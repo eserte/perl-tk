@@ -141,9 +141,13 @@ sub keys
       sub { my $w = shift;
             my $e = $w->XEvent;
             # print "Key(",join(',',@_),")\n";
+            my $N = $e->N();
             my $K = $e->K();
+            my $k = $e->k();
+            my $s = $e->s();
             my $A = $e->A();
-            print "press $K $A\n" 
+            printf "press keysym=%s ascii=`%s' keycode=%#x keysym_num=%#x state=%#x\n",
+	      $K, $A, $k, $N, $s;
           });
  $w->pack();
  return $w;
@@ -180,7 +184,6 @@ sub menubar
  $file->command("-label","Close","-command" => sub { close Gibberish },"-underline" => 0);
  $file->command("-label","Moan","-command"  => [ \&test_back_trace, $file, 3 ],"-underline" => 0);
  $file->command("-label","Trace","-command" => \&back_trace,"-underline" => 0);
- $file->command("-label","Wrong","-command" => sub { $top->configure(-gibberish => 'junk') });
  $file->command("-label","Send","-command"  => [\&send_test,$top] );
 
  $file->pack("-side" => "left");

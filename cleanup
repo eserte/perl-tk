@@ -1,4 +1,0 @@
-#!/bin/sh
-find . \( -name '*%' -o -name '*.bak' -o -name '*.orig' -o \
-          -name '*.old' -o -name '*.undone' -o \
-          -name 'core' -o -name 'malloc*.out' \) -ls -exec rm -f {} \;

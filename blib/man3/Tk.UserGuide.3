@@ -1,0 +1,641 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH USERGUIDE 1 "Tk402.003" "2/Aug/97" "perl/Tk Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+perl/Tk \- Writing Tk applications in perl5.
+.SH "DESCRIPTION"
+This manual page is for beginners.  It assumes you know some perl, 
+and have got perl+Tk running.
+Please run the \*(L'widget\*(R' demo before reading this text; it will teach you 
+the various widget types supported by Tk.
+.SH "Some background"
+Tk GUI programming is event-driven.  (This may already be familiar to you.)
+In event-driven programs, the main GUI loop is outside of the user program
+and inside the GUI library.  This loop will watch all events of interest,
+and activate the correct handler procedures to handle these events.
+Some of these handler procedures may be user-supplied; others will be part 
+of the library.
+.PP
+For a programmer, this means that you're not watching what is happening;
+instead, you are requested by the toolkit to perform actions whenever
+necessary.
+So, you're not watching for \*(L'raise window / close window / redraw window\*(R'
+requests, but you tell the toolkit which routine will handle such cases,
+and the toolkit will call the procedures when required.
+.SH "First requirements"
+Any perl program that uses Tk needs to include \f(CWuse Tk\fR.
+A program should also use \f(CWuse strict\fR and the \fB\-w\fR switch to ensure
+the program is working without common errors.
+.PP
+Any Tk application starts by creating the Tk main window.  You then create
+items inside the main window, or create new windows, before starting the
+mainloop.
+(You can also create more items and windows while you're running.)
+The items will be shown on the display after you \f(CWpack\fR them;
+more info on this later.
+Then you do a Tk mainloop; this will start the GUI and handle all events.
+That's your application.
+A trivial one-window example is show below:
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 2
+\&        use strict;
+\&        use Tk; 
+.Ve
+.Vb 6
+\&        my $main = new MainWindow;
+\&        $main->Label(-text => 'Hello, world!')->pack;
+\&        $main->Button(-text => 'Quit',
+\&                      -command => sub{exit}
+\&                      )->pack;
+\&        MainLoop;
+.Ve
+Please run this example.  It shows you two items types also shown in the
+widget demo; it also shows you how items are created and packed.
+Finally, note the typical Tk style using \f(CW-option\fR => \f(CWvalue\fR pairs.
+.SH "Item creation"
+Tk windows and widgets are hierarchical, i.e.\ one includes one or more
+others.  You create the first Tk window using \f(CWnew MainWindow\fR.
+This returns a window handle, assigned to \f(CW$main\fR in the example above.
+Keep track of the main handle.
+.PP
+You can use any Tk handle to create sub-items within the window or widget.
+This is done by calling the Tk constructor method on the variable.
+In the example above, the \f(CWLabel\fR method called from \f(CW$main\fR creates a 
+label widget inside the main window.  In the constructor call, you can specify
+various options; you can later add or change options for any widget
+using the \f(CWconfigure\fR method, which takes the same parameters as the
+constructor.  
+The one exception to the hierarchical structure is the \f(CWToplevel\fR constructor,
+which creates a new outermost window.
+.PP
+After you create any widget, you must render it by calling \f(CWpack\fR.  (This
+is not entirely true; more info later).  If you do not need to refer to
+the widget after construction and packing, call \f(CWpack\fR off the constructor
+results, as shown for the label and button in the example above.
+Note that the result of the compound call is the result of \f(CWpack\fR,
+which is not a valid Tk handle.
+.PP
+Windows and widgets are deleted by calling \f(CWdestroy\fR on them;
+this will delete and un-draw the widget and all its children,
+with the exception of Toplevel windows.
+.SH "Standard Tk types"
+.Ip "Button" 4
+.Ip "Radiobutton" 4
+.Ip "Checkbutton" 4
+.Ip "Listbox" 4
+.Ip "Scrollbar" 4
+.Ip "Entry" 4
+.Ip "Text" 4
+.Ip "Canvas" 4
+.Ip "Frame" 4
+.Ip "Toplevel" 4
+.Ip "Scale" 4
+.Ip "Menu" 4
+.Ip "Menubutton" 4
+.SH "Variables and callback routines"
+Most graphical interfaces are used to set up a set of values and conditions,
+and then perform the appropriate action.  The Tk toolkit is different
+from your average text-based prompting or menu driven system in that you do
+not collect settings yourself, and decide on an action based on an
+input code; instead, you leave these
+values to your toolkit and only get them when the action is performed.
+.PP
+So, where a traditional text-based system would look like this:
+(yes, this is obviously dumb code)
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 1
+\&        use strict;
+.Ve
+.Vb 3
+\&        print "Please type a font name\en";
+\&        my $font = <>; chop $font;
+\&        # Validate font
+.Ve
+.Vb 3
+\&        print "Please type a file name\en";
+\&        my $filename = <>; chop $filename;
+\&        # Validate filename
+.Ve
+.Vb 7
+\&        print "Type <1> to fax, <2> to print\en";
+\&        my $option = <>; chop $option;
+\&        if ($option eq 1) {
+\&            print "Faxing $filename in font $font\en";
+\&        } elsif ($option eq 2) {
+\&            print "Now sending $filename to printer in font $font\en";
+\&        }
+.Ve
+The (slightly larger) example below shows how to do this is Tk.
+Note the use of callbacks.  Note, also, that Tk handles the values, and
+the subroutine uses \f(CWget\fR to get at the values.
+If a user changes his mind and wants to change the font again,
+the application never notices; it's all handled by Tk.
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 2
+\&        use strict;
+\&        use Tk;
+.Ve
+.Vb 13
+\&        my $main = new MainWindow;
+\&        $main->Label(-text => 'Print file')->pack;
+\&        my $font = $main->Entry(-width => 10);
+\&        $font->pack;
+\&        my $filename = $main->Entry(-width => 10);
+\&        $filename->pack;
+\&        $main->Button(-text => 'Fax',
+\&                      -command => sub{do_fax($filename, $font)}
+\&                      )->pack;
+\&        $main->Button(-text => 'Print', 
+\&                      -command => sub{do_print($filename, $font)}
+\&                      )->pack;
+\&        MainLoop;
+.Ve
+.Vb 6
+\&        sub do_fax {
+\&            my ($file, $font) = @_;
+\&            my $file_val = $file->get;
+\&            my $font_val = $font->get;
+\&            print "Now faxing $file_val in $font_val\en";
+\&        }
+.Ve
+.Vb 6
+\&        sub do_print {
+\&            my ($file, $font) = @_;
+\&            $file = get $file;
+\&            $font = get $font;
+\&            print "Sending file $file to printer in $font\en";
+\&        }
+.Ve
+.SH "The packer.  Grouping and frames."
+In the examples above, you must have noticed the \f(CWpack\fR calls.
+This is one of the more complicated parts of Tk.  The basic idea
+is that any window or widget should be subject to a Tk widget placement manager;
+the \fIpacker\fR is the most useful placement manager.
+.PP
+The actions of the packer are rather simple: when applied
+to a widget, the packer positions that widget on the indicated position
+within the remaining space in its parent.  By default, the position is
+on top; this means the next items will be put below.  You can also
+specify the left, right, or bottom positions.  Specify position
+using \fB\-side => \*(L'right\*(R'\fR.
+.PP
+Additional packing parameters specify the behavior of the widget when
+there is some space left in the frame or when the window size is
+increased.  If widgets should maintain a fixed size, specify nothing;
+this is the default.  For widgets that you want to fill up the current
+horizontal space, specify \fB\-fill => \*(L'x\*(R'\fR, \fBy\fR, or \fBboth\fR; for
+widgets that should grow, specify \fB\-expand => \*(L'yes\*(R'\fR.  These
+parameters are not shown in the example below; see the widget demo.
+.PP
+If you want to group some items within a window that have a different
+packing order than others, you can include them in a Frame.  This is a 
+do-nothing window type that is meant for packing (and to play games
+with borders and colors).  
+.PP
+The example below shows the use of pack and frames:
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 2
+\&        use strict;
+\&        use Tk;
+.Ve
+.Vb 5
+\&        # Take top, the bottom -> now implicit top is in the middle
+\&        my $main = new MainWindow;
+\&        $main->Label(-text => 'At the top (default)')->pack;
+\&        $main->Label(-text => 'At the bottom')->pack(-side => 'bottom');
+\&        $main->Label(-text => 'The middle remains')->pack;
+.Ve
+.Vb 13
+\&        # Since left and right are taken, bottom will not work...
+\&        my $top1 = $main->Toplevel;
+\&        $top1->Label(-text => 'Left')->pack(-side => 'left');
+\&        $top1->Label(-text => 'Right')->pack(-side => 'right');
+\&        $top1->Label(-text => '?Bottom?')->pack(-side => 'bottom');
+\&        
+\&        # But when you use frames, things work quite alright
+\&        my $top2 = $main->Toplevel;
+\&        my $frame = $top2->Frame;
+\&        $frame->pack;
+\&        $frame->Label(-text => 'Left2')->pack(-side => 'left');
+\&        $frame->Label(-text => 'Right2')->pack(-side => 'right');
+\&        $top2->Label(-text => 'Bottom2')->pack(-side => 'bottom');
+.Ve
+.Vb 1
+\&        MainLoop;
+.Ve
+.SH "More than one window"
+Most real applications require more than one window.  As you read before, 
+you can create more outermost windows by using Toplevel.  Each window
+is independent; exiting a toplevel window does not affect the others.
+Exiting the main window will end the application.
+The example below shows a trivial three-window application:
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 2
+\&        use strict;
+\&        use Tk;
+.Ve
+.Vb 7
+\&        my $main = new MainWindow;
+\&        fill_window($main, 'Main');
+\&        my $top1 = $main->Toplevel;
+\&        fill_window($top1, 'First top-level');
+\&        my $top2 = $main->Toplevel;
+\&        fill_window($top2, 'Second top-level');
+\&        MainLoop;
+.Ve
+.Vb 10
+\&        sub fill_window {
+\&            my ($window, $header) = @_;
+\&            $window->Label(-text => $header)->pack;
+\&            $window->Button(-text => 'close',
+\&                            -command => sub{destroy $window}
+\&                            )->pack(-side => 'left');
+\&            $window->Button(-text => 'exit',
+\&                            -command => sub{exit}
+\&                            )->pack(-side => 'right');
+\&        }
+.Ve
+.SH "More callbacks"
+So far, all callback routines shown called a user procedure.
+You can also have a callback routine call another Tk routine.
+This is the way that scroll bars are implemented: scroll-bars
+can call a Tk item or a user procedure, whenever their position
+has changed.  The Tk item that has a scrollbar attached calls the
+scrollbar when its size or offset has changed.  In this way,
+the items are linked.  You can still ask a scrollbar's position,
+or set it by hand \- but the defaults will be taken care of.
+.PP
+The example below shows a listbox with a scroll bar.  Moving
+the scrollbar moves the listbox.  Scanning a listbox (dragging
+an item with the left mouse button) moves the scrollbar.
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 2
+\&        use strict;
+\&        use Tk;
+.Ve
+.Vb 14
+\&        my $main = new MainWindow;
+\&        my $box = $main->Listbox(-relief => 'sunken', 
+\&                                 -width => -1, # Shrink to fit
+\&                                 -height => 5,
+\&                                 -setgrid => 'yes');
+\&        my @items = qw(One Two Three Four Five Six Seven
+\&                       Eight Nine Ten Eleven Twelve);
+\&        foreach (@items) {
+\&           $box->insert('end', $_);
+\&        }
+\&        my $scroll = $main->Scrollbar(-command => ['yview', $box]);
+\&        $box->configure(-yscrollcommand => ['set', $scroll]);
+\&        $box->pack(-side => 'left', -fill => 'both', -expand => 'yes');
+\&        $scroll->pack(-side => 'right', -fill => 'y');
+.Ve
+.Vb 1
+\&        MainLoop;
+.Ve
+.SH "Canvases and tags"
+One of the most powerful window types in Tk is the Canvas window.
+In a canvas window, you can draw simple graphics and include
+other widgets.  The canvas area may be larger than the visible window,
+and may then be scrolled.  Any item you draw on the canvas has its own id,
+and may optionally have one or more \fItags\fR.  You may refer to any
+item by its id, and may refer to any group of items by a common tag;
+you can move, delete, or change groups of items using these tags, 
+and you can \fIbind\fR actions to tags.  For a properly designed (often
+structured) canvas, you can specify powerful actions quite simply.
+.PP
+In the example below, actions are bound to circles (single click)
+and blue items (double-click); obviously, this can be extended to any
+tag or group of tags.
+.PP
+.Vb 1
+\&        #! /usr/bin/perl5 -w
+.Ve
+.Vb 2
+\&        use strict;
+\&        use Tk;
+.Ve
+.Vb 4
+\&        # Create main window and canvas
+\&        my $main = new MainWindow;
+\&        my $canvas = $main->Canvas;
+\&        $canvas->pack(-expand => 'yes', -fill => 'both');
+.Ve
+.Vb 5
+\&        # Create various items
+\&        create_item($canvas, 1, 1, 'circle', 'blue', 'Jane');
+\&        create_item($canvas, 4, 4, 'circle', 'red', 'Peter');
+\&        create_item($canvas, 4, 1, 'square', 'blue', 'James');
+\&        create_item($canvas, 1, 4, 'square', 'red', 'Patricia');
+.Ve
+.Vb 5
+\&        # Single-clicking with left on a 'circle' item invokes a procedure
+\&        $canvas->bind('circle', '<1>' => sub {handle_circle($canvas)});
+\&        # Double-clicking with left on a 'blue' item invokes a procedure
+\&        $canvas->bind('blue', '<Double-1>' => sub {handle_blue($canvas)});
+\&        MainLoop;
+.Ve
+.Vb 14
+\&        # Create an item; use parameters as tags (this is not a default!)
+\&        sub create_item {
+\&            my ($can, $x, $y, $form, $color, $name) = @_;
+\&    
+\&            my $x2 = $x + 1;
+\&            my $y2 = $y + 1;
+\&            my $kind;
+\&            $kind = 'oval' if ($form eq 'circle');
+\&            $kind = 'rectangle' if ($form eq 'square');
+\&            $can->create(($kind, "$x" . 'c', "$y" . 'c',
+\&                          "$x2" . 'c', "$y2" . 'c'),
+\&                         -tags => [$form, $color, $name],
+\&                         -fill => $color);
+\&        }
+.Ve
+.Vb 16
+\&        # This gets the real name (not current, blue/red, square/circle)
+\&        # Note: you'll want to return a list in realistic situations...
+\&        sub get_name {
+\&            my ($can) = @_;
+\&            my $item = $can->find('withtag', 'current');
+\&            my @taglist = $can->gettags($item);
+\&            my $name;
+\&            foreach (@taglist) {
+\&                next if ($_ eq 'current');
+\&                next if ($_ eq 'red' or $_ eq 'blue');
+\&                next if ($_ eq 'square' or $_ eq 'circle');
+\&                $name = $_;
+\&                last;
+\&            }
+\&            return $name;
+\&        }
+.Ve
+.Vb 5
+\&        sub handle_circle {
+\&            my ($can) = @_;
+\&            my $name = get_name($can);
+\&            print "Action on circle $name...\en";
+\&        }
+.Ve
+.Vb 5
+\&        sub handle_blue {
+\&            my ($can) = @_;
+\&            my $name = get_name($can);
+\&            print "Action on blue item $name...\en";
+\&        }
+.Ve
+
+.rn }` ''
+.IX Title "USERGUIDE 1"
+.IX Name "perl/Tk - Writing Tk applications in perl5."
+
+.IX Header "NAME"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "Some background"
+
+.IX Header "First requirements"
+
+.IX Header "Item creation"
+
+.IX Header "Standard Tk types"
+
+.IX Item "Button"
+
+.IX Item "Radiobutton"
+
+.IX Item "Checkbutton"
+
+.IX Item "Listbox"
+
+.IX Item "Scrollbar"
+
+.IX Item "Entry"
+
+.IX Item "Text"
+
+.IX Item "Canvas"
+
+.IX Item "Frame"
+
+.IX Item "Toplevel"
+
+.IX Item "Scale"
+
+.IX Item "Menu"
+
+.IX Item "Menubutton"
+
+.IX Header "Variables and callback routines"
+
+.IX Header "The packer.  Grouping and frames."
+
+.IX Header "More than one window"
+
+.IX Header "More callbacks"
+
+.IX Header "Canvases and tags"
+

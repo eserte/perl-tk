@@ -1,0 +1,4 @@
+# Index created by AutoSplit for ./blib/lib/Tk/Toplevel.pm (file acts as timestamp)
+package Tk::Toplevel;
+sub Icon ;
+1;

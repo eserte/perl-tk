@@ -66,27 +66,9 @@ $mb->Menubutton(-text => '~File', -menuitems =>
                            my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
                            $t->Save($file) if (defined $file);
                           }],
-                  ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']],
-                  '',['Button' => 'E~xit', -command => [ 'destroy',$top ]],
+                  ['Button' => '~Quit', -command => [ 'destroy',$top ]],
+                  ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']]
                  ]);
-
-$mb->Menubutton(-text => '~Edit', -menuitems =>
-                [
-                 ['Button' => '~Undo',  -command => [$t, 'undo']],'',
-                 ['Button' => '~Copy',  -command => [$t, 'clipboardCopy']],
-                 ['Button' => 'Cu~t',   -command => [$t, 'clipboardCut']],
-                 ['Button' => '~Paste', -command => [$t, 'clipboardPaste']],
-                 '',['Button' => 'Select All', -command => [$t, 'selectAll']],
-                ]);
-
-$mb->Menubutton(-text => '~Search', -menuitems =>
-                [
-                ]);
-
-$mb->Menubutton(-text => '~View', -menuitems =>
-                [
-                 ['Button' => '~Line...', -command => [\&AskLine,$t]],
-                ]);
 
 $mb->Menubutton(-text => '~Help', -side => 'right');
 
@@ -102,30 +84,3 @@ if (@ARGV) {
 }
 
 MainLoop;
-
-sub AskLine
-{
- my ($t) = @_;
- unless (exists $t->{'AskLine'})
-  {
-   my $d = $t->{'AskLine'} = $t->Toplevel(-popover => 'cursor', -popanchor => 'nw');
-   $d->title('Goto Line ...');
-   $d->withdraw;
-   $d->transient($t->toplevel);
-   my $e = $d->Entry->pack;
-   $e->bind('<Return>', 
-     sub 
-      {
-       my $e = shift;
-       $d->withdraw;
-       my $posn = $e->get.'.0';
-       $t->SetCursor($posn);
-       $t->focus;
-      });
-   $d->protocol(WM_DESTROY_WINDOW =>[withdraw => $d]);
-  }
- $t->{'AskLine'}->Popup;
- $t->update;
- $t->{'AskLine'}->focusNext;
-
-}

@@ -1,0 +1,19 @@
+# Index created by AutoSplit for .././blib/lib/Tk/Listbox.pm (file acts as timestamp)
+package Tk::Listbox;
+sub xyIndex ;
+sub ClassInit ;
+sub BeginSelect ;
+sub Motion ;
+sub BeginExtend ;
+sub BeginToggle ;
+sub AutoScan ;
+sub UpDown ;
+sub ExtendUpDown ;
+sub DataExtend ;
+sub Cancel ;
+sub SelectAll ;
+sub SetList ;
+sub Getselected ;
+sub deleteSelected ;
+sub clipboardPaste ;
+1;

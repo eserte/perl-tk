@@ -482,8 +482,13 @@ sub IP
  if (@_)
   {
    my $term = shift;
+   pop(@_);			# The offset?
+   if (@_) {
+     $term .= " @_";
+   }
+   $term =~ s/^"(.*)"$/$1/s;
    $obj->start_list('DL');
-   $obj->tagged('item',$term);
+   $obj->tagged('item', $term);
   }
  else
   {
@@ -495,7 +500,7 @@ sub TP
 {
  my $obj = shift;
  my $heading = <MAN>;
- IP($obj,fontstuff(Perlize::munge($heading,\$obj->{WidgetKind})));
+ IP($obj,fontstuff($obj,Perlize::munge($heading,\$obj->{WidgetKind})));
 }
 
 sub RS
@@ -514,25 +519,40 @@ sub RE
                             
 sub fontstuff
 {
+ my $obj = shift;
  local ($_) = shift;
+ my $was_dot = /^\./;
+ 
  s/\\0/ /g;
  s/\\ / /g; # Make &xx; ??
  s/\\&//g;
- s/([<&>])/'E<'.$POD::special{$1}.'>'/eg; 
+ s/([<&>])/'E<'.$POD::special{$1}.'>'/eg 
+   if $obj->{'FILL'};
  if (/\\f/)
-  {        
-   s/\\fC(.*?)(?=\\f)/C<$1>/g;
-   s/\\f\(CW(.*?)(?=\\f)/C<$1>/g;
-   s/\\f([IB])(.*?)(?=\\f)/$1<$2>/g;
-   s/\\f([IB])(.*?)$/$1<$2>/;
-   s/\\fC(.*?)$/C<$1>/;
-   s/\\f\(CW(.*?)$/C<$1>/;
-   s/\\f[RP]//g;
+  {       
+    if ($obj->{'FILL'}) {
+      s/\\fC(.*?)(?=\\f)/C<$1>/g;
+      s/\\f\(CW(.*?)(?=\\f)/C<$1>/g;
+      s/\\f([IB])(.*?)(?=\\f)/$1<$2>/g;
+      s/\\f([IB])(.*?)$/$1<$2>/;
+      s/\\fC(.*?)$/C<$1>/;
+      s/\\f\(CW(.*?)$/C<$1>/;
+      s/\\f[RP](\\\|)?//g;	# `\|' - to separate from following `(' ?
+    } else {
+      s/\\fC(.*?)(?=\\f)/$1/g;
+      s/\\f\(CW(.*?)(?=\\f)/$1/g;
+      s/\\f([IB])(.*?)(?=\\f)/$2/g;
+      s/\\f([IB])(.*?)$/$2/;
+      s/\\fC(.*?)$/$1/;
+      s/\\f\(CW(.*?)$/$1/;
+      s/\\f[RP](\\\|)?//g;	# `\|' - to separate from following `(' ?      
+    }
   }        
  s/\\-/-/g;
  s/\\\^//g;
- s/\\\(\+-/&#177;/g;
+ s/\\\(\+-/+-/g;		# XXXX Some E<plus-minus>?
  s/\\e/\\/g;
+ $_ = " $_" if not $was_dot and /^\./;
  return $_;
 }
 
@@ -576,7 +596,7 @@ sub process
      }
     # Do the font changes first
     $_ = Perlize::munge($_,\$pod->{WidgetKind});
-    $_ = fontstuff($_);
+    $_ = fontstuff($pod,$_);
     if (/^\.(\w+)\s*(.*)$/)
      {
       my $cmd = $1;

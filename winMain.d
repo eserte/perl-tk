@@ -1,1 +1,0 @@
-winMain.o: winMain.c

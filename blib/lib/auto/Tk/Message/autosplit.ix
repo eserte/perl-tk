@@ -1,0 +1,3 @@
+# Index created by AutoSplit for ./blib/lib/Tk/Message.pm (file acts as timestamp)
+package Tk::Message;
+1;
