@@ -2,423 +2,123 @@
 #define _TKINT_VM
 #include "tkInt_f.h"
 #ifndef NO_VTABLES
-#define tkActiveUid (*TkintVptr->V_tkActiveUid)
-#define tkBitmapImageType (*TkintVptr->V_tkBitmapImageType)
-#define tkDisabledUid (*TkintVptr->V_tkDisabledUid)
-#define tkDisplayList (*TkintVptr->V_tkDisplayList)
-#define tkMainWindowList (*TkintVptr->V_tkMainWindowList)
-#define tkNormalUid (*TkintVptr->V_tkNormalUid)
-#define tkPredefBitmapTable (*TkintVptr->V_tkPredefBitmapTable)
-#ifndef TkAllocWindow
-#  define TkAllocWindow (*TkintVptr->V_TkAllocWindow)
-#endif
-
-#ifndef TkBindDeadWindow
-#  define TkBindDeadWindow (*TkintVptr->V_TkBindDeadWindow)
-#endif
-
-#ifndef TkBindEventProc
-#  define TkBindEventProc (*TkintVptr->V_TkBindEventProc)
-#endif
-
-#ifndef TkBindFree
-#  define TkBindFree (*TkintVptr->V_TkBindFree)
-#endif
-
-#ifndef TkBindInit
-#  define TkBindInit (*TkintVptr->V_TkBindInit)
-#endif
-
+#define tkBitmapObjType (*TkintVptr->V_tkBitmapObjType)
+#define tkBorderObjType (*TkintVptr->V_tkBorderObjType)
+#define tkColorObjType (*TkintVptr->V_tkColorObjType)
+#define tkCursorObjType (*TkintVptr->V_tkCursorObjType)
+#define tkFontObjType (*TkintVptr->V_tkFontObjType)
+#define tkOptionObjType (*TkintVptr->V_tkOptionObjType)
+#define tkStateKeyObjType (*TkintVptr->V_tkStateKeyObjType)
 #ifndef TkCanvPostscriptCmd
 #  define TkCanvPostscriptCmd (*TkintVptr->V_TkCanvPostscriptCmd)
 #endif
 
-#ifndef TkChangeEventWindow
-#  define TkChangeEventWindow (*TkintVptr->V_TkChangeEventWindow)
+#ifndef TkCreateMenuCmd
+#  define TkCreateMenuCmd (*TkintVptr->V_TkCreateMenuCmd)
 #endif
 
-#ifndef TkClassOption
-#  define TkClassOption (*TkintVptr->V_TkClassOption)
+#ifndef TkEventInit
+#  define TkEventInit (*TkintVptr->V_TkEventInit)
 #endif
 
-#ifndef TkClassOptionObj
-#  define TkClassOptionObj (*TkintVptr->V_TkClassOptionObj)
+#ifndef TkGetDoublePixels
+#  define TkGetDoublePixels (*TkintVptr->V_TkGetDoublePixels)
 #endif
 
-#ifndef TkClipBox
-#  define TkClipBox (*TkintVptr->V_TkClipBox)
+#ifndef TkOffsetParseProc
+#  define TkOffsetParseProc (*TkintVptr->V_TkOffsetParseProc)
 #endif
 
-#ifndef TkClipInit
-#  define TkClipInit (*TkintVptr->V_TkClipInit)
+#ifndef TkOffsetPrintProc
+#  define TkOffsetPrintProc (*TkintVptr->V_TkOffsetPrintProc)
 #endif
 
-#ifndef TkComputeAnchor
-#  define TkComputeAnchor (*TkintVptr->V_TkComputeAnchor)
+#ifndef TkOrientParseProc
+#  define TkOrientParseProc (*TkintVptr->V_TkOrientParseProc)
 #endif
 
-#ifndef TkCreateBindingProcedure
-#  define TkCreateBindingProcedure (*TkintVptr->V_TkCreateBindingProcedure)
+#ifndef TkOrientPrintProc
+#  define TkOrientPrintProc (*TkintVptr->V_TkOrientPrintProc)
 #endif
 
-#ifndef TkCreateCursorFromData
-#  define TkCreateCursorFromData (*TkintVptr->V_TkCreateCursorFromData)
+#ifndef TkPixelParseProc
+#  define TkPixelParseProc (*TkintVptr->V_TkPixelParseProc)
 #endif
 
-#ifndef TkCreateFrame
-#  define TkCreateFrame (*TkintVptr->V_TkCreateFrame)
-#endif
-
-#ifndef TkCreateMainWindow
-#  define TkCreateMainWindow (*TkintVptr->V_TkCreateMainWindow)
-#endif
-
-#ifndef TkCreateRegion
-#  define TkCreateRegion (*TkintVptr->V_TkCreateRegion)
-#endif
-
-#ifndef TkCurrentTime
-#  define TkCurrentTime (*TkintVptr->V_TkCurrentTime)
-#endif
-
-#ifndef TkDeadAppCmd
-#  define TkDeadAppCmd (*TkintVptr->V_TkDeadAppCmd)
-#endif
-
-#ifndef TkDeleteAllImages
-#  define TkDeleteAllImages (*TkintVptr->V_TkDeleteAllImages)
-#endif
-
-#ifndef TkDestroyRegion
-#  define TkDestroyRegion (*TkintVptr->V_TkDestroyRegion)
-#endif
-
-#ifndef TkDoConfigureNotify
-#  define TkDoConfigureNotify (*TkintVptr->V_TkDoConfigureNotify)
-#endif
-
-#ifndef TkDrawInsetFocusHighlight
-#  define TkDrawInsetFocusHighlight (*TkintVptr->V_TkDrawInsetFocusHighlight)
-#endif
-
-#ifndef TkEventDeadWindow
-#  define TkEventDeadWindow (*TkintVptr->V_TkEventDeadWindow)
-#endif
-
-#ifndef TkFindStateNum
-#  define TkFindStateNum (*TkintVptr->V_TkFindStateNum)
-#endif
-
-#ifndef TkFindStateNumObj
-#  define TkFindStateNumObj (*TkintVptr->V_TkFindStateNumObj)
-#endif
-
-#ifndef TkFindStateString
-#  define TkFindStateString (*TkintVptr->V_TkFindStateString)
-#endif
-
-#ifndef TkFocusDeadWindow
-#  define TkFocusDeadWindow (*TkintVptr->V_TkFocusDeadWindow)
-#endif
-
-#ifndef TkFocusFilterEvent
-#  define TkFocusFilterEvent (*TkintVptr->V_TkFocusFilterEvent)
-#endif
-
-#ifndef TkFocusKeyEvent
-#  define TkFocusKeyEvent (*TkintVptr->V_TkFocusKeyEvent)
-#endif
-
-#ifndef TkFontPkgFree
-#  define TkFontPkgFree (*TkintVptr->V_TkFontPkgFree)
-#endif
-
-#ifndef TkFontPkgInit
-#  define TkFontPkgInit (*TkintVptr->V_TkFontPkgInit)
-#endif
-
-#ifndef TkFreeBindingTags
-#  define TkFreeBindingTags (*TkintVptr->V_TkFreeBindingTags)
-#endif
-
-#ifndef TkFreeCursor
-#  define TkFreeCursor (*TkintVptr->V_TkFreeCursor)
-#endif
-
-#ifndef TkFreeWindowId
-#  define TkFreeWindowId (*TkintVptr->V_TkFreeWindowId)
-#endif
-
-#ifndef TkGetBitmapData
-#  define TkGetBitmapData (*TkintVptr->V_TkGetBitmapData)
-#endif
-
-#ifndef TkGetCursorByName
-#  define TkGetCursorByName (*TkintVptr->V_TkGetCursorByName)
-#endif
-
-#ifndef TkGetDefaultScreenName
-#  define TkGetDefaultScreenName (*TkintVptr->V_TkGetDefaultScreenName)
-#endif
-
-#ifndef TkGetDisplay
-#  define TkGetDisplay (*TkintVptr->V_TkGetDisplay)
-#endif
-
-#ifndef TkGetDisplayOf
-#  define TkGetDisplayOf (*TkintVptr->V_TkGetDisplayOf)
-#endif
-
-#ifndef TkGetFocusWin
-#  define TkGetFocusWin (*TkintVptr->V_TkGetFocusWin)
-#endif
-
-#ifndef TkGetInterpNames
-#  define TkGetInterpNames (*TkintVptr->V_TkGetInterpNames)
-#endif
-
-#ifndef TkGetPixelsFromObj
-#  define TkGetPixelsFromObj (*TkintVptr->V_TkGetPixelsFromObj)
-#endif
-
-#ifndef TkGetPointerCoords
-#  define TkGetPointerCoords (*TkintVptr->V_TkGetPointerCoords)
-#endif
-
-#ifndef TkGetScreenMMFromObj
-#  define TkGetScreenMMFromObj (*TkintVptr->V_TkGetScreenMMFromObj)
-#endif
-
-#ifndef TkGetServerInfo
-#  define TkGetServerInfo (*TkintVptr->V_TkGetServerInfo)
-#endif
-
-#ifndef TkGrabDeadWindow
-#  define TkGrabDeadWindow (*TkintVptr->V_TkGrabDeadWindow)
-#endif
-
-#ifndef TkGrabState
-#  define TkGrabState (*TkintVptr->V_TkGrabState)
-#endif
-
-#ifndef TkInOutEvents
-#  define TkInOutEvents (*TkintVptr->V_TkInOutEvents)
-#endif
-
-#ifndef TkInitXId
-#  define TkInitXId (*TkintVptr->V_TkInitXId)
-#endif
-
-#ifndef TkInstallFrameMenu
-#  define TkInstallFrameMenu (*TkintVptr->V_TkInstallFrameMenu)
-#endif
-
-#ifndef TkIntersectRegion
-#  define TkIntersectRegion (*TkintVptr->V_TkIntersectRegion)
-#endif
-
-#ifndef TkKeysymToString
-#  define TkKeysymToString (*TkintVptr->V_TkKeysymToString)
-#endif
-
-#ifndef TkPointerEvent
-#  define TkPointerEvent (*TkintVptr->V_TkPointerEvent)
-#endif
-
-#ifndef TkPositionInTree
-#  define TkPositionInTree (*TkintVptr->V_TkPositionInTree)
+#ifndef TkPixelPrintProc
+#  define TkPixelPrintProc (*TkintVptr->V_TkPixelPrintProc)
 #endif
 
 #ifndef TkPostscriptImage
 #  define TkPostscriptImage (*TkintVptr->V_TkPostscriptImage)
 #endif
 
-#ifndef TkPutImage
-#  define TkPutImage (*TkintVptr->V_TkPutImage)
+#ifndef TkRegisterObjTypes
+#  define TkRegisterObjTypes (*TkintVptr->V_TkRegisterObjTypes)
 #endif
 
-#ifndef TkQueueEventForAllChildren
-#  define TkQueueEventForAllChildren (*TkintVptr->V_TkQueueEventForAllChildren)
+#ifndef TkTileParseProc
+#  define TkTileParseProc (*TkintVptr->V_TkTileParseProc)
 #endif
 
-#ifndef TkReadBitmapFile
-#  define TkReadBitmapFile (*TkintVptr->V_TkReadBitmapFile)
+#ifndef TkTilePrintProc
+#  define TkTilePrintProc (*TkintVptr->V_TkTilePrintProc)
 #endif
 
-#ifndef TkRectInRegion
-#  define TkRectInRegion (*TkintVptr->V_TkRectInRegion)
+#ifndef Tk_BindObjCmd
+#  define Tk_BindObjCmd (*TkintVptr->V_Tk_BindObjCmd)
 #endif
 
-#ifndef TkScrollWindow
-#  define TkScrollWindow (*TkintVptr->V_TkScrollWindow)
+#ifndef Tk_BindtagsObjCmd
+#  define Tk_BindtagsObjCmd (*TkintVptr->V_Tk_BindtagsObjCmd)
 #endif
 
-#ifndef TkSelDeadWindow
-#  define TkSelDeadWindow (*TkintVptr->V_TkSelDeadWindow)
+#ifndef Tk_ClipboardObjCmd
+#  define Tk_ClipboardObjCmd (*TkintVptr->V_Tk_ClipboardObjCmd)
 #endif
 
-#ifndef TkSelEventProc
-#  define TkSelEventProc (*TkintVptr->V_TkSelEventProc)
+#ifndef Tk_GrabObjCmd
+#  define Tk_GrabObjCmd (*TkintVptr->V_Tk_GrabObjCmd)
 #endif
 
-#ifndef TkSelInit
-#  define TkSelInit (*TkintVptr->V_TkSelInit)
+#ifndef Tk_GridObjCmd
+#  define Tk_GridObjCmd (*TkintVptr->V_Tk_GridObjCmd)
 #endif
 
-#ifndef TkSelPropProc
-#  define TkSelPropProc (*TkintVptr->V_TkSelPropProc)
+#ifndef Tk_LabelframeObjCmd
+#  define Tk_LabelframeObjCmd (*TkintVptr->V_Tk_LabelframeObjCmd)
 #endif
 
-#ifndef TkSetClassProcs
-#  define TkSetClassProcs (*TkintVptr->V_TkSetClassProcs)
+#ifndef Tk_PackObjCmd
+#  define Tk_PackObjCmd (*TkintVptr->V_Tk_PackObjCmd)
 #endif
 
-#ifndef TkSetPixmapColormap
-#  define TkSetPixmapColormap (*TkintVptr->V_TkSetPixmapColormap)
+#ifndef Tk_PanedWindowObjCmd
+#  define Tk_PanedWindowObjCmd (*TkintVptr->V_Tk_PanedWindowObjCmd)
 #endif
 
-#ifndef TkSetRegion
-#  define TkSetRegion (*TkintVptr->V_TkSetRegion)
+#ifndef Tk_PlaceObjCmd
+#  define Tk_PlaceObjCmd (*TkintVptr->V_Tk_PlaceObjCmd)
 #endif
 
-#ifndef TkSetWindowMenuBar
-#  define TkSetWindowMenuBar (*TkintVptr->V_TkSetWindowMenuBar)
+#ifndef Tk_SelectionObjCmd
+#  define Tk_SelectionObjCmd (*TkintVptr->V_Tk_SelectionObjCmd)
 #endif
 
-#ifndef TkStringToKeysym
-#  define TkStringToKeysym (*TkintVptr->V_TkStringToKeysym)
+#ifndef Tk_StateParseProc
+#  define Tk_StateParseProc (*TkintVptr->V_Tk_StateParseProc)
 #endif
 
-#ifndef TkUnionRectWithRegion
-#  define TkUnionRectWithRegion (*TkintVptr->V_TkUnionRectWithRegion)
+#ifndef Tk_StatePrintProc
+#  define Tk_StatePrintProc (*TkintVptr->V_Tk_StatePrintProc)
 #endif
 
-#ifndef TkWmAddToColormapWindows
-#  define TkWmAddToColormapWindows (*TkintVptr->V_TkWmAddToColormapWindows)
+#ifndef Tk_TkwaitObjCmd
+#  define Tk_TkwaitObjCmd (*TkintVptr->V_Tk_TkwaitObjCmd)
 #endif
 
-#ifndef TkWmDeadWindow
-#  define TkWmDeadWindow (*TkintVptr->V_TkWmDeadWindow)
-#endif
-
-#ifndef TkWmFocusToplevel
-#  define TkWmFocusToplevel (*TkintVptr->V_TkWmFocusToplevel)
-#endif
-
-#ifndef TkWmMapWindow
-#  define TkWmMapWindow (*TkintVptr->V_TkWmMapWindow)
-#endif
-
-#ifndef TkWmNewWindow
-#  define TkWmNewWindow (*TkintVptr->V_TkWmNewWindow)
-#endif
-
-#ifndef TkWmProtocolEventProc
-#  define TkWmProtocolEventProc (*TkintVptr->V_TkWmProtocolEventProc)
-#endif
-
-#ifndef TkWmRemoveFromColormapWindows
-#  define TkWmRemoveFromColormapWindows (*TkintVptr->V_TkWmRemoveFromColormapWindows)
-#endif
-
-#ifndef TkWmRestackToplevel
-#  define TkWmRestackToplevel (*TkintVptr->V_TkWmRestackToplevel)
-#endif
-
-#ifndef TkWmSetClass
-#  define TkWmSetClass (*TkintVptr->V_TkWmSetClass)
-#endif
-
-#ifndef TkWmUnmapWindow
-#  define TkWmUnmapWindow (*TkintVptr->V_TkWmUnmapWindow)
-#endif
-
-#ifndef TkpChangeFocus
-#  define TkpChangeFocus (*TkintVptr->V_TkpChangeFocus)
-#endif
-
-#ifndef TkpClaimFocus
-#  define TkpClaimFocus (*TkintVptr->V_TkpClaimFocus)
-#endif
-
-#ifndef TkpCloseDisplay
-#  define TkpCloseDisplay (*TkintVptr->V_TkpCloseDisplay)
-#endif
-
-#ifndef TkpCmapStressed
-#  define TkpCmapStressed (*TkintVptr->V_TkpCmapStressed)
-#endif
-
-#ifndef TkpCreateNativeBitmap
-#  define TkpCreateNativeBitmap (*TkintVptr->V_TkpCreateNativeBitmap)
-#endif
-
-#ifndef TkpDefineNativeBitmaps
-#  define TkpDefineNativeBitmaps (*TkintVptr->V_TkpDefineNativeBitmaps)
-#endif
-
-#ifndef TkpGetNativeAppBitmap
-#  define TkpGetNativeAppBitmap (*TkintVptr->V_TkpGetNativeAppBitmap)
-#endif
-
-#ifndef TkpGetOtherWindow
-#  define TkpGetOtherWindow (*TkintVptr->V_TkpGetOtherWindow)
-#endif
-
-#ifndef TkpGetWrapperWindow
-#  define TkpGetWrapperWindow (*TkintVptr->V_TkpGetWrapperWindow)
-#endif
-
-#ifndef TkpInitializeMenuBindings
-#  define TkpInitializeMenuBindings (*TkintVptr->V_TkpInitializeMenuBindings)
-#endif
-
-#ifndef TkpMakeContainer
-#  define TkpMakeContainer (*TkintVptr->V_TkpMakeContainer)
-#endif
-
-#ifndef TkpMakeMenuWindow
-#  define TkpMakeMenuWindow (*TkintVptr->V_TkpMakeMenuWindow)
-#endif
-
-#ifndef TkpMakeWindow
-#  define TkpMakeWindow (*TkintVptr->V_TkpMakeWindow)
-#endif
-
-#ifndef TkpMenuNotifyToplevelCreate
-#  define TkpMenuNotifyToplevelCreate (*TkintVptr->V_TkpMenuNotifyToplevelCreate)
-#endif
-
-#ifndef TkpOpenDisplay
-#  define TkpOpenDisplay (*TkintVptr->V_TkpOpenDisplay)
-#endif
-
-#ifndef TkpPrintWindowId
-#  define TkpPrintWindowId (*TkintVptr->V_TkpPrintWindowId)
-#endif
-
-#ifndef TkpRedirectKeyEvent
-#  define TkpRedirectKeyEvent (*TkintVptr->V_TkpRedirectKeyEvent)
-#endif
-
-#ifndef TkpScanWindowId
-#  define TkpScanWindowId (*TkintVptr->V_TkpScanWindowId)
-#endif
-
-#ifndef TkpSetMainMenubar
-#  define TkpSetMainMenubar (*TkintVptr->V_TkpSetMainMenubar)
-#endif
-
-#ifndef TkpSync
-#  define TkpSync (*TkintVptr->V_TkpSync)
-#endif
-
-#ifndef TkpUseWindow
-#  define TkpUseWindow (*TkintVptr->V_TkpUseWindow)
-#endif
-
-#ifndef TkpWindowWasRecentlyDeleted
-#  define TkpWindowWasRecentlyDeleted (*TkintVptr->V_TkpWindowWasRecentlyDeleted)
+#ifndef Tk_WmObjCmd
+#  define Tk_WmObjCmd (*TkintVptr->V_Tk_WmObjCmd)
 #endif
 
 #endif /* NO_VTABLES */

@@ -263,7 +263,8 @@ $top->bind('MainWindow','<Map>',
 
 $camel   = $top->Photo(-format => 'gif', -file => Tk->findINC("Xcamel.gif"));
 
-# print "camel is ",$camel->width," wide\n";
+
+print "camel is ",$camel->width," wide\n";
 
 if (@ARGV)
  {
@@ -312,8 +313,9 @@ $be->insert('end',qw(one two three four));
 $QuitPB  = $top->Pixmap('-file' => Tk->findINC("demos/images/QuitPB.xpm"));
 $QuitPBa = $top->Pixmap('-file' => Tk->findINC("demos/images/QuitPBa.xpm"));
 
-my $q = &button($bf,"-image",$QuitPB,"-activeimage",$QuitPBa,
-        "-command", sub { $top->destroy });
+my $q = &button($bf,"-image",$QuitPB,
+                # "-activeimage",$QuitPBa,
+                "-command", sub { $top->destroy });
 $bl->attach($q, -msg => "Exit Application");
 
 &button($bf,"-text","Push me","-command",

@@ -1,3 +1,6 @@
+
+/*	$Id: tixHLCol.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  *  tixHLCol.c ---
  *
@@ -62,11 +65,11 @@ Tix_HLGetColumn(interp, wPtr, argv, column_ret, mustExist)
     if ((chPtr = Tix_HLFindElement(interp, wPtr, argv[0])) == NULL) {
 	return NULL;
     }
-    if (Tcl_GetInt(interp, argv[1], &column) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[1], &column) != TCL_OK) {
 	return NULL;
     }
     if (column >= wPtr->numColumns || column < 0) {
-	Tcl_AppendResult(interp, "Column \"", argv[1], 
+	Tcl_AppendResult(interp, "Column \"", argv[1],
 	    "\" does not exist", (char*)NULL);
 	return NULL;
     }
@@ -79,7 +82,7 @@ Tix_HLGetColumn(interp, wPtr, argv, column_ret, mustExist)
     * column_ret = column;
     return chPtr;
 }
-
+
 /*----------------------------------------------------------------------
  * "item" sub command
  *----------------------------------------------------------------------
@@ -110,7 +113,7 @@ Tix_HLItem(clientData, interp, argc, argv)
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
 }
-
+
 /*----------------------------------------------------------------------
  * "item cget" sub command
  *----------------------------------------------------------------------
@@ -130,11 +133,11 @@ Tix_HLItemCGet(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 
-    return Tk_ConfigureValue(interp, wPtr->dispData.tkwin, 
+    return Tk_ConfigureValue(interp, wPtr->dispData.tkwin,
 	chPtr->col[column].iPtr->base.diTypePtr->itemConfigSpecs,
 	(char *)chPtr->col[column].iPtr, argv[2], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "item configure" sub command
  *----------------------------------------------------------------------
@@ -155,11 +158,11 @@ Tix_HLItemConfig(clientData, interp, argc, argv)
     }
 
     if (argc == 2) {
-	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin, 
+	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin,
 	    chPtr->col[column].iPtr->base.diTypePtr->itemConfigSpecs,
 	    (char *)chPtr->col[column].iPtr, NULL, 0);
     } else if (argc == 3) {
-	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin, 
+	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin,
 	    chPtr->col[column].iPtr->base.diTypePtr->itemConfigSpecs,
 	    (char *)chPtr->col[column].iPtr, argv[2], 0);
     } else {
@@ -170,7 +173,7 @@ Tix_HLItemConfig(clientData, interp, argc, argv)
 	    argc-2, argv+2, TK_CONFIG_ARGV_ONLY);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "item create" sub command
  *----------------------------------------------------------------------
@@ -269,7 +272,7 @@ Tix_HLItemDelete(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "item exists" sub command
  *----------------------------------------------------------------------
@@ -319,7 +322,7 @@ Tix_HLColumn(clientData, interp, argc, argv)
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
 }
-
+
 /*----------------------------------------------------------------------
  * "column width" sub command
  *----------------------------------------------------------------------
@@ -336,11 +339,11 @@ Tix_HLColWidth(clientData, interp, argc, argv)
     char buff[128];
     int newWidth;
 
-    if (Tcl_GetInt(interp, argv[0], &column) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[0], &column) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (column >= wPtr->numColumns || column < 0) {
-	Tcl_AppendResult(interp, "Column \"", argv[0], 
+	Tcl_AppendResult(interp, "Column \"", argv[0],
 	    "\" does not exist", (char*)NULL);
 	return TCL_ERROR;
     }
@@ -374,7 +377,7 @@ Tix_HLColWidth(clientData, interp, argc, argv)
 	    newWidth = UNINITIALIZED;
 	    goto setwidth;
 	}
-	if (Tcl_GetInt(interp, argv[2], &newWidth) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[2], &newWidth) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (newWidth < 0) {

@@ -26,10 +26,10 @@ sub cscroll {
 	$j = 0;
 	$y = -10;
 	while ($j < 10) {
-	    $c->create('rectangle', sprintf("%dc", $x), sprintf("%dc", $y),
-		       sprintf("%dc", $x+2), sprintf("%dc", $y+2),
+	    $c->createRectangle("${x}c", "${y}c",
+		       ($x+2).'c', ($y+2).'c',
 		       -outline => 'black', -fill => $bg, -tags => 'rect');
-	    $c->create('text', sprintf("%dc", $x+1), sprintf("%dc", $y+1),
+	    $c->createText(($x+1).'c', ($y+1).'c',
 		       -text => "$i,$j", -anchor => 'center', -tags => 'text');
 	    $j++;
 	    $y += 3;
@@ -41,16 +41,8 @@ sub cscroll {
     $c->bind('all', '<Any-Leave>' => [\&cscroll_leave, \$old_fill]);
     $c->bind('all', '<1>' => \&cscroll_button);
 
-    $c->CanvasBind('<2>' => sub {
-	my ($c) = @_;
-        my $e = $c->XEvent;
-	$c->scan('mark', $e->x, $e->y);
-    });
-    $c->CanvasBind('<B2-Motion>' => sub {
-	my ($c) = @_;
-        my $e = $c->XEvent;
-	$c->scan('dragto', $e->x, $e->y);
-    });
+    $c->CanvasBind('<2>' => [ scanMark => Ev('x'), Ev('y') ]);
+    $c->CanvasBind('<B2-Motion>' => [ scanDragto => Ev('x'), Ev('y') ]);
 
 } # end cscroll
 
@@ -58,7 +50,7 @@ sub cscroll_button {
 
     my($c) = @_;
 
-    my $id = $c->find(qw/withtag current/);
+    my ($id) = $c->find(qw/withtag current/);
     $id++ if ($c->gettags('current'))[0] ne 'text';
     print STDOUT 'You buttoned at ', ($c->itemconfigure($id, -text))[4], "\n";
 
@@ -68,7 +60,7 @@ sub cscroll_enter {
 
     my($c, $old_fill) = @_;
 
-    my $id = $c->find(qw/withtag current/);
+    my ($id) = $c->find(qw/withtag current/);
     $id-- if ($c->gettags('current'))[0] eq 'text';
     $$old_fill = ($c->itemconfigure($id, -fill))[4];
     if ($c->depth > 1) {
@@ -84,7 +76,7 @@ sub cscroll_leave {
 
     my($c, $old_fill) = @_;
 
-    my $id = $c->find(qw/withtag current/);
+    my ($id) = $c->find(qw/withtag current/);
     $id-- if ($c->gettags('current'))[0] eq 'text';
     $c->itemconfigure($id, -fill => $$old_fill);
     $c->itemconfigure($id+1, -fill => 'black');

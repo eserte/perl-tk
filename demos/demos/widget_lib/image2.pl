@@ -27,7 +27,7 @@ sub image2 {
     my(@pl) = qw/-side top -anchor w/;
     $dir_label->pack(@pl);
     $dir_name->pack(@pl);
-    
+
     # All these "frog" and "toad" frames are just to repackage the listbox
     # and image side by side so they fit within an SVGA screen.
 
@@ -97,7 +97,7 @@ sub image2_load_image {
     my($x, $y) = ($e->x, $e->y);
     $i->configure(-file => "$$dir_name/" . $l->get("\@$x,$y"));
 
-    # NOTE:  $l->get('active') works just as well.  
+    # NOTE:  $l->get('active') works just as well.
 
 } # end image2_load_image
 

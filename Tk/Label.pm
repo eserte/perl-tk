@@ -7,7 +7,7 @@ require Tk;
 
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Label.pm#13 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Label.pm#6 $
 
 use base  qw(Tk::Widget);
 

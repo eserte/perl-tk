@@ -4,7 +4,7 @@ package Tk::Stats;
 
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Stats.pm#6 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Stats.pm#4 $
 
 sub stats
  {

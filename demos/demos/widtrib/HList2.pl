@@ -81,8 +81,8 @@ sub HList2 {
 	    my $fg = $rnd_color->();
 	    my $bg = $rnd_color->();
 	    if ($bg eq $fg) { $fg = 'white' }
-	    
-	    my $style_type = ($window ? 'window' : 
+
+	    my $style_type = ($window ? 'window' :
 			      ($image ? 'imagetext' : 'text'));
 	    my $btn;
 	    my $style = $h->ItemStyle($style_type);
@@ -117,7 +117,7 @@ sub HList2 {
 	      );
 	}
     }
-}                
+}
 
 1;
 

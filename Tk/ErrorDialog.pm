@@ -1,7 +1,7 @@
 package Tk::ErrorDialog;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#11 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/ErrorDialog.pm#6 $
 
 use Tk ();
 require Tk::Dialog;
@@ -99,7 +99,7 @@ sub Tk::Error {
     $w->ErrorDialog if not defined $ED_OBJECT;
 
     my($d, $t) = ($ED_OBJECT->Subwidget('error_dialog'), $ED_OBJECT->Subwidget('text'));
-    chop $error;
+#   chop $error;
     $d->configure(-text => "Error:  $error");
     $d->bell;
     my $ans = $d->Show;

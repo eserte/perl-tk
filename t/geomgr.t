@@ -33,20 +33,20 @@ eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacemen
          $method = $mgr . 'Info';
          eval { my %opts = $b->$method(); };
          ok ($@, '', "Fatal!. Even info on one widget failed with $mgr");
-	
+
          $method = $mgr . 'Forget';
          eval { $b->$method(); };
          ok ($@, '', "Fatal!. Even unmanage one widget failed with $mgr");
          eval { $mw->update; };
          ok ($@, '', "Uh. $mgr idletask problem with unmanage");
        }
-       
+
     $b->destroy;
     eval { $mw->update; };
     ok ($@, '', "Uh. Idletask problem on destroy widget");
 }
 ##
-## 
+##
 ##
 {
    print "grid serveral buttons at once\n";
@@ -69,10 +69,10 @@ eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacemen
     ok ($@, '', "Problem with relative extent the column span by 1");
     my %opt;
     %opt = $b->gridInfo;
-    ok ($opt{-columnspan}, 2, "'-' gives wrong column span"); 
-     
+    ok ($opt{-columnspan}, 2, "'-' gives wrong column span");
+
     $b->destroy;
-} 
+}
 1;
 __END__
 

@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/Table.pm#24 $
+$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
 
 use Tk::Pretty;
 use AutoLoader;
@@ -473,7 +473,11 @@ sub columns
         {
 	 $s->destroy if $s;
 	}
-       splice @$row, $r;
+       {   # FIXME? - Steve was getting warnings :
+           #   splice() offset past end of array
+	   local $^W = 0;
+	   splice @$row, $r;
+       }
       }
     }
    $t->QueueLayout(16);

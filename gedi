@@ -15,7 +15,7 @@
 
 require 5;
 use locale;
-use strict;  
+use strict;
 
 use Tk;
 use Tk::widgets qw(TextEdit);
@@ -32,7 +32,7 @@ use File::Basename;
 my $argcount = @ARGV;
 my ($global_filename) = @ARGV;
 
-if	($argcount>1) 
+if	($argcount>1)
 	{
 	print "\n";
 	print "ERROR: too many files specified. \n";
@@ -80,21 +80,21 @@ my $counter_frame = $top->Frame->pack(-anchor=>'nw');
 ##############################################
 ##############################################
 
-## autosizing is set up such that when the outside window is 
+## autosizing is set up such that when the outside window is
 ## resized, the text box adjusts to fill everything else in.
-## the text frame and the text window in the frame are both 
+## the text frame and the text window in the frame are both
 ## set up for autosizing.
 
 my $textwindow = $text_frame->Scrolled(
 	'TextEdit',
 	exportselection => 'true',  # 'sel' tag is associated with selections
-	# initial height, if it isnt 1, then autosizing fails 
+	# initial height, if it isnt 1, then autosizing fails
 	# once window shrinks below height
 	# and the line counters go off the screen.
 	# seems to be a problem with the Tk::pack command;
-	height => 1, 	 
+	height => 1,
 	-background => 'white',
-	-wrap=> 'none', 
+	-wrap=> 'none',
 	-setgrid => 'true', # use this for autosizing
 	-scrollbars =>'se')
 	-> pack(-expand => 'yes' , -fill => 'both');	# autosizing
@@ -103,7 +103,7 @@ my $textwindow = $text_frame->Scrolled(
 
 
 $top->protocol('WM_DELETE_WINDOW'=>
- sub{$textwindow->ConfirmExit;} 
+ sub{$textwindow->ConfirmExit;}
  );
 
 $SIG{INT} = sub {$textwindow->ConfirmExit;};
@@ -114,19 +114,19 @@ $SIG{INT} = sub {$textwindow->ConfirmExit;};
 ##############################################
 ##############################################
 my $current_line_label = $counter_frame
-	-> Label(text=>'line: 1') 
+	-> Label(text=>'line: 1')
 	-> grid(-row=>1,-column=>1, -sticky=>'nw' );
 
 my $total_line_label = $counter_frame
-	-> Label(text=>'total lines: 1') 
+	-> Label(text=>'total lines: 1')
 	-> grid(-row=>2,-column=>1, -sticky=>'nw' );
 
 my $current_column_label = $counter_frame
-	-> Label(text=>'column: 0') 
+	-> Label(text=>'column: 0')
 	-> grid(-row=>3,-column=>1, -sticky=>'nw' );
 
 my $insert_overstrike_mode_label = $counter_frame
-	-> Label(text=>' ') 
+	-> Label(text=>' ')
 	-> grid(-row=>5,-column=>1, -sticky=>'nw' );
 
 sub update_indicators
@@ -140,7 +140,7 @@ sub update_indicators
 
 	my $mode = $textwindow->OverstrikeMode;
 	my $overstrke_insert='Insert Mode';
-	if ($mode) 
+	if ($mode)
 		{$overstrke_insert='Overstrike Mode';}
 	$insert_overstrike_mode_label->configure
 		(text=> "$overstrke_insert");
@@ -148,7 +148,7 @@ sub update_indicators
 	my $filename = $textwindow->FileName;
 	$filename = 'NoName' unless(defined($filename));
 	my $edit_flag='';
-	if($textwindow->numberChanges) 
+	if($textwindow->numberChanges)
  		{$edit_flag='edited';}
 	$top->configure(-title => "Gedi  $edit_flag $filename");
 	$textwindow->idletasks;
@@ -157,9 +157,9 @@ sub update_indicators
 
 $textwindow->SetGUICallbacks (
  [
-  \&update_indicators, 
+  \&update_indicators,
   sub{$textwindow->HighlightAllPairsBracketingCursor}
- ] 
+ ]
 );
 
 
@@ -183,7 +183,7 @@ sub about_pop_up
 		{
 		my $pop = $top->Toplevel();
 		$pop->title("About");
-	
+
 		$pop->Label(text=>"Gedi (Gregs EDItor)")->pack();
 		$pop->Label(text=>"Ver. 1.0")->pack();
 		$pop->Label(text=>"Copyright 1999")->pack();
@@ -232,10 +232,10 @@ if (0)
 
 
 	$debug_menu->command(-label => 'Tag names', -underline=> 0 ,
-		-command => 
-		sub{ 
-		my @tags = $textwindow->tagNames(); 
-		print " @tags\n"; 
+		-command =>
+		sub{
+		my @tags = $textwindow->tagNames();
+		print " @tags\n";
 
 		foreach my $tag (@tags)
 			{
@@ -290,7 +290,7 @@ $top->geometry("80x24");
 
 ##############################################
 ## this line for debug
-## $top->bind('<Key>', [sub{print "ARGS: @_\n";}, Ev('k'), Ev('K') ]  );	
+## $top->bind('<Key>', [sub{print "ARGS: @_\n";}, Ev('k'), Ev('K') ]  );
 
 ##########################################
 ## fill the text window with initial file.

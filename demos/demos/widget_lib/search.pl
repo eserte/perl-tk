@@ -28,6 +28,7 @@ sub search {
     $fn_button->pack(qw/-side left -pady 5 -padx 10/);
 
     my $search_string = '';
+    my $kind = 'exact';
     my $string = $TOP->Frame;
     my $ss = $string->LabEntry(-label => 'Search string:', -width => 40,
         -labelPack => [qw/-side left -anchor w/],
@@ -37,15 +38,26 @@ sub search {
 
     my $text = $TOP->Scrolled(qw/Text -setgrid true -scrollbars e/);
 
+    my $subframe = $TOP->Frame;
+    my $exact  = $subframe->Radiobutton(-text => 'Exact match',
+                                        -variable => \$kind,
+                                        -value => 'exact');
+    my $regexp = $subframe->Radiobutton(-text => 'Regular expression',
+                                        -variable => \$kind,
+                                        -value => 'regexp');
+    $exact->pack(qw/-side left/, -fill => 'x');
+    $regexp->pack(qw/-side right/, -fill => 'x');
+
     $file->pack(qw/-side top -fill x/);
     $string->pack(qw/-side top -fill x/);
+    $subframe->pack(qw/-side top -fill x/);
     $text->pack(qw/-expand yes -fill both/);
 
     my $command =  sub {search_load_file $text, \$file_name, $ss};
     $fn_button->configure(-command => $command);
     $fn->bind('<Return>' => $command);
 
-    $command = sub {search_text $text, \$search_string, 'search'};
+    $command = sub {search_text $text, \$search_string, 'search', $kind};
     $ss_button->configure(-command => $command);
     $ss->bind('<Return>' => $command);
 
@@ -145,7 +157,7 @@ sub search_text {
     #           using exact matching only;  no special characters.
     # tag -	Tag to apply to each instance of a matching string.
 
-    my($w, $string, $tag) = @_;
+    my($w, $string, $tag, $kind) = @_;
 
     return unless ref($string) && length($$string);
 
@@ -153,8 +165,9 @@ sub search_text {
     my($current, $length) = ('1.0', 0);
 
     while (1) {
-	$current = $w->search(-count => \$length, $$string, $current, 'end');
+	$current = $w->search(-count => \$length, "-$kind", $$string, $current, 'end');
 	last if not $current;
+	warn "Posn=$current count=$length\n",
 	$w->tagAdd($tag, $current, "$current + $length char");
 	$current = $w->index("$current + $length char");
     }

@@ -1,7 +1,9 @@
 package Tk::Event::IO;
+use strict;
+use Carp;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.036'; # $Id: //depot/Tk8/Event/Event/IO.pm#12 $ +24
+$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
 use Symbol ();
@@ -105,16 +107,24 @@ sub fileevent
    $file = \*{$file};
   }
  my $obj = tied(*$file);
- $obj = tie *$file,'Tk::Event::IO', $file unless $obj && $obj->isa('Tk::Event::IO');
+ unless ($obj && $obj->isa('Tk::Event::IO'))
+  {
+   $obj = tie *$file,'Tk::Event::IO', $file;
+  }
  if (@_ == 3)
   {
+   # query return the handler
    return $obj->handler($imode);
   }
  else
   {
+   # set the handler
    my $h = $obj->handler($imode,$cb);
-   undef $obj;
-   untie *$file unless $h;
+   undef $obj;  # Prevent warnings about untie with ref to object
+   unless ($h)
+    {
+     untie *$file;
+    }
   }
 }
 

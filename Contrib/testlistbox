@@ -7,10 +7,10 @@ my $f = $top->Frame->pack(-expand => 'yes', -fill => 'both');
 my $l1 = $f->ScrlListbox(-relief => 'flat',
                          -exportselection => 0,
                          -selectmode => 'extended',-height => 20);
-my $l2 = $f->ScrlListbox(-relief => 'flat', 
+my $l2 = $f->ScrlListbox(-relief => 'flat',
                          -exportselection => 0,
                          -selectmode => 'extended',-height => 10);
-my $l3 = $f->ScrlListbox(-relief => 'flat', 
+my $l3 = $f->ScrlListbox(-relief => 'flat',
                          -exportselection => 0,
                          -selectmode => 'extended',-height => 20,
                          # -font => 'clb6x10'

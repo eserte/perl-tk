@@ -1,4 +1,4 @@
-/* 
+/*
  * tkUnixXId.c --
  *
  *	This file provides a replacement function for the default X
@@ -12,12 +12,12 @@
  *	George C. Kaplan and Michael Hoegeman.
  *
  * Copyright (c) 1993 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnixXId.c,v 1.2 1998/09/14 18:23:58 stanton Exp $
+ * RCS: @(#) $Id: tkUnixXId.c,v 1.7 2002/04/12 10:06:09 hobbs Exp $
  */
 
 /*
@@ -28,9 +28,8 @@
 
 #define XLIB_ILLEGAL_ACCESS 1
 
-#include "tkInt.h"
-#include "tkPort.h"
 #include "tkUnixInt.h"
+#include "tkPort.h"
 
 /*
  * A structure of the following type is used to hold one or more
@@ -57,7 +56,7 @@ static Tk_RestrictAction CheckRestrictProc _ANSI_ARGS_((
 			    ClientData clientData, XEvent *eventPtr));
 static void		WindowIdCleanup _ANSI_ARGS_((ClientData clientData));
 static void		WindowIdCleanup2 _ANSI_ARGS_((ClientData clientData));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -70,7 +69,7 @@ static void		WindowIdCleanup2 _ANSI_ARGS_((ClientData clientData));
  *	None.
  *
  * Side effects:
- *	The official allocator for the display is set up to be Tk_AllocXID.
+ *	The official allocator for the display is set up to be AllocXId.
  *
  *----------------------------------------------------------------------
  */
@@ -81,13 +80,56 @@ TkInitXId(dispPtr)
 					 * display. */
 {
     dispPtr->idStackPtr = NULL;
-    dispPtr->defaultAllocProc = (XID (*) _ANSI_ARGS_((Display *display))) 
+    dispPtr->defaultAllocProc = (XID (*) _ANSI_ARGS_((Display *display)))
             dispPtr->display->resource_alloc;
     dispPtr->display->resource_alloc = AllocXId;
     dispPtr->windowStackPtr = NULL;
-    dispPtr->idCleanupScheduled = 0;
+    dispPtr->idCleanupScheduled = (Tcl_TimerToken) 0;
 }
-
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkFreeXId --
+ *
+ *	This procedure is called to free resources for the id allocator
+ *	for a given display.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Frees the id and window stack pools.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkFreeXId(dispPtr)
+    TkDisplay *dispPtr;			/* Tk's information about the
+					 * display. */
+{
+    TkIdStack *stackPtr, *freePtr;
+
+    if (dispPtr->idCleanupScheduled) {
+	Tcl_DeleteTimerHandler(dispPtr->idCleanupScheduled);
+    }
+
+    for (stackPtr = dispPtr->idStackPtr; stackPtr != NULL; ) {
+	freePtr = stackPtr;
+	stackPtr = stackPtr->nextPtr;
+	ckfree((char *) freePtr);
+    }
+    dispPtr->idStackPtr = NULL;
+
+    for (stackPtr = dispPtr->windowStackPtr; stackPtr != NULL; ) {
+	freePtr = stackPtr;
+	stackPtr = stackPtr->nextPtr;
+	ckfree((char *) freePtr);
+    }
+    dispPtr->windowStackPtr = NULL;
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -119,7 +161,7 @@ AllocXId(display)
      */
 
     dispPtr = TkGetDisplay(display);
-    
+
     /*
      * If the topmost chunk on the stack is empty then free it.  Then
      * check for a free id on the stack and return it if it exists.
@@ -147,7 +189,7 @@ AllocXId(display)
     defAlloc:
     return (*dispPtr->defaultAllocProc)(display);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -185,7 +227,7 @@ Tk_FreeXId(display, xid)
     /*
      * Add a new chunk to the stack if the current chunk is full.
      */
-    
+
     stackPtr = dispPtr->idStackPtr;
     if ((stackPtr == NULL) || (stackPtr->numUsed >= IDS_PER_STACK)) {
 	stackPtr = (TkIdStack *) ckalloc(sizeof(TkIdStack));
@@ -202,7 +244,7 @@ Tk_FreeXId(display, xid)
     stackPtr->ids[stackPtr->numUsed] = xid;
     stackPtr->numUsed++;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -294,11 +336,11 @@ TkFreeWindowId(dispPtr, w)
      */
 
     if (!dispPtr->idCleanupScheduled) {
-	dispPtr->idCleanupScheduled = 1;
-	Tcl_CreateTimerHandler(100, WindowIdCleanup, (ClientData) dispPtr);
+	dispPtr->idCleanupScheduled =
+	    Tcl_CreateTimerHandler(100, WindowIdCleanup, (ClientData) dispPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -329,7 +371,7 @@ WindowIdCleanup(clientData)
     ClientData oldData;
     static Tcl_Time timeout = {0, 0};
 
-    dispPtr->idCleanupScheduled = 0;
+    dispPtr->idCleanupScheduled = (Tcl_TimerToken) 0;
 
     /*
      * See if it's safe to recycle the window ids.  It's safe if:
@@ -376,10 +418,10 @@ WindowIdCleanup(clientData)
      */
 
     tryAgain:
-    dispPtr->idCleanupScheduled = 1;
-    Tcl_CreateTimerHandler(500, WindowIdCleanup, (ClientData) dispPtr);
+    dispPtr->idCleanupScheduled =
+	Tcl_CreateTimerHandler(500, WindowIdCleanup, (ClientData) dispPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -412,7 +454,7 @@ WindowIdCleanup2(clientData)
     lastPtr->nextPtr = stackPtr->dispPtr->idStackPtr;
     stackPtr->dispPtr->idStackPtr = stackPtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -441,7 +483,7 @@ CheckRestrictProc(clientData, eventPtr)
     *flag = 1;
     return TK_DEFER_EVENT;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -466,10 +508,15 @@ Tk_GetPixmap(display, d, width, height, depth)
     int width, height;		/* Dimensions of pixmap. */
     int depth;			/* Bits per pixel for pixmap. */
 {
+    if (!width || !height)
+     {
+      LangDebug("%s w=%d h=%d d=%d\n",__FUNCTION__,width, height,depth);
+      abort();
+     }
     return XCreatePixmap(display, d, (unsigned) width, (unsigned) height,
 	    (unsigned) depth);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -496,7 +543,7 @@ Tk_FreePixmap(display, pixmap)
     XFreePixmap(display, pixmap);
     Tk_FreeXId(display, (XID) pixmap);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -535,3 +582,37 @@ TkpWindowWasRecentlyDeleted(win, dispPtr)
     }
     return 0;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpScanWindowId --
+ *
+ *	Given a string, produce the corresponding Window Id.
+ *
+ * Results:
+ *      The return value is normally TCL_OK;  in this case *idPtr
+ *      will be set to the Window value equivalent to string.  If
+ *      string is improperly formed then TCL_ERROR is returned and
+ *      an error message will be left in the interp's result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkpScanWindowId(interp, string, idPtr)
+    Tcl_Interp *interp;
+    Tcl_Obj *string;
+    Window *idPtr;
+{
+    int value;
+    if (Tcl_GetIntFromObj(interp, string, &value) != TCL_OK) {
+	return TCL_ERROR;
+    }
+    *idPtr = (Window) value;
+    return TCL_OK;
+}
+

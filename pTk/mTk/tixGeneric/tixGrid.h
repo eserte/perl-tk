@@ -1,3 +1,6 @@
+
+/*	$Id: tixGrid.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixGrid.h --
  *
@@ -111,7 +114,7 @@ typedef struct RenderInfo {
 } RenderInfo;
 
 typedef struct ExposedArea {
-    int x1, y1, x2, y2; 
+    int x1, y1, x2, y2;
 } ExposedArea, Rect;
 
 /*----------------------------------------------------------------------
@@ -160,13 +163,13 @@ typedef struct SelectBlock {
 } SelectBlock;
 
 /*----------------------------------------------------------------------
- * 			GrSortItem 
+ * 			GrSortItem
  *
  * Used to sort the items in the grid
  *----------------------------------------------------------------------
  */
 typedef struct Tix_GrSortItem {
-    Arg data;			/* is usually a string, but
+    Tcl_Obj * data;			/* is usually a string, but
 					 * can be a pointer to an
 					 * arbitrary data in C API */
     int index;				/* row or column */
@@ -290,7 +293,7 @@ typedef struct GridStruct {
 				 * the listbox changes. E.g., when the user
 				 * add/deletes elements. Useful for auto-
 				 * scrollbar geometry managers */
-   
+
     /*
      * Info for lay-out
      */
@@ -350,7 +353,7 @@ typedef Grid * WidgetPtr;
 #define DEF_GRID_EDITNOTIFY_COMMAND	""
 #define DEF_GRID_FLOATING_ROWS		"0"
 #define DEF_GRID_FLOATING_COLS		"0"
-#define DEF_GRID_FONT	      	"-Adobe-Helvetica-Bold-R-Normal--*-120-*"
+#define DEF_GRID_FONT			"Helvetica -12 bold"
 #define DEF_GRID_FG_COLOR		BLACK
 #define DEF_GRID_FG_MONO		BLACK
 #define DEF_GRID_FORMAT_COMMAND		""
@@ -434,7 +437,7 @@ EXTERN void		TixGridDataGetGridSize _ANSI_ARGS_((
 			    int *height_ret));
 EXTERN int		TixGridDataGetIndex _ANSI_ARGS_((
 			    Tcl_Interp * interp, WidgetPtr wPtr,
-			    Arg xStr, Arg yStr, int * xPtr, int * yPtr));
+			    Tcl_Obj * xStr, Tcl_Obj * yStr, int * xPtr, int * yPtr));
 EXTERN void 		TixGridDataInsert _ANSI_ARGS_((
 			    TixGridDataSet * dataSet,
 			    int x, int y, ClientData data));

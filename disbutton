@@ -10,10 +10,10 @@ sub invoke
 {
  my $w = shift;
  my $state = $w->cget('-state');
- $w->configure('-state' => 'disabled'); 
+ $w->configure('-state' => 'disabled');
  $w->update;
  $w->Callback('-command');
- $w->configure('-state' => $state); 
+ $w->configure('-state' => $state);
 }
 
 package main;

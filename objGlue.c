@@ -1,8 +1,9 @@
 /*
-  Copyright (c) 1997-1998 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1997-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
+#define PERL_NO_GET_CONTEXT
 
 #include <EXTERN.h>
 #include <perl.h>
@@ -14,21 +15,35 @@
 #include "pTk/tkInt.h"
 #include "tkGlue.h"
 
-#ifndef newSVpvn
-static SV *
-newSVpvn(char *s,STRLEN len)
-{
- SV *sv = newSVpv("",0);
- sv_setpvn(sv,s,len);
- return sv;
-}
-#endif
-
-
 static int
 Expire(int code)
 {
  return code;
+}
+
+int
+has_highbit(CONST char *s,int l)
+{
+ CONST char *e = s+l;
+ while (s < e)
+  {
+   if (*s++ & 0x80)
+    return 1;
+  }
+ return 0;
+}
+
+SV *
+sv_maybe_utf8(SV *sv)
+{
+#ifdef SvUTF8_on
+ if (SvPOK(sv))
+  {
+   if (has_highbit(SvPVX(sv),SvCUR(sv)))
+    SvUTF8_on(sv);
+  }
+#endif
+ return sv;
 }
 
 #define EXPIRE(args) \
@@ -57,24 +72,32 @@ Expire(int code)
  *
  */
 
+int
+Tcl_IsShared(Tcl_Obj *objPtr)
+{
+ return SvREFCNT(objPtr) > 1;
+}
+
 void
 Tcl_IncrRefCount(Tcl_Obj *objPtr)
 {
+ dTHX;
  SvREFCNT_inc(objPtr);
 }
 
 void
 Tcl_DecrRefCount(Tcl_Obj *objPtr)
 {
+ dTHX;
  SvREFCNT_dec(objPtr);
 }
 
-static SV *ForceScalar(SV *sv);
+static SV *ForceScalar(pTHX_ SV *sv);
 
-static SV *ForceScalarLvalue(SV *sv);
+static SV *ForceScalarLvalue(pTHX_ SV *sv);
 
 static void
-Scalarize(SV *sv, AV *av)
+Scalarize(pTHX_ SV *sv, AV *av)
 {
  int n    = av_len(av)+1;
  if (n == 0)
@@ -84,7 +107,16 @@ Scalarize(SV *sv, AV *av)
    SV **svp;
    if (n == 1 && (svp = av_fetch(av, 0, 0)))
     {
-     sv_setsv(sv,*svp);
+     STRLEN len = 0;
+     char *s  = SvPV(*svp,len);
+#ifdef SvUTF8
+     int utf8 = SvUTF8(*svp);
+     sv_setpvn(sv,s,len);
+     if (utf8)
+      SvUTF8_on(sv);
+#else
+     sv_setpvn(sv,s,len);
+#endif
     }
    else
     {
@@ -101,21 +133,22 @@ Scalarize(SV *sv, AV *av)
           {
            el = newSVpv("",0);
            temp = 1;
-           Scalarize(el,(AV *) SvRV(*svp));
+           Scalarize(aTHX_ el,(AV *) SvRV(*svp));
           }
-         Tcl_DStringAppendElement(&ds,LangString(el));
+         Tcl_DStringAppendElement(&ds,Tcl_GetString(el));
          if (temp)
           SvREFCNT_dec(el);
         }
       }
      sv_setpvn(sv,Tcl_DStringValue(&ds), Tcl_DStringLength(&ds));
+     sv_maybe_utf8(sv);
      Tcl_DStringFree(&ds);
     }
   }
 }
 
 static SV *
-ForceScalar(SV *sv)
+ForceScalar(pTHX_ SV *sv)
 {
  if (SvGMAGICAL(sv))
   mg_get(sv);
@@ -123,7 +156,7 @@ ForceScalar(SV *sv)
   {
    AV *av = (AV *) sv;
    SV *nsv = newSVpv("",0);
-   Scalarize(nsv, (AV *) av);
+   Scalarize(aTHX_ nsv, (AV *) av);
    av_clear(av);
    av_store(av,0,nsv);
    return nsv;
@@ -136,20 +169,26 @@ ForceScalar(SV *sv)
         Tcl/Tk's string fixation - don't change the real value
       */
      SV *nsv = newSVpv("",0);
-     Scalarize(nsv, (AV *) SvRV(sv));
+     Scalarize(aTHX_ nsv, (AV *) SvRV(sv));
      return sv_2mortal(nsv);
     }
    else if (!SvOK(sv))
     {
      /* Map undef to null string */
-     sv_setpvn(sv,"",0);
+     if (SvREADONLY(sv))
+      {
+       SV *nsv = newSVpv("",0);
+       return sv_2mortal(nsv);
+      }
+     else
+      sv_setpvn(sv,"",0);
     }
    return sv;
   }
 }
 
 static SV *
-ForceScalarLvalue(SV *sv)
+ForceScalarLvalue(pTHX_ SV *sv)
 {
  if (SvTYPE(sv) == SVt_PVAV)
   {
@@ -168,39 +207,47 @@ ForceScalarLvalue(SV *sv)
 void
 Tcl_SetBooleanObj (Tcl_Obj *objPtr, int value)
 {
- sv_setiv(ForceScalarLvalue(objPtr),value != 0);
+ dTHX;
+ sv_setiv(ForceScalarLvalue(aTHX_ objPtr),value != 0);
 }
 
 void
 Tcl_SetDoubleObj (Tcl_Obj *objPtr, double value)
 {
- sv_setnv(ForceScalarLvalue(objPtr),value);
+ dTHX;
+ sv_setnv(ForceScalarLvalue(aTHX_ objPtr),value);
 }
 
 void
 Tcl_SetIntObj (Tcl_Obj *objPtr, int value)
 {
- sv_setiv(ForceScalarLvalue(objPtr),value);
+ dTHX;
+ sv_setiv(ForceScalarLvalue(aTHX_ objPtr),value);
 }
 
 void
 Tcl_SetLongObj (Tcl_Obj *objPtr, long value)
 {
- sv_setiv(ForceScalarLvalue(objPtr),value);
+ dTHX;
+ sv_setiv(ForceScalarLvalue(aTHX_ objPtr),value);
 }
 
 void
-Tcl_SetStringObj (Tcl_Obj *objPtr, char *bytes, int length)
+Tcl_SetStringObj (Tcl_Obj *objPtr, CONST char *bytes, int length)
 {
+ dTHX;
  if (length < 0)
   length = strlen(bytes);
- sv_setpvn(ForceScalarLvalue(objPtr), bytes, length);
+ objPtr = ForceScalarLvalue(aTHX_ objPtr);
+ sv_setpvn(objPtr, bytes, length);
+ sv_maybe_utf8(objPtr);
 }
 
 int
 Tcl_GetLongFromObj (Tcl_Interp *interp, Tcl_Obj *obj, long *longPtr)
 {
- SV *sv = ForceScalar(obj);
+ dTHX;
+ SV *sv = ForceScalar(aTHX_ obj);
  if (SvIOK(sv) || looks_like_number(sv))
   *longPtr = SvIV(sv);
  else
@@ -214,7 +261,8 @@ Tcl_GetLongFromObj (Tcl_Interp *interp, Tcl_Obj *obj, long *longPtr)
 int
 Tcl_GetBooleanFromObj (Tcl_Interp *interp, Tcl_Obj *obj, int *boolPtr)
 {
- SV *sv = ForceScalar(obj);
+ dTHX;
+ SV *sv = ForceScalar(aTHX_ obj);
  static char *yes[] = {"y", "yes", "true", "on", NULL};
  static char *no[] =  {"n", "no", "false", "off", NULL};
  if (SvPOK(sv))
@@ -247,7 +295,8 @@ Tcl_GetBooleanFromObj (Tcl_Interp *interp, Tcl_Obj *obj, int *boolPtr)
 int
 Tcl_GetIntFromObj (Tcl_Interp *interp, Tcl_Obj *obj, int *intPtr)
 {
- SV *sv = ForceScalar(obj);
+ dTHX;
+ SV *sv = ForceScalar(aTHX_ obj);
  if (SvIOK(sv) || looks_like_number(sv))
   *intPtr = SvIV(sv);
  else
@@ -261,7 +310,8 @@ Tcl_GetIntFromObj (Tcl_Interp *interp, Tcl_Obj *obj, int *intPtr)
 int
 Tcl_GetDoubleFromObj (Tcl_Interp *interp, Tcl_Obj *obj, double *doublePtr)
 {
- SV *sv = ForceScalar(obj);
+ dTHX;
+ SV *sv = ForceScalar(aTHX_ obj);
  if (SvNOK(sv) || looks_like_number(sv))
   *doublePtr = SvNV(sv);
  else
@@ -275,41 +325,50 @@ Tcl_GetDoubleFromObj (Tcl_Interp *interp, Tcl_Obj *obj, double *doublePtr)
 Tcl_Obj *
 Tcl_NewIntObj (int value)
 {
+ dTHX;
  return newSViv(value);
 }
 
 Tcl_Obj *
 Tcl_NewBooleanObj (int value)
 {
+ dTHX;
  return newSViv(value);
 }
 
 Tcl_Obj *
 Tcl_NewObj(void)
 {
- return newSVpvn("",0);
+ dTHX;
+ return newSVsv(&PL_sv_undef);
 }
 
 Tcl_Obj *
 Tcl_NewLongObj(long value)
 {
+ dTHX;
  return newSViv(value);
 }
 
 Tcl_Obj *
 Tcl_NewDoubleObj(double value)
 {
+ dTHX;
  return newSVnv(value);
 }
 
 Tcl_Obj *
-Tcl_NewStringObj (char *bytes, int length)
+Tcl_NewStringObj (CONST char *bytes, int length)
 {
+ dTHX;
  if (bytes)
   {
+   SV *sv;
    if (length < 0)
     length = strlen(bytes);
-   return newSVpvn(bytes,length);
+   sv = newSV(length);
+   sv_setpvn(sv,(char *)bytes,length);
+   return sv_maybe_utf8(sv);
   }
  else
   return &PL_sv_undef;
@@ -318,6 +377,7 @@ Tcl_NewStringObj (char *bytes, int length)
 Tcl_Obj *
 Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
 {
+ dTHX;
  AV *av = newAV();
  if (objc)
   {
@@ -341,31 +401,163 @@ Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
  return MakeReference((SV *) av);
 }
 
+static char *
+LangString(SV *sv)
+{
+ dTHX;
+ STRLEN na;
+ if (!sv)
+  return "";
+ if (SvGMAGICAL(sv)) mg_get(sv);
+ if (SvPOK(sv))
+  return SvPV(sv, na);
+ else
+  {
+   if (SvROK(sv))
+    {
+     SV *rv = SvRV(sv);
+     if (SvTYPE(rv) == SVt_PVCV || SvTYPE(rv) == SVt_PVAV)
+      return SvPV(sv, na);
+     else
+      {
+       if (SvOBJECT(rv))
+        {
+         if (SvTYPE(rv) == SVt_PVHV)
+          {
+           SV **p = hv_fetch((HV *) rv,"_TkValue_",9,0);
+           if (p)
+            {
+             return SvPV(*p,na);
+            }
+           else
+            {
+             Lang_CmdInfo *info = WindowCommand(sv, NULL, 0);
+             if (info)
+              {
+               if (info->tkwin)
+                {
+                 char *val = Tk_PathName(info->tkwin);
+                 hv_store((HV *) rv,"_TkValue_",9,Tcl_NewStringObj(val,strlen(val)),0);
+                 return val;
+                }
+               if (info->image)
+                {
+                 return SvPV(info->image,na);
+                }
+              }
+            }
+          }
+         else if (SvPOK(rv))
+          {
+#ifdef SvUTF8
+           if (!SvUTF8(rv))
+            sv_utf8_upgrade(rv);
+#endif
+           return SvPV(rv,na);
+          }
+         else
+          {
+           if (!mg_find(rv,PERL_MAGIC_qr))
+            {
+             LangDumpVec("Odd object type", 1, &rv);
+            }
+          }
+        }
+      }
+    }
+   if (SvOK(sv))
+    {
+#ifdef SvUTF8
+     if (SvROK(sv) && SvPOK(SvRV(sv)) && !SvUTF8(SvRV(sv)))
+      sv_utf8_upgrade(SvRV(sv));
+     else
+      if (!SvUTF8(sv))
+       sv_utf8_upgrade(sv);
+#endif
+     return SvPV(sv, na);
+    }
+   else
+    return "";
+  }
+}
+
+void utf8Whoops(pTHX_ SV *objPtr)
+{
+
+ sv_utf8_upgrade(objPtr);
+ sv_dump(objPtr);
+}
+
 char *
 Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 {
- char *s;
- if ((SvROK(objPtr) && SvTYPE(SvRV(objPtr)) == SVt_PVAV) ||
-      (SvTYPE(objPtr) == SVt_PVAV))
-  objPtr = ForceScalar(objPtr);
- if (SvPOK(objPtr))
+ if (objPtr)
   {
-   STRLEN len;
-   s = SvPV(objPtr, len);
-   if (lengthPtr)
-    *lengthPtr = len;
+   dTHX;
+   char *s;
+   if ((SvROK(objPtr) && SvTYPE(SvRV(objPtr)) == SVt_PVAV) ||
+        (SvTYPE(objPtr) == SVt_PVAV))
+    objPtr = ForceScalar(aTHX_ objPtr);
+   if (SvPOK(objPtr))
+    {
+     STRLEN len;
+#ifdef SvUTF8
+     if (!SvUTF8(objPtr))
+      sv_utf8_upgrade(objPtr);
+#endif
+     s = SvPV(objPtr, len);
+#ifdef SvUTF8
+     if (!is_utf8_string(s,len))
+      {
+       LangDebug("%s @ %d not utf8\n",__FUNCTION__,__LINE__);
+       sv_dump(objPtr);
+       utf8Whoops(aTHX_ objPtr);
+       s = SvPV(objPtr, len);
+       if (!is_utf8_string(s,len))
+        {
+         U8 *p = (U8 *) s;
+	 U8 *e = p + len;
+	 while (p < e)
+	  {
+	   if (*p > 0x7F)
+	    *p = '?';
+	   p++;
+	  }
+	}
+      }
+#endif
+     if (lengthPtr)
+      *lengthPtr = len;
+    }
+   else
+    {
+     s = LangString(objPtr);
+#ifdef SvUTF8
+     if (!is_utf8_string(s,strlen(s)))
+      {
+       LangDebug("%s @ %d not utf8\n",__FUNCTION__,__LINE__);
+       sv_dump(objPtr);
+       /*//     abort();*/
+      }
+#endif
+     if (lengthPtr)
+      *lengthPtr = strlen(s);
+    }
+   return s;
   }
- else
-  {
-   s = LangString(objPtr);
-   if (lengthPtr)
-    *lengthPtr = strlen(s);
-  }
- return s;
+ return NULL;
 }
 
+
+char *
+Tcl_GetString(Tcl_Obj *objPtr)
+{
+ return Tcl_GetStringFromObj(objPtr, NULL);
+}
+
+
 AV *
-ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
+ForceList(pTHX_ Tcl_Interp *interp, Tcl_Obj *sv)
 {
  if (SvTYPE(sv) == SVt_PVAV)
   {
@@ -400,7 +592,7 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
             else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
           }
        */
-       unsigned char *s = (unsigned char *) LangString(sv);
+       unsigned char *s = (unsigned char *) Tcl_GetString(sv);
        int i = 0;
        while (*s)
         {
@@ -443,7 +635,7 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
              s++;
             }
           }
-         av_store(av,i++,newSVpvn(base,(s-base)));
+         av_store(av,i++,Tcl_NewStringObj(base,(s-base)));
          if (*s == '}')
           s++;
         }
@@ -457,7 +649,7 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
      else
       {
        SV *ref = MakeReference((SV *) av);
-       sv_setsv(sv,ref);
+       SvSetMagicSV(sv,ref);
        SvREFCNT_dec(ref);
       }
      return (AV *) SvRV(sv);
@@ -465,11 +657,27 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
   }
 }
 
+void
+Tcl_SetListObj(Tcl_Obj * objPtr,int objc, Tcl_Obj *CONST objv[])
+{
+ dTHX;
+ AV *av = ForceList(aTHX_ NULL,objPtr);
+ av_clear(av);
+ while (objc-- > 0)
+  {
+   /* Used by tkListbox.c passing in array from Tcl_ListObjGetEelements()
+    * so we need to increment REFCNT
+    */
+   av_store(av,objc,SvREFCNT_inc(objv[objc]));
+  }
+}
+
 int
 Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    Tcl_Obj *objPtr)
 {
- AV *av = ForceList(interp,listPtr);
+ dTHX;
+ AV *av = ForceList(aTHX_ interp,listPtr);
  if (!objPtr)
   objPtr = &PL_sv_undef;
  if (av)
@@ -481,7 +689,7 @@ Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
 }
 
 AV *
-MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
+MaybeForceList(pTHX_ Tcl_Interp *interp, Tcl_Obj *sv)
 {
  AV *av;
  int object = sv_isobject(sv);
@@ -499,18 +707,18 @@ MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
  else if (SvREADONLY(sv))
   {
    /* returns mortal list anyway */
-   return ForceList(interp,sv);
+   return ForceList(aTHX_ interp,sv);
   }
  else
   {
    SvREADONLY_on(sv);
-   av = ForceList(interp,sv);
+   av = ForceList(aTHX_ interp,sv);
    SvREADONLY_off(sv);
    /* If there was more than one element set the SV */
    if (av && av_len(av) > 0)
     {
      /* AV is mortal - so we want newRV not MakeReference as we need extra REFCNT */
-     sv_setsv(sv,newRV((SV *) av));
+     SvSetMagicSV(sv,newRV((SV *) av));
     }
    return av;
   }
@@ -522,7 +730,8 @@ Tcl_ListObjGetElements (Tcl_Interp *interp, Tcl_Obj *listPtr,
 {
  if (listPtr)
   {
-   AV *av = MaybeForceList(interp,listPtr);
+   dTHX;
+   AV *av = MaybeForceList(aTHX_ interp,listPtr);
    if (av)
     {
      *objcPtr = av_len(av)+1;
@@ -539,7 +748,8 @@ int
 Tcl_ListObjIndex (Tcl_Interp *interp,  Tcl_Obj *listPtr, int index,
 			    Tcl_Obj **objPtrPtr)
 {
- AV *av = ForceList(interp,listPtr);
+ dTHX;
+ AV *av = ForceList(aTHX_ interp,listPtr);
  if (av)
   {
    SV **svp = av_fetch(av, index, 0);
@@ -556,7 +766,8 @@ Tcl_ListObjIndex (Tcl_Interp *interp,  Tcl_Obj *listPtr, int index,
 int
 Tcl_ListObjLength (Tcl_Interp *interp, Tcl_Obj *listPtr, int *intPtr)
 {
- AV *av = ForceList(interp,listPtr);
+ dTHX;
+ AV *av = ForceList(aTHX_ interp,listPtr);
  if (av)
   {
    *intPtr = av_len(av)+1;
@@ -569,12 +780,20 @@ int
 Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
 			    int objc, Tcl_Obj *CONST objv[])
 {
- AV *av = ForceList(interp,listPtr);
+ dTHX;
+ AV *av = ForceList(aTHX_ interp,listPtr);
  if (av)
   {
    int len = av_len(av)+1;
-   int newlen = len-count+objc;
+   int newlen;
    int i;
+   if (first < 0)
+    first = 0;
+   if (first > len)
+     first = len;
+   if (first + count > len)
+    count = first-len;
+   newlen = len-count+objc;
    if (newlen > len)
     {
      /* Move entries beyond old range up to make room for new */
@@ -582,7 +801,8 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
      for (i=len-1; i >= (first+count); i--)
       {
        SV **svp = av_fetch(av,i,0);
-       av_store(av,i+newlen-len,SvREFCNT_inc(*svp));
+       if (svp)
+        av_store(av,i+newlen-len,SvREFCNT_inc(*svp));
       }
     }
    else if (newlen < len)
@@ -591,7 +811,8 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
      for (i=first+count; i < len; i++)
       {
        SV **svp = av_fetch(av,i,0);
-       av_store(av,i+newlen-len,SvREFCNT_inc(*svp));
+       if (svp)
+        av_store(av,i+newlen-len,SvREFCNT_inc(*svp));
       }
 #ifdef AvFILLp
      AvFILLp(av) = newlen-1;
@@ -602,12 +823,39 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
    /* Store new values */
    for (i=0; i < objc; i++)
     {
-     av_store(av,first+i,objv[i]);
+     /* In tkListbox.c used with incoming objv
+      * so we need to make copies
+      */
+     av_store(av,first+i,newSVsv(objv[i]));
     }
    return TCL_OK;
   }
  return TCL_ERROR;
 }
+
+int
+Tcl_ListObjAppendList(Tcl_Interp * interp, Tcl_Obj * listPtr,Tcl_Obj * elemListPtr)
+{
+ dTHX;
+ Tcl_Obj **objv;
+ int objc = 0;
+ int code;
+ AV *av = ForceList(aTHX_ interp,listPtr);
+ if ((code = Tcl_ListObjGetElements(interp,elemListPtr,&objc,&objv)) == TCL_OK)
+  {
+   dTHX;
+   int j = av_len(av)+1;
+   int i;
+   for (i=0; i < objc; i++)
+    {
+     av_store(av,j++,objv[i]);
+    }
+  }
+ return code;
+}
+
+
+
 
 Tcl_Obj *
 Tcl_ConcatObj (int objc, Tcl_Obj *CONST objv[])
@@ -617,6 +865,7 @@ Tcl_ConcatObj (int objc, Tcl_Obj *CONST objv[])
     set way Tcl_NewListObj() is expecting. So correct that
     then call Tcl_NewListObj().
   */
+ dTHX;
  int i;
  for (i=0; i < objc; i++)
   {
@@ -633,10 +882,10 @@ Tcl_ConcatObj (int objc, Tcl_Obj *CONST objv[])
 char *
 Tcl_DStringAppendElement(dsPtr, string)
     Tcl_DString *dsPtr;		/* Structure describing dynamic string. */
-    char *string;		/* String to append.  Must be
+    CONST char *string;		/* String to append.  Must be
 				 * null-terminated. */
 {
-    char *s = string;
+    CONST char *s = string;
     int ch;
     while ((ch = *s))
      {
@@ -660,17 +909,20 @@ Tcl_DStringAppendElement(dsPtr, string)
 void
 Tcl_AppendStringsToObj (Tcl_Obj *obj,...)
 {
+ dTHX;
  va_list ap;
  char *s;
- SV *sv = ForceScalar(obj);
+ SV *sv = ForceScalar(aTHX_ obj);
  va_start(ap,obj);
  while ((s = va_arg(ap,char *)))
   {
-   sv_catpv(sv,s);
+   Tcl_AppendToObj(sv,s,-1);
   }
  va_end(ap);
  if (sv != obj && SvROK(obj))
-  sv_setsv(obj,sv);
+  {
+   SvSetMagicSV(obj,sv);
+  }
 }
 
 /*
@@ -704,15 +956,15 @@ int
 Tcl_GetIndexFromObj(interp, objPtr, tablePtr, msg, flags, indexPtr)
     Tcl_Interp *interp; 	/* Used for error reporting if not NULL. */
     Tcl_Obj *objPtr;		/* Object containing the string to lookup. */
-    char **tablePtr;		/* Array of strings to compare against the
+    CONST char **tablePtr;		/* Array of strings to compare against the
 				 * value of objPtr; last entry must be NULL
 				 * and there must not be duplicate entries. */
-    char *msg;			/* Identifying word to use in error messages. */
+    CONST char *msg;			/* Identifying word to use in error messages. */
     int flags;			/* 0 or TCL_EXACT */
     int *indexPtr;		/* Place to store resulting integer index. */
 {
     int index, length, i, numAbbrev;
-    char *key, *p1, *p2, **entryPtr;
+    CONST char *key, *p1, *p2, **entryPtr;
     Tcl_Obj *resultPtr;
 
     /*
@@ -773,19 +1025,41 @@ Tcl_GetIndexFromObj(interp, objPtr, tablePtr, msg, flags, indexPtr)
 void
 Tcl_AppendToObj(objPtr, bytes, length)
     register Tcl_Obj *objPtr;	/* Points to the object to append to. */
-    char *bytes;		/* Points to the bytes to append to the
+    CONST char *bytes;		/* Points to the bytes to append to the
 				 * object. */
     register int length;	/* The number of bytes to append from
 				 * "bytes". If < 0, then append all bytes
 				 * up to NULL byte. */
 {
- SV *sv = ForceScalar(objPtr);
+ dTHX;
+ SV *sv = ForceScalar(aTHX_ objPtr);
+ int hi;
  if (length < 0)
   length = strlen(bytes);
+#ifdef SvUTF8
+ if ((hi = has_highbit(bytes,length)))
+  {
+   sv_utf8_upgrade(sv);
+  }
  sv_catpvn(sv, bytes, length);
+ if (hi)
+  SvUTF8_on(sv);
+#else
+ sv_catpvn(sv, bytes, length);
+#endif
  if (sv != objPtr && SvROK(objPtr))
-  sv_setsv(objPtr,sv);
+  SvSetMagicSV(objPtr,sv);
 }
+
+void
+Tcl_AppendObjToObj(Tcl_Obj * objPtr,Tcl_Obj * appendObjPtr)
+{
+ int len = 0;
+ char *s = Tcl_GetStringFromObj(appendObjPtr,&len);
+ Tcl_AppendToObj(objPtr,s,len);
+}
+
+
 
 void
 Tcl_WrongNumArgs(interp, objc, objv, message)
@@ -795,7 +1069,7 @@ Tcl_WrongNumArgs(interp, objc, objv, message)
     Tcl_Obj *CONST objv[];		/* Initial argument objects, which
 					 * should be included in the error
 					 * message. */
-    char *message;			/* Error message to print after the
+    CONST char *message;		/* Error message to print after the
 					 * leading objects in objv. The
 					 * message may be NULL. */
 {
@@ -820,7 +1094,7 @@ Tcl_WrongNumArgs(interp, objc, objv, message)
 }
 
 
-#define DStringSV(svp) ((*svp) ? (*svp = ForceScalar(*svp)) : (*svp = newSVpv("",0), *svp))
+#define DStringSV(svp) ((*svp) ? (*svp = ForceScalar(aTHX_ *svp)) : (*svp = newSVpv("",0), *svp))
 
 #undef Tcl_DStringInit
 void
@@ -838,40 +1112,46 @@ Tcl_DbDStringInit(Tcl_DString *svp,char *file,int line)
 void
 Tcl_DStringFree(Tcl_DString *svp)
 {
- if (*svp)
+ SV *sv;
+ if ((sv = *svp))
   {
-   SvREFCNT_dec(*svp);
-   *svp = NULL;
+   dTHX;
+   SvREFCNT_dec(sv);
+   *svp = Nullsv;
   }
 }
 
-char *
-Tcl_DStringAppend(Tcl_DString *svp, char *s, int len)
+void
+Tcl_DStringResult(Tcl_Interp *interp, Tcl_DString *svp)
 {
+ dTHX;
  SV *sv = DStringSV(svp);
- if (len < 0)
-  len = strlen(s);
- sv_catpvn(sv,s,len);
+ /* Tcl8.1+ strings are UTF-8 */
+ Tcl_SetObjResult(interp,sv_maybe_utf8(sv));
+ /* Now "free" the DString - the SvREFCNT_dec has been done by SetObjResult */
+ *svp = Nullsv;
+}
+
+char *
+Tcl_DStringAppend(Tcl_DString *svp, CONST char *s, int len)
+{
+ dTHX;
+ SV *sv = DStringSV(svp);
+ Tcl_AppendToObj(sv,(char *)s,len);
  return SvPVX(sv);
 }
 
 int
 Tcl_DStringLength(Tcl_DString *svp)
 {
+ dTHX;
  return (int) ((*svp) ? SvCUR(DStringSV(svp)) : 0);
-}
-
-void
-Tcl_DStringResult(Tcl_Interp *interp, Tcl_DString *svp)
-{
- SV *sv = DStringSV(svp);
- Tcl_ArgResult(interp,sv);
- Tcl_DStringFree(svp);
 }
 
 void
 Tcl_DStringSetLength(Tcl_DString *svp,int len)
 {
+ dTHX;
  SV *sv = DStringSV(svp);
  char *s = SvGROW(sv,(Size_t)(len+1));
  s[len] = '\0';
@@ -881,6 +1161,7 @@ Tcl_DStringSetLength(Tcl_DString *svp,int len)
 char *
 Tcl_DStringValue(Tcl_DString *svp)
 {
+ dTHX;
  SV *sv = DStringSV(svp);
  STRLEN len;
  return SvPV(sv,len);
@@ -889,7 +1170,433 @@ Tcl_DStringValue(Tcl_DString *svp)
 void
 Tcl_DStringGetResult(Tcl_Interp *interp, Tcl_DString *svp)
 {
- SV *sv = DStringSV(svp);
- sv_setsv(sv,LangScalarResult(interp));
+ int len;
+ char *s = Tcl_GetStringFromObj(Tcl_GetObjResult(interp),&len);
+ Tcl_DStringAppend(svp,s,len);
 }
+
+/* Now fake Tcl_Obj * internals routines */
+
+static void
+DummyFreeProc(Tcl_Obj *obj)
+{
+}
+
+static void
+IntUpdateStringProc(Tcl_Obj *obj)
+{
+ dTHX;
+ STRLEN len;
+ (void) SvPV(obj,len);
+}
+
+static void
+IntDupProc(Tcl_Obj *src,Tcl_Obj *dst)
+{
+ dTHX;
+ SvSetMagicSV(dst,src);
+ TclObjSetType(dst,TclObjGetType(src));
+}
+
+static int
+IntSetFromAnyProc(Tcl_Interp *interp, Tcl_Obj *obj)
+{
+ Tcl_ObjType *typePtr;
+ Tcl_GetString(obj);
+ typePtr = TclObjGetType(obj);
+ if ((typePtr != NULL) && (typePtr->freeIntRepProc != NULL)) {
+	(*typePtr->freeIntRepProc)(obj);
+  }
+ TclObjSetType(obj,&tclIntType);
+ return TCL_OK;
+}
+
+extern Tcl_ObjType   tclDoubleType;
+
+static int
+DoubleSetFromAnyProc(Tcl_Interp *interp, Tcl_Obj *obj)
+{
+ Tcl_ObjType *typePtr;
+ Tcl_GetString(obj);
+ typePtr = TclObjGetType(obj);
+ if ((typePtr != NULL) && (typePtr->freeIntRepProc != NULL)) {
+	(*typePtr->freeIntRepProc)(obj);
+  }
+ TclObjSetType(obj,&tclDoubleType);
+ return TCL_OK;
+}
+
+Tcl_ObjType tclIntType = {
+  "int",
+  DummyFreeProc,
+  IntDupProc,
+  IntUpdateStringProc,
+  IntSetFromAnyProc
+};
+
+Tcl_ObjType tclDoubleType = {
+  "double",
+  DummyFreeProc,
+  IntDupProc,
+  IntUpdateStringProc,
+  DoubleSetFromAnyProc
+};
+
+Tcl_ObjType perlDummyType = {
+  "scalar",
+  DummyFreeProc,
+  IntDupProc,
+  IntUpdateStringProc,
+  IntSetFromAnyProc
+};
+
+typedef struct
+{
+ Tcl_ObjType *type;
+ Tcl_InternalRep internalRep;
+} TclObjMagic_t;
+
+static int
+TclObj_get(pTHX_ SV *sv, MAGIC *mg)
+{
+ TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
+ if (info->type == &tclIntType)
+  {
+   SvIV_set(sv,info->internalRep.longValue);
+   SvIOK_on(sv);
+   LangDebug("%s %p %s %ld'\n",__FUNCTION__,sv,info->type->name,SvIV(sv));
+   return 0;
+  }
+ else if (info->type == &tclDoubleType)
+  {
+   SvNV_set(sv,info->internalRep.doubleValue);
+   SvNOK_on(sv);
+   LangDebug("%s %p %s %g'\n",__FUNCTION__,sv,info->type->name,SvNV(sv));
+   return 0;
+  }
+ else if (SvROK(sv) || info->type == &perlDummyType)
+  {
+   if (!SvPOK(sv) && SvPOKp(sv))
+    SvPOK_on(sv);
+
+   if (!SvNOK(sv) && SvNOKp(sv))
+    SvNOK_on(sv);
+
+   if (!SvIOK(sv) && SvIOKp(sv))
+    SvIOK_on(sv);
+  }
+ else
+  {
+   Tcl_GetString(sv);
+   SvPOK_on(sv);
+#if 0
+   LangDebug("%s %p %s '%s'\n",__FUNCTION__,sv,info->type->name,SvPV_nolen(sv));
+#endif
+  }
+ return 0;
+}
+
+static int
+TclObj_free(pTHX_ SV *sv, MAGIC *mg)
+{
+ TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
+ if (info->type)
+  {
+#ifdef DEBUG_TCLOBJ
+   LangDebug("%s %p %s\n",__FUNCTION__,sv,info->type->name);
+#endif
+   if (info->type->freeIntRepProc != NULL)
+    {
+     /* We _use_ MAGIC chain to locate interal rep so
+      * re-link mg for duration of callback
+      */
+     MAGIC *save = SvMAGIC(sv);
+     SvMAGIC(sv) = mg;
+     mg->mg_moremagic = NULL;
+     (*info->type->freeIntRepProc)(sv);
+     SvMAGIC(sv) = save;
+    }
+  }
+ else
+  {
+   /* We can have pretened we are double or int without setting a type */
+#if 0
+   LangDebug("%s %p NULL\n",__FUNCTION__,sv);
+   sv_dump(sv);
+#endif
+  }
+ return 0;
+}
+
+static int
+TclObj_set(pTHX_ SV *sv, MAGIC *mg)
+{
+#ifdef DEBUG_TCLOBJ
+ TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
+ LangDebug("%s %p %s\n",__FUNCTION__,sv,info->type->name);
+#endif
+ sv_unmagic(sv,'~');  /* sv_unmagic calls free proc */
+ return 0;
+}
+
+static U32
+TclObj_len(pTHX_ SV *sv, MAGIC *mg)
+{
+#ifdef DEBUG_TCLOBJ
+ TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
+ LangDebug("%s %s\n",__FUNCTION__,info->type->name);
+#endif
+ return 0;
+}
+
+static int
+TclObj_clear(pTHX_ SV *sv, MAGIC *mg)
+{
+#ifdef DEBUG_TCLOBJ
+ TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
+ LangDebug("%s %p %s\n",__FUNCTION__,sv,info->type->name);
+#endif
+ sv_unmagic(sv,'~');  /* sv_unmagic calls free proc */
+ return 0;
+}
+
+
+MGVTBL TclObj_vtab = {
+ TclObj_get,
+ TclObj_set,
+ NULL, /* TclObj_len, */
+ TclObj_clear,
+ TclObj_free
+};
+
+static TclObjMagic_t *
+Tcl_ObjMagic(Tcl_Obj *obj,int add)
+{
+ dTHX;
+ MAGIC *mg = (SvTYPE(obj) >= SVt_PVMG) ? mg_find(obj,'~') : NULL;
+ SV *data = NULL;
+ TclObjMagic_t *iv;
+ if (mg)
+  {
+   if (mg->mg_virtual == &TclObj_vtab)
+    {
+     data = mg->mg_obj;
+    }
+   else
+    {
+     if (add)
+      {
+       warn("Wrong kind of '~' magic on %_",obj);
+       sv_dump(obj);
+       abort();
+      }
+    }
+  }
+ else if (add)
+  {
+   Tcl_ObjType *type =  TclObjGetType(obj);
+   int rdonly = SvREADONLY(obj);
+   data = newSV(sizeof(TclObjMagic_t));
+   Zero(SvPVX(data),sizeof(TclObjMagic_t),char);
+   if (rdonly)
+    SvREADONLY_off(obj);
+   sv_upgrade(obj,SVt_PVMG);
+   sv_magic(obj,data,'~',NULL,0);
+   SvREFCNT_dec(data);
+   SvRMAGICAL_off(obj);
+   mg = mg_find(obj,'~');
+   if (mg->mg_obj != data)
+    abort();
+   mg->mg_virtual = &TclObj_vtab;
+   mg_magical(obj);
+   if (rdonly)
+    SvREADONLY_on(obj);
+   iv = (TclObjMagic_t *) SvPVX(data);
+   iv->type = type;
+   if (iv->type == &tclIntType)
+    {
+     iv->internalRep.longValue = SvIV(obj);
+    }
+   else if (iv->type == &tclDoubleType)
+    {
+     iv->internalRep.doubleValue = SvNV(obj);
+    }
+   return iv;
+  }
+ if (data)
+  {
+   TclObjMagic_t *iv = (TclObjMagic_t *) SvPVX(data);
+   return iv;
+  }
+ return NULL;
+}
+
+Tcl_Obj *
+Tcl_DuplicateObj(Tcl_Obj *src)
+{
+ dTHX;
+ /* We get AVs either from SvRV test below, or
+  * "suspect" ResultAv scheme
+  */
+ int object = sv_isobject(src);
+ if (SvTYPE(src) == SVt_PVAV)
+  {
+   abort();
+  }
+ if (!object && SvROK(src) && SvTYPE(SvRV(src)) == SVt_PVAV)
+  {
+   AV *av  = (AV *) SvRV(src);
+   IV max  = av_len(av);
+   AV *dst = newAV();
+   int i;
+   for (i=0; i <= max; i++)
+    {
+     /* Do a deep copy and hope there are no loops */
+     SV **svp = av_fetch(av,i,0);
+     SV *d    = (svp && *svp) ? Tcl_DuplicateObj(*svp) : &PL_sv_undef;
+     av_store(dst,i,d);
+    }
+   return MakeReference((SV *) dst);
+  }
+ else
+  {
+   SV *dup = newSVsv(src);
+   TclObjMagic_t *m = Tcl_ObjMagic(src,0);
+   if (m && m->type)
+    {
+     if (m->type->dupIntRepProc)
+      {
+       (*m->type->dupIntRepProc)(src,dup);
+      }
+     else
+      {
+       TclObjMagic_t *n = Tcl_ObjMagic(dup,1);
+       n->type = m->type;
+       n->internalRep = m->internalRep;
+      }
+    }
+   return dup;
+  }
+}
+
+Tcl_ObjType *
+Tcl_GetObjType(CONST char *name)
+{
+ if (strEQ(name,"int"))
+  return &tclIntType;
+ if (strEQ(name,"double"))
+  return &tclDoubleType;
+ LangDebug("%s wanted %s\n",__FUNCTION__,name);
+ return &perlDummyType;
+}
+
+static void
+NoFreeProc(Tcl_Obj *obj)
+{
+ TclObjMagic_t *m = Tcl_ObjMagic(obj,1);
+ LangDebug("%s %p %s\n",__FUNCTION__,obj,m->type->name);
+}
+
+Tcl_ObjType *
+TclObjGetType(Tcl_Obj *obj)
+{
+ TclObjMagic_t *m = Tcl_ObjMagic(obj,0);
+ if (m)
+  {
+#ifdef DEBUG_TCLOBJ
+   if (!m->type->freeIntRepProc)
+    m->type->freeIntRepProc = &NoFreeProc;
+#endif
+   return m->type;
+  }
+ if (SvNOK(obj))
+  {
+   return &tclDoubleType;
+  }
+ else if (SvIOK(obj))
+  {
+   return &tclIntType;
+  }
+ return &perlDummyType;
+}
+
+int
+TclObjLength(Tcl_Obj *obj)
+{
+ dTHX;
+ STRLEN len;
+ char *s = SvPV(obj,len);
+ return len;
+}
+
+void
+TclObjSetType(Tcl_Obj *obj,Tcl_ObjType *type)
+{
+ TclObjMagic_t *m = Tcl_ObjMagic(obj,1);
+#ifdef DEBUG_TCLOBJ
+ if (m->type)
+  {
+   LangDebug("%s %p was %s\n",__FUNCTION__,obj,m->type->name);
+  }
+ LangDebug("%s %p now %s\n",__FUNCTION__,obj,type->name);
+#endif
+ m->type = type;
+}
+
+int
+Tcl_ConvertToType(Tcl_Interp * interp, Tcl_Obj * objPtr,
+                  Tcl_ObjType * typePtr)
+{
+    if (TclObjGetType(objPtr) == typePtr) {
+	return TCL_OK;
+    }
+
+    /*
+     * Use the target type's Tcl_SetFromAnyProc to set "objPtr"s internal
+     * form as appropriate for the target type. This frees the old internal
+     * representation.
+     */
+
+    return typePtr->setFromAnyProc(interp, objPtr);
+}
+
+
+Tcl_InternalRep *
+TclObjInternal(Tcl_Obj *obj)
+{
+ TclObjMagic_t *m = Tcl_ObjMagic(obj,1);
+ return &(m->internalRep);
+}
+
+void
+Tcl_RegisterObjType(Tcl_ObjType *type)
+{
+}
+
+
+Tcl_Obj *
+LangCopyArg(sv)
+SV *sv;
+{
+ if (sv)
+  {
+   dTHX;
+   MAGIC *mg = (SvTYPE(sv) >= SVt_PVMG) ? mg_find(sv,'~') : NULL;
+   if (mg && mg->mg_virtual == &TclObj_vtab)
+    {
+     return Tcl_DuplicateObj(sv);
+    }
+   if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVCV)
+    {
+     return LangMakeCallback(sv);
+    }
+   sv = newSVsv(sv);
+  }
+ return sv;
+}
+
+
+
+
+
 

@@ -1,3 +1,6 @@
+
+/*	$Id: tixInt.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixInt.h --
  *
@@ -284,7 +287,7 @@ struct TixColorStyle {
     STYLE_COMMON_MEMBERS;
     STYLE_COLOR_MEMBERS;
 };
-
+
 /*----------------------------------------------------------------------
  * ImageTextItem --
  *
@@ -314,7 +317,7 @@ struct TixImageTextItem {
 	/*	 Text		  */
 	/*-------------------------*/
 
-    Arg text;		/* Show descriptive text */
+    Tcl_Obj * text;		/* Show descriptive text */
     size_t numChars;		/* Size of text */
     int textW, textH;
     int wrapLength;
@@ -334,7 +337,7 @@ struct TixImageTextStyle {
     int gap;			/* Gap between text and image */
     Tk_Anchor textanchor;	/* Text anchor information */
 };
-
+
 /*----------------------------------------------------------------------
  * ImageItem --
  *
@@ -374,7 +377,7 @@ struct TixTextItem {
 	/*	 Text		  */
 	/*-------------------------*/
 
-    Arg text;		/* Show descriptive text */
+    Tcl_Obj * text;		/* Show descriptive text */
     size_t numChars;		/* Size of text */
     int textW, textH;
     int underline;		/* Index of character to underline.  < 0 means
@@ -388,7 +391,7 @@ struct TixTextStyle {
     Tk_Justify justify;		/* Justification to use for multi-line text. */
     TixFont font;
 };
-
+
 /*----------------------------------------------------------------------
  * WindowItem --
  *
@@ -406,7 +409,7 @@ struct TixWindowItem {
 struct TixWindowStyle {
     STYLE_COMMON_MEMBERS;
 };
-
+
 /*----------------------------------------------------------------------
  * Tix_DItem and Tix_DItemStyle --
  *
@@ -788,6 +791,13 @@ EXTERN void		Tix_WindowItemListRemove  _ANSI_ARGS_((
 
 typedef struct _TixpSubRegion TixpSubRegion;
 
+struct _TixpSubRegion {
+    Pixmap pixmap;
+    int origX, origY;
+    int x, y;
+    int width, height;
+};
+
 /*
  * Functions that should be used by Tix only. Functions prefixed by "Tix"
  * are generic functions that has one implementation for all platforms.
@@ -813,7 +823,7 @@ extern void		TixpEndSubRegionDraw _ANSI_ARGS_((Display *display,
 extern int		TixpSetWindowParent _ANSI_ARGS_((Tcl_Interp * interp,
 			    Tk_Window tkwin, Tk_Window newParent,
 			    int parentId));
-extern void		TixpStartSubRegionDraw _ANSI_ARGS_((Display *display,
+extern void		TixpStartSubRegionDraw _ANSI_ARGS_((Tix_DispData *ddPtr,
 			     Drawable drawable, GC gc,
 			     TixpSubRegion * subRegPtr, int origX,
 			     int origY, int x, int y, int width, int height,

@@ -1,3 +1,6 @@
+
+/*	$Id: tixTList.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixTList.c --
  *
@@ -157,7 +160,7 @@ static Tk_ConfigSpec configSpecs[] = {
 
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
        (char *) NULL, 0, 0}
-};	
+};
 
 #define DEF_TLISTENTRY_STATE	 "normal"
 #define DEF_TLISTENTRY_DATA	 NULL
@@ -234,7 +237,7 @@ static int		Tix_TLGetNeighbor _ANSI_ARGS_((
 			    WidgetPtr wPtr, Tcl_Interp *interp,
 			    int type, int argc, char **argv));
 static int		Tix_TranslateIndex _ANSI_ARGS_((
-			    WidgetPtr wPtr, Tcl_Interp *interp, Arg string,
+			    WidgetPtr wPtr, Tcl_Interp *interp, Tcl_Obj * string,
 			    int * index, int isInsert));
 static int		Tix_TLDeleteRange _ANSI_ARGS_((
 			    WidgetPtr wPtr, ListEntry * fromPtr,
@@ -370,7 +373,7 @@ Tix_TListCmd(clientData, interp, argc, argv)
     interp->result = Tk_PathName(wPtr->dispData.tkwin);
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -533,7 +536,7 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -611,7 +614,7 @@ WidgetCommand(clientData, interp, argc, argv)
 
     return code;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -668,7 +671,7 @@ WidgetEventProc(clientData, eventPtr)
 	break;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -730,7 +733,7 @@ WidgetDestroy(clientData)
     Tk_FreeOptions(configSpecs, (char *) wPtr, wPtr->dispData.display, 0);
     ckfree((char *) wPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -767,7 +770,7 @@ WidgetCmdDeletedProc(clientData)
 	Tk_DestroyWindow(tkwin);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -822,7 +825,7 @@ MakeGeomRequest(wPtr)
 }
 
 
-
+
 /*----------------------------------------------------------------------
  * DItemSizeChanged --
  *
@@ -841,7 +844,7 @@ Tix_TLDItemSizeChanged(iPtr)
 	ResizeWhenIdle(wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * ResizeWhenIdle --
@@ -859,7 +862,7 @@ ResizeWhenIdle(wPtr)
 	Tcl_DoWhenIdle(WidgetComputeGeometry, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * ResizeWhenIdle --
@@ -876,7 +879,7 @@ ResizeNow(wPtr)
 	wPtr->resizing = 0;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * CancelResizeWhenIdle --
@@ -891,7 +894,7 @@ CancelResizeWhenIdle(wPtr)
 	Tcl_CancelIdleCall(WidgetComputeGeometry, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * RedrawWhenIdle --
@@ -912,7 +915,7 @@ RedrawWhenIdle(wPtr)
 	Tcl_DoWhenIdle(WidgetDisplay, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * CancelRedrawWhenIdle --
@@ -927,7 +930,7 @@ CancelRedrawWhenIdle(wPtr)
 	Tcl_CancelIdleCall(WidgetDisplay, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -997,7 +1000,7 @@ WidgetDisplay(clientData)
     Tk_FreePixmap(wPtr->dispData.display, pixmap);
 
 }
-
+
 /*----------------------------------------------------------------------
  *  AddElement  --
  *
@@ -1034,7 +1037,7 @@ AddElement(wPtr, chPtr, at)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  *  AllocEntry  --
  *
@@ -1055,7 +1058,7 @@ AllocEntry(wPtr)
 
     return chPtr;
 }
-
+
 /*----------------------------------------------------------------------
  *  FreeEntry  --
  *
@@ -1116,7 +1119,7 @@ FreeEntry(wPtr, chPtr)
     Tk_FreeOptions(entryConfigSpecs, (char *)chPtr,wPtr->dispData.display, 0);
     ckfree((char*)chPtr);
 }
-
+
 /*----------------------------------------------------------------------
  * "insert" sub command --
  *
@@ -1210,7 +1213,7 @@ Tix_TLInsert(clientData, interp, argc, argv)
 	}
     } else {
 	sprintf(buff, "%d", at);
-	Tcl_AppendResult(interp, buff, NULL);	
+	Tcl_AppendResult(interp, buff, NULL);
     }
 
     return code;
@@ -1248,7 +1251,7 @@ Tix_TLSpecialEntryInfo(wPtr, interp, chPtr)
     }
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "index" sub command
  *----------------------------------------------------------------------
@@ -1272,7 +1275,7 @@ Tix_TLIndex(clientData, interp, argc, argv)
     Tcl_AppendResult(interp, buff, NULL);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "info" sub command
  *----------------------------------------------------------------------
@@ -1310,7 +1313,7 @@ Tix_TLInfo(clientData, interp, argc, argv)
 	for (chPtr=(ListEntry*)wPtr->entList.head, i=0;
 	     chPtr;
 	     chPtr=chPtr->next, i++) {
-	
+
 	    if (chPtr->selected) {
 		Tcl_IntResults(interp,1,1,i);
 	    }
@@ -1340,16 +1343,16 @@ static int
 Tix_TranslateIndex(wPtr, interp, string, index, isInsert)
     WidgetPtr wPtr;		/* TList widget record. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    Arg string;		/* String representation of the index. */
+    Tcl_Obj * string;		/* String representation of the index. */
     int * index;		/* Returns the index value (0 = 1st element).*/
     int isInsert;		/* Is this function called by an "insert"
 				 * operation? */
 {
-    if (strcmp(LangString(string), "end") == 0) {
+    if (strcmp(Tcl_GetString(string), "end") == 0) {
 	*index = wPtr->entList.numItems;
     }
-    else if (Tix_TLGetAt(wPtr, interp, LangString(string), index) != TCL_OK) {
-	if (Tcl_GetInt(interp, string, index) != TCL_OK) {
+    else if (Tix_TLGetAt(wPtr, interp, Tcl_GetString(string), index) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, string, index) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	else if (*index < 0) {
@@ -1449,13 +1452,13 @@ static int Tix_TLGetNeighbor(wPtr, interp, type, argc, argv)
     }
 
     sprintf(buff, "%d", dst);
-    Tcl_AppendResult(interp, buff, NULL);	
+    Tcl_AppendResult(interp, buff, NULL);
 
     return TCL_OK;
 }
 
 
-
+
 /*----------------------------------------------------------------------
  * "cget" sub command --
  *----------------------------------------------------------------------
@@ -1472,7 +1475,7 @@ Tix_TLCGet(clientData, interp, argc, argv)
     return Tk_ConfigureValue(interp, wPtr->dispData.tkwin, configSpecs,
 	(char *)wPtr, argv[0], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "configure" sub command
  *----------------------------------------------------------------------
@@ -1497,7 +1500,7 @@ Tix_TLConfig(clientData, interp, argc, argv)
 	    TK_CONFIG_ARGV_ONLY);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "geometryinfo" sub command
  *----------------------------------------------------------------------
@@ -1516,10 +1519,10 @@ Tix_TLGeometryInfo(clientData, interp, argc, argv)
     int i;
 
     if (argc == 2) {
-	if (Tcl_GetInt(interp, argv[0], &qSize[0]) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[0], &qSize[0]) != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	if (Tcl_GetInt(interp, argv[1], &qSize[1]) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[1], &qSize[1]) != TCL_OK) {
 	    return TCL_ERROR;
 	}
     } else {
@@ -1545,7 +1548,7 @@ Tix_TLGeometryInfo(clientData, interp, argc, argv)
 #endif
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "delete" sub command
  *----------------------------------------------------------------------
@@ -1614,7 +1617,7 @@ static int Tix_TLDeleteRange(wPtr, fromPtr, toPtr)
     return started;
 }
 
-
+
 /*----------------------------------------------------------------------
  * "entrycget" sub command
  *----------------------------------------------------------------------
@@ -1643,7 +1646,7 @@ Tix_TLEntryCget(clientData, interp, argc, argv)
     return Tix_ConfigureValue2(interp, wPtr->dispData.tkwin, (char *)chPtr,
 	entryConfigSpecs, chPtr->iPtr, argv[1], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "entryconfigure" sub command
  *----------------------------------------------------------------------
@@ -1680,7 +1683,7 @@ Tix_TLEntryConfig(clientData, interp, argc, argv)
 	    TK_CONFIG_ARGV_ONLY, 0);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "nearest" sub command
  *----------------------------------------------------------------------
@@ -1697,10 +1700,10 @@ Tix_TLNearest(clientData, interp, argc, argv)
     int index;
     char buff[100];
 
-    if (Tcl_GetInt(interp, argv[0], &posn[0]) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[0], &posn[0]) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[1], &posn[1]) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[1], &posn[1]) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1799,7 +1802,7 @@ static int Tix_TLGetNearest(wPtr, posn)
 
     return index;
 }
-
+
 /*----------------------------------------------------------------------
  * "selection" sub command
  * 	Modify the selection in this HList box
@@ -1978,7 +1981,7 @@ Tix_TLSelection(clientData, interp, argc, argv)
 
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * "see" command
  *----------------------------------------------------------------------
@@ -2009,7 +2012,7 @@ Tix_TLSee(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "anchor", "dragsite" and "dropsite" sub commands --
  *
@@ -2084,7 +2087,7 @@ Tix_TLSetSite(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "xview" and "yview" sub command
  *----------------------------------------------------------------------
@@ -2164,7 +2167,7 @@ ConfigElement(wPtr, chPtr, argc, argv, flags, forced)
     }
     return TCL_OK;
 }
-
+
 static void
 Realloc(wPtr, new_size)
     WidgetPtr wPtr;
@@ -2180,7 +2183,7 @@ Realloc(wPtr, new_size)
                                       sizeof(ListRow)*new_size);
     wPtr->numRowAllocd = new_size;
 }
-
+
 static void ResizeRows(wPtr, winW, winH)
     WidgetPtr wPtr;
     int winW;			/* -1 == current width */
@@ -2469,7 +2472,7 @@ RedrawRows(wPtr, pixmap)
 	p[i]+= wPtr->rows[r].size[i];
     }
 }
-
+
 /*----------------------------------------------------------------------
  *  UpdateScrollBars
  *----------------------------------------------------------------------

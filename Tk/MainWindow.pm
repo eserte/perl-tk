@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.049'; # $Id: //depot/Tk8/Tk/MainWindow.pm#49 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/MainWindow.pm#8 $
 
 use Tk::CmdLine;
 use Tk qw(catch);

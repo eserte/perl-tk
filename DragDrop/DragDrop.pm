@@ -4,7 +4,7 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION);
-$VERSION = '3.032'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#32 $
+$VERSION = '4.012'; # $Id: //depot/Tkutf8/DragDrop/DragDrop.pm#13 $
 
 use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 
@@ -12,7 +12,7 @@ use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 # define a Tk_cmd to actually build a 'Label', then
 # use wmRelease in Populate to make it a toplevel.
 
-my $useWmRelease = 1; # ($^O ne 'MSWin32');
+my $useWmRelease = Tk::Wm->can('release'); # ($^O ne 'MSWin32');
 
 sub Tk_cmd { ($useWmRelease) ? \&Tk::label : \&Tk::toplevel }
 
@@ -46,7 +46,6 @@ sub Populate
  if ($useWmRelease)
   {
    $token->wmRelease;
-   $token->saveunder(1);
    $token->ConfigSpecs(-text => ['SELF','text','Text',$parent->class]);
   }
  else

@@ -4,13 +4,13 @@ use vars qw/$TOP/;
 
 sub style {
 
-    # Create a top-level window with a text widget that demonstrates 
+    # Create a top-level window with a text widget that demonstrates
     # the various display styles that are available in texts.
 
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     =>'',				      
+        -text     =>'',
         -title    => 'Text Demonstration - Display Styles',
         -iconname => 'style',
     );

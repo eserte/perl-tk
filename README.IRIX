@@ -1,3 +1,12 @@
+
+perl-5.8.1 and Tk804.025 on IRIX 6.5.20m
+
+1) IRIX has no ranlib, it's not required.  When building builtin zlib/png
+   support make will fail trying to invoke ranlib.  I (Steve Lidie) did:
+
+       alias ranlib=true
+
+
 Perl5.004/Tk402.* on IRIX 6.2
 
 Craig reports that there is a -lnsl in /usr/lib which MakeMaker finds

@@ -1,7 +1,10 @@
+
+/*	$Id: tixUnixSam.c,v 1.2 2000/11/22 07:55:24 idiscovery Exp $	*/
+
 /*
- * eixInit41.c --
+ * tixUnixSam.c --
  *
- *	Initializes embedded Tix for Tix version 4.1.
+ *	Initializes embedded Tix for Tix version 8.1.
  *
  */
 

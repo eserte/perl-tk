@@ -9,7 +9,9 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.056'; # $Id: //depot/Tk8/Tk/MMutil.pm#56 $
+$VERSION = '4.017'; # $Id: //depot/Tkutf8/Tk/MMutil.pm#17 $
+
+# warn __FILE__." $VERSION\n";
 
 use Tk::MakeDepend;
 
@@ -18,7 +20,7 @@ use vars qw($IsWin32);
 
 *IsWin32 = \$main::IsWin32;
 $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/)
-           unless defined $IsWin32;
+	   unless defined $IsWin32;
 
 @MYEXPORT = qw(pasthru perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
 
@@ -72,6 +74,7 @@ sub mTk_CHO
 {
  my $self = shift;
  my $mTk  = shift;
+ my $exc  = shift;
  my %c;
  my %h;
  foreach (@{$self->{H}}) { $h{$_} = 1 }
@@ -87,10 +90,21 @@ sub mTk_CHO
      $h{$_} = 1;
     }
   }
+ foreach (keys %$exc)
+  {
+   if (/\.c$/)
+    {
+     delete $c{$_};
+    }
+   elsif (/\.h$/)
+    {
+     delete $h{$_};
+    }
+  }
  while (@_)
   {
    my $name = shift;
-   carp("No $name") unless (exists $c{$name});
+   cluck("No $name") unless (exists $c{$name});
    delete $c{$name}
   }
  arch_prune(\%h);
@@ -110,7 +124,7 @@ sub mTk_CHO
   }
  foreach my $file (sort keys %$mTk)
   {
-   unless (-f $file)
+   unless (-f $file && -M $file < -M $mTk->{$file})
     {
      warn "Extracting $file\n";
      system($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
@@ -149,34 +163,34 @@ sub relpath
       {
        my $depth = reverse($1);
        if ($depth)
-        {
-         $depth =~ s,[^/\\]+,..,g;
-        }
+	{
+	 $depth =~ s,[^/\\]+,..,g;
+	}
        else
-        {
-         $depth = '.' ;
-        }
+	{
+	 $depth = '.' ;
+	}
        $depth =~ s,[/\\]+$,,;
        $base =~ s,^[/\\]+,,;
        $depth .= "/$base" if ($base);
        if (-e $depth)
-        {
-         # print "$path is $depth from $here\n";
-         return $depth;
-        }
+	{
+	 # print "$path is $depth from $here\n";
+	 return $depth;
+	}
        else
-        {
-         warn "Cannot find $depth\n";
-        }
+	{
+	 warn "Cannot find $depth\n";
+	}
       }
      else
       {
        unless(exists $visited{$here})
-        {
-         $visited{$here} = 1;
-         warn "$here does not start with $dir\n";
-         warn "i.e. building outside Tk itself\n";
-        }
+	{
+	 $visited{$here} = 1;
+	 warn "$here does not start with $dir\n";
+	 warn "i.e. building outside Tk itself\n";
+	}
       }
     }
    else
@@ -287,8 +301,7 @@ sub const_config
    }
    $self->{'LDFLAGS'} =~ s/-flat_namespace//;
    $self->{'LDFLAGS'} =~ s/-undefined\s+suppress//;
-  }
- elsif ($^O =~ /(openbsd)/i)
+  } elsif ($^O =~ /(openbsd)/i)
   {
    # -Bforcearchive is bad news for Tk - we don't want all of libpTk.a in all .so-s.
    $self->{'LDDLFLAGS'} =~ s/-Bforcearchive\s*//g;
@@ -494,7 +507,7 @@ sub TkExtMakefile
  $att{'macro'} = {} unless (exists $att{'macro'});
  $att{'macro'}{'TKDIR'} = $tk;
  my @opt = ('VERSION'     => $Tk::Config::VERSION,
-            'XS_VERSION'  => $Tk::Config::VERSION);
+	    'XS_VERSION'  => $Tk::Config::VERSION);
  push(@opt,'clean' => {} ) unless (exists $att{'clean'});
  $att{'clean'}->{FILES} = '' unless (exists $att{'clean'}->{FILES});
  $att{'clean'}->{FILES} .= ' *.bak';
@@ -509,9 +522,9 @@ sub TkExtMakefile
    if (delete $att{'dynamic_ptk'})
     {
      push(@opt,
-          'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
+	  'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
 #         'dynamic_lib' => { INST_DYNAMIC_DEP => "$ptk/libpTk\$(LIB_EXT)" }
-         );
+	 );
     }
    if ($IsWin32 && $Config{'cc'} =~ /^bcc/)
     {

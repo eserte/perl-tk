@@ -12,9 +12,9 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -24,11 +24,17 @@ void
 entry(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tk_EntryCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,0,Tk_EntryObjCmd,items,&ST(0)));
+ }
+
+void
+spinbox(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,0,Tk_SpinboxObjCmd,items,&ST(0)));
  }
 
 PROTOTYPES: DISABLE
-
 
 BOOT:
  {

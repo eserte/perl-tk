@@ -9,13 +9,24 @@
 # derivation from Tk8.0 sources.
 #
 package Tk;
-require 5.00404;
+require 5.007;
 use     Tk::Event ();
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 use base qw(Exporter DynaLoader);
 
 *fileevent = \&Tk::Event::IO::fileevent;
+
+use Encode;
+$Tk::encodeStopOnError = Encode::FB_QUIET();
+$Tk::encodeFallback    = Encode::FB_PERLQQ(); # Encode::FB_DEFAULT();
+
+our %font_encoding = ('jis0208' => 'jis0208-raw',
+                      'jis0212' => 'jis0212-raw',
+                      'ksc5601' => 'ksc5601-raw',
+                      'gb2312'  => 'gb2312-raw',
+                      'unicode' => 'ucs-2le',
+                     );
 
 BEGIN {
  if($^O eq 'cygwin')
@@ -32,6 +43,7 @@ BEGIN {
 
 $Tk::tearoff = 1 if ($Tk::platform eq 'unix');
 
+
 @EXPORT    = qw(Exists Ev exit MainLoop DoOneEvent tkinit);
 @EXPORT_OK = qw(NoOp after *widget *event lsearch catch $XS_VERSION
                 DONT_WAIT WINDOW_EVENTS  FILE_EVENTS TIMER_EVENTS
@@ -46,16 +58,19 @@ $Tk::tearoff = 1 if ($Tk::platform eq 'unix');
                );
 
 use strict;
-
 use Carp;
+
+# Record author's perforce depot record
+$Tk::CHANGE      = q$Change: 2901 $;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
-$Tk::version     = '8.0';
-$Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.025';
+$Tk::version     = '8.4';
+$Tk::patchLevel  = '8.4';
+$Tk::VERSION     = '804.025';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
+
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
 $Tk::library = Tk->findINC('.') unless (defined($Tk::library) && -d $Tk::library);
@@ -77,6 +92,10 @@ use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
                     'clipboard' =>  [qw(clear append)]
                    );
 
+#
+# Next few routines are here as perl code as doing caller()
+# in XS code is very complicated - so instead C code calls BackTrace
+#
 sub _backTrace
 {
  my $w = shift;
@@ -117,7 +136,9 @@ sub __DIE__
  my $mess = shift;
  my $w = $Tk::widget;
  # Note that if a __DIE__ handler returns it re-dies up the chain.
- return unless defined $w;
+ return unless defined($w) && Exists($w);
+ # This special message is for exit() as an exception see pTkCallback.c
+ return if $mess =~/^_TK_EXIT_\(\d+\)/;
  return if $w->_backTrace;
  # Not in an eval - should not happen
 }
@@ -226,6 +247,23 @@ sub Methods
   }
 }
 
+my %dialog = ( tk_chooseColor => 'ColorDialog',
+               tk_messageBox  => 'MessageBox',
+               tk_getOpenFile => 'FDialog',
+               tk_getSaveFile => 'FDialog',
+               tk_chooseDirectory => 'FDialog'
+             );
+
+foreach my $dialog (keys %dialog)
+ {
+  no strict 'refs';
+  unless (defined &$dialog)
+   {
+    my $kind = $dialog;
+    my $code = \&{"Tk::$dialog{$dialog}"};
+    *$dialog = sub { &$code($kind,@_) };
+   }
+ }
 
 sub MessageBox {
     my ($kind,%args) = @_;
@@ -288,6 +326,11 @@ sub chooseColor
  tk_chooseColor(-parent => shift,@_);
 }
 
+sub chooseDirectory
+{
+ tk_chooseDirectory(-parent => shift,@_);
+}
+
 sub DialogWrapper
 {
  my ($method,$kind,%args) = @_;
@@ -332,10 +375,16 @@ sub FDialog
   {
    push @_, -type => 'save';
   }
+ elsif ($cmd =~ /Directory/)
+  {
+   push @_, -type => 'dir';
+  }
  DialogWrapper('FBox', $cmd, @_);
 }
 
 *MotifFDialog = \&FDialog;
+
+*CORE::GLOBAL::exit = \&exit;
 
 sub MainLoop
 {
@@ -391,6 +440,26 @@ sub idletasks
 {
  shift->update('idletasks');
 }
+
+sub backtrace
+{
+ my ($self,$msg,$i) = @_;
+ $i = 1 if @_ < 3;
+ while (1)
+  {
+   my ($pack,$file,$line,$sub) = caller($i++);
+   last unless defined($sub);
+   $msg .= "\n $sub at $file line $line";
+  }
+ return "$msg\n";
+}
+
+sub die_with_trace
+{
+ my ($self,$msg) = @_;
+ die $self->backtrace($msg,1);
+}
+
 
 
 1;
@@ -698,6 +767,41 @@ sub lsearch
  return -1;
 }
 
+
+sub getEncoding
+{
+ my ($class,$name) = @_;
+ eval { require Encode };
+ if ($@)
+  {
+   require Tk::DummyEncode;
+   return Tk::DummyEncode->getEncoding($name);
+  }
+ $name = $Tk::font_encoding{$name} if exists $Tk::font_encoding{$name};
+ my $enc = Encode::find_encoding($name);
+
+ unless ($enc)
+  {
+   $enc = Encode::find_encoding($name) if ($name =~ s/[-_]\d+$//)
+  }
+# if ($enc)
+#  {
+#   print STDERR "Lookup '$name' => ".$enc->name."\n";
+#  }
+# else
+#  {
+#   print STDERR "Failed '$name'\n";
+#  }
+ unless ($enc)
+  {
+   if ($name eq 'X11ControlChars')
+    {
+     require Tk::DummyEncode;
+     $Encode::encoding{$name} = $enc = Tk::DummyEncode->getEncoding($name);
+    }
+  }
+ return $enc;
+}
 
 
 

@@ -1,0 +1,39 @@
+#!perl
+use Config;
+use File::Copy;
+my $file;
+chmod(0666,'Makefile');
+my $file;
+
+if ($^O eq 'MSWin32')
+ {
+  if ($Config{'cc'} =~ /gcc/)
+   {
+    $file = 'scripts/makefile.mingw';
+   }
+  elsif ($Config{'cc'} =~ /bcc/)
+   {
+    $file = 'scripts/makefile.bc32';
+   }
+  else
+   {
+    $file = 'scripts/makefile.vcwin32';
+    warn "Assuming ".$Config{'cc'}." is visual C of some kind\n";
+   }
+ }
+else
+ {
+  if ($Config{'cc'} =~ /gcc/)
+   {
+    $file = 'scripts/makefile.gcc';
+   }
+  else
+   {
+    warn "If make fails read libpng/INSTALL\n";
+    $file = 'scripts/makefile.std';
+   }
+ }
+
+copy($file,"Makefile")
+   || die "Cannot copy $file to Makefile:$!";
+1;

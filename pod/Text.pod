@@ -506,12 +506,6 @@ screen distances.
 If a line wraps, this option only applies to the last
 line on the display.
 
-=item B<-state> =E<gt> I<state>
-
-I<State> specifies if the text is I<hidden> or I<normal>.
-Hidden text is not displayed and takes no space on screen, but further
-on behaves just as normal text.
-
 =item B<-tabs> =E<gt> I<tabList>
 
 I<TabList> specifies a set of tab stops in the same form
@@ -543,6 +537,8 @@ for the text widget.
 =item B<-elide> =E<gt> I<value>
 
 If value is true then text covered by the tag is not displayed.
+Elided text is not displayed and takes no space on screen, but otherwise
+behaves just as normal text.
 
 =item B<-data> =E<gt> I<value>
 
@@ -1138,11 +1134,6 @@ returned by future calls to ``I<$text>-E<gt>B<markNames>''.
 This command returns an empty string.
 
 =back
-
-=item I<$text>-E<gt>B<menu>(I<menu>)
-
-Replace the default right-click menu with I<menu>. Use C<undef> to
-remove the menu completely. Returns a reference to the current menu.
 
 =item I<$text>-E<gt>B<scan>(I<option>, I<args>) or
 

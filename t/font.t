@@ -4,8 +4,8 @@ use Test;
 use Tk;
 use Tk::Font;
 
-BEGIN { plan tests => 9
-        # , todo => [9]
+BEGIN { plan tests => 13,
+        todo => [10]
       };
 
 my $mw = Tk::MainWindow->new;
@@ -32,7 +32,7 @@ my $mw = Tk::MainWindow->new;
 	"Warning should match /^wrong # args: should be \"font/ but was '". $@ . "'"
     );
 }
-## 
+##
 ## Stephen O. Lidie reported that Tk800.003
 ## fontMeasure() and fontMeasure(fontname) gives
 ## SEGV on linux and AIX.
@@ -71,5 +71,33 @@ my $mw = Tk::MainWindow->new;
         "cget(-font) returns wrong value."
     );
 }
+
+my @fam = $mw->fontFamilies;
+foreach my $fam ($mw->fontFamilies)
+ {
+  print "# $fam\n";
+ }
+
+$mw->optionAdd('*Listbox.font','Times -12 bold');
+my $lb = $mw->Listbox()->pack;
+$lb->insert(end => '0',"\xff","\x{20ac}","\x{0289}");
+$lb->update;
+my $lf = $lb->cget('-font');
+print "# $$lf:",join(',',$mw->fontActual($lf)),"\n";
+my %expect = (-family => 'Times',
+              -size   => -12, -weight => 'bold',
+              -slant  => 'roman');
+foreach my $key (sort keys %expect)
+ {
+  my $val = $mw->fontActual($lf,$key);
+  ok($val,qr/$expect{$key}/i,"Value of $key");
+ }
+
+my @subfonts = $mw->fontSubfonts($lf);
+foreach my $sf (@subfonts)
+ {
+  print '# ',join(',',@$sf),"\n";
+ }
+
 
 __END__

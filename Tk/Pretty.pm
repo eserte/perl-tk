@@ -5,7 +5,7 @@ package Tk::Pretty;
 require Exporter;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Pretty.pm#15 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Pretty.pm#6 $
 
 use base  qw(Exporter);
 

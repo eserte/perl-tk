@@ -3,7 +3,7 @@
 use Tk;
 
 {
- # This could/should go in Tk/LEntry.pm 
+ # This could/should go in Tk/LEntry.pm
  package Tk::LEntry;
  require Tk::Entry;
 use base  qw(Tk::Derived Tk::Entry);
@@ -37,7 +37,7 @@ my $mw = MainWindow->new;
 my $e  = $mw->LEntry(-maxwidth => 5, -width => 5);
 
 $e->pack;
-                 
+
 MainLoop;
 
 __END__

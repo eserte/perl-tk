@@ -38,6 +38,10 @@
 #define aTHX_
 #endif
 
+#ifndef pTHX_
+#define pTHX_
+#endif
+
 #ifdef dirty
 #undef dirty
 #endif
@@ -46,6 +50,9 @@
 #endif
 #ifdef colors
 #undef colors
+#endif
+#ifdef JOIN
+#undef JOIN
 #endif
 
 #ifdef na
@@ -57,11 +64,12 @@
 
 #define Tcl_Interp     HV
 #define LangCallback   SV
-#define Arg            SV *
 #define Var            SV *
 #define LangResultSave AV
+struct Lang_CmdInfo;
 #define Tcl_Command    struct Lang_CmdInfo *
-#define Tcl_RegExp     regexp *
+struct WrappedRegExp;
+#define Tcl_RegExp     struct WrappedRegExp *
 #define Tcl_Obj        SV
 #define Tcl_DString    SV *
 
@@ -109,3 +117,4 @@
 #endif /* USE_STDIO_PTR */
 
 #endif
+

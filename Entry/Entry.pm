@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.042'; # $Id: //depot/Tk8/Entry/Entry.pm#42 $
+$VERSION = sprintf '4.%03d',q$Revision: #15 $ =~ /#(\d+)/;
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
@@ -82,9 +82,9 @@ sub ClassInit
  # Standard Motif bindings:
  $mw->bind($class,'<Escape>','selectionClear');
 
- $mw->bind($class,'<1>',['Button1',Ev('x')]);
-
- $mw->bind($class,'<B1-Motion>',['MouseSelect',Ev('x')]);
+ $mw->bind($class,'<1>',['Button1',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<ButtonRelease-1>',['Button1Release',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B1-Motion>',['Motion',Ev('x'),Ev('y')]);
 
  $mw->bind($class,'<Double-1>',['MouseSelect',Ev('x'),'word','sel.first']);
  $mw->bind($class,'<Double-Shift-1>',['MouseSelect',Ev('x'),'word']);
@@ -96,7 +96,6 @@ sub ClassInit
 
  $mw->bind($class,'<B1-Leave>',['AutoScan',Ev('x')]);
  $mw->bind($class,'<B1-Enter>','CancelRepeat');
- $mw->bind($class,'<ButtonRelease-1>','CancelRepeat');
  $mw->bind($class,'<Control-1>','Control_1');
  $mw->bind($class,'<Left>', ['SetCursor',Ev('deltainsert',-1)]);
  $mw->bind($class,'<Right>',['SetCursor',Ev('deltainsert',1)]);
@@ -241,6 +240,11 @@ sub ButtonRelease_2
  }
 }
 
+sub Button1Release
+{
+ shift->CancelRepeat;
+}
+
 # Button1 --
 # This procedure is invoked to handle button-1 presses in entry
 # widgets. It moves the insertion cursor, sets the selection anchor,
@@ -253,6 +257,7 @@ sub Button1
 {
  my $w = shift;
  my $x = shift;
+ my $y = shift;
  $Tk::selectMode = 'char';
  $Tk::mouseMoved = 0;
  $Tk::pressX = $x;
@@ -264,6 +269,13 @@ sub Button1
    $w->focus()
   }
 }
+
+sub Motion
+{
+ my ($w,$x,$y) = @_;
+ $w->MouseSelect($x);
+}
+
 # MouseSelect --
 # This procedure is invoked when dragging out a selection with
 # the mouse. Depending on the selection mode (character, word,
@@ -276,8 +288,10 @@ sub Button1
 # x - The x-coordinate of the mouse.
 sub MouseSelect
 {
+
  my $w = shift;
  my $x = shift;
+ return if ref($w) eq 'Tk::Spinbox' and $w->{_element} ne 'entry';
  $Tk::selectMode = shift if (@_);
  my $cur = $w->index('@' . $x);
  return unless defined $cur;

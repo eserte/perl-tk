@@ -34,10 +34,10 @@ my $text;
     ok($@ , "", "can't embedd \$scroll=$scroll. Error is: $@");
 
     $text->update;
-   
+
     ok( ($normal->manager), 'text', "\$normal=$normal not managed by text widget");
     ok( ($scroll->manager), 'text', "\$scroll=$scroll not managed by text widget");
-   
+
     ok( ($normal->geometry eq '1x1+0+0'), '', '$normal not visible. Geometry'.$normal->geometry);
     ok( ($scroll->geometry eq '1x1+0+0'), '', '$scroll not visible. Geometry'.$scroll->geometry);
 }
@@ -77,10 +77,10 @@ my $text;
 # Message-id: <199804181932.UAA12664@ni-s.u-net.com>
 # ...
 # This from zzText.t - is not going to be fixed any time soon.
-# 
+#
 # ... test code above ...
 #
-# It is doing its own error handling, and there is no way to propagate the 
+# It is doing its own error handling, and there is no way to propagate the
 # error without a complete re-write of Text's display code.
 }
 ##

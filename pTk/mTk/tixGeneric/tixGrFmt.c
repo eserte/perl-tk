@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixGrFmt.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixGrFmt.c --
  *
  *	This module handles the formatting of the elements inside a Grid
@@ -49,22 +52,8 @@ static TIX_DECLARE_SUBCMD(Tix_GrFormatBorder);
 static TIX_DECLARE_SUBCMD(Tix_GrFormatGrid);
 EXTERN TIX_DECLARE_SUBCMD(Tix_GrFormat);
 
-#ifdef ITCL_21
-
-/*
- * ITcl 2.1 changed the definition of the constants for Tk configuration,
- * e.g., TK_CONFIG_COLOR, etc. This problem doesn't appear in itcl 2.2.
- */
-typedef Tk_ConfigProc * CFG_TYPE;
-
-#else
-
-typedef int CFG_TYPE;
-
-#endif
-
 static int		Tix_GrSaveColor _ANSI_ARGS_((WidgetPtr wPtr,
-			    CFG_TYPE type, void * ptr));
+			    int type, void * ptr));
 static void	    	GetBlockPosn _ANSI_ARGS_((WidgetPtr wPtr, int x1,
 			    int y1, int x2, int y2, int * bx1, int * by1,
 			    int * bx2, int * by2));
@@ -93,7 +82,7 @@ static int		GetInfo _ANSI_ARGS_((WidgetPtr wPtr,
 #define DEF_GRID_FILLED			"0"
 #define DEF_GRID_BORDER_COLOR		NORMAL_BG
 #define DEF_GRID_BORDER_MONO		WHITE
-#define DEF_GRID_GRIDLINE_COLOR		BLACK 
+#define DEF_GRID_GRIDLINE_COLOR		BLACK
 #define DEF_GRID_GRIDLINE_MONO		BLACK
 
 static Tk_ConfigSpec borderConfigSpecs[] = {
@@ -130,7 +119,7 @@ static Tk_ConfigSpec borderConfigSpecs[] = {
 
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
        (char *) NULL, 0, 0}
-};	
+};
 
 static Tk_ConfigSpec gridConfigSpecs[] = {
     {TK_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor",
@@ -174,7 +163,7 @@ static Tk_ConfigSpec gridConfigSpecs[] = {
 
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
        (char *) NULL, 0, 0}
-};	
+};
 
 int
 Tix_GrFormat(clientData, interp, argc, argv)
@@ -220,16 +209,16 @@ GetInfo(wPtr, interp, argc, argv, infoPtr, configSpecs)
     if (argc < 4) {
 	return Tix_ArgcError(interp, argc+2, argv-2, 2, "x1 y1 x2 y2 ...");
     }
-    if (Tcl_GetInt(interp, argv[0], &infoPtr->x1) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[0], &infoPtr->x1) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[1], &infoPtr->y1) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[1], &infoPtr->y1) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[2], &infoPtr->x2) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[2], &infoPtr->x2) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[3], &infoPtr->y2) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[3], &infoPtr->y2) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (Tk_ConfigureWidget(interp, wPtr->dispData.tkwin, configSpecs,
@@ -314,7 +303,7 @@ GetBlockPosn(wPtr, x1, y1, x2, y2, bx1, by1, bx2, by2)
 	*by2 -= wPtr->scrollInfo[1].offset;
 	break;
     }
-} 
+}
 
 static void
 GetRenderPosn(wPtr, bx1, by1, bx2, by2, rx1, ry1, rx2, ry2)
@@ -359,7 +348,7 @@ GetRenderPosn(wPtr, bx1, by1, bx2, by2, rx1, ry1, rx2, ry2)
     *rx2 += wPtr->renderInfo->origin[0];
     *ry1 += wPtr->renderInfo->origin[1];
     *ry2 += wPtr->renderInfo->origin[1];
-} 
+}
 
 static void
 Tix_GrFillCells(wPtr, border, selectBorder, bx1, by1, bx2, by2,
@@ -480,7 +469,7 @@ Tix_GrFormatBorder(clientData, interp, argc, argv)
 	goto done;
     }
 
-    /* 
+    /*
      * If the xon is not specified, then by default the xon is encloses the
      * whole region. Same for yon.
      */
@@ -495,16 +484,6 @@ Tix_GrFormatBorder(clientData, interp, argc, argv)
 
     GetBlockPosn(wPtr, info.x1, info.y1, info.x2, info.y2,
 	&bx1, &by1, &bx2, &by2);
-
-#if 0
-    /* now it works */
-#ifdef _WINDOWS
-    if (bx1 == 0 && bx2 == 0 && by1 == 0 && by2 == 0) {
-	/* some how this doesn't work in BC++ 4.5 */
-	goto done;
-    }
-#endif
-#endif
 
     for (i=bx1; i<=bx2; i+=(info.xon+info.xoff)) {
 	for (j=by1; j<=by2; j+=(info.yon+info.yoff)) {
@@ -587,7 +566,7 @@ Tix_GrFormatGrid(clientData, interp, argc, argv)
 	    gridConfigSpecs))!= TCL_OK) {
 	goto done;
     }
-    gc = Tk_3DBorderGC(wPtr->dispData.tkwin, info.border, 
+    gc = Tk_3DBorderGC(wPtr->dispData.tkwin, info.border,
 	TK_3D_FLAT_GC);
 
     GetBlockPosn(wPtr, info.x1, info.y1, info.x2, info.y2,
@@ -732,7 +711,7 @@ Tix_GrFormatGrid(clientData, interp, argc, argv)
 /* returns 1 if the caller can free the border/color */
 static int Tix_GrSaveColor(wPtr, type, ptr)
     WidgetPtr wPtr;
-    CFG_TYPE type;
+    int type;
     void * ptr;
 {
     Tk_3DBorder border = NULL;
@@ -759,12 +738,12 @@ static int Tix_GrSaveColor(wPtr, type, ptr)
 	if (cPtr->pixel == pixel) {
 	    cPtr->counter = wPtr->colorInfoCounter;
 	    return 1;
-	    
+
 	}
     }
 
     cPtr = (ColorInfo *)ckalloc(sizeof(ColorInfo));
-	
+
     if (type == TK_CONFIG_COLOR) {
 	cPtr->color  = color;
     } else {

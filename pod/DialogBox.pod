@@ -63,7 +63,7 @@ B<DialogBox> supports only two methods as of now:
 
 Add the widget indicated by I<widget>. I<Widget> can be the name
 of any Tk widget (standard or contributed). I<options> are the
-options that the widget accepts. The widget is advertised as a
+options that the widget accepts. The widget is advertized as a
 subwidget of B<DialogBox>. The first character of I<widget> is
 lower-cased and used as the advertised name.
 
@@ -76,8 +76,29 @@ name of the Button invoked.
 
 The actual Dialog is shown using the B<Popup> method. Any other
 options supplied to B<Show> are passed to B<Popup>, and can be used to
-position the Dialog on the screen. Please read L<Tk::Popup> for
-details.
+position the Dialog on the screen. Please read Tk::Popup for details.
+
+=back
+
+=head1 ADVERTISED WIDGETS
+
+=over 4
+
+=item B<top>
+
+The subwidget reference to the top half of the DialogBox widget, the Frame
+containing widgets added by the B<add> method.
+
+=item B<bottom>
+
+The subwidget reference to the bottom half of the DialogBox widget, the Frame
+containing the Button widgets.
+
+=item B<B_"button-text">
+
+Individual subwidget references to the Buttons in the DialogBox widget. The
+subwidget name is the string I<B_> concatenated with the Button's -text
+value.
 
 =back
 
@@ -104,7 +125,7 @@ value.
 =head1 BUGS
 
 There is no way of removing a widget once it has been added to the
-top frame, unless you access the I<top> subwidget and go through the
+top Frame, unless you access the I<top> subwidget and go through the
 child widgets.
 
 There is no control over the appearance of the Buttons in the

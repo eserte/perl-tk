@@ -1,6 +1,6 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Font.pm#23 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Font.pm#4 $
 require Tk::Widget;
 use strict;
 use Carp;

@@ -31,23 +31,15 @@ From the source code:
   # or, un-perlish, but useable (now activated in code):
   # $top->getOpenFile(-sortcmd => sub { uc $_[1] cmp uc $_[0]});
 
-This is an experimental option and subject to change.
+This is an experimental option!
 
 =item -type => $type
 
 Type should be "open" (default) or "save".
 
-=item -filter => $val
+=item -filter => $glob
 
-A filter to restrict the directories and files in the icon list. If
-specified as a glob pattern, then only B<files> will be filtered by
-the pattern. If specified as a subroutine, then this subroutine will
-be called for every file and directory and should return a true value,
-if the argument should be accepted for the icon list. The arguments of
-this subroutine are: I<FBox widget reference>, I<basename of file>,
-and I<directory name>.
-
-The subroutine form of this option is experimental.
+To be documented...
 
 =item -force => $bool
 
@@ -64,7 +56,7 @@ Copyright (c) 1994-1996 Sun Microsystems, Inc.
 See the file "license.terms" for information on usage and redistribution
 of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-Translated to Perl/Tk by Slaven Rezic <slaven@rezic.de>.
+Translated to Perl/Tk by Slaven Rezic <slaven.rezic@berlin.de>.
 
 =head1 SEE ALSO
 

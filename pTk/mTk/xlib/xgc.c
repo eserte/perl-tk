@@ -1,26 +1,36 @@
-/* 
+/*
  * xgc.c --
  *
  *	This file contains generic routines for manipulating X graphics
- *	contexts. 
+ *	contexts.
  *
  * Copyright (c) 1995-1996 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: xgc.c,v 1.2 1998/09/14 18:24:03 stanton Exp $
+ * RCS: @(#) $Id: xgc.c,v 1.6 2002/08/31 06:12:31 das Exp $
  */
 
 #include <tkInt.h>
 
-#ifdef MAC_TCL
-#	include <Xlib.h>
-#else
+#if !defined(MAC_TCL) && !defined(MAC_OSX_TK)
 #	include <X11/Xlib.h>
 #endif
+#ifdef MAC_TCL
+#	include <Xlib.h>
+#	include <X.h>
+#	define Cursor XCursor
+#	define Region XRegion
+#endif
+#ifdef MAC_OSX_TK
+#	include <X11/Xlib.h>
+#	include <X11/X.h>
+#	define Cursor XCursor
+#	define Region XRegion
+#endif
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -29,7 +39,7 @@
  *	Allocate a new GC, and initialize the specified fields.
  *
  * Results:
- *	Returns a newly allocated GC. 
+ *	Returns a newly allocated GC.
  *
  * Side effects:
  *	None.
@@ -63,7 +73,7 @@ XCreateGC(display, d, mask, values)
     gp->plane_mask = 	(mask & GCPlaneMask) 	?values->plane_mask 	:~0;
     gp->foreground = 	(mask & GCForeground) 	?values->foreground 	:0;
     gp->background = 	(mask & GCBackground) 	?values->background 	:0xffffff;
-    gp->line_width = 	(mask & GCLineWidth)	?values->line_width	:0;	
+    gp->line_width = 	(mask & GCLineWidth)	?values->line_width	:0;
     gp->line_style = 	(mask & GCLineStyle)	?values->line_style	:LineSolid;
     gp->cap_style =  	(mask & GCCapStyle)	?values->cap_style	:0;
     gp->join_style = 	(mask & GCJoinStyle)	?values->join_style	:0;
@@ -93,7 +103,7 @@ XCreateGC(display, d, mask, values)
 
     return gp;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -122,7 +132,7 @@ XChangeGC(d, gc, mask, values)
     if (mask & GCPlaneMask) { gc->plane_mask = values->plane_mask; }
     if (mask & GCForeground) { gc->foreground = values->foreground; }
     if (mask & GCBackground) { gc->background = values->background; }
-    if (mask & GCLineWidth) { gc->line_width = values->line_width; }	
+    if (mask & GCLineWidth) { gc->line_width = values->line_width; }
     if (mask & GCLineStyle) { gc->line_style = values->line_style; }
     if (mask & GCCapStyle) { gc->cap_style = values->cap_style; }
     if (mask & GCJoinStyle) { gc->join_style = values->join_style; }
@@ -142,7 +152,7 @@ XChangeGC(d, gc, mask, values)
     if (mask & GCDashOffset) { gc->dash_offset = values->dash_offset; }
     if (mask & GCDashList) { gc->dashes = values->dashes; (&(gc->dashes))[1] = 0;}
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -159,8 +169,7 @@ XChangeGC(d, gc, mask, values)
  *----------------------------------------------------------------------
  */
 
-void
-XFreeGC(d, gc)
+void XFreeGC(d, gc)
     Display * d;
     GC gc;
 {
@@ -171,7 +180,7 @@ XFreeGC(d, gc)
 	ckfree((char *) gc);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -189,7 +198,7 @@ XFreeGC(d, gc)
  *----------------------------------------------------------------------
  */
 
-void 
+void
 XSetForeground(display, gc, foreground)
     Display *display;
     GC gc;
@@ -198,7 +207,7 @@ XSetForeground(display, gc, foreground)
     gc->foreground = foreground;
 }
 
-void 
+void
 XSetBackground(display, gc, background)
     Display *display;
     GC gc;
@@ -321,7 +330,7 @@ XSetClipOrigin(display, gc, clip_x_origin, clip_y_origin)
     gc->clip_x_origin = clip_x_origin;
     gc->clip_y_origin = clip_y_origin;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -438,6 +447,7 @@ XDrawPoints(display, d, gc, points, npoints, mode)
 }
 #endif
 
+#if !defined(MAC_TCL) && !defined(MAC_OSX_TK)
 void
 XDrawSegments(display, d, gc, segments, nsegments)
     Display* display;
@@ -447,6 +457,7 @@ XDrawSegments(display, d, gc, segments, nsegments)
     int nsegments;
 {
 }
+#endif
 
 char *
 XFetchBuffer(display, nbytes_return, buffer)
@@ -457,7 +468,7 @@ XFetchBuffer(display, nbytes_return, buffer)
     return (char *) 0;
 }
 
-int 
+int
 XFetchName(display, w, window_name_return)
     Display* display;
     Window w;

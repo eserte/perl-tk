@@ -21,7 +21,7 @@ require Tk::Menu::Item;
 
 
 use vars qw($VERSION);
-$VERSION = '3.048'; # $Id: //depot/Tk8/Tk/Menu.pm#48 $
+$VERSION = sprintf '4.%03d', q$Revision: #19 $ =~ /\D(\d+)\s*$/;
 
 use strict;
 
@@ -955,22 +955,26 @@ sub tearOffMenu
   {
    $parent = $parent->parent;
   }
- my $menu = $w->clone($parent,'tearoff');
+ my $menu = $w->clone($parent->PathName,'tearoff');
 
  # Pick a title for the new menu by looking at the parent of the
  # original: if the parent is a menu, then use the text of the active
  # entry. If it's a menubutton then use its text.
- my $title = $menu->cget('-title');
+ my $title = $w->cget('-title');
+ # print ref($w),' ',$w->PathName," $w\n";
  unless (defined $title && length($title))
   {
    $parent = $w->parent;
-   if ($parent->IsMenubutton)
+   if ($parent)
     {
-     $title = $parent->cget('-text');
-    }
-   elsif ($parent->IsMenu)
-    {
-     $title = $parent->entrycget('active','-label');
+     if ($parent->IsMenubutton)
+      {
+       $title = $parent->cget('-text');
+      }
+     elsif ($parent->IsMenu)
+      {
+       $title = $parent->entrycget('active','-label');
+      }
     }
   }
  $menu->title($title) if (defined $title && length($title));
@@ -978,7 +982,12 @@ sub tearOffMenu
  # Set tkPriv(focus) on entry: otherwise the focus will get lost
  # after keyboard invocation of a sub-menu (it will stay on the
  # submenu).
- $menu->bind('<Enter>','EnterFocus');
+
+
+ # This seems to conflict with <Enter> class binding above
+ # if this fires before the class binding the wrong thing
+ # will get saved in $Tk::focus
+ # $menu->bind('<Enter>','EnterFocus');
  $menu->Callback('-tearoffcommand');
  return $menu;
 }
@@ -989,24 +998,29 @@ sub tearOffMenu
 #
 # Arguments:
 # src - Source window. Must be a menu. It and its
-# menu descendants will be duplicated at dst.
-# dst - Name to use for topmost menu in duplicate
+# menu descendants will be duplicated at path.
+# path - Name to use for topmost menu in duplicate
 # hierarchy.
-sub MenuDup
+
+use Data::Dumper;
+sub tkMenuDup
 {
- my $src    = shift;
- my $parent = shift;
- my $type  = (@_) ? shift : 'normal';
- my %args  = (-type => $type) ;
+ my ($src,$path,$type) = @_;
+ my ($pname,$name) = $path =~ /^(.*)\.([^\.]*)$/;
+ ($name) = $src->PathName =~ /^.*\.([^\.]*)$/ unless $name;
+ my $parent = ($pname) ? $src->Widget($pname) : $src->MainWindow;
+ my %args  = (Name => $name, -type => $type);
  foreach my $option ($src->configure())
   {
    next if (@$option == 2);
    $args{$$option[0]} = $$option[4] unless exists $args{$$option[0]};
   }
  my $dst = ref($src)->new($parent,%args);
+ # print "MenuDup $src $path $name $type ->",$dst->PathName,"\n";
+ $_[1] = $dst;
  if ($type eq 'tearoff')
   {
-   $dst->transient($parent->MainWindow);
+   $dst->transient($parent->toplevel);
   }
  my $last = $src->index('last');
  if ($last ne 'none')
@@ -1028,7 +1042,7 @@ sub MenuDup
   }
  # Duplicate the binding tags and bindings from the source menu.
  my @bindtags = $src->bindtags;
- my $path = $src->PathName;
+ $path = $src->PathName;
  foreach (@bindtags)
   {
    $_ = $dst if ($_ eq $path);
@@ -1037,6 +1051,7 @@ sub MenuDup
  foreach my $event ($src->bind)
   {
    my $cb = $src->bind($event);
+   print "$event => $cb\n";
    $dst->bind($event,$cb->Substitute($src,$dst));
   }
  return $dst;

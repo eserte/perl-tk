@@ -7,7 +7,7 @@ package Tk::Checkbutton;
 
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Checkbutton.pm#13 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Checkbutton.pm#6 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial

@@ -1,9 +1,9 @@
-#!/tools/local/perl -w
+#!/usr/local/bin/perl -w
 use strict;
 use File::Find;
 use Getopt::Std;
 use Cwd;
-my %opt = ('p' => '3');
+my %opt = ('p' => '4');
 getopts('oeap:',\%opt);
 my $path = getcwd();
 chdir($path);
@@ -59,6 +59,15 @@ unless (@ARGV)
 
 my @undo = ();
 
+sub VERSION
+{
+ my $have = `p4 have $ARGV`;
+ my ($path,$need)  = $have =~ /^(.*#(\d+))\s+-/;
+ $need++ if (-w $ARGV);
+ return sprintf "\$VERSION = sprintf '%d.%%03d', q\$Revision: #%d\$ =~ /\\D(\\d+)\\s*\$/;\n",$opt{'p'},$need;
+}
+
+
 $^I = ".old" if $opt{'e'};
 my $seen = 0;
 my $edit = 0;
@@ -66,61 +75,42 @@ while (<>)
  {
   $edit |= s/\r//g;
   s/ +$//;
-  if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$\s*(?:\+(\d+))?.*$/)
+  if (/^\s*\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$\s*(?:\+(\d+))?.*$/)
    {
     $seen = 1;
-    my $maj  = $1;
-    my $min  = $2;
-    my $path = $3;
-    my $inc  = $4;
-    my $need = 0;
-    unless ($path =~ /#(\d+)/)
-     {
-      my $have = `p4 have $ARGV`;
-      ($path,$need)  = $have =~ /^(.*#(\d+))\s+-/;
-      $need++;
-     }
-    else
-     {
-      $need = (-w $ARGV) ? $1+1 : $1;
-     }
-    if (defined($inc))
-     {
-      $need += $inc;
-      $inc  = " +$inc";
-     }
-    else
-     {
-      $inc = '';
-     }
-    if ($maj != $opt{'p'} || $min != $need)
+    warn "-$ARGV:_";
+    $_ = VERSION();
+    warn "+$ARGV:$_";
+    $edit = 1;
+   }
+  elsif (/^\s*(our\s+)?\$VERSION\s*=[^#]*\$Revision[:\s]+(.*)\$/)
+   {
+    $seen = 1;
+    my $want = VERSION();
+    if ($_ ne $want)
      {
       warn "-$ARGV:$_";
-      $need++ unless -w $ARGV;
-      $_ = sprintf("\$VERSION = '%d.%03d'; # \$Id: $path\$$inc\n",$opt{'p'},$need);
+      $_ = $want;
       warn "+$ARGV:$_";
       $edit = 1;
      }
    }
-  elsif (/\$[\w:]*VERSION\s*=/)
+  elsif (/\$[\w:]*\bVERSION\s*=/)
    {
     if ($seen == 1)
      {
       warn "DUPLICATE $ARGV already had $_";
      }
    }
-  elsif (/\$Id:/ || m#//depot#)
+  elsif (/\$(Id|Revision):/ || m#//depot#)
    {
     warn "Did not match:$_";
    }
-  elsif (!$seen && /^\s*(\@ISA|bootstrap|use\s(Tk)|sub)/)
+  elsif (!$seen && /^\s*(\@ISA|bootstrap|use\s+(Tk)|sub)/)
    {
-    my $have = `p4 have $ARGV`;
-    my ($dep,$ver)  = $have =~ /^(.*#(\d+))\s+-/;
-    ++$ver;
     warn "$ARGV:$.:insert before\n$_\n";
     print "\nuse vars qw(\$VERSION);\n";
-    printf "\$VERSION = '%d.%03d'; # \$Id: $dep\$\n\n",$opt{'p'},$ver;
+    print  VERSION();
     $seen = $edit = 1;
    }
   print if $opt{'e'};;

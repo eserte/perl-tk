@@ -20,13 +20,13 @@ BEGIN
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#23 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/TixGrid/TixGrid.pm#8 $
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Widget;
 use Carp;
 
-carp "\n".__PACKAGE__.' is deprecated' unless defined($Test::ntest);
+# carp "\n".__PACKAGE__.' is deprecated' unless defined($Test::ntest);
 
 use base  'Tk::Widget';
 
@@ -40,8 +40,19 @@ sub Tk::Widget::SrclTixGrid { shift->Scrolled('TixGrid' => @_) }
 
 Tk::Methods qw(anchor bdtype delete entrycget entryconfigure format index
                move set size unset xview yview
-               to_list_commands dragsite dropsite geometryinfo info
-               nearest selection sort );
+               dragsite dropsite geometryinfo info
+               nearest see selection sort );
+
+use Tk::Submethods
+		(
+		'anchor'	=> [ qw(get    set) ],
+		'delete'	=> [ qw(column row) ],
+		'info'		=> [ qw(bbox  exists anchor) ],
+		'move'		=> [ qw(column row) ],
+		'selection'	=> [ qw(adjust clear  includes set) ],
+		'size'		=> [ qw(column row) ],
+		'format'	=> [ qw(grid   border) ],
+		);
 
 # edit subcommand is special. It justs invokes tcl code:
 #
@@ -65,16 +76,6 @@ sub editApply
     $w->EditApply()
   }
 
-use Tk::Submethods
-		(
-		'anchor'	=> [ qw(get    set) ],
-		'delete'	=> [ qw(column row) ],
-		'info'		=> [ qw(bbox  exists anchor) ],
-		'move'		=> [ qw(column row) ],
-		'selection'	=> [ qw(adjust clear  includes set) ],
-		'size'		=> [ qw(column row) ],
-		'format'	=> [ qw(grid   border) ],
-		);
 
 ####################################################
 ##
@@ -521,8 +522,7 @@ sub SelectSingle
   {
     my ($w, $n1, $n2) = @_;
     $w->selection('set', $n1, $n2);
-    #FIX: -options -browsecmd not implemented jet
-    #$w->Callback('-browsecmd' => $n1, $n2);
+    $w->Callback('-browsecmd' => $n1, $n2);
   }
 
 #----------------------------------------------------------------------

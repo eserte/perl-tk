@@ -1,3 +1,6 @@
+
+/*	$Id: tixUnixPort.h,v 1.1.1.1 2000/05/17 11:08:54 idiscovery Exp $	*/
+
 /*
  * tixUnixPort.h --
  *
@@ -15,10 +18,6 @@
 #ifndef _TIX_UNIXPORT_H_
 #define _TIX_UNIXPORT_H_
 
-struct _TixpSubRegion {
-    XRectangle rect;
-    int rectUsed;
-};
 
 #ifdef UCHAR_SUPPORTED
 typedef unsigned char UNSIGNED_CHAR;

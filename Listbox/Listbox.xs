@@ -12,21 +12,21 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
 MODULE = Tk::Listbox	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
-                     
+
 void
 listbox(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tk_ListboxCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,0,Tk_ListboxObjCmd,items,&ST(0)));
  }
 
 BOOT:

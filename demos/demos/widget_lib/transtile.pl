@@ -16,7 +16,7 @@ sub transtile {
     );
 
     my $tile = $TOP->Photo(-file =>Tk->findINC('Camel.xpm'));
-    
+
     # A tiled Canvas - the tile overlays the background color.
 
     my $c = $TOP->Canvas(

@@ -14,7 +14,6 @@ use Tk::BrowseEntry;
 BEGIN {
     if (!eval q{
 	use Test;
-	use Tk::NumEntry;
 	1;
     }) {
 	print "1..0 # skip: no Test module\n";
@@ -27,19 +26,20 @@ BEGIN { plan tests => 2 }
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 {
-    package Tk::NumBrowseEntry;
+    package Tk::SpinboxBrowseEntry;
     use base qw(Tk::BrowseEntry);
-    use Tk::NumEntry;
-    Construct Tk::Widget 'NumBrowseEntry';
-    sub LabEntryWidget { "NumEntry" }
+    use Tk::Spinbox;
+    Construct Tk::Widget 'SpinboxBrowseEntry';
+    sub LabEntryWidget { "Spinbox" }
 }
 
 my $mw = my $top = tkinit;
-my $ne = $mw->NumBrowseEntry(-minvalue => -10,
-			     -maxvalue => +10,
+my $ne = $mw->SpinboxBrowseEntry(-from => -10,
+			     -to => +10,
 			     -choices => [-6,-3,0,3,6],
 			    )->pack;
-ok($ne->isa('Tk::NumBrowseEntry'));
+ok($ne->isa('Tk::SpinboxBrowseEntry'));
+
 
 {
     package Tk::MyLabEntry;
@@ -78,6 +78,10 @@ $top->after(60*1000, sub { $top->destroy });
 
 if (!$ENV{BATCH}) {
     MainLoop;
+}
+else {
+  $mw->update;
+  $top->after(4000);
 }
 
 __END__

@@ -1,14 +1,15 @@
-/* 
+/*
  * tkWinPointer.c --
  *
  *	Windows specific mouse tracking code.
  *
  * Copyright (c) 1995-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1998-1999 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinPointer.c,v 1.4 1999/02/04 21:00:57 stanton Exp $
+ * RCS: @(#) $Id: tkWinPointer.c,v 1.8 2000/04/19 01:06:51 ericm Exp $
  */
 
 #include "tkWinInt.h"
@@ -62,7 +63,7 @@ TkWinGetModifierState()
 	state |= ControlMask;
     }
     if (GetKeyState(VK_MENU) & 0x8000) {
-	state |= Mod2Mask;
+	state |= ALT_MASK;
     }
     if (GetKeyState(VK_CAPITAL) & 0x0001) {
 	state |= LockMask;
@@ -209,7 +210,7 @@ XUngrabKeyboard(display, time)
  *
  * MouseTimerProc --
  *
- *	Check the current mouse position and look for enter/leave 
+ *	Check the current mouse position and look for enter/leave
  *	events.
  *
  * Results:
@@ -364,7 +365,7 @@ XWarpPointer(display, src_w, dest_w, src_x, src_y, src_width,
     RECT r;
 
     GetWindowRect(Tk_GetHWND(dest_w), &r);
-    SetCursorPos(r.left+dest_x, r.top+dest_y);    
+    SetCursorPos(r.left+dest_x, r.top+dest_y);
 }
 
 /*
@@ -394,6 +395,40 @@ XGetInputFocus(display, focus_return, revert_to_return)
     *revert_to_return = RevertToParent;
     display->request++;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * XSetInputFocus --
+ *
+ *	Set the current focus window.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Changes the keyboard focus and causes the selected window to
+ *	be activated.
+ *
+ *----------------------------------------------------------------------
+ */
+
+
+#ifndef _LANG
+/* Perl/Tk has better one in tkWinWm.c which also does activate of toplevel */
+void
+XSetInputFocus(display, focus, revert_to, time)
+    Display* display;
+    Window focus;
+    int revert_to;
+    Time time;
+{
+    display->request++;
+    if (focus != None) {
+	SetFocus(Tk_GetHWND(focus));
+    }
+}
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -440,14 +475,14 @@ TkpChangeFocus(winPtr, force)
     if (winPtr->window == None) {
 	panic("ChangeXFocus got null X window");
     }
- 
+
     /*
      * Change the foreground window so the focus window is raised to the top of
      * the system stacking order and gets the keyboard focus.
      */
 
     if (force) {
-	SetForegroundWindow(Tk_GetHWND(winPtr->window));
+	TkWinSetForegroundWindow(winPtr);
     }
     XSetInputFocus(dispPtr->display, winPtr->window, RevertToParent,
 	    CurrentTime);
@@ -472,7 +507,7 @@ TkpChangeFocus(winPtr, force)
  *	This function captures the mouse so that all future events
  *	will be reported to this window, even if the mouse is outside
  *	the window.  If the specified window is NULL, then the mouse
- *	is released. 
+ *	is released.
  *
  * Results:
  *	None.

@@ -10,7 +10,7 @@ my $yt   = timegm(0,0,0,1,0,$year);
 $year += 1900;
 my $last = $year-1;
 
-print "This is $year\n";
+warn "This is $year\n";
 
 # $expr = shift;
 
@@ -27,13 +27,13 @@ sub wanted
 {
  my $write = -w $_;
  $File::Find::prune = 0;
- if (-T $_ && !/%$/ && !/\.bak/ && (stat($_))[9] >= $yt)
+ if (-T $_ && !/[%~]$/ && !/\.bak/ && (stat($_))[9] >= $yt)
   {
    if (/\.c$/)
     {
      my $xs = $_;
      $xs =~ s/\.c$/.xs/;
-     return -f $xs;
+     return if -f $xs;
     }
    local $file   = ($_);
    local ($_);

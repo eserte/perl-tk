@@ -14,25 +14,24 @@
 #include "pTk/tkInt.h"
 #include "pTk/tixPort.h"
 #include "pTk/tixInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
-extern int Tix_HListCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ; 
-TixintVtab  *TixintVptr  ; 
+TixVtab     *TixVptr     ;
+TixintVtab  *TixintVptr  ;
 
 MODULE = Tk::HList	PACKAGE = Tk
 
-PROTOTYPES: DISABLE   
+PROTOTYPES: DISABLE
 
 void
 hlist(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tix_HListCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,1,Tix_HListCmd,items,&ST(0)));
  }
 
 BOOT:

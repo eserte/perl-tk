@@ -90,7 +90,7 @@ PORTING NOTES
       (sometimes $^O eq 'MSWin32' is used instead of $Tk::platform
        eq 'MSWin32' assuming they are equivalent and vice versa)
     + #define distinctions
-        _WIN32                win_arch MSWin32
+        _WIN32                defined by gcc, if X11 need to undef
         __WIN32__             win_arch MSWin32, also defined in pTk/Lang.h
         WIN32                 from #include <windows.h>
                               when precedes #include "perl.h" then need
@@ -107,7 +107,7 @@ FILES (with Cygwin references)
     README.cygwin MANIFEST
     * documentation
 
-    Makefile.PL Tk/MMutil.pm pTk/Makefile.PL myConfig
+    Makefile.PL Tk/MMutil.pm pTk/Makefile.PL
     * make stuff
 
     pTk/mTk/win/tkWinX.c
@@ -149,6 +149,6 @@ TODO
     + Fix gcc warnings, mostly in pTk win32 flavor?
     + Test with cygwin-xfree X Server?
 
-Sun Jun 10 21:34:30 PST 2001
+Thu Aug 31 12:54:09 BST 2000
 Eric Fifer
-egf7@columbia.edu
+efifer@dircon.co.uk

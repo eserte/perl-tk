@@ -1,3 +1,6 @@
+
+/*	$Id: tixError.c,v 1.1.1.1 2000/05/17 11:08:41 idiscovery Exp $	*/
+
 /*
  * tixError.c --
  *
@@ -61,7 +64,7 @@ int Tix_UnknownPublicMethodError(interp, cPtr, widRec, method)
     int     i;
     char  * lead = "";
 
-    Tcl_AppendResult(interp, "unknown option \"", method, 
+    Tcl_AppendResult(interp, "unknown option \"", method,
 	"\": must be ",
 	(char*)NULL);
 

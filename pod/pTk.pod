@@ -107,7 +107,7 @@ The following data types are defined:
 
 =over 4
 
-=item C<Arg>
+=item C<Tcl_Obj *>
 
 is the main datatype of the language.  This is a type that your C
 function gets pointers to for arguments when the corresponding I<Lang>
@@ -156,23 +156,23 @@ It is not guaranteed that the C<args> can survive deletion of C<value>.
 The following macros and functions are used for conversion between
 strings and the additional types:
 
- LangCallback * LangMakeCallback(Arg)
- Arg LangCallbackArg(LangCallback *)
- char * LangString(Arg)
+ LangCallback * LangMakeCallback(Tcl_Obj *)
+ Tcl_Obj * LangCallbackArg(LangCallback *)
+ char * LangString(Tcl_Obj *)
 
 After you use the result of LangCallbackArg(), you should free it with
 C<freeProc> C<LANG_DYNAMIC> (it is not guaranteed that any change of
-C<Arg> will not be reflected in <LangCallback>, so you cannot do
+C<Tcl_Obj *> will not be reflected in <LangCallback>, so you cannot do
 LangSet...() in between, and you should reset it to C<NULL> if you
-want to do any further assignments to this C<Arg>).
+want to do any further assignments to this C<Tcl_Obj *>).
 
-The following function returns the C<Arg> that is a reference to C<Var>:
+The following function returns the C<Tcl_Obj *> that is a reference to C<Var>:
 
- Arg LangVarArg(Var)
+ Tcl_Obj * LangVarArg(Var)
 
 ???? It is very anti-intuitive, I hope the name is changed.
 
- int LangCmpCallback(LangCallback *a,Arg b)
+ int LangCmpCallback(LangCallback *a,Tcl_Obj * b)
 
 (currently only a stub), and, at last,
 
@@ -192,7 +192,7 @@ The argument C<format> of C<LangDoCallback> should contain a string that is
 suitable for C<sprintf> with optional arguments of C<LangDoCallback>.
 C<result> should be false if result of callback is not needed.
 
- int LangMethodCall(Tcl_Interp *,Arg,char *method,
+ int LangMethodCall(Tcl_Interp *,Tcl_Obj *,char *method,
 	int result,int argc,...)
 
 ????
@@ -203,24 +203,24 @@ or C<free> if appropriate.
 
 =head2 Setting variables
 
- void LangFreeArg (Arg, Tcl_FreeProc *freeProc)
- Arg  LangCopyArg (Arg);
- void Tcl_AppendArg (Tcl_Interp *interp, Arg)
- void LangSetString(Arg *, char *s)
- void LangSetDefault(Arg *, char *s)
+ void LangFreeArg (Tcl_Obj *, Tcl_FreeProc *freeProc)
+ Tcl_Obj *  LangCopyArg (Tcl_Obj *);
+ void Tcl_AppendArg (Tcl_Interp *interp, Tcl_Obj *)
+ void LangSetString(Tcl_Obj * *, char *s)
+ void LangSetDefault(Tcl_Obj * *, char *s)
 
 These two are equivalent unless s is an empty string. In this case
 C<LangSetDefault> behaves like C<LangSetString> with C<s==NULL>, i.e.,
 it sets the current value of the I<Lang> variable to be false.
 
- void LangSetInt(Arg *,int)
- void LangSetDouble(Arg *,double)
+ void LangSetInt(Tcl_Obj * *,int)
+ void LangSetDouble(Tcl_Obj * *,double)
 
 The I<Lang> functions separate uninitialized and initialized data
-comparing data with C<NULL>. So the declaration for an C<Arg> should
+comparing data with C<NULL>. So the declaration for an C<Tcl_Obj *> should
 look like
 
- Arg arg = NULL;
+ Tcl_Obj * arg = NULL;
 
 if you want to use this C<arg> with the above functions. After you are
 done, you should use C<LangFreeArg> with C<TCL_DYNAMIC> as C<freeProc>.
@@ -231,11 +231,11 @@ Use
 
 =over 4
 
-=item C<int  LangNull(Arg)>
+=item C<int  LangNull(Tcl_Obj *)>
 
 to check that an object is false;
 
-=item C<int  LangStringMatch(char *string, Arg match)>
+=item C<int  LangStringMatch(char *string, Tcl_Obj * match)>
 
 ????
 
@@ -253,11 +253,11 @@ to call I<Lang> C<eval>;
 
 =item C<char *Lang_GetErrorInfo(Tcl_Interp *interp)>
 
-=item C<void LangCloseHandler(Tcl_Interp *interp,Arg arg,FILE *f,Lang_FileCloseProc *proc)>
+=item C<void LangCloseHandler(Tcl_Interp *interp,Tcl_Obj * arg,FILE *f,Lang_FileCloseProc *proc)>
 
 currently stubs only;
 
-=item C<int LangSaveVar(Tcl_Interp *,Arg arg,Var *varPtr,int type)>
+=item C<int LangSaveVar(Tcl_Interp *,Tcl_Obj * arg,Var *varPtr,int type)>
 
 to save the structure C<arg> into I<Lang> variable C<*varPtr>;
 
@@ -277,13 +277,13 @@ to free the result;
 
 unsupported????;
 
-=item  C<void Tcl_AppendArg (Tcl_Interp *interp, Arg)>
+=item  C<void Tcl_AppendArg (Tcl_Interp *interp, Tcl_Obj *)>
 
 =back
 
 Another useful construction is
 
- Arg variable = LangFindVar(interp, Tk_Window tkwin, char *name);
+ Tcl_Obj * variable = LangFindVar(interp, Tk_Window tkwin, char *name);
 
 After using the above function, you should call
 
@@ -291,21 +291,21 @@ After using the above function, you should call
 
 ???? Note discrepancy in types!
 
-If you want to find the value of a variable (of type C<Arg>) given the
+If you want to find the value of a variable (of type C<Tcl_Obj *>) given the
 variable name, use C<Tcl_GetVar(interp, varName, flags)>. If you are
 interested in the string value of this variable, use
 C<LangString(Tcl_GetVar(...))>.
 
-To get a B<C> array of C<Arg> of length C<n>, use
+To get a B<C> array of C<Tcl_Obj *> of length C<n>, use
 
-    Arg *args = LangAllocVec(n);
+    Tcl_Obj * *args = LangAllocVec(n);
     ...
     LangFreeVec(n,args);
 
-You can set the values of the C<Arg>s using C<LangSet...> functions,
+You can set the values of the C<Tcl_Obj *>s using C<LangSet...> functions,
 and get string value using C<LangString>.
 
-If you want to merge an array of C<Arg>s into one C<Arg> (that will
+If you want to merge an array of C<Tcl_Obj *>s into one C<Tcl_Obj *> (that will
 be an array variable), use
 
     result = Tcl_Merge(listLength, list);
@@ -382,7 +382,7 @@ These files currently implement the following:
 
 =item Types:
 
- Var, Arg, LangCallback, LangFreeProc.
+ Var, Tcl_Obj *, LangCallback, LangFreeProc.
 
 =item Functions and macros:
 
@@ -445,16 +445,16 @@ in B<TCL>:
  void ListFactoryInit(ListFactory *)
  void ListFactoryFinish(ListFactory *)
  void ListFactoryFree(ListFactory *)
- Arg * ListFactoryArg(ListFactory *)
- void ListFactoryAppend(ListFactory *, Arg *arg)
- void ListFactoryAppendCopy(ListFactory *, Arg *arg)
+ Tcl_Obj * * ListFactoryArg(ListFactory *)
+ void ListFactoryAppend(ListFactory *, Tcl_Obj * *arg)
+ void ListFactoryAppendCopy(ListFactory *, Tcl_Obj * *arg)
  ListFactory * ListFactoryNewLevel(ListFactory *)
  ListFactory * ListFactoryEndLevel(ListFactory *)
  void ListFactoryResult(Tcl_Interp *, ListFactory *)
 
 The difference is that a call to C<ListFactoryFinish> should precede the
 actual usage of the value of C<ListFactory>, and there are two
-different ways to append an C<Arg> to a C<ListFactory>:
+different ways to append an C<Tcl_Obj *> to a C<ListFactory>:
 ListFactoryAppendCopy() guarantees that the value of C<arg> is copied
 to the list, but ListFactoryAppend() may append to the list a
 reference to the current value of C<arg>. If you are not going to change
@@ -472,59 +472,59 @@ ListFactoryEndLevel() cannot be used after a call to this function.
 
 Production of strings are still supported in B<portableTk>.
 
-=head2 Accessing C<Arg>s
+=head2 Accessing C<Tcl_Obj *>s
 
-The following functions for getting a value of an C<Arg> I<may> be
+The following functions for getting a value of an C<Tcl_Obj *> I<may> be
 provided:
 
- double LangDouble(Arg)
- int LangInt(Arg)
- long LangLong(Arg)
- int LangIsList(Arg arg)
+ double LangDouble(Tcl_Obj *)
+ int LangInt(Tcl_Obj *)
+ long LangLong(Tcl_Obj *)
+ int LangIsList(Tcl_Obj * arg)
 
 The function LangIsList() is supported only partially under B<TCL>,
 since there is no data types. It checks whether there is a space
 inside the string C<arg>.
 
-=head2 Assigning numbers to C<Arg>s
+=head2 Assigning numbers to C<Tcl_Obj *>s
 
 While LangSetDouble() and LangSetInt() are supported ways to assign
 numbers to assign an integer value to a variable, for the sake of
 efficiency under B<TCL> it is supposed that the destination of these
 commands was massaged before the call so it contains a long enough
 string to sprintf() the numbers inside it. If you are going to
-immediately use the resulting C<Arg>, the best way to do this is to
+immediately use the resulting C<Tcl_Obj *>, the best way to do this is to
 declare a buffer in the beginning of a block by
 
    dArgBuffer;
 
-and assign this buffer to the C<Arg> by
+and assign this buffer to the C<Tcl_Obj *> by
 
-   void LangSetDefaultBuffer(Arg *)
+   void LangSetDefaultBuffer(Tcl_Obj * *)
 
 You can also create the buffer(s) manually and assign them using
 
-   void LangSetBuffer(Arg *, char *)
+   void LangSetBuffer(Tcl_Obj * *, char *)
 
 This is the only choice if you need to assign numeric values to
-several C<Arg>s simultaneously. The advantage of the first approach is
+several C<Tcl_Obj *>s simultaneously. The advantage of the first approach is
 that the above declarations can be made C<nop>s in different languages.
 
-Note that if you apply C<LangSetDefaultBuffer> to an C<Arg> that
+Note that if you apply C<LangSetDefaultBuffer> to an C<Tcl_Obj *> that
 contains some value, you can create a leak if you do not free that
-C<Arg> first. This is a non-problem in real languages, but can be a
+C<Tcl_Obj *> first. This is a non-problem in real languages, but can be a
 trouble in C<TCL>, unless you use only the above API.
 
-=head2 Creating new C<Arg>s
+=head2 Creating new C<Tcl_Obj *>s
 
-The API for creating a new C<Arg> is
+The API for creating a new C<Tcl_Obj *> is
 
- void LangNewArg(Arg *, LangFreeProc *)
+ void LangNewArg(Tcl_Obj * *, LangFreeProc *)
 
-The API for creating a new C<Arg> is absent. Just initialize C<Arg> to
+The API for creating a new C<Tcl_Obj *> is absent. Just initialize C<Tcl_Obj *> to
 be C<NULL>, and apply one of C<LangSet...> methods.
 
-After you use this C<Arg>, it should be freed thusly:
+After you use this C<Tcl_Obj *>, it should be freed thusly:
 
 C<LangFreeArg(arg, freeProc)>.
 
@@ -532,18 +532,18 @@ C<LangFreeArg(arg, freeProc)>.
 
 Use
 
- int LangArgEval(Tcl_Interp *, Arg arg)
+ int LangArgEval(Tcl_Interp *, Tcl_Obj * arg)
 
 Here C<arg> should be a list to evaluate, in particular, the first
-element should be a C<LangCallback> massaged to be an C<Arg>. The
+element should be a C<LangCallback> massaged to be an C<Tcl_Obj *>. The
 arguments can be send to the subroutine by reference or by value in
 different languages.
 
-=head2 Getting result as C<Arg>
+=head2 Getting result as C<Tcl_Obj *>
 
 Use C<Tcl_ArgResult>. It is not guaranteed that result survives this
-operation, so the C<Arg> you get should be the only mean to access the
-data from this moment on. After you use this C<Arg>, you should free
+operation, so the C<Tcl_Obj *> you get should be the only mean to access the
+data from this moment on. After you use this C<Tcl_Obj *>, you should free
 it with C<freeProc> C<LANG_DYNAMIC> (you can do LangSet...() in between).
 
 =cut

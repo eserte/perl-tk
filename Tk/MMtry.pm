@@ -6,37 +6,46 @@ use Config;
 require Exporter;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/MMtry.pm#12 $
+$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);
 use strict;
 use File::Basename;
+use File::Spec;
 
 my $stderr_too = ($^O eq 'MSWin32') ? '' : '2>&1';
 
 sub try_compile
 {
- my $file  = shift;
+ my ($file,$inc,$lib)  = @_;
+ $inc = [] unless $inc;
+ $lib = [] unless $lib;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compiling $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} $file $stderr_too`;
+ my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib $stderr_too`;
  my $ok = ($? == 0);
+# warn $msgs if $msgs;
  unlink($out) if (-f $out);
  return $ok;
 }
 
 sub try_run
 {
- my $file  = shift;
+ my ($file,$inc,$lib)  = @_;
+ $inc = [] unless $inc;
+ $lib = [] unless $lib;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
- warn "Test Compiling $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} $file $stderr_too`;
+ warn "Test Compile/Run $file\n";
+ my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib $stderr_too`;
  my $ok = ($? == 0);
+# warn "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib:\n$msgs" if $msgs;
  if ($ok)
   {
-   system($out);
+   my $path = File::Spec->rel2abs($out);
+   $msgs = `$path $stderr_too`;
    $ok = ($? == 0);
+#  warn "$path:$msgs" if $msgs;
   }
  unlink($out) if (-f $out);
  return $ok;

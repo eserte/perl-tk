@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tkConsole80.c,v 1.1.1.1.2.1 2001/11/04 05:22:04 idiscovery Exp $	*/
+
+/*
  * tkConsole.c --
  *
  *	This file implements a Tcl console for systems that may not
@@ -33,7 +36,7 @@ static Tcl_Interp *gStdoutInterp = NULL;
  *
  * The first three will be used in the tk app shells...
  */
- 
+
 void	TkConsoleCreate _ANSI_ARGS_((void));
 int	TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
 void	TkConsolePrint _ANSI_ARGS_((Tcl_Interp *interp,
@@ -74,7 +77,7 @@ static Tcl_ChannelType consoleChannelType = {
     ConsoleWatch,		/* Watch for events on console. */
     ConsoleHandle,		/* Get a handle from the device. */
 };
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -121,7 +124,7 @@ TkConsoleCreate()
     }
     Tcl_SetStdChannel(consoleChannel, TCL_STDERR);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -140,7 +143,7 @@ TkConsoleCreate()
  *----------------------------------------------------------------------
  */
 
-int 
+int
 TkConsoleInit(interp)
     Tcl_Interp *interp;			/* Interpreter to use for prompting. */
 {
@@ -150,14 +153,14 @@ TkConsoleInit(interp)
 #ifdef MAC_TCL
     static char initCmd[] = "source -rsrc {Console}";
 #else
-    static char initCmd[] = "source $tk_library/console.tcl";
+    static char initCmd[] = "source [file join $tk_library console.tcl]";
 #endif
-    
+
     consoleInterp = Tcl_CreateInterp();
     if (consoleInterp == NULL) {
 	goto error;
     }
-    
+
     /*
      * Initialized Tcl and Tk.
      */
@@ -169,9 +172,9 @@ TkConsoleInit(interp)
 	goto error;
     }
     gStdoutInterp = interp;
-    
-    /* 
-     * Add console commands to the interp 
+
+    /*
+     * Add console commands to the interp
      */
     info = (ConsoleInfo *) ckalloc(sizeof(ConsoleInfo));
     info->interp = interp;
@@ -191,14 +194,14 @@ TkConsoleInit(interp)
     }
     Tcl_Release((ClientData) consoleInterp);
     return TCL_OK;
-    
+
     error:
     if (consoleInterp != NULL) {
     	Tcl_DeleteInterp(consoleInterp);
     }
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -230,10 +233,10 @@ ConsoleOutput(instanceData, buf, toWrite, errorCode)
     if (gStdoutInterp != NULL) {
 	TkConsolePrint(gStdoutInterp, (int) instanceData, buf, toWrite);
     }
-    
+
     return toWrite;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -261,7 +264,7 @@ ConsoleInput(instanceData, buf, bufSize, errorCode)
 {
     return 0;			/* Always return EOF. */
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -286,7 +289,7 @@ ConsoleClose(instanceData, interp)
 {
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -315,7 +318,7 @@ ConsoleWatch(instanceData, mask)
                                          * we are interested in. */
 {
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -345,7 +348,7 @@ ConsoleHandle(instanceData, direction, handlePtr)
 {
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -381,7 +384,7 @@ ConsoleCmd(clientData, interp, argc, argv)
 		" option ?arg arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    
+
     c = argv[1][0];
     length = strlen(argv[1]);
     result = TCL_OK;
@@ -389,7 +392,7 @@ ConsoleCmd(clientData, interp, argc, argv)
     Tcl_Preserve((ClientData) consoleInterp);
     if ((c == 't') && (strncmp(argv[1], "title", length)) == 0) {
 	Tcl_DString dString;
-	
+
 	Tcl_DStringInit(&dString);
 	Tcl_DStringAppend(&dString, "wm title . ", -1);
 	if (argc == 3) {
@@ -418,7 +421,7 @@ ConsoleCmd(clientData, interp, argc, argv)
     Tcl_Release((ClientData) consoleInterp);
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -454,7 +457,7 @@ InterpreterCmd(clientData, interp, argc, argv)
 		" option ?arg arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    
+
     c = argv[1][0];
     length = strlen(argv[1]);
     otherInterp = info->interp;
@@ -475,7 +478,7 @@ InterpreterCmd(clientData, interp, argc, argv)
     Tcl_Release((ClientData) otherInterp);
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -493,8 +496,8 @@ InterpreterCmd(clientData, interp, argc, argv)
  *----------------------------------------------------------------------
  */
 
-void 
-ConsoleDeleteProc(clientData) 
+void
+ConsoleDeleteProc(clientData)
     ClientData clientData;
 {
     ConsoleInfo *info = (ConsoleInfo *) clientData;
@@ -502,7 +505,7 @@ ConsoleDeleteProc(clientData)
     Tcl_DeleteInterp(info->consoleInterp);
     info->consoleInterp = NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -529,7 +532,7 @@ ConsoleEventProc(clientData, eventPtr)
 {
     ConsoleInfo *info = (ConsoleInfo *) clientData;
     Tcl_Interp *consoleInterp;
-    
+
     if (eventPtr->type == DestroyNotify) {
         consoleInterp = info->consoleInterp;
 
@@ -539,7 +542,7 @@ ConsoleEventProc(clientData, eventPtr)
          * field will be set to NULL. If the interpreter is already
          * gone, we do not have to do any work here.
          */
-        
+
         if (consoleInterp == (Tcl_Interp *) NULL) {
             return;
         }
@@ -548,7 +551,7 @@ ConsoleEventProc(clientData, eventPtr)
         Tcl_Release((ClientData) consoleInterp);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -585,19 +588,19 @@ TkConsolePrint(interp, devId, buffer, size)
     if (interp == NULL) {
 	return;
     }
-    
+
     if (devId == TCL_STDERR) {
 	cmd = "tkConsoleOutput stderr ";
     } else {
 	cmd = "tkConsoleOutput stdout ";
     }
-    
+
     result = Tcl_GetCommandInfo(interp, "console", &cmdInfo);
     if (result == 0) {
 	return;
     }
     info = (ConsoleInfo *) cmdInfo.clientData;
-    
+
     Tcl_DStringInit(&output);
     Tcl_DStringAppend(&output, buffer, size);
 
@@ -609,7 +612,7 @@ TkConsolePrint(interp, devId, buffer, size)
     Tcl_Preserve((ClientData) consoleInterp);
     Tcl_Eval(consoleInterp, command.string);
     Tcl_Release((ClientData) consoleInterp);
-    
+
     Tcl_DStringFree(&command);
     Tcl_DStringFree(&output);
 }

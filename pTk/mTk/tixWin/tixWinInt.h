@@ -1,3 +1,6 @@
+
+/*	$Id: tixWinInt.h,v 1.1.1.1 2000/05/17 11:08:55 idiscovery Exp $	*/
+
 /*
  * tixWinInt.h
  *

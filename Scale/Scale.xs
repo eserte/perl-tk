@@ -12,21 +12,21 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
 MODULE = Tk::Scale	PACKAGE = Tk
 
-PROTOTYPES: DISABLE                 
+PROTOTYPES: DISABLE
 
 void
 scale(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tk_ScaleCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,0,Tk_ScaleObjCmd,items,&ST(0)));
  }
 
 BOOT:

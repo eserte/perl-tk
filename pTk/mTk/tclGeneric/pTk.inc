@@ -5,3 +5,7 @@ tclNotify.c
 tclPreserve.c
 tclMath.h
 tclTimer.c
+tclDecls.h
+tclIntDecls.h
+tclIntPlatDecls.h
+tclPlatDecls.h

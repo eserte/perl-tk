@@ -1,4 +1,4 @@
-/* 
+/*
  * tkWin32Dll.c --
  *
  *	This file contains a stub dll entry point.
@@ -25,7 +25,7 @@ static HINSTANCE tclInstance;	/* Global library instance handle. */
 
 BOOL APIENTRY		DllMain _ANSI_ARGS_((HINSTANCE hInst,
 			    DWORD reason, LPVOID reserved));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -52,7 +52,7 @@ DllEntryPoint(hInst, reason, reserved)
 {
     return DllMain(hInst, reason, reserved);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -80,17 +80,33 @@ DllMain(hInstance, reason, reserved)
      * the hInstance to use. If we are detaching then clean up any
      * data structures related to this DLL.
      */
-    
+
     if (reason == DLL_PROCESS_ATTACH) {
+        /* We pretend to be Tcl as well - perhaps 
+           we should use perl's or Tk::Event's hInstance for this ?
+         */
 	tclInstance = hInstance;
-        TkWinXInit(hInstance);
+        /* and it is important to set Tk instance so 
+           we can find bitmaps and cursors
+         */
+        TkWinSetHINSTANCE(hInstance);
+        /* don't do this here - (do it in Boot?)
+           as it makes calls to Tcl_Xxxx from Tk::Event and 
+           we have not set vtables yet.
+         */
+#ifndef _LANG  
+         TkWinXInit(hInstance);
+#endif
     } else if (reason == DLL_PROCESS_DETACH) {
-        TkWinXCleanup(hInstance);
+/* this is done by clean call now */
+#if 0
+      TkWinXCleanup(hInstance);
+#endif
     }
     return(TRUE);
 }
 
-/* 
+/*
  * TkWin32DllPresent() can be referenced elsewhere to
  * force inclusion of this file and hence DLLMain()
  */

@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.035'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#35 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tixish/DialogBox.pm#9 $
 
 use base  qw(Tk::Toplevel);
 

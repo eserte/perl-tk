@@ -11,24 +11,27 @@ my $t = $top->Scrolled('Text',"-relief" => "raised",
                      "-setgrid" => "true");
 
 my $m = $t->Menu();
-$m->add("command", "-label" => "Open", "-underline" => 0, 
+$m->add("command", "-label" => "Open", "-underline" => 0,
         "-command" => \&sayopen);
-$m->add("command", "-label" => "Close", "-underline" => 0, 
+$m->add("command", "-label" => "Close", "-underline" => 0,
         "-command" => \&sayclose);
 $m->add("separator");
-$m->add("command", "-label" => "Selection", "-underline" => 0, 
+$m->add("command", "-label" => "Selection", "-underline" => 0,
         "-command" => \&showsel);
 $m->add("separator");
-$m->add("command", "-label" => "Exit", "-underline" => 1, 
+$m->add("command", "-label" => "Exit", "-underline" => 1,
         "-command" => \&doexit);
 
 $t->pack(-expand => 1, "-fill"   => "both");
 
 $t->tag("configure", "underline","-underline","on");
+$t->tag("configure", "hideable", -elide => 0, -foreground => 'blue');
 
-$t->insert("0.0", "This window is a text widget.  It displays one or more lines of text
-and allows you to edit the text.  Here is a summary of the things you
-can do to a text widget:
+$t->insert("0.0", "This window is a text widget.  It displays one or more
+lines of text and allows you to edit the text.  Here is a summary of the
+things you can do to a text widget:",'hideable');
+
+$t->insert(end => "
 
 1. Insert text. Press mouse button 1 to set the insertion cursor, then
 type text.  What you type will be added to the widget.  You can backspace
@@ -70,6 +73,10 @@ $t->bind("<Any-Enter>", sub { $t->focus });
 
 $t->Subwidget('text')->OnDestroy(sub { print "Destroyed!\n"; print $t->get('1.0','end') });
 
+$t->tag("bind", "hideable","<2>", sub {
+    $t->tagConfigure(hideable => -elide => 1, -foreground => 'pink')}
+);
+
 
 Tk::MainLoop;
 
@@ -87,10 +94,10 @@ sub sayclose { print "Close something\n" }
 sub showsel  { my @info = $t->tagRanges('sel');
                if (@info)
                 {
-                 print "start=$info[0] end=$info[1]\n" 
+                 print "start=$info[0] end=$info[1]\n"
                 }
              }
-sub doexit 
-{ 
+sub doexit
+{
  die "'die' no longer exits"
 }

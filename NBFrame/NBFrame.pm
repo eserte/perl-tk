@@ -1,9 +1,10 @@
 package Tk::NBFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/NBFrame/NBFrame.pm#14 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/NBFrame/NBFrame.pm#4 $
 
 use Tk qw($XS_VERSION);
+
 use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'NBFrame';

@@ -15,6 +15,7 @@ static STRLEN na; /* Quick and dirty fix */
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
+#include "pTk/tkFont.h"
 #include "pTk/tkXrm.h"
 #include "pTk/default.h"
 
@@ -45,8 +46,6 @@ DebugHook(SV *sv)
 {
 
 }
-
-#define pTk_exit(status) Tcl_Exit(status)
 
 #define XEvent_DESTROY(obj)
 
@@ -96,7 +95,7 @@ SV *source;
     {
      Tcl_ResetResult(interp);
      if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
-      croak(Tcl_GetResult(interp));
+      croak(Tcl_GetStringResult(interp));
     }
    else
     {
@@ -126,6 +125,153 @@ PointToWindow(Tk_Window tkwin, int x, int y, Window dest)
   }
  return (IV) win;
 }
+
+static SV *
+StringAlias(pTHX_ const char *s)
+{
+ SV *sv = newSV(0);
+ sv_upgrade(sv,SVt_PV);
+ SvPVX(sv) = (char *) s;
+ SvCUR_set(sv,strlen(s));
+ SvLEN(sv) = 0;
+ SvPOK_only(sv);
+ SvREADONLY_on(sv);
+ return sv;
+}
+
+typedef struct
+{
+ CONST char *foundary;
+ CONST char *encoding;
+ TkFontAttributes attrib;
+ const char *name;
+} LangFontInfo;
+
+static SV *
+FontInfo(pTHX_ const char *encoding, const char *foundary,
+         const TkFontAttributes *attrib, const char *name)
+{
+ SV *sv = newSV(sizeof(LangFontInfo));
+ LangFontInfo *info = (LangFontInfo *) SvPVX(sv);
+ SvCUR_set(sv,sizeof(LangFontInfo));
+ SvPOK_only(sv);
+ info->encoding = encoding;
+ info->foundary = foundary;
+ info->attrib   = *attrib;
+ /* FIXME */
+ info->name     = name;
+ return sv_bless(newRV_noinc(sv),gv_stashpv("Tk::FontRankInfo", TRUE));
+}
+
+#define Boolean int
+
+#define FontInfo_encoding(p) (StringAlias(aTHX_ (p)->encoding))
+#define FontInfo_foundary(p) (StringAlias(aTHX_ (p)->foundary))
+#define FontInfo_Xname(p)    (StringAlias(aTHX_ (p)->name))
+#define FontInfo_family(p)   (StringAlias(aTHX_ (p)->attrib.family))
+#define FontInfo_size(p)     ((p)->attrib.size)
+#define FontInfo_bold(p)     ((p)->attrib.weight == TK_FW_BOLD)
+#define FontInfo_italic(p)   ((p)->attrib.slant  == TK_FS_ITALIC)
+
+unsigned int
+LangFontRank(unsigned int suggested,
+	     int ch,
+	     CONST char *gotName,
+	     CONST char *wantFoundary,
+	     CONST TkFontAttributes *wantAttrib,
+	     CONST char *wantEncoding,
+	     CONST char *gotFoundary,
+	     CONST TkFontAttributes *gotAttrib,
+	     CONST char *gotEncoding)
+{
+ dTHX;
+ SV *hook = get_sv("Tk::FontRank",0);
+ if (hook && SvOK(hook))
+  {
+   dSP;
+   int flags = (suggested == 0 || suggested == (unsigned int) -1)
+                ? G_VOID : G_SCALAR;
+   SV *result, *sv;
+   int count;
+   ENTER;
+   SAVETMPS;
+   LangPushCallbackArgs(&hook);
+   result = Nullsv;
+   sv = newSV(UTF8_MAXLEN);
+   sv_upgrade(sv,SVt_PVIV);
+   count = uvchr_to_utf8_flags((U8 *) SvPVX(sv),ch, UNICODE_ALLOW_ANY)
+               - (U8 *) SvPVX(sv);
+   SvCUR_set(sv,count);
+   SvPOK_on(sv);
+   SvUTF8_on(sv);
+   SvIVX(sv) = ch;
+   SvIOK_on(sv);
+   SPAGAIN;
+   XPUSHs(sv_2mortal(newSViv((IV) suggested)));
+   XPUSHs(sv_2mortal(sv));
+   XPUSHs(sv_2mortal(FontInfo(aTHX_ wantEncoding, wantFoundary, wantAttrib, Nullch)));
+   XPUSHs(sv_2mortal(FontInfo(aTHX_ gotEncoding, gotFoundary, gotAttrib,gotName)));
+   PUTBACK;
+   if ((count  = LangCallCallback(hook, G_EVAL | flags)))
+    {
+     SPAGAIN;
+     result = POPs;
+     PUTBACK;
+    }
+   if (SvTRUE(ERRSV))
+    {
+     warn("%_",ERRSV);
+     sv_setsv(hook,&PL_sv_undef);
+    }
+   else
+    {
+     if (result && SvOK(result))
+      {
+       if (SvPOK(result) && !SvCUR(result))
+        {
+         suggested = (unsigned int) -2;
+        }
+       else
+        suggested = (unsigned int) SvIV(result);
+      }
+     else
+      {
+       suggested = (unsigned int) -1;
+      }
+    }
+   FREETMPS;
+   LEAVE;
+  }
+ /* Placeholder for a hook */
+ if (0 && !suggested)
+  LangDebug("%08x for U+%04x %s from %s\n",suggested,ch, gotEncoding, gotName);
+ return suggested;
+}
+
+
+MODULE = Tk	PACKAGE = Tk::FontRankInfo	PREFIX = FontInfo_
+PROTOTYPES: ENABLE
+
+SV *
+FontInfo_encoding(LangFontInfo *p)
+
+SV *
+FontInfo_foundary(LangFontInfo *p)
+
+SV *
+FontInfo_Xname(LangFontInfo *p)
+
+SV *
+FontInfo_family(LangFontInfo *p)
+
+int
+FontInfo_size(LangFontInfo *p)
+
+Boolean
+FontInfo_bold(LangFontInfo *p)
+
+Boolean
+FontInfo_italic(LangFontInfo *p)
 
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Const_
@@ -297,7 +443,7 @@ timeofday()
 CODE:
 {
  Tcl_Time t;
- TclpGetTime(&t);
+ Tcl_GetTime(&t);
  RETVAL = t.sec + (double) t.usec/1e6;
 }
 OUTPUT:
@@ -317,12 +463,6 @@ PPCODE:
   PUSHs(sv_2mortal(newSViv(x)));
   PUSHs(sv_2mortal(newSViv(y)));
  }
-
-MODULE = Tk	PACKAGE = Tk	PREFIX = pTk_
-
-void
-pTk_exit(status = 0)
-int	status
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 
@@ -471,6 +611,54 @@ CODE:
   Tk_ChangeWindowAttributes(win, CWEventMask, Tk_Attributes(win));
  }
 
+void
+MakeAtom(win,...)
+Tk_Window	win
+CODE:
+ {
+  int i;
+  for (i=1; i < items; i++)
+   {
+    SV *sv = ST(i);
+    Atom a = None;
+    const char *name = Nullch;
+    if (SvGMAGICAL(sv))
+     mg_get(sv);
+    if (SvIOK(sv) && !SvPOK(sv))
+     {
+      a = (Atom) SvIVX(sv);
+      if (a != None)
+       {
+        sv_upgrade(sv,SVt_PVIV);
+        name = Tk_GetAtomName(win,a);
+        sv_setpvn(sv,name,strlen(name));
+        SvIVX(sv) = (IV) a;
+        SvIOK_on(sv);
+       }
+     }
+    else if (SvPOK(sv) && !SvIOK(sv))
+     {
+      name = SvPVX(sv);
+      if (name && *name)
+       {
+        sv_upgrade(sv,SVt_PVIV);
+        a = Tk_InternAtom(win,name);
+        SvIVX(sv) = (IV) a;
+        SvIOK_on(sv);
+       }
+     }
+    else if (SvPOK(sv) && SvIOK(sv))
+     {
+      name = SvPVX(sv);
+      a    = (Atom) SvIVX(sv);
+      if (a != Tk_InternAtom(win,name))
+       {
+        croak("%s/%ld is not a valid atom for %s\n",name,a,Tk_PathName(win));
+       }
+     }
+   }
+ }
+
 
 int
 SendClientMessage(win,type,xid,format,data)
@@ -605,7 +793,7 @@ int
 Tk_IsTopLevel(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_Name(win)
 Tk_Window	win
 
@@ -613,7 +801,7 @@ char *
 Tk_PathName(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_Class(win)
 Tk_Window	win
 
@@ -704,7 +892,7 @@ char *	name
 char *	value
 int	priority
 
-char *
+const char *
 Tk_GetAtomName(win,atom)
 Tk_Window	win
 Atom		atom
@@ -714,11 +902,11 @@ Tk_ClearSelection(win,selection)
 Tk_Window	win
 Atom		selection
 
-char *
+const char *
 Tk_DisplayName(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_GetOption(win,name,class)
 Tk_Window	win
 char *	name
@@ -733,7 +921,7 @@ void
 Tk_Ungrab(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_SetAppName(win,name)
 Tk_Window	win
 char *		name
@@ -772,6 +960,16 @@ CODE:
  {
   Lang_CmdInfo *info = WindowCommand(win,NULL,1);
   ST(0) = sv_mortalcopy(WidgetRef(info->interp,path));
+ }
+
+SV *
+_object(win,name)
+SV *	win
+char *	name
+CODE:
+ {
+  Lang_CmdInfo *info = WindowCommand(win,NULL,1);
+  ST(0) = sv_mortalcopy(ObjectRef(info->interp,name));
  }
 
 Tk_Window
@@ -887,10 +1085,19 @@ SV *	win
 
 BOOT:
  {
+  Boot_Glue(aTHX);
 #ifdef WIN32
   /* Force inclusion of DllMain() */
   TkWin32DllPresent();
+  TkWinXInit(Tk_GetHINSTANCE());
 #endif
-  Boot_Glue();
- }
+  /* We need to call Tcl_Preserve() on something so
+     its exit handler is first on the list, and so last
+     to be called
+   */
+  Tcl_Preserve((ClientData) cv);
+  Tcl_Release((ClientData) cv);
+}
+
+
 

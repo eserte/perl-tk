@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.034'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#34 $
+$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev);
 
@@ -326,6 +326,7 @@ sub rgbToHsv {
           (($max == $green)?(0.166667*(2 + $rc - $bc)):
            (0.166667*(4 + $gc - $rc)));
     }
+    $hue += 1 if $hue < 0;
     return ($hue, $sat, $max/65535);
 
 } # end rgbToHsv
@@ -442,7 +443,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '3.034'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#34 $
+$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

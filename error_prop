@@ -18,6 +18,6 @@ sub two
 }
 
 my $mw = MainWindow->new;
-my $b  = $mw->Button(-text => 'Moan', 
+my $b  = $mw->Button(-text => 'Moan',
               -command => sub { after(1000, \&two, $mw) })->pack(-expand => 0);
 MainLoop;

@@ -1,7 +1,7 @@
 package Tk::ItemStyle;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/ItemStyle.pm#6 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/ItemStyle.pm#4 $
 
 require Tk;
 use base  qw(Tk);

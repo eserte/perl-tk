@@ -15,6 +15,7 @@ Tk::ConfigSpecs - Defining behaviour of 'configure' for composite widgets.
      $composite->ConfigSpecs('-attribute' => [ where,dbName,dbClass,default ]);
      $composite->ConfigSpecs('-alias' => '-otherattribute');
      $composite->ConfigSpecs('DEFAULT' => [ where ]);
+     $composite->ConfigSpecs($subwidget->ConfigSpecs);
      ...
     }
 
@@ -51,11 +52,11 @@ The currently permitted values of B<where> are:
 
 =item B<'ADVERTISED'>
 
-apply B<configure> to I<advertised> subwidgets.
+Apply B<configure> to I<advertised> subwidgets.
 
 =item B<'DESCENDANTS'>
 
-apply B<configure> recursively to all descendants.
+Apply B<configure> recursively to all descendants.
 
 =item B<'CALLBACK'>
 
@@ -70,7 +71,7 @@ anchor etc.) that core Tk makes special for C code.
 
 =item B<'CHILDREN'>
 
-apply B<configure> to all children.  (Children are the immediate
+Apply B<configure> to all children.  (Children are the immediate
 descendants of a widget.)
 
 =item B<'METHOD'>
@@ -152,7 +153,18 @@ are provided automatically (if not already specified).
 
 =back
 
-=head2 Default Values
+=head2 Delegating all options of a widget class to a subwidget
+
+    $composite->ConfigSpecs($subwidget->ConfigSpecs);
+
+The above generates a list of I<composite> ConfigSpecs arguments, one
+for each valid option in $subwidget's class, and delegates said option
+to $subwidget.  See L<Tk::Widget> and the I<widget> method
+ConfigSpecs.  Duplicating I<composite> ConfigSpecs and I<widget>
+ConfigSpecs keys will yield undefined results.
+
+
+=head2 Default values
 
 When the B<Populate> method returns B<ConfigDefault> is called.  This calls
 
@@ -176,7 +188,7 @@ default value will be added.
 Alias entries in the hash are used to convert user-specified values for the
 alias into values for the real attribute.
 
-=head2 New()-time Configure
+=head2 B<New()-time configure>
 
 Once control returns to B<new>, the list of user-supplied options
 augmented by those from B<ConfigDefault> are applied to the widget using the
@@ -233,7 +245,7 @@ sufficient.
 =head1 SEE ALSO
 
 L<Tk::composite|Tk::composite>,
-L<Tk::options|Tk::options>
+L<Tk::options|Tk::options>,
+L<Tk::Widget>
 
 =cut
-

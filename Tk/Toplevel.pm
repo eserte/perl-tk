@@ -5,7 +5,7 @@ package Tk::Toplevel;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/Toplevel.pm#30 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Toplevel.pm#6 $
 
 use base  qw(Tk::Wm Tk::Frame);
 

@@ -19,9 +19,9 @@
 #include "pTk/tkInt.h"
 #include "pTk/tixPort.h"
 #include "pTk/tixInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -62,11 +62,11 @@ PPCODE:
     SV *sv = newSVpv("",0);
     SvGROW(sv,len+1);
     len = DragQueryFile(drop,i,SvPVX(sv),SvLEN(sv));
-    SvCUR(sv) = len; 
+    SvCUR(sv) = len;
     XPUSHs(sv_2mortal(sv));
    }
   DragFinish(drop);
-  PUTBACK; 
+  PUTBACK;
  }
 
 BOOT:

@@ -6,7 +6,7 @@ use strict;
 package Tk::LimitEntry;
 require Tk::Entry;
 @Tk::LimitEntry::ISA = qw(Tk::Entry);
- 
+
 Construct Tk::Widget 'LimitEntry';
 
 sub Insert

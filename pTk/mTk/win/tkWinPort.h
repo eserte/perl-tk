@@ -6,12 +6,11 @@
  *	file that contains #ifdefs to handle different flavors of OS.
  *
  * Copyright (c) 1995-1996 Sun Microsystems, Inc.
- * Copyright (c) 1998 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinPort.h,v 1.3 1998/09/30 19:01:22 rjohnson Exp $
+ * RCS: @(#) $Id: tkWinPort.h,v 1.9 2002/10/19 02:10:20 hobbs Exp $
  */
 
 #ifndef _WINPORT
@@ -34,9 +33,22 @@
 #ifdef __EMX__
 #   include <sys/types.h>
 #endif
+
+/*
+ * Need to block out this include for building extensions with MetroWerks
+ * compiler for Win32.
+ */
+
+#ifndef __MWERKS__
 #include <sys/stat.h>
-#include <sys/timeb.h>
+#endif
+
 #include <time.h>
+#ifdef __CYGWIN__
+#    define _T(x) L##x
+#else
+#    include <tchar.h>
+#endif
 
 #ifdef _MSC_VER
 #    define hypot _hypot
@@ -46,8 +58,10 @@
 #    endif
 #endif /* _MSC_VER */
 
-#define strncasecmp strnicmp
-#define strcasecmp stricmp
+#ifndef __GNUC__
+#    define strncasecmp strnicmp
+#    define strcasecmp stricmp
+#endif
 
 #define NBBY 8
 
@@ -112,7 +126,7 @@
 	| ((p)->green & 0xff00) | (((p)->blue << 8) & 0xff0000)) | 0x20000000)
 
 /*
- * These calls implement native bitmaps which are not currently 
+ * These calls implement native bitmaps which are not currently
  * supported under Windows.  The macros eliminate the calls.
  */
 
@@ -132,11 +146,11 @@ struct timezone {
 #undef timezone
 struct timezone;
 struct timeval;
-#endif 
-
-extern int gettimeofday(struct timeval *, struct timezone *);
-#if 0
-EXTERN void		panic _ANSI_ARGS_(TCL_VARARGS(char *,format));
 #endif
+
+#ifndef _TCLINT
+#include <tclInt.h>
+#endif
+
 
 #endif /* _WINPORT */

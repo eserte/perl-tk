@@ -2,11 +2,10 @@
 package Tk::Scrollbar;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#18 $
+$VERSION = '4.010'; # $Id: //depot/Tkutf8/Scrollbar/Scrollbar.pm#10 $
 
 use Tk qw($XS_VERSION Ev);
 use AutoLoader;
-
 
 use base  qw(Tk::Widget);
 

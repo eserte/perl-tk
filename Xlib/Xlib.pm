@@ -2,7 +2,7 @@ package Tk::Xlib;
 require DynaLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Xlib/Xlib.pm#10 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Xlib/Xlib.pm#4 $
 
 use Tk qw($XS_VERSION);
 use Exporter;

@@ -12,7 +12,7 @@ sub twind {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     => '',				      
+        -text     => '',
         -title    => 'Text Demonstration - Embedded Windows',
         -iconname => 'twind',
     );
@@ -26,11 +26,11 @@ sub twind {
     # the scrollbar position.  So the following Scrolled widget has an
     # optional scrollbar at the bottom of the text widget and a required
     # scrollbar positioned to the right.
-    # 
+    #
     # Optional scrollbars are only displayed if they are required, so, the
     # the southern scrollbar is displayed IFF -wrap => none.
 
-    my $t = $TOP->Scrolled(qw/Text -setgrid true -width 70 -height 35 
+    my $t = $TOP->Scrolled(qw/Text -setgrid true -width 70 -height 35
         -wrap word -highlightthickness 0 -borderwidth 0 -scrollbars osre
 	-font/ => $FONT)->pack;
 
@@ -107,7 +107,7 @@ sub twind {
     my $embToggle = 'Short';
     my $t_toggle = $t->Checkbutton(
         -textvariable => \$embToggle,
-        -indicatoron  => 0, 
+        -indicatoron  => 0,
         -variable     => \$embToggle,
         -onvalue      => 'A much longer string',
         -offvalue     => 'Short',
@@ -127,7 +127,7 @@ sub twind {
         $col->configure(-command => sub {
 	    $t->configure(-background => $color);
 	});
-        $t->window('create', 'end', -window => $col, 
+        $t->window('create', 'end', -window => $col,
 	             -padx => 3, -pady => 2);
         $i++;
     }
@@ -156,7 +156,7 @@ sub twind_create_plot {
 	$text->window('create', 'plot', -window => $twind::plot);
 	$text->tag('add', 'center', 'plot');
 	$text->insert('plot', "\n");
-    } # ifend 
+    } # ifend
 
 } # end twind_create_plot
 
@@ -178,7 +178,7 @@ sub twind_restore_bg {
 
     my($text) = @_;
 
-    $text->configure(-background => 
+    $text->configure(-background =>
 		     ($text->Subwidget('text')->configure(-background))[3]);
 
 } # end twind_restore_bg

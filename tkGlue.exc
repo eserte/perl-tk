@@ -1,5 +1,3 @@
 ClearErrorInfo
-mainWindow
 DumpStack
-Boot_Glue
-Boot_Tix
+mainWindow

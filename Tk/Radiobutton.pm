@@ -7,7 +7,7 @@
 package Tk::Radiobutton;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#15 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Radiobutton.pm#6 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial

@@ -25,7 +25,7 @@ BEGIN { plan test => 1}
 
 if ($^O eq 'MSWin32') {
     skip(1, 'Cannot test pipe/fork/exec/fileevent on Win32 systems.');
-    exit;
+    CORE::exit();
 }
 
 $AUTHORIZED_CLIENTS = 'localhost|loopback'; # a regex
@@ -59,7 +59,7 @@ sub pipe_in {
 
     $MW->fileevent(\*PR, 'readable' => sub {
 
-#        print STDERR "IN: about to sysread ...\n" if $DEBUG;		
+#        print STDERR "IN: about to sysread ...\n" if $DEBUG;
 	if ( ($Tk::VERSION cmp '800.015') <= 0 ) {
 #	if ( defined($ARGV[0]) ) {
 	    $sysbuf = <PR>;

@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.085'; # $Id: //depot/Tk8/Tk/Widget.pm#85 $
+$VERSION = sprintf '4.%03d', q$Revision: #26 $ =~ /\D(\d+)\s*$/;
 
 require Tk;
 use AutoLoader;
@@ -12,20 +12,22 @@ use Carp;
 use base qw(DynaLoader Tk);
 
 # stubs for 'autoloaded' widget classes
-
 sub Button;
 sub Canvas;
 sub Checkbutton;
 sub Entry;
 sub Frame;
 sub Label;
+sub Labelframe;
 sub Listbox;
 sub Menu;
 sub Menubutton;
 sub Message;
+sub Panedwindow;
+sub Radiobutton;
 sub Scale;
 sub Scrollbar;
-sub Radiobutton;
+sub Spinbox;
 sub Text;
 sub Toplevel;
 
@@ -66,7 +68,7 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'event' => [qw(add delete generate info)],
                     'place' => [qw(configure forget info slaves)],
                     'wm'    => [qw(capture release)],
-                    'font'  => [qw(actual configure create delete families measure metrics names)]
+                    'font'  => [qw(actual configure create delete families measure metrics names subfonts)]
                   );
 
 BEGIN  {
@@ -87,7 +89,7 @@ Direct Tk::Submethods (
                visualsavailable  vrootheight viewable vrootwidth vrootx vrooty
                width x y toplevel children pixels pointerx pointery pointerxy
                server fpixels rgb )],
-   'tk'   => [qw(appname scaling)]);
+   'tk'   => [qw(appname caret scaling useinputmethods windowingsystem)]);
 
 
 sub DESTROY
@@ -130,7 +132,7 @@ sub CreateArgs
  my @result = ();
  my $class = delete $args->{'-class'};
  ($class) = $package =~ /([A-Z][A-Z0-9_]*)$/i unless (defined $class);
- push(@result, '-class' => "\u$class") if (defined $class);
+ @result = (-class => "\u$class") if (defined $class);
  foreach my $opt ($package->CreateOptions)
   {
    push(@result, $opt => delete $args->{$opt}) if exists $args->{$opt};
@@ -168,7 +170,7 @@ sub new
  my $leaf  = delete $args{'Name'};
  if (defined $leaf)
   {
-   $leaf =~ s/[^a-z0-9_]+/_/ig;
+   $leaf =~ s/[^a-z0-9_#]+/_/ig;
    $leaf = lcfirst($leaf);
   }
  else
@@ -187,6 +189,13 @@ sub new
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
+ unless (ref $obj)
+  {
+   die "No value from $cmd $lname" unless defined $obj;
+   warn "$cmd '$lname' returned '$obj'" unless $obj eq $lname;
+   $obj = $parent->Widget($lname = $obj);
+   die "$obj from $lname" unless ref $obj;
+  }
  bless $obj,$package;
  $obj->SetBindtags;
  my $notice = $parent->can('NoticeChild');
@@ -319,7 +328,7 @@ sub AUTOLOAD
         }
       }
     }
-   if (!defined(&$what) && $method =~ /^[A-Z]\w+$/)
+   if (!defined(&$what) && ref($_[0]) && $method =~ /^[A-Z]\w+$/)
     {
      # Use ->can as ->isa is broken in perl5.6.0
      my $sub = UNIVERSAL::can($_[0],'_AutoloadTkWidget');
@@ -901,14 +910,14 @@ sub Unbusy
 {
  my ($w) = @_;
  $w->update;
- $w->grabRelease;
+ $w->grabRelease if Tk::Exists($w);
  my $old = delete $w->{'Busy'};
  if (defined $old)
   {
    local $SIG{'__DIE__'};
    eval { &{pop(@$old)} } while (@$old);
   }
- $w->update;
+ $w->update if Tk::Exists($w);
 }
 
 sub waitVisibility
@@ -1297,6 +1306,119 @@ sub BalloonInfo
   }
 }
 
+sub bindDump {
+
+    # Dump lots of good binding information.  This pretty-print subroutine
+    # is, essentially, the following code in disguise:
+    #
+    # print "Binding information for $w\n";
+    # foreach my $tag ($w->bindtags) {
+    #     printf "\n Binding tag '$tag' has these bindings:\n";
+    #     foreach my $binding ($w->bind($tag)) {
+    #         printf "  $binding\n";
+    #     }
+    # }
+
+    my ($w) = @_;
+
+    my (@bindtags) = $w->bindtags;
+    my $digits = length( scalar @bindtags );
+    my ($spc1, $spc2) = ($digits + 33, $digits + 35);
+    my $format1 = "%${digits}d.";
+    my $format2 = ' ' x ($digits + 2);
+    my $n = 0;
+
+    print "\n## Binding information for '", $w->PathName, "', $w ##\n";
+
+    foreach my $tag (@bindtags) {
+        my (@bindings) = $w->bind($tag);
+        $n++;                   # count this bindtag
+
+        if ($#bindings == -1) {
+            printf "\n$format1 Binding tag '$tag' has no bindings.\n", $n;
+        } else {
+            printf "\n$format1 Binding tag '$tag' has these bindings:\n", $n;
+
+            foreach my $binding ( @bindings ) {
+                my $callback = $w->bind($tag, $binding);
+                printf "$format2%27s : %-40s\n", $binding, $callback;
+
+                if ($callback =~ /SCALAR/) {
+                    if (ref $$callback) {
+                        printf "%s %s\n", ' ' x $spc1, $$callback;
+                    } else {
+                        printf "%s '%s'\n", ' ' x $spc1, $$callback;
+                    }
+                } elsif ($callback =~ /ARRAY/) {
+                    if (ref $callback->[0]) {
+                        printf "%s %s\n", ' ' x $spc1, $callback->[0], "\n";
+                    } else {
+                        printf "%s '%s'\n", ' ' x $spc1, $callback->[0], "\n";
+                    }
+                    foreach my $arg (@$callback[1 .. $#{@$callback}]) {
+                        if (ref $arg) {
+                            printf "%s %-40s", ' ' x $spc2, $arg;
+                        } else {
+                            printf "%s '%s'", ' ' x $spc2, $arg;
+                        }
+			
+                        if (ref $arg eq 'Tk::Ev') {
+                            if ($arg =~ /SCALAR/) {
+                                print ": '$$arg'";
+                            } else {
+                                print ": '", join("' '", @$arg), "'";
+                            }
+                        }
+
+                        print "\n";
+                    } # forend callback arguments
+                } # ifend callback
+
+            } # forend all bindings for one tag
+
+        } # ifend have bindings
+
+    } # forend all tags
+    print "\n";
+
+} # end bindDump
+
+sub ConfigSpecs {
+
+    my $w = shift;
+    
+    return map { ( $_->[0], [ $w, @$_[ 1 .. 4 ] ] ) } $w->configure;
+
+}
+
+1;
+__END__
+
+=head1 NAME
+
+Tk::bindDump - dump detailed binding information for a widget.
+
+=head1 SYNOPSIS
+
+ use Tk::bindDump;
+
+ $splash->bindDump;
+
+=head1 DESCRIPTION
+
+This subroutine prints a widget's bindtags.  For each binding tag it
+prints all the bindings, comprised of the event descriptor and the
+callback.  Callback arguments are printed, and Tk::Ev objects are
+expanded.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2000 - 2001 Stephen O. Lidie. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut
 
 
 1;

@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixGrRC.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixGrRC.c --
  *
  *	This module handles "size" sub-commands.
@@ -57,7 +60,7 @@ Tix_GrRCSize(clientData, interp, argc, argv)
     } else {
 	which = 1;
     }
-    if (Tcl_GetInt(interp, argv[0], &index) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[0], &index) != TCL_OK) {
 	size_t len = strlen(argv[0]);
 
 	Tcl_ResetResult(interp);

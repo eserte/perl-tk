@@ -12,21 +12,21 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
 MODULE = Tk::Menubutton	PACKAGE = Tk
 
-PROTOTYPES: DISABLE     
+PROTOTYPES: DISABLE
 
 void
 menubutton(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tk_MenubuttonCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,0,Tk_MenubuttonObjCmd,items,&ST(0)));
  }
 
 BOOT:

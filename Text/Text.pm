@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.053'; # $Id: //depot/Tk8/Text/Text.pm#53 $
+$VERSION = '4.017'; # $Id: //depot/Tkutf8/Text/Text.pm#18 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -1011,32 +1011,32 @@ sub findandreplacepopup
   ->grid(-row=> 1, -column=>1, -padx=> 20, -sticky => 'nw');
  my $direction = '-forward';
  $frame->Radiobutton(
-  variable => \$direction,
-  text => 'forward',value => '-forward' )
+  -variable => \$direction,
+  -text => 'forward',-value => '-forward' )
   ->grid(-row=> 2, -column=>1, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  variable => \$direction,
-  text => 'backward',value => '-backward' )
+  -variable => \$direction,
+  -text => 'backward',-value => '-backward' )
   ->grid(-row=> 3, -column=>1, -padx=> 20, -sticky => 'nw');
 
  $frame->Label(-text=>"Mode:")
   ->grid(-row=> 1, -column=>2, -padx=> 20, -sticky => 'nw');
  my $mode = '-exact';
  $frame->Radiobutton(
-  variable => \$mode, text => 'exact',value => '-exact' )
+  -variable => \$mode, -text => 'exact',-value => '-exact' )
   ->grid(-row=> 2, -column=>2, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  variable => \$mode, text => 'regexp',value => '-regexp' )
+  -variable => \$mode, -text => 'regexp',-value => '-regexp' )
   ->grid(-row=> 3, -column=>2, -padx=> 20, -sticky => 'nw');
 
  $frame->Label(-text=>"Case:")
   ->grid(-row=> 1, -column=>3, -padx=> 20, -sticky => 'nw');
  my $case = '-case';
  $frame->Radiobutton(
-  variable => \$case, text => 'case',value => '-case' )
+  -variable => \$case, -text => 'case',-value => '-case' )
   ->grid(-row=> 2, -column=>3, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  variable => \$case, text => 'nocase',value => '-nocase' )
+  -variable => \$case, -text => 'nocase',-value => '-nocase' )
   ->grid(-row=> 3, -column=>3, -padx=> 20, -sticky => 'nw');
 
  ######################################################
@@ -1610,6 +1610,5 @@ sub GetMenu
 
 1;
 __END__
-
 
 

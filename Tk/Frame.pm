@@ -12,9 +12,8 @@ use base qw(Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Frame';
 
-
 use vars qw($VERSION);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Tk/Frame.pm#33 $
+$VERSION = '4.010'; # $Id: //depot/Tkutf8/Tk/Frame.pm#10 $
 
 sub Tk_cmd { \&Tk::frame }
 
@@ -84,13 +83,18 @@ sub selection
  $cw->Delegate('selection',@args);
 }
 
+sub autoLabel { 1 }
+
 sub Populate
 {
  my ($cw,$args) = @_;
- $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
- $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
- $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
- $cw->labelPack([]) if grep /^-label\w+/, keys %$args;
+ if ($cw->autoLabel)
+  {
+   $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
+   $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
+   $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
+   $cw->labelPack([]) if grep /^-label\w+/, keys %$args;
+  }
 }
 
 sub Menubar
@@ -369,5 +373,6 @@ sub FindMenu
   }
  return undef;
 }
+
 
 

@@ -42,7 +42,7 @@ char *imageString;
  Display *dpy   = Tk_Display(tkwin);
  Tcl_Interp *interp = ((TkWindow*) tkwin)->mainPtr->interp;
  Tk_Image image = Tk_GetImage(interp, tkwin,
-		  imageString, BackgroundImageProc, (ClientData) tkwin); 
+		  imageString, BackgroundImageProc, (ClientData) tkwin);
  int width, height;
  Pixmap pixmap;
  Tk_SizeOfImage(image, &width, &height);

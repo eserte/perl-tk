@@ -3,7 +3,7 @@ package WidgetDemo;
 use 5.005_03;
 
 use vars qw($VERSION);
-$VERSION = '3.024'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#24 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/WidgetDemo.pm#9 $
 
 use Tk 800.000;
 use Carp;
@@ -20,11 +20,11 @@ Construct Tk::Widget 'WidgetDemo';
 my %WIDGDEMO;			# class hash of active widget demonstrations
 
 sub Populate {
-    my($cw, $args) = @_;
+    my($self, $args) = @_;
 
     my (%arg_defaults) = (
         -name             => 'Unknown Demo Name',
-	-font             => '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*',
+	-font             => 'Helvetica 12',
 	-text             => 'Unknown Demo Text',
 	-geometry_manager => 'pack',
     );
@@ -40,22 +40,21 @@ sub Populate {
 	@ahsh{-name, -font, -text, -title, -iconname, -geometry_manager};
     delete $args->{-name};
     delete $args->{-font};
-    delete $args->{-text};
     delete $args->{-iconname};
     delete $args->{-geometry_manager};
 
     $WIDGDEMO{$demo}->destroy if Exists($WIDGDEMO{$demo});
-    $WIDGDEMO{$demo} = $cw;
+    $WIDGDEMO{$demo} = $self;
 
-    $cw->SUPER::Populate($args);
-    $cw->iconname($iconname);
+    $self->SUPER::Populate($args);
+    $self->iconname($iconname);
 
     my(@label_attributes) = ();
     if (ref($text) eq 'ARRAY') {
 	@label_attributes = @$text[1 .. $#{$text}];
 	$text = $text->[0];
     }
-    my $msg = $cw->Label(
+    my $msg = $self->Label(
         -font       => $font,
         -wraplength => '4i',
         -justify    => 'left',
@@ -63,13 +62,13 @@ sub Populate {
         @label_attributes,
     );
 
-    my $demo_frame = $cw->Frame;
-    $cw->Advertise('WidgetDemo' => $demo_frame); # deprecated
+    my $demo_frame = $self->Frame;
+    $self->Advertise('WidgetDemo' => $demo_frame); # deprecated
 
-    my $buttons = $cw->Frame;
+    my $buttons = $self->Frame;
     my $dismiss = $buttons->Button(
         -text    => 'Dismiss',
-        -command => [$cw => 'destroy'],
+        -command => [$self => 'destroy'],
     );
     my $see = $buttons->Button(-text => 'See Code',
 			       -command => [\&main::see_code, $demo]);
@@ -92,12 +91,36 @@ sub Populate {
 	croak "Only pack or grid geometry management supported.";
     }
 
-    $cw->Delegates('Construct' => $demo_frame);
-    return $cw;
+    $self->Delegates('Construct' => $demo_frame);
 
-} # end Populate, WidgetDemo constructor
+    $self->ConfigSpecs(
+        -text => [qw/METHOD text Text NoText/],
+    );
+
+    $self->{msg} = $msg;
+
+    return $self;
+
+} # end Populate
 
 sub Top {return $_[0]->Subwidget('WidgetDemo')}	# deprecated
 *top = *top = \&Top;  # peacify -w
+
+sub text {
+
+    my ($self, $text) = @_;
+
+    my(@label_attributes) = ();
+    if (ref($text) eq 'ARRAY') {
+	@label_attributes = @$text[1 .. $#{$text}];
+	$text = $text->[0];
+    }
+    
+    $self->{msg}->configure(
+        -text       => $text,
+        @label_attributes,
+    );
+
+} # end text
 
 1;

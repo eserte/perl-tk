@@ -5,7 +5,7 @@ package Tk::Clipboard;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Clipboard.pm#18 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Clipboard.pm#6 $
 
 use AutoLoader qw(AUTOLOAD);
 use Tk qw(catch);

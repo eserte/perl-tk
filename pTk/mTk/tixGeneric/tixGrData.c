@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixGrData.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixGrData.c --
  *
  *	This module manipulates the data structure for a Grid widget.
@@ -45,7 +48,7 @@ InitRowCol(index)
 
     return rowCol;
 }
-
+
 /*----------------------------------------------------------------------
  * TixGridDataSetInit --
  *
@@ -66,7 +69,7 @@ TixGridDataSetInit()
 
     return dataSet;
 }
-
+
 /*----------------------------------------------------------------------
  * TixGridDataSetFree --
  *
@@ -105,7 +108,7 @@ TixGridDataSetFree(dataSet)
     Tcl_DeleteHashTable(&dataSet->index[1]);
     ckfree((char*)dataSet);
 }
-
+
 /*----------------------------------------------------------------------
  * TixGridDataFindEntry --
  *
@@ -151,7 +154,7 @@ TixGridDataFindEntry(dataSet, x, y)
 
     return (char *)Tcl_GetHashValue(hashPtr);
 }
-
+
 /*----------------------------------------------------------------------
  * FindRowCol --
  *
@@ -189,7 +192,7 @@ FindRowCol(dataSet, x, y, rowcol, hashPtrs)
 
     return 1;
 }
-
+
 /*----------------------------------------------------------------------
  * TixGridDataCreateEntry --
  *
@@ -253,7 +256,7 @@ TixGridDataCreateEntry(dataSet, x, y, defaultEntry)
 	return defaultEntry;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixGridDataDeleteEntry --
  *
@@ -390,13 +393,13 @@ RowColMaxSize(wPtr, which, rowCol, defSize)
 
     return maxSize;
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixGridDataGetRowColSize --
  *
  *	Returns width of a column or height of a row.
- *	
+ *
  * Results:
  *	The width or height.
  *
@@ -426,7 +429,7 @@ TixGridDataGetRowColSize(wPtr, dataSet, which, index, defSize, pad0, pad1)
     }
     else {
 	rowCol = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
-    
+
 	switch (rowCol->size.sizeType) {
 	  case TIX_GR_AUTO:
 	    size  = RowColMaxSize(wPtr, which, rowCol, defSize);
@@ -465,12 +468,12 @@ int
 TixGridDataGetIndex(interp, wPtr, xStr, yStr, xPtr, yPtr)
     Tcl_Interp * interp;
     WidgetPtr wPtr;
-    Arg xStr;
-    Arg yStr;
+    Tcl_Obj * xStr;
+    Tcl_Obj * yStr;
     int * xPtr;
     int * yPtr;
 {
-    Arg str[2];
+    Tcl_Obj * str[2];
     int * ptr[2];
     int i;
 
@@ -484,19 +487,19 @@ TixGridDataGetIndex(interp, wPtr, xStr, yStr, xPtr, yPtr)
 	    continue;
 	}
 
-	if (strcmp(LangString(str[i]), "max") == 0) {
+	if (strcmp(Tcl_GetString(str[i]), "max") == 0) {
 	    *ptr[i] = wPtr->dataSet->maxIdx[i];
 	    if (*ptr[i] < wPtr->hdrSize[i]) {
 		*ptr[i] = wPtr->hdrSize[i];
 	    }
 	}
-	else if (strcmp(LangString(str[i]), "end") == 0) {
+	else if (strcmp(Tcl_GetString(str[i]), "end") == 0) {
 	    *ptr[i] = wPtr->dataSet->maxIdx[i] + 1;
 	    if (*ptr[i] < wPtr->hdrSize[i]) {
 		*ptr[i] = wPtr->hdrSize[i];
 	    }
 	} else {
-	    if (Tcl_GetInt(interp, str[i], ptr[i]) != TCL_OK) {
+	    if (Tcl_GetIntFromObj(interp, str[i], ptr[i]) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	}
@@ -507,7 +510,7 @@ TixGridDataGetIndex(interp, wPtr, xStr, yStr, xPtr, yPtr)
 
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixGridDataConfigRowColSize --
@@ -561,7 +564,7 @@ TixGridDataConfigRowColSize(interp, wPtr, dataSet, which, index, argc, argv,
 
     return code;
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixGridDataGetGridSize --
@@ -599,7 +602,7 @@ TixGridDataGetGridSize(dataSet, numCol_ret, numRow_ret)
     }
 
     for (i=0; i<2; i++) {
-	
+
 	for (hashPtr = Tcl_FirstHashEntry(&dataSet->index[i], &hashSearch);
 	     hashPtr;
 	     hashPtr = Tcl_NextHashEntry(&hashSearch)) {
@@ -693,7 +696,7 @@ TixGrDataNextCell(cellSearchPtr)
 	return 1;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixGridDataDeleteSearchedEntry --
  *
@@ -716,7 +719,7 @@ TixGridDataDeleteSearchedEntry(cellSearchPtr)
     Tcl_DeleteHashEntry(chPtr->entryPtr[0]);
     Tcl_DeleteHashEntry(chPtr->entryPtr[1]);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixGridDataDeleteRange --
@@ -796,7 +799,7 @@ TixGridDataDeleteRange(wPtr, dataSet, which, from, to)
 	Tix_GrDoWhenIdle(wPtr, TIX_GR_RESIZE);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixGridDataMoveRange --
@@ -890,7 +893,7 @@ TixGridDataMoveRange(wPtr, dataSet, which, from, to, by)
 	s    = from;
 	e    = to+1;
 	incr = 1;
-    } 
+    }
 
     for (i=s; i!=e; i+=incr) {
 	Tcl_HashEntry *hashPtr;

@@ -1,9 +1,9 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
 use Test;
-use Tk;        
+use Tk;
 use Tk::widgets qw(ProgressBar);
-                      
+
 plan tests => 15;
 
 my $mw  = MainWindow->new();

@@ -5,7 +5,7 @@ package Tk::Region;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Region.pm#4 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Region.pm#6 $
 
 use Tk::Widget ();
 

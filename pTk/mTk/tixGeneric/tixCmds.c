@@ -1,3 +1,6 @@
+
+/*	$Id: tixCmds.c,v 1.1.1.1 2000/05/17 11:08:38 idiscovery Exp $	*/
+
 /*
  * tixCmds.c --
  *
@@ -90,7 +93,7 @@ TIX_DEFINE_CMD(Tix_DoWhenIdleCmd)
     IdleStruct	      * iPtr;
     Tk_Window		tkwin;
     Tcl_HashEntry * hashPtr;
- 
+
     if (!inited) {
 	Tcl_InitHashTable(&idleTable, TCL_STRING_KEYS);
 	inited = 1;
@@ -149,7 +152,7 @@ TIX_DEFINE_CMD(Tix_DoWhenIdleCmd)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_DoWhenMapped
  *
@@ -210,12 +213,12 @@ TIX_DEFINE_CMD(Tix_DoWhenMappedCmd)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_FalseCmd --
  *
  *	Returns a false value regardless of the arguments. This is used to
- *	skip run-time debugging 
+ *	skip run-time debugging
  *----------------------------------------------------------------------
  */
 
@@ -224,7 +227,7 @@ TIX_DEFINE_CMD(Tix_FalseCmd)
     Tcl_SetResult(interp, "0",TCL_STATIC);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_FileCmd --
  *
@@ -292,11 +295,11 @@ TIX_DEFINE_CMD(Tix_FileCmd)
 	return TCL_OK;
     }
 
-    Tcl_AppendResult(interp, "unknown option \"", argv[1], 
+    Tcl_AppendResult(interp, "unknown option \"", argv[1],
 	"\", must be tildesubst or trimslash", NULL);
     return TCL_ERROR;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_Get3DBorderCmd
  *
@@ -344,7 +347,7 @@ TIX_DEFINE_CMD(Tix_Get3DBorderCmd)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_GetBooleanCmd
  *
@@ -374,7 +377,7 @@ TIX_DEFINE_CMD(Tix_GetBooleanCmd)
 	string = argv[1];
     }
 
-    if (Tcl_GetBoolean(interp, string, &value) != TCL_OK) {
+    if (Tcl_GetBooleanFromObj(interp, string, &value) != TCL_OK) {
 	if (nocomplain) {
 	    value = 0;
 	}
@@ -389,7 +392,7 @@ TIX_DEFINE_CMD(Tix_GetBooleanCmd)
   error:
     return Tix_ArgcError(interp, argc, argv, 1, "?-nocomplain? string");
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_GetIntCmd
  *
@@ -421,14 +424,14 @@ TIX_DEFINE_CMD(Tix_GetIntCmd)
 	}
     }
     if (i != argc-1) {
-	return Tix_ArgcError(interp, argc, argv, 1, 
+	return Tix_ArgcError(interp, argc, argv, 1,
 	    "?-nocomplain? ?-trunc? string");
     }
 
-    if (Tcl_GetInt(interp, string, &i_value) == TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, string, &i_value) == TCL_OK) {
 	;
     }
-    else if (Tcl_GetDouble(interp, string, &f_value) == TCL_OK) {
+    else if (Tcl_GetDoubleFromObj(interp, string, &f_value) == TCL_OK) {
 #if 0
 	/* Some machines don't have the "trunc" function */
 	if (opTrunc) {
@@ -446,24 +449,24 @@ TIX_DEFINE_CMD(Tix_GetIntCmd)
     }
     else {
 	Tcl_ResetResult(interp);
-	Tcl_AppendResult(interp, "\"", string, 
+	Tcl_AppendResult(interp, "\"", string,
 	    "\" is not a valid numerical value", NULL);
 	return TCL_ERROR;
     }
-    
+
     sprintf(buff, "%d", i_value);
     Tcl_SetResult(interp, buff, TCL_VOLATILE);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_HandleOptionsCmd
  *
- * 
+ *
  * argv[1] = recordName
  * argv[2] = validOptions
  * argv[3] = argList
- *           if (argv[3][0] == "-nounknown") then 
+ *           if (argv[3][0] == "-nounknown") then
  * 		don't complain about unknown options
  *----------------------------------------------------------------------
  */
@@ -492,7 +495,7 @@ TIX_DEFINE_CMD(Tix_HandleOptionsCmd)
 	goto done;
     }
     if (Tcl_SplitList(interp, argv[3], &listArgc, &listArgv) != TCL_OK) {
-	code = TCL_ERROR;	
+	code = TCL_ERROR;
 	goto done;
     }
 
@@ -530,7 +533,7 @@ TIX_DEFINE_CMD(Tix_HandleOptionsCmd)
 
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_SetWindowParent --
  *
@@ -568,7 +571,7 @@ TIX_DEFINE_CMD(Tix_ParentWindow)
 
     newParent = Tk_NameToWindow(interp, argv[2], mainWin);
     if (newParent == NULL) {
-	if (Tcl_GetInt(interp, argv[2], &parentId) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[2], &parentId) != TCL_OK) {
 	    Tcl_ResetResult(interp);
 	    Tcl_AppendResult(interp, "\"", argv[2],
 		"\" must be a window pathname or ID", NULL);
@@ -578,7 +581,7 @@ TIX_DEFINE_CMD(Tix_ParentWindow)
 
     return TixpSetWindowParent(interp, tkwin, newParent, parentId);
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_StrEqCmd --
  *
@@ -586,7 +589,7 @@ TIX_DEFINE_CMD(Tix_ParentWindow)
  *		if [tixStrEq $var1 $var2]
  *	than
  *		if ![string comp $var1 $var2]
- * 
+ *
  *----------------------------------------------------------------------
  */
 
@@ -602,7 +605,7 @@ TIX_DEFINE_CMD(Tix_StrEqCmd)
     }
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_StringSubCmd --
  *
@@ -633,7 +636,7 @@ TIX_DEFINE_CMD(Tix_StringSubCmd)
     while (1) {
 	s = str;
 	k = 0;
-	
+
 	while (*s && *s != *from) {
 	    /* Find the beginning of token */
 	    s++; k++;
@@ -677,7 +680,7 @@ TIX_DEFINE_CMD(Tix_StringSubCmd)
     }
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_TmpLineCmd
  *
@@ -691,21 +694,21 @@ TIX_DEFINE_CMD(Tix_TmpLineCmd)
     Tk_Window mainWin = (Tk_Window)clientData;
     Tk_Window tkwin;
     int x1, y1, x2, y2;
-    
+
     if (argc != 5 && argc != 6) {
 	return Tix_ArgcError(interp, argc, argv, 0,
 	    "tixTmpLine x1 y1 x2 y2 ?window?");
     }
-    if (Tcl_GetInt(interp, argv[1], &x1) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[1], &x1) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[2], &y1) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[2], &y1) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[3], &x2) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[3], &x2) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[4], &y2) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[4], &y2) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (argc == 6) {
@@ -726,12 +729,12 @@ TIX_DEFINE_CMD(Tix_TmpLineCmd)
     TixpDrawTmpLine(x1, y1, x2, y2, tkwin);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_TrueCmd
  *
  *	Returns a true value regardless of the arguments. This is used to
- *	skip run-time debugging 
+ *	skip run-time debugging
  *----------------------------------------------------------------------
  */
 
@@ -740,7 +743,7 @@ TIX_DEFINE_CMD(Tix_TrueCmd)
     Tcl_SetResult(interp, "1",TCL_STATIC);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * EventProc --
  *
@@ -815,14 +818,14 @@ static void IdleHandler(clientData)
 	} else {
 	    Tcl_AddErrorInfo(iPtr->interp,
 		"\n    (idle event handler executed by tixDoWhenIdle)");
-	} 
+	}
 	Tk_BackgroundError(iPtr->interp);
     }
 
     ckfree((char*)iPtr->command);
     ckfree((char*)iPtr);
 }
-
+
 /*----------------------------------------------------------------------
  * IsOption --
  *
@@ -831,7 +834,7 @@ static void IdleHandler(clientData)
  *----------------------------------------------------------------------
  */
 static int IsOption(option, optArgc, optArgv)
-    char *option;		/* Number of arguments. */ 
+    char *option;		/* Number of arguments. */
     int optArgc;		/* Number of arguments. */
     char **optArgv;		/* Argument strings. */
 {
@@ -844,7 +847,7 @@ static int IsOption(option, optArgc, optArgv)
     }
     return 0;
 }
-
+
 
 static void MapEventProc(clientData, eventPtr)
     ClientData clientData;	/* TCL command to evaluate */
@@ -890,7 +893,7 @@ static void MapEventProc(clientData, eventPtr)
     /* deallocate the mapEventStruct */
     ckfree((char*)mPtr);
 }
-
+
 static char *
 NameOfColor(colorPtr)
    XColor * colorPtr;

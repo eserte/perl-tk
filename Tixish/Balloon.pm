@@ -11,7 +11,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.039'; # $Id: //depot/Tk8/Tixish/Balloon.pm#39 $
+$VERSION = sprintf '4.%03d', q$Revision: #6 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -62,7 +62,7 @@ sub Populate {
     $w->{img_bl} = $w->Photo(-data => $arrows{BL}, '-format' => 'gif');
     $w->{img_br} = $w->Photo(-data => $arrows{BR}, '-format' => 'gif');
     $w->{img_no} = $w->Photo(-data => $arrows{NO}, '-format' => 'gif');
-    $w->OnDestroy([$w, 'deletePhotos']);
+    $w->OnDestroy([$w, '_destroyed']);
     $a->configure(-bd => 0);
     $d->configure(-bd => 0);
     my $atl = $a->Label(-bd => 0,
@@ -198,26 +198,26 @@ sub Motion {
 	      $button_up = 0;
 	    }
 	    # Deactivate it if the motioncommand says to:
-            my $command = $w->GetOption(-motioncommand => $client);
+	    my $command = $w->GetOption(-motioncommand => $client);
 	    $deactivate = $command->Call($client, $x, $y) if defined $command;
-            if ($deactivate)
-             {
-              $w->Deactivate;
-             }
-            else
-             {
-              # warn "deact: $client $w->{'client'}";
-              $w->Deactivate unless $client->IS($w->{'client'});
-              my $msg = $client->BalloonInfo($w,$x,$y,'-statusmsg','-balloonmsg');
-              if (defined($msg))
-               {
-                my $delay = delete $w->{'delay'};
-                $delay->cancel if defined $delay;
-                my $initwait = $w->GetOption(-initwait => $client);
-                $w->{'delay'} = $client->after($initwait, sub {$w->SwitchToClient($client);});
-                $w->{'client'} = $client;
-               }
-             }
+	    if ($deactivate)
+	     {
+	      $w->Deactivate;
+	     }
+	    else
+	     {
+	      # warn "deact: $client $w->{'client'}";
+	      $w->Deactivate unless $client->IS($w->{'client'});
+	      my $msg = $client->BalloonInfo($w,$x,$y,'-statusmsg','-balloonmsg');
+	      if (defined($msg))
+	       {
+		my $delay = delete $w->{'delay'};
+		$delay->cancel if defined $delay;
+		my $initwait = $w->GetOption(-initwait => $client);
+		$w->{'delay'} = $client->after($initwait, sub {$w->SwitchToClient($client);});
+		$w->{'client'} = $client;
+	       }
+	     }
 	} else {
 	    # cursor is at a position covered by a non client
 	    # pop down the balloon if it is up or scheduled.
@@ -281,7 +281,7 @@ sub grabBad {
     my $wp = $w->PathName;
     my $gp = $g->PathName;
     return 0 if $wp =~ /^$gp/;
-    return 1;			# bad grab
+    return 1;                   # bad grab
 
 } # end grabBad
 
@@ -302,11 +302,11 @@ sub Verify {
     my $over = $w->Containing($X,$Y);
     return if not defined $over or ($over->toplevel eq $w);
     my $deactivate = # DELETE? or move it to the isa-Menu section?:
-	             # ($over ne $client) or
-	             not $client->IS($w->{'client'})
+		     # ($over ne $client) or
+		     not $client->IS($w->{'client'})
 #                     or (!$client->isa('Tk::Menu') && $w->grabCurrent);
 #                     or $w->grabbad($client);
-                     or &grabBad($w, $client);
+		     or &grabBad($w, $client);
     if ($deactivate)
      {
       $w->Deactivate;
@@ -455,20 +455,21 @@ sub ClearStatus {
     }
 }
 
-sub destroy {
+sub _destroyed
+{
     my ($w) = @_;
+    # This is called when widget is destroyed (no matter how!)
+    # via the ->OnDestroy hook set in Populate.
+    # remove ourselves from the list of baloons.
     @balloons = grep($w != $_, @balloons);
-    #$w->SUPER::destroy;
-    # Above doesn't seem to work but at least I have removed it from the
-    # list of balloons and maybe undef'ing the object will get rid of it.
-    $w->deletePhotos();
-    undef $w;
-}
 
-sub deletePhotos {
-    my ($w) = @_;
+    # FIXME: If @balloons is now empty perhaps remove the 'all' bindings
+    # to reduce overhead until another balloon is created?
+
+    # Delete the images
     for (qw(no tl tr bl br)) {
-	$w->{"img_$_"}->delete if defined $w->{"img_$_"};
+        my $img = delete $w->{"img_$_"};
+	$img->delete if defined $img;
     }
 }
 

@@ -27,7 +27,7 @@ if (defined $Config{'gccversion'})
       if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
        {
         # This is the author - catch as many bugs as possible
-        $gccopt .= "  -MMD -Werror";
+        $gccopt .= "  -MMD -Werror -Wno-format";
         @macro = ( macro => { INSTALLDIRS => 'perl' });
        }
      }
@@ -60,7 +60,14 @@ $define{'USE_PROTOTYPE'} = 1     if ($Config{'prototype'});
 $define{'HAVE_UNISTD_H'} = 1     if ($Config{'i_unistd'});
 $define{'HAVE_SYS_SELECT_H'} = 1 if ($Config{'i_sysselct'});
 $define{'NO_STDLIB_H'} = 1       unless ($Config{'i_stdlib'});
-$define{'HAVE_SYS_TIME_H'} = 1   if ($Config{'i_systime'});
+if ($Config{'i_systime'})
+ {
+  $define{'HAVE_SYS_TIME_H'} = 1;
+  if ($Config{'i_time'})
+   {
+    $define{'TIME_WITH_SYS_TIME'} = 1;
+   }
+ }
 $define{'HAVE_LIMITS_H'} = 1     if ($Config{'i_limits'});
 $define{'HAS_STDARG'} = 1        if ($Config{'i_stdarg'});
 $define{'USE_BCOPY'} = 1         if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
@@ -175,11 +182,24 @@ sub IX11
  return undef;
 }
 
+sub Ift
+{
+ foreach (map { "$_/freetype2" } @_)
+  {
+   if (-d $_ && -d "$_/freetype" && -r "$_/freetype/freetype.h")
+    {
+     print "Using -I$_ to find $_/freetype/freetype.h\n";
+     return "-I$_";
+    }
+  }
+ return undef;
+}
+
 my @args = ();
 my $arg;
 foreach $arg (@ARGV)
  {
-  if ($arg =~ /^(X11\w*)=(.*)$/)
+  if ($arg =~ /^(X11\w*|XFT)=(.*)$/)
    {
     ${"$1"} = $2;
    }
@@ -319,6 +339,33 @@ if ($win_arch eq 'x') {
    }
 
   $inc = ($xinc eq "-I/usr/include") ? "" : $xinc;
+
+  if ($XFT)
+   {
+    # Found basic X libraries now see if we can find -lXft
+
+    my $ftinc = Ift("/usr/include","/usr/local/include");
+    if ($ftinc)
+     {
+      print "xlib='$xlib' xinc='$xinc'\n";
+      if (try_run("config/xft.c",[$xinc,$ftinc],[$xlib,'-lXft','-lfontconfig']))
+       {
+        $inc .= " $ftinc";
+        warn "Seem to have -lXft\n";
+        $define{USE_XFT_FONTS} = 1;
+        $xlib .= " -lXft";
+        $xtra = ' -lfontconfig';
+       }
+     }
+    else
+     {
+      warn "Cannot find freetype.h include file\n";
+     }
+   }
+  else
+   {
+    warn "XFT not requested\n";
+   }
 } elsif ($win_arch eq 'open32') {
   unless (defined $toolkit) {
     my @path = split /;/, $ENV{PATH};

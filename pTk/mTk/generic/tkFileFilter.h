@@ -83,7 +83,7 @@ EXTERN void		TkFreeFileFilters _ANSI_ARGS_((
 EXTERN void		TkInitFileFilters _ANSI_ARGS_((
 			    FileFilterList * flistPtr));
 EXTERN int		TkGetFileFilters _ANSI_ARGS_ ((Tcl_Interp *interp,
-    			    FileFilterList * flistPtr, Arg arg,
+    			    FileFilterList * flistPtr, Tcl_Obj * arg,
 			    int isWindows));
 
 # undef TCL_STORAGE_CLASS

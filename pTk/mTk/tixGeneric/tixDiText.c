@@ -1,3 +1,6 @@
+
+/*	$Id: tixDiText.c,v 1.2 2000/10/12 02:52:19 idiscovery Exp $	*/
+
 /*
  * tixDiText.c --
  *
@@ -29,7 +32,7 @@
 #define DEF_TEXTITEM_TYPE	 "text"
 
 static Tk_ConfigSpec textItemConfigSpecs[] = {
-    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType", 
+    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType",
        DEF_TEXTITEM_TYPE, Tk_Offset(TixTextItem, diTypePtr),
        0, &tixConfigItemType},
     {TK_CONFIG_CUSTOM, "-style", "textStyle", "TextStyle",
@@ -51,8 +54,8 @@ static Tk_ConfigSpec textItemConfigSpecs[] = {
  *----------------------------------------------------------------------
  */
 
-#define SELECTED_BG SELECT_BG 
-#define DISABLED_BG DISABLED  
+#define SELECTED_BG SELECT_BG
+#define DISABLED_BG DISABLED
 
 #define DEF_TEXTSTYLE_NORMAL_FG_COLOR		BLACK
 #define DEF_TEXTSTYLE_NORMAL_FG_MONO		BLACK
@@ -76,7 +79,7 @@ static Tk_ConfigSpec textItemConfigSpecs[] = {
 
 #define DEF_TEXTSTYLE_PADX			"2"
 #define DEF_TEXTSTYLE_PADY			"2"
-#define DEF_TEXTSTYLE_FONT	     "-Adobe-Helvetica-Bold-R-Normal--*-120-*"
+#define DEF_TEXTSTYLE_FONT			"Helvetica -12 bold"
 #define DEF_TEXTSTYLE_JUSTIFY			"left"
 #define DEF_TEXTSTYLE_WLENGTH			"0"
 #define DEF_TEXTSTYLE_ANCHOR			"w"
@@ -350,7 +353,7 @@ static void Tix_TextItemDisplay(pixmap, gc, iPtr, x, y, width, height, flags)
 
     TixGetColorDItemGC(iPtr, &backGC, &foreGC, flags);
 
-    TixpStartSubRegionDraw(itPtr->ddPtr->display, pixmap, foreGC,
+    TixpStartSubRegionDraw(itPtr->ddPtr, pixmap, foreGC,
 	    &subReg, 0, 0, x, y, width, height,
 	    itPtr->size[0], itPtr->size[1]);
 
@@ -366,10 +369,18 @@ static void Tix_TextItemDisplay(pixmap, gc, iPtr, x, y, width, height, flags)
 	x += itPtr->stylePtr->pad[0];
 	y += itPtr->stylePtr->pad[1];
 
+        /* FIXME?
+           A. is numChars still valid and is it bytes or chars ?
+           B. If width < itPtr->textW this falls out of the
+              region when using Xft to draw chars
+           C. What do we want to happen for width < textW anyway?
+               - clip (as before) or wrap ?
+         */
+
 	TixpSubRegDisplayText(itPtr->ddPtr->display, pixmap, foreGC,
-		&subReg, itPtr->stylePtr->font, LangString(itPtr->text),
-		itPtr->numChars, x, y, itPtr->textW, itPtr->stylePtr->justify,
-		itPtr->underline);
+		&subReg, itPtr->stylePtr->font, Tcl_GetString(itPtr->text),
+		itPtr->numChars, x, y,
+		width, itPtr->stylePtr->justify, itPtr->underline);
     }
 
     TixpEndSubRegionDraw(itPtr->ddPtr->display, pixmap, foreGC,
@@ -397,8 +408,8 @@ static void Tix_TextItemCalculateSize(iPtr)
 
 
     if (itPtr->text) {
-	itPtr->numChars = strlen(LangString(itPtr->text));
-	TixComputeTextGeometry(itPtr->stylePtr->font, LangString(itPtr->text),
+	itPtr->numChars = strlen(Tcl_GetString(itPtr->text));
+	TixComputeTextGeometry(itPtr->stylePtr->font, Tcl_GetString(itPtr->text),
 		itPtr->numChars,
 		itPtr->stylePtr->wrapLength, &itPtr->textW, &itPtr->textH);
 
@@ -450,7 +461,7 @@ Tix_TextItemLostStyle(iPtr)
 	itPtr->ddPtr, &tix_TextItemType, iPtr, NULL);
 
     Tix_TextItemStyleChanged(iPtr);
-}
+}
 /*----------------------------------------------------------------------
  *
  *
@@ -494,7 +505,7 @@ Tix_TextStyleCreate(interp, tkwin, diTypePtr, name)
 
     return (Tix_DItemStyle *)stylePtr;
 }
-
+
 static int
 Tix_TextStyleConfigure(style, argc, argv, flags)
     Tix_DItemStyle *style;
@@ -602,7 +613,7 @@ static int fg_flags [4] = {
     TIX_DITEM_DISABLED_FG
 };
 
-
+
 static void
 Tix_TextStyleSetTemplate(style, tmplPtr)
     Tix_DItemStyle* style;

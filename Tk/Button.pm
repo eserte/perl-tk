@@ -7,7 +7,7 @@ package Tk::Button;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Button.pm#16 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Button.pm#8 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial

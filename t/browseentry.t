@@ -3,7 +3,7 @@ BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
 
-BEGIN 
+BEGIN
   {
    plan test => 15;
   };
@@ -29,7 +29,7 @@ my $be = $mw->BrowseEntry(-listcmd => $listcmd,
 			  -browsecmd => $browsecmd,
 			  -textvariable => \$bla,
 			 )->pack;
-ok($@, "", "can't create BrowseEntry");
+ok("$@", "", "can't create BrowseEntry");
 ok(Tk::Exists($be), 1, "BrowseEntry creation failed");
 
 $be->insert('end', 1, 2, 3);
@@ -60,7 +60,7 @@ my $be2 = $mw->BrowseEntry(-choices => [qw/a b c d e/],
 			   -textvariable => \$bla,
 			   -state => "normal",
 			  )->pack;
-ok($@, "", "can't create BrowseEntry");
+ok("$@", "", "can't create BrowseEntry");
 ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
 
 #&Tk::MainLoop;

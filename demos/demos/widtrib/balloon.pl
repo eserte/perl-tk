@@ -154,9 +154,11 @@ $b->attach($lb,
 	   -msg => [qw/1 2 3 4/],
 	  );
 
-# destroy the balloons when I am destroyed:
-#  - Balloon.pm adds bindings to all widgets which we now want to remove if we can.
-$top->OnDestroy(sub { $b->destroy; });
+# As $b is a child of $top it is destroyed when $top is destroyed.
+# Balloon.pm now registers a handler for that, and so
+# this hackery is no longer required (and did not actually work
+# before).
+# $top->OnDestroy(sub { $b->destroy; });
 
 MainLoop;
 

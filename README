@@ -4,39 +4,65 @@ Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
-derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
+derived from those of the orignal Tix4.1.3 or Tk8.4 sources. See doc/license.html
 for details of this license.
 
-Tk800.024 is mainly for compatibility with perl-5.7.3 and later
-(various parts of perl's internals changed).
+Tk804.025 is late-alpha/beta level.
+(Previous stable release being Tk800.025.)
+The code itself is probably at least as solid as Tk800 series, but
+build process/tests need shaking down on non/Linux.
 
-It has minimal changes from Tk800.023 apart from bug fixes.
-For questions on this package try news:comp.lang.perl.tk or e-mail
-to <ptk@lists.stanford.edu> or <nick@ing-simmons.net>
+This a re-port of a perl interface to Tk8.4.
+C code is derived from Tcl/Tk8.4.4.
 
-This a re-port of a perl interface to Tk8.0.5 (Scriptics's production release).
+Perl API is essentially the same as Tk800.025 but has not
+been verified as compliant.
 
-It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.006 release.
+The goal of this release is Unicode support via perl's and
+core-tk's use of UTF-8.
+
+It also includes all the C code parts of Tix8.1.4 from SourceForge.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
 
-This version (Tk800.024) requires perl5.005 or later on Win32
-and 5.004_04 or later on UNIX.
-
-This version also contains re-worked Image code based on tcl/tk Img extension
-(version img1.2.3) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/
-Jan's "dash" patch is also merged.
-
-Tk800.024 should build and run on Windows NT using Visual C++, Borland,
-or with the MinGW-1.1 port of GCC with perl5.005 or later.
-Can be built using ActiveState's binary distribution
-(see README-ActiveState.txt).
-
-I have not tried a Borland build recently.
+This Tk804 is only likely to work with perl5.8+
+Perl's UTF-8 support has improved since int was introduced in perl5.6.0.
+Some functions (regular expression match in Text widgets) are known
+to only work with perl5.8.1
 
 Author has built against:
 
-  Perl5.7.3
-   Pentium Suse Linux-7.3 gcc-2.95.3
-   Win2000, MinGW-1.1 (gcc-2.95.3)
+  Perl5.8.0
+   Earlier versions worked with this - but it has Unicode mis-features.
+   Not tried it recently.
 
+  Perl5.8.1-RC*
+   Pentium Suse Linux-8.2 gcc-3.3
+   Visual C++ 6.0, Windows-XP, dmake
+   Mingw 2.0, Windows-XP, dmake  (perl without PERL_IMP_SYS, that is
+   broken for MinGW).
 
+  Perl5.8.1
+   Pentium Suse Linux-8.2 gcc-3.3
+   Visual C++ 6.0, Windows-XP, dmake/nmake
+
+For questions on this package try news:comp.lang.perl.tk or e-mail
+to <ptk@lists.stanford.edu> or <nick@ing-simmons.net>
+
+An experimental implementation of client side fonts via
+freetype2, fontconfig and Xft is provided for Unix.
+This is strongly recommened if you are planning to make use
+of Unicode rendering capabilities of Tk. It also gives anti-aliased
+fonts for regular text (if you have TrueType or Type1 fonts and
+they are in your fontconfig config file).
+
+See http://fontconfig.org
+
+The author has installed
+  http://fontconfig.org/release/xrender-0.8.3.tar.gz
+  http://fontconfig.org/release/xft-2.1.2.tar.gz
+  http://fontconfig.org/release/fontconfig-2.2.0.tar.gz
+
+but it also works with versions in SuSE8.2
+
+To try this install those libraries (or later ones?) and then do
+  perl Makefile.PL XFT=1

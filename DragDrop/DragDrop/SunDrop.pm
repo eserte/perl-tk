@@ -2,7 +2,7 @@ package Tk::DragDrop::SunDrop;
 require  Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#15 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/SunDrop.pm#4 $
 
 use base  qw(Tk::DragDrop::Rect);
 use strict;

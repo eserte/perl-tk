@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -wT
 #
-# This script implements a simple remote-control mechanism for Tk 
-# applications.  It allows you to select an application and then type 
+# This script implements a simple remote-control mechanism for Tk
+# applications.  It allows you to select an application and then type
 # commands to that application.
 
 
@@ -23,7 +23,7 @@ $MW->ErrorDialog->configure('-cleanupcode' => \&prompt);
 my $app = "local";		# application name that we're sending to
 my $lastCommand = "";		# use this command if !! entered
 
-# Create menu bar.  Arrange to recreate all the information in the 
+# Create menu bar.  Arrange to recreate all the information in the
 # applications sub-menu whenever it is cascaded to.
 
 my $menu = $MW->Frame(-relief => 'raised', -bd => 2);
@@ -50,12 +50,12 @@ $t->pack(-side => 'left');
 
 $SIG{'__WARN__'} = \&get_eval_status;
 
-# Create a binding to forward commands to the target application, plus modify 
-# many of the built-in bindings so that only information in the current 
-# command can be deleted (can still set the cursor earlier in the text and 
+# Create a binding to forward commands to the target application, plus modify
+# many of the built-in bindings so that only information in the current
+# command can be deleted (can still set the cursor earlier in the text and
 # select and insert; just can't delete).
 
-$t->bindtags([$t, 'Tk::Text', $MW, 'all']); # use *my* bindings before 
+$t->bindtags([$t, 'Tk::Text', $MW, 'all']); # use *my* bindings before
                                             # considering those of class Text
 $t->bind('<Return>' => sub {
     my $t = shift;
@@ -79,7 +79,7 @@ $t->bind('<BackSpace>' => sub {
     } else {
 	$t->break if $t->compare('insert', '<', 'promptEnd');
     }
-});    
+});
 $t->bind('<Control-d>' => sub {
     my $t = shift;
     $t->break if $t->compare('insert', '<', 'promptEnd');
@@ -109,7 +109,7 @@ $t->bind('<Control-x>' => sub {
     $t->tag('remove', 'sel', 'sel.first', 'promptEnd');
 });
 
-$t->tag('configure', 'bold', 
+$t->tag('configure', 'bold',
     -font => "*-Courier-Bold-R-Normal-*-120-*-*-*-*-*-*",
 );
 $app = $MW->name;
@@ -122,7 +122,7 @@ MainLoop;
 
 sub prompt {
 
-    # This procedure is used to print out a prompt at the insertion point 
+    # This procedure is used to print out a prompt at the insertion point
     # (which should be at the beginning of a line right now).
 
     $t->insert('insert', "$app: ");
@@ -134,8 +134,8 @@ sub prompt {
 
 sub invoke {
 
-    # The procedure below executes a command (it takes everything on the 
-    # current line after the prompt and either sends it to the remote 
+    # The procedure below executes a command (it takes everything on the
+    # current line after the prompt and either sends it to the remote
     # application or executes it locally, depending on "app".
 
     my $cmd = $t->get('promptEnd', 'insert');
@@ -175,18 +175,18 @@ sub newApp {
 
 sub fillAppsMenu {
 
-    # The procedure below will fill in the applications sub-menu with a list 
+    # The procedure below will fill in the applications sub-menu with a list
     # of all the applications that currently exist.
 
     my $i; eval {$menu_file_m_apps->delete(0, 'last')};
     foreach $i (sort $MW->interps) {
-	$menu_file_m_apps->add("command", 
-            -label   => $i, 
+	$menu_file_m_apps->add("command",
+            -label   => $i,
             -command => [sub { &newApp($_[0]);},$i],
         );
     }
-    $menu_file_m_apps->add("command", 
-        -label   => "local", 
+    $menu_file_m_apps->add("command",
+        -label   => "local",
         -command => sub { &newApp("local"); },
     );
 

@@ -5,7 +5,7 @@ package Tk::Menubar;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/Menubar.pm#17 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Menubar.pm#6 $
 
 use Tk::Frame;
 use Tk::Menu;

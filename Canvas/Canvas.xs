@@ -12,9 +12,9 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -28,7 +28,7 @@ void
 canvas(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,(Tcl_CmdProc *)Tk_CanvasObjCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,1,Tk_CanvasObjCmd,items,&ST(0)));
  }
 
 

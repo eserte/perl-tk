@@ -9,11 +9,31 @@
 #include <XSUB.h>
 #include "tkGlue.def"
 
+/* #define DO_CHECK_TCL_ALLOC */
+
 
 #define TCL_EVENT_IMPLEMENT
 #include "pTk/Lang.h"
 #include "pTk/tkEvent.h"
 #include "pTk/tkEvent_f.h"
+#include "pTk/tkEvent_f.c"
+
+extern void TclInitSubsystems(CONST char *argv0);
+
+static SV *
+FindVarName(varName,flags)
+char *varName;
+int flags;
+{
+ STRLEN len;
+ SV *name = newSVpv("Tk",2);
+ SV *sv;
+ sv_catpv(name,"::");
+ sv_catpv(name,varName);
+ sv = perl_get_sv(SvPV(name,len),flags);
+ SvREFCNT_dec(name);
+ return sv;
+}
 
 #ifndef INT2PTR
 #define INT2PTR(any,d) (any)(d)
@@ -23,22 +43,25 @@
 #endif
 
 void
-LangDebug(char *fmt,...)
+LangDebug(CONST char *fmt,...)
 {
  va_list ap;
  va_start(ap,fmt);
- PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
- PerlIO_flush(PerlIO_stderr());
+ if (SvIV(FindVarName("LangDebug",GV_ADD|GV_ADDWARN)))
+  {
+   PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
+   PerlIO_flush(PerlIO_stderr());
+  }
  va_end(ap);
 }
 
 void
 #ifdef STANDARD_C
-Tcl_Panic(char *fmt,...)
+Tcl_Panic(CONST char *fmt,...)
 #else
 /*VARARGS0 */
 Tcl_Panic(fmt, va_alist)
-char *fmt;
+CONST char *fmt;
 va_dcl
 #endif
 {
@@ -52,6 +75,7 @@ va_dcl
  PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
  PerlIO_putc(PerlIO_stderr(),'\n');
  va_end(ap);
+ abort();
  croak("Tcl_Panic");
 }
 
@@ -59,19 +83,28 @@ va_dcl
 #undef Tcl_Alloc
 #undef Tcl_Free
 
-int
-Tcl_DumpActiveMemory (char *fileName)
-{
- return 0;
-}
-
+#undef Tcl_DumpActiveMemory
+#undef Tcl_ValidateAllMemory
 void
-Tcl_ValidateAllMemory (char *file, int line)
+Tcl_ValidateAllMemory (CONST char *file, int line)
 {
 }
 
 
 #ifdef DO_CHECK_TCL_ALLOC
+
+typedef struct alloc_s
+{
+ struct alloc_s *self;
+ unsigned int size;
+ struct alloc_s *next;
+ struct alloc_s *prev;
+ CONST char *file;
+ int line;
+ char space[1];
+} alloc_t, *alloc_ptr;
+
+static alloc_ptr allocated;
 
 long Tcl_AllocCount = 0;
 
@@ -91,85 +124,177 @@ is_perl_arena(void *ptr)
 }
 
 static void
-check_lp(long *lp,char *s)
+check_lp(alloc_ptr lp,CONST char *s, CONST char *file, int line)
 {
  if (is_perl_arena(lp))
   {
-   warn("Attempt to '%s(%p)' perl data",s,lp+2);
+   warn("Attempt to '%s(%p)' perl data @ %s:%d",s,&lp->space, file, line);
    abort();
   }
- if (lp[0] != (long)lp || lp[lp[1]-1] != (long)lp)
+ if (lp->self != lp || lp[lp->size-1].self != lp)
   {
-   warn("Invalid '%s(%p)' %lx,%lx,%lx",
-         s,lp+2,lp[0],lp[1],lp[lp[1]-1]);
+   warn("Invalid '%s(%p)' a=%p s=%p e=%p @ %s:%d/%s:%d",
+         s,&lp->space,
+         lp,lp->self, lp[lp->size-1].self, file, line, lp->file, lp->line);
    abort();
   }
+}
+
+static void
+delink(alloc_ptr lp)
+{
+ lp->prev->next = lp->next;
+ lp->next->prev = lp->prev;
+ if (allocated == lp)
+  {
+   allocated = lp->prev;
+   if (allocated == lp)
+    allocated = NULL;
+  }
+}
+
+static char *
+enlink(alloc_ptr lp, unsigned int size, CONST char *file, int line)
+{
+ lp->next = (allocated) ? allocated : lp;
+ lp->prev = (allocated) ? allocated->prev : lp;
+ lp->prev->next = lp;
+ lp->next->prev = lp;
+ allocated = lp;
+ lp->self = lp;
+ lp->size = size;
+ lp[size-1].self = lp;
+ lp->file = file;
+ lp->line = line;
+ check_lp(lp,__FUNCTION__,file,line);
+ return lp->space;
+}
+
+void
+Lang_NoteOwner (void *owner,void *packet, CONST char *file, int line)
+{
+ alloc_ptr op = (alloc_ptr) ((char *)owner  - offsetof(alloc_t,space));
+ alloc_ptr lp = (alloc_ptr) ((char *)packet - offsetof(alloc_t,space));
+ check_lp(lp,__FUNCTION__, file, line);
+ check_lp(op,__FUNCTION__, file, line);
+ lp->file = op->file;
+ lp->line = op->line;
+}
+
+char *
+Tcl_DbCkrealloc (char *ptr,unsigned int size,CONST char *file,int line)
+{
+ alloc_ptr lp = (alloc_ptr) (ptr - offsetof(alloc_t,space));
+ check_lp(lp,__FUNCTION__, file, line);
+ file = lp->file;
+ line = lp->line;
+ delink(lp);
+ if ((int) size < 0)
+  abort();
+ size = (sizeof(alloc_t)+size+sizeof(alloc_t)+sizeof(alloc_t)-1)/sizeof(alloc_t);
+ lp = PerlMemShared_realloc(lp,size*sizeof(alloc_t));
+ return enlink(lp,size,file,line);
+}
+
+char *
+Tcl_DbCkalloc (unsigned int usize,CONST char *file,int line)
+{
+ char *res;
+ alloc_t *lp;
+ size_t size = (sizeof(alloc_t)+usize+sizeof(alloc_t)+sizeof(alloc_t)-1)/sizeof(alloc_t);
+ if ((int) usize < 0)
+  abort();
+ lp = PerlMemShared_calloc(size, sizeof(alloc_t));
+ Tcl_AllocCount++;
+ res = enlink(lp,size,file,line);
+ if (res+usize > (char *)(&lp[size-1].self))
+  {
+   warn("s=%x lp=%p res=%p..%p e=%p\n",usize,lp,res,res+usize,&lp[size-1].self);
+   assert(res+usize <= (char *)(&lp[size-1].self));
+  }
+ return res;
+}
+
+int
+Tcl_DbCkfree (char *ptr,CONST char *file ,int line)
+{
+ if (ptr)
+  {
+   alloc_ptr lp = (alloc_ptr) (ptr - offsetof(alloc_t,space));
+   check_lp(lp,__FUNCTION__, file, line);
+   delink(lp);
+   Tcl_AllocCount--;
+   memset(lp,-1,lp->size*sizeof(alloc_t));
+   PerlMemShared_free(lp);
+  }
+ else
+  {
+#ifndef WIN32
+   warn("Attempt to 'free(%p) @ %s:%s' NULL",ptr,file,line);
+#endif
+  }
+ return 0;
+}
+
+int
+Tcl_DumpActiveMemory (CONST char *fileName)
+{
+ alloc_ptr p = allocated;
+ if (Tcl_AllocCount)
+  {
+   long count = 0;
+   PerlIO_printf(PerlIO_stderr(),"\n%ld Tcl_Alloc packets un-freed\n",Tcl_AllocCount);
+   do
+    {
+     PerlIO_printf(PerlIO_stderr(),"%3ld @ %s:%d\n",p->size,p->file,p->line);
+     count++;
+     p = p->next;
+    } while (p != allocated);
+   if (count != Tcl_AllocCount)
+    {
+     PerlIO_printf(PerlIO_stderr(),"%ld un-freed, %ld on chain",Tcl_AllocCount,count);
+    }
+  }
+ return 0;
 }
 
 char *
 Tcl_Realloc(char *p, unsigned int size)
 {
- long *lp = ((long *)p)-2;
- check_lp(lp,__FUNCTION__);
- if ((int) size < 0)
-  abort();
- size = (size+sizeof(long)-1)/sizeof(long)+3;
- Renew(lp,size,long);
- lp[0] = (long)lp;
- lp[1] = size;
- lp[size-1] = (long)lp;
- return (char *)(lp+2);
+ return Tcl_DbCkrealloc(p, size, __FILE__, __LINE__);
 }
-
 
 char *
 Tcl_Alloc(unsigned int size)
 {
- long *lp;
- if ((int) size < 0)
-  abort();
- size = (size+sizeof(long)-1)/sizeof(long)+3;
- Newz(603, lp, size, long);
- lp[0] = (long)lp;
- lp[1] = size;
- lp[size-1] = (long)lp;
- Tcl_AllocCount++;
- return (char *)(lp+2);
+ return Tcl_DbCkalloc(size,__FILE__,__LINE__);
 }
 
 void
 Tcl_Free(char *p)
 {
- if (p)
-  {
-   long *lp = ((long *)p)-2;
-   check_lp(lp,__FUNCTION__);
-   memset(lp,-1,lp[1]*sizeof(long));
-   Tcl_AllocCount--;
-   Safefree(lp);
-  }
- else
-  {
-   warn("Attempt to 'free(%p)' NULL",p);
-  }
-}
-
-void
-Event_CleanupGlue(void)
-{
-#if 0
- warn("%ld Tcl_Alloc packets un-freed",Tcl_AllocCount);
-#endif
+ Tcl_DbCkfree(p,__FILE__,__LINE__);
 }
 
 #else
+
+void
+Lang_NoteOwner (void *owner,void *packet, CONST char *file, int line)
+{
+}
+
+int
+Tcl_DumpActiveMemory (CONST char *fileName)
+{
+ return 0;
+}
 
 char *
 Tcl_Realloc(char *p, unsigned int size)
 {
  if ((int) size < 0)
   abort();
- Renew(p,size,char);
+ p = PerlMemShared_realloc(p,size*sizeof(char));
  return p;
 }
 
@@ -179,14 +304,41 @@ Tcl_Alloc(unsigned int size)
  char *p;
  if ((int) size < 0)
   abort();
- Newz(603, p, size, char);
+ p = PerlMemShared_calloc(size, sizeof(char));
  return p;
 }
 
 void
 Tcl_Free(char *p)
 {
- Safefree(p);
+ PerlMemShared_free(p);
+}
+
+char *
+Tcl_DbCkalloc (unsigned int size,CONST char *file,int line)
+{
+ return Tcl_Alloc(size);
+}
+
+int
+Tcl_DbCkfree (char *ptr,CONST char *file ,int line)
+{
+ Tcl_Free(ptr);
+ return 0;
+}
+
+char *
+Tcl_DbCkrealloc (char *ptr,unsigned int size,CONST char *file,int line)
+{
+ return Tcl_Realloc(ptr,size);
+}
+
+#endif
+
+char *
+Tcl_AttemptDbCkalloc(unsigned int usize,CONST char *file,int line)
+{
+ return Tcl_DbCkalloc(usize,file,line);
 }
 
 void
@@ -195,32 +347,6 @@ Event_CleanupGlue(void)
 
 }
 
-#endif
-
-char *
-Tcl_DbCkalloc (unsigned int size,char *file,int line)
-{
- return Tcl_Alloc(size);
-}
-
-void
-Tcl_DbCkfree (char *ptr,char *file ,int line)
-{
- Tcl_Free(ptr);
-}
-
-char *
-Tcl_DbCkrealloc (char *ptr,unsigned int size,char *file,int line)
-{
- return Tcl_Realloc(ptr,size);
-}
-
-void
-LangExit(value)
-int value;
-{
- my_exit((unsigned) value);
-}
 
 long
 Lang_OSHandle(fd)
@@ -231,21 +357,6 @@ int fd;
 #else
  return fd;
 #endif
-}
-
-static SV *
-FindVarName(varName,flags)
-char *varName;
-int flags;
-{
- STRLEN len;
- SV *name = newSVpv("Tk",2);
- SV *sv;
- sv_catpv(name,"::");
- sv_catpv(name,varName);
- sv = perl_get_sv(SvPV(name,len),flags);
- SvREFCNT_dec(name);
- return sv;
 }
 
 static void
@@ -303,6 +414,7 @@ typedef struct PerlIOHandler
   int callingMask;                /* Events for which we are in callbacks */
   int pending;
   SV *mysv;
+  IV extraRefs;
   } PerlIOHandler;
 
 typedef struct PerlIOEvent
@@ -420,8 +532,7 @@ PerlIO_watch(PerlIOHandler *filePtr)
 }
 
 int
-PerlIO_is_writable(filePtr)
-PerlIOHandler *filePtr;
+PerlIO_is_writable(PerlIOHandler *filePtr)
 {
  if (!(filePtr->readyMask & TCL_WRITABLE))
   {
@@ -438,8 +549,7 @@ PerlIOHandler *filePtr;
 }
 
 int
-PerlIO_is_readable(filePtr)
-PerlIOHandler *filePtr;
+PerlIO_is_readable(PerlIOHandler *filePtr)
 {
  if (!(filePtr->readyMask & TCL_READABLE))
   {
@@ -464,8 +574,7 @@ PerlIOHandler *filePtr;
 }
 
 int
-PerlIO_has_exception(filePtr)
-PerlIOHandler *filePtr;
+PerlIO_has_exception(PerlIOHandler *filePtr)
 {
  return (filePtr->readyMask & TCL_EXCEPTION);
 }
@@ -558,10 +667,7 @@ PerlIOSetupProc(ClientData data, int flags)
 }
 
 static int
-PerlIOEventProc(evPtr, flags)
-Tcl_Event *evPtr;                 /* Event to service. */
-int flags;                        /* Flags that indicate what events to
-                                     * handle, such as TCL_FILE_EVENTS. */
+PerlIOEventProc(Tcl_Event *evPtr, int flags)
 {
  if (flags & TCL_FILE_EVENTS)
   {
@@ -609,10 +715,12 @@ int flags;                        /* Flags that indicate what events to
          ENTER;
          SAVETMPS;
          SvREFCNT_inc(filePtr->mysv);
+         filePtr->extraRefs++;
          filePtr->callingMask |= TCL_READABLE;
          LangPushCallbackArgs(&sv);
          LangCallCallback(sv,G_DISCARD);
          filePtr->callingMask &= ~TCL_READABLE;
+         filePtr->extraRefs--;
          SvREFCNT_dec(filePtr->mysv);
          FREETMPS;
          LEAVE;
@@ -623,10 +731,12 @@ int flags;                        /* Flags that indicate what events to
          ENTER;
          SAVETMPS;
          SvREFCNT_inc(filePtr->mysv);
+         filePtr->extraRefs++;
          filePtr->callingMask |= TCL_WRITABLE;
          LangPushCallbackArgs(&sv);
          LangCallCallback(sv,G_DISCARD);
          filePtr->callingMask &= ~TCL_WRITABLE;
+         filePtr->extraRefs--;
          SvREFCNT_dec(filePtr->mysv);
          FREETMPS;
          LEAVE;
@@ -637,10 +747,12 @@ int flags;                        /* Flags that indicate what events to
          ENTER;
          SAVETMPS;
          SvREFCNT_inc(filePtr->mysv);
+         filePtr->extraRefs++;
          filePtr->callingMask |= TCL_EXCEPTION;
          LangPushCallbackArgs(&sv);
          LangCallCallback(sv,G_DISCARD);
          filePtr->callingMask &= ~TCL_EXCEPTION;
+         filePtr->extraRefs--;
          SvREFCNT_dec(filePtr->mysv);
          FREETMPS;
          LEAVE;
@@ -655,9 +767,7 @@ int flags;                        /* Flags that indicate what events to
 }
 
 static void
-PerlIOCheckProc(data, flags)
-ClientData data;                  /* Not used. */
-int flags;                        /* Event flags as passed to Tcl_DoOneEvent. */
+PerlIOCheckProc(ClientData data, int flags)
 {
  if (flags & TCL_FILE_EVENTS)
   {
@@ -705,6 +815,7 @@ SV *sv;
  return NULL;
 }
 
+
 SV *
 PerlIO_TIEHANDLE(class, fh, mask)
 char *class;
@@ -712,11 +823,12 @@ SV *fh;
 int mask;                         /* OR'ed TCL_READABLE, TCL_WRITABLE, and TCL_EXCEPTION */
 {
  HV *stash = gv_stashpv(class, TRUE);
- GV *tmpgv = newGVgen(class);
+ GV *tmpgv = (GV *) newSV(0);
  IO *tmpio = newIO();
  IO *io = sv_2io(fh);
  SV *obj = newSV(sizeof(PerlIOHandler));
  PerlIOHandler *filePtr = (PerlIOHandler *)SvPVX(obj);
+ gv_init(tmpgv,stash,"Foo",3,0);
  GvIOp(tmpgv) = tmpio;
  if (!initialized)
   PerlIOEventInit();
@@ -731,12 +843,59 @@ int mask;                         /* OR'ed TCL_READABLE, TCL_WRITABLE, and TCL_E
  filePtr->pending     = 0;
  filePtr->nextPtr     = firstPerlIOHandler;
  filePtr->mysv        = obj;
+ filePtr->extraRefs   = 0;
  firstPerlIOHandler   = filePtr;
  PerlIO_watch(filePtr);
  obj = newRV_noinc(obj);
  sv_bless(obj, stash);
  return obj;
 }
+
+void
+PerlIO_DESTROY(thisPtr)
+PerlIOHandler *thisPtr;
+{
+ if (initialized)
+  {
+   PerlIOHandler **link = &firstPerlIOHandler;
+   PerlIOHandler *filePtr;
+   while ((filePtr = *link))
+    {
+     if (!thisPtr || filePtr == thisPtr)
+      {
+       IO *tmpio;
+       *link = filePtr->nextPtr;
+       PerlIO_unwatch(filePtr);
+       if (filePtr->readHandler)
+        {
+         LangFreeCallback(filePtr->readHandler);
+         filePtr->readHandler = NULL;
+        }
+       if (filePtr->writeHandler)
+        {
+         LangFreeCallback(filePtr->writeHandler);
+         filePtr->writeHandler = NULL;
+        }
+       if (filePtr->exceptionHandler)
+        {
+         LangFreeCallback(filePtr->exceptionHandler);
+         filePtr->exceptionHandler = NULL;
+        }
+       tmpio = GvIOp(filePtr->untied);
+       IoIFP(tmpio) = NULL;
+       IoOFP(tmpio) = NULL;
+       SvREFCNT_dec(filePtr->untied);
+       SvREFCNT_dec(filePtr->handle);
+      }
+     else
+      {
+       link = &filePtr->nextPtr;
+      }
+    }
+  }
+}
+
+
 
 
 SV *
@@ -795,6 +954,11 @@ LangCallback *cb;
      filePtr->handlerMask &= ~mask;
     }
    PerlIO_watch(filePtr);
+   /* What we return will be made mortal and free'd by caller
+      which will balance the effective REFCNT_inc
+      in LangMakeCallback()
+    */
+   return (cb) ? cb : &PL_sv_undef;
   }
  else
   {
@@ -812,8 +976,11 @@ LangCallback *cb;
      default:
       croak("Invalid handler type %d",mask);
     }
+   /* We need the REFCNT_inc from LangCallbackObj() to
+      counter the mortal-ize of return result
+    */
+   return (cb) ? LangCallbackObj(cb) : &PL_sv_undef;
   }
- return (cb) ? LangCallbackObj(cb) : &PL_sv_undef;
 }
 
 void
@@ -838,47 +1005,12 @@ PerlIO_Cleanup(PerlIOHandler *filePtr)
 }
 
 void
-PerlIO_DESTROY(thisPtr)
-PerlIOHandler *thisPtr;
+PerlIO_UNTIE(SV *sv,IV count)
 {
- if (initialized)
-  {
-   PerlIOHandler **link = &firstPerlIOHandler;
-   PerlIOHandler *filePtr;
-   while ((filePtr = *link))
-    {
-     if (!thisPtr || filePtr == thisPtr)
-      {
-       IO *tmpio;
-       *link = filePtr->nextPtr;
-       PerlIO_unwatch(filePtr);
-       if (filePtr->readHandler)
-        {
-         LangFreeCallback(filePtr->readHandler);
-         filePtr->readHandler = NULL;
-        }
-       if (filePtr->writeHandler)
-        {
-         LangFreeCallback(filePtr->writeHandler);
-         filePtr->writeHandler = NULL;
-        }
-       if (filePtr->exceptionHandler)
-        {
-         LangFreeCallback(filePtr->exceptionHandler);
-         filePtr->exceptionHandler = NULL;
-        }
-       tmpio = GvIOp(filePtr->untied);
-       IoIFP(tmpio) = NULL;
-       IoOFP(tmpio) = NULL;
-       SvREFCNT_dec(filePtr->untied);
-       SvREFCNT_dec(filePtr->handle);
-      }
-     else
-      {
-       link = &filePtr->nextPtr;
-      }
-    }
-  }
+ PerlIOHandler *thisPtr = SVtoPerlIOHandler(sv);
+ if ((count-thisPtr->extraRefs) > 0) {
+  warn("untie called with %ld references",count);
+ }
 }
 
 void
@@ -961,42 +1093,8 @@ int flags;
 static Signal_t handle_signal _((int sig));
 static Signal_t (*old_handler) _((int sig)) = NULL;
 static char seen[NSIG];
-static int  asyncReady;
-static int  asyncActive;
 
-int
-Tcl_AsyncInvoke(interp,code)
-Tcl_Interp *interp;
-int code;
-{
- int i;
- int done_one = 1;
- asyncReady = 0;
- asyncActive = 1;
- while (done_one)
-  {
-   done_one = 0;
-   for (i=0; i < NSIG; i++)
-    {
-     if (seen[i] > 0)
-      {
-       seen[i]--;
-       (*old_handler)(i);
-       done_one = 1;
-       break;
-      }
-    }
-  }
- asyncActive = 0;
- return code;
-}
-
-int
-Tcl_AsyncReady()
-{
- return asyncReady;
-}
-
+Tcl_AsyncHandler async[NSIG];
 
 static Signal_t
 handle_signal(sig)
@@ -1004,11 +1102,8 @@ int sig;
 {
  if (sig >= 0 && sig < NSIG)
   {
-   seen[sig]++;
-   if (!asyncActive)
-    {
-     asyncReady = 1;
-    }
+   if (async[sig])
+    Tcl_AsyncMark(async[sig]);
   }
 }
 
@@ -1039,27 +1134,39 @@ XS(XS_Tk__Callback_Call)
   {
    croak("No arguments");
   }
- LangPushCallbackArgs(&ST(0));
+ LangPushCallbackArgs(&cb);
  SPAGAIN;
  for (i=1; i < items; i++)
   {
    if (SvTAINTED(ST(i)))
     {
-     croak("Arg %d to callback %_ is tainted",i,ST(i));
+     croak("Tcl_Obj * %d to callback %_ is tainted",i,ST(i));
     }
    XPUSHs(ST(i));
   }
  PUTBACK;
 
- count = LangCallCallback(ST(0),GIMME|G_EVAL);
+ count = LangCallCallback(cb,GIMME|G_EVAL);
  SPAGAIN;
 
  err = ERRSV;
  if (SvTRUE(err))
   {
-   croak("%s",SvPV(err,na));
+   SV *save = sv_2mortal(newSVsv(err));
+   STRLEN len;
+   char *s = SvPV(save, len);
+   if (len >= 11 && !strncmp("_TK_EXIT_(",s,10))
+    {
+     char *e = strchr(s+=10,')');
+     sv_setpvn(save,s,e-s);
+     TclpExit(SvIV(save));
+    }
+   else
+    {
+     LangDebug("%s error:%.*s\n",__FUNCTION__,len,s);
+     croak("%s",s);
+    }
   }
-
  if (count)
   {
    for (i=1; i <= count; i++)
@@ -1107,6 +1214,21 @@ XS(XS_Tk__Event_INIT)
  install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
  XSRETURN_EMPTY;
 }
+
+#define pTk_exit(status) TclpExit(status)
+
+#define pTk_END() Tcl_Finalize()
+
+MODULE = Tk	PACKAGE = Tk	PREFIX = pTk_
+
+PROTOTYPES: ENABLE
+
+void
+pTk_END()
+
+void
+pTk_exit(status = 0)
+int	status
 
 MODULE = Tk::Event	PACKAGE = Tk::Callback	PREFIX = Callback_
 PROTOTYPES: DISABLE
@@ -1205,6 +1327,12 @@ PerlIO_DESTROY(filePtr)
 PerlIOHandler *	filePtr
 
 void
+PerlIO_UNTIE(filePtr,count)
+SV *		filePtr
+IV		count
+
+
+void
 PerlIO_END()
 
 MODULE = Tk::Event	PACKAGE = Tk::Event::Source	PREFIX = Tcl_
@@ -1255,7 +1383,7 @@ double
 dGetTime()
 CODE:
  {Tcl_Time time;
-  TclpGetTime(&time);
+  Tcl_GetTime(&time);
   RETVAL = (double) time.sec + time.usec * 1e-6;
  }
 OUTPUT:
@@ -1370,4 +1498,9 @@ BOOT:
 #endif
   newXS("Tk::Callback::Call", XS_Tk__Callback_Call, __FILE__);
   install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
+  sv_setiv(FindVarName("LangDebug",GV_ADD|GV_ADDMULTI),1);
+  TclInitSubsystems(SvPV_nolen(get_sv("0",FALSE)));
  }
+
+
+

@@ -8,7 +8,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#33 $
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /#(\d+)/;
 
 use Tk qw(Ev);
 use Carp;
@@ -120,7 +120,8 @@ sub SetBindings {
 
     # set bind tags
     $w->bindtags([$w, 'Tk::BrowseEntry', $w->toplevel, 'all']);
-    $e->bindtags([$e, $e->toplevel, 'all']);
+    # as we don't bind $e here leave its tags alone ...
+    # $e->bindtags([$e, ref($e), $e->toplevel, 'all']);
 
     # bindings for the button and entry
     $b->bind('<1>',[$w,'BtnDown']);

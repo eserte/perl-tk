@@ -21,14 +21,15 @@ Tcl_Interp *		T_TK_INTERP
 Tk_Font			T_TK_FONT
 EventAndKeySym *	T_TK_XEVENT
 LangCallback *		T_TK_CALLBACK
+LangFontInfo *		T_PVOBJ
 
-INPUT 
+INPUT
 T_PVOBJ
-	if (sv_object($arg)) {
+	if (sv_isobject($arg)) {
 	    STRLEN sz;
 	    $var = ($type) SvPV((SV*)SvRV($arg),sz);
 	    if (sz != sizeof(*$var))
-	     croak(\"$var too small for $type\");
+	     croak(\"$arg too small (%d) for $var $type (%d)\",sz,sizeof(*$var));
 	}
 	else
 	    croak(\"$var is not an object\")
@@ -68,7 +69,7 @@ T_IVOBJ
 	else {
 	    $var = ($type) NULL;
 	    croak(\"$var is not of type ${ntype}\");
-	}    
+	}
 
 T_NIO
 	if (sv_isa($arg, \"${Package}\")) {
@@ -86,9 +87,9 @@ T_TK_UID
 	sv_setpv($arg,$var);
 
 T_TK_WINDOW
-	sv_setsv($arg,TkToWidget($var,NULL));
+	SvSetMagicSV($arg,TkToWidget($var,NULL));
 
 T_TKWINDOW
-	sv_setsv($arg,TkToWidget((Tk_Window) $var,NULL));
+	SvSetMagicSV($arg,TkToWidget((Tk_Window) $var,NULL));
 
 

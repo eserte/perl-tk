@@ -4,7 +4,7 @@
 
 #include "imgInt.h"
 #include <string.h>
-      
+
 #ifndef _LANG
 #ifdef MAC_TCL
 #  include "dlfcn.h"
@@ -96,7 +96,7 @@ ImgPhotoPutBlock(handle, blockPtr, x, y, width, height)
 		}
 		if (end > X) {
  		    blockPtr->pixelPtr =  rowPtr + blockPtr->pixelSize * X;
-		    Tk_PhotoPutBlock(handle, blockPtr, x+X, y+Y, end-X, 1);
+		    Tk_PhotoPutBlock(handle, blockPtr, x+X, y+Y, end-X, 1, TK_PHOTO_COMPOSITE_SET);
 		}
 		X = end;
 	    }
@@ -104,7 +104,7 @@ ImgPhotoPutBlock(handle, blockPtr, x, y, width, height)
 	}
 	blockPtr->pixelPtr = imagePtr;
     } else {
-	Tk_PhotoPutBlock(handle,blockPtr,x,y,width,height);
+	Tk_PhotoPutBlock(handle,blockPtr,x,y,width,height, TK_PHOTO_COMPOSITE_SET);
     }
     return TCL_OK;
 }
@@ -253,3 +253,4 @@ ImgLoadFailed(handlePtr)
 }
 
 #endif
+

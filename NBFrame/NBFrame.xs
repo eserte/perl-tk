@@ -14,15 +14,14 @@
 #include "pTk/tkInt.h"
 #include "pTk/tix.h"
 #include "pTk/tixInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
-extern int Tix_NoteBookFrameCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 
-DECLARE_VTABLES;    
-TixVtab     *TixVptr     ; 
-TixintVtab  *TixintVptr  ; 
+DECLARE_VTABLES;
+TixVtab     *TixVptr     ;
+TixintVtab  *TixintVptr  ;
 
 MODULE = Tk::NBFrame	PACKAGE = Tk
 
@@ -32,7 +31,7 @@ void
 nbframe(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tix_NoteBookFrameCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,1,Tix_NoteBookFrameCmd,items,&ST(0)));
  }
 
 

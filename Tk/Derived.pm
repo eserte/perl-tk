@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.048'; # $Id: //depot/Tk8/Tk/Derived.pm#48 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Derived.pm#8 $
 
 $Tk::Derived::Debug = 0;
 

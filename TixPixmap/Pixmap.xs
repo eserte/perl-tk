@@ -15,14 +15,14 @@
 #include "pTk/tixPort.h"
 #include "pTk/tixInt.h"
 #include "pTk/tixImgXpm.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ; 
-TixintVtab  *TixintVptr  ; 
-TiximgxpmVtab  *TiximgxpmVptr  ; 
+TixVtab     *TixVptr     ;
+TixintVtab  *TixintVptr  ;
+TiximgxpmVtab  *TiximgxpmVptr  ;
 
 extern Tk_ImageType tixPixmapImageType;
 
@@ -61,7 +61,7 @@ TkWindow *	win
 BOOT:
  {
   IMPORT_VTABLES;
-  TixVptr     =     INT2PTR(TixVtab *, SvIV(perl_get_sv("Tk::TixVtab",5)));    
+  TixVptr     =     INT2PTR(TixVtab *, SvIV(perl_get_sv("Tk::TixVtab",5)));
   TixintVptr  =  INT2PTR(TixintVtab *, SvIV(perl_get_sv("Tk::TixintVtab",5)));
   TiximgxpmVptr  =  INT2PTR(TiximgxpmVtab *, SvIV(perl_get_sv("Tk::TiximgxpmVtab",5)));
 

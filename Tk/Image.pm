@@ -10,7 +10,7 @@ require DynaLoader;
 use base qw(DynaLoader Tk); # but are they ?
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Image.pm#16 $
+$VERSION = '4.011'; # $Id: //depot/Tkutf8/Tk/Image.pm#11 $
 
 sub new
 {
@@ -19,6 +19,7 @@ sub new
  $package->InitClass($widget);
  my $leaf = $package->Tk_image;
  my $obj = $widget->Tk::image('create',$leaf,@_);
+ $obj = $widget->_object($obj) unless (ref $obj);
  return bless $obj,$package;
 }
 

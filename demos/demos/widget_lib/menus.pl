@@ -12,22 +12,32 @@ sub menus {
     my ($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-	-text     => '',
+        -text     => ['', -wraplength => '5i'],	
         -title    => 'Menu Demonstration',
         -iconname => 'menus',
     );
 
-    my $toplevel = $TOP->toplevel;
+    my $ws = $TOP->windowingsystem;
+
+    my $text = ($ws eq 'classic' or $ws eq 'aqua') ?
+        'This window contains a menubar with cascaded menus.  You can invoke entries with an accelerator by typing Command+x, where "x" is the character next to the command key symbol. The rightmost menu can be torn off into a palette by dragging outside of its bounds and releasing the mouse.' :
+        'This window contains a menubar with cascaded menus.  You can post a menu from the keyboard by typing Alt+x, where "x" is the character underlined on the menu.  You can then traverse among the menus using the arrow keys.  When a menu is posted, you can invoke the current entry by typing space, or you can invoke any entry by typing its underlined character.  If a menu entry has an accelerator, you can invoke the entry without posting the menu just by typing the accelerator. The rightmost menu can be torn off into a palette by selecting the first item in the menu.';
+
+    $TOP->configure(-text => $text);
+
+    my $toplevel = $TOP->toplevel; # get $TOP's Toplevel widget reference
     my $menubar = $toplevel->Menu(-type => 'menubar');
     $toplevel->configure(-menu => $menubar);
 
-    my $modifier = 'Meta';	# Unix
-    if ($^O eq 'MSWin32') {
-	$modifier = 'Control';
-    } elsif ($^O eq 'MacOS') {  # one of these days
+    my $modifier;
+    if ( $ws eq 'classic' or $ws eq 'aqua') {
 	$modifier = 'Command';
+    } elsif ($Tk::platform eq 'windows') {
+	$modifier = 'Control';
+    } else {
+	$modifier = 'Meta';
     }
-
+ 
     my $f = $menubar->cascade(-label => '~File', -tearoff => 0);
     $f->command(-label => 'Open ...',    -command => [\&menus_error, 'Open']);
     $f->command(-label => 'New',         -command => [\&menus_error, 'New']);
@@ -53,20 +63,20 @@ sub menus {
     }
     my $c = $menubar->cascade(-label => '~Cascades', -tearoff => 0);
     $c->command(
-        -label       => 'Print hello', 
+        -label       => 'Print hello',
         -command     => sub {print "Hello\n"},
 	-accelerator => "$modifier+H",
         -underline   => 6,
     );
     $TOP->bind("<$modifier-h>" => sub {print "Hello\n"});
     $c->command(
-        -label       => 'Print goodbye', 
+        -label       => 'Print goodbye',
         -command     => sub {print "Goodbye\n"},
-	-accelerator => "$modifier+G", 
+	-accelerator => "$modifier+G",
         -underline   => 6,
     );
     $TOP->bind("<$modifier-g>" => sub {print "Goodbye\n"});
-    my $cc = $c->cascade(-label => '~Check buttons');
+    my $cc = $c->cascade(-label => '~Check buttons', -tearoff => 0);
 
     $cc->checkbutton(-label => 'Oil checked', -variable => \$OIL);
     $cc->checkbutton(-label => 'Transmission checked', -variable => \$TRANS);
@@ -87,7 +97,7 @@ sub menus {
     $cc_menu->invoke(1);
     $cc_menu->invoke(3);
 
-    my $rc = $c->cascade(-label => '~Radio buttons');
+    my $rc = $c->cascade(-label => '~Radio buttons', -tearoff => 0);
 
     foreach $label (qw/10 14 18 24 32/) {
 	$rc->radiobutton(
@@ -120,7 +130,12 @@ sub menus {
     my $i = $menubar->cascade(-label => '~Icons', -tearoff => 0);
     $i->command(
         -bitmap => '@'.Tk->findINC('demos/images/pattern'),
-	-command => [$DIALOG_ICON => 'Show'],
+	-command => sub {
+	    $TOP->messageBox(
+			     -title => 'Bitmap Menu Entry', 
+			     -message => 'The menu entry you invoked displays a bitmap rather than a text string.  Other than this, it is just like any other menu entry.', 
+			     -type => 'ok'),
+	    },
 	-hidemargin => 1,
     );
     foreach $label (qw/info questhead error/) {
@@ -135,8 +150,8 @@ sub menus {
     my $m = $menubar->cascade(-label => '~More', -tearoff => 0);
     foreach $label ('An entry', 'Another entry', 'Does nothing',
 		    'Does almost nothing', 'Make life meaningful') {
-	$m->command( 
-            -label   => $label, 
+	$m->command(
+            -label   => $label,
 	    -command => sub {print "You invoked \"$label\"\n"},
         );
     }
@@ -150,19 +165,14 @@ sub menus {
         );
     }
 
-    $TOP->Label(qw/-wraplength 4.5i -justify left -text/ => 'This window contains a menubar with cascaded menus.  You can post a menu from the keyboard by typing Alt+x, where "x" is the character underlined on the menu.  You can then traverse among the menus using the arrow keys.  When a menu is posted, you can invoke the current entry by typing space, or you can invoke any entry by typing its underlined character.  If a menu entry has an accelerator, you can invoke the entry without posting the menu just by typing the accelerator. The rightmost menu can be torn off into a palette by selecting the first item in the menu.', -font => $FONT)->pack;
-
-    my $status_bar = '     ';
-    $TOP->Label(qw/-relief sunken -borderwidth 1 -anchor w/,
-		-font => 'Helvetica 10', -textvariable => \$status_bar)->
-		    pack(qw/-padx 2 -pady 2 -expand yes -fill both/);
+    my $status_bar;
+    $TOP->Label(
+        qw/-relief sunken -borderwidth 1 -anchor w/,
+        -font => 'Helvetica 10', -textvariable => \$status_bar)->
+	pack(qw/-padx 2 -pady 2 -expand yes -fill both/);
     $menubar->bind('<<MenuSelect>>' => sub {
-	my $label = undef;
-	my $w = $Tk::event->W;
-	eval {local $SIG{__DIE__};
-	      $label = $w->entrycget('active', -label);
-	      $status_bar = $label;
-	};
+	$status_bar = undef;
+	$status_bar = $_[0]->entrycget('active', -label);
 	$TOP->idletasks;
     });
 
@@ -171,7 +181,7 @@ sub menus {
 sub menus_error {
 
     # Generate a background error, which may even be displayed in a window if
-    # using ErrorDialog. 
+    # using ErrorDialog.
 
     my($msg) = @_;
 

@@ -61,7 +61,7 @@ variable $mw at the 'ptksh> ' prompt of the command window.
 
 ptksh supports command line editing and history.  Just type "<Up>" at
 the command prompt to see a history list.  The last 50 commands entered
-are saved, then reloaded into history list the next time you start ptksh. 
+are saved, then reloaded into history list the next time you start ptksh.
 
 ptksh supports some convenient commands for inspecting Tk widgets.  See below.
 
@@ -146,9 +146,9 @@ If you have a perl/Tk script that you want to do debugging on, try running the
 command
 
   ptksh> do 'myscript';
-   
+
    -- or  (at shell command prompt) --
-  
+
   % ptksh myscript
 
 Then use the perl/Tk commands to try out different operations on your script.
@@ -320,7 +320,7 @@ if ( -r $HISTFILE and open(HIST, $HISTFILE) ) {
 			chop $c;	# kill trailing "\"
 			$c .= "\n";
 		}
-	}	
+	}
     close HIST;
 }
 
@@ -345,10 +345,10 @@ sub EvalInput {
 		Prompt($PROMPT);
 		Tk->break;
 	}
-	
+
 	# Support multi-line commands
 	if ($t->get('insert-1c', 'insert') eq "\\") {
-		$t->insert('insert', "\n");	
+		$t->insert('insert', "\n");
 		$t->insert('insert', "> ", 'prompt'); # must use this pattern for continue
 		$t->see('insert');
 		Tk->break;
@@ -358,27 +358,27 @@ sub EvalInput {
 	$command = $t->get('limit','end');
 	$t->markSet('insert','end');
 	$command =~ s/\\\n>\s/\n/mg;
-	
+
 	# Eval it
 	if ( $command !~ /^\s*$/) {
 		chomp $command;
-		push(@hist, $command) 
+		push(@hist, $command)
 			unless @hist && ($command eq $hist[$#hist]); #could elim more redundancy
-		
+
 		$t->insert('insert', "\n");
-		
+
 		$isStartOfCommand = 1;
-		
+
 		$command = PtkshCommand($command);
-		
+
 		exit if ($command eq 'exit');
-		
+
 		package main;
 		no strict;
 		$Tk::ptksh::result = eval "local \$^W=0; $Tk::ptksh::command;";
 		use strict;
 		package Tk::ptksh;
-				
+
 		if ($t->compare('insert', '!=', 'insert linestart')) {
 			$t->insert('insert', "\n");
 		}
@@ -389,23 +389,23 @@ sub EvalInput {
 			$t->insert('insert', '# ' . $result, 'result');
 		}
 	}
-	
+
 	Prompt($PROMPT);
-	
+
 	Tk->break;
 }
 
 sub Prompt {
 	my $pr = shift;
-	
+
 	if ($t->compare('insert', '!=', 'insert linestart')) {
 		$t->insert('insert', "\n");
 	}
-	
+
 	$t->insert('insert', $pr, 'prompt');
 	$t->see('insert');
 	$t->markSet('limit', 'insert');
-	
+
 }
 
 sub BackSpace {
@@ -434,7 +434,7 @@ sub Key {
 
 sub History {
 	Tk->break if defined($hist);
-	
+
 	$hist = $mw->Toplevel;
 	$hist->title('History');
 	$list = $hist->ScrlListbox(-scrollbars => 'oe',
@@ -492,7 +492,7 @@ sub LastCommand {
 sub Center {
 	my $w = shift;
 	my ($x, $y);
-	
+
 	if ($w->parent) {
 		#print STDERR $w->screenwidth, " ", $w->width, "\n";
 		$x = $w->parent->x + ($w->parent->width - $w->width)/2;
@@ -506,7 +506,7 @@ sub Center {
 	$y = int($y);
 	my $g = "+$x+$y";
 	#print STDERR "Setting geometry to $g\n";
-	$w->geometry($g);	
+	$w->geometry($g);
 }
 
 # To deal with "TIE".
@@ -515,14 +515,14 @@ sub Center {
 sub TIEHANDLE {	# just to capture the tied calls
 	my $self = [];
 	return bless $self;
-	
+
 }
 
 sub PRINT {
 	my ($bogus) = shift;
-	
+
 	$t->markSet('insert', 'end');
-	
+
 	if ($isStartOfCommand) {  # Then no prints have happened in this command yet so...
 		if ($t->compare('insert', '!=', 'insert linestart')) {
 			$t->insert('insert', "\n");
@@ -534,9 +534,9 @@ sub PRINT {
 	while (@_) {
 		$t->insert('end', shift, 'output');
 	}
-	
+
 	$t->see('insert');
-	
+
 	$t->markSet('limit', 'insert'); # don't interpret print as an input command
 }
 
@@ -608,7 +608,7 @@ sub _u {
 	print " --- Loading $module ---\n";
 	require "$module";
 	print $@ if $@;
-    } else {	
+    } else {
         %u_last = () if defined $module;
 	$u_cnt = 0;
 	foreach (sort keys %INC) {
@@ -617,7 +617,7 @@ sub _u {
             $u_last{$_} = 1;
 	    #next if m,^/, and m,\.ix$,; # Ignore autoloader files
 	    #next if m,\.ix$,; # Ignore autoloader files
-	
+
 	    if (length($_) < 20 ) {
 		printf "%-20s -> %s\n", $_, $INC{$_};
 	    } else {
@@ -632,7 +632,8 @@ sub _u {
 sub _d
   {
     require Data::Dumper;
-    local $Data::Dumper::Deparse = 1;
+    local $Data::Dumper::Deparse;
+    $Data::Dumper::Deparse = 1;
     print Data::Dumper::Dumper(@_);
   }
 
@@ -641,15 +642,15 @@ sub _h
     print <<'EOT';
 
   ? or h          print this message
-  d arg,...       calls Data::Dumper::Dumper 
-  p arg,...       print args, each on a line and "|\n" 
+  d arg,...       calls Data::Dumper::Dumper
+  p arg,...       print args, each on a line and "|\n"
   o $w /regexp/   print options of widget matching regexp
   o $w [opt ...]  print (all) options of widget
   u xxx           xxx = string : load Tk::Xxx
 			       = ''     : list all modules loaded
 			       = undef  : list modules loaded since last u call
 				              (or after ptksh startup)
-				                    
+
   Press <Up> (the "up arrow" key) for command history
   Press <Escape> to leave command history window
   Type "exit" to quit (saves history)
@@ -662,7 +663,7 @@ EOT
 # Substitute our special commands into the command line
 sub PtkshCommand {
 	$_ = shift;
-	
+
 	foreach ($_) {
 		last if s/^\?\s*$/Tk::ptksh::_h /;
 		last if s/^h\s*$/Tk::ptksh::_h /;
@@ -674,9 +675,9 @@ sub PtkshCommand {
 		last if s/^o\s+(\S+)\s*,?\s+(.*)?$/Tk::ptksh::_o $1, '$2';/;
     }
     %u_last = %INC unless $u_init++;
-    
+
     # print STDERR "Command is: $_\n";
-    
+
     $_;
 }
 
@@ -687,9 +688,9 @@ sub PtkshCommand {
 END {
 	if ($HISTFILE) {  # because this is probably perl -c if $HISTFILE is not set
 		$#hist-- if $hist[-1] =~ /^(q$|x$|\s*exit\b)/; # chop off the exit command
-		
+
 	    @hist = @hist[($#hist-$HISTSAVE)..($#hist)] if $#hist > $HISTSAVE;
-	    
+
 		if( open HIST, ">$HISTFILE" ) {
 			while ($_ = shift(@hist)) {
 				s/\n/\\\n/mg;

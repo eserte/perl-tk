@@ -1,7 +1,7 @@
 package Tie::Watch;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/lib/Tie/Watch.pm#4 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/lib/Tie/Watch.pm#6 $
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ $VERSION = '3.004'; # $Id: //depot/Tk8/lib/Tie/Watch.pm#4 $
  $watch = Tie::Watch->new(
      -variable => \$frog,
      -debug    => 1,
-     -shadow   => 0,			
+     -shadow   => 0,
      -fetch    => [\&fetch, 'arg1', 'arg2', ..., 'argn'],
      -store    => \&store,
      -destroy  => sub {print "Final value=$frog.\n"},

@@ -1,12 +1,12 @@
-use 5.00404;
+use 5.007;
 use Cwd;
 use Config;
 no  lib '.';
 BEGIN
  {
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
+  $xtra = "";
 
-  #$VERSION = '800.024010';
   open(M, "Tk.pm") or die "Can't open Tk.pm for reading VERSION: $!";
   while(<M>)
    {
@@ -37,15 +37,12 @@ use Tk::MMutil;
 if ($IsWin32)
  {
   *MY::makeaperl = \&makeWin32perl;
-  if ($Config{cc} =~ /^gcc/i)
-   {
-    @libs = ('');
-   }
+  @libs = ('-lcomctl32 -limm32');
  }
 else
  {
   my $plibs = $Config{'libs'};
-  my $libs  = "$xlib -lX11";   # Used to have -lpt in here as well.
+  my $libs  = "$xlib -lX11$xtra";   # Used to have -lpt in here as well.
   my @try   = qw(-lsocket -lnsl -lm);
   push(@try,'-lc') if $^O =~ /svr4/i;
   my $lib;
@@ -76,6 +73,8 @@ Tk::MMutil::TkExtMakefile(
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
+
+
 
 sub MY::top_targets
 {
@@ -161,6 +160,20 @@ sub MY::test
  # Temporarily remove sub-dirs from $self as we 'know'
  # there are no tests down there
  my $dir  = delete $self->{'DIR'};
+ my @td;
+ foreach my $sd (@$dir)
+  {
+   my @tests = sort glob($self->catfile($sd,'t','*.t'));
+   if (@tests)
+    {
+     warn "Tests in $sd\n";
+     push(@td,$sd);
+    }
+  }
+ if (@td)
+  {
+   $self->{DIR} = \@td;
+  }
  my $str  = $self->MM::test(%attrib);
  # Put sub-dirs back
  $self->{'DIR'} = $dir;

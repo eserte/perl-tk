@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -66,8 +66,12 @@ SV *sv;
      if (SvTYPE(SvRV(sv)) == SVt_PVCV)
       {
        AV *av = newAV();
-       /*       av_push(av,SvREFCNT_inc(sv));*/  /* Increment REFCNT ! */
+#if 0
+       /* This leaks */
+       av_push(av,SvREFCNT_inc(sv));  /* Increment REFCNT ! */
+#else
        av_push(av,sv);  /* changed by SRT: do not increment REFCNT ! */
+#endif
        sv = newRV_noinc((SV *) av);
       }
     }
@@ -106,7 +110,7 @@ SV *sv;
  if (!sv_isa(sv,"Tk::Callback"))
   {
    warn("Free non-Callback %p RV=%p",sv,SvRV(sv));
-   abort();
+   /*//   abort();*/
   }
  SvREFCNT_dec(sv);
 }
@@ -123,7 +127,7 @@ SV *sv;
  return SvREFCNT_inc(sv);
 }
 
-Arg
+Tcl_Obj *
 LangOldCallbackArg(sv,file,line)
 SV *sv;
 char *file;
@@ -145,12 +149,19 @@ int flags;
  I32 myframe = TOPMARK;
  I32 count;
  ENTER;
+ if (SvGMAGICAL(sv))
+  mg_get(sv);
  if (SvTAINTED(sv))
   {
    croak("Call of tainted value %_",sv);
   }
- if (SvGMAGICAL(sv))
-  mg_get(sv);
+ if (!SvOK(sv))
+  {
+   char *s = "Call of undefined value";
+   sv_setpvn(ERRSV,s,strlen(s));
+   abort();
+   return 0;
+  }
  if (flags & G_EVAL)
   {
    CV *cv  = perl_get_cv("Tk::__DIE__", FALSE);
@@ -185,12 +196,12 @@ int flags;
     mg_get(obj);
    if (SvPOK(sv) && SvROK(obj) && SvOBJECT(SvRV(obj)))
     {
-     count = perl_call_method(SvPV(sv, na), flags);
+     count = perl_call_method(SvPV_nolen(sv), flags);
     }
    else if (SvPOK(obj) && SvROK(sv) && SvOBJECT(SvRV(sv)))
     {
      *top = sv;
-     count = perl_call_method(SvPV(obj, na), flags);
+     count = perl_call_method(SvPV_nolen(obj), flags);
     }
    else
     {
@@ -211,7 +222,7 @@ LangPushCallbackArgs(SV **svp)
   {
    croak("Tainted callback %_",sv);
   }
- if (SvTYPE(SvRV(sv)) != SVt_PVCV)
+ if (SvROK(sv) && SvTYPE(SvRV(sv)) != SVt_PVCV)
   sv = SvRV(sv);
  PUSHMARK(sp);
  if (SvTYPE(sv) == SVt_PVAV)
@@ -284,7 +295,7 @@ SV *b;
          if (ap && bp && !LangCmpCallback(*ap,*bp))
           return 0;
         }
-       return 0;
+       return 1;
       }
     }
    default:
@@ -312,5 +323,120 @@ SV *b;
      }
   }
 }
+
+VOID *
+Tcl_GetThreadData(keyPtr, size)
+    Tcl_ThreadDataKey *keyPtr;	/* Identifier for the data chunk */
+    int size;			/* Size of storage block */
+{
+    VOID *result;
+    if (*keyPtr == NULL) {
+	result = (VOID *)ckalloc((size_t)size);
+	memset((char *)result, 0, (size_t)size);
+	*keyPtr = (Tcl_ThreadDataKey)result;
+	/* TclRememberDataKey(keyPtr); */
+    }
+    result = *(VOID **)keyPtr;
+    return result;
+}
+
+VOID *
+TclThreadDataKeyGet(keyPtr)
+    Tcl_ThreadDataKey *keyPtr;	/* Identifier for the data chunk,
+				 * really (pthread_key_t **) */
+{
+    char *result = *(char **)keyPtr;
+    return (VOID *)result;
+}
+
+
+Tcl_ThreadId
+Tcl_GetCurrentThread(void)
+{
+#if 0
+ warn("%s not implemented",__FUNCTION__);
+ abort();
+#endif
+ return 0;
+}
+
+void
+TclpAsyncMark(async)
+Tcl_AsyncHandler async;		/* Token for handler. */
+{
+#ifdef WIN32
+ static DWORD mainThreadId;
+ if (!mainThreadId)
+   mainThreadId = GetCurrentThreadId();
+
+
+    /*
+     * Need a way to kick the Windows event loop and tell it to go look at
+     * asynchronous events.
+     */
+
+    PostThreadMessage(mainThreadId, WM_USER, 0, 0);
+#endif
+}
+
+void
+TclpInitLock(void)
+{
+}
+
+void
+TclpExit(int status)
+{
+/*
+ * Tk::exit comes here - via Tcl_Exit()
+ * Once upon a time and we just called my_exit()
+ * but that causes perl to longjmp() out of tkEvent.c and tkBind.c
+ * which have stored stack addresses in Tk structures.
+ * The die scheme works round this but imposes cost on normal execution.
+ */
+ if (PL_in_eval)
+  croak("_TK_EXIT_(%d)\n",status);
+ else
+  my_exit(status);
+}
+
+void
+TclpInitUnlock(void)
+{
+}
+
+void
+TclpInitPlatform(void)
+{
+}
+
+void
+TclInitIOSubsystem(void)
+{
+}
+
+void
+TclInitObjSubsystem(void)
+{
+}
+
+void
+TclFinalizeIOSubsystem(void)
+{
+}
+
+void
+TclFinalizeThreadData(void)
+{
+}
+
+void
+TclFinalizeObjSubsystem(void)
+{
+}
+
+
+
+
 
 

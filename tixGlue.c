@@ -15,7 +15,7 @@ extern Tix_DItemInfo tix_WindowItemType;
 
 
 void
-Boot_Tix _((void))
+Boot_Tix (pTHX)
 {
  install_vtab("TixVtab",TixVGet(),sizeof(TixVtab));
  install_vtab("TixintVtab",TixintVGet(),sizeof(TixintVtab));
@@ -25,9 +25,9 @@ Boot_Tix _((void))
  tixCellUid     = Tk_GetUid("cell");
  tixRowUid      = Tk_GetUid("row");
  tixColumnUid   = Tk_GetUid("column");
- Tix_AddDItemType(&tix_TextItemType); 
- Tix_AddDItemType(&tix_ImageItemType); 
- Tix_AddDItemType(&tix_ImageTextItemType); 
- Tix_AddDItemType(&tix_WindowItemType); 
-} 
+ Tix_AddDItemType(&tix_TextItemType);
+ Tix_AddDItemType(&tix_ImageItemType);
+ Tix_AddDItemType(&tix_ImageTextItemType);
+ Tix_AddDItemType(&tix_WindowItemType);
+}
 

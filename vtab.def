@@ -1,0 +1,55 @@
+#ifdef WIN32
+#define DECLARE_VTABLES	\
+LangVtab           *LangVptr;          \
+TcldeclsVtab       *TcldeclsVptr;      \
+TkVtab             *TkVptr;            \
+TkdeclsVtab        *TkdeclsVptr;       \
+TkeventVtab        *TkeventVptr;       \
+TkglueVtab         *TkglueVptr;        \
+TkintVtab          *TkintVptr;         \
+TkintdeclsVtab     *TkintdeclsVptr;    \
+TkintplatdeclsVtab *TkintplatdeclsVptr;\
+TkintxlibdeclsVtab *TkintxlibdeclsVptr;\
+TkoptionVtab       *TkoptionVptr;      \
+TkplatdeclsVtab    *TkplatdeclsVptr
+
+#define IMPORT_VTABLES	do { \
+LangVptr           =           (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",GV_ADDWARN|GV_ADD));           \
+TcldeclsVptr       =       (TcldeclsVtab *) SvIV(perl_get_sv("Tk::TcldeclsVtab",GV_ADDWARN|GV_ADD));       \
+TkVptr             =             (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",GV_ADDWARN|GV_ADD));             \
+TkdeclsVptr        =        (TkdeclsVtab *) SvIV(perl_get_sv("Tk::TkdeclsVtab",GV_ADDWARN|GV_ADD));        \
+TkeventVptr        =        (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));        \
+TkglueVptr         =         (TkglueVtab *) SvIV(perl_get_sv("Tk::TkglueVtab",GV_ADDWARN|GV_ADD));         \
+TkintVptr          =          (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",GV_ADDWARN|GV_ADD));          \
+TkintdeclsVptr     =     (TkintdeclsVtab *) SvIV(perl_get_sv("Tk::TkintdeclsVtab",GV_ADDWARN|GV_ADD));     \
+TkintplatdeclsVptr = (TkintplatdeclsVtab *) SvIV(perl_get_sv("Tk::TkintplatdeclsVtab",GV_ADDWARN|GV_ADD)); \
+TkintxlibdeclsVptr = (TkintxlibdeclsVtab *) SvIV(perl_get_sv("Tk::TkintxlibdeclsVtab",GV_ADDWARN|GV_ADD)); \
+TkoptionVptr       =       (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",GV_ADDWARN|GV_ADD));       \
+TkplatdeclsVptr    =    (TkplatdeclsVtab *) SvIV(perl_get_sv("Tk::TkplatdeclsVtab",GV_ADDWARN|GV_ADD));    \
+} while (0)
+#else
+#define DECLARE_VTABLES	\
+LangVtab           *LangVptr;          \
+TcldeclsVtab       *TcldeclsVptr;      \
+TkVtab             *TkVptr;            \
+TkdeclsVtab        *TkdeclsVptr;       \
+TkeventVtab        *TkeventVptr;       \
+TkglueVtab         *TkglueVptr;        \
+TkintVtab          *TkintVptr;         \
+TkintdeclsVtab     *TkintdeclsVptr;    \
+TkoptionVtab       *TkoptionVptr;      \
+XlibVtab           *XlibVptr
+
+#define IMPORT_VTABLES	do { \
+LangVptr           =           (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",GV_ADDWARN|GV_ADD));           \
+TcldeclsVptr       =       (TcldeclsVtab *) SvIV(perl_get_sv("Tk::TcldeclsVtab",GV_ADDWARN|GV_ADD));       \
+TkVptr             =             (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",GV_ADDWARN|GV_ADD));             \
+TkdeclsVptr        =        (TkdeclsVtab *) SvIV(perl_get_sv("Tk::TkdeclsVtab",GV_ADDWARN|GV_ADD));        \
+TkeventVptr        =        (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));        \
+TkglueVptr         =         (TkglueVtab *) SvIV(perl_get_sv("Tk::TkglueVtab",GV_ADDWARN|GV_ADD));         \
+TkintVptr          =          (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",GV_ADDWARN|GV_ADD));          \
+TkintdeclsVptr     =     (TkintdeclsVtab *) SvIV(perl_get_sv("Tk::TkintdeclsVtab",GV_ADDWARN|GV_ADD));     \
+TkoptionVptr       =       (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",GV_ADDWARN|GV_ADD));       \
+XlibVptr           =           (XlibVtab *) SvIV(perl_get_sv("Tk::XlibVtab",GV_ADDWARN|GV_ADD));           \
+} while (0)
+#endif

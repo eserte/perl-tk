@@ -1,3 +1,6 @@
+
+/*	$Id: tixNBFrame.c,v 1.2 2000/10/12 02:56:38 idiscovery Exp $	*/
+
 /*
  * tixNBFrame.c --
  *
@@ -309,7 +312,7 @@ static void		RedrawWhenIdle _ANSI_ARGS_((WidgetPtr wPtr));
 static int		TabConfigure _ANSI_ARGS_((WidgetPtr wPtr,
 			    Tab *tPtr, char ** argv, int argc));
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -401,7 +404,7 @@ Tix_NoteBookFrameCmd(clientData, interp, argc, argv)
     interp->result = Tk_PathName(wPtr->tkwin);
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -567,10 +570,10 @@ WidgetCommand(clientData, interp, argc, argv)
 	    int x, y, left, right;
 	    Tab * tPtr;
 
-	    if (Tcl_GetInt(interp, argv[2], &x) != TCL_OK) {
+	    if (Tcl_GetIntFromObj(interp, argv[2], &x) != TCL_OK) {
 		goto error;
 	    }
-	    if (Tcl_GetInt(interp, argv[3], &y) != TCL_OK) {
+	    if (Tcl_GetIntFromObj(interp, argv[3], &y) != TCL_OK) {
 		goto error;
 	    }
 
@@ -702,7 +705,7 @@ WidgetCommand(clientData, interp, argc, argv)
     Tcl_Release((ClientData) wPtr);
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -825,7 +828,7 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -885,7 +888,7 @@ WidgetEventProc(clientData, eventPtr)
 	break;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -938,7 +941,7 @@ WidgetDestroy(clientData)
     Tk_FreeOptions(configSpecs, (char *) wPtr, wPtr->display, 0);
     ckfree((char *) wPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -974,7 +977,7 @@ WidgetCmdDeletedProc(clientData)
 	Tk_DestroyWindow(tkwin);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1029,7 +1032,7 @@ static int TabConfigure(wPtr, tPtr, argv, argc)
     }
 
     if (tPtr->text != NULL) {
-	tPtr->numChars = strlen(tPtr->text);
+	tPtr->numChars = -1;
 	TixComputeTextGeometry(wPtr->font, tPtr->text, tPtr->numChars,
 	    tPtr->wrapLength, &tPtr->width, &tPtr->height);
     }
@@ -1050,7 +1053,7 @@ static int TabConfigure(wPtr, tPtr, argv, argc)
 
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1113,7 +1116,7 @@ AddTab(wPtr, name, argv, argc)
 
     return TCL_OK;
 }
-
+
 static void DeleteTab(tPtr)
     Tab * tPtr;
 {
@@ -1136,7 +1139,7 @@ static void DeleteTab(tPtr)
     }
     ckfree((char*)tPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1159,7 +1162,7 @@ RedrawWhenIdle(wPtr)
 	Tcl_DoWhenIdle(WidgetDisplay, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1203,7 +1206,7 @@ static void GetTabPoints(wPtr, tPtr, x, points)
     points[5].x = points[4].x;
     points[5].y = points[0].y;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1348,7 +1351,7 @@ static void FocusTab(wPtr, tPtr, x, drawable)
 	    wPtr->borderWidth/2, TK_RELIEF_SUNKEN);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1447,7 +1450,7 @@ WidgetDisplay(clientData)
 
     wPtr->redrawing = 0;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1479,9 +1482,9 @@ ComputeGeometry(wPtr)
 	wPtr->tabsWidth  = 0;
 	wPtr->tabsHeight = 0;
 	for (tPtr=wPtr->tabHead; tPtr; tPtr=tPtr->next) {
-	
+
 	    if (tPtr->text != NULL) {
-		tPtr->numChars = strlen(tPtr->text);
+		tPtr->numChars = -1;
 		TixComputeTextGeometry(wPtr->font, tPtr->text,
 		    tPtr->numChars, tPtr->wrapLength,
 		    &tPtr->width, &tPtr->height);
@@ -1511,7 +1514,7 @@ ComputeGeometry(wPtr)
 	wPtr->height = wPtr->tabsHeight + wPtr->borderWidth*2;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *

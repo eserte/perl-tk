@@ -17,15 +17,14 @@
 
 use strict;
 use Config;
-use Tk;
-use Tk::Button;
-use Tk::Canvas;
+use Devel::Peek;
 
 BEGIN {
     if (!eval q{
 	use Test;
 	use Devel::Leak;
-	die if $Config{optimize} !~ /-DPERL_DEBUGGING_MSTATS/;
+	die if ($Config{usemymalloc} eq 'y' &&
+                $Config{optimize} !~ /-DPERL_DEBUGGING_MSTATS/);
 	1;
     }) {
 	print "# tests only work with installed Test and Devel::Leak modules\n";
@@ -36,6 +35,11 @@ BEGIN {
     }
 }
 
+use Tk;
+use Tk::Button;
+use Tk::Canvas;
+
+
 {
     # gather all todos marked with "TODO: number"
     my @todos;
@@ -44,7 +48,7 @@ BEGIN {
 	push @todos, $1 if (/^\#\s+TODO:\s+(\d+)/);
     }
     close DATA;
-    plan tests => 8, todo => [@todos];
+    plan tests => 10, todo => [@todos];
 }
 
 my $mw = new MainWindow;
@@ -61,78 +65,102 @@ for(1..100) {
     $mw->bind("<Motion>" => [sub { warn }]);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok($c2, $c1);
 
-# TODO: 2
+
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
     $mw->bind("<Motion>" => sub { warn });
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok($c2, $c1);
 
-# TODO: 3
+
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
     $mw->bind("<Motion>" => \&test);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok($c2, $c1);
 
 my $btn = $mw->Button(-command => sub { warn });
-# TODO: 4
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
     $btn->configure(-command => sub { warn });
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok(($c2-$c1) < 10, 1);
 
 # Tests for leaking Tk_GetUid (e.g. canvas items)
 
 my $c = $mw->Canvas->pack;
-$c->createLine(10,10,100,100, -tags => "a");
+$c->delete($c->createLine(10,10,100,100, -tags => "a"));
 
 $c1 = Devel::Leak::NoteSV($handle);
-for(1..100) {
+for(1..1000) {
     $c->createLine(10,10,100,100,-tags => "a");
     $c->delete("a");
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok(($c2-$c1) < 10, 1);
 
-# TODO: 6
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
     my $id = $c->createLine(10,10,100,100);
     $c->delete($id);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok(($c2-$c1) < 10, 1);
 
 # Tests for leaking widget destroys
 my $btn2 = $mw->Button;
 $btn2->destroy;
 
-# TODO: 7
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
     my $btn2 = $mw->Button;
     $btn2->destroy;
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c1, $c2);
+ok(($c2-$c1) < 10, 1);
 
 # Tests for leaking fileevent callbacks
-$mw->fileevent(\*STDOUT, 'readable', sub { });
-$mw->fileevent(\*STDOUT, 'readable','');
+$mw->fileevent(\*STDIN, 'readable', sub { });
+$mw->fileevent(\*STDIN, 'readable','');
 
-# TODO: 8
 $c1 = Devel::Leak::NoteSV($handle);
-$mw->fileevent(\*STDOUT, 'readable', sub { });
-$mw->fileevent(\*STDOUT, 'readable','');
+for (1..100)
+ {
+  $mw->fileevent(\*STDIN, 'readable', sub { });
+  $mw->fileevent(\*STDIN, 'readable','');
+ }
 $c2 = Devel::Leak::CheckSV($handle);
-ok($c1, $c2);
+ok(($c2-$c1) < 10, 1);
+
+require Tk::After;
+$mw->withdraw;
+$mw->update;
+my $count = 0;
+Tk->after(cancel => Tk->after(10,sub { $count-- }));
+my $N = 100;
+$c1 = Devel::Leak::NoteSV($handle);
+for (1..$N)
+{
+ Tk->after(cancel => Tk->after($_*10,sub { $count-- }));
+}
+$c2 = Devel::Leak::CheckSV($handle);
+print "# was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
+ok(($c2-$c1) < $N, 1);
+
+$mw->repeat(30,sub {})->cancel;
+my $id;
+$c1 = Devel::Leak::NoteSV($handle);
+$id = $mw->repeat(2, sub { $id->cancel if ($count++ == $N)});
+Tk::DoOneEvent(0) while $id->[1];
+undef $id;
+$c2 = Devel::Leak::CheckSV($handle);
+print "# was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
+ok(($c2-$c1) < $N, 1);
 
 sub test { warn }
 

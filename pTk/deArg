@@ -1,9 +1,7 @@
-#!/tools/local/perl -w
-use strict;
-$^I = '.bak';
+#!/usr/local/bin/perl -w
+$^I='.bak';
 while (<>)
  {
-  s/\bArg\b[^\S\n]*/Tcl_Obj */g;
-  s/[^\S\n]+$//;
+  s/\b(Arg)\b/Tcl_Obj */g;
   print;
  }

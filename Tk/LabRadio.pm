@@ -3,7 +3,7 @@
 package Tk::LabRadiobutton;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/LabRadio.pm#9 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/LabRadio.pm#4 $
 
 require Tk::Frame;
 use base  qw(Tk::Frame);

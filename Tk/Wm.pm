@@ -14,20 +14,20 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Wm.pm#28 $
+$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/Wm.pm#12 $
 
 use Tk::Submethods;
 
 *{Tk::Wm::wmGrid}    = sub { shift->wm("grid", @_) };
 *{Tk::Wm::wmTracing} = sub { shift->wm("tracing", @_) };
 
-Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
+Direct Tk::Submethods ('wm' => [qw(aspect attributes client colormapwindows command
                        deiconify focusmodel frame geometry group
                        iconbitmap iconify iconimage iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
-                       protocol resizable saveunder sizefrom state title transient
+                       protocol resizable sizefrom state title transient
                        withdraw wrapper)]);
-
+		
 sub SetBindtags
 {
  my ($obj) = @_;
@@ -169,3 +169,4 @@ sub iconposition
   }
  $w->wm('iconposition',@_);
 }
+

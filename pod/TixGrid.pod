@@ -33,8 +33,32 @@ Tk::TixGrid - Create and manipulate Tix Grid widgets
 
 S<    >I<$tixgrid> = I<$parent>->B<TixGrid>?(I<options>)?;
 
-    The port of C code and bindings is done but needs
-    debugging.  THERE ARE KNOWN BUGS. Work in progress ...
+=head1 DESCRIPTION
+
+This widget is intended as the basis of "spread sheet" like interfaces.
+The widget displays its contents in a two dimensional "grid" of cells.
+Each cell may contain one Tix display item, which may be in text,
+graphics or other formats. See L<Tk::DItem> for more information
+about Tix display items. Because these "items" need not be "windows" large
+grids can be handled  without consuming excessive display system resources.
+
+Individual cells, or groups of cells, can be formatted with a wide range of
+attributes, such as its color, relief and border. However because the
+widget is intended to handle large grids the mechanisms to achieve these
+are lower level, and more callback oriented than for other widgets. The
+assumption is that to avoid storing display details of a large number
+of cells, the data will be re-computed as needed.
+
+The port of Tix C code and some of the bindings to perl/Tk is done but still
+need further work. In several places the intent of the Tix code is not
+yet understood. For example the 'edit' interface is clearly intended
+for spread-sheet like cell content editing in an auxillary "entry" widget
+or similar, but how that should work is not yet clear.
+
+The B<TixGrid> method creates a new TixGrid window and returns a
+blessed reference of this TixGrid widget.  Additional options,
+described below, may be specified on the command line or in the
+option database to configure aspects of the B<TixGrid> widget.
 
 =head1 STANDARD OPTIONS
 
@@ -71,14 +95,11 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-browsecmd>
 
-?docu here?  Not in configure output but used in bindings ??!!
-
-If defined, gives a perl/Tk L<callback|Tk::callbacks>
-to be executed when the
-user browses a grid cell (This is normally the case when
-the user clicks on an entry).  When this callback is called, it is
-passed with two additional parameters: I<x> I<y>, where (I<x>,I<y>)
-is the location of the cell that has just been clicked.
+If defined, gives a perl/Tk L<callback|Tk::callbacks> to be executed when the
+user browses a grid cell (This is normally the case when the user clicks on an
+entry).  When this callback is called, it is passed with two additional
+parameters: I<x> I<y>, where (I<x>,I<y>) is the location of the cell that has
+just been clicked.
 
 =item Name:	B<Command>
 
@@ -86,7 +107,10 @@ is the location of the cell that has just been clicked.
 
 =item Switch:	B<-command>
 
-?docu here?  Not in configure output but used in bindings ??!!
+If defined, gives a perl/Tk L<callback|Tk::callbacks> to be executed when the
+user double-clicks a grid cell.  When this callback is called, it is passed
+with two additional parameters: I<x> I<y>, where (I<x>,I<y>) is the location of
+the cell that has just been clicked.
 
 =item Name:	B<editDoneCmd>
 
@@ -119,11 +143,8 @@ indicates that the cell is editable and B<false> otherwise.
 
 =item Switch:	B<-floatingcols>
 
-Defines the number of columns that fixed when the widget
-is horizontally scrolled.  These column(s)
-can be used as label(s) for the column(s).  The floating column(s)
-can be configured in the B<-formatcmd> callback with the
-B<formatBorder> method.  The default value is 0.
+Defines the number of extra columns beyond the existing grid
+that can be brought into view by scrolling.
 
 =item Name:	B<FloatingRows>
 
@@ -131,11 +152,8 @@ B<formatBorder> method.  The default value is 0.
 
 =item Switch:	B<-floatingrows>
 
-Defines the number of rows that are fixed when the widget
-is vertically scrolled.  These row(s)
-can be used as label(s) for the row(s).  The floating row(s)
-can be configured in the B<-formatcmd> callback with the
-B<formatBorder> method.  The default value is 0.
+Defines the number of extra rows beyond the the existing grid
+that can be brought into view by scrolling.
 
 =item Name:	B<formatCmd>
 
@@ -144,35 +162,43 @@ B<formatBorder> method.  The default value is 0.
 =item Switch:	B<-formatcmd>
 
 If defined, gives a perl/Tk L<callback|Tk::callbacks> to be
-executed when the grid cells need to be formatted on the screen.
-Normally, this callback calls the B<format> method (see below).
+executed when the grid cells need to be displayed on the screen.
+Its primary purpose is to draw the background of the region
+before the cells are rendered on top. This is normally
+achieved by calling B<formatGrid> or B<formatBorder> (see below).
+However other uses can  be made of this low-level callback. For example it can be used
+to "lazily" populate the grid by calling the B<set> method only as cells come
+into view.
+
 When this callback is called, it is passed with five additional
-parameters: I<type> I<x1> I<y1> I<x2> I<y2>. I<type> gives the
-logical type of the region in the grid. It may be one of the
+parameters: I<type> I<x1> I<y1> I<x2> I<y2>.
+
+I<x1> I<y1> I<x2> I<y2> gives the extent of the region that needs
+formatting.
+
+I<type> gives the logical type of the region in the grid. It may be one of the
 following.
 
 =over 8
 
-=item B<x-region>
+=item B<x_region>
 
-the horizontal margin
+The horizontal margin.
 
-=item B<y-region>
+=item B<y_region>
 
-the vertical margin
+The vertical margin.
 
-=item B<s-region>
+=item B<s_region>
 
-the area where the horizontal and vertical margins are joined
+The area in the top left corner where the horizontal and vertical margins
+are joined.
 
 =item B<main>
 
-all the cells that do not fall into the above three types
+The main body i.e. all the cells that do not fall into the above three types.
 
 =back
-
-I<x1> I<y1> I<x2> I<y2> gives the extent of the region that needs
-formatting.
 
 =item Name:	B<leftMargin>
 
@@ -180,8 +206,10 @@ formatting.
 
 =item Switch:	B<-leftmargin>
 
-In the number of cells, gives the width of vertical margin.
-A zero indicates that no vertical should be drawn.
+Gives the width of vertical margin in cells (columns).
+A zero indicates that no vertical margin exists. A positive value I<N>
+indicates that first I<N> columns are "labels" and are always displayed
+and not scrolled.
 
 =item Name:	B<itemType>
 
@@ -189,7 +217,7 @@ A zero indicates that no vertical should be drawn.
 
 =item Switch:	B<-itemtype>
 
-?docu here?
+Default item type for cells.
 
 =item Name:	B<selectMode>
 
@@ -216,7 +244,11 @@ Specifies the selection unit. Valid values are B<cell>, B<column> or B<row>.
 
 =item Switch:	B<-sizecmd>
 
-?docu here?
+Callback is called (with no extra arguments) when grid sizes are
+re-computed. For example if window changes size, a different font
+is specified etc.
+
+It is called just after scrollbars (if present) are updated.
 
 =item Name:	B<topMargin>
 
@@ -224,26 +256,12 @@ Specifies the selection unit. Valid values are B<cell>, B<column> or B<row>.
 
 =item Switch:	B<-topmargin>
 
-In the number of cells, gives the height of horizontal margin.
-A zero indicates that no horizontal should be drawn.
+Gives the width of horizontal margin in cells (rows).
+A zero indicates that no horizontal margin exists. A positive value
+I<N> indicates that first I<N> rows are "labels" and are always
+displayed and not scrolled.
 
 =back
-
-=head1 DESCRIPTION
-
-The B<TixGrid> method creates a TixGrid new window and returns a
-blessed reference of this TixGrid widget.
-Additional options,
-described above, may be specified on the command line or in the
-option database to configure aspects of the B<TixGrid> widget
-such as its cursor and relief.
-
-A Grid widget displays its contents in a two dimensional grid of cells.
-Each cell may contain one Tix display item, which may be in text,
-graphics or other formats. See L<Tk::DItem> for more information
-about Tix display items. Individual cells, or groups of cells,
-can be formatted with a wide range of attributes, such as its color,
-relief and border.
 
 =head1 WIDGET METHODS
 
@@ -254,44 +272,41 @@ form:
 
 S<    >I<$tixgrid>->B<method>?(I<arg, arg, ...>)?
 
-I<arg>s determine the exact behavior of the method. The following
-methods are possible for B<TixGrid> widgets:
+I<arg>s determine the exact behavior of the method.
+
+This object supports the B<configure> and B<cget> methods
+described in L<Tk::options> which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+L<Tk::Widget|Tk::Widget> class.
+
+The following additional methods are possible for B<TixGrid> widgets:
 
 =over 4
 
-=item I<$tixgrid>->B<anchor>(I<action>, I<x>, I<y>)
+=item I<$tixgrid>->B<anchorGet>(I<x>, I<y>)
 
-=item I<$tixgrid>->B<anchor>I<Action>(I<x>, I<y>)
+=item I<$tixgrid>->B<anchorSet>(I<x>, I<y>)
+
+=item I<$tixgrid>->B<anchorClear>
 
 Manipulates the B<anchor cell> of the B<TixGrid> widget.
 The anchor cell is the end of the selection that is fixed
 while the user is dragging out a selection with the mouse.
-I<Action> can be B<clear>, B<get> or B<set>.  If I<action>
-is B<clear>, I<x> and I<y> args are not accepted.
 
-=item I<$tixgrid>->B<bdtype>(I<x>, I<y> ?,I<xbdWidth>, I<ybdWidth>?)
+=item ($bd,$col,$row) = I<$tixgrid>->B<bdtype>(I<x,y> ?,I<xDelta>,I<yDelta>?)
 
-????
+Determines if the the screen (pixel) position I<x,y> is in a border.
+This is useful for changing the mouse cursor when the user points at a
+border - e.g. to indicate that the border can be adjusted
+interactively.
 
-=item I<$tixgrid>->B<cget>('I<-option>')
+If in a border returns a list of three elements. First element
+is 'xy', 'x' or 'y', second two elements are integers.
+(Value of these are not understood, seem to indicate which
+column and row of the border the screen position corresponds to?)
 
-Returns the current value of the configuration option given
-by I<-option>. I<-option> may have any of the values accepted
-by the B<TixGrid> constructor method.
-
-=item I<$tixgrid>->B<configure>(?I<-option>??=>I<value>, I<-option>=>I<value>, I<...>?)
-
-Query or modify the configuration options of the widget.
-If no I<-option> is specified, returns a list describing all
-of the available options for I<$tixgrid> (see B<Tk_ConfigureInfo>
-for information on the format of this list.) If I<-option> is
-specified with no I<value>, then the method returns a list describing
-the one named option (this list will be identical to the corresponding
-sublist of the value returned if no I<-option> is specified).
-If one or more I<option-value> pairs are specified, then the
-method modifies the given widget option(s) to have the given value(s);
-in this case the method returns an empty string. I<-option> may have
-any of the values accepted by the B<TixGrid> constructor method.
+If not in a border returns an empty list.
 
 =item I<$tixgrid>->B<delete>(I<dim>, I<from>?, I<to>?)
 
@@ -306,11 +321,10 @@ from position I<from> through I<to>.
 
 =item I<$tixgrid>->B<dragsite>(I<option>, I<x>, I<y>)
 
-?docu here? not implemented :-(
-
 =item I<$tixgrid>->B<dropsite>(I<option>, I<x>, I<y>)
 
-?docu here? not implemented :-(
+Tcl/Tix has (or was going to have) Drag&Drop support.
+Meaning for perl/Tk is not clear yet.
 
 =item I<$tixgrid>->B<editApply>
 
@@ -324,49 +338,82 @@ if the B<-editnotify> callback returns true for this cell.
 
 =item I<$tixgrid>->B<entrycget>(I<x>, I<y>, 'I<-option>')
 
-Returns the current value of the configuration option given by
-I<-option> of the cell at (I<x>,I<y>).  I<-option> may have any
-of the values accepted by the B<set> method.
-
 =item I<$tixgrid>->B<entryconfigure>(I<x>, I<y>?, I<-option>??=>I<value>, I<-option>=>I<value>, I<...>?)
 
-Query or modify the configuration options of the cell at (I<x>,I<y>).
-If no I<-option> is specified, returns a list describing all of the
-available options for the cell (see B<Tk_ConfigureInfo> for information
-on the format of this list.)  If I<-option> is specified with no
-I<value>, then the method returns a list describing the one named
-option (this list will be identical to the corresponding sublist
-of the value returned if no I<-option> is specified.) If one or
-more I<option-value> pairs are specified, then the method modifies
-the given widget option(s) to have the given value(s); in this case
-the method returns an empty string.  I<Option> may have any of the
-values accepted by the B<set> method.
-
-=item I<$tixgrid>->B<format>(I<option>, ?I<args>, ...?)
+Provide a configue interface to cells in the grid.
+The I<-option>s depend on the item type of the cell.
 
 =item I<$tixgrid>->B<formatBorder>(I<x1,y1>, I<x2,y2>, I<options>);
 
 =item I<$tixgrid>->B<formatGrid>(I<x1,y1>, I<x2,y2>, I<options>);
 
-the B<format> method can only be called by the B<-formatcmd> callback
-of the tixGrid widget.
+The B<formatBorder> and B<formatBorder> methods can only be called by the
+B<-formatcmd> callback of the tixGrid widget. They draw the background of
+the region described by I<x1,y1>, I<x2,y2> according the the supplied
+I<options>. One call to B<-formatcmd> callback can make multiple
+calls to B<formatBorder> and/or B<formatBorder> for different
+sub-regions.
 
-?docu complete?
+B<formatBorder> draws the background using Tk relief style,
+B<formatGrid> also draws grid lines between the cells.
+It only makes sense to call one or the other for a particular
+sub-region as one will over-write the other.
 
-=item I<$tixgrid>->B<geometryinfo>(?I<width>, ?I<height>, ...?)
+The options allowed are:
 
-?docu here?  Return a list of 4 floats! Currently "{first1 last1} {first2,last2}" :-(
+=over 8
 
-=item I<$tixgrid>->B<index>(I<$coordx>, I<$coordy>)
+=item -background / -bg
 
-?docu here?
+=item -borderwidth / -bd
 
-retuns I<(nx, ny)> of entry at position (I<$coordx>, I<$coordy>).
-(??widget or screen offset??)
+=item -filled
 
-=item I<$tixgrid>->B<info>(I<option>, ?I<args>, ...?)
+=item -relief
 
-?docu here?
+=item -selectbackground
+
+=item -xoff
+
+=item -xon
+
+=item -yoff
+
+=item -yon
+
+=back
+
+The B<-xon/-xoff and -yon/-yoff> options are obscure. If anyone
+can figure out how to do something interesting given what
+F<pTk/tixGrFmt.c> is doing with them please let Nick know!.
+
+=item I<$tixgrid>->B<geometryinfo>(?I<width>, I<height>?)
+
+Returns list of four values - two sets of two floating point numbers.
+First set is the scrollbar fractions for x direction, second set
+is scrollbar fractions for y direction. If I<width> and I<height>
+are specified then fractions are based on as if window size was of
+specified size (in pixels, but not allowing normal GetPixels units).
+Otherwise fractions are based on current size of the window.
+
+Usage obscure.
+
+=item I<$tixgrid>->B<index>(I<xcoord>, I<ycoord>)
+
+Retuns I<(x, y)> of entry at position (I<$coordx>, I<$coordy>).
+Either coordinate may be B<'max'> which is largest existing entry
+in that direction, B<'end'> which is one I<beyond> largest existing
+entry, or a number. (This is how you find out how big the grid is.)
+
+=item I<$tixgrid>->B<infoBbox>(I<x>,I<y>)
+
+Return the pixel bounding box of the cell at I<x,y>.
+
+=item I<$tixgrid>->B<infoExists>(I<x>,I<y>)
+
+Returns true if there is an item in the cell at I<x,y>.
+Throws an exception (dies) if I<x,y> is outside the
+grid - this may change (Nick doesn't like it).
 
 =item I<$tixgrid>->B<move>(I<dim>, I<from>, I<to>, I<offset>)
 
@@ -382,45 +429,27 @@ to rows 3,4,5.
 
 =item I<$tixgrid>->B<nearest>(I<x>, I<y>)
 
-?docu here?  screen pos (pixels) to entry (nx,ny) translation.
-
-=item I<$tixgrid>->B<selection>(I<option>, I<x1>, I<y1> ?,I<x2>, I<y2>?)
-
-=item I<$tixgrid>->B<selection>I<Option>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
-
-Option one of: B<adjust>, B<clear>, B<includes>, B<set>, and B<toggle>.
-
-x1 (y1) has not to be greater than x2 (y2), but only x2 and y2 can be 'max'.
-
-BUG: I<selection includes>: has no visible effect (as in Tix). Eh???
-
-BUG: I<selection clear>: only works for 0, 0, max, max (as in Tix). Eh???
-
-When I<x2, y2> are not given they default to I<x1, y1>, respectively.
-
-=over 8
+Screen pos (pixels) to entry (nx,ny) translation.
 
 =item I<$tixgrid>->B<selectionAdjust>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
 
-?docu here?
-
 =item I<$tixgrid>->B<selectionClear>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
-
-?docu here?
 
 =item I<$tixgrid>->B<selectionIncludes>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
 
-?docu here?
-
 =item I<$tixgrid>->B<selectionSet>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
-
-?docu here?
 
 =item I<$tixgrid>->B<selectionToggle>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
 
-?docu here?
+Selection support methods - probably buggy.
 
-=back
+x1 (y1) has not to be greater than x2 (y2), but only x2 and y2 can be 'max'.
+
+BUG: I<selectionIncludes>: has no visible effect (as in Tix). Eh???
+
+BUG: I<selectionClear>: only works for 0, 0, max, max (as in Tix). Eh???
+
+When I<x2, y2> are not given they default to I<x1, y1>, respectively.
 
 =item I<$tixgrid>->B<set>(I<x>, I<y>?, B<-itemtype>=>I<type>??, I<-option>=>I<value>, I<...>?)
 
@@ -478,17 +507,18 @@ Clears the cell at (I<x>,I<y>) by removing its display item.
 
 =item I<$tixgrid>->B<xview>
 
-?docu here?
+Normal horizontal scrollbar method.
 
 =item I<$tixgrid>->B<yview>
 
-?docu here?
+Normal vertical scrollbar method.
 
 =back
 
 =head1 BINDINGS
 
-to be done.
+To be done - only most obvious basic bindings work. The Tcl/Tix code
+was coded as a "state machine" which is not easy to follow.
 
 =head1 SEE ALSO
 
@@ -498,7 +528,8 @@ L<Tk::FloatEntry|Tk::FloatEntry>
 
 =head1 BUGS
 
-C code and bindings of TixGrid have some bugs.
+Tcl/Tix was/is not finished and both C code and bindings of TixGrid
+have some bugs.
 
 =head1 KEYWORDS
 

@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/Tixish/DirTree.pm#25 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tixish/DirTree.pm#9 $
 
 use Tk;
 use Tk::Derived;
@@ -50,10 +50,10 @@ sub fullpath
 {
  my ($path) = @_;
  my $cwd = getcwd();
- if (chdir($path))
+ if (CORE::chdir($path))
   {
    $path = getcwd();
-   chdir($cwd) || die "Cannot cd back to $cwd:$!";
+   CORE::chdir($cwd) || die "Cannot cd back to $cwd:$!";
   }
  else
   {
@@ -62,22 +62,16 @@ sub fullpath
  return $path;
 }
 
-sub directory {
+sub directory
+{
     my ($w,$key,$val) = @_;
-    if (defined $w->cget('-image'))
-     {
-      $w->chdir( $val );
-     }
-    else
-     {
-      # We have a default for -image, so its being undefined
-      # is probably caused by order of handling config defaults
-      # so defer it.
-      $w->afterIdle([$w, 'chdir' => $val]);
-     }
+    # We need a value for -image, so its being undefined
+    # is probably caused by order of handling config defaults
+    # so defer it.
+    $w->afterIdle([$w, 'set_dir' => $val]);
 }
 
-sub chdir {
+sub set_dir {
     my( $w, $val ) = @_;
     my $fulldir = fullpath( $val );
 
@@ -105,6 +99,7 @@ sub chdir {
     $w->OpenCmd( $parent );
     $w->setmode( $parent, 'close' );
 }
+*chdir = \&set_dir;
 
 
 sub OpenCmd {

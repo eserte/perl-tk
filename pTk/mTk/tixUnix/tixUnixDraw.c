@@ -1,3 +1,6 @@
+
+/*	$Id: tixUnixDraw.c,v 1.1.1.1 2000/05/17 11:08:54 idiscovery Exp $	*/
+
 /*
  * tixUnixDraw.c --
  *
@@ -13,7 +16,7 @@
 #include "tixPort.h"
 #include "tixUnixInt.h"
 
-
+
 /*
  *----------------------------------------------------------------------
  * TixpDrawTmpLine --
@@ -77,7 +80,7 @@ TixpDrawTmpLine(x1, y1, x2, y2, tkwin)
     XDrawLine(Tk_Display(tkwin), winId, gc, x1, y1, x2, y2);
     XFreeGC(Tk_Display(tkwin), gc);
 }
-
+
 /*----------------------------------------------------------------------
  * TixpDrawAnchorLines --
  *
@@ -119,189 +122,5 @@ void TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
 
     XDrawPoints(display, drawable, gc, points, 4, CoordModeOrigin);
 }
-
-/*----------------------------------------------------------------------
- * TixpStartSubRegionDraw --
- *
- *	Limits the subsequent drawing operations into the prescribed
- *	rectangle region. This takes effect up to a matching
- *	TixEndSubRegionDraw() call.
- *
- * Return value:
- *	none.
- *----------------------------------------------------------------------
- */
 
-void
-TixpStartSubRegionDraw(display, drawable, gc, subRegPtr, origX, origY,
-	x, y, width, height, needWidth, needHeight)
-    Display *display;
-    Drawable drawable;
-    GC gc;
-    TixpSubRegion * subRegPtr;
-    int origX;
-    int origY;
-    int x;
-    int y;
-    int width;
-    int height;
-    int needWidth;
-    int needHeight;
-{
-    if ((width < needWidth) || (height < needHeight)) {
-	subRegPtr->rectUsed    = 1;
-	subRegPtr->rect.x      = (short)x;
-	subRegPtr->rect.y      = (short)y;
-	subRegPtr->rect.width  = (short)width;
-	subRegPtr->rect.height = (short)height;
 
-	XSetClipRectangles(display, gc, origX, origY, &subRegPtr->rect,
-		1, Unsorted);
-    } else {
-	subRegPtr->rectUsed    = 0;
-    }
-}
-
-/*----------------------------------------------------------------------
- * TixpEndSubRegionDraw --
- *
- *
- *----------------------------------------------------------------------
- */
-void
-TixpEndSubRegionDraw(display, drawable, gc, subRegPtr)
-    Display *display;
-    Drawable drawable;
-    GC gc;
-    TixpSubRegion * subRegPtr;
-{
-    if (subRegPtr->rectUsed) {
-	subRegPtr->rect.x      = (short)0;
-	subRegPtr->rect.y      = (short)0;
-	subRegPtr->rect.width  = (short)20000;
-	subRegPtr->rect.height = (short)20000;
-	XSetClipRectangles(display, gc, 0, 0, &subRegPtr->rect, 1, Unsorted);
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TixpSubRegDisplayText --
- *
- *	Display a text string on one or more lines in a sub region.
- *
- * Results:
- *	See TkDisplayText
- *
- * Side effects:
- *	See TkDisplayText
- *
- *----------------------------------------------------------------------
- */
-
-void
-TixpSubRegDisplayText(display, drawable, gc, subRegPtr, font, string,
-	numChars, x, y,	length, justify, underline)
-    Display *display;		/* X display to use for drawing text. */
-    Drawable drawable;		/* Window or pixmap in which to draw the
-				 * text. */
-    GC gc;			/* Graphics context to use for drawing text. */
-    TixpSubRegion * subRegPtr;	/* Information about the subregion */
-    TixFont font;		/* Font that determines geometry of text
-				 * (should be same as font in gc). */
-    char *string;		/* String to display;  may contain embedded
-				 * newlines. */
-    int numChars;		/* Number of characters to use from string. */
-    int x, y;			/* Pixel coordinates within drawable of
-				 * upper left corner of display area. */
-    int length;			/* Line length in pixels;  used to compute
-				 * word wrap points and also for
-				 * justification.   Must be > 0. */
-    Tk_Justify justify;		/* How to justify lines. */
-    int underline;		/* Index of character to underline, or < 0
-				 * for no underlining. */
-{
-    TixDisplayText(display, drawable, font, string,
-	numChars, x, y,	length, justify, underline, gc);
-}
-
-/*----------------------------------------------------------------------
- * TixpSubRegFillRectangle --
- *
- *
- *----------------------------------------------------------------------
- */
-void
-TixpSubRegFillRectangle(display, drawable, gc, subRegPtr, x, y, width, height)
-    Display *display;		/* X display to use for drawing rectangle. */
-    Drawable drawable;		/* Window or pixmap in which to draw the
-				 * rectangle. */
-    GC gc;			/* Graphics context to use for drawing. */
-    TixpSubRegion * subRegPtr;	/* Information about the subregion */
-    int x, y;			/* Pixel coordinates within drawable of
-				 * upper left corner of display area. */
-    int width, height;		/* Size of the rectangle. */
-{
-    XFillRectangle(display, drawable, gc, x, y, width, height);
-}
-
-/*----------------------------------------------------------------------
- * TixpSubRegDrawImage	--
- *
- *	Draws a Tk image in a subregion.
- *----------------------------------------------------------------------
- */
-void
-TixpSubRegDrawImage(subRegPtr, image, imageX, imageY, width, height,
-	drawable, drawableX, drawableY)
-    TixpSubRegion * subRegPtr;
-    Tk_Image image;
-    int imageX;
-    int imageY;
-    int width;
-    int height;
-    Drawable drawable;
-    int drawableX;
-    int drawableY;
-{
-    if (subRegPtr->rectUsed) {
-	if (drawableX < subRegPtr->rect.x) {
-	    width  -= subRegPtr->rect.x - drawableX;
-	    imageX += subRegPtr->rect.x - drawableX;
-	    drawableX = subRegPtr->rect.x;
-	}
-	if (drawableX + width > subRegPtr->rect.x + subRegPtr->rect.width) {
-	    width = subRegPtr->rect.x - drawableX + subRegPtr->rect.width;
-	}
-
-	if (drawableY < subRegPtr->rect.y) {
-	    height -= subRegPtr->rect.y - drawableY;
-	    imageY += subRegPtr->rect.y - drawableY;
-	    drawableY = subRegPtr->rect.y;
-	}
-	if (drawableY + height > subRegPtr->rect.y + subRegPtr->rect.height) {
-	    height = subRegPtr->rect.y - drawableY + subRegPtr->rect.height;
-	}
-    }
-
-    Tk_RedrawImage(image, imageX, imageY, width, height, drawable,
-	    drawableX, drawableY);
-}
-
-void
-TixpSubRegDrawBitmap(display, drawable, gc, subRegPtr, bitmap, src_x, src_y,
-	width, height, dest_x, dest_y, plane)
-    Display *display;
-    Drawable drawable;
-    GC gc;
-    TixpSubRegion * subRegPtr;
-    Pixmap bitmap;
-    int src_x, src_y;
-    int width, height;
-    int dest_x, dest_y;
-    unsigned long plane;
-{
-    XCopyPlane(display, bitmap, drawable, gc, src_x, src_y, width, height,
-	    dest_x, dest_y, plane);
-}

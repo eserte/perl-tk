@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.050'; # $Id: //depot/Tk8/Tk/FileSelect.pm#50 $
+$VERSION = '4.013'; # $Id: //depot/Tkutf8/Tk/FileSelect.pm#14 $
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
@@ -50,8 +50,17 @@ sub import {
     if (defined $_[1] and $_[1] eq 'as_default') {
 	local $^W = 0;
 	package Tk;
-	*FDialog      = \&Tk::FileSelect::FDialog;
-	*MotifFDialog = \&Tk::FileSelect::FDialog;
+	if ($Tk::VERSION < 804) {
+	    *FDialog      = \&Tk::FileSelect::FDialog;
+	    *MotifFDialog = \&Tk::FileSelect::FDialog;
+	} else {
+	    *tk_getOpenFile = sub {
+		Tk::FileSelect::FDialog("tk_getOpenFile", @_);
+	    };
+	    *tk_getSaveFile = sub {
+		Tk::FileSelect::FDialog("tk_getSaveFile", @_);
+	    };
+	}
     }
 }
 
@@ -302,7 +311,7 @@ sub regexp
  if (@_ > 1)
   {
    $$var = $val;
-   $cw->{'match'} = sub { shift =~ m|^${val}$| };
+   $cw->{'match'} = (defined $val) ? sub { shift =~ m|^${val}$| } : sub { 1 };
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
@@ -317,6 +326,7 @@ sub defaultextension
  my ($cw,$val) = @_;
  if (@_ > 1)
   {
+   $val = '' unless defined $val;
    $val = ".$val" if ($val !~ /^\./);
    $cw->filter("*$val");
   }
@@ -413,6 +423,7 @@ sub reread
     }
    my $dl = $w->Subwidget('dir_list');
    $dl->delete(0, 'end');
+   $dl->selectionClear(0,'end');
    my $fl = $w->Subwidget('file_list');
    $fl->delete(0, 'end');
    local *DIR;

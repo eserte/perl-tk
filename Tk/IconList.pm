@@ -18,12 +18,12 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Translated to perk/Tk by Slaven Rezic <eserte@cs.tu-berlin.de>.
+# Translated to perk/Tk and modified by Slaven Rezic <slaven@rezic.de>.
 #
 
 #----------------------------------------------------------------------
 #
-#		      I C O N   L I S T
+#                     I C O N   L I S T
 #
 # This is a pseudo-widget that implements the icon list inside the
 # tkFDialog dialog box.
@@ -31,17 +31,18 @@
 #----------------------------------------------------------------------
 # tkIconList --
 #
-#	Creates an IconList widget.
+#       Creates an IconList widget.
 #
 
 package Tk::IconList;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/IconList.pm#8 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/IconList.pm#7 $
 
 use Tk qw(Ev);
 use strict;
+use Carp;
 
 use base 'Tk::Frame';
 
@@ -49,9 +50,9 @@ Construct Tk::Widget 'IconList';
 
 # tkIconList_Create --
 #
-#	Creates an IconList widget by assembling a canvas widget and a
-#	scrollbar widget. Sets all the bindings necessary for the IconList's
-#	operations.
+#       Creates an IconList widget by assembling a canvas widget and a
+#       scrollbar widget. Sets all the bindings necessary for the IconList's
+#       operations.
 #
 sub Populate {
     my($w, $args) = @_;
@@ -82,14 +83,22 @@ sub Populate {
     $w->{'maxTW'} = 1;
     $w->{'maxTH'} = 1;
     $w->{'numItems'} = 0;
-    delete $w->{'curItem'};
+#XXX curItem never used    delete $w->{'curItem'};
     $w->{'noScroll'} = 1;
+    $w->{'selection'} = [];
+    $w->{'index,anchor'} = '';
 
     # Creates the event bindings.
     $canvas->Tk::bind('<Configure>', sub { $w->Arrange } );
     $canvas->Tk::bind('<1>', [$w,'Btn1',Ev('x'),Ev('y')]);
     $canvas->Tk::bind('<B1-Motion>', [$w,'Motion1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<Control-B1-Motion>', 'NoOp');
+    $canvas->Tk::bind('<Shift-B1-Motion>', 'NoOp');
+    $canvas->Tk::bind('<Control-1>', [$w,'CtrlBtn1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<Shift-1>', [$w,'ShiftBtn1',Ev('x'),Ev('y')]);
     $canvas->Tk::bind('<Double-ButtonRelease-1>', [$w,'Double1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<Control-Double-ButtonRelease-1>', 'NoOp');
+    $canvas->Tk::bind('<Shift-Double-ButtonRelease-1>', 'NoOp');
     $canvas->Tk::bind('<ButtonRelease-1>', [$w,'CancelRepeat']);
     $canvas->Tk::bind('<B1-Leave>', [$w,'Leave1',Ev('x'),Ev('y')]);
     $canvas->Tk::bind('<B1-Enter>', [$w,'CancelRepeat']);
@@ -101,18 +110,22 @@ sub Populate {
     $canvas->Tk::bind('<KeyPress>', [$w,'KeyPress',Ev('A')]);
     $canvas->Tk::bind('<Control-KeyPress>', 'NoOp');
     $canvas->Tk::bind('<Alt-KeyPress>', 'NoOp');
-    $canvas->Tk::bind('<FocusIn>', sub { $w->FocusIn });
+    $canvas->Tk::bind('<Meta-KeyPress>', 'NoOp');
+#XXX bad....
+#    $canvas->Tk::bind('<FocusIn>', sub { $w->FocusIn });
+#    $canvas->Tk::bind('<FocusOut>', sub { $w->FocusOut });
 
+    # additional bindings not in tkfbox.tcl
     $canvas->Tk::bind('<2>',['scan','mark',Ev('x'),Ev('y')]);
     $canvas->Tk::bind('<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
     # Remove the standard Canvas bindings
-    $canvas->bindtags([$canvas, $canvas->toplevel, "all"]);
+    $canvas->bindtags([$canvas, $canvas->toplevel, 'all']);
     # ... and define some again
     $canvas->Tk::bind('<Home>', ['xview','moveto',0]);
     $canvas->Tk::bind('<End>',  ['xview','moveto',1]);
 
     $w->ConfigSpecs(-browsecmd =>
-		    ['CALLBACK', 'browseCommand', 'BrowseCommand', undef],
+		    ['METHOD', 'browseCommand', 'BrowseCommand', undef],
 		    -command =>
 		    ['CALLBACK', 'command', 'Command', undef],
 		    -font =>
@@ -120,12 +133,169 @@ sub Populate {
 		    -foreground =>
 		    ['PASSIVE', 'foreground', 'Foreground', undef],
 		    -fg => '-foreground',
+		    -multiple =>
+		    ['PASSIVE', 'multiple', 'Multiple', 0],
 		    -selectmode =>
 		    ['PASSIVE', 'selectMode', 'SelectMode', 'browse'],
+		    -selectbackground =>
+		    ['PASSIVE', 'selectBackground', 'Foreground', '#a0a0ff'],
 		   );
 
     $w;
 }
+
+# compatibility for old -browsecmd options
+sub browsecmd {
+    my $w = shift;
+    if (@_) {
+	$w->{Configure}{'-browsecmd'} = $_[0];
+	$w->bind('<<ListboxSelect>>' => $_[0]);
+    }
+    $w->{Configure}{'-browsecmd'};
+}
+
+sub Index {
+    my($w, $i) = @_;
+    if (!$w->{'list'}) { $w->{'list'} = [] }
+    if ($i =~ /^-?[0-9]+$/) {
+	if ($i < 0) {
+	    $i = 0;
+	}
+	if ($i > @{ $w->{'list'} }) {
+	    $i = @{ $w->{'list'} } - 1;
+	}
+	return $i;
+    } elsif ($i eq 'active') {
+	return $w->{'index,active'};
+    } elsif ($i eq 'anchor') {
+	return $w->{'index,anchor'};
+    } elsif ($i eq 'end') {
+	return @{ $w->{'list'} };
+    } elsif ($i =~ /@(-?[0-9]+),(-?[0-9]+)/) {
+	my($x, $y) = ($1, $2);
+	my $canvas = $w->Subwidget('canvas');
+	my $item = $canvas->find('closest', $x, $y);
+	if (defined $item) {
+	    return $canvas->itemcget($item, '-tags')->[1];
+	} else {
+	    return "";
+	}
+    } else {
+	croak "Unrecognized Index parameter `$i', use active, anchor, end, \@x,y, or x";
+    }
+}
+
+sub Selection {
+    my($w, $op, @args) = @_;
+    if ($op eq 'anchor') {
+	if (@args == 1) {
+	    $w->{'index,anchor'} = $w->Index($args[0]);
+	} else {
+	    return $w->{'index,anchor'};
+	}
+    } elsif ($op eq 'clear') {
+	my($first, $last);
+	if (@args == 2) {
+	    ($first, $last) = @args;
+	} elsif (@args == 1) {
+	    $first = $last = $args[0];
+	} else {
+	    croak "wrong # args: should be Selection('clear', first, ?last?)"
+	}
+	$first = $w->Index($first);
+	$last  = $w->Index($last);
+	if ($first > $last) {
+	    ($first, $last) = ($last, $first);
+	}
+	my $ind = 0;
+	for my $item (@{ $w->{'selection'} }) {
+	    if ($item >= $first) {
+		$first = $ind;
+		last;
+	    }
+	    $ind++; # XXX seems to be missing in the Tcl version
+	}
+	$ind = @{ $w->{'selection'} } - 1;
+	for(; $ind >= 0; $ind--) {
+	    my $item = $w->{'selection'}->[$ind];
+	    if ($item <= $last) {
+		$last = $ind;
+		last;
+	    }
+	}
+	if ($first > $last) {
+	    return;
+	}
+	splice @{ $w->{'selection'} }, $first, $last-$first+1;
+	$w->event('generate', '<<ListboxSelect>>');
+	$w->DrawSelection;
+    } elsif ($op eq 'includes') {
+	my $index;
+	for (@{ $w->{'selection'} }) {
+	    if ($args[0] eq $_) {
+		return 1;
+	    }
+	}
+	return 0;
+    } elsif ($op eq 'set') {
+	my($first, $last);
+	if (@args == 2) {
+	    ($first, $last) = @args;
+	} elsif (@args == 1) {
+	    $first = $last = $args[0];
+	} else {
+	    croak "wrong # args: should be Selection('set', first, ?last?)";
+	}
+
+	$first = $w->Index($first);
+	$last  = $w->Index($last);
+	if ($first > $last) {
+	    ($first, $last) = ($last, $first);
+	}
+	for(my $i = $first; $i <= $last; $i++) {
+	    push @{ $w->{'selection'} }, $i;
+	}
+	# lsort -integer -unique
+	my %sel = map { ($_ => 1) } @{ $w->{'selection'} };
+	@{ $w->{'selection'} } = sort { $a <=> $b } keys %sel;
+	$w->event('generate', '<<ListboxSelect>>');
+	$w->DrawSelection;
+    } else {
+	croak "Unrecognized Selection parameter `$op', use anchor, clear, includes, or set";
+    }
+}
+
+# XXX why lower case 's' here and upper in DrawSelection?
+sub Curselection {
+    my $w = shift;
+    @{ $w->{'selection'} };
+}
+
+sub DrawSelection {
+    my $w = shift;
+    my $canvas = $w->Subwidget('canvas');
+    $canvas->delete('selection');
+    my $selBg = $w->cget('-selectbackground');
+    for my $item (@{ $w->{'selection'} }) {
+	my $rTag = $w->{'list'}->[$item][2];
+	my($iTag, $tTag, $text, $serial) = @{ $w->{'itemList'}{$rTag} };
+	my @bbox = $canvas->bbox($tTag);
+	# XXX don't hardcode colors
+	$canvas->createRectangle
+	    (@bbox, -fill => $selBg, -outline => $selBg, -tags => 'selection');
+    }
+    $canvas->lower('selection');
+}
+
+# Returns the selected item
+#
+sub Get {
+    my($w, $item) = @_;
+    my $rTag = $w->{'list'}->[$item][2];
+    my($iTag, $tTag, $text, $serial) = @{ $w->{'itemList'}{$rTag} };
+    $text;
+}
+
 
 # tkIconList_AutoScan --
 #
@@ -136,7 +306,7 @@ sub Populate {
 # the mouse moves back into the window or the mouse button is released.
 #
 # Arguments:
-# w -		The IconList window.
+# w -           The IconList window.
 #
 sub AutoScan {
     my $w = shift;
@@ -177,42 +347,54 @@ sub DeleteAll {
     $w->{'maxTW'} = 1;
     $w->{'maxTH'} = 1;
     $w->{'numItems'} = 0;
-    delete $w->{'curItem'};
+#XXX curItem never used    delete $w->{'curItem'};
     $w->{'noScroll'} = 1;
+    $w->{'selection'} = [];
+    $w->{'index,anchor'} = '';
     $w->Subwidget('sbar')->set(0.0, 1.0);
     $canvas->xview('moveto', 0);
 }
 
-# Adds an icon into the IconList with the designated image and text
+# Adds an icon into the IconList with the designated image and items
 #
 sub Add {
-    my($w, $image, $text) = @_;
+    my($w, $image, @items) = @_;
     my $canvas = $w->Subwidget('canvas');
-    my $iTag = $canvas->createImage(0, 0, -image => $image, -anchor => 'nw');
     my $font = $w->cget(-font);
     my $fg   = $w->cget(-foreground);
-    my $tTag = $canvas->createText(0, 0, -text => $text, -anchor => 'nw',
-				   (defined $fg   ? (-fill => $fg)   : ()),
-				   (defined $font ? (-font => $font) : ()),
-				  );
-    my $rTag = $canvas->createRectangle(0, 0, 0, 0,
-					-fill => undef,
-					-outline => undef);
-    my(@b) = $canvas->bbox($iTag);
-    my $iW = $b[2] - $b[0];
-    my $iH = $b[3] - $b[1];
-    $w->{'maxIW'} = $iW if ($w->{'maxIW'} < $iW);
-    $w->{'maxIH'} = $iH if ($w->{'maxIH'} < $iH);
-    @b = $canvas->bbox($tTag);
-    my $tW = $b[2] - $b[0];
-    my $tH = $b[3] - $b[1];
-    $w->{'maxTW'} = $tW if ($w->{'maxTW'} < $tW);
-    $w->{'maxTH'} = $tH if ($w->{'maxTH'} < $tH);
-    push @{ $w->{'list'} }, [$iTag, $tTag, $rTag, $iW, $iH, $tW, $tH,
-			     $w->{'numItems'}];
-    $w->{'itemList'}{$rTag} = [$iTag, $tTag, $text, $w->{'numItems'}];
-    $w->{'textList'}{$w->{'numItems'}} = lc($text);
-    ++$w->{'numItems'};
+    foreach my $text (@items) {
+	my $iTag = $canvas->createImage
+	    (0, 0, -image => $image, -anchor => 'nw',
+	     -tags => ['icon', $w->{numItems}, 'item'.$w->{numItems}],
+	    );
+	my $tTag = $canvas->createText
+	    (0, 0, -text => $text, -anchor => 'nw',
+	     (defined $fg   ? (-fill => $fg)   : ()),
+	     (defined $font ? (-font => $font) : ()),
+	     -tags => ['text', $w->{numItems}, 'item'.$w->{numItems}],
+	    );
+	my $rTag = $canvas->createRectangle
+	    (0, 0, 0, 0,
+	     -fill => undef,
+	     -outline => undef,
+	     -tags => ['rect', $w->{numItems}, 'item'.$w->{numItems}],
+	    );
+	my(@b) = $canvas->bbox($iTag);
+	my $iW = $b[2] - $b[0];
+	my $iH = $b[3] - $b[1];
+	$w->{'maxIW'} = $iW if ($w->{'maxIW'} < $iW);
+	$w->{'maxIH'} = $iH if ($w->{'maxIH'} < $iH);
+	@b = $canvas->bbox($tTag);
+	my $tW = $b[2] - $b[0];
+	my $tH = $b[3] - $b[1];
+	$w->{'maxTW'} = $tW if ($w->{'maxTW'} < $tW);
+	$w->{'maxTH'} = $tH if ($w->{'maxTH'} < $tH);
+	push @{ $w->{'list'} }, [$iTag, $tTag, $rTag, $iW, $iH, $tW, $tH,
+				 $w->{'numItems'}];
+	$w->{'itemList'}{$rTag} = [$iTag, $tTag, $text, $w->{'numItems'}];
+	$w->{'textList'}{$w->{'numItems'}} = lc($text);
+	++$w->{'numItems'};
+    }
 }
 
 # Places the icons in a column-major arrangement.
@@ -254,7 +436,6 @@ sub Arrange {
 	my $t_dy = ($dy - $tH) / 2;
 	$canvas->coords($iTag, $x, $y + $i_dy);
 	$canvas->coords($tTag, $x + $shift, $y + $t_dy);
-	$canvas->coords($tTag, $x + $shift, $y + $t_dy);
 	$canvas->coords($rTag, $x, $y, $x + $dx, $y + $dy);
 	$y += $dy;
 	if ($y + $dy > $H) {
@@ -281,8 +462,9 @@ sub Arrange {
     }
     $w->{'itemsPerColumn'} = int(($H - $pad) / $dy);
     $w->{'itemsPerColumn'} = 1 if ($w->{'itemsPerColumn'} < 1);
-    $w->Select($w->{'list'}[$w->{'curItem'}][2], 0)
-      if (exists $w->{'curItem'});
+#XXX    $w->Select($w->{'list'}[$w->{'curItem'}][2], 0)
+#      if (exists $w->{'curItem'});
+    $w->DrawSelection; # missing in Tcl XXX
 }
 
 # Gets called when the user invokes the IconList (usually by double-clicking
@@ -290,21 +472,21 @@ sub Arrange {
 #
 sub Invoke {
     my $w = shift;
-    $w->Callback(-command => $w->{'selected'}) if (exists $w->{'selected'});
+    $w->Callback(-command => $w->{'selected'}) if (@{ $w->{'selection'} });
 }
 
 # tkIconList_See --
 #
-#	If the item is not (completely) visible, scroll the canvas so that
-#	it becomes visible.
+#       If the item is not (completely) visible, scroll the canvas so that
+#       it becomes visible.
 sub See {
     my($w, $rTag) = @_;
     return if ($w->{'noScroll'});
-    return unless (exists $w->{'itemList'}{$rTag});
+    return if ($rTag < 0 || $rTag >= @{ $w->{'list'} });
     my $canvas = $w->Subwidget('canvas');
     my(@sRegion) = @{ $canvas->cget('-scrollregion') };
     return unless (@sRegion);
-    my(@bbox) = $canvas->bbox($rTag);
+    my(@bbox) = $canvas->bbox('item'.$rTag);
     my $pad = $canvas->cget(-highlightthickness) + $canvas->cget(-bd);
     my $x1 = $bbox[0];
     my $x2 = $bbox[2];
@@ -324,60 +506,56 @@ sub See {
     }
 }
 
-sub SelectAtXY {
-    my($w, $x, $y) = @_;
-    my $canvas = $w->Subwidget('canvas');
-    $w->Select($canvas->find('closest',
-			     $canvas->canvasx($x),
-			     $canvas->canvasy($y)));
-}
-
-sub Select {
-    my $w = shift;
-    my $rTag = shift;
-    my $callBrowse = (@_ ? shift : 1);
-    return unless (exists $w->{'itemList'}{$rTag});
-    my($iTag, $tTag, $text, $serial) = @{ $w->{'itemList'}{$rTag} };
-    my $canvas = $w->Subwidget('canvas');
-    $w->{'rect'} = $canvas->createRectangle(0, 0, 0, 0, -fill => '#a0a0ff',
-					    -outline => '#a0a0ff')
-      unless (exists $w->{'rect'});
-    $canvas->lower($w->{'rect'});
-    my(@bbox) = $canvas->bbox($tTag);
-    $canvas->coords($w->{'rect'}, @bbox);
-    $w->{'curItem'} = $serial;
-    $w->{'selected'} = $text;
-    if ($callBrowse) {
-	$w->Callback(-browsecmd => $text);
-    }
-}
-
-sub Unselect {
-    my $w = shift;
-    my $canvas = $w->Subwidget('canvas');
-    if (exists $w->{'rect'}) {
-	$canvas->delete($w->{'rect'});
-	delete $w->{'rect'};
-    }
-    delete $w->{'selected'} if (exists $w->{'selected'});
-    delete $w->{'curItem'};
-}
-
-# Returns the selected item
-#
-sub Get {
-    my $w = shift;
-    if (exists $w->{'selected'}) {
-	$w->{'selected'};
-    } else {
-	undef;
-    }
-}
-
 sub Btn1 {
     my($w, $x, $y) = @_;
-    $w->Subwidget('canvas')->CanvasFocus;
-    $w->SelectAtXY($x, $y);
+
+    my $canvas = $w->Subwidget('canvas');
+    $canvas->CanvasFocus;
+    $x = int($canvas->canvasx($x));
+    $y = int($canvas->canvasy($y));
+    my $i = $w->Index('@'.$x.','.$y);
+    return if ($i eq '');
+    $w->Selection('clear', 0, 'end');
+    $w->Selection('set', $i);
+    $w->Selection('anchor', $i);
+}
+
+sub CtrlBtn1 {
+    my($w, $x, $y) = @_;
+
+    if ($w->cget(-multiple)) {
+	my $canvas = $w->Subwidget('canvas');
+	$canvas->CanvasFocus;
+	my $x = int($canvas->canvasx($x));
+	my $y = int($canvas->canvasy($y));
+	my $i = $w->Index('@'.$x.','.$y);
+	return if ($i eq '');
+	if ($w->Selection('includes', $i)) {
+	    $w->Selection('clear', $i);
+	} else {
+	    $w->Selection('set', $i);
+	    $w->Selection('anchor', $i);
+	}
+    }
+}
+
+sub ShiftBtn1 {
+    my($w, $x, $y) = @_;
+
+    if ($w->cget(-multiple)) {
+    my $canvas = $w->Subwidget('canvas');
+	$canvas->CanvasFocus;
+	my $x = int($canvas->canvasx($x));
+	my $y = int($canvas->canvasy($y));
+	my $i = $w->Index('@'.$x.','.$y);
+	return if ($i eq '');
+	my $a = $w->Index('anchor');
+	if ($a eq '') {
+	    $a = $i;
+	}
+	$w->Selection('clear', 0, 'end');
+	$w->Selection('set', $a, $i);
+    }
 }
 
 # Gets called on button-1 motions
@@ -386,12 +564,19 @@ sub Motion1 {
     my($w, $x, $y) = @_;
     $Tk::x = $x;
     $Tk::y = $y;
-    $w->SelectAtXY($x, $y);
+    my $canvas = $w->Subwidget('canvas');
+    $canvas->CanvasFocus;
+    $x = int($canvas->canvasx($x));
+    $y = int($canvas->canvasy($y));
+    my $i = $w->Index('@'.$x.','.$y);
+    return if ($i eq '');
+    $w->Selection('clear', 0, 'end');
+    $w->Selection('set', $i);
 }
 
 sub Double1 {
     my($w, $x, $y) = @_;
-    $w->Invoke if (exists $w->{'curItem'});
+    $w->Invoke if (@{ $w->{'selection'} });
 }
 
 sub ReturnKey {
@@ -409,10 +594,14 @@ sub Leave1 {
 sub FocusIn {
     my $w = shift;
     return unless (exists $w->{'list'});
-    unless (exists $w->{'curItem'}) {
-	my $rTag = $w->{'list'}[0][2];
-	$w->Select($rTag);
+    if (@{ $w->{'selection'} }) {
+	$w->DrawSelection;
     }
+}
+
+sub FocusOut {
+    my $w = shift;
+    $w->Selection('clear', 0, 'end');
 }
 
 # tkIconList_UpDown --
@@ -420,24 +609,25 @@ sub FocusIn {
 # Moves the active element up or down by one element
 #
 # Arguments:
-# w -		The IconList widget.
-# amount -	+1 to move down one item, -1 to move back one item.
+# w -           The IconList widget.
+# amount -      +1 to move down one item, -1 to move back one item.
 #
 sub UpDown {
     my($w, $amount) = @_;
-    my $rTag;
     return unless (exists $w->{'list'});
-    unless (exists $w->{'curItem'}) {
-	$rTag = $w->{'list'}[0][2];
+    my $i;
+    my(@curr) = $w->Curselection;
+    if (!@curr) {
+	$i = 0;
     } else {
-	my $oldRTag = $w->{'list'}[$w->{'curItem'}][2];
-	$rTag = $w->{'list'}[($w->{'curItem'} + $amount)][2];
-	$rTag = $oldRTag unless defined $rTag;
+	$i = $w->Index('anchor');
+	return if ($i eq '');
+	$i += $amount;
     }
-    if (defined $rTag) {
-	$w->Select($rTag);
-	$w->See($rTag);
-    }
+    $w->Selection('clear', 0, 'end');
+    $w->Selection('set', $i);
+    $w->Selection('anchor', $i);
+    $w->See($i);
 }
 
 # tkIconList_LeftRight --
@@ -445,34 +635,33 @@ sub UpDown {
 # Moves the active element left or right by one column
 #
 # Arguments:
-# w -		The IconList widget.
-# amount -	+1 to move right one column, -1 to move left one column.
+# w -           The IconList widget.
+# amount -      +1 to move right one column, -1 to move left one column.
 #
 sub LeftRight {
     my($w, $amount) = @_;
-    my $rTag;
     return unless (exists $w->{'list'});
-    unless (exists $w->{'curItem'}) {
-	$rTag = $w->{'list'}[0][2];
+    my $i;
+    my(@curr) = $w->Curselection;
+    if (!@curr) {
+	$i = 0;
     } else {
-	my $oldRTag = $w->{'list'}[$w->{'curItem'}][2];
-	my $newItem = $w->{'curItem'} + $amount * $w->{'itemsPerColumn'};
-	return if $newItem < 0;
-	$rTag = $w->{'list'}[$newItem][2];
-	$rTag = $oldRTag unless (defined $rTag);
+	$i = $w->Index('anchor');
+	return if ($i eq '');
+	$i += $amount*$w->{'itemsPerColumn'};
     }
-    if (defined $rTag) {
-	$w->Select($rTag);
-	$w->See($rTag);
-    }
+    $w->Selection('clear', 0, 'end');
+    $w->Selection('set', $i);
+    $w->Selection('anchor', $i);
+    $w->See($i);
 }
 
 #----------------------------------------------------------------------
-#		Accelerator key bindings
+#               Accelerator key bindings
 #----------------------------------------------------------------------
 # tkIconList_KeyPress --
 #
-#	Gets called when user enters an arbitrary key in the listbox.
+#       Gets called when user enters an arbitrary key in the listbox.
 #
 sub KeyPress {
     my($w, $key) = @_;
@@ -488,7 +677,8 @@ sub Goto {
     my($w, $text) = @_;
     return unless (exists $w->{'list'});
     return if (not defined $text or $text eq '');
-    my $start = (!exists $w->{'curItem'} ? 0 : $w->{'curItem'});
+#XXX curItem never used    my $start = (!exists $w->{'curItem'} ? 0 : $w->{'curItem'});
+    my $start = 0;
     $text = lc($text);
     my $theIndex = -1;
     my $less = 0;
@@ -507,9 +697,10 @@ sub Goto {
 	last if ($i == $start);
     }
     if ($theIndex > -1) {
-	my $rTag = $w->{'list'}[$theIndex][2];
-	$w->Select($rTag, 0);
-	$w->See($rTag);
+	$w->Selection(qw(clear 0 end));
+	$w->Selection('set', $theIndex);
+	$w->Selection('anchor', $theIndex);
+	$w->See($theIndex);
     }
 }
 

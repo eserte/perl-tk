@@ -18,21 +18,20 @@
 #include "tkGlue.h"
 #include "tkGlue.m"
 
-extern int Tix_InputOnlyCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ; 
-TixintVtab  *TixintVptr  ; 
+TixVtab     *TixVptr     ;
+TixintVtab  *TixintVptr  ;
 
 MODULE = Tk::InputO	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
 
 void
-inputo(...)              
+inputo(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tix_InputOnlyCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,1,Tix_InputOnlyCmd,items,&ST(0)));
  }
 
 BOOT:

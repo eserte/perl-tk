@@ -51,6 +51,11 @@ is selected.
 Reference to a scalar that contains the current value of the
 selected option.
 
+=item -textvariable
+
+Reference to a scalar that contains the text label of the current value of the
+selected option.
+
 =back
 
 =head1 METHODS
@@ -65,22 +70,27 @@ Adds OPTION_LIST to the already available options.
 
 =head1 EXAMPLE
 
-    use Tk;
-    my $mw = MainWindow->new();
+ use Tk;
+ my $mw = MainWindow->new();
 
-    my $var;
-    my $opt = $mw->Optionmenu(
-                -options => [qw(jan feb mar apr)],
-                -command => sub { print "got: ", shift, "\n" },
-		-variable => \$var,
-                )->pack;
+ my ($var, $tvar);
+ my $opt = $mw->Optionmenu(
+        -options => [[jan=>1], [feb=>2], [mar=>3], [apr=>4]],
+        -command => sub { print "got: ", shift, "\n" },
+        -variable => \$var,
+        -textvariable => \$tvar
+       )->pack;
 
-    $opt->addOptions([may=>5],[jun=>6],[jul=>7],[aug=>8]);
+ $opt->addOptions([may=>5],[jun=>6],[jul=>7],[aug=>8]);
 
-    $mw->Label(-textvariable=>\$var, -relief=>'groove')->pack;
-    $mw->Button(-text=>'Exit', -command=>sub{$mw->destroy})->pack;
+ my $f = $mw->Frame(-relief=>'groove', -borderwidth => 2)->pack;
+ $f->Label(-textvariable=>\$tvar)->pack(-side => 'left');
+ $f->Label(-text => " -> ")->pack(-side => 'left');
+ $f->Label(-textvariable=>\$var)->pack(-side => 'left');
 
-    MainLoop;
+ $mw->Button(-text=>'Exit', -command=>sub{$mw->destroy})->pack;
+
+ MainLoop;
 
 =head1 SEE ALSO
 

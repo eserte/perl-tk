@@ -4,10 +4,10 @@
 package Tk::ROText;
 
 use vars qw($VERSION);
-$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/ROText.pm#26 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/ROText.pm#9 $
 
 use Tk::Text;
-use base  qw(Tk::Text);
+use base  qw(Tk::Derived Tk::Text);
 
 Construct Tk::Widget 'ROText';
 
@@ -26,6 +26,13 @@ sub ClassInit
  $mw->bind($class,'<BackSpace>',$cb) if (defined $cb);
  $class->clipboardOperations($mw,'Copy');
  return $val;
+}
+
+sub Populate {
+    my($self,$args) = @_;
+    $self->SUPER::Populate($args);
+    my $m = $self->menu->entrycget($self->menu->index('Search'), '-menu');
+    $m->delete($m->index('Replace'));
 }
 
 sub Tk::Widget::ScrlROText { shift->Scrolled('ROText' => @_) }

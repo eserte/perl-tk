@@ -1,7 +1,7 @@
 package Tk::Mwm;
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Mwm/Mwm.pm#13 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Mwm/Mwm.pm#4 $
 
 use Tk qw($XS_VERSION);
 require DynaLoader;

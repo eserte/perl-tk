@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Tiler.pm#18 $
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::Frame);
 
@@ -165,7 +165,7 @@ sub Manage
    push(@{$m->{Slaves}},$s);
    $m->SlaveGeometryRequest($s);
   }
- $m->QueueLayout(2);
+ $m->QueueLayout(2 | 1);
 }
 
 sub moveto

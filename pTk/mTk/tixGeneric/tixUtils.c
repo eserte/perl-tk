@@ -1,3 +1,6 @@
+
+/*	$Id: tixUtils.c,v 1.3 2000/10/12 04:06:58 idiscovery Exp $	*/
+
 /*
  * tixUtils.c --
  *
@@ -20,16 +23,16 @@
 static void		Prompt _ANSI_ARGS_((Tcl_Interp *interp, int partial));
 static void		StdinProc _ANSI_ARGS_((ClientData clientData,
 			    int mask));
-static int		 ReliefParseProc _ANSI_ARGS_((ClientData clientData, 
-			    Tcl_Interp *interp, 
-			    Tk_Window tkwin, 
-			    Arg avalue, 
+static int		 ReliefParseProc _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp,
+			    Tk_Window tkwin,
+			    Tcl_Obj * avalue,
 			    char *widRec,
 			    int offset));
-static Arg		 ReliefPrintProc _ANSI_ARGS_((ClientData clientData, 
-			    Tk_Window tkwin, 
+static Tcl_Obj *		 ReliefPrintProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Window tkwin,
 			    char *widRec,
-			    int offset, 
+			    int offset,
 			    Tcl_FreeProc **freeProcPtr));
 /*
  * Global vars used in this file
@@ -41,7 +44,7 @@ static Tcl_DString command;	/* Used to assemble lines of terminal input
 #define WRONG_ARGC 1
 #define NO_MATCH   2
 
-
+
 #ifndef _LANG
 /*----------------------------------------------------------------------
  * TixSaveInterpState --
@@ -84,7 +87,7 @@ TixSaveInterpState(interp, statePtr)
 	statePtr->errorCode = NULL;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixRestoreInterpState --
  *
@@ -116,7 +119,7 @@ TixRestoreInterpState(interp, statePtr)
     }
 }
 #endif
-
+
 /*----------------------------------------------------------------------
  * Tix_HandleSubCmds --
  *
@@ -147,11 +150,11 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
     Tix_SubCmdInfo * s;
 
     /*
-     * First check if the number of arguments to the major command 
+     * First check if the number of arguments to the major command
      * is correct
      */
     argc -= 1;
-    if (argc < cmdInfo->minargc || 
+    if (argc < cmdInfo->minargc ||
 	(cmdInfo->maxargc != TIX_VAR_ARGS && argc > cmdInfo->maxargc)) {
 
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -188,7 +191,7 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 		break;
 	    }
 
-	    if (s->maxargc != TIX_VAR_ARGS && 
+	    if (s->maxargc != TIX_VAR_ARGS &&
 		argc > s->maxargc) {
 		error = WRONG_ARGC;
 		break;
@@ -215,7 +218,7 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 	 */
 	Tcl_AppendResult(interp, "unknown option \"",
 	    argv[1], "\".",  (char *) NULL);
-	
+
 	if (cmdInfo->numSubCmds == 0) {
 	    max = 0;
 	} else {
@@ -231,7 +234,7 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 		" This command does not take any options.",
 		(char *) NULL);
 	} else if (max == 1) {
-	    Tcl_AppendResult(interp, 
+	    Tcl_AppendResult(interp,
 		" Must be ", subCmdInfo->name, ".", (char *)NULL);
 	} else {
 	    Tcl_AppendResult(interp, " Must be ", (char *) NULL);
@@ -240,12 +243,12 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 		if (i == max-1) {
 		    Tcl_AppendResult(interp,"or ",s->name, ".", (char *) NULL);
 		} else if (i == max-2) {
-		    Tcl_AppendResult(interp, s->name, " ", (char *) NULL); 
+		    Tcl_AppendResult(interp, s->name, " ", (char *) NULL);
 		} else {
-		    Tcl_AppendResult(interp, s->name, ", ", (char *) NULL); 
+		    Tcl_AppendResult(interp, s->name, ", ", (char *) NULL);
 		}
 	    }
-	} 
+	}
     }
     return TCL_ERROR;
 }
@@ -266,22 +269,22 @@ void Tix_Exit(interp, code)
 {
     if (code != 0 && interp && interp->result != 0) {
 	fprintf(stderr, "%s\n", interp->result);
-	fprintf(stderr, "%s\n", 
+	fprintf(stderr, "%s\n",
 	    Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY));
     }
 
     if (interp) {
-	Tcl_GlobalEval(interp, "exit");
+	Tcl_GlobalEval(interp, tixStrDup("exit"));
     }
     exit(code);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
  * Tix_LoadTclLibrary --
  *
- *	Loads in a TCL library for an application according to 
+ *	Loads in a TCL library for an application according to
  *	the library settings.
  *
  * Results:
@@ -344,7 +347,7 @@ Tix_LoadTclLibrary(interp, envName, tclName, initFile, defDir, appName)
     ckfree(initCmd);
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_CreateCommands --
  *
@@ -389,7 +392,7 @@ void Tix_CreateCommands(interp, commands, clientData, deleteProc)
 
 #endif
 
-
+
 /*----------------------------------------------------------------------
  * Tix_DrawAnchorLines --
  *
@@ -408,7 +411,7 @@ void Tix_DrawAnchorLines(display, drawable, gc, x, y, w, h)
 {
     TixpDrawAnchorLines(display, drawable, gc, x, y, w, h);
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_CreateSubWindow --
  *
@@ -439,7 +442,7 @@ Tix_CreateSubWindow(interp, tkwin, subPath)
 
     return subwin;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_GetRenderBuffer --
  *
@@ -498,7 +501,7 @@ Drawable Tix_GetRenderBuffer(display, windowId, width, height, depth)
 	return windowId;
     }
 }
-
+
 #ifndef _LANG
 /*
  *----------------------------------------------------------------------
@@ -581,7 +584,7 @@ Tix_GlobalVarEval(iPtr, p, va_alist)
 #endif
 }
 #endif
-
+
 /*----------------------------------------------------------------------
  * TixGetHashTable --
  *
@@ -676,7 +679,7 @@ TixGetHashTable(interp, name)
  *
  *----------------------------------------------------------------------
  */
-
+
 /*----------------------------------------------------------------------
  *  ReliefParseProc --
  *
@@ -688,13 +691,13 @@ static int ReliefParseProc(clientData, interp, tkwin, avalue, widRec,offset)
     ClientData clientData;
     Tcl_Interp *interp;
     Tk_Window tkwin;
-    Arg avalue;
+    Tcl_Obj * avalue;
     char *widRec;		/* Must point to a valid Tix_DItem struct */
     int offset;
 {
     Tix_Relief * ptr = (Tix_Relief *)(widRec + offset);
     Tix_Relief   newVal;
-    char *value = LangString(avalue);
+    char *value = Tcl_GetString(avalue);
 
     if (value != NULL) {
 	size_t len = strlen(value);
@@ -728,7 +731,7 @@ static int ReliefParseProc(clientData, interp, tkwin, avalue, widRec,offset)
     return TCL_ERROR;
 }
 
-static Arg 
+static Tcl_Obj *
 ReliefPrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
     ClientData clientData;
     Tk_Window tkwin;
@@ -737,7 +740,7 @@ ReliefPrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
     Tix_FreeProc **freeProcPtr;
 {
     Tix_Relief *ptr = (Tix_Relief*)(widRec+offset);
-    Arg result = NULL;
+    Tcl_Obj * result = NULL;
 
     switch (*ptr) {
       case TIX_RELIEF_RAISED:
@@ -839,16 +842,16 @@ TixComputeTextGeometry(font, string, numChars, wrapLength,
     Tk_TextLayout textLayout;
 
     /*
-     * The justification itself doesn't affect the geometry (size) of 
+     * The justification itself doesn't affect the geometry (size) of
      * the text string. We pass TK_JUSTIFY_LEFT.
      */
 
     textLayout = Tk_ComputeTextLayout(font,
-	string, numChars, wrapLength, TK_JUSTIFY_LEFT, 0,
+	string, -1, wrapLength, TK_JUSTIFY_LEFT, 0,
 	widthPtr, heightPtr);
     Tk_FreeTextLayout(textLayout);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -888,11 +891,29 @@ TixDisplayText(display, drawable, font, string, numChars, x, y,
     GC gc;			/* Graphics context to use for drawing text. */
 {
     Tk_TextLayout textLayout;
-    int dummy;
+    int width;
+    int height;
+
+    /* FIXME: Needs attention?
+        - incoming numChars is not used, possibly due to confusion
+          as to whether it is bytes or chars
+     */
 
     textLayout = Tk_ComputeTextLayout(font,
-	string, numChars, length, justify, 0,
-	&dummy, &dummy);
+	string, -1, length, justify, 0,
+	&width, &height);
+
+    switch (justify) {
+        case TK_JUSTIFY_RIGHT:
+	    x += length-width;
+	    break;
+        case TK_JUSTIFY_CENTER:
+	    x += (length-width)/2;
+	    break;
+	default:
+	case TK_JUSTIFY_LEFT:
+	    break;
+    }
 
     Tk_DrawTextLayout(display, drawable, gc, textLayout,
 	    x, y, 0, -1);
@@ -910,7 +931,7 @@ TixDisplayText(display, drawable, font, string, numChars, x, y,
  */
 
 typedef void (Tcl_FreeInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
-typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *srcPtr, 
+typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *srcPtr,
         struct Tcl_Obj *dupPtr));
 typedef void (Tcl_UpdateStringProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
 typedef int (Tcl_SetFromAnyProc) _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1032,7 +1053,7 @@ TixGetStringFromObj(objPtr, lengthPtr)
 	return (char *) NULL;
     }
 #ifdef _LANG
-    objPtr = Tcl_GetStringFromObj(obj,lengthPtr); 
+    objPtr = Tcl_GetStringFromObj(obj,lengthPtr);
     if (*lengthPtr)
      return NULL;
     return objPtr;
@@ -1066,4 +1087,214 @@ TixGetStringFromObj(objPtr, lengthPtr)
 #endif /* _LANG */
 }
 
+/*----------------------------------------------------------------------
+ * TixStartSubRegionDraw --
+ *
+ *	Limits the subsequent drawing operations into the prescribed
+ *	rectangle region. This takes effect up to a matching
+ *	TixEndSubRegionDraw() call.
+ *
+ * Return value:
+ *	none.
+ *----------------------------------------------------------------------
+ */
+
+void
+TixpStartSubRegionDraw(ddPtr, drawable, gc, subRegPtr, origX, origY,
+	x, y, width, height, needWidth, needHeight)
+    Tix_DispData *ddPtr;
+    Drawable drawable;
+    GC gc;
+    TixpSubRegion * subRegPtr;
+    int origX;
+    int origY;
+    int x;
+    int y;
+    int width;
+    int height;
+    int needWidth;
+    int needHeight;
+{
+    Display *display = ddPtr->display;
+    int depth;
+
+    if ((width < needWidth) || (height < needHeight)) {
+	subRegPtr->origX  = origX;
+	subRegPtr->origY  = origY;
+	subRegPtr->x	  = x;
+	subRegPtr->y	  = y;
+	subRegPtr->width  = width;
+	subRegPtr->height = height;
+
+	/*
+	 * Find out the depth of the drawable and create a pixmap of
+	 * the same depth.
+	 */
+        depth = Tk_Depth(ddPtr->tkwin);
+
+	subRegPtr->pixmap = Tk_GetPixmap(display, drawable, width, height,
+		depth);
+
+	if (subRegPtr->pixmap != None) {
+	    /*
+	     * It could be None if we have somehow exhausted the Windows
+	     * GDI resources.
+	     */
+	    XCopyArea(display, drawable, subRegPtr->pixmap, gc, x, y,
+		    width, height, 0, 0);
+	}
+    } else {
+	subRegPtr->pixmap = None;
+    }
+}
+
+/*----------------------------------------------------------------------
+ * TixpEndSubRegionDraw --
+ *
+ *
+ *----------------------------------------------------------------------
+ */
+void
+TixpEndSubRegionDraw(display, drawable, gc, subRegPtr)
+    Display *display;
+    Drawable drawable;
+    GC gc;
+    TixpSubRegion * subRegPtr;
+{
+    if (subRegPtr->pixmap != None) {
+	XCopyArea(display, subRegPtr->pixmap, drawable, gc, 0, 0,
+		subRegPtr->width, subRegPtr->height,
+		subRegPtr->x, subRegPtr->y);
+	Tk_FreePixmap(display, subRegPtr->pixmap);
+	subRegPtr->pixmap = None;
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TixpSubRegDisplayText --
+ *
+ *	Display a text string on one or more lines in a sub region.
+ *
+ * Results:
+ *	See TkDisplayText
+ *
+ * Side effects:
+ *	See TkDisplayText
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TixpSubRegDisplayText(display, drawable, gc, subRegPtr, font, string,
+	numChars, x, y,	length, justify, underline)
+    Display *display;		/* X display to use for drawing text. */
+    Drawable drawable;		/* Window or pixmap in which to draw the
+				 * text. */
+    GC gc;			/* Graphics context to use for drawing text. */
+    TixpSubRegion * subRegPtr;	/* Information about the subregion */
+    TixFont font;		/* Font that determines geometry of text
+				 * (should be same as font in gc). */
+    char *string;		/* String to display;  may contain embedded
+				 * newlines. */
+    int numChars;		/* Number of characters to use from string. */
+    int x, y;			/* Pixel coordinates within drawable of
+				 * upper left corner of display area. */
+    int length;			/* Line length in pixels;  used to compute
+				 * word wrap points and also for
+				 * justification.   Must be > 0. */
+    Tk_Justify justify;		/* How to justify lines. */
+    int underline;		/* Index of character to underline, or < 0
+				 * for no underlining. */
+{
+    if (subRegPtr->pixmap != None) {
+	TixDisplayText(display, subRegPtr->pixmap, font, string,
+		numChars, x - subRegPtr->x, y - subRegPtr->y,
+		length, justify, underline, gc);
+    } else {
+	TixDisplayText(display, drawable, font, string,
+		numChars, x, y,	length, justify, underline, gc);
+    }
+}
+
+/*----------------------------------------------------------------------
+ * TixpSubRegFillRectangle --
+ *
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TixpSubRegFillRectangle(display, drawable, gc, subRegPtr, x, y, width, height)
+    Display *display;		/* X display to use for drawing rectangle. */
+    Drawable drawable;		/* Window or pixmap in which to draw the
+				 * rectangle. */
+    GC gc;			/* Graphics context to use for drawing. */
+    TixpSubRegion * subRegPtr;	/* Information about the subregion */
+    int x, y;			/* Pixel coordinates within drawable of
+				 * upper left corner of display area. */
+    int width, height;		/* Size of the rectangle. */
+{
+    if (subRegPtr->pixmap != None) {
+	XFillRectangle(display, subRegPtr->pixmap, gc,
+		x - subRegPtr->x, y - subRegPtr->x, width, height);
+    } else {
+	XFillRectangle(display, drawable, gc, x, y, width, height);
+    }
+}
+
+/*----------------------------------------------------------------------
+ * TixpSubRegDrawImage	--
+ *
+ *	Draws a Tk image in a subregion.
+ *----------------------------------------------------------------------
+ */
+
+void
+TixpSubRegDrawImage(subRegPtr, image, imageX, imageY, width, height,
+	drawable, drawableX, drawableY)
+    TixpSubRegion * subRegPtr;
+    Tk_Image image;
+    int imageX;
+    int imageY;
+    int width;
+    int height;
+    Drawable drawable;
+    int drawableX;
+    int drawableY;
+{
+    if (subRegPtr->pixmap != None) {
+	Tk_RedrawImage(image, imageX, imageY, width, height, subRegPtr->pixmap,
+	        drawableX - subRegPtr->x, drawableY - subRegPtr->y);
+    } else {
+	Tk_RedrawImage(image, imageX, imageY, width, height, drawable,
+	        drawableX, drawableY);
+    }
+}
+
+void
+TixpSubRegDrawBitmap(display, drawable, gc, subRegPtr, bitmap, src_x, src_y,
+	width, height, dest_x, dest_y, plane)
+    Display *display;
+    Drawable drawable;
+    GC gc;
+    TixpSubRegion * subRegPtr;
+    Pixmap bitmap;
+    int src_x, src_y;
+    int width, height;
+    int dest_x, dest_y;
+    unsigned long plane;
+{
+    XSetClipOrigin(display, gc, dest_x, dest_y);
+    if (subRegPtr->pixmap != None) {
+	XCopyPlane(display, bitmap, subRegPtr->pixmap, gc, src_x, src_y,
+		width, height, dest_x - subRegPtr->x, dest_y - subRegPtr->y,
+		plane);
+    } else {
+	XCopyPlane(display, bitmap, drawable, gc, src_x, src_y, width, height,
+	        dest_x, dest_y, plane);
+    }
+    XSetClipOrigin(display, gc, 0, 0);
+}
 

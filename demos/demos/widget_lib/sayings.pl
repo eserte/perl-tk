@@ -32,7 +32,7 @@ sub sayings {
       'A penny for your thoughts',
       'Fool me once, shame on you; fool me twice, shame on me',
       'Every cloud has a silver lining',
-      'Where there\'s smoke there\'s fire', 
+      'Where there\'s smoke there\'s fire',
       'It takes one to know one',
       'Take this job and shove it',
       'Up a creek without a paddle',

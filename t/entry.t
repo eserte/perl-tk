@@ -15,6 +15,9 @@ use strict;
 
 use Tk;
 use Tk::Trace;
+use Tk::Config ();
+my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
+
 
 BEGIN {
     if (!eval q{
@@ -49,15 +52,15 @@ $sel->insert("end", "This is some sample text");
 
 # Font names
 
-my $big = "-adobe-helvetica-medium-r-normal--24-240-75-75-p-*-iso8859-1";
-my $fixed = "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
+my $big   = $Xft ? '{Adobe Helvetica} -24' : "-adobe-helvetica-medium-r-normal--24-240-75-75-p-*-iso8859-1";
+my $fixed = $Xft ? '{Adobe Courier} -12' : "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
 
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
 
 $mw->option("add", "*Entry.borderWidth", 2);
 $mw->option("add", "*Entry.highlightThickness", 2);
-$mw->option("add", "*Entry.font", "Helvetica -12");
+$mw->option("add", "*Entry.font", $Xft ? '{Adobe Helvetica} -12' : "Helvetica -12");
 
 my $e = $mw->Entry(qw(-bd 2 -relief sunken))->pack;
 
@@ -93,12 +96,12 @@ my @tests = (
     [qw(-insertofftime 100 100 3.2), 'expected integer but got "3.2"', 0,0,1],
     [qw(-insertontime 100 100 3.2), 'expected integer but got "3.2"', 0,0,1],
     [qw(-justify right right bogus), 'bad justification "bogus": must be left, right, or center'],
-    [qw(-relief groove groove 1.5), 'bad relief type "1.5": must be flat, groove, raised, ridge, solid, or sunken'],
+    [qw(-relief groove groove 1.5), 'bad relief "1.5": must be flat, groove, raised, ridge, solid, or sunken'],
     [qw(-selectbackground), '#110022', '#110022', 'bogus', 'unknown color name "bogus"'],
     [qw(-selectborderwidth 1.3 1 badValue), 'bad screen distance "badValue"'],
     [qw(-selectforeground), '#654321', '#654321', 'bogus', 'unknown color name "bogus"'],
     [qw(-show * *), undef, undef],
-    [qw(-state n normal bogus), 'bad state value "bogus": must be normal or disabled'],
+    [qw(-state n normal bogus), 'bad state "bogus": must be disabled, normal, or readonly'],
     [qw(-takefocus), "any string", "any string", undef, undef],
     [qw(-textvariable), \$i, \$i, undef, undef],
     [qw(-width 402 402 3p), "'3p' isn't numeric"],
@@ -142,7 +145,7 @@ ok(ref $e, 'Tk::Entry');
 
 eval { $e->destroy; undef $e };
 eval { $e = $mw->Entry(-gorp => 'foo') };
-ok($@ =~ /Bad option \`-gorp\'/, 1, $@);
+ok($@ =~ /unknown option "-gorp"/, 1, $@);
 ok(!Tk::Exists($e), 1);
 ok(!defined $e, 1);
 
@@ -152,7 +155,7 @@ $e->update;
 
 my $cx = $mw->fontMeasure($fixed, 'a');
 my $cy = $mw->fontMetrics($fixed, '-linespace');
-#my $ux = $mw->fontMeasure($fixed, '\u4e4e'); # XXX no unicode yet
+my $ux = $mw->fontMeasure($fixed, "\x{4e4e}"); # XXX no unicode yet
 
 eval { $e->bbox };
 ok($@ =~ /wrong \# args: should be ".* bbox index"/, 1, $@);
@@ -164,7 +167,7 @@ eval { $e->bbox(qw(bogus)) };
 ok($@ =~ /bad entry index "bogus"/, 1, $@);
 
 $e->delete(0,"end");
-ok("5,5,0,$cy",join(",",$e->bbox(0)));
+ok(join(",",$e->bbox(0)),"5,5,0,$cy");
 
 $e->delete(0,"end");
 $e->insert(0,"abc");
@@ -206,7 +209,7 @@ ok($@ =~ /unknown option "-gorp"/, 1, $@);
 
 $e->configure(-bd => 4);
 ok($e->cget(-bd), 4);
-ok(scalar @{$e->configure}, 38);
+ok(scalar @{$e->configure}, 36);
 
 eval { $e->configure('-foo') };
 ok($@ =~ /unknown option "-foo"/, 1, $@);
@@ -349,7 +352,7 @@ eval {$e->select };
 ok($@ =~ /Can\'t locate(?: file)? auto\/Tk\/Entry\/select\.al/, 1, $@);
 
 eval {$e->selection };
-ok($@ =~ /wrong \# args: should be ".* select option \?index\?"/, 1, $@);
+ok($@ =~ /wrong \# args: should be ".* selection option \?index\?"/, 1, $@);
 
 eval {$e->selection('foo') };
 ok($@ =~ /bad selection option "foo": must be adjust, clear, from, present, range, or to/, 1, $@);
@@ -364,7 +367,7 @@ $e->selection("to", 4);
 $e->update;
 $e->selection("clear");
 eval { $mw->SelectionGet };
-ok($@ =~ /PRIMARY selection doesn\'t exist or form "STRING" not defined/, 1, $@);
+ok($@ =~ /PRIMARY selection doesn\'t exist or form "(UTF8_)?STRING" not defined/, 1, $@);
 ok($mw->SelectionOwner, $e);
 
 eval { $e->selection("present", "foo") };
@@ -429,7 +432,7 @@ $e->selectionFrom(1);
 $e->selection(qw(to 5));
 $e->selection(qw(range 4 4 ));
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in entry/, 1, $@);
+ok($@ =~ /selection isn\'t in widget/, 1, $@);
 
 $e->delete(0, "end");
 $e->insert("end", "0123456789");
@@ -600,7 +603,7 @@ $e->selectionFrom(1);
 $e->selectionTo(5);
 $e->configure(-exportselection => 0);
 eval { $mw->SelectionGet };
-ok($@ =~ /PRIMARY selection doesn\'t exist or form "STRING" not defined/, 1, $@);
+ok($@ =~ /PRIMARY selection doesn\'t exist or form "(UTF8_)?STRING" not defined/, 1, $@);
 ok($e->index("sel.first"), 1);
 ok($e->index("sel.last"), 5);
 
@@ -901,7 +904,7 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 8));
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in entry/, 1, $@);
+ok($@ =~ /selection isn\'t in widget/, 1, $@);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -921,7 +924,7 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(3 8));
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in entry/, 1, $@);
+ok($@ =~ /selection isn\'t in widget/, 1, $@);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -1025,7 +1028,7 @@ $e->insert(0, "abcdefghjklmnopqrstu");
 $e->selection(qw(range 4 10));
 $x = "a";
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in entry/, 1, $@);
+ok($@ =~ /selection isn\'t in widget/, 1, $@);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-textvariable => \$x);
@@ -1130,7 +1133,7 @@ if ($^O ne 'MSWin32') {
     # selection range is reset.
 
     eval { $e->index("sel.first") };
-    ok($@ =~ /selection isn\'t in entry/, 1, $@);
+    ok($@ =~ /selection isn\'t in widget/, 1, $@);
     skip(1,1);
 
 } else {
@@ -1144,7 +1147,7 @@ if ($^O ne 'MSWin32') {
 
 if ($^O ne 'MSWin32') {
     eval { $e->index("sbogus") };
-    ok($@ =~ /selection isn\'t in entry/, 1, $@);
+    ok($@ =~ /selection isn\'t in widget/, 1, $@);
 } else {
     eval { $e->index("sbogus") };
     ok($@ =~ /bad entry index "sbogus"/, 1, $@);
@@ -1224,10 +1227,14 @@ $e->delete(qw(0 end));
 $e->insert(qw(0 .............................));
 ok(join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
 
+$e->delete(qw(0 end));
+$e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
+my $Xw = join(" ", map { substr($_, 0, 8) } $e->xview);
+
 $e->configure(-show => 'X');
 $e->delete(qw(0 end));
 $e->insert(qw(0 .............................));
-ok(join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.275862");
+ok(join(" ", map { substr($_, 0, 8) } $e->xview), $Xw);
 
 $e->configure(-show => '.');
 $e->delete(qw(0 end));

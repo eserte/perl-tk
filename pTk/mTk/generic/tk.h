@@ -1,83 +1,101 @@
 /*
  * tk.h --
  *
- *	Declarations for Tk-related things that are visible
- *	outside of the Tk module itself.
+ *      Declarations for Tk-related things that are visible
+ *      outside of the Tk module itself.
  *
  * Copyright (c) 1989-1994 The Regents of the University of California.
  * Copyright (c) 1994 The Australian National University.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
- * Copyright (c) 1998-1999 Scriptics Corporation.
+ * Copyright (c) 1994-1998 Sun Microsystems, Inc.
+ * Copyright (c) 1998-2000 Ajuba Solutions.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tk.h,v 1.19 1999/02/04 21:03:27 stanton Exp $
+ * RCS: @(#) $Id: tk.h,v 1.74.2.2 2003/07/15 22:46:35 dgp Exp $
  */
 
 #ifndef _TK
 #define _TK
 
 /*
+ * For C++ compilers, use extern "C"
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
  * When version numbers change here, you must also go into the following files
  * and update the version numbers:
  *
- * README
- * unix/configure.in
- * win/makefile.bc
- * win/makefile.vc
- * win/README
- * mac/README
- * library/tk.tcl	(Not for patch release updates)
- *
- * The release level should be  0 for alpha, 1 for beta, and 2 for
- * final/patch.  The release serial value is the number that follows the
- * "a", "b", or "p" in the patch level; for example, if the patch level
- * is 4.3b2, TK_RELEASE_SERIAL is 2.  It restarts at 1 whenever the
- * release level is changed, except for the final release, which should
- * be 0.
+ * library/tk.tcl       (only if Major.minor changes, not patchlevel)
+ * unix/configure.in    (2 LOC Major, 2 LOC minor, 1 LOC patch)
+ * win/configure.in     (as above)
+ * win/makefile.vc      (not patchlevel)
+ * README               (sections 0 and 1)
+ * mac/README           (not patchlevel)
+ * macosx/Wish.pbproj/project.pbxproj
+ *                      (14 LOC total, 4 LOC patch)
+ * win/README           (not patchlevel)
+ * unix/README          (not patchlevel)
+ * unix/tk.spec         (3 LOC Major/Minor, 2 LOC patch)
+ * win/tcl.m4           (not patchlevel)
  *
  * You may also need to update some of these files when the numbers change
  * for the version of Tcl that this release of Tk is compiled against.
  */
 
 #define TK_MAJOR_VERSION   8
-#define TK_MINOR_VERSION   0
-#define TK_RELEASE_LEVEL   2
-#define TK_RELEASE_SERIAL  5
+#define TK_MINOR_VERSION   4
+#define TK_RELEASE_LEVEL   TCL_FINAL_RELEASE
+#define TK_RELEASE_SERIAL  4
 
-#define TK_VERSION "8.0"
-#define TK_PATCH_LEVEL "8.0.5"
-
-/*
- * A special definition used to allow this header file to be included
- * in resource files.
- */
-
-#ifndef RESOURCE_INCLUDED
+#define TK_VERSION      "8.4"
+#define TK_PATCH_LEVEL  "8.4.4"
 
 /*
  * The following definitions set up the proper options for Macintosh
  * compilers.  We use this method because there is no autoconf equivalent.
  */
 
-#ifdef MAC_TCL
+#if defined(MAC_TCL) || defined(MAC_OSX_TK)
 #   ifndef REDO_KEYSYM_LOOKUP
-#	define REDO_KEYSYM_LOOKUP
+#       define REDO_KEYSYM_LOOKUP
 #   endif
 #endif
+
+
+/*
+ * A special definition used to allow this header file to be included
+ * from windows or mac resource files so that they can obtain version
+ * information.  RC_INVOKED is defined by default by the windows RC tool
+ * and manually set for macintosh.
+ *
+ * Resource compilers don't like all the C stuff, like typedefs and
+ * procedure declarations, that occur below, so block them out.
+ */
+
+#ifdef RC_INVOKED
+#include "tcl.h"
+#endif
+
+#ifndef RC_INVOKED
 
 #ifndef _TKPORT
 #include "tkPort.h"
 #endif
 
-#if !defined(_XLIB_H)
-/* FIXME: There is a _XLIB vs _XLIB_H muddle with .t/.m files */
-#   ifdef MAC_TCL
-#	include <Xlib.h>
-#	include <X.h>
+#ifndef _XLIB_H
+#   if defined (MAC_TCL)
+#       include <Xlib.h>
+#       include <X.h>
+#   elif defined(MAC_OSX_TK)
+#       include <X11/Xlib.h>
+#       include <X11/X.h>
 #   else
-#	include <X11/Xlib.h>
+#       include <X11/Xlib.h>
 #   endif
 #if !defined(_XLIB_H)
 #define _XLIB_H
@@ -113,81 +131,236 @@ typedef struct Tk_ErrorHandler_ *Tk_ErrorHandler;
 typedef struct Tk_Font_ *Tk_Font;
 typedef struct Tk_Image__ *Tk_Image;
 typedef struct Tk_ImageMaster_ *Tk_ImageMaster;
+typedef struct Tk_OptionTable_ *Tk_OptionTable;
 typedef struct Tk_PostscriptInfo_ *Tk_PostscriptInfo;
 typedef struct Tk_TextLayout_ *Tk_TextLayout;
 typedef struct Tk_Window_ *Tk_Window;
 typedef struct Tk_3DBorder_ *Tk_3DBorder;
+typedef struct Tk_Style_ *Tk_Style;
+typedef struct Tk_StyleEngine_ *Tk_StyleEngine;
+typedef struct Tk_StyledElement_ *Tk_StyledElement;
 
 /*
  * Additional types exported to clients.
  */
 
-typedef char *Tk_Uid;
+typedef CONST char *Tk_Uid;
 
 /*
- * Structure used to specify how to handle argv options.
+ * The enum below defines the valid types for Tk configuration options
+ * as implemented by Tk_InitOptions, Tk_SetOptions, etc.
  */
 
-typedef struct {
-    char *key;		/* The key string that flags the option in the
-			 * argv array. */
-    int type;		/* Indicates option type;  see below. */
-    char *src;		/* Value to be used in setting dst;  usage
-			 * depends on type. */
-    char *dst;		/* Address of value to be modified;  usage
-			 * depends on type. */
-    char *help;		/* Documentation message describing this option. */
-} Tk_ArgvInfo;
+typedef enum {
+    TK_OPTION_BOOLEAN,
+    TK_OPTION_INT,
+    TK_OPTION_DOUBLE,
+    TK_OPTION_STRING,
+    TK_OPTION_STRING_TABLE,
+    TK_OPTION_COLOR,
+    TK_OPTION_FONT,
+    TK_OPTION_BITMAP,
+    TK_OPTION_BORDER,
+    TK_OPTION_RELIEF,
+    TK_OPTION_CURSOR,
+    TK_OPTION_JUSTIFY,
+    TK_OPTION_ANCHOR,
+    TK_OPTION_SYNONYM,
+    TK_OPTION_PIXELS,
+    TK_OPTION_WINDOW,
+    TK_OPTION_END,
+    TK_OPTION_CUSTOM,
+    TK_OPTION_STYLE,
+    TK_OPTION_OBJ,
+    TK_OPTION_CALLBACK,
+    TK_OPTION_SCALARVAR,
+    TK_OPTION_HASHVAR,
+    TK_OPTION_ARRAYVAR
+} Tk_OptionType;
 
 /*
- * Legal values for the type field of a Tk_ArgvInfo: see the user
- * documentation for details.
+ * Structures of the following type are used by widgets to specify
+ * their configuration options.  Typically each widget has a static
+ * array of these structures, where each element of the array describes
+ * a single configuration option.  The array is passed to
+ * Tk_CreateOptionTable.
  */
 
-#define TK_ARGV_CONSTANT		15
-#define TK_ARGV_INT			16
-#define TK_ARGV_STRING			17
-#define TK_ARGV_UID			18
-#define TK_ARGV_REST			19
-#define TK_ARGV_FLOAT			20
-#define TK_ARGV_FUNC			21
-#define TK_ARGV_GENFUNC			22
-#define TK_ARGV_HELP			23
-#define TK_ARGV_CONST_OPTION		24
-#define TK_ARGV_OPTION_VALUE		25
-#define TK_ARGV_OPTION_NAME_VALUE	26
-#define TK_ARGV_END			27
+typedef struct Tk_OptionSpec {
+    Tk_OptionType type;         /* Type of option, such as TK_OPTION_COLOR;
+				 * see definitions above. Last option in
+				 * table must have type TK_OPTION_END. */
+    char *optionName;           /* Name used to specify option in Tcl
+				 * commands. */
+    char *dbName;               /* Name for option in option database. */
+    char *dbClass;              /* Class for option in database. */
+    char *defValue;             /* Default value for option if not specified
+				 * in command line, the option database,
+				 * or the system. */
+    int objOffset;              /* Where in record to store a Tcl_Obj * that
+				 * holds the value of this option, specified
+				 * as an offset in bytes from the start of
+				 * the record. Use the Tk_Offset macro to
+				 * generate values for this.  -1 means don't
+				 * store the Tcl_Obj in the record. */
+    int internalOffset;         /* Where in record to store the internal
+				 * representation of the value of this option,
+				 * such as an int or XColor *.  This field
+				 * is specified as an offset in bytes
+				 * from the start of the record. Use the
+				 * Tk_Offset macro to generate values for it.
+				 * -1 means don't store the internal
+				 * representation in the record. */
+    int flags;                  /* Any combination of the values defined
+				 * below. */
+    ClientData clientData;      /* An alternate place to put option-specific
+				 * data. Used for the monochrome default value
+				 * for colors, etc. */
+    int typeMask;               /* An arbitrary bit mask defined by the
+				 * class manager; typically bits correspond
+				 * to certain kinds of options such as all
+				 * those that require a redisplay when they
+				 * change.  Tk_SetOptions returns the bit-wise
+				 * OR of the typeMasks of all options that
+				 * were changed. */
+} Tk_OptionSpec;
 
 /*
- * Flag bits for passing to Tk_ParseArgv:
+ * Flag values for Tk_OptionSpec structures.  These flags are shared by
+ * Tk_ConfigSpec structures, so be sure to coordinate any changes
+ * carefully.
  */
 
-#define TK_ARGV_NO_DEFAULTS		0x1
-#define TK_ARGV_NO_LEFTOVERS		0x2
-#define TK_ARGV_NO_ABBREV		0x4
-#define TK_ARGV_DONT_SKIP_FIRST_ARG	0x8
+#define TK_OPTION_NULL_OK               (1 << 0)
+#define TK_OPTION_DONT_SET_DEFAULT      (1 << 3)
+
+/*
+ * The following structure and function types are used by TK_OPTION_CUSTOM
+ * options; the structure holds pointers to the functions needed by the Tk
+ * option config code to handle a custom option.
+ */
+
+typedef int (Tk_CustomOptionSetProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, Tk_Window tkwin, Tcl_Obj **value, char *widgRec,
+	int offset, char *saveInternalPtr, int flags));
+typedef Tcl_Obj *(Tk_CustomOptionGetProc) _ANSI_ARGS_((ClientData clientData,
+	Tk_Window tkwin, char *widgRec, int offset));
+typedef void (Tk_CustomOptionRestoreProc) _ANSI_ARGS_((ClientData clientData,
+	Tk_Window tkwin, char *internalPtr, char *saveInternalPtr));
+typedef void (Tk_CustomOptionFreeProc) _ANSI_ARGS_((ClientData clientData,
+	Tk_Window tkwin, char *internalPtr));
+
+typedef struct Tk_ObjCustomOption {
+    char *name;                         /* Name of the custom option. */
+    Tk_CustomOptionSetProc *setProc;    /* Function to use to set a record's
+					 * option value from a Tcl_Obj */
+    Tk_CustomOptionGetProc *getProc;    /* Function to use to get a Tcl_Obj
+					 * representation from an internal
+					 * representation of an option. */
+    Tk_CustomOptionRestoreProc *restoreProc;    /* Function to use to restore a
+						 * saved value for the internal
+						 * representation. */
+    Tk_CustomOptionFreeProc *freeProc;  /* Function to use to free the internal
+					 * representation of an option. */
+    ClientData clientData;              /* Arbitrary one-word value passed to
+					 * the handling procs. */
+} Tk_ObjCustomOption;
+
+
+/*
+ * Macro to use to fill in "offset" fields of the Tk_OptionSpec.
+ * struct.  Computes number of bytes from beginning of structure
+ * to a given field.
+ */
+
+#ifdef offsetof
+#define Tk_Offset(type, field) ((int) offsetof(type, field))
+#else
+#define Tk_Offset(type, field) ((int) ((char *) &((type *) 0)->field))
+#endif
+
+/*
+ * The following two structures are used for error handling.  When
+ * configuration options are being modified, the old values are
+ * saved in a Tk_SavedOptions structure.  If an error occurs, then the
+ * contents of the structure can be used to restore all of the old
+ * values.  The contents of this structure are for the private use
+ * Tk.  No-one outside Tk should ever read or write any of the fields
+ * of these structures.
+ */
+
+typedef struct Tk_SavedOption {
+    struct TkOption *optionPtr;         /* Points to information that describes
+					 * the option. */
+    Tcl_Obj *valuePtr;                  /* The old value of the option, in
+					 * the form of a Tcl object; may be
+					 * NULL if the value wasn't saved as
+					 * an object. */
+    double internalForm;                /* The old value of the option, in
+					 * some internal representation such
+					 * as an int or (XColor *).  Valid
+					 * only if optionPtr->specPtr->objOffset
+					 * is < 0.  The space must be large
+					 * enough to accommodate a double, a
+					 * long, or a pointer; right now it
+					 * looks like a double is big
+					 * enough.  Also, using a double
+					 * guarantees that the field is
+					 * properly aligned for storing large
+					 * values. */
+} Tk_SavedOption;
+
+#ifdef TCL_MEM_DEBUG
+#   define TK_NUM_SAVED_OPTIONS 2
+#else
+#   define TK_NUM_SAVED_OPTIONS 20
+#endif
+
+typedef struct Tk_SavedOptions {
+    char *recordPtr;                    /* The data structure in which to
+					 * restore configuration options. */
+    Tk_Window tkwin;                    /* Window associated with recordPtr;
+					 * needed to restore certain options. */
+    int numItems;                       /* The number of valid items in
+					 * items field. */
+    Tk_SavedOption items[TK_NUM_SAVED_OPTIONS];
+					/* Items used to hold old values. */
+    struct Tk_SavedOptions *nextPtr;    /* Points to next structure in list;
+					 * needed if too many options changed
+					 * to hold all the old values in a
+					 * single structure.  NULL means no
+					 * more structures. */
+} Tk_SavedOptions;
 
 /*
  * Structure used to describe application-specific configuration
  * options:  indicates procedures to call to parse an option and
- * to return a text string describing an option.
+ * to return a text string describing an option. THESE ARE
+ * DEPRECATED; PLEASE USE THE NEW STRUCTURES LISTED ABOVE.
  */
 
+/*
+ * This is a temporary flag used while tkObjConfig and new widgets
+ * are in development.
+ */
+
+#ifndef __NO_OLD_CONFIG
+
 typedef int (Tk_OptionParseProc) _ANSI_ARGS_((ClientData clientData,
-	Tcl_Interp *interp, Tk_Window tkwin, Arg value, char *widgRec,
+	Tcl_Interp *interp, Tk_Window tkwin, Tcl_Obj *value, char *widgRec,
 	int offset));
-typedef Arg (Tk_OptionPrintProc) _ANSI_ARGS_((ClientData clientData,
+typedef Tcl_Obj *(Tk_OptionPrintProc) _ANSI_ARGS_((ClientData clientData,
 	Tk_Window tkwin, char *widgRec, int offset,
 	Tcl_FreeProc **freeProcPtr));
 
 typedef struct Tk_CustomOption {
-    Tk_OptionParseProc *parseProc;	/* Procedure to call to parse an
+    Tk_OptionParseProc *parseProc;      /* Procedure to call to parse an
 					 * option and store it in converted
 					 * form. */
-    Tk_OptionPrintProc *printProc;	/* Procedure to return a printable
+    Tk_OptionPrintProc *printProc;      /* Procedure to return a printable
 					 * string describing an existing
 					 * option. */
-    ClientData clientData;		/* Arbitrary one-word value used by
+    ClientData clientData;              /* Arbitrary one-word value used by
 					 * option parser:  passed to
 					 * parseProc and printProc. */
 } Tk_CustomOption;
@@ -200,22 +373,22 @@ typedef struct Tk_CustomOption {
  */
 
 typedef struct Tk_ConfigSpec {
-    int type;			/* Type of option, such as TK_CONFIG_COLOR;
+    int type;                   /* Type of option, such as TK_CONFIG_COLOR;
 				 * see definitions below.  Last option in
 				 * table must have type TK_CONFIG_END. */
-    char *argvName;		/* Switch used to specify option in argv.
+    char *argvName;             /* Switch used to specify option in argv.
 				 * NULL means this spec is part of a group. */
-    char *dbName;		/* Name for option in option database. */
-    char *dbClass;		/* Class for option in database. */
-    char *defValue;		/* Default value for option if not
+    Tk_Uid dbName;              /* Name for option in option database. */
+    Tk_Uid dbClass;             /* Class for option in database. */
+    Tk_Uid defValue;            /* Default value for option if not
 				 * specified in command line or database. */
-    int offset;			/* Where in widget record to store value;
+    int offset;                 /* Where in widget record to store value;
 				 * use Tk_Offset macro to generate values
 				 * for this. */
-    int specFlags;		/* Any combination of the values defined
+    int specFlags;              /* Any combination of the values defined
 				 * below;  other bits are used internally
 				 * by tkConfig.c. */
-    Tk_CustomOption *customPtr;	/* If type is TK_CONFIG_CUSTOM then this is
+    Tk_CustomOption *customPtr; /* If type is TK_CONFIG_CUSTOM then this is
 				 * a pointer to info about how to parse and
 				 * print the option.  Otherwise it is
 				 * irrelevant. */
@@ -226,34 +399,6 @@ typedef struct Tk_ConfigSpec {
  * documentation for details.
  */
 
-#define TK_CONFIG_BOOLEAN	1
-#define TK_CONFIG_INT		2
-#define TK_CONFIG_DOUBLE	3
-#define TK_CONFIG_STRING	4
-#define TK_CONFIG_UID		5
-#define TK_CONFIG_COLOR		6
-#define TK_CONFIG_FONT		7
-#define TK_CONFIG_BITMAP	8
-#define TK_CONFIG_BORDER	9
-#define TK_CONFIG_RELIEF	10
-#define TK_CONFIG_CURSOR	11
-#define TK_CONFIG_ACTIVE_CURSOR	12
-#define TK_CONFIG_JUSTIFY	13
-#define TK_CONFIG_ANCHOR	14
-#define TK_CONFIG_SYNONYM	15
-#define TK_CONFIG_CAP_STYLE	16
-#define TK_CONFIG_JOIN_STYLE	17
-#define TK_CONFIG_PIXELS	18
-#define TK_CONFIG_MM		19
-#define TK_CONFIG_WINDOW	20
-#define TK_CONFIG_CUSTOM	21
-#define TK_CONFIG_CALLBACK	22
-#define TK_CONFIG_LANGARG	23
-#define TK_CONFIG_SCALARVAR	24
-#define TK_CONFIG_HASHVAR	25
-#define TK_CONFIG_ARRAYVAR	26
-#define TK_CONFIG_OBJECT	27
-#define TK_CONFIG_END		28
 
 /*
  * Macro to use to fill in "offset" fields of Tk_ConfigInfos.
@@ -267,26 +412,82 @@ typedef struct Tk_ConfigSpec {
 #define Tk_Offset(type, field) ((int) ((char *) &((type *) 0)->field))
 #endif
 
+typedef enum {
+    TK_CONFIG_BOOLEAN, TK_CONFIG_INT, TK_CONFIG_DOUBLE, TK_CONFIG_STRING,
+    TK_CONFIG_UID, TK_CONFIG_COLOR, TK_CONFIG_FONT, TK_CONFIG_BITMAP,
+    TK_CONFIG_BORDER, TK_CONFIG_RELIEF, TK_CONFIG_CURSOR,
+    TK_CONFIG_ACTIVE_CURSOR, TK_CONFIG_JUSTIFY, TK_CONFIG_ANCHOR,
+    TK_CONFIG_SYNONYM, TK_CONFIG_CAP_STYLE, TK_CONFIG_JOIN_STYLE,
+    TK_CONFIG_PIXELS, TK_CONFIG_MM, TK_CONFIG_WINDOW, TK_CONFIG_CUSTOM,
+    TK_CONFIG_CALLBACK, TK_CONFIG_LANGARG, TK_CONFIG_SCALARVAR,
+    TK_CONFIG_HASHVAR,  TK_CONFIG_ARRAYVAR, TK_CONFIG_OBJECT,
+    TK_CONFIG_END
+} Tk_ConfigTypes;
+
 /*
  * Possible values for flags argument to Tk_ConfigureWidget:
  */
 
-#define TK_CONFIG_ARGV_ONLY	1
-#define TK_CONFIG_OBJS		0x80
+#define TK_CONFIG_ARGV_ONLY     1
+#define TK_CONFIG_OBJS          0x80
 
 /*
- * Possible flag values for Tk_ConfigInfo structures.  Any bits at
+ * Possible flag values for Tk_ConfigSpec structures.  Any bits at
  * or above TK_CONFIG_USER_BIT may be used by clients for selecting
  * certain entries.  Before changing any values here, coordinate with
- * tkConfig.c (internal-use-only flags are defined there).
+ * tkOldConfig.c (internal-use-only flags are defined there).
  */
 
-#define TK_CONFIG_COLOR_ONLY		1
-#define TK_CONFIG_MONO_ONLY		2
-#define TK_CONFIG_NULL_OK		4
-#define TK_CONFIG_DONT_SET_DEFAULT	8
-#define TK_CONFIG_OPTION_SPECIFIED	0x10
-#define TK_CONFIG_USER_BIT		0x100
+#define TK_CONFIG_NULL_OK               (1 << 0)
+#define TK_CONFIG_COLOR_ONLY            (1 << 1)
+#define TK_CONFIG_MONO_ONLY             (1 << 2)
+#define TK_CONFIG_DONT_SET_DEFAULT      (1 << 3)
+#define TK_CONFIG_OPTION_SPECIFIED      (1 << 4)
+#define TK_CONFIG_USER_BIT              0x100
+#endif /* __NO_OLD_CONFIG */
+
+/*
+ * Structure used to specify how to handle argv options.
+ */
+
+typedef struct {
+    char *key;          /* The key string that flags the option in the
+			 * argv array. */
+    int type;           /* Indicates option type;  see below. */
+    char *src;          /* Value to be used in setting dst;  usage
+			 * depends on type. */
+    char *dst;          /* Address of value to be modified;  usage
+			 * depends on type. */
+    char *help;         /* Documentation message describing this option. */
+} Tk_ArgvInfo;
+
+/*
+ * Legal values for the type field of a Tk_ArgvInfo: see the user
+ * documentation for details.
+ */
+
+#define TK_ARGV_CONSTANT                15
+#define TK_ARGV_INT                     16
+#define TK_ARGV_STRING                  17
+#define TK_ARGV_UID                     18
+#define TK_ARGV_REST                    19
+#define TK_ARGV_FLOAT                   20
+#define TK_ARGV_FUNC                    21
+#define TK_ARGV_GENFUNC                 22
+#define TK_ARGV_HELP                    23
+#define TK_ARGV_CONST_OPTION            24
+#define TK_ARGV_OPTION_VALUE            25
+#define TK_ARGV_OPTION_NAME_VALUE       26
+#define TK_ARGV_END                     27
+
+/*
+ * Flag bits for passing to Tk_ParseArgv:
+ */
+
+#define TK_ARGV_NO_DEFAULTS             0x1
+#define TK_ARGV_NO_LEFTOVERS            0x2
+#define TK_ARGV_NO_ABBREV               0x4
+#define TK_ARGV_DONT_SKIP_FIRST_ARG     0x8
 
 /*
  * Enumerated type for describing actions to be taken in response
@@ -301,30 +502,31 @@ typedef enum {
  * Priority levels to pass to Tk_AddOption:
  */
 
-#define TK_WIDGET_DEFAULT_PRIO	20
-#define TK_STARTUP_FILE_PRIO	40
-#define TK_USER_DEFAULT_PRIO	60
-#define TK_INTERACTIVE_PRIO	80
-#define TK_MAX_PRIO		100
+#define TK_WIDGET_DEFAULT_PRIO  20
+#define TK_STARTUP_FILE_PRIO    40
+#define TK_USER_DEFAULT_PRIO    60
+#define TK_INTERACTIVE_PRIO     80
+#define TK_MAX_PRIO             100
 
 /*
  * Relief values returned by Tk_GetRelief:
  */
 
-#define TK_RELIEF_RAISED	1
-#define TK_RELIEF_FLAT		2
-#define TK_RELIEF_SUNKEN	4
-#define TK_RELIEF_GROOVE	8
-#define TK_RELIEF_RIDGE		16
-#define TK_RELIEF_SOLID		32
+#define TK_RELIEF_NULL          -1
+#define TK_RELIEF_FLAT          0
+#define TK_RELIEF_GROOVE        1
+#define TK_RELIEF_RAISED        2
+#define TK_RELIEF_RIDGE         3
+#define TK_RELIEF_SOLID         4
+#define TK_RELIEF_SUNKEN        5
 
 /*
  * "Which" argument values for Tk_3DBorderGC:
  */
 
-#define TK_3D_FLAT_GC		1
-#define TK_3D_LIGHT_GC		2
-#define TK_3D_DARK_GC		3
+#define TK_3D_FLAT_GC           1
+#define TK_3D_LIGHT_GC          2
+#define TK_3D_DARK_GC           3
 
 /*
  * Special EnterNotify/LeaveNotify "mode" for use in events
@@ -333,7 +535,7 @@ typedef enum {
  * or any new values defined in the future.
  */
 
-#define TK_NOTIFY_SHARE		20
+#define TK_NOTIFY_SHARE         20
 
 /*
  * Enumerated type for describing a point by which to anchor something:
@@ -359,15 +561,15 @@ typedef enum {
  */
 
 typedef struct Tk_FontMetrics {
-    int ascent;			/* The amount in pixels that the tallest
+    int ascent;                 /* The amount in pixels that the tallest
 				 * letter sticks up above the baseline, plus
 				 * any extra blank space added by the designer
 				 * of the font. */
-    int descent;		/* The largest amount in pixels that any
+    int descent;                /* The largest amount in pixels that any
 				 * letter sticks below the baseline, plus any
 				 * extra blank space added by the designer of
 				 * the font. */
-    int linespace;		/* The sum of the ascent and descent.  How
+    int linespace;              /* The sum of the ascent and descent.  How
 				 * far apart two lines of text in the same
 				 * font should be placed so that none of the
 				 * characters in one line overlap any of the
@@ -378,16 +580,61 @@ typedef struct Tk_FontMetrics {
  * Flags passed to Tk_MeasureChars:
  */
 
-#define TK_WHOLE_WORDS		1
-#define TK_AT_LEAST_ONE		2
-#define TK_PARTIAL_OK		4
+#define TK_WHOLE_WORDS          1
+#define TK_AT_LEAST_ONE         2
+#define TK_PARTIAL_OK           4
 
 /*
  * Flags passed to Tk_ComputeTextLayout:
  */
 
-#define TK_IGNORE_TABS		8
-#define TK_IGNORE_NEWLINES	16
+#define TK_IGNORE_TABS          8
+#define TK_IGNORE_NEWLINES      16
+
+/*
+ * Widget class procedures used to implement platform specific widget
+ * behavior.
+ */
+
+typedef Window (Tk_ClassCreateProc) _ANSI_ARGS_((Tk_Window tkwin,
+	Window parent, ClientData instanceData));
+typedef void (Tk_ClassWorldChangedProc) _ANSI_ARGS_((ClientData instanceData));
+typedef void (Tk_ClassModalProc) _ANSI_ARGS_((Tk_Window tkwin,
+	XEvent *eventPtr));
+
+typedef struct Tk_ClassProcs {
+    unsigned int size;
+    Tk_ClassWorldChangedProc *worldChangedProc;
+				/* Procedure to invoke when the widget needs to
+				 * respond in some way to a change in the
+				 * world (font changes, etc.) */
+    Tk_ClassCreateProc *createProc;
+				/* Procedure to invoke when the
+				 * platform-dependent window needs to be
+				 * created. */
+    Tk_ClassModalProc *modalProc;
+				/* Procedure to invoke after all bindings on a
+				 * widget have been triggered in order to
+				 * handle a modal loop. */
+} Tk_ClassProcs;
+
+/*
+ * Simple accessor for Tk_ClassProcs structure.  Checks that the structure
+ * is not NULL, then checks the size field and returns either the requested
+ * field, if present, or NULL if the structure is too small to have the field
+ * (or NULL if the structure is NULL).
+ *
+ * A more general version of this function may be useful if other
+ * size-versioned structure pop up in the future:
+ *
+ *      #define Tk_GetField(name, who, which) \
+ *          (((who) == NULL) ? NULL :
+ *          (((who)->size <= Tk_Offset(name, which)) ? NULL :(name)->which))
+ */
+
+#define Tk_GetClassProc(procs, which) \
+    (((procs) == NULL) ? NULL : \
+    (((procs)->size <= Tk_Offset(Tk_ClassProcs, which)) ? NULL:(procs)->which))
 
 /*
  * Each geometry manager (the packer, the placer, etc.) is represented
@@ -401,7 +648,7 @@ typedef void (Tk_GeomLostSlaveProc) _ANSI_ARGS_((ClientData clientData,
 	Tk_Window tkwin));
 
 typedef struct Tk_GeomMgr {
-    char *name;			/* Name of the geometry manager (command
+    char *name;                 /* Name of the geometry manager (command
 				 * used to invoke it, or name of widget
 				 * class that allows embedded widgets). */
     Tk_GeomRequestProc *requestProc;
@@ -418,10 +665,10 @@ typedef struct Tk_GeomMgr {
  * Result values returned by Tk_GetScrollInfo:
  */
 
-#define TK_SCROLL_MOVETO	1
-#define TK_SCROLL_PAGES		2
-#define TK_SCROLL_UNITS		3
-#define TK_SCROLL_ERROR		4
+#define TK_SCROLL_MOVETO        1
+#define TK_SCROLL_PAGES         2
+#define TK_SCROLL_UNITS         3
+#define TK_SCROLL_ERROR         4
 
 /*
  *---------------------------------------------------------------------------
@@ -430,17 +677,17 @@ typedef struct Tk_GeomMgr {
  *
  *---------------------------------------------------------------------------
  */
-#define VirtualEvent	    (LASTEvent)
-#define ActivateNotify	    (LASTEvent + 1)
+#define VirtualEvent        (LASTEvent)
+#define ActivateNotify      (LASTEvent + 1)
 #define DeactivateNotify    (LASTEvent + 2)
 #define MouseWheelEvent     (LASTEvent + 3)
-#define TK_LASTEVENT	    (LASTEvent + 4)
+#define TK_LASTEVENT        (LASTEvent + 4)
 
-#define MouseWheelMask	    (1L << 28)
+#define MouseWheelMask      (1L << 28)
 
-#define ActivateMask	    (1L << 29)
+#define ActivateMask        (1L << 29)
 #define VirtualEventMask    (1L << 30)
-#define TK_LASTEVENT	    (LASTEvent + 4)
+#define TK_LASTEVENT        (LASTEvent + 4)
 
 
 /*
@@ -455,29 +702,29 @@ typedef struct Tk_GeomMgr {
 typedef struct {
     int type;
     unsigned long serial;   /* # of last request processed by server */
-    Bool send_event;	    /* True if this came from a SendEvent request */
-    Display *display;	    /* Display the event was read from */
-    Window event;	    /* Window on which event was requested. */
-    Window root;	    /* root window that the event occured on */
-    Window subwindow;	    /* child window */
-    Time time;		    /* milliseconds */
-    int x, y;		    /* pointer x, y coordinates in event window */
-    int x_root, y_root;	    /* coordinates relative to root */
-    unsigned int state;	    /* key or button mask */
-    Tk_Uid name;	    /* Name of virtual event. */
-    Bool same_screen;	    /* same screen flag */
+    Bool send_event;        /* True if this came from a SendEvent request */
+    Display *display;       /* Display the event was read from */
+    Window event;           /* Window on which event was requested. */
+    Window root;            /* root window that the event occured on */
+    Window subwindow;       /* child window */
+    Time time;              /* milliseconds */
+    int x, y;               /* pointer x, y coordinates in event window */
+    int x_root, y_root;     /* coordinates relative to root */
+    unsigned int state;     /* key or button mask */
+    Tk_Uid name;            /* Name of virtual event. */
+    Bool same_screen;       /* same screen flag */
 } XVirtualEvent;
 
 typedef struct {
     int type;
     unsigned long serial;   /* # of last request processed by server */
-    Bool send_event;	    /* True if this came from a SendEvent request */
-    Display *display;	    /* Display the event was read from */
-    Window window;	    /* Window in which event occurred. */
+    Bool send_event;        /* True if this came from a SendEvent request */
+    Display *display;       /* Display the event was read from */
+    Window window;          /* Window in which event occurred. */
 } XActivateDeactivateEvent;
 typedef XActivateDeactivateEvent XActivateEvent;
 typedef XActivateDeactivateEvent XDeactivateEvent;
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -487,23 +734,23 @@ typedef XActivateDeactivateEvent XDeactivateEvent;
  *--------------------------------------------------------------
  */
 
-#define Tk_Display(tkwin)		(((Tk_FakeWin *) (tkwin))->display)
-#define Tk_ScreenNumber(tkwin)		(((Tk_FakeWin *) (tkwin))->screenNum)
-#define Tk_Screen(tkwin)		(ScreenOfDisplay(Tk_Display(tkwin), \
+#define Tk_Display(tkwin)               (((Tk_FakeWin *) (tkwin))->display)
+#define Tk_ScreenNumber(tkwin)          (((Tk_FakeWin *) (tkwin))->screenNum)
+#define Tk_Screen(tkwin)                (ScreenOfDisplay(Tk_Display(tkwin), \
 	Tk_ScreenNumber(tkwin)))
-#define Tk_Depth(tkwin)			(((Tk_FakeWin *) (tkwin))->depth)
-#define Tk_Visual(tkwin)		(((Tk_FakeWin *) (tkwin))->visual)
-#define Tk_WindowId(tkwin)		(((Tk_FakeWin *) (tkwin))->window)
-#define Tk_PathName(tkwin) 		(((Tk_FakeWin *) (tkwin))->pathName)
-#define Tk_Name(tkwin)			(((Tk_FakeWin *) (tkwin))->nameUid)
-#define Tk_Class(tkwin) 		(((Tk_FakeWin *) (tkwin))->classUid)
-#define Tk_X(tkwin)			(((Tk_FakeWin *) (tkwin))->changes.x)
-#define Tk_Y(tkwin)			(((Tk_FakeWin *) (tkwin))->changes.y)
-#define Tk_Width(tkwin)			(((Tk_FakeWin *) (tkwin))->changes.width)
+#define Tk_Depth(tkwin)                 (((Tk_FakeWin *) (tkwin))->depth)
+#define Tk_Visual(tkwin)                (((Tk_FakeWin *) (tkwin))->visual)
+#define Tk_WindowId(tkwin)              (((Tk_FakeWin *) (tkwin))->window)
+#define Tk_PathName(tkwin)              (((Tk_FakeWin *) (tkwin))->pathName)
+#define Tk_Name(tkwin)                  (((Tk_FakeWin *) (tkwin))->nameUid)
+#define Tk_Class(tkwin)                 (((Tk_FakeWin *) (tkwin))->classUid)
+#define Tk_X(tkwin)                     (((Tk_FakeWin *) (tkwin))->changes.x)
+#define Tk_Y(tkwin)                     (((Tk_FakeWin *) (tkwin))->changes.y)
+#define Tk_Width(tkwin)                 (((Tk_FakeWin *) (tkwin))->changes.width)
 #define Tk_Height(tkwin) \
     (((Tk_FakeWin *) (tkwin))->changes.height)
-#define Tk_Changes(tkwin)		(&((Tk_FakeWin *) (tkwin))->changes)
-#define Tk_Attributes(tkwin)		(&((Tk_FakeWin *) (tkwin))->atts)
+#define Tk_Changes(tkwin)               (&((Tk_FakeWin *) (tkwin))->changes)
+#define Tk_Attributes(tkwin)            (&((Tk_FakeWin *) (tkwin))->atts)
 #define Tk_IsEmbedded(tkwin) \
     (((Tk_FakeWin *) (tkwin))->flags & TK_EMBEDDED)
 #define Tk_IsContainer(tkwin) \
@@ -512,12 +759,29 @@ typedef XActivateDeactivateEvent XDeactivateEvent;
     (((Tk_FakeWin *) (tkwin))->flags & TK_MAPPED)
 #define Tk_IsTopLevel(tkwin) \
     (((Tk_FakeWin *) (tkwin))->flags & TK_TOP_LEVEL)
-#define Tk_ReqWidth(tkwin)		(((Tk_FakeWin *) (tkwin))->reqWidth)
-#define Tk_ReqHeight(tkwin)		(((Tk_FakeWin *) (tkwin))->reqHeight)
+#define Tk_HasWrapper(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->flags & TK_HAS_WRAPPER)
+#define Tk_WinManaged(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->flags & TK_WIN_MANAGED)
+#define Tk_TopWinHierarchy(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->flags & TK_TOP_HIERARCHY)
+#define Tk_ReqWidth(tkwin)              (((Tk_FakeWin *) (tkwin))->reqWidth)
+#define Tk_ReqHeight(tkwin)             (((Tk_FakeWin *) (tkwin))->reqHeight)
+/* Tk_InternalBorderWidth is deprecated */
 #define Tk_InternalBorderWidth(tkwin) \
-    (((Tk_FakeWin *) (tkwin))->internalBorderWidth)
-#define Tk_Parent(tkwin)		(((Tk_FakeWin *) (tkwin))->parentPtr)
-#define Tk_Colormap(tkwin)		(((Tk_FakeWin *) (tkwin))->atts.colormap)
+    (((Tk_FakeWin *) (tkwin))->internalBorderLeft)
+#define Tk_InternalBorderLeft(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->internalBorderLeft)
+#define Tk_InternalBorderRight(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->internalBorderRight)
+#define Tk_InternalBorderTop(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->internalBorderTop)
+#define Tk_InternalBorderBottom(tkwin) \
+    (((Tk_FakeWin *) (tkwin))->internalBorderBottom)
+#define Tk_MinReqWidth(tkwin)           (((Tk_FakeWin *) (tkwin))->minReqWidth)
+#define Tk_MinReqHeight(tkwin)          (((Tk_FakeWin *) (tkwin))->minReqHeight)
+#define Tk_Parent(tkwin)                (((Tk_FakeWin *) (tkwin))->parentPtr)
+#define Tk_Colormap(tkwin)              (((Tk_FakeWin *) (tkwin))->atts.colormap)
 
 /*
  * The structure below is needed by the macros above so that they can
@@ -532,117 +796,139 @@ typedef XActivateDeactivateEvent XDeactivateEvent;
 
 typedef struct Tk_FakeWin {
     Display *display;
-    char *dummy1;
+    char *dummy1;               /* dispPtr */
     int screenNum;
     Visual *visual;
     int depth;
     Window window;
-    char *dummy2;
-    char *dummy3;
-    Tk_Window parentPtr;
-    char *dummy4;
-    char *dummy5;
+    char *dummy2;               /* childList */
+    char *dummy3;               /* lastChildPtr */
+    Tk_Window parentPtr;        /* parentPtr */
+    char *dummy4;               /* nextPtr */
+    char *dummy5;               /* mainPtr */
     char *pathName;
     Tk_Uid nameUid;
     Tk_Uid classUid;
     XWindowChanges changes;
-    unsigned int dummy6;
+    unsigned int dummy6;        /* dirtyChanges */
     XSetWindowAttributes atts;
-    unsigned long dummy7;
+    unsigned long dummy7;       /* dirtyAtts */
     unsigned int flags;
-    char *dummy8;
+    char *dummy8;               /* handlerList */
 #ifdef TK_USE_INPUT_METHODS
-    XIC dummy9;
+    XIC dummy9;                 /* inputContext */
 #endif /* TK_USE_INPUT_METHODS */
-    ClientData *dummy10;
-    int dummy11;
-    int dummy12;
-    char *dummy13;
-    char *dummy14;
-    ClientData dummy15;
+    ClientData *dummy10;        /* tagPtr */
+    int dummy11;                /* numTags */
+    int dummy12;                /* optionLevel */
+    char *dummy13;              /* selHandlerList */
+    char *dummy14;              /* geomMgrPtr */
+    ClientData dummy15;         /* geomData */
     int reqWidth, reqHeight;
-    int internalBorderWidth;
-    char *dummy16;
-    char *dummy17;
-    ClientData dummy18;
-    char *dummy19;
+    int internalBorderLeft;
+    char *dummy16;              /* wmInfoPtr */
+    char *dummy17;              /* classProcPtr */
+    ClientData dummy18;         /* instanceData */
+    char *dummy19;              /* privatePtr */
+    int internalBorderRight;
+    int internalBorderTop;
+    int internalBorderBottom;
+    int minReqWidth;
+    int minReqHeight;
 } Tk_FakeWin;
 
 /*
  * Flag values for TkWindow (and Tk_FakeWin) structures are:
  *
- * TK_MAPPED:			1 means window is currently mapped,
- *				0 means unmapped.
- * TK_TOP_LEVEL:		1 means this is a top-level window (it
- *				was or will be created as a child of
- *				a root window).
- * TK_ALREADY_DEAD:		1 means the window is in the process of
- *				being destroyed already.
- * TK_NEED_CONFIG_NOTIFY:	1 means that the window has been reconfigured
- *				before it was made to exist.  At the time of
- *				making it exist a ConfigureNotify event needs
- *				to be generated.
- * TK_GRAB_FLAG:		Used to manage grabs.  See tkGrab.c for
- *				details.
- * TK_CHECKED_IC:		1 means we've already tried to get an input
- *				context for this window;  if the ic field
- *				is NULL it means that there isn't a context
- *				for the field.
- * TK_DONT_DESTROY_WINDOW:	1 means that Tk_DestroyWindow should not
- *				invoke XDestroyWindow to destroy this widget's
- *				X window.  The flag is set when the window
- *				has already been destroyed elsewhere (e.g.
- *				by another application) or when it will be
- *				destroyed later (e.g. by destroying its
- *				parent).
- * TK_WM_COLORMAP_WINDOW:	1 means that this window has at some time
- *				appeared in the WM_COLORMAP_WINDOWS property
- *				for its toplevel, so we have to remove it
- *				from that property if the window is
- *				deleted and the toplevel isn't.
- * TK_EMBEDDED:			1 means that this window (which must be a
- *				toplevel) is not a free-standing window but
- *				rather is embedded in some other application.
- * TK_CONTAINER:		1 means that this window is a container, and
- *				that some other application (either in
- *				this process or elsewhere) may be
- *				embedding itself inside the window.
- * TK_BOTH_HALVES:		1 means that this window is used for
- *				application embedding (either as
- *				container or embedded application), and
- *				both the containing and embedded halves
- *				are associated with windows in this
- *				particular process.
- * TK_DEFER_MODAL:		1 means that this window has deferred a modal
- *				loop until all of the bindings for the current
- *				event have been invoked.
- * TK_WRAPPER:			1 means that this window is the extra
- *				wrapper window created around a toplevel
- *				to hold the menubar under Unix.  See
- *				tkUnixWm.c for more information.
- * TK_REPARENTED:		1 means that this window has been reparented
- *				so that as far as the window system is
- *				concerned it isn't a child of its Tk
- *				parent.  Initially this is used only for
- *				special Unix menubar windows.
+ * TK_MAPPED:                   1 means window is currently mapped,
+ *                              0 means unmapped.
+ * TK_TOP_LEVEL:                1 means this is a top-level widget.
+ * TK_ALREADY_DEAD:             1 means the window is in the process of
+ *                              being destroyed already.
+ * TK_NEED_CONFIG_NOTIFY:       1 means that the window has been reconfigured
+ *                              before it was made to exist.  At the time of
+ *                              making it exist a ConfigureNotify event needs
+ *                              to be generated.
+ * TK_GRAB_FLAG:                Used to manage grabs.  See tkGrab.c for
+ *                              details.
+ * TK_CHECKED_IC:               1 means we've already tried to get an input
+ *                              context for this window;  if the ic field
+ *                              is NULL it means that there isn't a context
+ *                              for the field.
+ * TK_DONT_DESTROY_WINDOW:      1 means that Tk_DestroyWindow should not
+ *                              invoke XDestroyWindow to destroy this widget's
+ *                              X window.  The flag is set when the window
+ *                              has already been destroyed elsewhere (e.g.
+ *                              by another application) or when it will be
+ *                              destroyed later (e.g. by destroying its
+ *                              parent).
+ * TK_WM_COLORMAP_WINDOW:       1 means that this window has at some time
+ *                              appeared in the WM_COLORMAP_WINDOWS property
+ *                              for its toplevel, so we have to remove it
+ *                              from that property if the window is
+ *                              deleted and the toplevel isn't.
+ * TK_EMBEDDED:                 1 means that this window (which must be a
+ *                              toplevel) is not a free-standing window but
+ *                              rather is embedded in some other application.
+ * TK_CONTAINER:                1 means that this window is a container, and
+ *                              that some other application (either in
+ *                              this process or elsewhere) may be
+ *                              embedding itself inside the window.
+ * TK_BOTH_HALVES:              1 means that this window is used for
+ *                              application embedding (either as
+ *                              container or embedded application), and
+ *                              both the containing and embedded halves
+ *                              are associated with windows in this
+ *                              particular process.
+ * TK_DEFER_MODAL:              1 means that this window has deferred a modal
+ *                              loop until all of the bindings for the current
+ *                              event have been invoked.
+ * TK_WRAPPER:                  1 means that this window is the extra
+ *                              wrapper window created around a toplevel
+ *                              to hold the menubar under Unix.  See
+ *                              tkUnixWm.c for more information.
+ * TK_REPARENTED:               1 means that this window has been reparented
+ *                              so that as far as the window system is
+ *                              concerned it isn't a child of its Tk
+ *                              parent.  Initially this is used only for
+ *                              special Unix menubar windows.
+ * TK_ANONYMOUS_WINDOW:         1 means that this window has no name, and is
+ *                              thus not accessible from Tk.
+ * TK_HAS_WRAPPER               1 means that this window has a wrapper window
+ * TK_WIN_MANAGED               1 means that this window is a child of the
+ *                              root window, and is managed by the window
+ *                              manager.
+ * TK_TOP_HIERARCHY             1 means this window is at the top of a
+ *                              physical window hierarchy within this
+ *                              process, i.e. the window's parent
+ *                              either doesn't exist or is not owned by
+ *                              this Tk application.
+ * TK_PROP_PROPCHANGE           1 means that PropertyNotify events in
+ *                              this window's children should propagate
+ *                              up to this window.
  */
 
 
-#define TK_MAPPED		1
-#define TK_TOP_LEVEL		2
-#define TK_ALREADY_DEAD		4
-#define TK_NEED_CONFIG_NOTIFY	8
-#define TK_GRAB_FLAG		0x10
-#define TK_CHECKED_IC		0x20
-#define TK_DONT_DESTROY_WINDOW	0x40
-#define TK_WM_COLORMAP_WINDOW	0x80
-#define TK_EMBEDDED		0x100
-#define TK_CONTAINER		0x200
-#define TK_BOTH_HALVES		0x400
-#define TK_DEFER_MODAL		0x800
-#define TK_WRAPPER		0x1000
-#define TK_REPARENTED		0x2000
-
+#define TK_MAPPED               1
+#define TK_TOP_LEVEL            2
+#define TK_ALREADY_DEAD         4
+#define TK_NEED_CONFIG_NOTIFY   8
+#define TK_GRAB_FLAG            0x10
+#define TK_CHECKED_IC           0x20
+#define TK_DONT_DESTROY_WINDOW  0x40
+#define TK_WM_COLORMAP_WINDOW   0x80
+#define TK_EMBEDDED             0x100
+#define TK_CONTAINER            0x200
+#define TK_BOTH_HALVES          0x400
+#define TK_DEFER_MODAL          0x800
+#define TK_WRAPPER              0x1000
+#define TK_REPARENTED           0x2000
+#define TK_ANONYMOUS_WINDOW     0x4000
+#define TK_HAS_WRAPPER          0x8000
+#define TK_WIN_MANAGED          0x10000
+#define TK_TOP_HIERARCHY        0x20000
+#define TK_PROP_PROPCHANGE      0x40000
+
 /*
  *--------------------------------------------------------------
  *
@@ -653,8 +939,8 @@ typedef struct Tk_FakeWin {
  */
 
 typedef enum {
-    TK_STATE_NULL, TK_STATE_NORMAL, TK_STATE_HIDDEN,
-    TK_STATE_DISABLED, TK_STATE_ACTIVE
+    TK_STATE_NULL = -1, TK_STATE_ACTIVE, TK_STATE_DISABLED,
+    TK_STATE_NORMAL, TK_STATE_HIDDEN
 } Tk_State;
 
 typedef struct Tk_SmoothMethod {
@@ -677,39 +963,39 @@ typedef struct Tk_SmoothMethod {
 #define TK_TAG_SPACE 3
 
 typedef struct Tk_Item  {
-    int id;				/* Unique identifier for this item
+    int id;                             /* Unique identifier for this item
 					 * (also serves as first tag for
 					 * item). */
-    struct Tk_Item *nextPtr;		/* Next in display list of all
+    struct Tk_Item *nextPtr;            /* Next in display list of all
 					 * items in this canvas.  Later items
 					 * in list are drawn on top of earlier
 					 * ones. */
     Tk_Uid staticTagSpace[TK_TAG_SPACE];/* Built-in space for limited # of
 					 * tags. */
-    Tk_Uid *tagPtr;			/* Pointer to array of tags.  Usually
+    Tk_Uid *tagPtr;                     /* Pointer to array of tags.  Usually
 					 * points to staticTagSpace, but
 					 * may point to malloc-ed space if
 					 * there are lots of tags. */
-    int tagSpace;			/* Total amount of tag space available
+    int tagSpace;                       /* Total amount of tag space available
 					 * at tagPtr. */
-    int numTags;			/* Number of tag slots actually used
+    int numTags;                        /* Number of tag slots actually used
 					 * at *tagPtr. */
-    struct Tk_ItemType *typePtr;	/* Table of procedures that implement
+    struct Tk_ItemType *typePtr;        /* Table of procedures that implement
 					 * this type of item. */
-    int x1, y1, x2, y2;			/* Bounding box for item, in integer
+    int x1, y1, x2, y2;                 /* Bounding box for item, in integer
 					 * canvas units. Set by item-specific
 					 * code and guaranteed to contain every
 					 * pixel drawn in item.  Item area
 					 * includes x1 and y1 but not x2
 					 * and y2. */
-    struct Tk_Item *prevPtr;		/* Previous in display list of all
+    struct Tk_Item *prevPtr;            /* Previous in display list of all
 					 * items in this canvas. Later items
 					 * in list are drawn just below earlier
 					 * ones. */
-    Tk_State state;			/* state of item */
-    LangCallback *updateCmd;		/* for "-updatecommand" option */
-    int redraw_flags;			/* some flags used in the canvas */
-    struct Tk_Item *group;		/* group item managing this one */
+    Tk_State state;                     /* state of item */
+    LangCallback *updateCmd;            /* for "-updatecommand" option */
+    int redraw_flags;                   /* some flags used in the canvas */
+    struct Tk_Item *group;              /* group item managing this one */
 
     /*
      *------------------------------------------------------------------
@@ -724,15 +1010,15 @@ typedef struct Tk_Item  {
 /*
  * Flag bits for canvases (redraw_flags):
  *
- * TK_ITEM_STATE_DEPENDANT -	1 means that object needs to be
- *				redrawn if the canvas state changes.
- * TK_ITEM_DONT_REDRAW - 	1 means that the object redraw is already
- *				been prepared, so the general canvas code
- *				doesn't need to do that any more.
+ * TK_ITEM_STATE_DEPENDANT -    1 means that object needs to be
+ *                              redrawn if the canvas state changes.
+ * TK_ITEM_DONT_REDRAW -        1 means that the object redraw is already
+ *                              been prepared, so the general canvas code
+ *                              doesn't need to do that any more.
  */
 
-#define TK_ITEM_STATE_DEPENDANT		1
-#define TK_ITEM_DONT_REDRAW		2
+#define TK_ITEM_STATE_DEPENDANT         1
+#define TK_ITEM_DONT_REDRAW             2
 
 /*
  * Structures used for implementing visitors.
@@ -740,40 +1026,40 @@ typedef struct Tk_Item  {
 
 typedef ClientData Tk_VisitorStartProc _ANSI_ARGS_((Tcl_Interp *interp,
 		   Tk_Canvas canvas, int argc, char **argv));
-typedef int 	Tk_VisitorItemProc _ANSI_ARGS_((Tcl_Interp *interp,
+typedef int     Tk_VisitorItemProc _ANSI_ARGS_((Tcl_Interp *interp,
 		   Tk_Canvas canvas, ClientData clientData,
 		   Tk_Item *itemPtr));
-typedef int 	Tk_VisitorEndProc _ANSI_ARGS_((Tcl_Interp *interp,
+typedef int     Tk_VisitorEndProc _ANSI_ARGS_((Tcl_Interp *interp,
 		   Tk_Canvas canvas, ClientData clientData));
 
 typedef struct Tk_VisitorType {
     char *name;
-    int typeSize;			/* should be sizeof(Tk_VisitorType) */
-    int flags;				/* If this flag is non-zero then
+    int typeSize;                       /* should be sizeof(Tk_VisitorType) */
+    int flags;                          /* If this flag is non-zero then
 					 * the item needs to be redrawn. */
     Tk_VisitorStartProc *startProc;
     Tk_VisitorEndProc  *endProc;
-    Tk_VisitorItemProc *visitArc;	/* The Arc visitor procedure. */
-    Tk_VisitorItemProc *visitBitmap;	/* The Bitmap visitor procedure. */
-    Tk_VisitorItemProc *visitImage;	/* The Image visitor procedure. */
-    Tk_VisitorItemProc *visitLine;	/* The Line visitor procedure. */
-    Tk_VisitorItemProc *visitOval;	/* The Oval visitor procedure. */
-    Tk_VisitorItemProc *visitPolygon;	/* The Polygon visitor procedure. */
-    Tk_VisitorItemProc *visitRectangle;	/* The Rectangle visitor procedure. */
-    Tk_VisitorItemProc *visitText;	/* The Text visitor procedure. */
-    Tk_VisitorItemProc *visitWindow;	/* The Window visitor procedure. */
-    Tk_VisitorItemProc *visitSticker;	/* The Sticker visitor procedure.
+    Tk_VisitorItemProc *visitArc;       /* The Arc visitor procedure. */
+    Tk_VisitorItemProc *visitBitmap;    /* The Bitmap visitor procedure. */
+    Tk_VisitorItemProc *visitImage;     /* The Image visitor procedure. */
+    Tk_VisitorItemProc *visitLine;      /* The Line visitor procedure. */
+    Tk_VisitorItemProc *visitOval;      /* The Oval visitor procedure. */
+    Tk_VisitorItemProc *visitPolygon;   /* The Polygon visitor procedure. */
+    Tk_VisitorItemProc *visitRectangle; /* The Rectangle visitor procedure. */
+    Tk_VisitorItemProc *visitText;      /* The Text visitor procedure. */
+    Tk_VisitorItemProc *visitWindow;    /* The Window visitor procedure. */
+    Tk_VisitorItemProc *visitSticker;   /* The Sticker visitor procedure.
 					 * from tkSticker*/
-    Tk_VisitorItemProc *visitViewport;	/* The Viewport visitor procedure.
+    Tk_VisitorItemProc *visitViewport;  /* The Viewport visitor procedure.
 					 * from TkSM */
-    Tk_VisitorItemProc *visitBarchart;	/* The Barchart visitor procedure.
+    Tk_VisitorItemProc *visitBarchart;  /* The Barchart visitor procedure.
 					 * from Scotty */
     Tk_VisitorItemProc *visitStripchart;/* The Stripchart visitor procedure.
 					 * from Scotty */
 
     /* ptk extensions */
-    Tk_VisitorItemProc *visitGroup;	/* The Group visitor procedure. */
-    Tk_VisitorItemProc *visitGrid;	/* The Grid visitor procedure. */
+    Tk_VisitorItemProc *visitGroup;     /* The Group visitor procedure. */
+    Tk_VisitorItemProc *visitGrid;      /* The Grid visitor procedure. */
 
     /*
      *------------------------------------------------------------------
@@ -789,48 +1075,60 @@ typedef struct Tk_VisitorType {
  * canvas widget.
  */
 
-typedef int	Tk_ItemCreateProc _ANSI_ARGS_((Tcl_Interp *interp,
+#ifdef USE_OLD_CANVAS
+typedef int     Tk_ItemCreateProc _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
 		    char **argv));
-typedef int	Tk_ItemConfigureProc _ANSI_ARGS_((Tcl_Interp *interp,
+typedef int     Tk_ItemConfigureProc _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
 		    char **argv, int flags));
-typedef int	Tk_ItemCoordProc _ANSI_ARGS_((Tcl_Interp *interp,
+typedef int     Tk_ItemCoordProc _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
 		    char **argv));
-typedef void	Tk_ItemDeleteProc _ANSI_ARGS_((Tk_Canvas canvas,
+#else
+typedef int     Tk_ItemCreateProc _ANSI_ARGS_((Tcl_Interp *interp,
+		    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
+		    Tcl_Obj *CONST objv[]));
+typedef int     Tk_ItemConfigureProc _ANSI_ARGS_((Tcl_Interp *interp,
+		    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
+		    CONST84 Tcl_Obj *CONST objv[], int flags));
+typedef int     Tk_ItemCoordProc _ANSI_ARGS_((Tcl_Interp *interp,
+		    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
+		    Tcl_Obj *CONST objv[]));
+#endif
+typedef void    Tk_ItemDeleteProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, Display *display));
-typedef void	Tk_ItemDisplayProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemDisplayProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, Display *display, Drawable dst,
 		    int x, int y, int width, int height));
-typedef double	Tk_ItemPointProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef double  Tk_ItemPointProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, double *pointPtr));
-typedef int	Tk_ItemAreaProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef int     Tk_ItemAreaProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, double *rectPtr));
-typedef int	Tk_ItemPostscriptProc _ANSI_ARGS_((Tcl_Interp *interp,
+typedef int     Tk_ItemPostscriptProc _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tk_Canvas canvas, Tk_Item *itemPtr, int prepass));
-typedef void	Tk_ItemScaleProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemScaleProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, double originX, double originY,
 		    double scaleX, double scaleY));
-typedef void	Tk_ItemTranslateProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemTranslateProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, double deltaX, double deltaY));
-typedef int	Tk_ItemIndexProc _ANSI_ARGS_((Tcl_Interp *interp,
+typedef int     Tk_ItemIndexProc _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tk_Canvas canvas, Tk_Item *itemPtr, Tcl_Obj *indexString,
 		    int *indexPtr));
-typedef void	Tk_ItemCursorProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemCursorProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int index));
-typedef int	Tk_ItemSelectionProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef int     Tk_ItemSelectionProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int offset, char *buffer,
 		    int maxBytes));
-typedef void	Tk_ItemInsertProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemInsertProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int beforeThis, Tcl_Obj *string));
-typedef void	Tk_ItemDCharsProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemDCharsProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int first, int last));
-typedef void	Tk_ItemBboxProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef void    Tk_ItemBboxProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr));
-typedef int	Tk_ItemGetCoordProc _ANSI_ARGS_((Tk_Item *itemPtr,
+typedef int     Tk_ItemGetCoordProc _ANSI_ARGS_((Tk_Item *itemPtr,
 		    double **coordsPtr, Tcl_FreeProc *freeProc));
-typedef int	Tk_ItemSetCoordProc _ANSI_ARGS_((Tk_Canvas canvas,
+typedef int     Tk_ItemSetCoordProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int num, double *coords));
 
 /*
@@ -843,63 +1141,62 @@ typedef int	Tk_ItemSetCoordProc _ANSI_ARGS_((Tk_Canvas canvas,
 /*
  * Structures used for implementing visitors.
  */
+#ifndef __NO_OLD_CONFIG
 
 typedef struct Tk_ItemType {
-    char *name;				/* The name of this type of item, such
+    char *name;                         /* The name of this type of item, such
 					 * as "line". */
-    int itemSize;			/* Total amount of space needed for
+    int itemSize;                       /* Total amount of space needed for
 					 * item's record. */
-    Tk_ItemCreateProc *createProc;	/* Procedure to create a new item of
+    Tk_ItemCreateProc *createProc;      /* Procedure to create a new item of
 					 * this type. */
-    Tk_ConfigSpec *configSpecs;		/* Pointer to array of configuration
+    Tk_ConfigSpec *configSpecs;         /* Pointer to array of configuration
 					 * specs for this type.  Used for
 					 * returning configuration info. */
-    Tk_ItemConfigureProc *configProc;	/* Procedure to call to change
+    Tk_ItemConfigureProc *configProc;   /* Procedure to call to change
 					 * configuration options. */
-    Tk_ItemCoordProc *coordProc;	/* Procedure to call to get and set
+    Tk_ItemCoordProc *coordProc;        /* Procedure to call to get and set
 					 * the item's coordinates. */
-    Tk_ItemDeleteProc *deleteProc;	/* Procedure to delete existing item of
+    Tk_ItemDeleteProc *deleteProc;      /* Procedure to delete existing item of
 					 * this type. */
-    Tk_ItemDisplayProc *displayProc;	/* Procedure to display items of
+    Tk_ItemDisplayProc *displayProc;    /* Procedure to display items of
 					 * this type. */
-    int flags;				/* TK_ITEM_TYPE_ALWAYS_REDRAW means displayProc
-					 * should be called even when the item has
+    int alwaysRedraw;                   /* Non-zero means displayProc should
+					 * be called even when the item has
 					 * been moved off-screen. */
-    Tk_ItemPointProc *pointProc;	/* Computes distance from item to
+    Tk_ItemPointProc *pointProc;        /* Computes distance from item to
 					 * a given point. */
-    Tk_ItemAreaProc *areaProc;		/* Computes whether item is inside,
+    Tk_ItemAreaProc *areaProc;          /* Computes whether item is inside,
 					 * outside, or overlapping an area. */
     Tk_ItemPostscriptProc *postscriptProc;
 					/* Procedure to write a Postscript
 					 * description for items of this
 					 * type. */
-    Tk_ItemScaleProc *scaleProc;	/* Procedure to rescale items of
+    Tk_ItemScaleProc *scaleProc;        /* Procedure to rescale items of
 					 * this type. */
     Tk_ItemTranslateProc *translateProc;/* Procedure to translate items of
 					 * this type. */
-    Tk_ItemIndexProc *indexProc;	/* Procedure to determine index of
+    Tk_ItemIndexProc *indexProc;        /* Procedure to determine index of
 					 * indicated character.  NULL if
 					 * item doesn't support indexing. */
-    Tk_ItemCursorProc *icursorProc;	/* Procedure to set insert cursor pos.
+    Tk_ItemCursorProc *icursorProc;     /* Procedure to set insert cursor pos.
 					 * to just before a given position. */
     Tk_ItemSelectionProc *selectionProc;/* Procedure to return selection (in
 					 * STRING format) when it is in this
 					 * item. */
-    Tk_ItemInsertProc *insertProc;	/* Procedure to insert something into
+    Tk_ItemInsertProc *insertProc;      /* Procedure to insert something into
 					 * an item. */
-    Tk_ItemDCharsProc *dCharsProc;	/* Procedure to delete characters
+    Tk_ItemDCharsProc *dCharsProc;      /* Procedure to delete characters
 					 * from an item. */
-    struct Tk_ItemType *nextPtr;	/* Used to link types together into
+    struct Tk_ItemType *nextPtr;        /* Used to link types together into
 					 * a list. */
-    Tk_ItemBboxProc *bboxProc;		/* Procedure to calculate the bounding
-					 * box for an item. */
-    int acceptProc;			/* Offset of visitors function  in
-					 * tkVisitorType struct for this item. */
-    Tk_ItemGetCoordProc *getCoordProc;	/* Procedure to get the coordinates
-					 * for an item. */
-    Tk_ItemSetCoordProc *setCoordProc;	/* Procedure to set the coordinates
-					 * for an item. */
+    Tk_ItemBboxProc *bboxProc;          /* Reserved for future extension. */
+    int   reserved2;                    /* Carefully compatible with */
+    char *reserved3;                    /* Jan Nijtmans dash patch */
+    char *reserved4;
 } Tk_ItemType;
+
+#endif
 
 /*
  * The following structure provides information about the selection and
@@ -910,41 +1207,42 @@ typedef struct Tk_ItemType {
  */
 
 typedef struct Tk_CanvasTextInfo {
-    Tk_3DBorder selBorder;	/* Border and background for selected
+    Tk_3DBorder selBorder;      /* Border and background for selected
 				 * characters.  Read-only to items.*/
-    int selBorderWidth;		/* Width of border around selection.
+    int selBorderWidth;         /* Width of border around selection.
 				 * Read-only to items. */
-    XColor *selFgColorPtr;	/* Foreground color for selected text.
+    XColor *selFgColorPtr;      /* Foreground color for selected text.
 				 * Read-only to items. */
-    Tk_Item *selItemPtr;	/* Pointer to selected item.  NULL means
+    Tk_Item *selItemPtr;        /* Pointer to selected item.  NULL means
 				 * selection isn't in this canvas.
 				 * Writable by items. */
-    int selectFirst;		/* Index of first selected character.
-				 * Writable by items. */
-    int selectLast;		/* Index of last selected character.
-				 * Writable by items. */
-    Tk_Item *anchorItemPtr;	/* Item corresponding to "selectAnchor":
+    int selectFirst;            /* Character index of first selected
+				 * character.  Writable by items. */
+    int selectLast;             /* Character index of last selected
+				 * character.  Writable by items. */
+    Tk_Item *anchorItemPtr;     /* Item corresponding to "selectAnchor":
 				 * not necessarily selItemPtr.   Read-only
 				 * to items. */
-    int selectAnchor;		/* Fixed end of selection (i.e. "select to"
-				 * operation will use this as one end of the
-				 * selection).  Writable by items. */
-    Tk_3DBorder insertBorder;	/* Used to draw vertical bar for insertion
+    int selectAnchor;           /* Character index of fixed end of
+				 * selection (i.e. "select to" operation will
+				 * use this as one end of the selection).
+				 * Writable by items. */
+    Tk_3DBorder insertBorder;   /* Used to draw vertical bar for insertion
 				 * cursor.  Read-only to items. */
-    int insertWidth;		/* Total width of insertion cursor.  Read-only
+    int insertWidth;            /* Total width of insertion cursor.  Read-only
 				 * to items. */
-    int insertBorderWidth;	/* Width of 3-D border around insert cursor.
+    int insertBorderWidth;      /* Width of 3-D border around insert cursor.
 				 * Read-only to items. */
-    Tk_Item *focusItemPtr;	/* Item that currently has the input focus,
+    Tk_Item *focusItemPtr;      /* Item that currently has the input focus,
 				 * or NULL if no such item.  Read-only to
 				 * items.  */
-    int gotFocus;		/* Non-zero means that the canvas widget has
+    int gotFocus;               /* Non-zero means that the canvas widget has
 				 * the input focus.  Read-only to items.*/
-    int cursorOn;		/* Non-zero means that an insertion cursor
+    int cursorOn;               /* Non-zero means that an insertion cursor
 				 * should be displayed in focusItemPtr.
 				 * Read-only to items.*/
 } Tk_CanvasTextInfo;
-
+
 /*
  * Structures used for Dashing and Outline.
  */
@@ -958,112 +1256,115 @@ typedef struct Tk_Dash {
 } Tk_Dash;
 
 typedef struct Tk_TSOffset {
-    int flags;			/* flags; see below for possible values */
-    int xoffset;		/* x offset */
-    int yoffset;		/* y offset */
+    int flags;                  /* flags; see below for possible values */
+    int xoffset;                /* x offset */
+    int yoffset;                /* y offset */
 } Tk_TSOffset;
 
 /*
  * Bit fields in Tk_Offset->flags:
  */
 
-#define TK_OFFSET_INDEX		1
-#define TK_OFFSET_RELATIVE	2
-#define TK_OFFSET_LEFT		4
-#define TK_OFFSET_CENTER	8
-#define TK_OFFSET_RIGHT		16
-#define TK_OFFSET_TOP		32
-#define TK_OFFSET_MIDDLE	64
-#define TK_OFFSET_BOTTOM	128
+#define TK_OFFSET_INDEX         1
+#define TK_OFFSET_RELATIVE      2
+#define TK_OFFSET_LEFT          4
+#define TK_OFFSET_CENTER        8
+#define TK_OFFSET_RIGHT         16
+#define TK_OFFSET_TOP           32
+#define TK_OFFSET_MIDDLE        64
+#define TK_OFFSET_BOTTOM        128
 
-typedef struct Tk_Tile_ *Tk_Tile;	/* Opaque type for tiles */
+typedef struct Tk_Tile_ *Tk_Tile;       /* Opaque type for tiles */
 
 typedef struct Tk_Outline {
-    GC gc;			/* Graphics context. */
-    double width;		/* Width of outline. */
-    double activeWidth;		/* Width of outline. */
-    double disabledWidth;	/* Width of outline. */
-    int offset;			/* Dash offset */
-    Tk_Dash dash;		/* Dash pattern */
-    Tk_Dash activeDash;		/* Dash pattern if state is active*/
-    Tk_Dash disabledDash;	/* Dash pattern if state is disabled*/
-    Tk_Tile tile;		/* Tile pattern */
-    Tk_Tile activeTile;		/* Tile pattern if state is active*/
-    Tk_Tile disabledTile;	/* Tile pattern if state is disabled*/
-    Tk_TSOffset tsoffset;	/* tile/stipple offset for outline*/
-    XColor *color;		/* Outline color. */
-    XColor *activeColor;	/* Outline color if state is active. */
-    XColor *disabledColor;	/* Outline color if state is disabled. */
-    Pixmap stipple;		/* Outline Stipple pattern. */
-    Pixmap activeStipple;	/* Outline Stipple pattern if state is active. */
-    Pixmap disabledStipple;	/* Outline Stipple pattern if state is disabled. */
+    GC gc;                      /* Graphics context. */
+    double width;               /* Width of outline. */
+    double activeWidth;         /* Width of outline. */
+    double disabledWidth;       /* Width of outline. */
+    int offset;                 /* Dash offset */
+    Tk_Dash dash;               /* Dash pattern */
+    Tk_Dash activeDash;         /* Dash pattern if state is active*/
+    Tk_Dash disabledDash;       /* Dash pattern if state is disabled*/
+    VOID *reserved1;            /* reserved for future expansion */
+    VOID *reserved2;
+    VOID *reserved3;
+    Tk_TSOffset tsoffset;       /* stipple offset for outline*/
+    XColor *color;              /* Outline color. */
+    XColor *activeColor;        /* Outline color if state is active. */
+    XColor *disabledColor;      /* Outline color if state is disabled. */
+    Pixmap stipple;             /* Outline Stipple pattern. */
+    Pixmap activeStipple;       /* Outline Stipple pattern if state is active. */
+    Pixmap disabledStipple;     /* Outline Stipple pattern if state is disabled. */
+    Tk_Tile tile;
 } Tk_Outline;
+
 
 /*
  * Some functions handy for Dashing and Outlines (in tkCanvUtil.c).
  */
 
-EXTERN int	Tk_GetDash _ANSI_ARGS_((Tcl_Interp *interp,
-		    Arg value, Tk_Dash *dash));
-EXTERN void	Tk_CreateOutline _ANSI_ARGS_((Tk_Outline *outline));
-EXTERN void	Tk_DeleteOutline _ANSI_ARGS_((Display *display,
+EXTERN void     Tk_CreateOutline _ANSI_ARGS_((Tk_Outline *outline));
+EXTERN void     Tk_DeleteOutline _ANSI_ARGS_((Display *display,
 		    Tk_Outline *outline));
-EXTERN int	Tk_ConfigOutlineGC _ANSI_ARGS_((XGCValues *gcValues,
+EXTERN int      Tk_ConfigOutlineGC _ANSI_ARGS_((XGCValues *gcValues,
 		    Tk_Canvas canvas ,Tk_Item *item,
 		    Tk_Outline *outline));
-EXTERN int	Tk_ChangeOutlineGC _ANSI_ARGS_((Tk_Canvas canvas,
+EXTERN int      Tk_ChangeOutlineGC _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *item, Tk_Outline *outline));
-EXTERN int	Tk_ResetOutlineGC _ANSI_ARGS_((Tk_Canvas canvas,
+EXTERN int      Tk_ResetOutlineGC _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *item, Tk_Outline *outline));
-EXTERN int	Tk_CanvasPsOutline _ANSI_ARGS_((Tk_Canvas canvas,
+EXTERN int      Tk_CanvasPsOutline _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *item, Tk_Outline *outline));
 
 /*
  * Some functions handy for Tiling and Stipple/Tile offset.
  */
 
-typedef void	(Tk_TileChangedProc) _ANSI_ARGS_((ClientData clientData,
-		    Tk_Tile tile, Tk_Item *itemPtr));
-EXTERN Tk_Tile	Tk_GetTile _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window tkwin,
+typedef void    (Tk_TileChangedProc) _ANSI_ARGS_((ClientData clientData,
+		    Tk_Tile tile));
+EXTERN Tk_Tile  Tk_GetTile _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window tkwin,
 		    CONST char *imageName));
-EXTERN void	Tk_FreeTile _ANSI_ARGS_((Tk_Tile tile));
-EXTERN char *	Tk_NameOfTile _ANSI_ARGS_((Tk_Tile tile));
-EXTERN void	Tk_SetTileChangedProc _ANSI_ARGS_((Tk_Tile tile,
-		    Tk_TileChangedProc * changeProc, ClientData clientData,
-		    Tk_Item *itemPtr));
-EXTERN Pixmap	Tk_PixmapOfTile _ANSI_ARGS_((Tk_Tile tile));
-EXTERN int	Tk_PixelParseProc _ANSI_ARGS_((
+EXTERN void     Tk_FreeTile _ANSI_ARGS_((Tk_Tile tile));
+EXTERN CONST char *     Tk_NameOfTile _ANSI_ARGS_((Tk_Tile tile));
+EXTERN void     Tk_SetTileChangedProc _ANSI_ARGS_((Tk_Tile tile,
+		    Tk_TileChangedProc * changeProc, ClientData clientData));
+EXTERN Pixmap   Tk_PixmapOfTile _ANSI_ARGS_((Tk_Tile tile));
+EXTERN int      Tk_PixelParseProc _ANSI_ARGS_((
 		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value, char *widgRec,
+		    Tk_Window tkwin, Tcl_Obj *value, char *widgRec,
 		    int offset));
-EXTERN Arg	Tk_PixelPrintProc _ANSI_ARGS_((
+EXTERN Tcl_Obj *Tk_PixelPrintProc _ANSI_ARGS_((
 		    ClientData clientData, Tk_Window tkwin,
 		    char *widgRec, int offset,
 		    Tcl_FreeProc **freeProcPtr));
-EXTERN void	Tk_SizeOfTile _ANSI_ARGS_((Tk_Tile tile, int *widthPtr,
+EXTERN void     Tk_SizeOfTile _ANSI_ARGS_((Tk_Tile tile, int *widthPtr,
 		    int *heightPtr));
-EXTERN void	Tk_SetTileOrigin _ANSI_ARGS_((Tk_Window tkwin, GC gc, int x,
-		    int y));
-EXTERN int	Tk_TileParseProc _ANSI_ARGS_((
+EXTERN int      Tk_TileParseProc _ANSI_ARGS_((
 		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value, char *widgRec,
+		    Tk_Window tkwin, Tcl_Obj *value, char *widgRec,
 		    int offset));
-EXTERN Arg	Tk_TilePrintProc _ANSI_ARGS_((
+EXTERN Tcl_Obj *Tk_TilePrintProc _ANSI_ARGS_((
 		    ClientData clientData, Tk_Window tkwin,
 		    char *widgRec, int offset,
 		    Tcl_FreeProc **freeProcPtr));
-EXTERN int	Tk_OffsetParseProc _ANSI_ARGS_((
+EXTERN int      Tk_OffsetParseProc _ANSI_ARGS_((
 		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value, char *widgRec,
+		    Tk_Window tkwin, Tcl_Obj *value, char *widgRec,
 		    int offset));
-EXTERN Arg	Tk_OffsetPrintProc _ANSI_ARGS_((
+EXTERN Tcl_Obj *Tk_OffsetPrintProc _ANSI_ARGS_((
 		    ClientData clientData, Tk_Window tkwin,
 		    char *widgRec, int offset,
 		    Tcl_FreeProc **freeProcPtr));
-EXTERN void	Tk_SetTileCanvasItem _ANSI_ARGS_((Tk_Tile tile,
-			    Tk_Canvas canvas, Tk_Item *itemPtr));
+EXTERN int      Tk_OrientParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Tcl_Obj *value, char *widgRec,
+		    int offset));
+EXTERN Tcl_Obj *Tk_OrientPrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1073,9 +1374,15 @@ EXTERN void	Tk_SetTileCanvasItem _ANSI_ARGS_((Tk_Tile tile,
  */
 
 typedef struct Tk_ImageType Tk_ImageType;
+#ifdef USE_OLD_IMAGE
 typedef int (Tk_ImageCreateProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	char *name, int objc, Tcl_Obj *objv[], Tk_ImageType *typePtr,
+	char *name, int argc, char **argv, Tk_ImageType *typePtr,
 	Tk_ImageMaster master, ClientData *masterDataPtr));
+#else
+typedef int (Tk_ImageCreateProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	char *name, int objc, Tcl_Obj *CONST objv[], Tk_ImageType *typePtr,
+	Tk_ImageMaster master, ClientData *masterDataPtr));
+#endif
 typedef ClientData (Tk_ImageGetProc) _ANSI_ARGS_((Tk_Window tkwin,
 	ClientData masterData));
 typedef void (Tk_ImageDisplayProc) _ANSI_ARGS_((ClientData instanceData,
@@ -1101,17 +1408,17 @@ typedef int (Tk_ImagePostscriptProc) _ANSI_ARGS_((ClientData clientData,
  */
 
 struct Tk_ImageType {
-    char *name;			/* Name of image type. */
+    char *name;                 /* Name of image type. */
     Tk_ImageCreateProc *createProc;
 				/* Procedure to call to create a new image
 				 * of this type. */
-    Tk_ImageGetProc *getProc;	/* Procedure to call the first time
+    Tk_ImageGetProc *getProc;   /* Procedure to call the first time
 				 * Tk_GetImage is called in a new way
 				 * (new visual or screen). */
     Tk_ImageDisplayProc *displayProc;
 				/* Call to draw image, in response to
 				 * Tk_RedrawImage calls. */
-    Tk_ImageFreeProc *freeProc;	/* Procedure to call whenever Tk_FreeImage
+    Tk_ImageFreeProc *freeProc; /* Procedure to call whenever Tk_FreeImage
 				 * is called to release an instance of an
 				 * image. */
     Tk_ImageDeleteProc *deleteProc;
@@ -1120,15 +1427,15 @@ struct Tk_ImageType {
 				 * has been called for each instance of the
 				 * image. */
     Tk_ImagePostscriptProc *postscriptProc;
-				/* Procedure to call to create postscript
-				 * output for this image type. */
+				/* Procedure to call to produce postscript
+				 * output for the image. */
     struct Tk_ImageType *nextPtr;
 				/* Next in list of all image types currently
 				 * known.  Filled in by Tk, not by image
 				 * manager. */
-    char *reserved;		/* reserved for future expansion */
+    char *reserved;             /* reserved for future expansion */
 };
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1149,18 +1456,27 @@ typedef void *Tk_PhotoHandle;
  */
 
 typedef struct Tk_PhotoImageBlock {
-    unsigned char *pixelPtr;	/* Pointer to the first pixel. */
-    int		width;		/* Width of block, in pixels. */
-    int		height;		/* Height of block, in pixels. */
-    int		pitch;		/* Address difference between corresponding
+    unsigned char *pixelPtr;    /* Pointer to the first pixel. */
+    int         width;          /* Width of block, in pixels. */
+    int         height;         /* Height of block, in pixels. */
+    int         pitch;          /* Address difference between corresponding
 				 * pixels in successive lines. */
-    int		pixelSize;	/* Address difference between successive
+    int         pixelSize;      /* Address difference between successive
 				 * pixels in the same line. */
-    int		offset[4];	/* Address differences between the red, green
+    int         offset[4];      /* Address differences between the red, green
 				 * and blue components of the pixel and the
 				 * pixel as a whole. */
-    int		reserved;	/* Reserved for extensions (dash patch) */
+    int         reserved;       /* Reserved for extensions (dash patch) */
 } Tk_PhotoImageBlock;
+
+/*
+ * The following values control how blocks are combined into photo
+ * images when the alpha component of a pixel is not 255, a.k.a. the
+ * compositing rule.
+ */
+
+#define TK_PHOTO_COMPOSITE_OVERLAY      0
+#define TK_PHOTO_COMPOSITE_SET          1
 
 /*
  * Procedure prototypes and structures used in reading and
@@ -1168,11 +1484,29 @@ typedef struct Tk_PhotoImageBlock {
  */
 
 typedef struct Tk_PhotoImageFormat Tk_PhotoImageFormat;
-typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+#ifdef USE_OLD_IMAGE
+typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((Tcl_Channel chan,
+	char *fileName, char *formatString, int *widthPtr, int *heightPtr));
+typedef int (Tk_ImageStringMatchProc) _ANSI_ARGS_((char *string,
+	char *formatString, int *widthPtr, int *heightPtr));
+typedef int (Tk_ImageFileReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	Tcl_Channel chan, char *fileName, char *formatString,
+	Tk_PhotoHandle imageHandle, int destX, int destY,
+	int width, int height, int srcX, int srcY));
+typedef int (Tk_ImageStringReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	char *string, char *formatString, Tk_PhotoHandle imageHandle,
+	int destX, int destY, int width, int height, int srcX, int srcY));
+typedef int (Tk_ImageFileWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	char *fileName, char *formatString, Tk_PhotoImageBlock *blockPtr));
+typedef int (Tk_ImageStringWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	Tcl_DString *dataPtr, char *formatString,
+	Tk_PhotoImageBlock *blockPtr));
+#else
+typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((Tcl_Channel chan,
 	Tcl_Obj *fileName, Tcl_Obj *format, int *widthPtr,
-	int *heightPtr));
-typedef int (Tk_ImageStringMatchProc) _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr));
+	int *heightPtr,Tcl_Interp *interp));
+typedef int (Tk_ImageStringMatchProc) _ANSI_ARGS_((Tcl_Obj *dataObj,
+	Tcl_Obj *format, int *widthPtr, int *heightPt, Tcl_Interp *interp));
 typedef int (Tk_ImageFileReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
 	Tcl_Channel chan, Tcl_Obj *fileName, Tcl_Obj *format,
 	Tk_PhotoHandle imageHandle, int destX, int destY,
@@ -1185,6 +1519,7 @@ typedef int (Tk_ImageFileWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
 typedef int (Tk_ImageStringWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
 	Tcl_DString *dataPtr, Tcl_Obj *format,
 	Tk_PhotoImageBlock *blockPtr));
+#endif
 
 /*
  * The following structure represents a particular file format for
@@ -1194,7 +1529,7 @@ typedef int (Tk_ImageStringWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
  */
 
 struct Tk_PhotoImageFormat {
-    char *name;			/* Name of image file format */
+    char *name;                 /* Name of image file format */
     Tk_ImageFileMatchProc *fileMatchProc;
 				/* Procedure to call to determine whether
 				 * an image file matches this format. */
@@ -1219,7 +1554,89 @@ struct Tk_PhotoImageFormat {
 				 * currently known.  Filled in by Tk, not
 				 * by image format handler. */
 };
-
+
+EXTERN void             Tk_CreateOldImageType _ANSI_ARGS_((
+				Tk_ImageType *typePtr));
+EXTERN void             Tk_CreateOldPhotoImageFormat _ANSI_ARGS_((
+				Tk_PhotoImageFormat *formatPtr));
+
+#if !defined(USE_TK_STUBS) && defined(USE_OLD_IMAGE)
+#define Tk_CreateImageType Tk_CreateOldImageType
+#define Tk_CreatePhotoImageFormat Tk_CreateOldPhotoImageFormat
+#endif
+
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Procedure prototypes and structures used for managing styles:
+ *
+ *--------------------------------------------------------------
+ */
+
+/*
+ * Style support version tag.
+ */
+#define TK_STYLE_VERSION_1      0x1
+#define TK_STYLE_VERSION        TK_STYLE_VERSION_1
+
+/*
+ * The following structures and prototypes are used as static templates to
+ * declare widget elements.
+ */
+
+typedef void (Tk_GetElementSizeProc) _ANSI_ARGS_((ClientData clientData,
+	char *recordPtr, CONST Tk_OptionSpec **optionsPtr, Tk_Window tkwin,
+	int width, int height, int inner, int *widthPtr, int *heightPtr));
+typedef void (Tk_GetElementBoxProc) _ANSI_ARGS_((ClientData clientData,
+	char *recordPtr, CONST Tk_OptionSpec **optionsPtr, Tk_Window tkwin,
+	int x, int y, int width, int height, int inner, int *xPtr, int *yPtr,
+	int *widthPtr, int *heightPtr));
+typedef int (Tk_GetElementBorderWidthProc) _ANSI_ARGS_((ClientData clientData,
+	char *recordPtr, CONST Tk_OptionSpec **optionsPtr, Tk_Window tkwin));
+typedef void (Tk_DrawElementProc) _ANSI_ARGS_((ClientData clientData,
+	char *recordPtr, CONST Tk_OptionSpec **optionsPtr, Tk_Window tkwin,
+	Drawable d, int x, int y, int width, int height, int state));
+
+typedef struct Tk_ElementOptionSpec {
+    char *name;                 /* Name of the required option. */
+    Tk_OptionType type;         /* Accepted option type. TK_OPTION_END means
+				 * any. */
+} Tk_ElementOptionSpec;
+
+typedef struct Tk_ElementSpec {
+    int version;                /* Version of the style support. */
+    char *name;                 /* Name of element. */
+    Tk_ElementOptionSpec *options;
+				/* List of required options. Last one's name
+				 * must be NULL. */
+
+    /*
+     * Hooks
+     */
+
+    Tk_GetElementSizeProc *getSize;
+				/* Compute the external (resp. internal) size of
+				 * the element from its desired internal (resp.
+				 * external) size. */
+    Tk_GetElementBoxProc *getBox;
+				/* Compute the inscribed or bounding boxes
+				 * within a given area. */
+    Tk_GetElementBorderWidthProc *getBorderWidth;
+				/* Return the element's internal border width.
+				 * Mostly useful for widgets. */
+    Tk_DrawElementProc *draw;   /* Draw the element in the given bounding box.*/
+} Tk_ElementSpec;
+
+/*
+ * Element state flags. Can be OR'ed.
+ */
+
+#define TK_ELEMENT_STATE_ACTIVE         1<<0
+#define TK_ELEMENT_STATE_DISABLED       1<<1
+#define TK_ELEMENT_STATE_FOCUS          1<<2
+#define TK_ELEMENT_STATE_PRESSED        1<<3
+
 /*
  *--------------------------------------------------------------
  *
@@ -1232,42 +1649,66 @@ struct Tk_PhotoImageFormat {
 
 #if 0
 
-#define TK_READABLE		TCL_READABLE
-#define TK_WRITABLE		TCL_WRITABLE
-#define TK_EXCEPTION		TCL_EXCEPTION
+#define TK_READABLE             TCL_READABLE
+#define TK_WRITABLE             TCL_WRITABLE
+#define TK_EXCEPTION            TCL_EXCEPTION
 
-#define TK_DONT_WAIT		TCL_DONT_WAIT
-#define TK_X_EVENTS		TCL_WINDOW_EVENTS
-#define TK_WINDOW_EVENTS	TCL_WINDOW_EVENTS
-#define TK_FILE_EVENTS		TCL_FILE_EVENTS
-#define TK_TIMER_EVENTS		TCL_TIMER_EVENTS
-#define TK_IDLE_EVENTS		TCL_IDLE_EVENTS
-#define TK_ALL_EVENTS		TCL_ALL_EVENTS
+#define TK_DONT_WAIT            TCL_DONT_WAIT
+#define TK_X_EVENTS             TCL_WINDOW_EVENTS
+#define TK_WINDOW_EVENTS        TCL_WINDOW_EVENTS
+#define TK_FILE_EVENTS          TCL_FILE_EVENTS
+#define TK_TIMER_EVENTS         TCL_TIMER_EVENTS
+#define TK_IDLE_EVENTS          TCL_IDLE_EVENTS
+#define TK_ALL_EVENTS           TCL_ALL_EVENTS
 
-#define Tk_IdleProc		Tcl_IdleProc
-#define Tk_FileProc		Tcl_FileProc
-#define Tk_TimerProc		Tcl_TimerProc
-#define Tk_TimerToken		Tcl_TimerToken
+#define Tk_IdleProc             Tcl_IdleProc
+#define Tk_FileProc             Tcl_FileProc
+#define Tk_TimerProc            Tcl_TimerProc
+#define Tk_TimerToken           Tcl_TimerToken
 
-#define Tk_BackgroundError	Tcl_BackgroundError
-#define Tk_CancelIdleCall	Tcl_CancelIdleCall
-#define Tk_CreateFileHandler	Tcl_CreateFileHandler
-#define Tk_CreateTimerHandler	Tcl_CreateTimerHandler
-#define Tk_DeleteFileHandler	Tcl_DeleteFileHandler
-#define Tk_DeleteTimerHandler	Tcl_DeleteTimerHandler
-#define Tk_DoOneEvent		Tcl_DoOneEvent
-#define Tk_DoWhenIdle		Tcl_DoWhenIdle
-#define Tk_Sleep		Tcl_Sleep
+#define Tk_BackgroundError      Tcl_BackgroundError
+#define Tk_CancelIdleCall       Tcl_CancelIdleCall
+#define Tk_CreateFileHandler    Tcl_CreateFileHandler
+#define Tk_CreateTimerHandler   Tcl_CreateTimerHandler
+#define Tk_DeleteFileHandler    Tcl_DeleteFileHandler
+#define Tk_DeleteTimerHandler   Tcl_DeleteTimerHandler
+#define Tk_DoOneEvent           Tcl_DoOneEvent
+#define Tk_DoWhenIdle           Tcl_DoWhenIdle
+#define Tk_Sleep                Tcl_Sleep
 
-#define Tk_EventuallyFree	Tcl_EventuallyFree
-#define Tk_FreeProc		Tcl_FreeProc
-#define Tk_Preserve		Tcl_Preserve
-#define Tk_Release		Tcl_Release
-#define Tk_FileeventCmd		Tcl_FileEventCmd
+/* Additional stuff that has moved to Tcl: */
+
+#define Tk_EventuallyFree       Tcl_EventuallyFree
+#define Tk_FreeProc             Tcl_FreeProc
+#define Tk_Preserve             Tcl_Preserve
+#define Tk_Release              Tcl_Release
+#define Tk_FileeventCmd         Tcl_FileEventCmd
 
 #endif
 
-
+
+/* Removed Tk_Main, use macro instead */
+#define Tk_Main(argc, argv, proc) \
+    Tk_MainEx(argc, argv, proc, Tcl_CreateInterp())
+
+extern CONST char *Tk_InitStubs _ANSI_ARGS_((Tcl_Interp *interp, char *version, int exact));
+
+#ifndef USE_TK_STUBS
+
+#define Tk_InitStubs(interp, version, exact) \
+    Tcl_PkgRequire(interp, "Tk", version, exact)
+
+#endif
+
+extern void Tk_InitImageArgs _ANSI_ARGS_((Tcl_Interp *interp, int argc, char ***argv));
+
+#if !defined(USE_TK_STUBS) || !defined(USE_OLD_IMAGE)
+
+#define Tk_InitImageArgs(interp, argc, argv) /**/
+
+#endif
+
+
 /*
  *--------------------------------------------------------------
  *
@@ -1290,6 +1731,8 @@ typedef void (Tk_EventProc) _ANSI_ARGS_((ClientData clientData,
 	XEvent *eventPtr));
 typedef int (Tk_GenericProc) _ANSI_ARGS_((ClientData clientData,
 	XEvent *eventPtr));
+typedef int (Tk_ClientMessageProc) _ANSI_ARGS_((Tk_Window tkwin,
+	XEvent *eventPtr));
 typedef int (Tk_GetSelProc) _ANSI_ARGS_((ClientData clientData,
 	Tcl_Interp *interp, char *portion));
 typedef int (Tk_GetXSelProc) _ANSI_ARGS_((ClientData clientData,
@@ -1300,13 +1743,14 @@ typedef Tk_RestrictAction (Tk_RestrictProc) _ANSI_ARGS_((
 	ClientData clientData, XEvent *eventPtr));
 typedef int (Tk_SelectionProc) _ANSI_ARGS_((ClientData clientData,
 	int offset, char *buffer, int maxBytes));
+
 typedef int (Tk_XSelectionProc) _ANSI_ARGS_((ClientData clientData,
 	int offset, long *buffer, int maxBytes,
 	Atom type, Tk_Window tkwin));
-
+
 
 typedef struct {
-    char *name;			/* Name of command. */
+    char *name;                 /* Name of command. */
     int (*cmdProc) _ANSI_ARGS_((ClientData clientData, Tcl_Interp *interp,
 	    int argc, char **argv));
 				/* Command procedure. */
@@ -1315,647 +1759,58 @@ typedef struct {
 /*
  *--------------------------------------------------------------
  *
- * Exported procedures and variables.
+ * Platform independant exported procedures and variables.
  *
  *--------------------------------------------------------------
  */
 
-EXTERN char *		Tk_EventInfo _ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr,
-			    KeySym keySym, int *numPtr, int *isNum, int *type,
-                            int num_size, char *numStorage));
+#include "tkDecls.h"
 
-EXTERN XColor *		Tk_3DBorderColor _ANSI_ARGS_((Tk_3DBorder border));
-EXTERN GC		Tk_3DBorderGC _ANSI_ARGS_((Tk_Window tkwin,
-			    Tk_3DBorder border, int which));
-EXTERN void		Tk_3DHorizontalBevel _ANSI_ARGS_((Tk_Window tkwin,
-			    Drawable drawable, Tk_3DBorder border, int x,
-			    int y, int width, int height, int leftIn,
-			    int rightIn, int topBevel, int relief));
-EXTERN void		Tk_3DVerticalBevel _ANSI_ARGS_((Tk_Window tkwin,
-			    Drawable drawable, Tk_3DBorder border, int x,
-			    int y, int width, int height, int leftBevel,
-			    int relief));
-EXTERN void		Tk_AddOption _ANSI_ARGS_((Tk_Window tkwin, char *name,
-			    char *value, int priority));
-EXTERN void		Tk_BindEvent _ANSI_ARGS_((Tk_BindingTable bindingTable,
-			    XEvent *eventPtr, Tk_Window tkwin, int numObjects,
-			    ClientData *objectPtr));
-EXTERN int		Tk_CanvasDashParseProc _ANSI_ARGS_((
-			    ClientData clientData, Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg value, char *widgRec,
-			    int offset));
-EXTERN Arg		Tk_CanvasDashPrintProc _ANSI_ARGS_((
-			    ClientData clientData, Tk_Window tkwin,
-			    char *widgRec, int offset,
-			    Tcl_FreeProc **freeProcPtr));
-EXTERN void		Tk_CanvasDrawableCoords _ANSI_ARGS_((Tk_Canvas canvas,
-			    double x, double y, short *drawableXPtr,
-			    short *drawableYPtr));
-EXTERN void		Tk_CanvasEventuallyRedraw _ANSI_ARGS_((
-			    Tk_Canvas canvas, int x1, int y1, int x2,
-			    int y2));
-EXTERN int		Tk_CanvasGetCoord _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, char *string,
-			    double *doublePtr));
-EXTERN int		Tk_CanvasGetCoordFromObj _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Tcl_Obj *obj,
-			    double *doublePtr));
-EXTERN Tk_CanvasTextInfo *Tk_CanvasGetTextInfo _ANSI_ARGS_((Tk_Canvas canvas));
-EXTERN int		Tk_CanvasPsBitmap _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Pixmap bitmap, int x, int y,
-			    int width, int height));
-EXTERN int		Tk_CanvasPsColor _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, XColor *colorPtr));
-EXTERN int		Tk_CanvasPsFont _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Tk_Font font));
-EXTERN void		Tk_CanvasPsPath _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, double *coordPtr, int numPoints));
-EXTERN int		Tk_CanvasPsStipple _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Pixmap bitmap));
-EXTERN double		Tk_CanvasPsY _ANSI_ARGS_((Tk_Canvas canvas, double y));
-EXTERN void		Tk_CanvasSetOffset _ANSI_ARGS_((
-			    Tk_Canvas canvas, GC gc, Tk_TSOffset *offset));
-EXTERN void		Tk_CanvasSetStippleOrigin _ANSI_ARGS_((
-			    Tk_Canvas canvas, GC gc));
-EXTERN int		Tk_CanvasTagsParseProc _ANSI_ARGS_((
-			    ClientData clientData, Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg value, char *widgRec,
-			    int offset));
-EXTERN Arg		Tk_CanvasTagsPrintProc _ANSI_ARGS_((
-			    ClientData clientData, Tk_Window tkwin,
-			    char *widgRec, int offset,
-			    Tcl_FreeProc **freeProcPtr));
-EXTERN Tk_Window	Tk_CanvasTkwin _ANSI_ARGS_((Tk_Canvas canvas));
-EXTERN void		Tk_CanvasWindowCoords _ANSI_ARGS_((Tk_Canvas canvas,
-			    double x, double y, short *screenXPtr,
-			    short *screenYPtr));
-EXTERN void		Tk_ChangeWindowAttributes _ANSI_ARGS_((Tk_Window tkwin,
-			    unsigned long valueMask,
-			    XSetWindowAttributes *attsPtr));
-EXTERN int		Tk_CharBbox _ANSI_ARGS_((Tk_TextLayout layout,
-			    int index, int *xPtr, int *yPtr, int *widthPtr,
-			    int *heightPtr));
-EXTERN void		Tk_ClearSelection _ANSI_ARGS_((Tk_Window tkwin,
-			    Atom selection));
-EXTERN int		Tk_ClipboardAppend _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Atom target, Atom format,
-			    char* buffer));
-EXTERN int		Tk_ClipboardClear _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin));
-EXTERN int		Tk_ConfigureInfo _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_ConfigSpec *specs,
-			    char *widgRec, char *argvName, int flags));
-EXTERN int		Tk_ConfigureValue _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_ConfigSpec *specs,
-			    char *widgRec, char *argvName, int flags));
-EXTERN int		Tk_ConfigureWidget _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_ConfigSpec *specs,
-			    int argc, char **argv, char *widgRec,
-			    int flags));
-EXTERN void		Tk_ConfigureWindow _ANSI_ARGS_((Tk_Window tkwin,
-			    unsigned int valueMask, XWindowChanges *valuePtr));
-EXTERN Tk_TextLayout	Tk_ComputeTextLayout _ANSI_ARGS_((Tk_Font font,
-			    CONST char *string, int numChars, int wrapLength,
-			    Tk_Justify justify, int flags, int *widthPtr,
-			    int *heightPtr));
-EXTERN Tk_Window	Tk_CoordsToWindow _ANSI_ARGS_((int rootX, int rootY,
-			    Tk_Window tkwin));
-EXTERN unsigned long	Tk_CreateBinding _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_BindingTable bindingTable, ClientData object,
-			    char *eventString, Arg command, int append));
-EXTERN Tk_BindingTable	Tk_CreateBindingTable _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN Tk_ErrorHandler	Tk_CreateErrorHandler _ANSI_ARGS_((Display *display,
-			    int errNum, int request, int minorCode,
-			    Tk_ErrorProc *errorProc, ClientData clientData));
-EXTERN void		Tk_CreateEventHandler _ANSI_ARGS_((Tk_Window token,
-			    unsigned long mask, Tk_EventProc *proc,
-			    ClientData clientData));
-EXTERN void		Tk_CreatePhotoOption _ANSI_ARGS_((Tcl_Interp *interp,
-			    CONST char *name, Tcl_CmdProc *proc));
-EXTERN void		Tk_CreateGenericHandler _ANSI_ARGS_((
-			    Tk_GenericProc *proc, ClientData clientData));
-EXTERN void		Tk_CreateImageType _ANSI_ARGS_((
-			    Tk_ImageType *typePtr));
-EXTERN void		Tk_CreateItemType _ANSI_ARGS_((Tk_ItemType *typePtr));
-EXTERN void		Tk_CreatePhotoImageFormat _ANSI_ARGS_((
-			    Tk_PhotoImageFormat *formatPtr));
-EXTERN void		Tk_CreateSelHandler _ANSI_ARGS_((Tk_Window tkwin,
-			    Atom selection, Atom target,
-			    Tk_SelectionProc *proc, ClientData clientData,
-			    Atom format));
-EXTERN void		Tk_CreateSmoothMethod _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_SmoothMethod *method));
-EXTERN void		Tk_CreateCanvasVisitor _ANSI_ARGS_((Tcl_Interp *interp,
-			    CONST Tk_VisitorType *typePtr));
-EXTERN void		Tk_CreateXSelHandler _ANSI_ARGS_((Tk_Window tkwin,
-			    Atom selection, Atom target,
-			    Tk_XSelectionProc *proc, ClientData clientData,
-			    Atom format));
-EXTERN Tk_Window	Tk_CreateWindow _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window parent, char *name, char *screenName));
-EXTERN Tk_Window	Tk_CreateWindowFromPath _ANSI_ARGS_((
-			    Tcl_Interp *interp, Tk_Window tkwin,
-			    char *pathName, char *screenName));
-EXTERN int		Tk_DefineBitmap _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Uid name, char *source, int width,
-			    int height));
-EXTERN void		Tk_DefineCursor _ANSI_ARGS_((Tk_Window window,
-			    Tk_Cursor cursor));
-EXTERN void		Tk_DeleteAllBindings _ANSI_ARGS_((
-			    Tk_BindingTable bindingTable, ClientData object));
-EXTERN int		Tk_DeleteBinding _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_BindingTable bindingTable, ClientData object,
-			    char *eventString));
-EXTERN void		Tk_DeleteBindingTable _ANSI_ARGS_((
-			    Tk_BindingTable bindingTable));
-EXTERN void		Tk_DeleteErrorHandler _ANSI_ARGS_((
-			    Tk_ErrorHandler handler));
-EXTERN void		Tk_DeleteEventHandler _ANSI_ARGS_((Tk_Window token,
-			    unsigned long mask, Tk_EventProc *proc,
-			    ClientData clientData));
-EXTERN void		Tk_DeleteGenericHandler _ANSI_ARGS_((
-			    Tk_GenericProc *proc, ClientData clientData));
-EXTERN void		Tk_DeleteImage _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name));
-EXTERN void		Tk_DeleteSelHandler _ANSI_ARGS_((Tk_Window tkwin,
-			    Atom selection, Atom target));
-EXTERN void             Tk_DestroyWindow _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN char *		Tk_DisplayName _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN void		Tk_DitherPhoto _ANSI_ARGS_((Tk_PhotoHandle handle,
-			    int x, int y, int width, int height));
-EXTERN int		Tk_DistanceToTextLayout _ANSI_ARGS_((
-			    Tk_TextLayout layout, int x, int y));
-EXTERN void		Tk_Draw3DPolygon _ANSI_ARGS_((Tk_Window tkwin,
-			    Drawable drawable, Tk_3DBorder border,
-			    XPoint *pointPtr, int numPoints, int borderWidth,
-			    int leftRelief));
-EXTERN void		Tk_Draw3DRectangle _ANSI_ARGS_((Tk_Window tkwin,
-			    Drawable drawable, Tk_3DBorder border, int x,
-			    int y, int width, int height, int borderWidth,
-			    int relief));
-EXTERN void		Tk_DrawChars _ANSI_ARGS_((Display *display,
-			    Drawable drawable, GC gc, Tk_Font tkfont,
-			    CONST char *source, int numChars, int x,
-			    int y));
-EXTERN void		Tk_DrawFocusHighlight _ANSI_ARGS_((Tk_Window tkwin,
-			    GC gc, int width, Drawable drawable));
-EXTERN void		Tk_DrawTextLayout _ANSI_ARGS_((Display *display,
-			    Drawable drawable, GC gc, Tk_TextLayout layout,
-			    int x, int y, int firstChar, int lastChar));
-EXTERN void		Tk_Fill3DPolygon _ANSI_ARGS_((Tk_Window tkwin,
-			    Drawable drawable, Tk_3DBorder border,
-			    XPoint *pointPtr, int numPoints, int borderWidth,
-			    int leftRelief));
-EXTERN void		Tk_Fill3DRectangle _ANSI_ARGS_((Tk_Window tkwin,
-			    Drawable drawable, Tk_3DBorder border, int x,
-			    int y, int width, int height, int borderWidth,
-			    int relief));
-EXTERN Tk_PhotoHandle	Tk_FindPhoto _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *imageName));
-EXTERN Font		Tk_FontId _ANSI_ARGS_((Tk_Font font));
-EXTERN void		Tk_Free3DBorder _ANSI_ARGS_((Tk_3DBorder border));
-EXTERN void		Tk_FreeBitmap _ANSI_ARGS_((Display *display,
-			    Pixmap bitmap));
-EXTERN void		Tk_FreeColor _ANSI_ARGS_((XColor *colorPtr));
-EXTERN void		Tk_FreeColormap _ANSI_ARGS_((Display *display,
-			    Colormap colormap));
-EXTERN void		Tk_FreeCursor _ANSI_ARGS_((Display *display,
-			    Tk_Cursor cursor));
-EXTERN void		Tk_FreeFont _ANSI_ARGS_((Tk_Font));
-EXTERN void		Tk_FreeGC _ANSI_ARGS_((Display *display, GC gc));
-EXTERN void		Tk_FreeImage _ANSI_ARGS_((Tk_Image image));
-EXTERN void		Tk_FreeOptions _ANSI_ARGS_((Tk_ConfigSpec *specs,
-			    char *widgRec, Display *display, int needFlags));
-EXTERN void		Tk_FreePixmap _ANSI_ARGS_((Display *display,
-			    Pixmap pixmap));
-EXTERN void		Tk_FreeTextLayout _ANSI_ARGS_((
-			    Tk_TextLayout textLayout));
-EXTERN void		Tk_FreeXId _ANSI_ARGS_((Display *display, XID xid));
-EXTERN GC		Tk_GCForColor _ANSI_ARGS_((XColor *colorPtr,
-			    Drawable drawable));
-EXTERN void		Tk_GeometryRequest _ANSI_ARGS_((Tk_Window tkwin,
-			    int reqWidth,  int reqHeight));
-EXTERN Tk_3DBorder	Tk_Get3DBorder _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_Uid colorName));
-EXTERN void		Tk_GetAllBindings _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_BindingTable bindingTable, ClientData object));
-EXTERN int		Tk_GetAnchor _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string, Tk_Anchor *anchorPtr));
-EXTERN char *		Tk_GetAtomName _ANSI_ARGS_((Tk_Window tkwin,
-			    Atom atom));
-EXTERN Arg		Tk_GetBinding _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_BindingTable bindingTable, ClientData object,
-			    char *eventString));
-EXTERN Pixmap		Tk_GetBitmap _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_Uid string));
-EXTERN Pixmap		Tk_GetBitmapFromData _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char *source,
-			    int width, int height));
-EXTERN Tk_VisitorType *	Tk_GetCanvasVisitor _ANSI_ARGS_((Tcl_Interp *interp,
-			    CONST char *name));
-EXTERN int		Tk_GetCapStyle _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string, int *capPtr));
-EXTERN XColor *		Tk_GetColor _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_Uid name));
-EXTERN XColor *		Tk_GetColorByValue _ANSI_ARGS_((Tk_Window tkwin,
-			    XColor *colorPtr));
-EXTERN Colormap		Tk_GetColormap _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char *string));
-EXTERN Tk_Cursor	Tk_GetCursor _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg arg));
-EXTERN Tk_Cursor	Tk_GetCursorFromData _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char *source, char *mask,
-			    int width, int height, int xHot, int yHot,
-			    Tk_Uid fg, Tk_Uid bg));
-EXTERN int		Tk_GetDoublePixels _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, CONST char *string,
-			    double *doublePtr));
-EXTERN Tk_Font		Tk_GetFont _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, CONST char *string));
-EXTERN Tk_Font		Tk_GetFontFromObj _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tcl_Obj *objPtr));
-EXTERN void		Tk_GetFontMetrics _ANSI_ARGS_((Tk_Font font,
-			    Tk_FontMetrics *fmPtr));
-EXTERN GC		Tk_GetGC _ANSI_ARGS_((Tk_Window tkwin,
-			    unsigned long valueMask, XGCValues *valuePtr));
-EXTERN Tk_Image		Tk_GetImage _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char *name,
-			    Tk_ImageChangedProc *changeProc,
-			    ClientData clientData));
-EXTERN ClientData	Tk_GetImageMasterData _ANSI_ARGS_ ((Tcl_Interp *interp,
-			    char *name, Tk_ImageType **typePtrPtr));
-EXTERN Tk_ItemType *	Tk_GetItemTypes _ANSI_ARGS_((void));
-EXTERN int		Tk_GetJoinStyle _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string, int *joinPtr));
-EXTERN int		Tk_GetJustify _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string, Tk_Justify *justifyPtr));
-EXTERN int		Tk_GetNumMainWindows _ANSI_ARGS_((void));
-EXTERN Tk_Uid		Tk_GetOption _ANSI_ARGS_((Tk_Window tkwin, char *name,
-			    char *className));
-EXTERN int		Tk_GetPixels _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char *string, int *intPtr));
-EXTERN Pixmap		Tk_GetPixmap _ANSI_ARGS_((Display *display, Drawable d,
-			    int width, int height, int depth));
-EXTERN int		Tk_GetRelief _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int *reliefPtr));
-EXTERN void		Tk_GetRootCoords _ANSI_ARGS_ ((Tk_Window tkwin,
-			    int *xPtr, int *yPtr));
-EXTERN int		Tk_GetScrollInfo _ANSI_ARGS_((Tcl_Interp *interp,
-			    int argc, char **argv, double *dblPtr,
-			    int *intPtr));
-EXTERN int		Tk_GetScreenMM _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char *string, double *doublePtr));
-EXTERN int		Tk_GetSelection _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Atom selection, Atom target,
-			    Tk_GetSelProc *proc, ClientData clientData));
-EXTERN int		Tk_GetXSelection _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Atom selection, Atom target,
-			    Tk_GetXSelProc *proc, ClientData clientData));
-EXTERN Tk_Uid		Tk_GetUid _ANSI_ARGS_((CONST char *string));
-EXTERN Visual *		Tk_GetVisual _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg arg, int *depthPtr,
-			    Colormap *colormapPtr));
-EXTERN void		Tk_GetVRootGeometry _ANSI_ARGS_((Tk_Window tkwin,
-			    int *xPtr, int *yPtr, int *widthPtr,
-			    int *heightPtr));
-EXTERN int		Tk_Grab _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, int grabGlobal));
-EXTERN void		Tk_HandleEvent _ANSI_ARGS_((XEvent *eventPtr));
-EXTERN Tk_Window      	Tk_IdToWindow _ANSI_ARGS_((Display *display,
-			    Window window));
-EXTERN void		Tk_ImageChanged _ANSI_ARGS_((
-			    Tk_ImageMaster master, int x, int y,
-			    int width, int height, int imageWidth,
-			    int imageHeight));
-EXTERN int		Tk_Init _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN Atom		Tk_InternAtom _ANSI_ARGS_((Tk_Window tkwin,
-			    char *name));
-EXTERN int		Tk_IntersectTextLayout _ANSI_ARGS_((
-			    Tk_TextLayout layout, int x, int y, int width,
-			    int height));
-EXTERN void		Tk_Main _ANSI_ARGS_((int argc, char **argv,
-			    Tcl_AppInitProc *appInitProc));
-EXTERN void		Tk_MainLoop _ANSI_ARGS_((void));
-EXTERN void		Tk_MaintainGeometry _ANSI_ARGS_((Tk_Window slave,
-			    Tk_Window master, int x, int y, int width,
-			    int height));
-EXTERN Tk_Window	Tk_MainWindow _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN void		Tk_MakeWindowExist _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN void		Tk_ManageGeometry _ANSI_ARGS_((Tk_Window tkwin,
-			    Tk_GeomMgr *mgrPtr, ClientData clientData));
-EXTERN void		Tk_MapWindow _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN int		Tk_MeasureChars _ANSI_ARGS_((Tk_Font tkfont,
-			    CONST char *source, int maxChars, int maxPixels,
-			    int flags, int *lengthPtr));
-EXTERN void		Tk_MoveResizeWindow _ANSI_ARGS_((Tk_Window tkwin,
-			    int x, int y, int width, int height));
-EXTERN void		Tk_MoveWindow _ANSI_ARGS_((Tk_Window tkwin, int x,
-			    int y));
-EXTERN void		Tk_MoveToplevelWindow _ANSI_ARGS_((Tk_Window tkwin,
-			    int x, int y));
-EXTERN char *		Tk_NameOf3DBorder _ANSI_ARGS_((Tk_3DBorder border));
-EXTERN char *		Tk_NameOfAnchor _ANSI_ARGS_((Tk_Anchor anchor));
-EXTERN char *		Tk_NameOfBitmap _ANSI_ARGS_((Display *display,
-			    Pixmap bitmap));
-EXTERN char *		Tk_NameOfCapStyle _ANSI_ARGS_((int cap));
-EXTERN char *		Tk_NameOfColor _ANSI_ARGS_((XColor *colorPtr));
-EXTERN char *		Tk_NameOfCursor _ANSI_ARGS_((Display *display,
-			    Tk_Cursor cursor));
-EXTERN char *		Tk_NameOfFont _ANSI_ARGS_((Tk_Font font));
-EXTERN char *		Tk_NameOfImage _ANSI_ARGS_((
-			    Tk_ImageMaster imageMaster));
-EXTERN char *		Tk_NameOfJoinStyle _ANSI_ARGS_((int join));
-EXTERN char *		Tk_NameOfJustify _ANSI_ARGS_((Tk_Justify justify));
-EXTERN char *		Tk_NameOfRelief _ANSI_ARGS_((int relief));
-EXTERN Tk_Window	Tk_NameToWindow _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *pathName, Tk_Window tkwin));
-EXTERN void		Tk_OwnSelection _ANSI_ARGS_((Tk_Window tkwin,
-			    Atom selection, Tk_LostSelProc *proc,
-			    ClientData clientData));
-EXTERN int		Tk_ParseArgv _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, int *argcPtr, char **argv,
-			    Tk_ArgvInfo *argTable, int flags));
-EXTERN int		Tk_OrientParseProc _ANSI_ARGS_((
-			    ClientData clientData, Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg value,
-			    char *widgRec, int offset));
-EXTERN Arg		Tk_OrientPrintProc _ANSI_ARGS_((
-			    ClientData clientData, Tk_Window tkwin,
-			    char *widgRec, int offset,
-			    Tcl_FreeProc **freeProcPtr));
-EXTERN void		Tk_PhotoPutBlock _ANSI_ARGS_((Tk_PhotoHandle handle,
-			    Tk_PhotoImageBlock *blockPtr, int x, int y,
-			    int width, int height));
-EXTERN void		Tk_PhotoPutZoomedBlock _ANSI_ARGS_((
-			    Tk_PhotoHandle handle,
-			    Tk_PhotoImageBlock *blockPtr, int x, int y,
-			    int width, int height, int zoomX, int zoomY,
-			    int subsampleX, int subsampleY));
-EXTERN int		Tk_PhotoGetImage _ANSI_ARGS_((Tk_PhotoHandle handle,
-			    Tk_PhotoImageBlock *blockPtr));
-EXTERN void		Tk_PhotoBlank _ANSI_ARGS_((Tk_PhotoHandle handle));
-EXTERN void		Tk_PhotoExpand _ANSI_ARGS_((Tk_PhotoHandle handle,
-			    int width, int height ));
-EXTERN void		Tk_PhotoGetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
-			    int *widthPtr, int *heightPtr));
-EXTERN void		Tk_PhotoSetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
-			    int width, int height));
-EXTERN int		Tk_PointToChar _ANSI_ARGS_((Tk_TextLayout layout,
-			    int x, int y));
-EXTERN int		Tk_PostscriptBitmap _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
-			    Pixmap bitmap, int startX, int startY,
-			    int width, int height));
-EXTERN int		Tk_PostscriptColor _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_PostscriptInfo psInfo, XColor *colorPtr));
-EXTERN int		Tk_PostscriptFontName _ANSI_ARGS_((Tk_Font tkfont,
-			    Tcl_DString *dsPtr));
-EXTERN int		Tk_PostscriptFont _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_PostscriptInfo psInfo, Tk_Font font));
-EXTERN int		Tk_PostscriptImage _ANSI_ARGS_((Tk_Image image,
-			    Tcl_Interp *interp, Tk_Window tkwin,
-			    Tk_PostscriptInfo psinfo, int x, int y,
-			    int width, int height, int prepass));
-EXTERN void		Tk_PostscriptPath _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_PostscriptInfo psInfo, double *coordPtr,
-			    int numPoints));
-EXTERN int		Tk_PostscriptStipple _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
-			    Pixmap bitmap));
-EXTERN double		Tk_PostscriptY _ANSI_ARGS_((double y,
-			    Tk_PostscriptInfo psInfo));
-EXTERN void		Tk_PreserveColormap _ANSI_ARGS_((Display *display,
-			    Colormap colormap));
-EXTERN void		Tk_QueueWindowEvent _ANSI_ARGS_((XEvent *eventPtr,
-			    Tcl_QueuePosition position));
-EXTERN void		Tk_RedrawImage _ANSI_ARGS_((Tk_Image image, int imageX,
-			    int imageY, int width, int height,
-			    Drawable drawable, int drawableX, int drawableY));
-EXTERN void		Tk_ResizeWindow _ANSI_ARGS_((Tk_Window tkwin,
-			    int width, int height));
-EXTERN int		Tk_RestackWindow _ANSI_ARGS_((Tk_Window tkwin,
-			    int aboveBelow, Tk_Window other));
-EXTERN Tk_RestrictProc *Tk_RestrictEvents _ANSI_ARGS_((Tk_RestrictProc *proc,
-			    ClientData arg, ClientData *prevArgPtr));
-EXTERN int		Tk_SafeInit _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN char *		Tk_SetAppName _ANSI_ARGS_((Tk_Window tkwin,
-			    char *name));
-EXTERN void		Tk_SetBackgroundFromBorder _ANSI_ARGS_((
-			    Tk_Window tkwin, Tk_3DBorder border));
-EXTERN void		Tk_SetClass _ANSI_ARGS_((Tk_Window tkwin,
-			    char *className));
-EXTERN void		Tk_SetGrid _ANSI_ARGS_((Tk_Window tkwin,
-			    int reqWidth, int reqHeight, int gridWidth,
-			    int gridHeight));
-EXTERN void		Tk_SetInternalBorder _ANSI_ARGS_((Tk_Window tkwin,
-			    int width));
-EXTERN void		Tk_SetWindowBackground _ANSI_ARGS_((Tk_Window tkwin,
-			    unsigned long pixel));
-EXTERN void		Tk_SetWindowBackgroundPixmap _ANSI_ARGS_((
-			    Tk_Window tkwin, Pixmap pixmap));
-EXTERN void		Tk_SetWindowBorder _ANSI_ARGS_((Tk_Window tkwin,
-			    unsigned long pixel));
-EXTERN void		Tk_SetWindowBorderWidth _ANSI_ARGS_((Tk_Window tkwin,
-			    int width));
-EXTERN void		Tk_SetWindowBorderPixmap _ANSI_ARGS_((Tk_Window tkwin,
-			    Pixmap pixmap));
-EXTERN void		Tk_SetWindowColormap _ANSI_ARGS_((Tk_Window tkwin,
-			    Colormap colormap));
-EXTERN int		Tk_SetWindowVisual _ANSI_ARGS_((Tk_Window tkwin,
-			    Visual *visual, int depth,
-			    Colormap colormap));
-EXTERN void		Tk_SizeOfBitmap _ANSI_ARGS_((Display *display,
-			    Pixmap bitmap, int *widthPtr,
-			    int *heightPtr));
-EXTERN void		Tk_SizeOfImage _ANSI_ARGS_((Tk_Image image,
-			    int *widthPtr, int *heightPtr));
-EXTERN int		Tk_StateParseProc _ANSI_ARGS_((
-			    ClientData clientData, Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg value,
-			    char *widgRec, int offset));
-EXTERN Arg		Tk_StatePrintProc _ANSI_ARGS_((
-			    ClientData clientData, Tk_Window tkwin,
-			    char *widgRec, int offset,
-			    Tcl_FreeProc **freeProcPtr));
-EXTERN int		Tk_StrictMotif _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN void		Tk_TextLayoutToPostscript _ANSI_ARGS_((
-			    Tcl_Interp *interp, Tk_TextLayout layout));
-EXTERN int		Tk_TextWidth _ANSI_ARGS_((Tk_Font font,
-			    CONST char *string, int numChars));
-EXTERN void		Tk_UndefineCursor _ANSI_ARGS_((Tk_Window window));
-EXTERN void		Tk_UnderlineChars _ANSI_ARGS_((Display *display,
-			    Drawable drawable, GC gc, Tk_Font tkfont,
-			    CONST char *source, int x, int y, int firstChar,
-			    int lastChar));
-EXTERN void		Tk_UnderlineTextLayout _ANSI_ARGS_((
-			    Display *display, Drawable drawable, GC gc,
-			    Tk_TextLayout layout, int x, int y,
-			    int underline));
-EXTERN void		Tk_Ungrab _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN void		Tk_UnmaintainGeometry _ANSI_ARGS_((Tk_Window slave,
-			    Tk_Window master));
-EXTERN void		Tk_UnmapWindow _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN void		Tk_UnsetGrid _ANSI_ARGS_((Tk_Window tkwin));
-EXTERN Tk_Window	Tk_EventWindow _ANSI_ARGS_((XEvent *eventPtr));
-EXTERN void		Tk_UpdatePointer _ANSI_ARGS_((Tk_Window tkwin,
-			    int x, int y, int state));
+/*
+ * Allow users to say that they don't want to alter their source to
+ * add the extra argument to Tk_PhotoPutBlock(); DO NOT DEFINE THIS
+ * WHEN BUILDING TK.
+ *
+ * This goes after the inclusion of the stubbed-decls so that the
+ * declarations of what is actually there can be correct.
+ */
+
+#ifdef USE_COMPOSITELESS_PHOTO_PUT_BLOCK
+#   ifdef Tk_PhotoPutBlock
+#       undef Tk_PhotoPutBlock
+#   endif
+#   define Tk_PhotoPutBlock             Tk_PhotoPutBlock_NoComposite
+#   ifdef Tk_PhotoPutZoomedBlock
+#       undef Tk_PhotoPutZoomedBlock
+#   endif
+#   define Tk_PhotoPutZoomedBlock       Tk_PhotoPutZoomedBlock_NoComposite
+#endif /* USE_COMPOSITELESS_PHOTO_PUT_BLOCK */
+
 /*
  * Tcl commands exported by Tk:
  */
 
-EXTERN int		Tk_BellObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_BindCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_BindtagsCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ButtonCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_CanvasObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_CheckbuttonCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ClipboardCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int              Tk_ChooseColorCmd _ANSI_ARGS_((ClientData clientData,
-                            Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_DestroyCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_EntryCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_EventObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_FrameCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_FocusObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_FontObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[]));
-EXTERN int              Tk_GetOpenFileCmd _ANSI_ARGS_((ClientData clientData,
-                            Tcl_Interp *interp, int argc, char **argv));
-EXTERN int              Tk_GetSaveFileCmd _ANSI_ARGS_((ClientData clientData,
-                            Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_GrabCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_GridCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ImageObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_LabelCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ListboxCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_LowerCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_MenuCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_MenubuttonCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int              Tk_MessageBoxCmd _ANSI_ARGS_((ClientData clientData,
-                            Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_MessageCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_OptionCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_PackCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_PlaceCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_PropertyCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_RadiobuttonCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_RaiseCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ScaleCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ScrollbarCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_SelectionCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_SendCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_TextCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_TkObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_TkwaitCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_ToplevelCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_UpdateCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_WinfoObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[]));
-EXTERN int		Tk_WmCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
-
-EXTERN int	TkTileParseProc _ANSI_ARGS_((
-		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value, char *widgRec,
-		    int offset));
-EXTERN Arg	TkTilePrintProc _ANSI_ARGS_((
-		    ClientData clientData, Tk_Window tkwin,
-		    char *widgRec, int offset,
-		    Tcl_FreeProc **freeProcPtr));
-EXTERN int	TkOffsetParseProc _ANSI_ARGS_((
-		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value, char *widgRec,
-		    int offset));
-EXTERN Arg	TkOffsetPrintProc _ANSI_ARGS_((
-		    ClientData clientData, Tk_Window tkwin,
-		    char *widgRec, int offset,
-		    Tcl_FreeProc **freeProcPtr));
-EXTERN int	TkStateParseProc _ANSI_ARGS_((
-		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value,
-		    char *widgRec, int offset));
-EXTERN Arg	TkStatePrintProc _ANSI_ARGS_((
-		    ClientData clientData, Tk_Window tkwin,
-		    char *widgRec, int offset,
-		    Tcl_FreeProc **freeProcPtr));
-EXTERN int	TkOrientParseProc _ANSI_ARGS_((
-		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value,
-		    char *widgRec, int offset));
-EXTERN Arg	TkOrientPrintProc _ANSI_ARGS_((
-		    ClientData clientData, Tk_Window tkwin,
-		    char *widgRec, int offset,
-		    Tcl_FreeProc **freeProcPtr));
-EXTERN int	TkPixelParseProc _ANSI_ARGS_((
-		    ClientData clientData, Tcl_Interp *interp,
-		    Tk_Window tkwin, Arg value,
-		    char *widgRec, int offset));
-EXTERN Arg	TkPixelPrintProc _ANSI_ARGS_((
-		    ClientData clientData, Tk_Window tkwin,
-		    char *widgRec, int offset,
-		    Tcl_FreeProc **freeProcPtr));
-
-EXTERN Tcl_Command	Lang_CreateWidget _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window, Tcl_CmdProc *proc,
+EXTERN Tcl_Command      Lang_CreateWidget _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window, Tcl_ObjCmdProc *proc,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc));
 
-EXTERN Tcl_Command	Lang_CreateImage _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *cmdName, Tcl_CmdProc *proc,
+EXTERN Tcl_Command      Lang_CreateImage _ANSI_ARGS_((Tcl_Interp *interp,
+			    char *cmdName, Tcl_ObjCmdProc *proc,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc,
 			    Tk_ImageType *typePtr));
 
-EXTERN void		Lang_DeleteWidget _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd));
+EXTERN void             Lang_DeleteWidget _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd));
 
-EXTERN void		Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
+EXTERN void             Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *dispName, int screenIndex));
 
-EXTERN Var		LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
+EXTERN Var              LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
 
-EXTERN Tcl_Obj *	LangWidgetObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
-EXTERN Tcl_Obj *	LangFontObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name));
-EXTERN Tcl_Obj *	LangObjectObj _ANSI_ARGS_((Tcl_Interp *interp, char *));
+EXTERN Tcl_Obj *        LangWidgetObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
+EXTERN Tcl_Obj *        LangFontObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name));
+EXTERN Tcl_Obj *        LangObjectObj _ANSI_ARGS_((Tcl_Interp *interp, char *));
 
 #define LangWidgetArg(interp,win) LangObjArg(LangWidgetObj(interp,win),__FILE__,__LINE__)
 #define LangFontArg(interp,font,name) LangObjArg(LangFontObj(interp,font,name),__FILE__,__LINE__)
@@ -1963,17 +1818,40 @@ EXTERN Tcl_Obj *	LangObjectObj _ANSI_ARGS_((Tcl_Interp *interp, char *));
 
 
 #ifndef NO_EXTERN
-EXTERN void		Lang_DeadMainWindow _ANSI_ARGS_((Tcl_Interp *, Tk_Window));
-EXTERN void		Lang_NewMainWindow  _ANSI_ARGS_((Tcl_Interp *, Tk_Window));
-EXTERN void		LangDeadWindow _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
-EXTERN void		LangClientMessage _ANSI_ARGS_((Tcl_Interp *interp,Tk_Window, XEvent *));
+EXTERN void             Lang_DeadMainWindow _ANSI_ARGS_((Tcl_Interp *, Tk_Window));
+EXTERN void             Lang_NewMainWindow  _ANSI_ARGS_((Tcl_Interp *, Tk_Window));
+EXTERN void             LangDeadWindow _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
+EXTERN void             LangClientMessage _ANSI_ARGS_((Tcl_Interp *interp,Tk_Window, XEvent *));
+EXTERN void             LangSelectHook _ANSI_ARGS_((CONST char *what, Tk_Window tkwin,
+                                                   Atom selection, Atom target, Atom type));
 #endif
 
 EXTERN int LangEventCallback _ANSI_ARGS_((ClientData, Tcl_Interp *,XEvent *,Tk_Window,KeySym));
-
-#endif /* RESOURCE_INCLUDED */
+EXTERN int              Tk_GetXSelection _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Atom selection, Atom target,
+			    Tk_GetXSelProc *proc, ClientData clientData));
+EXTERN Tk_Window        Tk_EventWindow _ANSI_ARGS_((XEvent *eventPtr));
+EXTERN char *           Tk_EventInfo _ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr,
+			    KeySym keySym, int *numPtr, int *isNum, int *type,
+			    int num_size, char *numStorage));
 
 #undef TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLIMPORT
 
+#endif /* RC_INVOKED */
+
+/*
+ * end block for C++
+ */
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* _TK */
+
+
+
+
+
+

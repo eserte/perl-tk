@@ -1,18 +1,18 @@
-From  michael@santafe.edu  Fri Mar  3 07:06:55 1995 
-Return-Path: <michael@santafe.edu> 
-Date: Fri, 3 Mar 95 00:03:19 MST 
+From  michael@santafe.edu  Fri Mar  3 07:06:55 1995
+Return-Path: <michael@santafe.edu>
+Date: Fri, 3 Mar 95 00:03:19 MST
 From: michael@santafe.edu (Michael I Angerman)
-Message-Id: <9503030703.AA00785@sfi.santafe.edu> 
-To: nTk@franz.ww.tu-berlin.de 
-Cc: Nick.Ing-Simmons@tiuk.ti.com 
-Cc: perl5-porters@africa.nicoh.com 
-Cc: john@wpi.edu 
-Cc: michael@santafe.edu 
-Subject: Documentation on tkGlue.c 
-P-From: michael@santafe.edu (Michael I Angerman) 
+Message-Id: <9503030703.AA00785@sfi.santafe.edu>
+To: nTk@franz.ww.tu-berlin.de
+Cc: Nick.Ing-Simmons@tiuk.ti.com
+Cc: perl5-porters@africa.nicoh.com
+Cc: john@wpi.edu
+Cc: michael@santafe.edu
+Subject: Documentation on tkGlue.c
+P-From: michael@santafe.edu (Michael I Angerman)
 
 	This is a complete listing of all the functions found in
-tkGlue.c as of version Tk-a13.tar.gz 
+tkGlue.c as of version Tk-a13.tar.gz
 
 	tkGlue.c is a very important file in the Tk distribution and
 so I thought I would begin to document this file since currently there
@@ -144,7 +144,7 @@ NameFromCv(cv)
 ResultAv(interp, who, create)
 
 Blessed(package, sv)
-Boot_Glue 
+Boot_Glue
 CallCallback(sv, flags)
 Call_Tk(info, items, args)
 Check_Eval(interp)

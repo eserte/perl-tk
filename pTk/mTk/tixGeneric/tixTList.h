@@ -1,3 +1,6 @@
+
+/*	$Id: tixTList.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixTList.h --
  *
@@ -27,7 +30,7 @@ typedef struct ListEntry {
     struct ListEntry * next;
     Tix_DItem * iPtr;
     Tk_Uid state;
-    Arg data;			/* user data field */
+    Tcl_Obj * data;			/* user data field */
     int size[2];
     unsigned int selected : 1;
 } ListEntry;
@@ -103,7 +106,7 @@ typedef struct ListStruct {
     ListEntry * dragSite;	/* The current drop site */
 
     /*
-     * Commands 
+     * Commands
      */
     LangCallback *command;		/* The command when user double-clicks */
     LangCallback *browseCmd;		/* The command to call when the selection

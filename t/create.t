@@ -16,18 +16,27 @@ BEGIN
     @class = (
 	# Tk core widgets
 	qw(
-		Button
-		Canvas
-		Checkbutton
-		Entry
 		Frame
+		Toplevel
+
 		Label
-		Listbox
+		Button
+		Checkbutton
 		Radiobutton
+
+		Entry
+		Spinbox
+
+		Listbox
+
 		Scale
 		Scrollbar
+
+		Labelframe
+		Panedwindow
+
+		Canvas
 		Text
-		Toplevel
 	),
 	# Tix core widgets
 	qw(
@@ -45,10 +54,10 @@ BEGIN
 		DirTree
 	),
 	# perl/Tk composites
+	($^O eq 'MSWin32') ? () : qw(ColorEditor),
 	qw(
 		LabEntry
 		LabFrame
-		ColorEditor
 		Optionmenu
 		ROText
 		Table
@@ -57,7 +66,7 @@ BEGIN
 		Dialog
 		DialogBox
 		FileSelect
-		
+
 	)
    );
 
@@ -66,7 +75,7 @@ BEGIN
 			    ($^O eq 'cygwin' and defined($Tk::platform)
 					     and $Tk::platform eq 'MSWin32'));
 
-   plan test => (13*@class+3);
+   plan test => (15*@class+3);
 
   };
 
@@ -96,6 +105,8 @@ foreach my $class (@class)
 
     if (Tk::Exists($w))
       {
+        ok($w->class,$class,"Window class does not match");
+
         if ($w->isa('Tk::Wm'))
           {
 	    # KDE-beta4 wm with policies:
@@ -127,6 +138,27 @@ foreach my $class (@class)
         ok ($@, "", "Error: configure scalar for $class");
         ok (scalar(@dummy),scalar(@$dummy), "Error: scalar config != list config");
 
+        $@ = "";
+        my %skip = (-class => 1);
+        foreach my $opt ($w->CreateOptions)
+         {
+          $skip{$opt} = 1;
+         }
+        foreach my $opt (@dummy)
+         {
+          my @val = @$opt;
+          if (@val != 2 && !exists($skip{$val[0]}) )
+           {
+            eval { $w->configure($val[0],$val[-1]) };
+            if ($@)
+             {
+              print "#$class @val:$@";
+              last;
+             }
+           }
+         }
+        ok($@,"","Cannot re-configure $class");
+
         eval { $mw->update; };
         ok ($@, "", "Error: 'update' after configure for $class widget");
 
@@ -153,7 +185,7 @@ foreach my $class (@class)
       {
         # Widget $class couldn't be created:
 	#	Popup/pack, update, destroy skipped
-	for (1..5) { skip (1,1,1, "skipped because widget could not be created"); }
+	for (1..6) { skip (1,1,1, "skipped because widget could not be created"); }
       }
   }
 

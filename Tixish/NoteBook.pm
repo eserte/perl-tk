@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '3.026'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#26 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tixish/NoteBook.pm#7 $
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -64,9 +64,9 @@ sub Populate
  $w->{'resize'} = 0;
 
  $w->ConfigSpecs(-ipadx => ['PASSIVE', 'ipadX', 'Pad', 0],
-                 -ipady => ['PASSIVE', 'ipadY', 'Pad', 0],
-                 -takefocus => ['SELF', 'takeFocus', 'TakeFocus', 0],
-                 -dynamicgeometry => ['PASSIVE', 'dynamicGeometry', 'DynamicGeometry', 0]);
+		 -ipady => ['PASSIVE', 'ipadY', 'Pad', 0],
+		 -takefocus => ['SELF', 'takeFocus', 'TakeFocus', 0],
+		 -dynamicgeometry => ['PASSIVE', 'dynamicGeometry', 'DynamicGeometry', 0]);
 
  # SetBindings
  $w->bind('<Configure>','MasterGeomProc');
@@ -180,9 +180,9 @@ sub raise
      if ((not defined $oldtop) || ($oldtop ne $child))
       {
        if (defined $childw->{-raisecmd})
-        {
-         $childw->{-raisecmd}->Call($childw);
-        }
+	{
+	 $childw->{-raisecmd}->Call($childw);
+	}
       }
     }
   }
@@ -266,10 +266,10 @@ sub MouseUp {
     my $name = $w->identify($x, $y);
     if ((defined $name) && (defined $w->{'down'}) &&
 	($name eq $w->{'down'}) &&
-        ($w->pagecget($name, -state) eq 'normal')) {
-        $w->raise($name);
+	($w->pagecget($name, -state) eq 'normal')) {
+	$w->raise($name);
     } else {
-        $w->focus($name);
+	$w->focus($name);
     }
 }
 
@@ -278,11 +278,11 @@ sub FocusNext {
     my $name;
 
     if (not defined $w->info('focus')) {
-        $name = $w->info('active');
-        $w->focus($name);
+	$name = $w->info('active');
+	$w->focus($name);
     } else {
-        $name = $w->info('focus' . $dir);
-        $w->focus($name);
+	$name = $w->info('focus' . $dir);
+	$w->focus($name);
     }
 }
 
@@ -291,10 +291,10 @@ sub SetFocusByKey {
 
     my $name = $w->info('focus');
     if (defined $name) {
-        if ($w->pagecget($name, -state) eq 'normal') {
-            $w->raise($name);
-            $w->activate($name);
-        }
+	if ($w->pagecget($name, -state) eq 'normal') {
+	    $w->raise($name);
+	    $w->activate($name);
+	}
     }
 }
 
@@ -303,13 +303,13 @@ sub NoteBookFind {
 
     my $page;
     foreach $page (@{$w->{'windows'}}) {
-        my $i = $w->pagecget($page, -underline);
-        my $c = substr($page, $i, 1);
-        if ($char =~ /$c/) {
-            if ($w->pagecget($page, -state) ne 'disabled') {
-                return $page;
-            }
-        }
+	my $i = $w->pagecget($page, -underline);
+	my $c = substr($page, $i, 1);
+	if ($char =~ /$c/) {
+	    if ($w->pagecget($page, -state) ne 'disabled') {
+		return $page;
+	    }
+	}
     }
     return undef;
 }
@@ -321,16 +321,16 @@ sub FindMenu {
 
     my $page;
     foreach $page (@{$w->{'windows'}}) {
-        my $i = $w->pagecget($page, -underline);
-        my $l = $w->pagecget($page, -label);
-        next if (not defined $l);
-        my $c = substr($l, $i, 1);
-        if ($char =~ /$c/i) {
-            if ($w->pagecget($page, -state) ne 'disabled') {
-                $w->raise($page);
-                return $w;
-            }
-        }
+	my $i = $w->pagecget($page, -underline);
+	my $l = $w->pagecget($page, -label);
+	next if (not defined $l);
+	my $c = substr($l, $i, 1);
+	if ($char =~ /$c/i) {
+	    if ($w->pagecget($page, -state) ne 'disabled') {
+		$w->raise($page);
+		return $w;
+	    }
+	}
     }
     return undef;
 }
@@ -391,44 +391,44 @@ sub Resize {
 
     if ($reqW * $reqH == 0)
      {
-        if ((not defined $w->{-dynamicgeometry}) ||
-            ($w->{-dynamicgeometry} == 0)) {
-            $reqW = 1;
-            $reqH = 1;
+	if ((not defined $w->{-dynamicgeometry}) ||
+	    ($w->{-dynamicgeometry} == 0)) {
+	    $reqW = 1;
+	    $reqH = 1;
 
-            my $childw;
-            foreach $childw ($w->page_widget)
-             {
-                my $cW = $childw->ReqWidth;
-                my $cH = $childw->ReqHeight;
-                $reqW = $cW if ($reqW < $cW);
-                $reqH = $cH if ($reqH < $cH);
-            }
-        } else {
-            if (defined $w->{'topchild'}) {
-                my $topw = $w->page_widget($w->{'topchild'});
-                $reqW = $topw->ReqWidth;
-                $reqH = $topw->ReqHeight;
-            } else {
-                $reqW = 1;
-                $reqH = 1;
-            }
-        }
-        $reqW += $w->{'pad-x1'} + $w->{'pad-x2'} + 2 * (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
-        $reqH += $w->{'pad-y1'} + $w->{'pad-y2'} + 2 * (defined $w->{-ipady} ? $w->{-ipady} : 0);
-        $reqW = ($reqW > $w->{'minW'}) ? $reqW : $w->{'minW'};
-        $reqH = ($reqH > $w->{'minH'}) ? $reqH : $w->{'minH'};
+	    my $childw;
+	    foreach $childw ($w->page_widget)
+	     {
+		my $cW = $childw->ReqWidth;
+		my $cH = $childw->ReqHeight;
+		$reqW = $cW if ($reqW < $cW);
+		$reqH = $cH if ($reqH < $cH);
+	    }
+	} else {
+	    if (defined $w->{'topchild'}) {
+		my $topw = $w->page_widget($w->{'topchild'});
+		$reqW = $topw->ReqWidth;
+		$reqH = $topw->ReqHeight;
+	    } else {
+		$reqW = 1;
+		$reqH = 1;
+	    }
+	}
+	$reqW += $w->{'pad-x1'} + $w->{'pad-x2'} + 2 * (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
+	$reqH += $w->{'pad-y1'} + $w->{'pad-y2'} + 2 * (defined $w->{-ipady} ? $w->{-ipady} : 0);
+	$reqW = ($reqW > $w->{'minW'}) ? $reqW : $w->{'minW'};
+	$reqH = ($reqH > $w->{'minH'}) ? $reqH : $w->{'minH'};
     }
     if (($w->ReqWidth != $reqW) ||
-        ($w->ReqHeight != $reqH)) {
-        $w->{'counter'} = 0 if (not defined $w->{'counter'});
-        if ($w->{'counter'} < 50) {
-            $w->{'counter'}++;
-            $w->GeometryRequest($reqW, $reqH);
-            $w->afterIdle([$w,'Resize']);
-            $w->{'resize'} = 1;
-            return;
-        }
+	($w->ReqHeight != $reqH)) {
+	$w->{'counter'} = 0 if (not defined $w->{'counter'});
+	if ($w->{'counter'} < 50) {
+	    $w->{'counter'}++;
+	    $w->GeometryRequest($reqW, $reqH);
+	    $w->afterIdle([$w,'Resize']);
+	    $w->{'resize'} = 1;
+	    return;
+	}
     }
     $w->{'counter'} = 0;
     $w->raise($w->{'topchild'} || ${$w->{'windows'}}[0]);

@@ -12,10 +12,10 @@ sub floor {
 
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
-        -name     => $demo,
-        -text     => ['This window contains a canvas widget showing the floorplan of Digital Equipment Corporation\'s Western Research Laboratory.  It has three levels.  At any given time one of the levels is active, meaning that you can see its room structure.  To activate a level, click the left mouse button anywhere on it.  As the mouse moves over the active level, the room under the mouse lights up and its room number appears in the "Room:" entry.  You can also type a room number in the entry and the room will light up.', qw/-wraplength 8i/],
-        -title    => 'Floorplan Canvas Demonstration',
-        -iconname => 'floor',
+	-name     => $demo,
+	-text     => ['This window contains a canvas widget showing the floorplan of Digital Equipment Corporation\'s Western Research Laboratory.  It has three levels.  At any given time one of the levels is active, meaning that you can see its room structure.  To activate a level, click the left mouse button anywhere on it.  As the mouse moves over the active level, the room under the mouse lights up and its room number appears in the "Room:" entry.  You can also type a room number in the entry and the room will light up.', qw/-wraplength 8i/],
+	-title    => 'Floorplan Canvas Demonstration',
+	-iconname => 'floor',
     );
 
     my $c = $TOP->Scrolled(qw/Canvas -width 900 -height 500 -relief sunken
@@ -30,7 +30,7 @@ sub floor {
 
     # Choose colors, then fill in the floorplan.
 
-    my %cinfo;			# color information hash
+    my %cinfo;                  # color information hash
     if ($TOP->depth > 1) {
 	$cinfo{'floor_bg1'} = '#a9c1da';
 	$cinfo{outline1} = '#77889a';
@@ -55,16 +55,16 @@ sub floor {
     my %floor_items = ();
     my $active_floor = 0;
     floor_display $c->Subwidget('canvas'), 3, \%floor_labels, \%floor_items,
-        \%cinfo, \$active_floor, $c_entry;
+	\%cinfo, \$active_floor, $c_entry;
 
     # Set up event bindings for the Canvas.
 
     my $floor_number;
     for $floor_number (1..3) {
 	$c->bind("floor${floor_number}", '<1>' =>
-            [\&floor_display, $floor_number, \%floor_labels, \%floor_items, 
+	    [\&floor_display, $floor_number, \%floor_labels, \%floor_items,
 	    \%cinfo, \$active_floor, $c_entry],
-        );
+	);
     }
     $c->bind('room', '<Enter>' => sub {
 	my($c) = @_;
@@ -76,25 +76,25 @@ sub floor {
     $c->bind('room', '<Leave>' => sub {$floor::current_room = ''});
     $c->CanvasBind('<2>' => sub {
 	my($c) = @_;
-        my $e = $c->XEvent;
+	my $e = $c->XEvent;
 	$c->scanMark($e->x, $e->y);
     });
     $c->CanvasBind('<B2-Motion>' => sub {
 	my($c) = @_;
-        my $e = $c->XEvent;
+	my $e = $c->XEvent;
 	$c->scanDragto($e->x, $e->y);
     });
     $c->CanvasBind('<Enter>', => [sub {shift; shift->focus}, $c_entry]);
 
     $c->traceVariable(\$floor::current_room, 'w' =>
-        [sub {
-            my($index, $value, $op, $floor_items, $cinfo) = @_;
-            return if $op eq 'u';
+	[sub {
+	    my($index, $value, $op, $floor_items, $cinfo) = @_;
+	    return if $op eq 'u';
 	    $floor_current_room = $value;
 	    &floor_room_changed($c->Subwidget('canvas'), $floor_items, $cinfo);
-	    $value;		# always return variable's new value
+	    $value;             # always return variable's new value
 	}, \%floor_items, \%cinfo],
-    ); 
+    );
 
 } # floor
 
@@ -133,7 +133,7 @@ sub floor_display {
     # Add the walls and labels for the active floor, along with transparent
     # polygons that define the rooms on the floor.  Make sure that the room
     # polygons are on top.
-	
+
     my $cmd = "floor_fg${active}";
     {
 	no strict qw(refs);
@@ -157,7 +157,7 @@ sub floor_display {
 
 sub floor_room_changed {
 
-    # Whenever the current_room variable changes, this procedure highlights 
+    # Whenever the current_room variable changes, this procedure highlights
     # the current room and unhighlights any previous room.
 
     my($w, $floor_items, $cinfo) = @_;
@@ -168,17 +168,17 @@ sub floor_room_changed {
     my(@c) = $w->coords($item);
     if ($c[0]) {
 	$w->raise(
-            $w->create('polygon', @c,
-	        -fill => $cinfo->{active},
-	        -tags => 'highlight',
-            ),
-        'marker');
+	    $w->create('polygon', @c,
+		-fill => $cinfo->{active},
+		-tags => 'highlight',
+	    ),
+	'marker');
     } # ifend we have coordinates
 
 } # end floor_room_changed
 
 # The following procedures are invoked to instantiate various portions of
-# the building floorplan.  The bodies of these procedures were generated 
+# the building floorplan.  The bodies of these procedures were generated
 # automatically from database files describing the building.
 
 

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkWinRegion.c --
  *
  *	Tk Region emulation code.
@@ -8,12 +8,12 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinRegion.c,v 1.2 1998/09/14 18:24:01 stanton Exp $
+ * RCS: @(#) $Id: tkWinRegion.c,v 1.3 2002/06/14 13:35:49 dkf Exp $
  */
 
 #include "tkWinInt.h"
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -37,7 +37,7 @@ TkCreateRegion()
     memset(&rect, 0, sizeof(RECT));
     return (TkRegion) CreateRectRgnIndirect(&rect);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -60,7 +60,7 @@ TkDestroyRegion(r)
 {
     DeleteObject((HRGN) r);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -89,7 +89,7 @@ TkClipBox(r, rect_return)
     rect_return->width = (short) (rect.right - rect.left);
     rect_return->height = (short) (rect.bottom - rect.top);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -114,7 +114,7 @@ TkIntersectRegion(sra, srb, dr_return)
 {
     CombineRgn((HRGN) dr_return, (HRGN) sra, (HRGN) srb, RGN_AND);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -143,7 +143,7 @@ TkUnionRectWithRegion(rectangle, src_region, dest_region_return)
 	    (HRGN) rectRgn, RGN_OR);
     DeleteObject(rectRgn);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -176,4 +176,29 @@ TkRectInRegion(r, x, y, width, height)
     rect.bottom = y+height;
     rect.right = x+width;
     return RectInRegion((HRGN)r, &rect) ? RectanglePart : RectangleOut;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkSubtractRegion --
+ *
+ *	Compute the set-difference of two regions.
+ *
+ * Results:
+ *	Returns the result in the dr_return region.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkSubtractRegion(sra, srb, dr_return)
+    TkRegion sra;
+    TkRegion srb;
+    TkRegion dr_return;
+{
+    CombineRgn((HRGN) dr_return, (HRGN) sra, (HRGN) srb, RGN_DIFF);
 }

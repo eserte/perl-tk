@@ -1,0 +1,14 @@
+
+For Tk804.025 to build properly on Mac OS X 10.2.6 (Darwin), Perl must
+be built dynamic, rather that the default of static.  Use a Configure
+incantation similar to this:
+
+sh Configure -des useshrplib=true [-Dprefix=/path/to/your/private/perl]
+
+S. Lidie, 2003/07/31
+
+Another style (knowing nothing of Darwin) might be:
+
+sh Configure -des -Duseshrplib [-Dprefix=/path/to/your/private/perl]
+
+NI-S, 2002/08/04

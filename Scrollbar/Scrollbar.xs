@@ -16,26 +16,24 @@
 #include "pTk/tkWin.h"
 #include "pTk/tkWinInt.h"
 #endif
-#include "pTk/tkVMacro.h"   
+#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
-         
-DECLARE_WIN32_VTABLES
+
 DECLARE_VTABLES;
 
 MODULE = Tk::Scrollbar	PACKAGE = Tk
 
-PROTOTYPES: DISABLE                  
-     
+PROTOTYPES: DISABLE
+
 void
 scrollbar(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tk_ScrollbarCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,1,Tk_ScrollbarCmd,items,&ST(0)));
  }
 
 BOOT:
  {
-  IMPORT_WIN32_VTABLES
   IMPORT_VTABLES;
  }

@@ -24,7 +24,7 @@ sub statement
  if (defined($rest) && length($rest))
   {
    my @words = split(/\s+/,$rest);
-   my $cmd = shift(@words); 
+   my $cmd = shift(@words);
    my $i = 0;
    while ($i < @words)
     {
@@ -93,7 +93,7 @@ LOOP:
        my @args = split(/\s/,$args);
        if (@args)
         {
-         print PERL " my (",join(',',map('$'.$_,@args)),") = \@_;\n"; 
+         print PERL " my (",join(',',map('$'.$_,@args)),") = \@_;\n";
         }
        block($body);
        print PERL "}\n";

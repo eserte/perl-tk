@@ -6,7 +6,7 @@ use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#27 $
+$VERSION = '3.006'; # $Id: //depot/Tkutf8/ptked#6 $
 
 my %opt;
 INIT

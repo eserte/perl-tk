@@ -12,7 +12,7 @@ package Plot;
 require 5.005_03;
 
 use vars qw/$VERSION @ISA/;
-$VERSION = '3.016'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#16 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Plot.pm#6 $
 
 use Tk::Frame;
 use base  qw/Tk::Frame/;
@@ -103,7 +103,7 @@ sub Populate {
 
     my $w_view = $cw->Button(
         -text    => 'View Composite Plot Widget',
-        -command => [\&::view_widget_code,
+        -command => [\&::view_widget,
 	             Tk->findINC('demos/widget_lib/Plot.pm'),
                     ],
     );

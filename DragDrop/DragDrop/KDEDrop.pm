@@ -1,14 +1,14 @@
 package Tk::DragDrop::KDEDrop;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DragDrop/KDEDrop.pm#7 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/KDEDrop.pm#4 $
 use base qw(Tk::DragDrop::Rect);
 
 Tk::DragDrop->Type('KDE');
 
 sub NewDrag
 {
- my ($class,$token) = @_;  
+ my ($class,$token) = @_;
  $token->{$class} = {};
 }
 
@@ -30,12 +30,12 @@ sub Drop
    $w->property('set','DndSelection','STRING',8,"file:$string",'root');
    my $data = pack('LLLLL',128,0,0,$e->X,$e->Y);
    $w->SendClientMessage('DndProtocol',$site->{id},32,$data);
-  } 
+  }
  else
   {
    warn $@ if $@;
   }
-}    
+}
 
 sub FindSite
 {
@@ -61,9 +61,9 @@ sub FindSite
      $hash->{$best} = $site;
     }
    return $site;
-  } 
+  }
  return undef;
-}          
+}
 
 sub Enter
 {

@@ -1,7 +1,7 @@
 package Tk::TList;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/TList/TList.pm#18 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/TList/TList.pm#6 $
 
 use Tk qw(Ev $XS_VERSION);
 

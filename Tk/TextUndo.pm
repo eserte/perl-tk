@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '3.054'; # $Id: //depot/Tk8/Tk/TextUndo.pm#54 $
+$VERSION = '4.013'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#13 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -173,7 +173,7 @@ sub CheckForRedoShuffle
  while ($w->SizeRedo)
   {
    my $ref = $w->ShiftRedo;
-   $w->PushUndo($ref);		
+   $w->PushUndo($ref);
   }
 
  # Finally undo whatever we did to compensate for doing it

@@ -1,3 +1,6 @@
+
+/*	$Id: tixMwm.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixMwm.c --
  *
@@ -144,7 +147,7 @@ static void		StructureProc _ANSI_ARGS_((ClientData clientData,
 
 static Tcl_HashTable mwmTable;
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -221,7 +224,7 @@ Tix_MwmCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixMwmProtocolHandler --
@@ -260,7 +263,7 @@ TixMwmProtocolHandler(clientData, eventPtr)
     }
     return 0;
 }
-
+
 static int
 MwmDecor(interp, string)
     Tcl_Interp * interp;
@@ -419,7 +422,7 @@ int SetMwmDecorations(interp, wmPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 
-	    if (Tcl_GetBoolean(interp, argv[i+1], &value) != TCL_OK) {
+	    if (Tcl_GetBooleanFromObj(interp, argv[i+1], &value) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 
@@ -697,7 +700,7 @@ int SetMwmTransientFor(interp, wmPtr, mainWindow, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -761,7 +764,7 @@ StructureProc(clientData, eventPtr)
 	ckfree((char*)wmPtr);
     }
 }
-
+
 static Tix_MwmInfo *
 GetMwmInfo(interp, tkwin)
     Tcl_Interp * interp;
@@ -880,7 +883,7 @@ IsMwmRunning(interp, wmPtr)
 	Window	top, parent, *children;
 	unsigned int num_children;
 	int	returnVal = 0;
-	unsigned i;
+	unsigned	i;
 
 	if (XQueryTree(Tk_Display(wmPtr->tkwin), root, &top, &parent,
 	    &children, &num_children)) {

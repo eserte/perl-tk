@@ -30,7 +30,7 @@ $vscroll->pack(-side => 'right', -fill => 'y');
 $hscroll->pack(-side => 'bottom', -fill => 'x');
 $canvas->pack(-expand => 'yes', -fill => 'both');
 $canvas->configure(-scrollregion => ['0', '0', '10c', '10c']);
-						  
+
 # Add a few items to scroll
 add_item($display, $canvas, 1);
 add_item($display, $canvas, 5);
@@ -51,12 +51,12 @@ sub add_item
     my $button1 = $c->Checkbutton();
     $c->create(('window', '1c', "$y" . 'c'),
 	       -anchor => 'w', -window => $button1);
-    
+
     # Rectangle
     my $yp = $y + 2;
     $c->create(('rectangle', '1.2c', "$y" . 'c', '4c', "$yp" . 'c'),
 	       -fill => 'SkyBlue2');
-    
+
     # This button is owned by the canvas, and doesn't go wrong
     my $button2 = $c->Checkbutton();
     $c->create(('window', '4.2c', "$y" . 'c'),

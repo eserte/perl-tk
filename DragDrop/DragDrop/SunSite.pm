@@ -2,7 +2,7 @@ package Tk::DragDrop::SunSite;
 require Tk::DropSite;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#11 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/SunSite.pm#5 $
 
 use Tk::DragDrop::SunConst;
 use base  qw(Tk::DropSite);
@@ -14,21 +14,20 @@ sub SunDrop
 {
  my ($w,$site) = @_;
  my $e = $w->XEvent;
- my ($atom,$t,$x,$y,$id,$flags) = unpack('LLSSLL',$e->A);
- $x -= $site->X;
- $y -= $site->Y;
- my $seln = $w->GetAtomName($atom);
+ my ($seln,$t,$x,$y,$id,$flags) = unpack('LLSSLL',$e->A);
+ $w->MakeAtom($seln);
  if ($flags & &ACK_FLAG)
   {
-   eval {local $SIG{__DIE__}; $w->SelectionGet('-selection'=>$seln,'_SUN_DRAGDROP_ACK');};
+   Tk::catch { $w->SelectionGet('-selection'=>$seln,'_SUN_DRAGDROP_ACK') };
   }
- $site->Callback(-dropcommand => $seln, $x, $y);
+ my @targ = $w->SelectionGet(-selection => $seln,'TARGETS');
+ $site->Apply(-dropcommand => $x, $y, $seln, SunDrop => \@targ);
  if ($flags & &TRANSIENT_FLAG)
   {
-   eval {local $SIG{__DIE__};  $w->SelectionGet('-selection'=>$seln,'_SUN_DRAGDROP_DONE');};
+   Tk::catch { $w->SelectionGet('-selection'=>$seln,'_SUN_DRAGDROP_DONE') };
   }
  $w->configure('-relief' => $w->{'_DND_RELIEF_'}) if (defined $w->{'_DND_RELIEF_'});
- $site->Callback(-entercommand => 0, $x, $y);
+ $site->Apply(-entercommand => $x, $y, 0);
 }
 
 sub SunPreview

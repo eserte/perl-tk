@@ -1,3 +1,6 @@
+
+/*	$Id: tixHLHdr.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  *  tixHLHdr.c ---
  *
@@ -30,7 +33,7 @@ static void		FreeHeader _ANSI_ARGS_((Tcl_Interp  *interp,
 static HListHeader*	AllocHeader _ANSI_ARGS_((Tcl_Interp *interp,
 			    WidgetPtr wPtr));
 static HListHeader*	Tix_HLGetHeader _ANSI_ARGS_((Tcl_Interp * interp,
-			    WidgetPtr wPtr, Arg string,
+			    WidgetPtr wPtr, Tcl_Obj * string,
 			    int requireIPtr));
 
 static Tk_ConfigSpec headerConfigSpecs[] = {
@@ -118,16 +121,16 @@ static HListHeader*
 Tix_HLGetHeader(interp, wPtr, string, requireIPtr)
     Tcl_Interp * interp;
     WidgetPtr wPtr;
-    Arg string;
+    Tcl_Obj * string;
     int requireIPtr;
 {
     int column;
 
-    if (Tcl_GetInt(interp, string, &column) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, string, &column) != TCL_OK) {
 	return NULL;
     }
     if (column >= wPtr->numColumns || column < 0) {
-	Tcl_AppendResult(interp, "Column \"", LangString(string),
+	Tcl_AppendResult(interp, "Column \"", Tcl_GetString(string),
 	    "\" does not exist", (char*)NULL);
 	return NULL;
     }
@@ -353,7 +356,7 @@ Tix_HLHeader(clientData, interp, argc, argv)
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
 }
-
+
 /*----------------------------------------------------------------------
  * "header cget" sub command
  *----------------------------------------------------------------------
@@ -375,7 +378,7 @@ Tix_HLHdrCGet(clientData, interp, argc, argv)
     return Tix_ConfigureValue2(interp, wPtr->dispData.tkwin,
 	(char*)hPtr, headerConfigSpecs, hPtr->iPtr, argv[1], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "header configure" sub command
  *----------------------------------------------------------------------
@@ -418,7 +421,7 @@ Tix_HLHdrConfig(clientData, interp, argc, argv)
     }
 }
 
-
+
 /*----------------------------------------------------------------------
  * "header create" sub command
  *----------------------------------------------------------------------
@@ -545,7 +548,7 @@ Tix_HLHdrExist(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "header size" sub command
  *----------------------------------------------------------------------

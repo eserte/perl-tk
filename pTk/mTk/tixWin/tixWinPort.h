@@ -1,3 +1,6 @@
+
+/*	$Id: tixWinPort.h,v 1.1.1.1 2000/05/17 11:08:55 idiscovery Exp $	*/
+
 /*
  * tixWinPort.h --
  *
@@ -31,13 +34,6 @@
 #         include <windows.h>
 #    endif
 #undef WIN32_LEAN_AND_MEAN
-
-struct _TixpSubRegion {
-    Pixmap pixmap;
-    int origX, origY;
-    int x, y;
-    int width, height;
-};
 
 typedef unsigned char UNSIGNED_CHAR;
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1998 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1998-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -36,7 +36,7 @@ PerlSetupProc(ClientData data, int flags)
     if (!(flags & TCL_FILE_EVENTS)) {
 	return;
     }
-    
+
     /*
      * Check to see if there is a ready file.  If so, poll.
      */
@@ -48,7 +48,7 @@ PerlSetupProc(ClientData data, int flags)
 	}
     }
 #endif
-}                    
+}
 
 static void
 PerlCheckProc(data, flags)
@@ -61,7 +61,7 @@ PerlCheckProc(data, flags)
     if (!(flags & TCL_FILE_EVENTS)) {
 	return;
     }
-    
+
     /*
      * Queue events for any ready files that don't already have events
      * queued (caused by persistent states that won't generate WinSock
@@ -79,7 +79,7 @@ PerlCheckProc(data, flags)
 	}
     }
 #endif
-}        
+}
 
 static int
 PerlEventProc(Tcl_Event *evPtr, int flags)
@@ -96,7 +96,7 @@ PerlEventProc(Tcl_Event *evPtr, int flags)
      * matches the event.  We do this rather than simply dereferencing
      * the handle in the event so that files can be deleted while the
      * event is in the queue.
-     */                 
+     */
 #if 0
     for (infoPtr = firstFilePtr; infoPtr != NULL; infoPtr = infoPtr->nextPtr) {
 	if (fileEvPtr->infoPtr == infoPtr) {

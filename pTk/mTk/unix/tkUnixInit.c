@@ -1,4 +1,4 @@
-/* 
+/*
  * tkUnixInit.c --
  *
  *	This file contains Unix-specific interpreter initialization
@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnixInit.c,v 1.3 1998/09/14 18:23:57 stanton Exp $
+ * RCS: @(#) $Id: tkUnixInit.c,v 1.5 2002/01/25 21:09:37 dgp Exp $
  */
 
 #include "tkInt.h"
@@ -21,7 +21,7 @@
  */
 #include "tkInitScript.h"
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -32,7 +32,7 @@
  *
  * Results:
  *	Returns a standard Tcl result.  Leaves an error message or result
- *	in interp->result.
+ *	in the interp's result.
  *
  * Side effects:
  *	Sets "tk_library" Tcl variable, runs "tk.tcl" script.
@@ -44,23 +44,20 @@ int
 TkpInit(interp)
     Tcl_Interp *interp;
 {
-    Var variable;
-    char *libDir;
+    CONST char *libDir;
 
-    variable = LangFindVar( interp, NULL,  "tk_library");
-    libDir = LangString(Tcl_GetVar(interp, variable, TCL_GLOBAL_ONLY));
+    libDir = Tcl_GetVar(interp, "tk_library", TCL_GLOBAL_ONLY);
     if (libDir == NULL || *libDir == '\0') {
-	Tcl_SetVar(interp, variable, TK_LIBRARY, TCL_GLOBAL_ONLY);
+	Tcl_SetVar(interp, "tk_library", TK_LIBRARY, TCL_GLOBAL_ONLY);
     }
-    LangFreeVar(variable);
     TkCreateXEventSource();
-#if 0
+#ifndef _LANG
     return Tcl_Eval(interp, initScript);
 #else
     return TCL_OK;
 #endif
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -84,7 +81,7 @@ TkpGetAppName(interp, namePtr)
     Tcl_Interp *interp;
     Tcl_DString *namePtr;	/* A previously initialized Tcl_DString. */
 {
-    char *p, *name;
+    CONST char *p, *name;
 
     name = Tcl_GetVar(interp, "argv0", TCL_GLOBAL_ONLY);
     if ((name == NULL) || (*name == 0)) {
@@ -97,7 +94,7 @@ TkpGetAppName(interp, namePtr)
     }
     Tcl_DStringAppend(namePtr, name, -1);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -117,15 +114,16 @@ TkpGetAppName(interp, namePtr)
 
 void
 TkpDisplayWarning(msg, title)
-    char *msg;			/* Message to be displayed. */
-    char *title;		/* Title of warning. */
+    CONST char *msg;		/* Message to be displayed. */
+    CONST char *title;		/* Title of warning. */
 {
     Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
     if (errChannel) {
-	Tcl_Write(errChannel, title, -1);
-	Tcl_Write(errChannel, ": ", 2);
-	Tcl_Write(errChannel, msg, -1);
-	Tcl_Write(errChannel, "\n", 1);
+	Tcl_WriteChars(errChannel, title, -1);
+	Tcl_WriteChars(errChannel, ": ", 2);
+	Tcl_WriteChars(errChannel, msg, -1);
+	Tcl_WriteChars(errChannel, "\n", 1);
     }
 }
+
 

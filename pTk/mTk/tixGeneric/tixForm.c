@@ -1,3 +1,6 @@
+
+/*	$Id: tixForm.c,v 1.1.1.1 2000/05/17 11:08:41 idiscovery Exp $	*/
+
 /*
  * tixForm.c --
  *
@@ -254,10 +257,10 @@ static int TixFm_SetGrid(clientData, interp, argc, argv)
     }
     else {
 	int x, y;
-	if (Tcl_GetInt(interp, argv[1], &x) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[1], &x) != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	if (Tcl_GetInt(interp, argv[2], &y) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[2], &y) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 
@@ -394,7 +397,7 @@ static int TixFm_Spring(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 
-    if (Tcl_GetInt(interp, argv[2], &strength) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[2], &strength) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -562,7 +565,7 @@ static int TixFm_SetClient(clientData, interp, argc, argv)
 	    }
 	    TixFm_UnlinkFromMaster(clientPtr);
 	}
-	
+
 	/* attach the client to the master */
 	TixFm_AddToMaster(masterPtr, clientPtr);
     }
@@ -786,7 +789,7 @@ static void ArrangeGeometry(clientData)
 	    return;
 	}
     }
-	
+
     masterPtr->numRequests = 0;
 
     if (!Tk_IsMapped(masterPtr->tkwin)) {
@@ -1248,7 +1251,7 @@ MasterStructureProc(clientData, eventPtr)
 	break;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1517,7 +1520,7 @@ TixFm_GetFormInfo(tkwin, create)
 	    clientPtr->tkwin	= tkwin;
 	    clientPtr->master	= NULL;
 	    clientPtr->next	= NULL;
-	
+
 	    for (i=0; i< 2; i++) {
 		for (j=0; j< 2; j++) {
 		    clientPtr->attType[i][j]    = ATT_NONE;
@@ -1528,19 +1531,19 @@ TixFm_GetFormInfo(tkwin, create)
 		    clientPtr->pad[i][j]        = 0;
 		    clientPtr->side[i][j].pcnt  = 0;
 		    clientPtr->side[i][j].disp  = 0;
-		
+
 		    clientPtr->spring[i][j]  	= -1;
 		    clientPtr->strWidget[i][j]  = 0;
 		}
 		clientPtr->springFail[i]  	= 0;
 		clientPtr->fill[i]  		= 0;
 	    }
-	
+
 	    Tcl_SetHashValue(hPtr, clientPtr);
-	
+
 	    Tk_CreateEventHandler(tkwin, StructureNotifyMask,
 		TixFm_StructureProc, (ClientData) clientPtr);
-	
+
 	    return clientPtr;
 	}
     }
@@ -1841,7 +1844,7 @@ PlaceWithSpring(clientPtr, axis, which)
 	    if ((ptr = ptr->strWidget[axis][1]) == 0) {
 		goto done1;
 	    }
-	
+
 	    switch (ptr->attType[axis][0]) {
 	      case ATT_GRID:
 	      case ATT_PARALLEL:
@@ -1894,7 +1897,7 @@ PlaceWithSpring(clientPtr, axis, which)
     /* Make sure this is a good list (neither ends are none) */
     if (springs.head == NULL) {
 	/* this should never happen, just to make sure */
-	goto fail;	
+	goto fail;
     }
     if (springs.head->clientPtr->attType[axis][0] == ATT_NONE) {
 	goto fail;
@@ -1913,7 +1916,7 @@ PlaceWithSpring(clientPtr, axis, which)
 
 	totalSize += size + link->clientPtr->pad[axis][0] +
 	  link->clientPtr->pad[axis][1];
-	
+
 	if (link->clientPtr->spring[axis][0] > 0) {
 	    totalStrength += link->clientPtr->spring[axis][0];
 	}

@@ -4,7 +4,9 @@
 use strict;
 use Tk;
 use Test::More;
-plan tests => 12;
+# Win32 gets one <visibility> event on toplevel and one on content (as expected)
+# UNIX/X is more complex, as windows overlap (deliberately)
+plan tests => ($^O eq 'MSWin32') ? 6 : 12;
 
 my $event = '<Visibility>';
 my $why;

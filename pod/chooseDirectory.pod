@@ -1,0 +1,60 @@
+#  Copyright (c) 1998-2000 by Scriptics Corporation.
+#  All rights reserved.
+#
+#  RCS: @(#) $Id: chooseDirectory.n,v 1.1 2000/01/27 00:23:10 ericm Exp $
+#
+
+=head1 NAME
+
+tk_chooseDirectory - pops up a dialog box for the user to select a directory.
+
+=for category  Tk Generic Methods
+
+=head1 SYNOPSIS
+
+B<tk_chooseDirectory >?I<option value ...>?
+
+=head1 DESCRIPTION
+
+The procedure B<tk_chooseDirectory> pops up a dialog box for the
+user to select a directory. The following I<option-value> pairs are
+possible as command line arguments:
+
+=over 4
+
+=item B<-initialdir> I<dirname>
+
+Specifies that the directories in I<directory> should be displayed
+when the dialog pops up. If this parameter is not specified, then
+the directories in the current working directory are displayed. If the
+parameter specifies a relative path, the return value will convert the
+relative path to an absolute path.  This option may not always work on
+the Macintosh.  This is not a bug. Rather, the I<General Controls>
+control panel on the Mac allows the end user to override the
+application default directory.
+
+=item B<-parent> $widget
+
+Makes $widget the logical parent of the dialog. The dialog
+is displayed on top of its parent window.
+
+=item B<-title> I<titleString>
+
+Specifies a string to display as the title of the dialog box. If this
+option is not specified, then a default title will be displayed.
+
+=item B<-mustexist> I<boolean>
+
+Specifies whether the user may specify non-existant directories.  If
+this parameter is true, then the user may only select directories that
+already exist.  The default value is I<false>.
+
+=back
+
+=head1 SEE ALSO
+
+L<Tk::getOpenFile>, L<Tk::getOpenFile>
+
+=head1 KEYWORDS
+
+directory selection dialog

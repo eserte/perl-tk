@@ -18,19 +18,19 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Translated to perk/Tk by Slaven Rezic <eserte@cs.tu-berlin.de>.
+# Translated to perl/Tk by Slaven Rezic <slaven@rezic.de>.
 #
 
 #----------------------------------------------------------------------
 #
-#		      F I L E   D I A L O G
+#                     F I L E   D I A L O G
 #
 #----------------------------------------------------------------------
 # tkFDialog --
 #
-#	Implements the TK file selection dialog. This dialog is used when
-#	the tk_strictMotif flag is set to false. This procedure shouldn't
-#	be called directly. Call tk_getOpenFile or tk_getSaveFile instead.
+#       Implements the TK file selection dialog. This dialog is used when
+#       the tk_strictMotif flag is set to false. This procedure shouldn't
+#       be called directly. Call tk_getOpenFile or tk_getSaveFile instead.
 #
 
 package Tk::FBox;
@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/FBox.pm#23 $
+$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/FBox.pm#14 $
 
 use base qw(Tk::Toplevel);
 
@@ -49,8 +49,17 @@ sub import {
     if (defined $_[1] and $_[1] eq 'as_default') {
 	local $^W = 0;
 	package Tk;
-	*FDialog      = \&Tk::FBox::FDialog;
-	*MotifFDialog = \&Tk::FBox::FDialog;
+	if ($Tk::VERSION < 804) {
+	    *FDialog      = \&Tk::FBox::FDialog;
+	    *MotifFDialog = \&Tk::FBox::FDialog;
+	} else {
+	    *tk_getOpenFile = sub {
+		Tk::FBox::FDialog("tk_getOpenFile", @_);
+	    };
+	    *tk_getSaveFile = sub {
+		Tk::FBox::FDialog("tk_getSaveFile", @_);
+	    };
+	}
     }
 }
 
@@ -78,7 +87,7 @@ sub Populate {
 		      -command => ['SetPath', $w]);
     my $upBtn = $f1->Button;
     if (!defined $updirImage->{$w->MainWindow}) {
-        $updirImage->{$w->MainWindow} = $w->Bitmap(-data => <<EOF);
+	$updirImage->{$w->MainWindow} = $w->Bitmap(-data => <<EOF);
 #define updir_width 28
 #define updir_height 16
 static char updir_bits[] = {
@@ -97,12 +106,13 @@ EOF
     $dirMenu->pack(-expand => 'yes', -fill => 'both', -padx => 4);
 
     $w->{'icons'} = my $icons =
-      $w->IconList(-browsecmd => ['ListBrowse', $w],
-		   -command   => ['ListInvoke', $w],
+      $w->IconList(-command => ['OkCmd', $w],
 		  );
+    $icons->bind('<<ListboxSelect>>' => [$w, 'ListBrowse']);
 
     # f2: the frame with the OK button and the "file name" field
     my $f2 = $w->Frame(-bd => 0);
+#XXX File name => File names if multiple
     my $f2_lab = $f2->Label(-text => 'File name:', -anchor => 'e',
 			    -width => 14, -underline => 5, -pady => 0);
     $w->{'ent'} = my $ent = $f2->Entry;
@@ -182,9 +192,9 @@ EOF
 
     $w->bind('<Alt-d>',[$dirMenu,'focus']);
     $w->bind('<Alt-t>',sub  {
-                             if ($typeMenuBtn->cget(-state) eq 'normal') {
-                             $typeMenuBtn->focus;
-                             } });
+			     if ($typeMenuBtn->cget(-state) eq 'normal') {
+			     $typeMenuBtn->focus;
+			     } });
     $w->bind('<Alt-n>',[$ent,'focus']);
     $w->bind('<KeyPress-Escape>',[$cancelBtn,'invoke']);
     $w->bind('<Alt-c>',[$cancelBtn,'invoke']);
@@ -201,17 +211,18 @@ EOF
     $w->SetPath(_cwd());
 
     $w->ConfigSpecs(-defaultextension => ['PASSIVE', undef, undef, undef],
-                    -filetypes        => ['PASSIVE', undef, undef, undef],
-                    -initialdir       => ['PASSIVE', undef, undef, undef],
-                    -initialfile      => ['PASSIVE', undef, undef, undef],
-#		    -sortcmd          => ['PASSIVE', undef, undef, sub { lc($a) cmp lc($b) }],
+		    -filetypes        => ['PASSIVE', undef, undef, undef],
+		    -initialdir       => ['PASSIVE', undef, undef, undef],
+		    -initialfile      => ['PASSIVE', undef, undef, undef],
+#                   -sortcmd          => ['PASSIVE', undef, undef, sub { lc($a) cmp lc($b) }],
 		    -sortcmd          => ['PASSIVE', undef, undef, sub { lc($_[0]) cmp lc($_[1]) }],
-                    -title            => ['PASSIVE', undef, undef, undef],
-                    -type             => ['PASSIVE', undef, undef, 'open'],
-                    -filter           => ['PASSIVE', undef, undef, '*'],
-                    -force            => ['PASSIVE', undef, undef, 0],
-                    'DEFAULT'         => [$icons],
-                   );
+		    -title            => ['PASSIVE', undef, undef, undef],
+		    -type             => ['PASSIVE', undef, undef, 'open'],
+		    -filter           => ['PASSIVE', undef, undef, '*'],
+		    -force            => ['PASSIVE', undef, undef, 0],
+		    -multiple         => ['PASSIVE', undef, undef, 0],
+		    'DEFAULT'         => [$icons],
+		   );
     # So-far-failed attempt to break reference loops ...
     $w->_OnDestroy(qw(dirMenu icons typeMenuLab typeMenuBtn okBtn ent updateId));
     $w;
@@ -223,7 +234,16 @@ sub Show {
 
     $w->configure(@_);
 
-    $w->transient($w->Parent);
+    # Dialog boxes should be transient with respect to their parent,
+    # so that they will always stay on top of their parent window.  However,
+    # some window managers will create the window as withdrawn if the parent
+    # window is withdrawn or iconified.  Combined with the grab we put on the
+    # window, this can hang the entire application.  Therefore we only make
+    # the dialog transient if the parent is viewable.
+
+    if (Tk::Exists($w->Parent) && $w->Parent->viewable) {
+	$w->transient($w->Parent);
+    }
 
     # set the default directory and selection according to the -initial
     # settings
@@ -239,6 +259,15 @@ sub Show {
 	}
 	$w->{'selectFile'} = $w->cget(-initialfile);
     }
+
+    # Set -multiple to a one or zero value (not other boolean types
+    # like "yes") so we can use it in tests more easily.
+    if ($w->cget('-type') ne 'open') {
+	$w->configure(-multiple => 0);
+    } else {
+	$w->configure(-multiple => !!$w->cget('-multiple'));
+    }
+    $w->{'icons'}->configure(-multiple => $w->cget('-multiple'));
 
     # Initialize the file types menu
     my $typeMenuBtn = $w->{'typeMenuBtn'};
@@ -259,7 +288,7 @@ sub Show {
 	$typeMenuBtn->configure(-state => 'normal');
 	$typeMenuLab->configure(-state => 'normal');
     } else {
-#XXX	$w->configure(-filter => '*');
+#XXX    $w->configure(-filter => '*');
 	$typeMenuBtn->configure(-state => 'disabled',
 				-takefocus => 0);
 	$typeMenuLab->configure(-state => 'disabled');
@@ -269,6 +298,7 @@ sub Show {
     # Withdraw the window, then update all the geometry information
     # so we know how big it wants to be, then center the window in the
     # display and de-iconify it.
+#XXX use Tk::Wm::Popup? or Tk::PlaceWindow?
     $w->withdraw;
     $w->idletasks;
     my $x = int($w->screenwidth / 2 - $w->reqwidth / 2 - $w->parent->vrootx);
@@ -278,13 +308,16 @@ sub Show {
     {
 	my $title = $w->cget(-title);
 	if (!defined $title) {
-	    $title = ($w->cget(-type) eq 'open' ? 'Open' : 'Save As');
+	    my $type = $w->cget(-type);
+	    $title = ($type eq 'dir') ? 'Choose Directory'
+                     : ($type eq 'save') ? 'Save As' : 'Open';
 	}
 	$w->title($title);
     }
 
     $w->deiconify;
     # Set a grab and claim the focus too.
+#XXX use Tk::setFocusGrab when it's available
     my $oldFocus = $w->focusCurrent;
     my $oldGrab = $w->grabCurrent;
     my $grabStatus = $oldGrab->grabStatus if ($oldGrab);
@@ -294,8 +327,7 @@ sub Show {
     $ent->delete(0, 'end');
     if (defined $w->{'selectFile'} && $w->{'selectFile'} ne '') {
 	$ent->insert(0, $w->{'selectFile'});
-	$ent->selectionFrom(0);
-	$ent->selectionTo('end');
+	$ent->selectionRange(0,'end');
 	$ent->icursor('end');
     }
 
@@ -324,10 +356,10 @@ sub Show {
 
 # tkFDialog_UpdateWhenIdle --
 #
-#	Creates an idle event handler which updates the dialog in idle
-#	time. This is important because loading the directory may take a long
-#	time and we don't want to load the same directory for multiple times
-#	due to multiple concurrent events.
+#       Creates an idle event handler which updates the dialog in idle
+#       time. This is important because loading the directory may take a long
+#       time and we don't want to load the same directory for multiple times
+#       due to multiple concurrent events.
 #
 sub UpdateWhenIdle {
     my $w = shift;
@@ -340,9 +372,9 @@ sub UpdateWhenIdle {
 
 # tkFDialog_Update --
 #
-#	Loads the files and directories into the IconList widget. Also
-#	sets up the directory option menu for quick access to parent
-#	directories.
+#       Loads the files and directories into the IconList widget. Also
+#       sets up the directory option menu for quick access to parent
+#       directories.
 #
 sub Update {
     my $w = shift;
@@ -392,8 +424,8 @@ sub Update {
     my $cwd = _cwd();
     local *FDIR;
     if (opendir(FDIR, $cwd)) {
-        my @files;
-#	my $sortcmd = $w->cget(-sortcmd);
+	my @files;
+#       my $sortcmd = $w->cget(-sortcmd);
 	my $sortcmd = sub { $w->cget(-sortcmd)->($a,$b) };
 	my $flt = $w->cget(-filter);
 	my $fltcb;
@@ -402,23 +434,21 @@ sub Update {
 	} else {
 	    $flt = _rx_to_glob($flt);
 	}
-        foreach my $f (sort $sortcmd readdir(FDIR)) {
-            next if $f eq '.' or $f eq '..';
+	foreach my $f (sort $sortcmd readdir(FDIR)) {
+	    next if $f eq '.' or $f eq '..';
 	    if ($fltcb) {
 		next if !$fltcb->($w, $f, $cwd);
 	    } else {
 		next if -f $f && $f !~ m!$flt!;
 	    }
-            if (-d $f) {
+	    if (-d $f) {
 		$icons->Add($folder, $f);
 	    } else {
 		push @files, $f;
 	    }
 	}
 	closedir(FDIR);
-	foreach my $f (@files) {
-	    $icons->Add($file, $f);
-	}
+	$icons->Add($file, @files);
     }
 
     $icons->Arrange;
@@ -448,7 +478,7 @@ sub Update {
 
 # tkFDialog_SetPathSilently --
 #
-# 	Sets data(selectPath) without invoking the trace procedure
+#       Sets data(selectPath) without invoking the trace procedure
 #
 sub SetPathSilently {
     my($w, $path) = @_;
@@ -466,6 +496,7 @@ sub SetPath {
 
 # This proc gets called whenever data(filter) is set
 #
+#XXX here's much more code in the tcl version ... check it out
 sub SetFilter {
     my($w, $title, $filter) = @_;
     $w->configure(-filter => $filter);
@@ -477,41 +508,46 @@ sub SetFilter {
 
 # tkFDialogResolveFile --
 #
-#	Interpret the user's text input in a file selection dialog.
-#	Performs:
+#       Interpret the user's text input in a file selection dialog.
+#       Performs:
 #
-#	(1) ~ substitution
-#	(2) resolve all instances of . and ..
-#	(3) check for non-existent files/directories
-#	(4) check for chdir permissions
+#       (1) ~ substitution
+#       (2) resolve all instances of . and ..
+#       (3) check for non-existent files/directories
+#       (4) check for chdir permissions
 #
 # Arguments:
-#	context:  the current directory you are in
-#	text:	  the text entered by the user
-#	defaultext: the default extension to add to files with no extension
+#       context:  the current directory you are in
+#       text:     the text entered by the user
+#       defaultext: the default extension to add to files with no extension
 #
 # Return value:
-#	[list $flag $directory $file]
+#       [list $flag $directory $file]
 #
-#	 flag = OK	: valid input
-#	      = PATTERN	: valid directory/pattern
-#	      = PATH	: the directory does not exist
-#	      = FILE	: the directory exists but the file doesn't
-#			  exist
-#	      = CHDIR	: Cannot change to the directory
-#	      = ERROR	: Invalid entry
+#        flag = OK      : valid input
+#             = PATTERN : valid directory/pattern
+#             = PATH    : the directory does not exist
+#             = FILE    : the directory exists but the file doesn't
+#                         exist
+#             = CHDIR   : Cannot change to the directory
+#             = ERROR   : Invalid entry
 #
-#	 directory      : valid only if flag = OK or PATTERN or FILE
-#	 file           : valid only if flag = OK or PATTERN
+#        directory      : valid only if flag = OK or PATTERN or FILE
+#        file           : valid only if flag = OK or PATTERN
 #
-#	directory may not be the same as context, because text may contain
-#	a subdirectory name
+#       directory may not be the same as context, because text may contain
+#       a subdirectory name
 #
 sub ResolveFile {
     my($context, $text, $defaultext) = @_;
     my $appPWD = _cwd();
     my $path = JoinFile($context, $text);
-    $path = "$path$defaultext" if ($path !~ /\..+$/) and defined $defaultext;
+    # If the file has no extension, append the default.  Be careful not
+    # to do this for directories, otherwise typing a dirname in the box
+    # will give back "dirname.extension" instead of trying to change dir.
+    if (!-d $path && $path !~ /\..+$/ && defined $defaultext) {
+	$path = "$path$defaultext";
+    }
     # Cannot just test for existance here as non-existing files are
     # not an error for getSaveFile type dialogs.
     # return ('ERROR', $path, "") if (!-e $path);
@@ -566,15 +602,14 @@ sub EntFocusIn {
     my $w = shift;
     my $ent = $w->{'ent'};
     if ($ent->get ne '') {
-	$ent->selectionFrom(0);
-	$ent->selectionTo('end');
+	$ent->selectionRange(0, 'end');
 	$ent->icursor('end');
     } else {
 	$ent->selectionClear;
     }
-    $w->{'icons'}->Unselect;
+#XXX is this missing in the tcl version, too???    $w->{'icons'}->Selection('clear');
     my $okBtn = $w->{'okBtn'};
-    if ($w->cget(-type) eq 'open') {
+    if ($w->cget(-type) ne 'save') {
 	$okBtn->configure(-text => 'Open');
     } else {
 	$okBtn->configure(-text => 'Save');
@@ -592,10 +627,30 @@ sub ActivateEnt {
     my $w = shift;
     my $ent = $w->{'ent'};
     my $text = $ent->get;
-    $text =~ s/^\s+//;
-    $text =~ s/\s+$//;
+    if ($w->cget(-multiple)) {
+	# For the multiple case we have to be careful to get the file
+	# names as a true list, watching out for a single file with a
+	# space in the name.  Thus we query the IconList directly.
+
+	$w->{'selectFile'} = [];
+	for my $item ($w->{'icons'}->Curselection) {
+	    $w->VerifyFileName($w->{'icons'}->Get($item));
+	}
+    } else {
+	$w->VerifyFileName($text);
+    }
+}
+
+# Verification procedure
+#
+sub VerifyFileName {
+    my($w, $text) = @_;
+#XXX leave this here?
+#    $text =~ s/^\s+//;
+#    $text =~ s/\s+$//;
     my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text,
 					  $w->cget(-defaultextension));
+    my $ent = $w->{'ent'};
     if ($flag eq 'OK') {
 	if ($file eq '') {
 	    # user has entered an existing (sub)directory
@@ -603,7 +658,11 @@ sub ActivateEnt {
 	    $ent->delete(0, 'end');
 	} else {
 	    $w->SetPathSilently($path);
-	    $w->{'selectFile'} = $file;
+	    if ($w->cget(-multiple)) {
+		push @{ $w->{'selectFile'} }, $file;
+	    } else {
+		$w->{'selectFile'} = $file;
+	    }
 	    $w->Done;
 	}
     } elsif ($flag eq 'PATTERN') {
@@ -615,34 +674,34 @@ sub ActivateEnt {
 			   -type => 'OK',
 			   -message => 'File "' . TclFileJoin($path, $file)
 			   . '" does not exist.');
-	    $ent->selection('from', 0);
-	    $ent->selection('to', 'end');
+	    $ent->selectionRange(0, 'end');
 	    $ent->icursor('end');
-	} else {
+	} elsif ($w->cget(-type) eq 'save') {
 	    $w->SetPathSilently($path);
-	    $w->{'selectFile'} = $file;
+	    if ($w->cget(-multiple)) {
+		push @{ $w->{'selectFile'} }, $file;
+	    } else {
+		$w->{'selectFile'} = $file;
+	    }
 	    $w->Done;
 	}
     } elsif ($flag eq 'PATH') {
 	$w->messageBox(-icon => 'warning',
 		       -type => 'OK',
 		       -message => "Directory \'$path\' does not exist.");
-	$ent->selection('from', 0);
-	$ent->selection('to', 'end');
+	$ent->selectionRange(0, 'end');
 	$ent->icursor('end');
     } elsif ($flag eq 'CHDIR') {
 	$w->messageBox(-type => 'OK',
 		       -message => "Cannot change to the directory \"$path\".\nPermission denied.",
 		       -icon => 'warning');
-	$ent->selection('from', 0);
-	$ent->selection('to', 'end');
+	$ent->selectionRange(0, 'end');
 	$ent->icursor('end');
     } elsif ($flag eq 'ERROR') {
 	$w->messageBox(-type => 'OK',
 		       -message => "Invalid file name \"$path\".",
 		       -icon => 'warning');
-	$ent->selection('from', 0);
-	$ent->selection('to', 'end');
+	$ent->selectionRange(0, 'end');
 	$ent->icursor('end');
     }
 }
@@ -720,14 +779,24 @@ sub TclFileSplit {
 #
 sub OkCmd {
     my $w = shift;
-    my $text = $w->{'icons'}->Get;
-    if (defined $text and $text ne '') {
-	my $file = JoinFile($w->{'selectPath'}, $text);
+
+    my $filenames = [];
+    for my $item ($w->{'icons'}->Curselection) {
+	push @$filenames, $w->{'icons'}->Get($item);
+    }
+
+    if ((@$filenames && !$w->cget('-multiple')) ||
+	($w->cget('-multiple') && @$filenames == 1)) {
+	my $filename = $filenames->[0];
+	my $file = JoinFile($w->{'selectPath'}, $filename);
 	if (-d $file) {
-	    $w->ListInvoke($text);
+	    $w->ListInvoke($filename);
 	    return;
 	}
+    } elsif ($w->cget('-type') eq 'dir') {
+	$w->Done($w->{'selectPath'});
     }
+
     $w->ActivateEnt;
 }
 
@@ -742,15 +811,35 @@ sub CancelCmd {
 # keys, etc)
 #
 sub ListBrowse {
-    my($w, $text) = @_;
-    return if ($text eq '');
-    my $file = JoinFile($w->{'selectPath'}, $text);
+    my($w) = @_;
+
+    my $text = [];
+    for my $item ($w->{'icons'}->Curselection) {
+	push @$text, $w->{'icons'}->Get($item);
+    }
+    return if @$text == 0;
+    my $isDir;
+    if (@$text > 1) {
+	my $newtext = [];
+	for my $file (@$text) {
+	    my $fullfile = JoinFile($w->{'selectPath'}, $file);
+	    if (!-d $fullfile) {
+		push @$newtext, $file;
+	    }
+	}
+	$text = $newtext;
+	$isDir = 0;
+    } else {
+	my $file = JoinFile($w->{'selectPath'}, $text->[0]);
+	$isDir = -d $file;
+    }
     my $ent = $w->{'ent'};
     my $okBtn = $w->{'okBtn'};
-    unless (-d $file) {
-	$ent->delete(0, 'end');
-	$ent->insert(0, $text);
-	if ($w->cget(-type) eq 'open') {
+    if (!$isDir) {
+	$ent->delete(qw(0 end));
+	$ent->insert(0, "@$text"); # XXX quote!
+
+	if ($w->cget('-type') ne 'save') {
 	    $okBtn->configure(-text => 'Open');
 	} else {
 	    $okBtn->configure(-text => 'Save');
@@ -764,9 +853,9 @@ sub ListBrowse {
 # Return key, etc)
 #
 sub ListInvoke {
-    my($w, $text) = @_;
-    return if ($text eq '');
-    my $file = JoinFile($w->{'selectPath'}, $text);
+    my($w, @filenames) = @_;
+    return if !@filenames;
+    my $file = JoinFile($w->{'selectPath'}, $filenames[0]);
     if (-d $file) {
 	my $appPWD = _cwd();
 	if (!ext_chdir($file)) {
@@ -778,48 +867,55 @@ sub ListInvoke {
 	    $w->SetPath($file);
 	}
     } else {
-        my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text);
-        if ($flag ne 'OK') {
-            $w->messageBox(-type => 'OK',
-                           -message => "Cannot resolve $w->{'selectPath'}/$text.",
-                           -icon => 'error');
-        } else {
-            $path = JoinFile($path, $file);
-            $w->Done($path);
-        }
+	if ($w->cget('-multiple')) {
+	    $w->{'selectFile'} = [@filenames];
+	} else {
+	    $w->{'selectFile'} = $file;
+	}
+	$w->Done;
     }
 }
 
 # tkFDialog_Done --
 #
-#	Gets called when user has input a valid filename.  Pops up a
-#	dialog box to confirm selection when necessary. Sets the
-#	tkPriv(selectFilePath) variable, which will break the "tkwait"
-#	loop in tkFDialog and return the selected filename to the
-#	script that calls tk_getOpenFile or tk_getSaveFile
+#       Gets called when user has input a valid filename.  Pops up a
+#       dialog box to confirm selection when necessary. Sets the
+#       tkPriv(selectFilePath) variable, which will break the "tkwait"
+#       loop in tkFDialog and return the selected filename to the
+#       script that calls tk_getOpenFile or tk_getSaveFile
 #
 sub Done {
     my $w = shift;
-    my $_selectFilePath = (@_) ? shift : '';
-    if ($_selectFilePath eq '') {
-	$_selectFilePath = JoinFile($w->{'selectPath'}, $w->{'selectFile'});
-	if (-e $_selectFilePath and
-	    $w->cget(-type) eq 'save' and
+    my $selectFilePath = (@_) ? shift : '';
+    if ($selectFilePath eq '') {
+	if ($w->cget('-multiple')) {
+	    $selectFilePath = [];
+	    for my $f (@{ $w->{'selectFile'} }) {
+		push @$selectFilePath, JoinFile($w->{'selectPath'}, $f);
+	    }
+	} else {
+	    $selectFilePath = JoinFile($w->{'selectPath'},
+				       $w->{'selectFile'});
+	}
+	if ($w->cget(-type) eq 'save' and
+	    -e $selectFilePath and
 	    !$w->cget(-force)) {
 	    my $reply = $w->messageBox
 	      (-icon => 'warning',
 	       -type => 'YesNo',
-	       -message => "File \"$_selectFilePath\" already exists.\nDo you want to overwrite it?");
+	       -message => "File \"$selectFilePath\" already exists.\nDo you want to overwrite it?");
 	    return unless (lc($reply) eq 'yes');
 	}
     }
-    $w->{'selectFilePath'} = ($_selectFilePath ne '' ? $_selectFilePath : undef);
+    $w->{'selectFilePath'} = ($selectFilePath ne '' ? $selectFilePath : undef);
 }
 
 sub FDialog {
     my $cmd = shift;
     if ($cmd =~ /Save/) {
 	push @_, -type => 'save';
+    } elsif ($cmd =~ /Directory/) {
+        push @_, -type => 'dir';
     }
     Tk::DialogWrapper('FBox', $cmd, @_);
 }
@@ -834,10 +930,10 @@ sub GetFileTypes {
     my $in = shift;
     my %fileTypes;
     foreach my $t (@$in) {
-        if (@$t < 2  || @$t > 3) {
+	if (@$t < 2  || @$t > 3) {
 	    require Carp;
 	    Carp::croak("bad file type \"$t\", should be \"typeName [extension ?extensions ...?] ?[macType ?macTypes ...?]?\"");
-        }
+	}
 	push @{ $fileTypes{$t->[0]} }, (ref $t->[1] eq 'ARRAY'
 					? @{ $t->[1] }
 					: $t->[1]);
@@ -847,27 +943,27 @@ sub GetFileTypes {
     my %hasDoneType;
     my %hasGotExt;
     foreach my $t (@$in) {
-        my $label = $t->[0];
-        my @exts;
+	my $label = $t->[0];
+	my @exts;
 
-        next if (exists $hasDoneType{$label});
+	next if (exists $hasDoneType{$label});
 
-        my $name = "$label (";
+	my $name = "$label (";
 	my $sep = '';
-        foreach my $ext (@{ $fileTypes{$label} }) {
-            next if ($ext eq '');
-            $ext =~ s/^\./*./;
-            if (!exists $hasGotExt{$label}->{$ext}) {
-                $name .= "$sep$ext";
-                push @exts, $ext;
-                $hasGotExt{$label}->{$ext}++;
-            }
-            $sep = ',';
-        }
-        $name .= ')';
-        push @types, [$name, \@exts];
+	foreach my $ext (@{ $fileTypes{$label} }) {
+	    next if ($ext eq '');
+	    $ext =~ s/^\./*./;
+	    if (!exists $hasGotExt{$label}->{$ext}) {
+		$name .= "$sep$ext";
+		push @exts, $ext;
+		$hasGotExt{$label}->{$ext}++;
+	    }
+	    $sep = ',';
+	}
+	$name .= ')';
+	push @types, [$name, \@exts];
 
-        $hasDoneType{$label}++;
+	$hasDoneType{$label}++;
     }
 
     return @types;
@@ -927,7 +1023,7 @@ sub _rx_to_glob {
     $arg =~ s!\*!.*!g;
     $arg = "^" . $arg . "\$";
     if ($] >= 5.005) {
-	$arg = qr($arg);
+	$arg = qr/$arg/;
     }
     $arg;
 }
