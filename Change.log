@@ -1,3 +1,25 @@
+Change 3049 on 2003/12/19 by nick@llama
+
+	tk8.4.5 tests for image1 etc. already existing with
+	Tcl_GetCommandInfo() on the image, so we need to honour
+	that and return info for images.
+
+Change 3048 on 2003/12/19 by nick@llama
+
+	Trivial typo in dirtree comment
+
+Change 3047 on 2003/12/19 by nick@llama
+
+	Generated files
+
+Change 3046 on 2003/12/19 by nick@dromedary
+
+	Raw merge of tcl/tk8.4.5
+
+Change 3043 on 2003/12/14 by nick@llama
+
+	Steve's widget patch
+
 Change 3042 on 2003/12/14 by nick@llama
 
 	Switch $VERSION stuff to new style when file

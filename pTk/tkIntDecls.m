@@ -198,6 +198,10 @@
 #  define TkGetMainInfoList (*TkintdeclsVptr->V_TkGetMainInfoList)
 #endif
 
+#ifndef TkGetOptionSpec
+#  define TkGetOptionSpec (*TkintdeclsVptr->V_TkGetOptionSpec)
+#endif
+
 #ifndef TkGetPointerCoords
 #  define TkGetPointerCoords (*TkintdeclsVptr->V_TkGetPointerCoords)
 #endif

@@ -117,6 +117,7 @@ demos/demos/widget_lib/entry3.pl
 demos/demos/widget_lib/filebox.pl
 demos/demos/widget_lib/floor.pl
 demos/demos/widget_lib/form.pl
+demos/demos/widget_lib/hello.pl
 demos/demos/widget_lib/hscale.pl
 demos/demos/widget_lib/icon.pl
 demos/demos/widget_lib/image1.pl
@@ -124,6 +125,7 @@ demos/demos/widget_lib/image2.pl
 demos/demos/widget_lib/items.pl
 demos/demos/widget_lib/labelframe.pl
 demos/demos/widget_lib/labels.pl
+demos/demos/widget_lib/mega.pl
 demos/demos/widget_lib/menbut.pl
 demos/demos/widget_lib/menus.pl
 demos/demos/widget_lib/menus2.pl
@@ -140,6 +142,7 @@ demos/demos/widget_lib/ruler.pl
 demos/demos/widget_lib/sayings.pl
 demos/demos/widget_lib/search.pl
 demos/demos/widget_lib/showVars.pl
+demos/demos/widget_lib/slide.pl
 demos/demos/widget_lib/spin.pl
 demos/demos/widget_lib/states.pl
 demos/demos/widget_lib/style.pl

@@ -7,7 +7,7 @@
  * Copyright (c) 1998-1999 by Scriptics Corporation.
  * All rights reserved.
  *
- * RCS: @(#) $Id: tclWinInit.c,v 1.40 2003/02/27 03:47:09 chengyemao Exp $
+ * RCS: @(#) $Id: tclWinInit.c,v 1.40.2.2 2003/11/10 20:32:34 dgp Exp $
  */
 
 #include "tclWinInt.h"
@@ -58,6 +58,12 @@ typedef struct {
 #ifndef PROCESSOR_ARCHITECTURE_MSIL
 #define PROCESSOR_ARCHITECTURE_MSIL  8
 #endif
+#ifndef PROCESSOR_ARCHITECTURE_AMD64
+#define PROCESSOR_ARCHITECTURE_AMD64 9
+#endif
+#ifndef PROCESSOR_ARCHITECTURE_IA32_ON_WIN64
+#define PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 10
+#endif
 #ifndef PROCESSOR_ARCHITECTURE_UNKNOWN
 #define PROCESSOR_ARCHITECTURE_UNKNOWN 0xFFFF
 #endif
@@ -68,14 +74,15 @@ typedef struct {
  */
 
 
-#define NUMPLATFORMS 3
+#define NUMPLATFORMS 4
 static char* platforms[NUMPLATFORMS] = {
-    "Win32s", "Windows 95", "Windows NT"
+    "Win32s", "Windows 95", "Windows NT", "Windows CE"
 };
 
-#define NUMPROCESSORS 9
+#define NUMPROCESSORS 11
 static char* processors[NUMPROCESSORS] = {
-    "intel", "mips", "alpha", "ppc", "shx", "arm", "ia64", "alpha64", "msil"
+    "intel", "mips", "alpha", "ppc", "shx", "arm", "ia64", "alpha64", "msil",
+    "amd64", "ia32_on_win64"
 };
 
 /* Used to store the encoding used for binary files */
@@ -190,7 +197,7 @@ TclpInitLibraryPath(path)
      */
 
     sprintf(installLib, "lib/tcl%s", TCL_VERSION);
-    sprintf(developLib, "../tcl%s/library", TCL_PATCH_LEVEL);
+    sprintf(developLib, "tcl%s/library", TCL_PATCH_LEVEL);
 
     /*
      * Look for the library relative to default encoding dir.
@@ -245,7 +252,25 @@ TclpInitLibraryPath(path)
      */
 
     if (path != NULL) {
-	Tcl_SplitPath(path, &pathc, &pathv);
+	int i, origc;
+	CONST char **origv;
+
+	Tcl_SplitPath(path, &origc, &origv);
+	pathc = 0;
+	pathv = (CONST char **) ckalloc((unsigned int)(origc * sizeof(char *)));
+	for (i=0; i< origc; i++) {
+	    if (origv[i][0] == '.') {
+		if (strcmp(origv[i], ".") == 0) {
+		    /* do nothing */
+		} else if (strcmp(origv[i], "..") == 0) {
+		    pathc--;
+		} else {
+		    pathv[pathc++] = origv[i];
+		}
+	    } else {
+		pathv[pathc++] = origv[i];
+	    }
+	}
 	if (pathc > 2) {
 	    str = pathv[pathc - 2];
 	    pathv[pathc - 2] = installLib;
@@ -300,6 +325,7 @@ TclpInitLibraryPath(path)
 	    Tcl_ListObjAppendElement(NULL, pathPtr, objPtr);
 	    Tcl_DStringFree(&ds);
 	}
+	ckfree((char *) origv);
 	ckfree((char *) pathv);
     }
 

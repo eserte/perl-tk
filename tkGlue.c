@@ -3463,32 +3463,35 @@ int
 Tcl_GetCommandInfo (Tcl_Interp *interp, CONST char *cmdName, Tcl_CmdInfo *infoPtr)
 {
  dTHX;
- if (*cmdName == '.')
+ HV *hv = InterpHv(interp,1);
+ SV **svp = hv_fetch(hv,cmdName,strlen(cmdName),0);
+ /* Widgets, images and named fonts get put in main hash */
+ if (svp && *svp)
   {
-   HV *hv = InterpHv(interp,1);
-   SV **svp = hv_fetch(hv,cmdName,strlen(cmdName),0);
+   Lang_CmdInfo *info = WindowCommand(*svp,NULL,0);
+   *infoPtr = info->Tk;
+   return 1;
+  }
+ /* widgets are special cased elsewhere */
+ else if (*cmdName != '.')
+  {
+   HV *cm = FindHv(aTHX_ interp, "Tcl_GetCommandInfo", 1, CMD_KEY);
+   SV **svp = hv_fetch(cm,cmdName,strlen(cmdName),0);
    if (svp && *svp)
     {
-     Lang_CmdInfo *info = WindowCommand(*svp,NULL,0);
-     *infoPtr = info->Tk;
+     memcpy(infoPtr,SvPVX(*svp),sizeof(Tcl_CmdInfo));
      return 1;
     }
-  }
- else
-  {
-   CV *cv = TkXSUB(cmdName,NULL,NULL);
-   if (!cv)
+   else if (0)
     {
-     return EXPIRE((interp,"Cannot find %s", cmdName));
-    }
-   else
-    {
-     HV *cm = FindHv(aTHX_ interp, "Tcl_GetCommandInfo", 1, CMD_KEY);
-     SV **svp = hv_fetch(cm,cmdName,strlen(cmdName),0);
-     if (svp && *svp)
+     /* If we didn't find the info but this is supposed to
+        be a known Tk builtin then something may have gone wrong
+        but "after" seems to occur regularly
+      */
+     CV *cv = TkXSUB(cmdName,NULL,NULL);
+     if (cv)
       {
-       memcpy(infoPtr,SvPVX(*svp),sizeof(Tcl_CmdInfo));
-       return 1;
+       LangDebug("No Tcl_GetCommandInfo for %s\n",cmdName);
       }
     }
   }

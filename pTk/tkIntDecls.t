@@ -267,6 +267,11 @@ VFUNC(int,TkGetInterpNames,V_TkGetInterpNames,_ANSI_ARGS_((Tcl_Interp * interp,
 VFUNC(TkMainInfo *,TkGetMainInfoList,V_TkGetMainInfoList,_ANSI_ARGS_((void)))
 #endif /* #ifndef TkGetMainInfoList */
 
+#ifndef TkGetOptionSpec
+VFUNC(CONST Tk_OptionSpec *,TkGetOptionSpec,V_TkGetOptionSpec,_ANSI_ARGS_((CONST char * name,
+				Tk_OptionTable optionTable)))
+#endif /* #ifndef TkGetOptionSpec */
+
 #ifndef TkGetPointerCoords
 VFUNC(void,TkGetPointerCoords,V_TkGetPointerCoords,_ANSI_ARGS_((Tk_Window tkwin,
 				int * xPtr, int * yPtr)))

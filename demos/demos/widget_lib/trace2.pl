@@ -99,7 +99,7 @@ sub trace2 {
     $TOP = $MW->WidgetDemo(
         -name             => $demo,
         -text             => "This demonstration derives a new Text widget whose contents are modified using a normal Perl variable.",
-        -title            => 'Contents of a Text idget tied to a variable',
+        -title            => 'Contents of a Text widget tied to a variable',
         -iconname         => 'trace2',
     );
 

@@ -1,4 +1,4 @@
-# DirTree, diplay directory tree.
+# DirTree, display directory tree.
 
 use Tk;
 use Tk::DirTree;

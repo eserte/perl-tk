@@ -13,7 +13,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tcl.h,v 1.153.2.6 2003/07/16 22:06:04 hobbs Exp $
+ * RCS: @(#) $Id: tcl.h,v 1.153.2.8 2003/10/22 22:35:46 andreas_kupries Exp $
  */
 #ifndef _TCL
 #define _TCL
@@ -57,10 +57,10 @@ extern "C" {
 #define TCL_MAJOR_VERSION   8
 #define TCL_MINOR_VERSION   4
 #define TCL_RELEASE_LEVEL   TCL_FINAL_RELEASE
-#define TCL_RELEASE_SERIAL  4
+#define TCL_RELEASE_SERIAL  5
 
 #define TCL_VERSION	    "8.4"
-#define TCL_PATCH_LEVEL	    "8.4.4"
+#define TCL_PATCH_LEVEL	    "8.4.5"
 
 /*
  * The following definitions set up the proper options for Windows
@@ -1670,6 +1670,7 @@ typedef struct Tcl_GlobTypeData {
 #define TCL_GLOB_TYPE_FILE		(1<<4)
 #define TCL_GLOB_TYPE_LINK		(1<<5)
 #define TCL_GLOB_TYPE_SOCK		(1<<6)
+#define TCL_GLOB_TYPE_MOUNT		(1<<7)
 
 #define TCL_GLOB_PERM_RONLY		(1<<0)
 #define TCL_GLOB_PERM_HIDDEN		(1<<1)

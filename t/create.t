@@ -127,13 +127,16 @@ foreach my $class (@class)
             eval { $w->pack; };
 	    ok ($@, "", "Can't pack a $class widget")
           }
+        print "# $class update\n";
         eval { $mw->update; };
         ok ($@, "", "Error during 'update' for $class widget");
 
         my @dummy;
+        print "# $class configure list\n";
         eval { @dummy = $w->configure; };
         ok ($@, "", "Error: configure list for $class");
         my $dummy;
+        print "# $class configure scalar\n";
         eval { $dummy = $w->configure; };
         ok ($@, "", "Error: configure scalar for $class");
         ok (scalar(@dummy),scalar(@$dummy), "Error: scalar config != list config");
@@ -159,9 +162,11 @@ foreach my $class (@class)
          }
         ok($@,"","Cannot re-configure $class");
 
+        print "# $class update post-configure\n";
         eval { $mw->update; };
         ok ($@, "", "Error: 'update' after configure for $class widget");
 
+        print "# $class destroy\n";
         eval { $w->destroy; };
         ok($@, "", "can't destroy $class widget");
         ok(!Tk::Exists($w), 1, "$class: widget not really destroyed");

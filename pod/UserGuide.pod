@@ -1,24 +1,27 @@
 =head1 NAME
 
-perl/Tk - Writing Tk applications in perl5.
+Perl/Tk - Writing Tk applications in Perl 5
 
 =for category Introduction
 
 =head1 DESCRIPTION
 
-This manual page is for beginners.  It assumes you know some perl,
-and have got perl+Tk running.
-Please run the 'widget' demo before reading this text; it will teach you
-the various widget types supported by Tk.
+This document is for beginners.  It assumes you know some Perl, and
+have it and Tk running.  If you are not currently reading this
+document courtesy of the B<widget> demonstration program, please be
+sure to run B<widget>, as it will teach you the various widget types
+supported by Tk and how to use them. B<widget> should be installed in
+your default path, so type I<widget> at a command prompt.
 
-=head1 Some background
+=head1 Some Background
 
-Tk GUI programming is event-driven.  (This may already be familiar to you.)
-In event-driven programs, the main GUI loop is outside of the user program
-and inside the GUI library.  This loop will watch all events of interest,
-and activate the correct handler procedures to handle these events.
-Some of these handler procedures may be user-supplied; others will be part
-of the library.
+Tk GUI programming is event-driven.  (This may already be familiar to
+you.)  In event-driven programs, the main GUI loop is outside of the
+user program and inside the GUI library.  This loop - initiated by
+calling B<MainLoop> - watches all events of interest and activate
+the correct handler procedures to handle these events.  Some of these
+handler procedures may be user-supplied; others will be part of the
+library.
 
 For a programmer, this means that you're not watching what is happening;
 instead, you are requested by the toolkit to perform actions whenever
@@ -27,7 +30,7 @@ So, you're not watching for 'raise window / close window / redraw window'
 requests, but you tell the toolkit which routine will handle such cases,
 and the toolkit will call the procedures when required.
 
-=head1 First requirements
+=head1 First Requirements
 
 Any perl program that uses Tk needs to include C<use Tk>.
 A program should also use C<use strict> and the B<-w> switch to ensure

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclWinPipe.c,v 1.33.2.2 2003/07/16 19:34:14 mdejong Exp $
+ * RCS: @(#) $Id: tclWinPipe.c,v 1.33.2.5 2003/10/21 22:57:18 andreas_kupries Exp $
  */
 
 #include "tclWinInt.h"
@@ -1577,15 +1577,19 @@ BuildCommandLine(
 	    arg = executable;
 	} else {
 	    arg = argv[i];
-	    Tcl_DStringAppend(&ds, " ", 1);
 	}
+
+	if(Tcl_DStringLength(&ds) > 0) Tcl_DStringAppend(&ds, " ", 1);
 
 	quote = 0;
 	if (arg[0] == '\0') {
 	    quote = 1;
 	} else {
-	    for (start = arg; *start != '\0'; start++) {
-		if (isspace(*start)) { /* INTL: ISO space. */
+	    int count;
+	    Tcl_UniChar ch;
+	    for (start = arg; *start != '\0'; start += count) {
+	        count = Tcl_UtfToUniChar(start, &ch);
+		if (Tcl_UniCharIsSpace(ch)) { /* INTL: ISO space. */
 		    quote = 1;
 		    break;
 		}
@@ -2629,6 +2633,9 @@ TclWinAddProcess(hProcess, id)
     DWORD id;                  /* Global process identifier */
 {
     ProcInfo *procPtr = (ProcInfo *) ckalloc(sizeof(ProcInfo));
+
+    PipeInit();
+
     procPtr->hProcess = hProcess;
     procPtr->dwProcessId = id;
     Tcl_MutexLock(&pipeMutex);

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkMenuDraw.c,v 1.3.20.1 2003/07/15 13:59:06 vincentdarley Exp $
+ * RCS: @(#) $Id: tkMenuDraw.c,v 1.3.20.2 2003/11/12 00:04:53 hobbs Exp $
  */
 
 #include "tkMenu.h"
@@ -993,6 +993,7 @@ TkPostSubmenu(interp, menuPtr, mePtr)
 
 	result = LangMethodCall(interp, menuPtr->postedCascade->namePtr,
 				"unpost", 0, 0);
+
 	menuPtr->postedCascade = NULL;
 	if (result != TCL_OK) {
 	    return result;
