@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/FBox.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/FBox.pm#11 $
 
 use base qw(Tk::Toplevel);
 
@@ -372,31 +372,21 @@ sub Update {
     my $icons = $w->{'icons'};
     $icons->DeleteAll;
 
-    # Make the dir list
-    my %hasDoneDir;
-    foreach my $f (sort { lc($a) cmp lc($b) } glob('.* *')) {
-	next if $f eq '.' or $f eq '..';
-	if (-d "./$f" and not exists $hasDoneDir{$f}) {
-	    $icons->Add($folder, $f);
-	    $hasDoneDir{$f}++;
+    # Make the dir & file list
+    my $flt = join('|', split(' ', $w->cget(-filter)) );
+    $flt =~ s!([\.\+])!\\$1!g;
+    $flt =~ s!\*!.*!g;
+    if( opendir( FDIR,  Cwd::cwd() )) {
+      my @files;
+        foreach my $f (sort { lc($a) cmp lc($b) } readdir FDIR) {
+          next if $f eq '.' or $f eq '..';
+          if (-d $f) { $icons->Add($folder, $f); }
+          elsif( $f =~ m!$flt$! ) { push( @files, $f ); } 
 	}
+      closedir( FDIR );
+      foreach my $f ( @files ) { $icons->Add($file, $f); }
     }
 
-    # Make the file list
-    my @files;
-    if ($w->cget(-filter) eq '*') {
-	@files = sort { lc($a) cmp lc($b) } glob('.* *');
-    } else {
-	@files = sort { lc($a) cmp lc($b) } glob($w->cget(-filter));
-    }
-    my $top = 0;
-    my %hasDoneFile;
-    foreach my $f (@files) {
-	if (-f "./$f" and not exists $hasDoneFile{$f}) {
-	    $icons->Add($file, $f);
-	    $hasDoneFile{$f}++;
-	}
-    }
     $icons->Arrange;
 
     # Update the Directory: option menu

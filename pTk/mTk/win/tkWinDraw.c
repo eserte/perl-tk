@@ -110,6 +110,7 @@ typedef BOOL (CALLBACK *WinDrawFunc) _ANSI_ARGS_((HDC dc,
  * Forward declarations for procedures defined in this file:
  */
 
+static HPEN		SetUpGraphicsPort _ANSI_ARGS_((GC gc));
 static POINT *		ConvertPoints _ANSI_ARGS_((XPoint *points, int npoints,
 			    int mode, RECT *bbox));
 static void		DrawOrFillArc _ANSI_ARGS_((Display *display,
@@ -885,42 +886,7 @@ XDrawLines(display, d, gc, points, npoints, mode)
 
     dc = TkWinGetDrawableDC(display, d, &state);
 
-    if (!tkpIsWin32s && (gc->line_width > 1)) {
-	LOGBRUSH lb;
-	DWORD style;
-
-	lb.lbStyle = BS_SOLID;
-	lb.lbColor = gc->foreground;
-	lb.lbHatch = 0;
-
-	style = PS_GEOMETRIC|PS_COSMETIC;
-	switch (gc->cap_style) {
-	    case CapNotLast:
-	    case CapButt:
-		style |= PS_ENDCAP_FLAT; 
-		break;
-	    case CapRound:
-		style |= PS_ENDCAP_ROUND; 
-		break;
-	    default:
-		style |= PS_ENDCAP_SQUARE; 
-		break;
-	}
-	switch (gc->join_style) {
-	    case JoinMiter: 
-		style |= PS_JOIN_MITER; 
-		break;
-	    case JoinRound:
-		style |= PS_JOIN_ROUND; 
-		break;
-	    default:
-		style |= PS_JOIN_BEVEL; 
-		break;
-	}
-	pen = ExtCreatePen(style, gc->line_width, &lb, 0, NULL);
-    } else {
-	pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
-    }
+    pen = SetUpGraphicsPort(gc);
     RenderObject(dc, gc, points, npoints, mode, pen, Polyline);
     DeleteObject(pen);
     
@@ -1030,7 +996,7 @@ XDrawRectangle(display, d, gc, x, y, width, height)
 
     dc = TkWinGetDrawableDC(display, d, &state);
 
-    pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
+    pen = SetUpGraphicsPort(gc);
     oldPen = SelectObject(dc, pen);
     oldBrush = SelectObject(dc, GetStockObject(NULL_BRUSH));
     SetROP2(dc, tkpWinRopModes[gc->function]);
@@ -1192,7 +1158,7 @@ DrawOrFillArc(display, d, gc, x, y, width, height, start, extent, fill)
      * difference in pixel definitions between X and Windows.
      */
 
-    pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
+    pen = SetUpGraphicsPort(gc);
     oldPen = SelectObject(dc, pen);
     if (!fill) {
 	/*
@@ -1214,6 +1180,105 @@ DrawOrFillArc(display, d, gc, x, y, width, height, start, extent, fill)
     }
     DeleteObject(SelectObject(dc, oldPen));
     TkWinReleaseDrawableDC(d, dc, &state);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetUpGraphicsPort --
+ *
+ *	Set up the graphics port from the given GC.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The current port is adjusted.
+ *
+ *----------------------------------------------------------------------
+ */
+
+#ifndef TkWinCreatePen
+#define TkWinCreatePen(gc, style, width, foreground) \
+	CreatePen(style, width, foreground)
+#endif
+
+#ifndef TkWinExtCreatePen
+#define TkWinExtCreatePen(gc, style, width, brush, count, lp) \
+	ExtCreatePen(style, width, brush, count, lp)
+#endif
+
+static HPEN
+SetUpGraphicsPort(gc)
+    GC gc;
+{
+    DWORD style;
+
+    if (gc->line_style == LineOnOffDash) {
+	unsigned char *p = (unsigned char *) &(gc->dashes);
+				/* pointer to the dash-list */
+
+	/*
+	 * Below is a simple translation of serveral dash patterns
+	 * to valid windows pen types. Far from complete,
+	 * but I don't know how to do it better.
+	 * Any ideas: <mailto:Jan.Nijtmans@wxs.nl>
+	 */
+
+	if (p[1] && p[2]) {
+	    if (!p[3] || p[4]) {
+		style = PS_DASHDOTDOT;		/*	-..	*/
+	    } else {
+		style = PS_DASHDOT;		/*	-.	*/
+	    }
+	} else {
+	    if (p[0] > (4 * gc->line_width)) {
+		style = PS_DASH;		/*	-	*/
+	    } else {
+		style = PS_DOT;			/*	.	*/
+	    }
+	}
+    } else {
+	style = PS_SOLID;
+    }
+    if (tkpIsWin32s || (gc->line_width < 2)) {
+	if (gc->line_width > 1) {
+	    style = PS_SOLID;
+	}
+	return TkWinCreatePen(gc, style, gc->line_width, gc->foreground);
+    } else {
+	LOGBRUSH lb;
+
+	lb.lbStyle = BS_SOLID;
+	lb.lbColor = gc->foreground;
+	lb.lbHatch = 0;
+
+	style |= PS_GEOMETRIC;
+	switch (gc->cap_style) {
+	    case CapNotLast:
+	    case CapButt:
+		style |= PS_ENDCAP_FLAT; 
+		break;
+	    case CapRound:
+		style |= PS_ENDCAP_ROUND; 
+		break;
+	    default:
+		style |= PS_ENDCAP_SQUARE; 
+		break;
+	}
+	switch (gc->join_style) {
+	    case JoinMiter: 
+		style |= PS_JOIN_MITER; 
+		break;
+	    case JoinRound:
+		style |= PS_JOIN_ROUND; 
+		break;
+	    default:
+		style |= PS_JOIN_BEVEL; 
+		break;
+	}
+	return TkWinExtCreatePen(gc, style, gc->line_width, &lb, 0, NULL);
+    }
 }
 
 /*

@@ -299,21 +299,13 @@ TkMenuConfigureEntryDrawOptions(mePtr, index)
 
     tkfont = (mePtr->tkfont == NULL) ? menuPtr->tkfont : mePtr->tkfont;
     
-    if (mePtr->state == tkActiveUid) {
+    if (mePtr->state == TK_STATE_ACTIVE) {
 	if (index != menuPtr->active) {
 	    TkActivateMenuEntry(menuPtr, index);
 	}
     } else {
 	if (index == menuPtr->active) {
 	    TkActivateMenuEntry(menuPtr, -1);
-	}
-	if ((mePtr->state != tkNormalUid)
-		&& (mePtr->state != tkDisabledUid)) {
-	    Tcl_AppendResult(menuPtr->interp, "bad state value \"",
-		    mePtr->state,
-		    "\": must be normal, active, or disabled", (char *) NULL);
-	    mePtr->state = tkNormalUid;
-	    return TCL_ERROR;
 	}
     }
 

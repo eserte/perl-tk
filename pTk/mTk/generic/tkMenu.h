@@ -50,7 +50,7 @@ typedef struct TkMenuEntry {
     char *label;		/* Main text label displayed in entry (NULL
 				 * if no label).  Malloc'ed. */
     int labelLength;		/* Number of non-NULL characters in label. */
-    Tk_Uid state;		/* State of button for display purposes:
+    Tk_State state;		/* State of button for display purposes:
 				 * normal, active, or disabled. */
     int underline;		/* Index of character to underline. */
     Pixmap bitmap;		/* Bitmap to display in menu entry, or None.
@@ -182,6 +182,9 @@ typedef struct TkMenuEntry {
   				 * Depends on platform and menu type what
   				 * kind of options are in this structure.
   				 */
+    Tk_Tile tile, activeTile, disabledTile;
+    Tk_TSOffset tsoffset;
+    GC tileGC, activeTileGC, disabledTileGC;
 } TkMenuEntry;
 
 /*
@@ -360,6 +363,9 @@ typedef struct TkMenu {
   				 * Depends on platform and menu type what
   				 * kind of options are in this structure.
   				 */
+    Tk_Tile tile, activeTile, disabledTile;
+    Tk_TSOffset tsoffset;
+    GC tileGC, activeTileGC, disabledTileGC;
 } TkMenu;
 
 /*

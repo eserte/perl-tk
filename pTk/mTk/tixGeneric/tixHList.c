@@ -1364,7 +1364,7 @@ Tix_HLSee(clientData, interp, argc, argv)
 	if (wPtr->elmToSee) {
 	    ckfree(wPtr->elmToSee);
 	}
-	wPtr->elmToSee = strdup(argv[0]);
+	wPtr->elmToSee = tixStrDup(argv[0]);
 	return TCL_OK;
     } else {
 	Tix_HLSeeElement(wPtr, chPtr, 1);
@@ -1452,9 +1452,18 @@ static int Tix_HLBBox(interp, wPtr, chPtr)
 	    y2 = pad+wYSize -1;
 	}
 
-	if (y2 >= y1) {
+	if (y2 >= y1) {                   
+#ifdef _LANG
+	    Tcl_Obj *result = Tcl_NewListObj(0,NULL);
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1));
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(y1));
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1+wXSize-1));
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(y2));
+	    Tcl_SetObjResult(interp, result);
+#else
 	    sprintf(buff, "%d %d %d %d", x1, y1, x1+wXSize-1, y2);
 	    Tcl_SetResult(interp, buff, TCL_VOLATILE);
+#endif
 	}
 	return TCL_OK;
     }
@@ -1849,7 +1858,7 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 	if (wPtr->separator != 0) {
 	    ckfree(wPtr->separator);
 	}
-	wPtr->separator = (char*)strdup(".");
+	wPtr->separator = tixStrDup(".");
     }
 
     if (oldfont != wPtr->font) {
@@ -2489,13 +2498,13 @@ AllocElement(wPtr, parent, pathName, name, ditemType)
 	chPtr->_oneCol.width	= 0;
     }
     if (pathName) {
-	chPtr->pathName		= (char*)strdup(pathName);
+	chPtr->pathName		= tixStrDup(pathName);
     } else {
 	chPtr->pathName		= NULL;
     }
 
     if (name) {
-	chPtr->name		= (char*)strdup(name);
+	chPtr->name		= tixStrDup(name);
     } else {
 	chPtr->name		= NULL;
     }
@@ -2820,7 +2829,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 	name = buff;
 
 	if (parentName == NULL) {
-	    pathName = (char*)strdup(name);
+	    pathName = tixStrDup(name);
 	    allocated = 1;
 	}
 	else {
@@ -3557,6 +3566,7 @@ WidgetDisplay(clientData)
 	    Tcl_ResetResult(interp);
 	} else {
 	    Tix_HLSeeElement(wPtr, chPtr, 0);
+	    UpdateScrollBars(wPtr, 0);
 	}
 
 	ckfree(wPtr->elmToSee);
@@ -3713,16 +3723,13 @@ static void DrawElements(wPtr, pixmap, gc, chPtr, x, y, xOffset)
     int childIconX, childIconY;		/* center of child's icon */
     int childY, childX;
     int oldY;
-    int topBorder;
-
-    if (wPtr->useHeader) {
-	topBorder = wPtr->headerHeight;
-    } else {
-	topBorder = 0;
-    }
+    int top    = wPtr->useHeader ? wPtr->headerHeight : 0,
+	left   = 0,
+	bottom = Tk_Height(wPtr->dispData.tkwin),
+	right  = Tk_Width(wPtr->dispData.tkwin);
 
     if (chPtr != wPtr->root) {
-	if (wPtr->bottomPixel > y  && (y + chPtr->height) >= topBorder) {
+	if (bottom > y  && (y + chPtr->height) >= top) {
 	    /* Otherwise element is not see at all */
 	    DrawOneElement(wPtr, pixmap, gc, chPtr, x, y, xOffset);
 	}
@@ -3735,7 +3742,6 @@ static void DrawElements(wPtr, pixmap, gc, chPtr, x, y, xOffset)
 	    childX = x +  wPtr->indent;
 	}
 	childY = y + chPtr->height;
-
 	if (myIconX > childX) {
 	    /* Can't shift the vertical branch too much to the right */
 	    myIconX = childX;
@@ -3772,105 +3778,93 @@ static void DrawElements(wPtr, pixmap, gc, chPtr, x, y, xOffset)
 	childIconX = childX + ptr->iconX;
 	childIconY = childY + ptr->iconY;
 
-	if (wPtr->bottomPixel > childY	&&
-	    (childY + ptr->allHeight) >= topBorder) {
+	if (bottom > childY && (childY + ptr->allHeight) >= top) {
 
 	    /* Otherwise all descendants of ptr are not seen at all
 	     */
 	    DrawElements(wPtr, pixmap, gc, ptr, childX, childY, xOffset);
 
-	    if (wPtr->drawBranch && chPtr != wPtr->root) {
-		/* Draw a horizontal branch to the child's image/bitmap */
+	    if (wPtr->drawBranch && chPtr != wPtr->root
+		&& top <= childIconY && childIconY <= bottom
+	    ) {
+		/* Draw a horizontal branch to the child */
 		XDrawLine(wPtr->dispData.display, pixmap, gc, myIconX,
 		    childIconY, childIconX, childIconY);
 	    }
 	}
 
-	if (wPtr->drawBranch && chPtr != wPtr->root) {
-	    /*
-	     * NB: no branches for toplevel elements
-	     */
-	    if (ptr == lastVisible) {
-		/* Last element. Must draw a vertical branch, even if element
-		 * is not seen
-		 */
-		int y0, y1;	/* used to clip the vertical lines. Otherwise
-				 * will wrap-around 65536 (max coordinate for
-				 * X
-				 */
-		y0 = myIconY;
-		y1 = childIconY;
+	/*
+	 * -- no branches for toplevel elements
+	 * -- for last element, draw a vertical branch, even if element
+	 *    is not seen
+	 */
+	if (ptr == lastVisible      && wPtr->drawBranch
+	    && chPtr != wPtr->root  && childIconY >= top
+	    && left <= myIconX      && myIconX <= right
+	) {
+	    /* clip vertical lines to avoid wrap-around */
+	    int y0 = myIconY < 0 ? 0 : myIconY,
+		y1 = childIconY > bottom ? bottom : childIconY;
 
-		if (y0 < 0) {
-		    y0 = 0;
-		}
-		if (y1 > Tk_Height(wPtr->dispData.tkwin)) {
-		    y1 = Tk_Height(wPtr->dispData.tkwin);
-		}
-		XDrawLine(wPtr->dispData.display, pixmap, gc, myIconX, y0,
-		    myIconX, y1);
-	    }
+	    XDrawLine(wPtr->dispData.display, pixmap, gc, myIconX, y0,
+		myIconX, y1);
 	}
 	childY += ptr->allHeight;
     }
 
     if (!wPtr->useIndicator) {
 	return;
-    } else {
-	childY = oldY;
     }
+    childY = oldY;
 
     /* Second iteration : draw the indicators */
     for (ptr = chPtr->childHead; ptr!=NULL; ptr=ptr->next) {
-	int justMapped;
+	int cY = childY;
 
 	if (ptr->hidden) {
 	    continue;
 	}
+	childY += ptr->allHeight;
+	childIconY = cY + ptr->iconY;
 
-	childIconY = childY + ptr->iconY;
-
-	if (wPtr->bottomPixel > childY	&&
-	    (childY + ptr->allHeight) >= topBorder) {
+	if (bottom > cY && (cY + ptr->allHeight) >= top
+	    && ptr->indicator != NULL
+	) {
 	    /* Otherwise all descendants of ptr are not seen at all
 	     */
-	    if (ptr->indicator != NULL) {
-		int indW = Tix_DItemWidth (ptr->indicator);
-		int indH = Tix_DItemHeight(ptr->indicator);
-		int indX;
-		int indY = childIconY;
+	    int justMapped,
+	        indW = Tix_DItemWidth (ptr->indicator),
+	        indH = Tix_DItemHeight(ptr->indicator),
+	        indY = childIconY - indH/2,
+	        indX = (chPtr == wPtr->root
+		       ? (wPtr->indent / 2 + wPtr->borderWidth
+		         + wPtr->highlightWidth - wPtr->leftPixel)
+		       : myIconX) - indW/2;
+	    if ( indX > right || (indX + indW) < left
+		 || indY > bottom ||(indY + indH) < top
+	    ) {
+		continue;  /* indicator not visible */
+	    }
 
-		if (chPtr == wPtr->root) {
-		    indX = wPtr->indent / 2 + wPtr->borderWidth
-			+ wPtr->highlightWidth - wPtr->leftPixel;
-		} else {
-		    indX = myIconX;
-		}
-
-		indX -= indW/2;
-		indY -= indH/2;		
-
-		justMapped = 0;
-		if (Tix_DItemType(ptr->indicator) == TIX_DITEM_WINDOW) {
-		    Tix_SetWindowItemSerial(&wPtr->mappedWindows,
-			ptr->indicator, wPtr->serial);
-		    if (!Tk_IsMapped(ptr->indicator->window.tkwin)) {
-			justMapped = 1;
-		    }
-		}
-
-		/* Put down the indicator */
-		Tix_DItemDisplay(pixmap, gc, ptr->indicator,
-		    indX, indY, indW, indH,
-		    TIX_DITEM_NORMAL_FG|TIX_DITEM_NORMAL_BG);
-
-		if (justMapped) {
-		    XLowerWindow(Tk_Display(ptr->indicator->window.tkwin),
-			Tk_WindowId(ptr->indicator->window.tkwin));
+	    justMapped = 0;
+	    if (Tix_DItemType(ptr->indicator) == TIX_DITEM_WINDOW) {
+		Tix_SetWindowItemSerial(&wPtr->mappedWindows,
+		    ptr->indicator, wPtr->serial);
+		if (!Tk_IsMapped(ptr->indicator->window.tkwin)) {
+		    justMapped = 1;
 		}
 	    }
+
+	    /* Put down the indicator */
+	    Tix_DItemDisplay(pixmap, gc, ptr->indicator,
+		indX, indY, indW, indH,
+		TIX_DITEM_NORMAL_FG|TIX_DITEM_NORMAL_BG);
+
+	    if (justMapped) {
+		XLowerWindow(Tk_Display(ptr->indicator->window.tkwin),
+		    Tk_WindowId(ptr->indicator->window.tkwin));
+	    }
 	}
-	childY += ptr->allHeight;
     }
 }
 
@@ -4241,7 +4235,6 @@ static void UpdateScrollBars(wPtr, sizeChanged)
 	window = Tk_Width(wPtr->dispData.tkwin)
 	  - 2*wPtr->borderWidth - 2*wPtr->highlightWidth;
 	first  = wPtr->leftPixel;
-
 	UpdateOneScrollBar(wPtr, wPtr->xScrollCmd, total, window, first);
     }
 
@@ -4254,7 +4247,6 @@ static void UpdateScrollBars(wPtr, sizeChanged)
 	if (wPtr->useHeader) {
 	    window -= wPtr->headerHeight;
 	}
-
 	UpdateOneScrollBar(wPtr, wPtr->yScrollCmd, total, window, first);
     }
 

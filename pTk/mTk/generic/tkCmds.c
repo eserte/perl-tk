@@ -276,7 +276,6 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     int i, tagArgc;
     char *p, **tagArg;
     Arg *tagArgv;
-    LangFreeProc *freeProc = NULL;    
 
     if ((argc < 2) || (argc > 3)) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
@@ -313,7 +312,7 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     if (argv[2][0] == 0) {
 	return TCL_OK;
     }
-    if (Lang_SplitList(interp, args[2], &tagArgc, &tagArgv, &freeProc) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, args[2], &tagArgc, &tagArgv) != TCL_OK) {
 	return TCL_ERROR;
     }            
     winPtr->numTags = tagArgc;
@@ -338,8 +337,6 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
 	    winPtr->tagPtr[i] = (ClientData) Tk_GetUid(p);
 	}
     }
-    if (freeProc)
-     (*freeProc)(tagArgc, tagArgv);
     return TCL_OK;
 }
 

@@ -13,18 +13,16 @@ require 5.00404;
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 use     Tk::Event ();
-require Exporter;
 use base qw(Exporter DynaLoader);
+
+*fileevent = \&Tk::Event::IO::fileevent;
 
 BEGIN { $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix' };
 
-# XXX
-if ($Tk::platform eq 'unix') {
-    $Tk::tearoff = 1;
-}
+$Tk::tearoff = 1 if ($Tk::platform eq 'unix');
 
-@EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
-@EXPORT_OK = qw(NoOp *widget *event lsearch catch
+@EXPORT    = qw(Exists Ev exit MainLoop DoOneEvent tkinit);
+@EXPORT_OK = qw(NoOp after *widget *event lsearch catch $XS_VERSION
                 DONT_WAIT WINDOW_EVENTS  FILE_EVENTS TIMER_EVENTS
                 IDLE_EVENTS ALL_EVENTS
                 NORMAL_BG ACTIVE_BG SELECT_BG
@@ -37,7 +35,6 @@ if ($Tk::platform eq 'unix') {
                );
 
 use strict;
-use Symbol ();
 
 use Carp;
 
@@ -45,7 +42,8 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.0';
 $Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.015';
+$Tk::VERSION     = '800.017';
+$Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -56,12 +54,7 @@ $Tk::event   = undef;
 
 use vars qw($inMainLoop);
 
-bootstrap Tk $Tk::VERSION;
-
-{
- no strict 'refs';
- *{'exit'} = \&Exit;
-}
+bootstrap Tk;
 
 my $boot_time = timeofday();
 
@@ -128,12 +121,6 @@ sub XEvent::AUTOLOAD
  goto &$XEvent::AUTOLOAD;
 }
 
-#foreach my $meth ('xy',split('','abcdfhkmopstvwxyABDEKNRSTWXY#'))
-# {
-#  no strict 'refs';
-#  *{'XEvent::'.$meth} = sub { shift->Info($meth) };
-# }
-
 sub NoOp  { }
 
 sub Ev
@@ -158,10 +145,11 @@ sub InitClass
  croak "Unexpected type of parent $parent" unless(ref $parent);
  croak "$parent is not a widget" unless($parent->IsWidget);
  my $mw = $parent->MainWindow;
- unless (exists $mw->{'_ClassInit_'}{$package})
-  {
+ my $hash = $mw->TkHash('_ClassInit_');
+ unless (exists $hash->{$package})
+  {     
    $package->Install($mw);
-   $mw->{'_ClassInit_'}{$package} = $package->ClassInit($mw);
+   $hash->{$package} = $package->ClassInit($mw);
   }
 }
 
@@ -230,11 +218,6 @@ sub Methods
   }
 }
 
-sub fileevent
-{
- require Tk::IO;
- goto &Tk::IO::fileevent;
-}
 
 sub MessageBox {
     my ($kind,%args) = @_;

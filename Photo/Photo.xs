@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */

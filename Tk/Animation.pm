@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Animation.pm#14$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Animation.pm#16 $
 
 use Tk::Photo;
 use base  qw(Tk::Photo);

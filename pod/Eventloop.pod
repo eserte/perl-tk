@@ -3,6 +3,8 @@
 
 Tk::Event - ToolKit for Events 
 
+=for category Implementation
+
 =head1 SYNOPSIS
  
  use Tk::Event;

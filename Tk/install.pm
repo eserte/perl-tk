@@ -2,7 +2,7 @@ package Tk::install;
 require Exporter;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/install.pm#9$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/install.pm#12 $
 
 use base  qw(Exporter);
 @EXPORT = qw(installbin);
@@ -13,13 +13,14 @@ sub installbin
 {
  my $prog  = shift(@ARGV);
  my $start = $Config{'startperl'};
- my $perl  = $Config{'perl'};
+ my $perl  = $Config{'perl'} || 'perl';
  $start =~ s/$perl$/$prog/;
  while (($src,$dst) = splice(@ARGV,0,2))
   {
    open(SRC,"<$src") || die "Cannot open $src:$!";
    my $line = <SRC>;
    $line =~ s/^#!\s*\S+/$start/;
+   warn $line;
    chmod(0755,$dst) if (-f $dst);
    open(DST,">$dst") || die "Cannot open $dst:$!";
    print "installbin $src => $dst\n";

@@ -183,12 +183,12 @@ TIX_DEFINE_CMD(Tix_ManageGeometryCmd)
     if (!isNew) {
 	cnPtr = (ClientStruct *) Tcl_GetHashValue(hashPtr);
 	ckfree(cnPtr->command);
-	cnPtr->command = (char*)strdup(argv[2]);
+	cnPtr->command = tixStrDup(argv[2]);
     } else {
 	cnPtr = (ClientStruct *) ckalloc(sizeof(ClientStruct));
 	cnPtr->tkwin     = tkwin;
 	cnPtr->interp    = interp;
-	cnPtr->command   = (char*)strdup(argv[2]);
+	cnPtr->command   = tixStrDup(argv[2]);
 	cnPtr->isDeleted = 0;
 	Tcl_SetHashValue(hashPtr, cnPtr);
 

@@ -485,6 +485,10 @@
 #  define XSetCommand (*XlibVptr->V_XSetCommand)
 #endif
 
+#ifndef XSetDashes
+#  define XSetDashes (*XlibVptr->V_XSetDashes)
+#endif
+
 #ifndef XSetErrorHandler
 #  define XSetErrorHandler (*XlibVptr->V_XSetErrorHandler)
 #endif

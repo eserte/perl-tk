@@ -12,35 +12,32 @@
  *
  */
 
-#ifdef ITCL_2
-
-#ifndef _TCLINT
-#include <tclInt.h>
-#endif
 /*
- * Structure to store ITcl name space information.
+ * With Tcl 8.0, namespaces moved from Itcl to Tcl, and so
+ * the Tix hacks have to be used in any verison of 8.0,
+ * regardless of the presence of Itcl...
  */
+
+#include "tix.h"
+
+#ifndef _LANG
+#include "Lang.h"
+#endif
+
+/*
+ * Structure to store Tcl 8.0 name space information.
+ */
+
 typedef struct _TixItclNameSp {
-    Interp *iPtr;
+    Tcl_Interp *iPtr;
     CallFrame *savedVarFramePtr;
-    Itcl_ActiveNamespace nsToken;
 } TixItclNameSp;
 
 #define DECLARE_ITCL_NAMESP(x,i) \
     TixItclNameSp x; \
-    x.iPtr = (Interp*)(i); \
-    x.nsToken = NULL;
+    x.iPtr = (Interp*)(i);
 
-EXTERN int		TixItclSetGlobalNameSp _ANSI_ARGS_((
+extern int		TixItclSetGlobalNameSp _ANSI_ARGS_((
 			    TixItclNameSp * nameSpPtr, Tcl_Interp * interp));
-EXTERN void		TixItclRestoreGlobalNameSp _ANSI_ARGS_((
+extern void		TixItclRestoreGlobalNameSp _ANSI_ARGS_((
 			    TixItclNameSp * nameSpPtr, Tcl_Interp * interp));
-
-
-#else
-
-#define DECLARE_ITCL_NAMESP(x,i)
-#define TixItclSetGlobalNameSp(a,b)     (1)
-#define TixItclRestoreGlobalNameSp(a,b)
-
-#endif /* ITCL_2 */

@@ -17,15 +17,15 @@ package Tk::Menubutton;
 require Tk;
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#19$
+$VERSION = '3.025'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#25 $
 
 use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Menubutton';
 
-import Tk qw(&Ev);
+import Tk qw(&Ev $XS_VERSION);
 
-bootstrap Tk::Menubutton $Tk::VERSION;
+bootstrap Tk::Menubutton;
 
 sub Tk_cmd { \&Tk::menubutton }
 
@@ -322,10 +322,10 @@ sub Motion
 sub ButtonUp {
     my $w = shift;
 
-    my $tearoff = $Tk::platform eq 'unix' || (defined($menu) &&
-					      $w->cget(-menu)->cget('-type') eq 'tearoff');
-    if (($tearoff != 0) && (defined($Tk::postedMb) && $Tk::postedMb == $w)
-	    && (defined($Tk::inMenubutton) && $Tk::inMenubutton == $w)) {
+    my $tearoff = $Tk::platform eq 'unix' || (defined($w->cget('-menu')) &&
+					      $w->cget('-menu')->cget('-type') eq 'tearoff');
+    if ($tearoff && (defined($Tk::postedMb)     && $Tk::postedMb == $w)
+	         && (defined($Tk::inMenubutton) && $Tk::inMenubutton == $w)) {
 	$Tk::postedMb->cget(-menu)->FirstEntry();
     } else {
       Tk::Menu->Unpost(undef);

@@ -1,9 +1,9 @@
 package Tk::TList;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/TList/TList.pm#12$
+$VERSION = '3.016'; # $Id: //depot/Tk8/TList/TList.pm#16 $
 
-use Tk qw(Ev);
+use Tk qw(Ev $XS_VERSION);
 
 use base  qw(Tk::Widget);
 
@@ -11,7 +11,7 @@ use strict;
 
 Construct Tk::Widget 'TList';
 
-bootstrap Tk::TList $Tk::VERSION;
+bootstrap Tk::TList;
 
 sub Tk_cmd { \&Tk::tlist }
 

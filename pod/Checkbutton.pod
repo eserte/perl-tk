@@ -133,10 +133,11 @@ B<background> options determine how the checkbutton is displayed.
 
 =item Switch:	B<-variable>
 
-Specifies name of global variable to set to indicate whether
-or not this button is selected.  Defaults to the name of the
-button within its parent (i.e. the last element of the button
-window's path name).
+Specifies reference to a variable to set to indicate whether
+or not this button is selected.  Defaults to C<\$widget-E<gt>{'Value'}>
+member of the widget's hash. In general perl variables are C<undef> unless
+specifically initialized which will not match either default B<-onvalue> or
+deafult B<-offvalue>. 
 
 =item Name:	B<width>
 

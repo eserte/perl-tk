@@ -1,11 +1,13 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
-# Copyright (c) 1999 Nick Ing-Simmons and Greg Bartels. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons.
+# Copyright (c) 1999 Greg London. 
+# All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::TextUndo;
 
-use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/TextUndo.pm#31$
+use vars qw($VERSION $DoDebug);
+$VERSION = '3.043'; # $Id: //depot/Tk8/Tk/TextUndo.pm#43 $
+$DoDebug = 0;
 
 use Tk qw (Ev);
 use AutoLoader;
@@ -37,53 +39,38 @@ sub ResetUndo
 }
 
 sub PushUndo
-{
- my ($w,$ref) = @_;
+{       
+ my $w = shift;
  $w->{UNDO} = [] unless (exists $w->{UNDO});
- push(@{$w->{UNDO}},$ref);
+ push(@{$w->{UNDO}},@_);
 }
 
 sub PushRedo
 {
- my ($w,$ref) = @_;
+ my $w = shift;
  $w->{REDO} = [] unless (exists $w->{REDO});
- push(@{$w->{REDO}},$ref);
+ push(@{$w->{REDO}},@_);
 }
 
 sub PopUndo
 {
  my ($w) = @_;
- my $ret=undef;
- if (defined(($w->{UNDO})))
-  {
-  return pop(@{$w->{UNDO}});
-  }
- else
-  { return undef ;}
+ return pop(@{$w->{UNDO}}) if defined $w->{UNDO};
+ return undef;
 }
 
 sub PopRedo
 {
  my ($w) = @_;
- my $ret=undef;
- if (defined(($w->{REDO})))
-  {
-  return pop(@{$w->{REDO}});
-  }
- else
-  { return undef ;}
+ return pop(@{$w->{REDO}}) if defined $w->{REDO};
+ return undef;
 }
 
 sub ShiftRedo
 {
  my ($w) = @_;
- my $ret=undef;
- if (defined(($w->{REDO})))
-  {
-  return shift(@{$w->{REDO}});
-  }
- else
-  { return undef ;}
+ return shift(@{$w->{REDO}}) if defined $w->{REDO};
+ return undef;
 }
 
 sub numberChanges
@@ -100,7 +87,6 @@ sub SizeRedo
  return scalar(@{$w->{'REDO'}});
 }
 
-
 sub getUndoAtIndex
 {
  my ($w,$index) = @_;
@@ -113,70 +99,6 @@ sub getRedoAtIndex
  my ($w,$index) = @_;
  return undef unless (exists $w->{REDO});
  return $w->{REDO}[$index];
-}
-
-sub getUndoThatMatches
-{
- my ($w,$matching) = @_;
- if (exists $w->{UNDO})
-  {
-   if (@{$w->{UNDO}})
-    {
-     my $count=0;
-     my $i=0;
-     my ($undo_ref, $op);
-     do
-      {
-      $i--;
-      $undo_ref = $w->getUndoAtIndex($i);
-      $op = $undo_ref->[0];
-      if ($op eq 'GlobEnd') {$count--;}
-      if ($op eq 'GlobStart') {$count++;}
-      }
-     while($count and (($i*-1)< @{$w->{UNDO}}) and ($op !~ /$matching/) );
-     return $undo_ref;
-    }
-  }
-}
-
-# if the only thing on the stack is globstart and glob end,
-#  then delete the globstart/globend entries.
-#  -2 globstart
-#  -1 globend
-# if a single operation is surrounded by globstart and globend,
-#  then delete the globstart/globend entries.
-#  -3 globstart
-#  -2 insert 1.4 z
-#  -1 globend
-sub CleanUpUndo
-{
- my ($w) = @_;
- my ($start_undo, $end_undo, $save_operation);
- $start_undo = $w->getUndoAtIndex(-2);
- if( $start_undo->[0] eq 'GlobStart')
-  {
-  $end_undo = $w->getUndoAtIndex(-1);
-  if( $end_undo->[1] eq $start_undo->[1]) #must be for same operation
-   {
-   $w->PopUndo;
-   $w->PopUndo;
-   return;
-   }
-  }
-
- $start_undo = $w->getUndoAtIndex(-3);
- if( $start_undo->[0] eq 'GlobStart')
-  {
-  $end_undo = $w->getUndoAtIndex(-1);
-  if( $end_undo->[1] eq $start_undo->[1]) #must be for same operation
-   {
-   $w->PopUndo;
-   $save_operation = $w->PopUndo;
-   $w->PopUndo;
-   $w->PushUndo($save_operation);
-   return;
-   }
-  }
 }
 
 ####################################################################
@@ -205,75 +127,74 @@ sub CleanUpUndo
 sub CheckForRedoShuffle
 {
  my ($w) = @_;
- return unless $w->SizeRedo && $w->OperationMode eq 'normal';
+ my $size_redo = $w->SizeRedo;
+ return unless $size_redo && ($w->OperationMode eq 'normal');
+ # local $DoDebug = 1;
+ 
+ # we are about to 'do' something new, but have something in REDO stack.
+ # The REDOs may conflict with new ops, but we want to preserve them.
+ # So convert them to UNDOs - effectively do them and their inverses
+ # so net effect on the widget is no-change.
+ 
+ $w->dump_array('StartShuffle');
+
  $w->OperationMode('REDO_MAGIC');
  $w->MarkSelectionsSavePositions;
+ 
+ my @pvtundo;
 
- # first, go through REDO array from index 0 to end,
- # get inverse, and push into UNDO array.
- my $size_redo = $w->SizeRedo;
- my ($ref, $op, @args, $op_undo, @args_undo, $undo_ref);
+ # go through REDO array from end downto 0, i.e. pseudo pop
+ # then pretend we did 'redo' get inverse, and push into UNDO array
+ # and 'do' the op.
  for (my $i=$size_redo-1; $i>=0 ; $i--)
   {
    my ($op,@args) = @{$w->getRedoAtIndex($i)};
    my $op_undo = $op .'_UNDO';
-   if ($op eq 'insert')
-    {
-    $w->$op(@args);                    # do insert now
-    }
-
-   $w->PushUndo($w->$op_undo(@args)); #figure out how to undo it and put in UNDO
+   # save the inverse of the op on the UNDO array
+   # do this before the re-doing the op - after a 'delete' we cannot see 
+   # text we deleted! 
+   my $undo = $w->$op_undo(@args);
+   $w->PushUndo($undo);
+   # We must 'do' the operation now so if this is an insert 
+   # the text and tags are available for inspection in delete_UNDO, and
+   # indices reflect changes.
+   $w->$op(@args);
+   # Save the undo that will reverse what we just did - it is 
+   # on the undo stack but will be tricky to find
+   push(@pvtundo,$undo);  
   }
 
- # then shift each item off REDO array until empty
- # push each item onto REDO array
+ # Now shift each item off REDO array until empty
+ # push each item onto UNDO array - this reverses the order
+ # and we are not altering buffer so we cannot look in the
+ # buffer to compute inverses - which is why we saved them above
+ 
  while ($w->SizeRedo)
   {
-   $ref = $w->ShiftRedo;
-   $w->PushUndo($ref);		# pop off redo stack push onto undo stack
-   ($op,@args) = @{$ref};
-   $op_undo = $op .'_UNDO';
-   ($op_undo,@args_undo) = @{$w->$op_undo(@args)};  # get the undo operation
-   $w->$op_undo(@args_undo);   # undo the operation # perform the undo operation.
-   if ($op eq 'delete')
-    {
-    $w->$op(@args); 			# do delete now
-    }
+   my $ref = $w->ShiftRedo;
+   $w->PushUndo($ref);		
   }
+
+ # Finally undo whatever we did to compensate for doing it
+ # and get buffer back to state it was before we started. 
+ while (@pvtundo)
+  {
+   my ($op,@args) = @{pop(@pvtundo)};
+   $w->$op(@args);
+  } 
+  
  $w->RestoreSelectionsMarkedSaved;
-
  $w->OperationMode('normal');
+ $w->dump_array('EndShuffle');
 }
-
 
 # sets/returns undo/redo/normal operation mode
 sub OperationMode
 {
  my ($w,$mode) = @_;
- unless ( exists($w->{'OPERATION_MODE'}) and
-         defined($w->{'OPERATION_MODE'}) )
-  { $w->{'OPERATION_MODE'}='normal';}
-
- if (defined($mode))
-  {
-   $w->{'OPERATION_MODE'}=$mode;
-  }
+ $w->{'OPERATION_MODE'} = $mode  if (@_ > 1);
+ $w->{'OPERATION_MODE'} = 'normal' unless exists($w->{'OPERATION_MODE'}); 
  return $w->{'OPERATION_MODE'};
-}
-
-sub AddOperation
-{
- my ($w,@operation) = @_;
- my $mode = $w->OperationMode;
-
- if ($mode eq 'normal')
-  {$w->PushUndo([@operation]);}
- elsif ($mode eq 'undo')
-  {$w->PushRedo([@operation]);}
- elsif ($mode eq 'redo')
-  {$w->PushUndo([@operation]);}
- else
-  {die "invalid destination $destination, must be UNDO or REDO";}
 }
 
 ####################################################################
@@ -281,43 +202,27 @@ sub AddOperation
 # used for debug purposes.
 sub dump_array
 {
- my $w = shift;
- my $array;
- my $ref;
- my $enable;
- print "START OF DUMP\n";
-
- print "UNDO array is:\n";
- if (defined($w->{UNDO}))
+ return unless $DoDebug;
+ my ($w,$why) = @_;
+ print "At $why:\n";
+ foreach my $key ('UNDO','REDO')
   {
-   $array = $w->{UNDO};
-   foreach $ref (@$array)
+   if (defined($w->{$key}))
     {
-     foreach my $item (@$ref)
-      {
-       my $local_item= $item;
-       $local_item =~ tr/\n/\^/;
-       print "$local_item ";
+     print " $key array is:\n";
+     my $array = $w->{$key};
+     foreach my $ref (@$array)
+      {                              
+       my @items;
+       foreach my $item (@$ref)
+        {
+         my $loc = $item;
+         $loc =~ tr/\n/\^/;
+         push(@items,$loc);
+        }
+       print "  [",join(',',@items),"]\n";
       }
-     print "\n";
     }
-  }
-
- print "\n";
- print "REDO array is:\n";
- if (defined($w->{REDO}))
-  {
-  $array = $w->{REDO};
-  foreach $ref (@$array)
-   {
-   foreach my $item (@$ref)
-    {
-     my $local_item= $item;
-    $local_item =~ tr/\n/\^/;
-   print "$local_item ";
-    }
-   print "\n";
-   }
   }
  print "\n";
 }
@@ -337,18 +242,55 @@ sub dump_array
 # no other method should directly access the {GLOB_COUNT} value directly
 #############################################################
 #############################################################
+
+sub AddOperation
+{
+ my ($w,@operation) = @_;
+ my $mode = $w->OperationMode;
+
+ if ($mode eq 'normal')
+  {$w->PushUndo([@operation]);}
+ elsif ($mode eq 'undo')
+  {$w->PushRedo([@operation]);}
+ elsif ($mode eq 'redo')
+  {$w->PushUndo([@operation]);}
+ else
+  {die "invalid destination '$mode', must be one of 'normal', 'undo' or 'redo'";}
+}
+
 sub addGlobStart	# add it to end of undo list
 {
  my ($w, $who) = @_;
  unless (defined($who)) {$who = (caller(1))[3];}
+ $w->CheckForRedoShuffle;
+ $w->dump_array('Start'.$who);
  $w->AddOperation('GlobStart', $who) ;
 }
 
 sub addGlobEnd		# add it to end of undo list
 {
- my ($w, $who) = @_;
+ my ($w, $who) = @_;                            
  unless (defined($who)) {$who = (caller(1))[3];}
- $w->AddOperation('GlobEnd',  $who);
+ my $topundo = $w->getUndoAtIndex(-1);
+ if ($topundo->[0] eq 'GlobStart')
+  {
+   $w->PopUndo;
+  }
+ else
+  {
+   my $nxtundo = $w->getUndoAtIndex(-2);
+   if ($nxtundo->[0] eq 'GlobStart')
+    {
+     $w->PopUndo;
+     $w->PopUndo;
+     $w->PushUndo($topundo);
+    }
+   else
+    {
+     $w->AddOperation('GlobEnd',  $who);
+    }
+  }
+ $w->dump_array('End'.$who);
 }
 
 sub GlobStart
@@ -409,6 +351,7 @@ sub GlobCount
 sub undo
 {
  my ($w) = @_;
+ $w->dump_array('Start'.'undo');
  unless ($w->numberChanges) {$w->bell; return;} # beep and return if empty
  $w->GlobCount(0); #initialize to zero
  $w->OperationMode('undo');
@@ -420,6 +363,7 @@ sub undo
    $w->$op(@args);   # do the operation
   } while($w->GlobCount and $w->numberChanges);
  $w->OperationMode('normal');
+ $w->dump_array('End'.'undo');
 }
 
 sub redo
@@ -454,51 +398,44 @@ sub insert
 {
  my $w = shift;
  $w->markSet('insert', $w->index(shift) );
- while(defined($_[0]))
+ while(@_)
   {
-  my $index1 = $w->index('insert');
-  my $string = shift;
-  my $taglist_ref = shift if defined($_[0]);
+   my $index1 = $w->index('insert');
+   my $string = shift;
+   my $taglist_ref = shift if @_;
 
-  if ($w->OperationMode eq 'normal')
-   {
-    $w->CheckForRedoShuffle;
-    $w->PushUndo($w->insert_UNDO($index1,$string,$taglist_ref));
-   }
-  $w->markSet('notepos' => $index1);
-  $w->SUPER::insert($index1,$string,$taglist_ref);
-  $w->markSet('insert', $w->index('notepos'));
+   if ($w->OperationMode eq 'normal')
+    {
+     $w->CheckForRedoShuffle;
+     $w->PushUndo($w->insert_UNDO($index1,$string,$taglist_ref));
+    }
+   $w->markSet('notepos' => $index1);
+   $w->SUPER::insert($index1,$string,$taglist_ref);
+   $w->markSet('insert', $w->index('notepos'));
   }
 }
 
-
-# possible things to insert:
-# carriage return
-# single character (not CR)
-# single line of characters (not ending in CR)
-# single line of characters ending with a CR
-# multi-line characters. last line does not end with CR
-# multi-line characters, last line does end with CR.
-#
-# also, note this possible call: ->insert (index, string, tag, string, tag...);
 sub insert_UNDO
 {
- my $w=shift;
+ my $w = shift;
  my $index = shift;
- my $string = shift;
- 
+ my $string = '';
+ # This possible call: ->insert (index, string, tag, string, tag...);
  # if more than one string, keep reading strings in (discarding tags)
  # until all strings are read in and $string contains entire text inserted.
- while(defined($_[0]))
+ while (@_)
   {
-  shift;		# discard tag (dont care about them here)
-  while(defined($_[0]))
-   {
-   $string .= shift;	# concatenate strings together.
-   }
+   $string .= shift;
+   my $tags    = shift if (@_);
   }
-
  # calculate index
+ # possible things to insert:
+ # carriage return
+ # single character (not CR)
+ # single line of characters (not ending in CR)
+ # single line of characters ending with a CR
+ # multi-line characters. last line does not end with CR
+ # multi-line characters, last line does end with CR.
  my ($line,$col) = split(/\./,$index);
  if ($string =~ /\n(.*)$/)
   {
@@ -508,8 +445,7 @@ sub insert_UNDO
  else
   {
    $col += length($string);
-  }
- my $end_index = $line .'.'. $col;
+  }    
  return ['delete', $index, $line.'.'.$col];
 }
 
@@ -520,129 +456,56 @@ sub delete
   { $stop = $start .'+1c'; }
  my $index1 = $w->index($start);
  my $index2 = $w->index($stop);
-
  if ($w->OperationMode eq 'normal')
   {
    $w->CheckForRedoShuffle;
    $w->PushUndo($w->delete_UNDO($index1,$index2));
   }
  $w->SUPER::delete($index1,$index2);
+ # why call SetCursor - it has side effects
+ # which cause a whole slew if save/restore hassles ?
  $w->SetCursor($index1);
 }
 
 sub delete_UNDO
 {
  my ($w, $index1, $index2) = @_;
+ my %tags;
+ my @result = ( 'insert' => $index1 );          
+ my $str   = ''; 
 
- my @tagSequence = $w->tagSequential($index1, $index2);
+ ###############################################################
+ # get tags in range and return them in a format that
+ # can be inserted.
+ # $text->insert('1.0', $string1, [tag1,tag2], $string2, [tag2, tag3]);
+ # note, have to break tags up into sequential order
+ # in reference to _all_ tags.
+ ###############################################################
 
-
- return ['insert',$index1, @tagSequence];
-}
-
-###############################################################
-# tagSequential:
-# get tags in range and return them in a format that
-# can be inserted.
-# $text->insert('1.0', $string1, [tag1,tag2], $string2, [tag2, tag3]);
-# note, have to break tags up into sequential order
-# in reference to _all_ tags.
-###############################################################
-
-
-##########################################################
-# get the list of tags in sequence by brute force.
-# go through every index in range and get tags at that index.
-# maintain a list of indexes and tags as you go along.
-##########################################################
-
-sub tagSequential
-{
- my ($w, $index1, $index2) = @_;
- my $index = $w->index($index1);
- my $last_index =  $w->index($index2);
- # note that $last_index may be equivelent to 'end'
- # which means that index + 1c will never be greater than $last_index
-# if ($last_index eq $w->index('end'))
-#  {
-#  $last_index = $w->index($last_index.' -1c');
-#  }
-
- my @tag_list = $w->tagNames($index);
-
- # @sequence_list is a list of lists, 
- # each sub list contains a start index, a stop index, and
- # a ref to a third list containing a list of tags that apply to 
- # the given indexes.
- # [
- # ['1.0', '1.7', ['red', 'orange'],
- # ['1.7', '1.10', ['yellow', 'green'],
- # ['1.10', '2.15', ['blue', 'indigo'],
- # ['2.15', '8.0', ['violet'],
- # ]
- my @sequence_list;
- push( @sequence_list, [$index, $index, \@tag_list] );
-
- do 
-  {
-  $index = $w->index($index . ' +1c');
-
-  # update the end index
-  $sequence_list[-1]->[1] = $index;
-
-  # get tags at index
-  my @new_tag_list = $w->tagNames($index);
-
-  # if these tags are different from last tags on sequence list
-  unless ( lists_are_identical( $sequence_list[-1]->[2] , \@new_tag_list ) )
-    {
-    push( @sequence_list, [$index, $index, \@new_tag_list] );
-    }
-  }
- while($w->compare($index, '<', $last_index) );
-
- my @return_list;
- foreach my $ref (@sequence_list)
-  {
-  push(@return_list, $w->get($ref->[0], $ref->[1]));
-  push(@return_list, $ref->[2]);
-  }
-
- return @return_list;
-}
-
-
-##########################################
-# take ref to two lists
-# if lists are identical, return 1
-# else return 0;
-##########################################
-sub lists_are_identical
-{
-  my ($l1_ref, $l2_ref) = @_;
- 
-  unless(defined($l1_ref))
+ $w->dump('-text','-tag', -command => sub {
+  my ($kind,$value,$posn) = @_;
+  if ($kind eq 'text')
    {
-   unless(defined($l2_ref))
-    {
-    return 1; # both undefined.
-    }
+    $str .= $value;
    }
-
-  return 0 unless (defined($l1_ref)); # one is defined, the other isnt
-  return 0 unless (defined($l2_ref)); # one is defined, the other isnt
-
-  return 0 unless (@$l1_ref == @$l2_ref); # not same size
-
-  # check every element in array.
-  for (my $i = 0; $i<@$l1_ref; $i++)
+  else
    {
-   return 0 unless ($l1_ref->[$i] eq $l2_ref->[$i]);
+    push(@result,$str,[keys %tags]) if (length $str);
+    $str = '';
+    if ($kind eq 'tagon')
+     {
+      $tags{$value} = 1;
+     }
+    elsif ($kind eq 'tagoff')
+     {
+      delete $tags{$value};
+     }
    }
-
-  return 1;
+ }, $index1, $index2);
+ push(@result,$str,[keys %tags]) if (length $str);
+ return \@result;
 }
-  
+
 ############################################################
 # override subroutines which are collections of low level
 # routines executed in sequence.
@@ -652,7 +515,6 @@ sub lists_are_identical
 sub ReplaceSelectionsWith
 {
  my $w = shift;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
  $w->SUPER::ReplaceSelectionsWith(@_);
  $w->addGlobEnd;
@@ -661,7 +523,6 @@ sub ReplaceSelectionsWith
 sub FindAndReplaceAll
 {
  my $w = shift;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
  $w->SUPER::FindAndReplaceAll(@_);
  $w->addGlobEnd;
@@ -670,7 +531,6 @@ sub FindAndReplaceAll
 sub clipboardCut
 {
  my $w = shift;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
  $w->SUPER::clipboardCut(@_);
  $w->addGlobEnd;
@@ -679,7 +539,6 @@ sub clipboardCut
 sub clipboardPaste
 {
  my $w = shift;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
  $w->SUPER::clipboardPaste(@_);
  $w->addGlobEnd;
@@ -688,7 +547,6 @@ sub clipboardPaste
 sub clipboardColumnCut
 {
  my $w = shift;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
  $w->SUPER::clipboardColumnCut(@_);
  $w->addGlobEnd;
@@ -697,73 +555,51 @@ sub clipboardColumnCut
 sub clipboardColumnPaste
 {
  my $w = shift;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
  $w->SUPER::clipboardColumnPaste(@_);
  $w->addGlobEnd;
 }
 
-
 # Greg: this method is more tightly coupled to the base class
 # than I would prefer, but I know of no other way to do it.
+
+sub Insert
+{
+ my ($w,$char)=@_;
+ return if $char eq '';
+ $w->addGlobStart;
+ $w->SUPER::Insert($char);
+ $w->addGlobEnd;
+}
+
+
 sub InsertKeypress
 {
  my ($w,$char)=@_;
  return if $char eq '';
- $w->CheckForRedoShuffle;
-
-
- my $undo_item = $w->getUndoAtIndex(-1);
-
- if (
-  (defined($undo_item)) and
-  ($undo_item->[0] =~ /delete/) and
-  ($undo_item->[2] == $w->index('insert')) and
-  (length($char) == 1)and
-  ($char ne "\n") and
-  ($char ne ' ')
-  )
-  {
-    {
-    my $save_char_for_overstrike = $w->get('insert');
-    #############################################################
-    # call SUPER, but pop anything it puts onto destination stack, since
-    # we will combine undo for this keypress into the previous one.
-    #############################################################
-    my $flag = 'InsertKeypress mystic magic token';
-    $w->PushUndo([$flag]);
-    $w->markSet('notepos' => 'insert');
-    $w->SUPER::InsertKeypress($char);
-    # pop everything off undo stack until we hit magical mystical token
-    do { $undo_item = $w->PopUndo->[0]; }
-      while (defined($undo_item) and ($undo_item ne $flag));
-
-    # fix the delete part
-    $undo_item = $w->getUndoThatMatches('delete');
-    $undo_item->[2] = $w->index('notepos'); # delete start stop
-
-    # if its overstrike mode
-    if($w->OverstrikeMode)
-     {
-     $undo_item = $w->getUndoThatMatches('insert');
-     if(defined($undo_item))
-      {$undo_item->[2] .= $save_char_for_overstrike; } # insert character_string
-     }
-    return; # dont do the normal call (below)
+ if ($char =~ /^\S$/ and !$w->OverstrikeMode and !$w->tagRanges('sel'))
+  {        
+   my $index = $w->index('insert');
+   my $undo_item = $w->getUndoAtIndex(-1);
+   if (defined($undo_item) && 
+       ($undo_item->[0] eq 'delete') &&
+       ($undo_item->[2] == $index) 
+      )
+    {        
+     $w->SUPER::insert($index,$char);
+     $undo_item->[2] = $w->index('insert');
+     return;
     }
   }
-
  $w->addGlobStart;
  $w->SUPER::InsertKeypress($char);
  $w->addGlobEnd;
- $w->CleanUpUndo;
-
 }
 
 ############################################################
 sub TextUndoFileProgress
 {
- my ($w,$action,$filename,$count) = @_;
+ my ($w,$action,$filename,$count,$val,$total) = @_;
  return unless(defined($filename) and defined($count));
 
  my $popup = $w->{'FILE_PROGRESS_POP_UP'};
@@ -776,18 +612,34 @@ sub TextUndoFileProgress
    $popup->resizable('no','no');
    $popup->Label(-textvariable => \$popup->{ACTION})->pack;
    $popup->Label(-textvariable => \$popup->{FILENAME})->pack;
-   $popup->Label(-textvariable => \$popup->{COUNT})->pack;
+   $popup->Label(-textvariable => \$popup->{COUNT})->pack;                       
+   my $f = $popup->Frame(-height => 10, -border => 2, -relief => 'sunken')->pack(-fill => 'x');
+   my $i = $f->Frame(-background => 'blue', -relief => 'raised', -border => 2);
    $w->{'FILE_PROGRESS_POP_UP'} = $popup;
+   $popup->{PROGBAR} = $i;
   }     
  $popup->{ACTION}   = $action;
  $popup->{COUNT}    = "lines: $count"; 
  $popup->{FILENAME} = "Filename: $filename";
+ if (defined($val) && defined($total) && $total != 0)
+  {
+   $popup->{PROGBAR}->place(-x => 0, -y => 0, -relheight => 1, -relwidth => $val/$total);
+  }
+ else
+  {
+   $popup->{PROGBAR}->placeForget;
+  }
+
  $popup->idletasks; 
- $popup->Popup unless $popup->viewable;
+ unless ($popup->viewable)
+  {    
+   $w->idletasks;
+   $w->toplevel->deiconify unless $w->viewable;
+   $popup->Popup; 
+  }
  $popup->update;
  return $popup;
 }
-
 
 sub FileName
 {
@@ -805,7 +657,7 @@ sub ConfirmDiscard
  if ($w->numberChanges)
   {
    my $ans = $w->messageBox(-icon    => 'warning',
-                            -type => YesNoCancel, -default => 'Yes',
+                            -type => 'YesNoCancel', -default => 'Yes',
                             -message =>
 "The text has been modified without being saved.
 Save edits?");
@@ -856,6 +708,7 @@ sub Save
    my $count=0;
    my $index = '1.0';
    my $progress;
+   my ($lines) = $w->index('end') =~ /^(\d+)\./;
    while ($w->compare($index,'<','end'))
     {
 #    my $end = $w->index("$index + 1024 chars");
@@ -864,7 +717,7 @@ sub Save
      $index = $end;
      if (($count++%1000) == 0)
       { 
-       $progress = $w->TextUndoFileProgress (Saving => $filename,$count);
+       $progress = $w->TextUndoFileProgress (Saving => $filename,$count,$count,$lines);
       }
     }
    $progress->withdraw if defined $progress;
@@ -899,7 +752,7 @@ sub Load
      $w->SUPER::insert('end',$_);
      if (($count++%1000) == 0)
       { 
-       $progress = $w->TextUndoFileProgress (Loading => $filename,$count);
+       $progress = $w->TextUndoFileProgress (Loading => $filename,$count,tell(FILE),-s $filename);
       }
     }
    close(FILE);
@@ -919,7 +772,6 @@ sub IncludeFile
  my ($w,$filename) = @_;
  unless (defined($filename))
   {$w->BackTrace("filename not specified"); return;}
- $w->CheckForRedoShuffle;
  if (open(FILE,"<$filename"))
   {
    $w->Busy;
@@ -931,7 +783,7 @@ sub IncludeFile
      $w->insert('insert',$_);
      if (($count++%1000) == 0)
       {
-       $progress = $w->TextUndoFileProgress (Including => $filename,$count);
+       $progress = $w->TextUndoFileProgress(Including => $filename,$count,tell(FILE),-s $filename);
       }
     }
    $progress->withdraw if defined $progress;
@@ -966,11 +818,11 @@ sub FileMenuItems
 {
  my ($w) = @_;
  return [
-   ["command"=>'Open',    -command => sub{$w->FileLoadPopup;}],
-   ["command"=>'Save',    -command => sub{$w->Save} ],
-   ["command"=>'Save As', -command => sub{$w->FileSaveAsPopup;}],
-   ["command"=>'Include', -command => sub{$w->IncludeFilePopup;}],
-   ["command"=>'Clear',   -command => sub{$w->ConfirmEmptyDocument;}],
+   ["command"=>'~Open',    -command => sub{$w->FileLoadPopup;}],
+   ["command"=>'~Save',    -command => sub{$w->Save} ],
+   ["command"=>'Save ~As', -command => sub{$w->FileSaveAsPopup;}],
+   ["command"=>'~Include', -command => sub{$w->IncludeFilePopup;}],
+   ["command"=>'~Clear',   -command => sub{$w->ConfirmEmptyDocument;}],
    "-",@{$w->SUPER::FileMenuItems}
   ]
 }
@@ -1038,10 +890,13 @@ sub MarkSelectionsSavePositions
  my ($w)=@_;
  $w->markSet('MarkInsertSavePosition','insert');
  my @ranges = $w->tagRanges('sel');
- my $range_total = @ranges;
- for (my $i=0; $i<$range_total; $i++)
+ my $i = 0;
+ while (@ranges)
   {
-   $w->markSet( 'MarkSelectionsSavePositions_'.$i, $ranges[$i] ); 
+   my ($start,$end) = splice(@ranges,0,2);
+   $w->markSet( 'MarkSelectionsSavePositions_'.++$i, $start); 
+   $w->markSet( 'MarkSelectionsSavePositions_'.++$i, $end); 
+   $w->tagRemove('sel',$start,$end); 
   }
 }
 
@@ -1095,21 +950,21 @@ sub SelectedLineNumbers
 sub insertStringAtStartOfSelectedLines
 {
  my ($w,$insert_string)=@_;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
+ $w->MarkSelectionsSavePositions;
  foreach my $line ($w->SelectedLineNumbers)
   {
    $w->insert($line.'.0', $insert_string);
   }
+ $w->RestoreSelectionsMarkedSaved;
  $w->addGlobEnd;
- $w->CleanUpUndo;
 }
 
 sub deleteStringAtStartOfSelectedLines
 {
  my ($w,$insert_string)=@_;
- $w->CheckForRedoShuffle;
  $w->addGlobStart;
+ $w->MarkSelectionsSavePositions;
  my $length = length($insert_string);
  foreach my $line ($w->SelectedLineNumbers)
   {
@@ -1119,9 +974,10 @@ sub deleteStringAtStartOfSelectedLines
    next unless ($current_text eq $insert_string);
    $w->delete($start, $end);
   }
+ $w->RestoreSelectionsMarkedSaved;
  $w->addGlobEnd;
- $w->CleanUpUndo;
 }
+
 
 1;
 __END__

@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#18$
+$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#25 $
 
 sub PreInit
 {
@@ -87,10 +87,11 @@ sub kind { return undef }
 package Tk::Menu::Button;
 use base qw(Tk::Menu::Item);
 Construct Tk::Menu 'Button';
-
-package Tk::Menu::Command;
-use base qw(Tk::Menu::Button);
 Construct Tk::Menu 'Command';
+
+#package Tk::Menu::Command;
+#use base qw(Tk::Menu::Button);
+#Construct Tk::Menu 'Command';
 
 package Tk::Menu::Cascade;
 use base qw(Tk::Menu::Item);
@@ -135,7 +136,7 @@ sub menu
   }
  else
   {
-   $menu->configure(%args);
+   $menu->configure(%args) if %args;
   }
  return $menu;
 }
@@ -151,7 +152,11 @@ sub radiobutton {  shift->menu->Radiobutton(@_); }
 sub pack
 {
  my $w = shift;
- carp "Cannot 'pack' $w - done automatically" if $^W;
+ if ($^W)
+  {
+   require Carp;
+   Carp::carp("Cannot 'pack' $w - done automatically") 
+  } 
 }
 
 package Tk::Menu::Checkbutton;

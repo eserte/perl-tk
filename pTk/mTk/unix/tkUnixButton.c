@@ -82,6 +82,7 @@ TkpDisplayButton(clientData)
     GC gc;
     Tk_3DBorder border;
     Pixmap pixmap;
+    Tk_Tile tile;
     int x = 0;			/* Initialization only needed to stop
 				 * compiler warning. */
     int y, relief;
@@ -98,16 +99,16 @@ TkpDisplayButton(clientData)
     }
 
     border = butPtr->normalBorder;
-    if ((butPtr->state == tkDisabledUid) && (butPtr->disabledFg != NULL)) {
+    if ((butPtr->state == TK_STATE_DISABLED) && (butPtr->disabledFg != NULL)) {
 	gc = butPtr->disabledGC;
-    } else if ((butPtr->state == tkActiveUid)
+    } else if ((butPtr->state == TK_STATE_ACTIVE)
 	    && !Tk_StrictMotif(butPtr->tkwin)) {
 	gc = butPtr->activeTextGC;
 	border = butPtr->activeBorder;
     } else {
 	gc = butPtr->normalTextGC;
     }
-    if ((butPtr->flags & SELECTED) && (butPtr->state != tkActiveUid)
+    if ((butPtr->flags & SELECTED) && (butPtr->state != TK_STATE_ACTIVE)
 	    && (butPtr->selectBorder != NULL) && !butPtr->indicatorOn) {
 	border = butPtr->selectBorder;
     }
@@ -132,10 +133,49 @@ TkpDisplayButton(clientData)
      * point in time where the on-sreen image has been cleared.
      */
 
+    if ((butPtr->state == TK_STATE_ACTIVE) && (butPtr->activeTile != NULL)) {
+	tile = butPtr->activeTile;
+    } else if ((butPtr->state == TK_STATE_DISABLED) &&
+	    (butPtr->disabledTile != NULL)) {
+	tile = butPtr->disabledTile;
+    } else {
+	tile = butPtr->tile;
+    }
+
     pixmap = Tk_GetPixmap(butPtr->display, Tk_WindowId(tkwin),
 	    Tk_Width(tkwin), Tk_Height(tkwin), Tk_Depth(tkwin));
-    Tk_Fill3DRectangle(tkwin, pixmap, border, 0, 0, Tk_Width(tkwin),
-	    Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    if (Tk_PixmapOfTile(tile) != None) {
+	if (butPtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (butPtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (butPtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (butPtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (butPtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (butPtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(butPtr->display, butPtr->copyGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, butPtr->copyGC, butPtr->tsoffset.xoffset,
+		    butPtr->tsoffset.yoffset);
+	}
+	XFillRectangle(butPtr->display, pixmap, butPtr->copyGC, 0, 0,
+		Tk_Width(tkwin), Tk_Height(tkwin));
+	XSetTSOrigin(butPtr->display, butPtr->copyGC, 0, 0);
+    } else {
+	Tk_Fill3DRectangle(tkwin, pixmap, border, 0, 0, Tk_Width(tkwin),
+		Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    }
 
     /*
      * Display image or bitmap or text for button.
@@ -269,7 +309,7 @@ TkpDisplayButton(clientData)
      * must temporarily modify the GC.
      */
 
-    if ((butPtr->state == tkDisabledUid)
+    if ((butPtr->state == TK_STATE_DISABLED)
 	    && ((butPtr->disabledFg == NULL) || (butPtr->image != NULL))) {
 	if ((butPtr->flags & SELECTED) && !butPtr->indicatorOn
 		&& (butPtr->selectBorder != NULL)) {
@@ -297,7 +337,7 @@ TkpDisplayButton(clientData)
 
     if (relief != TK_RELIEF_FLAT) {
 	int inset = butPtr->highlightWidth;
-	if (butPtr->defaultState == tkActiveUid) {
+	if (butPtr->defaultState == TK_STATE_ACTIVE) {
 	    /*
 	     * Draw the default ring with 2 pixels of space between the
 	     * default ring and the button and the default ring and the
@@ -319,7 +359,7 @@ TkpDisplayButton(clientData)
 		    Tk_Height(tkwin) - 2*inset, 2, TK_RELIEF_FLAT);
 
 	    inset += 2;
-	} else if (butPtr->defaultState == tkNormalUid) {
+	} else if (butPtr->defaultState == TK_STATE_NORMAL) {
 	    /*
 	     * Leave room for the default ring and write over any text or
 	     * background color.
@@ -354,7 +394,7 @@ TkpDisplayButton(clientData)
 	 * padding space left for a default ring.
 	 */
 
-	if (butPtr->defaultState == tkNormalUid) {
+	if (butPtr->defaultState == TK_STATE_NORMAL) {
 	    TkDrawInsetFocusHighlight(tkwin, gc, butPtr->highlightWidth,
 		    pixmap, 5);
 	} else {
@@ -407,7 +447,7 @@ TkpComputeButtonGeometry(butPtr)
      * Leave room for the default ring if needed.
      */
 
-    if (butPtr->defaultState != tkDisabledUid) {
+    if (butPtr->defaultState != TK_STATE_DISABLED) {
 	butPtr->inset += 5;
     }
     butPtr->indicatorSpace = 0;

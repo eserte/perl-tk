@@ -517,9 +517,9 @@ static void AddMwmProtocol(interp, wmPtr, name, message)
     }
 
     if (ptPtr->name == NULL) {
-	ptPtr->name = (char*)strdup(name);
+	ptPtr->name = tixStrDup(name);
     }
-    ptPtr->menuMessage = (char*)strdup(message);
+    ptPtr->menuMessage = tixStrDup(message);
     ptPtr->messageLen  = strlen(message);
     ptPtr->active = 1;
 

@@ -39,7 +39,7 @@ require Tk::Frame;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/IconList.pm#3$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/IconList.pm#5 $
 
 use base 'Tk::Frame';
 
@@ -133,6 +133,11 @@ sub Populate {
 		    ['CALLBACK', 'browseCommand', 'BrowseCommand', undef],
 		    -command =>
 		    ['CALLBACK', 'command', 'Command', undef],
+		    -font =>
+		    ['PASSIVE', 'font', 'Font', undef],
+		    -foreground =>
+		    ['PASSIVE', 'foreground', 'Foreground', undef],
+		    -fg => '-foreground',
 		   );
 
     $w;
@@ -200,8 +205,12 @@ sub Add {
     my($w, $image, $text) = @_;
     my $canvas = $w->Subwidget('canvas');
     my $iTag = $canvas->createImage(0, 0, -image => $image, -anchor => 'nw');
+    my $font = $w->cget(-font);
+    my $fg   = $w->cget(-foreground);
     my $tTag = $canvas->createText(0, 0, -text => $text, -anchor => 'nw',
-				   -font => $w->{'font'});
+				   (defined $fg   ? (-fill => $fg)   : ()),
+				   (defined $font ? (-font => $font) : ()),
+				  );
     my $rTag = $canvas->createRectangle(0, 0, 0, 0,
 					-fill => undef,
 					-outline => undef);
@@ -485,7 +494,7 @@ sub KeyPress {
     $w->{'_ILAccel'} .= $key;
     $w->Goto($w->{'_ILAccel'});
     eval {
-	$w->cancel($w->{'_ILAccel_afterid'});
+	$w->afterCancel($w->{'_ILAccel_afterid'});
     };
     $w->{'_ILAccel_afterid'} = $w->after(500, ['Reset', $w]);
 }

@@ -604,7 +604,7 @@ ReconfigureWindowsMenu(
     	     * Set enabling and disabling correctly.
     	     */
 
-	    if (mePtr->state == tkDisabledUid) {
+	    if (mePtr->state == TK_STATE_DISABLED) {
 		flags |= MF_DISABLED;
 	    }
     	    
@@ -981,7 +981,7 @@ TkWinHandleMenuEvent(phwnd, pMessage, pwParam, plParam, plResult)
 		    }
 		    if (parentEntryPtr->menuPtr
 			    ->entries[parentEntryPtr->index]->state
-			    != tkDisabledUid) {
+			    != TK_STATE_DISABLED) {
 			TkActivateMenuEntry(parentEntryPtr->menuPtr, 
 				parentEntryPtr->index);
 		    }
@@ -1060,7 +1060,7 @@ TkWinHandleMenuEvent(phwnd, pMessage, pwParam, plParam, plResult)
 		twdPtr->type = TWD_WINDC;
 		twdPtr->winDC.hdc = itemPtr->hDC;
 
-		if (mePtr->state != tkDisabledUid) {
+		if (mePtr->state != TK_STATE_DISABLED) {
 		    if (itemPtr->itemState & ODS_SELECTED) {
 			TkActivateMenuEntry(menuPtr, mePtr->index);
 		    } else {
@@ -1116,7 +1116,7 @@ TkWinHandleMenuEvent(phwnd, pMessage, pwParam, plParam, plResult)
 			}
 		    }	 
 
-		    if ((mePtr == NULL) || (mePtr->state == tkDisabledUid)) {
+		    if ((mePtr == NULL) || (mePtr->state == TK_STATE_DISABLED)) {
 			TkActivateMenuEntry(menuPtr, -1);
 		    } else {
 			TkActivateMenuEntry(menuPtr, mePtr->index);
@@ -1490,7 +1490,7 @@ DrawMenuEntryIndicator(menuPtr, mePtr, d, gc, indicatorGC, tkfont, fmPtr, x,
 	RECT rect;
 	GC whichGC;
 
-	if (mePtr->state != tkNormalUid) {
+	if (mePtr->state != TK_STATE_NORMAL) {
 	    whichGC = gc;
 	} else {
 	    whichGC = indicatorGC;
@@ -1501,7 +1501,7 @@ DrawMenuEntryIndicator(menuPtr, mePtr, d, gc, indicatorGC, tkfont, fmPtr, x,
 	rect.left = menuPtr->borderWidth + menuPtr->activeBorderWidth + x;
 	rect.right = mePtr->indicatorSpace + x;
 
-	if ((mePtr->state == tkDisabledUid) && (menuPtr->disabledFg != NULL)
+	if ((mePtr->state == TK_STATE_DISABLED) && (menuPtr->disabledFg != NULL)
 		&& (versionInfo.dwMajorVersion >= 4)) {
 	    RECT hilightRect;
 	    COLORREF oldFgColor = whichGC->foreground;
@@ -1519,7 +1519,7 @@ DrawMenuEntryIndicator(menuPtr, mePtr, d, gc, indicatorGC, tkfont, fmPtr, x,
 	DrawWindowsSystemBitmap(menuPtr->display, d, whichGC, &rect, 
 		OBM_CHECK, 0);
 
-	if ((mePtr->state == tkDisabledUid) 
+	if ((mePtr->state == TK_STATE_DISABLED) 
 		&& (menuPtr->disabledImageGC != None)
 		&& (versionInfo.dwMajorVersion < 4)) {
 	    XFillRectangle(menuPtr->display, d, menuPtr->disabledImageGC,
@@ -1571,7 +1571,7 @@ DrawMenuEntryAccelerator(menuPtr, mePtr, d, gc, tkfont, fmPtr,
 
     baseline = y + (height + fmPtr->ascent - fmPtr->descent) / 2;
 
-    if ((mePtr->state == tkDisabledUid) && (menuPtr->disabledFg != NULL)
+    if ((mePtr->state == TK_STATE_DISABLED) && (menuPtr->disabledFg != NULL)
 	    && ((mePtr->accel != NULL)
 	    || ((mePtr->type == CASCADE_ENTRY) && drawArrow))) {
 	if (versionInfo.dwMajorVersion >= 4) {
@@ -1602,7 +1602,7 @@ DrawMenuEntryAccelerator(menuPtr, mePtr, d, gc, tkfont, fmPtr,
 		mePtr->accelLength, leftEdge, baseline);
     }
 
-    if ((mePtr->state == tkDisabledUid) 
+    if ((mePtr->state == TK_STATE_DISABLED) 
 	    && (menuPtr->disabledImageGC != None)
 	    && (versionInfo.dwMajorVersion < 4)) {
 	XFillRectangle(menuPtr->display, d, menuPtr->disabledImageGC,
@@ -1619,7 +1619,7 @@ DrawMenuEntryAccelerator(menuPtr, mePtr, d, gc, tkfont, fmPtr,
 	rect.right = x + width - 1;
 	DrawWindowsSystemBitmap(menuPtr->display, d, gc, &rect, OBM_MNARROW, 
 		ALIGN_BITMAP_RIGHT);
-	if ((mePtr->state == tkDisabledUid) 
+	if ((mePtr->state == TK_STATE_DISABLED) 
 		&& (menuPtr->disabledImageGC != None)
 		&& (versionInfo.dwMajorVersion < 4)) {
 	    XFillRectangle(menuPtr->display, d, menuPtr->disabledImageGC,
@@ -1929,7 +1929,7 @@ DrawMenuEntryLabel(
     	}
     }
 
-    if (mePtr->state == tkDisabledUid) {
+    if (mePtr->state == TK_STATE_DISABLED) {
 	if (menuPtr->disabledFg == NULL) {
 	    XFillRectangle(menuPtr->display, d, menuPtr->disabledGC, x, y,
 		    (unsigned) width, (unsigned) height);
@@ -2103,7 +2103,7 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
      * Choose the gc for drawing the foreground part of the entry.
      */
 
-    if ((mePtr->state == tkActiveUid)
+    if ((mePtr->state == TK_STATE_ACTIVE)
 	    && !strictMotif) {
 	gc = mePtr->activeGC;
 	if (gc == NULL) {
@@ -2118,14 +2118,14 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
     		cascadeEntryPtr = cascadeEntryPtr->nextCascadePtr) {
     	    if (strcmp(LangString(cascadeEntryPtr->name), 
     	    	    Tk_PathName(menuPtr->tkwin)) == 0) {
-    	    	if (cascadeEntryPtr->state == tkDisabledUid) {
+    	    	if (cascadeEntryPtr->state == TK_STATE_DISABLED) {
     	    	    parentDisabled = 1;
     	    	}
     	    	break;
     	    }
     	}
 
-	if (((parentDisabled || (mePtr->state == tkDisabledUid)))
+	if (((parentDisabled || (mePtr->state == TK_STATE_DISABLED)))
 		&& (menuPtr->disabledFg != NULL)) {
 	    gc = mePtr->disabledGC;
 	    if (gc == NULL) {
@@ -2265,7 +2265,7 @@ DrawMenuEntryBackground(
     int width,				/* width of rectangle to draw */
     int height)				/* height of rectangle to draw */
 {
-    if (mePtr->state == tkActiveUid) {
+    if (mePtr->state == TK_STATE_ACTIVE) {
 	bgBorder = activeBorder;
     }
     Tk_Fill3DRectangle(menuPtr->tkwin, d, bgBorder,

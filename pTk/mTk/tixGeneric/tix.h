@@ -25,7 +25,7 @@
 #define TIX_PATCHLEVEL	"4.1.0"
 #define TIX_PATCH_LEVEL TIX_PATCHLEVEL
 
-#define TIX_RELEASE     "4.1.0.005"
+#define TIX_RELEASE     "4.1.0.007"
 
 #ifndef _TK
 #include <tk.h>
@@ -36,6 +36,20 @@
 #ifndef _WINDOWS
 #define _WINDOWS
 #endif
+#endif
+
+/*
+ * When building Tix itself, BUILD_tix should be defined by the makefile
+ * so that all EXTERN declarations get DLLEXPORT; when building apps
+ * using Tix, BUILD_tix should NOT be defined so that all EXTERN
+ * declarations get DLLIMPORT as defined in tcl.h
+ *
+ * NOTE: This ifdef MUST appear after the include of tcl.h and tk.h
+ * because the EXTERN declarations in those files need DLLIMPORT.
+ */
+#ifdef BUILD_tix
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
 #endif
 
 #ifdef __cplusplus
@@ -376,6 +390,8 @@ EXTERN void 		Tix_SetArgv _ANSI_ARGS_((Tcl_Interp *interp,
 			    int argc, char **argv));
 EXTERN void		Tix_SetRcFileName _ANSI_ARGS_((
 			    Tcl_Interp * interp,  char * rcFileName));
+EXTERN char *		TixGetStringFromObj _ANSI_ARGS_((
+			    char *objPtr,int *lengthPtr));
 
 /*
  * Entry points for Tk_CONFIG_CUSTOM stubs to call 
@@ -454,17 +470,8 @@ extern TIX_DECLARE_CMD(Tix_CreateWidgetCmd);
 EXTERN char * 		tixStrDup _ANSI_ARGS_((CONST char * s));
 
 #ifdef _WINDOWS
-#ifndef NO_STRCASECMP
-#define NO_STRCASECMP 1
-#endif
-#endif
-
-#if defined(NO_STRCASECMP)
-#  ifndef strcasecmp
-#    define strcasecmp tixStrCaseCmp
-#  endif
-extern int		tixStrCaseCmp _ANSI_ARGS_((CONST char *s1,
-			    CONST char *s2));
+/* This is the way win/tkWinPort.h in tk8.0.5 defines it */
+#define strcasecmp stricmp
 #endif
 
 

@@ -1,7 +1,7 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#2$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#12 $
 
 use Tk;
 use Tk::Canvas;
@@ -35,6 +35,7 @@ sub Populate {
 	-gap      => [PASSIVE => undef, undef, 1],
 	-colors   => [PASSIVE => undef, undef, undef],
 	-relief	  => [SELF => 'relief', 'Relief', 'sunken'],
+	-value    => [METHOD  => undef, undef, undef],
 	-variable => [METHOD  => undef, undef, undef],
 	-anchor   => [METHOD  => 'anchor', 'Anchor', 'w'],
 	-resolution
@@ -45,6 +46,7 @@ sub Populate {
 		  => [PASSIVE => 'troughColor', 'Background', 'grey55'],
     );
     _layoutRequest($c,1);
+    $c->OnDestroy(['Destroyed' => $c]);
 }
 
 sub anchor {
@@ -65,7 +67,7 @@ sub anchor {
 sub _layoutRequest {
     my $c = shift;
     my $why = shift;
-    $c->DoWhenIdle(['_arrange',$c]) unless $c->{'layout_pending'};
+    $c->afterIdle(['_arrange',$c]) unless $c->{'layout_pending'};
     $c->{'layout_pending'} |= $why;
 }
 
@@ -84,7 +86,7 @@ sub _arrange {
     my $from = $c->{Configure}{'-from'}; 
     my $to   = $c->{Configure}{'-to'};
     my $horz = $c->{Configure}{'-anchor'} =~ /[ew]/i ? 1 : 0;
-    my $dir  = $c->{Configure}{'-anchor'} =~ /[nw]/i ? -1 : 1;
+    my $dir  = $c->{Configure}{'-anchor'} =~ /[ne]/i ? -1 : 1;
 
     my($minv,$maxv) = $from < $to ? ($from,$to) : ($to,$from);
 
@@ -93,10 +95,10 @@ sub _arrange {
 	my $defw = 10 + $y*2 + $bw *2;
 	my $defl = ($maxv - $minv) + $x*2 + $bw*2;
 
-	$h = $c->{Configure}{'-length'} || $defw;
-	$w = $c->{Configure}{'-width'}  || $defl;
+	$h = $c->pixels($c->{Configure}{'-length'}) || $defl;
+	$w = $c->pixels($c->{Configure}{'-width'})  || $defw;
 
-	($w,$h) = ($h,$w) unless $horz;
+	($w,$h) = ($h,$w) if $horz;
 	$c->GeometryRequest($w,$h);
 	$c->parent->update;
 	$c->update;
@@ -278,9 +280,9 @@ sub _arrange {
 
 sub value {
     my $c = shift;
-    my $val = defined($c->{Configure}{'-variable'})
-		? $c->{Configure}{'-variable'}
-		: \$c->{Configure}{'-value'};
+    my $val = defined($c->{'-variable'})
+		? $c->{'-variable'}
+		: \$c->{'-value'};
     my $old = defined($$val) ? $$val : $c->{Configure}{'-from'};
 
     if(@_) {
@@ -292,37 +294,29 @@ sub value {
     $old;
 }
 
-##
-## A poor-man's watchvar until we have a proper watchvar
-##
-
-sub _afterit {
-    my $c = shift;
-    return unless defined($c->{Configure}{'-variable'});
-
-    if(${$c->{Configure}{'-variable'}} != $c->{Configure}{'-value'}) {
-	$c->{Configure}{'-value'} = ${$c->{Configure}{'-variable'}};
-	_layoutRequest($c,2);
-    }
-
-    $c->after(100, [ \&_afterit, $c]);
-}
-
 sub variable {
     my $c = shift;
-    my $val = \$c->{Configure}{'-variable'};
+    my $val = \$c->{'-variable'};
     my $old = $$val;
-
     if(@_) {
 	my $value = shift;
-	$c->{Configure}{'-value'} = $$old
-		if ref($old);
-	$$val = $value;
-	_afterit($c);
+        if (ref $old)
+         {
+          $c->{'-value'} = $$old;
+          untie $$old if tied($$old);
+         }
+        tie $$value,'Tk::Configure',$c,'-value';
+	$$val = $value;   
 	_layoutRequest($c,2);
     }
-
     $old;
+}
+
+sub Destroyed
+{
+ my $c = shift;   
+ my $var = delete $c->{'-variable'};
+ untie $$var if (defined($var) && ref($var))
 }
 
 1;
@@ -331,6 +325,8 @@ __END__
 =head1 NAME
 
 Tk::ProgressBar - A graphical progress bar
+
+=for category Derived Widgets
 
 =head1 SYNOPSIS
 

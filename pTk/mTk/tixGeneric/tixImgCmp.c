@@ -9,10 +9,11 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  */
-
+#include "tkInt.h"
 #include "tixPort.h"
 #include "tixInt.h"
 #include "tixDef.h"
+#include "tkVMacro.h"
 
 /*
  * ToDo: 
@@ -58,7 +59,21 @@ typedef struct CmpMaster {
     unsigned int changing;	/* is this image going to call Tk_ImageChanged
 				 * in an idle event? */
     unsigned int isDeleted;
-} CmpMaster;
+
+    int winCount;               /* Number of windows using image */
+} CmpMaster;   
+
+/* This is the per-instance data - this is currently minimal
+   it should really have all Display/Visual related stuff like
+   GCs, Pixmaps etc. so that master is window independant.
+   Instead we check (a bit) that instance tkwin is "compatible"
+   with the one specified on the master.
+*/
+
+typedef struct CmpInstance {
+    CmpMaster *master;		/* Master data */
+    Tk_Window tkwin;		/* Window where used */
+} CmpInstance;
 
 #define TYPE_TEXT	0
 #define TYPE_SPACE	1
@@ -74,7 +89,6 @@ typedef struct CmpLine {
     int padX, padY;
     Tk_Anchor anchor;
     int width, height;		/* Dimensions of this line. */
-
 } CmpLine;
 
 /* abstract type */
@@ -139,7 +153,7 @@ typedef union CmpItemPtr {
  * The type record for bitmap images:
  */
 static int		ImgCmpCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, char **argv,
+			    char *name, int argc, Tcl_Obj **objv,
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgCmpGet _ANSI_ARGS_((Tk_Window tkwin,
@@ -151,6 +165,7 @@ static void		ImgCmpDisplay _ANSI_ARGS_((ClientData clientData,
 static void		ImgCmpFree _ANSI_ARGS_((ClientData clientData,
 			    Display *display));
 static void		ImgCmpDelete _ANSI_ARGS_((ClientData clientData));
+static void		ImgCmpFreeResources _ANSI_ARGS_((ClientData clientData));
 static void		CalculateMasterSize _ANSI_ARGS_((ClientData clientData)); 
 
 Tk_ImageType tixCompoundImageType = {
@@ -160,6 +175,7 @@ Tk_ImageType tixCompoundImageType = {
     ImgCmpDisplay,		/* displayProc */
     ImgCmpFree,			/* freeProc */
     ImgCmpDelete,		/* deleteProc */
+    NULL,			/* postscriptProc */ 
     (Tk_ImageType *) NULL	/* nextPtr */
 };
 
@@ -348,8 +364,6 @@ static void		ImageProc _ANSI_ARGS_((ClientData clientData,
 			    int imgWidth, int imgHeight));
 static void 		FreeLine _ANSI_ARGS_((CmpLine * lPtr));
 static void 		FreeItem _ANSI_ARGS_((CmpItemPtr p));
-static void		CmpEventProc _ANSI_ARGS_((ClientData clientData,
-			    XEvent *eventPtr));
 
 /*
  *----------------------------------------------------------------------
@@ -370,12 +384,12 @@ static void		CmpEventProc _ANSI_ARGS_((ClientData clientData,
 
 	/* ARGSUSED */
 static int
-ImgCmpCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
+ImgCmpCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     Tcl_Interp *interp;		/* Interpreter for application containing
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings for options (doesn't
+    Tcl_Obj **objv;		/* Argument strings for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -384,12 +398,27 @@ ImgCmpCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
 				 * it will be returned in later callbacks. */
 {
     CmpMaster *masterPtr;
+    int i;
+#ifndef _LANG
+    char *argvbuf[10];
+    char **args = argvbuf;
+
+    /*
+     * Convert the objv arguments into string equivalent.
+     */
+    if (argc > 10) {
+	argv = (char **) ckalloc(argc * sizeof(char *));
+    }
+    for (i = 0; i < argc; i++) {
+	argv[i] = TixGetStringFromObj(objv[i], NULL);
+    }        
+#endif
 
     masterPtr = (CmpMaster *) ckalloc(sizeof(CmpMaster));
     masterPtr->tkMaster = master;
     masterPtr->interp = interp;
-    masterPtr->imageCmd = Tcl_CreateCommand(interp, name, ImgCmpCmd,
-	(ClientData)masterPtr, ImgCmpCmdDeletedProc);
+    masterPtr->imageCmd = Lang_CreateImage(interp, name, ImgCmpCmd,
+	(ClientData)masterPtr, ImgCmpCmdDeletedProc, typePtr);
     masterPtr->tkwin = NULL;
     masterPtr->display = NULL;
     masterPtr->width = 0;
@@ -407,8 +436,9 @@ ImgCmpCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
     masterPtr->showBackground = 0;
     masterPtr->changing = 0;
     masterPtr->isDeleted = 0;
+    masterPtr->winCount = 0;
 	
-    if (ImgCmpConfigureMaster(masterPtr, argc, argv, 0) != TCL_OK) {
+    if (ImgCmpConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgCmpDelete((ClientData) masterPtr);
 	return TCL_ERROR;
     }
@@ -464,9 +494,7 @@ ImgCmpConfigureMaster(masterPtr, argc, argv, flags)
 	}
     }
     if (masterPtr->tkwin == NULL) {
-	Tcl_AppendResult(masterPtr->interp, 
-	    "no value given for -window option.", NULL);
-	return TCL_ERROR;
+	masterPtr->tkwin = Tk_MainWindow(masterPtr->interp);
     }
     masterPtr->display = Tk_Display(masterPtr->tkwin);
 
@@ -475,8 +503,7 @@ ImgCmpConfigureMaster(masterPtr, argc, argv, flags)
 	return TCL_ERROR;
     }
 
-    Tk_CreateEventHandler(masterPtr->tkwin,
-	StructureNotifyMask, CmpEventProc, (ClientData)masterPtr);
+
     /*
      * Get the default GC for text and bitmaps
      */
@@ -933,15 +960,21 @@ ImgCmpGet(tkwin, masterData)
 				 * image. */
 {
     CmpMaster *masterPtr = (CmpMaster *)masterData;
-    
-    if (tkwin == masterPtr->tkwin) {
-	return masterData;
+
+    if (Tk_Display(tkwin) == masterPtr->display) {
+	CmpInstance *instance = (CmpInstance *) ckalloc(sizeof(CmpInstance));
+	if (instance) {
+	    instance->master = masterPtr;
+	    instance->tkwin  = tkwin;
+	    masterPtr->winCount++;            
+	}
+	return (ClientData) instance;
     }
 
     Tcl_AppendResult(masterPtr->interp, 
 	"Image \"",
 	Tk_NameOfImage(masterPtr->tkMaster),
-	"\" can only be assigned to window \"",
+	"\" can only be assigned to display of window \"",
 	Tk_PathName(masterPtr->tkwin), "\"", NULL);
     Tcl_AddErrorInfo(masterPtr->interp, "\n    (while configuring image \"");
     Tcl_AddErrorInfo(masterPtr->interp, Tk_NameOfImage(masterPtr->tkMaster));
@@ -1072,10 +1105,19 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
     int drawableX, drawableY;	/* Coordinates within drawable that
 				 * correspond to imageX and imageY. */
 {
-    CmpMaster * masterPtr = (CmpMaster*)clientData;
+    CmpInstance *instance = (CmpInstance *) clientData;
+    CmpMaster * masterPtr;
     CmpLine *lPtr;
     CmpItemPtr p;
     int dx, dy, extraX;
+
+    if (instance == NULL) {
+	/* attempting to draw into a invalid window (can only be drawn into
+	 * the original window set by the -window option */
+	return;
+    }
+
+    masterPtr = instance->master;
 
     if (masterPtr == NULL) {
 	/* attempting to draw into a invalid window (can only be drawn into
@@ -1084,7 +1126,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
     }
 
     if (masterPtr->showBackground) {
-	Tk_Fill3DRectangle(masterPtr->tkwin, drawable, 
+	Tk_Fill3DRectangle(instance->tkwin, drawable, 
 	    masterPtr->background,
 	    drawableX + masterPtr->padX - imageX,
 	    drawableY + masterPtr->padY - imageY,
@@ -1157,7 +1199,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 			font = masterPtr->font;
 		    }
 
-		    TixDisplayText(Tk_Display(masterPtr->tkwin), drawable,
+		    TixDisplayText(Tk_Display(instance->tkwin), drawable,
 			font, p.text->text, p.text->numChars,
 			dx, dy+extraY,	    
 			p.text->width - 2*p.item->padX,
@@ -1168,7 +1210,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 		break;
 		
 	      case TYPE_BITMAP:
-		XCopyPlane(Tk_Display(masterPtr->tkwin), p.bitmap->bitmap,
+		XCopyPlane(Tk_Display(instance->tkwin), p.bitmap->bitmap,
 		    drawable, p.bitmap->gc, 0, 0,
 		    p.bitmap->width  - 2*p.item->padX,
 		    p.bitmap->height - 2*p.item->padY,
@@ -1201,22 +1243,24 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
  * Side effects:
  *	Internal data structures get cleaned up.
  *
+ * Arguments:
+ *  clientData -- Pointer to CmpInstance for instance to be displayed
+ *  display    -- Display containing image window
+ *
  *----------------------------------------------------------------------
  */
 
 static void
 ImgCmpFree(clientData, display)
-    ClientData clientData;	/* Pointer to CmpInstance structure for
-				 * for instance to be displayed. */
-    Display *display;		/* Display containing window that used image.*/
-{
-    /*
-     * Since one compound image can only be used in one window, when that 
-     * window is deleted, this image is now useless and should be deleted as
-     * well
-     */
+    ClientData clientData;
+    Display *display;
+{  
+    CmpInstance *instance = (CmpInstance *) clientData;
+    /* Free per-instance resources and data */
+    instance->master->winCount--;            
+    ckfree((char *) instance);
 }
-
+
 static void FreeLine(lPtr)
     CmpLine * lPtr;
 {
@@ -1224,46 +1268,117 @@ static void FreeLine(lPtr)
 	Tk_Display(lPtr->masterPtr->tkwin), 0);
     ckfree((char *) lPtr);
 }
-
+
 static void FreeItem(p)
     CmpItemPtr p;
 {
+    Display *display = p.item->line->masterPtr->display;
+
     switch (p.item->type) {
       case TYPE_IMAGE:
 	if (p.image->image) {
 	    Tk_FreeImage(p.image->image);
 	}
-	Tk_FreeOptions(imageConfigSpecs, (char *)p.image, 
-	    Tk_Display(p.item->line->masterPtr->tkwin), 0);
+	Tk_FreeOptions(imageConfigSpecs, (char *)p.image, display, 0);
 	break;
 
       case TYPE_SPACE:
-	Tk_FreeOptions(spaceConfigSpecs, (char *)p.space, 
-	    Tk_Display(p.item->line->masterPtr->tkwin), 0);
+	Tk_FreeOptions(spaceConfigSpecs, (char *)p.space, display, 0);
 	break;
 
       case TYPE_TEXT:
 	if (p.text->gc != None) {
-	    Tk_FreeGC(Tk_Display(p.text->line->masterPtr->tkwin),
-		p.text->gc);
+	    Tk_FreeGC(display, p.text->gc);
 	}
-	Tk_FreeOptions(textConfigSpecs, (char *)p.text, 
-	    Tk_Display(p.item->line->masterPtr->tkwin), 0);
+	Tk_FreeOptions(textConfigSpecs, (char *)p.text, display, 0);
 	break;
 
       case TYPE_BITMAP:
 	if (p.bitmap->gc != None) {
-	    Tk_FreeGC(Tk_Display(p.bitmap->line->masterPtr->tkwin),
-		p.bitmap->gc);
+	    Tk_FreeGC(display, p.bitmap->gc);
 	}
-	Tk_FreeOptions(bitmapConfigSpecs, (char *)p.bitmap, 
-	    Tk_Display(p.item->line->masterPtr->tkwin), 0);
+	Tk_FreeOptions(bitmapConfigSpecs, (char *)p.bitmap, display, 0);
 	break;
 
       case TYPE_WIDGET:
 	break;
     }
     ckfree((char *) p.item);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ImgCmpFreeResources --
+ *
+ *	This procedure frees resources associated with the window
+ *	specified with the -window arg to "image create compound ..."
+ *
+ *	This procedure must be called from ImgCmpDelete
+ * 	in order to ensure resources are freed under all circumstances.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Resources associated with the image get freed, new image command
+ *	is removed from interpreter.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+ImgCmpFreeResources(masterData)
+    ClientData masterData;	/* Pointer to CmpMaster structure for
+				 * image.  Must not have any more instances. */
+{
+    CmpMaster *masterPtr = (CmpMaster *) masterData;
+    CmpLine * lPtr;
+    CmpItemPtr p;
+
+
+    if (masterPtr->tkwin == NULL) {
+        return ;
+    }
+
+    Tcl_Preserve((ClientData) masterPtr);
+
+    if (masterPtr->isDeleted == 0) {
+
+	    masterPtr->isDeleted = 1;
+
+	    for (lPtr=masterPtr->lineHead; lPtr;) {
+		    CmpLine * toDelete = lPtr;
+		    lPtr = lPtr->next;
+		    
+		    for (p.item=toDelete->itemHead; p.item;) {
+			    CmpItemPtr toDelete;
+			    
+			    toDelete.item = p.item;
+			    p.item=p.item->next;
+			    
+			    FreeItem(toDelete);
+		    }
+		    FreeLine(toDelete);
+	    }
+
+	    if (masterPtr->changing) {
+		    Tcl_CancelIdleCall(CalculateMasterSize, (ClientData)masterPtr);
+	    }
+	    masterPtr->tkMaster = NULL;
+
+	    if (masterPtr->imageCmd != NULL) {
+		    Tcl_DeleteCommandFromToken(masterPtr->interp, masterPtr->imageCmd);
+		    masterPtr->imageCmd = NULL;
+	    }
+
+	    if (masterPtr->gc != None) {
+		    Tk_FreeGC(masterPtr->display, masterPtr->gc);
+	    }
+	    
+	    Tk_FreeOptions(configSpecs, (char *) masterPtr, masterPtr->display, 0);
+    }
+
+    Tcl_Release((ClientData) masterPtr);
 }
 
 /*
@@ -1288,56 +1403,7 @@ ImgCmpDelete(masterData)
 				 * image.  Must not have any more instances. */
 {
     CmpMaster *masterPtr = (CmpMaster *) masterData;
-    CmpLine * lPtr;
-    CmpItemPtr p;
-
-    if (masterPtr->tkwin == NULL) {
-	goto done;
-    }
-
-    Tcl_Preserve((ClientData) masterPtr);
-
-    Tk_DeleteEventHandler(masterPtr->tkwin,
-	StructureNotifyMask, CmpEventProc, (ClientData)masterPtr);
-
-    if (masterPtr->isDeleted) {
-	Tcl_Release((ClientData) masterPtr);
-	return;
-    }
-    masterPtr->isDeleted = 1;
-
-    for (lPtr=masterPtr->lineHead; lPtr;) {
-	CmpLine * toDelete = lPtr;
-	lPtr = lPtr->next;
-
-	for (p.item=toDelete->itemHead; p.item;) {
-	    CmpItemPtr toDelete;
-
-	    toDelete.item = p.item;
-	    p.item=p.item->next;
-
-	    FreeItem(toDelete);
-	}
-	FreeLine(toDelete);
-    }
-
-    if (masterPtr->changing) {
-	Tcl_CancelIdleCall(CalculateMasterSize, (ClientData)masterPtr);
-    }
-    masterPtr->tkMaster = NULL;
-    if (masterPtr->imageCmd != NULL) {
-	char * cmd = Tcl_GetCommandName(masterPtr->interp,masterPtr->imageCmd);
-	masterPtr->imageCmd = NULL;
-	Tcl_DeleteCommand(masterPtr->interp, cmd);
-    }
-    if (masterPtr->gc != None) {
-	Tk_FreeGC(masterPtr->display, masterPtr->gc);
-    }
-
-    Tk_FreeOptions(configSpecs, (char *) masterPtr, masterPtr->display, 0);
-    Tcl_Release((ClientData) masterPtr);
-
-  done:
+    ImgCmpFreeResources(masterData);
     ckfree((char *) masterPtr);
 }
 
@@ -1364,18 +1430,11 @@ ImgCmpCmdDeletedProc(clientData)
 {
     CmpMaster *masterPtr = (CmpMaster *) clientData;
 
-    Tcl_Preserve((ClientData) masterPtr);
-    if (masterPtr->isDeleted == 1) {
-	Tcl_Release((ClientData) masterPtr);
-	return;
-    } else {
-	if (masterPtr->tkMaster != NULL) {
-	    if (Tk_MainWindow(masterPtr->interp) != NULL) {
-		Tk_DeleteImage(masterPtr->interp, 
-		    Tk_NameOfImage(masterPtr->tkMaster));
-	    }
-	}
-	Tcl_Release((ClientData) masterPtr);
+    masterPtr->imageCmd = NULL;
+
+    if (masterPtr->tkMaster != NULL) {
+	    Tk_DeleteImage(masterPtr->interp, 
+			   Tk_NameOfImage(masterPtr->tkMaster));
     }
 }
 /*
@@ -1384,7 +1443,7 @@ ImgCmpCmdDeletedProc(clientData)
  * ImageProc --
  *
  *	This procedure is invoked by the image code whenever the manager
- *	for an image does something that affects the size of contents
+ *	for an image does something that affects the size or contents
  *	of an image displayed in a button.
  *
  * Results:
@@ -1410,38 +1469,4 @@ ImageProc(clientData, x, y, width, height, imgWidth, imgHeight)
 
     ChangeImageWhenIdle(p.item->line->masterPtr);
 }
-
-/*
- *--------------------------------------------------------------
- *
- * CmpEventProc --
- *
- *	This procedure is invoked by the Tk dispatcher for various
- *	events on the window that employs this compound image.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	When the window gets deleted, internal structures get
- *	cleaned up.  When it gets exposed, it is redisplayed.
- *
- *--------------------------------------------------------------
- */
 
-static void
-CmpEventProc(clientData, eventPtr)
-    ClientData clientData;	/* Information about window. */
-    XEvent *eventPtr;		/* Information about event. */
-{
-    CmpMaster *masterPtr = (CmpMaster *)clientData;
-    char * cmd;
-
-    if (eventPtr->type == DestroyNotify) {
-	if (masterPtr->imageCmd != NULL) {
-	    cmd = Tcl_GetCommandName(masterPtr->interp,masterPtr->imageCmd);
-	    masterPtr->imageCmd = NULL;
-	    Tcl_DeleteCommand(masterPtr->interp, cmd);
-	}
-    }
-}

@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#27$
+$VERSION = '3.029'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#29 $
 
 use base  qw(Tk::Toplevel);
 
@@ -31,17 +31,18 @@ sub Populate {
 
     # create the two frames
     my $top = $cw->Component('Frame', 'top');
-    $top->configure(-relief => 'raised', -bd => 1);
-    $top->pack(-side => 'top', -fill => 'both', -ipady => 3, -ipadx => 3);
+    $top->configure(-relief => 'raised', -bd => 1) unless $Tk::platform eq 'MSWin32';
     my $bot = $cw->Component('Frame', 'bottom');
-    $bot->configure(-relief => 'raised', -bd => 1);
-    $bot->pack(-side => 'top', -fill => 'both', -ipady => 3, -ipadx => 3);
+    $bot->configure(-relief => 'raised', -bd => 1) unless $Tk::platform eq 'MSWin32';
+    $bot->pack(qw/-side bottom -fill both -ipady 3 -ipadx 3/);
+    $top->pack(qw/-side top -fill both -ipady 3 -ipadx 3 -expand 1/);
 
     # create a row of buttons in the bottom.
     my $bl;  # foreach my $var: perl > 5.003_08
     foreach $bl (@$buttons) 
      {
 	my $b = $bot->Button(-text => $bl, -command => sub { $cw->{'selected_button'} = "$bl" } );
+	$cw->Advertise("B_$bl" => $b);
         if ($Tk::platform eq 'MSWin32') 
          {
           $b->configure(-width => 10, -pady => 0);
@@ -61,12 +62,7 @@ sub Populate {
 	    $b->pack(-side => 'left', -expand => 1,  -padx => 1, -pady => 1);
 	}
     }                
-    $cw->ConfigSpecs( -fg         => ['ADVERTISED','foreground','Foreground','black'],
-                      -foreground => ['ADVERTISED','foreground','Foreground','black'],
-                      -bg         => ['DESCENDANTS','background','Background',undef],
-                      -background => ['DESCENDANTS','background','Background',undef],
-                      -command    => ['CALLBACK', undef, undef, undef ], 
-                    );
+    $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ]);
     $cw->Delegates('Construct',$top);
 }
 
@@ -114,7 +110,3 @@ sub Show {
 }
 
 1;
-
-__END__
-
-=cut

@@ -38,6 +38,76 @@ VFUNC(Tcl_Command,Lang_CreateWidget,V_Lang_CreateWidget,_ANSI_ARGS_((Tcl_Interp 
 VFUNC(void,Lang_DeleteWidget,V_Lang_DeleteWidget,_ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd)))
 #endif
 
+#ifndef TkOffsetParseProc
+VFUNC(int,TkOffsetParseProc,V_TkOffsetParseProc,_ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset)))
+#endif
+
+#ifndef TkOffsetPrintProc
+VFUNC(Arg,TkOffsetPrintProc,V_TkOffsetPrintProc,_ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr)))
+#endif
+
+#ifndef TkOrientParseProc
+VFUNC(int,TkOrientParseProc,V_TkOrientParseProc,_ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value,
+		    char *widgRec, int offset)))
+#endif
+
+#ifndef TkOrientPrintProc
+VFUNC(Arg,TkOrientPrintProc,V_TkOrientPrintProc,_ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr)))
+#endif
+
+#ifndef TkPixelParseProc
+VFUNC(int,TkPixelParseProc,V_TkPixelParseProc,_ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value,
+		    char *widgRec, int offset)))
+#endif
+
+#ifndef TkPixelPrintProc
+VFUNC(Arg,TkPixelPrintProc,V_TkPixelPrintProc,_ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr)))
+#endif
+
+#ifndef TkStateParseProc
+VFUNC(int,TkStateParseProc,V_TkStateParseProc,_ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value,
+		    char *widgRec, int offset)))
+#endif
+
+#ifndef TkStatePrintProc
+VFUNC(Arg,TkStatePrintProc,V_TkStatePrintProc,_ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr)))
+#endif
+
+#ifndef TkTileParseProc
+VFUNC(int,TkTileParseProc,V_TkTileParseProc,_ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset)))
+#endif
+
+#ifndef TkTilePrintProc
+VFUNC(Arg,TkTilePrintProc,V_TkTilePrintProc,_ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr)))
+#endif
+
 #ifndef Tk_3DBorderColor
 VFUNC(XColor *,Tk_3DBorderColor,V_Tk_3DBorderColor,_ANSI_ARGS_((Tk_3DBorder border)))
 #endif
@@ -59,12 +129,6 @@ VFUNC(void,Tk_3DVerticalBevel,V_Tk_3DVerticalBevel,_ANSI_ARGS_((Tk_Window tkwin,
 			    Drawable drawable, Tk_3DBorder border, int x,
 			    int y, int width, int height, int leftBevel,
 			    int relief)))
-#endif
-
-#ifndef Tk_BellObjCmd
-VFUNC(int,Tk_BellObjCmd,V_Tk_BellObjCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[])))
 #endif
 
 #ifndef Tk_BindEvent
@@ -297,11 +361,6 @@ VFUNC(void,Tk_DrawTextLayout,V_Tk_DrawTextLayout,_ANSI_ARGS_((Display *display,
 			    int x, int y, int firstChar, int lastChar)))
 #endif
 
-#ifndef Tk_EventCmd
-VFUNC(int,Tk_EventCmd,V_Tk_EventCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Arg *args)))
-#endif
-
 #ifndef Tk_EventInfo
 VFUNC(char *,Tk_EventInfo,V_Tk_EventInfo,_ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr, 
 			    KeySym keySym, int *numPtr, int *isNum, int *type, 
@@ -328,12 +387,6 @@ VFUNC(void,Tk_Fill3DRectangle,V_Tk_Fill3DRectangle,_ANSI_ARGS_((Tk_Window tkwin,
 
 #ifndef Tk_FontId
 VFUNC(Font,Tk_FontId,V_Tk_FontId,_ANSI_ARGS_((Tk_Font font)))
-#endif
-
-#ifndef Tk_FontObjCmd
-VFUNC(int,Tk_FontObjCmd,V_Tk_FontObjCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[])))
 #endif
 
 #ifndef Tk_Free3DBorder
@@ -384,6 +437,10 @@ VFUNC(void,Tk_FreePixmap,V_Tk_FreePixmap,_ANSI_ARGS_((Display *display,
 #ifndef Tk_FreeTextLayout
 VFUNC(void,Tk_FreeTextLayout,V_Tk_FreeTextLayout,_ANSI_ARGS_((
 			    Tk_TextLayout textLayout)))
+#endif
+
+#ifndef Tk_FreeTile
+VFUNC(void,Tk_FreeTile,V_Tk_FreeTile,_ANSI_ARGS_((Tk_Tile tile)))
 #endif
 
 #ifndef Tk_FreeXId
@@ -469,6 +526,12 @@ VFUNC(Tk_Cursor,Tk_GetCursorFromData,V_Tk_GetCursorFromData,_ANSI_ARGS_((Tcl_Int
 			    Tk_Uid fg, Tk_Uid bg)))
 #endif
 
+#ifndef Tk_GetDoublePixels
+VFUNC(int,Tk_GetDoublePixels,V_Tk_GetDoublePixels,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, CONST char *string,
+			    double *doublePtr)))
+#endif
+
 #ifndef Tk_GetFont
 VFUNC(Tk_Font,Tk_GetFont,V_Tk_GetFont,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, CONST char *string)))
@@ -552,6 +615,11 @@ VFUNC(int,Tk_GetSelection,V_Tk_GetSelection,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_GetSelProc *proc, ClientData clientData)))
 #endif
 
+#ifndef Tk_GetTile
+VFUNC(Tk_Tile,Tk_GetTile,V_Tk_GetTile,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Window tkwin,
+		    CONST char *imageName)))
+#endif
+
 #ifndef Tk_GetUid
 VFUNC(Tk_Uid,Tk_GetUid,V_Tk_GetUid,_ANSI_ARGS_((CONST char *string)))
 #endif
@@ -593,11 +661,6 @@ VFUNC(void,Tk_ImageChanged,V_Tk_ImageChanged,_ANSI_ARGS_((
 			    Tk_ImageMaster master, int x, int y,
 			    int width, int height, int imageWidth,
 			    int imageHeight)))
-#endif
-
-#ifndef Tk_ImageObjCmd
-VFUNC(int,Tk_ImageObjCmd,V_Tk_ImageObjCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[])))
 #endif
 
 #ifndef Tk_InternAtom
@@ -706,6 +769,10 @@ VFUNC(char *,Tk_NameOfJustify,V_Tk_NameOfJustify,_ANSI_ARGS_((Tk_Justify justify
 VFUNC(char *,Tk_NameOfRelief,V_Tk_NameOfRelief,_ANSI_ARGS_((int relief)))
 #endif
 
+#ifndef Tk_NameOfTile
+VFUNC(char *,Tk_NameOfTile,V_Tk_NameOfTile,_ANSI_ARGS_((Tk_Tile tile)))
+#endif
+
 #ifndef Tk_NameToWindow
 VFUNC(Tk_Window,Tk_NameToWindow,V_Tk_NameToWindow,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *pathName, Tk_Window tkwin)))
@@ -717,14 +784,59 @@ VFUNC(void,Tk_OwnSelection,V_Tk_OwnSelection,_ANSI_ARGS_((Tk_Window tkwin,
 			    ClientData clientData)))
 #endif
 
+#ifndef Tk_PixmapOfTile
+VFUNC(Pixmap,Tk_PixmapOfTile,V_Tk_PixmapOfTile,_ANSI_ARGS_((Tk_Tile tile)))
+#endif
+
 #ifndef Tk_PointToChar
 VFUNC(int,Tk_PointToChar,V_Tk_PointToChar,_ANSI_ARGS_((Tk_TextLayout layout,
 			    int x, int y)))
 #endif
 
+#ifndef Tk_PostscriptBitmap
+VFUNC(int,Tk_PostscriptBitmap,V_Tk_PostscriptBitmap,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
+			    Pixmap bitmap, int startX, int startY,
+			    int width, int height)))
+#endif
+
+#ifndef Tk_PostscriptColor
+VFUNC(int,Tk_PostscriptColor,V_Tk_PostscriptColor,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_PostscriptInfo psInfo, XColor *colorPtr)))
+#endif
+
+#ifndef Tk_PostscriptFont
+VFUNC(int,Tk_PostscriptFont,V_Tk_PostscriptFont,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_PostscriptInfo psInfo, Tk_Font font)))
+#endif
+
 #ifndef Tk_PostscriptFontName
 VFUNC(int,Tk_PostscriptFontName,V_Tk_PostscriptFontName,_ANSI_ARGS_((Tk_Font tkfont,
 			    Tcl_DString *dsPtr)))
+#endif
+
+#ifndef Tk_PostscriptImage
+VFUNC(int,Tk_PostscriptImage,V_Tk_PostscriptImage,_ANSI_ARGS_((Tk_Image image,
+			    Tcl_Interp *interp, Tk_Window tkwin,
+			    Tk_PostscriptInfo psinfo, int x, int y,
+			    int width, int height, int prepass)))
+#endif
+
+#ifndef Tk_PostscriptPath
+VFUNC(void,Tk_PostscriptPath,V_Tk_PostscriptPath,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_PostscriptInfo psInfo, double *coordPtr,
+			    int numPoints)))
+#endif
+
+#ifndef Tk_PostscriptStipple
+VFUNC(int,Tk_PostscriptStipple,V_Tk_PostscriptStipple,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
+			    Pixmap bitmap)))
+#endif
+
+#ifndef Tk_PostscriptY
+VFUNC(double,Tk_PostscriptY,V_Tk_PostscriptY,_ANSI_ARGS_((double y,
+			    Tk_PostscriptInfo psInfo)))
 #endif
 
 #ifndef Tk_PreserveColormap
@@ -784,6 +896,17 @@ VFUNC(void,Tk_SetInternalBorder,V_Tk_SetInternalBorder,_ANSI_ARGS_((Tk_Window tk
 			    int width)))
 #endif
 
+#ifndef Tk_SetTileChangedProc
+VFUNC(void,Tk_SetTileChangedProc,V_Tk_SetTileChangedProc,_ANSI_ARGS_((Tk_Tile tile,
+		    Tk_TileChangedProc * changeProc, ClientData clientData,
+		    Tk_Item *itemPtr)))
+#endif
+
+#ifndef Tk_SetTileOrigin
+VFUNC(void,Tk_SetTileOrigin,V_Tk_SetTileOrigin,_ANSI_ARGS_((Tk_Window tkwin, GC gc, int x,
+		    int y)))
+#endif
+
 #ifndef Tk_SetWindowBackground
 VFUNC(void,Tk_SetWindowBackground,V_Tk_SetWindowBackground,_ANSI_ARGS_((Tk_Window tkwin,
 			    unsigned long pixel)))
@@ -831,6 +954,11 @@ VFUNC(void,Tk_SizeOfImage,V_Tk_SizeOfImage,_ANSI_ARGS_((Tk_Image image,
 			    int *widthPtr, int *heightPtr)))
 #endif
 
+#ifndef Tk_SizeOfTile
+VFUNC(void,Tk_SizeOfTile,V_Tk_SizeOfTile,_ANSI_ARGS_((Tk_Tile tile, int *widthPtr,
+		    int *heightPtr)))
+#endif
+
 #ifndef Tk_StrictMotif
 VFUNC(int,Tk_StrictMotif,V_Tk_StrictMotif,_ANSI_ARGS_((Tk_Window tkwin)))
 #endif
@@ -843,17 +971,6 @@ VFUNC(void,Tk_TextLayoutToPostscript,V_Tk_TextLayoutToPostscript,_ANSI_ARGS_((
 #ifndef Tk_TextWidth
 VFUNC(int,Tk_TextWidth,V_Tk_TextWidth,_ANSI_ARGS_((Tk_Font font,
 			    CONST char *string, int numChars)))
-#endif
-
-#ifndef Tk_TkObjCmd
-VFUNC(int,Tk_TkObjCmd,V_Tk_TkObjCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[])))
-#endif
-
-#ifndef Tk_ToplevelCmd
-VFUNC(int,Tk_ToplevelCmd,V_Tk_ToplevelCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Arg *args)))
 #endif
 
 #ifndef Tk_UndefineCursor
@@ -889,12 +1006,6 @@ VFUNC(void,Tk_UnmapWindow,V_Tk_UnmapWindow,_ANSI_ARGS_((Tk_Window tkwin)))
 
 #ifndef Tk_UnsetGrid
 VFUNC(void,Tk_UnsetGrid,V_Tk_UnsetGrid,_ANSI_ARGS_((Tk_Window tkwin)))
-#endif
-
-#ifndef Tk_WinfoObjCmd
-VFUNC(int,Tk_WinfoObjCmd,V_Tk_WinfoObjCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-			    Tcl_Obj *CONST objv[])))
 #endif
 
 #endif /* _TK */

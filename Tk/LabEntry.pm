@@ -5,7 +5,7 @@
 package Tk::LabEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/LabEntry.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/LabEntry.pm#11 $
 
 use base  qw(Tk::Frame);
 use Tk::widgets qw(Frame Label Entry);

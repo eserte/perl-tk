@@ -1,7 +1,7 @@
 package Tk::DragDrop::XDNDSite;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/XDNDSite.pm#8$
+$VERSION = '3.010'; # $Id: //depot/Tk8/DragDrop/DragDrop/XDNDSite.pm#10 $
 use base qw(Tk::DropSite);
 
 sub XDND_PROTOCOL_VERSION () { 3 }

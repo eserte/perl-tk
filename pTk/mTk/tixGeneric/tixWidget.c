@@ -35,7 +35,6 @@ TIX_DEFINE_CMD(Tix_CreateWidgetCmd)
     TixConfigSpec * spec;
     char * widRec = NULL;
     char * rootCmd = NULL;
-    char * tmpArgv[3];
     char * value;
     int i;
     int code = TCL_OK;
@@ -103,16 +102,6 @@ TIX_DEFINE_CMD(Tix_CreateWidgetCmd)
      * this widget
      */
 
-#ifndef TK_8_0_OR_LATER
-    tmpArgv[0] = "rename";
-    tmpArgv[1] = widRec;
-    tmpArgv[2] = rootCmd;
-
-    if (Tcl_RenameCmd((ClientData)0, interp, 3, tmpArgv) != TCL_OK) {
-	code = TCL_ERROR;
-	goto done;
-    }
-#else
     Tcl_DStringInit(&ds);
     Tcl_DStringAppendElement(&ds, "rename");
     Tcl_DStringAppendElement(&ds, widRec);
@@ -125,7 +114,6 @@ TIX_DEFINE_CMD(Tix_CreateWidgetCmd)
     } else {
 	Tcl_DStringFree(&ds);
     }
-#endif
 
     Tcl_CreateCommand(interp, widRec, Tix_InstanceCmd,
 	(ClientData)cPtr, NULL);
@@ -181,7 +169,7 @@ TIX_DEFINE_CMD(Tix_CreateWidgetCmd)
 	 * calls.
 	 */
 	if (interp->result) {
-	    oldResult = (char*)strdup(interp->result);
+	    oldResult = tixStrDup(interp->result);
 #if 0
 	    printf("%s -->\n%s\n", widRec, oldResult);
 #endif

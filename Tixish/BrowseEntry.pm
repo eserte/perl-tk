@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.022'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#22$
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#26 $
 
 use Tk qw(Ev);
 use Carp;
@@ -126,10 +126,7 @@ sub PopupChoices {
     my ($w) = @_;
 
     if (!$w->{'popped'}) {
-	my $listcmd = $w->cget(-listcmd);
-	if (defined $listcmd) {
-	    $listcmd->Call($w);
-	}
+       $w->Callback(-listcmd => $w);
 	my $e = $w->Subwidget('entry');
 	my $c = $w->Subwidget('choices');
 	my $s = $w->Subwidget('slistbox');
@@ -199,10 +196,7 @@ sub LbChoose {
     } else {
 	# select appropriate entry and close the listbox
 	$w->LbCopySelection;
-	my $browsecmd = $w->cget(-browsecmd);
-	if (defined $browsecmd) {
-	    $browsecmd->Call($w, $w->Subwidget('entry')->get());
-	}
+       $w->Callback(-browsecmd => $w, $w->Subwidget('entry')->get);
     }
 }
 

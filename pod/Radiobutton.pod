@@ -124,10 +124,9 @@ this button is selected.
 
 =item Switch:	B<-variable>
 
-Specifies name of global variable to set whenever this button is
+Specifies reference to a variable to set whenever this button is
 selected.  Changes in this variable also cause the button to select
-or deselect itself.
-Defaults to the value B<selectedButton>.
+or deselect itself. Defaults to the value C<\$Tk::selectedButton>.
 
 =item Name:	B<width>
 

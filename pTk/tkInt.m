@@ -3,6 +3,7 @@
 #include "tkInt_f.h"
 #ifndef NO_VTABLES
 #define tkActiveUid (*TkintVptr->V_tkActiveUid)
+#define tkBitmapImageType (*TkintVptr->V_tkBitmapImageType)
 #define tkDisabledUid (*TkintVptr->V_tkDisabledUid)
 #define tkDisplayList (*TkintVptr->V_tkDisplayList)
 #define tkMainWindowList (*TkintVptr->V_tkMainWindowList)
@@ -28,8 +29,20 @@
 #  define TkBindInit (*TkintVptr->V_TkBindInit)
 #endif
 
+#ifndef TkCanvPostscriptCmd
+#  define TkCanvPostscriptCmd (*TkintVptr->V_TkCanvPostscriptCmd)
+#endif
+
 #ifndef TkChangeEventWindow
 #  define TkChangeEventWindow (*TkintVptr->V_TkChangeEventWindow)
+#endif
+
+#ifndef TkClassOption
+#  define TkClassOption (*TkintVptr->V_TkClassOption)
+#endif
+
+#ifndef TkClassOptionObj
+#  define TkClassOptionObj (*TkintVptr->V_TkClassOptionObj)
 #endif
 
 #ifndef TkClipBox
@@ -96,6 +109,10 @@
 #  define TkFindStateNum (*TkintVptr->V_TkFindStateNum)
 #endif
 
+#ifndef TkFindStateNumObj
+#  define TkFindStateNumObj (*TkintVptr->V_TkFindStateNumObj)
+#endif
+
 #ifndef TkFindStateString
 #  define TkFindStateString (*TkintVptr->V_TkFindStateString)
 #endif
@@ -132,6 +149,10 @@
 #  define TkFreeWindowId (*TkintVptr->V_TkFreeWindowId)
 #endif
 
+#ifndef TkGetBitmapData
+#  define TkGetBitmapData (*TkintVptr->V_TkGetBitmapData)
+#endif
+
 #ifndef TkGetCursorByName
 #  define TkGetCursorByName (*TkintVptr->V_TkGetCursorByName)
 #endif
@@ -156,8 +177,16 @@
 #  define TkGetInterpNames (*TkintVptr->V_TkGetInterpNames)
 #endif
 
+#ifndef TkGetPixelsFromObj
+#  define TkGetPixelsFromObj (*TkintVptr->V_TkGetPixelsFromObj)
+#endif
+
 #ifndef TkGetPointerCoords
 #  define TkGetPointerCoords (*TkintVptr->V_TkGetPointerCoords)
+#endif
+
+#ifndef TkGetScreenMMFromObj
+#  define TkGetScreenMMFromObj (*TkintVptr->V_TkGetScreenMMFromObj)
 #endif
 
 #ifndef TkGetServerInfo
@@ -198,6 +227,10 @@
 
 #ifndef TkPositionInTree
 #  define TkPositionInTree (*TkintVptr->V_TkPositionInTree)
+#endif
+
+#ifndef TkPostscriptImage
+#  define TkPostscriptImage (*TkintVptr->V_TkPostscriptImage)
 #endif
 
 #ifndef TkPutImage

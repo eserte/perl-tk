@@ -64,7 +64,7 @@ my $seen = 0;
 my $edit = 0;
 while (<>)
  {
-  if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id(.*)\$.*$/)
+  if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$.*$/)
    {
     $seen = 1;
     my $maj  = $1;

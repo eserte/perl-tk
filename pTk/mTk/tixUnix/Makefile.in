@@ -84,7 +84,7 @@ CFLAGS		=	-O
 install:: install-basic install-binaries
 	@echo done
 
-BINDIRS = tk4.0 tk4.1 tk4.2 tk4.3 tk8.0 itcl2.0 itcl2.1 itcl2.2
+BINDIRS = tk8.0 itcl2.0 itcl2.1 itcl2.2
 
 install-binaries::
 	@for i in $(BINDIRS); \
@@ -162,9 +162,14 @@ install-libraries:
 		$(INSTALL_DATA) $$i $(TIX_LIBRARY)/pref; \
 		fi; \
 	    done;
-	@echo "Installing pkgIndex.tcl"
-	@cat */pkgIndex.tcl > pkgIndex.tcl
-	@$(INSTALL_DATA) pkgIndex.tcl $(TIX_LIBRARY)
+	@if [ -f */pkgIndex.tcl ] ; then \
+	    echo "Installing pkgIndex.tcl"; \
+	    cat */pkgIndex.tcl > pkgIndex.tcl; \
+	    $(INSTALL_DATA) pkgIndex.tcl $(TIX_LIBRARY); \
+	else \
+	    echo "	No pkgIndex.tcl found in the target directories."; \
+	    echo "	pkgIndex.tcl installation skipped."; \
+	fi;
 
 install-demos:
 	@for i in $(prefix)/lib $(TIX_LIBRARY) $(TIX_LIBRARY)/demos \
@@ -288,30 +293,18 @@ autoconf::
 	autoconf
 
 config::
-	-cd tk4.0; ./configure
-	-cd tk4.1; ./configure
-	-cd tk4.2; ./configure
-	-cd tk4.3; ./configure
 	-cd tk8.0; ./configure
 	-cd itcl2.0; ./configure
 	-cd itcl2.1; ./configure
 	-cd itcl2.2; ./configure
 
 config-shared::
-	-cd tk4.0; ./configure
-	-cd tk4.1; ./configure --enable-shared
-	-cd tk4.2; ./configure --enable-shared
-	-cd tk4.3; ./configure --enable-shared
 	-cd tk8.0; ./configure --enable-shared
 	-cd itcl2.0; ./configure
 	-cd itcl2.1; ./configure --enable-shared
 	-cd itcl2.2; ./configure --enable-shared
 
 config-shared-sam::
-	-cd tk4.0; ./configure --enable-sam
-	-cd tk4.1; ./configure --enable-shared --enable-sam
-	-cd tk4.2; ./configure --enable-shared --enable-sam
-	-cd tk4.3; ./configure --enable-shared
 	-cd tk8.0; ./configure --enable-shared
 	-cd itcl2.0; ./configure
 	-cd itcl2.1; ./configure --enable-shared

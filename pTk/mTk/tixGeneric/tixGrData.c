@@ -14,6 +14,11 @@
 #include "tixInt.h"
 #include "tixGrid.h"
 
+/* need "(unsigned int)" to prevent sign-extension on 64-bit machines, and
+ * "(unsigned long)" to avoid an egcs warning
+ */
+#define FIX(X) ((char*)(unsigned long)(unsigned int)(X))
+
 static int		FindRowCol _ANSI_ARGS_((TixGridDataSet * dataSet,
 			    int x, int y, TixGridRowCol * rowcol[2],
 			    Tcl_HashEntry * hashPtrs[2]));
@@ -122,12 +127,12 @@ TixGridDataFindEntry(dataSet, x, y)
     Tcl_HashEntry *hashPtr;
 
     /* (1) Find the row and column */
-    if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[0], (char*)x))) {
+    if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[0], FIX(x)))) {
 	return NULL;
     }
     col = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
 
-    if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[1], (char*)y))) {
+    if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[1], FIX(y)))) {
 	return NULL;
     }
     row = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
@@ -168,14 +173,14 @@ FindRowCol(dataSet, x, y, rowcol, hashPtrs)
     TixGridRowCol * rowcol[2];	/* Returns information about the row/col. */
     Tcl_HashEntry * hashPtrs[2];/* Returns hash table info about the row/col.*/
 {
-    hashPtrs[0] = Tcl_FindHashEntry(&dataSet->index[0], (char*)x);
+    hashPtrs[0] = Tcl_FindHashEntry(&dataSet->index[0], FIX(x));
     if (hashPtrs[0] != NULL) {
 	rowcol[0] = (TixGridRowCol *)Tcl_GetHashValue(hashPtrs[0]);
     } else {
 	return 0;
     }
 
-    hashPtrs[1] = Tcl_FindHashEntry(&dataSet->index[1], (char*)y);
+    hashPtrs[1] = Tcl_FindHashEntry(&dataSet->index[1], FIX(y));
     if (hashPtrs[1] != NULL) {
 	rowcol[1] = (TixGridRowCol *)Tcl_GetHashValue(hashPtrs[1]);
     } else {
@@ -214,7 +219,7 @@ TixGridDataCreateEntry(dataSet, x, y, defaultEntry)
 
     for (i=0; i<2; i++) {
 	hashPtr = Tcl_CreateHashEntry(&dataSet->index[i],
-	    (char*)dispIndex[i], &isNew);
+	    FIX(dispIndex[i]), &isNew);
 
 	if (!isNew) {
 	    rowcol[i] = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
@@ -271,7 +276,6 @@ TixGridDataDeleteEntry(dataSet, x, y)
     TixGridRowCol *rowcol[2];
     Tcl_HashEntry *hashPtrs[2];	/* Hash entries of the row/col. */
     Tcl_HashEntry *cx, *cy;	/* Hash entries of the cell in the row/col. */
-    int i;
 
     if (!FindRowCol(dataSet, x, y, rowcol, hashPtrs)) {
 	/*
@@ -293,25 +297,6 @@ TixGridDataDeleteEntry(dataSet, x, y)
     else {
 	panic("Inconsistent grid dataset: (%d,%d) : %x %x", x, y, cx, cy);
     }
-
-#if 0
-    /*
-     * Can't do this, otherwise the size info of this row/col is lost.
-     */
-    for (i=0; i<2; i++) {
-	if (rowcol[i]->table.numEntries == 0) {
-  	    Tcl_DeleteHashEntry(hashPtrs[i]);
-
-	    Tcl_DeleteHashTable(&rowcol[i]->table);
-	    ckfree((char*)rowcol[i]);
-	}
-    }
-#endif
-
-#if 0
-    printf("%d %d\n", dataSet->index[0].numEntries, 
-	   dataSet->index[1].numEntries);
-#endif
 
     return 1;
 
@@ -341,7 +326,7 @@ TixGridDataUpdateSort(dataSet, axis, start, end, items)
     ptr = (TixGridRowCol **)ckalloc(numItems * sizeof(TixGridRowCol *));
 
     for (k=0,i=start; i<=end; i++,k++) {
-	if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[axis], (char*)i))) {
+	if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[axis], FIX(i)))) {
 	    /*
 	     * This row/col doesn't exist
 	     */
@@ -357,7 +342,7 @@ TixGridDataUpdateSort(dataSet, axis, start, end, items)
 	pos = items[k].index - start;
 
 	if (ptr[pos] != NULL) {
-	    hashPtr = Tcl_CreateHashEntry(&dataSet->index[axis], (char*)i,
+	    hashPtr = Tcl_CreateHashEntry(&dataSet->index[axis], FIX(i),
 		&isNew);
 	    Tcl_SetHashValue(hashPtr, (char*)ptr[pos]);
 	    ptr[pos]->dispIndex = i;
@@ -434,7 +419,7 @@ TixGridDataGetRowColSize(wPtr, dataSet, which, index, defSize, pad0, pad1)
     Tcl_HashEntry *hashPtr;
     int size;
 
-    if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[which], (char*)index))) {
+    if (!(hashPtr = Tcl_FindHashEntry(&dataSet->index[which], FIX(index)))) {
 	size  = defSize->pixels;
 	*pad0 = defSize->pad0;
 	*pad1 = defSize->pad1;
@@ -554,7 +539,7 @@ TixGridDataConfigRowColSize(interp, wPtr, dataSet, which, index, argc, argv,
     Tcl_HashEntry *hashPtr;
     int isNew, code;
 
-    hashPtr = Tcl_CreateHashEntry(&dataSet->index[which],(char*)index, &isNew);
+    hashPtr = Tcl_CreateHashEntry(&dataSet->index[which], FIX(index), &isNew);
 
     if (!isNew) {
 	rowCol = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
@@ -778,7 +763,7 @@ TixGridDataDeleteRange(wPtr, dataSet, which, from, to)
 	TixGridRowCol *rcPtr, *rcp;
 	Tcl_HashSearch hashSearch;
 
-	hashPtr = Tcl_FindHashEntry(&dataSet->index[which], (char*)i);
+	hashPtr = Tcl_FindHashEntry(&dataSet->index[which], FIX(i));
 	if (hashPtr != NULL) {
 	    rcPtr = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
 
@@ -912,12 +897,12 @@ TixGridDataMoveRange(wPtr, dataSet, which, from, to, by)
 	TixGridRowCol *rcPtr;
 	int isNew;
 
-	hashPtr = Tcl_FindHashEntry(&dataSet->index[which], (char*)i);
+	hashPtr = Tcl_FindHashEntry(&dataSet->index[which], FIX(i));
 	if (hashPtr != NULL) {
 	    rcPtr = (TixGridRowCol *)Tcl_GetHashValue(hashPtr);
 	    rcPtr->dispIndex = i+by;
 	    Tcl_DeleteHashEntry(hashPtr);
-	    hashPtr = Tcl_CreateHashEntry(&dataSet->index[which],(char*)(i+by),
+	    hashPtr = Tcl_CreateHashEntry(&dataSet->index[which], FIX(i+by),
 		    &isNew);
 	    Tcl_SetHashValue(hashPtr, (char*)rcPtr);
 	}

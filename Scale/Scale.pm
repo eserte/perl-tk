@@ -11,17 +11,18 @@
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
 package Tk::Scale;
-require Tk;
-use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Scale/Scale.pm#8$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Scale/Scale.pm#12 $
+
+use Tk qw($XS_VERSION);
+use AutoLoader;
 
 use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Scale';
 
-bootstrap Tk::Scale $Tk::VERSION;
+bootstrap Tk::Scale;
 
 sub Tk_cmd { \&Tk::scale }
 

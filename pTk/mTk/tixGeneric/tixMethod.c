@@ -20,8 +20,9 @@
  */
 #include <tclInt.h>
 #include <tk.h>
-#include "tixPort.h"
-#include "tixInt.h"
+#include <tixPort.h>
+#include <tixInt.h>
+#include <tixItcl.h>
 
 #define GetMethodTable(interp) (_TixGetHashTable(interp, "tixMethodTab", MethodTableDeleteProc))
 
@@ -211,7 +212,7 @@ Tix_FindMethod(interp, context, method)
 	     * theContext may point to the stack. We have to put it
 	     * in some more permanent place.
 	     */
-	    theContext = (char*)strdup(theContext);
+	    theContext = tixStrDup(theContext);
 	}
 	Tcl_SetHashValue(hashPtr, (char*)theContext);
     }
@@ -273,7 +274,7 @@ static char * Tix_SaveContext(interp, widRec)
 	return NULL;
     }
     else {
-	return (char*)strdup(context);
+	return tixStrDup(context);
     }
 }
 
@@ -355,7 +356,7 @@ char * Tix_GetMethodFullName(context, method)
 
 #undef ITCL_2
 
-#ifndef ITCL_2
+#if !defined(ITCL_2) && !defined(TK_8_0_OR_LATER)
 
 #define Tix_GetCommandInfo Tcl_GetCommandInfo
 
@@ -387,22 +388,15 @@ int Tix_GetCommandInfo(interp, cmdName, infoPtr)
 {
     register Interp *iPtr = (Interp *) interp;
     int result;
-    CallFrame *savedVarFramePtr;
-    Itcl_ActiveNamespace nsToken;
+    DECLARE_ITCL_NAMESP(nameSp, interp);
 
-    savedVarFramePtr = iPtr->varFramePtr;
-    iPtr->varFramePtr = NULL;
-
-    nsToken = Itcl_ActivateNamesp(interp, (Itcl_Namespace)iPtr->globalNs);
-    if (nsToken == NULL) {
-        result = 0;
-    }
-    else {
+    result = TixItclSetGlobalNameSp(&nameSp, interp);
+    
+    if (result != 0) {
         result = Tcl_GetCommandInfo(interp, cmdName, infoPtr);
-        Itcl_DeactivateNamesp(interp, nsToken);
     }
 
-    iPtr->varFramePtr = savedVarFramePtr;
+    TixItclRestoreGlobalNameSp(&nameSp, interp);
     return result;
 }
 #endif

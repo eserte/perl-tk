@@ -58,7 +58,9 @@ Tcl_DecrRefCount(Tcl_Obj *objPtr)
  SvREFCNT_dec(objPtr);
 }
 
-static SV * ForceScalar(SV *sv);
+static SV *ForceScalar(SV *sv);
+
+static SV *ForceScalarLvalue(SV *sv);
 
 static void
 Scalarize(SV *sv, AV *av)
@@ -118,13 +120,36 @@ ForceScalar(SV *sv)
  else
   {
    if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
-    {
-     Scalarize(sv, (AV *) SvRV(sv));
+    {                       
+     /* Callbacks and lists often get stringified by mistake due to 
+        Tcl/Tk's string fixation - don't change the real value
+      */
+     SV *nsv = newSVpv("",0);
+     Scalarize(nsv, (AV *) SvRV(sv));
+     return sv_2mortal(nsv);
     }
    else if (!SvOK(sv))
-    {
+    {   
+     /* Map undef to null string */
      sv_setpvn(sv,"",0);
     }
+   return sv;
+  }
+}
+
+static SV *
+ForceScalarLvalue(SV *sv)
+{
+ if (SvTYPE(sv) == SVt_PVAV)
+  {
+   AV *av = (AV *) sv;
+   SV *nsv = newSVpv("",0);
+   av_clear(av);
+   av_store(av,0,nsv);
+   return nsv;
+  }
+ else
+  {
    return sv;
   }
 }
@@ -132,25 +157,25 @@ ForceScalar(SV *sv)
 void
 Tcl_SetBooleanObj (Tcl_Obj *objPtr, int value)
 {
- sv_setiv(ForceScalar(objPtr),value != 0);
+ sv_setiv(ForceScalarLvalue(objPtr),value != 0);
 }
 
 void
 Tcl_SetDoubleObj (Tcl_Obj *objPtr, double value)
 {
- sv_setnv(ForceScalar(objPtr),value);
+ sv_setnv(ForceScalarLvalue(objPtr),value);
 }
 
 void
 Tcl_SetIntObj (Tcl_Obj *objPtr, int value)
 {
- sv_setiv(ForceScalar(objPtr),value);
+ sv_setiv(ForceScalarLvalue(objPtr),value);
 }
 
 void
 Tcl_SetLongObj (Tcl_Obj *objPtr, long value)
 {
- sv_setiv(ForceScalar(objPtr),value);
+ sv_setiv(ForceScalarLvalue(objPtr),value);
 }
 
 void
@@ -158,7 +183,7 @@ Tcl_SetStringObj (Tcl_Obj *objPtr, char *bytes, int length)
 {
  if (length < 0)
   length = strlen(bytes);
- sv_setpvn(ForceScalar(objPtr), bytes, length);
+ sv_setpvn(ForceScalarLvalue(objPtr), bytes, length);
 }
 
 int
@@ -243,20 +268,55 @@ Tcl_NewIntObj (int value)
 }
 
 Tcl_Obj *
+Tcl_NewBooleanObj (int value)
+{
+ return newSViv(value);
+}
+
+Tcl_Obj *
+Tcl_NewObj(void)
+{
+ return newSVpvn("",0);
+}
+
+Tcl_Obj *
+Tcl_NewLongObj(long value)
+{
+ return newSViv(value);
+}
+
+Tcl_Obj *
+Tcl_NewDoubleObj(double value)
+{
+ return newSVnv(value);
+}
+
+Tcl_Obj *
 Tcl_NewStringObj (char *bytes, int length)
 {
- if (length < 0)
-  length = strlen(bytes);
- return newSVpv(bytes,length);
+ if (bytes)
+  {
+   if (length < 0)              
+    length = strlen(bytes);     
+   return newSVpvn(bytes,length);
+  }
+ else
+  return &PL_sv_undef;
 }
 
 Tcl_Obj *
 Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
 {
  AV *av = newAV();
- while (objc-- > 0)
-  {
-   av_store(av,objc,SvREFCNT_inc(objv[objc])); /* Should we bump ref ?? */
+ if (objc)
+  {  
+   while (objc-- > 0)
+    {            
+     if (objv[objc]) 
+      {
+       av_store(av,objc,objv[objc]); /* Should we bump ref ?? */
+      }
+    }
   }
  return MakeReference((SV *) av);
 }
@@ -286,39 +346,101 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 
 AV *
 ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
-{
+{    
  if (SvTYPE(sv) == SVt_PVAV)
-  return (AV *) sv;
- if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVAV || sv_isobject(sv))
   {
-   int argc= 0;
-   LangFreeProc *freeProc = NULL;
-   SV **argv;
-   if (Lang_SplitString(interp,LangString(sv),&argc,&argv,&freeProc) == TCL_OK)
+   return (AV *) sv;
+  }
+ else 
+  {
+   int object = sv_isobject(sv);
+   if (!object && SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
-     int n = argc;
-     AV *av = newAV();
-     while (n-- > 0)
-      {
-       av_store(av,n,SvREFCNT_inc(argv[n]));
-      }       
-     if (freeProc)
-      (*freeProc)(argc,argv);
-     if (SvREADONLY(sv))
-      {
-       sv_2mortal((SV *) av);
-       return av;
-      }
-     else
-      {
-       sv_setsv(sv,MakeReference((SV *) av));
-       SvREFCNT_dec((SV *) av);
-      }
+     return (AV *) SvRV(sv);
     }
    else
-    return NULL;
+    {
+     AV *av = newAV();
+     if (!object && (SvIOK(sv) || SvNOK(sv)))
+      {                     
+       /* Simple case of single number */
+       av_store(av,0,SvREFCNT_inc(sv));
+      }                     
+     else
+      {                     
+       /* Parse TCL like strings 
+          {} are quotes - and can be nested
+          \ quotes \ itself and whitespace 
+
+          Older Tk used this perl code ... 
+          local $_ = shift;
+          my (@arr, $tmp);
+          while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
+            if (defined $1) { push @arr, $1 }
+            else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
+          }
+       */
+       unsigned char *s = (unsigned char *) LangString(sv);
+       int i = 0;
+       while (*s)
+        {       
+         unsigned char *base; 
+         /* Skip leading whitespace */
+         while (isspace(*s))
+          s++;
+         if (!*s)
+          break;
+         base = s;
+         if (*s == '{')
+          {     
+           /* Slurp chars till we find matching '}' */
+           int count = 1;  /* number of open '{' */
+           base = ++s; 
+           while (*s)
+            {
+             if (*s == '{')
+              count++;
+             else if (*s == '}' && (count-- <= 0))
+              break;
+             s++;
+            }
+           if (*s == '}')
+            s++; 
+           else
+            {
+             /* Found end of string before closing '}' 
+                TCL would set an error, we will just include the
+                un-matched opening '{' in the string.
+              */
+             base--;
+            }
+          } 
+         else if (*s)
+          {
+           /* Find a "word" */
+           while (*s && !isspace(*s))
+            {
+             if (*s == '\\' && s[1]) /* \ quotes anything except end of string */
+              s++;
+             s++;
+            }
+          }
+         av_store(av,i++,newSVpvn(base,(s-base)));
+        }
+      }
+     /* Now have an AV populated decide how to return */                     
+     if (SvREADONLY(sv))    
+      {                     
+       sv_2mortal((SV *) av);
+       return av;           
+      }                     
+     else                   
+      {                     
+       sv_setsv(sv,MakeReference((SV *) av));
+      }                     
+     return (AV *) SvRV(sv);
+    }
   }
- return (AV *) SvRV(sv);
 }
 
 int
@@ -334,13 +456,43 @@ Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
  return TCL_ERROR;
 }
 
+AV *
+MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
+{
+ AV *av;
+ if (SvIOK(sv) || SvNOK(sv))
+  {
+   av = newAV();
+   av_store(av,0,SvREFCNT_inc(sv));
+   sv_2mortal((SV *) av);
+   return av;
+  }            
+ else if (SvREADONLY(sv))   
+  {
+   /* returns mortal list anyway */
+   return ForceList(interp,sv);
+  }
+ else 
+  {       
+   SvREADONLY_on(sv);
+   av = ForceList(interp,sv);  
+   SvREADONLY_off(sv);
+   /* If there was more than one element set the SV */
+   if (av && av_len(av) > 2)
+    {
+     sv_setsv(sv,MakeReference((SV *) av));
+    }
+   return av;
+  }
+}
+
 int
 Tcl_ListObjGetElements (Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    int *objcPtr, Tcl_Obj ***objvPtr)
 {          
  if (listPtr)
-  {
-   AV *av = ForceList(interp,listPtr);
+  {        
+   AV *av = MaybeForceList(interp,listPtr);
    if (av)
     {
      *objcPtr = av_len(av)+1;
@@ -465,7 +617,7 @@ void
 Tcl_AppendStringsToObj (Tcl_Obj *obj,...)
 {
  va_list ap;
- char *s;
+ char *s; 
  SV *sv = ForceScalar(obj);
  va_start(ap,obj);
  while ((s = va_arg(ap,char *)))
@@ -473,6 +625,8 @@ Tcl_AppendStringsToObj (Tcl_Obj *obj,...)
    sv_catpv(sv,s);
   }
  va_end(ap);
+ if (sv != obj && SvROK(obj))
+  sv_setsv(obj,sv);
 }
 
 /*
@@ -585,6 +739,8 @@ Tcl_AppendToObj(objPtr, bytes, length)
  if (length < 0)
   length = strlen(bytes);
  sv_catpvn(sv, bytes, length);
+ if (sv != objPtr && SvROK(objPtr))
+  sv_setsv(objPtr,sv);
 }
 
 void
@@ -620,7 +776,7 @@ Tcl_WrongNumArgs(interp, objc, objv, message)
 }
 
 
-#define DStringSV(svp) ((*svp) ? ForceScalar(*svp) : (*svp = newSVpv("",0), *svp))
+#define DStringSV(svp) ((*svp) ? (*svp = ForceScalar(*svp)) : (*svp = newSVpv("",0), *svp))
 
 #undef Tcl_DStringInit
 void
@@ -686,4 +842,10 @@ Tcl_DStringValue(Tcl_DString *svp)
  return SvPV(sv,len);
 }
 
+void
+Tcl_DStringGetResult(Tcl_Interp *interp, Tcl_DString *svp)
+{
+ SV *sv = DStringSV(svp);
+ sv_setsv(sv,LangScalarResult(interp));
+}
 

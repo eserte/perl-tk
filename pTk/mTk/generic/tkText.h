@@ -265,6 +265,12 @@ struct TkTextDispChunk {
  * referred to in other structures.
  */
 
+typedef enum {	TEXT_WRAPMODE_NULL, TEXT_WRAPMODE_NONE,
+		TEXT_WRAPMODE_CHAR, TEXT_WRAPMODE_WORD
+} TkWrapMode;
+
+extern Tk_CustomOption textWrapModeOption;
+
 typedef struct TkTextTag {
     char *name;			/* Name of this tag.  This field is actually
 				 * a pointer to the key from the entry in
@@ -362,10 +368,11 @@ typedef struct TkTextTag {
     int underline;		/* Non-zero means draw underline underneath
 				 * text.  Only valid if underlineString is
 				 * non-NULL. */
-    Tk_Uid wrapMode;		/* How to handle wrap-around for this tag.
-				 * Must be tkTextCharUid, tkTextNoneUid,
-				 * tkTextWordUid, or NULL to use wrapMode
-				 * for whole widget. */
+    TkWrapMode wrapMode;	/* How to handle wrap-around for this tag.
+				 * Must be TEXT_WRAPMODE_CHAR,
+				 * TEXT_WRAPMODE_NONE, TEXT_WRAPMODE_WORD,
+				 * or TEXT_WRAPMODE_NULL to use wrapmode for
+				 * whole widget. */
     Arg elideString;		/* -elide option string (malloc-ed).
 				 * NULL means option not specified. */
     int elide;		/* Non-zero means text is elided.
@@ -373,6 +380,8 @@ typedef struct TkTextTag {
     int affectsDisplay;		/* Non-zero means that this tag affects the
 				 * way information is displayed on the screen
 				 * (so need to redisplay if tag changes). */
+    Tk_State state;		/* Must be TK_STATE_NULL, TK_STATE_NORMAL,
+				 * TK_STATE_HIDDEN or TK_STATE_DISABLED. */
     Arg userData;		/* arbitary user data */
 } TkTextTag;
 
@@ -471,8 +480,8 @@ typedef struct TkText {
 				 * image segment doesn't yet have an
 				 * associated image, there is no entry for
 				 * it here. */
-    Tk_Uid state;		/* Normal or disabled.  Text is read-only
-				 * when disabled. */
+    Tk_State state;		/* Normal, hidden or disabled.  Text is
+ 				 * read-only when disabled. */
 
     /*
      * Default information for displaying (may be overridden by tags
@@ -514,9 +523,9 @@ typedef struct TkText {
      * Additional information used for displaying:
      */
 
-    Tk_Uid wrapMode;		/* How to handle wrap-around.  Must be
-				 * tkTextCharUid, tkTextNoneUid, or
-				 * tkTextWordUid. */
+    TkWrapMode wrapMode;	/* How to handle wrap-around.  Must be
+				 * TEXT_WRAPMODE_CHAR, TEXT_WRAPMODE_NONE, or
+				 * TEXT_WRAPMODE_WORD. */
     int width, height;		/* Desired dimensions for window, measured
 				 * in characters. */
     int setGrid;		/* Non-zero means pass gridding information
@@ -610,6 +619,16 @@ typedef struct TkText {
 				 * vertical scrollbar when view changes. */
     int flags;			/* Miscellaneous flags;  see below for
 				 * definitions. */
+
+    /*
+     * Additional information, added by the 'dash'-patch
+     */
+
+    Tk_Tile tile;		/* Tile to display in background. */
+    Tk_Tile disabledTile;	/* Tile to display in background if state
+				 * is disabled. */
+    GC tileGC;			/* GC to store background tile. */
+    Tk_TSOffset tsoffset;	/* tile offset */
 } TkText;
 
 /*
@@ -653,7 +672,7 @@ typedef void		Tk_SegLineChangeProc _ANSI_ARGS_((
 typedef int		Tk_SegLayoutProc _ANSI_ARGS_((struct TkText *textPtr,
 			    struct TkTextIndex *indexPtr, TkTextSegment *segPtr,
 			    int offset, int maxX, int maxChars,
-			    int noCharsYet, Tk_Uid wrapMode,
+			    int noCharsYet, TkWrapMode wrapMode,
 			    struct TkTextDispChunk *chunkPtr));
 typedef void		Tk_SegCheckProc _ANSI_ARGS_((TkTextSegment *segPtr,
 			    TkTextLine *linePtr));
@@ -712,15 +731,10 @@ typedef struct Tk_SegType {
 extern int		tkBTreeDebug;
 extern int		tkTextDebug;
 extern Tk_SegType	tkTextCharType;
-extern Tk_Uid		tkTextCharUid;
-extern Tk_Uid		tkTextDisabledUid;
 extern Tk_SegType	tkTextLeftMarkType;
-extern Tk_Uid		tkTextNoneUid;
-extern Tk_Uid 		tkTextNormalUid;
 extern Tk_SegType	tkTextRightMarkType;
 extern Tk_SegType	tkTextToggleOnType;
 extern Tk_SegType	tkTextToggleOffType;
-extern Tk_Uid		tkTextWordUid;
 
 /*
  * Declarations for procedures that are used by the text-related files
@@ -770,7 +784,7 @@ extern int		TkTextCharBbox _ANSI_ARGS_((TkText *textPtr,
 extern int		TkTextCharLayoutProc _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, TkTextSegment *segPtr,
 			    int offset, int maxX, int maxChars, int noBreakYet,
-			    Tk_Uid wrapMode, TkTextDispChunk *chunkPtr));
+			    TkWrapMode wrapMode, TkTextDispChunk *chunkPtr));
 extern void		TkTextCreateDInfo _ANSI_ARGS_((TkText *textPtr));
 extern int		TkTextDLineInfo _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, int *xPtr, int *yPtr,
@@ -801,6 +815,8 @@ extern void		TkTextLostSelection _ANSI_ARGS_((
 			    ClientData clientData));
 extern TkTextIndex *	TkTextMakeIndex _ANSI_ARGS_((TkTextBTree tree,
 			    int lineIndex, int charIndex,
+			    TkTextIndex *indexPtr));
+extern int		TkTextIsElided _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr));
 extern int		TkTextIsElided _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr));

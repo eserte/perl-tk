@@ -242,4 +242,8 @@ VFUNC(void,TixpSubRegFillRectangle,V_TixpSubRegFillRectangle,_ANSI_ARGS_((Displa
 			    int width, int height)))
 #endif
 
+#ifndef tixStrDup
+VFUNC(char *,tixStrDup,V_tixStrDup,_ANSI_ARGS_(( CONST char * s)))
+#endif
+
 #endif /* _TIXINT */

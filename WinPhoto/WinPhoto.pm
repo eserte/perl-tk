@@ -1,15 +1,16 @@
 package Tk::WinPhoto;
 require DynaLoader;
-require Tk;
+
+use vars qw($VERSION);
+$VERSION = '3.008'; # $Id: //depot/Tk8/WinPhoto/WinPhoto.pm#8 $
+
+use Tk qw($XS_VERSION);
 require Tk::Image;
 require Tk::Photo;
 
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/WinPhoto/WinPhoto.pm#4$
-
 use base  qw(DynaLoader);
 
-bootstrap Tk::WinPhoto $Tk::VERSION;
+bootstrap Tk::WinPhoto;
 
 1;
 

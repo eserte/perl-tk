@@ -31,7 +31,6 @@
 
 typedef struct TkColormap TkColormap;
 typedef struct TkGrabEvent TkGrabEvent;
-typedef struct Tk_PostscriptInfo Tk_PostscriptInfo;
 typedef struct TkpCursor_ *TkpCursor;
 typedef struct TkRegion_ *TkRegion;
 typedef struct TkStressedCmap TkStressedCmap;
@@ -329,6 +328,12 @@ typedef struct TkDisplay {
                                  * the display when we no longer have any
                                  * Tk applications using it.
                                  */
+    int mouseButtonState;	/* current mouse button state for this
+				 * display */
+    int warpInProgress;
+    Window warpWindow;
+    int warpX;
+    int warpY;
 } TkDisplay;
 
 /*
@@ -685,15 +690,16 @@ typedef void TkDelayedEventProc _ANSI_ARGS_((void));
 typedef void tkHandleEventProc_t _ANSI_ARGS_((XEvent* eventPtr));
 
 extern Tk_Uid			tkActiveUid;
-MOVEXT Tk_ImageType		tkBitmapImageType;
-MOVEXT Tk_ImageType		tkPixmapImageType;
+extern Tk_SmoothMethod		tkBezierSmoothMethod;
+EXTERN Tk_ImageType		tkBitmapImageType;
+EXTERN Tk_ImageType		tkPixmapImageType;
 extern Tk_Uid			tkDisabledUid;
-MOVEXT Tk_PhotoImageFormat	tkImgFmtGIF;
+EXTERN Tk_PhotoImageFormat	tkImgFmtGIF;
 extern tkHandleEventProc_t	*tkHandleEventProc;
-MOVEXT Tk_PhotoImageFormat	tkImgFmtPPM;
+EXTERN Tk_PhotoImageFormat	tkImgFmtPPM;
 extern TkMainInfo		*tkMainWindowList;
 extern Tk_Uid			tkNormalUid;
-MOVEXT Tk_ImageType		tkPhotoImageType;
+EXTERN Tk_ImageType		tkPhotoImageType;
 extern Tcl_HashTable		tkPredefBitmapTable;
 extern int			tkSendSerial;
 
@@ -706,9 +712,9 @@ EXTERN char *		TkAlignImageData _ANSI_ARGS_((XImage *image,
 			    int alignment, int bitOrder));
 EXTERN TkWindow *	TkAllocWindow _ANSI_ARGS_((TkDisplay *dispPtr,
 			    int screenNum, TkWindow *parentPtr));
-MOVEXT void		TkBezierPoints _ANSI_ARGS_((double control[],
+EXTERN void		TkBezierPoints _ANSI_ARGS_((double control[],
 			    int numSteps, double *coordPtr));
-MOVEXT void		TkBezierScreenPoints _ANSI_ARGS_((Tk_Canvas canvas,
+EXTERN void		TkBezierScreenPoints _ANSI_ARGS_((Tk_Canvas canvas,
 			    double control[], int numSteps,
 			    XPoint *xPointPtr));
 EXTERN void		TkBindDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
@@ -716,8 +722,15 @@ EXTERN void		TkBindEventProc _ANSI_ARGS_((TkWindow *winPtr,
 			    XEvent *eventPtr));
 EXTERN void		TkBindFree _ANSI_ARGS_((TkMainInfo *mainPtr));
 EXTERN void		TkBindInit _ANSI_ARGS_((TkMainInfo *mainPtr));
+EXTERN int		TkCanvasGetCoordObj _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, Tcl_Obj *obj,
+			    double *doublePtr));
 EXTERN void		TkChangeEventWindow _ANSI_ARGS_((XEvent *eventPtr,
 			    TkWindow *winPtr));
+EXTERN void		TkClassOption _ANSI_ARGS_((Tk_Window tkwin,
+			    char *defaultname, int *argcp, Arg **argvp));
+EXTERN void		TkClassOptionObj _ANSI_ARGS_((Tk_Window tkwin,
+			    char *defaultname, int *objcp, Tcl_Obj * CONST **objvp));
 #ifndef TkClipBox
 EXTERN void		TkClipBox _ANSI_ARGS_((TkRegion rgn,
 			    XRectangle* rect_return));
@@ -764,6 +777,9 @@ EXTERN void		TkFillPolygon _ANSI_ARGS_((Tk_Canvas canvas,
 EXTERN int		TkFindStateNum _ANSI_ARGS_((Tcl_Interp *interp,
 			    CONST char *option, CONST TkStateMap *mapPtr,
 			    CONST char *strKey));
+EXTERN int		TkFindStateNumObj _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tcl_Obj *optionPtr, CONST TkStateMap *mapPtr,
+			    Tcl_Obj *keyPtr));
 EXTERN char *		TkFindStateString _ANSI_ARGS_((
 			    CONST TkStateMap *mapPtr, int numKey));
 EXTERN void		TkFocusDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
@@ -779,10 +795,10 @@ EXTERN void		TkFreeWindowId _ANSI_ARGS_((TkDisplay *dispPtr,
 			    Window w));
 EXTERN void		TkGenerateActivateEvents _ANSI_ARGS_((
 			    TkWindow *winPtr, int active));
-MOVEXT char *		TkGetBitmapData _ANSI_ARGS_((Tcl_Interp *interp,
+EXTERN char *		TkGetBitmapData _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, char *fileName, int *widthPtr,
 			    int *heightPtr, int *hotXPtr, int *hotYPtr));
-MOVEXT void		TkGetButtPoints _ANSI_ARGS_((double p1[], double p2[],
+EXTERN void		TkGetButtPoints _ANSI_ARGS_((double p1[], double p2[],
 			    double width, int project, double m1[],
 			    double m2[]));
 EXTERN TkCursor *	TkGetCursorByName _ANSI_ARGS_((Tcl_Interp *interp,
@@ -796,17 +812,21 @@ EXTERN int		TkGetDisplayOf _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN TkWindow *	TkGetFocusWin _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN int		TkGetInterpNames _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin));
-MOVEXT int		TkGetMiterPoints _ANSI_ARGS_((double p1[], double p2[],
+EXTERN int		TkGetMiterPoints _ANSI_ARGS_((double p1[], double p2[],
 			    double p3[], double width, double m1[],
 			    double m2[]));
+EXTERN int		TkGetPixelsFromObj _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tcl_Obj *obj, int *intPtr));
 EXTERN void		TkGetPointerCoords _ANSI_ARGS_((Tk_Window tkwin,
 			    int *xPtr, int *yPtr));
 EXTERN int		TkGetProlog _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int		TkGetScreenMMFromObj _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tcl_Obj *obj, double *doublePtr));
 EXTERN void		TkGetServerInfo _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin));
 EXTERN void		TkGrabDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN int		TkGrabState _ANSI_ARGS_((TkWindow *winPtr));
-MOVEXT void		TkIncludePoint _ANSI_ARGS_((Tk_Item *itemPtr,
+EXTERN void		TkIncludePoint _ANSI_ARGS_((Tk_Item *itemPtr,
 			    double *pointPtr));
 EXTERN void		TkInitXId _ANSI_ARGS_((TkDisplay *dispPtr));
 EXTERN void		TkInOutEvents _ANSI_ARGS_((XEvent *eventPtr,
@@ -819,21 +839,21 @@ EXTERN void		TkIntersectRegion _ANSI_ARGS_((TkRegion sra,
 			    TkRegion srcb, TkRegion dr_return));
 #endif
 EXTERN char *		TkKeysymToString _ANSI_ARGS_((KeySym keysym));
-MOVEXT int		TkLineToArea _ANSI_ARGS_((double end1Ptr[2],
+EXTERN int		TkLineToArea _ANSI_ARGS_((double end1Ptr[2],
 			    double end2Ptr[2], double rectPtr[4]));
-MOVEXT double		TkLineToPoint _ANSI_ARGS_((double end1Ptr[2],
+EXTERN double		TkLineToPoint _ANSI_ARGS_((double end1Ptr[2],
 			    double end2Ptr[2], double pointPtr[2]));
-MOVEXT int		TkMakeBezierCurve _ANSI_ARGS_((Tk_Canvas canvas,
+EXTERN int		TkMakeBezierCurve _ANSI_ARGS_((Tk_Canvas canvas,
 			    double *pointPtr, int numPoints, int numSteps,
 			    XPoint xPoints[], double dblPoints[]));
-MOVEXT void		TkMakeBezierPostscript _ANSI_ARGS_((Tcl_Interp *interp,
+EXTERN void		TkMakeBezierPostscript _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, double *pointPtr,
-			    int numPoints));
+			    int numPoints, int numSteps));
 EXTERN void		TkOptionClassChanged _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN void		TkOptionDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
-MOVEXT int		TkOvalToArea _ANSI_ARGS_((double *ovalPtr,
+EXTERN int		TkOvalToArea _ANSI_ARGS_((double *ovalPtr,
 			    double *rectPtr));
-MOVEXT double		TkOvalToPoint _ANSI_ARGS_((double ovalPtr[4],
+EXTERN double		TkOvalToPoint _ANSI_ARGS_((double ovalPtr[4],
 			    double width, int filled, double pointPtr[2]));
 EXTERN int		TkpChangeFocus _ANSI_ARGS_((TkWindow *winPtr,
 			    int force));
@@ -876,12 +896,17 @@ EXTERN TkDisplay *	TkpOpenDisplay _ANSI_ARGS_((char *display_name));
 EXTERN void		TkPointerDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN int		TkPointerEvent _ANSI_ARGS_((XEvent *eventPtr,
 			    TkWindow *winPtr));
-MOVEXT int		TkPolygonToArea _ANSI_ARGS_((double *polyPtr,
+EXTERN int		TkPolygonToArea _ANSI_ARGS_((double *polyPtr,
 			    int numPoints, double *rectPtr));
-MOVEXT double		TkPolygonToPoint _ANSI_ARGS_((double *polyPtr,
+EXTERN double		TkPolygonToPoint _ANSI_ARGS_((double *polyPtr,
 			    int numPoints, double *pointPtr));
 EXTERN int		TkPositionInTree _ANSI_ARGS_((TkWindow *winPtr,
 			    TkWindow *treePtr));
+EXTERN int		TkPostscriptImage _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
+			    XImage *ximage, int x, int y, int width,
+			    int height));
+
 #ifndef TkpPrintWindowId
 EXTERN void		TkpPrintWindowId _ANSI_ARGS_((char *buf,
 			    Window window));
@@ -948,8 +973,14 @@ EXTERN void		TkSetRegion _ANSI_ARGS_((Display* display, GC gc,
 EXTERN void		TkSetWindowMenuBar _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, Arg oldMenuName, 
 			    Arg menuName));
+EXTERN int		TkSmoothParseProc _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, Tk_Window tkwin,
+			    Arg value, char *recordPtr, int offset));
+EXTERN Arg 		TkSmoothPrintProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Window tkwin, char *recordPtr, int offset,
+			    Tcl_FreeProc **freeProcPtr));
 EXTERN KeySym		TkStringToKeysym _ANSI_ARGS_((char *name));
-MOVEXT int		TkThickPolyLineToArea _ANSI_ARGS_((double *coordPtr,
+EXTERN int		TkThickPolyLineToArea _ANSI_ARGS_((double *coordPtr,
 			    int numPoints, double width, int capStyle,
 			    int joinStyle, double *rectPtr));
 #ifndef TkUnionRectWithRegion
@@ -975,6 +1006,15 @@ EXTERN void		TkWmUnmapWindow _ANSI_ARGS_((TkWindow *winPtr));
  * Unsupported commands.
  */
 EXTERN int		TkUnsupported1Cmd _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, char **argv));
+
+/*
+ * Canvas-related procedures that are shared among Tk modules but not
+ * exported to the outside world:
+ */
+                                                        
+struct TkCanvas;
+extern int		TkCanvPostscriptCmd _ANSI_ARGS_((struct TkCanvas *canvasPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
 
 # undef TCL_STORAGE_CLASS

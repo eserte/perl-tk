@@ -165,9 +165,8 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     int argc;
     char ** argv;                                      
     int delta = 0;
-    LangFreeProc *freeProc = NULL;
 
-    if (Lang_SplitList(interp, avalue, &argc, &argv, &freeProc) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, avalue, &argc, &argv) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -274,9 +273,6 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     }
 
   done:
-    if (freeProc) {
-	(*freeProc)(argc, argv);
-    }
     if (code == TCL_ERROR) {
 	clientPtr->attType[axis][which] = ATT_NONE;
 	clientPtr->off[axis][which] = 0;

@@ -34,6 +34,34 @@ static int configFlags[] = {LABEL_MASK, BUTTON_MASK,
 	CHECK_BUTTON_MASK, RADIO_BUTTON_MASK};
 
 /*
+ * Custom option for handling "-default", "-state" , "-tile" and "-offset"
+ */
+
+static Tk_CustomOption defaultOption = {
+    Tk_StateParseProc,
+    Tk_StatePrintProc,
+    (ClientData) 5	/* allow "normal", "active" and "disabled" */
+};
+
+static Tk_CustomOption stateOption = {
+    Tk_StateParseProc,
+    Tk_StatePrintProc,
+    (ClientData) 1	/* allow "normal", "active" and "disabled" */
+};
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
+
+/*
  * Information used for parsing configuration specs:
  */
 
@@ -56,6 +84,9 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
 	DEF_BUTTON_ACTIVE_FG_MONO, Tk_Offset(TkButton, activeFg), 
 	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK
 	|TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
+	Tk_Offset(TkButton, activeTile),ALL_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_OBJECT, "-activeimage", "activeImage", "ActiveImage",
 	DEF_BUTTON_SELECT_IMAGE, Tk_Offset(TkButton, selectImageString),
 	BUTTON_MASK|TK_CONFIG_NULL_OK},
@@ -82,8 +113,9 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
     {TK_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
 	DEF_BUTTON_CURSOR, Tk_Offset(TkButton, cursor),
 	ALL_MASK|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_UID, "-default", "default", "Default",
-        DEF_BUTTON_DEFAULT, Tk_Offset(TkButton, defaultState), BUTTON_MASK},
+    {TK_CONFIG_CUSTOM, "-default", "default", "Default",
+        DEF_BUTTON_DEFAULT, Tk_Offset(TkButton, defaultState),
+	BUTTON_MASK, &defaultOption},
     {TK_CONFIG_COLOR, "-disabledforeground", "disabledForeground",
 	"DisabledForeground", DEF_BUTTON_DISABLED_FG_COLOR,
 	Tk_Offset(TkButton, disabledFg), BUTTON_MASK|CHECK_BUTTON_MASK
@@ -92,6 +124,9 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
 	"DisabledForeground", DEF_BUTTON_DISABLED_FG_MONO,
 	Tk_Offset(TkButton, disabledFg), BUTTON_MASK|CHECK_BUTTON_MASK
 	|RADIO_BUTTON_MASK|TK_CONFIG_MONO_ONLY|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-disabledtile", "disabledTile", "Tile", (char *) NULL,
+	Tk_Offset(TkButton, disabledTile),ALL_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, ALL_MASK},
     {TK_CONFIG_FONT, "-font", "font", "Font",
@@ -129,6 +164,9 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
     {TK_CONFIG_LANGARG, "-offvalue", "offValue", "Value",
 	DEF_BUTTON_OFF_VALUE, Tk_Offset(TkButton, offValue),
 	CHECK_BUTTON_MASK},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(TkButton, tsoffset),ALL_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
     {TK_CONFIG_LANGARG, "-onvalue", "onValue", "Value",
 	DEF_BUTTON_ON_VALUE, Tk_Offset(TkButton, onValue),
 	CHECK_BUTTON_MASK},
@@ -158,9 +196,9 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
     {TK_CONFIG_OBJECT, "-selectimage", "selectImage", "SelectImage",
 	DEF_BUTTON_SELECT_IMAGE, Tk_Offset(TkButton, selectImageString),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_UID, "-state", "state", "State",
+    {TK_CONFIG_CUSTOM, "-state", "state", "State",
 	DEF_BUTTON_STATE, Tk_Offset(TkButton, state),
-	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK},
+	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK, &stateOption},
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_LABEL_TAKE_FOCUS, Tk_Offset(TkButton, takeFocus),
 	LABEL_MASK|TK_CONFIG_NULL_OK},
@@ -172,6 +210,9 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
     {TK_CONFIG_SCALARVAR, "-textvariable", "textVariable", "Variable",
 	DEF_BUTTON_TEXT_VARIABLE, Tk_Offset(TkButton, textVarName),
 	ALL_MASK|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(TkButton, tile),ALL_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_INT, "-underline", "underline", "Underline",
 	DEF_BUTTON_UNDERLINE, Tk_Offset(TkButton, underline), ALL_MASK},
     {TK_CONFIG_LANGARG, "-value", "value", "Value",
@@ -232,6 +273,8 @@ static int		ConfigureButton _ANSI_ARGS_((Tcl_Interp *interp,
 			    TkButton *butPtr, int argc, char **argv,
 			    int flags));
 static void		DestroyButton _ANSI_ARGS_((TkButton *butPtr));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 
 /*
@@ -345,7 +388,7 @@ ButtonCreate(clientData, interp, argc, argv, type)
 	return TCL_ERROR;
     }
 
-    Tk_SetClass(new, classNames[type]);
+    TkClassOption(new, classNames[type],&argc,&args);
     butPtr = TkpCreateButton(new);
 
     TkSetClassProcs(new, &tkpButtonProcs, (ClientData) butPtr);
@@ -368,7 +411,7 @@ ButtonCreate(clientData, interp, argc, argv, type)
     butPtr->image = NULL;
     butPtr->selectImageString = NULL;
     butPtr->selectImage = NULL;
-    butPtr->state = tkNormalUid;
+    butPtr->state = TK_STATE_NORMAL;
     butPtr->normalBorder = NULL;
     butPtr->activeBorder = NULL;
     butPtr->borderWidth = 0;
@@ -400,7 +443,7 @@ ButtonCreate(clientData, interp, argc, argv, type)
     butPtr->selectBorder = NULL;
     butPtr->indicatorSpace = 0;
     butPtr->indicatorDiameter = 0;
-    butPtr->defaultState = tkDisabledUid;
+    butPtr->defaultState = TK_STATE_DISABLED;
     butPtr->selVarName = NULL;
     butPtr->onValue = NULL;
     butPtr->offValue = NULL;
@@ -408,6 +451,10 @@ ButtonCreate(clientData, interp, argc, argv, type)
     butPtr->command = NULL;
     butPtr->takeFocus = NULL;
     butPtr->flags = 0;
+    butPtr->tile = butPtr->activeTile = butPtr->disabledTile = NULL;
+    butPtr->tsoffset.flags = 0;
+    butPtr->tsoffset.xoffset = 0;
+    butPtr->tsoffset.yoffset = 0;
 
     Tk_CreateEventHandler(butPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -516,12 +563,12 @@ ButtonWidgetCmd(clientData, interp, argc, argv)
 		    argv[0]);
 	    goto error;
 	}
-	if (butPtr->state != tkDisabledUid) {
+	if (butPtr->state != TK_STATE_DISABLED) {
 	    for (i = 0; i < 4; i++) {
-		butPtr->state = (butPtr->state == tkNormalUid)
-			? tkActiveUid : tkNormalUid;
+		butPtr->state = (butPtr->state == TK_STATE_NORMAL)
+			? TK_STATE_ACTIVE : TK_STATE_NORMAL;
 		Tk_SetBackgroundFromBorder(butPtr->tkwin,
-			(butPtr->state == tkActiveUid) ? butPtr->activeBorder
+			(butPtr->state == TK_STATE_ACTIVE) ? butPtr->activeBorder
 			: butPtr->normalBorder);
 		TkpDisplayButton((ClientData) butPtr);
 
@@ -544,7 +591,7 @@ ButtonWidgetCmd(clientData, interp, argc, argv)
 		    argv[0]);
 	    goto error;
 	}
-	if (butPtr->state != tkDisabledUid) {
+	if (butPtr->state != TK_STATE_DISABLED) {
 	    result = TkInvokeButton(butPtr);
 	}
     } else if ((c == 's') && (strncmp(argv[1], "select", length) == 0)
@@ -643,6 +690,15 @@ DestroyButton(butPtr)
     if (butPtr->disabledGC != None) {
 	Tk_FreeGC(butPtr->display, butPtr->disabledGC);
     }
+    if (butPtr->tile != NULL) {
+	Tk_FreeTile(butPtr->tile);
+    }
+    if (butPtr->activeTile != NULL) {
+	Tk_FreeTile(butPtr->activeTile);
+    }
+    if (butPtr->disabledTile != NULL) {
+	Tk_FreeTile(butPtr->disabledTile);
+    }
     if (butPtr->copyGC != None) {
 	Tk_FreeGC(butPtr->display, butPtr->copyGC);
     }
@@ -655,6 +711,28 @@ DestroyButton(butPtr)
     Tk_FreeOptions(tkpButtonConfigSpecs, (char *) butPtr, butPtr->display,
 	    configFlags[butPtr->type]);
     Tcl_EventuallyFree((ClientData)butPtr, TCL_DYNAMIC);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;           /* Not used */
+{
+    register TkButton *butPtr = (TkButton *) clientData;
+
+    ConfigureButton(butPtr->interp, butPtr, 0, NULL, 0);
 }
 
 /*
@@ -715,35 +793,10 @@ ConfigureButton(interp, butPtr, argc, argv, flags)
      * defaults that couldn't be specified to Tk_ConfigureWidget.
      */
 
-    if ((butPtr->state == tkActiveUid) && !Tk_StrictMotif(butPtr->tkwin)) {
+    if ((butPtr->state == TK_STATE_ACTIVE) && !Tk_StrictMotif(butPtr->tkwin)) {
 	Tk_SetBackgroundFromBorder(butPtr->tkwin, butPtr->activeBorder);
     } else {
 	Tk_SetBackgroundFromBorder(butPtr->tkwin, butPtr->normalBorder);
-	if ((butPtr->state != tkNormalUid) && (butPtr->state != tkActiveUid)
-		&& (butPtr->state != tkDisabledUid)) {
-	    Tcl_AppendResult(interp, "bad state value \"", butPtr->state,
-		    "\": must be normal, active, or disabled", (char *) NULL);
-	    butPtr->state = tkNormalUid;
-	    return TCL_ERROR;
-	}
-    }
-
-    if ((butPtr->defaultState != tkActiveUid)
-	    && (butPtr->defaultState != tkDisabledUid)
-	    && (butPtr->defaultState != tkNormalUid)) {
-	Tcl_AppendResult(interp, "bad -default value \"", butPtr->defaultState,
-		"\": must be normal, active, or disabled", (char *) NULL);
-	butPtr->defaultState = tkDisabledUid;
-	return TCL_ERROR;
-    }
-
-    if ((butPtr->defaultState != tkActiveUid)
-	    && (butPtr->defaultState != tkDisabledUid)
-	    && (butPtr->defaultState != tkNormalUid)) {
-	Tcl_AppendResult(interp, "bad -default value \"", butPtr->defaultState,
-		"\": must be normal, active, or disabled", (char *) NULL);
-	butPtr->defaultState = tkDisabledUid;
-	return TCL_ERROR;
     }
 
     if (butPtr->highlightWidth < 0) {
@@ -905,6 +958,8 @@ TkButtonWorldChanged(instanceData)
     GC newGC;
     unsigned long mask;
     TkButton *butPtr;
+    Tk_Tile tile;
+    Pixmap pixmap;
 
     butPtr = (TkButton *) instanceData;
 
@@ -968,9 +1023,32 @@ TkButtonWorldChanged(instanceData)
 	butPtr->disabledGC = newGC;
     }
 
-    if (butPtr->copyGC == None) {
-	butPtr->copyGC = Tk_GetGC(butPtr->tkwin, 0, &gcValues);
+    if ((butPtr->state == TK_STATE_ACTIVE) && (butPtr->activeTile != NULL)) {
+	tile = butPtr->activeTile;
+    } else if ((butPtr->state == TK_STATE_DISABLED) && (butPtr->disabledTile != NULL)) {
+	tile = butPtr->disabledTile;
+    } else {
+	tile = butPtr->tile;
     }
+    Tk_SetTileChangedProc(butPtr->disabledTile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(butPtr->activeTile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(butPtr->tile, (Tk_TileChangedProc *) NULL, 
+	    (ClientData)NULL, (Tk_Item *)NULL);
+    Tk_SetTileChangedProc(tile, TileChangedProc,
+	    (ClientData) butPtr, (Tk_Item *) NULL);
+    if ((pixmap = Tk_PixmapOfTile(tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	newGC = Tk_GetGC(butPtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else {
+	newGC = Tk_GetGC(butPtr->tkwin, 0, &gcValues);
+    }
+    if (butPtr->copyGC != None) {
+	Tk_FreeGC(butPtr->display, butPtr->copyGC);
+    }
+    butPtr->copyGC = newGC;
 
     TkpComputeButtonGeometry(butPtr);
 

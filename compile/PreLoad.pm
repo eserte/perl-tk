@@ -1,7 +1,7 @@
 package PreLoad;
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/compile/PreLoad.pm#3$
+$VERSION = '3.005'; # $Id: //depot/Tk8/compile/PreLoad.pm#5 $
 
 require AutoLoader;
 

@@ -247,6 +247,12 @@ $widget into the stacking order just below I<belowThis>
 (or the ancestor of I<belowThis> that is a sibling of $widget);
 this could end up either raising or lowering $widget.
 
+=item I<$widget>-E<gt>B<MapWindow>
+
+Cause I<$widget> to be "mapped" i.e. made visible on the display.
+May confuse the geometry manager (pack, grid, place, ...)
+that thinks it is managing the widget.
+
 =item I<$widget>-E<gt>B<manager>
 
 Returns the name of the geometry manager currently
@@ -458,6 +464,13 @@ is an integer release number provided by the server.
 =item I<$widget>-E<gt>B<toplevel>
 
 Returns the reference of the top-level window containing I<$widget>.
+
+=item I<$widget>-E<gt>B<UnmapWindow>
+
+Cause I<$widget> to be "unmapped" i.e. removed from the display.
+This does for any widget what I<$widget>-E<gt>withdraw does for 
+toplevel widgets. May confuse the geometry manager (pack, grid, place, ...)
+that thinks it is managing the widget. 
 
 =item I<$widget>-E<gt>B<update> 
 

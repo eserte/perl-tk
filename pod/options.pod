@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-options - Standard options supported by widgets and their manipulation
+Tk::options - Standard options supported by widgets and their manipulation
 
 =for category Creating and Configuring Widgets
 
@@ -186,6 +186,15 @@ than one element at a time (e.g. menus but not buttons).
 Specifies foreground color to use when drawing active elements.
 See above for definition of active elements.
 
+=item Name:	B<activetile>
+
+=item Class:	B<Tile>
+
+=item Switch:	B<-activetile>
+
+Specifies image used to display inside active elements of the widget.
+See above for definition of active elements.
+
 =item Name:	B<anchor>
 
 =item Class:	B<Anchor>
@@ -251,6 +260,23 @@ The value may have any of the forms acceptable to B<Tk_GetPixels>.
 Specifies the mouse cursor to be used for the widget.
 The value may have any of the forms acceptable to B<Tk_GetCursor>.
 
+=item Name:	B<dash>
+
+=item Class:	B<Dash>
+
+=item Switch:	B<-dash>
+
+The value may have any of the forms accepted by B<Tk_GetDash>,
+such as B<4>, B<[6,4]>, B<.>, B<->, B<-.>, or B<-..>.
+
+=item Name:	B<dashoffset>
+
+=item Class:	B<Dashoffset>
+
+=item Switch:	B<-dashoffset>
+
+Specifies the offset in the dash list where the drawing starts.
+
 =item Name:	B<disabledForeground>
 
 =item Class:	B<DisabledForeground>
@@ -262,6 +288,14 @@ If the option is specified as an empty string (which is typically the
 case on monochrome displays), disabled elements are drawn with the
 normal foreground color but they are dimmed by drawing them
 with a stippled fill pattern.
+
+=item Name:	B<disabledtile>
+
+=item Class:	B<Tile>
+
+=item Switch:	B<-disabledtile>
+
+Specifies image to use when drawing a disabled element.
 
 =item Name:	B<exportSelection>
 
@@ -423,6 +457,25 @@ Must be one of B<left>, B<center>, or B<right>.
 B<Left> means that the lines' left edges all line up, B<center>
 means that the lines' centers are aligned, and B<right> means
 that the lines' right edges line up.
+
+=item Name:	B<offset>
+
+=item Class:	B<Offset>
+
+=item Switch:	B<-offset>
+
+Specifies the offset of tiles (see also B<-tile> option). It can
+have two different formats B<-offset x,y> or B<-offset side>,
+where side can be B<n>, B<ne>, B<e>, B<se>, B<s>,
+B<sw>, B<w>, B<nw>, or B<center>. In the first case
+the origin is the origin of the toplevel of the current window.
+For the canvas itself and canvas objects the origin is the canvas
+origin, but putting B<#> in front of the coordinate pair
+indicates using the toplevel origin in stead. For canvas objects,
+the B<-offset> option is used for stippling as well.
+For the line and polygon canvas items you can also specify
+an index as argument, which connects the stipple or tile
+origin to one of the coordinate points of the line/polygon.
 
 =item Name:	B<orient>
 
@@ -614,6 +667,15 @@ B<anchor> or B<justify>.
 =item Switch:	B<-troughcolor>
 
 Specifies the color to use for the rectangular trough areas
+in widgets such as scrollbars and scales.
+
+=item Name:	B<troughTile>
+
+=item Class:	B<Tile>
+
+=item Switch:	B<-troughtile>
+
+Specifies image used to display in the rectangular trough areas
 in widgets such as scrollbars and scales.
 
 =item Name:	B<underline>

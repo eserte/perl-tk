@@ -30,6 +30,28 @@ static Tk_Uid rightUid = NULL;
 static Tk_Uid flushUid = NULL;
 
 /*
+ * Custom option for handling "-state"
+ */
+
+static Tk_CustomOption stateOption = {
+    Tk_StateParseProc,
+    Tk_StatePrintProc,
+    (ClientData) 1	/* allow "normal", "active" and "disabled" */
+};
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
+
+/*
  * Information used for parsing configuration specs:
  */
 
@@ -46,6 +68,9 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_COLOR, "-activeforeground", "activeForeground", "Background",
 	DEF_MENUBUTTON_ACTIVE_FG_MONO, Tk_Offset(TkMenuButton, activeFg),
 	TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenuButton, activeTile),TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor",
 	DEF_MENUBUTTON_ANCHOR, Tk_Offset(TkMenuButton, anchor), 0},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
@@ -77,6 +102,9 @@ static Tk_ConfigSpec configSpecs[] = {
 	"DisabledForeground", DEF_MENUBUTTON_DISABLED_FG_MONO,
 	Tk_Offset(TkMenuButton, disabledFg),
 	TK_CONFIG_MONO_ONLY|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-disabledtile", "disabledTile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenuButton, disabledTile),TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, 0},
     {TK_CONFIG_FONT, "-font", "font", "Font",
@@ -108,10 +136,14 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_MENUBUTTON_PADX, Tk_Offset(TkMenuButton, padX), 0},
     {TK_CONFIG_PIXELS, "-pady", "padY", "Pad",
 	DEF_MENUBUTTON_PADY, Tk_Offset(TkMenuButton, padY), 0},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(TkMenuButton, tile),TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_MENUBUTTON_RELIEF, Tk_Offset(TkMenuButton, relief), 0},
-    {TK_CONFIG_UID, "-state", "state", "State",
-	DEF_MENUBUTTON_STATE, Tk_Offset(TkMenuButton, state), 0},
+    {TK_CONFIG_CUSTOM, "-state", "state", "State",
+	DEF_MENUBUTTON_STATE, Tk_Offset(TkMenuButton, state), 0,
+	&stateOption},
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_MENUBUTTON_TAKE_FOCUS, Tk_Offset(TkMenuButton, takeFocus),
 	TK_CONFIG_NULL_OK},
@@ -120,6 +152,9 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_SCALARVAR, "-textvariable", "textVariable", "Variable",
 	DEF_MENUBUTTON_TEXT_VARIABLE, Tk_Offset(TkMenuButton, textVarName),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenuButton, tile),TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_INT, "-underline", "underline", "Underline",
 	DEF_MENUBUTTON_UNDERLINE, Tk_Offset(TkMenuButton, underline), 0},
     {TK_CONFIG_LANGARG, "-width", "width", "Width",
@@ -150,6 +185,8 @@ static int		ConfigureMenuButton _ANSI_ARGS_((Tcl_Interp *interp,
 			    TkMenuButton *mbPtr, int argc, char **argv,
 			    int flags));
 static void		DestroyMenuButton _ANSI_ARGS_((char *memPtr));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  *--------------------------------------------------------------
@@ -196,7 +233,7 @@ Tk_MenubuttonCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 
-    Tk_SetClass(new, "Menubutton");
+    TkClassOption(new, "Menubutton",&argc,&argv);
     mbPtr = TkpCreateMenuButton(new);
 
     TkSetClassProcs(new, &tkpMenubuttonClass, (ClientData) mbPtr);
@@ -217,7 +254,7 @@ Tk_MenubuttonCmd(clientData, interp, argc, argv)
     mbPtr->bitmap = None;
     mbPtr->imageString = NULL;
     mbPtr->image = NULL;
-    mbPtr->state = tkNormalUid;
+    mbPtr->state = TK_STATE_NORMAL;
     mbPtr->normalBorder = NULL;
     mbPtr->activeBorder = NULL;
     mbPtr->borderWidth = 0;
@@ -252,6 +289,11 @@ Tk_MenubuttonCmd(clientData, interp, argc, argv)
     mbPtr->cursor = None;
     mbPtr->takeFocus = NULL;
     mbPtr->flags = 0;
+    mbPtr->tile = mbPtr->activeTile = mbPtr->disabledTile = NULL;
+    mbPtr->tileGC = None;
+    mbPtr->tsoffset.flags = 0;
+    mbPtr->tsoffset.xoffset = 0;
+    mbPtr->tsoffset.yoffset = 0;
     if (aboveUid == NULL) {
 	aboveUid = Tk_GetUid("above");
 	belowUid = Tk_GetUid("below");
@@ -395,9 +437,43 @@ DestroyMenuButton(memPtr)
     if (mbPtr->disabledGC != None) {
 	Tk_FreeGC(mbPtr->display, mbPtr->disabledGC);
     }
+    if (mbPtr->tile != NULL) {
+	Tk_FreeTile(mbPtr->tile);
+    }
+    if (mbPtr->activeTile != NULL) {
+	Tk_FreeTile(mbPtr->activeTile);
+    }
+    if (mbPtr->disabledTile != NULL) {
+	Tk_FreeTile(mbPtr->disabledTile);
+    }
+    if (mbPtr->tileGC != None) {
+	Tk_FreeGC(mbPtr->display, mbPtr->tileGC);
+    }
     Tk_FreeTextLayout(mbPtr->textLayout);
     Tk_FreeOptions(configSpecs, (char *) mbPtr, mbPtr->display, 0);
     ckfree((char *) mbPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;           /* Not used */
+{
+    register TkMenuButton *mbPtr = (TkMenuButton *) clientData;
+
+    ConfigureMenuButton(mbPtr->interp, mbPtr, 0, NULL, 0);
 }
 
 /*
@@ -430,7 +506,6 @@ ConfigureMenuButton(interp, mbPtr, argc, argv, flags)
     char **argv;		/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
-    int result;
     Tk_Image image;
 
     /*
@@ -443,9 +518,8 @@ ConfigureMenuButton(interp, mbPtr, argc, argv, flags)
 		MenuButtonTextVarProc, (ClientData) mbPtr);
     }
 
-    result = Tk_ConfigureWidget(interp, mbPtr->tkwin, configSpecs,
-	    argc, argv, (char *) mbPtr, flags);
-    if (result != TCL_OK) {
+    if (Tk_ConfigureWidget(interp, mbPtr->tkwin, configSpecs,
+	    argc, argv, (char *) mbPtr, flags) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -455,17 +529,10 @@ ConfigureMenuButton(interp, mbPtr, argc, argv, flags)
      * defaults that couldn't be specified to Tk_ConfigureWidget.
      */
 
-    if ((mbPtr->state == tkActiveUid) && !Tk_StrictMotif(mbPtr->tkwin)) {
+    if ((mbPtr->state == TK_STATE_ACTIVE) && !Tk_StrictMotif(mbPtr->tkwin)) {
 	Tk_SetBackgroundFromBorder(mbPtr->tkwin, mbPtr->activeBorder);
     } else {
 	Tk_SetBackgroundFromBorder(mbPtr->tkwin, mbPtr->normalBorder);
-	if ((mbPtr->state != tkNormalUid) && (mbPtr->state != tkActiveUid)
-		&& (mbPtr->state != tkDisabledUid)) {
-	    Tcl_AppendResult(interp, "bad state value \"", mbPtr->state,
-		    "\": must be normal, active, or disabled", (char *) NULL);
-	    mbPtr->state = tkNormalUid;
-	    return TCL_ERROR;
-	}
     }
 
     if ((mbPtr->direction != aboveUid) && (mbPtr->direction != belowUid)
@@ -591,8 +658,37 @@ TkMenuButtonWorldChanged(instanceData)
     GC gc;
     unsigned long mask;
     TkMenuButton *mbPtr;
+    Tk_Tile tile;
+    Pixmap pixmap;
 
     mbPtr = (TkMenuButton *) instanceData;
+
+    if ((mbPtr->state == TK_STATE_ACTIVE) && (mbPtr->activeTile != NULL)) {
+	tile = mbPtr->activeTile;
+    } else if ((mbPtr->state == TK_STATE_DISABLED) && (mbPtr->disabledTile != NULL)) {
+	tile = mbPtr->disabledTile;
+    } else {
+	tile = mbPtr->tile;
+    }
+    Tk_SetTileChangedProc(mbPtr->disabledTile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(mbPtr->activeTile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(mbPtr->tile, (Tk_TileChangedProc *) NULL, 
+	    (ClientData)NULL, (Tk_Item *)NULL);
+    Tk_SetTileChangedProc(tile, TileChangedProc,
+	    (ClientData) mbPtr, (Tk_Item *) NULL);
+    if ((pixmap = Tk_PixmapOfTile(tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	gc = Tk_GetGC(mbPtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else {
+	gc = Tk_GetGC(mbPtr->tkwin, 0, &gcValues);
+    }
+    if (mbPtr->tileGC != None) {
+	Tk_FreeGC(mbPtr->display, mbPtr->tileGC);
+    }
+    mbPtr->tileGC = gc;
 
     gcValues.font = Tk_FontId(mbPtr->tkfont);
     gcValues.foreground = mbPtr->normalFg->pixel;

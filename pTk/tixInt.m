@@ -163,5 +163,9 @@
 #  define TixpSubRegFillRectangle (*TixintVptr->V_TixpSubRegFillRectangle)
 #endif
 
+#ifndef tixStrDup
+#  define tixStrDup (*TixintVptr->V_tixStrDup)
+#endif
+
 #endif /* NO_VTABLES */
 #endif /* _TIXINT_VM */

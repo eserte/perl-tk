@@ -42,7 +42,7 @@ The public methods provided by Tk::Derived are as follows:
 
 =over 4
 
-=item -E<gt>ConfigSpecs(-I<key> =E<gt> [I<kind>, I<name>, I<Class>, I<default], ...)
+=item -E<gt>ConfigSpecs(-I<key> =E<gt> [I<kind>, I<name>, I<Class>, I<default>], ...)
 
 =back
 

@@ -22,6 +22,10 @@
 #define ERRSV GvSV(errgv)
 #endif
 
+#ifndef aTHX_
+#define aTHX_
+#endif
+
 #ifdef dirty
 #undef dirty
 #endif

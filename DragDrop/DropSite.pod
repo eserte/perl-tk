@@ -2,6 +2,8 @@
 
 Tk::DropSite - Receive side of Drag & Drop abstraction
 
+=for category User Interaction
+
 =head1 SYNOPSIS
 
  use Tk::DropSite qw(...);

@@ -172,7 +172,7 @@ CreateClassRecord(interp, classRec, mainWindow, isWidget)
 #endif
 	cPtr->superClass = NULL;
 	cPtr->isWidget   = isWidget;
-	cPtr->className  = (char*)strdup(classRec);
+	cPtr->className  = tixStrDup(classRec);
 	cPtr->ClassName  = NULL;
 	cPtr->nSpecs     = 0;
 	cPtr->specs      = 0;
@@ -481,7 +481,7 @@ InitClass(interp, classRec, cPtr, scPtr, parsePtr)
     Tix_ListIterator li;
     TixClassRecord * subPtr;
 
-    cPtr->ClassName = (char*)strdup(parsePtr->ClassName);
+    cPtr->ClassName = tixStrDup(parsePtr->ClassName);
 
     /*
      * (3) Set up the methods.
@@ -987,11 +987,11 @@ static int SetupMethod(interp, cPtr, s)
     cPtr->methods  = (char**)ckalloc(nMethods*sizeof(char*));
     /* Copy the methods of this class */
     for (i=0; i<listArgc; i++) {
-	cPtr->methods[i] = (char*)strdup(listArgv[i]);
+	cPtr->methods[i] = tixStrDup(listArgv[i]);
     }
     /* Copy the methods of the super class */
     for (; i<nMethods; i++) {
-	cPtr->methods[i] = (char*)strdup(scPtr->methods[i-listArgc]);
+	cPtr->methods[i] = tixStrDup(scPtr->methods[i-listArgc]);
     }
 
     if (listArgv) {
@@ -1033,8 +1033,8 @@ SetupDefault(interp, cPtr, s)
 	    Tix_SubwidgetDef * p = (Tix_SubwidgetDef*)li.curr;
 
 	    defPtr = (Tix_SubwidgetDef*)ckalloc(sizeof(Tix_SubwidgetDef));
-	    defPtr->spec  = (char*)strdup(p->spec);
-	    defPtr->value = (char*)strdup(p->value);
+	    defPtr->spec  = tixStrDup(p->spec);
+	    defPtr->value = tixStrDup(p->value);
 
 	    Tix_SimpleListAppend(&cPtr->subWDefs, (char*)defPtr, 0);
 	}
@@ -1075,8 +1075,8 @@ SetupDefault(interp, cPtr, s)
 	/* Append this spec to the end
 	 */
 	defPtr = (Tix_SubwidgetDef*)ckalloc(sizeof(Tix_SubwidgetDef));
-	defPtr->spec  = (char*)strdup(list[0]);
-	defPtr->value = (char*)strdup(list[1]);
+	defPtr->spec  = tixStrDup(list[0]);
+	defPtr->value = tixStrDup(list[1]);
 
 	Tix_SimpleListAppend(&cPtr->subWDefs, (char*)defPtr, 0);
 
@@ -1235,7 +1235,7 @@ InitSpec(interp, s, isWidget)
 	goto done;
     }
 
-    specList = (char*)strdup(interp->result);
+    specList = tixStrDup(interp->result);
 
     if (Tcl_SplitList(interp, specList, &listArgc, &listArgv)!= TCL_OK) {
 	goto done;
@@ -1257,16 +1257,16 @@ InitSpec(interp, s, isWidget)
     sPtr->realPtr   = NULL;
 
     if (isWidget) {
-	sPtr->argvName = (char*)strdup(listArgv[0]);
-	sPtr->dbName   = (char*)strdup(listArgv[1]);
-	sPtr->dbClass  = (char*)strdup(listArgv[2]);
-	sPtr->defValue = (char*)strdup(listArgv[3]);
+	sPtr->argvName = tixStrDup(listArgv[0]);
+	sPtr->dbName   = tixStrDup(listArgv[1]);
+	sPtr->dbClass  = tixStrDup(listArgv[2]);
+	sPtr->defValue = tixStrDup(listArgv[3]);
     }
     else {
-	sPtr->argvName = (char*)strdup(listArgv[0]);
+	sPtr->argvName = tixStrDup(listArgv[0]);
 	sPtr->dbClass  = TIX_EMPTY_STRING;
 	sPtr->dbName   = TIX_EMPTY_STRING;
-	sPtr->defValue = (char*)strdup(listArgv[1]);
+	sPtr->defValue = tixStrDup(listArgv[1]);
     }
 
     /* Set up the verifyCmd */
@@ -1279,7 +1279,7 @@ InitSpec(interp, s, isWidget)
 	    n = 2;
 	}
 
-	sPtr->verifyCmd = (char*)strdup(listArgv[n]);
+	sPtr->verifyCmd = tixStrDup(listArgv[n]);
     } else {
 	sPtr->verifyCmd = NULL;
     }
@@ -1306,27 +1306,27 @@ CopySpec(sPtr)
     nPtr->forceCall = sPtr->forceCall;
 
     if (sPtr->argvName != NULL &&  sPtr->argvName != TIX_EMPTY_STRING) {
-	nPtr->argvName = (char*)strdup(sPtr->argvName);
+	nPtr->argvName = tixStrDup(sPtr->argvName);
     } else {
 	nPtr->argvName = TIX_EMPTY_STRING;
     }
     if (sPtr->defValue != NULL &&  sPtr->defValue != TIX_EMPTY_STRING) {
-	nPtr->defValue = (char*)strdup(sPtr->defValue);
+	nPtr->defValue = tixStrDup(sPtr->defValue);
     } else {
 	nPtr->defValue = TIX_EMPTY_STRING;
     }
     if (sPtr->dbName != NULL &&  sPtr->dbName != TIX_EMPTY_STRING) {
-	nPtr->dbName = (char*)strdup(sPtr->dbName);
+	nPtr->dbName = tixStrDup(sPtr->dbName);
     } else {
 	nPtr->dbName = TIX_EMPTY_STRING;
     }
     if (sPtr->dbClass != NULL &&  sPtr->dbClass != TIX_EMPTY_STRING) {
-	nPtr->dbClass = (char*)strdup(sPtr->dbClass);
+	nPtr->dbClass = tixStrDup(sPtr->dbClass);
     } else {
 	nPtr->dbClass = TIX_EMPTY_STRING;
     }
     if (sPtr->verifyCmd != NULL) {
-	nPtr->verifyCmd = (char*)strdup(sPtr->verifyCmd);
+	nPtr->verifyCmd = tixStrDup(sPtr->verifyCmd);
     } else {
 	nPtr->verifyCmd = NULL;
     }
@@ -1454,7 +1454,8 @@ InitAlias(interp, cPtr, s)
     int listArgc;
     TixConfigSpec  * sPtr;
 
-    if (Tcl_SplitList(interp, s, &listArgc, &listArgv) != TCL_OK) {
+    if (Tcl_SplitList(interp, s, &listArgc, &listArgv) != TCL_OK
+	    || 2 != listArgc) {
 	return NULL;
     } else {
 	sPtr = (TixConfigSpec*) ckalloc(sizeof(TixConfigSpec));
@@ -1462,8 +1463,8 @@ InitAlias(interp, cPtr, s)
 	sPtr->isStatic   = 0;
 	sPtr->forceCall  = 0;
 	sPtr->readOnly   = 0;
-	sPtr->argvName   = (char*)strdup(listArgv[0]);
-	sPtr->dbName     = (char*)strdup(listArgv[1]);
+	sPtr->argvName   = tixStrDup(listArgv[0]);
+	sPtr->dbName     = tixStrDup(listArgv[1]);
 	sPtr->dbClass    = TIX_EMPTY_STRING;
 	sPtr->defValue   = TIX_EMPTY_STRING;
 	sPtr->verifyCmd  = NULL;
@@ -1618,7 +1619,7 @@ static Tix_LinkList * CopyStringList(list, newList)
     for (ptr=(Tix_StringLink*)list->head; ptr; ptr=ptr->next) {
 	newLink = (Tix_StringLink*)ckalloc(sizeof(Tix_StringLink));
 
-	newLink->string = (char*)strdup(ptr->string);
+	newLink->string = tixStrDup(ptr->string);
 	Tix_SimpleListAppend(newList, (char*)newLink, 0);
     }
 }
@@ -1700,7 +1701,7 @@ static int AppendStrings(interp, list, string)
 	if (strcmp(listArgv[i], "all")==0) {
 	    ptr->string = NULL;
 	} else {
-	    ptr->string=(char*)strdup(listArgv[i]);
+	    ptr->string = tixStrDup(listArgv[i]);
 	}
 	Tix_SimpleListAppend(list, (char*)ptr, 0);
     }
@@ -1889,7 +1890,7 @@ CopySubWidgetSpecs(scPtr, cPtr)
 	Tix_SubWidgetSpec *newPtr;
 	newPtr = AllocSubWidgetSpec();
 
-	newPtr->name = (char*)strdup(ssPtr->name);
+	newPtr->name = tixStrDup(ssPtr->name);
 	CopyExportSpec(&ssPtr->exportSpec, & newPtr->exportSpec);
 
 	Tix_SimpleListAppend(&cPtr->subWidgets, (char*)newPtr, 0);
@@ -1943,7 +1944,7 @@ SetupSubWidget(interp, cPtr, s)
 	}
 	else {
 	    newSpec = AllocSubWidgetSpec();
-	    newSpec->name = (char*)strdup(name);
+	    newSpec->name = tixStrDup(name);
 
 	    Tix_SimpleListAppend(&cPtr->subWidgets, (char*)newSpec, 0);
 

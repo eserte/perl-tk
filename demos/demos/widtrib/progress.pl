@@ -18,7 +18,7 @@ foreach my $loop (0..1) {
         $mw->ProgressBar(
 	    -borderwidth => 2,
 	    -relief => 'sunken',
-	    -width => 200,
+	    -width => 20,
 	    -padx => 2,
 	    -pady => 2,
 	    -variable => \$status_var,

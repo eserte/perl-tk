@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/Wm.pm#21$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Wm.pm#23 $
 
 use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 

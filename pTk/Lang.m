@@ -3,10 +3,6 @@
 #include "Lang_f.h"
 #ifndef NO_VTABLES
 #define LangOptionCommand (*LangVptr->V_LangOptionCommand)
-#ifndef LangAllocVec
-#  define LangAllocVec (*LangVptr->V_LangAllocVec)
-#endif
-
 #ifndef LangBadFile
 #  define LangBadFile (*LangVptr->V_LangBadFile)
 #endif
@@ -53,10 +49,6 @@
 
 #ifndef LangFreeVar
 #  define LangFreeVar (*LangVptr->V_LangFreeVar)
-#endif
-
-#ifndef LangFreeVec
-#  define LangFreeVec (*LangVptr->V_LangFreeVec)
 #endif
 
 #ifndef LangLibraryDir
@@ -113,10 +105,6 @@
 
 #ifndef LangString
 #  define LangString (*LangVptr->V_LangString)
-#endif
-
-#ifndef LangStringArg
-#  define LangStringArg (*LangVptr->V_LangStringArg)
 #endif
 
 #ifndef LangStringMatch
@@ -179,14 +167,6 @@
 #  define Lang_SetErrorCode (*LangVptr->V_Lang_SetErrorCode)
 #endif
 
-#ifndef Lang_SplitList
-#  define Lang_SplitList (*LangVptr->V_Lang_SplitList)
-#endif
-
-#ifndef Lang_SplitString
-#  define Lang_SplitString (*LangVptr->V_Lang_SplitString)
-#endif
-
 #ifndef Tcl_AddErrorInfo
 #  define Tcl_AddErrorInfo (*LangVptr->V_Tcl_AddErrorInfo)
 #endif
@@ -213,10 +193,6 @@
 
 #ifndef Tcl_AppendStringsToObj
 #  define Tcl_AppendStringsToObj (*LangVptr->V_Tcl_AppendStringsToObj)
-#endif
-
-#ifndef Tcl_ArgResult
-#  define Tcl_ArgResult (*LangVptr->V_Tcl_ArgResult)
 #endif
 
 #ifndef Tcl_BackgroundError
@@ -257,6 +233,10 @@
 
 #ifndef Tcl_DStringFree
 #  define Tcl_DStringFree (*LangVptr->V_Tcl_DStringFree)
+#endif
+
+#ifndef Tcl_DStringGetResult
+#  define Tcl_DStringGetResult (*LangVptr->V_Tcl_DStringGetResult)
 #endif
 
 #ifndef Tcl_DStringInit
@@ -439,8 +419,12 @@
 #  define Tcl_ListObjReplace (*LangVptr->V_Tcl_ListObjReplace)
 #endif
 
-#ifndef Tcl_Merge
-#  define Tcl_Merge (*LangVptr->V_Tcl_Merge)
+#ifndef Tcl_NewBooleanObj
+#  define Tcl_NewBooleanObj (*LangVptr->V_Tcl_NewBooleanObj)
+#endif
+
+#ifndef Tcl_NewDoubleObj
+#  define Tcl_NewDoubleObj (*LangVptr->V_Tcl_NewDoubleObj)
 #endif
 
 #ifndef Tcl_NewIntObj
@@ -449,6 +433,14 @@
 
 #ifndef Tcl_NewListObj
 #  define Tcl_NewListObj (*LangVptr->V_Tcl_NewListObj)
+#endif
+
+#ifndef Tcl_NewLongObj
+#  define Tcl_NewLongObj (*LangVptr->V_Tcl_NewLongObj)
+#endif
+
+#ifndef Tcl_NewObj
+#  define Tcl_NewObj (*LangVptr->V_Tcl_NewObj)
 #endif
 
 #ifndef Tcl_NewStringObj

@@ -10,7 +10,7 @@ require DynaLoader;
 use base qw(DynaLoader Tk); # but are they ?
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Image.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Image.pm#9 $
 
 sub new
 {

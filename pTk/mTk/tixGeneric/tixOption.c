@@ -315,7 +315,7 @@ int Tix_ChangeOneOption(interp, cPtr, widRec, spec, value, isDefault, isInit)
 	    code = TCL_ERROR;
 	    goto done;
 	} else {
-	    newValue = value = strdup(interp->result);
+	    newValue = value = tixStrDup(interp->result);
 	}
     }
 

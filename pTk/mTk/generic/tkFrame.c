@@ -64,6 +64,9 @@ typedef struct {
     int highlightWidth;		/* Width in pixels of highlight to draw
 				 * around widget when it has the focus.
 				 * 0 means don't draw a highlight. */
+    Tk_Tile tile;		/* tiling */
+    Tk_TSOffset tsoffset;	/* offset for tiling */
+    GC tileGC;			/* GC for tiling */
     XColor *highlightBgColorPtr;
 				/* Color for drawing traversal highlight
 				 * area when highlight is off. */
@@ -98,6 +101,22 @@ typedef struct {
 
 #define REDRAW_PENDING		1
 #define GOT_FOCUS		4
+
+/*
+ * Custom option for handling "-tile"
+ */
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
 
 /*
  * The following flag bits are used so that there can be separate
@@ -145,6 +164,9 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_LANGARG, "-menu", "menu", "Menu",
 	DEF_TOPLEVEL_MENU, Tk_Offset(Frame, menuName),
 	TOPLEVEL|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(Frame, tsoffset),BOTH|TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_FRAME_RELIEF, Tk_Offset(Frame, relief), BOTH},
     {TK_CONFIG_STRING, "-screen", "screen", "Screen",
@@ -155,6 +177,8 @@ static Tk_ConfigSpec configSpecs[] = {
 	BOTH|TK_CONFIG_NULL_OK},
     {TK_CONFIG_LANGARG, "-use", "use", "Use",
 	DEF_FRAME_USE, Tk_Offset(Frame, useThis), TOPLEVEL|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(Frame, tile),BOTH|TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
     {TK_CONFIG_LANGARG, "-visual", "visual", "Visual",
 	DEF_FRAME_VISUAL, Tk_Offset(Frame, visualName),
 	BOTH|TK_CONFIG_NULL_OK},
@@ -180,6 +204,9 @@ static void		FrameEventProc _ANSI_ARGS_((ClientData clientData,
 static int		FrameWidgetCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 static void		MapFrame _ANSI_ARGS_((ClientData clientData));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
+
 
 /*
  *--------------------------------------------------------------
@@ -414,6 +441,11 @@ TkCreateFrame(clientData, interp, argc, argv, toplevel, appName)
     framePtr->borderWidth = 0;
     framePtr->relief = TK_RELIEF_FLAT;
     framePtr->highlightWidth = 0;
+    framePtr->tile = NULL;
+    framePtr->tsoffset.flags = 0;
+    framePtr->tsoffset.xoffset = 0;
+    framePtr->tsoffset.yoffset = 0;
+    framePtr->tileGC = NULL;
     framePtr->highlightBgColorPtr = NULL;
     framePtr->highlightColorPtr = NULL;
     framePtr->width = 0;
@@ -587,10 +619,38 @@ DestroyFrame(memPtr)
 
     Tk_FreeOptions(configSpecs, (char *) framePtr, framePtr->display,
 	    framePtr->mask);
+    if (framePtr->tile != NULL) {
+	Tk_FreeTile(framePtr->tile);
+    }
+    if (framePtr->tileGC != None) {
+	Tk_FreeGC(framePtr->display, framePtr->tileGC);
+    }
     if (framePtr->colormap != None) {
 	Tk_FreeColormap(framePtr->display, framePtr->colormap);
     }
     ckfree((char *) framePtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;			/* Not used */
+{
+    register Frame *framePtr = (Frame *) clientData;
+
+    ConfigureFrame(framePtr->interp, framePtr, 0, NULL, 0);
 }
 
 /*
@@ -624,6 +684,9 @@ ConfigureFrame(interp, framePtr, argc, argv, flags)
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
     Arg oldMenuName;
+    GC new = None;
+    XGCValues gcValues;
+    Pixmap pixmap;
     
     /*
      * Need the old menubar name for the menu code to delete it.
@@ -648,13 +711,23 @@ ConfigureFrame(interp, framePtr, argc, argv, flags)
 	TkSetWindowMenuBar(interp, framePtr->tkwin, oldMenuName,
 		framePtr->menuName);
     }
-        
-    /* FIXME: Suspicious */
-    if (framePtr->border != NULL) {
+    
+    Tk_SetTileChangedProc(framePtr->tile, TileChangedProc,
+	(ClientData)framePtr, (Tk_Item *) NULL);
+    if ((pixmap = Tk_PixmapOfTile(framePtr->tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	new = Tk_GetGC(framePtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else if (framePtr->border != NULL) {
 	Tk_SetBackgroundFromBorder(framePtr->tkwin, framePtr->border);
     } else {
 	Tk_SetWindowBackgroundPixmap(framePtr->tkwin, None);
     }
+
+    if (framePtr->tileGC != None) {
+	Tk_FreeGC(framePtr->display, framePtr->tileGC);
+    }
+    framePtr->tileGC = new;
 
     if (framePtr->highlightWidth < 0) {
 	framePtr->highlightWidth = 0;
@@ -703,6 +776,8 @@ DisplayFrame(clientData)
     register Frame *framePtr = (Frame *) clientData;
     register Tk_Window tkwin = framePtr->tkwin;
     GC gc;
+    void (* drawFunction) _ANSI_ARGS_((Tk_Window, Drawable, Tk_3DBorder,
+	    int, int, int, int, int, int)) = Tk_Fill3DRectangle;
 
     framePtr->flags &= ~REDRAW_PENDING;
     /* FIXME: do we get here ? */
@@ -711,8 +786,51 @@ DisplayFrame(clientData)
 	return;
     }
 
+    if (framePtr->tileGC != NULL) {
+	int borderWidth = framePtr->highlightWidth;
+	if (framePtr->border != NULL) {
+	    borderWidth += framePtr->borderWidth;
+	}
+	if ((Tk_Width(tkwin) > (2 * borderWidth)) &&
+		(Tk_Height(tkwin) > (2 * borderWidth))) {
+	    Tk_SetTileOrigin(tkwin, framePtr->tileGC, 0, 0);
+	    if (framePtr->tsoffset.flags) {
+		int w=0; int h=0;
+		if (framePtr->tsoffset.flags &
+			(TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(framePtr->tile, &w, &h);
+		}
+		if (framePtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		    w = 0;
+		} else if (framePtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		    w = Tk_Width(tkwin);
+		} else {
+		    w = (Tk_Width(tkwin) - w) / 2;
+		}
+		if (framePtr->tsoffset.flags & TK_OFFSET_TOP) {
+		    h = 0;
+		} else if (framePtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		    h = Tk_Height(tkwin);
+		} else {
+		    h = (Tk_Height(tkwin) - h) / 2;
+		}
+		XSetTSOrigin(framePtr->display, framePtr->tileGC, w , h);
+	    } else {
+	        Tk_SetTileOrigin(tkwin, framePtr->tileGC,
+			framePtr->tsoffset.xoffset,
+			framePtr->tsoffset.yoffset);
+	    }
+	    XFillRectangle(framePtr->display, Tk_WindowId(tkwin),
+		    framePtr->tileGC, borderWidth, borderWidth,
+		    Tk_Width(tkwin) - 2 * borderWidth,
+		    Tk_Height(tkwin) - 2 * borderWidth);
+	    XSetTSOrigin(framePtr->display, framePtr->tileGC, 0, 0);
+	    drawFunction = Tk_Draw3DRectangle;
+	}
+    }
+
     if (framePtr->border != NULL) {
-	Tk_Fill3DRectangle(tkwin, Tk_WindowId(tkwin),
+	drawFunction(tkwin, Tk_WindowId(tkwin),
 		framePtr->border, framePtr->highlightWidth,
 		framePtr->highlightWidth,
 		Tk_Width(tkwin) - 2*framePtr->highlightWidth,

@@ -40,8 +40,6 @@ typedef struct TkScrollbar {
 				 * freed even after tkwin has gone away. */
     Tcl_Interp *interp;		/* Interpreter associated with scrollbar. */
     Tcl_Command widgetCmd;	/* Token for scrollbar's widget command. */
-    Tk_Uid orientUid;		/* Orientation for window ("vertical" or
-				 * "horizontal"). */
     int vertical;		/* Non-zero means vertical orientation
 				 * requested, zero means horizontal. */
     int width;			/* Desired narrow dimension of scrollbar,
@@ -140,6 +138,9 @@ typedef struct TkScrollbar {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, activeTile, troughTile;
+    GC activeTileGC;
+    Tk_TSOffset tsoffset;
 } TkScrollbar;
 
 /*

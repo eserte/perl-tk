@@ -1,4 +1,12 @@
 #!/usr/local/bin/perl -w
+use strict;               
+
+my %Ignore;
+my %Ignored;
+my %WinIgnore;          
+my %Exclude;
+
+my $oops = 0;
 
 use Getopt::Std;
 my %opt;
@@ -110,9 +118,15 @@ sub Vfunc
 
  while (<H>)
   {
-   if (/^\s*(EXTERN|extern)\s*(.*?)\s*(\w+)\s+_ANSI_ARGS_\s*\((TCL_VARARGS)?\(/)
-    {
+   if (/^\s*(MOVEXT|COREXT|EXTERN|extern)\s*(.*?)\s*(\w+)\s+_ANSI_ARGS_\s*\((TCL_VARARGS)?\(/)
+    {                      
      my ($type,$name,$op) = ($2,$3,$4);
+     if ($1 eq 'MOVEXT' || $1 eq 'COREXT')
+      {                   
+       warn "$1 $name\n";
+       $oops++;
+       $Ignore{$name} = $hfile;
+      }
      $op = "" unless (defined $op);
      my $defn =  "VFUNC($type,$name,V_$name,_ANSI_ARGS_($op(";
      $_ = $';
@@ -130,9 +144,15 @@ sub Vfunc
      $defn .= $_;
      $VFunc{$name} = $defn;
     }
-   elsif (/^\s*(EXTERN|extern)\s*(.*?)\s*(\w+)\s*;/)
+   elsif (/^\s*(MOVEXT|COREXT|EXTERN|extern)\s*(.*?)\s*(\w+)\s*;/)
     {
      my ($type,$name) = ($2,$3);
+     if ($1 eq 'MOVEXT' || $1 eq 'COREXT')
+      {                   
+       warn "$1 $name\n";
+       $oops++;
+       $Ignore{$name} = $hfile;
+      }
      $VVar{$name} = "VVAR($type,$name,V_$name)\n";
     }
    elsif (/\b(EXTERN|extern)\s+[\w_]+\s+[\w_]+\[\];$/)
@@ -157,9 +177,9 @@ sub Vfunc
    $gard =~ s/\..*$//;                 
    $gard =~ s#/#_#g;
    my $name = "\u\L${gard}\UV";
-   $fdef = $hfile;
+   my $fdef = $hfile;
    $fdef =~ s/\..*$/.t/;
-   $mdef = $hfile;
+   my $mdef = $hfile;
    $mdef =~ s/\..*$/.m/;
    
    $mdef .= 'dmy' unless $opt{'m'};
@@ -214,16 +234,16 @@ sub Vfunc
    print VMACRO "#ifndef NO_VTABLES\n";
    print VMACRO $xexcl if %WinIgnore;
    print VFUNC  $xexcl if %WinIgnore;
-   foreach $func (sort keys %VVar)                     
+   foreach my $func (sort keys %VVar)                     
     {                                                   
      if (!exists($Exclude{$func}) && !exists($Ignore{$func}))                       
       {                                                 
        print VFUNC $VVar{$func};                     
        print VMACRO "#define $func (*${name}ptr->V_$func)\n";
-      }                                                 
-     delete $Ignore{$func};
+      }                
+     $Ignored{$func} = delete $Ignore{$func} if exists $Ignore{$func};
     }                                                   
-   foreach $func (sort keys %VFunc)                     
+   foreach my $func (sort keys %VFunc)                     
     {                                                   
      if (!exists($Exclude{$func}) && !exists($Ignore{$func}))                       
       {                                                 
@@ -241,7 +261,7 @@ sub Vfunc
        print VMACRO "#endif /* !DO_X_EXCLUDE */\n" if exists($WinIgnore{$func});  
        print VMACRO "\n";
       }                                                 
-     delete $Ignore{$func};
+     $Ignored{$func} = delete $Ignore{$func} if exists $Ignore{$func};
     }                                                   
    print VMACRO "#endif /* NO_VTABLES */\n";
    print VMACRO "#endif /* _${gard}_VM */\n";
@@ -251,29 +271,41 @@ sub Vfunc
 
    unlink($mdef) unless $opt{'m'};
    unlink($fdef) unless $opt{'t'};
-
   }
 }
 
 foreach (<tk*Tab.c>)
  {
   Exclude($_);
- }
+ }   
 
-my $h;
-foreach $h (@ARGV)
+die "Usage: $0 <some.h>\n" if (@ARGV != 1);
+
+my $h = shift;
+my $x = $h;
+$x =~ s/\.h/.exc/;
+Ignore($x) if (-f $x);
+$x =~ s/\.exc/.excwin/;
+WinIgnore($x) if (-f $x);
+Vfunc($h);
+
+foreach my $s (sort keys %Ignore)
  {
-  local %Ignore = ();
-  my $x = $h;
-  $x =~ s/\.h/.exc/;
-  Ignore($x) if (-f $x);
-  $x =~ s/\.exc/.excwin/;
-  WinIgnore($x) if (-f $x);
-  Vfunc($h);
-  foreach $x (sort keys %Ignore)
-   {
-    warn "$x is not in $h\n";
-   }
+  warn "$s is not in $h\n";
+  $oops++;
+ }  
+          
+if ($oops)
+ {
+  $x = $h;   
+  $x =~ s/\.h/.exc/;                    
+  rename($x,"$x.old") || die "Cannot rename $x to $x.old:$!";
+  open(EXC,">$x") || die "Cannot open $x:$!";
+  foreach my $s (sort keys %Ignored)
+   {         
+    print EXC $s,"\n";
+   }                  
+  close(EXC);
  }
 
 __END__

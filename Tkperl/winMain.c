@@ -23,7 +23,7 @@
 
 #include <stdio.h>
 
-extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
+// extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 
 
 /*
@@ -50,7 +50,7 @@ extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 int
 main(int argc, char *argv[], char *env[])
 {
-#ifndef WIN32
+#if defined(WIN32) && defined(RunPerl)
     return (RunPerl(argc, argv, env, NULL));
 #else
     fprintf(stderr, "Error: RunPerl() is unimplemented on this platform\n");

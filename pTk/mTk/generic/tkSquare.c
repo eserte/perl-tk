@@ -129,6 +129,7 @@ SquareCmd(clientData, interp, argc, argv)
     Tk_Window mainw = (Tk_Window) clientData;
     Square *squarePtr;
     Tk_Window tkwin;
+    char *name;
 
     if (argc < 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -140,7 +141,13 @@ SquareCmd(clientData, interp, argc, argv)
     if (tkwin == NULL) {
 	return TCL_ERROR;
     }
-    Tk_SetClass(tkwin, "Square");
+    name = "Square";
+    if ((argc>3) && !strcmp(argv[2],"-class")) {
+	argc -= 2;
+	argv += 2;
+	name = argv[1];
+    }
+    Tk_SetClass(tkwin, name);
 
     /*
      * Allocate and initialize the widget record.

@@ -18,6 +18,70 @@
 #include "tkPort.h"
 
 /*
+ * bltList.h --
+ *
+ * Copyright 1993-1996 by AT&T Bell Laboratories.
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for any purpose and without fee is hereby
+ * granted, provided that the above copyright notice appear in all
+ * copies and that both that the copyright notice and warranty
+ * disclaimer appear in supporting documentation, and that the
+ * names of AT&T Bell Laboratories any of their entities not be used
+ * in advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.
+ *
+ * AT&T disclaims all warranties with regard to this software, including
+ * all implied warranties of merchantability and fitness.  In no event
+ * shall AT&T be liable for any special, indirect or consequential
+ * damages or any damages whatsoever resulting from loss of use, data
+ * or profits, whether in an action of contract, negligence or other
+ * tortuous action, arising out of or in connection with the use or
+ * performance of this software.
+ *
+ */
+#ifndef _BLT_LIST_H
+#define _BLT_LIST_H
+
+struct Blt_List;
+/*
+ * A Blt_ListItem is the container structure for the Blt_List.
+ */
+typedef struct Blt_ListItem {
+    struct Blt_ListItem *prevPtr;	/* Link to the previous item */
+    struct Blt_ListItem *nextPtr;	/* Link to the next item */
+    Tk_Uid keyPtr;		/* Pointer to the (character string) key */
+    ClientData clientData;	/* Pointer to the data object */
+    struct Blt_List *listPtr;
+} Blt_ListItem;
+
+/*
+ * A Blt_List is a doubly chained list structure.
+ */
+typedef struct Blt_List {
+    Blt_ListItem *headPtr;	/* Pointer to first element in list */
+    Blt_ListItem *tailPtr;	/* Pointer to last element in list */
+    int numEntries;		/* Number of elements in list */
+    int type;			/* Type of keys in list */
+} Blt_List;
+
+static void Blt_InitList _ANSI_ARGS_((Blt_List *listPtr, int type));
+static Blt_ListItem *Blt_NewItem _ANSI_ARGS_((char *key));
+static void Blt_LinkAfter _ANSI_ARGS_((Blt_List *listPtr,
+	Blt_ListItem *itemPtr, Blt_ListItem *afterPtr));
+static void Blt_FreeItem _ANSI_ARGS_((Blt_ListItem *itemPtr));
+static void TileChangedProc _ANSI_ARGS_((ClientData clientData,
+	int x, int y, int width, int height, int imageWidth,
+	int imageHeight));
+
+#define Blt_FirstListItem(listPtr)	((listPtr)->headPtr)
+#define Blt_NextItem(itemPtr) 		((itemPtr)->nextPtr)
+#define Blt_GetItemValue(itemPtr)  	((itemPtr)->clientData)
+#define Blt_SetItemValue(itemPtr, valuePtr) \
+	((itemPtr)->clientData = (ClientData)(valuePtr))
+
+#endif /* _BLT_LIST_H */
+
+/*
  * Each call to Tk_GetImage returns a pointer to one of the following
  * structures, which is used as a token by clients (widgets) that
  * display images.
@@ -82,7 +146,8 @@ static Tk_ImageType *imageTypeList = NULL;
  * Prototypes for local procedures:
  */
 
-static void		DeleteImage _ANSI_ARGS_((ImageMaster *masterPtr));
+static void	DeleteImage _ANSI_ARGS_((ImageMaster *masterPtr));
+
 
 /*
  *----------------------------------------------------------------------
@@ -228,9 +293,11 @@ Tk_ImageObjCmd(clientData, interp, argc, objv)
 			imagePtr = imagePtr->nextPtr) {
 		   (*masterPtr->typePtr->freeProc)(
 			   imagePtr->instanceData, imagePtr->display);
-		   (*imagePtr->changeProc)(imagePtr->widgetClientData, 0, 0,
+		   if (imagePtr->changeProc != NULL) {
+		     (*imagePtr->changeProc)(imagePtr->widgetClientData, 0, 0,
 			masterPtr->width, masterPtr->height, masterPtr->width,
 			masterPtr->height);
+		   }
 		}
 		(*masterPtr->typePtr->deleteProc)(masterPtr->masterData);
 		masterPtr->typePtr = NULL;
@@ -254,6 +321,11 @@ Tk_ImageObjCmd(clientData, interp, argc, objv)
 		imagePtr = imagePtr->nextPtr) {
 	   imagePtr->instanceData = (*typePtr->getProc)(
 		   imagePtr->tkwin, masterPtr->masterData);
+	   if (imagePtr->changeProc != NULL) {
+	      (*imagePtr->changeProc)(imagePtr->widgetClientData, 0, 0,
+		masterPtr->width, masterPtr->height, masterPtr->width,
+		masterPtr->height);
+	   }
 	}
         Tcl_ArgResult(interp, LangObjectArg( interp, Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
     } else if ((c == 'd') && (strncmp(strv[1], "delete", length) == 0)) {
@@ -380,8 +452,10 @@ Tk_ImageChanged(imageMaster, x, y, width, height, imageWidth,
     masterPtr->height = imageHeight;
     for (imagePtr = masterPtr->instancePtr; imagePtr != NULL;
 	    imagePtr = imagePtr->nextPtr) {
-	(*imagePtr->changeProc)(imagePtr->widgetClientData, x, y,
+	if (imagePtr->changeProc != NULL) {
+	  (*imagePtr->changeProc)(imagePtr->widgetClientData, x, y,
 	    width, height, imageWidth, imageHeight);
+	}
     }
 }
 
@@ -408,6 +482,9 @@ Tk_NameOfImage(imageMaster)
 {
     ImageMaster *masterPtr = (ImageMaster *) imageMaster;
 
+    if (imageMaster == NULL) {
+	return "";
+    }
     return Tcl_GetHashKey(masterPtr->tablePtr, masterPtr->hPtr);
 }
 
@@ -534,6 +611,90 @@ Tk_FreeImage(image)
         }
 	ckfree((char *) masterPtr);
     }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_PostscriptImage --
+ *
+ *	This procedure is called by widgets that contain images in order
+ *	to redisplay an image on the screen or an off-screen pixmap.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The image's manager is notified, and it redraws the desired
+ *	portion of the image before returning.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+Tk_PostscriptImage(image, interp, tkwin, psinfo, x, y, width, height, prepass)
+    Tk_Image image;		/* Token for image to redisplay. */
+    Tcl_Interp *interp;
+    Tk_Window tkwin;
+    Tk_PostscriptInfo psinfo;	/* postscript info */
+    int x, y;			/* Upper-left pixel of region in image that
+				 * needs to be redisplayed. */
+    int width, height;		/* Dimensions of region to redraw. */
+    int prepass;
+{
+    int result;
+    XImage *ximage;
+    Pixmap pmap;
+    GC newGC;
+    XGCValues gcValues;
+
+/*    Image *imagePtr = (Image *) image;
+
+    if (imagePtr->masterPtr->typePtr->postscriptProc != NULL) {
+	return imagePtr->masterPtr->typePtr->postscriptProc(
+		(ClientData) ((Image *)image)->masterPtr, interp, tkwin, psinfo,
+		x, y, width, height, prepass);
+    }*/
+
+    if (prepass) {
+	return TCL_OK;
+    }
+
+    /*
+     * Create a Pixmap, tell the image to redraw itself there, and then
+     * generate an XImage from the Pixmap.  We can then read pixel 
+     * values out of the XImage.
+     */
+
+    pmap = Tk_GetPixmap(Tk_Display(tkwin), Tk_WindowId(tkwin),
+                        width, height, Tk_Depth(tkwin));
+
+    gcValues.foreground = WhitePixelOfScreen(Tk_Screen(tkwin));
+    newGC = Tk_GetGC(tkwin, GCForeground, &gcValues);
+    if (newGC != None) {
+	XFillRectangle(Tk_Display(tkwin), pmap, newGC,
+		0, 0, width, height);
+	Tk_FreeGC(Tk_Display(tkwin), newGC);
+    }
+
+    Tk_RedrawImage(image, x, y, width, height, pmap, 0, 0);
+
+    ximage = XGetImage(Tk_Display(tkwin), pmap, 0, 0, width, height,
+                       AllPlanes, ZPixmap);
+
+    Tk_FreePixmap(Tk_Display(tkwin), pmap);
+    
+    if (ximage == NULL) {
+	/* The XGetImage() function is apparently not
+	 * implemented on this system. Just ignore it.
+	 */
+	return TCL_OK;
+    }
+    result = TkPostscriptImage(interp, tkwin, psinfo, ximage, x, y,
+	    width, height);
+
+    XDestroyImage(ximage);
+    return result;
 }
 
 /*
@@ -753,6 +914,646 @@ TkDeleteAllImages(mainPtr)
         masterPtr->hPtr = NULL; 
     }
     Tcl_DeleteHashTable(&mainPtr->imageTable);
+}
+
+/*
+ * bltTile.c --
+ *
+ *	This module implements a utility to convert images into
+ *	tiles.
+ *
+ * Copyright 1995-1996 by AT&T Bell Laboratories.
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for any purpose and without fee is hereby
+ * granted, provided that the above copyright notice appear in all
+ * copies and that both that the copyright notice and warranty
+ * disclaimer appear in supporting documentation, and that the
+ * names of AT&T Bell Laboratories any of their entities not be used
+ * in advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.
+ *
+ * AT&T disclaims all warranties with regard to this software, including
+ * all implied warranties of merchantability and fitness.  In no event
+ * shall AT&T be liable for any special, indirect or consequential
+ * damages or any damages whatsoever resulting from loss of use, data
+ * or profits, whether in an action of contract, negligence or other
+ * tortuous action, arising out of or in connection with the use or
+ * performance of this software.
+ *
+ */
+
+#define TILE_MAGIC ((unsigned int) 0x46170277)
+
+static Tcl_HashTable tileTable;
+static int initialized = 0;
+
+typedef struct {
+    Tk_Uid nameId;		/* Identifier of image from which the
+				 * tile was generated. */
+    Display *display;		/* Display where pixmap was created */
+    int depth;			/* Depth of pixmap */
+    int screenNum;		/* Screen number of pixmap */
+
+    Pixmap pixmap;		/* Pixmap generated from image */
+    Tk_Image image;		/* Token of image */
+    int width, height;		/* Dimensions of the tile. */
+
+    Blt_List clients;		/* List of clients sharing this tile */
+
+} TileMaster;
+
+typedef struct {
+    Tk_Uid nameId;		/* Identifier of image from which the
+				 * tile was generated. */
+    Display *display;
+} TileKey;
+
+
+typedef struct {
+    unsigned int magic;
+    Tk_TileChangedProc *changeProc; 
+				/* If non-NULL, routine to
+				 * call to when tile image changes. */
+    ClientData clientData;	/* Data to pass to when calling the above
+				 * routine */
+    Tk_Item *canvasItem;	/* item pointer (only used for Canvas) */
+    TileMaster *masterPtr;	/* Pointer to actual tile information */
+    Blt_ListItem *itemPtr;	/* Pointer to client entry in the master's
+				 * client list.  Used to delete the client */
+} Tile;
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ *	It would be better if Tk checked for NULL proc pointers.
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, x, y, width, height, imageWidth, imageHeight)
+    ClientData clientData;
+    int x, y, width, height;	/* Not used */
+    int imageWidth, imageHeight;
+{
+    TileMaster *masterPtr = (TileMaster *)clientData;
+    Tile *tilePtr;
+    Blt_ListItem *itemPtr;
+
+    if (((Image *) masterPtr->image)->masterPtr->typePtr == NULL) {
+	if (masterPtr->pixmap != None) {
+	    Tk_FreePixmap(masterPtr->display, masterPtr->pixmap);
+	}
+	masterPtr->pixmap = None;
+    } else { 
+/*	GC newGC;
+	XGCValues gcValues;*/
+	/*
+	 * If the size of the current image differs from the current pixmap,
+	 * destroy the pixmap and create a new one of the proper size
+	 */
+	if ((masterPtr->width != imageWidth) || 
+	    (masterPtr->height != imageHeight)) {
+	    Pixmap pixmap;
+	    Window root;
+	    
+	    if (masterPtr->pixmap != None) {
+		Tk_FreePixmap(masterPtr->display, masterPtr->pixmap);
+	    }
+	    root = RootWindow(masterPtr->display, masterPtr->screenNum);
+	    pixmap = Tk_GetPixmap(masterPtr->display, root, imageWidth, 
+		imageHeight, masterPtr->depth);
+	    masterPtr->width = imageWidth;
+	    masterPtr->height = imageHeight;
+	    masterPtr->pixmap = pixmap;
+	}
+/*	gcValues.foreground = WhitePixelOfScreen(Tk_Screen(tkwin));
+	newGC = Tk_GetGC(tkwin, GCForeground, &gcValues);
+	if (newGC != None) {
+	    XFillRectangle(masterPtr->display, masterPtr->pixmap, newGC,
+		    0, 0, imageWidth, imageHeight);
+	    Tk_FreeGC(masterPtr->display, newGC);
+	}*/
+	Tk_RedrawImage(masterPtr->image, 0, 0, imageWidth, imageHeight,
+	    masterPtr->pixmap, 0, 0);
+    }
+    /*
+     * Now call back each of the tile clients to notify them that the
+     * pixmap has changed.
+     */
+    for (itemPtr = Blt_FirstListItem(&(masterPtr->clients)); itemPtr != NULL; 
+	itemPtr = Blt_NextItem(itemPtr)) {
+	tilePtr = (Tile *)Blt_GetItemValue(itemPtr);
+	if (tilePtr->changeProc != NULL) {
+	    (*tilePtr->changeProc) (tilePtr->clientData, (Tk_Tile)tilePtr,
+		    tilePtr->canvasItem);
+	}
+    }
+}
+
+
+static void
+InitTables()
+{
+    Tcl_InitHashTable(&tileTable, sizeof(TileKey) / sizeof(int));
+    initialized = 1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_GetTile
+ *
+ *	Convert the named image into a tile.
+ *
+ * Results:
+ *	If the image is valid, a new tile is returned.  If the name
+ *	does not represent a proper image, an error message is left in
+ *	interp->result.
+ *
+ * Side Effects:
+ *	Memory and X resources are allocated.  Bookkeeping is
+ *	maintained on the tile (i.e. width, height, and name).
+ *
+ *----------------------------------------------------------------------
+ */
+Tk_Tile 
+Tk_GetTile(interp, tkwin, imageName)
+    Tcl_Interp *interp;		/* Interpreter to report results back to */
+    Tk_Window tkwin;		/* Window on the same display as tile */
+    CONST char *imageName;	/* Name of image */
+{
+    Tcl_HashEntry *hPtr;
+    Blt_ListItem *itemPtr;
+    Tile *tilePtr;
+    int isNew;
+    TileKey key;
+    TileMaster *masterPtr;
+
+    if ((imageName == NULL) || (*imageName == '\0')) {
+	return (Tk_Tile) NULL;
+    }
+    if (!initialized) {
+	InitTables();
+    }
+    tilePtr = (Tile *)ckalloc(sizeof(Tile));
+    memset(tilePtr, 0, sizeof(Tile));
+    if (tilePtr == NULL) {
+	panic("can't allocate Tile client structure");
+    }
+    /* Initialize client information (Remember to set the itemPtr) */
+    tilePtr->magic = TILE_MAGIC;
+
+    /* Find (or create) the master entry for the tile */
+    key.nameId = Tk_GetUid((char *) imageName);
+    key.display = Tk_Display(tkwin);
+    hPtr = Tcl_CreateHashEntry(&tileTable, (char *)&key, &isNew);
+
+    if (isNew) {
+	Tk_Image image;
+	int width, height;
+	Pixmap pixmap;
+	Window root;
+	GC newGC;
+	XGCValues gcValues;
+
+	masterPtr = (TileMaster *)ckalloc(sizeof(TileMaster));
+	if (masterPtr == NULL) {
+	    panic("can't allocate Tile master structure");
+	}
+
+	/*
+	 * Initialize the (master) bookkeeping on the tile.
+	 */
+	masterPtr->nameId = key.nameId;
+	masterPtr->depth = Tk_Depth(tkwin);
+	masterPtr->screenNum = Tk_ScreenNumber(tkwin);
+	masterPtr->display = Tk_Display(tkwin);
+
+	/*
+	 * Get the image. Funnel all change notifications to a single routine.
+	 */
+	image = Tk_GetImage(interp, tkwin, (char *) imageName, TileChangedProc,
+	    (ClientData)masterPtr);
+	if (image == NULL) {
+	    Tcl_DeleteHashEntry(hPtr);
+	    ckfree((char *)masterPtr);
+	    ckfree((char *)tilePtr);
+	    return NULL;
+	}
+
+	/*
+	 * Create a pixmap the same size and draw the image into it.
+	 */
+	Tk_SizeOfImage(image, &width, &height);
+	root = RootWindow(masterPtr->display, masterPtr->screenNum);
+	pixmap = Tk_GetPixmap(masterPtr->display, root, width, height,
+	    masterPtr->depth);
+	gcValues.foreground = WhitePixelOfScreen(Tk_Screen(tkwin));
+	newGC = Tk_GetGC(tkwin, GCForeground, &gcValues);
+	if (newGC != None) {
+	    XFillRectangle(Tk_Display(tkwin), pixmap, newGC,
+		    0, 0, width, height);
+	    Tk_FreeGC(Tk_Display(tkwin), newGC);
+	}
+	Tk_RedrawImage(image, 0, 0, width, height, pixmap, 0, 0);
+
+	masterPtr->width = width;
+	masterPtr->height = height;
+	masterPtr->pixmap = pixmap;
+	masterPtr->image = image;
+	Blt_InitList(&(masterPtr->clients), TCL_ONE_WORD_KEYS);
+	Tcl_SetHashValue(hPtr, (ClientData)masterPtr);
+    } else {
+	masterPtr = (TileMaster *)Tcl_GetHashValue(hPtr);
+    }
+    itemPtr = Blt_NewItem(key.nameId);
+    Blt_SetItemValue(itemPtr, (ClientData)tilePtr);
+    Blt_LinkAfter(&(masterPtr->clients), itemPtr, (Blt_ListItem *)NULL);
+    tilePtr->itemPtr = itemPtr;
+    tilePtr->masterPtr = masterPtr;
+    return (Tk_Tile)tilePtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_FreeTile
+ *
+ *	Release the resources associated with the tile.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	Memory and X resources are freed.  Bookkeeping information
+ *	about the tile (i.e. width, height, and name) is discarded.
+ *
+ *----------------------------------------------------------------------
+ */
+void
+Tk_FreeTile(tile)
+    Tk_Tile tile;		/* Tile to be deleted */
+{
+    Tile *tilePtr = (Tile *)tile;
+    TileMaster *masterPtr;
+
+    if (!initialized) {
+	InitTables();
+    }
+    if ((tilePtr == NULL) || (tilePtr->magic != TILE_MAGIC)) {
+	return;			/* No tile */
+    }
+    masterPtr = tilePtr->masterPtr;
+
+    /* Remove the client from the master tile's list */
+    if (tilePtr->itemPtr != NULL) {
+	Blt_FreeItem(tilePtr->itemPtr);
+    }
+    ckfree((char *) tilePtr);
+
+    /*
+     * If there are no more clients of the tile, then remove the
+     * pixmap, image, and the master record.
+     */
+    if ((masterPtr != NULL) && (masterPtr->clients.numEntries == 0)) {
+	Tcl_HashEntry *hPtr;
+	TileKey key;
+
+	key.nameId = masterPtr->nameId;
+	key.display = masterPtr->display;
+	hPtr = Tcl_FindHashEntry(&tileTable, (char *)&key);
+	if (hPtr != NULL) {
+	    Tcl_DeleteHashEntry(hPtr);
+	}
+	if (masterPtr->pixmap != None) {
+	    Tk_FreePixmap(masterPtr->display, masterPtr->pixmap);
+	}
+	Tk_FreeImage(masterPtr->image);
+	ckfree((char *)masterPtr);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_NameOfTile
+ *
+ *	Returns the name of the image from which the tile was
+ *	generated.
+ *
+ * Results:
+ *	The name of the image is returned.  The name is not unique.
+ *	Many tiles may use the same image.
+ *
+ *----------------------------------------------------------------------
+ */
+char *
+Tk_NameOfTile(tile)
+    Tk_Tile tile;		/* Tile to query */
+{
+    Tile *tilePtr = (Tile *)tile;
+
+    if (tilePtr == NULL) {
+	return "";
+    }
+    if (tilePtr->magic != TILE_MAGIC) {
+	return "not a tile";
+    }
+    if ((tilePtr->masterPtr == NULL) || (tilePtr->masterPtr->nameId == NULL)) {
+	return "";
+    }
+    return (tilePtr->masterPtr->nameId);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_PixmapOfTile
+ *
+ *	Returns the pixmap of the tile.
+ *
+ * Results:
+ *	The X pixmap used as the tile is returned.
+ *
+ *----------------------------------------------------------------------
+ */
+Pixmap
+Tk_PixmapOfTile(tile)
+    Tk_Tile tile;		/* Tile to query */
+{
+    Tile *tilePtr = (Tile *)tile;
+
+    if ((tilePtr == NULL) || (tilePtr->magic != TILE_MAGIC) ||
+	    (tilePtr->masterPtr == NULL)) {
+	return None;
+    }
+    return (tilePtr->masterPtr->pixmap);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_SizeOfTile
+ *
+ *	Returns the width and height of the tile.
+ *
+ * Results:
+ *	The width and height of the tile are returned.
+ *
+ *----------------------------------------------------------------------
+ */
+void
+Tk_SizeOfTile(tile, widthPtr, heightPtr)
+    Tk_Tile tile;		/* Tile to query */
+    int *widthPtr, *heightPtr;	/* Returned dimensions of the tile (out) */
+{
+    Tile *tilePtr = (Tile *)tile;
+
+    if ((tilePtr == NULL) || (tilePtr->magic != TILE_MAGIC) ||
+	    (tilePtr->masterPtr == NULL)) {
+	*widthPtr = *heightPtr = 0;
+	return;			/* No tile given */
+    }
+    *widthPtr = tilePtr->masterPtr->width;
+    *heightPtr = tilePtr->masterPtr->height;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_SetTileChangedProc
+ *
+ *	Sets the routine to called when an image changes.  If
+ *	*changeProc* is NULL, no callback will be performed.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	The designated routine will be called the next time the
+ *	image associated with the tile changes.
+ *
+ *----------------------------------------------------------------------
+ */
+void
+Tk_SetTileChangedProc(tile, changeProc, clientData, itemPtr)
+    Tk_Tile tile;		/* Tile to query */
+    Tk_TileChangedProc *changeProc;
+    ClientData clientData;
+    Tk_Item *itemPtr;
+{
+    Tile *tilePtr = (Tile *)tile;
+
+    if ((tilePtr != NULL) && (tilePtr->magic == TILE_MAGIC)) {
+	tilePtr->changeProc = changeProc;
+	tilePtr->clientData = clientData;
+	tilePtr->canvasItem = itemPtr;
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_SetTileOrigin --
+ *
+ *	Set the pattern origin of the tile to a common point (i.e. the
+ *	origin (0,0) of the top level window) so that tiles from two
+ *	different widgets will match up.  This done by setting the
+ *	GCTileStipOrigin field is set to the translated origin of the
+ *	toplevel window in the hierarchy.
+ *
+ * Results:
+ *	None.
+ *
+ * Side Effects:
+ *	The GCTileStipOrigin is reset in the GC.  This will cause the
+ *	tile origin to change when the GC is used for drawing.
+ *
+ *----------------------------------------------------------------------
+ */
+/*ARGSUSED*/
+void
+Tk_SetTileOrigin(tkwin, gc, x, y)
+    Tk_Window tkwin;
+    GC gc;
+    int x, y;
+{
+    while (!Tk_IsTopLevel(tkwin)) {
+	x -= Tk_X(tkwin) + Tk_Changes(tkwin)->border_width;
+	y -= Tk_Y(tkwin) + Tk_Changes(tkwin)->border_width;
+	tkwin = Tk_Parent(tkwin);
+    }
+    XSetTSOrigin(Tk_Display(tkwin), gc, x, y);
+}
+
+/*
+ * bltList.c --
+ *
+ *	Generic linked list management routines.
+ *
+ * Copyright 1991-1996 by AT&T Bell Laboratories.
+ * Permission to use, copy, modify, and distribute this software
+ * and its documentation for any purpose and without fee is hereby
+ * granted, provided that the above copyright notice appear in all
+ * copies and that both that the copyright notice and warranty
+ * disclaimer appear in supporting documentation, and that the
+ * names of AT&T Bell Laboratories any of their entities not be used
+ * in advertising or publicity pertaining to distribution of the
+ * software without specific, written prior permission.
+ *
+ * AT&T disclaims all warranties with regard to this software, including
+ * all implied warranties of merchantability and fitness.  In no event
+ * shall AT&T be liable for any special, indirect or consequential
+ * damages or any damages whatsoever resulting from loss of use, data
+ * or profits, whether in an action of contract, negligence or other
+ * tortuous action, arising out of or in connection with the use or
+ * performance of this software.
+ *
+ */
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Blt_InitList --
+ *
+ *	Initialized a linked list.
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+Blt_InitList(listPtr, type)
+    Blt_List *listPtr;
+    int type;
+{
+
+    listPtr->numEntries = 0;
+    listPtr->headPtr = listPtr->tailPtr = (Blt_ListItem *)NULL;
+    listPtr->type = type;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Blt_NewItem --
+ *
+ *	Creates a list entry holder.  This routine does not insert
+ *	the entry into the list, nor does it no attempt to maintain
+ *	consistency of the keys.  For example, more than one entry
+ *	may use the same key.
+ *
+ * Results:
+ *	The return value is the pointer to the newly created entry.
+ *
+ * Side Effects:
+ *	The key is not copied, only the Uid is kept.  It is assumed
+ *	this key will not change in the life of the entry.
+ *
+ *----------------------------------------------------------------------
+ */
+static Blt_ListItem *
+Blt_NewItem(key)
+    char *key;			/* Unique key to reference object */
+{
+    register Blt_ListItem *iPtr;
+
+    iPtr = (Blt_ListItem *)ckalloc(sizeof(Blt_ListItem));
+    if (iPtr == (Blt_ListItem *)NULL) {
+	panic("can't allocate list item structure");
+    }
+    iPtr->keyPtr = key;
+    iPtr->clientData = (ClientData)NULL;
+    iPtr->nextPtr = iPtr->prevPtr = (Blt_ListItem *)NULL;
+    iPtr->listPtr = (Blt_List *)NULL;
+    return (iPtr);
+}
+/*
+ *----------------------------------------------------------------------
+ *
+ * Blt_LinkAfter --
+ *
+ *	Inserts an entry following a given entry.
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+Blt_LinkAfter(listPtr, iPtr, afterPtr)
+    Blt_List *listPtr;
+    Blt_ListItem *iPtr;
+    Blt_ListItem *afterPtr;
+{
+    /*
+     * If the list keys are strings, change the key to a Tk_Uid
+     */
+    if (listPtr->type == TCL_STRING_KEYS) {
+	iPtr->keyPtr = Tk_GetUid(iPtr->keyPtr);
+    }
+    if (listPtr->headPtr == (Blt_ListItem *)NULL) {
+	listPtr->tailPtr = listPtr->headPtr = iPtr;
+    } else {
+	if (afterPtr == (Blt_ListItem *)NULL) {
+	    afterPtr = listPtr->tailPtr;
+	}
+	iPtr->nextPtr = afterPtr->nextPtr;
+	iPtr->prevPtr = afterPtr;
+	if (afterPtr == listPtr->tailPtr) {
+	    listPtr->tailPtr = iPtr;
+	} else {
+	    afterPtr->nextPtr->prevPtr = iPtr;
+	}
+	afterPtr->nextPtr = iPtr;
+    }
+    iPtr->listPtr = listPtr;
+    listPtr->numEntries++;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Blt_FreeItem --
+ *
+ *	Frees an entry from the given list.
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+Blt_FreeItem(iPtr)
+    Blt_ListItem *iPtr;
+{
+    Blt_List *listPtr;
+
+    listPtr = iPtr->listPtr;
+    if (listPtr != NULL) {
+	if (listPtr->headPtr == iPtr) {
+	    listPtr->headPtr = iPtr->nextPtr;
+	}
+	if (listPtr->tailPtr == iPtr) {
+	    listPtr->tailPtr = iPtr->prevPtr;
+	}
+	if (iPtr->nextPtr != NULL) {
+	    iPtr->nextPtr->prevPtr = iPtr->prevPtr;
+	}
+	if (iPtr->prevPtr != NULL) {
+	    iPtr->prevPtr->nextPtr = iPtr->nextPtr;
+	}
+	iPtr->listPtr = NULL;
+	listPtr->numEntries--;
+    }
+    ckfree((char *) iPtr);
 }
 
 /*

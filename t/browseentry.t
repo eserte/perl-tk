@@ -34,8 +34,12 @@ ok(Tk::Exists($be), 1, "BrowseEntry creation failed");
 $be->insert('end', 1, 2, 3);
 ok($be->get(0), 1, "wrong element in listbox");
 
-$be->idletasks;
-$be->BtnDown;
+$be->idletasks;           
+# this can "fail" if KDE screen save is up, or user is doing something
+# else - such snags are what we should expect when calling binding
+# methods directly ...
+eval { $be->BtnDown };
+warn $@ if $@;
 ok(@listcmd, 1, "-listcmd failed");
 ok($listcmd[0]->isa('Tk::BrowseEntry'), 1, "wrong 1st argument in -listcmd");
 

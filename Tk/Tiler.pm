@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Tiler.pm#10$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Tiler.pm#14 $
 
 use base  qw(Tk::Frame);
 
@@ -122,7 +122,7 @@ sub Layout
 sub QueueLayout
 {
  my ($m,$why) = @_;
- $m->DoWhenIdle(['Layout',$m]) unless ($m->{LayoutPending});
+ $m->afterIdle(['Layout',$m]) unless ($m->{LayoutPending});
  $m->{LayoutPending} |= $why;
 }
 

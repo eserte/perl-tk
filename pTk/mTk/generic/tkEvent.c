@@ -419,6 +419,33 @@ Tk_HandleEvent(eventPtr)
     TkDisplay *dispPtr;
     Tcl_Interp *interp = (Tcl_Interp *) NULL;
 
+    /*
+     * Hack for simulated X-events: Correct the state field
+     * of the event record to match with the ButtonPress
+     * and ButtonRelease events.
+     */
+
+    if (eventPtr->type==ButtonPress) {
+	dispPtr = TkGetDisplay(eventPtr->xbutton.display);
+	eventPtr->xbutton.state |= dispPtr->mouseButtonState;
+	switch (eventPtr->xbutton.button) {
+	    case 1: dispPtr->mouseButtonState |= Button1Mask; break; 
+	    case 2: dispPtr->mouseButtonState |= Button2Mask; break; 
+	    case 3: dispPtr->mouseButtonState |= Button3Mask; break; 
+	}
+    } else if (eventPtr->type==ButtonRelease) {
+	dispPtr = TkGetDisplay(eventPtr->xbutton.display);
+	switch (eventPtr->xbutton.button) {
+	    case 1: dispPtr->mouseButtonState &= ~Button1Mask; break; 
+	    case 2: dispPtr->mouseButtonState &= ~Button2Mask; break; 
+	    case 3: dispPtr->mouseButtonState &= ~Button3Mask; break; 
+	}
+	eventPtr->xbutton.state |= dispPtr->mouseButtonState;
+    } else if (eventPtr->type==MotionNotify) {
+	dispPtr = TkGetDisplay(eventPtr->xmotion.display);
+	eventPtr->xmotion.state |= dispPtr->mouseButtonState;
+    }
+
     /* 
      * Next, invoke all the generic event handlers (those that are
      * invoked for all events).  If a generic event handler reports that

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -46,7 +46,10 @@ DebugHook(SV *sv)
 
 }
 
+#define pTk_exit(status) Tcl_Exit(status)
+
 #define XEvent_DESTROY(obj)
+#define Callback_DESTROY(obj)
 
 #define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
@@ -215,7 +218,7 @@ CODE:
  }
 
 
-MODULE = Tk	PACKAGE = Tk::Callback
+MODULE = Tk	PACKAGE = Tk::Callback	PREFIX = Callback_
 
 void
 new(package,what)
@@ -276,12 +279,8 @@ CODE:
 }
 
 void
-DESTROY(object)
+Callback_DESTROY(object)
 SV *	object
-CODE:
- {
-  ST(0) = &PL_sv_undef;
- }
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk
 
@@ -324,7 +323,26 @@ PPCODE:
   PUSHs(sv_2mortal(newSViv(y)));
  }
 
+MODULE = Tk	PACKAGE = Tk	PREFIX = pTk_
+
+void
+pTk_exit(status = 0)
+int	status
+
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
+
+void
+Tk_CheckHash(widget)
+SV *	widget
+
+void
+Debug(widget,string)
+SV *	widget;
+char *	string
+CODE:
+ {
+  LangDumpVec(string,1,&SvRV(widget));
+ }
 
 void
 WidgetMethod(widget,name,...)
@@ -761,10 +779,6 @@ OUTPUT:
  RETVAL
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tcl_
-
-void
-Tcl_Exit(status = 0)
-int	status
 
 void
 Tcl_AddErrorInfo(interp,message)

@@ -2,6 +2,8 @@
 
 messageBox  -  pop up a message window and wait for user response.
 
+=for category Popups and Dialogs
+
 =head1 SYNOPSIS
 
 S<    >I<$response> = I<$widget>-E<gt>B<messageBox>(I<-option> =E<gt> I<value>, ... );

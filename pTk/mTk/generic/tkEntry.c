@@ -18,6 +18,8 @@
 #include "tkVMacro.h"
 #include "default.h"
 
+#define ENTRY_VALIDATE
+
 /*
  * A data structure of the following type is kept for each entry
  * widget managed by this file:
@@ -100,7 +102,7 @@ typedef struct {
     char *showChar;		/* Value of -show option.  If non-NULL, first
 				 * character is used for displaying all
 				 * characters in entry.  Malloc'ed. */
-    Tk_Uid state;		/* Normal or disabled.  Entry is read-only
+    Tk_State state;		/* Normal or disabled.  Entry is read-only
 				 * when disabled. */
     Var textVarName;		/* Name of variable (malloc'ed) or NULL.
 				 * If non-NULL, entry's string tracks the
@@ -142,6 +144,17 @@ typedef struct {
     int avgWidth;		/* Width of average character. */
     int flags;			/* Miscellaneous flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, disabledTile, fgTile;
+    GC tileGC;
+    Tk_TSOffset tsoffset;
+#ifdef ENTRY_VALIDATE
+    LangCallback *validateCmd;  /* Command prefix to use when invoking
+				 * validate command.  NULL means don't
+				 * invoke commands.  Malloc'ed. */
+    int validate;               /* Non-zero means try to validate */
+    LangCallback *invalidCmd;	/* Command called when a validation returns 0
+				 * (successfully fails), defaults to {}. */
+#endif /* ENTRY_VALIDATE */
 } Entry;
 
 /*
@@ -160,7 +173,11 @@ typedef struct {
  * UPDATE_SCROLLBAR:		Non-zero means scrollbar should be updated
  *				during next redisplay operation.
  * GOT_SELECTION:		Non-zero means we've claimed the selection.
- */
+ * VALIDATING:                  Non-zero means we are in a validateCmd
+ * VALIDATE_VAR:                Non-zero means we are attempting to validate
+ *                              the entry's textvariable with validateCmd
+ * VALIDATE_ABORT:              Non-zero if validatecommand signals an abort
+ *                              for current procedure and make no changes */
 
 #define REDRAW_PENDING		1
 #define BORDER_NEEDED		2
@@ -168,6 +185,11 @@ typedef struct {
 #define GOT_FOCUS		8
 #define UPDATE_SCROLLBAR	0x10
 #define GOT_SELECTION		0x20
+#ifdef ENTRY_VALIDATE
+#define VALIDATING              0x40
+#define VALIDATE_VAR            0x80
+#define VALIDATE_ABORT          0x100
+#endif /* ENTRY_VALIDATE */
 
 /*
  * The following macro defines how many extra pixels to leave on each
@@ -176,6 +198,55 @@ typedef struct {
 
 #define XPAD 1
 #define YPAD 1
+
+#ifdef ENTRY_VALIDATE
+/*
+ * Definitions for validate values:
+ */
+
+#define VALIDATE_NONE		0
+#define VALIDATE_ALL		1
+#define VALIDATE_KEY		2
+#define VALIDATE_FOCUS		3
+#define VALIDATE_FOCUSIN	4
+#define VALIDATE_FOCUSOUT	5
+
+#define DEF_ENTRY_VALIDATE	VALIDATE_NONE
+
+static int	ValidateParseProc _ANSI_ARGS_((ClientData clientData,
+		    Tcl_Interp *interp, Tk_Window tkwin,
+		    Arg value, char *entry, int offset));
+static Arg	ValidatePrintProc _ANSI_ARGS_((ClientData clientData,
+		    Tk_Window tkwin, char *entry, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+
+static Tk_CustomOption validateOption = {
+	ValidateParseProc,
+	ValidatePrintProc,
+	(ClientData) NULL};
+#endif /* ENTRY_VALIDATE */
+
+/*
+ * Custom options for handling "-state" , "-tile" and "-offset"
+ */
+
+static Tk_CustomOption stateOption = {
+    Tk_StateParseProc,
+    Tk_StatePrintProc,
+    (ClientData) NULL	/* only "normal" and "disabled" */
+};
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
 
 /*
  * Information used for argv parsing.
@@ -196,6 +267,8 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_ENTRY_BORDER_WIDTH, Tk_Offset(Entry, borderWidth), 0},
     {TK_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
 	DEF_ENTRY_CURSOR, Tk_Offset(Entry, cursor), TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-disabledtile", "disabledTile", "Tile", (char *) NULL,
+	Tk_Offset(Entry, disabledTile),TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
     {TK_CONFIG_BOOLEAN, "-exportselection", "exportSelection",
 	"ExportSelection", DEF_ENTRY_EXPORT_SELECTION,
 	Tk_Offset(Entry, exportSelection), 0},
@@ -205,6 +278,10 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_ENTRY_FONT, Tk_Offset(Entry, tkfont), 0},
     {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_ENTRY_FG, Tk_Offset(Entry, fgColorPtr), 0},
+    {TK_CONFIG_SYNONYM, "-fgtile", "foregroundTile", (char *) NULL,
+	(char *) NULL, 0, 0},
+    {TK_CONFIG_CUSTOM, "-foregroundtile", "foregroundTile", "Tile", (char *) NULL,
+	Tk_Offset(Entry, fgTile),TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
     {TK_CONFIG_COLOR, "-highlightbackground", "highlightBackground",
 	"HighlightBackground", DEF_ENTRY_HIGHLIGHT_BG,
 	Tk_Offset(Entry, highlightBgColorPtr), 0},
@@ -227,8 +304,16 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_ENTRY_INSERT_ON_TIME, Tk_Offset(Entry, insertOnTime), 0},
     {TK_CONFIG_PIXELS, "-insertwidth", "insertWidth", "InsertWidth",
 	DEF_ENTRY_INSERT_WIDTH, Tk_Offset(Entry, insertWidth), 0},
+#ifdef ENTRY_VALIDATE
+    {TK_CONFIG_CALLBACK, "-invalidcommand", "invalidCommand", "InvalidCommand",
+	(char *) NULL, Tk_Offset(Entry, invalidCmd), TK_CONFIG_DONT_SET_DEFAULT},
+    {TK_CONFIG_SYNONYM, "-invcmd", "invalidCommand", (char *) NULL,
+	(char *) NULL, 0, 0},
+#endif /* ENTRY_VALIDATE */
     {TK_CONFIG_JUSTIFY, "-justify", "justify", "Justify",
 	DEF_ENTRY_JUSTIFY, Tk_Offset(Entry, justify), 0},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(Entry, tsoffset),TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_ENTRY_RELIEF, Tk_Offset(Entry, relief), 0},
     {TK_CONFIG_BORDER, "-selectbackground", "selectBackground", "Foreground",
@@ -251,13 +336,25 @@ static Tk_ConfigSpec configSpecs[] = {
 	TK_CONFIG_MONO_ONLY},
     {TK_CONFIG_STRING, "-show", "show", "Show",
 	DEF_ENTRY_SHOW, Tk_Offset(Entry, showChar), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_UID, "-state", "state", "State",
-	DEF_ENTRY_STATE, Tk_Offset(Entry, state), 0},
+    {TK_CONFIG_CUSTOM, "-state", "state", "State",
+	DEF_ENTRY_STATE, Tk_Offset(Entry, state), 0, &stateOption},
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_ENTRY_TAKE_FOCUS, Tk_Offset(Entry, takeFocus), TK_CONFIG_NULL_OK},
     {TK_CONFIG_SCALARVAR, "-textvariable", "textVariable", "Variable",
 	DEF_ENTRY_TEXT_VARIABLE, Tk_Offset(Entry, textVarName),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(Entry, tile),TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
+#ifdef ENTRY_VALIDATE
+    {TK_CONFIG_CUSTOM, "-validate", "validate", "Validate",
+       DEF_ENTRY_VALIDATE, Tk_Offset(Entry, validate),
+       TK_CONFIG_DONT_SET_DEFAULT, &validateOption},
+    {TK_CONFIG_CALLBACK, "-validatecommand", "validateCommand", "ValidateCommand",
+       (char *) NULL, Tk_Offset(Entry, validateCmd),
+       TK_CONFIG_DONT_SET_DEFAULT},
+    {TK_CONFIG_SYNONYM, "-vcmd", "validateCommand", (char *) NULL,
+	(char *) NULL, 0, 0},
+#endif /* ENTRY_VALIDATE */
     {TK_CONFIG_INT, "-width", "width", "Width",
 	DEF_ENTRY_WIDTH, Tk_Offset(Entry, prefWidth), 0},
     {TK_CONFIG_CALLBACK, "-xscrollcommand", "xScrollCommand", "ScrollCommand",
@@ -307,6 +404,15 @@ static char *		EntryTextVarProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, Var name1, char *name2,
 			    int flags));
 static void		EntryUpdateScrollbar _ANSI_ARGS_((Entry *entryPtr));
+#ifdef ENTRY_VALIDATE
+static int		EntryValidate _ANSI_ARGS_((Entry *entryPtr,
+			    LangCallback *cmd,char *string));
+static int		EntryValidateChange _ANSI_ARGS_((Entry *entryPtr,
+			    char *string, char *new, int index, int type));
+static void		ExpandPercents _ANSI_ARGS_((Entry *entryPtr,
+			    char *before, char *add, char *new, int index,
+			    int type, Tcl_DString *dsPtr));
+#endif /* ENTRY_VALIDATE */
 static void		EntryValueChanged _ANSI_ARGS_((Entry *entryPtr));
 static void		EntryVisibleRange _ANSI_ARGS_((Entry *entryPtr,
 			    double *firstPtr, double *lastPtr));
@@ -318,6 +424,8 @@ static int		GetEntryIndex _ANSI_ARGS_((Tcl_Interp *interp,
 			    Entry *entryPtr, Arg arg, int *indexPtr));
 static void		InsertChars _ANSI_ARGS_((Entry *entryPtr, int index,
 			    char *string));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  * The structure below defines entry class behavior by means of procedures
@@ -414,7 +522,7 @@ Tk_EntryCmd(clientData, interp, argc, argv)
     entryPtr->selBorderWidth = 0;
     entryPtr->selFgColorPtr = NULL;
     entryPtr->showChar = NULL;
-    entryPtr->state = tkNormalUid;
+    entryPtr->state = TK_STATE_NORMAL;
     entryPtr->textVarName = NULL;
     entryPtr->takeFocus = NULL;
     entryPtr->prefWidth = 0;
@@ -434,8 +542,20 @@ Tk_EntryCmd(clientData, interp, argc, argv)
     entryPtr->highlightGC = None;
     entryPtr->avgWidth = 1;
     entryPtr->flags = 0;
+    entryPtr->tile = NULL;
+    entryPtr->disabledTile = NULL;
+    entryPtr->fgTile = NULL;
+    entryPtr->tileGC = NULL;
+    entryPtr->tsoffset.flags = 0;
+    entryPtr->tsoffset.xoffset = 0;
+    entryPtr->tsoffset.yoffset = 0;
+#ifdef ENTRY_VALIDATE
+    entryPtr->validateCmd = NULL;
+    entryPtr->validate = VALIDATE_NONE;
+    entryPtr->invalidCmd = NULL;
+#endif /* ENTRY_VALIDATE */
 
-    Tk_SetClass(entryPtr->tkwin, "Entry");
+    TkClassOption(entryPtr->tkwin, "Entry",&argc,&argv);
     TkSetClassProcs(entryPtr->tkwin, &entryClass, (ClientData) entryPtr);
     Tk_CreateEventHandler(entryPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -552,7 +672,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		goto error;
 	    }
 	}
-	if ((last >= first) && (entryPtr->state == tkNormalUid)) {
+	if ((last >= first) && (entryPtr->state == TK_STATE_NORMAL)) {
 	    DeleteChars(entryPtr, first, last-first);
 	}
     } else if ((c == 'g') && (strncmp(argv[1], "get", length) == 0)) {
@@ -601,7 +721,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 	if (GetEntryIndex(interp, entryPtr, args[2], &index) != TCL_OK) {
 	    goto error;
 	}
-	if (entryPtr->state == tkNormalUid) {
+	if (entryPtr->state == TK_STATE_NORMAL) {
 	    InsertChars(entryPtr, index, argv[3]);
 	}
     } else if ((c == 's') && (length >= 2)
@@ -737,6 +857,23 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
+#ifdef ENTRY_VALIDATE
+    } else if ((c == 'v') && (strncmp(argv[1], "validate", length) == 0)) {
+	int code, x;
+	if (argc != 2) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], " validate\"", (char *) NULL);
+	    goto error;
+	}
+	x = entryPtr->validate;
+	entryPtr->validate = VALIDATE_ALL;
+	code = EntryValidateChange(entryPtr, (char *) NULL,
+				   entryPtr->string, -1, -1);
+	if (entryPtr->validate) {
+	    entryPtr->validate = x;
+	}
+	sprintf(interp->result, "%d", (code == TCL_OK) ? 1 : 0);
+#endif /* ENTRY_VALIDATE */
     } else if ((c == 'x') && (strncmp(argv[1], "xview", length) == 0)) {
 	int index, type, count, charsPerPage;
 	double fraction, first, last;
@@ -784,7 +921,11 @@ EntryWidgetCmd(clientData, interp, argc, argv)
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],
 		"\": must be bbox, cget, configure, delete, get, ",
+#ifdef ENTRY_VALIDATE
+		"icursor, index, insert, scan, selection, validate, or xview",
+#else
 		"icursor, index, insert, scan, selection, or xview",
+#endif /* ENTRY_VALIDATE */
 		(char *) NULL);
 	goto error;
     }
@@ -839,6 +980,18 @@ DestroyEntry(memPtr)
     if (entryPtr->selTextGC != None) {
 	Tk_FreeGC(entryPtr->display, entryPtr->selTextGC);
     }
+    if (entryPtr->tile != NULL) {
+	Tk_FreeTile(entryPtr->tile);
+    }
+    if (entryPtr->disabledTile != NULL) {
+	Tk_FreeTile(entryPtr->disabledTile);
+    }
+    if (entryPtr->fgTile != NULL) {
+	Tk_FreeTile(entryPtr->fgTile);
+    }
+    if (entryPtr->tileGC != NULL) {
+	Tk_FreeGC(entryPtr->display, entryPtr->tileGC);
+    }
     Tcl_DeleteTimerHandler(entryPtr->insertBlinkHandler);
     if (entryPtr->displayString != NULL) {
 	ckfree(entryPtr->displayString);
@@ -846,6 +999,28 @@ DestroyEntry(memPtr)
     Tk_FreeTextLayout(entryPtr->textLayout);
     Tk_FreeOptions(configSpecs, (char *) entryPtr, entryPtr->display, 0);
     ckfree((char *) entryPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;			/* Not used */
+{
+    register Entry *entryPtr = (Entry *) clientData;
+
+    ConfigureEntry(entryPtr->interp, entryPtr, 0, NULL, 0);
 }
 
 /*
@@ -921,16 +1096,6 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
      * the geometry and setting the background from a 3-D border.
      */
 
-    if ((entryPtr->state != tkNormalUid)
-	    && (entryPtr->state != tkDisabledUid)) {
-	Tcl_AppendResult(interp, "bad state value \"", entryPtr->state,
-		"\": must be normal or disabled", (char *) NULL);
-	entryPtr->state = tkNormalUid;
-	return TCL_ERROR;
-    }
-
-    Tk_SetBackgroundFromBorder(entryPtr->tkwin, entryPtr->normalBorder);
-
     if (entryPtr->insertWidth <= 0) {
 	entryPtr->insertWidth = 2;
     }
@@ -998,9 +1163,10 @@ EntryWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
 {
     XGCValues gcValues;
-    GC gc;
+    GC gc = None;
     unsigned long mask;
     Entry *entryPtr;
+    Pixmap pixmap;
 
     entryPtr = (Entry *) instanceData;
 
@@ -1008,6 +1174,25 @@ EntryWorldChanged(instanceData)
     if (entryPtr->avgWidth == 0) {
 	entryPtr->avgWidth = 1;
     }
+
+    Tk_SetTileChangedProc(entryPtr->tile, TileChangedProc,
+	    (ClientData)entryPtr, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(entryPtr->disabledTile, TileChangedProc,
+	    (ClientData)entryPtr, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(entryPtr->fgTile, TileChangedProc,
+	    (ClientData)entryPtr, (Tk_Item *) NULL);
+
+    if ((pixmap = Tk_PixmapOfTile(entryPtr->tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	gc = Tk_GetGC(entryPtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else if (entryPtr->normalBorder != NULL) {
+	Tk_SetBackgroundFromBorder(entryPtr->tkwin, entryPtr->normalBorder);
+    }
+    if (entryPtr->tileGC != None) {
+	Tk_FreeGC(entryPtr->display, entryPtr->tileGC);
+    }
+    entryPtr->tileGC = gc;
 
     gcValues.foreground = entryPtr->fgColorPtr->pixel;
     gcValues.font = Tk_FontId(entryPtr->tkfont);
@@ -1065,6 +1250,8 @@ DisplayEntry(clientData)
     Tk_FontMetrics fm;
     Pixmap pixmap;
     int showSelection;
+    Pixmap tilepixmap;
+    Tk_Tile tile;
 
     entryPtr->flags &= ~REDRAW_PENDING;
     if ((entryPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
@@ -1117,8 +1304,21 @@ DisplayEntry(clientData)
      * insertion cursor background.
      */
 
-    Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->normalBorder,
-	    0, 0, Tk_Width(tkwin), Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    if ((entryPtr->state == TK_STATE_DISABLED) &&
+	    (entryPtr->disabledTile != NULL)) {
+	tile = entryPtr->disabledTile;
+    } else {
+	tile = entryPtr->tile;
+    }
+    if ((tilepixmap = Tk_PixmapOfTile(tile)) != None) {
+	Tk_SetTileOrigin(tkwin, entryPtr->tileGC, 0, 0);
+	XFillRectangle(entryPtr->display, pixmap, entryPtr->tileGC, 0, 0,
+		Tk_Width(tkwin), Tk_Height(tkwin));
+	XSetTSOrigin(entryPtr->display, entryPtr->tileGC, 0, 0);
+    } else {
+	Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->normalBorder,
+		0, 0, Tk_Width(tkwin), Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    }
     if (showSelection && (entryPtr->selectLast > entryPtr->leftIndex)) {
 	if (entryPtr->selectFirst <= entryPtr->leftIndex) {
 	    selStartX = entryPtr->leftX;
@@ -1150,7 +1350,7 @@ DisplayEntry(clientData)
      */
 
     if ((entryPtr->insertPos >= entryPtr->leftIndex)
-	    && (entryPtr->state == tkNormalUid)
+	    && (entryPtr->state == TK_STATE_NORMAL)
 	    && (entryPtr->flags & GOT_FOCUS)) {
 	if (entryPtr->insertPos == 0) {
 	    cursorX = 0;
@@ -1388,6 +1588,14 @@ InsertChars(entryPtr, index, string)
     strncpy(new, entryPtr->string, (size_t) index);
     strcpy(new+index, string);
     strcpy(new+index+length, entryPtr->string+index);
+#ifdef ENTRY_VALIDATE
+    if ((entryPtr->validate == VALIDATE_KEY ||
+	 entryPtr->validate == VALIDATE_ALL) &&
+	EntryValidateChange(entryPtr, string, new, index, 1) != TCL_OK) {
+	ckfree(new);
+	return;
+    }
+#endif /* ENTRY_VALIDATE */
     ckfree(entryPtr->string);
     entryPtr->string = new;
     entryPtr->numChars += length;
@@ -1442,6 +1650,9 @@ DeleteChars(entryPtr, index, count)
     int count;			/* How many characters to delete. */
 {
     char *new;
+#ifdef ENTRY_VALIDATE
+    char *string;
+#endif /* ENTRY_VALIDATE */
 
     if ((index + count) > entryPtr->numChars) {
 	count = entryPtr->numChars - index;
@@ -1453,6 +1664,21 @@ DeleteChars(entryPtr, index, count)
     new = (char *) ckalloc((unsigned) (entryPtr->numChars + 1 - count));
     strncpy(new, entryPtr->string, (size_t) index);
     strcpy(new+index, entryPtr->string+index+count);
+#ifdef ENTRY_VALIDATE
+    string = (char *) ckalloc((unsigned) (1 + count));
+    strncpy(string, entryPtr->string+index, (size_t) count);
+    string[count] = '\0';
+
+    if ((entryPtr->validate == VALIDATE_KEY ||
+	 entryPtr->validate == VALIDATE_ALL) &&
+	EntryValidateChange(entryPtr, string, new, index, 0) != TCL_OK) {
+	ckfree(new);
+	ckfree(string);
+	return;
+    }
+
+    ckfree(string);
+#endif /* ENTRY_VALIDATE */
     ckfree(entryPtr->string);
     entryPtr->string = new;
     entryPtr->numChars -= count;
@@ -1585,6 +1811,35 @@ EntrySetValue(entryPtr, value)
 					 * changed. */
     char *value;			/* New text to display in entry. */
 {
+#ifdef ENTRY_VALIDATE
+    int code;
+
+    if (strcmp(value, entryPtr->string) == 0) {
+	return;
+    }
+
+    if (entryPtr->flags & VALIDATE_VAR) {
+	/* Recursing : assume we are in fixup code and it knows
+	   what it is doing 
+	*/
+    } else {
+	entryPtr->flags |= VALIDATE_VAR;
+	code = EntryValidateChange(entryPtr, (char *) NULL, value, -1, -1);
+	if (code != TCL_OK || (entryPtr->flags & VALIDATE_ABORT)) {
+	    /*
+	     * If VALIDATE_ABORT has been set, then this operation should be
+	     * aborted because the validatecommand did something else instead
+	     * Set variable to what that 'something' was.
+	     */
+	    EntryValueChanged(entryPtr);
+	    entryPtr->flags &= ~VALIDATE_ABORT;
+	    entryPtr->flags &= ~VALIDATE_VAR;
+	    return;
+	}
+	entryPtr->flags &= ~VALIDATE_VAR;
+    }
+#endif /* ENTRY_VALIDATE */
+
     ckfree(entryPtr->string);
     entryPtr->numChars = strlen(value);
     entryPtr->string = (char *) ckalloc((unsigned) (entryPtr->numChars + 1));
@@ -2248,9 +2503,25 @@ EntryFocusProc(entryPtr, gotFocus)
 		    entryPtr->insertOnTime, EntryBlinkProc,
 		    (ClientData) entryPtr);
 	}
+#ifdef ENTRY_VALIDATE
+	if (entryPtr->validate == VALIDATE_ALL ||
+	    entryPtr->validate == VALIDATE_FOCUS ||
+	    entryPtr->validate == VALIDATE_FOCUSIN) {
+	    EntryValidateChange(entryPtr, (char *) NULL,
+				entryPtr->string, -1, -2);
+	}
+#endif /* ENTRY_VALIDATE */
     } else {
 	entryPtr->flags &= ~(GOT_FOCUS | CURSOR_ON);
 	entryPtr->insertBlinkHandler = (Tcl_TimerToken) NULL;
+#ifdef ENTRY_VALIDATE
+	if (entryPtr->validate == VALIDATE_ALL ||
+	    entryPtr->validate == VALIDATE_FOCUS ||
+	    entryPtr->validate == VALIDATE_FOCUSOUT) {
+	    EntryValidateChange(entryPtr, (char *) NULL,
+				entryPtr->string, -1, -3);
+	}
+#endif /* ENTRY_VALIDATE */
     }
     EventuallyRedraw(entryPtr);
 }
@@ -2312,8 +2583,438 @@ EntryTextVarProc(clientData, interp, name1, name2, flags)
     if (value == NULL) {
 	value = "";
     }
+#ifdef ENTRY_VALIDATE
+    EntrySetValue(entryPtr, value);
+#else
     if (strcmp(value, entryPtr->string) != 0) {
 	EntrySetValue(entryPtr, value);
     }
+#endif /* ENTRY_VALIDATE */
     return (char *) NULL;
 }
+#ifdef ENTRY_VALIDATE
+
+/*
+ *--------------------------------------------------------------
+ *
+ * EntryValidate --
+ *
+ *	This procedure is invoked when any character is added or
+ *	removed from the entry widget, or a focus has trigerred validation.
+ *
+ * Results:
+ *	TCL_OK if the validatecommand passes the new string.
+ *      TCL_BREAK if the vcmd executed OK, but rejects the string.
+ *      TCL_ERROR if an error occurred while executing the vcmd
+ *      or a valid Tcl_Bool is not returned.
+ *
+ * Side effects:
+ *      An error condition may arise
+ *
+ *--------------------------------------------------------------
+ */
+
+static int
+EntryValidate(entryPtr, cmd, string)
+     register Entry *entryPtr;	/* Entry that needs validation. */
+     register LangCallback *cmd;	/* Validation command (NULL-terminated
+				 * string). */
+     char *string;
+{
+    int code;                   
+    Arg result;
+
+    code = LangDoCallback(entryPtr->interp, cmd, 1, 1, "%s", string);
+
+    if (code != TCL_OK && code != TCL_RETURN) {
+	Tcl_AddErrorInfo(entryPtr->interp,
+		 "\n\t(in validation command executed by entry)");
+	Tcl_BackgroundError(entryPtr->interp);
+	return TCL_ERROR;
+    }          
+
+    result = Tcl_ResultArg(entryPtr->interp);
+
+    if (Tcl_GetBoolean(entryPtr->interp,  result, &code) != TCL_OK) {
+	Tcl_AddErrorInfo(entryPtr->interp,
+		 "\nValid Tcl Boolean not returned by validation command");
+	Tcl_BackgroundError(entryPtr->interp);
+	Tcl_SetResult(entryPtr->interp, (char *) NULL, TCL_STATIC);
+	return TCL_ERROR;
+    }
+
+    Tcl_SetResult(entryPtr->interp, (char *) NULL, TCL_STATIC);
+    return code ? TCL_OK : TCL_BREAK;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * EntryValidateChange --
+ *
+ *	This procedure is invoked when any character is added or
+ *	removed from the entry widget, or a focus has trigerred validation.
+ *
+ * Results:
+ *	TCL_OK if the validatecommand accepts the new string,
+ *      TCL_ERROR if any problems occured with validatecommand.
+ *
+ * Side effects:
+ *      The insertion/deletion may be aborted, and the
+ *      validatecommand might turn itself off (if an error
+ *      or loop condition arises).
+ *
+ *--------------------------------------------------------------
+ */
+
+static int
+EntryValidateChange(entryPtr, string, new, index, type)
+     register Entry *entryPtr;	/* Entry that needs validation. */
+     char *string;		/* New characters to add (NULL-terminated
+				 * string). */
+     char *new;                 /* Potential new value of entry string */
+     int index;                 /* index of insert/delete, -1 otherwise */
+     int type;                  /* -1 == forced, 0 == delete, 1 == insert
+				 * -2 == focusin, -3 == focusout */
+{
+    int code;
+    char *p;
+    Arg result;
+    Tcl_DString script;
+
+    if (entryPtr->validateCmd == NULL ||
+	entryPtr->validate == VALIDATE_NONE) {
+	return TCL_OK;
+    }
+
+    /*
+     * If we're already validating, then we're hitting a loop condition
+     * Return and set validate to 0 to disallow further validations
+     * and prevent current validation from finishing
+     */
+    if (entryPtr->flags & VALIDATING) {
+	if (entryPtr->flags & VALIDATE_VAR) {
+	    return TCL_OK;
+	}
+	else {     
+	    Tcl_SetResult(entryPtr->interp,"Validate recursed",TCL_STATIC);
+	    return TCL_ERROR;
+	}
+    }
+
+    entryPtr->flags |= VALIDATING;
+
+    /*
+     * Now form command string and run through the -validatecommand
+     */
+                                                             
+#ifndef _LANG
+    Tcl_DStringInit(&script);
+    ExpandPercents(entryPtr, entryPtr->validateCmd,
+		   string, new, index, type, &script);
+    Tcl_DStringAppend(&script, "", 1);
+
+    p = Tcl_DStringValue(&script);
+    code = EntryValidate(entryPtr, p);
+    Tcl_DStringFree(&script);
+#else
+
+    code = LangDoCallback(entryPtr->interp, entryPtr->validateCmd, 1, 5, "%s %s %s %d %d", 
+                          new, string,  entryPtr->string, index, type);
+    if (code != TCL_OK && code != TCL_RETURN) {
+	Tcl_AddErrorInfo(entryPtr->interp,
+		 "\n\t(in validation command executed by entry)");
+	Tcl_BackgroundError(entryPtr->interp);
+	goto done;
+    }          
+
+    result = Tcl_ResultArg(entryPtr->interp);
+
+    if (Tcl_GetBoolean(entryPtr->interp,  result, &code) != TCL_OK) {
+	Tcl_AddErrorInfo(entryPtr->interp,
+		 "\nValid Tcl Boolean not returned by validation command");
+	Tcl_BackgroundError(entryPtr->interp);
+	Tcl_SetResult(entryPtr->interp, (char *) NULL, TCL_STATIC);
+        code = TCL_ERROR;
+	goto done;
+    }
+
+    Tcl_ResetResult(entryPtr->interp);
+    code = (code) ? TCL_OK : TCL_BREAK;
+
+#endif
+
+    /*
+     * If e->validate has become VALIDATE_NONE during the validation,
+     * it means that a loop condition almost occured.  Do not allow
+     * this validation result to finish.
+     */
+    if (entryPtr->validate == VALIDATE_NONE ) {
+	code = TCL_ERROR;
+    }
+    /*
+     * If validate will return ERROR, then disallow further validations
+     * Otherwise, if it didn't accept the new string (returned TCL_BREAK)
+     * then eval the invalidCmd (if it's set)
+     */
+    if (code == TCL_ERROR) {
+	entryPtr->validate = VALIDATE_NONE;
+    } else if (code == TCL_BREAK) {
+	if (entryPtr->invalidCmd != NULL) {
+#ifndef _LANG
+	    Tcl_DStringInit(&script);
+	    ExpandPercents(entryPtr, entryPtr->invalidCmd,
+			   string, new, index, type, &script);
+	    Tcl_DStringAppend(&script, "", 1);
+	    p = Tcl_DStringValue(&script);
+	    if (Tcl_Eval(entryPtr->interp, p) != TCL_OK) {
+		Tcl_AddErrorInfo(entryPtr->interp,
+				 "\n\t(in invalidcommand executed by entry)");
+		Tcl_BackgroundError(entryPtr->interp);
+		code = TCL_ERROR;
+		entryPtr->validate = VALIDATE_NONE;
+	    }
+	    Tcl_DStringFree(&script);
+#else           
+	    if (LangDoCallback(entryPtr->interp, entryPtr->invalidCmd, 1, 5, "%s %s %s %d %d",  
+			       new, string, entryPtr->string, index, type) != TCL_OK) {
+		Tcl_AddErrorInfo(entryPtr->interp,
+				 "\n\t(in invalidcommand executed by entry)");
+		Tcl_BackgroundError(entryPtr->interp);
+		code = TCL_ERROR;
+		entryPtr->validate = VALIDATE_NONE;
+	    }
+#endif
+	}
+    }
+
+done:
+    entryPtr->flags &= ~VALIDATING;
+    return code;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * ExpandPercents --
+ *
+ *	Given a command and an event, produce a new command
+ *	by replacing % constructs in the original command
+ *	with information from the X event.
+ *
+ * Results:
+ *	The new expanded command is appended to the dynamic string
+ *	given by dsPtr.
+ *
+ * Side effects:
+ *	None.
+ *
+ *--------------------------------------------------------------
+ */
+
+#ifndef _LANG
+static void
+ExpandPercents(entryPtr, before, add, new, index, type, dsPtr)
+     register Entry *entryPtr;	/* Entry that needs validation. */
+     register char *before;	/* Command containing percent
+				 * expressions to be replaced. */
+     char *add; 		/* New characters to add (NULL-terminated
+				 * string). */
+     char *new;                 /* Potential new value of entry string */
+     int index;                 /* index of insert/delete */
+     int type;                  /* INSERT or DELETE */
+     Tcl_DString *dsPtr;        /* Dynamic string in which to append
+				 * new command. */
+{
+    int spaceNeeded, cvtFlags;	/* Used to substitute string as proper Tcl
+				 * list element. */
+    int number, length;
+#define NUM_SIZE 40
+    register char *string;
+    char numStorage[NUM_SIZE+1];
+
+    while (1) {
+	/*
+	 * Find everything up to the next % character and append it
+	 * to the result string.
+	 */
+
+	for (string = before; (*string != 0) && (*string != '%'); string++) {
+	    /* Empty loop body. */
+	}
+	if (string != before) {
+	    Tcl_DStringAppend(dsPtr, before, string-before);
+	    before = string;
+	}
+	if (*before == 0) {
+	    break;
+	}
+
+	/*
+	 * There's a percent sequence here.  Process it.
+	 */
+
+	number = 0;
+	string = "??";
+	switch (before[1]) {
+	  case 'd': /* Type of call that caused validation */
+	    number = type;
+	    goto doNumber;
+	  case 'i': /* index of insert/delete */
+	    number = index;
+	    goto doNumber;
+	  case 'P': /* 'Peeked' new value of the string */
+	    string = new;
+	    goto doString;
+	  case 's': /* Current string value of entry */
+	    string = entryPtr->string;
+	    goto doString;
+	  case 'S': /* string to be inserted/delete, if any */
+	    string = add;
+	    goto doString;                                             
+	  case 'v': /* type of validation */
+	    string = ValidatePrintProc((ClientData) NULL, entryPtr->tkwin,
+				       (char *) entryPtr, 0, 0);
+	    goto doString;
+	  case 'W': /* widget name */
+	    string = Tk_PathName(entryPtr->tkwin);
+	    goto doString;
+	  default:
+	    numStorage[0] = before[1];
+	    numStorage[1] = '\0';
+	    string = numStorage;
+	    goto doString;
+	}
+
+	doNumber:
+	sprintf(numStorage, "%d", number);
+	string = numStorage;
+
+	doString:
+	spaceNeeded = Tcl_ScanElement(string, &cvtFlags);
+	length = Tcl_DStringLength(dsPtr);
+	Tcl_DStringSetLength(dsPtr, length + spaceNeeded);
+	spaceNeeded = Tcl_ConvertElement(string,
+		Tcl_DStringValue(dsPtr) + length,
+		cvtFlags | TCL_DONT_USE_BRACES);
+	Tcl_DStringSetLength(dsPtr, length + spaceNeeded);
+	before += 2;
+    }
+}
+#endif /* _LANG */
+
+/*
+ *--------------------------------------------------------------
+ *
+ * ValidateParseProc --
+ *
+ *	This procedure is invoked by Tk_ConfigureWidget during
+ *	option processing to handle "-validate" options for entry
+ *	widgets.
+ *
+ * Results:
+ *	A standard Tcl return value.
+ *
+ * Side effects:
+ *	The validation style for the entry widget may change.
+ *
+ *--------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+static int
+ValidateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+    ClientData clientData;		/* Not used.*/
+    Tcl_Interp *interp;			/* Used for reporting errors. */
+    Tk_Window tkwin;			/* Window for text widget. */
+    Arg ovalue;			/* Value of option. */
+    char *widgRec;			/* Pointer to widgRec structure. */
+    int offset;				/* Offset into item (ignored). */
+{
+    int c;
+    size_t length;                            
+    char *value = LangString(ovalue);
+
+    register int *validatePtr = (int *) (widgRec + offset);
+
+    if(value == NULL || *value == 0) {
+	*validatePtr = VALIDATE_NONE;
+	return TCL_OK;
+    }
+
+    c = value[0];
+    length = strlen(value);
+    if ((c == 'n') && (strncmp(value, "none", length) == 0)) {
+	*validatePtr = VALIDATE_NONE;
+    } else if ((c == 'a') && (strncmp(value, "all", length) == 0)) {
+	*validatePtr = VALIDATE_ALL;
+    } else if ((c == 'k') && (strncmp(value, "key", length) == 0)) {
+	*validatePtr = VALIDATE_KEY;
+    } else if (strcmp(value, "focus") == 0) {
+	*validatePtr = VALIDATE_FOCUS;
+    } else if (strcmp(value, "focusin") == 0) {
+	*validatePtr = VALIDATE_FOCUSIN;
+    } else if (strcmp(value, "focusout") == 0) {
+	*validatePtr = VALIDATE_FOCUSOUT;
+    } else {
+	Tcl_AppendResult(interp, "bad validation type \"", value,
+		"\": must be none, all, key, focus, focusin, or focusout",
+		(char *) NULL);
+	return TCL_ERROR;
+    }
+    return TCL_OK;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * ValidatePrintProc --
+ *
+ *	This procedure is invoked by the Tk configuration code
+ *	to produce a printable string for the "-validate" configuration
+ *	option for entry widgets.
+ *
+ * Results:
+ *	The return value is a string describing the entry
+ *	widget's current validation style.
+ *
+ * Side effects:
+ *	None.
+ *
+ *--------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+static Arg
+ValidatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+    ClientData clientData;		/* Ignored. */
+    Tk_Window tkwin;			/* Window for text widget. */
+    char *widgRec;			/* Pointer to widgRec structure. */
+    int offset;				/* Ignored. */
+    Tcl_FreeProc **freeProcPtr;		/* Pointer to variable to fill in with
+					 * information about how to reclaim
+					 * storage for return string. */
+{
+    register int *validatePtr = (int *) (widgRec + offset);
+    Arg result = NULL;
+
+    switch (*validatePtr) {
+	case VALIDATE_NONE:
+	    return LangStringArg("none");
+	case VALIDATE_ALL:
+	    return LangStringArg("all");
+	case VALIDATE_KEY:
+	    return LangStringArg("key");
+	case VALIDATE_FOCUS:
+	    return LangStringArg("focus");
+	case VALIDATE_FOCUSIN:
+	    return LangStringArg("focusin");
+	    break;
+	case VALIDATE_FOCUSOUT:
+	    return LangStringArg("focusout");
+	    break;
+	default:
+	    return NULL;
+    }                                  
+}
+#endif /* ENTRY_VALIDATE */

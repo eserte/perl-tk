@@ -416,7 +416,7 @@ DrawMenuEntryBackground(menuPtr, mePtr, d, activeBorder, bgBorder, x, y,
     int width;			/* Width of entry rect */
     int height;			/* Height of entry rect */
 {
-    if (mePtr->state == tkActiveUid) {
+    if (mePtr->state == TK_STATE_ACTIVE) {
 	int relief;
     	bgBorder = activeBorder;
 
@@ -722,7 +722,7 @@ DrawMenuEntryLabel(
     	}
     }
 
-    if (mePtr->state == tkDisabledUid) {
+    if (mePtr->state == TK_STATE_DISABLED) {
 	if (menuPtr->disabledFg == NULL) {
 	    XFillRectangle(menuPtr->display, d, menuPtr->disabledGC, x, y,
 		    (unsigned) width, (unsigned) height);
@@ -1305,7 +1305,7 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
      * Choose the gc for drawing the foreground part of the entry.
      */
 
-    if ((mePtr->state == tkActiveUid)
+    if ((mePtr->state == TK_STATE_ACTIVE)
 	    && !strictMotif) {
 	gc = mePtr->activeGC;
 	if (gc == NULL) {
@@ -1320,14 +1320,14 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
     		cascadeEntryPtr = cascadeEntryPtr->nextCascadePtr) {
     	    if (strcmp(LangString(cascadeEntryPtr->name),
     	    	    Tk_PathName(menuPtr->tkwin)) == 0) {
-    	    	if (cascadeEntryPtr->state == tkDisabledUid) {
+    	    	if (cascadeEntryPtr->state == TK_STATE_DISABLED) {
     	    	    parentDisabled = 1;
     	    	}
     	    	break;
     	    }
     	}
 
-	if (((parentDisabled || (mePtr->state == tkDisabledUid)))
+	if (((parentDisabled || (mePtr->state == TK_STATE_DISABLED)))
 		&& (menuPtr->disabledFg != NULL)) {
 	    gc = mePtr->disabledGC;
 	    if (gc == NULL) {

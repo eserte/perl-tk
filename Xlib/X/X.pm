@@ -3,8 +3,8 @@ package Tk::X;
 use strict;
 use Carp;
 use vars qw($VERSION @EXPORT $AUTOLOAD);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Xlib/X/X.pm#12$
-require Tk;
+$VERSION = '3.016'; # $Id: //depot/Tk8/Xlib/X/X.pm#16 $
+use Tk qw($XS_VERSION);
 
 require Exporter;
 require DynaLoader;
@@ -385,7 +385,7 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 
-bootstrap Tk::X $Tk::VERSION;
+bootstrap Tk::X;
 
 # Preloaded methods go here.
 

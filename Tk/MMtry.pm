@@ -6,7 +6,7 @@ use Config;
 require Exporter;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/MMtry.pm#8$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/MMtry.pm#10 $
 
 use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);

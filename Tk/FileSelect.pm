@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Tk/FileSelect.pm#33$
+$VERSION = '3.039'; # $Id: //depot/Tk8/Tk/FileSelect.pm#39 $
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
@@ -27,6 +27,7 @@ sub Cancel
 {
  my ($cw) = @_;
  $cw->{Selected} = undef;
+ $cw->withdraw unless $cw->cget('-transient');
 }
 
 sub Accept {
@@ -126,6 +127,8 @@ sub Accept {
     {
       my $sm = $cw->Subwidget('file_list')->cget(-selectmode);
       $cw->{Selected} = $leaves;
+      my $command = $cw->cget('-command');
+      $command->Call(@{$cw->{Selected}}) if defined $command;
     }
 
 } # end Accept
@@ -234,6 +237,8 @@ sub Populate {
         -dirlistlabel     => [ 'PASSIVE', undef, undef, 'Directories'],
         -dirlabel         => [ 'PASSIVE', undef, undef, 'Directory'],
         '-accept'         => [ 'CALLBACK',undef,undef, undef ],
+        -command          => [ 'CALLBACK',undef,undef, undef ],
+        -transient        => [ 'PASSIVE', undef, undef, 1 ],
         -verify           => [ 'PASSIVE', undef, undef, ['!-d'] ],
         -create           => [ 'PASSIVE', undef, undef, 0 ],
         DEFAULT           => [ 'file_list' ],
@@ -274,7 +279,7 @@ sub filter
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
-     $cw->DoWhenIdle(['reread',$cw,$cw->cget('-directory')])
+     $cw->afterIdle(['reread',$cw,$cw->cget('-directory')])
     }
   }
  return $$var;
@@ -444,6 +449,8 @@ sub validateFile
        if (!defined($accept) || $accept->Call($full))
         {
          $cw->{Selected} = [$full];
+	 my $command = $cw->cget('-command');
+	 $command->Call(@{$cw->{Selected}}) if defined $command;
         }
        else
         {
@@ -475,14 +482,18 @@ sub Error
 sub Show
 {
  my ($cw,@args) = @_;
- $cw->Popup(@args);
- $cw->focus;
- $cw->waitVariable(\$cw->{Selected});
- $cw->withdraw;
- return defined($cw->{Selected})
-      ? (wantarray) ? @{$cw->{Selected}} : $cw->{Selected}[0]
-      : undef;
-
+ if ($cw->cget('-transient')) {
+   $cw->Popup(@args);
+   $cw->waitVisibility;
+   $cw->focus;
+   $cw->waitVariable(\$cw->{Selected});
+   $cw->withdraw;
+   return defined($cw->{Selected})
+     ? (wantarray) ? @{$cw->{Selected}} : $cw->{Selected}[0]
+       : undef;
+ } else {
+   $cw->Popup(@args);
+ }
 }
 
 sub FDialog

@@ -18,6 +18,9 @@
 
 DECLARE_VTABLES;
 
+extern Tk_ItemType ptkCanvGridType;
+extern Tk_ItemType ptkCanvGroupType;
+
 
 MODULE = Tk::Canvas	PACKAGE = Tk
 
@@ -25,7 +28,7 @@ void
 canvas(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,Tk_CanvasCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,(Tcl_CmdProc *)Tk_CanvasObjCmd,items,&ST(0)));
  }
 
 
@@ -34,4 +37,6 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
+  Tk_CreateItemType(&ptkCanvGridType);
+  Tk_CreateItemType(&ptkCanvGroupType);
  }

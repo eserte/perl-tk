@@ -113,6 +113,7 @@ typedef struct Tk_ErrorHandler_ *Tk_ErrorHandler;
 typedef struct Tk_Font_ *Tk_Font;
 typedef struct Tk_Image__ *Tk_Image;
 typedef struct Tk_ImageMaster_ *Tk_ImageMaster;
+typedef struct Tk_PostscriptInfo_ *Tk_PostscriptInfo;
 typedef struct Tk_TextLayout_ *Tk_TextLayout;
 typedef struct Tk_Window_ *Tk_Window;
 typedef struct Tk_3DBorder_ *Tk_3DBorder;
@@ -271,6 +272,7 @@ typedef struct Tk_ConfigSpec {
  */
 
 #define TK_CONFIG_ARGV_ONLY	1
+#define TK_CONFIG_OBJS		0x80
 
 /*
  * Possible flag values for Tk_ConfigInfo structures.  Any bits at
@@ -650,6 +652,21 @@ typedef struct Tk_FakeWin {
  *--------------------------------------------------------------
  */
 
+typedef enum {
+    TK_STATE_NULL, TK_STATE_NORMAL, TK_STATE_HIDDEN,
+    TK_STATE_DISABLED, TK_STATE_ACTIVE
+} Tk_State;
+
+typedef struct Tk_SmoothMethod {
+    char *name;
+    int (*coordProc) _ANSI_ARGS_((Tk_Canvas canvas,
+		double *pointPtr, int numPoints, int numSteps,
+		XPoint xPoints[], double dblPoints[]));
+    void (*postscriptProc) _ANSI_ARGS_((Tcl_Interp *interp,
+		Tk_Canvas canvas, double *coordPtr,
+		int numPoints, int numSteps));
+} Tk_SmoothMethod;
+
 /*
  * For each item in a canvas widget there exists one record with
  * the following structure.  Each actual item is represented by
@@ -689,9 +706,10 @@ typedef struct Tk_Item  {
 					 * items in this canvas. Later items
 					 * in list are drawn just below earlier
 					 * ones. */
-    int   reserved1;			/* This padding is for compatibility */
-    char *reserved2;			/* with Jan Nijtmans dash patch */
-    int   reserved3;
+    Tk_State state;			/* state of item */
+    LangCallback *updateCmd;		/* for "-updatecommand" option */
+    int redraw_flags;			/* some flags used in the canvas */
+    struct Tk_Item *group;		/* group item managing this one */
 
     /*
      *------------------------------------------------------------------
@@ -702,6 +720,68 @@ typedef struct Tk_Item  {
      *------------------------------------------------------------------
      */
 } Tk_Item;
+
+/*
+ * Flag bits for canvases (redraw_flags):
+ *
+ * TK_ITEM_STATE_DEPENDANT -	1 means that object needs to be
+ *				redrawn if the canvas state changes.
+ * TK_ITEM_DONT_REDRAW - 	1 means that the object redraw is already
+ *				been prepared, so the general canvas code
+ *				doesn't need to do that any more.
+ */
+
+#define TK_ITEM_STATE_DEPENDANT		1
+#define TK_ITEM_DONT_REDRAW		2
+
+/*
+ * Structures used for implementing visitors.
+ */
+
+typedef ClientData Tk_VisitorStartProc _ANSI_ARGS_((Tcl_Interp *interp,
+		   Tk_Canvas canvas, int argc, char **argv));
+typedef int 	Tk_VisitorItemProc _ANSI_ARGS_((Tcl_Interp *interp,
+		   Tk_Canvas canvas, ClientData clientData,
+		   Tk_Item *itemPtr));
+typedef int 	Tk_VisitorEndProc _ANSI_ARGS_((Tcl_Interp *interp,
+		   Tk_Canvas canvas, ClientData clientData));
+
+typedef struct Tk_VisitorType {
+    char *name;
+    int typeSize;			/* should be sizeof(Tk_VisitorType) */
+    int flags;				/* If this flag is non-zero then
+					 * the item needs to be redrawn. */
+    Tk_VisitorStartProc *startProc;
+    Tk_VisitorEndProc  *endProc;
+    Tk_VisitorItemProc *visitArc;	/* The Arc visitor procedure. */
+    Tk_VisitorItemProc *visitBitmap;	/* The Bitmap visitor procedure. */
+    Tk_VisitorItemProc *visitImage;	/* The Image visitor procedure. */
+    Tk_VisitorItemProc *visitLine;	/* The Line visitor procedure. */
+    Tk_VisitorItemProc *visitOval;	/* The Oval visitor procedure. */
+    Tk_VisitorItemProc *visitPolygon;	/* The Polygon visitor procedure. */
+    Tk_VisitorItemProc *visitRectangle;	/* The Rectangle visitor procedure. */
+    Tk_VisitorItemProc *visitText;	/* The Text visitor procedure. */
+    Tk_VisitorItemProc *visitWindow;	/* The Window visitor procedure. */
+    Tk_VisitorItemProc *visitSticker;	/* The Sticker visitor procedure.
+					 * from tkSticker*/
+    Tk_VisitorItemProc *visitViewport;	/* The Viewport visitor procedure.
+					 * from TkSM */
+    Tk_VisitorItemProc *visitBarchart;	/* The Barchart visitor procedure.
+					 * from Scotty */
+    Tk_VisitorItemProc *visitStripchart;/* The Stripchart visitor procedure.
+					 * from Scotty */
+
+    /* ptk extensions */
+    Tk_VisitorItemProc *visitGroup;	/* The Group visitor procedure. */
+    Tk_VisitorItemProc *visitGrid;	/* The Grid visitor procedure. */
+
+    /*
+     *------------------------------------------------------------------
+     * Starting here is additional item-extension stuff;
+     * you can add extra item types after this plus other information.
+     *------------------------------------------------------------------
+     */
+} Tk_VisitorType;
 
 /*
  * Records of the following type are used to describe a type of
@@ -735,7 +815,7 @@ typedef void	Tk_ItemScaleProc _ANSI_ARGS_((Tk_Canvas canvas,
 typedef void	Tk_ItemTranslateProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, double deltaX, double deltaY));
 typedef int	Tk_ItemIndexProc _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tk_Canvas canvas, Tk_Item *itemPtr, Arg indexString,
+		    Tk_Canvas canvas, Tk_Item *itemPtr, Tcl_Obj *indexString,
 		    int *indexPtr));
 typedef void	Tk_ItemCursorProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int index));
@@ -743,9 +823,26 @@ typedef int	Tk_ItemSelectionProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int offset, char *buffer,
 		    int maxBytes));
 typedef void	Tk_ItemInsertProc _ANSI_ARGS_((Tk_Canvas canvas,
-		    Tk_Item *itemPtr, int beforeThis, char *string));
+		    Tk_Item *itemPtr, int beforeThis, Tcl_Obj *string));
 typedef void	Tk_ItemDCharsProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int first, int last));
+typedef void	Tk_ItemBboxProc _ANSI_ARGS_((Tk_Canvas canvas,
+		    Tk_Item *itemPtr));
+typedef int	Tk_ItemGetCoordProc _ANSI_ARGS_((Tk_Item *itemPtr,
+		    double **coordsPtr, Tcl_FreeProc *freeProc));
+typedef int	Tk_ItemSetCoordProc _ANSI_ARGS_((Tk_Canvas canvas,
+		    Tk_Item *itemPtr, int num, double *coords));
+
+/*
+ * Some flag values that can be used in the "flags" field in Tk_ItemType.
+ */
+
+#define TK_ITEM_ALWAYS_REDRAW 1
+#define TK_ITEM_VISITOR_SUPPORT 2
+
+/*
+ * Structures used for implementing visitors.
+ */
 
 typedef struct Tk_ItemType {
     char *name;				/* The name of this type of item, such
@@ -765,8 +862,8 @@ typedef struct Tk_ItemType {
 					 * this type. */
     Tk_ItemDisplayProc *displayProc;	/* Procedure to display items of
 					 * this type. */
-    int alwaysRedraw;			/* Non-zero means displayProc should
-					 * be called even when the item has
+    int flags;				/* TK_ITEM_TYPE_ALWAYS_REDRAW means displayProc
+					 * should be called even when the item has
 					 * been moved off-screen. */
     Tk_ItemPointProc *pointProc;	/* Computes distance from item to
 					 * a given point. */
@@ -794,10 +891,14 @@ typedef struct Tk_ItemType {
 					 * from an item. */
     struct Tk_ItemType *nextPtr;	/* Used to link types together into
 					 * a list. */
-    char *reserved1;			/* Reserved for future extension. */
-    int   reserved2;			/* Carefully compatible with */
-    char *reserved3;			/* Jan Nijtmans dash patch */
-    char *reserved4;
+    Tk_ItemBboxProc *bboxProc;		/* Procedure to calculate the bounding
+					 * box for an item. */
+    int acceptProc;			/* Offset of visitors function  in
+					 * tkVisitorType struct for this item. */
+    Tk_ItemGetCoordProc *getCoordProc;	/* Procedure to get the coordinates
+					 * for an item. */
+    Tk_ItemSetCoordProc *setCoordProc;	/* Procedure to set the coordinates
+					 * for an item. */
 } Tk_ItemType;
 
 /*
@@ -845,6 +946,125 @@ typedef struct Tk_CanvasTextInfo {
 } Tk_CanvasTextInfo;
 
 /*
+ * Structures used for Dashing and Outline.
+ */
+
+typedef struct Tk_Dash {
+    int number;
+    union {
+	char *pt;
+	char array[sizeof(char *)];
+    } pattern;
+} Tk_Dash;
+
+typedef struct Tk_TSOffset {
+    int flags;			/* flags; see below for possible values */
+    int xoffset;		/* x offset */
+    int yoffset;		/* y offset */
+} Tk_TSOffset;
+
+/*
+ * Bit fields in Tk_Offset->flags:
+ */
+
+#define TK_OFFSET_INDEX		1
+#define TK_OFFSET_RELATIVE	2
+#define TK_OFFSET_LEFT		4
+#define TK_OFFSET_CENTER	8
+#define TK_OFFSET_RIGHT		16
+#define TK_OFFSET_TOP		32
+#define TK_OFFSET_MIDDLE	64
+#define TK_OFFSET_BOTTOM	128
+
+typedef struct Tk_Tile_ *Tk_Tile;	/* Opaque type for tiles */
+
+typedef struct Tk_Outline {
+    GC gc;			/* Graphics context. */
+    double width;		/* Width of outline. */
+    double activeWidth;		/* Width of outline. */
+    double disabledWidth;	/* Width of outline. */
+    int offset;			/* Dash offset */
+    Tk_Dash dash;		/* Dash pattern */
+    Tk_Dash activeDash;		/* Dash pattern if state is active*/
+    Tk_Dash disabledDash;	/* Dash pattern if state is disabled*/
+    Tk_Tile tile;		/* Tile pattern */
+    Tk_Tile activeTile;		/* Tile pattern if state is active*/
+    Tk_Tile disabledTile;	/* Tile pattern if state is disabled*/
+    Tk_TSOffset tsoffset;	/* tile/stipple offset for outline*/
+    XColor *color;		/* Outline color. */
+    XColor *activeColor;	/* Outline color if state is active. */
+    XColor *disabledColor;	/* Outline color if state is disabled. */
+    Pixmap stipple;		/* Outline Stipple pattern. */
+    Pixmap activeStipple;	/* Outline Stipple pattern if state is active. */
+    Pixmap disabledStipple;	/* Outline Stipple pattern if state is disabled. */
+} Tk_Outline;
+
+/*
+ * Some functions handy for Dashing and Outlines (in tkCanvUtil.c).
+ */
+
+EXTERN int	Tk_GetDash _ANSI_ARGS_((Tcl_Interp *interp,
+		    Arg value, Tk_Dash *dash));
+EXTERN void	Tk_CreateOutline _ANSI_ARGS_((Tk_Outline *outline));
+EXTERN void	Tk_DeleteOutline _ANSI_ARGS_((Display *display,
+		    Tk_Outline *outline));
+EXTERN int	Tk_ConfigOutlineGC _ANSI_ARGS_((XGCValues *gcValues,
+		    Tk_Canvas canvas ,Tk_Item *item,
+		    Tk_Outline *outline));
+EXTERN int	Tk_ChangeOutlineGC _ANSI_ARGS_((Tk_Canvas canvas,
+		    Tk_Item *item, Tk_Outline *outline));
+EXTERN int	Tk_ResetOutlineGC _ANSI_ARGS_((Tk_Canvas canvas,
+		    Tk_Item *item, Tk_Outline *outline));
+EXTERN int	Tk_CanvasPsOutline _ANSI_ARGS_((Tk_Canvas canvas,
+		    Tk_Item *item, Tk_Outline *outline));
+
+/*
+ * Some functions handy for Tiling and Stipple/Tile offset.
+ */
+
+typedef void	(Tk_TileChangedProc) _ANSI_ARGS_((ClientData clientData,
+		    Tk_Tile tile, Tk_Item *itemPtr));
+EXTERN Tk_Tile	Tk_GetTile _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window tkwin,
+		    CONST char *imageName));
+EXTERN void	Tk_FreeTile _ANSI_ARGS_((Tk_Tile tile));
+EXTERN char *	Tk_NameOfTile _ANSI_ARGS_((Tk_Tile tile));
+EXTERN void	Tk_SetTileChangedProc _ANSI_ARGS_((Tk_Tile tile,
+		    Tk_TileChangedProc * changeProc, ClientData clientData,
+		    Tk_Item *itemPtr));
+EXTERN Pixmap	Tk_PixmapOfTile _ANSI_ARGS_((Tk_Tile tile));
+EXTERN int	Tk_PixelParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset));
+EXTERN Arg	Tk_PixelPrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN void	Tk_SizeOfTile _ANSI_ARGS_((Tk_Tile tile, int *widthPtr,
+		    int *heightPtr));
+EXTERN void	Tk_SetTileOrigin _ANSI_ARGS_((Tk_Window tkwin, GC gc, int x,
+		    int y));
+EXTERN int	Tk_TileParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset));
+EXTERN Arg	Tk_TilePrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN int	Tk_OffsetParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset));
+EXTERN Arg	Tk_OffsetPrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN void	Tk_SetTileCanvasItem _ANSI_ARGS_((Tk_Tile tile,
+			    Tk_Canvas canvas, Tk_Item *itemPtr));
+
+
+/*
  *--------------------------------------------------------------
  *
  * Procedure prototypes and structures used for managing images:
@@ -867,6 +1087,9 @@ typedef void (Tk_ImageDeleteProc) _ANSI_ARGS_((ClientData masterData));
 typedef void (Tk_ImageChangedProc) _ANSI_ARGS_((ClientData clientData,
 	int x, int y, int width, int height, int imageWidth,
 	int imageHeight));
+typedef int (Tk_ImagePostscriptProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, Tk_Window tkwin, Tk_PostscriptInfo psinfo,
+	int x, int y, int width, int height, int prepass));
 
 /*
  * The following structure represents a particular type of image
@@ -896,6 +1119,9 @@ struct Tk_ImageType {
 				 * will not be called until after freeProc
 				 * has been called for each instance of the
 				 * image. */
+    Tk_ImagePostscriptProc *postscriptProc;
+				/* Procedure to call to create postscript
+				 * output for this image type. */
     struct Tk_ImageType *nextPtr;
 				/* Next in list of all image types currently
 				 * known.  Filled in by Tk, not by image
@@ -1114,40 +1340,53 @@ EXTERN void		Tk_AddOption _ANSI_ARGS_((Tk_Window tkwin, char *name,
 EXTERN void		Tk_BindEvent _ANSI_ARGS_((Tk_BindingTable bindingTable,
 			    XEvent *eventPtr, Tk_Window tkwin, int numObjects,
 			    ClientData *objectPtr));
-MOVEXT void		Tk_CanvasDrawableCoords _ANSI_ARGS_((Tk_Canvas canvas,
-			    double x, double y, short *drawableXPtr,
-			    short *drawableYPtr));
-MOVEXT void		Tk_CanvasEventuallyRedraw _ANSI_ARGS_((
-			    Tk_Canvas canvas, int x1, int y1, int x2,
-			    int y2));
-MOVEXT int		Tk_CanvasGetCoord _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, char *string,
-			    double *doublePtr));
-MOVEXT Tk_CanvasTextInfo *Tk_CanvasGetTextInfo _ANSI_ARGS_((Tk_Canvas canvas));
-MOVEXT int		Tk_CanvasPsBitmap _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Pixmap bitmap, int x, int y,
-			    int width, int height));
-MOVEXT int		Tk_CanvasPsColor _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, XColor *colorPtr));
-MOVEXT int		Tk_CanvasPsFont _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Tk_Font font));
-MOVEXT void		Tk_CanvasPsPath _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, double *coordPtr, int numPoints));
-MOVEXT int		Tk_CanvasPsStipple _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, Pixmap bitmap));
-MOVEXT double		Tk_CanvasPsY _ANSI_ARGS_((Tk_Canvas canvas, double y));
-MOVEXT void		Tk_CanvasSetStippleOrigin _ANSI_ARGS_((
-			    Tk_Canvas canvas, GC gc));
-MOVEXT int		Tk_CanvasTagsParseProc _ANSI_ARGS_((
+EXTERN int		Tk_CanvasDashParseProc _ANSI_ARGS_((
 			    ClientData clientData, Tcl_Interp *interp,
 			    Tk_Window tkwin, Arg value, char *widgRec,
 			    int offset));
-MOVEXT Arg		Tk_CanvasTagsPrintProc _ANSI_ARGS_((
+EXTERN Arg		Tk_CanvasDashPrintProc _ANSI_ARGS_((
 			    ClientData clientData, Tk_Window tkwin,
 			    char *widgRec, int offset,
 			    Tcl_FreeProc **freeProcPtr));
-MOVEXT Tk_Window	Tk_CanvasTkwin _ANSI_ARGS_((Tk_Canvas canvas));
-MOVEXT void		Tk_CanvasWindowCoords _ANSI_ARGS_((Tk_Canvas canvas,
+EXTERN void		Tk_CanvasDrawableCoords _ANSI_ARGS_((Tk_Canvas canvas,
+			    double x, double y, short *drawableXPtr,
+			    short *drawableYPtr));
+EXTERN void		Tk_CanvasEventuallyRedraw _ANSI_ARGS_((
+			    Tk_Canvas canvas, int x1, int y1, int x2,
+			    int y2));
+EXTERN int		Tk_CanvasGetCoord _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, char *string,
+			    double *doublePtr));
+EXTERN int		Tk_CanvasGetCoordFromObj _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, Tcl_Obj *obj,
+			    double *doublePtr));
+EXTERN Tk_CanvasTextInfo *Tk_CanvasGetTextInfo _ANSI_ARGS_((Tk_Canvas canvas));
+EXTERN int		Tk_CanvasPsBitmap _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, Pixmap bitmap, int x, int y,
+			    int width, int height));
+EXTERN int		Tk_CanvasPsColor _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, XColor *colorPtr));
+EXTERN int		Tk_CanvasPsFont _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, Tk_Font font));
+EXTERN void		Tk_CanvasPsPath _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, double *coordPtr, int numPoints));
+EXTERN int		Tk_CanvasPsStipple _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Canvas canvas, Pixmap bitmap));
+EXTERN double		Tk_CanvasPsY _ANSI_ARGS_((Tk_Canvas canvas, double y));
+EXTERN void		Tk_CanvasSetOffset _ANSI_ARGS_((
+			    Tk_Canvas canvas, GC gc, Tk_TSOffset *offset));
+EXTERN void		Tk_CanvasSetStippleOrigin _ANSI_ARGS_((
+			    Tk_Canvas canvas, GC gc));
+EXTERN int		Tk_CanvasTagsParseProc _ANSI_ARGS_((
+			    ClientData clientData, Tcl_Interp *interp,
+			    Tk_Window tkwin, Arg value, char *widgRec,
+			    int offset));
+EXTERN Arg		Tk_CanvasTagsPrintProc _ANSI_ARGS_((
+			    ClientData clientData, Tk_Window tkwin,
+			    char *widgRec, int offset,
+			    Tcl_FreeProc **freeProcPtr));
+EXTERN Tk_Window	Tk_CanvasTkwin _ANSI_ARGS_((Tk_Canvas canvas));
+EXTERN void		Tk_CanvasWindowCoords _ANSI_ARGS_((Tk_Canvas canvas,
 			    double x, double y, short *screenXPtr,
 			    short *screenYPtr));
 EXTERN void		Tk_ChangeWindowAttributes _ANSI_ARGS_((Tk_Window tkwin,
@@ -1191,17 +1430,23 @@ EXTERN Tk_ErrorHandler	Tk_CreateErrorHandler _ANSI_ARGS_((Display *display,
 EXTERN void		Tk_CreateEventHandler _ANSI_ARGS_((Tk_Window token,
 			    unsigned long mask, Tk_EventProc *proc,
 			    ClientData clientData));
+EXTERN void		Tk_CreatePhotoOption _ANSI_ARGS_((Tcl_Interp *interp,
+			    CONST char *name, Tcl_CmdProc *proc));
 EXTERN void		Tk_CreateGenericHandler _ANSI_ARGS_((
 			    Tk_GenericProc *proc, ClientData clientData));
 EXTERN void		Tk_CreateImageType _ANSI_ARGS_((
 			    Tk_ImageType *typePtr));
-MOVEXT void		Tk_CreateItemType _ANSI_ARGS_((Tk_ItemType *typePtr));
-MOVEXT void		Tk_CreatePhotoImageFormat _ANSI_ARGS_((
+EXTERN void		Tk_CreateItemType _ANSI_ARGS_((Tk_ItemType *typePtr));
+EXTERN void		Tk_CreatePhotoImageFormat _ANSI_ARGS_((
 			    Tk_PhotoImageFormat *formatPtr));
 EXTERN void		Tk_CreateSelHandler _ANSI_ARGS_((Tk_Window tkwin,
 			    Atom selection, Atom target,
 			    Tk_SelectionProc *proc, ClientData clientData,
 			    Atom format));
+EXTERN void		Tk_CreateSmoothMethod _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_SmoothMethod *method));
+EXTERN void		Tk_CreateCanvasVisitor _ANSI_ARGS_((Tcl_Interp *interp,
+			    CONST Tk_VisitorType *typePtr));
 EXTERN void		Tk_CreateXSelHandler _ANSI_ARGS_((Tk_Window tkwin,
 			    Atom selection, Atom target,
 			    Tk_XSelectionProc *proc, ClientData clientData,
@@ -1236,6 +1481,8 @@ EXTERN void		Tk_DeleteSelHandler _ANSI_ARGS_((Tk_Window tkwin,
 			    Atom selection, Atom target));
 EXTERN void             Tk_DestroyWindow _ANSI_ARGS_((Tk_Window tkwin));
 EXTERN char *		Tk_DisplayName _ANSI_ARGS_((Tk_Window tkwin));
+EXTERN void		Tk_DitherPhoto _ANSI_ARGS_((Tk_PhotoHandle handle,
+			    int x, int y, int width, int height));
 EXTERN int		Tk_DistanceToTextLayout _ANSI_ARGS_((
 			    Tk_TextLayout layout, int x, int y));
 EXTERN void		Tk_Draw3DPolygon _ANSI_ARGS_((Tk_Window tkwin,
@@ -1263,7 +1510,7 @@ EXTERN void		Tk_Fill3DRectangle _ANSI_ARGS_((Tk_Window tkwin,
 			    Drawable drawable, Tk_3DBorder border, int x,
 			    int y, int width, int height, int borderWidth,
 			    int relief));
-MOVEXT Tk_PhotoHandle	Tk_FindPhoto _ANSI_ARGS_((Tcl_Interp *interp,
+EXTERN Tk_PhotoHandle	Tk_FindPhoto _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *imageName));
 EXTERN Font		Tk_FontId _ANSI_ARGS_((Tk_Font font));
 EXTERN void		Tk_Free3DBorder _ANSI_ARGS_((Tk_3DBorder border));
@@ -1304,6 +1551,8 @@ EXTERN Pixmap		Tk_GetBitmap _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN Pixmap		Tk_GetBitmapFromData _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, char *source,
 			    int width, int height));
+EXTERN Tk_VisitorType *	Tk_GetCanvasVisitor _ANSI_ARGS_((Tcl_Interp *interp,
+			    CONST char *name));
 EXTERN int		Tk_GetCapStyle _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int *capPtr));
 EXTERN XColor *		Tk_GetColor _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1318,6 +1567,9 @@ EXTERN Tk_Cursor	Tk_GetCursorFromData _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, char *source, char *mask,
 			    int width, int height, int xHot, int yHot,
 			    Tk_Uid fg, Tk_Uid bg));
+EXTERN int		Tk_GetDoublePixels _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, CONST char *string,
+			    double *doublePtr));
 EXTERN Tk_Font		Tk_GetFont _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, CONST char *string));
 EXTERN Tk_Font		Tk_GetFontFromObj _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1332,7 +1584,7 @@ EXTERN Tk_Image		Tk_GetImage _ANSI_ARGS_((Tcl_Interp *interp,
 			    ClientData clientData));
 EXTERN ClientData	Tk_GetImageMasterData _ANSI_ARGS_ ((Tcl_Interp *interp,
 			    char *name, Tk_ImageType **typePtrPtr));
-MOVEXT Tk_ItemType *	Tk_GetItemTypes _ANSI_ARGS_((void));
+EXTERN Tk_ItemType *	Tk_GetItemTypes _ANSI_ARGS_((void));
 EXTERN int		Tk_GetJoinStyle _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int *joinPtr));
 EXTERN int		Tk_GetJustify _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1423,27 +1675,55 @@ EXTERN void		Tk_OwnSelection _ANSI_ARGS_((Tk_Window tkwin,
 EXTERN int		Tk_ParseArgv _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, int *argcPtr, char **argv,
 			    Tk_ArgvInfo *argTable, int flags));
-MOVEXT void		Tk_PhotoPutBlock _ANSI_ARGS_((Tk_PhotoHandle handle,
+EXTERN int		Tk_OrientParseProc _ANSI_ARGS_((
+			    ClientData clientData, Tcl_Interp *interp,
+			    Tk_Window tkwin, Arg value,
+			    char *widgRec, int offset));
+EXTERN Arg		Tk_OrientPrintProc _ANSI_ARGS_((
+			    ClientData clientData, Tk_Window tkwin,
+			    char *widgRec, int offset,
+			    Tcl_FreeProc **freeProcPtr));
+EXTERN void		Tk_PhotoPutBlock _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    Tk_PhotoImageBlock *blockPtr, int x, int y,
 			    int width, int height));
-MOVEXT void		Tk_PhotoPutZoomedBlock _ANSI_ARGS_((
+EXTERN void		Tk_PhotoPutZoomedBlock _ANSI_ARGS_((
 			    Tk_PhotoHandle handle,
 			    Tk_PhotoImageBlock *blockPtr, int x, int y,
 			    int width, int height, int zoomX, int zoomY,
 			    int subsampleX, int subsampleY));
-MOVEXT int		Tk_PhotoGetImage _ANSI_ARGS_((Tk_PhotoHandle handle,
+EXTERN int		Tk_PhotoGetImage _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    Tk_PhotoImageBlock *blockPtr));
-MOVEXT void		Tk_PhotoBlank _ANSI_ARGS_((Tk_PhotoHandle handle));
-MOVEXT void		Tk_PhotoExpand _ANSI_ARGS_((Tk_PhotoHandle handle,
+EXTERN void		Tk_PhotoBlank _ANSI_ARGS_((Tk_PhotoHandle handle));
+EXTERN void		Tk_PhotoExpand _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    int width, int height ));
-MOVEXT void		Tk_PhotoGetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
+EXTERN void		Tk_PhotoGetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    int *widthPtr, int *heightPtr));
-MOVEXT void		Tk_PhotoSetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
+EXTERN void		Tk_PhotoSetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    int width, int height));
 EXTERN int		Tk_PointToChar _ANSI_ARGS_((Tk_TextLayout layout,
 			    int x, int y));
+EXTERN int		Tk_PostscriptBitmap _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
+			    Pixmap bitmap, int startX, int startY,
+			    int width, int height));
+EXTERN int		Tk_PostscriptColor _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_PostscriptInfo psInfo, XColor *colorPtr));
 EXTERN int		Tk_PostscriptFontName _ANSI_ARGS_((Tk_Font tkfont,
 			    Tcl_DString *dsPtr));
+EXTERN int		Tk_PostscriptFont _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_PostscriptInfo psInfo, Tk_Font font));
+EXTERN int		Tk_PostscriptImage _ANSI_ARGS_((Tk_Image image,
+			    Tcl_Interp *interp, Tk_Window tkwin,
+			    Tk_PostscriptInfo psinfo, int x, int y,
+			    int width, int height, int prepass));
+EXTERN void		Tk_PostscriptPath _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_PostscriptInfo psInfo, double *coordPtr,
+			    int numPoints));
+EXTERN int		Tk_PostscriptStipple _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
+			    Pixmap bitmap));
+EXTERN double		Tk_PostscriptY _ANSI_ARGS_((double y,
+			    Tk_PostscriptInfo psInfo));
 EXTERN void		Tk_PreserveColormap _ANSI_ARGS_((Display *display,
 			    Colormap colormap));
 EXTERN void		Tk_QueueWindowEvent _ANSI_ARGS_((XEvent *eventPtr,
@@ -1489,6 +1769,14 @@ EXTERN void		Tk_SizeOfBitmap _ANSI_ARGS_((Display *display,
 			    int *heightPtr));
 EXTERN void		Tk_SizeOfImage _ANSI_ARGS_((Tk_Image image,
 			    int *widthPtr, int *heightPtr));
+EXTERN int		Tk_StateParseProc _ANSI_ARGS_((
+			    ClientData clientData, Tcl_Interp *interp,
+			    Tk_Window tkwin, Arg value,
+			    char *widgRec, int offset));
+EXTERN Arg		Tk_StatePrintProc _ANSI_ARGS_((
+			    ClientData clientData, Tk_Window tkwin,
+			    char *widgRec, int offset,
+			    Tcl_FreeProc **freeProcPtr));
 EXTERN int		Tk_StrictMotif _ANSI_ARGS_((Tk_Window tkwin));
 EXTERN void		Tk_TextLayoutToPostscript _ANSI_ARGS_((
 			    Tcl_Interp *interp, Tk_TextLayout layout));
@@ -1524,8 +1812,8 @@ EXTERN int		Tk_BindtagsCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 EXTERN int		Tk_ButtonCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_CanvasCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
+EXTERN int		Tk_CanvasObjCmd _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
 EXTERN int		Tk_CheckbuttonCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 EXTERN int		Tk_ClipboardCmd _ANSI_ARGS_((ClientData clientData,
@@ -1536,12 +1824,12 @@ EXTERN int		Tk_DestroyCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 EXTERN int		Tk_EntryCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_EventCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
+EXTERN int		Tk_EventObjCmd _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
 EXTERN int		Tk_FrameCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		Tk_FocusCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
+EXTERN int		Tk_FocusObjCmd _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]));
 EXTERN int		Tk_FontObjCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int objc,
 			    Tcl_Obj *CONST objv[]));
@@ -1606,7 +1894,47 @@ EXTERN int		Tk_WinfoObjCmd _ANSI_ARGS_((ClientData clientData,
 EXTERN int		Tk_WmCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 
-
+EXTERN int	TkTileParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset));
+EXTERN Arg	TkTilePrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN int	TkOffsetParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value, char *widgRec,
+		    int offset));
+EXTERN Arg	TkOffsetPrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN int	TkStateParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value,
+		    char *widgRec, int offset));
+EXTERN Arg	TkStatePrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN int	TkOrientParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value,
+		    char *widgRec, int offset));
+EXTERN Arg	TkOrientPrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+EXTERN int	TkPixelParseProc _ANSI_ARGS_((
+		    ClientData clientData, Tcl_Interp *interp,
+		    Tk_Window tkwin, Arg value,
+		    char *widgRec, int offset));
+EXTERN Arg	TkPixelPrintProc _ANSI_ARGS_((
+		    ClientData clientData, Tk_Window tkwin,
+		    char *widgRec, int offset,
+		    Tcl_FreeProc **freeProcPtr));
+        
 EXTERN Tcl_Command	Lang_CreateWidget _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window, Tcl_CmdProc *proc,
 			    ClientData clientData,

@@ -482,6 +482,10 @@ VFUNC(int,XSetClipOrigin,V_XSetClipOrigin,_ANSI_ARGS_((Display *, GC, int, int))
 VFUNC(int,XSetCommand,V_XSetCommand,_ANSI_ARGS_((Display *, Window, char **, int)))
 #endif
 
+#ifndef XSetDashes
+VFUNC(int,XSetDashes,V_XSetDashes,_ANSI_ARGS_((Display *, GC, int, const char *, int)))
+#endif
+
 #ifndef XSetErrorHandler
 VFUNC(XErrorHandler,XSetErrorHandler,V_XSetErrorHandler,_ANSI_ARGS_((XErrorHandler)))
 #endif

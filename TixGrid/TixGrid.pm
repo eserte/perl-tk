@@ -20,9 +20,9 @@ BEGIN
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#18$
+$VERSION = '3.022'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#22 $
 
-use Tk 'Ev';
+use Tk qw(Ev $XS_VERSION);
 use Tk::Widget;
 use Carp;
 
@@ -32,7 +32,7 @@ use base  'Tk::Widget';
 
 Construct Tk::Widget 'TixGrid';
 
-bootstrap Tk::TixGrid $Tk::VERSION;
+bootstrap Tk::TixGrid;
 
 sub Tk_cmd { \&Tk::tixGrid }
 

@@ -86,6 +86,8 @@ typedef struct {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile;		/* tiling */
+    GC tileGC;			/* GC for tiling */
 } Message;
 
 /*
@@ -100,6 +102,16 @@ typedef struct {
 
 #define REDRAW_PENDING		1
 #define GOT_FOCUS		4
+
+/*
+ * Custom option for handling "-tile"
+ */
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
 
 /*
  * Information used for argv parsing.
@@ -154,6 +166,8 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_SCALARVAR, "-textvariable", "textVariable", "Variable",
 	DEF_MESSAGE_TEXT_VARIABLE, Tk_Offset(Message, textVarName),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(Message, tile),TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
     {TK_CONFIG_PIXELS, "-width", "width", "Width",
 	DEF_MESSAGE_WIDTH, Tk_Offset(Message, width), 0},
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
@@ -181,6 +195,8 @@ static int		ConfigureMessage _ANSI_ARGS_((Tcl_Interp *interp,
 			    int flags));
 static void		DestroyMessage _ANSI_ARGS_((char *memPtr));
 static void		DisplayMessage _ANSI_ARGS_((ClientData clientData));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  * The structure below defines message class behavior by means of procedures
@@ -265,8 +281,10 @@ Tk_MessageCmd(clientData, interp, argc, argv)
     msgPtr->cursor = None;
     msgPtr->takeFocus = NULL;
     msgPtr->flags = 0;
+    msgPtr->tile = NULL;
+    msgPtr->tileGC = NULL;
 
-    Tk_SetClass(msgPtr->tkwin, "Message");
+    TkClassOption(msgPtr->tkwin, "Message",&argc,&argv);
     TkSetClassProcs(msgPtr->tkwin, &messageClass, (ClientData) msgPtr);
     Tk_CreateEventHandler(msgPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -394,6 +412,28 @@ DestroyMessage(memPtr)
 /*
  *----------------------------------------------------------------------
  *
+ * TileChangedProc
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;			/* Not used */
+{
+    register Message *msgPtr = (Message *) clientData;
+
+    ConfigureMessage(msgPtr->interp , msgPtr, 0, NULL, 0);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * ConfigureMessage --
  *
  *	This procedure is called to process an argv/argc list, plus
@@ -468,8 +508,6 @@ ConfigureMessage(interp, msgPtr, argc, argv, flags)
 
     msgPtr->numChars = strlen(msgPtr->string);
 
-    Tk_SetBackgroundFromBorder(msgPtr->tkwin, msgPtr->border);
-
     if (msgPtr->highlightWidth < 0) {
 	msgPtr->highlightWidth = 0;
     }
@@ -501,11 +539,27 @@ MessageWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
 {
     XGCValues gcValues;
-    GC gc;
+    GC gc = None;
+    Pixmap pixmap;
     Tk_FontMetrics fm;
     Message *msgPtr;
 
     msgPtr = (Message *) instanceData;
+
+    Tk_SetTileChangedProc(msgPtr->tile, TileChangedProc,
+	    (ClientData)msgPtr, (Tk_Item *) NULL);
+
+    if ((pixmap = Tk_PixmapOfTile(msgPtr->tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	gc = Tk_GetGC(msgPtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else if (msgPtr->border != NULL) {
+	Tk_SetBackgroundFromBorder(msgPtr->tkwin, msgPtr->border);
+    }
+    if (msgPtr->tileGC != None) {
+	Tk_FreeGC(msgPtr->display, msgPtr->tileGC);
+    }
+    msgPtr->tileGC = gc;
 
     gcValues.font = Tk_FontId(msgPtr->tkfont);
     gcValues.foreground = msgPtr->fgColorPtr->pixel;
@@ -645,13 +699,33 @@ DisplayMessage(clientData)
     register Message *msgPtr = (Message *) clientData;
     register Tk_Window tkwin = msgPtr->tkwin;
     int x, y;
+    int borderWidth = msgPtr->highlightWidth;
 
     msgPtr->flags &= ~REDRAW_PENDING;
     if ((msgPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
 	return;
     }
-    Tk_Fill3DRectangle(tkwin, Tk_WindowId(tkwin), msgPtr->border, 0, 0,
-	    Tk_Width(tkwin), Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    if (msgPtr->border != NULL) {
+	borderWidth += msgPtr->borderWidth;
+    }
+    if (msgPtr->tileGC != NULL) {
+	if ((Tk_Width(tkwin) > (2 * borderWidth)) && (Tk_Height(tkwin) > (2 * borderWidth))) {
+	    Tk_SetTileOrigin(tkwin, msgPtr->tileGC, 0, 0);
+	    XFillRectangle(msgPtr->display, Tk_WindowId(tkwin), msgPtr->tileGC,
+		    borderWidth, borderWidth, Tk_Width(tkwin) - 2 * borderWidth,
+		    Tk_Height(tkwin) - 2 * borderWidth);
+	    XSetTSOrigin(msgPtr->display, msgPtr->tileGC, 0, 0);
+	}
+    } else {
+	if (msgPtr->relief == TK_RELIEF_FLAT) {
+	    borderWidth = msgPtr->highlightWidth;
+	}
+	Tk_Fill3DRectangle(tkwin, Tk_WindowId(tkwin), msgPtr->border,
+		borderWidth, borderWidth,
+		Tk_Width(tkwin) - 2 * borderWidth,
+		Tk_Height(tkwin) - 2 * borderWidth,
+		0, TK_RELIEF_FLAT);
+    }
 
     /*
      * Compute starting y-location for message based on message size
@@ -663,7 +737,7 @@ DisplayMessage(clientData)
     Tk_DrawTextLayout(Tk_Display(tkwin), Tk_WindowId(tkwin), msgPtr->textGC,
 	    msgPtr->textLayout, x, y, 0, -1);
 
-    if (msgPtr->relief != TK_RELIEF_FLAT) {
+    if (borderWidth > msgPtr->highlightWidth) {
 	Tk_Draw3DRectangle(tkwin, Tk_WindowId(tkwin), msgPtr->border,
 		msgPtr->highlightWidth, msgPtr->highlightWidth,
 		Tk_Width(tkwin) - 2*msgPtr->highlightWidth,
