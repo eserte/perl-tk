@@ -14,7 +14,8 @@ use Tk::MMutil;
 Tk::MMutil::TkExtMakefile(
     'LINKTYPE'  => 'static',
     'INC'	=> "$inc -I.",
-    'SKIP'	=> [qw(static static_lib dynamic dynamic_lib distclean 
+    'OBJECT'    => '$(O_FILES)',
+    'SKIP'	=> [qw(dynamic dynamic_lib distclean 
                        test perldepend xs_c xs_o)],
     'clean'	=> {'FILES' => 'libXpm$(LIB_EXT) *%'}
 );
@@ -27,18 +28,19 @@ install :: all
 
 sub MY::top_targets {
 '
-all :: linkext
+all     :: static
 
-static  ::	libXpm$(LIB_EXT)
+dynamic :: static 
 
-dynamic ::	libXpm$(LIB_EXT)
+config  ::
 
-libXpm$(LIB_EXT): $(O_FILES)
-	$(AR) cr libXpm$(LIB_EXT) $(O_FILES)
-	$(RANLIB) libXpm$(LIB_EXT)
+';
+}
 
-config ::
-
+sub MY::post_constants
+{
+ '
+INST_STATIC=libXpm$(LIB_EXT)
 ';
 }
 

@@ -1,1 +1,2 @@
-tkPack.o: tkPack.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h
+tkPack.o: tkPack.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h \
+ tkInt.h

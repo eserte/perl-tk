@@ -1,95 +1,29 @@
-Copyright (c) 1995,1996 Nick Ing-Simmons. All rights reserved.
+Copyright (c) 1995,1996,1997 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
-derived from those of the orignal Tk4.0 sources. See pTk/license.terms 
+derived from those of the orignal Tk4.2 sources. See pTk/license.terms 
 for details of this license.
 
-This a re-port of a perl interface to Tk4.0p3 (John Ousterhout's production
-release).  This version (Tk400.201) requires perl5.002 or later.
+This a re-port of a perl interface to Tk4.2p2 (John Ousterhout's production
+release).  This version (Tk402.000) requires perl5.003 or later.
+I stronly recommend using perl5.003_99 (gama release) or 5.004 itself.
 
-This version is a patch release.
+THIS VERSION IS AN ALPHA TRACK - I.E. FOR THOSE ASSISTING IN DEBUGGING PERL/TK,
+NOT FOR PRODUCTION USE.  INTERFACES AND CONTENT SUBJECT TO CHANGE AND
+MAY PARTS BE NON-FUNCTIONAL.
 
-It should build with perl5.002 ... perl5.003_11, it has problems
-with 5.003_12 ... 5.003_15.
-5.003_16 works but 5.003_17 does not.
-Issues with late _xx releases are to do with closures.
-I will do my best to make sure perl5.004 works ...
+Tk400.202 is the current "production" release - see VERSIONS
 
-Note particularly : 
-
-* Changed Tk::Menu::AddItems to take an array of items rather than 
-  a reference to an array of items - this makes calling it directly a little
-  easier *BUT IS INCOMPATIBLE* if it was called directly.
-
-* Configuring an Optionmenu's -options now replaces existing options
-  rather than appending.
-
-See Changes for more detail of what is different.
-
-Although this is a production release it should be noted that 
-some sub-modules are not as "finished" as others.
-The interfaces to Tcl/Tk's "core" widgets Text, Entry, Canvas, Button,
-RadioButton, Checkbutton, Scale, Scrollbar, Listbox, Menu, Menubutton are stable.
-As are core Bitmap, Photo and Pixmap image types.
-The "Composite" or "Mega Widget" interface is also stable but lacking 
-in some features.
-
-The less finished parts include:
-   - Tk::HTML needs libwww package from CPAN which in turn requires the 
-     libnet package. It will eventually be improved as libwww improves.
-   - Tk::IO requires the 'IO::' package which was first introduced into
-     perl distribution in 5.003_01. It is available in CPAN archive for 
-     earlier releases. Tk::IO is likely to change as perl's IO evolves, and with
-     tk4.1  changes.
-   - Tk::Ghostview postscript previewer is still experimental, I use a
-     "Display Postscript" extension which I may release at some point.
-   - Tk::Pod should be changed to use new Pod:: module(s) from CPAN.
-   - Tk::DragDrop works on Solaris (and SunOS to some extent)
-     it should really be based on a standard.
-   - Tk::Xlib will evolve further if tk4.1's Win32/Mac ports permit.
-   - Most of the Tix stuff only has C code ported, the many of the tcl parts still
-     needing converting to perl.
-       - HList works reasonably well
-       - There is a reasonably complete port of NoteBook and Balloon now.
-       - BrowseEntry is a simplified combo-box
-       - InputO has not been tested. 
-   - There is an intent to add an object oriented interface to Canvas items,
-     (existing interface will still work).
-   - There are partially completed things like NNTP News reader which 
-     may be finished one day.
-   - There are point-demo and test scripts in distribution 
-
-See INSTALL for how to build it.
-
-The two Camel/X 'logo' GIFs were produced by :
-
-Grafix, Sussex, UK, +44-1293-886725
-
-For a very reasonable fee. We have rights to distribute them.
-
-There is a USNET newsgroup comp.lang.perl.tk for discussing all 
-aspects of perl/Tk.
-
-Unfortunately Nick does not get much chance to read the newsgroup,
-and there are significant lags in propoagating news articles, 
-so there is also a mailing list. Mail sent to the mailing list 
-(eventually) shows up on the news groups so 'lurking' on the 
-newsgroup is fine to see everything.
-
-If you are really keen or want to help you may wish to subscribe to the
-mailing list.
-
-To do so send mail to majordomo@lists.Stanford.EDU with 'subscribe ptk'
-in the body of the message.
-
-e.g. on normal UNIX machine:
-
-echo 'subscribe ptk' | mail majordomo@lists.Stanford.EDU
-
-Please don't send subscribe requests to the list itself.
-
-Sending problems to ptk@lists.Stanford.EDU is the best way 
-to get answers.
+Tk402.000 should build and run on Windows NT using Visual C++ and perl5.003_99.
 
 
+Goal of 402.* is to retain perl-level API as it exists in Tk400.200
+production release.
+
+However as internals have changed I am uncertain that everything "works"
+correctly.  The movement of event loop out of tk4.1 into Tcl was 
+particularly messy to move "back".
+
+I hope to have an event loop in perl and or XSUB code for 402's production
+release. 

@@ -12,7 +12,7 @@ sub mkTextBind {
     $w->iconname('Text Bindings');
     my $w_ok = $w->Button(-text => 'OK', -width => 8, -command => ['destroy', $w]);
     my $w_t = $w->Text(-setgrid => 'true', -width => '60', -height => '28',
-			-font => '-Adobe-Helvetica-Bold-R-Normal-*-120-*-*-*-*-*-*');
+			-font => '-Adobe-Helvetica-Bold-R-Normal--*-120-*-*-*-*-*-*');
     my $w_s = $w->Scrollbar(-command => ['yview', $w_t]);
     $w_t->configure(-yscrollcommand => ['set', $w_s]);
     $w_ok->pack(-side => 'bottom');

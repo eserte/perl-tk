@@ -44,7 +44,7 @@ sub mkPlot {
     $w->title('Plot Demonstration');
     $w->iconname('Plot');
 
-    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal-*-180-*-*-*-*-*-*', -wraplength => '4i',
+    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '4i',
 			     -justify => 'left', -text => 'This window displays a canvas widget containing a simple ' .
 			     '2-dimensional plot.  You can doctor the data by dragging any of the points with mouse ' .
 			     'button 1.');
@@ -54,7 +54,7 @@ sub mkPlot {
     $c->pack(-side => 'top', -fill => 'x');
     $w_ok->pack(-side => 'bottom', -pady => '5');
 
-    my $font = '-Adobe-helvetica-medium-r-*-180-*-*-*-*-*-*';
+    my $font = '-Adobe-helvetica-medium-r-Normal--*-180-*-*-*-*-*-*';
 
     $c->create('line', 100, 250, 400, 250, -width => 2);
     $c->create('line', 100, 250, 100, 50, -width => 2);

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Derived;
@@ -7,7 +7,49 @@ require Tk::Configure;
 use strict;
 use Carp;
 
+=head1 NAME
+
+Tk::Derived - Base class for widgets derived from others
+
+=head1 SYNOPSIS
+
+  package Tk::Whatever;
+  require Tk::Something; 
+  require Tk::Derived;
+  @ISA = qw(Tk::Derived Tk::Something);
+
+  sub Populate
+  {
+   my ($cw,$args) = @_;
+   ...
+   $cw->SUPER::Populate($args);
+   $cw->ConfigSpecs(...);
+   ...
+  }
+
+=head1 DESCRIPTION 
+
+Tk::Derived is used with perl5's multiple inheritance to override some
+methods normally inherited from Tk::Widget.
+
+Tk::Derived should precede any Tk widgets in the class's @ISA.
+
+Tk::Derived's main purpose is to apply wrappers to C<configure> and C<cget>
+methods of widgets to allow the derived widget to add to or modify behaviour
+of the configure options supported by the base widget.
+
+The derived class should normally override the C<Populate> method provided
+by Tk::Derived and call C<ConfigSpecs> to declare configure options.
+
+The public methods provided by Tk::Derived are as follows:
+
+=over 4
+
+=cut
+
 $Tk::Derived::Debug = 0;
+
+use Tk qw(NORMAL_BG BLACK);
 
 sub Subwidget 
 {
@@ -97,7 +139,7 @@ sub Subconfigure
     }
    elsif ($widget eq 'SELF')
     {
-     push(@subwidget,Tk::Configure->new('Tk::configure', 'Tk::cget', $cw,@arg))
+     push(@subwidget,Tk::Configure->new('configure_self', 'cget_self', $cw,@arg))
     }
    elsif ($widget eq 'PASSIVE') 
     {
@@ -134,7 +176,8 @@ sub _callback
 {
  my ($cw,$opt,$val) = @_;
  $cw->BackTrace("Wrong number of args to configure") unless (@_ == 3);
- $cw->{Configure}{$opt} = Tk::Callback->new($val);
+ $val = Tk::Callback->new($val) if defined $val;
+ $cw->{Configure}{$opt} = $val;
 }
 
 sub cget
@@ -232,16 +275,23 @@ sub configure
      my $old = $$var;
      my $subwidget;
      $$var = $val;
+     my $accepted = 0;
+     my $error = "No widget handles $opt";
      foreach $subwidget ($cw->Subconfigure($opt))
       {
        next unless (defined $subwidget);
        eval {local $SIG{'__DIE__'};  $subwidget->configure($opt => $val) };
        if ($@)
         {
-         $cw->BackTrace($@) if ($Tk::Derived::Debug);
+         $error = $@; 
          undef $@;
         }
+       else
+        {
+         $accepted = 1;
+        }
       }
+     $cw->BackTrace($error) unless ($accepted);
      $val = $$var;
      $changed{$opt} = $val if (!defined $old || !defined $val || $old ne $val);
     }
@@ -257,7 +307,6 @@ sub ConfigDefault
  $cw->BackTrace("Bad args") unless (defined $args && ref $args eq 'HASH');
 
  my $specs = $cw->ConfigSpecs;
- my $opt; 
  # Should we enforce a Delagates(DEFAULT => )  as well ?
  $specs->{'DEFAULT'} = ['SELF'] unless (exists $specs->{'DEFAULT'});
  $specs->{'-cursor'} = ['SELF',undef,undef,undef] unless (exists $specs->{'-cursor'});
@@ -271,18 +320,19 @@ sub ConfigDefault
   {
    my (@bg) = ('SELF');
    push(@bg,'CHILDREN') if $children;
-   $specs->{'-background'} = [\@bg,'background','Background',undef]; 
+   $specs->{'-background'} = [\@bg,'background','Background',NORMAL_BG]; 
   }
  unless (exists($specs->{'-foreground'}))
   {
    my (@fg) = ('PASSIVE');
    unshift(@fg,'CHILDREN') if $children;
-   $specs->{'-foreground'} = [\@fg,'foreground','Foreground',undef];
+   $specs->{'-foreground'} = [\@fg,'foreground','Foreground',BLACK];
   }
  $cw->ConfigAlias(-fg => '-foreground', -bg => '-background');
 
  # Pre-scan args for aliases - this avoids defaulting
  # options specified via alias
+ my $opt; 
  foreach $opt (keys %$args)
   {
    my $info = $specs->{$opt};
@@ -310,9 +360,11 @@ sub ConfigDefault
           {
            # Only propagate if a default is supplied
            $args->{$opt} = $info->[3];
-           # maybe should convert -fred info 'fred','Fred' here 
+           # maybe should convert -fred into 'fred','Fred' here 
            if (defined $info->[1] && defined $info->[2])
             {
+             # Should we do this on the Subconfigure widget instead?
+             # to match *Entry.Background 
              my $db = $cw->optionGet($info->[1],$info->[2]);
              $args->{$opt} = $db if (defined $db);
             }
@@ -322,6 +374,10 @@ sub ConfigDefault
     }
   }
 }
+
+=item -E<gt>ConfigSpecs(-I<key> =E<gt> [I<kind>, I<name>, I<Class>, I<default], ...)
+
+=cut 
 
 sub ConfigSpecs
 {
@@ -367,6 +423,7 @@ sub ConfigAlias
  $cw->BackTrace("Odd number of args to ConfigAlias") if (@_);
 }
 
+
 sub Delegate
 {
  my ($cw,$method,@args) = @_;
@@ -396,4 +453,34 @@ sub ConfigChanged
  my ($cw,$args) = @_;
 }       
 
+sub Advertise
+{
+ my ($cw,$name,$widget)  = @_;
+ confess "No name" unless (defined $name);
+ croak "No widget" unless (defined $widget);
+ $cw->{SubWidget} = {} unless (exists $cw->{SubWidget});
+ $cw->{SubWidget}{$name} = $widget;              # advertise it
+ return $widget;
+}
+
+sub Component
+{
+ my ($cw,$kind,$name,%args) = @_;
+ $args{'Name'} = "\l$name" if (defined $name && !exists $args{'Name'});
+ # my $pack = delete $args{'-pack'};
+ my $delegate = delete $args{'-delegate'};
+ my $w = $cw->$kind(%args);            # Create it
+ # $w->pack(@$pack) if (defined $pack);
+ $cw->Advertise($name,$w) if (defined $name);
+ $cw->Delegates(map(($_ => $w),@$delegate)) if (defined $delegate); 
+ return $w;                            # and return it
+}
+
 1;
+__END__
+
+=back
+
+=cut
+
+

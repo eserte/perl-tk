@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
@@ -8,9 +8,6 @@ require DynaLoader;
 use strict;
 
 use Carp;
-
-#my $tk_dir;
-#{ ($tk_dir) = __FILE__  =~ m#^(.*)/Widget\.pm$# }
 
 @Tk::Widget::ISA = qw(DynaLoader Tk);
 
@@ -188,13 +185,17 @@ sub new
 sub DelegateFor
 {
  my ($w,$method) = @_;
- return $w unless (exists $w->{Delegates});
- my $delegate = $w->{Delegates};
- my $widget = $delegate->{$method};
- $widget = $delegate->{DEFAULT} unless (defined $widget);
- $widget = $w->Subwidget($widget) if (defined $widget && !ref $widget);
- $widget = $w unless (defined $widget);
- return $widget;
+ while(exists $w->{Delegates})
+  {
+   my $delegate = $w->{Delegates};
+   my $widget = $delegate->{$method};
+   $widget = $delegate->{DEFAULT} unless (defined $widget);
+   $widget = $w->Subwidget($widget) if (defined $widget && !ref $widget);
+   last unless (defined $widget);
+   last if $widget == $w;
+   $w = $widget;
+  }
+ return $w;
 }
 
 sub Delegates
@@ -233,7 +234,6 @@ sub Construct
  *{$class.'::Is'.$name} = \&True;
 }
 
-
 sub IS
 {
  return (defined $_[1]) && $_[0] == $_[1];
@@ -265,7 +265,7 @@ sub AUTOLOAD
  eval {local $SIG{'__DIE__'}; require $name};
  if ($@)
   {
-   croak $@ unless ($@ =~ /Can't locate $name/);
+   croak $@ unless ($@ =~ /Can't locate \Q$name\E/);
    my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
    if ($package eq 'Tk::Widget' && $method ne '__ANON__')
     {
@@ -312,6 +312,27 @@ sub AUTOLOAD
 
 *isa = \&True if ($] <= 5.003);
 
+*configure_self = \&Tk::configure;
+*cget_self = \&Tk::cget;
+
+sub _Destroyed
+{ 
+ my $w = shift;
+ my $a = delete $w->{'_Destroy_'};
+ return unless ref $a;
+ while (@$a)
+  {
+   eval {local $SIG{'__DIE__'}; pop(@$a)->Call };
+  }
+}
+
+sub privateData
+{
+ my $w = shift;
+ my $p = shift || caller;
+ $w->{$p} ||= {};
+}
+
 1;                     
 
 __END__
@@ -337,17 +358,6 @@ sub focusSave
  my $focus = $w->focusCurrent;
  return sub {} if (!defined $focus);
  return sub { eval {local $SIG{'__DIE__'};  $focus->focus } };
-}
-
-sub _Destroyed
-{ 
- my $w = shift;
- my $a = delete $w->{'_Destroy_'};
- return unless ref $a;
- while (@$a)
-  {
-   eval {local $SIG{'__DIE__'}; pop(@$a)->Call };
-  }
 }
 
 sub OnDestroy
@@ -849,8 +859,30 @@ sub Callback
 
 sub packAdjust
 {
+ print 'packAdjust(',join(',',@_),")\n";
  require Tk::Adjuster;
- Tk::Adjuster->new(@_);
+ my ($w,%args) = @_;
+ my $delay = delete($args{'-delay'});
+ $delay = 1 unless (defined $delay);
+ $w->pack(%args);
+ %args = $w->packInfo;
+ my $adj = Tk::Adjuster->new($args{'-in'},
+            -widget => $w, -delay => $delay, -side => $args{'-side'});
+ $adj->packed($w,%args);
+ return $w;
+}
+
+sub gridAdjust
+{
+ require Tk::Adjuster;
+ my ($w,%args) = @_;
+ my $delay = delete($args{'-delay'});
+ $delay = 1 unless (defined $delay);
+ $w->grid(%args);
+ %args = $w->gridInfo;
+ my $adj = Tk::Adjuster->new($args{'-in'},-widget => $w, -delay => $delay);
+ $adj->gridded($w,%args);
+ return $w;
 }
 
 sub place
@@ -936,6 +968,13 @@ sub Scrolled
 sub Populate
 {
  my ($cw,$args) = @_;
+}
+
+sub ForwardEvent
+{
+ my $self = shift;
+ my $to   = shift;
+ $to->PassEvent($self->XEvent);
 }
 
 

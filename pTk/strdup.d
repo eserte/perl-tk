@@ -1,1 +1,1 @@
-strdup.o: strdup.c tkPort.h
+strdup.o: strdup.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h

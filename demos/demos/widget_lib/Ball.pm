@@ -21,7 +21,7 @@ require 5.002;
 use English;
 use Tk::Canvas;
 use Tk::Widget;
-use Tk qw(DoOneEvent);
+use Tk qw(DoOneEvent DONT_WAIT);
 Construct Tk::Canvas 'Ball';
 use strict;
 
@@ -134,7 +134,7 @@ sub move_all_balls {
 
     foreach (@{$BALLS{Ball->get_canvas_hash($canvas)}->{'BALLS'}}) {
         $ARG->move_one_ball($speed_ratio);
-        DoOneEvent(1);		# be kind and process XEvents if they arise
+        DoOneEvent(DONT_WAIT);		# be kind and process XEvents if they arise
     }
 
 } # end move_all_balls

@@ -229,14 +229,14 @@ sub Populate {
     $cw->ConfigSpecs(-bitmap	=> [$bitmap, undef, undef, 'hourglass'],
 		     -foreground=> [[$txt1,$txt2], 'foreground','Foreground','black'],
 		     -background=> ['DESCENDANTS', 'background', 'Background',undef],
-		     -font	=> [$txt1,'font','Font','-Adobe-Helvetica-Bold-R-Normal--*-180-*'],
+		     -font	=> [$txt1,'font','Font','-Adobe-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*'],
 		     -canceltext=> ['PASSIVE', undef, undef, 'Cancel'],
 		     -cancelroutine=> ['PASSIVE', undef, undef, undef],
 		     -txt1	=> ['PASSIVE', undef, undef, undef],
 		     -txt2	=> ['PASSIVE',undef,undef,undef],
 		     -resizeable => ['PASSIVE',undef,undef,1]);
 }
-
+                                                     
 sub Show {
     ## Do last minute configuration and Show the dialog
     my($wd, @args) = @_;

@@ -1,43 +1,31 @@
-%.c : mTk/%.c ./Tcl-pTk 
-	$(PERL) ./Tcl-pTk $< $@
-
-%.h : mTk/%.h ./Tcl-pTk 
-	$(PERL) ./Tcl-pTk $< $@
-
-%.c : Tk/%.c ./Tcl-pTk
-	$(PERL) ./Tcl-pTk $< $@
-
-
-%.h : Tk/%.h ./Tcl-pTk
-	$(PERL) ./Tcl-pTk $< $@
-
-%.c : Tix/%.c ./Tcl-pTk
-	$(PERL) ./Tcl-pTk $< $@
-
-
-%.h : Tix/../include/%.h ./Tcl-pTk
-	$(PERL) ./Tcl-pTk $< $@
-
 include Makefile
 
 # Auto generation of Xlib.h disabled for now
 #Xlib.h : config/Xdummy.c mkXinfo $(C_FILES) $(wildcard xpm/*.c)
 #	$(PERL) mkXinfo Xlib.h -I . $(DEFINE) $(INC)  config/Xdummy.c 
 
+N_FILES = $(subst $(OBJ_EXT),.n,$(O_FILES))
+
+.SUFFIXES : .n
+
+.c.n :
+	$(CCCMD) $(CCCDLFLAGS) -I$(PERL_INC) -o $@ -DNO_VTABLES $(DEFINE) $(GCCOPT) $*.c
+
+nfiles :
+	echo $(N_FILES)
+
 c     : need counts 
 	counts *.c | sort -rn > c
 
-need  : GNUmakefile $(LIBOBJS) ../tkGlue.o 
-	-ld -r -o /tmp/junk $(LIBOBJS) ../tkGlue.o
-	nm -p /tmp/junk >$@
+need  : GNUmakefile $(N_FILES) ../tkGlue.o 
+	-ld -r -o /tmp/junk $(N_FILES) ../tkGlue.o
+	nm -p /tmp/junk | grep ' [A-Z] ' >$@
 
-source : $(C_FILES) $(notdir $(wildcard mTk/*.[ch]))
+clean ::
+	rm -f *.n 
 
 $(wildcard *.t) : mkVFunc
 
-Methods.def : mkmethods $(C_FILES)
-	$(PERL) mkmethods $@ $(C_FILES)
-
-config :: Methods.def
-
 -include $(wildcard *.d)
+
+

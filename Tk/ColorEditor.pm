@@ -476,8 +476,9 @@ sub Populate
         -borderwidth  => 2,
         -textvariable => \$cw->{'Entry'},
         -width        => 10,
-        -font         => "-Adobe-Courier-Medium-R-Normal-*-120-*-*-*-*-*-*",
-    );
+        -font         => "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*"
+    );                   
+
     $nameLabel->pack(-in => $middle_middle[3], -side => 'left');
     $name->pack(
         -in     => $middle_middle[3],
@@ -505,8 +506,9 @@ sub Populate
     my $value = $cw->Label(
         -textvariable => \$cw->{'color'}, 
         -width        => 13,
-        -font         => '-Adobe-Courier-Medium-R-Normal-*-120-*-*-*-*-*-*',
-    );
+        -font         => "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*"
+    );                   
+
     $swatch->pack(
         -in     => $middle_right,
         -side   => 'top', 

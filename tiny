@@ -1,17 +1,8 @@
 #!/usr/local/bin/perl -w
-
+use strict;
 use Tk;
-use Tk::Xrm;
 
-{
- my $top = MainWindow->new();
- my $w = $top->Button(-text => 'Quit',-command => ['destroy',$top])->pack;
- while (MainWindow->Count)
-  {
-   Tk->DoOneEvent;
-  }
-}
-print "done:  Enter text:";
-print "Text is: ",scalar(<STDIN>),"\n";
-
+my $mw = MainWindow->new;
+$mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;
+MainLoop;
 

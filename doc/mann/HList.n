@@ -354,7 +354,7 @@ with the data it represents.
 Specifies the type of display item to be display for the new list
 entry. \fBtype\fR must be a valid display item type. Currently the
 available display item types are \fBimagetext\fR, \fBtext\fR, and
-$widget\fR. If this option is not specified, then by default the
+\bwindow\fR. If this option is not specified, then by default the
 display item type specified by the \fB\-itemtype\fR widget option is
 created.
 '

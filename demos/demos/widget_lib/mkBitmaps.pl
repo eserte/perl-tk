@@ -38,7 +38,7 @@ sub mkBitmaps  {
     $w->title('Bitmap Demonstration');
     $w->iconname('Bitmaps');
 
-    my $w_msg = $w->Label(-font => '-Adobe-times-medium-r-normal--*-180*-*-*-*-*-*', -wraplength => '4i', 
+    my $w_msg = $w->Label(-font => '-Adobe-times-medium-r-normal--*-180-*-*-*-*-*-*', -wraplength => '4i', 
 			   -justify => 'left', -text => 'This window displays all of Tk\'s built-in bitmaps, along with the ' .
 			   'names you can use for them in Perl scripts.  Click the "OK" button when you\'ve seen enough.');
     my $w_frame = $w->Frame();

@@ -1,10 +1,6 @@
-This is Tk400.200
+This is Tk402.000
 
-The name by the way is Tcl/Tk's 4.0 with three digits for me to mess with.
-
-I did think of 'Tk-4.00_200' but it looks a bit long.
-
-And Tk400.200 > Tk-b12 style I used for beta releases.
+The name by the way is Tcl/Tk's 4.2 with three digits for me to mess with.
 
 I hope Sun don't get through more than 100 revisions so two sub-version digits
 will be enough for them.

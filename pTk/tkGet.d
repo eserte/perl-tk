@@ -1,1 +1,1 @@
-tkGet.o: tkGet.c tkInt.h tk.h Lang.h tkPort.h tkConfig.h
+tkGet.o: tkGet.c tkInt.h tk.h Lang.h tkConfig.h tkPort.h tkUnixPort.h

@@ -1,1 +1,1 @@
-tixError.o: tixError.c tkPort.h tkConfig.h tk.h Lang.h
+tixError.o: tixError.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h

@@ -63,9 +63,9 @@ sub arrowSetup {
     $c->create('text', $v{'x2'}-5*$v{'b'}, $tmp+5, -text => $v{'b'}, -anchor => 'n');
 
     $c->create('text', $v{'x1'}, 310, -text => "\"-width\" =>  $v{'width'}", -anchor => 'w',
-	       -font => '-Adobe-Helvetica-Medium-R-Normal-*-180-*-*-*-*-*-*');
+	       -font => '-Adobe-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
     $c->create('text', $v{'x1'}, 330, -text => "\"-arrowshape\" =>  [$v{'a'},  $v{'b'},  $v{'c'}]", -anchor => 'w',
-	       -font => '-Adobe-Helvetica-Medium-R-Normal-*-180-*-*-*-*-*-*');
+	       -font => '-Adobe-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
 
     $v{'count'}++;
 
@@ -159,7 +159,7 @@ sub mkArrow {
     $w->title('Arrowhead Editor Demonstration');
     $w->iconname('Arrow');
 
-    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal-*-180-*-*-*-*-*-*', -wraplength => '5i', 
+    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '5i', 
 				-justify => 'left', -text => 'This widget allows you to experiment with different widths ' .
 				'and arrowhead shapes for lines in canvases.  To change the line width or the shape of the ' .
 				'arrowhead, drag any of the three boxes attached to the oversized arrow.  The arrows on ' .

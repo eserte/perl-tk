@@ -3,6 +3,8 @@
 require 5.002;
 use Ball;
 
+use Tk qw(:eventtypes);
+
 use subs qw(ClearMsg DoSingleStep NotDone ShowMsg SimStart SimStop mkmb);
 
 my(@menu_button_list, $quit_flag, $quit_code,
@@ -163,7 +165,7 @@ sub bounce {
 	    $BOUNCE->destroy;
 	    return;
 	}
-	DoOneEvent($bounce_running ? 1 : 0);   
+	DoOneEvent($bounce_running ? DONT_WAIT : ALL_EVENTS);   
 	DoSingleStep($canvas) if $bounce_running;
     }
 

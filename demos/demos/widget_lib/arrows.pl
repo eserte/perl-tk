@@ -249,11 +249,11 @@ sub arrow_setup {
 
     $c->create('text', $v->{'x1'}, 310, -text => "-width =>  $v->{'width'}",
 	       -anchor => 'w',
-	       -font => '-*-Helvetica-Medium-R-Normal-*-180-*-*-*-*-*-*');
+	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
     $c->create('text', $v->{'x1'}, 330,
 	       -text => "-arrowshape =>  [$v->{'a'}, $v->{'b'}, $v->{'c'}]",
 	       -anchor => 'w',
-	       -font => '-*-Helvetica-Medium-R-Normal-*-180-*-*-*-*-*-*');
+	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
 
     $v->{'count'}++;
 

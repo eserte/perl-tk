@@ -1,4 +1,4 @@
-package X;
+package Tk::X;
 
 use strict;
 use Carp;
@@ -383,7 +383,7 @@ sub AUTOLOAD {
     goto &$AUTOLOAD;
 }
 
-bootstrap X $VERSION;
+bootstrap Tk::X $Tk::VERSION;
 
 # Preloaded methods go here.
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995,1996 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -13,6 +13,12 @@
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
 #include "pTk/tkXrm.h"
+#include "pTk/default.h"
+
+#ifdef __WIN32__
+#include "pTk/tkWinInt.h"
+#endif
+
 #include "tkGlue.h"
 #include "leak_util.h"
 
@@ -37,7 +43,96 @@ SV *sv;
 
 #define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
-Tk_Window mainWindow = NULL;
+#define Const_DONT_WAIT()     (TCL_DONT_WAIT)
+#define Const_WINDOW_EVENTS() (TCL_WINDOW_EVENTS)
+#define Const_FILE_EVENTS()   (TCL_FILE_EVENTS)
+#define Const_TIMER_EVENTS()  (TCL_TIMER_EVENTS)
+#define Const_IDLE_EVENTS()   (TCL_IDLE_EVENTS)
+#define Const_ALL_EVENTS()    (TCL_ALL_EVENTS)
+
+#ifndef SELECT_FG
+/* Should really depend on color/mono */
+#define SELECT_FG BLACK
+#endif
+
+#define Const_NORMAL_BG()     (NORMAL_BG)
+#define Const_ACTIVE_BG()     (ACTIVE_BG)
+#define Const_SELECT_BG()     (SELECT_BG)
+#define Const_SELECT_FG()     (SELECT_FG)
+#define Const_TROUGH()        (TROUGH)
+#define Const_INDICATOR()     (INDICATOR)
+#define Const_DISABLED()      (DISABLED)
+#define Const_BLACK()         (BLACK)
+#define Const_WHITE()         (WHITE)
+
+static XFontStruct * TkwinFont _((Tk_Window tkwin, Tk_Uid name));
+
+static XFontStruct *
+TkwinFont(tkwin,name)
+Tk_Window tkwin;
+Tk_Uid name;
+{
+ XFontStruct *font = NULL;
+ Tcl_Interp *interp;
+ if (TkToWidget(tkwin,&interp) && interp)
+  font = Tk_GetFontStruct(interp, tkwin, name);
+ if (!font)
+  croak("Cannot get font");
+ return font;
+}
+
+#define Tk_FontAscent(tkwin,name)  (TkwinFont(tkwin,name)->ascent)
+#define Tk_FontDescent(tkwin,name) (TkwinFont(tkwin,name)->descent)
+
+
+MODULE = Tk	PACKAGE = Tk	PREFIX = Const_
+PROTOTYPES: ENABLE
+
+char *
+Const_BLACK()
+
+char *
+Const_WHITE()
+
+char *
+Const_NORMAL_BG()
+
+char *
+Const_ACTIVE_BG()
+
+char *
+Const_SELECT_BG()
+
+char *
+Const_SELECT_FG()
+
+char *
+Const_TROUGH()
+
+char *
+Const_INDICATOR()
+
+char *
+Const_DISABLED()
+
+
+IV
+Const_DONT_WAIT()     
+
+IV
+Const_WINDOW_EVENTS() 
+
+IV
+Const_FILE_EVENTS()
+
+IV
+Const_TIMER_EVENTS()  
+
+IV
+Const_IDLE_EVENTS()   
+
+IV
+Const_ALL_EVENTS()    
 
 MODULE = Tk	PACKAGE = Tk::Xrm	PREFIX = Xrm_
 PROTOTYPES: DISABLE
@@ -46,47 +141,20 @@ void
 Xrm_import(class,...)
 char *	class
 
+
+
 MODULE = Tk	PACKAGE = MainWindow
 
+PROTOTYPES: DISABLE
 
 int
 Count(self)
 SV *	self
 CODE:
  {
-  ST(0) = sv_2mortal(newSViv(tk_NumMainWindows));
+  ST(0) = sv_2mortal(newSViv(Tk_GetNumMainWindows()));
  }
 
-
-SV *
-CreateMainWindow(name, Class, ...)
-	char *		name
-	char *		Class
-    CODE:
-       {
-        Tcl_Interp *interp = Tcl_CreateInterp(); 
-        char *display = NULL;
-        int  sync     = 0; 
-        RETVAL = &sv_undef; 
-        
-        if (items > 3)
-         display = (char *)SvPV(ST(2),na);
-
-        if (items > 4)
-          sync = (int)SvIV(ST(3));
-
-        if ((mainWindow = Tk_CreateMainWindow(interp, display, name, Class)))
-         {
-          if (sync)
-           XSynchronize(Tk_Display(mainWindow), True);
-
-          RETVAL = SvREFCNT_inc(TkToWidget(mainWindow,NULL));
-         }
-        else 
-         croak(Tcl_GetResult(interp));
-       }
-    OUTPUT:
-        RETVAL
 
 MODULE = Tk	PACKAGE = Leak
 
@@ -152,9 +220,9 @@ double
 timeofday()
 CODE:
 {
- struct timeval t;
- Tk_timeofday(&t);
- RETVAL = t.tv_sec + (double) t.tv_usec/1e6;
+ Tcl_Time t;
+ TclpGetTime(&t);
+ RETVAL = t.sec + (double) t.usec/1e6;
 }
 OUTPUT:
  RETVAL
@@ -218,35 +286,6 @@ Tk_MainLoop(class = "Tk")
 char *	class
 CODE:
  Tk_MainLoop(); 
-
-int
-Tk_DoOneEvent(...)
-CODE:
- {
-  int flags = 0;
-  if (items)
-   {int i;
-    for (i=0; i < items; i++)
-     {
-      SV *sv = ST(i);
-      if (SvIOK(sv) || looks_like_number(sv))
-       flags |= SvIV(sv);
-      else if (!sv_isobject(sv))
-       {STRLEN l;
-        char *s = SvPV(sv,l);
-        if (strcmp(s,BASEEXT))
-         {
-          /* string to integer lookup here */
-          croak("Usage [$object->]DoOneEvent([flags]) got '%s'\n",s);
-         }
-       }
-     }
-   }
-  RETVAL = Tk_DoOneEvent(flags);
- }
-OUTPUT:
-  RETVAL
-
 
 MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = Tk_
 
@@ -600,11 +639,58 @@ OUTPUT:
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tcl_
 
 void
+Tcl_Exit(status = 0)
+int	status
+
+void
 Tcl_AddErrorInfo(interp,message)
 Tcl_Interp *	interp
 char *		message
 
+void
+Tcl_BackgroundError(interp)
+Tcl_Interp *	interp
+
+int
+Tcl_DoOneEvent(...)
+CODE:
+ {
+  int flags = 0;
+  if (items)
+   {int i;
+    for (i=0; i < items; i++)
+     {
+      SV *sv = ST(i);
+      if (SvIOK(sv) || looks_like_number(sv))
+       flags |= SvIV(sv);
+      else if (!sv_isobject(sv))
+       {STRLEN l;
+        char *s = SvPV(sv,l);
+        if (strcmp(s,BASEEXT))
+         {
+          /* string to integer lookup here */
+          croak("Usage [$object->]DoOneEvent([flags]) got '%s'\n",s);
+         }
+       }
+     }
+   }
+  RETVAL = Tcl_DoOneEvent(flags);
+ }
+OUTPUT:
+  RETVAL
+
+
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
+
+IV
+Tk_FontAscent(win,name)
+Tk_Window	win
+Tk_Uid		name
+
+IV
+Tk_FontDescent(win,name)
+Tk_Window	win
+Tk_Uid		name
 
 void
 abort()
@@ -614,15 +700,15 @@ DebugHook(arg)
 SV *	arg
 
 void
-Tk_BackgroundError(interp)
-Tcl_Interp *	interp
-
-void
 ClearErrorInfo(win)
 SV *	win
 
 BOOT:
  {
+#ifdef WIN32
+  /* Force inclusion of DllMain() */ 
+  TkWin32DllPresent(); 
+#endif
   Boot_Glue();
  } 
 

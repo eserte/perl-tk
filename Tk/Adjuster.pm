@@ -77,6 +77,7 @@ use AutoLoader;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
 
+Construct Tk::Widget qw(Adjuster);
 
 # We cannot do this :
 
@@ -86,40 +87,24 @@ require Tk::Frame;
 # will be delegated and hierachy gets turned inside-out
 # So packAdjust is autoloaded in Widget.pm
 
-sub new
+sub packed
 {
- my ($class,$s,%args) = @_;
- my $delay = delete($args{'-delay'});
- $delay = 1 unless (defined $delay);
- $s->pack(%args);
- %args = $s->packInfo;
- my $w = $class->SUPER::new($args{'-in'},
-                            -widget => $s, 
-                            -delay => $delay,
-                            -side => $args{'-side'});
+ my ($w,$s,%args) = @_;
  delete $args{'-before'};
  $args{'-expand'} = 0;
  $args{'-after'} = $s;
  $args{'-fill'} = (($w->vert) ? 'y' : 'x');
-
  $w->pack(%args);
- my $cursor;                                                                           
- if ($w->vert)                                                                  
-  {                                                                                    
-   $cursor = 'sb_h_double_arrow';                                                      
-   $w->{'sep'}->configure(-width => 2, -height => 10000);                              
-  }                                                                                    
- else
-  {                                                                                    
-   $cursor = 'sb_v_double_arrow';                                                      
-   $w->{'sep'}->configure(-height => 2, -width => 10000);                              
-  }                                                                                    
- my $x;                                                                                
- foreach $x ($w->{'sep'},$w->{'but'})                                                  
-  {                                                                                    
-   $x->configure(-cursor => $cursor);                                                  
-  }                                                                                    
- return $s;
+}
+
+sub gridded
+{
+ my ($w,$s,%args) = @_;
+ # delete $args{'-before'};
+ # $args{'-expand'} = 0;
+ # $args{'-after'} = $s;
+ # $args{'-fill'} = (($w->vert) ? 'y' : 'x');
+ $w->grid(%args);
 }
 
 sub ClassInit
@@ -153,28 +138,57 @@ sub SizeChange
 sub Mapped
 {
  my $w = shift;
- my $s = $w->slave;
- my @sc = $s->packSlaves;
- # $s->packPropagate(0) if (@sc);
- my %info = $w->packInfo;
- $info{'-in'}->packPropagate(0)
+ my $m = $w->manager;
+ if ($m =~ /^(pack|grid)$/)
+  {
+   my %info = $w->$m('info');
+   $info{'-in'}->$m('propagate',0);
+  }
 }
 
 sub Populate
 {
  my ($w,$args) = @_;
  $w->SUPER::Populate($args);
- $w->ConfigSpecs(-widget => ['PASSIVE','widget','Widget',$w->Parent],
-                 -side   => ['PASSIVE','side','Side','top'],
-                 -delay  => ['PASSIVE','delay','Delay', 1],
-                );
  $w->{'sep'} = Tk::Adjuster::Item->new($w,-bd => 1, -relief => 'sunken');
  $w->{'but'} = Tk::Adjuster::Item->new($w,-bd => 1, -width => 8, -height => 8, -relief => 'raised');
  # Use a Menu as a "token"
- my $l = $w->{'lin'} = $w->Menu(-bg => 'black');
  # Toplevel needs these, Menu implies them
  # $l->UnmapWindow;
  # $l->overrideredirect(1);
+ my $l = $w->{'lin'} = $w->Menu;
+ my $cs = $w->ConfigSpecs(-widget => ['PASSIVE','widget','Widget',$w->Parent],
+                 -side       => ['METHOD','side','Side','top'],
+                 -delay      => ['PASSIVE','delay','Delay', 1],
+                 -background => [[SELF,$w->{'sep'},$w->{'but'}],'background','Background',undef], 
+                 -foreground => [Tk::Configure->new($w->{'lin'},'-background'),'foreground','Foreground','black'] 
+                );
+}
+
+sub side
+{
+ my ($w,$val) = @_; 
+ if (@_ > 1)
+  {
+   $w->{'side'} = $val;
+   my $cursor;                                                                           
+   if ($w->vert)                                                                         
+    {                                                                                    
+     $cursor = 'sb_h_double_arrow';                                                      
+     $w->{'sep'}->configure(-width => 2, -height => 10000);                              
+    }                                                                                    
+   else                                                                                  
+    {                                                                                    
+     $cursor = 'sb_v_double_arrow';                                                      
+     $w->{'sep'}->configure(-height => 2, -width => 10000);                              
+    }                                                                                    
+   my $x;                                                                                
+   foreach $x ($w->{'sep'},$w->{'but'})                                                  
+    {                                                                                    
+     $x->configure(-cursor => $cursor);                                                  
+    }                                                                                    
+  }
+ return $w->{'side'};
 }
 
 sub slave 
@@ -258,7 +272,6 @@ sub Restore
   }
 }
 
-
 sub dWidth
 {
  my ($w,$dx,$sdx,$down) = @_;
@@ -277,7 +290,7 @@ sub dWidth
    my $s = $w->slave;
    $s->GeometryRequest($s->Width+$dx,$s->Height) if (defined $s);
   }
- $w->update;
+ $w->idletasks;
 }
 
 sub dHeight
@@ -298,7 +311,7 @@ sub dHeight
    my $s = $w->slave;
    $s->GeometryRequest($s->Width,$s->Height+$dy) if (defined $s);
   }
- $w->update;
+ $w->idletasks;
 }
 
 

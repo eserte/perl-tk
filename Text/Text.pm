@@ -41,17 +41,6 @@ sub Tags;
 
 __END__
 
-#
-# Bind --
-# This procedure below invoked the first time the mouse enters a text
-# widget or a text widget receives the input focus. It creates all of
-# the class bindings for texts.
-#
-# Arguments:
-# event - Indicates which event caused the procedure to be invoked
-# (Enter or FocusIn). It is used so that we can carry out
-# the functions of that event in addition to setting up
-# bindings.
 
 sub bindRdOnly
 {
@@ -60,15 +49,7 @@ sub bindRdOnly
  my ($class,$mw) = @_;
 
  # Standard Motif bindings:
- $mw->bind($class,"<1>",
-            sub
-            {
-             my $w = shift;
-             my $Ev = $w->XEvent;
-             $w->Button1($Ev->x,$Ev->y);
-             $w->tag("remove","sel","0.0","end")
-            }
-           );
+ $mw->bind($class,"<1>",['Button1',Ev('x'),Ev('y')]);
  $mw->bind($class,"<Meta-B1-Motion>",'NoOp');
  $mw->bind($class,"<Meta-1>",'NoOp');
 
@@ -187,37 +168,29 @@ sub bindRdOnly
    $mw->bind($class,"<Control-n>",    ['SetCursor',Ev('UpDownLine',1)]);
    $mw->bind($class,"<Control-p>",    ['SetCursor',Ev('UpDownLine',-1)]);
 
-   $mw->bind($class,"<2>",
-              sub
-              {
-               my $w = shift;
-               my $Ev = $w->XEvent;
-               $w->scan("mark",$Ev->x,$Ev->y);
-               $Tk::x = $Ev->x;
-               $Tk::y = $Ev->y;
-               $Tk::mouseMoved = 0
-              }
-             )
-   ;
-   $mw->bind($class,"<B2-Motion>",
-              sub
-              {
-               my $w = shift;
-               my $Ev = $w->XEvent;
-               if ($Ev->x != $Tk::x || $Ev->y != $Tk::y)
-                {
-                 $Tk::mouseMoved = 1
-                }
-               if ($Tk::mouseMoved)
-                {
-                 $w->scan("dragto",$Ev->x,$Ev->y)
-                }
-              }
-             );
+   $mw->bind($class,"<2>",['Button2',Ev('x'),Ev('y')]);
+   $mw->bind($class,"<B2-Motion>",['Motion2',Ev('x'),Ev('y')]);
 
   }
  $mw->bind($class,"<Destroy>",'Destroy');
  return $class;
+}
+
+
+sub Motion2
+{
+ my ($w,$x,$y) = @_;
+ $Tk::mouseMoved = 1 if ($x != $Tk::x || $y != $Tk::y);
+ $w->scan("dragto",$x,$y) if ($Tk::mouseMoved);
+}
+
+sub Button2
+{
+ my ($w,$x,$y) = @_;
+ $w->scan("mark",$x,$y);
+ $Tk::x = $x;
+ $Tk::y = $y;
+ $Tk::mouseMoved = 0;
 }
                                          
 
@@ -386,6 +359,7 @@ sub Button1
   {
    $w->focus()
   }
+ $w->tag("remove","sel","0.0","end");
 }
 # SelectTo --
 # This procedure is invoked to extend the selection, typically when
@@ -850,6 +824,12 @@ sub PRINT
   {
    $w->insert('end',shift);
   }
+}
+
+sub PRINTF
+{
+ my $w = shift;
+ $w->PRINT(sprintf(shift,@_));
 }
 
 

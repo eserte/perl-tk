@@ -1,3 +1,4 @@
-tkBitmap.o: tkBitmap.c tkPort.h tkConfig.h tk.h Lang.h bitmaps/error \
- bitmaps/gray25 bitmaps/gray50 bitmaps/hourglass bitmaps/info \
- bitmaps/questhead bitmaps/question bitmaps/warning
+tkBitmap.o: tkBitmap.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h \
+ bitmaps/error.bmp bitmaps/gray12.bmp bitmaps/gray25.bmp \
+ bitmaps/gray50.bmp bitmaps/hourglass.bmp bitmaps/info.bmp \
+ bitmaps/questhead.bmp bitmaps/question.bmp bitmaps/warning.bmp

@@ -1,0 +1,46 @@
+#!/usr/local/bin/perl -w
+
+
+foreach $obj (<*.o>,<../*.o>)
+ {
+  # next if $obj =~ /_f\.o$/;
+  open(NM,"nm -p $obj|") || die "Cannot open nm $obj:$!";
+  $ref{$obj} = {};
+  $def{$obj} = {};
+  while (<NM>)
+   {
+    if (/\b([A-Z])\b\s*_?(.*)$/)
+     {
+      my ($kind,$name) = ($1,$2);
+      $file{$obj}{$name} = $kind;
+      if ($kind ne 'U')
+       {
+        $def{$obj}{$name} = $kind;
+       }
+      else
+       {
+        $ref{$name} = [] unless (exists $ref{$name});
+        push(@{$ref{$name}},$obj);
+       }
+     }
+   }
+  close(NM);
+ }
+
+FILE:
+foreach $file (@ARGV)
+ {
+  foreach $sym (keys %{$def{$file}})
+   {
+    if (exists $ref{$sym})
+     {
+      my @files = grep(!/_f\.o$/,@{$ref{$sym}});
+      if (@files)
+       {
+        print "$file defines $sym for ",join(',',@files),"\n";
+        next FILE;
+       }
+     }
+   }
+  warn "No good reason for $file!\n";
+ }

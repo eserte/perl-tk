@@ -1,1 +1,0 @@
-simx.o: simx.c

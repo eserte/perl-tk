@@ -698,7 +698,8 @@ sub TearOffMenu
    $parent = $parent->parent;
   }
  my $menu = $w->MenuDup($parent);
- $menu->overrideredirect(0);
+ # $menu->overrideredirect(0);
+ $menu->configure(-transient => 0);
  $menu->transient($parent);
  # Pick a title for the new menu by looking at the parent of the
  # original: if the parent is a menu, then use the text of the active
@@ -718,6 +719,7 @@ sub TearOffMenu
  # after keyboard invocation of a sub-menu (it will stay on the
  # submenu).
  $menu->bind("<Enter>",EnterFocus);
+ $menu->Callback('-tearoffcommand');
 }
 
 # tkMenuDup --

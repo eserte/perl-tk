@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 
 use Tk;
-require FileDialog;
+require Tk::FileDialog;
 
 my $mw = MainWindow->new();
 
@@ -17,7 +17,7 @@ $mw->Button(-text => 'Choose File',
             -command => 
             sub
              {
-              my $fname = $fdialog->show(ChDirFlag => 1, 
+              my $fname = $fdialog->Show(ChDirFlag => 1, 
                                          DisableShowAll => 'YES');
               print "Chose $fname\n";
              })->pack(-side => 'left', -fill => 'y');

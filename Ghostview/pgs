@@ -9,6 +9,13 @@ require Tk::Ghostview;
 
 use strict qw(subs);
 
+sub usage_death {
+ print STDERR "usage: pgs <filename>\n";
+ exit 1;
+}
+
+$ARGV[0] or usage_death();
+(@ARGV == 1) or usage_death();
 
 my $top = MainWindow->new();
 my $gs  = $top->Ghostview(-file => $ARGV[0]);

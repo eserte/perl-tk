@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Frame;
@@ -25,16 +25,6 @@ sub CreateArgs
  return @result;
 }
 
-sub Advertise
-{
- my ($cw,$name,$widget)  = @_;
- confess "No name" unless (defined $name);
- croak "No widget" unless (defined $widget);
- $cw->{SubWidget} = {} unless (exists $cw->{SubWidget});
- $cw->{SubWidget}{$name} = $widget;              # advertise it
- return $widget;
-}
-
 sub Default
 {
  my ($cw,$name,$widget)  = @_;
@@ -43,7 +33,7 @@ sub Default
  $cw->Delegates(DEFAULT => $widget);
  $cw->ConfigSpecs(DEFAULT => [$widget]);
  $widget->pack('-expand' => 1, -fill => 'both') unless ($widget->manager);  # Suspect 
- goto \&Advertise;
+ $cw->Advertise($name,$widget);
 }
 
 sub ConfigDelegate
@@ -84,19 +74,6 @@ sub bind
 sub selection
 {my ($cw,@args) = @_;
  $cw->Delegate('selection',@args);
-}
-
-sub Component
-{
- my ($cw,$kind,$name,%args) = @_;
- $args{'Name'} = "\l$name" if (defined $name && !exists $args{'Name'});
- my $pack = delete $args{'-pack'};
- my $delegate = delete $args{'-delegate'};
- my $w = $cw->$kind(%args);            # Create it
- $w->pack(@$pack) if (defined $pack);
- $cw->Advertise($name,$w) if (defined $name);
- $cw->Delegates(map(($_ => $w),@$delegate)) if (defined $delegate); 
- return $w;                            # and return it
 }
 
 sub Populate

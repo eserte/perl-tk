@@ -1,6 +1,12 @@
 #ifndef _TKGLUE
 #define _TKGLUE
 
+#ifndef _TKOPTION
+#include "pTk/tkOption.h"
+#include "pTk/tkOption_f.h"
+#endif
+
+
 typedef struct Lang_CmdInfo 
  {Tcl_CmdInfo Tk;
   Tcl_Interp  *interp;
@@ -9,6 +15,7 @@ typedef struct Lang_CmdInfo
  } Lang_CmdInfo;
 
 #define DECLARE_VTABLES   \
+TkoptionVtab   *TkoptionVptr   ;  \
 XlibVtab   *XlibVptr   ;  \
 TkVtab     *TkVptr     ;  \
 TkintVtab  *TkintVptr  ;  \
@@ -17,6 +24,7 @@ TkglueVtab *TkglueVptr
 
 #define IMPORT_VTABLES                                                \
 do {                                                                  \
+  TkoptionVptr   =   (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",5));    \
   LangVptr   =   (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",5));    \
   TkVptr     =     (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",5));      \
   TkintVptr  =  (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",5));   \
@@ -25,7 +33,7 @@ do {                                                                  \
  } while (0)
 
 extern Lang_CmdInfo *WindowCommand _ANSI_ARGS_((SV *win,HV **hptr, int moan));
-extern Tk_Window GetWindow _ANSI_ARGS_((SV *win));
+extern Tk_Window SVtoWindow _ANSI_ARGS_((SV *win));
 extern int Call_Tk _ANSI_ARGS_((Lang_CmdInfo *info,int argc, SV **args));
 extern HV *InterpHv _ANSI_ARGS_((Tcl_Interp *interp,int fatal));
 extern SV *WidgetRef _ANSI_ARGS_((Tcl_Interp *interp, char *path));
@@ -37,10 +45,10 @@ extern SV *MakeReference _ANSI_ARGS_((SV * sv));
 extern void Lang_TkCommand _ANSI_ARGS_ ((char *name, Tcl_CmdProc *proc));
 extern Tk_Window TkToMainWindow _ANSI_ARGS_((Tk_Window tkwin));
 
-COREXT void ClearErrorInfo _ANSI_ARGS_((SV *interp));
-COREXT Tk_Window mainWindow;
-COREXT void Dump_vec _ANSI_ARGS_((char *who,int count,SV **data));
-COREXT void DumpStack _ANSI_ARGS_((void));
-COREXT void  Boot_Glue _ANSI_ARGS_((void));
+EXTERN void ClearErrorInfo _ANSI_ARGS_((SV *interp));
+EXTERN Tk_Window mainWindow;
+EXTERN void Dump_vec _ANSI_ARGS_((char *who,int count,SV **data));
+EXTERN void DumpStack _ANSI_ARGS_((void));
+EXTERN void  Boot_Glue _ANSI_ARGS_((void));
 
 #endif

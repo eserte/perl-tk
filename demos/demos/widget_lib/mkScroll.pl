@@ -51,7 +51,7 @@ sub mkScroll {
     $w->iconname('Canvas');
     $w->minsize(100, 100);
 
-    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal-*-180-*-*-*-*-*-*', -wraplength => '4i',
+    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '4i',
 			   -justify => 'left', -text => 'This window displays a canvas widget that can be scrolled either ' .
 			   'using the scrollbars or by dragging with button 2 in the canvas.  If you click button 1 on one ' .
 			   'of the rectangles, its indices will be printed on stdout.');

@@ -5,7 +5,7 @@
 
 package Tk::Balloon;
 
-use Tk qw(Ev);
+use Tk qw(Ev Exists);
 use Carp;
 require Tk::Toplevel;
 
@@ -16,10 +16,9 @@ my @balloons;
 
 sub ClassInit {
     my ($class, $mw) = @_;
-    $mw->bind("all", "<Motion>", ['Tk::Balloon::Motion', Ev('X'), Ev('Y')]);
-    $mw->bind("all", "<Leave>", ['Tk::Balloon::Motion', Ev('X'), Ev('Y')]);
-    $mw->bind("all", "<Button>", ['Tk::Balloon::ButtonDown', Ev('X'), Ev('Y'), Ev('b')]);
-    $mw->bind("all", "<ButtonRelease>", ['Tk::Balloon::ButtonUp', Ev('X'), Ev('Y'), Ev('b')]);
+    $mw->bind("all", "<Motion>", ['Tk::Balloon::Motion', Ev('X'), Ev('Y'), Ev('s')]);
+    $mw->bind("all", "<Leave>",  ['Tk::Balloon::Motion', Ev('X'), Ev('Y'), Ev('s')]);
+    $mw->bind("all", "<Button>", 'Tk::Balloon::ButtonDown');
     return $class;
 }
 
@@ -62,8 +61,8 @@ sub Populate {
 		    -initwait => ["PASSIVE", "initWait", "InitWait", 350],
 		    -state => ["PASSIVE", "state", "State", "both"],
 		    -statusbar => ["PASSIVE", "statusBar", "StatusBar", undef],
-		    -background => ["DESCENDANTS", "background", "Background", "#ffff60"],
-		    -font => [$ml, "font", "Font", "-*-helvetica-medium-r-normal-*-12-*-*-*-*-*-*"],
+		    -background => ["DESCENDANTS", "background", "Background", "#C0C080"],
+		    -font => [$ml, "font", "Font", "-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*"],
 		    -borderwidth => ["SELF", "borderWidth", "BorderWidth", 1]
 );
 
@@ -78,153 +77,97 @@ sub attach {
     $balloonmsg = $msg if (not defined $balloonmsg);
     $statusmsg = $msg if (not defined $statusmsg);
     $w->{"clients"}->{$client} = {-balloonmsg => $balloonmsg, -statusmsg => $statusmsg};
+    $client->OnDestroy([$w, 'detach', $client]);
 }
 
 # detach a client from the balloon.
-sub detach {
+sub detach 
+{
     my ($w, $client) = @_;
+    return unless Exists($w);
+    $w->Deactivate if ($w->{"client"} == $client);
     delete $w->{"clients"}->{$client};
 }
 
 sub Motion {
-    my ($w, $x, $y) = @_;
-    my $b;
+    my ($ewin, $x, $y, $s) = @_;
+    
+    # Don't do anything if a button is down or a grab is active
+    return if ($s || $ewin->grabCurrent());
 
-    foreach $bal (@balloons) {
-	$bal->_Motion($x, $y);
+    # Find which window we are over
+    my $over = $ewin->Containing($x, $y);
+    my $w;
+
+    foreach $w (@balloons) {
+	next if (($w->cget(-state) eq "none"));	# popping up disabled
+
+	# if cursor has moved over the balloon -- ignore
+	next if ((defined $over) && $over->toplevel eq $w);
+
+	# find the client window that matches
+	my $client = $over;
+	while (defined $client) {
+	    last if (exists $w->{"clients"}->{$client});
+	    $client = $client->Parent;
+	}
+	if (defined $client) {
+	    unless ($client->IS($w->{"client"})) {  
+		$w->Deactivate;
+		$w->{"client"} = $client;
+		$w->{"delay"}  = $client->after($w->cget(-initwait), sub {$w->SwitchToClient($client);});
+	    }
+	} 
+	else {
+	    # cursor is at a position covered by a non client
+	    # pop down the balloon if it is up or scheduled.
+	    $w->Deactivate if ($w->{"popped"} || $w->{"delay"});
+	    $w->{"client"} = undef;
+	}
     }
 }
 
 sub ButtonDown {
-    my ($w, $x, $y, $b) = @_;
-    my $bal;
-
-    foreach $bal (@balloons) {
-	$bal->_ButtonDown($x, $y, $b);
+    my ($ewin) = @_;
+    my $w;
+    foreach $w (@balloons) {
+	$w->Deactivate if ($w->{"popped"} || $w->{"delay"});
     }
-}
-
-sub ButtonUp {
-    my ($w, $x, $y, $b) = @_;
-    my $bal;
-
-    foreach $bal (@balloons) {
-	$bal->_ButtonUp($x, $y, $b);
-    }
-}
-
-sub _Motion {
-    my ($w, $x, $y) = @_;
-
-    return if (($w->cget(-state) eq "none") || 	# popping up disabled
-	       ($w->{"buttonDown"}) ||		# button is already down
-	       (defined $w->grabCurrent()));	# somebody else has screen
-
-    my $cw = $w->Containing($x, $y);
-    # if cursor hash moved over the balloon -- ignore
-    return if ((defined $cw) && $cw->toplevel eq $w);
-
-    # find the client window that matches
-    while (defined $cw) {
-	last if (exists $w->{"clients"}->{$cw});
-	$cw = $cw->winfo("parent");
-    }
-    if (not defined $cw) {
-	# cursor is at a position covered by a non client
-	# pop down the balloon if it is up
-	if ($w->{"popped"}) {
-	    $w->Deactivate;
-	}
-	$w->{"client"} = undef;
-	return;
-    }
-    unless ($cw->IS($w->{"client"})) {  
-	if ($w->{"popped"}) {
-	    $w->Deactivate;
-	}
-	$w->{"client"} = $cw;
-	Tk->after($w->cget(-initwait), sub {$w->SwitchToClient($cw);});
-    }
-}
-
-sub _ButtonDown {
-    my ($w, $x, $y, $b) = @_;
-
-    # call motion binding
-    $w->Motion($x, $y);
-    $w->{"buttonDown"}++;
-
-    return if (defined $w->grabCurrent());
-
-    if ($w->{"popped"}) {
-	$w->Deactivate;
-    } else {
-	$w->{"cancel"} = 1;
-    }
-}
-
-sub _ButtonUp {
-    my ($w, $x, $y, $b) = @_;
-    $w->Motion($x, $y);
-    $w->{"buttonDown"}--;
 }
 
 # switch the balloon to a new client
 sub SwitchToClient {
     my ($w, $client) = @_;
-    return if ((not $w->winfo("exists")) &&
-	       (not $client->winfo("exists")) &&
-	       ($client ne $w->{"client"})
-	      );
-    if (defined $w->{"cancel"} && $w->{"cancel"}) {
-	$w->{"cancel"} = undef;
-	return;
-    }
-    if ($w->grabCurrent) {
-	return;
-    }
-    $w->Activate;
-}
-
-sub ClientDestroy {
-    my ($w, $client) = @_;
-    return if (!$w->winfo("exists"));
-    if ($w->{"client"} ne $client) {
-	$w->Deactivate;
-	$w->{"client"} = undef;
-	delete $w->{"clients"}->{$client};
-    }
-}
-
-sub Activate {
-    my ($w) = @_;
-    if ($w->cget(-state) =~ /both|balloon/) {
-	$w->Popup;
-    }
-    if ($w->cget(-state) =~ /both|status/) {
-	$w->SetStatus;
-    }
+    return unless Exists($w);
+    return unless Exists($client);
+    return unless $client->IS($w->{"client"});
+    return if ($w->grabCurrent);
+    my $state = $w->cget(-state);
+    $w->Popup if ($state =~ /both|balloon/);
+    $w->SetStatus if ($state =~ /both|status/);
     $w->{"popped"} = 1;
-    Tk->after(200, sub {$w->Verify;});
+    $w->{"delay"}  = $w->repeat(200, ['Verify', $w]);
 }
 
 sub Verify {
     my ($w) = @_;
-    return if ((not $w->winfo("exists")) ||
-	       (!$w->{"popped"}));
-    if ($w->grabCurrent) {
-	$w->Deactivate;
-	return;
-    }
-    Tk->after(200, sub {$w->Verify;});
+    $w->Deactivate if ($w->grabCurrent);
 }
 
 sub Deactivate {
     my ($w) = @_;
-    $w->Popdown;
-    $w->ClearStatus;
-    $w->{"popped"} = 0;
-    $w->{"cancel"} = undef;
+    my $delay = delete $w->{"delay"};
+    $delay->cancel if defined $delay;
+    if ($w->{"popped"})
+     {
+      $w->withdraw;
+      $w->ClearStatus;
+      $w->{"popped"} = 0;
+     }
+    else
+     {
+      $w->{"client"} = undef;
+     }
 }
 
 sub Popup {
@@ -237,22 +180,17 @@ sub Popup {
     return if (not exists $w->{"clients"}->{$client});
     my $msg = $w->{"clients"}->{$client}->{-balloonmsg};
     $w->Subwidget("message")->configure(-text => $msg);
-    $w->geometry("+10000+10000");
+    $w->idletasks;
+
+    return unless Exists($w);
+    return unless Exists($client);
+
+    my $x = int($client->rootx + $client->width/2);
+    my $y = int($client->rooty + int ($client->height/1.3));
+    $w->geometry("+$x+$y");
     $w->deiconify();
     $w->raise;
     $w->update;
-
-    return if (not $w->winfo("exists"));
-    return if (not $client->winfo("exists"));
-
-    my $x = int($client->winfo("rootx") + $client->winfo("width")/2);
-    my $y = int($client->winfo("rooty") + int ($client->winfo("height")/1.3));
-    $w->geometry("+$x+$y");
-}
-
-sub Popdown {
-    my ($w) = @_;
-    $w->withdraw;
 }
 
 sub SetStatus {

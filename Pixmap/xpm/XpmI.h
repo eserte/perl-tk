@@ -60,6 +60,7 @@ extern FILE *popen();
 
 #include "pTk/tkPort.h"
 #include "pTk/Lang.h"
+#include "pTk/tkInt.h"
 #include "pTk/tkVMacro.h"
 
 #define VOID_SPRINTF 

@@ -22,4 +22,7 @@
 #ifdef _TIXINT
 #include "tixInt.m"
 #endif
+#ifdef _TKOPTION
+#include "tkOption.m"
+#endif
 

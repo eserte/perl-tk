@@ -14,7 +14,7 @@ foreach (<*.o>)
  }
 
 
-@ARGV = <*.ft.o> unless(@ARGV);
+@ARGV = <*_f.o> unless(@ARGV);
 
 foreach (@ARGV)
  {

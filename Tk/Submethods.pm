@@ -30,6 +30,7 @@ sub Direct
    my $sub;
    foreach $sub (@{$sm})
     {
+     # eval "sub ${package}::${sub} { shift->$fn('$sub',\@_) }";
      *{$package.'::'.$sub} = sub { shift->$fn($sub,@_) };
     }
   }

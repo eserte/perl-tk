@@ -1,4 +1,8 @@
 # image2.pl
+#
+# Folks, I really apologize for this mess.  It's the first time I've looked
+# at it in two years - I promise to overhaul all these demos in the near
+# furture!
 
 use File::Basename;
 
@@ -42,13 +46,21 @@ sub image2 {
     my $w_dir_label = $w->Label(-text => 'Directory:');
     my $dir_name = Tk->findINC('demos/images');
     my $w_dir_name = $w->Entry(-width => 30, -textvariable => \$dir_name);
-    my $w_spacer1 = $w->Frame(-height => '3m', -width => 20);
-    my $w_file_label = $w->Label(-text => 'File:');
-    my $w_f = $w->Frame;
+    my $frog0 = $w->Frame;
+    my $frog = $frog0->Frame;
+    my $w_file_label = $frog->Label(-text => 'File:');
+    my $w_f = $frog->Frame;
     my(@pl) = (-side => 'top', -anchor => 'w');
     $w_dir_label->pack(@pl);
     $w_dir_name->pack(@pl);
-    $w_spacer1->pack(@pl);
+    
+    # All these "frog" and "toad" frames are just to repackage the listbox
+    # and image side by side so they fit within an SVGA screen.
+
+    $frog0->pack;
+    $frog->pack(qw/-side left/);
+    my $toad = $frog0->Frame;
+    $toad->pack(qw/-side right/);
     $w_file_label->pack(@pl);
     $w_f->pack(@pl);
 
@@ -63,11 +75,9 @@ sub image2 {
 
     my $image2a = $w->Photo;
     $w_f_list->bind('<Double-1>' => [\&image2_load_image, $image2a, \$dir_name]);
-    my $w_spacer2 = $w->Frame(-height => '3m', -width => 20);
-    my $w_image_label = $w->Label(-text => 'Image:');
-    my $w_image = $w->Label(-image => $image2a);
+    my $w_image_label = $toad->Label(-text => 'Image:');
+    my $w_image = $toad->Label(-image => $image2a);
     @pl = (-side => 'top', -anchor => 'w');
-    $w_spacer2->pack(@pl);
     $w_image_label->pack(@pl);
     $w_image->pack(@pl);
 
@@ -118,4 +128,3 @@ sub image2_load_image {
 } # end image2_load_image
 
 1;
-

@@ -18,8 +18,7 @@
 #include "tkGlue.m"
 
 #define InputStream PerlIO *
-
-extern void perror _((const char *));
+#define OutputStream PerlIO *
 
 DECLARE_VTABLES;
 
@@ -52,7 +51,7 @@ int mask;
 int flags;
 #endif
 {
- if (mask & TK_READABLE)
+ if (mask & TCL_READABLE)
   {
    nIO_read *info = (nIO_read *) clientData;
    SV *buf = info->buf;
@@ -84,8 +83,29 @@ int flags;
   }
 }
 
+static int restore_mode _((PerlIO *f,int mode));
 static int make_nonblock _((PerlIO *f,int *mode,int *newmode));
 
+#ifdef __WIN32__
+static int
+make_nonblock(f,mode,newmode)
+PerlIO *f;
+int *mode;
+int *newmode;
+{
+ croak("Cannot make nonblocking on Win32 yet");
+ return -1;
+}
+
+static int
+restore_mode(f,mode)
+PerlIO *f;
+int mode;
+{
+ croak("Cannot make nonblocking on Win32 yet");
+ return -1;
+}
+#else
 static int 
 make_nonblock(f,mode,newmode)
 PerlIO *f;
@@ -131,6 +151,16 @@ int *newmode;
  return RETVAL;
 }
 
+static int
+restore_mode(f,mode)
+PerlIO *f;
+int mode;
+{
+ return fcntl(PerlIO_fileno(f), F_SETFL, mode);
+}
+
+#endif
+
 static int has_nl _((SV *sv));
 
 static int has_nl(sv)
@@ -151,9 +181,63 @@ SV *sv;
 #undef read
 #undef open
 
-MODULE = Tk::IO	PACKAGE = Tk::IO
+MODULE = Tk::IO	PACKAGE = Tk::IO PREFIX = Tcl_
 
 PROTOTYPES: DISABLE
+
+void
+Tcl_CreateReadHandler(f,callback)
+InputStream	f
+SV *		callback
+CODE:
+ {
+  Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), 
+                        TCL_READABLE, NULL, callback);
+ }
+
+void
+Tcl_CreateWriteHandler(f,callback)
+OutputStream	f
+SV *		callback
+CODE:
+ {
+  Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), 
+                        TCL_WRITABLE, NULL, callback);
+ }
+
+void
+Tcl_DeleteReadHandler(f)
+InputStream	f
+CODE:
+ {
+  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD));
+ }
+
+void
+Tcl_DeleteWriteHandler(f)
+OutputStream	f
+CODE:
+ {
+  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD));
+ }
+
+MODULE = Tk::IO	PACKAGE = Tk::IO
+
+PROTOTYPES: ENABLE
+
+int
+make_nonblock(f,mode,newmode)
+InputStream	f
+int	&mode = NO_INIT
+int	&newmode  = NO_INIT
+OUTPUT:
+  mode
+  newmode
+
+int
+restore_mode(f,mode)
+InputStream	f
+int	mode
 
 SV *
 read(f,buf,len,offset = 0)
@@ -184,15 +268,15 @@ int	offset
        return;
       }
      SvPOK_only(buf);		/* validate pointer */
-     Tk_CreateFileHandler(PerlIO_fileno(f), TK_READABLE, read_handler, (ClientData) &info);
+     Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
      do                                        
       {                                        
-       Tk_DoOneEvent(0);                       
+       Tcl_DoOneEvent(0);                       
       } while (!info.eof && !info.error && info.count == 0);
-     Tk_DeleteFileHandler(PerlIO_fileno(f)); 
+     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD)); 
      if (mode != newmode)
       {
-       count = fcntl(PerlIO_fileno(f),F_SETFL,mode);
+       count = restore_mode(f,mode);
        if (count != 0)
         croak("Cannot make blocking");
       }
@@ -226,18 +310,18 @@ InputStream	f
      info.count  = 0; 
      info.error  = 0; 
      info.eof    = 0; 
-     Tk_CreateFileHandler(PerlIO_fileno(f), TK_READABLE, read_handler, (ClientData) &info);
+     Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
      while (!info.eof && !info.error && !has_nl(buf))
       {                                        
        info.len = 1;
        info.count = 0;
        while (!info.eof && !info.error && !info.count)
-        Tk_DoOneEvent(0);                       
+        Tcl_DoOneEvent(0);                       
       } 
-     Tk_DeleteFileHandler(PerlIO_fileno(f)); 
+     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD)); 
      if (mode != newmode)
       {
-       count = fcntl(PerlIO_fileno(f),F_SETFL,mode);
+       count = restore_mode(f,mode);
        if (count != 0)
         croak("Cannot make blocking");
       }

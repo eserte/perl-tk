@@ -57,7 +57,7 @@ sub ctext {
             -text      => 'This is just a string of text to demonstrate the text facilities of canvas widgets. Bindings have been been defined to support editing (see above)."',
              -width    => 440,
              -anchor   => 'n',
-             -font     => '-*-helvetica-medium-r-*-240-*-*-*-*-*-*',
+             -font     => '-*-Helvetica-Medium-R-Normal--*-240-*-*-*-*-*-*',
              -justify  => 'left',
         ),
     );

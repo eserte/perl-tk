@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::TextUndo;
@@ -125,7 +125,7 @@ sub Load
   {
    $text->MainWindow->Busy;
    $text->SUPER::delete('1.0','end');
-   delete $w->{UNDO};
+   delete $text->{UNDO};
    while (<FILE>)
     {
      $text->SUPER::insert('end',$_);

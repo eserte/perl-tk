@@ -60,6 +60,7 @@ require Tk::Toplevel;
 
 Construct Tk::Widget 'Dialog';
 
+
 sub Populate
 {
 
@@ -88,7 +89,7 @@ sub Populate
     $cw->withdraw;
     $cw->iconname('Dialog');
     $cw->protocol('WM_DELETE_WINDOW' => sub {});
-    $cw->transient($cw->toplevel);
+    $cw->transient($cw->Parent->toplevel);
 
     my $w_top = $cw->Frame(Name => 'top',-relief => 'raised', -borderwidth => 1);
     my $w_bot = $cw->Frame(Name => 'bot',-relief => 'raised', -borderwidth => 1);
@@ -151,7 +152,7 @@ sub Populate
                       -foreground => ['ADVERTISED','foreground','Foreground','black'],
                       -bg         => ['DESCENDANTS','background','Background',undef],
                       -background => ['DESCENDANTS','background','Background',undef],
-                      -font       => ['message','font','Font','-*-Times-Medium-R-Normal-*-180-*-*-*-*-*-*'],
+                      -font       => ['message','font','Font', '-*-Times-Medium-R-Normal--*-180-*-*-*-*-*-*'],
                       DEFAULT     => ['message',undef,undef,undef]
                      );
 } # end Dialog constructor

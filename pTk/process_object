@@ -1,3 +1,5 @@
+use Data::Dumper;
+
 sub do_nm
 {
  my $obj = shift;
@@ -13,7 +15,7 @@ sub do_nm
       {
        if (exists $def{$name})
         {
-         warn "$name " . pretty($def{$name}) . " and [$kind,$obj]\n"; 
+         warn "$name " . Dumper($def{$name}) . " and [$kind,$obj]\n"; 
         }
        $def{$name} = [$kind,$obj];
       }

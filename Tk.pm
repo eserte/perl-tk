@@ -1,34 +1,43 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995, 1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in Tk/license.terms due to partial
 # derivation from Tk4.0 sources.
 #
 package Tk;
-require 5.002;
-use     AutoLoader;
+require 5.003_97;
+use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 require Exporter;
-
-@Tk::ISA  = qw(Exporter DynaLoader);
+@Tk::ISA = qw(Exporter DynaLoader);
 
 
 @EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
-@EXPORT_OK = qw(NoOp *widget *event lsearch catch);
-
-use vars qw($widget $event $library $version $patchlevel $VERSION $strictMotif);
+@EXPORT_OK = qw(NoOp *widget *event lsearch catch 
+                DONT_WAIT WINDOW_EVENTS  FILE_EVENTS TIMER_EVENTS 
+                IDLE_EVENTS ALL_EVENTS 
+                NORMAL_BG ACTIVE_BG SELECT_BG 
+                SELECT_FG TROUGH INDICATOR DISABLED BLACK WHITE);
+%EXPORT_TAGS = (eventtypes => [qw(DONT_WAIT WINDOW_EVENTS  FILE_EVENTS 
+                                  TIMER_EVENTS IDLE_EVENTS ALL_EVENTS)], 
+                variables  => [qw(*widget *event)],
+                colors     => [qw(NORMAL_BG ACTIVE_BG SELECT_BG SELECT_FG 
+                                  TROUGH INDICATOR DISABLED BLACK WHITE)],
+               );
 
 use strict;
+use Symbol ();
+
 use Carp;
 
-# $version and $patchLevel are reset by pTk when a mainwindow
+# $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
-$Tk::version     = "4.0";
-$Tk::patchLevel  = "4.0p3";
-$Tk::VERSION     = '400.202';
+$Tk::version     = "4.2";
+$Tk::patchLevel  = "4.2";
+$Tk::VERSION     = '402.000';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -37,16 +46,20 @@ $Tk::library = Tk->findINC('.') unless (-d $Tk::library);
 $Tk::widget  = undef;
 $Tk::event   = undef;
 
+# Supress used once warnings on function table pointers 
+# How can we do this in the C code?
+use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab $TkoptionVtab);  
+
 bootstrap Tk $Tk::VERSION;
 
+{
+ no strict 'refs';
+ *{'exit'} = \&Exit;
+}
 my $boot_time = timeofday();
 
 # This is a workround for Solaris X11 locale handling 
 Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11')) if (&NeedPreload && -d '/usr/openwin/lib');
-
-# Supress used once warnings on function table pointers 
-# How can we do this in the C code?
-use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab);  
 
 use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
                     'clipboard' =>  [qw(clear append)]
@@ -154,12 +167,63 @@ sub __DIE__
   }
 }
 
+sub fileevent
+{
+ require Tk::IO;
+ my ($obj,$file,$mode,$cb) = @_;
+ croak "Unknown mode '$mode'" unless $mode =~ /^(readable|writeable)$/;
+ unless (ref $file)
+  {
+   require IO::Handle;
+   no strict 'refs';
+   $file = Symbol::qualify($file,(caller)[0]);
+   $file = bless \*{$file},'IO::Handle';
+  }
+ if ($cb)
+  {
+   # Adding the handler
+   $cb = Tk::Callback->new($cb);
+   if ($mode eq 'readable')
+    {
+     Tk::IO::CreateReadHandler($file,$cb);
+    }
+   else
+    {
+     Tk::IO::CreateWriteHandler($file,$cb);
+    }
+  }
+ else
+  {
+   if ($mode eq 'readable')
+    {
+     Tk::IO::DeleteReadHandler($file);
+    }
+   else
+    {
+     Tk::IO::DeleteWriteHandler($file);
+    }
+  }
+}
+
+sub SplitString
+{
+ local $_ = shift;
+ carp "SplitString '$_'";
+ return split(/\s+/,$_);
+}
+
+
 1;
 
 __END__
 # provide an exit() to be exported if exit occurs 
 # before a MainWindow->new()
 sub exit { CORE::exit(@_);}
+
+sub Exists
+{my $w = shift;
+ return defined($w) && ref($w) && $w->IsWidget && $w->exists;
+}
 
 sub Error
 {my $w = shift;
@@ -434,7 +498,7 @@ sub idletasks
 sub updateWidgets
 {
  my ($w) = @_;
- while ($w->DoOneEvent(0x13))   # No wait, X events and idle events
+ while ($w->DoOneEvent(DONT_WAIT|IDLE_EVENTS|WINDOW_EVENTS))
   {
   }
  $w;

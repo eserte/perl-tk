@@ -6,7 +6,6 @@
 # to the widget demo standard.
 
 use English;
-use WidgetDemo;
 use vars qw($TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
 	    @ORDER $PF @PUZ $SIDE $SPACE $SPACE_IMAGE $WIDTRIB);
 

@@ -1,9 +1,0 @@
-
-This version of pTk is (nearly) ready to permit dynamic loading of
-widgets, image types etc.
-
-One area which is very new is the generation of the function tables
-for the various .h files. 
-
-In particular Xlib.h which was auto-generated in SunOS4.1.3/Openwindows
-*may* need hand edits. 

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Wm;
@@ -12,10 +12,10 @@ use strict qw(vars);
 # There are issues with this stuff now we have Tix's wm release/capture
 # as toplevel-ness is now dynamic.
 
-require Tk::Submethods;
+use Tk::Submethods ( 'wm' => [qw(grid)] );
 
 Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command 
-                       deiconify focusmodel frame geometry grid group
+                       deiconify focusmodel frame geometry group
                        iconbitmap iconify iconmask iconname iconposition
                        iconwindow maxsize minsize overrideredirect positionfrom
                        protocol resizable saveunder sizefrom state title transient

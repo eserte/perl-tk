@@ -11,6 +11,10 @@ my $mb    = $mw->Frame->pack(-fill => 'x');
 my $text  = $mw->ROText(-font => $font)->pack(-expand => 1, -fill => 'both');
 my $bfont = $font->Clone(weight =>'bold');
 my $bold  = $text->Tag('bold',-font => $bfont);
+
+print "Bold is ",scalar($bfont->Name),"\n ascent=",
+       $bfont->ascent," descent=",$bfont->descent,"\n";
+
 $mb->Optionmenu(-text => 'Font', -underline => 0,
                 -options => [sort $font->Name],
                 -command => [configure => $text, '-font' ])

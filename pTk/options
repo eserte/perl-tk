@@ -1,2 +1,0 @@
-#!/bin/sh
-nm -Ap *.o | egrep '(Tk_AddOption|Tk_GetOption|TkOptionDeadWindow|TkOptionClassChanged)'
