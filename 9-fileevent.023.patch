@@ -1,0 +1,58 @@
+--- Tk800.024/Event/Event.xs	Sat Apr  7 17:24:02 2001
++++ Event/Event.xs	Fri Nov 30 18:13:56 2001
+@@ -290,4 +290,5 @@
+   int handlerMask;                /* Events for which we have callbacks */
+   int callingMask;                /* Events for which we are in callbacks */
+   int pending;
++  SV *mysv;
+  } PerlIOHandler;
+
+ typedef struct PerlIOEvent
+@@ -587,10 +588,12 @@
+          SV *sv = filePtr->readHandler;
+          ENTER;
+          SAVETMPS;
++         SvREFCNT_inc(filePtr->mysv);
+          filePtr->callingMask |= TCL_READABLE;
+          LangPushCallbackArgs(&sv);
+          LangCallCallback(sv,G_DISCARD);
+          filePtr->callingMask &= ~TCL_READABLE;
++         SvREFCNT_dec(filePtr->mysv);
+          FREETMPS;
+          LEAVE;
+         }
+@@ -599,10 +602,12 @@
+          SV *sv = filePtr->writeHandler;
+          ENTER;
+          SAVETMPS;
++         SvREFCNT_inc(filePtr->mysv);
+          filePtr->callingMask |= TCL_WRITABLE;
+          LangPushCallbackArgs(&sv);
+          LangCallCallback(sv,G_DISCARD);
+          filePtr->callingMask &= ~TCL_WRITABLE;
++         SvREFCNT_dec(filePtr->mysv);
+          FREETMPS;
+          LEAVE;
+         }
+@@ -611,10 +616,12 @@
+          SV *sv = filePtr->exceptionHandler;
+          ENTER;
+          SAVETMPS;
++         SvREFCNT_inc(filePtr->mysv);
+          filePtr->callingMask |= TCL_EXCEPTION;
+          LangPushCallbackArgs(&sv);
+          LangCallCallback(sv,G_DISCARD);
+          filePtr->callingMask &= ~TCL_EXCEPTION;
++         SvREFCNT_dec(filePtr->mysv);
+          FREETMPS;
+          LEAVE;
+         }
+@@ -699,6 +706,7 @@
+  filePtr->waitMask    = mask;
+  filePtr->pending     = 0;
+  filePtr->nextPtr     = firstPerlIOHandler;
++ filePtr->mysv        = obj;
+  firstPerlIOHandler   = filePtr;
+  PerlIO_watch(filePtr);
+  obj = newRV_noinc(obj);
+

@@ -1,0 +1,16 @@
+--- ../Tk804.024/pod/options.pod	Sat Jul 13 16:13:22 2002
++++ pod/options.pod	Thu Feb 27 23:40:49 2003
+@@ -749,9 +749,9 @@ on how this option is used.
+
+ =head1 SEE ALSO
+
+-L<Tk::option|Tk::option>
+-L<Tk::callbacks|Tk::callbacks>
+-L<Tk::configspec|Tk::configspec>
++L<Tk::option>
++L<Tk::callbacks>
++L<Tk::ConfigSpecs>
+ L<Tk_GetPixels|Tk::pTk::GetPixels>
+
+ =head1 KEYWORDS
+

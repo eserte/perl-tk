@@ -1,0 +1,46 @@
+--- Tk804.024/Tk/Trace.pm.orig	Sat Nov 16 22:55:39 2002
++++ Tk804.024/Tk/Trace.pm	Sat Nov 16 23:02:34 2002
+@@ -84,7 +84,7 @@
+     $self->Destroy(@_);                      # destroy variable
+ }
+ 
+-sub traceVariable {
++sub Tk::Widget::traceVariable {
+     my($parent, $vref, $op, $callback) = @_;
+     die "Illegal parent." unless ref $parent;
+     die "Illegal variable." unless ref $vref;
+@@ -120,7 +120,7 @@
+ 
+ } # end traceVariable
+ 
+-sub traceVdelete {
++sub Tk::Widget::traceVdelete {
+     my($parent, $vref, $op_not_honored, $callabck_not_honored) = @_;
+     if (defined $trace{$vref}) {
+         $trace{$vref}->Unwatch;
+@@ -128,7 +128,7 @@
+     }
+ }
+ 
+-sub traceVinfo {
++sub Tk::Widget::traceVinfo {
+     my($parent, $vref) = @_;
+     return (defined $trace{$vref}) ? $trace{$vref}->Info : undef;
+ }
+@@ -226,6 +226,7 @@
+ =head1 EXAMPLE
+ 
+  use Tk;
++ use Tk::Trace;
+ 
+  # Trace a Scale's variable and move a meter in unison.
+ 
+@@ -266,7 +267,7 @@
+ 
+ =head1 COPYRIGHT
+ 
+-Copyright (C) 2000 - 2000 Stephen O. Lidie. All rights reserved.
++Copyright (C) 2000 - 2003 Stephen O. Lidie. All rights reserved.
+ 
+ This program is free software; you can redistribute it and/or modify it under
+ the same terms as Perl itself.

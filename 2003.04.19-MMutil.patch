@@ -1,0 +1,21 @@
+--- Tk804.024/Tk/MMutil.pm	Sun Oct 13 18:48:05 2002
++++ Tk804.024.sol-patches/Tk/MMutil.pm	Sat Apr 19 17:31:42 2003
+@@ -346,15 +358,15 @@ sub manifypods
+  local $_ = $self->MM::manifypods;
+  if ($] >= 5.00565)
+   {
+-   s/(POD2MAN_EXE.*pod2man)/$1 --center "perl\/Tk Documentation" --release "Tk\$(VERSION)"/;
++   s/(POD2MAN_EXE.*pod2man.*)/$1 --center "perl\/Tk Documentation" --release "Tk\$(VERSION)"/;
+   }
+  elsif ($] >= 5.003)
+   {
+-   s/(POD2MAN_EXE.*pod2man)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
++   s/(POD2MAN_EXE.*pod2man.*)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
+   }
+  else
+   {
+-   s/(POD2MAN_EXE.*pod2man)/$1 -center \\"perl\/Tk Documentation\\" -release \\"Tk\$(VERSION)\\"/;
++   s/(POD2MAN_EXE.*pod2man.*)/$1 -center \\"perl\/Tk Documentation\\" -release \\"Tk\$(VERSION)\\"/;
+   }
+  s/\bpod::/Tk::/mg;
+  s/\bpTk:://mg;

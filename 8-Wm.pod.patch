@@ -1,0 +1,29 @@
+--- Tk804.024/pod/Wm.pod	Sat Jul 13 16:13:22 2002
++++ new.Tk804.024/pod/Wm.pod	Thu Dec 12 17:49:14 2002
+@@ -430,15 +430,18 @@
+ no source has been specified yet.  Most window managers interpret
+ ``no source'' as equivalent to B<program>.
+ 
+-=item I<$toplevel>-E<gt>B<state>
++=item I<$toplevel>-E<gt>B<state>(?I<newstate>?)
++
++If I<newstate> is specified, the window will be set to
++the new state, otherwise it returns the current state of
++I<$toplevel>: either B<normal>, B<iconic>, B<withdrawn>, B<icon>, or
++(Windows only) B<zoomed>. The
++difference between B<iconic> and B<icon> is that B<iconic> refers to a
++window that has been iconified (e.g., with the B<iconify> method)
++while B<icon> refers to a window whose only purpose is to serve as the
++icon for some other window (via the B<iconwindow> method). The
++B<icon> state cannot be set.
+ 
+-Returns the current state of $widget:  either B<normal>,
+-B<iconic>, B<withdrawn>, or B<icon>.  The difference
+-between B<iconic> and B<icon> is that B<iconic> refers
+-to a window that has been iconified (e.g., with the B<iconify>
+-method) while B<icon> refers to a window whose only purpose is
+-to serve as the icon for some other window (via the B<iconwindow>
+-method).
+ 
+ =item I<$toplevel>-E<gt>B<title>(?I<string>?)
+ 

@@ -1,0 +1,21 @@
+--- Tk804.024/demos/demos/widget_lib/style.pl	Sat Jul 13 16:12:51 2002
++++ new.Tk804.024/demos/demos/widget_lib/style.pl	Mon Jan 13 23:58:07 2003
+@@ -15,11 +15,13 @@ sub style {
+         -iconname => 'style',
+     );
+ 
+-    $TOP->fontCreate(qw/C_small  -family courier   -size 10/);
+-    $TOP->fontCreate(qw/C_big    -family courier   -size 14 -weight bold/);
+-    $TOP->fontCreate(qw/C_vbig   -family helvetica -size 24 -weight bold/);
+-    $TOP->fontCreate(qw/C_bold   -family courier   -size 12 -weight bold
+-		     -slant italic/);
++    eval { # eval, in case fonts already exist
++	$TOP->fontCreate(qw/C_small  -family courier   -size 10/);
++	$TOP->fontCreate(qw/C_big    -family courier   -size 14 -weight bold/);
++	$TOP->fontCreate(qw/C_vbig   -family helvetica -size 24 -weight bold/);
++	$TOP->fontCreate(qw/C_bold   -family courier   -size 12 -weight bold
++			 -slant italic/);
++    };
+ 
+     my $t = $TOP->Scrolled(qw/Text -setgrid true -width  70 -height 32
+ 			   -font normal -wrap word -scrollbars e/);

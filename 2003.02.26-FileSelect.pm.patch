@@ -1,0 +1,10 @@
+--- ../Tk804.024/Tk/FileSelect.pm	Sun Oct 13 18:48:05 2002
++++ Tk/FileSelect.pm	Wed Feb 26 12:55:19 2003
+@@ -177,6 +177,7 @@ sub Populate {
+     );
+     $e->pack(-side => 'bottom', -expand => 0, -fill => 'x');
+     $e->bind('<Return>' => [$w => 'validateFile', Ev(['get'])]);
++    $e->bind('<FocusIn>' => [$w => 'SelectionClear']);
+
+     # Create directory scrollbox, place at the left-middle.
+     my $b = $w->Component(

@@ -1,0 +1,8 @@
+--- ../Tk804.024/Tk/TextUndo.pm	Sat Jul 13 16:12:49 2002
++++ Tk/TextUndo.pm	Tue Feb 25 10:16:07 2003
+@@ -571,6 +571,7 @@ sub Insert
+  $w->addGlobStart;
+  $w->SUPER::Insert($char);
+  $w->addGlobEnd;
++ $w->see('insert');
+ }

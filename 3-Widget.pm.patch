@@ -1,0 +1,37 @@
+--- Tk804.024/Tk/Widget.pm.orig	Sun Nov 10 21:16:25 2002
++++ Tk804.024/Tk/Widget.pm	Sun Nov 10 23:22:38 2002
+@@ -482,12 +482,6 @@
+ # but does auto-cancel when widget is deleted.
+ require Tk::After;
+ 
+-sub afterIdle
+-{
+- my $w = shift;
+- return Tk::After->new($w,'idle','once',@_);
+-}
+-
+ sub afterCancel
+ {
+  my ($w,$what) = @_;
+@@ -497,6 +491,21 @@
+    carp "dubious cancel of $what" if 0 && $^W;
+    $w->Tk::after('cancel' => $what);
+   }
++}
++
++sub afterIdle
++{
++ my $w = shift;
++ return Tk::After->new($w,'idle','once',@_);
++}
++
++sub afterInfo {
++    my ($w, $id) = @_;
++    if (defined $id) {
++	return ($id->[4], $id->[2], $id->[3]);
++    } else {
++	return sort( keys %{$w->{_After_}} );
++    }
+ }
+ 
+ sub after

@@ -1,0 +1,10 @@
+--- Entry.pm.orig       Mon Mar 31 20:40:37 2003
++++ Entry.pm    Mon Mar 31 20:57:00 2003
+@@ -287,6 +287,7 @@
+  return unless defined $cur;
+  my $anchor = $w->index('anchor');
+  return unless defined $anchor;
++ $Tk::pressX ||= $x;
+  if (($cur != $anchor) || (abs($Tk::pressX - $x) >= 3))
+   {
+    $Tk::mouseMoved = 1

@@ -1,0 +1,13 @@
+--- Tk804.024/pod/pack.pod	Sat Jul 13 16:13:23 2002
++++ new.Tk804.024/pod/pack.pod	Tue Nov 12 15:38:20 2002
+@@ -152,6 +152,10 @@ than receiving default values.
+ 
+ =over 4
+ 
++=item I<$slave>-E<gt>B<packConfigure>?(I<options>)?
++
++Same as B<pack>.
++
+ =item I<$slave>-E<gt>B<packForget>
+ 
+ Removes I<slave> from the packing order for its

@@ -10,7 +10,7 @@
 # 1)	Add support for Mac OS X (Darwin).
 # 	  
 	cd ../Tk804.024/Tk
-	patch -p0  < ../../Tk804.024.patches/1-MMutil.patch
+	patch -p0  < ../Tk804.024.patches/1-MMutil.patch
 	cd -
 # 
 # 2)	Copy documentation from ErrorDialog.pm module to Error.pod and

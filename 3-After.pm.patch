@@ -1,0 +1,25 @@
+--- Tk804.024/Tk/After.pm.orig	Sun Nov 10 21:13:27 2002
++++ Tk804.024/Tk/After.pm	Sun Nov 10 23:45:32 2002
+@@ -1,4 +1,4 @@
+-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
++# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved. 
+ # This program is free software; you can redistribute it and/or
+ # modify it under the same terms as Perl itself.
+ package Tk::After;
+@@ -81,6 +81,16 @@
+  delete $w->{_After_}{$id};
+  local $Tk::widget = $w;
+  $obj->[4]->Call;
++}
++
++sub time {
++    my $obj = shift;
++    my $delay = shift;
++    if (defined $delay) {
++	$obj->cancel if $delay == 0;
++	$obj->[2] = $delay;
++    }
++    $obj->[2];
+ }
+ 
+ 1;

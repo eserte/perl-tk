@@ -1,0 +1,10 @@
+--- Balloon.pm.orig	Thu Apr 24 20:05:18 2003
++++ Balloon.pm	Thu Apr 24 20:07:11 2003
+@@ -81,6 +81,7 @@
+ 		    -cancelcommand => ['CALLBACK', 'cancelCommand', 'CancelCommand', undef],
+ 		    -motioncommand => ['CALLBACK', 'motionCommand', 'MotionCommand', undef],
+ 		    -background => ['DESCENDANTS', 'background', 'Background', '#C0C080'],
++                    -foreground => ['DESCENDANTS', 'foreground', 'Foreground', undef],
+ 		    -font => [$ml, 'font', 'Font', '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*'],
+ 		    -borderwidth => ['SELF', 'borderWidth', 'BorderWidth', 1]
+ 		   );

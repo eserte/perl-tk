@@ -1,0 +1,26 @@
+--- t/Trace.t	(revision 27)
++++ t/Trace.t	(revision 28)
+@@ -2,7 +2,7 @@
+ use strict;
+ use Test;
+ use Tk;
+-plan test => 5;
++plan test => 7;
+ my $var = 'One';
+ my $mw = MainWindow->new;
+ my $e  = $mw->Entry(-textvariable => \$var)->pack;
+@@ -16,3 +16,14 @@
+ chop($var);
+ ok($e->get,'Thre',"Entry does not track chop-ing variable");
+
++my $nv;
++$mw->Entry(-textvariable => \$nv);
++$nv = 3/2;
++ok($nv, 3/2, "IV should not override NV");
++
++my $pv_chop = 421;
++chop($pv_chop);
++$mw->Entry(-textvariable => \$pv_chop);
++ok($pv_chop, "42", "PV flag not set");
++
++__END__

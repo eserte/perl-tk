@@ -1,0 +1,16 @@
+--- Tk804.024/Tk/Wm.pm	Sun Oct 13 18:48:05 2002
++++ Tk804.024.sol-patches/Tk/Wm.pm	Fri Apr 18 09:46:32 2003
+@@ -16,2 +16,2 @@
+ use vars qw($VERSION);
+ $VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Wm.pm#8 $
+
+-use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
++#use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
++*{Tk::Wm::wmGrid}    = sub { shift->Tk::wm("grid", @_) };
++*{Tk::Wm::wmTracing} = sub { shift->Tk::wm("tracing", @_) };
+
+-Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
++Direct Tk::Submethods ('wm' => [qw(aspect attributes client colormapwindows command
+                        deiconify focusmodel frame geometry group
+                        iconbitmap iconify iconimage iconmask iconname
+                        iconwindow maxsize minsize overrideredirect positionfrom

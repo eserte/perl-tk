@@ -1,0 +1,435 @@
+--- Tk804.024.orig/Tixish/BrowseEntry.pm	Sat Jul 13 10:12:48 2002
++++ /Users/lusol/Desktop/Downloads/BrowseEntry/BrowseEntry.pm	Thu Feb 13 17:15:57 2003
+@@ -1,65 +1,114 @@
+ #
+ # BrowseEntry is a stripped down version of ComboBox.tcl from Tix4.0
++#
++# Some additions by Slaven Rezic <slaven@rezic.de> to make the widget
++# look like the Windows' Combobox. There are also additional options.
++#
+ 
+ package Tk::BrowseEntry;
+ 
+ use vars qw($VERSION);
+-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tixish/BrowseEntry.pm#6 $
++$VERSION = '4.007'; # $Id: BrowseEntry.pm,v 1.5 2003/02/13 22:15:57 eserte Exp $
+ 
+ use Tk qw(Ev);
+ use Carp;
+ use strict;
+ 
+-require Tk::Frame;
+-require Tk::LabEntry;
+-
+ use base qw(Tk::Frame);
+ Construct Tk::Widget 'BrowseEntry';
+ 
++require Tk::LabEntry;
++
++sub LabEntryWidget { "LabEntry" }
++sub ButtonWidget   { "Button"   }
++sub ListboxWidget  { "Listbox"  }
++
+ sub Populate {
+     my ($w, $args) = @_;
+ 
+-    $w->SUPER::Populate($args);
++    $w->Tk::Frame::Populate($args);
+ 
+     # entry widget and arrow button
+     my $lpack = delete $args->{-labelPack};
+     if (not defined $lpack) {
+ 	$lpack = [-side => 'left', -anchor => 'e'];
+     }
++    $w->{_BE_Style} = delete $args->{-style} || $Tk::platform;
++    my $LabEntry = $w->LabEntryWidget;
++    my $Listbox  = $w->ListboxWidget;
++    my $Button   = $w->ButtonWidget;
++    # XXX should this be retained?
++#      if (defined $args->{-state} and $args->{-state} eq 'readonly') { # XXX works only at construction time
++#  	$LabEntry = "NoSelLabEntry";
++#  	require Tk::NoSelLabEntry;
++#      }
++    my $e;
+     my $var = "";
+-    my $e = $w->LabEntry(-labelPack => $lpack,
+-			 -label => delete $args->{-label},
+-			 -textvariable => \$var,);
+-    my $b = $w->Button(-bitmap => '@' . Tk->findINC('cbxarrow.xbm'));
++    my @LabEntry_args = (-textvariable => \$var);
++    if (exists $args->{-label}) {
++	$e = $w->$LabEntry(-labelPack => $lpack,
++			   -label => delete $args->{-label},
++			   @LabEntry_args,
++			  );
++    } else {
++	$e = $w->$LabEntry(@LabEntry_args);
++    }
++    my $b = $w->$Button(-bitmap => '@' . Tk->findINC($w->{_BE_Style} eq 'MSWin32' ? 'arrowdownwin.xbm' : 'cbxarrow.xbm'));
+     $w->Advertise('entry' => $e);
+     $w->Advertise('arrow' => $b);
+     $b->pack(-side => 'right', -padx => 1);
+-    $e->pack(-side => 'right', -fill => 'x', -expand => 1, -padx => 1);
++    $e->pack(-side => 'right', -fill => 'x', -expand => 1); #XXX, -padx => 1);
+ 
+     # popup shell for listbox with values.
+-    my $c = $w->Toplevel(-bd => 2, -relief => 'raised');
++    my $c = $w->Toplevel(-bd => 2,
++			 -relief => ($w->{_BE_Style} eq 'MSWin32'
++				     ? "solid" : "raised"));
+     $c->overrideredirect(1);
+     $c->withdraw;
+-    my $sl = $c->Scrolled( qw/Listbox -selectmode browse -scrollbars oe/ );
++    my $sl = $c->Scrolled( $Listbox, qw/-selectmode browse -scrollbars oe/ );
++    if ($w->{_BE_Style} eq 'MSWin32' and $Tk::platform eq 'MSWin32') {
++	$sl->configure(-bg => 'SystemWindow', -relief => "flat");
++    }
+     $w->Advertise('choices' => $c);
+     $w->Advertise('slistbox' => $sl);
+     $sl->pack(-expand => 1, -fill => 'both');
+ 
++    $sl->Subwidget("scrolled")->bind("<Motion>",sub {
++	return unless ($w->{_BE_Style} eq 'MSWin32');
++	my $e = $_[0]->XEvent;
++	my $y = $e->y;
++	my $inx = $sl->nearest($y);
++	if (defined $inx) {
++	    $sl->selectionClear(0, "end");
++	    $sl->selectionSet($inx);
++	}
++   });
++
+     # other initializations
+     $w->SetBindings;
+-    $w->{'popped'} = 0;
+-    $w->Delegates('insert' => $sl, 'delete' => $sl, get => $sl, DEFAULT => $e);
++    $w->{'_BE_popped'} = 0;
++    $w->Delegates(get => $sl, DEFAULT => $e);
+     $w->ConfigSpecs(
+         -listwidth   => [qw/PASSIVE  listWidth   ListWidth/,   undef],
++        -listheight  => [{-height => $sl}, qw/listHeight ListHeight/, undef],
+         -listcmd     => [qw/CALLBACK listCmd     ListCmd/,     undef],
++        -autolistwidth   => [qw/PASSIVE autoListWidth AutoListWidth/, undef],
++        -autolimitheight => [qw/PASSIVE autoLimitHeight AutoLimitHeight 0/],
+         -browsecmd   => [qw/CALLBACK browseCmd   BrowseCmd/,   undef],
++	-browse2cmd  => [qw/CALLBACK browse2Cmd  Browse2Cmd/,  undef],
+         -choices     => [qw/METHOD   choices     Choices/,     undef],
+         -state       => [qw/METHOD   state       State         normal/],
+         -arrowimage  => [ {-image => $b}, qw/arrowImage ArrowImage/, undef],
+-        -variable    => '-textvariable',
++        -variable    => [ {'-textvariable' => $e} ],
+ 	-colorstate  => [qw/PASSIVE  colorState  ColorState/,  undef],
+         -command     => '-browsecmd',
+         -options     => '-choices',
++	-label       => [qw/PASSIVE  label       Label/,       undef],
++	-labelPack   => [qw/PASSIVE  labelPack   LabelPack/,   undef],
++		    #-background  => [$e, qw/background Background/,   undef],
++		    #-foreground  => [$e, qw/foreground Foreground/,   undef],
++	-buttontakefocus => [{-takefocus => $b}, 'buttonTakefocus',
++			     'ButtonTakefocus', 1],
+         DEFAULT      => [$e] );
+ }
+ 
+@@ -93,20 +142,20 @@
+ {
+  my $w = shift;
+  $w->BtnDown;
+- $w->{'savefocus'} = $w->focusCurrent;
++ $w->{'_BE_savefocus'} = $w->focusCurrent;
+  $w->Subwidget('slistbox')->focus;
+ }
+ 
+ 
+ sub ListboxRelease
+-{
++{    
+  my ($w,$x,$y) = @_;
+  $w->ButtonHack;
+  $w->LbChoose($x, $y);
+ }
+ 
+ sub Return
+-{
++{     
+  my ($w,$l) = @_;
+  my($x, $y) = $l->bbox($l->curselection);
+  $w->LbChoose($x, $y)
+@@ -117,28 +166,37 @@
+     my ($w) = @_;
+     return if $w->cget( '-state' ) eq 'disabled';
+ 
+-    if ($w->{'popped'}) {
++    if ($w->{'_BE_popped'}) {
+ 	$w->Popdown;
+-	$w->{'buttonHack'} = 0;
++	$w->{'_BE_buttonHack'} = 0;
+     } else {
+ 	$w->PopupChoices;
+-	$w->{'buttonHack'} = 1;
++	$w->{'_BE_buttonHack'} = 1;
+     }
+ }
+ 
+ sub PopupChoices {
+     my ($w) = @_;
+ 
+-    if (!$w->{'popped'}) {
+-       $w->Callback(-listcmd => $w);
++    if (!$w->{'_BE_popped'}) {
++	$w->Callback(-listcmd => $w);
+ 	my $e = $w->Subwidget('entry');
+ 	my $c = $w->Subwidget('choices');
+ 	my $s = $w->Subwidget('slistbox');
+ 	my $a = $w->Subwidget('arrow');
+-	my $y1 = $e->rooty + $e->height + 3;
++	my $y1 = ($w->{_BE_Style} eq 'MSWin32'
++		  ? $a->rooty + $a->height
++		  : $e->rooty + $e->height + 3
++		 );
+ 	my $bd = $c->cget(-bd) + $c->cget(-highlightthickness);
+-	my $ht = $s->reqheight + 2 * $bd;
+-	my $x1 = $e->rootx;
++	# using the real listbox reqheight rather than the
++	# container frame one, which does not change after resizing the
++	# listbox
++	my $ht = $s->Subwidget("scrolled")->reqheight + 2 * $bd;
++	my $x1 = ($w->{_BE_Style} eq 'MSWin32'
++		  ? $e->Subwidget("entry")->rootx
++		  : $e->rootx
++		 );
+ 	my ($width, $x2);
+ 	if (defined $w->cget(-listwidth)) {
+ 	    $width = $w->cget(-listwidth);
+@@ -147,18 +205,18 @@
+ 	    $x2 = $a->rootx + $a->width;
+ 	    $width = $x2 - $x1;
+ 	}
+-	my $rw = $c->reqwidth;
+-	if ($rw < $width) {
+-	    $rw = $width
+-	} else {
+-	    if ($rw > $width * 3) {
+-		$rw = $width * 3;
+-	    }
+-	    if ($rw > $w->vrootwidth) {
+-		$rw = $w->vrootwidth;
+-	    }
+-	}
+-	$width = $rw;
++    	my $rw = $c->reqwidth;
++    	if ($rw < $width) {
++    	    $rw = $width
++    	} else {
++    	    if ($rw > $width * 3) {
++    		$rw = $width * 3;
++    	    }
++    	    if ($rw > $w->vrootwidth) {
++    		$rw = $w->vrootwidth;
++    	    }
++    	}
++    	$width = $rw;
+ 
+ 	# if listbox is too far right, pull it back to the left
+ 	#
+@@ -173,18 +231,44 @@
+ 	}
+ 
+ 	# if listbox is below bottom of screen, pull it up.
++	# check the Win32 taskbar, if possible
++	my $rootheight;
++	if ($Tk::platform eq 'MSWin32' and $^O eq 'MSWin32') {
++	    eval {
++		require Win32Util; # XXX should not use a non-CPAN widget
++		$rootheight = (Win32Util::screen_region($w))[3];
++	    };
++	}
++	if (!defined $rootheight) {
++	    $rootheight = $w->vrootheight;
++	}
++
+ 	my $y2 = $y1 + $ht;
+-	if ($y2 > $w->vrootheight) {
++	if ($y2 > $rootheight) {
+ 	    $y1 = $y1 - $ht - ($e->height - 5);
+ 	}
+-
+ 	$c->geometry(sprintf('%dx%d+%d+%d', $rw, $ht, $x1, $y1));
+ 	$c->deiconify;
+ 	$c->raise;
+ 	$e->focus;
+-	$w->{'popped'} = 1;
++	$w->{'_BE_popped'} = 1;
++
++	# highlight current selection
++	my $current_sel = $e->get;
++	if (defined $current_sel) {
++	    my $i = 0;
++	    foreach my $str ($s->get(0, "end")) {
++		if ($str eq $current_sel) {
++		    $s->selectionClear(0, "end");
++		    $s->selectionSet($i);
++		    last;
++		}
++		$i++;
++	    }
++	}
+ 
+ 	$c->configure(-cursor => 'arrow');
++	$w->{'_BE_grabinfo'} = $w->grabSave;
+ 	$w->grabGlobal;
+     }
+ }
+@@ -194,13 +278,14 @@
+     my ($w, $x, $y) = @_;
+     my $l = $w->Subwidget('slistbox')->Subwidget('listbox');
+     if ((($x < 0) || ($x > $l->Width)) ||
+-	(($y < 0) || ($y > $l->Height))) {
+-	# mouse was clicked outside the listbox... close the listbox
+-	$w->LbClose;
++        (($y < 0) || ($y > $l->Height))) {
++        # mouse was clicked outside the listbox... close the listbox
++        $w->LbClose;
+     } else {
+-	# select appropriate entry and close the listbox
+-	$w->LbCopySelection;
+-       $w->Callback(-browsecmd => $w, $w->Subwidget('entry')->get);
++        # select appropriate entry and close the listbox
++        $w->LbCopySelection;
++	$w->Callback(-browsecmd, $w, $w->Subwidget('entry')->get());
++	$w->Callback(-browse2cmd => $w, $w->LbIndex);
+     }
+ }
+ 
+@@ -217,11 +302,11 @@
+     my ($w) = @_;
+     my $index = $w->LbIndex;
+     if (defined $index) {
+-	$w->{'curIndex'} = $index;
++	$w->{'_BE_curIndex'} = $index;
+ 	my $l = $w->Subwidget('slistbox')->Subwidget('listbox');
+         my $var_ref = $w->cget( '-textvariable' );
+         $$var_ref = $l->get($index);
+-	if ($w->{'popped'}) {
++	if ($w->{'_BE_popped'}) {
+ 	    $w->Popdown;
+ 	}
+     }
+@@ -245,15 +330,19 @@
+ # pop down the listbox
+ sub Popdown {
+     my ($w) = @_;
+-    if ($w->{'savefocus'} && Tk::Exists($w->{'savefocus'})) {
+-	$w->{'savefocus'}->focus;
+-	delete $w->{'savefocus'};
++    if ($w->{'_BE_savefocus'} && Tk::Exists($w->{'_BE_savefocus'})) {
++	$w->{'_BE_savefocus'}->focus;
++	delete $w->{'_BE_savefocus'};
+     }
+-    if ($w->{'popped'}) {
++    if ($w->{'_BE_popped'}) {
+ 	my $c = $w->Subwidget('choices');
+ 	$c->withdraw;
+ 	$w->grabRelease;
+-	$w->{'popped'} = 0;
++	if (ref $w->{'_BE_grabinfo'} eq 'CODE') {
++	    $w->{'_BE_grabinfo'}->();
++	    delete $w->{'_BE_grabinfo'};
++	}
++	$w->{'_BE_popped'} = 0;
+     }
+ }
+ 
+@@ -262,7 +351,7 @@
+ sub ButtonHack {
+     my ($w) = @_;
+     my $b = $w->Subwidget('arrow');
+-    if ($w->{'buttonHack'}) {
++    if ($w->{'_BE_buttonHack'}) {
+ 	$b->butUp;
+     }
+ }
+@@ -281,7 +370,8 @@
+      $w->insert( 'end', $val);
+      $hash{$val} = 1;
+     }
+-   $old = (@$choices) ? $choices->[0] : undef unless exists $hash{$old};
++   $old = $choices->[0]
++    if defined $old && not exists $hash{$old} && defined $choices->[0];
+    $$var = $old;
+   }
+  else
+@@ -309,9 +399,20 @@
+     if( $state eq 'readonly' ) {
+         $entry->configure( -state => 'disabled' );
+         $button->configure( -state => 'normal' );
++	if ($w->{_BE_Style} eq 'MSWin32') {
++	    $entry->bind('<1>',[$w,'BtnDown']);
++	    $w->{_BE_OriginalCursor} = $entry->cget( -cursor );
++	    $entry->configure( -cursor => 'left_ptr' );
++	}
+     } else {
+         $entry->configure( -state => $state );
++	if (exists $w->{_BE_OriginalCursor}) {
++	    $entry->configure(-cursor => delete $w->{_BE_OriginalCursor});
++	}
+         $button->configure( -state => $state );
++	if ($w->{_BE_Style} eq 'MSWin32') {
++	    $entry->bind('<1>',['Button1',Tk::Ev('x')]);
++	}
+     }
+ }
+ 
+@@ -346,6 +447,53 @@
+     $lb->configure( -width => $size );
+ }
+ 
++sub limitheight {
++    my $w = shift;
++    my $choices_number = shift || $w->Subwidget('slistbox')->index("end");
++    $choices_number = 10 if $choices_number > 10;
++    $w->configure(-listheight => $choices_number) if ($choices_number > 0);
++}
++
++sub insert {
++    my $w = shift;
++    $w->Subwidget("slistbox")->insert(@_);
++    if ($w->cget(-autolimitheight)) {
++	$w->limitheight;
++    }
++    if ($w->cget(-autolistwidth)) {
++	$w->updateListWidth(@_[1..$#_]);
++    }
++}
++
++sub delete {
++    my $w = shift;
++    $w->Subwidget("slistbox")->delete(@_);
++    if ($w->cget(-autolimitheight)) {
++	$w->limitheight;
++    }
++    if ($w->cget(-autolistwidth)) {
++	$w->updateListWidth();
++    }
++}
++
++sub updateListWidth {
++    my $w = shift;
++    my @ins = @_;
++    if (!@ins) {
++	@ins = $w->get(0, "end");
++    }
++
++    my $max_width = 0;
++    foreach my $ins (@ins) {
++	my $new_width = $w->fontMeasure($w->cget(-font), $ins);
++	if ($new_width > $max_width) {
++	    $max_width = $new_width;
++	}
++    }
++    if ($max_width > 20) { # be sane
++	$w->configure(-listwidth => $max_width + 32); # XXX for scrollbar
++    }
++}
+ 
+ 1;
+ 

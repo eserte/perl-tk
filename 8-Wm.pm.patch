@@ -1,0 +1,11 @@
+--- Tk804.024/Tk/Wm.pm	Sun Oct 13 18:48:05 2002
++++ new.Tk804.024/Tk/Wm.pm	Tue Oct 29 18:52:33 2002
+@@ -18,7 +18,7 @@ $VERSION = '4.008'; # $Id: //depot/Tkutf
+ 
+ use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
+ 
+-Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
++Direct Tk::Submethods ('wm' => [qw(aspect attributes client colormapwindows command
+                        deiconify focusmodel frame geometry group
+                        iconbitmap iconify iconimage iconmask iconname
+                        iconwindow maxsize minsize overrideredirect positionfrom

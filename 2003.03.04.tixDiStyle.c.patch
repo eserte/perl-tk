@@ -1,0 +1,11 @@
+--- ../Tk804.024/pTk/mTk/tixGeneric/tixDiStyle.c	Sat Jul 20 21:25:17 2002
++++ pTk/mTk/tixGeneric/tixDiStyle.c	Mon Mar  3 19:51:47 2003
+@@ -251,7 +251,7 @@ Tix_ItemStyleCmd(clientData, interp, arg
+ #else
+ 		Tcl_SetStringObj(objv[n],Tcl_GetString(objv[i]),-1);
+ 		Tcl_SetStringObj(objv[n+1],Tcl_GetString(objv[i+1]),-1);
+-		return TCL_ERROR;
++		/* XXX ??? return TCL_ERROR; */
+ #endif
+ 	    }
+ 	    n+=2;

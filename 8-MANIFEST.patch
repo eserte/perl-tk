@@ -1,0 +1,10 @@
+--- MANIFEST.orig	Fri Feb 21 12:14:37 2003
++++ MANIFEST	Fri Feb 21 12:15:32 2003
+@@ -248,6 +248,7 @@
+ Tixish/examples/perl-tix-tree
+ Tixish/lib/Tk/balArrow.xbm
+ Tixish/lib/Tk/cbxarrow.xbm
++Tixish/lib/Tk/arrowdownwin.xbm 
+ Tk.pm				"Base" class/package
+ Tk.pod
+ Tk.xs

@@ -1,0 +1,51 @@
+--- Tk804.024/pod/Error.pod.orig	Sun Nov 10 19:25:56 2002
++++ Tk804.024/pod/Error.pod	Sun Nov 10 20:31:28 2002
+@@ -77,13 +77,47 @@
+ The B<Tk> module includes a default B<Tk::Error> subroutine
+ that simply reports the error on stderr.
+ 
+-An alternate definition is provided via :
++=head1 Tk::ErrorDialog
++
++An alternate definition is provided via:
+ 
+ S<    >C<require Tk::ErrorDialog;>
+ 
+ that posts a dialog box containing the error message and offers
+ the user a chance to see a stack trace showing where the
+ error occurred.
++
++This is an OO implementation of the Tcl/Tk command B<bgerror>, with a
++twist: since there is only one B<ErrorDialog> widget, you aren't required
++to invoke the constructor to create it; it will be created
++automatically when the first background error occurs.  However, in
++order to configure the I<-cleanupcode> and I<-appendtraceback>
++B<ErrorDialog> options you must call the constructor and create it
++manually.
++
++The B<ErrorDialog> object essentially consists of two subwidgets: a
++B<Dialog> widget to display the background error and a B<Text> widget
++for the traceback information.  If required, you can invoke various
++widget methods to customize these subwidgets - their advertised names
++are described below.
++
++S<    >I<$mw>-E<gt>B<ErrorDialog>(-cleanupcode => I<code>, -appendtraceback => I<bool>);
++
++$mw is a window reference.
++
++I<code> is a CODE reference if special post-background error
++processing is required (default is undefined). The callback subroutine
++is called with @_ having the same arguments that B<Tk::Error> was
++invoked with.
++
++I<bool> is a boolean indicating whether or not to append successive
++tracebacks (default is 1, do append).
++
++=head2 Advertised ErrorDialog widgets
++
++I<error_dialog> is the Dialog widget reference.
++
++I<text> is the Text widget reference containing the traceback information.
+ 
+ =head1 BUGS
+ 

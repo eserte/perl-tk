@@ -1,0 +1,280 @@
+--- Tk804.024/demos/widget.orig	Sun Nov 17 18:07:22 2002
++++ Tk804.024/demos/widget	Sun Nov 17 21:29:06 2002
+@@ -1,7 +1,6 @@
+ #!/usr/local/bin/perl -w
+ 
+-require 5.004;
+-
++use 5.005_03;
+ use Tk 800.000;
+ use lib Tk->findINC('demos/widget_lib');
+ use Tk::widgets qw/Dialog ErrorDialog ROText/;
+@@ -244,7 +243,7 @@
+     -default_button => 'OK',
+     -buttons        => ['OK'],
+     -text           => "         widget\n\nPerl Version $]" .
+-		       "\nTk Version $Tk::VERSION\n\n      2000/07/07",
++		       "\nTk Version $Tk::VERSION\n\n      2002/11/17",
+ );
+ $help->cget(-menu)->entryconfigure('About',
+     -command => [$DIALOG_ABOUT => 'Show'],
+@@ -497,9 +496,11 @@
+  # Stephen.O.Lidie@Lehigh.EDU, 2000/07/06, Lehigh University.
+  #     Remove inswt() from widget and styles.pl to show the proper Perl/Tk
+  #     idiom for inserting Text tags.  Various and sundry cleanups.
++ # sol0@lehigh.edu, 2002/11/17, Lehigh University Computing Center.
++ #     Update for Tk 8.4.x.
+ 
+ =head1 AUTHOR
+ 
+-Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
++Steve Lidie <sol0@Lehigh.EDU>
+ 
+ =cut
+--- Tk804.024/demos/demos/widget_lib/arrows.pl.orig	Sun Nov 17 18:52:49 2002
++++ Tk804.024/demos/demos/widget_lib/arrows.pl	Sun Nov 17 18:58:07 2002
+@@ -84,7 +84,7 @@
+ 
+     my($c) = @_;
+ 
+-    my $i = $c->create(qw/text .6i .1i -anchor n -text/ => "Range error!");
++    my $i = $c->createText(qw/.6i .1i -anchor n -text/ => "Range error!");
+     $c->after(4000, sub { $c->delete($i) });
+ 
+ } # end errow_err
+@@ -164,40 +164,40 @@
+     # Create the arrow and outline.
+ 
+     $c->delete('all');
+-    $c->create('line', $v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'},
++    $c->createLine($v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'},
+ 	       -width => 10*$v->{width},
+ 	       -arrowshape => [10*$v->{a}, 10*$v->{b}, 10*$v->{c}],
+ 	       -arrow => 'last', @{$v->{bigLineStyle}});
+     my $xtip = $v->{x2}-10*$v->{b};
+     my $deltaY =  10*$v->{c}+5*$v->{width};
+-    $c->create('line', $v->{x2}, $v->{'y'}, $xtip, $v->{'y'}+$deltaY,
++    $c->createLine($v->{x2}, $v->{'y'}, $xtip, $v->{'y'}+$deltaY,
+ 	       $v->{x2}-10*$v->{a}, $v->{'y'}, $xtip, $v->{'y'}-$deltaY,
+ 	       $v->{x2}, $v->{'y'}, -width => 2, -capstyle => 'round',
+ 	       -joinstyle => 'round');
+ 
+     # Create the boxes for reshaping the line and arrowhead.
+ 
+-    $c->create('rectangle', $v->{x2}-10*$v->{a}-5, $v->{'y'}-5,
++    $c->createRectangle($v->{x2}-10*$v->{a}-5, $v->{'y'}-5,
+ 	       $v->{x2}-10*$v->{a}+5, $v->{'y'}+5, @{$v->{boxStyle}},
+ 	       -tags => ['box1', 'box']);
+-    $c->create('rectangle', $xtip-5, $v->{'y'}-$deltaY-5, $xtip+5,
++    $c->createRectangle($xtip-5, $v->{'y'}-$deltaY-5, $xtip+5,
+ 	       $v->{'y'}-$deltaY+5, @{$v->{boxStyle}},
+ 	       -tags => ['box2', 'box']);
+-    $c->create('rectangle', $v->{x1}-5, $v->{'y'}-5*$v->{width}-5,
++    $c->createRectangle($v->{x1}-5, $v->{'y'}-5*$v->{width}-5,
+ 	       $v->{x1}+5, $v->{'y'}-5*$v->{width}+5, @{$v->{boxStyle}},
+ 	       -tags => ['box3', 'box']);
+ 
+     # Create three arrows in actual size with the same parameters
+ 
+-    $c->create('line', $v->{x2}+50, 0, $v->{x2}+50, 1000, -width => 2);
++    $c->createLine($v->{x2}+50, 0, $v->{x2}+50, 1000, -width => 2);
+     my $tmp = $v->{x2}+100;
+-    $c->create('line', $tmp, $v->{'y'}-125, $tmp, $v->{'y'}-75,
++    $c->createLine($tmp, $v->{'y'}-125, $tmp, $v->{'y'}-75,
+ 	       -width => $v->{width}, -arrow => 'both',
+ 	       -arrowshape => [$v->{a}, $v->{b}, $v->{c}]);
+-    $c->create('line', $tmp-25, $v->{'y'}, $tmp+25, $v->{'y'},
++    $c->createLine($tmp-25, $v->{'y'}, $tmp+25, $v->{'y'},
+ 	       -width => $v->{width}, -arrow => 'both',
+ 	       -arrowshape =>[$v->{a}, $v->{b}, $v->{c}]);
+-    $c->create('line', $tmp-25, $v->{'y'}+75, $tmp+25, $v->{'y'}+125,
++    $c->createLine($tmp-25, $v->{'y'}+75, $tmp+25, $v->{'y'}+125,
+ 	       -width => $v->{width}, -arrow => 'both',
+ 	       -arrowshape => [$v->{a}, $v->{b}, $v->{c}]);
+     $c->itemconfigure($cur, @{$v->{activeStyle}}) if $cur =~ /box?/;
+@@ -206,31 +206,31 @@
+     # dimensions.
+ 
+     $tmp = $v->{x2}+10;
+-    $c->create('line', $tmp, $v->{'y'}-5*$v->{width}, $tmp, $v->{'y'}-$deltaY,
++    $c->createLine($tmp, $v->{'y'}-5*$v->{width}, $tmp, $v->{'y'}-$deltaY,
+ 	       -arrow => 'both', -arrowshape => $v->{smallTips});
+-    $c->create('text', $v->{x2}+15, $v->{'y'}-$deltaY+5*$v->{c},
++    $c->createText($v->{x2}+15, $v->{'y'}-$deltaY+5*$v->{c},
+ 	       -text => $v->{c}, -anchor => 'w');
+     $tmp =  $v->{x1}-10;
+-    $c->create('line', $tmp, $v->{'y'}-5*$v->{width}, $tmp,
++    $c->createLine($tmp, $v->{'y'}-5*$v->{width}, $tmp,
+ 	       $v->{'y'}+5*$v->{width}, -arrow => 'both',
+ 	       -arrowshape => $v->{smallTips});
+-    $c->create('text', $v->{x1}-15, $v->{'y'}, -text => $v->{width},
++    $c->createText($v->{x1}-15, $v->{'y'}, -text => $v->{width},
+ 	       -anchor => 'e');
+     $tmp = $v->{'y'}+5*$v->{width}+10*$v->{c}+10;
+-    $c->create('line', $v->{x2}-10*$v->{a}, $tmp, $v->{x2}, $tmp,
++    $c->createLine($v->{x2}-10*$v->{a}, $tmp, $v->{x2}, $tmp,
+ 	       -arrow => 'both', -arrowshape => $v->{smallTips});
+-    $c->create('text', $v->{x2}-5*$v->{a}, $tmp+5, -text => $v->{a},
++    $c->createText($v->{x2}-5*$v->{a}, $tmp+5, -text => $v->{a},
+ 	       -anchor => 'n');
+     $tmp = $tmp+25;
+-    $c->create('line', $v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp,
++    $c->createLine($v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp,
+ 	       -arrow => 'both', -arrowshape => $v->{smallTips});
+-    $c->create('text', $v->{x2}-5*$v->{b}, $tmp+5, -text => $v->{b},
++    $c->createText($v->{x2}-5*$v->{b}, $tmp+5, -text => $v->{b},
+ 	       -anchor => 'n');
+ 
+-    $c->create('text', $v->{x1}, 310, -text => "-width =>  $v->{width}",
++    $c->createText($v->{x1}, 310, -text => "-width =>  $v->{width}",
+ 	       -anchor => 'w',
+ 	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
+-    $c->create('text', $v->{x1}, 330,
++    $c->createText($v->{x1}, 330,
+ 	       -text => "-arrowshape =>  [$v->{a}, $v->{b}, $v->{c}]",
+ 	       -anchor => 'w',
+ 	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
+--- Tk804.024/demos/demos/widget_lib/bind.pl.orig	Sun Nov 17 19:02:04 2002
++++ Tk804.024/demos/demos/widget_lib/bind.pl	Sun Nov 17 19:03:46 2002
+@@ -44,19 +44,19 @@
+     $t->insert('end', '6. A grid that demonstrates how canvases can be scrolled.', 'd6');
+ 
+     foreach $tag (qw(d1 d2 d3 d4 d5 d6)) {
+-	$t->tag('bind', $tag, '<Any-Enter>' =>
+-            sub {shift->tag('configure', $tag, @bold)}
++	$t->tagBind($tag, '<Any-Enter>' =>
++            sub {shift->tagConfigure($tag, @bold)}
+         );
+-	$t->tag('bind', $tag, '<Any-Leave>' =>
+-            sub {shift->tag('configure', $tag, @normal)}
++	$t->tagBind($tag, '<Any-Leave>' =>
++            sub {shift->tagConfigure($tag, @normal)}
+         );
+     }
+-    $t->tag(qw/bind d1 <1>/ => sub {&items('items')});
+-    $t->tag(qw/bind d2 <1>/ => sub {&plot('plot')});
+-    $t->tag(qw/bind d3 <1>/ => sub {&ctext('ctext')});
+-    $t->tag(qw/bind d4 <1>/ => sub {&arrows('arrows')});
+-    $t->tag(qw/bind d5 <1>/ => sub {&ruler('ruler')});
+-    $t->tag(qw/bind d6 <1>/ => sub {&cscroll('cscroll')});
++    $t->tagBind(qw/d1 <1>/ => sub {&items('items')});
++    $t->tagBind(qw/d2 <1>/ => sub {&plot('plot')});
++    $t->tagBind(qw/d3 <1>/ => sub {&ctext('ctext')});
++    $t->tagBind(qw/d4 <1>/ => sub {&arrows('arrows')});
++    $t->tagBind(qw/d5 <1>/ => sub {&ruler('ruler')});
++    $t->tagBind(qw/d6 <1>/ => sub {&cscroll('cscroll')});
+ 
+     $t->mark(qw/set insert 0.0/);
+ 
+--- Tk804.024/demos/demos/widget_lib/form.pl.orig	Sun Nov 17 18:45:43 2002
++++ Tk804.024/demos/demos/widget_lib/form.pl	Sun Nov 17 18:46:22 2002
+@@ -19,8 +19,8 @@
+     foreach ('Name:', 'Address:', '', '', 'Phone:') {
+ 	my $e = $f->Entry(qw/-relief sunken -width 40/);
+ 	my $l = $f->Label(-text => $_, -anchor => 'e', -justify => 'right');
+-        Tk::grid( $l, -row => $row, -column => 0, -sticky => 'e');
+-        Tk::grid( $e, -row => $row++, -column => 1,-sticky => 'ew');
++        $l->grid(-row => $row, -column => 0, -sticky => 'e');
++        $e->grid(-row => $row++, -column => 1,-sticky => 'ew');
+         $f->gridRowconfigure(1,-weight => 1);
+ 	$e->focus if $_ eq 'Name:';
+     }
+--- Tk804.024/demos/demos/widget_lib/hscale.pl.orig	Sun Nov 17 19:22:58 2002
++++ Tk804.024/demos/demos/widget_lib/hscale.pl	Sun Nov 17 19:24:05 2002
+@@ -19,8 +19,8 @@
+ 
+     my $canvas = $frame->Canvas(
+         qw/width 50 -height 50 -bd 0 -highlightthickness 0/);
+-    $canvas->create(qw/polygon 0 0 1 1 2 2 -fill DeepSkyBlue3 -tags poly/);
+-    $canvas->create(qw/line 0 0 1 1 2 2 0 0 -fill black -tags line/);
++    $canvas->createPolygon(qw/0 0 1 1 2 2 -fill DeepSkyBlue3 -tags poly/);
++    $canvas->createLine (qw/0 0 1 1 2 2 0 0 -fill black -tags line/);
+ 
+     my $scale = $frame->Scale(qw/-orient horizontal -length 284 -from 0
+         -to 250 -tickinterval 50 -command/ => [\&hscale_width, $canvas]);
+--- Tk804.024/demos/demos/widget_lib/Plot.pm.orig	Sun Nov 17 19:06:35 2002
++++ Tk804.024/demos/demos/widget_lib/Plot.pm	Sun Nov 17 19:07:33 2002
+@@ -9,23 +9,15 @@
+ #
+ # Advertised Plot widgets:  canvas, entry, PostScript_button, view_button.
+ 
+-require 5.002;
++require 5.005_03;
+ 
+ use vars qw/$VERSION @ISA/;
+ $VERSION = '4.002'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Plot.pm#2 $
+ 
+ use Tk::Frame;
+-use base  qw(Tk::Frame);
++use base  qw/Tk::Frame/;
+ Construct Tk::Widget 'Plot';
+ use strict;
+-
+-# Plot Virtual Methods
+-#
+-# 	$plot = $MW->Plot(
+-#           -title_color        => 'Brown',
+-#           -inactive_highlight => 'Skyblue2',
+-#           -active_highlight   => 'red',
+-#       );
+ 
+ sub Populate {
+ 
+--- Tk804.024/demos/demos/widget_lib/search.pl.orig	Sun Nov 17 19:11:19 2002
++++ Tk804.024/demos/demos/widget_lib/search.pl	Sun Nov 17 19:24:41 2002
+@@ -117,13 +117,13 @@
+     if (not open(F, "<$$file")) {
+ 	$MW->Dialog(
+             -title  => 'File Not Found',
+-            -text   => $OS_ERROR,
++            -text   => "$!: '$$file'",
+             -bitmap => 'error',
+         )->Show;
+ 	return;
+     }
+     $w->delete(qw/1.0 end/);
+-    $bytes = read F, $buf, 10000;	# after all, it IS just an example
++    $bytes = read F, $buf, 10_000;	# after all, it IS just an example
+     $w->insert('end', $buf);
+     if ($bytes == 10000) {
+ 	$w->insert('end', "\n\n**************** File truncated at 10,000 bytes! ****************\n");
+@@ -149,13 +149,13 @@
+ 
+     return unless ref($string) && length($$string);
+ 
+-    $w->tag('remove',  $tag, qw/0.0 end/);
++    $w->tagRemove($tag, qw/0.0 end/);
+     my($current, $length) = ('1.0', 0);
+ 
+     while (1) {
+ 	$current = $w->search(-count => \$length, $$string, $current, 'end');
+ 	last if not $current;
+-	$w->tag('add', $tag, $current, "$current + $length char");
++	$w->tagAdd($tag, $current, "$current + $length char");
+ 	$current = $w->index("$current + $length char");
+     }
+ 
+--- Tk804.024/demos/demos/widget_lib/vscale.pl.orig	Sun Nov 17 19:23:05 2002
++++ Tk804.024/demos/demos/widget_lib/vscale.pl	Sun Nov 17 19:25:14 2002
+@@ -19,8 +19,8 @@
+ 
+     my $canvas = $frame->Canvas(
+         qw/-width 50 -height 50 -borderwidth 0 -highlightthickness 0/);
+-    $canvas->create(qw/polygon 0 0 1 1 2 2 -fill SeaGreen3 -tags poly/);
+-    $canvas->create(qw/line 0 0 1 1 2 2 0 0 -fill black -tags line/);
++    $canvas->createPolygon(qw/0 0 1 1 2 2 -fill SeaGreen3 -tags poly/);
++    $canvas->createLine(qw/0 0 1 1 2 2 0 0 -fill black -tags line/);
+ 
+     my $scale = $frame->Scale(qw/-orient vertical -length 284 -from 0
+         -to 250 -tickinterval 50 -command/ => [\&vscale_height, $canvas]);
+--- Tk804.024/demos/demos/widget_lib/WidgetDemo.pm.orig	Sun Nov 17 18:13:05 2002
++++ Tk804.024/demos/demos/widget_lib/WidgetDemo.pm	Sun Nov 17 18:25:00 2002
+@@ -1,6 +1,7 @@
+ package WidgetDemo;
+ 
+-use 5.004;
++use 5.005_03;
++use Tk 800.000;
+ use Carp;
+ 
+ use vars qw($VERSION @ISA);

@@ -1,0 +1,56 @@
+--- t/Trace.t	(revision 27)
++++ t/Trace.t	(revision 28)
+@@ -2,7 +2,7 @@
+ use strict;
+ use Test;
+ use Tk;
+-plan test => 5;
++plan test => 7;
+ my $var = 'One';
+ my $mw = MainWindow->new;
+ my $e  = $mw->Entry(-textvariable => \$var)->pack;
+@@ -16,3 +16,14 @@
+ chop($var);
+ ok($e->get,'Thre',"Entry does not track chop-ing variable");
+
++my $nv;
++$mw->Entry(-textvariable => \$nv);
++$nv = 3/2;
++ok($nv, 3/2, "IV should not override NV");
++
++my $pv_chop = 421;
++chop($pv_chop);
++$mw->Entry(-textvariable => \$pv_chop);
++ok($pv_chop, "42", "PV flag not set");
++
++__END__
+--- tkGlue.c.orig	Thu Apr 24 20:46:21 2003
++++ tkGlue.c	Thu Apr 24 20:52:19 2003
+@@ -3368,7 +3368,6 @@
+     some magic list or be careful how we insert ourselves in the list?
+ 
+   */
+-
+  if (!SvPOK(sv) && SvPOKp(sv))
+   SvPOK_on(sv);
+ 
+@@ -3399,6 +3398,11 @@
+     some magic list or be careful how we insert ourselves in the list?
+ 
+   */
++
++ /* This seems to be wrong in at least one case --- see t/Trace.t and
++    Message-ID: <3ef348b.0304240510.299e5519@posting.google.com>
++ */
++#if 0
+  if (!SvPOK(sv) && SvPOKp(sv))
+   SvPOK_on(sv);
+ 
+@@ -3407,6 +3411,7 @@
+ 
+  if (!SvIOK(sv) && SvIOKp(sv))
+   SvIOK_on(sv);
++#endif
+ 
+  ENTER;
+  SvREFCNT_inc(sv);

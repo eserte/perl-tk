@@ -1,0 +1,41 @@
+--- Tk804.024/pTk/ptkCanvGrid.c	Sun Sep  8 09:09:37 2002
++++ new.Tk804.024/pTk/ptkCanvGrid.c	Thu Jan 23 11:26:34 2003
+@@ -513,21 +513,24 @@ DisplayGrid(canvas, itemPtr, display, dr
+     ComputeGridBbox(canvas, gridPtr);
+ 
+     /* Clip grid to the scroll region */
+-    if (cx < (double) (canvasPtr->scrollX1))
++    if (canvasPtr->regionArg != NULL)
+      {
+-      cx = (double) (canvasPtr->scrollX1);
+-     }
+-    if (cy < (double) (canvasPtr->scrollY1))
+-     {
+-      cy = (double) (canvasPtr->scrollY1);
+-     }
+-    if (mx > (double) (canvasPtr->scrollX2))
+-     {
+-      mx = (double) (canvasPtr->scrollX2);
+-     }
+-    if (my > (double) (canvasPtr->scrollY2))
+-     {
+-      my = (double) (canvasPtr->scrollY2);
++      if (cx < (double) (canvasPtr->scrollX1))
++       {
++  	cx = (double) (canvasPtr->scrollX1);
++       }
++      if (cy < (double) (canvasPtr->scrollY1))
++       {
++  	cy = (double) (canvasPtr->scrollY1);
++       }
++      if (mx > (double) (canvasPtr->scrollX2))
++       {
++  	mx = (double) (canvasPtr->scrollX2);
++       }
++      if (my > (double) (canvasPtr->scrollY2))
++       {
++  	my = (double) (canvasPtr->scrollY2);
++       }
+      }
+ 
+     /* Compute first grid point within the region to be drawn */

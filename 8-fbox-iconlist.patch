@@ -1,0 +1,1199 @@
+--- /usr/local/src/Tk804.024/Tk/FBox.pm	Sun Sep 15 16:11:42 2002
++++ FBox.pm	Sun Feb  2 22:36:53 2003
+@@ -18,7 +18,7 @@
+ # See the file "license.terms" for information on usage and redistribution
+ # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+ #
+-# Translated to perk/Tk by Slaven Rezic <eserte@cs.tu-berlin.de>.
++# Translated to perl/Tk by Slaven Rezic <slaven@rezic.de>.
+ #
+
+ #----------------------------------------------------------------------
+@@ -39,15 +39,12 @@
+ use strict;
+ use vars qw($VERSION $updirImage $folderImage $fileImage);
+
+-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/FBox.pm#9 $
++$VERSION = '4.010'; # $Id: FBox.pm,v 2.2 2003/02/02 21:36:53 eserte Exp $
+
+ use base qw(Tk::Toplevel);
+
+ Construct Tk::Widget 'FBox';
+
+-my $selectFilePath;
+-my $selectFile;
+-
+ sub import {
+     if (defined $_[1] and $_[1] eq 'as_default') {
+ 	local $^W = 0;
+@@ -75,7 +72,6 @@
+     # f1: the frame with the directory option menu
+     my $f1 = $w->Frame;
+     my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
+-    $w->{'selectPath'} = '.';
+     $w->{'dirMenu'} = my $dirMenu =
+       $f1->Optionmenu(-variable => \$w->{'selectPath'},
+ 		      -textvariable => \$w->{'selectPath'},
+@@ -101,12 +97,13 @@
+     $dirMenu->pack(-expand => 'yes', -fill => 'both', -padx => 4);
+
+     $w->{'icons'} = my $icons =
+-      $w->IconList(-browsecmd => ['ListBrowse', $w],
+-		   -command   => ['ListInvoke', $w],
++      $w->IconList(-command => ['OkCmd', $w],
+ 		  );
++    $icons->bind('<<ListboxSelect>>' => [$w, 'ListBrowse']);
+
+     # f2: the frame with the OK button and the "file name" field
+     my $f2 = $w->Frame(-bd => 0);
++#XXX File name => File names if multiple
+     my $f2_lab = $f2->Label(-text => 'File name:', -anchor => 'e',
+ 			    -width => 14, -underline => 5, -pady => 0);
+     $w->{'ent'} = my $ent = $f2->Entry;
+@@ -213,6 +210,7 @@
+                     -type             => ['PASSIVE', undef, undef, 'open'],
+                     -filter           => ['PASSIVE', undef, undef, '*'],
+                     -force            => ['PASSIVE', undef, undef, 0],
++                    -multiple         => ['PASSIVE', undef, undef, 0],
+                     'DEFAULT'         => [$icons],
+                    );
+     # So-far-failed attempt to break reference loops ...
+@@ -226,7 +224,16 @@
+
+     $w->configure(@_);
+
+-    $w->transient($w->Parent);
++    # Dialog boxes should be transient with respect to their parent,
++    # so that they will always stay on top of their parent window.  However,
++    # some window managers will create the window as withdrawn if the parent
++    # window is withdrawn or iconified.  Combined with the grab we put on the
++    # window, this can hang the entire application.  Therefore we only make
++    # the dialog transient if the parent is viewable.
++
++    if (Tk::Exists($w->Parent) && $w->Parent->viewable) {
++	$w->transient($w->Parent);
++    }
+
+     # set the default directory and selection according to the -initial
+     # settings
+@@ -243,6 +250,15 @@
+ 	$w->{'selectFile'} = $w->cget(-initialfile);
+     }
+
++    # Set -multiple to a one or zero value (not other boolean types
++    # like "yes") so we can use it in tests more easily.
++    if ($w->cget('-type') eq 'save') {
++	$w->configure(-multiple => 0);
++    } else {
++	$w->configure(-multiple => !!$w->cget('-multiple'));
++    }
++    $w->{'icons'}->configure(-multiple => $w->cget('-multiple'));
++
+     # Initialize the file types menu
+     my $typeMenuBtn = $w->{'typeMenuBtn'};
+     my $typeMenuLab = $w->{'typeMenuLab'};
+@@ -262,7 +278,7 @@
+ 	$typeMenuBtn->configure(-state => 'normal');
+ 	$typeMenuLab->configure(-state => 'normal');
+     } else {
+-	$w->configure(-filter => '*');
++#XXX	$w->configure(-filter => '*');
+ 	$typeMenuBtn->configure(-state => 'disabled',
+ 				-takefocus => 0);
+ 	$typeMenuLab->configure(-state => 'disabled');
+@@ -272,6 +288,7 @@
+     # Withdraw the window, then update all the geometry information
+     # so we know how big it wants to be, then center the window in the
+     # display and de-iconify it.
++#XXX use Tk::Wm::Popup? or Tk::PlaceWindow?
+     $w->withdraw;
+     $w->idletasks;
+     my $x = int($w->screenwidth / 2 - $w->reqwidth / 2 - $w->parent->vrootx);
+@@ -288,6 +305,7 @@
+
+     $w->deiconify;
+     # Set a grab and claim the focus too.
++#XXX use Tk::setFocusGrab when it's available
+     my $oldFocus = $w->focusCurrent;
+     my $oldGrab = $w->grabCurrent;
+     my $grabStatus = $oldGrab->grabStatus if ($oldGrab);
+@@ -295,17 +313,18 @@
+     my $ent = $w->{'ent'};
+     $ent->focus;
+     $ent->delete(0, 'end');
+-    $ent->insert(0, $w->{'selectFile'});
+-    $ent->selectionFrom(0);
+-    $ent->selectionTo('end');
+-    $ent->icursor('end');
++    if (defined $w->{'selectFile'} && $w->{'selectFile'} ne '') {
++	$ent->insert(0, $w->{'selectFile'});
++	$ent->selectionRange(0,'end');
++	$ent->icursor('end');
++    }
+
+     # 8. Wait for the user to respond, then restore the focus and
+     # return the index of the selected button.  Restore the focus
+     # before deleting the window, since otherwise the window manager
+     # may take the focus away so we can't redirect it.  Finally,
+     # restore any grab that was in effect.
+-    $w->waitVariable(\$selectFilePath);
++    $w->waitVariable(\$w->{'selectFilePath'});
+     eval {
+ 	$oldFocus->focus if $oldFocus;
+     };
+@@ -320,7 +339,7 @@
+ 	    $oldGrab->grab;
+ 	}
+     }
+-    return $selectFilePath;
++    return $w->{'selectFilePath'};
+ }
+
+ # tkFDialog_UpdateWhenIdle --
+@@ -339,33 +358,6 @@
+     }
+ }
+
+-# This proc gets called whenever data(selectPath) is set
+-#
+-sub SetPath
+-{
+- my $w = shift;
+- if (@_)
+-  {
+-   my $newdir = shift;
+-   # Update the Directory: option menu
+-   my @list;
+-   my $dir = '';
+-   foreach my $subdir (TclFileSplit($newdir))
+-    {
+-     $dir = TclFileJoin($dir, $subdir);
+-     push @list, $dir;
+-    }
+-    my $dirMenu = $w->{'dirMenu'};
+-    $dirMenu->configure(-options => \@list);
+-    $w->{'selectPath'} = $newdir;
+-    # my $vvar = $dirMenu->cget('-variable');
+-    # my $tvar = $dirMenu->cget('-textvariable');
+-    # my $mvar = \$w->{'selectPath'};
+-    # print "now m=$mvar ($$mvar) t=$tvar ($$tvar) v=$vvar ($$vvar)\n";
+-  }
+- $w->UpdateWhenIdle;
+-}
+-
+ # tkFDialog_Update --
+ #
+ #	Loads the files and directories into the IconList widget. Also
+@@ -378,7 +370,7 @@
+
+     # This proc may be called within an idle handler. Make sure that the
+     # window has not been destroyed before this proc is called
+-    if (!Tk::Exists($w) || !$w->isa('Tk::FBox')) {
++    if (!Tk::Exists($w) || $w->class ne 'FBox') {
+ 	return;
+     } else {
+ 	delete $w->{'updateId'};
+@@ -407,31 +399,57 @@
+
+     # Turn on the busy cursor. BUG?? We haven't disabled X events, though,
+     # so the user may still click and cause havoc ...
+-    $w->Busy(-cursor => 'watch', -recurse => 1);
++    my $ent = $w->{'ent'};
++    my $entCursor = $ent->cget(-cursor);
++    my $dlgCursor = $w->cget(-cursor);
++    $ent->configure(-cursor => 'watch');
++    $w->configure(-cursor => 'watch');
+     $w->idletasks;
+     my $icons = $w->{'icons'};
+     $icons->DeleteAll;
+
+     # Make the dir & file list
+-    my $flt = join('|', split(' ', $w->cget(-filter)) );
+-    $flt =~ s!([\.\+])!\\$1!g;
+-    $flt =~ s!\*!.*!g;
++    my $cwd = _cwd();
+     local *FDIR;
+-    if( opendir( FDIR,  _cwd() )) {
++    if (opendir(FDIR, $cwd)) {
+         my @files;
+ #	my $sortcmd = $w->cget(-sortcmd);
+ 	my $sortcmd = sub { $w->cget(-sortcmd)->($a,$b) };
++	my $flt = $w->cget(-filter);
++	my $fltcb;
++	if (ref $flt eq 'CODE') {
++	    $fltcb = $flt;
++	} else {
++	    $flt = _rx_to_glob($flt);
++	}
+         foreach my $f (sort $sortcmd readdir(FDIR)) {
+             next if $f eq '.' or $f eq '..';
+-            if (-d $f) { $icons->Add($folder, $f); }
+-            elsif( $f =~ m!$flt$! ) { push( @files, $f ); }
++	    if ($fltcb) {
++		next if !$fltcb->($w, $f, $cwd);
++	    } else {
++		next if -f $f && $f !~ m!$flt!;
++	    }
++            if (-d $f) {
++		$icons->Add($folder, $f);
++	    } else {
++		push @files, $f;
++	    }
+ 	}
+-      closedir( FDIR );
+-      foreach my $f ( @files ) { $icons->Add($file, $f); }
++	closedir(FDIR);
++	$icons->Add($file, @files);
+     }
+
+     $icons->Arrange;
+
++    # Update the Directory: option menu
++    my @list;
++    my $dir = '';
++    foreach my $subdir (TclFileSplit($w->{'selectPath'})) {
++	$dir = TclFileJoin($dir, $subdir);
++	push @list, $dir;
++    }
++    my $dirMenu = $w->{'dirMenu'};
++    $dirMenu->configure(-options => \@list);
+
+     # Restore the PWD to the application's PWD
+     ext_chdir($appPWD);
+@@ -442,7 +460,8 @@
+     }
+
+     # turn off the busy cursor.
+-    $w->Unbusy;
++    $ent->configure(-cursor => $entCursor);
++    $w->configure(-cursor =>  $dlgCursor);
+ }
+
+ # tkFDialog_SetPathSilently --
+@@ -455,8 +474,17 @@
+     $w->{'selectPath'} = $path;
+ }
+
++# This proc gets called whenever data(selectPath) is set
++#
++sub SetPath {
++    my $w = shift;
++    $w->{'selectPath'} = $_[0] if @_;
++    $w->UpdateWhenIdle;
++}
++
+ # This proc gets called whenever data(filter) is set
+ #
++#XXX here's much more code in the tcl version ... check it out
+ sub SetFilter {
+     my($w, $title, $filter) = @_;
+     $w->configure(-filter => $filter);
+@@ -502,7 +530,12 @@
+     my($context, $text, $defaultext) = @_;
+     my $appPWD = _cwd();
+     my $path = JoinFile($context, $text);
+-    $path = "$path$defaultext" if ($path !~ /\..+$/) and defined $defaultext;
++    # If the file has no extension, append the default.  Be careful not
++    # to do this for directories, otherwise typing a dirname in the box
++    # will give back "dirname.extension" instead of trying to change dir.
++    if (!-d $path && $path !~ /\..+$/ && defined $defaultext) {
++	$path = "$path$defaultext";
++    }
+     # Cannot just test for existance here as non-existing files are
+     # not an error for getSaveFile type dialogs.
+     # return ('ERROR', $path, "") if (!-e $path);
+@@ -557,13 +590,12 @@
+     my $w = shift;
+     my $ent = $w->{'ent'};
+     if ($ent->get ne '') {
+-	$ent->selectionFrom(0);
+-	$ent->selectionTo('end');
++	$ent->selectionRange(0, 'end');
+ 	$ent->icursor('end');
+     } else {
+ 	$ent->selectionClear;
+     }
+-    $w->{'icons'}->Unselect;
++#XXX is this missing in the tcl version, too???    $w->{'icons'}->Selection('clear');
+     my $okBtn = $w->{'okBtn'};
+     if ($w->cget(-type) eq 'open') {
+ 	$okBtn->configure(-text => 'Open');
+@@ -583,10 +615,30 @@
+     my $w = shift;
+     my $ent = $w->{'ent'};
+     my $text = $ent->get;
+-    $text =~ s/^\s+//;
+-    $text =~ s/\s+$//;
++    if ($w->cget(-multiple)) {
++	# For the multiple case we have to be careful to get the file
++	# names as a true list, watching out for a single file with a
++	# space in the name.  Thus we query the IconList directly.
++
++	$w->{'selectFile'} = [];
++	for my $item ($w->{'icons'}->Curselection) {
++	    $w->VerifyFileName($w->{'icons'}->Get($item));
++	}
++    } else {
++	$w->VerifyFileName($text);
++    }
++}
++
++# Verification procedure
++#
++sub VerifyFileName {
++    my($w, $text) = @_;
++#XXX leave this here?
++#    $text =~ s/^\s+//;
++#    $text =~ s/\s+$//;
+     my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text,
+ 					  $w->cget(-defaultextension));
++    my $ent = $w->{'ent'};
+     if ($flag eq 'OK') {
+ 	if ($file eq '') {
+ 	    # user has entered an existing (sub)directory
+@@ -594,7 +646,11 @@
+ 	    $ent->delete(0, 'end');
+ 	} else {
+ 	    $w->SetPathSilently($path);
+-	    $w->{'selectFile'} = $file;
++	    if ($w->cget(-multiple)) {
++		push @{ $w->{'selectFile'} }, $file;
++	    } else {
++		$w->{'selectFile'} = $file;
++	    }
+ 	    $w->Done;
+ 	}
+     } elsif ($flag eq 'PATTERN') {
+@@ -606,34 +662,34 @@
+ 			   -type => 'OK',
+ 			   -message => 'File "' . TclFileJoin($path, $file)
+ 			   . '" does not exist.');
+-	    $ent->selection('from', 0);
+-	    $ent->selection('to', 'end');
++	    $ent->selectionRange(0, 'end');
+ 	    $ent->icursor('end');
+ 	} else {
+ 	    $w->SetPathSilently($path);
+-	    $w->{'selectFile'} = $file;
++	    if ($w->cget(-multiple)) {
++		push @{ $w->{'selectFile'} }, $file;
++	    } else {
++		$w->{'selectFile'} = $file;
++	    }
+ 	    $w->Done;
+ 	}
+     } elsif ($flag eq 'PATH') {
+ 	$w->messageBox(-icon => 'warning',
+ 		       -type => 'OK',
+ 		       -message => "Directory \'$path\' does not exist.");
+-	$ent->selection('from', 0);
+-	$ent->selection('to', 'end');
++	$ent->selectionRange(0, 'end');
+ 	$ent->icursor('end');
+     } elsif ($flag eq 'CHDIR') {
+ 	$w->messageBox(-type => 'OK',
+ 		       -message => "Cannot change to the directory \"$path\".\nPermission denied.",
+ 		       -icon => 'warning');
+-	$ent->selection('from', 0);
+-	$ent->selection('to', 'end');
++	$ent->selectionRange(0, 'end');
+ 	$ent->icursor('end');
+     } elsif ($flag eq 'ERROR') {
+ 	$w->messageBox(-type => 'OK',
+ 		       -message => "Invalid file name \"$path\".",
+ 		       -icon => 'warning');
+-	$ent->selection('from', 0);
+-	$ent->selection('to', 'end');
++	$ent->selectionRange(0, 'end');
+ 	$ent->icursor('end');
+     }
+ }
+@@ -711,36 +767,65 @@
+ #
+ sub OkCmd {
+     my $w = shift;
+-    my $text = $w->{'icons'}->Get;
+-    if (defined $text and $text ne '') {
+-	my $file = JoinFile($w->{'selectPath'}, $text);
++
++    my $filenames = [];
++    for my $item ($w->{'icons'}->Curselection) {
++	push @$filenames, $w->{'icons'}->Get($item);
++    }
++
++    if ((@$filenames && !$w->cget('-multiple')) ||
++	($w->cget('-multiple') && @$filenames == 1)) {
++	my $filename = $filenames->[0];
++	my $file = JoinFile($w->{'selectPath'}, $filename);
+ 	if (-d $file) {
+-	    $w->ListInvoke($text);
++	    $w->ListInvoke($filename);
+ 	    return;
+ 	}
+     }
++
+     $w->ActivateEnt;
+ }
+
+ # Gets called when user presses the "Cancel" button
+ #
+ sub CancelCmd {
+-    undef $selectFilePath;
++    my $w = shift;
++    undef $w->{'selectFilePath'};
+ }
+
+ # Gets called when user browses the IconList widget (dragging mouse, arrow
+ # keys, etc)
+ #
+ sub ListBrowse {
+-    my($w, $text) = @_;
+-    return if ($text eq '');
+-    my $file = JoinFile($w->{'selectPath'}, $text);
++    my($w) = @_;
++
++    my $text = [];
++    for my $item ($w->{'icons'}->Curselection) {
++	push @$text, $w->{'icons'}->Get($item);
++    }
++    return if @$text == 0;
++    my $isDir;
++    if (@$text > 1) {
++	my $newtext = [];
++	for my $file (@$text) {
++	    my $fullfile = JoinFile($w->{'selectPath'}, $file);
++	    if (!-d $fullfile) {
++		push @$newtext, $file;
++	    }
++	}
++	$text = $newtext;
++	$isDir = 0;
++    } else {
++	my $file = JoinFile($w->{'selectPath'}, $text->[0]);
++	$isDir = -d $file;
++    }
+     my $ent = $w->{'ent'};
+     my $okBtn = $w->{'okBtn'};
+-    unless (-d $file) {
+-	$ent->delete(0, 'end');
+-	$ent->insert(0, $text);
+-	if ($w->cget(-type) eq 'open') {
++    if (!$isDir) {
++	$ent->delete(qw(0 end));
++	$ent->insert(0, "@$text"); # XXX quote!
++
++	if ($w->cget('-type') eq 'open') {
+ 	    $okBtn->configure(-text => 'Open');
+ 	} else {
+ 	    $okBtn->configure(-text => 'Save');
+@@ -754,9 +839,9 @@
+ # Return key, etc)
+ #
+ sub ListInvoke {
+-    my($w, $text) = @_;
+-    return if ($text eq '');
+-    my $file = JoinFile($w->{'selectPath'}, $text);
++    my($w, @filenames) = @_;
++    return if !@filenames;
++    my $file = JoinFile($w->{'selectPath'}, $filenames[0]);
+     if (-d $file) {
+ 	my $appPWD = _cwd();
+ 	if (!ext_chdir($file)) {
+@@ -768,15 +853,22 @@
+ 	    $w->SetPath($file);
+ 	}
+     } else {
+-        my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text);
+-        if ($flag ne 'OK') {
+-            $w->messageBox(-type => 'OK',
+-                           -message => "Cannot resolve $w->{'selectPath'}/$text.",
+-                           -icon => 'error');
+-        } else {
+-            $path = JoinFile($path, $file);
+-            $w->Done($path);
+-        }
++	if ($w->cget('-multiple')) {
++	    $w->{'selectFile'} = [@filenames];
++	} else {
++	    $w->{'selectFile'} = $file;
++	}
++	$w->Done;
++#XXX hmmm, why is this here?
++#          my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text);
++#          if ($flag ne 'OK') {
++#              $w->messageBox(-type => 'OK',
++#                             -message => "Cannot resolve $w->{'selectPath'}/$text.",
++#                             -icon => 'error');
++#          } else {
++#              $path = JoinFile($path, $file);
++#              $w->Done($path);
++#          }
+     }
+ }
+
+@@ -790,20 +882,28 @@
+ #
+ sub Done {
+     my $w = shift;
+-    my $_selectFilePath = (@_) ? shift : '';
+-    if ($_selectFilePath eq '') {
+-	$_selectFilePath = JoinFile($w->{'selectPath'}, $w->{'selectFile'});
+-	if (-e $_selectFilePath and
+-	    $w->cget(-type) eq 'save' and
++    my $selectFilePath = (@_) ? shift : '';
++    if ($selectFilePath eq '') {
++	if ($w->cget('-multiple')) {
++	    $selectFilePath = [];
++	    for my $f (@{ $w->{'selectFile'} }) {
++		push @$selectFilePath, JoinFile($w->{'selectPath'}, $f);
++	    }
++	} else {
++	    $selectFilePath = JoinFile($w->{'selectPath'},
++				       $w->{'selectFile'});
++	}
++	if ($w->cget(-type) eq 'save' and
++	    -e $selectFilePath and
+ 	    !$w->cget(-force)) {
+ 	    my $reply = $w->messageBox
+ 	      (-icon => 'warning',
+ 	       -type => 'YesNo',
+-	       -message => "File \"$_selectFilePath\" already exists.\nDo you want to overwrite it?");
++	       -message => "File \"$selectFilePath\" already exists.\nDo you want to overwrite it?");
+ 	    return unless (lc($reply) eq 'yes');
+ 	}
+     }
+-    $selectFilePath = ($_selectFilePath ne '' ? $_selectFilePath : undef);
++    $w->{'selectFilePath'} = ($selectFilePath ne '' ? $selectFilePath : undef);
+ }
+
+ sub FDialog {
+@@ -910,6 +1010,17 @@
+     $1;
+ }
+
+-1;
++sub _rx_to_glob {
++    my $arg = shift;
++    $arg = join('|', split(' ', $arg));
++    $arg =~ s!([\.\+])!\\$1!g;
++    $arg =~ s!\*!.*!g;
++    $arg = "^" . $arg . "\$";
++    if ($] >= 5.005) {
++	$arg = qr/$arg/;
++    }
++    $arg;
++}
+
++1;
+
+--- /usr/local/src/Tk804.024/Tk/IconList.pm	Sun Sep 15 16:11:42 2002
++++ IconList.pm	Sun Feb  2 22:37:42 2003
+@@ -18,7 +18,7 @@
+ # See the file "license.terms" for information on usage and redistribution
+ # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+ #
+-# Translated to perk/Tk by Slaven Rezic <eserte@cs.tu-berlin.de>.
++# Translated to perk/Tk and modified by Slaven Rezic <slaven@rezic.de>.
+ #
+
+ #----------------------------------------------------------------------
+@@ -36,12 +36,12 @@
+
+ package Tk::IconList;
+ require Tk::Frame;
+-
+-use vars qw($VERSION);
+-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/IconList.pm#4 $
+-
+ use Tk qw(Ev);
+ use strict;
++use Carp;
++
++use vars qw($VERSION);
++$VERSION = '4.005'; # $Id: IconList.pm,v 2.6 2003/02/02 21:37:42 eserte Exp $
+
+ use base 'Tk::Frame';
+
+@@ -82,14 +82,22 @@
+     $w->{'maxTW'} = 1;
+     $w->{'maxTH'} = 1;
+     $w->{'numItems'} = 0;
+-    delete $w->{'curItem'};
++#XXX curItem never used    delete $w->{'curItem'};
+     $w->{'noScroll'} = 1;
++    $w->{'selection'} = [];
++    $w->{'index,anchor'} = '';
+
+     # Creates the event bindings.
+     $canvas->Tk::bind('<Configure>', sub { $w->Arrange } );
+     $canvas->Tk::bind('<1>', [$w,'Btn1',Ev('x'),Ev('y')]);
+     $canvas->Tk::bind('<B1-Motion>', [$w,'Motion1',Ev('x'),Ev('y')]);
++    $canvas->Tk::bind('<Control-B1-Motion>', 'NoOp');
++    $canvas->Tk::bind('<Shift-B1-Motion>', 'NoOp');
++    $canvas->Tk::bind('<Control-1>', [$w,'CtrlBtn1',Ev('x'),Ev('y')]);
++    $canvas->Tk::bind('<Shift-1>', [$w,'ShiftBtn1',Ev('x'),Ev('y')]);
+     $canvas->Tk::bind('<Double-ButtonRelease-1>', [$w,'Double1',Ev('x'),Ev('y')]);
++    $canvas->Tk::bind('<Control-Double-ButtonRelease-1>', 'NoOp');
++    $canvas->Tk::bind('<Shift-Double-ButtonRelease-1>', 'NoOp');
+     $canvas->Tk::bind('<ButtonRelease-1>', [$w,'CancelRepeat']);
+     $canvas->Tk::bind('<B1-Leave>', [$w,'Leave1',Ev('x'),Ev('y')]);
+     $canvas->Tk::bind('<B1-Enter>', [$w,'CancelRepeat']);
+@@ -101,18 +109,22 @@
+     $canvas->Tk::bind('<KeyPress>', [$w,'KeyPress',Ev('A')]);
+     $canvas->Tk::bind('<Control-KeyPress>', 'NoOp');
+     $canvas->Tk::bind('<Alt-KeyPress>', 'NoOp');
+-    $canvas->Tk::bind('<FocusIn>', sub { $w->FocusIn });
++    $canvas->Tk::bind('<Meta-KeyPress>', 'NoOp');
++#XXX bad....
++#    $canvas->Tk::bind('<FocusIn>', sub { $w->FocusIn });
++#    $canvas->Tk::bind('<FocusOut>', sub { $w->FocusOut });
+
++    # additional bindings not in tkfbox.tcl
+     $canvas->Tk::bind('<2>',['scan','mark',Ev('x'),Ev('y')]);
+     $canvas->Tk::bind('<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
+     # Remove the standard Canvas bindings
+-    $canvas->bindtags([$canvas]);
++    $canvas->bindtags([$canvas, $canvas->toplevel, 'all']);
+     # ... and define some again
+     $canvas->Tk::bind('<Home>', ['xview','moveto',0]);
+     $canvas->Tk::bind('<End>',  ['xview','moveto',1]);
+
+     $w->ConfigSpecs(-browsecmd =>
+-		    ['CALLBACK', 'browseCommand', 'BrowseCommand', undef],
++		    ['METHOD', 'browseCommand', 'BrowseCommand', undef],
+ 		    -command =>
+ 		    ['CALLBACK', 'command', 'Command', undef],
+ 		    -font =>
+@@ -120,13 +132,170 @@
+ 		    -foreground =>
+ 		    ['PASSIVE', 'foreground', 'Foreground', undef],
+ 		    -fg => '-foreground',
++		    -multiple =>
++		    ['PASSIVE', 'multiple', 'Multiple', 0],
+ 		    -selectmode =>
+ 		    ['PASSIVE', 'selectMode', 'SelectMode', 'browse'],
++		    -selectbackground =>
++		    ['PASSIVE', 'selectBackground', 'Foreground', '#a0a0ff'],
+ 		   );
+
+     $w;
+ }
+
++# compatibility for old -browsecmd options
++sub browsecmd {
++    my $w = shift;
++    if (@_) {
++	$w->{Configure}{'-browsecmd'} = $_[0];
++	$w->bind('<<ListboxSelect>>' => $_[0]);
++    }
++    $w->{Configure}{'-browsecmd'};
++}
++
++sub Index {
++    my($w, $i) = @_;
++    if (!$w->{'list'}) { $w->{'list'} = [] }
++    if ($i =~ /^-?[0-9]+$/) {
++	if ($i < 0) {
++	    $i = 0;
++	}
++	if ($i > @{ $w->{'list'} }) {
++	    $i = @{ $w->{'list'} } - 1;
++	}
++	return $i;
++    } elsif ($i eq 'active') {
++	return $w->{'index,active'};
++    } elsif ($i eq 'anchor') {
++	return $w->{'index,anchor'};
++    } elsif ($i eq 'end') {
++	return @{ $w->{'list'} };
++    } elsif ($i =~ /@(-?[0-9]+),(-?[0-9]+)/) {
++	my($x, $y) = ($1, $2);
++	my $canvas = $w->Subwidget('canvas');
++	my $item = $canvas->find('closest', $x, $y);
++	if (defined $item) {
++	    return $canvas->itemcget($item, '-tags')->[1];
++	} else {
++	    return "";
++	}
++    } else {
++	croak "Unrecognized Index parameter `$i', use active, anchor, end, \@x,y, or x";
++    }
++}
++
++sub Selection {
++    my($w, $op, @args) = @_;
++    if ($op eq 'anchor') {
++	if (@args == 1) {
++	    $w->{'index,anchor'} = $w->Index($args[0]);
++	} else {
++	    return $w->{'index,anchor'};
++	}
++    } elsif ($op eq 'clear') {
++	my($first, $last);
++	if (@args == 2) {
++	    ($first, $last) = @args;
++	} elsif (@args == 1) {
++	    $first = $last = $args[0];
++	} else {
++	    croak "wrong # args: should be Selection('clear', first, ?last?)"
++	}
++	$first = $w->Index($first);
++	$last  = $w->Index($last);
++	if ($first > $last) {
++	    ($first, $last) = ($last, $first);
++	}
++	my $ind = 0;
++	for my $item (@{ $w->{'selection'} }) {
++	    if ($item >= $first) {
++		$first = $ind;
++		last;
++	    }
++            $ind++; # XXX seems to be missing in the Tcl version
++	}
++	$ind = @{ $w->{'selection'} } - 1;
++	for(; $ind >= 0; $ind--) {
++	    my $item = $w->{'selection'}->[$ind];
++	    if ($item <= $last) {
++		$last = $ind;
++		last;
++	    }
++	}
++	if ($first > $last) {
++	    return;
++	}
++	splice @{ $w->{'selection'} }, $first, $last-$first+1;
++	$w->event('generate', '<<ListboxSelect>>');
++	$w->DrawSelection;
++    } elsif ($op eq 'includes') {
++	my $index;
++	for (@{ $w->{'selection'} }) {
++	    if ($args[0] eq $_) {
++		return 1;
++	    }
++	}
++	return 0;
++    } elsif ($op eq 'set') {
++	my($first, $last);
++	if (@args == 2) {
++	    ($first, $last) = @args;
++	} elsif (@args == 1) {
++	    $first = $last = $args[0];
++	} else {
++	    croak "wrong # args: should be Selection('set', first, ?last?)";
++	}
++
++	$first = $w->Index($first);
++	$last  = $w->Index($last);
++	if ($first > $last) {
++	    ($first, $last) = ($last, $first);
++	}
++	for(my $i = $first; $i <= $last; $i++) {
++	    push @{ $w->{'selection'} }, $i;
++	}
++	# lsort -integer -unique
++	my %sel = map { ($_ => 1) } @{ $w->{'selection'} };
++	@{ $w->{'selection'} } = sort { $a <=> $b } keys %sel;
++	$w->event('generate', '<<ListboxSelect>>');
++	$w->DrawSelection;
++    } else {
++	croak "Unrecognized Selection parameter `$op', use anchor, clear, includes, or set";
++    }
++}
++
++# XXX why lower case 's' here and upper in DrawSelection?
++sub Curselection {
++    my $w = shift;
++    @{ $w->{'selection'} };
++}
++
++sub DrawSelection {
++    my $w = shift;
++    my $canvas = $w->Subwidget('canvas');
++    $canvas->delete('selection');
++    my $selBg = $w->cget('-selectbackground');
++    for my $item (@{ $w->{'selection'} }) {
++	my $rTag = $w->{'list'}->[$item][2];
++	my($iTag, $tTag, $text, $serial) = @{ $w->{'itemList'}{$rTag} };
++	my @bbox = $canvas->bbox($tTag);
++	# XXX don't hardcode colors
++	$canvas->createRectangle
++	    (@bbox, -fill => $selBg, -outline => $selBg, -tags => 'selection');
++    }
++    $canvas->lower('selection');
++}
++
++# Returns the selected item
++#
++sub Get {
++    my($w, $item) = @_;
++    my $rTag = $w->{'list'}->[$item][2];
++    my($iTag, $tTag, $text, $serial) = @{ $w->{'itemList'}{$rTag} };
++    $text;
++}
++
++
+ # tkIconList_AutoScan --
+ #
+ # This procedure is invoked when the mouse leaves an entry window
+@@ -177,42 +346,54 @@
+     $w->{'maxTW'} = 1;
+     $w->{'maxTH'} = 1;
+     $w->{'numItems'} = 0;
+-    delete $w->{'curItem'};
++#XXX curItem never used    delete $w->{'curItem'};
+     $w->{'noScroll'} = 1;
++    $w->{'selection'} = [];
++    $w->{'index,anchor'} = '';
+     $w->Subwidget('sbar')->set(0.0, 1.0);
+     $canvas->xview('moveto', 0);
+ }
+
+-# Adds an icon into the IconList with the designated image and text
++# Adds an icon into the IconList with the designated image and items
+ #
+ sub Add {
+-    my($w, $image, $text) = @_;
++    my($w, $image, @items) = @_;
+     my $canvas = $w->Subwidget('canvas');
+-    my $iTag = $canvas->createImage(0, 0, -image => $image, -anchor => 'nw');
+     my $font = $w->cget(-font);
+     my $fg   = $w->cget(-foreground);
+-    my $tTag = $canvas->createText(0, 0, -text => $text, -anchor => 'nw',
+-				   (defined $fg   ? (-fill => $fg)   : ()),
+-				   (defined $font ? (-font => $font) : ()),
+-				  );
+-    my $rTag = $canvas->createRectangle(0, 0, 0, 0,
+-					-fill => undef,
+-					-outline => undef);
+-    my(@b) = $canvas->bbox($iTag);
+-    my $iW = $b[2] - $b[0];
+-    my $iH = $b[3] - $b[1];
+-    $w->{'maxIW'} = $iW if ($w->{'maxIW'} < $iW);
+-    $w->{'maxIH'} = $iH if ($w->{'maxIH'} < $iH);
+-    @b = $canvas->bbox($tTag);
+-    my $tW = $b[2] - $b[0];
+-    my $tH = $b[3] - $b[1];
+-    $w->{'maxTW'} = $tW if ($w->{'maxTW'} < $tW);
+-    $w->{'maxTH'} = $tH if ($w->{'maxTH'} < $tH);
+-    push @{ $w->{'list'} }, [$iTag, $tTag, $rTag, $iW, $iH, $tW, $tH,
+-			     $w->{'numItems'}];
+-    $w->{'itemList'}{$rTag} = [$iTag, $tTag, $text, $w->{'numItems'}];
+-    $w->{'textList'}{$w->{'numItems'}} = lc($text);
+-    ++$w->{'numItems'};
++    foreach my $text (@items) {
++	my $iTag = $canvas->createImage
++	    (0, 0, -image => $image, -anchor => 'nw',
++	     -tags => ['icon', $w->{numItems}, 'item'.$w->{numItems}],
++	    );
++	my $tTag = $canvas->createText
++	    (0, 0, -text => $text, -anchor => 'nw',
++	     (defined $fg   ? (-fill => $fg)   : ()),
++	     (defined $font ? (-font => $font) : ()),
++	     -tags => ['text', $w->{numItems}, 'item'.$w->{numItems}],
++	    );
++	my $rTag = $canvas->createRectangle
++	    (0, 0, 0, 0,
++	     -fill => undef,
++	     -outline => undef,
++	     -tags => ['rect', $w->{numItems}, 'item'.$w->{numItems}],
++	    );
++	my(@b) = $canvas->bbox($iTag);
++	my $iW = $b[2] - $b[0];
++	my $iH = $b[3] - $b[1];
++	$w->{'maxIW'} = $iW if ($w->{'maxIW'} < $iW);
++	$w->{'maxIH'} = $iH if ($w->{'maxIH'} < $iH);
++	@b = $canvas->bbox($tTag);
++	my $tW = $b[2] - $b[0];
++	my $tH = $b[3] - $b[1];
++	$w->{'maxTW'} = $tW if ($w->{'maxTW'} < $tW);
++	$w->{'maxTH'} = $tH if ($w->{'maxTH'} < $tH);
++	push @{ $w->{'list'} }, [$iTag, $tTag, $rTag, $iW, $iH, $tW, $tH,
++				 $w->{'numItems'}];
++	$w->{'itemList'}{$rTag} = [$iTag, $tTag, $text, $w->{'numItems'}];
++	$w->{'textList'}{$w->{'numItems'}} = lc($text);
++	++$w->{'numItems'};
++    }
+ }
+
+ # Places the icons in a column-major arrangement.
+@@ -254,7 +435,6 @@
+ 	my $t_dy = ($dy - $tH) / 2;
+ 	$canvas->coords($iTag, $x, $y + $i_dy);
+ 	$canvas->coords($tTag, $x + $shift, $y + $t_dy);
+-	$canvas->coords($tTag, $x + $shift, $y + $t_dy);
+ 	$canvas->coords($rTag, $x, $y, $x + $dx, $y + $dy);
+ 	$y += $dy;
+ 	if ($y + $dy > $H) {
+@@ -281,8 +461,9 @@
+     }
+     $w->{'itemsPerColumn'} = int(($H - $pad) / $dy);
+     $w->{'itemsPerColumn'} = 1 if ($w->{'itemsPerColumn'} < 1);
+-    $w->Select($w->{'list'}[$w->{'curItem'}][2], 0)
+-      if (exists $w->{'curItem'});
++#XXX    $w->Select($w->{'list'}[$w->{'curItem'}][2], 0)
++#      if (exists $w->{'curItem'});
++    $w->DrawSelection; # missing in Tcl XXX
+ }
+
+ # Gets called when the user invokes the IconList (usually by double-clicking
+@@ -290,7 +471,7 @@
+ #
+ sub Invoke {
+     my $w = shift;
+-    $w->Callback(-command => $w->{'selected'}) if (exists $w->{'selected'});
++    $w->Callback(-command => $w->{'selected'}) if (@{ $w->{'selection'} });
+ }
+
+ # tkIconList_See --
+@@ -300,11 +481,11 @@
+ sub See {
+     my($w, $rTag) = @_;
+     return if ($w->{'noScroll'});
+-    return unless (exists $w->{'itemList'}{$rTag});
++    return if ($rTag < 0 || $rTag >= @{ $w->{'list'} });
+     my $canvas = $w->Subwidget('canvas');
+     my(@sRegion) = @{ $canvas->cget('-scrollregion') };
+     return unless (@sRegion);
+-    my(@bbox) = $canvas->bbox($rTag);
++    my(@bbox) = $canvas->bbox('item'.$rTag);
+     my $pad = $canvas->cget(-highlightthickness) + $canvas->cget(-bd);
+     my $x1 = $bbox[0];
+     my $x2 = $bbox[2];
+@@ -324,60 +505,56 @@
+     }
+ }
+
+-sub SelectAtXY {
++sub Btn1 {
+     my($w, $x, $y) = @_;
+-    my $canvas = $w->Subwidget('canvas');
+-    $w->Select($canvas->find('closest',
+-			     $canvas->canvasx($x),
+-			     $canvas->canvasy($y)));
+-}
+
+-sub Select {
+-    my $w = shift;
+-    my $rTag = shift;
+-    my $callBrowse = (@_ ? shift : 1);
+-    return unless (exists $w->{'itemList'}{$rTag});
+-    my($iTag, $tTag, $text, $serial) = @{ $w->{'itemList'}{$rTag} };
+     my $canvas = $w->Subwidget('canvas');
+-    $w->{'rect'} = $canvas->createRectangle(0, 0, 0, 0, -fill => '#a0a0ff',
+-					    -outline => '#a0a0ff')
+-      unless (exists $w->{'rect'});
+-    $canvas->lower($w->{'rect'});
+-    my(@bbox) = $canvas->bbox($tTag);
+-    $canvas->coords($w->{'rect'}, @bbox);
+-    $w->{'curItem'} = $serial;
+-    $w->{'selected'} = $text;
+-    if ($callBrowse) {
+-	$w->Callback(-browsecmd => $text);
+-    }
++    $canvas->CanvasFocus;
++    $x = int($canvas->canvasx($x));
++    $y = int($canvas->canvasy($y));
++    my $i = $w->Index('@'.$x.','.$y);
++    return if ($i eq '');
++    $w->Selection('clear', 0, 'end');
++    $w->Selection('set', $i);
++    $w->Selection('anchor', $i);
+ }
+
+-sub Unselect {
+-    my $w = shift;
+-    my $canvas = $w->Subwidget('canvas');
+-    if (exists $w->{'rect'}) {
+-	$canvas->delete($w->{'rect'});
+-	delete $w->{'rect'};
+-    }
+-    delete $w->{'selected'} if (exists $w->{'selected'});
+-    delete $w->{'curItem'};
+-}
++sub CtrlBtn1 {
++    my($w, $x, $y) = @_;
+
+-# Returns the selected item
+-#
+-sub Get {
+-    my $w = shift;
+-    if (exists $w->{'selected'}) {
+-	$w->{'selected'};
+-    } else {
+-	undef;
++    if ($w->cget(-multiple)) {
++	my $canvas = $w->Subwidget('canvas');
++	$canvas->CanvasFocus;
++	my $x = int($canvas->canvasx($x));
++	my $y = int($canvas->canvasy($y));
++	my $i = $w->Index('@'.$x.','.$y);
++	return if ($i eq '');
++	if ($w->Selection('includes', $i)) {
++	    $w->Selection('clear', $i);
++	} else {
++	    $w->Selection('set', $i);
++	    $w->Selection('anchor', $i);
++	}
+     }
+ }
+
+-sub Btn1 {
++sub ShiftBtn1 {
+     my($w, $x, $y) = @_;
+-    $w->Subwidget('canvas')->CanvasFocus;
+-    $w->SelectAtXY($x, $y);
++
++    if ($w->cget(-multiple)) {
++    my $canvas = $w->Subwidget('canvas');
++	$canvas->CanvasFocus;
++	my $x = int($canvas->canvasx($x));
++	my $y = int($canvas->canvasy($y));
++	my $i = $w->Index('@'.$x.','.$y);
++	return if ($i eq '');
++	my $a = $w->Index('anchor');
++	if ($a eq '') {
++	    $a = $i;
++	}
++	$w->Selection('clear', 0, 'end');
++	$w->Selection('set', $a, $i);
++    }
+ }
+
+ # Gets called on button-1 motions
+@@ -386,12 +563,19 @@
+     my($w, $x, $y) = @_;
+     $Tk::x = $x;
+     $Tk::y = $y;
+-    $w->SelectAtXY($x, $y);
++    my $canvas = $w->Subwidget('canvas');
++    $canvas->CanvasFocus;
++    $x = int($canvas->canvasx($x));
++    $y = int($canvas->canvasy($y));
++    my $i = $w->Index('@'.$x.','.$y);
++    return if ($i eq '');
++    $w->Selection('clear', 0, 'end');
++    $w->Selection('set', $i);
+ }
+
+ sub Double1 {
+     my($w, $x, $y) = @_;
+-    $w->Invoke if (exists $w->{'curItem'});
++    $w->Invoke if (@{ $w->{'selection'} });
+ }
+
+ sub ReturnKey {
+@@ -409,12 +593,16 @@
+ sub FocusIn {
+     my $w = shift;
+     return unless (exists $w->{'list'});
+-    unless (exists $w->{'curItem'}) {
+-	my $rTag = $w->{'list'}[0][2];
+-	$w->Select($rTag);
++    if (@{ $w->{'selection'} }) {
++	$w->DrawSelection;
+     }
+ }
+
++sub FocusOut {
++    my $w = shift;
++    $w->Selection('clear', 0, 'end');
++}
++
+ # tkIconList_UpDown --
+ #
+ # Moves the active element up or down by one element
+@@ -425,19 +613,20 @@
+ #
+ sub UpDown {
+     my($w, $amount) = @_;
+-    my $rTag;
+     return unless (exists $w->{'list'});
+-    unless (exists $w->{'curItem'}) {
+-	$rTag = $w->{'list'}[0][2];
++    my $i;
++    my(@curr) = $w->Curselection;
++    if (!@curr) {
++	$i = 0;
+     } else {
+-	my $oldRTag = $w->{'list'}[$w->{'curItem'}][2];
+-	$rTag = $w->{'list'}[($w->{'curItem'} + $amount)][2];
+-	$rTag = $oldRTag unless defined $rTag;
+-    }
+-    if (defined $rTag) {
+-	$w->Select($rTag);
+-	$w->See($rTag);
+-    }
++	$i = $w->Index('anchor');
++	return if ($i eq '');
++	$i += $amount;
++    }
++    $w->Selection('clear', 0, 'end');
++    $w->Selection('set', $i);
++    $w->Selection('anchor', $i);
++    $w->See($i);
+ }
+
+ # tkIconList_LeftRight --
+@@ -450,21 +639,20 @@
+ #
+ sub LeftRight {
+     my($w, $amount) = @_;
+-    my $rTag;
+     return unless (exists $w->{'list'});
+-    unless (exists $w->{'curItem'}) {
+-	$rTag = $w->{'list'}[0][2];
++    my $i;
++    my(@curr) = $w->Curselection;
++    if (!@curr) {
++	$i = 0;
+     } else {
+-	my $oldRTag = $w->{'list'}[$w->{'curItem'}][2];
+-	my $newItem = $w->{'curItem'} + $amount * $w->{'itemsPerColumn'};
+-	return if $newItem < 0;
+-	$rTag = $w->{'list'}[$newItem][2];
+-	$rTag = $oldRTag unless (defined $rTag);
+-    }
+-    if (defined $rTag) {
+-	$w->Select($rTag);
+-	$w->See($rTag);
+-    }
++	$i = $w->Index('anchor');
++	return if ($i eq '');
++	$i += $amount*$w->{'itemsPerColumn'};
++    }
++    $w->Selection('clear', 0, 'end');
++    $w->Selection('set', $i);
++    $w->Selection('anchor', $i);
++    $w->See($i);
+ }
+
+ #----------------------------------------------------------------------
+@@ -488,7 +676,8 @@
+     my($w, $text) = @_;
+     return unless (exists $w->{'list'});
+     return if (not defined $text or $text eq '');
+-    my $start = (!exists $w->{'curItem'} ? 0 : $w->{'curItem'});
++#XXX curItem never used    my $start = (!exists $w->{'curItem'} ? 0 : $w->{'curItem'});
++    my $start = 0;
+     $text = lc($text);
+     my $theIndex = -1;
+     my $less = 0;
+@@ -507,9 +696,10 @@
+ 	last if ($i == $start);
+     }
+     if ($theIndex > -1) {
+-	my $rTag = $w->{'list'}[$theIndex][2];
+-	$w->Select($rTag, 0);
+-	$w->See($rTag);
++	$w->Selection(qw(clear 0 end));
++	$w->Selection('set', $theIndex);
++	$w->Selection('anchor', $theIndex);
++	$w->See($theIndex);
+     }
+ }
+
+@@ -519,4 +709,3 @@
+ }
+
+ 1;
+-

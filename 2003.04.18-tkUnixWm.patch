@@ -1,0 +1,73 @@
+*** Tk804.024/Tk/Wm.pm	Sun Oct 13 18:48:05 2002
+--- Tk804.024.sol-patches/Tk/Wm.pm	Fri Apr 18 09:46:32 2003
+***************
+*** 16,24 ****
+  use vars qw($VERSION);
+  $VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Wm.pm#8 $
+
+! use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
+
+! Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
+                         deiconify focusmodel frame geometry group
+                         iconbitmap iconify iconimage iconmask iconname
+                         iconwindow maxsize minsize overrideredirect positionfrom
+--- 16,26 ----
+  use vars qw($VERSION);
+  $VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Wm.pm#8 $
+
+! #use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
+! *{Tk::Wm::wmGrid}    = sub { shift->Tk::wm("grid", @_) };
+! *{Tk::Wm::wmTracing} = sub { shift->Tk::wm("tracing", @_) };
+
+! Direct Tk::Submethods ('wm' => [qw(aspect attributes client colormapwindows command
+                         deiconify focusmodel frame geometry group
+                         iconbitmap iconify iconimage iconmask iconname
+                         iconwindow maxsize minsize overrideredirect positionfrom
+--- Tk804.024/pTk/mTk/unix/tkUnixWm.c	Fri Oct  4 21:59:10 2002
++++ Tk804.024.sol-patches/pTk/mTk/unix/tkUnixWm.c	Fri Apr 18 11:18:23 2003
+@@ -1094,18 +1094,18 @@ Tk_WmObjCmd(clientData, interp, objc, ob
+     if ((argv1[0] == 't') && (strncmp(argv1, "tracing", (size_t) length) == 0)
+ 	    && (length >= 3)) {
+ 	int wmTracing;
+-	if ((objc != 2) && (objc != 3)) {
+-	    Tcl_WrongNumArgs(interp, 2, objv, "?boolean?");
++	if ((objc != 3) && (objc != 4)) {
++	    Tcl_WrongNumArgs(interp, 3, objv, "?boolean?");
+ 	    return TCL_ERROR;
+ 	}
+-	if (objc == 2) {
++	if (objc == 3) {
+ 	    Tcl_SetResult(interp,
+ 		    ((dispPtr->flags & TK_DISPLAY_WM_TRACING) ? "1" : ""),
+                     TCL_STATIC);
+ 	    return TCL_OK;
+ 	}
+-	if (Tcl_GetBooleanFromObj(interp, objv[2], &wmTracing) != TCL_OK) {
++	if (Tcl_GetBooleanFromObj(interp, objv[3], &wmTracing) != TCL_OK) {
+ 	    return TCL_ERROR;
+ 	}
+ 	if (wmTracing) {
+--- Tk804.024/pTk/mTk/win/tkWinWm.c	Thu Oct  3 19:22:25 2002
++++ Tk804.024.sol-patches/pTk/mTk/win/tkWinWm.c	Fri Apr 18 11:18:50 2003
+@@ -2467,17 +2467,17 @@ Tk_WmObjCmd(clientData, interp, objc, ob
+     if ((argv1[0] == 't') && (strncmp(argv1, "tracing", length) == 0)
+ 	    && (length >= 3)) {
+ 	int wmTracing;
+-	if ((objc != 2) && (objc != 3)) {
+-	    Tcl_WrongNumArgs(interp, 2, objv, "?boolean?");
++	if ((objc != 3) && (objc != 4)) {
++	    Tcl_WrongNumArgs(interp, 3, objv, "?boolean?");
+ 	    return TCL_ERROR;
+ 	}
+-	if (objc == 2) {
++	if (objc == 3) {
+ 	    Tcl_SetResult(interp,
+ 		    ((dispPtr->flags & TK_DISPLAY_WM_TRACING) ? "1" : ""),
+ 		    TCL_STATIC);
+ 	    return TCL_OK;
+ 	}
+-	if (Tcl_GetBooleanFromObj(interp, objv[2], &wmTracing) != TCL_OK) {
++	if (Tcl_GetBooleanFromObj(interp, objv[3], &wmTracing) != TCL_OK) {
+ 	    return TCL_ERROR;
+ 	}
+ 	if (wmTracing) {

@@ -1,0 +1,16 @@
+--- ../Tk804.024/objGlue.c	Sun Oct  6 20:27:26 2002
++++ ./objGlue.c	Sat Feb 22 18:29:48 2003
+@@ -444,8 +444,11 @@ LangString(SV *sv)
+    if (SvOK(sv))
+     {
+ #ifdef SvUTF8
+-     if (!SvUTF8(sv))
+-      sv_utf8_upgrade(sv);
++     if (SvROK(sv) && SvPOK(SvRV(sv)) && !SvUTF8(SvRV(sv)))
++      sv_utf8_upgrade(SvRV(sv));
++     else
++      if (!SvUTF8(sv))
++       sv_utf8_upgrade(sv);
+ #endif
+      return SvPV(sv, na);
+     }

@@ -1,0 +1,40 @@
+--- Tk804.024/Tixish/DirTree.pm	Sat Jul 13 16:12:48 2002
++++ new.Tk804.024/Tixish/DirTree.pm	Fri Nov  8 20:57:34 2002
+@@ -50,10 +50,10 @@
+ {
+  my ($path) = @_;
+  my $cwd = getcwd();
+- if (chdir($path))
++ if (CORE::chdir($path))
+   {
+    $path = getcwd();
+-   chdir($cwd) || die "Cannot cd back to $cwd:$!";
++   CORE::chdir($cwd) || die "Cannot cd back to $cwd:$!";
+   }
+  else
+   {
+@@ -90,6 +90,7 @@
+         next unless length $name;
+         push @dirs, $name;
+         my $dir = join( '/', @dirs );
++	$dir =~ s|^//|/|;
+         $w->add_to_tree( $dir, $name, $parent )
+             unless $w->infoExists( $dir );
+         $parent = $dir;
+@@ -98,6 +99,7 @@
+     $w->OpenCmd( $parent );
+     $w->setmode( $parent, 'close' );
+ }
++*chdir = \&set_dir;
+ 
+ 
+ sub OpenCmd {
+@@ -129,7 +131,7 @@
+     my @args = (-image => $image, -text => $name);
+     if( $parent ) {             # Add in alphabetical order.
+         foreach my $sib ($w->infoChildren( $parent )) {
+-            if( $sib gt $name ) {
++            if( $sib gt $dir ) {
+                 push @args, (-before => $sib);
+                 last;
+             }

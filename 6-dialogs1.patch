@@ -1,0 +1,269 @@
+--- Tk804.024/MANIFEST.orig	Wed Nov 20 21:06:58 2002
++++ Tk804.024/MANIFEST	Wed Nov 20 21:07:44 2002
+@@ -1436,6 +1436,7 @@
+ pod/Optionmenu.pod
+ pod/Photo.pod
+ pod/Pixmap.pod
++pod/Popup.pod
+ pod/README
+ pod/ROText.pod
+ pod/Radiobutton.pod
+--- Tk804.024/Tixish/DialogBox.pm.orig	Wed Nov 20 19:25:25 2002
++++ Tk804.024/Tixish/DialogBox.pm	Wed Nov 20 20:33:02 2002
+@@ -90,13 +90,16 @@
+ }
+ 
+ sub Show {
+-    my ($cw, $grab) = @_;
++
+     croak 'DialogBox: "Show" method requires at least 1 argument'
+ 	if scalar @_ < 1;
++    my $cw = shift;
++    my ($grab) = @_;
+     my $old_focus = $cw->focusSave;
+     my $old_grab = $cw->grabSave;
+ 
+-    $cw->Popup();
++    shift if defined $grab && length $grab && ($grab =~ /global/);
++    $cw->Popup(@_);
+ 
+     Tk::catch {
+     if (defined $grab && length $grab && ($grab =~ /global/)) {
+--- Tk804.024/Tk/ColorEditor.pm.orig	Wed Nov 20 19:37:34 2002
++++ Tk804.024/Tk/ColorEditor.pm	Wed Nov 20 20:13:01 2002
+@@ -658,6 +658,7 @@
+             sub {
+                 my ($objref) = @_;
+                 $objref->Callback(-command => ($objref->{'highlight'}, $objref->cget('-color')));
++		$cw->{'done'} = 1;
+             }, $cw,
+         ],
+     );
+@@ -711,9 +712,9 @@
+ 
+ sub Show {
+ 
+-    my($objref) = @_;
++    my($objref, @args) = @_;
+ 
+-    $objref->deiconify;
++    Tk::ColorDialog::Show(@_);
+ 
+ } # end show
+ 
+--- Tk804.024/pod/Dialog.pod.orig	Sat Nov 16 20:40:14 2002
++++ Tk804.024/pod/Dialog.pod	Wed Nov 20 19:21:39 2002
+@@ -19,16 +19,17 @@
+ 
+ =head1 DESCRIPTION
+ 
+-This procedure is part of the Tk script library - its arguments describe a
+-dialog box.
+-After creating a dialog box, B<Dialog> waits for the user to
+-select one of the buttons either by clicking on the button with the
+-mouse or by typing return to invoke the default button (if any).
+-Then it returns the text string of the selected button.
++This procedure is part of the Tk script library - its arguments
++describe a dialog box.  After creating a dialog box, B<Dialog> waits
++for the user to select one of the Buttons either by clicking on the
++Button with the mouse or by typing return to invoke the default Button
++(if any).  Then it returns the text string of the selected Button.
+ 
+ While waiting for the user to respond, B<Dialog> sets a local
+ grab.  This prevents the user from interacting with the application
+-in any way except to invoke the dialog box.  See B<Show()> method.
++in any way except to invoke the dialog box.  See the B<Show()> method.
++
++=head1 OPTIONS
+ 
+ The following option/value pairs are supported:
+ 
+@@ -40,23 +41,22 @@
+ 
+ =item B<-text>
+ 
+-Message to appear in the top portion of the dialog box.
++Message to appear in the top portion of the Dialog.
+ 
+ =item B<-bitmap>
+ 
+-If non-empty, specifies a bitmap to display in the top portion of
+-the dialog, to the left of the text.
+-If this is an empty string then no bitmap is displayed in the dialog.
++If non-empty, specifies a bitmap to display in the top portion of the
++Dialog, to the left of the text.  If this is an empty string then no
++bitmap is displayed in the Dialog.
+ 
+ =item B<-default_button>
+ 
+-Text label string of the button that displays the default ring.
++Text label string of the Button that displays the default ring.
+ 
+ =item B<-buttons>
+ 
+-A reference to a list of button label strings.
+-Each I<string> specifies text to display in a button,
+-in order from left to right.
++A reference to a list of Button label strings.  Each I<string>
++specifies text to display in a Button, in order from left to right.
+ 
+ =back
+ 
+@@ -64,11 +64,34 @@
+ 
+ =over 4
+ 
+-=item C<$answer = $dialog-E<gt>B<Show>(?-global?);>
++=item I<$answer> = $dialog-E<gt>B<Show(>?-global?B<)>;
+ 
+-This method displays the dialog, waits for the user's response, and stores
+-the text string of the selected button in C<$answer>.  If I<-global> is
++This method displays the Dialog, waits for the user's response, and stores
++the text string of the selected Button in I<$answer>.  If I<-global> is
+ specified a global (rather than local) grab is performed.
++
++The actual Dialog is shown using the B<Popup> method. Any other
++options supplied to B<Show> are passed to B<Popup>, and can be used to
++position the Dialog on the screen. Please read Tk::Popup for details.
++
++=back
++
++=head1 ADVERTISED WIDGETS
++
++Because Tk::Dialog is a subclass of Tk::DialogBox it inherits all the
++advertised subwidgets of its superclass: e.g. "B_button-text", where
++'button-text' is a Button's -text value. Additionally, Tk::Dialog
++advertises:
++
++=over 4
++
++=item B<message>
++
++The dialog's Label widget containing the message text.
++
++=item B<bitmap>
++
++The dialog's Label widget containing the bitmap image.
+ 
+ =back
+ 
+--- Tk804.024/pod/DialogBox.pod.orig	Sat Nov 16 20:40:27 2002
++++ Tk804.024/pod/DialogBox.pod	Wed Nov 20 18:33:29 2002
+@@ -19,32 +19,35 @@
+ =head1 DESCRIPTION
+ 
+ B<DialogBox> is very similar to B<Dialog> except that it allows
+-any widget in the top frame. B<DialogBox> creates two
+-frames---"top" and "bottom". The bottom frame shows all the
+-specified buttons, lined up from left to right. The top frame acts
++any widget in the top Frame. B<DialogBox> creates two
++Frames, I<top> and I<bottom>. The bottom Frame shows all the
++specified Buttons, lined up from left to right. The top Frame acts
+ as a container for all other widgets that can be added with the
+-B<add()> method. The non-standard options recognized by
+-B<DialogBox> are as follows:
++B<add()> method.
++
++=head1 OPTIONS
++
++The options recognized by B<DialogBox> are as follows:
+ 
+ =over 4
+ 
+ =item B<-title>
+ 
+-Specify the title of the dialog box. If this is not set, then the
++Specify the title of the DialogBox. If this is not set, then the
+ name of the program is used.
+ 
+ =item B<-buttons>
+ 
+-The buttons to display in the bottom frame. This is a reference to
+-an array of strings containing the text to put on each
+-button. There is no default value for this. If you do not specify
+-any buttons, no buttons will be displayed.
++The button names to display in the bottom Frame. This is a reference
++to an array of strings containing the text to put on each
++Button. There is no default value for this. If you do not specify any
++button names, no Buttons are displayed.
+ 
+ =item B<-default_button>
+ 
+-Specifies the default button that is considered invoked when user
+-presses <Return> on the dialog box. This button is highlighted. If
+-no default button is specified, then the first element of the
++Specifies the default Button that is considered invoked when user
++presses <Return> on the DialogBox. This Button is highlighted. If
++no default Button is specified, then the first element of the
+ array whose reference is passed to the B<-buttons> option is used
+ as the default.
+ 
+@@ -59,29 +62,55 @@
+ =item B<add(>I<widget>, I<options>B<)>
+ 
+ Add the widget indicated by I<widget>. I<Widget> can be the name
+-of any Tk widget (standard or contributed). I<Options> are the
++of any Tk widget (standard or contributed). I<options> are the
+ options that the widget accepts. The widget is advertized as a
+-subwidget of B<DialogBox>.
++subwidget of B<DialogBox>. The first character of I<widget> is
++lower-cased and used as the advertised name.
++
++=item B<Show(>I<?-global?>B<)>
++
++Displays the Dialog until the user invokes one of the Buttons in the
++bottom Frame. If the grab type I<-global> is specified, then B<Show>
++uses that grab; otherwise it defaults to a local grab. Returns the
++name of the Button invoked.
++
++The actual Dialog is shown using the B<Popup> method. Any other
++options supplied to B<Show> are passed to B<Popup>, and can be used to
++position the Dialog on the screen. Please read Tk::Popup for details.
++
++=back
++
++=head1 ADVERTISED WIDGETS
++
++=over 4
++
++=item B<top>
++
++The subwidget reference to the top half of the DialogBox widget, the Frame
++containing widgets added by the B<add> method.
++
++=item B<bottom>
++
++The subwidget reference to the bottom half of the DialogBox widget, the Frame
++containing the Button widgets.
+ 
+-=item B<Show(>I<grab>B<)>
++=item B<B_"button-text">
+ 
+-Display the dialog box, until user invokes one of the buttons in
+-the bottom frame. If the grab type is specified in I<grab>, then
+-B<Show> uses that grab; otherwise it uses a local grab. Returns
+-the name of the button invoked.
++Individual subwidget references to the Buttons in the DialogBox widget. The
++subwidget name is the string I<B_> concatenated with the Button's -text
++value.
+ 
+ =back
+ 
+ =head1 BUGS
+ 
+ There is no way of removing a widget once it has been added to the
+-top frame.
++top Frame, unless you access the I<top> subwidget and go through the
++child widgets.
+ 
+-There is no control over the appearance of the buttons in the
+-bottom frame nor is there any way to control the placement of the
+-two frames with respect to each other e.g. widgets to the left,
+-buttons to the right instead of widgets on the top and buttons on
+-the bottom always.
++There is no control over the appearance of the Buttons in the
++bottom Frame nor is there any way to control the placement of the
++two Frames with respect to each other.
+ 
+ =head1 AUTHOR
+ 

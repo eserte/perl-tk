@@ -1,0 +1,13 @@
+--- Tk804.024/Listbox/Listbox.pm	Sun Sep 15 16:11:42 2002
++++ Tk804.024.sol-patches/Listbox/Listbox.pm	Sun Mar 23 10:57:52 2003
+@@ -51,8 +51,8 @@ bootstrap Tk::Listbox;
+ sub Tk_cmd { \&Tk::listbox }
+
+ Tk::Methods('activate','bbox','curselection','delete','get','index',
+-            'insert','nearest','scan','see','selection','size',
+-            'xview','yview');
++            'insert','itemcget','itemconfigure','nearest','scan','see',
++            'selection','size','xview','yview');
+
+ use Tk::Submethods ( 'selection' => [qw(anchor clear includes set)],
+ 		     'scan'      => [qw(mark dragto)],

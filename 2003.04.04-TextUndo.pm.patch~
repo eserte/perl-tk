@@ -1,0 +1,20 @@
+--- Tk804.024/Tk/TextUndo.pm	Sat Jul 13 16:12:49 2002
++++ Tk804.024.sol-patches/Tk/TextUndo.pm	Fri Apr  4 19:43:40 2003
+@@ -571,6 +571,7 @@ sub Insert
+  $w->addGlobStart;
+  $w->SUPER::Insert($char);
+  $w->addGlobEnd;
++ $w->see('insert');
+ }
+
+
+@@ -709,7 +710,7 @@ sub Save
+    my $count=0;
+    my $index = '1.0';
+    my $progress;
+-   my ($lines) = $w->index('end') =~ /^(\d+)\./;
++   my ($lines) = $w->index('end - 1 chars') =~ /^(\d+)\./;
+    while ($w->compare($index,'<','end'))
+     {
+ #    my $end = $w->index("$index + 1024 chars");
+frog

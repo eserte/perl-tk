@@ -1,0 +1,13 @@
+--- Tixish/NoteBook.pm  (revision 42)
++++ Tixish/NoteBook.pm  (working copy)
+@@ -264,8 +264,8 @@
+ sub MouseUp {
+     my ($w, $x, $y) = @_;
+     my $name = $w->identify($x, $y);
+-    if ((defined $name) &&
+-        ($name eq $w->{'down'}) &&
++    if ((defined $name) && (defined $w->{'down'}) &&
++       ($name eq $w->{'down'}) &&
+         ($w->pagecget($name, -state) eq 'normal')) {
+         $w->raise($name);
+     } else {
