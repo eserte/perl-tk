@@ -1,9 +1,9 @@
-package Tk::Adjuster; 
+package Tk::Adjuster;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Adjuster.pm#18$
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/Adjuster.pm#21$
 
-use base  qw(Tk::Frame);          
+use base  qw(Tk::Frame);
 
 # We cannot do this :
 
@@ -17,9 +17,6 @@ use base  qw(Tk::Frame);
 Construct Tk::Widget qw(Adjuster);
 
 {package Tk::Adjuster::Item;
-use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Adjuster.pm#18$
-
 
 use strict;
 use base  qw(Tk::Frame);
@@ -156,7 +153,7 @@ sub Mapped
    my $master = $info{'-in'};
    $master->$m('propagate',0);
    $w->{'master'} = $master;
-  }  
+  }
  $w->slave_expand_off;
 }
 
@@ -173,15 +170,15 @@ sub Populate
  my $cs = $w->ConfigSpecs(-widget => ['PASSIVE','widget','Widget',$w->Parent],
                  -side       => ['METHOD','side','Side','top'],
                  -delay      => ['PASSIVE','delay','Delay', 1],
-                 -background => [['SELF',$w->{'sep'},$w->{'but'}],'background','Background',undef], 
-                 -foreground => [Tk::Configure->new($w->{'lin'},'-background'),'foreground','Foreground','black'], 
+                 -background => [['SELF',$w->{'sep'},$w->{'but'}],'background','Background',undef],
+                 -foreground => [Tk::Configure->new($w->{'lin'},'-background'),'foreground','Foreground','black'],
 		 -restore    => ['PASSIVE','restore', 'Restore', 1],
                 );
 }
 
 sub side
 {
- my ($w,$val) = @_; 
+ my ($w,$val) = @_;
  if (@_ > 1)
   {
    $w->{'side'} = $val;
@@ -205,8 +202,8 @@ sub side
  return $w->{'side'};
 }
 
-sub slave 
-{ 
+sub slave
+{
  my $w = shift;
  my $s = $w->cget('-widget');
  return $s;
@@ -257,7 +254,7 @@ sub delta_width_bar
      $max_rootx = $m->rootx + $m->width - $m_border - 1;
     }
    $w->{'lin_info'} = [$min_rootx, $max_rootx, $t_border];
-  } 
+  }
   else
    {
     ($min_rootx, $max_rootx, $t_border) = @{$w->{'lin_info'}};
@@ -330,7 +327,7 @@ sub delta_height_bar
      $max_rooty = $m->rooty + $m->height - $m_border - 1;
     }
    $w->{'lin_info'} = [$min_rooty, $max_rooty, $t_border];
-  } 
+  }
  else
   {
    ($min_rooty, $max_rooty, $t_border) = @{$w->{'lin_info'}};
@@ -404,12 +401,12 @@ sub slave_expand_off
     }
   }
  elsif ($manager eq 'grid')
-  { 
+  {
    my %info = $s->gridInfo;
    my $master = $info{'-in'};
    if ($w->vert)
-    {        
-     my $col = $info{'-column'};     
+    {
+     my $col = $info{'-column'};
      my $expand = $master->gridColumnconfigure($col, '-weight');
      if ($expand)
       {
@@ -418,8 +415,8 @@ sub slave_expand_off
       }
     }
    else
-    {                        
-     my $row = $info{'-row'};   
+    {
+     my $row = $info{'-row'};
      my $expand = $master->gridRowconfigure($row, '-weight');
      if ($expand)
       {
@@ -430,7 +427,7 @@ sub slave_expand_off
   }
 }
 
-1;                         
+1;
 
 __END__
 

@@ -2,8 +2,8 @@ package Tk::X;
 
 use strict;
 use Carp;
-use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Xlib/X/X.pm#11$
+use vars qw($VERSION @EXPORT $AUTOLOAD);
+$VERSION = '3.012'; # $Id: //depot/Tk8/Xlib/X/X.pm#12$
 require Tk;
 
 require Exporter;

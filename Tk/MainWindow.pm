@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.037'; # $Id: //depot/Tk8/Tk/MainWindow.pm#37$
+$VERSION = '3.038'; # $Id: //depot/Tk8/Tk/MainWindow.pm#38$
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -35,7 +35,7 @@ sub CreateArgs
  my $name = delete($args->{'-name'});
  unless (Tk::tainting)
   {
-   $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});               
+   $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
    $result{'-screen'} = $ENV{'DISPLAY'} unless exists $result{'-screen'};
   }
  return (-name => "\l$name",%result);
@@ -49,11 +49,11 @@ sub new
    carp "Usage $package->new(-screen => '$_[0]' ...)" if $^W;
    unshift(@_,'-screen');
   }
- croak("Odd number of args"."$package->new(" . join(',',@_) .")") if @_ % 2;
+ croak('Odd number of args'."$package->new(" . join(',',@_) .')') if @_ % 2;
  my %args = @_;
 
  my $top = eval { bless Create($package->CreateArgs(\%args)), $package };
- croak($@ . "$package->new(" . join(',',@_) .")") if ($@);
+ croak($@ . "$package->new(" . join(',',@_) .')') if ($@);
  $top->apply_command_line;
  $top->InitBindings;
  $top->SetBindtags;
@@ -73,10 +73,10 @@ sub new
 sub InitBindings
 {
  my $mw = shift;
- $mw->bind('all',"<Tab>","focusNext");
+ $mw->bind('all','<Tab>','focusNext');
  $mw->eventAdd(qw[<<LeftTab>> <Shift-Tab>]);
  catch {  $mw->eventAdd(qw[<<LeftTab>> <ISO_Left_Tab>]) };
- $mw->bind('all',"<<LeftTab>>","focusPrev");  
+ $mw->bind('all','<<LeftTab>>','focusPrev');
  if ($Tk::platform eq 'unix')
   {
    $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F20> <Meta-Key-w>]);
@@ -92,15 +92,15 @@ sub InitBindings
    $mw->eventAdd(qw[<<Undo>> <Control-Key-z>]);
   }
 
- # FIXME - Should these move to Menubutton ? 
+ # FIXME - Should these move to Menubutton ?
  my $c = ($Tk::platform eq 'unix') ? 'all' : 'Tk::Menubutton';
- $mw->bind($c,"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev('K')]);
- $mw->bind($c,"<F10>",'FirstMenu');
+ $mw->bind($c,'<Alt-KeyPress>',['TraverseToMenu',Tk::Ev('K')]);
+ $mw->bind($c,'<F10>','FirstMenu');
 }
 
 sub Existing
 {
- grep( Tk::Exists($_), @Windows);  
+ grep( Tk::Exists($_), @Windows);
 }
 
 END
@@ -116,7 +116,7 @@ END
        # this can occur if non-callback perl code did a 'die'.
        # It will also handle some cases of non-Tk 'exit' being called
        # Destroy this mainwindow and hence is descendants ...
-       $top->destroy; 
+       $top->destroy;
       }
     }
   }
@@ -128,23 +128,23 @@ sub WMSaveYourself
 {
  my $mw  = shift;
  my @args = @{$mw->command};
- warn "preWMSaveYourself:".join(' ',@args)."\n";
+ warn 'preWMSaveYourself:'.join(' ',@args)."\n";
  @args = ($0) unless (@args);
  my $i = 1;
  while ($i < @args)
   {
    if ($args[$i] eq '-iconic')
     {
-     splice(@args,$i,1); 
+     splice(@args,$i,1);
     }
    elsif ($args[$i] =~ /^-(geometry|iconposition)$/)
     {
-     splice(@args,$i,2); 
+     splice(@args,$i,2);
     }
   }
 
  my @ip = $mw->wm('iconposition');
- print "ip ",join(',',@ip),"\n";
+ print 'ip ',join(',',@ip),"\n";
  my $icon = $mw->iconwindow;
  if (defined($icon))
   {
@@ -155,9 +155,9 @@ sub WMSaveYourself
  splice(@args,1,0,'-iconic') if ($mw->state() eq 'iconic');
 
  splice(@args,1,0,'-geometry' => $mw->geometry);
- warn "postWMSaveYourself:".join(' ',@args)."\n";
+ warn 'postWMSaveYourself:'.join(' ',@args)."\n";
  $mw->command([@args]);
-}    
+}
 
 1;
 

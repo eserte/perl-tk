@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclUnixChan.c 1.207 97/11/04 14:45:29
+ * RCS: @(#) $Id: tclUnixChan.c,v 1.9 1999/02/03 00:51:20 stanton Exp $
  */
 
 #include	"tclInt.h"	/* Internal definitions for Tcl. */
@@ -1659,6 +1659,23 @@ TcpGetOptionProc(instanceData, interp, optionName, dsPtr)
         len = strlen(optionName);
     }
 
+    if ((len > 1) && (optionName[1] == 'e') &&
+                    (strncmp(optionName, "-error", len) == 0)) {
+       int optlen;
+       int err, ret;
+    
+       optlen = sizeof(int);
+       ret = getsockopt(statePtr->fd, SOL_SOCKET, SO_ERROR,
+                        (char *)&err, &optlen);
+       if (ret < 0) {
+           err = errno;
+       }
+       if (err != 0) {
+           Tcl_DStringAppend(dsPtr, Tcl_ErrnoMsg(err), -1);
+       }
+       return TCL_OK;
+    }
+
     if ((len == 0) ||
             ((len > 1) && (optionName[1] == 'p') &&
                     (strncmp(optionName, "-peername", len) == 0))) {
@@ -2320,6 +2337,9 @@ TclGetDefaultStdChannel(type)
     }
 
     channel = Tcl_MakeFileChannel((ClientData) fd, mode);
+    if (channel == NULL) {
+	return NULL;
+    }
 
     /*
      * Set up the normal channel options for stdio handles.

@@ -12,15 +12,15 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package Tk::Menu; 
+package Tk::Menu;
 require Tk;
 require Tk::Widget;
 require Tk::Wm;
 require Tk::Derived;
 
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/Menu.pm#26$
+use vars qw($VERSION);
+$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/Menu.pm#30$
 
 use strict;
 
@@ -28,7 +28,7 @@ use base  qw(Tk::Wm Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Menu';
 
-sub Tk_cmd { \&Tk::menu }    
+sub Tk_cmd { \&Tk::menu }
 
 Tk::Methods('activate','add','clone','delete','entrycget','entryconfigure',
             'index','insert','invoke','post','postcascade','type',
@@ -46,7 +46,7 @@ sub CreateArgs
  my $opt;
  foreach $opt (qw(-type -screen -visual -colormap))
   {
-   my $val = delete $args->{$opt};                     
+   my $val = delete $args->{$opt};
    push(@result, $opt => $val) if (defined $val);
   }
  return @result;
@@ -65,7 +65,7 @@ sub InitObject
      $menu->configure(%$args);
      %$args = ();
     }
-   $menu->AddItems(@$menuitems) 
+   $menu->AddItems(@$menuitems)
   }
 }
 
@@ -78,9 +78,9 @@ sub AddItems
   {
    my $item = shift;
    if (!ref($item))
-    { 
+    {
      $menu->separator;  # A separator
-    }  
+    }
    else
     {
      my ($kind,$name,%minfo) = ( @$item );
@@ -97,7 +97,7 @@ sub AddItems
     }  # A non-separator
   }
 }
-        
+
 #
 #-------------------------------------------------------------------------
 # Elements of tkPriv that are used in this file:
@@ -157,23 +157,23 @@ sub ClassInit
  my ($class,$mw) = @_;
  # Must set focus when mouse enters a menu, in order to allow
  # mixed-mode processing using both the mouse and the keyboard.
- $mw->bind($class,"<FocusIn>", 'NoOp');
- $mw->bind($class,"<Enter>", 'Enter');
- $mw->bind($class,"<Leave>", ['Leave',Ev('X'),Ev('Y'),Ev('s')]);
- $mw->bind($class,"<Motion>", ['Motion',Ev('x'),Ev('y'),Ev('s')]);
- $mw->bind($class,"<ButtonPress>",'ButtonDown');
- $mw->bind($class,"<ButtonRelease>",['Invoke',1]);
- $mw->bind($class,"<space>",['Invoke',0]);
- $mw->bind($class,"<Return>",['Invoke',0]);
- $mw->bind($class,"<Escape>",'Escape');
- $mw->bind($class,"<Left>",'LeftArrow');
- $mw->bind($class,"<Right>",'RightArrow');
- $mw->bind($class,"<Up>",'UpArrow');
- $mw->bind($class,"<Down>",'DownArrow');
- $mw->bind($class,"<KeyPress>", ['TraverseWithinMenu',Ev('K')]);
- $mw->bind($class,"<Alt-KeyPress>", ['TraverseWithinMenu',Ev('K')]);
+ $mw->bind($class,'<FocusIn>', 'NoOp');
+ $mw->bind($class,'<Enter>', 'Enter');
+ $mw->bind($class,'<Leave>', ['Leave',Ev('X'),Ev('Y'),Ev('s')]);
+ $mw->bind($class,'<Motion>', ['Motion',Ev('x'),Ev('y'),Ev('s')]);
+ $mw->bind($class,'<ButtonPress>','ButtonDown');
+ $mw->bind($class,'<ButtonRelease>',['Invoke',1]);
+ $mw->bind($class,'<space>',['Invoke',0]);
+ $mw->bind($class,'<Return>',['Invoke',0]);
+ $mw->bind($class,'<Escape>','Escape');
+ $mw->bind($class,'<Left>','LeftArrow');
+ $mw->bind($class,'<Right>','RightArrow');
+ $mw->bind($class,'<Up>','UpArrow');
+ $mw->bind($class,'<Down>','DownArrow');
+ $mw->bind($class,'<KeyPress>', ['TraverseWithinMenu',Ev('K')]);
+ $mw->bind($class,'<Alt-KeyPress>', ['TraverseWithinMenu',Ev('K')]);
  return $class;
-}                     
+}
 
 sub UpArrow
 {
@@ -199,7 +199,7 @@ sub DownArrow
   {
    $menu->NextEntry(1);
   }
-}                   
+}
 
 sub LeftArrow
 {
@@ -258,7 +258,7 @@ sub Unpost
 
  # Unpost menu(s) and restore some stuff that's dependent on
  # what was posted.
- eval {local $SIG{__DIE__}; 
+ eval {local $SIG{__DIE__};
    if (defined $mb)
      {
       $menu = $mb->cget('-menu');
@@ -275,9 +275,9 @@ sub Unpost
 
       undef $Tk::popup;
      }
-    elsif (defined $menu && ref $menu && 
+    elsif (defined $menu && ref $menu &&
            $menu->cget('-type') ne 'menubar' &&
-           $menu->cget('-type') ne 'tearoff' 
+           $menu->cget('-type') ne 'tearoff'
           )
      {
       # We're in a cascaded sub-menu from a torn-off menu or popup.
@@ -288,7 +288,7 @@ sub Unpost
        {
         my $parent = $menu->parent;
         last if (!$parent->IsMenu || !$parent->ismapped);
-        $parent->postcascade('none');        
+        $parent->postcascade('none');
         $parent->GenerateMenuSelect;
         $parent->activate('none');
         my $type = $parent->cget('-type');
@@ -318,13 +318,13 @@ sub Unpost
      undef $Tk::tearoff;
     }
   }
-}   
+}
 
 sub RestoreOldGrab
 {
  if (defined $Tk::oldGrab)
   {
-   eval 
+   eval
     {
      local $SIG{__DIE__};
      if ($Tk::grabStatus eq 'global')
@@ -335,7 +335,7 @@ sub RestoreOldGrab
       {
        $Tk::oldGrab->grab;
       }
-    };     
+    };
    undef $Tk::oldGrab;
   }
 }
@@ -366,7 +366,7 @@ sub Motion
  my $t     = $menu->cget('-type');
 
  if ($menu->IS($Tk::window))
-  {                     
+  {
    if ($menu->cget('-type') eq 'menubar')
     {
 #    if (defined($Tk::focus) && $Tk::focus != $menu)
@@ -412,12 +412,12 @@ sub ButtonDown
   {
    while ($menu->cget('-type') eq 'normal'
           && $menu->parent->IsMenu
-          && $menu->parent->ismapped 
+          && $menu->parent->ismapped
          )
     {
      $menu = $menu->parent;
     }
-   
+
    if (!defined $Tk::menuBar)
     {
      $Tk::menuBar = $menu;
@@ -428,7 +428,7 @@ sub ButtonDown
    # Don't update grab information if the grab window isn't changing.
    # Otherwise, we'll get an error when we unpost the menus and
    # restore the grab, since the old grab window will not be viewable
-   # anymore.              
+   # anymore.
 
    $menu->SaveGrabInfo unless ($menu->IS($menu->grabCurrent));
 
@@ -437,13 +437,13 @@ sub ButtonDown
 
    $menu->grabGlobal if ($Tk::platform eq 'unix');
   }
-}            
+}
 
 sub Enter
 {
- my $w = shift; 
+ my $w = shift;
  my $ev = $w->XEvent;
- $Tk::window = $w; 
+ $Tk::window = $w;
  if ($w->cget('-type') eq 'tearoff')
   {
    if ($ev->m ne 'NotifyUngrab')
@@ -539,7 +539,7 @@ sub Invoke
 # menu - Name of the menu window.
 sub Escape
 {
- my $menu = shift;  
+ my $menu = shift;
  my $parent = $menu->parent;
  if (!$parent->IsMenu)
   {
@@ -591,7 +591,7 @@ sub NextMenu
          $parent->NextEntry(1);
          return;
         }
-       $parent = $parent->parent; 
+       $parent = $parent->parent;
       }
     }
   }
@@ -600,7 +600,7 @@ sub NextMenu
    $count = -1;
    my $m2 = $menu->parent;
    if ($m2->IsMenu)
-    { 
+    {
      if ($m2->cget('-type') ne 'menubar')
       {
        $menu->activate('none');
@@ -608,8 +608,8 @@ sub NextMenu
        $m2->SetFocus;
        # This code unposts any posted submenu in the parent.
        my $tmp = $m2->index('active');
-       $m2->activate('none'); 
-       $m2->activate($tmp); 
+       $m2->activate('none');
+       $m2->activate($tmp);
        return;
       }
     }
@@ -673,7 +673,7 @@ sub NextEntry
  my $length = $menu->index('last')+1;
  my $quitAfter = $length;
  my $active = $menu->index('active');
- my $i = ($active eq 'none') ? 0 : $active+$count; 
+ my $i = ($active eq 'none') ? 0 : $active+$count;
  while (1)
   {
    return if ($quitAfter <= 0);
@@ -691,7 +691,7 @@ sub NextEntry
    $i += $count;
    $quitAfter -= 1;
   }
- $menu->activate($i); 
+ $menu->activate($i);
  $menu->GenerateMenuSelect;
  if ($menu->type($i) eq 'cascade')
   {
@@ -739,7 +739,7 @@ sub TraverseWithinMenu
         }
        else
         {
-         $w->Unpost();  
+         $w->Unpost();
          $w->invoke($i);
         }
        return;
@@ -756,7 +756,7 @@ sub FindMenu
    if (!defined($char) || $char eq '')
     {
      $menu->FirstEntry;
-    }           
+    }
    else
     {
      $menu->TraverseWithinMenu($char);
@@ -780,7 +780,7 @@ sub FindMenu
 sub FirstEntry
 {
  my $menu = shift;
- return if (!defined($menu) || $menu eq "" || !ref($menu));
+ return if (!defined($menu) || $menu eq '' || !ref($menu));
  $menu->SetFocus;
  return if ($menu->index('active') ne 'none');
  my $last = $menu->index('last');
@@ -898,7 +898,7 @@ sub Post
 }
 
 sub SetFocus
-{                 
+{
  my $menu = shift;
  $Tk::focus = $menu->focusCurrent if (!defined($Tk::focus));
  $menu->focus;
@@ -909,7 +909,7 @@ sub GenerateMenuSelect
  my $menu = shift;
  $Tk::activeMenu = $menu;
  $Tk::activeItem = $menu->index('active');
- $menu->eventGenerate('<<MenuSelect>>');  # FIXME 
+ $menu->eventGenerate('<<MenuSelect>>');  # FIXME
 }
 
 # Converted from tearoff.tcl --
@@ -977,7 +977,7 @@ sub TearOffMenu
  # Set tkPriv(focus) on entry: otherwise the focus will get lost
  # after keyboard invocation of a sub-menu (it will stay on the
  # submenu).
- $menu->bind("<Enter>",'EnterFocus');
+ $menu->bind('<Enter>','EnterFocus');
  $menu->Callback('-tearoffcommand');
  return $menu;
 }
@@ -1021,16 +1021,16 @@ sub MenuDup
          next if (@$option == 2);
          push(@args,$$option[0],$$option[4]) if (defined $$option[4]);
         }
-       $dst->add($type,@args);  
-      }           
-     
+       $dst->add($type,@args);
+      }
+
      # Duplicate the binding tags and bindings from the source menu.
      my @bindtags = $src->bindtags;
      my $path = $src->PathName;
      foreach (@bindtags)
       {
        $_ = $dst if ($_ eq $path);
-      }                            
+      }
      $dst->bindtags([@bindtags]);
      foreach my $event ($src->bind)
       {
@@ -1040,11 +1040,11 @@ sub MenuDup
     }
   }
  return $dst;
-} 
+}
 
 
 
-# Some convenience methods 
+# Some convenience methods
 
 sub separator   { require Tk::Menu::Item; shift->Separator(@_);   }
 sub command     { require Tk::Menu::Item; shift->Command(@_);     }

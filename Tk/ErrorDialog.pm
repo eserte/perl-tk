@@ -1,7 +1,7 @@
 package Tk::ErrorDialog;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#7$
 
 use English;
 use Tk ();
@@ -12,7 +12,7 @@ use base qw(Tk::Toplevel);
 # ErrorDialog - a translation of `tkerror' from Tcl/Tk to TkPerl.
 #
 # Currently TkPerl background errors are sent to stdout/stderr; use this
-# module if you want them in a window.  You can also "roll your own" by 
+# module if you want them in a window.  You can also "roll your own" by
 # supplying the routine Tk::Error.
 #
 # Stephen O. Lidie, Lehigh University Computing Center.  95/03/02
@@ -139,7 +139,7 @@ sub Tk::Error {
     my($d, $t) = ($ED_OBJECT->Subwidget('error_dialog'), $ED_OBJECT->Subwidget('text'));
     chop $error;
     $d->configure(-text => "Error:  $error");
-    $d->bell; 
+    $d->bell;
     my $ans = $d->Show;
 
     $t->delete('0.0', 'end') if not $ED_OBJECT->{'-appendtraceback'};

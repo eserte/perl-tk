@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkImage.c 1.15 97/10/09 09:57:50
+ * RCS: @(#) $Id: tkImage.c,v 1.2 1998/09/14 18:23:12 stanton Exp $
  */
 
 #include "tkInt.h"
@@ -117,7 +117,7 @@ Tk_CreateImageType(typePtr)
 /*
  *----------------------------------------------------------------------
  *
- * Tk_ImageCmd --
+ * Tk_ImageObjCmd --
  *
  *	This procedure is invoked to process the "image" Tcl command.
  *	See the user documentation for details on what it does.
@@ -132,7 +132,7 @@ Tk_CreateImageType(typePtr)
  */
 
 int
-Tk_ImageCmd(clientData, interp, argc, objv)
+Tk_ImageObjCmd(clientData, interp, argc, objv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
@@ -147,25 +147,26 @@ Tk_ImageCmd(clientData, interp, argc, objv)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
     char idString[30], *name;
-    static int id = 0;        
-
+    static int id = 0;
     static char **strv = NULL;
-    if (strv) ckfree((char *) strv);
-    strv = (char **) ckalloc(argc * sizeof(char *));
+
+    if (argc < 2) {
+	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg arg ...?");
+	return TCL_ERROR;
+    }
+    if (strv) {
+	ckfree((char *) strv);
+    } 
+    strv = (char **) ckalloc((argc+1) * sizeof(char *));
+    strv[argc] = NULL;
     for (i = 0; i < argc; i++) {
 	strv[i]=Tcl_GetStringFromObj(objv[i], (int *) NULL);
-    }
-    if (argc < 2) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
-		" option ?args?\"", (char *) NULL);
-	return TCL_ERROR;
     }
     c = strv[1][0];
     length = strlen(strv[1]);
     if ((c == 'c') && (strncmp(strv[1], "create", length) == 0)) {
 	if (argc < 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
-		    " create type ?name? ?options?\"", (char *) NULL);
+	    Tcl_WrongNumArgs(interp, 2, objv, "type ?name? ?options?");
 	    return TCL_ERROR;
 	}
 	c = strv[2][0];

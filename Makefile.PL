@@ -6,7 +6,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.013';      
+  $VERSION = '800.014';      
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
@@ -47,6 +47,7 @@ else
 my $dir = Tk::MMutil::find_subdir();
 delete $dir->{'pTk'};
 
+
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
     'EXE_FILES' => [qw(ptksh ptked)],
@@ -58,7 +59,6 @@ Tk::MMutil::TkExtMakefile(
 					    : ''),
     'LIBS'    => \@libs,
     'OBJECT'  => '$(O_FILES)',
-#   'PMLIBDIRS'  => ['Tk','pod'],
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );

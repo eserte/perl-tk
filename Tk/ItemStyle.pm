@@ -1,14 +1,14 @@
 package Tk::ItemStyle;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/ItemStyle.pm#2$
+use vars qw($VERSION);
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ItemStyle.pm#4$
 
 require Tk;
 use base  qw(Tk);
 require Tk::Widget;
 Construct Tk::Widget 'ItemStyle';
 
-Tk::Methods ("delete");
+Tk::Methods ('delete');
 
 sub new
 {
@@ -20,7 +20,7 @@ sub new
  $package->InitClass($widget);
  my $obj = $widget->itemstyle($type, %args);
  return bless $obj,$package;
-}       
+}
 
 sub Install
 {

@@ -2,7 +2,7 @@ package Tk::DragDrop::SunSite;
 require Tk::DropSite;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#8$
+$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#9$
 
 use Tk::DragDrop::SunConst;
 use base  qw(Tk::DropSite);
@@ -20,12 +20,12 @@ sub SunDrop
  my $seln = $w->GetAtomName($atom);
  if ($flags & &ACK_FLAG)
   {
-   eval {local $SIG{__DIE__}; $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_ACK");};
+   eval {local $SIG{__DIE__}; $w->SelectionGet('-selection'=>$seln,'_SUN_DRAGDROP_ACK');};
   }
  $site->Callback(-dropcommand => $seln, $x, $y);
  if ($flags & &TRANSIENT_FLAG)
   {
-   eval {local $SIG{__DIE__};  $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_DONE");};
+   eval {local $SIG{__DIE__};  $w->SelectionGet('-selection'=>$seln,'_SUN_DRAGDROP_DONE');};
   }
  $w->configure('-relief' => $w->{'_DND_RELIEF_'}) if (defined $w->{'_DND_RELIEF_'});
  $site->Callback(-entercommand => 0, $x, $y);
@@ -68,39 +68,39 @@ sub NoteSites
  my ($wrapper,$offset) = $t->wrapper;
  if ($t->viewable)
   {
-   my $s;              
-   my $i = 0;          
-   my @win;            
-   my $bx = $t->rootx; 
-   my $by = $t->rooty - $offset; 
+   my $s;
+   my $i = 0;
+   my @win;
+   my $bx = $t->rootx;
+   my $by = $t->rooty - $offset;
    $t->MakeWindowExist;
    foreach $s (@$sites)
-    {                  
-     my $w = $s->widget; 
-     if ($w->viewable) 
-      {           
-       $w->MakeWindowExist;                                     
-       $data[1]++;     
-       push(@data,${$w->WindowId});                   # XID     
-       push(@data,$i++);                              # Our "tag"
-       push(@data,ENTERLEAVE|MOTION);                 # Flags   
-       push(@data,0);                                 # Kind is "rect"
+    {
+     my $w = $s->widget;
+     if ($w->viewable)
+      {
+       $w->MakeWindowExist;
+       $data[1]++;
+       push(@data,${$w->WindowId});                   # XID
+       push(@data,$i++);                              # Our 'tag'
+       push(@data,ENTERLEAVE|MOTION);                 # Flags
+       push(@data,0);                                 # Kind is 'rect'
        push(@data,1);                                 # Number of rects
        push(@data,$s->X-$bx,$s->Y-$by,$s->width,$s->height);  # The rect
-      }                
-    }                  
+      }
+    }
   }
  if ($data[1])
   {
    $t->property('set',
-                "_SUN_DRAGDROP_INTEREST",           # name
-                "_SUN_DRAGDROP_INTEREST",           # type
-                32,                                 # format 
-                \@data,$wrapper);                   # the data 
+                '_SUN_DRAGDROP_INTEREST',           # name
+                '_SUN_DRAGDROP_INTEREST',           # type
+                32,                                 # format
+                \@data,$wrapper);                   # the data
   }
  else
   {
-   $t->property('delete',"_SUN_DRAGDROP_INTEREST",$wrapper);
+   $t->property('delete','_SUN_DRAGDROP_INTEREST',$wrapper);
   }
 }
 

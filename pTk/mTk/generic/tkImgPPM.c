@@ -13,7 +13,7 @@
  *	   Department of Computer Science,
  *	   Australian National University.
  *
- * SCCS: @(#) tkImgPPM.c 1.16 97/10/28 14:51:46
+ * RCS: @(#) $Id: tkImgPPM.c,v 1.2 1998/09/14 18:23:13 stanton Exp $
  */
 #include "tkInt.h"
 #include "tkPort.h"
@@ -38,15 +38,15 @@
  */
 
 static int		FileMatchPPM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-			    Arg fileName, Arg formatString,
+			    Tcl_Obj *fileName, Tcl_Obj *formatString,
 			    int *widthPtr, int *heightPtr));
 static int		FileReadPPM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Channel chan, Arg fileName,
-			    Arg formatString, Tk_PhotoHandle imageHandle,
+			    Tcl_Channel chan, Tcl_Obj *fileName,
+			    Tcl_Obj *formatString, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int		FileWritePPM _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *fileName, Arg formatString,
+			    char *fileName, Tcl_Obj *formatString,
 			    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat tkImgFmtPPM = {
@@ -89,8 +89,8 @@ static int
 FileMatchPPM(interp, chan, fileName, formatString, widthPtr, heightPtr)
     Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image file, open for reading. */
-    Arg fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
+    Tcl_Obj *fileName;		/* The name of the image file. */
+    Tcl_Obj *formatString;	/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw PPM file. */
@@ -125,8 +125,8 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image file, open for reading. */
-    Arg fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
+    Tcl_Obj *fileName;		/* The name of the image file. */
+    Tcl_Obj *formatString;	/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -231,6 +231,7 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
     }
 
     ckfree((char *) pixelPtr);
+    Tcl_AppendResult(interp, tkImgFmtPPM.name, (char *) NULL);   
     return TCL_OK;
 }
 
@@ -256,7 +257,7 @@ static int
 FileWritePPM(interp, fileName, formatString, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
-    Arg formatString;
+    Tcl_Obj *formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     Tcl_Channel chan;
@@ -267,6 +268,9 @@ FileWritePPM(interp, fileName, formatString, blockPtr)
 
     chan = Tcl_OpenFileChannel(interp, fileName, "w", 0666);
     if (chan == NULL) {
+	return TCL_ERROR;
+    }
+    if (Tcl_SetChannelOption(interp, chan, "translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 

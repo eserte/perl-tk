@@ -5,8 +5,8 @@ package Tk::TextUndo;
 require Tk::Text;
 use AutoLoader;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/TextUndo.pm#17$
+use vars qw($VERSION);
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/TextUndo.pm#21$
 
 use base qw(Tk::Text);
 
@@ -21,13 +21,13 @@ sub ClassInit
 
 sub undo
 {
- my ($w) = @_; 
+ my ($w) = @_;
  if (exists $w->{UNDO})
   {
    if (@{$w->{UNDO}})
     {
      my ($op,@args) = @{pop(@{$w->{UNDO}})};
-     $w->$op(@args);   
+     $w->$op(@args);
      $w->SetCursor($args[0]);
      return;
     }
@@ -40,7 +40,6 @@ sub addUndo
  my ($w,$op,@args) = @_;
  $w->{UNDO} = [] unless (exists $w->{UNDO});
  push(@{$w->{UNDO}},['SUPER::'.$op,@args]);
- # print "add(",join(',',$op,@args),")\n";
 }
 
 sub topUndo
@@ -93,7 +92,7 @@ sub FileName
  my $text = shift;
  if (@_)
   {
-   $text->{'FILE'} = shift; 
+   $text->{'FILE'} = shift;
   }
  return $text->{'FILE'};
 }
@@ -102,7 +101,7 @@ sub Save
 {
  my $text = shift;
  my $file = (@_) ? shift : $text->FileName;
- $text->BackTrace("No filename defined") unless (defined $file);
+ $text->BackTrace('No filename defined') unless (defined $file);
  if (open(FILE,">$file"))
   {
    my $index = '1.0';
@@ -114,7 +113,7 @@ sub Save
     }
    if (close(FILE))
     {
-     delete $text->{UNDO}; 
+     delete $text->{UNDO};
      $text->FileName($file);
     }
   }

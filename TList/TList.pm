@@ -1,7 +1,7 @@
-package Tk::TList; 
+package Tk::TList;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.009'; # $Id: //depot/Tk8/TList/TList.pm#9$
+use vars qw($VERSION);
+$VERSION = '3.011'; # $Id: //depot/Tk8/TList/TList.pm#11$
 
 use Tk qw(Ev);
 
@@ -11,7 +11,7 @@ use strict;
 
 Construct Tk::Widget 'TList';
 
-bootstrap Tk::TList $Tk::VERSION; 
+bootstrap Tk::TList $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::tlist }
 
@@ -32,33 +32,18 @@ sub ClassInit
 
  $mw->bind($class,'<ButtonPress-1>',[ 'Button1' ] );
  $mw->bind($class,'<Shift-ButtonPress-1>',[ 'ShiftButton1' ] );
- $mw->bind($class,'<Control-ButtonRelease-1>', sub {} );
- $mw->bind($class,'<ButtonRelease-1>',
-		sub
-		 {
-		  my $w = shift;
-		  my $Ev = $w->XEvent;
-		  $w->CancelRepeat
-		      if($w->cget('-selectmode') ne "dragdrop");
-		  $w->ButtonRelease1($Ev);
-		 });
+ $mw->bind($class,'<Control-ButtonRelease-1>','Control_ButtonRelease_1');
+ $mw->bind($class,'<ButtonRelease-1>','ButtonRelease_1');
  $mw->bind($class,'<B1-Motion>',[ 'Button1Motion' ] );
  $mw->bind($class,'<B1-Leave>',[ 'AutoScan' ] );
 
  $mw->bind($class,'<Double-ButtonPress-1>',['Double1']);
 
- $mw->bind($class,'<Control-B1-Motion>', sub {} );
+ $mw->bind($class,'<Control-B1-Motion>','Control_B1_Motion');
  $mw->bind($class,'<Control-ButtonPress-1>',['CtrlButton1']);
  $mw->bind($class,'<Control-Double-ButtonPress-1>',['CtrlButton1']);
 
- $mw->bind($class,'<B1-Enter>',
-		sub
-		 {
-		  my $w = shift;
-		  my $Ev = $w->XEvent;
-		  $w->CancelRepeat
-		      if($w->cget('-selectmode') ne "dragdrop");
-		 });
+ $mw->bind($class,'<B1-Enter>','B1_Enter');
 
  $mw->bind($class,'<Up>',  ['DirKey', 'up']);
  $mw->bind($class,'<Down>',['DirKey', 'down']);
@@ -66,8 +51,8 @@ sub ClassInit
  $mw->bind($class,'<Left>', ['DirKey', 'left']);
  $mw->bind($class,'<Right>',['DirKey', 'right']);
 
- $mw->bind($class,'<Prior>', sub {shift->yview('scroll', -1, 'pages') } );
- $mw->bind($class,'<Next>',  sub {shift->yview('scroll',  1, 'pages') } );
+ $mw->bind($class,'<Prior>','Prior');
+ $mw->bind($class,'<Next>','Next');
 
  $mw->bind($class,'<Return>', ['KeyboardActivate']);
  $mw->bind($class,'<space>',  ['KeyboardBrowse']);
@@ -75,19 +60,60 @@ sub ClassInit
  return $class;
 }
 
+sub Control_ButtonRelease_1
+{
+}
+
+
+sub ButtonRelease_1
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $w->CancelRepeat
+ if($w->cget('-selectmode') ne 'dragdrop');
+ $w->ButtonRelease1($Ev);
+}
+
+
+sub Control_B1_Motion
+{
+}
+
+
+sub B1_Enter
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $w->CancelRepeat
+ if($w->cget('-selectmode') ne 'dragdrop');
+}
+
+
+sub Prior
+{
+shift->yview('scroll', -1, 'pages')
+}
+
+
+sub Next
+{
+shift->yview('scroll',  1, 'pages')
+}
+
+
 sub Button1
 {
  my $w = shift;
  my $Ev = $w->XEvent;
 
- delete $w->{'shiftanchor'}; 
+ delete $w->{'shiftanchor'};
 
  $w->focus()
-    if($w->cget("-takefocus"));
+    if($w->cget('-takefocus'));
 
- my $mode = $w->cget("-selectmode");
+ my $mode = $w->cget('-selectmode');
 
- if ($mode eq "dragdrop")
+ if ($mode eq 'dragdrop')
   {
    # $w->Send_WaitDrag($Ev->y);
    return;
@@ -98,33 +124,33 @@ sub Button1
  return unless defined $ent;
 
  my $browse = 0;
-   
- if($mode eq "single")
+
+ if($mode eq 'single')
   {
    $w->anchor('set', $ent);
   }
- elsif($mode eq "browse")
+ elsif($mode eq 'browse')
   {
    $w->anchor('set', $ent);
    $w->selection('clear' );
    $w->selection('set', $ent);
    $browse = 1;
   }
- elsif($mode eq "multiple")
+ elsif($mode eq 'multiple')
   {
    $w->selection('clear');
    $w->anchor('set', $ent);
    $w->selection('set', $ent);
    $browse = 1;
   }
- elsif($mode eq "extended")
+ elsif($mode eq 'extended')
   {
    $w->anchor('set', $ent);
    $w->selection('clear');
    $w->selection('set', $ent);
    $browse = 1;
   }
-   
+
  $w->Callback(-browsecmd => $ent) if ($browse);
 }
 
@@ -135,13 +161,13 @@ sub ShiftButton1
 
  my $to = $w->GetNearest($Ev->x,$Ev->y);
 
- delete $w->{'shiftanchor'}; 
+ delete $w->{'shiftanchor'};
 
  return unless defined $to;
 
  my $mode = $w->cget('-selectmode');
 
- if ($mode eq "extended")
+ if ($mode eq 'extended')
   {
    my $from = $w->info('anchor');
    if($from)
@@ -174,11 +200,11 @@ sub ButtonRelease1
 {
  my ($w, $Ev) = @_;
 
- delete $w->{'shiftanchor'}; 
+ delete $w->{'shiftanchor'};
 
  my $mode = $w->cget('-selectmode');
 
- if($mode eq "dragdrop")
+ if($mode eq 'dragdrop')
   {
 #   $w->Send_DoneDrag();
    return;
@@ -193,23 +219,23 @@ sub ButtonRelease1
   {
    $w->selection('clear');
 
-   return if($mode eq "single" || $mode eq "browse")
+   return if($mode eq 'single' || $mode eq 'browse')
 
   }
  else
   {
-   if($mode eq "single" || $mode eq "browse")
+   if($mode eq 'single' || $mode eq 'browse')
     {
      $w->anchor('set', $ent);
      $w->selection('clear');
      $w->selection('set', $ent);
 
     }
-   elsif($mode eq "multiple")
+   elsif($mode eq 'multiple')
     {
      $w->selection('set', $ent);
     }
-   elsif($mode eq "extended")
+   elsif($mode eq 'extended')
     {
      $w->selection('set', $ent);
     }
@@ -223,11 +249,11 @@ sub Button1Motion
  my $w = shift;
  my $Ev = $w->XEvent;
 
- delete $w->{'shiftanchor'}; 
+ delete $w->{'shiftanchor'};
 
  my $mode = $w->cget('-selectmode');
 
- if ($mode eq "dragdrop")
+ if ($mode eq 'dragdrop')
   {
 #   $w->Send_StartDrag();
    return;
@@ -237,11 +263,11 @@ sub Button1Motion
 
  return unless defined $ent;
 
- if($mode eq "single")
+ if($mode eq 'single')
   {
    $w->anchor('set', $ent);
   }
- elsif($mode eq "multiple" || $mode eq "extended")
+ elsif($mode eq 'multiple' || $mode eq 'extended')
   {
    my $from = $w->info('anchor');
    if($from)
@@ -257,7 +283,7 @@ sub Button1Motion
     }
   }
 
- if($mode ne "single")
+ if($mode ne 'single')
   {
    $w->Callback(-browsecmd =>$ent);
   }
@@ -268,7 +294,7 @@ sub Double1
  my $w = shift;
  my $Ev = $w->XEvent;
 
- delete $w->{'shiftanchor'}; 
+ delete $w->{'shiftanchor'};
 
  my $ent = $w->GetNearest($Ev->x,$Ev->y);
 
@@ -285,7 +311,7 @@ sub CtrlButton1
  my $w = shift;
  my $Ev = $w->XEvent;
 
- delete $w->{'shiftanchor'}; 
+ delete $w->{'shiftanchor'};
 
  my $ent = $w->GetNearest($Ev->x,$Ev->y);
 
@@ -293,7 +319,7 @@ sub CtrlButton1
 
  my $mode = $w->cget('-selectmode');
 
- if($mode eq "extended")
+ if($mode eq 'extended')
   {
    $w->anchor('set', $ent) unless defined( $w->info('anchor') );
 
@@ -356,8 +382,8 @@ sub AutoScan
 {
  my $w = shift;
 
- return if($w->cget('-selectmode') eq "dragdrop");
- 
+ return if($w->cget('-selectmode') eq 'dragdrop');
+
  my $Ev = $w->XEvent;
  my $y = $Ev->y;
  my $x = $Ev->x;

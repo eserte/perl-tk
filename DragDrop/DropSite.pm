@@ -2,8 +2,8 @@ package Tk::DropSite;
 require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#9$
+use vars qw($VERSION);
+$VERSION = '3.011'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#11$
 
 use base  qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 
@@ -16,7 +16,7 @@ Tk::DragDrop->Tk::DragDrop::Common::Type('Local');
 
 my @toplevels;
 
-BEGIN                  
+BEGIN
 {
  my $name;
  no strict 'refs';
@@ -128,7 +128,7 @@ sub QueueDropSiteUpdate
  my $class = ref($obj);
  my $t   = $obj->widget->toplevel;
  unless ($t->{'DropUpdate'})
-  {                  
+  {
    $t->{'DropUpdate'} = 1;
    $t->afterIdle(sub { UpdateDropSites($t) });
   }
@@ -205,7 +205,7 @@ sub new
   }
  else
   {
-   $args{'-droptypes'} = \@types; 
+   $args{'-droptypes'} = \@types;
   }
  my ($key,$val);
  while (($key,$val) = each %args)
@@ -218,8 +218,8 @@ sub new
  my $obj = bless \%args,$class;
  unless (exists $t->{'DropSites'})
   {
-   $t->{'DropSites'} = {}; 
-   $t->{'DropUpdate'} = 0; 
+   $t->{'DropSites'} = {};
+   $t->{'DropUpdate'} = 0;
   }
  my $type;
  foreach $type (@{$args{'-droptypes'}})

@@ -4,8 +4,8 @@ require Tk::HList;
 require DirHandle;
 use Cwd;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Dirlist.pm#5$
+use vars qw($VERSION);
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Dirlist.pm#7$
 
 use base  qw(Tk::Derived Tk::HList);
 use strict;
@@ -22,7 +22,7 @@ sub getimage
      $w->{$key} = $w->Bitmap($key);
     }
   }
- return $w->{$key}; 
+ return $w->{$key};
 }
 
 
@@ -53,14 +53,14 @@ sub fullpath
 sub AddDir
 {
  my ($w,$dir) = @_;
- my $path = "";
- my $prefix = "";
+ my $path = '';
+ my $prefix = '';
  my $first = 0;
  my $name;
  foreach $name (split m#/#,$dir)
   {
    $first++;
-   if ($name eq "")
+   if ($name eq '')
     {
      next unless ($first == 1);
      $path = '/';
@@ -83,10 +83,10 @@ sub AddDir
 sub choose_image
 {
  my ($w,$path) = @_;
- return "folder" if (-d $path);
- return "srcfile"  if ($path =~ /\.[ch]$/);
- return "textfile" if (-T $path);
- return "file";
+ return 'folder' if (-d $path);
+ return 'srcfile'  if ($path =~ /\.[ch]$/);
+ return 'textfile' if (-T $path);
+ return 'file';
 }
 
 

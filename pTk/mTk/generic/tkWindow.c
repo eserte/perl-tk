@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWindow.c 1.233 97/10/31 09:55:23
+ * RCS: @(#) $Id: tkWindow.c,v 1.4 1998/09/30 19:01:20 rjohnson Exp $
  */
 
 #include "tkPort.h"
@@ -103,7 +103,8 @@ static TkCmd commands[] = {
      * Commands that are part of the intrinsics:
      */
 #if 0
-    {"bell",		Tk_BellCmd,		NULL,			0},
+
+    {"bell",		NULL,			Tk_BellObjCmd, 		0},
     {"bind",		Tk_BindCmd,		NULL,			1},
     {"bindtags",	Tk_BindtagsCmd,		NULL,			1},
     {"clipboard",	Tk_ClipboardCmd,	NULL,			0},
@@ -113,7 +114,7 @@ static TkCmd commands[] = {
     {"font",		NULL,			Tk_FontObjCmd,		1},
     {"grab",		Tk_GrabCmd,		NULL,			0},
     {"grid",		Tk_GridCmd,		NULL,			1},
-    {"image",		NULL,			Tk_ImageCmd,		1},
+    {"image",		NULL,			Tk_ImageObjCmd,		1},
     {"lower",		Tk_LowerCmd,		NULL,			1},
 #ifndef Tk_OptionCmd
     {"option",		Tk_OptionCmd,		NULL,			1},

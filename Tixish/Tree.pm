@@ -6,7 +6,7 @@ package Tk::Tree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/Tree.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tixish/Tree.pm#13$
 
 use Tk;
 use Tk::Derived;
@@ -18,91 +18,91 @@ Construct Tk::Widget 'Tree';
 
 sub Tk::Widget::ScrlTree { shift->Scrolled('Tree' => @_) }
 
-sub Populate 
+sub Populate
 {
  my( $w, $args ) = @_;
 
  $w->SUPER::Populate( $args );
 
  $w->ConfigSpecs(
-        -ignoreinvoke => ["PASSIVE",  "ignoreInvoke", "IgnoreInvoke", 0],
-        -opencmd      => ["CALLBACK", "openCmd",      "OpenCmd",
+        -ignoreinvoke => ['PASSIVE',  'ignoreInvoke', 'IgnoreInvoke', 0],
+        -opencmd      => ['CALLBACK', 'openCmd',      'OpenCmd',
                           sub { $w->OpenCmd( @_ ) } ],
-        -indicatorcmd => ["CALLBACK", "indicatorCmd",      "IndicatorCmd",
+        -indicatorcmd => ['CALLBACK', 'indicatorCmd',      'IndicatorCmd',
                           sub { $w->IndicatorCmd( @_ ) } ],
-        -closecmd     => ["CALLBACK", "closeCmd",     "CloseCmd",
-                          sub { $w->CloseCmd( @_ ) } ], 
-        -indicator    => ["SELF", "indicator", "Indicator", 1],
-        -indent       => ["SELF", "indent", "Indent", 20],
-        -width        => ["SELF", "width", "Width", 20],
-        -itemtype     => ["SELF", "itemtype", "Itemtype", 'imagetext'],
+        -closecmd     => ['CALLBACK', 'closeCmd',     'CloseCmd',
+                          sub { $w->CloseCmd( @_ ) } ],
+        -indicator    => ['SELF', 'indicator', 'Indicator', 1],
+        -indent       => ['SELF', 'indent', 'Indent', 20],
+        -width        => ['SELF', 'width', 'Width', 20],
+        -itemtype     => ['SELF', 'itemtype', 'Itemtype', 'imagetext'],
        );
 }
 
-sub autosetmode 
+sub autosetmode
 {
  my( $w ) = @_;
  $w->setmode();
 }
 
-sub IndicatorCmd 
+sub IndicatorCmd
 {
  my( $w, $ent, $event ) = @_;
- 
+
  my $mode = $w->getmode( $ent );
- 
- if ( $event eq "<Arm>" ) 
+
+ if ( $event eq '<Arm>' )
   {
-   if ($mode eq "open" ) 
+   if ($mode eq 'open' )
     {
-     $w->_indicator_image( $ent, "plusarm" );
-    } 
-   else 
-    {
-     $w->_indicator_image( $ent, "minusarm" );
+     $w->_indicator_image( $ent, 'plusarm' );
     }
-  } 
- elsif ( $event eq "<Disarm>" ) 
+   else
+    {
+     $w->_indicator_image( $ent, 'minusarm' );
+    }
+  }
+ elsif ( $event eq '<Disarm>' )
   {
-   if ($mode eq "open" ) 
+   if ($mode eq 'open' )
     {
-     $w->_indicator_image( $ent, "plus" );
-    } 
-   else 
-    {
-     $w->_indicator_image( $ent, "minus" );
+     $w->_indicator_image( $ent, 'plus' );
     }
-  } 
- elsif( $event eq "<Activate>" ) 
+   else
+    {
+     $w->_indicator_image( $ent, 'minus' );
+    }
+  }
+ elsif( $event eq '<Activate>' )
   {
    $w->Activate( $ent, $mode );
    $w->Callback( -browsecmd => $ent );
   }
 }
 
-sub close 
+sub close
 {
  my( $w, $ent ) = @_;
  my $mode = $w->getmode( $ent );
- $w->Activate( $ent, $mode ) if( $mode eq "close" );
+ $w->Activate( $ent, $mode ) if( $mode eq 'close' );
 }
 
-sub open 
+sub open
 {
  my( $w, $ent ) = @_;
  my $mode = $w->getmode( $ent );
- $w->Activate( $ent, $mode ) if( $mode eq "open" );
+ $w->Activate( $ent, $mode ) if( $mode eq 'open' );
 }
 
 sub getmode
 {
  my( $w, $ent ) = @_;
 
- return( "none" ) unless $w->indicatorExists( $ent );
+ return( 'none' ) unless $w->indicatorExists( $ent );
 
  my $img = $w->_indicator_image( $ent );
- return( "open" ) if( $img eq "plus" || $img eq "plusarm" );
- return( "close" );
+ return( 'open' ) if( $img eq 'plus' || $img eq 'plusarm' );
+ return( 'close' );
 }
 
 sub setmode
@@ -110,50 +110,50 @@ sub setmode
  my ($w,$ent,$mode) = @_;
  unless (defined $mode)
   {
-   $mode = "none";                     
-   my @args;                             
+   $mode = 'none';
+   my @args;
    push(@args,$ent) if defined $ent;
    my @children = $w->infoChildren( @args );
-   if ( @children ) 
+   if ( @children )
     {
-     $mode = "close";
-     foreach my $c (@children) 
+     $mode = 'close';
+     foreach my $c (@children)
       {
-       $mode = "open" if $w->infoHidden( $c );
+       $mode = 'open' if $w->infoHidden( $c );
        $w->setmode( $c );
       }
     }
   }
-            
- if (defined $ent) 
-  {      
-   if ( $mode eq "open" )
+
+ if (defined $ent)
+  {
+   if ( $mode eq 'open' )
     {
-     $w->_indicator_image( $ent, "plus" );
+     $w->_indicator_image( $ent, 'plus' );
     }
-   elsif ( $mode eq "close" )
+   elsif ( $mode eq 'close' )
     {
-     $w->_indicator_image( $ent, "minus" );
+     $w->_indicator_image( $ent, 'minus' );
     }
-   elsif( $mode eq "none" )
+   elsif( $mode eq 'none' )
     {
      $w->_indicator_image( $ent, undef );
     }
   }
 }
 
-sub Activate 
+sub Activate
 {
  my( $w, $ent, $mode ) = @_;
- if ( $mode eq "open" ) 
+ if ( $mode eq 'open' )
   {
    $w->Callback( -opencmd => $ent );
-   $w->_indicator_image( $ent, "minus" );
-  } 
- elsif ( $mode eq "close" ) 
+   $w->_indicator_image( $ent, 'minus' );
+  }
+ elsif ( $mode eq 'close' )
   {
    $w->Callback( -closecmd => $ent );
-   $w->_indicator_image( $ent, "plus" );
+   $w->_indicator_image( $ent, 'plus' );
   }
  else
   {
@@ -161,28 +161,28 @@ sub Activate
   }
 }
 
-sub OpenCmd 
+sub OpenCmd
 {
  my( $w, $ent ) = @_;
  # The default action
- foreach my $kid ($w->infoChildren( $ent )) 
+ foreach my $kid ($w->infoChildren( $ent ))
   {
    $w->show( -entry => $kid );
   }
 }
 
-sub CloseCmd 
+sub CloseCmd
 {
  my( $w, $ent ) = @_;
 
  # The default action
- foreach my $kid ($w->infoChildren( $ent )) 
+ foreach my $kid ($w->infoChildren( $ent ))
   {
    $w->hide( -entry => $kid );
   }
 }
 
-sub Command 
+sub Command
 {
  my( $w, $ent ) = @_;
 
@@ -191,7 +191,7 @@ sub Command
  $w->Activate( $ent, $w->getmode( $ent ) ) if $w->indicatorExists( $ent );
 }
 
-sub _indicator_image 
+sub _indicator_image
 {
  my( $w, $ent, $image ) = @_;
  my $data = $w->privateData();

@@ -4,7 +4,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#9$
+$VERSION = '3.012'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#12$
 
 sub Type
 {
@@ -15,7 +15,7 @@ sub Type
  unless (exists $hash->{$name})
   {
    push(@$array,$name);
-   $class = (caller(0))[0] unless (@_ > 2); 
+   $class = (caller(0))[0] unless (@_ > 2);
    $hash->{$name} = $class;
    # confess "Strange class $class for $base/$name" unless ($class =~ /^Tk/);
    # print "$base $name is ",$class,"\n";
@@ -39,12 +39,11 @@ sub import
      else
       {
        my ($kind) = $class =~ /([A-Z][a-z]+)$/;
-       # print "$type $class is kind of '$kind'\n";
        my $file = Tk->findINC("DragDrop/${type}${kind}.pm");
        if (defined $file)
         {
-         # print "Loading $file\n"; 
-         require $file; 
+         # print "Loading $file\n";
+         require $file;
         }
        else
         {

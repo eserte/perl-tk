@@ -1,5 +1,8 @@
 ImgGetStringFromObj
+ImgGetIndexFromObj
 ImgLoadJpegLibrary
+ImgGetIntFromObj
+ImgInitTIFFpixar
 ImgInitTIFFzip
 ImgInitTIFFjpeg
 ImgLoadFailed

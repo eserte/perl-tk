@@ -1,12 +1,12 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 require Tk;
 package Tk::ROText;
 require Tk::Text;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/ROText.pm#19$
+use vars qw($VERSION);
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/ROText.pm#21$
 
 use base  qw(Tk::Text);
 Construct Tk::Widget 'ROText';

@@ -5,13 +5,13 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tixish/Balloon.pm#23$
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tixish/Balloon.pm#24$
 
 use Tk qw(Ev Exists);
 use Carp;
 require Tk::Toplevel;
 
-Tk::Widget->Construct("Balloon");
+Tk::Widget->Construct('Balloon');
 use base qw(Tk::Toplevel);
 
 use UNIVERSAL;
@@ -23,10 +23,10 @@ my $button_up = 0;
 
 sub ClassInit {
     my ($class, $mw) = @_;
-    $mw->bind("all", "<Motion>", ['Tk::Balloon::Motion', Ev('X'), Ev('Y'), Ev('s')]);
-    $mw->bind("all", "<Leave>",  ['Tk::Balloon::Motion', Ev('X'), Ev('Y'), Ev('s')]);
-    $mw->bind("all", "<Button>", 'Tk::Balloon::ButtonDown');
-    $mw->bind("all", "<ButtonRelease>", 'Tk::Balloon::ButtonUp');
+    $mw->bind('all', '<Motion>', ['Tk::Balloon::Motion', Ev('X'), Ev('Y'), Ev('s')]);
+    $mw->bind('all', '<Leave>',  ['Tk::Balloon::Motion', Ev('X'), Ev('Y'), Ev('s')]);
+    $mw->bind('all', '<Button>', 'Tk::Balloon::ButtonDown');
+    $mw->bind('all', '<ButtonRelease>', 'Tk::Balloon::ButtonUp');
     return $class;
 }
 
@@ -39,48 +39,48 @@ sub Populate {
     $w->withdraw;
     # Only the container frame's background should be black... makes it
     # look better.
-    $w->configure(-background => "black");
+    $w->configure(-background => 'black');
     my $a = $w->Frame;
     my $m = $w->Frame;
     $a->configure(-bd => 0);
     my $al = $a->Label(-bd => 0,
-		       -relief => "flat",
-		       -bitmap => '@' . Tk->findINC("balArrow.xbm"));
-    $al->pack(-side => "left", -padx => 1, -pady => 1, -anchor => "nw");
+		       -relief => 'flat',
+		       -bitmap => '@' . Tk->findINC('balArrow.xbm'));
+    $al->pack(-side => 'left', -padx => 1, -pady => 1, -anchor => 'nw');
     $m->configure(-bd => 0);
     my $ml = $m->Label(-bd => 0,
 		       -padx => 0,
 		       -pady => 0,
 		       -text => $args->{-message});
-    $w->Advertise("message" => $ml);
-    $ml->pack(-side => "left",
-	      -anchor => "w",
+    $w->Advertise('message' => $ml);
+    $ml->pack(-side => 'left',
+	      -anchor => 'w',
 	      -expand => 1,
-	      -fill => "both",
+	      -fill => 'both',
 	      -padx => 10,
 	      -pady => 3);
-    $a->pack(-fill => "both", -side => "left");
-    $m->pack(-fill => "both", -side => "left");
+    $a->pack(-fill => 'both', -side => 'left');
+    $m->pack(-fill => 'both', -side => 'left');
 
     # append to global list of balloons
     push(@balloons, $w);
-    $w->{"popped"} = 0;
-    $w->{"buttonDown"} = 0;
-    $w->{"menu_index"} = 'none';
-    $w->{"menu_index_over"} = 'none';
-    $w->{"canvas_tag"} = '';
-    $w->{"canvas_tag_over"} = '';
-    $w->ConfigSpecs(-installcolormap => ["PASSIVE", "installColormap", "InstallColormap", 0],
-		    -initwait => ["PASSIVE", "initWait", "InitWait", 350],
-		    -state => ["PASSIVE", "state", "State", "both"],
-		    -statusbar => ["PASSIVE", "statusBar", "StatusBar", undef],
-		    -balloonposition => ["PASSIVE", "balloonPosition", "BalloonPosition", "widget"],
-		    -postcommand => ["PASSIVE", "postCommand", "PostCommand", undef],
-		    -cancelcommand => ["PASSIVE", "cancelCommand", "CancelCommand", undef],
-		    -motioncommand => ["PASSIVE", "motionCommand", "MotionCommand", undef],
-		    -background => ["DESCENDANTS", "background", "Background", "#C0C080"],
-		    -font => [$ml, "font", "Font", "-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*"],
-		    -borderwidth => ["SELF", "borderWidth", "BorderWidth", 1]
+    $w->{'popped'} = 0;
+    $w->{'buttonDown'} = 0;
+    $w->{'menu_index'} = 'none';
+    $w->{'menu_index_over'} = 'none';
+    $w->{'canvas_tag'} = '';
+    $w->{'canvas_tag_over'} = '';
+    $w->ConfigSpecs(-installcolormap => ['PASSIVE', 'installColormap', 'InstallColormap', 0],
+		    -initwait => ['PASSIVE', 'initWait', 'InitWait', 350],
+		    -state => ['PASSIVE', 'state', 'State', 'both'],
+		    -statusbar => ['PASSIVE', 'statusBar', 'StatusBar', undef],
+		    -balloonposition => ['PASSIVE', 'balloonPosition', 'BalloonPosition', 'widget'],
+		    -postcommand => ['PASSIVE', 'postCommand', 'PostCommand', undef],
+		    -cancelcommand => ['PASSIVE', 'cancelCommand', 'CancelCommand', undef],
+		    -motioncommand => ['PASSIVE', 'motionCommand', 'MotionCommand', undef],
+		    -background => ['DESCENDANTS', 'background', 'Background', '#C0C080'],
+		    -font => [$ml, 'font', 'Font', '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*'],
+		    -borderwidth => ['SELF', 'borderWidth', 'BorderWidth', 1]
 		   );
 
 }
@@ -91,7 +91,7 @@ sub attach {
     my $msg = delete $args{-msg};
     $args{-balloonmsg} = $msg unless exists $args{-balloonmsg};
     $args{-statusmsg}  = $msg unless exists $args{-statusmsg};
-    $w->{"clients"}{$client} = \%args;
+    $w->{'clients'}{$client} = \%args;
     $client->OnDestroy([$w, 'detach', $client]);
 }
 
@@ -99,38 +99,38 @@ sub attach {
 sub detach {
     my ($w, $client) = @_;
     return unless Exists($w);
-    $w->Deactivate if ($w->{"clients"} == $client);
-    delete $w->{"clients"}{$client};
+    $w->Deactivate if ($w->{'clients'} == $client);
+    delete $w->{'clients'}{$client};
 }
 
 sub Motion {
     my ($ewin, $x, $y, $s) = @_;
-    
+
     # Don't do anything if a button is down or a grab is active
     # 0x1f00 is (Button1Mask | .. | Button5Mask)
     return if not defined $ewin or ((($s & 0x1f00) or $ewin->grabCurrent()) and not $ewin->isa('Tk::Menu'));
-    
+
     # Find which window we are over
     my $over = $ewin->Containing($x, $y);
-    
+
     foreach my $w (@balloons) {
 	# if cursor has moved over the balloon -- ignore
 	next if defined $over and $over->toplevel eq $w;
-	
+
 	# find the client window that matches
 	my $client = $over;
 	while (defined $client) {
-	    last if (exists $w->{"clients"}{$client});
+	    last if (exists $w->{'clients'}{$client});
 	    $client = $client->Parent;
 	}
-	
+
 	if (defined $client) {
 	    # popping up disabled -- ignore
-	    my $state = (exists $w->{"clients"}{$client}{-state}
-			 ? $w->{"clients"}{$client}{-state}
+	    my $state = (exists $w->{'clients'}{$client}{-state}
+			 ? $w->{'clients'}{$client}{-state}
 			 : $w->cget(-state));
 	    next if $state eq 'none';
-	    
+
 	    # Check if a button was recently released:
 	    my $deactivate = 0;
 	    if ($button_up) {
@@ -138,49 +138,49 @@ sub Motion {
 	      $button_up = 0;
 	    }
 	    # Deactivate it if the motioncommand says to:
-	    my $command = (exists $w->{"clients"}{$client}{-motioncommand}
-			   ? $w->{"clients"}{$client}{-motioncommand}
+	    my $command = (exists $w->{'clients'}{$client}{-motioncommand}
+			   ? $w->{'clients'}{$client}{-motioncommand}
 			   : $w->cget(-motioncommand));
 	    if (defined $command) {
 		croak "$command is not a code reference" if not UNIVERSAL::isa($command, 'CODE');
 		$deactivate = &$command;
 	    }
-	    
+
 	    if ($client->isa('Tk::Menu') and
-		(UNIVERSAL::isa($w->{"clients"}{$client}{-balloonmsg}, 'ARRAY') or
-		 UNIVERSAL::isa($w->{"clients"}{$client}{-statusmsg}, 'ARRAY'))) {
+		(UNIVERSAL::isa($w->{'clients'}{$client}{-balloonmsg}, 'ARRAY') or
+		 UNIVERSAL::isa($w->{'clients'}{$client}{-statusmsg}, 'ARRAY'))) {
 	        my $i = $client->index('active');
-		if ($i eq 'none' and $client->IS($w->{"client"})) {
+		if ($i eq 'none' and $client->IS($w->{'client'})) {
 		    my $y = $client->pointery - $client->rooty;
 		    $i = $client->index("\@$y");
 		}
-		$deactivate = $deactivate || ($w->{"menu_index_over"} ne $i);
-		$w->{"menu_index_over"} = $i;
+		$deactivate = $deactivate || ($w->{'menu_index_over'} ne $i);
+		$w->{'menu_index_over'} = $i;
 	    } elsif ($client->isa('Tk::Canvas') and
-		     (UNIVERSAL::isa($w->{"clients"}{$client}{-balloonmsg}, 'HASH') or
-		      UNIVERSAL::isa($w->{"clients"}{$client}{-statusmsg}, 'HASH'))) {
+		     (UNIVERSAL::isa($w->{'clients'}{$client}{-balloonmsg}, 'HASH') or
+		      UNIVERSAL::isa($w->{'clients'}{$client}{-statusmsg}, 'HASH'))) {
 		my @tags = ($client->find('withtag', 'current'),
 			    $client->gettags('current'), '');
-		$w->{"canvas_tag"} = '' if not defined $w->{"canvas_tag"};
-		$deactivate = $deactivate || ($tags[0] ne $w->{"canvas_tag_over"});
-		$w->{"canvas_tag_over"} = $tags[0];
+		$w->{'canvas_tag'} = '' if not defined $w->{'canvas_tag'};
+		$deactivate = $deactivate || ($tags[0] ne $w->{'canvas_tag_over'});
+		$w->{'canvas_tag_over'} = $tags[0];
 	    }
-	    if ($deactivate or not $client->IS($w->{"client"})) {
-		my $initwait = (exists $w->{"clients"}{$client}{-initwait}
-				? $w->{"clients"}{$client}{-initwait}
+	    if ($deactivate or not $client->IS($w->{'client'})) {
+		my $initwait = (exists $w->{'clients'}{$client}{-initwait}
+				? $w->{'clients'}{$client}{-initwait}
 				: $w->cget(-initwait));
 		$w->Deactivate;
-		$w->{"client"} = $client;
-		$w->{"delay"}  = $client->after($initwait,
+		$w->{'client'} = $client;
+		$w->{'delay'}  = $client->after($initwait,
 						sub {$w->SwitchToClient($client);});
 	    }
 	} else {
 	    # cursor is at a position covered by a non client
 	    # pop down the balloon if it is up or scheduled.
 	    $w->Deactivate;
-	    $w->{"client"} = undef;
-	    $w->{"menu_index"} = 'none';
-	    $w->{"canvas_tag"} = '';
+	    $w->{'client'} = undef;
+	    $w->{'menu_index'} = 'none';
+	    $w->{'canvas_tag'} = '';
 	}
     }
 }
@@ -202,10 +202,10 @@ sub SwitchToClient {
     my ($w, $client) = @_;
     return unless Exists($w);
     return unless Exists($client);
-    return unless $client->IS($w->{"client"});
+    return unless $client->IS($w->{'client'});
     return if $w->grabCurrent and not $client->isa('Tk::Menu');
-    my $command = (exists $w->{"clients"}{$client}{-postcommand}
-		   ? $w->{"clients"}{$client}{-postcommand}
+    my $command = (exists $w->{'clients'}{$client}{-postcommand}
+		   ? $w->{'clients'}{$client}{-postcommand}
 		   : $w->cget(-postcommand));
     if (defined $command) {
 	croak "$command is not a code reference" if not UNIVERSAL::isa($command, 'CODE');
@@ -214,16 +214,16 @@ sub SwitchToClient {
 	return if not $pos;
 	if ($pos =~ /^(\d+),(\d+)$/) {
 	    # Save the returned position so the Popup method can use it:
-	    $w->{"clients"}{$client}{"postposition"} = [$1, $2];
+	    $w->{'clients'}{$client}{'postposition'} = [$1, $2];
 	}
     }
-    my $state = (exists $w->{"clients"}{$client}{-state}
-		 ? $w->{"clients"}{$client}{-state}
+    my $state = (exists $w->{'clients'}{$client}{-state}
+		 ? $w->{'clients'}{$client}{-state}
 		 : $w->cget(-state));
     $w->Popup if ($state =~ /both|balloon/);
     $w->SetStatus if ($state =~ /both|status/);
-    $w->{"popped"} = 1;
-    $w->{"delay"}  = $w->repeat(200, ['Verify', $w, $client]);
+    $w->{'popped'} = 1;
+    $w->{'delay'}  = $w->repeat(200, ['Verify', $w, $client]);
 }
 
 sub Verify {
@@ -233,42 +233,42 @@ sub Verify {
     my $deactivate = 0;
     if ($client->isa('Tk::Menu')) {
 	# We have to be a little more careful about verifying menu balloons:
-	if (UNIVERSAL::isa($w->{"clients"}{$client}{-balloonmsg}, 'ARRAY') or
-	    UNIVERSAL::isa($w->{"clients"}{$client}{-statusmsg}, 'ARRAY')) {
+	if (UNIVERSAL::isa($w->{'clients'}{$client}{-balloonmsg}, 'ARRAY') or
+	    UNIVERSAL::isa($w->{'clients'}{$client}{-statusmsg}, 'ARRAY')) {
 	    my $i = $client->index('active');
 	    if ($i eq 'none' and $over eq $client) {
 		my $y = $client->pointery - $client->rooty;
 		$i = $client->index("\@$y");
 	    }
-	    $deactivate = ($w->{"menu_index"} ne $i);
+	    $deactivate = ($w->{'menu_index'} ne $i);
 	} elsif ($over ne $client) {
 	    $deactivate = 1;
 	}
     } elsif ($client->isa('Tk::Canvas')) {
-	if (UNIVERSAL::isa($w->{"clients"}{$client}{-balloonmsg}, 'HASH') or
-	    UNIVERSAL::isa($w->{"clients"}{$client}{-statusmsg}, 'HASH')) {
+	if (UNIVERSAL::isa($w->{'clients'}{$client}{-balloonmsg}, 'HASH') or
+	    UNIVERSAL::isa($w->{'clients'}{$client}{-statusmsg}, 'HASH')) {
 	    my @tags = ($client->find('withtag', 'current'),
 			$client->gettags('current'), '');
-	    $w->{"canvas_tag"} = '' if not defined $w->{"canvas_tag"};
-	    $deactivate = ($tags[0] ne $w->{"canvas_tag"});
+	    $w->{'canvas_tag'} = '' if not defined $w->{'canvas_tag'};
+	    $deactivate = ($tags[0] ne $w->{'canvas_tag'});
 	}
     } elsif ($w->grabCurrent) {
 	$deactivate = 1;
     }
-    
-    if ($deactivate or not $client->IS($w->{"client"})) {
+
+    if ($deactivate or not $client->IS($w->{'client'})) {
 	$w->Deactivate;
     }
 }
 
 sub Deactivate {
     my ($w) = @_;
-    my $delay = delete $w->{"delay"};
+    my $delay = delete $w->{'delay'};
     $delay->cancel if defined $delay;
-    if ($w->{"popped"}) {
-	my $client = $w->{"client"};
-	my $command = (exists $w->{"clients"}{$client}{-cancelcommand}
-		       ? $w->{"clients"}{$client}{-cancelcommand}
+    if ($w->{'popped'}) {
+	my $client = $w->{'client'};
+	my $command = (exists $w->{'clients'}{$client}{-cancelcommand}
+		       ? $w->{'clients'}{$client}{-cancelcommand}
 		       : $w->cget(-cancelcommand));
 	if (defined $command) {
 	    croak "$command is not a code reference" if not UNIVERSAL::isa($command, 'CODE');
@@ -277,51 +277,51 @@ sub Deactivate {
 	}
 	$w->withdraw;
 	$w->ClearStatus;
-	$w->{"popped"} = 0;
-	$w->{"menu_index"} = 'none';
-	$w->{"canvas_tag"} = '';
+	$w->{'popped'} = 0;
+	$w->{'menu_index'} = 'none';
+	$w->{'canvas_tag'} = '';
     }
-    $w->{"client"} = undef;
+    $w->{'client'} = undef;
 }
 
 sub Popup {
     my ($w) = @_;
     if ($w->cget(-installcolormap)) {
-	$w->colormapwindows($w->winfo("toplevel"))
+	$w->colormapwindows($w->winfo('toplevel'))
     }
-    my $client = $w->{"client"};
-    return if not defined $client or not exists $w->{"clients"}{$client};
+    my $client = $w->{'client'};
+    return if not defined $client or not exists $w->{'clients'}{$client};
     my $msg;
     if ($client->isa('Tk::Menu') and
-	UNIVERSAL::isa($w->{"clients"}{$client}{-balloonmsg}, 'ARRAY')) {
+	UNIVERSAL::isa($w->{'clients'}{$client}{-balloonmsg}, 'ARRAY')) {
 	my $i = $client->index('active');
-	if ($i eq 'none' and $client->IS($w->{"client"})) {
+	if ($i eq 'none' and $client->IS($w->{'client'})) {
 	    my $y = $client->pointery - $client->rooty;
 	    $i = $client->index("\@$y");
 	}
-	$w->{"menu_index"} = $i;
+	$w->{'menu_index'} = $i;
 	return if $i eq 'none';
-	$msg = (@{$w->{"clients"}{$client}{-balloonmsg}})[$i] || '';
+	$msg = (@{$w->{'clients'}{$client}{-balloonmsg}})[$i] || '';
     } elsif ($client->isa('Tk::Canvas') and
-	     UNIVERSAL::isa($w->{"clients"}{$client}{-balloonmsg}, 'HASH')) {
+	     UNIVERSAL::isa($w->{'clients'}{$client}{-balloonmsg}, 'HASH')) {
 	my @tags = ($client->find('withtag', 'current'),
 		    $client->gettags('current'));
-	$w->{"canvas_tag"} = $tags[0];
+	$w->{'canvas_tag'} = $tags[0];
 	$msg = '';
 	foreach (@tags) {
-	    if (exists $w->{"clients"}{$client}{-balloonmsg}{$_}) {
-		$msg = $w->{"clients"}{$client}{-balloonmsg}{$_};
+	    if (exists $w->{'clients'}{$client}{-balloonmsg}{$_}) {
+		$msg = $w->{'clients'}{$client}{-balloonmsg}{$_};
 		last;
 	    }
 	}
     } else {
-	$msg = $w->{"clients"}{$client}{-balloonmsg};
+	$msg = $w->{'clients'}{$client}{-balloonmsg};
     }
 
     # Dereference it if it looks like a scalar reference:
     $msg = $$msg if UNIVERSAL::isa($msg, 'SCALAR');
 
-    $w->Subwidget("message")->configure(-text => $msg);
+    $w->Subwidget('message')->configure(-text => $msg);
     $w->idletasks;
 
     return unless Exists($w);
@@ -329,10 +329,10 @@ sub Popup {
     return if $msg eq '';  # Don't popup empty balloons.
 
     my ($x, $y);
-    my $pos = (exists $w->{"clients"}{$client}{-balloonposition}
-	       ? $w->{"clients"}{$client}{-balloonposition}
+    my $pos = (exists $w->{'clients'}{$client}{-balloonposition}
+	       ? $w->{'clients'}{$client}{-balloonposition}
 	       : $w->cget(-balloonposition));
-    my $postpos = delete $w->{"clients"}{$client}{"postposition"};
+    my $postpos = delete $w->{'clients'}{$client}{'postposition'};
     if (defined $postpos) {
 	# The postcommand must have returned a position for the balloon - I will use that:
 	($x, $y) = @{$postpos};
@@ -354,38 +354,38 @@ sub Popup {
 
 sub SetStatus {
     my ($w) = @_;
-    my $client = $w->{"client"};
-    my $s = (exists $w->{"clients"}{$client}{-statusbar}
-	     ? $w->{"clients"}{$client}{-statusbar}
+    my $client = $w->{'client'};
+    my $s = (exists $w->{'clients'}{$client}{-statusbar}
+	     ? $w->{'clients'}{$client}{-statusbar}
 	     : $w->cget(-statusbar));
-    if (defined $s and $s->winfo("exists")) {
+    if (defined $s and $s->winfo('exists')) {
 	my $vref = $s->cget(-textvariable);
-	return if not defined $client or not exists $w->{"clients"}{$client};
+	return if not defined $client or not exists $w->{'clients'}{$client};
 	my $msg;
 	if ($client->isa('Tk::Menu') and
-	    UNIVERSAL::isa($w->{"clients"}{$client}{-statusmsg}, 'ARRAY')) {
+	    UNIVERSAL::isa($w->{'clients'}{$client}{-statusmsg}, 'ARRAY')) {
 	    my $i = $client->index('active');
-	    if ($i eq 'none' and $client->IS($w->{"client"})) {
+	    if ($i eq 'none' and $client->IS($w->{'client'})) {
 		my $y = $client->pointery - $client->rooty;
 		$i = $client->index("\@$y");
 	    }
-	    $w->{"menu_index"} = $i;
+	    $w->{'menu_index'} = $i;
 	    return if $i eq 'none';
-	    $msg = (@{$w->{"clients"}{$client}{-statusmsg}})[$i] || '';
+	    $msg = (@{$w->{'clients'}{$client}{-statusmsg}})[$i] || '';
 	} elsif ($client->isa('Tk::Canvas') and
-		 UNIVERSAL::isa($w->{"clients"}{$client}{-statusmsg}, 'HASH')) {
+		 UNIVERSAL::isa($w->{'clients'}{$client}{-statusmsg}, 'HASH')) {
 	    my @tags = ($client->find('withtag', 'current'),
 			$client->gettags('current'));
-	    $w->{"canvas_tag"} = $tags[0];
+	    $w->{'canvas_tag'} = $tags[0];
 	    $msg = '';
 	    foreach (@tags) {
-		if (exists $w->{"clients"}{$client}{-statusmsg}{$_}) {
-		    $msg = $w->{"clients"}{$client}{-statusmsg}{$_};
+		if (exists $w->{'clients'}{$client}{-statusmsg}{$_}) {
+		    $msg = $w->{'clients'}{$client}{-statusmsg}{$_};
 		    last;
 		}
 	    }
 	} else {
-	    $msg = $w->{"clients"}{$client}{-statusmsg} || '';
+	    $msg = $w->{'clients'}{$client}{-statusmsg} || '';
 	}
 	# Dereference it if it looks like a scalar reference:
 	$msg = $$msg if UNIVERSAL::isa($msg, 'SCALAR');
@@ -399,16 +399,16 @@ sub SetStatus {
 
 sub ClearStatus {
     my ($w) = @_;
-    my $client = $w->{"client"};
-    my $s = (exists $w->{"clients"}{$client}{-statusbar}
-	     ? $w->{"clients"}{$client}{-statusbar}
+    my $client = $w->{'client'};
+    my $s = (exists $w->{'clients'}{$client}{-statusbar}
+	     ? $w->{'clients'}{$client}{-statusbar}
 	     : $w->cget(-statusbar));
-    if (defined $s and $s->winfo("exists")) {
+    if (defined $s and $s->winfo('exists')) {
 	my $vref = $s->cget(-textvariable);
 	if (defined $vref) {
-	    $$vref = "";
+	    $$vref = '';
 	} else {
-	    eval { $s->configure(-text => ""); }
+	    eval { $s->configure(-text => ''); }
 	}
     }
 }

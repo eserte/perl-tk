@@ -2,12 +2,12 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 AC_INIT(../generic/tcl.h)
-# SCCS: @(#) configure.in 1.18 98/08/12 17:29:39
+# RCS: @(#) $Id: configure.in,v 1.28 1999/02/03 18:37:42 stanton Exp $
 
 TCL_VERSION=8.0
 TCL_MAJOR_VERSION=8
 TCL_MINOR_VERSION=0
-TCL_PATCH_LEVEL=".3"
+TCL_PATCH_LEVEL=".5"
 VERSION=${TCL_VERSION}
 
 if test "${prefix}" = "NONE"; then
@@ -34,6 +34,23 @@ if test "${GCC}" = "yes" ; then
     CFLAGS_WARNING="-Wall -Wconversion"
 else
     CFLAGS_WARNING=""
+fi
+
+#------------------------------------------------------------------------------
+# If we're using GCC, see if the compiler understands -pipe.  If so, use it.
+# It makes compiling go faster.  (This is only a performance feature.)
+#------------------------------------------------------------------------------
+
+if test -z "$no_pipe"; then
+if test -n "$GCC"; then
+  AC_MSG_CHECKING([if the compiler understands -pipe])
+  OLDCC="$CC"  
+  CC="$CC -pipe"
+  AC_TRY_COMPILE(,,
+    AC_MSG_RESULT(yes),
+    CC="$OLDCC"
+    AC_MSG_RESULT(no))
+fi  
 fi
 
 #--------------------------------------------------------------------
@@ -660,7 +677,7 @@ AC_CHECK_LIB(dl, dlopen, have_dl=yes, have_dl=no)
 # Step 3: set configuration options based on system name and version.
 
 fullSrcDir=`cd $srcdir; pwd`
-TCL_SHARED_LIB_SUFFIX=""
+EXTRA_CFLAGS=""
 TCL_UNSHARED_LIB_SUFFIX=""
 TCL_TRIM_DOTS='`echo ${VERSION} | tr -d .`'
 ECHO_VERSION='`echo ${VERSION}`'
@@ -691,7 +708,7 @@ case $system in
 	LD_SEARCH_FLAGS='-L${LIB_RUNTIME_DIR}'
 	TCL_SHARED_LIB_SUFFIX='${VERSION}\$\{DBGX\}.a'
 	;;
-    BSD/OS-2.1*|BSD/OS-3*)
+    BSD/OS-2.1*|BSD/OS-3*|BSD/OS-4*)
 	SHLIB_CFLAGS=""
 	SHLIB_LD="shlicc -r"
 	SHLIB_LD_LIBS='${LIBS}'
@@ -712,12 +729,12 @@ case $system in
 	LD_SEARCH_FLAGS=""
 	;;
     HP-UX-*.08.*|HP-UX-*.09.*|HP-UX-*.10.*)
+	SHLIB_SUFFIX=".sl"
 	AC_CHECK_LIB(dld, shl_load, tcl_ok=yes, tcl_ok=no)
 	if test "$tcl_ok" = yes; then
 	    SHLIB_CFLAGS="+z"
 	    SHLIB_LD="ld -b"
 	    SHLIB_LD_LIBS=""
-	    SHLIB_SUFFIX=".sl"
 	    DL_OBJS="tclLoadShl.o"
 	    DL_LIBS="-ldld"
 	    LD_FLAGS="-Wl,-E"
@@ -735,15 +752,29 @@ case $system in
 	LD_SEARCH_FLAGS='-L${LIB_RUNTIME_DIR}'
 	TCL_SHARED_LIB_SUFFIX='${VERSION}\$\{DBGX\}.a'
 	;;
-    IRIX-5.*|IRIX-6.*)
+    IRIX-5.*|IRIX-6.*|IRIX64-6.5*)
 	SHLIB_CFLAGS=""
-	SHLIB_LD="ld -shared -rdata_shared"
-	SHLIB_LD_LIBS=""
+	SHLIB_LD="ld -n32 -shared -rdata_shared"
+	SHLIB_LD_LIBS='${LIBS}'
 	SHLIB_SUFFIX=".so"
 	DL_OBJS="tclLoadDl.o"
 	DL_LIBS=""
-	LD_FLAGS=""
 	LD_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+	if test "$CC" = "gcc" -o `$CC -v 2>&1 | grep -c gcc` != "0" ; then
+	    EXTRA_CFLAGS="-mabi=n32"
+	    LD_FLAGS="-mabi=n32"
+	else
+	    case $system in
+		IRIX-6.3)
+		    # Use to build 6.2 compatible binaries on 6.3.
+		    EXTRA_CFLAGS="-n32 -D_OLD_TERMIOS"
+		    ;;
+		*)
+		    EXTRA_CFLAGS="-n32"
+		    ;;
+	    esac
+	    LD_FLAGS="-n32"
+	fi
 	;;
     IRIX64-6.*)
 	SHLIB_CFLAGS=""
@@ -757,7 +788,7 @@ case $system in
 	;;
     Linux*)
 	SHLIB_CFLAGS="-fPIC"
-	SHLIB_LD_LIBS=""
+	SHLIB_LD_LIBS='${LIBS}'
 	SHLIB_SUFFIX=".so"
 	if test "$have_dl" = yes; then
 	    SHLIB_LD="${CC} -shared"
@@ -1248,6 +1279,7 @@ AC_SUBST(CFG_TCL_UNSHARED_LIB_SUFFIX)
 AC_SUBST(TCL_DBGX)
 AC_SUBST(DL_LIBS)
 AC_SUBST(DL_OBJS)
+AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(LD_FLAGS)
 AC_SUBST(MAKE_LIB)
 AC_SUBST(MATH_LIBS)

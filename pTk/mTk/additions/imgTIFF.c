@@ -12,15 +12,16 @@
 /* Date   : 7/16/97      */
 
 #include "imgInt.h"
-#include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #if defined(__STDC__) || defined(HAS_STDARG)
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
+
+extern int unlink _ANSI_ARGS_((CONST char *));
 
 #ifdef __WIN32__
 #define WIN32_LEAN_AND_MEAN
@@ -51,25 +52,20 @@
  */
 
 static int ChnMatchTIFF _ANSI_ARGS_((Tcl_Channel chan, char *fileName,
-	char *formatString, int *widthPtr, int *heightPtr));
-static int FileMatchTIFF _ANSI_ARGS_((FILE *f, char *fileName,
-	char *formatString, int *widthPtr, int *heightPtr));
-static int ObjMatchTIFF _ANSI_ARGS_((struct Tcl_Obj *dataObj,
-	char *formatString, int *widthPtr, int *heightPtr));
+	Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ObjMatchTIFF _ANSI_ARGS_((Tcl_Obj *dataObj,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int ChnReadTIFF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-	char *fileName, char *formatString, Tk_PhotoHandle imageHandle,
-	int destX, int destY, int width, int height, int srcX, int srcY));
-static int FileReadTIFF _ANSI_ARGS_((Tcl_Interp *interp, FILE *f,
-	char *fileName, char *formatString, Tk_PhotoHandle imageHandle,
+	char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 static int ObjReadTIFF _ANSI_ARGS_((Tcl_Interp *interp,
-	struct Tcl_Obj *dataObj, char *formatString,
+	Tcl_Obj *dataObj, Tcl_Obj *format,
 	Tk_PhotoHandle imageHandle, int destX, int destY,
 	int width, int height, int srcX, int srcY));
-static int FileWriteTIFF _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
-	char *formatString, Tk_PhotoImageBlock *blockPtr));
+static int ChnWriteTIFF _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
+	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 static int StringWriteTIFF _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_DString *dataPtr, char *formatString,
+	Tcl_DString *dataPtr, Tcl_Obj *format,
 	Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtTIFF = {
@@ -78,32 +74,8 @@ Tk_PhotoImageFormat imgFmtTIFF = {
     (Tk_ImageStringMatchProc *) ObjMatchTIFF,	/* stringMatchProc */
     (Tk_ImageFileReadProc *) ChnReadTIFF,	/* fileReadProc */
     (Tk_ImageStringReadProc *) ObjReadTIFF,	/* stringReadProc */
-    FileWriteTIFF,				/* fileWriteProc */
+    (Tk_ImageFileWriteProc *) ChnWriteTIFF,	/* fileWriteProc */
     (Tk_ImageStringWriteProc *) StringWriteTIFF,/* stringWriteProc */
-};
-
-Tk_PhotoImageFormat imgOldFmtTIFF = {
-    "TIFF",					/* name */
-    (Tk_ImageFileMatchProc *) FileMatchTIFF,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchTIFF,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) FileReadTIFF,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadTIFF,	/* stringReadProc */
-    FileWriteTIFF,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteTIFF,/* stringWriteProc */
-};
-
-/*
- * We use Tk_ParseArgv to parse any options supplied in the format string.
- */
-
-static char *compression;	/* static variables hold parse results */
-				/* ... icky, and not reentrant ... */
-
-static Tk_ArgvInfo writeOptTable[] = {
-    {"-compression", TK_ARGV_STRING, "none", (char *) &compression,
-	"Select compression method"},
-    {NULL, TK_ARGV_END, (char *) NULL, (char *) NULL,
-	(char *) NULL}
 };
 
 static struct TiffFunctions {
@@ -137,6 +109,7 @@ static struct TiffFunctions {
     tsize_t (* ScanlineSize) _ANSI_ARGS_((TIFF *));
     void (* setByteArray) _ANSI_ARGS_((VOID **, VOID*, long));
     int (* VSetField) _ANSI_ARGS_((TIFF *, ttag_t, va_list));
+    void (* SwabArrayOfShort) _ANSI_ARGS_((uint16*, unsigned long));
 } tiff = {0};
 
 static char *symbols[] = {
@@ -170,6 +143,7 @@ static char *symbols[] = {
     "TIFFScanlineSize",
     "_TIFFsetByteArray",
     "TIFFVSetField",
+    "TIFFSwabArrayOfShort",
     (char *) NULL
 };
 
@@ -182,15 +156,15 @@ static int getint _ANSI_ARGS_((unsigned char *buf, TIFFDataType format,
 static int CommonMatchTIFF _ANSI_ARGS_((MFile *handle, int *widhtPtr,
 	int *heightPtr));
 static int CommonReadTIFF _ANSI_ARGS_((Tcl_Interp *interp, TIFF *tif,
-	char *formatString, Tk_PhotoHandle imageHandle, int destX, int destY,
+	Tcl_Obj *format, Tk_PhotoHandle imageHandle, int destX, int destY,
 	int width, int height, int srcX, int srcY));
 static int CommonWriteTIFF _ANSI_ARGS_((Tcl_Interp *interp, TIFF *tif,
-	char *formatString, Tk_PhotoImageBlock *blockPtr));
+	int comp, Tk_PhotoImageBlock *blockPtr));
+static int ParseWriteFormat _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *format,
+	int *comp, char **mode));
 static int load_tiff_library _ANSI_ARGS_((Tcl_Interp *interp));
 static void  _TIFFerr    _ANSI_ARGS_((CONST char *, CONST char *, va_list));
 static void  _TIFFwarn   _ANSI_ARGS_((CONST char *, CONST char *, va_list));
-static int tiff_vsprintf _ANSI_ARGS_((char *dest,
-	CONST char *format, va_list args));
 void ImgTIFFfree _ANSI_ARGS_((tdata_t data));
 tdata_t ImgTIFFmalloc _ANSI_ARGS_((tsize_t size));
 tdata_t ImgTIFFrealloc _ANSI_ARGS_((tdata_t data, tsize_t size));
@@ -205,6 +179,7 @@ tsize_t ImgTIFFScanlineSize _ANSI_ARGS_((TIFF *));
 void ImgTIFFsetByteArray _ANSI_ARGS_((VOID **, VOID*, long));
 int ImgTIFFSetField _ANSI_ARGS_(TCL_VARARGS(TIFF *, tif));
 tsize_t ImgTIFFTileSize _ANSI_ARGS_((TIFF*));
+void ImgTIFFSwabArrayOfShort _ANSI_ARGS_((uint16*, unsigned long));
 
 /*
  * External hooks to functions, so they can be called from
@@ -238,7 +213,7 @@ tdata_t ImgTIFFrealloc(data, size)
     if (tiff.realloc) {
 	return tiff.realloc(data, size);
     } else {
-	return Tcl_Realloc(data, size);
+	return ckrealloc(data, size);
     }
 }
 
@@ -258,7 +233,7 @@ ImgTIFFError TCL_VARARGS_DEF(CONST char *, arg1)
     CONST char* module;
     CONST char* fmt;
 
-    module = TCL_VARARGS_START(CONST char *, arg1, ap);
+    module = (CONST char*) TCL_VARARGS_START(CONST char *, arg1, ap);
     fmt =  va_arg(ap, CONST char *);
     _TIFFerr(module, fmt, ap);
     va_end(ap);
@@ -327,7 +302,7 @@ ImgTIFFSetField TCL_VARARGS_DEF(TIFF*, arg1)
     ttag_t tag;
     int result;
 
-    tif = TCL_VARARGS_START(TIFF*, arg1, ap);
+    tif = (TIFF*) TCL_VARARGS_START(TIFF*, arg1, ap);
     tag =  va_arg(ap, ttag_t);
     result = tiff.VSetField(tif, tag, ap);
     va_end(ap);
@@ -341,6 +316,15 @@ ImgTIFFTileSize(tif)
     return tiff.TileSize(tif);
 }
 
+void
+ImgTIFFSwabArrayOfShort(p, l)
+    uint16* p;
+    unsigned long l;
+{
+    tiff.SwabArrayOfShort(p,l);
+    return;
+}
+
 /*
  * The functions for the TIFF input handler
  */
@@ -350,13 +334,9 @@ static void unMapDummy _ANSI_ARGS_((thandle_t, tdata_t, toff_t));
 static int closeDummy _ANSI_ARGS_((thandle_t));
 static tsize_t writeDummy _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
 
-static tsize_t readFile _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
-static tsize_t seekFile _ANSI_ARGS_((thandle_t, toff_t, int));
-static toff_t  sizeFile _ANSI_ARGS_((thandle_t));
-
-static tsize_t readChan _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
-static tsize_t seekChan _ANSI_ARGS_((thandle_t, toff_t, int));
-static toff_t  sizeChan _ANSI_ARGS_((thandle_t));
+static tsize_t readMFile _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
+static tsize_t seekMFile _ANSI_ARGS_((thandle_t, toff_t, int));
+static toff_t  sizeMFile _ANSI_ARGS_((thandle_t));
 
 static tsize_t readString _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
 static tsize_t writeString _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
@@ -413,9 +393,10 @@ load_tiff_library(interp)
 	if (tiff.RegisterCODEC && tiff.Error && tiff.PredictorInit &&
 		tiff.MergeFieldInfo && tiff.FlushData1 && tiff.NoPostDecode &&
 		tiff.TileRowSize && tiff.ScanlineSize && tiff.setByteArray &&
-		tiff.VSetField) {
+		tiff.VSetField && tiff.SwabArrayOfShort) {
 	    tiff.RegisterCODEC(COMPRESSION_DEFLATE, "Deflate", ImgInitTIFFzip);
 	    tiff.RegisterCODEC(COMPRESSION_JPEG, "JPEG", ImgInitTIFFjpeg);
+	    tiff.RegisterCODEC(COMPRESSION_PIXARLOG, "PixarLog", ImgInitTIFFpixar);
 	}
     }
     return TCL_OK;
@@ -434,7 +415,7 @@ static void _TIFFerr(module, fmt, ap)
     cp += strlen(module) + 2;
   }
 
-  tiff_vsprintf(cp, fmt, ap);
+  vsprintf(cp, fmt, ap);
   if (errorMessage) {
     ckfree(errorMessage);
   }
@@ -484,59 +465,29 @@ writeDummy(fd, data, size)
 }
 
 static tsize_t
-readFile(fd, data, size)
+readMFile(fd, data, size)
     thandle_t fd;
     tdata_t data;
     tsize_t size;
 {
-    return (tsize_t) fread((char *) data, 1, (size_t) size, (FILE *) fd);
+    return (tsize_t) ImgRead((MFile *) fd, (char *) data, (int) size) ;
 }
 
 static tsize_t
-seekFile(fd, off, whence)
+seekMFile(fd, off, whence)
     thandle_t fd;
     toff_t off;
     int whence;
 {
-    if (fseek((FILE *) fd, (long) off, whence)) {
-	return -1;
-    } else {
-	return (tsize_t) ftell((FILE *) fd);
-    }
+    return (tsize_t) ImgSeek((MFile *) fd, (int) off, whence);
 }
 
 static toff_t
-sizeFile(fd)
+sizeMFile(fd)
     thandle_t fd;
 {
     int fsize;
-    return (fsize = seekFile(fd, 0, SEEK_END)) < 0 ? 0 : (toff_t) fsize;
-}
-
-static tsize_t
-readChan(fd, data, size)
-    thandle_t fd;
-    tdata_t data;
-    tsize_t size;
-{
-    return (tsize_t) Tcl_Read((Tcl_Channel) fd, (char *) data, (int) size) ;
-}
-
-static tsize_t
-seekChan(fd, off, whence)
-    thandle_t fd;
-    toff_t off;
-    int whence;
-{
-    return (tsize_t) Tcl_Seek((Tcl_Channel) fd, (int) off, whence);
-}
-
-static toff_t
-sizeChan(fd)
-    thandle_t fd;
-{
-    int fsize;
-    return (fsize = Tcl_Seek((Tcl_Channel) fd, 0, SEEK_END)) < 0 ? 0 : (toff_t) fsize;
+    return (fsize = ImgSeek((MFile *) fd, 0, SEEK_END)) < 0 ? 0 : (toff_t) fsize;
 }
 
 /*
@@ -639,46 +590,32 @@ sizeString(fd)
  */
 
 static int
-ObjMatchTIFF(dataObj, formatString, widthPtr, heightPtr)
-    struct Tcl_Obj *dataObj;	/* the object containing the image data */
-    char *formatString;		/* the image format string */
+ObjMatchTIFF(data, format, widthPtr, heightPtr)
+    Tcl_Obj *data;		/* the object containing the image data */
+    Tcl_Obj *format;		/* the image format string */
     int *widthPtr;		/* where to put the string width */
     int *heightPtr;		/* where to put the string height */
 {
     MFile handle;
 
-    if (!ImgReadInit(dataObj, 'I', &handle) &&
-	    !ImgReadInit(dataObj, 'M', &handle)) {
+    if (!ImgReadInit(data, '\111', &handle) &&
+	    !ImgReadInit(data, '\115', &handle)) {
 	return 0;
     }
 
     return CommonMatchTIFF(&handle, widthPtr, heightPtr);
 }
 
-static int ChnMatchTIFF(chan, fileName, formatString, widthPtr, heightPtr)
+static int ChnMatchTIFF(chan, fileName, format, widthPtr, heightPtr)
     Tcl_Channel chan;
     char *fileName;
-    char *formatString;
+    Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
 
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
-
-    return CommonMatchTIFF(&handle, widthPtr, heightPtr);
-}
-
-static int FileMatchTIFF(f, fileName, formatString, widthPtr, heightPtr)
-    FILE *f;
-    char *fileName;
-    char *formatString;
-    int *widthPtr, *heightPtr;
-{
-    MFile handle;
-
-    handle.data = (char *) f;
-    handle.state = IMG_FILE;
 
     return CommonMatchTIFF(&handle, widthPtr, heightPtr);
 }
@@ -691,9 +628,9 @@ static int CommonMatchTIFF(handle, widthPtr, heightPtr)
     int i, j, order, w = 0, h = 0;
 
     i = ImgRead(handle, (char *) buf, 8);
-    order = (buf[0] == 'I');
+    order = (buf[0] == '\111');
     if ((i != 8) || (buf[0] != buf[1])
-	    || ((buf[0] != 'I') && (buf[0] != 'M'))
+	    || ((buf[0] != '\111') && (buf[0] != '\115'))
 	    || (getint(buf+2,TIFF_SHORT,order) != 42)) {
 	return 0;
     }
@@ -703,7 +640,9 @@ static int CommonMatchTIFF(handle, widthPtr, heightPtr)
 	i -= 4096;
 	ImgRead(handle, (char *) buf, 4096);
     }
-    ImgRead(handle, (char *) buf, i-8);
+    if (i>8) {
+        ImgRead(handle, (char *) buf, i-8);
+    }
     ImgRead(handle, (char *) buf, 2);
     i = getint(buf,TIFF_SHORT,order);
     while (i--) {
@@ -728,11 +667,11 @@ static int CommonMatchTIFF(handle, widthPtr, heightPtr)
     return 1;
 }
 
-static int ObjReadTIFF(interp, dataObj, formatString, imageHandle,
+static int ObjReadTIFF(interp, data, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
-    struct Tcl_Obj *dataObj;		/* object containing the image */
-    char *formatString;
+    Tcl_Obj *data;			/* object containing the image */
+    Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
     int width, height;
@@ -743,48 +682,54 @@ static int ObjReadTIFF(interp, dataObj, formatString, imageHandle,
     int count, result;
     MFile handle;
     char buffer[1024];
-    FILE *outfile;
-    char *data = NULL;
+    char *dataPtr = NULL;
 
     if (load_tiff_library(interp) != TCL_OK) {
 	return TCL_ERROR;
     }
 
-    if (!ImgReadInit(dataObj, 'M', &handle) &&
-	    !ImgReadInit(dataObj, 'I', &handle)) {
-	return TCL_ERROR;
+    if (!ImgReadInit(data, '\115', &handle)) {
+	    ImgReadInit(data, '\111', &handle);
     }
 
     if (tiff.ClientOpen) {
 	tempFileName[0] = 0;
 	if (handle.state != IMG_STRING) {
-	    data = ckalloc((handle.length*3)/4);
-	    handle.length = ImgRead(&handle, data, handle.length);
-	    handle.data = data;
+	    dataPtr = ckalloc((handle.length*3)/4 + 2);
+	    handle.length = ImgRead(&handle, dataPtr, handle.length);
+	    handle.data = dataPtr;
 	}
 	handle.state = 0;
-	tif = tiff.ClientOpen("inline data", "rb", (thandle_t) &handle,
+	tif = tiff.ClientOpen("inline data", "r", (thandle_t) &handle,
 		readString, writeString, seekString, closeDummy,
 		sizeString, mapDummy, unMapDummy);
     } else {
+	Tcl_Channel outchan;
 	tmpnam(tempFileName);
-	outfile = fopen(tempFileName,"wb");
+	outchan = Tcl_OpenFileChannel(interp, tempFileName, "w", 0644);
+	if (!outchan) {
+	    return TCL_ERROR;
+	}
+	if (Tcl_SetChannelOption(interp, outchan, "-translation", "binary") != TCL_OK) {
+	    return TCL_ERROR;
+	}
 
 	count = ImgRead(&handle, buffer, 1024);
 	while (count == 1024) {
-	    fwrite(buffer, 1, count, outfile);
+	    Tcl_Write(outchan, buffer, count);
 	    count = ImgRead(&handle, buffer, 1024);
 	}
 	if (count>0){
-	    fwrite(buffer, 1, count, outfile);
+	    Tcl_Write(outchan, buffer, count);
 	}
-	fclose(outfile);
-
-	tif = tiff.Open(tempFileName, "rb");
+	if (Tcl_Close(interp, outchan) == TCL_ERROR) {
+	    return TCL_ERROR;
+	}
+	tif = tiff.Open(tempFileName, "r");
     }
 
     if (tif != NULL) {
-	result = CommonReadTIFF(interp, tif, formatString, imageHandle,
+	result = CommonReadTIFF(interp, tif, format, imageHandle,
 		destX, destY, width, height, srcX, srcY);
     } else {
 	result = TCL_ERROR;
@@ -797,18 +742,18 @@ static int ObjReadTIFF(interp, dataObj, formatString, imageHandle,
 	ckfree(errorMessage);
 	errorMessage = NULL;
     }
-    if (data) {
-	ckfree(data);
+    if (dataPtr) {
+	ckfree(dataPtr);
     }
     return result;
 }
 
-static int ChnReadTIFF(interp, chan, fileName, formatString, imageHandle,
+static int ChnReadTIFF(interp, chan, fileName, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
     Tcl_Channel chan;
     char *fileName;
-    char *formatString;
+    Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
     int width, height;
@@ -818,35 +763,46 @@ static int ChnReadTIFF(interp, chan, fileName, formatString, imageHandle,
     char tempFileName[256];
     int count, result;
     char buffer[1024];
-    FILE *outfile;
 
     if (load_tiff_library(interp) != TCL_OK) {
 	return TCL_ERROR;
     }
 
     if (tiff.ClientOpen) {
+	MFile handle;
 	tempFileName[0] = 0;
-	tif = tiff.ClientOpen(fileName, "rb", (thandle_t) chan,
-		readChan, writeDummy, seekChan, closeDummy,
-		sizeChan, mapDummy, unMapDummy);
+	handle.data = (char *) chan;
+	handle.state = IMG_CHAN;
+	tif = tiff.ClientOpen(fileName, "r", (thandle_t) &handle,
+		readMFile, writeDummy, seekMFile, closeDummy,
+		sizeMFile, mapDummy, unMapDummy);
     } else {
+	Tcl_Channel outchan;
 	tmpnam(tempFileName);
-	outfile = fopen(tempFileName,"wb");
+	outchan = Tcl_OpenFileChannel(interp, tempFileName, "w", 0644);
+	if (!outchan) {
+	    return TCL_ERROR;
+	}
+	if (Tcl_SetChannelOption(interp, outchan, "-translation", "binary") != TCL_OK) {
+	    return TCL_ERROR;
+	}
 
 	count = Tcl_Read(chan, buffer, 1024);
 	while (count == 1024) {
-	    fwrite(buffer, 1, count, outfile);
+	    Tcl_Write(outchan, buffer, count);
 	    count = Tcl_Read(chan, buffer, 1024);
 	}
 	if (count>0){
-	    fwrite(buffer, 1, count, outfile);
+	    Tcl_Write(outchan, buffer, count);
 	}
-	fclose(outfile);
+	if (Tcl_Close(interp, outchan) == TCL_ERROR) {
+	    return TCL_ERROR;
+	}
 
-	tif = tiff.Open(tempFileName, "rb");
+	tif = tiff.Open(tempFileName, "r");
     }
     if (tif) {
-	result = CommonReadTIFF(interp, tif, formatString, imageHandle,
+	result = CommonReadTIFF(interp, tif, format, imageHandle,
 		destX, destY, width, height, srcX, srcY);
     } else {
 	result = TCL_ERROR;
@@ -862,63 +818,6 @@ static int ChnReadTIFF(interp, chan, fileName, formatString, imageHandle,
     return result;
 }
 
-static int FileReadTIFF(interp, f, fileName, formatString, imageHandle,
-	destX, destY, width, height, srcX, srcY)
-    Tcl_Interp *interp;
-    FILE *f;
-    char *fileName;
-    char *formatString;
-    Tk_PhotoHandle imageHandle;
-    int destX, destY;
-    int width, height;
-    int srcX, srcY;
-{
-    TIFF *tif;
-    char tempFileName[256];
-    int count, result;
-    char buffer[1024];
-    FILE *outfile;
-
-    if (load_tiff_library(interp) != TCL_OK) {
-	return TCL_ERROR;
-    }
-
-    if (tiff.ClientOpen) {
-	tempFileName[0] = 0;
-	tif = tiff.ClientOpen(fileName, "rb", (thandle_t) f,
-		readFile, writeDummy, seekFile, closeDummy,
-		sizeFile, mapDummy, unMapDummy);
-    } else {
-	tmpnam(tempFileName);
-	outfile = fopen(tempFileName,"wb");
-
-	count = fread(buffer, 1, 1024, f);
-	while (count == 1024) {
-	    fwrite(buffer, 1, count, outfile);
-	    count = fread(buffer, 1, 1024, f);
-	}
-	if (count>0){
-	    fwrite(buffer, 1, count, outfile);
-	}
-	fclose(outfile);
-	tif = tiff.Open(tempFileName, "rb");
-    }
-    if (tif) {
-	result = CommonReadTIFF(interp, tif, formatString, imageHandle,
-		destX, destY, width, height, srcX, srcY);
-    } else {
-	result = TCL_ERROR;
-    }
-    if (tempFileName[0]) {
-	unlink(tempFileName);
-    }
-    if (result == TCL_ERROR) {
-	Tcl_AppendResult(interp, errorMessage, (char *) NULL);
-	ckfree(errorMessage);
-	errorMessage = NULL;
-    }
-    return result;
-}
 
 typedef struct myblock {
     Tk_PhotoImageBlock ck;
@@ -928,11 +827,11 @@ typedef struct myblock {
 
 #define block bl.ck
 
-static int CommonReadTIFF(interp, tif, formatString, imageHandle,
+static int CommonReadTIFF(interp, tif, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
     TIFF *tif;
-    char *formatString;
+    Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
     int width, height;
@@ -968,7 +867,7 @@ static int CommonReadTIFF(interp, tif, formatString, imageHandle,
     block.width = w;
     block.height = h;
     block.pitch = - (block.pixelSize * (int) w);
-    block.pixelPtr = ((unsigned char *) raster) - (h-1) * block.pitch;
+    block.pixelPtr = ((unsigned char *) raster) + ((1-h) * block.pitch);
     if (raster == NULL) {
 	printf("cannot malloc\n");
 	return TCL_ERROR;
@@ -1003,36 +902,40 @@ static int CommonReadTIFF(interp, tif, formatString, imageHandle,
     return TCL_OK;
 }
 
-static int StringWriteTIFF(interp, dataPtr, formatString, blockPtr)
+static int StringWriteTIFF(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    char *formatString;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     TIFF *tif;
-    int result;
+    int result, comp;
     MFile handle;
-    FILE *f = NULL;
     char tempFileName[256];
     Tcl_DString dstring;
+    char *mode;
 
     if (load_tiff_library(interp) != TCL_OK) {
 	return TCL_ERROR;
+    }
+
+    if (ParseWriteFormat(interp, format, &comp, &mode) != TCL_OK) {
+    	return TCL_ERROR;
     }
 
     if (tiff.ClientOpen) {
 	tempFileName[0] = 0;
 	Tcl_DStringInit(&dstring);
 	ImgWriteInit(&dstring, &handle);
-	tif = tiff.ClientOpen("inline data", "wb", (thandle_t) &handle,
+	tif = tiff.ClientOpen("inline data", mode, (thandle_t) &handle,
 		readString, writeString, seekString, closeDummy,
 		sizeString, mapDummy, unMapDummy);
     } else {
 	tmpnam(tempFileName);
-	tif = tiff.Open(tempFileName,"wb");
+	tif = tiff.Open(tempFileName,mode);
     }
 
-    result = CommonWriteTIFF(interp, tif, formatString, blockPtr);
+    result = CommonWriteTIFF(interp, tif, comp, blockPtr);
     tiff.Close(tif);
 
     if (result != TCL_OK) {
@@ -1046,21 +949,26 @@ static int StringWriteTIFF(interp, dataPtr, formatString, blockPtr)
     }
 
     if (tempFileName[0]) {
+	Tcl_Channel inchan;
 	char buffer[1024];
-	f = fopen(tempFileName,"rb");
-	if (f == NULL) {
-	    Tcl_AppendResult(interp, "cannot open temporary file", (char *) NULL);
+	inchan = Tcl_OpenFileChannel(interp, tempFileName, "w", 0644);
+	if (!inchan) {
+	    return TCL_ERROR;
+	}
+	if (Tcl_SetChannelOption(interp, inchan, "-translation", "binary") != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	ImgWriteInit(dataPtr, &handle);
 
-	result = fread(buffer, 1, 1024, f);
-	while (!feof(f)) {
+	result = Tcl_Read(inchan, buffer, 1024);
+	while ((result == TCL_OK) && !Tcl_Eof(inchan)) {
 	    ImgWrite(&handle, buffer, result);
-	    result = fread(buffer, 1, 1024, f);
+	    result = Tcl_Read(inchan, buffer, 1024);
 	}
-	ImgWrite(&handle, buffer, result);
-	fclose(f);
+	if (result == TCL_OK) {
+	    ImgWrite(&handle, buffer, result);
+	    result = Tcl_Close(interp, inchan);
+	}
 	unlink(tempFileName);
     } else {
 	int length = handle.length;
@@ -1069,25 +977,34 @@ static int StringWriteTIFF(interp, dataPtr, formatString, blockPtr)
 	Tcl_DStringFree(&dstring);
     }
     ImgPutc(IMG_DONE, &handle);
-    return TCL_OK;
+    return result;
 }
 
-static int FileWriteTIFF(interp, filename, formatString, blockPtr)
+static int ChnWriteTIFF(interp, filename, format, blockPtr)
     Tcl_Interp *interp;
     char *filename;
-    char *formatString;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     TIFF *tif;
-    int result;
+    int result, comp;
     Tcl_DString nameBuffer; 
-    char *fullname;
+    char *fullname, *mode;
 
     if ((fullname=Tcl_TranslateFileName(interp,filename,&nameBuffer))==NULL) {
 	return TCL_ERROR;
     }
 
-    if (!(tif = tiff.Open(fullname,"wb"))) {
+    if (load_tiff_library(interp) != TCL_OK) {
+	Tcl_DStringFree(&nameBuffer);
+	return TCL_ERROR;
+    }
+
+    if (ParseWriteFormat(interp, format, &comp, &mode) != TCL_OK) {
+    	return TCL_ERROR;
+    }
+
+    if (!(tif = tiff.Open(fullname,mode))) {
 	Tcl_AppendResult(interp, filename, ": ", Tcl_PosixError(interp),
 		(char *)NULL);
 	Tcl_DStringFree(&nameBuffer);
@@ -1096,56 +1013,98 @@ static int FileWriteTIFF(interp, filename, formatString, blockPtr)
 
     Tcl_DStringFree(&nameBuffer);
 
-    if (load_tiff_library(interp) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    result = CommonWriteTIFF(interp, tif, formatString, blockPtr);
+    result = CommonWriteTIFF(interp, tif, comp, blockPtr);
     tiff.Close(tif);
     return result;
 }
 
-static int CommonWriteTIFF(interp, tif, formatString, blockPtr)
+static int ParseWriteFormat(interp, format, comp, mode)
+    Tcl_Interp *interp;
+    Tcl_Obj *format;
+    int *comp;
+    char **mode;
+{
+    static char *tiffWriteOptions[] = {"-compression", "-byteorder"};
+    int objc, length, c, i, index;
+    Tcl_Obj **objv;
+    char *compression, *byteorder;
+
+    *comp = COMPRESSION_NONE;
+    *mode = "w";
+    if (ImgListObjGetElements(interp, format, &objc, &objv) != TCL_OK)
+	return TCL_ERROR;
+    if (objc) {
+	compression = "none";
+	byteorder = "";
+	for (i=1; i<objc; i++) {
+	    if (Tcl_GetIndexFromObj(interp, objv[i], tiffWriteOptions,
+		    "format option", 0, &index)!=TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    if (++i >= objc) {
+		Tcl_AppendResult(interp, "No value for option \"",
+			Tcl_GetStringFromObj(objv[--i], (int *) NULL),
+			"\"", (char *) NULL);
+		return TCL_ERROR;
+	    }
+	    switch(index) {
+		case 0:
+		    compression = Tcl_GetStringFromObj(objv[i], (int *) NULL); break;
+		case 1:
+		    byteorder = Tcl_GetStringFromObj(objv[i], (int *) NULL); break;
+	    }
+	}
+	c = compression[0]; length = strlen(compression);
+	if ((c == 'n') && (!strncmp(compression,"none",length))) {
+	    *comp = COMPRESSION_NONE;
+	} else if ((c == 'd') && (!strncmp(compression,"deflate",length))) {
+	    *comp = COMPRESSION_DEFLATE;
+	} else if ((c == 'j') && (!strncmp(compression,"jpeg",length))) {
+	    *comp = COMPRESSION_JPEG;
+	} else if ((c == 'l') && (length>1) && (!strncmp(compression,"logluv",length))) {
+	    *comp = COMPRESSION_SGILOG;
+	} else if ((c == 'l') && (length>1) && (!strncmp(compression,"lzw",length))) {
+	    *comp = COMPRESSION_LZW;
+	} else if ((c == 'p') && (length>1) && (!strncmp(compression,"packbits",length))) {
+	    *comp = COMPRESSION_PACKBITS;
+	} else if ((c == 'p') && (length>1) && (!strncmp(compression,"pixarlog",length))) {
+	    *comp = COMPRESSION_PIXARLOG;
+	} else {
+	    Tcl_AppendResult(interp, "invalid compression mode \"",
+		     compression,"\": should be deflate, jpeg, logluv, lzw, ",
+		    "packbits, pixarlog, or none", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	c = byteorder[0]; length = strlen(byteorder);
+	if (c == 0) {
+	    *mode = "w";
+	} else if ((c == 's') && (!strncmp(byteorder,"smallendian", length))) {
+	    *mode = "wl";
+	} else if ((c == 'l') && (!strncmp(byteorder,"littleendian", length))) {
+	    *mode = "wl";
+	} else if ((c == 'b') && (!strncmp(byteorder,"bigendian", length))) {
+	    *mode = "wb";
+	} else if ((c == 'n') && (!strncmp(byteorder,"network", length))) {
+	    *mode = "wb";
+	} else {
+	    Tcl_AppendResult(interp, "invalid byteorder \"",
+		     byteorder,"\": should be bigendian, littleendian",
+		    "network, smallendian, or {}", (char *) NULL);
+	    return TCL_ERROR;
+	}
+    }
+    return TCL_OK;
+}
+
+static int CommonWriteTIFF(interp, tif, comp, blockPtr)
     Tcl_Interp *interp;
     TIFF *tif;
-    char *formatString;
+    int comp;
     Tk_PhotoImageBlock *blockPtr;
 {
-    int numsamples, comp;
+    int numsamples;
     unsigned char *data = NULL;
 
-    comp = COMPRESSION_NONE;
-    if (formatString != NULL) {
-      int argc, length, c;
-      char **argv;
-      if (Tcl_SplitList(interp, formatString, &argc, &argv) != TCL_OK)
-	return TCL_ERROR;
-      compression = "none";
-      if (Tk_ParseArgv(interp, (Tk_Window) NULL, &argc, argv,
-	      writeOptTable, TK_ARGV_NO_LEFTOVERS|TK_ARGV_NO_DEFAULTS)
-	      != TCL_OK) {
-	ckfree((char *) argv);
-	return TCL_ERROR;
-      }
-      c = compression[0]; length = strlen(compression);
-      if ((c == 'n') && (!strncmp(compression,"none",length))) {
-	comp = COMPRESSION_NONE;
-      } else if ((c == 'l') && (!strncmp(compression,"lzw",length))) {
-	comp = COMPRESSION_LZW;
-      } else if ((c == 'j') && (!strncmp(compression,"jpeg",length))) {
-	comp = COMPRESSION_JPEG;
-      } else if ((c == 'p') && (!strncmp(compression,"packbits",length))) {
-	comp = COMPRESSION_PACKBITS;
-      } else if ((c == 'd') && (!strncmp(compression,"deflate",length))) {
-	comp = COMPRESSION_DEFLATE;
-      } else {
-	Tcl_AppendResult(interp, "invalid compression mode \"",
-		compression,"\": should be deflate, jpeg, lzw, ",
-		"packbits or none", (char *) NULL);
-	ckfree((char *) argv);
-	return TCL_ERROR;
-      }
-      ckfree((char *) argv);
-    }
     tiff.SetField(tif, TIFFTAG_IMAGEWIDTH, blockPtr->width);
     tiff.SetField(tif, TIFFTAG_IMAGELENGTH, blockPtr->height);
     tiff.SetField(tif, TIFFTAG_COMPRESSION, comp);
@@ -1227,176 +1186,4 @@ static int CommonWriteTIFF(interp, tif, formatString, blockPtr)
     }
 
     return TCL_OK;
-}
-
-
-/* Portable vsprintf  by Robert A. Larson <blarson@skat.usc.edu> */
-
-/* Copyright 1989 Robert A. Larson.
- * Distribution in any form is allowed as long as the author
- * retains credit, changes are noted by their author and the
- * copyright message remains intact.  This program comes as-is
- * with no warentee of fitness for any purpouse.
- *
- * Thanks to Doug Gwen, Chris Torek, and others who helped clarify
- * the ansi printf specs.
- *
- * Please send any bug fixes and improvments to blarson@skat.usc.edu .
- * The use of goto is NOT a bug.
- */
-
-/* Feb	7, 1989		blarson		First usenet release */
-
-/* This code implements the vsprintf function, without relying on
- * the existance of _doprint or other system specific code.
- *
- * Define NOVOID if void * is not a supported type.
- *
- * Two compile options are available for efficency:
- *	INTSPRINTF	should be defined if sprintf is int and returns
- *			the number of chacters formated.
- *	LONGINT		should be defined if sizeof(long) == sizeof(int)
- *
- *	They only make the code smaller and faster, they need not be
- *	defined.
- *
- * UNSIGNEDSPECIAL should be defined if unsigned is treated differently
- * than int in argument passing.  If this is definded, and LONGINT is not,
- * the compiler must support the type unsingned long.
- *
- * Most quirks and bugs of the available sprintf fuction are duplicated,
- * however * in the width and precision fields will work correctly
- * even if sprintf does not support this, as will the n format.
- *
- * Bad format strings, or those with very long width and precision
- * fields (including expanded * fields) will cause undesired results.
- */
-
-#ifdef OSK		/* os9/68k can take advantage of both */
-#define LONGINT
-#define INTSPRINTF
-#endif
-
-/* This must be a typedef not a #define! */
-typedef VOID *pointer;
-
-
-#ifdef	INTSPRINTF
-#define Sprintf(string,format,arg)	(sprintf((string),(format),(arg)))
-#else
-#define Sprintf(string,format,arg)	(\
-	sprintf((string),(format),(arg)),\
-	strlen(string)\
-)
-#endif
-
-typedef int *intp;
-
-static int tiff_vsprintf(dest, format, args)
-    char *dest;
-    CONST char *format;
-    va_list args;
-{
-    register char *dp = dest;
-    register char c;
-    register char *tp;
-    char tempfmt[64];
-#ifndef LONGINT
-    int longflag;
-#endif
-
-    tempfmt[0] = '%';
-    while( (c = *format++) != 0) {
-	if(c=='%') {
-	    tp = &tempfmt[1];
-#ifndef LONGINT
-	    longflag = 0;
-#endif
-continue_format:
-	    switch(c = *format++) {
-		case 's':
-		    *tp++ = c;
-		    *tp = '\0';
-		    dp += Sprintf(dp, tempfmt, va_arg(args, char *));
-		    break;
-		case 'u':
-		case 'x':
-		case 'o':
-		case 'X':
-#ifdef UNSIGNEDSPECIAL
-		    *tp++ = c;
-		    *tp = '\0';
-#ifndef LONGINT
-		    if(longflag)
-			dp += Sprintf(dp, tempfmt, va_arg(args, unsigned long));
-		    else
-#endif
-			dp += Sprintf(dp, tempfmt, va_arg(args, unsigned));
-		    break;
-#endif
-		case 'd':
-		case 'c':
-		case 'i':
-		    *tp++ = c;
-		    *tp = '\0';
-#ifndef LONGINT
-		    if(longflag)
-			dp += Sprintf(dp, tempfmt, va_arg(args, long));
-		    else
-#endif
-			dp += Sprintf(dp, tempfmt, va_arg(args, int));
-		    break;
-		case 'f':
-		case 'e':
-		case 'E':
-		case 'g':
-		case 'G':
-		    *tp++ = c;
-		    *tp = '\0';
-		    dp += Sprintf(dp, tempfmt, va_arg(args, double));
-		    break;
-		case 'p':
-		    *tp++ = c;
-		    *tp = '\0';
-		    dp += Sprintf(dp, tempfmt, va_arg(args, pointer));
-		    break;
-		case '-':
-		case '+':
-		case '0':
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-		case '.':
-		case ' ':
-		case '#':
-		case 'h':
-		    *tp++ = c;
-		    goto continue_format;
-		case 'l':
-#ifndef LONGINT
-		    longflag = 1;
-		    *tp++ = c;
-#endif
-		    goto continue_format;
-		case '*':
-		    tp += Sprintf(tp, "%d", va_arg(args, int));
-		    goto continue_format;
-		case 'n':
-		    *va_arg(args, intp) = dp - dest;
-		    break;
-		case '%':
-		default:
-		    *dp++ = c;
-		    break;
-	    }
-	} else *dp++ = c;
-    }
-    *dp = '\0';
-    return dp - dest;
 }

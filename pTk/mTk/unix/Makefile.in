@@ -5,7 +5,7 @@
 # "autoconf" program (constructs like "@foo@" will get replaced in the
 # actual Makefile.
 #
-# SCCS: @(#) Makefile.in 1.146 97/11/05 11:10:45
+# RCS: @(#) $Id: Makefile.in,v 1.11 1998/10/20 20:02:37 rjohnson Exp $
 
 # Current Tk version;  used in various names.
 
@@ -187,7 +187,7 @@ TK_LD_SEARCH_FLAGS = @TK_LD_SEARCH_FLAGS@
 # modify any of this stuff by hand.
 #----------------------------------------------------------------
 
-AC_FLAGS =		@DEFS@
+AC_FLAGS =		@EXTRA_CFLAGS@ @DEFS@
 RANLIB =		@RANLIB@
 SRC_DIR =		@srcdir@/..
 TOP_DIR =		@srcdir@/..
@@ -838,10 +838,7 @@ dist:   $(UNIX_DIR)/configure
 		$(TOP_DIR)/win/rc/*.ico $(TOP_DIR)/win/rc/*.bmp \
 		$(DISTDIR)/win/rc
 	mkdir $(DISTDIR)/mac
-	sccs edit -s $(TOP_DIR)/mac/tkMacProjects.sea.hqx
-	cp -p tkMacProjects.sea.hqx $(DISTDIR)/mac
-	sccs unedit $(TOP_DIR)/mac/tkMacProjects.sea.hqx
-	rm -f tkMacProjects.sea.hqx
+	cp -p $(TOP_DIR)/mac/tkMacProjects.sea.hqx $(DISTDIR)/mac
 	cp -p $(TOP_DIR)/mac/*.c $(TOP_DIR)/mac/*.h $(TOP_DIR)/mac/*.r \
 		$(DISTDIR)/mac
 	cp -p $(TOP_DIR)/mac/README $(DISTDIR)/mac

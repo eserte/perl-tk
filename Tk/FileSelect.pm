@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION);
-$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/FileSelect.pm#26$
+$VERSION = '3.029'; # $Id: //depot/Tk8/Tk/FileSelect.pm#29$
 
 use Tk qw(Ev);
 use strict;
@@ -247,8 +247,8 @@ sub translate
   {
       my ($bs,$ch) = @_;
       return "\\$ch" if (length $bs);
-      return ".*"  if ($ch eq '*');
- return "."   if ($ch eq '?');
+      return '.*'  if ($ch eq '*');
+ return '.'   if ($ch eq '?');
  return "\\."  if ($ch eq '.');
  return "\\/" if ($ch eq '/');
  return "\\\\" if ($ch eq '\\');
@@ -336,7 +336,7 @@ sub reread
     {
      $w->Unbusy;
      $w->{'reread'} = 0;
-     $w->{Directory} = $dir . "/" . $w->cget('-filter');
+     $w->{Directory} = $dir . '/' . $w->cget('-filter');
      $w->BackTrace("Cannot chdir($dir) :$!");
     }
   }
@@ -344,8 +344,8 @@ sub reread
   {
    my $file = $w->cget('-initialfile');
    my $seen = 0;
-   $w->Subwidget('dir_list')->delete(0, "end");
-   $w->Subwidget('file_list')->delete(0, "end");
+   $w->Subwidget('dir_list')->delete(0, 'end');
+   $w->Subwidget('file_list')->delete(0, 'end');
    my $accept = $w->cget('-accept');
    my $f;
    foreach $f (sort(readdir(DIR)))
@@ -381,7 +381,7 @@ sub reread
    $w->{Configure}{'-directory'} = $dir;
    $w->Unbusy;
    $w->{'reread'} = 0;
-   $w->{Directory} = $dir . "/" . $w->cget('-filter');
+   $w->{Directory} = $dir . '/' . $w->cget('-filter');
   }
  else
   {
@@ -389,7 +389,7 @@ sub reread
    $w->Unbusy;
    $w->{'reread'} = 0;
    chdir($panic) || $w->BackTrace("Cannot chdir($panic) : $!");
-   $w->{Directory} = $dir . "/" . $w->cget('-filter');
+   $w->{Directory} = $dir . '/' . $w->cget('-filter');
    $w->BackTrace("Cannot opendir('$dir') :$!");
   }
 }
@@ -446,7 +446,7 @@ sub validateFile
       }
      else
       {
-       $cw->Error("$name does not match '".$cw->cget('-filter')."'");
+       $cw->Error("$name does not match '".$cw->cget('-filter').'\'');
       }
     }
    else

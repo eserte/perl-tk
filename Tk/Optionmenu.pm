@@ -1,12 +1,12 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Optionmenu;
 require Tk::Menubutton;
 require Tk::Menu;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#15$
+use vars qw($VERSION);
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#18$
 
 use base  qw(Tk::Derived Tk::Menubutton);
 
@@ -65,11 +65,11 @@ sub addOptions
   {
    my $val = shift;
    my $label = $val;
-   if (ref $val) 
+   if (ref $val)
     {
      ($label, $val) = @$val;
-    } 
-   my $len = length($label);                          
+    }
+   my $len = length($label);
    $width = $len if (!defined($width) || $len > $width);
    $menu->command(-label => $label, -command => [ $w , 'setOption', $label, $val ]);
    $w->setOption($label, $val) unless (defined $$var);

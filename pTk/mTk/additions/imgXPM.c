@@ -6,9 +6,9 @@
  * Written by:
  *	Jan Nijtmans
  *	CMG (Computer Management Group) Arnhem B.V.
- *	email: nijtmans@worldaccess.nl (private)
+ *	email: Jan.Nijtmans@wxs.nl (private)
  *	       Jan.Nijtmans@cmg.nl (work)
- *	url:   http://www.worldaccess.nl/~nijtmans/
+ *	url:   http://home.wxs.nl/~nijtmans/
  *
  * (with some code stolen from the XPM image type and the GIF handler)
  *
@@ -23,16 +23,14 @@
  *
  * SCCS: @(#) tkImgXPM.c 0.1 96/11/22 13:56:24
  */
-
-#define NEED_REAL_STDIO 
 #include "tk.h"
 #include "tkVMacro.h"
 #include "imgInt.h"
-#include <stdio.h>
+#include <X11/Xlib.h>
 #include <ctype.h>
 #include <stdlib.h>
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined(__GNUC__)
 #define strncasecmp strnicmp
 #else        
 #ifndef _AIX
@@ -67,53 +65,35 @@ extern char *	strstr _ANSI_ARGS_((CONST char *string,
 #define MAX_BUFFER 4096
 
 /*
- * This structure is needed to access strings in the same 
- * way as a file
- */
-typedef struct XPM_DString {
-  char *data;  /* the data string          */
-  char *p;     /* character at current pos */
-  int length;
-} XPM_DString;
-
-/*
  * The format record for the XPM file format:
  */
 
-static int		ChanMatchXPM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-			    Arg fileName, Arg formatString, int *widthPtr,
+static int		ChanMatchXPM _ANSI_ARGS_((Tcl_Interp *interp,Tcl_Channel chan,
+			    Tcl_Obj *fileName, Tcl_Obj *format, int *widthPtr,
 			    int *heightPtr));
-static int		FileMatchXPM _ANSI_ARGS_((Tcl_Interp *interp, FILE *f, Arg fileName,
-			    Arg formatString, int *widthPtr,
-			    int *heightPtr));
-static int      	ObjMatchXPM _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *dataObj,
-		            Arg formatString, int *widthPtr, int *heightPtr));
+static int      	ObjMatchXPM _ANSI_ARGS_((Tcl_Interp *interp,Tcl_Obj *dataObj,
+		            Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int		ChanReadXPM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Channel chan, Arg fileName,
-			    Arg formatString, Tk_PhotoHandle imageHandle,
+			    Tcl_Channel chan, Tcl_Obj *fileName,
+			    Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
-static int		FileReadXPM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    FILE *f, Arg fileName, Arg formatString,
-			    Tk_PhotoHandle imageHandle, int destX, int destY,
-			    int width, int height, int srcX, int srcY));
 static int	        ObjReadXPM _ANSI_ARGS_((Tcl_Interp *interp,
-			    struct Tcl_Obj *dataObj, Arg formatString,
+			    Tcl_Obj *dataObj, Tcl_Obj *format,
               		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		            int width, int height, int srcX, int srcY));
-static int		ReadXPM _ANSI_ARGS_((Tcl_Interp *interp, int type,
-			    Tcl_Channel chan, char *fileName,
-			    Arg formatString, Tk_PhotoHandle imageHandle,
+static int		CommonReadXPM _ANSI_ARGS_((Tcl_Interp *interp, MFile *handle,
+			    Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int	        StringWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-               		    Tcl_DString *dataPtr, Arg formatString,
+               		    Tcl_DString *dataPtr, Tcl_Obj *format,
 		            Tk_PhotoImageBlock *blockPtr));
 static int              FileWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-                            char *fileName, Arg formatString,
+                            char *fileName, Tcl_Obj *format,
                             Tk_PhotoImageBlock *blockPtr));
-static int		WriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *fileName, Tcl_DString *dataPtr, Arg formatString,
+static int		CommonWriteXPM _ANSI_ARGS_((Tcl_Interp *interp, char *fileName,
+			    Tcl_DString *dataPtr, Tcl_Obj *format,
 			    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtXPM = {
@@ -121,7 +101,7 @@ Tk_PhotoImageFormat imgFmtXPM = {
     ChanMatchXPM,	/* fileMatchProc */
     ObjMatchXPM,	/* stringMatchProc */
     ChanReadXPM,	/* fileReadProc */
-    ObjReadXPM,		/* stringReadProc */
+    ObjReadXPM,	/* stringReadProc */
     FileWriteXPM,	/* fileWriteProc */
     StringWriteXPM	/* stringWriteProc */
 };
@@ -130,15 +110,11 @@ Tk_PhotoImageFormat imgFmtXPM = {
  * Prototypes for local procedures defined in this file:
  */
 
-#define CHANNEL_INPUT 0
-#define FILE_INPUT 1
-#define DSTRING_INPUT 2
-
-static int	ReadXPMFileHeader _ANSI_ARGS_((int type, Tcl_Channel chan,
+static int	ReadXPMFileHeader _ANSI_ARGS_((MFile *handle,
 			int *widthPtr, int *heightPtr, int *numColors, int *byteSize));
 static char *	GetType _ANSI_ARGS_((char *colorDefn, int *type_ret));
 static char *	GetColor _ANSI_ARGS_((char *colorDefn, char *colorName, int *type_ret));
-static char *	Gets _ANSI_ARGS_((int type, Tcl_Channel chan, char *buffer, int size));
+static char *	Gets _ANSI_ARGS_((MFile *handle, char *buffer, int size));
 
 /*
  *----------------------------------------------------------------------
@@ -159,57 +135,26 @@ static char *	Gets _ANSI_ARGS_((int type, Tcl_Channel chan, char *buffer, int si
  */
 
 static char *
-Gets(type, chan, buffer, size)
-    int type;
-    Tcl_Channel chan;
+Gets(handle, buffer, size)
+    MFile *handle;
     char *buffer;
     int size;
 {
     char *p;
 
-    if (type == CHANNEL_INPUT) {
-        p = buffer;
-        while ((Tcl_Read(chan, p, 1) == 1)) {
-            if (--size <= 0) {
-                *p = 0; return buffer;
-            }
-	    if (*p++ == '\n') {
-	        *p = 0;
-	        return buffer;
-	    }
-        }
-        *p = 0;
-        return (p != buffer) ? buffer :(char *) NULL;
-    } else if (type == FILE_INPUT) {
-	/* read data from file */
-	return fgets(buffer, size, (FILE *) chan);
-    } else {
-        XPM_DString *dataPtr = (XPM_DString *) chan;
-	/* emulate premature EOF */
-	if ((dataPtr->length <= 0) || (*dataPtr->p == 0)) {
-	    return (char *)NULL;
+    /* read data from MFile */
+    p = buffer;
+    while ((ImgRead(handle, p, 1) == 1)) {
+	if (--size <= 0) {
+	    *p = 0; return buffer;
 	}
-
-	p = buffer;
-	size--;
-	while(size--) {
-	    if ((dataPtr->length <= 0) || (*dataPtr->p == 0)) {
-		*p = 0;
-		return buffer;
-	    } else {
-		if (*dataPtr->p == '\n') {
-		    *p++ = *dataPtr->p++;
-		    dataPtr->length--;
-		    *p = 0;
-		    return buffer;
-		}
-	    }
-	    *p++ = *dataPtr->p++;
-	    dataPtr->length--;
+	if (*p++ == '\n') {
+	    *p = 0;
+	    return buffer;
 	}
-	*p = 0;
-	return buffer;
     }
+    *p = 0;
+    return (p != buffer) ? buffer :(char *) NULL;
 }
 
 
@@ -231,55 +176,24 @@ Gets(type, chan, buffer, size)
  *----------------------------------------------------------------------
  */
 static int
-ObjMatchXPM(interp, dataObj, formatString, widthPtr, heightPtr)
+ObjMatchXPM(interp, dataObj, format, widthPtr, heightPtr)
     Tcl_Interp *interp;
-    struct Tcl_Obj *dataObj;	/* The data supplied by the image */
-    Arg formatString;		/* User-specified format string, or NULL. */
-    int *widthPtr, *heightPtr;	/* The dimensions of the image are
-				 * returned here if the file is a valid
-				 * raw XPM file. */
-{
-    struct XPM_DString d;
-    int numColors, byteSize;
-
-    d.data = d.p = ImgGetStringFromObj(dataObj, &d.length);
-    return ReadXPMFileHeader(DSTRING_INPUT, (Tcl_Channel) &d, widthPtr, heightPtr, &numColors, &byteSize);
-}
-
-
-/*
- *----------------------------------------------------------------------
- *
- * FileMatchXPM --
- *
- *	This procedure is invoked by the photo image type to see if
- *	a file contains image data in XPM format.
- *
- * Results:
- *	The return value is >0 if the first characters in file "f" look
- *	like XPM data, and 0 otherwise.
- *
- * Side effects:
- *	The access position in f may change.
- *
- *----------------------------------------------------------------------
- */
-
-static int
-FileMatchXPM(interp, f, fileName, formatString, widthPtr, heightPtr)
-    Tcl_Interp *interp;
-    FILE *f;			/* The image file, open for reading. */
-    Arg fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
+    Tcl_Obj *dataObj;		/* The data supplied by the image */
+    Tcl_Obj *format;		/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
 {
     int numColors, byteSize;
-    return ReadXPMFileHeader(FILE_INPUT, (Tcl_Channel) f, widthPtr, heightPtr, &numColors, &byteSize);
+    MFile handle;
+
+    handle.data = ImgGetStringFromObj(dataObj, &handle.length);
+    handle.state = IMG_STRING;
+
+    return ReadXPMFileHeader(&handle, widthPtr, heightPtr, &numColors, &byteSize);
 }
+
 
-
 /*
  *----------------------------------------------------------------------
  *
@@ -299,24 +213,29 @@ FileMatchXPM(interp, f, fileName, formatString, widthPtr, heightPtr)
  */
 
 static int
-ChanMatchXPM(interp, chan, fileName, formatString, widthPtr, heightPtr)
+ChanMatchXPM(interp, chan, fileName, format, widthPtr, heightPtr)
     Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    Arg fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
+    Tcl_Obj *fileName;		/* The name of the image file. */
+    Tcl_Obj *format;		/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
 {
     int numColors, byteSize;
-    return ReadXPMFileHeader(CHANNEL_INPUT, chan, widthPtr, heightPtr, &numColors, &byteSize);
+    MFile handle;
+
+    handle.data = (char *) chan;
+    handle.state = IMG_CHAN;
+
+    return ReadXPMFileHeader(&handle, widthPtr, heightPtr, &numColors, &byteSize);
 }
 
 
 /*
  *----------------------------------------------------------------------
  *
- * ReadXPM --
+ * CommonReadXPM --
  *
  *	This procedure is called by the photo image type to read
  *	XPM format data from a file or string and write it into a
@@ -340,13 +259,11 @@ typedef struct myblock {
 } myblock;
 
 static int
-ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
+CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
-    int input;                  /* Where to read from*/
-    Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
+    MFile *handle;		/* The image channel, open for reading. */
+    Tcl_Obj *format;		/* User-specified format object, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -382,20 +299,19 @@ ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
 	isMono = 0;
     }
 
-    type = ReadXPMFileHeader(input, chan, &fileWidth, &fileHeight, &numColors, &byteSize);
+    type = ReadXPMFileHeader(handle, &fileWidth, &fileHeight, &numColors, &byteSize);
     if (type == 0) {
-	Tcl_AppendResult(interp, "couldn't read raw XPM header from file \"",
-		fileName, "\"", NULL);
+	Tcl_AppendResult(interp, "couldn't read raw XPM header", NULL);
 	return TCL_ERROR;
     }
     if ((fileWidth <= 0) || (fileHeight <= 0)) {
-	Tcl_AppendResult(interp, "XPM image file \"", fileName,
-		"\" has dimension(s) <= 0", (char *) NULL);
+	Tcl_AppendResult(interp, "XPM image file has dimension(s) <= 0",
+		(char *) NULL);
 	return TCL_ERROR;
     }
     if ((byteSize < 1) || (byteSize > 4)) {
-	Tcl_AppendResult(interp, "XPM image file \"", fileName,
-		"\" has invalid byte size (should be 1, 2, 3 or 4)", (char *) NULL);
+	Tcl_AppendResult(interp, "XPM image file has invalid byte size ",
+		"(should be 1, 2, 3 or 4)", (char *) NULL);
 	return TCL_ERROR;
     }
 
@@ -422,17 +338,17 @@ ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
 	XColor color;
 	int found;
 
-	p = Gets(input, chan, buffer,MAX_BUFFER);
+	p = Gets(handle, buffer,MAX_BUFFER);
 	while (((p = strchr(p,'\"')) == NULL) || ((strstr(p,"/*")) != NULL)) {
-	    p = Gets(input, chan, buffer,MAX_BUFFER);
+	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
 		return TCL_ERROR;
 	    }
 	    p = buffer;
 	}
 	colorDefn = p + byteSize + 1;
-	colorName = (char*)ckalloc(strlen(colorDefn));
-	useName   = (char*)ckalloc(strlen(colorDefn));
+	colorName = (char*)ckalloc(strlen(colorDefn)+1);
+	useName   = (char*)ckalloc(strlen(colorDefn)+1);
 	found     = 0;
 	color1 = 0;
 	data = 0;
@@ -520,9 +436,9 @@ ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
 
     i = srcY;
     while (i-- > 0) {
-	p = Gets(input, chan, buffer,MAX_BUFFER);
+	p = Gets(handle, buffer,MAX_BUFFER);
 	while (((p = strchr(p,'\"')) == NULL) || ((strstr(p,"/*")) != NULL)) {
-	    p = Gets(input, chan, buffer,MAX_BUFFER);
+	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
 		return TCL_ERROR;
 	    }
@@ -532,9 +448,9 @@ ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
 
 
     for (h = height; h > 0; h--) {
-	p = Gets(input, chan, buffer,MAX_BUFFER);
+	p = Gets(handle, buffer,MAX_BUFFER);
 	while (((p = strchr(p,'\"')) == NULL) || ((strstr(p,"/*")) != NULL)) {
-	    p = Gets(input, chan, buffer,MAX_BUFFER);
+	    p = Gets(handle, buffer,MAX_BUFFER);
 	    if (p == NULL) {
 		return TCL_ERROR;
 	    }
@@ -597,48 +513,8 @@ ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
     ckfree((char *) block.pub.pixelPtr);
     return TCL_OK;
 }
+
 
-
-/*
- *----------------------------------------------------------------------
- *
- * FileReadXPM --
- *
- *	This procedure is called by the photo image type to read
- *	XPM format data from a file and write it into a given
- *	photo image.
- *
- * Results:
- *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in interp->result.
- *
- * Side effects:
- *	The access position in file f is changed, and new data is
- *	added to the image given by imageHandle.
- *
- *----------------------------------------------------------------------
- */
-
-static int
-FileReadXPM(interp, f, fileName, formatString, imageHandle, destX, destY,
-	width, height, srcX, srcY)
-    Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
-    FILE *f;			/* The image file, open for reading. */
-    Arg fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
-    Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
-    int destX, destY;		/* Coordinates of top-left pixel in
-				 * photo image to be written to. */
-    int width, height;		/* Dimensions of block of photo image to
-				 * be written to. */
-    int srcX, srcY;		/* Coordinates of top-left pixel to be used
-				 * in image being read. */
-{
-  return ReadXPM(interp, FILE_INPUT, (Tcl_Channel) f, LangString(fileName), formatString, imageHandle,
-		 destX, destY, width, height, srcX, srcY);
-}
-
-
 /*
  *----------------------------------------------------------------------
  *
@@ -660,12 +536,12 @@ FileReadXPM(interp, f, fileName, formatString, imageHandle, destX, destY,
  */
 
 static int
-ChanReadXPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
+ChanReadXPM(interp, chan, fileName, format, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    Arg fileName;		/* The name of the image file. */
-    Arg formatString;		/* User-specified format string, or NULL. */
+    Tcl_Obj *fileName;		/* The name of the image file. */
+    Tcl_Obj *format;		/* User-specified format object, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -674,7 +550,12 @@ ChanReadXPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
     int srcX, srcY;		/* Coordinates of top-left pixel to be used
 				 * in image being read. */
 {
-    return ReadXPM(interp, CHANNEL_INPUT, chan, LangString(fileName), formatString, imageHandle,
+    MFile handle;
+
+    handle.data = (char *) chan;
+    handle.state = IMG_CHAN;
+
+    return CommonReadXPM(interp, &handle, format, imageHandle,
 		 destX, destY, width, height, srcX, srcY);
 }
 
@@ -699,11 +580,11 @@ ChanReadXPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
  */
 
 static int
-ObjReadXPM(interp, dataObj, formatString, imageHandle, destX, destY,
+ObjReadXPM(interp, data, format, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
-    struct Tcl_Obj *dataObj;
-    Arg formatString;		/* User-specified format string, or NULL. */
+    Tcl_Obj *data;
+    Tcl_Obj *format;		/* User-specified format object, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -712,11 +593,13 @@ ObjReadXPM(interp, dataObj, formatString, imageHandle, destX, destY,
     int srcX, srcY;		/* Coordinates of top-left pixel to be used
 				 * in image being read. */
 {
-  struct XPM_DString d;
+    MFile handle;
 
-  d.data = d.p = ImgGetStringFromObj(dataObj, &d.length);
-  return ReadXPM(interp, DSTRING_INPUT, (Tcl_Channel) &d, "", formatString, imageHandle,
-		 destX, destY, width, height, srcX, srcY);
+    handle.data = ImgGetStringFromObj(data, &handle.length);
+    handle.state = IMG_STRING;
+
+    return CommonReadXPM(interp, &handle, format, imageHandle,
+	    destX, destY, width, height, srcX, srcY);
 }
 
 
@@ -744,9 +627,8 @@ ObjReadXPM(interp, dataObj, formatString, imageHandle, destX, destY,
 #define UCHAR(c) ((unsigned char) (c))
 
 static int
-ReadXPMFileHeader(input, chan, widthPtr, heightPtr, numColors, byteSize)
-    int input;                  /* type of input */
-    Tcl_Channel chan;		/* Channel to read the header from */
+ReadXPMFileHeader(handle, widthPtr, heightPtr, numColors, byteSize)
+    MFile *handle;		/* handle to read the header from */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here. */
     int *numColors;		/* the number of colors is returned here */
@@ -755,7 +637,7 @@ ReadXPMFileHeader(input, chan, widthPtr, heightPtr, numColors, byteSize)
     char buffer[MAX_BUFFER];
     char *p;
 
-    p = Gets(input, chan, buffer,MAX_BUFFER);
+    p = Gets(handle, buffer,MAX_BUFFER);
     if (p == NULL) {
 	return 0;
     }
@@ -767,14 +649,14 @@ ReadXPMFileHeader(input, chan, widthPtr, heightPtr, numColors, byteSize)
 	return 0;
     }
     while ((p = strchr(p,'{')) == NULL) {
-	p = Gets(input, chan, buffer,MAX_BUFFER);
+	p = Gets(handle, buffer,MAX_BUFFER);
 	if (p == NULL) {
 	    return 0;
 	}
 	p = buffer;
     }
     while ((p = strchr(p,'"')) == NULL) {
-	p = Gets(input, chan, buffer,MAX_BUFFER);
+	p = Gets(handle, buffer,MAX_BUFFER);
 	if (p == NULL) {
 	    return 0;
 	}
@@ -936,13 +818,13 @@ static char * GetColor(colorDefn, colorName, type_ret)
  *----------------------------------------------------------------------
  */
 static int
-FileWriteXPM(interp, fileName, formatString, blockPtr)
+FileWriteXPM(interp, fileName, format, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
-    Arg formatString;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
-    return WriteXPM(interp, fileName, (Tcl_DString *)NULL, formatString, blockPtr);
+    return CommonWriteXPM(interp, fileName, (Tcl_DString *)NULL, format, blockPtr);
 }
 
 
@@ -963,25 +845,25 @@ FileWriteXPM(interp, fileName, formatString, blockPtr)
  *----------------------------------------------------------------------
  */
 static int	        
-StringWriteXPM(interp, dataPtr, formatString, blockPtr) 
+StringWriteXPM(interp, dataPtr, format, blockPtr) 
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    Arg formatString;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
-  return WriteXPM(interp, (char *) NULL, dataPtr, formatString, blockPtr);
+  return CommonWriteXPM(interp, "unknown", dataPtr, format, blockPtr);
 }
 
 
 /*
  * Yes, I know these macros are dangerous. But it should work fine
  */
-#define WRITE(buf) { if (f) fputs(buf, f); else Tcl_DStringAppend(dataPtr, buf, -1);}
+#define WRITE(buf) { if (!dataPtr) Tcl_Write(chan, buf, -1); else Tcl_DStringAppend(dataPtr, buf, -1);}
 
 /*
  *----------------------------------------------------------------------
  *
- * WriteXPM
+ * CommonWriteXPM
  *
  *	This procedure writes a XPM image to the file filename 
  *      (if filename != NULL) or to dataPtr.
@@ -999,16 +881,16 @@ StringWriteXPM(interp, dataPtr, formatString, blockPtr)
  *----------------------------------------------------------------------
  */
 static int
-WriteXPM(interp, fileName, dataPtr, formatString, blockPtr)
+CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
     Tcl_DString *dataPtr;
-    Arg formatString;    
+    Tcl_Obj *format;    
     Tk_PhotoImageBlock *blockPtr;
 {
     int x, y, i;
     int found;
-    FILE *f = (FILE *) NULL;
+    Tcl_Channel chan = (Tcl_Channel) NULL;
     Tcl_HashTable colors;
     Tcl_HashEntry *entry;
     Tcl_HashSearch search;
@@ -1023,7 +905,7 @@ WriteXPM(interp, fileName, dataPtr, formatString, blockPtr)
 	ClientData value;
 	char component[5];
     } temp;
-    char buffer[256];
+    char buffer[256], *p;
 
     /*
      * xpm_chars[] must be 64 chars long
@@ -1043,39 +925,36 @@ WriteXPM(interp, fileName, dataPtr, formatString, blockPtr)
     }
 
     /* open the output file (if needed) */
-    if (fileName) {
-      f = fopen(fileName, "w");
-      if (f == (FILE *)NULL) {
-	Tcl_AppendResult(interp, ": cannot open file for writing",
-		(char *)NULL);
+    if (!dataPtr) {
+      chan = Tcl_OpenFileChannel(interp, fileName, "w", 0644);
+      if (!chan) {
 	return TCL_ERROR;
       }
     }
 
     /* compute image name */
-    if (f) {
-	char *p;
-	p = strrchr(fileName, '/');
-	if (p) {
-	    fileName = p;
-	}
-	p = strrchr(fileName, '\\');
-	if (p) {
-	    fileName = p;
-	}
-	p = strrchr(fileName, ':');
-	if (p) {
-	    fileName = p;
-	}
-	p = strchr(fileName, '.');
-	if (p) {
-	    *p = 0;
-	}
-	fprintf(f, "/* XPM */\nstatic char * %s[] = {\n", fileName);
-    } else {
-	Tcl_DStringAppend(dataPtr,
-		"/* XPM */\nstatic char * unknown[] = {\n", -1);
+
+    p = strrchr(fileName, '/');
+    if (p) {
+	fileName = p+1;
     }
+    p = strrchr(fileName, '\\');
+    if (p) {
+	fileName = p+1;
+    }
+    p = strrchr(fileName, ':');
+    if (p) {
+	fileName = p+1;
+    }
+    p = strchr(fileName, '.');
+    if (p) {
+	*p = '\0';
+    }
+    sprintf(buffer, "/* XPM */\nstatic char * %s[] = {\n", fileName);
+    if (p) {
+	*p = '.';
+    }
+    WRITE(buffer);
 
     /*
      * Compute size of colortable
@@ -1173,8 +1052,8 @@ WriteXPM(interp, fileName, dataPtr, formatString, blockPtr)
     Tcl_DeleteHashTable(&colors);    
 
     /* close the file */
-    if (f) {
-	fclose(f);
+    if (chan) {
+	Tcl_Close(interp, chan);
     }
     return TCL_OK;
 }

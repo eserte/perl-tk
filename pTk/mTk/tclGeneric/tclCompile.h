@@ -6,7 +6,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclCompile.h 1.7 98/08/04 11:53:24
+ * RCS: @(#) $Id: tclCompile.h,v 1.8 1998/09/14 18:39:58 stanton Exp $
  */
 
 #ifndef _TCLCOMPILATION

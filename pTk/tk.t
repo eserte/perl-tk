@@ -61,6 +61,12 @@ VFUNC(void,Tk_3DVerticalBevel,V_Tk_3DVerticalBevel,_ANSI_ARGS_((Tk_Window tkwin,
 			    int relief)))
 #endif
 
+#ifndef Tk_BellObjCmd
+VFUNC(int,Tk_BellObjCmd,V_Tk_BellObjCmd,_ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int objc,
+			    Tcl_Obj *CONST objv[])))
+#endif
+
 #ifndef Tk_BindEvent
 VFUNC(void,Tk_BindEvent,V_Tk_BindEvent,_ANSI_ARGS_((Tk_BindingTable bindingTable,
 			    XEvent *eventPtr, Tk_Window tkwin, int numObjects,
@@ -587,6 +593,11 @@ VFUNC(void,Tk_ImageChanged,V_Tk_ImageChanged,_ANSI_ARGS_((
 			    Tk_ImageMaster master, int x, int y,
 			    int width, int height, int imageWidth,
 			    int imageHeight)))
+#endif
+
+#ifndef Tk_ImageObjCmd
+VFUNC(int,Tk_ImageObjCmd,V_Tk_ImageObjCmd,_ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[])))
 #endif
 
 #ifndef Tk_InternAtom

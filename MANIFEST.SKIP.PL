@@ -43,8 +43,8 @@ tcl\.pm$
 \bcore\b
 pod/html$
 \bdoc/
-\bToDo/
-\bObsolete/
+Tk.ppd$
+\b(ToDo|learn|Pending|Obsolete)/
 \b(GNU)?[Mm]akefile(\.aperl)?$
 \bperlmain\.c$
 \btkperl\b

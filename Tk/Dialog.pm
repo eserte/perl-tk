@@ -1,7 +1,7 @@
 package Tk::Dialog;
 
 use vars qw($VERSION);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Dialog.pm#20$
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/Dialog.pm#24$
 
 # Dialog - a translation of `tk_dialog' from Tcl/Tk to TkPerl (based on
 # John Stoffel's idea).
@@ -36,7 +36,7 @@ sub Populate
     my $default_button = delete $args->{-default_button};
     $default_button =  $buttons->[0] unless (defined $default_button);
 
-    
+
     # Create the Toplevel window and divide it into top and bottom parts.
 
     $cw->{'selected_button'} = '';
@@ -78,9 +78,9 @@ sub Populate
                     $_[0]->{'selected_button'} = $_[1];
                 }, $cw, $bl,
             ]
-        );       
+        );
         if ($Tk::platform eq 'MSWin32') {
-            $w_but->configure(-width => 10, -pady => 0); 
+            $w_but->configure(-width => 10, -pady => 0);
         }
 
         if ($bl eq $default_button) {
@@ -98,15 +98,8 @@ sub Populate
                 $w_but->pack(-in => $w_default_frame, -padx => '2m',
                              -pady => '2m');
             }
-            $cw->bind(
-                '<Return>' => [
-                    sub {
-                        $_[1]->flash; 
-                        $_[2]->{'selected_button'} = $_[3];
-                    }, $w_but, $cw, $bl,
-                ]
-            );
-	    $w_default_button = $w_but;
+            $cw->bind( '<Return>' => ['Return', $w_but, $cw, $bl ]);
+            $w_default_button = $w_but;
         } else {
          $w_but->pack(@pl, -expand => 1, @$pad2);
         }
@@ -129,13 +122,19 @@ sub Populate
     $cw->Delegates('Construct' => $w_top);
 } # end Dialog constructor
 
+sub Return {
+ $_[1]->flash;
+ $_[2]->{'selected_button'} = $_[3];
+}
+
+
 sub Show {
 
     # Dialog object public method - display the dialog.
 
     my ($cw, $grab_type) = @_;
 
-    croak "Dialog:  `Show' method requires at least 1 argument"
+    croak 'Dialog:  "Show" method requires at least 1 argument'
         if scalar @_ < 1 ;
 
     my $old_focus = $cw->focusSave;
@@ -144,7 +143,7 @@ sub Show {
     # Update all geometry information, center the dialog in the display
     # and deiconify it
 
-    $cw->Popup(); 
+    $cw->Popup();
 
     # set a grab and claim the focus.
 
@@ -155,11 +154,11 @@ sub Show {
     }
     $cw->waitVisibility;
     $cw->update;
-    if (defined $cw->{'default_button'}) 
+    if (defined $cw->{'default_button'})
      {
       $cw->{'default_button'}->focus;
-     } 
-    else 
+     }
+    else
      {
       $cw->focus;
      }

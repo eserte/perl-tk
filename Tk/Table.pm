@@ -1,15 +1,15 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Table.pm#10$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Table.pm#12$
 
 use Tk::Pretty;
 use AutoLoader;
-use base qw(Tk::Frame);  
+use base qw(Tk::Frame);
 
 Construct Tk::Widget 'Table';
 
@@ -56,7 +56,7 @@ sub FocusChildren
  return () if ($t->cget('-takefocus'));
  return $t->SUPER::FocusChildren;
 }
-                                        
+
 sub Populate
 {
  my ($t,$args) = @_;
@@ -150,11 +150,11 @@ sub Layout
  my $fcols  = $t->cget(-fixedcolumns);
  my $sb     = $t->cget(-scrollbars);
  my $H      = $t->Height;
- my $W      = $t->Width; 
- my $tadj   = $bw; 
- my $badj   = $bw; 
- my $ladj   = $bw; 
- my $radj   = $bw; 
+ my $W      = $t->Width;
+ my $tadj   = $bw;
+ my $badj   = $bw;
+ my $ladj   = $bw;
+ my $radj   = $bw;
  my @xs     = ($W,0,0,0);
  my @ys     = (0,$H,0,0);
  my $xsb;
@@ -211,9 +211,9 @@ sub Layout
  my $top  = $t->{Top}+$frows;
  my $left = $t->{Left}+$fcols;
 
- if ($why & 49)  
+ if ($why & 49)
   {
-   # Width and/or Height of element or 
+   # Width and/or Height of element or
    # number of rows and/or columns or
    # scrollbar presence has changed
    my $w = sizeN($t->cget('-columns'),$t->{Width})+$radj+$ladj;
@@ -244,14 +244,14 @@ sub Layout
              $s->UnmapWindow;
              if ($why & 1)
               {
-               my $w = $t->{Width}[$c]; 
+               my $w = $t->{Width}[$c];
                $s->ResizeWindow($w,$h);
               }
             }
           }
         }
       }
-     else 
+     else
       {
        my $hwm  = $left-$fcols;
        my $sh   = 0;
@@ -261,7 +261,7 @@ sub Layout
        for ($c = 0; $c <$cols; $c++)
         {
          my $s = $t->{Row}[$r][$c];
-         my $w = $t->{Width}[$c]; 
+         my $w = $t->{Width}[$c];
          if (($c < $left && $c >= $fcols) || ($x+$w > $W-$radj) )
           {
            if (defined $s)
@@ -288,8 +288,8 @@ sub Layout
            $x     += $w;
            if ($c >= $fcols)
             {
-             $hwm++;      
-             $sh    += $w 
+             $hwm++;
+             $sh    += $w
             }
           }
         }
@@ -308,7 +308,7 @@ sub Layout
    if (defined $xsb && $xs[2] > 0)
     {
      $xsb->MoveResizeWindow(@xs);
-     $cols -= $fcols; 
+     $cols -= $fcols;
      if ($cols > 0)
       {
        $xsb->set($t->{Left}/$cols,$t->{Right}/$cols);
@@ -378,7 +378,7 @@ sub LostSlave
   }
  else
   {
-   $t->BackTrace("Cannot find" . $s->PathName);
+   $t->BackTrace('Cannot find' . $s->PathName);
   }
  $t->QueueLayout(2);
 }
@@ -390,8 +390,8 @@ sub put
  $t->ManageGeometry($w);
  unless (defined $t->{Row}[$row])
   {
-   $t->{Row}[$row] = []; 
-   $t->{Height}[$row] = 0; 
+   $t->{Row}[$row] = [];
+   $t->{Height}[$row] = 0;
   }
  unless (defined $t->{Width}[$col])
   {

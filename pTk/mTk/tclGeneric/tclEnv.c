@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclEnv.c 1.54 97/10/27 17:47:52
+ * RCS: @(#) $Id: tclEnv.c,v 1.3 1999/02/02 23:01:59 stanton Exp $
  */
 
 #include "tclInt.h"
@@ -276,7 +276,6 @@ TclSetEnv(name, value)
 	(void) Tcl_SetVar2(eiPtr->interp, "env", (char *) name,
 		(char *) value, TCL_GLOBAL_ONLY);
     }
-
 }
 
 /*

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinChan.c 1.75 97/09/26 16:17:46
+ * RCS: @(#) $Id: tclWinChan.c,v 1.4 1999/01/04 19:25:05 rjohnson Exp $
  */
 
 #include "tclWinInt.h"
@@ -1167,6 +1167,9 @@ TclGetDefaultStdChannel(type)
     }
 
     channel = Tcl_MakeFileChannel(handle, mode);
+    if (channel == NULL) {
+	return NULL;
+    }
 
     /*
      * Set up the normal channel options for stdio handles.

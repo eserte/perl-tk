@@ -4,8 +4,8 @@ require Tk;
 use Exporter;
 
 
-use vars qw($VERSION @ISA @EXPORT_OK);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Xlib/Xlib.pm#5$
+use vars qw($VERSION @EXPORT_OK);
+$VERSION = '3.006'; # $Id: //depot/Tk8/Xlib/Xlib.pm#6$
 
 use base  qw(DynaLoader Exporter);
 @EXPORT_OK = qw(XDrawString XLoadFont XDrawRectangle);

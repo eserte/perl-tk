@@ -1,13 +1,13 @@
-package Tk::Mwm; 
+package Tk::Mwm;
 require Tk;
 require DynaLoader;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Mwm/Mwm.pm#6$
+use vars qw($VERSION);
+$VERSION = '3.008'; # $Id: //depot/Tk8/Mwm/Mwm.pm#8$
 
 use base  qw(DynaLoader);
 
-bootstrap Tk::Mwm $Tk::VERSION; 
+bootstrap Tk::Mwm $Tk::VERSION;
 
 package Tk;
 use Tk::Submethods ( 'mwm' => [qw(decorations ismwmrunning protocol transientfor)] );

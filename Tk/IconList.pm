@@ -25,7 +25,7 @@
 #
 #		      I C O N   L I S T
 #
-# This is a pseudo-widget that implements the icon list inside the 
+# This is a pseudo-widget that implements the icon list inside the
 # tkFDialog dialog box.
 #
 #----------------------------------------------------------------------
@@ -39,7 +39,7 @@ require Tk::Frame;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/IconList.pm#2$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/IconList.pm#3$
 
 use base 'Tk::Frame';
 
@@ -129,7 +129,7 @@ sub Populate {
     $canvas->Tk::bind('<Alt-KeyPress>', 'NoOp');
     $canvas->Tk::bind('<FocusIn>', sub { $w->FocusIn });
 
-    $w->ConfigSpecs(-browsecmd => 
+    $w->ConfigSpecs(-browsecmd =>
 		    ['CALLBACK', 'browseCommand', 'BrowseCommand', undef],
 		    -command =>
 		    ['CALLBACK', 'command', 'Command', undef],

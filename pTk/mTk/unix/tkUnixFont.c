@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixFont.c 1.16 97/10/23 12:47:53
+ * RCS: @(#) $Id: tkUnixFont.c,v 1.4 1998/11/25 01:48:54 stanton Exp $
  */
  
 #include "tkPort.h"
@@ -127,6 +127,35 @@ TkpGetNativeFont(tkwin, name)
     CONST char *name;		/* Platform-specific font name. */
 {
     XFontStruct *fontStructPtr;
+    CONST char *p;
+    int hasSpace, dashes, hasWild;
+
+    /*
+     * The behavior of X when given a name that isn't an XLFD is unspecified.
+     * For example, Exceed 6 returns a valid font for any random string. This
+     * is awkward since system names have higher priority than the other Tk
+     * font syntaxes.  So, we need to perform a quick sanity check on the
+     * name and fail if it looks suspicious.  We fail if the name:
+     *     - contains a space immediately before a dash
+     *	   - contains a space, but no '*' characters and fewer than 14 dashes
+     */
+
+    hasSpace = dashes = hasWild = 0;
+    for (p = name; *p != '\0'; p++) {
+	if (*p == ' ') {
+	    if (p[1] == '-') {
+		return NULL;
+	    }
+	    hasSpace = 1;
+	} else if (*p == '-') {
+	    dashes++;
+	} else if (*p == '*') {
+	    hasWild = 1;
+	}
+    }
+    if ((dashes < 14) && !hasWild && hasSpace) {
+	return NULL;
+    }
 
     fontStructPtr = XLoadQueryFont(Tk_Display(tkwin), name);
     if (fontStructPtr == NULL) {

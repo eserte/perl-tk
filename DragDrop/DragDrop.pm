@@ -3,14 +3,14 @@ require Tk::DragDrop::Common;
 require Tk::Toplevel;
 require Tk::Label;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.017'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#17$
+use vars qw($VERSION);
+$VERSION = '3.019'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#19$
 
 use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 
-# This is a little tricky, ISA says 'Toplevel' but we 
-# define a Tk_cmd to actually build a 'Label', then 
-# use wmRelease in Populate to make it a toplevel. 
+# This is a little tricky, ISA says 'Toplevel' but we
+# define a Tk_cmd to actually build a 'Label', then
+# use wmRelease in Populate to make it a toplevel.
 
 my $useWmRelease = 1; # ($^O ne 'MSWin32');
 
@@ -41,7 +41,7 @@ sub Populate
  if ($useWmRelease)
   {
    $token->wmRelease;
-   $token->saveunder(1);     
+   $token->saveunder(1);
    $token->ConfigSpecs(-text => ['SELF','text','Text',$parent->class]);
   }
  else
@@ -59,8 +59,8 @@ sub Populate
                      -predropcommand  => ['CALLBACK',undef,undef,undef],
                      -postdropcommand => ['CALLBACK',undef,undef,undef],
                      -cursor          => ['SELF','cursor','Cursor','hand2'],
-                     -handlers        => ['SETMETHOD','handlers','Handlers',[[[$token,'SendText']]]],  
-                     -selection       => ['SETMETHOD','selection','Selection',"dnd_" . $parent->toplevel->name],  
+                     -handlers        => ['SETMETHOD','handlers','Handlers',[[[$token,'SendText']]]],
+                     -selection       => ['SETMETHOD','selection','Selection','dnd_' . $parent->toplevel->name],
                      -event           => ['SETMETHOD','event','Event','<B1-Motion>']
                     );
  $token->{InstallHandlers} = 0;
@@ -130,7 +130,7 @@ sub Mapped
   {
    my $X = $e->X;
    my $Y = $e->Y;
-   $token->MoveToplevelWindow($X,$Y); 
+   $token->MoveToplevelWindow($X,$Y);
    $token->NewDrag;
    $token->FindSite($X,$Y);
   }
@@ -158,7 +158,7 @@ sub FindSite
   }
  else
   {
-   warn "No sitetypes";
+   warn 'No sitetypes';
   }
  return undef;
 }
@@ -226,7 +226,7 @@ sub Done
 sub HandleLoose
 {
  my ($w,$seln) = @_;
- return "";
+ return '';
 }
 
 sub Drop
@@ -238,24 +238,24 @@ sub Drop
  my $site  = $token->FindSite($e->X,$e->Y);
  if (defined $site)
   {
-   my $seln = $token->cget('-selection'); 
+   my $seln = $token->cget('-selection');
    unless ($token->Callback(-predropcommand => $seln, $site))
     {
-     my $w = $token->parent;  
+     my $w = $token->parent;
      if ($token->{InstallHandlers})
-      {                       
-       my $h;                 
+      {
+       my $h;
        foreach $h (@{$token->cget('-handlers')})
-        {                     
+        {
          $w->SelectionHandle('-selection' => $seln,@$h);
-        }                     
+        }
        $token->{InstallHandlers} = 0;
-      }                       
-     if (!$w->IS($w->SelectionOwner('-selection'=>$seln)))              
-      {                                                                 
+      }
+     if (!$w->IS($w->SelectionOwner('-selection'=>$seln)))
+      {
        $w->SelectionOwn('-selection' => $seln, -command => [\&HandleLoose,$w,$seln]);
-      }                                                                 
-     $site->Drop($w,$seln,$e); 
+      }
+     $site->Drop($w,$seln,$e);
      $token->Callback(-postdropcommand => $seln);
     }
   }
@@ -277,11 +277,11 @@ sub StartDrag
       {
        unless ($token->Callback('-startcommand'))
         {
-         delete $token->{'XY'};  
+         delete $token->{'XY'};
          $w->{'Dragging'} = $token;
          $token->MoveToplevelWindow($X,$Y);
-         $token->raise;          
-         $token->deiconify;      
+         $token->raise;
+         $token->deiconify;
          $token->FindSite($X,$Y);
         }
       }

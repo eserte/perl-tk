@@ -2,8 +2,8 @@ package Tk::Bitmap;
 require Tk;
 require Tk::Image;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Bitmap/Bitmap.pm#5$
+use vars qw($VERSION);
+$VERSION = '3.006'; # $Id: //depot/Tk8/Bitmap/Bitmap.pm#6$
 
 use base  qw(Tk::Image);
 

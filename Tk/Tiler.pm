@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 # An example of a geometry manager "widget" in perl
@@ -6,8 +6,8 @@ package Tk::Tiler;
 require Tk;
 require Tk::Frame;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Tiler.pm#7$
+use vars qw($VERSION);
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Tiler.pm#10$
 
 use base  qw(Tk::Frame);
 
@@ -61,8 +61,8 @@ sub Layout
  my $H = $m->Height;
  my $w = $m->{Sw} || 1;  # max width of slave
  my $h = $m->{Sh} || 1;  # max height of slave
- my $x = $bw; 
- my $y = $bw; 
+ my $x = $bw;
+ my $y = $bw;
  my $start = 0;
  # Set size and position of slaves
  my $rows = $m->{Rows} = ($H-2*$bw)/$h;
@@ -160,8 +160,8 @@ sub Manage
  my $s;
  foreach $s (@_)
   {
-   $m->ManageGeometry($s);      
-   push(@{$m->{Slaves}},$s);    
+   $m->ManageGeometry($s);
+   push(@{$m->{Slaves}},$s);
    $m->SlaveGeometryRequest($s);
   }
  $m->QueueLayout(2);
@@ -187,7 +187,7 @@ sub yview { my $w = shift; my $c = shift; $w->$c(@_) }
 sub FocusIn
 {
  my ($w) = @_;
- print "Focus ",$w->PathName,"\n";
+ print 'Focus ',$w->PathName,"\n";
 }
 
 sub ClassInit

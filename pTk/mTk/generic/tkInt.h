@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkInt.h 1.6 98/08/04 12:19:22
+ * RCS: $Id: tkInt.h,v 1.8 1998/09/30 19:01:20 rjohnson Exp $ 
  */
 
 #ifndef _TKINT
@@ -706,8 +706,6 @@ EXTERN char *		TkAlignImageData _ANSI_ARGS_((XImage *image,
 			    int alignment, int bitOrder));
 EXTERN TkWindow *	TkAllocWindow _ANSI_ARGS_((TkDisplay *dispPtr,
 			    int screenNum, TkWindow *parentPtr));
-MOVEXT int		TkAreaToPolygon _ANSI_ARGS_((double *polyPtr,
-			    int numPoints, double *rectPtr));
 MOVEXT void		TkBezierPoints _ANSI_ARGS_((double control[],
 			    int numSteps, double *coordPtr));
 MOVEXT void		TkBezierScreenPoints _ANSI_ARGS_((Tk_Canvas canvas,
@@ -737,9 +735,6 @@ EXTERN unsigned long	TkCreateBindingProcedure _ANSI_ARGS_((
 			    ClientData object, char *eventString,
 			    TkBindEvalProc *evalProc, TkBindFreeProc *freeProc,
 			    ClientData clientData));
-EXTERN Pixmap		TkCreateBitmapFromData _ANSI_ARGS_((Display* display,
-			    Drawable d, CONST char* data,
-			    unsigned int width, unsigned int height));
 EXTERN TkCursor *	TkCreateCursorFromData _ANSI_ARGS_((Tk_Window tkwin,
 			    char *source, char *mask, int width, int height,
 			    int xHot, int yHot, XColor fg, XColor bg));
@@ -762,8 +757,6 @@ EXTERN void		TkDoConfigureNotify _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN void		TkDrawInsetFocusHighlight _ANSI_ARGS_((
 			    Tk_Window tkwin, GC gc, int width,
 			    Drawable drawable, int padding));
-EXTERN void		TkEventCleanupProc _ANSI_ARGS_((
-			    ClientData clientData, Tcl_Interp *interp));
 EXTERN void		TkEventDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN void		TkFillPolygon _ANSI_ARGS_((Tk_Canvas canvas,
 			    double *coordPtr, int numPoints, Display *display,
@@ -806,9 +799,6 @@ EXTERN int		TkGetInterpNames _ANSI_ARGS_((Tcl_Interp *interp,
 MOVEXT int		TkGetMiterPoints _ANSI_ARGS_((double p1[], double p2[],
 			    double p3[], double width, double m1[],
 			    double m2[]));
-#ifndef TkGetNativeProlog
-EXTERN int		TkGetNativeProlog _ANSI_ARGS_((Tcl_Interp *interp));
-#endif
 EXTERN void		TkGetPointerCoords _ANSI_ARGS_((Tk_Window tkwin,
 			    int *xPtr, int *yPtr));
 EXTERN int		TkGetProlog _ANSI_ARGS_((Tcl_Interp *interp));
@@ -816,8 +806,6 @@ EXTERN void		TkGetServerInfo _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin));
 EXTERN void		TkGrabDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN int		TkGrabState _ANSI_ARGS_((TkWindow *winPtr));
-EXTERN TkWindow *      	TkIDToWindow _ANSI_ARGS_((Window window, 
-			    TkDisplay *display));
 MOVEXT void		TkIncludePoint _ANSI_ARGS_((Tk_Item *itemPtr,
 			    double *pointPtr));
 EXTERN void		TkInitXId _ANSI_ARGS_((TkDisplay *dispPtr));
@@ -835,12 +823,6 @@ MOVEXT int		TkLineToArea _ANSI_ARGS_((double end1Ptr[2],
 			    double end2Ptr[2], double rectPtr[4]));
 MOVEXT double		TkLineToPoint _ANSI_ARGS_((double end1Ptr[2],
 			    double end2Ptr[2], double pointPtr[2]));
-EXTERN int		TkListAppend _ANSI_ARGS_((void **headPtrPtr,
-			    void *itemPtr, size_t size));
-EXTERN int		TkListDelete _ANSI_ARGS_((void **headPtrPtr,
-			    void *itemPtr, size_t size));
-EXTERN void *		TkListFind _ANSI_ARGS_((void *headPtr, void *itemPtr,
-			    size_t size));
 MOVEXT int		TkMakeBezierCurve _ANSI_ARGS_((Tk_Canvas canvas,
 			    double *pointPtr, int numPoints, int numSteps,
 			    XPoint xPoints[], double dblPoints[]));
@@ -988,8 +970,6 @@ EXTERN void		TkWmRestackToplevel _ANSI_ARGS_((TkWindow *winPtr,
 			    int aboveBelow, TkWindow *otherPtr));
 EXTERN void		TkWmSetClass _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN void		TkWmUnmapWindow _ANSI_ARGS_((TkWindow *winPtr));
-EXTERN int		TkXFileProc _ANSI_ARGS_((ClientData clientData,
-			    int mask, int flags));
 
 /* 
  * Unsupported commands.

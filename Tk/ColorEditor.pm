@@ -1,24 +1,24 @@
 package Tk::ColorSelect;
-use strict;       
+use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#19$
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#24$
 
 use Tk qw(Ev);
 
 require Tk::Frame;
 
-use vars qw(@ISA); 
 use base  qw(Tk::Frame);
 Construct Tk::Widget 'ColorSelect';
 
 sub Populate
 {
-    my ($middle,$args) = @_; 
+    my ($middle,$args) = @_;
     my($i, @a);
-    foreach $i ('/usr/local/lib/X11/rgb.txt', '/usr/lib/X11/rgb.txt', 
+    foreach $i ('/usr/local/lib/X11/rgb.txt', '/usr/lib/X11/rgb.txt',
                 '/usr/local/X11R5/lib/X11/rgb.txt', '/X11/R5/lib/X11/rgb.txt',
                 '/X11/R4/lib/rgb/rgb.txt', '/usr/openwin/lib/X11/rgb.txt') {
+        local *FOO;
         next if ! open FOO, $i;
         my $middle_left = $middle->Frame;
         $middle_left->pack(
@@ -38,11 +38,11 @@ sub Populate
 
         my $scroll = $middle->Scrollbar(
             -orient      => 'vertical',
-            -command     => ["yview", $names],
+            -command     => ['yview', $names],
             -relief      => 'sunken',
             -borderwidth => 2,
         );
-        $names->configure(-yscrollcommand => ["set",$scroll]);
+        $names->configure(-yscrollcommand => ['set',$scroll]);
         $names->pack(-in => $middle_left, -side => 'left');
         $scroll->pack(-in => $middle_left, -side => 'right', -fill => 'y');
 
@@ -62,7 +62,7 @@ sub Populate
 		    die $@;
 		}
             }
-            if (!exists($Tk::ColorEditor::names{$hex}) || 
+            if (!exists($Tk::ColorEditor::names{$hex}) ||
                 length($Tk::ColorEditor::names{$hex}) > length($color)) {
                   $Tk::ColorEditor::names{$hex} = $color;
                 $names->insert('end', $color);
@@ -72,17 +72,17 @@ sub Populate
         last;
     }
 
-    # Create the three scales for editing the color, and the entry for typing 
+    # Create the three scales for editing the color, and the entry for typing
     # in a color value.
 
     my $middle_middle = $middle->Frame;
     $middle_middle->pack(-side => 'left', -expand => 1, -fill => 'y');
     my $mcm1 = $middle_middle->Optionmenu(-variable => \$middle->{'color_space'},
-                                  -command => [ $middle, 'color_space'], 
+                                  -command => [ $middle, 'color_space'],
                                   -relief  => 'raised',
                                   -options => [ ['HSB color space' => 'hsb'],
                                                 ['RGB color space' => 'rgb'],
-                                                ["CMY color space" => 'cmy']]);
+                                                ['CMY color space' => 'cmy']]);
     $mcm1->pack(-side => 'top', -fill => 'x');
 
     my(@middle_middle, @label, @scale);
@@ -94,7 +94,7 @@ sub Populate
     $middle_middle[1]->pack(-side => 'top', -expand => 1);
     $middle_middle[2]->pack(-side => 'top', -expand => 1);
     $middle_middle[3]->pack(-side => 'top', -expand => 1, -fill => 'x');
-    $middle->{'Labels'} = ["zero","one","two"];
+    $middle->{'Labels'} = ['zero','one','two'];
     foreach $i (0..2) {
         $label[$i] = $middle->Label(-textvariable => \$middle->{'Labels'}[$i]);
         $scale[$i] = $middle->Scale(
@@ -106,7 +106,7 @@ sub Populate
         );
         $scale[$i]->pack(
             -in     => $middle_middle[$i],
-            -side   => 'top', 
+            -side   => 'top',
             -anchor => 'w',
         );
         $label[$i]->pack(
@@ -115,20 +115,22 @@ sub Populate
             -anchor => 'w',
         );
     }
-    my $nameLabel = $middle->Label(-text => "Name:");
+    my $nameLabel = $middle->Label(-text => 'Name:');
+    $middle->{'Entry'} = '';
     my $name = $middle->Entry(
         -relief       => 'sunken',
         -borderwidth  => 2,
         -textvariable => \$middle->{'Entry'},
-        -width        => 10,
-        -font         => "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*"
-    );                   
+        -width        => 10,     
+# For some reason giving this font causes problems at end of t/create.t
+#       -font         => '-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*'  
+    );
 
     $nameLabel->pack(-in => $middle_middle[3], -side => 'left');
     $name->pack(
         -in     => $middle_middle[3],
-        -side   => 'right', 
-        -expand => 1, 
+        -side   => 'right',
+        -expand => 1,
         -fill   => 'x',
     );
     $name->bind('<Return>' => [ $middle, 'color', Ev(['get'])]);
@@ -149,29 +151,28 @@ sub Populate
     my $swatch_item = $swatch->create('oval', '.5c', '.3c', '2.26c', '4.76c');
 
     my $value = $middle->Label(
-        -textvariable => \$middle->{'color'}, 
+        -textvariable => \$middle->{'color'},
         -width        => 13,
-        -font         => "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*"
-    );                   
+        -font         => '-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*'
+    );
 
     $swatch->pack(
         -in     => $middle_right,
-        -side   => 'top', 
-        -expand => 1, 
+        -side   => 'top',
+        -expand => 1,
         -fill   => 'both',
     );
-    $value->pack(-in => $middle_right, -side => 'bottom', -pady => '.25c');   
+    $value->pack(-in => $middle_right, -side => 'bottom', -pady => '.25c');
 
     $middle->ConfigSpecs(
         '-color_space'  => ['METHOD', undef, undef, 'hsb'],
         '-initialcolor' => '-color',
-        '-color'        => ['METHOD', 'background', 'Background', 
+        '-color'        => ['METHOD', 'background', 'Background',
                                $middle->cget('-background')]
     );
 
     $middle->{'swatch'} = $swatch;
     $middle->{'swatch_item'} = $swatch_item;
-    $middle->{'Entry'} = '';
     $middle->{'scale'} = [@scale];
     $middle->{'red'} = 0;
     $middle->{'blue'} = 0;
@@ -183,7 +184,7 @@ sub Hex
 {
  my $w = shift;
  my @rgb = (@_ == 3) ? @_ : $w->rgb(@_);
- sprintf("#%04x%04x%04x",@rgb)
+ sprintf('#%04x%04x%04x',@rgb)
 }
 
 sub color_space {
@@ -195,21 +196,21 @@ sub color_space {
       my %Labels = ( 'rgb' => [qw(Red Green Blue)],
                      'cmy' => [qw(Cyan Magenta Yellow)],
                      'hsb' => [qw(Hue Saturation Brightness)] );
-                          
+
       # The procedure below is invoked when a new color space is selected. It
-      # changes the labels on the scales and re-loads the scales with the 
+      # changes the labels on the scales and re-loads the scales with the
       # appropriate values for the current color in the new color space
-                          
+
       $space = 'hsb' unless (exists $Labels{$space});
       my $i;
-      for $i (0..2)       
-       {                  
+      for $i (0..2)
+       {
         $objref->{'Labels'}[$i] = $Labels{$space}->[$i];
-       }                  
+       }
       $objref->{'color_space'} = $space;
       $objref->DoWhenIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
      }
- return $objref->{'color_space'}; 
+ return $objref->{'color_space'};
 } # color_space
 
 sub hsvToRgb {
@@ -253,18 +254,18 @@ sub color
    my ($format, $shift);
    my ($red, $green, $blue);
 
-   if ($name !~ /^#/) 
+   if ($name !~ /^#/)
     {
      ($red, $green, $blue) = $objref->{'swatch'}->rgb($name);
-    } 
-   else 
+    }
+   else
     {
        my $len = length $name;
-       if($len == 4) { $format = "#(.)(.)(.)"; $shift = 12; }
-         elsif($len == 7) { $format = "#(..)(..)(..)"; $shift = 8; }
-           elsif($len == 10) { $format = "#(...)(...)(...)"; $shift = 4; }
-             elsif($len == 13) { $format = "#(....)(....)(....)"; $shift = 0; }
-       else { 
+       if($len == 4) { $format = '#(.)(.)(.)'; $shift = 12; }
+         elsif($len == 7) { $format = '#(..)(..)(..)'; $shift = 8; }
+           elsif($len == 10) { $format = '#(...)(...)(...)'; $shift = 4; }
+             elsif($len == 13) { $format = '#(....)(....)(....)'; $shift = 0; }
+       else {
 	 $objref->BackTrace(
 	   "ColorEditor error:  syntax error in color name \"$name\"");
 	 return;
@@ -279,7 +280,7 @@ sub color
    $objref->{'red'} = $red;
    $objref->{'blue'} = $blue;
    $objref->{'green'} = $green;
-   my $hex = sprintf("#%04x%04x%04x", $red, $green, $blue);
+   my $hex = sprintf('#%04x%04x%04x', $red, $green, $blue);
    $objref->{'color'} = $hex;
    $objref->{'Entry'} = $name;
    $objref->DoWhenIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
@@ -327,7 +328,7 @@ sub rgbToHsv {
 sub scale_changed {
 
     # The procedure below is invoked when one of the scales is adjusted.  It
-    # propagates color information from the current scale readings to 
+    # propagates color information from the current scale readings to
     # everywhere else that it is used.
 
     my($objref) = @_;
@@ -351,7 +352,7 @@ sub scale_changed {
     $objref->{'red'} = $red;
     $objref->{'blue'} = $blue;
     $objref->{'green'} = $green;
-    $objref->color(sprintf("#%04x%04x%04x", $red, $green, $blue));
+    $objref->color(sprintf('#%04x%04x%04x', $red, $green, $blue));
     $objref->idletasks;
 
 } # end scale_changed
@@ -389,8 +390,7 @@ sub set_scales {
 
 package Tk::ColorDialog;
 require Tk::Toplevel;
-use vars qw(@ISA);
-use base  qw(Tk::Toplevel); 
+use base  qw(Tk::Toplevel);
 
 Construct Tk::Widget 'ColorDialog';
 
@@ -411,7 +411,7 @@ sub Cancel
 
 sub Populate
 {
- my ($cw,$args) = @_;       
+ my ($cw,$args) = @_;
  $cw->SUPER::Populate($args);
  $cw->protocol('WM_DELETE_WINDOW' => [ 'Cancel' => $cw ]);
  $cw->transient($cw->Parent->toplevel);
@@ -425,10 +425,10 @@ sub Populate
 }
 
 sub Show
-{           
+{
  my $cw = shift;
  $cw->configure(@_) if @_;
- $cw->Popup(); 
+ $cw->Popup();
  $cw->waitVisibility;
  $cw->waitVariable(\$cw->{'done'});
  $cw->withdraw;
@@ -437,8 +437,8 @@ sub Show
 
 package Tk::ColorEditor;
 
-use vars qw($VERSION $SET_PALETTE @ISA);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#19$
+use vars qw($VERSION $SET_PALETTE);
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#24$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
@@ -447,7 +447,7 @@ Construct Tk::Widget 'ColorEditor';
 
 %Tk::ColorEditor::names = ();
 
- 
+
 use Tk::Dialog;
 use Tk::Pretty;
 
@@ -463,11 +463,11 @@ sub add_menu_item
  my $value;
  foreach $value (@_)
   {
-   if ($value eq 'SEP') 
+   if ($value eq 'SEP')
     {
      $objref->{'mcm2'}->separator;
-    } 
-   else 
+    }
+   else
     {
      $objref->{'mcm2'}->command( -label => $value,
            -command => [ 'configure', $objref, '-highlight' => $value ] );
@@ -512,7 +512,7 @@ sub delete_menu_item
  my $value;
  foreach $value (@_)
   {
-   $objref->{'mcm2'}->delete($value);                                      
+   $objref->{'mcm2'}->delete($value);
    my $list_ord = $value =~ /\d+/ ? $value : lsearch($objref->{'highlight_list'}, $value);
    splice(@{$objref->{'highlight_list'}}, $list_ord, 1) if $list_ord != -1;
   }
@@ -527,7 +527,7 @@ sub configure {
     my($option, $value);
     while (($option, $value) = splice(@hook_list, 0, 2)) {
 	$objref->SUPER::configure($option => $value);
-    } # whilend all options/values          
+    } # whilend all options/values
 
 } # end configure
 
@@ -554,12 +554,12 @@ sub delete_widgets {
 
 } # end delete_widgets
 
-sub ApplyDefault 
+sub ApplyDefault
 {
  my($objref) = @_;
  my $cb = $objref->cget('-command');
  my $h;
- foreach $h (@{$objref->{'highlight_list'}}) 
+ foreach $h (@{$objref->{'highlight_list'}})
   {
    next if $h =~ /TEAR_SEP|SEP/;
    $cb->Call($h);
@@ -583,7 +583,7 @@ sub Populate
         foreground background SEP
         activeForeground activeBackground SEP
         highlightColor highlightBackground SEP
-        selectForeground selectBackground SEP 
+        selectForeground selectBackground SEP
         disabledForeground insertBackground selectColor troughColor
     );
 
@@ -591,11 +591,11 @@ sub Populate
 
     my $usage = $cw->Dialog( '-title' => 'ColorEditor Usage',
         -justify    => 'left',
-        -wraplength => '6i',				   
+        -wraplength => '6i',
         -text       => "The Colors menu allows you to:\n\nSelect a color attribute such as \"background\" that you wish to colorize.  Click on \"Apply\" to update that single color attribute.\n\nSelect one of three color spaces.  All color spaces display a color value as a hexadecimal number under the oval color swatch that can be directly supplied on widget commands.\n\nApply Tk's default color scheme to the application.  Useful if you've made a mess of things and want to start over!\n\nChange the application's color palette.  Make sure \"background\" is selected as the color attribute, find a pleasing background color to apply to all current and future application widgets, then select \"Set Palette\".",
     );
 
-    # Create the menu bar at the top of the window for the File, Colors 
+    # Create the menu bar at the top of the window for the File, Colors
     # and Help menubuttons.
 
     my $m0 = $cw->Frame(-relief => 'raised', -borderwidth => 2);
@@ -609,8 +609,8 @@ sub Populate
     $mf->pack(-side => 'left');
     my $close_command = [sub {shift->withdraw}, $cw];
     $mf->command(
-        -label       => 'Close', 
-        -underline   => 0, 
+        -label       => 'Close',
+        -underline   => 0,
         -command     => $close_command,
         -accelerator => 'Ctrl-w',
     );
@@ -629,15 +629,15 @@ sub Populate
     $mc->separator;
 
     $mc->command(
-        -label     => 'Apply Default Colors', 
+        -label     => 'Apply Default Colors',
         -underline => 6,
         -command   => ['ApplyDefault',$cw]
     );
     $mc->separator;
     $mc->command(
-        -label     => $SET_PALETTE, 
+        -label     => $SET_PALETTE,
         -underline => 0,
-        -command   => sub { $cw->setPalette($cw->cget('-color'))} 
+        -command   => sub { $cw->setPalette($cw->cget('-color'))}
     );
 
     my $m1 = $mc->cget(-menu);
@@ -652,8 +652,8 @@ sub Populate
     );
     $mh->pack(-side => 'right');
     $mh->command(
-        -label       => 'Usage', 
-        -underline   => 0, 
+        -label       => 'Usage',
+        -underline   => 0,
         -command     => [sub {shift->Show}, $usage],
     );
 
@@ -671,7 +671,7 @@ sub Populate
     );
     $update->pack(-pady => 1, -padx => '0.25c');
 
-    # Create the listbox that holds all of the color names in rgb.txt, if an 
+    # Create the listbox that holds all of the color names in rgb.txt, if an
     # rgb.txt file can be found.
 
     my $middle = $cw->ColorSelect(-relief => 'raised', -borderwidth => 2);
@@ -687,7 +687,7 @@ sub Populate
     $cw->{'highlight_list'} = [@highlight_list];
     $cw->{'mcm2'} = $mcm2;
 
-    foreach (@highlight_list) 
+    foreach (@highlight_list)
      {
       next if /^TEAR_SEP$/;
       $cw->add_menu_item($_);
@@ -701,12 +701,12 @@ sub Populate
     $cw->{'gwt_depth'} = 0;
     $cw->{'palette'} = $mc;
 
-    my $pixmap = $cw->Pixmap('-file' => Tk->findINC("ColorEdit.xpm"));
+    my $pixmap = $cw->Pixmap('-file' => Tk->findINC('ColorEdit.xpm'));
     $cw->Icon(-image => $pixmap);
 
-    $cw->ConfigSpecs(   
+    $cw->ConfigSpecs(
         DEFAULT         => [$middle],
-        -widgets        => ['PASSIVE', undef, undef, 
+        -widgets        => ['PASSIVE', undef, undef,
                                [$cw->parent->Descendants]],
         -display_status => ['PASSIVE', undef, undef, 0],
         '-title'        => ['METHOD', undef, undef, ''],
@@ -745,10 +745,10 @@ sub set_colors {
     foreach $widget (@{$objref->cget('-widgets')}) {
         if ($display) {
             $objref->{'Status_l'}->configure(
-                -text => "WIDGET:  " . $widget->PathName
+                -text => 'WIDGET:  ' . $widget->PathName
             );
             $objref->update;
-        } 
+        }
         eval {local $SIG{'__DIE__'}; $color = ($widget->configure("-\L${type}"))[3]} if $reset;
         eval {local $SIG{'__DIE__'}; $widget->configure("-\L${type}" => $color)};
     }
@@ -761,7 +761,7 @@ sub set_colors {
 
 1;
 
-__END__ 
+__END__
 
-=cut 
+=cut
 

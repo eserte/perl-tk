@@ -1,12 +1,12 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/Font.pm#17$
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Font.pm#20$
 require Tk::Widget;
 use strict;
 use Data::Dumper;
 use Carp;
-use overload '""' => 'as_string'; 
-sub as_string { return ${$_[0]} }       
+use overload '""' => 'as_string';
+sub as_string { return ${$_[0]} }
 
 *MainWindow = \&Tk::Widget::MainWindow;
 
@@ -24,15 +24,15 @@ my @tkfield = qw(family size weight slant underline overstrike);
 my %tkfield = map { $_ => "-$_" } @tkfield;
 
 sub _xonly { my $old = '*'; return $old }
-                 
-sub Pixel 
+
+sub Pixel
 {
  my $me  = shift;
  my $old = $me->configure('-size');
  $old = '*' if ($old > 0);
  if (@_)
-  {                          
-   $me->configure(-size => -$_[0]); 
+  {
+   $me->configure(-size => -$_[0]);
   }
  return $old;
 }
@@ -43,8 +43,8 @@ sub Point
  my $old = 10*$me->configure('-size');
  $old = '*' if ($old < 0);
  if (@_)
-  {                          
-   $me->configure(-size => int($_[0]/10)); 
+  {
+   $me->configure(-size => int($_[0]/10));
   }
  return $old;
 }
@@ -52,7 +52,7 @@ sub Point
 foreach my $f (@tkfield,@xfield)
  {
   no strict 'refs';
-  my $sub = "\u$f";  
+  my $sub = "\u$f";
   unless (defined &{$sub})
    {
     my $key = $tkfield{$f};
@@ -64,7 +64,7 @@ foreach my $f (@tkfield,@xfield)
      {
       *{$sub} = \&_xonly;
      }
-   }   
+   }
  }
 
 sub new
@@ -77,8 +77,8 @@ sub new
    $me = $w->Tk::font('create',@_);
   }
  else
-  {       
-   croak "Odd number of args" if @_ & 1;
+  {
+   croak 'Odd number of args' if @_ & 1;
    my %attr;
    while (@_)
     {
@@ -88,7 +88,7 @@ sub new
      if (defined $t)
       {
        $attr{$t} = $v;
-      }  
+      }
      elsif ($k eq 'point')
       {
        $attr{'-size'} = -int($v/10+0.5);
@@ -99,7 +99,7 @@ sub new
       }
      else
       {
-       carp "$k ignored" if $^W; 
+       carp "$k ignored" if $^W;
       }
     }
    $me = $w->Tk::font('create',%attr);
@@ -110,10 +110,10 @@ sub new
 
 sub Pattern
 {
- my $me  = shift;              
+ my $me  = shift;
  my @str;
  foreach my $f (@xfield)
-  {    
+  {
    my $meth = "\u$f";
    my $str  = $me->$meth();
    if ($f eq 'family')
@@ -132,7 +132,7 @@ sub Pattern
     }
    push(@str,$str);
   }
- return join("-", "", @str);
+ return join('-', '', @str);
 }
 
 sub Name

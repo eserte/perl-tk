@@ -1,8 +1,8 @@
 package Tk::install;
 require Exporter;
 
-use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/install.pm#5$
+use vars qw($VERSION @EXPORT);
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/install.pm#9$
 
 use base  qw(Exporter);
 @EXPORT = qw(installbin);
@@ -23,7 +23,7 @@ sub installbin
    chmod(0755,$dst) if (-f $dst);
    open(DST,">$dst") || die "Cannot open $dst:$!";
    print "installbin $src => $dst\n";
-   do 
+   do
     {
      print DST $line;
     } while (defined($line = <SRC>));

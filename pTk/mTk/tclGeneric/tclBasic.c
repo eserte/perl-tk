@@ -7,12 +7,12 @@
  *
  * Copyright (c) 1987-1994 The Regents of the University of California.
  * Copyright (c) 1994-1997 Sun Microsystems, Inc.
- * Copyright (c) 1998 by Scriptics Corporation.
+ * Copyright (c) 1998-1999 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclBasic.c 1.12 98/08/10 17:21:31
+ * RCS: @(#) $Id: tclBasic.c,v 1.15 1999/02/03 00:55:04 stanton Exp $
  */
 
 #include "tclInt.h"
@@ -188,7 +188,7 @@ static CmdInfo builtInCmds[] = {
         (CompileProc *) NULL,		1},
     {"glob",		Tcl_GlobCmd,		(Tcl_ObjCmdProc *) NULL,
         (CompileProc *) NULL,		0},
-    {"open",		Tcl_OpenCmd,		(Tcl_ObjCmdProc *) NULL,
+    {"open",		(Tcl_CmdProc *) NULL,	Tcl_OpenObjCmd,
         (CompileProc *) NULL,		0},
     {"pid",		(Tcl_CmdProc *) NULL,	Tcl_PidObjCmd,
         (CompileProc *) NULL,		1},
@@ -1421,7 +1421,7 @@ Tcl_CreateCommand(interp, cmdName, proc, clientData, deleteProc)
     Command *cmdPtr, *refCmdPtr;
     Tcl_HashEntry *hPtr;
     char *tail;
-    int new, result;
+    int new;
     ImportedCmdData *dataPtr;
 
     if (iPtr->flags & DELETED) {
@@ -1440,10 +1440,9 @@ Tcl_CreateCommand(interp, cmdName, proc, clientData, deleteProc)
      */
 
     if (strstr(cmdName, "::") != NULL) {
-	result = TclGetNamespaceForQualName(interp, cmdName, 
-                (Namespace *) NULL, CREATE_NS_IF_UNKNOWN, &nsPtr, 
-                &dummy1, &dummy2, &tail);
-	if ((result != TCL_OK) || (nsPtr == NULL) || (tail == NULL)) {
+       TclGetNamespaceForQualName(interp, cmdName, (Namespace *) NULL,
+           CREATE_NS_IF_UNKNOWN, &nsPtr, &dummy1, &dummy2, &tail);
+       if ((nsPtr == NULL) || (tail == NULL)) {
 	    return (Tcl_Command) NULL;
 	}
     } else {
@@ -1568,7 +1567,7 @@ Tcl_CreateObjCommand(interp, cmdName, proc, clientData, deleteProc)
     Command *cmdPtr, *refCmdPtr;
     Tcl_HashEntry *hPtr;
     char *tail;
-    int new, result;
+    int new;
     ImportedCmdData *dataPtr;
 
     if (iPtr->flags & DELETED) {
@@ -1587,10 +1586,9 @@ Tcl_CreateObjCommand(interp, cmdName, proc, clientData, deleteProc)
      */
 
     if (strstr(cmdName, "::") != NULL) {
-	result = TclGetNamespaceForQualName(interp, cmdName, 
-                (Namespace *) NULL, CREATE_NS_IF_UNKNOWN, &nsPtr, 
-                &dummy1, &dummy2, &tail);
-	if ((result != TCL_OK) || (nsPtr == NULL) || (tail == NULL)) {
+       TclGetNamespaceForQualName(interp, cmdName, (Namespace *) NULL,
+           CREATE_NS_IF_UNKNOWN, &nsPtr, &dummy1, &dummy2, &tail);
+       if ((nsPtr == NULL) || (tail == NULL)) {
 	    return (Tcl_Command) NULL;
 	}
     } else {
@@ -1921,12 +1919,9 @@ TclRenameCommand(interp, oldName, newName)
      * Tcl_CreateCommand would.
      */
 
-    result = TclGetNamespaceForQualName(interp, newName, (Namespace *) NULL,
-            (CREATE_NS_IF_UNKNOWN | TCL_LEAVE_ERR_MSG),
-            &newNsPtr, &dummy1, &dummy2, &newTail);
-    if (result != TCL_OK) {
-        return result;
-    }
+    TclGetNamespaceForQualName(interp, newName, (Namespace *) NULL,
+       CREATE_NS_IF_UNKNOWN, &newNsPtr, &dummy1, &dummy2, &newTail);
+
     if ((newNsPtr == NULL) || (newTail == NULL)) {
 	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
 		 "can't rename to \"", newName, "\": bad command name",

@@ -1,7 +1,7 @@
 package Tk::Animation;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Animation.pm#12$
+use vars qw($VERSION);
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Animation.pm#14$
 
 use Tk::Photo;
 use base  qw(Tk::Photo);
@@ -44,7 +44,7 @@ sub new
      $obj->{'_frame_index_'}  = 0;
     }
   }
- return $obj; 
+ return $obj;
 }
 
 sub set_image
@@ -102,8 +102,8 @@ sub gif_sequence
    my $index = @images;
    $args{'-format'} = "gif -index $index";
    my $img;
-   eval 
-    {local $SIG{'__DIE__'};  
+   eval
+    {local $SIG{'__DIE__'};
      my $img = $widget->Photo(%args);
      push(@images,$img);
     };

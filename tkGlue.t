@@ -59,4 +59,8 @@ VFUNC(Lang_CmdInfo *,WindowCommand,V_WindowCommand,_ANSI_ARGS_((SV *win,HV **hpt
 VFUNC(int,XSTkCommand,V_XSTkCommand,_ANSI_ARGS_((CV *cv, Tcl_CmdProc *proc, int items, SV **args)))
 #endif
 
+#ifndef install_vtab
+VFUNC(void,install_vtab,V_install_vtab,_ANSI_ARGS_((char *name, void *table, size_t size)))
+#endif
+
 #endif /* _TKGLUE */

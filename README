@@ -7,24 +7,26 @@ of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
 for details of this license.
 
-This a re-port of a perl interface to Tk8.0.3 (Scriptics's production release). 
+This a re-port of a perl interface to Tk8.0.5 (Scriptics's production release). 
 
 It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.006 release.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
 
-This version also contains re-worked Image code based on tcl/tk Img extension 
-by Jan Nijtmans <nijtmans@worldaccess.nl>
+This version also contains re-worked Image code based on tcl/tk Img extension
+(version img1.2b2) by Jan Nijtmans, CMG Arnhem B.V.:
+email: Jan.Nijtmans@wxs.nl (private)
+       Jan.Nijtmans@cmg.nl (work)
+url:   http://home.wxs.nl/~nijtmans/
 
-This version (Tk800.013) requires perl5.005 or later on Win32 
+This version (Tk800.014) requires perl5.005 or later on Win32 
 and 5.004_04 or later on UNIX.
 
-Tk800.013 should build and run on Windows NT using Visual C++, Borland, 
+Tk800.014 should build and run on Windows NT using Visual C++, Borland, 
 or with the Mingw32 port of GCC with perl5.005 or later.
 Can be built using ActiveState's binrary distribution 
 (see README-ActiveState.txt).
 
-The Mingw32 builds are a little buggy. In particular "native" getOpenFile
-dialog seems to crash. I suspect Mingw32's <windows.h> include files.
+The Mingw32 builds are stable now.
 
 I have not tried a Borland build recently.
 
@@ -33,18 +35,9 @@ in tk8.0 while retaining as much of the perl-level API as it exists in Tk40?.*
 as possible.
 
 Author has built against:
-  Perl5.00502 
-   SPARC Solaris2.6 and 2.5.1, gcc-2.8.1
+  Perl5.00503
+   SPARC Solaris2.6, gcc-2.8.1
+  Perl5.00503
    NT4.0 SP3, Mingw32/EGCS 1.1.1
-   RedHat Linux 5.1 (x86), cc (i.e. gcc-2.7.?)
 
-  Perl5.00404
-   SPARC Solaris2.6 and 2.5.1, gcc-2.8.1
-   
-  Perl5.00556
-   SPARC Solaris2.6 and 2.5.1, gcc-2.8.1
-   RedHat Linux 5.1 (x86), cc (i.e. gcc-2.7.?)
-   
-  ActivePerl 509e
-   NT4.0 SP3, VC++ 6.0 Prof. Ed.
 

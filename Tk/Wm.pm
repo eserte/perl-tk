@@ -14,11 +14,11 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/Wm.pm#17$
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Wm.pm#18$
 
 use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 
-Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command 
+Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
                        deiconify focusmodel frame geometry group
                        iconbitmap iconify iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
@@ -36,7 +36,7 @@ sub Populate
  my ($cw,$args) = @_;
  $cw->ConfigSpecs('-overanchor' => ['PASSIVE',undef,undef,undef],
                   '-popanchor'  => ['PASSIVE',undef,undef,undef],
-                  '-popover'    => ['PASSIVE',undef,undef,undef] 
+                  '-popover'    => ['PASSIVE',undef,undef,undef]
                  );
 }
 
@@ -93,9 +93,9 @@ sub Popup
     }
    else
     {
-     $rx = $base->rootx; 
-     $ry = $base->rooty; 
-     $rw = $base->Width; 
+     $rx = $base->rootx;
+     $ry = $base->rooty;
+     $rw = $base->Width;
      $rh = $base->Height;
     }
   }
@@ -138,7 +138,7 @@ sub iconposition
  my $w = shift;
  if (@_ == 1)
   {
-   return $w->wm('iconposition',$1,$2) if $_[0] =~ /^(\d+),(\d+)$/; 
+   return $w->wm('iconposition',$1,$2) if $_[0] =~ /^(\d+),(\d+)$/;
    if ($_[0] =~ /^([+-])(\d+)([+-])(\d+)$/)
     {
      my $x = ($1 eq '-') ? $w->screenwidth-$2 : $2;

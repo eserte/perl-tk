@@ -2,7 +2,7 @@ package Tk::DragDrop::SunDrop;
 require  Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#7$
 
 use base  qw(Tk::DragDrop::Rect);
 use strict;
@@ -10,7 +10,7 @@ use Tk::DragDrop::SunConst;
 
 Tk::DragDrop->Type('Sun');
 
-BEGIN 
+BEGIN
  {
   my @fields = qw(name win X Y width height flags);
   my $i = 0;
@@ -25,7 +25,7 @@ BEGIN
 sub Preview
 {
  my ($site,$token,$e,$kind,$flags) = (@_);
- $token->BackTrace("No flags") unless defined $flags;
+ $token->BackTrace('No flags') unless defined $flags;
  my $sflags = $site->flags;
  return if ($kind == _motion && !($sflags & MOTION));
  return if ($kind != _motion && !($sflags & ENTERLEAVE));
@@ -33,21 +33,21 @@ sub Preview
  $token->SendClientMessage('_SUN_DRAGDROP_PREVIEW',$site->win,32,$data);
 }
 
-sub Enter  
+sub Enter
 {
  my ($site,$token,$e) = @_;
  $site->SUPER::Enter($token,$e);
  $site->Preview($token,$e,_enter,0);
 }
 
-sub Leave  
+sub Leave
 {
  my ($site,$token,$e) = @_;
  $site->SUPER::Leave($token,$e);
  $site->Preview($token,$e,_leave,0);
 }
 
-sub Motion 
+sub Motion
 {
  my ($site,$token,$e) = @_;
  $site->SUPER::Motion($token,$e);
@@ -58,13 +58,13 @@ sub HandleDone
 {
  my ($w,$seln,$offset,$max) = @_;
  $w->SelectionClear('-selection',$seln);
- return "";
+ return '';
 }
 
 sub HandleAck
 {
  my ($w,$seln,$offset,$max) = @_;
- return "";
+ return '';
 }
 
 sub Drop
@@ -73,8 +73,8 @@ sub Drop
  $site->SUPER::Drop($w,$seln,$e);
  $w->SelectionHandle('-selection'=>$seln,'-type'=>'_SUN_DRAGDROP_ACK',[\&HandleAck,$w,$seln]);
  $w->SelectionHandle('-selection'=>$seln,'-type'=>'_SUN_DRAGDROP_DONE',[\&HandleDone,$w,$seln]);
- my $atom  = $w->InternAtom($seln);                                 
- my $flags = ACK_FLAG | TRANSIENT_FLAG;                           
+ my $atom  = $w->InternAtom($seln);
+ my $flags = ACK_FLAG | TRANSIENT_FLAG;
  my $data  = pack('LLSSLL',$atom,$e->t,$e->X,$e->Y,$site->name,$flags);
  $w->SendClientMessage('_SUN_DRAGDROP_TRIGGER',$site->win,32,$data);
 }
@@ -86,20 +86,20 @@ sub CheckSites
 {
  my ($class,$token) = @_;
  delete $token->{'SunDD'} unless $busy;
-}       
+}
 
 sub SiteList
 {
  my ($class,$token) = @_;
  unless ($busy || exists $token->{'SunDD'})
   {
-   Carp::confess("Already doing it!") if ($busy++);
+   Carp::confess('Already doing it!') if ($busy++);
    my @data  = ();
-   my @sites = ();      
-   my $mw = $token->MainWindow;       
-   $token->{'SunDD'} = \@sites; 
+   my @sites = ();
+   my $mw = $token->MainWindow;
+   $token->{'SunDD'} = \@sites;
    eval {local $SIG{__DIE__}; };
-   @data = $mw->SelectionGet( '-selection'=>"_SUN_DRAGDROP_DSDM",  "_SUN_DRAGDROP_SITE_RECTS");
+   @data = $mw->SelectionGet( '-selection'=>'_SUN_DRAGDROP_DSDM',  '_SUN_DRAGDROP_SITE_RECTS');
    if ($@)
     {
      $token->configure('-cursor'=>'hand2');
@@ -110,11 +110,11 @@ sub SiteList
      while (@data)
       {
        my $version = shift(@data);
-       if ($version != 0)          
-        {                          
+       if ($version != 0)
+        {
          warn "Unexpected site version $version";
          last;
-        }                          
+        }
        push(@sites,bless [splice(@data,0,7)],$class);
       }
     }

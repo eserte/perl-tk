@@ -2,16 +2,16 @@ package Tk::DragDrop::SunConst;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#13$
 
 use base  qw(Exporter);
 
-@EXPORT = qw(_enter _leave _motion 
+@EXPORT = qw(_enter _leave _motion
              ENTERLEAVE MOTION DEFAULT_SITE
              MOVE_FLAG ACK_FLAG TRANSIENT_FLAG FORWARDED_FLAG
             );
 
-# Event types 
+# Event types
 sub _enter  () {7};
 sub _leave  () {8};
 sub _motion () {6};
@@ -30,5 +30,5 @@ sub FORWARDED_FLAG () {1<<3}
 
 1;
 
-__END__ 
+__END__
 

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvLine.c 1.46 97/04/25 16:51:02
+ * RCS: @(#) $Id: tkCanvLine.c,v 1.3 1999/02/04 20:51:23 stanton Exp $
  */
 
 #include "tkPort.h"
@@ -813,7 +813,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
     double *coordPtr, *linePoints;
     double staticSpace[2*MAX_STATIC_POINTS];
     double poly[10];
-    double bestDist, dist;
+    double bestDist, dist, width;
     int numPoints, count;
     int changedMiterToBevel;	/* Non-zero means that a mitered corner
 				 * had to be treated as beveled after all
@@ -842,6 +842,11 @@ LineToPoint(canvas, itemPtr, pointPtr)
 	linePoints = linePtr->coordPtr;
     }
 
+    width = (double) linePtr->width;
+    if (width < 1.0) {
+	width = 1.0;
+    }
+
     /*
      * The overall idea is to iterate through all of the edges of
      * the line, computing a polygon for each edge and testing the
@@ -862,7 +867,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
 		|| ((linePtr->joinStyle == JoinRound)
 			&& (count != numPoints))) {
 	    dist = hypot(coordPtr[0] - pointPtr[0], coordPtr[1] - pointPtr[1])
-		    - linePtr->width/2.0;
+		    - width/2.0;
 	    if (dist <= 0.0) {
 		bestDist = 0.0;
 		goto done;
@@ -878,7 +883,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
 	 */
 
 	if (count == numPoints) {
-	    TkGetButtPoints(coordPtr+2, coordPtr, (double) linePtr->width,
+	    TkGetButtPoints(coordPtr+2, coordPtr, width,
 		    linePtr->capStyle == CapProjecting, poly, poly+2);
 	} else if ((linePtr->joinStyle == JoinMiter) && !changedMiterToBevel) {
 	    poly[0] = poly[6];
@@ -886,7 +891,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
 	    poly[2] = poly[4];
 	    poly[3] = poly[5];
 	} else {
-	    TkGetButtPoints(coordPtr+2, coordPtr, (double) linePtr->width, 0,
+	    TkGetButtPoints(coordPtr+2, coordPtr, width, 0,
 		    poly, poly+2);
 
 	    /*
@@ -910,17 +915,17 @@ LineToPoint(canvas, itemPtr, pointPtr)
 	    }
 	}
 	if (count == 2) {
-	    TkGetButtPoints(coordPtr, coordPtr+2, (double) linePtr->width,
+	    TkGetButtPoints(coordPtr, coordPtr+2, width,
 		    linePtr->capStyle == CapProjecting, poly+4, poly+6);
 	} else if (linePtr->joinStyle == JoinMiter) {
 	    if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
-		    (double) linePtr->width, poly+4, poly+6) == 0) {
+		    width, poly+4, poly+6) == 0) {
 		changedMiterToBevel = 1;
-		TkGetButtPoints(coordPtr, coordPtr+2, (double) linePtr->width,
+		TkGetButtPoints(coordPtr, coordPtr+2, width,
 			0, poly+4, poly+6);
 	    }
 	} else {
-	    TkGetButtPoints(coordPtr, coordPtr+2, (double) linePtr->width, 0,
+	    TkGetButtPoints(coordPtr, coordPtr+2, width, 0,
 		    poly+4, poly+6);
 	}
 	poly[8] = poly[0];
@@ -941,7 +946,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
 
     if (linePtr->capStyle == CapRound) {
 	dist = hypot(coordPtr[0] - pointPtr[0], coordPtr[1] - pointPtr[1])
-		- linePtr->width/2.0;
+		- width/2.0;
 	if (dist <= 0.0) {
 	    bestDist = 0.0;
 	    goto done;
@@ -1014,6 +1019,7 @@ LineToArea(canvas, itemPtr, rectPtr)
     LineItem *linePtr = (LineItem *) itemPtr;
     double staticSpace[2*MAX_STATIC_POINTS];
     double *linePoints;
+    double width;
     int numPoints, result;
 
     /*
@@ -1041,8 +1047,13 @@ LineToArea(canvas, itemPtr, rectPtr)
      * Check the segments of the line.
      */
 
+    width = (double) linePtr->width;
+    if (width < 1.0) {
+	width = 1.0;
+    }
+
     result = TkThickPolyLineToArea(linePoints, numPoints, 
-	    (double) linePtr->width, linePtr->capStyle, linePtr->joinStyle,
+	    width, linePtr->capStyle, linePtr->joinStyle,
 	    rectPtr);
     if (result == 0) {
 	goto done;

@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinSock.c 1.80 97/10/09 18:24:59
+ * RCS: @(#) $Id: tclWinSock.c,v 1.5 1999/02/03 00:51:20 stanton Exp $
  */
 
 #define _XLIB_H
@@ -700,7 +700,7 @@ SocketEventProc(evPtr, flags)
 	}
 
     }
-    if (events & FD_WRITE) {
+    if (events & (FD_WRITE | FD_CONNECT)) {
 	mask |= TCL_WRITABLE;
     }
 
@@ -903,6 +903,13 @@ CreateSocket(interp, port, host, server, myaddr, myport, async)
 	goto error;
     }
 
+    /*
+     * Win-NT has a misfeature that sockets are inherited in child
+     * processes by default.  Turn off the inherit bit.
+     */
+
+    SetHandleInformation( (HANDLE) sock, HANDLE_FLAG_INHERIT, 0 );
+	
     /*
      * Set kernel space buffering
      */
@@ -1398,6 +1405,13 @@ TcpAccept(infoPtr)
     }
 
     /*
+     * Win-NT has a misfeature that sockets are inherited in child
+     * processes by default.  Turn off the inherit bit.
+     */
+
+    SetHandleInformation( (HANDLE) newSocket, HANDLE_FLAG_INHERIT, 0 );
+	
+    /*
      * Add this socket to the global list of sockets.
      */
 
@@ -1732,6 +1746,24 @@ TcpGetOptionProc(instanceData, interp, optionName, dsPtr)
         len = strlen(optionName);
     }
 
+    if ((len > 1) && (optionName[1] == 'e') &&
+                    (strncmp(optionName, "-error", len) == 0)) {
+       int optlen;
+       int err, ret;
+    
+       optlen = sizeof(int);
+       ret = TclWinGetSockOpt(sock, SOL_SOCKET, SO_ERROR,
+                              (char *)&err, &optlen);
+       if (ret == SOCKET_ERROR) {
+           err = (*winSock.WSAGetLastError)();
+       }
+       if (err) {
+           TclWinConvertWSAError(err);
+           Tcl_DStringAppend(dsPtr, Tcl_ErrnoMsg(Tcl_GetErrno()), -1);
+       }
+       return TCL_OK;
+    }
+
     if ((len == 0) ||
             ((len > 1) && (optionName[1] == 'p') &&
                     (strncmp(optionName, "-peername", len) == 0))) {
@@ -1859,7 +1891,7 @@ TcpWatchProc(instanceData, mask)
 	infoPtr->watchEvents |= (FD_READ|FD_CLOSE|FD_ACCEPT);
     }
     if (mask & TCL_WRITABLE) {
-	infoPtr->watchEvents |= (FD_WRITE);
+       infoPtr->watchEvents |= (FD_WRITE|FD_CONNECT);
     }
 
     /*

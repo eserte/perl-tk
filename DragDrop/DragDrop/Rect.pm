@@ -2,7 +2,7 @@ package Tk::DragDrop::Rect;
 
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#3$
+$VERSION = '3.004'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#4$
 
 sub NewDrag
 {
@@ -38,7 +38,7 @@ sub Over
  my ($site,$X,$Y) = @_;
  my $x = $site->X;
  my $y = $site->Y;
- my $val = ($X >= $x && $X < ($x + $site->width) && 
+ my $val = ($X >= $x && $X < ($x + $site->width) &&
          $Y >= $y && $Y < ($y + $site->height));
  # print "Over ",$site->Show," $X,$Y => $val\n";
  return $val;
@@ -49,17 +49,17 @@ sub Match
  my ($site,$other) = @_;
  return 0 unless (defined $other);
  return 1 if ($site == $other);
- return 0 unless (ref($site) eq ref($other)); 
+ return 0 unless (ref($site) eq ref($other));
  for ("$site")
   {
    if (/ARRAY/)
     {
-     my $i;   
-     return 0 unless (@$site == @$other); 
+     my $i;
+     return 0 unless (@$site == @$other);
      for ($i = 0; $i < @$site; $i++)
-      {       
+      {
        return 0 unless ($site->[$i] == $other->[$i]);
-      }       
+      }
      return 1;
     }
    elsif (/SCALAR/)
