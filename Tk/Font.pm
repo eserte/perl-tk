@@ -1,9 +1,8 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '3.022'; # $Id: //depot/Tk8/Tk/Font.pm#22 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Font.pm#23 $
 require Tk::Widget;
 use strict;
-use Data::Dumper;
 use Carp;
 use overload '""' => 'as_string';
 sub as_string { return ${$_[0]} }
@@ -103,7 +102,6 @@ sub new
       }
     }
    $me = $w->Tk::font('create',%attr);
-   # print Dumper(\%attr,[$me->actual]);
   }
  return bless $me,$pkg;
 }

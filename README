@@ -1,35 +1,37 @@
-Tk is a Graphical User Interface ToolKit.           
+Tk is a Graphical User Interface ToolKit.
 
 Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
-for details of this license.                                         
+for details of this license.
 
-Tk800.018 is still rather beta-ish - Tk800.015 is latest stable release.
+Hopefully Tk800.019 is still production worthy but consider
+it a late beta - Tk800.015 is latest stable release.
 
 For questions on this package try news:comp.lang.perl.tk or e-mail
-to <ptk@lists.stanford.edu> or <nick@ing-simmons.net> 
+to <ptk@lists.stanford.edu> or <nick@ing-simmons.net>
 
-This a re-port of a perl interface to Tk8.0.5 (Scriptics's production release). 
+This a re-port of a perl interface to Tk8.0.5 (Scriptics's production release).
 
 It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.006 release.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
 
->>> TK IS KNOWN NOT TO WORK WITH perl5.005_63 <<<          
-(Does work with 5.005_64-to-be as of 7 Jan 2000)
+>>> TK IS KNOWN NOT TO WORK WITH perl5.005_63 <<<
+- Does work with 5.005_64-to-be as of 7 Jan 2000
+- Sometimes fails with 5.6.0-RC1 ("unparsable float")
 
-This version (Tk800.018) requires perl5.005 or later on Win32 
+This version (Tk800.019) requires perl5.005 or later on Win32
 and 5.004_04 or later on UNIX.
 
 This version also contains re-worked Image code based on tcl/tk Img extension
-(version img1.2b2) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/ 
+(version img1.2b2) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/
 Jan's "dash" patch is also merged.
 
-Tk800.018 should build and run on Windows NT using Visual C++, Borland, 
+Tk800.019 should build and run on Windows NT using Visual C++, Borland,
 or with the Mingw32 port of GCC with perl5.005 or later.
-Can be built using ActiveState's binrary distribution 
+Can be built using ActiveState's binrary distribution
 (see README-ActiveState.txt).
 
 The Mingw32 builds are stable now using older Mingw32s.
@@ -44,9 +46,8 @@ as possible.
 Author has built against:
   Perl5.00503
    SPARC Solaris2.6, gcc-2.8.1
-   Pentium Suse Linux-6.1 egcs-1.1.2       
-   NT4.0 SP4, VC++6 ActivePerl 518
+   Pentium Suse Linux-6.1 egcs-1.1.2
 
-  Perl5.00502
-   NT4.0 SP4, Mingw32/EGCS 1.1.2
+  Perl5.00404
+   Pentium Suse Linux-6.1 egcs-1.1.2
 

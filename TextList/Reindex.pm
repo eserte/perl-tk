@@ -2,7 +2,7 @@ package Tk::Reindex;
 
 
 use vars qw($VERSION);
-$VERSION = '3.001'; # $Id: //depot/Tk8/TextList/Reindex.pm#1 $
+$VERSION = '3.002'; # $Id: //depot/Tk8/TextList/Reindex.pm#2 $
 
 use Tk;
 use base qw(Tk::Derived);
@@ -79,7 +79,10 @@ sub to_index
   my $w=shift;
   my $offset=$w->cget(-linestart)+1;
   my(@args)=@_;
-  s/^\d+(?=\.)/$&+$offset/e foreach @args;
+  foreach (@args)
+   {
+    s/^\d+(?=\.)/$&+$offset/e;
+   }
   @args;
 }
 
@@ -88,7 +91,10 @@ sub from_index
   my $w=shift;
   my $offset=$w->cget(-linestart)+1;
   my(@args)=@_;
-  s/^\d+(?=\.)/$&-$offset/e foreach @args;
+  foreach (@args)
+   {
+    s/^\d+(?=\.)/$&-$offset/e
+   }
   @args;
 }
 

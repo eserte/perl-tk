@@ -18,6 +18,10 @@
 #  define LangCopyCallback (*TkeventVptr->V_LangCopyCallback)
 #endif
 
+#ifndef LangDebug
+#  define LangDebug (*TkeventVptr->V_LangDebug)
+#endif
+
 #ifndef LangFreeCallback
 #  define LangFreeCallback (*TkeventVptr->V_LangFreeCallback)
 #endif
@@ -28,6 +32,10 @@
 
 #ifndef LangPushCallbackArgs
 #  define LangPushCallbackArgs (*TkeventVptr->V_LangPushCallbackArgs)
+#endif
+
+#ifndef Tcl_Alloc
+#  define Tcl_Alloc (*TkeventVptr->V_Tcl_Alloc)
 #endif
 
 #ifndef Tcl_CancelIdleCall
@@ -48,6 +56,18 @@
 
 #ifndef Tcl_CreateTimerHandler
 #  define Tcl_CreateTimerHandler (*TkeventVptr->V_Tcl_CreateTimerHandler)
+#endif
+
+#ifndef Tcl_DbCkalloc
+#  define Tcl_DbCkalloc (*TkeventVptr->V_Tcl_DbCkalloc)
+#endif
+
+#ifndef Tcl_DbCkfree
+#  define Tcl_DbCkfree (*TkeventVptr->V_Tcl_DbCkfree)
+#endif
+
+#ifndef Tcl_DbCkrealloc
+#  define Tcl_DbCkrealloc (*TkeventVptr->V_Tcl_DbCkrealloc)
 #endif
 
 #ifndef Tcl_DeleteEventSource
@@ -74,8 +94,16 @@
 #  define Tcl_Exit (*TkeventVptr->V_Tcl_Exit)
 #endif
 
+#ifndef Tcl_Free
+#  define Tcl_Free (*TkeventVptr->V_Tcl_Free)
+#endif
+
 #ifndef Tcl_GetServiceMode
 #  define Tcl_GetServiceMode (*TkeventVptr->V_Tcl_GetServiceMode)
+#endif
+
+#ifndef Tcl_Panic
+#  define Tcl_Panic (*TkeventVptr->V_Tcl_Panic)
 #endif
 
 #ifndef Tcl_QueueEvent
@@ -84,6 +112,10 @@
 
 #ifndef Tcl_QueueProcEvent
 #  define Tcl_QueueProcEvent (*TkeventVptr->V_Tcl_QueueProcEvent)
+#endif
+
+#ifndef Tcl_Realloc
+#  define Tcl_Realloc (*TkeventVptr->V_Tcl_Realloc)
 #endif
 
 #ifndef Tcl_ServiceAll

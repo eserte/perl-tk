@@ -22,7 +22,7 @@
 #ifndef NO_STDLIB_H
 #include <stdlib.h>
 #endif
-                
+
 #if !defined(__GNUC__) && !defined(_AIX)
 #ifdef __STDC__
 #ifndef STRINGIFY
@@ -112,8 +112,8 @@ typedef long fd_mask;
 #   endif
 #endif
 
-/* 
- * A special definition used to allow this header file to be included 
+/*
+ * A special definition used to allow this header file to be included
  * in resource files so that they can get obtain version information from
  * this file.  Resource compilers don't like all the C stuff, like typedefs
  * and procedure declarations, that occur below.
@@ -226,14 +226,14 @@ typedef long LONG;
  * directly. Programmers should use either the procedure Tcl_GetObjResult()
  * or Tcl_GetStringResult() to read the interpreter's result. See the
  * SetResult man page for details.
- * 
+ *
  * Note: any change to the Tcl_Interp definition below must be mirrored
  * in the "real" definition in tclInt.h.
  *
  * Note: Tcl_ObjCmdProc procedures do not directly set result and freeProc.
  * Instead, they set a Tcl_Obj member in the "real" structure that can be
  * accessed with Tcl_GetObjResult() and Tcl_SetObjResult().
- */         
+ */
 
 #ifndef Tcl_Interp
 typedef struct Tcl_Interp
@@ -252,7 +252,7 @@ typedef struct Tcl_Interp
     int errorLine;              /* When TCL_ERROR is returned, this gives
                                  * the line number within the command where
                                  * the error occurred (1 if first line). */
-} 
+}
 #endif /* USE_TCL_STRUCTS */
 Tcl_Interp;
 #endif /* Tcl_Interp */
@@ -276,7 +276,7 @@ typedef struct Var *Var;
 #endif
 typedef struct Tcl_Var_ *Tcl_Var;
 
-#ifndef LangResultSave 
+#ifndef LangResultSave
 typedef struct LangResultSave LangResultSave;
 #endif
 
@@ -285,7 +285,7 @@ typedef struct LangResultSave LangResultSave;
  * command. Programmers are strongly encouraged to use one of the
  * procedures Tcl_GetObjResult() or Tcl_GetStringResult() to read the
  * interpreter's result. See the SetResult man page for details. Besides
- * this result, the command procedure returns an integer code, which is 
+ * this result, the command procedure returns an integer code, which is
  * one of the following:
  *
  * TCL_OK		Command completed normally; the interpreter's
@@ -323,7 +323,7 @@ typedef struct Tcl_Value {
 
 /*
  * Forward declaration of Tcl_Obj to prevent an error when the forward
- * reference to Tcl_Obj is encountered in the procedure types declared 
+ * reference to Tcl_Obj is encountered in the procedure types declared
  * below.
  */
 
@@ -350,7 +350,7 @@ typedef int (Tcl_CmdProc) _ANSI_ARGS_((ClientData clientData,
 typedef void (Tcl_CmdTraceProc) _ANSI_ARGS_((ClientData clientData,
 	Tcl_Interp *interp, int level, char *command, Tcl_CmdProc *proc,
 	ClientData cmdClientData, int argc, char *argv[]));
-typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((Tcl_Obj *srcPtr, 
+typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((Tcl_Obj *srcPtr,
         Tcl_Obj *dupPtr));
 typedef int (Tcl_EventProc) _ANSI_ARGS_((Tcl_Event *evPtr, int flags));
 typedef void (Tcl_EventCheckProc) _ANSI_ARGS_((ClientData clientData,
@@ -388,7 +388,7 @@ typedef char *(Tcl_VarTraceProc) _ANSI_ARGS_((ClientData clientData,
  * procedures that provide standard operations on objects of that type.
  */
 
-typedef struct Tcl_ObjType 
+typedef struct Tcl_ObjType
 #ifdef USE_TCL_STRUCTS
 {
     char *name;			/* Name of the type, e.g. "int". */
@@ -407,7 +407,7 @@ typedef struct Tcl_ObjType
 				 * rep to this type. Frees the internal rep
 				 * of the old type. Returns TCL_ERROR on
 				 * failure. */
-} 
+}
 #endif /* USE_TCL_STRUCTS */
 Tcl_ObjType;
 
@@ -417,7 +417,7 @@ Tcl_ObjType;
  * representation, or both.
  */
 
-#ifdef USE_TCL_STRUCTS  
+#ifdef USE_TCL_STRUCTS
 struct Tcl_Obj
 {
     int refCount;		/* When 0 the object will be freed. */
@@ -448,7 +448,7 @@ struct Tcl_Obj
 	} twoPtrValue;
     } internalRep;
 };
-#endif /* USE_TCL_STRUCTS */ 
+#endif /* USE_TCL_STRUCTS */
 
 /*
  * Macros to increment and decrement a Tcl_Obj's reference count, and to
@@ -481,7 +481,7 @@ EXTERN void Tcl_DecrRefCount _ANSI_ARGS_((Tcl_Obj *objPtr));
 
 /*
  * Macros and definitions that help to debug the use of Tcl objects.
- * When TCL_MEM_DEBUG is defined, the Tcl_New* declarations are 
+ * When TCL_MEM_DEBUG is defined, the Tcl_New* declarations are
  * overridden to call debugging versions of the object creation procedures.
  */
 
@@ -511,16 +511,16 @@ EXTERN Tcl_Obj *	Tcl_NewStringObj _ANSI_ARGS_((char *bytes,
 #  define Tcl_NewStringObj(bytes, len) \
      Tcl_DbNewStringObj(bytes, len, __FILE__, __LINE__)
 #endif /* TCL_MEM_DEBUG */
-                         
+
 
 /*
  * The following definitions support Tcl's namespace facility.
  * Note: the first five fields must match exactly the fields in a
- * Namespace structure (see tcl.h). 
+ * Namespace structure (see tcl.h).
  */
 
-typedef struct Tcl_Namespace 
-#ifdef USE_TCL_STRUCTS 
+typedef struct Tcl_Namespace
+#ifdef USE_TCL_STRUCTS
 {
     char *name;                 /* The namespace's name within its parent
 				 * namespace. This contains no ::'s. The
@@ -537,7 +537,7 @@ typedef struct Tcl_Namespace
                                 /* Points to the namespace that contains
 				 * this one. NULL if this is the global
 				 * namespace. */
-} 
+}
 #endif /* USE_TCL_STRUCTS */
 Tcl_Namespace;
 
@@ -550,7 +550,7 @@ Tcl_Namespace;
  * the namespace in which the command's code should execute. The
  * Tcl_CallFrame structures exist only while procedures or namespace
  * eval/inscope's are being executed, and provide a Tcl call stack.
- * 
+ *
  * A call frame is initialized and pushed using Tcl_PushCallFrame and
  * popped using Tcl_PopCallFrame. Storage for a Tcl_CallFrame must be
  * provided by the Tcl_PushCallFrame caller, and callers typically allocate
@@ -590,7 +590,7 @@ typedef struct Tcl_CallFrame {
  * to a compatibility wrapper that does string-to-object or object-to-string
  * argument conversions then calls the other procedure.
  */
-     
+
 typedef struct Tcl_CmdInfo {
     int isNativeObjectProc;	 /* 1 if objProc was registered by a call to
 				  * Tcl_CreateObjCommand; 0 otherwise.
@@ -618,7 +618,7 @@ typedef struct Tcl_CmdInfo {
  * never modify it.
  */
 
-#ifdef USE_TCL_STRUCTS 
+#ifdef USE_TCL_STRUCTS
 #define TCL_DSTRING_STATIC_SIZE 200
 typedef struct Tcl_DString {
     char *string;		/* Points to beginning of string:  either
@@ -639,11 +639,11 @@ typedef struct Tcl_DString {
 #else
 #ifndef Tcl_DString
 typedef struct _Tcl_DString *Tcl_DString;
-#endif                      
+#endif
 
 EXTERN int Tcl_DStringLength _ANSI_ARGS_((Tcl_DString *dsPtr));
 EXTERN char *Tcl_DStringValue _ANSI_ARGS_((Tcl_DString *dsPtr));
-#define Tcl_DStringTrunc Tcl_DStringSetLength 
+#define Tcl_DStringTrunc Tcl_DStringSetLength
 
 #endif /* USE_TCL_STRUCTS */
 /*
@@ -651,7 +651,7 @@ EXTERN char *Tcl_DStringValue _ANSI_ARGS_((Tcl_DString *dsPtr));
  * be specified in the "tcl_precision" variable, and the number of
  * characters of buffer space required by Tcl_PrintDouble.
  */
- 
+
 #define TCL_MAX_PREC 17
 #define TCL_DOUBLE_SPACE (TCL_MAX_PREC+10)
 
@@ -724,7 +724,12 @@ EXTERN char *		Tcl_Alloc _ANSI_ARGS_((unsigned int size));
 EXTERN void		Tcl_Free _ANSI_ARGS_((char *ptr));
 EXTERN char *		Tcl_Realloc _ANSI_ARGS_((char *ptr,
 			    unsigned int size));
+EXTERN char *		Tcl_DbCkalloc _ANSI_ARGS_((unsigned int size,char *file,int line));
+EXTERN void		Tcl_DbCkfree _ANSI_ARGS_((char *ptr,char *file,int line));
+EXTERN char *		Tcl_DbCkrealloc _ANSI_ARGS_((char *ptr,
+			    unsigned int size,char *file,int line));
 
+#define TCL_MEM_DEBUG
 #ifdef TCL_MEM_DEBUG
 
 #  define Tcl_Alloc(x) Tcl_DbCkalloc(x, __FILE__, __LINE__)
@@ -737,7 +742,6 @@ EXTERN char *		Tcl_Realloc _ANSI_ARGS_((char *ptr,
 EXTERN int		Tcl_DumpActiveMemory _ANSI_ARGS_((char *fileName));
 EXTERN void		Tcl_ValidateAllMemory _ANSI_ARGS_((char *file,
 			    int line));
-
 #else
 
 #  if USE_TCLALLOC
@@ -817,7 +821,7 @@ typedef struct Tcl_HashTable {
 					 * order bits of randomized keys. */
     int mask;				/* Mask value used in hashing
 					 * function. */
-    int keyType;			/* Type of keys used in this table. 
+    int keyType;			/* Type of keys used in this table.
 					 * It's either TCL_STRING_KEYS,
 					 * TCL_ONE_WORD_KEYS, or an integer
 					 * giving the number of ints that
@@ -891,14 +895,14 @@ typedef struct Tcl_HashSearch {
  * event.
  */
 
-#if defined(USE_TCL_STRUCTS) || defined(TCL_EVENT_IMPLEMENT) 
+#if defined(USE_TCL_STRUCTS) || defined(TCL_EVENT_IMPLEMENT)
 
 struct Tcl_Event {
     Tcl_EventProc *proc;	/* Procedure to call to service this event. */
     struct Tcl_Event *nextPtr;	/* Next in list of pending events, or NULL. */
 };
 
-#else 
+#else
 struct Tcl_Event {
     void *(*spaceforproc)(void);
     void *spaceforlink;
@@ -1140,7 +1144,7 @@ EXTERN Tcl_Trace	Tcl_CreateTrace _ANSI_ARGS_((Tcl_Interp *interp,
 			    ClientData clientData));
 EXTERN char *		Tcl_DbCkalloc _ANSI_ARGS_((unsigned int size,
 			    char *file, int line));
-EXTERN int		Tcl_DbCkfree _ANSI_ARGS_((char *ptr,
+EXTERN void		Tcl_DbCkfree _ANSI_ARGS_((char *ptr,
 			    char *file, int line));
 EXTERN char *		Tcl_DbCkrealloc _ANSI_ARGS_((char *ptr,
 			    unsigned int size, char *file, int line));
@@ -1347,7 +1351,7 @@ EXTERN char *		Tcl_JoinPath _ANSI_ARGS_((int argc, char **argv,
 EXTERN int		Tcl_LinkVar _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *varName, char *addr, int type));
 EXTERN int		Tcl_ListObjAppendList _ANSI_ARGS_((
-			    Tcl_Interp *interp, Tcl_Obj *listPtr, 
+			    Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    Tcl_Obj *elemListPtr));
 EXTERN int		Tcl_ListObjAppendElement _ANSI_ARGS_((
 			    Tcl_Interp *interp, Tcl_Obj *listPtr,
@@ -1356,7 +1360,7 @@ EXTERN int		Tcl_ListObjGetElements _ANSI_ARGS_((
 			    Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    int *objcPtr, Tcl_Obj ***objvPtr));
 EXTERN int		Tcl_ListObjIndex _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Obj *listPtr, int index, 
+			    Tcl_Obj *listPtr, int index,
 			    Tcl_Obj **objPtrPtr));
 EXTERN int		Tcl_ListObjLength _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *listPtr, int *intPtr));
@@ -1442,7 +1446,7 @@ EXTERN int		Tcl_ServiceEvent _ANSI_ARGS_((int flags));
 EXTERN void		Tcl_SetAssocData _ANSI_ARGS_((Tcl_Interp *interp,
                             char *name, Tcl_InterpDeleteProc *proc,
                             ClientData clientData));
-EXTERN void		Tcl_SetBooleanObj _ANSI_ARGS_((Tcl_Obj *objPtr, 
+EXTERN void		Tcl_SetBooleanObj _ANSI_ARGS_((Tcl_Obj *objPtr,
 			    int boolValue));
 EXTERN void		Tcl_SetChannelBufferSize _ANSI_ARGS_((
 			    Tcl_Channel chan, int sz));
@@ -1451,15 +1455,15 @@ EXTERN int		Tcl_SetChannelOption _ANSI_ARGS_((
 	        	    char *optionName, char *newValue));
 EXTERN int		Tcl_SetCommandInfo _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *cmdName, Tcl_CmdInfo *infoPtr));
-EXTERN void		Tcl_SetDoubleObj _ANSI_ARGS_((Tcl_Obj *objPtr, 
+EXTERN void		Tcl_SetDoubleObj _ANSI_ARGS_((Tcl_Obj *objPtr,
 			    double doubleValue));
 EXTERN void		Tcl_SetErrno _ANSI_ARGS_((int err));
 EXTERN void		Tcl_SetErrorCode _ANSI_ARGS_(TCL_VARARGS(Tcl_Interp *,interp));
-EXTERN void		Tcl_SetIntObj _ANSI_ARGS_((Tcl_Obj *objPtr, 
+EXTERN void		Tcl_SetIntObj _ANSI_ARGS_((Tcl_Obj *objPtr,
 			    int intValue));
-EXTERN void		Tcl_SetListObj _ANSI_ARGS_((Tcl_Obj *objPtr, 
+EXTERN void		Tcl_SetListObj _ANSI_ARGS_((Tcl_Obj *objPtr,
 			    int objc, Tcl_Obj *CONST objv[]));
-EXTERN void		Tcl_SetLongObj _ANSI_ARGS_((Tcl_Obj *objPtr, 
+EXTERN void		Tcl_SetLongObj _ANSI_ARGS_((Tcl_Obj *objPtr,
 			    long longValue));
 EXTERN void		Tcl_SetMaxBlockTime _ANSI_ARGS_((Tcl_Time *timePtr));
 EXTERN void		Tcl_SetObjErrorCode _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1477,7 +1481,7 @@ EXTERN void		Tcl_SetResult _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN int		Tcl_SetServiceMode _ANSI_ARGS_((int mode));
 EXTERN void		Tcl_SetStdChannel _ANSI_ARGS_((Tcl_Channel channel,
 			    int type));
-EXTERN void		Tcl_SetStringObj _ANSI_ARGS_((Tcl_Obj *objPtr, 
+EXTERN void		Tcl_SetStringObj _ANSI_ARGS_((Tcl_Obj *objPtr,
 			    char *bytes, int length));
 EXTERN void		Tcl_SetTimer _ANSI_ARGS_((Tcl_Time *timePtr));
 EXTERN char *		Tcl_SetVar _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1543,7 +1547,7 @@ EXTERN ClientData	Tcl_VarTraceInfo2 _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_VarTraceProc *procPtr,
 			    ClientData prevClientData));
 EXTERN int		Tcl_WaitForEvent _ANSI_ARGS_((Tcl_Time *timePtr));
-EXTERN Tcl_Pid		Tcl_WaitPid _ANSI_ARGS_((Tcl_Pid pid, int *statPtr, 
+EXTERN Tcl_Pid		Tcl_WaitPid _ANSI_ARGS_((Tcl_Pid pid, int *statPtr,
 			    int options));
 EXTERN int		Tcl_Write _ANSI_ARGS_((Tcl_Channel chan,
         		    char *s, int slen));
@@ -1570,6 +1574,8 @@ EXTERN void LangSetDefault _ANSI_ARGS_((Arg *,char *));
 EXTERN void LangSetInt _ANSI_ARGS_((Arg *,int));
 EXTERN void LangSetDouble _ANSI_ARGS_((Arg *,double));
 EXTERN void LangSetArg _ANSI_ARGS_((Arg *,Arg));
+EXTERN void LangSetVar _ANSI_ARGS_((Arg *,Var));
+
 EXTERN int  LangCmpArg  _ANSI_ARGS_((Arg,Arg));
 EXTERN int  LangCmpOpt  _ANSI_ARGS_((char *opt,char *arg,size_t length));
 
@@ -1580,11 +1586,11 @@ EXTERN int  LangCmpOpt  _ANSI_ARGS_((char *opt,char *arg,size_t length));
    Tk will set freeProc as for Tcl e.g. NULL for statics & UIDs
    and to "free" for Tcl_Merge etc.
    Non Tk users *may* be able to use it as a guide,
-   but it is more likely that they will have to use 
+   but it is more likely that they will have to use
    their own ref counts.
-   Perhaps Tcl_Merge should set freeProc and/or Tcl's 
+   Perhaps Tcl_Merge should set freeProc and/or Tcl's
    LangSetString() deliberately malloc() a copy of the string so we don't need
-   the freeProc 
+   the freeProc
 */
 EXTERN void LangFreeArg _ANSI_ARGS_((Arg,Tcl_FreeProc *freeProc));
 EXTERN Arg  LangCopyArg _ANSI_ARGS_((Arg));
@@ -1600,7 +1606,7 @@ EXTERN void Tcl_Panic _ANSI_ARGS_((char *,...));
 
 EXTERN int  LangNull _ANSI_ARGS_((Arg));
 
-/* Used to default Menu variable to the label 
+/* Used to default Menu variable to the label
    TCL just strdup's the string so it can be ckfree'ed
 */
 
@@ -1628,7 +1634,6 @@ EXTERN char *Lang_GetErrorInfo _ANSI_ARGS_((Tcl_Interp *interp));
 
 EXTERN int LangSaveVar _ANSI_ARGS_((Tcl_Interp *,Arg,Var *,int type));
 EXTERN void LangFreeVar _ANSI_ARGS_((Var));
-EXTERN Arg LangVarArg _ANSI_ARGS_((Var));
 EXTERN Arg Tcl_ResultArg _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN Arg LangScalarResult _ANSI_ARGS_((Tcl_Interp *interp));
 
@@ -1652,7 +1657,7 @@ EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc));
 
-EXTERN int Lang_CallWithArgs _ANSI_ARGS_ ((Tcl_Interp *interp, 
+EXTERN int Lang_CallWithArgs _ANSI_ARGS_ ((Tcl_Interp *interp,
 					char *sub, int argc, Arg *argv));
 
 #ifndef LangCallback
@@ -1671,7 +1676,7 @@ EXTERN long Lang_OSHandle _ANSI_ARGS_((int fd));
 #define TK_LIBRARY LangLibraryDir()
 #define TclPlatformExit(status) LangExit(status)
 
-#ifdef WIN32                     
+#ifdef WIN32
 #ifdef __BORLANDC__
 #pragma warn -par	/* "parameter 'foo' is never used" */
 #pragma warn -aus	/* "'foo' is assigned a value that is never used" */
@@ -1682,11 +1687,11 @@ EXTERN long Lang_OSHandle _ANSI_ARGS_((int fd));
 #pragma warning(disable:4101 4102 4244 4018)
 #pragma warning(disable:4133) /* init incompatible for xlib */
 #endif
-#endif   
+#endif
 
 #if !defined(TCL_EVENT_IMPLEMENT)
-#include "tkEvent.h"          
-#include "tkEvent.m"          
+#include "tkEvent.h"
+#include "tkEvent.m"
 #endif
 
 #endif /* RESOURCE_INCLUDED */

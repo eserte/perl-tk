@@ -12,7 +12,7 @@
  * RCS: @(#) $Id: tkUnixColor.c,v 1.2 1998/09/14 18:23:55 stanton Exp $
  */
 
-#include <tkColor.h>
+#include "tkColor.h"
 
 /*
  * If a colormap fills up, attempts to allocate new colors from that

@@ -640,6 +640,7 @@ WidgetEventProc(clientData, eventPtr)
       case DestroyNotify:
 	if (wPtr->dispData.tkwin != NULL) {
 	    wPtr->dispData.tkwin = NULL;
+	    wPtr->dispData.sizeChangedProc = NULL;
 	    Tcl_DeleteCommand(wPtr->dispData.interp, 
 	        Tcl_GetCommandName(wPtr->dispData.interp, wPtr->widgetCmd));
 	}
@@ -761,7 +762,8 @@ WidgetCmdDeletedProc(clientData)
      */
     if (wPtr->dispData.tkwin != NULL) {
 	Tk_Window tkwin = wPtr->dispData.tkwin;
-	wPtr->dispData.tkwin = NULL;
+	wPtr->dispData.tkwin = NULL;           
+	wPtr->dispData.sizeChangedProc = NULL;
 	Tk_DestroyWindow(tkwin);
     }
 }

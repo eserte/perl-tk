@@ -2029,6 +2029,7 @@ WidgetEventProc(clientData, eventPtr)
       case DestroyNotify:
 	if (wPtr->dispData.tkwin != NULL) {
 	    wPtr->dispData.tkwin = NULL;
+	    wPtr->dispData.sizeChangedProc = NULL;
 	    Tcl_DeleteCommand(wPtr->dispData.interp, 
 		Tcl_GetCommandName(wPtr->dispData.interp, wPtr->widgetCmd));
 	}
@@ -2211,6 +2212,7 @@ WidgetCmdDeletedProc(clientData)
     if (wPtr->dispData.tkwin != NULL) {
 	Tk_Window tkwin = wPtr->dispData.tkwin;
 	wPtr->dispData.tkwin = NULL;
+	wPtr->dispData.sizeChangedProc = NULL;
 	Tk_DestroyWindow(tkwin);
     }
 }
@@ -2240,6 +2242,12 @@ Tix_HLComputeGeometry(clientData)
     int i, reqW, reqH;
     int sizeChanged = 0;
     int width = 0;
+
+    if (wPtr->dispData.tkwin == NULL) {
+	panic("No tkwin");            
+	return;
+    }
+
     wPtr->resizing = 0;
 
     /* Update geometry request */
@@ -2322,7 +2330,12 @@ Tix_HLComputeGeometry(clientData)
 void
 Tix_HLResizeWhenIdle(wPtr)
     WidgetPtr wPtr;
-{
+{  
+    if (wPtr->dispData.tkwin == NULL) {
+	panic("No tkwin");            
+	return;
+    }
+
     if (!wPtr->resizing) {
 	wPtr->resizing = 1;
 	Tcl_DoWhenIdle(Tix_HLComputeGeometry, (ClientData)wPtr);
@@ -2372,6 +2385,11 @@ static void
 RedrawWhenIdle(wPtr)
     WidgetPtr wPtr;
 {
+    if (wPtr->dispData.tkwin == NULL) {
+	panic("No tkwin");            
+	return;
+    }
+
     if (!wPtr->redrawing && Tk_IsMapped(wPtr->dispData.tkwin)) {
 	wPtr->redrawing = 1;
 	Tcl_DoWhenIdle(WidgetDisplay, (ClientData)wPtr);
@@ -2386,7 +2404,8 @@ RedrawWhenIdle(wPtr)
 static void
 CancelRedrawWhenIdle(wPtr)
     WidgetPtr wPtr;
-{
+{  
+
     if (wPtr->redrawing) {
 	wPtr->redrawing = 0;
 	Tcl_CancelIdleCall(WidgetDisplay, (ClientData)wPtr);
@@ -2962,7 +2981,10 @@ ConfigElement(wPtr, chPtr, argc, argv, flags, forced)
     int forced;			/* We need a "forced" configure to ensure that
 				 * the DItem is initialized properly */
 {
-    int sizeChanged;
+    int sizeChanged;   
+
+    if (wPtr->dispData.tkwin == NULL)
+	panic("No tkwin");
 
     if (Tix_WidgetConfigure2(wPtr->dispData.interp, wPtr->dispData.tkwin,
 	(char*)chPtr, entryConfigSpecs, chPtr->col[0].iPtr, argc, argv, flags,

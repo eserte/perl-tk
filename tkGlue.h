@@ -92,8 +92,9 @@ EXTERN void  Boot_Glue _ANSI_ARGS_((void));
 EXTERN void  Boot_Tix  _ANSI_ARGS_((void));
 EXTERN void install_vtab _ANSI_ARGS_((char *name, void *table, size_t size));
 extern SV *TagIt _((SV *sv, char *type));
-extern void Font_DESTROY _((SV *sv));
-extern void Tk_CheckHash _((SV *sv));
+extern void Font_DESTROY _((SV *sv));                
+struct pTkCheckChain;
+extern void Tk_CheckHash _((SV *sv,struct pTkCheckChain *chain));
 
 
 #ifndef WIN32

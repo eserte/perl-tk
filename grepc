@@ -1,4 +1,4 @@
-#!/usr/local/bin/new/perl -w
+#!/tools/local/perl -w
 use strict;
 use vars qw($file);
 use Data::Dumper;
@@ -11,7 +11,7 @@ getopts("mlce:",\%opt);
 
 my $expr = (defined $opt{'e'}) ? $opt{'e'} : shift;
 print "Matching '$expr'\n";
-        
+
 my $count = 0;
 
 sub match
@@ -26,7 +26,7 @@ sub match
    $count++;
    unless ($opt{'c'})
     {
-     print "$File::Find::name:$.: $_" 
+     print "$File::Find::name:$.: $_"
     }
   }
  return 0;
@@ -39,7 +39,7 @@ sub wanted
   {
    local $file   = ($_);
    local ($_);
-   no strict 'refs'; 
+   no strict 'refs';
    open($file,"<$file") || die "Cannot open $file:$!";
    while (<$file>)
     {
@@ -48,7 +48,7 @@ sub wanted
    close($file);
    if ($opt{'c'} && $count)
     {
-     print "$File::Find::name: $count\n" 
+     print "$File::Find::name: $count\n"
     }
   }
  elsif (-d $_)

@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.063'; # $Id: //depot/Tk8/Tk/Widget.pm#63 $
+$VERSION = '3.066'; # $Id: //depot/Tk8/Tk/Widget.pm#66 $
 
 require Tk;
 use AutoLoader;
@@ -93,7 +93,6 @@ Direct Tk::Submethods (
 sub DESTROY
 {
  my $w = shift;
- $w->CheckHash;
  $w->destroy if ($w->IsWidget);
 }
 
@@ -319,8 +318,7 @@ sub AUTOLOAD
  $DB::sub = $what; # Tell debugger what is going on...
  goto &$what;
 }
-            
-use Data::Dumper;
+
 sub _Destroyed
 {
  my $w = shift;
@@ -328,7 +326,7 @@ sub _Destroyed
  if (ref($a))
   {
    while (@$a)
-    {  
+    {
      my $ent = pop(@$a);
      if (ref $ent)
       {
@@ -336,14 +334,14 @@ sub _Destroyed
       }
      else
       {
-       delete $w->{$ent};  
+       delete $w->{$ent};
       }
     }
-  }  
-}   
+  }
+}
 
-sub _OnDestroy          
-{    
+sub _OnDestroy
+{
  my $w = shift;
  $w->{'_Destroy_'} = [] unless (exists $w->{'_Destroy_'});
  push(@{$w->{'_Destroy_'}},@_);
@@ -475,8 +473,8 @@ sub after
   {
    if ($t ne 'cancel')
     {
-     require Tk::After;                     
-     return Tk::After->new($w,$t,'once',@_) 
+     require Tk::After;
+     return Tk::After->new($w,$t,'once',@_)
     }
    while (@_)
     {
@@ -1016,7 +1014,7 @@ sub pack
  local $SIG{'__DIE__'} = \&Carp::croak;
  my $w = shift;
  if (@_ && $_[0] =~ /^(?:configure|forget|info|propagate|slaves)$/x)
-  {               
+  {
    # maybe array/scalar context issue with slaves
    $w->Tk::pack(@_);
   }
@@ -1136,33 +1134,33 @@ sub FillMenu
  foreach my $lab (@labels)
   {
    my $method = $lab.'MenuItems';
-   $method =~ s/~//g;   
-   $method =~ s/[\s-]+/_/g;   
+   $method =~ s/~//g;
+   $method =~ s/[\s-]+/_/g;
    if ($w->can($method))
     {
-     $menu->Menubutton(-label => $lab, -tearoff => 0, -menuitems => $w->$method());          
+     $menu->Menubutton(-label => $lab, -tearoff => 0, -menuitems => $w->$method());
     }
   }
  return $menu;
-} 
+}
 
 sub menu
 {
  my ($w,$menu) = @_;
  if (@_ > 1)
-  {         
+  {
    $w->_OnDestroy('_MENU_') unless exists $w->{'_MENU_'};
    $w->{'_MENU_'} = $menu;
   }
  return unless defined wantarray;
  unless (exists $w->{'_MENU_'})
-  {                    
+  {
    $w->_OnDestroy('_MENU_');
    $w->{'_MENU_'} = $menu = $w->Menu(-tearoff => 0);
    $w->FillMenu($menu,$w->MenuLabels);
   }
  return $w->{'_MENU_'};
-}        
+}
 
 sub MenuLabels
 {
@@ -1173,7 +1171,7 @@ sub FileMenuItems
 {
  my ($w) = @_;
  return [ ["command"=>'E~xit', -command => [ $w, 'WmDeleteWindow']]];
-}              
+}
 
 sub WmDeleteWindow
 {

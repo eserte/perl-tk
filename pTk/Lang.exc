@@ -1,3 +1,6 @@
+LangDebug
+LangExit
+Lang_OSHandle
 TclCalloc
 TclFinalizeCompExecEnv
 TclFinalizeEnvironment
@@ -6,6 +9,7 @@ TclIdlePending
 TclServiceIdle
 Tcl_AddObjErrorInfo
 Tcl_AfterObjCmd
+Tcl_Alloc
 Tcl_AppInit
 Tcl_AppendAllObjTypes
 Tcl_AppendToObj
@@ -37,7 +41,6 @@ Tcl_CreateTrace
 Tcl_DStringEndSublist
 Tcl_DStringStartSublist
 Tcl_DbCkalloc
-Tcl_DbCkfree
 Tcl_DbCkrealloc
 Tcl_DbNewBooleanObj
 Tcl_DbNewDoubleObj
@@ -78,6 +81,7 @@ Tcl_ExprString
 Tcl_Finalize
 Tcl_FindExecutable
 Tcl_Flush
+Tcl_Free
 Tcl_FreeResult
 Tcl_GetAlias
 Tcl_GetAliasObj
@@ -126,6 +130,7 @@ Tcl_ObjSetVar2
 Tcl_OpenCommandChannel
 Tcl_OpenTcpClient
 Tcl_OpenTcpServer
+Tcl_Panic
 Tcl_ParseVar
 Tcl_PkgProvide
 Tcl_PkgRequire
@@ -133,6 +138,7 @@ Tcl_PrintDouble
 Tcl_PutEnv
 Tcl_QueueEvent
 Tcl_QueueProcEvent
+Tcl_Realloc
 Tcl_ReapDetachedProcs
 Tcl_RecordAndEval
 Tcl_RegExpCompile

@@ -173,7 +173,8 @@ Tixish/examples/perl-tix-dyntree
 Tixish/examples/perl-tix-tree
 Tixish/lib/Tk/balArrow.xbm
 Tixish/lib/Tk/cbxarrow.xbm
-Tk.pm				"Base" class/package 
+Tk.pm				"Base" class/package
+Tk.pod
 Tk.xs
 Tk/Adjuster.pm
 Tk/After.pm
@@ -312,12 +313,12 @@ compile/PreLoad.pm
 compile/findloader
 compile/splitfunc
 config/Ksprintf.c
-config/signedchar.c		Test to see of 'signed char' is legal 
+config/signedchar.c		Test to see of 'signed char' is legal
 config/tod.c			Test for gettimeofday()
 config/unsigned.c		See if 'char' is signed
 copydate			Utility to update copyright notices
 cursor_demo			Lists all built-in (X) cursors.
-debug				Run perl Tk script under GNU gdb 
+debug				Run perl Tk script under GNU gdb
 debug.bat
 demos/MANIFEST
 demos/MANIFEST.SKIP
@@ -443,7 +444,7 @@ demos/timer
 demos/tom
 demos/widget
 demos/widget_old
-derived_test			Test of Tk::Derived 
+derived_test			Test of Tk::Derived
 destroy_test			Test of <Destroy> binding
 dfpy				Author's utility for putting Tk on a floppy
 dialog_test
@@ -487,6 +488,7 @@ labelpack
 lbformat_demo
 leak_test
 lentry
+linux-progbar-toy
 local_demo
 ls_table
 lsfonts
@@ -532,6 +534,7 @@ pTk/bitmaps/info.bmp
 pTk/bitmaps/questhead.bmp
 pTk/bitmaps/question.bmp
 pTk/bitmaps/tk.bmp
+pTk/bitmaps/transpnt.bmp
 pTk/bitmaps/warning.bmp
 pTk/chext
 pTk/compat/limits.h
@@ -1195,7 +1198,6 @@ pipe_test
 pixels-points
 pixmap_test
 pod/Adjuster.pod
-pod/After.pod
 pod/Animation.pod
 pod/Balloon.pod
 pod/Bitmap.pod
@@ -1240,6 +1242,7 @@ pod/NoteBook.pod
 pod/Optionmenu.pod
 pod/Photo.pod
 pod/Pixmap.pod
+pod/README
 pod/ROText.pod
 pod/Radiobutton.pod
 pod/Scale.pod
@@ -1265,6 +1268,7 @@ pod/Wm.pod
 pod/X.pod
 pod/X11Font.pod
 pod/Xrm.pod
+pod/after.pod
 pod/bind.pod
 pod/bindtags.pod
 pod/callbacks.pod
@@ -1404,6 +1408,7 @@ t/X.t
 t/balloon.t
 t/browseentry.t
 t/create.t
+t/fbox.t
 t/fileselect.t
 t/font.t
 t/geomgr.t

@@ -234,7 +234,6 @@ I<$menu>-E<gt>B<post>(I<x,y>)
 where I<menu> is the path name of the associated menu, and I<x>
 and I<y> are the root-window coordinates of the upper-right
 corner of the cascade entry.
-E<lt>E<lt>E<lt>E<lt>E<lt>E<lt>E<lt> /home/perl5/NI-S/Tk8/doc/mann/tmp.7542.77
 On Unix, the lower-level menu is unposted by executing
 
 =over 4
@@ -248,10 +247,7 @@ On other platforms, the platform's native code takes care of unposting the
 menu.
 
 If a B<-command> option is specified for a cascade entry then it is
-evaluated
-whenever the entry is invoked.
-This is not
-supported on Windows.
+evaluated whenever the entry is invoked. This is not supported on Windows.
 
 =head2 TEAR-OFF ENTRIES
 
@@ -318,7 +314,7 @@ the menubar and is right justified.
 
 =head2 SEPARATORS IN MENUBARS
 
-Separator entries are not displayed in menubars. 
+Separator entries are not displayed in menubars.
 The I<last> separator entry causes remaining entries to be
 right justified.
 

@@ -10,9 +10,9 @@
 #
 package Tk;
 require 5.00404;
+use     Tk::Event ();
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
-use     Tk::Event ();
 use base qw(Exporter DynaLoader);
 
 *fileevent = \&Tk::Event::IO::fileevent;
@@ -42,7 +42,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.0';
 $Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.018';
+$Tk::VERSION     = '800.019';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 
@@ -147,7 +147,7 @@ sub InitClass
  my $mw = $parent->MainWindow;
  my $hash = $mw->TkHash('_ClassInit_');
  unless (exists $hash->{$package})
-  {     
+  {
    $package->Install($mw);
    $hash->{$package} = $package->ClassInit($mw);
   }
@@ -240,7 +240,7 @@ sub MessageBox {
 	    defined $args->{-default};
 	if (not defined $args->{-default_button} and scalar(@buttons) == 1) {
 	   $args->{-default_button} = $buttons[0];
-	}  
+	}
         my $md = $parent->Dialog(%$args);
         my $an = $md->Show;
         $md->destroy;

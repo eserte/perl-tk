@@ -15,7 +15,7 @@
 #ifndef _TK3D
 #define _TK3D
 
-#include <tkInt.h>
+#include "tkInt.h"
 
 #ifdef BUILD_tk
 # undef TCL_STORAGE_CLASS
