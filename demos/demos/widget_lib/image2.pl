@@ -87,9 +87,12 @@ sub image2_load_dir {
 
     $l->delete(0, 'end');
     my $i;
-    foreach $i (sort <$$dir_name/*>) {
-	$l->insert('end', basename($i));
+    local *DIR;
+    opendir DIR, $$dir_name;
+    foreach $i (sort readdir DIR) {
+       $l->insert('end', $i);
     }
+    closedir DIR;
 
 } # end image2_load_dir
 

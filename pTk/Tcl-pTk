@@ -186,7 +186,7 @@ while ($_ = &getline)
    {
     if (/^\s\*\s*Copyright/)
      {
-      print " *\n * Modifications Copyright (c) 1994 Nick Ing-Simmons\n";
+      print " *\n * Modifications Copyright (c) 1994-1996 Nick Ing-Simmons\n";
      }
       
     if (/^\s\*\s*all copies of this software./)

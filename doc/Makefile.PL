@@ -12,7 +12,7 @@ sub MY::post_initialize
  %{$self->{PM}} = ();
 }
 
-sub MY::manifypods
+sub MY::postamble
 {
  my ($self) = @_;
  my $sec;
@@ -33,11 +33,13 @@ sub MY::manifypods
   }
 
  return $dep . '
-manifypods: index.html
 
-index.html : man2html $(MANFILES)
+html : config index.html
+
+index.html : man2html $(MANFILES) $(INST_MAN1DIR) $(INST_MAN3DIR)
 	@echo "Making HTML"
-	@$(PERL) man2html -tk -q $(MANFILES)
+	@$(PERL) man2html -tk -man1 $(INST_MAN1DIR) \
+	         -man3 $(INST_MAN3DIR) -q $(MANFILES)
 ';
 }
 

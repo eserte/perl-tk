@@ -37,6 +37,10 @@ require Exporter;
 
 Pod::Parse - Parse perl's pod files.
 
+=head1 SYNOPSIS
+
+B<THIS TK SNAPSHOT SHOULD BE REPLACED BY A CPAN MODULE>
+
 =head1 DESCRIPTION
 
 A module designed to simplify the job of parsing and formatting ``pods'', the

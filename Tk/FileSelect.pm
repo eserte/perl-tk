@@ -21,7 +21,6 @@ FileSelect - a widget for choosing files
  use Tk::FileSelect;
 
  $FSref = $top->FileSelect(-directory => $start_dir);
-
                $top            - a window reference, e.g. MainWindow->new
                $start_dir      - the starting point for the FileSelect
  $FSref = $top->Show;
@@ -59,7 +58,7 @@ Klaus Lichtenwalder, Lichtenwalder@ACM.org, Datapat GmbH, Munich, April 22, 1995
 adapted by  Frederick L. Wagner, derf@ti.com, Texas Instruments Incorporated, Dallas, 21Jun95
 
 =head1 HISTORY 
- 
+
  950621 -- The following changes were made:
    1: Rewrote Tk stuff to take advantage of new Compound widget module, so
       FileSelect is now composed of 2 LabEntry and 2 ScrlListbox2 

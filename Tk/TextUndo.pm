@@ -1,3 +1,6 @@
+# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
 package Tk::TextUndo;
 require Tk::Text;
 use AutoLoader;
@@ -137,5 +140,79 @@ sub Load
   }
 }
 
+#   Should one add/document a Filename(?$newfilename?) method, or
+#   document the $text->{FILE} instance variable, or
+#   leave the housekeeping to the programmer?
 
+#   We have here no <L4> on our keyboard :-(  So TextUndo needs
+
+#	- document the 'undo' method. so other can use Bind
+#	- an BindUndo method
+#	- or use/document *textUndo.undo resource (defaults
+#	  to <L4>
+
+=head1 NAME
+
+Tk::TextUndo - perl/tk text widget with bindings to undo changes.
+
+=head1 SYNOPSIS
+
+    use Tk::TextUndo;
+    ...
+    $testundo = $parent->TextUndo(?option => value, ...?);
+    ...
+
+=head1 DESCRIPTION
+
+This IS-A text widget with an unlimited 'undo' history but without
+a re'undo' capability.
+
+=head2 Bindings
+
+The C<TextUndo> widget has the same bindings as the L<Text> widget.
+Additionally to the L<Text> widget there are the following bindings:
+
+=over 4
+
+=item Event <L4>
+
+undo the last change.  Pressing <L4> several times undo
+step by step the changes made to the text widget.
+
+
+=back
+
+=head2 Methods
+
+The C<TextUndo> widget has the same methods as C<Text> widget.
+Additional method for the C<TextUndo> widget are:
+
+=over 4
+
+=item $text->Load($filename);
+
+Loads the contents of the $filename into the text widget. Load()
+delete the previous contents of the text widget as well as it's
+undo history of the previous file.
+
+=item $text->Save(?$otherfilename?)
+
+Save contents of the text widget to a file. If the
+$otherfilename is not specified, the text widget contents
+writes the file of $filename used in the last Load()
+call.  If no file was previously Load()'ed an error message
+pops up.  The default filename of the last Load() call
+is not overwriten by $otherfilename.
+
+=back
+
+=head1 KEYS
+
+widget, text, undo
+
+=head1 SEE ALSO
+
+Tk::Text(3), Tk::ROText(3)
+
+=cut
 

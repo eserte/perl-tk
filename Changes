@@ -1,12 +1,90 @@
 Within each 'release' time advances down the file, but most recent
 release is at the top.
 
-Changes in *****
+Changes in Tk400.200
+
+* Fixed typos in tkPort.h, accept perl5.002 and later, including
+  conditional compile for 5.003_04 
+
+* Fixed bug with menu traversal and entering upper-case caused by 
+  Tk-b12's attempt to enable Solaris's keypad.
+
+* Tolerate 'extreme POSIX-ness' for 'irix'.
+
+* Added some more converted Tix stuff to Contrib 
+  - Tix stuff will probably become a separate CPAN module.
+
+* Messy hack to cause pod documentation to get added to HTML version
+  - doc directory now processes pre-installed pod2man output!
+
+* Made default for -scrollbars option to be non-optional
+  can now have string matching /([or]?[ns])?([or]?[ew])?/
+  that is 
+    'n' or 's', prefixed by optional 'o' or 'r'
+    'e' or 'w', prefixed by optional 'o' or 'r'
+  The 'r' (for required) is ignored as it is new default (as in pre-Tk-b11)
+  'o' causes that scrollbar to only be visible if needed, as in Tk-b11..Tk-b12
+
+* Some new pods courtesy of Achim Bohnet <ach@rosat.mpe-garching.mpg.de>
+
+* Convert '.o' to $(OBJ_EXT) when writing Makefiles - for OS/2.
+
+* Removed (some of) junk from distribution.
+
+* Updated Copyright dates.
+
+Changes in Tk-b12
 
 * Added -ldnet to Makefile.PL (DEC Net library for ultrix)
 
 * Tweeked DoOneEvent to be more tolerant of 'strings' as flags.
 
+* 'Enabled' keypad number-lock for Solaris.
+
+* Made 'optional' scrollbars a little more robust.
+
+* Added missing 'sub-methods' to Canvas
+
+* Change to Tk::MMutil and its uses to derive relative
+  pathnames.
+
+* Mods to Tk::HTML for (then current) libwww and to add features.
+
+* Convert to Tk::IO to use IO::Handle/IO::File rather than FileHandle
+
+* Use PerlIO abstraction rather than <stdio.h>'s FILE.
+
+* Added basic TIEHANDLE support to Tk::Text (needs very recent perl...)
+
+* 'required' perl5.003 - it didn't!
+
+* Tweak to Tk::After to allow $w->repeat's callback to cancel
+  further repeats, and make period more deteministic.
+
+* Added 'Dirlist' - thankyou whoever contributed it.
+
+* Mods to ErrorDialog to allow buttons to be customized.
+
+* (Some) cleanup of auto-scrollbar code.
+
+* Optionmenu allows name/value pairs as well as lists of values.
+
+* Updated TextUndo's 'Save' method.
+
+* Added missing sub-methods to 'grid'.
+
+* Make generated HTML more compliant with standards (weblint).
+
+* Fixed problem with -background/-bg options to composites.
+
+* Used correct Configure variable to allow use with perl installed
+  in ~name paths.
+
+* Avoid 'regex' name-clash for picky AIX compiler.
+
+* Allow perl/Tk in 'tainted' mode (I think).
+
+* Some other stuff - details lost due to disk problem.
 
 Changes in b11.02
 

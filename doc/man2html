@@ -8,7 +8,7 @@ use Getopt::Long;
 $opt_suffix = "htm";
 $opt_tk     = "";
 
-GetOptions('suffix=s','tk','q');
+GetOptions('suffix=s','tk','q','man1=s','man3=s');
 
 $SIG{INT} = sub { confess("Interrupt") };
 
@@ -780,7 +780,26 @@ sub process
    }
 }
 
-@ARGV = <man/*.[3n]> unless (@ARGV);
+sub mandir
+{
+ my ($dir,$sfx) = @_;
+ opendir(DIR,$dir) || die "Cannot open $dir:$!";
+ foreach (readdir(DIR))
+  {
+   next if (/^\.+$/);
+   push(@ARGV,"$dir/$_") if (/$sfx$/)
+  }
+ closedir(DIR);
+}
+
+mandir($opt_man1,'.1') if (defined $opt_man1);
+mandir($opt_man3,'.3') if (defined $opt_man3);
+
+unless (@ARGV)
+ {
+  mandir('man2','.2');
+  mandir('mann','.n');
+ }
 
 die "No files !" unless (@ARGV);
 

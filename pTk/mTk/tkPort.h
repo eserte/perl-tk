@@ -230,14 +230,13 @@ typedef long fd_mask;
 #undef calloc
 #define calloc(n,s) TclCalloc(n,s)
 
-
 #ifdef TIMEOFDAY_NO_TZ
 #define Tk_timeofday(x) gettimeofday(x)
- COREEXT int gettimeofday _ANSI_ARGS_((struct timeval *tp));
+COREXT int gettimeofday _ANSI_ARGS_((struct timeval *tp));
 #else
 #ifdef TIMEOFDAY_TZ
 #define Tk_timeofday(x) gettimeofday(x, (struct timezone *) 0)
- COREEXT int gettimeofday _ANSI_ARGS_((struct timeval *tp ,struct timezone *tzp));
+COREXT int gettimeofday _ANSI_ARGS_((struct timeval *tp ,struct timezone *tzp));
 #else
 #define Tk_timeofday(x) gettimeofday(x, (void *) 0)
 #ifdef TIMEOFDAY_DOTS

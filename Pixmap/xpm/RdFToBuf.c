@@ -39,9 +39,6 @@
 
 #include "XpmI.h"
 #include <sys/stat.h>
-#ifndef FOR_MSW
-#include <unistd.h>
-#endif
 #ifndef VAX11C
 #include <fcntl.h>
 #endif

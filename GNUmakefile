@@ -23,6 +23,4 @@ ccglue    : tkGlue.c
 debug_malloc.so : debug_malloc.o GNUmakefile 
 	$(CC) -G -o $@ $< 
                          
-           
-                   
                        

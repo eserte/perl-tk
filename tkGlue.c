@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -7,6 +7,13 @@
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
+
+#include <patchlevel.h>
+#if PATCHLEVEL > 3 || SUBVERSION >= 4
+#define Tkgv_fullname(x,y,z) gv_fullname(x,y,z)
+#else
+#define Tkgv_fullname(x,y,z) gv_fullname(x,y)
+#endif
 
 #include "tkGlue.def"
 
@@ -195,7 +202,7 @@ int refs;
       break;
      case SVt_PVGV:
       {SV *tmp = newSVpv("", 0);
-       gv_fullname(tmp,(GV *) sv);
+       Tkgv_fullname(tmp,(GV *) sv, Nullch);
        sv_catpv(out,"*");
        sv_catpv(out,SvPV(tmp,na));
        SvREFCNT_dec(tmp);
@@ -205,7 +212,7 @@ int refs;
       if (CvGV(sv))
        {
         SV *tmp = newSVpv("", 0);
-        gv_fullname(tmp, CvGV(sv));
+        Tkgv_fullname(tmp, CvGV(sv), Nullch);
         sv_catpv(out,"&");
         sv_catpv(out,SvPV(tmp,na));
         SvREFCNT_dec(tmp);
@@ -576,7 +583,7 @@ Tk_Window tkwin;
  Display *dpy = Tk_Display(tkwin);
  if (dpy)
   XSync(dpy,FALSE);
- hv_delete(hv, TOP_KEY, sizeof(TOP_KEY), G_DISCARD);
+ hv_delete(hv, TOP_KEY, strlen(TOP_KEY), G_DISCARD);
  Tcl_DeleteInterp(interp);
  
 #if 0
@@ -592,7 +599,7 @@ Tcl_Interp *interp;
 Tk_Window tkwin;
 {
  SV *sv = newSViv((IV) tkwin);            
- hv_store(interp, TOP_KEY, sizeof(TOP_KEY), sv, 0);
+ hv_store(interp, TOP_KEY, strlen(TOP_KEY), sv, 0);
 }
 
 #define mSVPV(sv,na) (SvOK(sv) ? SvPV(sv,na) : "undef")
@@ -777,7 +784,7 @@ int need;
  if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVHV)
   {
    HV *hash = (HV *) SvRV(sv);
-   SV **x = hv_fetch(hash, CMD_KEY, sizeof(CMD_KEY), 0);
+   SV **x = hv_fetch(hash, CMD_KEY, strlen(CMD_KEY), 0);
    if (x)
     {
      Lang_CmdInfo *info;
@@ -1826,7 +1833,7 @@ Tcl_Interp *interp;
  HV *hv = InterpHv(interp,0);
  if (hv)
   {
-   SV **x = hv_fetch(hv, TOP_KEY, sizeof(TOP_KEY), 0);
+   SV **x = hv_fetch(hv, TOP_KEY, strlen(TOP_KEY), 0);
    if (x)
     {
      return (Tk_Window) SvIV(*x);
@@ -2162,7 +2169,7 @@ Tk_Window tkwin;
    if (obj && SvROK(obj) && SvTYPE(SvRV(obj)) == SVt_PVHV)
     {
      HV *hash = (HV *) SvRV(obj);
-     SV *cmd = hv_delete(hash, CMD_KEY, sizeof(CMD_KEY), G_SCALAR);
+     SV *cmd = hv_delete(hash, CMD_KEY, strlen(CMD_KEY), G_SCALAR);
      if (cmd)
       {
        Lang_CmdInfo *info = (Lang_CmdInfo *) SvIV(cmd);
@@ -2260,7 +2267,7 @@ Tcl_CmdDeleteProc *deleteProc;
     in interp and one representing Tk's use
   */
  /* Record the command info in the window's hash */
- hv_store(hash, CMD_KEY, sizeof(CMD_KEY), newSViv((IV) info), 0);
+ hv_store(hash, CMD_KEY, strlen(CMD_KEY), newSViv((IV) info), 0);
  return info;
 }
 
@@ -2287,7 +2294,7 @@ Tcl_CmdDeleteProc *deleteProc;
  IncInterp(interp, cmdName);
  hv_store(hv, cmdName, cmdLen, MakeReference((SV *) hash), 0);
  /* Record the command info in the window's hash */
- hv_store(hash, CMD_KEY, sizeof(CMD_KEY), newSViv((IV) info), 0);
+ hv_store(hash, CMD_KEY, strlen(CMD_KEY), newSViv((IV) info), 0);
  return info;
 }
 

@@ -1,14 +1,14 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995, 1996 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in Tk/license.terms due to partial
 # derivation from Tk4.0 sources.
 #
 package Tk;
-require 5.003;
+require 5.002;
 use     AutoLoader;
 require Exporter;
 require DynaLoader;
@@ -24,8 +24,8 @@ use Carp;
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.0";
-$Tk::patchLevel  = "4.0p1";
-$Tk::VERSION     = "b12";
+$Tk::patchLevel  = "4.0p3";
+$Tk::VERSION     = '400.200';
 $Tk::strictMotif = 0;
                                    
 $Tk::library = __FILE__;

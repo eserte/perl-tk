@@ -77,7 +77,7 @@ Graham Barr <Graham.Barr@tiuk.ti.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995 Graham Barr. All rights reserved. This program is free
+Copyright (c) 1995-1996 Graham Barr. All rights reserved. This program is free
 software; you can redistribute it and/or modify it under the same terms
 as Perl itself.
 
