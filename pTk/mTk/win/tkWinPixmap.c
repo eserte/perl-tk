@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinPixmap.c 1.15 96/10/11 14:58:31
+ * SCCS: @(#) tkWinPixmap.c 1.18 97/08/06 15:36:23
  */
 
 #include "tkWinInt.h"
@@ -40,6 +40,8 @@ Tk_GetPixmap(display, d, width, height, depth)
     int depth;
 {
     TkWinDrawable *newTwdPtr, *twdPtr;
+    int planes;
+    Screen *screen;
     
     display->request++;
 
@@ -57,7 +59,13 @@ Tk_GetPixmap(display, d, width, height, depth)
     } else {
 	newTwdPtr->bitmap.colormap = twdPtr->bitmap.colormap;
     }
-    newTwdPtr->bitmap.handle = CreateBitmap(width, height, 1, depth, NULL);
+    screen = &display->screens[0];
+    planes = 1;
+    if (depth == screen->root_depth) {
+	planes = (int) screen->ext_data;
+	depth /= planes;
+    }
+    newTwdPtr->bitmap.handle = CreateBitmap(width, height, planes, depth, NULL);
 
     if (newTwdPtr->bitmap.handle == NULL) {
 	ckfree((char *) newTwdPtr);
@@ -122,5 +130,55 @@ TkSetPixmapColormap(pixmap, colormap)
     TkWinDrawable *twdPtr = (TkWinDrawable *)pixmap;
     twdPtr->bitmap.colormap = colormap;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * XGetGeometry --
+ *
+ *	Retrieve the geometry of the given drawable.  Note that
+ *	this is a degenerate implementation that only returns the
+ *	size of a pixmap.
+ *
+ * Results:
+ *	Returns 0.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
 
+int
+XGetGeometry(display, d, root_return, x_return, y_return, width_return,
+	height_return, border_width_return, depth_return)
+    Display* display;
+    Drawable d;
+    Window* root_return;
+    int* x_return;
+    int* y_return;
+    unsigned int* width_return;
+    unsigned int* height_return;
+    unsigned int* border_width_return;
+    unsigned int* depth_return;
+{
+    TkWinDrawable *twdPtr = (TkWinDrawable *)d;
+    HDC dc;
+    BITMAPINFO info;
 
+    if ((twdPtr->type != TWD_BITMAP) || (twdPtr->bitmap.handle == NULL)) {
+	panic("XGetGeometry: invalid pixmap");
+    }
+    dc = GetDC(NULL);
+    info.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    info.bmiHeader.biBitCount = 0;
+    if (!GetDIBits(dc, twdPtr->bitmap.handle, 0, 0, NULL, &info,
+	    DIB_RGB_COLORS)) {
+	panic("XGetGeometry: unable to get bitmap size");
+    }
+    ReleaseDC(NULL, dc);
+
+    *width_return = info.bmiHeader.biWidth;
+    *height_return = info.bmiHeader.biHeight;
+    return 1;
+}

@@ -32,6 +32,14 @@
 #include "pTk/tk_f.h"
 #include "pTk/tkInt_f.h"
 #include "pTk/Xlib_f.h"
+#ifdef WIN32
+#include "pTk/tkWin.h"
+#include "pTk/tkWinInt.h"
+#include "pTk/tkWin_f.h"
+#include "pTk/tkWinInt_f.h"
+#else
+#include "pTk/tkUnixInt.h"
+#endif
 #include "tkGlue.h"
 #include "tkGlue_f.h"
 #include "leak_util.h"
@@ -83,7 +91,6 @@ static char CMD_KEY[]      = "_CmdInfo_";
 
 extern void  LangPrint _((SV *sv));
 
-static void  EnterSubCommands   _((char *package, ...));
 static void handle_idle _((ClientData clientData));
 static void SelectionGet _((CV * cv));
 static void ManageGeometry _((CV * cv));
@@ -102,7 +109,7 @@ static SV *NameFromCv _((CV * cv));
 static void FreeAbstract _((CV * cv));
 static AV *FindAv _((Tcl_Interp *interp, char *who, int create, char *key));
 static HV *FindHv _((HV *interp, char *who, int create, char *key));
-static AV *ResultAv _((Tcl_Interp *interp, char *who, int create));
+static SV *ResultSv _((Tcl_Interp *interp, char *who, int create));
 static SV *Blessed _((char *package, SV * sv));
 static void XEventInfo _((CV * cv));
 static void PassEvent  _((CV * cv));
@@ -149,7 +156,7 @@ static GV *current_widget;
 static GV *current_event;
 
 void
-#ifdef STANDARD_C                 
+#ifdef STANDARD_C
 Tcl_Panic(char *fmt,...)
 #else
 /*VARARGS0 */
@@ -176,9 +183,8 @@ va_dcl
   croak("Tcl_Panic");
 }
 
-static int 
-Expire(code)
-int code;
+static int
+Expire(int code)
 {
  return code;
 }
@@ -201,7 +207,7 @@ do_watch(void)
 }
 #else
 extern void do_watch _((void));
-void 
+void
 do_watch()
 {
 
@@ -209,11 +215,7 @@ do_watch()
 #endif
 
 static void
-LangCatAv(out, av, refs, bra)
-SV *out;
-AV *av;
-int refs;
-char *bra;
+LangCatAv(SV *out, AV *av, int refs, char *bra)
 {
  int n = av_len(av) + 1;
  int i = 0;
@@ -260,10 +262,10 @@ int refs;
         SvREFCNT_dec(tmp);
         break;
        }
-     default: 
+     default:
       if (SvOK(sv))
        {
-        char *s = ""; 
+        char *s = "";
         if (SvROK(sv))
          {
           if (SvTYPE(SvRV(sv)) == SVt_PVAV)
@@ -324,7 +326,7 @@ SV **args;
     sv_catpvn(sv, " ", 1);
   }
  SvPV(sv, i);
- s = strncpy(malloc(i + 1), SvPV(sv, na), i);
+ s = strncpy(ckalloc(i + 1), SvPV(sv, na), i);
  s[i] = '\0';
  SvREFCNT_dec(sv);
  return s;
@@ -334,7 +336,7 @@ void
 LangPrint(sv)
 SV *sv;
 {
- static char *type_name[] = 
+ static char *type_name[] =
  {
   "NULL",
   "IV",
@@ -439,6 +441,22 @@ SV *sv;
  return sv_bless(sv, stash);
 }
 
+SV *
+TagIt(SV *sv, char *type)
+{         
+ char buffer[1024];
+ sprintf(buffer,"Tk::%s_Type",type);
+ if (SvROK(sv))
+  Blessed(buffer,sv);
+ else
+  {
+   SV *rv = newRV(sv);
+   Blessed(buffer,rv);
+   SvREFCNT_dec(rv);
+  } 
+ return sv;
+}
+
 Tcl_Interp *
 Tcl_CreateInterp  _((void))
 {
@@ -464,13 +482,11 @@ int fatal;
  return NULL;
 }
 
+typedef SV *(*createProc_t)(void);
 
-static AV *
-FindAv(interp, who, create, key)
-Tcl_Interp *interp;
-char *who;
-int create;
-char *key;
+static SV *
+FindXv(Tcl_Interp *interp, char *who, int create, 
+       char *key, U32 type , createProc_t createProc)
 {
  STRLEN len = strlen(key);
  HV *hv = InterpHv(interp,1);
@@ -478,35 +494,58 @@ char *key;
   {
    if (hv_exists(hv, key, len))
     {
-     SV **x = hv_fetch(hv, key, len, 0);              
-     if (x)                                           
-      {                                               
-       SV *rv = *x;                                   
-       if (SvROK(rv) && SvTYPE(SvRV(rv)) == SVt_PVAV) 
+     SV **x = hv_fetch(hv, key, len, 0);
+     if (x)
+      {
+       SV *sv = *x;
+       if (type >= SVt_PVAV)
         {
-         AV *av = (AV *) SvRV(rv);                       
-         if (create < 0)
+         if (!SvROK(sv) || SvTYPE(SvRV(sv)) != type)
           {
-           SvREFCNT_inc((SV *) av);
-           hv_delete(hv, key, len, G_DISCARD);
+           fprintf(stderr,__FUNCTION__ " "); sv_dump(sv);
+           Tcl_Panic("%s not a %u reference %s", key, type, SvPV(sv, na));
           }
-         return av;
+         else
+          {
+           sv = SvRV(sv);
+          }
         }
-       else                                           
-        Tcl_Panic("%s not an array reference %s", key, SvPV(rv, na));
-      }                                               
-     else                                             
+       if (create < 0)
+        {
+         SvREFCNT_inc((SV *) sv);
+         hv_delete(hv, key, len, G_DISCARD);
+        }
+       return sv;
+      }
+     else
       Tcl_Panic("%s exists but can't be fetched", key);
     }
    else if (create > 0)
-    {
-     AV *av = newAV();
-     hv_store(hv, key, len, MakeReference((SV *) av), 0);
-     return av;
+    {         
+     SV *sv = (*createProc)();
+     if (sv)
+      {
+       TagIt(sv,key);
+       if (type >= SVt_PVAV)
+        {
+         hv_store(hv, key, len, MakeReference(sv), 0);
+        }
+       else
+        hv_store(hv, key, len, sv, 0);
+      }
+     return sv;
     }
   }
  return NULL;
 }
+
+static SV *
+createHV(void)
+{
+ return (SV *) newHV();
+}
+
+
 
 static HV *
 FindHv(hv, who, create, key)
@@ -515,55 +554,52 @@ char *who;
 int create;
 char *key;
 {
- STRLEN len = strlen(key);
- if (hv && SvTYPE((SV *) hv) == SVt_PVHV)
-  {
-   if (hv_exists(hv, key, len))
-    {
-     SV **x = hv_fetch(hv, key, len, 0);              
-     if (x)                                           
-      {                                               
-       SV *rv = *x;                                   
-       if (SvROK(rv) && SvTYPE(SvRV(rv)) == SVt_PVHV) 
-        {
-         HV *av = (HV *) SvRV(rv);                       
-         if (create < 0)
-          {
-           SvREFCNT_inc((SV *) av);
-           hv_delete(hv, key, len, G_DISCARD);
-          }
-         return av;
-        }
-       else                                           
-        Tcl_Panic("%s not an hash reference %s", key, SvPV(rv, na));
-      }                                               
-     else                                             
-      Tcl_Panic("%s exists but can't be fetched", key);
-    }
-   else if (create > 0)
-    {
-     HV *av = newHV();
-     hv_store(hv, key, len, MakeReference((SV *) av), 0);
-     return av;
-    }
-  }
- else
-  {
-   Tcl_Panic("Not a hash %p",hv);
-  }
- return NULL;
+ return (HV *) FindXv(hv, who, create, key, SVt_PVHV, createHV);
 }
 
+static SV *
+createAV(void)
+{
+ return (SV *) newAV();
+}
+
+
 static AV *
-ResultAv(interp, who, create)
+FindAv(hv, who, create, key)
+HV *hv;
+char *who;
+int create;
+char *key;
+{
+ return (AV *) FindXv(hv, who, create, key, SVt_PVAV, createAV);
+}
+
+static SV *
+createSV(void)
+{
+#ifdef LEAKTEST
+ return newSV(999,0);
+#else
+ return newSV(0);
+#endif
+}
+
+static SV *
+ResultSv(interp, who, create)
 Tcl_Interp *interp;
 char *who;
 int create;
 {
- return FindAv(interp, who, create, "_TK_RESULT_");
+ SV *sv = FindXv(interp, who, create, "_TK_RESULT_", SVt_NULL, createSV);
+ if (sv && SvTYPE(sv) == SVt_PVAV)
+  {
+   fprintf(stderr, __FUNCTION__ " %s ",who);  sv_dump(sv);
+   Tcl_Panic("How did array get there!");
+  }
+ return sv;
 }
 
-void 
+void
 Tcl_CallWhenDeleted(interp, proc, clientData)
 Tcl_Interp *interp;
 Tcl_InterpDeleteProc *proc;
@@ -575,11 +611,11 @@ ClientData clientData;
  av_push(av, newSViv((IV) clientData));
 }
 
-static 
+static
 XS(InterpDestroy)
 {
  dXSARGS;
- Tcl_Interp *interp = (Tcl_Interp *) SvRV(ST(0)); 
+ Tcl_Interp *interp = (Tcl_Interp *) SvRV(ST(0));
  AV *av = FindAv(interp, "InterpDestroy", 0, "_WhenDeleted_");
  HV *hv = FindHv(interp, "Tcl_GetAssocData", 0, ASSOC_KEY);
 #if 0
@@ -632,7 +668,7 @@ Tcl_Interp *interp;
  * the TkMainInfo structure too and replace all of Tk's commands
  * with dummy commands that return errors (except don't replace
  * the "exit" command, since it may be needed for the application
- * to exit).  
+ * to exit).
  */
 
 void
@@ -712,7 +748,7 @@ SV **data;
 
 void
 DumpStack _((void))
-{                                      
+{
  dTHR;
  do_watch();
  Dump_vec("stack", stack_sp - stack_base, stack_base + 1);
@@ -745,7 +781,7 @@ SV **p;
      if (p[i])
       Decrement(p[i], "LangFreeVec");
     }
-   free(p);
+   ckfree((char *) p);
   }
 }
 
@@ -776,7 +812,7 @@ char *s;
      return;
     }
   }
- *sp = sv = (s) ? newSVpv(s, strlen(s)) : &sv_undef;
+ *sp = sv = (s) ? TagIt(newSVpv(s, strlen(s)),"LangSetString") : &sv_undef;
 }
 
 void
@@ -802,7 +838,7 @@ char *s;
       }
     }
   }
- *sp = sv = (s && *s) ? newSVpv(s, strlen(s)) : &sv_undef;
+ *sp = sv = (s && *s) ? TagIt(newSVpv(s, strlen(s)),"LangSetDefault") : &sv_undef;
 }
 
 void
@@ -815,7 +851,7 @@ SV *arg;
  if (!arg)
   arg = &sv_undef;
  if (SvTYPE(arg) == SVt_PVAV)
-  arg = newRV(arg);              /* DUBIOUS - AV's refcount too high now ? */
+  arg = newRV(arg);              
  if (sv && SvMAGICAL(sv))
   {
    sv_setsv(sv, arg);
@@ -942,7 +978,7 @@ SV *sv;
           {
            return SvPV(rv,na);
           }
-         else 
+         else
           Dump_vec("Odd object type", 1, &rv);
         }
       }
@@ -955,7 +991,7 @@ SV *sv;
 }
 
 /*
- * Result functions operate on an AV with 0th element 
+ * Result functions operate on an AV with 0th element
  * being string result
  */
 
@@ -963,31 +999,59 @@ char *
 Tcl_GetResult(interp)
 Tcl_Interp *interp;
 {
- AV *av = ResultAv(interp, "Tcl_GetResult", 0);
- if (av)
+ SV *sv = ResultSv(interp, "Tcl_GetResult", 0);
+ if (sv)
   {
-   int len = av_len(av) + 1;
-   do_watch();
-   if (len)
+   STRLEN len;
+   if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
-     if (len == 1)
-      return SvPV(*av_fetch(av, 0, 0), na);
-     else
-      return LangMergeString(len, AvALLOC(av));
+     AV *av = (AV *) SvRV(sv);
+     int len = av_len(av) + 1;
+     do_watch();
+     if (len)
+      {
+       if (len == 1)
+        return SvPV(*av_fetch(av, 0, 0), len);
+       else
+        return LangMergeString(len, AvALLOC(av));
+      }
+    }
+   else
+    {
+     return SvPV(sv, len);
     }
   }
  return "";
+}
+
+Tcl_Obj *
+Tcl_GetObjResult(interp)
+Tcl_Interp *interp;
+{       
+ return ResultSv(interp,"Tcl_GetObjResult",1);
 }
 
 Arg
 Tcl_ResultArg(interp)
 Tcl_Interp *interp;
 {
- AV *av = ResultAv(interp,"Tcl_ResultArg",-1);
- if (av)
-  return MakeReference((SV *) av);
- else
-  return &sv_undef;
+ return ResultSv(interp,"Tcl_ResultArg",-1);
+}
+
+Arg
+LangScalarResult(interp)
+Tcl_Interp *interp;
+{
+ SV *sv = ResultSv(interp,"Tcl_ResultArg",-1);
+ if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
+  {
+   AV *av = (AV *) SvRV(sv);
+   if (av_len(av) == 0)
+    {  
+     return av_pop(av);
+    }
+  }
+ return sv;
 }
 
 void
@@ -1001,11 +1065,7 @@ SV *arg;
   arg = newRV(arg);
  else
   Increment(arg, "Tcl_AppendArg");
- if (arg == my_watch)
-  {
-   Tcl_Panic("Watch result");
-  }
- av_push(ResultAv(interp, "Tcl_AppendArg", 1), arg);
+ Tcl_ListObjAppendElement(interp,Tcl_GetObjResult(interp), arg);
 }
 
 void
@@ -1023,12 +1083,13 @@ void
 Tcl_ResetResult(interp)
 Tcl_Interp *interp;
 {
- AV *av = ResultAv(interp, "Tcl_ResetResult", 0);
- if (av)
+ SV *sv = ResultSv(interp, "Tcl_ResetResult", 0);
+ if (sv)
   {
-   do_watch();
-   av_clear(av);
-   do_watch();
+   if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
+    av_clear((AV *) SvRV(sv));
+   else
+    sv_setsv(sv,&sv_undef);
   }
 }
 
@@ -1057,7 +1118,7 @@ va_dcl
 
 #ifdef STANDARD_C
 void
-Tcl_IntResults 
+Tcl_IntResults
 _ANSI_ARGS_((Tcl_Interp * interp, int count, int append,...))
 #else
 /*VARARGS0 */
@@ -1091,7 +1152,7 @@ va_dcl
 
 #ifdef STANDARD_C
 void
-Tcl_DoubleResults 
+Tcl_DoubleResults
 _ANSI_ARGS_((Tcl_Interp * interp, int count, int append,...))
 #else
 void
@@ -1142,14 +1203,15 @@ Tcl_Merge(argc, args)
 int argc;
 SV **args;
 {
- AV *av = newAV();       
+ AV *av = newAV();
  int i;
 #ifdef DEBUG_GLUE
  Dump_vec("Tcl_Merge", argc, args);
 #endif
  /* Increment refcounts of the SVs, the args vector
     should be LangFreeVec()ed by Tk which will dec them.
-  */
+  */      
+ TagIt((SV *) av, "Tcl_Merge");
  for (i = 0; i < argc; i++)
   {
    SV *sv = args[i];
@@ -1170,7 +1232,7 @@ int *argcPtr;
 Arg **argvPtr;
 LangFreeProc **freeProc;
 {
- /* Maybe inverse of Merge i.e. simply return av_len/AvALLOC 
+ /* Maybe inverse of Merge i.e. simply return av_len/AvALLOC
     and (probably) mess with REFCNTs again
   */
  do_watch();
@@ -1251,7 +1313,7 @@ LangFreeProc **freeProc;
  *argvPtr  = sp-count+1;
  *freeProc = StackFree;
 #if 0
- Dump_vec("SplitString", *argcPtr, *argvPtr);
+ Dump_vec("Lang_SplitString", *argcPtr, *argvPtr);
 #endif
 /*
  * Note FREETMPS and LEAVE happen in StackFree
@@ -1265,7 +1327,7 @@ LangFreeProc **freeProc;
 
 #ifdef STANDARD_C
 void
-Tcl_AppendResult 
+Tcl_AppendResult
 _ANSI_ARGS_((Tcl_Interp * interp,...))
 #else
 void
@@ -1274,14 +1336,9 @@ Tcl_Interp *interp;
 va_dcl
 #endif
 {
- AV *av = ResultAv(interp, "Tcl_AppendResult", 1);
- SV **x = av_fetch(av, 0, 0);
+ SV *result = Tcl_GetObjResult(interp);
  va_list ap;
- SV *sv;
  char *s;
- if (!x)
-  x = av_store(av, 0, newSVpv("", 0));
- sv = *x;
 #ifdef I_STDARG
  va_start(ap, interp);
 #else
@@ -1289,25 +1346,31 @@ va_dcl
 #endif
  while ((s = va_arg(ap, char *)))
   {
-   sv_catpv(sv, s);
+   Tcl_AppendStringsToObj(result,s, NULL);
   }
  va_end(ap);
 }
 
 
 void
-Tcl_ArgResult(interp, sv)
+Tcl_SetObjResult(interp, sv)
 Tcl_Interp *interp;
 SV *sv;
 {
- AV *av = ResultAv(interp, "Tcl_ArgResult", 1);
+ SV *result;
  Tcl_ResetResult(interp);
- if (sv == my_watch)
-  {
-   Tcl_Panic("Watch result");
-  }
+ result = Tcl_GetObjResult(interp);
+ /*
+  * It is caller's responsibility to free the incoming sv if it
+  * is a temporary, we increment refcount here as common case is
+  * LangWidgetArg() which just returns a raw un-incremented value 
+  * from the hash.
+  */
  if (SvTYPE(sv) == SVt_PVAV)
-  {
+  {               
+   /* Setting result to an AV occurs in configure processing to 
+    * return all the values associated with the option
+    */
    AV *xv = (AV *) sv;
    int l = av_len(xv) + 1;
    int i;
@@ -1317,22 +1380,25 @@ SV *sv;
      if (x)
       {
        Increment(*x, "Tcl_ArgResult");
-       av_push(av, *x);
+       Tcl_ListObjAppendElement(interp, result, *x);
       }
      else
-      av_push(av, &sv_undef);
+      Tcl_ListObjAppendElement(interp, result, &sv_undef);
     }
   }
  else
   {
    Increment(sv, "Tcl_ArgResult");
-   av_store(av, 0, sv);
+   Tcl_ListObjAppendElement(interp, result, sv);
   }
-#ifdef DEBUG_GLUE
- Dump_vec("Result", av_len(interp) + 1, AvALLOC(interp));
-#endif
- do_watch();
 }
+
+void
+Tcl_ArgResult (Tcl_Interp *interp, Tcl_Obj *sv)
+{
+ Tcl_SetObjResult(interp, sv);
+}
+
 
 
 static SV *
@@ -1344,7 +1410,7 @@ char *path;
   {
    HV *hv = InterpHv(interp,1);
    SV **x = hv_fetch(hv, path, strlen(path), 0);
-   if (x)     
+   if (x)
     return *x;
   }
  return &sv_undef;
@@ -1372,7 +1438,7 @@ SV *
 TkToWidget(tkwin,pinterp)
 Tk_Window tkwin;
 Tcl_Interp **pinterp;
-{                                   
+{
  Tcl_Interp *junk;
  if (!pinterp)
   pinterp = &junk;
@@ -1395,7 +1461,7 @@ Tcl_Interp **pinterp;
 }
 
 
-Tk_Window 
+Tk_Window
 TkToMainWindow(tkwin)
 Tk_Window tkwin;
 {
@@ -1411,7 +1477,7 @@ Tk_Window tkwin;
  return NULL;
 }
 
-Arg 
+Arg
 LangWidgetArg(interp, tkwin)
 Tcl_Interp *interp;
 Tk_Window tkwin;
@@ -1482,23 +1548,20 @@ LangResultSave *
 LangSaveResult(interp)
 Tcl_Interp **interp;
 {
- AV *now = ResultAv(*interp, "LangSaveResult", 1);
- AV *save = CopyAv(newAV(), now);
- av_clear(now);
+ SV *now = ResultSv(*interp, "LangSaveResult", -1);
  IncInterp(*interp,"LangResultSave");
- return save;
+ return now;
 }
 
 void
 LangRestoreResult(interp, old)
 Tcl_Interp **interp;
-AV *old;
+SV *old;
 {
- AV *now = ResultAv(*interp, "LangRestoreResult", 1);
- CopyAv(now, old);
+ SV *now = ResultSv(*interp, "LangRestoreResult", 1);
+ sv_setsv(now,old);
  SvREFCNT_dec((SV *) old);
  DecInterp(*interp,"LangRestoreResult");
- do_watch();
 }
 
 static void
@@ -1518,20 +1581,20 @@ char *message;
  if (InterpHv(interp,0))
   {
    AV *av = FindAv(interp, "Tcl_AddErrorInfo", 1, "_ErrorInfo_");
-   SV *sv;                         
-   while (isspace(*message))       
-    message++;                     
-   if (*message)                   
+   SV *sv;
+   while (isspace(*message))
+    message++;
+   if (*message)
     av_push(av,newSVpv(message,0));
   }
 }
 
-static int 
+static int
 Check_Eval(interp)
 Tcl_Interp *interp;
 {
  SV *sv = perl_get_sv("@", TRUE);
- if (SvTRUE(sv))  
+ if (SvTRUE(sv))
   {
    char *s = SvPV(sv, na);
    if (!strcmp("_TK_BREAK_\n",s))
@@ -1547,7 +1610,7 @@ Tcl_Interp *interp;
      sv_setpv(sv,"");
      return TCL_ERROR;
     }
-  }               
+  }
  return TCL_OK;
 }
 
@@ -1555,7 +1618,7 @@ static void
 Set_widget(widget)
 SV *widget;
 {
- if (!current_widget)                                    
+ if (!current_widget)
   current_widget = gv_fetchpv("Tk::widget",5, SVt_PV);
  if (widget && SvROK(widget))
   {
@@ -1566,10 +1629,9 @@ SV *widget;
 }
 
 static void
-Set_event(event)
-SV *event;
+Set_event(SV *event)
 {
- if (!current_event)                                    
+ if (!current_event)
   current_event = gv_fetchpv("Tk::event",5, SVt_PV);
  if (event && SvROK(event))
   {
@@ -1579,7 +1641,7 @@ SV *event;
   }
 }
 
-static 
+static
 void HandleBgErrors(clientData)
 ClientData clientData;
 {Tcl_Interp *interp = (Tcl_Interp *) clientData;
@@ -1625,20 +1687,21 @@ Tcl_Interp *interp;
    AV *pend = FindAv(interp, "Tcl_BackgroundError", 1, "_PendingErrors_");
    AV *av   = FindAv(interp, "Tcl_BackgroundError", -1, "_ErrorInfo_");
    SV *obj  = WidgetRef(interp,".");
-   if (obj && SvROK(obj))  
+   if (obj && SvROK(obj))
     obj = SvREFCNT_inc(obj);
-   else                    
+   else
     obj = newSVpv(BASEEXT,0);
-   if (!av)                
-    {                      
-     av = newAV();         
-    }                      
-   av_unshift(av,3);       
+   if (!av)
+    {
+     av = newAV();
+     TagIt((SV *) av, "Tcl_BackgroundError");
+    }
+   av_unshift(av,3);
    av_store(av, 0, newSVpv("Tk::Error",0));
-   av_store(av, 1, obj);   
+   av_store(av, 1, obj);
    av_store(av, 2, newSVpv(Tcl_GetResult(interp),0));
    av_push( pend, LangMakeCallback((SV *) av));
-   if (av_len(pend) <= 0)  
+   if (av_len(pend) <= 0)
     Tcl_DoWhenIdle(HandleBgErrors, (ClientData) interp);
    Tcl_ResetResult(interp);
   }
@@ -1666,16 +1729,23 @@ SV *win;
  Lang_ClearErrorInfo(info->interp);
 }
 
-static int 
-Return_Results(interp,items,offset)
-Tcl_Interp *interp;
-int items;
-int offset;
+static int
+Return_Results(Tcl_Interp *interp,int items,int offset)
 {
  dSP;
- AV *av = ResultAv(interp, "Call_Tk", 0);
- int count = (av) ? (av_len(av) + 1) : 0;
+ SV *sv = ResultSv(interp, "Return_Results", 0);
+ int count = 0;
  SV **args;
+ if (sv)
+  {
+   if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
+    {
+     sv = SvRV(sv);
+     count = av_len((AV *) sv) + 1;
+    }
+   else
+    count = 1;
+  }
  /* Get stack as it is now */
  SPAGAIN;
  if (count > items)
@@ -1686,32 +1756,29 @@ int offset;
  args = sp + offset;
  if (count)
   {
-   int i = count;
-   while (i-- > 0)
+   if (SvTYPE(sv) == SVt_PVAV)
     {
-     SV *x = av_pop(av);
-#if 0           
-     args[i] = sv_mortalcopy(x);
-     Decrement(x,"Move to stack");
-#else
-     if (1 || SvREADONLY(x))  
-      {                       
+     int i = count;
+     while (i-- > 0)
+      {
+       SV *x = av_pop((AV *) sv);
        args[i] = sv_mortalcopy(x);
        Decrement(x,"Move to stack");
-      }                       
-     else                     
-      args[i] = sv_2mortal(x);
-#endif
-    }    
-  }      
- else    
-  {      
+      }
+    }
+   else
+    {
+     args[0] = sv_mortalcopy(sv);
+    }
+  }
+ else
+  {
    if (!(GIMME & G_ARRAY))
-    {    
+    {
      args[0] = &sv_undef;
      count++;
-    }    
-  }      
+    }
+  }
  /* Copy stack pointer back to global */
  PUTBACK;
  return count;
@@ -1730,26 +1797,28 @@ SV **args;
    SV *what = SvREFCNT_inc(args[0]);
    dSP;
    int old_taint = tainted;
-   tainted = 0; 
+   tainted = 0;
    IncInterp(interp, "Call_Tk");
    Tcl_ResetResult(interp);
-   if (info->Tk.proc)
+   if (info->Tk.proc || info->Tk.objProc)
     {
-     /* Must find offset of 0'th arg now in case 
-        stack moves as a result of the call 
+     /* Must find offset of 0'th arg now in case
+        stack moves as a result of the call
       */
      int offset = args - sp;
      /* BEWARE - FIXME ? if Tk code does a callback to perl and perl grow the
         stack then args that Tk code has will still point at old stack.
         Thus if Tk tests args[i] *after* the callback it will get junk.
-        Only solid fix that occurs to me at present is to take a copy 
+        Only solid fix that occurs to me at present is to take a copy
         of args here - but that seems expensive.
-        (Note it is only vector that is at risk, SVs themselves will stay put.)   
+        (Note it is only vector that is at risk, SVs themselves will stay put.)
         Possible alternate fix is for (all the) Lang_*Callback() to be passed &args,
         and fix it if stack moves.
       */
-     int code = (*info->Tk.proc) (info->Tk.clientData, interp, items, args);
-     /* info stucture may have been free()'ed now ... */
+     int code = (info->Tk.objProc)
+                  ? (*info->Tk.objProc) (info->Tk.objClientData, interp, items, args)
+                  : (*info->Tk.proc) (info->Tk.clientData, interp, items, args);
+     /* info stucture may have been free'ed now ... */
      if (code == TCL_OK)
       {
        count = Return_Results(interp,items,offset);
@@ -1799,21 +1868,24 @@ static
 XS(MainWindowCreate)
 {
  dXSARGS;
- Tcl_Interp *interp = Tcl_CreateInterp(); 
+ Tcl_Interp *interp = Tcl_CreateInterp();
  SV **args = &ST(0);
- char *appName = SvPV(ST(0),na);
+ char *appName = SvPV(ST(1),na);
  int offset = args - sp;
- if (TkCreateFrame(NULL, interp, items, &ST(0), 1, appName) != TCL_OK)
+ int code = TkCreateFrame(NULL, interp, items, &ST(0), 1, appName);
+ if (code != TCL_OK)
   {
    Tcl_AddErrorInfo(interp, "Tk::MainWindow::Create");
    croak("%s",Tcl_GetResult(interp));
   }
- TkPlatformInit(interp);
+#ifndef WIN32
+ TkCreateXEventSource();
+#endif
  XSRETURN(Return_Results(interp,items,offset));
 }
 
 
-static int 
+static int
 all_printable(s,n)
 char *s;
 int n;
@@ -1838,23 +1910,23 @@ Atom type;
 Tk_Window tkwin;
 {
  AV *av = (AV *) clientData;
- if (type == XA_STRING || (format == 8 && all_printable((char *) portion, numItems))) 
+ if (type == XA_STRING || (format == 8 && all_printable((char *) portion, numItems)))
   {
-   if (format != 8) 
+   if (format != 8)
     {
      return EXPIRE((interp, "bad format for string selection: wanted \"8\", got \"%d\"", format));
     }
    else
     {
      SV **x = av_fetch(av, 0, 0);
-     SV *sv;           
-     if (!x)           
+     SV *sv;
+     if (!x)
       x = av_store(av, 0, newSVpv("", 0));
-     sv = *x;          
+     sv = *x;
      sv_catpvn(sv, (char *) portion, (unsigned) numItems);
     }
-  } 
- else 
+  }
+ else
   {
    char *p = (char *) portion;
    if (type == Tk_InternAtom(tkwin,"TARGETS"))
@@ -1909,7 +1981,7 @@ char *s;
  if (*s++ != '-')
   return 0;
  if (!isalpha(*s))
-  return 0; 
+  return 0;
  while ((ch = *++s))
   {
    if (!isalnum(ch) && ch != '_')
@@ -1918,7 +1990,7 @@ char *s;
  return 1;
 }
 
-static 
+static
 XS(SelectionGet)
 {
  dXSARGS;
@@ -1950,8 +2022,9 @@ XS(SelectionGet)
    else
     croak("Bad option '%s'",s);
   }
- av = newAV(); 
- if (Tk_GetXSelection(info->interp, info->tkwin, selection, target, 
+ av = newAV();
+ TagIt((SV *) av,"SelectionGet");
+ if (Tk_GetXSelection(info->interp, info->tkwin, selection, target,
                   SelGetProc, (ClientData) av) != TCL_OK)
   {
    SvREFCNT_dec((SV *) av);
@@ -2089,15 +2162,15 @@ SV **args;
          if (mw)
           {
            if ((ClientData) mw != info->Tk.clientData)
-            {     
+            {
              if (info->Tk.clientData)
               {
                fprintf(stderr,"cmd %p/%p using %p/%p\n",
                        info->Tk.clientData,info->interp,
                        mw, winfo->interp);
               }
-             info->Tk.clientData = (ClientData) mw;           
-            }     
+             info->Tk.clientData = (ClientData) mw;
+            }
           }
         }
        return i;
@@ -2122,7 +2195,7 @@ static
 XS(XStoSubCmd)
 {
  dXSARGS;
- Lang_CmdInfo info;                      
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  int posn = InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn < 0)
@@ -2130,27 +2203,27 @@ XS(XStoSubCmd)
    croak("%s is not a Tk Window",SvPV(ST(0),na));
   }
  if (posn == 0)
-  {                                      
-   /* Do arg re-ordering to covert grab/wm like calls from 
+  {
+   /* Do arg re-ordering to covert grab/wm like calls from
       perl method call form to that expected by Tk
-              0   1   2                          
-      have [ win sub ?-opt? ....     ]   
-      need [ cv  sub ?-opt? win ...  ]   
-                                         
-    */                                   
-                                         
+              0   1   2
+      have [ win sub ?-opt? ....     ]
+      need [ cv  sub ?-opt? win ...  ]
+
+    */
+
    MEXTEND(sp, 1);                /* May not be room ? */
    while (sp > mark + 2)          /* Move all but two args up 1 */
-    {                                    
+    {
      if (SvPOK(*sp) && isSwitch(SvPV(*sp, na)))
-      break;                             
-     sp[1] = sp[0];                      
-     sp--;                               
-    }                                    
+      break;
+     sp[1] = sp[0];
+     sp--;
+    }
    sp[1] = mark[1];               /* Move object = window arg */
    sp = mark + (++items);         /* move sp past the lot */
    PUTBACK;                       /* and reset the global */
-  }                                      
+  }
  ST(0) = name;          /* Fill in command name */
  XSRETURN(Call_Tk(&info, items, &ST(0)));
 }
@@ -2159,7 +2232,7 @@ static
 XS(XStoAfterSub)
 {
  dXSARGS;
- Lang_CmdInfo info;                      
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  int posn = InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn != 0)
@@ -2180,15 +2253,15 @@ static
 XS(XStoGrid)
 {
  dXSARGS;
- Lang_CmdInfo info;                      
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  int posn = InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn == 0 && 0)
   {
    /* Find a place for the widget arg after a possible subcommands */
-   posn = 1;                          
+   posn = 1;
    if (posn < items && SvPOK(ST(posn)) && !isSwitch(SvPV(ST(posn),na)))
-    posn++;                           
+    posn++;
    items = InsertArg(mark,posn,ST(0));
    ST(0) = name;          /* Fill in command name */
   }
@@ -2200,11 +2273,11 @@ XS(XStoGrid)
 }
 
 
-static 
+static
 XS(XStoDisplayof)
 {
  dXSARGS;
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  int posn = InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn != 0)
@@ -2228,11 +2301,11 @@ XS(XStoTk)
 {
  dXSARGS;
  SV *name = NameFromCv(cv);
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  int posn =  InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn < 0)
   {
-   Dump_vec(SvPV(name,na),items,&ST(0));         
+   Dump_vec(SvPV(name,na),items,&ST(0));
    croak("Usage $widget->%s(...)",SvPV(name,na));
   }
  if (items == 0 || !SvPOK(ST(0)) || strcmp(SvPV(ST(0),na),BASEEXT) != 0)
@@ -2248,11 +2321,11 @@ XS(XStoOption)
 {
  dXSARGS;
  SV *name = NameFromCv(cv);
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  int posn =  InfoFromArgs(&info, LangOptionCommand, 1, items, &ST(0));
  if (posn < 0)
   {
-   Dump_vec(SvPV(name,na),items,&ST(0));         
+   Dump_vec(SvPV(name,na),items,&ST(0));
    croak("Usage $widget->%s(...)",SvPV(name,na));
   }
  if (items > 1 && SvPOK(ST(1)) && !strcmp(SvPV(ST(1),na),"get"))
@@ -2268,11 +2341,11 @@ XS(XStoImage)
 {
  dXSARGS;
  SV *name = NameFromCv(cv);
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  int posn =  InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn < 0)
   {
-   Dump_vec(SvPV(name,na),items,&ST(0));         
+   Dump_vec(SvPV(name,na),items,&ST(0));
    croak("Usage $widget->%s(...)",SvPV(name,na));
   }
  if (items > 1 && SvPOK(ST(1)))
@@ -2294,7 +2367,7 @@ static
 XS(XStoTclCmd)
 {
  dXSARGS;
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  if (InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0)) != 0)
   {
@@ -2312,12 +2385,12 @@ static
 XS(XStoNoWindow)
 {
  dXSARGS;
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  HV *cm;
  STRLEN sz;
  char *cmdName = SvPV(name,sz);
- SV **x  ; 
+ SV **x  ;
  InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,0,items,&ST(0));
  cm = FindHv(info.interp, "XStoNoWindow", 0, CMD_KEY);
  if ((x = hv_fetch(cm, cmdName, sz, 0)))
@@ -2325,22 +2398,22 @@ XS(XStoNoWindow)
    Tcl_CmdInfo *cmd = (Tcl_CmdInfo *) SvPV(*x,sz);
    if (sz != sizeof(*cmd))
     croak("%s corrupted",CMD_KEY);
-   info.Tk.clientData = cmd->clientData;
+   info.Tk = *cmd;
   }
  else
-  info.Tk.clientData = NULL;
+  {
+   info.Tk.clientData = NULL;
+   info.Tk.objClientData = NULL;
+  }
  if (items > 0 && (sv_isobject(ST(0)) || !strcmp(SvPV(ST(0),na),BASEEXT)))
   ST(0) = name;         /* Fill in command name */
- else 
+ else
   items = InsertArg(mark,0,name);
  XSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static CV *
-TkXSUB(name,xs,proc)
-char *name;
-void (*xs)_((CV *));
-Tcl_CmdProc *proc;
+TkXSUB(char *name,void (*xs)(CV *),Tcl_CmdProc *proc)
 {
  SV *sv = newSVpv(BASEEXT,0);
  CV *cv;
@@ -2359,7 +2432,7 @@ Tcl_CmdProc *proc;
  return cv;
 }
 
-void 
+void
 Lang_TkCommand(name,proc)
 char *name;
 Tcl_CmdProc *proc;
@@ -2367,8 +2440,8 @@ Tcl_CmdProc *proc;
  TkXSUB(name,XStoTclCmd,proc);
 }
 
-                     
-/* 
+
+/*
   The bind command is handled specially, it must *always* be called
   with a widget object. And only the <> form of sequence is allowed
   so that the following forms of call can be spotted:
@@ -2377,7 +2450,7 @@ Tcl_CmdProc *proc;
   $widget->bind('tag');
   $widget->bind('<...>');
   $widget->bind('tag','<...>');
-  $widget->bind('<...>',command); 
+  $widget->bind('<...>',command);
   $widget->bind('tag','<...>',command);
 
 */
@@ -2386,29 +2459,29 @@ static
 XS(XStoBind)
 {
  dXSARGS;
- Lang_CmdInfo info;                     
+ Lang_CmdInfo info;
  SV *name = NameFromCv(cv);
  int posn = InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
- STRLEN len;                             
+ STRLEN len;
  if (posn < 0)
   {
    Dump_vec(SvPV(name,na),items,&ST(0));
    croak("Usage $widget->%s(...)",SvPV(name,na));
   }
  if (items < 2 || *SvPV(ST(1),len) == '<')
-  {                                      
-   /* Looks like $widget->bind([<..>])   
-    * i.e. bind command to widget itself 
+  {
+   /* Looks like $widget->bind([<..>])
+    * i.e. bind command to widget itself
     * Standard move up of all the args to make room for 'bind'
-    * as argv[0]                                              
-    */                                                        
+    * as argv[0]
+    */
    items = InsertArg(mark,0,name);
-  }                                      
- else                                    
-  {                                      
+  }
+ else
+  {
    /* Looks like $widget->bind('tag',...)
-    * simply overwrite 0'th argument with 'bind' 
-    */                                   
+    * simply overwrite 0'th argument with 'bind'
+    */
    ST(0) = name;          /* Fill in command name */
 #if 0
    if (dowarn)
@@ -2424,12 +2497,12 @@ XS(XStoBind)
       }
     }
 #endif
-  }                                      
+  }
  XSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 
-void 
+void
 LangDeadWindow(interp, tkwin)
 Tcl_Interp *interp;
 Tk_Window tkwin;
@@ -2437,9 +2510,9 @@ Tk_Window tkwin;
  HV *hv = InterpHv(interp,0);
  if (hv)
   {
-   /* This is last hook before tkwin disapears 
-       - LangDeleteWidget has happened 
-       - <Destroy> bindings have happened 
+   /* This is last hook before tkwin disapears
+       - LangDeleteWidget has happened
+       - <Destroy> bindings have happened
     */
    char *cmdName = Tk_PathName(tkwin);
    STRLEN cmdLen = strlen(cmdName);
@@ -2460,24 +2533,26 @@ Tk_Window tkwin;
   }
 }
 
-static void Lang_DeleteCommand _((Tcl_Interp *interp,Tcl_Command info));
 
-static void
-Lang_DeleteCommand(interp, info)
+int
+Tcl_DeleteCommandFromToken(interp, info)
 Tcl_Interp *interp;
 Tcl_Command info;
 {
  if (info)
   {
-   if (info->Tk.deleteProc)   
-    {                         
+   if (info->Tk.deleteProc)
+    {
      (*info->Tk.deleteProc) (info->Tk.deleteData);
      info->Tk.deleteProc = NULL;
      info->Tk.deleteData = NULL;
-    }                         
-   info->Tk.clientData = NULL;
-   info->Tk.proc       = NULL;
+    }
+   info->Tk.clientData    = NULL;
+   info->Tk.proc          = NULL;
+   info->Tk.objClientData = NULL;
+   info->Tk.objProc       = NULL;
   }
+ return TCL_OK;
 }
 
 void
@@ -2490,9 +2565,9 @@ Tcl_Command info;
  SV *win = WidgetRef(interp, cmdName);
  /* This is first sign of disapearing widget, <Destroy> bindings
     are still to come.
-  */ 
+  */
  LangMethodCall(interp,win,"_Destroyed",0,0);
- Lang_DeleteCommand(interp,info);
+ Tcl_DeleteCommandFromToken(interp,info);
  if (win && SvOK(win))
   {
    HV *hash = NULL;
@@ -2511,8 +2586,8 @@ Tcl_Command info;
  char *cmdName = SvPV(info->image,na);
  if (info->interp != interp)
   Tcl_Panic("%s->interp=%p expected %p", cmdName, info->interp, interp);
- Lang_DeleteCommand(interp, info);
- DecInterp(info->interp,cmdName); 
+ Tcl_DeleteCommandFromToken(interp, info);
+ DecInterp(info->interp,cmdName);
 }
 
 Tcl_Command
@@ -2531,12 +2606,13 @@ Tcl_CmdDeleteProc *deleteProc;
  Lang_CmdInfo info;
  SV *sv;
  do_watch();
+ memset(&info,0,sizeof(info));
  info.Tk.proc = proc;
  info.Tk.deleteProc = deleteProc;
  info.Tk.clientData = info.Tk.deleteData = clientData;
  info.interp = interp;
  info.tkwin = tkwin;
- info.image = NULL; 
+ info.image = NULL;
  sv = struct_sv(&info,sizeof(info));
 
  /* Record the object in the main hash */
@@ -2564,12 +2640,13 @@ Tcl_CmdDeleteProc *deleteProc;
  SV *sv;
  Lang_CmdInfo info;
  do_watch();
+ memset(&info,0,sizeof(info));
  info.Tk.proc = proc;
  info.Tk.deleteProc = deleteProc;
  info.Tk.clientData = info.Tk.deleteData = clientData;
  info.interp = interp;
  info.tkwin = NULL;
- info.image = newSVpv(cmdName,cmdLen); 
+ info.image = newSVpv(cmdName,cmdLen);
  sv =  struct_sv(&info,sizeof(info));
  /* Record the object in the main hash */
  IncInterp(interp, cmdName);
@@ -2591,23 +2668,23 @@ Tk_ImageType *typePtr;
 }
 
 Tcl_Command
-Tcl_CreateCommand(interp, cmdName, proc, clientData, deleteProc)
+Tcl_CreateObjCommand(interp, cmdName, proc, clientData, deleteProc)
 Tcl_Interp *interp;
 char *cmdName;
-Tcl_CmdProc *proc;
+Tcl_ObjCmdProc *proc;
 ClientData clientData;
 Tcl_CmdDeleteProc *deleteProc;
 {
  if (clientData)
   {
    CV *cv    = TkXSUB(cmdName,NULL,NULL);
-   if (deleteProc)                
-    {                             
+   if (deleteProc)
+    {
      HV *hv = InterpHv(interp,1);
      Tcl_CallWhenDeleted(interp,(Tcl_InterpDeleteProc *)deleteProc,clientData);
-    }                             
-   if (!cv)                       
-    {                             
+    }
+   if (!cv)
+    {
      abort();
      croak("No XSUB for %s\n",cmdName);
     }
@@ -2616,40 +2693,53 @@ Tcl_CmdDeleteProc *deleteProc;
 }
 
 int
+Tcl_IsSafe(interp)
+Tcl_Interp *interp;
+{
+ return 0; /* Is this interp in a 'safe' compartment - not yet implemented */
+}
+
+int
+Tcl_HideCommand (Tcl_Interp *interp, char *cmdName, char *hiddenCmdName)
+{
+ CV *cv = TkXSUB(cmdName,NULL,NULL);
+ warn("Tcl_HideCommand %s => %s called",cmdName,hiddenCmdName);
+ if (!cv)
+  {
+   return EXPIRE((interp,"Cannot find %s", cmdName));
+  }
+ return TCL_OK;
+}
+
+int
+Tcl_GetCommandInfo (Tcl_Interp *interp,char *cmdName, Tcl_CmdInfo *infoPtr)
+{
+ CV *cv = TkXSUB(cmdName,NULL,NULL);
+ if (!cv)
+  {
+   return EXPIRE((interp,"Cannot find %s", cmdName));
+  }
+ return EXPIRE((interp,"perl/Tk cannot `GetCommandInfo' %s", cmdName));
+}
+
+Tcl_Command
+Tcl_CreateCommand(interp, cmdName, proc, clientData, deleteProc)
+Tcl_Interp *interp;
+char *cmdName;
+Tcl_CmdProc *proc;
+ClientData clientData;
+Tcl_CmdDeleteProc *deleteProc;
+{
+ return Tcl_CreateObjCommand(interp, cmdName, (Tcl_ObjCmdProc *) proc, clientData, deleteProc);
+}
+
+int
 Tcl_GetBoolean(interp, sv, boolPtr)
 Tcl_Interp *interp;
 SV *sv;
 int *boolPtr;
 {
- static char *yes[] = {"y", "yes", "true", "on", NULL};
- static char *no[] =  {"n", "no", "false", "off", NULL};
- do_watch();
- if (SvGMAGICAL(sv)) mg_get(sv);
- if (SvPOK(sv))
-  {
-   char *s = SvPV(sv, na);
-   char **p = yes;
-   while (*p)
-    {
-     if (!strcasecmp(s, *p++))
-      {
-       *boolPtr = 1;
-       return TCL_OK;
-      }
-    }
-   p = no;
-   while (*p)
-    {
-     if (!strcasecmp(s, *p++))
-      {
-       *boolPtr = 0;
-       return TCL_OK;
-      }
-    }
-  }
- *boolPtr = SvTRUE(sv);
- do_watch();
- return TCL_OK;
+ return Tcl_GetBooleanFromObj(interp, sv, boolPtr);
 }
 
 int
@@ -2658,10 +2748,7 @@ Tcl_Interp *interp;
 SV *sv;
 double *doublePtr;
 {
- if (SvGMAGICAL(sv)) mg_get(sv);
- *doublePtr = SvNV(sv);
- do_watch();
- return TCL_OK;
+ return Tcl_GetDoubleFromObj(interp, sv, doublePtr);
 }
 
 int
@@ -2670,15 +2757,18 @@ Tcl_Interp *interp;
 SV *sv;
 int *intPtr;
 {
- if (SvGMAGICAL(sv)) mg_get(sv);
- if (SvIOK(sv) || looks_like_number(sv))
-  *intPtr = SvIV(sv);
- else
-  {
-   *intPtr = 0;
-   return EXPIRE((interp, "'%s' isn't numeric", SvPVX(sv)));
-  }
- return TCL_OK;
+ return Tcl_GetIntFromObj(interp, sv, intPtr);
+}
+
+int
+Lang_GetStrInt(interp, s, intPtr)
+Tcl_Interp *interp;
+char *s;
+int *intPtr;
+{SV *sv = newSVpv(s,0);
+ int code = Tcl_GetIntFromObj(interp, sv, intPtr);
+ SvREFCNT_dec(sv);
+ return code;
 }
 
 static SV *LangVar2 _((Tcl_Interp *interp, SV *sv, char *part2, int flags));
@@ -2734,7 +2824,7 @@ int flags;
  return SvPV(sv, na);
 }
 
-int 
+int
 LangCmpOpt(opt,arg,len)
 char *opt;
 char *arg;
@@ -2799,7 +2889,7 @@ SV *sv;
 
  /* We are a "magic" set processor, whether we like it or not
     because this is the hook we use to get called.
-    So we are (I think) supposed to look at "private" flags 
+    So we are (I think) supposed to look at "private" flags
     and set the public ones if appropriate.
     e.g. "chop" sets SvPOKp as a hint but not SvPOK
 
@@ -2807,7 +2897,7 @@ SV *sv;
 
     Question are successive "magics" called in correct order?
 
-    i.e. if we are tracing a tied variable should we call 
+    i.e. if we are tracing a tied variable should we call
     some magic list or be careful how we insert ourselves in the list?
 
   */
@@ -2869,7 +2959,7 @@ ClientData clientData;
  p->sv = SvREFCNT_inc(sv);
  p->part2 = part2;
 
- /* We want to be last in the chain so that any 
+ /* We want to be last in the chain so that any
     other magic has been called first
   */
 
@@ -2975,7 +3065,7 @@ SV *sv;
  return 0;
 }
 
-int 
+int
 Tcl_LinkVar(interp,varName,addr,type)
 Tcl_Interp *interp;
 char *varName;
@@ -3189,7 +3279,7 @@ int type;
    return TCL_OK;
   }
  else if (SvPOK(sv))
-  {            
+  {
    dTHR;
    HV *old_stash = curcop->cop_stash;
    char *name = SvPV(sv,na);
@@ -3199,7 +3289,7 @@ int type;
    switch (type)
     {
      case TK_CONFIG_SCALARVAR:
-      prefix = '$'; 
+      prefix = '$';
      default:
       if (!strchr(name,':'))
        {
@@ -3212,11 +3302,11 @@ int type;
       break;
      case TK_CONFIG_ARRAYVAR:
       x = (SV *) perl_get_av(name,TRUE);
-      prefix = '@'; 
+      prefix = '@';
       break;
      case TK_CONFIG_HASHVAR:
       x = (SV *) perl_get_hv(name,TRUE);
-      prefix = '%'; 
+      prefix = '%';
       break;
     }
    curcop->cop_stash = old_stash;
@@ -3242,7 +3332,7 @@ Var sv;
  SvREFCNT_dec(sv);
 }
 
-Arg 
+Arg
 LangVarArg(sv)
 Var sv;
 {
@@ -3252,12 +3342,12 @@ Var sv;
 
 
 /*
-   For perl a "callback" is an SV 
-   - Simple case of ref to CV 
-   - A ref to an AV, 1st element is "method" rest are 
+   For perl a "callback" is an SV
+   - Simple case of ref to CV
+   - A ref to an AV, 1st element is "method" rest are
    args to be passed on EACH call (before/after any Tk args ?)
    Akin to fact that TCL/TK evals an arbitary string
-   (Perl code could pre-scan args and convert Malcolm's 
+   (Perl code could pre-scan args and convert Malcolm's
    -method/-slave into this form.)
    - Special case of a "window" reference, treat 1st arg
    as a method. (e.g. for TCL/TK's .menu post x y )
@@ -3307,7 +3397,7 @@ LangCopyCallback(sv)
 SV *sv;
 {
  if (sv)
-  Increment(sv, "LangCallbackArg");
+  Increment(sv, "LangCopyCallback");
  return sv;
 }
 
@@ -3355,7 +3445,7 @@ EventAndKeySym *obj;
     {
      int i = 1;
      sv = *x;
-     if (!sv_isobject(sv) && obj && obj->window)                            
+     if (!sv_isobject(sv) && obj && obj->window)
       {
        XPUSHs(sv_mortalcopy(obj->window));
       }
@@ -3369,8 +3459,8 @@ EventAndKeySym *obj;
            SV *what = SvRV(arg);
            if (SvPOK(what))
             {STRLEN len;
-             char *s = SvPV(what,len);           
-             if (len == 1)             
+             char *s = SvPV(what,len);
+             if (len == 1)
               {
                arg = EventToSv((I32) *s,obj);
               }
@@ -3446,10 +3536,10 @@ EventAndKeySym *obj;
   }
  else
   {
-   if (obj && obj->window)                            
+   if (obj && obj->window)
     XPUSHs(sv_mortalcopy(obj->window));
   }
- *svp = sv; 
+ *svp = sv;
  PUTBACK;
  return TCL_OK;
 }
@@ -3492,7 +3582,7 @@ int flags;
     }
    else if (SvPOK(obj) && SvROK(sv) && SvOBJECT(SvRV(sv)))
     {
-     /* We have obj method ... 
+     /* We have obj method ...
         Used to be used instead of LangMethodCall()
       */
      *top = sv;
@@ -3503,7 +3593,7 @@ int flags;
 #if 0
      int pok = SvPOK(sv);
      int rok = SvROK(obj);
-     int ook = SvOBJECT(SvRV(obj)); 
+     int ook = SvOBJECT(SvRV(obj));
      PerlIO_printf(PerlIO_stderr(), "Dubious call '%s'(%d) obj=%s(%d/%d)\n", SvPV(sv, na), pok, SvPV(obj, na), rok, ook);
      Dump_vec("sv",1,&sv);
      Dump_vec("obj",1,&obj);
@@ -3516,48 +3606,48 @@ int flags;
  return count;
 }
 
-static 
+static
 XS(CallbackCall)
 {
  dXSARGS;
- int i;  
+ int i;
  int count;
  SV *cb = ST(0);
  SV *err;
  int wantarray = GIMME;
  PushCallbackArgs(NULL,&ST(0),NULL);
- SPAGAIN;        
+ SPAGAIN;
  for (i=1; i < items; i++)
-  {              
+  {
    XPUSHs(ST(i));
-  }              
- PUTBACK;        
+  }
+ PUTBACK;
 
  count = CallCallback(ST(0),GIMME|G_EVAL);
- SPAGAIN;        
+ SPAGAIN;
 
  err = GvSV(gv_fetchpv("@", TRUE, SVt_PV));
- if (SvTRUE(err))  
+ if (SvTRUE(err))
   {
    croak("%s",SvPV(err,na));
   }
 
- if (count)      
-  {              
+ if (count)
+  {
    for (i=1; i <= count; i++)
-    {            
+    {
      ST(i-1) = sp[i-count];
-    }            
-  }              
- else            
-  {              
+    }
+  }
+ else
+  {
    if (!(wantarray & G_ARRAY))
-    {            
+    {
      ST(0) = &sv_undef;
-     count++;    
-    }            
-  }              
- PUTBACK;        
+     count++;
+    }
+  }
+ PUTBACK;
  XSRETURN(count);
 }
 
@@ -3568,6 +3658,7 @@ int count;
  dSP;
  int offset = count;
  SV **p = sp - count;
+ Tcl_ResetResult(interp);
  while (count-- > 0)
   {
    Tcl_AppendArg(interp, *++p);
@@ -3578,13 +3669,13 @@ int count;
 
 
 
-static void 
+static void
 PushVarArgs(ap,argc)
 va_list ap;
 int argc;
 {
  dSP;
- int i;  
+ int i;
  char *fmt = va_arg(ap, char *);
  char *s = fmt;
  for (i = 0; i < argc; i++)
@@ -3641,7 +3732,7 @@ int argc;
 
 #ifdef STANDARD_C
 int
-LangDoCallback 
+LangDoCallback
 _ANSI_ARGS_((Tcl_Interp * interp, LangCallback * sv, int result, int argc,...))
 #else
 int
@@ -3657,50 +3748,50 @@ va_dcl
   {
    static int flags[3] = { G_DISCARD, G_SCALAR, G_ARRAY };
    int count = 0;
-   int code;    
-   SV *cb    = sv;            
+   int code;
+   SV *cb    = sv;
    dTHR;
-   ENTER;       
-   SAVETMPS;    
+   ENTER;
+   SAVETMPS;
    if (interp)
     {
-     Tcl_ResetResult(interp);    
+     Tcl_ResetResult(interp);
      Lang_ClearErrorInfo(interp);
     }
    code = PushCallbackArgs(interp,&sv,NULL);
    if (code != TCL_OK)
     return code;
-   if (argc)    
-    {           
+   if (argc)
+    {
      va_list ap;
 #ifdef I_STDARG
      va_start(ap, argc);
-#else         
+#else
      va_start(ap);
-#endif        
+#endif
      PushVarArgs(ap,argc);
      va_end(ap);
-    }           
+    }
    count = CallCallback(sv, flags[result] | G_EVAL);
-   if (interp && result)  
+   if (interp && result)
     SetTclResult(interp,count);
-   FREETMPS;    
-   LEAVE;       
+   FREETMPS;
+   LEAVE;
    count = Check_Eval(interp);
    if (count == TCL_ERROR && interp)
-    {           
+    {
      SV *tmp = newSVpv("", 0);
      LangCatArg(tmp,cb,0);
      Tcl_AddErrorInfo(interp,SvPV(tmp,na));
      SvREFCNT_dec(tmp);
-    }           
+    }
    return count;
   }
  return TCL_ERROR;
 }
 
 int
-LangMethodCall 
+LangMethodCall
 #ifdef STANDARD_C
 _((Tcl_Interp * interp, Arg sv, char *method, int result, int argc,...))
 #else
@@ -3746,6 +3837,23 @@ va_dcl
 }
 
 int
+Tcl_EvalObj (Tcl_Interp *interp,Tcl_Obj *objPtr)
+{
+ SV *sv = LangMakeCallback(objPtr);
+ ENTER;
+ SAVETMPS;
+ if (PushCallbackArgs(interp,&sv,NULL) == TCL_OK)
+  {                     
+   int count = CallCallback(sv, G_SCALAR | G_EVAL);
+   SetTclResult(interp,count);
+  }
+ FREETMPS;
+ LEAVE;
+ return Check_Eval(interp);
+}
+
+
+int
 LangEval(interp, cmd, global)
 Tcl_Interp *interp;
 char *cmd;
@@ -3758,30 +3866,30 @@ int global;
   }
  else
   {
-   dSP;                      
-   int count = 0;            
-   int old_taint = tainted;  
-   SV *sv;                   
-   tainted = 0;              
-   ENTER;                    
-   SAVETMPS;                 
-   PUSHMARK(sp);             
+   dSP;
+   int count = 0;
+   int old_taint = tainted;
+   SV *sv;
+   tainted = 0;
+   ENTER;
+   SAVETMPS;
+   PUSHMARK(sp);
    Set_widget(sv = WidgetRef(interp,"."));
    XPUSHs(sv_mortalcopy(sv));
-   tainted = 1;   
-   sv = newSVpv(cmd,0);      
-   SvTAINT(sv);              
-   tainted = 0;              
-   XPUSHs(sv_2mortal(sv));   
-   PUTBACK;                  
-   Tcl_ResetResult(interp);  
+   tainted = 1;
+   sv = newSVpv(cmd,0);
+   SvTAINT(sv);
+   tainted = 0;
+   XPUSHs(sv_2mortal(sv));
+   PUTBACK;
+   Tcl_ResetResult(interp);
    Lang_ClearErrorInfo(interp);
    sv = sv_2mortal(newSVpv("Receive",0));
-   tainted = old_taint;      
+   tainted = old_taint;
    count = CallCallback(sv, G_ARRAY | G_EVAL);
    SetTclResult(interp,count);
-   FREETMPS;                 
-   LEAVE;                    
+   FREETMPS;
+   LEAVE;
    return Check_Eval(interp);
   }
 }
@@ -3793,7 +3901,7 @@ XS(BindClientMessage)
  if (items >= 1)
   {
    HV *hv = NULL;
-   Lang_CmdInfo *info = WindowCommand(ST(0), &hv, 2); 
+   Lang_CmdInfo *info = WindowCommand(ST(0), &hv, 2);
    if (info)
     {
      HV *cm = FindHv(hv, "BindClientMessage", (items > 2), CM_KEY);
@@ -3803,8 +3911,8 @@ XS(BindClientMessage)
        char *key = SvPV(ST(1),len);
        if (items > 2)
         {
-         SV *cb = LangMakeCallback(ST(2));                                                 
-         hv_store(cm, key, len, cb ,0);                                                    
+         SV *cb = LangMakeCallback(ST(2));
+         hv_store(cm, key, len, cb ,0);
         }
        else
         {
@@ -3845,7 +3953,7 @@ XEvent *event;
     x = hv_fetch(cm,"any",3,0);
    if (x && (sv = *x))
     {
-     dSP;                      
+     dSP;
      SV *data = struct_sv(NULL, sizeof(EventAndKeySym));
      EventAndKeySym *info = (EventAndKeySym *) SvPVX(data);
      SV *e  = Blessed("XEvent", MakeReference(data));
@@ -3854,26 +3962,26 @@ XEvent *event;
      info->keySym = 0;
      info->interp = interp;
      info->window = w;
-     info->tkwin  = tkwin; 
-     ENTER;           
-     SAVETMPS;        
+     info->tkwin  = tkwin;
+     ENTER;
+     SAVETMPS;
      Tcl_ResetResult(interp);
      Lang_ClearErrorInfo(interp);
      Set_widget(w);
      Set_event(e);
-     if (SvROK(w))    
-      {               
+     if (SvROK(w))
+      {
        HV *hash = (HV *) SvRV(w);
        hv_store(hash, XEVENT_KEY, strlen(XEVENT_KEY), e, 0);
-      }               
-     else             
-      Decrement(e,"Unused Event"); 
+      }
+     else
+      Decrement(e,"Unused Event");
      result = PushCallbackArgs(interp,&sv,info);
      if (result == TCL_OK)
       CallCallback(sv, G_DISCARD | G_EVAL);
      Lang_MaybeError(interp,Check_Eval(interp),"ClientMessage handler");
-     FREETMPS;        
-     LEAVE;           
+     FREETMPS;
+     LEAVE;
     }
 #if 0
    else
@@ -3891,13 +3999,14 @@ XEvent *event;
 }
 
 int
-LangEventCallback(interp, tkwin, sv, event, keySym)
+LangEventCallback(cdata, interp, event, tkwin, keySym)
+ClientData cdata;
 Tcl_Interp *interp;
 Tk_Window tkwin;
-SV *sv;
 XEvent *event;
 KeySym keySym;
 {
+ SV *sv = (SV *) cdata;
  int result = TCL_ERROR;
  Tk_Window ewin = Tk_EventWindow(event);
 #ifdef LEAK_CHECKING
@@ -3909,8 +4018,8 @@ KeySym keySym;
  Lang_ClearErrorInfo(interp);
  if (ewin && tkwin)
   {
-   dSP;                      
-   int code;                 
+   dSP;
+   int code;
    SV *data = struct_sv(NULL, sizeof(EventAndKeySym));
    EventAndKeySym *info = (EventAndKeySym *) SvPVX(data);
    SV *e = Blessed("XEvent", MakeReference(data));
@@ -3922,10 +4031,10 @@ KeySym keySym;
    info->keySym = keySym;
    info->interp = interp;
    info->window = w;
-   info->tkwin  = tkwin; 
+   info->tkwin  = tkwin;
    ENTER;
    SAVETMPS;
-   PUTBACK; 
+   PUTBACK;
    Tcl_ResetResult(interp);
    Lang_ClearErrorInfo(interp);
    Set_widget(w);
@@ -3937,22 +4046,22 @@ KeySym keySym;
      hv_store(hash, XEVENT_KEY, strlen(XEVENT_KEY), e, 0);
     }
    else
-    Decrement(e,"Unused Event"); 
+    Decrement(e,"Unused Event");
    if (result == TCL_OK)
     {
      CallCallback(sv, G_DISCARD | G_EVAL);
-     FREETMPS;        
+     FREETMPS;
      result = Check_Eval(interp);
     }
-   LEAVE;           
+   LEAVE;
   }
  else
   {
-   /* 
+   /*
     * Event pertains to a window which has been/is being deleted.
     * Although we may be able to call perl code we cannot make
     * any method calls because the widget hash object has probably vanished.
-    * 
+    *
     * Quietly return "OK" having done nothing
     */
    result = TCL_OK;
@@ -3964,7 +4073,7 @@ KeySym keySym;
  return result;
 }
 
-int 
+int
 Tcl_GetOpenFile(interp, string, doWrite, checkUsage, filePtr)
 Tcl_Interp *interp;
 SV *string;
@@ -3981,8 +4090,8 @@ ClientData *filePtr;
  if (!call)
   {
    SV *tmp = sv_newmortal();
-   sv_setpv(tmp,BASEEXT);                          
-   sv_catpv(tmp,"::GetFILE");                      
+   sv_setpv(tmp,BASEEXT);
+   sv_catpv(tmp,"::GetFILE");
    call = (SV *) perl_get_cv(SvPV(tmp,na),0);
   }
  ENTER;
@@ -4007,8 +4116,8 @@ ClientData *filePtr;
   }
  sp -= count;
  PUTBACK;
- FREETMPS;        
- LEAVE;           
+ FREETMPS;
+ LEAVE;
  if (!*filePtr && result == TCL_OK)
   return EXPIRE((interp, "Cannot get file from %s",SvPV(string,na)));
  return result;
@@ -4045,7 +4154,7 @@ XEvent *eventPtr;
    GenericInfo *p = (GenericInfo *) clientData;
    Tcl_Interp *interp = p->interp;
    SV *sv = p->cb;
-   dSP;  
+   dSP;
    SV *data = struct_sv(NULL, sizeof(EventAndKeySym));
    EventAndKeySym *info = (EventAndKeySym *) SvPVX(data);
    SV *e = Blessed("XEvent", MakeReference(data));
@@ -4059,9 +4168,9 @@ XEvent *eventPtr;
    do_watch();
    ENTER;
    SAVETMPS;
-   Set_event(e); 
-   XPUSHs(sv_mortalcopy(e));                   
-   PUTBACK;                                    
+   Set_event(e);
+   XPUSHs(sv_mortalcopy(e));
+   PUTBACK;
    if (tkwin)
     {
      w = TkToWidget(tkwin,&info->interp);  /* Pending REFCNT */
@@ -4074,18 +4183,18 @@ XEvent *eventPtr;
    Lang_ClearErrorInfo(interp);
    result = PushCallbackArgs(interp, &sv,info);
    if (result == TCL_OK)
-    {    
+    {
      count = CallCallback(sv, G_EVAL);
      result = Check_Eval(interp);
-    }    
+    }
    if (count)
-    {    
+    {
      SPAGAIN;
      code = TOPi;
      sp -= count;
      PUTBACK;
-    }    
-   else  
+    }
+   else
     code = 0;
    Lang_MaybeError(interp,result,"Generic Event");
    FREETMPS;
@@ -4140,38 +4249,38 @@ Tk_Window tkwin;
  LEAVE;
 }
 
-static 
+static
 XS(ManageGeometry)
-{               
+{
  dXSARGS;
  if (items == 2)
-  {                                                 
+  {
    HV *hash = NULL;
    Lang_CmdInfo *info   = WindowCommand(ST(0), &hash, 0);
    if (info && info->tkwin)
     {
-     Lang_CmdInfo *slave  = WindowCommand(ST(1), NULL, 0);         
+     Lang_CmdInfo *slave  = WindowCommand(ST(1), NULL, 0);
      if (slave && slave->tkwin)
       {
        SV **x = hv_fetch(hash,GEOMETRY_KEY,strlen(GEOMETRY_KEY),0);
        SV *mgr_sv = NULL;
-       if (!x)                                                    
-        {                                                         
-         Tk_GeomMgr mgr;                                          
-         mgr.name          = Tk_PathName(info->tkwin);            
-         mgr.requestProc   = Perl_GeomRequest;                    
-         mgr.lostSlaveProc = Perl_GeomLostSlave;                  
-         mgr_sv = struct_sv((char *) &mgr,sizeof(mgr));                      
-         hv_store(hash,GEOMETRY_KEY,strlen(GEOMETRY_KEY),mgr_sv, 0); 
-        }                                                         
-       else                                                       
-        mgr_sv = *x;                                              
-       Tk_ManageGeometry(slave->tkwin, (Tk_GeomMgr *) SvPV(mgr_sv,na), (ClientData) info); 
+       if (!x)
+        {
+         Tk_GeomMgr mgr;
+         mgr.name          = Tk_PathName(info->tkwin);
+         mgr.requestProc   = Perl_GeomRequest;
+         mgr.lostSlaveProc = Perl_GeomLostSlave;
+         mgr_sv = struct_sv((char *) &mgr,sizeof(mgr));
+         hv_store(hash,GEOMETRY_KEY,strlen(GEOMETRY_KEY),mgr_sv, 0);
+        }
+       else
+        mgr_sv = *x;
+       Tk_ManageGeometry(slave->tkwin, (Tk_GeomMgr *) SvPV(mgr_sv,na), (ClientData) info);
       }
      else
       croak("Not a (slave) widget %s",SvPV(ST(1),na));
     }
-   else                                     
+   else
     croak("Not a (master) widget %s",SvPV(ST(0),na));
   }
  else
@@ -4204,7 +4313,7 @@ ClientData clientData;
  LEAVE;
  LangFreeCallback(p->cb);
  DecInterp(p->interp, "handle_idle");
- free(p);
+ ckfree((char *) p);
 }
 
 
@@ -4216,9 +4325,10 @@ XS(XS_Tk_DoWhenIdle)
    Lang_CmdInfo *info = WindowCommand(ST(0), NULL, 0);
    if (info && info->interp && (info->tkwin || info->image))
     {
-     if (ResultAv(info->interp, "DoWhenIdle", 0))
+     /* Why is non-creation of result important ? */
+     if (ResultSv(info->interp, "DoWhenIdle", 0))
       {
-       GenericInfo *p = (GenericInfo *) malloc(sizeof(GenericInfo));
+       GenericInfo *p = (GenericInfo *) ckalloc(sizeof(GenericInfo));
        p->interp = (Tcl_Interp *)(IncInterp(info->interp,"Tk_DoWhenIdle"));
        p->cb = LangMakeCallback(ST(1));
        Tcl_DoWhenIdle(handle_idle, (ClientData) p);
@@ -4266,22 +4376,22 @@ EventAndKeySym *obj;
           w = WidgetRef(obj->interp, result);
          if (SvROK(w))
           sv_setsv(eventSv, w);
-         else 
+         else
           {
            if (number)
             sv_setref_iv(eventSv, "Window", number);
           }
         }
         break;
-     
+
        case TK_EVENTTYPE_DISPLAY:
         sv_setref_pv(eventSv, "DisplayPtr", (void *) number);
         break;
-     
+
        case TK_EVENTTYPE_DATA:
         sv_setpvn(eventSv, result, (unsigned) number);
         break;
-     
+
        default:
 #if 0
         if (!result && strchr("AK", ix))
@@ -4307,7 +4417,7 @@ SVtoEventAndKeySym(arg)
 SV *arg;
 {
  SV *sv;
- if (sv_isobject(arg) && (sv = SvRV(arg)) && 
+ if (sv_isobject(arg) && (sv = SvRV(arg)) &&
      SvPOK(sv) && SvCUR(sv) == sizeof(EventAndKeySym))
   {
    return (EventAndKeySym *) SvPVX(sv);
@@ -4317,13 +4427,13 @@ SV *arg;
  return NULL;
 }
 
-static 
+static
 XS(PassEvent)
 {
  dXSARGS;
  Tk_Window tkwin = NULL;
  EventAndKeySym *obj = NULL;
- if (items == 2 
+ if (items == 2
      && (tkwin = (Tk_Window) SVtoWindow(ST(0)))
      && (obj = SVtoEventAndKeySym(ST(1)))
     )
@@ -4355,24 +4465,7 @@ static
 XS(FreeAbstract)
 {
  dXSARGS;
- if (items != 1)
-  croak("Usage: DESTROY(obj)");
- else
-  {
-   if (SvROK(ST(0)))
-    {
-     SV *sv = SvRV(ST(0));
-     if (SvIOK(sv))
-      {
-       char *obj = (char *) SvIVX(sv);
-       warn("FreeAbstract %p!",obj);
-       free(obj);
-      }
-    }
-   else
-    croak("Not a reference");
-  }
- XSRETURN(1);
+ XSRETURN_UNDEF;
 }
 
 void
@@ -4381,7 +4474,7 @@ Tcl_Interp *interp;
 char *dispName;
 int screenIndex;
 {
- 
+
 }
 
 
@@ -4395,7 +4488,7 @@ Tcl_DString *bufferPtr;
 {
  Tcl_DStringInit(bufferPtr);
  Tcl_DStringAppend(bufferPtr,name,strlen(name));
- return bufferPtr->string;
+ return Tcl_DStringValue(bufferPtr);
 }
 
 char *
@@ -4411,7 +4504,7 @@ Tcl_DString *result;
    if (argc)
     Tcl_DStringAppend(result,"/",1);
   }
- return result->string;
+ return Tcl_DStringValue(result);
 }
 
 char *
@@ -4452,36 +4545,6 @@ va_dcl
   }
 }
 
-#ifdef STANDARD_C
-static void
-EnterSubCommands(char *package,...)
-#else
-/*VARARGS0 */
-static void
-EnterSubCommands(package, va_alist)
-char *package;
-va_dcl
-#endif
-{
- va_list ap;
- char buf[80];
- char *method;
-#ifdef I_STDARG
- va_start(ap, package);
-#else
- va_start(ap);
-#endif
- while ((method = va_arg(ap, char *)))
-  {
-#if 0
-   CV *cv;
-   sprintf(buf, "Tk::%s%s", package, method);
-   cv = newXS(buf, XStoSubCommand, __FILE__);     
-   CvXSUBANY(cv).any_ptr = newSVpv(method, 0);
-#endif
-  }
-}
-
 void
 LangExit(value)
 int value;
@@ -4506,7 +4569,7 @@ SV *b;
  if (!a || !b)
   return 0;
  if (SvTYPE(a) != SvTYPE(b))
-  return 0; 
+  return 0;
  switch(SvTYPE(a))
   {
    case SVt_PVAV:
@@ -4523,9 +4586,9 @@ SV *b;
          SV **ap = av_fetch(aa,i,0);
          SV **bp = av_fetch(ba,i,0);
          if (ap && !bp)
-          return 0; 
+          return 0;
          if (bp && !ap)
-          return 0; 
+          return 0;
          if (ap && bp && !LangCmpCallback(*ap,*bp))
           return 0;
         }
@@ -4546,7 +4609,7 @@ SV *b;
      {
       return LangCmpCallback(SvRV(a),SvRV(b));
      }
-    else 
+    else
      {STRLEN asz;
       char *as = SvPV(a,asz);
       STRLEN bsz;
@@ -4582,14 +4645,14 @@ Tcl_Interp *interp;
  return "";
 }
 
-void 
+void
 LangBadFile(fd)
 int fd;
 {
  warn("File (%d) closed without deleting handler",fd);
 }
 
-int 
+int
 LangEventHook(flags)
 int flags;
 /* Used by Tcl_Async stuff for signal handling */
@@ -4641,14 +4704,14 @@ char *start;
 #endif
 }
 
-void 
+void
 Lang_FreeRegExp(re)
 Tcl_RegExp re;
 {
  pregfree(re);
 }
 
-void 
+void
 Tcl_RegExpRange(re, index, startPtr, endPtr)
 Tcl_RegExp re;
 int index;
@@ -4666,68 +4729,13 @@ Lang_BuildInImages()
 	Tk_CreateImageType(&tkBitmapImageType);
 	Tk_CreateImageType(&tkPixmapImageType);
 	Tk_CreateImageType(&tkPhotoImageType);
-    
+
 	/*
 	 * Create built-in photo image formats.
 	 */
-    
+
 	Tk_CreatePhotoImageFormat(&tkImgFmtPPM);
 #endif
-}
-
-Tcl_Channel
-Tcl_OpenFileChannel(interp,fileName,modeString,permissions)
-Tcl_Interp *interp;
-char *fileName;
-char *modeString;
-int permissions;
-{PerlIO *f = PerlIO_open(fileName,modeString);
- if (!f)
-  {
-   /* FIXME - use strerr() or perl's equivalent */
-   Tcl_SprintfResult(interp,"Cannot open '%s' in mode '%s'",fileName, modeString);
-  }
- return (Tcl_Channel) f;
-}
-
-int
-Tcl_Read(chan,bufPtr,toRead)
-Tcl_Channel chan;
-char *bufPtr;
-int toRead;
-{
- PerlIO *f = (PerlIO *) chan;
- return PerlIO_read(f,bufPtr,toRead);
-}
-
-int
-Tcl_Write(chan, buf, count)
-Tcl_Channel chan;
-char *buf;
-int count;
-{
- PerlIO *f = (PerlIO *) chan;
- if (count < 0)
-  count = strlen(buf);
- return PerlIO_write(f,buf,count);
-}
-
-int 
-Tcl_Close(interp,chan)
-Tcl_Interp *interp;
-Tcl_Channel chan;
-{
- return PerlIO_close((PerlIO *) chan);
-}
-                         
-int
-Tcl_Seek(chan, offset, mode)
-Tcl_Channel chan;
-int offset;
-int mode;
-{
- PerlIO_seek((PerlIO *) chan, offset, mode);
- return PerlIO_tell((PerlIO *) chan);
 }
 
 
@@ -4738,7 +4746,7 @@ char *name;
 Tcl_InterpDeleteProc **procPtr;
 {
  HV *cm = FindHv(interp, "Tcl_GetAssocData", 0, ASSOC_KEY);
- SV **x  = hv_fetch(cm, name, strlen(name), 0); 
+ SV **x  = hv_fetch(cm, name, strlen(name), 0);
  if (x)
   {
    STRLEN sz;
@@ -4787,7 +4795,7 @@ XS(name)                                          \
  CvXSUB(cv) = xs;                                 \
  CvXSUBANY(cv).any_ptr = (VOID *) proc;           \
  xs(cv);                                          \
-}                                              
+}
 
 #include "TkXSUB.def"
 #undef MkXSUB
@@ -4803,8 +4811,8 @@ size_t size;
   {
    typedef int (*fptr)_((void));
    fptr *q = table;
-   unsigned i; 
-   sv_setiv(FindTkVarName(name,5),(IV) table);   
+   unsigned i;
+   sv_setiv(FindTkVarName(name,5),(IV) table);
    if (size % sizeof(fptr))
     {
      warn("%s is strange size %d",name,size);
@@ -4823,7 +4831,7 @@ size_t size;
 }
 
 void
-Boot_Glue 
+Boot_Glue
 _((void))
 {
  /* A wonder how you call $e-># ? */
@@ -4837,8 +4845,12 @@ _((void))
  install_vtab("TkglueVtab",TkglueVGet(),sizeof(TkglueVtab));
  install_vtab("XlibVtab",XlibVGet(),sizeof(XlibVtab));
  install_vtab("TkoptionVtab",TkoptionVGet(),sizeof(TkoptionVtab));
+#ifdef WIN32
+ install_vtab("TkwinVtab",TkwinVGet(),sizeof(TkwinVtab));
+ install_vtab("TkwinintVtab",TkwinintVGet(),sizeof(TkwinintVtab));
+#endif
 
- Boot_Tix(); 
+ Boot_Tix();
 
  while (*XEventMethods)
   {
@@ -4884,14 +4896,45 @@ _((void))
 #include "TkXSUB.def"
 #undef MkXSUB
 
-#define WIDGET(x) EnterWidgetMethods x;
-#define IMAGE(x)  EnterWidgetMethods x;
-#define COMMAND(x) 
-#include "pTk/Methods.def"
-#undef  WIDGET
-#undef  COMMAND
-
 }
 
+void
+Tcl_AllowExceptions (Tcl_Interp *interp)
+{
+ /* FIXME: What should this do ? */
+}
 
+char *
+Tcl_Realloc(char *p, unsigned int size)
+{
+ if ((int) size < 0)
+  abort();
+ Renew(p,size,char);
+ return p;
+}
+
+char *
+Tcl_Alloc(unsigned int size)
+{
+ char *p;
+ if ((int) size < 0)
+  abort();
+ Newz(603, p, size, char);
+ return p;
+}
+
+void
+Tcl_Free(char *p)
+{
+ Safefree(p);
+}
+
+void
+LangDebug(char *fmt,...)
+{
+ va_list ap;
+ va_start(ap,fmt);
+ vfprintf(stderr,fmt,ap);
+ va_end(ap);
+}
 

@@ -1,10 +1,10 @@
-Tk 4.1 for Windows
+Tk 8.0p2 for Windows
 
 by Scott Stanton
 Sun Microsystems Laboratories
 scott.stanton@eng.sun.com
 
-SCCS: @(#) README 1.11 96/04/12 16:41:48
+SCCS: @(#) README 1.20 97/11/21 15:17:54
 
 1. Introduction
 ---------------
@@ -17,7 +17,7 @@ contains information specific to the Windows version of Tk.
 2. Distribution notes
 ---------------------
 
-Tk 4.1 for Windows is distributed in binary form in addition to the
+Tk 8.0 for Windows is distributed in binary form in addition to the
 common source release.  The binary distribution is a self-extracting
 archive with a built-in installation script.
 
@@ -34,14 +34,14 @@ source distribution in order to build and use extensions.
 
 In order to compile Tk for Windows, you need the following items:
 
-	Tcl 7.5 Source Distribution (plus any patches)
-	Tk 4.1 Source Distribution (plus any patches)
+	Tcl 8.0 Source Distribution (plus any patches)
+	Tk 8.0 Source Distribution (plus any patches)
 
 	The latest Win32 SDK header files
 
-	Borland C++ 4.5/5.0 (32-bit compiler)
+	Borland C++ 4.5 or later (32-bit compiler)
 	  or
-	Visual C++ 2.x/4.0
+	Visual C++ 2.x or later
 	
 
 In the "win" subdirectory of the source release, you will find two
@@ -57,23 +57,35 @@ need to place the Tk script library files someplace where Tk can
 find them.  Tk looks in one of two places for the library files:
 
 	1) The environment variable "TK_LIBRARY".
-	2) Relative to the directory containing the Tk DLL.
-	    Tk will look for a directory "..\lib\tk4.1" relative to the
-	    directory containing the tk41.dll loaded by the currently running
-	    application.
 
-Note that in order to run wish41.exe, you must ensure that tcl75.dll
-(and tcl1675.dll under Win32s), tk41.dll are on your path, or in the
-directory containing wish41.exe.
+	2) In the lib\tk8.0 directory under the Tcl installation directory
+	   as specified in the registry:
+
+		For Windows NT & 95:
+		    HKEY_LOCAL_MACHINE\SOFTWARE\Sun\Tcl\8.0
+			Value Name is "Root"
+
+		For Win32s:
+		    HKEY_CLASSES_ROOT\SOFTWARE\Sun\Tcl\8.0\
+
+	2) Relative to the directory containing the current .exe.
+	    Tk will look for a directory "..\lib\tk8.0" relative to the
+	    directory containing the currently running .exe.
+
+Note that in order to run wish80.exe, you must ensure that tcl80.dll,
+tclpip80.dll (plus tcl1680.dll under Win32s), and tk80.dll are on your
+path, in the system directory, or in the directory containing
+wish80.exe.
 
 4. Test suite
 -------------
 
 The Windows version of Tk does not pass many of the tests in the test
 suite.  This is primarily due to dependencies in the test suite on the
-size of particular X fonts, and other X related features.  We will be
-working to develop a more general test suite for Tk under Windows, but
-for now, you will not be able to pass many of the tests.
+size of particular X fonts, and other X related features as well as
+problems with "exec".  We will be working to develop a more general
+test suite for Tk under Windows, but for now, you will not be able to
+pass many of the tests.
 
 5. Known Bugs
 -------------
@@ -81,16 +93,27 @@ for now, you will not be able to pass many of the tests.
 Here is the current list of known bugs/missing features for the
 Windows beta version of Tk:
 
-- There is no support for custom cursors/application icons.
+- There is no support for custom cursors/application icons.  The core
+  set of X cursors is supported, although you cannot change their color.
 - Stippling of arcs isn't implemented yet.
-- Some "wm" functions don't map to Windows and aren't implemented.
-- There is no support for the option database yet.
+- Some "wm" functions don't map to Windows and aren't implemented;
+  others should map, but just aren't implemented.  The worst offenders
+  are the icon manipulation routines.
 - Under Win32s, you can only start one instance of Wish at a time.
-- Traversing the items in a menubar causes the titlebar of the window
-  to flash.
 - Color management on some displays doesn't work properly resulting in
   Tk switching to monochrome mode.
+- Tk seems to fail to draw anything on some Matrox Millenium cards.
 - Send and winfo interps are not currently supported
+- Printing does not work for images (e.g. GIF) on a canvas.
+- Tk_dialog appears in the upper left corner.  This is a symptom of a
+  larger problem with "wm geometry" when applied to unmapped or
+  iconified windows.
+- Some keys don't work on international keyboards.
+- Grabs do not affect native menus or the title bar.
+- PPM images are using the wrong translation mode for writing to
+  files, resulting in CR/LF terminated PPM files.
+- Tk crashes if the display depth changes while it is running.  Tk
+  also doesn't consistently track changes in the system colors.
 
 If you have comments or bug reports for the Windows version of Tk,
 please direct them to:

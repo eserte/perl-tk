@@ -4,70 +4,35 @@
  *	This file contains Unix-specific interpreter initialization
  *	functions.
  *
- * Copyright (c) 1995-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1995-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixInit.c 1.13 96/08/22 09:23:05
+ * SCCS: @(#) tkUnixInit.c 1.24 97/07/24 14:46:09
  */
 
 #include "tkInt.h"
 #include "tkUnixInt.h"
 
 /*
+ * The Init script (common to Windows and Unix platforms) is
+ * defined in tkInitScript.h
+ */
+#include "tkInitScript.h"
+
+
+/*
  * Default directory in which to look for libraries:
  */
 
-#if 0
 static char defaultLibraryDir[200] = TK_LIBRARY;
-#endif
 
-/*
- * The following string is the startup script executed in new
- * interpreters.  It looks on disk in several different directories
- * for a script "tk.tcl" that is compatible with this version
- * of Tk.  The tk.tcl script does all of the real work of
- * initialization.
- */
-
-static char initScript[] =
-"proc tkInit {} {\n\
-    global tk_library tk_version tk_patchLevel env\n\
-    rename tkInit {}\n\
-    set dirs {}\n\
-    if [info exists env(TK_LIBRARY)] {\n\
-	lappend dirs $env(TK_LIBRARY)\n\
-    }\n\
-    lappend dirs $tk_library\n\
-    lappend dirs [file dirname [info library]]/lib/tk$tk_version\n\
-    set parentDir [file dirname [file dirname [info nameofexecutable]]] \n\
-    lappend dirs $parentDir/lib/tk$tk_version\n\
-    if [string match {*[ab]*} $tk_patchLevel] {\n\
-	set lib tk$tk_patchLevel\n\
-    } else {\n\
-	set lib tk$tk_version\n\
-    }\n\
-    lappend dirs [file dirname $parentDir]/$lib/library\n\
-    lappend dirs [file dirname [file dirname [info library]]]/$lib/library\n\
-    lappend dirs $parentDir/library\n\
-    foreach i $dirs {\n\
-	set tk_library $i\n\
-	if ![catch {uplevel #0 source $i/tk.tcl}] {\n\
-	    return\n\
-	}\n\
-    }\n\
-    set msg \"Can't find a usable tk.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\"\n\
-    append msg \"This probably means that Tk wasn't installed properly.\n\"\n\
-    error $msg\n\
-}\n\
-tkInit";
 
 /*
  *----------------------------------------------------------------------
  *
- * TkPlatformInit --
+ * TkpInit --
  *
  *	Performs Unix-specific interpreter initialization related to the
  *      tk_library variable.
@@ -83,7 +48,7 @@ tkInit";
  */
 
 int
-TkPlatformInit(interp)
+TkpInit(interp)
     Tcl_Interp *interp;
 {
     Var variable;
@@ -102,3 +67,72 @@ TkPlatformInit(interp)
     return TCL_OK;
 #endif
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpGetAppName --
+ *
+ *	Retrieves the name of the current application from a platform
+ *	specific location.  For Unix, the application name is the tail
+ *	of the path contained in the tcl variable argv0.
+ *
+ * Results:
+ *	Returns the application name in the given Tcl_DString.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpGetAppName(interp, namePtr)
+    Tcl_Interp *interp;
+    Tcl_DString *namePtr;	/* A previously initialized Tcl_DString. */
+{
+    char *p, *name;
+
+    name = Tcl_GetVar(interp, "argv0", TCL_GLOBAL_ONLY);
+    if ((name == NULL) || (*name == 0)) {
+	name = "tk";
+    } else {
+	p = strrchr(name, '/');
+	if (p != NULL) {
+	    name = p+1;
+	}
+    }
+    Tcl_DStringAppend(namePtr, name, -1);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpDisplayWarning --
+ *
+ *	This routines is called from Tk_Main to display warning
+ *	messages that occur during startup.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Generates messages on stdout.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpDisplayWarning(msg, title)
+    char *msg;			/* Message to be displayed. */
+    char *title;		/* Title of warning. */
+{
+    Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
+    if (errChannel) {
+	Tcl_Write(errChannel, title, -1);
+	Tcl_Write(errChannel, ": ", 2);
+	Tcl_Write(errChannel, msg, -1);
+	Tcl_Write(errChannel, "\n", 1);
+    }
+}
+

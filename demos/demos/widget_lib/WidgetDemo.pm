@@ -2,14 +2,14 @@ package WidgetDemo;
 
 use 5.004;
 use Carp;
-use English;
 
-use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/demos/demos/widget_lib/WidgetDemo.pm#8$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#4$
 
 use Tk;
+use Tk::Toplevel;
 use strict;
-@WidgetDemo::ISA = 'Tk::Toplevel';
+@ISA = 'Tk::Toplevel';
 Construct Tk::Widget 'WidgetDemo';
 
 =head1 NAME
@@ -156,6 +156,6 @@ sub Populate {
 } # end Populate, WidgetDemo constructor
 
 sub Top {return $_[0]->Subwidget('WidgetDemo')}
-*top = \&Top;
+*top = *top = \&Top;  # peacify -w
 
 1;

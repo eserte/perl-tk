@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1990 The Regents of the University of California.
-'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) raise.n 1.5 95/06/05 13:21:38
+'\" SCCS: @(#) raise.n 1.9 96/06/14 14:20:02
 '\" 
 .so man.macros
 .TH raise n 3.3 Tk "Tk Geometry Management"
@@ -30,6 +30,9 @@ In this case the \fBraise\fR command will insert
 $widget\fR into the stacking order just above \fIaboveThis\fR
 (or the ancestor of \fIaboveThis\fR that is a sibling of $widget\fR);
 this could end up either raising or lowering $widget\fR.
+
+.SH "SEE ALSO"
+lower
 
 .SH KEYWORDS
 obscure, raise, stacking order

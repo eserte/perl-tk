@@ -10,7 +10,7 @@ use AutoLoader;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '2.016'; # $Id: //depot/Tk/Tk/MainWindow.pm#16$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/MainWindow.pm#6$
 
 use Tk::CmdLine;
 require Tk;
@@ -67,10 +67,12 @@ sub InitBindings
 {
  my $mw = shift;
  $mw->bind('all',"<Tab>","focusNext");
- $mw->bind('all',"<Shift-Tab>","focusPrev");
-                                    
- $mw->bind('all',"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev('A')]);
- $mw->bind('all',"<F10>",'FirstMenu');
+ $mw->bind('all',"<Shift-Tab>","focusPrev");  
+
+ # FIXME - Should these move to Menubutton ? 
+ my $c = ($Tk::platform eq 'unix') ? 'all' : 'Tk::Menubutton';
+ $mw->bind($c,"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev('A')]);
+ $mw->bind($c,"<F10>",'FirstMenu');
 }
 
 

@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvUtil.c 1.6 96/02/15 18:53:10
+ * SCCS: @(#) tkCanvUtil.c 1.7 96/05/03 10:54:22
  */
 
 #include "tkPort.h"
@@ -90,7 +90,7 @@ Tk_CanvasDrawableCoords(canvas, x, y, drawableXPtr, drawableYPtr)
     } else if (tmp < -32768) {
 	*drawableXPtr = -32768;
     } else {
-	*drawableXPtr = tmp;
+	*drawableXPtr = (short) tmp;
     }
 
     tmp = y  - canvasPtr->drawableYOrigin;
@@ -104,7 +104,7 @@ Tk_CanvasDrawableCoords(canvas, x, y, drawableXPtr, drawableYPtr)
     } else if (tmp < -32768) {
 	*drawableYPtr = -32768;
     } else {
-	*drawableYPtr = tmp;
+	*drawableYPtr = (short) tmp;
     }
 }
 
@@ -150,7 +150,7 @@ Tk_CanvasWindowCoords(canvas, x, y, screenXPtr, screenYPtr)
     } else if (tmp < -32768) {
 	*screenXPtr = -32768;
     } else {
-	*screenXPtr = tmp;
+	*screenXPtr = (short) tmp;
     }
 
     tmp = y  - canvasPtr->yOrigin;
@@ -164,7 +164,7 @@ Tk_CanvasWindowCoords(canvas, x, y, screenXPtr, screenYPtr)
     } else if (tmp < -32768) {
 	*screenYPtr = -32768;
     } else {
-	*screenYPtr = tmp;
+	*screenYPtr = (short) tmp;
     }
 }
 

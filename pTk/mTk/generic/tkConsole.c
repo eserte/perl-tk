@@ -10,10 +10,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkConsole.c 1.43 96/08/26 19:42:51
+ * SCCS: @(#) tkConsole.c 1.54 97/10/17 10:46:08
  */
 
-#include "tkInt.h"
+#include "tk.h"
+#include <string.h>
 
 /*
  * A data structure of the following type holds information for each console
@@ -30,7 +31,14 @@ static Tcl_Interp *gStdoutInterp = NULL;
 
 /*
  * Forward declarations for procedures defined later in this file:
+ *
+ * The first three will be used in the tk app shells...
  */
+ 
+void	TkConsoleCreate _ANSI_ARGS_((void));
+int	TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
+void	TkConsolePrint _ANSI_ARGS_((Tcl_Interp *interp,
+			    int devId, char *buffer, long size));
 
 static int	ConsoleCmd _ANSI_ARGS_((ClientData clientData,
 		    Tcl_Interp *interp, int argc, char **argv));
@@ -48,10 +56,8 @@ static int	ConsoleClose _ANSI_ARGS_((ClientData instanceData,
 		    Tcl_Interp *interp));
 static void	ConsoleWatch _ANSI_ARGS_((ClientData instanceData,
 		    int mask));
-static int	ConsoleReady _ANSI_ARGS_((ClientData instanceData,
-		    int mask));
-static Tcl_File	ConsoleFile _ANSI_ARGS_((ClientData instanceData,
-		    int direction));
+static int	ConsoleHandle _ANSI_ARGS_((ClientData instanceData,
+		    int direction, ClientData *handlePtr));
 
 /*
  * This structure describes the channel type structure for file based IO:
@@ -67,8 +73,7 @@ static Tcl_ChannelType consoleChannelType = {
     NULL,			/* Set option proc. */
     NULL,			/* Get option proc. */
     ConsoleWatch,		/* Watch for events on console. */
-    ConsoleReady,		/* Are events present? */
-    ConsoleFile,		/* Get a Tcl_File from the device. */
+    ConsoleHandle,		/* Get a handle from the device. */
 };
 
 /*
@@ -174,7 +179,7 @@ TkConsoleInit(interp)
     info->consoleInterp = consoleInterp;
     Tcl_CreateCommand(interp, "console", ConsoleCmd, (ClientData) info,
 	    (Tcl_CmdDeleteProc *) ConsoleDeleteProc);
-    Tcl_CreateCommand(consoleInterp, "interp", InterpreterCmd,
+    Tcl_CreateCommand(consoleInterp, "consoleinterp", InterpreterCmd,
 	    (ClientData) info, (Tcl_CmdDeleteProc *) NULL);
 
     Tk_CreateEventHandler(mainWindow, StructureNotifyMask, ConsoleEventProc,
@@ -315,14 +320,14 @@ ConsoleWatch(instanceData, mask)
 /*
  *----------------------------------------------------------------------
  *
- * ConsoleReady --
+ * ConsoleHandle --
  *
- *	Invoked by the notifier to notice whether any events are present
- *	on the console. Since there are no events on the console, this
- *	routine always returns zero.
+ *	Invoked by the generic IO layer to get a handle from a channel.
+ *	Because console channels are not devices, this function always
+ *	fails.
  *
  * Results:
- *	Always 0.
+ *	Always returns TCL_ERROR.
  *
  * Side effects:
  *	None.
@@ -332,43 +337,14 @@ ConsoleWatch(instanceData, mask)
 
 	/* ARGSUSED */
 static int
-ConsoleReady(instanceData, mask)
-    ClientData instanceData;		/* Device ID for the channel. */
-    int mask;				/* OR-ed combination of
-                                         * TCL_READABLE, TCL_WRITABLE and
-                                         * TCL_EXCEPTION, for the events
-                                         * we are interested in. */
+ConsoleHandle(instanceData, direction, handlePtr)
+    ClientData instanceData;	/* Device ID for the channel. */
+    int direction;		/* TCL_READABLE or TCL_WRITABLE to indicate
+				 * which direction of the channel is being
+				 * requested. */
+    ClientData *handlePtr;	/* Where to store handle */
 {
-    return 0;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * ConsoleFile --
- *
- *	Invoked by the generic IO layer to get a Tcl_File from a channel.
- *	Because console channels do not use Tcl_Files, this function always
- *	returns NULL.
- *
- * Results:
- *	Always NULL.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-	/* ARGSUSED */
-static Tcl_File
-ConsoleFile(instanceData, direction)
-    ClientData instanceData;		/* Device ID for the channel. */
-    int direction;			/* TCL_READABLE or TCL_WRITABLE
-                                         * to indicate which direction of
-                                         * the channel is being requested. */
-{
-    return (Tcl_File) NULL;
+    return TCL_ERROR;
 }
 
 /*
@@ -414,20 +390,26 @@ ConsoleCmd(clientData, interp, argc, argv)
     Tcl_Preserve((ClientData) consoleInterp);
     if ((c == 't') && (strncmp(argv[1], "title", length)) == 0) {
 	Tcl_DString dString;
-	char *wmCmd = "wm title . {";
 	
 	Tcl_DStringInit(&dString);
-	Tcl_DStringAppend(&dString, wmCmd, strlen(wmCmd));
-	Tcl_DStringAppend(&dString, argv[2], strlen(argv[2]));
-	Tcl_DStringAppend(&dString, "}", strlen("}"));
-	Tcl_Eval(consoleInterp, dString.string);
+	Tcl_DStringAppend(&dString, "wm title . ", -1);
+	if (argc == 3) {
+	    Tcl_DStringAppendElement(&dString, argv[2]);
+	}
+	Tcl_Eval(consoleInterp, Tcl_DStringValue(&dString));
 	Tcl_DStringFree(&dString);
     } else if ((c == 'h') && (strncmp(argv[1], "hide", length)) == 0) {
 	Tcl_Eval(info->consoleInterp, "wm withdraw .");
     } else if ((c == 's') && (strncmp(argv[1], "show", length)) == 0) {
 	Tcl_Eval(info->consoleInterp, "wm deiconify .");
     } else if ((c == 'e') && (strncmp(argv[1], "eval", length)) == 0) {
-	Tcl_Eval(info->consoleInterp, argv[2]);
+	if (argc == 3) {
+	    Tcl_Eval(info->consoleInterp, argv[2]);
+	} else {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " eval command\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],
 		"\": should be hide, show, or title",
@@ -476,7 +458,6 @@ InterpreterCmd(clientData, interp, argc, argv)
     
     c = argv[1][0];
     length = strlen(argv[1]);
-    result = TCL_OK;
     otherInterp = info->interp;
     Tcl_Preserve((ClientData) otherInterp);
     if ((c == 'e') && (strncmp(argv[1], "eval", length)) == 0) {
@@ -552,6 +533,17 @@ ConsoleEventProc(clientData, eventPtr)
     
     if (eventPtr->type == DestroyNotify) {
         consoleInterp = info->consoleInterp;
+
+        /*
+         * It is possible that the console interpreter itself has
+         * already been deleted. In that case the consoleInterp
+         * field will be set to NULL. If the interpreter is already
+         * gone, we do not have to do any work here.
+         */
+        
+        if (consoleInterp == (Tcl_Interp *) NULL) {
+            return;
+        }
         Tcl_Preserve((ClientData) consoleInterp);
 	Tcl_Eval(consoleInterp, "tkConsoleExit");
         Tcl_Release((ClientData) consoleInterp);

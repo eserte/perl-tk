@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinCursor.c 1.6 96/02/15 18:56:06
+ * SCCS: @(#) tkWinCursor.c 1.10 97/09/02 13:21:01
  */
 
 #include "tkWinInt.h"
@@ -101,15 +101,17 @@ TkGetCursorByName(interp, tkwin, arg)
 
     cursorPtr = (TkWinCursor *) ckalloc(sizeof(TkWinCursor));
     cursorPtr->info.cursor = (Tk_Cursor) cursorPtr;
+    cursorPtr->winCursor = NULL;
     if (namePtr->name != NULL) {
 	cursorPtr->winCursor = LoadCursor(NULL, namePtr->id);
 	cursorPtr->system = 1;
-    } else {
 #ifdef __OPEN32__
+    } else {
 	cursorPtr->winCursor = os2LoadCursor(TkWinGetTkModule(), string);
-#else
-	cursorPtr->winCursor = LoadCursor(TkWinGetTkModule(), string);
 #endif
+    }
+    if (cursorPtr->winCursor == NULL) {
+	cursorPtr->winCursor = LoadCursor(Tk_GetHINSTANCE(), string);
 	cursorPtr->system = 0;
     }
     if (cursorPtr->winCursor == NULL) {
@@ -180,10 +182,10 @@ TkFreeCursor(cursorPtr)
 /*
  *----------------------------------------------------------------------
  *
- * TkWinUpdateCursor --
+ * TkpSetCursor --
  *
- *	Set the windows global cursor to the cursor associated with
- *	the given Tk window.
+ *	Set the global cursor.  If the cursor is None, then use the
+ *	default Tk cursor.
  *
  * Results:
  *	None.
@@ -195,28 +197,19 @@ TkFreeCursor(cursorPtr)
  */
 
 void
-TkWinUpdateCursor(winPtr)
-    TkWindow *winPtr;
+TkpSetCursor(cursor)
+    TkpCursor cursor;
 {
-    HCURSOR cursor = NULL;
+    HCURSOR hcursor;
+    TkWinCursor *winCursor = (TkWinCursor *) cursor;
 
-    /*
-     * A window inherits its cursor from its parent if it doesn't
-     * have one of its own.  Top level windows inherit the default
-     * cursor.
-     */
-
-    while (winPtr != NULL) {
-	if (winPtr->atts.cursor != None) {
-	    cursor = ((TkWinCursor *) winPtr->atts.cursor)->winCursor;
-	    break;
-	} else if (winPtr->flags & TK_TOP_LEVEL) {
-	    cursor = LoadCursor(NULL, TK_DEFAULT_CURSOR);
-	    break;
-	}
-	winPtr = winPtr->parentPtr;
+    if (winCursor == NULL || winCursor->winCursor == NULL) {
+	hcursor = LoadCursor(NULL, TK_DEFAULT_CURSOR);
+    } else {
+	hcursor = winCursor->winCursor;
     }
-    if (cursor != NULL) {
-	SetCursor(cursor);
+
+    if (hcursor != NULL) {
+	SetCursor(hcursor);
     }
 }

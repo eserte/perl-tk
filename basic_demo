@@ -207,12 +207,7 @@ sub popup
  my $top = $w->MainWindow;
  $w->{Cursor} = $top->cget("-cursor");
  $top->configure("-cursor"=>"watch");
- print "Event ",$Tk::event,"\n";
- if (defined $e)
-  {
-   $w->wm("geometry",$e->X . "x" . $e->Y);
-  }
- $w->deiconify;
+ $w->Popup(-popover => $top, -popanchor => 'c', -overanchor => 'c');
  $w->update;
  $w->grab;
 }
@@ -288,10 +283,14 @@ my $bl = $top->Balloon;
 
 my $bf = $top->Frame->pack(-fill => 'x');
 
-$bf->Optionmenu(-textvariable => \$option, 
+my $bigfont = "-Adobe-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*";
+
+my $om = $bf->Optionmenu(-textvariable => \$option, -font => $bigfont, 
                  -options => [qw(one two three four)],
                  -command => sub { print "Optionmenu set to: ",shift,"\n"}
                 )->pack(-side => 'right');
+
+# print $om->cget('-font'),"\n";
 
 my $be = $bf->BrowseEntry(-variable => \$option )->pack(-side => 'right');
 $be->insert('end',qw(one two three four));

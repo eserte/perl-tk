@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkPack.c 1.63 96/02/15 18:52:33
+ * SCCS: @(#) tkPack.c 1.64 96/05/03 10:51:52
  */
 
 #include "tkPort.h"
@@ -132,6 +132,7 @@ static Tk_GeomMgr packerType = {
 static void		ArrangePacking _ANSI_ARGS_((ClientData clientData));
 static int		ConfigureSlaves _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, int argc, char *argv[]));
+static void             DestroyPacker _ANSI_ARGS_((char *memPtr));
 static Packer *		GetPacker _ANSI_ARGS_((Tk_Window tkwin));
 static int		PackAfter _ANSI_ARGS_((Tcl_Interp *interp,
 			    Packer *prevPtr, Packer *masterPtr, int argc,

@@ -1,10 +1,9 @@
 # HList - A hierarchial listbox widget.
 
-use English;
 use Tk::HList;
 use strict;
 use subs qw/show_dir/;
-use vars qw/$top $FILEIMG $FOLDIMG/;
+use vars qw/$MW $top $FILEIMG $FOLDIMG/;
 
 sub HList {
     my($demo) = @_;

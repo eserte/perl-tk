@@ -7,7 +7,7 @@ require Tk::Wm;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Toplevel.pm#8$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Toplevel.pm#4$
 
 @ISA = qw(Tk::Wm Tk::Frame);
 

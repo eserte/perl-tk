@@ -7,12 +7,12 @@
  *	they're only used for testing.
  *
  * Copyright (c) 1993-1994 The Regents of the University of California.
- * Copyright (c) 1994-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTest.c 1.35 96/10/03 11:22:26
+ * SCCS: @(#) tkTest.c 1.50 97/11/06 16:56:32
  */
 
 #include "tkInt.h"
@@ -22,112 +22,13 @@
 #include "tkWinInt.h"
 #endif
 
-/*
- * The table below describes events and is used by the "testevent"
- * command.
- */
+#ifdef MAC_TCL
+#include "tkScrollbar.h"
+#endif
 
-typedef struct {
-    char *name;			/* Name of event. */
-    int type;			/* Event type for X, such as
-				 * ButtonPress. */
-} EventInfo;
-
-static EventInfo eventArray[] = {
-    {"Motion",		MotionNotify},
-    {"Button",		ButtonPress},
-    {"ButtonPress",	ButtonPress},
-    {"ButtonRelease",	ButtonRelease},
-    {"Colormap",	ColormapNotify},
-    {"Enter",		EnterNotify},
-    {"Leave",		LeaveNotify},
-    {"Expose",		Expose},
-    {"FocusIn",		FocusIn},
-    {"FocusOut",	FocusOut},
-    {"Keymap",		KeymapNotify},
-    {"Key",		KeyPress},
-    {"KeyPress",	KeyPress},
-    {"KeyRelease",	KeyRelease},
-    {"Property",	PropertyNotify},
-    {"ResizeRequest",	ResizeRequest},
-    {"Circulate",	CirculateNotify},
-    {"Configure",	ConfigureNotify},
-    {"Destroy",		DestroyNotify},
-    {"Gravity",		GravityNotify},
-    {"Map",		MapNotify},
-    {"Reparent",	ReparentNotify},
-    {"Unmap",		UnmapNotify},
-    {"Visibility",	VisibilityNotify},
-    {"CirculateRequest",CirculateRequest},
-    {"ConfigureRequest",ConfigureRequest},
-    {"MapRequest",	MapRequest},
-    {(char *) NULL,	0}
-};
-
-/*
- * The defines and table below are used to classify events into
- * various groups.  The reason for this is that logically identical
- * fields (e.g. "state") appear at different places in different
- * types of events.  The classification masks can be used to figure
- * out quickly where to extract information from events.
- */
-
-#define KEY_BUTTON_MOTION	0x1
-#define CROSSING		0x2
-#define FOCUS			0x4
-#define EXPOSE			0x8
-#define VISIBILITY		0x10
-#define CREATE			0x20
-#define MAP			0x40
-#define REPARENT		0x80
-#define CONFIG			0x100
-#define CONFIG_REQ		0x200
-#define RESIZE_REQ		0x400
-#define GRAVITY			0x800
-#define PROP			0x1000
-#define SEL_CLEAR		0x2000
-#define SEL_REQ			0x4000
-#define SEL_NOTIFY		0x8000
-#define COLORMAP		0x10000
-#define MAPPING			0x20000
-
-static int flagArray[LASTEvent] = {
-   /* Not used */		0,
-   /* Not used */		0,
-   /* KeyPress */		KEY_BUTTON_MOTION,
-   /* KeyRelease */		KEY_BUTTON_MOTION,
-   /* ButtonPress */		KEY_BUTTON_MOTION,
-   /* ButtonRelease */		KEY_BUTTON_MOTION,
-   /* MotionNotify */		KEY_BUTTON_MOTION,
-   /* EnterNotify */		CROSSING,
-   /* LeaveNotify */		CROSSING,
-   /* FocusIn */		FOCUS,
-   /* FocusOut */		FOCUS,
-   /* KeymapNotify */		0,
-   /* Expose */			EXPOSE,
-   /* GraphicsExpose */		EXPOSE,
-   /* NoExpose */		0,
-   /* VisibilityNotify */	VISIBILITY,
-   /* CreateNotify */		CREATE,
-   /* DestroyNotify */		0,
-   /* UnmapNotify */		0,
-   /* MapNotify */		MAP,
-   /* MapRequest */		0,
-   /* ReparentNotify */		REPARENT,
-   /* ConfigureNotify */	CONFIG,
-   /* ConfigureRequest */	CONFIG_REQ,
-   /* GravityNotify */		0,
-   /* ResizeRequest */		RESIZE_REQ,
-   /* CirculateNotify */	0,
-   /* CirculateRequest */	0,
-   /* PropertyNotify */		PROP,
-   /* SelectionClear */		SEL_CLEAR,
-   /* SelectionRequest */	SEL_REQ,
-   /* SelectionNotify */	SEL_NOTIFY,
-   /* ColormapNotify */		COLORMAP,
-   /* ClientMessage */		0,
-   /* MappingNotify */		MAPPING
-};
+#ifdef __UNIX__
+#include "tkUnixInt.h"
+#endif
 
 /*
  * The following data structure represents the master for a test
@@ -159,7 +60,7 @@ typedef struct TImageInstance {
  */
 
 static int		ImageCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, char **argv,
+			    char *name, int argc, Tcl_Obj *CONST objv[],
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImageGet _ANSI_ARGS_((Tk_Window tkwin,
@@ -204,12 +105,24 @@ static NewApp *newAppPtr = NULL;
 extern int SquareCmd _ANSI_ARGS_((ClientData clientData,
 	Tcl_Interp *interp, int argc, char *argv[]));
 
+typedef struct CBinding {
+    Tcl_Interp *interp;
+    char *command;
+    char *delete;
+} CBinding;
+
 /*
  * Forward declarations for procedures defined later in this file:
  */
 
+static int		CBindingEvalProc _ANSI_ARGS_((ClientData clientData, 
+			    Tcl_Interp *interp, XEvent *eventPtr,
+			    Tk_Window tkwin, KeySym keySym));
+static void		CBindingFreeProc _ANSI_ARGS_((ClientData clientData));
 int			Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
 static int		ImageCmd _ANSI_ARGS_((ClientData dummy,
+			    Tcl_Interp *interp, int argc, char **argv));
+static int		TestcbindCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
 #ifdef __WIN32__
 static int		TestclipboardCmd _ANSI_ARGS_((ClientData dummy,
@@ -217,12 +130,32 @@ static int		TestclipboardCmd _ANSI_ARGS_((ClientData dummy,
 #endif
 static int		TestdeleteappsCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
-static int		TesteventCmd _ANSI_ARGS_((ClientData dummy,
-			    Tcl_Interp *interp, int argc, char **argv));
 static int		TestmakeexistCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
+static int		TestmenubarCmd _ANSI_ARGS_((ClientData dummy,
+			    Tcl_Interp *interp, int argc, char **argv));
+#if defined(__WIN32__) || defined(MAC_TCL)
+static int		TestmetricsCmd _ANSI_ARGS_((ClientData dummy,
+			    Tcl_Interp *interp, int argc, char **argv));
+#endif
 static int		TestsendCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
+static int		TestpropCmd _ANSI_ARGS_((ClientData dummy,
+			    Tcl_Interp *interp, int argc, char **argv));
+#if !(defined(__WIN32__) || defined(MAC_TCL))
+static int		TestwrapperCmd _ANSI_ARGS_((ClientData dummy,
+			    Tcl_Interp *interp, int argc, char **argv));
+#endif
+
+/*
+ * External (platform specific) initialization routine:
+ */
+
+EXTERN int		TkplatformtestInit _ANSI_ARGS_((
+			    Tcl_Interp *interp));
+#ifndef MAC_TCL
+#define TkplatformtestInit(x) TCL_OK
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -255,23 +188,37 @@ Tktest_Init(interp)
     if (Tcl_PkgProvide(interp, "Tktest", TK_VERSION) == TCL_ERROR) {
         return TCL_ERROR;
     }
-    
+
     Tcl_CreateCommand(interp, "square", SquareCmd,
 	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
 #ifdef __WIN32__
     Tcl_CreateCommand(interp, "testclipboard", TestclipboardCmd,
 	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
 #endif
+    Tcl_CreateCommand(interp, "testcbind", TestcbindCmd,
+	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "testdeleteapps", TestdeleteappsCmd,
 	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
-    Tcl_CreateCommand(interp, "testevent", TesteventCmd,
+    Tcl_CreateCommand(interp, "testembed", TkpTestembedCmd,
 	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "testmakeexist", TestmakeexistCmd,
 	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "testmenubar", TestmenubarCmd,
+	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
+#if defined(__WIN32__) || defined(MAC_TCL)
+    Tcl_CreateCommand(interp, "testmetrics", TestmetricsCmd,
+	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
+#endif
+    Tcl_CreateCommand(interp, "testprop", TestpropCmd,
+	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "testsend", TestsendCmd,
 	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
+#if !(defined(__WIN32__) || defined(MAC_TCL))
+    Tcl_CreateCommand(interp, "testwrapper", TestwrapperCmd,
+	    (ClientData) Tk_MainWindow(interp), (Tcl_CmdDeleteProc *) NULL);
+#endif
 
-    /*
+/*
      * Create test image type.
      */
 
@@ -279,7 +226,12 @@ Tktest_Init(interp)
 	initialized = 1;
 	Tk_CreateImageType(&imageType);
     }
-    return TCL_OK;
+
+    /*
+     * And finally add any platform specific test commands.
+     */
+    
+    return TkplatformtestInit(interp);
 }
 
 /*
@@ -327,6 +279,113 @@ TestclipboardCmd(clientData, interp, argc, argv)
 /*
  *----------------------------------------------------------------------
  *
+ * TestcbindCmd --
+ *
+ *	This procedure implements the "testcbinding" command.  It provides
+ *	a set of functions for testing C bindings in tkBind.c.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	Depends on option;  see below.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+TestcbindCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+    TkWindow *winPtr;
+    Tk_Window tkwin;
+    ClientData object;
+    CBinding *cbindPtr;
+    
+    
+    if (argc < 4 || argc > 5) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" bindtag pattern command ?deletecommand?", (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    tkwin = (Tk_Window) clientData;
+
+    if (argv[1][0] == '.') {
+	winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[1], tkwin);
+	if (winPtr == NULL) {
+	    return TCL_ERROR;
+	}
+	object = (ClientData) winPtr->pathName;
+    } else {
+	winPtr = (TkWindow *) clientData;
+	object = (ClientData) Tk_GetUid(argv[1]);
+    }
+
+    if (argv[3][0] == '\0') {
+	return Tk_DeleteBinding(interp, winPtr->mainPtr->bindingTable,
+		object, argv[2]);
+    }
+
+    cbindPtr = (CBinding *) ckalloc(sizeof(CBinding));
+    cbindPtr->interp = interp;
+    cbindPtr->command =
+	    strcpy((char *) ckalloc(strlen(argv[3]) + 1), argv[3]);
+    if (argc == 4) {
+	cbindPtr->delete = NULL;
+    } else {
+	cbindPtr->delete =
+		strcpy((char *) ckalloc(strlen(argv[4]) + 1), argv[4]);
+    }
+
+    if (TkCreateBindingProcedure(interp, winPtr->mainPtr->bindingTable,
+	    object, argv[2], CBindingEvalProc, CBindingFreeProc,
+	    (ClientData) cbindPtr) == 0) {
+	ckfree((char *) cbindPtr->command);
+	if (cbindPtr->delete != NULL) {
+	    ckfree((char *) cbindPtr->delete);
+	}
+	ckfree((char *) cbindPtr);
+	return TCL_ERROR;
+    }
+    return TCL_OK;
+}
+
+static int
+CBindingEvalProc(clientData, interp, eventPtr, tkwin, keySym)
+    ClientData clientData;
+    Tcl_Interp *interp;
+    XEvent *eventPtr;
+    Tk_Window tkwin;
+    KeySym keySym;
+{
+    CBinding *cbindPtr;
+
+    cbindPtr = (CBinding *) clientData;
+    
+    return Tcl_GlobalEval(interp, cbindPtr->command);
+}
+
+static void
+CBindingFreeProc(clientData)
+    ClientData clientData;
+{
+    CBinding *cbindPtr = (CBinding *) clientData;
+    
+    if (cbindPtr->delete != NULL) {
+	Tcl_GlobalEval(cbindPtr->interp, cbindPtr->delete);
+	ckfree((char *) cbindPtr->delete);
+    }
+    ckfree((char *) cbindPtr->command);
+    ckfree((char *) cbindPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TestdeleteappsCmd --
  *
  *	This procedure implements the "testdeleteapps" command.  It cleans
@@ -358,414 +417,6 @@ TestdeleteappsCmd(clientData, interp, argc, argv)
 	ckfree((char *) newAppPtr);
 	newAppPtr = nextPtr;
     }
-    return TCL_OK;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TesteventCmd --
- *
- *	This procedure implements the "testevent" command.  It allows
- *	events to be generated on the fly, for testing event-handling.
- *
- * Results:
- *	A standard Tcl result.
- *
- * Side effects:
- *	Creates and handles events.
- *
- *----------------------------------------------------------------------
- */
-
-	/* ARGSUSED */
-static int
-TesteventCmd(clientData, interp, argc, argv)
-    ClientData clientData;		/* Main window for application. */
-    Tcl_Interp *interp;			/* Current interpreter. */
-    int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
-{
-    Tk_Window main = (Tk_Window) clientData;
-    Tk_Window tkwin, tkwin2;
-    XEvent event;
-    EventInfo *eiPtr;
-    char *field, *value;
-    int i, number, flags;
-    KeySym keysym;
-
-    if ((argc < 3) || !(argc & 1)) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		" window type ?field value field value ...?\"",
-		(char *) NULL);
-	return TCL_ERROR;
-    }
-    tkwin = Tk_NameToWindow(interp, argv[1], main);
-    if (tkwin == NULL) {
-	return TCL_ERROR;
-    }
-
-    /*
-     * Get the type of the event.
-     */
-
-    memset((VOID *) &event, 0, sizeof(event));
-    for (eiPtr = eventArray; ; eiPtr++) {
-	if (eiPtr->name == NULL) {
-	    Tcl_AppendResult(interp, "bad event type \"", argv[2],
-		    "\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if (strcmp(eiPtr->name, argv[2]) == 0) {
-	    event.xany.type = eiPtr->type;
-	    break;
-	}
-    }
-
-    /*
-     * Fill in fields that are common to all events.
-     */
-
-    event.xany.serial = NextRequest(Tk_Display(tkwin));
-    event.xany.send_event = False;
-    event.xany.window = Tk_WindowId(tkwin);
-    event.xany.display = Tk_Display(tkwin);
-
-    /*
-     * Process the remaining arguments to fill in additional fields
-     * of the event.
-     */
-
-    flags = flagArray[event.xany.type];
-    for (i = 3; i < argc; i += 2) {
-	field = argv[i];
-	value = argv[i+1];
-	if (strcmp(field, "-above") == 0) {
-	    tkwin2 = Tk_NameToWindow(interp, value, main);
-	    if (tkwin2 == NULL) {
-		return TCL_ERROR;
-	    }
-	    event.xconfigure.above = Tk_WindowId(tkwin2);
-	} else if (strcmp(field, "-borderwidth") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xcreatewindow.border_width = number;
-	} else if (strcmp(field, "-button") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xbutton.button = number;
-	} else if (strcmp(field, "-count") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    if (flags & EXPOSE) {
-		event.xexpose.count = number;
-	    } else if (flags & MAPPING) {
-		event.xmapping.count = number;
-	    }
-	} else if (strcmp(field, "-detail") == 0) {
-	    if (flags & (CROSSING|FOCUS)) {
-		if (strcmp(value, "NotifyAncestor") == 0) {
-		    number = NotifyAncestor;
-		} else if (strcmp(value, "NotifyVirtual") == 0) {
-		    number = NotifyVirtual;
-		} else if (strcmp(value, "NotifyInferior") == 0) {
-		    number = NotifyInferior;
-		} else if (strcmp(value, "NotifyNonlinear") == 0) {
-		    number = NotifyNonlinear;
-		} else if (strcmp(value, "NotifyNonlinearVirtual") == 0) {
-		    number = NotifyNonlinearVirtual;
-		} else if (strcmp(value, "NotifyPointer") == 0) {
-		    number = NotifyPointer;
-		} else if (strcmp(value, "NotifyPointerRoot") == 0) {
-		    number = NotifyPointerRoot;
-		} else if (strcmp(value, "NotifyDetailNone") == 0) {
-		    number = NotifyDetailNone;
-		} else {
-		    Tcl_AppendResult(interp, "bad detail \"", value, "\"",
-			    (char *) NULL);
-		    return TCL_ERROR;
-		}
-		if (flags & FOCUS) {
-		    event.xfocus.detail = number;
-		} else {
-		    event.xcrossing.detail = number;
-		}
-	    } else if (flags & CONFIG_REQ) {
-		if (strcmp(value, "Above") == 0) {
-		    number = Above;
-		} else if (strcmp(value, "Below") == 0) {
-		    number = Below;
-		} else if (strcmp(value, "TopIf") == 0) {
-		    number = TopIf;
-		} else if (strcmp(value, "BottomIf") == 0) {
-		    number = BottomIf;
-		} else if (strcmp(value, "Opposite") == 0) {
-		    number = Opposite;
-		} else {
-		    Tcl_AppendResult(interp, "bad detail \"", value, "\"",
-			    (char *) NULL);
-		    return TCL_ERROR;
-		}
-		event.xconfigurerequest.detail = number;
-	    }
-	} else if (strcmp(field, "-focus") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xcrossing.focus = number;
-	} else if (strcmp(field, "-height") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    if (flags & EXPOSE) {
-		 event.xexpose.height = number;
-	    } else if (flags & (CONFIG|CONFIG_REQ)) {
-		event.xconfigure.height = number;
-	    } else if (flags & RESIZE_REQ) {
-		event.xresizerequest.height = number;
-	    }
-	} else if (strcmp(field, "-keycode") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xkey.keycode = number;
-	} else if (strcmp(field, "-keysym") == 0) {
-	    keysym = TkStringToKeysym(value);
-	    if (keysym == NoSymbol) {
-		Tcl_AppendResult(interp, "unknown keysym \"", value,
-			"\"", (char *) NULL);
-		return TCL_ERROR;
-	    }
-	    number = XKeysymToKeycode(event.xany.display, keysym);
-	    if (number == 0) {
-		Tcl_AppendResult(interp, "no keycode for keysym \"", value,
-			"\"", (char *) NULL);
-		return TCL_ERROR;
-	    }
-	    event.xkey.keycode = number;
-	} else if (strcmp(field, "-mode") == 0) {
-	    if (strcmp(value, "NotifyNormal") == 0) {
-		number = NotifyNormal;
-	    } else if (strcmp(value, "NotifyGrab") == 0) {
-		number = NotifyGrab;
-	    } else if (strcmp(value, "NotifyUngrab") == 0) {
-		number = NotifyUngrab;
-	    } else if (strcmp(value, "NotifyWhileGrabbed") == 0) {
-		number = NotifyWhileGrabbed;
-	    } else {
-		Tcl_AppendResult(interp, "bad mode \"", value, "\"",
-			(char *) NULL);
-		return TCL_ERROR;
-	    }
-	    if (flags & CROSSING) {
-		event.xcrossing.mode = number;
-	    } else if (flags & FOCUS) {
-		event.xfocus.mode = number;
-	    }
-	} else if (strcmp(field, "-override") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    if (flags & CREATE) {
-		event.xcreatewindow.override_redirect = number;
-	    } else if (flags & MAP) {
-		event.xmap.override_redirect = number;
-	    } else if (flags & REPARENT) {
-		event.xreparent.override_redirect = number;
-	    } else if (flags & CONFIG) {
-		event.xconfigure.override_redirect = number;
-	    }
-	} else if (strcmp(field, "-place") == 0) {
-	    if (strcmp(value, "PlaceOnTop") == 0) {
-		event.xcirculate.place = PlaceOnTop;
-	    } else if (strcmp(value, "PlaceOnBottom") == 0) {
-		event.xcirculate.place = PlaceOnBottom;
-	    } else if (strcmp(value, "bogus") == 0) {
-		event.xcirculate.place = 147;
-	    } else {
-		Tcl_AppendResult(interp, "bad place \"", value, "\"",
-			(char *) NULL);
-		return TCL_ERROR;
-	    }
-	} else if (strcmp(field, "-root") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xkey.root = number;
-	} else if (strcmp(field, "-rootx") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xkey.x_root = number;
-	} else if (strcmp(field, "-rooty") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xkey.y_root = number;
-	} else if (strcmp(field, "-sendevent") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xany.send_event = number;
-	} else if (strcmp(field, "-serial") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xany.serial = number;
-	} else if (strcmp(field, "-state") == 0) {
-	    if (flags & KEY_BUTTON_MOTION) {
-		if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		event.xkey.state = number;
-	    } else if (flags & CROSSING) {
-		if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		event.xcrossing.state = number;
-	    } else if (flags & VISIBILITY) {
-		if (strcmp(value, "VisibilityUnobscured") == 0) {
-		    number = VisibilityUnobscured;
-		} else if (strcmp(value, "VisibilityPartiallyObscured") == 0) {
-		    number = VisibilityPartiallyObscured;
-		} else if (strcmp(value, "VisibilityFullyObscured") == 0) {
-		    number = VisibilityFullyObscured;
-		} else {
-		    Tcl_AppendResult(interp, "bad state \"", value, "\"",
-			    (char *) NULL);
-		    return TCL_ERROR;
-		}
-		event.xvisibility.state = number;
-	    }
-	} else if (strcmp(field, "-subwindow") == 0) {
-	    tkwin2 = Tk_NameToWindow(interp, value, main);
-	    if (tkwin2 == NULL) {
-		return TCL_ERROR;
-	    }
-	    event.xkey.subwindow = Tk_WindowId(tkwin2);
-	} else if (strcmp(field, "-time") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    if (flags & (KEY_BUTTON_MOTION|PROP|SEL_CLEAR)) {
-		event.xkey.time = (Time) number;
-	    } else if (flags & SEL_REQ) {
-		event.xselectionrequest.time = (Time) number;
-	    } else if (flags & SEL_NOTIFY) {
-		event.xselection.time = (Time) number;
-	    }
-	} else if (strcmp(field, "-valueMask") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    event.xconfigurerequest.value_mask = number;
-	} else if (strcmp(field, "-width") == 0) {
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    if (flags & EXPOSE) {
-		event.xexpose.width = number;
-	    } else if (flags & (CONFIG|CONFIG_REQ)) {
-		event.xconfigure.width = number;
-	    } else if (flags & RESIZE_REQ) {
-		event.xresizerequest.width = number;
-	    }
-	} else if (strcmp(field, "-window") == 0) {
-	    tkwin2 = Tk_NameToWindow(interp, value, main);
-	    if (tkwin2 == NULL) {
-		return TCL_ERROR;
-	    }
-	    event.xmap.window = Tk_WindowId(tkwin2);
-	} else if (strcmp(field, "-x") == 0) {
-	    int rootX, rootY;
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    Tk_GetRootCoords(tkwin, &rootX, &rootY);
-	    rootX += number;
-	    if (flags & KEY_BUTTON_MOTION) {
-		event.xkey.x = number;
-		event.xkey.x_root = rootX;
-	    } else if (flags & EXPOSE) {
-		event.xexpose.x = number;
-	    } else if (flags & (CREATE|CONFIG|GRAVITY|CONFIG_REQ)) {
-		event.xcreatewindow.x = number;
-	    } else if (flags & REPARENT) {
-		event.xreparent.x = number;
-	    } else if (flags & CROSSING) {
-		event.xcrossing.x = number;
-		event.xcrossing.x_root = rootY;
-	    }
-	} else if (strcmp(field, "-y") == 0) {
-	    int rootX, rootY;
-	    if (Tcl_GetInt(interp, value, &number) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    Tk_GetRootCoords(tkwin, &rootX, &rootY);
-	    rootY += number;
-	    if (flags & KEY_BUTTON_MOTION) {
-		event.xkey.y = number;
-		event.xkey.y_root = rootY;
-	    } else if (flags & EXPOSE) {
-		event.xexpose.y = number;
-	    } else if (flags & (CREATE|CONFIG|GRAVITY|CONFIG_REQ)) {
-		event.xcreatewindow.y = number;
-	    } else if (flags & REPARENT) {
-		event.xreparent.y = number;
-	    } else if (flags & CROSSING) {
-		event.xcrossing.y = number;
-		event.xcrossing.y_root = rootY;
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "bad option \"", field, "\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-    }
-    Tk_HandleEvent(&event);
-    return TCL_OK;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TestmakeexistCmd --
- *
- *	This procedure implements the "testmakeexist" command.  It calls
- *	Tk_MakeWindowExist on each of its arguments to force the windows
- *	to be created.
- *
- * Results:
- *	A standard Tcl result.
- *
- * Side effects:
- *	Forces windows to be created.
- *
- *----------------------------------------------------------------------
- */
-
-	/* ARGSUSED */
-static int
-TestmakeexistCmd(clientData, interp, argc, argv)
-    ClientData clientData;		/* Main window for application. */
-    Tcl_Interp *interp;			/* Current interpreter. */
-    int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
-{
-    Tk_Window main = (Tk_Window) clientData;
-    int i;
-    Tk_Window tkwin;
-
-    for (i = 1; i < argc; i++) {
-	tkwin = Tk_NameToWindow(interp, argv[i], main);
-	if (tkwin == NULL) {
-	    return TCL_ERROR;
-	}
-	Tk_MakeWindowExist(tkwin);
-    }
 
     return TCL_OK;
 }
@@ -789,12 +440,12 @@ TestmakeexistCmd(clientData, interp, argc, argv)
 
 	/* ARGSUSED */
 static int
-ImageCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
+ImageCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     Tcl_Interp *interp;		/* Interpreter for application containing
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings for options (doesn't
+    Tcl_Obj *CONST objv[];	/* Argument strings for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -808,17 +459,18 @@ ImageCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
 
     varName = "log";
     for (i = 0; i < argc; i += 2) {
-	if (strcmp(argv[i], "-variable") != 0) {
-	    Tcl_AppendResult(interp, "bad option name \"", argv[i],
+	char *arg = Tcl_GetStringFromObj(objv[i], NULL);
+	if (strcmp(arg, "-variable") != 0) {
+	    Tcl_AppendResult(interp, "bad option name \"", arg,
 		    "\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
 	if ((i+1) == argc) {
-	    Tcl_AppendResult(interp, "no value given for \"", argv[i],
+	    Tcl_AppendResult(interp, "no value given for \"", arg,
 		    "\" option", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	varName = argv[i+1];
+	varName = Tcl_GetStringFromObj(objv[i+1], NULL);
     }
     timPtr = (TImageMaster *) ckalloc(sizeof(TImageMaster));
     timPtr->master = master;
@@ -1060,6 +712,277 @@ ImageDelete(clientData)
 /*
  *----------------------------------------------------------------------
  *
+ * TestmakeexistCmd --
+ *
+ *	This procedure implements the "testmakeexist" command.  It calls
+ *	Tk_MakeWindowExist on each of its arguments to force the windows
+ *	to be created.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	Forces windows to be created.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+static int
+TestmakeexistCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+    Tk_Window main = (Tk_Window) clientData;
+    int i;
+    Tk_Window tkwin;
+
+    for (i = 1; i < argc; i++) {
+	tkwin = Tk_NameToWindow(interp, argv[i], main);
+	if (tkwin == NULL) {
+	    return TCL_ERROR;
+	}
+	Tk_MakeWindowExist(tkwin);
+    }
+
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TestmenubarCmd --
+ *
+ *	This procedure implements the "testmenubar" command.  It is used
+ *	to test the Unix facilities for creating space above a toplevel
+ *	window for a menubar.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	Changes menubar related stuff.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+static int
+TestmenubarCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+#ifdef __UNIX__
+    Tk_Window main = (Tk_Window) clientData;
+    Tk_Window tkwin, menubar;
+
+    if (argc < 2) {
+	Tcl_AppendResult(interp, "wrong # args;  must be \"", argv[0],
+		" option ?arg ...?\"", (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    if (strcmp(argv[1], "window") == 0) {
+	if (argc != 4) {
+	    Tcl_AppendResult(interp, "wrong # args;  must be \"", argv[0],
+		    "window toplevel menubar\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	tkwin = Tk_NameToWindow(interp, argv[2], main);
+	if (tkwin == NULL) {
+	    return TCL_ERROR;
+	}
+	if (argv[3][0] == 0) {
+	    TkUnixSetMenubar(tkwin, NULL);
+	} else {
+	    menubar = Tk_NameToWindow(interp, argv[3], main);
+	    if (menubar == NULL) {
+		return TCL_ERROR;
+	    }
+	    TkUnixSetMenubar(tkwin, menubar);
+	}
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": must be  window", (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    return TCL_OK;
+#else
+    interp->result = "testmenubar is supported only under Unix";
+    return TCL_ERROR;
+#endif
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TestmetricsCmd --
+ *
+ *	This procedure implements the testmetrics command. It provides
+ *	a way to determine the size of various widget components.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+#ifdef __WIN32__
+static int
+TestmetricsCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+    char buf[200];
+
+    if (argc < 2) {
+	Tcl_AppendResult(interp, "wrong # args;  must be \"", argv[0],
+		" option ?arg ...?\"", (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    if (strcmp(argv[1], "cyvscroll") == 0) {
+	sprintf(buf, "%d", GetSystemMetrics(SM_CYVSCROLL));
+	Tcl_AppendResult(interp, buf, (char *) NULL);
+    } else  if (strcmp(argv[1], "cxhscroll") == 0) {
+	sprintf(buf, "%d", GetSystemMetrics(SM_CXHSCROLL));
+	Tcl_AppendResult(interp, buf, (char *) NULL);
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": must be cxhscroll or cyvscroll", (char *) NULL);
+	return TCL_ERROR;
+    }
+    return TCL_OK;
+}
+#endif
+#ifdef MAC_TCL
+static int
+TestmetricsCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+    Tk_Window tkwin = (Tk_Window) clientData;
+    TkWindow *winPtr;
+    char buf[200];
+
+    if (argc != 3) {
+	Tcl_AppendResult(interp, "wrong # args;  must be \"", argv[0],
+		" option window\"", (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[2], tkwin);
+    if (winPtr == NULL) {
+	return TCL_ERROR;
+    }
+    
+    if (strcmp(argv[1], "cyvscroll") == 0) {
+	sprintf(buf, "%d", ((TkScrollbar *) winPtr->instanceData)->width);
+	Tcl_AppendResult(interp, buf, (char *) NULL);
+    } else  if (strcmp(argv[1], "cxhscroll") == 0) {
+	sprintf(buf, "%d", ((TkScrollbar *) winPtr->instanceData)->width);
+	Tcl_AppendResult(interp, buf, (char *) NULL);
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": must be cxhscroll or cyvscroll", (char *) NULL);
+	return TCL_ERROR;
+    }
+    return TCL_OK;
+}
+#endif
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TestpropCmd --
+ *
+ *	This procedure implements the "testprop" command.  It fetches
+ *	and prints the value of a property on a window.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+static int
+TestpropCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+    Tk_Window main = (Tk_Window) clientData;
+    int result, actualFormat;
+    unsigned long bytesAfter, length, value;
+    Atom actualType, propName;
+    char *property, *p, *end;
+    Window w;
+    char buffer[30];
+
+    if (argc != 3) {
+	Tcl_AppendResult(interp, "wrong # args;  must be \"", argv[0],
+		" window property\"", (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    w = strtoul(argv[1], &end, 0);
+    propName = Tk_InternAtom(main, argv[2]);
+    property = NULL;
+    result = XGetWindowProperty(Tk_Display(main),
+	    w, propName, 0, 100000, False, AnyPropertyType,
+	    &actualType, &actualFormat, &length,
+	    &bytesAfter, (unsigned char **) &property);
+    if ((result == Success) && (actualType != None)) {
+	if ((actualFormat == 8) && (actualType == XA_STRING)) {
+	    for (p = property; ((unsigned long)(p-property)) < length; p++) {
+		if (*p == 0) {
+		    *p = '\n';
+		}
+	    }
+	    Tcl_SetResult(interp, property, TCL_VOLATILE);
+	} else {
+	    for (p = property; length > 0; length--) {
+		if (actualFormat == 32) {
+		    value = *((long *) p);
+		    p += sizeof(long);
+		} else if (actualFormat == 16) {
+		    value = 0xffff & (*((short *) p));
+		    p += sizeof(short);
+		} else {
+		    value = 0xff & *p;
+		    p += 1;
+		}
+		sprintf(buffer, "0x%lx", value);
+		Tcl_AppendElement(interp, buffer);
+	    }
+	}
+    }
+    if (property != NULL) {
+	XFree(property);
+    }
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TestsendCmd --
  *
  *	This procedure implements the "testsend" command.  It provides
@@ -1091,7 +1014,7 @@ TestsendCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 
-#ifndef __WIN32__
+#if !(defined(__WIN32__) || defined(MAC_TCL))
     if (strcmp(argv[1], "bogus") == 0) {
 	XChangeProperty(winPtr->dispPtr->display,
 		RootWindow(winPtr->dispPtr->display, 0),
@@ -1099,8 +1022,8 @@ TestsendCmd(clientData, interp, argc, argv)
 		PropModeReplace,
 		(unsigned char *) "This is bogus information", 6);
     } else if (strcmp(argv[1], "prop") == 0) {
-	int result, actualFormat, length;
-	unsigned long bytesAfter;
+	int result, actualFormat;
+	unsigned long length, bytesAfter;
 	Atom actualType, propName;
 	char *property, *p, *end;
 	Window w;
@@ -1122,7 +1045,7 @@ TestsendCmd(clientData, interp, argc, argv)
 	    property = NULL;
 	    result = XGetWindowProperty(winPtr->dispPtr->display,
 		    w, propName, 0, 100000, False, XA_STRING,
-		    &actualType, &actualFormat, (unsigned long *) &length,
+		    &actualType, &actualFormat, &length,
 		    &bytesAfter, (unsigned char **) &property);
 	    if ((result == Success) && (actualType != None)
 		    && (actualFormat == 8) && (actualType == XA_STRING)) {
@@ -1160,3 +1083,53 @@ TestsendCmd(clientData, interp, argc, argv)
 #endif
     return TCL_OK;
 }
+
+#if !(defined(__WIN32__) || defined(MAC_TCL))
+/*
+ *----------------------------------------------------------------------
+ *
+ * TestwrapperCmd --
+ *
+ *	This procedure implements the "testwrapper" command.  It 
+ *	provides a way from Tcl to determine the extra window Tk adds
+ *	in between the toplevel window and the window decorations.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+static int
+TestwrapperCmd(clientData, interp, argc, argv)
+    ClientData clientData;		/* Main window for application. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
+{
+    TkWindow *winPtr, *wrapperPtr;
+    Tk_Window tkwin;
+
+    if (argc != 2) {
+	Tcl_AppendResult(interp, "wrong # args;  must be \"", argv[0],
+		" window\"", (char *) NULL);
+	return TCL_ERROR;
+    }
+    
+    tkwin = (Tk_Window) clientData;
+    winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[1], tkwin);
+    if (winPtr == NULL) {
+	return TCL_ERROR;
+    }
+
+    wrapperPtr = TkpGetWrapperWindow(winPtr);
+    if (wrapperPtr != NULL) {
+	TkpPrintWindowId(interp->result, Tk_WindowId(wrapperPtr));
+    }
+    return TCL_OK;
+}
+#endif

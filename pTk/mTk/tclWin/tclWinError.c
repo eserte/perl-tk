@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinError.c 1.6 96/10/03 14:59:22
+ * SCCS: @(#) tclWinError.c 1.7 97/10/28 17:30:33
  */
 
 #include "tclInt.h"
@@ -253,7 +253,7 @@ static char errorTable[] = {
     EINVAL,	/* 229 */
     EPIPE,	/* ERROR_BAD_PIPE		230 */
     EAGAIN,	/* ERROR_PIPE_BUSY		231 */
-    EINVAL,	/* 232 */
+    EPIPE,	/* ERROR_NO_DATA		232 */
     EPIPE,	/* ERROR_PIPE_NOT_CONNECTED	233 */
     EINVAL,	/* 234 */
     EINVAL,	/* 235 */

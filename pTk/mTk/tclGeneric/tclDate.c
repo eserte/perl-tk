@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * @(#) tclDate.c 1.29 97/01/30 10:50:33
+ * @(#) tclDate.c 1.32 97/02/03 14:54:37
  */
 
 #include "tclInt.h"
@@ -94,44 +94,19 @@ static time_t   TclDateRelSeconds;
 /*
  * Prototypes of internal functions.
  */
-static void
-TclDateerror _ANSI_ARGS_((char *s));
-
-static time_t
-ToSeconds _ANSI_ARGS_((time_t      Hours,
-                       time_t      Minutes,
-                       time_t      Seconds,
-                       MERIDIAN    Meridian));
-
-static int
-Convert _ANSI_ARGS_((time_t      Month,
-                     time_t      Day,
-                     time_t      Year,
-                     time_t      Hours,
-                     time_t      Minutes,
-                     time_t      Seconds,
-                     MERIDIAN    Meridia,
-                     DSTMODE     DSTmode,
-                     time_t     *TimePtr));
-
-static time_t
-DSTcorrect _ANSI_ARGS_((time_t      Start,
-                        time_t      Future));
-
-static time_t
-RelativeDate _ANSI_ARGS_((time_t      Start,
-                          time_t      DayOrdinal,
-                          time_t      DayNumber));
-
-static int
-RelativeMonth _ANSI_ARGS_((time_t      Start,
-                           time_t      RelMonth,
-                           time_t     *TimePtr));
-static int
-LookupWord _ANSI_ARGS_((char  *buff));
-
-static int
-TclDatelex _ANSI_ARGS_((void));
+static void	TclDateerror _ANSI_ARGS_((char *s));
+static time_t	ToSeconds _ANSI_ARGS_((time_t Hours, time_t Minutes,
+		    time_t Seconds, MERIDIAN Meridian));
+static int	Convert _ANSI_ARGS_((time_t Month, time_t Day, time_t Year,
+		    time_t Hours, time_t Minutes, time_t Seconds,
+		    MERIDIAN Meridia, DSTMODE DSTmode, time_t *TimePtr));
+static time_t	DSTcorrect _ANSI_ARGS_((time_t Start, time_t Future));
+static time_t	RelativeDate _ANSI_ARGS_((time_t Start, time_t DayOrdinal,
+		    time_t DayNumber));
+static int	RelativeMonth _ANSI_ARGS_((time_t Start, time_t RelMonth,
+		    time_t *TimePtr));
+static int	LookupWord _ANSI_ARGS_((char *buff));
+static int	TclDatelex _ANSI_ARGS_((void));
 
 int
 TclDateparse _ANSI_ARGS_((void));
@@ -506,14 +481,15 @@ RelativeDate(Start, DayOrdinal, DayNumber)
 
 static int
 RelativeMonth(Start, RelMonth, TimePtr)
-    time_t      Start;
-    time_t      RelMonth;
-    time_t     *TimePtr;
+    time_t Start;
+    time_t RelMonth;
+    time_t *TimePtr;
 {
     struct tm *tm;
     time_t Month;
     time_t Year;
     time_t Julian;
+    int result;
 
     if (RelMonth == 0) {
         *TimePtr = 0;
@@ -523,10 +499,26 @@ RelativeMonth(Start, RelMonth, TimePtr)
     Month = 12 * (tm->tm_year + TM_YEAR_BASE) + tm->tm_mon + RelMonth;
     Year = Month / 12;
     Month = Month % 12 + 1;
-    if (Convert(Month, (time_t)tm->tm_mday, Year,
-                (time_t)tm->tm_hour, (time_t)tm->tm_min, (time_t)tm->tm_sec,
-                MER24, DSTmaybe, &Julian) < 0)
-        return -1;
+    result = Convert(Month, (time_t) tm->tm_mday, Year,
+	    (time_t) tm->tm_hour, (time_t) tm->tm_min, (time_t) tm->tm_sec,
+	    MER24, DSTmaybe, &Julian);
+    /*
+     * The following iteration takes into account the case were we jump
+     * into a "short month".  Far example, "one month from Jan 31" will
+     * fail because there is no Feb 31.  The code below will reduce the
+     * day and try converting the date until we succed or the date equals
+     * 28 (which always works unless the date is bad in another way).
+     */
+
+    while ((result != 0) && (tm->tm_mday > 28)) {
+	tm->tm_mday--;
+	result = Convert(Month, (time_t) tm->tm_mday, Year,
+		(time_t) tm->tm_hour, (time_t) tm->tm_min, (time_t) tm->tm_sec,
+		MER24, DSTmaybe, &Julian);
+    }
+    if (result != 0) {
+	return -1;
+    }
     *TimePtr = DSTcorrect(Start, Julian);
     return 0;
 }
@@ -770,11 +762,19 @@ TclGetDate(p, now, zone, timePtr)
 	/*
 	 * The following line handles years that are specified using
 	 * only two digits.  The line of code below implements a policy
-	 * where two digit dates always refer to the hundered years
-	 * after TM_YEAR_BASE - which is all dates in the 1900's.
+	 * defined by the X/Open workgroup on the millinium rollover.
+	 * Note: some of those dates may not actually be valid on some
+	 * platforms.  The POSIX standard startes that the dates 70-99
+	 * shall refer to 1970-1999 and 00-38 shall refer to 2000-2038.
+	 * This later definition should work on all platforms.
 	 */
+
 	if (TclDateYear < 100) {
-	    TclDateYear += TM_YEAR_BASE;
+	    if (TclDateYear >= 69) {
+		TclDateYear += 1900;
+	    } else {
+		TclDateYear += 2000;
+	    }
 	}
 	if (Convert(TclDateMonth, TclDateDay, TclDateYear, TclDateHour, TclDateMinutes, TclDateSeconds,
 		TclDateMeridian, TclDateDSTmode, &Start) < 0) {

@@ -14,7 +14,7 @@ use Carp;
 # stubs for 'autoloaded' widget classes
 
 use vars qw($VERSION);
-$VERSION = '2.022'; # $Id: //depot/Tk/Tk/Widget.pm#22$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Widget.pm#7$
 
 sub Button;
 sub Canvas;
@@ -65,6 +65,7 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'grid'  => [qw(bbox columnconfigure configure forget info location propagate rowconfigure size slaves)],
                     'form'  => [qw(check configure forget grid info slaves)],
                     'after' => [qw(cancel idle)],
+                    'event' => [qw(add delete generate info)],
                     'place' => [qw(configure forget info slaves)],
                     'wm'    => [qw(capture release)]
                   );
@@ -165,7 +166,8 @@ sub new
      $lname = $pname . "." . $leaf . ++$parent->{$key};
     }
   }
- my $obj = &$cmd($parent, $lname, @args);
+ my $obj = eval { &$cmd($parent, $lname, @args) };
+ confess $@ if $@;
  bless $obj,$package;
  $obj->InitObject(\%args);
  $obj->configure(%args) if (%args);
@@ -322,6 +324,57 @@ sub privateData
  my $w = shift;
  my $p = shift || caller;
  $w->{$p} ||= {};
+}
+
+my @image_types;
+my %image_method;
+
+sub ImageMethod
+{
+ shift if (@_ & 1);
+ while (@_)
+  {
+   my ($name,$method) = splice(@_,0,2);
+   push(@image_types,$name);
+   $image_method{$name} = $method;
+  }
+}
+
+sub Getimage 
+{
+ my ($w, $name) = @_;
+ my $mw = $w->MainWindow;
+ my $images = ($mw->{'__Images__'} ||= {});
+
+ return $images->{$name} if $images->{$name};
+
+ ImageMethod(xpm => "Pixmap",
+    gif => "Photo",
+    ppm => "Photo",
+    xbm => "Bitmap" ) unless @image_types;
+
+ foreach my $type (@image_types) 
+  {
+   my $method = $image_method{$type};
+   my $file = Tk->findINC( "$name.$type" );
+   next unless( $file && $method );
+   $images->{$name} = $w->$method( -file => $file );
+   return $images->{$name};
+  }
+
+ # Try built-in bitmaps
+ $images->{$name} = $w->Pixmap( -id => $name );
+ return $images->{$name};
+}
+
+sub SaveGrabInfo 
+{               
+ my $w = shift;
+ $Tk::oldGrab = $w->grabCurrent;
+ if (defined $Tk::oldGrab)
+  {
+   $Tk::grabStatus = $Tk::oldGrab->grabStatus;
+  }
 }
 
 1;                     
@@ -988,7 +1041,53 @@ sub ForwardEvent
  my $to   = shift;
  $to->PassEvent($self->XEvent);
 }
+ 
+# Save / Return abstract event type as in Tix.
+sub EventType
+{
+ my $w = shift;
+ $w->{'_EventType_'} = $_[0] if @_;
+ return $w->{'_EventType_'};
+}
 
+=head1 NAME 
 
+Tk::Widget - Base class of all widgets
 
+=head1 SYNOPSIS
+
+   package Tk::Whatever;
+   require Tk::Widget;
+   @ISA = qw(Tk::Widget);   
+   Construct Tk::Widget 'Whatever';
+
+   sub Tk_cmd { \&Tk::whatever }
+
+=head1 DESCRIPTION 
+
+The B<Tk::Widget> is an abstract base class for all Tk widgets.
+
+Generic methods available to all widgets include:
+
+=over 4
+
+=item Getimage( name )
+
+Given I<name>, look for an image file with that base name and return
+a C<Tk::Image>.  File extensions are tried in this order: F<xpm>,
+F<gif>, F<ppm>, F<xbm> until a valid iamge is found.  If no image is
+found, try a builtin image with that name.
+
+=item EventType( ?value? )
+
+Return or set the tixEvent variable C<option>.  Currently, the only
+C<option> used is "type".
+
+=back 
+
+=head1 CAVEATS
+
+The above documentaion on generic methods is catastrophically incomplete.
+
+=cut 
 

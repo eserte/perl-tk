@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1990 The Regents of the University of California.
-'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) lower.n 1.5 95/06/07 21:15:19
+'\" SCCS: @(#) lower.n 1.9 96/06/14 14:19:56
 '\" 
 .so man.macros
 .TH lower n 3.3 Tk "Tk Geometry Management"
@@ -30,6 +30,9 @@ In this case the \fBlower\fR command will insert
 $widget\fR into the stacking order just below \fIbelowThis\fR
 (or the ancestor of \fIbelowThis\fR that is a sibling of $widget\fR);
 this could end up either raising or lowering $widget\fR.
+
+.SH "SEE ALSO"
+raise
 
 .SH KEYWORDS
 lower, obscure, stacking order

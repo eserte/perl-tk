@@ -1,6 +1,6 @@
 '\"
 '\" Copyright (c) 1994 The Australian National University
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
@@ -9,16 +9,16 @@
 '\"	    Department of Computer Science,
 '\"	    Australian National University.
 '\"
-'\" "@(#) photo.n 1.8 95/06/09 10:11:08"
+'\" "@(#) photo.n 1.12 97/10/14 10:52:30"
 '\" 
 .so man.macros
-.TH photo n 4.0 Tk "Tk Image Classes"
+.TH photo n 4.0 Tk "Tk Built-In Commands"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
 photo \- Full-color images
 .SH SYNOPSIS
-\fI$widget->\fBPhoto\fR?(\fIname\fR?,?\fIoptions\fR)?
+\fBimage create photo \fR?\fIname\fR? ?\fIoptions\fR?
 .BE
 
 .SH DESCRIPTION
@@ -35,26 +35,27 @@ in regions where no image data has been supplied.
 
 .SH "CREATING PHOTOS"
 .PP
-Photos are created using the \fI$widget->\fBPhoto\fR.
+Like all images, photos are created using the \fBimage create\fR
+command.
 Photos support the following \fIoptions\fR:
 .TP
-\fB\-data\fR => \fIstring\fR
+\fB\-data \fIstring\fR
 Specifies the contents of the image as a string.  The format of the
 string must be one of those for which there is an image file format
 handler that will accept string data.  If both the \fB\-data\fR
 and \fB\-file\fR options are specified, the \fB\-file\fR option takes
 precedence.
 .TP
-\fB\-format\fR => \fIformat-name\fR
+\fB\-format \fIformat-name\fR
 Specifies the name of the file format for the data specified with the
 \fB\-data\fR or \fB\-file\fR option.
 .TP
-\fB\-file\fR => \fIname\fR
+\fB\-file \fIname\fR
 \fIname\fR gives the name of a file that is to be read to supply data
 for the photo image.  The file format must be one of those for which
-there is an image file format handler that can read data from a file.
+there is an image file format handler that can read data.
 .TP
-\fB\-gamma\fR => \fIvalue\fR
+\fB\-gamma \fIvalue\fR
 Specifies that the colors allocated for displaying this image in a
 window should be corrected for a non-linear display with the specified
 gamma exponent value.  (The intensity produced by most
@@ -65,13 +66,13 @@ value is one (no correction).  In general, values greater than one
 will make the image lighter, and values less than one will make it
 darker.
 .TP
-\fB\-height\fR => \fInumber\fR
+\fB\-height \fInumber\fR
 Specifies the height of the image, in pixels.  This option is useful
 primarily in situations where the user wishes to build up the contents
 of the image piece by piece.  A value of zero (the default) allows the
 image to expand or shrink vertically to fit the data stored in it.
 .TP
-\fB\-palette\fR => \fIpalette-spec\fR
+\fB\-palette \fIpalette-spec\fR
 Specifies the resolution of the color cube to be allocated for
 displaying this image, and thus the number of colors used from the
 colormaps of the windows where it is displayed.  The
@@ -82,23 +83,23 @@ red, green and blue to use, respectively.  If the first form (a single
 number) is used, the image will be displayed in monochrome (i.e.,
 grayscale).
 .TP
-\fB\-width\fR => \fInumber\fR
+\fB\-width \fInumber\fR
 Specifies the width of the image, in pixels.    This option is useful
 primarily in situations where the user wishes to build up the contents
 of the image piece by piece.  A value of zero (the default) allows the
 image to expand or shrink horizontally to fit the data stored in it.
 
-.SH "IMAGE METHODS"
+.SH "IMAGE COMMAND"
 .PP
-When a photo image is created, Tk also creates a new object
+When a photo image is created, Tk also creates a new command
 whose name is the same as the image.
-This object may be used to invoke various operations
+This command may be used to invoke various operations
 on the image.
-These have the following general form:
-.DS C
-\fI$image\fR->\fImethod\fR?(\fIarg arg ...\fR)?
-.DE
-\fIMethod\fR and the \fIarg\fRs
+It has the following general form:
+.CS
+\fIimageName option \fR?\fIarg arg ...\fR?
+.CE
+\fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.
 .PP
 Those options that write data to the image generally expand the size
@@ -108,23 +109,23 @@ image, unless the user has specified non-zero values for the
 case the width and/or height, respectively, of the image will not be
 changed.
 .PP
-The following methods are possible for photo images:
+The following commands are possible for photo images:
 .TP
-\fI$image\fR->\fBblank\fR
+\fIimageName \fBblank\fR
 Blank the image; that is, set the entire image to have no data, so it
 will be displayed as transparent, and the background of whatever
 window it is displayed in will show through.
 .TP
-\fI$image\fR->\fBcget\fR(\fIoption\fR)
+\fIimageName \fBcget\fR \fIoption\fR
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the
-\fBPhoto\fR method.
+\fBimage create photo\fR command.
 .TP
-\fI$image\fR->\fBconfigure\fR?(?\fIoption\fR? ?=>\fIvalue ...\fR)?
+\fIimageName \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
 Query or modify the configuration options for the image.
 If no \fIoption\fR is specified, returns a list describing all of
-the available options for \fI$image\fR (see \fBconfigure\fR for
+the available options for \fIimageName\fR (see \fBTk_ConfigureInfo\fR for
 information on the format of this list).  If \fIoption\fR is specified
 with no \fIvalue\fR, then the command returns a list describing the
 one named option (this list will be identical to the corresponding
@@ -132,15 +133,15 @@ sublist of the value returned if no \fIoption\fR is specified).  If
 one or more \fIoption\-value\fR pairs are specified, then the command
 modifies the given option(s) to have the given value(s);  in
 this case the command returns an empty string.
-\fIOption\fR may have any of the values accepted by 
-\fBPhoto\fR.
+\fIOption\fR may have any of the values accepted by the
+\fBimage create photo\fR command.
 .TP
-\fI$image\fR->\fBcopy\fR(\fIsourceImage\fR ?,\fIoption value(s) ...\fR?)
+\fIimageName \fBcopy\fR \fIsourceImage\fR ?\fIoption value(s) ...\fR?
 Copies a region from the image called \fIsourceImage\fR (which must
-be a photo image) to the image called \fI$image\fR, possibly with
+be a photo image) to the image called \fIimageName\fR, possibly with
 pixel zooming and/or subsampling.  If no options are specified, this
-command copies the whole of \fIsourceImage\fR into \fI$image\fR,
-starting at coordinates (0,0) in \fI$image\fR.  The following
+command copies the whole of \fIsourceImage\fR into \fIimageName\fR,
+starting at coordinates (0,0) in \fIimageName\fR.  The following
 options may be specified:
 .RS
 .TP
@@ -185,19 +186,43 @@ about the Y or X axes, respectively.  If \fIy\fR is not given, the
 default value is the same as \fIx\fR.
 .RE
 .TP
-\fI$image\fR->\fBget\fR(\fIx,y\fR)
+\fIimageName \fBdata ?\fIoption value(s) ...\fR?
+returns image data in the form of a string.
+The following options may be specified:
+.RS
+.TP
+\fB\-format\fI format-name\fR
+Specifies the name of the image file format handler to be used to
+convert the data.  Specifically, this subcommand searches
+for the first handler whose name matches a initial substring of
+\fIformat-name\fR and which has the capability to write an string.
+If this option is not given, the data is returned in the default
+format as accepted by \fIimageName \fBput\fR?.
+.TP
+\fB\-from \fIx1 y1 x2 y2\fR
+Specifies a rectangular region of \fIimageName\fR to be written to the
+string.  If only \fIx1\fR and \fIy1\fR are specified, the region
+extends from \fI(x1,y1)\fR to the bottom-right corner of
+\fIimageName\fR.  If all four coordinates are given, they specify
+diagonally opposite corners of the rectangular region.  The default,
+if this option is not given, is the whole image.
+.RE
+.TP
+\fIimageName \fBget\fR \fIx y\fR
 Returns the color of the pixel at coordinates (\fIx\fR,\fIy\fR) in the
 image as a list of three integers between 0 and 255, representing the
 red, green and blue components respectively.
 .TP
-\fI$image\fR->\fBput\fR(\fIdata\fR ?,\fB\-to\fI x1 y1 x2 y2\fR?)
-Sets pixels in \fI$image\fR to the colors specified in \fIdata\fR.
-\fIdata\fR is used to form a two-dimensional array of pixels that are
-then copied into the \fI$image\fR.  \fIdata\fR is structured as a
-list of horizontal rows, from top to bottom, each of which is a list
-of colors, listed from left to right.  Each color may be specified by name
-(e.g., blue) or in hexadecimal form (e.g., #2376af).  The
-\fB\-to\fR option can be used to specify the area of \fI$image\fR to be
+\fIimageName \fBput \fIdata\fR ?\fB\-format\fI format-name\fR? ?\fB\-to\fI x1 y1 x2 y2\fR?
+Sets pixels in \fIimageName\fR to the data specified in \fIdata\fR.
+If the -format option is supplied, a string read function for this
+format should be available and the data is expected to match this format.
+Otherwise \fIdata\fR is used to form a two-dimensional array of pixels
+that are then copied into the \fIimageName\fR. \fIdata\fR is structured
+then as a list of horizontal rows, from top to bottom, each of which is
+a list of colors, listed from left to right.  Each color may be specified
+by name (e.g., blue) or in hexadecimal form (e.g., #2376af).  The
+\fB\-to\fR option can be used to specify the area of \fIimageName\fR to be
 affected.  If only \fIx1\fR and \fIy1\fR are given, the area affected
 has its top-left corner at (\fIx1,y1\fR) and is the same size as the
 array given in \fIdata\fR.  If all four coordinates are given, they
@@ -205,12 +230,12 @@ specify diagonally opposite corners of the affected rectangle, and the
 array given in \fIdata\fR will be replicated as necessary in the X and
 Y directions to fill the rectangle.
 .TP
-\fI$image\fR->\fBread\fR(\fIfilename\fR ?,\fIoption value(s) ...\fR?)
+\fIimageName \fBread\fR \fIfilename\fR ?\fIoption value(s) ...\fR?
 Reads image data from the file named \fIfilename\fR into the image.
 This command first searches the list of
 image file format handlers for a handler that can interpret the data
 in \fIfilename\fR, and then reads the image in \fIfilename\fR into
-\fI$image\fR (the destination image).  The following options may be
+\fIimageName\fR (the destination image).  The following options may be
 specified:
 .RS
 .TP
@@ -230,30 +255,30 @@ The default, if this option is not specified, is the whole of the
 image in the image file.
 .TP
 \fB\-shrink\fR
-If this option, the size of \fI$image\fR will be reduced, if
+If this option, the size of \fIimageName\fR will be reduced, if
 necessary, so that the region into which the image file data are read
-is at the bottom-right corner of the \fI$image\fR.  This option
+is at the bottom-right corner of the \fIimageName\fR.  This option
 will not affect the width or height of the image if the user has
 specified a non-zero value for the \fB\-width\fR or \fB\-height\fR
 configuration option, respectively.
 .TP
 \fB\-to \fIx y\fR
 Specifies the coordinates of the top-left corner of the region of
-\fI$image\fR into which data from \fIfilename\fR are to be read.
+\fIimageName\fR into which data from \fIfilename\fR are to be read.
 The default is (0,0).
 .RE
 .TP
-\fI$image\fR->\fBredither\fR
+\fIimageName \fBredither\fR
 The dithering algorithm used in displaying photo images propagates
 quantization errors from one pixel to its neighbors.
-If the image data for \fI$image\fR is supplied in pieces, the
+If the image data for \fIimageName\fR is supplied in pieces, the
 dithered image may not be exactly correct.  Normally the difference is
 not noticeable, but if it is a problem, this command can be used to
 recalculate the dithered image in each window where the image is
 displayed.
 .TP
-\fI$image\fR->\fBwrite\fR(\fIfilename\fR ?,\fIoption value(s) ...\fR)?
-Writes image data from \fI$image\fR to a file named \fIfilename\fR.
+\fIimageName \fBwrite \fIfilename\fR ?\fIoption value(s) ...\fR?
+Writes image data from \fIimageName\fR to a file named \fIfilename\fR.
 The following options may be specified:
 .RS
 .TP
@@ -266,10 +291,10 @@ file.  If this option is not given, this subcommand uses the first
 handler that has the capability to write an image file.
 .TP
 \fB\-from \fIx1 y1 x2 y2\fR
-Specifies a rectangular region of \fI$image\fR to be written to the
+Specifies a rectangular region of \fIimageName\fR to be written to the
 image file.  If only \fIx1\fR and \fIy1\fR are specified, the region
 extends from \fI(x1,y1)\fR to the bottom-right corner of
-\fI$image\fR.  If all four coordinates are given, they specify
+\fIimageName\fR.  If all four coordinates are given, they specify
 diagonally opposite corners of the rectangular region.  The default,
 if this option is not given, is the whole image.
 .RE

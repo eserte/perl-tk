@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1990-1994 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) message.n 1.25 95/06/07 21:15:24
+'\" SCCS: @(#) message.n 1.32 97/10/31 12:58:50
 '\" 
 .so man.macros
 .TH message n 4.0 Tk "Tk Generic Methods"
@@ -14,29 +14,15 @@
 .SH NAME
 message \- Create and manipulate message widgets
 .SH SYNOPSIS
-\fI$message\fR = \fI$parent\fR->\fBMessage\fR(\fR?\fIoptions\fR?\fR);
-.SH "STANDARD OPTIONS"
-.LP
-.nf
-.ta 4c 8c 12c
-.VS
-\fBanchor\fR	\fBfont\fR	\fBhighlightThickness\fR	\fBtakeFocus\fR
-\fBbackground\fR	\fBforeground\fR	\fBpadX\fR	\fBtext\fR
-\fBborderWidth\fR	\fBhighlightBackground\fR	\fBpadY\fR	\fBtextVariable\fR
-.VE
-\fBcursor\fR	\fBhighlightColor\fR	\fBrelief\fR	\fBwidth\fR
-.fi
-.LP
-See the ``options'' manual entry for details on the standard options.
+\fBmessage\fR $widget \fR?\fIoptions\fR?
+.SO
+\-anchor	\-font	\-highlightthickness	\-takefocus
+\-background	\-foreground	\-padx	\-text
+\-borderwidth	\-highlightbackground	\-pady	\-textvariable
+\-cursor	\-highlightcolor	\-relief	\-width
+.SE
 .SH "WIDGET-SPECIFIC OPTIONS"
-.ta 4c
-.LP
-.nf
-Name:	\fBaspect\fR
-Class:	\fBAspect\fR
-Configure Option:	\fB\-aspect\fR
-.fi
-.IP
+.OP \-aspect aspect Aspect
 Specifies a non-negative integer value indicating desired
 aspect ratio for the text.  The aspect ratio is specified as
 100*width/height.  100 means the text should
@@ -46,13 +32,7 @@ be twice as tall as it is wide, and so on.
 Used to choose line length for text if \fBwidth\fR option
 isn't specified.
 Defaults to 150.
-.LP
-.nf
-Name:	\fBjustify\fR
-Class:	\fBJustify\fR
-Configure Option:	\fB\-justify\fR
-.fi
-.IP
+.OP \-justify justify Justify
 Specifies how to justify lines of text.
 Must be one of \fBleft\fR, \fBcenter\fR, or \fBright\fR.  Defaults
 to \fBleft\fR.
@@ -72,13 +52,7 @@ The the text will displayed so that the left edges of all the lines
 line up and the right edge of the longest line is \fBpadX\fR from
 the right side of the window;  the entire text block will be centered
 in the vertical span of the window.
-.LP
-.nf
-Name:	\fBwidth\fR
-Class:	\fBWidth\fR
-Configure Option:	\fB\-width\fR
-.fi
-.IP
+.OP \-width width Width
 Specifies the length of lines in the window.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
 If this option has a value greater than zero then the \fBaspect\fR
@@ -132,22 +106,20 @@ The \fBmessage\fR command creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
-.DS C
-\fI$message\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
-.DE
+.CS
+\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+.CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for message widgets:
 .TP
-\fI$message->\fBcget\fR(\fIoption\fR)
-.VS
+\fI$widget->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBmessage\fR
 command.
-.VE
 .TP
-\fI$message->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for

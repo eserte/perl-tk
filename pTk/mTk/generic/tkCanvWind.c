@@ -4,12 +4,12 @@
  *	This file implements window items for canvas widgets.
  *
  * Copyright (c) 1992-1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvWind.c 1.26 96/09/06 08:41:52
+ * SCCS: @(#) tkCanvWind.c 1.29 97/10/14 10:40:54
  */
 
 #include "tkPort.h"
@@ -413,12 +413,21 @@ ComputeWindowBbox(canvas, winItemPtr)
 {
     int width, height, x, y;
 
-    x = winItemPtr->x + ((winItemPtr->x >= 0) ? 0.5 : - 0.5);
-    y = winItemPtr->y + ((winItemPtr->y >= 0) ? 0.5 : - 0.5);
+    x = (int) (winItemPtr->x + ((winItemPtr->x >= 0) ? 0.5 : - 0.5));
+    y = (int) (winItemPtr->y + ((winItemPtr->y >= 0) ? 0.5 : - 0.5));
 
     if (winItemPtr->tkwin == NULL) {
-	winItemPtr->header.x1 = winItemPtr->header.x2 = x;
-	winItemPtr->header.y1 = winItemPtr->header.y2 = y;
+	/*
+	 * There is no window for this item yet.  Just give it a 1x1
+	 * bounding box.  Don't give it a 0x0 bounding box; there are
+	 * strange cases where this bounding box might be used as the
+	 * dimensions of the window, and 0x0 causes problems under X.
+	 */
+
+	winItemPtr->header.x1 = x;
+	winItemPtr->header.x2 = winItemPtr->header.x1 + 1;
+	winItemPtr->header.y1 = y;
+	winItemPtr->header.y2 = winItemPtr->header.y1 + 1;
 	return;
     }
 
@@ -537,6 +546,23 @@ DisplayWinItem(canvas, itemPtr, display, drawable, regionX, regionY,
 	    (double) winItemPtr->header.y1, &x, &y);
     width = winItemPtr->header.x2 - winItemPtr->header.x1;
     height = winItemPtr->header.y2 - winItemPtr->header.y1;
+
+    /*
+     * If the window is completely out of the visible area of the canvas
+     * then unmap it.  This code used not to be present (why unmap the
+     * window if it isn't visible anyway?) but this could cause the
+     * window to suddenly reappear if the canvas window got resized.
+     */
+
+    if (((x + width) <= 0) || ((y + height) <= 0)
+	    || (x >= Tk_Width(canvasTkwin)) || (y >= Tk_Height(canvasTkwin))) {
+	if (canvasTkwin == Tk_Parent(winItemPtr->tkwin)) {
+	    Tk_UnmapWindow(winItemPtr->tkwin); 
+	} else {
+	    Tk_UnmaintainGeometry(winItemPtr->tkwin, canvasTkwin);
+	}
+	return;
+    }
 
     /*
      * Reposition and map the window (but in different ways depending
@@ -692,10 +718,10 @@ ScaleWinItem(canvas, itemPtr, originX, originY, scaleX, scaleY)
     winItemPtr->x = originX + scaleX*(winItemPtr->x - originX);
     winItemPtr->y = originY + scaleY*(winItemPtr->y - originY);
     if (winItemPtr->width > 0) {
-	winItemPtr->width = scaleX*winItemPtr->width;
+	winItemPtr->width = (int) (scaleX*winItemPtr->width);
     }
     if (winItemPtr->height > 0) {
-	winItemPtr->height = scaleY*winItemPtr->height;
+	winItemPtr->height = (int) (scaleY*winItemPtr->height);
     }
     ComputeWindowBbox(canvas, winItemPtr);
 }

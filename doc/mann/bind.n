@@ -1,14 +1,14 @@
 '\"
 '\" Copyright (c) 1990 The Regents of the University of California.
-'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) bind.n 1.31 95/06/07 21:15:06
+'\" SCCS: @(#) bind.n 1.41 96/10/03 18:27:05
 '\" 
 .so man.macros
-.TH bind n 4.0 Tk "Tk Generic Methods"
+.TH bind n 4.1 Tk "Tk Generic Methods"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
@@ -44,7 +44,6 @@ callback currently bound to \fIsequence\fR is returned, or
 an empty string is returned if there is no binding for \fIsequence\fR.
 If neither \fIsequence\fR nor \fIcallback\fR is specified, then the
 return value is a list whose elements are all the sequences
-.VS
 for which there exist bindings for \fItag\fR.
 .PP
 If no \fItag\fR is specified then the \fBbind\fR refers to \fI$widget\fR.
@@ -72,7 +71,6 @@ the binding applies to all widgets in that class;
 .IP
 If \fItag\fR has the value \fBall\fR,
 the binding applies to all windows in the application.
-.VE
 
 .SH "EVENT PATTERNS"
 .PP
@@ -89,10 +87,23 @@ type, and an extra piece of information (\fIdetail\fR) identifying
 a particular button or keysym.  Any of the fields may be omitted,
 as long as at least one of \fItype\fR and \fIdetail\fR is present.
 The fields must be separated by white space or dashes.
-
+.VS
+.PP
+The third form of pattern is used to specify a user-defined, named virtual
+event.  It has the following syntax:
+.CS
+\fB<<\fIname\fB>>\fR
+.CE
+The entire virtual event pattern is surrounded by double angle brackets.
+Inside the angle brackets is the user-defined name of the virtual event.
+Modifiers, such as \fBShift\fR or \fBControl\fR, may not be combined with a
+virtual event to modify it.  Bindings on a virtual event may be created
+before the virtual event is defined, and if the definition of a virtual
+event changes dynamically, all windows bound to that virtual event will
+respond immediately to the new definition.  
+.VE
 .SH "MODIFIERS"
 .PP
-.VS
 Modifiers consist of any of the following values:
 .DS
 .ta 6c
@@ -120,7 +131,7 @@ are down, the pattern \fB<Control-Button-1>\fR will match
 the event, but \fB<Mod1-Button-1>\fR will not.
 If no modifiers are specified, then any combination of modifiers may
 be present in the event.
-.LP
+.PP
 \fBMeta\fR and \fBM\fR refer to whichever of the
 \fBM1\fR through \fBM5\fR modifiers is associated with the meta
 key(s) on the keyboard (keysyms \fBMeta_R\fR and \fBMeta_L\fR).
@@ -129,8 +140,7 @@ modifiers, then \fBMeta\fR and \fBM\fR will not match any events.
 Similarly, the \fBAlt\fR modifier refers to whichever modifier
 is associated with the alt key(s) on the keyboard (keysyms
 \fBAlt_L\fR and \fBAlt_R\fR).
-.VE
-.LP
+.PP
 The \fBDouble\fR and \fBTriple\fR modifiers are a convenience
 for specifying double mouse clicks and other repeated
 events. They cause a particular event pattern to be
@@ -143,23 +153,22 @@ is equivalent to \fB<Button-1><Button-1>\fR with the extra
 time and space requirement.
 
 .SH "EVENT TYPES"
-.LP
+.PP
 The \fItype\fR field may be any of the standard X event types, with a
 few extra abbreviations.  Below is a list of all the valid types;
 where two names appear together, they are synonyms.
 .DS C
 .ta 5c 10c
-.VS
 \fBButtonPress, Button	Expose	Map
 ButtonRelease	FocusIn	Motion
 Circulate	FocusOut	Property	
 Colormap	Gravity	Reparent
 Configure	KeyPress, Key	Unmap
 Destroy	KeyRelease	Visibility
-.VE
-Enter	Leave\fR
+Enter	Leave	Activate
+Deactivate\fR
 .DE
-.LP
+.PP
 The last part of a long event specification is \fIdetail\fR.  In the
 case of a \fBButtonPress\fR or \fBButtonRelease\fR event, it is the
 number of a button (1-5).  If a button number is given, then only an
@@ -172,7 +181,7 @@ depressed when the matching event occurs.  If a button
 number is given then \fItype\fR may be omitted:  if will default
 to \fBButtonPress\fR.  For example, the specifier \fB<1>\fR
 is equivalent to \fB<ButtonPress-1>\fR.
-.LP
+.PP
 If the event type is \fBKeyPress\fR or \fBKeyRelease\fR, then
 \fIdetail\fR may be specified in the form of an X keysym.  Keysyms
 are textual specifications for particular keys on the keyboard;
@@ -223,9 +232,7 @@ types.
 .TP
 \fB'a'\fR
 The \fIabove\fR field from the event,
-.VS
 formatted as a hexadecimal number.
-.VE
 Valid only for \fBConfigure\fR events.
 .TP
 \fB'b'\fR
@@ -281,10 +288,7 @@ for \fBCirculate\fR events.
 \fB's'\fR
 The \fIstate\fR field from the event.  For \fBButtonPress\fR,
 \fBButtonRelease\fR, \fBEnter\fR, \fBKeyPress\fR, \fBKeyRelease\fR,
-\fBLeave\fR, and \fBMotion\fR events,
-.VS
-a decimal string
-.VE
+\fBLeave\fR, and \fBMotion\fR events, a decimal string
 is substituted.  For \fBVisibility\fR, one of the strings
 \fBVisibilityUnobscured\fR, \fBVisibilityPartiallyObscured\fR,
 and \fBVisibilityFullyObscured\fR is substituted.
@@ -356,32 +360,27 @@ Valid for all event types.
 .TP
 \fB'X'\fR
 The \fIx_root\fR field from the event.
-.VS
 If a virtual-root window manager is being used then the substituted
 value is the corresponding x-coordinate in the virtual root.
-.VE
 Valid only for
 \fBButtonPress\fR, \fBButtonRelease\fR, \fBKeyPress\fR, \fBKeyRelease\fR,
 and \fBMotion\fR events.
 .TP
 \fB'Y'\fR
 The \fIy_root\fR field from the event.
-.VS
 If a virtual-root window manager is being used then the substituted
 value is the corresponding y-coordinate in the virtual root.
-.VE
 Valid only for
 \fBButtonPress\fR, \fBButtonRelease\fR, \fBKeyPress\fR, \fBKeyRelease\fR,
 and \fBMotion\fR events.
 .LP
 .SH MULTIPLE MATCHES
-.LP
-.VS
+.PP
 It is possible for several bindings to match a given X event.
 If the bindings are associated with different \fItag\fR's,
 then each of the bindings will be executed, in order.
-By default, a class binding will be executed first, followed
-by a binding for the widget, a binding for its toplevel, and
+By default, a binding for the widget will be executed first, followed
+by a class binding, a binding for its toplevel, and
 an \fBall\fR binding.
 The \fBbindtags\fR method may be used to change this order for
 a particular window or to associate additional binding tags with
@@ -403,20 +402,42 @@ have the same \fItag\fR, then the most specific binding
 is chosen and its callback is evaluated.
 The following tests are applied, in order, to determine which of
 several matching sequences is more specific:
-(a) a longer sequence (in terms of number
-of events matched) is more specific than a shorter sequence;
-(b) an event pattern that specifies a specific button or key is more specific
+(a) an event pattern that specifies a specific button or key is more specific
 than one that doesn't;
+(b) a longer sequence (in terms of number
+of events matched) is more specific than a shorter sequence;
 (c) if the modifiers specified in one pattern are a subset of the
 modifiers in another pattern, then the pattern with more modifiers
 is more specific.
+.VS
+(d) a virtual event whose physical pattern matches the sequence is less
+specific than the same physical pattern that is not associated with a 
+virtual event.
+(e) given a sequence that matches two or more virtual events, one 
+of the virtual events will be chosen, but the order is undefined.
+.PP
+If the matching sequences contain more than one event, then tests
+(c)-(e) are applied in order from the most recent event to the least recent
+event in the sequences.  If these tests fail to determine a winner, then the
+most recently registered sequence is the winner.
+.PP
+If there are two (or more) virtual events that are both triggered by the
+same sequence, and both of those virtual events are bound to the same window
+tag, then only one of the virtual events will be triggered, and it will
+be picked at random:  
+.CS
+event add <<Paste>> <Control-y>
+event add <<Paste>> <Button-2>
+event add <<Scroll>> <Button-2>
+bind Entry <<Paste>> {puts Paste}
+bind Entry <<Scroll>> {puts Scroll}
+.CE
+If the user types Control-y, the \fB<<Paste>>\fR binding
+will be invoked, but if the user presses button 2 then one of
+either the \fB<<Paste>>\fR or the \fB<<Scroll>>\fR bindings will
+be invoked, but exactly which one gets invoked is undefined.
 .VE
-If the matching sequences contain more than
-one event, then tests (c)-(e) are applied in order from the most
-recent event to the least recent event in the sequences.  If these
-tests fail to determine a winner, then the most recently registered
-sequence is the winner.
-.LP
+.PP
 If an X event does not match any of the existing bindings, then the
 event is ignored.
 An unbound event is not considered to be an error.
@@ -429,7 +450,6 @@ the recent events (leading up to and including the current event)
 match the given sequence.  This means, for example, that if button 1 is
 clicked repeatedly the sequence \fB<Double-ButtonPress-1>\fR will match
 each button press but the first.
-.VS
 If extraneous events that would prevent a match occur in the middle
 of an event sequence then the extraneous events are
 ignored unless they are \fBKeyPress\fR or \fBButtonPress\fR events.
@@ -444,7 +464,6 @@ For example, the event sequence \fBaB\fR will match a press of the
 \fBa\fR key, a release of the \fBa\fR key, a press of the \fBShift\fR
 key, and a press of the \fBb\fR key:  the press of \fBShift\fR is
 ignored because it is a modifier key.
-.VE
 Finally, if several \fBMotion\fR events occur in a row, only
 the last one is used for purposes of matching binding sequences.
 

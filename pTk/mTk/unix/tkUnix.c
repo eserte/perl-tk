@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnix.c 1.3 96/02/15 18:55:18
+ * SCCS: @(#) tkUnix.c 1.5 97/01/07 11:41:39
  */
 
 #include <tkInt.h>

@@ -1,6 +1,6 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Font.pm#10$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Font.pm#3$
 
 =head1 NAME
 

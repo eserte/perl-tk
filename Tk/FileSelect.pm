@@ -1,7 +1,7 @@
 package Tk::FileSelect; 
                
 use vars qw($VERSION);
-$VERSION = '2.011'; # $Id: //depot/Tk/Tk/FileSelect.pm#11$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/FileSelect.pm#4$
 
 use Tk qw(Ev);
 use strict;

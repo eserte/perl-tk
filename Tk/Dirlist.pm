@@ -5,7 +5,7 @@ require DirHandle;
 use Cwd;
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Tk/Dirlist.pm#6$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Dirlist.pm#3$
 
 @ISA = qw(Tk::Derived Tk::HList);
 use strict;

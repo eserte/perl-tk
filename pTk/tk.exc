@@ -51,3 +51,7 @@ Tk_MessageBoxCmd
 Tk_AddOption
 Tk_GetOption
 Tk_OptionCmd
+Tk_Main
+Tk_SafeInit
+Tk_UpdatePointer
+

@@ -11,13 +11,12 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkEntry.c 1.102 96/08/06 17:27:33
+ * SCCS: @(#) tkEntry.c 1.112 97/11/06 16:56:16
  */
 
-#include "default.h"
-#include "tkPort.h"
 #include "tkInt.h"
 #include "tkVMacro.h"
+#include "default.h"
 
 /*
  * A data structure of the following type is kept for each entry
@@ -34,72 +33,15 @@ typedef struct {
 				 * freed even after tkwin has gone away. */
     Tcl_Interp *interp;		/* Interpreter associated with entry. */
     Tcl_Command widgetCmd;	/* Token for entry's widget command. */
-    int numChars;		/* Number of non-NULL characters in
-				 * string (may be 0). */
-    char *string;		/* Pointer to storage for string;
-				 * NULL-terminated;  malloc-ed. */
-    Var  textVarName;		/* Name of variable (malloc'ed) or NULL.
-				 * If non-NULL, entry's string tracks the
-				 * contents of this variable and vice versa. */
-    Tk_Uid state;		/* Normal or disabled.  Entry is read-only
-				 * when disabled. */
 
     /*
-     * Information used when displaying widget:
+     * Fields that are set by widget commands other than "configure".
      */
-
-    Tk_3DBorder normalBorder;	/* Used for drawing border around whole
-				 * window, plus used for background. */
-    int borderWidth;		/* Width of 3-D border around window. */
-    int relief;			/* 3-D effect: TK_RELIEF_RAISED, etc. */
-    XFontStruct *fontPtr;	/* Information about text font, or NULL. */
-    XColor *fgColorPtr;		/* Text color in normal mode. */
-    GC textGC;			/* For drawing normal text. */
-    Tk_3DBorder selBorder;	/* Border and background for selected
-				 * characters. */
-    int selBorderWidth;		/* Width of border around selection. */
-    XColor *selFgColorPtr;	/* Foreground color for selected text. */
-    GC selTextGC;		/* For drawing selected text. */
-    Tk_3DBorder insertBorder;	/* Used to draw vertical bar for insertion
-				 * cursor. */
-    int insertWidth;		/* Total width of insert cursor. */
-    int insertBorderWidth;	/* Width of 3-D border around insert cursor. */
-    int insertOnTime;		/* Number of milliseconds cursor should spend
-				 * in "on" state for each blink. */
-    int insertOffTime;		/* Number of milliseconds cursor should spend
-				 * in "off" state for each blink. */
-    Tcl_TimerToken insertBlinkHandler;
-				/* Timer handler used to blink cursor on and
-				 * off. */
-    int highlightWidth;		/* Width in pixels of highlight to draw
-				 * around widget when it has the focus.
-				 * <= 0 means don't draw a highlight. */
-    XColor *highlightBgColorPtr;
-				/* Color for drawing traversal highlight
-				 * area when highlight is off. */
-    XColor *highlightColorPtr;	/* Color for drawing traversal highlight. */
-    GC highlightGC;		/* For drawing traversal highlight. */
-    Tk_Justify justify;		/* Justification to use for text within
-				 * window. */
-    int avgWidth;		/* Width of average character. */
-    int prefWidth;		/* Desired width of window, measured in
-				 * average characters. */
-    int inset;			/* Number of pixels on the left and right
-				 * sides that are taken up by XPAD, borderWidth
-				 * (if any), and highlightWidth (if any). */
-    int leftIndex;		/* Index of left-most character visible in
-				 * window. */
-    int leftX;			/* X position at which leftIndex is drawn
-				 * (varies depending on justify). */
-    int tabOrigin;		/* Origin for tabs (left edge of string[0]). */
+     
+    char *string;		/* Pointer to storage for string;
+				 * NULL-terminated;  malloc-ed. */
     int insertPos;		/* Index of character before which next
 				 * typed character will be inserted. */
-    char *showChar;		/* Value of -show option.  If non-NULL, first
-				 * character is used for displaying all
-				 * characters in entry.  Malloc'ed. */
-    char *displayString;	/* If non-NULL, points to string with same
-				 * length as string but whose characters
-				 * are all equal to showChar.  Malloc'ed. */
 
     /*
      * Information about what's selected, if any.
@@ -112,8 +54,6 @@ typedef struct {
     int selectAnchor;		/* Fixed end of selection (i.e. "select to"
 				 * operation will use this as one end of the
 				 * selection). */
-    int exportSelection;	/* Non-zero means tie internal entry selection
-				 * to X selection. */
 
     /*
      * Information for scanning:
@@ -125,16 +65,81 @@ typedef struct {
 				 * window when scan started. */
 
     /*
-     * Miscellaneous information:
+     * Configuration settings that are updated by Tk_ConfigureWidget.
      */
 
+    Tk_3DBorder normalBorder;	/* Used for drawing border around whole
+				 * window, plus used for background. */
+    int borderWidth;		/* Width of 3-D border around window. */
     Tk_Cursor cursor;		/* Current cursor for window, or None. */
+    int exportSelection;	/* Non-zero means tie internal entry selection
+				 * to X selection. */
+    Tk_Font tkfont;		/* Information about text font, or NULL. */
+    XColor *fgColorPtr;		/* Text color in normal mode. */
+    XColor *highlightBgColorPtr;/* Color for drawing traversal highlight
+				 * area when highlight is off. */
+    XColor *highlightColorPtr;	/* Color for drawing traversal highlight. */
+    int highlightWidth;		/* Width in pixels of highlight to draw
+				 * around widget when it has the focus.
+				 * <= 0 means don't draw a highlight. */
+    Tk_3DBorder insertBorder;	/* Used to draw vertical bar for insertion
+				 * cursor. */
+    int insertBorderWidth;	/* Width of 3-D border around insert cursor. */
+    int insertOffTime;		/* Number of milliseconds cursor should spend
+				 * in "off" state for each blink. */
+    int insertOnTime;		/* Number of milliseconds cursor should spend
+				 * in "on" state for each blink. */
+    int insertWidth;		/* Total width of insert cursor. */
+    Tk_Justify justify;		/* Justification to use for text within
+				 * window. */
+    int relief;			/* 3-D effect: TK_RELIEF_RAISED, etc. */
+    Tk_3DBorder selBorder;	/* Border and background for selected
+				 * characters. */
+    int selBorderWidth;		/* Width of border around selection. */
+    XColor *selFgColorPtr;	/* Foreground color for selected text. */
+    char *showChar;		/* Value of -show option.  If non-NULL, first
+				 * character is used for displaying all
+				 * characters in entry.  Malloc'ed. */
+    Tk_Uid state;		/* Normal or disabled.  Entry is read-only
+				 * when disabled. */
+    Var textVarName;		/* Name of variable (malloc'ed) or NULL.
+				 * If non-NULL, entry's string tracks the
+				 * contents of this variable and vice versa. */
     char *takeFocus;		/* Value of -takefocus option;  not used in
 				 * the C code, but used by keyboard traversal
 				 * scripts.  Malloc'ed, but may be NULL. */
+    int prefWidth;		/* Desired width of window, measured in
+				 * average characters. */
     LangCallback *scrollCmd;	/* Command prefix for communicating with
 				 * scrollbar(s).  Malloc'ed.  NULL means
 				 * no command to issue. */
+
+    /*
+     * Fields whose values are derived from the current values of the
+     * configuration settings above.
+     */
+
+    int numChars;		/* Number of non-NULL characters in
+				 * string (may be 0). */
+    char *displayString;	/* If non-NULL, points to string with same
+				 * length as string but whose characters
+				 * are all equal to showChar.  Malloc'ed. */
+    int inset;			/* Number of pixels on the left and right
+				 * sides that are taken up by XPAD, borderWidth
+				 * (if any), and highlightWidth (if any). */
+    Tk_TextLayout textLayout;	/* Cached text layout information. */
+    int layoutX, layoutY;	/* Origin for layout. */
+    int leftIndex;		/* Index of left-most character visible in
+				 * window. */
+    int leftX;			/* X position at which character at leftIndex
+				 * is drawn (varies depending on justify). */
+    Tcl_TimerToken insertBlinkHandler;
+				/* Timer handler used to blink cursor on and
+				 * off. */
+    GC textGC;			/* For drawing normal text. */
+    GC selTextGC;		/* For drawing selected text. */
+    GC highlightGC;		/* For drawing traversal highlight. */
+    int avgWidth;		/* Width of average character. */
     int flags;			/* Miscellaneous flags;  see below for
 				 * definitions. */
 } Entry;
@@ -154,13 +159,15 @@ typedef struct {
  *				focus.
  * UPDATE_SCROLLBAR:		Non-zero means scrollbar should be updated
  *				during next redisplay operation.
+ * GOT_SELECTION:		Non-zero means we've claimed the selection.
  */
 
 #define REDRAW_PENDING		1
 #define BORDER_NEEDED		2
 #define CURSOR_ON		4
 #define GOT_FOCUS		8
-#define UPDATE_SCROLLBAR	16
+#define UPDATE_SCROLLBAR	0x10
+#define GOT_SELECTION		0x20
 
 /*
  * The following macro defines how many extra pixels to leave on each
@@ -195,7 +202,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, 0},
     {TK_CONFIG_FONT, "-font", "font", "Font",
-	DEF_ENTRY_FONT, Tk_Offset(Entry, fontPtr), 0},
+	DEF_ENTRY_FONT, Tk_Offset(Entry, tkfont), 0},
     {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_ENTRY_FG, Tk_Offset(Entry, fgColorPtr), 0},
     {TK_CONFIG_COLOR, "-highlightbackground", "highlightBackground",
@@ -305,10 +312,24 @@ static void		EntryVisibleRange _ANSI_ARGS_((Entry *entryPtr,
 			    double *firstPtr, double *lastPtr));
 static int		EntryWidgetCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
+static void		EntryWorldChanged _ANSI_ARGS_((
+			    ClientData instanceData));
 static int		GetEntryIndex _ANSI_ARGS_((Tcl_Interp *interp,
 			    Entry *entryPtr, Arg arg, int *indexPtr));
 static void		InsertChars _ANSI_ARGS_((Entry *entryPtr, int index,
 			    char *string));
+
+/*
+ * The structure below defines entry class behavior by means of procedures
+ * that can be invoked from generic window code.
+ */
+
+static TkClassProcs entryClass = {
+    NULL,			/* createProc. */
+    EntryWorldChanged,		/* geometryProc. */
+    NULL			/* modalProc. */
+};
+
 
 /*
  *--------------------------------------------------------------
@@ -364,52 +385,58 @@ Tk_EntryCmd(clientData, interp, argc, argv)
     entryPtr->widgetCmd = Tcl_CreateCommand(interp,
 	    Tk_PathName(entryPtr->tkwin), EntryWidgetCmd,
 	    (ClientData) entryPtr, EntryCmdDeletedProc);
-    entryPtr->numChars = 0;
     entryPtr->string = (char *) ckalloc(1);
     entryPtr->string[0] = '\0';
-    entryPtr->textVarName = NULL;
-    entryPtr->state = tkNormalUid;
-    entryPtr->normalBorder = NULL;
-    entryPtr->borderWidth = 0;
-    entryPtr->relief = TK_RELIEF_FLAT;
-    entryPtr->fontPtr = NULL;
-    entryPtr->fgColorPtr = NULL;
-    entryPtr->textGC = None;
-    entryPtr->selBorder = NULL;
-    entryPtr->selBorderWidth = 0;
-    entryPtr->selFgColorPtr = NULL;
-    entryPtr->selTextGC = None;
-    entryPtr->insertBorder = NULL;
-    entryPtr->insertWidth = 0;
-    entryPtr->insertBorderWidth = 0;
-    entryPtr->insertOnTime = 0;
-    entryPtr->insertOffTime = 0;
-    entryPtr->insertBlinkHandler = (Tcl_TimerToken) NULL;
-    entryPtr->highlightWidth = 0;
-    entryPtr->highlightBgColorPtr = NULL;
-    entryPtr->highlightColorPtr = NULL;
-    entryPtr->justify = TK_JUSTIFY_LEFT;
-    entryPtr->avgWidth = 1;
-    entryPtr->prefWidth = 0;
-    entryPtr->inset = XPAD;
-    entryPtr->leftIndex = 0;
-    entryPtr->leftX = 0;
-    entryPtr->tabOrigin = 0;
     entryPtr->insertPos = 0;
-    entryPtr->showChar = NULL;
-    entryPtr->displayString = NULL;
     entryPtr->selectFirst = -1;
     entryPtr->selectLast = -1;
     entryPtr->selectAnchor = 0;
-    entryPtr->exportSelection = 1;
     entryPtr->scanMarkX = 0;
     entryPtr->scanMarkIndex = 0;
+
+    entryPtr->normalBorder = NULL;
+    entryPtr->borderWidth = 0;
     entryPtr->cursor = None;
+    entryPtr->exportSelection = 1;
+    entryPtr->tkfont = NULL;
+    entryPtr->fgColorPtr = NULL;
+    entryPtr->highlightBgColorPtr = NULL;
+    entryPtr->highlightColorPtr = NULL;
+    entryPtr->highlightWidth = 0;
+    entryPtr->insertBorder = NULL;
+    entryPtr->insertBorderWidth = 0;
+    entryPtr->insertOffTime = 0;
+    entryPtr->insertOnTime = 0;
+    entryPtr->insertWidth = 0;
+    entryPtr->justify = TK_JUSTIFY_LEFT;
+    entryPtr->relief = TK_RELIEF_FLAT;
+    entryPtr->selBorder = NULL;
+    entryPtr->selBorderWidth = 0;
+    entryPtr->selFgColorPtr = NULL;
+    entryPtr->showChar = NULL;
+    entryPtr->state = tkNormalUid;
+    entryPtr->textVarName = NULL;
     entryPtr->takeFocus = NULL;
+    entryPtr->prefWidth = 0;
     entryPtr->scrollCmd = NULL;
+
+    entryPtr->numChars = 0;
+    entryPtr->displayString = NULL;
+    entryPtr->inset = XPAD;
+    entryPtr->textLayout = NULL;
+    entryPtr->layoutX = 0;
+    entryPtr->layoutY = 0;
+    entryPtr->leftIndex = 0;
+    entryPtr->leftX = 0;
+    entryPtr->insertBlinkHandler = (Tcl_TimerToken) NULL;
+    entryPtr->textGC = None;
+    entryPtr->selTextGC = None;
+    entryPtr->highlightGC = None;
+    entryPtr->avgWidth = 1;
     entryPtr->flags = 0;
 
     Tk_SetClass(entryPtr->tkwin, "Entry");
+    TkSetClassProcs(entryPtr->tkwin, &entryClass, (ClientData) entryPtr);
     Tk_CreateEventHandler(entryPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
 	    EntryEventProc, (ClientData) entryPtr);
@@ -455,7 +482,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
     register Entry *entryPtr = (Entry *) clientData;
     int result = TCL_OK;
     size_t length;
-    int c, height;
+    int c;
 
     if (argc < 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -466,7 +493,8 @@ EntryWidgetCmd(clientData, interp, argc, argv)
     c = argv[1][0];
     length = strlen(argv[1]);
     if ((c == 'b') && (strncmp(argv[1], "bbox", length) == 0)) {
-	int index, x1, x2;
+	int index;
+	int x, y, width, height;
 
 	if (argc != 3) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -480,23 +508,9 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 	if ((index == entryPtr->numChars) && (index > 0)) {
 	    index--;
 	}
-	TkMeasureChars(entryPtr->fontPtr,
-		(entryPtr->displayString == NULL) ? entryPtr->string
-		: entryPtr->displayString, index, entryPtr->tabOrigin,
-		1000000, entryPtr->tabOrigin, TK_NEWLINES_NOT_SPECIAL,
-		&x1);
-	if (index < entryPtr->numChars) {
-	    TkMeasureChars(entryPtr->fontPtr,
-		(entryPtr->displayString == NULL) ? entryPtr->string
-		: entryPtr->displayString, index+1, entryPtr->tabOrigin,
-		1000000, entryPtr->tabOrigin, TK_NEWLINES_NOT_SPECIAL,
-		&x2);
-	} else {
-	    x2 = x1;
-	}
-	height = entryPtr->fontPtr->ascent + entryPtr->fontPtr->descent;
-	sprintf(interp->result, "%d %d %d %d", x1, 
-		(Tk_Height(entryPtr->tkwin) - height)/2, x2-x1, height);
+	Tk_CharBbox(entryPtr->textLayout, index, &x, &y, &width, &height);
+	sprintf(interp->result, "%d %d %d %d",
+		x + entryPtr->layoutX, y + entryPtr->layoutY, width, height);
     } else if ((c == 'c') && (strncmp(argv[1], "cget", length) == 0)
 	    && (length >= 2)) {
 	if (argc != 3) {
@@ -699,17 +713,14 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 	    if (index >= index2) {
 		entryPtr->selectFirst = entryPtr->selectLast = -1;
 	    } else {
-		if ((entryPtr->selectFirst == -1)
-			&& (entryPtr->exportSelection)) {
-		    Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY, 
-			    EntryLostSelection, (ClientData) entryPtr);
-		}
 		entryPtr->selectFirst = index;
 		entryPtr->selectLast = index2;
 	    }
-	    if ((entryPtr->selectFirst == -1) && (entryPtr->exportSelection)) {
-		Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY,
+	    if (!(entryPtr->flags & GOT_SELECTION)
+		    && (entryPtr->exportSelection)) {
+		Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY, 
 			EntryLostSelection, (ClientData) entryPtr);
+		entryPtr->flags |= GOT_SELECTION;
 	    }
 	    EventuallyRedraw(entryPtr);
 	} else if ((c == 't') && (strncmp(argv[2], "to", length) == 0)) {
@@ -745,7 +756,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		case TK_SCROLL_ERROR:
 		    goto error;
 		case TK_SCROLL_MOVETO:
-		    index = (fraction * entryPtr->numChars) + 0.5;
+		    index = (int) ((fraction * entryPtr->numChars) + 0.5);
 		    break;
 		case TK_SCROLL_PAGES:
 		    charsPerPage = ((Tk_Width(entryPtr->tkwin)
@@ -832,6 +843,7 @@ DestroyEntry(memPtr)
     if (entryPtr->displayString != NULL) {
 	ckfree(entryPtr->displayString);
     }
+    Tk_FreeTextLayout(entryPtr->textLayout);
     Tk_FreeOptions(configSpecs, (char *) entryPtr, entryPtr->display, 0);
     ckfree((char *) entryPtr);
 }
@@ -866,8 +878,6 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
     char **argv;		/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
-    XGCValues gcValues;
-    GC new;
     int oldExport;
 
     /*
@@ -921,24 +931,6 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
 
     Tk_SetBackgroundFromBorder(entryPtr->tkwin, entryPtr->normalBorder);
 
-    gcValues.foreground = entryPtr->fgColorPtr->pixel;
-    gcValues.font = entryPtr->fontPtr->fid;
-    gcValues.graphics_exposures = False;
-    new = Tk_GetGC(entryPtr->tkwin, GCForeground|GCFont|GCGraphicsExposures,
-	    &gcValues);
-    if (entryPtr->textGC != None) {
-	Tk_FreeGC(entryPtr->display, entryPtr->textGC);
-    }
-    entryPtr->textGC = new;
-
-    gcValues.foreground = entryPtr->selFgColorPtr->pixel;
-    gcValues.font = entryPtr->fontPtr->fid;
-    new = Tk_GetGC(entryPtr->tkwin, GCForeground|GCFont, &gcValues);
-    if (entryPtr->selTextGC != None) {
-	Tk_FreeGC(entryPtr->display, entryPtr->selTextGC);
-    }
-    entryPtr->selTextGC = new;
-
     if (entryPtr->insertWidth <= 0) {
 	entryPtr->insertWidth = 2;
     }
@@ -960,9 +952,11 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
      */
 
     if (entryPtr->exportSelection && (!oldExport)
-	    && (entryPtr->selectFirst != -1)) {
+	    && (entryPtr->selectFirst != -1)
+	    && !(entryPtr->flags & GOT_SELECTION)) {
 	Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY, EntryLostSelection,
 		(ClientData) entryPtr);
+	entryPtr->flags |= GOT_SELECTION;
     }
 
     /*
@@ -976,11 +970,72 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
 	entryPtr->highlightWidth = 0;
     }
     entryPtr->inset = entryPtr->highlightWidth + entryPtr->borderWidth + XPAD;
-    entryPtr->avgWidth = XTextWidth(entryPtr->fontPtr, "0", 1);
+
+    EntryWorldChanged((ClientData) entryPtr);
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * EntryWorldChanged --
+ *
+ *      This procedure is called when the world has changed in some
+ *      way and the widget needs to recompute all its graphics contexts
+ *	and determine its new geometry.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      Entry will be relayed out and redisplayed.
+ *
+ *---------------------------------------------------------------------------
+ */
+ 
+static void
+EntryWorldChanged(instanceData)
+    ClientData instanceData;	/* Information about widget. */
+{
+    XGCValues gcValues;
+    GC gc;
+    unsigned long mask;
+    Entry *entryPtr;
+
+    entryPtr = (Entry *) instanceData;
+
+    entryPtr->avgWidth = Tk_TextWidth(entryPtr->tkfont, "0", 1);
+    if (entryPtr->avgWidth == 0) {
+	entryPtr->avgWidth = 1;
+    }
+
+    gcValues.foreground = entryPtr->fgColorPtr->pixel;
+    gcValues.font = Tk_FontId(entryPtr->tkfont);
+    gcValues.graphics_exposures = False;
+    mask = GCForeground | GCFont | GCGraphicsExposures;
+    gc = Tk_GetGC(entryPtr->tkwin, mask, &gcValues);
+    if (entryPtr->textGC != None) {
+	Tk_FreeGC(entryPtr->display, entryPtr->textGC);
+    }
+    entryPtr->textGC = gc;
+
+    gcValues.foreground = entryPtr->selFgColorPtr->pixel;
+    gcValues.font = Tk_FontId(entryPtr->tkfont);
+    mask = GCForeground | GCFont;
+    gc = Tk_GetGC(entryPtr->tkwin, mask, &gcValues);
+    if (entryPtr->selTextGC != None) {
+	Tk_FreeGC(entryPtr->display, entryPtr->selTextGC);
+    }
+    entryPtr->selTextGC = gc;
+
+    /*
+     * Recompute the window's geometry and arrange for it to be
+     * redisplayed.
+     */
+
     EntryComputeGeometry(entryPtr);
     entryPtr->flags |= UPDATE_SCROLLBAR;
     EventuallyRedraw(entryPtr);
-    return TCL_OK;
 }
 
 /*
@@ -1005,15 +1060,18 @@ DisplayEntry(clientData)
 {
     register Entry *entryPtr = (Entry *) clientData;
     register Tk_Window tkwin = entryPtr->tkwin;
-    int baseY, selStartX, selEndX, index, cursorX;
-    int xBound, count;
+    int baseY, selStartX, selEndX, cursorX, x, w;
+    int xBound;
+    Tk_FontMetrics fm;
     Pixmap pixmap;
-    char *displayString;
+    int showSelection;
 
     entryPtr->flags &= ~REDRAW_PENDING;
     if ((entryPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
 	return;
     }
+
+    Tk_GetFontMetrics(entryPtr->tkfont, &fm);
 
     /*
      * Update the scrollbar if that's needed.
@@ -1040,8 +1098,18 @@ DisplayEntry(clientData)
      */
 
     xBound = Tk_Width(tkwin) - entryPtr->inset;
-    baseY = (Tk_Height(tkwin) + entryPtr->fontPtr->ascent
-	    - entryPtr->fontPtr->descent)/2;
+    baseY = (Tk_Height(tkwin) + fm.ascent - fm.descent) / 2;
+
+    /*
+     * On Windows and Mac, we need to hide the selection whenever we
+     * don't have the focus.
+     */
+
+#ifdef ALWAYS_SHOW_SELECTION
+    showSelection = 1;
+#else
+    showSelection = (entryPtr->flags & GOT_FOCUS);
+#endif
 
     /*
      * Draw the background in three layers.  From bottom to top the
@@ -1051,39 +1119,25 @@ DisplayEntry(clientData)
 
     Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->normalBorder,
 	    0, 0, Tk_Width(tkwin), Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
-    if (entryPtr->displayString == NULL) {
-	displayString = entryPtr->string;
-    } else {
-	displayString = entryPtr->displayString;
-    }
-    if (entryPtr->selectLast > entryPtr->leftIndex) {
+    if (showSelection && (entryPtr->selectLast > entryPtr->leftIndex)) {
 	if (entryPtr->selectFirst <= entryPtr->leftIndex) {
 	    selStartX = entryPtr->leftX;
-	    index = entryPtr->leftIndex;
 	} else {
-	    (void) TkMeasureChars(entryPtr->fontPtr,
-		    displayString + entryPtr->leftIndex,
-		    entryPtr->selectFirst - entryPtr->leftIndex,
-		    entryPtr->leftX, xBound, entryPtr->tabOrigin,
-		    TK_PARTIAL_OK|TK_NEWLINES_NOT_SPECIAL, &selStartX);
-	    index = entryPtr->selectFirst;
+	    Tk_CharBbox(entryPtr->textLayout, entryPtr->selectFirst,
+		    &x, NULL, NULL, NULL);
+	    selStartX = x + entryPtr->layoutX;
 	}
 	if ((selStartX - entryPtr->selBorderWidth) < xBound) {
-	    (void) TkMeasureChars(entryPtr->fontPtr,
-		    displayString + index, entryPtr->selectLast - index,
-		    selStartX, xBound, entryPtr->tabOrigin,
-		    TK_PARTIAL_OK|TK_NEWLINES_NOT_SPECIAL, &selEndX);
+	    Tk_CharBbox(entryPtr->textLayout, entryPtr->selectLast - 1,
+		    &x, NULL, &w, NULL);
+	    selEndX = x + w + entryPtr->layoutX;
 	    Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->selBorder,
 		    selStartX - entryPtr->selBorderWidth,
-		    baseY - entryPtr->fontPtr->ascent
-			    - entryPtr->selBorderWidth,
+		    baseY - fm.ascent - entryPtr->selBorderWidth,
 		    (selEndX - selStartX) + 2*entryPtr->selBorderWidth,
-		    entryPtr->fontPtr->ascent + entryPtr->fontPtr->descent
-			    + 2*entryPtr->selBorderWidth,
+		    (fm.ascent + fm.descent) + 2*entryPtr->selBorderWidth,
 		    entryPtr->selBorderWidth, TK_RELIEF_RAISED);
-	} else {
-	    selEndX = xBound;
-	}
+	} 
     }
 
     /*
@@ -1098,66 +1152,55 @@ DisplayEntry(clientData)
     if ((entryPtr->insertPos >= entryPtr->leftIndex)
 	    && (entryPtr->state == tkNormalUid)
 	    && (entryPtr->flags & GOT_FOCUS)) {
-	(void) TkMeasureChars(entryPtr->fontPtr,
-		displayString + entryPtr->leftIndex,
-		entryPtr->insertPos - entryPtr->leftIndex, entryPtr->leftX,
-		xBound + entryPtr->insertWidth, entryPtr->tabOrigin,
-		TK_PARTIAL_OK|TK_NEWLINES_NOT_SPECIAL, &cursorX);
+	if (entryPtr->insertPos == 0) {
+	    cursorX = 0;
+	} else if (entryPtr->insertPos >= entryPtr->numChars) {
+	    Tk_CharBbox(entryPtr->textLayout, entryPtr->numChars - 1,
+		    &x, NULL, &w, NULL);
+	    cursorX = x + w;
+	} else {
+	    Tk_CharBbox(entryPtr->textLayout, entryPtr->insertPos,
+		    &x, NULL, NULL, NULL);
+	    cursorX = x;
+	}
+	cursorX += entryPtr->layoutX;
 	cursorX -= (entryPtr->insertWidth)/2;
 	if (cursorX < xBound) {
 	    if (entryPtr->flags & CURSOR_ON) {
 		Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->insertBorder,
-			cursorX, baseY - entryPtr->fontPtr->ascent,
-			entryPtr->insertWidth,
-			entryPtr->fontPtr->ascent + entryPtr->fontPtr->descent,
+			cursorX, baseY - fm.ascent,
+			entryPtr->insertWidth, fm.ascent + fm.descent, 
 			entryPtr->insertBorderWidth, TK_RELIEF_RAISED);
 	    } else if (entryPtr->insertBorder == entryPtr->selBorder) {
 		Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->normalBorder,
-			cursorX, baseY - entryPtr->fontPtr->ascent,
-			entryPtr->insertWidth,
-			entryPtr->fontPtr->ascent + entryPtr->fontPtr->descent,
+			cursorX, baseY - fm.ascent,
+			entryPtr->insertWidth, fm.ascent + fm.descent,
 			0, TK_RELIEF_FLAT);
 	    }
 	}
     }
 
     /*
-     * Draw the text in three pieces:  first the piece to the left of
-     * the selection, then the selection, then the piece to the right
-     * of the selection.
+     * Draw the text in two pieces:  first the unselected portion, then the
+     * selected portion on top of it.
      */
 
-    if (entryPtr->selectLast <= entryPtr->leftIndex) {
-	TkDisplayChars(entryPtr->display, pixmap, entryPtr->textGC,
-		entryPtr->fontPtr, displayString + entryPtr->leftIndex,
-		entryPtr->numChars - entryPtr->leftIndex, entryPtr->leftX,
-		baseY, entryPtr->tabOrigin, TK_NEWLINES_NOT_SPECIAL);
-    } else {
-	count = entryPtr->selectFirst - entryPtr->leftIndex;
-	if (count > 0) {
-	    TkDisplayChars(entryPtr->display, pixmap, entryPtr->textGC,
-		    entryPtr->fontPtr, displayString + entryPtr->leftIndex,
-		    count, entryPtr->leftX, baseY, entryPtr->tabOrigin,
-		    TK_NEWLINES_NOT_SPECIAL);
-	    index = entryPtr->selectFirst;
+    Tk_DrawTextLayout(entryPtr->display, pixmap, entryPtr->textGC,
+	    entryPtr->textLayout, entryPtr->layoutX, entryPtr->layoutY,
+	    entryPtr->leftIndex, entryPtr->numChars);
+
+    if (showSelection && (entryPtr->selTextGC != entryPtr->textGC) &&
+	    (entryPtr->selectFirst < entryPtr->selectLast)) {
+	int first;
+
+	if (entryPtr->selectFirst - entryPtr->leftIndex < 0) {
+	    first = entryPtr->leftIndex;
 	} else {
-	    index = entryPtr->leftIndex;
+	    first = entryPtr->selectFirst;
 	}
-	count = entryPtr->selectLast - index;
-	if ((selStartX < xBound) && (count > 0)) {
-	    TkDisplayChars(entryPtr->display, pixmap, entryPtr->selTextGC,
-		    entryPtr->fontPtr, displayString + index, count,
-		    selStartX, baseY, entryPtr->tabOrigin,
-		    TK_NEWLINES_NOT_SPECIAL);
-	}
-	count = entryPtr->numChars - entryPtr->selectLast;
-	if ((selEndX < xBound) && (count > 0)) {
-	    TkDisplayChars(entryPtr->display, pixmap, entryPtr->textGC,
-		    entryPtr->fontPtr,
-		    displayString + entryPtr->selectLast,
-		    count, selEndX, baseY, entryPtr->tabOrigin,
-		    TK_NEWLINES_NOT_SPECIAL);
-	}
+	Tk_DrawTextLayout(entryPtr->display, pixmap, entryPtr->selTextGC,
+		entryPtr->textLayout, entryPtr->layoutX, entryPtr->layoutY,
+		first, entryPtr->selectLast);
     }
 
     /*
@@ -1220,7 +1263,8 @@ EntryComputeGeometry(entryPtr)
     Entry *entryPtr;			/* Widget record for entry. */
 {
     int totalLength, overflow, maxOffScreen, rightX;
-    int fontHeight, height, width, i;
+    int height, width, i;
+    Tk_FontMetrics fm;
     char *p, *displayString;
 
     /*
@@ -1244,6 +1288,12 @@ EntryComputeGeometry(entryPtr)
     } else {
 	displayString = entryPtr->string;
     }
+    Tk_FreeTextLayout(entryPtr->textLayout);
+    entryPtr->textLayout = Tk_ComputeTextLayout(entryPtr->tkfont,
+	    displayString, entryPtr->numChars, 0, entryPtr->justify,
+	    TK_IGNORE_NEWLINES, &totalLength, &height);
+
+    entryPtr->layoutY = (Tk_Height(entryPtr->tkwin) - height) / 2;
 
     /*
      * Recompute where the leftmost character on the display will
@@ -1252,8 +1302,6 @@ EntryComputeGeometry(entryPtr)
      * window unless the entire window is full.
      */
 
-    TkMeasureChars(entryPtr->fontPtr, displayString, entryPtr->numChars,
-	    0, INT_MAX, 0, TK_NEWLINES_NOT_SPECIAL, &totalLength);
     overflow = totalLength - (Tk_Width(entryPtr->tkwin) - 2*entryPtr->inset);
     if (overflow <= 0) {
 	entryPtr->leftIndex = 0;
@@ -1265,7 +1313,7 @@ EntryComputeGeometry(entryPtr)
 	} else {
 	    entryPtr->leftX = (Tk_Width(entryPtr->tkwin) - totalLength)/2;
 	}
-	entryPtr->tabOrigin = entryPtr->leftX;
+	entryPtr->layoutX = entryPtr->leftX;
     } else {
 	/*
 	 * The whole string can't fit in the window.  Compute the
@@ -1274,24 +1322,23 @@ EntryComputeGeometry(entryPtr)
 	 * window, then don't let leftIndex be any greater than that.
 	 */
 
-	maxOffScreen = TkMeasureChars(entryPtr->fontPtr, displayString,
-	    entryPtr->numChars, 0, overflow, 0,
-	    TK_NEWLINES_NOT_SPECIAL|TK_PARTIAL_OK, &rightX);
+	maxOffScreen = Tk_PointToChar(entryPtr->textLayout, overflow, 0);
+	Tk_CharBbox(entryPtr->textLayout, maxOffScreen,
+		&rightX, NULL, NULL, NULL);
 	if (rightX < overflow) {
 	    maxOffScreen += 1;
 	}
 	if (entryPtr->leftIndex > maxOffScreen) {
 	    entryPtr->leftIndex = maxOffScreen;
 	}
-	TkMeasureChars(entryPtr->fontPtr, displayString,
-		entryPtr->leftIndex, 0, INT_MAX, 0,
-		TK_NEWLINES_NOT_SPECIAL|TK_PARTIAL_OK, &rightX);
+	Tk_CharBbox(entryPtr->textLayout, entryPtr->leftIndex,
+		&rightX, NULL, NULL, NULL);
 	entryPtr->leftX = entryPtr->inset;
-	entryPtr->tabOrigin = entryPtr->leftX - rightX;
+	entryPtr->layoutX = entryPtr->leftX - rightX;
     }
 
-    fontHeight = entryPtr->fontPtr->ascent + entryPtr->fontPtr->descent;
-    height = fontHeight + 2*entryPtr->inset + 2*(YPAD-XPAD);
+    Tk_GetFontMetrics(entryPtr->tkfont, &fm);
+    height = fm.linespace + 2*entryPtr->inset + 2*(YPAD-XPAD);
     if (entryPtr->prefWidth > 0) {
 	width = entryPtr->prefWidth*entryPtr->avgWidth + 2*entryPtr->inset;
     } else {
@@ -1551,6 +1598,9 @@ EntrySetValue(entryPtr, value)
     }
     if (entryPtr->leftIndex >= entryPtr->numChars) {
 	entryPtr->leftIndex = entryPtr->numChars-1;
+	if (entryPtr->leftIndex < 0) {
+	    entryPtr->leftIndex = 0;
+	}
     }
     if (entryPtr->insertPos > entryPtr->numChars) {
 	entryPtr->insertPos = entryPtr->numChars;
@@ -1591,8 +1641,7 @@ EntryEventProc(clientData, eventPtr)
     } else if (eventPtr->type == DestroyNotify) {
 	if (entryPtr->tkwin != NULL) {
 	    entryPtr->tkwin = NULL;
-	    Tcl_DeleteCommand(entryPtr->interp,
-		    Tcl_GetCommandName(entryPtr->interp, entryPtr->widgetCmd));
+            Tcl_DeleteCommandFromToken(entryPtr->interp, entryPtr->widgetCmd);
 	}
 	if (entryPtr->flags & REDRAW_PENDING) {
 	    Tcl_CancelIdleCall(DisplayEntry, (ClientData) entryPtr);
@@ -1731,7 +1780,7 @@ GetEntryIndex(interp, entryPtr, arg, indexPtr)
 	    goto badIndex;
 	}
     } else if (string[0] == '@') {
-	int x, dummy, roundUp;
+	int x, roundUp;
 
         Arg tmp = LangStringArg(string+1);
 
@@ -1748,15 +1797,8 @@ GetEntryIndex(interp, entryPtr, arg, indexPtr)
 	    x = Tk_Width(entryPtr->tkwin) - entryPtr->inset - 1;
 	    roundUp = 1;
 	}
-	if (entryPtr->numChars == 0) {
-	    *indexPtr = 0;
-	} else {
-	    *indexPtr = TkMeasureChars(entryPtr->fontPtr,
-		    (entryPtr->displayString == NULL) ? entryPtr->string
-		    : entryPtr->displayString,
-		    entryPtr->numChars, entryPtr->tabOrigin, x,
-		    entryPtr->tabOrigin, TK_NEWLINES_NOT_SPECIAL, &dummy);
-	}
+	*indexPtr = Tk_PointToChar(entryPtr->textLayout,
+		x - entryPtr->layoutX, 0);
 
 	/*
 	 * Special trick:  if the x-position was off-screen to the right,
@@ -1866,9 +1908,10 @@ EntrySelectTo(entryPtr, index)
      * Grab the selection if we don't own it already.
      */
 
-    if ((entryPtr->selectFirst == -1) && (entryPtr->exportSelection)) {
+    if (!(entryPtr->flags & GOT_SELECTION) && (entryPtr->exportSelection)) {
 	Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY, EntryLostSelection,
 		(ClientData) entryPtr);
+	entryPtr->flags |= GOT_SELECTION;
     }
 
     /*
@@ -1978,11 +2021,21 @@ EntryLostSelection(clientData)
 {
     Entry *entryPtr = (Entry *) clientData;
 
+    entryPtr->flags &= ~GOT_SELECTION;
+
+    /*
+     * On Windows and Mac systems, we want to remember the selection
+     * for the next time the focus enters the window.  On Unix, we need
+     * to clear the selection since it is always visible.
+     */
+
+#ifdef ALWAYS_SHOW_SELECTION
     if ((entryPtr->selectFirst != -1) && entryPtr->exportSelection) {
 	entryPtr->selectFirst = -1;
 	entryPtr->selectLast = -1;
 	EventuallyRedraw(entryPtr);
     }
+#endif
 }
 
 /*
@@ -2051,23 +2104,27 @@ EntryVisibleRange(entryPtr, firstPtr, lastPtr)
     double *lastPtr;			/* Return position of char just after
 					 * last visible one. */
 {
-    char *displayString;
-    int charsInWindow, endX;
+    int charsInWindow;
 
-    if (entryPtr->displayString == NULL) {
-	displayString = entryPtr->string;
-    } else {
-	displayString = entryPtr->displayString;
-    }
     if (entryPtr->numChars == 0) {
 	*firstPtr = 0.0;
 	*lastPtr = 1.0;
     } else {
-	charsInWindow = TkMeasureChars(entryPtr->fontPtr,
-		displayString + entryPtr->leftIndex,
-		entryPtr->numChars - entryPtr->leftIndex, entryPtr->inset,
-		Tk_Width(entryPtr->tkwin) - entryPtr->inset, entryPtr->inset,
-		TK_AT_LEAST_ONE|TK_NEWLINES_NOT_SPECIAL, &endX);
+	charsInWindow = Tk_PointToChar(entryPtr->textLayout,
+		Tk_Width(entryPtr->tkwin) - entryPtr->inset
+			- entryPtr->layoutX - 1, 0) + 1;
+	if (charsInWindow > entryPtr->numChars) {
+	    /*
+	     * If all chars were visible, then charsInWindow will be
+	     * the index just after the last char that was visible.
+	     */
+	     
+	    charsInWindow = entryPtr->numChars;
+	}
+	charsInWindow -= entryPtr->leftIndex;
+	if (charsInWindow == 0) {
+	    charsInWindow = 1;
+	}
 	*firstPtr = ((double) entryPtr->leftIndex)/entryPtr->numChars;
 	*lastPtr = ((double) (entryPtr->leftIndex + charsInWindow))
 		/entryPtr->numChars;

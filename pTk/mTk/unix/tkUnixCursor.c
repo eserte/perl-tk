@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixCursor.c 1.3 96/07/23 16:56:24
+ * SCCS: @(#) tkUnixCursor.c 1.4 96/10/08 09:33:08
  */
 
 #include "tkPort.h"
@@ -231,6 +231,17 @@ TkGetCursorByName(interp, tkwin, arg)
 	int xHot, yHot, dummy1, dummy2;
 	XColor fg, bg;
 
+        /*
+         * Prevent file system access in safe interpreters.
+         */
+
+        if (Tcl_IsSafe(interp)) {
+            Tcl_AppendResult(interp, "can't get cursor from a file in",
+                    " a safe interpreter", (char *) NULL);
+            cursorPtr = NULL;
+            goto cleanup;
+        }
+        
 	/*
 	 * The cursor is to be created by reading bitmap files.  There
 	 * should be either two elements in the list (source, color) or

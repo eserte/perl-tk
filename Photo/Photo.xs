@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -18,13 +18,10 @@
 #include "tkGlue.h"
 #include "tkGlue.m"
 
-/* Old here means FILE * rather than Tcl_Chan 
- * Switch to later ASAP ...
- */
-extern Tk_PhotoImageFormat	imgOldFmtBMP;
-extern Tk_PhotoImageFormat	imgOldFmtGIF;
-extern Tk_PhotoImageFormat	imgOldFmtXBM;
-extern Tk_PhotoImageFormat	imgOldFmtXPM;
+extern Tk_PhotoImageFormat	imgFmtBMP;
+extern Tk_PhotoImageFormat	imgFmtGIF;
+extern Tk_PhotoImageFormat	imgFmtXBM;
+extern Tk_PhotoImageFormat	imgFmtXPM;
 
 
 DECLARE_VTABLES;
@@ -40,8 +37,8 @@ BOOT:
   sv_setiv(FindTkVarName("TkimgphotoVtab",1),(IV) TkimgphotoVGet());   
   Tk_CreateImageType(&tkPhotoImageType);
   Tk_CreatePhotoImageFormat(&tkImgFmtPPM);
-  Tk_CreatePhotoImageFormat(&imgOldFmtGIF);
-  Tk_CreatePhotoImageFormat(&imgOldFmtXBM);
-  Tk_CreatePhotoImageFormat(&imgOldFmtXPM);
-  Tk_CreatePhotoImageFormat(&imgOldFmtBMP);
+  Tk_CreatePhotoImageFormat(&imgFmtGIF);
+  Tk_CreatePhotoImageFormat(&imgFmtXBM);
+  Tk_CreatePhotoImageFormat(&imgFmtXPM);
+  Tk_CreatePhotoImageFormat(&imgFmtBMP);
  }

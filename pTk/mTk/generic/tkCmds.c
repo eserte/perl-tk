@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCmds.c 1.110 96/04/03 15:54:47
+ * SCCS: @(#) tkCmds.c 1.125 97/05/20 16:16:33
  */
 
 #include "tkPort.h"
@@ -21,8 +21,6 @@
  * Forward declarations for procedures defined later in this file:
  */
 
-static Tk_Window	GetDisplayOf _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, char **argv));
 static TkWindow *	GetToplevel _ANSI_ARGS_((Tk_Window tkwin));
 static char *		WaitVariableProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, Var name1, char *name2,
@@ -145,7 +143,7 @@ Tk_BindCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
     } else if (argc == 3) {
-	LangCallback *command;
+	Arg command;
 
 	command = Tk_GetBinding(interp, winPtr->mainPtr->bindingTable,
 		object, argv[2]);
@@ -153,7 +151,8 @@ Tk_BindCmd(clientData, interp, argc, argv)
 	    Tcl_ResetResult(interp);
 	    return TCL_OK;
 	}
-	Tcl_ArgResult(interp,LangCallbackArg(command));
+	Tcl_ArgResult(interp,command);
+	Tcl_DecrRefCount(command);
     } else {
 	Tk_GetAllBindings(interp, winPtr->mainPtr->bindingTable, object);
     }
@@ -287,7 +286,7 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     }
     if (argc == 2) {
 	if (winPtr->numTags == 0) {
-	    Tcl_AppendElement(interp, winPtr->pathName);
+	    Tcl_AppendArg(interp, LangWidgetArg(interp, (Tk_Window) winPtr));
 	    Tcl_AppendElement(interp, winPtr->classUid);
 	    for (winPtr2 = winPtr;
 		    (winPtr2 != NULL) && !(winPtr2->flags & TK_TOP_LEVEL);
@@ -295,7 +294,7 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
 		/* Empty loop body. */
 	    }
 	    if ((winPtr != winPtr2) && (winPtr2 != NULL)) {
-		Tcl_AppendElement(interp, winPtr2->pathName);
+		Tcl_AppendArg(interp, LangWidgetArg(interp, (Tk_Window) winPtr2));
 	    }
 	    Tcl_AppendElement(interp, "all");
 	} else {
@@ -414,9 +413,19 @@ Tk_DestroyCmd(clientData, interp, argc, argv)
     for (i = 1; i < argc; i++) {
 	window = Tk_NameToWindow(interp, argv[i], tkwin);
 	if (window == NULL) {
-	    return TCL_ERROR;
+	    Tcl_ResetResult(interp);
+	    continue;
 	}
 	Tk_DestroyWindow(window);
+	if (window == tkwin) {
+	    /*
+	     * We just deleted the main window for the application! This
+	     * makes it impossible to do anything more (tkwin isn't
+	     * valid anymore).
+	     */
+
+	    break;
+	 }
     }
     return TCL_OK;
 }
@@ -534,7 +543,7 @@ Tk_RaiseCmd(clientData, interp, argc, argv)
 /*
  *----------------------------------------------------------------------
  *
- * Tk_TkCmd --
+ * Tk_TkObjCmd --
  *
  *	This procedure is invoked to process the "tk" Tcl command.
  *	See the user documentation for details on what it does.
@@ -548,42 +557,89 @@ Tk_RaiseCmd(clientData, interp, argc, argv)
  *----------------------------------------------------------------------
  */
 
-	/* ARGSUSED */
 int
-Tk_TkCmd(clientData, interp, argc, argv)
-    ClientData clientData;	/* Main window associated with
-				 * interpreter. */
+Tk_TkObjCmd(clientData, interp, objc, objv)
+    ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    int objc;			/* Number of arguments. */
+    Tcl_Obj *CONST objv[];	/* Argument objects. */
 {
-    char c;
-    size_t length;
-    Tk_Window tkwin = (Tk_Window) clientData;
-    TkWindow *winPtr;
+    int index;
+    Tk_Window tkwin;
+    static char *optionStrings[] = {
+	"appname",	"scaling",	NULL
+    };
+    enum options {
+	TK_APPNAME,	TK_SCALING
+    };
 
-    if (argc < 2) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], " option ?arg?\"", (char *) NULL);
+    tkwin = (Tk_Window) clientData;
+
+    if (objc < 2) {
+	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg?");
 	return TCL_ERROR;
     }
-    c = argv[1][0];
-    length = strlen(argv[1]);
-    if ((c == 'a') && (strncmp(argv[1], "appname", length) == 0)) {
-	winPtr = ((TkWindow *) tkwin)->mainPtr->winPtr;
-	if (argc > 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
-		    " appname ?newName?\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if (argc == 3) {
-	    winPtr->nameUid = Tk_GetUid(Tk_SetAppName(tkwin, argv[2]));
-	}
-	interp->result = winPtr->nameUid;
-    } else {
-	Tcl_AppendResult(interp, "bad option \"", argv[1],
-		"\": must be appname", (char *) NULL);
+    if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "option", 0,
+	    &index) != TCL_OK) {
 	return TCL_ERROR;
+    }
+
+    switch ((enum options) index) {
+        case TK_APPNAME: {
+	    TkWindow *winPtr;
+	    char *string;
+
+	    winPtr = (TkWindow *) tkwin;
+
+	    if (objc > 3) {
+	        Tcl_WrongNumArgs(interp, 2, objv, "?newName?");
+		return TCL_ERROR;
+	    }
+	    if (objc == 3) {
+		string = Tcl_GetStringFromObj(objv[2], NULL);
+		winPtr->nameUid = Tk_GetUid(Tk_SetAppName(tkwin, string));
+	    }
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), winPtr->nameUid, -1);
+	    break;
+	}
+	case TK_SCALING: {
+	    Screen *screenPtr;
+	    int skip, width, height;
+	    double d;
+	    
+	    screenPtr = Tk_Screen(tkwin);
+
+	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
+	    if (skip < 0) {
+		return TCL_ERROR;
+	    }
+	    if (objc - skip == 2) {
+		d = 25.4 / 72;
+		d *= WidthOfScreen(screenPtr);
+		d /= WidthMMOfScreen(screenPtr);
+		Tcl_SetDoubleObj(Tcl_GetObjResult(interp), d);
+	    } else if (objc - skip == 3) {
+		if (Tcl_GetDoubleFromObj(interp, objv[2 + skip], &d) != TCL_OK) {
+		    return TCL_ERROR;
+		}
+		d = (25.4 / 72) / d;
+		width = (int) (d * WidthOfScreen(screenPtr) + 0.5);
+		if (width <= 0) {
+		    width = 1;
+		}
+		height = (int) (d * HeightOfScreen(screenPtr) + 0.5); 
+		if (height <= 0) {
+		    height = 1;
+		}
+		WidthMMOfScreen(screenPtr) = width;
+		HeightMMOfScreen(screenPtr) = height;
+	    } else {
+		Tcl_WrongNumArgs(interp, 2, objv,
+			"?-displayof window? ?factor?");
+		return TCL_ERROR;
+	    }
+	    break;
+	}
     }
     return TCL_OK;
 }
@@ -772,9 +828,8 @@ Tk_UpdateCmd(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-    Tk_Window tkwin = (Tk_Window) clientData;
     int flags;
-    Display *display;
+    TkDisplay *dispPtr;
 
     if (argc == 1) {
 	flags = TCL_DONT_WAIT;
@@ -792,7 +847,7 @@ Tk_UpdateCmd(clientData, interp, argc, argv)
     }
 
     /*
-     * Handle all pending events, sync the display, and repeat over
+     * Handle all pending events, sync all displays, and repeat over
      * and over again until all pending events have been handled.
      * Special note:  it's possible that the entire application could
      * be destroyed by an event handler that occurs during the update.
@@ -800,12 +855,14 @@ Tk_UpdateCmd(clientData, interp, argc, argv)
      * Tcl_DoOneEvent.
      */
 
-    display = Tk_Display(tkwin);
     while (1) {
 	while (Tcl_DoOneEvent(flags) != 0) {
 	    /* Empty loop body */
 	}
-	XSync(display, False);
+	for (dispPtr = tkDisplayList; dispPtr != NULL;
+		dispPtr = dispPtr->nextPtr) {
+	    XSync(dispPtr->display, False);
+	}
 	if (Tcl_DoOneEvent(flags) == 0) {
 	    break;
 	}
@@ -823,7 +880,7 @@ Tk_UpdateCmd(clientData, interp, argc, argv)
 /*
  *----------------------------------------------------------------------
  *
- * Tk_WinfoCmd --
+ * Tk_WinfoObjCmd --
  *
  *	This procedure is invoked to process the "winfo" Tcl command.
  *	See the user documentation for details on what it does.
@@ -838,535 +895,652 @@ Tk_UpdateCmd(clientData, interp, argc, argv)
  */
 
 int
-Tk_WinfoCmd(clientData, interp, argc, argv)
+Tk_WinfoObjCmd(clientData, interp, objc, objv)
     ClientData clientData;	/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    int objc;			/* Number of arguments. */
+    Tcl_Obj *CONST objv[];	/* Argument objects. */
 {
-    Tk_Window tkwin = (Tk_Window) clientData;
-    size_t length;
-    char c, *argName;
-    Tk_Window window;
-    register TkWindow *winPtr;
+    int index, x, y, width, height, useX, useY, class, skip;
+    char buf[128];
+    char *string;
+    TkWindow *winPtr;
+    Tk_Window tkwin;
 
-#define SETUP(name) \
-    if (argc != 3) {\
-	argName = name; \
-	goto wrongArgs; \
-    } \
-    window = Tk_NameToWindow(interp, argv[2], tkwin); \
-    if (window == NULL) { \
-	return TCL_ERROR; \
-    }
+    static TkStateMap visualMap[] = {
+	{PseudoColor,	"pseudocolor"},
+	{GrayScale,	"grayscale"},
+	{DirectColor,	"directcolor"},
+	{TrueColor,	"truecolor"},
+	{StaticColor,	"staticcolor"},
+	{StaticGray,	"staticgray"},
+	{-1,		NULL}
+    };
+    static char *optionStrings[] = {
+	"cells",	"children",	"class",	"colormapfull",
+	"depth",	"geometry",	"height",	"id",
+	"ismapped",	"manager",	"name",		"parent",
+	"pointerx",	"pointery",	"pointerxy",	"reqheight",
+	"reqwidth",	"rootx",	"rooty",	"screen",
+	"screencells",	"screendepth",	"screenheight",	"screenwidth",
+	"screenmmheight","screenmmwidth","screenvisual","server",
+	"toplevel",	"viewable",	"visual",	"visualid",
+	"vrootheight",	"vrootwidth",	"vrootx",	"vrooty",
+	"width",	"x",		"y",
+	
+	"atom",		"atomname",	"containing",	"interps",
+	"pathname",
 
-    if (argc < 2) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], " option ?arg?\"", (char *) NULL);
+	"exists",	"fpixels",	"pixels",	"rgb",
+	"visualsavailable",
+
+	NULL
+    };
+    enum options {
+	WIN_CELLS,	WIN_CHILDREN,	WIN_CLASS,	WIN_COLORMAPFULL,
+	WIN_DEPTH,	WIN_GEOMETRY,	WIN_HEIGHT,	WIN_ID,
+	WIN_ISMAPPED,	WIN_MANAGER,	WIN_NAME,	WIN_PARENT,
+	WIN_POINTERX,	WIN_POINTERY,	WIN_POINTERXY,	WIN_REQHEIGHT,
+	WIN_REQWIDTH,	WIN_ROOTX,	WIN_ROOTY,	WIN_SCREEN,
+	WIN_SCREENCELLS,WIN_SCREENDEPTH,WIN_SCREENHEIGHT,WIN_SCREENWIDTH,
+	WIN_SCREENMMHEIGHT,WIN_SCREENMMWIDTH,WIN_SCREENVISUAL,WIN_SERVER,
+	WIN_TOPLEVEL,	WIN_VIEWABLE,	WIN_VISUAL,	WIN_VISUALID,
+	WIN_VROOTHEIGHT,WIN_VROOTWIDTH,	WIN_VROOTX,	WIN_VROOTY,
+	WIN_WIDTH,	WIN_X,		WIN_Y,
+	
+	WIN_ATOM,	WIN_ATOMNAME,	WIN_CONTAINING,	WIN_INTERPS,
+	WIN_PATHNAME,
+
+	WIN_EXISTS,	WIN_FPIXELS,	WIN_PIXELS,	WIN_RGB,
+	WIN_VISUALSAVAILABLE
+    };
+
+    tkwin = (Tk_Window) clientData;
+    
+    if (objc < 2) {
+	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg?");
 	return TCL_ERROR;
     }
-    c = argv[1][0];
-    length = strlen(argv[1]);
-    if ((c == 'a') && (strcmp(argv[1], "atom") == 0)) {
-	char *atomName;
-
-	if (argc == 3) {
-	    atomName = argv[2];
-	} else if (argc == 5) {
-	    atomName = argv[4];
-	    tkwin = GetDisplayOf(interp, tkwin, argv+2);
-	    if (tkwin == NULL) {
-		return TCL_ERROR;
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " atom ?-displayof window? name\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-	sprintf(interp->result, "%ld", Tk_InternAtom(tkwin, atomName));
-    } else if ((c == 'a') && (strncmp(argv[1], "atomname", length) == 0)
-	    && (length >= 5)) {
-	Atom atom;
-	char *name;
-	Arg id;
-
-	if (argc == 3) {
-	    id = args[2];
-	} else if (argc == 5) {
-	    id = args[4];
-	    tkwin = GetDisplayOf(interp, tkwin, argv+2);
-	    if (tkwin == NULL) {
-		return TCL_ERROR;
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " atomname ?-displayof window? id\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if (Tcl_GetInt(interp, id, (int *) &atom) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	name = Tk_GetAtomName(tkwin, atom);
-	if (strcmp(name, "?bad atom?") == 0) {
-	    Tcl_AppendResult(interp, "no atom exists with id \"",
-		    argv[2], "\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	interp->result = name;
-    } else if ((c == 'c') && (strncmp(argv[1], "cells", length) == 0)
-	    && (length >= 2)) {
-	SETUP("cells");
-	sprintf(interp->result, "%d", Tk_Visual(window)->map_entries);
-    } else if ((c == 'c') && (strncmp(argv[1], "children", length) == 0)
-	    && (length >= 2)) {
-	SETUP("children");
-	for (winPtr = ((TkWindow *) window)->childList; winPtr != NULL;
-		winPtr = winPtr->nextPtr) {
-	    Tcl_AppendArg(interp, LangWidgetArg(interp, (Tk_Window) winPtr));
-	}
-    } else if ((c == 'c') && (strncmp(argv[1], "class", length) == 0)
-	    && (length >= 2)) {
-	SETUP("class");
-	interp->result = Tk_Class(window);
-    } else if ((c == 'c') && (strncmp(argv[1], "colormapfull", length) == 0)
-	    && (length >= 3)) {
-	SETUP("colormapfull");
-	interp->result = (TkCmapStressed(window, Tk_Colormap(window)))
-		? "1" : "0";
-    } else if ((c == 'c') && (strncmp(argv[1], "containing", length) == 0)
-	    && (length >= 3)) {
-	int rootX, rootY, index;
-
-	if (argc == 4) {
-	    index = 2;
-	} else if (argc == 6) {
-	    index = 4;
-	    tkwin = GetDisplayOf(interp, tkwin, argv+2);
-	    if (tkwin == NULL) {
-		return TCL_ERROR;
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " containing ?-displayof window? rootX rootY\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if ((Tk_GetPixels(interp, tkwin, argv[index], &rootX) != TCL_OK)
-		|| (Tk_GetPixels(interp, tkwin, argv[index+1], &rootY)
-		!= TCL_OK)) {
-	    return TCL_ERROR;
-	}
-	window = Tk_CoordsToWindow(rootX, rootY, tkwin);
-	if (window != NULL) {
-	    interp->result = Tk_PathName(window);
-	}
-    } else if ((c == 'd') && (strncmp(argv[1], "depth", length) == 0)) {
-	SETUP("depth");
-	sprintf(interp->result, "%d", Tk_Depth(window));
-    } else if ((c == 'e') && (strncmp(argv[1], "exists", length) == 0)) {
-	if (argc != 3) {
-	    argName = "exists";
-	    goto wrongArgs;
-	}
-	window = Tk_NameToWindow(interp, argv[2], tkwin);
-	if ((window == NULL)
-		|| (((TkWindow *) window)->flags & TK_ALREADY_DEAD)) {
-	    interp->result = "0";
-	} else {
-	    interp->result = "1";
-	}
-    } else if ((c == 'f') && (strncmp(argv[1], "fpixels", length) == 0)
-	    && (length >= 2)) {
-	double mm, pixels;
-
-	if (argc != 4) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " fpixels window number\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	window = Tk_NameToWindow(interp, argv[2], tkwin);
-	if (window == NULL) {
-	    return TCL_ERROR;
-	}
-	if (Tk_GetScreenMM(interp, window, argv[3], &mm) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	pixels = mm * WidthOfScreen(Tk_Screen(window))
-		/ WidthMMOfScreen(Tk_Screen(window));
-	Tcl_DoubleResults(interp, 1, 0, pixels);
-    } else if ((c == 'g') && (strncmp(argv[1], "geometry", length) == 0)) {
-	SETUP("geometry");
-	sprintf(interp->result, "%dx%d+%d+%d", Tk_Width(window),
-		Tk_Height(window), Tk_X(window), Tk_Y(window));
-    } else if ((c == 'h') && (strncmp(argv[1], "height", length) == 0)) {
-	SETUP("height");
-	sprintf(interp->result, "%d", Tk_Height(window));
-    } else if ((c == 'i') && (strcmp(argv[1], "id") == 0)) {
-	SETUP("id");
-	Tk_MakeWindowExist(window);
-	sprintf(interp->result, "0x%x", (unsigned int) Tk_WindowId(window));
-    } else if ((c == 'i') && (strncmp(argv[1], "interps", length) == 0)
-	    && (length >= 2)) {
-	if (argc == 4) {
-	    tkwin = GetDisplayOf(interp, tkwin, argv+2);
-	    if (tkwin == NULL) {
-		return TCL_ERROR;
-	    }
-	} else if (argc != 2) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " interps ?-displayof window?\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-	return TkGetInterpNames(interp, tkwin);
-    } else if ((c == 'i') && (strncmp(argv[1], "ismapped", length) == 0)
-	    && (length >= 2)) {
-	SETUP("ismapped");
-	interp->result = Tk_IsMapped(window) ? "1" : "0";
-    } else if ((c == 'm') && (strncmp(argv[1], "manager", length) == 0)) {
-	SETUP("manager");
-	winPtr = (TkWindow *) window;
-	if (winPtr->geomMgrPtr != NULL) {
-	    interp->result = winPtr->geomMgrPtr->name;
-	}
-    } else if ((c == 'n') && (strncmp(argv[1], "name", length) == 0)) {
-	SETUP("name");
-	interp->result = Tk_Name(window);
-    } else if ((c == 'p') && (strncmp(argv[1], "parent", length) == 0)) {
-	SETUP("parent");
-	winPtr = (TkWindow *) window;
-	if (winPtr->parentPtr != NULL) {
-	    interp->result = winPtr->parentPtr->pathName;
-	}
-    } else if ((c == 'p') && (strncmp(argv[1], "pathname", length) == 0)
-	    && (length >= 2)) {
-	int index, id;
-
-	if (argc == 3) {
-	    index = 2;
-	} else if (argc == 5) {
-	    index = 4;
-	    tkwin = GetDisplayOf(interp, tkwin, argv+2);
-	    if (tkwin == NULL) {
-		return TCL_ERROR;
-	    }
-	} else {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " pathname ?-displayof window? id\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if (Tcl_GetInt(interp, argv[index], &id) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	window = Tk_IdToWindow(Tk_Display(tkwin), (Window) id);
-	if ((window == NULL) || (((TkWindow *) window)->mainPtr
-		!= ((TkWindow *) tkwin)->mainPtr)) {
-	    Tcl_AppendResult(interp, "window id \"", argv[index],
-		    "\" doesn't exist in this application", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	interp->result = Tk_PathName(window);
-    } else if ((c == 'p') && (strncmp(argv[1], "pixels", length) == 0)
-	    && (length >= 2)) {
-	int pixels;
-
-	if (argc != 4) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " pixels window number\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	window = Tk_NameToWindow(interp, argv[2], tkwin);
-	if (window == NULL) {
-	    return TCL_ERROR;
-	}
-	if (Tk_GetPixels(interp, window, argv[3], &pixels) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	sprintf(interp->result, "%d", pixels);
-    } else if ((c == 'p') && (strcmp(argv[1], "pointerx") == 0)) {
-	int x, y;
-
-	SETUP("pointerx");
-	winPtr = GetToplevel(window);
-	if (winPtr == NULL) {
-	    x = -1;
-	} else {
-	    TkGetPointerCoords((Tk_Window)winPtr, &x, &y);
-	}
-	sprintf(interp->result, "%d", x);
-    } else if ((c == 'p') && (strcmp(argv[1], "pointerxy") == 0)) {
-	int x, y;
-
-	SETUP("pointerxy");
-	winPtr = GetToplevel(window);
-	if (winPtr == NULL) {
-	    x = -1;
-	} else {
-	    TkGetPointerCoords((Tk_Window)winPtr, &x, &y);
-	}
-	sprintf(interp->result, "%d %d", x, y);
-    } else if ((c == 'p') && (strcmp(argv[1], "pointery") == 0)) {
-	int x, y;
-
-	SETUP("pointery");
-	winPtr = GetToplevel(window);
-	if (winPtr == NULL) {
-	    y = -1;
-	} else {
-	    TkGetPointerCoords((Tk_Window)winPtr, &x, &y);
-	}
-	sprintf(interp->result, "%d", y);
-    } else if ((c == 'r') && (strncmp(argv[1], "reqheight", length) == 0)
-	    && (length >= 4)) {
-	SETUP("reqheight");
-	sprintf(interp->result, "%d", Tk_ReqHeight(window));
-    } else if ((c == 'r') && (strncmp(argv[1], "reqwidth", length) == 0)
-	    && (length >= 4)) {
-	SETUP("reqwidth");
-	sprintf(interp->result, "%d", Tk_ReqWidth(window));
-    } else if ((c == 'r') && (strncmp(argv[1], "rgb", length) == 0)
-	    && (length >= 2)) {
-	XColor *colorPtr;
-
-	if (argc != 4) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " rgb window colorName\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	window = Tk_NameToWindow(interp, argv[2], tkwin);
-	if (window == NULL) {
-	    return TCL_ERROR;
-	}
-	colorPtr = Tk_GetColor(interp, window, argv[3]);
-	if (colorPtr == NULL) {
-	    return TCL_ERROR;
-	}
-	sprintf(interp->result, "%d %d %d", colorPtr->red, colorPtr->green,
-		colorPtr->blue);
-	Tk_FreeColor(colorPtr);
-    } else if ((c == 'r') && (strcmp(argv[1], "rootx") == 0)) {
-	int x, y;
-
-	SETUP("rootx");
-	Tk_GetRootCoords(window, &x, &y);
-	sprintf(interp->result, "%d", x);
-    } else if ((c == 'r') && (strcmp(argv[1], "rooty") == 0)) {
-	int x, y;
-
-	SETUP("rooty");
-	Tk_GetRootCoords(window, &x, &y);
-	sprintf(interp->result, "%d", y);
-    } else if ((c == 's') && (strcmp(argv[1], "screen") == 0)) {
-	char string[20];
-
-	SETUP("screen");
-	sprintf(string, "%d", Tk_ScreenNumber(window));
-	Tcl_AppendResult(interp, Tk_DisplayName(window), ".", string,
-		(char *) NULL);
-    } else if ((c == 's') && (strncmp(argv[1], "screencells", length) == 0)
-	    && (length >= 7)) {
-	SETUP("screencells");
-	sprintf(interp->result, "%d", CellsOfScreen(Tk_Screen(window)));
-    } else if ((c == 's') && (strncmp(argv[1], "screendepth", length) == 0)
-	    && (length >= 7)) {
-	SETUP("screendepth");
-	sprintf(interp->result, "%d", DefaultDepthOfScreen(Tk_Screen(window)));
-    } else if ((c == 's') && (strncmp(argv[1], "screenheight", length) == 0)
-	    && (length >= 7)) {
-	SETUP("screenheight");
-	sprintf(interp->result, "%d",  HeightOfScreen(Tk_Screen(window)));
-    } else if ((c == 's') && (strncmp(argv[1], "screenmmheight", length) == 0)
-	    && (length >= 9)) {
-	SETUP("screenmmheight");
-	sprintf(interp->result, "%d",  HeightMMOfScreen(Tk_Screen(window)));
-    } else if ((c == 's') && (strncmp(argv[1], "screenmmwidth", length) == 0)
-	    && (length >= 9)) {
-	SETUP("screenmmwidth");
-	sprintf(interp->result, "%d",  WidthMMOfScreen(Tk_Screen(window)));
-    } else if ((c == 's') && (strncmp(argv[1], "screenvisual", length) == 0)
-	    && (length >= 7)) {
-	SETUP("screenvisual");
-	switch (DefaultVisualOfScreen(Tk_Screen(window))->class) {
-	    case PseudoColor:	interp->result = "pseudocolor"; break;
-	    case GrayScale:	interp->result = "grayscale"; break;
-	    case DirectColor:	interp->result = "directcolor"; break;
-	    case TrueColor:	interp->result = "truecolor"; break;
-	    case StaticColor:	interp->result = "staticcolor"; break;
-	    case StaticGray:	interp->result = "staticgray"; break;
-	    default:		interp->result = "unknown"; break;
-	}
-    } else if ((c == 's') && (strncmp(argv[1], "screenwidth", length) == 0)
-	    && (length >= 7)) {
-	SETUP("screenwidth");
-	sprintf(interp->result, "%d",  WidthOfScreen(Tk_Screen(window)));
-    } else if ((c == 's') && (strncmp(argv[1], "server", length) == 0)
-	    && (length >= 2)) {
-	SETUP("server");
-	TkGetServerInfo(interp, window);
-    } else if ((c == 't') && (strncmp(argv[1], "toplevel", length) == 0)) {
-	SETUP("toplevel");
-	winPtr = GetToplevel(window);
-	if (winPtr != NULL) {
-	    interp->result = winPtr->pathName;
-	}
-    } else if ((c == 'v') && (strncmp(argv[1], "viewable", length) == 0)
-	    && (length >= 3)) {
-	SETUP("viewable");
-	for (winPtr = (TkWindow *) window; ; winPtr = winPtr->parentPtr) {
-	    if ((winPtr == NULL) || !(winPtr->flags & TK_MAPPED)) {
-		interp->result = "0";
-		break;
-	    }
-	    if (winPtr->flags & TK_TOP_LEVEL) {
-		interp->result = "1";
-		break;
-	    }
-	}
-    } else if ((c == 'v') && (strcmp(argv[1], "visual") == 0)) {
-	SETUP("visual");
-	switch (Tk_Visual(window)->class) {
-	    case PseudoColor:	interp->result = "pseudocolor"; break;
-	    case GrayScale:	interp->result = "grayscale"; break;
-	    case DirectColor:	interp->result = "directcolor"; break;
-	    case TrueColor:	interp->result = "truecolor"; break;
-	    case StaticColor:	interp->result = "staticcolor"; break;
-	    case StaticGray:	interp->result = "staticgray"; break;
-	    default:		interp->result = "unknown"; break;
-	}
-    } else if ((c == 'v') && (strncmp(argv[1], "visualid", length) == 0)
-	       && (length >= 7)) {
-	SETUP("visualid");
-	sprintf(interp->result, "0x%x", (unsigned int)
-		XVisualIDFromVisual(Tk_Visual(window)));
-    } else if ((c == 'v') && (strncmp(argv[1], "visualsavailable", length) == 0)
-	    && (length >= 7)) {
-	XVisualInfo template, *visInfoPtr;
-	int count, i;
-	char string[70], visualIdString[16], *fmt;
-	int includeVisualId;
-
-	if (argc == 3) {
-	    includeVisualId = 0;
-	} else if ((argc == 4)
-		&& (strncmp(argv[3], "includeids", strlen(argv[3])) == 0)) {
-	    includeVisualId = 1;
-	} else {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " visualsavailable window ?includeids?\"", 
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-
-	window = Tk_NameToWindow(interp, argv[2], tkwin); 
-	if (window == NULL) { 
-	  return TCL_ERROR; 
-	}
-
-	template.screen = Tk_ScreenNumber(window);
-	visInfoPtr = XGetVisualInfo(Tk_Display(window), VisualScreenMask,
-		&template, &count);
-	if (visInfoPtr == NULL) {
-	    interp->result = "can't find any visuals for screen";
-	    return TCL_ERROR;
-	}
-	for (i = 0; i < count; i++) {
-	    switch (visInfoPtr[i].class) {
-		case PseudoColor:	fmt = "pseudocolor %d"; break;
-		case GrayScale:		fmt = "grayscale %d"; break;
-		case DirectColor:	fmt = "directcolor %d"; break;
-		case TrueColor:		fmt = "truecolor %d"; break;
-		case StaticColor:	fmt = "staticcolor %d"; break;
-		case StaticGray:	fmt = "staticgray %d"; break;
-		default:		fmt = "unknown"; break;
-	    }
-	    sprintf(string, fmt, visInfoPtr[i].depth);
-	    if (includeVisualId) {
-		sprintf(visualIdString, " 0x%x",
-			(unsigned int) visInfoPtr[i].visualid);
-		strcat(string, visualIdString);
-	    }
-	    Tcl_AppendElement(interp, string);
-	}
-	XFree((char *) visInfoPtr);
-    } else if ((c == 'v') && (strncmp(argv[1], "vrootheight", length) == 0)
-	    && (length >= 6)) {
-	int x, y;
-	int width, height;
-
-	SETUP("vrootheight");
-	Tk_GetVRootGeometry(window, &x, &y, &width, &height);
-	sprintf(interp->result, "%d", height);
-    } else if ((c == 'v') && (strncmp(argv[1], "vrootwidth", length) == 0)
-	    && (length >= 6)) {
-	int x, y;
-	int width, height;
-
-	SETUP("vrootwidth");
-	Tk_GetVRootGeometry(window, &x, &y, &width, &height);
-	sprintf(interp->result, "%d", width);
-    } else if ((c == 'v') && (strcmp(argv[1], "vrootx") == 0)) {
-	int x, y;
-	int width, height;
-
-	SETUP("vrootx");
-	Tk_GetVRootGeometry(window, &x, &y, &width, &height);
-	sprintf(interp->result, "%d", x);
-    } else if ((c == 'v') && (strcmp(argv[1], "vrooty") == 0)) {
-	int x, y;
-	int width, height;
-
-	SETUP("vrooty");
-	Tk_GetVRootGeometry(window, &x, &y, &width, &height);
-	sprintf(interp->result, "%d", y);
-    } else if ((c == 'w') && (strncmp(argv[1], "width", length) == 0)) {
-	SETUP("width");
-	sprintf(interp->result, "%d", Tk_Width(window));
-    } else if ((c == 'x') && (argv[1][1] == '\0')) {
-	SETUP("x");
-	sprintf(interp->result, "%d", Tk_X(window));
-    } else if ((c == 'y') && (argv[1][1] == '\0')) {
-	SETUP("y");
-	sprintf(interp->result, "%d", Tk_Y(window));
-    } else {
-	Tcl_AppendResult(interp, "bad option \"", argv[1],
-		"\": must be atom, atomname, cells, children, ",
-		"class, colormapfull, containing, depth, exists, fpixels, ",
-		"geometry, height, ",
-		"id, interps, ismapped, manager, name, parent, pathname, ",
-		"pixels, pointerx, pointerxy, pointery, reqheight, ",
-		"reqwidth, rgb, ",
-		"rootx, rooty, ",
-		"screen, screencells, screendepth, screenheight, ",
-		"screenmmheight, screenmmwidth, screenvisual, ",
-		"screenwidth, server, ",
-		"toplevel, viewable, visual, visualid, visualsavailable, ",
-		"vrootheight, vrootwidth, vrootx, vrooty, ",
-		"width, x, or y", (char *) NULL);
+    if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "option", 0,
+	    &index) != TCL_OK) {
 	return TCL_ERROR;
+    }
+
+    if (index < WIN_ATOM) {
+	if (objc != 3) {
+	    Tcl_WrongNumArgs(interp, 2, objv, "window");
+	    return TCL_ERROR;
+	}
+	string = Tcl_GetStringFromObj(objv[2], NULL);
+	tkwin = Tk_NameToWindow(interp, string, tkwin);
+	if (tkwin == NULL) {
+	    return TCL_ERROR;
+	}
+    }
+    winPtr = (TkWindow *) tkwin;
+
+    switch ((enum options) index) {
+	case WIN_CELLS: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    Tk_Visual(tkwin)->map_entries);
+	    break;
+	}
+	case WIN_CHILDREN: {
+	    Tcl_Obj *strPtr;
+
+	    Tcl_ResetResult(interp);
+	    winPtr = winPtr->childList;
+	    for ( ; winPtr != NULL; winPtr = winPtr->nextPtr) {
+		strPtr = LangWidgetArg(interp,(Tk_Window) winPtr);
+		Tcl_IncrRefCount(strPtr);  /* CHECK REFCNT */
+		Tcl_ListObjAppendElement(NULL,
+		     Tcl_GetObjResult(interp), strPtr);
+	    }
+	    break;
+	}
+	case WIN_CLASS: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_Class(tkwin), -1);
+	    break;
+	}
+	case WIN_COLORMAPFULL: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp),
+		    TkpCmapStressed(tkwin, Tk_Colormap(tkwin)));
+	    break;
+	}
+	case WIN_DEPTH: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Depth(tkwin));
+	    break;
+	}
+	case WIN_GEOMETRY: {
+	    Tcl_ResetResult(interp);
+	    sprintf(buf, "%dx%d+%d+%d", Tk_Width(tkwin), Tk_Height(tkwin),
+		    Tk_X(tkwin), Tk_Y(tkwin));
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+	    break;
+	}
+	case WIN_HEIGHT: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Height(tkwin));
+	    break;
+	}
+	case WIN_ID: {
+	    Tk_MakeWindowExist(tkwin);
+	    TkpPrintWindowId(buf, Tk_WindowId(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+	    break;
+	}
+	case WIN_ISMAPPED: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp),
+		    (int) Tk_IsMapped(tkwin));
+	    break;
+	}
+	case WIN_MANAGER: {
+	    Tcl_ResetResult(interp);
+	    if (winPtr->geomMgrPtr != NULL) {
+		Tcl_SetStringObj(Tcl_GetObjResult(interp),
+		        winPtr->geomMgrPtr->name, -1);
+	    }
+	    break;
+	}
+	case WIN_NAME: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_Name(tkwin), -1);
+	    break;
+	}
+	case WIN_PARENT: {
+	    Tcl_ResetResult(interp);
+	    if (winPtr->parentPtr != NULL) {
+		Tcl_ArgResult(interp, LangWidgetArg(interp, (Tk_Window) winPtr->parentPtr)); 
+	    }
+	    break;
+	}
+	case WIN_POINTERX: {
+	    useX = 1;
+	    useY = 0;
+	    goto pointerxy;
+	}
+	case WIN_POINTERY: {
+	    useX = 0;
+	    useY = 1;
+	    goto pointerxy;
+	}
+	case WIN_POINTERXY: {
+	    useX = 1;
+	    useY = 1;
+
+	    pointerxy:
+	    winPtr = GetToplevel(tkwin);
+	    if (winPtr == NULL) {
+		x = -1;
+		y = -1;
+	    } else {
+		TkGetPointerCoords((Tk_Window) winPtr, &x, &y);
+	    }
+	    Tcl_ResetResult(interp);
+	    if (useX & useY) {
+		sprintf(buf, "%d %d", x, y);
+		Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+	    } else if (useX) {
+		Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
+	    } else {
+		Tcl_SetIntObj(Tcl_GetObjResult(interp), y);
+	    }
+	    break;
+	}
+	case WIN_REQHEIGHT: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_ReqHeight(tkwin));
+	    break;
+	}
+	case WIN_REQWIDTH: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_ReqWidth(tkwin));
+	    break;
+	}
+	case WIN_ROOTX: {
+	    Tk_GetRootCoords(tkwin, &x, &y);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
+	    break;
+	}
+	case WIN_ROOTY: {
+	    Tk_GetRootCoords(tkwin, &x, &y);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), y);
+	    break;
+	}
+	case WIN_SCREEN: {
+	    sprintf(buf, "%d", Tk_ScreenNumber(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		    Tk_DisplayName(tkwin), ".", buf, NULL);
+	    break;
+	}
+	case WIN_SCREENCELLS: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    CellsOfScreen(Tk_Screen(tkwin)));
+	    break;
+	}
+	case WIN_SCREENDEPTH: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    DefaultDepthOfScreen(Tk_Screen(tkwin)));
+	    break;
+	}
+	case WIN_SCREENHEIGHT: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    HeightOfScreen(Tk_Screen(tkwin)));
+	    break;
+	}
+	case WIN_SCREENWIDTH: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    WidthOfScreen(Tk_Screen(tkwin)));
+	    break;
+	}
+	case WIN_SCREENMMHEIGHT: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    HeightMMOfScreen(Tk_Screen(tkwin)));
+	    break;
+	}
+	case WIN_SCREENMMWIDTH: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    WidthMMOfScreen(Tk_Screen(tkwin)));
+	    break;
+	}
+	case WIN_SCREENVISUAL: {
+	    class = DefaultVisualOfScreen(Tk_Screen(tkwin))->class;
+	    goto visual;
+	}
+	case WIN_SERVER: {
+	    TkGetServerInfo(interp, tkwin);
+	    break;
+	}
+	case WIN_TOPLEVEL: {
+	    winPtr = GetToplevel(tkwin);
+	    if (winPtr != NULL) {
+		Tcl_ResetResult(interp);
+		Tcl_ArgResult(interp, LangWidgetArg(interp, (Tk_Window) winPtr)); 
+	    }
+	    break;
+	}
+	case WIN_VIEWABLE: {
+	    int viewable;
+
+	    viewable = 0;
+	    for ( ; ; winPtr = winPtr->parentPtr) {
+		if ((winPtr == NULL) || !(winPtr->flags & TK_MAPPED)) {
+		    break;
+		}
+		if (winPtr->flags & TK_TOP_LEVEL) {
+		    viewable = 1;
+		    break;
+		}
+	    }
+	    Tcl_ResetResult(interp);
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), viewable);
+	    break;
+	}
+	case WIN_VISUAL: {
+	    class = Tk_Visual(tkwin)->class;
+
+	    visual:
+	    string = TkFindStateString(visualMap, class);
+	    if (string == NULL) {
+		string = "unknown";
+	    }
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), string, -1);
+	    break;
+	}
+	case WIN_VISUALID: {
+	    Tcl_ResetResult(interp);
+	    sprintf(buf, "0x%x",
+		    (unsigned int) XVisualIDFromVisual(Tk_Visual(tkwin)));
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+	    break;
+	}
+	case WIN_VROOTHEIGHT: {
+	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
+	    break;
+	}
+	case WIN_VROOTWIDTH: {
+	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
+	    break;
+	}
+	case WIN_VROOTX: {
+	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
+	    break;
+	}
+	case WIN_VROOTY: {
+	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), y);
+	    break;
+	}
+	case WIN_WIDTH: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Width(tkwin));
+	    break;
+	}
+	case WIN_X: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_X(tkwin));
+	    break;
+	}
+	case WIN_Y: {
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Y(tkwin));
+	    break;
+	}
+
+	/*
+	 * Uses -displayof.
+	 */
+	 
+	case WIN_ATOM: {
+	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
+	    if (skip < 0) {
+		return TCL_ERROR;
+	    }
+	    if (objc - skip != 3) {
+	        Tcl_WrongNumArgs(interp, 2, objv, "?-displayof window? name");
+		return TCL_ERROR;
+	    }
+	    objv += skip;
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetLongObj(Tcl_GetObjResult(interp),
+		    (long) Tk_InternAtom(tkwin, string));
+	    break;
+	}
+	case WIN_ATOMNAME: {
+	    char *name;
+	    long id;
+	    
+	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
+	    if (skip < 0) {
+		return TCL_ERROR;
+	    }
+	    if (objc - skip != 3) {
+		Tcl_WrongNumArgs(interp, 2, objv, "?-displayof window? id");
+		return TCL_ERROR;
+	    }
+	    objv += skip;
+	    if (Tcl_GetLongFromObj(interp, objv[2], &id) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    Tcl_ResetResult(interp);
+	    name = Tk_GetAtomName(tkwin, (Atom) id);
+	    if (strcmp(name, "?bad atom?") == 0) {
+		string = Tcl_GetStringFromObj(objv[2], NULL);
+		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+			"no atom exists with id \"", string, "\"", NULL);
+		return TCL_ERROR;
+	    }
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
+	    break;
+	}
+	case WIN_CONTAINING: {
+	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
+	    if (skip < 0) {
+		return TCL_ERROR;
+	    }
+	    if (objc - skip != 4) {
+		Tcl_WrongNumArgs(interp, 2, objv,
+			"?-displayof window? rootX rootY");
+		return TCL_ERROR;
+	    }
+	    objv += skip;
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    if (Tk_GetPixels(interp, tkwin, string, &x) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[3], NULL);
+	    if (Tk_GetPixels(interp, tkwin, string, &y) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    tkwin = Tk_CoordsToWindow(x, y, tkwin);
+	    if (tkwin != NULL) {
+		Tcl_ResetResult(interp);
+		Tcl_ArgResult(interp, LangWidgetArg(interp, tkwin));
+	    }
+	    break;
+	}
+	case WIN_INTERPS: {
+	    int result;
+	    
+	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
+	    if (skip < 0) {
+		return TCL_ERROR;
+	    }
+	    if (objc - skip != 2) {
+		Tcl_WrongNumArgs(interp, 2, objv, "?-displayof window?");
+		return TCL_ERROR;
+	    }
+	    result = TkGetInterpNames(interp, tkwin);
+	    return result;
+	}
+	case WIN_PATHNAME: {
+	    int id;
+
+	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
+	    if (skip < 0) {
+		return TCL_ERROR;
+	    }
+	    if (objc - skip != 3) {
+		Tcl_WrongNumArgs(interp, 2, objv, "?-displayof window? id");
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[2 + skip], NULL);
+	    if (TkpScanWindowId(interp, objv[2+skip], &id) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    winPtr = (TkWindow *)
+	            Tk_IdToWindow(Tk_Display(tkwin), (Window) id);
+	    if ((winPtr == NULL) ||
+		    (winPtr->mainPtr != ((TkWindow *) tkwin)->mainPtr)) {
+		Tcl_ResetResult(interp);
+		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+			"window id \"", string,
+			"\" doesn't exist in this application", (char *) NULL);
+		return TCL_ERROR;
+	    }
+
+	    /*
+	     * If the window is a utility window with no associated path
+	     * (such as a wrapper window or send communication window), just
+	     * return an empty string.
+	     */
+
+	    tkwin = (Tk_Window) winPtr;
+	    if (Tk_PathName(tkwin) != NULL) {
+		Tcl_ResetResult(interp);
+		Tcl_ArgResult(interp, LangWidgetArg(interp,tkwin));
+	    }
+	    break;
+	}
+
+	/*
+	 * objv[3] is window.
+	 */
+
+	case WIN_EXISTS: {
+	    int alive;
+
+	    if (objc != 3) {
+		Tcl_WrongNumArgs(interp, 2, objv, "window");
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    winPtr = (TkWindow *) Tk_NameToWindow(interp, string, tkwin);
+	    alive = 1;
+	    if ((winPtr == NULL) || (winPtr->flags & TK_ALREADY_DEAD)) {
+		alive = 0;
+	    }
+	    Tcl_ResetResult(interp); /* clear any error msg */
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), alive);
+	    break;
+	}
+	case WIN_FPIXELS: {
+	    double mm, pixels;
+
+	    if (objc != 4) {
+		Tcl_WrongNumArgs(interp, 2, objv, "window number");
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    tkwin = Tk_NameToWindow(interp, string, tkwin);
+	    if (tkwin == NULL) {
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[3], NULL);
+	    if (Tk_GetScreenMM(interp, tkwin, string, &mm) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    pixels = mm * WidthOfScreen(Tk_Screen(tkwin))
+		/ WidthMMOfScreen(Tk_Screen(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetDoubleObj(Tcl_GetObjResult(interp), pixels);
+	    break;
+	}
+	case WIN_PIXELS: {
+	    int pixels;
+	    
+	    if (objc != 4) {
+		Tcl_WrongNumArgs(interp, 2, objv, "window number");
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    tkwin = Tk_NameToWindow(interp, string, tkwin);
+	    if (tkwin == NULL) {
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[3], NULL);
+	    if (Tk_GetPixels(interp, tkwin, string, &pixels) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), pixels);
+	    break;
+	}
+	case WIN_RGB: {
+	    XColor *colorPtr;
+
+	    if (objc != 4) {
+		Tcl_WrongNumArgs(interp, 2, objv, "window colorName");
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    tkwin = Tk_NameToWindow(interp, string, tkwin);
+	    if (tkwin == NULL) {
+		return TCL_ERROR;
+	    }
+	    string = Tcl_GetStringFromObj(objv[3], NULL);
+	    colorPtr = Tk_GetColor(interp, tkwin, string);
+	    if (colorPtr == NULL) {
+		return TCL_ERROR;
+	    }
+	    sprintf(buf, "%d %d %d", colorPtr->red, colorPtr->green,
+		    colorPtr->blue);
+	    Tk_FreeColor(colorPtr);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+	    break;
+	}
+	case WIN_VISUALSAVAILABLE: {
+	    XVisualInfo template, *visInfoPtr;
+	    int count, i;
+	    char visualIdString[16];
+	    int includeVisualId;
+	    Tcl_Obj *strPtr;
+
+	    if (objc == 3) {
+		includeVisualId = 0;
+	    } else if ((objc == 4)
+		    && (strcmp(Tcl_GetStringFromObj(objv[3], NULL),
+			    "includeids") == 0)) {
+		includeVisualId = 1;
+	    } else {
+		Tcl_WrongNumArgs(interp, 2, objv, "window ?includeids?");
+		return TCL_ERROR;
+	    }
+
+	    string = Tcl_GetStringFromObj(objv[2], NULL);
+	    tkwin = Tk_NameToWindow(interp, string, tkwin); 
+	    if (tkwin == NULL) { 
+		return TCL_ERROR; 
+	    }
+
+	    template.screen = Tk_ScreenNumber(tkwin);
+	    visInfoPtr = XGetVisualInfo(Tk_Display(tkwin), VisualScreenMask,
+		    &template, &count);
+	    Tcl_ResetResult(interp);
+	    if (visInfoPtr == NULL) {
+		Tcl_SetStringObj(Tcl_GetObjResult(interp),
+			"can't find any visuals for screen", -1);
+		return TCL_ERROR;
+	    }
+	    for (i = 0; i < count; i++) {
+		string = TkFindStateString(visualMap, visInfoPtr[i].class);
+		if (string == NULL) {
+		    strcpy(buf, "unknown");
+		} else {
+		    sprintf(buf, "%s %d", string, visInfoPtr[i].depth);
+		}
+		if (includeVisualId) {
+		    sprintf(visualIdString, " 0x%x",
+			    (unsigned int) visInfoPtr[i].visualid);
+		    strcat(buf, visualIdString);
+		}
+		strPtr = Tcl_NewStringObj(buf, -1);
+		Tcl_ListObjAppendElement(NULL, Tcl_GetObjResult(interp),
+		        strPtr);
+	    }
+	    XFree((char *) visInfoPtr);
+	    break;
+	}
     }
     return TCL_OK;
-
-    wrongArgs:
-    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
-	    argv[0], " ", argName, " window\"", (char *) NULL);
-    return TCL_ERROR;
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * GetDisplayOf --
+ * TkGetDisplayOf --
  *
- *	Parses a "-displayof" option for the "winfo" command.
+ *	Parses a "-displayof window" option for various commands.  If
+ *	present, the literal "-displayof" should be in objv[0] and the
+ *	window name in objv[1].
  *
  * Results:
- *	The return value is a token for the window specified in
- *	argv[1].  If argv[0] and argv[1] couldn't be parsed, NULL
- *	is returned and an error is left in interp->result.
+ *	The return value is 0 if the argument strings did not contain
+ *	the "-displayof" option.  The return value is 2 if the
+ *	argument strings contained both the "-displayof" option and
+ *	a valid window name.  Otherwise, the return value is -1 if
+ *	the window name was missing or did not specify a valid window.
+ *
+ *	If the return value was 2, *tkwinPtr is filled with the
+ *	token for the window specified on the command line.  If the
+ *	return value was -1, an error message is left in interp's
+ *	result object.
  *
  * Side effects:
  *	None.
@@ -1374,24 +1548,41 @@ Tk_WinfoCmd(clientData, interp, argc, argv)
  *----------------------------------------------------------------------
  */
 
-static Tk_Window
-GetDisplayOf(interp, tkwin, argv)
+int
+TkGetDisplayOf(interp, objc, objv, tkwinPtr)
     Tcl_Interp *interp;		/* Interpreter for error reporting. */
-    Tk_Window tkwin;		/* Window to use for looking up window
-				 * given in argv[1]. */
-    char **argv;		/* Array of two strings.   First must be
-				 * "-displayof" or an abbreviation, second
-				 * must be window name. */
+    int objc;			/* Number of arguments. */
+    Tcl_Obj *CONST objv[];	/* Argument objects. If it is present,
+				 * "-displayof" should be in objv[0] and
+				 * objv[1] the name of a window. */
+    Tk_Window *tkwinPtr;	/* On input, contains main window of
+				 * application associated with interp.  On
+				 * output, filled with window specified as
+				 * option to "-displayof" argument, or
+				 * unmodified if "-displayof" argument was not
+				 * present. */
 {
-    size_t length;
-
-    length = strlen(argv[0]);
-    if ((length < 2) || (LangCmpOpt("-displayof", argv[0], length) != 0)) {
-	Tcl_AppendResult(interp, "bad argument \"", argv[0],
-		"\": must be -displayof", (char *) NULL);
-	return (Tk_Window) NULL;
+    char *string;
+    int length;
+    
+    if (objc < 1) {
+	return 0;
     }
-    return Tk_NameToWindow(interp, argv[1], tkwin);
+    string = Tcl_GetStringFromObj(objv[0], &length);
+    if ((length >= 2) && (strncmp(string, "-displayof", (unsigned) length) == 0)) {
+        if (objc < 2) {
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp),
+		    "value for \"-displayof\" missing", -1);
+	    return -1;
+	}
+	string = Tcl_GetStringFromObj(objv[1], NULL);
+	*tkwinPtr = Tk_NameToWindow(interp, string, *tkwinPtr);
+	if (*tkwinPtr == NULL) {
+	    return -1;
+	}
+	return 2;
+    }
+    return 0;
 }
 
 /*

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclLoad.c 1.15 96/10/12 17:05:58
+ * SCCS: @(#) tclLoad.c 1.17 97/07/24 20:05:04
  */
 
 #include "tclInt.h"
@@ -126,7 +126,9 @@ Tcl_LoadCmd(dummy, interp, argc, argv)
 	gotPkgName = 0;
     }
     if ((fullFileName[0] == 0) && !gotPkgName) {
-	interp->result = "must specify either file name or package name";
+	Tcl_SetResult(interp,
+		"must specify either file name or package name",
+		TCL_STATIC);
 	code = TCL_ERROR;
 	goto done;
     }
@@ -368,6 +370,10 @@ Tcl_LoadCmd(dummy, interp, argc, argv)
 	 * everything we need in target's $errorInfo.
 	 */
 
+	/*
+         * It is (abusively) assumed that errorInfo and errorCode vars exists.
+         * we changed SetVar2 to accept NULL values to avoid crashes. --dl
+	 */
 	Tcl_ResetResult(interp);
 	Tcl_AddErrorInfo(interp, Tcl_GetVar2(target,
 		"errorInfo", (char *) NULL, TCL_GLOBAL_ONLY));

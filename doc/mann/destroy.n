@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1990 The Regents of the University of California.
-'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) destroy.n 1.11 95/06/07 21:15:12
+'\" SCCS: @(#) destroy.n 1.14 96/12/12 17:54:59
 '\" 
 .so man.macros
 .TH destroy n "" Tk "Tk Generic Methods"
@@ -18,6 +18,7 @@ destroy \- Destroy one or more windows
 .BE
 
 .SH DESCRIPTION
+.VS
 .PP
 This command deletes the window related to 
 \fI$widget\fR, plus all its descendants.

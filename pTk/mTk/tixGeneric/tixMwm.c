@@ -655,7 +655,7 @@ static void ResetProtocols(clientData)
      */
     XChangeProperty(Tk_Display(wmPtr->tkwin), Tk_WindowId(wmPtr->tkwin),
 	mwm_menu_atom, mwm_menu_atom, 8, PropModeReplace, 
-	(unsigned char *)dString.string, dString.length+1);
+	(unsigned char *)Tcl_DStringValue(&dString), Tcl_DStringLength(&dString));
 
     Tcl_DStringFree(&dString);
     ckfree((char*)atoms);

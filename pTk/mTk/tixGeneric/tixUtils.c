@@ -419,7 +419,7 @@ Tix_CreateSubWindow(interp, tkwin, subPath)
     Tcl_DStringAppend(&dString, ".tixsw:", 7);
     Tcl_DStringAppend(&dString, subPath, strlen(subPath));
 
-    subwin = Tk_CreateWindowFromPath(interp, tkwin, dString.string,
+    subwin = Tk_CreateWindowFromPath(interp, tkwin, Tcl_DStringValue(&dString),
 	(char *) NULL);
 
     Tcl_DStringFree(&dString);

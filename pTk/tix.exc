@@ -8,7 +8,6 @@ Tix_SetArgv
 tixConfigItemStyle 
 tixConfigRelief
 tixStrCaseCmp
-tixStrDup
 tixConfigItemType
 Tix_DefinePixmap
 Tix_EvalArgv

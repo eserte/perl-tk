@@ -3,8 +3,8 @@
 
 EXTERN void		Tk_CreatePhotoImageFormat _ANSI_ARGS_((
 			    Tk_PhotoImageFormat *formatPtr));
-EXTERN Tk_PhotoHandle	Tk_FindPhoto _ANSI_ARGS_((char *imageName));
-
+EXTERN Tk_PhotoHandle	Tk_FindPhoto _ANSI_ARGS_((Tcl_Interp *interp, 
+			    char *imageName));
 EXTERN void		Tk_PhotoPutBlock _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    Tk_PhotoImageBlock *blockPtr, int x, int y,
 			    int width, int height));

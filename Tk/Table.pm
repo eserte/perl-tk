@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Tk/Table.pm#9$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Table.pm#4$
 
 use Tk::Pretty;
 use AutoLoader;

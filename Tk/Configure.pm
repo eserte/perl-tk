@@ -2,6 +2,10 @@
 # need translating from public form 
 # e.g. $cw->configure(-label => 'fred')
 
+
+use vars qw($VERSION);
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Configure.pm#3$
+
 # into $cw->subwiget('label')->configure(-text => 'fred')
 # Should probably do something clever with regexp's here
 
@@ -10,7 +14,7 @@ use Carp;
 use Tk::Pretty;
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/Tk/Configure.pm#7$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Configure.pm#3$
 
 
 

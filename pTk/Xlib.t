@@ -12,9 +12,11 @@ VFUNC(XClassHint *,XAllocClassHint,V_XAllocClassHint,_ANSI_ARGS_((void)))
 VFUNC(int,XAllocColor,V_XAllocColor,_ANSI_ARGS_((Display *, Colormap, XColor *)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XAllocNamedColor
 VFUNC(int,XAllocNamedColor,V_XAllocNamedColor,_ANSI_ARGS_((Display *, Colormap, const char *, XColor *, XColor *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XAllocSizeHints
@@ -108,9 +110,11 @@ VFUNC(Region,XCreateRegion,V_XCreateRegion,_ANSI_ARGS_((void)))
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XCreateWindow
 VFUNC(Window,XCreateWindow,V_XCreateWindow,_ANSI_ARGS_((Display *, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual *, long unsigned int, XSetWindowAttributes *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XDefaultColormap
@@ -180,9 +184,11 @@ VFUNC(int,XDrawPoints,V_XDrawPoints,_ANSI_ARGS_(( Display*, Drawable, GC, XPoint
 VFUNC(int,XDrawRectangle,V_XDrawRectangle,_ANSI_ARGS_((Display *, Drawable, GC, int, int, unsigned int, unsigned int)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XDrawString
 VFUNC(int,XDrawString,V_XDrawString,_ANSI_ARGS_((Display *, Drawable, GC, int, int, const char *, int)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XEventsQueued
@@ -226,9 +232,11 @@ VFUNC(int,XFreeColors,V_XFreeColors,_ANSI_ARGS_((Display *, Colormap, long unsig
 VFUNC(int,XFreeCursor,V_XFreeCursor,_ANSI_ARGS_((Display *, Cursor)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XFreeFont
 VFUNC(int,XFreeFont,V_XFreeFont,_ANSI_ARGS_((Display *, XFontStruct *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XFreeFontNames
@@ -252,9 +260,11 @@ VFUNC(GContext,XGContextFromGC,V_XGContextFromGC,_ANSI_ARGS_((GC)))
 VFUNC(char *,XGetAtomName,V_XGetAtomName,_ANSI_ARGS_((Display *, Atom)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XGetFontProperty
 VFUNC(int,XGetFontProperty,V_XGetFontProperty,_ANSI_ARGS_((XFontStruct *, Atom, long unsigned int *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XGetGeometry
 VFUNC(int,XGetGeometry,V_XGetGeometry,_ANSI_ARGS_((Display *, Drawable, Window *, int *, int *, unsigned int *, unsigned int *, unsigned int *, unsigned int *)))
@@ -344,13 +354,17 @@ VFUNC(Atom *,XListProperties,V_XListProperties,_ANSI_ARGS_((Display *, Window, i
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XLoadFont
 VFUNC(Font,XLoadFont,V_XLoadFont,_ANSI_ARGS_((Display *, const char *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XLoadQueryFont
 VFUNC(XFontStruct *,XLoadQueryFont,V_XLoadQueryFont,_ANSI_ARGS_((Display *, const char *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XLookupColor
 VFUNC(int,XLookupColor,V_XLookupColor,_ANSI_ARGS_((Display *, Colormap, const char *, XColor *, XColor *)))
@@ -384,9 +398,11 @@ VFUNC(int,XNextEvent,V_XNextEvent,_ANSI_ARGS_((Display *, XEvent *)))
 VFUNC(int,XNoOp,V_XNoOp,_ANSI_ARGS_((Display *)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XOpenDisplay
 VFUNC(Display *,XOpenDisplay,V_XOpenDisplay,_ANSI_ARGS_((const char *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XParseColor
 VFUNC(int,XParseColor,V_XParseColor,_ANSI_ARGS_((Display *, Colormap, const char *, XColor *)))
@@ -494,17 +510,21 @@ VFUNC(int,XSetSelectionOwner,V_XSetSelectionOwner,_ANSI_ARGS_((Display *, Atom, 
 VFUNC(int,XSetTSOrigin,V_XSetTSOrigin,_ANSI_ARGS_((Display *, GC, int, int)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XSetTransientForHint
 VFUNC(int,XSetTransientForHint,V_XSetTransientForHint,_ANSI_ARGS_((Display *, Window, Window)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XSetWMClientMachine
 VFUNC(void,XSetWMClientMachine,V_XSetWMClientMachine,_ANSI_ARGS_((Display *, Window, XTextProperty *)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XSetWMColormapWindows
 VFUNC(int,XSetWMColormapWindows,V_XSetWMColormapWindows,_ANSI_ARGS_((Display *, Window, Window *, int)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XSetWMHints
@@ -560,13 +580,17 @@ VFUNC(KeySym,XStringToKeysym,V_XStringToKeysym,_ANSI_ARGS_((const char *)))
 VFUNC(int,XSync,V_XSync,_ANSI_ARGS_((Display *, int)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XTextExtents
 VFUNC(int,XTextExtents,V_XTextExtents,_ANSI_ARGS_((XFontStruct *, const char *, int, int *, int *, int *, XCharStruct *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XTextWidth
 VFUNC(int,XTextWidth,V_XTextWidth,_ANSI_ARGS_((XFontStruct *, const char *, int)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XTranslateCoordinates
 VFUNC(int,XTranslateCoordinates,V_XTranslateCoordinates,_ANSI_ARGS_((Display *, Window, Window, int, int, int *, int *, Window *)))

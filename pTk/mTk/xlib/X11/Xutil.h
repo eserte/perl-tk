@@ -386,7 +386,7 @@ extern int XFindContext(
 #endif
 );
 
-extern Status XGetClassHint(
+extern int XGetClassHint(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -394,7 +394,7 @@ extern Status XGetClassHint(
 #endif
 );
 
-extern Status XGetIconSizes(
+extern int XGetIconSizes(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -403,7 +403,7 @@ extern Status XGetIconSizes(
 #endif
 );
 
-extern Status XGetNormalHints(
+extern int XGetNormalHints(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -411,7 +411,7 @@ extern Status XGetNormalHints(
 #endif
 );
 
-extern Status XGetRGBColormaps(
+extern int XGetRGBColormaps(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -421,7 +421,7 @@ extern Status XGetRGBColormaps(
 #endif
 );
 
-extern Status XGetSizeHints(
+extern int XGetSizeHints(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -430,7 +430,7 @@ extern Status XGetSizeHints(
 #endif
 );
 
-extern Status XGetStandardColormap(
+extern int XGetStandardColormap(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -439,7 +439,7 @@ extern Status XGetStandardColormap(
 #endif
 );
 
-extern Status XGetTextProperty(
+extern int XGetTextProperty(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* window */,
@@ -457,7 +457,7 @@ extern XVisualInfo *XGetVisualInfo(
 #endif
 );
 
-extern Status XGetWMClientMachine(
+extern int XGetWMClientMachine(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -472,7 +472,7 @@ extern XWMHints *XGetWMHints(
 #endif
 );
 
-extern Status XGetWMIconName(
+extern int XGetWMIconName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -480,7 +480,7 @@ extern Status XGetWMIconName(
 #endif
 );
 
-extern Status XGetWMName(
+extern int XGetWMName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -488,7 +488,7 @@ extern Status XGetWMName(
 #endif
 );
 
-extern Status XGetWMNormalHints(
+extern int XGetWMNormalHints(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -497,7 +497,7 @@ extern Status XGetWMNormalHints(
 #endif
 );
 
-extern Status XGetWMSizeHints(
+extern int XGetWMSizeHints(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -507,7 +507,7 @@ extern Status XGetWMSizeHints(
 #endif
 );
 
-extern Status XGetZoomHints(
+extern int XGetZoomHints(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -533,7 +533,7 @@ extern int XLookupString(
 #endif
 );
 
-extern Status XMatchVisualInfo(
+extern int XMatchVisualInfo(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* screen */,
@@ -762,7 +762,7 @@ extern void XShrinkRegion(
 #endif
 );
 
-extern Status XStringListToTextProperty(
+extern int XStringListToTextProperty(
 #if NeedFunctionPrototypes
     char**		/* list */,
     int			/* count */,
@@ -804,7 +804,7 @@ extern void XwcFreeStringList(
 #endif
 );
 
-extern Status XTextPropertyToStringList(
+extern int XTextPropertyToStringList(
 #if NeedFunctionPrototypes
     XTextProperty*	/* text_prop */,
     char***		/* list_return */,

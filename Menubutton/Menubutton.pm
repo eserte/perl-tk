@@ -19,7 +19,7 @@ use AutoLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Menubutton/Menubutton.pm#6$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#5$
 
 @ISA = qw(Tk::Widget);
 
@@ -45,10 +45,6 @@ sub InitObject
  $mb->menu(-tearoff => $tearoff) if (defined $tearoff);
  $mb->AddItems(@$menuitems) if (defined $menuitems)
 }
-
-1;
-
-__END__
 
 
 #
@@ -108,6 +104,7 @@ __END__
 sub ClassInit
 {
  my ($class,$mw) = @_;
+ $mw->bind($class,"<FocusIn>",'NoOp');
  $mw->bind($class,"<Enter>",'Enter');
  $mw->bind($class,"<Leave>",'Leave');
  $mw->bind($class,"<1>",'ButtonDown');
@@ -152,16 +149,12 @@ sub Enter
    $w->configure("-state","active")
   }
 }
-# Leave --
-# This procedure is invoked when the mouse leaves a menubutton widget.
-# It de-activates the widget.
-#
-# Arguments:
-# w - The name of the widget.
+
 sub Leave
 {
  my $w = shift;
  $Tk::inMenubutton = undef;
+ return unless Tk::Exists($w);
  if ($w->cget("-state") eq "active")
   {
    $w->configure("-state","normal")
@@ -188,6 +181,8 @@ sub Post
  my $menu = $w->cget("-menu");
  return unless (defined($menu) && $menu->index('last') ne 'none');
 
+ my $tearoff = $Tk::platform eq 'unix' || $menu->cget('-type') eq 'tearoff';
+
  my $wpath = $w->PathName;
  my $mpath = $menu->PathName;
  unless (index($mpath,"$wpath.") == 0)
@@ -206,25 +201,79 @@ sub Post
  $w->configure("-relief","raised");
  $Tk::postedMb = $w;
  $Tk::focus = $w->focusCurrent;
- $menu->activate("none");
+ $menu->activate("none"); 
+ $menu->GenerateMenuSelect;
  # If this looks like an option menubutton then post the menu so
  # that the current entry is on top of the mouse. Otherwise post
  # the menu just below the menubutton, as for a pull-down.
- if ($w->cget("-indicatoron") == 1 && defined($w->cget("-textvariable")))
-  {
-   if (!defined($y))
+
+ eval 
+  {local $SIG{'__DIE__'};
+   my $dir = $w->cget('-direction');
+   if ($dir eq 'above')
     {
-     $x = $w->rootx+$w->width/2;
-     $y = $w->rooty+$w->height/2
+     $menu->post($w->rootx, $w->rooty - $menu->ReqHeight); 
     }
-   $menu->PostOverPoint($x,$y,$menu->FindName($w->cget("-text")))
-  }
- else
+   elsif ($dir eq 'below')
+    {
+     $menu->post($w->rootx, $w->rooty + $w->Height); 
+    } 
+   elsif ($dir eq 'left')
+    {
+     my $x = $w->rootx - $menu->ReqWidth;
+     my $y = int((2*$w->rooty + $w->Height) / 2);
+     if ($w->cget("-indicatoron") == 1 && defined($w->cget("-textvariable")))
+      {
+       $menu->PostOverPoint($x,$y,$menu->FindName($w->cget("-text")))
+      }
+     else
+      {
+       $menu->post($x,$y);
+      }
+    }
+   elsif ($dir eq 'right')
+    {
+     my $x = $w->rootx - $w->Width;
+     my $y = int((2*$w->rooty + $w->Height) / 2);
+     if ($w->cget("-indicatoron") == 1 && defined($w->cget("-textvariable")))
+      {
+       $menu->PostOverPoint($x,$y,$menu->FindName($w->cget("-text")))
+      }
+     else
+      {
+       $menu->post($x,$y);
+      }
+    }  
+   else
+    {
+     if ($w->cget("-indicatoron") == 1 && defined($w->cget("-textvariable")))
+      {
+       if (!defined($y))
+        {
+         $x = $w->rootx+$w->width/2;
+         $y = $w->rooty+$w->height/2
+        }
+       $menu->PostOverPoint($x,$y,$menu->FindName($w->cget("-text")))
+      }
+     else
+      {
+       $menu->post($w->rootx,$w->rooty+$w->height);
+      }
+    }
+  };
+ if ($@)
   {
-   $menu->post($w->rootx,$w->rooty+$w->height);
+   Tk::Menu->Unpost;
+   die $@ 
   }
- $menu->Enter();
- $w->grab("-global")
+
+ $Tk::tearoff = $tearoff;
+ if ($tearoff)
+  {
+   $menu->focus;
+   $w->SaveGrabInfo;
+   $w->grabGlobal;
+  }
 }
 # Motion --
 # This procedure handles mouse motion events inside menubuttons, and
@@ -243,13 +292,16 @@ sub Motion
  my $rootx = shift;
  my $rooty = shift;
  return if (defined($Tk::inMenubutton) && $Tk::inMenubutton == $w);
- my $new = $w->Containing($rootx,$rooty) if defined $w->Containing($rootx,$rooty);
- return if ! defined $new;
- if (defined($Tk::inMenubutton) && $new != $Tk::inMenubutton)
+ my $new = $w->Containing($rootx,$rooty);
+ if (defined($Tk::inMenubutton))
   {
-   $Tk::inMenubutton->Leave();
+   if (!defined($new) || ($new != $Tk::inMenubutton && $w->toplevel != $new->toplevel))
+    {
+     $Tk::inMenubutton->Leave();
+    }
   }
- if (defined($new) && $new->IsMenubutton && $new->cget('-indicatoron') == 0)
+ if (defined($new) && $new->IsMenubutton && $new->cget('-indicatoron') == 0 &&
+     $w->cget('-indicatoron') == 0)
   {
    if ($upDown eq "down")
     {
@@ -270,17 +322,23 @@ sub Motion
 # w - The name of the menubutton widget.
 sub ButtonUp
 {
- my $w = shift;
- if (defined($Tk::postedMb) && $Tk::postedMb == $w && 
-     defined($Tk::inMenubutton) && $Tk::inMenubutton == $w)
+ my $w = shift;                          
+ if (defined($Tk::postedMb) &&  $w == $Tk::postedMb &&
+     defined($Tk::inMenubutton) && $w == $Tk::inMenubutton)
   {
-   my $menu = $Tk::postedMb->cget("-menu");
-   $menu->FirstEntry() if (defined $menu);
+   my $menu = $Tk::postedMb->cget('-menu');
+   if (defined $menu)
+    {
+     my $tearoff = $Tk::platform eq 'unix' || 
+                   (defined($menu) && $menu->cget('-type') eq 'tearoff');
+     if ($tearoff == 0)
+      {
+       $menu->FirstEntry();
+       return;
+      }
+    }
   }
- else
-  {
-   Tk::Menu->Unpost(undef); # fixme
-  }
+ Tk::Menu->Unpost(undef); # fixme
 }
 
 # Some convenience methods 
@@ -292,7 +350,7 @@ sub menu
  if (!defined $menu)
   {
    require Tk::Menu;
-   $w->ColorOptions(\%args); 
+   $w->ColorOptions(\%args) if ($Tk::platform eq 'unix'); 
    $menu = $w->Menu(%args);
    $w->configure('-menu'=>$menu);
   }
@@ -342,3 +400,7 @@ sub FindMenu
 }
 
 1;
+
+__END__
+
+

@@ -162,4 +162,8 @@ VFUNC(void,Tix_SimpleListStart,V_Tix_SimpleListStart,_ANSI_ARGS_((
 			    Tix_LinkList * lPtr, Tix_ListIterator * liPtr)))
 #endif
 
+#ifndef tixStrDup
+VFUNC(char *,tixStrDup,V_tixStrDup,_ANSI_ARGS_((CONST char * s)))
+#endif
+
 #endif /* _TIX */

@@ -13,7 +13,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkMain.c 1.150 96/09/05 18:42:25
+ * SCCS: @(#) tkMain.c 1.154 97/08/29 10:40:43
  */
 
 #include <ctype.h>
@@ -37,8 +37,11 @@
  */
 
 extern int		isatty _ANSI_ARGS_((int fd));
-extern int		read _ANSI_ARGS_((int fd, char *buf, size_t size));
+#if !defined(__WIN32__) && !defined(_WIN32)
 extern char *		strrchr _ANSI_ARGS_((CONST char *string, int c));
+#endif
+extern void		TkpDisplayWarning _ANSI_ARGS_((char *msg,
+			    char *title));
 
 /*
  * Global variables used by the main program:
@@ -93,7 +96,7 @@ Tk_Main(argc, argv, appInitProc)
     char buf[20];
     int code;
     size_t length;
-    Tcl_Channel inChannel, outChannel, errChannel;
+    Tcl_Channel inChannel, outChannel;
 
     Tcl_FindExecutable(argv[0]);
     interp = Tcl_CreateInterp();
@@ -159,13 +162,7 @@ Tk_Main(argc, argv, appInitProc)
      */
 
     if ((*appInitProc)(interp) != TCL_OK) {
-	errChannel = Tcl_GetStdChannel(TCL_STDERR);
-	if (errChannel) {
-            Tcl_Write(errChannel,
-		    "application-specific initialization failed: ", -1);
-            Tcl_Write(errChannel, interp->result, -1);
-            Tcl_Write(errChannel, "\n", 1);
-        }
+	TkpDisplayWarning(interp->result, "Application initialization failed");
     }
 
     /*
@@ -175,7 +172,16 @@ Tk_Main(argc, argv, appInitProc)
     if (fileName != NULL) {
 	code = Tcl_EvalFile(interp, fileName);
 	if (code != TCL_OK) {
-	    goto error;
+	    /*
+	     * The following statement guarantees that the errorInfo
+	     * variable is set properly.
+	     */
+
+	    Tcl_AddErrorInfo(interp, "");
+	    TkpDisplayWarning(Tcl_GetVar(interp, "errorInfo",
+		    TCL_GLOBAL_ONLY), "Error in startup script");
+	    Tcl_DeleteInterp(interp);
+	    Tcl_Exit(1);
 	}
 	tty = 0;
     } else {
@@ -216,22 +222,6 @@ Tk_Main(argc, argv, appInitProc)
     Tk_MainLoop();
     Tcl_DeleteInterp(interp);
     Tcl_Exit(0);
-
-error:
-    /*
-     * The following statement guarantees that the errorInfo
-     * variable is set properly.
-     */
-
-    Tcl_AddErrorInfo(interp, "");
-    errChannel = Tcl_GetStdChannel(TCL_STDERR);
-    if (errChannel) {
-        Tcl_Write(errChannel, Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY),
-		-1);
-        Tcl_Write(errChannel, "\n", 1);
-    }
-    Tcl_DeleteInterp(interp);
-    Tcl_Exit(1);
 }
 
 /*
@@ -275,15 +265,12 @@ StdinProc(clientData, mask)
 		Tcl_DeleteChannelHandler(chan, StdinProc, (ClientData) chan);
 	    }
 	    return;
-	} else {
-	    count = 0;
-	}
+	} 
     }
 
     (void) Tcl_DStringAppend(&command, Tcl_DStringValue(&line), -1);
     cmd = Tcl_DStringAppend(&command, "\n", -1);
     Tcl_DStringFree(&line);
-    
     if (!Tcl_CommandComplete(cmd)) {
         gotPartial = 1;
         goto prompt;
@@ -300,8 +287,12 @@ StdinProc(clientData, mask)
 
     Tcl_CreateChannelHandler(chan, 0, StdinProc, (ClientData) chan);
     code = Tcl_RecordAndEval(interp, cmd, TCL_EVAL_GLOBAL);
-    Tcl_CreateChannelHandler(chan, TCL_READABLE, StdinProc,
-	    (ClientData) chan);
+    
+    chan = Tcl_GetStdChannel(TCL_STDIN);
+    if (chan) {
+	Tcl_CreateChannelHandler(chan, TCL_READABLE, StdinProc,
+		(ClientData) chan);
+    }
     Tcl_DStringFree(&command);
     if (*interp->result != 0) {
 	if ((code != TCL_OK) || (tty)) {
@@ -355,8 +346,6 @@ Prompt(interp, partial)
     char *promptCmd;
     int code;
     Tcl_Channel outChannel, errChannel;
-
-    errChannel = Tcl_GetChannel(interp, "stderr", NULL);
 
     promptCmd = Tcl_GetVar(interp,
 	partial ? "tcl_prompt2" : "tcl_prompt1", TCL_GLOBAL_ONLY);

@@ -7,7 +7,8 @@ VFUNC(void,Tk_CreatePhotoImageFormat,V_Tk_CreatePhotoImageFormat,_ANSI_ARGS_((
 #endif
 
 #ifndef Tk_FindPhoto
-VFUNC(Tk_PhotoHandle,Tk_FindPhoto,V_Tk_FindPhoto,_ANSI_ARGS_((char *imageName)))
+VFUNC(Tk_PhotoHandle,Tk_FindPhoto,V_Tk_FindPhoto,_ANSI_ARGS_((Tcl_Interp *interp, 
+			    char *imageName)))
 #endif
 
 #ifndef Tk_PhotoBlank

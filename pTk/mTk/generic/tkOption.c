@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkOption.c 1.56 96/10/09 15:18:02
+ * SCCS: @(#) tkOption.c 1.57 96/10/17 15:16:45
  */
 
 #include "tkPort.h"
@@ -903,6 +903,16 @@ ReadOptionFile(interp, tkwin, fileName, priority)
     Tcl_Channel chan;
     Tcl_DString newName;
 
+    /*
+     * Prevent file system access in a safe interpreter.
+     */
+    
+    if (Tcl_IsSafe(interp)) {
+        Tcl_AppendResult(interp, "can't read options from a file in a",
+                " safe interpreter", (char *) NULL);
+        return TCL_ERROR;
+    }
+    
     realName = Tcl_TranslateFileName(interp, fileName, &newName);
     if (realName == NULL) {
 	return TCL_ERROR;

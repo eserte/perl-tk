@@ -31,7 +31,7 @@ sub Pressed
  my ($t,$i,$j) = @_;
  my $l = $t->Label(-text => "Pressed $i,$j",-relief => 'sunken');
  my $old = $t->put($i,$j,$l);
- $old->destroy if ($old);
+ $old->delete if ($old);
 }
 
 my $i;

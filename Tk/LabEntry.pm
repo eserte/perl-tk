@@ -7,7 +7,7 @@ package Tk::LabEntry;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/LabEntry.pm#8$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/LabEntry.pm#4$
 
 @ISA = qw(Tk::Frame);
 

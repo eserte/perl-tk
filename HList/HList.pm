@@ -1,7 +1,7 @@
 package Tk::HList; 
 
 use vars qw($VERSION);
-$VERSION = '2.013'; # $Id: //depot/Tk/HList/HList.pm#13$
+$VERSION = '3.004'; # $Id: //depot/Tk8/HList/HList.pm#4$
 
 use Tk qw(Ev);
 
@@ -52,6 +52,7 @@ sub ClassInit
 		 {
 		  my $w = shift;
 		  my $Ev = $w->XEvent;
+
 		  $w->CancelRepeat
 		      if($w->cget('-selectmode') ne "dragdrop");
 		  $w->ButtonRelease1($Ev);
@@ -99,6 +100,7 @@ sub Button1
  my $Ev = $w->XEvent;
 
  delete $w->{'shiftanchor'}; 
+ delete $w->{tixindicator}; 
 
  $w->focus()
     if($w->cget("-takefocus"));
@@ -127,6 +129,8 @@ sub Button1
 
  if (defined($info[1]) && $info[1] eq 'indicator')
   {
+   $w->{tixindicator} = $ent;
+   $w->EventType( "<Arm>" );
    $w->Callback(-indicatorcmd => $ent);
   }
  else
@@ -174,6 +178,7 @@ sub ShiftButton1
  my $to = $w->GetNearest($Ev->y);
 
  delete $w->{'shiftanchor'}; 
+ delete $w->{tixindicator}; 
 
  return unless (defined($to) and length($to));
 
@@ -227,6 +232,18 @@ sub ButtonRelease1
 
  return unless (defined($ent) and length($ent));
 
+ if($w->{tixindicator})
+  {
+   return unless delete($w->{tixindicator}) eq $ent;
+   my @info = $w->info('item',$Ev->x, $Ev->y);
+   if(defined($info[1]) && $info[1] eq 'indicator')
+    {
+     $w->EventType( "<Activate>" );
+     $w->Callback(-indicatorcmd => $ent);
+    }
+   return;
+  }
+
  if($x < 0 || $y < 0 || $x > $w->width || $y > $w->height)
   {
    $w->select('clear');
@@ -272,8 +289,14 @@ sub Button1Motion
   }
 
  my $ent = $w->GetNearest($Ev->y);
-
  return unless (defined($ent) and length($ent));
+
+ if($w->{tixindicator})
+  {
+   $w->EventType( $w->{tixindicator} eq $ent ? "<Arm>" : "<Disarm>" );
+   $w->Callback(-indicatorcmd => $w->{tixindicator});
+   return;
+  }
 
  if ($mode eq "single")
   {

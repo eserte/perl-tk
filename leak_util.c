@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995,1996-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995,1996-1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -23,11 +23,8 @@ struct hash_s
  char *tag;
 };
 
-char *
-lookup(ht,sv,tag)
-hash_ptr *ht;
-SV *sv;
-void *tag;
+static char *
+lookup(hash_ptr *ht, SV *sv, void *tag)
 {unsigned hash = ((unsigned) sv) % MAX_HASH;
  hash_ptr p = ht[hash];
  while (p)
@@ -125,8 +122,9 @@ long int hwm;
 {
  char *state = lookup(p,sv,new);
  if (state != old)
-  {
-   Dump_vec(state ? state : new, 1, &sv);
+  {                           
+   fprintf(stderr,"%s %p : ", state ? state : new, sv);
+   sv_dump(sv);
   }
  return hwm+1;
 }

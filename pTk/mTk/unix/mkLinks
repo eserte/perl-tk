@@ -191,6 +191,14 @@ if test -r CrtSelHdlr.3; then
     rm -f Tk_CreateSelHandler.3
     ln CrtSelHdlr.3 Tk_CreateSelHandler.3
 fi
+if test -r CrtWindow.3; then
+    rm -f Tk_CreateWindow.3
+    ln CrtWindow.3 Tk_CreateWindow.3
+fi
+if test -r CrtWindow.3; then
+    rm -f Tk_CreateWindowFromPath.3
+    ln CrtWindow.3 Tk_CreateWindowFromPath.3
+fi
 if test -r GetBitmap.3; then
     rm -f Tk_DefineBitmap.3
     ln GetBitmap.3 Tk_DefineBitmap.3
@@ -234,6 +242,10 @@ fi
 if test -r WindowId.3; then
     rm -f Tk_Depth.3
     ln WindowId.3 Tk_Depth.3
+fi
+if test -r CrtWindow.3; then
+    rm -f Tk_DestroyWindow.3
+    ln CrtWindow.3 Tk_DestroyWindow.3
 fi
 if test -r WindowId.3; then
     rm -f Tk_Display.3
@@ -379,6 +391,10 @@ if test -r GetImage.3; then
     rm -f Tk_GetImage.3
     ln GetImage.3 Tk_GetImage.3
 fi
+if test -r CrtImgType.3; then
+    rm -f Tk_GetImageMasterData.3
+    ln CrtImgType.3 Tk_GetImageMasterData.3
+fi
 if test -r CrtItemType.3; then
     rm -f Tk_GetItemTypes.3
     ln CrtItemType.3 Tk_GetItemTypes.3
@@ -478,6 +494,10 @@ fi
 if test -r MaintGeom.3; then
     rm -f Tk_MaintainGeometry.3
     ln MaintGeom.3 Tk_MaintainGeometry.3
+fi
+if test -r CrtWindow.3; then
+    rm -f Tk_MakeWindowExist.3
+    ln CrtWindow.3 Tk_MakeWindowExist.3
 fi
 if test -r ManageGeom.3; then
     rm -f Tk_ManageGeometry.3

@@ -17,10 +17,8 @@ package Ball;
 # Gurusamy Sarathy (gsar@engin.umich.edu)
 # Tidied up by SOL.
 
-use English;
-
 use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/demos/demos/widget_lib/Ball.pm#9$
+$VERSION = '3.004'; # $Id: //depot/Tk8/demos/demos/widget_lib/Ball.pm#4$
 
 use Tk::Canvas;
 use Tk::Widget;

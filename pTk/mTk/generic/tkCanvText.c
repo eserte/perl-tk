@@ -9,39 +9,13 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvText.c 1.56 96/02/17 17:45:17
+ * SCCS: @(#) tkCanvText.c 1.68 97/10/09 17:44:53
  */
 
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkCanvas.h"
-
-/*
- * One of the following structures is kept for each line of text
- * in a text item.  It contains geometry and display information
- * for that line.
- */
-
-typedef struct TextLine {
-    char *firstChar;		/* Pointer to the first character in this
-				 * line (in the "text" field of enclosing
-				 * text item). */
-    int numChars;		/* Number of characters displayed in this
-				 * line. */
-    int totalChars;		/* Total number of characters included as
-				 * part of this line (may include an extra
-				 * space character at the end that isn't
-				 * displayed). */
-    int x, y;			/* Origin at which to draw line on screen
-				 * (in integer pixel units, but in canvas
-				 * coordinates, not screen coordinates). */
-    int x1, y1;			/* Upper-left pixel that is part of text
-				 * line on screen (again, in integer canvas
-				 * pixel units). */
-    int x2, y2;			/* Lower-left pixel that is part of text
-				 * line on screen (again, in integer canvas
-				 * pixel units). */
-} TextLine;
+#include "default.h"
 
 /*
  * The structure below defines the record for each text item.
@@ -56,30 +30,46 @@ typedef struct TextItem  {
 				 * insertion cursor.  The structure is owned
 				 * by (and shared with) the generic canvas
 				 * code. */
-    char *text;			/* Text for item (malloc-ed). */
-    int numChars;		/* Number of non-NULL characters in text. */
+    /*
+     * Fields that are set by widget commands other than "configure".
+     */
+     
     double x, y;		/* Positioning point for text. */
-    Tk_Anchor anchor;		/* Where to anchor text relative to (x,y). */
-    int width;			/* Width of lines for word-wrap, pixels.
-				 * Zero means no word-wrap. */
-    Tk_Justify justify;		/* Justification mode for text. */
-    int rightEdge;		/* Pixel just to right of right edge of
-				 * area of text item.  Used for selecting
-				 * up to end of line. */
-    XFontStruct *fontPtr;	/* Font for drawing text. */
-    XColor *color;		/* Color for text. */
-    Pixmap stipple;		/* Stipple bitmap for text, or None. */
-    GC gc;			/* Graphics context for drawing text. */
-    TextLine *linePtr;		/* Pointer to array of structures describing
-				 * individual lines of text item (malloc-ed). */
-    int numLines;		/* Number of structs at *linePtr. */
     int insertPos;		/* Insertion cursor is displayed just to left
 				 * of character with this index. */
+
+    /*
+     * Configuration settings that are updated by Tk_ConfigureWidget.
+     */
+
+    Tk_Anchor anchor;		/* Where to anchor text relative to (x,y). */
+    XColor *color;		/* Color for text. */
+    Tk_Font tkfont;		/* Font for drawing text. */
+    Tk_Justify justify;		/* Justification mode for text. */
+    Pixmap stipple;		/* Stipple bitmap for text, or None. */
+    char *text;			/* Text for item (malloc-ed). */
+    int width;			/* Width of lines for word-wrap, pixels.
+				 * Zero means no word-wrap. */
+
+    /*
+     * Fields whose values are derived from the current values of the
+     * configuration settings above.
+     */
+
+    int numChars;		/* Number of non-NULL characters in text. */
+    Tk_TextLayout textLayout;	/* Cached text layout information. */
+    int leftEdge;		/* Pixel location of the left edge of the
+				 * text item; where the left border of the
+				 * text layout is drawn. */
+    int rightEdge;		/* Pixel just to right of right edge of
+				 * area of text item.  Used for selecting up
+				 * to end of line. */
+    GC gc;			/* Graphics context for drawing text. */
+    GC selTextGC;		/* Graphics context for selected text. */
     GC cursorOffGC;		/* If not None, this gives a graphics context
 				 * to use to draw the insertion cursor when
-				 * it's off.  Usedif the selection and
+				 * it's off.  Used if the selection and
 				 * insertion cursor colors are the same.  */
-    GC selTextGC;		/* Graphics context for selected text. */
 } TextItem;
 
 /*
@@ -97,8 +87,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_COLOR, "-fill", (char *) NULL, (char *) NULL,
 	"black", Tk_Offset(TextItem, color), 0},
     {TK_CONFIG_FONT, "-font", (char *) NULL, (char *) NULL,
-	"-Adobe-Helvetica-Bold-R-Normal--*-120-*-*-*-*-*-*",
-	Tk_Offset(TextItem, fontPtr), 0},
+	DEF_CANVTEXT_FONT, Tk_Offset(TextItem, tkfont), 0},
     {TK_CONFIG_JUSTIFY, "-justify", (char *) NULL, (char *) NULL,
 	"left", Tk_Offset(TextItem, justify),
 	TK_CONFIG_DONT_SET_DEFAULT},
@@ -128,7 +117,7 @@ static int		CreateText _ANSI_ARGS_((Tcl_Interp *interp,
 			    int argc, char **argv));
 static void		DeleteText _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, Display *display));
-static void		DisplayText _ANSI_ARGS_((Tk_Canvas canvas,
+static void		DisplayCanvText _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, Display *display, Drawable dst,
 			    int x, int y, int width, int height));
 static int		GetSelText _ANSI_ARGS_((Tk_Canvas canvas,
@@ -137,8 +126,6 @@ static int		GetSelText _ANSI_ARGS_((Tk_Canvas canvas,
 static int		GetTextIndex _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr,
 			    Arg indexString, int *indexPtr));
-static void		LineToPostscript _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string, int numChars));
 static void		ScaleText _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, double originX, double originY,
 			    double scaleX, double scaleY));
@@ -173,7 +160,7 @@ Tk_ItemType tkTextType = {
     ConfigureText,			/* configureProc */
     TextCoords,				/* coordProc */
     DeleteText,				/* deleteProc */
-    DisplayText,			/* displayProc */
+    DisplayCanvText,			/* displayProc */
     0,					/* alwaysRedraw */
     TextToPoint,			/* pointProc */
     TextToArea,				/* areaProc */
@@ -231,22 +218,25 @@ CreateText(interp, canvas, itemPtr, argc, argv)
      * up after errors during the the remainder of this procedure.
      */
 
-    textPtr->text = NULL;
     textPtr->textInfoPtr = Tk_CanvasGetTextInfo(canvas);
-    textPtr->numChars = 0;
-    textPtr->anchor = TK_ANCHOR_CENTER;
-    textPtr->width = 0;
-    textPtr->justify = TK_JUSTIFY_LEFT;
-    textPtr->rightEdge = 0;
-    textPtr->fontPtr = NULL;
-    textPtr->color = NULL;
-    textPtr->stipple = None;
-    textPtr->gc = None;
-    textPtr->linePtr = NULL;
-    textPtr->numLines = 0;
-    textPtr->insertPos = 0;
+
+    textPtr->insertPos	= 0;
+
+    textPtr->anchor	= TK_ANCHOR_CENTER;
+    textPtr->color	= NULL;
+    textPtr->tkfont	= NULL;
+    textPtr->justify	= TK_JUSTIFY_LEFT;
+    textPtr->stipple	= None;
+    textPtr->text	= NULL;
+    textPtr->width	= 0;
+
+    textPtr->numChars	= 0;
+    textPtr->textLayout = NULL;
+    textPtr->leftEdge	= 0;
+    textPtr->rightEdge	= 0;
+    textPtr->gc		= None;
+    textPtr->selTextGC	= None;
     textPtr->cursorOffGC = None;
-    textPtr->selTextGC = None;
 
     /*
      * Process the arguments to fill in the item record.
@@ -361,11 +351,10 @@ ConfigureText(interp, canvas, itemPtr, argc, argv, flags)
      * graphics contexts.
      */
 
-    textPtr->numChars = strlen(textPtr->text);
     newGC = newSelGC = None;
-    if ((textPtr->color != NULL) && (textPtr->fontPtr != NULL)) {
+    if ((textPtr->color != NULL) && (textPtr->tkfont != NULL)) {
 	gcValues.foreground = textPtr->color->pixel;
-	gcValues.font = textPtr->fontPtr->fid;
+	gcValues.font = Tk_FontId(textPtr->tkfont);
 	mask = GCForeground|GCFont;
 	if (textPtr->stipple != None) {
 	    gcValues.stipple = textPtr->stipple;
@@ -402,11 +391,13 @@ ConfigureText(interp, canvas, itemPtr, argc, argv, flags)
     }
     textPtr->cursorOffGC = newGC;
 
+
     /*
      * If the text was changed, move the selection and insertion indices
      * to keep them inside the item.
      */
 
+    textPtr->numChars = strlen(textPtr->text);
     if (textInfoPtr->selItemPtr == itemPtr) {
 	if (textInfoPtr->selectFirst >= textPtr->numChars) {
 	    textInfoPtr->selItemPtr = NULL;
@@ -454,29 +445,26 @@ DeleteText(canvas, itemPtr, display)
 {
     TextItem *textPtr = (TextItem *) itemPtr;
 
-    if (textPtr->text != NULL) {
-	ckfree(textPtr->text);
-    }
-    if (textPtr->fontPtr != NULL) {
-	Tk_FreeFontStruct(textPtr->fontPtr);
-    }
     if (textPtr->color != NULL) {
 	Tk_FreeColor(textPtr->color);
     }
+    Tk_FreeFont(textPtr->tkfont);
     if (textPtr->stipple != None) {
 	Tk_FreeBitmap(display, textPtr->stipple);
     }
+    if (textPtr->text != NULL) {
+	ckfree(textPtr->text);
+    }
+
+    Tk_FreeTextLayout(textPtr->textLayout);
     if (textPtr->gc != None) {
 	Tk_FreeGC(display, textPtr->gc);
     }
-    if (textPtr->linePtr != NULL) {
-	ckfree((char *) textPtr->linePtr);
+    if (textPtr->selTextGC != None) {
+	Tk_FreeGC(display, textPtr->selTextGC);
     }
     if (textPtr->cursorOffGC != None) {
 	Tk_FreeGC(display, textPtr->cursorOffGC);
-    }
-    if (textPtr->selTextGC != None) {
-	Tk_FreeGC(display, textPtr->selTextGC);
     }
 }
 
@@ -507,79 +495,21 @@ ComputeTextBbox(canvas, textPtr)
     TextItem *textPtr;			/* Item whose bbos is to be
 					 * recomputed. */
 {
-    TextLine *linePtr;
-#define MAX_LINES 100
-    char *lineStart[MAX_LINES];
-    int lineChars[MAX_LINES];
-    int linePixels[MAX_LINES];
-    int numLines, wrapPixels, maxLinePixels, leftX, topY, y;
-    int lineHeight, i, fudge;
-    char *p;
-    XCharStruct *maxBoundsPtr = &textPtr->fontPtr->max_bounds;
-    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
+    Tk_CanvasTextInfo *textInfoPtr;
+    int leftX, topY, width, height, fudge;
 
-    if (textPtr->linePtr != NULL) {
-	ckfree((char *) textPtr->linePtr);
-	textPtr->linePtr = NULL;
-    }
-
-    /*
-     * Work through the text computing the starting point, number of
-     * characters, and number of pixels in each line.
-     */
-
-    p = textPtr->text;
-    maxLinePixels = 0;
-    if (textPtr->width > 0) {
-	wrapPixels = textPtr->width;
-    } else {
-	wrapPixels = 10000000;
-    }
-    for (numLines = 0; (numLines < MAX_LINES); numLines++) {
-	int numChars, numPixels;
-	numChars = TkMeasureChars(textPtr->fontPtr, p,
-		(textPtr->text + textPtr->numChars) - p, 0,
-		wrapPixels, 0, TK_WHOLE_WORDS|TK_AT_LEAST_ONE, &numPixels);
-	if (numPixels > maxLinePixels) {
-	    maxLinePixels = numPixels;
-	}
-	lineStart[numLines] = p;
-	lineChars[numLines] = numChars;
-	linePixels[numLines] = numPixels;
-	p += numChars;
-
-	/*
-	 * Skip space character that terminates a line, if there is one.
-	 * In the case of multiple spaces, all but one will be displayed.
-	 * This is important to make sure the insertion cursor gets
-	 * displayed when it is in the middle of a multi-space.
-	 */
-
-	if (isspace(UCHAR(*p))) {
-	    p++;
-	} else if (*p == 0) {
-	    /*
-	     * The code below is tricky.  Putting the loop termination
-	     * here guarantees that there's a TextLine for the last
-	     * line of text, even if the line is empty (this can
-	     * also happen if the entire text item is empty).  This is
-	     * needed so that we can display the insertion cursor on a
-	     * line even when it is empty.
-	     */
-
-	    numLines++;
-	    break;
-	}
-    }
+    Tk_FreeTextLayout(textPtr->textLayout);
+    textPtr->textLayout = Tk_ComputeTextLayout(textPtr->tkfont,
+	    textPtr->text, textPtr->numChars, textPtr->width,
+	    textPtr->justify, 0, &width, &height);
 
     /*
      * Use overall geometry information to compute the top-left corner
      * of the bounding box for the text item.
      */
 
-    leftX = textPtr->x + 0.5;
-    topY = textPtr->y + 0.5;
-    lineHeight = textPtr->fontPtr->ascent + textPtr->fontPtr->descent;
+    leftX = (int) (textPtr->x + 0.5);
+    topY = (int) (textPtr->y + 0.5);
     switch (textPtr->anchor) {
 	case TK_ANCHOR_NW:
 	case TK_ANCHOR_N:
@@ -589,13 +519,13 @@ ComputeTextBbox(canvas, textPtr)
 	case TK_ANCHOR_W:
 	case TK_ANCHOR_CENTER:
 	case TK_ANCHOR_E:
-	    topY -= (lineHeight * numLines)/2;
+	    topY -= height / 2;
 	    break;
 
 	case TK_ANCHOR_SW:
 	case TK_ANCHOR_S:
 	case TK_ANCHOR_SE:
-	    topY -= lineHeight * numLines;
+	    topY -= height;
 	    break;
     }
     switch (textPtr->anchor) {
@@ -607,55 +537,18 @@ ComputeTextBbox(canvas, textPtr)
 	case TK_ANCHOR_N:
 	case TK_ANCHOR_CENTER:
 	case TK_ANCHOR_S:
-	    leftX -= maxLinePixels/2;
+	    leftX -= width / 2;
 	    break;
 
 	case TK_ANCHOR_NE:
 	case TK_ANCHOR_E:
 	case TK_ANCHOR_SE:
-	    leftX -= maxLinePixels;
+	    leftX -= width;
 	    break;
     }
-    textPtr->rightEdge = leftX + maxLinePixels;
 
-    /*
-     * Create the new TextLine array and fill it in using the geometry
-     * information gathered already.
-     */
-
-    if (numLines > 0) {
-	textPtr->linePtr = (TextLine *) ckalloc((unsigned)
-		(numLines * sizeof(TextLine)));
-    } else {
-	textPtr->linePtr = NULL;
-    }
-    textPtr->numLines = numLines;
-    for (i = 0, linePtr = textPtr->linePtr, y = topY;
-	    i < numLines; i++, linePtr++, y += lineHeight) {
-	linePtr->firstChar = lineStart[i];
-	linePtr->numChars = lineChars[i];
-	if (i == (numLines-1)) {
-	    linePtr->totalChars = linePtr->numChars;
-	} else {
-	    linePtr->totalChars = lineStart[i+1] - lineStart[i];
-	}
-	switch (textPtr->justify) {
-	    case TK_JUSTIFY_LEFT:
-		linePtr->x = leftX;
-		break;
-	    case TK_JUSTIFY_CENTER:
-		linePtr->x = leftX + maxLinePixels/2 - linePixels[i]/2;
-		break;
-	    case TK_JUSTIFY_RIGHT:
-		linePtr->x = leftX + maxLinePixels - linePixels[i];
-		break;
-	}
-	linePtr->y = y + textPtr->fontPtr->ascent;
-	linePtr->x1 = linePtr->x + maxBoundsPtr->lbearing;
-	linePtr->y1 = y;
-	linePtr->x2 = linePtr->x + linePixels[i];
-	linePtr->y2 = linePtr->y + textPtr->fontPtr->descent - 1;
-    }
+    textPtr->leftEdge  = leftX;
+    textPtr->rightEdge = leftX + width;
 
     /*
      * Last of all, update the bounding box for the item.  The item's
@@ -664,32 +557,21 @@ ComputeTextBbox(canvas, textPtr)
      * potentially be quite large).
      */
 
-    linePtr = textPtr->linePtr;
-    textPtr->header.x1 = textPtr->header.x2 = leftX;
-    textPtr->header.y1 = topY;
-    textPtr->header.y2 = topY + numLines*lineHeight;
-    for (linePtr = textPtr->linePtr, i = textPtr->numLines; i > 0;
-	    i--, linePtr++) {
-	if (linePtr->x1 < textPtr->header.x1) {
-	    textPtr->header.x1 = linePtr->x1;
-	}
-	if (linePtr->x2 >= textPtr->header.x2) {
-	    textPtr->header.x2 = linePtr->x2 + 1;
-	}
-    }
-
-    fudge = (textInfoPtr->insertWidth+1)/2;
+    textInfoPtr = textPtr->textInfoPtr;
+    fudge = (textInfoPtr->insertWidth + 1) / 2;
     if (textInfoPtr->selBorderWidth > fudge) {
 	fudge = textInfoPtr->selBorderWidth;
     }
-    textPtr->header.x1 -= fudge;
-    textPtr->header.x2 += fudge;
+    textPtr->header.x1 = leftX - fudge;
+    textPtr->header.y1 = topY;
+    textPtr->header.x2 = leftX + width + fudge;
+    textPtr->header.y2 = topY + height;
 }
 
 /*
  *--------------------------------------------------------------
  *
- * DisplayText --
+ * DisplayCanvText --
  *
  *	This procedure is invoked to draw a text item in a given
  *	drawable.
@@ -705,7 +587,7 @@ ComputeTextBbox(canvas, textPtr)
  */
 
 static void
-DisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
+DisplayCanvText(canvas, itemPtr, display, drawable, x, y, width, height)
     Tk_Canvas canvas;			/* Canvas that contains item. */
     Tk_Item *itemPtr;			/* Item to be displayed. */
     Display *display;			/* Display on which to draw item. */
@@ -714,13 +596,13 @@ DisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
     int x, y, width, height;		/* Describes region of canvas that
 					 * must be redisplayed (not used). */
 {
-    TextItem *textPtr = (TextItem *) itemPtr;
-    TextLine *linePtr;
-    int i, focusHere, insertX, insertIndex, lineIndex, tabOrigin;
-    int beforeSelect, inSelect, afterSelect, selStartX, selEndX;
+    TextItem *textPtr;
+    Tk_CanvasTextInfo *textInfoPtr;
+    int selFirst, selLast;
     short drawableX, drawableY;
-    Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
-    Tk_Window tkwin = Tk_CanvasTkwin(canvas);
+
+    textPtr = (TextItem *) itemPtr;
+    textInfoPtr = textPtr->textInfoPtr;
 
     if (textPtr->gc == None) {
 	return;
@@ -736,142 +618,115 @@ DisplayText(canvas, itemPtr, display, drawable, x, y, width, height)
 	Tk_CanvasSetStippleOrigin(canvas, textPtr->gc);
     }
 
-    focusHere = (textInfoPtr->focusItemPtr == itemPtr) &&
-	    (textInfoPtr->gotFocus);
-    for (linePtr = textPtr->linePtr, i = textPtr->numLines;
-	    i > 0; linePtr++, i--) {
+    selFirst = -1;
+    selLast = 0;		/* lint. */
+    if (textInfoPtr->selItemPtr == itemPtr) {
+	selFirst = textInfoPtr->selectFirst;
+	selLast = textInfoPtr->selectLast;
+	if (selLast >= textPtr->numChars) {
+	    selLast = textPtr->numChars - 1;
+	}
+	if ((selFirst >= 0) && (selFirst <= selLast)) {
+	    /*
+	     * Draw a special background under the selection.
+	     */
 
-	/*
-	 * If part or all of this line is selected, then draw a special
-	 * background under the selected part of the line.
-	 */
+	    int xFirst, yFirst, hFirst;
+	    int xLast, yLast, wLast;
 
-	lineIndex = linePtr->firstChar - textPtr->text;
-	if ((textInfoPtr->selItemPtr != itemPtr)
-		|| (textInfoPtr->selectLast < lineIndex)
-		|| (textInfoPtr->selectFirst >= (lineIndex
-			+ linePtr->totalChars))) {
-	    beforeSelect = linePtr->numChars;
-	    inSelect = 0;
-	} else {
-	    beforeSelect = textInfoPtr->selectFirst - lineIndex;
-	    if (beforeSelect <= 0) {
-		beforeSelect = 0;
-		selStartX = linePtr->x;
-	    } else {
-		(void) TkMeasureChars(textPtr->fontPtr,
-			linePtr->firstChar, beforeSelect, 0,
-			(int) 1000000, 0, TK_PARTIAL_OK, &selStartX);
-		selStartX += linePtr->x;
-	    }
-	    inSelect = textInfoPtr->selectLast + 1 - (lineIndex + beforeSelect);
+	    Tk_CharBbox(textPtr->textLayout, selFirst,
+		    &xFirst, &yFirst, NULL, &hFirst);
+	    Tk_CharBbox(textPtr->textLayout, selLast,
+		    &xLast, &yLast, &wLast, NULL);
 
 	    /*
 	     * If the selection spans the end of this line, then display
 	     * selection background all the way to the end of the line.
-	     * However, for the last line we only want to display up to
-	     * the last character, not the end of the line, hence the
-	     * "i != 1" check.
+	     * However, for the last line we only want to display up to the
+	     * last character, not the end of the line.
 	     */
 
-	    if (inSelect >= (linePtr->totalChars - beforeSelect)) {
-		inSelect = linePtr->numChars - beforeSelect;
-		if (i != 1) {
-		    selEndX = textPtr->rightEdge;
-		    goto fillSelectBackground;
+	    x = xFirst;
+	    height = hFirst;
+	    for (y = yFirst ; y <= yLast; y += height) {
+		if (y == yLast) {
+		    width = (xLast + wLast) - x;
+		} else {	    
+		    width = textPtr->rightEdge - textPtr->leftEdge - x;
 		}
-	    }
-	    (void) TkMeasureChars(textPtr->fontPtr,
-		    linePtr->firstChar + beforeSelect, inSelect,
-		    selStartX-linePtr->x, (int) 1000000, 0, TK_PARTIAL_OK,
-		    &selEndX);
-	    selEndX += linePtr->x;
-	    fillSelectBackground:
-	    Tk_CanvasDrawableCoords(canvas,
-		    (double) (selStartX - textInfoPtr->selBorderWidth),
-		    (double) (linePtr->y - textPtr->fontPtr->ascent),
-		    &drawableX, &drawableY);
-	    Tk_Fill3DRectangle(tkwin, drawable, textInfoPtr->selBorder,
-		    drawableX, drawableY,
-		    selEndX - selStartX + 2*textInfoPtr->selBorderWidth,
-		    textPtr->fontPtr->ascent + textPtr->fontPtr->descent,
-		    textInfoPtr->selBorderWidth, TK_RELIEF_RAISED);
-	}
-
-	/*
-	 * If the insertion cursor is in this line, then draw a special
-	 * background for the cursor before drawing the text.  Note:
-	 * if we're the cursor item but the cursor is turned off, then
-	 * redraw background over the area of the cursor.  This guarantees
-	 * that the selection won't make the cursor invisible on mono
-	 * displays, where both are drawn in the same color.
-	 */
-
-	if (focusHere) {
-	    insertIndex = textPtr->insertPos
-		    - (linePtr->firstChar - textPtr->text);
-	    if ((insertIndex >= 0) && (insertIndex <= linePtr->numChars)) {
-		(void) TkMeasureChars(textPtr->fontPtr, linePtr->firstChar,
-		    insertIndex, 0, (int) 1000000, 0, TK_PARTIAL_OK, &insertX);
 		Tk_CanvasDrawableCoords(canvas,
-			(double) (linePtr->x + insertX
-			    - (textInfoPtr->insertWidth)/2),
-			(double) (linePtr->y - textPtr->fontPtr->ascent),
+			(double) (textPtr->leftEdge + x
+				- textInfoPtr->selBorderWidth),
+			(double) (textPtr->header.y1 + y),
 			&drawableX, &drawableY);
-		if (textInfoPtr->cursorOn) {
-		    Tk_Fill3DRectangle(tkwin, drawable,
-			    textInfoPtr->insertBorder, drawableX, drawableY,
-			    textInfoPtr->insertWidth,
-			    textPtr->fontPtr->ascent
-				+ textPtr->fontPtr->descent,
-			    textInfoPtr->insertBorderWidth, TK_RELIEF_RAISED);
-		} else if (textPtr->cursorOffGC != None) {
-		    /* Redraw the background over the area of the cursor,
-		     * even though the cursor is turned off.  This guarantees
-		     * that the selection won't make the cursor invisible on
-		     * mono displays, where both may be drawn in the same
-		     * color.
-		     */
-
-		    XFillRectangle(display, drawable, textPtr->cursorOffGC,
-			    drawableX, drawableY,
-			    (unsigned) textInfoPtr->insertWidth,
-			    (unsigned) (textPtr->fontPtr->ascent
-				+ textPtr->fontPtr->descent));
-		}
+		Tk_Fill3DRectangle(Tk_CanvasTkwin(canvas), drawable,
+			textInfoPtr->selBorder, drawableX, drawableY,
+			width + 2 * textInfoPtr->selBorderWidth,
+			height, textInfoPtr->selBorderWidth, TK_RELIEF_RAISED);
+		x = 0;
 	    }
-	}
-
-	/*
-	 * Display the text in three pieces:  the part before the
-	 * selection, the selected part (which needs a different graphics
-	 * context), and the part after the selection.
-	 */
-
-	Tk_CanvasDrawableCoords(canvas, (double) linePtr->x,
-		(double) linePtr->y, &drawableX, &drawableY);
-	tabOrigin = drawableX;
-	if (beforeSelect != 0) {
-	    TkDisplayChars(display, drawable, textPtr->gc, textPtr->fontPtr,
-		    linePtr->firstChar, beforeSelect, drawableX,
-		    drawableY, tabOrigin, 0);
-	}
-	if (inSelect != 0) {
-	    Tk_CanvasDrawableCoords(canvas, (double) selStartX,
-		    (double) linePtr->y, &drawableX, &drawableY);
-	    TkDisplayChars(display, drawable, textPtr->selTextGC,
-		    textPtr->fontPtr, linePtr->firstChar + beforeSelect,
-		    inSelect, drawableX, drawableY, tabOrigin, 0);
-	}
-	afterSelect = linePtr->numChars - beforeSelect - inSelect;
-	if (afterSelect > 0) {
-	    Tk_CanvasDrawableCoords(canvas, (double) selEndX,
-		    (double) linePtr->y, &drawableX, &drawableY);
-	    TkDisplayChars(display, drawable, textPtr->gc, textPtr->fontPtr,
-		    linePtr->firstChar + beforeSelect + inSelect,
-		    afterSelect, drawableX, drawableY, tabOrigin, 0);
 	}
     }
+
+    /*
+     * If the insertion point should be displayed, then draw a special
+     * background for the cursor before drawing the text.  Note:  if
+     * we're the cursor item but the cursor is turned off, then redraw
+     * background over the area of the cursor.  This guarantees that
+     * the selection won't make the cursor invisible on mono displays,
+     * where both are drawn in the same color.
+     */
+
+    if ((textInfoPtr->focusItemPtr == itemPtr) && (textInfoPtr->gotFocus)) {
+	if (Tk_CharBbox(textPtr->textLayout, textPtr->insertPos,
+		&x, &y, NULL, &height)) {
+	    Tk_CanvasDrawableCoords(canvas,
+		    (double) (textPtr->leftEdge + x
+			    - (textInfoPtr->insertWidth / 2)),
+		    (double) (textPtr->header.y1 + y),
+		    &drawableX, &drawableY);
+	    if (textInfoPtr->cursorOn) {
+		Tk_Fill3DRectangle(Tk_CanvasTkwin(canvas), drawable,
+			textInfoPtr->insertBorder,
+			drawableX, drawableY,
+			textInfoPtr->insertWidth, height,
+			textInfoPtr->insertBorderWidth, TK_RELIEF_RAISED);
+	    } else if (textPtr->cursorOffGC != None) {
+		/*
+		 * Redraw the background over the area of the cursor,
+		 * even though the cursor is turned off.  This
+		 * guarantees that the selection won't make the cursor
+		 * invisible on mono displays, where both may be drawn
+		 * in the same color.
+		 */
+
+		XFillRectangle(display, drawable, textPtr->cursorOffGC,
+			drawableX, drawableY,
+			(unsigned) textInfoPtr->insertWidth,
+			(unsigned) height);
+	    }
+	}
+    }
+
+
+    /*
+     * Display the text in two pieces: draw the entire text item, then
+     * draw the selected text on top of it.  The selected text then
+     * will only need to be drawn if it has different attributes (such
+     * as foreground color) than regular text.
+     */
+
+    Tk_CanvasDrawableCoords(canvas, (double) textPtr->leftEdge,
+	    (double) textPtr->header.y1, &drawableX, &drawableY);
+    Tk_DrawTextLayout(display, drawable, textPtr->gc, textPtr->textLayout,
+	    drawableX, drawableY, 0, -1);
+
+    if ((selFirst >= 0) && (textPtr->selTextGC != textPtr->gc)) {
+	Tk_DrawTextLayout(display, drawable, textPtr->selTextGC,
+	    textPtr->textLayout, drawableX, drawableY, selFirst,
+	    selLast + 1);
+    }
+
     if (textPtr->stipple != None) {
 	XSetTSOrigin(display, textPtr->gc, 0, 0);
     }
@@ -1047,9 +902,9 @@ TextDeleteChars(canvas, itemPtr, first, last)
  *
  * Results:
  *	The return value is 0 if the point whose x and y coordinates
- *	are pointPtr[0] and pointPtr[1] is inside the arc.  If the
- *	point isn't inside the arc then the return value is the
- *	distance from the point to the arc.
+ *	are pointPtr[0] and pointPtr[1] is inside the text item.  If
+ *	the point isn't inside the text item then the return value
+ *	is the distance from the point to the text item.
  *
  * Side effects:
  *	None.
@@ -1063,61 +918,12 @@ TextToPoint(canvas, itemPtr, pointPtr)
     Tk_Item *itemPtr;		/* Item to check against point. */
     double *pointPtr;		/* Pointer to x and y coordinates. */
 {
-    TextItem *textPtr = (TextItem *) itemPtr;
-    TextLine *linePtr;
-    int i;
-    double xDiff, yDiff, dist, minDist;
+    TextItem *textPtr;
 
-    /*
-     * Treat each line in the text item as a rectangle, compute the
-     * distance to that rectangle, and take the minimum of these
-     * distances.  Perform most of the calculations in integer pixel
-     * units, since that's how the dimensions of the text are defined.
-     */
-
-    minDist = -1.0;
-    for (linePtr = textPtr->linePtr, i = textPtr->numLines;
-	    i > 0; linePtr++, i--) {
-
-	/*
-	 * If the point is inside the line's rectangle, then can
-	 * return immediately.
-	 */
-    
-	if ((pointPtr[0] >= linePtr->x1)
-		&& (pointPtr[0] <= linePtr->x2)
-		&& (pointPtr[1] >= linePtr->y1)
-		&& (pointPtr[1] <= linePtr->y2)) {
-	    return 0.0;
-	}
-    
-	/*
-	 * Point is outside line's rectangle; compute distance to nearest
-	 * side.
-	 */
-    
-	if (pointPtr[0] < linePtr->x1) {
-	    xDiff = linePtr->x1 - pointPtr[0];
-	} else if (pointPtr[0] > linePtr->x2)  {
-	    xDiff = pointPtr[0] - linePtr->x2;
-	} else {
-	    xDiff = 0;
-	}
-    
-	if (pointPtr[1] < linePtr->y1) {
-	    yDiff = linePtr->y1 - pointPtr[1];
-	} else if (pointPtr[1] > linePtr->y2)  {
-	    yDiff = pointPtr[1] - linePtr->y2;
-	} else {
-	    yDiff = 0;
-	}
-
-	dist = hypot(xDiff, yDiff);
-	if ((dist < minDist) || (minDist < 0.0)) {
-	    minDist = dist;
-	}
-    }
-    return minDist;
+    textPtr = (TextItem *) itemPtr;
+    return (double) Tk_DistanceToTextLayout(textPtr->textLayout,
+	    (int) pointPtr[0] - textPtr->leftEdge,
+	    (int) pointPtr[1] - textPtr->header.y1);
 }
 
 /*
@@ -1148,39 +954,14 @@ TextToArea(canvas, itemPtr, rectPtr)
 				 * (x1, y1, x2, y2) describing rectangular
 				 * area.  */
 {
-    TextItem *textPtr = (TextItem *) itemPtr;
-    TextLine *linePtr;
-    int i, result;
+    TextItem *textPtr;
 
-    /*
-     * Scan the lines one at a time, seeing whether each line is
-     * entirely in, entirely out, or overlapping the rectangle.  If
-     * an overlap is detected, return immediately;  otherwise wait
-     * until all lines have been processed and see if they were all
-     * inside or all outside.
-     */
-
-    result = 0;
-    for (linePtr = textPtr->linePtr, i = textPtr->numLines;
-	    i > 0; linePtr++, i--) {
-	if ((rectPtr[2] < linePtr->x1) || (rectPtr[0] > linePtr->x2)
-		|| (rectPtr[3] < linePtr->y1) || (rectPtr[1] > linePtr->y2)) {
-	    if (result == 1) {
-		return 0;
-	    }
-	    result = -1;
-	    continue;
-	}
-	if ((linePtr->x1 < rectPtr[0]) || (linePtr->x2 > rectPtr[2])
-		|| (linePtr->y1 < rectPtr[1]) || (linePtr->y2 > rectPtr[3])) {
-	    return 0;
-	}
-	if (result == -1) {
-	    return 0;
-	}
-	result = 1;
-    }
-    return result;
+    textPtr = (TextItem *) itemPtr;
+    return Tk_IntersectTextLayout(textPtr->textLayout,
+	    (int) (rectPtr[0] + 0.5) - textPtr->leftEdge,
+	    (int) (rectPtr[1] + 0.5) - textPtr->header.y1,
+	    (int) (rectPtr[2] - rectPtr[0] + 0.5),
+	    (int) (rectPtr[3] - rectPtr[1] + 0.5));
 }
 
 /*
@@ -1283,90 +1064,68 @@ GetTextIndex(interp, canvas, itemPtr, arg, indexPtr)
     char *string = LangString(arg);
     TextItem *textPtr = (TextItem *) itemPtr;
     size_t length;
+    int c;
+    TkCanvas *canvasPtr = (TkCanvas *) canvas;
     Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
+    c = string[0];
     length = strlen(string);
 
-    if (string[0] == 'e') {
-	if (strncmp(string, "end", length) == 0) {
-	    *indexPtr = textPtr->numChars;
-	} else {
-	    badIndex:
-
-	    /*
-	     * Some of the paths here leave messages in interp->result,
-	     * so we have to clear it out before storing our own message.
-	     */
-
-	    Tcl_SetResult(interp, (char *) NULL, TCL_STATIC);
-	    Tcl_AppendResult(interp, "bad index \"", string, "\"",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-    } else if (string[0] == 'i') {
-	if (strncmp(string, "insert", length) == 0) {
-	    *indexPtr = textPtr->insertPos;
-	} else {
-	    goto badIndex;
-	}
-    } else if (string[0] == 's') {
+    if ((c == 'e') && (strncmp(string, "end", length) == 0)) {
+	*indexPtr = textPtr->numChars;
+    } else if ((c == 'i') && (strncmp(string, "insert", length) == 0)) {
+	*indexPtr = textPtr->insertPos;
+    } else if ((c == 's') && (strncmp(string, "sel.first", length) == 0)
+	    && (length >= 5)) {
 	if (textInfoPtr->selItemPtr != itemPtr) {
 	    interp->result = "selection isn't in item";
 	    return TCL_ERROR;
 	}
-	if (length < 5) {
-	    goto badIndex;
+	*indexPtr = textInfoPtr->selectFirst;
+    } else if ((c == 's') && (strncmp(string, "sel.last", length) == 0)
+	    && (length >= 5)) {
+	if (textInfoPtr->selItemPtr != itemPtr) {
+	    interp->result = "selection isn't in item";
+	    return TCL_ERROR;
 	}
-	if (strncmp(string, "sel.first", length) == 0) {
-	    *indexPtr = textInfoPtr->selectFirst;
-	} else if (strncmp(string, "sel.last", length) == 0) {
-	    *indexPtr = textInfoPtr->selectLast;
-	} else {
-	    goto badIndex;
-	}
-    } else if (string[0] == '@') {
-	int x, y, dummy, i;
+	*indexPtr = textInfoPtr->selectLast;
+    } else if (c == '@') {
+	int x, y;
 	double tmp;
 	char *end, *p;
-	TextLine *linePtr;
 
 	p = string+1;
 	tmp = strtod(p, &end);
 	if ((end == p) || (*end != ',')) {
 	    goto badIndex;
 	}
-	x = (tmp < 0) ? tmp - 0.5 : tmp + 0.5;
+	x = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
 	p = end+1;
 	tmp = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
 	}
-	y = (tmp < 0) ? tmp - 0.5 : tmp + 0.5;
-	if ((textPtr->numChars == 0) || (y < textPtr->linePtr[0].y1)) {
-	    *indexPtr = 0;
-	    return TCL_OK;
-	}
-	for (i = 0, linePtr = textPtr->linePtr; ; i++, linePtr++) {
-	    if (i >= textPtr->numLines) {
-		*indexPtr = textPtr->numChars;
-		return TCL_OK;
-	    }
-	    if (y <= linePtr->y2) {
-		break;
-	    }
-	}
-	*indexPtr = TkMeasureChars(textPtr->fontPtr, linePtr->firstChar,
-		linePtr->numChars, linePtr->x, x, linePtr->x, 0, &dummy);
-	*indexPtr += linePtr->firstChar - textPtr->text;
-    } else {
-	if (Tcl_GetInt(interp, arg, indexPtr) != TCL_OK) {
-	    goto badIndex;
-	}
+	y = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
+	*indexPtr = Tk_PointToChar(textPtr->textLayout,
+		x + canvasPtr->scrollX1 - textPtr->leftEdge,
+		y + canvasPtr->scrollY1 - textPtr->header.y1);
+    } else if (Tcl_GetInt(interp, arg, indexPtr) == TCL_OK) {
 	if (*indexPtr < 0){
 	    *indexPtr = 0;
 	} else if (*indexPtr > textPtr->numChars) {
 	    *indexPtr = textPtr->numChars;
 	}
+    } else {
+	/*
+	 * Some of the paths here leave messages in interp->result,
+	 * so we have to clear it out before storing our own message.
+	 */
+
+	badIndex:
+	Tcl_SetResult(interp, (char *) NULL, TCL_STATIC);
+	Tcl_AppendResult(interp, "bad index \"", string, "\"",
+		(char *) NULL);
+	return TCL_ERROR;
     }
     return TCL_OK;
 }
@@ -1493,19 +1252,20 @@ TextToPostscript(interp, canvas, itemPtr, prepass)
 					 * final Postscript is being created. */
 {
     TextItem *textPtr = (TextItem *) itemPtr;
-    TextLine *linePtr;
-    int i;
-    char *xoffset = NULL, *yoffset = NULL;	/* Initializations needed */
-    char *justify = NULL;			/* only to stop compiler
-   						 * warnings. */
+    int x, y;
+    Tk_FontMetrics fm;
+    char *justify;
     char buffer[500];
 
     if (textPtr->color == NULL) {
 	return TCL_OK;
     }
 
-    if (Tk_CanvasPsFont(interp, canvas, textPtr->fontPtr) != TCL_OK) {
+    if (Tk_CanvasPsFont(interp, canvas, textPtr->tkfont) != TCL_OK) {
 	return TCL_ERROR;
+    }
+    if (prepass != 0) {
+	return TCL_OK;
     }
     if (Tk_CanvasPsColor(interp, canvas, textPtr->color) != TCL_OK) {
 	return TCL_ERROR;
@@ -1516,94 +1276,36 @@ TextToPostscript(interp, canvas, itemPtr, prepass)
 	Tk_CanvasPsStipple(interp, canvas, textPtr->stipple);
 	Tcl_AppendResult(interp, "} bind def\n", (char *) NULL);
     }
+
     sprintf(buffer, "%.15g %.15g [\n", textPtr->x,
 	    Tk_CanvasPsY(canvas, textPtr->y));
     Tcl_AppendResult(interp, buffer, (char *) NULL);
-    for (i = textPtr->numLines, linePtr = textPtr->linePtr;
-	    i > 0; i--, linePtr++) {
-	Tcl_AppendResult(interp, "    ", (char *) NULL);
-	LineToPostscript(interp, linePtr->firstChar,
-		linePtr->numChars);
-	Tcl_AppendResult(interp, "\n", (char *) NULL);
-    }
+
+    Tk_TextLayoutToPostscript(interp, textPtr->textLayout);
+
+    x = 0;  y = 0;  justify = NULL;	/* lint. */
     switch (textPtr->anchor) {
-	case TK_ANCHOR_NW:     xoffset = "0";    yoffset = "0";   break;
-	case TK_ANCHOR_N:      xoffset = "-0.5"; yoffset = "0";   break;
-	case TK_ANCHOR_NE:     xoffset = "-1";   yoffset = "0";   break;
-	case TK_ANCHOR_E:      xoffset = "-1";   yoffset = "0.5"; break;
-	case TK_ANCHOR_SE:     xoffset = "-1";   yoffset = "1";   break;
-	case TK_ANCHOR_S:      xoffset = "-0.5"; yoffset = "1";   break;
-	case TK_ANCHOR_SW:     xoffset = "0";    yoffset = "1";   break;
-	case TK_ANCHOR_W:      xoffset = "0";    yoffset = "0.5"; break;
-	case TK_ANCHOR_CENTER: xoffset = "-0.5"; yoffset = "0.5"; break;
+	case TK_ANCHOR_NW:	x = 0; y = 0;	break;
+	case TK_ANCHOR_N:	x = 1; y = 0;	break;
+	case TK_ANCHOR_NE:	x = 2; y = 0;	break;
+	case TK_ANCHOR_E:	x = 2; y = 1;	break;
+	case TK_ANCHOR_SE:	x = 2; y = 2;	break;
+	case TK_ANCHOR_S:	x = 1; y = 2;	break;
+	case TK_ANCHOR_SW:	x = 0; y = 2;	break;
+	case TK_ANCHOR_W:	x = 0; y = 1;	break;
+	case TK_ANCHOR_CENTER:	x = 1; y = 1;	break;
     }
     switch (textPtr->justify) {
-	case TK_JUSTIFY_LEFT:	justify = "0";   break;
-	case TK_JUSTIFY_CENTER:	justify = "0.5"; break;
-	case TK_JUSTIFY_RIGHT:	justify = "1";   break;
+        case TK_JUSTIFY_LEFT:	justify = "0";	break;
+	case TK_JUSTIFY_CENTER: justify = "0.5";break;
+	case TK_JUSTIFY_RIGHT:  justify = "1";	break;
     }
-    sprintf(buffer, "] %d %s %s %s %s DrawText\n",
-	    textPtr->fontPtr->ascent + textPtr->fontPtr->descent,
-	    xoffset, yoffset, justify,
-	    (textPtr->stipple == None) ? "false" : "true");
+
+    Tk_GetFontMetrics(textPtr->tkfont, &fm);
+    sprintf(buffer, "] %d %g %g %s %s DrawText\n",
+	    fm.linespace, x / -2.0, y / 2.0, justify,
+	    ((textPtr->stipple == None) ? "false" : "true"));
     Tcl_AppendResult(interp, buffer, (char *) NULL);
+
     return TCL_OK;
-}
-
-/*
- *--------------------------------------------------------------
- *
- * LineToPostscript --
- *
- *	This procedure generates a parenthesized Postscript string
- *	describing one line of text from a text item.
- *
- * Results:
- *	None. The parenthesized string is appended to
- *	interp->result.  It generates proper backslash notation so
- *	that Postscript can interpret the string correctly.
- *
- * Side effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
-
-static void
-LineToPostscript(interp, string, numChars)
-    Tcl_Interp *interp;		/* Interp whose result is to be appended to. */
-    char *string;		/* String to Postscript-ify. */
-    int numChars;		/* Number of characters in the string. */
-{
-#define BUFFER_SIZE 100
-    char buffer[BUFFER_SIZE+5];
-    int used, c;
-
-    buffer[0] = '(';
-    used = 1;
-    for ( ; numChars > 0; string++, numChars--) {
-	c = (*string) & 0xff;
-	if ((c == '(') || (c == ')') || (c == '\\') || (c < 0x20)
-		|| (c >= 0x7f)) {
-	    /*
-	     * Tricky point:  the "03" is necessary in the sprintf below,
-	     * so that a full three digits of octal are always generated.
-	     * Without the "03", a number following this sequence could
-	     * be interpreted by Postscript as part of this sequence.
-	     */
-	    sprintf(buffer+used, "\\%03o", c);
-	    used += strlen(buffer+used);
-	} else {
-	    buffer[used] = c;
-	    used++;
-	}
-	if (used >= BUFFER_SIZE) {
-	    buffer[used] = 0;
-	    Tcl_AppendResult(interp, buffer, (char *) NULL);
-	    used = 0;
-	}
-    }
-    buffer[used] = ')';
-    buffer[used+1] = 0;
-    Tcl_AppendResult(interp, buffer, (char *) NULL);
 }

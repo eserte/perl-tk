@@ -1,797 +1,643 @@
 /* 
  * tkWinFont.c --
  *
- *	This file contains the Xlib emulation routines relating to
- *	creating and manipulating fonts.
+ *	Contains the Windows implementation of the platform-independant
+ *	font package interface.
  *
- * Copyright (c) 1995 Sun Microsystems, Inc.
+ * Copyright (c) 1995-1997 Sun Microsystems, Inc.
  * Copyright (c) 1994 Software Research Associates, Inc. 
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinFont.c 1.10 96/09/25 11:01:30
+ * SCCS: @(#) tkWinFont.c 1.20 97/05/14 15:45:30
  */
 
 #include "tkWinInt.h"
+#include "tkFont.h"
 
 /*
- * Forward declarations for functions used in this file.
+ * The following structure represents Windows' implementation of a font.
  */
 
-static int		NameToFont _ANSI_ARGS_((_Xconst char *name,
-			    LOGFONT *logfont));
-static int		XNameToFont _ANSI_ARGS_((_Xconst char *name,
-			    LOGFONT *logfont));
-static int		HasWhiteSpace _ANSI_ARGS_((_Xconst char *name));
-
-#ifdef __OPEN32__
-static char *lastname;
-#endif
-
-static int
-HasWhiteSpace(name)
-_Xconst char *name;
-{
- unsigned ch;
- while ((ch = *name++))
-  {
-   if (isspace(ch))
-    return 1;
-  }
- return 0;
-}
+typedef struct WinFont {
+    TkFont font;		/* Stuff used by generic font package.  Must
+				 * be first in structure. */
+    HFONT hFont;		/* Windows information about font. */
+    HWND hwnd;			/* Toplevel window of application that owns
+				 * this font, used for getting HDC. */
+    int widths[256];		/* Widths of first 256 chars in this font. */
+} WinFont;
+
 /*
- *----------------------------------------------------------------------
+ * The following structure is used as to map between the Tcl strings
+ * that represent the system fonts and the numbers used by Windows.
+ */
+
+static TkStateMap systemMap[] = {
+    {ANSI_FIXED_FONT,	    "ansifixed"},
+    {ANSI_VAR_FONT,	    "ansi"},
+    {DEVICE_DEFAULT_FONT,   "device"},
+    {OEM_FIXED_FONT,	    "oemfixed"},
+    {SYSTEM_FIXED_FONT,	    "systemfixed"},
+    {SYSTEM_FONT,	    "system"},
+    {-1,		    NULL}
+};
+
+#define ABS(x)          (((x) < 0) ? -(x) : (x))
+
+static TkFont *		AllocFont _ANSI_ARGS_((TkFont *tkFontPtr, 
+                            Tk_Window tkwin, HFONT hFont));
+static char *		GetProperty _ANSI_ARGS_((CONST TkFontAttributes *faPtr,
+			    CONST char *option));
+static int CALLBACK	WinFontFamilyEnumProc _ANSI_ARGS_((ENUMLOGFONT *elfPtr,
+			    NEWTEXTMETRIC *ntmPtr, int fontType,
+			    LPARAM lParam));
+
+
+/*
+ *---------------------------------------------------------------------------
  *
- * NameToFont --
+ * TkpGetNativeFont --
  *
- *	Converts a three part font name into a logical font
- *	description.  Font name is of the form:
- *		"Family point_size style_list"
- *	Style_list contains a list of one or more attributes:
- *		normal, bold, italic, underline, strikeout
+ *	Map a platform-specific native font name to a TkFont.
  *
  * Results:
- *	Returns false if the font name was syntactically invalid,
- *	else true.  Sets the fields of the passed in LOGFONT.
+ * 	The return value is a pointer to a TkFont that represents the
+ *	native font.  If a native font by the given name could not be
+ *	found, the return value is NULL.  
+ *
+ *	Every call to this procedure returns a new TkFont structure,
+ *	even if the name has already been seen before.  The caller should
+ *	call TkpDeleteFont() when the font is no longer needed.
+ *
+ *	The caller is responsible for initializing the memory associated
+ *	with the generic TkFont when this function returns and releasing
+ *	the contents of the generic TkFont before calling TkpDeleteFont().
  *
  * Side effects:
  *	None.
  *
- *----------------------------------------------------------------------
+ *---------------------------------------------------------------------------
  */
 
-static int
-NameToFont(name, logfont)
-    _Xconst char *name;
-    LOGFONT *logfont;
+TkFont *
+TkpGetNativeFont(tkwin, name)
+    Tk_Window tkwin;		/* For display where font will be used. */
+    CONST char *name;		/* Platform-specific font name. */
 {
-    int argc, argc2;
-    Arg *args, *args2;
-    int nameLen, i, pointSize = 0;
-    Tcl_Interp *dummy = Tcl_CreateInterp();
-    LangFreeProc *freeProc = NULL, *freeProc2 = NULL;
-
-    if (Lang_SplitString(dummy, name, &argc, &args, &freeProc) != TCL_OK) {
-	goto nomatch;
-    }
-    if (argc != 3) {
-	goto nomatch;
-    }
-
-    memset(logfont, '\0', sizeof(LOGFONT));
-
-    /*
-     * Determine the font family name.
-     */
-
-    nameLen = strlen(argv[0]);
-    if (nameLen > LF_FACESIZE) {
-	nameLen = LF_FACESIZE;
-    }
-    strncpy(logfont->lfFaceName, argv[0], nameLen);
-
-    /*
-     * Check the character set.
-     */
-
-    logfont->lfCharSet = ANSI_CHARSET;
-    if (stricmp(logfont->lfFaceName, "Symbol") == 0) {
-	logfont->lfCharSet = SYMBOL_CHARSET;
-    } else if (stricmp(logfont->lfFaceName, "WingDings") == 0) {
-	logfont->lfCharSet = SYMBOL_CHARSET;
-#ifdef __OPEN32__
-    } else if (stricmp(logfont->lfFaceName, "Symbol Set") == 0) {
-	logfont->lfCharSet = SYMBOL_CHARSET;
-#endif
-    }
-	
-    /*
-     * Determine the font size.
-     */
-
-    if (Tcl_GetInt(dummy, args[1], &pointSize) != TCL_OK) {
-	goto nomatch;
-    }
-    logfont->lfHeight = -pointSize;
-
-    /*
-     * Apply any style modifiers.
-     */
-	
-    if (Lang_SplitList(dummy, args[2], &argc2, &args2, &freeProc2) != TCL_OK) {
-	goto nomatch;
-    }
-    for (i = 0; i < argc2; i++) {
-	char *s = LangString(args2[i]);
-	
-	if (stricmp(s, "normal") == 0) {
-	    logfont->lfWeight = FW_NORMAL;
-	} else if (stricmp(s, "bold") == 0) {
-	    logfont->lfWeight = FW_BOLD;
-	} else if (stricmp(s, "medium") == 0) {
-	    logfont->lfWeight = FW_MEDIUM;
-	} else if (stricmp(s, "heavy") == 0) {
-	    logfont->lfWeight = FW_HEAVY;
-	} else if (stricmp(s, "thin") == 0) {
-	    logfont->lfWeight = FW_THIN;
-	} else if (stricmp(s, "extralight") == 0) {
-	    logfont->lfWeight = FW_EXTRALIGHT;
-	} else if (stricmp(s, "light") == 0) {
-	    logfont->lfWeight = FW_LIGHT;
-	} else if (stricmp(s, "semibold") == 0) {
-	    logfont->lfWeight = FW_SEMIBOLD;
-	} else if (stricmp(s, "extrabold") == 0) {
-	    logfont->lfWeight = FW_EXTRABOLD;
-	} else if (stricmp(s, "italic") == 0) {
-	    logfont->lfItalic = TRUE;
-	} else if (stricmp(s, "oblique") == 0) {
-	    logfont->lfOrientation = 3600 - 150; /* 15 degree forward slant */
-	} else if (stricmp(s, "underline") == 0) {
-	    logfont->lfUnderline = TRUE;
-	} else if (stricmp(s, "strikeout") == 0) {
-	    logfont->lfStrikeOut = TRUE;
-	} else {
-	    /* ignore for now */
-	}
-    }
-    if (freeProc2) {
-	(*freeProc2)(argc2,args2);
-    }
-    if (freeProc) {
-	(*freeProc)(argc,args);
-    }
-    return True;
- nomatch:
-    if (freeProc2) {
-	(*freeProc2)(argc2,args2);
-    }
-    if (freeProc) {
-	(*freeProc)(argc,args);
-    }
-    return False;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XNameToFont --
- *
- *	This function constructs a logical font description from an
- *	X font name.  This code only handles font names with all 13
- *	parts, although a part can be '*'.
- *
- * Results:
- *	Returns false if the font name was syntactically invalid,
- *	else true.  Sets the fields of the passed in LOGFONT.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-static int
-XNameToFont(name, logfont)
-    _Xconst char *name;
-    LOGFONT *logfont;
-{
-    const char *head, *tail;
-    const char *field[13];
-    int flen[13];
-    int i, len;
-
-    /*
-     * Valid font name patterns must have a leading '-' or '*'.
-     */
-
-    head = tail = name;
-    if (*tail == '-') {
-	head++; tail++;
-    } else if (*tail != '*') {
-	return FALSE;
-    }
-
-    /*
-     * Identify field boundaries.  Stores a pointer to the beginning
-     * of each field in field[i], and the length of the field in flen[i].
-     * Fields are separated by dashes.  Each '*' becomes a field by itself.
-     */
-
-    i = 0;
-    while (*tail != '\0' && i < 12) {
-	if (*tail == '-') {
-	    flen[i] = tail - head;
-	    field[i] = head;
-	    tail++;
-	    head = tail;
-	    i++;
-	} else if (*tail == '*') {
-	    len = tail - head;
-	    if (len > 0) {
-		flen[i] = tail - head;
-		field[i] = head;
-	    } else {
-		flen[i] = 1;
-		field[i] = head;
-		tail++;
-		if (*tail == '-') {
-		    tail++;
-		}
-	    }
-	    head = tail;
-	    i++;
-	} else {
-	    tail++;
-	}
-    }
-
-    /*
-     * We handle the last field as a special case, since it may contain
-     * an emedded hyphen.
-     */
-
-    flen[i] = strlen(head);
-    field[i] = head;
-
-    /*
-     * Bail if we don't have all of the fields.
-     */
-
-    if (i != 12) {
-	return FALSE;
-    } 
-
-    /*
-     * Now fill in the logical font description from the fields we have
-     * identified.
-     */
-
-    memset(logfont, '\0', sizeof(LOGFONT));
-
-    /*
-     * Field 1: Foundry.  Skip.
-     */
-
-    /*
-     * Field 2: Font Family.
-     */
-
-    i = 1;
-    if (!(flen[i] == 0 ||
-	  (flen[i] == 1 && (field[i][0] == '*' || field[i][0] == '?'))))
-    {
-	len = (flen[i] < LF_FACESIZE) ? flen[i] : LF_FACESIZE - 1;
-	strncpy(logfont->lfFaceName, field[i], len);
-
-	/*
-	 * Need to handle Symbol and WingDings specially.
-	 */
-
-	if (stricmp(logfont->lfFaceName, "Symbol") == 0) {
-	    logfont->lfCharSet = SYMBOL_CHARSET;
-	} else if (stricmp(logfont->lfFaceName, "WingDings") == 0) {
-	    logfont->lfCharSet = SYMBOL_CHARSET;
-#ifdef __OPEN32__
-	} else if (stricmp(logfont->lfFaceName, "Symbol Set") == 0) {
-	    logfont->lfCharSet = SYMBOL_CHARSET;
-#endif
-	}
-    }
-
-    /*
-     * Field 3: Weight.  Default is medium.
-     */
-
-    i = 2;
-    if ((flen[i] > 0) && (strnicmp(field[i], "bold", flen[i]) == 0)) {
-	logfont->lfWeight = FW_BOLD;
-    } else {
-	logfont->lfWeight = FW_MEDIUM;
-    }
-	    
-    /*
-     * Field 4: Slant.  Default is Roman.
-     */
+    int object;
+    HFONT hFont;
     
-    i = 3;
-    if (!(flen[i] == 0 ||
-	  (flen[i] == 1 && (field[i][0] == '*' || field[i][0] == '?'))))
-    {
-	if (strnicmp(field[i], "r", flen[i]) == 0) {
-	    /* Roman.  Don't do anything */
-	} else if (strnicmp(field[i], "i", flen[i]) == 0) {
-	    /* Italic */
-	    logfont->lfItalic = TRUE;
-	} else if (strnicmp(field[i], "o", flen[i]) == 0) {
-	    /* Oblique */
-	    logfont->lfOrientation = 3600 - 150; /* 15 degree slant forward */
-	} else if (strnicmp(field[i], "ri", flen[i]) == 0) {
-	    /* Reverse Italic */
-	    logfont->lfOrientation = 300;        /* 30 degree slant backward */
-	} else if (strnicmp(field[i], "ro", flen[i]) == 0) {
-	    /* Reverse Oblique */
-	    logfont->lfOrientation = 150;        /* 30 degree slant backward */
-	} else if (strnicmp(field[i], "ot", flen[i]) == 0) {
-	    /* Other */
-	} else {
-	    return FALSE;
-	}
-    }
-
-    /*
-     * Field 5 & 6: Set Width & Blank.  Skip.
-     */
-
-    /*
-     * Field 7: Pixels.  Use this as the points if no points set.
-     */
-
-    i = 6;
-    if (!(flen[i] == 0 ||
-	  (flen[i] == 1 && (field[i][0] == '*' || field[i][0] == '?'))))
-    {
-	logfont->lfHeight = -atoi(field[i]);
-    }
-
-    /*
-     * Field 8: Points in tenths of a point.
-     */
-
-    i = 7;
-    if (!(flen[i] == 0 ||
-	  (flen[i] == 1 && (field[i][0] == '*' || field[i][0] == '?'))))
-    {
-	logfont->lfHeight = -(atoi(field[i]) / 10);
-    }
-
-    /*
-     * Field 9: Horizontal Resolution in DPI.  Skip.
-     * Field 10: Vertical Resolution in DPI.  Skip.
-     */
-
-    /*
-     * Field 11: Spacing.
-     */
-
-    i = 10;
-    if (!(flen[i] == 0 ||
-	  (flen[i] == 1 && (field[i][0] == '*' || field[i][0] == '?'))))
-    {
-	if (flen[i] != 1) {
-	    return FALSE;
-	}
-	if (field[i][0] == 'p' || field[i][0] == 'P') {
-	    logfont->lfPitchAndFamily |= VARIABLE_PITCH;
-	} else if (field[i][0] == 'm' || field[i][0] == 'm' ||
-		   field[i][0] == 'c' || field[i][0] == 'c')
-	{
-	    logfont->lfPitchAndFamily |= FIXED_PITCH;
-	} else {
-	    return FALSE;
-	}
-    }
-
-    /*
-     * Field 12: Average Width.
-     */
-
-    i = 11;
-    if (!(flen[i] == 0 ||
-	  (flen[i] == 1 && (field[i][0] == '*' || field[i][0] == '?'))))
-    {
-	logfont->lfWidth = (atoi(field[i]) / 10);
-    }
-
-    /*
-     * Field 13: Character Set.  Skip.
-     */
-
-    return TRUE;
-}
-
-#ifdef __OPEN32__
-static int
-myProc(LOGFONT *pLogFont, TEXTMETRIC *pTM, int iFT, LPARAM userData)
-{
-    LOGFONT *input = (LOGFONT*)userData;
-    *input = *pLogFont;
-    return 0;
-}
-#endif
-/*
- *----------------------------------------------------------------------
- *
- * XLoadFont --
- *
- *	Get the font handle for the specified font.
- *
- * Results:
- *	Returns the font handle.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-Font
-XLoadFont(display, name)
-    Display* display;
-    _Xconst char* name;
-{
-    HFONT font;
-    LOGFONT logfont;
-
-    if (((name[0] == '-') || (name[0] == '*'))
-	    && XNameToFont(name, &logfont)) {
-	font = CreateFontIndirect(&logfont);
-    } else if (HasWhiteSpace(name) && NameToFont(name, &logfont)) {
-	font = CreateFontIndirect(&logfont);
-    } else {
-	int object = SYSTEM_FONT;
-
-	if (stricmp(name, "system") == 0) {
-	    object = SYSTEM_FONT;
-	} else if (stricmp(name, "systemfixed") == 0) {
-	    object = SYSTEM_FIXED_FONT;
-	} else if (stricmp(name, "ansi") == 0) {
-	    object = ANSI_VAR_FONT;
-	} else if (stricmp(name, "ansifixed") == 0 || 
-		   stricmp(name, "fixed") == 0) {
-	    object = ANSI_FIXED_FONT;
-	} else if (stricmp(name, "device") == 0) {
-	    object = DEVICE_DEFAULT_FONT;
-	} else if (stricmp(name, "oemfixed") == 0) {
-	    object = OEM_FIXED_FONT;
-#ifdef __OPEN32__
-	} else {
-	    HDC dc = GetDC(NULL);
-	    
-	    EnumFonts(dc, name, myProc, (LPARAM)&logfont);
-	    ReleaseDC(NULL, dc);
-	    font = CreateFontIndirect(&logfont);
-	    goto havefont;
-#endif
-	}
-	font = GetStockObject(object);
-      havefont: ;
-    }
-    if (font == NULL) {
-	font = GetStockObject(SYSTEM_FONT);
-    }
-    return (Font) font;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XQueryFont --
- *
- *	Retrieve information about the specified font.
- *
- * Results:
- *	Returns a newly allocated XFontStruct.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-XFontStruct *
-XQueryFont(display, font_ID)
-    Display* display;
-    XID font_ID;
-{
-    XFontStruct *fontPtr = (XFontStruct *) ckalloc(sizeof(XFontStruct));
-    HFONT oldFont;
-    HDC dc;
-    TEXTMETRIC tm;
-    XCharStruct bounds;
-
-    if (!fontPtr) {
+    object = TkFindStateNum(NULL, NULL, systemMap, name);
+    if (object < 0) {
 	return NULL;
     }
-    
-    fontPtr->fid = font_ID;
+    hFont = GetStockObject(object);
+    if (hFont == NULL) {
+	panic("TkpGetNativeFont: can't allocate stock font");
+    }
 
-    dc = GetDC(NULL);
-    oldFont = SelectObject(dc, (HFONT) fontPtr->fid);
+    return AllocFont(NULL, tkwin, hFont);
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * TkpGetFontFromAttributes -- 
+ *
+ *	Given a desired set of attributes for a font, find a font with
+ *	the closest matching attributes.
+ *
+ * Results:
+ * 	The return value is a pointer to a TkFont that represents the
+ *	font with the desired attributes.  If a font with the desired
+ *	attributes could not be constructed, some other font will be
+ *	substituted automatically.  NULL is never returned.
+ *
+ *	Every call to this procedure returns a new TkFont structure,
+ *	even if the specified attributes have already been seen before.
+ *	The caller should call TkpDeleteFont() to free the platform-
+ *	specific data when the font is no longer needed.  
+ *
+ *	The caller is responsible for initializing the memory associated
+ *	with the generic TkFont when this function returns and releasing
+ *	the contents of the generic TkFont before calling TkpDeleteFont().
+ *
+ * Side effects:
+ *	None.
+ *
+ *---------------------------------------------------------------------------
+ */
+TkFont *
+TkpGetFontFromAttributes(tkFontPtr, tkwin, faPtr)
+    TkFont *tkFontPtr;		/* If non-NULL, store the information in
+				 * this existing TkFont structure, rather than
+				 * allocating a new structure to hold the
+				 * font; the existing contents of the font
+				 * will be released.  If NULL, a new TkFont
+				 * structure is allocated. */
+    Tk_Window tkwin;		/* For display where font will be used. */
+    CONST TkFontAttributes *faPtr;  /* Set of attributes to match. */
+{
+    LOGFONT lf;
+    HFONT hFont;
+    Window window;
+    HWND hwnd;
+    HDC hdc;
+
+    window = Tk_WindowId(((TkWindow *) tkwin)->mainPtr->winPtr);
+    hwnd = (window == None) ? NULL : TkWinGetHWND(window);
+
+    hdc = GetDC(hwnd);
+    lf.lfHeight		= -faPtr->pointsize;
+    if (lf.lfHeight < 0) {
+	lf.lfHeight = MulDiv(lf.lfHeight, 
+	        254 * WidthOfScreen(Tk_Screen(tkwin)),
+		720 * WidthMMOfScreen(Tk_Screen(tkwin)));
+    }
+    lf.lfWidth		= 0;
+    lf.lfEscapement	= 0;
+    lf.lfOrientation	= 0;
+    lf.lfWeight		= (faPtr->weight == TK_FW_NORMAL) ? FW_NORMAL : FW_BOLD;
+    lf.lfItalic		= faPtr->slant;
+    lf.lfUnderline	= faPtr->underline;
+    lf.lfStrikeOut	= faPtr->overstrike;
+    lf.lfCharSet	= DEFAULT_CHARSET;
+    lf.lfOutPrecision	= OUT_DEFAULT_PRECIS;
+    lf.lfClipPrecision	= CLIP_DEFAULT_PRECIS;
+    lf.lfQuality	= DEFAULT_QUALITY;
+    lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
+    if (faPtr->family == NULL) {
+	lf.lfFaceName[0] = '\0';
+    } else {
+	lstrcpyn(lf.lfFaceName, faPtr->family, sizeof(lf.lfFaceName));
+    }
+    ReleaseDC(hwnd, hdc);
 
     /*
-     * Determine the font metrics and store the values into the appropriate
-     * X data structures.
+     * Replace the standard X and Mac family names with the names that
+     * Windows likes.
      */
 
-    if (GetTextMetrics(dc, &tm)) {
-	fontPtr->direction = FontLeftToRight;
-	fontPtr->min_byte1 = 0;
-	fontPtr->max_byte1 = 0;
-	fontPtr->min_char_or_byte2 = tm.tmFirstChar;
-	fontPtr->max_char_or_byte2 = tm.tmLastChar;
-#ifdef __OPEN32__
-	if (strstr(lastname,"Symbol") && tm.tmLastChar == 126) {
-	    fontPtr->max_char_or_byte2 = 254;
+    if ((stricmp(lf.lfFaceName, "Times") == 0)
+	    || (stricmp(lf.lfFaceName, "New York") == 0)) {
+	strcpy(lf.lfFaceName, "Times New Roman");
+    } else if ((stricmp(lf.lfFaceName, "Courier") == 0)
+	    || (stricmp(lf.lfFaceName, "Monaco") == 0)) {
+	strcpy(lf.lfFaceName, "Courier New");
+    } else if ((stricmp(lf.lfFaceName, "Helvetica") == 0)
+	    || (stricmp(lf.lfFaceName, "Geneva") == 0)) {
+	strcpy(lf.lfFaceName, "Arial");
+    }
+
+    hFont = CreateFontIndirect(&lf);
+    if (hFont == NULL) {
+        hFont = GetStockObject(SYSTEM_FONT);
+	if (hFont == NULL) {
+	    panic("TkpGetFontFromAttributes: cannot get system font");
 	}
-#endif
-	fontPtr->all_chars_exist = True;
-	fontPtr->default_char = tm.tmDefaultChar;
-	fontPtr->n_properties = 0;
-	fontPtr->properties = NULL;
-	bounds.lbearing = 0;
-	bounds.rbearing = (short) tm.tmMaxCharWidth;
-	bounds.width = (short) tm.tmMaxCharWidth;
-	bounds.ascent = (short) tm.tmAscent;
-	bounds.descent = (short) tm.tmDescent;
-	bounds.attributes = 0;
-	fontPtr->min_bounds = bounds;
-	fontPtr->max_bounds = bounds;
-	fontPtr->ascent = tm.tmAscent;
-	fontPtr->descent = tm.tmDescent;
+    }
+    return AllocFont(tkFontPtr, tkwin, hFont);
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * TkpDeleteFont --
+ *
+ *	Called to release a font allocated by TkpGetNativeFont() or
+ *	TkpGetFontFromAttributes().  The caller should have already
+ *	released the fields of the TkFont that are used exclusively by
+ *	the generic TkFont code.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	TkFont is deallocated.
+ *
+ *---------------------------------------------------------------------------
+ */
+
+void
+TkpDeleteFont(tkFontPtr)
+    TkFont *tkFontPtr;		/* Token of font to be deleted. */
+{
+    WinFont *fontPtr;
+
+    fontPtr = (WinFont *) tkFontPtr;
+    DeleteObject(fontPtr->hFont);
+    ckfree((char *) fontPtr);
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * TkpGetFontFamilies, WinFontEnumFamilyProc --
+ *
+ *	Return information about the font families that are available
+ *	on the display of the given window.
+ *
+ * Results:
+ *	interp->result is modified to hold a list of all the available
+ *	font families.
+ *
+ * Side effects:
+ *	None.
+ *
+ *---------------------------------------------------------------------------
+ */
+ 
+void
+TkpGetFontFamilies(interp, tkwin)
+    Tcl_Interp *interp;		/* Interp to hold result. */
+    Tk_Window tkwin;		/* For display to query. */
+{    
+    Window window;
+    HWND hwnd;
+    HDC hdc;
+
+    window = Tk_WindowId(tkwin);
+    hwnd = (window == (Window) NULL) ? NULL : TkWinGetHWND(window);
+
+    hdc = GetDC(hwnd);
+    EnumFontFamilies(hdc, NULL, (FONTENUMPROC) WinFontFamilyEnumProc,
+	    (LPARAM) interp);
+    ReleaseDC(hwnd, hdc);
+}
+
+/* ARGSUSED */
+
+static int CALLBACK
+WinFontFamilyEnumProc(elfPtr, ntmPtr, fontType, lParam)
+    ENUMLOGFONT *elfPtr;	/* Logical-font data. */
+    NEWTEXTMETRIC *ntmPtr;	/* Physical-font data (not used). */
+    int fontType;		/* Type of font (not used). */
+    LPARAM lParam;		/* Interp to hold result. */
+{
+    Tcl_Interp *interp;
+
+    interp = (Tcl_Interp *) lParam;
+    Tcl_AppendElement(interp, elfPtr->elfLogFont.lfFaceName);
+    return 1;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ *  Tk_MeasureChars --
+ *
+ *	Determine the number of characters from the string that will fit
+ *	in the given horizontal span.  The measurement is done under the
+ *	assumption that Tk_DrawChars() will be used to actually display
+ *	the characters.
+ *
+ * Results:
+ *	The return value is the number of characters from source that
+ *	fit into the span that extends from 0 to maxLength.  *lengthPtr is
+ *	filled with the x-coordinate of the right edge of the last
+ *	character that did fit.
+ *
+ * Side effects:
+ *	None.
+ *
+ *---------------------------------------------------------------------------
+ */
+int
+Tk_MeasureChars(tkfont, source, numChars, maxLength, flags, lengthPtr)
+    Tk_Font tkfont;		/* Font in which characters will be drawn. */
+    CONST char *source;		/* Characters to be displayed.  Need not be
+				 * '\0' terminated. */
+    int numChars;		/* Maximum number of characters to consider
+				 * from source string. */
+    int maxLength;		/* If > 0, maxLength specifies the longest
+				 * permissible line length; don't consider any
+				 * character that would cross this
+				 * x-position.  If <= 0, then line length is
+				 * unbounded and the flags argument is
+				 * ignored. */
+    int flags;			/* Various flag bits OR-ed together:
+				 * TK_PARTIAL_OK means include the last char
+				 * which only partially fit on this line.
+				 * TK_WHOLE_WORDS means stop on a word
+				 * boundary, if possible.
+				 * TK_AT_LEAST_ONE means return at least one
+				 * character even if no characters fit. */
+    int *lengthPtr;		/* Filled with x-location just after the
+				 * terminating character. */
+{
+    WinFont *fontPtr;
+    HDC hdc;
+    HFONT hFont;
+    int curX, curIdx;
+
+    /*
+     * On the authority of the Gates Empire, Windows does not use kerning
+     * or fractional character widths when displaying text on the screen.
+     * So that means we can safely measure individual characters or spans
+     * of characters and add up the widths w/o any "off-by-one pixel" 
+     * errors.  
+     */
+
+    fontPtr = (WinFont *) tkfont;
+
+    hdc = GetDC(fontPtr->hwnd);
+    hFont = SelectObject(hdc, fontPtr->hFont);
+
+    if (numChars == 0) {
+	curX = 0;
+	curIdx = 0;
+    } else if (maxLength <= 0) {
+	SIZE size;
+
+	GetTextExtentPoint(hdc, source, numChars, &size);
+	curX = size.cx;
+	curIdx = numChars;
+    } else {
+	int newX, termX, sawNonSpace;
+	CONST char *term, *end, *p;
+	int ch;
+
+	ch = UCHAR(*source);
+	newX = curX = termX = 0;
+	
+	term = source;
+	end = source + numChars;
+
+	sawNonSpace = !isspace(ch);
+	for (p = source; ; ) {
+	    newX += fontPtr->widths[ch];
+	    if (newX > maxLength) {
+		break;
+	    }
+	    curX = newX;
+	    p++;
+	    if (p >= end) {
+		term = end;
+		termX = curX;
+		break;
+	    }
+
+	    ch = UCHAR(*p);
+	    if (isspace(ch)) {
+		if (sawNonSpace) {
+		    term = p;
+		    termX = curX;
+		    sawNonSpace = 0;
+		}
+	    } else {
+		sawNonSpace = 1;
+	    }
+	}
 
 	/*
-	 * If the font is not fixed pitch, then we need to construct
-	 * the per_char array.
+	 * P points to the first character that doesn't fit in the desired
+	 * span.  Use the flags to figure out what to return.
 	 */
 
-	if (tm.tmAveCharWidth != tm.tmMaxCharWidth) {
-	    int i;
-#ifdef __OPEN32__
-	    int nchars = fontPtr->max_char_or_byte2 - tm.tmFirstChar + 1;
-#else
-	    int nchars = tm.tmLastChar - tm.tmFirstChar + 1;
-#endif
-	    int minWidth = 30000;
+	if ((flags & TK_PARTIAL_OK) && (p < end) && (curX < maxLength)) {
+	    /*
+	     * Include the first character that didn't quite fit in the desired
+	     * span.  The width returned will include the width of that extra
+	     * character.
+	     */
 
-	    fontPtr->per_char =
-		(XCharStruct *)ckalloc(sizeof(XCharStruct) * nchars);
-
-	    if (tm.tmPitchAndFamily & TMPF_TRUETYPE) {
-		ABC *chars = (ABC*)ckalloc(sizeof(ABC) * nchars);
-
-		GetCharABCWidths(dc, tm.tmFirstChar, tm.tmLastChar, chars);
-		for (i = 0; i < nchars; i++) {
-		    fontPtr->per_char[i].ascent = (short) tm.tmAscent;
-		    fontPtr->per_char[i].descent = (short) tm.tmDescent;
-		    fontPtr->per_char[i].attributes = 0;
-		    fontPtr->per_char[i].lbearing = chars[i].abcA;
-		    fontPtr->per_char[i].rbearing = chars[i].abcA
-			+ chars[i].abcB;
-		    fontPtr->per_char[i].width = chars[i].abcA + chars[i].abcB
-			+ chars[i].abcC;
-		}
-		ckfree((char *)chars);
-	    } else {
-		int *chars = (int *)ckalloc(sizeof(int) * nchars);
-
-#ifdef __OPEN32__
-		GetCharWidth(dc, tm.tmFirstChar, fontPtr->max_char_or_byte2, chars);
-#else
-		GetCharWidth(dc, tm.tmFirstChar, tm.tmLastChar, chars);
-#endif
-
-		for (i = 0; i < nchars ; i++ ) {
-		    fontPtr->per_char[i] = bounds;
-		    fontPtr->per_char[i].width = chars[i];
-		    if (minWidth > chars[i]) {
-			minWidth = chars[i];
-		    }
-		}
-		ckfree((char *)chars);
-	    }
-	    fontPtr->min_bounds.width = minWidth;
-	} else {
-	    fontPtr->per_char = NULL;
+	    curX = newX;
+	    p++;
 	}
-    } else {
-	ckfree((char *)fontPtr);
-	fontPtr = NULL;
-    }    
+	if ((flags & TK_AT_LEAST_ONE) && (term == source) && (p < end)) {
+	    term = p;
+	    termX = curX;
+	    if (term == source) {
+		term++;
+		termX = newX;
+	    }
+	} else if ((p >= end) || !(flags & TK_WHOLE_WORDS)) {
+	    term = p;
+	    termX = curX;
+	}
 
-    SelectObject(dc, oldFont);
-    ReleaseDC(NULL, dc);
-    
-    return fontPtr;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XLoadQueryFont --
- *
- *	Finds the closest available Windows font for the specified
- *	font name.
- *
- * Results:
- *	Allocates and returns an XFontStruct containing a description
- *	of the matching font.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-XFontStruct *
-XLoadQueryFont(display, name)
-    Display* display;
-    _Xconst char* name;
-{
-    Font font;
-
-#ifdef __OPEN32__
-    lastname = name;
-#endif
-    font = XLoadFont(display, name);
-    return XQueryFont(display, font);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XFreeFont --
- *
- *	Releases resources associated with the specified font.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Frees the memory referenced by font_struct.
- *
- *----------------------------------------------------------------------
- */
-
-void
-XFreeFont(display, font_struct)
-    Display* display;
-    XFontStruct* font_struct;
-{
-    DeleteObject((HFONT)font_struct->fid);
-    if (font_struct->per_char != NULL) {
-	ckfree((char *) font_struct->per_char);
+	curX = termX;
+	curIdx = term - source;	
     }
-    ckfree((char *) font_struct);
+
+    SelectObject(hdc, hFont);
+    ReleaseDC(fontPtr->hwnd, hdc);
+
+    *lengthPtr = curX;
+    return curIdx;
 }
 
 /*
- *----------------------------------------------------------------------
+ *---------------------------------------------------------------------------
  *
- * XTextExtents --
+ * Tk_DrawChars --
  *
- *	Compute the width of an 8-bit character string.
- *
- * Results:
- *	Returns the computed width of the specified string.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-int
-XTextWidth(font_struct, string, count)
-    XFontStruct* font_struct;
-    _Xconst char* string;
-    int count;
-{
-    TEXTMETRIC tm;
-    SIZE size;
-    HFONT oldFont;
-    HDC dc;
-
-    dc = GetDC(NULL);
-    oldFont = SelectObject(dc, (HFONT)font_struct->fid);
-
-    GetTextExtentPoint(dc, string, count, &size);
-    GetTextMetrics(dc, &tm);
-    size.cx -= tm.tmOverhang;
-
-    SelectObject(dc, oldFont);
-    ReleaseDC(NULL, dc);
-
-    return size.cx;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XTextExtents --
- *
- *	Compute the bounding box for a string.
+ *	Draw a string of characters on the screen.  
  *
  * Results:
- *	Sets the direction_return, ascent_return, descent_return, and
- *	overall_return values as defined by Xlib.
- *
- * Side effects:
  *	None.
  *
- *----------------------------------------------------------------------
+ * Side effects:
+ *	Information gets drawn on the screen.
+ *
+ *---------------------------------------------------------------------------
  */
 
 void
-XTextExtents(font_struct, string, nchars, direction_return,
-	font_ascent_return, font_descent_return, overall_return)
-    XFontStruct* font_struct;
-    _Xconst char* string;
-    int nchars;
-    int* direction_return;
-    int* font_ascent_return;
-    int* font_descent_return;
-    XCharStruct* overall_return;
+Tk_DrawChars(display, drawable, gc, tkfont, source, numChars, x, y)
+    Display *display;		/* Display on which to draw. */
+    Drawable drawable;		/* Window or pixmap in which to draw. */
+    GC gc;			/* Graphics context for drawing characters. */
+    Tk_Font tkfont;		/* Font in which characters will be drawn;
+				 * must be the same as font used in GC. */
+    CONST char *source;		/* Characters to be displayed.  Need not be
+				 * '\0' terminated.  All Tk meta-characters
+				 * (tabs, control characters, and newlines)
+				 * should be stripped out of the string that
+				 * is passed to this function.  If they are
+				 * not stripped out, they will be displayed as
+				 * regular printing characters. */
+    int numChars;		/* Number of characters in string. */
+    int x, y;			/* Coordinates at which to place origin of
+				 * string when drawing. */
 {
     HDC dc;
-    HFONT oldFont;
-    TEXTMETRIC tm;
-    SIZE size;
+    HFONT hFont;
+    TkWinDCState state;
+    WinFont *fontPtr;
 
-    *direction_return = font_struct->direction;
-    *font_ascent_return = font_struct->ascent;
-    *font_descent_return = font_struct->descent;
+    fontPtr = (WinFont *) gc->font;
+    display->request++;
 
-    dc = GetDC(NULL);
-    oldFont = SelectObject(dc, (HFONT)font_struct->fid);
+    if (drawable == None) {
+	return;
+    }
 
-    GetTextMetrics(dc, &tm);
-    overall_return->ascent = (short) tm.tmAscent;
-    overall_return->descent = (short) tm.tmDescent;
-    GetTextExtentPoint(dc, string, nchars, &size);
-    overall_return->width = (short) size.cx;
-    overall_return->lbearing = 0;
-    overall_return->rbearing = (short) (overall_return->width - tm.tmOverhang);
+    dc = TkWinGetDrawableDC(display, drawable, &state);
 
-    SelectObject(dc, oldFont);
-    ReleaseDC(NULL, dc);
+    SetROP2(dc, tkpWinRopModes[gc->function]);
+
+    if ((gc->fill_style == FillStippled
+	    || gc->fill_style == FillOpaqueStippled)
+	    && gc->stipple != None) {
+	TkWinDrawable *twdPtr = (TkWinDrawable *)gc->stipple;
+	HBRUSH oldBrush, stipple;
+	HBITMAP oldBitmap, bitmap;
+	HDC dcMem;
+	TEXTMETRIC tm;
+	SIZE size;
+
+	if (twdPtr->type != TWD_BITMAP) {
+	    panic("unexpected drawable type in stipple");
+	}
+
+	/*
+	 * Select stipple pattern into destination dc.
+	 */
+	
+	dcMem = CreateCompatibleDC(dc);
+
+	stipple = CreatePatternBrush(twdPtr->bitmap.handle);
+	SetBrushOrgEx(dc, gc->ts_x_origin, gc->ts_y_origin, NULL);
+	oldBrush = SelectObject(dc, stipple);
+
+	SetTextAlign(dcMem, TA_LEFT | TA_TOP);
+	SetTextColor(dcMem, gc->foreground);
+	SetBkMode(dcMem, TRANSPARENT);
+	SetBkColor(dcMem, RGB(0, 0, 0));
+
+        hFont = SelectObject(dcMem, fontPtr->hFont);
+
+	/*
+	 * Compute the bounding box and create a compatible bitmap.
+	 */
+
+	GetTextExtentPoint(dcMem, source, numChars, &size);
+	GetTextMetrics(dcMem, &tm);
+	size.cx -= tm.tmOverhang;
+	bitmap = CreateCompatibleBitmap(dc, size.cx, size.cy);
+	oldBitmap = SelectObject(dcMem, bitmap);
+
+	/*
+	 * The following code is tricky because fonts are rendered in multiple
+	 * colors.  First we draw onto a black background and copy the white
+	 * bits.  Then we draw onto a white background and copy the black bits.
+	 * Both the foreground and background bits of the font are ANDed with
+	 * the stipple pattern as they are copied.
+	 */
+
+	PatBlt(dcMem, 0, 0, size.cx, size.cy, BLACKNESS);
+	TextOut(dcMem, 0, 0, source, numChars);
+	BitBlt(dc, x, y - tm.tmAscent, size.cx, size.cy, dcMem,
+		0, 0, 0xEA02E9);
+	PatBlt(dcMem, 0, 0, size.cx, size.cy, WHITENESS);
+	TextOut(dcMem, 0, 0, source, numChars);
+	BitBlt(dc, x, y - tm.tmAscent, size.cx, size.cy, dcMem,
+		0, 0, 0x8A0E06);
+
+	/*
+	 * Destroy the temporary bitmap and restore the device context.
+	 */
+
+        SelectObject(dcMem, hFont);
+	SelectObject(dcMem, oldBitmap);
+	DeleteObject(bitmap);
+	DeleteDC(dcMem);
+	SelectObject(dc, oldBrush);
+	DeleteObject(stipple);
+    } else {
+	SetTextAlign(dc, TA_LEFT | TA_BASELINE);
+	SetTextColor(dc, gc->foreground);
+	SetBkMode(dc, TRANSPARENT);
+	hFont = SelectObject(dc, fontPtr->hFont);
+	TextOut(dc, x, y, source, numChars);
+        SelectObject(dc, hFont);
+    }
+    TkWinReleaseDrawableDC(drawable, dc, &state);
 }
-
 
 /*
- *----------------------------------------------------------------------
+ *---------------------------------------------------------------------------
  *
- * XGetFontProperty --
+ * AllocFont --
  *
- *	Called to get font properties.  Since font properties are not
- *	supported under Windows, this function is a no-op.
+ *	Helper for TkpGetNativeFont() and TkpGetFontFromAttributes().
+ *	Allocates and intializes the memory for a new TkFont that
+ *	wraps the platform-specific data.
  *
  * Results:
- *	Always returns false
+ *	Returns pointer to newly constructed TkFont.  
+ *
+ *	The caller is responsible for initializing the fields of the
+ *	TkFont that are used exclusively by the generic TkFont code, and
+ *	for releasing those fields before calling TkpDeleteFont().
  *
  * Side effects:
- *	None.
+ *	Memory allocated.
  *
- *----------------------------------------------------------------------
- */
+ *---------------------------------------------------------------------------
+ */ 
 
-Bool
-XGetFontProperty(font_struct, atom, value_return)
-    XFontStruct* font_struct;
-    Atom atom;
-    unsigned long* value_return;
+static TkFont *
+AllocFont(tkFontPtr, tkwin, hFont)
+    TkFont *tkFontPtr;		/* If non-NULL, store the information in
+				 * this existing TkFont structure, rather than
+				 * allocating a new structure to hold the
+				 * font; the existing contents of the font
+				 * will be released.  If NULL, a new TkFont
+				 * structure is allocated. */
+    Tk_Window tkwin;		/* For display where font will be used. */
+    HFONT hFont;		/* Windows information about font. */
 {
-    return False;
+    HWND hwnd;
+    WinFont *fontPtr;
+    HDC hdc;
+    TEXTMETRIC tm;
+    Window window;
+    char buf[LF_FACESIZE];
+    TkFontAttributes *faPtr;
+
+    if (tkFontPtr != NULL) {
+        fontPtr = (WinFont *) tkFontPtr;
+        DeleteObject(fontPtr->hFont);
+    } else {
+        fontPtr = (WinFont *) ckalloc(sizeof(WinFont));
+    }
+    
+    window = Tk_WindowId(((TkWindow *) tkwin)->mainPtr->winPtr);
+    hwnd = (window == None) ? NULL : TkWinGetHWND(window);
+
+    hdc = GetDC(hwnd);
+    hFont = SelectObject(hdc, hFont);
+    GetTextFace(hdc, sizeof(buf), buf);
+    GetTextMetrics(hdc, &tm);
+    GetCharWidth(hdc, 0, 255, fontPtr->widths);
+
+    fontPtr->font.fid	= (Font) fontPtr;
+
+    faPtr = &fontPtr->font.fa;
+    faPtr->family	= Tk_GetUid(buf);
+    faPtr->pointsize	= MulDiv(tm.tmHeight - tm.tmInternalLeading,
+	    720 * WidthMMOfScreen(Tk_Screen(tkwin)),
+	    254 * WidthOfScreen(Tk_Screen(tkwin)));
+    faPtr->weight	= (tm.tmWeight > FW_MEDIUM) ? TK_FW_BOLD : TK_FW_NORMAL;
+    faPtr->slant	= (tm.tmItalic != 0) ? TK_FS_ITALIC : TK_FS_ROMAN;
+    faPtr->underline	= (tm.tmUnderlined != 0) ? 1 : 0;
+    faPtr->overstrike	= (tm.tmStruckOut != 0) ? 1 : 0;
+
+    fontPtr->font.fm.ascent	= tm.tmAscent;
+    fontPtr->font.fm.descent	= tm.tmDescent;
+    fontPtr->font.fm.maxWidth	= tm.tmMaxCharWidth;
+    fontPtr->font.fm.fixed	= !(tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
+
+    hFont = SelectObject(hdc, hFont);
+    ReleaseDC(hwnd, hdc);
+
+    fontPtr->hFont		= hFont;
+    fontPtr->hwnd		= hwnd;
+
+    return (TkFont *) fontPtr;
 }
 

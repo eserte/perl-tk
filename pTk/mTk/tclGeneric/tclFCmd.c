@@ -4,12 +4,12 @@
  *      This file implements the generic portion of file manipulation 
  *      subcommands of the "file" command. 
  *
- * Copyright (c) 1996 Sun Microsystems, Inc.
+ * Copyright (c) 1996-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclFCmd.c 1.12 96/10/08 17:25:34
+ * SCCS: @(#) tclFCmd.c 1.17 97/05/14 13:23:13
  */
 
 #include "tclInt.h"
@@ -707,4 +707,109 @@ FileBasename(interp, path, bufferPtr)
     }
     ckfree((char *) argv);
     return Tcl_DStringValue(bufferPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclFileAttrsCmd --
+ *
+ *      Sets or gets the platform-specific attributes of a file. The objc-objv
+ *	points to the file name with the rest of the command line following.
+ *	This routine uses platform-specific tables of option strings
+ *	and callbacks. The callback to get the attributes take three
+ *	parameters:
+ *	    Tcl_Interp *interp;	    The interp to report errors with.
+ *				    Since this is an object-based API,
+ *				    the object form of the result should be
+ *				    used.
+ *	    CONST char *fileName;   This is extracted using
+ *				    Tcl_TranslateFileName.
+ *	    TclObj **attrObjPtrPtr; A new object to hold the attribute
+ *				    is allocated and put here.
+ *	The first two parameters of the callback used to write out the
+ *	attributes are the same. The third parameter is:
+ *	    CONST *attrObjPtr;	    A pointer to the object that has
+ *				    the new attribute.
+ *	They both return standard TCL errors; if the routine to get
+ *	an attribute fails, no object is allocated and *attrObjPtrPtr
+ *	is unchanged.
+ *
+ * Results:
+ *      Standard TCL error.
+ *
+ * Side effects:
+ *      May set file attributes for the file name.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+int
+TclFileAttrsCmd(interp, objc, objv)
+    Tcl_Interp *interp;		/* The interpreter for error reporting. */
+    int objc;			/* Number of command line arguments. */
+    Tcl_Obj *CONST objv[];	/* The command line objects. */
+{
+    Tcl_Obj *resultPtr = Tcl_GetObjResult(interp);
+    char *fileName;
+    int length, index;
+    Tcl_Obj *listObjPtr;
+    Tcl_Obj *elementObjPtr;
+    Tcl_DString buffer;
+
+    if ((objc > 2) && ((objc % 2) == 0)) {
+	Tcl_AppendStringsToObj(resultPtr, 
+		"wrong # args: must be \"file attributes name ?option? ?value? ?option value? ...\"",
+		(char *) NULL);
+	return TCL_ERROR;
+    }
+
+    fileName = Tcl_GetStringFromObj(objv[0], &length);
+    if (Tcl_TranslateFileName(interp, fileName, &buffer) == NULL) {
+    	return TCL_ERROR;
+    }
+    fileName = Tcl_DStringValue(&buffer);
+    
+    if (objc == 1) {
+    	listObjPtr = Tcl_NewListObj(0, (Tcl_Obj **) NULL);
+    	
+    	for (index = 0; tclpFileAttrStrings[index] != NULL; index++) {
+    	    elementObjPtr = Tcl_NewStringObj(tclpFileAttrStrings[index], -1);
+	    Tcl_ListObjAppendElement(interp, listObjPtr, elementObjPtr);
+	    if ((*tclpFileAttrProcs[index].getProc)(interp, index, fileName,
+	    	    &elementObjPtr) != TCL_OK) {
+	    	Tcl_DecrRefCount(listObjPtr);
+	    	return TCL_ERROR;
+	    }
+	    Tcl_ListObjAppendElement(interp, listObjPtr, elementObjPtr);
+    	}
+    	Tcl_SetObjResult(interp, listObjPtr);
+    } else if (objc == 2) {
+    	if (Tcl_GetIndexFromObj(interp, objv[1], tclpFileAttrStrings, "option",
+    		0, &index) != TCL_OK) {
+    	    return TCL_ERROR;
+    	}
+	if ((*tclpFileAttrProcs[index].getProc)(interp, index, fileName,
+		&elementObjPtr) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	Tcl_SetObjResult(interp, elementObjPtr);
+    } else {
+        int i;
+        
+    	for (i = 1; i < objc ; i += 2) {
+    	    if (Tcl_GetIndexFromObj(interp, objv[i], tclpFileAttrStrings, "option",
+    	    	    0, &index) != TCL_OK) {
+    	    	return TCL_ERROR;
+    	    }
+    	    if ((*tclpFileAttrProcs[index].setProc)(interp, index, fileName,
+    	    	    objv[i + 1]) != TCL_OK) {
+    	    	return TCL_ERROR;
+    	    }
+    	}
+    }
+    
+    Tcl_DStringFree(&buffer);
+    
+    return TCL_OK;
 }

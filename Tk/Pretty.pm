@@ -5,7 +5,7 @@ package Tk::Pretty;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/Tk/Pretty.pm#7$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Pretty.pm#4$
 
 @ISA = qw(Exporter);
 

@@ -3,7 +3,7 @@ use Carp;
 
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/Tk/widgets.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/widgets.pm#3$
 
 sub import
 {

@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTextIndex.c 1.13 96/02/15 18:52:57
+ * SCCS: @(#) tkTextIndex.c 1.15 97/06/17 17:49:24
  */
 
 #include "default.h"
@@ -214,7 +214,7 @@ TkTextGetIndex(interp, textPtr, string, indexPtr)
 
     /*
      *---------------------------------------------------------------------
-     * Stage 1: check to see if the index consists of nothing but a mar
+     * Stage 1: check to see if the index consists of nothing but a mark
      * name.  We do this check now even though it's also done later, in
      * order to allow mark names that include funny characters such as
      * spaces or "+1c".
@@ -366,6 +366,18 @@ TkTextGetIndex(interp, textPtr, string, indexPtr)
 	result = TkTextMarkNameToIndex(textPtr, string, indexPtr);
 	*endOfBase = c;
 	if (result == TCL_OK) {
+	    goto gotBase;
+	}
+
+	/*
+	 * See if the base position is the name of an embedded image
+	 */
+
+	c = *endOfBase;
+	*endOfBase = 0;
+	result = TkTextImageIndex(textPtr, string, indexPtr);
+	*endOfBase = c;
+	if (result != 0) {
 	    goto gotBase;
 	}
     }

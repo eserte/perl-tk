@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkMessage.c 1.66 96/02/15 18:52:28
+ * SCCS: @(#) tkMessage.c 1.75 97/07/31 09:11:14
  */
 
 #include "tkPort.h"
@@ -34,17 +34,17 @@ typedef struct {
 				 * freed even after tkwin has gone away. */
     Tcl_Interp *interp;		/* Interpreter associated with message. */
     Tcl_Command widgetCmd;	/* Token for message's widget command. */
-    Tk_Uid string;		/* String displayed in message. */
-    int numChars;		/* Number of characters in string, not
-				 * including terminating NULL character. */
-    Var textVarName;		/* Name of variable (malloc'ed) or NULL.
-				 * If non-NULL, message displays the contents
-				 * of this variable. */
 
     /*
      * Information used when displaying widget:
      */
 
+    char *string;		/* String displayed in message. */
+    int numChars;		/* Number of characters in string, not
+				 * including terminating NULL character. */
+    Var textVarName;		/* Name of variable (malloc'ed) or NULL.
+				 * If non-NULL, message displays the contents
+				 * of this variable. */
     Tk_3DBorder border;		/* Structure used to draw 3-D border and
 				 * background.  NULL means a border hasn't
 				 * been created yet. */
@@ -57,27 +57,24 @@ typedef struct {
 				/* Color for drawing traversal highlight
 				 * area when highlight is off. */
     XColor *highlightColorPtr;	/* Color for drawing traversal highlight. */
-    int inset;			/* Total width of all borders, including
-				 * traversal highlight and 3-D border.
-				 * Indicates how much interior stuff must
-				 * be offset from outside edges to leave
-				 * room for borders. */
-    XFontStruct *fontPtr;	/* Information about text font, or NULL. */
+    Tk_Font tkfont;		/* Information about text font, or NULL. */
     XColor *fgColorPtr;		/* Foreground color in normal mode. */
-    GC textGC;			/* GC for drawing text in normal mode. */
     int padX, padY;		/* User-requested extra space around text. */
-    Tk_Anchor anchor;		/* Where to position text within window region
-				 * if window is larger or smaller than
-				 * needed. */
     int width;			/* User-requested width, in pixels.  0 means
 				 * compute width using aspect ratio below. */
     int aspect;			/* Desired aspect ratio for window
 				 * (100*width/height). */
-    int lineLength;		/* Length of each line, in pixels.  Computed
-				 * from width and/or aspect. */
-    int msgHeight;		/* Total number of pixels in vertical direction
-				 * needed to display message. */
+    int msgWidth;		/* Width in pixels needed to display
+				 * message. */
+    int msgHeight;		/* Height in pixels needed to display
+				 * message. */
+    Tk_Anchor anchor;		/* Where to position text within window region
+				 * if window is larger or smaller than
+				 * needed. */
     Tk_Justify justify;		/* Justification for text. */
+
+    GC textGC;			/* GC for drawing text in normal mode. */
+    Tk_TextLayout textLayout;	/* Saved layout information. */
 
     /*
      * Miscellaneous information:
@@ -130,7 +127,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, 0},
     {TK_CONFIG_FONT, "-font", "font", "Font",
-	DEF_MESSAGE_FONT, Tk_Offset(Message, fontPtr), 0},
+	DEF_MESSAGE_FONT, Tk_Offset(Message, tkfont), 0},
     {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_MESSAGE_FG, Tk_Offset(Message, fgColorPtr), 0},
     {TK_CONFIG_COLOR, "-highlightbackground", "highlightBackground",
@@ -176,12 +173,26 @@ static char *		MessageTextVarProc _ANSI_ARGS_((ClientData clientData,
 			    int flags));
 static int		MessageWidgetCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
+static void		MessageWorldChanged _ANSI_ARGS_((
+			    ClientData instanceData));
 static void		ComputeMessageGeometry _ANSI_ARGS_((Message *msgPtr));
 static int		ConfigureMessage _ANSI_ARGS_((Tcl_Interp *interp,
 			    Message *msgPtr, int argc, char **argv,
 			    int flags));
 static void		DestroyMessage _ANSI_ARGS_((char *memPtr));
 static void		DisplayMessage _ANSI_ARGS_((ClientData clientData));
+
+/*
+ * The structure below defines message class behavior by means of procedures
+ * that can be invoked from generic window code.
+ */
+
+static TkClassProcs messageClass = {
+    NULL,			/* createProc. */
+    MessageWorldChanged,	/* geometryProc. */
+    NULL			/* modalProc. */
+};
+
 
 /*
  *--------------------------------------------------------------
@@ -230,6 +241,7 @@ Tk_MessageCmd(clientData, interp, argc, argv)
     msgPtr->interp = interp;
     msgPtr->widgetCmd = Tcl_CreateCommand(interp, Tk_PathName(msgPtr->tkwin),
 	    MessageWidgetCmd, (ClientData) msgPtr, MessageCmdDeletedProc);
+    msgPtr->textLayout = NULL;
     msgPtr->string = NULL;
     msgPtr->numChars = 0;
     msgPtr->textVarName = NULL;
@@ -239,8 +251,7 @@ Tk_MessageCmd(clientData, interp, argc, argv)
     msgPtr->highlightWidth = 0;
     msgPtr->highlightBgColorPtr = NULL;
     msgPtr->highlightColorPtr = NULL;
-    msgPtr->inset = 0;
-    msgPtr->fontPtr = NULL;
+    msgPtr->tkfont = NULL;
     msgPtr->fgColorPtr = NULL;
     msgPtr->textGC = None;
     msgPtr->padX = 0;
@@ -248,7 +259,7 @@ Tk_MessageCmd(clientData, interp, argc, argv)
     msgPtr->anchor = TK_ANCHOR_CENTER;
     msgPtr->width = 0;
     msgPtr->aspect = 150;
-    msgPtr->lineLength = 0;
+    msgPtr->msgWidth = 0;
     msgPtr->msgHeight = 0;
     msgPtr->justify = TK_JUSTIFY_LEFT;
     msgPtr->cursor = None;
@@ -256,6 +267,7 @@ Tk_MessageCmd(clientData, interp, argc, argv)
     msgPtr->flags = 0;
 
     Tk_SetClass(msgPtr->tkwin, "Message");
+    TkSetClassProcs(msgPtr->tkwin, &messageClass, (ClientData) msgPtr);
     Tk_CreateEventHandler(msgPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
 	    MessageEventProc, (ClientData) msgPtr);
@@ -366,6 +378,7 @@ DestroyMessage(memPtr)
      * stuff.
      */
 
+    Tk_FreeTextLayout(msgPtr->textLayout);
     if (msgPtr->textVarName != NULL) {
 	Tcl_UntraceVar(msgPtr->interp, msgPtr->textVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
@@ -408,9 +421,6 @@ ConfigureMessage(interp, msgPtr, argc, argv, flags)
     char **argv;		/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
-    XGCValues gcValues;
-    GC newGC;
-
     /*
      * Eliminate any existing trace on a variable monitored by the message.
      */
@@ -425,7 +435,7 @@ ConfigureMessage(interp, msgPtr, argc, argv, flags)
 	    argc, argv, (char *) msgPtr, flags) != TCL_OK) {
 	return TCL_ERROR;
     }
-
+    
     /*
      * If the message is to display the value of a variable, then set up
      * a trace on the variable's value, create the variable if it doesn't
@@ -443,8 +453,7 @@ ConfigureMessage(interp, msgPtr, argc, argv, flags)
 	    if (msgPtr->string != NULL) {
 		ckfree(msgPtr->string);
 	    }
-	    msgPtr->string = (char *) ckalloc((unsigned) (strlen(value) + 1));
-	    strcpy(msgPtr->string, value);
+	    msgPtr->string = strcpy(ckalloc(strlen(value) + 1), value);
 	}
 	Tcl_TraceVar(interp, msgPtr->textVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
@@ -465,21 +474,53 @@ ConfigureMessage(interp, msgPtr, argc, argv, flags)
 	msgPtr->highlightWidth = 0;
     }
 
-    gcValues.font = msgPtr->fontPtr->fid;
+    MessageWorldChanged((ClientData) msgPtr);
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * MessageWorldChanged --
+ *
+ *      This procedure is called when the world has changed in some
+ *      way and the widget needs to recompute all its graphics contexts
+ *	and determine its new geometry.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      Message will be relayed out and redisplayed.
+ *
+ *---------------------------------------------------------------------------
+ */
+ 
+static void
+MessageWorldChanged(instanceData)
+    ClientData instanceData;	/* Information about widget. */
+{
+    XGCValues gcValues;
+    GC gc;
+    Tk_FontMetrics fm;
+    Message *msgPtr;
+
+    msgPtr = (Message *) instanceData;
+
+    gcValues.font = Tk_FontId(msgPtr->tkfont);
     gcValues.foreground = msgPtr->fgColorPtr->pixel;
-    newGC = Tk_GetGC(msgPtr->tkwin, GCForeground|GCFont,
-	    &gcValues);
+    gc = Tk_GetGC(msgPtr->tkwin, GCForeground | GCFont, &gcValues);
     if (msgPtr->textGC != None) {
 	Tk_FreeGC(msgPtr->display, msgPtr->textGC);
     }
-    msgPtr->textGC = newGC;
+    msgPtr->textGC = gc;
 
-    if (msgPtr->padX == -1) {
-	msgPtr->padX = msgPtr->fontPtr->ascent/2;
+    Tk_GetFontMetrics(msgPtr->tkfont, &fm);
+    if (msgPtr->padX < 0) {
+	msgPtr->padX = fm.ascent / 2;
     }
-
     if (msgPtr->padY == -1) {
-	msgPtr->padY = msgPtr->fontPtr->ascent/4;
+	msgPtr->padY = fm.ascent / 4;
     }
 
     /*
@@ -493,8 +534,6 @@ ConfigureMessage(interp, msgPtr, argc, argv, flags)
 	Tcl_DoWhenIdle(DisplayMessage, (ClientData) msgPtr);
 	msgPtr->flags |= REDRAW_PENDING;
     }
-
-    return TCL_OK;
 }
 
 /*
@@ -520,12 +559,13 @@ static void
 ComputeMessageGeometry(msgPtr)
     register Message *msgPtr;	/* Information about window. */
 {
-    char *p;
-    int width, inc, height, numLines;
-    int thisWidth, maxWidth;
-    int aspect, lowerBound, upperBound;
+    int width, inc, height;
+    int thisWidth, thisHeight, maxWidth;
+    int aspect, lowerBound, upperBound, inset;
 
-    msgPtr->inset = msgPtr->borderWidth + msgPtr->highlightWidth;
+    Tk_FreeTextLayout(msgPtr->textLayout);
+
+    inset = msgPtr->borderWidth + msgPtr->highlightWidth;
 
     /*
      * Compute acceptable bounds for the final aspect ratio.
@@ -554,44 +594,19 @@ ComputeMessageGeometry(msgPtr)
 	width = WidthOfScreen(Tk_Screen(msgPtr->tkwin))/2;
 	inc = width/2;
     }
+
     for ( ; ; inc /= 2) {
-	maxWidth = 0;
-	for (numLines = 1, p = msgPtr->string; ; numLines++)  {
-	    if (*p == '\n') {
-		p++;
-		continue;
-	    }
-	    p += TkMeasureChars(msgPtr->fontPtr, p,
-		    msgPtr->numChars - (p - msgPtr->string), 0, width, 0,
-		    TK_WHOLE_WORDS|TK_AT_LEAST_ONE, &thisWidth);
-	    if (thisWidth > maxWidth) {
-		maxWidth = thisWidth;
-	    }
-	    if (*p == 0) {
-		break;
-	    }
+	msgPtr->textLayout = Tk_ComputeTextLayout(msgPtr->tkfont,
+		msgPtr->string, msgPtr->numChars, width, msgPtr->justify,
+		0, &thisWidth, &thisHeight);
+	maxWidth = thisWidth + 2 * (inset + msgPtr->padX);
+	height = thisHeight + 2 * (inset + msgPtr->padY);
 
-	    /*
-	     * Skip spaces and tabs at the beginning of a line, unless
-	     * they follow a user-requested newline.
-	     */
-
-	    while (isspace(UCHAR(*p))) {
-		if (*p == '\n') {
-		    p++;
-		    break;
-		}
-		p++;
-	    }
-	}
-
-	height = numLines * (msgPtr->fontPtr->ascent
-		+ msgPtr->fontPtr->descent) + 2*msgPtr->inset
-		+ 2*msgPtr->padY;
 	if (inc <= 2) {
 	    break;
 	}
-	aspect = (100*(maxWidth + 2*msgPtr->inset + 2*msgPtr->padX))/height;
+	aspect = (100 * maxWidth) / height;
+
 	if (aspect < lowerBound) {
 	    width += inc;
 	} else if (aspect > upperBound) {
@@ -599,13 +614,12 @@ ComputeMessageGeometry(msgPtr)
 	} else {
 	    break;
 	}
+	Tk_FreeTextLayout(msgPtr->textLayout);
     }
-    msgPtr->lineLength = maxWidth;
-    msgPtr->msgHeight = numLines * (msgPtr->fontPtr->ascent
-		+ msgPtr->fontPtr->descent);
-    Tk_GeometryRequest(msgPtr->tkwin,
-	    maxWidth + 2*msgPtr->inset + 2*msgPtr->padX, height);
-    Tk_SetInternalBorder(msgPtr->tkwin, msgPtr->inset);
+    msgPtr->msgWidth = thisWidth;
+    msgPtr->msgHeight = thisHeight;
+    Tk_GeometryRequest(msgPtr->tkwin, maxWidth, height);
+    Tk_SetInternalBorder(msgPtr->tkwin, inset);
 }
 
 /*
@@ -630,8 +644,7 @@ DisplayMessage(clientData)
 {
     register Message *msgPtr = (Message *) clientData;
     register Tk_Window tkwin = msgPtr->tkwin;
-    char *p;
-    int x, y, lineLength, numChars, charsLeft;
+    int x, y;
 
     msgPtr->flags &= ~REDRAW_PENDING;
     if ((msgPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
@@ -645,73 +658,10 @@ DisplayMessage(clientData)
      * and anchor option.
      */
 
-    switch (msgPtr->anchor) {
-	case TK_ANCHOR_NW: case TK_ANCHOR_N: case TK_ANCHOR_NE:
-	    y = msgPtr->inset + msgPtr->padY;
-	    break;
-	case TK_ANCHOR_W: case TK_ANCHOR_CENTER: case TK_ANCHOR_E:
-	    y = ((int) (Tk_Height(tkwin) - msgPtr->msgHeight))/2;
-	    break;
-	default:
-	    y = Tk_Height(tkwin) - msgPtr->inset - msgPtr->padY
-		    - msgPtr->msgHeight;
-	    break;
-    }
-    y += msgPtr->fontPtr->ascent;
-
-    /*
-     * Work through the string to display one line at a time.
-     * Display each line in three steps.  First compute the
-     * line's width, then figure out where to display the
-     * line to justify it properly, then display the line.
-     */
-
-    for (p = msgPtr->string, charsLeft = msgPtr->numChars; *p != 0;
-	    y += msgPtr->fontPtr->ascent + msgPtr->fontPtr->descent) {
-	if (*p == '\n') {
-	    p++;
-	    charsLeft--;
-	    continue;
-	}
-	numChars = TkMeasureChars(msgPtr->fontPtr, p, charsLeft, 0,
-		msgPtr->lineLength, 0, TK_WHOLE_WORDS|TK_AT_LEAST_ONE,
-		&lineLength);
-	switch (msgPtr->anchor) {
-	    case TK_ANCHOR_NW: case TK_ANCHOR_W: case TK_ANCHOR_SW:
-		x = msgPtr->inset + msgPtr->padX;
-		break;
-	    case TK_ANCHOR_N: case TK_ANCHOR_CENTER: case TK_ANCHOR_S:
-		x = ((int) (Tk_Width(tkwin) - msgPtr->lineLength))/2;
-		break;
-	    default:
-		x = Tk_Width(tkwin) - msgPtr->inset - msgPtr->padX
-			- msgPtr->lineLength;
-		break;
-	}
-	if (msgPtr->justify == TK_JUSTIFY_CENTER) {
-	    x += (msgPtr->lineLength - lineLength)/2;
-	} else if (msgPtr->justify == TK_JUSTIFY_RIGHT) {
-	    x += msgPtr->lineLength - lineLength;
-	}
-	TkDisplayChars(msgPtr->display, Tk_WindowId(tkwin),
-		msgPtr->textGC, msgPtr->fontPtr, p, numChars, x, y, x, 0);
-	p += numChars;
-	charsLeft -= numChars;
-
-	/*
-	 * Skip blanks at the beginning of a line, unless they follow
-	 * a user-requested newline.
-	 */
-
-	while (isspace(UCHAR(*p))) {
-	    charsLeft--;
-	    if (*p == '\n') {
-		p++;
-		break;
-	    }
-	    p++;
-	}
-    }
+    TkComputeAnchor(msgPtr->anchor, tkwin, msgPtr->padX, msgPtr->padY,
+	    msgPtr->msgWidth, msgPtr->msgHeight, &x, &y);
+    Tk_DrawTextLayout(Tk_Display(tkwin), Tk_WindowId(tkwin), msgPtr->textGC,
+	    msgPtr->textLayout, x, y, 0, -1);
 
     if (msgPtr->relief != TK_RELIEF_FLAT) {
 	Tk_Draw3DRectangle(tkwin, Tk_WindowId(tkwin), msgPtr->border,
@@ -764,8 +714,7 @@ MessageEventProc(clientData, eventPtr)
     } else if (eventPtr->type == DestroyNotify) {
 	if (msgPtr->tkwin != NULL) {
 	    msgPtr->tkwin = NULL;
-	    Tcl_DeleteCommand(msgPtr->interp,
-		    Tcl_GetCommandName(msgPtr->interp, msgPtr->widgetCmd));
+	    Tcl_DeleteCommandFromToken(msgPtr->interp, msgPtr->widgetCmd);
 	}
 	if (msgPtr->flags & REDRAW_PENDING) {
 	    Tcl_CancelIdleCall(DisplayMessage, (ClientData) msgPtr);

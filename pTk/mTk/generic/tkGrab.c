@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkGrab.c 1.51 96/09/05 12:29:43
+ * SCCS: @(#) tkGrab.c 1.52 97/03/21 11:14:34
  */
 
 #include "tkPort.h"
@@ -1205,9 +1205,9 @@ EatGrabEvents(dispPtr, serial)
 
     info.display = dispPtr->display;
     info.serial = serial;
-    XSync(dispPtr->display, False);
+    TkpSync(info.display);
     oldProc = Tk_RestrictEvents(GrabRestrictProc, (ClientData)&info, &oldArg);
-    while (Tcl_DoOneEvent(TCL_DONT_WAIT|TCL_WINDOW_EVENTS)) {
+    while (Tcl_ServiceEvent(TCL_WINDOW_EVENTS)) {
     }
     Tk_RestrictEvents(oldProc, oldArg, &dummy);
 }

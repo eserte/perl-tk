@@ -1,4 +1,3 @@
 tkAppInit.c
 tkUnixDialog.c
-imgUnixPmap.c
-
+tkUnixInit.c

@@ -3,12 +3,12 @@
  *
  *	Windows specific mouse tracking code.
  *
- * Copyright (c) 1995 Sun Microsystems, Inc.
+ * Copyright (c) 1995-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinPointer.c 1.14 96/02/15 18:56:05
+ * SCCS: @(#) tkWinPointer.c 1.28 97/10/31 08:40:07
  */
 
 #include "tkWinInt.h"
@@ -20,350 +20,134 @@
 #define MOUSE_TIMER_INTERVAL 250
 
 /*
- * Mask that selects any of the state bits corresponding to buttons,
- * plus masks that select individual buttons' bits:
+ * Declarations of static variables used in this file.
  */
 
-#define ALL_BUTTONS \
-	(Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask)
-static unsigned int buttonStates[] = {
-    Button1Mask, Button2Mask, Button3Mask, Button4Mask, Button5Mask
-};
-
-/*
- * Declarations of static variables used in the grab module.
- */
-
-static int captured;		/* 1 if mouse events outside of Tk windows
-				 * will be reported, else 0. */
-static TkWindow *grabWinPtr;	/* Window that defines the top of the grab
-				 * tree in a global grab. */
-static TkWindow *keyboardWinPtr;/* Current keyboard grab window. */
-static TkWindow *restrictWinPtr;
-				/* Window to which all mouse
-				   events will be reported. */
-
-/*
- * Declarations of static variables used in mouse position tracking.
- */
-
-static POINT lastMousePos;	/* Last known mouse position. */
-static HWND lastMouseWindow;	/* Last known mouse window. */
-static TkWindow *lastMouseWinPtr;
-				/* Last window mouse was seen in.  Used to
-				 * detect Enter/Leave events. */
-static Tcl_TimerToken mouseTimer;
-				/* Handle to the latest mouse timer. */
-static int mouseTimerSet;	/* Non-zero if the mouse timer is active. */
+static int captured = 0;		/* 1 if mouse is currently captured. */
+static TkWindow *keyboardWinPtr = NULL; /* Current keyboard grab window. */
+static Tcl_TimerToken mouseTimer;	/* Handle to the latest mouse timer. */
+static int mouseTimerSet = 0;		/* 1 if the mouse timer is active. */
 
 /*
  * Forward declarations of procedures used in this file.
  */
 
-static void		InitializeCrossingEvent _ANSI_ARGS_((
-    			    XEvent* eventPtr, TkWindow *winPtr,
-			    long x, long y));
 static void		MouseTimerProc _ANSI_ARGS_((ClientData clientData));
-static int		UpdateMousePosition _ANSI_ARGS_((HWND hwnd,
-			    TkWindow *winPtr, long x, long y));
 
 /*
  *----------------------------------------------------------------------
  *
- * TkWinPointerInit --
+ * TkWinGetModifierState --
  *
- *	Initialize the mouse pointer module.
+ *	Return the modifier state as of the last message.
  *
  * Results:
- *	None.
+ *	Returns the X modifier mask.
  *
  * Side effects:
- *	Initializes various static variables.
+ *	None.
  *
  *----------------------------------------------------------------------
  */
 
-void
-TkWinPointerInit()
+int
+TkWinGetModifierState()
 {
-    captured = 0;
-    grabWinPtr = NULL;
-    keyboardWinPtr = NULL;
-    restrictWinPtr = NULL;
+    int state = 0;
 
-    mouseTimerSet = 0;
-    GetCursorPos(&lastMousePos);
-    lastMouseWindow = WindowFromPoint(lastMousePos);
-    lastMouseWinPtr = NULL;
+    if (GetKeyState(VK_SHIFT) & 0x8000) {
+	state |= ShiftMask;
+    }
+    if (GetKeyState(VK_CONTROL) & 0x8000) {
+	state |= ControlMask;
+    }
+    if (GetKeyState(VK_MENU) & 0x8000) {
+	state |= Mod2Mask;
+    }
+    if (GetKeyState(VK_CAPITAL) & 0x0001) {
+	state |= LockMask;
+    }
+    if (GetKeyState(VK_NUMLOCK) & 0x0001) {
+	state |= Mod1Mask;
+    }
+    if (GetKeyState(VK_SCROLL) & 0x0001) {
+	state |= Mod3Mask;
+    }
+    if (GetKeyState(VK_LBUTTON) & 0x8000) {
+	state |= Button1Mask;
+    }
+    if (GetKeyState(VK_MBUTTON) & 0x8000) {
+	state |= Button2Mask;
+    }
+    if (GetKeyState(VK_RBUTTON) & 0x8000) {
+	state |= Button3Mask;
+    }
+    return state;
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * TkWinPointerDeadWindow --
+ * Tk_PointerEvent --
  *
- *	Clean up pointer module state when a window is destroyed.
+ *	This procedure is called for each pointer-related event.
+ *	It converts the position to root coords and updates the
+ *	global pointer state machine.  It also ensures that the
+ *	mouse timer is scheduled.
  *
  * Results:
  *	None.
  *
  * Side effects:
- *	May change the grab module settings.
+ *	May queue events and change the grab state.
  *
  *----------------------------------------------------------------------
  */
 
 void
-TkWinPointerDeadWindow(winPtr)
-    TkWindow *winPtr;
-{
-    if (winPtr == lastMouseWinPtr) {
-	lastMouseWinPtr = NULL;
-    }
-    if (winPtr == grabWinPtr) {
-	grabWinPtr = NULL;
-    }
-    if (winPtr == restrictWinPtr) {
-	restrictWinPtr = NULL;
-    }
-    if (!(restrictWinPtr || grabWinPtr)) {
-	captured = 0;
-	ReleaseCapture();
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TkWinPointerEvent --
- *
- *	This procedure is called for each pointer-related event,
- *	before the event is queued.  It simulates X style automatic
- *	grabs so that button release events are not lost.  It also
- *	updates the pointer position so enter/leave events will be
- *	correctly generated.
- *
- * Results:
- *	Returns 0 if the event should be discarded.
- *
- * Side effects:
- *	Changes the current mouse capture window. 
- *
- *----------------------------------------------------------------------
- */
-
-void
-TkWinPointerEvent(eventPtr, winPtr)
-    XEvent *eventPtr;		/* Event to process */
-    TkWindow *winPtr;		/* Window to which event was reported. */
+Tk_PointerEvent(hwnd, x, y)
+    HWND hwnd;				/* Window for coords, or NULL for
+					 * the root window. */
+    int x, y;				/* Coords relative to hwnd, or screen
+					 * if hwnd is NULL. */
 {
     POINT pos;
-    HWND hwnd;
-    TkWinDrawable *twdPtr;
+    int state;
+    Tk_Window tkwin;
+
+    pos.x = x;
+    pos.y = y;
+
+    /*
+     * Convert client coords to root coords if we were given a window.
+     */
+
+    if (hwnd) {
+	ClientToScreen(hwnd, &pos);
+    }
 
     /*
      * If the mouse is captured, Windows will report all pointer
      * events to the capture window.  So, we need to determine which
      * window the mouse is really over and change the event.  Note
      * that the computed hwnd may point to a window not owned by Tk,
-     * or a toplevel decorative frame, so winPtr can be NULL.
+     * or a toplevel decorative frame, so tkwin can be NULL.
      */
 
-    if (captured) {
-	pos.x = eventPtr->xmotion.x_root;
-	pos.y = eventPtr->xmotion.y_root;
+    if (captured || hwnd == NULL) {
 	hwnd = WindowFromPoint(pos);
-	twdPtr = TkWinGetDrawableFromHandle(hwnd);
-	if (twdPtr && (twdPtr->type == TWD_WINDOW)) {
-	    winPtr = TkWinGetWinPtr(twdPtr);
-	} else {
-	    winPtr = NULL;
-	}
-    } else {
-	hwnd = TkWinGetHWND(Tk_WindowId(winPtr));
     }
+    tkwin = Tk_HWNDToWindow(hwnd);
 
-    switch (eventPtr->type) {
-	case MotionNotify: 
+    state = TkWinGetModifierState();
 
-	    /*
-	     * If updating the mouse position caused an enter or leave
-	     * event to be generated, we discard the motion event.
-	     */
+    Tk_UpdatePointer(tkwin, pos.x, pos.y, state);
 
-	    if (UpdateMousePosition(hwnd, winPtr, eventPtr->xmotion.x_root,
-		    eventPtr->xmotion.y_root)) {
-		return;
-	    }
-	    break;
-
-	case ButtonPress:
-
-	    /*
-	     * Set mouse capture and the restrict window if we are
-	     * currently unrestricted.  However, If this is not the
-	     * first button pressed and we are already grabbed, do not
-	     * change anything.
-	     */
-
-	    if (!restrictWinPtr) {
-		if (!grabWinPtr) {
-		    /*
-		     * Mouse was ungrabbed, so set a button grab.
-		     */
-
-		    restrictWinPtr = winPtr;
-		    captured = 1;
-		    SetCapture(hwnd);
-		} else if ((eventPtr->xmotion.state & ALL_BUTTONS) == 0) {
-
-		    /*
-		     * Mouse was grabbed, but not in a button grab.
-		     * Make sure the new restrict window is inside the
-		     * current grab tree.
-		     */
-
-		    if (TkPositionInTree(winPtr, grabWinPtr)
-			    == TK_GRAB_IN_TREE) {
-			restrictWinPtr = winPtr;
-		    } else {
-			restrictWinPtr = grabWinPtr;
-		    }
-		    captured = 1;
-		    SetCapture(TkWinGetHWND(Tk_WindowId(restrictWinPtr)));
-		}
-	    }
-	    break;
-
-	case ButtonRelease:
-
-	    /*
-	     * Release the mouse capture when the last button is
-	     * released and we aren't in a global grab.
-	     */
-		    
-	    if ((eventPtr->xbutton.state & ALL_BUTTONS)
-		    == buttonStates[eventPtr->xbutton.button - Button1]) {
-		if (!grabWinPtr) {
-		    captured = 0;
-		    ReleaseCapture();
-		}
-
-		/*
-		 * If we are releasing a restrict window, then we need
-		 * to send the button event followed by mouse motion from
-		 * the restrict window the the current mouse position.
-		 */
-
-		if (restrictWinPtr) {
-		    if (Tk_WindowId(restrictWinPtr) != eventPtr->xany.window) {
-			TkChangeEventWindow(eventPtr, restrictWinPtr);
-		    }
-		    Tk_QueueWindowEvent(eventPtr, TCL_QUEUE_TAIL);
-		    lastMouseWinPtr = restrictWinPtr;
-		    restrictWinPtr = NULL;
-		    UpdateMousePosition(hwnd, winPtr, eventPtr->xmotion.x_root,
-			    eventPtr->xmotion.y_root);
-		    return;
-		}
-	    }
-	    break;
+    if ((captured || tkwin) && !mouseTimerSet) {
+	mouseTimerSet = 1;
+	mouseTimer = Tcl_CreateTimerHandler(MOUSE_TIMER_INTERVAL,
+		MouseTimerProc, NULL);
     }
-
-    /*
-     * If a restrict window is set, make sure the pointer event is reported
-     * relative to that window.  Otherwise, if a global grab is in effect
-     * then events outside of window managed by Tk should be reported to the
-     * grab window.
-     */
-
-    if (restrictWinPtr) {
-	winPtr = restrictWinPtr;
-    } else if (grabWinPtr && !winPtr) {
-	winPtr = grabWinPtr;
-    }
-
-    /*
-     * If the target window has changed, update the coordinates in the event.
-     */
-
-    if (winPtr && Tk_WindowId(winPtr) != eventPtr->xany.window) {
-	TkChangeEventWindow(eventPtr, winPtr);
-    }
-    Tk_QueueWindowEvent(eventPtr, TCL_QUEUE_TAIL);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XGrabPointer --
- *
- *	Capture the mouse so event are reported outside of toplevels.
- *	Note that this is a very limited implementation that only
- *	supports GrabModeAsync and owner_events True.
- *
- * Results:
- *	Always returns GrabSuccess.
- *
- * Side effects:
- *	Turns on mouse capture, sets the global grab pointer, and
- *	clears any window restrictions.
- *
- *----------------------------------------------------------------------
- */
-
-int
-XGrabPointer(display, grab_window, owner_events, event_mask, pointer_mode,
-	keyboard_mode, confine_to, cursor, time)
-    Display* display;
-    Window grab_window;
-    Bool owner_events;
-    unsigned int event_mask;
-    int pointer_mode;
-    int keyboard_mode;
-    Window confine_to;
-    Cursor cursor;
-    Time time;
-{
-    HWND hwnd = TkWinGetHWND(grab_window);
-    grabWinPtr = TkWinGetWinPtr(grab_window);
-    captured = 1;
-    restrictWinPtr = NULL;
-    SetCapture(hwnd);
-    if (TkPositionInTree(lastMouseWinPtr, grabWinPtr) == TK_GRAB_IN_TREE) {
-	TkWinUpdateCursor(lastMouseWinPtr);
-    } else {
-	TkWinUpdateCursor(grabWinPtr);
-    }
-    return GrabSuccess;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XUngrabPointer --
- *
- *	Release the current grab.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Releases the mouse capture.
- *
- *----------------------------------------------------------------------
- */
-
-void
-XUngrabPointer(display, time)
-    Display* display;
-    Time time;
-{
-    captured = 0;
-    grabWinPtr = NULL;
-    restrictWinPtr = NULL;
-    ReleaseCapture();
-    TkWinUpdateCursor(lastMouseWinPtr);
 }
 
 /*
@@ -423,165 +207,6 @@ XUngrabKeyboard(display, time)
 /*
  *----------------------------------------------------------------------
  *
- * InitializeCrossingEvent --
- *
- *	Initializes the common fields for enter/leave events.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Fills in the specified event structure.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-InitializeCrossingEvent(eventPtr, winPtr, x, y)
-    XEvent* eventPtr;		/* Event structure to initialize. */
-    TkWindow *winPtr;		/* Window to make event relative to. */
-    long x, y;			/* Root coords of event. */
-{
-    eventPtr->xcrossing.serial = LastKnownRequestProcessed(winPtr->display);
-    eventPtr->xcrossing.send_event = 0;
-    eventPtr->xcrossing.display = winPtr->display;
-    eventPtr->xcrossing.root = RootWindow(winPtr->display, winPtr->screenNum);
-    eventPtr->xcrossing.time = TkCurrentTime(winPtr->dispPtr);
-    eventPtr->xcrossing.x_root = x;
-    eventPtr->xcrossing.y_root = y;
-    eventPtr->xcrossing.state = TkWinGetModifierState(WM_MOUSEMOVE, 0, 0);
-    eventPtr->xcrossing.mode = NotifyNormal;
-    eventPtr->xcrossing.focus = False;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * UpdateMousePosition --
- *
- *	Update the current mouse window and position, and generate
- *	any enter/leave events that are needed.  Will schedule a
- *	timer to check the mouse position if the pointer is still
- *	inside a Tk window.
- *
- * Results:
- *	Returns 1 if enter/leave events were generated.
- *
- * Side effects:
- *	May generate enter/leave events and schedule a timer.
- *
- *----------------------------------------------------------------------
- */
-
-int
-UpdateMousePosition(hwnd, winPtr, x, y)
-    HWND hwnd;			/* current mouse window */
-    TkWindow *winPtr;		/* current Tk window (or NULL)  */
-    long x;			/* current mouse position in */
-    long y;			/* root coordinates */
-{
-    int crossed = 0;		/* 1 if mouse crossed a window boundary */
-    TkWindow *cursorWinPtr;
-
-    if (winPtr != lastMouseWinPtr) {
-	if (restrictWinPtr) {
-	    int newPos, oldPos;
-
-	    newPos = TkPositionInTree(winPtr, restrictWinPtr);
-	    oldPos = TkPositionInTree(lastMouseWinPtr, restrictWinPtr);
-
-	    /*
-	     * Check if the mouse crossed into or out of the restrict
-	     * window.  If so, we need to generate an Enter or Leave event.
-	     */
-
-	    if ((newPos != oldPos) && ((newPos == TK_GRAB_IN_TREE)
-		    || (oldPos == TK_GRAB_IN_TREE))) {
-		XEvent event;
-
-		InitializeCrossingEvent(&event, restrictWinPtr, x, y);
-		if (newPos == TK_GRAB_IN_TREE) {
-		    event.type = EnterNotify;
-		} else {
-		    event.type = LeaveNotify;
-		}
-		if ((oldPos == TK_GRAB_ANCESTOR)
-			|| (newPos == TK_GRAB_ANCESTOR)) {
-		    event.xcrossing.detail = NotifyAncestor;
-		} else {
-		    event.xcrossing.detail = NotifyVirtual;
-		}
-		TkChangeEventWindow(&event, restrictWinPtr);
-		Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
-	    }
-
-	} else {
-	    TkWindow *targetPtr;
-
-	    if ((lastMouseWinPtr == NULL)
-		|| (lastMouseWinPtr->window == None)) {
-		targetPtr = winPtr;
-	    } else {
-		targetPtr = lastMouseWinPtr;
-	    }
-
-	    if (targetPtr && (targetPtr->window != None)) {
-		XEvent event;
-
-		/*
-		 * Generate appropriate Enter/Leave events.
-		 */
-
-		InitializeCrossingEvent(&event, targetPtr, x, y);
-
-		TkInOutEvents(&event, lastMouseWinPtr, winPtr, LeaveNotify,
-			EnterNotify, TCL_QUEUE_TAIL);
-
-		if (TkPositionInTree(winPtr, grabWinPtr) == TK_GRAB_IN_TREE) {
-		    cursorWinPtr = winPtr;
-		} else {
-		    cursorWinPtr = grabWinPtr;
-		}
-		crossed = 1;
-	    }
-	}
-	lastMouseWinPtr = winPtr;
-    }
-
-    /*
-     * Make sure the cursor reflects the current mouse position.
-     */
-
-    if (restrictWinPtr) {
-	cursorWinPtr = restrictWinPtr;
-    } else if (grabWinPtr) {
-	cursorWinPtr = (TkPositionInTree(winPtr, grabWinPtr)
-		== TK_GRAB_IN_TREE) ? winPtr : grabWinPtr;
-    } else {
-	cursorWinPtr = winPtr;
-    }
-    TkWinUpdateCursor(cursorWinPtr);
-
-    lastMouseWindow = hwnd;
-    lastMousePos.x = x;
-    lastMousePos.y = y;
-
-    /*
-     * Ensure the mouse timer is set if we are still inside a Tk window.
-     */
-
-    if (winPtr != NULL && !mouseTimerSet) {
-	mouseTimerSet = 1;
-	mouseTimer = Tcl_CreateTimerHandler(MOUSE_TIMER_INTERVAL,
-		MouseTimerProc, NULL);
-    }
-
-    return crossed;
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * MouseTimerProc --
  *
  *	Check the current mouse position and look for enter/leave 
@@ -601,9 +226,6 @@ MouseTimerProc(clientData)
     ClientData clientData;
 {
     POINT pos;
-    HWND hwnd;
-    TkWinDrawable *twdPtr;
-    TkWindow *winPtr;
 
     mouseTimerSet = 0;
 
@@ -613,32 +235,7 @@ MouseTimerProc(clientData)
      */
 
     GetCursorPos(&pos);
-    if (pos.x == lastMousePos.y && pos.y == lastMousePos.y) {
-	hwnd = lastMouseWindow;
-    } else {
-	hwnd = WindowFromPoint(pos);
-    }
-
-    /*
-     * Check to see if the current window is managed by Tk.
-     */
-
-    if (hwnd == lastMouseWindow) {
-	winPtr = lastMouseWinPtr;
-    } else {
-	twdPtr = TkWinGetDrawableFromHandle(hwnd);
-	if (twdPtr && (twdPtr->type == TWD_WINDOW)) {
-	    winPtr = TkWinGetWinPtr(twdPtr);
-	} else {
-	    winPtr = NULL;
-	}
-    }
-
-    /*
-     * Generate enter/leave events.
-     */
-
-    UpdateMousePosition(hwnd, winPtr, pos.x, pos.y);
+    Tk_PointerEvent(NULL, pos.x, pos.y);
 }
 
 /*
@@ -664,13 +261,11 @@ TkGetPointerCoords(tkwin, xPtr, yPtr)
 				 * lookup is to be done. */
     int *xPtr, *yPtr;		/* Store pointer coordinates here. */
 {
-    DWORD msgPos;
-    POINTS rootPoint;
+    POINT point;
 
-    msgPos = GetMessagePos();
-    rootPoint = MAKEPOINTS(msgPos);
-    *xPtr = rootPoint.x;
-    *yPtr = rootPoint.y;
+    GetCursorPos(&point);
+    *xPtr = point.x;
+    *yPtr = point.y;
 }
 
 /*
@@ -705,8 +300,9 @@ XQueryPointer(display, w, root_return, child_return, root_x_return,
     int* win_y_return;
     unsigned int* mask_return;
 {
+    display->request++;
     TkGetPointerCoords(NULL, root_x_return, root_y_return);
-    *mask_return = TkWinGetModifierState(WM_MOUSEMOVE, 0, 0);    
+    *mask_return = TkWinGetModifierState();
     return True;
 }
 
@@ -732,20 +328,10 @@ XGetInputFocus(display, focus_return, revert_to_return)
     Window *focus_return;
     int *revert_to_return;
 {
-    HWND hwnd = GetFocus();
-    TkWinDrawable *twdPtr = TkWinGetDrawableFromHandle(hwnd);
-
-    /*
-     * The focus window may be a Tk window or a window manager decorative
-     * frame.
-     */
-
-    if (twdPtr) {
-	*focus_return = Tk_WindowId(TkWinGetWinPtr(twdPtr));
-    } else {
-	*focus_return = None;
-    }
+    Tk_Window tkwin = Tk_HWNDToWindow(GetFocus());
+    *focus_return = tkwin ? Tk_WindowId(tkwin) : None;
     *revert_to_return = RevertToParent;
+    display->request++;
 }
 
 /*
@@ -772,77 +358,100 @@ XSetInputFocus(display, focus, revert_to, time)
     int revert_to;
     Time time;
 {
-    HWND hwnd = TkWinGetHWND(focus);
-    SetFocus(hwnd);
+    display->request++;
+    if (focus != None) {
+	SetFocus(Tk_GetHWND(focus));
+    }
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * XDefineCursor --
+ * TkpChangeFocus --
  *
- *	This function is called to update the cursor on a window.
- *	Since the mouse might be in the specified window, we need to
- *	check the specified window against the current mouse position
- *	and grab state.
+ *	This procedure is invoked to move the system focus from
+ *	one window to another.
+ *
+ * Results:
+ *	The return value is the serial number of the command that
+ *	changed the focus.  It may be needed by the caller to filter
+ *	out focus change events that were queued before the command.
+ *	If the procedure doesn't actually change the focus then
+ *	it returns 0.
+ *
+ * Side effects:
+ *	The official Windows focus window changes;  the application's focus
+ *	window isn't changed by this procedure.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkpChangeFocus(winPtr, force)
+    TkWindow *winPtr;		/* Window that is to receive the X focus. */
+    int force;			/* Non-zero means claim the focus even
+				 * if it didn't originally belong to
+				 * topLevelPtr's application. */
+{
+    TkDisplay *dispPtr = winPtr->dispPtr;
+    Window focusWindow;
+    int dummy, serial;
+    TkWindow *winPtr2;
+
+    if (!force) {
+	XGetInputFocus(dispPtr->display, &focusWindow, &dummy);
+	winPtr2 = (TkWindow *) Tk_IdToWindow(dispPtr->display, focusWindow);
+	if ((winPtr2 == NULL) || (winPtr2->mainPtr != winPtr->mainPtr)) {
+	    return 0;
+	}
+    }
+
+    if (winPtr->window == None) {
+	panic("ChangeXFocus got null X window");
+    }
+    XSetInputFocus(dispPtr->display, winPtr->window, RevertToParent,
+	    CurrentTime);
+
+    /*
+     * Remember the current serial number for the X server and issue
+     * a dummy server request.  This marks the position at which we
+     * changed the focus, so we can distinguish FocusIn and FocusOut
+     * events on either side of the mark.
+     */
+
+    serial = NextRequest(winPtr->display);
+    XNoOp(winPtr->display);
+    return serial;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpSetCapture --
+ *
+ *	This function captures the mouse so that all future events
+ *	will be reported to this window, even if the mouse is outside
+ *	the window.  If the specified window is NULL, then the mouse
+ *	is released. 
  *
  * Results:
  *	None.
  *
  * Side effects:
- *	May update the cursor.
+ *	Sets the capture flag and captures the mouse.
  *
  *----------------------------------------------------------------------
  */
 
 void
-XDefineCursor(display, w, cursor)
-    Display* display;
-    Window w;
-    Cursor cursor;
+TkpSetCapture(winPtr)
+    TkWindow *winPtr;			/* Capture window, or NULL. */
 {
-    TkWindow *winPtr = TkWinGetWinPtr(w);
-
-    if (restrictWinPtr) {
-
-	/*
-	 * If there is a restrict window, then we only update the cursor
-	 * if the restrict window is the window being modified.
-	 */
-
-	if (winPtr == restrictWinPtr) {
-	    goto update;
-	}
-    } else if (grabWinPtr) {
-
-	/*
-	 * If a grab is in effect, then we only update the cursor if the mouse
-	 * pointer is outside the grab tree and the specified window is the
-	 * grab window, or the pointer is inside the grab tree and the
-	 * specified window is also the pointer window.
-	 */
-
-	if (TkPositionInTree(lastMouseWinPtr, grabWinPtr) == TK_GRAB_IN_TREE) {
-	    if (winPtr == lastMouseWinPtr) {
-		goto update;
-	    }
-	} else if (winPtr == grabWinPtr) {
-	    goto update;
-	}
+    if (winPtr) {
+	SetCapture(Tk_GetHWND(Tk_WindowId(winPtr)));
+	captured = 1;
     } else {
-
-	/*
-	 * Otherwise, we only update the cursor if the specified window
-	 * contains the mouse pointer.
-	 */
-
-	if (winPtr == lastMouseWinPtr) {
-	    goto update;
-	}
+	captured = 0;
+	ReleaseCapture();
     }
-    return;
-
-update:
-    TkWinUpdateCursor(winPtr);
 }
-

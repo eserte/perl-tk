@@ -5,11 +5,16 @@ Construct Tk::Widget 'Canvas';
 
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Canvas/Canvas.pm#6$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Canvas/Canvas.pm#4$
 
 bootstrap Tk::Canvas $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::canvas }
+
+Tk::Methods("addtag","bbox","bind","canvasx","canvasy","coords","create",
+            "dchars","delete","dtag","find","focus","gettags","icursor",
+            "index","insert","itemcget","itemconfigure","lower","move",
+            "postscript","raise","scale","scan","select","type","xview","yview");
 
 use Tk::Submethods ( 'create' => [qw(arc bitmap image line oval 
                                  polygon rectangle text window)],

@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinDraw.c 1.23 96/10/17 17:34:29
+ * SCCS: @(#) tkWinDraw.c 1.30 97/03/21 11:20:05
  */
 
 #include "tkWinInt.h"
@@ -26,7 +26,7 @@
  * Translation table between X gc functions and Win32 raster op modes.
  */
 
-static int ropModes[] = {
+int tkpWinRopModes[] = {
     R2_BLACK,			/* GXclear */
     R2_MASKPEN,			/* GXand */
     R2_MASKPENNOT,		/* GXandReverse */
@@ -115,7 +115,7 @@ static POINT *		ConvertPoints _ANSI_ARGS_((XPoint *points, int npoints,
 static void		DrawOrFillArc _ANSI_ARGS_((Display *display,
 			    Drawable d, GC gc, int x, int y,
 			    unsigned int width, unsigned int height,
-			    int angle1, int angle2, int fill));
+			    int start, int extent, int fill));
 static void		RenderObject _ANSI_ARGS_((HDC dc, GC gc,
 			    XPoint* points, int npoints, int mode, HPEN pen,
 			    WinDrawFunc func));
@@ -148,7 +148,7 @@ TkWinGetDrawableDC(display, d, state)
     TkWinDrawable *twdPtr = (TkWinDrawable *)d;
     Colormap cmap;
 
-    if (twdPtr->type != TWD_BITMAP) {
+    if (twdPtr->type == TWD_WINDOW) {
 	TkWindow *winPtr = twdPtr->window.winPtr;
     
  	dc = GetDC(twdPtr->window.handle);
@@ -157,13 +157,12 @@ TkWinGetDrawableDC(display, d, state)
 	} else {
 	    cmap = winPtr->atts.colormap;
 	}
+    } else if (twdPtr->type == TWD_WINDC) {
+	dc = twdPtr->winDC.hdc;
+	cmap = DefaultColormap(display, DefaultScreen(display));
     } else {
-	HDC dcMem;
-	dc = GetDC(NULL);
-	dcMem = CreateCompatibleDC(dc);
-	ReleaseDC(NULL, dc);
-	SelectObject(dcMem, twdPtr->bitmap.handle);
-	dc = dcMem;
+	dc = CreateCompatibleDC(NULL);
+	SelectObject(dc, twdPtr->bitmap.handle);
 	cmap = twdPtr->bitmap.colormap;
     }
     state->palette = TkWinSelectPalette(dc, cmap);
@@ -195,9 +194,9 @@ TkWinReleaseDrawableDC(d, dc, state)
     TkWinDrawable *twdPtr = (TkWinDrawable *)d;
     SelectPalette(dc, state->palette, TRUE);
     RealizePalette(dc);
-    if (twdPtr->type != TWD_BITMAP) {
+    if (twdPtr->type == TWD_WINDOW) {
 	ReleaseDC(TkWinGetHWND(d), dc);
-    } else {
+    } else if (twdPtr->type == TWD_BITMAP) {
 	DeleteDC(dc);
     }
 }
@@ -518,15 +517,26 @@ TkPutImage(colors, ncolors, display, d, gc, image, src_x, src_y, dest_x,
     display->request++;
 
     dc = TkWinGetDrawableDC(display, d, &state);
-    SetROP2(dc, ropModes[gc->function]);
+    SetROP2(dc, tkpWinRopModes[gc->function]);
     dcMem = CreateCompatibleDC(dc);
 
     if (image->bits_per_pixel == 1) {
-	data = TkAlignImageData(image, sizeof(WORD), MSBFirst);
-	bitmap = CreateBitmap(image->width, image->height, 1, 1, data);
+	/*
+	 * If the image isn't in the right format, we have to copy
+	 * it into a new buffer in MSBFirst and word-aligned format.
+	 */
+
+	if ((image->bitmap_bit_order != MSBFirst)
+		|| (image->bitmap_pad != sizeof(WORD))) {
+	    data = TkAlignImageData(image, sizeof(WORD), MSBFirst);
+	    bitmap = CreateBitmap(image->width, image->height, 1, 1, data);
+	    ckfree(data);
+	} else {
+	    bitmap = CreateBitmap(image->width, image->height, 1, 1,
+		    image->data);
+	}
 	SetTextColor(dc, gc->foreground);
 	SetBkColor(dc, gc->background);
-	ckfree(data);
     } else {    
 	int i, usePalette;
 
@@ -534,7 +544,7 @@ TkPutImage(colors, ncolors, display, d, gc, image, src_x, src_y, dest_x,
 	 * Do not use a palette for TrueColor images.
 	 */
 	
-	usePalette = (image->bits_per_pixel < 24);
+	usePalette = (image->bits_per_pixel < 16);
 	
 	if (usePalette) {
 	    infoPtr = (BITMAPINFO*) ckalloc(sizeof(BITMAPINFOHEADER)
@@ -556,7 +566,7 @@ TkPutImage(colors, ncolors, display, d, gc, image, src_x, src_y, dest_x,
 #ifdef __OPEN32__
 	if (1) {			/* Bug in Open32. */
 #else
-	if ((GetVersion() & 0x80000000)) {
+	if (tkpIsWin32s) {
 #endif
 	    int y;
 	    char *srcPtr, *dstPtr, *temp;
@@ -609,132 +619,6 @@ TkPutImage(colors, ncolors, display, d, gc, image, src_x, src_y, dest_x,
 /*
  *----------------------------------------------------------------------
  *
- * XDrawString --
- *
- *	Draw a single string in the current font.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Renders the specified string in the drawable.
- *
- *----------------------------------------------------------------------
- */
-
-void
-XDrawString(display, d, gc, x, y, string, length)
-    Display* display;
-    Drawable d;
-    GC gc;
-    int x;
-    int y;
-    _Xconst char* string;
-    int length;
-{
-    HDC dc;
-    HFONT oldFont;
-    TkWinDCState state;
-
-    display->request++;
-
-    if (d == None) {
-	return;
-    }
-
-    dc = TkWinGetDrawableDC(display, d, &state);
-    SetROP2(dc, ropModes[gc->function]);
-
-    if ((gc->fill_style == FillStippled
-	    || gc->fill_style == FillOpaqueStippled)
-	    && gc->stipple != None) {
-	TkWinDrawable *twdPtr = (TkWinDrawable *)gc->stipple;
-	HBRUSH oldBrush, stipple;
-	HBITMAP oldBitmap, bitmap;
-	HDC dcMem;
-	TEXTMETRIC tm;
-	SIZE size;
-
-	if (twdPtr->type != TWD_BITMAP) {
-	    panic("unexpected drawable type in stipple");
-	}
-
-	/*
-	 * Select stipple pattern into destination dc.
-	 */
-	
-	dcMem = CreateCompatibleDC(dc);
-
-	stipple = CreatePatternBrush(twdPtr->bitmap.handle);
-	SetBrushOrgEx(dc, gc->ts_x_origin, gc->ts_y_origin, NULL);
-	oldBrush = SelectObject(dc, stipple);
-
-	SetTextAlign(dcMem, TA_LEFT | TA_TOP);
-	SetTextColor(dcMem, gc->foreground);
-	SetBkMode(dcMem, TRANSPARENT);
-	SetBkColor(dcMem, RGB(0, 0, 0));
-
-	if (gc->font != None) {
-	    oldFont = SelectObject(dcMem, (HFONT)gc->font);
-	}
-
-	/*
-	 * Compute the bounding box and create a compatible bitmap.
-	 */
-
-	GetTextExtentPoint(dcMem, string, length, &size);
-	GetTextMetrics(dcMem, &tm);
-	size.cx -= tm.tmOverhang;
-	bitmap = CreateCompatibleBitmap(dc, size.cx, size.cy);
-	oldBitmap = SelectObject(dcMem, bitmap);
-
-	/*
-	 * The following code is tricky because fonts are rendered in multiple
-	 * colors.  First we draw onto a black background and copy the white
-	 * bits.  Then we draw onto a white background and copy the black bits.
-	 * Both the foreground and background bits of the font are ANDed with
-	 * the stipple pattern as they are copied.
-	 */
-
-	PatBlt(dcMem, 0, 0, size.cx, size.cy, BLACKNESS);
-	TextOut(dcMem, 0, 0, string, length);
-	BitBlt(dc, x, y - tm.tmAscent, size.cx, size.cy, dcMem,
-		0, 0, 0xEA02E9);
-	PatBlt(dcMem, 0, 0, size.cx, size.cy, WHITENESS);
-	TextOut(dcMem, 0, 0, string, length);
-	BitBlt(dc, x, y - tm.tmAscent, size.cx, size.cy, dcMem,
-		0, 0, 0x8A0E06);
-
-	/*
-	 * Destroy the temporary bitmap and restore the device context.
-	 */
-
-	if (gc->font != None) {
-	    SelectObject(dcMem, oldFont);
-	}
-	SelectObject(dcMem, oldBitmap);
-	DeleteObject(bitmap);
-	DeleteDC(dcMem);
-	SelectObject(dc, oldBrush);
-	DeleteObject(stipple);
-    } else {
-	SetTextAlign(dc, TA_LEFT | TA_BASELINE);
-	SetTextColor(dc, gc->foreground);
-	SetBkMode(dc, TRANSPARENT);
-	if (gc->font != None) {
-	    oldFont = SelectObject(dc, (HFONT)gc->font);
-	}
-	TextOut(dc, x, y, string, length);
-	if (gc->font != None) {
-	    SelectObject(dc, oldFont);
-	}
-    }
-    TkWinReleaseDrawableDC(d, dc, &state);
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * XFillRectangles --
  *
  *	Fill multiple rectangular areas in the given drawable.
@@ -757,17 +641,17 @@ XFillRectangles(display, d, gc, rectangles, nrectangles)
     int nrectangles;
 {
     HDC dc;
-    HBRUSH brush;
     int i;
     RECT rect;
     TkWinDCState state;
+    HBRUSH brush;
 
     if (d == None) {
 	return;
     }
 
     dc = TkWinGetDrawableDC(display, d, &state);
-    SetROP2(dc, ropModes[gc->function]);
+    SetROP2(dc, tkpWinRopModes[gc->function]);
     brush = CreateSolidBrush(gc->foreground);
 
     if ((gc->fill_style == FillStippled
@@ -825,11 +709,8 @@ XFillRectangles(display, d, gc, rectangles, nrectangles)
 	DeleteObject(bgBrush);
     } else {
 	for (i = 0; i < nrectangles; i++) {
-	    rect.left = rectangles[i].x;
-	    rect.top = rectangles[i].y;
-	    rect.right = rect.left + rectangles[i].width;
-	    rect.bottom = rect.top + rectangles[i].height;
-	    FillRect(dc, &rect, brush);
+	    TkWinFillRect(dc, rectangles[i].x, rectangles[i].y,
+		    rectangles[i].width, rectangles[i].height, gc->foreground);
 	}
     }
     DeleteObject(brush);
@@ -883,7 +764,17 @@ RenderObject(dc, gc, points, npoints, mode, pen, func)
 	    panic("unexpected drawable type in stipple");
 	}
 
-    
+	/*
+	 * Grow the bounding box enough to account for wide lines.
+	 */
+
+	if (gc->line_width > 1) {
+	    rect.left -= gc->line_width;
+	    rect.top -= gc->line_width;
+	    rect.right += gc->line_width;
+	    rect.bottom += gc->line_width;
+	}
+
 	width = rect.right - rect.left;
 	height = rect.bottom - rect.top;
 
@@ -891,8 +782,8 @@ RenderObject(dc, gc, points, npoints, mode, pen, func)
 	 * Select stipple pattern into destination dc.
 	 */
 	
-	oldBrush = SelectObject(dc, CreatePatternBrush(twdPtr->bitmap.handle));
 	SetBrushOrgEx(dc, gc->ts_x_origin, gc->ts_y_origin, NULL);
+	oldBrush = SelectObject(dc, CreatePatternBrush(twdPtr->bitmap.handle));
 
 	/*
 	 * Create temporary drawing surface containing a copy of the
@@ -906,7 +797,7 @@ RenderObject(dc, gc, points, npoints, mode, pen, func)
 	BitBlt(dcMem, 0, 0, width, height, dc, rect.left, rect.top, SRCCOPY);
 
 	/*
-	 * Translate the object to 0,0 for rendering in the temporary drawing
+	 * Translate the object for rendering in the temporary drawing
 	 * surface. 
 	 */
 
@@ -947,7 +838,7 @@ RenderObject(dc, gc, points, npoints, mode, pen, func)
     } else {
 	oldPen = SelectObject(dc, pen);
 	oldBrush = SelectObject(dc, CreateSolidBrush(gc->foreground));
-	SetROP2(dc, ropModes[gc->function]);
+	SetROP2(dc, tkpWinRopModes[gc->function]);
 
 	SetPolyFillMode(dc, (gc->fill_rule == EvenOddRule) ? ALTERNATE
 		: WINDING);
@@ -994,7 +885,42 @@ XDrawLines(display, d, gc, points, npoints, mode)
 
     dc = TkWinGetDrawableDC(display, d, &state);
 
-    pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
+    if (!tkpIsWin32s && (gc->line_width > 1)) {
+	LOGBRUSH lb;
+	DWORD style;
+
+	lb.lbStyle = BS_SOLID;
+	lb.lbColor = gc->foreground;
+	lb.lbHatch = 0;
+
+	style = PS_GEOMETRIC|PS_COSMETIC;
+	switch (gc->cap_style) {
+	    case CapNotLast:
+	    case CapButt:
+		style |= PS_ENDCAP_FLAT; 
+		break;
+	    case CapRound:
+		style |= PS_ENDCAP_ROUND; 
+		break;
+	    default:
+		style |= PS_ENDCAP_SQUARE; 
+		break;
+	}
+	switch (gc->join_style) {
+	    case JoinMiter: 
+		style |= PS_JOIN_MITER; 
+		break;
+	    case JoinRound:
+		style |= PS_JOIN_ROUND; 
+		break;
+	    default:
+		style |= PS_JOIN_BEVEL; 
+		break;
+	}
+	pen = ExtCreatePen(style, gc->line_width, &lb, 0, NULL);
+    } else {
+	pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
+    }
     RenderObject(dc, gc, points, npoints, mode, pen, Polyline);
     DeleteObject(pen);
     
@@ -1107,7 +1033,7 @@ XDrawRectangle(display, d, gc, x, y, width, height)
     pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
     oldPen = SelectObject(dc, pen);
     oldBrush = SelectObject(dc, GetStockObject(NULL_BRUSH));
-    SetROP2(dc, ropModes[gc->function]);
+    SetROP2(dc, tkpWinRopModes[gc->function]);
 
     Rectangle(dc, x, y, x+width+1, y+height+1);
 
@@ -1133,7 +1059,7 @@ XDrawRectangle(display, d, gc, x, y, width, height)
  */
 
 void
-XDrawArc(display, d, gc, x, y, width, height, angle1, angle2)
+XDrawArc(display, d, gc, x, y, width, height, start, extent)
     Display* display;
     Drawable d;
     GC gc;
@@ -1141,12 +1067,12 @@ XDrawArc(display, d, gc, x, y, width, height, angle1, angle2)
     int y;
     unsigned int width;
     unsigned int height;
-    int angle1;
-    int angle2;
+    int start;
+    int extent;
 {
     display->request++;
 
-    DrawOrFillArc(display, d, gc, x, y, width, height, angle1, angle2, 0);
+    DrawOrFillArc(display, d, gc, x, y, width, height, start, extent, 0);
 }
 
 /*
@@ -1166,7 +1092,7 @@ XDrawArc(display, d, gc, x, y, width, height, angle1, angle2)
  */
 
 void
-XFillArc(display, d, gc, x, y, width, height, angle1, angle2)
+XFillArc(display, d, gc, x, y, width, height, start, extent)
     Display* display;
     Drawable d;
     GC gc;
@@ -1174,12 +1100,12 @@ XFillArc(display, d, gc, x, y, width, height, angle1, angle2)
     int y;
     unsigned int width;
     unsigned int height;
-    int angle1;
-    int angle2;
+    int start;
+    int extent;
 {
     display->request++;
 
-    DrawOrFillArc(display, d, gc, x, y, width, height, angle1, angle2, 1);
+    DrawOrFillArc(display, d, gc, x, y, width, height, start, extent, 1);
 }
 
 /*
@@ -1200,22 +1126,23 @@ XFillArc(display, d, gc, x, y, width, height, angle1, angle2)
  */
 
 static void
-DrawOrFillArc(display, d, gc, x, y, width, height, angle1, angle2, fill)
+DrawOrFillArc(display, d, gc, x, y, width, height, start, extent, fill)
     Display *display;
     Drawable d;
     GC gc;
     int x, y;			/* left top */
     unsigned int width, height;
-    int angle1;			/* angle1: three-o'clock (deg*64) */
-    int angle2;			/* angle2: relative (deg*64) */
+    int start;			/* start: three-o'clock (deg*64) */
+    int extent;			/* extent: relative (deg*64) */
     int fill;			/* ==0 draw, !=0 fill */
 {
     HDC dc;
     HBRUSH brush, oldBrush;
     HPEN pen, oldPen;
     TkWinDCState state;
-    int xr, yr, xstart, ystart, xend, yend;
-    double radian_start, radian_end, radian_tmp;
+    int clockwise = (extent < 0); /* non-zero if clockwise */
+    int xstart, ystart, xend, yend;
+    double radian_start, radian_end, xr, yr;
 
     if (d == None) {
 	return;
@@ -1223,51 +1150,69 @@ DrawOrFillArc(display, d, gc, x, y, width, height, angle1, angle2, fill)
 
     dc = TkWinGetDrawableDC(display, d, &state);
 
-    SetROP2(dc, ropModes[gc->function]);
+    SetROP2(dc, tkpWinRopModes[gc->function]);
 
     /*
-     * Convert the X arc description to a Win32 arc description.
+     * Compute the absolute starting and ending angles in normalized radians.
+     * Swap the start and end if drawing clockwise.
      */
 
-    xr = (width % 2) ? (width / 2) : ((width - 1) / 2);
-    yr = (height % 2) ? (height / 2) : ((height - 1) / 2);
-
-    radian_start = XAngleToRadians(angle1);
-    radian_end = XAngleToRadians(angle1+angle2);
-    if( angle2 < 0 ) {
-	radian_tmp = radian_start;
-	radian_start = radian_end;
-	radian_end = radian_tmp;
+    start = start % (64*360);
+    if (start < 0) {
+	start += (64*360);
     }
-
-    xstart = x + (int) ((double)xr * (1+cos(radian_start)));
-    ystart = y + (int) ((double)yr * (1-sin(radian_start)));
-    xend = x + (int) ((double)xr * (1+cos(radian_end)));
-    yend = y + (int) ((double)yr * (1-sin(radian_end)));
+    extent = (start+extent) % (64*360);
+    if (extent < 0) {
+	extent += (64*360);
+    }
+    if (clockwise) {
+	int tmp = start;
+	start = extent;
+	extent = tmp;
+    }
+    radian_start = XAngleToRadians(start);
+    radian_end = XAngleToRadians(extent);
 
     /*
-     * Now draw a filled or open figure.
+     * Now compute points on the radial lines that define the starting and
+     * ending angles.  Be sure to take into account that the y-coordinate
+     * system is inverted.
      */
 
+    xr = x + width / 2.0;
+    yr = y + height / 2.0;
+    xstart = (int)((xr + cos(radian_start)*width/2.0) + 0.5);
+    ystart = (int)((yr + sin(-radian_start)*height/2.0) + 0.5);
+    xend = (int)((xr + cos(radian_end)*width/2.0) + 0.5);
+    yend = (int)((yr + sin(-radian_end)*height/2.0) + 0.5);
+
+    /*
+     * Now draw a filled or open figure.  Note that we have to
+     * increase the size of the bounding box by one to account for the
+     * difference in pixel definitions between X and Windows.
+     */
+
+    pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
+    oldPen = SelectObject(dc, pen);
     if (!fill) {
-	pen = CreatePen(PS_SOLID, gc->line_width, gc->foreground);
-	oldPen = SelectObject(dc, pen);
-	oldBrush = SelectObject(dc, GetStockObject(NULL_BRUSH));
-	Arc(dc, x, y, x + width, y + height, xstart, ystart, xend, yend);
-	DeleteObject(SelectObject(dc, oldPen));
-	SelectObject(dc, oldBrush);
+	/*
+	 * Note that this call will leave a gap of one pixel at the
+	 * end of the arc for thin arcs.  We can't use ArcTo because
+	 * it's only supported under Windows NT.
+	 */
+
+	Arc(dc, x, y, x+width+1, y+height+1, xstart, ystart, xend, yend);
     } else {
 	brush = CreateSolidBrush(gc->foreground);
 	oldBrush = SelectObject(dc, brush);
-	oldPen = SelectObject(dc, GetStockObject(NULL_PEN));
 	if (gc->arc_mode == ArcChord) {
-	    Chord(dc, x, y, x + width, y + height, xstart, ystart, xend, yend);
+	    Chord(dc, x, y, x+width+1, y+height+1, xstart, ystart, xend, yend);
 	} else if ( gc->arc_mode == ArcPieSlice ) {
-	    Pie(dc, x, y, x + width, y + height, xstart, ystart, xend, yend);
+	    Pie(dc, x, y, x+width+1, y+height+1, xstart, ystart, xend, yend);
 	}
 	DeleteObject(SelectObject(dc, oldBrush));
-	SelectObject(dc, oldPen);
     }
+    DeleteObject(SelectObject(dc, oldPen));
     TkWinReleaseDrawableDC(d, dc, &state);
 }
 
@@ -1307,4 +1252,41 @@ TkScrollWindow(tkwin, gc, x, y, width, height, dx, dy, damageRgn)
     scrollRect.bottom = y + height;
     return (ScrollWindowEx(hwnd, dx, dy, &scrollRect, NULL, (HRGN) damageRgn,
 	    NULL, 0) == NULLREGION) ? 0 : 1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinFillRect --
+ *
+ *	This routine fills a rectangle with the foreground color
+ *	from the specified GC ignoring all other GC values.  This
+ *	is the fastest way to fill a drawable with a solid color.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Modifies the contents of the DC drawing surface.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkWinFillRect(dc, x, y, width, height, pixel)
+    HDC dc;
+    int x, y, width, height;
+    int pixel;
+{
+    RECT rect;
+    COLORREF oldColor;
+
+    rect.left = x;
+    rect.top = y;
+    rect.right = x + width;
+    rect.bottom = y + height;
+    oldColor = SetBkColor(dc, (COLORREF)pixel);
+    SetBkMode(dc, OPAQUE);
+    ExtTextOut(dc, 0, 0, ETO_OPAQUE, &rect, NULL, 0, NULL);
+    SetBkColor(dc, oldColor);
 }

@@ -1,7 +1,6 @@
+tkSendSerial
+TkpTestembedCmd
 TkAlignImageData
-TkConsoleCreate
-TkConsoleInit
-TkConsolePrint
 TkCopyAndGlobalEval
 TkFillPolygon
 TkGetNativeProlog
@@ -11,3 +10,16 @@ TkXFileProc
 tkHandleEventProc
 TkOptionClassChanged
 TkOptionDeadWindow
+TkEventCleanupProc
+TkGenerateActivateEvents
+TkListAppend
+TkListDelete
+TkListFind
+TkPointerDeadWindow
+TkpDisplayWarning
+TkpGetAppName
+TkpGetMS
+TkpInit
+TkpSetCapture
+TkpSetCursor
+TkpWmSetState

@@ -5,12 +5,12 @@
  *      subcommands of the "file" command.  All filename arguments should
  *	already be translated to native format.
  *
- * Copyright (c) 1996 Sun Microsystems, Inc.
+ * Copyright (c) 1996-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclUnixFCmd.c 1.16 96/12/16 13:36:01
+ * SCCS: @(#) tclUnixFCmd.c 1.31 97/10/13 16:51:14
  *
  * Portions of this code were derived from NetBSD source code which has
  * the following copyright notice:
@@ -50,6 +50,7 @@
 #include "tclInt.h"
 #include "tclPort.h"
 #include <utime.h>
+#include <grp.h>
 
 /*
  * The following constants specify the type of callback when
@@ -61,11 +62,51 @@
 #define DOTREE_F      3     /* regular file */
 
 /*
+ * Callbacks for file attributes code.
+ */
+
+static int		GetGroupAttribute _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj **attributePtrPtr));
+static int		GetOwnerAttribute _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj **attributePtrPtr));
+static int		GetPermissionsAttribute _ANSI_ARGS_((
+			    Tcl_Interp *interp, int objIndex, char *fileName,
+			    Tcl_Obj **attributePtrPtr));
+static int		SetGroupAttribute _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj *attributePtr));
+static int		SetOwnerAttribute _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj *attributePtr));
+static int		SetPermissionsAttribute _ANSI_ARGS_((
+			    Tcl_Interp *interp, int objIndex, char *fileName,
+			    Tcl_Obj *attributePtr));
+			  
+/*
  * Prototype for the TraverseUnixTree callback function.
  */
 
 typedef int (TraversalProc) _ANSI_ARGS_((char *src, char *dst, 
         struct stat *sb, int type, Tcl_DString *errorPtr));
+
+/*
+ * Constants and variables necessary for file attributes subcommand.
+ */
+
+enum {
+    UNIX_GROUP_ATTRIBUTE,
+    UNIX_OWNER_ATTRIBUTE,
+    UNIX_PERMISSIONS_ATTRIBUTE
+};
+
+char *tclpFileAttrStrings[] = {"-group", "-owner", "-permissions",
+	(char *) NULL};
+CONST TclFileAttrProcs tclpFileAttrProcs[] = {
+	{GetGroupAttribute, SetGroupAttribute},
+	{GetOwnerAttribute, SetOwnerAttribute},
+	{GetPermissionsAttribute, SetPermissionsAttribute}};
 
 /*
  * Declarations for local procedures defined in this file:
@@ -261,7 +302,7 @@ TclpCopyFile(src, dst)
 	    if (symlink(link, dst) < 0) {
 		return TCL_ERROR;
 	    }
-	    return TCL_OK;
+	    break;
 
         case S_IFBLK:
         case S_IFCHR:
@@ -322,7 +363,12 @@ CopyFile(src, dst, srcStatBufPtr)
 	return TCL_ERROR;
     }
 
+#if HAVE_ST_BLKSIZE
     blockSize = srcStatBufPtr->st_blksize;
+#else
+    blockSize = 4096;
+#endif
+
     buffer = ckalloc(blockSize);
     while (1) {
 	nread = read(srcFd, buffer, blockSize);
@@ -522,7 +568,10 @@ TclpRemoveDirectory(path, recursive, errorPtr)
     if (rmdir(path) == 0) {
 	return TCL_OK;
     }
-    if (((errno != EEXIST) && (errno != ENOTEMPTY)) || (recursive == 0)) {
+    if (errno == ENOTEMPTY) {
+	errno = EEXIST;
+    }
+    if ((errno != EEXIST) || (recursive == 0)) {
 	if (errorPtr != NULL) {
 	    Tcl_DStringAppend(errorPtr, path, -1);
 	}
@@ -819,6 +868,7 @@ TraversalDelete(src, ignore, sbPtr, type, errorPtr)
  *      
  *----------------------------------------------------------------------
  */
+
 static int
 CopyFileAtts(src, dst, statBufPtr) 
     char *src;                 /* Path name of source file */
@@ -828,20 +878,9 @@ CopyFileAtts(src, dst, statBufPtr)
     struct utimbuf tval;
     mode_t newMode;
     
-    newMode = statBufPtr->st_mode & (S_ISUID | S_ISGID | S_IRWXU | S_IRWXG | S_IRWXO);
+    newMode = statBufPtr->st_mode
+	    & (S_ISUID | S_ISGID | S_IRWXU | S_IRWXG | S_IRWXO);
 	
-    /*
-     * On some systems chown will always fail for a non-root user unless
-     * POSIX_CHOWN_RESTRICTED is not set.  Others will succeed as long as 
-     * you don't try to chown a file to someone besides youself.
-     */
-    
-    if (chown(dst, statBufPtr->st_uid, statBufPtr->st_gid)) {
-	if (errno != EPERM) {
-	    return TCL_ERROR;
-	}
-    }
-
     /* 
      * Note that if you copy a setuid file that is owned by someone
      * else, and you are not root, then the copy will be setuid to you.
@@ -866,3 +905,320 @@ CopyFileAtts(src, dst, statBufPtr)
     }
     return TCL_OK;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetGroupAttribute
+ *
+ *      Gets the group attribute of a file.
+ *
+ * Results:
+ *      Standard TCL result. Returns a new Tcl_Obj in attributePtrPtr
+ *	if there is no error.
+ *
+ * Side effects:
+ *      A new object is allocated.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetGroupAttribute(interp, objIndex, fileName, attributePtrPtr)
+    Tcl_Interp *interp;		/* The interp we are using for errors. */
+    int objIndex;		/* The index of the attribute. */
+    char *fileName;		/* The name of the file. */
+    Tcl_Obj **attributePtrPtr;	/* A pointer to return the object with. */
+{
+    struct stat statBuf;
+    struct group *groupPtr;
+
+    if (stat(fileName, &statBuf) != 0) {
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"could not stat file \"", fileName, "\": ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    groupPtr = getgrgid(statBuf.st_gid);
+    if (groupPtr == NULL) {
+	*attributePtrPtr = Tcl_NewIntObj(statBuf.st_gid);
+    } else {
+	*attributePtrPtr = Tcl_NewStringObj(groupPtr->gr_name, -1);
+    }
+    endgrent();
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetOwnerAttribute
+ *
+ *      Gets the owner attribute of a file.
+ *
+ * Results:
+ *      Standard TCL result. Returns a new Tcl_Obj in attributePtrPtr
+ *	if there is no error.
+ *
+ * Side effects:
+ *      A new object is allocated.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetOwnerAttribute(interp, objIndex, fileName, attributePtrPtr)
+    Tcl_Interp *interp;		/* The interp we are using for errors. */
+    int objIndex;		/* The index of the attribute. */
+    char *fileName;		/* The name of the file. */
+    Tcl_Obj **attributePtrPtr;	/* A pointer to return the object with. */
+{
+    struct stat statBuf;
+    struct passwd *pwPtr;
+
+    if (stat(fileName, &statBuf) != 0) {
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"could not stat file \"", fileName, "\": ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    pwPtr = getpwuid(statBuf.st_uid);
+    if (pwPtr == NULL) {
+	*attributePtrPtr = Tcl_NewIntObj(statBuf.st_uid);
+    } else {
+	*attributePtrPtr = Tcl_NewStringObj(pwPtr->pw_name, -1);
+    }
+    endpwent();
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetPermissionsAttribute
+ *
+ *      Gets the group attribute of a file.
+ *
+ * Results:
+ *      Standard TCL result. Returns a new Tcl_Obj in attributePtrPtr
+ *	if there is no error. The object will have ref count 0.
+ *
+ * Side effects:
+ *      A new object is allocated.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetPermissionsAttribute(interp, objIndex, fileName, attributePtrPtr)
+    Tcl_Interp *interp;		    /* The interp we are using for errors. */
+    int objIndex;		    /* The index of the attribute. */
+    char *fileName;		    /* The name of the file. */
+    Tcl_Obj **attributePtrPtr;	    /* A pointer to return the object with. */
+{
+    struct stat statBuf;
+    char returnString[6];
+
+    if (stat(fileName, &statBuf) != 0) {
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"could not stat file \"", fileName, "\": ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }
+
+    sprintf(returnString, "%0#5lo", (statBuf.st_mode & 0x00007FFF));
+
+    *attributePtrPtr = Tcl_NewStringObj(returnString, -1);
+    
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetGroupAttribute
+ *
+ *      Sets the file to the given group.
+ *
+ * Results:
+ *      Standard TCL result.
+ *
+ * Side effects:
+ *      The group of the file is changed.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+static int
+SetGroupAttribute(interp, objIndex, fileName, attributePtr)
+    Tcl_Interp *interp;		    /* The interp we are using for errors. */
+    int objIndex;		    /* The index of the attribute. */
+    char *fileName;		    /* The name of the file. */
+    Tcl_Obj *attributePtr;	    /* The attribute to set. */
+{
+    gid_t groupNumber;
+    long placeHolder;
+
+    if (Tcl_GetLongFromObj(interp, attributePtr, &placeHolder) != TCL_OK) {
+	struct group *groupPtr;
+	char *groupString = Tcl_GetStringFromObj(attributePtr, NULL);
+
+	Tcl_ResetResult(interp);
+	groupPtr = getgrnam(groupString);
+	if (groupPtr == NULL) {
+	    endgrent();
+	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		    "could not set group for file \"", fileName,
+		    "\": group \"", groupString, "\" does not exist",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	groupNumber = groupPtr->gr_gid;
+    } else {
+	groupNumber = (gid_t) placeHolder;
+    }
+
+    if (chown(fileName, -1, groupNumber) != 0) {
+	endgrent();
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"could not set group for file \"", fileName, "\": ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }    
+    endgrent();
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetOwnerAttribute
+ *
+ *      Sets the file to the given owner.
+ *
+ * Results:
+ *      Standard TCL result.
+ *
+ * Side effects:
+ *      The group of the file is changed.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+static int
+SetOwnerAttribute(interp, objIndex, fileName, attributePtr)
+    Tcl_Interp *interp;		    /* The interp we are using for errors. */
+    int objIndex;		    /* The index of the attribute. */
+    char *fileName;		    /* The name of the file. */
+    Tcl_Obj *attributePtr;	    /* The attribute to set. */
+{
+    uid_t userNumber;
+    long placeHolder;
+
+    if (Tcl_GetLongFromObj(interp, attributePtr, &placeHolder) != TCL_OK) {
+	struct passwd *pwPtr;
+	char *ownerString = Tcl_GetStringFromObj(attributePtr, NULL);
+
+	Tcl_ResetResult(interp);
+	pwPtr = getpwnam(ownerString);
+	if (pwPtr == NULL) {
+	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		    "could not set owner for file \"", fileName,
+		    "\": user \"", ownerString, "\" does not exist",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	userNumber = pwPtr->pw_uid;
+    } else {
+	userNumber = (uid_t) placeHolder;
+    }
+
+    if (chown(fileName, userNumber, -1) != 0) {
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"could not set owner for file \"", fileName, "\": ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }    
+	
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetPermissionsAttribute
+ *
+ *      Sets the file to the given group.
+ *
+ * Results:
+ *      Standard TCL result.
+ *
+ * Side effects:
+ *      The group of the file is changed.
+ *      
+ *----------------------------------------------------------------------
+ */
+
+static int
+SetPermissionsAttribute(interp, objIndex, fileName, attributePtr)
+    Tcl_Interp *interp;		    /* The interp we are using for errors. */
+    int objIndex;		    /* The index of the attribute. */
+    char *fileName;		    /* The name of the file. */
+    Tcl_Obj *attributePtr;	    /* The attribute to set. */
+{
+    long modeInt;
+    mode_t newMode;
+
+    /*
+     * mode_t is a long under SPARC; an int under SunOS. Since we do not
+     * know how big it really is, we get the long and then cast it
+     * down to a mode_t.
+     */
+    
+    if (Tcl_GetLongFromObj(interp, attributePtr, &modeInt)
+	    != TCL_OK) {
+	return TCL_ERROR;
+    }
+
+    newMode = (mode_t) modeInt;
+
+    if (chmod(fileName, newMode) != 0) {
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"could not set permissions for file \"", fileName, "\": ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }
+    return TCL_OK;
+}
+/*
+ *---------------------------------------------------------------------------
+ *
+ * TclpListVolumes --
+ *
+ *	Lists the currently mounted volumes, which on UNIX is just /.
+ *
+ * Results:
+ *	A standard Tcl result.  Will always be TCL_OK, since there is no way
+ *	that this command can fail.  Also, the interpreter's result is set to 
+ *	the list of volumes.
+ *
+ * Side effects:
+ *	None.
+ *
+ *---------------------------------------------------------------------------
+ */
+
+int
+TclpListVolumes(interp)
+    Tcl_Interp *interp;			/* Interpreter to which to pass
+					 * the volume list. */
+{
+    Tcl_Obj *resultPtr;
+    
+    resultPtr = Tcl_GetObjResult(interp);
+    Tcl_SetStringObj(resultPtr, "/", 1);
+    return TCL_OK;	
+}
+

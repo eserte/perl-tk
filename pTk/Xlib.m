@@ -15,9 +15,11 @@
 #  define XAllocColor (*XlibVptr->V_XAllocColor)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XAllocNamedColor
 #  define XAllocNamedColor (*XlibVptr->V_XAllocNamedColor)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XAllocSizeHints
@@ -111,9 +113,11 @@
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XCreateWindow
 #  define XCreateWindow (*XlibVptr->V_XCreateWindow)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XDefaultColormap
@@ -183,9 +187,11 @@
 #  define XDrawRectangle (*XlibVptr->V_XDrawRectangle)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XDrawString
 #  define XDrawString (*XlibVptr->V_XDrawString)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XEventsQueued
@@ -229,9 +235,11 @@
 #  define XFreeCursor (*XlibVptr->V_XFreeCursor)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XFreeFont
 #  define XFreeFont (*XlibVptr->V_XFreeFont)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XFreeFontNames
@@ -255,9 +263,11 @@
 #  define XGetAtomName (*XlibVptr->V_XGetAtomName)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XGetFontProperty
 #  define XGetFontProperty (*XlibVptr->V_XGetFontProperty)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XGetGeometry
 #  define XGetGeometry (*XlibVptr->V_XGetGeometry)
@@ -347,13 +357,17 @@
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XLoadFont
 #  define XLoadFont (*XlibVptr->V_XLoadFont)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XLoadQueryFont
 #  define XLoadQueryFont (*XlibVptr->V_XLoadQueryFont)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XLookupColor
 #  define XLookupColor (*XlibVptr->V_XLookupColor)
@@ -387,9 +401,11 @@
 #  define XNoOp (*XlibVptr->V_XNoOp)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XOpenDisplay
 #  define XOpenDisplay (*XlibVptr->V_XOpenDisplay)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XParseColor
 #  define XParseColor (*XlibVptr->V_XParseColor)
@@ -497,17 +513,21 @@
 #  define XSetTSOrigin (*XlibVptr->V_XSetTSOrigin)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XSetTransientForHint
 #  define XSetTransientForHint (*XlibVptr->V_XSetTransientForHint)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XSetWMClientMachine
 #  define XSetWMClientMachine (*XlibVptr->V_XSetWMClientMachine)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XSetWMColormapWindows
 #  define XSetWMColormapWindows (*XlibVptr->V_XSetWMColormapWindows)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef DO_X_EXCLUDE
 #ifndef XSetWMHints
@@ -563,13 +583,17 @@
 #  define XSync (*XlibVptr->V_XSync)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XTextExtents
 #  define XTextExtents (*XlibVptr->V_XTextExtents)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XTextWidth
 #  define XTextWidth (*XlibVptr->V_XTextWidth)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XTranslateCoordinates
 #  define XTranslateCoordinates (*XlibVptr->V_XTranslateCoordinates)

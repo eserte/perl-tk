@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinKey.c 1.7 96/10/14 11:37:43
+ * SCCS: @(#) tkWinKey.c 1.9 97/06/20 15:12:39
  */
 
 #include "tkWinInt.h"
@@ -122,7 +122,9 @@ XLookupString(event_struct, buffer_return, bytes_buffer, keysym_return,
 	}
 	keysym = XKeycodeToKeysym(event_struct->display, 
 		event_struct->keycode, index);
-	if ((keysym != NoSymbol) && (keysym > 0) && (keysym < 256)) {
+	if (((keysym != NoSymbol) && (keysym > 0) && (keysym < 256)) 
+		|| (keysym == XK_Return)
+		|| (keysym == XK_Tab)) {
 	    buffer_return[0] = (char) keysym;
 	    return 1;
 	}

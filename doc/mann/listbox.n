@@ -1,74 +1,44 @@
 '\"
 '\" Copyright (c) 1990 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) listbox.n 1.30 95/06/07 21:15:18
+'\" SCCS: @(#) listbox.n 1.38 97/10/31 12:58:47
 '\" 
 .so man.macros
-.TH listbox n "" Tk "Tk Generic Methods"
+.TH listbox n 8.0 Tk "Tk Generic Methods"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
 listbox \- Create and manipulate listbox widgets
 .SH SYNOPSIS
-\fI$listbox\fR = \fI$parent\fR->\fBListbox\fR(\fR?\fIoptions\fR?\fR);
-.SH "STANDARD OPTIONS"
-.LP
-.nf
-.ta 4c 8c 12c
-.VS
-\fBbackground\fR	\fBfont\fR	\fBrelief\fR	\fBtakeFocus\fR
-\fBborderWidth\fR	\fBheight\fR	\fBselectBackground\fR	\fBwidth\fR
-\fBcursor\fR	\fBhighlightBackground\fR	\fBselectBorderWidth\fR	\fBxScrollCommand\fR
-\fBexportSelection\fR	\fBhighlightColor\fR	\fBselectForeground\fR	\fByScrollCommand\fR
-.VE
-\fBforeground\fR	\fBhighlightThickness\fR	\fBsetGrid\fR
-.fi
-.LP
-See the ``options'' manual entry for details on the standard options.
+\fBlistbox\fR $widget \fR?\fIoptions\fR?
+.SO
+\-background	\-foreground	\-relief	\-takefocus
+\-borderwidth	\-height	\-selectbackground	\-width
+\-cursor	\-highlightbackground	\-selectborderwidth	\-xscrollcommand
+\-exportselection	\-highlightcolor	\-selectforeground	\-yscrollcommand
+\-font	\-highlightthickness	\-setgrid
+.SE
 .SH "WIDGET-SPECIFIC OPTIONS"
-.ta 4c
-.LP
-.nf
-Name:	\fBheight\fR
-Class:	\fBHeight\fR
-Configure Option:	\fB\-height\fR
-.fi
-.IP
+.OP \-height height Height
 Specifies the desired height for the window, in lines.
-.VS
 If zero or less, then the desired height for the window is made just
 large enough to hold all the elements in the listbox.
-.LP
-.nf
-Name:	\fBselectMode\fR
-Class:	\fBSelectMode\fR
-Configure Option:	\fB\-selectmode\fR
-.fi
-.IP
+.OP \-selectmode selectMode SelectMode
 Specifies one of several styles for manipulating the selection.
 The value of the option may be arbitrary, but the default bindings
 expect it to be either \fBsingle\fR, \fBbrowse\fR, \fBmultiple\fR,
 or \fBextended\fR;  the default value is \fBbrowse\fR.
-.VE
-.LP
-.nf
-Name:	\fBwidth\fR
-Class:	\fBWidth\fR
-Configure Option:	\fB\-width\fR
-.fi
-.IP
+.OP \-width width Width
 Specifies the desired width for the window in characters.
 If the font doesn't have a uniform width then the width of the
 character ``0'' is used in translating from character units to
 screen units.
-.VS
 If zero or less, then the desired width for the window is made just
 large enough to hold all the elements in the listbox.
-.VE
 .BE
 
 .SH DESCRIPTION
@@ -93,7 +63,6 @@ If a listbox is exporting its selection (see \fBexportSelection\fR
 option), then it will observe the standard X11 protocols
 for handling the selection.
 Listbox selections are available as type \fBSTRING\fR;
-.VS
 the value of the selection will be the text of the selected elements, with
 newlines separating the elements.
 .PP
@@ -106,7 +75,6 @@ They also support scanning, as described below.
 
 .SH "INDICES"
 .PP
-.VS
 Many of the methods for listboxes take one or more indices
 as arguments.
 An index specifies a particular element of the listbox, in any of
@@ -117,7 +85,6 @@ Specifies the element as a numerical index, where 0 corresponds
 to the first element in the listbox.
 .TP 12
 \fBactive\fR
-.VS
 Indicates the element that has the location cursor.  This element
 will be displayed with an underline when the listbox has the
 keyboard focus, and it is specified with the \fBactivate\fR
@@ -126,15 +93,16 @@ method.
 \fBanchor\fR
 Indicates the anchor point for the selection, which is set with the
 \fBselection anchor\fR method.
-.VE
 .TP 12
 \fBend\fR
 Indicates the end of the listbox.
-For some commands this means just after the last element;
-for other commands it means the last element.
+.VS 8.0
+For most commands this refers to the last element in the listbox,
+but for a few commands such as \fBindex\fR and \fBinsert\fR
+it refers to the element just after the last one.
+.VE
 .TP 12
 \fB@\fIx\fB,\fIy\fR
-.VS
 Indicates the element that covers the point in the listbox window
 specified by \fIx\fR and \fIy\fR (in pixel coordinates).  If no
 element covers that point, then the closest element to that
@@ -143,7 +111,6 @@ point is used.
 In the method descriptions below, arguments named \fIindex\fR,
 \fIfirst\fR, and \fIlast\fR always contain text indices in one of
 the above forms.
-.VE
 
 .SH "WIDGET METHODS"
 .PP
@@ -151,21 +118,24 @@ The \fBlistbox\fR command creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
-.DS C
-\fI$listbox\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
-.DE
+.CS
+\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+.CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for listbox widgets:
 .TP
-\fI$listbox->\fBactivate\fR(\fIindex\fR)
-.VS
+\fI$widget->\fBactivate\fR(\fIindex\fR)
 Sets the active element to the one indicated by \fIindex\fR.
+.VS 8.0
+If \fIindex\fR is outside the range of elements in the listbox
+then the closest element is activated.
+.VE
 The active element is drawn with an underline when the widget
 has the input focus, and its index may be retrieved with the
 index \fBactive\fR.
 .TP
-\fI$listbox->\fBbbox\fR(\fIindex\fR)
+\fI$widget->\fBbbox\fR(\fIindex\fR)
 Returns a list of four numbers describing the bounding box of
 the text in the element given by \fIindex\fR.
 The first two elements of the list give the x and y coordinates
@@ -173,18 +143,21 @@ of the upper-left corner of the screen area covered by the text
 (specified in pixels relative to the widget) and the last two
 elements give the width and height of the area, in pixels.
 If no part of the element given by \fIindex\fR is visible on the
-screen then the result is an empty string;  if the element is
+screen,
+.VS 8.0
+or if \fIindex\fR refers to a non-existent element,
+.VE
+then the result is an empty string;  if the element is
 partially visible, the result gives the full area of the element,
 including any parts that are not visible.
 .TP
-\fI$listbox->\fBcget\fR(\fIoption\fR)
+\fI$widget->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBlistbox\fR
 command.
-.VE
 .TP
-\fI$listbox->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for
@@ -198,55 +171,59 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBlistbox\fR
 command.
 .TP
-\fI$listbox->\fBcurselection\fR
+\fI$widget->\fBcurselection\fR
 Returns a list containing the numerical indices of
 all of the elements in the listbox that are currently selected.
 If there are no elements selected in the listbox then an empty
 string is returned.
 .TP
-\fI$listbox->\fBdelete\fR(\fIfirst, \fR?\fIlast\fR?\fR)
+\fI$widget->\fBdelete\fR(\fIfirst, \fR?\fIlast\fR?\fR)
 Deletes one or more elements of the listbox.  \fIFirst\fR and \fIlast\fR
 are indices specifying the first and last elements in the range
 to delete.  If \fIlast\fR isn't specified it defaults to
 \fIfirst\fR, i.e. a single element is deleted.
 .TP
-\fI$listbox->\fBget\fR(\fIfirst, \fR?\fIlast\fR?\fR)
+\fI$widget->\fBget\fR(\fIfirst, \fR?\fIlast\fR?\fR)
 If \fIlast\fR is omitted, returns the contents of the listbox
-element indicated by \fIfirst\fR.
-.VS
+element indicated by \fIfirst\fR,
+.VS 8.0
+or an empty string if \fIfirst\fR refers to a non-existent element.
+.VE
 If \fIlast\fR is specified, the command returns a list whose elements
 are all of the listbox elements between \fIfirst\fR and \fIlast\fR,
 inclusive.
 Both \fIfirst\fR and \fIlast\fR may have any of the standard
 forms for indices.
 .TP
-\fI$listbox->\fBindex\fR(\fIindex\fR)
-Returns a decimal string giving the integer index value that
-corresponds to \fIindex\fR.
-.VS
+\fI$widget->\fBindex\fR(\fIindex\fR)
+Returns the integer index value that corresponds to \fIindex\fR.
+.VS 8.0
+If \fIindex\fR is \fBend\fR the return value is a count of the number
+of elements in the listbox (not the index of the last element).
+.VE
 .TP
-\fI$listbox->\fBinsert\fR(\fIindex, \fR?\fIelement, element, ...\fR?\fR)
+\fI$widget->\fBinsert\fR(\fIindex, \fR?\fIelement, element, ...\fR?\fR)
 Inserts zero or more new elements in the list just before the
 element given by \fIindex\fR.  If \fIindex\fR is specified as
 \fBend\fR then the new elements are added to the end of the
 list.  Returns an empty string.
 .TP
-\fI$listbox->\fBnearest\fR(\fIy\fR)
+\fI$widget->\fBnearest\fR(\fIy\fR)
 Given a y-coordinate within the listbox window, this command returns
 the index of the (visible) listbox element nearest to that y-coordinate.
 .TP
-\fI$listbox->\fBscan\fR(\fIoption, args\fR)
+\fI$widget->\fBscan\fR(\fIoption, args\fR)
 This command is used to implement scanning on listboxes.  It has
 two forms, depending on \fIoption\fR:
 .RS
 .TP
-\fI$listbox->\fBscanMark\fR(\fIx, y\fR)
+\fI$widget->\fBscanMark\fR(\fIx, y\fR)
 Records \fIx\fR and \fIy\fR and the current view in the listbox
 window;  used in conjunction with later \fBscan dragto\fR commands.
 Typically this command is associated with a mouse button press in
 the widget.  It returns an empty string.
 .TP
-\fI$listbox->\fBscanDragto\fR(\fIx, y\fR.\fR)
+\fI$widget->\fBscanDragto\fR(\fIx, y\fR.\fR)
 This command computes the difference between its \fIx\fR and \fIy\fR
 arguments and the \fIx\fR and \fIy\fR arguments to the last
 \fBscan mark\fR command for the widget.
@@ -257,8 +234,7 @@ dragging the list at high speed through the window.  The return
 value is an empty string.
 .RE
 .TP
-\fI$listbox->\fBsee\fR(\fIindex\fR)
-.VS
+\fI$widget->\fBsee\fR(\fIindex\fR)
 Adjust the view in the listbox so that the element given by \fIindex\fR
 is visible.
 If the element is already visible then the command has no effect;
@@ -266,47 +242,49 @@ if the element is near one edge of the window then the listbox
 scrolls to bring the element into view at the edge;  otherwise
 the listbox scrolls to center the element.
 .TP
-\fI$listbox->\fBselection\fR(\fIoption, arg\fR)
+\fI$widget->\fBselection\fR(\fIoption, arg\fR)
 This command is used to adjust the selection within a listbox.  It
 has several forms, depending on \fIoption\fR:
 .RS
 .TP
-\fI$listbox->\fBselectionAnchor\fR(\fIindex\fR)
+\fI$widget->\fBselectionAnchor\fR(\fIindex\fR)
 Sets the selection anchor to the element given by \fIindex\fR.
+.VS 8.0
+If \fIindex\fR refers to a non-existent element, then the closest
+element is used.
+.VE
 The selection anchor is the end of the selection that is fixed
 while dragging out a selection with the mouse.
 The index \fBanchor\fR may be used to refer to the anchor
 element.
 .TP
-\fI$listbox->\fBselectionClear\fR(\fIfirst, \fR?\fIlast\fR?\fR)
+\fI$widget->\fBselectionClear\fR(\fIfirst, \fR?\fIlast\fR?\fR)
 If any of the elements between \fIfirst\fR and \fIlast\fR
 (inclusive) are selected, they are deselected.
 The selection state is not changed for elements outside
 this range.
 .TP
-\fI$listbox->\fBselectionIncludes\fR(\fIindex\fR)
+\fI$widget->\fBselectionIncludes\fR(\fIindex\fR)
 Returns 1 if the element indicated by \fIindex\fR is currently
 selected, 0 if it isn't.
 .TP
-\fI$listbox->\fBselectionSet\fR(\fIfirst, \fR?\fIlast\fR?\fR)
+\fI$widget->\fBselectionSet\fR(\fIfirst, \fR?\fIlast\fR?\fR)
 Selects all of the elements in the range between
 \fIfirst\fR and \fIlast\fR, inclusive, without affecting
 the selection state of elements outside that range.
-.VS
 .RE
 .TP
-\fI$listbox->\fBsize\fR
+\fI$widget->\fBsize\fR
 Returns a decimal string indicating the total number of elements
 in the listbox.
 .TP
-\fI$listbox->\fBxview\fR(\fIargs\fR)
-.VS
+\fI$widget->\fBxview\fR(\fIargs\fR)
 This command is used to query and change the horizontal position of the
 information in the widget's window.  It can take any of the following
 forms:
 .RS
 .TP
-\fI$listbox->\fBxview\fR
+\fI$widget->\fBxview\fR
 Returns a list containing two elements.
 Each element is a real fraction between 0 and 1;  together they describe
 the horizontal span that is visible in the window.
@@ -316,7 +294,7 @@ in the window, and 40% of the text is off-screen to the right.
 These are the same values passed to scrollbars via the \fB\-xscrollcommand\fR
 option.
 .TP
-\fI$listbox->\fBxview\fR(\fIindex\fR)
+\fI$widget->\fBxview\fR(\fIindex\fR)
 Adjusts the view in the window so that the character position given by
 \fIindex\fR is displayed at the left edge of the window.
 Character positions are defined by the width of the character \fB0\fR.
@@ -341,13 +319,13 @@ become visible;  if it is positive then characters farther to the right
 become visible.
 .RE
 .TP
-\fI$listbox->\fByview\fR(\fI?args\fR?\fR)
+\fI$widget->\fByview\fR(\fI?args\fR?\fR)
 This command is used to query and change the vertical position of the
 text in the widget's window.
 It can take any of the following forms:
 .RS
 .TP
-\fI$listbox->\fByview\fR
+\fI$widget->\fByview\fR
 Returns a list containing two elements, both of which are real fractions
 between 0 and 1.
 The first element gives the position of the listbox element at the
@@ -358,7 +336,7 @@ the last one in the window, relative to the listbox as a whole.
 These are the same values passed to scrollbars via the \fB\-yscrollcommand\fR
 option.
 .TP
-\fI$listbox->\fByview\fR(\fIindex\fR)
+\fI$widget->\fByview\fR(\fIindex\fR)
 Adjusts the view in the window so that the element given by
 \fIindex\fR is displayed at the top of the window.
 .TP
@@ -505,7 +483,6 @@ The F16 key (labelled Copy on many Sun workstations) or Meta-w
 copies the selection in the widget to the clipboard, if there is
 a selection.
 
-.VE
 .PP
 The behavior of listboxes can be changed by defining new bindings for
 individual widgets or by redefining the class bindings.

@@ -5,7 +5,7 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use vars qw/$TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
+use vars qw/$MW $TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
 	    $DX $DY $MIN_PXL $MAX_PXL $MARGIN $ALEN $ORIGINAL_CURSOR $CANV
 	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS $VERSION/;
 
@@ -33,7 +33,6 @@ sub plop {
 # the same terms as Perl itself.
 
 require 5.002;
-use English;
 use strict;
 use Tk;
 require Tk::Dialog;

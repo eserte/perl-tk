@@ -3,7 +3,7 @@ require Tk;
 
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/NBFrame/NBFrame.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/NBFrame/NBFrame.pm#3$
 
 @ISA = qw(Tk::Widget);
 

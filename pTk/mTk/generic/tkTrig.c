@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTrig.c 1.23 96/02/15 18:53:05
+ * SCCS: @(#) tkTrig.c 1.27 97/03/07 11:34:35
  */
 
 #include "tkInt.h"
@@ -895,14 +895,14 @@ TkIncludePoint(itemPtr, pointPtr)
 {
     int tmp;
 
-    tmp = pointPtr[0] + 0.5;
+    tmp = (int) (pointPtr[0] + 0.5);
     if (tmp < itemPtr->x1) {
 	itemPtr->x1 = tmp;
     }
     if (tmp > itemPtr->x2) {
 	itemPtr->x2 = tmp;
     }
-    tmp = pointPtr[1] + 0.5;
+    tmp = (int) (pointPtr[1] + 0.5);
     if (tmp < itemPtr->y1) {
 	itemPtr->y1 = tmp;
     }
@@ -1014,10 +1014,14 @@ TkBezierPoints(control, numSteps, coordPtr)
  *
  * TkMakeBezierCurve --
  *
- *	Given a set of points, create a new set of points that
- *	fit Bezier splines to the line segments connecting the
- *	original points.  Produces output points in either of two
- *	forms.
+ *	Given a set of points, create a new set of points that fit
+ *	parabolic splines to the line segments connecting the original
+ *	points.  Produces output points in either of two forms.
+ *
+ *	Note: in spite of this procedure's name, it does *not* generate
+ *	Bezier curves.  Since only three control points are used for
+ *	each curve segment, not four, the curves are actually just
+ *	parabolic.
  *
  * Results:
  *	Either or both of the xPoints or dblPoints arrays are filled
@@ -1324,21 +1328,35 @@ TkGetMiterPoints(p1, p2, p3, width, m1, m2)
     double deltaX, deltaY;	/* X and y offsets cooresponding to
 				 * dist (fudge factors for bounding
 				 * box). */
-    static float elevenDegrees = (float) ((11.0*2.0*PI)/360.0);
+    double p1x, p1y, p2x, p2y, p3x, p3y;
+    static double elevenDegrees = (11.0*2.0*PI)/360.0;
 
-    if (p2[1] == p1[1]) {
-	theta1 = (p2[0] < p1[0]) ? 0 : PI;
-    } else if (p2[0] == p1[0]) {
-	theta1 = (p2[1] < p1[1]) ? PI/2.0 : -PI/2.0;
+    /*
+     * Round the coordinates to integers to mimic what happens when the
+     * line segments are displayed; without this code, the bounding box
+     * of a mitered line can be miscomputed greatly.
+     */
+
+    p1x = floor(p1[0]+0.5);
+    p1y = floor(p1[1]+0.5);
+    p2x = floor(p2[0]+0.5);
+    p2y = floor(p2[1]+0.5);
+    p3x = floor(p3[0]+0.5);
+    p3y = floor(p3[1]+0.5);
+
+    if (p2y == p1y) {
+	theta1 = (p2x < p1x) ? 0 : PI;
+    } else if (p2x == p1x) {
+	theta1 = (p2y < p1y) ? PI/2.0 : -PI/2.0;
     } else {
-	theta1 = atan2(p1[1] - p2[1], p1[0] - p2[0]);
+	theta1 = atan2(p1y - p2y, p1x - p2x);
     }
-    if (p3[1] == p2[1]) {
-	theta2 = (p3[0] > p2[0]) ? 0 : PI;
-    } else if (p3[0] == p2[0]) {
-	theta2 = (p3[1] > p2[1]) ? PI/2.0 : -PI/2.0;
+    if (p3y == p2y) {
+	theta2 = (p3x > p2x) ? 0 : PI;
+    } else if (p3x == p2x) {
+	theta2 = (p3y > p2y) ? PI/2.0 : -PI/2.0;
     } else {
-	theta2 = atan2(p3[1] - p2[1], p3[0] - p2[0]);
+	theta2 = atan2(p3y - p2y, p3x - p2x);
     }
     theta = theta1 - theta2;
     if (theta > PI) {
@@ -1364,11 +1382,11 @@ TkGetMiterPoints(p1, p2, p3, width, m1, m2)
 	theta3 += PI;
     }
     deltaX = dist*cos(theta3);
-    m1[0] = p2[0] + deltaX;
-    m2[0] = p2[0] - deltaX;
+    m1[0] = p2x + deltaX;
+    m2[0] = p2x - deltaX;
     deltaY = dist*sin(theta3);
-    m1[1] = p2[1] + deltaY;
-    m2[1] = p2[1] - deltaY;
+    m1[1] = p2y + deltaY;
+    m2[1] = p2y - deltaY;
     return 1;
 }
 

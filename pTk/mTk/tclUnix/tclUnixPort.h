@@ -19,7 +19,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclUnixPort.h 1.43 96/10/08 17:13:28
+ * SCCS: @(#) tclUnixPort.h 1.49 97/07/30 14:11:59
  */
 
 #ifndef _TCLUNIXPORT
@@ -97,6 +97,35 @@
 #include <netinet/in.h>		/* struct in_addr, struct sockaddr_in */
 #include <arpa/inet.h>		/* inet_ntoa() */
 #include <netdb.h>		/* gethostbyname() */
+
+/*
+ * Some platforms (e.g. SunOS) don't define FLT_MAX and FLT_MIN, so we
+ * look for an alternative definition.  If no other alternative is available
+ * we use a reasonable guess.
+ */
+
+#ifndef NO_FLOAT_H
+#include <float.h>
+#else
+#   ifndef NO_VALUES_H
+#	include <values.h>
+#   endif
+#endif
+
+#ifndef FLT_MAX
+#   ifdef MAXFLOAT
+#	define FLT_MAX MAXFLOAT
+#   else
+#	define FLT_MAX 3.402823466E+38F
+#   endif
+#endif
+#ifndef FLT_MIN
+#   ifdef MINFLOAT
+#	define FLT_MIN MINFLOAT
+#   else
+#	define FLT_MIN 1.175494351E-38F
+#   endif
+#endif
 
 /*
  * NeXT doesn't define O_NONBLOCK, so #define it here if necessary.
@@ -400,13 +429,6 @@ EXTERN int		gettimeofday _ANSI_ARGS_((struct timeval *tp,
 #define MASK_SIZE howmany(FD_SETSIZE, NFDBITS)
 
 /*
- * The following function is declared in tclInt.h but doesn't do anything
- * on Unix systems.
- */
-
-#define TclSetSystemEnv(a,b)
-
-/*
  * The following implements the Unix method for exiting the process.
  */
 #define TclPlatformExit(status) exit(status)
@@ -444,5 +466,15 @@ extern double strtod();
 
 #define TclpGetDate(t,u) ((u) ? gmtime((t)) : localtime((t)))
 #define TclStrftime(s,m,f,t) (strftime((s),(m),(f),(t)))
+#define TclpGetPid(pid)	    ((unsigned long) (pid))
+
+#define TclpReleaseFile(file)	
+
+/*
+ * The following routine is only exported for testing purposes.
+ */
+
+EXTERN int	TclUnixWaitForFile _ANSI_ARGS_((int fd, int mask,
+		    int timeout));
 
 #endif /* _TCLUNIXPORT */

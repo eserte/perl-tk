@@ -4,7 +4,7 @@ require DynaLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/Mwm/Mwm.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Mwm/Mwm.pm#3$
 
 @ISA = qw(DynaLoader);
 

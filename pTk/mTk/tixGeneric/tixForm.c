@@ -151,7 +151,7 @@ static Tcl_HashTable masterInfoHashTable;
 /*
  * Have static variables in this module been initialized?
  */
-static initialized = 0;
+static int initialized = 0;
 
 static int ReqSize(tkwin, axis)
     Tk_Window tkwin;

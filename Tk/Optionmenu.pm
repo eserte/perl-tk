@@ -7,9 +7,11 @@ require Tk::Menu;
 
 
 use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Tk/Optionmenu.pm#9$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#5$
 
 @ISA = qw(Tk::Derived Tk::Menubutton);
+
+use strict;
 
 Construct Tk::Widget 'Optionmenu';
 
@@ -24,14 +26,15 @@ sub Populate
    my $gen = undef;
    $var = \$gen;
   }
- $w->menu(-tearoff => 0);
+ my $menu = $w->menu(-tearoff => 0);
  $w->configure(-textvariable => $var);
 
  # Should we allow -menubackground etc. as in -label* of Frame ?
 
- $w->ConfigSpecs(-command => [CALLBACK,undef,undef,undef],
-                 -options => [METHOD, undef, undef, undef],
-		 -variable=> [PASSIVE, undef, undef, undef],
+ $w->ConfigSpecs(-command => ['CALLBACK',undef,undef,undef],
+                 -options => ['METHOD', undef, undef, undef],
+		 -variable=> ['PASSIVE', undef, undef, undef],
+		 -font    => [['SELF',$menu], undef, undef, undef],
                 );
 
  $w->configure(-variable => delete $args->{-variable});

@@ -6,10 +6,10 @@ use File::Copy;
 use File::Compare;
 
 my $tdir = $ENV{'HOME'}."/tcl";
-my $otcl = "$tdir/tcl7.6";
-my $ntcl = "$tdir/tcl7.6p2";
-my $otk  = "$tdir/tk4.2";
-my $ntk  = "$tdir/tk4.2p2";
+my $ntcl = "$tdir/tcl8.0b2";
+my $otcl = "$tdir/tcl7.6p2";
+my $ntk  = "$tdir/tk8.0b2";
+my $otk  = "$tdir/tk4.2p2";
 
 open(FIXUP,">Fixup");
 

@@ -7,7 +7,7 @@ use AutoLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.012'; # $Id: //depot/Tk/Tk/TextUndo.pm#12$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/TextUndo.pm#4$
 
 @ISA = qw(Tk::Text);
 

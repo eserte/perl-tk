@@ -6,12 +6,12 @@
  *	one per line, and provides scrolling and selection.
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkListbox.c 1.109 96/05/17 16:26:55
+ * SCCS: @(#) tkListbox.c 1.120 97/10/29 13:06:59
  */
 
 #include "tkPort.h"
@@ -85,7 +85,7 @@ typedef struct {
 				 * Indicates how much interior stuff must
 				 * be offset from outside edges to leave
 				 * room for borders. */
-    XFontStruct *fontPtr;	/* Information about text font, or NULL. */
+    Tk_Font tkfont;		/* Information about text font, or NULL. */
     XColor *fgColorPtr;		/* Text color in normal mode. */
     GC textGC;			/* For drawing normal text. */
     Tk_3DBorder selBorder;	/* Borders and backgrounds for selected
@@ -216,7 +216,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, 0},
     {TK_CONFIG_FONT, "-font", "font", "Font",
-	DEF_LISTBOX_FONT, Tk_Offset(Listbox, fontPtr), 0},
+	DEF_LISTBOX_FONT, Tk_Offset(Listbox, tkfont), 0},
     {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_LISTBOX_FG, Tk_Offset(Listbox, fgColorPtr), 0},
     {TK_CONFIG_INT, "-height", "height", "Height",
@@ -280,7 +280,7 @@ static void		DeleteEls _ANSI_ARGS_((Listbox *listPtr, int first,
 static void		DestroyListbox _ANSI_ARGS_((char *memPtr));
 static void		DisplayListbox _ANSI_ARGS_((ClientData clientData));
 static int		GetListboxIndex _ANSI_ARGS_((Tcl_Interp *interp,
-			    Listbox *listPtr, Arg arg, int numElsOK,
+			    Listbox *listPtr, Arg arg, int endIsSize,
 			    int *indexPtr));
 static void		InsertEls _ANSI_ARGS_((Listbox *listPtr, int index,
 			    int argc, char **argv));
@@ -305,8 +305,22 @@ static void		ListboxUpdateHScrollbar _ANSI_ARGS_((Listbox *listPtr));
 static void		ListboxUpdateVScrollbar _ANSI_ARGS_((Listbox *listPtr));
 static int		ListboxWidgetCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
+static void		ListboxWorldChanged _ANSI_ARGS_((
+			    ClientData instanceData));
 static int		NearestListboxElement _ANSI_ARGS_((Listbox *listPtr,
 			    int y));
+
+/*
+ * The structure below defines button class behavior by means of procedures
+ * that can be invoked from generic window code.
+ */
+
+static TkClassProcs listboxClass = {
+    NULL,			/* createProc. */
+    ListboxWorldChanged,	/* geometryProc. */
+    NULL			/* modalProc. */
+};
+
 
 /*
  *--------------------------------------------------------------
@@ -372,7 +386,7 @@ Tk_ListboxCmd(clientData, interp, argc, argv)
     listPtr->highlightBgColorPtr = NULL;
     listPtr->highlightColorPtr = NULL;
     listPtr->inset = 0;
-    listPtr->fontPtr = NULL;
+    listPtr->tkfont = NULL;
     listPtr->fgColorPtr = NULL;
     listPtr->textGC = None;
     listPtr->selBorder = NULL;
@@ -387,7 +401,7 @@ Tk_ListboxCmd(clientData, interp, argc, argv)
     listPtr->partialLine = 0;
     listPtr->setGrid = 0;
     listPtr->maxWidth = 0;
-    listPtr->xScrollUnit = 0;
+    listPtr->xScrollUnit = 1;
     listPtr->xOffset = 0;
     listPtr->selectMode = NULL;
     listPtr->numSelected = 0;
@@ -405,6 +419,7 @@ Tk_ListboxCmd(clientData, interp, argc, argv)
     listPtr->flags = 0;
 
     Tk_SetClass(listPtr->tkwin, "Listbox");
+    TkSetClassProcs(listPtr->tkwin, &listboxClass, (ClientData) listPtr);
     Tk_CreateEventHandler(listPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
 	    ListboxEventProc, (ClientData) listPtr);
@@ -451,6 +466,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
     int result = TCL_OK;
     size_t length;
     int c;
+    Tk_FontMetrics fm;
 
     if (argc < 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -470,9 +486,14 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	    goto error;
 	}
 	ListboxRedrawRange(listPtr, listPtr->active, listPtr->active);
-	if (GetListboxIndex(interp, listPtr, args[2], 0, &index)
-		!= TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, args[2], 0, &index) != TCL_OK) {
 	    goto error;
+	}
+	if (index >= listPtr->numElements) {
+	    index = listPtr->numElements-1;
+	}
+	if (index < 0) {
+	    index = 0;
 	}
 	listPtr->active = index;
 	ListboxRedrawRange(listPtr, listPtr->active, listPtr->active);
@@ -488,6 +509,9 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	if (GetListboxIndex(interp, listPtr, args[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
+	if ((index >= listPtr->numElements) || (index < 0)) {
+	    goto done;
+	}
 	for (i = 0, elPtr = listPtr->firstPtr; i < index;
 		i++, elPtr = elPtr->nextPtr) {
 	    /* Empty loop body. */
@@ -495,11 +519,12 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	if ((index >= listPtr->topIndex) && (index < listPtr->numElements)
 		    && (index < (listPtr->topIndex + listPtr->fullLines
 		    + listPtr->partialLine))) {
-	    x = listPtr->inset - listPtr->xOffset;
+	    x = listPtr->inset + listPtr->selBorderWidth - listPtr->xOffset;
 	    y = ((index - listPtr->topIndex)*listPtr->lineHeight)
 		    + listPtr->inset + listPtr->selBorderWidth;
+	    Tk_GetFontMetrics(listPtr->tkfont, &fm);
 	    sprintf(interp->result, "%d %d %d %d", x, y, elPtr->pixelWidth,
-		    listPtr->fontPtr->ascent + listPtr->fontPtr->descent);
+		    fm.linespace);
 	}
     } else if ((c == 'c') && (strncmp(argv[1], "cget", length) == 0)
 	    && (length >= 2)) {
@@ -559,14 +584,20 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	if (GetListboxIndex(interp, listPtr, args[2], 0, &first) != TCL_OK) {
 	    goto error;
 	}
-	if (argc == 3) {
-	    last = first;
-	} else {
-	    if (GetListboxIndex(interp, listPtr, args[3], 0, &last) != TCL_OK) {
-		goto error;
+	if (first < listPtr->numElements) {
+	    if (argc == 3) {
+		last = first;
+	    } else {
+		if (GetListboxIndex(interp, listPtr, args[3], 0,
+			&last) != TCL_OK) {
+		    goto error;
+		}
+		if (last >= listPtr->numElements) {
+		    last = listPtr->numElements-1;
+		}
 	    }
+	    DeleteEls(listPtr, first, last);
 	}
-	DeleteEls(listPtr, first, last);
     } else if ((c == 'g') && (strncmp(argv[1], "get", length) == 0)) {
 	int first, last, i;
 	Element *elPtr;
@@ -583,13 +614,22 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		0, &last) != TCL_OK)) {
 	    goto error;
 	}
+	if (first >= listPtr->numElements) {
+	    goto done;
+	}
+	if (last >= listPtr->numElements) {
+	    last = listPtr->numElements-1;
+	}
+
 	for (elPtr = listPtr->firstPtr, i = 0; i < first;
 		i++, elPtr = elPtr->nextPtr) {
 	    /* Empty loop body. */
 	}
 	if (elPtr != NULL) {
 	    if (argc == 3) {
-		interp->result = elPtr->text;
+		if (first >= 0) {
+		    interp->result = elPtr->text;
+		}
 	    } else {
 		for (  ; i <= last; i++, elPtr = elPtr->nextPtr) {
 		    Tcl_AppendElement(interp, elPtr->text);
@@ -678,6 +718,12 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	if (GetListboxIndex(interp, listPtr, args[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
+	if (index >= listPtr->numElements) {
+	    index = listPtr->numElements-1;
+	}
+	if (index < 0) {
+	    index = 0;
+	}
 	diff = listPtr->topIndex-index;
 	if (diff > 0) {
 	    if (diff <= (listPtr->fullLines/3)) {
@@ -724,6 +770,12 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " selection anchor index\"", (char *) NULL);
 		goto error;
 	    }
+	    if (first >= listPtr->numElements) {
+		first = listPtr->numElements-1;
+	    }
+	    if (first < 0) {
+		first = 0;
+	    }
 	    listPtr->selectAnchor = first;
 	} else if ((c == 'c') && (strncmp(argv[2], "clear", length) == 0)) {
 	    ListboxSelect(listPtr, first, last, 0);
@@ -736,11 +788,15 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 			argv[0], " selection includes index\"", (char *) NULL);
 		goto error;
 	    }
+	    if ((first < 0) || (first >= listPtr->numElements)) {
+		interp->result = "0";
+		goto done;
+	    }
 	    for (elPtr = listPtr->firstPtr, i = 0; i < first;
 		    i++, elPtr = elPtr->nextPtr) {
 		/* Empty loop body. */
 	    }
-	    if ((elPtr != NULL) && (elPtr->selected)) {
+	    if (elPtr->selected) {
 		interp->result = "1";
 	    } else {
 		interp->result = "0";
@@ -792,7 +848,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		case TK_SCROLL_ERROR:
 		    goto error;
 		case TK_SCROLL_MOVETO:
-		    offset = fraction*listPtr->maxWidth + 0.5;
+		    offset = (int) (fraction*listPtr->maxWidth + 0.5);
 		    break;
 		case TK_SCROLL_PAGES:
 		    windowUnits = windowWidth/listPtr->xScrollUnit;
@@ -838,7 +894,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		case TK_SCROLL_ERROR:
 		    goto error;
 		case TK_SCROLL_MOVETO:
-		    index = listPtr->numElements*fraction + 0.5;
+		    index = (int) (listPtr->numElements*fraction + 0.5);
 		    break;
 		case TK_SCROLL_PAGES:
 		    if (listPtr->fullLines > 2) {
@@ -862,6 +918,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		"xview, or yview", (char *) NULL);
 	goto error;
     }
+    done:
     Tcl_Release((ClientData) listPtr);
     return result;
 
@@ -951,8 +1008,6 @@ ConfigureListbox(interp, listPtr, argc, argv, flags)
     char **argv;		/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
-    XGCValues gcValues;
-    GC new;
     int oldExport;
 
     oldExport = listPtr->exportSelection;
@@ -973,24 +1028,6 @@ ConfigureListbox(interp, listPtr, argc, argv, flags)
     }
     listPtr->inset = listPtr->highlightWidth + listPtr->borderWidth;
 
-    gcValues.foreground = listPtr->fgColorPtr->pixel;
-    gcValues.font = listPtr->fontPtr->fid;
-    gcValues.graphics_exposures = False;
-    new = Tk_GetGC(listPtr->tkwin, GCForeground|GCFont|GCGraphicsExposures,
-	    &gcValues);
-    if (listPtr->textGC != None) {
-	Tk_FreeGC(listPtr->display, listPtr->textGC);
-    }
-    listPtr->textGC = new;
-
-    gcValues.foreground = listPtr->selFgColorPtr->pixel;
-    gcValues.font = listPtr->fontPtr->fid;
-    new = Tk_GetGC(listPtr->tkwin, GCForeground|GCFont, &gcValues);
-    if (listPtr->selTextGC != None) {
-	Tk_FreeGC(listPtr->display, listPtr->selTextGC);
-    }
-    listPtr->selTextGC = new;
-
     /*
      * Claim the selection if we've suddenly started exporting it and
      * there is a selection to export.
@@ -1002,6 +1039,58 @@ ConfigureListbox(interp, listPtr, argc, argv, flags)
 		(ClientData) listPtr);
     }
 
+    ListboxWorldChanged((ClientData) listPtr);
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * ListboxWorldChanged --
+ *
+ *      This procedure is called when the world has changed in some
+ *      way and the widget needs to recompute all its graphics contexts
+ *	and determine its new geometry.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      Listbox will be relayed out and redisplayed.
+ *
+ *---------------------------------------------------------------------------
+ */
+ 
+static void
+ListboxWorldChanged(instanceData)
+    ClientData instanceData;	/* Information about widget. */
+{
+    XGCValues gcValues;
+    GC gc;
+    unsigned long mask;
+    Listbox *listPtr;
+
+    listPtr = (Listbox *) instanceData;
+
+    gcValues.foreground = listPtr->fgColorPtr->pixel;
+    gcValues.font = Tk_FontId(listPtr->tkfont);
+    gcValues.graphics_exposures = False;
+    mask = GCForeground | GCFont | GCGraphicsExposures;
+    gc = Tk_GetGC(listPtr->tkwin, mask, &gcValues);
+    if (listPtr->textGC != None) {
+	Tk_FreeGC(listPtr->display, listPtr->textGC);
+    }
+    listPtr->textGC = gc;
+
+    gcValues.foreground = listPtr->selFgColorPtr->pixel;
+    gcValues.font = Tk_FontId(listPtr->tkfont);
+    mask = GCForeground | GCFont;
+    gc = Tk_GetGC(listPtr->tkwin, mask, &gcValues);
+    if (listPtr->selTextGC != None) {
+	Tk_FreeGC(listPtr->display, listPtr->selTextGC);
+    }
+    listPtr->selTextGC = gc;
+
     /*
      * Register the desired geometry for the window and arrange for
      * the window to be redisplayed.
@@ -1010,7 +1099,6 @@ ConfigureListbox(interp, listPtr, argc, argv, flags)
     ListboxComputeGeometry(listPtr, 1, 1, 1);
     listPtr->flags |= UPDATE_V_SCROLLBAR|UPDATE_H_SCROLLBAR;
     ListboxRedrawRange(listPtr, 0, listPtr->numElements-1);
-    return TCL_OK;
 }
 
 /*
@@ -1038,6 +1126,7 @@ DisplayListbox(clientData)
     register Element *elPtr;
     GC gc;
     int i, limit, x, y, width, prevSelected;
+    Tk_FontMetrics fm;
     int left, right;			/* Non-zero values here indicate
 					 * that the left or right edge of
 					 * the listbox is off-screen. */
@@ -1140,22 +1229,20 @@ DisplayListbox(clientData)
 			TK_RELIEF_RAISED);
 	    }
 	}
-	y += listPtr->fontPtr->ascent + listPtr->selBorderWidth;
+	Tk_GetFontMetrics(listPtr->tkfont, &fm);
+	y += fm.ascent + listPtr->selBorderWidth;
 	x = listPtr->inset + listPtr->selBorderWidth - elPtr->lBearing
 		- listPtr->xOffset;
-	XDrawString(listPtr->display, pixmap, gc, x, y,
-		elPtr->text, elPtr->textLength);
+	Tk_DrawChars(listPtr->display, pixmap, gc, listPtr->tkfont,
+		elPtr->text, elPtr->textLength, x, y);
 
 	/*
 	 * If this is the active element, underline it.
 	 */
 
 	if ((i == listPtr->active) && (listPtr->flags & GOT_FOCUS)) {
-	    XFillRectangle(listPtr->display, pixmap, gc,
-		    listPtr->inset + listPtr->selBorderWidth
-			- listPtr->xOffset,
-		    y + listPtr->fontPtr->descent - 1,
-		    (unsigned) elPtr->pixelWidth, 1);
+	    Tk_UnderlineChars(listPtr->display, pixmap, gc, listPtr->tkfont,
+		    elPtr->text, x, y, 0, elPtr->textLength);
 	}
     }
 
@@ -1221,18 +1308,20 @@ ListboxComputeGeometry(listPtr, fontChanged, maxIsStale, updateGrid)
 				 * the window. */
 {
     register Element *elPtr;
-    int dummy, fontHeight, width, height, pixelWidth, pixelHeight;
-    XCharStruct bbox;
+    int width, height, pixelWidth, pixelHeight;
+    Tk_FontMetrics fm;
 
     if (fontChanged  || maxIsStale) {
-	listPtr->xScrollUnit = XTextWidth(listPtr->fontPtr, "0", 1);
+	listPtr->xScrollUnit = Tk_TextWidth(listPtr->tkfont, "0", 1);
+	if (listPtr->xScrollUnit == 0) {
+	    listPtr->xScrollUnit = 1;
+	}
 	listPtr->maxWidth = 0;
 	for (elPtr = listPtr->firstPtr; elPtr != NULL; elPtr = elPtr->nextPtr) {
 	    if (fontChanged) {
-		XTextExtents(listPtr->fontPtr, elPtr->text, elPtr->textLength,
-			&dummy, &dummy, &dummy, &bbox);
-		elPtr->lBearing = bbox.lbearing;
-		elPtr->pixelWidth = bbox.rbearing - bbox.lbearing;
+		elPtr->pixelWidth = Tk_TextWidth(listPtr->tkfont,
+			elPtr->text, elPtr->textLength);
+		elPtr->lBearing = 0;
 	    }
 	    if (elPtr->pixelWidth > listPtr->maxWidth) {
 		listPtr->maxWidth = elPtr->pixelWidth;
@@ -1240,8 +1329,8 @@ ListboxComputeGeometry(listPtr, fontChanged, maxIsStale, updateGrid)
 	}
     }
 
-    fontHeight = listPtr->fontPtr->ascent + listPtr->fontPtr->descent;
-    listPtr->lineHeight = fontHeight + 1 + 2*listPtr->selBorderWidth;
+    Tk_GetFontMetrics(listPtr->tkfont, &fm);
+    listPtr->lineHeight = fm.linespace + 1 + 2*listPtr->selBorderWidth;
     width = listPtr->width;
     if (width <= 0) {
 	width = (listPtr->maxWidth + listPtr->xScrollUnit - 1)
@@ -1299,8 +1388,7 @@ InsertEls(listPtr, index, argc, argv)
     char **argv;		/* New elements (one per entry). */
 {
     register Element *prevPtr, *newPtr;
-    int length, dummy, i, oldMaxWidth;
-    XCharStruct bbox;
+    int length, i, oldMaxWidth;
 
     /*
      * Find the element before which the new ones will be inserted.
@@ -1333,10 +1421,9 @@ InsertEls(listPtr, index, argc, argv)
 	newPtr = (Element *) ckalloc(ElementSize(length));
 	newPtr->textLength = length;
 	strcpy(newPtr->text, *argv);
-	XTextExtents(listPtr->fontPtr, newPtr->text, newPtr->textLength,
-		&dummy, &dummy, &dummy, &bbox);
-	newPtr->lBearing = bbox.lbearing;
-	newPtr->pixelWidth = bbox.rbearing - bbox.lbearing;
+	newPtr->pixelWidth = Tk_TextWidth(listPtr->tkfont, newPtr->text,
+		newPtr->textLength);
+	newPtr->lBearing = 0;
 	if (newPtr->pixelWidth > listPtr->maxWidth) {
 	    listPtr->maxWidth = newPtr->pixelWidth;
 	}
@@ -1541,8 +1628,7 @@ ListboxEventProc(clientData, eventPtr)
 		Tk_UnsetGrid(listPtr->tkwin);
 	    }
 	    listPtr->tkwin = NULL;
-	    Tcl_DeleteCommand(listPtr->interp,
-		    Tcl_GetCommandName(listPtr->interp, listPtr->widgetCmd));
+	    Tcl_DeleteCommandFromToken(listPtr->interp, listPtr->widgetCmd);
 	}
 	if (listPtr->flags & REDRAW_PENDING) {
 	    Tcl_CancelIdleCall(DisplayListbox, (ClientData) listPtr);
@@ -1644,15 +1730,15 @@ ListboxCmdDeletedProc(clientData)
  */
 
 static int
-GetListboxIndex(interp, listPtr, arg, numElsOK, indexPtr)
+GetListboxIndex(interp, listPtr, arg, endIsSize, indexPtr)
     Tcl_Interp *interp;		/* For error messages. */
     Listbox *listPtr;		/* Listbox for which the index is being
 				 * specified. */
-    Arg arg;		/* Specifies an element in the listbox. */
-    int numElsOK;		/* 0 means the return value must be less
-				 * less than the number of entries in
-				 * the listbox;  1 means it may also be
-				 * equal to the number of entries. */
+    Arg arg;			/* Specifies an element in the listbox. */
+    int endIsSize;		/* If 1, "end" refers to the number of
+				 * entries in the listbox.  If 0, "end"
+				 * refers to 1 less than the number of
+				 * entries. */
     int *indexPtr;		/* Where to store converted index. */
 {
     char *string = LangString(arg);
@@ -1668,13 +1754,17 @@ GetListboxIndex(interp, listPtr, arg, numElsOK, indexPtr)
 	    && (length >= 2)) {
 	*indexPtr = listPtr->selectAnchor;
     } else if ((c == 'e') && (strncmp(string, "end", length) == 0)) {
-	*indexPtr = listPtr->numElements;
+	if (endIsSize) {
+	    *indexPtr = listPtr->numElements;
+	} else {
+	    *indexPtr = listPtr->numElements - 1;
+	}
     } else if (c == '@') {
-	int x, y;
+	int y;
 	char *p, *end;
 
 	p = string+1;
-	x = strtol(p, &end, 0);
+	strtol(p, &end, 0);
 	if ((end == p) || (*end != ',')) {
 	    goto badIndex;
 	}
@@ -1689,16 +1779,6 @@ GetListboxIndex(interp, listPtr, arg, numElsOK, indexPtr)
 	    Tcl_ResetResult(interp);
 	    goto badIndex;
 	}
-    }
-    if (numElsOK) {
-	if (*indexPtr > listPtr->numElements) {
-	    *indexPtr = listPtr->numElements;
-	}
-    } else if (*indexPtr >= listPtr->numElements) {
-	*indexPtr = listPtr->numElements-1;
-    }
-    if (*indexPtr < 0) {
-	*indexPtr = 0;
     }
     return TCL_OK;
 
@@ -1781,16 +1861,16 @@ ChangeListboxOffset(listPtr, offset)
      * round it off to an even multiple of xScrollUnit.
      */
 
-    maxOffset = listPtr->maxWidth + (listPtr->xScrollUnit-1)
-	    - (Tk_Width(listPtr->tkwin) - 2*listPtr->inset
-	    - 2*listPtr->selBorderWidth - listPtr->xScrollUnit);
+    maxOffset = listPtr->maxWidth - (Tk_Width(listPtr->tkwin) -
+	    2*listPtr->inset - 2*listPtr->selBorderWidth)
+	    + listPtr->xScrollUnit - 1;
     if (offset > maxOffset) {
 	offset = maxOffset;
     }
     if (offset < 0) {
 	offset = 0;
     }
-    offset -= offset%listPtr->xScrollUnit;
+    offset -= offset % listPtr->xScrollUnit;
     if (offset != listPtr->xOffset) {
 	listPtr->xOffset = offset;
 	listPtr->flags |= UPDATE_H_SCROLLBAR;
@@ -1826,7 +1906,7 @@ ListboxScanTo(listPtr, x, y)
     int newTopIndex, newOffset, maxIndex, maxOffset;
 
     maxIndex = listPtr->numElements - listPtr->fullLines;
-    maxOffset = listPtr->maxWidth + (listPtr->xScrollUnit-1)
+    maxOffset = listPtr->maxWidth + (listPtr->xScrollUnit - 1)
 	    - (Tk_Width(listPtr->tkwin) - 2*listPtr->inset
 	    - 2*listPtr->selBorderWidth - listPtr->xScrollUnit);
 
@@ -1939,7 +2019,7 @@ ListboxSelect(listPtr, first, last, select)
     int select;				/* 1 means select items, 0 means
 					 * deselect them. */
 {
-    int i, firstRedisplay, lastRedisplay, increment, oldCount;
+    int i, firstRedisplay, increment, oldCount;
     Element *elPtr;
 
     if (last < first) {
@@ -1947,8 +2027,14 @@ ListboxSelect(listPtr, first, last, select)
 	first = last;
 	last = i;
     }
-    if (first >= listPtr->numElements) {
+    if ((last < 0) || (first >= listPtr->numElements)) {
 	return;
+    }
+    if (first < 0) {
+	first = 0;
+    }
+    if (last >= listPtr->numElements) {
+	last = listPtr->numElements - 1;
     }
     oldCount = listPtr->numSelected;
     firstRedisplay = -1;
@@ -1966,7 +2052,6 @@ ListboxSelect(listPtr, first, last, select)
 	if (firstRedisplay < 0) {
 	    firstRedisplay = i;
 	}
-	lastRedisplay = i;
     }
     if (firstRedisplay >= 0) {
 	ListboxRedrawRange(listPtr, first, last);

@@ -3,7 +3,7 @@ use strict;
 use File::Find;
 use Getopt::Std;
 use Cwd;
-my %opt = ('p' => '2');
+my %opt = ('p' => '3');
 getopts('oap:',\%opt);
 my $path = getcwd();
 chdir($path);
@@ -63,14 +63,26 @@ my $seen = 0;
 my $edit = 0;
 while (<>)
  {
-  if (/^(\$VERSION\s*=\s*'\d+\.)(\d+)('\s*;.*\$Id:.*#(\d+)\$.*)$/)
+  if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id(.*)\$.*$/)
    {            
     $seen = 1;
-    my $ver  = $2;
-    my $need = (-w $ARGV) ? $4+1 : $4;
-    if ($ver != $need)
+    my $maj  = $1;
+    my $min  = $2;
+    my $path = $3;
+    my $need = 0;
+    unless ($path =~ /#(\d+)/)
      {
-      $_ = sprintf("$1%03d$3\n",$need);
+      my $have = `p4 have $ARGV`;
+      ($path,$need)  = $have =~ /^(.*#(\d+))\s+-/; 
+      $need++;
+     }
+    else
+     {
+      $need = (-w $ARGV) ? $1+1 : $1;
+     }
+    if ($maj != $opt{'p'} || $min != $need)
+     {
+      $_ = sprintf("\$VERSION = '%d.%03d'; # \$Id: $path\$\n",$opt{'p'},$need);
       warn "$ARGV:$_";                        
       $edit = 1;
      }        

@@ -39,7 +39,7 @@ sub MY::post_initialize
  my %mTk;
  my $dir;
  my @list;
- if ($^O eq 'MSWin32')
+ if ($Tk::MMutil::IsWin32)
   {
    @list = qw(win xlib additions generic tixWin tixGeneric tclWin tclGeneric);
   }
@@ -61,36 +61,52 @@ sub MY::post_initialize
    my %exc;
    my $src = $self->catdir("mTk",$dir);
    next unless -d $src;
-   opendir(DIR,$src) || die "Cannot open $src:$!";
-   if (open(EXC,$self->catfile($src,"pTk.exc")))
+   if (open(EXC,$self->catfile($src,"pTk.inc")))
     {
      while (<EXC>)
-      {
-       chomp;
-       $exc{$_} = 1;
-       if (-f $_)
-        {
-         chmod(0777,$_);
-         unlink($_); 
-         warn "Loose $_\n";
-        }
-      }
+      {          
+       chomp;    
+       s/#.*$//;
+       next unless /\S/;
+       $mTk{$_} = $self->catfile($src,$_) unless (exists $mTk{$_});
+      }          
      close(EXC);
     }
    else
     {
-     warn "Cannot open $src/pTk.exc:$!";
+     opendir(DIR,$src) || die "Cannot open $src:$!";
+     if (open(EXC,$self->catfile($src,"pTk.exc")))
+      {            
+       while (<EXC>)
+        {          
+         chomp;    
+         s/#.*$//;
+         next unless /\S/;
+         $exc{$_} = 1;
+         if (-f $_)
+          {        
+           chmod(0777,$_);
+           unlink($_); 
+           warn "Loose $_\n";
+          }        
+        }          
+       close(EXC); 
+      }            
+     else          
+      {            
+       warn "Cannot open $src/pTk.exc:$!";
+      }            
+     my $file;     
+     while (defined($file = readdir(DIR)))
+      {            
+       next if $exc{$file};
+       if ($file =~ /\.[ch]$/)
+        {          
+         $mTk{$file} = $self->catfile($src,$file) unless (exists $mTk{$file});
+        }          
+      }            
+     closedir(DIR);
     }
-   my $file;
-   while (defined($file = readdir(DIR)))
-    {
-     next if $exc{$file};
-     if ($file =~ /\.[ch]$/)
-      {
-       $mTk{$file} = $self->catfile($src,$file) unless (exists $mTk{$file});
-      }
-    }
-   closedir(DIR);
   }
  my @loose = ();
  if (defined($Config{'i_stdlib'}) && try_compile("config/Hstrtoul.c"))
@@ -122,7 +138,7 @@ sub MY::post_initialize
   {
    $self->{PM}->{$name} = $self->catfile($dir,$name);
   }
- if ($^O eq 'MSWin32' or $win_arch eq 'open32' or $win_arch eq 'pm')
+ if ($Tk::MMutil::IsWin32 or $win_arch eq 'open32' or $win_arch eq 'pm')
   {my $ddir = $self->catdir('$(INST_ARCHLIBDIR)','X11');
    my $sdir = $self->catdir('mTk','xlib','X11');
    push(@{$self->{'dir_targets'}},$ddir);
@@ -197,7 +213,7 @@ $dep .= $self->dir_target(@{$self->{'dir_targets'}});
 $dep .= "config :: " . join(" \\\n\t",map($self->catfile($_,".exists"),@{$self->{'dir_targets'}})) .
         "\n\t".$self->{NOECHO}."\$(NOOP)\n";
 
-if ($^O eq 'MSWin32')
+if ($Tk::MMutil::IsWin32)
  {
   $dep .= '
 tk.res : mTk/win/rc/tk.rc
@@ -218,11 +234,6 @@ tixInt.t : tixInt.h tixInt.exc mkVFunc
 
 config :: LangIO.h Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t 
 	'.$self->{NOECHO}.'$(NOOP)
-
-Methods.def : mkmethods $(C_FILES)
-	$(PERL) mkmethods $@ $(C_FILES)
-
-libpTk$(LIB_EXT) : Methods.def
 
 ';
 }

@@ -26,8 +26,8 @@ find(\&wanted,'.');
 chmod(0666,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";
 print SKIP <<'EOF'
-\.[oai]$
-\.(bso?|old|bak|out|hide|q4|orig)$
+\.[oaid]$
+\.(bso?|old|bak|out|hide|q4|gz|tcl|orig)$
 ^\.
 /\.
 C\+\+/Main$
@@ -36,12 +36,13 @@ C\+\+/Main$
 \bpTk/tkConfig\.h$
 \bpTk/need$
 \bpm_to_blib$
-%$
+[%~]$
 \b(blib|merge|Ilya|Pixmap)/
 \bTix/
 tcl\.pm$
 \bcore\b
-\b(Obsolete|ToDo|PowerPoint)/
+\bToDo/
+\bObsolete/
 \b(GNU)?[Mm]akefile(\.aperl)?$
 \btkperl\b
 \bHTML/doc\b

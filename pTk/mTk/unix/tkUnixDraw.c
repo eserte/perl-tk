@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixDraw.c 1.7 96/02/15 18:55:26
+ * SCCS: @(#) tkUnixDraw.c 1.9 97/03/21 11:16:18
  */
 
 #include "tkPort.h"
@@ -78,15 +78,15 @@ TkScrollWindow(tkwin, gc, x, y, width, height, dx, dy, damageRgn)
 
     /*
      * Sync the event stream so all of the expose events will be on the
-     * X event queue before we start filtering.  This avoids busy waiting
+     * Tk event queue before we start filtering.  This avoids busy waiting
      * while we filter events.
      */
 
-    XSync(info.display, False);
+    TkpSync(info.display);
     oldProc = Tk_RestrictEvents(ScrollRestrictProc, (ClientData) &info,
 	    &oldArg);
     while (!info.done) {
-	Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_DONT_WAIT);
+	Tcl_ServiceEvent(TCL_WINDOW_EVENTS);
     }
     Tk_RestrictEvents(oldProc, oldArg, &dummy);
 

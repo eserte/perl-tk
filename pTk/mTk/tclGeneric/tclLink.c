@@ -13,7 +13,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclLink.c 1.13 96/08/09 16:23:34
+ * SCCS: @(#) tclLink.c 1.15 97/01/21 21:51:42
  */
 
 #include "tclInt.h"
@@ -394,11 +394,11 @@ StringValue(linkPtr, buffer)
     switch (linkPtr->type) {
 	case TCL_LINK_INT:
 	    linkPtr->lastValue.i = *(int *)(linkPtr->addr);
-	    sprintf(buffer, "%d", linkPtr->lastValue.i);
+	    TclFormatInt(buffer, linkPtr->lastValue.i);
 	    return buffer;
 	case TCL_LINK_DOUBLE:
 	    linkPtr->lastValue.d = *(double *)(linkPtr->addr);
-	    Tcl_PrintDouble(linkPtr->interp, linkPtr->lastValue.d, buffer);
+	    Tcl_PrintDouble((Tcl_Interp *) NULL, linkPtr->lastValue.d, buffer);
 	    return buffer;
 	case TCL_LINK_BOOLEAN:
 	    linkPtr->lastValue.i = *(int *)(linkPtr->addr);

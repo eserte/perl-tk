@@ -4,12 +4,12 @@
  *	This file implements polygon items for canvas widgets.
  *
  * Copyright (c) 1991-1994 The Regents of the University of California.
- * Copyright (c) 1994 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvPoly.c 1.34 96/02/15 18:52:32
+ * SCCS: @(#) tkCanvPoly.c 1.37 97/04/29 15:39:16
  */
 
 #include "tkPort.h"
@@ -40,6 +40,8 @@ typedef struct PolygonItem  {
     int smooth;			/* Non-zero means draw shape smoothed (i.e.
 				 * with Bezier splines). */
     int splineSteps;		/* Number of steps in each spline segment. */
+    int autoClosed;		/* Zero means the given polygon was closed,
+				   one means that we auto closed it. */
 } PolygonItem;
 
 /*
@@ -194,6 +196,7 @@ CreatePolygon(interp, canvas, itemPtr, argc, argv)
     polyPtr->fillGC = None;
     polyPtr->smooth = 0;
     polyPtr->splineSteps = 12;
+    polyPtr->autoClosed = 0;
 
     /*
      * Count the number of points and then parse them into a point
@@ -255,7 +258,11 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
     int i, numPoints;
 
     if (argc == 0) {
-	for (i = 0; i < 2*polyPtr->numPoints; i++) {
+	/*
+	 * Print the coords used to create the polygon.  If we auto
+	 * closed the polygon then we don't report the last point.
+	 */
+	for (i = 0; i < 2*(polyPtr->numPoints - polyPtr->autoClosed); i++) {
 	    Tcl_DoubleResults(interp, 1, 1, polyPtr->coordPtr[i]);
 	}
     } else if (argc < 6) {
@@ -291,6 +298,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
 	    }
 	}
 	polyPtr->numPoints = numPoints;
+	polyPtr->autoClosed = 0;
     
 	/*
 	 * Close the polygon if it isn't already closed.
@@ -298,6 +306,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
     
 	if ((polyPtr->coordPtr[argc-2] != polyPtr->coordPtr[0])
 		|| (polyPtr->coordPtr[argc-1] != polyPtr->coordPtr[1])) {
+	    polyPtr->autoClosed = 1;
 	    polyPtr->numPoints++;
 	    polyPtr->coordPtr[argc] = polyPtr->coordPtr[0];
 	    polyPtr->coordPtr[argc+1] = polyPtr->coordPtr[1];
@@ -475,8 +484,8 @@ ComputePolygonBbox(canvas, polyPtr)
     int i;
 
     coordPtr = polyPtr->coordPtr;
-    polyPtr->header.x1 = polyPtr->header.x2 = *coordPtr;
-    polyPtr->header.y1 = polyPtr->header.y2 = coordPtr[1];
+    polyPtr->header.x1 = polyPtr->header.x2 = (int) *coordPtr;
+    polyPtr->header.y1 = polyPtr->header.y2 = (int) coordPtr[1];
 
     for (i = 1, coordPtr = polyPtr->coordPtr+2; i < polyPtr->numPoints;
 	    i++, coordPtr += 2) {

@@ -841,6 +841,21 @@ EXTERN void		TixpSubRegFillRectangle _ANSI_ARGS_((Display *display,
 			    TixpSubRegion * subRegPtr, int x, int y,
 			    int width, int height));
 
+/* These functions are also, and originaly declared in tixPort.h but 
+ * that would mean even more Vtables 
+ */
+
+EXTERN void		TixComputeTextGeometry _ANSI_ARGS_((
+			    TixFont fontStructPtr, char *string,
+			    int numChars, int wrapLength, int *widthPtr,
+			    int *heightPtr));
+EXTERN void		TixDisplayText _ANSI_ARGS_((Display *display,
+			    Drawable drawable, TixFont font,
+			    char *string, int numChars, int x, int y,
+			    int length, Tk_Justify justify, int underline,
+			    GC gc));
+EXTERN Tcl_HashTable *	TixGetHashTable _ANSI_ARGS_((Tcl_Interp * interp,
+			    char * name, Tcl_InterpDeleteProc *deleteProc));
 
 /*
  * Console Stuff

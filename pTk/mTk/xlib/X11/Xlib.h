@@ -58,7 +58,6 @@ typedef unsigned long wchar_t;
 typedef char *XPointer;
 
 #define Bool int
-#define Status int
 #define True 1
 #define False 0
 
@@ -493,7 +492,7 @@ typedef struct _XDisplay {
 	 * expensive if many extensions are being used.
 	 */
 	Bool (*event_vec[128])();  /* vector for wire to event */
-	Status (*wire_vec[128])(); /* vector for event to wire */
+	int (*wire_vec[128])(); /* vector for event to wire */
 	KeySym lock_meaning;	   /* for XLookupString */
 	struct _XLockInfo *lock;   /* multi-thread state, display lock */
 	struct _XInternalAsync *async_handlers; /* for internal async */
@@ -1802,7 +1801,7 @@ extern int *XListDepths(
 
 /* ICCCM routines for things that don't require special include files; */
 /* other declarations are given in Xutil.h                             */
-extern Status XReconfigureWMWindow(
+extern int XReconfigureWMWindow(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -1812,7 +1811,7 @@ extern Status XReconfigureWMWindow(
 #endif
 );
 
-extern Status XGetWMProtocols(
+extern int XGetWMProtocols(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -1820,7 +1819,7 @@ extern Status XGetWMProtocols(
     int*		/* count_return */
 #endif
 );
-extern Status XSetWMProtocols(
+extern int XSetWMProtocols(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -1828,21 +1827,21 @@ extern Status XSetWMProtocols(
     int			/* count */
 #endif
 );
-extern Status XIconifyWindow(
+extern int XIconifyWindow(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
     int			/* screen_number */
 #endif
 );
-extern Status XWithdrawWindow(
+extern int XWithdrawWindow(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
     int			/* screen_number */
 #endif
 );
-extern Status XGetCommand(
+extern int XGetCommand(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -1850,7 +1849,7 @@ extern Status XGetCommand(
     int*		/* argc_return */
 #endif
 );
-extern Status XGetWMColormapWindows(
+extern int XGetWMColormapWindows(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -1858,7 +1857,7 @@ extern Status XGetWMColormapWindows(
     int*		/* count_return */
 #endif
 );
-extern Status XSetWMColormapWindows(
+extern int XSetWMColormapWindows(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -1916,7 +1915,7 @@ extern void XAddToSaveSet(
 #endif
 );
 
-extern Status XAllocColor(
+extern int XAllocColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
@@ -1924,7 +1923,7 @@ extern Status XAllocColor(
 #endif
 );
 
-extern Status XAllocColorCells(
+extern int XAllocColorCells(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
@@ -1936,7 +1935,7 @@ extern Status XAllocColorCells(
 #endif
 );
 
-extern Status XAllocColorPlanes(
+extern int XAllocColorPlanes(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
@@ -1952,7 +1951,7 @@ extern Status XAllocColorPlanes(
 #endif
 );
 
-extern Status XAllocNamedColor(
+extern int XAllocNamedColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
@@ -2555,7 +2554,7 @@ extern int XEventsQueued(
 #endif
 );
 
-extern Status XFetchName(
+extern int XFetchName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -2763,7 +2762,7 @@ extern Bool XGetFontProperty(
 #endif
 );
 
-extern Status XGetGCValues(
+extern int XGetGCValues(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     GC			/* gc */,
@@ -2772,7 +2771,7 @@ extern Status XGetGCValues(
 #endif
 );
 
-extern Status XGetGeometry(
+extern int XGetGeometry(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable		/* d */,
@@ -2786,7 +2785,7 @@ extern Status XGetGeometry(
 #endif
 );
 
-extern Status XGetIconName(
+extern int XGetIconName(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -2836,7 +2835,7 @@ extern void XGetScreenSaver(
 #endif
 );
 
-extern Status XGetTransientForHint(
+extern int XGetTransientForHint(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -2861,7 +2860,7 @@ extern int XGetWindowProperty(
 #endif
 );
 
-extern Status XGetWindowAttributes(
+extern int XGetWindowAttributes(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -2987,7 +2986,7 @@ extern unsigned long XLastKnownRequestProcessed(
 #endif
 );
 
-extern Status XLookupColor(
+extern int XLookupColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
@@ -3078,7 +3077,7 @@ extern void XNoOp(
 #endif
 );
 
-extern Status XParseColor(
+extern int XParseColor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Colormap		/* colormap */,
@@ -3173,7 +3172,7 @@ extern int XQLength(
 #endif
 );
 
-extern Status XQueryBestCursor(
+extern int XQueryBestCursor(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable		/* d */,
@@ -3184,7 +3183,7 @@ extern Status XQueryBestCursor(
 #endif
 );
 
-extern Status XQueryBestSize(
+extern int XQueryBestSize(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     int			/* class */,
@@ -3196,7 +3195,7 @@ extern Status XQueryBestSize(
 #endif
 );
 
-extern Status XQueryBestStipple(
+extern int XQueryBestStipple(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable		/* which_screen */,
@@ -3207,7 +3206,7 @@ extern Status XQueryBestStipple(
 #endif
 );
 
-extern Status XQueryBestTile(
+extern int XQueryBestTile(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Drawable		/* which_screen */,
@@ -3292,7 +3291,7 @@ extern void XQueryTextExtents16(
 #endif
 );
 
-extern Status XQueryTree(
+extern int XQueryTree(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -3435,7 +3434,7 @@ extern void XSelectInput(
 #endif
 );
 
-extern Status XSendEvent(
+extern int XSendEvent(
 #if NeedFunctionPrototypes
     Display*		/* display */,
     Window		/* w */,
@@ -4076,7 +4075,7 @@ extern int XwcTextExtents(
 #endif
 );
 
-extern Status XmbTextPerCharExtents(
+extern int XmbTextPerCharExtents(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */,
     _Xconst char*	/* text */,
@@ -4090,7 +4089,7 @@ extern Status XmbTextPerCharExtents(
 #endif
 );
 
-extern Status XwcTextPerCharExtents(
+extern int XwcTextPerCharExtents(
 #if NeedFunctionPrototypes
     XFontSet		/* font_set */,
     wchar_t*		/* text */,
@@ -4189,7 +4188,7 @@ extern XIM XOpenIM(
 #endif
 );
 
-extern Status XCloseIM(
+extern int XCloseIM(
 #if NeedFunctionPrototypes
     XIM /* im */
 #endif
@@ -4281,7 +4280,7 @@ extern int XmbLookupString(
     char*		/* buffer_return */,
     int			/* bytes_buffer */,
     KeySym*		/* keysym_return */,
-    Status*		/* status_return */
+    int*		/* status_return */
 #endif
 );
 
@@ -4292,7 +4291,7 @@ extern int XwcLookupString(
     wchar_t*		/* buffer_return */,
     int			/* wchars_buffer */,
     KeySym*		/* keysym_return */,
-    Status*		/* status_return */
+    int*		/* status_return */
 #endif
 );
 

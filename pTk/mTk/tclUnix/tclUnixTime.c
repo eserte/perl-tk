@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclUnixTime.c 1.11 96/07/23 16:17:21
+ * SCCS: @(#) tclUnixTime.c 1.13 97/10/31 15:04:58
  */
 
 #include "tkPort.h"
@@ -107,7 +107,8 @@ TclpGetClicks()
  *	this function.
  *
  * Results:
- *	Hours east of GMT.
+ *	The return value is the local time zone, measured in
+ *	minutes away from GMT (-ve for east, +ve for west).
  *
  * Side effects:
  *	None.
@@ -145,7 +146,7 @@ TclpGetTimeZone (currentTime)
 #if defined(HAVE_TM_GMTOFF) && !defined (TCL_GOT_TIMEZONE)
 #   define TCL_GOT_TIMEZONE
     time_t     curTime = (time_t) currentTime;
-    struct tm *timeDataPtr = localtime(&currentTime);
+    struct tm *timeDataPtr = localtime(&curTime);
     int        timeZone;
 
     timeZone = -(timeDataPtr->tm_gmtoff / 60);
@@ -154,6 +155,24 @@ TclpGetTimeZone (currentTime)
     }
     
     return timeZone;
+#endif
+
+#if defined(USE_DELTA_FOR_TZ)
+#define TCL_GOT_TIMEZONE 1
+    /*
+     * This hack replaces using global var timezone or gettimeofday
+     * in situations where they are buggy such as on AIX when libbsd.a
+     * is linked in.
+     */
+
+    int timeZone;
+    time_t tt;
+    struct tm *stm;
+    tt = 849268800L;      /*    1996-11-29 12:00:00  GMT */
+    stm = localtime(&tt); /* eg 1996-11-29  6:00:00  CST6CDT */
+    /* The calculation below assumes a max of +12 or -12 hours from GMT */
+    timeZone = (12 - stm->tm_hour)*60 + (0 - stm->tm_min);
+    return timeZone;  /* eg +360 for CST6CDT */
 #endif
 
     /*

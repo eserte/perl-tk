@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1994 The Regents of the University of California.
-'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) image.n 1.6 95/06/07 21:15:16
+'\" SCCS: @(#) image.n 1.10 96/03/26 18:23:05
 '\" 
 .so man.macros
 .TH image n 4.0 Tk "Tk Image Classes"

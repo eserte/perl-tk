@@ -5,12 +5,12 @@
  *	text widgets.
  *
  * Copyright (c) 1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTextMark.c 1.15 96/02/15 18:52:59
+ * SCCS: @(#) tkTextMark.c 1.18 97/10/20 11:12:50
  */
 
 #include "tkInt.h"
@@ -119,9 +119,9 @@ TkTextMarkCmd(textPtr, interp, argc, argv)
     c = argv[2][0];
     length = strlen(argv[2]);
     if ((c == 'g') && (strncmp(argv[2], "gravity", length) == 0)) {
-	if (argc > 5) {
+	if (argc < 4 || argc > 5) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " mark gravity markName ?gravity?",
+		    argv[0], " mark gravity markName ?gravity?\"",
 		    (char *) NULL);
 	    return TCL_ERROR;
 	}
@@ -524,7 +524,7 @@ TkTextInsertDisplayProc(chunkPtr, x, y, height, baseline, display, dst, screenY)
     TkText *textPtr = (TkText *) chunkPtr->clientData;
     int halfWidth = textPtr->insertWidth/2;
 
-    if ((x + halfWidth) <= 0) {
+    if ((x + halfWidth) < 0) {
 	/*
 	 * The insertion cursor is off-screen.  Just return.
 	 */

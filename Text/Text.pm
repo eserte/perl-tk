@@ -17,7 +17,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '2.013'; # $Id: //depot/Tk/Text/Text.pm#13$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Text/Text.pm#5$
 
 @ISA = qw(Tk::Widget);
 
@@ -30,6 +30,10 @@ sub Tk_cmd { \&Tk::text }
 import Tk qw(Ev);
 
 sub Tk::Widget::ScrlText { shift->Scrolled('Text' => @_) }
+
+Tk::Methods("bbox","compare","debug","delete","dlineinfo","dump",
+            "get","image","index","insert","mark","scan","search",
+            "see","tag","window","xview","yview");
 
 use Tk::Submethods ( 'mark' => [qw(gravity names next previous set unset)],
                      'scan' => [qw(mark dragto)],

@@ -11,15 +11,19 @@
 #
 # The information in this file is specific to a single platform.
 #
-# SCCS: @(#) tkConfig.sh.in 1.5 96/04/15 09:49:11
+# SCCS: @(#) tkConfig.sh.in 1.11 97/10/30 13:29:13
 
 # Tk's version number.
 TK_VERSION='@TK_VERSION@'
 TK_MAJOR_VERSION='@TK_MAJOR_VERSION@'
 TK_MINOR_VERSION='@TK_MINOR_VERSION@'
+TK_PATCH_LEVEL='@TK_PATCH_LEVEL@'
 
 # -D flags for use with the C compiler.
 TK_DEFS='@DEFS@'
+
+# Flag, 1: we built a shared lib, 0 we didn't
+TK_SHARED_BUILD=@TK_SHARED_BUILD@
 
 # The name of the Tk library (may be either a .a file or a shared library):
 TK_LIB_FILE=@TK_LIB_FILE@
@@ -48,3 +52,17 @@ TK_BUILD_LIB_SPEC='@TK_BUILD_LIB_SPEC@'
 # String to pass to linker to pick up the Tk library from its
 # installed directory.
 TK_LIB_SPEC='@TK_LIB_SPEC@'
+
+# Location of the top-level source directory from which Tk was built.
+# This is the directory that contains a README file as well as
+# subdirectories such as generic, unix, etc.  If Tk was compiled in a
+# different place than the directory containing the source files, this
+# points to the location of the sources, not the location where Tk was
+# compiled.
+TK_SRC_DIR='@TK_SRC_DIR@'
+
+# Needed if you want to make a 'fat' shared library library
+# containing tk objects or link a different wish.
+TK_CC_SEARCH_FLAGS='@TK_CC_SEARCH_FLAGS@'
+TK_LD_SEARCH_FLAGS='@TK_LD_SEARCH_FLAGS@'
+

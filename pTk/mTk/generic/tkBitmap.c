@@ -6,30 +6,44 @@
  *	also avoids interactions with the X server.
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkBitmap.c 1.37 96/07/23 16:54:40
+ * SCCS: @(#) tkBitmap.c 1.45 97/07/24 17:27:38
  */
 
 #include "tkPort.h"
-#include "tk.h"
+#include "tkInt.h"
 
 /*
  * The includes below are for pre-defined bitmaps.
+ *
+ * Platform-specific issue: Windows complains when the bitmaps are
+ * included, because an array of characters is being initialized with
+ * integers as elements.  For lint purposes, the following pragmas
+ * temporarily turn off that warning message.
  */
+
+#if defined(__WIN32__) || defined(_WIN32)
+#pragma warning (disable : 4305)
+#endif
 
 #include "error.bmp"
 #include "gray12.bmp"
 #include "gray25.bmp"
 #include "gray50.bmp"
+#include "gray75.bmp"
 #include "hourglass.bmp"
 #include "info.bmp"
 #include "questhead.bmp"
 #include "question.bmp"
 #include "warning.bmp"
+
+#if defined(__WIN32__) || defined(_WIN32)
+#pragma warning (default : 4305)
+#endif
 
 /*
  * One of the following data structures exists for each bitmap that is
@@ -72,23 +86,13 @@ typedef struct {
 } IdKey;
 
 /*
- * For each call to Tk_DefineBitmap one of the following structures is
- * created to hold information about the bitmap.
- */
-
-typedef struct {
-    char *source;		/* Bits for bitmap. */
-    int width, height;		/* Dimensions of bitmap. */
-} PredefBitmap;
-
-/*
  * Hash table create by Tk_DefineBitmap to map from a name to a
  * collection of in-core data about a bitmap.  The table is
  * indexed by the address of the data for the bitmap, and the entries
- * contain pointers to PredefBitmap structures.
+ * contain pointers to TkPredefBitmap structures.
  */
 
-static Tcl_HashTable predefTable;
+Tcl_HashTable tkPredefBitmapTable;
 
 /*
  * Hash table used by Tk_GetBitmapFromData to map from a collection
@@ -138,7 +142,8 @@ static void		BitmapInit _ANSI_ARGS_((void));
 
 Pixmap
 Tk_GetBitmap(interp, tkwin, string)
-    Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
+    Tcl_Interp *interp;		/* Interpreter to use for error reporting,
+				 * this may be NULL. */
     Tk_Window tkwin;		/* Window in which bitmap will be used. */
     Tk_Uid string;		/* Description of bitmap.  See manual entry
 				 * for details on legal syntax. */
@@ -147,7 +152,7 @@ Tk_GetBitmap(interp, tkwin, string)
     IdKey idKey;
     Tcl_HashEntry *nameHashPtr, *idHashPtr, *predefHashPtr;
     register TkBitmap *bitmapPtr;
-    PredefBitmap *predefPtr;
+    TkPredefBitmap *predefPtr;
     int new;
     Pixmap bitmap;
     int width, height;
@@ -178,6 +183,12 @@ Tk_GetBitmap(interp, tkwin, string)
 	Tcl_DString buffer;
 	int result;
 
+        if (Tcl_IsSafe(interp)) {
+            Tcl_AppendResult(interp, "can't specify bitmap with '@' in a",
+                    " safe interpreter", (char *) NULL);
+            goto error;
+        }
+        
 	string = Tcl_TranslateFileName(interp, string + 1, &buffer);
 	if (string == NULL) {
 	    goto error;
@@ -186,33 +197,49 @@ Tk_GetBitmap(interp, tkwin, string)
 		RootWindowOfScreen(nameKey.screen), string,
 		(unsigned int *) &width, (unsigned int *) &height,
 		&bitmap, &dummy2, &dummy2);
-	Tcl_DStringFree(&buffer);
 	if (result != BitmapSuccess) {
-	    Tcl_AppendResult(interp, "error reading bitmap file \"", string,
+	    if (interp != NULL) {
+		Tcl_AppendResult(interp, "error reading bitmap file \"", string,
 		    "\"", (char *) NULL);
+	    }
+	    Tcl_DStringFree(&buffer);
 	    goto error;
 	}
+	Tcl_DStringFree(&buffer);
     } else {
-	predefHashPtr = Tcl_FindHashEntry(&predefTable, string);
+	predefHashPtr = Tcl_FindHashEntry(&tkPredefBitmapTable, string);
 	if (predefHashPtr == NULL) {
 	    /*
-	     * The check for a NULL interpreter is a special hack that
-	     * allows this procedure to be called from GetShadows in
-	     * tk3d.c, where it doesn't have an intepreter handle.
+	     * The following platform specific call allows the user to
+	     * define bitmaps that may only exist during run time.  If
+	     * it returns None nothing was found and we return the error.
 	     */
-
-	    if (interp != NULL) {
-		Tcl_AppendResult(interp, "bitmap \"", string,
+	    bitmap = TkpGetNativeAppBitmap(Tk_Display(tkwin), string,
+		    &width, &height);
+	    
+	    if (bitmap == None) {
+		if (interp != NULL) {
+		    Tcl_AppendResult(interp, "bitmap \"", string,
 			"\" not defined", (char *) NULL);
+		}
+		goto error;
 	    }
-	    goto error;
+	} else {
+	    predefPtr = (TkPredefBitmap *) Tcl_GetHashValue(predefHashPtr);
+	    width = predefPtr->width;
+	    height = predefPtr->height;
+	    if (predefPtr->native) {
+		bitmap = TkpCreateNativeBitmap(Tk_Display(tkwin),
+		    predefPtr->source);
+		if (bitmap == None) {
+		    panic("native bitmap creation failed");
+		}
+	    } else {
+		bitmap = XCreateBitmapFromData(Tk_Display(tkwin),
+		    RootWindowOfScreen(nameKey.screen), predefPtr->source,
+		    (unsigned) width, (unsigned) height);
+	    }
 	}
-	predefPtr = (PredefBitmap *) Tcl_GetHashValue(predefHashPtr);
-	width = predefPtr->width;
-	height = predefPtr->height;
-	bitmap = XCreateBitmapFromData(Tk_Display(tkwin),
-		RootWindowOfScreen(nameKey.screen), predefPtr->source,
-		(unsigned) width, (unsigned) height);
     }
 
     /*
@@ -273,22 +300,23 @@ Tk_DefineBitmap(interp, name, source, width, height)
 {
     int new;
     Tcl_HashEntry *predefHashPtr;
-    PredefBitmap *predefPtr;
+    TkPredefBitmap *predefPtr;
 
     if (!initialized) {
 	BitmapInit();
     }
 
-    predefHashPtr = Tcl_CreateHashEntry(&predefTable, name, &new);
+    predefHashPtr = Tcl_CreateHashEntry(&tkPredefBitmapTable, name, &new);
     if (!new) {
         Tcl_AppendResult(interp, "bitmap \"", name,
 		"\" is already defined", (char *) NULL);
 	return TCL_ERROR;
     }
-    predefPtr = (PredefBitmap *) ckalloc(sizeof(PredefBitmap));
+    predefPtr = (TkPredefBitmap *) ckalloc(sizeof(TkPredefBitmap));
     predefPtr->source = source;
     predefPtr->width = width;
     predefPtr->height = height;
+    predefPtr->native = 0;
     Tcl_SetHashValue(predefHashPtr, predefPtr);
     return TCL_OK;
 }
@@ -466,11 +494,10 @@ Tk_GetBitmapFromData(interp, tkwin, source, width, height)
 {
     DataKey nameKey;
     Tcl_HashEntry *dataHashPtr;
-    Tk_Uid name = NULL;		/* Initialization need only to prevent
-				 * compiler warning. */
+    Tk_Uid name;
     int new;
-    static int autoNumber = 0;
     char string[20];
+    static int autoNumber = 0;
 
     if (!initialized) {
 	BitmapInit();
@@ -520,7 +547,7 @@ BitmapInit()
     initialized = 1;
     Tcl_InitHashTable(&nameTable, sizeof(NameKey)/sizeof(int));
     Tcl_InitHashTable(&dataTable, sizeof(DataKey)/sizeof(int));
-    Tcl_InitHashTable(&predefTable, TCL_ONE_WORD_KEYS);
+    Tcl_InitHashTable(&tkPredefBitmapTable, TCL_ONE_WORD_KEYS);
 
     /*
      * The call below is tricky:  can't use sizeof(IdKey) because it
@@ -533,6 +560,8 @@ BitmapInit()
 
     Tk_DefineBitmap(dummy, Tk_GetUid("error"), (char *) error_bits,
 	    error_width, error_height);
+    Tk_DefineBitmap(dummy, Tk_GetUid("gray75"), (char *) gray75_bits,
+	    gray75_width, gray75_height);
     Tk_DefineBitmap(dummy, Tk_GetUid("gray50"), (char *) gray50_bits,
 	    gray50_width, gray50_height);
     Tk_DefineBitmap(dummy, Tk_GetUid("gray25"), (char *) gray25_bits,
@@ -549,5 +578,8 @@ BitmapInit()
 	    question_width, question_height);
     Tk_DefineBitmap(dummy, Tk_GetUid("warning"), (char *) warning_bits,
 	    warning_width, warning_height);
+
+    TkpDefineNativeBitmaps();
+
     Tcl_DeleteInterp(dummy);
 }

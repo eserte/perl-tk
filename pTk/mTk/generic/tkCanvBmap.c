@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvBmap.c 1.29 96/02/17 16:59:10
+ * SCCS: @(#) tkCanvBmap.c 1.30 96/05/03 10:49:00
  */
 
 #include "tkInt.h"
@@ -366,8 +366,8 @@ ComputeBitmapBbox(canvas, bmapPtr)
     int width, height;
     int x, y;
 
-    x = bmapPtr->x + ((bmapPtr->x >= 0) ? 0.5 : - 0.5);
-    y = bmapPtr->y + ((bmapPtr->y >= 0) ? 0.5 : - 0.5);
+    x = (int) (bmapPtr->x + ((bmapPtr->x >= 0) ? 0.5 : - 0.5));
+    y = (int) (bmapPtr->y + ((bmapPtr->y >= 0) ? 0.5 : - 0.5));
 
     if (bmapPtr->bitmap == None) {
 	bmapPtr->header.x1 = bmapPtr->header.x2 = x;

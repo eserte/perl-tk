@@ -20,10 +20,6 @@
 #include "Lang.h"
 #endif
 
-#ifndef _TK
-#include "tk.h"
-#endif
-
 #if defined(__WIN32__) || defined(_WIN32)
 #   include "tkWinPort.h"
 #   ifndef strcasecmp

@@ -1,0 +1,21 @@
+#!/usr/local/bin/perl -w
+use HTML::Parse;
+require HTML::FormatPS;
+
+$HTML::Parse::IGNORE_UNKNOWN = 0;
+# $HTML::Parse::IMPLICIT_TAGS  = 1;
+
+
+my $html = parse_htmlfile($ARGV[0]);
+
+sub handler
+{
+ my ($e,$f,$depth) = @_;
+ if ($f)
+  {
+   print ' ' x $depth,(ref $e) ? $e->tag : $e,"\n";
+  }
+ return 1;
+}
+
+$html->traverse(\&handler,0);

@@ -1,7 +1,7 @@
 package Tk::Adjuster::Item;
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Adjuster.pm#8$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Adjuster.pm#3$
 
 @ISA = qw(Tk::Frame);
 
@@ -82,7 +82,7 @@ require Tk::Frame;
 @ISA = qw(Tk::Frame);
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Adjuster.pm#8$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Adjuster.pm#3$
 
 Construct Tk::Widget qw(Adjuster);
 

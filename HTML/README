@@ -1,0 +1,6 @@
+Tk::HTML needs libwww module from CPAN which it turn needs libnet.
+Rest of perl/Tk will work without this package.
+
+Features are closely linked to what libwww's HTML parser supports.
+
+This package should really be a stand alone module in CPAN.

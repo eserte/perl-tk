@@ -6,7 +6,7 @@ require Tk::Frame;
 require Tk::Menubutton;
 
 use vars qw($VERSION);
-$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Menubar.pm#10$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Menubar.pm#4$
 
 @ISA = qw(Tk::Frame);
 use strict;

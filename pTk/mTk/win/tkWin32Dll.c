@@ -8,11 +8,13 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWin32Dll.c 1.7 96/04/05 15:21:06
+ * SCCS: @(#) tkWin32Dll.c 1.9 96/08/06 15:59:08
  */
 
 #include "tkPort.h"
 #include "tkWinInt.h"
+
+static HINSTANCE tclInstance;	/* Global library instance handle. */
 
 /*
  * The following declaration is for the VC++ DLL entry point.
@@ -77,7 +79,10 @@ DllMain(hInstance, reason, reserved)
      */
     
     if (reason == DLL_PROCESS_ATTACH) {
+	tclInstance = hInstance;
         TkWinXInit(hInstance);
+    } else if (reason == DLL_PROCESS_DETACH) {
+        TkWinXCleanup(hInstance);
     }
     return(TRUE);
 }
@@ -93,3 +98,8 @@ TkWin32DllPresent()
  return 1;
 }
 
+HINSTANCE
+TclWinGetTclInstance()
+{
+    return tclInstance;
+}

@@ -1,14 +1,14 @@
 '\"
 '\" Copyright (c) 1991-1994 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) wm.n 1.28 95/06/07 21:15:03
+'\" SCCS: @(#) wm.n 1.37 96/10/14 11:07:58
 '\" 
 .so man.macros
-.TH wm n 4.0 Tk "Tk Generic Methods"
+.TH wm n 4.3 Tk "Tk Generic Methods"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
@@ -73,13 +73,16 @@ list of the internal windows within \fI$toplevel\fR whose colormaps differ
 from their parents.
 The order of the windows in the property indicates a priority order:
 the window manager will attempt to install as many colormaps as possible
-from the head of this list when \fI$toplevel\fR gets the colormap focus.
-If \fBcolormapwindows\fR is not invoked, Tk will automatically set
+from the head of this list when \fI$widget\fR gets the colormap focus.
+If \fI$widget\fR is not included among the windows in \fIwindowList\fR,
+Tk implicitly adds it at the end of the \fBWM_COLORMAP_WINDOWS\fR
+property, so that its colormap is lowest in priority.
+If \fI$widget\fR->colormapwindows\fR is not invoked, Tk will automatically set
 the property for each top-level window to all the internal windows
-whose colormaps differ from their parents, but the order is undefined.
+whose colormaps differ from their parents, followed by the top-level
+itself;  the order of the internal windows is undefined.
 See the ICCCM documentation for more information on the
 \fBWM_COLORMAP_WINDOWS\fR property.
-.VE
 .TP
 \fI$toplevel\fR->\fBcommand\fR(?\fIvalue\fR?)
 If \fIvalue\fR is specified, this command stores \fIvalue\fR in \fI$toplevel\fR's
@@ -113,15 +116,17 @@ should give the focus to \fI$toplevel\fR at appropriate times.  However,
 once the focus has been given to \fI$toplevel\fR or one of its descendants,
 the application may re-assign the focus among \fI$toplevel\fR's descendants.
 The focus model defaults to \fBpassive\fR, and Tk's \fBfocus\fR command
-assumes a passive model of focussing.
+assumes a passive model of focusing.
 .TP
 \fI$toplevel\fR->\fBframe\fR
-If \fI$toplevel\fR has been reparented by the window manager into a
-decorative frame, the command returns the X window identifier for
-the outermost frame that contains \fI$toplevel\fR (the window whose
-parent is the root or virtual root).  If \fI$toplevel\fR hasn't been
-reparented by the window manager then the command returns the
-X window identifier for \fI$toplevel\fR.
+.VS
+If \fI$widget\fR has been reparented by the window manager into a
+decorative frame, the command returns the platform specific window
+identifier for the outermost frame that contains \fI$toplevel\fR (the
+window whose parent is the root or virtual root).  If \fI$toplevel\fR
+hasn't been reparented by the window manager then the command returns
+the platform specific window identifier for \fI$toplevel\fR.
+.VE
 .TP
 \fI$toplevel\fR->\fBgeometry\fR(?\fInewGeometry\fR?)
 If \fInewGeometry\fR is specified, then the geometry of \fI$toplevel\fR
@@ -257,7 +262,6 @@ is no icon window currently specified for \fI$toplevel\fR.
 Button press events are disabled for \fI$toplevel\fR as long as it is
 an icon window;  this is needed in order to allow window managers
 to ``own'' those events.
-.VE
 Note: not all window managers support the notion of an icon window.
 .TP
 \fI$toplevel\fR->\fBmaxsize\fR(?\fIwidth,height\fR?)
@@ -292,7 +296,6 @@ The minimum size defaults to one pixel in each dimension.
 If resizing has been disabled with the \fBresizable\fR command,
 then this command has no effect.
 See the sections on geometry management below for more information.
-.VE
 .TP
 \fI$toplevel\fR->\fBoverrideredirect(?\fIboolean\fR?)
 If \fIboolean\fR is specified, it must have a proper boolean form and
@@ -350,7 +353,7 @@ Lastly, if neither \fIname\fR nor \fIcallback\fR is specified, the
 method returns a list of all the protocols for which handlers
 are currently defined for \fI$toplevel\fR.
 .RS
-.LP
+.PP
 Tk always defines a protocol handler for \fBWM_DELETE_WINDOW\fR, even if
 you haven't asked for one with \fBprotocol\fR.
 If a \fBWM_DELETE_WINDOW\fR message arrives when you haven't defined
@@ -373,7 +376,6 @@ If resizing is disabled, then the window's size will be the size
 from the most recent interactive resize or \fBgeometry\fR
 command.  If there has been no such operation then
 the window's natural size will be used.
-.VE
 .TP
 \fI$toplevel\fR->\fBsizefrom\fR(?\fIwho\fR?)
 If \fIwho\fR is specified, it must be either \fBprogram\fR or
@@ -392,8 +394,13 @@ no source has been specified yet.  Most window managers interpret
 ``no source'' as equivalent to \fBprogram\fR.
 .TP
 \fI$toplevel\fR->\fBstate\fR
-Returns the current state of \fI$toplevel\fR:  either \fBnormal\fR,
-\fBiconic\fR, or \fBwithdrawn\fR.
+Returns the current state of $widget\fR:  either \fBnormal\fR,
+\fBiconic\fR, \fBwithdrawn\fR, or \fBicon\fR.  The difference
+between \fBiconic\fR and \fBicon\fR is that \fBiconic\fR refers
+to a window that has been iconified (e.g., with the \fBwm iconify\fR
+command) while \fBicon\fR refers to a window whose only purpose is
+to serve as the icon for some other window (via the \fBwm iconwindow\fR
+command).
 .TP
 \fI$toplevel\fR->\fBtitle\fR(?\fIstring\fR?)
 If \fIstring\fR is specified, then it will be passed to the window
@@ -430,7 +437,6 @@ such as group.
 
 .SH "GEOMETRY MANAGEMENT"
 .PP
-.VS
 By default a top-level window appears on the screen in its
 \fInatural size\fR, which is the one determined internally by its
 widgets and geometry managers.
@@ -455,7 +461,6 @@ all forms of resizing, including the window's natural size as
 well as manual resizes and the \fBgeometry\fR command.
 You can also use the command \fBresizable\fR to completely
 disable interactive resizing in one or both dimensions.
-.VE
 
 .SH "GRIDDED GEOMETRY MANAGEMENT"
 .PP
@@ -485,13 +490,11 @@ integral grid sizes for the window and pixel sizes.
 To return to non-gridded geometry management, invoke
 \fBgrid\fR with empty argument strings.
 .PP
-.VS
 When gridded geometry management is enabled then all the dimensions specified
 in \fBminsize\fR, \fBmaxsize\fR, and \fBgeometry\fR commands
 are treated as grid units rather than pixel units.
 Interactive resizing is also carried out in even numbers of grid units
 rather than pixels.
-.VE
 
 .SH BUGS
 .PP

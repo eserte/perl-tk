@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -35,8 +35,7 @@
 #endif
 
 static void
-DebugHook(sv)
-SV *sv;
+DebugHook(SV *sv)
 {
 
 }
@@ -107,8 +106,11 @@ Tk_Uid name;
 {
  XFontStruct *font = NULL;
  Tcl_Interp *interp;
+#if 0
+ /* FIXME */
  if (TkToWidget(tkwin,&interp) && interp)
   font = Tk_GetFontStruct(interp, tkwin, name);
+#endif
  if (!font)
   croak("Cannot get font");
  return font;
@@ -188,8 +190,8 @@ Tk_Window	win
 int		flag
 
 int
-Count(slf)
-SV *	slf
+Count(self)
+SV *	self
 CODE:
  {
   ST(0) = sv_2mortal(newSViv(Tk_GetNumMainWindows()));
@@ -268,7 +270,7 @@ OUTPUT:
  RETVAL
 
 TkWindow *
-TkGetFocus(win)
+TkGetFocusWin(win)
 TkWindow *	win
 
 void
@@ -287,15 +289,16 @@ MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 void
 EnterMethods(package,file,...)
 char *	package
-char *	file
+char *	file       
 CODE:
  {int i;
-  char buf[80];
+  char buf[80];  /* FIXME Size of buffer */
   for (i=2; i < items; i++)
-   {
+   {                               
+    STRLEN len;
     SV *method = newSVsv(ST(i));
     CV *cv;                        
-    sprintf(buf, "%s::%s", package, SvPV(method,na));
+    sprintf(buf, "%s::%s", package, SvPV(method,len));
     cv = newXS(buf, XStoWidget, file);
     CvXSUBANY(cv).any_ptr = method;
    }
@@ -636,19 +639,6 @@ CODE:
     Lang_CmdInfo *info = WindowCommand(win,NULL,0);
     RETVAL = (info && info->tkwin);
    }
- }
-OUTPUT:
- RETVAL           
-
-int
-Tk_GetPixels(win,string)
-SV *	win
-char *	string
-CODE:
- {
-  Lang_CmdInfo *info = WindowCommand(win,NULL,3);
-  if(Tk_GetPixels(info->interp,info->tkwin,string,&RETVAL))
-    croak(Tcl_GetResult(info->interp));
  }
 OUTPUT:
  RETVAL

@@ -11,11 +11,12 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinFile.c 1.37 96/09/18 15:10:45
+ * SCCS: @(#) tclWinFile.c 1.45 97/10/29 19:08:35
  */
 
-#include <sys/stat.h>
 #include "tclWinInt.h"
+#include <sys/stat.h>
+#include <shlobj.h>
 
 /*
  * The variable below caches the name of the current working directory
@@ -25,322 +26,6 @@
 
 static char *currentDir =  NULL;
 
-
-/*
- *----------------------------------------------------------------------
- *
- * TclCreateTempFile --
- *
- *	This function opens a unique file with the property that it
- *	will be deleted when its file handle is closed.  The temporary
- *	file is created in the system temporary directory.
- *
- * Results:
- *	Returns a valid C file descriptor, or -1 on failure.
- *
- * Side effects:
- *	Creates a new temporary file.
- *
- *----------------------------------------------------------------------
- */
-
-Tcl_File
-TclCreateTempFile(contents, namePtr)
-    char *contents;		/* String to write into temp file, or NULL. */
-    Tcl_DString *namePtr;	/* If non-NULL, pointer to initialized 
-				 * DString that is filled with the name of 
-				 * the temp file that was created. */
-{
-    char name[MAX_PATH];
-    HANDLE handle;
-
-    if (!GetTempPath(MAX_PATH, name)
-	    || !GetTempFileName(name, "TCL", 0, name)) {
-	return NULL;
-    }
-
-    handle = CreateFile(name, GENERIC_READ | GENERIC_WRITE, 0, NULL,
-	    CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
-	    NULL);
-
-    /* 
-     * Under Win32s a file created with FILE_FLAG_DELETE_ON_CLOSE won't
-     * actually be deleted when it is closed.  This was causing tcl to leak
-     * temp files.  The DeleteFile() call will delete the file now under
-     * Win32s.  Under 95 and NT, the call will fail because the file is 
-     * locked (because it was just opened), but it will get deleted when
-     * it is closed, due to the FILE_FLAG_DELETE_ON_CLOSE.
-     */
-
-    DeleteFile(name);
-
-    if (handle == INVALID_HANDLE_VALUE) {
-	goto error;
-    }
-
-    /*
-     * Write the file out, doing line translations on the way.
-     */
-
-    if (contents != NULL) {
-	DWORD result, length;
-	char *p;
-	
-	for (p = contents; *p != '\0'; p++) {
-	    if (*p == '\n') {
-		length = p - contents;
-		if (length > 0) {
-		    if (!WriteFile(handle, contents, length, &result, NULL)) {
-			goto error;
-		    }
-		}
-		if (!WriteFile(handle, "\r\n", 2, &result, NULL)) {
-		    goto error;
-		}
-		contents = p+1;
-	    }
-	}
-	length = p - contents;
-	if (length > 0) {
-	    if (!WriteFile(handle, contents, length, &result, NULL)) {
-		goto error;
-	    }
-	}
-    }
-    if (SetFilePointer(handle, 0, NULL, FILE_BEGIN) == 0xFFFFFFFF) {
-	goto error;
-    }
-    
-    Tcl_DStringAppend(namePtr, name, -1);
-    return Tcl_GetFile((ClientData) handle, TCL_WIN_FILE);
-
-  error:
-    TclWinConvertError(GetLastError());
-    CloseHandle(handle);
-    DeleteFile(name);
-    return NULL;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TclOpenFile --
- *
- *	This function wraps the normal system open() to ensure that
- *	files are opened with the _O_NOINHERIT flag set.
- *
- * Results:
- *	Same as open().
- *
- * Side effects:
- *	Same as open().
- *
- *----------------------------------------------------------------------
- */
-
-Tcl_File
-TclOpenFile(path, mode)
-    char *path;
-    int mode;
-{
-    HANDLE handle;
-    DWORD accessMode;
-    DWORD createMode;
-    DWORD shareMode;
-    DWORD flags;
-    SECURITY_ATTRIBUTES sec;
-
-    /*
-     * Map the access bits to the NT access mode.
-     */
-
-    switch (mode & (O_RDONLY | O_WRONLY | O_RDWR)) {
-	case O_RDONLY:
-	    accessMode = GENERIC_READ;
-	    break;
-	case O_WRONLY:
-	    accessMode = GENERIC_WRITE;
-	    break;
-	case O_RDWR:
-	    accessMode = (GENERIC_READ | GENERIC_WRITE);
-	    break;
-	default:
-	    TclWinConvertError(ERROR_INVALID_FUNCTION);
-	    return NULL;
-    }
-
-    /*
-     * Map the creation flags to the NT create mode.
-     */
-
-    switch (mode & (O_CREAT | O_EXCL | O_TRUNC)) {
-	case (O_CREAT | O_EXCL):
-	case (O_CREAT | O_EXCL | O_TRUNC):
-	    createMode = CREATE_NEW;
-	    break;
-	case (O_CREAT | O_TRUNC):
-	    createMode = CREATE_ALWAYS;
-	    break;
-	case O_CREAT:
-	    createMode = OPEN_ALWAYS;
-	    break;
-	case O_TRUNC:
-	case (O_TRUNC | O_EXCL):
-	    createMode = TRUNCATE_EXISTING;
-	    break;
-	default:
-	    createMode = OPEN_EXISTING;
-	    break;
-    }
-
-    /*
-     * If the file is not being created, use the existing file attributes.
-     */
-
-    flags = 0;
-    if (!(mode & O_CREAT)) {
-	flags = GetFileAttributes(path);
-	if (flags == 0xFFFFFFFF) {
-	    flags = 0;
-	}
-    }
-
-    /*
-     * Set up the security attributes so this file is not inherited by
-     * child processes.
-     */
-
-    sec.nLength = sizeof(sec);
-    sec.lpSecurityDescriptor = NULL;
-    sec.bInheritHandle = 0;
-
-    /*
-     * Set up the file sharing mode.  We want to allow simultaneous access.
-     */
-
-    shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
-
-    /*
-     * Now we get to create the file.
-     */
-
-    handle = CreateFile(path, accessMode, shareMode, &sec, createMode, flags,
-            (HANDLE) NULL);
-    if (handle == INVALID_HANDLE_VALUE) {
-	DWORD err = GetLastError();
-	if ((err & 0xffffL) == ERROR_OPEN_FAILED) {
-	    err = (mode & O_CREAT) ? ERROR_FILE_EXISTS : ERROR_FILE_NOT_FOUND;
-	}
-        TclWinConvertError(err);
-        return NULL;
-    }
-
-    return Tcl_GetFile((ClientData) handle, TCL_WIN_FILE);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TclCloseFile --
- *
- *	Closes a file on Windows.
- *
- * Results:
- *	0 on success, -1 on failure.
- *
- * Side effects:
- *	The file is closed.
- *
- *----------------------------------------------------------------------
- */
-
-int
-TclCloseFile(file)
-    Tcl_File file;	/* The file to close. */
-{
-    HANDLE handle;
-    int type;
-    ClientData clientData;
-    TclWinPipe *pipePtr;
-
-    clientData = Tcl_GetFileInfo(file, &type);
-
-    if (type == TCL_WIN_FILE) {
-        handle = (HANDLE) clientData;
-	if (CloseHandle(handle) == FALSE) {
-	    TclWinConvertError(GetLastError());
-	    return -1;
-	}
-    } else if (type == TCL_WIN32S_PIPE) {
-	pipePtr = (TclWinPipe *) clientData;
-
-	if (pipePtr->otherPtr != NULL) {
-	    pipePtr->otherPtr->otherPtr = NULL;
-	} else {
-	    if (pipePtr->fileHandle != INVALID_HANDLE_VALUE) {
-		CloseHandle(pipePtr->fileHandle);
-	    }
-	    DeleteFile(pipePtr->fileName);
-	    ckfree((char *) pipePtr->fileName);
-	}
-	ckfree((char *) pipePtr);
-    } else {
-	panic("Tcl_CloseFile: unexpected file type");
-    }
-
-    Tcl_FreeFile(file);
-    return 0;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TclSeekFile --
- *
- *	Sets the file pointer on a file indicated by the file.
- *
- * Results:
- *	The new position at which the file pointer is after it was
- *	moved, or -1 on failure.
- *
- * Side effects:
- *	May move the position at which subsequent operations on the
- *	file access it.
- *
- *----------------------------------------------------------------------
- */
-
-int
-TclSeekFile(file, offset, whence)
-    Tcl_File file;	/* File to seek on. */
-    int offset;			/* How much to move. */
-    int whence;			/* Relative to where? */
-{
-    DWORD moveMethod;
-    DWORD newPos;
-    HANDLE handle;
-    int type;
-
-    handle = (HANDLE) Tcl_GetFileInfo(file, &type);
-    if (type != TCL_WIN_FILE) {
-	panic("Tcl_SeekFile: unexpected file type");
-    }
-    
-    if (whence == SEEK_SET) {
-        moveMethod = FILE_BEGIN;
-    } else if (whence == SEEK_CUR) {
-        moveMethod = FILE_CURRENT;
-    } else {
-        moveMethod = FILE_END;
-    }
-
-    newPos = SetFilePointer(handle, offset, NULL, moveMethod);
-    if (newPos == 0xFFFFFFFF) {
-        TclWinConvertError(GetLastError());
-        return -1;
-    }
-    return newPos;
-}
 
 /*
  *----------------------------------------------------------------------
@@ -420,6 +105,7 @@ TclMatchFiles(interp, separators, dirPtr, pattern, tail)
 {
     char drivePattern[4] = "?:\\";
     char *newPattern, *p, *dir, *root, c;
+    char *src, *dest;
     int length, matchDotFiles;
     int result = TCL_OK;
     int baseLength = Tcl_DStringLength(dirPtr);
@@ -514,22 +200,17 @@ TclMatchFiles(interp, separators, dirPtr, pattern, tail)
     }
     
     /*
-     * If the volume is not case sensitive, then we need to convert the pattern
-     * to lower case.
+     * In Windows, although some volumes may support case sensitivity, Windows
+     * doesn't honor case.  So in globbing we need to ignore the case
+     * of file names.
      */
 
     length = tail - pattern;
     newPattern = ckalloc(length+1);
-    if (volFlags & FS_CASE_SENSITIVE) {
-	strncpy(newPattern, pattern, length);
-	newPattern[length] = '\0';
-    } else {
-	char *src, *dest;
-	for (src = pattern, dest = newPattern; src < tail; src++, dest++) {
-	    *dest = (char) tolower(*src);
-	}
-	*dest = '\0';
+    for (src = pattern, dest = newPattern; src < tail; src++, dest++) {
+	*dest = (char) tolower(*src);
     }
+    *dest = '\0';
     
     /*
      * We need to check all files in the directory, so append a *.*
@@ -592,36 +273,31 @@ TclMatchFiles(interp, separators, dirPtr, pattern, tail)
 	 * Ignore hidden files.
 	 */
 
-	if ((data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) 
-		|| (!matchDotFiles && (data.cFileName[0] == '.'))) {
+	if (!matchDotFiles && (data.cFileName[0] == '.')) {
 	    continue;
 	}
 
 	/*
-	 * Check to see if the file matches the pattern.  If the volume is not
-	 * case sensitive, we need to convert the file name to lower case.  If
-	 * the volume also doesn't preserve case, then we return the lower case
-	 * form of the name, otherwise we return the system form.
- 	 */
+	 * Check to see if the file matches the pattern.  We need to convert
+	 * the file name to lower case for comparison purposes.  Note that we
+	 * are ignoring the case sensitivity flag because Windows doesn't honor
+	 * case even if the volume is case sensitive.  If the volume also
+	 * doesn't preserve case, then we return the lower case form of the
+	 * name, otherwise we return the system form.
+	 */
 
 	matchResult = NULL;
-	if (!(volFlags & FS_CASE_SENSITIVE)) {
-	    Tcl_DStringSetLength(&buffer, 0);
-	    Tcl_DStringAppend(&buffer, data.cFileName, -1);
-	    for (p = buffer.string; *p != '\0'; p++) {
-		*p = (char) tolower(*p);
-	    }
-	    if (Tcl_StringMatch(buffer.string, newPattern)) {
-		if (volFlags & FS_CASE_IS_PRESERVED) {
-		    matchResult = data.cFileName;
-		} else {
-		    matchResult = buffer.string;
-		}	
-	    }
-	} else {
-	    if (Tcl_StringMatch(data.cFileName, newPattern)) {
+	Tcl_DStringSetLength(&buffer, 0);
+	Tcl_DStringAppend(&buffer, data.cFileName, -1);
+	for (p = buffer.string; *p != '\0'; p++) {
+	    *p = (char) tolower(*p);
+	}
+	if (Tcl_StringMatch(buffer.string, newPattern)) {
+	    if (volFlags & FS_CASE_IS_PRESERVED) {
 		matchResult = data.cFileName;
-	    }
+	    } else {
+		matchResult = buffer.string;
+	    }	
 	}
 
 	if (matchResult == NULL) {
@@ -721,14 +397,17 @@ char *
 TclGetCwd(interp)
     Tcl_Interp *interp;		/* If non NULL, used for error reporting. */
 {
-    char buffer[MAXPATHLEN+1], *bufPtr;
+    static char buffer[MAXPATHLEN+1];
+    char *bufPtr, *p;
 
     if (currentDir == NULL) {
 	if (GetCurrentDirectory(MAXPATHLEN+1, buffer) == 0) {
 	    TclWinConvertError(GetLastError());
 	    if (interp != NULL) {
 		if (errno == ERANGE) {
-		    interp->result = "working directory name is too long";
+		    Tcl_SetResult(interp,
+			    "working directory name is too long",
+			    TCL_STATIC);
 		} else {
 		    Tcl_AppendResult(interp,
 			    "error getting working directory name: ",
@@ -747,18 +426,222 @@ TclGetCwd(interp)
 	} else {
 	    bufPtr = buffer;
 	}
-	currentDir = (char *) ckalloc((unsigned) (strlen(bufPtr) + 1));
-	strcpy(currentDir, bufPtr);
 
 	/*
 	 * Convert to forward slashes for easier use in scripts.
 	 */
 
-	for (bufPtr = currentDir; *bufPtr != '\0'; bufPtr++) {
-	    if (*bufPtr == '\\') {
-		*bufPtr = '/';
+	for (p = bufPtr; *p != '\0'; p++) {
+	    if (*p == '\\') {
+		*p = '/';
 	    }
 	}
     }
-    return currentDir;
+    return bufPtr;
 }
+
+#if 0
+/*
+ *-------------------------------------------------------------------------
+ *
+ * TclWinResolveShortcut --
+ *
+ *	Resolve a potential Windows shortcut to get the actual file or 
+ *	directory in question.  
+ *
+ * Results:
+ *	Returns 1 if the shortcut could be resolved, or 0 if there was
+ *	an error or if the filename was not a shortcut.
+ *	If bufferPtr did hold the name of a shortcut, it is modified to
+ *	hold the resolved target of the shortcut instead.
+ *
+ * Side effects:
+ *	Loads and unloads OLE package to determine if filename refers to
+ *	a shortcut.
+ *
+ *-------------------------------------------------------------------------
+ */
+
+int
+TclWinResolveShortcut(bufferPtr)
+    Tcl_DString *bufferPtr;	/* Holds name of file to resolve.  On 
+				 * return, holds resolved file name. */
+{
+    HRESULT hres; 
+    IShellLink *psl; 
+    IPersistFile *ppf; 
+    WIN32_FIND_DATA wfd; 
+    WCHAR wpath[MAX_PATH];
+    char *path, *ext;
+    char realFileName[MAX_PATH];
+
+    /*
+     * Windows system calls do not automatically resolve
+     * shortcuts like UNIX automatically will with symbolic links.
+     */
+
+    path = Tcl_DStringValue(bufferPtr);
+    ext = strrchr(path, '.');
+    if ((ext == NULL) || (stricmp(ext, ".lnk") != 0)) {
+	return 0;
+    }
+
+    CoInitialize(NULL);
+    path = Tcl_DStringValue(bufferPtr);
+    realFileName[0] = '\0';
+    hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, 
+	    &IID_IShellLink, &psl); 
+    if (SUCCEEDED(hres)) { 
+	hres = psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf);
+	if (SUCCEEDED(hres)) { 
+	    MultiByteToWideChar(CP_ACP, 0, path, -1, wpath, sizeof(wpath));
+	    hres = ppf->lpVtbl->Load(ppf, wpath, STGM_READ); 
+	    if (SUCCEEDED(hres)) {
+		hres = psl->lpVtbl->Resolve(psl, NULL, 
+			SLR_ANY_MATCH | SLR_NO_UI); 
+		if (SUCCEEDED(hres)) { 
+		    hres = psl->lpVtbl->GetPath(psl, realFileName, MAX_PATH, 
+			    &wfd, 0);
+		} 
+	    } 
+	    ppf->lpVtbl->Release(ppf); 
+	} 
+	psl->lpVtbl->Release(psl); 
+    } 
+    CoUninitialize();
+
+    if (realFileName[0] != '\0') {
+	Tcl_DStringSetLength(bufferPtr, 0);
+	Tcl_DStringAppend(bufferPtr, realFileName, -1);
+	return 1;
+    }
+    return 0;
+}
+#endif
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclWinStat, TclWinLstat --
+ *
+ *	These functions replace the library versions of stat and lstat.
+ *
+ *	The stat and lstat functions provided by some Windows compilers 
+ *	are incomplete.  Ideally, a complete rewrite of stat would go
+ *	here; now, the only fix is that stat("c:") used to return an
+ *	error instead infor for current dir on specified drive.
+ *
+ * Results:
+ *	See stat documentation.
+ *
+ * Side effects:
+ *	See stat documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TclWinStat(path, buf)
+    CONST char *path;		/* Path of file to stat (in current CP). */
+    struct stat *buf;		/* Filled with results of stat call. */
+{
+    char name[4];
+    int result;
+
+    if ((strlen(path) == 2) && (path[1] == ':')) {
+	strcpy(name, path);
+	name[2] = '.';
+	name[3] = '\0';
+	path = name;
+    }
+
+#undef stat
+
+    result = stat(path, buf);
+
+#ifndef _MSC_VER
+
+    /*
+     * Borland's stat doesn't take into account localtime.
+     */
+
+    if ((result == 0) && (buf->st_mtime != 0)) {
+	TIME_ZONE_INFORMATION tz;
+	int time, bias;
+
+	time = GetTimeZoneInformation(&tz);
+	bias = tz.Bias;
+	if (time == TIME_ZONE_ID_DAYLIGHT) {
+	    bias += tz.DaylightBias;
+	}
+	bias *= 60;
+	buf->st_atime -= bias;
+	buf->st_ctime -= bias;
+	buf->st_mtime -= bias;
+    }
+
+#endif
+
+    return result;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * TclWinAccess --
+ *
+ *	This function replaces the library version of access.
+ *
+ *	The library version of access returns that all files have execute
+ *	permission.
+ *
+ * Results:
+ *	See access documentation.
+ *
+ * Side effects:
+ *	See access documentation.
+ *
+ *---------------------------------------------------------------------------
+ */
+
+int
+TclWinAccess(
+    CONST char *path,		/* Path of file to access (in current CP). */
+    int mode)			/* Permission setting. */
+{
+    int result;
+    CONST char *p;
+
+#undef access
+
+    result = access(path, mode);
+
+    if (result == 0) {
+	if (mode & 1) {
+	    if (GetFileAttributes(path) & FILE_ATTRIBUTE_DIRECTORY) {
+		/*
+		 * Directories are always executable. 
+		 */
+
+		return 0;
+	    }
+	    p = strrchr(path, '.');
+	    if (p != NULL) {
+		p++;
+		if ((stricmp(p, "exe") == 0)
+			|| (stricmp(p, "com") == 0)
+			|| (stricmp(p, "bat") == 0)) {
+		    /*
+		     * File that ends with .exe, .com, or .bat is executable.
+		     */
+
+		    return 0;
+		}
+	    }
+	    errno = EACCES;
+	    return -1;
+	}
+    }
+    return result;
+}
+

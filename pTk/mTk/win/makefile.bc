@@ -5,7 +5,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# SCCS: @(#) makefile.bc 1.40 96/04/18 17:23:29
+# SCCS: @(#) makefile.bc 1.73 97/11/05 16:12:27
 
 
 #
@@ -19,12 +19,12 @@
 ROOT	= ..
 TMPDIR	= .
 TOOLS	= c:\bc45
-TCLDIR	= ..\..\tcl7.5
+TCLDIR	= ..\..\tcl8.0
 
 # uncomment the following line to compile with symbols
 #DEBUG=1
 
-# uncomment the following two lines to compile with TCL_MEM_DEBUG
+# uncomment the following line to compile with TCL_MEM_DEBUG
 #DEBUGDEFINES	=TCL_MEM_DEBUG
 
 #
@@ -32,7 +32,6 @@ TCLDIR	= ..\..\tcl7.5
 #
 
 BORLAND = $(TOOLS)
-IMPLIB  = Implib
 IMPLIB  = $(BORLAND)\bin\Implib
 BCC32   = $(BORLAND)\bin\Bcc32
 TLINK32 = $(BORLAND)\bin\tlink32
@@ -40,7 +39,7 @@ RC	= $(BORLAND)\bin\brcc32
 CP      = copy
 RM      = del
 
-INCLUDES =	$(BORLAND)\include;$(ROOT)\generic;$(ROOT)\bitmaps;$(ROOT)\xlib;$(ROOT);$(TCLDIR)\generic
+INCLUDES =	$(BORLAND)\include;$(ROOT)\generic;$(ROOT)\bitmaps;$(ROOT)\xlib;$(ROOT)\win;$(TCLDIR)\generic
 LIBDIRS =	$(BORLAND)\lib;$(ROOT)\win
 TCLLIBDIR =	$(TCLDIR)\win
 
@@ -59,14 +58,14 @@ DEBUGCCFLAGS = -k -Od -v
 
 !endif
 
-DEFINES = _RTLDLL;$(DEBUGDEFINES)
+DEFINES = MT;_RTLDLL;STRICT;$(DEBUGDEFINES)
 PROJECTCCFLAGS= $(DEBUGCCFLAGS) -w-par -w-stu
 
 LNFLAGS_exe = -Tpe -aa -c $(DEBUGLDFLAGS) $(BORLAND)\lib\c0w32
 LNFLAGS_dll = -Tpd -aa -c $(DEBUGLDFLAGS) $(BORLAND)\lib\c0d32
 
-LNLIBS_exe =	$(TKLIB) $(TCLLIBDIR)\$(TCLLIB) import32 cw32i
-LNLIBS_dll =	$(TCLLIBDIR)\$(TCLLIB) import32 cw32i
+LNLIBS_exe =	$(TKLIB) $(TCLLIBDIR)\$(TCLLIB) import32 cw32mti
+LNLIBS_dll =	$(TCLLIBDIR)\$(TCLLIB) import32 cw32mti
 
 # 
 # Global makefile settings
@@ -77,7 +76,7 @@ LNLIBS_dll =	$(TCLLIBDIR)\$(TCLLIB) import32 cw32i
 
 .suffixes: .c .dll .lib .obj .exe
 
-.path.c=$(ROOT)\win;$(ROOT)\generic;$(ROOT)\xlib
+.path.c=$(ROOT)\win;$(ROOT)\generic;$(ROOT)\xlib;$(ROOT)\unix
 .path.obj=$(TMPDIR)
 
 WISHOBJS = \
@@ -91,25 +90,35 @@ TKTESTOBJS = \
 	$(TMPDIR)\testMain.obj
 
 XLIBOBJS = \
+	$(TMPDIR)\xcolors.obj \
 	$(TMPDIR)\xdraw.obj \
 	$(TMPDIR)\xgc.obj \
 	$(TMPDIR)\ximage.obj \
 	$(TMPDIR)\xutil.obj
 
 TKOBJS = \
+	$(TMPDIR)\tkUnixMenubu.obj \
+	$(TMPDIR)\tkUnixScale.obj \
 	$(XLIBOBJS) \
+	$(TMPDIR)\tkWin3d.obj \
 	$(TMPDIR)\tkWin32Dll.obj \
+	$(TMPDIR)\tkWinButton.obj \
 	$(TMPDIR)\tkWinClipboard.obj \
 	$(TMPDIR)\tkWinColor.obj \
 	$(TMPDIR)\tkWinCursor.obj \
+	$(TMPDIR)\tkWinDialog.obj \
 	$(TMPDIR)\tkWinDraw.obj \
+	$(TMPDIR)\tkWinEmbed.obj \
 	$(TMPDIR)\tkWinFont.obj \
 	$(TMPDIR)\tkWinImage.obj \
 	$(TMPDIR)\tkWinInit.obj \
 	$(TMPDIR)\tkWinKey.obj \
+	$(TMPDIR)\tkWinMenu.obj \
 	$(TMPDIR)\tkWinPixmap.obj \
 	$(TMPDIR)\tkWinPointer.obj \
 	$(TMPDIR)\tkWinRegion.obj \
+	$(TMPDIR)\tkWinScrlbr.obj \
+	$(TMPDIR)\tkWinSend.obj \
 	$(TMPDIR)\tkWinWindow.obj \
 	$(TMPDIR)\tkWinWm.obj \
 	$(TMPDIR)\tkWinX.obj \
@@ -138,6 +147,7 @@ TKOBJS = \
 	$(TMPDIR)\tkEntry.obj \
 	$(TMPDIR)\tkError.obj \
 	$(TMPDIR)\tkEvent.obj \
+	$(TMPDIR)\tkFileFilter.obj \
 	$(TMPDIR)\tkFocus.obj \
 	$(TMPDIR)\tkFont.obj \
 	$(TMPDIR)\tkFrame.obj \
@@ -153,21 +163,24 @@ TKOBJS = \
 	$(TMPDIR)\tkImgPhoto.obj \
 	$(TMPDIR)\tkImgUtil.obj \
 	$(TMPDIR)\tkListbox.obj \
+	$(TMPDIR)\tkMacWinMenu.obj \
 	$(TMPDIR)\tkMain.obj \
 	$(TMPDIR)\tkMenu.obj \
 	$(TMPDIR)\tkMenubutton.obj \
+	$(TMPDIR)\tkMenuDraw.obj \
 	$(TMPDIR)\tkMessage.obj \
 	$(TMPDIR)\tkOption.obj \
 	$(TMPDIR)\tkPack.obj \
 	$(TMPDIR)\tkPlace.obj \
+	$(TMPDIR)\tkPointer.obj \
 	$(TMPDIR)\tkRectOval.obj \
 	$(TMPDIR)\tkScale.obj \
 	$(TMPDIR)\tkScrollbar.obj \
 	$(TMPDIR)\tkSelect.obj \
-	$(TMPDIR)\tkSend.obj \
 	$(TMPDIR)\tkText.obj \
 	$(TMPDIR)\tkTextBTree.obj \
 	$(TMPDIR)\tkTextDisp.obj \
+	$(TMPDIR)\tkTextImage.obj \
 	$(TMPDIR)\tkTextIndex.obj \
 	$(TMPDIR)\tkTextMark.obj \
 	$(TMPDIR)\tkTextTag.obj \
@@ -175,14 +188,13 @@ TKOBJS = \
 	$(TMPDIR)\tkTrig.obj \
 	$(TMPDIR)\tkUtil.obj \
 	$(TMPDIR)\tkVisual.obj \
-	$(TMPDIR)\tkWindow.obj \
-	$(TMPDIR)\tkXId.obj
+	$(TMPDIR)\tkWindow.obj
 
-TCLLIB = tcl75.lib
-TKLIB = tk41.lib
-TCLDLL = tcl75.dll
-TKDLL = tk41.dll
-WISH = wish41.exe
+TCLDLL = tcl80.dll
+TCLLIB = tcl80.lib
+TKDLL = tk80.dll
+TKLIB = tk80.lib
+WISH = wish80.exe
 TKTEST = tktest.exe
 
 #
@@ -190,7 +202,15 @@ TKTEST = tktest.exe
 #
 
 all: cfgdll $(TKDLL) cfgexe $(WISH) cfgcln
-test: cfgdll $(TKDLL) cfgtest $(TKTEST) cfgcln
+tktest: cfgdll $(TKDLL) cfgtest $(TKTEST) cfgcln
+
+test: tktest
+	$(TKTEST) &&|
+		cd ../tests
+		console show
+		update
+		source all
+|
 
 # Implicit Targets
 
@@ -216,7 +236,7 @@ $(TMPDIR)\testMain.obj : $(ROOT)\win\winMain.c
 
 cfgdll:
 	@$(CP) &&|
-		-n$(TMPDIR) -I$(INCLUDES) -c -WD
+		-n$(TMPDIR) -I$(INCLUDES) -c -WM
 		-D$(DEFINES) -3 -d $(PROJECTCCFLAGS)
 | bcc32.cfg >NUL
 
@@ -229,7 +249,7 @@ cfgexe:
 cfgtest:
 	@$(CP) &&|
 		-n$(TMPDIR) -I$(INCLUDES) -c -W
-		-D$(DEFINES);TCL_TEST -3 -d $(PROJECTCCFLAGS)
+		-D$(DEFINES);TK_TEST -3 -d $(PROJECTCCFLAGS)
 | bcc32.cfg >NUL
 
 cfgcln:

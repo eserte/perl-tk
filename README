@@ -1,12 +1,16 @@
+THIS VERSION IS AN ALPHA TRACK - I.E. FOR THOSE ASSISTING IN DEBUGGING PERL/TK,
+NOT FOR PRODUCTION USE.  INTERFACES AND CONTENT SUBJECT TO CHANGE AND
+MAY PARTS ARE **KNOWN** TO BE NON-FUNCTIONAL.
+
 Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
-derived from those of the orignal Tix4.1.0 or Tk4.2 sources. See doc/license.html
+derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
 for details of this license.
 
-This a re-port of a perl interface to Tk4.2p2 (John Ousterhout's production
-release).  
+This a re-port of a perl interface to Tk8.0p2 (John Ousterhout's production
+release).            
 
 It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.005 release.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
@@ -14,35 +18,18 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk402.004) requires perl5.004 or later.
-(Actually 5.003 will probably work on UNIX platforms if requires are 
- downgraded, but not on Win32.)
-I strongly recommend using 5.004_04.
+This version (Tk800.000) requires perl5.004 or later.
+I strongly recommend using 5.004_04 or 5.004_59
 
-In addition this version has had some testing under perl5.004_5X, and 
-various 'use English' constucts of form $ARG and @ARG have been removed
-to allow co-existance with threads. 
+Tk800.000 should build and run on Windows NT using Visual C++, or 
+Borland with and perl5.004_5X.
 
-_One_ Tk app. ran under threaded perl without crashing, but this is not in 
-any way to be taken as saying that Tk is thread safe. I am fairly sure it
-is NOT thread safe. (Due to core tk4.2.)
-
-THIS VERSION IS BETA - I.E. FOR THOSE ASSISTING IN DEBUGGING PERL/TK,
-NOT FOR PRODUCTION USE.  INTERFACES AND CONTENT SUBJECT TO CHANGE AND
-PARTS MAY BE NON-FUNCTIONAL.
-
-Tk400.202 is the current "production" release - see VERSIONS
-
-Tk402.004 should build and run on Windows NT using Visual C++ and perl5.004_04.
-I also believe I have incorporated contributed fixes to allow build with Borland
-compiler on NT.
-
-Goal of 402.* is to retain perl-level API as it exists in Tk400.200
-production release.
+Goal of 800.* is to incorporate native look-and-feel to Win32 port introduced
+in tk8.0 while retaining as much of the perl-level API as it exists in Tk40?.*
+as possible.
 
 However as internals have changed I am uncertain that everything "works"
-correctly.  The movement of event loop out of tk4.1 into Tcl was 
-particularly messy to move "back".
+correctly.  
 
-I hope to have an event loop in perl and or XSUB code for 402's production
-release. 
+fileevent is now broken on all platforms (was broken on Win32 in 40?.* series
+now Unix has 'caught up' with assumption of Tcl_Channel).

@@ -10,29 +10,34 @@ SGI, as well as PCs running Linux, BSDI, and SCO UNIX.  To compile for
 a PC running Windows, see the README file in the directory ../win.  To
 compile for a Macintosh, see the README file in the directory ../mac.
 
-SCCS: @(#) README 1.13 96/04/17 11:40:46
+SCCS: @(#) README 1.24 97/08/13 17:31:19
 
 How To Compile And Install Tk:
 ------------------------------
 
-(a) Make sure that the Tcl 7.5 release is present in the directory
-    ../../tcl7.5.  This release of Tk will only work with Tcl 7.5.
-    Also, be sure that you have configured Tcl before you configure
-    Tk.
+(a) Make sure that the Tcl 8.0 release is present in the directory
+    ../../tcl8.0 (or else use the "--with-tcl" switch described below). 
+    This release of Tk will only work with Tcl 8.0. Also, be sure that
+    you have configured Tcl before you configure Tk.
 
 (b) Check for patches as described in ../README.
 
-(b) Type "./configure".  This runs a configuration script created by GNU
+(c) If you have already compiled Tk once in this directory and are now
+    preparing to compile again in the same directory but for a different
+    platform, or if you have applied patches, type "make distclean" to
+    discard all the configuration information computed previously.
+
+(d) Type "./configure".  This runs a configuration script created by GNU
     autoconf, which configures Tcl for your system and creates a
     Makefile.  The configure script allows you to customize the Tcl
     configuration for your site; for details on how you can do this,
     type "./configure -help" or refer to the autoconf documentation (not
-    included here).  Note:  Tk will use the same C compiler (e.g. gcc)
-    as Tcl, as well as several other of Tcl's configuration options.
-    You should not usually modify CC in the Makefile generated here
-    (if do you, be sure to check all of the definitions related to dynamic
-    loading to make sure that they are still correct).  Tk's "configure"
-    supports the following special switches in addition to the standard ones:
+    included here).  Tk's "configure" script supports the following
+    special switches in addition to the standard ones:
+	--enable-gcc		If this switch is set, Tk will configure
+				itself to use gcc if it is available on your
+				system.  Note:  it is not safe to modify the
+				Makefile to use gcc after configure is run.
 	--with-tcl=DIR		Specifies the directory containing the Tcl
 				binaries and Tcl's platform-dependent
 				configuration information.  By default
@@ -44,11 +49,11 @@ How To Compile And Install Tk:
     Note: be sure to use only absolute path names (those starting with "/")
     in the --prefix and --exec_prefix options.
 
-(d) Type "make".  This will create a library archive called "libtk.a"
+(e) Type "make".  This will create a library archive called "libtk.a"
     or "libtk.so" and an interpreter application called "wish" that
     allows you to type Tcl commands interactively or execute script files.
 
-(e) If the make fails then you'll have to personalize the Makefile
+(f) If the make fails then you'll have to personalize the Makefile
     for your site or possibly modify the distribution in other ways.
     First check the file "porting.notes" to see if there are hints
     for compiling on your system.  Then look at the porting Web page
@@ -56,7 +61,7 @@ How To Compile And Install Tk:
     there are comments at the beginning of it that describe the things
     you might want to change and how to change them.
     
-(f) Type "make install" to install Tk's binaries and script files in
+(g) Type "make install" to install Tk's binaries and script files in
     standard places.  You'll need write permission on the installation
     directoryies to do this.  The installation directories are
     determined by the "configure" script and may be specified with
@@ -65,7 +70,7 @@ How To Compile And Install Tk:
     can override these choices by modifying the "prefix" and
     "exec_prefix" variables in the Makefile.
 
-(g) At this point you can play with Tk by invoking the "wish"
+(h) At this point you can play with Tk by invoking the "wish"
     program and typing Tcl commands.  However, if you haven't installed
     Tk then you'll first need to set your TK_LIBRARY environment
     variable to hold the full path name of the "library" subdirectory.
@@ -73,15 +78,15 @@ How To Compile And Install Tk:
     TCL_LIBRARY environment variable as well (see the Tcl README file
     for information on this).  Note that installed versions of wish,
     libtk.a, libtk.so, and the Tk library have a version number in their
-    names, such as "wish4.0" or "libtk4.0.so"; to use the installed
+    names, such as "wish8.0" or "libtk8.0.so"; to use the installed
     versions, either specify the version number or create a symbolic
-    link (e.g. from "wish" to "wish4.0").
+    link (e.g. from "wish" to "wish8.0").
 
 If you have trouble compiling Tk, read through the file "porting.notes".
 It contains information that people have provided about changes they had
 to make to compile Tcl in various environments.  Or, check out the
 following Web URL:
-    http://www.sunlabs.com/cgi-bin/tcl/info.4.1
+    http://www.sunlabs.com/cgi-bin/tcl/info.8.0
 This is an on-line database of porting information.  We make no guarantees
 that this information is accurate, complete, or up-to-date, but you may
 find it useful.  If you get Tk running on a new configuration and had to

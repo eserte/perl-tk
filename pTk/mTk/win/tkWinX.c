@@ -9,43 +9,39 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinX.c 1.31 96/10/14 13:26:55
+ * SCCS: @(#) tkWinX.c 1.51 97/09/02 13:06:57
  */
 
 #include "tkInt.h"
 #include "tkWinInt.h"
 
 /*
- * The following declaration is a special purpose backdoor into the
- * Tcl notifier.  It is used to process events on the Tcl event queue,
- * without reentering the system event queue.
+ * Definitions of extern variables supplied by this file.
  */
 
-extern void		TclWinFlushEvents _ANSI_ARGS_((void));
+int tkpIsWin32s = -1;
 
 /*
  * Declarations of static variables used in this file.
  */
 
-static HINSTANCE appInstance = (HINSTANCE) NULL;
+static HINSTANCE tkInstance = (HINSTANCE) NULL;
 				/* Global application instance handle. */
-static Display *winDisplay;	/* Display that represents Windows screen. */
-static Tcl_HashTable windowTable;
-				/* Table of child windows indexed by handle. */
+static TkDisplay *winDisplay;	/* Display that represents Windows screen. */
 static char winScreenName[] = ":0";
 				/* Default name of windows display. */
-static ATOM topLevelAtom, childAtom;
-				/* Atoms for the classes registered by Tk. */
-static isInModal = 0;		/* True if TK can entered a modal loop */
+static WNDCLASS childClass;	/* Window class for child windows. */
+static int childClassInitialized = 0; /* Registered child class? */
 
 /*
  * Forward declarations of procedures used in this file.
  */
 
-static void		DeleteWindow _ANSI_ARGS_((HWND hwnd));
-static void 		GetTranslatedKey _ANSI_ARGS_((XKeyEvent *xkey));
-static void 		TranslateEvent _ANSI_ARGS_((HWND hwnd, UINT message,
+static void		GenerateXEvent _ANSI_ARGS_((HWND hwnd, UINT message,
 			    WPARAM wParam, LPARAM lParam));
+static unsigned int	GetState _ANSI_ARGS_((UINT message, WPARAM wParam,
+			    LPARAM lParam));
+static void 		GetTranslatedKey _ANSI_ARGS_((XKeyEvent *xkey));
 
 /*
  *----------------------------------------------------------------------
@@ -74,62 +70,25 @@ TkGetServerInfo(interp, tkwin)
 {
     char buffer[50];
     OSVERSIONINFO info;
-    int index = 0;
-    static char* os[] = {"Win32", "Win32s", "Win32c"};
 
     info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     GetVersionEx(&info);
-    if (info.dwPlatformId == VER_PLATFORM_WIN32s) {
-	index = 1;
-    } else if (info.dwPlatformId == VER_PLATFORM_WIN32s) {
-	index = 2;
-    }
     sprintf(buffer, "Windows %d.%d %d ", info.dwMajorVersion,
 	    info.dwMinorVersion, info.dwBuildNumber);
-    Tcl_AppendResult(interp, buffer, os[index], (char *) NULL);
+    Tcl_AppendResult(interp, buffer,
+	    (info.dwPlatformId == VER_PLATFORM_WIN32s) ? "Win32s" : "Win32",
+	    (char *) NULL);
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * TkWinGetTkModule --
+ * Tk_GetHINSTANCE --
  *
- *	This function returns the module handle for the Tk DLL.
- *
- * Results:
- *	Returns the library module handle.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-HMODULE
-TkWinGetTkModule()
-{
-#if 0
-    char libName[13];
-    sprintf(libName, "tk%d%d.dll", TK_MAJOR_VERSION, TK_MINOR_VERSION);
-    return GetModuleHandle(libName);
-#else
-    /* According to "Advanced Windows" book HMODULE and HINSTANCE are 
-     * equivalent so to avoid issues with name of the DLL just return 
-     * the instance.
-     */
-    return (HMODULE) TkWinGetAppInstance();
-#endif
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TkWinGetAppInstance --
- *
- *	Retrieves the global application instance handle.
+ *	Retrieves the global instance handle used by the Tk library.
  *
  * Results:
- *	Returns the global application instance handle.
+ *	Returns the global instance handle.
  *
  * Side effects:
  *	None.
@@ -138,9 +97,9 @@ TkWinGetTkModule()
  */
 
 HINSTANCE
-TkWinGetAppInstance()
+Tk_GetHINSTANCE()
 {
-    return appInstance;
+    return tkInstance;
 }
 
 /*
@@ -163,57 +122,74 @@ void
 TkWinXInit(hInstance)
     HINSTANCE hInstance;
 {
-    WNDCLASS class;
-    static initialized = 0;
+    OSVERSIONINFO info;
 
-    if (initialized != 0) {
+    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    GetVersionEx(&info);
+    tkpIsWin32s = (info.dwPlatformId == VER_PLATFORM_WIN32s);
+
+    if (childClassInitialized != 0) {
 	return;
     }
-    initialized = 1;
+    childClassInitialized = 1;
 
-    appInstance = hInstance;
+    tkInstance = hInstance;
 
-    class.style = CS_HREDRAW | CS_VREDRAW;
-    class.cbClsExtra = 0;
-    class.cbWndExtra = 0;
-    class.hInstance = hInstance;
-    class.hbrBackground = NULL;
-    class.lpszMenuName = NULL;
+    childClass.style = CS_HREDRAW | CS_VREDRAW | CS_CLASSDC;
+    childClass.cbClsExtra = 0;
+    childClass.cbWndExtra = 0;
+    childClass.hInstance = hInstance;
+    childClass.hbrBackground = NULL;
+    childClass.lpszMenuName = NULL;
 
-    /*
-     * Register the TopLevel window class.
-     */
-
-    class.lpszClassName = TK_WIN_TOPLEVEL_CLASS_NAME;
-    class.lpfnWndProc = TkWinTopLevelProc;
-#ifdef __OPEN32__
-    class.hIcon = os2LoadIcon(TkWinGetTkModule(), "tk");
-#else
-    class.hIcon = LoadIcon(TkWinGetTkModule(), "tk");
-#endif
-    class.hCursor = LoadCursor(NULL, IDC_ARROW);
-
-    topLevelAtom = RegisterClass(&class);
-    if (topLevelAtom == 0) {
-	panic("Unable to register TkTopLevel class");
-    }
-    
     /*
      * Register the Child window class.
      */
 
-    class.lpszClassName = TK_WIN_CHILD_CLASS_NAME;
-    class.lpfnWndProc = TkWinChildProc;
-    class.hIcon = NULL;
-    class.hCursor = NULL;
+    childClass.lpszClassName = TK_WIN_CHILD_CLASS_NAME;
+    childClass.lpfnWndProc = TkWinChildProc;
+    childClass.hIcon = NULL;
+    childClass.hCursor = NULL;
 
-    childAtom = RegisterClass(&class);
-    if (childAtom == 0) {
-#ifndef __OPEN32__
-	UnregisterClass((LPCTSTR)topLevelAtom, hInstance);
-#endif
+    if (!RegisterClass(&childClass)) {
 	panic("Unable to register TkChild class");
     }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinXCleanup --
+ *
+ *	Removes the registered classes for Tk.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Removes window classes from the system.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkWinXCleanup(hInstance)
+    HINSTANCE hInstance;
+{
+    /*
+     * Clean up our own class.
+     */
+    
+    if (childClassInitialized) {
+        childClassInitialized = 0;
+        UnregisterClass(TK_WIN_CHILD_CLASS_NAME, hInstance);
+    }
+
+    /*
+     * And let the window manager clean up its own class(es).
+     */
+    
+    TkWinWmCleanup(hInstance);
 }
 
 /*
@@ -247,7 +223,7 @@ TkGetDefaultScreenName(interp, screenName)
 /*
  *----------------------------------------------------------------------
  *
- * XOpenDisplay --
+ * TkpOpenDisplay --
  *
  *	Create the Display structure and fill it with device
  *	specific information.
@@ -261,45 +237,43 @@ TkGetDefaultScreenName(interp, screenName)
  *----------------------------------------------------------------------
  */
 
-Display *
-XOpenDisplay(display_name)
-    _Xconst char *display_name;
+TkDisplay *
+TkpOpenDisplay(display_name)
+    char *display_name;
 {
     Screen *screen;
     HDC dc;
     TkWinDrawable *twdPtr;
-
-    TkWinPointerInit();
-
-    Tcl_InitHashTable(&windowTable, TCL_ONE_WORD_KEYS);
+    Display *display;
 
     if (winDisplay != NULL) {
-	if (strcmp(winDisplay->display_name, display_name) == 0) {
+	if (strcmp(winDisplay->display->display_name, display_name) == 0) {
 	    return winDisplay;
 	} else {
-	    panic("XOpenDisplay: tried to open multiple displays");
 	    return NULL;
 	}
     }
 
-    winDisplay = (Display *) ckalloc(sizeof(Display));
-    winDisplay->display_name = (char *) ckalloc(strlen(display_name)+1);
-    strcpy(winDisplay->display_name, display_name);
+    display = (Display *) ckalloc(sizeof(Display));
+    display->display_name = (char *) ckalloc(strlen(display_name)+1);
+    strcpy(display->display_name, display_name);
 
-    winDisplay->cursor_font = 1;
-    winDisplay->nscreens = 1;
-    winDisplay->request = 1;
-    winDisplay->qlen = 0;
+    display->cursor_font = 1;
+    display->nscreens = 1;
+    display->request = 1;
+    display->qlen = 0;
 
     screen = (Screen *) ckalloc(sizeof(Screen));
-    screen->display = winDisplay;
+    screen->display = display;
 
     dc = GetDC(NULL);
     screen->width = GetDeviceCaps(dc, HORZRES);
     screen->height = GetDeviceCaps(dc, VERTRES);
-    screen->mwidth = GetDeviceCaps(dc, HORZSIZE);
-    screen->mheight = GetDeviceCaps(dc, VERTSIZE);
-
+    screen->mwidth = MulDiv(screen->width, 254,
+	    GetDeviceCaps(dc, LOGPIXELSX) * 10);
+    screen->mheight = MulDiv(screen->height, 254,
+	    GetDeviceCaps(dc, LOGPIXELSY) * 10);
+    
     /*
      * Set up the root window.
      */
@@ -312,8 +286,20 @@ XOpenDisplay(display_name)
     twdPtr->window.winPtr = NULL;
     twdPtr->window.handle = NULL;
     screen->root = (Window)twdPtr;
+ 
+    /*
+     * On windows, when creating a color bitmap, need two pieces of 
+     * information: the number of color planes and the number of 
+     * pixels per plane.  Need to remember both quantities so that
+     * when constructing an HBITMAP for offscreen rendering, we can
+     * specify the correct value for the number of planes.  Otherwise
+     * the HBITMAP won't be compatible with the HWND and we'll just
+     * get blank spots copied onto the screen.
+     */
 
-    screen->root_depth = GetDeviceCaps(dc, BITSPIXEL);
+    screen->ext_data = (XExtData *) GetDeviceCaps(dc, PLANES);
+    screen->root_depth = GetDeviceCaps(dc, BITSPIXEL) * (int) screen->ext_data;
+
     screen->root_visual = (Visual *) ckalloc(sizeof(Visual));
     screen->root_visual->visualid = 0;
     if (GetDeviceCaps(dc, RASTERCAPS) & RC_PALETTE) {
@@ -329,6 +315,12 @@ XOpenDisplay(display_name)
 	} else if (screen->root_depth == 8) {
 	    screen->root_visual->class = StaticColor;
 	    screen->root_visual->map_entries = 256;
+	} else if (screen->root_depth == 12) {
+	    screen->root_visual->class = TrueColor;
+	    screen->root_visual->map_entries = 32;
+	    screen->root_visual->red_mask = 0xf0;
+	    screen->root_visual->green_mask = 0xf000;
+	    screen->root_visual->blue_mask = 0xf00000;
 	} else if (screen->root_depth == 16) {
 	    screen->root_visual->class = TrueColor;
 	    screen->root_visual->map_entries = 64;
@@ -353,12 +345,78 @@ XOpenDisplay(display_name)
     screen->white_pixel = RGB(255, 255, 255);
     screen->black_pixel = RGB(0, 0, 0);
 
-    winDisplay->screens = screen;
-    winDisplay->nscreens = 1;
-    winDisplay->default_screen = 0;
-    screen->cmap = XCreateColormap(winDisplay, None, screen->root_visual,
+    display->screens = screen;
+    display->nscreens = 1;
+    display->default_screen = 0;
+    screen->cmap = XCreateColormap(display, None, screen->root_visual,
 	    AllocNone);
+    winDisplay = (TkDisplay *) ckalloc(sizeof(TkDisplay));
+    winDisplay->display = display;
     return winDisplay;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpCloseDisplay --
+ *
+ *	Closes and deallocates a Display structure created with the
+ *	TkpOpenDisplay function.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Frees up memory.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpCloseDisplay(dispPtr)
+    TkDisplay *dispPtr;
+{
+    Display *display = dispPtr->display;
+    HWND hwnd;
+
+    if (dispPtr != winDisplay) {
+        panic("TkpCloseDisplay: tried to call TkpCloseDisplay on another display");
+        return;
+    }
+
+    /*
+     * Force the clipboard to be rendered if we are the clipboard owner.
+     */
+    
+    if (dispPtr->clipWindow) {
+	hwnd = Tk_GetHWND(Tk_WindowId(dispPtr->clipWindow));
+	if (GetClipboardOwner() == hwnd) {
+	    OpenClipboard(hwnd);
+	    EmptyClipboard();
+	    TkWinClipboardRender(dispPtr, CF_TEXT);
+	    CloseClipboard();
+	}
+    }
+
+    winDisplay = NULL;
+
+    if (display->display_name != (char *) NULL) {
+        ckfree(display->display_name);
+    }
+    if (display->screens != (Screen *) NULL) {
+        if (display->screens->root_visual != NULL) {
+            ckfree((char *) display->screens->root_visual);
+        }
+        if (display->screens->root != None) {
+            ckfree((char *) display->screens->root);
+        }
+        if (display->screens->cmap != None) {
+            XFreeColormap(display, display->screens->cmap);
+        }
+        ckfree((char *) display->screens);
+    }
+    ckfree((char *) display);
+    ckfree((char *) dispPtr);
 }
 
 /*
@@ -388,149 +446,6 @@ XBell(display, percent)
 /*
  *----------------------------------------------------------------------
  *
- * TkWinTopLevelProc --
- *
- *	Callback from Windows whenever an event occurs on a top level
- *	window.
- *
- * Results:
- *	Standard Windows return value.
- *
- * Side effects:
- *	Default window behavior.
- *
- *----------------------------------------------------------------------
- */
-
-LRESULT CALLBACK
-TkWinTopLevelProc(hwnd, message, wParam, lParam)
-    HWND hwnd;
-    UINT message;
-    WPARAM wParam;
-    LPARAM lParam;
-{
-    static inMoveSize = 0;
-	
-    if (inMoveSize) {
-	TclWinFlushEvents();
-    }
-
-    switch (message) {
-	case WM_ENTERSIZEMOVE:
-	    inMoveSize = 1;
-	    break;
-
-	case WM_EXITSIZEMOVE:
-	    inMoveSize = 0;
-	    break;
-
-	case WM_CREATE: {
-	    CREATESTRUCT *info = (CREATESTRUCT *) lParam;
-	    TkWinDrawable *twdPtr = (TkWinDrawable *)info->lpCreateParams;
-	    Tcl_HashEntry *hPtr;
-	    int new;
-
-	    /*
-	     * Add the window and handle to the window table.
-	     */
-
-	    twdPtr->window.handle = hwnd;
-	    hPtr = Tcl_CreateHashEntry(&windowTable, (char *)hwnd, &new);
-	    if (!new) {
-		panic("Duplicate window handle: %p", hwnd);
-	    }
-	    Tcl_SetHashValue(hPtr, twdPtr);
-
-	    /*
-	     * Store the pointer to the drawable structure passed into
-	     * CreateWindow in the user data slot of the window.
-	     */
-
-	    SetWindowLong(hwnd, GWL_USERDATA, (DWORD)twdPtr);
-	    return 0;
-	}
-
-	case WM_DESTROY:
-	    DeleteWindow(hwnd);
-	    return 0;
-	    
-	case WM_GETMINMAXINFO: 
-	    TkWinWmSetLimits(hwnd, (MINMAXINFO *) lParam);
-	    return 0;
-
-	case WM_PALETTECHANGED:
-	    return TkWinWmInstallColormaps(hwnd, WM_PALETTECHANGED,
-		    hwnd == (HWND)wParam);
-
-	case WM_QUERYNEWPALETTE:
-	    return TkWinWmInstallColormaps(hwnd, WM_QUERYNEWPALETTE, TRUE);
-
-	case WM_WINDOWPOSCHANGED: {
-	    WINDOWPOS *pos = (WINDOWPOS *) lParam;
-	    TkWinDrawable *twdPtr =
-		(TkWinDrawable *) GetWindowLong(hwnd, GWL_USERDATA);
-
-#ifdef __OPEN32__
-	    RECT r;
-	    /* Somehow sometimes it is not translated upside-down... */
-	    GetWindowRect(hwnd, &r);
-	    pos->x = r.left;
-	    pos->y = r.top;
-	    pos->cx = r.right - r.left;
-	    pos->cy = r.bottom - r.top;
-#endif
-	    TkWinWmConfigure(TkWinGetWinPtr(twdPtr), pos);
-#ifdef __OPEN32__
-	    break;			/* To update child PM window */
-#endif
-	    return 0;
-	}
-
-#ifndef __OPEN32__
-	case WM_CLOSE:
-#endif
-	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-#ifdef __OPEN32__
-	    TranslateEvent(hwnd, message, wParam, lParam);
-	    /* To NOT get focus. */
-	    return 0;
-
-	case WM_CLOSE:
-#endif
-	case WM_LBUTTONUP:
-	case WM_MBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MOUSEMOVE:
-	case WM_CHAR:
-	case WM_SYSCHAR:
-	case WM_KEYDOWN:
-	case WM_KEYUP:
-	case WM_SETFOCUS:
-	case WM_KILLFOCUS:
-	    TranslateEvent(hwnd, message, wParam, lParam);
-	    return 0;
-
-	case WM_SYSKEYDOWN:
-	case WM_SYSKEYUP:
-	case WM_DESTROYCLIPBOARD:
-	    TranslateEvent(hwnd, message, wParam, lParam);
-
-	    /*
-	     * We need to pass these messages to the default window
-	     * procedure in order to get the system menu to work.
-	     */
-
-	    break;
-    }
-
-    return DefWindowProc(hwnd, message, wParam, lParam);
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * TkWinChildProc --
  *
  *	Callback from Windows whenever an event occurs on a child
@@ -540,7 +455,7 @@ TkWinTopLevelProc(hwnd, message, wParam, lParam)
  *	Standard Windows return value.
  *
  * Side effects:
- *	Default window behavior.
+ *	May process events off the Tk event queue.
  *
  *----------------------------------------------------------------------
  */
@@ -552,137 +467,170 @@ TkWinChildProc(hwnd, message, wParam, lParam)
     WPARAM wParam;
     LPARAM lParam;
 {
+    LRESULT result;
+
     switch (message) {
-	case WM_CREATE: {
-	    CREATESTRUCT *info = (CREATESTRUCT *) lParam;
-	    Tcl_HashEntry *hPtr;
-	    int new;
-
+	case WM_SETCURSOR:
 	    /*
-	     * Add the window and handle to the window table.
+	     * Short circuit the WM_SETCURSOR message since we set
+	     * the cursor elsewhere.
 	     */
 
-	    hPtr = Tcl_CreateHashEntry(&windowTable, (char *)hwnd, &new);
-	    if (!new) {
-		panic("Duplicate window handle: %p", hwnd);
-	    }
-	    Tcl_SetHashValue(hPtr, info->lpCreateParams);
+	    result = TRUE;
+	    break;
 
-	    /*
-	     * Store the pointer to the drawable structure passed into
-	     * CreateWindow in the user data slot of the window.  Then set
-	     * the Z stacking order so the window appears on top.
-	     */
-	    
-	    SetWindowLong(hwnd, GWL_USERDATA, (DWORD)info->lpCreateParams);
-	    SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0,
-		    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-	    return 0;
-	}
-
-	case WM_DESTROY:
-	    DeleteWindow(hwnd);
-	    return 0;
-	    
+	case WM_CREATE:
 	case WM_ERASEBKGND:
 	case WM_WINDOWPOSCHANGED:
-	    return 0;
+	    result = 0;
+	    break;
 
-	case WM_RENDERFORMAT: {
-	    TkWinDrawable *twdPtr;
-	    twdPtr = (TkWinDrawable *) GetWindowLong(hwnd, GWL_USERDATA);
-	    TkWinClipboardRender(TkWinGetWinPtr(twdPtr), wParam);
-	    return 0;
-	}
-
-#ifndef __OPEN32__
-	case WM_DESTROYCLIPBOARD:
 	case WM_PAINT:
-#endif
-	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-#ifdef __OPEN32__
-	    TranslateEvent(hwnd, message, wParam, lParam);
-	    /* To NOT get focus. */
-	    return 0;
+	    GenerateXEvent(hwnd, message, wParam, lParam);
+	    result = DefWindowProc(hwnd, message, wParam, lParam);
+	    break;
 
-	case WM_DESTROYCLIPBOARD:
-	case WM_PAINT:
-#endif
-	case WM_LBUTTONUP:
-	case WM_MBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MOUSEMOVE:
-	case WM_CHAR:
-	case WM_SYSCHAR:
-	case WM_SYSKEYDOWN:
-	case WM_SYSKEYUP:
-	case WM_KEYDOWN:
-	case WM_KEYUP:
-	case WM_SETFOCUS:
-	case WM_KILLFOCUS:
-	    TranslateEvent(hwnd, message, wParam, lParam);
-	    return 0;
+        case TK_CLAIMFOCUS:
+	case TK_GEOMETRYREQ:
+	case TK_ATTACHWINDOW:
+	case TK_DETACHWINDOW:
+	    result =  TkWinEmbeddedEventProc(hwnd, message, wParam, lParam);
+	    break;
+
+	default:
+	    if (!Tk_TranslateWinEvent(hwnd, message, wParam, lParam,
+		    &result)) {
+		result = DefWindowProc(hwnd, message, wParam, lParam);
+	    }
+	    break;
     }
 
-    return DefWindowProc(hwnd, message, wParam, lParam);
+    /*
+     * Handle any newly queued events before returning control to Windows.
+     */
+
+    Tcl_ServiceAll();
+    return result;
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * TranslateEvent --
+ * Tk_TranslateWinEvent --
  *
- *	This function is called by the window procedures to handle
+ *	This function is called by widget window procedures to handle
  *	the translation from Win32 events to Tk events.
+ *
+ * Results:
+ *	Returns 1 if the event was handled, else 0.
+ *
+ * Side effects:
+ *	Depends on the event.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+Tk_TranslateWinEvent(hwnd, message, wParam, lParam, resultPtr)
+    HWND hwnd;
+    UINT message;
+    WPARAM wParam;
+    LPARAM lParam;
+    LRESULT *resultPtr;
+{
+    *resultPtr = 0;
+    switch (message) {
+	case WM_RENDERFORMAT: {
+	    TkWindow *winPtr = (TkWindow *) Tk_HWNDToWindow(hwnd);
+	    if (winPtr) {
+		TkWinClipboardRender(winPtr->dispPtr, wParam);
+	    }
+	    return 1;
+	}
+
+	case WM_COMMAND:
+	case WM_NOTIFY:
+	case WM_VSCROLL:
+	case WM_HSCROLL: {
+	    /*
+	     * Reflect these messages back to the sender so that they
+	     * can be handled by the window proc for the control.  Note
+	     * that we need to be careful not to reflect a message that
+	     * is targeted to this window, or we will loop.
+	     */
+
+	    HWND target = (message == WM_NOTIFY)
+		? ((NMHDR*)lParam)->hwndFrom : (HWND) lParam;
+	    if (target && target != hwnd) {
+		*resultPtr = SendMessage(target, message, wParam, lParam);
+		return 1;
+	    }
+	    break;
+	}
+
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONDBLCLK:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONDBLCLK:
+	case WM_LBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MOUSEMOVE:
+	    Tk_PointerEvent(hwnd, (short) LOWORD(lParam),
+		    (short) HIWORD(lParam));
+	    return 1;
+
+	case WM_CLOSE:
+	case WM_SETFOCUS:
+	case WM_KILLFOCUS:
+	case WM_DESTROYCLIPBOARD:
+	case WM_CHAR:
+	case WM_SYSKEYDOWN:
+	case WM_SYSKEYUP:
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+ 	    GenerateXEvent(hwnd, message, wParam, lParam);
+	    return 1;
+    }
+    return 0;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GenerateXEvent --
+ *
+ *	This routine generates an X event from the corresponding
+ * 	Windows event.
  *
  * Results:
  *	None.
  *
  * Side effects:
- *	Queues a new Tk event.
+ *	Queues one or more X events.
  *
  *----------------------------------------------------------------------
  */
 
 static void
-TranslateEvent(hwnd, message, wParam, lParam)
+GenerateXEvent(hwnd, message, wParam, lParam)
     HWND hwnd;
     UINT message;
     WPARAM wParam;
     LPARAM lParam;
 {
-    TkWindow *winPtr;
     XEvent event;
-    TkWinDrawable *twdPtr;
-
-    /*
-     * Retrieve the window information, and reset the hwnd pointer in
-     * case the original window was a toplevel decorative frame.
-     */
-
-    twdPtr = (TkWinDrawable *) GetWindowLong(hwnd, GWL_USERDATA);
-    if (twdPtr == NULL) {
+    TkWindow *winPtr = (TkWindow *)Tk_HWNDToWindow(hwnd);
+    if (!winPtr || winPtr->window == None) {
 	return;
     }
-    winPtr = TkWinGetWinPtr(twdPtr);
-
-    /*
-     * TranslateEvent may get called even after Tk has deleted the window.
-     * So we must check for a dead window before proceeding.
-     */
-
-    if (winPtr == NULL || winPtr->window == None) {
-	return;
-    }
-
-    hwnd = TkWinGetHWND(winPtr->window);
 
     event.xany.serial = winPtr->display->request++;
     event.xany.send_event = False;
     event.xany.display = winPtr->display;
-    event.xany.window = (Window) winPtr->window;
+    event.xany.window = winPtr->window;
 
     switch (message) {
 	case WM_PAINT: {
@@ -714,40 +662,48 @@ TranslateEvent(hwnd, message, wParam, lParam)
 	    break;
 
 	case WM_SETFOCUS:
-	    event.type = FocusIn;
-	    event.xfocus.mode = NotifyNormal;
-	    event.xfocus.detail = NotifyAncestor;
-	    break;
-
-	case WM_KILLFOCUS:
-	    event.type = FocusOut;
-	    event.xfocus.mode = NotifyNormal;
-	    event.xfocus.detail = NotifyAncestor;
-	    break;
+	case WM_KILLFOCUS: {
+	    TkWindow *otherWinPtr = (TkWindow *)Tk_HWNDToWindow((HWND) wParam);
 	    
+	    /*
+	     * Compare toplevel windows to avoid reporting focus
+	     * changes within the same toplevel.
+	     */
+
+	    while (!(winPtr->flags & TK_TOP_LEVEL)) {
+		winPtr = winPtr->parentPtr;
+		if (winPtr == NULL) {
+		    return;
+		}
+	    }
+	    while (otherWinPtr && !(otherWinPtr->flags & TK_TOP_LEVEL)) {
+		otherWinPtr = otherWinPtr->parentPtr;
+	    }
+	    if (otherWinPtr == winPtr) {
+		return;
+	    }
+
+	    event.xany.window = winPtr->window;
+	    event.type = (message == WM_SETFOCUS) ? FocusIn : FocusOut;
+	    event.xfocus.mode = NotifyNormal;
+	    event.xfocus.detail = NotifyNonlinear;
+	    break;
+	}
+
 	case WM_DESTROYCLIPBOARD:
 	    event.type = SelectionClear;
 	    event.xselectionclear.selection =
 		Tk_InternAtom((Tk_Window)winPtr, "CLIPBOARD");
-	    event.xselectionclear.time = GetCurrentTime();
+	    event.xselectionclear.time = TkpGetMS();
 	    break;
 	    
-	case WM_LBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_MBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MOUSEMOVE:
 	case WM_CHAR:
-	case WM_SYSCHAR:
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
 	case WM_KEYDOWN:
 	case WM_KEYUP: {
-	    unsigned int state = TkWinGetModifierState(message,
-		    wParam, lParam);
-	    Time time = GetCurrentTime();
+	    unsigned int state = GetState(message, wParam, lParam);
+	    Time time = TkpGetMS();
 	    POINT clientPoint;
 	    POINTS rootPoint;	/* Note: POINT and POINTS are different */
 	    DWORD msgPos;
@@ -782,41 +738,6 @@ TranslateEvent(hwnd, message, wParam, lParam)
 	     */
 
 	    switch (message) {
-		case WM_LBUTTONDOWN:
-		    event.type = ButtonPress;
-		    event.xbutton.button = Button1;
-		    break;
-
-		case WM_MBUTTONDOWN:
-		    event.type = ButtonPress;
-		    event.xbutton.button = Button2;
-		    break;
-
-		case WM_RBUTTONDOWN:
-		    event.type = ButtonPress;
-		    event.xbutton.button = Button3;
-		    break;
-	
-		case WM_LBUTTONUP:
-		    event.type = ButtonRelease;
-		    event.xbutton.button = Button1;
-		    break;
-	
-		case WM_MBUTTONUP:
-		    event.type = ButtonRelease;
-		    event.xbutton.button = Button2;
-		    break;
-
-		case WM_RBUTTONUP:
-		    event.type = ButtonRelease;
-		    event.xbutton.button = Button3;
-		    break;
-	
-		case WM_MOUSEMOVE:
-		    event.type = MotionNotify;
-		    event.xmotion.is_hint = NotifyNormal;
-		    break;
-
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		    /*
@@ -856,7 +777,6 @@ TranslateEvent(hwnd, message, wParam, lParam)
 		    break;
 
 		case WM_CHAR:
-		case WM_SYSCHAR:
 		    /*
 		     * Synthesize both a KeyPress and a KeyRelease.
 		     */
@@ -873,34 +793,22 @@ TranslateEvent(hwnd, message, wParam, lParam)
 		    event.type = KeyRelease;
 		    break;
 	    }
-
-	    if ((event.type == MotionNotify)
-		    || (event.type == ButtonPress)
-		    || (event.type == ButtonRelease)) {
-		TkWinPointerEvent(&event, winPtr);
-		goto done;
-	    }
 	    break;
 	}
 
 	default:
-	  goto done;
+	    return;
     }
     Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
-
-  done:
-    if (isInModal) {
-	TclWinFlushEvents();
-    }
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * TkWinGetModifierState --
+ * GetState --
  *
  *	This function constructs a state mask for the mouse buttons 
- *	and modifier keys.
+ *	and modifier keys as they were before the event occured.
  *
  * Results:
  *	Returns a composite value of all the modifier and button state
@@ -912,91 +820,59 @@ TranslateEvent(hwnd, message, wParam, lParam)
  *----------------------------------------------------------------------
  */
 
-unsigned int
-TkWinGetModifierState(message, wParam, lParam)
+static unsigned int
+GetState(message, wParam, lParam)
     UINT message;		/* Win32 message type */
     WPARAM wParam;		/* wParam of message, used if key message */
     LPARAM lParam;		/* lParam of message, used if key message */
 {
-    unsigned int state = 0;	/* accumulated state flags */
-    int isKeyEvent;		/* 1 if message is a key press or release */
+    int mask;
     int prevState;		/* 1 if key was previously down */
+    unsigned int state = TkWinGetModifierState();
 
     /*
-     * If the event is a key press or release, we check for autorepeat.
+     * If the event is a key press or release, we check for modifier
+     * keys so we can report the state of the world before the event.
      */
 
     if (message == WM_SYSKEYDOWN || message == WM_KEYDOWN
 	    || message == WM_SYSKEYUP || message == WM_KEYUP) {
-	isKeyEvent = TRUE;
+	mask = 0;
 	prevState = HIWORD(lParam) & KF_REPEAT;
-    }
-
-    /*
-     * If the key being pressed or released is a modifier key, then
-     * we use its previous state, otherwise we look at the current state.
-     */
-
-    if (isKeyEvent && (wParam == VK_SHIFT)) {
-	state |= prevState ? ShiftMask : 0;
-    } else {
-	state |= (GetKeyState(VK_SHIFT) & 0x8000) ? ShiftMask : 0;
-    }
-    if (isKeyEvent && (wParam == VK_CONTROL)) {
-	state |= prevState ? ControlMask : 0;
-    } else {
-	state |= (GetKeyState(VK_CONTROL) & 0x8000) ? ControlMask : 0;
-    }
-    if (isKeyEvent && (wParam == VK_MENU)) {
-	state |= prevState ? Mod2Mask : 0;
-    } else {
-	state |= (GetKeyState(VK_MENU) & 0x8000) ? Mod2Mask : 0;
-    }
-
-    /*
-     * For toggle keys, we have to check both the previous key state
-     * and the current toggle state.  The result is the state of the
-     * toggle before the event.
-     */
-
-    if ((wParam == VK_CAPITAL)
-	    && (message == WM_SYSKEYDOWN || message == WM_KEYDOWN)) {
-	state = (prevState ^ (GetKeyState(VK_CAPITAL) & 0x0001))
-	    ? 0 : LockMask;
-    } else {
-	state |= (GetKeyState(VK_CAPITAL) & 0x0001) ? LockMask : 0;
-    }
-    if ((wParam == VK_NUMLOCK)
-	    && (message == WM_SYSKEYDOWN || message == WM_KEYDOWN)) {
-	state = (prevState ^ (GetKeyState(VK_NUMLOCK) & 0x0001))
-	    ? 0 : Mod1Mask;
-    } else {
-	state |= (GetKeyState(VK_NUMLOCK) & 0x0001) ? Mod1Mask : 0;
-    }
-    if ((wParam == VK_SCROLL)
-	    && (message == WM_SYSKEYDOWN || message == WM_KEYDOWN)) {
-	state = (prevState ^ (GetKeyState(VK_SCROLL) & 0x0001))
-	    ? 0 : Mod3Mask;
-    } else {
-	state |= (GetKeyState(VK_SCROLL) & 0x0001) ? Mod3Mask : 0;
-    }
-
-    /*
-     * If a mouse button is being pressed or released, we use the previous
-     * state of the button.
-     */
-
-    if (message == WM_LBUTTONUP || (message != WM_LBUTTONDOWN
-	    && GetKeyState(VK_LBUTTON) & 0x8000)) {
-	state |= Button1Mask;
-    }
-    if (message == WM_MBUTTONUP || (message != WM_MBUTTONDOWN
-	    && GetKeyState(VK_MBUTTON) & 0x8000)) {
-	state |= Button2Mask;
-    }
-    if (message == WM_RBUTTONUP || (message != WM_RBUTTONDOWN
-	    && GetKeyState(VK_RBUTTON) & 0x8000)) {
-	state |= Button3Mask;
+	switch(wParam) {
+	    case VK_SHIFT:
+		mask = ShiftMask;
+		break;
+	    case VK_CONTROL:
+		mask = ControlMask;
+		break;
+	    case VK_MENU:
+		mask = Mod2Mask;
+		break;
+	    case VK_CAPITAL:
+		if (message == WM_SYSKEYDOWN || message == WM_KEYDOWN) {
+		    mask = LockMask;
+		    prevState = ((state & mask) ^ prevState) ? 0 : 1;
+		}
+		break;
+	    case VK_NUMLOCK:
+		if (message == WM_SYSKEYDOWN || message == WM_KEYDOWN) {
+		    mask = Mod1Mask;
+		    prevState = ((state & mask) ^ prevState) ? 0 : 1;
+		}
+		break;
+	    case VK_SCROLL:
+		if (message == WM_SYSKEYDOWN || message == WM_KEYDOWN) {
+		    mask = Mod3Mask;
+		    prevState = ((state & mask) ^ prevState) ? 0 : 1;
+		}
+		break;
+	}
+	if (prevState) {
+	    state |= mask;
+	} else {
+	    state &= ~mask;
+	}
     }
     return state;
 }
@@ -1030,7 +906,7 @@ GetTranslatedKey(xkey)
 
     while (xkey->nchars < XMaxTransChars
 	    && PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-	if ((msg.message == WM_CHAR) || (msg.message == WM_SYSCHAR)) {
+	if (msg.message == WM_CHAR) {
 	    xkey->trans_chars[xkey->nchars] = (char) msg.wParam;
 #ifdef __OPEN32__
 	    StashedKey = (char) msg.wParam;
@@ -1042,88 +918,6 @@ GetTranslatedKey(xkey)
 	    }
 	} else {
 	    break;
-	}
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TkWinGetDrawableFromHandle --
- *
- *	Find the drawable associated with the given window handle.
- *
- * Results:
- *	Returns a drawable pointer if the window is managed by Tk.
- *	Otherwise it returns NULL.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-TkWinDrawable *
-TkWinGetDrawableFromHandle(hwnd)
-    HWND hwnd;			/* Win32 window handle */
-{
-    Tcl_HashEntry *hPtr;
-
-    hPtr = Tcl_FindHashEntry(&windowTable, (char *)hwnd);
-    if (hPtr) {
-	return (TkWinDrawable *)Tcl_GetHashValue(hPtr);
-    }
-    return NULL;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * DeleteWindow --
- *
- *	Remove a window from the window table, and free the resources
- *	associated with the drawable.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Frees the resources associated with a window handle.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-DeleteWindow(hwnd)
-    HWND hwnd;
-{
-    TkWinDrawable *twdPtr;
-    Tcl_HashEntry *hPtr;
-
-    /*
-     * Remove the window from the window table.
-     */
-
-    hPtr = Tcl_FindHashEntry(&windowTable, (char *)hwnd);
-    if (hPtr) {
-	Tcl_DeleteHashEntry(hPtr);
-    }
-
-    /*
-     * Free the drawable associated with this window, unless the drawable
-     * is still in use by a TkWindow.  This only happens in the case of
-     * a top level window, since the window gets destroyed when the
-     * decorative frame is destroyed.
-     */
-
-    twdPtr = (TkWinDrawable *) GetWindowLong(hwnd, GWL_USERDATA);
-    if (twdPtr) {
-	if (twdPtr->window.winPtr == NULL) {
-	    ckfree((char *) twdPtr);
-	} else if (!(twdPtr->window.winPtr->flags & TK_TOP_LEVEL)) {
-	    panic("Non-toplevel window destroyed before its drawable");
-	} else {
-	    twdPtr->window.handle = NULL;
 	}
     }
 }
@@ -1151,44 +945,92 @@ Tk_FreeXId(display, xid)
 {
 }
 
-/*----------------------------------------------------------------------
- * TkWinEnterModalLoop --
+/*
+ *----------------------------------------------------------------------
  *
- *	Notifies the Windows event handler that TK is about to enter a
- *	modal loop. Window Events are handled immediately if TK has
- *	enter a modal loop.
+ * TkWinResendEvent --
+ *
+ *	This function converts an X event into a Windows event and
+ *	invokes the specified windo procedure.
  *
  * Results:
- *	None.
+ *	A standard Windows result.
  *
  * Side effects:
- *	The isInModal counter is incremented.
+ *	Invokes the window procedure
  *
  *----------------------------------------------------------------------
  */
 
-void TkWinEnterModalLoop(interp)
-    Tcl_Interp * interp;
+LRESULT
+TkWinResendEvent(wndproc, hwnd, eventPtr)
+    WNDPROC wndproc;
+    HWND hwnd;
+    XEvent *eventPtr;
 {
-    isInModal ++;
+    UINT msg;
+    WPARAM wparam;
+    LPARAM lparam;
+
+    if (eventPtr->type == ButtonPress) {
+	switch (eventPtr->xbutton.button) {
+	    case Button1:
+		msg = WM_LBUTTONDOWN;
+		wparam = MK_LBUTTON;
+		break;
+	    case Button2:
+		msg = WM_MBUTTONDOWN;
+		wparam = MK_MBUTTON;
+		break;
+	    case Button3:
+		msg = WM_RBUTTONDOWN;
+		wparam = MK_RBUTTON;
+		break;
+	    default:
+		return 0;
+	}
+	if (eventPtr->xbutton.state & Button1Mask) {
+	    wparam |= MK_LBUTTON;
+	}
+	if (eventPtr->xbutton.state & Button2Mask) {
+	    wparam |= MK_MBUTTON;
+	}
+	if (eventPtr->xbutton.state & Button3Mask) {
+	    wparam |= MK_RBUTTON;
+	}
+	if (eventPtr->xbutton.state & ShiftMask) {
+	    wparam |= MK_SHIFT;
+	}
+	if (eventPtr->xbutton.state & ControlMask) {
+	    wparam |= MK_CONTROL;
+	}
+	lparam = MAKELPARAM((short) eventPtr->xbutton.x,
+		(short) eventPtr->xbutton.y);
+    } else {
+	return 0;
+    }
+    return CallWindowProc(wndproc, hwnd, msg, wparam, lparam);
 }
 
-/*----------------------------------------------------------------------
- * TkWinLeaveModalLoop --
+/*
+ *----------------------------------------------------------------------
  *
- *	Complement to the TkWinEnterModalLoop function.
+ * TkpGetMS --
+ *
+ *	Return a relative time in milliseconds.  It doesn't matter
+ *	when the epoch was.
  *
  * Results:
- *	None.
+ *	Number of milliseconds.
  *
  * Side effects:
- *	The isInModal counter is decremented.
+ *	None.
  *
  *----------------------------------------------------------------------
  */
 
-void TkWinLeaveModalLoop(interp)
-    Tcl_Interp * interp;
+unsigned long
+TkpGetMS()
 {
-    isInModal --;
+    return GetCurrentTime();
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -176,6 +176,9 @@ SV *sv;
  return 0;
 }
 
+#define TCL_UNIX_FD 0
+#define Tcl_GetFile(x,y) x
+
 /* Avoid Tcl's hacks here - we have enough of our own */
 #undef write
 #undef read
@@ -191,9 +194,11 @@ InputStream	f
 SV *		callback
 CODE:
  {
+#ifdef NOT_BROKEN
   int fd = PerlIO_fileno(f);
   Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), 
                         TCL_READABLE, NULL, callback);
+#endif
  }
 
 void
@@ -202,9 +207,11 @@ OutputStream	f
 SV *		callback
 CODE:
  {
+#ifdef NOT_BROKEN
   int fd = PerlIO_fileno(f);
   Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), 
                         TCL_WRITABLE, NULL, callback);
+#endif
  }
 
 void
@@ -212,8 +219,10 @@ Tcl_DeleteReadHandler(f)
 InputStream	f
 CODE:
  {
+#ifdef NOT_BROKEN
   int fd = PerlIO_fileno(f);
   Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD));
+#endif
  }
 
 void
@@ -221,8 +230,10 @@ Tcl_DeleteWriteHandler(f)
 OutputStream	f
 CODE:
  {
+#ifdef NOT_BROKEN
   int fd = PerlIO_fileno(f);
   Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD));
+#endif
  }
 
 MODULE = Tk::IO	PACKAGE = Tk::IO
@@ -273,12 +284,14 @@ int	offset
        return;
       }
      SvPOK_only(buf);		/* validate pointer */
+#ifdef NOT_BROKEN
      Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
      do                                        
       {                                        
        Tcl_DoOneEvent(0);                       
       } while (!info.eof && !info.error && info.count == 0);
      Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD)); 
+#endif
      if (mode != newmode)
       {
        count = restore_mode(f,mode);
@@ -316,6 +329,7 @@ InputStream	f
      info.count  = 0; 
      info.error  = 0; 
      info.eof    = 0; 
+#ifdef NOT_BROKEN
      Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd, TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
      while (!info.eof && !info.error && !has_nl(buf))
       {                                        
@@ -325,6 +339,7 @@ InputStream	f
         Tcl_DoOneEvent(0);                       
       } 
      Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd, TCL_UNIX_FD)); 
+#endif
      if (mode != newmode)
       {
        count = restore_mode(f,mode);

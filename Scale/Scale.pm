@@ -15,7 +15,7 @@ require Tk;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/Scale/Scale.pm#7$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Scale/Scale.pm#4$
 
 @ISA = qw(Tk::Widget);
 
@@ -24,6 +24,8 @@ Construct Tk::Widget 'Scale';
 bootstrap Tk::Scale $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::scale }
+
+Tk::Methods("coords","get","identify","set");
 
 
 import Tk qw(Ev);

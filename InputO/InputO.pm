@@ -3,7 +3,7 @@ require Tk;
 
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/InputO/InputO.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/InputO/InputO.pm#3$
 
 @ISA = qw(Tk::Widget);
 

@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTextBTree.c 1.35 96/03/21 15:51:39
+ * SCCS: @(#) tkTextBTree.c 1.37 97/04/25 16:52:00
  */
 
 #include "tkInt.h"
@@ -127,6 +127,8 @@ static void		CheckNodeConsistency _ANSI_ARGS_((Node *nodePtr));
 static void		CleanupLine _ANSI_ARGS_((TkTextLine *linePtr));
 static void		DeleteSummaries _ANSI_ARGS_((Summary *tagPtr));
 static void		DestroyNode _ANSI_ARGS_((Node *nodePtr));
+static TkTextSegment *	FindTagEnd _ANSI_ARGS_((TkTextBTree tree, 
+			    TkTextTag *tagPtr, TkTextIndex *indexPtr));
 static void		IncCount _ANSI_ARGS_((TkTextTag *tagPtr, int inc,
 			    TagInfo *tagInfoPtr));
 static void		Rebalance _ANSI_ARGS_((BTree *treePtr, Node *nodePtr));
@@ -444,7 +446,6 @@ TkBTreeInsertChars(indexPtr, string)
 	segPtr->size = chunkSize;
 	strncpy(segPtr->body.chars, string, (size_t) chunkSize);
 	segPtr->body.chars[chunkSize] = 0;
-	curPtr = segPtr;
 
 	if (eol[-1] != '\n') {
 	    break;
@@ -1486,7 +1487,7 @@ FindTagStart(tree, tagPtr, indexPtr)
     register TkTextLine *linePtr;
     register TkTextSegment *segPtr;
     register Summary *summaryPtr;
-    int offset = 0;
+    int offset;
 
     nodePtr = tagPtr->tagRootPtr;
     if (nodePtr == (Node *) NULL) {
@@ -1566,7 +1567,7 @@ FindTagEnd(tree, tagPtr, indexPtr)
     register TkTextLine *linePtr ,*lastLinePtr;
     register TkTextSegment *segPtr, *lastSegPtr, *last2SegPtr;
     register Summary *summaryPtr;
-    int lastoffset, lastoffset2, offset = 0;
+    int lastoffset, lastoffset2, offset;
 
     nodePtr = tagPtr->tagRootPtr;
     if (nodePtr == (Node *) NULL) {
@@ -2258,7 +2259,6 @@ TkBTreeCharTagged(indexPtr, tagPtr)
      * level-0 node.
      */
 
-    toggles = 0;
     for (siblingLinePtr = indexPtr->linePtr->parentPtr->children.linePtr;
 	    siblingLinePtr != indexPtr->linePtr;
 	    siblingLinePtr = siblingLinePtr->nextPtr) {
@@ -3350,7 +3350,7 @@ CharCheckProc(segPtr, linePtr)
     if (segPtr->size <= 0) {
 	panic("CharCheckProc: segment has size <= 0");
     }
-    if (strlen(segPtr->body.chars) != segPtr->size) {
+    if (strlen(segPtr->body.chars) != (size_t) segPtr->size) {
 	panic("CharCheckProc: segment has wrong size");
     }
     if (segPtr->nextPtr == NULL) {

@@ -46,7 +46,7 @@ static Tk_ConfigSpec windowItemConfigSpecs[] = {
        DEF_WINDOWITEM_STYLE, Tk_Offset(TixWindowItem, stylePtr),
        TK_CONFIG_NULL_OK, &tixConfigItemStyle},
 
-    {TK_CONFIG_SYNONYM, "-widget", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_SYNONYM, "-widget", "window", (char *) NULL,
        (char *)NULL, 0, 0},
 
     {TK_CONFIG_WINDOW, "-window", "window", "Window",

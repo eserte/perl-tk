@@ -13,10 +13,12 @@
 #include "tixPort.h"
 #include "tixInt.h"
 
-#ifdef NO_STRDUP
 
 /*
  * strdup is not a POSIX call and is not supported on many platforms.
+ * Also Tix code assumes it can ckfree() what has been strdup()'ed
+ * which may not be valid using system's strdup() and non-system malloc/free
+ * equivalents fot ckalloc()/ckfree()
  */
 
 char * tixStrDup(s)
@@ -26,12 +28,12 @@ char * tixStrDup(s)
     char * new_string;
 
     new_string = (char*)ckalloc(len);
-    strcpy(new_string, s);
+    if (new_string)
+	strcpy(new_string, s);
 
     return new_string;
 }
 
-#endif /* NO_STRDUP */
 
 
 #ifdef NO_STRCASECMP

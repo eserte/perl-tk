@@ -4,7 +4,16 @@ VVAR(Tk_Uid,tkDisabledUid,V_tkDisabledUid)
 VVAR(TkDisplay *,tkDisplayList,V_tkDisplayList)
 VVAR(TkMainInfo		*,tkMainWindowList,V_tkMainWindowList)
 VVAR(Tk_Uid,tkNormalUid,V_tkNormalUid)
-VVAR(int,tkSendSerial,V_tkSendSerial)
+VVAR(Tcl_HashTable,tkPredefBitmapTable,V_tkPredefBitmapTable)
+#ifndef TkAllocWindow
+VFUNC(TkWindow *,TkAllocWindow,V_TkAllocWindow,_ANSI_ARGS_((TkDisplay *dispPtr,
+			    int screenNum, TkWindow *parentPtr)))
+#endif
+
+#ifndef TkBindDeadWindow
+VFUNC(void,TkBindDeadWindow,V_TkBindDeadWindow,_ANSI_ARGS_((TkWindow *winPtr)))
+#endif
+
 #ifndef TkBindEventProc
 VFUNC(void,TkBindEventProc,V_TkBindEventProc,_ANSI_ARGS_((TkWindow *winPtr,
 			    XEvent *eventPtr)))
@@ -33,16 +42,19 @@ VFUNC(int,TkClipInit,V_TkClipInit,_ANSI_ARGS_((Tcl_Interp *interp,
 			    TkDisplay *dispPtr)))
 #endif
 
-#ifndef TkCmapStressed
-VFUNC(int,TkCmapStressed,V_TkCmapStressed,_ANSI_ARGS_((Tk_Window tkwin,
-			    Colormap colormap)))
+#ifndef TkComputeAnchor
+VFUNC(void,TkComputeAnchor,V_TkComputeAnchor,_ANSI_ARGS_((Tk_Anchor anchor,
+			    Tk_Window tkwin, int padX, int padY,
+			    int innerWidth, int innerHeight, int *xPtr,
+			    int *yPtr)))
 #endif
 
-#ifndef TkComputeTextGeometry
-VFUNC(void,TkComputeTextGeometry,V_TkComputeTextGeometry,_ANSI_ARGS_((
-			    XFontStruct *fontStructPtr, char *string,
-			    int numChars, int wrapLength, int *widthPtr,
-			    int *heightPtr)))
+#ifndef TkCreateBindingProcedure
+VFUNC(unsigned long,TkCreateBindingProcedure,V_TkCreateBindingProcedure,_ANSI_ARGS_((
+			    Tcl_Interp *interp, Tk_BindingTable bindingTable,
+			    ClientData object, char *eventString,
+			    TkBindEvalProc *evalProc, TkBindFreeProc *freeProc,
+			    ClientData clientData)))
 #endif
 
 #ifndef TkCreateCursorFromData
@@ -83,20 +95,14 @@ VFUNC(void,TkDeleteAllImages,V_TkDeleteAllImages,_ANSI_ARGS_((TkMainInfo *mainPt
 VFUNC(void,TkDestroyRegion,V_TkDestroyRegion,_ANSI_ARGS_((TkRegion rgn)))
 #endif
 
-#ifndef TkDisplayChars
-VFUNC(void,TkDisplayChars,V_TkDisplayChars,_ANSI_ARGS_((Display *display,
-			    Drawable drawable, GC gc,
-			    XFontStruct *fontStructPtr, char *string,
-			    int numChars, int x, int y, int tabOrigin,
-			    int flags)))
+#ifndef TkDoConfigureNotify
+VFUNC(void,TkDoConfigureNotify,V_TkDoConfigureNotify,_ANSI_ARGS_((TkWindow *winPtr)))
 #endif
 
-#ifndef TkDisplayText
-VFUNC(void,TkDisplayText,V_TkDisplayText,_ANSI_ARGS_((Display *display,
-			    Drawable drawable, XFontStruct *fontStructPtr,
-			    char *string, int numChars, int x, int y,
-			    int length, Tk_Justify justify, int underline,
-			    GC gc)))
+#ifndef TkDrawInsetFocusHighlight
+VFUNC(void,TkDrawInsetFocusHighlight,V_TkDrawInsetFocusHighlight,_ANSI_ARGS_((
+			    Tk_Window tkwin, GC gc, int width,
+			    Drawable drawable, int padding)))
 #endif
 
 #ifndef TkEventDeadWindow
@@ -121,6 +127,19 @@ VFUNC(void,TkFocusDeadWindow,V_TkFocusDeadWindow,_ANSI_ARGS_((TkWindow *winPtr))
 #ifndef TkFocusFilterEvent
 VFUNC(int,TkFocusFilterEvent,V_TkFocusFilterEvent,_ANSI_ARGS_((TkWindow *winPtr,
 			    XEvent *eventPtr)))
+#endif
+
+#ifndef TkFocusKeyEvent
+VFUNC(TkWindow *,TkFocusKeyEvent,V_TkFocusKeyEvent,_ANSI_ARGS_((TkWindow *winPtr,
+			    XEvent *eventPtr)))
+#endif
+
+#ifndef TkFontPkgFree
+VFUNC(void,TkFontPkgFree,V_TkFontPkgFree,_ANSI_ARGS_((TkMainInfo *mainPtr)))
+#endif
+
+#ifndef TkFontPkgInit
+VFUNC(void,TkFontPkgInit,V_TkFontPkgInit,_ANSI_ARGS_((TkMainInfo *mainPtr)))
 #endif
 
 #ifndef TkFreeBindingTags
@@ -150,8 +169,14 @@ VFUNC(char *,TkGetDefaultScreenName,V_TkGetDefaultScreenName,_ANSI_ARGS_((Tcl_In
 VFUNC(TkDisplay *,TkGetDisplay,V_TkGetDisplay,_ANSI_ARGS_((Display *display)))
 #endif
 
-#ifndef TkGetFocus
-VFUNC(TkWindow *,TkGetFocus,V_TkGetFocus,_ANSI_ARGS_((TkWindow *winPtr)))
+#ifndef TkGetDisplayOf
+VFUNC(int,TkGetDisplayOf,V_TkGetDisplayOf,_ANSI_ARGS_((Tcl_Interp *interp,
+			    int objc, Tcl_Obj *CONST objv[],
+			    Tk_Window *tkwinPtr)))
+#endif
+
+#ifndef TkGetFocusWin
+VFUNC(TkWindow *,TkGetFocusWin,V_TkGetFocusWin,_ANSI_ARGS_((TkWindow *winPtr)))
 #endif
 
 #ifndef TkGetInterpNames
@@ -192,6 +217,10 @@ VFUNC(void,TkInOutEvents,V_TkInOutEvents,_ANSI_ARGS_((XEvent *eventPtr,
 VFUNC(void,TkInitXId,V_TkInitXId,_ANSI_ARGS_((TkDisplay *dispPtr)))
 #endif
 
+#ifndef TkInstallFrameMenu
+VFUNC(void,TkInstallFrameMenu,V_TkInstallFrameMenu,_ANSI_ARGS_((Tk_Window tkwin)))
+#endif
+
 #ifndef TkIntersectRegion
 VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
 			    TkRegion srcb, TkRegion dr_return)))
@@ -199,21 +228,6 @@ VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
 
 #ifndef TkKeysymToString
 VFUNC(char *,TkKeysymToString,V_TkKeysymToString,_ANSI_ARGS_((KeySym keysym)))
-#endif
-
-#ifndef TkMakeWindow
-VFUNC(Window,TkMakeWindow,V_TkMakeWindow,_ANSI_ARGS_((TkWindow *winPtr,
-			    Window parent)))
-#endif
-
-#ifndef TkMeasureChars
-VFUNC(int,TkMeasureChars,V_TkMeasureChars,_ANSI_ARGS_((XFontStruct *fontStructPtr,
-			    char *source, int maxChars, int startX, int maxX,
-			    int tabOrigin, int flags, int *nextXPtr)))
-#endif
-
-#ifndef TkPlatformInit
-VFUNC(int,TkPlatformInit,V_TkPlatformInit,_ANSI_ARGS_((Tcl_Interp *interp)))
 #endif
 
 #ifndef TkPointerEvent
@@ -236,7 +250,7 @@ VFUNC(void,TkPutImage,V_TkPutImage,_ANSI_ARGS_((unsigned long *colors,
 
 #ifndef TkQueueEventForAllChildren
 VFUNC(void,TkQueueEventForAllChildren,V_TkQueueEventForAllChildren,_ANSI_ARGS_((
-			    Tk_Window tkwin, XEvent *eventPtr)))
+			    TkWindow *winPtr, XEvent *eventPtr)))
 #endif
 
 #ifndef TkRectInRegion
@@ -268,6 +282,11 @@ VFUNC(void,TkSelInit,V_TkSelInit,_ANSI_ARGS_((Tk_Window tkwin)))
 VFUNC(void,TkSelPropProc,V_TkSelPropProc,_ANSI_ARGS_((XEvent *eventPtr)))
 #endif
 
+#ifndef TkSetClassProcs
+VFUNC(void,TkSetClassProcs,V_TkSetClassProcs,_ANSI_ARGS_((Tk_Window tkwin,
+			    TkClassProcs *procs, ClientData instanceData)))
+#endif
+
 #ifndef TkSetPixmapColormap
 VFUNC(void,TkSetPixmapColormap,V_TkSetPixmapColormap,_ANSI_ARGS_((Pixmap pixmap,
 			    Colormap colormap)))
@@ -278,16 +297,14 @@ VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
 			    TkRegion rgn)))
 #endif
 
-#ifndef TkStringToKeysym
-VFUNC(KeySym,TkStringToKeysym,V_TkStringToKeysym,_ANSI_ARGS_((char *name)))
+#ifndef TkSetWindowMenuBar
+VFUNC(void,TkSetWindowMenuBar,V_TkSetWindowMenuBar,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Arg oldMenuName, 
+			    Arg menuName)))
 #endif
 
-#ifndef TkUnderlineChars
-VFUNC(void,TkUnderlineChars,V_TkUnderlineChars,_ANSI_ARGS_((Display *display,
-			    Drawable drawable, GC gc,
-			    XFontStruct *fontStructPtr, char *string,
-			    int x, int y, int tabOrigin, int flags,
-			    int firstChar, int lastChar)))
+#ifndef TkStringToKeysym
+VFUNC(KeySym,TkStringToKeysym,V_TkStringToKeysym,_ANSI_ARGS_((char *name)))
 #endif
 
 #ifndef TkUnionRectWithRegion
@@ -302,6 +319,10 @@ VFUNC(void,TkWmAddToColormapWindows,V_TkWmAddToColormapWindows,_ANSI_ARGS_((
 
 #ifndef TkWmDeadWindow
 VFUNC(void,TkWmDeadWindow,V_TkWmDeadWindow,_ANSI_ARGS_((TkWindow *winPtr)))
+#endif
+
+#ifndef TkWmFocusToplevel
+VFUNC(TkWindow *,TkWmFocusToplevel,V_TkWmFocusToplevel,_ANSI_ARGS_((TkWindow *winPtr)))
 #endif
 
 #ifndef TkWmMapWindow
@@ -333,6 +354,109 @@ VFUNC(void,TkWmSetClass,V_TkWmSetClass,_ANSI_ARGS_((TkWindow *winPtr)))
 
 #ifndef TkWmUnmapWindow
 VFUNC(void,TkWmUnmapWindow,V_TkWmUnmapWindow,_ANSI_ARGS_((TkWindow *winPtr)))
+#endif
+
+#ifndef TkpChangeFocus
+VFUNC(int,TkpChangeFocus,V_TkpChangeFocus,_ANSI_ARGS_((TkWindow *winPtr,
+			    int force)))
+#endif
+
+#ifndef TkpClaimFocus
+VFUNC(void,TkpClaimFocus,V_TkpClaimFocus,_ANSI_ARGS_((TkWindow *topLevelPtr,
+			    int force)))
+#endif
+
+#ifndef TkpCloseDisplay
+VFUNC(void,TkpCloseDisplay,V_TkpCloseDisplay,_ANSI_ARGS_((TkDisplay *dispPtr)))
+#endif
+
+#ifndef TkpCmapStressed
+VFUNC(int,TkpCmapStressed,V_TkpCmapStressed,_ANSI_ARGS_((Tk_Window tkwin,
+			    Colormap colormap)))
+#endif
+
+#ifndef TkpCreateNativeBitmap
+VFUNC(Pixmap,TkpCreateNativeBitmap,V_TkpCreateNativeBitmap,_ANSI_ARGS_((Display *display,
+			    char * source)))
+#endif
+
+#ifndef TkpDefineNativeBitmaps
+VFUNC(void,TkpDefineNativeBitmaps,V_TkpDefineNativeBitmaps,_ANSI_ARGS_((void)))
+#endif
+
+#ifndef TkpGetNativeAppBitmap
+VFUNC(Pixmap,TkpGetNativeAppBitmap,V_TkpGetNativeAppBitmap,_ANSI_ARGS_((Display *display,
+			    char *name, int *width, int *height)))
+#endif
+
+#ifndef TkpGetOtherWindow
+VFUNC(TkWindow *,TkpGetOtherWindow,V_TkpGetOtherWindow,_ANSI_ARGS_((TkWindow *winPtr)))
+#endif
+
+#ifndef TkpGetWrapperWindow
+VFUNC(TkWindow *,TkpGetWrapperWindow,V_TkpGetWrapperWindow,_ANSI_ARGS_((TkWindow *winPtr)))
+#endif
+
+#ifndef TkpInitializeMenuBindings
+VFUNC(void,TkpInitializeMenuBindings,V_TkpInitializeMenuBindings,_ANSI_ARGS_((
+			    Tcl_Interp *interp, Tk_BindingTable bindingTable)))
+#endif
+
+#ifndef TkpMakeContainer
+VFUNC(void,TkpMakeContainer,V_TkpMakeContainer,_ANSI_ARGS_((Tk_Window tkwin)))
+#endif
+
+#ifndef TkpMakeMenuWindow
+VFUNC(void,TkpMakeMenuWindow,V_TkpMakeMenuWindow,_ANSI_ARGS_((Tk_Window tkwin,
+			    int transient)))
+#endif
+
+#ifndef TkpMakeWindow
+VFUNC(Window,TkpMakeWindow,V_TkpMakeWindow,_ANSI_ARGS_((TkWindow *winPtr,
+			    Window parent)))
+#endif
+
+#ifndef TkpMenuNotifyToplevelCreate
+VFUNC(void,TkpMenuNotifyToplevelCreate,V_TkpMenuNotifyToplevelCreate,_ANSI_ARGS_((
+			    Tcl_Interp *, char *menuName)))
+#endif
+
+#ifndef TkpOpenDisplay
+VFUNC(TkDisplay *,TkpOpenDisplay,V_TkpOpenDisplay,_ANSI_ARGS_((char *display_name)))
+#endif
+
+#ifndef TkpPrintWindowId
+VFUNC(void,TkpPrintWindowId,V_TkpPrintWindowId,_ANSI_ARGS_((char *buf,
+			    Window window)))
+#endif
+
+#ifndef TkpRedirectKeyEvent
+VFUNC(void,TkpRedirectKeyEvent,V_TkpRedirectKeyEvent,_ANSI_ARGS_((TkWindow *winPtr,
+			    XEvent *eventPtr)))
+#endif
+
+#ifndef TkpScanWindowId
+VFUNC(int,TkpScanWindowId,V_TkpScanWindowId,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Arg string, int *idPtr)))
+#endif
+
+#ifndef TkpSetMainMenubar
+VFUNC(void,TkpSetMainMenubar,V_TkpSetMainMenubar,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, char *menuName)))
+#endif
+
+#ifndef TkpSync
+VFUNC(void,TkpSync,V_TkpSync,_ANSI_ARGS_((Display *display)))
+#endif
+
+#ifndef TkpUseWindow
+VFUNC(int,TkpUseWindow,V_TkpUseWindow,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Arg string)))
+#endif
+
+#ifndef TkpWindowWasRecentlyDeleted
+VFUNC(int,TkpWindowWasRecentlyDeleted,V_TkpWindowWasRecentlyDeleted,_ANSI_ARGS_((Window win,
+			    TkDisplay *dispPtr)))
 #endif
 
 #endif /* _TKINT */

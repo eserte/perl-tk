@@ -5,7 +5,7 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use vars qw/$TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
+use vars qw/$MW $TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
 	    @ORDER $PF @PUZ $SIDE $SPACE $SPACE_IMAGE $WIDTRIB/;
 
 sub npuz {
@@ -32,7 +32,6 @@ sub npuz {
 # the same terms as Perl itself.
 
 require 5.002;
-use English;
 use Tk;
 use Tk::Dialog;
 use strict;

@@ -1,14 +1,14 @@
 /*
- * tkWinDlg.c --
+ * tkWinDialog.c --
  *
  *	Contains the Windows implementation of the common dialog boxes.
  *
- * Copyright (c) 1996 Sun Microsystems, Inc.
+ * Copyright (c) 1996-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinDialog.c 1.5 96/09/11 19:24:28
+ * SCCS: @(#) tkWinDialog.c 1.10 97/10/21 11:29:18
  *
  */
  
@@ -47,7 +47,8 @@ typedef struct MsgTypeInfo {
 
 #define NUM_TYPES 6
 
-static MsgTypeInfo msgTypeInfo[NUM_TYPES] = {
+static MsgTypeInfo 
+msgTypeInfo[NUM_TYPES] = {
     {"abortretryignore", MB_ABORTRETRYIGNORE, 3, {"abort", "retry", "ignore"}},
     {"ok", 		 MB_OK, 	      1, {"ok"                      }},
     {"okcancel",	 MB_OKCANCEL,	      2, {"ok",    "cancel"         }},
@@ -79,10 +80,6 @@ static int 		GetFileName _ANSI_ARGS_((ClientData clientData,
     			    int isOpen));
 static UINT CALLBACK	ColorDlgHookProc _ANSI_ARGS_((HWND hDlg, UINT uMsg,
 			    WPARAM wParam, LPARAM lParam));
-static UINT CALLBACK	FileDlgHookProc _ANSI_ARGS_((HWND hDlg, UINT uMsg,
-			    WPARAM wParam, LPARAM lParam));
-static void		HandleFileDlgNotify _ANSI_ARGS_((HWND hDlg,
-			    OPENFILENAME * ofnPtr, LPOFNOTIFY pofn));
 static int 		MakeFilter _ANSI_ARGS_((Tcl_Interp *interp,
     			    OPENFILENAME *ofnPtr, Arg string));
 static int		ParseFileDlgArgs _ANSI_ARGS_((Tcl_Interp * interp,
@@ -111,7 +108,8 @@ static int 		ProcessCDError _ANSI_ARGS_((Tcl_Interp * interp,
  *----------------------------------------------------------------------
  */
 
-static int EvalArgv(interp, cmdName, argc, argv)
+static int 
+EvalArgv(interp, cmdName, argc, argv)
     Tcl_Interp *interp;		/* Current interpreter. */
     char * cmdName;		/* Name of the TCL command to call */
     int argc;			/* Number of arguments. */
@@ -180,6 +178,7 @@ Tk_ChooseColorCmd(clientData, interp, argc, argv)
 {
     Tk_Window parent = Tk_MainWindow(interp);
     ChooseColorData custData;
+    int oldMode;
     CHOOSECOLOR chooseColor;
     char * colorStr = NULL;
     int i;
@@ -266,9 +265,17 @@ Tk_ChooseColorCmd(clientData, interp, argc, argv)
     /*
      * 2. Popup the dialog
      */
-    TkWinEnterModalLoop(interp);
+
+    oldMode = Tcl_SetServiceMode(TCL_SERVICE_ALL);
     winCode = ChooseColor(&chooseColor);
-    TkWinLeaveModalLoop(interp);
+    (void) Tcl_SetServiceMode(oldMode);
+
+    /*
+     * Clear the interp result since anything may have happened during the
+     * modal loop.
+     */
+
+    Tcl_ResetResult(interp);
 
     /*
      * 3. Process the result of the dialog
@@ -426,7 +433,8 @@ Tk_GetSaveFileCmd(clientData, interp, argc, argv)
  *----------------------------------------------------------------------
  */
 
-static int GetFileName(clientData, interp, argc, argv, isOpen)
+static int 
+GetFileName(clientData, interp, argc, argv, isOpen)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
@@ -435,8 +443,7 @@ static int GetFileName(clientData, interp, argc, argv, isOpen)
 				 * false if we should call GetSaveFileName() */
 {
     OPENFILENAME openFileName, *ofnPtr;
-    int tclCode;
-    int winCode;
+    int tclCode, winCode, oldMode;
     OpenFileData *custData;
     char buffer[MAX_PATH+1];
     
@@ -448,12 +455,12 @@ static int GetFileName(clientData, interp, argc, argv, isOpen)
     if (ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen) != TCL_OK) {
 	return TCL_ERROR;
     }
-    custData = (OpenFileData*)ofnPtr->lCustData;
+    custData = (OpenFileData*) ofnPtr->lCustData;
 
     /*
      * 2. Call the common dialog function.
      */
-    TkWinEnterModalLoop(interp);
+    oldMode = Tcl_SetServiceMode(TCL_SERVICE_ALL);
     GetCurrentDirectory(MAX_PATH+1, buffer);
     if (isOpen) {
 	winCode = GetOpenFileName(ofnPtr);
@@ -461,7 +468,18 @@ static int GetFileName(clientData, interp, argc, argv, isOpen)
 	winCode = GetSaveFileName(ofnPtr);
     }
     SetCurrentDirectory(buffer);
-    TkWinLeaveModalLoop(interp);
+    (void) Tcl_SetServiceMode(oldMode);
+
+    /*
+     * Clear the interp result since anything may have happened during the
+     * modal loop.
+     */
+
+    Tcl_ResetResult(interp);
+
+    if (ofnPtr->lpstrInitialDir != NULL) {
+	ckfree((char*) ofnPtr->lpstrInitialDir);
+    }
 
     /*
      * 3. Process the results.
@@ -513,7 +531,8 @@ static int GetFileName(clientData, interp, argc, argv, isOpen)
  *----------------------------------------------------------------------
  */
 
-static int ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
+static int 
+ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
     Tcl_Interp * interp;	/* Current interpreter. */
     OPENFILENAME *ofnPtr;	/* Info about the file dialog */
     int argc;			/* Number of arguments. */
@@ -526,6 +545,7 @@ static int ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
     Tk_Window parent = Tk_MainWindow(interp);
     int doneFilter = 0;
     int windowsMajorVersion;
+    Tcl_DString buffer;
 
     custData = (OpenFileData*)ckalloc(sizeof(OpenFileData));
     custData->interp = interp;
@@ -547,11 +567,10 @@ static int ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
     ofnPtr->nFileOffset       = 0;
     ofnPtr->nFileExtension    = 0;
     ofnPtr->lpstrDefExt       = NULL;
-    ofnPtr->lpfnHook 	      = FileDlgHookProc;
+    ofnPtr->lpfnHook 	      = NULL; 
     ofnPtr->lCustData         = (DWORD)custData;
     ofnPtr->lpTemplateName    = NULL;
-    ofnPtr->Flags             = OFN_ENABLEHOOK|OFN_HIDEREADONLY|
-      				OFN_PATHMUSTEXIST;
+    ofnPtr->Flags             = OFN_HIDEREADONLY | OFN_PATHMUSTEXIST;
 
     windowsMajorVersion = LOBYTE(LOWORD(GetVersion()));
     if (windowsMajorVersion >= 4) {
@@ -594,12 +613,21 @@ static int ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
 	else if (strncmp(argv[i], "-initialdir", len)==0) {
 	    if (v==argc) {goto arg_missing;}
 
-	    ofnPtr->lpstrInitialDir = argv[v];
+	    if (Tcl_TranslateFileName(interp, argv[v], &buffer) == NULL) {
+		return TCL_ERROR;
+	    }
+	    ofnPtr->lpstrInitialDir = ckalloc(Tcl_DStringLength(&buffer)+1);
+	    strcpy((char*)ofnPtr->lpstrInitialDir, Tcl_DStringValue(&buffer));
+	    Tcl_DStringFree(&buffer);
 	}
 	else if (strncmp(argv[i], "-initialfile", len)==0) {
 	    if (v==argc) {goto arg_missing;}
 
-	    strncpy(ofnPtr->lpstrFile, argv[v], MAX_PATH);
+	    if (Tcl_TranslateFileName(interp, argv[v], &buffer) == NULL) {
+		return TCL_ERROR;
+	    }
+	    strcpy(ofnPtr->lpstrFile, Tcl_DStringValue(&buffer));
+	    Tcl_DStringFree(&buffer);
 	}
 	else if (strncmp(argv[i], "-parent", len)==0) {
 	    if (v==argc) {goto arg_missing;}
@@ -776,102 +804,6 @@ static int MakeFilter(interp, ofnPtr, string)
 /*
  *----------------------------------------------------------------------
  *
- * FileDlgHookProc --
- *
- *	Gets called during the execution of the file dialog. It processes
- *	the "interesting" messages that Windows send to the dialog.
- *
- * Results:
- *	TRUE if the message has been processed, FALSE otherwise.
- *
- * Side effects:
- *	None
- *
- *----------------------------------------------------------------------
- */
-
-static UINT
-CALLBACK FileDlgHookProc(hDlg, uMsg, wParam, lParam)
-    HWND hDlg;			/* Handle to the file dialog */
-    UINT uMsg;			/* Type of message */
-    WPARAM wParam;		/* word param, interpretation depends on uMsg*/
-    LPARAM lParam;		/* long param, interpretation depends on uMsg*/
-{
-    OPENFILENAME *ofnPtr;
-
-    switch (uMsg) {
-      case WM_INITDIALOG:
-	/* Save the pointer to OPENFILENAME so that we can use it later
-	 * -- This pointer is only passed in the WM_INITDIALOG message as
-	 * the lParam argument.
-	 */
-	SetWindowLong(hDlg, DWL_USER, lParam);
-	return FALSE;
-
-      case WM_DESTROY:
-	return FALSE;
-
-      case WM_NOTIFY:
-	ofnPtr = (OPENFILENAME*)GetWindowLong(hDlg, DWL_USER);
-	HandleFileDlgNotify(hDlg, ofnPtr, (LPOFNOTIFY)lParam);
-	return TRUE;
-    }
-    return FALSE;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * HandleFileDlgNotify  --
- *
- *	Processes the WM_NOTIFY message notifications that is sent
- *	to the hook dialog procedure for the file dialog.
- *
- * Results:
- *	TRUE if the message has been processed, FALSE otherwise.
- *
- * Side effects:
- *	None
- *
- *----------------------------------------------------------------------
- */
-
-static void HandleFileDlgNotify(hDlg, ofnPtr, pofn)
-    HWND hDlg;			/* Handle to the file dialog */
-    OPENFILENAME *ofnPtr;	/* Info about the file dialog */
-    LPOFNOTIFY pofn;		/* the notification message */
-{
-    /*    OpenFileData *custData = (OpenFileData*)ofnPtr->lCustData; */
-
-    switch (pofn->hdr.code) {
-
-      case CDN_SELCHANGE:
-	/* The selection has changed */
-	break;
-
-      case CDN_FOLDERCHANGE:
-	/* A new folder has been opened. */
-	break;
-
-
-      case CDN_HELP:
-	/* The "Help" pushbutton has been pressed. */
-	break;
-
-      case CDN_FILEOK:
-	/* The 'OK' pushbutton has been pressed. */
-	break;
-
-      case CDN_SHAREVIOLATION:
-	/* Received a sharing violation. */
-	MessageBox(hDlg, "Sharing violation.", "", MB_OK);
-	break;
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * Tk_MessageBoxCmd --
  *
  *	This procedure implements the MessageBox window for the
@@ -904,7 +836,7 @@ Tk_MessageBoxCmd(clientData, interp, argc, argv)
     int type = MB_OK;
     int i, j;
     char *result;
-    int code;
+    int code, oldMode;
     char *defaultBtn = NULL;
     int defaultBtnIdx = -1;
 
@@ -1019,11 +951,10 @@ Tk_MessageBoxCmd(clientData, interp, argc, argv)
     }
     
     flags |= icon | type;
-    TkWinEnterModalLoop(interp);
+    oldMode = Tcl_SetServiceMode(TCL_SERVICE_ALL);
     code = MessageBox(hWnd, message, title, flags|MB_SYSTEMMODAL);
-    TkWinLeaveModalLoop(interp);
+    (void) Tcl_SetServiceMode(oldMode);
 
-    /* Format the result in string form */
     switch (code) {
       case IDABORT:	result = "abort";  break;
       case IDCANCEL:	result = "cancel"; break;
@@ -1035,7 +966,14 @@ Tk_MessageBoxCmd(clientData, interp, argc, argv)
       default:		result = "";
     }
 
-    Tcl_AppendResult(interp, result, NULL);
+    /*
+     * When we come to here interp->result may have been changed by some
+     * background scripts. Call Tcl_SetResult() to make sure that any stuff
+     * lingering in interp->result will not appear in the result of
+     * this command.
+     */
+
+    Tcl_SetResult(interp, result, TCL_STATIC);
     return TCL_OK;
 
   arg_missing:

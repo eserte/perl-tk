@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkClipboard.c 1.14 96/02/15 18:52:37
+ * SCCS: @(#) tkClipboard.c 1.15 96/05/03 10:51:08
  */
 
 #include "tkInt.h"
@@ -147,7 +147,7 @@ ClipboardAppHandler(clientData, offset, buffer, maxBytes)
     if (length <= 0) {
 	return 0;
     }
-    if (length > maxBytes) {
+    if (length > (size_t) maxBytes) {
 	length = maxBytes;
     }
     strncpy(buffer, p, length);

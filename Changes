@@ -4,6 +4,25 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.000
+
+Adopt tk8.0p2 and associated tcl8.0p2 where required.
+Fix to build and run as much as possible on Solaris and Win32.
+
+Menus and Fonts have changed radically in the core. 
+
+Tcl/Tk's menu.tcl has been hand converted (mostly) to Menu.pm and Menubutton.pm.
+Menus mostly work - there will typo's in all that hand conversion.
+
+No attempt has been made to make Font stuff visible to perl, indeed
+existing Tk::Font is ideal candiate API (very close to what Tcl has), but probably 
+does not work at the moment.
+
+Other big snag is fileevent is now completely broken on all platforms.
+I need to re-implement enough of Tcl_Channel API on top of perl's file handles
+to re-introduce it. This will be main focus of Tk800.001 ...
+
+
 Changes in 402.004    
 
  Un-bundle Tk::Pod
@@ -129,5 +148,6 @@ Changes in Tk4.1a
   - munge from 'platform' source to pTk/*/[ch]
 
 * Pseudo release with non-standard name "Tk4.1a"
+
 
 

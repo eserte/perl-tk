@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixXId.c 1.17 96/07/23 16:56:39
+ * SCCS: @(#) tkUnixXId.c 1.22 97/06/25 13:16:47
  */
 
 /*
@@ -30,6 +30,7 @@
 
 #include "tkInt.h"
 #include "tkPort.h"
+#include "tkUnixInt.h"
 
 /*
  * A structure of the following type is used to hold one or more
@@ -80,7 +81,8 @@ TkInitXId(dispPtr)
 					 * display. */
 {
     dispPtr->idStackPtr = NULL;
-    dispPtr->defaultAllocProc = dispPtr->display->resource_alloc;
+    dispPtr->defaultAllocProc = (XID (*) _ANSI_ARGS_((Display *display))) 
+            dispPtr->display->resource_alloc;
     dispPtr->display->resource_alloc = AllocXId;
     dispPtr->windowStackPtr = NULL;
     dispPtr->idCleanupScheduled = 0;
@@ -293,7 +295,7 @@ TkFreeWindowId(dispPtr, w)
 
     if (!dispPtr->idCleanupScheduled) {
 	dispPtr->idCleanupScheduled = 1;
-	Tcl_CreateTimerHandler(100, WindowIdCleanup, (ClientData *) dispPtr);
+	Tcl_CreateTimerHandler(100, WindowIdCleanup, (ClientData) dispPtr);
     }
 }
 
@@ -325,6 +327,7 @@ WindowIdCleanup(clientData)
     int anyEvents, delta;
     Tk_RestrictProc *oldProc;
     ClientData oldData;
+    static Tcl_Time timeout = {0, 0};
 
     dispPtr->idCleanupScheduled = 0;
 
@@ -350,7 +353,7 @@ WindowIdCleanup(clientData)
     anyEvents = 0;
     oldProc = Tk_RestrictEvents(CheckRestrictProc, (ClientData) &anyEvents,
 	    &oldData);
-    Tcl_DoOneEvent(TCL_DONT_WAIT|TCL_WINDOW_EVENTS);
+    TkUnixDoOneXEvent(&timeout);
     Tk_RestrictEvents(oldProc, oldData, &oldData);
     if (anyEvents) {
 	goto tryAgain;
@@ -374,7 +377,7 @@ WindowIdCleanup(clientData)
 
     tryAgain:
     dispPtr->idCleanupScheduled = 1;
-    Tcl_CreateTimerHandler(500, WindowIdCleanup, (ClientData *) dispPtr);
+    Tcl_CreateTimerHandler(500, WindowIdCleanup, (ClientData) dispPtr);
 }
 
 /*
@@ -492,4 +495,43 @@ Tk_FreePixmap(display, pixmap)
 {
     XFreePixmap(display, pixmap);
     Tk_FreeXId(display, (XID) pixmap);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpWindowWasRecentlyDeleted --
+ *
+ *	Checks whether the window was recently deleted. This is called
+ *	by the generic error handler to detect asynchronous notification
+ *	of errors due to operations by Tk on a window that was already
+ *	deleted by the server.
+ *
+ * Results:
+ *	1 if the window was deleted recently, 0 otherwise.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkpWindowWasRecentlyDeleted(win, dispPtr)
+    Window win;		/* The window to check for. */
+    TkDisplay *dispPtr;	/* The window belongs to this display. */
+{
+    TkIdStack *stackPtr;
+    int i;
+
+    for (stackPtr = dispPtr->windowStackPtr;
+         stackPtr != NULL;
+         stackPtr = stackPtr->nextPtr) {
+        for (i = 0; i < stackPtr->numUsed; i++) {
+            if ((Window) stackPtr->ids[i] == win) {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }

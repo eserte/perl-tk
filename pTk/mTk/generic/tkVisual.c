@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkVisual.c 1.18 96/02/15 18:53:08
+ * SCCS: @(#) tkVisual.c 1.19 97/04/25 16:52:17
  */
 
 #include "tkInt.h"
@@ -523,7 +523,7 @@ Tk_PreserveColormap(display, colormap)
 					 * preserved. */
 {
     TkDisplay *dispPtr;
-    TkColormap *cmapPtr, *prevPtr;
+    TkColormap *cmapPtr;
 
     /*
      * Find Tk's information about the display, then see if this
@@ -535,8 +535,8 @@ Tk_PreserveColormap(display, colormap)
     if (dispPtr == NULL) {
 	panic("unknown display passed to Tk_PreserveColormap");
     }
-    for (prevPtr = NULL, cmapPtr = dispPtr->cmapPtr; cmapPtr != NULL;
-	    prevPtr = cmapPtr, cmapPtr = cmapPtr->nextPtr) {
+    for (cmapPtr = dispPtr->cmapPtr; cmapPtr != NULL;
+	    cmapPtr = cmapPtr->nextPtr) {
 	if (cmapPtr->colormap == colormap) {
 	    cmapPtr->refCount += 1;
 	    return;

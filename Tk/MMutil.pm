@@ -8,12 +8,20 @@ use Config;
 use Carp;
 use File::Basename;
 
+use vars qw($VERSION);
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/MMutil.pm#13$
+
+use Tk::MakeDepend;
 
 use vars qw($VERSION);
-$VERSION = '2.028'; # $Id: //depot/Tk/Tk/MMutil.pm#28$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/MMutil.pm#13$
 
 use Tk::Config qw(!$VERSION);
+use vars qw($IsWin32);
 
+*IsWin32 = \$main::IsWin32;
+$IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/)
+           unless defined $IsWin32;
 
 @MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
 
@@ -39,12 +47,12 @@ sub arch_prune
     }
    elsif ($win_arch eq 'MSWin32') 
     {
-     delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
+     delete $hash->{$_} if /Mwm/ and not /tclUnix/;
      delete $hash->{$_} if /winMain|dllMain/;
      # delete $hash->{$_} if /^Xrm/;
     }
   } 
-}
+}                                        
 
 sub mTk_postamble
 {
@@ -52,8 +60,7 @@ sub mTk_postamble
  my $dep = "config :: \$(C_FILES) \$(H_FILES)\n\t$self->{NOECHO}\$(NOOP)\n";
  my $mTk = $self->{'MTK'};
  $dep .= "# Begin Munging dependancies\n";
- my $file;
- foreach $file (sort keys %$mTk)
+ foreach my $file (sort keys %$mTk)
   {
    $dep .= "$file : ".$mTk->{$file}." \$(TKDIR)/pTk/Tcl-pTk\n";
    $dep .= "\t\$(PERL) \$(TKDIR)/pTk/Tcl-pTk ".$mTk->{$file}." $file\n";
@@ -94,6 +101,22 @@ sub mTk_CHO
  my(@o_files)     = @{$self->{C}};
  $self->{O_FILES} = [grep s/\.c(pp|xx|c)?$/$self->{OBJ_EXT}/i, @o_files] ;
  $self->{'MTK'}   = $mTk;
+ my $tk = installed_tk();
+ my $perl = $self->{'PERL'};
+ if ($IsWin32 && !-f $perl && -f "$perl.exe")
+  {
+   print "perl=$perl X=$^X\n";
+   $perl = "$perl.exe";
+   $self->{'PERL'} = $perl; 
+  }
+ foreach my $file (sort keys %$mTk)
+  {
+   unless (-f $file)
+    {                   
+     warn "Extracting $file\n";
+     system($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
+    }
+  }
 }
 
 my %visited;
@@ -170,32 +193,52 @@ sub perldepend
  my $self = shift;
  my $str = $self->MM::perldepend;
  my $name;
- my @files;
- $str .= "# Auto generated from GCC's .d files\n";
- foreach $name ($self->lsdir("."))
+ my %c;
+ foreach my $file (@{$self->{'C'}})
   {
-   if ($name =~ /\.d$/)
+   $c{$file} = 1;
+  }
+ foreach my $file (keys %{$self->{'XS'}})
+  {
+   $c{$file} = 1;
+   delete $c{$self->{'XS'}{$file}};
+  }
+ my @files = grep(-f $_,sort(keys %c));
+ if (@files)
+  {
+   my @inc   = split(/\s+/,$self->{'INC'});   
+   my @def   = split(/\s+/,$self->{'DEFINE'});
+   push(@def,qw(-DWIN32 -D__WIN32__)) if ($IsWin32);
+   $str .= Tk::MakeDepend::command_line(@inc,@def,@files);
+  }
+ if (0) 
+  {
+   $str .= "# Auto generated from GCC's .d files\n";
+   foreach $name ($self->lsdir("."))
     {
-     local $_;
-     open(DEP,"<$name") || die "Cannot open $name:$!";
-     while (<DEP>)
+     if ($name =~ /\.d$/)
       {
-       if ($^O eq 'MSWin32')
+       local $_;
+       open(DEP,"<$name") || die "Cannot open $name:$!";
+       while (<DEP>)
         {
-         s/Unix/Win/g;
+         if ($IsWin32)
+          {
+           s/Unix/Win/g;
+          }
+         elsif ($win_arch eq 'open32') {
+           s/tixUnix/tixWin/g;
+           s/\btkWinInt\.h\b/tkWinInt.h windows.h/g;
+         }
+         elsif ($win_arch eq 'pm') {
+           s/tixUnix/tixWin/g;
+           s/tkUnix/tkOS2/g;
+         }
+         s/^([^:]*)\.o\s*:/$1$self->{OBJ_EXT}:/;
+         $str .= $_;
         }
-       elsif ($win_arch eq 'open32') {
-         s/tixUnix/tixWin/g;
-         s/\btkWinInt\.h\b/tkWinInt.h windows.h/g;
-       }
-       elsif ($win_arch eq 'pm') {
-         s/tixUnix/tixWin/g;
-         s/tkUnix/tkOS2/g;
-       }
-       s/^([^:]*)\.o\s*:/$1$self->{OBJ_EXT}:/;
-       $str .= $_;
+       close(DEP);
       }
-     close(DEP);
     }
   }
  return $str;
@@ -220,25 +263,23 @@ sub constants
  my $self = shift;
  local $_ = $self->MM::constants;
  s/(\.SUFFIXES)/$1:\n$1/;
- if ($^O eq 'MSWin32')
+ $_ .= "\nGCCOPT = $Tk::Config::gccopt\n";
+ if ($IsWin32)
   {
-   if (1) 
+   if (0) 
     {
-     if ($Config::Config{cc} =~ /^bcc/i) {
+     if ($Config::Config{cc} =~ /^bcc/i) 
+      {
        $_ .= "LDDLFLAGS = -v -Tpd\n";
-     }
-     else {
+      }
+     else 
+      {
        $_ .= "!include <win32.mak>\n";
        $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
        $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
-       # $_ .= "\nGCCOPT = -WX\n";
-     }
+      }
     }
   } 
- else
-  {
-   $_ .= "\nGCCOPT = $Tk::Config::gccopt\n";
-  }
  $_;
 }
 
@@ -246,10 +287,10 @@ sub cflags
 {
  my $self = shift;
  local $_ = $self->MM::cflags;
- if ($^O eq 'MSWin32')
+ if ($IsWin32)
   {
    if ($Config::Config{cc} =~ /^bcc/i) {
-     s/(CCFLAGS\s*=)/$1 -v -w- -I. -I.\\pTk -I.. -I..\\pTk/; 
+     # s/(CCFLAGS\s*=)/$1/; 
    }
    else {
      s/(CCFLAGS\s*=)/$1 \$(cflags) \$(cvarsdll)/; 
@@ -395,6 +436,7 @@ sub TkExtMakefile
  $att{'clean'}->{FILES} .= " *.bak";
  unless (exists($att{'linkext'}) && $att{linkext}{LINKTYPE} eq '')
   {
+   my $ptk = findpTk();
    my @tm = (findINC('Tk/typemap'));
    unshift(@tm,@{$att{'TYPEMAPS'}}) if (exists $att{'TYPEMAPS'});
    $att{'TYPEMAPS'} = \@tm;
@@ -402,7 +444,6 @@ sub TkExtMakefile
    $i = (defined $i) ? "$i $inc" : $inc;
    if (delete $att{'dynamic_ptk'})
     {
-     my $ptk = findpTk();
      push(@opt, 
           'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
           'dynamic_lib' => {
@@ -410,9 +451,14 @@ sub TkExtMakefile
                             }
          ); 
     }
+   if ($IsWin32 && $Config{'cc'} =~ /^bcc/)
+    {
+     # Borland compiler is very dumb at finding files 
+     $i = "-I$tk $i";
+     $i = "-I$ptk $i";
+    }
    if (delete $att{'ptk_include'})
     {
-     my $ptk = findpTk();
      $i = "-I$ptk $i" unless ($ptk eq '.');
     }
    else

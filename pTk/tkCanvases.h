@@ -21,7 +21,7 @@ EXTERN int		Tk_CanvasPsBitmap _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN int		Tk_CanvasPsColor _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, XColor *colorPtr));
 EXTERN int		Tk_CanvasPsFont _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, XFontStruct *fontStructPtr));
+			    Tk_Canvas canvas, Tk_Font font));
 EXTERN void		Tk_CanvasPsPath _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, double *coordPtr, int numPoints));
 EXTERN int		Tk_CanvasPsStipple _ANSI_ARGS_((Tcl_Interp *interp,

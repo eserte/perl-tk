@@ -25,7 +25,6 @@ my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                        '-accept'   => sub 
                                      { my $file = shift ; 
                                        return 0 if (-s $file && !(stat(_))[12]);
-                                       return 1 unless -e $file;
                                        return (-r $file) && (-T $file);  
                                      },
                        Name => 'fs', -filter => '*');
@@ -55,77 +54,22 @@ $t->DropSite(-motioncommand =>
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                   [[Button => '~Open',
-                   -command => sub { my $file = $fs->Show(-popover => $top, -create => 0, -verify => ['-r']);
-                                      $t->Load($file) if (defined $file);
-                                   }]]);
+                   -command => sub { my $file = $fs->Show(-popover => $top);
+                               $t->Load($file) if (defined $file);
+                             }
+                  ]]);
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                  [['Button' => '~Save', -command => [ $t , 'Save' ]],
-                  ['Button' => 'Save ~As', -command =>
-                      sub { 
-                           my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
-                           $t->Save($file) if (defined $file);
-                          }],
-                  ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']],
-                  '',['Button' => 'E~xit', -command => [ 'destroy',$top ]],
+                  ['Button' => '~Quit', -command => [ 'destroy',$top ]],
+                  ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']]
                  ]);
-
-$mb->Menubutton(-text => '~Edit', -menuitems =>
-                [
-                 ['Button' => '~Undo',  -command => [$t, 'undo']],'',
-                 ['Button' => '~Copy',  -command => [$t, 'clipboardCopy']],
-                 ['Button' => 'Cu~t',   -command => [$t, 'clipboardCut']],
-                 ['Button' => '~Paste', -command => [$t, 'clipboardPaste']],
-                 '',['Button' => 'Select All', -command => [$t, 'selectAll']],
-                ]);
-
-$mb->Menubutton(-text => '~Search', -menuitems =>
-                [
-                ]);
-
-$mb->Menubutton(-text => '~View', -menuitems =>
-                [
-                 ['Button' => '~Line...', -command => [\&AskLine,$t]],
-                ]);
 
 $mb->Menubutton(-text => '~Help', -side => 'right');
 
 
 $t->pack(-expand => 1, -fill => 'both');
 
-if (@ARGV) {
-    if (! -e $ARGV[0]) {
-        open(FILE,">$ARGV[0]") or die "Could not open $ARGV[0]: $!";
-        close(FILE) or die "There was trouble with $ARGV[0]: $!";
-    }
-    $t->Load($ARGV[0]);
-}
+$t->Load($ARGV[0]) if (@ARGV);
 
 MainLoop;
-
-sub AskLine
-{
- my ($t) = @_;
- unless (exists $t->{'AskLine'})
-  {
-   my $d = $t->{'AskLine'} = $t->Toplevel(-popover => 'cursor', -popanchor => 'nw');
-   $d->title('Goto Line ...');
-   $d->withdraw;
-   $d->transient($t->toplevel);
-   my $e = $d->Entry->pack;
-   $e->bind('<Return>', 
-     sub 
-      {
-       my $e = shift;
-       $d->withdraw;
-       my $posn = $e->get.'.0';
-       $t->SetCursor($posn);
-       $t->focus;
-      });
-   $d->protocol(WM_DESTROY_WINDOW =>[withdraw => $d]);
-  }
- $t->{'AskLine'}->Popup;
- $t->update;
- $t->{'AskLine'}->focusNext;
-
-}

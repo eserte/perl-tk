@@ -1,9 +1,8 @@
 package Perlize;
 use Carp;
 
-
 use vars qw($VERSION);
-$VERSION = '2.004'; # $Id: //depot/Tk/doc/Perlize.pm#4$
+$VERSION = '3.004'; # $Id: //depot/Tk8/doc/Perlize.pm#4$
 
 sub widget
 {
@@ -101,6 +100,23 @@ sub munge ($$)
    s/\\f[IB]pathName\b/\$widget/g;
   }
  return $_;
+}                 
+
+sub perlize_file
+{
+ my ($src,$dst) = @_;
+ $dst ||= "$src.perlized";
+ open(SRC,"<$src") || die "Cannot open $src:$!";
+ open(DST,">$dst") || die "Cannot open $dst:$!";
+ my $kind;
+ while (<SRC>)
+  {
+   print DST munge($_,\$kind);
+  }
+ close(SRC);
+ close(DST);
+ warn "$src kind='$kind'\n" if $kind;
+ return $dst;
 }
 
 1;

@@ -1,146 +1,269 @@
-# $Id: //depot/Tk/Tixish/NoteBook.pm#9$
+package Tk::NoteBook;
 #
 # Implementation of NoteBook widget.
 # Derived from NoteBook.tcl in Tix 4.0
 
 # Contributed by Rajappa Iyer <rsi@earthling.net>
-# Hack by Nick for 'menu' traversal.
+# Hacked by Nick for 'menu' traversal.
+# Restructured by Nick 
 
-package Tk::NoteBook;
+use vars qw($VERSION @ISA);
 
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#4$
+require Tk::NBFrame;
 
-use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Tixish/NoteBook.pm#9$
+@ISA = qw(Tk::Derived Tk::NBFrame);
+Tk::Widget->Construct("NoteBook");
+use strict;
 
 use Tk qw(Ev);
 
 use Carp;
 require Tk::Frame;
-require Tk::NBFrame;
-require Tk::VStack;
-
-Tk::Widget->Construct("NoteBook");
-
-@Tk::NoteBook::ISA = qw(Tk::VStack);
 
 sub TraverseToNoteBook;
 
-sub ClassInit {
-    my ($class,$mw) = @_;
-    if (0) {
-	# class binding does not work right due to extra level of
-	# widget hierachy
-	$mw->bind($class,"<ButtonPress-1>", ['MouseDown',Ev('x'),Ev('y')]);
-	$mw->bind($class,"<ButtonRelease-1>", ['MouseUp',Ev('x'),Ev('y')]);
+sub ClassInit 
+{
+ my ($class,$mw) = @_;
+ # class binding does not work right due to extra level of
+ # widget hierachy
+ $mw->bind($class,"<ButtonPress-1>", ['MouseDown',Ev('x'),Ev('y')]);
+ $mw->bind($class,"<ButtonRelease-1>", ['MouseUp',Ev('x'),Ev('y')]);
+ 
+ $mw->bind($class,"<B1-Motion>", ['MouseDown',Ev('x'),Ev('y')]);
+ $mw->bind($class,"<Left>", ['FocusNext','prev']);
+ $mw->bind($class,"<Right>", ['FocusNext','next']);
+ 
+ $mw->bind($class,"<Return>", 'SetFocusByKey');
+ $mw->bind($class,"<space>", 'SetFocusByKey');
+ return $class;
+}            
 
-	$mw->bind($class,"<B1-Motion>", ['MouseDown',Ev('x'),Ev('y')]);
-	$mw->bind($class,"<Left>", ['FocusNext','prev']);
-	$mw->bind($class,"<Right>", ['FocusNext','next']);
-
-	$mw->bind($class,"<Return>", 'SetFocusByKey');
-	$mw->bind($class,"<space>", 'SetFocusByKey');
-    }
-    return $class;
+sub raised 
+{
+ return shift->{"topchild"};
 }
-
-sub Populate {
-    my ($cw, $args) = @_;
-
-    $cw->SUPER::Populate($args);
-    $cw->{"pad-x1"} = 0;
-    $cw->{"pad-x2"} = 0;
-    $cw->{"pad-y1"} = 20;
-    $cw->{"pad-y2"} = 0;
-
-    my $f = $cw->Component("NBFrame" => "nbframe");
-
-    if (1) {
-	# Should be class bindings
-	$f->bind("<ButtonPress-1>", sub {
-	    $cw->MouseDown($f->XEvent->x, $f->XEvent->y);
-	});
-	$f->bind("<ButtonRelease-1>", sub {
-	    $cw->MouseUp($f->XEvent->x, $f->XEvent->y);
-	});
-	$f->bind("<B1-Motion>", sub {
-	    $cw->MouseDown($f->XEvent->x, $f->XEvent->y);
-	});
-	$f->bind("<Left>", sub {$cw->FocusNext("prev");});
-	$f->bind("<Right>", sub {$cw->FocusNext("next");});
-	$f->bind("<Return>", sub {$cw->SetFocusByKey;});
-	$f->bind("<space>", sub {$cw->SetFocusByKey;});
-     }
-
-    $f->configure(-slave => 1, -takefocus => 1, -relief => "raised");
-    $cw->{"top"} = $f;
-    $cw->ConfigSpecs(-takefocus => ["SELF", "takeFocus", "TakeFocus", 0],
-		     "DEFAULT" => [$f]);
+       
+sub Populate 
+{      
+ my ($w, $args) = @_;
+ 
+ $w->SUPER::Populate($args);
+ $w->{"pad-x1"} = 0;
+ $w->{"pad-x2"} = 0;
+ $w->{"pad-y1"} = 0;
+ $w->{"pad-y2"} = 0;
+ 
+ $w->{"nWindows"} = 0;
+ $w->{"minH"} = 1;
+ $w->{"minW"} = 1;
+ 
+ $w->{"counter"} = 0;
+ $w->{"resize"} = 0;
+ 
+ $w->ConfigSpecs(-ipadx => ["PASSIVE", "ipadX", "Pad", 0],
+                 -ipady => ["PASSIVE", "ipadY", "Pad", 0],
+                 -takefocus => ["SELF", "takeFocus", "TakeFocus", 0],
+                 -dynamicgeometry => ["PASSIVE", "dynamicGeometry", "DynamicGeometry", 0]);
+ 
+ # SetBindings
+ $w->bind("<Configure>", sub {$w->MasterGeomProc;});
+ 
+ $args->{-slave} = 1;
+ $args->{-takefocus} = 1;
+ $args->{-relief} = 'raised';
+ 
+ $w->QueueResize;
 }
 
 #---------------------------
 # Public methods
-#---------------------------
-sub add {
-    my ($w, $child, %args) = @_;
-    my $c = $w->SUPER::add($child, %args);
-    delete $args{-createcmd};
-    delete $args{-raisecmd};
-    if (keys %args) {
-	$w->{"top"}->add($child, %args);
+#---------------------------                   
+
+sub page_widget
+{
+ my $w = shift;
+ $w->{'_pages_'} = {} unless exists $w->{'_pages_'};
+ my $h = $w->{'_pages_'};
+ if (@_)
+  {
+   my $name = shift;
+   if (@_)
+    {
+     my $cw = shift;
+     if (defined $cw)
+      {
+       $h->{$name} = $cw;
+      }
+     else
+      {
+       return delete $h->{$name};
+      }
     }
-    return $c;
+   return $h->{$name};
+  }
+ else
+  {
+   return (values %$h);
+  }
 }
 
-sub raise {
-    my ($w, $child) = @_;
-    $w->SUPER::raise($child);
-    if ($w->{"top"}->pagecget($child, -state) eq "normal") {
-	$w->{"top"}->activate($child);
-	$w->{"top"}->focus($child);
-    }
+sub add 
+{
+ my ($w, $child, %args) = @_; 
+ 
+ croak("$child already exists") if defined $w->page_widget($child);
+ 
+ my $f = Tk::Frame->new($w,Name => $child,-relief => 'raised');
+ 
+ my $ccmd = delete $args{-createcmd};
+ my $rcmd = delete $args{-raisecmd};
+ $f->{-createcmd} = $ccmd if (defined $ccmd);
+ $f->{-raisecmd} = $rcmd if (defined $rcmd);
+ 
+ # manage our geometry
+ $w->ManageGeometry($f);
+ # create default bindings
+ $f->bind("<Configure>", sub {$w->ClientGeomProc('-configure', $f)});
+ $f->bind("<Destroy>", sub {$w->delete($child,1);}); # XXX
+ $w->page_widget($child,$f);
+ $w->{"nWindows"}++;
+ push(@{$w->{"windows"}}, $child);
+ $w->SUPER::add($child,%args);
+ return $f;
 }
 
-sub delete {
-    my ($w, $child) = @_;
-    $w->SUPER::delete($child);
-    if (defined $w->{"top"}->{$child}) {
-	$w->{"top"}->delete($child);
+sub raise 
+{
+ my ($w, $child) = @_;
+ return unless defined $child;
+ if ($w->pagecget($child, -state) eq "normal") 
+  {
+   $w->activate($child);
+   $w->focus($child);
+   my $childw = $w->page_widget($child);
+   if ($childw) 
+    {
+     if (defined $childw->{-createcmd}) 
+      {
+       &{$$childw->{-createcmd}}($childw);
+       delete $childw->{-createcmd};
+      }
+     # hide the original visible window
+     my $oldtop = $w->{"topchild"};
+     if (defined($oldtop) && ($oldtop ne $child)) 
+      {        
+       $w->page_widget($oldtop)->UnmapWindow;
+      }
+     $w->{"topchild"} = $child;
+     my $myW = $w->Width;
+     my $myH = $w->Height;
+   
+     my $cW = $myW - $w->{"pad-x1"} - $w->{"pad-x2"} - 2 * (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
+     my $cH = $myH - $w->{"pad-y1"} - $w->{"pad-y2"} - 2 * (defined $w->{-ipady} ? $w->{-ipady} : 0);
+     my $cX = $w->{"pad-x1"} + (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
+     my $cY = $w->{"pad-y1"} + (defined $w->{-ipady} ? $w->{-ipady} : 0);
+   
+     if ($cW > 0 && $cH > 0) 
+      {    
+       $childw->MoveResizeWindow($cX, $cY, $cW, $cH);
+       $childw->MapWindow;
+       $childw->raise;
+      }
+     if ((not defined $oldtop) || ($oldtop ne $child)) 
+      {
+       if (defined $childw->{-raisecmd}) 
+        {
+         &{$childw->{-raisecmd}}($childw);
+        }
+      }
     }
+  }
+}          
+
+sub pageconfigure 
+{
+ my ($w, $child, %args) = @_;
+ my $childw = $w->page_widget($child);
+ if (defined $childw) 
+  {
+   my $ccmd = delete $args{-createcmd};
+   my $rcmd = delete $args{-raisecmd};
+   $childw->{-createcmd} = $ccmd if (defined $ccmd);
+   $childw->{-raisecmd} = $rcmd if (defined $rcmd);
+   $w->SUPER::pageconfigure($child, %args) if (keys %args);
+  }
+}
+
+sub pages {
+    my ($w) = @_;
+    return @{$w->{"windows"}};
+}
+
+sub pagecget 
+{
+ my ($w, $child, $opt) = @_;
+ my $childw = $w->page_widget($child);
+ if (defined $childw)
+  {
+   return $childw->{-createcmd} if ($opt =~ /-createcmd/);
+   return $childw->{-raisecmd} if ($opt =~ /-raisecmd/);
+   return $w->SUPER::pagecget($child, $opt);
+  } 
+ else 
+  {
+   carp "page $child does not exist";
+  }
+}
+
+sub delete 
+{
+ my ($w, $child, $destroy) = @_;          
+ my $childw = $w->page_widget($child,undef);
+ if (defined $childw) 
+  {         
+   $childw->bind("<Destroy>", undef);
+   $childw->destroy;
+   @{$w->{"windows"}} = grep($_ !~ /$child/, @{$w->{"windows"}});
+   $w->{"nWindows"}--;
+   $w->SUPER::delete($child);
+   # see if the child to be deleted was the top child
+   if ((defined $w->{"topchild"}) && ($w->{"topchild"} eq $child)) 
+    {                             
+     delete $w->{"topchild"};
+     if ( @{$w->{'windows'}}) 
+      {
+       $w->raise($w->{'windows'}[0]);
+      }
+    }
+  } 
+ else 
+  {
+   carp "page $child does not exist" unless $destroy;
+  }
 }
 
 #---------------------------------------
 # Private methods
 #---------------------------------------
-sub Resize {
-    my ($w) = @_;
-
-    my ($tW, $tH) = split(" ", $w->{"top"}->geometryinfo);
-    $w->{"pad-x1"} = 2;
-    $w->{"pad-x2"} = 2;
-    $w->{"pad-y1"} = $tH + (defined $w->{"-ipadx"} ? $w->{"-ipadx"} : 0) + 1;
-    $w->{"pad-y2"} = 2;
-    $w->{"minW"} = $tW;
-    $w->{"minH"} = $tH;
-    $w->SUPER::Resize;
-}
 
 sub MouseDown {
     my ($w, $x, $y) = @_;
-    my $name = $w->{"top"}->identify($x, $y);
-    $w->{"top"}->focus($name);
+    my $name = $w->identify($x, $y);
+    $w->focus($name);
     $w->{"down"} = $name;
 }
 
 sub MouseUp {
     my ($w, $x, $y) = @_;
-    my $name = $w->{"top"}->identify($x, $y);
+    my $name = $w->identify($x, $y);
     if ((defined $name) &&
-	($name eq $w->{"down"}) &&
-	($w->{"top"}->pagecget($name, -state) eq "normal")) {
-	$w->{"top"}->activate($name);
-	$w->SUPER::raise($name);
+        ($name eq $w->{"down"}) &&
+        ($w->pagecget($name, -state) eq "normal")) {
+        $w->raise($name);
     } else {
-	$w->{"top"}->focus($name);
+        $w->focus($name);
     }
 }
 
@@ -148,38 +271,39 @@ sub FocusNext {
     my ($w, $dir) = @_;
     my $name;
 
-    if (not defined $w->{"top"}->info("focus")) {
-	$name = $w->{"top"}->info("active");
-	$w->{"top"}->focus($name);
+    if (not defined $w->info("focus")) {
+        $name = $w->info("active");
+        $w->focus($name);
     } else {
-	$name = $w->{"top"}->info("focus" . $dir);
-	$w->{"top"}->focus($name);
+        $name = $w->info("focus" . $dir);
+        $w->focus($name);
     }
 }
 
 sub SetFocusByKey {
     my ($w) = @_;
 
-    my $name = $w->{"top"}->info("focus");
+    my $name = $w->info("focus");
     if (defined $name) {
-	if ($w->{"top"}->pagecget($name, -state) eq "normal") {
-	    $w->raise($name);
-	    $w->{"top"}->activate($name);
-	}
+        if ($w->pagecget($name, -state) eq "normal") {
+            $w->raise($name);
+            $w->activate($name);
+        }
     }
 }
 
 sub NoteBookFind {
     my ($w, $char) = @_;
-
+ 
+    my $page;
     foreach $page (@{$w->{"windows"}}) {
-	$i = $w->{"top"}->pagecget($page, -underline);
-	$c = substr($page, $i, 1);
-	if ($char =~ /$c/) {
-	    if ($w->{"top"}->pagecget($page, -state) ne "disabled") {
-		return $page;
-	    }
-	}
+        my $i = $w->pagecget($page, -underline);
+        my $c = substr($page, $i, 1);
+        if ($char =~ /$c/) {
+            if ($w->pagecget($page, -state) ne "disabled") {
+                return $page;
+            }
+        }
     }
     return undef;
 }
@@ -189,17 +313,18 @@ sub NoteBookFind {
 sub FindMenu {
     my ($w, $char) = @_;
 
+    my $page; 
     foreach $page (@{$w->{"windows"}}) {
-	$i = $w->{"top"}->pagecget($page, -underline);
-	my $l = $w->{"top"}->pagecget($page, -label);
-	next if (not defined $l);
-	$c = substr($l, $i, 1);
-	if ($char =~ /$c/i) {
-	    if ($w->{"top"}->pagecget($page, -state) ne "disabled") {
+        my $i = $w->pagecget($page, -underline);
+        my $l = $w->pagecget($page, -label);
+        next if (not defined $l);
+        my $c = substr($l, $i, 1);
+        if ($char =~ /$c/i) {
+            if ($w->pagecget($page, -state) ne "disabled") {
                 $w->{"keypage"} = $page;
-		return $w;
-	    }
-	}
+                return $w;
+            }
+        }
     }
     return undef;
 }
@@ -213,8 +338,113 @@ sub PostFirst {
     my ($w) = @_;
     my $page = delete $w->{"keypage"};
     if (defined $page) {
-	$w->raise($page);
+        $w->raise($page);
     }
+}   
+
+sub MasterGeomProc 
+{
+ my ($w) = @_;
+ if (Tk::Exists($w)) 
+  {
+   $w->{"resize"} = 0 unless (defined $w->{"resize"}); 
+   $w->QueueResize;
+  }
+}
+
+sub SlaveGeometryRequest 
+{
+ my $w = shift;
+ if (Tk::Exists($w)) 
+  {
+   $w->QueueResize;
+  }
+}
+
+sub LostSlave {
+    my ($w, $s) = @_;
+    print "Loosing $s\n";
+    $s->UnmapWindow;
+}
+
+sub ClientGeomProc 
+{
+ my ($w, $flag, $client) = @_;
+ $w->QueueResize if (Tk::Exists($w));
+ if ($flag =~ /-lostslave/) 
+  {
+   carp "Geometry Management Error: Another geometry manager has taken control of $client. This error is usually caused because a widget has been created in the wrong frame: it should have been created inside $client instead of $w";
+  }
+}
+
+sub QueueResize 
+{
+ my $w = shift;
+ $w->DoWhenIdle(['Resize', $w]) unless ($w->{"resize"}++);
+}   
+
+sub Resize {
+
+    my ($w) = @_;
+
+    return unless Tk::Exists($w) && $w->{"nWindows"} && $w->{"resize"};
+
+    my ($tW, $tH) = split(" ", $w->geometryinfo);
+    $w->{"pad-x1"} = 2;
+    $w->{"pad-x2"} = 2;
+    $w->{"pad-y1"} = $tH + (defined $w->{"-ipadx"} ? $w->{"-ipadx"} : 0) + 1;
+    $w->{"pad-y2"} = 2;
+    $w->{"minW"} = $tW;
+    $w->{"minH"} = $tH;
+
+    $w->{"resize"} = 0;
+    my $reqW = $w->{-width} || 0;
+    my $reqH = $w->{-height} || 0;
+
+    if ($reqW * $reqH == 0) 
+     {
+        if ((not defined $w->{-dynamicgeometry}) ||
+            ($w->{-dynamicgeometry} == 0)) {
+            $reqW = 1;
+            $reqH = 1;
+            
+            my $childw;
+            foreach $childw ($w->page_widget) 
+             {
+                my $cW = $childw->ReqWidth;
+                my $cH = $childw->ReqHeight;
+                $reqW = $cW if ($reqW < $cW);
+                $reqH = $cH if ($reqH < $cH);
+            }
+        } else {
+            if (defined $w->{"topchild"}) {
+                my $topw = $w->page_widget($w->{"topchild"});
+                $reqW = $topw->ReqWidth;
+                $reqH = $topw->ReqHeight;
+            } else {
+                $reqW = 1;
+                $reqH = 1;
+            }
+        }
+        $reqW += $w->{"pad-x1"} + $w->{"pad-x2"} + 2 * (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
+        $reqH += $w->{"pad-y1"} + $w->{"pad-y2"} + 2 * (defined $w->{-ipady} ? $w->{-ipady} : 0);
+        $reqW = ($reqW > $w->{"minW"}) ? $reqW : $w->{"minW"};
+        $reqH = ($reqH > $w->{"minH"}) ? $reqH : $w->{"minH"};
+    }
+    if (($w->ReqWidth != $reqW) ||
+        ($w->ReqHeight != $reqH)) {
+        $w->{"counter"} = 0 if (not defined $w->{"counter"});
+        if ($w->{"counter"} < 50) {
+            $w->{"counter"}++;
+            $w->GeometryRequest($reqW, $reqH);
+            $w->DoWhenIdle(sub {$w->Resize;});
+            $w->{"resize"} = 1;
+            return;
+        }
+    }
+    $w->{"counter"} = 0;
+    $w->raise($w->{"topchild"} || ${$w->{"windows"}}[0]);
+    $w->{"resize"} = 0;
 }
 
 1;
@@ -233,6 +463,7 @@ Tk::NoteBook - display several windows in limited space with notebook metaphor.
   $page1 = $w->add("page1", options);
   $page2 = $w->add("page2", options);
   ...
+  $page2 = $w->add("page2", options);
 
 =head1 DESCRIPTION
 
@@ -369,9 +600,10 @@ Returns the name of the currently raised page.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-B<Rajappa Iyer> rsi@earthling.net
+B<Rajappa Iyer>  <rsi@earthling.net>
+Nick Ing-Simmons <nick@ni-s.u-net.com>
 
 This code and documentation was derived from NoteBook.tcl in
 Tix4.0 written by Ioi Lam. It may be distributed under the same

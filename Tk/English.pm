@@ -3,7 +3,7 @@ package Tk::English;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '2.004'; # $Id: //depot/Tk/Tk/English.pm#4$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/English.pm#3$
 
 @ISA = (Exporter);
 

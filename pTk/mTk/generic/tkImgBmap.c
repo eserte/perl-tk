@@ -4,12 +4,12 @@
  *	This procedure implements images of type "bitmap" for Tk.
  *
  * Copyright (c) 1994 The Regents of the University of California.
- * Copyright (c) 1994-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkImgBmap.c 1.28 96/07/31 16:45:26
+ * SCCS: @(#) tkImgBmap.c 1.33 97/07/31 09:08:22
  */
 #define NEED_REAL_STDIO
 #include "tkInt.h"
@@ -78,8 +78,9 @@ typedef struct BitmapInstance {
  * The type record for bitmap images:
  */
 
+static int		GetByte _ANSI_ARGS_((Tcl_Channel chan));
 static int		ImgBmapCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, char **argv,
+			    char *name, int argc, Tcl_Obj *objv[],
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgBmapGet _ANSI_ARGS_((Tk_Window tkwin,
@@ -136,7 +137,7 @@ typedef struct ParseInfo {
     char *string;		/* Next character of string data for bitmap,
 				 * or NULL if bitmap is being read from
 				 * file. */
-    FILE *f;			/* File containing bitmap data, or NULL
+    Tcl_Channel chan;		/* File containing bitmap data, or NULL
 				 * if no file. */
     char word[MAX_WORD_LENGTH+1];
 				/* Current word of bitmap data, NULL
@@ -155,7 +156,7 @@ static void		ImgBmapCmdDeletedProc _ANSI_ARGS_((
 static void		ImgBmapConfigureInstance _ANSI_ARGS_((
 			    BitmapInstance *instancePtr));
 static int		ImgBmapConfigureMaster _ANSI_ARGS_((
-			    BitmapMaster *masterPtr, int argc, char **argv,
+			    BitmapMaster *masterPtr, int argc, Tcl_Obj **argv,
 			    int flags));
 static int		NextBitmapWord _ANSI_ARGS_((ParseInfo *parseInfoPtr));
 
@@ -178,12 +179,12 @@ static int		NextBitmapWord _ANSI_ARGS_((ParseInfo *parseInfoPtr));
 
 	/* ARGSUSED */
 static int
-ImgBmapCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
+ImgBmapCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     Tcl_Interp *interp;		/* Interpreter for application containing
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings for options (doesn't
+    Tcl_Obj *objv[];		/* Argument objects for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -192,6 +193,7 @@ ImgBmapCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
 				 * it will be returned in later callbacks. */
 {
     BitmapMaster *masterPtr;
+    int i;
 
     masterPtr = (BitmapMaster *) ckalloc(sizeof(BitmapMaster));
     masterPtr->tkMaster = master;
@@ -208,7 +210,8 @@ ImgBmapCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
     masterPtr->maskFileString = NULL;
     masterPtr->maskDataString = NULL;
     masterPtr->instancePtr = NULL;
-    if (ImgBmapConfigureMaster(masterPtr, argc, argv, 0) != TCL_OK) {
+
+    if (ImgBmapConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgBmapDelete((ClientData) masterPtr);
 	return TCL_ERROR;
     }
@@ -241,7 +244,7 @@ ImgBmapConfigureMaster(masterPtr, argc, argv, flags)
     BitmapMaster *masterPtr;	/* Pointer to data structure describing
 				 * overall bitmap image to (reconfigure). */
     int argc;			/* Number of entries in argv. */
-    char **argv;		/* Pairs of configuration options for image. */
+    Tcl_Obj **argv;		/* Pairs of configuration options for image. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget,
 				 * such as TK_CONFIG_ARGV_ONLY. */
 {
@@ -481,19 +484,25 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
 
     pi.string = string;
     if (string == NULL) {
+        if (Tcl_IsSafe(interp)) {
+            Tcl_AppendResult(interp, "can't get bitmap data from a file in a",
+                    " safe interpreter", (char *) NULL);
+            return NULL;
+        }
 	expandedFileName = Tcl_TranslateFileName(interp, fileName, &buffer);
 	if (expandedFileName == NULL) {
 	    return NULL;
 	}
-	pi.f = fopen(expandedFileName, "r");
+	pi.chan = Tcl_OpenFileChannel(interp, expandedFileName, "r", 0);
 	Tcl_DStringFree(&buffer);
-	if (pi.f == NULL) {
+	if (pi.chan == NULL) {
+	    Tcl_ResetResult(interp);
 	    Tcl_AppendResult(interp, "couldn't read bitmap file \"",
 		    fileName, "\": ", Tcl_PosixError(interp), (char *) NULL);
 	    return NULL;
 	}
     } else {
-	pi.f = NULL;
+	pi.chan = NULL;
     }
 
     /*
@@ -589,7 +598,7 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
 	if (NextBitmapWord(&pi) != TCL_OK) {
 	    goto error;
 	}
-	*p = strtol(pi.word, &end, 0);
+	*p = (char) strtol(pi.word, &end, 0);
 	if (end == pi.word) {
 	    goto error;
 	}
@@ -599,8 +608,8 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
      * All done.  Clean up and return.
      */
 
-    if (pi.f != NULL) {
-	fclose(pi.f);
+    if (pi.chan != NULL) {
+	Tcl_Close(NULL, pi.chan);
     }
     *widthPtr = width;
     *heightPtr = height;
@@ -614,8 +623,8 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
     if (data != NULL) {
 	ckfree(data);
     }
-    if (pi.f != NULL) {
-	fclose(pi.f);
+    if (pi.chan != NULL) {
+	Tcl_Close(NULL, pi.chan);
     }
     return NULL;
 }
@@ -666,14 +675,14 @@ NextBitmapWord(parseInfoPtr)
 	}
 	parseInfoPtr->string = src;
     } else {
-	for (c = getc(parseInfoPtr->f); isspace(UCHAR(c)) || (c == ',');
-		c = getc(parseInfoPtr->f)) {
+	for (c = GetByte(parseInfoPtr->chan); isspace(UCHAR(c)) || (c == ',');
+		c = GetByte(parseInfoPtr->chan)) {
 	    if (c == EOF) {
 		return TCL_ERROR;
 	    }
 	}
 	for ( ; !isspace(UCHAR(c)) && (c != ',') && (c != EOF);
-		c = getc(parseInfoPtr->f)) {
+		c = GetByte(parseInfoPtr->chan)) {
 	    *dst = c;
 	    dst++;
 	    parseInfoPtr->wordLength++;
@@ -981,8 +990,7 @@ ImgBmapDelete(masterData)
     }
     masterPtr->tkMaster = NULL;
     if (masterPtr->imageCmd != NULL) {
-	Tcl_DeleteCommand(masterPtr->interp,
-		Tcl_GetCommandName(masterPtr->interp, masterPtr->imageCmd));
+	Tcl_DeleteCommandFromToken(masterPtr->interp, masterPtr->imageCmd);
     }
     if (masterPtr->data != NULL) {
 	ckfree(masterPtr->data);
@@ -1021,5 +1029,36 @@ ImgBmapCmdDeletedProc(clientData)
     masterPtr->imageCmd = NULL;
     if (masterPtr->tkMaster != NULL) {
 	Tk_DeleteImage(masterPtr->interp, Tk_NameOfImage(masterPtr->tkMaster));
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetByte --
+ *
+ *	Get the next byte from the open channel.
+ *
+ * Results:
+ *	The next byte or EOF.
+ *
+ * Side effects:
+ *	We read from the channel.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetByte(chan)
+    Tcl_Channel chan;	/* The channel we read from. */
+{
+    char buffer;
+    int size;
+
+    size = Tcl_Read(chan, &buffer, 1);
+    if (size <= 0) {
+	return EOF;
+    } else {
+	return buffer;
     }
 }

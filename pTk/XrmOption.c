@@ -118,8 +118,8 @@ int depth;
       {
        if (index + depth > Qsize)
         {size_t size = (Qsize = depth+Qindex+5) * sizeof(XrmQuark);
-         Qname  = (XrmQuarkList) realloc(Qname,size);
-         Qclass = (XrmQuarkList) realloc(Qclass,size);
+         Qname  = (XrmQuarkList) ckrealloc((char *)Qname,size);
+         Qclass = (XrmQuarkList) ckrealloc((char *)Qclass,size);
         }
 #ifdef XRM_DEBUG
        printf("using %d for %s\n",index,Tk_PathName(c));
@@ -137,8 +137,8 @@ int depth;
    if (depth > Qsize)
     {
      size_t size = (Qsize = depth+5) * sizeof(XrmQuark);
-     Qname  = (XrmQuarkList)((Qname) ? realloc(Qname,size) : ckalloc(size));
-     Qclass = (XrmQuarkList)((Qclass) ? realloc(Qclass,size) : ckalloc(size));
+     Qname  = (XrmQuarkList)((Qname) ? ckrealloc((char *)Qname,size) : ckalloc(size));
+     Qclass = (XrmQuarkList)((Qclass) ? ckrealloc((char *)Qclass,size) : ckalloc(size));
     }
    depth = 0;
   }

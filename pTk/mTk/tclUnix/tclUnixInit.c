@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclUnixInit.c 1.19 96/10/04 10:28:56
+ * SCCS: @(#) tclUnixInit.c 1.26 97/08/05 20:09:25
  */
 
 #define NO_UNAME
@@ -39,7 +39,12 @@ static char defaultLibraryDir[200] = TCL_LIBRARY;
  */
 
 static char pkgPath[200] = TCL_PACKAGE_PATH;
-#endif
+
+/*
+ * Is this module initialized?
+ */
+
+static int initialized = 0;
 
 /*
  * The following string is the startup script executed in new
@@ -51,8 +56,10 @@ static char pkgPath[200] = TCL_PACKAGE_PATH;
 
 static char initScript[] =
 "proc tclInit {} {\n\
-    global tcl_library tcl_version tcl_patchLevel env\n\
+    global tcl_library tcl_version tcl_patchLevel env errorInfo\n\
+    global tcl_pkgPath\n\
     rename tclInit {}\n\
+    set errors {}\n\
     set dirs {}\n\
     if [info exists env(TCL_LIBRARY)] {\n\
 	lappend dirs $env(TCL_LIBRARY)\n\
@@ -69,16 +76,81 @@ static char initScript[] =
     lappend dirs $parentDir/library\n\
     foreach i $dirs {\n\
 	set tcl_library $i\n\
-	if ![catch {uplevel #0 source $i/init.tcl}] {\n\
-	    return\n\
+	set tclfile [file join $i init.tcl]\n\
+	if {[file exists $tclfile]} {\n\
+            lappend tcl_pkgPath [file dirname $i]\n\
+	    if ![catch {uplevel #0 [list source $tclfile]} msg] {\n\
+		return\n\
+	    } else {\n\
+		append errors \"$tclfile: $msg\n$errorInfo\n\"\n\
+	    }\n\
 	}\n\
     }\n\
     set msg \"Can't find a usable init.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\"\n\
+    append msg \"    $dirs\n\n\"\n\
+    append msg \"$errors\n\n\"\n\
     append msg \"This probably means that Tcl wasn't installed properly.\n\"\n\
     error $msg\n\
 }\n\
 tclInit";
+
+/*
+ * Static routines in this file:
+ */
+
+static void	PlatformInitExitHandler _ANSI_ARGS_((ClientData clientData));
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * PlatformInitExitHandler --
+ *
+ *	Uninitializes all values on unload, so that this module can
+ *	be later reinitialized.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Returns the module to uninitialized state.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+PlatformInitExitHandler(clientData)
+    ClientData clientData;		/* Unused. */
+{
+    strcpy(defaultLibraryDir, TCL_LIBRARY);
+    strcpy(pkgPath, TCL_PACKAGE_PATH);
+    initialized = 0;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * PlatformInitExitHandler --
+ *
+ *	Uninitializes all values on unload, so that this module can
+ *	be later reinitialized.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Returns the module to uninitialized state.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+PlatformInitExitHandler(clientData)
+    ClientData clientData;		/* Unused. */
+{
+    strcpy(defaultLibraryDir, TCL_LIBRARY);
+    strcpy(pkgPath, TCL_PACKAGE_PATH);
+    initialized = 0;
+}
 
 /*
  *----------------------------------------------------------------------
@@ -106,7 +178,6 @@ TclPlatformInit(interp)
     struct utsname name;
 #endif
     int unameOK;
-    static int initialized = 0;
 
     tclPlatform = TCL_PLATFORM_UNIX;
     Tcl_SetVar(interp, "tcl_library", defaultLibraryDir, TCL_GLOBAL_ONLY);
@@ -118,8 +189,25 @@ TclPlatformInit(interp)
 	unameOK = 1;
 	Tcl_SetVar2(interp, "tcl_platform", "os", name.sysname,
 		TCL_GLOBAL_ONLY);
-	Tcl_SetVar2(interp, "tcl_platform", "osVersion", name.release,
-		TCL_GLOBAL_ONLY);
+	/*
+	 * The following code is a special hack to handle differences in
+	 * the way version information is returned by uname.  On most
+	 * systems the full version number is available in name.release.
+	 * However, under AIX the major version number is in
+	 * name.version and the minor version number is in name.release.
+	 */
+
+	if ((strchr(name.release, '.') != NULL) || !isdigit(name.version[0])) {
+	    Tcl_SetVar2(interp, "tcl_platform", "osVersion", name.release,
+		    TCL_GLOBAL_ONLY);
+	} else {
+	    Tcl_SetVar2(interp, "tcl_platform", "osVersion", name.version,
+		    TCL_GLOBAL_ONLY);
+	    Tcl_SetVar2(interp, "tcl_platform", "osVersion", ".",
+		    TCL_GLOBAL_ONLY|TCL_APPEND_VALUE);
+	    Tcl_SetVar2(interp, "tcl_platform", "osVersion", name.release,
+		    TCL_GLOBAL_ONLY|TCL_APPEND_VALUE);
+	}
 	Tcl_SetVar2(interp, "tcl_platform", "machine", name.machine,
 		TCL_GLOBAL_ONLY);
     }
@@ -131,6 +219,14 @@ TclPlatformInit(interp)
     }
 
     if (!initialized) {
+
+        /*
+         * Create an exit handler so that uninitialization will be done
+         * on unload.
+         */
+        
+        Tcl_CreateExitHandler(PlatformInitExitHandler, NULL);
+        
 	/*
 	 * The code below causes SIGPIPE (broken pipe) errors to
 	 * be ignored.  This is needed so that Tcl processes don't
@@ -221,11 +317,11 @@ Tcl_SourceRCFile(interp)
         Tcl_DStringInit(&temp);
 	fullName = Tcl_TranslateFileName(interp, fileName, &temp);
 	if (fullName == NULL) {
-	    errChannel = Tcl_GetStdChannel(TCL_STDERR);
-	    if (errChannel) {
-		Tcl_Write(errChannel, interp->result, -1);
-		Tcl_Write(errChannel, "\n", 1);
-	    }
+	    /*
+	     * Couldn't translate the file name (e.g. it referred to a
+	     * bogus user or there was no HOME environment variable).
+	     * Just do nothing.
+	     */
 	} else {
 
 	    /*

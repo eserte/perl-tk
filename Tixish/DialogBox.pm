@@ -1,4 +1,3 @@
-# $Id: //depot/Tk/Tixish/DialogBox.pm#6$
 #
 # DialogBox is similar to Dialog except that it allows any widget
 # in the top frame. Widgets can be added with the add method. Currently
@@ -6,15 +5,15 @@
 
 package Tk::DialogBox;
 
-use English;
+use strict;
 use Carp;
 
 require Tk::Toplevel;
 require Tk::Frame;
 
 
-use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Tixish/DialogBox.pm#6$
+use vars qw($VERSION @ISA);
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#6$
 
 @ISA = qw(Tk::Toplevel Tk::Frame);
 
@@ -30,26 +29,27 @@ sub Populate {
     $default_button = $buttons->[0] unless defined $default_button;
 
     $cw->{"selected_button"} = '';
+    $cw->transient($cw->Parent->toplevel);
     $cw->withdraw;
     $cw->protocol("WM_DELETE_WINDOW" => sub {});
-    $cw->transient($cw->Parent->toplevel);
 
     # create the two frames
-    my $top = $cw->Component(Frame, "top");
+    my $top = $cw->Component('Frame', "top");
     $top->configure(-relief => "raised", -bd => 1);
     $top->pack(-side => "top", -fill => "both", -ipady => 3, -ipadx => 3);
-    my $bot = $cw->Component(Frame, "bottom");
+    my $bot = $cw->Component('Frame', "bottom");
     $bot->configure(-relief => "raised", -bd => 1);
     $bot->pack(-side => "top", -fill => "both", -ipady => 3, -ipadx => 3);
 
     # create a row of buttons in the bottom.
+    my $bl;  # foreach my $var: perl > 5.003_08
     foreach $bl (@$buttons) {
 	$b = $bot->Button(-text => $bl,
 			  -command => [ sub {
 			      $_[0]->{"selected_button"} = $_[1];
 			  }, $cw, $bl]);
 	if ($bl eq $default_button) {
-	    $db = $bot->Frame(-relief => "sunken", -bd => 1);
+	    my $db = $bot->Frame(-relief => "sunken", -bd => 1);
 	    $b->raise($db);
 	    $b->pack(-in => $db, -padx => "2", -pady => "2");
 	    $db->pack(-side => "left", -expand => 1, -padx => 1, -pady => 1);

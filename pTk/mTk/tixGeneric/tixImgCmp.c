@@ -1300,18 +1300,6 @@ ImgCmpDelete(masterData)
     Tk_DeleteEventHandler(masterPtr->tkwin,
 	StructureNotifyMask, CmpEventProc, (ClientData)masterPtr);
 
-#if 0
-    if (Tk_Display(masterPtr->tkwin) == NULL) {
-	/* Hack : When we issue "destroy .", 
-	 * Tk_Display(masterPtr->tkwin) will mysteriously become
-	 * 0x0. In that case, we know the app is quitting anyways, so don't
-	 * bother to do anything. And if we try to use a 0x0 display, we'd get
-	 * a TK panic!
-	 */
-	Tcl_Release((ClientData) masterPtr);
-	return;
-    }
-#endif
     if (masterPtr->isDeleted) {
 	Tcl_Release((ClientData) masterPtr);
 	return;
@@ -1338,8 +1326,9 @@ ImgCmpDelete(masterData)
     }
     masterPtr->tkMaster = NULL;
     if (masterPtr->imageCmd != NULL) {
-	Lang_DeleteObject(masterPtr->interp, masterPtr->imageCmd);
+	char * cmd = Tcl_GetCommandName(masterPtr->interp,masterPtr->imageCmd);
 	masterPtr->imageCmd = NULL;
+	Tcl_DeleteCommand(masterPtr->interp, cmd);
     }
     if (masterPtr->gc != None) {
 	Tk_FreeGC(masterPtr->display, masterPtr->gc);
@@ -1450,8 +1439,9 @@ CmpEventProc(clientData, eventPtr)
 
     if (eventPtr->type == DestroyNotify) {
 	if (masterPtr->imageCmd != NULL) {
-	    Lang_DeleteObject(masterPtr->interp, masterPtr->imageCmd);
+	    cmd = Tcl_GetCommandName(masterPtr->interp,masterPtr->imageCmd);
 	    masterPtr->imageCmd = NULL;
+	    Tcl_DeleteCommand(masterPtr->interp, cmd);
 	}
     }
 }

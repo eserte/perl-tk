@@ -1,6 +1,6 @@
 #ifdef _TK
 #ifndef LangEventCallback
-VFUNC(int,LangEventCallback,V_LangEventCallback,_ANSI_ARGS_((Tcl_Interp *,Tk_Window,LangCallback *,XEvent *,KeySym)))
+VFUNC(int,LangEventCallback,V_LangEventCallback,_ANSI_ARGS_((ClientData, Tcl_Interp *,XEvent *,Tk_Window,KeySym)))
 #endif
 
 #ifndef LangFindVar
@@ -74,6 +74,12 @@ VFUNC(void,Tk_ChangeWindowAttributes,V_Tk_ChangeWindowAttributes,_ANSI_ARGS_((Tk
 			    XSetWindowAttributes *attsPtr)))
 #endif
 
+#ifndef Tk_CharBbox
+VFUNC(int,Tk_CharBbox,V_Tk_CharBbox,_ANSI_ARGS_((Tk_TextLayout layout,
+			    int index, int *xPtr, int *yPtr, int *widthPtr,
+			    int *heightPtr)))
+#endif
+
 #ifndef Tk_ClearSelection
 VFUNC(void,Tk_ClearSelection,V_Tk_ClearSelection,_ANSI_ARGS_((Tk_Window tkwin,
 			    Atom selection)))
@@ -88,6 +94,13 @@ VFUNC(int,Tk_ClipboardAppend,V_Tk_ClipboardAppend,_ANSI_ARGS_((Tcl_Interp *inter
 #ifndef Tk_ClipboardClear
 VFUNC(int,Tk_ClipboardClear,V_Tk_ClipboardClear,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin)))
+#endif
+
+#ifndef Tk_ComputeTextLayout
+VFUNC(Tk_TextLayout,Tk_ComputeTextLayout,V_Tk_ComputeTextLayout,_ANSI_ARGS_((Tk_Font font,
+			    CONST char *string, int numChars, int wrapLength,
+			    Tk_Justify justify, int flags, int *widthPtr,
+			    int *heightPtr)))
 #endif
 
 #ifndef Tk_ConfigureInfo
@@ -237,6 +250,11 @@ VFUNC(void,Tk_DestroyWindow,V_Tk_DestroyWindow,_ANSI_ARGS_((Tk_Window tkwin)))
 VFUNC(char *,Tk_DisplayName,V_Tk_DisplayName,_ANSI_ARGS_((Tk_Window tkwin)))
 #endif
 
+#ifndef Tk_DistanceToTextLayout
+VFUNC(int,Tk_DistanceToTextLayout,V_Tk_DistanceToTextLayout,_ANSI_ARGS_((
+			    Tk_TextLayout layout, int x, int y)))
+#endif
+
 #ifndef Tk_Draw3DPolygon
 VFUNC(void,Tk_Draw3DPolygon,V_Tk_Draw3DPolygon,_ANSI_ARGS_((Tk_Window tkwin,
 			    Drawable drawable, Tk_3DBorder border,
@@ -251,9 +269,22 @@ VFUNC(void,Tk_Draw3DRectangle,V_Tk_Draw3DRectangle,_ANSI_ARGS_((Tk_Window tkwin,
 			    int relief)))
 #endif
 
+#ifndef Tk_DrawChars
+VFUNC(void,Tk_DrawChars,V_Tk_DrawChars,_ANSI_ARGS_((Display *display,
+			    Drawable drawable, GC gc, Tk_Font tkfont,
+			    CONST char *source, int numChars, int x,
+			    int y)))
+#endif
+
 #ifndef Tk_DrawFocusHighlight
 VFUNC(void,Tk_DrawFocusHighlight,V_Tk_DrawFocusHighlight,_ANSI_ARGS_((Tk_Window tkwin,
 			    GC gc, int width, Drawable drawable)))
+#endif
+
+#ifndef Tk_DrawTextLayout
+VFUNC(void,Tk_DrawTextLayout,V_Tk_DrawTextLayout,_ANSI_ARGS_((Display *display,
+			    Drawable drawable, GC gc, Tk_TextLayout layout,
+			    int x, int y, int firstChar, int lastChar)))
 #endif
 
 #ifndef Tk_EventCmd
@@ -285,6 +316,16 @@ VFUNC(void,Tk_Fill3DRectangle,V_Tk_Fill3DRectangle,_ANSI_ARGS_((Tk_Window tkwin,
 			    int relief)))
 #endif
 
+#ifndef Tk_FontId
+VFUNC(Font,Tk_FontId,V_Tk_FontId,_ANSI_ARGS_((Tk_Font font)))
+#endif
+
+#ifndef Tk_FontObjCmd
+VFUNC(int,Tk_FontObjCmd,V_Tk_FontObjCmd,_ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int objc,
+			    Tcl_Obj *CONST objv[])))
+#endif
+
 #ifndef Tk_Free3DBorder
 VFUNC(void,Tk_Free3DBorder,V_Tk_Free3DBorder,_ANSI_ARGS_((Tk_3DBorder border)))
 #endif
@@ -308,9 +349,8 @@ VFUNC(void,Tk_FreeCursor,V_Tk_FreeCursor,_ANSI_ARGS_((Display *display,
 			    Tk_Cursor cursor)))
 #endif
 
-#ifndef Tk_FreeFontStruct
-VFUNC(void,Tk_FreeFontStruct,V_Tk_FreeFontStruct,_ANSI_ARGS_((
-			    XFontStruct *fontStructPtr)))
+#ifndef Tk_FreeFont
+VFUNC(void,Tk_FreeFont,V_Tk_FreeFont,_ANSI_ARGS_((Tk_Font)))
 #endif
 
 #ifndef Tk_FreeGC
@@ -329,6 +369,11 @@ VFUNC(void,Tk_FreeOptions,V_Tk_FreeOptions,_ANSI_ARGS_((Tk_ConfigSpec *specs,
 #ifndef Tk_FreePixmap
 VFUNC(void,Tk_FreePixmap,V_Tk_FreePixmap,_ANSI_ARGS_((Display *display,
 			    Pixmap pixmap)))
+#endif
+
+#ifndef Tk_FreeTextLayout
+VFUNC(void,Tk_FreeTextLayout,V_Tk_FreeTextLayout,_ANSI_ARGS_((
+			    Tk_TextLayout textLayout)))
 #endif
 
 #ifndef Tk_FreeXId
@@ -366,7 +411,7 @@ VFUNC(char *,Tk_GetAtomName,V_Tk_GetAtomName,_ANSI_ARGS_((Tk_Window tkwin,
 #endif
 
 #ifndef Tk_GetBinding
-VFUNC(LangCallback *,Tk_GetBinding,V_Tk_GetBinding,_ANSI_ARGS_((Tcl_Interp *interp,
+VFUNC(Arg,Tk_GetBinding,V_Tk_GetBinding,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_BindingTable bindingTable, ClientData object,
 			    char *eventString)))
 #endif
@@ -414,9 +459,19 @@ VFUNC(Tk_Cursor,Tk_GetCursorFromData,V_Tk_GetCursorFromData,_ANSI_ARGS_((Tcl_Int
 			    Tk_Uid fg, Tk_Uid bg)))
 #endif
 
-#ifndef Tk_GetFontStruct
-VFUNC(XFontStruct *,Tk_GetFontStruct,V_Tk_GetFontStruct,_ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tk_Uid name)))
+#ifndef Tk_GetFont
+VFUNC(Tk_Font,Tk_GetFont,V_Tk_GetFont,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, CONST char *string)))
+#endif
+
+#ifndef Tk_GetFontFromObj
+VFUNC(Tk_Font,Tk_GetFontFromObj,V_Tk_GetFontFromObj,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tcl_Obj *objPtr)))
+#endif
+
+#ifndef Tk_GetFontMetrics
+VFUNC(void,Tk_GetFontMetrics,V_Tk_GetFontMetrics,_ANSI_ARGS_((Tk_Font font,
+			    Tk_FontMetrics *fmPtr)))
 #endif
 
 #ifndef Tk_GetGC
@@ -429,6 +484,11 @@ VFUNC(Tk_Image,Tk_GetImage,V_Tk_GetImage,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, char *name,
 			    Tk_ImageChangedProc *changeProc,
 			    ClientData clientData)))
+#endif
+
+#ifndef Tk_GetImageMasterData
+VFUNC(ClientData,Tk_GetImageMasterData,V_Tk_GetImageMasterData,_ANSI_ARGS_((Tcl_Interp *interp,
+			    char *name, Tk_ImageType **typePtrPtr)))
 #endif
 
 #ifndef Tk_GetJoinStyle
@@ -483,7 +543,7 @@ VFUNC(int,Tk_GetSelection,V_Tk_GetSelection,_ANSI_ARGS_((Tcl_Interp *interp,
 #endif
 
 #ifndef Tk_GetUid
-VFUNC(Tk_Uid,Tk_GetUid,V_Tk_GetUid,_ANSI_ARGS_((char *string)))
+VFUNC(Tk_Uid,Tk_GetUid,V_Tk_GetUid,_ANSI_ARGS_((CONST char *string)))
 #endif
 
 #ifndef Tk_GetVRootGeometry
@@ -530,6 +590,12 @@ VFUNC(Atom,Tk_InternAtom,V_Tk_InternAtom,_ANSI_ARGS_((Tk_Window tkwin,
 			    char *name)))
 #endif
 
+#ifndef Tk_IntersectTextLayout
+VFUNC(int,Tk_IntersectTextLayout,V_Tk_IntersectTextLayout,_ANSI_ARGS_((
+			    Tk_TextLayout layout, int x, int y, int width,
+			    int height)))
+#endif
+
 #ifndef Tk_MainLoop
 VFUNC(void,Tk_MainLoop,V_Tk_MainLoop,_ANSI_ARGS_((void)))
 #endif
@@ -555,6 +621,12 @@ VFUNC(void,Tk_ManageGeometry,V_Tk_ManageGeometry,_ANSI_ARGS_((Tk_Window tkwin,
 
 #ifndef Tk_MapWindow
 VFUNC(void,Tk_MapWindow,V_Tk_MapWindow,_ANSI_ARGS_((Tk_Window tkwin)))
+#endif
+
+#ifndef Tk_MeasureChars
+VFUNC(int,Tk_MeasureChars,V_Tk_MeasureChars,_ANSI_ARGS_((Tk_Font tkfont,
+			    CONST char *source, int maxChars, int maxPixels,
+			    int flags, int *lengthPtr)))
 #endif
 
 #ifndef Tk_MoveResizeWindow
@@ -598,9 +670,8 @@ VFUNC(char *,Tk_NameOfCursor,V_Tk_NameOfCursor,_ANSI_ARGS_((Display *display,
 			    Tk_Cursor cursor)))
 #endif
 
-#ifndef Tk_NameOfFontStruct
-VFUNC(char *,Tk_NameOfFontStruct,V_Tk_NameOfFontStruct,_ANSI_ARGS_((
-			    XFontStruct *fontStructPtr)))
+#ifndef Tk_NameOfFont
+VFUNC(char *,Tk_NameOfFont,V_Tk_NameOfFont,_ANSI_ARGS_((Tk_Font font)))
 #endif
 
 #ifndef Tk_NameOfImage
@@ -629,6 +700,16 @@ VFUNC(Tk_Window,Tk_NameToWindow,V_Tk_NameToWindow,_ANSI_ARGS_((Tcl_Interp *inter
 VFUNC(void,Tk_OwnSelection,V_Tk_OwnSelection,_ANSI_ARGS_((Tk_Window tkwin,
 			    Atom selection, Tk_LostSelProc *proc,
 			    ClientData clientData)))
+#endif
+
+#ifndef Tk_PointToChar
+VFUNC(int,Tk_PointToChar,V_Tk_PointToChar,_ANSI_ARGS_((Tk_TextLayout layout,
+			    int x, int y)))
+#endif
+
+#ifndef Tk_PostscriptFontName
+VFUNC(int,Tk_PostscriptFontName,V_Tk_PostscriptFontName,_ANSI_ARGS_((Tk_Font tkfont,
+			    Tcl_DString *dsPtr)))
 #endif
 
 #ifndef Tk_PreserveColormap
@@ -739,9 +820,20 @@ VFUNC(void,Tk_SizeOfImage,V_Tk_SizeOfImage,_ANSI_ARGS_((Tk_Image image,
 VFUNC(int,Tk_StrictMotif,V_Tk_StrictMotif,_ANSI_ARGS_((Tk_Window tkwin)))
 #endif
 
-#ifndef Tk_TkCmd
-VFUNC(int,Tk_TkCmd,V_Tk_TkCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Arg *args)))
+#ifndef Tk_TextLayoutToPostscript
+VFUNC(void,Tk_TextLayoutToPostscript,V_Tk_TextLayoutToPostscript,_ANSI_ARGS_((
+			    Tcl_Interp *interp, Tk_TextLayout layout)))
+#endif
+
+#ifndef Tk_TextWidth
+VFUNC(int,Tk_TextWidth,V_Tk_TextWidth,_ANSI_ARGS_((Tk_Font font,
+			    CONST char *string, int numChars)))
+#endif
+
+#ifndef Tk_TkObjCmd
+VFUNC(int,Tk_TkObjCmd,V_Tk_TkObjCmd,_ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int objc,
+			    Tcl_Obj *CONST objv[])))
 #endif
 
 #ifndef Tk_ToplevelCmd
@@ -751,6 +843,20 @@ VFUNC(int,Tk_ToplevelCmd,V_Tk_ToplevelCmd,_ANSI_ARGS_((ClientData clientData,
 
 #ifndef Tk_UndefineCursor
 VFUNC(void,Tk_UndefineCursor,V_Tk_UndefineCursor,_ANSI_ARGS_((Tk_Window window)))
+#endif
+
+#ifndef Tk_UnderlineChars
+VFUNC(void,Tk_UnderlineChars,V_Tk_UnderlineChars,_ANSI_ARGS_((Display *display,
+			    Drawable drawable, GC gc, Tk_Font tkfont,
+			    CONST char *source, int x, int y, int firstChar,
+			    int lastChar)))
+#endif
+
+#ifndef Tk_UnderlineTextLayout
+VFUNC(void,Tk_UnderlineTextLayout,V_Tk_UnderlineTextLayout,_ANSI_ARGS_((
+			    Display *display, Drawable drawable, GC gc,
+			    Tk_TextLayout layout, int x, int y,
+			    int underline)))
 #endif
 
 #ifndef Tk_Ungrab
@@ -768,6 +874,12 @@ VFUNC(void,Tk_UnmapWindow,V_Tk_UnmapWindow,_ANSI_ARGS_((Tk_Window tkwin)))
 
 #ifndef Tk_UnsetGrid
 VFUNC(void,Tk_UnsetGrid,V_Tk_UnsetGrid,_ANSI_ARGS_((Tk_Window tkwin)))
+#endif
+
+#ifndef Tk_WinfoObjCmd
+VFUNC(int,Tk_WinfoObjCmd,V_Tk_WinfoObjCmd,_ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int objc,
+			    Tcl_Obj *CONST objv[])))
 #endif
 
 #endif /* _TK */

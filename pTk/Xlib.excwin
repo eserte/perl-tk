@@ -25,4 +25,15 @@ XPutImage
 XSetRegion
 XSetWMName
 XListFonts
-
+XLoadFont
+XFreeFont
+XDrawString
+XAllocNamedColor
+XGetFontProperty
+XTextWidth
+XTextExtents
+XSetWMColormapWindows
+XSetTransientForHint
+XOpenDisplay
+XLoadQueryFont
+XCreateWindow

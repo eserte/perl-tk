@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvArc.c 1.32 96/02/17 16:59:09
+ * SCCS: @(#) tkCanvArc.c 1.34 97/04/25 16:50:56
  */
 
 #include "tkPort.h"
@@ -370,12 +370,12 @@ ConfigureArc(interp, canvas, itemPtr, argc, argv, flags)
      * style and graphics contexts.
      */
 
-    i = arcPtr->start/360.0;
+    i = (int) (arcPtr->start/360.0);
     arcPtr->start -= i*360.0;
     if (arcPtr->start < 0) {
 	arcPtr->start += 360.0;
     }
-    i = arcPtr->extent/360.0;
+    i = (int) (arcPtr->extent/360.0);
     arcPtr->extent -= i*360.0;
 
     if ((arcPtr->style != arcUid) && (arcPtr->style != chordUid)
@@ -537,8 +537,8 @@ ComputeArcBbox(canvas, arcPtr)
      * 9-o'clock, and 12-o'clock positions, if they are relevant.
      */
 
-    arcPtr->header.x1 = arcPtr->header.x2 = arcPtr->center1[0];
-    arcPtr->header.y1 = arcPtr->header.y2 = arcPtr->center1[1];
+    arcPtr->header.x1 = arcPtr->header.x2 = (int) arcPtr->center1[0];
+    arcPtr->header.y1 = arcPtr->header.y2 = (int) arcPtr->center1[1];
     TkIncludePoint((Tk_Item *) arcPtr, arcPtr->center2);
     center[0] = (arcPtr->bbox[0] + arcPtr->bbox[2])/2;
     center[1] = (arcPtr->bbox[1] + arcPtr->bbox[3])/2;
@@ -593,10 +593,10 @@ ComputeArcBbox(canvas, arcPtr)
     } else {
 	tmp = (arcPtr->width + 1)/2 + 1;
     }
-    arcPtr->header.x1 -= tmp;
-    arcPtr->header.y1 -= tmp;
-    arcPtr->header.x2 += tmp;
-    arcPtr->header.y2 += tmp;
+    arcPtr->header.x1 -= (int) tmp;
+    arcPtr->header.y1 -= (int) tmp;
+    arcPtr->header.x2 += (int) tmp;
+    arcPtr->header.y2 += (int) tmp;
 }
 
 /*
@@ -646,8 +646,8 @@ DisplayArc(canvas, itemPtr, display, drawable, x, y, width, height)
     if (y2 <= y1) {
 	y2 = y1+1;
     }
-    start = (64*arcPtr->start) + 0.5;
-    extent = (64*arcPtr->extent) + 0.5;
+    start = (int) ((64*arcPtr->start) + 0.5);
+    extent = (int) ((64*arcPtr->extent) + 0.5);
 
     /*
      * Display filled arc first (if wanted), then outline.  If the extent
@@ -752,12 +752,6 @@ ArcToPoint(canvas, itemPtr, pointPtr)
     double vertex[2], pointAngle, diff, dist, newDist;
     double poly[8], polyDist, width, t1, t2;
     int filled, angleInRange;
-
-    if ((arcPtr->fillGC != None) || (arcPtr->outlineGC == None)) {
-	filled = 1;
-    } else {
-	filled = 0;
-    }
 
     /*
      * See if the point is within the angular range of the arc.
@@ -960,7 +954,6 @@ ArcToArea(canvas, itemPtr, rectPtr)
      */
 
     pointPtr = points;
-    numPoints = 0;
     angle = -arcPtr->start*(PI/180.0);
     pointPtr[0] = rx*cos(angle);
     pointPtr[1] = ry*sin(angle);
@@ -1015,7 +1008,6 @@ ArcToArea(canvas, itemPtr, rectPtr)
 	pointPtr[0] = 0.0;
 	pointPtr[1] = ry;
 	numPoints++;
-	pointPtr += 2;
     }
 
     /*

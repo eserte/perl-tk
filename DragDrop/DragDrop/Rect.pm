@@ -2,7 +2,7 @@ package Tk::DragDrop::Rect;
 
 
 use vars qw($VERSION);
-$VERSION = '2.004'; # $Id: //depot/Tk/DragDrop/DragDrop/Rect.pm#4$
+$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#3$
 
 sub NewDrag
 {

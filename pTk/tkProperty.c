@@ -3,7 +3,7 @@
  *
  *                                                                                                  This file manages properties for the Tk toolkit,
  *
- * Copyright (c) 1994-1997 Nick-Ing-Simmons
+ * Copyright (c) 1994-1998 Nick-Ing-Simmons
  *
  * All rights reserved.
  *
@@ -321,6 +321,7 @@ Arg *args;                        /* Argument strings. */
     }
    if (argc == 3)
     {
+#ifndef WIN32
      int num_prop = 0;
      Atom *list = XListProperties(Tk_Display(tkwin), xid, &num_prop);
      int i;
@@ -331,6 +332,7 @@ Arg *args;                        /* Argument strings. */
       }
      if (list)
       XFree((char *) list);
+#endif
     }
    return TCL_OK;
   }

@@ -5,7 +5,7 @@ use AutoLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Scrollbar/Scrollbar.pm#6$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#4$
 
 @ISA = qw(Tk::Widget);
 
@@ -14,6 +14,8 @@ Construct Tk::Widget 'Scrollbar';
 bootstrap Tk::Scrollbar $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::scrollbar }
+
+Tk::Methods("activate","delta","fraction","get","identify","set");
 
 sub Needed
 {

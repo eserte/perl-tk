@@ -1,0 +1,22 @@
+dnl	This file is an input file used by the GNU "autoconf" program to
+dnl	generate the file "configure", which is run to configure the
+dnl	Makefile in this directory.
+
+AC_INIT(../generic/tixInit.c)
+
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
+#----------------------------------------------------------------------
+# We don't want to use any relative path because we need to generate
+# Makefile's in subdirectories
+#----------------------------------------------------------------------
+if test "$INSTALL" = "./install.sh"; then
+    INSTALL=`pwd`/install.sh
+fi
+SRC_DIR=`cd ..; pwd`
+AC_SUBST(SRC_DIR)
+
+TIX_VERSION=4.1
+AC_SUBST(TIX_VERSION)
+AC_OUTPUT(Makefile)

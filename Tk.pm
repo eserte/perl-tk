@@ -3,6 +3,10 @@
 # Copyright (c) 1994 Sun Microsystems, Inc.
 # Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
+
+use vars qw($VERSION);
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk.pm#10$
+
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in Tk/license.terms due to partial
 # derivation from Tk4.0 sources.
@@ -13,6 +17,8 @@ use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 require Exporter;
 @Tk::ISA = qw(Exporter DynaLoader);
+
+BEGIN { $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix' };
 
 
 @EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
@@ -35,9 +41,9 @@ use Carp;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
-$Tk::version     = "4.2";
-$Tk::patchLevel  = "4.2";
-$Tk::VERSION     = '402.004';
+$Tk::version     = "8.0";
+$Tk::patchLevel  = "8.0";
+$Tk::VERSION     = '800.000';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -49,7 +55,8 @@ $Tk::event   = undef;
 # Supress used once warnings on function table pointers 
 # How can we do this in the C code?
 use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab $TkoptionVtab);  
-use vars qw($TixVtab $TixintVtab $TiximgxpmVtab $TkimgphotoVtab);
+use vars qw($TixVtab $TixintVtab $TiximgxpmVtab);
+use vars qw($TkwinVtab $TkwinintVtab);
 
 bootstrap Tk $Tk::VERSION;
 
@@ -222,16 +229,21 @@ sub fileevent
 sub SplitString
 {
  local $_ = shift;
+ # carp "SplitString '$_'";
  my (@arr, $tmp);
  while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
    if (defined $1) { push @arr, $1 }
    else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
- }
- # carp "SplitString '$_':(".join(',',@arr).")\n";
+ }  
+ # carp '('.join(',',@arr).")";
  return @arr;
- #return split(/\s+/,$_);
 }
 
+sub Methods
+{
+ my ($package,$file) = caller;   
+ $package->EnterMethods($file,@_);
+}
 
 1;
 

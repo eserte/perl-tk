@@ -8,6 +8,10 @@ require Exporter;
 require DynaLoader;
 require AutoLoader;
 
+
+use vars qw($VERSION);
+$VERSION = '3.003'; # $Id: //depot/Tk8/Xlib/X/X.pm#3$
+
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
@@ -360,7 +364,7 @@ require AutoLoader;
 	YXSorted
 	ZPixmap
 );
-$VERSION = '2.004'; # $Id: //depot/Tk/Xlib/X/X.pm#4$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Xlib/X/X.pm#3$
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()

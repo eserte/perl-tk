@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkEvent.c 1.18 96/09/12 09:25:22
+ * SCCS: @(#) tkEvent.c 1.20 96/09/20 09:33:38
  */
 
 #include "tkPort.h"
@@ -546,34 +546,16 @@ Tk_HandleEvent(eventPtr)
     
 	/*
 	 * Redirect KeyPress and KeyRelease events to the focus window,
-	 * or ignore them entirely if there is no focus window.  Map the
-	 * x and y coordinates to make sense in the context of the focus
-	 * window, if possible (make both -1 if the map-from and map-to
-	 * windows don't share the same screen).
+	 * or ignore them entirely if there is no focus window.
 	 */
     
 	if (mask & (KeyPressMask|KeyReleaseMask)) {
-	    TkWindow *focusPtr;
-	    int winX, winY, focusX, focusY;
-    
 	    winPtr->dispPtr->lastEventTime = eventPtr->xkey.time;
-	    focusPtr = TkGetFocus(winPtr);
-	    if (focusPtr == NULL) {
+	    winPtr = TkFocusKeyEvent(winPtr, eventPtr);
+	    if (winPtr == NULL) {
                 Tcl_Release((ClientData) interp);
 		return;
 	    }
-	    if ((focusPtr->display != winPtr->display)
-		    || (focusPtr->screenNum != winPtr->screenNum)) {
-		eventPtr->xkey.x = -1;
-		eventPtr->xkey.y = -1;
-	    } else {
-		Tk_GetRootCoords((Tk_Window) winPtr, &winX, &winY);
-		Tk_GetRootCoords((Tk_Window) focusPtr, &focusX, &focusY);
-		eventPtr->xkey.x -= focusX - winX;
-		eventPtr->xkey.y -= focusY - winY;
-	    }
-	    eventPtr->xkey.window = focusPtr->window;
-	    winPtr = focusPtr;
 	}
     
 	/*
@@ -639,22 +621,17 @@ Tk_HandleEvent(eventPtr)
     ip.nextPtr = pendingPtr;
     pendingPtr = &ip;
     if (mask == 0) {
-#if 0
-	/* Old TK Stuff */
 	if ((eventPtr->type == SelectionClear)
 		|| (eventPtr->type == SelectionRequest)
 		|| (eventPtr->type == SelectionNotify)) {
 	    TkSelEventProc((Tk_Window) winPtr, eventPtr);
+#if 0
 	} else if ((eventPtr->type == ClientMessage)
 		&& (eventPtr->xclient.message_type ==
 		    Tk_InternAtom((Tk_Window) winPtr, "WM_PROTOCOLS"))) {
 	    TkWmProtocolEventProc(winPtr, eventPtr);
+	}
 #else
-	/* Tix extensions */
-	if ((eventPtr->type == SelectionClear)
-		|| (eventPtr->type == SelectionRequest)
-		|| (eventPtr->type == SelectionNotify)) {
-	    TkSelEventProc((Tk_Window) winPtr, eventPtr);
 	} else if ((eventPtr->type == ClientMessage)) {
 	    if (((eventPtr->xclient.message_type ==
 	          Tk_InternAtom((Tk_Window) winPtr, "WM_PROTOCOLS"))
@@ -945,20 +922,19 @@ Tk_QueueWindowEvent(eventPtr, position)
  */
 
 void
-TkQueueEventForAllChildren(tkwin, eventPtr)
-    Tk_Window tkwin;	    /* Window to which event is sent. */
+TkQueueEventForAllChildren(winPtr, eventPtr)
+    TkWindow *winPtr;	    /* Window to which event is sent. */
     XEvent *eventPtr;	    /* The event to be sent. */
 {
-    TkWindow *winPtr, *childPtr;
+    TkWindow *childPtr;
 
-    winPtr = (TkWindow *) tkwin;
     eventPtr->xany.window = winPtr->window;
     Tk_QueueWindowEvent(eventPtr, TCL_QUEUE_TAIL);
     
     childPtr = winPtr->childList;
     while (childPtr != NULL) {
 	if (!Tk_IsTopLevel(childPtr)) {
-	    TkQueueEventForAllChildren((Tk_Window) childPtr, eventPtr);
+	    TkQueueEventForAllChildren(childPtr, eventPtr);
 	}
 	childPtr = childPtr->nextPtr;
     }

@@ -9,17 +9,22 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinColor.c 1.12 96/07/30 18:52:26
+ * SCCS: @(#) tkWinColor.c 1.20 97/10/27 16:39:23
  */
 
-#include "tkWinInt.h"
-#include "xcolors.h"
+#include <tkColor.h>
+#include <tkWinInt.h>
 
 /*
- * This variable indicates whether the color table has been initialized.
+ * The following structure is used to keep track of each color that is
+ * allocated by this module.
  */
 
-static int initialized = 0;
+typedef struct WinColor {
+    TkColor info;		/* Generic color information. */
+    int index;			/* Index for GetSysColor(), -1 if color
+				 * is not a "live" system color. */
+} WinColor;
 
 /*
  * colorTable is a hash table used to look up X colors by name.
@@ -28,8 +33,10 @@ static int initialized = 0;
 static Tcl_HashTable colorTable;
 
 /*
- * The SystemColorEntries array contains the names and index values for the
- * Windows indirect system color names.
+ * The sysColors array contains the names and index values for the
+ * Windows indirect system color names.  In use, all of the names
+ * will have the string "System" prepended, but we omit it in the table
+ * to save space.
  */
 
 typedef struct {
@@ -37,181 +44,59 @@ typedef struct {
     int index;
 } SystemColorEntry;
 
-static SystemColorEntry sysColorEntries[] = {
-    "SystemActiveBorder",		COLOR_ACTIVEBORDER,
-    "SystemActiveCaption",		COLOR_ACTIVECAPTION,
-    "SystemAppWorkspace",		COLOR_APPWORKSPACE,
-    "SystemBackground",			COLOR_BACKGROUND,
-    "SystemButtonFace",			COLOR_BTNFACE,
-    "SystemButtonHighlight",		COLOR_BTNHIGHLIGHT,
-    "SystemButtonShadow",		COLOR_BTNSHADOW,
-    "SystemButtonText",			COLOR_BTNTEXT,
-    "SystemCaptionText",		COLOR_CAPTIONTEXT,
-    "SystemDisabledText",		COLOR_GRAYTEXT,
-    "SystemHighlight",			COLOR_HIGHLIGHT,
-    "SystemHighlightText",		COLOR_HIGHLIGHTTEXT,
-    "SystemInactiveBorder",		COLOR_INACTIVEBORDER,
-    "SystemInactiveCaption",		COLOR_INACTIVECAPTION,
-    "SystemInactiveCaptionText",	COLOR_INACTIVECAPTIONTEXT,
-    "SystemMenu",			COLOR_MENU,
-    "SystemMenuText",			COLOR_MENUTEXT,
-    "SystemScrollbar",			COLOR_SCROLLBAR,
-    "SystemWindow",			COLOR_WINDOW,
-    "SystemWindowFrame",		COLOR_WINDOWFRAME,
-    "SystemWindowText",			COLOR_WINDOWTEXT,
-    NULL,				0
+
+static SystemColorEntry sysColors[] = {
+    "3dDarkShadow",		COLOR_3DDKSHADOW,
+    "3dLight",			COLOR_3DLIGHT,
+    "ActiveBorder",		COLOR_ACTIVEBORDER,
+    "ActiveCaption",		COLOR_ACTIVECAPTION,
+    "AppWorkspace",		COLOR_APPWORKSPACE,
+    "Background",		COLOR_BACKGROUND,
+    "ButtonFace",		COLOR_BTNFACE,
+    "ButtonHighlight",		COLOR_BTNHIGHLIGHT,
+    "ButtonShadow",		COLOR_BTNSHADOW,
+    "ButtonText",		COLOR_BTNTEXT,
+    "CaptionText",		COLOR_CAPTIONTEXT,
+    "DisabledText",		COLOR_GRAYTEXT,
+    "GrayText",			COLOR_GRAYTEXT,
+    "Highlight",		COLOR_HIGHLIGHT,
+    "HighlightText",		COLOR_HIGHLIGHTTEXT,
+    "InactiveBorder",		COLOR_INACTIVEBORDER,
+    "InactiveCaption",		COLOR_INACTIVECAPTION,
+    "InactiveCaptionText",	COLOR_INACTIVECAPTIONTEXT,
+    "InfoBackground",		COLOR_INFOBK,
+    "InfoText",			COLOR_INFOTEXT,
+    "Menu",			COLOR_MENU,
+    "MenuText",			COLOR_MENUTEXT,
+    "Scrollbar",		COLOR_SCROLLBAR,
+    "Window",			COLOR_WINDOW,
+    "WindowFrame",		COLOR_WINDOWFRAME,
+    "WindowText",		COLOR_WINDOWTEXT,
+    NULL,			0
 };
 
-/*
- * The sysColors array is initialized by SetSystemColors().
- */
-
-static XColorEntry sysColors[] = {
-    0, 0, 0, "SystemActiveBorder",
-    0, 0, 0, "SystemActiveCaption",
-    0, 0, 0, "SystemAppWorkspace",
-    0, 0, 0, "SystemBackground",
-    0, 0, 0, "SystemButtonFace",
-    0, 0, 0, "SystemButtonHighlight",
-    0, 0, 0, "SystemButtonShadow",
-    0, 0, 0, "SystemButtonText",
-    0, 0, 0, "SystemCaptionText",
-    0, 0, 0, "SystemDisabledText",
-    0, 0, 0, "SystemHighlight",
-    0, 0, 0, "SystemHighlightText",
-    0, 0, 0, "SystemInactiveBorder",
-    0, 0, 0, "SystemInactiveCaption",
-    0, 0, 0, "SystemInactiveCaptionText",
-    0, 0, 0, "SystemMenu",
-    0, 0, 0, "SystemMenuText",
-    0, 0, 0, "SystemScrollbar",
-    0, 0, 0, "SystemWindow",
-    0, 0, 0, "SystemWindowFrame",
-    0, 0, 0, "SystemWindowText",
-    0, 0, 0, NULL
-};
+static int ncolors = 0;
 
 /*
  * Forward declarations for functions defined later in this file.
  */
-static int GetColorByName _ANSI_ARGS_((char *name, XColor *color));
-static int GetColorByValue _ANSI_ARGS_((char *value, XColor *color));
-static void InitColorTable _ANSI_ARGS_((void));
-static void SetSystemColors _ANSI_ARGS_((void));
 
-
+static int	FindSystemColor _ANSI_ARGS_((const char *name,
+		    XColor *colorPtr, int *indexPtr));
+static int	GetColorByName _ANSI_ARGS_((char *name, XColor *color));
+static int	GetColorByValue _ANSI_ARGS_((char *value, XColor *color));
 
 /*
  *----------------------------------------------------------------------
  *
- * SetSystemColors --
+ * FindSystemColor --
  *
- *	Initializes the sysColors array with the current values for
- *	the system colors.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Changes the RGB values stored in the sysColors array.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-SetSystemColors()
-{
-    SystemColorEntry *sPtr;
-    XColorEntry *ePtr;
-    COLORREF color;
-
-    for (ePtr = sysColors, sPtr = sysColorEntries;
-	 sPtr->name != NULL; ePtr++, sPtr++)
-    {
-	color = GetSysColor(sPtr->index);
-	ePtr->red = GetRValue(color);
-	ePtr->green = GetGValue(color);
-	ePtr->blue = GetBValue(color);
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * InitColorTable --
- *
- *	Initialize color name database.
+ *	This routine finds the color entry that corresponds to the
+ *	specified color.
  *
  * Results:
- *	None.
- *
- * Side effects:
- *	Builds a hash table of color names and RGB values.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-InitColorTable()
-{
-    XColorEntry *colorPtr;
-    Tcl_HashEntry *hPtr;
-    int dummy;
-#ifdef __OPEN32__
-    char tmpclr[64];
-#endif
-
-    Tcl_InitHashTable(&colorTable, TCL_STRING_KEYS);
-
-    /*
-     * Add X colors to table.
-     */
-
-    for (colorPtr = xColors; colorPtr->name != NULL; colorPtr++) {
-#ifdef __OPEN32__
-	strcpy(tmpclr,colorPtr->name);
-        hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(tmpclr),
-		&dummy);
-#else
-        hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(colorPtr->name),
-		&dummy);
-#endif
-        Tcl_SetHashValue(hPtr, colorPtr);
-    }
-    
-    /*
-     * Add Windows indirect system colors to table.
-     */
-
-    SetSystemColors();
-    for (colorPtr = sysColors; colorPtr->name != NULL; colorPtr++) {
-#ifdef __OPEN32__
-	strcpy(tmpclr,colorPtr->name);
-        hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(tmpclr),
-		&dummy);
-#else
-        hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(colorPtr->name),
-		&dummy);
-#endif
-        Tcl_SetHashValue(hPtr, colorPtr);
-    }
-
-    initialized = 1;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * GetColorByName --
- *
- *	Looks for a color in the color table by name, then finds the
- *	closest available color in the palette and converts it to an
- *	XColor structure.
- *
- * Results:
- *	If it finds a match, the color is returned in the color
- *	parameter and the return value is 1.  Otherwise the return
- *	value is 0.
+ *	Returns non-zero on success.  The RGB values of the XColor
+ *	will be initialized to the proper values on success.
  *
  * Side effects:
  *	None.
@@ -220,103 +105,195 @@ InitColorTable()
  */
 
 static int
-GetColorByName(name, color)
-    char *name;			/* An X color name, e.g. "red" */
-    XColor *color;		/* The closest available color. */
+FindSystemColor(name, colorPtr, indexPtr)
+    const char *name;		/* Color name. */
+    XColor *colorPtr;		/* Where to store results. */
+    int *indexPtr;		/* Out parameter to store color index. */
 {
-    Tcl_HashEntry *hPtr;
-    XColorEntry *colorPtr;
+    int l, u, r, i;
 
-    if (!initialized) {
-	InitColorTable();
-    }
-
-    hPtr = Tcl_FindHashEntry(&colorTable, (char *) strlwr(name));
-
-    if (hPtr == NULL) {
-	return 0;
-    }
-
-    colorPtr = (XColorEntry *) Tcl_GetHashValue(hPtr);
-    color->pixel = PALETTERGB(colorPtr->red, colorPtr->green, colorPtr->blue); 
-    color->red = colorPtr->red << 8;
-    color->green = colorPtr->green << 8;
-    color->blue = colorPtr->blue << 8;
-    color->flags = DoRed|DoGreen|DoBlue;
-    color->pad = 0;
-
-    return 1;
-}      
-
-/*
- *----------------------------------------------------------------------
- *
- * GetColorByValue --
- *
- *	Parses an X RGB color string and finds the closest available
- *	color in the palette and converts it to an XColor structure.
- *	The returned color will have RGB values in the range 0 to 255.
- *
- * Results:
- *	If it finds a match, the color is returned in the color
- *	parameter and the return value is 1.  Otherwise the return
- *	value is 0.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-static int
-GetColorByValue(value, color)
-    char *value;		/* a string of the form "#RGB", "#RRGGBB", */
-				/* "#RRRGGGBBB", or "#RRRRGGGGBBBB" */
-    XColor *color;		/* The closest available color. */
-{
-    char fmt[16];
-    int i;
-
-    i = strlen(value+1);
-    if (i % 3) {
-	return 0;
-    }
-    i /= 3;
-    if (i == 0) {
-	return 0;
-    }
-    sprintf(fmt, "%%%dx%%%dx%%%dx", i, i, i);
-    sscanf(value+1, fmt, &color->red, &color->green, &color->blue);
     /*
-     * Scale the parse values into 8 bits.
+     * Count the number of elements in the color array if we haven't
+     * done so yet.
      */
-    if (i == 1) {
-	color->red <<= 4;
-	color->green <<= 4;
-	color->blue <<= 4;
-    } else if (i != 2) {
-	color->red >>= (4*(i-2));
-	color->green >>= (4*(i-2));
-	color->blue >>= (4*(i-2));
-    }	
-    color->pad = 0;
-    color->pixel = PALETTERGB(color->red, color->green, color->blue); 
-    color->red = GetRValue(color->pixel) << 8;
-    color->green = GetGValue(color->pixel) << 8;
-    color->blue = GetBValue(color->pixel) << 8;
 
+    if (ncolors == 0) {
+	SystemColorEntry *ePtr;
+	int version;
+
+	version = LOBYTE(LOWORD(GetVersion()));
+	for (ePtr = sysColors; ePtr->name != NULL; ePtr++) {
+	    if (version < 4) {
+		if (ePtr->index == COLOR_3DDKSHADOW) {
+		    ePtr->index = COLOR_BTNSHADOW;
+		} else if (ePtr->index == COLOR_3DLIGHT) {
+		    ePtr->index = COLOR_BTNHIGHLIGHT;
+		}
+	    }
+	    ncolors++;
+	}
+    }
+
+    /*
+     * Perform a binary search on the sorted array of colors.
+     */
+
+    l = 0;
+    u = ncolors - 1;
+    while (l <= u) {
+	i = (l + u) / 2;
+	r = strcasecmp(name, sysColors[i].name);
+	if (r == 0) {
+	    break;
+	} else if (r < 0) {
+	    u = i-1;
+	} else {
+	    l = i+1;
+	}
+    }
+    if (l > u) {
+	return 0;
+    }
+
+    *indexPtr = sysColors[i].index;
+    colorPtr->pixel = GetSysColor(sysColors[i].index);
+    colorPtr->red = GetRValue(colorPtr->pixel) << 8;
+    colorPtr->green = GetGValue(colorPtr->pixel) << 8;
+    colorPtr->blue = GetBValue(colorPtr->pixel) << 8;
+    colorPtr->flags = DoRed|DoGreen|DoBlue;
+    colorPtr->pad = 0;
     return 1;
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * XParseColor --
+ * TkpGetColor --
  *
- *	Decodes an X color specification.
+ *	Allocate a new TkColor for the color with the given name.
  *
  * Results:
- *	Sets exact_def_return to the parsed color.
+ *	Returns a newly allocated TkColor, or NULL on failure.
+ *
+ * Side effects:
+ *	May invalidate the colormap cache associated with tkwin upon
+ *	allocating a new colormap entry.  Allocates a new TkColor
+ *	structure.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkColor *
+TkpGetColor(tkwin, name)
+    Tk_Window tkwin;		/* Window in which color will be used. */
+    Tk_Uid name;		/* Name of color to allocated (in form
+				 * suitable for passing to XParseColor). */
+{
+    WinColor *winColPtr;
+    XColor color;
+    int index = -1;		/* -1 indicates that this is not an indirect
+				 * sytem color. */
+    /*
+     * Check to see if it is a system color or an X color string.  If the
+     * color is found, allocate a new WinColor and store the XColor and the
+     * system color index.
+     */
+
+    if (((strncasecmp(name, "system", 6) == 0)
+	    && FindSystemColor(name+6, &color, &index))
+	    || XParseColor(Tk_Display(tkwin), Tk_Colormap(tkwin), name,
+		    &color)) {
+	winColPtr = (WinColor *) ckalloc(sizeof(WinColor));
+	winColPtr->info.color = color;
+	winColPtr->index = index;
+
+	XAllocColor(Tk_Display(tkwin), Tk_Colormap(tkwin),
+		&winColPtr->info.color);
+ 	return (TkColor *) winColPtr; 
+    }
+    return (TkColor *) NULL;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpGetColorByValue --
+ *
+ *	Given a desired set of red-green-blue intensities for a color,
+ *	locate a pixel value to use to draw that color in a given
+ *	window.
+ *
+ * Results:
+ *	The return value is a pointer to an TkColor structure that
+ *	indicates the closest red, blue, and green intensities available
+ *	to those specified in colorPtr, and also specifies a pixel
+ *	value to use to draw in that color.
+ *
+ * Side effects:
+ *	May invalidate the colormap cache for the specified window.
+ *	Allocates a new TkColor structure.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkColor *
+TkpGetColorByValue(tkwin, colorPtr)
+    Tk_Window tkwin;		/* Window in which color will be used. */
+    XColor *colorPtr;		/* Red, green, and blue fields indicate
+				 * desired color. */
+{
+    WinColor *tkColPtr = (WinColor *) ckalloc(sizeof(WinColor));
+
+    tkColPtr->info.color.red = colorPtr->red;
+    tkColPtr->info.color.green = colorPtr->green;
+    tkColPtr->info.color.blue = colorPtr->blue;
+    tkColPtr->info.color.pixel = 0;
+    tkColPtr->index = -1;
+    XAllocColor(Tk_Display(tkwin), Tk_Colormap(tkwin), &tkColPtr->info.color);
+    return (TkColor *) tkColPtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpFreeColor --
+ *
+ *	Release the specified color back to the system.
+ *
+ * Results:
+ *	None
+ *
+ * Side effects:
+ *	Invalidates the colormap cache for the colormap associated with
+ *	the given color.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpFreeColor(tkColPtr)
+    TkColor *tkColPtr;		/* Color to be released.  Must have been
+				 * allocated by TkpGetColor or
+				 * TkpGetColorByValue. */
+{
+    Screen *screen = tkColPtr->screen;
+
+    XFreeColors(DisplayOfScreen(screen), tkColPtr->colormap,
+	    &tkColPtr->color.pixel, 1, 0L);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinIndexOfColor --
+ *
+ *	Given a color, return the system color index that was used
+ *	to create the color.
+ *
+ * Results:
+ *	If the color was allocated using a system indirect color name,
+ *	then the corresponding GetSysColor() index is returned.
+ *	Otherwise, -1 is returned.
  *
  * Side effects:
  *	None.
@@ -325,24 +302,14 @@ GetColorByValue(value, color)
  */
 
 int
-XParseColor(display, colormap, spec, exact_def_return)
-    Display* display;
-    Colormap colormap;
-    _Xconst char* spec;
-    XColor* exact_def_return;
+TkWinIndexOfColor(colorPtr)
+    XColor *colorPtr;
 {
-    /*
-     * Note that we are violating the const-ness of spec.  This is
-     * probably OK in most cases.  But this is a bug in general.
-     */
-
-    /* FIXME - also "rgb:xx/xx/xx" , "rgb:xxxx/xxxx/xxxx" */
-
-    if (spec[0] == '#') {
-	return GetColorByValue((char *) spec, exact_def_return);
-    } else {
-	return GetColorByName((char *) spec, exact_def_return);
-    }
+    register WinColor *winColPtr = (WinColor *) colorPtr;
+    if (winColPtr->info.magic == COLOR_MAGIC) {
+	return winColPtr->index;
+    }    
+    return -1;
 }
 
 /*
@@ -382,34 +349,44 @@ XAllocColor(display, colormap, color)
 	UINT newPixel, closePixel;
 	int new, refCount;
 	Tcl_HashEntry *entryPtr;
+	UINT index;
 
 	/*
 	 * Find the nearest existing palette entry.
 	 */
 	
 	newPixel = RGB(entry.peRed, entry.peGreen, entry.peBlue);
-	closePixel = GetNearestPaletteIndex(cmap->palette, newPixel);
-	GetPaletteEntries(cmap->palette, closePixel, 1, &closeEntry);
+	index = GetNearestPaletteIndex(cmap->palette, newPixel);
+	GetPaletteEntries(cmap->palette, index, 1, &closeEntry);
 	closePixel = RGB(closeEntry.peRed, closeEntry.peGreen,
 		closeEntry.peBlue);
 
 	/*
-	 * If this is not a duplicate, allocate a new entry.
+	 * If this is not a duplicate, allocate a new entry.  Note that
+	 * we may get values for index that are above the current size
+	 * of the palette.  This happens because we don't shrink the size of
+	 * the palette object when we deallocate colors so there may be
+	 * stale values that match in the upper slots.  We should ignore
+	 * those values and just put the new color in as if the colors
+	 * had not matched.
 	 */
 	
-	if (newPixel != closePixel) {
-	    /*
-	     * Fails if the palette is full.
-	     */
-
+	if ((index >= cmap->size) || (newPixel != closePixel)) {
 	    if (cmap->size == sizePalette) {
-		return 0;
+		color->red = closeEntry.peRed << 8;
+		color->green = closeEntry.peGreen << 8;
+		color->blue = closeEntry.peBlue << 8;
+		entry = closeEntry;
+		if (index >= cmap->size) {
+		    OutputDebugString("XAllocColor: Colormap is bigger than we thought");
+		}
+	    } else {
+		cmap->size++;
+		ResizePalette(cmap->palette, cmap->size);
+		SetPaletteEntries(cmap->palette, cmap->size - 1, 1, &entry);
 	    }
-	
-	    cmap->size++;
-	    ResizePalette(cmap->palette, cmap->size);
-	    SetPaletteEntries(cmap->palette, cmap->size - 1, 1, &entry);
 	}
+
 	color->pixel = PALETTERGB(entry.peRed, entry.peGreen, entry.peBlue);
 	entryPtr = Tcl_CreateHashEntry(&cmap->refCounts,
 		(char *) color->pixel, &new);
@@ -419,7 +396,6 @@ XAllocColor(display, colormap, color)
 	    refCount = ((int) Tcl_GetHashValue(entryPtr)) + 1;
 	}
 	Tcl_SetHashValue(entryPtr, (ClientData)refCount);
-
     } else {
 	
 	/*
@@ -435,40 +411,6 @@ XAllocColor(display, colormap, color)
 
     ReleaseDC(NULL, dc);
     return 1;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * XAllocNamedColor --
- *
- *	Find the closest color of the given name.
- *
- * Results:
- *	Returns 1 on success with the resulting color in
- *	exact_def_return.  Returns 0 on failure.
- *
- * Side effects:
- *	Allocates a new color in the palette.
- *
- *----------------------------------------------------------------------
- */
-
-int
-XAllocNamedColor(display, colormap, color_name, screen_def_return,
-	exact_def_return)
-    Display* display;
-    Colormap colormap;
-    _Xconst char* color_name;
-    XColor* screen_def_return;
-    XColor* exact_def_return;
-{
-    int rval = GetColorByName((char *) color_name, exact_def_return);
-    if (rval) {
-	*screen_def_return = *exact_def_return;
-	return XAllocColor(display, colormap, exact_def_return);
-    } 
-    return 0;
 }
 
 /*
@@ -537,6 +479,8 @@ XFreeColors(display, colormap, pixels, npixels, planes)
 		    panic("Tried to free a color that isn't allocated.");
 		}
 		Tcl_DeleteHashEntry(entryPtr);
+	    } else {
+		Tcl_SetHashValue(entryPtr, (ClientData)refCount);
 	    }
 	}
     }
@@ -566,20 +510,42 @@ XCreateColormap(display, w, visual, alloc)
     Visual* visual;
     int alloc;
 {
-    LOGPALETTE logPalette;
-    TkWinColormap *cmap = (TkWinColormap *) ckalloc(sizeof(TkWinColormap));
+    char logPalBuf[sizeof(LOGPALETTE) + 256 * sizeof(PALETTEENTRY)];
+    LOGPALETTE *logPalettePtr;
+    PALETTEENTRY *entryPtr;
+    TkWinColormap *cmap;
+    Tcl_HashEntry *hashPtr;
+    int new;
+    UINT i;
+    HPALETTE sysPal;
 
-    logPalette.palVersion = 0x300;
-    logPalette.palNumEntries = 1;
-    logPalette.palPalEntry[0].peRed = 0;
-    logPalette.palPalEntry[0].peGreen = 0;
-    logPalette.palPalEntry[0].peBlue = 0;
-    logPalette.palPalEntry[0].peFlags = 0;
+    /*
+     * Allocate a starting palette with all of the reserved colors.
+     */
 
-    cmap->palette = CreatePalette(&logPalette);
-    cmap->size = 0;
+    logPalettePtr = (LOGPALETTE *) logPalBuf;
+    logPalettePtr->palVersion = 0x300;
+    sysPal = (HPALETTE) GetStockObject(DEFAULT_PALETTE);
+    logPalettePtr->palNumEntries = GetPaletteEntries(sysPal, 0, 256,
+	    logPalettePtr->palPalEntry);
+
+    cmap = (TkWinColormap *) ckalloc(sizeof(TkWinColormap));
+    cmap->size = logPalettePtr->palNumEntries;
     cmap->stale = 0;
+    cmap->palette = CreatePalette(logPalettePtr);
+
+    /*
+     * Add hash entries for each of the static colors.
+     */
+
     Tcl_InitHashTable(&cmap->refCounts, TCL_ONE_WORD_KEYS);
+    for (i = 0; i < logPalettePtr->palNumEntries; i++) {
+	entryPtr = logPalettePtr->palPalEntry + i;
+	hashPtr = Tcl_CreateHashEntry(&cmap->refCounts, (char*) PALETTERGB(
+	    entryPtr->peRed, entryPtr->peGreen, entryPtr->peBlue), &new);
+	Tcl_SetHashValue(hashPtr, (ClientData)1);
+    }
+
     return (Colormap)cmap;
 }
 

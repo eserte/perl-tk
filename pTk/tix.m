@@ -118,5 +118,9 @@
 #  define Tix_SimpleListStart (*TixVptr->V_Tix_SimpleListStart)
 #endif
 
+#ifndef tixStrDup
+#  define tixStrDup (*TixVptr->V_tixStrDup)
+#endif
+
 #endif /* NO_VTABLES */
 #endif /* _TIX_VM */

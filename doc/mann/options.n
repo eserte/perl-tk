@@ -1,14 +1,14 @@
 '\"
 '\" Copyright (c) 1990-1994 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) options.n 1.35 95/06/07 21:15:26
+'\" SCCS: @(#) options.n 1.47 97/05/31 17:12:19
 '\" 
 .so man.macros
-.TH options n 4.0 Tk "Tk Generic Methods"
+.TH options n 4.4 Tk "Tk Generic Methods"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
@@ -50,62 +50,34 @@ Specifies background color to use when drawing active elements.
 An element (a widget or portion of a widget) is active if the
 mouse cursor is positioned over the element and pressing a mouse button
 will cause some action to occur.
-.VS
 If strict Motif compliance has been requested by setting the
 \fB$Tk::strictMotif\fR variable, this option will normally be
 ignored;  the normal background color will be used instead.
+.VS
+For some elements on Windows and Macintosh systems, the active color
+will only be used while mouse button 1 is pressed over the element.
 .VE
-.LP
-.nf
-Name:	\fBactiveBorderWidth\fR
-Class:	\fBBorderWidth\fR
-Configure Option:	\fB\-activeborderwidth\fR
-.fi
-.IP
+.OP \-activeborderwidth activeBorderWidth BorderWidth
 Specifies a non-negative value indicating
 the width of the 3-D border drawn around active elements.  
 See above for definition of active elements.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
 This option is typically only available in widgets displaying more
 than one element at a time (e.g. menus but not buttons).
-.LP
-.nf
-Name:	\fBactiveForeground\fR
-Class:	\fBBackground\fR
-Configure Option:	\fB\-activeforeground\fR
-.fi
-.IP
+.OP \-activeforeground activeForeground Background
 Specifies foreground color to use when drawing active elements.
 See above for definition of active elements.
-.LP
-.nf
-Name:	\fBanchor\fR
-Class:	\fBAnchor\fR
-Configure Option:	\fB\-anchor\fR
-.fi
-.IP
+.OP \-anchor anchor Anchor
 Specifies how the information in a widget (e.g. text or a bitmap)
 is to be displayed in the widget.
 Must be one of the values \fBn\fR, \fBne\fR, \fBe\fR, \fBse\fR,
 \fBs\fR, \fBsw\fR, \fBw\fR, \fBnw\fR, or \fBcenter\fR.
 For example, \fBnw\fR means display the information such that its
 top-left corner is at the top-left corner of the widget.
-.LP
-.nf
-Name:	\fBbackground\fR
-Class:	\fBBackground\fR
-Configure Option:	\fB\-background or \-bg\fR
-.fi
-.IP
+.OP "\-background or \-bg" background Background
 Specifies the normal background color to use when displaying the
 widget.
-.LP
-.nf
-Name:	\fBbitmap\fR
-Class:	\fBBitmap\fR
-Configure Option:	\fB\-bitmap\fR
-.fi
-.IP
+.OP \-bitmap bitmap Bitmap
 Specifies a bitmap to display in the widget, in any of the forms
 acceptable to \fBTk_GetBitmap\fR.
 The exact way in which the bitmap is displayed may be affected by
@@ -114,51 +86,25 @@ Typically, if this option is specified then it overrides other
 options that specify a textual value to display in the widget;
 the \fBbitmap\fR option may be reset to an empty string to re-enable
 a text display.
-.VS
 In widgets that support both \fBbitmap\fR and \fBimage\fR options,
 \fBimage\fR will usually override \fBbitmap\fR.
-.VE
-.LP
-.nf
-Name:	\fBborderWidth\fR
-Class:	\fBBorderWidth\fR
-Configure Option:	\fB\-borderwidth or \-bd\fR
-.fi
-.IP
+.OP "\-borderwidth or \-bd" borderWidth BorderWidth
 Specifies a non-negative value indicating the width
 of the 3-D border to draw around the outside of the widget (if such a
 border is being drawn;  the \fBrelief\fR option typically determines
 this).  The value may also be used when drawing 3-D effects in the
 interior of the widget.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
-.LP
-.nf
-Name:	\fBcursor\fR
-Class:	\fBCursor\fR
-Configure Option:	\fB\-cursor\fR
-.fi
-.IP
+.OP \-cursor cursor Cursor
 Specifies the mouse cursor to be used for the widget.
 The value may have any of the forms acceptable to \fBTk_GetCursor\fR.
-.LP
-.nf
-Name:	\fBdisabledForeground\fR
-Class:	\fBDisabledForeground\fR
-Configure Option:	\fB\-disabledforeground\fR
-.fi
-.IP
+.OP \-disabledforeground disabledForeground DisabledForeground
 Specifies foreground color to use when drawing a disabled element.
 If the option is specified as an empty string (which is typically the
 case on monochrome displays), disabled elements are drawn with the
-normal fooreground color but they are dimmed by drawing them
+normal foreground color but they are dimmed by drawing them
 with a stippled fill pattern.
-.LP
-.nf
-Name:	\fBexportSelection\fR
-Class:	\fBExportSelection\fR
-Configure Option:	\fB\-exportselection\fR
-.fi
-.IP
+.OP \-exportselection exportSelection ExportSelection
 Specifies whether or not a selection in the widget should also be
 the X selection.
 The value may have any of the forms accepted by \fBTcl_GetBoolean\fR,
@@ -168,145 +114,56 @@ the current X selection, selecting outside the widget deselects any
 widget selection, and the widget will respond to selection retrieval
 requests when it has a selection.  The default is usually for widgets
 to export selections.
-.LP
-.nf
-Name:	\fBfont\fR
-Class:	\fBFont\fR
-Configure Option:	\fB\-font\fR
-.fi
-.IP
+.OP \-font font Font
 Specifies the font to use when drawing text inside the widget.
-.LP
-.nf
-Name:	\fBforeground\fR
-Class:	\fBForeground\fR
-Configure Option:	\fB\-foreground or \-fg\fR
-.fi
-.IP
+.OP "\-foreground or \-fg" foreground Foreground
 Specifies the normal foreground color to use when displaying the widget.
-.LP
-.nf
-Name:	\fBgeometry\fR
-Class:	\fBGeometry\fR
-Configure Option:	\fB\-geometry\fR
-.fi
-.IP
-Specifies the desired geometry for the widget's window, in the
-form \fIwidth\fBx\fIheight\fR, where \fIwidth\fR is the desired
-width of the window and \fIheight\fR is the desired height.  The
-units for \fIwidth\fR and \fIheight\fR depend on the particular
-widget.  For widgets displaying text the units are usually the
-size of the characters in the font being displayed;  for other
-widgets the units are usually pixels.
-.LP
-.nf
-.VS
-Name:	\fBhighlightBackground\fR
-Class:	\fBHighlightBackground\fR
-Configure Option:	\fB\-highlightbackground\fR
-.fi
-.IP
+.OP \-highlightbackground highlightBackground HighlightBackground
 Specifies the color to display in the traversal highlight region when
 the widget does not have the input focus.
-.LP
-.nf
-Name:	\fBhighlightColor\fR
-Class:	\fBHighlightColor\fR
-Configure Option:	\fB\-highlightcolor\fR
-.fi
-.IP
+.OP \-highlightcolor highlightColor HighlightColor
 Specifies the color to use for the traversal highlight rectangle that is
 drawn around the widget when it has the input focus.
-.LP
-.nf
-Name:	\fBhighlightThickness\fR
-Class:	\fBHighlightThickness\fR
-Configure Option:	\fB\-highlightthickness\fR
-.fi
-.IP
+.OP \-highlightthickness highlightThickness HighlightThickness
 Specifies a non-negative value indicating the width of the highlight
 rectangle to draw around the outside of the widget when it has the
 input focus.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
 If the value is zero, no focus highlight is drawn around the widget.
-.LP
-.nf
-Name:	\fBimage\fR
-Class:	\fBImage\fR
-Configure Option:	\fB\-image\fR
-.fi
-.IP
+.OP \-image image Image
 Specifies an image to display in the widget, which must have been
 created with an image create. (See \fBimage\fR for details of image creation.) 
 Typically, if the \fBimage\fR option is specified then it overrides other
 options that specify a bitmap or textual value to display in the widget;
 the \fBimage\fR option may be reset to an empty string to re-enable
 a bitmap or text display.
-.VE
-.LP
-.nf
-Name:	\fBinsertBackground\fR
-Class:	\fBForeground\fR
-Configure Option:	\fB\-insertbackground\fR
-.fi
-.IP
+.OP \-insertbackground insertBackground Foreground
 Specifies the color to use as background in the area covered by the
 insertion cursor.  This color will normally override either the normal
 background for the widget (or the selection background if the insertion
 cursor happens to fall in the selection).
-.LP
-.nf
-Name:	\fBinsertBorderWidth\fR
-Class:	\fBBorderWidth\fR
-Configure Option:	\fB\-insertborderwidth\fR
-.fi
-.IP
+.OP \-insertborderwidth insertBorderWidth BorderWidth
 Specifies a non-negative value indicating the width
 of the 3-D border to draw around the insertion cursor.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
-.LP
-.nf
-Name:	\fBinsertOffTime\fR
-Class:	\fBOffTime\fR
-Configure Option:	\fB\-insertofftime\fR
-.fi
-.IP
+.OP \-insertofftime insertOffTime OffTime
 Specifies a non-negative integer value indicating the number of
 milliseconds the insertion cursor should remain ``off'' in each blink cycle.
 If this option is zero then the cursor doesn't blink:  it is on
 all the time.
-.LP
-.nf
-Name:	\fBinsertOnTime\fR
-Class:	\fBOnTime\fR
-Configure Option:	\fB\-insertontime\fR
-.fi
-.IP
+.OP \-insertontime insertOnTime OnTime
 Specifies a non-negative integer value indicating the number of
 milliseconds the insertion cursor should remain ``on'' in each blink cycle.
-.LP
-.nf
-Name:	\fBinsertWidth\fR
-Class:	\fBInsertWidth\fR
-Configure Option:	\fB\-insertwidth\fR
-.fi
-.IP
+.OP \-insertwidth insertWidth InsertWidth
 Specifies a  value indicating the total width of the insertion cursor.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
 If a border has been specified for the insertion
 cursor (using the \fBinsertBorderWidth\fR option), the border
 will be drawn inside the width specified by the \fBinsertWidth\fR
 option.
-.LP
-.nf
-.VS
-Name:	\fBjump\fR
-Class:	\fBJump\fR
-Configure Option:	\fB\-jump\fR
-.fi
-.IP
+.OP \-jump jump Jump
 For widgets with a slider that can be dragged to adjust a value,
-such as scrollbars and scales, this option determines when
+such as scrollbars, this option determines when
 notifications are made about changes in the value.
 The option's value must be a boolean of the form accepted by
 \fBTcl_GetBoolean\fR.
@@ -315,38 +172,19 @@ slider is dragged.
 If the value is true, updates are delayed until the mouse button
 is released to end the drag;  at that point a single notification
 is made (the value ``jumps'' rather than changing smoothly).
-.LP
-.nf
-Name:	\fBjustify\fR
-Class:	\fBJustify\fR
-Configure Option:	\fB\-justify\fR
-.fi
-.IP
+.OP \-justify justify Justify
 When there are multiple lines of text displayed in a widget, this
 option determines how the lines line up with each other.
 Must be one of \fBleft\fR, \fBcenter\fR, or \fBright\fR.
 \fBLeft\fR means that the lines' left edges all line up, \fBcenter\fR
 means that the lines' centers are aligned, and \fBright\fR means
 that the lines' right edges line up.
-.VE
-.LP
-.nf
-Name:	\fBorient\fR
-Class:	\fBOrient\fR
-Configure Option:	\fB\-orient\fR
-.fi
-.IP
+.OP \-orient orient Orient
 For widgets that can lay themselves out with either a horizontal
 or vertical orientation, such as scrollbars, this option specifies
 which orientation should be used.  Must be either \fBhorizontal\fR
 or \fBvertical\fR or an abbreviation of one of these.
-.LP
-.nf
-Name:	\fBpadX\fR
-Class:	\fBPad\fR
-Configure Option:	\fB\-padx\fR
-.fi
-.IP
+.OP \-padx padX Pad
 Specifies a non-negative value indicating how much extra space
 to request for the widget in the X-direction.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
@@ -355,18 +193,10 @@ add this amount to the width it would normally need (as determined
 by the width of the things displayed in the widget);  if the geometry
 manager can satisfy this request, the widget will end up with extra
 internal space to the left and/or right of what it displays inside.
-.VS
 Most widgets only use this option for padding text:  if they are
 displaying a bitmap or image, then they usually ignore padding
 options.
-.VE
-.LP
-.nf
-Name:	\fBpadY\fR
-Class:	\fBPad\fR
-Configure Option:	\fB\-pady\fR
-.fi
-.IP
+.OP \-pady padY Pad
 Specifies a non-negative value indicating how much extra space
 to request for the widget in the Y-direction.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
@@ -375,80 +205,37 @@ this amount to the height it would normally need (as determined by
 the height of the things displayed in the widget);  if the geometry
 manager can satisfy this request, the widget will end up with extra
 internal space above and/or below what it displays inside.
-.VS
 Most widgets only use this option for padding text:  if they are
 displaying a bitmap or image, then they usually ignore padding
 options.
-.LP
-.nf
-Name:	\fBrelief\fR
-Class:	\fBRelief\fR
-Configure Option:	\fB\-relief\fR
-.fi
-.IP
+.OP \-relief relief Relief
 Specifies the 3-D effect desired for the widget.  Acceptable
 values are \fBraised\fR, \fBsunken\fR, \fBflat\fR, \fBridge\fR,
-and \fBgroove\fR.
+\fBsolid\fR, and \fBgroove\fR.
 The value
 indicates how the interior of the widget should appear relative
 to its exterior;  for example, \fBraised\fR means the interior of
 the widget should appear to protrude from the screen, relative to
 the exterior of the widget.
-.LP
-.nf
-Name:	\fBrepeatDelay\fR
-Class:	\fBRepeatDelay\fR
-Configure Option:	\fB\-repeatdelay\fR
-.fi
-.IP
+.OP \-repeatdelay repeatDelay RepeatDelay
 Specifies the number of milliseconds a button or key must be held
 down before it begins to auto-repeat.  Used, for example, on the
 up- and down-arrows in scrollbars.
-.LP
-.nf
-Name:	\fBrepeatInterval\fR
-Class:	\fBRepeatInterval\fR
-Configure Option:	\fB\-repeatinterval\fR
-.fi
-.IP
+.OP \-repeatinterval repeatInterval RepeatInterval
 Used in conjunction with \fBrepeatDelay\fR:  once auto-repeat
 begins, this option determines the number of milliseconds between
 auto-repeats.
-.LP
-.nf
-Name:	\fBselectBackground\fR
-Class:	\fBForeground\fR
-Configure Option:	\fB\-selectbackground\fR
-.fi
-.IP
+.OP \-selectbackground selectBackground Foreground
 Specifies the background color to use when displaying selected
 items.
-.LP
-.nf
-Name:	\fBselectBorderWidth\fR
-Class:	\fBBorderWidth\fR
-Configure Option:	\fB\-selectborderwidth\fR
-.fi
-.IP
+.OP \-selectborderwidth selectBorderWidth BorderWidth
 Specifies a non-negative value indicating the width
 of the 3-D border to draw around selected items.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
-.LP
-.nf
-Name:	\fBselectForeground\fR
-Class:	\fBBackground\fR
-Configure Option:	\fB\-selectforeground\fR
-.fi
-.IP
+.OP \-selectforeground selectForeground Background
 Specifies the foreground color to use when displaying selected
 items.
-.LP
-.nf
-Name:	\fBsetGrid\fR
-Class:	\fBSetGrid\fR
-Configure Option:	\fB\-setgrid\fR
-.fi
-.IP
+.OP \-setgrid setGrid SetGrid
 Specifies a boolean value that determines whether this widget controls the
 resizing grid for its top-level window.
 This option is typically used in text widgets, where the information
@@ -462,92 +249,51 @@ the window will be displayed to the user in grid units and the window
 size will be constrained to integral numbers of grid units.
 See the section GRIDDED GEOMETRY MANAGEMENT in the \fBwm\fR manual
 entry for more details.
-.LP
-.nf
-.VS
-Name:	\fBtakeFocus\fR
-Class:	\fBTakeFocus\fR
-Configure Option:	\fB\-takefocus\fR
-.fi
-.IP
-Provides information used when moving the focus from window to window
-via keyboard traversal (e.g., Tab and Shift-Tab).
-Before setting the focus to a window, the traversal scripts first
-check whether the window is viewable (it and all its ancestors are mapped);
-if not, the window is skipped.
-Next, the scripts consult the value of the \fBtakeFocus\fR option.
-A value of \fB0\fR means that this window should be skipped entirely
+.OP \-takefocus takeFocus TakeFocus
+Determines whether the window accepts the focus during keyboard
+traversal (e.g., Tab and Shift-Tab).
+Before setting the focus to a window, the traversal scripts
+consult the value of the \fBtakeFocus\fR option.
+A value of \fB0\fR means that the window should be skipped entirely
 during keyboard traversal. 
-\fB1\fR means that the this window should always receive the input
-focus.
-An empty value means that the traversal scripts make the decision
-about whether or not to focus on the window:  the current
+\fB1\fR means that the window should receive the input
+focus as long as it is viewable (it and all of its ancestors are mapped).
+An empty value for the option means that the traversal scripts make
+the decision about whether or not to focus on the window:  the current
 algorithm is to skip the window if it is
-disabled or if it has no key bindings.
+disabled, if it has no key bindings, or if it is not viewable.
 If the value has any other form, then the traversal scripts take
 the value, append the name of the window to it (with a separator space),
 and evaluate the resulting string as a Callback.
-The script must return 0, 1, or an empty string;  this value is used
-just as if the option had that value in the first place.
+The script must return \fB0\fR, \fB1\fR, or an empty string:  a 
+\fB0\fR or \fB1\fR value specifies whether the window will receive
+the input focus, and an empty string results in the default decision
+described above.
 Note: this interpretation of the option is defined entirely by
 the Callbacks that implement traversal:  the widget implementations
 ignore the option entirely, so you can change its meaning if you
 redefine the keyboard traversal scripts.
-.VE
-.LP
-.nf
-Name:	\fBtext\fR
-Class:	\fBText\fR
-Configure Option:	\fB\-text\fR
-.fi
-.IP
+.OP \-text text Text
 Specifies a string to be displayed inside the widget.  The way in which
 the string is displayed depends on the particular widget and may be
 determined by other options, such as \fBanchor\fR or \fBjustify\fR.
-.LP
-.nf
-Name:	\fBtextVariable\fR
-Class:	\fBVariable\fR
-Configure Option:	\fB\-textvariable\fR
-.fi
-.IP
+.OP \-textvariable textVariable Variable
 Specifies the name of a variable.  The value of the variable is a text
 string to be displayed inside the widget;  if the variable value changes
 then the widget will automatically update itself to reflect the new value.
 The way in which the string is displayed in the widget depends on the
 particular widget and may be determined by other options, such as
 \fBanchor\fR or \fBjustify\fR.
-.LP
-.nf
-.VS
-Name:	\fBtroughColor\fR
-Class:	\fBBackground\fR
-Configure Option:	\fB\-troughcolor\fR
-.fi
-.IP
+.OP \-troughcolor troughColor Background
 Specifies the color to use for the rectangular trough areas
 in widgets such as scrollbars and scales.
-.VE
-.LP
-.nf
-Name:	\fBunderline\fR
-Class:	\fBUnderline\fR
-Configure Option:	\fB\-underline\fR
-.fi
-.IP
+.OP \-underline underline Underline
 Specifies the integer index of a character to underline in the widget.
 This option is used by the default bindings to implement keyboard
 traversal for menu buttons and menu entries.
 0 corresponds to the first character of the text displayed in the
 widget, 1 to the next character, and so on.
-.LP
-.nf
-.VS
-Name:	\fBwrapLength\fR
-Class:	\fBWrapLength\fR
-Configure Option:	\fB\-wraplength\fR
-.fi
-.IP
+.OP \-wraplength wrapLength WrapLength
 For widgets that can perform word-wrapping, this option specifies
 the maximum line length.
 Lines that would exceed this length are wrapped onto the next line,

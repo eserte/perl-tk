@@ -10,11 +10,11 @@ package Plot;
 # Advertised Plot widgets:  canvas, entry, PostScript_button, view_button.
 
 require 5.002;
-use English;
 
-use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/demos/demos/widget_lib/Plot.pm#8$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#4$
 
+use Tk::Frame;
 @ISA = qw(Tk::Frame);
 Construct Tk::Widget 'Plot';
 use strict;

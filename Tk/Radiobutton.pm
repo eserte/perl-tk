@@ -6,7 +6,7 @@
 
 
 use vars qw($VERSION);
-$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Radiobutton.pm#10$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#4$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial

@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinInit.c 1.23 96/10/04 17:05:02
+ * SCCS: @(#) tclWinInit.c 1.32 97/06/24 17:28:26
  */
 
 #include "tclInt.h"
@@ -75,10 +75,40 @@ static char* processors[NUMPROCESSORS] = {
 
 static char *initScript =
 "proc init {} {\n\
-    global tcl_library tcl_version tcl_patchLevel env\n\
+    global tcl_library tcl_platform tcl_version tcl_patchLevel env errorInfo\n\
+    global tcl_pkgPath\n\
     rename init {}\n\
+    set errors {}\n\
+    proc tcl_envTraceProc {lo n1 n2 op} {\n\
+	global env\n\
+	set x $env($n2)\n\
+	set env($lo) $x\n\
+	set env([string toupper $lo]) $x\n\
+    }\n\
+    foreach p [array names env] {\n\
+	set u [string toupper $p]\n\
+	if {$u != $p} {\n\
+	    switch -- $u {\n\
+		COMSPEC -\n\
+		PATH {\n\
+		    if {![info exists env($u)]} {\n\
+			set env($u) $env($p)\n\
+		    }\n\
+		    trace variable env($p) w [list tcl_envTraceProc $p]\n\
+		    trace variable env($u) w [list tcl_envTraceProc $p]\n\
+		}\n\
+	    }\n\
+	}\n\
+    }\n\
+    if {![info exists env(COMSPEC)]} {\n\
+	if {$tcl_platform(os) == {Windows NT}} {\n\
+	    set env(COMSPEC) cmd.exe\n\
+	} else {\n\
+	    set env(COMSPEC) command.com\n\
+	}\n\
+    }	\n\
     set dirs {}\n\
-    if [info exists env(TCL_LIBRARY)] {\n\
+    if {[info exists env(TCL_LIBRARY)]} {\n\
 	lappend dirs $env(TCL_LIBRARY)\n\
     }\n\
     lappend dirs $tcl_library\n\
@@ -92,16 +122,23 @@ static char *initScript =
     lappend dirs [file join [file dirname [pwd]] library]\n\
     foreach i $dirs {\n\
 	set tcl_library $i\n\
-	if ![catch {uplevel #0 source [list [file join $i init.tcl]]}] {\n\
-	    return\n\
+	set tclfile [file join $i init.tcl]\n\
+	if {[file exists $tclfile]} {\n\
+            lappend tcl_pkgPath [file dirname $i]\n\
+	    if ![catch {uplevel #0 [list source $tclfile]} msg] {\n\
+	        return\n\
+	    } else {\n\
+		append errors \"$tclfile: $msg\n$errorInfo\n\"\n\
+	    }\n\
 	}\n\
     }\n\
     set msg \"Can't find a usable init.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\"\n\
+    append msg \"    $dirs\n\n\"\n\
+    append msg \"$errors\n\n\"\n\
     append msg \"This probably means that Tcl wasn't installed properly.\n\"\n\
     error $msg\n\
 }\n\
-init";
+init\n";
 
 /*
  *----------------------------------------------------------------------
@@ -170,8 +207,8 @@ TclPlatformInit(interp)
 		&& (RegQueryValueEx(key, "Root", NULL, NULL, NULL, &size)
 		    == ERROR_SUCCESS)) {
 	    Tcl_DStringSetLength(&ds, size);
-	    RegQueryValueEx(key, "Root", NULL, NULL, Tcl_DStringValue(&ds),
-		    &size);
+	    RegQueryValueEx(key, "Root", NULL, NULL,
+		    (LPBYTE)Tcl_DStringValue(&ds), &size);
 	}
     } else {
 	if ((RegOpenKeyEx(HKEY_CLASSES_ROOT,
@@ -180,7 +217,8 @@ TclPlatformInit(interp)
 		&& (RegQueryValueEx(key, "", NULL, NULL, NULL, &size)
 		    == ERROR_SUCCESS)) {
 	    Tcl_DStringSetLength(&ds, size);
-	    RegQueryValueEx(key, "", NULL, NULL, Tcl_DStringValue(&ds), &size);
+	    RegQueryValueEx(key, "", NULL, NULL,
+		    (LPBYTE) Tcl_DStringValue(&ds), &size);
 	}
     }
     Tcl_SetVar(interp, "tcl_library", Tcl_DStringValue(&ds), TCL_GLOBAL_ONLY);
@@ -191,7 +229,7 @@ TclPlatformInit(interp)
 	argv[2] = NULL;
 	Tcl_DStringSetLength(&ds, 0);
 	Tcl_SetVar(interp, "tcl_pkgPath", Tcl_JoinPath(2, argv, &ds),
-		TCL_GLOBAL_ONLY);
+		TCL_GLOBAL_ONLY|TCL_LIST_ELEMENT);
 	argv[1] = "lib/tcl" TCL_VERSION;
 	Tcl_DStringSetLength(&ds, 0);
 	Tcl_SetVar(interp, "tcl_library", Tcl_JoinPath(2, argv, &ds), 
@@ -267,6 +305,7 @@ Tcl_Init(interp)
     Tcl_Interp *interp;		/* Interpreter to initialize. */
 {
     return Tcl_Eval(interp, initScript);
+
 }
 
 /*
@@ -327,11 +366,11 @@ Tcl_SourceRCFile(interp)
         Tcl_DStringInit(&temp);
 	fullName = Tcl_TranslateFileName(interp, fileName, &temp);
 	if (fullName == NULL) {
-	    errChannel = Tcl_GetStdChannel(TCL_STDERR);
-	    if (errChannel) {
-		Tcl_Write(errChannel, interp->result, -1);
-		Tcl_Write(errChannel, "\n", 1);
-	    }
+	    /*
+	     * Couldn't translate the file name (e.g. it referred to a
+	     * bogus user or there was no HOME environment variable).
+	     * Just do nothing.
+	     */
 	} else {
 
 	    /*

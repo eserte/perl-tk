@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) stub16.c 1.4 96/09/12 15:13:30
+ * SCCS: @(#) stub16.c 1.5 96/12/11 20:01:58
  */
 
 #define STRICT
@@ -173,6 +173,7 @@ cleanup:
     CloseHandle(hStdOutput);
     CloseHandle(hStdError);
     ExitProcess(result);
+    return 1;
 }
 
 static HANDLE

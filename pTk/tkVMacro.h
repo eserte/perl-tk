@@ -34,4 +34,9 @@
 #ifdef _TIXIMGXPM
 #include "tixImgXpm.m"
 #endif
-
+#ifdef _TKWIN
+#include "tkWin.m"
+#endif
+#ifdef _TKWININT
+#include "tkWinInt.m"
+#endif

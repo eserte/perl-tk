@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkImage.c 1.11 96/03/01 17:19:28
+ * SCCS: @(#) tkImage.c 1.15 97/10/09 09:57:50
  */
 
 #include "tkInt.h"
@@ -110,14 +110,8 @@ Tk_CreateImageType(typePtr)
 				 * in by caller.  Must not have been passed
 				 * to Tk_CreateImageType previously. */
 {
-    Tk_ImageType *typePtr2;
-
-    typePtr2 = (Tk_ImageType *) ckalloc(sizeof(Tk_ImageType));
-    *typePtr2 = *typePtr;
-    typePtr2->name = (char *) ckalloc((unsigned) (strlen(typePtr->name) + 1));
-    strcpy(typePtr2->name, typePtr->name);
-    typePtr2->nextPtr = imageTypeList;
-    imageTypeList = typePtr2;
+    typePtr->nextPtr = imageTypeList;
+    imageTypeList = typePtr;
 }
 
 /*
@@ -138,11 +132,11 @@ Tk_CreateImageType(typePtr)
  */
 
 int
-Tk_ImageCmd(clientData, interp, argc, argv)
+Tk_ImageCmd(clientData, interp, argc, objv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Tcl_Obj *CONST objv[];	/* Argument strings. */
 {
     TkWindow *winPtr = (TkWindow *) clientData;
     int c, i, new, firstOption;
@@ -153,22 +147,28 @@ Tk_ImageCmd(clientData, interp, argc, argv)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
     char idString[30], *name;
-    static int id = 0;
+    static int id = 0;        
 
+    static char **strv = NULL;
+    if (strv) ckfree((char *) strv);
+    strv = (char **) ckalloc(argc * sizeof(char *));
+    for (i = 0; i < argc; i++) {
+	strv[i]=Tcl_GetStringFromObj(objv[i], (int *) NULL);
+    }
     if (argc < 2) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		" option ?args?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    c = argv[1][0];
-    length = strlen(argv[1]);
-    if ((c == 'c') && (strncmp(argv[1], "create", length) == 0)) {
+    c = strv[1][0];
+    length = strlen(strv[1]);
+    if ((c == 'c') && (strncmp(strv[1], "create", length) == 0)) {
 	if (argc < 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		    " create type ?name? ?options?\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	c = argv[2][0];
+	c = strv[2][0];
 
 	/*
 	 * Look up the image type.
@@ -177,12 +177,12 @@ Tk_ImageCmd(clientData, interp, argc, argv)
 	for (typePtr = imageTypeList; typePtr != NULL;
 		typePtr = typePtr->nextPtr) {
 	    if ((c == typePtr->name[0])
-		    && (strcmp(argv[2], typePtr->name) == 0)) {
+		    && (strcmp(strv[2], typePtr->name) == 0)) {
 		break;
 	    }
 	}
 	if (typePtr == NULL) {
-	    Tcl_AppendResult(interp, "image type \"", argv[2],
+	    Tcl_AppendResult(interp, "image type \"", strv[2],
 		    "\" doesn't exist", (char *) NULL);
 	    return TCL_ERROR;
 	}
@@ -191,13 +191,13 @@ Tk_ImageCmd(clientData, interp, argc, argv)
 	 * Figure out a name to use for the new image.
 	 */
 
-	if ((argc == 3) || (argv[3][0] == '-')) {
+	if ((argc == 3) || (strv[3][0] == '-')) {
 	    id++;
 	    sprintf(idString, "image%d", id);
 	    name = idString;
 	    firstOption = 3;
 	} else {
-	    name = argv[3];
+	    name = strv[3];
 	    firstOption = 4;
 	}
 
@@ -243,7 +243,7 @@ Tk_ImageCmd(clientData, interp, argc, argv)
 	 */
 
 	if ((*typePtr->createProc)(interp, name, argc-firstOption,
-		argv+firstOption, typePtr, (Tk_ImageMaster) masterPtr,
+		(Tcl_Obj **)(objv+firstOption), typePtr, (Tk_ImageMaster) masterPtr,
 		&masterPtr->masterData) != TCL_OK) {
 	    DeleteImage(masterPtr);
 	    return TCL_ERROR;
@@ -255,34 +255,34 @@ Tk_ImageCmd(clientData, interp, argc, argv)
 		   imagePtr->tkwin, masterPtr->masterData);
 	}
         Tcl_ArgResult(interp, LangObjectArg( interp, Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
-    } else if ((c == 'd') && (strncmp(argv[1], "delete", length) == 0)) {
+    } else if ((c == 'd') && (strncmp(strv[1], "delete", length) == 0)) {
 	for (i = 2; i < argc; i++) {
-	    hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, argv[i]);
+	    hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, strv[i]);
 	    if (hPtr == NULL) {
-	    Tcl_AppendResult(interp, "image \"", argv[i],
+	    Tcl_AppendResult(interp, "image \"", strv[i],
 		    "\" doesn't exist", (char *) NULL);
 		return TCL_ERROR;
 	    }
 	    masterPtr = (ImageMaster *) Tcl_GetHashValue(hPtr);
 	    DeleteImage(masterPtr);
 	}
-    } else if ((c == 'h') && (strncmp(argv[1], "height", length) == 0)) {
+    } else if ((c == 'h') && (strncmp(strv[1], "height", length) == 0)) {
 	if (argc != 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		    " height name\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, argv[2]);
+	hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, strv[2]);
 	if (hPtr == NULL) {
-	    Tcl_AppendResult(interp, "image \"", argv[2],
+	    Tcl_AppendResult(interp, "image \"", strv[2],
 		    "\" doesn't exist", (char *) NULL);
 	    return TCL_ERROR;
 	}
 	masterPtr = (ImageMaster *) Tcl_GetHashValue(hPtr);
-	sprintf(interp->result, "%d", masterPtr->height);
-    } else if ((c == 'n') && (strncmp(argv[1], "names", length) == 0)) {
+	Tcl_SetIntObj(Tcl_GetObjResult(interp), masterPtr->height);
+    } else if ((c == 'n') && (strncmp(strv[1], "names", length) == 0)) {
 	if (argc != 2) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		    " names\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
@@ -290,25 +290,25 @@ Tk_ImageCmd(clientData, interp, argc, argv)
 		hPtr != NULL; hPtr = Tcl_NextHashEntry(&search)) {
 	    Tcl_AppendArg(interp, LangObjectArg(interp,Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
 	}
-    } else if ((c == 't') && (strcmp(argv[1], "type") == 0)) {
+    } else if ((c == 't') && (strcmp(strv[1], "type") == 0)) {
 	if (argc != 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		    " type name\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, argv[2]);
+	hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, strv[2]);
 	if (hPtr == NULL) {
-	    Tcl_AppendResult(interp, "image \"", argv[2],
+	    Tcl_AppendResult(interp, "image \"", strv[2],
 		    "\" doesn't exist", (char *) NULL);
 	    return TCL_ERROR;
 	}
 	masterPtr = (ImageMaster *) Tcl_GetHashValue(hPtr);
 	if (masterPtr->typePtr != NULL) {
-	    interp->result = masterPtr->typePtr->name;
+	    Tcl_AppendResult(interp, masterPtr->typePtr->name, (char *) NULL);
 	}
-    } else if ((c == 't') && (strcmp(argv[1], "types") == 0)) {
+    } else if ((c == 't') && (strcmp(strv[1], "types") == 0)) {
 	if (argc != 2) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		    " types\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
@@ -316,22 +316,22 @@ Tk_ImageCmd(clientData, interp, argc, argv)
 		typePtr = typePtr->nextPtr) {
 	    Tcl_AppendElement(interp, typePtr->name);
 	}
-    } else if ((c == 'w') && (strncmp(argv[1], "width", length) == 0)) {
+    } else if ((c == 'w') && (strncmp(strv[1], "width", length) == 0)) {
 	if (argc != 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", strv[0],
 		    " width name\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, argv[2]);
+	hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, strv[2]);
 	if (hPtr == NULL) {
-	    Tcl_AppendResult(interp, "image \"", argv[2],
+	    Tcl_AppendResult(interp, "image \"", strv[2],
 		    "\" doesn't exist", (char *) NULL);
 	    return TCL_ERROR;
 	}
 	masterPtr = (ImageMaster *) Tcl_GetHashValue(hPtr);
-	sprintf(interp->result, "%d", masterPtr->width);
+	Tcl_SetIntObj(Tcl_GetObjResult(interp), masterPtr->width);
     } else {
-	Tcl_AppendResult(interp, "bad option \"", argv[1],
+	Tcl_AppendResult(interp, "bad option \"", strv[1],
 		"\": must be create, delete, height, names, type, types,",
 		" or width", (char *) NULL);
 	return TCL_ERROR;
@@ -658,8 +658,9 @@ Tk_DeleteImage(interp, name)
     char *name;			/* Name of image. */
 {
     Tcl_HashEntry *hPtr;
-    TkWindow *winPtr = (TkWindow *) Tk_MainWindow(interp);
+    TkWindow *winPtr;
 
+    winPtr = (TkWindow *) Tk_MainWindow(interp);
     if (winPtr == NULL) {
 	return;
     }
@@ -751,4 +752,48 @@ TkDeleteAllImages(mainPtr)
         masterPtr->hPtr = NULL; 
     }
     Tcl_DeleteHashTable(&mainPtr->imageTable);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_GetImageMasterData --
+ *
+ *	Given the name of an image, this procedure returns the type
+ *	of the image and the clientData associated with its master.
+ *
+ * Results:
+ *	If there is no image by the given name, then NULL is returned
+ *	and a NULL value is stored at *typePtrPtr.  Otherwise the return
+ *	value is the clientData returned by the createProc when the
+ *	image was created and a pointer to the type structure for the
+ *	image is stored at *typePtrPtr.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+ClientData
+Tk_GetImageMasterData(interp, name, typePtrPtr)
+    Tcl_Interp *interp;		/* Interpreter in which the image was
+				 * created. */
+    char *name;			/* Name of image. */
+    Tk_ImageType **typePtrPtr;	/* Points to location to fill in with
+				 * pointer to type information for image. */
+{
+    Tcl_HashEntry *hPtr;
+    TkWindow *winPtr;
+    ImageMaster *masterPtr;
+
+    winPtr = (TkWindow *) Tk_MainWindow(interp);
+    hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, name);
+    if (hPtr == NULL) {
+	*typePtrPtr = NULL;
+	return NULL;
+    }
+    masterPtr = (ImageMaster *) Tcl_GetHashValue(hPtr);
+    *typePtrPtr = masterPtr->typePtr;
+    return masterPtr->masterData;
 }

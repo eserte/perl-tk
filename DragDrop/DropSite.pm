@@ -3,7 +3,7 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/DragDrop/DropSite.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#3$
 
 @ISA = qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 

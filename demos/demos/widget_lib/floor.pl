@@ -1,8 +1,9 @@
 # floor.pl
+use strict;
 
 use subs qw/floor_bg1 floor_bg2 floor_bg3 floor_display floor_fg1 floor_fg2
 	    floor_fg3 floor_room_changed/;
-use vars qw/$TOP/;
+use vars qw/$MW $TOP/;
 
 sub floor {
 
@@ -1320,8 +1321,6 @@ package floor;
 # at every keystroke, and when a valid room number is found light the room up.
 #
 # All other global variables are also "floor" qualified.
-
-use English;;
 
 my($class, $current_room, $canvas, $floor_items, $cinfo);
 

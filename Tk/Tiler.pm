@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Tiler.pm#8$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Tiler.pm#4$
 
 @ISA = qw(Tk::Frame);
 

@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTextTag.c 1.36 96/03/07 15:30:43
+ * SCCS: @(#) tkTextTag.c 1.39 97/02/07 13:51:52
  */
 
 #include "default.h"
@@ -34,7 +34,7 @@ static Tk_ConfigSpec tagConfigSpecs[] = {
     {TK_CONFIG_BITMAP, "-fgstipple", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(TkTextTag, fgStipple), TK_CONFIG_NULL_OK},
     {TK_CONFIG_FONT, "-font", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(TkTextTag, fontPtr), TK_CONFIG_NULL_OK},
+	(char *) NULL, Tk_Offset(TkTextTag, tkfont), TK_CONFIG_NULL_OK},
     {TK_CONFIG_COLOR, "-foreground", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(TkTextTag, fgColor), TK_CONFIG_NULL_OK},
     {TK_CONFIG_STRING, "-justify", (char *) NULL, (char *) NULL,
@@ -223,24 +223,25 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		    |Button2MotionMask|Button3MotionMask|Button4MotionMask
 		    |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
 		    |EnterWindowMask|LeaveWindowMask|KeyPressMask
-		    |KeyReleaseMask|PointerMotionMask)) {
+		    |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
 		Tk_DeleteBinding(interp, textPtr->bindingTable,
 			(ClientData) tagPtr, argv[4]);
 		Tcl_ResetResult(interp);
 		Tcl_AppendResult(interp, "requested illegal events; ",
-			"only key, button, motion, and enter/leave ",
+			"only key, button, motion, enter, leave, and virtual ",
 			"events may be used", (char *) NULL);
 		return TCL_ERROR;
 	    }
 	} else if (argc == 5) {
-	    LangCallback *command;
+	    Arg command;
     
 	    command = Tk_GetBinding(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr, argv[4]);
 	    if (command == NULL) {
 		return TCL_ERROR;
 	    }
-	    Tcl_ArgResult(interp,LangCallbackArg(command));
+	    Tcl_ArgResult(interp,command);
+	    Tcl_DecrRefCount(command);
 	} else {
 	    Tk_GetAllBindings(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr);
@@ -409,7 +410,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		    || (tagPtr->bdString != NULL)
 		    || (tagPtr->reliefString != NULL)
 		    || (tagPtr->bgStipple != None)
-		    || (tagPtr->fgColor != NULL) || (tagPtr->fontPtr != None)
+		    || (tagPtr->fgColor != NULL) || (tagPtr->tkfont != None)
 		    || (tagPtr->fgStipple != None)
 		    || (tagPtr->justifyString != NULL)
 		    || (tagPtr->lMargin1String != NULL)
@@ -791,7 +792,7 @@ TkTextCreateTag(textPtr, tagName)
     tagPtr->relief = TK_RELIEF_FLAT;
     tagPtr->bgStipple = None;
     tagPtr->fgColor = NULL;
-    tagPtr->fontPtr = NULL;
+    tagPtr->tkfont = NULL;
     tagPtr->fgStipple = None;
     tagPtr->justifyString = NULL;
     tagPtr->justify = TK_JUSTIFY_LEFT;
@@ -902,9 +903,7 @@ TkTextFreeTag(textPtr, tagPtr)
     if (tagPtr->fgColor != None) {
 	Tk_FreeColor(tagPtr->fgColor);
     }
-    if (tagPtr->fontPtr != None) {
-	Tk_FreeFontStruct(tagPtr->fontPtr);
-    }
+    Tk_FreeFont(tagPtr->tkfont);
     if (tagPtr->fgStipple != None) {
 	Tk_FreeBitmap(textPtr->display, tagPtr->fgStipple);
     }
@@ -1154,7 +1153,7 @@ TkTextBindProc(clientData, eventPtr)
 		mask = 0;
 		break;
 	}
-	if ((eventPtr->xbutton.state & AnyButtonMask) == mask) {
+	if ((eventPtr->xbutton.state & AnyButtonMask) == (unsigned) mask) {
 	    textPtr->flags &= ~BUTTON_DOWN;
 	    repick = 1;
 	}

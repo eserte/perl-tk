@@ -13,7 +13,7 @@
 package Tk::Listbox; 
 
 use vars qw($VERSION);
-$VERSION = '2.004'; # $Id: //depot/Tk/Listbox/Listbox.pm#4$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Listbox/Listbox.pm#4$
 
 use Tk qw(Ev);
 require Tk::Clipboard;
@@ -25,7 +25,11 @@ Construct Tk::Widget 'Listbox';
 
 bootstrap Tk::Listbox $Tk::VERSION; 
 
-sub Tk_cmd { \&Tk::listbox }
+sub Tk_cmd { \&Tk::listbox } 
+
+Tk::Methods("activate","bbox","curselection","delete","get","index",
+            "insert","nearest","scan","see","selection","size",
+            "xview","yview");
 
 use Tk::Submethods ( 'selection' => [qw(anchor clear includes set)],
                      'scan' => [qw(mark dragto)]

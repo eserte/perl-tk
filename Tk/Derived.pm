@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '2.017'; # $Id: //depot/Tk/Tk/Derived.pm#17$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Derived.pm#4$
 
 
 
@@ -315,7 +315,7 @@ sub configure
        eval {local $SIG{'__DIE__'};  $subwidget->configure($opt => $val) };
        if ($@)
         {
-         $error = $@; 
+         $error = "Can't set $opt to '$val' for $cw: " . $@; 
          undef $@;
         }
        else

@@ -1,0 +1,16 @@
+#!/usr/local/bin/perl -w        
+# Utility to run GNU merge on munged tcl docs against perl docs     
+use FindBin qw($RealBin);
+use lib $RealBin;
+use Perlize;
+use File::Copy;
+die join(' ',$0,@ARGV) unless @ARGV == 4;
+
+my $orig = Perlize::perlize_file(shift);     
+my $theirs = Perlize::perlize_file(shift);
+my $mine   = shift;
+my $merge  = shift;
+copy($mine,$merge);
+my $code = system('merge',$merge,$orig,$theirs);
+warn "Code $code from merge of $mine" if ($code);
+exit $code;

@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkPlace.c 1.25 96/02/15 18:52:32
+ * SCCS: @(#) tkPlace.c 1.27 96/08/20 17:05:31
  */
 
 #include "tkPort.h"
@@ -361,9 +361,9 @@ FindSlave(tkwin)
 	slavePtr->masterPtr = NULL;
 	slavePtr->nextPtr = NULL;
 	slavePtr->x = slavePtr->y = 0;
-	slavePtr->relX = slavePtr->relY = 0.0;
+	slavePtr->relX = slavePtr->relY = (float) 0.0;
 	slavePtr->width = slavePtr->height = 0;
-	slavePtr->relWidth = slavePtr->relHeight = 0.0;
+	slavePtr->relWidth = slavePtr->relHeight = (float) 0.0;
 	slavePtr->anchor = TK_ANCHOR_NW;
 	slavePtr->borderMode = BM_INSIDE;
 	slavePtr->flags = 0;
@@ -607,7 +607,7 @@ ConfigureSlave(interp, slavePtr, argc, argv)
 		    result = TCL_ERROR;
 		    goto done;
 		}
-		slavePtr->relHeight = d;
+		slavePtr->relHeight = (float) d;
 		slavePtr->flags |= CHILD_REL_HEIGHT;
 	    }
 	} else if ((c == 'r') && (strncmp(argv[0], "-relwidth", length) == 0)
@@ -619,7 +619,7 @@ ConfigureSlave(interp, slavePtr, argc, argv)
 		    result = TCL_ERROR;
 		    goto done;
 		}
-		slavePtr->relWidth = d;
+		slavePtr->relWidth = (float) d;
 		slavePtr->flags |= CHILD_REL_WIDTH;
 	    }
 	} else if ((c == 'r') && (strncmp(argv[0], "-relx", length) == 0)
@@ -628,14 +628,14 @@ ConfigureSlave(interp, slavePtr, argc, argv)
 		result = TCL_ERROR;
 		goto done;
 	    }
-	    slavePtr->relX = d;
+	    slavePtr->relX = (float) d;
 	} else if ((c == 'r') && (strncmp(argv[0], "-rely", length) == 0)
 		&& (length >= 5)) {
 	    if (Tcl_GetDouble(interp, argv[1], &d) != TCL_OK) {
 		result = TCL_ERROR;
 		goto done;
 	    }
-	    slavePtr->relY = d;
+	    slavePtr->relY = (float) d;
 	} else if ((c == 'w') && (strncmp(argv[0], "-width", length) == 0)) {
 	    if (argv[1][0] == 0) {
 		slavePtr->flags &= ~CHILD_WIDTH;
@@ -747,9 +747,9 @@ RecomputePlacement(clientData)
 	 */
 
 	x1 = slavePtr->x + masterBW + (slavePtr->relX*masterWidth);
-	x = x1 + ((x1 > 0) ? 0.5 : -0.5);
+	x = (int) (x1 + ((x1 > 0) ? 0.5 : -0.5));
 	y1 = slavePtr->y + masterBW + (slavePtr->relY*masterHeight);
-	y = y1 + ((y1 > 0) ? 0.5 : -0.5);
+	y = (int) (y1 + ((y1 > 0) ? 0.5 : -0.5));
 	if (slavePtr->flags & (CHILD_WIDTH|CHILD_REL_WIDTH)) {
 	    width = 0;
 	    if (slavePtr->flags & CHILD_WIDTH) {
@@ -765,7 +765,7 @@ RecomputePlacement(clientData)
 		 */
 
 		x2 = x1 + (slavePtr->relWidth*masterWidth);
-		tmp = x2 + ((x2 > 0) ? 0.5 : -0.5);
+		tmp = (int) (x2 + ((x2 > 0) ? 0.5 : -0.5));
 		width += tmp - x;
 	    }
 	} else {
@@ -783,7 +783,7 @@ RecomputePlacement(clientData)
 		 */
 
 		y2 = y1 + (slavePtr->relHeight*masterHeight);
-		tmp = y2 + ((y2 > 0) ? 0.5 : -0.5);
+		tmp = (int) (y2 + ((y2 > 0) ? 0.5 : -0.5));
 		height += tmp - y;
 	    }
 	} else {

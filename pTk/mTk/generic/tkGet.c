@@ -13,7 +13,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkGet.c 1.12 96/02/15 18:53:33
+ * SCCS: @(#) tkGet.c 1.13 96/04/26 10:25:46
  */
 
 #include "tkInt.h"
@@ -414,7 +414,7 @@ Tk_NameOfJustify(justify)
 
 Tk_Uid
 Tk_GetUid(string)
-    char *string;		/* String to convert. */
+    CONST char *string;		/* String to convert. */
 {
     int dummy;
 

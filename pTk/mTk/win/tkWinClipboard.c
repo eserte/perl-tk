@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinClipboard.c 1.6 96/10/03 11:22:51
+ * SCCS: @(#) tkWinClipboard.c 1.8 97/05/20 17:01:13
  */
 
 #include "tkWinInt.h"
@@ -161,13 +161,12 @@ XSetSelectionOwner(display, selection, owner, time)
  */
 
 void
-TkWinClipboardRender(winPtr, format)
-    TkWindow *winPtr;
+TkWinClipboardRender(dispPtr, format)
+    TkDisplay *dispPtr;
     UINT format;
 {
     TkClipboardTarget *targetPtr;
     TkClipboardBuffer *cbPtr;
-    TkDisplay *dispPtr = winPtr->dispPtr;
     HGLOBAL handle;
     char *buffer, *p, *endPtr;
     int length;

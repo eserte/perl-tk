@@ -4,7 +4,7 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION);
-$VERSION = '2.004'; # $Id: //depot/Tk/DragDrop/DragDrop.pm#4$
+$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#3$
 
 @ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
 

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvLine.c 1.44 96/12/02 10:54:33
+ * SCCS: @(#) tkCanvLine.c 1.46 97/04/25 16:51:02
  */
 
 #include "tkPort.h"
@@ -259,9 +259,9 @@ CreateLine(interp, canvas, itemPtr, argc, argv)
 	bothUid = Tk_GetUid("both");
     }
     linePtr->arrow = noneUid;
-    linePtr->arrowShapeA = 8.0;
-    linePtr->arrowShapeB = 10.0;
-    linePtr->arrowShapeC = 3.0;
+    linePtr->arrowShapeA = (float)8.0;
+    linePtr->arrowShapeB = (float)10.0;
+    linePtr->arrowShapeC = (float)3.0;
     linePtr->firstArrowPtr = NULL;
     linePtr->lastArrowPtr = NULL;
     linePtr->smooth = 0;
@@ -600,8 +600,8 @@ ComputeLineBbox(canvas, linePtr)
     int i, width;
 
     coordPtr = linePtr->coordPtr;
-    linePtr->header.x1 = linePtr->header.x2 = *coordPtr;
-    linePtr->header.y1 = linePtr->header.y2 = coordPtr[1];
+    linePtr->header.x1 = linePtr->header.x2 = (int) *coordPtr;
+    linePtr->header.y1 = linePtr->header.y2 = (int) coordPtr[1];
 
     /*
      * Compute the bounding box of all the points in the line,
@@ -1014,10 +1014,7 @@ LineToArea(canvas, itemPtr, rectPtr)
     LineItem *linePtr = (LineItem *) itemPtr;
     double staticSpace[2*MAX_STATIC_POINTS];
     double *linePoints;
-    double radius;
     int numPoints, result;
-
-    radius = linePtr->width/2.0;
 
     /*
      * Handle smoothed lines by generating an expanded set of points
@@ -1254,9 +1251,9 @@ ParseArrowShape(clientData, interp, tkwin, value, recordPtr, offset)
 		!= TCL_OK)) {
 	goto syntaxError;
     }
-    linePtr->arrowShapeA = a;
-    linePtr->arrowShapeB = b;
-    linePtr->arrowShapeC = c;
+    linePtr->arrowShapeA = (float) a;
+    linePtr->arrowShapeB = (float) b;
+    linePtr->arrowShapeC = (float) c;
     if (freeProc)
      (*freeProc)(argc,argv);
     return TCL_OK;

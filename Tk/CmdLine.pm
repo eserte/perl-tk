@@ -6,7 +6,7 @@ use strict;
 
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/Tk/CmdLine.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/CmdLine.pm#3$
 
 use vars qw($synchronous %switch $iconic %options %methods @command %config);
 

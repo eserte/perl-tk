@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1990 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) bindtags.n 1.5 95/05/06 15:30:44
+'\" SCCS: @(#) bindtags.n 1.9 96/11/30 14:54:49
 '\" 
 .so man.macros
 .TH bindtags n 4.0 Tk "Tk Generic Methods"
@@ -58,6 +58,8 @@ reverses the order in which binding scripts will be evaluated for
 a button named \fB$b\fR so that \fBall\fR bindings are invoked
 first, following by bindings for \fB$b\fR's toplevel, followed by
 class bindings, followed by bindings for \fB$b\fR.
+If \fItagList\fR is an empty list then the binding tags for $widget\fR
+are returned to the default state described above.
 .PP
 The \fBbindtags\fR command may be used to introduce arbitrary
 additional binding tags for a window, or to remove standard tags.

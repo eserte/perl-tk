@@ -33,15 +33,16 @@ System("perl","Makefile.PL") unless (-r "Makefile");
 
 System("make","manifest") if ($opt_man);
 
-my $dir   = getcwd();
+my $path  = getcwd();
+my $dir   = $path;
 my $files = maniread();
-$dir   =~ s#^.*/([^/]+)$#$1#;
+$dir   =~ s#^.*/([^/]+)\d+$#$1#;
 
 my @files = map("$dir$version/$_",sort(keys %$files));
 chdir("..");
 
 unlink("$dir$version") if (-l "$dir$version");
-symlink($dir,"$dir$version") || die "Cannot link $dir $dir$version:$!";
+symlink($path,"$dir$version") || die "Cannot link $dir $dir$version:$!";
 
 $dir .= $version;
 

@@ -1,0 +1,25 @@
+#!/usr/local/bin/perl -w
+use Tk;
+require Tk::ErrorDialog;
+require Tk::Pod;
+
+$top = MainWindow->new();
+$top->withdraw;
+
+@ARGV = "Tk" unless (@ARGV);
+
+foreach $file (@ARGV)
+ {
+  if (-d $file)
+   {
+    Tk::Pod->Dir($file);
+   }
+  else
+   {
+    $top->Pod(-file => $file);
+   }
+ }
+
+$top->destroy unless ($top->children);
+
+MainLoop;

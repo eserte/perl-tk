@@ -12,8 +12,7 @@
  *
  * This code contributed by Karl Lehenbauer and Mark Diekhans
  *
- *
- * SCCS: @(#) tclCkalloc.c 1.24 96/09/17 13:23:02
+ * SCCS: @(#) tclCkalloc.c 1.28 97/04/30 12:09:04
  */
 
 #include "tclInt.h"
@@ -108,17 +107,20 @@ static int  init_malloced_bodies = TRUE;
 
 static int		MemoryCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
+static void		ValidateMemory _ANSI_ARGS_((
+			    struct mem_header *memHeaderP, char *file,
+			    int line, int nukeGuards));
 
 /*
  *----------------------------------------------------------------------
  *
- * dump_memory_info --
+ * TclDumpMemoryInfo --
  *     Display the global memory management statistics.
  *
  *----------------------------------------------------------------------
  */
-static void
-dump_memory_info(outFile) 
+void
+TclDumpMemoryInfo(outFile) 
     FILE *outFile;
 {
         fprintf(outFile,"total mallocs             %10d\n", 
@@ -166,7 +168,7 @@ ValidateMemory(memHeaderP, file, line, nukeGuards)
         }
     }
     if (guard_failed) {
-        dump_memory_info(stderr);
+        TclDumpMemoryInfo (stderr);
         fprintf(stderr, "low guard failed at %lx, %s %d\n",
                  (long unsigned int) memHeaderP->body, file, line);
         fflush(stderr);  /* In case name pointer is bad. */
@@ -188,7 +190,7 @@ ValidateMemory(memHeaderP, file, line, nukeGuards)
     }
 
     if (guard_failed) {
-        dump_memory_info (stderr);
+        TclDumpMemoryInfo (stderr);
         fprintf(stderr, "high guard failed at %lx, %s %d\n",
                  (long unsigned int) memHeaderP->body, file, line);
         fflush(stderr);  /* In case name pointer is bad. */
@@ -294,7 +296,7 @@ Tcl_DbCkalloc(size, file, line)
                               sizeof(struct mem_header) + HIGH_GUARD_SIZE);
     if (result == NULL) {
         fflush(stdout);
-        dump_memory_info(stderr);
+        TclDumpMemoryInfo(stderr);
         panic("unable to alloc %d bytes, %s line %d", size, file, 
               line);
     }
@@ -461,7 +463,7 @@ Tcl_DbCkrealloc(ptr, size, file, line)
 	    (((unsigned long) ptr) - BODY_OFFSET);
 
     copySize = size;
-    if (copySize > memp->length) {
+    if (copySize > (unsigned int) memp->length) {
 	copySize = memp->length;
     }
     new = Tcl_DbCkalloc(size, file, line);
@@ -578,7 +580,7 @@ MemoryCmd (clientData, interp, argc, argv)
         return TCL_OK;
     }
     if (strcmp(argv[1],"info") == 0) {
-        dump_memory_info(stdout);
+        TclDumpMemoryInfo(stdout);
         return TCL_OK;
     }
     if (strcmp(argv[1],"init") == 0) {

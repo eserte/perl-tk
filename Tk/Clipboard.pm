@@ -4,7 +4,7 @@
 package Tk::Widget;
 
 use vars qw($VERSION);
-$VERSION = '2.014'; # $Id: //depot/Tk/Tk/Clipboard.pm#14$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Clipboard.pm#4$
 
 sub clipboardSet
 {

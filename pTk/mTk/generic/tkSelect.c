@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkSelect.c 1.56 96/03/21 13:16:29
+ * SCCS: @(#) tkSelect.c 1.57 96/05/03 10:52:40
  */
 
 #include "tkInt.h"
@@ -202,10 +202,14 @@ Tk_Window tkwin;
   }
  else
   {
+#ifdef WIN32
+   return -1;
+#else
    char buffer[TK_SEL_BYTES_AT_ONCE];
    int count = (*cd->proc)(cd->clientData, offset, buffer, maxBytes);
    buffer[count] = '\0';
    return TkSelCvtToX(Xbuffer, buffer, type, tkwin, maxBytes);
+#endif
   }
 }
 
@@ -660,6 +664,9 @@ Tk_Window tkwin;
     portion[numItems] = '\0';
     return (*info->proc)(info->clientData, interp, (char *) portion);
  } else {
+#ifdef WIN32
+    return TCL_ERROR;
+#else
     char *string;
     int  result;
     if (format != 32) {
@@ -672,6 +679,7 @@ Tk_Window tkwin;
     result = (*info->proc)(info->clientData, interp, string);
     ckfree(string);
     return result;
+#endif
  }
 }
 
@@ -796,6 +804,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	    
 	Tk_ClearSelection(tkwin, selection);
 	return TCL_OK;
+#ifndef WIN32
     } else if ((c == 'e') && (strncmp(argv[1], "exists", length) == 0)) {
 	Window win = None;
 	for (count = argc-2, argp = argv+2; count > 0; count -= 2, argp += 2) {
@@ -850,6 +859,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	    }
         }
 	return TCL_OK;
+#endif /* WIN32 */
     } else if ((c == 'g') && (strncmp(argv[1], "get", length) == 0)) {
 	Atom target;
 	char *targetName = NULL;
@@ -1233,7 +1243,7 @@ TkSelClearSelection(tkwin, eventPtr)
     }
 
     if (infoPtr != NULL && (infoPtr->owner == tkwin)
-	    && (eventPtr->xselectionclear.serial >= infoPtr->serial)) {
+	    && (eventPtr->xselectionclear.serial >= (unsigned) infoPtr->serial)) {
 	if (prevPtr == NULL) {
 	    dispPtr->selectionInfoPtr = infoPtr->nextPtr;
 	} else {

@@ -2,9 +2,11 @@
 #define LangCallback   SV
 #define Arg            SV *
 #define Var            SV *
-#define LangResultSave AV
+#define LangResultSave SV
 #define Tcl_Command    struct Lang_CmdInfo *
 #define Tcl_RegExp     regexp *
+#define Tcl_Obj        SV 
+#define Tcl_DString    SV *
 
 #ifndef PerlIO 
 #define PerlIO FILE 

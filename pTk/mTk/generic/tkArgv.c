@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkArgv.c 1.20 96/02/15 18:51:32
+ * SCCS: @(#) tkArgv.c 1.21 97/04/25 16:50:27
  */
 
 #include "tkPort.h"
@@ -239,10 +239,10 @@ Tk_ParseArgv(interp, tkwin, argcPtr, argv, argTable, flags)
 		}
 		break;
 	    case TK_ARGV_FUNC: {
-		int (*handlerProc)();
+		typedef int (ArgvFunc)_ANSI_ARGS_((char *, char *, char *));
+		ArgvFunc *handlerProc;
 
-		handlerProc = (int (*)())infoPtr->src;
-		
+		handlerProc = (ArgvFunc *) infoPtr->src;
 		if ((*handlerProc)(infoPtr->dst, infoPtr->key,
 			argv[srcIndex])) {
 		    srcIndex += 1;
@@ -251,10 +251,11 @@ Tk_ParseArgv(interp, tkwin, argcPtr, argv, argTable, flags)
 		break;
 	    }
 	    case TK_ARGV_GENFUNC: {
-		int	    (*handlerProc)();
+		typedef int (ArgvGenFunc)_ANSI_ARGS_((char *, Tcl_Interp *, 
+			char *, int, char **));
+		ArgvGenFunc *handlerProc;
 
-		handlerProc = (int (*)())infoPtr->src;
-
+		handlerProc = (ArgvGenFunc *) infoPtr->src;
 		argc = (*handlerProc)(infoPtr->dst, interp, infoPtr->key,
 			argc, argv+srcIndex);
 		if (argc < 0) {

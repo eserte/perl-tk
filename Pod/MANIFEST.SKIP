@@ -1,0 +1,4 @@
+blib/
+Makefile$
+%$
+\.(bak|old)$

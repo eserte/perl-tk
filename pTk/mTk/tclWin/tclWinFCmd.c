@@ -4,16 +4,15 @@
  *      This file implements the Windows specific portion of file manipulation 
  *      subcommands of the "file" command. 
  *
- * Copyright (c) 1996 Sun Microsystems, Inc.
+ * Copyright (c) 1996-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinFCmd.c 1.12 96/10/14 14:39:16
+ * SCCS: @(#) tclWinFCmd.c 1.20 97/10/10 11:50:14
  */
 
 #include "tclWinInt.h"
-#include "tclPort.h"
 
 /*
  * The following constants specify the type of callback when
@@ -23,6 +22,53 @@
 #define DOTREE_PRED   1     /* pre-order directory  */
 #define DOTREE_POSTD  2     /* post-order directory */
 #define DOTREE_F      3     /* regular file */
+
+/*
+ * Callbacks for file attributes code.
+ */
+
+static int		GetWinFileAttributes _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj **attributePtrPtr));
+static int		GetWinFileLongName _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj **attributePtrPtr));
+static int		GetWinFileShortName _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj **attributePtrPtr));
+static int		SetWinFileAttributes _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj *attributePtr));
+static int		CannotSetAttribute _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName,
+			    Tcl_Obj *attributePtr));
+
+/*
+ * Constants and variables necessary for file attributes subcommand.
+ */
+
+enum {
+    WIN_ARCHIVE_ATTRIBUTE,
+    WIN_HIDDEN_ATTRIBUTE,
+    WIN_LONGNAME_ATTRIBUTE,
+    WIN_READONLY_ATTRIBUTE,
+    WIN_SHORTNAME_ATTRIBUTE,
+    WIN_SYSTEM_ATTRIBUTE
+};
+
+static int attributeArray[] = {FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_HIDDEN,
+	0, FILE_ATTRIBUTE_READONLY, 0, FILE_ATTRIBUTE_SYSTEM};
+
+
+char *tclpFileAttrStrings[] = {"-archive", "-hidden", "-longname", "-readonly",
+	"-shortname", "-system", (char *) NULL};
+CONST TclFileAttrProcs tclpFileAttrProcs[] = {
+	{GetWinFileAttributes, SetWinFileAttributes},
+	{GetWinFileAttributes, SetWinFileAttributes},
+	{GetWinFileLongName, CannotSetAttribute},
+	{GetWinFileAttributes, SetWinFileAttributes},
+	{GetWinFileShortName, CannotSetAttribute},
+	{GetWinFileAttributes, SetWinFileAttributes}};
 
 /*
  * Prototype for the TraverseWinTree callback function.
@@ -35,6 +81,11 @@ typedef int (TraversalProc)(char *src, char *dst, DWORD attr, int type,
  * Declarations for local procedures defined in this file:
  */
 
+static void		AttributesPosixError _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName, int getOrSet));
+static int		ConvertFileNameFormat _ANSI_ARGS_((Tcl_Interp *interp,
+			    int objIndex, char *fileName, int longShort,
+			    Tcl_Obj **attributePtrPtr));
 static int		TraversalCopy(char *src, char *dst, DWORD attr, 
 				int type, Tcl_DString *errorPtr);
 static int		TraversalDelete(char *src, char *dst, DWORD attr,
@@ -93,8 +144,8 @@ TclpRenameFile(
     DWORD srcAttr, dstAttr;
     
     /*
-     * Would throw an exception under NT if one of the arguments is a char
-     * block device.
+     * Would throw an exception under NT if one of the arguments is a 
+     * char block device.
      */
 
     try {
@@ -104,6 +155,7 @@ TclpRenameFile(
     } except (-1) {}
 
     TclWinConvertError(GetLastError());
+
     srcAttr = GetFileAttributes(src);
     dstAttr = GetFileAttributes(dst);
     if (srcAttr == (DWORD) -1) {
@@ -116,6 +168,16 @@ TclpRenameFile(
     if (errno == EBADF) {
 	errno = EACCES;
 	return TCL_ERROR;
+    }
+    if ((errno == EACCES) && (TclWinGetPlatformId() == VER_PLATFORM_WIN32s)) {
+	if ((srcAttr != 0) && (dstAttr != 0)) {
+	    /*
+	     * Win32s reports trying to overwrite an existing file or directory
+	     * as EACCES.
+	     */
+
+	    errno = EEXIST;
+	}
     }
     if (errno == EACCES) {
 	decode:
@@ -403,7 +465,14 @@ TclpDeleteFile(
 	return TCL_OK;
     }
     TclWinConvertError(GetLastError());
-    if (errno == EACCES) {
+    if (path[0] == '\0') {
+	/*
+	 * Win32s thinks that "" is the same as "." and then reports EISDIR
+	 * instead of ENOENT.
+	 */
+
+	errno = ENOENT;
+    } else if (errno == EACCES) {
         attr = GetFileAttributes(path);
 	if (attr != (DWORD) -1) {
 	    if (attr & FILE_ATTRIBUTE_DIRECTORY) {
@@ -475,8 +544,17 @@ int
 TclpCreateDirectory(
     char *path)			/* Pathname of directory to create */
 {
+    int error;
+
     if (CreateDirectory(path, NULL) == 0) {
-	TclWinConvertError(GetLastError());
+	error = GetLastError();
+	if (TclWinGetPlatformId() == VER_PLATFORM_WIN32s) {
+	    if ((error == ERROR_ACCESS_DENIED) 
+		    && (GetFileAttributes(path) != (DWORD) -1)) {
+		error = ERROR_FILE_EXISTS;
+	    }
+	}
+	TclWinConvertError(error);
 	return TCL_ERROR;
     }   
     return TCL_OK;
@@ -570,13 +648,20 @@ TclpRemoveDirectory(
 {
     int result;
     Tcl_DString buffer;
-    OSVERSIONINFO os;
     DWORD attr;
 
     if (RemoveDirectory(path) != FALSE) {
 	return TCL_OK;
     }
     TclWinConvertError(GetLastError());
+    if (path[0] == '\0') {
+	/*
+	 * Win32s thinks that "" is the same as "." and then reports EACCES
+	 * instead of ENOENT.
+	 */
+
+	errno = ENOENT;
+    }
     if (errno == EACCES) {
 	attr = GetFileAttributes(path);
 	if (attr != (DWORD) -1) {
@@ -603,14 +688,12 @@ TclpRemoveDirectory(
 	    }
 
 	    /* 
-	     * Windows 95 reports removing a non-empty directory as
-	     * an EACCES, not an EEXIST.  If the directory is not empty,
+	     * Windows 95 and Win32s report removing a non-empty directory 
+	     * as EACCES, not EEXIST.  If the directory is not empty,
 	     * change errno so caller knows what's going on.
 	     */
 
-	    os.dwOSVersionInfoSize = sizeof(os);
-	    GetVersionEx(&os);
-	    if (os.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS) {
+	    if (TclWinGetPlatformId() != VER_PLATFORM_WIN32_NT) {
 		HANDLE handle;
 		WIN32_FIND_DATA data;
 		Tcl_DString buffer;
@@ -951,4 +1034,368 @@ TraversalDelete(
 	Tcl_DStringAppend(errorPtr, src, -1);
     }
     return TCL_ERROR;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * AttributesPosixError --
+ *
+ *	Sets the object result with the appropriate error.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *      The interp's object result is set with an error message
+ *	based on the objIndex, fileName and errno.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+AttributesPosixError(
+    Tcl_Interp *interp,		/* The interp that has the error */
+    int objIndex,		/* The attribute which caused the problem. */
+    char *fileName,		/* The name of the file which caused the 
+				 * error. */
+    int getOrSet)		/* 0 for get; 1 for set */
+{
+    TclWinConvertError(GetLastError());
+    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), 
+	    "cannot ", getOrSet ? "set" : "get", " attribute \"", 
+	    tclpFileAttrStrings[objIndex], "\" for file \"", fileName, 
+	    "\": ", Tcl_PosixError(interp), (char *) NULL);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetWinFileAttributes --
+ *
+ *      Returns a Tcl_Obj containing the value of a file attribute.
+ *	This routine gets the -hidden, -readonly or -system attribute.
+ *
+ * Results:
+ *      Standard Tcl result and a Tcl_Obj in attributePtrPtr. The object
+ *	will have ref count 0. If the return value is not TCL_OK,
+ *	attributePtrPtr is not touched.
+ *
+ * Side effects:
+ *      A new object is allocated if the file is valid.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetWinFileAttributes(
+    Tcl_Interp *interp,		    /* The interp we are using for errors. */
+    int objIndex,		    /* The index of the attribute. */
+    char *fileName,		    /* The name of the file. */
+    Tcl_Obj **attributePtrPtr)	    /* A pointer to return the object with. */
+{
+    DWORD result = GetFileAttributes(fileName);
+
+    if (result == 0xFFFFFFFF) {
+	AttributesPosixError(interp, objIndex, fileName, 0);
+	return TCL_ERROR;
+    }
+
+    *attributePtrPtr = Tcl_NewBooleanObj(result & attributeArray[objIndex]);
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ConvertFileNameFormat --
+ *
+ *      Returns a Tcl_Obj containing either the long or short version of the 
+ *	file name.
+ *
+ * Results:
+ *      Standard Tcl result and a Tcl_Obj in attributePtrPtr. The object
+ *	will have ref count 0. If the return value is not TCL_OK,
+ *	attributePtrPtr is not touched.
+ *
+ * Side effects:
+ *      A new object is allocated if the file is valid.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ConvertFileNameFormat(
+    Tcl_Interp *interp,		    /* The interp we are using for errors. */
+    int objIndex,		    /* The index of the attribute. */
+    char *fileName,		    /* The name of the file. */
+    int longShort,		    /* 0 to short name, 1 to long name. */
+    Tcl_Obj **attributePtrPtr)	    /* A pointer to return the object with. */
+{
+    HANDLE findHandle;
+    WIN32_FIND_DATA findData;
+    int pathArgc, i;
+    char **pathArgv, **newPathArgv;
+    char *currentElement, *resultStr;
+    Tcl_DString resultDString;
+    int result = TCL_OK;
+
+    Tcl_SplitPath(fileName, &pathArgc, &pathArgv);
+    newPathArgv = (char **) ckalloc(pathArgc * sizeof(char *));
+
+    i = 0;
+    if ((pathArgv[0][0] == '/') 
+	    || ((strlen(pathArgv[0]) == 3) && (pathArgv[0][1] == ':'))) {
+	newPathArgv[0] = (char *) ckalloc(strlen(pathArgv[0]) + 1);
+	strcpy(newPathArgv[0], pathArgv[0]);
+	i = 1;
+    } 
+    for ( ; i < pathArgc; i++) {
+	if (strcmp(pathArgv[i], ".") == 0) {
+	    currentElement = ckalloc(2);
+	    strcpy(currentElement, ".");
+	} else if (strcmp(pathArgv[i], "..") == 0) {
+	    currentElement = ckalloc(3);
+	    strcpy(currentElement, "..");
+	} else {
+	    int useLong;
+
+	    Tcl_DStringInit(&resultDString);
+	    resultStr = Tcl_JoinPath(i + 1, pathArgv, &resultDString);
+	    findHandle = FindFirstFile(resultStr, &findData);
+	    if (findHandle == INVALID_HANDLE_VALUE) {
+		pathArgc = i - 1;
+		AttributesPosixError(interp, objIndex, fileName, 0);
+		result = TCL_ERROR;
+		Tcl_DStringFree(&resultDString);
+		goto cleanup;
+	    }
+	    if (longShort) {
+		if (findData.cFileName[0] != '\0') {
+		    useLong = 1;
+		} else {
+		    useLong = 0;
+		}
+	    } else {
+		if (findData.cAlternateFileName[0] == '\0') {
+		    useLong = 1;
+		} else {
+		    useLong = 0;
+		}
+	    }
+	    if (useLong) {
+		currentElement = ckalloc(strlen(findData.cFileName) + 1);
+		strcpy(currentElement, findData.cFileName);
+	    } else {
+		currentElement = ckalloc(strlen(findData.cAlternateFileName) 
+			+ 1);
+		strcpy(currentElement, findData.cAlternateFileName);
+	    }
+	    Tcl_DStringFree(&resultDString);
+	    FindClose(findHandle);
+	}
+	newPathArgv[i] = currentElement;
+    }
+
+    Tcl_DStringInit(&resultDString);
+    resultStr = Tcl_JoinPath(pathArgc, newPathArgv, &resultDString);
+    *attributePtrPtr = Tcl_NewStringObj(resultStr, Tcl_DStringLength(&resultDString));
+    Tcl_DStringFree(&resultDString);
+
+cleanup:
+    for (i = 0; i < pathArgc; i++) {
+	ckfree(newPathArgv[i]);
+    }
+    ckfree((char *) newPathArgv);
+    return result;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetWinFileLongName --
+ *
+ *      Returns a Tcl_Obj containing the short version of the file
+ *	name.
+ *
+ * Results:
+ *      Standard Tcl result and a Tcl_Obj in attributePtrPtr. The object
+ *	will have ref count 0. If the return value is not TCL_OK,
+ *	attributePtrPtr is not touched.
+ *
+ * Side effects:
+ *      A new object is allocated if the file is valid.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetWinFileLongName(
+    Tcl_Interp *interp,		    /* The interp we are using for errors. */
+    int objIndex,		    /* The index of the attribute. */
+    char *fileName,		    /* The name of the file. */
+    Tcl_Obj **attributePtrPtr)	    /* A pointer to return the object with. */
+{
+    return ConvertFileNameFormat(interp, objIndex, fileName, 1, attributePtrPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetWinFileShortName --
+ *
+ *      Returns a Tcl_Obj containing the short version of the file
+ *	name.
+ *
+ * Results:
+ *      Standard Tcl result and a Tcl_Obj in attributePtrPtr. The object
+ *	will have ref count 0. If the return value is not TCL_OK,
+ *	attributePtrPtr is not touched.
+ *
+ * Side effects:
+ *      A new object is allocated if the file is valid.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+GetWinFileShortName(
+    Tcl_Interp *interp,		    /* The interp we are using for errors. */
+    int objIndex,		    /* The index of the attribute. */
+    char *fileName,		    /* The name of the file. */
+    Tcl_Obj **attributePtrPtr)	    /* A pointer to return the object with. */
+{
+    return ConvertFileNameFormat(interp, objIndex, fileName, 0, attributePtrPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetWinFileAttributes --
+ *
+ *	Set the file attributes to the value given by attributePtr.
+ *	This routine sets the -hidden, -readonly, or -system attributes.
+ *
+ * Results:
+ *      Standard TCL error.
+ *
+ * Side effects:
+ *      The file's attribute is set.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+SetWinFileAttributes(
+    Tcl_Interp *interp,		    /* The interp we are using for errors. */
+    int objIndex,		    /* The index of the attribute. */
+    char *fileName,		    /* The name of the file. */
+    Tcl_Obj *attributePtr)	    /* The new value of the attribute. */
+{
+    DWORD fileAttributes = GetFileAttributes(fileName);
+    int yesNo;
+    int result;
+
+    if (fileAttributes == 0xFFFFFFFF) {
+	AttributesPosixError(interp, objIndex, fileName, 1);
+	return TCL_ERROR;
+    }
+
+    result = Tcl_GetBooleanFromObj(interp, attributePtr, &yesNo);
+    if (result != TCL_OK) {
+	return result;
+    }
+
+    if (yesNo) {
+	fileAttributes |= (attributeArray[objIndex]);
+    } else {
+	fileAttributes &= ~(attributeArray[objIndex]);
+    }
+
+    if (!SetFileAttributes(fileName, fileAttributes)) {
+	AttributesPosixError(interp, objIndex, fileName, 1);
+	return TCL_ERROR;
+    }
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetWinFileLongName --
+ *
+ *	The attribute in question is a readonly attribute and cannot
+ *	be set.
+ *
+ * Results:
+ *      TCL_ERROR
+ *
+ * Side effects:
+ *      The object result is set to a pertinant error message.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+CannotSetAttribute(
+    Tcl_Interp *interp,		    /* The interp we are using for errors. */
+    int objIndex,		    /* The index of the attribute. */
+    char *fileName,		    /* The name of the file. */
+    Tcl_Obj *attributePtr)	    /* The new value of the attribute. */
+{
+    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), 
+	    "cannot set attribute \"", tclpFileAttrStrings[objIndex],
+	    "\" for file \"", fileName, "\" : attribute is readonly", 
+	    (char *) NULL);
+    return TCL_ERROR;
+}
+
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * TclpListVolumes --
+ *
+ *	Lists the currently mounted volumes
+ *
+ * Results:
+ *	A standard Tcl result.  Will always be TCL_OK, since there is no way
+ *	that this command can fail.  Also, the interpreter's result is set to 
+ *	the list of volumes.
+ *
+ * Side effects:
+ *	None
+ *
+ *---------------------------------------------------------------------------
+ */
+
+int
+TclpListVolumes( 
+    Tcl_Interp *interp)    /* Interpreter to which to pass the volume list */
+{
+    Tcl_Obj *resultPtr, *elemPtr;
+    char buf[4];
+    int i;
+
+    resultPtr = Tcl_GetObjResult(interp);
+
+    buf[1] = ':';
+    buf[2] = '/';
+    buf[3] = '\0';
+
+    /*
+     * On Win32s: 
+     * GetLogicalDriveStrings() isn't implemented.
+     * GetLogicalDrives() returns incorrect information.
+     */
+
+    for (i = 0; i < 26; i++) {
+        buf[0] = (char) ('a' + i);
+	if (GetVolumeInformation(buf, NULL, 0, NULL, NULL, NULL, NULL, 0)  
+		|| (GetLastError() == ERROR_NOT_READY)) {
+	    elemPtr = Tcl_NewStringObj(buf, -1);
+	    Tcl_ListObjAppendElement(NULL, resultPtr, elemPtr);
+	}
+    }
+    return TCL_OK;	
 }

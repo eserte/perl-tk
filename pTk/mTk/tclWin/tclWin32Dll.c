@@ -9,13 +9,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWin32Dll.c 1.15 96/09/12 15:10:59
+ * SCCS: @(#) tclWin32Dll.c 1.21 97/08/05 11:47:10
  */
 
-#include <windows.h>
-#include "tcl.h"
-#include "tclPort.h"
-#include "tclWinInt.h"
+#include "tkWinInt.h"
 
 typedef DWORD (WINAPI * UT32PROC)(LPVOID lpBuff, DWORD dwUserDefined,
 	LPVOID *lpTranslationList);
@@ -41,7 +38,8 @@ typedef struct LibraryList {
 
 static LibraryList *libraryList = NULL;	/* List of currently loaded DLL's.  */
 
-static HINSTANCE tclInstance;		/* Global library instance handle. */
+static HINSTANCE tclInstance;	/* Global library instance handle. */
+static int tclPlatformId;	/* Running under NT, 95, or Win32s? */
 
 /*
  * Declarations for functions that are only used in this file.
@@ -106,6 +104,8 @@ DllMain(hInst, reason, reserved)
     DWORD reason;		/* Reason this function is being called. */
     LPVOID reserved;		/* Not used. */
 {
+    OSVERSIONINFO os;
+
     switch (reason) {
     case DLL_PROCESS_ATTACH:
 
@@ -120,13 +120,32 @@ DllMain(hInst, reason, reserved)
 	}
 
 	tclInstance = hInst;
+	os.dwOSVersionInfoSize = sizeof(os);
+	GetVersionEx(&os);
+	tclPlatformId = os.dwPlatformId;
+
+	/*
+	 * The following code stops Windows 3.x from automatically putting 
+	 * up Sharing Violation dialogs, e.g, when someone tries to
+	 * access a file that is locked or a drive with no disk in it.
+	 * Tcl already returns the appropriate error to the caller, and they 
+	 * can decide to put up their own dialog in response to that failure.  
+	 *
+	 * Under 95 and NT, the system doesn't automatically put up dialogs 
+	 * when the above operations fail.
+	 */
+
+	if (tclPlatformId == VER_PLATFORM_WIN32s) {
+	    SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS);
+	}
+
 	return TRUE;
 
     case DLL_PROCESS_DETACH:
 
 	tclProcessesAttached--;
 	if (tclProcessesAttached == 0) {
-
+#if 0
 	    /*
 	     * Unregister the Tcl thunk.
 	     */
@@ -140,12 +159,21 @@ DllMain(hInst, reason, reserved)
 	     */
 
 	    UnloadLibraries();
+
+            /*
+             * And finally finalize our use of Tcl.
+             */
+
+            Tcl_Finalize();
+#endif
 	}
 	break;
     }
 
     return TRUE; 
 }
+
+#if 0
 
 /*
  *----------------------------------------------------------------------
@@ -209,7 +237,7 @@ UnloadLibraries()
     while (libraryList != NULL) {
 	FreeLibrary(libraryList->handle);
 	ptr = libraryList->nextPtr;
-	ckfree(libraryList);
+	ckfree((char*)libraryList);
 	libraryList = ptr;
     }
 }
@@ -217,7 +245,7 @@ UnloadLibraries()
 /*
  *----------------------------------------------------------------------
  *
- * TclSynchSpawn --
+ * TclWinSynchSpawn --
  *
  *	32-bit entry point to the 16-bit SynchSpawn code.
  *
@@ -230,7 +258,7 @@ UnloadLibraries()
  *----------------------------------------------------------------------
  */
 int 
-TclSynchSpawn(void *args, int type, void **trans, int *pidPtr)
+TclWinSynchSpawn(void *args, int type, void **trans, Tcl_Pid *pidPtr)
 {
     static UT32PROC UTProc = NULL;
     static int utErrorCode;
@@ -287,6 +315,7 @@ TclSynchSpawn(void *args, int type, void **trans, int *pidPtr)
     *pidPtr = 0;
     return 1;
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -308,4 +337,30 @@ HINSTANCE
 TclWinGetTclInstance()
 {
     return tclInstance;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclWinGetPlatformId --
+ *
+ *	Determines whether running under NT, 95, or Win32s, to allow 
+ *	runtime conditional code.
+ *
+ * Results:
+ *	The return value is one of:
+ *	    VER_PLATFORM_WIN32s		Win32s on Windows 3.1. 
+ *	    VER_PLATFORM_WIN32_WINDOWS	Win32 on Windows 95.
+ *	    VER_PLATFORM_WIN32_NT	Win32 on Windows NT
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int		
+TclWinGetPlatformId()
+{
+    return tclPlatformId;
 }

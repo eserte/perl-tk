@@ -2,7 +2,7 @@ package Tk::ColorEditor;
 
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/Tk/ColorEditor.pm#7$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#3$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

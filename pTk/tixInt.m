@@ -7,6 +7,10 @@
 #define tixDisabledUid (*TixintVptr->V_tixDisabledUid)
 #define tixNormalUid (*TixintVptr->V_tixNormalUid)
 #define tixRowUid (*TixintVptr->V_tixRowUid)
+#ifndef TixComputeTextGeometry
+#  define TixComputeTextGeometry (*TixintVptr->V_TixComputeTextGeometry)
+#endif
+
 #ifndef TixDItemGetAnchor
 #  define TixDItemGetAnchor (*TixintVptr->V_TixDItemGetAnchor)
 #endif
@@ -19,12 +23,20 @@
 #  define TixDItemStyleFree (*TixintVptr->V_TixDItemStyleFree)
 #endif
 
+#ifndef TixDisplayText
+#  define TixDisplayText (*TixintVptr->V_TixDisplayText)
+#endif
+
 #ifndef TixGetColorDItemGC
 #  define TixGetColorDItemGC (*TixintVptr->V_TixGetColorDItemGC)
 #endif
 
 #ifndef TixGetDefaultDItemStyle
 #  define TixGetDefaultDItemStyle (*TixintVptr->V_TixGetDefaultDItemStyle)
+#endif
+
+#ifndef TixGetHashTable
+#  define TixGetHashTable (*TixintVptr->V_TixGetHashTable)
 #endif
 
 #ifndef Tix_AddDItemType

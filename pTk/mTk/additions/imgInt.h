@@ -31,8 +31,12 @@ EXTERN int ImgPhotoPutBlock _ANSI_ARGS_((Tk_PhotoHandle handle,
 EXTERN int ImgLoadLib _ANSI_ARGS_((Tcl_Interp *interp, CONST char *libName,
 	VOID **handlePtr, char **symbols, int num));
 EXTERN void ImgLoadFailed _ANSI_ARGS_((VOID **handlePtr));
+#if TCL_MAJOR_VERSION < 8
 EXTERN char *ImgGetStringFromObj _ANSI_ARGS_((struct Tcl_Obj *objPtr,
 	int *lengthPtr));
+#else  
+#define ImgGetStringFromObj(obj,lp) Tcl_GetStringFromObj(obj,lp)
+#endif 
 EXTERN int ImgGetc _ANSI_ARGS_((MFile *handle));
 EXTERN int ImgRead _ANSI_ARGS_((MFile *handle, VOID *dst, int count));
 EXTERN int ImgPutc _ANSI_ARGS_((int c, MFile *handle));

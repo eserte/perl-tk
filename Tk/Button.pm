@@ -7,7 +7,7 @@ package Tk::Button;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '2.012'; # $Id: //depot/Tk/Tk/Button.pm#12$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Button.pm#5$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -17,9 +17,11 @@ use AutoLoader;
 @ISA = qw(Tk::Widget);
 
 use strict;
-use vars qw($buttonWindow $relief);
+use vars qw($buttonWindow $relief); 
 
-sub Tk_cmd { \&Tk::button }
+Tk::Methods("deselect","flash","invoke","select","toggle");
+
+sub Tk_cmd { \&Tk::button }         
 
 Construct Tk::Widget 'Button';
 

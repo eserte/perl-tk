@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinPort.h 1.41 96/09/30 12:00:36
+ * SCCS: @(#) tclWinPort.h 1.53 97/07/30 14:12:17
  */
 
 #ifndef _TCLWINPORT
@@ -30,6 +30,7 @@
 #include <time.h>
 #include <io.h>
 #include <fcntl.h>
+#include <float.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -52,14 +53,15 @@
 #endif
 
 /*
- * The following defines denote malloc and free as the system calls
- * used to allocate new memory.  These defines are only used in the
- * file tclCkalloc.c.
+ * The following defines wrap the system memory allocation routines for
+ * use by tclAlloc.c.
  */
 
-#define TclpAlloc(size)		malloc(size)
-#define TclpFree(ptr)		free(ptr)
-#define TclpRealloc(ptr, size)	realloc(ptr, size)
+#define TclpSysAlloc(size, isBin)	((void*)GlobalAlloc(GMEM_FIXED, \
+					    (DWORD)size))
+#define TclpSysFree(ptr)		(GlobalFree((HGLOBAL)ptr))
+#define TclpSysRealloc(ptr, size)	((void*)GlobalReAlloc((HGLOBAL)ptr, \
+					    (DWORD)size, 0))
 
 /*
  * The default platform eol translation on Windows is TCL_TRANSLATE_CRLF:
@@ -146,15 +148,6 @@
 #endif
 
 /*
- * On systems without symbolic links (i.e. S_IFLNK isn't defined)
- * define "lstat" to use "stat" instead.
- */
-
-#ifndef S_IFLNK
-#   define lstat stat
-#endif
-
-/*
  * Define macros to query file type bits, if they're not already
  * defined.
  */
@@ -194,20 +187,6 @@
 #       define S_ISFIFO(m) 0
 #   endif
 # endif
-#ifndef S_ISLNK
-#   ifdef S_IFLNK
-#       define S_ISLNK(m) (((m) & S_IFMT) == S_IFLNK)
-#   else
-#       define S_ISLNK(m) 0
-#   endif
-# endif
-#ifndef S_ISSOCK
-#   ifdef S_IFSOCK
-#       define S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
-#   else
-#       define S_ISSOCK(m) 0
-#   endif
-# endif
 
 /*
  * Define pid_t and uid_t if they're not already defined.
@@ -219,13 +198,6 @@
 #if ! TCL_UID_T
 #   define uid_t int
 #endif
-
-/*
- * Provide an implementation of TclSetSystemEnv in terms of the equivalent
- * Win32 call.
- */
-
-#define TclSetSystemEnv(a,b) SetEnvironmentVariable(a,b)
 
 /*
  * Provide a stub definition for TclGetUserHome().
@@ -355,6 +327,14 @@
 #endif
 
 /*
+ * The following define ensures that we use the native putenv
+ * implementation to modify the environment array.  This keeps
+ * the C level environment in synch with the system level environment.
+ */
+
+#define USE_PUTENV	1
+    
+/*
  * The following defines map from standard socket names to our internal
  * wrappers that redirect through the winSock function table (see the
  * file tclWinSock.c).
@@ -378,8 +358,26 @@
 
 EXTERN struct tm *	TclpGetDate _ANSI_ARGS_((const time_t *tp,
 			    int useGMT));
+EXTERN unsigned long	TclpGetPid _ANSI_ARGS_((Tcl_Pid pid));
 EXTERN size_t		TclStrftime _ANSI_ARGS_((char *s, size_t maxsize,
 			    const char *format, const struct tm *t));
+
+/*
+ * The following prototypes and defines replace the Windows versions
+ * of POSIX function that various compilier vendors didn't implement 
+ * well or consistantly.
+ */
+
+#define stat(path, buf)		TclWinStat(path, buf)
+#define lstat			stat
+#define access(path, mode)	TclWinAccess(path, mode)
+
+EXTERN int		TclWinStat _ANSI_ARGS_((CONST char *path, 
+			    struct stat *buf));
+EXTERN int		TclWinAccess _ANSI_ARGS_((CONST char *path, 
+			    int mode));
+
+#define TclpReleaseFile(file)	ckfree((char *) file)
 
 /*
  * Declarations for Windows specific functions.
@@ -394,13 +392,8 @@ EXTERN int PASCAL FAR	TclWinGetSockOpt _ANSI_ARGS_((SOCKET s, int level,
 		            int optname, char FAR * optval, int FAR *optlen));
 EXTERN HINSTANCE	TclWinGetTclInstance _ANSI_ARGS_((void));
 EXTERN HINSTANCE	TclWinLoadLibrary _ANSI_ARGS_((char *name));
-EXTERN void		TclWinNotifySocket _ANSI_ARGS_((void));
 EXTERN u_short PASCAL FAR
 			TclWinNToHS _ANSI_ARGS_((u_short ns));
 EXTERN int PASCAL FAR	TclWinSetSockOpt _ANSI_ARGS_((SOCKET s, int level,
 		            int optname, const char FAR * optval, int optlen));
-EXTERN int		TclWinSocketReady _ANSI_ARGS_((Tcl_File file,
-			    int mask));
-EXTERN void		TclWinWatchSocket _ANSI_ARGS_((Tcl_File file,
-			    int mask));
 #endif /* _TCLWINPORT */

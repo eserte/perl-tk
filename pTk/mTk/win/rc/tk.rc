@@ -1,4 +1,4 @@
-// SCCS: @(#) tk.rc 1.17 96/09/12 16:22:08
+// SCCS: @(#) tk.rc 1.22 97/03/21 18:35:14
 //
 // Version
 //
@@ -38,13 +38,19 @@ BEGIN
 END
 
 //
-// Icon
+// Icons
 //
 
 tk                      ICON    DISCARDABLE     "tk.ico"
 
 //
-// Cursor
+// Bitmaps
+//
+
+buttons			BITMAP  DISCARDABLE	"buttons.bmp"
+
+//
+// Cursors
 //
 
 X_cursor                CURSOR  DISCARDABLE     "cursor00.cur"

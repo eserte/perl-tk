@@ -1,14 +1,14 @@
 '\"
 '\" Copyright (c) 1990-1994 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) winfo.n 1.37 95/06/24 17:43:23
+'\" SCCS: @(#) winfo.n 1.45 97/01/25 13:45:04
 '\" 
 .so man.macros
-.TH winfo n 4.0 Tk "Tk Generic Methods"
+.TH winfo n 4.3 Tk "Tk Generic Methods"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
@@ -39,8 +39,10 @@ Returns a decimal string giving the number of cells in the
 color map for \fI$widget\fR.
 .TP
 \fI$widget\fR->\fBchildren\fR
+\fI$widget->\fBchildren\fR
 Returns a list containing all the children
-of \fI$widget\fR.  Top-level windows are returned as children
+of $widget\fR.  The list is in stacking order, with the lowest
+window first.  Top-level windows are returned as children
 of their logical parents.
 .TP
 \fI$widget\fR->\fBclass\fR
@@ -53,7 +55,6 @@ otherwise.  The colormap for a window is ``known'' to be full if the last
 attempt to allocate a new color on that window failed and this
 application hasn't freed any colors in the colormap since the
 failed allocation.
-.VE
 .TP
 \fI$widget\fR->\fBcontaining\fR(\fIrootX,rootY\fR)
 Returns the window containing the point given
@@ -100,7 +101,11 @@ or use \fI$widget\fR->\fBreqheight\fR to get the window's requested height
 instead of its actual height.
 .TP
 \fI$widget\fR->\fBid\fR
-Returns a hexadecimal string indicating the X identifier for \fI$widget\fR.
+Returns a hexadecimal string giving a low-level platform-specific
+identifier for $widget\fR.  On Unix platforms, this is the X
+window identifier.  Under Windows, this is the Windows
+HWND.  On the Macintosh the value has no meaning outside Tk.
+.VE
 .TP
 \fI$widget\fR->\fBinterps\fR
 Returns a list whose members are the names of all Tcl interpreters
@@ -121,7 +126,6 @@ The name is usually the name of the method for the geometry
 manager, such as \fBpack\fR or \fBplace\fR.
 If the geometry manager is a widget, such as canvases or text, the
 name is the widget's class command, such as \fBcanvas\fR.
-.VE
 .TP
 \fI$widget\fR->\fBname\fR
 Returns \fI$widget\fR's name (i.e. its name within its parent, as opposed
@@ -172,7 +176,6 @@ If a virtual root window is in use on the screen, the position
 is computed in the virtual root.
 If the mouse pointer isn't on the same screen as \fI$widget\fR then
 -1 is returned.
-.VE
 .TP
 \fI$widget\fR->\fBreqheight\fR
 Returns a decimal string giving \fI$widget\fR's requested height,
@@ -247,7 +250,6 @@ where \fImajor\fR and \fIminor\fR are the version and revision
 numbers provided by the server (e.g., \fBX11R5\fR), \fIvendor\fR
 is the name of the vendor for the server, and \fIvendorRelease\fR
 is an integer release number provided by the server.
-.VE
 .TP
 \fI$widget\fR->\fBtoplevel\fR
 Returns the path name of the top-level window containing \fI$widget\fR.
@@ -257,7 +259,6 @@ Returns the path name of the top-level window containing \fI$widget\fR.
 Returns 1 if \fI$widget\fR and all of its ancestors up through the
 nearest toplevel window are mapped.  Returns 0 if any of these
 windows are not mapped.
-.VE
 .TP
 \fI$widget\fR->\fBvisual\fR
 Returns one of the following strings to indicate the visual
@@ -265,14 +266,19 @@ class for \fI$widget\fR: \fBdirectcolor\fR, \fBgrayscale\fR,
 \fBpseudocolor\fR, \fBstaticcolor\fR, \fBstaticgray\fR, or
 \fBtruecolor\fR.
 .TP
-\fI$widget\fR->\fBvisualsavailable\fR
+\fI$widget\fR->\fBvisualid\fR
+.VS
+Returns the X identifier for the visual for $widget\fR.
+.TP
+\fI$widget\fR->\fBvisualsavailable\fR(?\fBincludeids\fR?\fR)
 .VS
 Returns a list whose elements describe the visuals available for
 \fI$widget\fR's screen.
 Each element consists of a visual class followed by an integer depth.
 The class has the same form as returned by \fI$widget\fR->\fBvisual\fR.
 The depth gives the number of bits per pixel in the visual.
-.VE
+In addition, if the \fBincludeids\fR argument is provided, then the
+depth is followed by the X identifier for the visual.
 .TP
 \fI$widget\fR->\fBvrootheight\fR
 Returns the height of the virtual root window associated with \fI$widget\fR

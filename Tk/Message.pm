@@ -6,7 +6,7 @@ use AutoLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Message.pm#8$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Message.pm#4$
 
 @ISA = qw(Tk::Widget);
 

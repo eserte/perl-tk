@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvImg.c 1.17 96/02/17 17:18:43
+ * SCCS: @(#) tkCanvImg.c 1.18 96/05/03 10:49:09
  */
 
 #include "tkInt.h"
@@ -353,8 +353,8 @@ ComputeImageBbox(canvas, imgPtr)
     int width, height;
     int x, y;
 
-    x = imgPtr->x + ((imgPtr->x >= 0) ? 0.5 : - 0.5);
-    y = imgPtr->y + ((imgPtr->y >= 0) ? 0.5 : - 0.5);
+    x = (int) (imgPtr->x + ((imgPtr->x >= 0) ? 0.5 : - 0.5));
+    y = (int) (imgPtr->y + ((imgPtr->y >= 0) ? 0.5 : - 0.5));
 
     if (imgPtr->image == None) {
 	imgPtr->header.x1 = imgPtr->header.x2 = x;

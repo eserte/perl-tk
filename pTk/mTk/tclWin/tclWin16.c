@@ -1,15 +1,15 @@
 /*
  * tclWin16.c --
  *
- *	This file contains code for a 16-bit DLL to handle 32-to-16 bit
+ *      This file contains code for a 16-bit DLL to handle 32-to-16 bit
  *      thunking. This is necessary for the Win32s SynchSpawn() call.
  *
- * Copyright (c) 1994-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWin16.c 1.13 96/09/12 15:10:06
+ * SCCS: @(#) tclWin16.c 1.18 97/05/23 13:13:32
  */
 
 #define STRICT
@@ -20,11 +20,19 @@
 #include <stdio.h>
 #include <string.h>
 
-static int 			WinSpawn(char *command);
-static int 			DosSpawn(char *command, char *fromFileName,
-				    char *toFileName);						
-static int			WaitForExit(int inst);
+static int                      WinSpawn(char *command);
+static int                      DosSpawn(char *command, char *fromFileName,
+				    char *toFileName);                                          
+static int                      WaitForExit(int inst);
 
+/*
+ * The following data is used to construct a .pif file that wraps the
+ * .bat file that runs the 16-bit application (that Jack built).  
+ * The .pif file causes the .bat file to run in an iconified window.
+ * Otherwise, when we try to exec something, a DOS box pops up, 
+ * obscuring everything, and then almost immediately flickers out of
+ * existence, which is rather disconcerting.
+ */
 
 static char pifData[545] = {
 '\000', '\013', '\040', '\040', '\040', '\040', '\040', '\040', 
@@ -98,18 +106,57 @@ static char pifData[545] = {
 '\000'
 };
 
-BOOL CALLBACK 
-LibMain(HINSTANCE hinst, WORD wDS, WORD cbHeap, LPSTR unused)
-{
-    // Nothing to do.      
+static HINSTANCE hInstance;
 
-    hinst = hinst;
-    wDS = wDS;
-    cbHeap = cbHeap;
-    unused = unused;
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * LibMain --
+ *
+ *      16-bit DLL entry point.
+ *
+ * Results:
+ *      Returns 1.
+ *
+ * Side effects:
+ *      None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int CALLBACK
+LibMain(
+    HINSTANCE hinst,
+    WORD wDS,
+    WORD cbHeap,
+    LPSTR unused)
+{
+    hInstance   = hinst;
+    wDS         = wDS;          /* lint. */
+    cbHeap      = cbHeap;       /* lint. */
+    unused      = unused;       /* lint. */
 
     return TRUE;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * UTProc --
+ *
+ *      Universal Thunk dispatch routine.  Executes a 16-bit DOS
+ *      application or a 16-bit or 32-bit Windows application and
+ *      waits for it to complete.
+ *
+ * Results:
+ *      1 if the application could be run, 0 or -1 on failure.
+ *
+ * Side effects:
+ *      Executes 16-bit code.
+ *
+ *----------------------------------------------------------------------
+ */
 
 int WINAPI
 UTProc(buf, func)
@@ -125,28 +172,70 @@ UTProc(buf, func)
 	return WinSpawn(args[0]);
     }
 }
+
+/*
+ *-------------------------------------------------------------------------
+ *
+ * WinSpawn --
+ *
+ *      Start a 16-bit or 32-bit Windows application with optional 
+ *      command line arguments and wait for it to finish.  Windows 
+ *      applications do not handle input/output redirection.
+ *
+ * Results:
+ *      The return value is 1 if the application could be run, 0 otherwise.
+ *
+ * Side effects:
+ *      Whatever the application does.
+ *
+ *-------------------------------------------------------------------------
+ */
 
 static int
 WinSpawn(command)
-    char *command;
+    char *command;              /* The command line, consisting of the name
+				 * of the executable to run followed by any
+				 * number of arguments to the executable. */
 {
     return WaitForExit(WinExec(command, SW_SHOW));
 }
+
 /*
  *---------------------------------------------------------------------------
  *
- * Spawn --
+ * DosSpawn --
+ *
+ *      Start a 16-bit DOS program with optional command line arguments
+ *      and wait for it to finish.  Input and output can be redirected
+ *      from the specified files, but there is no such thing as stderr 
+ *      under Win32s.
+ *      
+ *      This procedure to constructs a temporary .pif file that wraps a
+ *      temporary .bat file that runs the 16-bit application.  The .bat
+ *      file is necessary to get the redirection symbols '<' and '>' to 
+ *      work, because WinExec() doesn't accept them.  The .pif file is
+ *      necessary to cause the .bat file to run in an iconified window,
+ *      to avoid having a large DOS box pop up, obscuring everything, and 
+ *      then almost immediately flicker out of existence, which is rather 
+ *      disconcerting.
+ *
+ * Results:
+ *      The return value is 1 if the application could be run, 0 otherwise.
+ *
+ * Side effects:
+ *      Whatever the application does.
  *
  *---------------------------------------------------------------------------
  */
+
 static int
 DosSpawn(command, fromFileName, toFileName)
-    char *command;		/* The name of the program, plus any
+    char *command;              /* The name of the program, plus any
 				 * arguments, to be run. */
-    char *fromFileName;		/* Standard input for the program is to be
+    char *fromFileName;         /* Standard input for the program is to be
 				 * redirected from this file, or NULL for no
 				 * standard input. */
-    char *toFileName;		/* Standard output for the program is to be
+    char *toFileName;           /* Standard output for the program is to be
 				 * redirected to this file, or NULL to
 				 * discard standard output. */
 {
@@ -191,25 +280,34 @@ DosSpawn(command, fromFileName, toFileName)
 
     return result;
 }
-
+
 /*
+ *-------------------------------------------------------------------------
+ *
+ * WaitForExit --
+ *
+ *      Wait until the application with the given instance handle has
+ *      finished.  PeekMessage() is used to yield the processor; 
+ *      otherwise, nothing else could execute on the system.
+ *
  * Results:
- * 	The return value is 1 if the process exited successfully,
- *	or 0 otherwise.
+ *      The return value is 1 if the process exited successfully,
+ *      or 0 otherwise.
  *
  * Side effects:
- *	None.
+ *      None.
  *
  *---------------------------------------------------------------------------
  */
 
 static int
 WaitForExit(inst)
-    int inst;			/* Identifies the instance handle of the
+    int inst;                   /* Identifies the instance handle of the
 				 * process to wait for. */
 {
     TASKENTRY te;
     MSG msg;
+    UINT timer;
 
     if (inst < 32) {
 	return 0;
@@ -227,8 +325,10 @@ WaitForExit(inst)
     if (te.hInst != (HINSTANCE) inst) {
 	return 0;
     }
+
+    timer = SetTimer(NULL, 0, 0, NULL);
     while (1) {
-	if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) == TRUE) {
+	if (GetMessage(&msg, NULL, 0, 0) != 0) {
 	    TranslateMessage(&msg);
 	    DispatchMessage(&msg);
 	}
@@ -240,195 +340,8 @@ WaitForExit(inst)
 	} while (TaskNext(&te) != FALSE);
 
 	if (te.hInst != (HINSTANCE) inst) {
+	    KillTimer(NULL, timer);
 	    return 1;
 	}
     }
 }
-#if 0
-
-
-
-
- #ifndef APIENTRY
-#define APIENTRY
-#endif
-
-#include <windows.h>
-#include <malloc.h>
-#include <toolhelp.h>
-#ifdef _MSC_VER
-#include "tclWinInt.h"
-#else
-#include "tclWinIn.h"
-#endif
-
-typedef DWORD (FAR PASCAL  * UT16CBPROC)(LPVOID lpBuff, DWORD dwUserDefined,
-	LPVOID FAR *lpTranslationList);
-
-HINSTANCE hInstance;
-
-
-/*
- *----------------------------------------------------------------------
- *
- * LibMain --
- *
- *	DLL entry point
- *
- * Results:
- *	Returns 1.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-int FAR PASCAL
-LibMain(instance, dataSeg, heapSize, cmdLine)
-    HINSTANCE instance;
-    WORD dataSeg;
-    WORD heapSize;
-    LPSTR cmdLine;
-{
-    hInstance = instance;
-    return 1;
-}
-
-
-/*
- *----------------------------------------------------------------------
- *
- * UTInit --
- *
- *	Universal Thunk initialization procedure.
- *
- * Results:
- *	Always returns 1.
- *
- * Side effects:
- *	Sets the universal thunk callback procedure.
- *
- *----------------------------------------------------------------------
- */
-DWORD FAR PASCAL _export
-UTInit(callback, buf)
-    UT16CBPROC callback;
-    LPVOID buf;
-{
-    return 1;   /* Return Success */
-} 
-
-/*
- *----------------------------------------------------------------------
- *
- * UTProc --
- *
- *	Universal Thunk dispatch routine.
- *
- * Results:
- *	1 on success, 0 or -1 on failure.
- *
- * Side effects:
- *	Executes 16-bit code.
- *
- *----------------------------------------------------------------------
- */
-
-DWORD FAR PASCAL _export
-UTProc(buf, func)
-    LPVOID buf;
-    DWORD func;
-{
-    char **argv;
-
-    argv = (char **) buf;
-
-    if (func == 0) {
-
-
-
-    switch (func) {
-
-	case TCLSYNCHSPAWN: {
-	    HINSTANCE inst;
-	    LPCSTR cmdLine;
-	    UINT cmdShow;
-	    MSG msg;
-	    TASKENTRY te;
-	    
-	    /* Retrieve the command line arguments stored in buffer */
-
-	    cmdLine = (LPSTR) ((LPDWORD)buf)[0];
-	    cmdShow = (UINT) ((LPDWORD)buf)[1];
-	    
-	    /* Start the application with WinExec() */
-	    
-	    inst = WinExec(cmdLine, cmdShow);
-	    if ((int) inst < 32) {
-		return 0;
-	    }
-
-	    /* Loop until the application is terminated. The Toolhelp API
-	     * ModuleFindHandle() returns NULL when the application is
-	     * terminated. NOTE: PeekMessage() is used to yield the
-	     * processor; otherwise, nothing else could execute on the
-	     * system.
-	     */
-
-	    te.dwSize = sizeof(TASKENTRY);
-	    TaskFirst(&te);
-	    do {
-	    	if (te.hInst == inst) {
-	    	    break;
-	    	}
-	    } while (TaskNext(&te));
-	    
-	    if (te.hInst == inst) {
-	    	while (1) {
-	    	    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != 0) {
-	    	    	TranslateMessage(&msg);
-	    	    	DispatchMessage(&msg);
-	    	    }
-	    	    
-	    	    TaskFirst(&te);
-	    	    do {
-	    	    	if (te.hInst == inst) {
-	    	    	    break;
-	    	    	}
-	    	    } while (TaskNext(&te));
-	    	    
-	    	    if (te.hInst != inst) {
-	    	        break;
-	    	    }
-	    	}
-	    }
-	    return 1;
-	}
-    }
-
-    return (DWORD)-1L; /* We should never get here. */
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * _WEP --
- *
- *	Windows exit procedure
- *
- * Results:
- *	Always returns 1.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-int FAR PASCAL
-_WEP(dummy)
-    int dummy;
-{
-   return 1;
-}
-#endif

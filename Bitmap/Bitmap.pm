@@ -3,7 +3,7 @@ require Tk;
 require Tk::Image;
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/Bitmap/Bitmap.pm#5$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Bitmap/Bitmap.pm#3$
 
 @ISA = qw(Tk::Image);
 

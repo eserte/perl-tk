@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkConfig.c 1.52 96/02/15 18:52:39
+ * SCCS: @(#) tkConfig.c 1.53 96/04/26 10:29:31
  */
 
 #include "tkPort.h"
@@ -138,8 +138,8 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 		    Tk_SetClass(tkwin, LangString(args[1]));  
 		    continue;
 		}
-
-	    } 
+	    }                
+	    Tcl_SprintfResult(interp,"Bad option `%s'",*argv);
 	    return TCL_ERROR;
 	}
 
@@ -487,22 +487,18 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 		break;
 	    }
 	    case TK_CONFIG_FONT: {
-		XFontStruct *newPtr, *oldPtr;
+		Tk_Font new;
 
 		if (nullValue) {
-		    newPtr = NULL;
+		    new = NULL;
 		} else {
-		    uid = Tk_GetUid(LangString(value));
-		    newPtr = Tk_GetFontStruct(interp, tkwin, uid);
-		    if (newPtr == NULL) {
+		    new = Tk_GetFontFromObj(interp, tkwin, value);
+		    if (new == NULL) {
 			return TCL_ERROR;
 		    }
 		}
-		oldPtr = *((XFontStruct **) ptr);
-		if (oldPtr != NULL) {
-		    Tk_FreeFontStruct(oldPtr);
-		}
-		*((XFontStruct **) ptr) = newPtr;
+		Tk_FreeFont(*((Tk_Font *) ptr));
+		*((Tk_Font *) ptr) = new;
 		break;
 	    }
 	    case TK_CONFIG_BITMAP: {
@@ -881,9 +877,9 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	    break;
 	}
 	case TK_CONFIG_FONT: {
-	    XFontStruct *fontStructPtr = *((XFontStruct **) ptr);
-	    if (fontStructPtr != NULL) {
-		LangSetString(&result,Tk_NameOfFontStruct(fontStructPtr));
+	    Tk_Font tkfont = *((Tk_Font *) ptr);
+	    if (tkfont != NULL) {
+		LangSetString(&result,Tk_NameOfFont(tkfont));
 	    }
 	    break;
 	}
@@ -1075,10 +1071,8 @@ Tk_FreeOptions(specs, widgRec, display, needFlags)
 		}
 		break;
 	    case TK_CONFIG_FONT:
-		if (*((XFontStruct **) ptr) != NULL) {
-		    Tk_FreeFontStruct(*((XFontStruct **) ptr));
-		    *((XFontStruct **) ptr) = NULL;
-		}
+		Tk_FreeFont(*((Tk_Font *) ptr));
+		*((Tk_Font *) ptr) = NULL;
 		break;
 	    case TK_CONFIG_BITMAP:
 		if (*((Pixmap *) ptr) != None) {

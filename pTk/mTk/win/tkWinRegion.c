@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinRegion.c 1.6 96/02/15 18:56:06
+ * SCCS: @(#) tkWinRegion.c 1.7 96/05/03 11:05:54
  */
 
 #include "tkWinInt.h"
@@ -84,10 +84,10 @@ TkClipBox(r, rect_return)
 {
     RECT rect;
     GetRgnBox((HRGN)r, &rect);
-    rect_return->x = rect.left;
-    rect_return->y = rect.top;
-    rect_return->width = rect.right - rect.left;
-    rect_return->height = rect.bottom - rect.top;
+    rect_return->x = (short) rect.left;
+    rect_return->y = (short) rect.top;
+    rect_return->width = (short) (rect.right - rect.left);
+    rect_return->height = (short) (rect.bottom - rect.top);
 }
 
 /*

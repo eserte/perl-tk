@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkAppInit.c 1.21 96/03/26 16:47:07
+ * SCCS: @(#) tkAppInit.c 1.22 96/05/29 09:47:08
  */
 
 #include "tk.h"
@@ -82,7 +82,7 @@ Tcl_AppInit(interp)
     if (Tk_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
     }
-    Tcl_StaticPackage(interp, "Tk", Tk_Init, (Tcl_PackageInitProc *) NULL);
+    Tcl_StaticPackage(interp, "Tk", Tk_Init, Tk_SafeInit);
 #ifdef TK_TEST
     if (Tktest_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;

@@ -7,16 +7,17 @@
  *	to the window manager.
  *
  * Copyright (c) 1991-1994 The Regents of the University of California.
- * Copyright (c) 1994-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixWm.c 1.124 96/03/29 14:05:44
+ * SCCS: @(#) tkUnixWm.c 1.155 97/10/28 08:35:19
  */
 
 #include "tkPort.h"
 #include "tkInt.h"
+#include "tkUnixInt.h"
 #include <errno.h>
 
 /*
@@ -43,7 +44,7 @@ ProtocolFree(clientData)
 char *clientData;
 {ProtocolHandler *p = (ProtocolHandler *) clientData;
  LangFreeCallback(p->command);
- ckfree(p);
+ ckfree((char *) p);
 }
 
 /*
@@ -60,26 +61,49 @@ typedef struct TkWmInfo {
 				 * not be window's immediate parent).  If
 				 * the window isn't reparented, this has the
 				 * value None. */
-    Tk_Uid titleUid;		/* Title to display in window caption.  If
-				 * NULL, use name of widget. */
-    Tk_Uid iconName;		/* Name to display in icon. */
+    char *title;		/* Title to display in window caption.  If
+				 * NULL, use name of widget.  Malloced. */
+    char *iconName;		/* Name to display in icon.  Malloced. */
     Window master;		/* Master window for TRANSIENT_FOR property,
 				 * or None. */
     XWMHints hints;		/* Various pieces of information for
 				 * window manager. */
-    Tk_Uid leaderName;		/* Path name of leader of window group
+    char *leaderName;		/* Path name of leader of window group
 				 * (corresponds to hints.window_group).
-				 * Note:  this field doesn't get updated
-				 * if leader is destroyed. */
-    Tk_Uid masterWindowName;	/* Path name of window specified as master
+				 * Malloc-ed.  Note:  this field doesn't
+				 * get updated if leader is destroyed. */
+    char *masterWindowName;	/* Path name of window specified as master
 				 * in "wm transient" command, or NULL.
-				 * Note:  this field doesn't get updated if
-				 * masterWindowName is destroyed. */
+				 * Malloc-ed. Note:  this field doesn't
+				 * get updated if masterWindowName is
+				 * destroyed. */
     Tk_Window icon;		/* Window to use as icon for this window,
 				 * or NULL. */
     Tk_Window iconFor;		/* Window for which this window is icon, or
 				 * NULL if this isn't an icon for anyone. */
     int withdrawn;		/* Non-zero means window has been withdrawn. */
+
+    /*
+     * In order to support menubars transparently under X, each toplevel
+     * window is encased in an additional window, called the wrapper,
+     * that holds the toplevel and the menubar, if any.  The information
+     * below is used to keep track of the wrapper and the menubar.
+     */
+
+    TkWindow *wrapperPtr;	/* Pointer to information about the wrapper.
+				 * This is the "real" toplevel window as
+				 * seen by the window manager. Although
+				 * this is an official Tk window, it
+				 * doesn't appear in the application's
+				 * window hierarchy.  NULL means that
+				 * the wrapper hasn't been created yet. */
+    Tk_Window menubar;		/* Pointer to information about the
+				 * menubar, or NULL if there is no
+				 * menubar for this toplevel. */
+    int menuHeight;		/* Amount of vertical space needed for
+				 * menubar, measured in pixels.  If
+				 * menubar is non-NULL, this is >= 1 (X
+				 * servers don't like dimensions of 0). */
 
     /*
      * Information used to construct an XSizeHints structure for
@@ -136,15 +160,16 @@ typedef struct TkWmInfo {
 				 * reparented then these will be the outer
 				 * dimensions of the window, including
 				 * border. */
-    int xInParent, yInParent;	/* Offset of window within reparent,  measured
-				 * from upper-left outer corner of parent's
-				 * border to upper-left outer corner of child's
-				 * border.  If not reparented then these are
-				 * zero. */
+    int xInParent, yInParent;	/* Offset of wrapperPtr within reparent,
+				 * measured in pixels from upper-left outer
+				 * corner of reparent's border to upper-left
+				 * outer corner of wrapperPtr's border.  If
+				 * not reparented then these are zero. */
     int configWidth, configHeight;
 				/* Dimensions passed to last request that we
-				 * issued to change geometry of window.  Used
-				 * to eliminate redundant resize operations. */
+				 * issued to change geometry of the wrapper.
+				 * Used to eliminate redundant resize
+				 * operations. */
 
     /*
      * Information about the virtual root window for this top-level,
@@ -260,8 +285,8 @@ static WmInfo *firstWmPtr = NULL;	/* Points to first top-level window. */
 static int wmTracing = 0;
 
 /*
- * The following structure is the official type record for geometry
- * management of top-level windows.
+ * The following structures are the official type records for geometry
+ * management of top-level and menubar windows.
  */
 
 static void		TopLevelReqProc _ANSI_ARGS_((ClientData dummy,
@@ -279,6 +304,15 @@ static Tk_GeomMgr wmMgrType = {
 
 static void TkWmFreeCmd _ANSI_ARGS_((WmInfo *wmPtr));
 
+static void		MenubarReqProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Window tkwin));
+
+static Tk_GeomMgr menubarMgrType = {
+    "menubar",				/* name */
+    MenubarReqProc,			/* requestProc */
+    (Tk_GeomLostSlaveProc *) NULL,	/* lostSlaveProc */
+};
+
 /*
  * Structures of the following type are used for communication between
  * WaitForEvent, WaitRestrictProc, and WaitTimeoutProc.
@@ -291,23 +325,23 @@ typedef struct WaitRestrictInfo {
     XEvent *eventPtr;		/* Where to store the event when it's found. */
     int foundEvent;		/* Non-zero means that an event of the
 				 * desired type has been found. */
-    int timeout;		/* Non-zero means that too much time elapsed
-				 * while waiting, and we should just give
-				 * up. */
 } WaitRestrictInfo;
 
 /*
  * Forward declarations for procedures defined in this file:
  */
 
-static int		ComputeReparentGeometry _ANSI_ARGS_((TkWindow *winPtr));
-static void		ConfigureEvent _ANSI_ARGS_((TkWindow *winPtr,
+static int		ComputeReparentGeometry _ANSI_ARGS_((WmInfo *wmPtr));
+static void		ConfigureEvent _ANSI_ARGS_((WmInfo *wmPtr,
 			    XConfigureEvent *eventPtr));
+static void		CreateWrapper _ANSI_ARGS_((WmInfo *wmPtr));
 static void		GetMaxSize _ANSI_ARGS_((WmInfo *wmPtr,
 			    int *maxWidthPtr, int *maxHeightPtr));
+static void		MenubarDestroyProc _ANSI_ARGS_((ClientData clientData,
+			    XEvent *eventPtr));
 static int		ParseGeometry _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, TkWindow *winPtr));
-static void		ReparentEvent _ANSI_ARGS_((TkWindow *winPtr,
+static void		ReparentEvent _ANSI_ARGS_((WmInfo *wmPtr,
 			    XReparentEvent *eventPtr));
 static void		TopLevelEventProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
@@ -332,7 +366,8 @@ static void		UnmanageGeometry _ANSI_ARGS_((Tk_Window tkwin));
 static Tk_RestrictAction
 			WaitRestrictProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
-static void		WaitTimeoutProc _ANSI_ARGS_((ClientData clientData));
+static void		WrapperEventProc _ANSI_ARGS_((ClientData clientData,
+			    XEvent *eventPtr));
 
 /*
  *--------------------------------------------------------------
@@ -358,36 +393,38 @@ TkWmNewWindow(winPtr)
 {
     register WmInfo *wmPtr;
 
-    if (winPtr->wmInfoPtr == NULL) {
-	wmPtr = (WmInfo *) ckalloc(sizeof(WmInfo));
-	wmPtr->winPtr = winPtr;
-	wmPtr->reparent = None;
-	wmPtr->titleUid = NULL;
-	wmPtr->iconName = NULL;
-	wmPtr->master = None;
-	wmPtr->hints.flags = InputHint | StateHint;
-	wmPtr->hints.input = True;
-	wmPtr->hints.initial_state = NormalState;
-	wmPtr->hints.icon_pixmap = None;
-	wmPtr->hints.icon_window = None;
-	wmPtr->hints.icon_x = wmPtr->hints.icon_y = 0;
-	wmPtr->hints.icon_mask = None;
-	wmPtr->hints.window_group = None;
-	wmPtr->leaderName = NULL;
-	wmPtr->masterWindowName = NULL;
-	wmPtr->icon = NULL;
-	wmPtr->iconFor = NULL;
-	wmPtr->withdrawn = 0;
-	wmPtr->sizeHintsFlags = 0;
-	wmPtr->minWidth = wmPtr->minHeight = 1;
+    wmPtr = (WmInfo *) ckalloc(sizeof(WmInfo));
+    wmPtr->winPtr = winPtr;
+    wmPtr->reparent = None;
+    wmPtr->title = NULL;
+    wmPtr->iconName = NULL;
+    wmPtr->master = None;
+    wmPtr->hints.flags = InputHint | StateHint;
+    wmPtr->hints.input = True;
+    wmPtr->hints.initial_state = NormalState;
+    wmPtr->hints.icon_pixmap = None;
+    wmPtr->hints.icon_window = None;
+    wmPtr->hints.icon_x = wmPtr->hints.icon_y = 0;
+    wmPtr->hints.icon_mask = None;
+    wmPtr->hints.window_group = None;
+    wmPtr->leaderName = NULL;
+    wmPtr->masterWindowName = NULL;
+    wmPtr->icon = NULL;
+    wmPtr->iconFor = NULL;
+    wmPtr->withdrawn = 0;
+    wmPtr->wrapperPtr = NULL;
+    wmPtr->menubar = NULL;
+    wmPtr->menuHeight = 0;
+    wmPtr->sizeHintsFlags = 0;
+    wmPtr->minWidth = wmPtr->minHeight = 1;
 
-	/*
-	 * Default the maximum dimensions to the size of the display, minus
-	 * a guess about how space is needed for window manager decorations.
-	 */
+    /*
+     * Default the maximum dimensions to the size of the display, minus
+     * a guess about how space is needed for window manager decorations.
+     */
 
-    wmPtr->maxWidth = DisplayWidth(winPtr->display, winPtr->screenNum)- 15;
-    wmPtr->maxHeight= DisplayHeight(winPtr->display, winPtr->screenNum)-30;
+    wmPtr->maxWidth = 0;
+    wmPtr->maxHeight = 0;
     wmPtr->gridWin = NULL;
     wmPtr->widthInc = wmPtr->heightInc = 1;
     wmPtr->minAspect.x = wmPtr->minAspect.y = 1;
@@ -400,32 +437,21 @@ TkWmNewWindow(winPtr)
     wmPtr->y = winPtr->changes.y;
     wmPtr->parentWidth = winPtr->changes.width
 	    + 2*winPtr->changes.border_width;
-	wmPtr->parentHeight = winPtr->changes.height
+    wmPtr->parentHeight = winPtr->changes.height
 	    + 2*winPtr->changes.border_width;
-	wmPtr->xInParent = wmPtr->yInParent = 0;
-	wmPtr->configWidth = -1;
-	wmPtr->configHeight = -1;
-	wmPtr->vRoot = None;
-	wmPtr->protPtr = NULL;
-	wmPtr->cmdArgv = NULL;
-	wmPtr->clientMachine = NULL;
-	wmPtr->flags = WM_NEVER_MAPPED;
-	wmPtr->nextPtr = firstWmPtr;
-	firstWmPtr = wmPtr;
-	winPtr->wmInfoPtr = wmPtr;
-    } else {
-	wmPtr = winPtr->wmInfoPtr;
-    }
+    wmPtr->xInParent = wmPtr->yInParent = 0;
+    wmPtr->configWidth = -1;
+    wmPtr->configHeight = -1;
+    wmPtr->vRoot = None;
+    wmPtr->protPtr = NULL;
+    wmPtr->cmdArgv = NULL;
+    wmPtr->clientMachine = NULL;
+    wmPtr->flags = WM_NEVER_MAPPED;
+    wmPtr->nextPtr = firstWmPtr;
+    firstWmPtr = wmPtr;
+    winPtr->wmInfoPtr = wmPtr;
 
     UpdateVRootGeometry(wmPtr);
-
-    /*
-     * Tk must monitor structure events for top-level windows, in order
-     * to detect size and position changes caused by window managers.
-     */
-
-    Tk_CreateEventHandler((Tk_Window) winPtr, StructureNotifyMask,
-	    TopLevelEventProc, (ClientData) winPtr);
 
     /*
      * Arrange for geometry requests to be reflected from the window
@@ -465,32 +491,41 @@ TkWmMapWindow(winPtr)
 {
     register WmInfo *wmPtr = winPtr->wmInfoPtr;
     XTextProperty textProp;
+    char *string;
 
     if (wmPtr->flags & WM_NEVER_MAPPED) {
 	wmPtr->flags &= ~WM_NEVER_MAPPED;
 
 	/*
 	 * This is the first time this window has ever been mapped.
+	 * First create the wrapper window that provides space for a
+	 * menubar.
+	 */
+
+	if (wmPtr->wrapperPtr == NULL) {
+	    CreateWrapper(wmPtr);
+	}
+
+	/*
 	 * Store all the window-manager-related information for the
 	 * window.
 	 */
 
-	if (wmPtr->titleUid == NULL) {
-	    wmPtr->titleUid = winPtr->nameUid;
-	}
-	if (XStringListToTextProperty(&wmPtr->titleUid, 1, &textProp)  != 0) {
-	    XSetWMName(winPtr->display, winPtr->window, &textProp);
+	string = (wmPtr->title != NULL) ? wmPtr->title : winPtr->nameUid;
+	if (XStringListToTextProperty(&string, 1, &textProp)  != 0) {
+	    XSetWMName(winPtr->display, wmPtr->wrapperPtr->window, &textProp);
 	    XFree((char *) textProp.value);
 	}
     
 	TkWmSetClass(winPtr);
-    
+
 	if (wmPtr->iconName != NULL) {
-	    XSetIconName(winPtr->display, winPtr->window, wmPtr->iconName);
+	    XSetIconName(winPtr->display, wmPtr->wrapperPtr->window,
+		    wmPtr->iconName);
 	}
     
 	if (wmPtr->master != None) {
-	    XSetTransientForHint(winPtr->display, winPtr->window,
+	    XSetTransientForHint(winPtr->display, wmPtr->wrapperPtr->window,
 		    wmPtr->master);
 	}
     
@@ -498,13 +533,13 @@ TkWmMapWindow(winPtr)
 	UpdateHints(winPtr);
 	UpdateWmProtocols(wmPtr);
 	if (wmPtr->cmdArgv != NULL) {
-	    XSetCommand(winPtr->display, winPtr->window, wmPtr->cmdArgv,
-		    wmPtr->cmdArgc);
+	    XSetCommand(winPtr->display, wmPtr->wrapperPtr->window,
+		    wmPtr->cmdArgv, wmPtr->cmdArgc);
 	}
 	if (wmPtr->clientMachine != NULL) {
 	    if (XStringListToTextProperty(&wmPtr->clientMachine, 1, &textProp)
 		    != 0) {
-		XSetWMClientMachine(winPtr->display, winPtr->window,
+		XSetWMClientMachine(winPtr->display, wmPtr->wrapperPtr->window,
 			&textProp);
 		XFree((char *) textProp.value);
 	    }
@@ -538,7 +573,7 @@ TkWmMapWindow(winPtr)
      * processed the map operation.
      */
 
-    XMapWindow(winPtr->display, winPtr->window);
+    XMapWindow(winPtr->display, wmPtr->wrapperPtr->window);
     if (wmPtr->hints.initial_state == NormalState) {
 	WaitForMapNotify(winPtr, 1);
     }
@@ -577,7 +612,7 @@ TkWmUnmapWindow(winPtr)
      * to do with the window manager filtering Map events (and possily not
      * filtering Unmap events?).
      */ 
-    XUnmapWindow(winPtr->display, winPtr->window);
+    XUnmapWindow(winPtr->display, winPtr->wmInfoPtr->wrapperPtr->window);
     WaitForMapNotify(winPtr, 0);
 }
 
@@ -642,11 +677,23 @@ TkWmDeadWindow(winPtr)
 	    }
 	}
     }
+    if (wmPtr->title != NULL) {
+	ckfree(wmPtr->title);
+    }
+    if (wmPtr->iconName != NULL) {
+	ckfree(wmPtr->iconName);
+    }
     if (wmPtr->hints.flags & IconPixmapHint) {
 	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
     }
     if (wmPtr->hints.flags & IconMaskHint) {
 	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_mask);
+    }
+    if (wmPtr->leaderName != NULL) {
+	ckfree(wmPtr->leaderName);
+    }
+    if (wmPtr->masterWindowName != NULL) {
+	ckfree(wmPtr->masterWindowName);
     }
     if (wmPtr->icon != NULL) {
 	wmPtr2 = ((TkWindow *) wmPtr->icon)->wmInfoPtr;
@@ -658,6 +705,22 @@ TkWmDeadWindow(winPtr)
 	wmPtr2->icon = NULL;
 	wmPtr2->hints.flags &= ~IconWindowHint;
 	UpdateHints((TkWindow *) wmPtr->iconFor);
+    }
+    if (wmPtr->menubar != NULL) {
+	Tk_DestroyWindow(wmPtr->menubar);
+    }
+    if (wmPtr->wrapperPtr != NULL) {
+	/*
+	 * The rest of Tk doesn't know that we reparent the toplevel
+	 * inside the wrapper, so reparent it back out again before
+	 * deleting the wrapper; otherwise the toplevel will get deleted
+	 * twice (once implicitly by the deletion of the wrapper).
+	 */
+
+	XUnmapWindow(winPtr->display, winPtr->window);
+	XReparentWindow(winPtr->display, winPtr->window,
+		XRootWindow(winPtr->display, winPtr->screenNum), 0, 0);
+	Tk_DestroyWindow((Tk_Window) wmPtr->wrapperPtr);
     }
     while (wmPtr->protPtr != NULL) {
 	ProtocolHandler *protPtr;
@@ -677,7 +740,8 @@ TkWmDeadWindow(winPtr)
     }
     ckfree((char *) wmPtr);
     winPtr->wmInfoPtr = NULL;
-}
+}  
+
 
 /*
  *--------------------------------------------------------------
@@ -713,7 +777,8 @@ TkWmSetClass(winPtr)
 	classPtr = XAllocClassHint();
 	classPtr->res_name = winPtr->nameUid;
 	classPtr->res_class = winPtr->classUid;
-	XSetClassHint(winPtr->display, winPtr->window, classPtr);
+	XSetClassHint(winPtr->display, winPtr->wmInfoPtr->wrapperPtr->window,
+		classPtr);
 	XFree((char *) classPtr);
     }
 }
@@ -735,16 +800,10 @@ TkWmSetClass(winPtr)
  *----------------------------------------------------------------------
  */
 
-#ifdef FOR_SYNC_DEBUGGING 
-static int ErrorHandler _ANSI_ARGS_((ClientData clientData, XErrorEvent *errEventPtr));
-static int 
-ErrorHandler(clientData,errEventPtr)
-ClientData clientData;
-XErrorEvent *errEventPtr;
+static int ErrorHandler(ClientData clientData, XErrorEvent *errEventPtr)
 {
  abort();
 }
-#endif 
 
 
 	/* ARGSUSED */
@@ -1006,7 +1065,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		ckfree((char *) wmPtr->clientMachine);
 		wmPtr->clientMachine = NULL;
 		if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
-		    XDeleteProperty(winPtr->display, winPtr->window,
+		    XDeleteProperty(winPtr->display, wmPtr->wrapperPtr->window,
 			    Tk_InternAtom((Tk_Window) winPtr,
 			    "WM_CLIENT_MACHINE"));
 		}
@@ -1023,7 +1082,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    XTextProperty textProp;
 	    if (XStringListToTextProperty(&wmPtr->clientMachine, 1, &textProp)
 		    != 0) {
-		XSetWMClientMachine(winPtr->display, winPtr->window,
+		XSetWMClientMachine(winPtr->display, wmPtr->wrapperPtr->window,
 			&textProp);
 		XFree((char *) textProp.value);
 	    }
@@ -1043,10 +1102,13 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    return TCL_ERROR;
 	}
+	Tk_MakeWindowExist((Tk_Window) winPtr);
+	if (wmPtr->wrapperPtr == NULL) {
+	    CreateWrapper(wmPtr);
+	}
 	if (argc == 3) {
-	    Tk_MakeWindowExist((Tk_Window) winPtr);
-	    if (XGetWMColormapWindows(winPtr->display, winPtr->window,
-		    &cmapList, &count) == 0) {
+	    if (XGetWMColormapWindows(winPtr->display,
+		    wmPtr->wrapperPtr->window, &cmapList, &count) == 0) {
 		return TCL_OK;
 	    }
 	    for (i = 0; i < count; i++) {
@@ -1091,14 +1153,14 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (!gotToplevel) {
 	    wmPtr->flags |= WM_ADDED_TOPLEVEL_COLORMAP;
-	    cmapList[windowArgc] = winPtr->window;
+	    cmapList[windowArgc] = wmPtr->wrapperPtr->window;
 	    windowArgc++;
 	} else {
 	    wmPtr->flags &= ~WM_ADDED_TOPLEVEL_COLORMAP;
 	}
 	wmPtr->flags |= WM_COLORMAPS_EXPLICIT;
-	XSetWMColormapWindows(winPtr->display, winPtr->window, cmapList,
-		windowArgc);
+	XSetWMColormapWindows(winPtr->display, wmPtr->wrapperPtr->window,
+		cmapList, windowArgc);
 	ckfree((char *) cmapList);
         if (freeProc)
          (*freeProc)(windowArgc,windowArgs); 
@@ -1125,7 +1187,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    if (wmPtr->cmdArgv != NULL) {
                 TkWmFreeCmd(wmPtr);
 		if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
-		    XDeleteProperty(winPtr->display, winPtr->window,
+		    XDeleteProperty(winPtr->display, wmPtr->wrapperPtr->window,
 			    Tk_InternAtom((Tk_Window) winPtr, "WM_COMMAND"));
 		}
 	    }
@@ -1145,7 +1207,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
           wmPtr->cmdArgv[i] = LangString(cmdArgs[i]);
          }
 	if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
-	    XSetCommand(winPtr->display, winPtr->window, wmPtr->cmdArgv, wmPtr->cmdArgc);
+	    XSetCommand(winPtr->display, wmPtr->wrapperPtr->window,
+		    wmPtr->cmdArgv, cmdArgc);
 	}
 	if (freeProc)
 	    (*freeProc)(cmdArgc,cmdArgs);
@@ -1157,7 +1220,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (wmPtr->iconFor != NULL) {
 	    Tcl_AppendResult(interp, "can't deiconify ", argv[2],
-		    ": it is an icon for ", winPtr->pathName, (char *) NULL);
+		    ": it is an icon for ", Tk_PathName(wmPtr->iconFor),
+		    (char *) NULL);
 	    return TCL_ERROR;
 	}
 	wmPtr->hints.initial_state = NormalState;
@@ -1302,6 +1366,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
     } else if ((c == 'g') && (strncmp(argv[1], "group", length) == 0)
 	    && (length >= 3)) {
 	Tk_Window tkwin2;
+	WmInfo *wmPtr2;
 
 	if ((argc != 3) && (argc != 4)) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
@@ -1317,16 +1382,31 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (*argv[3] == '\0') {
 	    wmPtr->hints.flags &= ~WindowGroupHint;
+	    if (wmPtr->leaderName != NULL) {
+		ckfree(wmPtr->leaderName);
+	    }
 	    wmPtr->leaderName = NULL;
 	} else {
 	    tkwin2 = Tk_NameToWindow(interp, argv[3], tkwin);
 	    if (tkwin2 == NULL) {
 		return TCL_ERROR;
 	    }
+	    while (!Tk_IsTopLevel(tkwin2)) {
+		/*
+		 * Ensure that the group leader is actually a Tk toplevel.
+		 */
+
+		tkwin2 = Tk_Parent(tkwin2);
+	    }
 	    Tk_MakeWindowExist(tkwin2);
-	    wmPtr->hints.window_group = Tk_WindowId(tkwin2);
+	    wmPtr2 = ((TkWindow *) tkwin2)->wmInfoPtr;
+	    if (wmPtr2->wrapperPtr == NULL) {
+		CreateWrapper(wmPtr2);
+	    }
+	    wmPtr->hints.window_group = Tk_WindowId(wmPtr2->wrapperPtr);
 	    wmPtr->hints.flags |= WindowGroupHint;
-	    wmPtr->leaderName = Tk_PathName(tkwin2);
+	    wmPtr->leaderName = ckalloc((unsigned) (strlen(argv[3])+1));
+	    strcpy(wmPtr->leaderName, argv[3]);
 	}
 	UpdateHints(winPtr);
     } else if ((c == 'i') && (strncmp(argv[1], "iconbitmap", length) == 0)
@@ -1349,8 +1429,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	if (*argv[3] == '\0') {
 	    if (wmPtr->hints.icon_pixmap != None) {
 		Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
+		wmPtr->hints.icon_pixmap = None;
 	    }
-	    wmPtr->hints.icon_pixmap = None;
 	    wmPtr->hints.flags &= ~IconPixmapHint;
 	} else {
 	    pixmap = Tk_GetBitmap(interp, (Tk_Window) winPtr,
@@ -1381,7 +1461,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (wmPtr->iconFor != NULL) {
 	    Tcl_AppendResult(interp, "can't iconify ", argv[2],
-		    ": it is an icon for ", winPtr->pathName, (char *) NULL);
+		    ": it is an icon for ", Tk_PathName(wmPtr->iconFor),
+		   (char *) NULL);
 	    return TCL_ERROR;
 	}
 	wmPtr->hints.initial_state = IconicState;
@@ -1393,11 +1474,11 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    Tk_MapWindow((Tk_Window) winPtr);
 	    wmPtr->withdrawn = 0;
 	} else {
-	    if (XIconifyWindow(winPtr->display, winPtr->window,
-		winPtr->screenNum) == 0) {
-	    interp->result =
-		    "couldn't send iconify message to window manager";
-	    return TCL_ERROR;
+	    if (XIconifyWindow(winPtr->display, wmPtr->wrapperPtr->window,
+		    winPtr->screenNum) == 0) {
+		interp->result =
+			"couldn't send iconify message to window manager";
+		return TCL_ERROR;
 	    }
 	    WaitForMapNotify(winPtr, 0);
 	}
@@ -1443,9 +1524,11 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    interp->result = (wmPtr->iconName != NULL) ? wmPtr->iconName : "";
 	    return TCL_OK;
 	} else {
-	    wmPtr->iconName = Tk_GetUid(argv[3]);
+	    wmPtr->iconName = ckalloc((unsigned) (strlen(argv[3]) + 1));
+	    strcpy(wmPtr->iconName, argv[3]);
 	    if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
-		XSetIconName(winPtr->display, winPtr->window, wmPtr->iconName);
+		XSetIconName(winPtr->display, wmPtr->wrapperPtr->window,
+			wmPtr->iconName);
 	    }
 	}
     } else if ((c == 'i') && (strncmp(argv[1], "iconposition", length) == 0)
@@ -1534,14 +1617,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		WmInfo *wmPtr3 = ((TkWindow *) wmPtr->icon)->wmInfoPtr;
 		wmPtr3->iconFor = NULL;
 		wmPtr3->withdrawn = 1;
-
-		/*
-		 * Let the window use button events again.
-		 */
-
-		atts.event_mask = Tk_Attributes(wmPtr->icon)->event_mask
-			| ButtonPressMask;
-		Tk_ChangeWindowAttributes(wmPtr->icon, CWEventMask, &atts);
+		wmPtr3->hints.initial_state = WithdrawnState;
 	    }
 
 	    /*
@@ -1555,13 +1631,17 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		    & ~ButtonPressMask;
 	    Tk_ChangeWindowAttributes(tkwin2, CWEventMask, &atts);
 	    Tk_MakeWindowExist(tkwin2);
-	    wmPtr->hints.icon_window = Tk_WindowId(tkwin2);
+	    if (wmPtr2->wrapperPtr == NULL) {
+		CreateWrapper(wmPtr2);
+	    }
+	    wmPtr->hints.icon_window = Tk_WindowId(wmPtr2->wrapperPtr);
 	    wmPtr->hints.flags |= IconWindowHint;
 	    wmPtr->icon = tkwin2;
 	    wmPtr2->iconFor = (Tk_Window) winPtr;
 	    if (!wmPtr2->withdrawn && !(wmPtr2->flags & WM_NEVER_MAPPED)) {
 		wmPtr2->withdrawn = 0;
-		if (XWithdrawWindow(Tk_Display(tkwin2), Tk_WindowId(tkwin2),
+		if (XWithdrawWindow(Tk_Display(tkwin2),
+			Tk_WindowId(wmPtr2->wrapperPtr),
 			Tk_ScreenNumber(tkwin2)) == 0) {
 		    interp->result =
 			    "couldn't send withdraw message to window manager";
@@ -1638,6 +1718,11 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	atts.override_redirect = (boolean) ? True : False;
 	Tk_ChangeWindowAttributes((Tk_Window) winPtr, CWOverrideRedirect,
 		&atts);
+	if (winPtr->wmInfoPtr->wrapperPtr != NULL) {
+	    Tk_ChangeWindowAttributes(
+		    (Tk_Window) winPtr->wmInfoPtr->wrapperPtr,
+		    CWOverrideRedirect, &atts);
+	}
     } else if ((c == 's')
 	    && (strncmp(argv[1], "saveunder", length) == 0)) {
 	int boolean;
@@ -1663,6 +1748,11 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	atts.save_under = (boolean) ? True : False;
 	Tk_ChangeWindowAttributes((Tk_Window) winPtr, CWSaveUnder,
 		&atts);
+	if (winPtr->wmInfoPtr->wrapperPtr != NULL) {
+	    Tk_ChangeWindowAttributes(
+		(Tk_Window) winPtr->wmInfoPtr->wrapperPtr, 
+		CWSaveUnder, &atts);
+	}
     } else if ((c == 'p') && (strncmp(argv[1], "positionfrom", length) == 0)
 	    && (length >= 2)) {
 	if ((argc != 3) && (argc != 4)) {
@@ -1863,17 +1953,19 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	if (argc == 3) {
-	    interp->result = (wmPtr->titleUid != NULL) ? wmPtr->titleUid
+	    interp->result = (wmPtr->title != NULL) ? wmPtr->title
 		    : winPtr->nameUid;
 	    return TCL_OK;
 	} else {
-	    wmPtr->titleUid = Tk_GetUid(argv[3]);
+	    wmPtr->title = ckalloc((unsigned) (strlen(argv[3]) + 1));
+	    strcpy(wmPtr->title, argv[3]);
 	    if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
 		XTextProperty textProp;
 
-		if (XStringListToTextProperty(&wmPtr->titleUid, 1,
+		if (XStringListToTextProperty(&wmPtr->title, 1,
 			&textProp)  != 0) {
-		    XSetWMName(winPtr->display, winPtr->window, &textProp);
+		    XSetWMName(winPtr->display, wmPtr->wrapperPtr->window,
+			    &textProp);
 		    XFree((char *) textProp.value);
 		}
 	    }
@@ -1881,6 +1973,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
     } else if ((c == 't') && (strncmp(argv[1], "transient", length) == 0)
 	    && (length >= 3)) {
 	Tk_Window master;
+	WmInfo *wmPtr2;
 
 	if ((argc != 3) && (argc != 4)) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
@@ -1895,21 +1988,37 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (argv[3][0] == '\0') {
 	    wmPtr->master = None;
+	    if (wmPtr->masterWindowName != NULL) {
+		ckfree(wmPtr->masterWindowName);
+	    }
 	    wmPtr->masterWindowName = NULL;
 	} else {
 	    master = Tk_NameToWindow(interp, argv[3], tkwin);
 	    if (master == NULL) {
 		return TCL_ERROR;
 	    }
+	    while (!Tk_IsTopLevel(master)) {
+		/*
+		 * Ensure that the master window is actually a Tk toplevel.
+		 */
+
+		master = Tk_Parent(master);
+	    }
 	    Tk_MakeWindowExist(master);
-	    wmPtr->master = Tk_WindowId(master);
-	    wmPtr->masterWindowName = Tk_PathName(master);
+	    wmPtr2 = ((TkWindow *) master)->wmInfoPtr;
+	    if (wmPtr2->wrapperPtr == NULL) {
+		CreateWrapper(wmPtr2);
+	    }
+	    wmPtr->master = Tk_WindowId(wmPtr2->wrapperPtr);
+	    wmPtr->masterWindowName = ckalloc((unsigned) (strlen(argv[3])+1));
+	    strcpy(wmPtr->masterWindowName, argv[3]);
 	}
 	if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
-	    XSetTransientForHint(winPtr->display, winPtr->window,
+	    XSetTransientForHint(winPtr->display, wmPtr->wrapperPtr->window,
 		    wmPtr->master);
 	}
-    } else if ((c == 'w') && (strncmp(argv[1], "withdraw", length) == 0)) {
+    } else if ((c == 'w') && (strncmp(argv[1], "withdraw", length) == 0)
+	    && (length >= 2)) {
 	if (argc != 3) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
 		    argv[0], " withdraw window\"", (char *) NULL);
@@ -1926,7 +2035,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	if (wmPtr->flags & WM_NEVER_MAPPED) {
 	    return TCL_OK;
 	}
-	if (XWithdrawWindow(winPtr->display, winPtr->window,
+	if (XWithdrawWindow(winPtr->display, wmPtr->wrapperPtr->window,
 		winPtr->screenNum) == 0) {
 	    interp->result =
 		    "couldn't send withdraw message to window manager";
@@ -2017,7 +2126,7 @@ Tk_SetGrid(tkwin, reqWidth, reqHeight, widthInc, heightInc)
 	    && (wmPtr->widthInc == widthInc)
 	    && (wmPtr->heightInc == heightInc)
 	    && ((wmPtr->sizeHintsFlags & (PBaseSize|PResizeInc))
-		    == (PBaseSize|PResizeInc))) {
+		    == (PBaseSize|PResizeInc) )) {
 	return;
     }
 
@@ -2127,24 +2236,26 @@ Tk_UnsetGrid(tkwin)
  * ConfigureEvent --
  *
  *	This procedure is called to handle ConfigureNotify events on
- *	top-level windows.
+ *	wrapper windows.
  *
  * Results:
  *	None.
  *
  * Side effects:
- *	Information gets updated in the WmInfo structure for the window.
+ *	Information gets updated in the WmInfo structure for the window
+ *	and the toplevel itself gets repositioned within the wrapper.
  *
  *----------------------------------------------------------------------
  */
 
 static void
-ConfigureEvent(winPtr, configEventPtr)
-    TkWindow *winPtr;			/* Top-level window. */
+ConfigureEvent(wmPtr, configEventPtr)
+    WmInfo *wmPtr;			/* Information about toplevel window. */
     XConfigureEvent *configEventPtr;	/* Event that just occurred for
-					 * winPtr. */
+					 * wmPtr->wrapperPtr. */
 {
-    register WmInfo *wmPtr = winPtr->wmInfoPtr;
+    TkWindow *wrapperPtr = wmPtr->wrapperPtr;
+    TkWindow *winPtr = wmPtr->winPtr;
 
     /* 
      * Update size information from the event.  There are a couple of
@@ -2159,8 +2270,8 @@ ConfigureEvent(winPtr, configEventPtr)
      *    window will stop tracking geometry manager requests).
      */
 
-    if (((winPtr->changes.width != configEventPtr->width)
-	    || (winPtr->changes.height != configEventPtr->height))
+    if (((wrapperPtr->changes.width != configEventPtr->width)
+	    || (wrapperPtr->changes.height != configEventPtr->height))
 	    && !(wmPtr->flags & WM_SYNC_PENDING)){
 	if (wmTracing) {
 	    printf("TopLevelEventProc: user changed %s size to %dx%d\n",
@@ -2174,34 +2285,53 @@ ConfigureEvent(winPtr, configEventPtr)
 	     * from what the widgets asked for.
 	     */
 	} else {
-	    if (wmPtr->gridWin != NULL) {
-		wmPtr->width = wmPtr->reqGridWidth
-			+ (configEventPtr->width
-			- winPtr->reqWidth)/wmPtr->widthInc;
-		if (wmPtr->width < 0) {
-		    wmPtr->width = 0;
+	    /*
+	     * Note: if this window is embedded then don't set the external
+	     * size, since it came from the containing application, not the
+	     * user.  In this case we want to keep sending our size requests
+	     * to the containing application;  if the user fixes the size
+	     * of that application then it will still percolate down to us
+	     * in the right way.
+	     */
+
+	    if (!(winPtr->flags & TK_EMBEDDED)) {
+		if (wmPtr->gridWin != NULL) {
+		    wmPtr->width = wmPtr->reqGridWidth
+			    + (configEventPtr->width
+			    - winPtr->reqWidth)/wmPtr->widthInc;
+		    if (wmPtr->width < 0) {
+			wmPtr->width = 0;
+		    }
+		} else {
+		    wmPtr->width = configEventPtr->width;
 		}
-	    } else {
-		wmPtr->width = configEventPtr->width;
 	    }
 	}
 	if ((wmPtr->height == -1)
-		&& (configEventPtr->height == winPtr->reqHeight)) {
+		&& (configEventPtr->height ==
+			(winPtr->reqHeight + wmPtr->menuHeight))) {
 	    /*
 	     * Don't set external height, since the user didn't change it
 	     * from what the widgets asked for.
 	     */
 	} else {
-	    if (wmPtr->gridWin != NULL) {
-		wmPtr->height = wmPtr->reqGridHeight
-			+ (configEventPtr->height
-			- winPtr->reqHeight)/wmPtr->heightInc;
-		if (wmPtr->height < 0) {
-		    wmPtr->height = 0;
+	    /*
+	     * See note for wmPtr->width about not setting external size
+	     * for embedded windows.
+	     */
+
+	    if (!(winPtr->flags & TK_EMBEDDED)) {
+		if (wmPtr->gridWin != NULL) {
+		    wmPtr->height = wmPtr->reqGridHeight
+			    + (configEventPtr->height - wmPtr->menuHeight
+			    - winPtr->reqHeight)/wmPtr->heightInc;
+		    if (wmPtr->height < 0) {
+			wmPtr->height = 0;
+		    }
+		} else {
+		    wmPtr->height = configEventPtr->height - wmPtr->menuHeight;
 		}
-	    } else {
-		wmPtr->height = configEventPtr->height;
-	    }
+            }
 	}
 	wmPtr->configWidth = configEventPtr->width;
 	wmPtr->configHeight = configEventPtr->height;
@@ -2214,11 +2344,11 @@ ConfigureEvent(winPtr, configEventPtr)
 	printf(" send_event = %d, serial = %ld\n", configEventPtr->send_event,
 		configEventPtr->serial);
     }
-    winPtr->changes.width = configEventPtr->width;
-    winPtr->changes.height = configEventPtr->height;
-    winPtr->changes.border_width = configEventPtr->border_width;
-    winPtr->changes.sibling = configEventPtr->above;
-    winPtr->changes.stack_mode = Above;
+    wrapperPtr->changes.width = configEventPtr->width;
+    wrapperPtr->changes.height = configEventPtr->height;
+    wrapperPtr->changes.border_width = configEventPtr->border_width;
+    wrapperPtr->changes.sibling = configEventPtr->above;
+    wrapperPtr->changes.stack_mode = Above;
 
     /*
      * Reparenting window managers make life difficult.  If the
@@ -2236,13 +2366,13 @@ ConfigureEvent(winPtr, configEventPtr)
      * there is a parent shrink-wrapped around the window.
      */
 
-    if ((wmPtr->reparent == None) || !ComputeReparentGeometry(winPtr)) {
+    if ((wmPtr->reparent == None) || !ComputeReparentGeometry(wmPtr)) {
 	wmPtr->parentWidth = configEventPtr->width
 		+ 2*configEventPtr->border_width;
 	wmPtr->parentHeight = configEventPtr->height
 		+ 2*configEventPtr->border_width;
-	winPtr->changes.x = wmPtr->x = configEventPtr->x;
-	winPtr->changes.y = wmPtr->y = configEventPtr->y;
+	wrapperPtr->changes.x = wmPtr->x = configEventPtr->x;
+	wrapperPtr->changes.y = wmPtr->y = configEventPtr->y;
 	if (wmPtr->flags & WM_NEGATIVE_X) {
 	    wmPtr->x = wmPtr->vRootWidth - (wmPtr->x + wmPtr->parentWidth);
 	}
@@ -2250,6 +2380,34 @@ ConfigureEvent(winPtr, configEventPtr)
 	    wmPtr->y = wmPtr->vRootHeight - (wmPtr->y + wmPtr->parentHeight);
 	}
     }
+
+    /*
+     * Make sure that the toplevel and menubar are properly positioned within
+     * the wrapper.
+     */
+
+    XMoveResizeWindow(winPtr->display, winPtr->window, 0,
+	    wmPtr->menuHeight, (unsigned) wrapperPtr->changes.width,
+	    (unsigned) (wrapperPtr->changes.height - wmPtr->menuHeight));
+    if ((wmPtr->menubar != NULL)
+	    && ((Tk_Width(wmPtr->menubar) != wrapperPtr->changes.width)
+	    || (Tk_Height(wmPtr->menubar) != wmPtr->menuHeight))) {
+	Tk_MoveResizeWindow(wmPtr->menubar, 0, 0, wrapperPtr->changes.width,
+		wmPtr->menuHeight);
+    }
+
+    /*
+     * Update the coordinates in the toplevel (they should refer to the
+     * position in root window coordinates, not the coordinates of the
+     * wrapper window).  Then synthesize a ConfigureNotify event to tell
+     * the application about the change.
+     */
+
+    winPtr->changes.x = wrapperPtr->changes.x;
+    winPtr->changes.y = wrapperPtr->changes.y + wmPtr->menuHeight;
+    winPtr->changes.width = wrapperPtr->changes.width;
+    winPtr->changes.height = wrapperPtr->changes.height - wmPtr->menuHeight;
+    TkDoConfigureNotify(winPtr);
 }
 
 /*
@@ -2258,7 +2416,7 @@ ConfigureEvent(winPtr, configEventPtr)
  * ReparentEvent --
  *
  *	This procedure is called to handle ReparentNotify events on
- *	top-level windows.
+ *	wrapper windows.
  *
  * Results:
  *	None.
@@ -2270,12 +2428,12 @@ ConfigureEvent(winPtr, configEventPtr)
  */
 
 static void
-ReparentEvent(winPtr, reparentEventPtr)
-    TkWindow *winPtr;			/* Top-level window. */
+ReparentEvent(wmPtr, reparentEventPtr)
+    WmInfo *wmPtr;			/* Information about toplevel window. */
     XReparentEvent *reparentEventPtr;	/* Event that just occurred for
-					 * winPtr. */
+					 * wmPtr->wrapperPtr. */
 {
-    register WmInfo *wmPtr = winPtr->wmInfoPtr;
+    TkWindow *wrapperPtr = wmPtr->wrapperPtr;
     Window vRoot, ancestor, *children, dummy2, *virtualRootPtr;
     Atom actualType;
     int actualFormat;
@@ -2284,24 +2442,24 @@ ReparentEvent(winPtr, reparentEventPtr)
     Tk_ErrorHandler handler;
 
     /*
-     * Identify the root window for winPtr.  This is tricky because of
+     * Identify the root window for wrapperPtr.  This is tricky because of
      * virtual root window managers like tvtwm.  If the window has a
      * property named __SWM_ROOT or __WM_ROOT then this property gives
      * the id for a virtual root window that should be used instead of
      * the root window of the screen.
      */
 
-    vRoot = RootWindow(winPtr->display, winPtr->screenNum);
+    vRoot = RootWindow(wrapperPtr->display, wrapperPtr->screenNum);
     wmPtr->vRoot = None;
-    handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+    handler = Tk_CreateErrorHandler(wrapperPtr->display, -1, -1, -1,
 	    (Tk_ErrorProc *) NULL, (ClientData) NULL);
-    if (((XGetWindowProperty(winPtr->display, winPtr->window,
-	    Tk_InternAtom((Tk_Window) winPtr, "__WM_ROOT"), 0, (long) 1,
+    if (((XGetWindowProperty(wrapperPtr->display, wrapperPtr->window,
+	    Tk_InternAtom((Tk_Window) wrapperPtr, "__WM_ROOT"), 0, (long) 1,
 	    False, XA_WINDOW, &actualType, &actualFormat, &numItems,
 	    &bytesAfter, (unsigned char **) &virtualRootPtr) == Success)
 	    && (actualType == XA_WINDOW))
-	    || ((XGetWindowProperty(winPtr->display, winPtr->window,
-	    Tk_InternAtom((Tk_Window) winPtr, "__SWM_ROOT"), 0, (long) 1,
+	    || ((XGetWindowProperty(wrapperPtr->display, wrapperPtr->window,
+	    Tk_InternAtom((Tk_Window) wrapperPtr, "__SWM_ROOT"), 0, (long) 1,
 	    False, XA_WINDOW, &actualType, &actualFormat, &numItems,
 	    &bytesAfter, (unsigned char **) &virtualRootPtr) == Success)
 	    && (actualType == XA_WINDOW))) {
@@ -2318,8 +2476,8 @@ ReparentEvent(winPtr, reparentEventPtr)
 
     if (wmTracing) {
 	printf("ReparentEvent: %s reparented to 0x%x, vRoot = 0x%x\n",
-		winPtr->pathName, (unsigned int) reparentEventPtr->parent,
-		(unsigned int) vRoot);
+		wmPtr->winPtr->pathName,
+		(unsigned int) reparentEventPtr->parent, (unsigned int) vRoot);
     }
 
     /*
@@ -2336,13 +2494,11 @@ ReparentEvent(winPtr, reparentEventPtr)
     if (reparentEventPtr->parent == vRoot) {
 	noReparent:
 	wmPtr->reparent = None;
-	wmPtr->parentWidth = winPtr->changes.width
-		+ 2*winPtr->changes.border_width;
-	wmPtr->parentHeight = winPtr->changes.height
-		+ 2*winPtr->changes.border_width;
+	wmPtr->parentWidth = wrapperPtr->changes.width;
+	wmPtr->parentHeight = wrapperPtr->changes.height;
 	wmPtr->xInParent = wmPtr->yInParent = 0;
-	winPtr->changes.x = reparentEventPtr->x;
-	winPtr->changes.y = reparentEventPtr->y;
+	wrapperPtr->changes.x = reparentEventPtr->x;
+	wrapperPtr->changes.y = reparentEventPtr->y;
 	return;
     }
 
@@ -2356,25 +2512,26 @@ ReparentEvent(winPtr, reparentEventPtr)
      * ReparentNotify event coming later).
      */
 
-    handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+    handler = Tk_CreateErrorHandler(wrapperPtr->display, -1, -1, -1,
 	    (Tk_ErrorProc *) NULL, (ClientData) NULL);
     wmPtr->reparent = reparentEventPtr->parent;
     while (1) {
-	if (XQueryTree(winPtr->display, wmPtr->reparent, &dummy2, &ancestor,
+	if (XQueryTree(wrapperPtr->display, wmPtr->reparent, &dummy2, &ancestor,
 		&children, &dummy) == 0) {
 	    Tk_DeleteErrorHandler(handler);
 	    goto noReparent;
 	}
 	XFree((char *) children);
 	if ((ancestor == vRoot) ||
-		(ancestor == RootWindow(winPtr->display, winPtr->screenNum))) {
+		(ancestor == RootWindow(wrapperPtr->display,
+		wrapperPtr->screenNum))) {
 	    break;
 	}
 	wmPtr->reparent = ancestor;
     }
     Tk_DeleteErrorHandler(handler);
 
-    if (!ComputeReparentGeometry(winPtr)) {
+    if (!ComputeReparentGeometry(wmPtr)) {
 	goto noReparent;
     }
 }
@@ -2396,17 +2553,18 @@ ReparentEvent(winPtr, reparentEventPtr)
  *	being reparented.
  *
  * Side effects:
- *	Geometry information in winPtr and winPtr->wmPtr gets updated.
+ *	Geometry information in wmPtr, wmPtr->winPtr, and
+ *	wmPtr->wrapperPtr gets updated.
  *
  *----------------------------------------------------------------------
  */
 
 static int
-ComputeReparentGeometry(winPtr)
-    TkWindow *winPtr;		/* Top-level window whose reparent info
-				 * is to be recomputed. */
+ComputeReparentGeometry(wmPtr)
+    WmInfo *wmPtr;		/* Information about toplevel window
+				 * whose reparent info is to be recomputed. */
 {
-    register WmInfo *wmPtr = winPtr->wmInfoPtr;
+    TkWindow *wrapperPtr = wmPtr->wrapperPtr;
     int width, height, bd;
     unsigned int dummy;
     int xOffset, yOffset, x, y;
@@ -2414,11 +2572,11 @@ ComputeReparentGeometry(winPtr)
     Status status;
     Tk_ErrorHandler handler;
 
-    handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+    handler = Tk_CreateErrorHandler(wrapperPtr->display, -1, -1, -1,
 	    (Tk_ErrorProc *) NULL, (ClientData) NULL);
-    (void) XTranslateCoordinates(winPtr->display, winPtr->window,
+    (void) XTranslateCoordinates(wrapperPtr->display, wrapperPtr->window,
 	    wmPtr->reparent, 0, 0, &xOffset, &yOffset, &dummy2);
-    status = XGetGeometry(winPtr->display, wmPtr->reparent,
+    status = XGetGeometry(wrapperPtr->display, wmPtr->reparent,
 	    &dummy2, &x, &y, (unsigned int *) &width,
 	    (unsigned int *) &height, (unsigned int *) &bd, &dummy);
     Tk_DeleteErrorHandler(handler);
@@ -2432,8 +2590,8 @@ ComputeReparentGeometry(winPtr)
 	wmPtr->xInParent = wmPtr->yInParent = 0;
 	return 0;
     }
-    wmPtr->xInParent = xOffset + bd - winPtr->changes.border_width;
-    wmPtr->yInParent = yOffset + bd - winPtr->changes.border_width;
+    wmPtr->xInParent = xOffset + bd;
+    wmPtr->yInParent = yOffset + bd;
     wmPtr->parentWidth = width + 2*bd;
     wmPtr->parentHeight = height + 2*bd;
 
@@ -2450,10 +2608,14 @@ ComputeReparentGeometry(winPtr)
      * result. Without this check, windows can "walk" across the screen
      * under some conditions.
      *
-     * 2. Don't update wmPtr->x and wmPtr->y unless winPtr->changes.x
-     * or winPtr->changes.y has changed (otherwise a size change can
+     * 2. Don't update wmPtr->x and wmPtr->y unless wrapperPtr->changes.x
+     * or wrapperPtr->changes.y has changed (otherwise a size change can
      * spoof us into thinking that the position changed too and defeat
      * the intent of (1) above.
+     *
+     * (As of 9/96 the above 2 comments appear to be stale.  They're
+     * being left in place as a reminder of what was once true (and
+     * perhaps should still be true?)).
      *
      * 3. Ignore size changes coming from the window system if we're
      * about to change the size ourselves but haven't seen the event for
@@ -2461,8 +2623,8 @@ ComputeReparentGeometry(winPtr)
      */
 
     if (!(wmPtr->flags & WM_MOVE_PENDING)
-	    && ((winPtr->changes.x != (x + wmPtr->xInParent))
-	    || (winPtr->changes.y != (y + wmPtr->yInParent)))) {
+	    && ((wmPtr->wrapperPtr->changes.x != (x + wmPtr->xInParent))
+	    || (wmPtr->wrapperPtr->changes.y != (y + wmPtr->yInParent)))) {
 	wmPtr->x = x;
 	if (wmPtr->flags & WM_NEGATIVE_X) {
 	    wmPtr->x = wmPtr->vRootWidth - (wmPtr->x + wmPtr->parentWidth);
@@ -2473,12 +2635,12 @@ ComputeReparentGeometry(winPtr)
 	}
     }
 
-    winPtr->changes.x = x + wmPtr->xInParent;
-    winPtr->changes.y = y + wmPtr->yInParent;
+    wmPtr->wrapperPtr->changes.x = x + wmPtr->xInParent;
+    wmPtr->wrapperPtr->changes.y = y + wmPtr->yInParent;
     if (wmTracing) {
-	printf("winPtr coords %d,%d, wmPtr coords %d,%d, offsets %d %d\n",
-		winPtr->changes.x, winPtr->changes.y, wmPtr->x, wmPtr->y,
-		wmPtr->xInParent, wmPtr->yInParent);
+	printf("wrapperPtr coords %d,%d, wmPtr coords %d,%d, offsets %d %d\n",
+		wrapperPtr->changes.x, wrapperPtr->changes.y,
+		wmPtr->x, wmPtr->y, wmPtr->xInParent, wmPtr->yInParent);
     }
     return 1;
 }
@@ -2486,10 +2648,10 @@ ComputeReparentGeometry(winPtr)
 /*
  *----------------------------------------------------------------------
  *
- * TopLevelEventProc --
+ * WrapperEventProc --
  *
- *	This procedure is invoked when a top-level (or other externally-
- *	managed window) is restructured in any way.
+ *	This procedure is invoked by the event loop when a wrapper window
+ *	is restructured.
  *
  * Results:
  *	None.
@@ -2502,17 +2664,18 @@ ComputeReparentGeometry(winPtr)
  */
 
 static void
-TopLevelEventProc(clientData, eventPtr)
-    ClientData clientData;		/* Window for which event occurred. */
+WrapperEventProc(clientData, eventPtr)
+    ClientData clientData;		/* Information about toplevel window. */
     XEvent *eventPtr;			/* Event that just happened. */
 {
-    register TkWindow *winPtr = (TkWindow *) clientData;
+    WmInfo *wmPtr = (WmInfo *) clientData;
+    XEvent mapEvent;
 
-    winPtr->wmInfoPtr->flags |= WM_VROOT_OFFSET_STALE;
+    wmPtr->flags |= WM_VROOT_OFFSET_STALE;
     if (eventPtr->type == DestroyNotify) {
 	Tk_ErrorHandler handler;
 
-	if (!(winPtr->flags & TK_ALREADY_DEAD)) {
+	if (!(wmPtr->wrapperPtr->flags & TK_ALREADY_DEAD)) {
 	    /*
 	     * A top-level window was deleted externally (e.g., by the window
 	     * manager).  This is probably not a good thing, but cleanup as
@@ -2521,13 +2684,13 @@ TopLevelEventProc(clientData, eventPtr)
 	     * it's already gone.
 	     */
     
-	    handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+	    handler = Tk_CreateErrorHandler(wmPtr->winPtr->display, -1, -1, -1,
 		    (Tk_ErrorProc *) NULL, (ClientData) NULL);
-	    Tk_DestroyWindow((Tk_Window) winPtr);
+	    Tk_DestroyWindow((Tk_Window) wmPtr->winPtr);
 	    Tk_DeleteErrorHandler(handler);
 	}
 	if (wmTracing) {
-	    printf("TopLevelEventProc: %s deleted\n", winPtr->pathName);
+	    printf("TopLevelEventProc: %s deleted\n", wmPtr->winPtr->pathName);
 	}
     } else if (eventPtr->type == ConfigureNotify) {
 	/*
@@ -2540,22 +2703,29 @@ TopLevelEventProc(clientData, eventPtr)
 	 * the window).
 	 */
 
-	if (!(winPtr->wmInfoPtr->flags & WM_NEVER_MAPPED)) {
-	    ConfigureEvent(winPtr, &eventPtr->xconfigure);
+	if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
+	    ConfigureEvent(wmPtr, &eventPtr->xconfigure);
 	}
     } else if (eventPtr->type == MapNotify) {
-	winPtr->flags |= TK_MAPPED;
-	if (wmTracing) {
-	    printf("TopLevelEventProc: %s mapped\n", winPtr->pathName);
-	}
+	wmPtr->wrapperPtr->flags |= TK_MAPPED;
+	wmPtr->winPtr->flags |= TK_MAPPED;
+	XMapWindow(wmPtr->winPtr->display, wmPtr->winPtr->window);
+	goto doMapEvent;
     } else if (eventPtr->type == UnmapNotify) {
-	winPtr->flags &= ~TK_MAPPED;
-	if (wmTracing) {
-	    printf("TopLevelEventProc: %s unmapped\n", winPtr->pathName);
-	}
+	wmPtr->wrapperPtr->flags &= ~TK_MAPPED;
+	wmPtr->winPtr->flags &= ~TK_MAPPED;
+	XUnmapWindow(wmPtr->winPtr->display, wmPtr->winPtr->window);
+	goto doMapEvent;
     } else if (eventPtr->type == ReparentNotify) {
-	ReparentEvent(winPtr, &eventPtr->xreparent);
+	ReparentEvent(wmPtr, &eventPtr->xreparent);
     }
+    return;
+
+    doMapEvent:
+    mapEvent = *eventPtr;
+    mapEvent.xmap.event = wmPtr->winPtr->window;
+    mapEvent.xmap.window = wmPtr->winPtr->window;
+    Tk_HandleEvent(&mapEvent);
 }
 
 /*
@@ -2586,6 +2756,24 @@ TopLevelReqProc(dummy, tkwin)
     WmInfo *wmPtr;
 
     wmPtr = winPtr->wmInfoPtr;
+
+    if ((wmPtr->width >= 0) && (wmPtr->height >= 0)) {
+	/*
+	 * Explicit dimensions have been set for this window, so we
+	 * should ignore the geometry request.  It's actually important
+	 * to ignore the geometry request because, due to quirks in
+	 * window managers, invoking UpdateGeometryInfo may cause the
+	 * window to move.  For example, if "wm geometry -10-20" was
+	 * invoked, the window may be positioned incorrectly the first
+	 * time it appears (because we didn't know the proper width of
+	 * the window manager borders); if we invoke UpdateGeometryInfo
+	 * again, the window will be positioned correctly, which may
+	 * cause it to jump on the screen.
+	 */
+
+	return;
+    }
+
     wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
     if (!(wmPtr->flags & (WM_UPDATE_PENDING|WM_NEVER_MAPPED))) {
 	Tcl_DoWhenIdle(UpdateGeometryInfo, (ClientData) winPtr);
@@ -2618,8 +2806,8 @@ TopLevelReqProc(dummy, tkwin)
  *	None.
  *
  * Side effects:
- *	The window's size and location may change, unless the WM prevents
- *	that from happening.
+ *	The size and location of both the toplevel window and its wrapper
+ *	may change, unless the WM prevents that from happening.
  *
  *----------------------------------------------------------------------
  */
@@ -2708,40 +2896,100 @@ UpdateGeometryInfo(clientData)
     }
 
     /*
-     * Reconfigure the window if it isn't already configured correctly.
+     * Reconfigure the wrapper if it isn't already configured correctly.
      * A few tricky points:
      *
-     * 1. Sometimes the window manager will give us a different size
+     * 1. If the window is embeddedand the container is also in this
+     *    process, don't actually reconfigure the window; just pass the
+     *    desired size on to the container.  Also, zero out any position
+     *    information, since embedded windows are not allowed to move.
+     * 2. Sometimes the window manager will give us a different size
      *    than we asked for (e.g. mwm has a minimum size for windows), so
      *    base the size check on what we *asked for* last time, not what we
      *    got.
-     * 2. Can't just reconfigure always, because we may not get a
+     * 3. Can't just reconfigure always, because we may not get a
      *    ConfigureNotify event back if nothing changed, so
      *    WaitForConfigureNotify will hang a long time.
-     * 3. Don't move window unless a new position has been requested for
+     * 4. Don't move window unless a new position has been requested for
      *	  it.  This is because of "features" in some window managers (e.g.
      *    twm, as of 4/24/91) where they don't interpret coordinates
      *    according to ICCCM.  Moving a window to its current location may
      *    cause it to shift position on the screen.
      */
 
+    if ((winPtr->flags & (TK_EMBEDDED|TK_BOTH_HALVES))
+	    == (TK_EMBEDDED|TK_BOTH_HALVES)) {
+	/*
+	 * This window is embedded and the container is also in this
+	 * process, so we don't need to do anything special about the
+	 * geometry, except to make sure that the desired size is known
+	 * by the container.  Also, zero out any position information,
+	 * since embedded windows are not allowed to move.
+	 */
+
+	wmPtr->x = wmPtr->y = 0;
+	wmPtr->flags &= ~(WM_NEGATIVE_X|WM_NEGATIVE_Y);
+	height += wmPtr->menuHeight;
+	Tk_GeometryRequest((Tk_Window) TkpGetOtherWindow(winPtr),
+		width, height);
+	return;
+    }
     serial = NextRequest(winPtr->display);
+    height += wmPtr->menuHeight;
     if (wmPtr->flags & WM_MOVE_PENDING) {
+	if ((x == winPtr->changes.x) && (y == winPtr->changes.y)
+		&& (width == wmPtr->wrapperPtr->changes.width)
+		&& (height == wmPtr->wrapperPtr->changes.height)) {
+	    /*
+	     * The window already has the correct geometry, so don't bother
+	     * to configure it;  the X server appears to ignore these
+	     * requests, so we won't get back a ConfigureNotify and the
+	     * WaitForConfigureNotify call below will hang for a while.
+	     */
+
+	    wmPtr->flags &= ~WM_MOVE_PENDING;
+	    return;
+	}
 	wmPtr->configWidth = width;
 	wmPtr->configHeight = height;
 	if (wmTracing) {
-	    printf("UpdateGeometryInfo moving to %d %d, resizing to %d x %d,\n",
-		    x, y, width, height);
+	   printf("UpdateGeometryInfo moving to %d %d, resizing to %d x %d,\n",
+                   x, y, width, height);
 	}
-	Tk_MoveResizeWindow((Tk_Window) winPtr, x, y, width, height);
+	XMoveResizeWindow(winPtr->display, wmPtr->wrapperPtr->window, x, y,
+		(unsigned) width, (unsigned) height);
     } else if ((width != wmPtr->configWidth)
 	    || (height != wmPtr->configHeight)) {
+	if ((width == wmPtr->wrapperPtr->changes.width)
+		&& (height == wmPtr->wrapperPtr->changes.height)) {
+	    /*
+	     * The window is already just the size we want, so don't bother
+	     * to configure it;  the X server appears to ignore these
+	     * requests, so we won't get back a ConfigureNotify and the
+	     * WaitForConfigureNotify call below will hang for a while.
+	     */
+
+	    return;
+	}
 	wmPtr->configWidth = width;
 	wmPtr->configHeight = height;
 	if (wmTracing) {
 	    printf("UpdateGeometryInfo resizing to %d x %d\n", width, height);
 	}
-	Tk_ResizeWindow((Tk_Window) winPtr, width, height);
+	XResizeWindow(winPtr->display, wmPtr->wrapperPtr->window,
+		(unsigned) width, (unsigned) height);
+    } else if ((wmPtr->menubar != NULL)
+	    && ((Tk_Width(wmPtr->menubar) != wmPtr->wrapperPtr->changes.width)
+	    || (Tk_Height(wmPtr->menubar) != wmPtr->menuHeight))) {
+	/*
+	 * It is possible that the window's overall size has not changed
+	 * but the menu size has.
+	 */
+	
+	Tk_MoveResizeWindow(wmPtr->menubar, 0, 0,
+		wmPtr->wrapperPtr->changes.width, wmPtr->menuHeight);
+	XResizeWindow(winPtr->display, wmPtr->wrapperPtr->window,
+		(unsigned) width, (unsigned) height);
     } else {
 	return;
     }
@@ -2803,7 +3051,7 @@ UpdateSizeHints(winPtr)
 	if (hintsPtr->base_width < 0) {
 	    hintsPtr->base_width = 0;
 	}
-	hintsPtr->base_height = winPtr->reqHeight
+	hintsPtr->base_height = winPtr->reqHeight + wmPtr->menuHeight
 		- (wmPtr->reqGridHeight * wmPtr->heightInc);
 	if (hintsPtr->base_height < 0) {
 	    hintsPtr->base_height = 0;
@@ -2850,12 +3098,12 @@ UpdateSizeHints(winPtr)
 	if (wmPtr->height >= 0) {
 	    hintsPtr->min_height = wmPtr->height;
 	} else {
-	    hintsPtr->min_height = winPtr->reqHeight;
+	    hintsPtr->min_height = winPtr->reqHeight + wmPtr->menuHeight;
 	}
 	hintsPtr->max_height = hintsPtr->min_height;
     }
 
-    XSetWMNormalHints(winPtr->display, winPtr->window, hintsPtr);
+    XSetWMNormalHints(winPtr->display, wmPtr->wrapperPtr->window, hintsPtr);
 
     XFree((char *) hintsPtr);
 }
@@ -2922,8 +3170,8 @@ WaitForConfigureNotify(winPtr, serial)
 
     while (!gotConfig) {
 	wmPtr->flags |= WM_SYNC_PENDING;
-	code = WaitForEvent(winPtr->display, winPtr->window, ConfigureNotify,
-		&event);
+	code = WaitForEvent(winPtr->display, wmPtr->wrapperPtr->window,
+		ConfigureNotify, &event);
 	wmPtr->flags &= ~WM_SYNC_PENDING;
 	if (code != TCL_OK) {
 	    if (wmTracing) {
@@ -2975,10 +3223,10 @@ WaitForEvent(display, window, type, eventPtr)
     int type;			/* Type of event that is wanted. */
     XEvent *eventPtr;		/* Place to store event. */
 {
-#define TIMEOUT_MS 2000
     WaitRestrictInfo info;
     Tk_RestrictProc *oldRestrictProc;
     ClientData oldRestrictData;
+    Tcl_Time timeout;
 
     /*
      * Set up an event filter to select just the events we want, and
@@ -2991,21 +3239,17 @@ WaitForEvent(display, window, type, eventPtr)
     info.type = type;
     info.eventPtr = eventPtr;
     info.foundEvent = 0;
-    info.timeout = 0;
     oldRestrictProc = Tk_RestrictEvents(WaitRestrictProc, (ClientData) &info,
 	    &oldRestrictData);
-    Tcl_CreateModalTimeout(TIMEOUT_MS, WaitTimeoutProc,
-	    (ClientData) &info);
-    while (1) {
-	Tcl_DoOneEvent(TCL_WINDOW_EVENTS);
-	if (info.foundEvent) {
-	    break;
-	}
-	if (info.timeout) {
+
+    TclpGetTime(&timeout);
+    timeout.sec += 2;
+
+    while (!info.foundEvent) {
+	if (!TkUnixDoOneXEvent(&timeout)) {
 	    break;
 	}
     }
-    Tcl_DeleteModalTimeout(WaitTimeoutProc, (ClientData) &info);
     (void) Tk_RestrictEvents(oldRestrictProc, oldRestrictData,
 	    &oldRestrictData);
     if (info.foundEvent) {
@@ -3063,34 +3307,6 @@ WaitRestrictProc(clientData, eventPtr)
 /*
  *----------------------------------------------------------------------
  *
- * WaitTimeoutProc --
- *
- *	This procedure is invoked as a timer handler when too much
- *	time elapses during a call to WaitForEvent.  It sets a flag
- *	in a structure shared with WaitForEvent so that WaitForEvent
- *	knows that it should return.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The timeout field gest set in the WaitRestrictInfo structure.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-WaitTimeoutProc(clientData)
-    ClientData clientData;	/* Pointer to WaitRestrictInfo structure. */
-{
-    WaitRestrictInfo *infoPtr = (WaitRestrictInfo *) clientData;
-
-    infoPtr->timeout = 1;
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * WaitForMapNotify --
  *
  *	This procedure is invoked in order to synchronize with the
@@ -3135,7 +3351,7 @@ WaitForMapNotify(winPtr, mapped)
 	    break;
 	}
 	wmPtr->flags |= WM_SYNC_PENDING;
-	code = WaitForEvent(winPtr->display, winPtr->window,
+	code = WaitForEvent(winPtr->display, wmPtr->wrapperPtr->window,
 		mapped ? MapNotify : UnmapNotify, &event);
 	wmPtr->flags &= ~WM_SYNC_PENDING;
 	if (code != TCL_OK) {
@@ -3185,7 +3401,7 @@ UpdateHints(winPtr)
     if (wmPtr->flags & WM_NEVER_MAPPED) {
 	return;
     }
-    XSetWMHints(winPtr->display, winPtr->window, &wmPtr->hints);
+    XSetWMHints(winPtr->display, wmPtr->wrapperPtr->window, &wmPtr->hints);
 }
 
 /*
@@ -3264,14 +3480,22 @@ ParseGeometry(interp, string, winPtr)
 	} else if (*p != '+') {
 	    goto error;
 	}
-	x = strtol(p+1, &end, 10);
+	p++;
+	if (!isdigit(UCHAR(*p)) && (*p != '-')) {
+	    goto error;
+	}
+	x = strtol(p, &end, 10);
 	p = end;
 	if (*p == '-') {
 	    flags |= WM_NEGATIVE_Y;
 	} else if (*p != '+') {
 	    goto error;
 	}
-	y = strtol(p+1, &end, 10);
+	p++;
+	if (!isdigit(UCHAR(*p)) && (*p != '-')) {
+	    goto error;
+	}
+	y = strtol(p, &end, 10);
 	if (*end != '\0') {
 	    goto error;
 	}
@@ -3354,10 +3578,58 @@ Tk_GetRootCoords(tkwin, xPtr, yPtr)
     while (1) {
 	x += winPtr->changes.x + winPtr->changes.border_width;
 	y += winPtr->changes.y + winPtr->changes.border_width;
-	if ((winPtr->flags & TK_TOP_LEVEL) || (winPtr->parentPtr == NULL)) {
-	    break;
+	if ((winPtr->wmInfoPtr != NULL)
+		&& (winPtr->wmInfoPtr->menubar == (Tk_Window) winPtr)) {
+	    /*
+	     * This window is a special menubar; switch over to its
+	     * associated toplevel, compensate for their differences in
+	     * y coordinates, then continue with the toplevel (in case
+	     * it's embedded).
+	     */
+
+	    y -= winPtr->wmInfoPtr->menuHeight;
+	    winPtr = winPtr->wmInfoPtr->winPtr;
+	    continue;
+	}
+	if (winPtr->flags & TK_TOP_LEVEL) {
+	    TkWindow *otherPtr;
+
+	    if (!(winPtr->flags & TK_EMBEDDED)) {
+		break;
+	    }
+	    otherPtr = TkpGetOtherWindow(winPtr);
+	    if (otherPtr == NULL) {
+		/*
+		 * The container window is not in the same application.
+		 * Query the X server.
+		 */
+
+		Window root, dummyChild;
+		int rootX, rootY;
+
+		root = winPtr->wmInfoPtr->vRoot;
+		if (root == None) {
+		    root = RootWindowOfScreen(Tk_Screen((Tk_Window)winPtr));
+		}
+		XTranslateCoordinates(winPtr->display, winPtr->window, 
+		    root, 0, 0, &rootX, &rootY, &dummyChild);
+		x += rootX;
+		y += rootY;
+		break;
+	    } else {
+		/*
+		 * The container window is in the same application.
+		 * Let's query its coordinates.
+		 */
+
+		winPtr = otherPtr;
+		continue;
+	    }
 	}
 	winPtr = winPtr->parentPtr;
+	if (winPtr == NULL) {
+	    break;
+	}
     }
     *xPtr = x;
     *yPtr = y;
@@ -3392,83 +3664,121 @@ Tk_CoordsToWindow(rootX, rootY, tkwin)
     Tk_Window tkwin;		/* Token for any window in application;
 				 * used to identify the display. */
 {
-    Window rootChild, root, vRoot;
-    int dummy1, dummy2;
-    register WmInfo *wmPtr;
-    register TkWindow *winPtr, *childPtr;
-    TkWindow *nextPtr;		/* Coordinates of highest child found so
-				 * far that contains point. */
-    int x, y;			/* Coordinates in winPtr. */
-    int tmpx, tmpy, bd;
+    Window window, parent, child;
+    int x, y, childX, childY, tmpx, tmpy, bd;
+    WmInfo *wmPtr;
+    TkWindow *winPtr, *childPtr, *nextPtr;
 
     /*
-     * Step 1: find any top-level window for the right screen.
+     * Step 1: scan the list of toplevel windows to see if there is a
+     * virtual root for the screen we're interested in.  If so, we have
+     * to translate the coordinates from virtual root to root
+     * coordinates.
      */
 
-    while (!Tk_IsTopLevel(tkwin)) {
-	tkwin = Tk_Parent(tkwin);
-    }
-    wmPtr = ((TkWindow *) tkwin)->wmInfoPtr;
-
-    /*
-     * Step 2: find the window in the actual root that contains the
-     * desired point.  Special trick:  if a virtual root window manager
-     * is in use, there may be windows in both the true root (e.g.
-     * pop-up menus) and in the virtual root;  have to look in *both*
-     * places.
-     */
-
-    UpdateVRootGeometry(wmPtr);
-    root = RootWindowOfScreen(Tk_Screen(tkwin));
-    if (XTranslateCoordinates(Tk_Display(tkwin), root, root,
-	    rootX + wmPtr->vRootX, rootY + wmPtr->vRootY,
-	    &dummy1, &dummy2, &rootChild) == False) {
-	panic("Tk_CoordsToWindow get False return from XTranslateCoordinates");
-    }
-
-    /*
-     * Step 3: if the window we've found so far (a child of the root)
-     * is the virtual root window, then look again to find the child of
-     * the virtual root.
-     */
-
-    vRoot = ((TkWindow *) tkwin)->wmInfoPtr->vRoot;
-    if ((vRoot != None) && (rootChild == vRoot)) {
-	if (XTranslateCoordinates(Tk_Display(tkwin), vRoot, vRoot, rootX,
-		rootY, &dummy1, &dummy2, &rootChild) == False) {
-	    panic("Tk_CoordsToWindow get False return from XTranslateCoordinates");
+    parent = window = RootWindowOfScreen(Tk_Screen(tkwin));
+    x = rootX;
+    y = rootY;
+    for (wmPtr = firstWmPtr; wmPtr != NULL; wmPtr = wmPtr->nextPtr) {
+	if (Tk_Screen(wmPtr->winPtr) != Tk_Screen(tkwin)) {
+	    continue;
 	}
+	if (wmPtr->vRoot == None) {
+	    continue;
+	}
+	UpdateVRootGeometry(wmPtr);
+	parent = wmPtr->vRoot;
+	break;
     }
-    for (wmPtr = firstWmPtr; ; wmPtr = wmPtr->nextPtr) {
-	if (wmPtr == NULL) {
+
+    /*
+     * Step 2: work down through the window hierarchy starting at the
+     * root. For each window, find the child that contains the given
+     * point and then see if this child is either a wrapper for one of
+     * our toplevel windows or a window manager decoration window for
+     * one of our toplevels.  This approach handles several tricky
+     * cases:
+     *
+     * 1. There may be a virtual root window between the root and one of
+     *    our toplevels.
+     * 2. If a toplevel is embedded, we may have to search through the
+     *    windows of the container application(s) before getting to
+     *    the toplevel.
+     */
+
+    while (1) {
+	if (XTranslateCoordinates(Tk_Display(tkwin), parent, window,
+		x, y, &childX, &childY, &child) == False) {
+	    panic("Tk_CoordsToWindow got False return from XTranslateCoordinates");
+	}
+	if (child == None) {
 	    return NULL;
 	}
-	if ((wmPtr->reparent == rootChild) || ((wmPtr->reparent == None)
-		&& (wmPtr->winPtr->window == rootChild))) {
-	    break;
+	for (wmPtr = firstWmPtr; wmPtr != NULL; wmPtr = wmPtr->nextPtr) {
+	    if (wmPtr->reparent == child) {
+		goto gotToplevel;
+	    }
+	    if (wmPtr->wrapperPtr != NULL) {
+		if (child == wmPtr->wrapperPtr->window) {
+		    goto gotToplevel;
+		}
+	    } else if (child == wmPtr->winPtr->window) {
+		goto gotToplevel;
+	    }
 	}
+	x = childX;
+	y = childY;
+	parent = window;
+	window = child;
     }
+
+    gotToplevel:
     winPtr = wmPtr->winPtr;
     if (winPtr->mainPtr != ((TkWindow *) tkwin)->mainPtr) {
 	return NULL;
     }
 
     /*
-     * Step 4: work down through the hierarchy underneath this window.
-     * At each level, scan through all the children to find the highest
-     * one in the stacking order that contains the point.  Then repeat
-     * the whole process on that child.
+     * Step 3: at this point winPtr and wmPtr refer to the toplevel that
+     * contains the given coordinates, and childX and childY give the
+     * translated coordinates in the *parent* of the toplevel.  Now
+     * decide whether the coordinates are in the menubar or the actual
+     * toplevel, and translate the coordinates into the coordinate
+     * system of that window.
      */
 
-    x = rootX;
-    y = rootY;
+    x = childX - winPtr->changes.x;
+    y = childY - winPtr->changes.y;
+    if ((x < 0) || (x >= winPtr->changes.width)
+	    || (y >= winPtr->changes.height)) {
+	return NULL;
+    }
+    if (y < 0) {
+	winPtr = (TkWindow *) wmPtr->menubar;
+	if (winPtr == NULL) {
+	    return NULL;
+	}
+	y += wmPtr->menuHeight;
+	if (y < 0) {
+	    return NULL;
+	}
+    }
+
+    /*
+     * Step 4: work down through the hierarchy underneath the current
+     * window. At each level, scan through all the children to find the
+     * highest one in the stacking order that contains the point.  Then
+     * repeat the whole process on that child.
+     */
+
     while (1) {
-	x -= winPtr->changes.x;
-	y -= winPtr->changes.y;
 	nextPtr = NULL;
 	for (childPtr = winPtr->childList; childPtr != NULL;
 		childPtr = childPtr->nextPtr) {
 	    if (!Tk_IsMapped(childPtr) || (childPtr->flags & TK_TOP_LEVEL)) {
+		continue;
+	    }
+	    if (childPtr->flags & TK_REPARENTED) {
 		continue;
 	    }
 	    tmpx = x - childPtr->changes.x;
@@ -3484,6 +3794,23 @@ Tk_CoordsToWindow(rootX, rootY, tkwin)
 	    break;
 	}
 	winPtr = nextPtr;
+	x -= winPtr->changes.x;
+	y -= winPtr->changes.y;
+	if ((winPtr->flags & TK_CONTAINER)
+		&& (winPtr->flags & TK_BOTH_HALVES)) {
+	    /*
+	     * The window containing the point is a container, and the
+	     * embedded application is in this same process.  Switch
+	     * over to the toplevel for the embedded application and
+	     * start processing that toplevel from scratch.
+	     */
+
+	    winPtr = TkpGetOtherWindow(winPtr);
+	    wmPtr = winPtr->wmInfoPtr;
+	    childX = x;
+	    childY = y;
+	    goto gotToplevel;
+	}
     }
     return (Tk_Window) winPtr;
 }
@@ -3723,7 +4050,7 @@ UpdateWmProtocols(wmPtr)
 	    atomPtr++;
 	}
     }
-    XChangeProperty(wmPtr->winPtr->display, wmPtr->winPtr->window,
+    XChangeProperty(wmPtr->winPtr->display, wmPtr->wrapperPtr->window,
 	    Tk_InternAtom((Tk_Window) wmPtr->winPtr, "WM_PROTOCOLS"),
 	    XA_ATOM, 32, PropModeReplace, (unsigned char *) arrayPtr,
 	    atomPtr-arrayPtr);
@@ -3803,7 +4130,7 @@ TkWmProtocolEventProc(winPtr, eventPtr)
      */
 
     if (protocol == Tk_InternAtom((Tk_Window) winPtr, "WM_DELETE_WINDOW")) {
-	Tk_DestroyWindow((Tk_Window) winPtr);
+	Tk_DestroyWindow((Tk_Window) wmPtr->winPtr);
     }
 }
 
@@ -3847,6 +4174,7 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
     XEvent event;
     int diff;
     Tk_ErrorHandler handler;
+    TkWindow *wrapperPtr;
 
     changes.stack_mode = aboveBelow;
     changes.sibling = None;
@@ -3863,8 +4191,9 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
 
 	TkWmMapWindow(winPtr);
     }
+    wrapperPtr = winPtr->wmInfoPtr->wrapperPtr;
     window = (winPtr->wmInfoPtr->reparent != None)
-	    ? winPtr->wmInfoPtr->reparent : winPtr->window;
+	    ? winPtr->wmInfoPtr->reparent : wrapperPtr->window;
     if (otherPtr != NULL) {
 	if (otherPtr->window == None) {
 	    Tk_MakeWindowExist((Tk_Window) otherPtr);
@@ -3873,7 +4202,8 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
 	    TkWmMapWindow(otherPtr);
 	}
 	changes.sibling = (otherPtr->wmInfoPtr->reparent != None)
-		? otherPtr->wmInfoPtr->reparent : otherPtr->window;
+		? otherPtr->wmInfoPtr->reparent
+		: otherPtr->wmInfoPtr->wrapperPtr->window;
 	mask = CWStackMode|CWSibling;
     }
 
@@ -3964,15 +4294,30 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
      * to handle all of this stuff, so be careful to use it instead
      * of XConfigureWindow.
      */
-
+          
+#if 0
     if (!(mask & CWSibling)) {
 	window = winPtr->window;
     }
+#endif
+
     serial = NextRequest(winPtr->display);
-    if (window != winPtr->window) {
+    if (window != wrapperPtr->window) {
+	/*
+	 * We're going to have to wait for events on a window that
+	 * Tk doesn't own, so we have to tell X specially that we
+	 * want to get events on that window.  To make matters worse,
+	 * it's possible that the window doesn't exist anymore (e.g.
+	 * the toplevel could have been withdrawn) so ignore events
+	 * occurring during the request.
+	 */
+
+	handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+		(Tk_ErrorProc *) NULL, (ClientData) NULL);
 	XSelectInput(winPtr->display, window, StructureNotifyMask);
+	Tk_DeleteErrorHandler(handler);
     }
-    XReconfigureWMWindow(winPtr->display, winPtr->window,
+    XReconfigureWMWindow(winPtr->display, wrapperPtr->window,
 	    Tk_ScreenNumber((Tk_Window) winPtr), mask,  &changes);
 
     /*
@@ -3983,7 +4328,7 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
      * the event isn't one that Tk owns.
      */
 
-    if (window == winPtr->window) {
+    if (window == wrapperPtr->window) {
 	WaitForConfigureNotify(winPtr, serial);
     } else {
 	while (1) {
@@ -3996,7 +4341,17 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
 		break;
 	    }
 	}
+
+	/*
+	 * Ignore errors that occur when we are de-selecting events on
+	 * window, since it's possible that the window doesn't exist
+	 * anymore (see comment above previous call to XSelectInput).
+	 */
+
+	handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+		(Tk_ErrorProc *) NULL, (ClientData) NULL);
 	XSelectInput(winPtr->display, window, (long) 0);
+	Tk_DeleteErrorHandler(handler);
     }
 }
 
@@ -4028,6 +4383,7 @@ TkWmAddToColormapWindows(winPtr)
     TkWindow *winPtr;		/* Window with a non-default colormap.
 				 * Should not be a top-level window. */
 {
+    TkWindow *wrapperPtr;
     TkWindow *topPtr;
     Window *oldPtr, *newPtr;
     int count, i;
@@ -4051,12 +4407,16 @@ TkWmAddToColormapWindows(winPtr)
     if (topPtr->wmInfoPtr->flags & WM_COLORMAPS_EXPLICIT) {
 	return;
     }
+    if (topPtr->wmInfoPtr->wrapperPtr == NULL) {
+	CreateWrapper(topPtr->wmInfoPtr);
+    }
+    wrapperPtr = topPtr->wmInfoPtr->wrapperPtr;
 
     /*
      * Fetch the old value of the property.
      */
 
-    if (XGetWMColormapWindows(topPtr->display, topPtr->window,
+    if (XGetWMColormapWindows(topPtr->display, wrapperPtr->window,
 	    &oldPtr, &count) == 0) {
 	oldPtr = NULL;
 	count = 0;
@@ -4087,7 +4447,8 @@ TkWmAddToColormapWindows(winPtr)
     }
     newPtr[count-1] = winPtr->window;
     newPtr[count] = topPtr->window;
-    XSetWMColormapWindows(topPtr->display, topPtr->window, newPtr, count+1);
+    XSetWMColormapWindows(topPtr->display, wrapperPtr->window, newPtr,
+	    count+1);
     ckfree((char *) newPtr);
     if (oldPtr != NULL) {
 	XFree((char *) oldPtr);
@@ -4121,9 +4482,14 @@ TkWmRemoveFromColormapWindows(winPtr)
 				 * top-level.  Should not be a top-level
 				 * window. */
 {
+    TkWindow *wrapperPtr;
     TkWindow *topPtr;
     Window *oldPtr;
     int count, i, j;
+
+    if (winPtr->window == None) {
+	return;
+    }
 
     for (topPtr = winPtr->parentPtr; ; topPtr = topPtr->parentPtr) {
 	if (topPtr == NULL) {
@@ -4146,12 +4512,19 @@ TkWmRemoveFromColormapWindows(winPtr)
 
 	return;
     }
+    if (topPtr->wmInfoPtr->wrapperPtr == NULL) {
+	CreateWrapper(topPtr->wmInfoPtr);
+    }
+    wrapperPtr = topPtr->wmInfoPtr->wrapperPtr;
+    if (wrapperPtr == NULL) {
+	return;
+    }
 
     /*
      * Fetch the old value of the property.
      */
 
-    if (XGetWMColormapWindows(topPtr->display, topPtr->window,
+    if (XGetWMColormapWindows(topPtr->display, wrapperPtr->window,
 	    &oldPtr, &count) == 0) {
 	return;
     }
@@ -4166,7 +4539,7 @@ TkWmRemoveFromColormapWindows(winPtr)
 	    for (j = i ; j < count-1; j++) {
 		oldPtr[j] = oldPtr[j+1];
 	    }
-	    XSetWMColormapWindows(topPtr->display, topPtr->window,
+	    XSetWMColormapWindows(topPtr->display, wrapperPtr->window,
 		    oldPtr, count-1);
 	    break;
 	}
@@ -4216,94 +4589,6 @@ TkGetPointerCoords(tkwin, xPtr, yPtr)
 	*xPtr = -1;
 	*yPtr = -1;
     }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * IdleMapTopLevel -- stolen from tkFrame.c
- *
- *	This procedure is invoked as a when-idle handler to map a
- *	newly-released toplevel window
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The window given by the clientData argument is mapped.
- *
- *----------------------------------------------------------------------
- */
-static void
-IdleMapToplevel(clientData)
-    ClientData clientData;
-{
-    TkWindow * winPtr = (TkWindow *) clientData;
-
-    if (winPtr->flags & TK_TOP_LEVEL) {
-	Tk_MapWindow((Tk_Window)winPtr);
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * UnmanageGeometry --
- *
- *	Since there is a bug in tkGeometry.c, we need this routine to
- *	replace Tk_ManageGeometry(tkwin, NULL, NULL);
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The window given by the clientData argument is mapped.
- *
- *----------------------------------------------------------------------
- */
-static void UnmanageGeometry(tkwin)
-    Tk_Window tkwin;		/* Window whose geometry is to
-				 * be unmanaged.*/
-{
-    register TkWindow *winPtr = (TkWindow *) tkwin;
-
-    if ((winPtr->geomMgrPtr != NULL) &&
-	(winPtr->geomMgrPtr->lostSlaveProc != NULL)) {
-	(*winPtr->geomMgrPtr->lostSlaveProc)(winPtr->geomData, tkwin);
-    }
-
-    winPtr->geomMgrPtr = NULL;
-    winPtr->geomData = NULL;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TkMakeWindow --
- *
- *	Create an actual window system window object based on the
- *	current attributes of the specified TkWindow.
- *
- * Results:
- *	Returns the handle to the new window, or None on failure.
- *
- * Side effects:
- *	Creates a new X window.
- *
- *----------------------------------------------------------------------
- */
-
-Window
-TkMakeWindow(winPtr, parent)
-    TkWindow *winPtr;
-    Window parent;
-{
-    return XCreateWindow(winPtr->display, parent, winPtr->changes.x,
-	    winPtr->changes.y, (unsigned) winPtr->changes.width,
-	    (unsigned) winPtr->changes.height,
-	    (unsigned) winPtr->changes.border_width, winPtr->depth,
-	    InputOutput, winPtr->visual, winPtr->dirtyAtts,
-	    &winPtr->atts);
 }
 
 /*
@@ -4371,4 +4656,534 @@ GetMaxSize(wmPtr, maxWidthPtr, maxHeightPtr)
 	*maxHeightPtr = tmp;
     }
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpMakeMenuWindow --
+ *
+ *	Configure the window to be either a pull-down (or pop-up)
+ *	menu, or as a toplevel (torn-off) menu or palette.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Changes the style bit used to create a new Mac toplevel.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpMakeMenuWindow(tkwin, transient)
+    Tk_Window tkwin;		/* New window. */
+    int transient;		/* 1 means menu is only posted briefly as
+				 * a popup or pulldown or cascade.  0 means
+				 * menu is always visible, e.g. as a torn-off
+				 * menu.  Determines whether save_under and
+				 * override_redirect should be set. */
+{
+    WmInfo *wmPtr;
+    XSetWindowAttributes atts;
+    TkWindow *wrapperPtr;
+
+    if (!Tk_IsTopLevel(tkwin)) {
+	return;
+    }
+    wmPtr = ((TkWindow *) tkwin)->wmInfoPtr;
+    if (wmPtr->wrapperPtr == NULL) {
+	CreateWrapper(wmPtr);
+    }
+    wrapperPtr = wmPtr->wrapperPtr;
+    if (transient) {
+	atts.override_redirect = True;
+	atts.save_under = True;
+    } else {
+	atts.override_redirect = False;
+	atts.save_under = False;
+    }
+
+    /*
+     * The override-redirect and save-under bits must be set on the
+     * wrapper window in order to have the desired effect.  However,
+     * also set the override-redirect bit on the window itself, so
+     * that the "wm overrideredirect" command will see it.
+     */
+
+    if ((atts.override_redirect != Tk_Attributes(wrapperPtr)->override_redirect)
+	    || (atts.save_under != Tk_Attributes(wrapperPtr)->save_under)) {
+	Tk_ChangeWindowAttributes((Tk_Window) wrapperPtr,
+		CWOverrideRedirect|CWSaveUnder, &atts);
+    }
+    if (atts.override_redirect != Tk_Attributes(tkwin)->override_redirect) {
+	Tk_ChangeWindowAttributes(tkwin, CWOverrideRedirect, &atts);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * CreateWrapper --
+ *
+ *	This procedure is invoked to create the wrapper window for a
+ *	toplevel window.  It is called just before a toplevel is mapped
+ *	for the first time.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The wrapper is created and the toplevel is reparented inside it.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+CreateWrapper(wmPtr)
+    WmInfo *wmPtr;		/* Window manager information for the
+				 * window. */
+{
+    TkWindow *winPtr, *wrapperPtr;
+    Window parent;
+    Tcl_HashEntry *hPtr;
+    int new;
+
+    winPtr = wmPtr->winPtr;
+    if (winPtr->window == None) {
+	Tk_MakeWindowExist((Tk_Window) winPtr);
+    }
+
+    /*
+     * The code below is copied from CreateTopLevelWindow,
+     * Tk_MakeWindowExist, and TkpMakeWindow; The idea is to create an
+     * "official" Tk window (so that we can get events on it), but to
+     * hide the window outside the official Tk hierarchy so that it
+     * isn't visible to the application.  See the comments for the other
+     * procedures if you have questions about this code.
+     */
+
+    wmPtr->wrapperPtr = wrapperPtr = TkAllocWindow(winPtr->dispPtr,
+	    Tk_ScreenNumber((Tk_Window) winPtr), winPtr);
+    wrapperPtr->dirtyAtts |= CWBorderPixel;
+
+    /*
+     * Tk doesn't normally select for StructureNotifyMask events because
+     * the events are synthesized internally.  However, for wrapper
+     * windows we need to know when the window manager modifies the
+     * window configuration.  We also need to select on focus change
+     * events; these are the only windows for which we care about focus
+     * changes.
+     */
+
+    wrapperPtr->flags |= TK_WRAPPER;
+    wrapperPtr->atts.event_mask |= StructureNotifyMask|FocusChangeMask;
+    wrapperPtr->atts.override_redirect = winPtr->atts.override_redirect;
+    if (winPtr->flags & TK_EMBEDDED) {
+	parent = TkUnixContainerId(winPtr);
+    } else {
+	parent = XRootWindow(wrapperPtr->display, wrapperPtr->screenNum);
+    }
+    wrapperPtr->window = XCreateWindow(wrapperPtr->display,
+	    parent, wrapperPtr->changes.x, wrapperPtr->changes.y,
+	    (unsigned) wrapperPtr->changes.width,
+	    (unsigned) wrapperPtr->changes.height,
+	    (unsigned) wrapperPtr->changes.border_width, wrapperPtr->depth,
+	    InputOutput, wrapperPtr->visual,
+	    wrapperPtr->dirtyAtts|CWOverrideRedirect, &wrapperPtr->atts);
+    hPtr = Tcl_CreateHashEntry(&wrapperPtr->dispPtr->winTable,
+	    (char *) wrapperPtr->window, &new);
+    Tcl_SetHashValue(hPtr, wrapperPtr);
+    wrapperPtr->mainPtr = winPtr->mainPtr;
+    wrapperPtr->mainPtr->refCount++;
+    wrapperPtr->dirtyAtts = 0;
+    wrapperPtr->dirtyChanges = 0;
+#ifdef TK_USE_INPUT_METHODS
+    wrapperPtr->inputContext = NULL;
+#endif /* TK_USE_INPUT_METHODS */
+    wrapperPtr->wmInfoPtr = wmPtr;
+
+    /*
+     * Reparent the toplevel window inside the wrapper.
+     */
+
+    XReparentWindow(wrapperPtr->display, winPtr->window, wrapperPtr->window,
+	    0, 0);
+
+    /*
+     * Tk must monitor structure events for wrapper windows in order
+     * to detect changes made by window managers such as resizing,
+     * mapping, unmapping, etc..
+     */
+
+    Tk_CreateEventHandler((Tk_Window) wmPtr->wrapperPtr, StructureNotifyMask,
+	    WrapperEventProc, (ClientData) wmPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWmFocusToplevel --
+ *
+ *	This is a utility procedure invoked by focus-management code.
+ *	The focus code responds to externally generated focus-related
+ *	events on wrapper windows but ignores those events for any other
+ *	windows.  This procedure determines whether a given window is a
+ *	wrapper window and, if so, returns the toplevel window
+ *	corresponding to the wrapper.
+ *
+ * Results:
+ *	If winPtr is a wrapper window, returns a pointer to the
+ *	corresponding toplevel window; otherwise returns NULL.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkWindow *
+TkWmFocusToplevel(winPtr)
+    TkWindow *winPtr;		/* Window that received a focus-related
+				 * event. */
+{
+    if (!(winPtr->flags & TK_WRAPPER)) {
+	return NULL;
+    }
+    return winPtr->wmInfoPtr->winPtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkUnixSetMenubar --
+ *
+ *	This procedure is invoked by menu management code to specify the
+ *	window to use as a menubar for a given toplevel window.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The window given by menubar will be mapped and positioned inside
+ *	the wrapper for tkwin and above tkwin.  Menubar will
+ *	automatically be resized to maintain the height specified by
+ *	TkUnixSetMenuHeight the same width as tkwin.  Any previous
+ *	menubar specified for tkwin will be unmapped and ignored from
+ *	now on.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkUnixSetMenubar(tkwin, menubar)
+    Tk_Window tkwin;		/* Token for toplevel window. */
+    Tk_Window menubar;		/* Token for window that is to serve as
+				 * menubar for tkwin.  Must not be a
+				 * toplevel window.  If NULL, any
+				 * existing menubar is canceled and the
+				 * menu height is reset to 0. */
+{
+    WmInfo *wmPtr = ((TkWindow *) tkwin)->wmInfoPtr;
+    Tk_Window parent;
+    TkWindow *menubarPtr = (TkWindow *) menubar;
+
+    if (wmPtr->menubar != NULL) {
+	/*
+	 * There's already a menubar for this toplevel.  If it isn't the
+	 * same as the new menubar, unmap it so that it is out of the
+	 * way, and reparent it back to its original parent.
+	 */
+
+	if (wmPtr->menubar == menubar) {
+	    return;
+	}
+	((TkWindow *) wmPtr->menubar)->wmInfoPtr = NULL;
+	((TkWindow *) wmPtr->menubar)->flags &= ~TK_REPARENTED;
+	Tk_UnmapWindow(wmPtr->menubar);
+	parent = Tk_Parent(wmPtr->menubar);
+	if (parent != NULL) {
+	    Tk_MakeWindowExist(parent);
+	    XReparentWindow(Tk_Display(wmPtr->menubar),
+		    Tk_WindowId(wmPtr->menubar), Tk_WindowId(parent), 0, 0);
+	}
+	Tk_DeleteEventHandler(wmPtr->menubar, StructureNotifyMask,
+		MenubarDestroyProc, (ClientData) wmPtr->menubar);
+	Tk_ManageGeometry(wmPtr->menubar, NULL, (ClientData) NULL);
+    }
+
+    wmPtr->menubar = menubar;
+    if (menubar == NULL) {
+	wmPtr->menuHeight = 0;
+    } else {
+	if ((menubarPtr->flags & TK_TOP_LEVEL)
+	     || (Tk_Screen(menubar) != Tk_Screen(tkwin))) {
+	    panic("TkUnixSetMenubar got bad menubar");
+	}
+	wmPtr->menuHeight = Tk_ReqHeight(menubar);
+	if (wmPtr->menuHeight == 0) {
+	    wmPtr->menuHeight = 1;
+	}
+	Tk_MakeWindowExist(tkwin);
+	Tk_MakeWindowExist(menubar);
+	if (wmPtr->wrapperPtr == NULL) {
+	    CreateWrapper(wmPtr);
+	}
+	XReparentWindow(Tk_Display(menubar), Tk_WindowId(menubar),
+		wmPtr->wrapperPtr->window, 0, 0);
+	menubarPtr->wmInfoPtr = wmPtr;
+	Tk_MoveResizeWindow(menubar, 0, 0, Tk_Width(tkwin), wmPtr->menuHeight);
+	Tk_MapWindow(menubar);
+	Tk_CreateEventHandler(menubar, StructureNotifyMask, MenubarDestroyProc,
+		(ClientData) menubar);
+	Tk_ManageGeometry(menubar, &menubarMgrType, (ClientData) wmPtr);
+	menubarPtr->flags |= TK_REPARENTED;
+    }
+    wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
+    if (!(wmPtr->flags & (WM_UPDATE_PENDING|WM_NEVER_MAPPED))) {
+	Tcl_DoWhenIdle(UpdateGeometryInfo, (ClientData) tkwin);
+	wmPtr->flags |= WM_UPDATE_PENDING;
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * MenubarDestroyProc --
+ *
+ *	This procedure is invoked by the event dispatcher whenever a
+ *	menubar window is destroyed (it's also invoked for a few other
+ *	kinds of events, but we ignore those).
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The association between the window and its toplevel is broken,
+ *	so that the window is no longer considered to be a menubar.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+MenubarDestroyProc(clientData, eventPtr)
+    ClientData clientData;		/* TkWindow pointer for menubar. */
+    XEvent *eventPtr;			/* Describes what just happened. */
+{
+    WmInfo *wmPtr;
+
+    if (eventPtr->type != DestroyNotify) {
+	return;
+    }
+    wmPtr = ((TkWindow *) clientData)->wmInfoPtr;
+    wmPtr->menubar = NULL;
+    wmPtr->menuHeight = 0;
+    wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
+    if (!(wmPtr->flags & (WM_UPDATE_PENDING|WM_NEVER_MAPPED))) {
+	Tcl_DoWhenIdle(UpdateGeometryInfo, (ClientData) wmPtr->winPtr);
+	wmPtr->flags |= WM_UPDATE_PENDING;
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * MenubarReqProc --
+ *
+ *	This procedure is invoked by the Tk geometry management code
+ *	whenever a menubar calls Tk_GeometryRequest to request a new
+ *	size.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+MenubarReqProc(clientData, tkwin)
+    ClientData clientData;	/* Pointer to the window manager
+				 * information for tkwin's toplevel. */
+    Tk_Window tkwin;		/* Handle for menubar window. */
+{
+    WmInfo *wmPtr = (WmInfo *) clientData;
+
+    wmPtr->menuHeight = Tk_ReqHeight(tkwin);
+    if (wmPtr->menuHeight <= 0) {
+	wmPtr->menuHeight = 1;
+    }
+    wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
+    if (!(wmPtr->flags & (WM_UPDATE_PENDING|WM_NEVER_MAPPED))) {
+	Tcl_DoWhenIdle(UpdateGeometryInfo, (ClientData) wmPtr->winPtr);
+	wmPtr->flags |= WM_UPDATE_PENDING;
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpGetWrapperWindow --
+ *
+ *	Given a toplevel window return the hidden wrapper window for
+ *	the toplevel window if available.
+ *
+ * Results:
+ *	The wrapper window.  NULL is we were not passed a toplevel
+ *	window or the wrapper has yet to be created.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+TkWindow *
+TkpGetWrapperWindow(winPtr)
+    TkWindow *winPtr;		/* A toplevel window pointer. */
+{
+    register WmInfo *wmPtr = winPtr->wmInfoPtr;
+
+    if ((winPtr == NULL) || (wmPtr == NULL)) {
+	return NULL;
+    }
+
+    return wmPtr->wrapperPtr;
+}
+   
+/* Support Procedures for release and capture */
+/*
+ *----------------------------------------------------------------------
+ *
+ * IdleMapToplevel --
+ *
+ *	This procedure is invoked as a when-idle handler to map a
+ *	newly-released toplevel window
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The window given by the clientData argument is mapped.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+IdleMapToplevel(clientData)
+    ClientData clientData;
+{
+    TkWindow * winPtr = (TkWindow *) clientData;
+
+    if (winPtr->flags & TK_TOP_LEVEL) {
+	Tk_MapWindow((Tk_Window)winPtr);
+    }
+}  
+/*
+ *----------------------------------------------------------------------
+ *
+ * UnmanageGeometry --
+ *
+ *	Since there is a bug in tkGeometry.c, we need this routine to
+ *	replace Tk_ManageGeometry(tkwin, NULL, NULL);
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The window given by the clientData argument is mapped.
+ *
+ *----------------------------------------------------------------------
+ */
+static void UnmanageGeometry(tkwin)
+    Tk_Window tkwin;		/* Window whose geometry is to
+				 * be unmanaged.*/
+{
+    register TkWindow *winPtr = (TkWindow *) tkwin;
+
+    if ((winPtr->geomMgrPtr != NULL) &&
+	(winPtr->geomMgrPtr->lostSlaveProc != NULL)) {
+	(*winPtr->geomMgrPtr->lostSlaveProc)(winPtr->geomData, tkwin);
+    }
+
+    winPtr->geomMgrPtr = NULL;
+    winPtr->geomData = NULL;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TopLevelEventProc --
+ *
+ *	This procedure is invoked when a top-level (or other externally-
+ *	managed window) is restructured in any way.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Tk's internal data structures for the window get modified to
+ *	reflect the structural change.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+TopLevelEventProc(clientData, eventPtr)
+    ClientData clientData;		/* Window for which event occurred. */
+    XEvent *eventPtr;			/* Event that just happened. */
+{
+    register TkWindow *winPtr = (TkWindow *) clientData;
+    WmInfo *wmPtr = winPtr->wmInfoPtr;
+
+    wmPtr->flags |= WM_VROOT_OFFSET_STALE;
+    if (eventPtr->type == DestroyNotify) {
+	Tk_ErrorHandler handler;
+
+	if (!(winPtr->flags & TK_ALREADY_DEAD)) {
+	    /*
+	     * A top-level window was deleted externally (e.g., by the window
+	     * manager).  This is probably not a good thing, but cleanup as
+	     * best we can.  The error handler is needed because
+	     * Tk_DestroyWindow will try to destroy the window, but of course
+	     * it's already gone.
+	     */
+    
+	    handler = Tk_CreateErrorHandler(winPtr->display, -1, -1, -1,
+		    (Tk_ErrorProc *) NULL, (ClientData) NULL);
+	    Tk_DestroyWindow((Tk_Window) winPtr);
+	    Tk_DeleteErrorHandler(handler);
+	}
+	if (wmTracing) {
+	    printf("TopLevelEventProc: %s deleted\n", winPtr->pathName);
+	}
+    } else if (eventPtr->type == ConfigureNotify) {
+	/*
+	 * Ignore the event if the window has never been mapped yet.
+	 * Such an event occurs only in weird cases like changing the
+	 * internal border width of a top-level window, which results
+	 * in a synthetic Configure event.  These events are not relevant
+	 * to us, and if we process them confusion may result (e.g. we
+	 * may conclude erroneously that the user repositioned or resized
+	 * the window).
+	 */
+
+	if (!(winPtr->wmInfoPtr->flags & WM_NEVER_MAPPED)) {
+	    ConfigureEvent(wmPtr, &eventPtr->xconfigure);
+	}
+    } else if (eventPtr->type == MapNotify) {
+	winPtr->flags |= TK_MAPPED;
+	if (wmTracing) {
+	    printf("TopLevelEventProc: %s mapped\n", winPtr->pathName);
+	}
+    } else if (eventPtr->type == UnmapNotify) {
+	winPtr->flags &= ~TK_MAPPED;
+	if (wmTracing) {
+	    printf("TopLevelEventProc: %s unmapped\n", winPtr->pathName);
+	}
+    } else if (eventPtr->type == ReparentNotify) {
+	ReparentEvent(wmPtr, &eventPtr->xreparent);
+    }
+}
+
 

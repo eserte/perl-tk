@@ -13,7 +13,7 @@ require Tk::Toplevel;
 @Tk::Dialog::ISA = qw(Tk::Toplevel);
 
 use vars qw($VERSION);
-$VERSION = '2.012'; # $Id: //depot/Tk/Tk/Dialog.pm#12$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Dialog.pm#5$
 
 
 Construct Tk::Widget 'Dialog';
@@ -44,10 +44,10 @@ sub Populate
     ($pad1, $pad2) =
         ([-padx => '3m', -pady => '3m'], [-padx => '3m', -pady => '2m']);
 
-    $cw->withdraw;
     $cw->iconname('Dialog');
     $cw->protocol('WM_DELETE_WINDOW' => sub {});
     $cw->transient($cw->Parent->toplevel);
+    $cw->withdraw;
 
     my $w_top = $cw->Frame(Name => 'top',-relief => 'raised', -borderwidth => 1);
     my $w_bot = $cw->Frame(Name => 'bot',-relief => 'raised', -borderwidth => 1);

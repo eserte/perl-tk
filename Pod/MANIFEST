@@ -1,0 +1,6 @@
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+Parse.pm
+Pod.pm
+tkpod

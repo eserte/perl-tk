@@ -4,6 +4,13 @@ VVAR(Tk_Uid,tixColumnUid,V_tixColumnUid)
 VVAR(Tk_Uid,tixDisabledUid,V_tixDisabledUid)
 VVAR(Tk_Uid,tixNormalUid,V_tixNormalUid)
 VVAR(Tk_Uid,tixRowUid,V_tixRowUid)
+#ifndef TixComputeTextGeometry
+VFUNC(void,TixComputeTextGeometry,V_TixComputeTextGeometry,_ANSI_ARGS_((
+			    TixFont fontStructPtr, char *string,
+			    int numChars, int wrapLength, int *widthPtr,
+			    int *heightPtr)))
+#endif
+
 #ifndef TixDItemGetAnchor
 VFUNC(void,TixDItemGetAnchor,V_TixDItemGetAnchor,_ANSI_ARGS_((Tk_Anchor anchor,
 			    int x, int y, int cav_w, int cav_h,
@@ -21,6 +28,14 @@ VFUNC(void,TixDItemStyleFree,V_TixDItemStyleFree,_ANSI_ARGS_((Tix_DItem *iPtr,
 			    Tix_DItemStyle * stylePtr)))
 #endif
 
+#ifndef TixDisplayText
+VFUNC(void,TixDisplayText,V_TixDisplayText,_ANSI_ARGS_((Display *display,
+			    Drawable drawable, TixFont font,
+			    char *string, int numChars, int x, int y,
+			    int length, Tk_Justify justify, int underline,
+			    GC gc)))
+#endif
+
 #ifndef TixGetColorDItemGC
 VFUNC(void,TixGetColorDItemGC,V_TixGetColorDItemGC,_ANSI_ARGS_((
 			    Tix_DItem * iPtr, GC * backGC_ret,
@@ -31,6 +46,11 @@ VFUNC(void,TixGetColorDItemGC,V_TixGetColorDItemGC,_ANSI_ARGS_((
 VFUNC(Tix_DItemStyle*,TixGetDefaultDItemStyle,V_TixGetDefaultDItemStyle,_ANSI_ARGS_((
 			    Tix_DispData * ddPtr, Tix_DItemInfo * diTypePtr,
 			    Tix_DItem *iPtr, Tix_DItemStyle* oldStylePtr)))
+#endif
+
+#ifndef TixGetHashTable
+VFUNC(Tcl_HashTable *,TixGetHashTable,V_TixGetHashTable,_ANSI_ARGS_((Tcl_Interp * interp,
+			    char * name, Tcl_InterpDeleteProc *deleteProc)))
 #endif
 
 #ifndef Tix_AddDItemType

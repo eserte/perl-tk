@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinTime.c 1.5 96/07/23 16:19:01
+ * SCCS: @(#) tclWinTime.c 1.6 97/04/14 17:25:56
  */
 
 #include "tkPort.h"
@@ -90,6 +90,7 @@ TclpGetClicks()
 {
     return GetTickCount();
 }
+#ifndef _LANG 
 
 /*
  *----------------------------------------------------------------------
@@ -120,6 +121,7 @@ TclpGetTimeZone (currentTime)
 
     return timeZone;
 }
+#endif /* _LANG */
 
 /*
  *----------------------------------------------------------------------
@@ -149,6 +151,7 @@ TclpGetTime(timePtr)
     timePtr->usec = t.millitm * 1000;
 }
 
+#ifndef _LANG
 /*
  *----------------------------------------------------------------------
  *
@@ -175,7 +178,9 @@ TclpGetTZName()
 	return _tzname[0];
     }
 }
+#endif
 
+#ifndef _LANG
 /*
  *----------------------------------------------------------------------
  *
@@ -265,7 +270,8 @@ TclpGetDate(tp, useGMT)
 	tmPtr = ComputeGMT(tp);
     }
     return tmPtr;
-}
+} 
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -320,10 +326,10 @@ ComputeGMT(tp)
     if (rem >= SECSPERYEAR) {			  /* 1971, etc. */
 	tmp++;
 	rem -= SECSPERYEAR;
-	if (rem > SECSPERYEAR) {		  /* 1972, etc. */
+	if (rem >= SECSPERYEAR) {		  /* 1972, etc. */
 	    tmp++;
 	    rem -= SECSPERYEAR;
-	    if (rem > SECSPERYEAR + SECSPERDAY) { /* 1973, etc. */
+	    if (rem >= SECSPERYEAR + SECSPERDAY) { /* 1973, etc. */
 		tmp++;
 		rem -= SECSPERYEAR + SECSPERDAY;
 	    } else {

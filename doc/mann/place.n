@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1992 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) place.n 1.9 95/06/07 21:15:30
+'\" SCCS: @(#) place.n 1.13 96/08/27 13:21:49
 '\" 
 .so man.macros
 .TH place n "" Tk "Tk Geometry Management"
@@ -73,12 +73,10 @@ In this case the location is specified in a relative fashion
 as a floating-point number:  0.0 corresponds to the left edge
 of the master and 1.0 corresponds to the right edge of the master.
 \fILocation\fR need not be in the range 0.0\-1.0.
-.VS
 If both \fB\-x\fR and \fB\-relx\fR are specified for a slave
 then their values are summed.  For example, \fB\-relx 0.5 \-x \-2\fR
 positions the left edge of the slave 2 pixels to the left of the
 center of its master.
-.VE
 .TP
 \fB\-y\fR => \fIlocation\fR
 \fILocation\fR specifies the y-coordinate within the master window
@@ -94,12 +92,10 @@ In this case the value is specified in a relative fashion
 as a floating-point number:  0.0 corresponds to the top edge
 of the master and 1.0 corresponds to the bottom edge of the master.
 \fILocation\fR need not be in the range 0.0\-1.0.
-.VS
 If both \fB\-y\fR and \fB\-rely\fR are specified for a slave
 then their values are summed.  For example, \fB\-rely 0.5 \-x 3\fR
 positions the top edge of the slave 3 pixels below the
 center of its master.
-.VE
 .TP
 \fB\-anchor\fR => \fIwhere\fR
 \fIWhere\fR specifies which point of $widget\fR is to be positioned
@@ -127,11 +123,9 @@ In this case the width is specified as a floating-point number
 relative to the width of the master: 0.5 means $widget\fR will
 be half as wide as the master, 1.0 means $widget\fR will have
 the same width as the master, and so on.
-.VS
 If both \fB\-width\fR and \fB\-relwidth\fR are specified for a slave,
 their values are summed.  For example, \fB\-relwidth 1.0 \-width 5\fR
 makes the slave 5 pixels wider than the master.
-.VE
 .TP
 \fB\-height\fR => \fIsize\fR
 \fISize\fR specifies the height for $widget\fR in screen units
@@ -148,11 +142,9 @@ In this case the height is specified as a floating-point number
 relative to the height of the master: 0.5 means $widget\fR will
 be half as high as the master, 1.0 means $widget\fR will have
 the same height as the master, and so on.
-.VS
 If both \fB\-height\fR and \fB\-relheight\fR are specified for a slave,
 their values are summed.  For example, \fB\-relheight 1.0 \-height \-2\fR
 makes the slave 2 pixels shorter than the master.
-.VE
 .TP
 \fB\-bordermode\fR => \fImode\fR
 \fIMode\fR determines the degree to which borders within the
@@ -225,9 +217,9 @@ parent is to tie two siblings together.
 For example, the placer can be used to force a window always to
 be positioned centered just below one of its
 siblings by specifying the configuration
-.DS C
+.CS
 \fB\-in \fIsibling\fB \-relx 0.5 \-rely 1.0 \-anchor n \-bordermode outside\fR
-.DE
+.CE
 Whenever the sibling is repositioned in the future, the slave
 will be repositioned as well.
 .PP

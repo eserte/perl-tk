@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '2.014'; # $Id: //depot/Tk/Entry/Entry.pm#14$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Entry/Entry.pm#5$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -32,6 +32,8 @@ bootstrap Tk::Entry $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::entry }
 
+Tk::Methods("bbox","delete","get","icursor","index","insert","scan",
+            "selection","xview");
 
 1;
 

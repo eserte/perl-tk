@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkError.c 1.20 96/02/15 18:53:17
+ * SCCS: @(#) tkError.c 1.23 97/04/25 16:51:27
  */
 
 #include "tkPort.h"
@@ -191,11 +191,10 @@ Tk_DeleteErrorHandler(handler)
 	dispPtr->deleteCount = 0;
 	lastSerial = LastKnownRequestProcessed(dispPtr->display);
 	errorPtr = dispPtr->errorPtr;
-	for (errorPtr = dispPtr->errorPtr, prevPtr = NULL;
-		errorPtr != NULL;  errorPtr = nextPtr) {
+	for (prevPtr = NULL; errorPtr != NULL; errorPtr = nextPtr) {
 	    nextPtr = errorPtr->nextPtr;
-	    if ((errorPtr->lastRequest != -1)
-		    && (errorPtr->lastRequest <= lastSerial)) {
+	    if ((errorPtr->lastRequest != (unsigned long) -1)
+		    && (errorPtr->lastRequest <= (unsigned long) lastSerial)) {
 		if (prevPtr == NULL) {
 		    dispPtr->errorPtr = nextPtr;
 		} else {
@@ -263,7 +262,7 @@ ErrorProc(display, errEventPtr)
 		    && (errorPtr->request != errEventPtr->request_code))
 		|| ((errorPtr->minorCode != -1)
 		    && (errorPtr->minorCode != errEventPtr->minor_code))
-		|| ((errorPtr->lastRequest != -1)
+		|| ((errorPtr->lastRequest != (unsigned long) -1)
 		    && (errorPtr->lastRequest < errEventPtr->serial))) {
 	    continue;
 	}
@@ -284,10 +283,18 @@ ErrorProc(display, errEventPtr)
      * is deleted by someone externally, like a window manager.  We'll
      * ignore the errors at least long enough to clean up internally and
      * remove the entry from the window table.
+     *
+     * NOTE: For embedding, we must also check whether the window was
+     * recently deleted. If so, it may be that Tk generated operations on
+     * windows that were deleted by the container. Now we are getting
+     * the errors (BadWindow) after Tk already deleted the window itself.
      */
 
-    if ((errEventPtr->error_code == BadWindow) && (Tk_IdToWindow(display,
-	    (Window) errEventPtr->resourceid) != NULL)) {
+    if ((errEventPtr->error_code == BadWindow) &&
+            ((Tk_IdToWindow(display, (Window) errEventPtr->resourceid) !=
+                    NULL) ||
+                (TkpWindowWasRecentlyDeleted((Window) errEventPtr->resourceid,
+                        dispPtr)))) {
 	return 0;
     }
 

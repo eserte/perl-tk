@@ -3,6 +3,24 @@
  */
 #define NEED_REAL_STDIO 
 
+#if defined(__WIN32__)
+#   define WIN32_LEAN_AND_MEAN
+#   include <windows.h>
+#   undef WIN32_LEAN_AND_MEAN
+#   if defined(_MSC_VER)
+#	define EXPORT(a,b) __declspec(dllexport) a b
+#   else
+#	if defined(__BORLANDC__)
+#	    define EXPORT(a,b) a _export b
+#	else
+#	    define EXPORT(a,b) a b
+#	endif
+#   endif
+#else
+#   define EXPORT(a,b) a b
+#endif
+
+
 #include "imgInt.h"
 #include <string.h>
 
@@ -27,22 +45,6 @@
 #   define RTLD_NOW 1
 #endif
 
-#if defined(__WIN32__)
-#   define WIN32_LEAN_AND_MEAN
-#   include <windows.h>
-#   undef WIN32_LEAN_AND_MEAN
-#   if defined(_MSC_VER)
-#	define EXPORT(a,b) __declspec(dllexport) a b
-#   else
-#	if defined(__BORLANDC__)
-#	    define EXPORT(a,b) a _export b
-#	else
-#	    define EXPORT(a,b) a b
-#	endif
-#   endif
-#else
-#   define EXPORT(a,b) a b
-#endif
 
 /*
  * Declarations for functions defined in this file.
@@ -507,6 +509,8 @@ typedef struct Tcl_Obj {
  *----------------------------------------------------------------------
  */
 
+#if TCL_MAJOR_VERSION < 8
+
 char *
 ImgGetStringFromObj(objPtr, lengthPtr)
     register Tcl_Obj *objPtr;	/* Object whose string rep byte pointer
@@ -543,6 +547,8 @@ ImgGetStringFromObj(objPtr, lengthPtr)
 	return string;
     }
 }
+
+#endif
 
 /*
  *--------------------------------------------------------------------------
@@ -746,7 +752,7 @@ ImgWrite(handle, src, count)
     bufcount = curcount + count + count/3 + count/52 + 1024;
 
     /* make sure that the DString contains enough space */
-    if (bufcount >= (handle->buffer->spaceAvl)) {
+    if (bufcount >= Tcl_DStringLength(handle->buffer)) {
 	Tcl_DStringSetLength(handle->buffer, bufcount + 4096);
 	handle->data = Tcl_DStringValue(handle->buffer) + curcount;
     }
@@ -858,7 +864,7 @@ ImgWriteInit(buffer, handle)
     Tcl_DString *buffer;
     MFile *handle;		/* mmencode "file" handle */
 {
-    Tcl_DStringSetLength(buffer, buffer->spaceAvl);
+    Tcl_DStringSetLength(buffer, 1024);
     handle->buffer = buffer;
     handle->data = Tcl_DStringValue(buffer);
     handle->state = 0;

@@ -21,22 +21,40 @@ typedef struct Lang_CmdInfo
   SV          *image; 
  } Lang_CmdInfo;
 
-#define DECLARE_VTABLES   \
-TkoptionVtab   *TkoptionVptr   ;  \
-XlibVtab   *XlibVptr   ;  \
-TkVtab     *TkVptr     ;  \
-TkintVtab  *TkintVptr  ;  \
-LangVtab   *LangVptr   ;  \
-TkglueVtab *TkglueVptr 
+#ifdef WIN32
+#define DECLARE_WIN32_VTABLES	\
+TkwinVtab *TkwinVptr;		\
+TkwinintVtab * TkwinintVptr;
+#else
+#define DECLARE_WIN32_VTABLES 
+#endif
 
-#define IMPORT_VTABLES                                                \
-do {                                                                  \
-  TkoptionVptr   =   (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",5));    \
-  LangVptr   =   (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",5));    \
-  TkVptr     =     (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",5));      \
-  TkintVptr  =  (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",5));   \
-  TkglueVptr = (TkglueVtab *) SvIV(perl_get_sv("Tk::TkglueVtab",5));  \
-  XlibVptr   =   (XlibVtab *) SvIV(perl_get_sv("Tk::XlibVtab",5));    \
+#define DECLARE_VTABLES		\
+TkoptionVtab   *TkoptionVptr;	\
+XlibVtab   *XlibVptr   ;	\
+TkVtab     *TkVptr     ;	\
+TkintVtab  *TkintVptr  ;	\
+LangVtab   *LangVptr   ;	\
+TkglueVtab *TkglueVptr 
+              
+#ifdef WIN32
+#define IMPORT_WIN32_VTABLES                                                   \
+do {                                                                           \
+  TkwinVptr     =   (TkwinVtab *) SvIV(perl_get_sv("Tk::TkwinVtab",5));        \
+  TkwinintVptr  =   (TkwinintVtab *) SvIV(perl_get_sv("Tk::TkwinintVtab",5));  \
+ } while (0);
+#else
+#define IMPORT_WIN32_VTABLES
+#endif
+
+#define IMPORT_VTABLES                                                         \
+do {                                                                           \
+  TkoptionVptr   =   (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",5)); \
+  LangVptr   =   (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",5));             \
+  TkVptr     =     (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",5));               \
+  TkintVptr  =  (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",5));            \
+  TkglueVptr = (TkglueVtab *) SvIV(perl_get_sv("Tk::TkglueVtab",5));           \
+  XlibVptr   =   (XlibVtab *) SvIV(perl_get_sv("Tk::XlibVtab",5));             \
  } while (0)
 
 extern Lang_CmdInfo *WindowCommand _ANSI_ARGS_((SV *win,HV **hptr, int moan));
@@ -59,6 +77,7 @@ EXTERN void DumpStack _ANSI_ARGS_((void));
 EXTERN void  Boot_Glue _ANSI_ARGS_((void));
 EXTERN void  Boot_Tix  _ANSI_ARGS_((void));
 EXTERN void install_vtab _((char *name, void *table, size_t size));
+extern SV *TagIt _((SV *sv, char *type));
 
 
 #endif

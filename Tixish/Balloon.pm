@@ -1,4 +1,4 @@
-# $Id: //depot/Tk/Tixish/Balloon.pm#10$
+# $Id: //depot/Tk8/Tixish/Balloon.pm#5$
 #
 # The help widget that provides both "balloon" and "status bar"
 # types of help messages.
@@ -7,7 +7,7 @@ package Tk::Balloon;
 
 
 use vars qw($VERSION);
-$VERSION = '2.010'; # $Id: //depot/Tk/Tixish/Balloon.pm#10$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tixish/Balloon.pm#5$
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -191,7 +191,7 @@ sub Popup {
 
     my $x = int($client->rootx + $client->width/2);
     my $y = int($client->rooty + int ($client->height/1.3));
-    $w->geometry("+$x+$y");
+    $w->MoveToplevelWindow($x,$y);
     $w->deiconify();
     $w->raise;
     $w->update;

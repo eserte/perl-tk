@@ -1,7 +1,7 @@
-The bulk of what was the Tk::Contrib stuff is now un-bundled
-and available as a separate CPAN distribution:
+Files in Tk*/Contrib have been contributed by various people at 
+various times. No attempt has been made by perl/Tk's author to 
+verify that they work with this release of perl/Tk.
 
-Look in :
-
-http://www.perl.com/CPAN/modules/by-module/Tk/
+Authors are encoraged to make them into finished add-on modules and
+maintain them in CPAN themselves.
 

@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '2.012'; # $Id: //depot/Tk/Tk/Wm.pm#12$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Wm.pm#5$
 
 use Tk::Submethods ( 'wm' => [qw(grid)] );
 
@@ -49,8 +49,9 @@ sub Post
  my ($w,$X,$Y) = @_;
  $X = int($X);
  $Y = int($Y);
- $w->positionfrom('program');
- $w->geometry("+$X+$Y");
+ $w->positionfrom('user');
+ # $w->geometry("+$X+$Y");
+ $w->MoveToplevelWindow($X,$Y);
  $w->deiconify;
  $w->raise;
 }

@@ -5,7 +5,7 @@
 # "autoconf" program (constructs like "@foo@" will get replaced in the
 # actual Makefile.
 #
-# SCCS: @(#) Makefile.in 1.122 96/10/02 14:03:58
+# SCCS: @(#) Makefile.in 1.146 97/11/05 11:10:45
 
 # Current Tk version;  used in various names.
 
@@ -92,9 +92,8 @@ X11_INCLUDES =		@XINCLUDES@
 # can override it).
 X11_LIB_SWITCHES =	@XLIBSW@
 
-# Libraries to use when linking:  must include at least Xlib, the
-# dynamic loading library, and the math library (in that order).  This
-# definition is determined by the configure script.
+# Libraries to use when linking.  This definition is determined by the
+# configure script.
 LIBS = @TCL_BUILD_LIB_SPEC@ @LIBS@ $(X11_LIB_SWITCHES) @DL_LIBS@ @MATH_LIBS@ -lc
 
 # To change the compiler switches, for example to change from -O
@@ -156,6 +155,12 @@ TK_LIB_FILE = @TK_LIB_FILE@
 
 SHLIB_LD = @SHLIB_LD@
 
+# Additional search flags needed to find the various shared libraries
+# at run-time.  The first symbol is for use when creating a binary
+# with cc, and the second is for use when running ld directly.
+TK_CC_SEARCH_FLAGS = @TK_CC_SEARCH_FLAGS@
+TK_LD_SEARCH_FLAGS = @TK_LD_SEARCH_FLAGS@
+
 #----------------------------------------------------------------
 # The information below is modified by the configure script when
 # Makefile is generated from Makefile.in.  You shouldn't normally
@@ -169,6 +174,7 @@ TOP_DIR =		@srcdir@/..
 GENERIC_DIR =		$(TOP_DIR)/generic
 UNIX_DIR = 		@srcdir@
 BMAP_DIR =		$(TOP_DIR)/bitmaps
+TOOL_DIR =		@TCL_SRC_DIR@/tools
 
 #----------------------------------------------------------------
 # The information below should be usable as is.  The configure
@@ -193,7 +199,7 @@ WISH_OBJS = tkAppInit.o
 TKTEST_OBJS = tkTestInit.o tkTest.o tkSquare.o
 
 WIDGOBJS = tkButton.o tkEntry.o tkFrame.o tkListbox.o \
-	tkMenu.o tkMenubutton.o tkMessage.o tkScale.o \
+	tkMenu.o tkMenubutton.o tkMenuDraw.o tkMessage.o tkScale.o \
 	tkScrollbar.o
 
 CANVOBJS = tkCanvas.o tkCanvArc.o tkCanvBmap.o tkCanvImg.o \
@@ -202,18 +208,20 @@ CANVOBJS = tkCanvas.o tkCanvArc.o tkCanvBmap.o tkCanvImg.o \
 
 IMAGEOBJS = tkImage.o tkImgBmap.o tkImgGIF.o tkImgPPM.o tkImgPhoto.o
 
-TEXTOBJS = tkText.o tkTextBTree.o tkTextDisp.o tkTextIndex.o \
+TEXTOBJS = tkText.o tkTextBTree.o tkTextDisp.o tkTextImage.o tkTextIndex.o \
 	tkTextMark.o tkTextTag.o tkTextWind.o
 
-UNIXOBJS = tkUnix.o tkUnixCursor.o tkUnixDialog.o tkUnixDraw.o tkUnixEvent.o \
-	tkUnixInit.o tkUnixSelect.o tkUnixWm.o tkUnixXId.o
+UNIXOBJS = tkUnix.o tkUnix3d.o tkUnixButton.o tkUnixColor.o tkUnixCursor.o \
+	tkUnixDialog.o tkUnixDraw.o \
+	tkUnixEmbed.o tkUnixEvent.o tkUnixFocus.o tkUnixFont.o tkUnixInit.o \
+	tkUnixMenu.o tkUnixMenubu.o tkUnixScale.o tkUnixScrlbr.o \
+	tkUnixSelect.o tkUnixSend.o tkUnixWm.o tkUnixXId.o
 
 OBJS =  tk3d.o tkArgv.o tkAtom.o tkBind.o tkBitmap.o tkClipboard.o tkCmds.o \
 	tkColor.o tkConfig.o tkCursor.o tkError.o tkEvent.o \
 	tkFocus.o tkFont.o tkGet.o tkGC.o tkGeometry.o tkGrab.o tkGrid.o \
 	tkMain.o tkOption.o tkPack.o tkPlace.o \
-	tkSelect.o tkSend.o tkUtil.o tkVisual.o \
-	tkWindow.o \
+	tkSelect.o tkUtil.o tkVisual.o tkWindow.o \
 	$(UNIXOBJS) $(WIDGOBJS) $(CANVOBJS) $(IMAGEOBJS) $(TEXTOBJS)
 
 SRCS = \
@@ -229,13 +237,13 @@ SRCS = \
 	$(GENERIC_DIR)/tkGrid.c \
 	$(GENERIC_DIR)/tkMain.c $(GENERIC_DIR)/tkOption.c \
 	$(GENERIC_DIR)/tkPack.c $(GENERIC_DIR)/tkPlace.c \
-	$(GENERIC_DIR)/tkSelect.c \
-	$(GENERIC_DIR)/tkSend.c $(GENERIC_DIR)/tkUtil.c \
+	$(GENERIC_DIR)/tkSelect.c $(GENERIC_DIR)/tkUtil.c \
 	$(GENERIC_DIR)/tkVisual.c $(GENERIC_DIR)/tkWindow.c \
 	$(GENERIC_DIR)/tkButton.c \
 	$(GENERIC_DIR)/tkEntry.c $(GENERIC_DIR)/tkFrame.c \
 	$(GENERIC_DIR)/tkListbox.c $(GENERIC_DIR)/tkMenu.c \
-	$(GENERIC_DIR)/tkMenubutton.c $(GENERIC_DIR)/tkMessage.c \
+	$(GENERIC_DIR)/tkMenubutton.c $(GENERIC_DIR)/tkMenuDraw.c \
+	$(GENERIC_DIR)/tkMessage.c \
 	$(GENERIC_DIR)/tkScale.c $(GENERIC_DIR)/tkScrollbar.c \
 	$(GENERIC_DIR)/tkCanvas.c $(GENERIC_DIR)/tkCanvArc.c \
 	$(GENERIC_DIR)/tkCanvBmap.c $(GENERIC_DIR)/tkCanvImg.c \
@@ -248,19 +256,28 @@ SRCS = \
 	$(GENERIC_DIR)/tkImgPPM.c \
 	$(GENERIC_DIR)/tkImgPhoto.c $(GENERIC_DIR)/tkText.c \
 	$(GENERIC_DIR)/tkTextBTree.c $(GENERIC_DIR)/tkTextDisp.c \
+	$(GENERIC_DIR)/tkTextImage.c \
 	$(GENERIC_DIR)/tkTextIndex.c $(GENERIC_DIR)/tkTextMark.c \
 	$(GENERIC_DIR)/tkTextTag.c $(GENERIC_DIR)/tkTextWind.c \
 	$(GENERIC_DIR)/tkSquare.c $(GENERIC_DIR)/tkTest.c \
 	$(UNIX_DIR)/tkAppInit.c $(UNIX_DIR)/tkUnix.c \
+	$(UNIX_DIR)/tkUnix3d.c \
+	$(UNIX_DIR)/tkUnixButton.c $(UNIX_DIR)/tkUnixColor.c \
 	$(UNIX_DIR)/tkUnixCursor.c \
 	$(UNIX_DIR)/tkUnixDialog.c $(UNIX_DIR)/tkUnixDraw.c \
-	$(UNIX_DIR)/tkUnixEvent.c $(UNIX_DIR)/tkUnixInit.c \
-	$(UNIX_DIR)/tkUnixSelect.c $(UNIX_DIR)/tkUnixWm.c \
+	$(UNIX_DIR)/tkUnixEmbed.c $(UNIX_DIR)/tkUnixEvent.c \
+	$(UNIX_DIR)/tkUnixFocus.c \
+	$(UNIX_DIR)/tkUnixFont.c $(UNIX_DIR)/tkUnixInit.c \
+	$(UNIX_DIR)/tkUnixMenu.c $(UNIX_DIR)/tkUnixMenubu.c \
+	$(UNIX_DIR)/tkUnixScale.c $(UNIX_DIR)/tkUnixScrlbr.c \
+	$(UNIX_DIR)/tkUnixSelect.c \
+	$(UNIX_DIR)/tkUnixSend.c $(UNIX_DIR)/tkUnixWm.c \
 	$(UNIX_DIR)/tkUnixXId.c
 
+
 HDRS = bltList.h \
-	default.h ks_names.h tkPatch.h tk.h tkCanvas.h tkInt.h  \
-	tkPort.h tkText.h
+	default.h ks_names.h tkPatch.h tk.h tkButton.h tkCanvas.h tkInt.h  \
+	tkPort.h tkScrollbar.h tkText.h
 
 DEMOPROGS = browse hello ixset rmt rolodex square tcolor timer widget
 
@@ -268,19 +285,33 @@ all: wish
 
 # The following target is configured by autoconf to generate either
 # a shared library or non-shared library for Tk.
-
 @TK_LIB_FILE@: ${OBJS}
 	rm -f @TK_LIB_FILE@
 	@MAKE_LIB@
 	$(RANLIB) @TK_LIB_FILE@
 
+# Make target which outputs the list of the .o contained in the Tk lib
+# usefull to build a single big shared library containing Tcl/Tk and other
+# extensions.  used for the Tcl Plugin.  -- dl
+tkLibObjs:
+	@echo ${OBJS}
+# This targets actually build the objects needed for the lib in the above
+# case
+objs: ${OBJS}
+
+
 wish: $(WISH_OBJS) $(TK_LIB_FILE)
 	$(CC) @LD_FLAGS@ $(WISH_OBJS) @TK_BUILD_LIB_SPEC@ $(LIBS) \
-		@TK_LD_SEARCH_FLAGS@ -o wish
+		$(TK_CC_SEARCH_FLAGS) -o wish
 
 tktest: $(TKTEST_OBJS) $(TK_LIB_FILE)
 	${CC} @LD_FLAGS@ $(TKTEST_OBJS) @TK_BUILD_LIB_SPEC@ $(LIBS) \
-		@TK_LD_SEARCH_FLAGS@ -o tktest
+		$(TK_CC_SEARCH_FLAGS) -o tktest
+
+xttest: test.o tkTest.o tkSquare.o $(TK_LIB_FILE)
+	${CC} @LD_FLAGS@ test.o tkTest.o tkSquare.o \
+		@TK_BUILD_LIB_SPEC@ $(LIBS) \
+		@TK_LD_SEARCH_FLAGS@ -lXt -o xttest
 
 # Note, in the target below TCL_LIBRARY needs to be set or else
 # "make test" won't work in the case where the compilation directory
@@ -293,6 +324,15 @@ test: tktest
 	TK_LIBRARY=$(TOP_DIR)/library; export TK_LIBRARY; \
 	( echo cd $(TOP_DIR)/tests\; source all\; exit ) \
 	| ./tktest -geometry +0+0
+
+
+# Useful target to launch a built tktest with the proper path,...
+runtest:
+	LD_LIBRARY_PATH=`pwd`:${TCL_BIN_DIR}:${LD_LIBRARY_PATH}; \
+	export LD_LIBRARY_PATH; \
+	TCL_LIBRARY=@TCL_SRC_DIR@/library; export TCL_LIBRARY; \
+	TK_LIBRARY=$(TOP_DIR)/library; export TK_LIBRARY; \
+	./tktest
 
 install: install-binaries install-libraries install-demos install-man
 
@@ -321,7 +361,7 @@ install-binaries: $(TK_LIB_FILE) wish
 
 install-libraries:
 	@for i in $(INSTALL_ROOT)$(prefix)/lib $(INCLUDE_INSTALL_DIR) \
-		$(SCRIPT_INSTALL_DIR) ; \
+		$(SCRIPT_INSTALL_DIR) $(SCRIPT_INSTALL_DIR)/images; \
 	    do \
 	    if [ ! -d $$i ] ; then \
 		echo "Making directory $$i"; \
@@ -332,10 +372,17 @@ install-libraries:
 	    done;
 	@echo "Installing tk.h"
 	@$(INSTALL_DATA) $(GENERIC_DIR)/tk.h $(INCLUDE_INSTALL_DIR)/tk.h
-	for i in $(SRC_DIR)/library/*.tcl $(SRC_DIR)/library/*.gif $(SRC_DIR)/library/*.xbm $(SRC_DIR)/library/tclIndex $(SRC_DIR)/library/prolog.ps $(UNIX_DIR)/tkAppInit.c; \
+	for i in $(SRC_DIR)/library/*.tcl $(SRC_DIR)/library/tclIndex $(SRC_DIR)/library/prolog.ps $(UNIX_DIR)/tkAppInit.c; \
 	    do \
 	    echo "Installing $$i"; \
 	    $(INSTALL_DATA) $$i $(SCRIPT_INSTALL_DIR); \
+	    done;
+	for i in $(SRC_DIR)/library/images/*; \
+	    do \
+	    if [ -f $$i ] ; then \
+		echo "Installing $$i"; \
+		$(INSTALL_DATA) $$i $(SCRIPT_INSTALL_DIR)/images; \
+	    fi; \
 	    done;
 
 install-demos:
@@ -513,9 +560,6 @@ tkPlace.o: $(GENERIC_DIR)/tkPlace.c
 tkSelect.o: $(GENERIC_DIR)/tkSelect.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkSelect.c
 
-tkSend.o: $(GENERIC_DIR)/tkSend.c
-	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkSend.c
-
 tkUtil.o: $(GENERIC_DIR)/tkUtil.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkUtil.c
 
@@ -542,6 +586,9 @@ tkMenu.o: $(GENERIC_DIR)/tkMenu.c
 
 tkMenubutton.o: $(GENERIC_DIR)/tkMenubutton.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkMenubutton.c
+
+tkMenuDraw.o: $(GENERIC_DIR)/tkMenuDraw.c
+	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkMenuDraw.c
 
 tkMessage.o: $(GENERIC_DIR)/tkMessage.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkMessage.c
@@ -618,6 +665,9 @@ tkTextBTree.o: $(GENERIC_DIR)/tkTextBTree.c
 tkTextDisp.o: $(GENERIC_DIR)/tkTextDisp.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkTextDisp.c
 
+tkTextImage.o: $(GENERIC_DIR)/tkTextImage.c
+	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkTextImage.c
+
 tkTextIndex.o: $(GENERIC_DIR)/tkTextIndex.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tkTextIndex.c
 
@@ -633,6 +683,15 @@ tkTextWind.o: $(GENERIC_DIR)/tkTextWind.c
 tkUnix.o: $(UNIX_DIR)/tkUnix.c
 	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnix.c
 
+tkUnix3d.o: $(UNIX_DIR)/tkUnix3d.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnix3d.c
+
+tkUnixButton.o: $(UNIX_DIR)/tkUnixButton.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixButton.c
+
+tkUnixColor.o: $(UNIX_DIR)/tkUnixColor.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixColor.c
+
 tkUnixCursor.o: $(UNIX_DIR)/tkUnixCursor.c
 	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixCursor.c
 
@@ -642,15 +701,39 @@ tkUnixDialog.o: $(UNIX_DIR)/tkUnixDialog.c
 tkUnixDraw.o: $(UNIX_DIR)/tkUnixDraw.c
 	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixDraw.c
 
+tkUnixEmbed.o: $(UNIX_DIR)/tkUnixEmbed.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixEmbed.c
+
 tkUnixEvent.o: $(UNIX_DIR)/tkUnixEvent.c
 	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixEvent.c
 
-tkUnixInit.o: $(UNIX_DIR)/tkUnixInit.c tkConfig.sh
+tkUnixFocus.o: $(UNIX_DIR)/tkUnixFocus.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixFocus.c
+
+tkUnixFont.o: $(UNIX_DIR)/tkUnixFont.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixFont.c
+
+tkUnixInit.o: $(UNIX_DIR)/tkUnixInit.c $(GENERIC_DIR)/tkInitScript.h tkConfig.sh
 	$(CC) -c $(CC_SWITCHES) -DTK_LIBRARY=\"${TK_LIBRARY}\" \
 	    $(UNIX_DIR)/tkUnixInit.c
 
+tkUnixMenu.o: $(UNIX_DIR)/tkUnixMenu.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixMenu.c
+
+tkUnixMenubu.o: $(UNIX_DIR)/tkUnixMenubu.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixMenubu.c
+
+tkUnixScale.o: $(UNIX_DIR)/tkUnixScale.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixScale.c
+
+tkUnixScrlbr.o: $(UNIX_DIR)/tkUnixScrlbr.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixScrlbr.c
+
 tkUnixSelect.o: $(UNIX_DIR)/tkUnixSelect.c
 	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixSelect.c
+
+tkUnixSend.o: $(UNIX_DIR)/tkUnixSend.c
+	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixSend.c
 
 tkUnixWm.o: $(UNIX_DIR)/tkUnixWm.c
 	$(CC) -c $(CC_SWITCHES) $(UNIX_DIR)/tkUnixWm.c
@@ -682,8 +765,10 @@ checkexports: $(TK_LIB_FILE)
 # to put the distribution.  DISTDIR must be an absolute path name.
 #
 
-DISTDIR   = /proj/tcl/dist/tk4.2
-TCLDIR	  = $(TOP_DIR)/../tcl7.6
+DISTNAME =	tk@TK_VERSION@@TK_PATCH_LEVEL@
+ZIPNAME =	tk@TK_MAJOR_VERSION@@TK_MINOR_VERSION@@TK_PATCH_LEVEL@.zip
+DISTDIR =	/proj/tcl/dist/$(DISTNAME)
+TCLDIR = 	@TCL_SRC_DIR@
 $(UNIX_DIR)/configure: $(UNIX_DIR)/configure.in
 	autoconf $(UNIX_DIR)/configure.in > $(UNIX_DIR)/configure
 
@@ -714,7 +799,7 @@ dist:   $(UNIX_DIR)/configure
 	cp -p $(GENERIC_DIR)/*.c $(GENERIC_DIR)/*.h $(DISTDIR)/generic
 	cp -p $(GENERIC_DIR)/README $(DISTDIR)/generic
 	cp -p $(TOP_DIR)/changes $(TOP_DIR)/README $(TOP_DIR)/license.terms \
-		$(TOP_DIR)/ToDo $(DISTDIR)
+		$(DISTDIR)
 	rm -f $(DISTDIR)/generic/blt*.[ch]
 	mkdir $(DISTDIR)/win
 	cp -p $(TOP_DIR)/win/*.c $(TOP_DIR)/win/*.h $(DISTDIR)/win
@@ -723,7 +808,8 @@ dist:   $(UNIX_DIR)/configure
 	cp -p $(TOP_DIR)/license.terms $(DISTDIR)/win
 	mkdir $(DISTDIR)/win/rc
 	cp -p $(TOP_DIR)/win/rc/*.rc $(TOP_DIR)/win/rc/*.cur \
-		$(TOP_DIR)/win/rc/*.ico $(DISTDIR)/win/rc
+		$(TOP_DIR)/win/rc/*.ico $(TOP_DIR)/win/rc/*.bmp \
+		$(DISTDIR)/win/rc
 	mkdir $(DISTDIR)/mac
 	sccs edit -s $(TOP_DIR)/mac/tkMacProjects.sit.hqx
 	cp -p tkMacProjects.sit.hqx $(DISTDIR)/mac
@@ -734,6 +820,9 @@ dist:   $(UNIX_DIR)/configure
 	cp -p $(TOP_DIR)/mac/README $(DISTDIR)/mac
 	cp -p $(TOP_DIR)/license.terms $(DISTDIR)/mac
 	cp -p $(TOP_DIR)/mac/*.pch $(DISTDIR)/mac
+	cp -p $(TOP_DIR)/mac/*.doc $(DISTDIR)/mac
+	cp -p $(TOP_DIR)/mac/*.exp $(DISTDIR)/mac
+	cp -p $(TOP_DIR)/mac/*.tcl $(DISTDIR)/mac
 	mkdir $(DISTDIR)/compat
 	cp -p $(TOP_DIR)/license.terms $(TCLDIR)/compat/unistd.h \
 		$(TCLDIR)/compat/stdlib.h $(TCLDIR)/compat/limits.h \
@@ -747,9 +836,13 @@ dist:   $(UNIX_DIR)/configure
 	mkdir $(DISTDIR)/library
 	cp -p $(TOP_DIR)/license.terms $(TOP_DIR)/library/*.tcl \
 		$(TOP_DIR)/library/tclIndex $(TOP_DIR)/library/prolog.ps \
-		$(TOP_DIR)/library/folder.gif $(TOP_DIR)/library/textfile.gif \
-		$(TOP_DIR)/library/updir.xbm \
 		$(DISTDIR)/library
+	mkdir $(DISTDIR)/library/images
+	@(cd $(TOP_DIR); for i in library/images/* ; do \
+	    if [ -f $$i ] ; then \
+		cp $$i $(DISTDIR)/$$i; \
+	    fi; \
+	done;)
 	mkdir $(DISTDIR)/library/demos
 	cp -pr $(TOP_DIR)/library/demos/*.tcl \
 		$(TOP_DIR)/library/demos/tclIndex \
@@ -780,20 +873,52 @@ dist:   $(UNIX_DIR)/configure
 		$(DISTDIR)/tests
 
 #
+# The following target can only be used for non-patch releases.  Use
+# the "allpatch" target below for patch releases.
+#
+
+alldist: dist
+	rm -f /proj/tcl/dist/$(DISTNAME).tar.Z \
+		/proj/tcl/dist/$(DISTNAME).tar.gz \
+		/proj/tcl/dist/$(ZIPNAME)
+	cd /proj/tcl/dist; tar cf $(DISTNAME).tar $(DISTNAME); \
+		gzip -9 -c $(DISTNAME).tar > $(DISTNAME).tar.gz; \
+		compress $(DISTNAME).tar; zip -r8 $(ZIPNAME) $(DISTNAME)
+
+#
+# The target below is similar to "alldist" except it works for patch
+# releases.  It is needed because patch releases are peculiar: the
+# patch designation appears in the name of the compressed file
+# (e.g. tcl8.0p1.tar.gz) but the extracted source directory doesn't
+# include the patch designation (e.g. tcl8.0).
+#
+
+allpatch: dist
+	rm -f /proj/tcl/dist/$(DISTNAME).tar.Z \
+		/proj/tcl/dist/$(DISTNAME).tar.gz \
+		/proj/tcl/dist/$(ZIPNAME)
+	mv /proj/tcl/dist/tk${VERSION} /proj/tcl/dist/old
+	mv /proj/tcl/dist/$(DISTNAME) /proj/tcl/dist/tk${VERSION}
+	cd /proj/tcl/dist; tar cf $(DISTNAME).tar tk${VERSION}; \
+		gzip -9 -c $(DISTNAME).tar > $(DISTNAME).tar.gz; \
+		compress $(DISTNAME).tar; zip -r8 $(ZIPNAME) tk${VERSION}
+	mv /proj/tcl/dist/tk${VERSION} /proj/tcl/dist/$(DISTNAME)
+	mv /proj/tcl/dist/old /proj/tcl/dist/tk${VERSION}
+
+#
 # Target to create a Macintosh version of the distribution.  This will
 # do a normal distribution and then massage the output to prepare it
 # for moving to the Mac platform.  This requires a few scripts and
 # programs found only in the Tcl greoup's tool workspace.
 #
 
-TOOLDIR =	/home/rjohnson/Projects/tools
 macdist: dist
 	rm -f $(DISTDIR)/mac/tkMacProjects.sit.hqx
-	tclsh $(TOOLDIR)/generic/man2html.tcl $(DISTDIR)/tmp ../.. tk$(VERSION)
+	tclsh $(TOOL_DIR)/man2html.tcl $(DISTDIR)/tmp ../.. tk$(VERSION)
 	mv $(DISTDIR)/tmp/tk$(VERSION) $(DISTDIR)/html
 	rm -rf $(DISTDIR)/doc
 	rm -rf $(DISTDIR)/tmp
-	tclsh $(TOOLDIR)/mac/cvtEOL.tcl $(DISTDIR)
+	tclsh $(TOOL_DIR)/cvtEOL.tcl $(DISTDIR)
 
 #
 # Targets to build Solaris package of the distribution for the current

@@ -1,11 +1,11 @@
 '\"
 '\" Copyright (c) 1994 The Regents of the University of California.
-'\" Copyright (c) 1994-1995 Sun Microsystems, Inc.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
 '\"
 '\" See the file "license.terms" for information on usage and redistribution
 '\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 '\" 
-'\" @(#) bitmap.n 1.6 95/06/07 21:15:07
+'\" SCCS: @(#) bitmap.n 1.10 96/03/29 14:48:41
 '\" 
 .so man.macros
 .TH bitmap n 4.0 Tk "Tk Image Classes"
@@ -41,7 +41,7 @@ Bitmaps support the following \fIoptions\fR:
 \fB\-background\fR => \fIcolor\fR
 Specifies a background color for the image in any of the standard
 ways accepted by Tk.  If this option is set to an empty string
-then the background pixels will be transparent.  This affect
+then the background pixels will be transparent.  This effect
 is achieved by using the source bitmap as the mask bitmap, ignoring
 any \fB\-maskdata\fR or \fB\-maskfile\fR options.
 .TP

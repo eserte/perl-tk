@@ -2159,7 +2159,7 @@ Realloc(wPtr, new_size)
     if (new_size == wPtr->numRowAllocd) {
 	return;
     }
-    wPtr->rows = (ListRow*)ckrealloc(wPtr->rows, sizeof(ListRow)*new_size);
+    wPtr->rows = (ListRow*)ckrealloc((char *)(wPtr->rows), sizeof(ListRow)*new_size);
     wPtr->numRowAllocd = new_size;
 }
 

@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkCanvas.c 1.119 96/03/21 11:26:39
+ * SCCS: @(#) tkCanvas.c 1.126 97/07/31 09:05:52
  */
 
 #include "default.h"
@@ -193,6 +193,8 @@ static void		CanvasUpdateScrollbars _ANSI_ARGS_((
 			    TkCanvas *canvasPtr));
 static int		CanvasWidgetCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
+static void		CanvasWorldChanged _ANSI_ARGS_((
+			    ClientData instanceData));
 static int		ConfigureCanvas _ANSI_ARGS_((Tcl_Interp *interp,
 			    TkCanvas *canvasPtr, int argc, char **argv,
 			    int flags));
@@ -218,6 +220,18 @@ static void		RelinkItems _ANSI_ARGS_((TkCanvas *canvasPtr,
 			    char *tag, Tk_Item *prevPtr));
 static Tk_Item *	StartTagSearch _ANSI_ARGS_((TkCanvas *canvasPtr,
 			    char *tag, TagSearch *searchPtr));
+
+/*
+ * The structure below defines canvas class behavior by means of procedures
+ * that can be invoked from generic window code.
+ */
+
+static TkClassProcs canvasClass = {
+    NULL,			/* createProc. */
+    CanvasWorldChanged,		/* geometryProc. */
+    NULL			/* modalProc. */
+};
+
 
 /*
  *--------------------------------------------------------------
@@ -341,13 +355,14 @@ Tk_CanvasCmd(clientData, interp, argc, argv)
     canvasPtr->psInfoPtr = NULL;
 
     Tk_SetClass(canvasPtr->tkwin, "Canvas");
+    TkSetClassProcs(canvasPtr->tkwin, &canvasClass, (ClientData) canvasPtr);
     Tk_CreateEventHandler(canvasPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
 	    CanvasEventProc, (ClientData) canvasPtr);
     Tk_CreateEventHandler(canvasPtr->tkwin, KeyPressMask|KeyReleaseMask
 	    |ButtonPressMask|ButtonReleaseMask|EnterWindowMask
-	    |LeaveWindowMask|PointerMotionMask, CanvasBindProc,
-	    (ClientData) canvasPtr);
+	    |LeaveWindowMask|PointerMotionMask|VirtualEventMask,
+	    CanvasBindProc, (ClientData) canvasPtr);
     Tk_CreateSelHandler(canvasPtr->tkwin, XA_PRIMARY, XA_STRING,
 	    CanvasFetchSelection, (ClientData) canvasPtr, XA_STRING);
     if (ConfigureCanvas(interp, canvasPtr, argc-2, argv+2, 0) != TCL_OK) {
@@ -532,22 +547,23 @@ CanvasWidgetCmd(clientData, interp, argc, argv)
 		    |Button2MotionMask|Button3MotionMask|Button4MotionMask
 		    |Button5MotionMask|ButtonPressMask|ButtonReleaseMask
 		    |EnterWindowMask|LeaveWindowMask|KeyPressMask
-		    |KeyReleaseMask|PointerMotionMask)) {
+		    |KeyReleaseMask|PointerMotionMask|VirtualEventMask)) {
 		Tk_DeleteBinding(interp, canvasPtr->bindingTable,
 			object, argv[3]);
 		Tcl_ResetResult(interp);
 		Tcl_AppendResult(interp, "requested illegal events; ",
-			"only key, button, motion, and enter/leave ",
+			"only key, button, motion, enter, leave, and virtual ",
 			"events may be used", (char *) NULL);
 		goto error;
 	    }
 	} else if (argc == 4) {
-	    LangCallback *command =  
+	    Arg command =  
                Tk_GetBinding(interp, canvasPtr->bindingTable, object, argv[3]);
 	    if (command == NULL) {
 		goto error;
 	    }
-	    Tcl_ArgResult(interp,LangCallbackArg(command));
+	    Tcl_ArgResult(interp,command);
+	    Tcl_DecrRefCount(command);
 	} else {
 	    Tk_GetAllBindings(interp, canvasPtr->bindingTable, object);
 	}
@@ -1299,17 +1315,17 @@ CanvasWidgetCmd(clientData, interp, argc, argv)
 			    - canvasPtr->scrollX1) + 0.5);
 		    break;
 		case TK_SCROLL_PAGES:
-		    newX = canvasPtr->xOrigin + count * .9
-			    * (Tk_Width(canvasPtr->tkwin) - 2*canvasPtr->inset);
+		    newX = (int) (canvasPtr->xOrigin + count * .9
+			    * (Tk_Width(canvasPtr->tkwin) - 2*canvasPtr->inset));
 		    break;
 		case TK_SCROLL_UNITS:
 		    if (canvasPtr->xScrollIncrement > 0) {
 			newX = canvasPtr->xOrigin
 				+ count*canvasPtr->xScrollIncrement;
 		    } else {
-			newX = canvasPtr->xOrigin + count * .1
+			newX = (int) (canvasPtr->xOrigin + count * .1
 				* (Tk_Width(canvasPtr->tkwin)
-				- 2*canvasPtr->inset);
+				- 2*canvasPtr->inset));
 		    }
 		    break;
 	    }
@@ -1340,18 +1356,18 @@ CanvasWidgetCmd(clientData, interp, argc, argv)
 			    - canvasPtr->scrollY1) + 0.5);
 		    break;
 		case TK_SCROLL_PAGES:
-		    newY = canvasPtr->yOrigin + count * .9
+		    newY = (int) (canvasPtr->yOrigin + count * .9
 			    * (Tk_Height(canvasPtr->tkwin)
-			    - 2*canvasPtr->inset);
+			    - 2*canvasPtr->inset));
 		    break;
 		case TK_SCROLL_UNITS:
 		    if (canvasPtr->yScrollIncrement > 0) {
 			newY = canvasPtr->yOrigin
 				+ count*canvasPtr->yScrollIncrement;
 		    } else {
-			newY = canvasPtr->yOrigin + count * .1
+			newY = (int) (canvasPtr->yOrigin + count * .1
 				* (Tk_Height(canvasPtr->tkwin)
-				- 2*canvasPtr->inset);
+				- 2*canvasPtr->inset));
 		    }
 		    break;
 	    }
@@ -1564,6 +1580,51 @@ ConfigureCanvas(interp, canvasPtr, argc, argv, flags)
 	    canvasPtr->xOrigin + Tk_Width(canvasPtr->tkwin),
 	    canvasPtr->yOrigin + Tk_Height(canvasPtr->tkwin));
     return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * CanvasWorldChanged --
+ *
+ *      This procedure is called when the world has changed in some
+ *      way and the widget needs to recompute all its graphics contexts
+ *	and determine its new geometry.
+ *
+ * Results:
+ *      None.
+ *
+ * Side effects:
+ *	Configures all items in the canvas with a empty argc/argv, for
+ *	the side effect of causing all the items to recompute their
+ *	geometry and to be redisplayed.
+ *
+ *---------------------------------------------------------------------------
+ */
+ 
+static void
+CanvasWorldChanged(instanceData)
+    ClientData instanceData;	/* Information about widget. */
+{
+    TkCanvas *canvasPtr;
+    Tk_Item *itemPtr;
+    int result;
+
+    canvasPtr = (TkCanvas *) instanceData;
+    itemPtr = canvasPtr->firstItemPtr;
+    for ( ; itemPtr != NULL; itemPtr = itemPtr->nextPtr) {
+	result = (*itemPtr->typePtr->configProc)(canvasPtr->interp,
+		(Tk_Canvas) canvasPtr, itemPtr, 0, NULL,
+		TK_CONFIG_ARGV_ONLY);
+	if (result != TCL_OK) {
+	    Tcl_ResetResult(canvasPtr->interp);
+	}
+    }
+    canvasPtr->flags |= REPICK_NEEDED;
+    Tk_CanvasEventuallyRedraw((Tk_Canvas) canvasPtr,
+	    canvasPtr->xOrigin, canvasPtr->yOrigin,
+	    canvasPtr->xOrigin + Tk_Width(canvasPtr->tkwin),
+	    canvasPtr->yOrigin + Tk_Height(canvasPtr->tkwin));
 }
 
 /*
@@ -1825,9 +1886,8 @@ CanvasEventProc(clientData, eventPtr)
     } else if (eventPtr->type == DestroyNotify) {
 	if (canvasPtr->tkwin != NULL) {
 	    canvasPtr->tkwin = NULL;
-	    Tcl_DeleteCommand(canvasPtr->interp,
-		    Tcl_GetCommandName(canvasPtr->interp,
-		    canvasPtr->widgetCmd));
+            Tcl_DeleteCommandFromToken(canvasPtr->interp,
+		    canvasPtr->widgetCmd);
 	}
 	if (canvasPtr->flags & REDRAW_PENDING) {
 	    Tcl_CancelIdleCall(DisplayCanvas, (ClientData) canvasPtr);
@@ -2451,7 +2511,7 @@ FindItems(interp, canvasPtr, argc, argv, newTag, cmdName, option)
 		    cmdName, option, " below tagOrId", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	itemPtr = StartTagSearch(canvasPtr, argv[1], &search);
+	(void) StartTagSearch(canvasPtr, argv[1], &search);
 	if (search.prevPtr != NULL) {
 	    DoItem(interp, search.prevPtr, uid);
 	}
@@ -2523,10 +2583,10 @@ FindItems(interp, canvasPtr, argc, argv, newTag, cmdName, option)
 	     * new closest item.
 	     */
 
-	    x1 = (coords[0] - closestDist - halo - 1);
-	    y1 = (coords[1] - closestDist - halo - 1);
-	    x2 = (coords[0] + closestDist + halo + 1);
-	    y2 = (coords[1] + closestDist + halo + 1);
+	    x1 = (int) (coords[0] - closestDist - halo - 1);
+	    y1 = (int) (coords[1] - closestDist - halo - 1);
+	    x2 = (int) (coords[0] + closestDist + halo + 1);
+	    y2 = (int) (coords[1] + closestDist + halo + 1);
 	    closestPtr = itemPtr;
 
 	    /*
@@ -2660,10 +2720,10 @@ FindArea(interp, canvasPtr, argv, uid, enclosed)
      * calling item-specific code except for items that are close.
      */
 
-    x1 = (rect[0]-1.0);
-    y1 = (rect[1]-1.0);
-    x2 = (rect[2]+1.0);
-    y2 = (rect[3]+1.0);
+    x1 = (int) (rect[0]-1.0);
+    y1 = (int) (rect[1]-1.0);
+    x2 = (int) (rect[2]+1.0);
+    y2 = (int) (rect[3]+1.0);
     for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;
 	    itemPtr = itemPtr->nextPtr) {
 	if ((itemPtr->x1 >= x2) || (itemPtr->x2 <= x1)
@@ -3096,10 +3156,10 @@ CanvasFindClosest(canvasPtr, coords)
     Tk_Item *bestPtr;
     int x1, y1, x2, y2;
 
-    x1 = coords[0] - canvasPtr->closeEnough;
-    y1 = coords[1] - canvasPtr->closeEnough;
-    x2 = coords[0] + canvasPtr->closeEnough;
-    y2 = coords[1] + canvasPtr->closeEnough;
+    x1 = (int) (coords[0] - canvasPtr->closeEnough);
+    y1 = (int) (coords[1] - canvasPtr->closeEnough);
+    x2 = (int) (coords[0] + canvasPtr->closeEnough);
+    y2 = (int) (coords[1] + canvasPtr->closeEnough);
 
     bestPtr = NULL;
     for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;

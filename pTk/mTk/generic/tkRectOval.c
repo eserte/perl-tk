@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkRectOval.c 1.39 96/03/02 17:28:06
+ * SCCS: @(#) tkRectOval.c 1.40 96/05/03 10:52:21
  */
 
 #include "tkPort.h"
@@ -464,23 +464,23 @@ ComputeRectOvalBbox(canvas, rectOvalPtr)
      * greater than the lower ones.
      */
 
-    tmp = (rectOvalPtr->bbox[0] >= 0) ? rectOvalPtr->bbox[0] + .5
-	    : rectOvalPtr->bbox[0] - .5;
+    tmp = (int) ((rectOvalPtr->bbox[0] >= 0) ? rectOvalPtr->bbox[0] + .5
+	    : rectOvalPtr->bbox[0] - .5);
     rectOvalPtr->header.x1 = tmp - bloat;
-    tmp = (rectOvalPtr->bbox[1] >= 0) ? rectOvalPtr->bbox[1] + .5
-	    : rectOvalPtr->bbox[1] - .5;
+    tmp = (int) ((rectOvalPtr->bbox[1] >= 0) ? rectOvalPtr->bbox[1] + .5
+	    : rectOvalPtr->bbox[1] - .5);
     rectOvalPtr->header.y1 = tmp - bloat;
     dtmp = rectOvalPtr->bbox[2];
     if (dtmp < (rectOvalPtr->bbox[0] + 1)) {
 	dtmp = rectOvalPtr->bbox[0] + 1;
     }
-    tmp = (dtmp >= 0) ? dtmp + .5 : dtmp - .5;
+    tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
     rectOvalPtr->header.x2 = tmp + bloat;
     dtmp = rectOvalPtr->bbox[3];
     if (dtmp < (rectOvalPtr->bbox[1] + 1)) {
 	dtmp = rectOvalPtr->bbox[1] + 1;
     }
-    tmp = (dtmp >= 0) ? dtmp + .5 : dtmp - .5;
+    tmp = (int) ((dtmp >= 0) ? dtmp + .5 : dtmp - .5);
     rectOvalPtr->header.y2 = tmp + bloat;
 }
 

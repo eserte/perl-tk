@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '2.014'; # $Id: //depot/Tk/Tk/Frame.pm#14$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Frame.pm#4$
 
 sub Menubar;
 

@@ -16,7 +16,7 @@
 
 
 use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#9$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#4$
 
 # The ErrorDialog object essentially consists of two subwidgets: an
 # ErrorDialog widget to display the background error and a Text widget for the
@@ -53,7 +53,7 @@ require Tk::Dialog;
 @Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
 
 use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#9$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#4$
 
 use strict;
 

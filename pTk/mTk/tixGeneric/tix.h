@@ -450,12 +450,8 @@ extern TIX_DECLARE_CMD(Tix_CreateWidgetCmd);
  * Compatibility section
  *----------------------------------------------------------------------	*/
 
-#ifdef NO_STRDUP
 #define strdup tixStrDup
-
-EXTERN char * 		tixStrDup _ANSI_ARGS_((
-			    CONST char * s));
-#endif
+EXTERN char * 		tixStrDup _ANSI_ARGS_((CONST char * s));
 
 #ifdef _WINDOWS
 #ifndef NO_STRCASECMP

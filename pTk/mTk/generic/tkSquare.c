@@ -8,12 +8,12 @@
  *	normal wish, but it is included in "tktest".
  *
  * Copyright (c) 1991-1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkSquare.c 1.17 96/07/23 16:54:29
+ * SCCS: @(#) tkSquare.c 1.19 97/07/31 09:13:13
  */
 
 #include "tkPort.h"
@@ -59,7 +59,7 @@ typedef struct {
 
 static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_BORDER, "-background", "background", "Background",
-	"#cdb79e", Tk_Offset(Square, bgBorder), TK_CONFIG_COLOR_ONLY},
+	"#d9d9d9", Tk_Offset(Square, bgBorder), TK_CONFIG_COLOR_ONLY},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
 	"white", Tk_Offset(Square, bgBorder), TK_CONFIG_MONO_ONLY},
     {TK_CONFIG_SYNONYM, "-bd", "borderWidth", (char *) NULL,
@@ -392,9 +392,8 @@ SquareEventProc(clientData, eventPtr)
     } else if (eventPtr->type == DestroyNotify) {
 	if (squarePtr->tkwin != NULL) {
 	    squarePtr->tkwin = NULL;
-	    Tcl_DeleteCommand(squarePtr->interp,
-		    Tcl_GetCommandName(squarePtr->interp,
-		    squarePtr->widgetCmd));
+	    Tcl_DeleteCommandFromToken(squarePtr->interp,
+		    squarePtr->widgetCmd);
 	}
 	if (squarePtr->updatePending) {
 	    Tcl_CancelIdleCall(SquareDisplay, (ClientData) squarePtr);

@@ -20,7 +20,7 @@ sub MY::postamble
  %{$self->{PM}} = ();
  my $dep = "MANFILES =";
  open(FILE,">MANFILES") || die "Cannot open MANFILES:$!";
- foreach $sec (qw(n 2))
+ foreach $sec (qw(n 2 3))
   {
    my $name;
    foreach $name ($self->lsdir("man$sec"))

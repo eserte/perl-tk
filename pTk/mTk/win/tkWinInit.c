@@ -4,63 +4,27 @@
  *	This file contains Windows-specific interpreter initialization
  *	functions.
  *
- * Copyright (c) 1995 Sun Microsystems, Inc.
+ * Copyright (c) 1995-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinInit.c 1.13 96/03/18 14:22:29
+ * SCCS: @(#) tkWinInit.c 1.29 97/07/24 14:46:35
  */
 
 #include "tkWinInt.h"
 
 /*
- * The following string is the startup script executed in new
- * interpreters.  It looks on disk in several different directories
- * for a script "tk.tcl" that is compatible with this version
- * of Tk.  The tk.tcl script does all of the real work of
- * initialization.
+ * The Init script (common to Windows and Unix platforms) is
+ * defined in tkInitScript.h
  */
+#include "tkInitScript.h"
 
-#if 0
-
-static char *initScript =
-"proc init {} {\n\
-    global tk_library tk_version tk_patchLevel env\n\
-    rename init {}\n\
-    set dirs {}\n\
-    if [info exists env(TK_LIBRARY)] {\n\
-	lappend dirs $env(TK_LIBRARY)\n\
-    }\n\
-    lappend dirs $tk_library\n\
-    lappend dirs [file dirname [info library]]/lib/tk$tk_version\n\
-    lappend dirs [file dirname [file dirname [info nameofexecutable]]]/lib/tk$tk_version\n\
-    if [string match {*[ab]*} $tk_patchLevel] {\n\
-	set lib tk$tk_patchLevel\n\
-    } else {\n\
-	set lib tk$tk_version\n\
-    }\n\
-    lappend dirs [file dirname [file dirname [pwd]]]/$lib/library\n\
-    lappend dirs [file dirname [pwd]]/library\n\
-    foreach i $dirs {\n\
-	set tk_library $i\n\
-	if ![catch {uplevel #0 source [list $i/tk.tcl]}] {\n\
-	    return\n\
-	}\n\
-    }\n\
-    set msg \"Can't find a usable tk.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\"\n\
-    append msg \"This probably means that Tk wasn't installed properly.\n\"\n\
-    error $msg\n\
-}\n\
-init";
-
-#endif 
 
 /*
  *----------------------------------------------------------------------
  *
- * TkPlatformInit --
+ * TkpInit --
  *
  *	Performs Windows-specific interpreter initialization related to the
  *      tk_library variable.
@@ -76,22 +40,82 @@ init";
  */
 
 int
-TkPlatformInit(interp)
+TkpInit(interp)
     Tcl_Interp *interp;
 {
-    char *libDir;
-    Var variable;
-
-   variable = LangFindVar( interp, NULL,  "tk_library");
-   libDir = LangString(Tcl_GetVar(interp, variable, TCL_GLOBAL_ONLY));
-   if (libDir == NULL || *libDir == '\0') {
-      Tcl_SetVar(interp, variable, TK_LIBRARY, TCL_GLOBAL_ONLY);
-   }
-   LangFreeVar(variable);
-
-#if 0
     return Tcl_Eval(interp, initScript);
-#else
-    return TCL_OK;
-#endif 
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpGetAppName --
+ *
+ *	Retrieves the name of the current application from a platform
+ *	specific location.  For Windows, the application name is the
+ *	root of the tail of the path contained in the tcl variable argv0.
+ *
+ * Results:
+ *	Returns the application name in the given Tcl_DString.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpGetAppName(interp, namePtr)
+    Tcl_Interp *interp;
+    Tcl_DString *namePtr;	/* A previously initialized Tcl_DString. */
+{
+    int argc;
+    char **argv = NULL, *name, *p;
+
+    name = Tcl_GetVar(interp, "argv0", TCL_GLOBAL_ONLY);
+    if (name != NULL) {
+	Tcl_SplitPath(name, &argc, &argv);
+	if (argc > 0) {
+	    name = argv[argc-1];
+	    p = strrchr(name, '.');
+	    if (p != NULL) {
+		*p = '\0';
+	    }
+	} else {
+	    name = NULL;
+	}
+    }
+    if ((name == NULL) || (*name == 0)) {
+	name = "tk";
+    }
+    Tcl_DStringAppend(namePtr, name, -1);
+    if (argv != NULL) {
+	ckfree((char *)argv);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkpDisplayWarning --
+ *
+ *	This routines is called from Tk_Main to display warning
+ *	messages that occur during startup.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Displays a message box.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkpDisplayWarning(msg, title)
+    char *msg;			/* Message to be displayed. */
+    char *title;		/* Title of warning. */
+{
+    MessageBox(NULL, msg, title, MB_OK | MB_ICONEXCLAMATION | MB_SYSTEMMODAL
+	    | MB_SETFOREGROUND | MB_TOPMOST);
 }

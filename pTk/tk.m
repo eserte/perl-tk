@@ -58,6 +58,10 @@
 #  define Tk_ChangeWindowAttributes (*TkVptr->V_Tk_ChangeWindowAttributes)
 #endif
 
+#ifndef Tk_CharBbox
+#  define Tk_CharBbox (*TkVptr->V_Tk_CharBbox)
+#endif
+
 #ifndef Tk_ClearSelection
 #  define Tk_ClearSelection (*TkVptr->V_Tk_ClearSelection)
 #endif
@@ -68,6 +72,10 @@
 
 #ifndef Tk_ClipboardClear
 #  define Tk_ClipboardClear (*TkVptr->V_Tk_ClipboardClear)
+#endif
+
+#ifndef Tk_ComputeTextLayout
+#  define Tk_ComputeTextLayout (*TkVptr->V_Tk_ComputeTextLayout)
 #endif
 
 #ifndef Tk_ConfigureInfo
@@ -178,6 +186,10 @@
 #  define Tk_DisplayName (*TkVptr->V_Tk_DisplayName)
 #endif
 
+#ifndef Tk_DistanceToTextLayout
+#  define Tk_DistanceToTextLayout (*TkVptr->V_Tk_DistanceToTextLayout)
+#endif
+
 #ifndef Tk_Draw3DPolygon
 #  define Tk_Draw3DPolygon (*TkVptr->V_Tk_Draw3DPolygon)
 #endif
@@ -186,8 +198,16 @@
 #  define Tk_Draw3DRectangle (*TkVptr->V_Tk_Draw3DRectangle)
 #endif
 
+#ifndef Tk_DrawChars
+#  define Tk_DrawChars (*TkVptr->V_Tk_DrawChars)
+#endif
+
 #ifndef Tk_DrawFocusHighlight
 #  define Tk_DrawFocusHighlight (*TkVptr->V_Tk_DrawFocusHighlight)
+#endif
+
+#ifndef Tk_DrawTextLayout
+#  define Tk_DrawTextLayout (*TkVptr->V_Tk_DrawTextLayout)
 #endif
 
 #ifndef Tk_EventCmd
@@ -210,6 +230,14 @@
 #  define Tk_Fill3DRectangle (*TkVptr->V_Tk_Fill3DRectangle)
 #endif
 
+#ifndef Tk_FontId
+#  define Tk_FontId (*TkVptr->V_Tk_FontId)
+#endif
+
+#ifndef Tk_FontObjCmd
+#  define Tk_FontObjCmd (*TkVptr->V_Tk_FontObjCmd)
+#endif
+
 #ifndef Tk_Free3DBorder
 #  define Tk_Free3DBorder (*TkVptr->V_Tk_Free3DBorder)
 #endif
@@ -230,8 +258,8 @@
 #  define Tk_FreeCursor (*TkVptr->V_Tk_FreeCursor)
 #endif
 
-#ifndef Tk_FreeFontStruct
-#  define Tk_FreeFontStruct (*TkVptr->V_Tk_FreeFontStruct)
+#ifndef Tk_FreeFont
+#  define Tk_FreeFont (*TkVptr->V_Tk_FreeFont)
 #endif
 
 #ifndef Tk_FreeGC
@@ -248,6 +276,10 @@
 
 #ifndef Tk_FreePixmap
 #  define Tk_FreePixmap (*TkVptr->V_Tk_FreePixmap)
+#endif
+
+#ifndef Tk_FreeTextLayout
+#  define Tk_FreeTextLayout (*TkVptr->V_Tk_FreeTextLayout)
 #endif
 
 #ifndef Tk_FreeXId
@@ -314,8 +346,16 @@
 #  define Tk_GetCursorFromData (*TkVptr->V_Tk_GetCursorFromData)
 #endif
 
-#ifndef Tk_GetFontStruct
-#  define Tk_GetFontStruct (*TkVptr->V_Tk_GetFontStruct)
+#ifndef Tk_GetFont
+#  define Tk_GetFont (*TkVptr->V_Tk_GetFont)
+#endif
+
+#ifndef Tk_GetFontFromObj
+#  define Tk_GetFontFromObj (*TkVptr->V_Tk_GetFontFromObj)
+#endif
+
+#ifndef Tk_GetFontMetrics
+#  define Tk_GetFontMetrics (*TkVptr->V_Tk_GetFontMetrics)
 #endif
 
 #ifndef Tk_GetGC
@@ -324,6 +364,10 @@
 
 #ifndef Tk_GetImage
 #  define Tk_GetImage (*TkVptr->V_Tk_GetImage)
+#endif
+
+#ifndef Tk_GetImageMasterData
+#  define Tk_GetImageMasterData (*TkVptr->V_Tk_GetImageMasterData)
 #endif
 
 #ifndef Tk_GetJoinStyle
@@ -402,6 +446,10 @@
 #  define Tk_InternAtom (*TkVptr->V_Tk_InternAtom)
 #endif
 
+#ifndef Tk_IntersectTextLayout
+#  define Tk_IntersectTextLayout (*TkVptr->V_Tk_IntersectTextLayout)
+#endif
+
 #ifndef Tk_MainLoop
 #  define Tk_MainLoop (*TkVptr->V_Tk_MainLoop)
 #endif
@@ -424,6 +472,10 @@
 
 #ifndef Tk_MapWindow
 #  define Tk_MapWindow (*TkVptr->V_Tk_MapWindow)
+#endif
+
+#ifndef Tk_MeasureChars
+#  define Tk_MeasureChars (*TkVptr->V_Tk_MeasureChars)
 #endif
 
 #ifndef Tk_MoveResizeWindow
@@ -462,8 +514,8 @@
 #  define Tk_NameOfCursor (*TkVptr->V_Tk_NameOfCursor)
 #endif
 
-#ifndef Tk_NameOfFontStruct
-#  define Tk_NameOfFontStruct (*TkVptr->V_Tk_NameOfFontStruct)
+#ifndef Tk_NameOfFont
+#  define Tk_NameOfFont (*TkVptr->V_Tk_NameOfFont)
 #endif
 
 #ifndef Tk_NameOfImage
@@ -488,6 +540,14 @@
 
 #ifndef Tk_OwnSelection
 #  define Tk_OwnSelection (*TkVptr->V_Tk_OwnSelection)
+#endif
+
+#ifndef Tk_PointToChar
+#  define Tk_PointToChar (*TkVptr->V_Tk_PointToChar)
+#endif
+
+#ifndef Tk_PostscriptFontName
+#  define Tk_PostscriptFontName (*TkVptr->V_Tk_PostscriptFontName)
 #endif
 
 #ifndef Tk_PreserveColormap
@@ -574,8 +634,16 @@
 #  define Tk_StrictMotif (*TkVptr->V_Tk_StrictMotif)
 #endif
 
-#ifndef Tk_TkCmd
-#  define Tk_TkCmd (*TkVptr->V_Tk_TkCmd)
+#ifndef Tk_TextLayoutToPostscript
+#  define Tk_TextLayoutToPostscript (*TkVptr->V_Tk_TextLayoutToPostscript)
+#endif
+
+#ifndef Tk_TextWidth
+#  define Tk_TextWidth (*TkVptr->V_Tk_TextWidth)
+#endif
+
+#ifndef Tk_TkObjCmd
+#  define Tk_TkObjCmd (*TkVptr->V_Tk_TkObjCmd)
 #endif
 
 #ifndef Tk_ToplevelCmd
@@ -584,6 +652,14 @@
 
 #ifndef Tk_UndefineCursor
 #  define Tk_UndefineCursor (*TkVptr->V_Tk_UndefineCursor)
+#endif
+
+#ifndef Tk_UnderlineChars
+#  define Tk_UnderlineChars (*TkVptr->V_Tk_UnderlineChars)
+#endif
+
+#ifndef Tk_UnderlineTextLayout
+#  define Tk_UnderlineTextLayout (*TkVptr->V_Tk_UnderlineTextLayout)
 #endif
 
 #ifndef Tk_Ungrab
@@ -600,6 +676,10 @@
 
 #ifndef Tk_UnsetGrid
 #  define Tk_UnsetGrid (*TkVptr->V_Tk_UnsetGrid)
+#endif
+
+#ifndef Tk_WinfoObjCmd
+#  define Tk_WinfoObjCmd (*TkVptr->V_Tk_WinfoObjCmd)
 #endif
 
 #endif /* NO_VTABLES */

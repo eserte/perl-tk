@@ -1,13 +1,13 @@
 use Cwd;
 use Config;
 no  lib '.';
-require 5.004;
 BEGIN 
- {
-  $IsWin32   = $^O eq 'MSWin32';
-  $VERSION = '402.004';
+ {        
+  $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $win_arch = ($IsWin32) ? $^O : 'x';		# Currently 'x' and 'open32' supported
+  $VERSION = '800.000';
+
+  $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
   require "./myConfig";
   use lib ($Tk::MMutil::dir=getcwd);
@@ -33,11 +33,27 @@ else
     $libs .= " $lib" if ($plibs =~ /$lib\b/);
    }
   @libs = ("$libs");
+ }   
+
+my %dir;
+opendir(DIR,'.') || die "Cannot opendir:$!";
+foreach my $dir (readdir(DIR))
+ {
+  next if $dir =~ /^\.\.?$/;
+  next if -l $dir;
+  next unless -d $dir;
+  if (-f "$dir/Makefile.PL")
+   {
+    $dir{$dir} = 1 unless ($IsWin32 && -f "$dir/NotWin.exc"); 
+   }
  }
+closedir(DIR);
+delete $dir{'pTk'};
 
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
     'NAME'     => 'Tk',
+    'DIR'      => ['pTk',reverse(sort(keys %dir))],
     'DISTNAME' => "Tk",
     'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)' . ($win_arch eq 'open32'
 					    ? ' pTk/dllInit$(LIB_EXT)'
@@ -100,10 +116,10 @@ sub MY::post_initialize
   {
    $self->{PM}->{$name} = $self->catfile($dir,$name);
   }
- if ($^O eq 'MSWin32')
+ if ($IsWin32)
   {
+   push(@{$self->{'O_FILES'}},'pTk\tkWin32Dll$(OBJ_EXT)');
    if ($Config{cc} =~ /^bcc/i) {
-     push(@{$self->{'O_FILES'}},'pTk\tkWin32Dll.obj');
      $ret .= "\nRESFILES = pTk\\tk.res\n";
    }
    else {
@@ -123,7 +139,6 @@ config       :: tkGlue.t
 	@$(NOOP)
 
 $(BASEEXT)$(OBJ_EXT) : tkGlue.h
-tkGlue$(OBJ_EXT)     : tkGlue.c tkGlue.h pTk/Methods.def tkGlue.t
 Makefile     : myConfig
 
 tkGlue.t     : tkGlue.h pTk/mkVFunc
@@ -134,13 +149,15 @@ $(MYEXTLIB)  : config FORCE
 
 perlmain.c : config Makefile
 
-pTk/Methods.def : $(MYEXTLIB)
-pTk/tk.res      : $(MYEXTLIB)
+pTk/tk.res : $(MYEXTLIB) 
+
+pTk/tkWin32dll$(OBJ_EXT) : 
+	@$(NOOP)
+
+basic      : $(INST_DYNAMIC) pm_to_blib 
 
 MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
 	$(MAKE) manifest 
-
-ready    : $(INST_DYNAMIC)
 
 ';
 }

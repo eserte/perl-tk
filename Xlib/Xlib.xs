@@ -24,6 +24,18 @@ DECLARE_VTABLES;
    of args and/or passing in array refs
 */
 
+/* Now we have some sneakyness for Benefit of Win32.
+ * As we have tkVMacro.h above any function which exists
+ * should be #define'd so we can test for existance.
+ */
+
+#ifndef XLoadFont
+#define XLoadFont(dpy,name) None
+#endif
+
+#ifndef XDrawString
+#define XDrawString(dpy,win,gc,x,y,string,len)
+#endif
 
 static IV
 SvGCIVOBJ(class,sv)

@@ -550,7 +550,7 @@ TixGetDefaultDItemStyle(ddPtr, diTypePtr, iPtr, oldStylePtr)
 	/*
 	 * Create the new style
 	 */
-	stylePtr = GetDItemStyle(ddPtr, diTypePtr, dString.string, &isNew);
+	stylePtr = GetDItemStyle(ddPtr, diTypePtr, Tcl_DStringValue(&dString), &isNew);
 	if (isNew) {
 	    diTypePtr->styleConfigureProc(stylePtr, 0, NULL, 0);
 	    stylePtr->base.flags |= TIX_STYLE_DEFAULT;

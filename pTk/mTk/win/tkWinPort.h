@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinPort.h 1.12 96/10/02 15:40:59
+ * SCCS: @(#) tkWinPort.h 1.25 97/04/21 17:08:42
  */
 
 #ifndef _WINPORT
@@ -39,15 +39,15 @@
 #include <time.h>
 
 #ifdef _MSC_VER
-#    define strncasecmp strnicmp
 #    define hypot _hypot
 #else /* _MSC_VER */
 #    ifdef __EMX__
 #        define strncasecmp strnicmp
-#    else
-#        define strncasecmp strncmpi
 #    endif
 #endif /* _MSC_VER */
+
+#define strncasecmp strnicmp
+#define strcasecmp stricmp
 
 #define NBBY 8
 
@@ -77,12 +77,14 @@
 
 #define TkFreeWindowId(dispPtr,w)
 #define TkInitXId(dispPtr)
+#define TkpCmapStressed(tkwin,colormap) (0)
 #define XFlush(display)
 #define XGrabServer(display)
 #define XUngrabServer(display)
+#define TkpSync(display)
 
 /*
- * The following X functions are implemented as macros under Windows.
+ * The following functions are implemented as macros under Windows.
  */
 
 #define XFree(data) {if ((data) != NULL) ckfree((char *) (data));}
@@ -105,6 +107,17 @@
  */
 
 #define TkGetNativeProlog(interp) TkGetProlog(interp)
+#define TkpGetPixel(p) (((((p)->red >> 8) & 0xff) \
+	| ((p)->green & 0xff00) | (((p)->blue << 8) & 0xff0000)) | 0x20000000)
+
+/*
+ * These calls implement native bitmaps which are not currently 
+ * supported under Windows.  The macros eliminate the calls.
+ */
+
+#define TkpDefineNativeBitmaps()
+#define TkpCreateNativeBitmap(display, source) None
+#define TkpGetNativeAppBitmap(display, name, w, h) None
 
 /*
  * Define timezone for gettimeofday.
@@ -116,9 +129,10 @@ struct timezone {
 };
 #else
 struct timezone;
+struct timeval;
 #endif 
 
 extern int gettimeofday(struct timeval *, struct timezone *);
-extern void panic();
+EXTERN void		panic _ANSI_ARGS_(TCL_VARARGS(char *,format));
 
 #endif /* _WINPORT */

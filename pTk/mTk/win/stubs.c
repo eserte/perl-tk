@@ -14,7 +14,7 @@
 int
 _XInitImageFuncPtrs(XImage *image)
 {
-    return NULL;
+    return 0;
 }
 
 /*
@@ -29,13 +29,13 @@ XSetWMClientMachine(display, w, text_prop)
 {
 }
 
-Status
+int
 XStringListToTextProperty(list, count, text_prop_return)
     char** list;
     int count;
     XTextProperty* text_prop_return;
 {
-    return NULL;
+    return (int) NULL;
 }
 
 /*
@@ -86,7 +86,7 @@ XCreatePixmapCursor(display, source, mask, foreground_color,
     unsigned int x;
     unsigned int y;
 {
-    return NULL;
+    return (Cursor) NULL;
 }
 
 void
@@ -108,7 +108,7 @@ XFilterEvent(event, window)
     XEvent* event;
     Window window;
 {
-    return NULL;
+    return 0;
 }
 
 extern void XForceScreenSaver(display, mode)
@@ -128,7 +128,7 @@ GContext
 XGContextFromGC(gc)
     GC gc;
 {
-    return NULL;
+    return (GContext) NULL;
 }
 
 char *
@@ -140,53 +140,22 @@ XGetAtomName(display, atom)
 }
 
 int
-XGetGeometry(display, d, root_return, x_return, y_return, width_return,
-	height_return, border_width_return, depth_return)
-    Display* display;
-    Drawable d;
-    Window* root_return;
-    int* x_return;
-    int* y_return;
-    unsigned int* width_return;
-    unsigned int* height_return;
-    unsigned int* border_width_return;
-    unsigned int* depth_return;
-{
-    return NULL;
-}
-
-XImage *
-XGetImage(display, d, x, y, width, height, plane_mask, format)
-    Display* display;
-    Drawable d;
-    int x;
-    int y;
-    unsigned int width;
-    unsigned int height;
-    unsigned long plane_mask;
-    int	format;
-{
-    return NULL;
-}
-
-
-int
 XGetWindowAttributes(display, w, window_attributes_return)
     Display* display;
     Window w;
     XWindowAttributes* window_attributes_return;
 {
-    return NULL;
+    return 0;
 }
 
-Status
+int
 XGetWMColormapWindows(display, w, windows_return, count_return)
     Display* display;
     Window w;
     Window** windows_return;
     int* count_return;
 {
-    return NULL;
+    return (int) NULL;
 }
 
 int
@@ -195,7 +164,7 @@ XIconifyWindow(display, w, screen_number)
     Window w;
     int screen_number;
 {
-    return NULL;
+    return 0;
 }
 
 XHostAddress *
@@ -216,7 +185,7 @@ XLookupColor(display, colormap, color_name, exact_def_return,
     XColor* exact_def_return;
     XColor* screen_def_return;
 {
-    return NULL;
+    return 0;
 }
 
 void
@@ -252,7 +221,7 @@ XQueryTree(display, w, root_return, parent_return, children_return,
     Window** children_return;
     unsigned int* nchildren_return;
 {
-    return NULL;
+    return 0;
 }
 
 void
@@ -266,7 +235,7 @@ XRootWindow(display, screen_number)
     Display* display;
     int screen_number;
 {
-    return NULL;
+    return (Window) NULL;
 }
 
 void
@@ -285,7 +254,7 @@ XSendEvent(display, w, propagate, event_mask, event_send)
     long event_mask;
     XEvent* event_send;
 {
-    return NULL;
+    return 0;
 }
 
 void
@@ -310,24 +279,6 @@ XSetIconName(display, w, icon_name)
     Window w;
     _Xconst char* icon_name;
 {
-}
-
-void
-XSetTransientForHint(display, w, prop_window)
-    Display* display;
-    Window w;
-    Window prop_window;
-{
-}
-
-int
-XSetWMColormapWindows(display, w, colormap_windows, count)
-    Display* display;
-    Window w;
-    Window* colormap_windows;
-    int count;
-{
-    return 0;
 }
 
 void
@@ -419,7 +370,7 @@ XmbLookupString(ic, event, buffer_return, bytes_buffer, keysym_return,
     char* buffer_return;
     int bytes_buffer;
     KeySym* keysym_return;
-    Status* status_return;
+    int* status_return;
 {
     return 0;
 }
@@ -446,115 +397,7 @@ XGetWindowProperty(display, w, property, long_offset, long_length, delete,
     *nitems_return = 0;
     *bytes_after_return = 0;
     *prop_return = NULL;
-    return 0;			/* failure */
-}
-
-/* Seen from Lang_f.c : */
-void XUnionRectWithRegion(
-    XRectangle*		rectangle,
-    Region		src_region,
-    Region		dest_region_return
-) {}
-
-/* tix and hacks */
-
-#if 0 /* is in xgc.obj */
-void XChangeGC(
-    Display*		display ,
-    GC			gc,
-    unsigned long	valuemask,
-    XGCValues*		values
-    ) {
-    panic("Not implemented: XChangeGC");
-}
-#endif
-
-#if 0 /* copied from Tix to tkWinDraw.c */
-void XDrawPoints(
-    Display*		display,
-    Drawable		d,
-    GC			gc,
-    XPoint*		points,
-    int			npoints,
-    int			mode
-    ) {
-    panic("Not implemented: XDrawPoints");
-}
-#endif
-
-extern Window XCreateWindow(
-    Display*		display,
-    Window		parent,
-    int			x,
-    int			y,
-    unsigned int	width,
-    unsigned int	height,
-    unsigned int	border_width,
-    int			depth,
-    unsigned int	class,
-    Visual*		visual,
-    unsigned long	valuemask,
-    XSetWindowAttributes*	attributes
-    ) {
-    panic("Not implemented: XCreateWindow");
-    return NULL;
-}
-
-/* Used in some new cases in tk*Wm. */
-
-void XReparentWindow(
-    Display*		display,
-    Window		w,
-    Window		parent,
-    int			x,
-    int			y
-    ) {
-    panic("Not implemented: XReparentWindow");
-}
-
-Atom *XListProperties(
-    Display*		display,
-    Window		w,
-    int*		num_prop_return
-    ) {
-    *num_prop_return = 0;
-    return NULL;
-}
-
-Window XGetSelectionOwner(
-    Display*		display,
-    Atom		selection
-    ) {
-    return NULL;
-}
-
-int
-TkSelCvtToX(propPtr, string, type, tkwin, maxBytes)
-    long *propPtr;
-    char *string;		/* String representation of selection. */
-    Atom type;			/* Atom specifying the X format that is
-				 * desired for the selection.  Should not
-				 * be XA_STRING (if so, don't bother calling
-				 * this procedure at all). */
-    Tk_Window tkwin;		/* Window that governs atom conversion. */
-    int maxBytes;		/* Number of 32-bit words contained in the
-				 * result. */
-{
-    panic("Not implemented: TkSelCvtToX");
-    return 0;
-}
-
-char *
-TkSelCvtFromX(propPtr, numValues, type, tkwin)
-    register long *propPtr;	/* Property value from X. */
-    int numValues;		/* Number of 32-bit values in property. */
-    Atom type;			/* Type of property  Should not be
-				 * XA_STRING (if so, don't bother calling
-				 * this procedure at all). */
-    Tk_Window tkwin;		/* Window to use for atom conversion. */
-{
-    panic("Not implemented: TkSelCvtFromX");
-    return NULL;
+    return BadValue;
 }
 
 

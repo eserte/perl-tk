@@ -11,7 +11,7 @@ require DynaLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Tk/Image.pm#9$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Image.pm#4$
 
 sub new
 {
