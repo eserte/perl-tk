@@ -7,7 +7,7 @@ sub style {
     # Create a top-level window with a text widget that demonstrates 
     # the various display styles that are available in texts.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     =>'',				      

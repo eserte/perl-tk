@@ -1,11 +1,18 @@
 #ifndef _TKGLUE
 #define _TKGLUE
 
+#ifndef BASEEXT
+#define BASEEXT "Tk"
+#endif
+
 #ifndef _TKOPTION
 #include "pTk/tkOption.h"
 #include "pTk/tkOption_f.h"
 #endif
 
+#ifndef dTHR
+#define dTHR int maybeTHR
+#endif
 
 typedef struct Lang_CmdInfo 
  {Tcl_CmdInfo Tk;

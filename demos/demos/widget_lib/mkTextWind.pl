@@ -50,13 +50,13 @@ sub textWindPlot {
     }
 
     $mkTextWind_c->bind('point', '<Any-Enter>' => [sub {
-	shift->itemconfigure(@ARG);
+	shift->itemconfigure(@_);
     }, qw(current -fill red)]);
     $mkTextWind_c->bind('point', '<Any-Leave>' => [sub {
-	shift->itemconfigure(@ARG);
+	shift->itemconfigure(@_);
     }, qw(current -fill SkyBlue2)]);
     $mkTextWind_c->bind('point', '<1>' => sub {
-	my($c, $e) = @ARG;
+	my($c, $e) = @_;
         my $e = $c->XEvent;
 	embPlotDown($c, $e->x, $e->y);
     });
@@ -64,7 +64,7 @@ sub textWindPlot {
         shift->dtag('selected');
     });
     $mkTextWind_c->Tk::bind('<B1-Motion>' => sub {
-	my($c, $e) = @ARG;
+	my($c, $e) = @_;
         my $e = $c->XEvent;
 	embPlotMove($c, $e->x, $e->y);
     });
@@ -99,7 +99,7 @@ $mkTextWind::embPlot{'lastY'} = 0;
 
 sub embPlotDown {
     
-    my($w, $x, $y) = @ARG;
+    my($w, $x, $y) = @_;
 
     $w->dtag('selected');
     $w->addtag('selected', 'withtag', 'current');
@@ -112,7 +112,7 @@ sub embPlotDown {
 
 sub embPlotMove {
 
-    my($w, $x, $y) = @ARG;
+    my($w, $x, $y) = @_;
 
     $w->move('selected', $x - $mkTextWind::embPlot{'lastX'}, $y - $mkTextWind::embPlot{'lastY'});
     $mkTextWind::embPlot{'lastX'} = $x;
@@ -123,7 +123,7 @@ sub embPlotMove {
 
 sub embDefBg {
 
-    my($t) = @ARG;
+    my($t) = @_;
 
     $t->configure(-background => ($t->configure(-background))[3]);
 
@@ -205,7 +205,7 @@ sub mkTextWind {
 	my $color_name = "w_t_color${i}";
 	${$color_name} = $mkTextWind::w_t->Button(-text => "$color", -cursor => 'top_left_arrow');
         ${$color_name}->configure(-command => [sub {
-	    shift->configure(@ARG);
+	    shift->configure(@_);
 	}, $mkTextWind::w_t, -background => $color]);
         $mkTextWind::w_t->window('create', 'end', -window => ${$color_name}, -padx => 3, -pady => 2);
         $i++;

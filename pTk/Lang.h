@@ -28,6 +28,10 @@ typedef long fd_mask;
 #   define strcasecmp stricmp
 #endif
 
+#ifdef USE_BCOPY
+#define memmove(dst,src,len) bcopy(src,len,dst)
+#endif
+
 /*
  * When version numbers change here, must also go into the following files
  * and update the version numbers:

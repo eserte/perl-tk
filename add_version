@@ -1,77 +1,125 @@
 #!/usr/local/bin/perl -w
+use strict;
 use File::Find;
+use Getopt::Std;
+use Cwd;
+my %opt = ('p' => '2');
+getopts('oap:',\%opt);
+my $path = getcwd();
+chdir($path);
+$path = getcwd();
+my $dep;
+my $rel;
+my $wh = `p4 where ./...`;
 
-my @opened = `p4 opened .`; 
-if (@opened)
+if ($wh =~ m#^\s*(.*)/\.\.\.\s+(.*)/\.\.\.\s*$#)
+ {            
+  $dep  = $1;
+  $rel  = $2;
+ }
+else
  {
-  print @opened;
-  die "Cannot proceeed with opened files\n";
+  die $wh;
  }
 
-find(sub 
-     { 
-      $File::Find::prune = 1 if (/^blib$/);
-      push(@ARGV,$File::Find::name) if (/\.pm$/) 
-     },'.');
+if ($opt{'o'})
+ {
+  foreach (`p4 opened`)
+   {           
+    unless (s#^\Q$dep\E#$path#)
+     {
+      warn "Not under $path : $_";
+      next; 
+     }
+    unless (/\(kx?text\)/)
+     {
+      warn "Not ktext : $_";
+      next; 
+     }
+    chomp;
+    s/#\d+\s+-.*$//;
+    push(@ARGV,$_);
+   }
+ }
+elsif ($opt{'a'})
+ {
+  find(sub    
+       {      
+        $File::Find::prune = 1 if (/^blib$/);
+        push(@ARGV,$File::Find::name) if (/\.pm$/) 
+       },'.');
+ }
+
+unless (@ARGV)
+ {
+  warn "No files specified\n";
+  exit;
+ }
 
 my @undo = ();
 
-foreach (@ARGV)
- {
-  system('p4','edit','-t','ktext',$_) unless (-w $_);
- }
-
 $^I = ".old";
-my $done = 0;
+my $seen = 0;
+my $edit = 0;
 while (<>)
  {
   if (/^(\$VERSION\s*=\s*'\d+\.)(\d+)('\s*;.*\$Id:.*#(\d+)\$.*)$/)
-   {
-    if ($2 != $4)
+   {            
+    $seen = 1;
+    my $ver  = $2;
+    my $need = (-w $ARGV) ? $4+1 : $4;
+    if ($ver != $need)
      {
-      warn "$ARGV:$_";
-      $_ = sprintf("$1%03d$3\n",$4+1);
-      warn $_;
+      $_ = sprintf("$1%03d$3\n",$need);
+      warn "$ARGV:$_";                        
+      $edit = 1;
      }        
-    else      
-     {        
-      push(@undo,$ARGV);
-     }        
-    $done = 2;
    }
   elsif (/\$[\w:]*VERSION\s*=/)
    {
-    if ($done == 1)
+    if ($seen == 1)
      {
-      warn "$ARGV already had $_";
-      push(@undo,$ARGV);
+      warn "DUPLICATE $ARGV already had $_";
      }
    }
   elsif (/\$Id:/ || m#//depot#)
    {
     warn "Did not match:$_";
    }
-  elsif (!$done && /^\s*(\@ISA|bootstrap|use\s(Tk))|sub/)
+  elsif (!$seen && /^\s*(\@ISA|bootstrap|use\s(Tk))|sub/)
    {
-    # warn "$ARGV:$.:$_";
-    $done = 1;
+    my $have = `p4 have $ARGV`;
+    my ($dep,$ver)  = $have =~ /^(.*#(\d+))\s+-/;
+    ++$ver;
+    warn "$ARGV:$.:insert before\n$_\n";
     print "\nuse vars qw(\$VERSION);\n";
-    print "\$VERSION = '2.000'; # \$Id:\$\n\n";
+    printf "\$VERSION = '%d.%03d'; # \$Id: $dep\$\n\n",$opt{'p'},$ver;
+    $seen = $edit = 1;
    }
   print;
-  if (!$done && (eof || /__END__/))
+  if (!$seen && (eof || /__END__/))
    {
-    warn "No point found in $ARGV\n";
-    $done = 1;
+    warn "No insert point found in $ARGV\n";
+    $seen = 1;
    }
   if (eof)
-   {
-    $done = 0;
+   {        
+    if ($edit)
+     {
+      system('p4','edit','-t','ktext',$ARGV) unless -w $ARGV;
+     }        
+    else
+     {
+      push(@undo,$ARGV);
+     }
+    $seen = $edit = 0;
     $.    = 0;
    }
  }
 
-foreach (@undo)
- {
-  system('p4','revert',$_);
+foreach my $file (@undo)
+ {            
+  chmod(0666,$file) unless -w $file;
+  unlink($file);
+  rename("$file$^I",$file);
  }

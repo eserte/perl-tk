@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Derived;
@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '2.015'; # $Id: //depot/Tk/Tk/Derived.pm#15$
+$VERSION = '2.017'; # $Id: //depot/Tk/Tk/Derived.pm#17$
 
 
 

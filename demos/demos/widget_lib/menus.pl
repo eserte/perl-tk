@@ -8,7 +8,7 @@ sub menus {
     # This demonstration script creates a window with a bunch of menus
     # and cascaded menus.
 
-    my ($demo) = @ARG;
+    my ($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
 	-text     => '',
@@ -164,7 +164,7 @@ sub menus_error {
     # Generate a background error, which may even be displayed in a window if
     # using ErrorDialog. 
 
-    my($msg) = @ARG;
+    my($msg) = @_;
 
     $msg = "This is just a demo: no action has been defined for \"$msg\".";
     $TOP->BackTrace($msg);

@@ -34,7 +34,7 @@ sub mkVScale {
 
 sub setHeight {
 
-    my($w, $height) = @ARG;
+    my($w, $height) = @_;
 
     $height += 21;
     $y2 = $height - 30;

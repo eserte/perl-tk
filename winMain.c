@@ -19,9 +19,11 @@
 #include <stdlib.h>
 
 #include <stdio.h>
-#include <win32io.h>
 
+#if 0
+#include <win32io.h>
 extern __declspec(dllimport) WIN32_IOSUBSYSTEM	win32stdio;
+#endif
 extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 
 
@@ -149,7 +151,7 @@ WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     GetModuleFileName(NULL, buffer, sizeof(buffer));
     argv[0] = buffer;
 
-    return (RunPerl(argc, argv, _environ, &win32stdio));
+    return (RunPerl(argc, argv, _environ, NULL));
 }
 
 #endif

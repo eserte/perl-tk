@@ -1,7 +1,7 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in Tk/license.terms due to partial
@@ -37,7 +37,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.2";
 $Tk::patchLevel  = "4.2";
-$Tk::VERSION     = '402.003';
+$Tk::VERSION     = '402.004';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}

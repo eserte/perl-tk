@@ -7,7 +7,7 @@ sub colors {
     # Create a top-level window containing a listbox showing a bunch of 
     # colors from the X color database.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'A listbox containing several color names is displayed below, along with a scrollbar.  You can scan the list either using the scrollbar or by dragging in the listbox window with button 2 pressed.  If you double-click button 1 on a color, then the application\'s color palette will be set to match that color.',
@@ -22,7 +22,7 @@ sub colors {
 
     $list->bind('<Double-1>' => 
         sub  {
-	    $ARG[0]->setPalette($ARG[0]->get('active'));
+	    $_[0]->setPalette($_[0]->get('active'));
 	},
     );
 

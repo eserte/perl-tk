@@ -7,7 +7,7 @@ sub bitmaps {
 
     # Create a top-level window that displays all of Tk's built-in bitmaps.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This window displays all of Tk\'s built-in bitmaps, along with the names you can use for them in Perl scripts.',
@@ -27,7 +27,7 @@ sub bitmaps_row {
  
     # The procedure below creates a new row of bitmaps in a window.
 
-    my($w, @names) = @ARG;
+    my($w, @names) = @_;
 
     my $row = $w->Frame->pack(qw/-side top -fill both/);
 

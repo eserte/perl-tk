@@ -8,7 +8,7 @@ sub cscroll {
     # Create a top-level window containing a simple canvas that can be
     # scrolled in two dimensions.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This window displays a canvas widget that can be scrolled either using the scrollbars or by dragging with button 2 in the canvas.  If you click button 1 on one of the rectangles, its indices will be printed on stdout.',
@@ -43,12 +43,12 @@ sub cscroll {
     $c->bind('all', '<1>' => \&cscroll_button);
 
     $c->CanvasBind('<2>' => sub {
-	my ($c) = @ARG;
+	my ($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('mark', $e->x, $e->y);
     });
     $c->CanvasBind('<B2-Motion>' => sub {
-	my ($c) = @ARG;
+	my ($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
     });
@@ -57,7 +57,7 @@ sub cscroll {
 
 sub cscroll_button {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $id = $c->find(qw/withtag current/);
     $id++ if ($c->gettags('current'))[0] ne 'text';
@@ -67,7 +67,7 @@ sub cscroll_button {
 
 sub cscroll_enter {
 
-    my($c, $old_fill) = @ARG;
+    my($c, $old_fill) = @_;
 
     my $id = $c->find(qw/withtag current/);
     $id-- if ($c->gettags('current'))[0] eq 'text';
@@ -83,7 +83,7 @@ sub cscroll_enter {
 
 sub cscroll_leave {
 
-    my($c, $old_fill) = @ARG;
+    my($c, $old_fill) = @_;
 
     my $id = $c->find(qw/withtag current/);
     $id-- if ($c->gettags('current'))[0] eq 'text';

@@ -5,7 +5,7 @@ require 5.004;
 BEGIN 
  {
   $IsWin32   = $^O eq 'MSWin32';
-  $VERSION = '402.003';
+  $VERSION = '402.004';
 
   $win_arch = ($IsWin32) ? $^O : 'x';		# Currently 'x' and 'open32' supported
 
@@ -139,6 +139,8 @@ pTk/tk.res      : $(MYEXTLIB)
 
 MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
 	$(MAKE) manifest 
+
+ready    : $(INST_DYNAMIC)
 
 ';
 }

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MMutil;
@@ -8,10 +8,12 @@ use Config;
 use Carp;
 use File::Basename;
 
-use Tk::Config qw(!$VERSION);
 
 use vars qw($VERSION);
-$VERSION = '2.023'; # $Id: //depot/Tk/Tk/MMutil.pm#23$
+$VERSION = '2.028'; # $Id: //depot/Tk/Tk/MMutil.pm#28$
+
+use Tk::Config qw(!$VERSION);
+
 
 @MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
 
@@ -220,15 +222,18 @@ sub constants
  s/(\.SUFFIXES)/$1:\n$1/;
  if ($^O eq 'MSWin32')
   {
-   if ($Config::Config{cc} =~ /^bcc/i) {
-     $_ .= "LDDLFLAGS = -v -Tpd\n";
-   }
-   else {
-     $_ .= "!include <win32.mak>\n";
-     $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
-     $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
-     $_ .= "\nGCCOPT = -WX\n";
-   }
+   if (1) 
+    {
+     if ($Config::Config{cc} =~ /^bcc/i) {
+       $_ .= "LDDLFLAGS = -v -Tpd\n";
+     }
+     else {
+       $_ .= "!include <win32.mak>\n";
+       $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
+       $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
+       # $_ .= "\nGCCOPT = -WX\n";
+     }
+    }
   } 
  else
   {

@@ -16,7 +16,7 @@
 
 
 use vars qw($VERSION);
-$VERSION = '2.000'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#7$
+$VERSION = '2.009'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#9$
 
 # The ErrorDialog object essentially consists of two subwidgets: an
 # ErrorDialog widget to display the background error and a Text widget for the
@@ -53,8 +53,9 @@ require Tk::Dialog;
 @Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#7$
+$VERSION = '2.009'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#9$
 
+use strict;
 
 Construct Tk::Widget 'ErrorDialog';
 
@@ -80,7 +81,7 @@ sub Populate {
     # to create object container then creates the dialog toplevel and the
     # traceback toplevel.
 
-    my($cw, $args) = @ARG;
+    my($cw, $args) = @_;
 
     my $dr = $cw->Dialog(
         -title          => 'Error in '.$cw->MainWindow->name,
@@ -118,8 +119,8 @@ sub Populate {
 
     $cw->Advertise(error_dialog => $dr); # advertise dialog widget
     $cw->Advertise(text => $t_text);     # advertise text widget
-    $cw->ConfigSpecs(-cleanupcode => [PASSIVE, undef, undef, undef],
-                     -appendtraceback => [ PASSIVE, undef, undef, 1 ]);
+    $cw->ConfigSpecs(-cleanupcode => [PASSIVE => undef, undef, undef],
+                     -appendtraceback => [ PASSIVE => undef, undef, 1 ]);
     $ED_OBJECT = $cw;
     return $cw;
 
@@ -131,7 +132,7 @@ sub Tk::Error {
     # Post a dialog box with the error message and give the user a chance
     # to see a more detailed stack trace.
 
-    my($w, $error, @msgs) = @ARG;
+    my($w, $error, @msgs) = @_;
 
     my $grab = $w->grab('current');
     $grab->Unbusy if (defined $grab);

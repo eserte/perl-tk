@@ -7,7 +7,7 @@ sub bind {
     # Create a top-level window that illustrates how you can bind Perl
     # commands to regions of text in a text widget.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     =>'',				      

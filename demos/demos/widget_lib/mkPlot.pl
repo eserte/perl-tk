@@ -8,7 +8,7 @@ $mkPlot::plot{'lastY'} = 0;
 
 sub plot_down {
 
-    my($w) = @ARG;
+    my($w) = @_;
 
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -23,7 +23,7 @@ sub plot_down {
 
 sub plot_move {
 
-    my($w) = @ARG;
+    my($w) = @_;
 
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -79,11 +79,11 @@ sub mkPlot {
         $c->addtag('point', 'withtag', $item);
     }
 
-    $c->bind('point', '<Any-Enter>' => [sub{shift->itemconfigure(@ARG)}, qw(current -fill red)]);
-    $c->bind('point', '<Any-Leave>' => [sub{shift->itemconfigure(@ARG)}, qw(current -fill SkyBlue2)]);
-    $c->bind('point', '<1>' => sub{plot_down(@ARG)});
+    $c->bind('point', '<Any-Enter>' => [sub{shift->itemconfigure(@_)}, qw(current -fill red)]);
+    $c->bind('point', '<Any-Leave>' => [sub{shift->itemconfigure(@_)}, qw(current -fill SkyBlue2)]);
+    $c->bind('point', '<1>' => sub{plot_down(@_)});
     $c->bind('point', '<ButtonRelease-1>' => sub {shift->dtag('selected')});
-    $c->Tk::bind('<B1-Motion>' => sub {plot_move(@ARG)});
+    $c->Tk::bind('<B1-Motion>' => sub {plot_move(@_)});
 
 } # end mkPlot
  

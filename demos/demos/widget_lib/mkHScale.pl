@@ -34,7 +34,7 @@ sub mkHScale {
 
 sub setWidth {
 
-    my($w, $width) = @ARG;
+    my($w, $width) = @_;
 
     $width += 21;
     my $x2 = $width - 30;

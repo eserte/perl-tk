@@ -52,7 +52,7 @@ foreach (<${dir}/*>) {
 
 $list->bind('all', '<Control-c>' => \&exit);
 $list->bind('<Double-Button-1>' => sub {
-    my($listbox) = @ARG;
+    my($listbox) = @_;
     foreach (split ' ', $listbox->get('active')) {
 	browse $dir, $::ARG;
     }
@@ -68,7 +68,7 @@ sub browse {
     # invoked; if the file is a regular file then an editor is invoked to 
     # display the file.
 
-    my($dir, $file) = @ARG;
+    my($dir, $file) = @_;
 
     if ($dir ne '.') {
 	$file = "$dir/$file";

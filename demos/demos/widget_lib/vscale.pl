@@ -7,7 +7,7 @@ sub vscale {
 
     # Create a top-level window that displays a vertical scale.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'An arrow and a vertical scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
@@ -34,7 +34,7 @@ sub vscale {
 
 sub vscale_height {
 
-    my($w, $height) = @ARG;
+    my($w, $height) = @_;
 
     $height += 21;
     my $y2 = $height - 30;

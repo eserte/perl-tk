@@ -1835,6 +1835,7 @@ DoConfigureNotify(winPtr)
  *----------------------------------------------------------------------
  */
 
+
 void
 Tk_SetClass(tkwin, className)
     Tk_Window tkwin;		/* Token for window to assign class. */

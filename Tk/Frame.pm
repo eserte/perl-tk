@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Frame;
@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '2.011'; # $Id: //depot/Tk/Tk/Frame.pm#11$
+$VERSION = '2.014'; # $Id: //depot/Tk/Tk/Frame.pm#14$
 
 sub Menubar;
 
@@ -24,8 +24,12 @@ sub CreateArgs
 {
  my ($package,$parent,$args) = @_;
  my @result = $package->SUPER::CreateArgs($parent,$args);
- my $colormap = delete $args->{-colormap};                     
- push(@result, '-colormap' => $colormap) if (defined $colormap);
+ my $opt;
+ foreach $opt ('-colormap','-visual')
+  {
+   my $val = delete $args->{$opt};
+   push(@result, $opt => $val) if (defined $val);
+  }
  return @result;
 }
 

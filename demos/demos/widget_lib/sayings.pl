@@ -8,7 +8,7 @@ sub sayings {
     # well-known sayings.  The listbox can be scrolled or scanned in
     # two dimensions.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'The listbox below contains a collection of well-known sayings.  You can scan the list using either of the scrollbars or by dragging in the listbox window with button 2 pressed.',

@@ -1,4 +1,4 @@
-# $Id: //depot/Tk/Tixish/DialogBox.pm#5$
+# $Id: //depot/Tk/Tixish/DialogBox.pm#6$
 #
 # DialogBox is similar to Dialog except that it allows any widget
 # in the top frame. Widgets can be added with the add method. Currently
@@ -14,7 +14,7 @@ require Tk::Frame;
 
 
 use vars qw($VERSION);
-$VERSION = '2.005'; # $Id: //depot/Tk/Tixish/DialogBox.pm#5$
+$VERSION = '2.006'; # $Id: //depot/Tk/Tixish/DialogBox.pm#6$
 
 @ISA = qw(Tk::Toplevel Tk::Frame);
 
@@ -32,7 +32,7 @@ sub Populate {
     $cw->{"selected_button"} = '';
     $cw->withdraw;
     $cw->protocol("WM_DELETE_WINDOW" => sub {});
-    $cw->transient($cw->toplevel);
+    $cw->transient($cw->Parent->toplevel);
 
     # create the two frames
     my $top = $cw->Component(Frame, "top");
@@ -61,7 +61,8 @@ sub Populate {
 	} else {
 	    $b->pack(-side => "left", -expand => 1,  -padx => 1, -pady => 1);
 	}
-    }
+    }                       
+    $cw->Delegates('Construct',$top);
 }
 
 sub add {

@@ -8,7 +8,7 @@ sub ctext {
     # Create a window containing a canvas displaying a text string and
     # allowing the string to be edited and re-anchored.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This window displays a string of text to demonstrate the text facilities of canvas widgets.  You can click in the boxes to adijust the position of the text relative to its positioning point or change its justification.  The text also supports the following simple bindings for editing:
@@ -41,31 +41,31 @@ sub ctext {
     $c->bind(qw/text <1>/ => \&ctext_press);
     $c->bind(qw/text <B1-Motion>/ => \&ctext_move);
     $c->bind(qw/text <Shift-1>/ => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	my($x, $y) = ($e->x, $e->y);
 	$c->select(qw/adjust current/, "\@$x,$y");
     });
     $c->bind(qw/text <Shift-B1-Motion>/ => \&ctext_move);
     $c->bind(qw/text <KeyPress>/ => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	my $A = $e->A;
 	$c->insert(qw/text insert/, "$A");
     });
     $c->bind(qw/text <Return>/ => sub {
-	my($c) = @ARG;
+	my($c) = @_;
 	$c->insert(qw/text insert/, "\\n");
     });
     $c->bind(qw/text <Control-h>/ => \&ctext_bs);
     $c->bind(qw/text <BackSpace>/ => \&ctext_bs);
     $c->bind(qw/text <Delete>/ => sub {
-	my($c) = @ARG;
+	my($c) = @_;
 	eval {local $SIG{__DIE__}; $c->dchars(qw/text sel.first sel.last/)};
 	$c->dchars('text', 'insert');
     });
     $c->bind(qw/text <2>/ => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->insert('text', $e->xy, $MW->SelectionGet);
     });
@@ -113,7 +113,7 @@ sub ctext {
 
 sub ctext_bs {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     eval {local $SIG{__DIE__}; $c->dchars(qw/text sel.first sel.last/)};
     my $char = $c->index(qw/text insert/) - 1;
@@ -123,7 +123,7 @@ sub ctext_bs {
 
 sub ctext_configure {
 
-    my($w, $x, $y, $option, $value, $color) = @ARG;
+    my($w, $x, $y, $option, $value, $color) = @_;
 
     my $item = $w->create('rectangle', $x, $y, $x+30, $y+30,
 			  -outline => 'black', -fill => $color, -width => 1);
@@ -136,7 +136,7 @@ sub ctext_configure {
 
 sub ctext_enter {
 
-    my($w, $config_fill) = @ARG;
+    my($w, $config_fill) = @_;
 
     $$config_fill =  ($w->itemconfigure('current', -fill))[4];
     $w->itemconfigure(qw/current -fill black/);
@@ -145,7 +145,7 @@ sub ctext_enter {
 
 sub ctext_move {
 
-    my($w) = @ARG;
+    my($w) = @_;
     my $e = $w->XEvent;
 
     my($x, $y) = ($e->x, $e->y);
@@ -155,7 +155,7 @@ sub ctext_move {
 
 sub ctext_press {
 
-    my($w) = @ARG;
+    my($w) = @_;
     my $e = $w->XEvent;
 
     my($x, $y) = ($e->x, $e->y);

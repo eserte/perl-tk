@@ -7,7 +7,7 @@ $count = 0;
 
 sub flash_widget 
 {
- my($w, $option, $val1, $val2, $interval) = @ARG;
+ my($w, $option, $val1, $val2, $interval) = @_;
  $w->configure($option => $val1);
  $w->after($interval, [\&flash_widget, $w, $option, $val2, $val1, $interval] );
  $count++;

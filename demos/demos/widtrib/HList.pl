@@ -7,7 +7,7 @@ use subs qw/show_dir/;
 use vars qw/$top $FILEIMG $FOLDIMG/;
 
 sub HList {
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name => $demo,
         -text => 'HList - A hierarchial listbox widget.',
@@ -31,18 +31,18 @@ sub HList {
 }
 
 sub show_dir {
-    my($entry_path, $text, $h) = @ARG;
+    my($entry_path, $text, $h) = @_;
     opendir H, $entry_path;
     my(@dirent) = grep ! /^\.\.?$/, sort(readdir H);
     closedir H;
     $h->add($entry_path,  -text => $text, -image => $FOLDIMG);
-    while ($ARG = shift @dirent) {
-	my $file = "$entry_path/$ARG";
+    while ($_ = shift @dirent) {
+	my $file = "$entry_path/$_";
 	if (-d $file) {
-	    show_dir $file, $ARG, $h;
+	    show_dir $file, $_, $h;
 	} else {
 	    my $size = -s $file;
-	    $h->add($file,  -text => $ARG, -image => $FILEIMG, -data => $size);
+	    $h->add($file,  -text => $_, -image => $FILEIMG, -data => $size);
 	}
     }
 } # end show_dir

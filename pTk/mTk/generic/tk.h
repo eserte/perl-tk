@@ -822,7 +822,7 @@ typedef struct Tk_PhotoImageBlock {
 				 * pixels in successive lines. */
     int		pixelSize;	/* Address difference between successive
 				 * pixels in the same line. */
-    int		offset[3];	/* Address differences between the red, green
+    int		offset[4];	/* Address differences between the red, green
 				 * and blue components of the pixel and the
 				 * pixel as a whole. */
 } Tk_PhotoImageBlock;

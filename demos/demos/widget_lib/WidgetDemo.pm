@@ -5,7 +5,7 @@ use Carp;
 use English;
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/demos/demos/widget_lib/WidgetDemo.pm#6$
+$VERSION = '2.008'; # $Id: //depot/Tk/demos/demos/widget_lib/WidgetDemo.pm#8$
 
 use Tk;
 use strict;
@@ -76,7 +76,7 @@ the same terms as Perl itself.
 my %WIDGDEMO;			# class hash of active widget demonstrations
 
 sub Populate {
-    my($cw, $args) = @ARG;
+    my($cw, $args) = @_;
 
     my (%arg_defaults) = (
         -name             => 'Unknown Demo Name',
@@ -90,7 +90,7 @@ sub Populate {
 
 
     my(@margs, %ahsh, @args);
-    @margs = grep ! defined $args->{$ARG}, keys %arg_defaults;
+    @margs = grep ! defined $args->{$_}, keys %arg_defaults;
     %ahsh = %$args;
     @ahsh{@margs} = @arg_defaults{@margs};
     my($demo, $font, $text, $title, $iconname, $gm) =
@@ -156,5 +156,6 @@ sub Populate {
 } # end Populate, WidgetDemo constructor
 
 sub Top {return $_[0]->Subwidget('WidgetDemo')}
+*top = \&Top;
 
 1;

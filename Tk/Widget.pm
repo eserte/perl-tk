@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
@@ -14,7 +14,7 @@ use Carp;
 # stubs for 'autoloaded' widget classes
 
 use vars qw($VERSION);
-$VERSION = '2.017'; # $Id: //depot/Tk/Tk/Widget.pm#17$
+$VERSION = '2.022'; # $Id: //depot/Tk/Tk/Widget.pm#22$
 
 sub Button;
 sub Canvas;
@@ -851,7 +851,7 @@ sub Callback
 
 sub packAdjust
 {
- print 'packAdjust(',join(',',@_),")\n";
+# print 'packAdjust(',join(',',@_),")\n";
  require Tk::Adjuster;
  my ($w,%args) = @_;
  my $delay = delete($args{'-delay'});
@@ -970,7 +970,8 @@ sub Scrolled
  my $w  = $cw->$kind(%args);
  %args = @args;
  $cw->AddScrollbars($w);
- $cw->Default("\L$kind" => $w);
+ $cw->Default("\L$kind" => $w); 
+ $cw->Delegates('bind' => $w, 'bindtags' => $w);
  $cw->ConfigDefault(\%args);
  $cw->configure(%args);
  return $cw;

@@ -10,7 +10,7 @@ sub bitmapRow  {
     # w -	The window reference that is to contain the row.
     # args -	The names of one or more bitmaps, which will be displayed in frame $w
 
-    my($w, @names) = @ARG;
+    my($w, @names) = @_;
     my($bitmap, $wr, $wr_bit, $wr_bit_bitmap, $wr_bit_label);
 
     $wr = $w->Frame();

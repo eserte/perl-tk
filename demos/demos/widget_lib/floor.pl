@@ -9,7 +9,7 @@ sub floor {
     # Create a top-level window containing a canvas that displays the
     # floorplan for DEC's Western Research Laboratory.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This window contains a canvas widget showing the floorplan of Digital Equipment Corporation\'s Western Research Laboratory.  It has three levels.  At any given time one of the levels is active, meaning that you can see its room structure.  To activate a level, click the left mouse button anywhere on it.  As the mouse moves over the active level, the room under the mouse lights up and its room number appears in the "Room:" entry.  You can also type a room number in the entry and the room will light up.', qw/-wraplength 8i/],
@@ -67,7 +67,7 @@ sub floor {
         );
     }
     $c->bind('room', '<Enter>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
 	my $id = $c->find('withtag' => 'current');
 	$floor::current_room  = $floor_labels{$c->find('withtag','current')}
 	    if defined $id;
@@ -75,12 +75,12 @@ sub floor {
     });
     $c->bind('room', '<Leave>' => sub {$floor::current_room = ''});
     $c->Tk::bind('<2>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('mark', $e->x, $e->y);
     });
     $c->Tk::bind('<B2-Motion>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
     });
@@ -98,7 +98,7 @@ sub floor_display {
     # and a normal function.)
 
     my($c, $active, $floor_labels, $floor_items, $cinfo, $active_floor,
-       $c_entry) = @ARG;
+       $c_entry) = @_;
 
     return if $$active_floor eq $active;
 
@@ -152,7 +152,7 @@ sub floor_room_changed {
     # Whenever the current_room variable changes, this procedure highlights 
     # the current room and unhighlights any previous room.
 
-    my($w, $floor_items, $cinfo) = @ARG;
+    my($w, $floor_items, $cinfo) = @_;
 
     $w->delete('highlight');
     my $item = $floor_items->{$floor::current_room};
@@ -176,7 +176,7 @@ sub floor_room_changed {
 
 sub floor_bg1 {
 
-    my ($w, $fill, $outline) = @ARG;
+    my ($w, $fill, $outline) = @_;
 
     $w->create('poly', qw(347 80 349 82 351 84 353 85 363 92 375 99 386 104 386 129 398 129 398 162 484 162 484 129 559 129 559
 	133 725 133 725 129 802 129 802 389 644 389 644 391 559 391 559 327 508 327 508 311 484 311 484 278 395 278 395 288 400
@@ -289,7 +289,7 @@ sub floor_bg1 {
 
 sub floor_bg2 {
 
-    my ($w, $fill, $outline) = @ARG;
+    my ($w, $fill, $outline) = @_;
 
     $w->create('poly', qw(559 129 484 129 484 162 398 162 398 129 315 129 315 133 176 133 176 129 96 129 96 133 3 133 3 339 0
 	339 0 391 60 391 60 387 258 387 258 329 350 329 350 311 395 311 395 280 484 280 484 311 508 311 508 327 558 327 558 391
@@ -335,7 +335,7 @@ sub floor_bg2 {
 
 sub floor_bg3 {
 
-    my ($w, $fill, $outline) = @ARG;
+    my ($w, $fill, $outline) = @_;
 
     $w->create('poly', qw(159 300 107 300 107 248 159 248 159 129 96 129 96 133 21 133 21 331 0 331 0 391 60 391 60 370 159 370
 	159 300), -tags => ['floor3', 'bg'], -fill => $fill);
@@ -365,7 +365,7 @@ sub floor_bg3 {
 
 sub floor_fg1 {
 
-    my($w, $color, $fl, $fi) = @ARG;
+    my($w, $color, $fl, $fi) = @_;
 
     my($i);
     $i = $w->create('polygon', qw(375 246 375 172 341 172 341 246), -fill => undef, -tags => ['floor1', 'room']);
@@ -723,7 +723,7 @@ sub floor_fg1 {
 
 sub floor_fg2 {;
 
-    my($w, $color, $fl, $fi) = @ARG;
+    my($w, $color, $fl, $fi) = @_;
 
     my($i);
     $i = $w->create('polygon', qw(748 188 755 188 755 205 758 205 758 222 800 222 800 168 748 168), -fill => undef, -tags => ['floor2', 'room']);
@@ -1088,7 +1088,7 @@ sub floor_fg2 {;
 
 sub floor_fg3 {;
 
-    my($w, $color, $fl, $fi) = @ARG;
+    my($w, $color, $fl, $fi) = @_;
 
     my($i);
     $i = $w->create('polygon', qw(89 228 89 180 70 180 70 228), -fill => undef, -tags => ['floor3', 'room']);
@@ -1332,7 +1332,7 @@ sub TIESCALAR {
     #
     # Return a blessed reference, which is what FETCH and STORE will get.
 
-    ($class, $canvas, $floor_items, $cinfo) = @ARG;
+    ($class, $canvas, $floor_items, $cinfo) = @_;
     my $self;
     bless \$self, $class;
 
@@ -1342,7 +1342,7 @@ sub FETCH {
 
     # Method to handle reads of the tied variable:  simply return it's value.
    
-    my($current_room) = @ARG;
+    my($current_room) = @_;
     return $$current_room;
 
 }
@@ -1352,7 +1352,7 @@ sub STORE {
     # Method to handle writes to the tied variable:  simply store it's value.
     # Call floor_room_changed() to highlight a room, if possible.
 
-    my($current_room, $value) = @ARG;
+    my($current_room, $value) = @_;
     $$current_room = $value;
     &::floor_room_changed($canvas, $floor_items, $cinfo);
 

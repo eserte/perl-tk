@@ -7,7 +7,7 @@ sub puzzle {
 
     # Create a top-level window containing a 15-puzzle game.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'A 15-puzzle appears below as a collection of buttons.  Click on any of the pieces next to the space, and that piece will slide over the space.  Continue this until the pieces are arranged in numerical order from upper-left to lower-right.',
@@ -63,7 +63,7 @@ sub puzzle_switch {
     
     # Procedure invoked by buttons in the puzzle to resize the puzzle entries.
 
-    my($w, $num, $xpos, $ypos) = @ARG;
+    my($w, $num, $xpos, $ypos) = @_;
 
     if (    (($ypos->{$num} >= ($ypos->{'space'} - 0.01)) &&
 	     ($ypos->{$num} <= ($ypos->{'space'} + 0.01))

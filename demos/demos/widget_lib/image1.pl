@@ -6,7 +6,7 @@ sub image1 {
 
     # This demonstration script displays two image widgets.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This demonstration displays two images, each in a separate label widget.',

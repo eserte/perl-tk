@@ -8,7 +8,7 @@ sub arrows {
     # Create a top-level window containing a canvas demonstration that
     # allows the user to experiment with arrow shapes.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This widget allows you to experiment with different widths and arrowhead shapes for lines in canvases.  To change the line width or the shape of the arrowhead, drag any of the three boxes attached to the oversized arrow.  The arrows on the right give examples at normal scale.  The text at the bottom shows the configuration options as you\'d enter them for a canvas line item.', qw/-wraplength 5i/],
@@ -53,11 +53,11 @@ sub arrows {
     # Bindings to highlight the 3 tiny resize boxes.
 
     foreach ([qw/<Enter> activeStyle/], [qw/<Leave> boxStyle/]) {
-        $c->bind('box', $ARG->[0] =>[
+        $c->bind('box', $_->[0] =>[
             sub {
-		my($c, $style) = @ARG;
+		my($c, $style) = @_;
 		$c->itemconfigure('current', @{$ainfo{$style}})
-	    }, $ARG->[1]],
+	    }, $_->[1]],
         );
     }
     $c->bind(qw/box <B1-Enter>/ => undef);
@@ -83,7 +83,7 @@ sub arrows {
 
 sub arrow_err {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $i = $c->create(qw/text .6i .1i -anchor n -text/ => "Range error!");
     $c->after(4000, sub { $c->delete($i) });
@@ -92,7 +92,7 @@ sub arrow_err {
 
 sub arrow_move1 {
 
-    my($c, $v) = @ARG;
+    my($c, $v) = @_;
     my $e = $c->XEvent;
 
     my($x, $y, $err) = ($e->x, $e->y, 0);
@@ -109,7 +109,7 @@ sub arrow_move1 {
 
 sub arrow_move2 {
 
-    my($c, $v) = @ARG;
+    my($c, $v) = @_;
     my $e = $c->XEvent;
 
     my($x, $y, $errx, $erry) = ($e->x, $e->y, 0, 0);
@@ -131,7 +131,7 @@ sub arrow_move2 {
 
 sub arrow_move3 {
 
-    my($c, $v) = @ARG;
+    my($c, $v) = @_;
     my $e = $c->XEvent;
 
     my($x, $y, $err) = ($e->x, $e->y, 0);
@@ -155,7 +155,7 @@ sub arrow_setup {
     # regenerated, and also the name of a global variable containing the
     # parameters for the display.
 
-    my($c, $v) = @ARG;
+    my($c, $v) = @_;
 
     # Remember the current box, if there is one.
 

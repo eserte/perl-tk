@@ -9,7 +9,7 @@ sub items {
     # Create a top-level window containing a canvas that displays the various
     # item types and allows them to be selected and moved.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ["This window contains a canvas widget with examples of the various kinds of items supported by canvases.  The following operations are supported:\n  Button-1 drag:\tmoves item under pointer.\n  Button-2 drag:\trepositions view.\n  Button-3 drag:\tstrokes out area.\n Ctrl+f:\t\tdisplays items under area.", qw/-wraplength 5i/],
@@ -174,7 +174,7 @@ sub items {
     # first, and the variable from then on.
 
     $c->CanvasBind('<1>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	items_start_drag $c, $e->x, $e->y, \%iinfo;
     });
@@ -189,11 +189,11 @@ sub items {
     $c->CanvasBind('<B3-Motion>' =>
          sub {items_stroke shift, $Tk::event->x, $Tk::event->y, \%iinfo});
     $c->CanvasBind('<Control-f>' => [sub {
-	my($c, $iinfo) = @ARG;
+	my($c, $iinfo) = @_;
         my $e = $c->XEvent;
 	items_under_area $c, $iinfo;
     }, \%iinfo]);
-    $c->CanvasBind('<Any-Enter>' => sub {$ARG[0]->CanvasFocus});
+    $c->CanvasBind('<Any-Enter>' => sub {$_[0]->CanvasFocus});
 
 } # end items
 
@@ -204,7 +204,7 @@ sub items_button_press {
     # Procedure that's invoked when the button embedded in the canvas
     # is invoked.
 
-    my($w, $color) = @ARG;
+    my($w, $color) = @_;
 
     my $i = $w->create(qw/text 25c 18.1c -anchor n/, -text => 'Ouch!!',
 		       -fill => $color);
@@ -214,7 +214,7 @@ sub items_button_press {
 
 sub items_drag {
 
-    my($c, $x, $y, $iinfo) = @ARG;
+    my($c, $x, $y, $iinfo) = @_;
 
     $x = $c->canvasx($x);
     $y = $c->canvasy($y);
@@ -226,7 +226,7 @@ sub items_drag {
 
 sub items_enter {
 
-    my($c, $iinfo) = @ARG;
+    my($c, $iinfo) = @_;
 
     $iinfo->{restore_cmd} = '';
 
@@ -269,7 +269,7 @@ sub items_enter {
 
 sub items_leave {
 
-    my($c, $iinfo) = @ARG;
+    my($c, $iinfo) = @_;
 
     eval $iinfo->{restore_cmd};
 
@@ -277,7 +277,7 @@ sub items_leave {
 
 sub items_mark {
 
-    my($c, $x, $y, $iinfo) = @ARG;
+    my($c, $x, $y, $iinfo) = @_;
 
     $iinfo->{areaX1} = $c->canvasx($x);
     $iinfo->{areaY1} = $c->canvasy($y);
@@ -287,7 +287,7 @@ sub items_mark {
 
 sub items_start_drag {
 
-    my($c, $x, $y, $iinfo) = @ARG;
+    my($c, $x, $y, $iinfo) = @_;
 
     $iinfo->{lastX} = $c->canvasx($x);
     $iinfo->{lastY} = $c->canvasy($y);
@@ -296,7 +296,7 @@ sub items_start_drag {
 
 sub items_stroke {
 
-    my($c, $x, $y, $iinfo) = @ARG;
+    my($c, $x, $y, $iinfo) = @_;
 
     $x = $c->canvasx($x);
     $y = $c->canvasy($y);
@@ -312,7 +312,7 @@ sub items_stroke {
 
 sub items_under_area {
 
-    my($c, $iinfo) = @ARG;
+    my($c, $iinfo) = @_;
 
     my $area = $c->find('withtag', 'area');
     my @items  = ();
@@ -320,7 +320,7 @@ sub items_under_area {
     foreach $i ($c->find('enclosed', $iinfo->{areaX1},
             $iinfo->{areaY1}, $iinfo->{areaX2}, $iinfo->{areaY2})) {
 	my @tags = $c->gettags($i); 
-	if (defined($tags[0]) and grep $ARG eq 'item', @tags) {
+	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
     }
@@ -330,7 +330,7 @@ sub items_under_area {
     foreach $i ($c->find('overlapping', $iinfo->{areaX1}, $iinfo->{areaY1},
             $iinfo->{areaX2}, $iinfo->{areaY2})) {
 	my @tags = $c->gettags($i); 
-	if (defined($tags[0]) and grep $ARG eq 'item', @tags) {
+	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
     }

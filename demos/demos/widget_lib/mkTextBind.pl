@@ -51,8 +51,8 @@ demonstrations that are available:');
     insert_with_tags($w_t, "\n\n6. A grid that demonstrates how canvases can be scrolled.", 'd6');
 
     foreach $tag (qw(d1 d2 d3 d4 d5 d6)) {
-	$w_t->tag('bind', $tag, '<Any-Enter>' => [sub {shift->tag('configure', shift, @ARG)}, $tag, @bold]);
-	$w_t->tag('bind', $tag, '<Any-Leave>' => [sub {shift->tag('configure', shift, @ARG)}, $tag, @normal]);
+	$w_t->tag('bind', $tag, '<Any-Enter>' => [sub {shift->tag('configure', shift, @_)}, $tag, @bold]);
+	$w_t->tag('bind', $tag, '<Any-Leave>' => [sub {shift->tag('configure', shift, @_)}, $tag, @normal]);
     }
     $w_t->tag('bind', 'd1', '<3>', \&mkItems);
     $w_t->tag('bind', 'd2', '<3>', \&mkPlot);

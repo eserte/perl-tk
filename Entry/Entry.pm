@@ -1,3 +1,5 @@
+package Tk::Entry; 
+
 # Converted from entry.tcl --
 #
 # This file defines the default bindings for Tk entry widgets.
@@ -6,27 +8,21 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
-
 use vars qw($VERSION);
-$VERSION = '2.000'; # $Id: //depot/Tk/Entry/Entry.pm#9$
+$VERSION = '2.014'; # $Id: //depot/Tk/Entry/Entry.pm#14$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
 
-package Tk::Entry; 
 require Tk::Widget;
 require Tk::Clipboard;
 use AutoLoader;
 
 @ISA = qw(Tk::Widget); 
-
-use vars qw($VERSION);
-$VERSION = '2.009'; # $Id: //depot/Tk/Entry/Entry.pm#9$
-
 
 import Tk qw(Ev);
 
@@ -76,6 +72,8 @@ sub ClassInit
 {
  my ($class,$mw) = @_;
  # Standard Motif bindings:
+ $mw->bind($class,'<Escape>',['selection','clear']);
+
  $mw->bind($class,"<1>",
              sub
              {
@@ -248,9 +246,10 @@ sub ClassInit
               my $w = shift;
               $w->selection("range",0,"end")
              } ) ;
- $mw->bind($class,"<Control-backslash>",'SelectionClear');
+ $mw->bind($class,"<Control-backslash>",['selection','clear']);
 
  $class->clipboardKeysyms($mw,"F16","F20","F18");
+ $class->clipboardKeysyms($mw,'Control-c','Control-x','Control-v');
 
  $mw->bind($class,"<KeyPress>", ['Insert',Ev(A)]);
 
@@ -316,17 +315,6 @@ sub ClassInit
                } ) ;
    $class->clipboardKeysyms($mw,"Meta-w","Control-w","Control-y");
    # A few additional bindings of my own.
-   $mw->bind($class,"<Control-v>",
-               sub
-               {
-                my $w = shift;
-                my $Ev = $w->XEvent;
-                eval
-                 {local $SIG{__DIE__};
-                  $w->insert("insert",$w->SelectionGet);
-                  $w->SeeInsert;
-                 }
-               } ) ;
    $mw->bind($class,"<Control-w>",
                sub
                {
@@ -611,7 +599,12 @@ sub Transpose
  $w->SeeInsert;
 }
 
-sub deleteSelected
+sub getSelected
 {
- shift->delete("sel.first","sel.last")
+ my $w = shift;
+ return undef unless $w->selection('present');
+ my $str = $w->get;
+ my $s = $w->index('sel.first');
+ my $e = $w->index('sel.last');
+ return substr($str,$s,$e+1-$s);
 }

@@ -617,6 +617,7 @@ ImgRead(handle, dst, count)
     int count;		/* number of bytes */
 {
     register int i, c;
+    char *cdst = (char *) dst;
     switch (handle->state) {
       case IMG_STRING:
 	if (count > handle->length) {
@@ -635,7 +636,7 @@ ImgRead(handle, dst, count)
     }
 
     for(i=0; i<count && (c=ImgGetc(handle)) != IMG_DONE; i++) {
-	*((char *) dst)++ = c;
+	*cdst++ = c;
     }
     return i;
 }
@@ -836,7 +837,7 @@ ImgPutc(c, handle)
 	*handle->data++ = '\n';
     }
     return c & 0xff;
-};
+}
 
 /*
  *-------------------------------------------------------------------------

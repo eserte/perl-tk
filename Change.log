@@ -1,3 +1,76 @@
+Change 472 on 1998/01/25 by nick@ni-s
+
+	Misc mail patches and suggestions
+
+Change 471 on 1998/01/25 by nick@ni-s
+
+	Notebook tweaks to avoid core dump
+
+Change 470 on 1998/01/24 by nick@ni-s
+
+	REcognize -visual as create-time option
+
+Change 469 on 1998/01/24 by nick@ni-s
+
+	Versions _again_
+
+Change 468 on 1998/01/24 by nick@ni-s
+
+	Copyright dates
+
+Change 465 on 1998/01/24 by nick@ni-s
+
+	Update MANIFEST after all that unbundling.
+
+Change 464 on 1998/01/24 by nick@ni-s
+
+	Un-bundle Tk::Pod
+
+Change 463 on 1998/01/24 by nick@ni-s
+
+	Un-bundle Contrib
+
+Change 462 on 1998/01/24 by nick@ni-s
+
+	Un-bundle Tk::HTML
+
+Change 461 on 1998/01/24 by nick@ni-s
+
+	Bump $VERSION
+
+Change 460 on 1998/01/24 by nick@ni-s
+
+	Fix "Class" of Mainwindow
+
+Change 427 on 1997/12/29 by nick@ni-s
+
+	Update $VERSION
+
+Change 426 on 1997/12/29 by nick@ni-s
+
+	More mailed patches
+
+Change 425 on 1997/12/29 by nick@ni-s
+
+	Mail backlog part 1 of n 
+
+Change 418 on 1997/12/09 by nick@camel
+
+	Dallas Trip edits
+
+Change 415 on 1997/09/25 by nick@pluto
+
+	Fix FileSelect with -create to validate non-existant files correctly
+	toyedit as test case for above.
+
+Change 409 on 1997/09/18 by nick@pluto
+
+	Use output of xmkmf rather than file itself.
+
+Change 402 on 1997/09/11 by nick@ni-s
+
+	Prepare for Tk402.003
+
 Change 401 on 1997/09/11 by nick@ni-s
 
 	Update VERSION numbers

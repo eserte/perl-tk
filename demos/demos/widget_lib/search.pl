@@ -10,7 +10,7 @@ sub search {
     # file and highlight all instances of a given string.  A LabEntry widget
     # is used to collect the file name and search string.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     =>'',				      
@@ -92,7 +92,7 @@ sub search_flash_matches {
     # cmd2 -	Reference to a list of tag options.
     # sleep2 -	Ms to sleep after executing cmd2 before executing cmd1 again.
 
-    my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @ARG;
+    my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @_;
 
     $w->tag(@{$cmd1});
     $w->after($sleep1, 
@@ -111,7 +111,7 @@ sub search_load_file {
     # file -	Reference to the name of the file to load.  Must be readable.
     # e -       Entry widget to get next focus.
 
-    my ($w, $file, $e) = @ARG;
+    my ($w, $file, $e) = @_;
 
     my ($buf, $bytes) = ('', 0);
 
@@ -146,7 +146,7 @@ sub search_text {
     #           using exact matching only;  no special characters.
     # tag -	Tag to apply to each instance of a matching string.
 
-    my($w, $string, $tag) = @ARG;
+    my($w, $string, $tag) = @_;
 
     return unless ref($string) && length($$string);
 

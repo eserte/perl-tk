@@ -37,41 +37,41 @@ sub mkCanvText {
 					     'text facilities of canvas widgets. You can point, click, and type.  You can ' .
 					     'also select and then delete with Control-d.', -width => 440, -anchor => 'n',
 					     -font => $font, -justify => 'left'));
-    $c->bind('text', '<1>' => sub {textB1Press(@ARG)});
-    $c->bind('text', '<B1-Motion>' => sub {textB1Move(@ARG)});
+    $c->bind('text', '<1>' => sub {textB1Press(@_)});
+    $c->bind('text', '<B1-Motion>' => sub {textB1Move(@_)});
     $c->bind('text', '<Shift-1>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	my($x, $y) = ($e->x, $e->y);
 	$c->select('adjust', 'current', "\@$x,$y");
     });
-    $c->bind('text', '<Shift-B1-Motion>' => sub {textB1Move(@ARG)});
+    $c->bind('text', '<Shift-B1-Motion>' => sub {textB1Move(@_)});
     $c->bind('text', '<KeyPress>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	my $A = $e->A;
 	$c->insert('text', 'insert', "$A");
     });
     $c->bind('text', '<Shift-KeyPress>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	my $A = $e->A;
 	$c->insert('text', 'insert', "$A");
     });
     $c->bind('text', '<Return>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->insert('text', 'insert', "\\n");
     });
-    $c->bind('text', '<Control-h>' => sub {textBs(@ARG)});
-    $c->bind('text', '<Delete>' => sub {textBs(@ARG)});
+    $c->bind('text', '<Control-h>' => sub {textBs(@_)});
+    $c->bind('text', '<Delete>' => sub {textBs(@_)});
     $c->bind('text', '<Control-d>' => sub {
-	my($c, $e) = @ARG;
+	my($c, $e) = @_;
         my $e = $c->XEvent;
 	$c->dchars('text', 'sel.first', 'sel.last');
     });
     $c->bind('text', '<Control-v>' => sub {
-	my($c, $e) = @ARG;
+	my($c, $e) = @_;
         my $e = $c->XEvent;
 	$c->insert('text', 'insert', Tk::selection('get'));
     });
@@ -90,7 +90,7 @@ sub mkCanvText {
     mkTextConfig $c, $x+60, $y+60, -anchor => 'nw',      $color;
     my $item = $c->create('rectangle', $x+40, $y+40, $x+50, $y+50, -outline => 'black', -fill => 'red');
     $c->bind($item, '<1>' => sub {
-	my($c, $e) = @ARG;
+	my($c, $e) = @_;
         my $e = $c->XEvent;
 	$c->itemconfigure('text', -anchor => 'center');
     });
@@ -106,9 +106,9 @@ sub mkCanvText {
     $c->create('text', $x+45, $y-5, -text => 'Justification', -anchor => 's',
 	       -font => '-Adobe-times-medium-r-normal--*-240-*-*-*-*-*-*', -fill => 'brown');
 
-    $c->bind('config', '<Enter>' =>  sub {textEnter(@ARG)});
+    $c->bind('config', '<Enter>' =>  sub {textEnter(@_)});
     $c->bind('config', '<Leave>' => sub {
-	my($c, $e) = @ARG;
+	my($c, $e) = @_;
         my $e = $c->XEvent;
 	$c->itemconfigure('current', -fill => $mkCanvText::textConfigFill);
     });
@@ -118,11 +118,11 @@ sub mkCanvText {
 
 sub mkTextConfig {
 
-    my($w, $x, $y, $option, $value, $color) = @ARG;
+    my($w, $x, $y, $option, $value, $color) = @_;
 
     my $item = $w->create('rectangle', $x, $y, $x+30, $y+30, -outline => 'black', -fill => $color, -width => 1);
     $w->bind($item, '<1>', [sub {
-	my($w, $option, $value, $e) = @ARG;
+	my($w, $option, $value, $e) = @_;
         my $e = $w->XEvent;
 
 	$w->itemconfigure('text', $option => $value);
@@ -135,7 +135,7 @@ $mkCanvText::textConfigFill = 'purple';
 
 sub textEnter {
 
-    my($w) = @ARG;
+    my($w) = @_;
     my $e = $w->XEvent;
 
     $mkCanvText::textConfigFill =  ($w->itemconfigure('current', -fill))[4];
@@ -146,7 +146,7 @@ sub textEnter {
 
 sub textB1Press {
 
-    my($w) = @ARG;
+    my($w) = @_;
     my $e = $w->XEvent;
 
     my($x, $y) = ($e->x, $e->y);
@@ -160,7 +160,7 @@ sub textB1Press {
 
 sub textB1Move {
 
-    my($w) = @ARG;
+    my($w) = @_;
     my $e = $w->XEvent;
 
     my($x, $y) = ($e->x, $e->y);
@@ -171,7 +171,7 @@ sub textB1Move {
 
 sub textBs {
 
-    my($w) = @ARG;
+    my($w) = @_;
     my $w = $c->XEvent;
 
     my $char = $w->index('text', 'insert') - 1;

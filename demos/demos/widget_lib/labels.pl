@@ -7,7 +7,7 @@ sub labels {
     # Create a top-level window that displays a bunch of labels.  @pl is the
     # "packing list" variable which specifies the list of packer attributes.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'Five labels are displayed below: three textual ones on the left, and an image label and a text label on the right.  Labels are pretty boring because you can\'t do anything with them.',

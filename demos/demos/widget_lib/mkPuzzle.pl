@@ -42,7 +42,7 @@ sub puzzle_switch {
     
     # Procedure invoked by buttons in the puzzle to resize the puzzle entries.
 
-    my($w, $num) = @ARG;
+    my($w, $num) = @_;
 
     if (    (($mkPuzzle::ypos{$num} >= ($mkPuzzle::ypos{'space'} - .01)) &&
 	     ($mkPuzzle::ypos{$num} <= ($mkPuzzle::ypos{'space'} + .01))
