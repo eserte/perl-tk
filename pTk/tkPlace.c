@@ -303,7 +303,7 @@ Tk_PlaceCmd(clientData, interp, argc, args)
 	if ((slavePtr->masterPtr != NULL)
 		&& (slavePtr->masterPtr->tkwin != Tk_Parent(slavePtr->tkwin))) {
 	    Tcl_AppendElement(interp, "-in");
-	    Tcl_AppendElement(interp, Tk_PathName(slavePtr->masterPtr->tkwin));
+	    Tcl_AppendArg(interp, LangWidgetArg(interp,slavePtr->masterPtr->tkwin));
 	}
     } else if ((c == 's') && (strncmp(LangString(args[1]), "slaves", length) == 0)) {
 	if (argc != 3) {
@@ -317,7 +317,7 @@ Tk_PlaceCmd(clientData, interp, argc, args)
 	    masterPtr = (Master *) Tcl_GetHashValue(hPtr);
 	    for (slavePtr = masterPtr->slavePtr; slavePtr != NULL;
 		    slavePtr = slavePtr->nextPtr) {
-		Tcl_AppendElement(interp, Tk_PathName(slavePtr->tkwin));
+		Tcl_AppendArg(interp, LangWidgetArg(interp,slavePtr->tkwin));
 	    }
 	}
     } else {
@@ -510,13 +510,13 @@ ConfigureSlave(interp, slavePtr, argc, args)
 	}
 	length = strlen(LangString(args[0]));
 	c = LangString(args[0])[1];
-	if ((c == 'a') && (strncmp(LangString(args[0]), "-anchor", length) == 0)) {
+	if ((c == 'a') &&  LangCmpOpt("-anchor",LangString(args[0]),length) == 0 ) {
 	    if (Tk_GetAnchor(interp, LangString(args[1]), &slavePtr->anchor) != TCL_OK) {
 		result = TCL_ERROR;
 		goto done;
 	    }
-	} else if ((c == 'b')
-		&& (strncmp(LangString(args[0]), "-bordermode", length) == 0)) {
+	} else if ((c == 'b') &&  LangCmpOpt("-bordermode",LangString(args[0]),length) == 0 ) {
+
 	    c = LangString(args[1])[0];
 	    length = strlen(LangString(args[1]));
 	    if ((c == 'i') && (strncmp(LangString(args[1]), "ignore", length) == 0)
@@ -525,8 +525,8 @@ ConfigureSlave(interp, slavePtr, argc, args)
 	    } else if ((c == 'i') && (strncmp(LangString(args[1]), "inside", length) == 0)
 		    && (length >= 2)) {
 		slavePtr->borderMode = BM_INSIDE;
-	    } else if ((c == 'o')
-		    && (strncmp(LangString(args[1]), "outside", length) == 0)) {
+	    } else if ((c == 'o') && (strncmp(LangString(args[1]), "outside", length) == 0)) {
+
 		slavePtr->borderMode = BM_OUTSIDE;
 	    } else {
 		Tcl_AppendResult(interp, "bad border mode \"", LangString(args[1]),
@@ -535,7 +535,7 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		result = TCL_ERROR;
 		goto done;
 	    }
-	} else if ((c == 'h') && (strncmp(LangString(args[0]), "-height", length) == 0)) {
+	} else if ((c == 'h') &&  LangCmpOpt("-height",LangString(args[0]),length) == 0 ) {
 	    if (LangString(args[1])[0] == 0) {
 		slavePtr->flags &= ~CHILD_HEIGHT;
 	    } else {
@@ -546,7 +546,7 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		}
 		slavePtr->flags |= CHILD_HEIGHT;
 	    }
-	} else if ((c == 'i') && (strncmp(LangString(args[0]), "-in", length) == 0)) {
+	} else if ((c == 'i') &&  LangCmpOpt("-in",LangString(args[0]),length) == 0 ) {
 	    Tk_Window tkwin;
 	    Tk_Window ancestor;
 
@@ -590,7 +590,7 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		slavePtr->nextPtr = slavePtr->masterPtr->slavePtr;
 		slavePtr->masterPtr->slavePtr = slavePtr;
 	    }
-	} else if ((c == 'r') && (strncmp(LangString(args[0]), "-relheight", length) == 0)
+	} else if ((c == 'r') &&  LangCmpOpt("-relheight",LangString(args[0]),length) == 0 
 		&& (length >= 5)) {
 	    if (LangString(args[1])[0] == 0) {
 		slavePtr->flags &= ~CHILD_REL_HEIGHT;
@@ -602,7 +602,7 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		slavePtr->relHeight = d;
 		slavePtr->flags |= CHILD_REL_HEIGHT;
 	    }
-	} else if ((c == 'r') && (strncmp(LangString(args[0]), "-relwidth", length) == 0)
+	} else if ((c == 'r') &&  LangCmpOpt("-relwidth",LangString(args[0]),length) == 0 
 		&& (length >= 5)) {
 	    if (LangString(args[1])[0] == 0) {
 		slavePtr->flags &= ~CHILD_REL_WIDTH;
@@ -614,21 +614,21 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		slavePtr->relWidth = d;
 		slavePtr->flags |= CHILD_REL_WIDTH;
 	    }
-	} else if ((c == 'r') && (strncmp(LangString(args[0]), "-relx", length) == 0)
+	} else if ((c == 'r') &&  LangCmpOpt("-relx",LangString(args[0]),length) == 0 
 		&& (length >= 5)) {
 	    if (Tcl_GetDouble(interp, args[1], &d) != TCL_OK) {
 		result = TCL_ERROR;
 		goto done;
 	    }
 	    slavePtr->relX = d;
-	} else if ((c == 'r') && (strncmp(LangString(args[0]), "-rely", length) == 0)
+	} else if ((c == 'r') &&  LangCmpOpt("-rely",LangString(args[0]),length) == 0 
 		&& (length >= 5)) {
 	    if (Tcl_GetDouble(interp, args[1], &d) != TCL_OK) {
 		result = TCL_ERROR;
 		goto done;
 	    }
 	    slavePtr->relY = d;
-	} else if ((c == 'w') && (strncmp(LangString(args[0]), "-width", length) == 0)) {
+	} else if ((c == 'w') &&  LangCmpOpt("-width",LangString(args[0]),length) == 0 ) {
 	    if (LangString(args[1])[0] == 0) {
 		slavePtr->flags &= ~CHILD_WIDTH;
 	    } else {
@@ -639,13 +639,13 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		}
 		slavePtr->flags |= CHILD_WIDTH;
 	    }
-	} else if ((c == 'x') && (strncmp(LangString(args[0]), "-x", length) == 0)) {
+	} else if ((c == 'x') &&  LangCmpOpt("-x",LangString(args[0]),length) == 0 ) {
 	    if (Tk_GetPixels(interp, slavePtr->tkwin, LangString(args[1]),
 		    &slavePtr->x) != TCL_OK) {
 		result = TCL_ERROR;
 		goto done;
 	    }
-	} else if ((c == 'y') && (strncmp(LangString(args[0]), "-y", length) == 0)) {
+	} else if ((c == 'y') &&  LangCmpOpt("-y",LangString(args[0]),length) == 0 ) {
 	    if (Tk_GetPixels(interp, slavePtr->tkwin, LangString(args[1]),
 		    &slavePtr->y) != TCL_OK) {
 		result = TCL_ERROR;

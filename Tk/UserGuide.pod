@@ -10,8 +10,8 @@ the various widget types supported by Tk.
 =head1 Some background
 
 Tk GUI programming is event-driven.  (This may already be familiar to you.)
-In event-driven programs, the main GUI loop is outside of the user program,
-and put inside the GUI library.  This loop will watch all events of interest,
+In event-driven programs, the main GUI loop is outside of the user program
+and inside the GUI library.  This loop will watch all events of interest,
 and activate the correct handler procedures to handle these events.
 Some of these handler procedures may be user-supplied; others will be part 
 of the library.
@@ -26,7 +26,8 @@ and the toolkit will call the procedures when required.
 =head1 First requirements
 
 Any perl program that uses Tk needs to include C<use Tk>.
-I advise also to use C<use strict> and use the B<-w> switch.
+A program should also use C<use strict> and the B<-w> switch to ensure
+the program is working without common errors.
 
 Any Tk application starts by creating the Tk main window.  You then create
 items inside the main window, or create new windows, before starting the
@@ -62,7 +63,7 @@ This returns a window handle, assigned to C<$main> in the example above.
 Keep track of the main handle.
 
 You can use any Tk handle to create sub-items within the window or widget.
-This is done by calling the a Tk constructor method on the variable.
+This is done by calling the Tk constructor method on the variable.
 In the example above, the C<Label> method called from C<$main> creates a 
 label widget inside the main window.  In the constructor call, you can specify
 various options; you can later add or change options for any widget
@@ -115,7 +116,7 @@ with the exception of Toplevel windows.
 =back 
 
 
-=head1 Variables and call-back routines
+=head1 Variables and callback routines
 
 Most graphical interfaces are used to set up a set of values and conditions,
 and then perform the appropriate action.  The Tk toolkit is different
@@ -148,7 +149,7 @@ So, where a traditional text-based system would look like this:
         }
 
 The (slightly larger) example below shows how to do this is Tk.
-Note the use of call-backs.  Note, also, that Tk handles the values, and
+Note the use of callbacks.  Note, also, that Tk handles the values, and
 the subroutine uses C<get> to get at the values.
 If a user changes his mind and wants to change the font again,
 the application never notices; it's all handled by Tk.
@@ -189,10 +190,10 @@ the application never notices; it's all handled by Tk.
 
 =head1 The packer.  Grouping and frames.
 
-In the examples above, you must have noticed to C<pack> calls.
+In the examples above, you must have noticed the C<pack> calls.
 This is one of the more complicated parts of Tk.  The basic idea
-is that any window or widget should be subject to a Tk window manager;
-the I<packer> is the most useful window manager.
+is that any window or widget should be subject to a Tk widget placement manager;
+the I<packer> is the most useful placement manager.
 
 The actions of the packer are rather simple: when applied
 to a widget, the packer positions that widget on the indicated position
@@ -201,12 +202,13 @@ on top; this means the next items will be put below.  You can also
 specify the left, right, or bottom positions.  Specify position
 using B<-side =E<gt> 'right'>.
 
-Additional packing parameters specify the behavior of the widget when there
-is some space left, or when the window size is increased.  For widgets
-that you want to keep the same size, specify nothing; for widgets 
-that you want to fill all space, specify B<-fill> to B<x>, B<y>, or B<both>;
-for widgets that should grow, specify B<-expand =E<gt> 'yes'>.
-These parameters are not shown in the example below; see the widget demo.
+Additional packing parameters specify the behavior of the widget when
+there is some space left in the frame or when the window size is
+increased.  If widgets should maintain a fixed size, specify nothing;
+this is the default.  For widgets that you want to fill up the current
+horizontal space, specify B<-fill =E<gt> 'x'>, B<y>, or B<both>; for
+widgets that should grow, specify B<-expand =E<gt> 'yes'>.  These
+parameters are not shown in the example below; see the widget demo.
 
 If you want to group some items within a window that have a different
 packing order than others, you can include them in a Frame.  This is a 
@@ -246,8 +248,8 @@ The example below shows the use of pack and frames:
 
 Most real applications require more than one window.  As you read before, 
 you can create more outermost windows by using Toplevel.  Each window
-is independent; closing a toplevel window does not affect the others.
-Closing the main window will end the application.
+is independent; exiting a toplevel window does not affect the others.
+Exiting the main window will end the application.
 The example below shows a trivial three-window application:
 
         #! /usr/bin/perl5 -w
@@ -278,10 +280,10 @@ The example below shows a trivial three-window application:
 
 =head1 More callbacks
 
-So far, all call-back routines shown called a user procedure.
-You can also have a call-back routine call another Tk routine.
+So far, all callback routines shown called a user procedure.
+You can also have a callback routine call another Tk routine.
 This is the way that scroll bars are implemented: scroll-bars
-can call a Tk items, or a user procedure,  whenever their position
+can call a Tk item or a user procedure, whenever their position
 has changed.  The Tk item that has a scrollbar attached calls the
 scrollbar when its size or offset has changed.  In this way,
 the items are linked.  You can still ask a scrollbar's position,

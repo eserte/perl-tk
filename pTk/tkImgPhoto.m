@@ -1,3 +1,5 @@
+#ifndef _TKIMGPHOTO_VM
+#define _TKIMGPHOTO_VM
 #include "tkImgPhoto_f.h"
 #define tkImgFmtGIF (*TkimgphotoVptr->V_tkImgFmtGIF)
 #define tkImgFmtPPM (*TkimgphotoVptr->V_tkImgFmtPPM)
@@ -10,3 +12,4 @@
 #define Tk_PhotoPutBlock (*TkimgphotoVptr->V_Tk_PhotoPutBlock)
 #define Tk_PhotoPutZoomedBlock (*TkimgphotoVptr->V_Tk_PhotoPutZoomedBlock)
 #define Tk_PhotoSetSize (*TkimgphotoVptr->V_Tk_PhotoSetSize)
+#endif /* _TKIMGPHOTO_VM */

@@ -543,6 +543,7 @@ sub Normalize {
 	local($_) = $_[0];
 
 	start_hide;
+        s/(E<[^<>]*>)/hide($1)/ge;
         s/([A-Z]<[^<>]*>)/hide($1)/ge;
         
         s/</hide("E<lt>")/ge;

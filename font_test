@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-BEGIN { unshift (@INC,'blib') }
+use lib ('blib');
 
 use Tk ;
 $top = MainWindow->new;

@@ -1,5 +1,6 @@
 
-OSF's 'make' has problems with the constructed Makefiles.
+OSF's 'make' has problems with the Makefiles constructed by MakeMaker
+before MakeMaker-4.18
 
 make
 just says:

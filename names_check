@@ -1,0 +1,58 @@
+#!/usr/local/bin/perl -w
+use lib 'blib';
+use Tk;
+$mw = MainWindow->new;
+$w = $mw->Button(-text => 'button',-command => [destroy => $mw]);
+$w->packConfigure;             # Can't locate auto/Tk/Button/packConfigu.al in @INC at ./frog line 6
+$w->packInfo;
+$w->packPropagate;         # unknown or ambiguous option "propagate": must be -after, -anchor, -before, -expand, -fill, -in, -ipadx, -ipady, -padx, -pady, or -side at /usr/local/lib/perl5/auto/Tk/Widget/pack.al line 15.
+$w->packSlaves;
+$w->packForget;
+$w->place('-x' => 200, '-y' => 300);
+$w->placeInfo;                 # Can't locate auto/Tk/Button/placeInfo.al in @INC at ./frog line 15
+$w->placeForget;               # Can't locate auto/Tk/Button/placeForget.al in @INC at ./frog line 14
+$w->placeSlaves;               # Can't locate auto/Tk/Button/placeSlaves.al in @INC at ./frog line 16
+$w->placeConfigure('-x' => 0);   # Can't locate auto/Tk/Button/placeConfig.al in @INC at ./frog line 13
+$w->pack;
+$w->update;
+$id = $w->after(100);
+$w->afterCancel($id);          # Can't locate auto/Tk/Button/afterCancel.al in @INC at ./frog line 18
+$w->afterIdle($w,'bell');      # Can't locate auto/Tk/Button/afterIdle.al in @INC at ./frog line 19
+$w->bell;
+$w->clipboardClear;            # Can't locate auto/Tk/Button/clipboardCl.al in @INC at ./frog line 21
+$w->clipboardAppend(" ");      # Can't locate auto/Tk/Button/clipboardAp.al in @INC at ./frog line 22
+$w->fileevent(STDIN, 'readable', sub {print "stdin is readable\n"});
+$w->focus;
+$w->focusCurrent;
+$w->focusForce;
+$w->focusLastfor;                 # Can't locate auto/Tk/Button/focusLast.al in @INC at ./frog line 28
+$w->focusFollowsMouse;
+$w->focusNext;
+$w->focusPrev;
+$w->grab;
+$w->grabCurrent;
+$w->grabRelease;
+$w->grabGlobal;
+$w->grabStatus;
+$w->lower;
+$w->optionAdd('abc' => 'def');
+$w->optionClear;               # Can't locate auto/Tk/Button/optionClear.al in @INC at ./frog line 41
+$w->optionGet('name', 'class');
+$w->optionReadfile("$ENV{'HOME'}/.Xdefaults");
+$w->SelectionClear;           # Can't locate auto/Tk/Button/XSelectionC.al in @INC at ./frog line 44
+$w->SelectionHandle;          # Can't locate auto/Tk/Button/XSelectionH.al in @INC at ./frog line 46
+$w->SelectionOwn;             # Can't locate auto/Tk/Button/XSelectionO.al in @INC at ./frog line 47
+$w->SelectionOwner;           # Can't locate auto/Tk/Button/XSelectionO.al in @INC at ./frog line 48
+#$w->SelectionGet;             # Can't locate auto/Tk/Button/XSelectionG.al in @INC at ./frog line 45
+#$w->send;
+#tk appname                     # ???         
+$w->bisque;                    # Can't locate auto/Tk/Button/Bisque.al in @INC at ./frog line 55
+$w->Optionmenu;
+$v = 'frog';
+$w->waitVisibility;
+$w->waitWindow;
+$w->waitVariable(\$v);
+#tk_popup                       # ???
+$w->Palette;
+$w->destroy;
+MainLoop;

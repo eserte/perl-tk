@@ -1,7 +1,6 @@
 package Tk::Widget;
 require Tk;
 use AutoLoader;
-use Tk::Pretty;
 use strict qw(vars);
 
 use Carp;
@@ -49,8 +48,17 @@ sub import
 
 # Some tidy-ness functions for winfo stuff
 
+
 BEGIN 
  {
+  Tk::SubMethods( 'grab' =>  [qw(current status release -global)],
+                  'focus' => [qw(-force -lastfor)],
+                  'pack'  => [qw(configure forget info propagate slaves)],
+                  'after' => [qw(cancel idle)],
+                  'place' => [qw(configure forget info slaves)],
+                  'wm'    => [qw(capture release)]
+                );
+
   my $fn;
   foreach $fn (qw(cells class colormapfull depth exists geometry height id 
                ismapped manager name parent reqheight reqwidth rootx rooty
@@ -62,12 +70,13 @@ BEGIN
    {
     *{"$fn"} = sub { shift->winfo($fn, @_) };
    }
+
  }
 
 sub DESTROY
 {
  my $w = shift;
- $w->destroy if ($w->IsWidget); # i.e. is Tk data still there
+ $w->destroy if ($w->IsWidget);
 }
 
 sub Install 
@@ -77,7 +86,7 @@ sub Install
  my ($package,$mw) = @_;
 }
 
-sub classinit
+sub ClassInit
 {
  # Carry out class bindings (or whatever)
  my ($package,$mw) = @_;
@@ -92,7 +101,7 @@ sub InitClass
  unless (exists $mw->{'_ClassInit_'}{$package})
   {
    $package->Install($mw);
-   $mw->{'_ClassInit_'}{$package} = $package->classinit($mw);
+   $mw->{'_ClassInit_'}{$package} = $package->ClassInit($mw);
   }
 }
 
@@ -141,10 +150,14 @@ sub new
    $leaf   = "\L$package";
    $leaf   =~ s/^tk:://;
    $lname  = $pname . "." . $leaf;
-   my $num = 0;
+   # create a hash indexed by leaf name to speed up 
+   # creation of a lot of sub-widgets of the same type
+   # e.g. entries in Table
+   my $key = "_#$leaf";
+   $parent->{$key} = 0 unless (exists $parent->{$key});
    while (defined ($parent->Widget($lname)))
     {
-     $lname = $pname . "." . $leaf . ++$num;
+     $lname = $pname . "." . $leaf . ++$parent->{$key};
     }
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
@@ -163,51 +176,16 @@ sub new
 sub True  { 1 }
 sub False { 0 }
 
-sub Construct
+sub DelegateFor
 {
- my ($base,$name) = @_;
- my $class = (caller(0))[0];
-# print "$base->$name is $class\n";
-# @{$class.'::Inherit::ISA'} = @{$class.'::ISA'};
- *{"$name"} = sub { $class->new(@_) };
- *{"Is$name"} = \&False;
- *{$class.'::Is'.$name} = \&True;
-}
-
-sub Inherit
-{
- my $w = shift;
- my $method = shift;
- my $what   = (caller(1))[3];
- my ($class) = $what =~ /^(.*)::[^:]+$/;
- @{$class.'::Inherit::ISA'} = @{$class.'::ISA'} unless (defined @{$class.'::Inherit::ISA'});
- $class .= '::Inherit::';
- $class .= $method;
- return $w->$class(@_);
-}
-
-sub InheritThis
-{
- my $w      = shift;
- my $what   = (caller(1))[3];
- my ($class,$method) = $what =~ /^(.*)::([^:]+)$/;
-#my $class = ref($w) ? ref($w) : $w;
- @{$class.'::Inherit::ISA'} = @{$class.'::ISA'} unless (defined @{$class.'::Inherit::ISA'});
- $class .= '::Inherit::';
- $class .= $method;
- return $w->$class(@_);
-}
-
-sub WidgetClass
-{
- my $nameref  = shift;
- my $class = ref $nameref;
- my $name  = $$nameref;
- carp "(bless...)->WidgetClass is obsolete should be:\nTk::Widget->Construct('$name');";
- @{$class.'::Inherit::ISA'} = @{$class.'::ISA'};
- *{"$name"} = sub { $class->new(@_) };
- *{"Is$name"} = \&False;
- *{$class.'::Is'.$name} = \&True;
+ my ($w,$method) = @_;
+ return $w unless (exists $w->{Delegates});
+ my $delegate = $w->{Delegates};
+ my $widget = $delegate->{$method};
+ $widget = $delegate->{DEFAULT} unless (defined $widget);
+ $widget = $w->Subwidget($widget) if (defined $widget && !ref $widget);
+ $widget = $w unless (defined $widget);
+ return $widget;
 }
 
 sub Delegates
@@ -230,6 +208,21 @@ sub Delegates
    $cw->{'Delegates'} = \%args;
   }
  return $cw->{'Delegates'}
+}
+
+sub Construct
+{
+ my ($base,$name) = @_;
+ my $class = (caller(0))[0];
+
+ # DelegateFor  trickyness is to allow Frames and other derived things
+ # to force creation in a delegate e.g. a ScrlText with embeded windows
+ # need those windows to be children of the Text to get clipping right
+ # and not of the Frame which contains the Text and the scrollbars.
+
+ *{"$name"} = sub { $class->new(shift->DelegateFor('Construct'),@_) };
+ *{"Is$name"} = \&False;
+ *{$class.'::Is'.$name} = \&True;
 }
 
 sub AUTOLOAD
@@ -257,7 +250,7 @@ sub AUTOLOAD
          $widget = $delegate->{DEFAULT} unless (defined $widget);
          if (defined $widget)              
           {                                
-           my $subwidget = (ref $widget) ? $widget : $_[0]->subwidget($widget);
+           my $subwidget = (ref $widget) ? $widget : $_[0]->Subwidget($widget);
            if (defined $subwidget)         
             {                              
 #            print "AUTOLOAD: $what\n";
@@ -279,9 +272,94 @@ sub AUTOLOAD
  goto &AutoLoader::AUTOLOAD;
 }
 
+sub grabSave
+{
+ my ($w) = @_;
+ my $grab = $w->grabCurrent;
+ return sub {} if (!defined $grab);
+ my $method = ($grab->grabStatus eq 'global') ? 'grabGlobal' : 'grab';
+ return sub { eval { $grab->$method() } };
+}
+
+sub focusCurrent
+{
+ my ($w) = @_;
+ $w->Tk::focus('-displayof'); 
+}
+
+sub focusSave
+{
+ my ($w) = @_;
+ my $focus = $w->focusCurrent;
+ return sub {} if (!defined $focus);
+ return sub { eval { $focus->focus } };
+}
+
+sub place
+{
+ require Tk::Pretty;
+ &Tk::Pretty::PrintArgs;
+ my $w = shift;
+ if (@_ && $_[0] =~ /^(?:configure|forget|info|slaves)$/x)
+  {
+   $w->Tk::place(@_);
+  }
+ else
+  {
+   # Two things going on here:
+   # 1. Add configure on the front so that we can drop leading '-' 
+   eval { $w->Tk::place('configure',@_) };
+   croak "$@" if $@;
+   # 2. Return the widget rather than nothing
+   return $w;
+  }
+}
+
+sub pack
+{
+ my $w = shift;
+ if (@_ && $_[0] =~ /^(?:configure|forget|info|propagate|slaves)$/x)
+  {
+   $w->Tk::pack(@_);
+  }
+ else
+  {
+   # Two things going on here:
+   # 1. Add configure on the front so that we can drop leading '-' 
+   eval { $w->Tk::pack('configure',@_) };
+   croak "$@" if $@;
+   # 2. Return the widget rather than nothing
+   return $w;
+  }
+}
+
 1;
 
 __END__
+
+sub Inherit
+{
+ carp "Inherit is deprecated - use SUPER::";
+ my $w = shift;
+ my $method = shift;
+ my ($class) = caller;
+ *{$class.'::Inherit::ISA'} = \@{$class.'::ISA'} unless (defined @{$class.'::Inherit::ISA'});
+ $class .= '::Inherit::';
+ $class .= $method;
+ return $w->$class(@_);
+}
+
+sub InheritThis
+{
+ carp "InheritThis is deprecated - use SUPER::";
+ my $w      = shift;
+ my $what   = (caller(1))[3];
+ my ($class,$method) = $what =~ /^(.*)::([^:]+)$/;
+ *{$class.'::Inherit::ISA'} = \@{$class.'::ISA'} unless (defined @{$class.'::Inherit::ISA'});
+ $class .= '::Inherit::';
+ $class .= $method;
+ return $w->$class(@_);
+}
 
 sub FindMenu
 {
@@ -296,7 +374,7 @@ sub IS
 
 sub XEvent { shift->{"_XEvent_"} }
 
-sub rootproperty
+sub propertyRoot
 {
  my $w = shift;
  return $w->property(@_,'root');
@@ -321,19 +399,19 @@ sub containing { shift->Containing(@_)  }
 # Walk should possibly be enhanced so allow early termination
 # like '-prune' of find.
 
-sub walk 
+sub Walk 
 {
  # Traverse a widget hierarchy while executing a subroutine.
  my($cw, $proc, @args) = @_;
  my $subwidget;
  foreach $subwidget ($cw->children) 
   {
-   $subwidget->walk($proc,@args);
+   $subwidget->Walk($proc,@args);
    &$proc($subwidget, @args);
   }
 } # end walk
 
-sub descendants
+sub Descendants
 {
  # Return a list of widgets derived from a parent widget and all its
  # descendants of a particular class.  
@@ -342,7 +420,7 @@ sub descendants
  my($widget, $class) = @_;
  my(@widget_tree)    = ();
  
- $widget->walk(
+ $widget->Walk(
                sub { my ($widget,$list,$class) = @_;
                      push(@$list, $widget) if  (!defined($class) or $class eq $widget->class);
                    }, 
@@ -351,30 +429,33 @@ sub descendants
  return @widget_tree;
 } 
 
-sub packinfo
+sub Palette
 {
- my ($w) = @_;
- my $mgr = $w->manager;
- $w->$mgr('info');
-}
-
-sub packslaves
-{
- my ($w) = @_;
- $w->pack('slaves');
-}
-
-sub packpropagate
-{
- my $w = shift;
- $w->pack('propagate',@_);
-}
-
-sub packforget
-{
- my ($w) = @_;
- my $mgr = $w->manager;
- $w->$mgr('forget') if (defined $mgr);
+ my $w = shift->MainWindow;
+ unless (exists $w->{_Palette_})
+  {
+   my %Palette = ();
+   my $c = $w->Checkbutton();
+   my $e = $w->Entry();
+   my $s = $w->Scrollbar();
+   $Palette{"activeBackground"}    = ($c->configure("-activebackground"))[3] ;
+   $Palette{"activeForeground"}    = ($c->configure("-activeforeground"))[3];
+   $Palette{"background"}          = ($c->configure("-background"))[3];
+   $Palette{"disabledForeground"}  = ($c->configure("-disabledforeground"))[3];
+   $Palette{"foreground"}          = ($c->configure("-foreground"))[3];
+   $Palette{"highlightBackground"} = ($c->configure("-highlightbackground"))[3];
+   $Palette{"highlightColor"}      = ($c->configure("-highlightcolor"))[3];
+   $Palette{"insertBackground"}    = ($e->configure("-insertbackground"))[3];
+   $Palette{"selectColor"}         = ($c->configure("-selectcolor"))[3];
+   $Palette{"selectBackground"}    = ($e->configure("-selectbackground"))[3];
+   $Palette{"selectForeground"}    = ($e->configure("-selectforeground"))[3];
+   $Palette{"troughColor"}         = ($s->configure("-troughcolor"))[3];
+   $c->destroy;
+   $e->destroy;
+   $s->destroy;
+   $w->{_Palette_} = \%Palette;
+  }
+ return $w->{_Palette_};
 }
 
 
@@ -412,10 +493,11 @@ sub setPalette
    $new{"disabledForeground"} = sprintf("#%02x%02x%02x",(3*$bg[0]+$fg[0])/1024,(3*$bg[1]+$fg[1])/1024,(3*$bg[2]+$fg[2])/1024);
   }
  $new{"highlightBackground"} = $new{"background"} unless (exists $new{"highlightBackground"});
+
  unless (exists $new{"activeBackground"})
   {
    my @light;
-   # Pick a default active background that islighter than the
+   # Pick a default active background that is lighter than the
    # normal background. To do this, round each color component
    # up by 15% or 1/3 of the way to full white, whichever is
    # greater.
@@ -446,28 +528,7 @@ sub setPalette
  # If the variable exists, then it is already correct (it was created
  # the last time this procedure was invoked). If the variable
  # doesn't exist, fill it in using the defaults from a few widgets.
-
- unless (defined %Tk::Palette)
-  {
-   my $c = $w->Checkbutton();
-   my $e = $w->Entry();
-   my $s = $w->Scrollbar();
-   $Tk::Palette{"activeBackground"}    = ($c->configure("-activebackground"))[3] ;
-   $Tk::Palette{"activeForeground"}    = ($c->configure("-activeforeground"))[3];
-   $Tk::Palette{"background"}          = ($c->configure("-background"))[3];
-   $Tk::Palette{"disabledForeground"}  = ($c->configure("-disabledforeground"))[3];
-   $Tk::Palette{"foreground"}          = ($c->configure("-foreground"))[3];
-   $Tk::Palette{"highlightBackground"} = ($c->configure("-highlightbackground"))[3];
-   $Tk::Palette{"highlightColor"}      = ($c->configure("-highlightcolor"))[3];
-   $Tk::Palette{"insertBackground"}    = ($e->configure("-insertbackground"))[3];
-   $Tk::Palette{"selectColor"}         = ($c->configure("-selectcolor"))[3];
-   $Tk::Palette{"selectBackground"}    = ($e->configure("-selectbackground"))[3];
-   $Tk::Palette{"selectForeground"}    = ($e->configure("-selectforeground"))[3];
-   $Tk::Palette{"troughColor"}         = ($s->configure("-troughcolor"))[3];
-   $c->destroy;
-   $e->destroy;
-   $s->destroy;
-  }
+ my $Palette = $w->Palette;
 
  # Walk the widget hierarchy, recoloring all existing windows.
  $w->RecolorTree(\%new);
@@ -476,10 +537,10 @@ sub setPalette
  my $option;
  foreach $option (keys %new)
   {
-   $w->option("add","*$option",$new{$option},"widgetDefault");
+   $w->option("add","*$option",$new{$option},'widgetDefault');
    # Save the options in the global variable Tk::Palette, for use the
    # next time we change the options.
-   $Tk::Palette{$option} = $new{$option};
+   $Palette->{$option} = $new{$option};
   }
 }
 
@@ -501,6 +562,7 @@ sub RecolorTree
  my ($w,$colors) = @_;
  my $dbOption;
  local ($@);
+ my $Palette = $w->Palette;
  foreach $dbOption (keys %$colors)
   {
    my $option = "-\L$dbOption";
@@ -508,7 +570,7 @@ sub RecolorTree
    eval { $value = $w->cget($option) };
    if (defined $value)
     {
-     if ($value eq $Tk::Palette{$dbOption})
+     if ($value eq $Palette->{$dbOption})
       {
        $w->configure($option,$colors->{$dbOption})
       }
@@ -549,7 +611,7 @@ sub Darken
 #
 # Arguments:
 # None.
-sub tk_bisque
+sub bisque
 {
  shift->setPalette("activeBackground" => "#e6ceb1",
                "activeForeground" => "black",
@@ -568,11 +630,12 @@ sub tk_bisque
 
 sub PrintConfig
 {
+ require Tk::Pretty;
  my ($w) = (@_);
  my $c;
  foreach $c ($w->configure)
   {
-   print pretty(@$c),"\n";
+   print Tk::Pretty::Pretty(@$c),"\n";
   }
 } 
 
@@ -591,6 +654,7 @@ sub Busy
      $old{$key} = $w->Tk::cget($key);
     }
    $old{'bindtags'} = \@tags;
+   $old{'grab'}     = $w->grabSave;
    unless ($w->Tk::bind('Busy'))
     {                     
      $w->Tk::bind('Busy','<KeyPress>','bell');
@@ -600,37 +664,39 @@ sub Busy
    $w->{'Busy'} = \%old;
   }
  $w->Tk::configure(%args);
- $w->grab;
+ eval { $w->grab };
  $w->update;
 }
 
 sub Unbusy
 {
  my ($w) = @_;
- $w->grab('release');
+ $w->grabRelease;
  my $old = delete $w->{'Busy'};
  if (defined $old)
   {
-   $w->update;
+   my $grab = delete $old->{'grab'};
+   $w->update;  # flush events that happened with Busy bindings
    $w->bindtags(delete $old->{'bindtags'});
    $w->Tk::configure(%{$old}); 
    $w->update;
+   &$grab;
   }
 }
 
-sub currentfocus
-{
- my ($w) = @_;
- $w->Tk::focus('-displayof'); 
-}
-
-sub waitvisibility
+sub waitVisibility
 {
  my ($w) = shift;
  $w->tkwait('visibility',$w);
 }
 
-sub waitwindow
+sub waitVariable
+{
+ my ($w) = shift;
+ $w->tkwait('variable',@_);
+}
+
+sub waitWindow
 {
  my ($w) = shift;
  $w->tkwait('window',$w);
@@ -648,3 +714,76 @@ sub Popwidget
  $w->{'_EventWidget_'} = $ew;
  $w->$method(@args);
 }
+
+sub ColorOptions
+{
+ my ($w,$args) = @_;
+ my $opt;
+ $args = {} unless (defined $args);
+ foreach $opt (qw(-foreground -background -disabledforeground
+                  -activebackground -activeforeground
+              ))
+  {
+   $args->{$opt} = $w->cget($opt) unless (exists $arg{$opt})
+  }
+ return (wantarray) ? %$args : $args;
+}
+
+sub XscrollBind
+{
+ my ($mw,$class) = @_;
+ $mw->bind($class,'<Left>',         ['xview','scroll',-1,'units']);
+ $mw->bind($class,'<Control-Left>', ['xview','scroll',-1,'pages']);
+ $mw->bind($class,'<Control-Prior>',['xview','scroll',-1,'pages']);
+ $mw->bind($class,'<Right>',        ['xview','scroll',1,'units']);
+ $mw->bind($class,'<Control-Right>',['xview','scroll',1,'pages']);
+ $mw->bind($class,'<Control-Next>', ['xview','scroll',1,'pages']);
+
+ $mw->bind($class,'<Home>',         ['xview','moveto',0]);
+ $mw->bind($class,'<End>',          ['xview','moveto',1]);
+}
+
+sub PriorNextBind
+{
+ my ($mw,$class) = @_;
+ $mw->bind($class,'<Next>',     ['yview','scroll',1,'pages']);
+ $mw->bind($class,'<Prior>',    ['yview','scroll',-1,'pages']);
+}
+
+sub YscrollBind
+{
+ my ($mw,$class) = @_;
+ $mw->PriorNextBind($class);
+ $mw->bind($class,'<Up>',       ['yview','scroll',-1,'units']);
+ $mw->bind($class,'<Down>',     ['yview','scroll',1,'units']);
+}
+
+sub XYscrollBind
+{
+ my ($mw,$class) = @_;
+ $mw->YscrollBind($class);
+ $mw->XscrollBind($class);
+}
+
+sub Scrolled
+{
+ my ($parent,$kind,%args) = @_;
+ my @args = Tk::Frame->CreateArgs($parent,\%args);
+ my $name = delete $args{'Name'};
+ push(@args,'Name' => $name) if (defined $name);
+ my $cw = $parent->Frame(@args);
+ my $w  = $cw->$kind();
+ $cw->AddScrollbars($w);
+ $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars','se']);
+ $cw->Default("\L$kind" => $w);
+ $cw->ConfigDefault(\%args);
+ $cw->configure(%args);
+ return $cw;
+}
+
+sub ScrlListbox
+{
+ my $parent = shift; 
+ return $parent->Scrolled('Listbox' => @_, -scrollbars => 'w');
+}
+

@@ -754,7 +754,7 @@ ImgPmapDelete(masterData)
     }
     masterPtr->tkMaster = NULL;
     if (masterPtr->imageCmd != NULL) {
- 	Lang_DeleteImage(masterPtr->interp,masterPtr->imageCmd);
+ 	Lang_DeleteObject(masterPtr->interp,masterPtr->imageCmd);
 
     }
     if (masterPtr->data != NULL) {

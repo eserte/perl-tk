@@ -2,7 +2,7 @@
 
 Defining behaviour of 'configure' for composite widgets.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
   sub Populate
   {
@@ -17,7 +17,7 @@ Defining behaviour of 'configure' for composite widgets.
 
 =head1 DESCRIPTION 
 
-The aim is to make composite widget configure method look as much like
+The aim is to make the composite widget configure method look as much like
 a regular Tk widget's configure as possible.
 To enable this the attributes that the composite as a whole accepts
 needs to be defined.
@@ -40,13 +40,13 @@ below, or to respond to 'inquiry' configure commands.
 It may be either one of the values below, or a list of such values
 enclosed in C<[ ]>.
 
-The currently permited values of where are:
+The currently permitted values of where are:
 
 =over 4
 
 =item C<'DESCENDANTS'>  
 
-apply 'configure' recusively to all descendants
+apply 'configure' recursively to all descendants
 
 =item C<'ADVERTISED'>
 
@@ -58,7 +58,7 @@ apply 'configure' to the core widget (e.g. Frame) that is the
 basis of the composite. (This is the default behaviour for most 
 attributes which makes a simple Frame behave the way you would expect.)
 Note that once you have specified ConfigSpecs for an attribute 
-you must explcitly include C<SELF> in the list if you want the 
+you must explicitly include C<SELF> in the list if you want the 
 attribute to apply to the composite itself (this avoids nasty
 infinite recursion problems). 
 
@@ -81,9 +81,8 @@ in $composite->{Configure}{-attribute}. This is appropriate for
 not forwarded to a subwidget. (e.g. C<Tk::Tiler> has -yscrollcommand 
 to allow it to have scrollbar attached.)
 
-This maybe the first of several 'validating' keywords.
-e.g. font, cursor, anchor etc. that core Tk makes special for C code,
-may also be added.
+This may be the first of several 'validating' keywords
+(e.g. font, cursor, anchor etc.) that core Tk makes special for C code.
 
 =item C<'METHOD'>
 
@@ -92,8 +91,8 @@ Call $cw->attribute(value)
 This is the most general case. Simply have a method of the 
 composite class with the same name as the attribute.
 The method may do any validation and have whatever side-effects you like.
-(It is probably worth 'queueing' using C<DoWhenIdle> for more complex 
- side-effects.) 
+(It is probably worth 'queueing' using C<DoWhenIdle> for
+more complex side-effects.) 
 
 
 =item C<$reference>
@@ -107,7 +106,7 @@ $reference may also be result of
  Tk::Config->new(setmethod,getmethod,args,...)
 
 C<Tk::Config> class is used to implement all the above keyword types.
-The class has 'configure' and 'cget' methods so alows higher level
+The class has 'configure' and 'cget' methods so allows higher level
 code to I<always> just call one of those methods on an 'object' of some
 kind.
 
@@ -115,9 +114,9 @@ kind.
 
 Call $cw->subwidget('otherstring')->configure(-attribute => value)
 
-This is here for backward compatibility with Tk-b5, it is probably 
-better just to use the subwidget reference directly. Only case for
-retaining this form is to allow additional lay of abstraction - perhaps
+While this is here for backward compatibility with Tk-b5, it is probably 
+better just to use the subwidget reference directly.  The only case for
+retaining this form is to allow an additional layer of abstraction - perhaps
 having a 'current' subwidget - this is unproven.
 
 =back 
@@ -135,7 +134,7 @@ hash take the form:
  '-attribute' => [ where, dbName, dbClass, default ]
 
 C<ConfigDefault> ignores 'where' completely (and also the DEFAULT entry)
-and looks up the 'options' database on the widget's behalf,
+and checks the 'options' database on the widget's behalf,
 and if an entry is present matching dbName/dbClass 
 
  -attribute => value 
@@ -156,7 +155,7 @@ of their attributes this way.
 
 =head2 Configuring composites
 
-Once the above have occured calls of the form:
+Once the above have occurred calls of the form:
 
    $composite->configure( -attribute => value );
 

@@ -1,0 +1,7 @@
+#!/usr/local/bin/perl -w
+
+while (<>)
+ {
+  s/(["'])?-(\w+)\1\s*(=>|,)/$2 =>/g;
+  print;
+ }

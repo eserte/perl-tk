@@ -1,14 +1,17 @@
 #!/usr/local/bin/perl -w
 
-BEGIN { unshift (@INC,qw(./blib .)) }
+use lib (qw(./blib .));
 
-use Tk;
-use Tk::Pretty;
-#require Tk::Label;
-
+require Tk;
 {
  my $top = MainWindow->new();
- my $w = $top->Label(-text => 'hello')->pack;
- MainLoop;
+ my $w = $top->Button(-text => 'Quit',-command => ['destroy',$top])->pack;
+ while (MainWindow->Count)
+  {
+   Tk->DoOneEvent;
+  }
 }
-print "Done\n";
+print "done:  Enter text:";
+print "Text is: ",scalar(<STDIN>),"\n";
+
+

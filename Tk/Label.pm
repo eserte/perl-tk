@@ -8,12 +8,6 @@ Tk::Widget->Construct('Label');
 
 sub Tk_cmd { \&Tk::label }
 
-sub classinit
-{
- my ($class,$mw) = @_;
- return $class;
-}
-
 1;
 
 

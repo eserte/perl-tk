@@ -16,3 +16,10 @@
 #ifdef _TKIMGPHOTO
 #include "tkImgPhoto.m"
 #endif
+#ifdef _TIX
+#include "tix.m"
+#endif
+#ifdef _TIXINT
+#include "tixInt.m"
+#endif
+

@@ -14,7 +14,7 @@ Beginings of a Ghostscript lowlevel PostScript viewing widget
 
 =head1 DESCRIPTION
 
-Tested with gs3 via F<pgs> and F<Ghostview.pm> in parent directory.
+Tested with gs3 via F<pgs> and F<Ghostview.pm>.
 
 Aim is to have both GS and "Display Postscript" widgets
 which present same interface to higher level document viewers.
@@ -60,7 +60,8 @@ sub Populate
 
  $w->BindClientMessage('DONE','StopInterp');
  $w->BindClientMessage('PAGE','PAGE');
- $w->ChangeView;
+ $w->ConfigSpecs('-orientation' => ['METHOD','orientation','Orientation','Portrait']
+                );
 } 
 
 
@@ -194,13 +195,13 @@ sub BoundingBox
 {
  my $w = shift;
  return @{$w->{'BoundingBox'}} unless (@_);
- croak "Invalid bounding box" . pretty(\@_) unless (@_ == 4); 
+ croak "Invalid bounding box" . Pretty(\@_) unless (@_ == 4); 
  my @bb = @_;
  $w->{'BoundingBox'} = \@bb;
  $w->ChangeView;
 }
 
-sub Orientation
+sub orientation
 {
  my $w = shift;
  if (@_)
@@ -213,7 +214,7 @@ sub Orientation
  return $names[$w->{'page_orientation'}/90];
 }
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,'<Configure>','NoteSize');

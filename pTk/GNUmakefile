@@ -11,6 +11,13 @@
 %.h : Tk/%.h ./Tcl-pTk
 	$(PERL) ./Tcl-pTk $< $@
 
+%.c : Tix/%.c ./Tcl-pTk
+	$(PERL) ./Tcl-pTk $< $@
+
+
+%.h : Tix/../include/%.h ./Tcl-pTk
+	$(PERL) ./Tcl-pTk $< $@
+
 include Makefile
 
 # Auto generation of Xlib.h disabled for now
@@ -24,7 +31,7 @@ need  : GNUmakefile $(LIBOBJS) ../tkGlue.o
 	-ld -r -o /tmp/junk $(LIBOBJS) ../tkGlue.o
 	nm -p /tmp/junk >$@
 
-source : $(C_FILES) 
+source : $(C_FILES) $(notdir $(wildcard mTk/*.[ch]))
 
 $(wildcard *.t) : mkVFunc
 

@@ -10,7 +10,7 @@ Tk::Widget->Construct('Menubar');
 sub Populate
 {
  my ($cw,$args) = @_;
- $cw->Inherit('Populate',$args);
+ $cw->SUPER::Populate($args);
 }
 
 sub command
@@ -20,12 +20,12 @@ sub command
  $button = ['Misc', -underline => 0 ] unless (defined $button);
  my @bargs = ();
  ($button,@bargs) = @$button if (ref($button) && ref $button eq 'ARRAY');
- unless (defined $cw->subwidget($button))
+ unless (defined $cw->Subwidget($button))
   {
    $cw->Component(Menubutton => $button, -text => $button, 
                   '-pack' => [ -side => 'left', -fill => 'y' ], @bargs);
   }
- $cw->subwidget($button)->command(%args);
+ $cw->Subwidget($button)->command(%args);
 }
 
 1;

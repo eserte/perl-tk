@@ -11,6 +11,18 @@ $inc    = "";
 require '../myConfig.out';
 require '../MMutil';
 
+if (&try_compile("config/signedchar.c"))
+ {
+  $define .= " -DANSI_SIGNED_CHAR";
+ }
+else
+ {
+  if (&try_run("config/unsigned.c"))
+   {
+    $define .= " -DCHAR_UNSIGNED";
+   }
+ }
+
 $inc .= " -I." ; 
 
 WriteMakefile(

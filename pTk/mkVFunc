@@ -117,6 +117,8 @@ sub Vfunc
    open(VFUNC,">$fdef")   || die "Cannot open $fdef:$!";
    open(VMACRO,">$mdef")  || die "Cannot open $mdef:$!";
    print VFUNC  "#ifdef _$gard\n";                       
+   print VMACRO "#ifndef _${gard}_VM\n";
+   print VMACRO "#define _${gard}_VM\n";
    print VMACRO "#include \"$htfile\"\n"; 
    foreach $func (sort keys %VVar)                     
     {                                                   
@@ -134,6 +136,7 @@ sub Vfunc
        print VMACRO "#define $func (*${name}ptr->V_$func)\n"  
       }                                                 
     }                                                   
+   print VMACRO "#endif /* _${gard}_VM */\n";
    close(VMACRO);                                       
    print VFUNC  "#endif /* _$gard */\n";                 
    close(VFUNC); # Close this last - Makefile dependancy

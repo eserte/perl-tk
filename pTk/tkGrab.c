@@ -165,7 +165,7 @@ Tk_GrabCmd(clientData, interp, argc, args)
 	    return TCL_ERROR;
 	}
 	return Tk_Grab(interp, tkwin, 0);
-    } else if ((c == '-') && (strncmp(LangString(args[1]), "-global", length) == 0)
+    } else if ((c == '-') && (LangCmpOpt("-global", LangString(args[1]), length) == 0)
 	    && (length >= 2)) {
 	if (argc != 3) {
 	    goto badArgs;
@@ -225,7 +225,7 @@ Tk_GrabCmd(clientData, interp, argc, args)
 	} else {
 	    globalGrab = 1;
 	    length = strlen(LangString(args[2]));
-	    if ((strncmp(LangString(args[2]), "-global", length) != 0) || (length < 2)) {
+	    if ((LangCmpOpt("-global", LangString(args[2]), length) != 0) || (length < 2)) {
 		Tcl_AppendResult(interp, "bad argument \"", LangString(args[2]),
 			"\": must be \"", LangString(args[0]), " set ?-global? window\"",
 			         NULL);

@@ -29,7 +29,7 @@ arguments in C<[]>. Here are some examples:
 
   $mw->bind($class,"<Delete>",'Delete');
 
-Will call $widget->Delete, the $widget being provided (by bind) as 
+This will call $widget->Delete, the $widget being provided (by bind) as 
 the one where the Delete key was pressed.
 
 While having bind provide a widget object for you is ideal in many cases
@@ -55,7 +55,7 @@ easier to re-use:
   $a->bind("<Next>",['Next','Page']);
   $a->bind("<Down>",['Next','Line']);
 
-Will call $a->Next('Page') or $a->Next('Line') respectively.
+This will call $a->Next('Page') or $a->Next('Line') respectively.
 
 Note that the contents of the C<[]> are evaluated by perl when the 
 callback is created. It is often desirable for the arguments provided

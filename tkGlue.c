@@ -90,6 +90,9 @@ static SV *EventToSv _((I32 ix,EventAndKeySymPtr obj));
 static I32 Perl_Trace _((IV ix, SV * sv));
 static I32 LinkIntSet _((IV ix, SV * sv));
 static I32 LinkIntVal _((IV ix, SV * sv));
+static I32 LinkDoubleSet _((IV ix, SV * sv));
+static I32 LinkDoubleVal _((IV ix, SV * sv));
+static I32 LinkCannotSet _((IV ix, SV * sv));
 static void DoWhenIdle _((CV * cv));
 static int handle_generic _((ClientData clientData, XEvent * eventPtr));
 static void HandleBgErrors _((ClientData clientData));
@@ -97,8 +100,9 @@ static void SetTclResult _((Tcl_Interp *interp,int count));
 static void PushVarArgs _((va_list ap,int argc));
 static int InfoFromArgs _((Lang_CmdInfo *info,Tcl_CmdProc *proc,int items, SV **args));
 static I32 InsertArg _((SV **mark,I32 posn,SV *sv));
-static Tk_Window TkToMainWindow _((Tk_Window tkwin));
-static SV * ImageRef _((Tcl_Interp *interp, char *path));
+extern Tk_Window TkToMainWindow _((Tk_Window tkwin));
+static SV * ObjectRef _((Tcl_Interp *interp, char *path));
+static int isSwitch _((char *arg));
 
 void
 #ifdef STANDARD_C                 
@@ -563,9 +567,15 @@ Tk_Window tkwin;
 {
  HV *hv = InterpHv(interp);
  Tk_Cmd *cmdPtr = Tk_Commands;
+ Display *dpy = Tk_Display(tkwin);
+ if (dpy)
+  XSync(dpy,FALSE);
  hv_delete(hv, TOP_KEY, sizeof(TOP_KEY), G_DISCARD);
  Tcl_DeleteInterp(interp);
+ 
 #if 0
+ Tcl_CreateCommand(winPtr->mainPtr->interp, "send",
+		    TkDeadAppCmd, (ClientData) NULL, (void (*)()) NULL);
  fprintf(stderr,"Lang_DeadMainWindow %ld\n",SvREFCNT((SV *) interp));
 #endif
 }
@@ -792,6 +802,7 @@ SV *sv;
  do_watch();
  if (!sv)
   return "";
+ if (SvGMAGICAL(sv)) mg_get(sv);
  if (SvPOK(sv))
   return SvPV(sv, na);
  else
@@ -1164,7 +1175,7 @@ SV *sv;
 
 
 static SV *
-ImageRef(interp, path)
+ObjectRef(interp, path)
 Tcl_Interp *interp;
 char *path;
 {
@@ -1223,7 +1234,7 @@ Tcl_Interp **pinterp;
 }
 
 
-static Tk_Window 
+Tk_Window 
 TkToMainWindow(tkwin)
 Tk_Window tkwin;
 {
@@ -1248,11 +1259,11 @@ Tk_Window tkwin;
 }
 
 Arg
-LangImageArg(interp, name)
+LangObjectArg(interp, name)
 Tcl_Interp *interp;
 char *name;
 {
- return ImageRef(interp, name);
+ return ObjectRef(interp, name);
 }
 
 void
@@ -1597,6 +1608,22 @@ Tk_Window tkwin;
  return TCL_OK;
 }
 
+static int
+isSwitch(s)
+char *s;
+{int ch;
+ if (*s++ != '-')
+  return 0;
+ if (!isalpha(*s))
+  return 0; 
+ while ((ch = *++s))
+  {
+   if (!isalnum(ch) && ch != '_')
+    return 0;
+  }
+ return 1;
+}
+
 static 
 XS(SelectionGet)
 {
@@ -1609,7 +1636,7 @@ XS(SelectionGet)
  while (i < items)
   {STRLEN len;
    char *s = SvPV(ST(i),len);
-   if (len && *s != '-')
+   if (len && !isSwitch(s))
     {
      target = Tk_InternAtom(info->tkwin,s);
      i += 1;
@@ -1812,7 +1839,7 @@ XS(XStoSubCmd)
    MEXTEND(sp, 1);                /* May not be room ? */
    while (sp > mark + 2)          /* Move all but two args up 1 */
     {                                    
-     if (SvPOK(*sp) && *(SvPV(*sp, na)) == '-')
+     if (SvPOK(*sp) && isSwitch(SvPV(*sp, na)))
       break;                             
      sp[1] = sp[0];                      
      sp--;                               
@@ -1839,7 +1866,7 @@ XS(XStoAfterSub)
   }
  /* Find a place for the widget arg after a possible subcommands */
  posn = 1;
- if (posn < items && SvPOK(ST(posn)) && *SvPV(ST(posn),na) != '-')
+ if (posn < items && SvPOK(ST(posn)) && !isSwitch(SvPV(ST(posn),na)))
   posn++;
  items = InsertArg(mark,posn,ST(0));
  ST(0) = name;          /* Fill in command name */
@@ -1859,7 +1886,7 @@ XS(XStoDisplayof)
    croak("Usage $widget->%s(...)",SvPV(name,na));
   }
  posn = 1;
- if (posn < items && SvPOK(ST(posn)) && *SvPV(ST(posn),na) != '-')
+ if (posn < items && SvPOK(ST(posn)) && !isSwitch(SvPV(ST(posn),na)))
   posn++;
  items = InsertArg(mark,posn++,sv_2mortal(newSVpv("-displayof",0)));
  SPAGAIN;
@@ -1962,10 +1989,10 @@ XS(XStoNoWindow)
 }
 
 static CV *
-TkXSUB(name,proc,xs)
+TkXSUB(name,xs,proc)
 char *name;
-Tcl_CmdProc *proc;
 void (*xs)_((CV *));
+Tcl_CmdProc *proc;
 {
  SV *sv = newSVpv(BASEEXT,0);
  CV *cv;
@@ -1989,7 +2016,7 @@ Lang_TkCommand(name,proc)
 char *name;
 Tcl_CmdProc *proc;
 {
- TkXSUB(name,proc,XStoTclCmd);
+ TkXSUB(name,XStoTclCmd,proc);
 }
 
                      
@@ -2066,6 +2093,26 @@ Tk_Window tkwin;
   }
 }
 
+static void Lang_DeleteCommand _((Tcl_Interp *interp,Tcl_Command info));
+
+static void
+Lang_DeleteCommand(interp, info)
+Tcl_Interp *interp;
+Tcl_Command info;
+{
+ if (info)
+  {
+   if (info->Tk.deleteProc)   
+    {                         
+     (*info->Tk.deleteProc) (info->Tk.deleteData);
+     info->Tk.deleteProc = NULL;
+     info->Tk.deleteData = NULL;
+    }                         
+   info->Tk.clientData = NULL;
+   info->Tk.proc       = NULL;
+  }
+}
+
 void
 Lang_DeleteWidget(interp, info)
 Tcl_Interp *interp;
@@ -2074,14 +2121,7 @@ Tcl_Command info;
  Tk_Window tkwin = info->tkwin;
  char *cmdName = Tk_PathName(tkwin);
  SV *win = WidgetRef(interp, cmdName);
- if (info->Tk.deleteProc)
-  {
-   (*info->Tk.deleteProc) (info->Tk.deleteData);
-   info->Tk.deleteProc = NULL;
-   info->Tk.deleteData = NULL;
-  }
- info->Tk.clientData = NULL;
- info->Tk.proc       = NULL;
+ Lang_DeleteCommand(interp,info);
  if (win && SvOK(win))
   {
    HV *hash = NULL;
@@ -2093,21 +2133,14 @@ Tcl_Command info;
 }
 
 void
-Lang_DeleteImage(interp, info)
+Lang_DeleteObject(interp, info)
 Tcl_Interp *interp;
 Tcl_Command info;
 {
  char *cmdName = SvPV(info->image,na);
  if (info->interp != interp)
   Tcl_Panic("%s->interp=%p expected %p", cmdName, info->interp, interp);
- if (info->Tk.deleteProc)
-  {                   
-   (*info->Tk.deleteProc) (info->Tk.deleteData);
-   info->Tk.deleteProc = NULL;
-   info->Tk.deleteData = NULL;
-  }                   
- info->Tk.clientData = NULL;
- info->Tk.proc = NULL;
+ Lang_DeleteCommand(interp, info);
  DecInterp(info->interp,cmdName); 
 }
 
@@ -2146,13 +2179,12 @@ Tcl_CmdDeleteProc *deleteProc;
 }
 
 Tcl_Command
-Lang_CreateImage(interp, cmdName, proc, clientData, deleteProc, typePtr)
+Lang_CreateObject(interp, cmdName, proc, clientData, deleteProc)
 Tcl_Interp *interp;
 char *cmdName;
 Tcl_CmdProc *proc;
 ClientData clientData;
 Tcl_CmdDeleteProc *deleteProc;
-Tk_ImageType *typePtr;
 {
  HV *hv = InterpHv(interp);
  STRLEN cmdLen = strlen(cmdName);
@@ -2173,7 +2205,19 @@ Tk_ImageType *typePtr;
  return info;
 }
 
-void
+Tcl_Command
+Lang_CreateImage(interp, cmdName, proc, clientData, deleteProc, typePtr)
+Tcl_Interp *interp;
+char *cmdName;
+Tcl_CmdProc *proc;
+ClientData clientData;
+Tcl_CmdDeleteProc *deleteProc;
+Tk_ImageType *typePtr;
+{
+ return Lang_CreateObject(interp, cmdName, proc, clientData, deleteProc);
+}
+
+Tcl_Command
 Tcl_CreateCommand(interp, cmdName, proc, clientData, deleteProc)
 Tcl_Interp *interp;
 char *cmdName;
@@ -2191,9 +2235,11 @@ Tcl_CmdDeleteProc *deleteProc;
     }                             
    if (!cv)                       
     {                             
+     abort();
      croak("No XSUB for %s\n",cmdName);
     }
   }
+ return NULL;
 }
 
 int
@@ -2205,6 +2251,7 @@ int *boolPtr;
  static char *yes[] = {"y", "yes", "true", "on", NULL};
  static char *no[] =  {"n", "no", "false", "off", NULL};
  do_watch();
+ if (SvGMAGICAL(sv)) mg_get(sv);
  if (SvPOK(sv))
   {
    char *s = SvPV(sv, na);
@@ -2238,6 +2285,7 @@ Tcl_Interp *interp;
 SV *sv;
 double *doublePtr;
 {
+ if (SvGMAGICAL(sv)) mg_get(sv);
  *doublePtr = SvNV(sv);
  do_watch();
  return TCL_OK;
@@ -2249,6 +2297,7 @@ Tcl_Interp *interp;
 SV *sv;
 int *intPtr;
 {
+ if (SvGMAGICAL(sv)) mg_get(sv);
  if (SvIOK(sv) || looks_like_number(sv))
   *intPtr = SvIV(sv);
  else
@@ -2312,13 +2361,42 @@ int flags;
  return SvPV(sv, na);
 }
 
+int 
+LangCmpOpt(opt,arg,len)
+char *opt;
+char *arg;
+size_t len;
+{
+ int result = 0;
+ if (!len)
+  len = strlen(arg);
+ if (*opt == '-')
+  opt++;
+ if (*arg == '-')
+  {
+   arg++;
+   if (len)
+    len--;
+  }
+ while (len--)
+  {char ch = *arg++;;
+   if ((result = *opt++ - ch) || !ch)
+    break;
+  }
+ return result;
+}
+
 int
 LangCmpArg(a,b)
 SV *a;
 SV *b;
 {
- char *as = (a && SvOK(a)) ? SvPV(a,na) : "";
- char *bs = (b && SvOK(b)) ? SvPV(b,na) : "";
+ char *as;
+ char *bs;
+ if (SvGMAGICAL(a)) mg_get(a);
+ if (SvGMAGICAL(b)) mg_get(b);
+ as = (a && SvOK(a)) ? SvPV(a,na) : "";
+ bs = (b && SvOK(b)) ? SvPV(b,na) : "";
  return strcmp(as,bs);
 }
 
@@ -2385,6 +2463,7 @@ ClientData clientData;
 {
  Tk_TraceInfo *p;
  struct ufuncs *ufp;
+ MAGIC **mgp;
  MAGIC *mg;
 
  if (SvTHINKFIRST(sv))
@@ -2415,10 +2494,20 @@ ClientData clientData;
  p->sv = SvREFCNT_inc(sv);
  p->part2 = part2;
 
- Newz(702, mg, 1, MAGIC);
- mg->mg_moremagic = SvMAGIC(sv);
+ /* We want to be last in the chain so that any 
+    other magic has been called first
+  */
 
- SvMAGIC(sv) = mg;
+ mgp = &SvMAGIC(sv);
+ while ((mg = *mgp))
+  {
+   mgp = &mg->mg_moremagic;
+  }
+
+ Newz(702, mg, 1, MAGIC);
+ mg->mg_moremagic = NULL;
+ *mgp = mg;
+
  mg->mg_obj = 0;
  mg->mg_type = 'U';
  mg->mg_len = 0;
@@ -2429,14 +2518,13 @@ ClientData clientData;
  ufp->uf_val = 0;
  ufp->uf_set = Perl_Trace;
  ufp->uf_index = (IV) p;
- SvMAGIC(sv)->mg_ptr = (char *) ufp;
+ mg->mg_ptr = (char *) ufp;
 
  if (!SvMAGICAL(sv))
   abort();
 
  return TCL_OK;
 }
-
 
 SV *
 FindTkVarName(varName,flags)
@@ -2446,10 +2534,21 @@ int flags;
  SV *name = newSVpv(BASEEXT,strlen(BASEEXT));
  SV *sv;
  sv_catpv(name,"::");
+ if (!strncmp(varName,"tk_",3))
+  varName += 3;
  sv_catpv(name,varName);
  sv = perl_get_sv(SvPV(name,na),flags);
  SvREFCNT_dec(name);
  return sv;
+}
+
+char *
+LangLibraryDir()
+{
+ SV *sv = FindTkVarName("library",0);
+ if (sv && SvPOK(sv))
+  return SvPV(sv,na);
+ return NULL;
 }
 
 static I32
@@ -2463,12 +2562,41 @@ SV *sv;
 }
 
 static I32
+LinkDoubleSet(ix, sv)
+IV ix;
+SV *sv;
+{
+ double *p = (double *) ix;
+ (*p) = SvNV(sv);
+ return 0;
+}
+
+static I32
+LinkCannotSet(ix, sv)
+IV ix;
+SV *sv;
+{
+ croak("Attempt to set readonly linked variable");
+ return 0;
+}
+
+static I32
 LinkIntVal(ix, sv)
 IV ix;
 SV *sv;
 {
  int *p = (int *) ix;
  sv_setiv(sv,*p);
+ return 0;
+}
+
+static I32
+LinkDoubleVal(ix, sv)
+IV ix;
+SV *sv;
+{
+ double *p = (double *) ix;
+ sv_setnv(sv,*p);
  return 0;
 }
 
@@ -2484,15 +2612,26 @@ int type;
   {
    struct ufuncs uf;
    uf.uf_index = (IV) addr;
-   switch(type)
+   switch(type & ~TCL_LINK_READ_ONLY)
     {
+     case TCL_LINK_INT:
      case TCL_LINK_BOOLEAN:
       uf.uf_val   = LinkIntVal;
       uf.uf_set   = LinkIntSet;
       *((int *) addr) = SvIV(sv);
       break;
+     case TCL_LINK_DOUBLE:
+      uf.uf_val   = LinkDoubleVal;
+      uf.uf_set   = LinkDoubleSet;
+      *((double *) addr) = SvNV(sv);
+      break;
+     case TCL_LINK_STRING:
      default:
       return EXPIRE((interp,"Cannot link %s type %d\n",varName,type));
+    }
+   if (type & TCL_LINK_READ_ONLY)
+    {
+     uf.uf_set   = LinkCannotSet;
     }
    sv_magic(sv,NULL,'U',(char *) (&uf), sizeof(uf));
    return TCL_OK;
@@ -2675,15 +2814,24 @@ int type;
   }
  else if (SvPOK(sv))
   {
+   HV *old_stash = curcop->cop_stash;
    char *name = SvPV(sv,na);
    SV *x = NULL;
    int prefix = '?';
+   curcop->cop_stash = NULL;
    switch (type)
     {
      case TK_CONFIG_SCALARVAR:
       prefix = '$'; 
      default:
-      x = perl_get_sv(name,TRUE);
+      if (!strchr(name,':'))
+       {
+        x = FindTkVarName(name,1);
+       }
+      else
+       {
+        x = perl_get_sv(name,TRUE);
+       }
       break;
      case TK_CONFIG_ARRAYVAR:
       x = (SV *) perl_get_av(name,TRUE);
@@ -2694,6 +2842,7 @@ int type;
       prefix = '%'; 
       break;
     }
+   curcop->cop_stash = old_stash;
    if (x)
     {
      *vp = SvREFCNT_inc(x);
@@ -2742,6 +2891,7 @@ SV *sv;
 {
  if (sv)
   {
+   AV *av;
    /* Case of a Tcl_Merge which returns an AV * */
    if (SvTYPE(sv) == SVt_PVAV)
     sv = newRV(sv);
@@ -2755,6 +2905,13 @@ SV *sv;
    if (!SvROK(sv))
     {
      sv = MakeReference(sv);
+    }
+   if (SvTYPE(SvRV(sv)) == SVt_PVAV)
+    {
+     if (av_len((AV *) SvRV(sv)) < 0)
+      {
+       croak("Empty list is not a valid callback");
+      }
     }
    if (!sv_isa(sv,"Tk::Callback"))
     sv = Blessed("Tk::Callback",sv);
@@ -2835,6 +2992,7 @@ EventAndKeySymPtr obj;
              else
               {char *x;
                arg = sv_newmortal();
+               sv_setpv(arg,"");
                while ((x = strchr(s,'%')))
                 {
                  if (x > s)
@@ -2945,9 +3103,11 @@ int flags;
     }
    else
     {
+#if 0
      fprintf(stderr, "Dubious call '%s' (obj=%s)\n", SvPV(sv, na), SvPV(obj, na));
      DumpStack();
      abort();
+#endif
      count = perl_call_sv(sv, flags);
     }
   }
@@ -3867,23 +4027,28 @@ int flags;
 /* Tcl caches compiled regexps so does not free them */
 
 Tcl_RegExp
-Tcl_RegExpCompile(interp, string)
+Lang_RegExpCompile(interp, string, fold)
 Tcl_Interp *interp;
 char *string;
+int fold;
 {
  PMOP pm;
  memset(&pm,0,sizeof(pm));
+ if (fold)
+  {
+   pm.op_pmflags |= PMf_FOLD;
+  }
  return pregcomp(string,string+strlen(string),&pm);
 }
 
 int
-Tcl_RegExpExec(interp, re, string, start)
+Lang_RegExpExec(interp, re, string, start)
 Tcl_Interp *interp;
 Tcl_RegExp re;
 char *string;
 char *start;
 {
- return pregexec(re,start,start+strlen(start),string,0,NULL,0);
+ return pregexec(re,start,start+strlen(start),string,0,NULL,1);
 }
 
 void 
@@ -3907,18 +4072,6 @@ char **endPtr;
 void
 Lang_BuildInImages()
 {
-  /* 
-   * Create any image types, and Photo formats
-   * which should be considered 'built in'
-   *
-   * These should really be 'required' and dynamically loaded
-   * to keep program size down for simple applications.
-   */
-
-	/*
-	 * Create built-in image types.
-	 */
-    
 #if 0
 	Tk_CreateImageType(&tkBitmapImageType);
 	Tk_CreateImageType(&tkPixmapImageType);
@@ -3972,8 +4125,8 @@ _((void))
  CvXSUBANY(cv).any_i32 = (I32) '@';
  newXS("XEvent::DESTROY", FreeAbstract, __FILE__);
 
- sprintf(buf, "%s::%s_module", BASEEXT, BASEEXT);
 #ifdef NTK_VERSION
+ sprintf(buf, "%s::Version", BASEEXT);
  sv_setpv(perl_get_sv(buf,1),NTK_VERSION);
 #endif
 
@@ -4002,30 +4155,30 @@ _((void))
 
  cv = newXS("Tk::Interp::DESTROY", InterpDestroy, __FILE__);
 
- TkXSUB("bind", Tk_BindCmd,   XStoBind);
- TkXSUB("pack", Tk_PackCmd,   XStoAfterSub);
- TkXSUB("place",Tk_PlaceCmd,  XStoAfterSub);
- TkXSUB("winfo",Tk_WinfoCmd,  XStoSubCmd);
- TkXSUB("wm",   Tk_WmCmd,     XStoSubCmd);
- TkXSUB("grab", Tk_GrabCmd, XStoSubCmd);
- TkXSUB("focus", Tk_FocusCmd, XStoSubCmd);
- TkXSUB("property", Tk_PropertyCmd, XStoSubCmd);
+ TkXSUB("bind",   XStoBind, Tk_BindCmd);
+ TkXSUB("pack",   XStoAfterSub, Tk_PackCmd);
+ TkXSUB("place",  XStoAfterSub,Tk_PlaceCmd);
+ TkXSUB("winfo",  XStoSubCmd,Tk_WinfoCmd);
+ TkXSUB("wm",     XStoSubCmd,   Tk_WmCmd);
+ TkXSUB("grab", XStoSubCmd, Tk_GrabCmd);
+ TkXSUB("focus", XStoSubCmd, Tk_FocusCmd);
+ TkXSUB("property", XStoSubCmd, Tk_PropertyCmd);
 
- TkXSUB("clipboard", Tk_ClipboardCmd, XStoDisplayof);
- TkXSUB("bell", Tk_BellCmd, XStoDisplayof);
+ TkXSUB("clipboard", XStoDisplayof, Tk_ClipboardCmd);
+ TkXSUB("bell", XStoDisplayof, Tk_BellCmd);
 
- TkXSUB("bindtags", Tk_BindtagsCmd, XStoTk);
- TkXSUB("destroy", Tk_DestroyCmd, XStoTk);
- TkXSUB("raise", Tk_RaiseCmd, XStoTk);
- TkXSUB("lower", Tk_LowerCmd, XStoTk);
- TkXSUB("option", Tk_OptionCmd, XStoOption);
- TkXSUB("image", Tk_ImageCmd,  XStoImage);
- TkXSUB("selection", Tk_SelectionCmd, XStoTk);
- TkXSUB("tk", Tk_TkCmd, XStoTk);
+ TkXSUB("bindtags", XStoTk, Tk_BindtagsCmd);
+ TkXSUB("destroy", XStoTk, Tk_DestroyCmd);
+ TkXSUB("raise", XStoTk, Tk_RaiseCmd);
+ TkXSUB("lower", XStoTk, Tk_LowerCmd);
+ TkXSUB("option", XStoOption, Tk_OptionCmd);
+ TkXSUB("image",  XStoImage, Tk_ImageCmd);
+ TkXSUB("selection", XStoTk, Tk_SelectionCmd);
+ TkXSUB("tk", XStoTk, Tk_TkCmd);
 
- TkXSUB("exit",       Tk_ExitCmd, XStoNoWindow);
- TkXSUB("after",      Tk_AfterCmd, XStoNoWindow);
- TkXSUB("fileevent",  Tk_FileeventCmd, XStoNoWindow);
+ TkXSUB("exit", XStoNoWindow,       Tk_ExitCmd);
+ TkXSUB("after", XStoNoWindow,      Tk_AfterCmd);
+ TkXSUB("fileevent", XStoNoWindow,  Tk_FileeventCmd);
 
  Lang_TkCommand("send",       Tk_SendCmd);
 

@@ -24,7 +24,7 @@ foreach $name (sort keys %unres)
  {
   if ($name =~ /^X[A-Z]/)
    {
-    print "$name : ",pretty($unres{$name}),"\n";
+    print "$name : ",Pretty($unres{$name}),"\n";
    }
  }
 

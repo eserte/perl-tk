@@ -1,0 +1,89 @@
+#!/usr/local/bin/perl -w
+
+require 'perlfiles';
+
+#Looking for sub's in perl/Tk which are either all lower case,
+#or consist of a Tk keyword concatenated with another word,
+#yields this suggested table:
+
+%methods = (waitwindow     => 'waitWindow',
+            waitvisibility => 'waitVisibility',
+            currentfocus   => 'focusCurrent',
+            packforget     => 'packForget',
+            packinfo       => 'packInfo',
+            packpropagate  => 'packPropagate',
+            descendants    => 'Descendants',
+            walk           => 'Walk',  
+            classinit      => 'ClassInit',
+            rootproperty   => 'propertyRoot',
+            show           => 'Show', 
+            focuschildren  => 'FocusChildren',
+            pretty         => 'Pretty',
+            receive        => 'Receive',
+            setlist        => 'SetList', 
+            subconfigure   => 'Subconfigure',
+            subwidget      => 'Subwidget',
+            afterId        => 'RepeatId',
+            labelvariable  => 'labelVariable', 
+            labelpack      => 'labelPack',
+            OptionGet      => 'optionGet'
+           );
+
+
+$methods = "(\\bsub\\s+|->\\s*)(" . join('|',keys %methods) . ")\\b";
+
+sub methods
+{
+ my $changes = s/$methods/$1.$methods{$2}/oge;
+ $changes += s/\bpretty\b\(/Pretty(/g;
+}
+
+sub options
+{
+ my $changes = s/\b-label_?(\w+)\b/-label\u$1/g;
+ $changes += s/\bTk::tk_/Tk::/g;
+ $changes += s,"\\@\$(tk_library|Tk::library)/([^"]*)",'\@'.Tk->findINC('$2'),g;
+ $changes += s,"\$(tk_library|Tk::library)/([^"]*)",Tk->findINC('$2'),g;
+ $changes += s/\$tk_library\b/\$Tk::library/g;
+ print STDERR "$ARGV:$.: $_" if (/tk_\w+/);
+ return $changes;
+}
+
+$^I = ".b8";
+
+@keep  = ();
+@loose = ();
+
+@ARGV = &perlfiles(@ARGV) if (!@ARGV || -d $ARGV[0]);
+
+@ARGV = grep(!/(b9names|\.b8)$/,@ARGV);
+
+$changes = 0;
+while (<>)
+ {
+  $changes += &methods;
+  $changes += &options;
+  print;
+  if (eof)
+   {
+    my $backup = "$ARGV$^I";
+    print STDERR "$changes changes in $ARGV\n";
+    if ($changes)
+     {
+      push(@keep,$backup);
+     }
+    else
+     {
+      push(@loose,$ARGV);
+     }
+    $changes = 0;
+   }
+ }
+
+chmod(0444,@keep);
+
+foreach $file (@loose)
+ {
+  unlink($file) || warn "Cannot unlink $file:$!";
+  rename("$file$^I",$file) || warn "Cannot rename $file$^I do $file:$!";
+ }

@@ -1,5 +1,5 @@
 package Tk::HTMLText;
-require Tk::Text;
+require Tk::ROText;
 require Tk::Photo;
 require Tk::Pixmap;
 require Tk::Bitmap;
@@ -7,22 +7,15 @@ require Tk::HTML;
 use Carp;
 use strict qw(vars subs);
 
-@Tk::HTMLText::ISA = qw(Tk::HTML Tk::Text);
+@Tk::HTMLText::ISA = qw(Tk::HTML Tk::Derived Tk::ROText);
 
 Tk::Widget->Construct('HTMLText');
-
-sub classinit
-{
- my ($class,$mw) = @_;
- $class->bindRdOnly($mw);
- return $class;
-}
 
 sub InitObject
 {
  my ($w,$args) = @_;
  $w->Cleanout;
- $w->InheritThis($args);
+ $w->SUPER::InitObject($args);
  
  $args->{-wrap} = 'word';
  $args->{-width} = 80;
@@ -49,6 +42,14 @@ sub InitObject
  $w->tag('configure','HREF',-underline => 1, -font => $w->Font(family => 'times',slant => 'i', weight => 'bold' ));
  $w->tag('configure','CENTER',-justify => 'center');
  $w->{Configure} = {};
+ $w->ConfigSpecs('-showlink' => ['CALLBACK',undef,undef,undef]);
+}
+
+sub ShowLink
+{
+ my ($w,$link) = @_;
+ my $cb = $w->cget('-showlink');
+ $cb->Call($link) if (defined $cb);
 }
 
 sub AUTOLOAD

@@ -14,6 +14,7 @@ sub new
 {
  my $package = shift;
  my $name = $0;
+ $name = 'ptk' if ($name eq '-e'); 
  $name    =~ s#^.*/##; 
  my $top = eval { bless CreateMainWindow("\l$name", "\u$name", @_), $package };
  croak($@ . "$package" ."::new(" . join(',',@_) .")") if ($@);
@@ -36,14 +37,55 @@ sub InitBindings
  $mw->bind('all',"<F10>",'FirstMenu');
 }
 
+
+
+END
+{
+ my $top;
+ while ($top = pop(@Windows))
+  {
+   if ($top->IsWidget)
+    {
+     # Tk data structuctures are still in place
+     # this can occur if non-callback perl code did a 'die'.
+     # It will also handle some cases of non-Tk 'exit' being called
+     # Destroy this mainwindow and hence is descendants ...
+     $top->destroy; 
+    }
+  }
+}
+
+
+1;
+
+__END__
+
 sub CmdLine
 {
  my $top = shift;
  my $state = $top->state;
 
- local ($opt_iconposition,$opt_geometry,$opt_iconic);
+ *opt_fg = \$opt_foreground; 
+ *opt_bg = \$opt_background; 
+ *opt_fn = \$opt_font; 
+ *opt_motif = \$Tk::strictMotif;
 
- my $result = GetOptions('iconposition=s','geometry=s','iconic!');
+ my $result = GetOptions('iconposition=s',
+                         'geometry=s',
+                         'title=s',
+                         'fg=s','foreground=s',
+                         'bg=s','background=s',
+                         'fn=s','font=s',
+                         'iconic!','motif!');
+
+ $top->title($opt_title) if (defined $opt_title);
+ my (@colours) = ();
+ push(@colours,foreground => $opt_foreground)if (defined $opt_foreground);
+ $opt_background = '#d9d9d9' if (@colours && !defined($opt_background));
+ push(@colours,background => $opt_background)if (defined $opt_background);
+ $top->setPalette(@colours) if (@colours);
+
+ $top->optionAdd('*font' => $opt_font)  if (defined $opt_font);
 
  if (defined $opt_iconposition)
   {
@@ -69,28 +111,8 @@ sub CmdLine
   {
    $top->deiconify unless ($state eq 'normal');
   }
+ return $top;
 }
-
-END
-{
- my $top;
- while ($top = pop(@Windows))
-  {
-   if ($top->IsWidget)
-    {
-     # Tk data structuctures are still in place
-     # this can occur if non-callback perl code did a 'die'.
-     # It will also handle some cases of non-Tk 'exit' being called
-     # Destroy this mainwindow and hence is descendants ...
-     $top->destroy; 
-    }
-  }
-}
-
-
-1;
-
-__END__
 
 sub SaveYourself
 {

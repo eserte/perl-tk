@@ -1,52 +1,49 @@
 #!/usr/local/bin/perl -w
-BEGIN { unshift(@INC,"./blib")}
+
+BEGIN 
+ {
+  require lib;
+  chomp($dir = `pwd`);
+  import lib "$dir/blib";
+ }
 
 use Tk;
-use Tk::FileSelect;
+require Tk::TextUndo;
+require Tk::FileSelect;
 use Tk::ErrorDialog;
 
-sub Open
-{
- my ($text,$file) = @_;
- if (open(FILE,"<$file"))
-  {
-   $text->MainWindow->Busy;
-   $text->delete('0.0','end');
-   while (<FILE>)
-    {
-     $text->insert('end',$_);
-    }
-   close(FILE);
-   $text->MainWindow->Unbusy;
-  }
-}
-                                     
-$top = MainWindow->new();
-$mb  = $top->Component(Menubar => 'menubar',
+my $top = MainWindow->new();
+my $mb  = $top->Component(Menubar => 'menubar',
                        '-pack' => [ -side => 'top', -fill => 'x' ]);
 
-$fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
+my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                        '-accept'   => sub 
                                      { my $file = shift ; 
-                                       my $val = (-r $file) && (-T $file);  
-                                       return $val;
+                                       return 0 if (-s $file && !(stat(_))[12]);
+                                       return (-r $file) && (-T $file);  
                                      },
                        Name => 'fs', -filter => '*');
 
+my $t = $top->Component(TextUndo => 'text', -wrap => 'none', -bg => 'white');
+
 $mb->command(-button => ['File',-underline => 0],
              -label => 'Open', -underline => 0, 
-             -command => sub { my $file = $fs->show(-popover => $top);
-                               Open($t,$file) if (defined $file);
+             -command => sub { my $file = $fs->Show(-popover => $top);
+                               $t->Load($file) if (defined $file);
                              });
+$mb->command(-button => 'File', 
+             -label => 'Save', -underline => 0, 
+             -command => [ $t , 'Save' ]);
 $mb->command(-button => 'File', -label => 'Quit', -underline => 0, 
               -command => [ 'destroy',$top ] );
 
-$t = $top->Component(Text => 'text', -wrap => 'none', -bg => 'white');
 $top->Delegates(DEFAULT => $t); 
 $top->ConfigSpecs(DEFAULT => [$t]); 
 $t->pack(-expand => 1, -fill => 'both');
 $top->AddScrollbars($t);
 $top->ConfigDefault(\%args);
 $top->configure(%args) if (%args);
+
+$t->Load($ARGV[0]) if (@ARGV);
 
 MainLoop;

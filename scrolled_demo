@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-BEGIN { unshift(@INC,"blib",".") }
+use lib ("blib",".");
 
 use Tk;
 
@@ -10,22 +10,22 @@ use Tk;
 $top = MainWindow->new();
 
 $lb  = $top->ScrlListbox(-scrollbars => 'sw',-label => 'sw');
-$lb->configure(-label_relief => 'raised');
+$lb->configure(-labelRelief => 'raised');
 $lb->insert('end',@data);
 $lb->pack(-side => left, -expand => 1, -fill => 'both'  );
 
 $lb  = $top->ScrlListbox(-scrollbars => 'nw',-label => 'nw');
-$lb->configure(-label_relief => 'raised');
+$lb->configure(-labelRelief => 'raised');
 $lb->insert('end',@data);
 $lb->pack(-side => left, -expand => 1, -fill => 'both'  );
 
 $lb  = $top->ScrlListbox(-scrollbars => 'se',-label => 'se');
-$lb->configure(-label_relief => 'raised');
+$lb->configure(-labelRelief => 'raised');
 $lb->insert('end',@data);
 $lb->pack(-side => left, -expand => 1, -fill => 'both'  );
 
 $lb  = $top->ScrlListbox(-scrollbars => 'ne',-label => 'ne');
-$lb->configure(-label_relief => 'raised');
+$lb->configure(-labelRelief => 'raised');
 $lb->insert('end',@data);
 $lb->pack(-side => left, -expand => 1, -fill => 'both'  );
 

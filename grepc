@@ -1,0 +1,38 @@
+#!/usr/local/bin/perl 
+
+use File::Find;
+
+$expr = shift;
+
+sub match
+{
+ if (/$expr/o)
+  {
+   print "$File::Find::dir/$file:$.: $_" 
+  }
+ return 0;
+}
+
+sub wanted
+{
+ $File::Find::prune = 0;
+ if (-T $_ && !/%$/ && /\.[ch]$/)
+  {
+   local $file   = ($_);
+   local ($_);
+   open($file,"<$file") || die "Cannot open $file:$!";
+   while (<$file>)
+    {
+     last if &match;
+    }
+   close($file);
+  }
+ elsif (-d $_)
+  {
+   $File::Find::prune = 1 if ($_ eq 'mTk');
+  }
+}
+
+@ARGV = '.' unless (@ARGV);
+
+find(\&wanted,@ARGV);

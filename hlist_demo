@@ -1,0 +1,27 @@
+#!/usr/local/bin/perl -w
+use lib ('blib');
+use Tk;
+require Tk::HList;
+
+$mw = MainWindow->new;
+
+my $hl = $mw->ScrlHList(-separator => '.', -width => 25, 
+                        -drawbranch => 1,
+                        -indent => 10);
+
+
+$hl->pack(-expand => 1, -fill => 'both');
+
+@list = qw(one two three);
+
+foreach $item (@list)
+ {
+  $hl->add($item,-itemtype => 'text', -text => $item);
+  my $subitem;
+  foreach $subitem (@list)
+   {
+    $hl->addchild($item,-itemtype => 'text', -text => $subitem);
+   }
+ }
+
+MainLoop;

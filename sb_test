@@ -1,0 +1,72 @@
+#!/usr/local/bin/perl -w
+use lib 'blib';
+use Tk;
+use Carp;
+
+sub Tk::Widget::Scrolled
+{
+ my ($parent,$kind,%args) = @_;
+ my $cw     = $parent->Frame;
+ my $w      = $cw->$kind();
+ $cw->AddScrollbars($w);
+ $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars','w']);
+ return $cw->Default("\L$kind" => $w);
+}
+
+sub Tk::Listbox::Scrollbars
+{
+ my ($w,$opt) = @_;
+ croak "widget not packed" unless ($w->manager eq 'pack');
+ my %pack = $w->packInfo;
+ my $cw   = $pack{'-in'};
+ print "cw=$cw opt=$opt\n";
+ 
+ my $xsb;
+ my $ysb;
+ my $xside = (($opt =~ /^n/) ? 'top' : 'bottom');
+ my $yside = (($opt =~ /w$/) ? 'left' : 'right');
+
+ if ($opt =~ /^[ns][we]?$/)
+  {
+   $xsb = $cw->Scrollbar(-orient => 'horizontal', -command => [ 'xview', $w ]);
+   $w->configure(-xscrollcommand => ["set", $xsb]);
+   if ($opt =~ /^[ns][we]$/)
+    {
+     my $slice  = $cw->Frame;
+     my $corner = $slice->Frame('-relief' => 'raised', '-width' => 20, '-height' => 20);
+     $ysb = $slice->Scrollbar(-orient => 'vertical', -command => [ 'yview', $w ]);
+     $w->configure(-yscrollcommand => ["set", $ysb]);
+     $ysb->pack(-side => $yside, -fill => 'y');
+     $corner->pack(-before => $ysb, -side => $xside, -anchor => $opt,  -pady => 2, -fill => 'x');
+     $slice->pack(-in => $cw, -before => $w, -side => $yside, -fill => 'y');
+    }
+   $xsb->pack(-in => $cw, -before => $w, -side => $xside, -fill => 'x');
+  }
+ elsif ($opt =~ /^[ns]?[we]$/)
+  {
+   $ysb = $cw->Scrollbar(-orient => 'vertical', -command => [ 'yview', $w ]);
+   $w->configure(-yscrollcommand => ["set", $ysb]);
+   $ysb->pack(-in => $cw, -before => $w, -side => $yside, -fill => 'y');
+  }
+ return $w;
+}
+
+my $top = MainWindow->new();
+
+my @data = ();
+for (0..30)
+ {
+  push(@data,"Line number $_ is long enough");
+ }
+
+my $lb  = $top->Listbox->pack(-expand => 1, -fill => both)->Scrollbars('s');
+$lb->insert('end',@data);
+$lb  = $top->Listbox->pack(-expand => 1, -fill => both)->Scrollbars('e');
+$lb->insert('end',@data);
+$lb  = $top->Listbox->pack(-expand => 1, -fill => both)->Scrollbars('se');
+$lb->insert('end',@data);
+
+print join(',',$top->packSlaves),"\n";
+
+
+MainLoop;

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-BEGIN { unshift(@INC,'../blib','blib') } 
+use lib ('../blib','blib');
 
 use Tk;
 

@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkSelect.c 1.47 95/05/11 09:37:15";
+static char sccsid[] = "@(#) tkSelect.c 1.48 95/08/21 10:49:09";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -549,9 +549,19 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
 	infoPtr->owner = tkwin;
 	infoPtr->nextPtr = dispPtr->selectionInfoPtr;
 	dispPtr->selectionInfoPtr = infoPtr;
-    } else if ((infoPtr->owner != tkwin) && (infoPtr->clearProc != NULL)) {
-	clearProc = infoPtr->clearProc;
-	clearData = infoPtr->clearData;
+    } else if (infoPtr->clearProc != NULL) {
+	if (infoPtr->owner != tkwin) {
+	    clearProc = infoPtr->clearProc;
+	    clearData = infoPtr->clearData;
+	} else if (infoPtr->clearProc == LostSelection) {
+	    /*
+	     * If the selection handler is one created by "selection own",
+	     * be sure to free the record for it;  otherwise there will be
+	     * a memory leak.
+	     */
+
+	    ckfree((char *) infoPtr->clearData);
+	}
     }
 
     infoPtr->owner = tkwin;
@@ -774,7 +784,7 @@ Tk_GetXSelection(interp, tkwin, selection, target, proc, clientData)
 		if (count > TK_SEL_BYTES_AT_ONCE) {
 		    panic("selection handler returned too many bytes");
 		}
-		buffer[count] = '\0';
+		((char *) buffer)[count] = '\0';
 		result = (*proc)(clientData, interp, buffer, count, format, type, tkwin);
 		if ((result != TCL_OK) || (count < TK_SEL_BYTES_AT_ONCE)
 			|| (ip.selPtr == NULL)) {
@@ -996,10 +1006,10 @@ Tk_SelectionCmd(clientData, interp, argc, args)
 	    }
 	    c = string[1];
 	    length = strlen(string);
-	    if ((c == 'd') && (strncmp(string, "-displayof", length) == 0)) {
+	    if ((c == 'd') &&  LangCmpOpt("-displayof",string,length) == 0 ) {
 		path = LangString(argp[1]);
-	    } else if ((c == 's')
-		    && (strncmp(string, "-selection", length) == 0)) {
+	    } else if ((c == 's') &&  LangCmpOpt("-selection",string,length) == 0 ) {
+
 		selName = LangString(argp[1]);
 	    } else {
 		Tcl_AppendResult(interp, "unknown option \"", string,
@@ -1046,13 +1056,13 @@ Tk_SelectionCmd(clientData, interp, argc, args)
 	    }
 	    c = string[1];
 	    length = strlen(string);
-	    if ((c == 'd') && (strncmp(string, "-displayof", length) == 0)) {
+	    if ((c == 'd') &&  LangCmpOpt("-displayof",string,length) == 0 ) {
 		path = LangString(argp[1]);
-	    } else if ((c == 's')
-		    && (strncmp(string, "-selection", length) == 0)) {
+	    } else if ((c == 's') &&  LangCmpOpt("-selection",string,length) == 0 ) {
+
 		selName = LangString(argp[1]);
-	    } else if ((c == 't')
-		    && (strncmp(string, "-type", length) == 0)) {
+	    } else if ((c == 't') &&  LangCmpOpt("-type",string,length) == 0 ) {
+
 		targetName = LangString(argp[1]);
 	    } else {
 		Tcl_AppendResult(interp, "unknown option \"", string,
@@ -1111,13 +1121,13 @@ Tk_SelectionCmd(clientData, interp, argc, args)
 	    }
 	    c = string[1];
 	    length = strlen(string);
-	    if ((c == 'f') && (strncmp(string, "-format", length) == 0)) {
+	    if ((c == 'f') &&  LangCmpOpt("-format",string,length) == 0 ) {
 		formatName = LangString(argp[1]);
-	    } else if ((c == 's')
-		    && (strncmp(string, "-selection", length) == 0)) {
+	    } else if ((c == 's') &&  LangCmpOpt("-selection",string,length) == 0 ) {
+
 		selName = LangString(argp[1]);
-	    } else if ((c == 't')
-		    && (strncmp(string, "-type", length) == 0)) {
+	    } else if ((c == 't') &&  LangCmpOpt("-type",string,length) == 0 ) {
+
 		targetName = LangString(argp[1]);
 	    } else {
 		Tcl_AppendResult(interp, "unknown option \"", string,
@@ -1184,13 +1194,13 @@ Tk_SelectionCmd(clientData, interp, argc, args)
 	    }
 	    c = string[1];
 	    length = strlen(string);
-	    if ((c == 'c') && (strncmp(string, "-command", length) == 0)) {
+	    if ((c == 'c') &&  LangCmpOpt("-command",string,length) == 0 ) {
 		script = argp[1];
-	    } else if ((c == 'd')
-		    && (strncmp(string, "-displayof", length) == 0)) {
+	    } else if ((c == 'd') &&  LangCmpOpt("-displayof",string,length) == 0 ) {
+
 		path = LangString(argp[1]);
-	    } else if ((c == 's')
-		    && (strncmp(string, "-selection", length) == 0)) {
+	    } else if ((c == 's') &&  LangCmpOpt("-selection",string,length) == 0 ) {
+
 		selName = LangString(argp[1]);
 	    } else {
 		Tcl_AppendResult(interp, "unknown option \"", string,

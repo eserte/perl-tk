@@ -13,7 +13,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkMenu.c 1.93 95/07/22 16:05:23";
+static char sccsid[] = "@(#) tkMenu.c 1.91 95/06/09 08:20:00";
 
 #include "tkPort.h"
 #include "default.h"
@@ -191,7 +191,7 @@ static Tk_ConfigSpec entryConfigSpecs[] = {
 	DEF_MENU_ENTRY_FG, Tk_Offset(MenuEntry, fg),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
 	|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_IMAGE, "-image",          NULL,          NULL,
+    {TK_CONFIG_OBJECT, "-image",          NULL,          NULL,
 	DEF_MENU_ENTRY_IMAGE, Tk_Offset(MenuEntry, imageString),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
 	|TK_CONFIG_NULL_OK},
@@ -213,7 +213,7 @@ static Tk_ConfigSpec entryConfigSpecs[] = {
     {TK_CONFIG_COLOR, "-selectcolor",          NULL,          NULL,
 	DEF_MENU_ENTRY_SELECT, Tk_Offset(MenuEntry, indicatorFg),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_STRING, "-selectimage",          NULL,          NULL,
+    {TK_CONFIG_OBJECT, "-selectimage",          NULL,          NULL,
 	DEF_MENU_ENTRY_SELECT_IMAGE, Tk_Offset(MenuEntry, selectImageString),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_NULL_OK},
     {TK_CONFIG_UID, "-state",          NULL,          NULL,
@@ -258,6 +258,18 @@ typedef struct Menu {
     int active;			/* Index of active entry.  -1 means
 				 * nothing active. */
 
+    char *screenName;		/* Screen on which widget is created.  Non-null
+				 * only for top-levels.  Malloc-ed, may be
+				 * NULL. */
+    char *visualName;		/* Textual description of visual for window,
+				 * from -visual option.  Malloc-ed, may be
+				 * NULL. */
+    char *colormapName;		/* Textual description of colormap for window,
+				 * from -colormap option.  Malloc-ed, may be
+				 * NULL. */
+    Colormap colormap;		/* If not None, identifies a colormap
+				 * allocated for this window, which must be
+				 * freed when the window is deleted. */
     /*
      * Information used when displaying widget:
      */
@@ -314,6 +326,8 @@ typedef struct Menu {
 				 * NULL if no submenu posted. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    unsigned int isGCHacked : 1;/* have we hacked the GC so that they use
+				 * the correct stipple bg/fg? */
 } Menu;
 
 /*
@@ -356,6 +370,9 @@ static Tk_ConfigSpec configSpecs[] = {
 	         NULL, 0, 0},
     {TK_CONFIG_SYNONYM, "-bg", "background",          NULL,
 	         NULL, 0, 0},
+    {TK_CONFIG_STRING, "-colormap", "colormap", "Colormap",
+	DEF_FRAME_COLORMAP, Tk_Offset(Menu, colormapName),
+	TK_CONFIG_NULL_OK},
     {TK_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
 	DEF_MENU_BORDER_WIDTH, Tk_Offset(Menu, borderWidth), 0},
     {TK_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
@@ -376,6 +393,9 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_MENU_POST_COMMAND, Tk_Offset(Menu, postCommand), TK_CONFIG_NULL_OK},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_MENU_RELIEF, Tk_Offset(Menu, relief), 0},
+    {TK_CONFIG_STRING, "-screen", "screen", "Screen",
+	DEF_TOPLEVEL_SCREEN, Tk_Offset(Menu, screenName),
+	TK_CONFIG_NULL_OK},
     {TK_CONFIG_COLOR, "-selectcolor", "selectColor", "Background",
 	DEF_MENU_SELECT_COLOR, Tk_Offset(Menu, indicatorFg),
 	TK_CONFIG_COLOR_ONLY},
@@ -386,6 +406,9 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_MENU_TAKE_FOCUS, Tk_Offset(Menu, takeFocus), TK_CONFIG_NULL_OK},
     {TK_CONFIG_BOOLEAN, "-tearoff", "tearOff", "TearOff",
 	DEF_MENU_TEAROFF, Tk_Offset(Menu, tearOff), 0},
+    {TK_CONFIG_STRING, "-visual", "visual", "Visual",
+	DEF_FRAME_VISUAL, Tk_Offset(Menu, visualName),
+	TK_CONFIG_NULL_OK},
     {TK_CONFIG_END,          NULL,          NULL,          NULL,
 	         NULL, 0, 0}
 };
@@ -402,7 +425,7 @@ static Tk_ConfigSpec configSpecs[] = {
 /*
  * Forward declarations for procedures defined later in this file:
  */
-
+static void		HackMenuGC _ANSI_ARGS_((Menu *menuPtr, Tk_3DBorder border));
 static int		ActivateMenuEntry _ANSI_ARGS_((Menu *menuPtr,
 			    int index));
 static void		ComputeMenuGeometry _ANSI_ARGS_((
@@ -472,8 +495,14 @@ Tk_MenuCmd(clientData, interp, argc, args)
 {
     Tk_Window tkwin = (Tk_Window) clientData;
     Tk_Window new;
-    register Menu *menuPtr;
+    register Menu *menuPtr = NULL;
     XSetWindowAttributes atts;
+
+    int i, c, length, depth;
+    Colormap colormap;
+    Visual *visual;
+    Display *display;
+    char *screenName, *visualName, *colormapName, *arg;
 
     if (argc < 2) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -482,16 +511,68 @@ Tk_MenuCmd(clientData, interp, argc, args)
     }
 
     /*
-     * Create the new window.  Set override-redirect so the window
+     * Pre-process the argument list.  Scan through it to find any
+     * "-screen", "-visual", and "-newcmap" options.  These
+     * arguments need to be processed specially, before the window
+     * is configured using the usual Tk mechanisms.
+     */
+    colormapName = screenName = visualName = NULL;
+    for (i = 2; i < argc; i += 2) {
+	arg = LangString(args[i]);
+	length = strlen(arg);
+	if (length < 2) {
+	    continue;
+	}
+	c = arg[1];
+	if ((c == 'c') &&  LangCmpOpt("-colormap",arg,strlen(arg)) == 0 ) {
+	    colormapName = LangString(args[i+1]);
+	} else if ((c == 's') &&  LangCmpOpt("-screen",arg,strlen(arg)) == 0 ) {
+	    screenName = LangString(args[i+1]);
+	} else if ((c == 'v') &&  LangCmpOpt("-visual",arg,strlen(arg)) == 0 ) {
+	    visualName = LangString(args[i+1]);
+	}
+    }
+
+    /*
+     * Create the new window.
+     */
+    if (screenName == NULL) {
+	screenName = "";
+    }
+    new = Tk_CreateWindowFromPath(interp, tkwin, LangString(args[1]), screenName);
+    if (new == NULL) {
+	goto error;
+    }
+    Tk_SetClass(new, "Menu");
+
+    if (visualName == NULL) {
+	visualName = Tk_GetOption(new, "visual", "Visual");
+    }
+    if (colormapName == NULL) {
+	colormapName = Tk_GetOption(new, "colormap", "Colormap");
+    }
+    colormap = None;
+    if (visualName != NULL && strcmp(visualName, "") != 0) {
+	visual = Tk_GetVisual(interp, new, visualName, &depth,
+	    (colormapName == NULL) ? &colormap : (Colormap *) NULL);
+	if (visual == NULL) {
+	    goto error;
+	}
+	Tk_SetWindowVisual(new, visual, depth, colormap);
+    }
+    if (colormapName != NULL && strcmp(colormapName, "") != 0) {
+	colormap = Tk_GetColormap(interp, new, colormapName);
+	if (colormap == None) {
+	    goto error;
+	}
+	Tk_SetWindowColormap(new, colormap);
+    }
+
+    /* Set override-redirect so the window
      * manager won't add a border or argue about placement, and set
      * save-under so that the window can pop up and down without a
      * lot of re-drawing.
      */
-
-    new = Tk_CreateWindowFromPath(interp, tkwin, LangString(args[1]), "");
-    if (new == NULL) {
-	return TCL_ERROR;
-    }
     atts.override_redirect = True;
     atts.save_under = True;
     Tk_ChangeWindowAttributes(new, CWOverrideRedirect|CWSaveUnder, &atts);
@@ -533,8 +614,11 @@ Tk_MenuCmd(clientData, interp, argc, args)
     menuPtr->postCommand = NULL;
     menuPtr->postedCascade = NULL;
     menuPtr->flags = 0;
-
-    Tk_SetClass(new, "Menu");
+    menuPtr->screenName = NULL;
+    menuPtr->visualName = NULL;
+    menuPtr->colormapName = NULL;
+    menuPtr->colormap = colormap;
+    menuPtr->isGCHacked = 0;
     Tk_CreateEventHandler(menuPtr->tkwin, ExposureMask|StructureNotifyMask,
 	    MenuEventProc, (ClientData) menuPtr);
     if (ConfigureMenu(interp, menuPtr, argc-2, args+2, 0) != TCL_OK) {
@@ -544,8 +628,15 @@ Tk_MenuCmd(clientData, interp, argc, args)
     Tcl_ArgResult(interp,LangWidgetArg(interp,menuPtr->tkwin));
     return TCL_OK;
 
-    error:
-    Tk_DestroyWindow(menuPtr->tkwin);
+  error:
+    display = Tk_Display(new);
+    if (colormap != None) {
+	Tk_FreeColormap(display, colormap);
+    }
+
+    if (menuPtr) {
+	Tk_DestroyWindow(menuPtr->tkwin);
+    }
     return TCL_ERROR;
 }
 
@@ -1200,7 +1291,11 @@ ConfigureMenu(interp, menuPtr, argc, args, flags)
     }
     menuPtr->activeGC = newGC;
 
-    gcValues.foreground = menuPtr->indicatorFg->pixel;
+    if (Tk_Depth(menuPtr->tkwin) <= 2) {
+	gcValues.foreground = menuPtr->fg->pixel;
+    } else {
+	gcValues.foreground = menuPtr->indicatorFg->pixel;
+    }
     newGC = Tk_GetGC(menuPtr->tkwin, GCForeground|GCFont, &gcValues);
     if (menuPtr->indicatorGC != None) {
 	Tk_FreeGC(menuPtr->display, menuPtr->indicatorGC);
@@ -1414,8 +1509,13 @@ ConfigureMenuEntry(interp, menuPtr, mePtr, index, argc, args, flags)
 	    Tk_FreeGC(menuPtr->display, mePtr->disabledGC);
     }
     mePtr->disabledGC = newDisabledGC;
+
     if (mePtr->indicatorFg != NULL) {
-	gcValues.foreground = mePtr->indicatorFg->pixel;
+	if (Tk_Depth(menuPtr->tkwin) <= 2) {
+	    gcValues.foreground = menuPtr->fg->pixel;
+	} else {
+	    gcValues.foreground = mePtr->indicatorFg->pixel;
+	}
 	newGC = Tk_GetGC(menuPtr->tkwin, GCForeground, &gcValues);
     } else {
 	newGC = None;
@@ -1689,6 +1789,31 @@ ComputeMenuGeometry(clientData)
  *----------------------------------------------------------------------
  */
 
+
+static void 
+HackMenuGC(menuPtr, border)
+    Menu *menuPtr;
+    Tk_3DBorder border;
+{
+    GC theGC;
+    XGCValues gcValues;
+
+    /* make sure all the GC have been created */
+    Tk_Fill3DRectangle(menuPtr->tkwin, Tk_WindowId(menuPtr->tkwin),
+	border, 0, 0, 4, 4,
+	2, TK_RELIEF_RAISED);
+
+    /* Reset the GC of the border */
+    theGC = Tk_3DBorderGC(menuPtr->tkwin, border, TK_3D_DARK_GC);
+    gcValues.foreground = Tk_3DBorderColor(border)->pixel;
+    gcValues.background = menuPtr->fg->pixel;
+    gcValues.stipple = Tk_GetBitmap((Tcl_Interp *) NULL, menuPtr->tkwin,
+	Tk_GetUid("gray50"));
+    gcValues.fill_style = FillOpaqueStippled;
+    XChangeGC(Tk_Display(menuPtr->tkwin), theGC,
+	GCForeground|GCBackground|GCStipple|GCFillStyle, &gcValues);
+}
+
 static void
 DisplayMenu(clientData)
     ClientData clientData;	/* Information about widget. */
@@ -1705,6 +1830,13 @@ DisplayMenu(clientData)
     menuPtr->flags &= ~REDRAW_PENDING;
     if ((menuPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
 	return;
+    }
+    if (!menuPtr->isGCHacked) {
+	if (Tk_Depth(menuPtr->tkwin) <= 2) {
+	    HackMenuGC(menuPtr, menuPtr->activeBorder);
+	    HackMenuGC(menuPtr, menuPtr->border);
+	}
+	menuPtr->isGCHacked = 1;
     }
 
     /*
@@ -1743,6 +1875,7 @@ DisplayMenu(clientData)
 		    bgBorder, menuPtr->borderWidth, mePtr->y,
 		    Tk_Width(tkwin) - 2*menuPtr->borderWidth, mePtr->height,
 		    menuPtr->activeBorderWidth, TK_RELIEF_RAISED);
+
 	    gc = mePtr->activeGC;
 	    if (gc == NULL) {
 		gc = menuPtr->activeGC;
@@ -1752,6 +1885,7 @@ DisplayMenu(clientData)
 		    bgBorder, menuPtr->borderWidth, mePtr->y,
 		    Tk_Width(tkwin) - 2*menuPtr->borderWidth, mePtr->height,
 		    0, TK_RELIEF_FLAT);
+
 	    if ((mePtr->state == tkDisabledUid)
 		    && (menuPtr->disabledFg != NULL)) {
 		gc = mePtr->disabledGC;
@@ -2295,11 +2429,11 @@ MenuAddOrInsert(interp, menuPtr, indexString, argc, args)
     } else if ((c == 'c') && (strncmp(LangString(args[0]), "command", length) == 0)
 	    && (length >= 2)) {
 	type = COMMAND_ENTRY;
-    } else if ((c == 'r')
-	    && (strncmp(LangString(args[0]), "radiobutton", length) == 0)) {
+    } else if ((c == 'r') && (strncmp(LangString(args[0]), "radiobutton", length) == 0)) {
+
 	type = RADIO_BUTTON_ENTRY;
-    } else if ((c == 's')
-	    && (strncmp(LangString(args[0]), "separator", length) == 0)) {
+    } else if ((c == 's') && (strncmp(LangString(args[0]), "separator", length) == 0)) {
+
 	type = SEPARATOR_ENTRY;
     } else {
 	Tcl_AppendResult(interp, "bad menu entry type \"",

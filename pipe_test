@@ -1,25 +1,34 @@
 #!/usr/local/bin/perl -w
 
-BEGIN { unshift(@INC,"./blib")}
+use lib ("./blib");
 
 use Tk;
 use Tk::IO;
 
-$top = MainWindow->new;
+my $top = MainWindow->new;
+my $status = "Ready for job ...";
+$top->Label(-textvariable => \$status, -anchor => 'w')->pack(-side => 'bottom', -fill => 'x', -anchor => 'w');
 
-$t = $top->Text("-relief" => "raised", "-bd" => "2", "-setgrid" => "true");
-$s = $top->Scrollbar("-command" => ["yview",$t]);
+my $t = $top->Text("-relief" => "raised", "-bd" => "2", "-setgrid" => "true");
+my $s = $top->Scrollbar("-command" => ["yview",$t]);
 $t->configure("-yscrollcommand" => ["set",$s] );
 
-$cmd = 'ls *.c';
+
+$fh  = Tk::IO->new(-linecommand  => [$t,'insert','end'],
+                   -childcommand => \&Child);
+
+$cmd = 'ls -l';
 
 $e = $top->Entry("-width" => 40,"-textvariable" => \$cmd);
 $e->pack("-side" => "bottom");
 
-$b = $top->Button("-text" => "Do It", "-command" => [\&DoIt,$e,$t]);
+$b = $top->Button("-text" => "Do It", "-command" => [\&DoIt,$fh,$e]);
 $b->pack("-side" => "bottom");
 
 $b = $top->Button("-text" => "Quit", "-command" => ['destroy',$top]);
+$b->pack("-side" => "bottom");
+
+$b = $top->Button("-text" => "Kill", "-command" => sub { $fh->killpg(3)} );
 $b->pack("-side" => "bottom");
 
 $s->pack("-side"=>"left","-fill" => "y");
@@ -27,28 +36,25 @@ $t->pack("-side"=>"left","-expand" => "y", "-fill"   => "both");
 
 $t->bind("<Any-Enter>", sub { $t->focus });
 
-foreach (1,2,3)
- {
-  $t->insert("end","line ". $_ . "\n");
- }
 
 $e->update;
 
 $e->focus;
 
+
+
 Tk::MainLoop;
+
+sub Child
+{
+ my ($code,$fh) = @_;
+ my $cmd = join(' ',$fh->command);
+ $status = "code=$code from $cmd";
+}
 
 
 sub DoIt
-{my $e = shift;
- my $t = shift;
- my $cmd = $e->get;
- my $fh = Tk::IO->open("$cmd|");
- my $line;
- while ($line = $fh->readline)
-  {
-   $t->insert("end",$line);
-   $t->idletasks;
-  }
- $fh->close || warn "Close:$!";
+{my $fh = shift;
+ my $e = shift;
+ $fh->exec($e->get);
 }

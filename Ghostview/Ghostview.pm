@@ -1,6 +1,5 @@
 require Tk::Ghostscript;
 require Tk::DSC;
-# require Tk::Xlib;
 
 package Tk::Ghostview;
 use strict qw(subs);
@@ -11,46 +10,49 @@ use Tk::Pretty;
 
 Tk::Widget->Construct('Ghostview');
 
-$scale  = 72.0;
+$scale  = 72;
 $width  = 11*$scale;
 $height = 11*$scale;
 
-sub new
-{my $package   = shift;
- my $parent    = shift;
- my $file      = shift;
- $package->DoInit($parent);
-
-# my $screen    = $parent->Screen;
-# my $yscale    = 25.4*$screen->HeightOfScreen/$screen->HeightMMOfScreen;
-# my $xscale    = 25.4*$screen->WidthOfScreen/$screen->WidthMMOfScreen;
-# print "x=$xscale, y=$yscale\n";
- 
- my $gs        = $parent->Ghostscript(
-                         'x_pixels_per_inch' => $scale,
-                         'y_pixels_per_inch' => $scale,
-                         'BoundingBox' => [ 0,0, $width, $height]
-                        );
-
- my $doc       = DSC->new($gs,$file);
-
- bless $gs,$package;
- $gs->{'DOC'} = $doc;
- if (defined $doc->{'Title'})
+sub scale
+{
+ my ($w,$val) = @_;
+ my $var = \$w->{Configure}{'-scale'};
+ if (@_ > 1)
   {
-   $parent->toplevel->title($doc->{'Title'});
+   $$var = $val;
   }
- $gs->{'RedrawPending'} = 0;
- $gs->{'PAGE'} = 0;
- my @bindtags = $gs->bindtags;
- unshift(@bindtags,$package);
- $gs->bindtags(\@bindtags);
- return $gs;
+ return $$var;
 }
 
-sub classinit
+sub file
+{
+ my ($w,$val) = @_;
+ my $var = \$w->{Configure}{'-file'};
+ if (@_ > 1)
+  {
+   $$var = $val;
+   my $doc = DSC->new($w,$val);
+   $w->{'DOC'} = $doc;
+   $w->toplevel->title($doc->{'Title'});
+  }
+ return $$var;
+}
+
+sub Populate
+{
+ my ($w,$args) = @_;
+ $w->SUPER::Populate($args);
+ $w->{'RedrawPending'} = 0;
+ $w->{'PAGE'} = 0;
+ $w->ConfigSpecs('-file'  => ['METHOD',undef,undef,undef]);
+ $w->ConfigSpecs('-scale' => ['METHOD',undef,undef,72.0]);
+}
+
+sub ClassInit
 {
  my ($class,$mw) = @_;
+ $class->SUPER::ClassInit($mw);
  $mw->bind($class,'<Expose>','Expose');
  $mw->bind($class,'<Next>','Next');
  $mw->bind($class,'<Prior>','Prior');
@@ -66,7 +68,7 @@ sub Contents { shift->Doc->Contents }
 sub Orientation
 {
  my ($gs,$orient) = @_;
- $gs->Tk::Ghostscript::Orientation($orient);
+ $gs->orientation($orient);
  $gs->Expose;
 }
 
@@ -133,16 +135,19 @@ sub DrawPage
    $gs->printf("closepath fill\n");
    $gs->printf("0 setgray\n");     
   }
- if (exists $doc->{'BeginProlog'})
+ if (defined $doc)
   {
-   $doc->CopySection($gs,'Prolog');
+   if (exists $doc->{'BeginProlog'})
+    {                        
+     $doc->CopySection($gs,'Prolog');
+    }                        
+   else                      
+    {                        
+     $doc->CopyTill($gs,0,'^%!','EndProlog','Page:','Trailer');
+    }                        
+   $doc->CopySection($gs,'Setup') if (exists $doc->{'BeginSetup'});
+   $doc->SendPage($gs,$page);
   }
- else
-  {
-   $doc->CopyTill($gs,0,'^%!','EndProlog','Page:','Trailer');
-  }
- $doc->CopySection($gs,'Setup') if (exists $doc->{'BeginSetup'});
- $doc->SendPage($gs,$page);
  $gs->Postscript("GS_Standard restore\n");
 }
  

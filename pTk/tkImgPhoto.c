@@ -16,7 +16,7 @@
  *	   Australian National University.
  */
 
-static char sccsid[] = "@(#) tkImgPhoto.c 1.27 95/07/25 15:55:25";
+static char sccsid[] = "@(#) tkImgPhoto.c 1.29 95/08/28 14:01:04";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -37,7 +37,7 @@ extern _XInitImageFuncPtrs _ANSI_ARGS_((XImage *image));
  * space) to get signed behavior.
  */
 
-#ifdef __STDC__
+#if defined(__STDC__) || defined(ANSI_SIGNED_CHAR) || defined(_AIX)
     typedef signed char schar;
 #else
 #   ifndef CHAR_UNSIGNED
@@ -1902,7 +1902,7 @@ ImgPhotoDelete(masterData)
     }
     masterPtr->tkMaster = NULL;
     if (masterPtr->imageCmd != NULL) {
-	Lang_DeleteImage(masterPtr->interp,masterPtr->imageCmd);
+	Lang_DeleteObject(masterPtr->interp,masterPtr->imageCmd);
 
     }
     if (masterPtr->pix24 != NULL) {
@@ -2998,12 +2998,18 @@ MatchFileFormat(interp, f, fileName, formatString, imageFormatPtr,
     matched = 0;
     for (formatPtr = formatList; formatPtr != NULL;
 	 formatPtr = formatPtr->nextPtr) {
-	if ((formatString != NULL)
-		&& (strncasecmp(formatString, formatPtr->name,
-		strlen(formatPtr->name)) != 0)) {
-	    continue;
+	if (formatString != NULL) {
+	    if (strncasecmp(formatString, formatPtr->name,
+		    strlen(formatPtr->name)) != 0) {
+		continue;
+	    }
+	    matched = 1;
+	    if (formatPtr->fileMatchProc == NULL) {
+		Tcl_AppendResult(interp, "-file option isn't supported for ",
+			formatString, " images",          NULL);
+		return TCL_ERROR;
+	    }
 	}
-	matched = 1;
 	if (formatPtr->fileMatchProc != NULL) {
 	    fseek(f, 0L, SEEK_SET);
 	    if ((*formatPtr->fileMatchProc)(f, fileName, formatString,
@@ -3022,7 +3028,7 @@ MatchFileFormat(interp, f, fileName, formatString, imageFormatPtr,
     if (formatPtr == NULL) {
 	if ((formatString != NULL) && !matched) {
 	    Tcl_AppendResult(interp, "image file format \"", formatString,
-		    "\" is unknown",          NULL);
+		    "\" is not supported",          NULL);
 	} else {
 	    Tcl_AppendResult(interp,
 		    "couldn't recognize data in image file \"",
@@ -3077,14 +3083,22 @@ MatchStringFormat(interp, string, formatString, imageFormatPtr,
      * Scan through the table of file format handlers to find
      * one which can handle the image.
      */
+
     matched = 0;
     for (formatPtr = formatList; formatPtr != NULL;
 	    formatPtr = formatPtr->nextPtr) {
-	if ((formatString != NULL) && (strncasecmp(formatString,
-		formatPtr->name, strlen(formatPtr->name)) != 0)) {
-	    continue;
+	if (formatString != NULL) {
+	    if (strncasecmp(formatString, formatPtr->name,
+		    strlen(formatPtr->name)) != 0) {
+		continue;
+	    }
+	    matched = 1;
+	    if (formatPtr->stringMatchProc == NULL) {
+		Tcl_AppendResult(interp, "-data option isn't supported for ",
+			formatString, " images",          NULL);
+		return TCL_ERROR;
+	    }
 	}
-	matched = 1;
 	if ((formatPtr->stringMatchProc != NULL)
 		&& (*formatPtr->stringMatchProc)(string, formatString,
 		widthPtr, heightPtr)) {
@@ -3094,11 +3108,11 @@ MatchStringFormat(interp, string, formatString, imageFormatPtr,
 
     if (formatPtr == NULL) {
 	if ((formatString != NULL) && !matched) {
-	    Tcl_AppendResult(interp, "image file format \"", formatString,
-		    "\" is unknown",          NULL);
+	    Tcl_AppendResult(interp, "image format \"", formatString,
+		    "\" is not supported",          NULL);
 	} else {
-	    Tcl_AppendResult(interp, "no format found to parse",
-		    " image data string",          NULL);
+	    Tcl_AppendResult(interp, "couldn't recognize image data",
+		             NULL);
 	}
 	return TCL_ERROR;
     }
@@ -3196,7 +3210,8 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
     xEnd = x + width;
     yEnd = y + height;
     if ((xEnd > masterPtr->width) || (yEnd > masterPtr->height)) {
-	ImgPhotoSetSize(masterPtr, xEnd, yEnd);
+	ImgPhotoSetSize(masterPtr, MAX(xEnd, masterPtr->width),
+		MAX(yEnd, masterPtr->height));
     }
 
     if ((y < masterPtr->ditherY) || ((y == masterPtr->ditherY)
@@ -3233,7 +3248,7 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
 		&& (blockPtr->pitch == pitch)))) {
 	memcpy((VOID *) destLinePtr,
 		(VOID *) (blockPtr->pixelPtr + blockPtr->offset[0]),
-		(size_t) (height * pitch));
+		(size_t) (height * width * 3));
     } else {
 	for (hLeft = height; hLeft > 0;) {
 	    srcLinePtr = blockPtr->pixelPtr + blockPtr->offset[0];
@@ -3352,7 +3367,8 @@ Tk_PhotoPutZoomedBlock(handle, blockPtr, x, y, width, height, zoomX, zoomY,
     xEnd = x + width;
     yEnd = y + height;
     if ((xEnd > masterPtr->width) || (yEnd > masterPtr->height)) {
-	ImgPhotoSetSize(masterPtr, xEnd, yEnd);
+	ImgPhotoSetSize(masterPtr, MAX(xEnd, masterPtr->width),
+		MAX(yEnd, masterPtr->height));
     }
 
     if ((y < masterPtr->ditherY) || ((y == masterPtr->ditherY)
@@ -3961,7 +3977,8 @@ Tk_PhotoExpand(handle, width, height)
 	height = masterPtr->height;
     }
     if ((width != masterPtr->width) || (height != masterPtr->height)) {
-	ImgPhotoSetSize(masterPtr, width, height);
+	ImgPhotoSetSize(masterPtr, MAX(width, masterPtr->width),
+		MAX(height, masterPtr->height));
 	Tk_ImageChanged(masterPtr->tkMaster, 0, 0, 0, 0, masterPtr->width,
 		masterPtr->height);
     }

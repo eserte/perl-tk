@@ -5,30 +5,56 @@ of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tk4.0 sources. See pTk/license.terms 
 for details of this license.
 
-This a re-port of a perl interface to Tk4.0 
+This a re-port of a perl interface to Tk4.0p2 
 (John Ousterhout's production release).
 
 See INSTALL for how to build it.
 
+The two Camel/X 'logo' GIFs were produced by :
+
+Grafix,
+http://www.pncl.co.uk/subs/rsmith/rsmith.html,
+rsmith@pncl.co.uk,
+Sussex, UK,
+(01293) 886725
+
+For a very reasonable fee. We have rights to distribute them.
+
 See Changes for what is different.
 
-You may wish to subscribe to the mailing list for discussing problems,
-both new ports and simple how do I do ... questions.
+Note that :
+ - the Tix stuff only has C code ported, the tcl parts still need
+   converting to perl.
+ - there are probably still partially completed things like HTML
+   and NNTP reader ptknews lying about, which need other modules and/or more
+   work.
 
-To do so send mail to majordomo@wpi.edu with 'subscribe ptk'
+There is a USNET newsgroup comp.lang.perl.tk for discussing all 
+aspects of perl/Tk.
+
+Unfortunately Nick does not get much chance to read the newsgroup,
+and there are significant lags in propoagating news articles, 
+so there is also a mailing list. Mail sent to the mailing list 
+(eventually) shows up on the news groups so 'lurking' on the 
+newsgroup is fine to see everything.
+
+If you are really keen or want to help you may wish to subscribe to the
+mailing list.
+
+To do so send mail to majordomo@guest.wpi.edu with 'subscribe ptk'
 in the body of the message.
 
 e.g. on normal UNIX machine:
 
-echo 'subscribe ptk' | mail majordomo@wpi.edu
+echo 'subscribe ptk' | mail majordomo@guest.wpi.edu
 
 Please don't send subscribe requests to the list itself.
 
-Sending problems to ptk@wpi.edu is the best way 
+Sending problems to ptk@guest.wpi.edu is the best way 
 to get answers.
 
 ---------------------------------------------------------------------------
-pTk sub-directory is a modified version of Tk4.0p1
+pTk sub-directory is a modified version of Tk4.0p2
 
 It has been modified to call "glue" functions rather than use libtcl.a - so it
 is completely independant of TCL.

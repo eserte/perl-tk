@@ -116,8 +116,8 @@ Tk_GetScrollInfo(interp, argc, args, dblPtr, intPtr)
 	    return TK_SCROLL_ERROR;
 	}
 	return TK_SCROLL_MOVETO;
-    } else if ((c == 's')
-	    && (strncmp(LangString(args[2]), "scroll", length) == 0)) {
+    } else if ((c == 's') && (strncmp(LangString(args[2]), "scroll", length) == 0)) {
+
 	if (argc != 5) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
 		    LangString(args[0]), " ", LangString(args[1]), " scroll number units|pages\"",
@@ -131,8 +131,8 @@ Tk_GetScrollInfo(interp, argc, args, dblPtr, intPtr)
 	c = LangString(args[4])[0];
 	if ((c == 'p') && (strncmp(LangString(args[4]), "pages", length) == 0)) {
 	    return TK_SCROLL_PAGES;
-	} else if ((c == 'u')
-		&& (strncmp(LangString(args[4]), "units", length) == 0)) {
+	} else if ((c == 'u') && (strncmp(LangString(args[4]), "units", length) == 0)) {
+
 	    return TK_SCROLL_UNITS;
 	} else {
 	    Tcl_AppendResult(interp, "bad argument \"", LangString(args[4]),

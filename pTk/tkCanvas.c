@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkCanvas.c 1.101 95/07/27 13:23:48";
+static char sccsid[] = "@(#) tkCanvas.c 1.103 95/08/16 09:42:13";
 
 #include "default.h"
 #include "tkInt.h"
@@ -311,6 +311,7 @@ Tk_CanvasCmd(clientData, interp, argc, args)
     canvasPtr->drawableXOrigin = canvasPtr->drawableYOrigin = 0;
     canvasPtr->bindingTable = NULL;
     canvasPtr->currentItemPtr = NULL;
+    canvasPtr->newCurrentPtr = NULL;
     canvasPtr->closeEnough = 0.0;
     canvasPtr->pickEvent.type = LeaveNotify;
     canvasPtr->pickEvent.xcrossing.x = 0;
@@ -767,6 +768,10 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 		ckfree((char *) itemPtr);
 		if (itemPtr == canvasPtr->currentItemPtr) {
 		    canvasPtr->currentItemPtr = NULL;
+		    canvasPtr->flags |= REPICK_NEEDED;
+		}
+		if (itemPtr == canvasPtr->newCurrentPtr) {
+		    canvasPtr->newCurrentPtr = NULL;
 		    canvasPtr->flags |= REPICK_NEEDED;
 		}
 		if (itemPtr == canvasPtr->textInfo.focusItemPtr) {
@@ -2889,7 +2894,6 @@ PickCurrentItem(canvasPtr, eventPtr)
 					 * LeaveWindow, ButtonRelease, or
 					 * MotionNotify. */
 {
-    Tk_Item *closestPtr = NULL;
     double coords[2];
     int buttonDown;
 
@@ -2964,7 +2968,18 @@ PickCurrentItem(canvasPtr, eventPtr)
     coords[0] = canvasPtr->pickEvent.xcrossing.x + canvasPtr->xOrigin;
     coords[1] = canvasPtr->pickEvent.xcrossing.y + canvasPtr->yOrigin;
     if (canvasPtr->pickEvent.type != LeaveNotify) {
-	closestPtr = CanvasFindClosest(canvasPtr, coords);
+	canvasPtr->newCurrentPtr = CanvasFindClosest(canvasPtr, coords);
+    } else {
+	canvasPtr->newCurrentPtr = NULL;
+    }
+
+    if ((canvasPtr->newCurrentPtr == canvasPtr->currentItemPtr)
+	    && !(canvasPtr->flags & LEFT_GRABBED_ITEM)) {
+	/*
+	 * Nothing to do:  the current item hasn't changed.
+	 */
+
+	return;
     }
 
     /*
@@ -2974,7 +2989,7 @@ PickCurrentItem(canvasPtr, eventPtr)
      * item.
      */
 
-    if ((closestPtr != canvasPtr->currentItemPtr)
+    if ((canvasPtr->newCurrentPtr != canvasPtr->currentItemPtr)
 	    && (canvasPtr->currentItemPtr != NULL)
 	    && !(canvasPtr->flags & LEFT_GRABBED_ITEM)) {
 	XEvent event;
@@ -3011,31 +3026,24 @@ PickCurrentItem(canvasPtr, eventPtr)
 	}
     
 	/*
-	 * The binding for the leave event could have changed the canvas such
-	 * that closestPtr should no longer be the new current item.  In fact,
-	 * closestPtr may not even exist anymore.  The only safe thing is to
-	 * recompute the new current item.  Even the mouse position may have
-	 * changed, so recompute coords.
+	 * Note:  during CanvasDoEvent above, it's possible that
+	 * canvasPtr->newCurrentPtr got reset to NULL because the
+	 * item was deleted.
 	 */
-
-	coords[0] = canvasPtr->pickEvent.xcrossing.x + canvasPtr->xOrigin;
-	coords[1] = canvasPtr->pickEvent.xcrossing.y + canvasPtr->yOrigin;
-	buttonDown = canvasPtr->state
-		& (Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask);
-	if (canvasPtr->pickEvent.type != LeaveNotify) {
-	    closestPtr = CanvasFindClosest(canvasPtr, coords);
-	}
     }
-    if ((closestPtr != canvasPtr->currentItemPtr) && buttonDown) {
+    if ((canvasPtr->newCurrentPtr != canvasPtr->currentItemPtr) && buttonDown) {
 	canvasPtr->flags |= LEFT_GRABBED_ITEM;
 	return;
     }
-    if ((closestPtr == canvasPtr->currentItemPtr)
-	    && !(canvasPtr->flags & LEFT_GRABBED_ITEM)) {
-	return;
-    }
+
+    /*
+     * Special note:  it's possible that canvasPtr->newCurrentPtr ==
+     * canvasPtr->currentItemPtr here.  This can happen, for example,
+     * if LEFT_GRABBED_ITEM was set.
+     */
+
     canvasPtr->flags &= ~LEFT_GRABBED_ITEM;
-    canvasPtr->currentItemPtr = closestPtr;
+    canvasPtr->currentItemPtr = canvasPtr->newCurrentPtr;
     if (canvasPtr->currentItemPtr != NULL) {
 	XEvent event;
 

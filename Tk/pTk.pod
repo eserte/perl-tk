@@ -12,12 +12,12 @@ this document. Many thanks.
 =head1 Portable Tk
 
 B<PortableTk> is an attempt to make B<Tk> useful from other
-languages. Currently tk4.0b2 runs under Perl using this
-approach. Below I<Lang> is the notation for an external language to
+languages. Currently tk4.0 runs under Perl using this
+approach. Below, I<Lang> is the notation for an external language to
 which B<PortableTk> glues B<Tk> code.
 
-The main problem with using the code developped for B<TCL> with
-different language is the absence of data types: almost anything is
+The main problem with using the code developed for B<TCL> with
+different languages is the absence of data types: almost anything is
 C<char*>. It makes automatic translation hopeless. However, if you
 C<typedef> several new symbols to be C<char*>, you can still use your
 code in B<TCL>, I<and> it will make the automatic translation
@@ -31,17 +31,17 @@ C<"??">. Other languages can be more flexible, so in B<portableTk> you
 should inform the compiler that what you want to return means "error"
 (see L<Setting variables>).
 
-Currently B<PortableTk> uses also other, slightly different approach
+Currently B<PortableTk> uses several different approachs
 to simplify translation: several B<TCL> functions that are especially
 dangerous to use are undefined, so you can easily find places that
-need to be updated to use Language-independent functions looking on
+need to be updated to use Language-independent functions based on
 compiler warnings.  Eventually a way to use these Language-independent
-functions under proper B<TCL> will be also provided. End of this 
+functions under proper B<TCL> will be also provided.  The end of this 
 document provides a starting point for such a project.
 
 =head1 Structure of B<pTk>, porting your code
 
-B<pTk>, that is a port of B<Tk>, is very special with respect to port
+B<pTk>, that is a port of B<Tk>, is very special with respect to porting
 of other code to B<portableTk>. The problem is that currently there is
 very little hope to merge the modifications back into B<Tk>, so a
 special strategy is needed to maintain this port. Do not use this
@@ -49,7 +49,7 @@ strategy to port your own code.
 
 B<pTk> is produced from B<Tk> via a two-step process: first, some
 manual editing (the result is in the subdirectory C<mTk>), and second,
-automatic conversion by C<munge> script (written in Perl). Thus the
+automatic conversion by the C<munge> script (written in Perl). Thus the
 subdirectory C<pTk/mTk> contains code with minimal possible difference
 from the virgin B<Tk> code, so it is easier to merge(1) the
 differences between B<Tk> versions into modified code.
@@ -57,7 +57,7 @@ differences between B<Tk> versions into modified code.
 It looks like the strategy for a portable code should be exactly
 opposite: starting from B<TCL>-based code, apply C<munge>, and then
 hand-edit the resulting code. Probably it is also possible to target
-your code to B<portableTk> from the scratch, since this will make it
+your code to B<portableTk> from scratch, since this will make it
 possible to run it under a lot of I<Lang>uages.
 
 The only reason anyone would like to look into contents of C<pTk/mTk>
@@ -103,7 +103,7 @@ variables of type C<char*>.
 
 =head2 Language data
 
-Following datatypes are defined:
+The following data types are defined:
 
 =over 15
 
@@ -147,7 +147,7 @@ After you use the split values, call
 
     if (args != NULL && freeProc) (*freeProc)(argc,args);
 
-It is not guarantied that the C<args> can survive deletion of C<value>.
+It is not guaranteed that the C<args> can survive deletion of C<value>.
 
 =back
 
@@ -161,7 +161,7 @@ strings and the additional types:
  char * LangString(Arg)
 
 After you use the result of LangCallbackArg(), you should free it with
-C<freeProc> C<LANG_DYNAMIC> (it is not guarantied that any change of
+C<freeProc> C<LANG_DYNAMIC> (it is not guaranteed that any change of
 C<Arg> will not be reflected in <LangCallback>, so you cannot do
 LangSet...() in between, and you should reset it to C<NULL> if you
 want to do any further assignments to this C<Arg>).
@@ -170,7 +170,7 @@ The following function returns the C<Arg> that is a reference to C<Var>:
 
  Arg LangVarArg(Var)
 
-???? It is very antiintuitive, I hope the name is changed.
+???? It is very anti-intuitive, I hope the name is changed.
 
  int LangCmpCallback(LangCallback *a,Arg b)
 
@@ -183,7 +183,7 @@ The following function returns the C<Arg> that is a reference to C<Var>:
 
 Above we have seen the new datatype C<LangCallback> and the
 corresponding I<Config option>  C<TK_CONFIG_CALLBACK>. The following
-function are provided for manipulation of C<LangCallback>s:
+functions are provided for manipulation of C<LangCallback>s:
 
  void LangFreeCallback(LangCallback *)
  int LangDoCallback(Tcl_Interp *,LangCallback *,
@@ -322,9 +322,7 @@ We mark items that can be dealt with by C<munge> by I<Autoconverted>.
 
 =item C<Tcl_AppendResult> 
 
-takes not C<(char*)NULL>, but C<NULL> as delimiter. I<Autoconverted>.
-
-
+does not take C<(char*)NULL>, but C<NULL> as delimiter. I<Autoconverted>.
 
 =item C<Tcl_CreateCommand>, C<Tcl_DeleteCommand> 
 
@@ -333,26 +331,26 @@ window itself, not the pathname. I<Autoconverted>.
 
 =item C<sprintf(interp-E<gt>result, "%d %d %d %d",...)> 
 
-C<Tcl_IntResults(interp,4,0,...)>, I<Autoconverted>.
+C<Tcl_IntResults(interp,4,0,...)>. I<Autoconverted>.
 
-=item C<interp-E<gt>result = "1"> 
+=item C<interp-E<gt>result = "1";>
 
-C<Tcl_SetResult(interp, "1",TCL_STATIC)>, I<Autoconverted>.
+C<Tcl_SetResult(interp,"1", TCL_STATIC)>. I<Autoconverted>.
 
 =item Reading C<interp-E<gt>result> 
 
-C<Tcl_GetResult(interp)>, I<Autoconverted>.
+C<Tcl_GetResult(interp)>. I<Autoconverted>.
 
-=item C<interp-E<gt>result = Tk_PathName(textPtr-E<gt>tkwin)> 
+=item C<interp-E<gt>result = Tk_PathName(textPtr-E<gt>tkwin);>
 
-C<Tk_WidgetResult(interp,textPtr-E<gt>tkwin)>,  I<Autoconverted>.
+C<Tk_WidgetResult(interp,textPtr-E<gt>tkwin)>. I<Autoconverted>.
 
-=item Sequence C<Tcl_PrintDouble, Tcl_PrintDouble, ...,
-Tcl_AppendResult> 
+=item Sequence C<Tcl_PrintDouble, Tcl_PrintDouble, ..., Tcl_AppendResult> 
 
 Use a single command 
 
- void	Tcl_DoubleResults(Tcl_Interp *interp,int append,int argc,...)
+ void Tcl_DoubleResults(Tcl_Interp *interp, int append,
+	int argc,...);
 
 C<append> governs whether it is required to clear the result first.
 
@@ -426,7 +424,7 @@ and a function
 
 =head1 Checking for trouble
 
-If you start with a working TCL code, you can start convertion using
+If you start with working TCL code, you can start convertion using
 the above hints. Good indication that you are doing is OK is absence
 of C<sprintf> and C<sscanf> in your code (at least in the part that is
 working with interpreter).
@@ -446,7 +444,7 @@ separate interfaces in other languages (since list is a different type
 from a string), so you should use a different interface in your code.
 
 The type for construction of dynamic lists is C<ListFactory>. The API
-below is mostly direct counterpart of API for construction of dynamic lists
+below is a counterpart of the API for construction of dynamic lists
 in B<TCL>:
 
  void ListFactoryInit(ListFactory *)
@@ -459,10 +457,10 @@ in B<TCL>:
  ListFactory * ListFactoryEndLevel(ListFactory *)
  void ListFactoryResult(Tcl_Interp *, ListFactory *)
 
-The difference is that a call to C<ListFactoryFinish> should preceed the
+The difference is that a call to C<ListFactoryFinish> should precede the
 actual usage of the value of C<ListFactory>, and there are two
 different ways to append an C<Arg> to a C<ListFactory>:
-ListFactoryAppendCopy() guaranties that the value of C<arg> is copied
+ListFactoryAppendCopy() guarantees that the value of C<arg> is copied
 to the list, but ListFactoryAppend() may append to the list a
 reference to the current value of C<arg>. If you are not going to change
 the value of C<arg> after appending, the call to ListFactoryAppend may
@@ -475,9 +473,9 @@ The functions ListFactoryNewLevel() and ListFactoryEndLevel() return a
 pointer to a C<ListFactory> to fill. The argument of
 ListFactoryEndLevel() cannot be used after a call to this function.
 
-=head2 DStrings for production of strings
+=head2 DStrings 
 
-are still supported in B<portableTk>.
+Production of strings are still supported in B<portableTk>.
 
 =head2 Accessing C<Arg>s
 
@@ -523,6 +521,7 @@ C<Arg> first. This is a non-problem in real languages, but can be a
 trouble in C<TCL>, unless you use only the above API.
 
 =head2 Creating new C<Arg>s
+
 The API for creating a new C<Arg> is
 
  void LangNewArg(Arg *, LangFreeProc *)
@@ -547,7 +546,7 @@ different languages.
 
 =head2 Getting result as C<Arg>
 
-Use C<Tcl_ArgResult>. It is not guarantied that result survives this
+Use C<Tcl_ArgResult>. It is not guaranteed that result survives this
 operation, so the C<Arg> you get should be the only mean to access the
 data from this moment on. After you use this C<Arg>, you should free
 it with C<freeProc> C<LANG_DYNAMIC> (you can do LangSet...() in between).

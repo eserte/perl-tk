@@ -34,7 +34,7 @@ sub int_results
  my $type = shift;
  my @fmt = split(/\s+/,$fmt);
  my $cnt = @fmt;
- print STDERR "'$fmt' => $cnt\n";
+ # print STDERR "'$fmt' => $cnt\n";
  return "Tcl_${type}Results(interp,$cnt,0";
 }
 
@@ -77,9 +77,22 @@ while ($_ = &getline)
  {
   s/^\s*#\s*include\s*[<"]tcl\.h[">]\s*$/#include "Lang.h"\n/;
 
+  s/^\s*#\s*include\s*<((tk|tkInt|tkPort|tix|tixInt)\.h)>\s*$/#include "$1"\n/;
+
   next if (/^\s*extern.*\bpanic\s*\(/);
 
   s/\(char\s*\*\)\s*NULL\b/         NULL/g;
+
+  if (/if\s*\(\(c == '.'\)\s*$/)
+   {
+    my $line = &getline;
+    if (defined($line))
+     {
+      s/\s*$//;
+      $line =~ s/^\s*//;
+      $_ .= " " . $line . "\n";
+     }
+   }
 
   if (/Tcl_(Create|Delete)Command/)
    {
@@ -89,8 +102,8 @@ while ($_ = &getline)
       redo PROCESS;   
      }
     s/Tcl_CreateCommand\s*\(\s*((\w+->)*interp)\s*,\s*Tk_PathName\s*\(([^\)]+)\)/Lang_CreateWidget($1,$3/;
-    s/Tcl_DeleteCommand\s*\(\s*((\w+->)*interp)\s*,\s*Tcl_GetCommandName\s*\([^,]+,\s*([^\)]+->imageCmd)\)/Lang_DeleteImage($1,$3/;
-    s/Tcl_DeleteCommand\s*\(\s*((\w+->)*interp)\s*,\s*Tcl_GetCommandName\s*\([^,]+,\s*([^\)]+->widgetCmd)\)/Lang_DeleteWidget($1,$3/;
+    s/Tcl_DeleteCommand\s*\(\s*((\w+->)*(\w+\.)?interp)\s*,\s*Tcl_GetCommandName\s*\([^,]+,\s*([^\)]+->(\w+\.style|image)Cmd)\)/Lang_DeleteObject($1,$4/;
+    s/Tcl_DeleteCommand\s*\(\s*((\w+->)*(\w+\.)?interp)\s*,\s*Tcl_GetCommandName\s*\([^,]+,\s*([^\)]+->widgetCmd)\)/Lang_DeleteWidget($1,$4/;
    }
 
   if (/\bargv\w*\b/)
@@ -163,8 +176,9 @@ while ($_ = &getline)
     s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*((\w+->)*\w+)->pathName\s*,\s*TCL_STATIC\s*\)/Tcl_ArgResult($1,LangWidgetArg($1,(Tk_Window)($3)))/; 
     die $_ if /(Tk_PathName|->pathName)/;
    }
-
-# s/\(\(c == '(.)'\)\s*&&\s*strncmp\(([^,]+),\s*("-\1[^"]+"),\s*(\w+)\s*\)\s*==\s*0\)\)/!LangCmpConfig($3,$2,$1)/g;
+#            1             2                 3           4                  5                           6
+  s/\(c == '(.)'\)\s*&&\s*(\()?\(strncmp\(([^,]+),\s*("-\1[^"]*"),\s*(\w+|strlen\(\3\))\s*\)\s*==\s*0\)(\))?/(c == '$1') && $2 LangCmpOpt($4,$3,$5) == 0 $6/g;
+  s/\(c == '(.)'\)\s*&&\s*\(strcmp\(([^,]+),\s*("-\1[^"]*")\s*\)\s*==\s*0\)/(c == '$1') && LangCmpOpt($3,$2,0) == 0/g;
   
   print;
 

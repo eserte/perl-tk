@@ -11,7 +11,8 @@
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
 package Tk::Listbox; 
-require Tk;
+use Tk qw(Ev);
+require Tk::Clipboard;
 require DynaLoader;
 use AutoLoader;
 
@@ -46,201 +47,36 @@ sub xyIndex
  return $w->index($Ev->xy);
 }
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
 
  # Standard Motif bindings:
- $mw->bind($class,"<1>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginSelect($w,$w->xyIndex($Ev));
-	       }
-	      )
- ;
- $mw->bind($class,"<B1-Motion>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		Motion($w,$w->xyIndex($Ev));
-	       }
-	      )
- ;
+ $mw->bind($class,"<1>",['BeginSelect',Ev('index',Ev('@'))]);
+ $mw->bind($class,"<B1-Motion>",['Motion',Ev('index',Ev('@'))]);
  $mw->bind($class,"<ButtonRelease-1>",
 	       sub
 	       {
 		my $w = shift;
 		my $Ev = $w->XEvent;
-		$w->CancelRepeat();
+		$w->CancelRepeat;
 		$w->activate($Ev->xy);
 	       }
 	      )
  ;
- $mw->bind($class,"<Shift-1>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginExtend($w,$w->xyIndex($Ev));
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-1>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginToggle($w,$w->xyIndex($Ev));
-	       }
-	      )
- ;
- $mw->bind($class,"<B1-Leave>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		AutoScan($w,$Ev->x,$Ev->y)
-	       }
-	      )
- ;
- $mw->bind($class,"<B1-Enter>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->CancelRepeat()
-	       }
-	      )
- ;
- $mw->bind($class,"<Up>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		UpDown($w,-1)
-	       }
-	      )
- ;
- $mw->bind($class,"<Shift-Up>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		ExtendUpDown($w,-1)
-	       }
-	      )
- ;
- $mw->bind($class,"<Down>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		UpDown($w,1)
-	       }
-	      )
- ;
- $mw->bind($class,"<Shift-Down>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		ExtendUpDown($w,1)
-	       }
-	      )
- ;
- $mw->bind($class,"<Left>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("scroll",-1,"units")
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-Left>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("scroll",-1,"pages")
-	       }
-	      )
- ;
- $mw->bind($class,"<Right>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("scroll",1,"units")
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-Right>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("scroll",1,"pages")
-	       }
-	      )
- ;
- $mw->bind($class,"<Prior>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->yview("scroll",-1,"pages")
-	       }
-	      )
- ;
- $mw->bind($class,"<Next>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->yview("scroll",1,"pages")
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-Prior>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("scroll",-1,"pages")
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-Next>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("scroll",1,"pages")
-	       }
-	      )
- ;
- $mw->bind($class,"<Home>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("moveto",0)
-	       }
-	      )
- ;
- $mw->bind($class,"<End>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->xview("moveto",1)
-	       }
-	      )
- ;
+ $mw->bind($class,"<Shift-1>",['BeginExtend',Ev('index',Ev('@'))]);
+ $mw->bind($class,"<Control-1>",['BeginToggle',Ev('index',Ev('@'))]);
+
+ $mw->bind($class,"<B1-Leave>",['AutoScan',Ev('x'),Ev('y')]);
+ $mw->bind($class,"<B1-Enter>",'CancelRepeat');
+ $mw->bind($class,"<Up>",['UpDown',-1]);
+ $mw->bind($class,"<Shift-Up>",['ExtendUpDown',-1]);
+ $mw->bind($class,"<Down>",['UpDown',1]);
+ $mw->bind($class,"<Shift-Down>",['ExtendUpDown',1]);
+
+ $mw->XscrollBind($class); 
+ $mw->PriorNextBind($class); 
+
  $mw->bind($class,"<Control-Home>",
 	       sub
 	       {
@@ -253,15 +89,7 @@ sub classinit
 	       }
 	      )
  ;
- $mw->bind($class,"<Shift-Control-Home>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		DataExtend($w,0)
-	       }
-	      )
- ;
+ $mw->bind($class,"<Shift-Control-Home>",['DataExtend',0]);
  $mw->bind($class,"<Control-End>",
 	       sub
 	       {
@@ -274,82 +102,14 @@ sub classinit
 	       }
 	      )
  ;
- $mw->bind($class,"<Shift-Control-End>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		DataExtend($w,"end")
-	       }
-	      )
- ;
- $mw->bind($class,"<F16>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		if ($w->IS($w->SelectionOwner))
-		 {
-		  $w->Clipboard("clear");
-		  $w->Clipboard("append",$w->SelectionGet);
-		 }
-	       }
-	      )
- ;
- $mw->bind($class,"<space>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginSelect($w,$w->index("active"))
-	       }
-	      )
- ;
- $mw->bind($class,"<Select>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginSelect($w,$w->index("active"))
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-Shift-space>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginExtend($w,$w->index("active"))
-	       }
-	      )
- ;
- $mw->bind($class,"<Shift-Select>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		BeginExtend($w,$w->index("active"))
-	       }
-	      )
- ;
- $mw->bind($class,"<Escape>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		Cancel($w)
-	       }
-	      )
- ;
- $mw->bind($class,"<Control-slash>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		SelectAll($w)
-	       }
-	      )
- ;
+ $mw->bind($class,"<Shift-Control-End>",['DataExtend','end']);
+ $class->clipboardKeysyms($mw,"F16");
+ $mw->bind($class,"<space>",['BeginSelect',Ev('index','active')]);
+ $mw->bind($class,"<Select>",['BeginSelect',Ev('index','active')]);
+ $mw->bind($class,"<Control-Shift-space>",['BeginExtend',Ev('index','active')]);
+ $mw->bind($class,"<Shift-Select>",['BeginExtend',Ev('index','active')]);
+ $mw->bind($class,"<Escape>",'Cancel');
+ $mw->bind($class,"<Control-slash>",'SelectAll');
  $mw->bind($class,"<Control-backslash>",
 	       sub
 	       {
@@ -363,22 +123,8 @@ sub classinit
 	      )
  ;
  # Additional Tk bindings that aren't part of the Motif look and feel:
- $mw->bind($class,"<2>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->scan("mark",$Ev->x,$Ev->y)
-	       }
-	      )
- ;
- $mw->bind($class,"<B2-Motion>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->scan("dragto",$Ev->x,$Ev->y)
-	       } ) ;
+ $mw->bind($class,"<2>",['scan','mark',Ev('x'),Ev('y')]);
+ $mw->bind($class,"<B2-Motion>",['scan','dragto',Ev('x'),Ev('y')]);
  return $class;
 }
 # BeginSelect --
@@ -490,7 +236,7 @@ sub BeginExtend
  my $el = shift;
  if ($w->cget("-selectmode") eq "extended" && $w->selection("includes","anchor"))
   {
-   Motion($w,$el)
+   $w->Motion($el)
   }
 }
 # BeginToggle --
@@ -559,8 +305,8 @@ sub AutoScan
   {
    return;
   }
- Motion($w,$w->index("@" . $x . ',' . $y));
- $w->afterId($w->after(50,"AutoScan",$w,$x,$y));
+ $w->Motion($w->index("@" . $x . ',' . $y));
+ $w->RepeatId($w->after(50,"AutoScan",$w,$x,$y));
 }
 # UpDown --
 #
@@ -611,7 +357,7 @@ sub ExtendUpDown
   }
  $w->activate($w->index("active")+$amount);
  $w->see("active");
- Motion($w,$w->index("active"))
+ $w->Motion($w->index("active"))
 }
 # DataExtend
 #
@@ -634,7 +380,7 @@ sub DataExtend
    $w->see($el);
    if ($w->selection("includes","anchor"))
     {
-     Motion($w,$el)
+     $w->Motion($el)
     }
   }
  elsif ($mode eq "multiple")
@@ -700,7 +446,7 @@ sub SelectAll
   }
 }
 
-sub setlist
+sub SetList
 {
  my $w = shift;
  $w->delete(0,"end");

@@ -7,6 +7,20 @@ sub try_compile
  return $ok;
 }
 
+sub try_run
+{
+ my $file  = shift;
+ my $msgs  = `$Config{'cc'} $file 2>&1`;
+ my $ok = ($? == 0);
+ if ($ok)
+  {
+   system('a.out');
+   $ok = ($? == 0);
+  }
+ unlink('a.out') if (-f 'a.out');
+ return $ok;
+}
+
 sub upgrade_pic
 {
  my $flags = "";
@@ -21,15 +35,17 @@ sub upgrade_pic
 
 sub MY::constants
 {
- $_ = MM->constants;
- s/\n.PRECIOUS:.*\n//;
+ my $self = shift;
+ $_ = $self->MM::constants;
+# s/\n.PRECIOUS:.*\n//;
  $_ .= "\nGCCOPT = $gccopt\n";
  $_;
 }
 
 sub MY::c_o
 {
- $_ = MM->c_o;
+ my $self = shift;
+ $_ = $self->MM::c_o;
  s/\$\(DEFINE\)/\$(DEFINE) \$(GCCOPT)/;
  $_;
 }

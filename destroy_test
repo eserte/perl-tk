@@ -1,9 +1,9 @@
 #!/usr/local/bin/perl -w
-BEGIN { unshift(@INC,'blib') }
+use lib ('blib');
 
 use Tk;
 
-require Pretty ; 
+require Tk::Pretty ; 
 
 $top = MainWindow->new();
 

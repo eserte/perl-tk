@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-BEGIN { unshift(@INC,'../blib','blib') }
+use lib ('../blib','blib');
 use Tk;
 
 $fw_font  = "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*";
@@ -11,7 +11,7 @@ use strict qw(subs);
 
 
 $top = MainWindow->new();
-$gs  = $top->Ghostview($ARGV[0]);
+$gs  = $top->Ghostview(-file => $ARGV[0]);
 $f = $top->Frame();
 $l = $top->ScrlListbox('-width' => $gs->Doc->{'LabelLen'});
 $l->bind('<Double-1>',[sub { shift; shift->SetPage(@_) },$gs,Ev('index','active')]);
@@ -36,11 +36,8 @@ foreach $kind (sort keys %{$contents})
  }
 $mb->pack('-side'=>'right');
 
-$mb = $f->Menubutton('-text'=>'Orientation');
-$mb->command('-label'=> 'Portrait',  '-command'=>['Orientation',$gs,'Portrait']);
-$mb->command('-label'=> 'Landscape', '-command'=>['Orientation',$gs,'Landscape']);
-$mb->command('-label'=> 'Upsidedown', '-command'=>['Orientation',$gs,'Upsidedown']);
-$mb->command('-label'=> 'Seascape', '-command'=>['Orientation',$gs,'Seascape']);
+$mb = $f->Optionmenu('-text'=>'Orientation',-options => [qw(Portrait Landscape Upsidedown Seascape)],
+                     -command => [$gs,'Orientation']);
 
 $mb->pack('-side'=>'right');
 

@@ -1,3 +1,5 @@
+#ifndef _XLIB_VM
+#define _XLIB_VM
 #include "Xlib_f.h"
 #define XAllocClassHint (*XlibVptr->V_XAllocClassHint)
 #define XAllocColor (*XlibVptr->V_XAllocColor)
@@ -35,6 +37,7 @@
 #define XDrawImageString (*XlibVptr->V_XDrawImageString)
 #define XDrawLine (*XlibVptr->V_XDrawLine)
 #define XDrawLines (*XlibVptr->V_XDrawLines)
+#define XDrawPoints (*XlibVptr->V_XDrawPoints)
 #define XDrawRectangle (*XlibVptr->V_XDrawRectangle)
 #define XDrawString (*XlibVptr->V_XDrawString)
 #define XEventsQueued (*XlibVptr->V_XEventsQueued)
@@ -135,3 +138,4 @@
 #define XWindowEvent (*XlibVptr->V_XWindowEvent)
 #define XWithdrawWindow (*XlibVptr->V_XWithdrawWindow)
 #define _XInitImageFuncPtrs (*XlibVptr->V__XInitImageFuncPtrs)
+#endif /* _XLIB_VM */

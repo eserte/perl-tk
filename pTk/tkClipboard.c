@@ -484,13 +484,13 @@ Tk_ClipboardCmd(clientData, interp, argc, args)
 		count--;
 		break;
 	    }
-	    if ((c == 'd') && (strncmp(string, "-displayof", length) == 0)) {
+	    if ((c == 'd') &&  LangCmpOpt("-displayof",string,length) == 0 ) {
 		path = LangString(argp[1]);
-	    } else if ((c == 'f')
-		    && (strncmp(string, "-format", length) == 0)) {
+	    } else if ((c == 'f') &&  LangCmpOpt("-format",string,length) == 0 ) {
+
 		formatName = LangString(argp[1]);
-	    } else if ((c == 't')
-		    && (strncmp(string, "-type", length) == 0)) {
+	    } else if ((c == 't') &&  LangCmpOpt("-type",string,length) == 0 ) {
+
 		targetName = LangString(argp[1]);
 	    } else {
 		Tcl_AppendResult(interp, "unknown option \"", string,
@@ -533,7 +533,7 @@ Tk_ClipboardCmd(clientData, interp, argc, args)
 	    }
 	    c = string[1];
 	    length = strlen(string);
-	    if ((c == 'd') && (strncmp(string, "-displayof", length) == 0)) {
+	    if ((c == 'd') &&  LangCmpOpt("-displayof",string,length) == 0 ) {
 		path = LangString(argp[1]);
 	    } else {
 		Tcl_AppendResult(interp, "unknown option \"", string,

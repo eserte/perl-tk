@@ -2,14 +2,14 @@ package Tk::Pretty;
 require Exporter;
 @ISA = qw(Exporter);
 
-@EXPORT = qw(pretty PrintArgs);
+@EXPORT = qw(Pretty PrintArgs);
 
 sub pretty_list
 {
- join(',',map(&pretty($_),@_));
+ join(',',map(&Pretty($_),@_));
 }
 
-sub pretty
+sub Pretty
 {
  return pretty_list(@_) if (@_ > 1);
  my $obj = shift;
@@ -39,7 +39,7 @@ sub pretty
       {
        while (($key,$value) = each %$obj)
         {            
-         $result .= $key . "=>" . pretty($value) . ",";
+         $result .= $key . "=>" . Pretty($value) . ",";
         }            
        chop($result);
       }
@@ -47,11 +47,11 @@ sub pretty
     }            
    elsif ($type =~ /^REF/)
     {            
-     $result .= "\\" . pretty($$obj);
+     $result .= "\\" . Pretty($$obj);
     }            
    elsif ($type =~ /^SCALAR/)
     {            
-     $result .= pretty($$obj);
+     $result .= Pretty($$obj);
     }            
    else          
     {            
@@ -79,7 +79,7 @@ sub pretty
 sub PrintArgs
 {
  my $name = (caller(1))[3];
- print "$name(",pretty(@_),")\n";
+ print "$name(",Pretty(@_),")\n";
 }
 
 1;

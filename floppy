@@ -43,14 +43,15 @@ sub grab
   }
 }
 
-grab(".","Ned");
+grab(".","pTk/mTk","Ned",<Extensions/*>);
 @files = grep(-w $_,@files);
 push(@files,grep(-M $_ < 7,<../../useful/*>));
 push(@files,grep(-M $_ < 7,<ToDo/*>));
-grab(grep(-M $_ < 7,<../../Packages/*>));
-@files = grep(!/\.(ps|ppm|n|3|html)$/,@files);
+# grab(grep(-M $_ < 7,<../../Packages/*>));
+@files = grep(!/\.(ps|ppm|n|3|ht)$/,@files);
 @files = grep(!m#/(mTk\.b\d|merge)/#,@files);
 # @files = grep(!m/patches\.001/,@files);
+push(@files,"Tix/tcl2perl");
 
 foreach ("/dev/rdiskette","/dev/rfd0")
  {
@@ -69,5 +70,6 @@ $name = "Tk-$year.$mon.$mday.tar.gz";
 chdir("..");
 system("gtar","-czvf",$name,'--block-compress',map("$dir/". $_,@files));
 System("tar","-cvfb",$floppy,36,$name);
+System("tar","-tvfb",$floppy,36);
 
 

@@ -1,3 +1,4 @@
+require Tk::Table;
 package Tk::HTML::FORM;
 use Carp;
 use strict qw(vars subs);
@@ -90,6 +91,11 @@ sub Button
  my $method = "\u\L$type";
  my $text   = $method;
  $text = $args->{'VALUE'} if defined $args->{'VALUE'};
+ if(defined $args->{'NAME'}) 
+  {
+   my $var = $form->Variable($args);
+   $$var = $args->{'VALUE'} if defined $args->{'VALUE'};
+  }
  my $e = $w->Button(-text => $text, -command => [$form,$method]);
  $w->window('create','insert',-window => $e);
  $w->{NL} = 0;                
@@ -150,8 +156,8 @@ sub IMAGE
  my $n = $args->{'NAME'};
  if(defined $args->{'NAME'} && defined $args->{'SRC'}) 
   {
-   $args->{'IMAGE'} = $w->{'form'};
-      $w->IMG("",$args);
+   $args->{'IMAGE'} = $form;
+   $w->IMG($form,$args);
   }
 }
 
@@ -318,7 +324,7 @@ sub call_ISINDEX
  my $method = "GET";
  my $url;
  if(defined $w->{'base'}) { $url = $w->{'base'}; } else { $url = $w->url; }
- my $query = $w->encode($e->get);
+ my $query = Tk::HTML::FORM::encode($w,$e->get);
  $w->HREF('GET',"$url?$query");
 }
 
@@ -347,12 +353,16 @@ sub IMG_CLICK
  my $cor = $c->cget(-borderwidth);
  if($t eq "ISMAP") 
   {
-   $w->HREF('GET',$w->url . "?" . ($Ev->x - $cor) . "," . ($Ev->y - $cor));
+   $w->HREF('GET',$aref . "?" . ($Ev->x - $cor) . "," . ($Ev->y - $cor));
   } 
+ elsif($t eq "AREF")
+  {
+   $w->HREF('GET',$aref);
+  }
  else 
   {
    my $s = "$n.x=" . ($Ev->x - $cor) . "&$n.y=" . ($Ev->y - $cor);
-   $w->call_FORM($aref,$s);
+   $aref->Submit($s);
   }
 }
 
@@ -499,18 +509,22 @@ sub IMG
  $w->window('create','insert','-window' => $l, @al);
  $w->{NL} = 0;                
  $w->FindImage($args->{'SRC'},$l) if (exists $args->{'SRC'});
- if(defined $args->{'ISMAP'} || defined $args->{'IMAGE'}) 
+ if(defined $args->{'IMAGE'} || 
+    (exists $w->{TAGS}{'A'} && @{$w->{TAGS}{'A'}}))
   {
    $l->configure('-cursor' => "top_left_arrow", -borderwidth => 3, -relief => 'raised');
-   if(defined $args->{'ISMAP'}) 
+   if(defined $args->{'ISMAP'})
     {
-     # FIXME aref
-     $l->bind('<1>',[$w,'IMG_CLICK',$l,'ISMAP',$w->{'aref'}]);
+     $l->bind('<1>',[$w,'IMG_CLICK',$l,'ISMAP',${$w->{TAGS}{'A'}}[0]->{'HREF'}]);
     } 
-   else 
+   elsif(defined $args->{'IMAGE'})
     {
-     $l->bind('<1>',[$w,'IMG_CLICK',$l,'IMAGE',$args->{'IMAGE'},$args->{'NAME'}]);
+     $l->bind('<1>',[$w,'IMG_CLICK',$l,'IMAGE',$f,$args->{'NAME'}]);
     } 
+   else
+    {
+     $l->bind('<1>',[$w,'IMG_CLICK',$l,'AREF',${$w->{TAGS}{'A'}}[0]->{'HREF'}]);
+    }
   }
  return $w;
 }
@@ -548,7 +562,14 @@ sub BR
 {
  my ($w,$f,$args) = @_;
  $w->{'BODY'} = 1;
- $w->nl(1);
+ if (@{$w->{'Text'}})
+  {
+   $w->{'Text'}[-1]->Call("\n");
+  }
+ else
+  {
+   $w->nl(1);
+  }
  return $w;
 }
 
@@ -567,6 +588,9 @@ sub HR
  $w->nl(1);
  return $w;
 }
+
+
+
 
 sub FORM
 {
@@ -606,7 +630,7 @@ sub INPUT
   my($w,$f,$args) = @_;
   my $form = $w->CurrentForm;
   my $type = $args->{'TYPE'};
-  print pretty($args),"\n";
+  print Pretty($args),"\n";
   $args->{'TYPE'} = $type = 'TEXT' unless (defined $type);
   $type = "\U$type";
   $form->$type($args);
@@ -634,7 +658,7 @@ sub OptionText
      $mb->{'FORM_MAP'} = {} unless (exists $mb->{'FORM_MAP'});
      $mb->{'FORM_MAP'}{$text} = $args->{'VALUE'};
     }                  
-   $mb->Options($text);
+   $mb->options([$text]);
    $mb->setOption($text) if (defined $args->{'SELECTED'});
   }
  else
@@ -782,6 +806,7 @@ sub A
      my $tag  = $w->GenTag('HREF',-underline => 1);
      $w->tag('add',$tag,$args->{Start},$args->{End});
      $w->tag('bind',$tag,'<Button-1>',[$w,'HREF','GET',$href]);
+     $w->tag('bind',$tag,'<Enter>',[$w,'ShowLink',$href]);
     }
    if (exists $args->{'NAME'})
     {
@@ -816,12 +841,12 @@ sub List
    my $depth = @{$w->{'List'}};
    if($depth > 1) {
      ${${$w->{'List'}}[$depth - 2]}[2] = $args->{End};
-     $depth *= 20;
+     my $len = $depth * 20;
      my $tag = $w->GenTag($args->{Tag},
-                          -lmargin1 => $depth, 
-                          -lmargin2 => $depth,
-                          -rmargin => $depth);
-     $w->tag('add',$tag,$args->{Start},$args->{End});
+                          -lmargin1 => $len, 
+                          -lmargin2 => $len,
+                          -rmargin => $len);
+     $w->tag('add',$tag,${${$w->{'List'}}[$depth - 1]}[2],$args->{End});
    }
    pop(@{$w->{'List'}});
   }
@@ -890,22 +915,73 @@ sub DD
  return $w;
 }
 
+sub Enclosing
+{
+ my ($w,$tag) = @_;
+ return $w->{TAGS}{$tag}[-1] if (exists $w->{TAGS}{$tag} && @{$w->{TAGS}{$tag}});
+ croak "No enclosing $tag";
+}
+
 sub TR
 {
  my ($w,$f,$args) = @_;
+ my $table = $w->Enclosing('TABLE');
+ if ($f)
+  {
+   $args->{Col} = 0;
+  }
+ else
+  {
+   $table->{Widget}->configure(-columns => $args->{Col});
+   $table->{Row}++;
+  }
  return $w;
 } 
 
 sub TD
 {
  my ($w,$f,$args) = @_;
- $w->nl(1);
+ my $row   = $w->Enclosing('TR');
+ my $table = $w->Enclosing('TABLE');
+ if ($f)
+  {
+   $args->{Text} = "";
+   push(@{$w->{'Text'}},Tk::Callback->new(sub { $args->{Text} .= shift }));
+  }
+ else
+  {
+   my $w = $table->{Widget};
+   my @args = ();
+   my $al = $args->{ALIGN};
+   if (defined $al)
+    {
+     push(@args,-justify => 'right',-anchor => 'e') if ($al =~ /RIGHT/i);
+    }
+#  print $table->{Row},",",$row->{Col}," : ",$args->{Text},"\n";
+   $w->Create($table->{Row},$row->{Col},'Message',-aspect => 300, 
+           -relief => 'ridge', -text => $args->{Text},@args);
+   pop(@{$w->{'Text'}});
+   $row->{Col}++;
+  }
  return $w;
 } 
+
+*TH = \&TD;
 
 sub TABLE
 {
  my ($w,$f,$args) = @_;
+ if ($f)
+  {
+   $args->{Widget} = $w->ScrlTable;
+   $args->{Row}    = 0;
+   $w->window('create','insert',-window => $args->{Widget});
+   print "Table:",Pretty($args),"\n";
+  }
+ else
+  {
+#   $args->{Widget}->configure(-rows => $args->{Row});
+  }
  return $w;
 }
 
@@ -962,6 +1038,16 @@ sub Text
   }
 }
 
+sub CloseTag
+{
+ my ($w,$tag) = @_;
+ my $info = pop(@{$w->{TAGS}{$tag}});       
+ $info->{End} = $w->index('insert');
+ return $w->$tag(0,$info);
+}
+
+%Tk::HTML::NotNested = ( 'TD' => 1 );
+
 sub Tag
 {                      
  my ($w,$tag) = @_;
@@ -972,9 +1058,7 @@ sub Tag
    $tag = "\U$1";
    if (exists $w->{TAGS}{$tag} && @{$w->{TAGS}{$tag}})
     {
-     my $info = pop(@{$w->{TAGS}{$tag}});       
-     $info->{End} = $w->index('insert');
-     $val = $w->$tag(0,$info);
+     $w->CloseTag($tag);
     }
    else
     {
@@ -1001,6 +1085,10 @@ sub Tag
     {                
      $w->{TAGS}{$tag} = [];
     }                
+   if (exists($Tk::HTML::NotNested{$tag}) && @{$w->{TAGS}{$tag}})
+    {
+     $w->CloseTag($tag);
+    }
    push (@{$w->{TAGS}{$tag}},\%info);
    $val = $w->$tag(1,\%info);
   }

@@ -1,7 +1,7 @@
 #ifdef _TK
 VVAR(int,tk_NumMainWindows,V_tk_NumMainWindows)
 VFUNC(Var,LangFindVar,V_LangFindVar,_ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name)))
-VFUNC(Arg,LangImageArg,V_LangImageArg,_ANSI_ARGS_((Tcl_Interp *interp, char *)))
+VFUNC(Arg,LangObjectArg,V_LangObjectArg,_ANSI_ARGS_((Tcl_Interp *interp, char *)))
 VFUNC(Arg,LangWidgetArg,V_LangWidgetArg,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Window)))
 VFUNC(Tcl_Command,Lang_CreateImage,V_Lang_CreateImage,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *cmdName, Tcl_CmdProc *proc,
@@ -12,8 +12,10 @@ VFUNC(Tcl_Command,Lang_CreateWidget,V_Lang_CreateWidget,_ANSI_ARGS_((Tcl_Interp 
 			    Tk_Window, Tcl_CmdProc *proc,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc)))
-VFUNC(void,Lang_DeleteImage,V_Lang_DeleteImage,_ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd)))
 VFUNC(void,Lang_DeleteWidget,V_Lang_DeleteWidget,_ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd)))
+VFUNC(int,Tix_ArgcError,V_Tix_ArgcError,_ANSI_ARGS_((Tcl_Interp *interp, 
+			    int argc, Arg *args, int prefixCount,
+			    char *message)))
 VFUNC(XColor *,Tk_3DBorderColor,V_Tk_3DBorderColor,_ANSI_ARGS_((Tk_3DBorder border)))
 VFUNC(GC,Tk_3DBorderGC,V_Tk_3DBorderGC,_ANSI_ARGS_((Tk_Window tkwin,
 			    Tk_3DBorder border, int which)))

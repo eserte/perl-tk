@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * @(#) tkPort.h 1.5 95/05/11 10:49:35
+ * @(#) tkPort.h 1.6 95/08/28 09:33:16
  */
 
 #ifndef _TKPORT
@@ -133,14 +133,6 @@
 extern int errno;
 
 /*
- * Define OPEN_MAX if it isn't already defined for this system.
- */
-
-#ifndef OPEN_MAX
-#   define OPEN_MAX 256
-#endif
-
-/*
  * The following macro defines the type of the mask arguments to
  * select:
  */
@@ -175,14 +167,20 @@ extern int errno;
  * The following macro defines the number of fd_masks in an fd_set:
  */
 
+#ifndef FD_SETSIZE
+#   ifdef OPEN_MAX
+#	define FD_SETSIZE OPEN_MAX
+#   else
+#	define FD_SETSIZE 256
+#   endif
+#endif
 #if !defined(howmany)
 #   define howmany(x, y) (((x)+((y)-1))/(y))
 #endif
-#ifdef NFDBITS
-#   define MASK_SIZE howmany(FD_SETSIZE, NFDBITS)
-#else
-#   define MASK_SIZE howmany(OPEN_MAX, NBBY*sizeof(fd_mask))
+#ifndef NFDBITS
+#   define NFDBITS NBBY*sizeof(fd_mask)
 #endif
+#define MASK_SIZE howmany(FD_SETSIZE, NFDBITS)
 
 /*
  * The following macro checks to see whether there is buffered

@@ -23,7 +23,7 @@ Tk::Widget->Construct('DragToken');
 
 use Carp;
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = shift;
  return $class;

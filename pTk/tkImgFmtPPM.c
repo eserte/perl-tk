@@ -14,7 +14,7 @@
  *	   Australian National University.
  */
 
-static char sccsid[] = "@(#) tkImgFmtPPM.c 1.8 95/07/26 12:57:36";
+static char sccsid[] = "@(#) tkImgFmtPPM.c 1.9 95/08/30 15:34:52";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -384,8 +384,10 @@ ReadPPMFileHeader(f, widthPtr, heightPtr, maxIntensityPtr)
 	    }
 	    c = getc(f);
 	}
-	buffer[i] = ' ';
-	i++;
+	if (i < (BUFFER_SIZE-1)) {
+	    buffer[i] = ' ';
+	    i++;
+	}
 	firstInLine = 0;
     }
     buffer[i] = 0;

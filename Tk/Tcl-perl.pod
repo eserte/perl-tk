@@ -39,7 +39,7 @@ port with the current one. It is also out-of-date in places.
   comparison in no particular order follows:
   
   
-  tkper5a5			Tk
+  tkperl5a5				Tk
   -------------------------------	-----------------------------------
   $top=tkinit(name,display,sync);	$top=MainWindow->new();
   
@@ -122,7 +122,7 @@ port with the current one. It is also out-of-date in places.
   re-bless the hash and keep their on stuff in it too.)
   
   Tk's "Tcl_Interp" is in fact a ref to "." window. 
-  You can find all the Tk windows decended from it as their object 
+  You can find all the Tk windows descended from it as their object 
   references get added (by PathName) into this hash. 
   $w->MainWindow returns this hash from any window.
   
@@ -154,7 +154,7 @@ port with the current one. It is also out-of-date in places.
   1st extra arg is reference to the per-widget hash that serves as the 
   perl object for the widget. 
   
-  Every time an XEvent a refence to a special class is placed
+  Every time an XEvent a reference to a special class is placed
   in the widget hash. It can be retrieved by $w->XEvent method.
   
   The methods of the XEvent class are the 

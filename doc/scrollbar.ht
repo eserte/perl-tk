@@ -1,9 +1,10 @@
+<HTML>
 <! Copyright (c) 1990-1994 The Regents of the University of California.-->
 <! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
 <! See the file "license.terms" for information on usage and redistribution-->
 <! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
 <! -->
-<! @(#) scrollbar.n 1.23 95/06/29 14:25:20-->
+<! @(#) scrollbar.n 1.24 95/08/30 10:05:00-->
 <! -->
 <H1>scrollbar</H1>
 <HR>
@@ -348,8 +349,11 @@ associated widget to shift down (right) by one unit so that the
 document appears to move up (left) one unit.
 If the button is held down, the action auto-repeats.
 <DT>[6]
-<DD>All of the above actions may be invoked with button 2 as well
-as with button 1.
+<DD>If button 2 is pressed over the trough or the slider, it sets
+the view to correspond to the mouse position;  dragging the
+mouse with button 2 down causes the view to drag with the mouse.
+If button 2 is pressed over one of the arrows, it causes the
+same behavior as pressing button 1.
 <DT>[7]
 <DD>If button 1 is pressed with the Control key down, then if the
 mouse is over <B>arrow1</B> or <B>trough1</B> the view changes

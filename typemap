@@ -1,6 +1,7 @@
 TYPEMAP
 EventAndKeySymPtr	T_XEVENT
 Tk_Window		T_TK_WINDOW
+TkWindow *		T_TKWINDOW
 Display *		T_PTROBJ
 Screen *		T_PTROBJ
 Visual *		T_PTROBJ
@@ -10,6 +11,8 @@ Font			T_IVOBJ
 Atom			T_IV
 FILE *			T_NIO
 hash_ptr *		T_PTR
+Tk_3DBorder		T_PTROBJ
+Tk_Uid			T_TK_UID
 
 INPUT 
 T_XEVENT
@@ -22,6 +25,12 @@ T_XEVENT
 
 T_TK_WINDOW
 	$var = GetWindow($arg)
+
+T_TKWINDOW
+	$var = (TkWindow *) GetWindow($arg)
+
+T_TK_UID
+	$var = Tk_GetUid(SvPV($arg),na)
 
 T_IVOBJ
 	if (sv_isa($arg, \"${ntype}\")) {
@@ -42,4 +51,13 @@ T_NIO
 OUTPUT
 T_IVOBJ
 	sv_setref_iv($arg, \"${ntype}\", (IV) $var);
+
+T_TK_UID
+	sv_setpv($arg,$var);
+
+T_TK_WINDOW
+	sv_setsv($arg,TkToWidget($var,NULL));
+
+T_TKWINDOW
+	sv_setsv($arg,TkToWidget((Tk_Window) $var,NULL));
 

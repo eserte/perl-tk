@@ -123,11 +123,11 @@ sub Tk::BackgroundError {
 
     $w->ErrorDialog if not defined $ED_OBJECT;
 
-    my($d, $t) = ($ED_OBJECT->subwidget('error_dialog'), $ED_OBJECT->subwidget('text'));
+    my($d, $t) = ($ED_OBJECT->Subwidget('error_dialog'), $ED_OBJECT->Subwidget('text'));
     chop $error;
     $d->configure(-text => "Error:  $error");
     $d->bell; 
-    my $ans = $d->show;
+    my $ans = $d->Show;
 
     $t->delete('0.0', 'end') if not $ED_OBJECT->{'-appendtraceback'};
     $t->insert('end', "\n");

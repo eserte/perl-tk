@@ -159,7 +159,7 @@ sub CopySection
   }
  else
   {
-   warn "No $start:" . pretty($doc);
+   warn "No $start:" . Pretty($doc);
   }
 }
 

@@ -624,6 +624,8 @@ Tk_HandleEvent(eventPtr)
     ip.nextPtr = pendingPtr;
     pendingPtr = &ip;
     if (mask == 0) {
+#if 0
+	/* Old TK Stuff */
 	if ((eventPtr->type == SelectionClear)
 		|| (eventPtr->type == SelectionRequest)
 		|| (eventPtr->type == SelectionNotify)) {
@@ -636,6 +638,20 @@ Tk_HandleEvent(eventPtr)
                 LangClientMessage(winPtr->mainPtr->interp, (Tk_Window) winPtr, eventPtr);
 	    }
 	}
+#else
+	/* Tix extensions */
+	if ((eventPtr->type == SelectionClear)
+		|| (eventPtr->type == SelectionRequest)
+		|| (eventPtr->type == SelectionNotify)) {
+	    TkSelEventProc((Tk_Window) winPtr, eventPtr);
+	} else if ((eventPtr->type == ClientMessage)
+		&& ((eventPtr->xclient.message_type ==
+		    Tk_InternAtom((Tk_Window) winPtr, "WM_PROTOCOLS"))
+		  ||(eventPtr->xclient.message_type ==
+		    Tk_InternAtom((Tk_Window) winPtr,"_MOTIF_WM_MESSAGES")))) {
+	    TkWmProtocolEventProc(winPtr, eventPtr);
+	}
+#endif
     } else {
 	for (handlerPtr = winPtr->handlerList; handlerPtr != NULL; ) {
 	    if ((handlerPtr->mask & mask) != 0) {

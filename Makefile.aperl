@@ -1,0 +1,1475 @@
+# This Makefile is for the Tk extension to perl.
+#
+# It was generated automatically by MakeMaker version 5.10 from the contents
+# of Makefile.PL. Don't edit this file, edit Makefile.PL instead.
+#
+#	ANY CHANGES MADE HERE WILL BE LOST!
+#
+#   MakeMaker Parameters:
+
+#	DEFINE => '-DBASEEXT=\"$(BASEEXT)\" -DNTK_VERSION=\"b9-tobe\" -DUSE_PROTO -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DHAVE_LIMITS_H "-DSELECT_MASK=fd_set"'
+#	DISTNAME => 'Tk'
+#	INC => '-I/usr/openwin/include'
+#	LIBS => ['-L/usr/local/lib -lX11 -lpt -lsocket -lnsl -lm']
+#	MAP_TARGET => 'tkperl'
+#	MYEXTLIB => 'pTk/libpTk.a'
+#	NAME => 'Tk'
+#	OBJECT => '$(BASEEXT).o tkGlue.o leak_util.o'
+#	VERSION => 'b9-tobe'
+#	clean => { FILES=>'libpTk.a *%' }
+
+# --- MakeMaker post_initialize section:
+
+
+# --- MakeMaker const_config section:
+
+# These definitions are from config.sh (via /usr/local/lib/perl5.new/sun4-sunos/5.002/Config.pm)
+
+# They may have been overridden via Makefile.PL or on the command line
+AR = ar
+CC = gcc
+CCCDLFLAGS = -fpic
+CCDLFLAGS =  
+DLEXT = so
+DLSRC = dl_dlopen.xs
+LD = ld
+LDDLFLAGS = -assert nodefinitions -L/usr/local/lib
+LDFLAGS =  -L/usr/local/lib
+LIBC = 
+LIB_EXT = .a
+OBJ_EXT = .o
+RANLIB = /usr/bin/ranlib
+SO = so
+
+
+# --- MakeMaker constants section:
+
+NAME = Tk
+DISTNAME = Tk
+NAME_SYM = Tk
+VERSION = b9-tobe
+VERSION_SYM = b9_tobe
+VERSION_MACRO = VERSION
+DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
+
+# In which directory should we put this extension during 'make'?
+# This is typically ./blib.
+# (also see INST_LIBDIR and relationship to ROOTEXT)
+INST_LIB = ./blib
+INST_ARCHLIB = ./blib/sun4-sunos
+INST_EXE = ./blib/sun4-sunos
+
+# AFS users will want to set the installation directories for
+# the final 'make install' early without setting INST_LIB,
+# INST_ARCHLIB, and INST_EXE for the testing phase
+INSTALLPRIVLIB = /usr/local/lib/perl5.new
+INSTALLARCHLIB = /usr/local/lib/perl5.new/sun4-sunos/5.002
+INSTALLBIN = /usr/local/bin/new
+
+# Perl library to use when building the extension
+PERL_LIB = /usr/local/lib/perl5.new
+PERL_ARCHLIB = /usr/local/lib/perl5.new/sun4-sunos/5.002
+LIBPERL_A = libperl.a
+
+MAKEMAKER = $(PERL_LIB)/ExtUtils/MakeMaker.pm
+MM_VERSION = 5.10
+FIRST_MAKEFILE  = Makefile
+MAKE_APERL_FILE = Makefile.aperl
+
+PERLMAINCC = $(CC)
+
+# Perl header files (will eventually be under PERL_LIB)
+PERL_INC = /usr/local/lib/perl5.new/sun4-sunos/5.002/CORE
+# Perl binaries
+PERL = /usr/local/bin/nperl
+FULLPERL = /usr/local/bin/nperl
+
+# FULLEXT = Pathname for extension directory (eg DBD/Oracle).
+# BASEEXT = Basename part of FULLEXT. May be just equal FULLEXT.
+# ROOTEXT = Directory part of FULLEXT with leading slash (eg /DBD)
+# DLBASE  = Basename part of dynamic library. May be just equal BASEEXT.
+FULLEXT = Tk
+BASEEXT = Tk
+ROOTEXT = 
+DLBASE  = $(BASEEXT)
+
+INC = -I/usr/openwin/include
+DEFINE = -DBASEEXT=\"$(BASEEXT)\" -DNTK_VERSION=\"b9-tobe\" -DUSE_PROTO -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DHAVE_LIMITS_H "-DSELECT_MASK=fd_set"
+OBJECT = $(BASEEXT).o tkGlue.o leak_util.o
+LDFROM = $(OBJECT)
+LINKTYPE = static
+
+# Handy lists of source code files:
+XS_FILES= Tk.xs
+C_FILES = Tk.c \
+	leak_util.c \
+	tkGlue.c \
+	tkGlue_f.c
+O_FILES = Tk.o \
+	leak_util.o \
+	tkGlue.o \
+	tkGlue_f.o
+H_FILES = leak_util.h \
+	reghack.h \
+	tkGlue.h \
+	tkGlue_f.h
+MAN1PODS = 
+MAN3PODS = Tk/Callback.pod \
+	Tk/ColorEditor.pm \
+	Tk/Composite.pod \
+	Tk/ConfigSpec.pod \
+	Tk/FileSelect.pm \
+	Tk/Internals.pod \
+	Tk/Tcl-perl.pod \
+	Tk/Tk.pod \
+	Tk/UserGuide.pod \
+	Tk/pTk.pod
+
+# Man installation stuff:
+INST_MAN1DIR	= ./blib/man/man1
+INSTALLMAN1DIR	= /usr/local/man/man1
+MAN1EXT	= 1
+
+INST_MAN3DIR	= ./blib/man/man3
+INSTALLMAN3DIR	= /usr/local/lib/perl5.new/man/man3
+MAN3EXT	= 3
+
+
+# work around a famous dec-osf make(1) feature(?):
+makemakerdflt: all
+
+.SUFFIXES: .xs .c .C $(OBJ_EXT)
+
+# .PRECIOUS: Makefile    # seems to be not necessary anymore
+
+.PHONY: all config static dynamic test linkext
+
+# This extension may link to it's own library (see SDBM_File)
+MYEXTLIB = pTk/libpTk.a
+
+# Where is the Config information that we are using/depend on
+CONFIGDEP = $(PERL_ARCHLIB)/Config.pm $(PERL_INC)/config.h
+
+# Where to put things:
+INST_LIBDIR     = $(INST_LIB)$(ROOTEXT)
+INST_ARCHLIBDIR = $(INST_ARCHLIB)$(ROOTEXT)
+
+INST_AUTODIR      = $(INST_LIB)/auto/$(FULLEXT)
+INST_ARCHAUTODIR  = $(INST_ARCHLIB)/auto/$(FULLEXT)
+
+INST_STATIC  = $(INST_ARCHAUTODIR)/$(BASEEXT)$(LIB_EXT)
+INST_DYNAMIC = $(INST_ARCHAUTODIR)/$(DLBASE).$(DLEXT)
+INST_BOOT    = $(INST_ARCHAUTODIR)/$(BASEEXT).bs
+
+EXPORT_LIST = 
+
+PERL_ARCHIVE = 
+
+INST_PM = $(INST_LIBDIR)/Tk.pm \
+	$(INST_LIBDIR)/Tk/Button.pm \
+	$(INST_LIBDIR)/Tk/Callback.pod \
+	$(INST_LIBDIR)/Tk/Checkbutton.pm \
+	$(INST_LIBDIR)/Tk/Clipboard.pm \
+	$(INST_LIBDIR)/Tk/ColorEdit.xpm \
+	$(INST_LIBDIR)/Tk/ColorEditor.pm \
+	$(INST_LIBDIR)/Tk/Composite.pod \
+	$(INST_LIBDIR)/Tk/ConfigSpec.pod \
+	$(INST_LIBDIR)/Tk/Configure.pm \
+	$(INST_LIBDIR)/Tk/Credits \
+	$(INST_LIBDIR)/Tk/Derived.pm \
+	$(INST_LIBDIR)/Tk/Dialog.pm \
+	$(INST_LIBDIR)/Tk/English.pm \
+	$(INST_LIBDIR)/Tk/ErrorDialog.pm \
+	$(INST_LIBDIR)/Tk/FileSelect.pm \
+	$(INST_LIBDIR)/Tk/FileSelect.pm.save \
+	$(INST_LIBDIR)/Tk/Frame.pm \
+	$(INST_LIBDIR)/Tk/Image.pm \
+	$(INST_LIBDIR)/Tk/Internals.pod \
+	$(INST_LIBDIR)/Tk/LabEntry.pm \
+	$(INST_LIBDIR)/Tk/LabRadio.pm \
+	$(INST_LIBDIR)/Tk/Label.pm \
+	$(INST_LIBDIR)/Tk/MainWindow.pm \
+	$(INST_LIBDIR)/Tk/Menubar.pm \
+	$(INST_LIBDIR)/Tk/Message.pm \
+	$(INST_LIBDIR)/Tk/Optionmenu.pm \
+	$(INST_LIBDIR)/Tk/Pretty.pm \
+	$(INST_LIBDIR)/Tk/ROText.pm \
+	$(INST_LIBDIR)/Tk/Radiobutton.pm \
+	$(INST_LIBDIR)/Tk/SunDragDrop.pm \
+	$(INST_LIBDIR)/Tk/Table.pm \
+	$(INST_LIBDIR)/Tk/Tcl-perl.pod \
+	$(INST_LIBDIR)/Tk/TextUndo.pm \
+	$(INST_LIBDIR)/Tk/Tiler.pm \
+	$(INST_LIBDIR)/Tk/Tk.pod \
+	$(INST_LIBDIR)/Tk/Tk.xbm \
+	$(INST_LIBDIR)/Tk/Toplevel.pm \
+	$(INST_LIBDIR)/Tk/UserGuide.pod \
+	$(INST_LIBDIR)/Tk/Widget.pm \
+	$(INST_LIBDIR)/Tk/Wm.pm \
+	$(INST_LIBDIR)/Tk/Xcamel.gif \
+	$(INST_LIBDIR)/Tk/icon.gif \
+	$(INST_LIBDIR)/Tk/license.terms \
+	$(INST_LIBDIR)/Tk/pTk.pod \
+	$(INST_LIBDIR)/Tk/prolog.ps
+
+GCCOPT =  -Wall -Wno-comment -Wno-unused -MMD -D__USE_FIXED_PROTOTYPES__ -pedantic -Werror
+
+
+# --- MakeMaker const_loadlibs section:
+
+# Tk might depend on some other libraries:
+# (These comments may need revising:)
+#
+# Dependent libraries can be linked in one of three ways:
+#
+#  1.  (For static extensions) by the ld command when the perl binary
+#      is linked with the extension library. See EXTRALIBS below.
+#
+#  2.  (For dynamic extensions) by the ld command when the shared
+#      object is built/linked. See LDLOADLIBS below.
+#
+#  3.  (For dynamic extensions) by the DynaLoader when the shared
+#      object is loaded. See BSLOADLIBS below.
+#
+# EXTRALIBS =	List of libraries that need to be linked with when
+#		linking a perl binary which includes this extension
+#		Only those libraries that actually exist are included.
+#		These are written to a file and used when linking perl.
+#
+# LDLOADLIBS =	List of those libraries which can or must be linked into
+#		the shared library when created using ld. These may be
+#		static or dynamic libraries.
+#		LD_RUN_PATH is a colon separated list of the directories
+#		in LDLOADLIBS. It is passed as an environment variable to
+#		the process that links the shared library.
+#
+# BSLOADLIBS =	List of those libraries that are needed but can be
+#		linked in dynamically at run time on this platform.
+#		SunOS/Solaris does not need this because ld records
+#		the information (from LDLOADLIBS) into the object file.
+#		This list is used to create a .bs (bootstrap) file.
+#
+EXTRALIBS  = -L/usr/local/lib -lX11
+LDLOADLIBS = -L/usr/local/lib -lX11 -lm
+BSLOADLIBS = 
+LD_RUN_PATH= /usr/local/lib:/lib
+
+
+# --- MakeMaker const_cccmd section:
+CCCMD = $(CC) -c $(INC) -DDEBUGGING -I/usr/local/include -O2 -g $(DEFINE_VERSION)
+
+
+# --- MakeMaker tool_autosplit section:
+
+# Usage: $(AUTOSPLITFILE) FileToSplit AutoDirToSplitInto
+AUTOSPLITFILE = $(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -e 'use AutoSplit;autosplit($$ARGV[0], $$ARGV[1], 0, 1, 1) ;'
+
+
+# --- MakeMaker tool_xsubpp section:
+
+XSUBPPDIR = /usr/local/lib/perl5.new/ExtUtils
+XSUBPP = $(XSUBPPDIR)/xsubpp
+XSPROTOARG = 
+XSUBPPDEPS = $(XSUBPPDIR)/typemap typemap
+XSUBPPARGS = -typemap $(XSUBPPDIR)/typemap -typemap typemap
+
+
+# --- MakeMaker tools_other section:
+
+SHELL = /bin/sh
+LD = ld
+TOUCH = touch
+CP = cp
+MV = mv
+RM_F  = rm -f
+RM_RF = rm -rf
+CHMOD = chmod
+UMASK_NULL = umask 0
+
+# The following is a portable way to say mkdir -p
+# To see which directories are created, change the if 0 to if 1
+MKPATH = $(PERL) -wle '$$"="/"; foreach $$p (@ARGV){' \
+-e 'next if -d $$p; my(@p); foreach(split(/\//,$$p)){' \
+-e 'push(@p,$$_); next if -d "@p/"; print "mkdir @p" if 0;' \
+-e 'mkdir("@p",0777)||die $$! } } exit 0;'
+
+
+# --- MakeMaker dist section:
+
+DISTVNAME = $(DISTNAME)-$(VERSION)
+TAR  = tar
+TARFLAGS = cvf
+COMPRESS = compress
+SUFFIX = Z
+SHAR = shar
+PREOP = @ true
+POSTOP = @ true
+CI = ci -u
+RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
+DIST_CP = best
+DIST_DEFAULT = tardist
+
+
+# --- MakeMaker macro section:
+
+
+# --- MakeMaker post_constants section:
+
+.SUFFIXES:
+.SUFFIXES:     .a .o .c .xs
+CCCDLFLAGS = -fPIC
+
+
+# --- MakeMaker pasthru section:
+
+PASTHRU = INSTALLPRIVLIB="$(INSTALLPRIVLIB)"\
+	INSTALLARCHLIB="$(INSTALLARCHLIB)"\
+	INSTALLBIN="$(INSTALLBIN)"\
+	INSTALLMAN1DIR="$(INSTALLMAN1DIR)"\
+	INSTALLMAN3DIR="$(INSTALLMAN3DIR)"\
+	LIBPERL_A="$(LIBPERL_A)"\
+	LINKTYPE="$(LINKTYPE)"
+
+
+# --- MakeMaker c_o section:
+
+.c$(OBJ_EXT):
+	$(CCCMD) $(CCCDLFLAGS) -I$(PERL_INC) $(DEFINE) $(GCCOPT) $*.c
+
+.C$(OBJ_EXT):
+	$(CCCMD) $(CCCDLFLAGS) -I$(PERL_INC) $(DEFINE) $*.C
+
+
+# --- MakeMaker xs_c section:
+
+.xs.c:
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) $(XSUBPP) $(XSPROTOARG) $(XSUBPPARGS) $*.xs >$*.tc && mv $*.tc $@
+
+
+# --- MakeMaker xs_o section:
+
+.xs$(OBJ_EXT):
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) $(XSUBPP) $(XSPROTOARG) $(XSUBPPARGS) $*.xs >xstmp.c && mv xstmp.c $*.c
+	$(CCCMD) $(CCCDLFLAGS) -I$(PERL_INC) $(DEFINE) $*.c
+
+
+# --- MakeMaker top_targets section:
+
+all ::	config $(INST_PM) subdirs linkext manifypods
+
+subdirs :: $(MYEXTLIB)
+
+
+
+config :: Makefile.aperl $(INST_LIBDIR)/.exists
+
+config :: $(INST_ARCHAUTODIR)/.exists Version_check
+
+config :: $(INST_AUTODIR)/.exists
+
+$(INST_AUTODIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_AUTODIR)
+	@ $(TOUCH) $(INST_AUTODIR)/.exists
+	@-$(CHMOD) 755 $(INST_AUTODIR)
+
+$(INST_LIBDIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_LIBDIR)
+	@ $(TOUCH) $(INST_LIBDIR)/.exists
+	@-$(CHMOD) 755 $(INST_LIBDIR)
+
+$(INST_ARCHAUTODIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_ARCHAUTODIR)
+	@ $(TOUCH) $(INST_ARCHAUTODIR)/.exists
+	@-$(CHMOD) 755 $(INST_ARCHAUTODIR)
+
+config :: $(INST_MAN3DIR)/.exists
+
+
+$(INST_MAN3DIR)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_MAN3DIR)
+	@ $(TOUCH) $(INST_MAN3DIR)/.exists
+	@-$(CHMOD) 755 $(INST_MAN3DIR)
+
+$(O_FILES): $(H_FILES)
+
+help:
+	perldoc ExtUtils::MakeMaker
+
+Version_check:
+	@$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) \
+		-e 'use ExtUtils::MakeMaker qw($$Version &Version_check);' \
+		-e '&Version_check("$(MM_VERSION)")'
+
+
+# --- MakeMaker linkext section:
+
+linkext :: $(LINKTYPE)
+
+
+
+# --- MakeMaker dlsyms section:
+
+
+# --- MakeMaker dynamic section:
+
+# $(INST_PM) has been moved to the all: target.
+# It remains here for awhile to allow for old usage: "make dynamic"
+dynamic :: Makefile.aperl $(INST_DYNAMIC) $(INST_BOOT) $(INST_PM)
+
+
+
+# --- MakeMaker dynamic_bs section:
+
+BOOTSTRAP = Tk.bs
+
+# As Mkbootstrap might not write a file (if none is required)
+# we use touch to prevent make continually trying to remake it.
+# The DynaLoader only reads a non-empty file.
+$(BOOTSTRAP): Makefile.aperl 
+	@ echo "Running Mkbootstrap for $(NAME) ($(BSLOADLIBS))"
+	@ $(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" \
+		-e 'use ExtUtils::Mkbootstrap;' \
+		-e 'Mkbootstrap("$(BASEEXT)","$(BSLOADLIBS)");'
+	@ $(TOUCH) $(BOOTSTRAP)
+	$(CHMOD) 644 $@
+	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+$(INST_BOOT): $(BOOTSTRAP)
+	@ rm -rf $(INST_BOOT)
+	-cp $(BOOTSTRAP) $(INST_BOOT)
+	$(CHMOD) 644 $@
+	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# --- MakeMaker dynamic_lib section:
+
+# This section creates the dynamically loadable $(INST_DYNAMIC)
+# from $(OBJECT) and possibly $(MYEXTLIB).
+ARMAYBE = :
+OTHERLDFLAGS = 
+
+$(INST_DYNAMIC): $(OBJECT) $(MYEXTLIB) $(BOOTSTRAP) $(INST_ARCHAUTODIR)/.exists $(EXPORT_LIST) $(PERL_ARCHIVE)
+	LD_RUN_PATH="$(LD_RUN_PATH)" $(LD) -o $@ $(LDDLFLAGS) $(LDFROM) $(OTHERLDFLAGS) $(MYEXTLIB) $(LDLOADLIBS) $(EXPORT_LIST) $(PERL_ARCHIVE)
+	$(CHMOD) 755 $@
+	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# --- MakeMaker static section:
+
+# $(INST_PM) has been moved to the all: target.
+# It remains here for awhile to allow for old usage: "make static"
+static :: Makefile.aperl $(INST_STATIC) $(INST_PM)
+
+
+
+# --- MakeMaker static_lib section:
+
+$(INST_STATIC): $(OBJECT) $(MYEXTLIB) $(INST_ARCHAUTODIR)/.exists
+	cp $(MYEXTLIB) $@
+	$(AR) cr $@ $(OBJECT) && $(RANLIB) $@
+	@echo "$(EXTRALIBS)" > $(INST_ARCHAUTODIR)/extralibs.ld
+	$(CHMOD) 755 $@
+	@echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# --- MakeMaker installpm section:
+inst_pm :: $(INST_PM)
+
+
+# installpm: Tk.pm => $(INST_LIBDIR)/Tk.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk.pm: Tk.pm Makefile.aperl $(INST_LIBDIR)/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Button.pm => $(INST_LIBDIR)/Tk/Button.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Button.pm: Tk/Button.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Button.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+$(INST_LIBDIR)/Tk/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_LIBDIR)/Tk
+	@ $(TOUCH) $(INST_LIBDIR)/Tk/.exists
+	@-$(CHMOD) 755 $(INST_LIBDIR)/Tk
+
+
+# installpm: Tk/Callback.pod => $(INST_LIBDIR)/Tk/Callback.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Callback.pod: Tk/Callback.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Callback.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Checkbutton.pm => $(INST_LIBDIR)/Tk/Checkbutton.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Checkbutton.pm: Tk/Checkbutton.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Checkbutton.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Clipboard.pm => $(INST_LIBDIR)/Tk/Clipboard.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Clipboard.pm: Tk/Clipboard.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Clipboard.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/ColorEdit.xpm => $(INST_LIBDIR)/Tk/ColorEdit.xpm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/ColorEdit.xpm: Tk/ColorEdit.xpm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/ColorEdit.xpm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/ColorEditor.pm => $(INST_LIBDIR)/Tk/ColorEditor.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/ColorEditor.pm: Tk/ColorEditor.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/ColorEditor.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Composite.pod => $(INST_LIBDIR)/Tk/Composite.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Composite.pod: Tk/Composite.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Composite.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/ConfigSpec.pod => $(INST_LIBDIR)/Tk/ConfigSpec.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/ConfigSpec.pod: Tk/ConfigSpec.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/ConfigSpec.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Configure.pm => $(INST_LIBDIR)/Tk/Configure.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Configure.pm: Tk/Configure.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Configure.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Credits => $(INST_LIBDIR)/Tk/Credits, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Credits: Tk/Credits Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Credits $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Derived.pm => $(INST_LIBDIR)/Tk/Derived.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Derived.pm: Tk/Derived.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Derived.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Dialog.pm => $(INST_LIBDIR)/Tk/Dialog.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Dialog.pm: Tk/Dialog.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Dialog.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/English.pm => $(INST_LIBDIR)/Tk/English.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/English.pm: Tk/English.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/English.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/ErrorDialog.pm => $(INST_LIBDIR)/Tk/ErrorDialog.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/ErrorDialog.pm: Tk/ErrorDialog.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/ErrorDialog.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/FileSelect.pm => $(INST_LIBDIR)/Tk/FileSelect.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/FileSelect.pm: Tk/FileSelect.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/FileSelect.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/FileSelect.pm.save => $(INST_LIBDIR)/Tk/FileSelect.pm.save, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/FileSelect.pm.save: Tk/FileSelect.pm.save Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/FileSelect.pm.save $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Frame.pm => $(INST_LIBDIR)/Tk/Frame.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Frame.pm: Tk/Frame.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Frame.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Image.pm => $(INST_LIBDIR)/Tk/Image.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Image.pm: Tk/Image.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Image.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Internals.pod => $(INST_LIBDIR)/Tk/Internals.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Internals.pod: Tk/Internals.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Internals.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/LabEntry.pm => $(INST_LIBDIR)/Tk/LabEntry.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/LabEntry.pm: Tk/LabEntry.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/LabEntry.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/LabRadio.pm => $(INST_LIBDIR)/Tk/LabRadio.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/LabRadio.pm: Tk/LabRadio.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/LabRadio.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Label.pm => $(INST_LIBDIR)/Tk/Label.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Label.pm: Tk/Label.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Label.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/MainWindow.pm => $(INST_LIBDIR)/Tk/MainWindow.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/MainWindow.pm: Tk/MainWindow.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/MainWindow.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Menubar.pm => $(INST_LIBDIR)/Tk/Menubar.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Menubar.pm: Tk/Menubar.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Menubar.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Message.pm => $(INST_LIBDIR)/Tk/Message.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Message.pm: Tk/Message.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Message.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Optionmenu.pm => $(INST_LIBDIR)/Tk/Optionmenu.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Optionmenu.pm: Tk/Optionmenu.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Optionmenu.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Pretty.pm => $(INST_LIBDIR)/Tk/Pretty.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Pretty.pm: Tk/Pretty.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Pretty.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/ROText.pm => $(INST_LIBDIR)/Tk/ROText.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/ROText.pm: Tk/ROText.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/ROText.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Radiobutton.pm => $(INST_LIBDIR)/Tk/Radiobutton.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Radiobutton.pm: Tk/Radiobutton.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Radiobutton.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/SunDragDrop.pm => $(INST_LIBDIR)/Tk/SunDragDrop.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/SunDragDrop.pm: Tk/SunDragDrop.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/SunDragDrop.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Table.pm => $(INST_LIBDIR)/Tk/Table.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Table.pm: Tk/Table.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Table.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Tcl-perl.pod => $(INST_LIBDIR)/Tk/Tcl-perl.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Tcl-perl.pod: Tk/Tcl-perl.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Tcl-perl.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/TextUndo.pm => $(INST_LIBDIR)/Tk/TextUndo.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/TextUndo.pm: Tk/TextUndo.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/TextUndo.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Tiler.pm => $(INST_LIBDIR)/Tk/Tiler.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Tiler.pm: Tk/Tiler.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Tiler.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Tk.pod => $(INST_LIBDIR)/Tk/Tk.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Tk.pod: Tk/Tk.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Tk.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Tk.xbm => $(INST_LIBDIR)/Tk/Tk.xbm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Tk.xbm: Tk/Tk.xbm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Tk.xbm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Toplevel.pm => $(INST_LIBDIR)/Tk/Toplevel.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Toplevel.pm: Tk/Toplevel.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Toplevel.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/UserGuide.pod => $(INST_LIBDIR)/Tk/UserGuide.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/UserGuide.pod: Tk/UserGuide.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/UserGuide.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/Widget.pm => $(INST_LIBDIR)/Tk/Widget.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Widget.pm: Tk/Widget.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Widget.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Wm.pm => $(INST_LIBDIR)/Tk/Wm.pm, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Wm.pm: Tk/Wm.pm Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Wm.pm $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+	@$(AUTOSPLITFILE) $@ $(INST_LIB)/auto
+
+
+# installpm: Tk/Xcamel.gif => $(INST_LIBDIR)/Tk/Xcamel.gif, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/Xcamel.gif: Tk/Xcamel.gif Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/Xcamel.gif $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/icon.gif => $(INST_LIBDIR)/Tk/icon.gif, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/icon.gif: Tk/icon.gif Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/icon.gif $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/license.terms => $(INST_LIBDIR)/Tk/license.terms, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/license.terms: Tk/license.terms Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/license.terms $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/pTk.pod => $(INST_LIBDIR)/Tk/pTk.pod, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/pTk.pod: Tk/pTk.pod Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/pTk.pod $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+# installpm: Tk/prolog.ps => $(INST_LIBDIR)/Tk/prolog.ps, splitlib=$(INST_LIB)
+
+$(INST_LIBDIR)/Tk/prolog.ps: Tk/prolog.ps Makefile.aperl $(INST_LIBDIR)/Tk/.exists
+	@ rm -f $@
+	$(UMASK_NULL) && cp Tk/prolog.ps $@
+	@ echo $@ >> $(INST_ARCHAUTODIR)/.packlist
+
+
+
+# --- MakeMaker manifypods section:
+POD2MAN_EXE = /usr/local/bin/new/pod2man
+POD2MAN = $(PERL) -we '%m=@ARGV;for (keys %m){' \
+-e 'next if -e $$m{$$_} && -M $$m{$$_} < -M $$_ && -M $$m{$$_} < -M "Makefile.aperl";' \
+-e 'print "Installing $$m{$$_}\n";' \
+-e 'system("$(PERL) $(POD2MAN_EXE) $$_>$$m{$$_}")==0 or warn "Couldn\047t install $$m{$$_}\n";' \
+-e 'chmod 0644, $$m{$$_} or warn "chmod 644 $$m{$$_}: $$!\n";}'
+
+manifypods :
+	@$(POD2MAN) \
+	Tk/ConfigSpec.pod \
+	$(INST_MAN3DIR)/Tk::ConfigSpec.$(MAN3EXT) \
+	Tk/Tcl-perl.pod \
+	$(INST_MAN3DIR)/Tk::Tcl-perl.$(MAN3EXT) \
+	Tk/Composite.pod \
+	$(INST_MAN3DIR)/Tk::Composite.$(MAN3EXT) \
+	Tk/FileSelect.pm \
+	$(INST_MAN3DIR)/Tk::FileSelect.$(MAN3EXT) \
+	Tk/Callback.pod \
+	$(INST_MAN3DIR)/Tk::Callback.$(MAN3EXT) \
+	Tk/UserGuide.pod \
+	$(INST_MAN3DIR)/Tk::UserGuide.$(MAN3EXT) \
+	Tk/pTk.pod \
+	$(INST_MAN3DIR)/Tk::pTk.$(MAN3EXT) \
+	Tk/Tk.pod \
+	$(INST_MAN3DIR)/Tk::Tk.$(MAN3EXT) \
+	Tk/ColorEditor.pm \
+	$(INST_MAN3DIR)/Tk::ColorEditor.$(MAN3EXT) \
+	Tk/Internals.pod \
+	$(INST_MAN3DIR)/Tk::Internals.$(MAN3EXT)
+
+# --- MakeMaker processPL section:
+
+
+# --- MakeMaker installbin section:
+
+$(INST_EXE)/.exists :: $(PERL)
+	@ $(MKPATH) $(INST_EXE)
+	@ $(TOUCH) $(INST_EXE)/.exists
+	@-$(CHMOD) 755 $(INST_EXE)
+
+EXE_FILES = 
+
+all :: 
+
+realclean ::
+	rm -f 
+
+
+# --- MakeMaker subdirs section:
+
+# The default clean, realclean and test targets in this Makefile
+# have automatically been given entries for each subdir.
+
+
+
+subdirs ::
+	@-cd Bitmap && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Canvas && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Contrib && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Entry && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Ghostview && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd HList && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd HTML && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd IO && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd InputO && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Listbox && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Menu && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Menubutton && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Mwm && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd NBFrame && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Ned && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Photo && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Pixmap && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Pod && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Scale && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Scrollbar && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Text && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd Xlib && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd demos && $(MAKE) all $(PASTHRU)
+
+
+
+subdirs ::
+	@-cd pTk && $(MAKE) all $(PASTHRU)
+
+
+
+# --- MakeMaker clean section:
+
+# Delete temporary files but do not touch installed files. We don't delete
+# the Makefile here so a later make realclean still has a makefile to use.
+
+clean ::
+	-cd Bitmap && test -f Makefile.aperl && $(MAKE) clean
+	-cd Canvas && test -f Makefile.aperl && $(MAKE) clean
+	-cd Contrib && test -f Makefile.aperl && $(MAKE) clean
+	-cd Entry && test -f Makefile.aperl && $(MAKE) clean
+	-cd Ghostview && test -f Makefile.aperl && $(MAKE) clean
+	-cd HList && test -f Makefile.aperl && $(MAKE) clean
+	-cd HTML && test -f Makefile.aperl && $(MAKE) clean
+	-cd IO && test -f Makefile.aperl && $(MAKE) clean
+	-cd InputO && test -f Makefile.aperl && $(MAKE) clean
+	-cd Listbox && test -f Makefile.aperl && $(MAKE) clean
+	-cd Menu && test -f Makefile.aperl && $(MAKE) clean
+	-cd Menubutton && test -f Makefile.aperl && $(MAKE) clean
+	-cd Mwm && test -f Makefile.aperl && $(MAKE) clean
+	-cd NBFrame && test -f Makefile.aperl && $(MAKE) clean
+	-cd Ned && test -f Makefile.aperl && $(MAKE) clean
+	-cd Photo && test -f Makefile.aperl && $(MAKE) clean
+	-cd Pixmap && test -f Makefile.aperl && $(MAKE) clean
+	-cd Pod && test -f Makefile.aperl && $(MAKE) clean
+	-cd Scale && test -f Makefile.aperl && $(MAKE) clean
+	-cd Scrollbar && test -f Makefile.aperl && $(MAKE) clean
+	-cd Text && test -f Makefile.aperl && $(MAKE) clean
+	-cd Xlib && test -f Makefile.aperl && $(MAKE) clean
+	-cd demos && test -f Makefile.aperl && $(MAKE) clean
+	-cd pTk && test -f Makefile.aperl && $(MAKE) clean
+	-rm -rf Tk.c libpTk.a *% ./blib Makeaperlfile $(INST_ARCHAUTODIR)/extralibs.all perlmain.c mon.out core so_locations *~ */*~ */*/*~ *$(OBJ_EXT) *$(LIB_EXT) perl.exe $(BOOTSTRAP) $(BASEEXT).bso $(BASEEXT).def $(BASEEXT).exp
+	-mv Makefile.aperl Makefile.aperl.old 2>/dev/null
+
+
+# --- MakeMaker realclean section:
+
+# Delete temporary files (via clean) and also delete installed files
+realclean purge ::  clean
+	-cd Bitmap && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Bitmap && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Canvas && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Canvas && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Contrib && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Contrib && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Entry && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Entry && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Ghostview && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Ghostview && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd HList && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd HList && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd HTML && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd HTML && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd IO && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd IO && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd InputO && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd InputO && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Listbox && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Listbox && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Menu && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Menu && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Menubutton && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Menubutton && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Mwm && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Mwm && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd NBFrame && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd NBFrame && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Ned && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Ned && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Photo && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Photo && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Pixmap && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Pixmap && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Pod && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Pod && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Scale && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Scale && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Scrollbar && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Scrollbar && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Text && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Text && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd Xlib && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd Xlib && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd demos && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd demos && test -f Makefile.aperl && $(MAKE)  realclean
+	-cd pTk && test -f Makefile.aperl.old && $(MAKE) -f Makefile.aperl.old realclean
+	-cd pTk && test -f Makefile.aperl && $(MAKE)  realclean
+	rm -rf $(INST_AUTODIR) $(INST_ARCHAUTODIR)
+	rm -f $(INST_DYNAMIC) $(INST_BOOT)
+	rm -f $(INST_STATIC) $(INST_PM)
+	rm -rf Makefile.aperl Makefile.aperl.old
+
+
+# --- MakeMaker dist_basics section:
+
+distclean :: realclean distcheck
+
+distcheck :
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&fullcheck";' \
+		-e 'fullcheck();'
+
+skipcheck :
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&skipcheck";' \
+		-e 'skipcheck();'
+
+manifest :
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&mkmanifest";' \
+		-e 'mkmanifest();'
+
+
+# --- MakeMaker dist_core section:
+
+dist : $(DIST_DEFAULT)
+
+tardist : $(DISTVNAME).tar.$(SUFFIX)
+
+$(DISTVNAME).tar.$(SUFFIX) : distdir
+	$(PREOP)
+	$(TAR) $(TARFLAGS) $(DISTVNAME).tar $(DISTVNAME)
+	$(RM_RF) $(DISTVNAME)
+	$(COMPRESS) $(DISTVNAME).tar
+	$(POSTOP)
+
+uutardist : $(DISTVNAME).tar.$(SUFFIX)
+	uuencode $(DISTVNAME).tar.$(SUFFIX) \
+		$(DISTVNAME).tar.$(SUFFIX) > \
+		$(DISTVNAME).tar.$(SUFFIX).uu
+
+shdist : distdir
+	$(PREOP)
+	$(SHAR) $(DISTVNAME) > $(DISTVNAME).shar
+	$(RM_RF) $(DISTVNAME)
+	$(POSTOP)
+
+
+# --- MakeMaker dist_dir section:
+
+distdir :
+	$(RM_RF) $(DISTVNAME)
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "/mani/";' \
+		-e 'manicopy(maniread(),"$(DISTVNAME)", "$(DIST_CP)");'
+
+
+# --- MakeMaker dist_test section:
+
+disttest : distdir
+	cd $(DISTVNAME) && $(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) Makefile.PL
+	cd $(DISTVNAME) && $(MAKE)
+	cd $(DISTVNAME) && $(MAKE) test
+
+
+# --- MakeMaker dist_ci section:
+
+ci :
+	$(PERL) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use ExtUtils::Manifest "&maniread";' \
+		-e '@all = keys %{ maniread() };' \
+		-e 'print("Executing $(CI) @all\n"); system("$(CI) @all");' \
+		-e 'print("Executing $(RCS_LABEL) ...\n"); system("$(RCS_LABEL) @all");'
+
+
+# --- MakeMaker install section:
+
+doc_install ::
+	@ echo Appending installation info to $(INSTALLARCHLIB)/perllocal.pod
+	@ $(PERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB)  \
+		-e "use ExtUtils::MakeMaker; MY->new({})->writedoc('Module', '$(NAME)', \
+		'LINKTYPE=$(LINKTYPE)', 'VERSION=$(VERSION)', \
+		'EXE_FILES=$(EXE_FILES)')" >> $(INSTALLARCHLIB)/perllocal.pod
+
+install :: pure_install doc_install
+
+pure_install ::
+	cd Bitmap && test -f Makefile.aperl && $(MAKE) install
+	cd Canvas && test -f Makefile.aperl && $(MAKE) install
+	cd Contrib && test -f Makefile.aperl && $(MAKE) install
+	cd Entry && test -f Makefile.aperl && $(MAKE) install
+	cd Ghostview && test -f Makefile.aperl && $(MAKE) install
+	cd HList && test -f Makefile.aperl && $(MAKE) install
+	cd HTML && test -f Makefile.aperl && $(MAKE) install
+	cd IO && test -f Makefile.aperl && $(MAKE) install
+	cd InputO && test -f Makefile.aperl && $(MAKE) install
+	cd Listbox && test -f Makefile.aperl && $(MAKE) install
+	cd Menu && test -f Makefile.aperl && $(MAKE) install
+	cd Menubutton && test -f Makefile.aperl && $(MAKE) install
+	cd Mwm && test -f Makefile.aperl && $(MAKE) install
+	cd NBFrame && test -f Makefile.aperl && $(MAKE) install
+	cd Ned && test -f Makefile.aperl && $(MAKE) install
+	cd Photo && test -f Makefile.aperl && $(MAKE) install
+	cd Pixmap && test -f Makefile.aperl && $(MAKE) install
+	cd Pod && test -f Makefile.aperl && $(MAKE) install
+	cd Scale && test -f Makefile.aperl && $(MAKE) install
+	cd Scrollbar && test -f Makefile.aperl && $(MAKE) install
+	cd Text && test -f Makefile.aperl && $(MAKE) install
+	cd Xlib && test -f Makefile.aperl && $(MAKE) install
+	cd demos && test -f Makefile.aperl && $(MAKE) install
+	cd pTk && test -f Makefile.aperl && $(MAKE) install
+	@$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" -e 'require File::Path;' \
+	-e '$$message = q[ You do not have permissions to install into];' \
+	-e 'File::Path::mkpath(@ARGV);' \
+	-e 'foreach (@ARGV){ die qq{ $$message $$_\n} unless -w $$_}' \
+	    $(INSTALLPRIVLIB) $(INSTALLARCHLIB)
+	$(MAKE) INST_LIB=$(INSTALLPRIVLIB) INST_ARCHLIB=$(INSTALLARCHLIB) INST_EXE=$(INSTALLBIN) INST_MAN1DIR=$(INSTALLMAN1DIR) INST_MAN3DIR=$(INSTALLMAN3DIR) all
+	@$(PERL) -i.bak -lne 'print unless $$seen{ $$_ }++' $(INSTALLARCHLIB)/auto/$(FULLEXT)/.packlist
+
+#### UNINSTALL IS STILL EXPERIMENTAL ####
+uninstall ::
+	cd Bitmap && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Canvas && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Contrib && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Entry && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Ghostview && test -f Makefile.aperl && $(MAKE) uninstall
+	cd HList && test -f Makefile.aperl && $(MAKE) uninstall
+	cd HTML && test -f Makefile.aperl && $(MAKE) uninstall
+	cd IO && test -f Makefile.aperl && $(MAKE) uninstall
+	cd InputO && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Listbox && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Menu && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Menubutton && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Mwm && test -f Makefile.aperl && $(MAKE) uninstall
+	cd NBFrame && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Ned && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Photo && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Pixmap && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Pod && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Scale && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Scrollbar && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Text && test -f Makefile.aperl && $(MAKE) uninstall
+	cd Xlib && test -f Makefile.aperl && $(MAKE) uninstall
+	cd demos && test -f Makefile.aperl && $(MAKE) uninstall
+	cd pTk && test -f Makefile.aperl && $(MAKE) uninstall
+	$(RM_RF) `cat $(INSTALLARCHLIB)/auto/$(FULLEXT)/.packlist`
+
+
+# --- MakeMaker force section:
+# Phony target to force checking subdirectories.
+FORCE:
+
+
+# --- MakeMaker perldepend section:
+
+PERL_HDRS = $(PERL_INC)/EXTERN.h $(PERL_INC)/INTERN.h \
+    $(PERL_INC)/XSUB.h	$(PERL_INC)/av.h	$(PERL_INC)/cop.h \
+    $(PERL_INC)/cv.h	$(PERL_INC)/dosish.h	$(PERL_INC)/embed.h \
+    $(PERL_INC)/form.h	$(PERL_INC)/gv.h	$(PERL_INC)/handy.h \
+    $(PERL_INC)/hv.h	$(PERL_INC)/keywords.h	$(PERL_INC)/mg.h \
+    $(PERL_INC)/op.h	$(PERL_INC)/opcode.h	$(PERL_INC)/patchlevel.h \
+    $(PERL_INC)/perl.h	$(PERL_INC)/perly.h	$(PERL_INC)/pp.h \
+    $(PERL_INC)/proto.h	$(PERL_INC)/regcomp.h	$(PERL_INC)/regexp.h \
+    $(PERL_INC)/scope.h	$(PERL_INC)/sv.h	$(PERL_INC)/unixish.h \
+    $(PERL_INC)/util.h	$(PERL_INC)/config.h
+
+
+
+$(OBJECT) : $(PERL_HDRS)
+
+Tk.c : $(XSUBPPDEPS)
+
+
+# --- MakeMaker makefile section:
+
+$(OBJECT) : $(FIRST_MAKEFILE)
+
+# We take a very conservative approach here, but it's worth it.
+# We move Makefile to Makefile.old here to avoid gnu make looping.
+Makefile.aperl :	Makefile.PL $(CONFIGDEP)
+	@echo "Makefile out-of-date with respect to $?"
+	@echo "Cleaning current config before rebuilding Makefile..."
+	-@mv Makefile.aperl Makefile.aperl.old
+	-$(MAKE) -f Makefile.aperl.old clean >/dev/null 2>&1 || true
+	$(PERL) "-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" Makefile.PL DIR=Bitmap:Canvas:Contrib:Entry:Ghostview:HList:HTML:IO:InputO:Listbox:Menu:Menubutton:Mwm:NBFrame:Ned:Photo:Pixmap:Pod:Scale:Scrollbar:Text:Xlib:demos:pTk MAKEFILE=Makefile.aperl LINKTYPE=static MAKEAPERL=1 NORECURS=1 LINKTYPE=static
+	@echo ">>> Your Makefile has been rebuilt. <<<"
+	@echo ">>> Please rerun the make command.  <<<"; false
+
+
+# --- MakeMaker staticmake section:
+
+# --- MakeMaker makeaperl section ---
+MAP_TARGET    = tkperl
+FULLPERL      = /usr/local/bin/nperl
+
+MAP_LINKCMD   = $(CC) -L/usr/local/lib 
+MAP_PERLINC   = -I./blib/sun4-sunos -I./blib -I/usr/local/lib/perl5.new/sun4-sunos/5.002 -I/usr/local/lib/perl5.new
+MAP_STATIC    = /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Xlib/Xlib.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Text/Text.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Scrollbar/Scrollbar.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Scale/Scale.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Pixmap/Pixmap.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Photo/Photo.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Ned/Ned.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/NBFrame/NBFrame.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Mwm/Mwm.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Menubutton/Menubutton.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Menu/Menu.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Listbox/Listbox.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/InputO/InputO.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/IO/IO.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/HList/HList.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Entry/Entry.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Canvas/Canvas.a \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Bitmap/Bitmap.a \
+	/home/auspex4/local/share/lib/perl5.new/sun4-sunos/5.002/auto/DynaLoader/DynaLoader.a \
+	./blib/sun4-sunos/auto/Tk/Tk.a
+
+MAP_PRELIBS   = -lgdbm -ldbm -ldb -ldl -lm -lc -lposix 
+
+MAP_LIBPERL = /usr/local/lib/perl5.new/sun4-sunos/5.002/CORE/libperl.a
+
+$(INST_ARCHAUTODIR)/extralibs.all: $(INST_ARCHAUTODIR)/.exists ./blib/sun4-sunos/auto/Tk/extralibs.ld \
+	/home/auspex4/local/share/lib/perl5.new/sun4-sunos/5.002/auto/DynaLoader/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Bitmap/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Canvas/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Entry/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/HList/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/IO/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/InputO/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Listbox/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Menu/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Menubutton/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Mwm/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/NBFrame/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Ned/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Photo/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Pixmap/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Scale/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Scrollbar/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Text/extralibs.ld \
+	/home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Xlib/extralibs.ld
+	@ rm -f $@
+	@ $(TOUCH) $@
+	cat ./blib/sun4-sunos/auto/Tk/extralibs.ld >> $@
+	cat /home/auspex4/local/share/lib/perl5.new/sun4-sunos/5.002/auto/DynaLoader/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Bitmap/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Canvas/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Entry/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/HList/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/IO/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/InputO/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Listbox/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Menu/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Menubutton/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Mwm/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/NBFrame/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Ned/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Photo/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Pixmap/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Scale/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Scrollbar/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Text/extralibs.ld >> $@
+	cat /home/road10/free-sw/perl5/nTk-area/Tk-b9-tobe/blib/sun4-sunos/auto/Tk/Xlib/extralibs.ld >> $@
+
+$(MAP_TARGET) :: ./perlmain$(OBJ_EXT) $(MAP_LIBPERL) $(MAP_STATIC) $(INST_ARCHAUTODIR)/extralibs.all
+	$(MAP_LINKCMD) -o $@ ./perlmain$(OBJ_EXT) $(MAP_LIBPERL) $(MAP_STATIC) `cat $(INST_ARCHAUTODIR)/extralibs.all` $(MAP_PRELIBS)
+	@ echo 'To install the new "$(MAP_TARGET)" binary, call'
+	@ echo '    make -f Makefile.aperl inst_perl MAP_TARGET=$(MAP_TARGET)'
+	@ echo 'To remove the intermediate files say'
+	@ echo '    make -f Makefile.aperl map_clean'
+
+./perlmain$(OBJ_EXT): ./perlmain.c
+	cd . && $(PERLMAINCC) -c  -I/usr/local/lib/perl5.new/sun4-sunos/5.002/CORE  -DDEBUGGING -I/usr/local/include -O2 -g $(DEFINE_VERSION)  -I$(PERL_INC) perlmain.c
+
+./perlmain.c: Makefile.aperl
+	@ echo Writing $@
+	@ $(PERL) $(MAP_PERLINC) -e 'use ExtUtils::Miniperl; \
+		writemain(grep s#.*/auto/##, qw|$(MAP_STATIC)|)' > $@.tmp && mv $@.tmp $@
+
+
+doc_inst_perl:
+	@ echo Appending installation info to $(INSTALLARCHLIB)/perllocal.pod
+	@ $(FULLPERL) -e 'use ExtUtils::MakeMaker; MY->new->writedoc("Perl binary",' \
+		-e '"$(MAP_TARGET)", "MAP_STATIC=$(MAP_STATIC)",' \
+		-e '"MAP_EXTRA=@ARGV", "MAP_LIBPERL=$(MAP_LIBPERL)")' \
+		-- `cat $(INST_ARCHAUTODIR)/extralibs.all` >> $(INSTALLARCHLIB)/perllocal.pod
+
+inst_perl: pure_inst_perl doc_inst_perl
+
+pure_inst_perl: $(MAP_TARGET)
+	cp $(MAP_TARGET) $(INSTALLBIN)/$(MAP_TARGET)
+
+clean :: map_clean
+
+map_clean :
+	rm -f ./perlmain$(OBJ_EXT) ./perlmain.c $(MAP_TARGET) Makefile.aperl $(INST_ARCHAUTODIR)/extralibs.all
+
+
+# --- MakeMaker test section:
+
+test : all
+	$(PERL) -I$(INST_LIBDIR) Tk/demos/widget
+
+
+# --- MakeMaker postamble section:
+
+subdirs      :: $(MYEXTLIB) 
+config       :: tkGlue.t
+
+Makefile     : myConfig
+$(BASEEXT).o : tkGlue.h
+tkGlue.o     : tkGlue.c tkGlue.h pTk/Methods.def tkGlue.t
+
+
+tkGlue.t     : tkGlue.h pTk/mkVFunc
+	$(PERL) pTk/mkVFunc tkGlue.h
+
+$(MYEXTLIB)  : config FORCE
+	cd pTk; $(MAKE) libpTk.a
+
+perlmain.c : config Makefile
+
+pTk/Methods.def : $(MYEXTLIB)
+
+installpm   :: $(INST_PM)
+
+
+
+# --- MakeMaker selfdocument section:
+
+
+# End.

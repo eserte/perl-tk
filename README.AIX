@@ -1,78 +1,8 @@
-From  lusol@Turkey.CC.Lehigh.EDU  Thu Jul 13 21:51:37 1995 
-Return-Path: <lusol@Turkey.CC.Lehigh.EDU> 
-From: lusol@Turkey.CC.Lehigh.EDU (Stephen O. Lidie)
-Message-Id: <9507132050.AA18789@Turkey.CC.Lehigh.EDU> 
-Subject: b6 notes for AIX 
-To: Nick.Ing-Simmons@tiuk.ti.com (nick) 
-Date: Thu, 13 Jul 1995 16:50:52 -0400 (EDT) 
-X-Mailer: ELM [version 2.4 PL24] 
-Content-Type: text 
-Content-Length: 1504 
-P-From: lusol@Turkey.CC.Lehigh.EDU (Stephen O. Lidie) 
 
-I had some trouble building Tk-b6 on AIX 3.2.5.... here's my note to the
-Perl heavies and the replies:
+As of perl5.002b1f the MakeMaker shipped with perl moans a lot 
+building dynamic loaded extension on AIX. They have been reported to work.
 
+There may be 'make install' problems too.
 
-On Tue, 11 Jul 1995, Stephen O. Lidie wrote:
+Getting latest MakeMaker from CPAN may help.
 
-> After updating to Perl 5.001m a make of not-yet-released Tk-b6 resulted in
-> these unresolved externals:
-> 
-> pregcomp
-> pregexec
-> pregfree
-> 
-> Adding them to perl.exp fixed the problem..... will someone please ensure
-> they get offically "patched".. thanks,
-
-Ah yes, a side effect of the renaming (for Digital Unix).  My mistake.
-Larry, could you add this for 5.002 (assuming you want to keep the 
-renaming and haven't come up with a better new name:-)
-
-Index: global.sym
-*** perl5.001m/global.sym	Thu Jun 22 10:22:37 1995
---- perl5.001n/global.sym	Wed Jul 12 09:27:24 1995
-***************
-*** 862,871 ****
-  q
-  ref
-  refkids
-! regcomp
-  regdump
-! regexec
-! regfree
-  regnext
-  regprop
-  repeatcpy
---- 862,871 ----
-  q
-  ref
-  refkids
-! pregcomp
-  regdump
-! pregexec
-! pregfree
-  regnext
-  regprop
-  repeatcpy
-
-
-End of patch.
-
-    Andy Dougherty		doughera@lafcol.lafayette.edu
------------------------------------------------------------------
-
-On Wed, 12 Jul 1995, Andy Dougherty wrote:
-
-> Index: global.sym
-> *** perl5.001m/global.sym	Thu Jun 22 10:22:37 1995
-> --- perl5.001n/global.sym	Wed Jul 12 09:27:24 1995
-
-Oh, and of course you'll have to
-	make regen_headers
-(or manually run embed.pl)
-since I recently took out the automatic regeneration of the .h files
-when they were out of date :-).
-
-    Andy Dougherty		doughera@lafcol.lafayette.edu

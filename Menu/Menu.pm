@@ -11,6 +11,7 @@
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+
 package Tk::Menu; 
 require Tk;
 require DynaLoader;
@@ -33,17 +34,15 @@ sub CreateArgs
  # Remove from hash %$args any configure-like
  # options which only apply at create time (e.g. -class for Frame)
  # return these as a list of -key => value pairs
-
- # This is here to prevent our inheriting the above
- # behaviour for -class from Tk::Frame via Tk::Toplevel 
- # We really need to refine the @ISA scheme so that Menu and Toplevel
- # inherit 'wm' stuff from (say) a Tk::WindowManaged class 
-
- return ();
+ my @result = ();
+ my $opt;
+ foreach $opt (qw(-screen -visual -colormap))
+  {
+   my $val = delete $args->{$opt};                     
+   push(@result, $opt => $val) if (defined $val);
+  }
+ return @result;
 }
-
-
-
 
 1;
 
@@ -103,7 +102,7 @@ __END__
 # (Enter or FocusIn). It is used so that we can carry out
 # the functions of that event in addition to setting up
 # bindings.
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  # Must set focus when mouse enters a menu, in order to allow
@@ -168,7 +167,7 @@ sub Unpost
       $Tk::popup->unpost();
       undef $Tk::popup;
      }
-    elsif ($menu->overrideredirect)
+    elsif (defined $menu && ref $menu && $menu->overrideredirect)
      {
       # We're in a cascaded sub-menu from a torn-off menu or popup.
       # Unpost all the menus up to the toplevel one (but not
@@ -185,11 +184,12 @@ sub Unpost
       $menu->unpost()
      }
   };
+ warn "$@" if ($@);
  # Release grab, if any.
  if (defined $menu && ref $menu)
   {
-   my $grab = $menu->grab("current");
-   $grab->grab("release") if (defined $grab);
+   my $grab = $menu->grabCurrent;
+   $grab->grabRelease if (defined $grab);
   }
 }
 
@@ -244,7 +244,7 @@ sub ButtonDown
  $menu->postcascade("active");
  if (defined $Tk::postedMb)
   {
-   $Tk::postedMb->grab("-global")
+   $Tk::postedMb->grabGlobal
   }
  else
   {
@@ -255,10 +255,9 @@ sub ButtonDown
     {
      $menu = $menu->parent;
     }
-   $menu->grab("-global");
+   $menu->grabGlobal;
   }
 }
-
 
 sub Enter
 {
@@ -358,10 +357,7 @@ sub LeftRight
     {
      $menu->postcascade("active");
      $m2 = $menu->entrycget("active","-menu");
-     if ($m2 ne "")
-      {
-       FirstEntry($m2)
-      }
+     $m2->FirstEntry if (defined $m2);
      return;
     }
   }
@@ -514,15 +510,9 @@ sub TraverseWithinMenu
 sub FirstEntry
 {
  my $menu = shift;
- if ($menu eq "")
-  {
-   return;
-  }
- $menu->focus();
- if ($menu->index("active") ne "none")
-  {
-   return;
-  }
+ return if (!defined($menu) || $menu eq "" || !ref($menu));
+ $menu->Enter;
+ return if ($menu->index("active") ne "none");
  $last = $menu->index("last");
  return if ($last eq 'none');
  for ($i = 0;$i <= $last;$i += 1)
@@ -535,6 +525,7 @@ sub FirstEntry
     }
   }
 }
+
 # FindName --
 # Given a menu and a text string, return the index of the menu entry
 # that displays the string as its label. If there is no such entry,
@@ -585,13 +576,13 @@ sub PostOverPoint
   {
    if ($entry == $menu->index("last"))
     {
-     $y += -(($menu->yposition($entry)+$menu->height)/2);
+     $y -= ($menu->yposition($entry)+$menu->height)/2;
     }
    else
     {
-     $y += -(($menu->yposition($entry)+$menu->yposition($entry+1))/2)
+     $y -= ($menu->yposition($entry)+$menu->yposition($entry+1))/2;
     }
-   $x += -($menu->reqwidth/2)
+   $x -= $menu->reqwidth/2;
   }
  $menu->post($x,$y);
  if (defined($entry) && $menu->entrycget($entry,"-state") ne "disabled")
@@ -619,9 +610,9 @@ sub Popup
  my $entry = shift;
  Unpost(undef) if (defined($Tk::popup) || defined($Tk::postedMb));
  $menu->PostOverPoint($x,$y,$entry);
- $menu->grab("-global");
+ $menu->grabGlobal;
  $Tk::popup = $menu;
- $Tk::focus = $menu->currentfocus;
+ $Tk::focus = $menu->focusCurrent;
  $menu->focus();
 }
 
@@ -738,17 +729,10 @@ sub MenuDup
 
 # Some convenience methods 
 
-sub additem
-{my $w = shift;
- my $type = shift;
- $w->add($type,@_);
- # hook to return blessed ref to Tk::Menu::Item or similar
-}
-
-sub separator   { shift->additem('separator',@_);   }
-sub command     { shift->additem('command',@_);     }
-sub cascade     { shift->additem('cascade',@_);     }
-sub checkbutton { shift->additem('checkbutton',@_); }
-sub radiobutton { shift->additem('radiobutton',@_); }
+sub separator   { shift->add('separator',@_);   }
+sub command     { shift->add('command',@_);     }
+sub cascade     { shift->add('cascade',@_);     }
+sub checkbutton { shift->add('checkbutton',@_); }
+sub radiobutton { shift->add('radiobutton',@_); }
 
 1; 

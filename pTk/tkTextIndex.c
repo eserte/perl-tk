@@ -11,7 +11,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkTextIndex.c 1.11 95/06/28 16:16:36";
+static char sccsid[] = "@(#) tkTextIndex.c 1.12 95/09/18 13:26:52";
 
 #include "default.h"
 #include "tkPort.h"
@@ -522,7 +522,7 @@ ForwBack(string, indexPtr)
     while (isspace(UCHAR(*p))) {
 	p++;
     }
-    count = strtoul(p, &end, 0);
+    count = strtol(p, &end, 0);
     if (end == p) {
 	return NULL;
     }

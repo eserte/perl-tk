@@ -254,7 +254,7 @@ Tk_ImageCmd(clientData, interp, argc, args)
 	   imagePtr->instanceData = (*typePtr->getProc)(
 		   imagePtr->tkwin, masterPtr->masterData);
 	}
-        Tcl_ArgResult(interp, LangImageArg( interp, Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
+        Tcl_ArgResult(interp, LangObjectArg( interp, Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
     } else if ((c == 'd') && (strncmp(LangString(args[1]), "delete", length) == 0)) {
 	for (i = 2; i < argc; i++) {
 	    hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, LangString(args[i]));
@@ -288,7 +288,7 @@ Tk_ImageCmd(clientData, interp, argc, args)
 	}
 	for (hPtr = Tcl_FirstHashEntry(&winPtr->mainPtr->imageTable, &search);
 		hPtr != NULL; hPtr = Tcl_NextHashEntry(&search)) {
-	    Tcl_AppendArg(interp, LangImageArg(interp,Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
+	    Tcl_AppendArg(interp, LangObjectArg(interp,Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
 	}
     } else if ((c == 't') && (strcmp(LangString(args[1]), "type") == 0)) {
 	if (argc != 3) {

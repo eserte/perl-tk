@@ -19,7 +19,7 @@ sub CreateArgs
  my ($package,$parent,$args) = @_;
  croak("Must specify -radiobuttons for $package") 
     unless (defined $args->{'-radiobuttons'});
- return $package->InheritThis($parent,$args);
+ return $package->SUPER::CreateArgs($parent,$args);
 }
 
 sub Populate
@@ -27,13 +27,13 @@ sub Populate
     require Tk::Radiobutton;
 
     my ($cw,$args) = @_;
+    $cw->SUPER::Populate($args);
 
     # LabeledRadiobutton(s) constructor.
     #
     # Advertised subwidgets:  the name(s) of your radiobutton(s).
 
 
-    $cw->InheritThis($args);
 
     my (@widgets) = ();
 

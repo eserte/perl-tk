@@ -15,7 +15,7 @@
  */
 #define NO_COREXT
 
-static char sccsid[] = "@(#) tkText.c 1.80 95/07/20 09:42:42";
+static char sccsid[] = "@(#) tkText.c 1.82 95/08/21 11:46:27";
 
 #include "default.h"
 #include "tkPort.h"
@@ -280,6 +280,8 @@ Tk_TextCmd(clientData, interp, argc, args)
     textPtr->bindingTable = NULL;
     textPtr->currentMarkPtr = NULL;
     textPtr->pickEvent.type = LeaveNotify;
+    textPtr->pickEvent.xcrossing.x = 0;
+    textPtr->pickEvent.xcrossing.y = 0;
     textPtr->numCurTags = 0;
     textPtr->curTagArrayPtr = NULL;
     textPtr->takeFocus = NULL;
@@ -1471,7 +1473,10 @@ TextSearchCmd(textPtr, interp, argc, args)
     Arg varName;
     char buffer[20];
     TkTextIndex index, stopIndex;
-    Tcl_DString line, patDString;
+    Tcl_DString line;
+#if 0
+    Tcl_DString patDString;
+#endif
     TkTextSegment *segPtr;
     TkTextLine *linePtr;
     Tcl_RegExp regexp = NULL;		/* Initialization needed only to
@@ -1499,24 +1504,24 @@ TextSearchCmd(textPtr, interp, argc, args)
 	    return TCL_ERROR;
 	}
 	c = arg[1];
-	if ((c == 'b') && (strncmp(LangString(args[i]), "-backwards", length) == 0)) {
+	if ((c == 'b') &&  LangCmpOpt("-backwards",LangString(args[i]),length) == 0 ) {
 	    backwards = 1;
-	} else if ((c == 'c') && (strncmp(LangString(args[i]), "-count", length) == 0)) {
+	} else if ((c == 'c') &&  LangCmpOpt("-count",LangString(args[i]),length) == 0 ) {
 	    if (i >= (argc-1)) {
 		Tcl_SetResult(interp, "no value given for \"-count\" option",TCL_STATIC);
 		return TCL_ERROR;
 	    }
 	    i++;
 	    varName = args[i];
-	} else if ((c == 'e') && (strncmp(LangString(args[i]), "-exact", length) == 0)) {
+	} else if ((c == 'e') &&  LangCmpOpt("-exact",LangString(args[i]),length) == 0 ) {
 	    exact = 1;
-	} else if ((c == 'f') && (strncmp(LangString(args[i]), "-forwards", length) == 0)) {
+	} else if ((c == 'f') &&  LangCmpOpt("-forwards",LangString(args[i]),length) == 0 ) {
 	    backwards = 0;
-	} else if ((c == 'n') && (strncmp(LangString(args[i]), "-nocase", length) == 0)) {
+	} else if ((c == 'n') &&  LangCmpOpt("-nocase",LangString(args[i]),length) == 0 ) {
 	    noCase = 1;
-	} else if ((c == 'r') && (strncmp(LangString(args[i]), "-regexp", length) == 0)) {
+	} else if ((c == 'r') &&  LangCmpOpt("-regexp",LangString(args[i]),length) == 0 ) {
 	    exact = 0;
-	} else if ((c == '-') && (strncmp(LangString(args[i]), "--", length) == 0)) {
+	} else if ((c == '-') &&  LangCmpOpt("--",LangString(args[i]),length) == 0 ) {
 	    i++;
 	    break;
 	} else {
@@ -1532,6 +1537,7 @@ TextSearchCmd(textPtr, interp, argc, args)
     }
     pattern = LangString(args[i]);
 
+#if 0
     /*
      * Convert the pattern to lower-case if we're supposed to ignore case.
      */
@@ -1546,6 +1552,7 @@ TextSearchCmd(textPtr, interp, argc, args)
 	    }
 	}
     }
+#endif
 
     if (TkTextGetIndex(interp, textPtr, LangString(args[i+1]), &index) != TCL_OK) {
 	return TCL_ERROR;
@@ -1554,8 +1561,14 @@ TextSearchCmd(textPtr, interp, argc, args)
     startingLine = TkBTreeLineIndex(index.linePtr);
     startingChar = index.charIndex;
     if (startingLine >= numLines) {
-	startingLine = 0;
-	startingChar = 0;
+	if (backwards) {
+	    startingLine = TkBTreeNumLines(textPtr->tree) - 1;
+	    startingChar = TkBTreeCharsInLine(TkBTreeFindLine(textPtr->tree,
+		    startingLine));
+	} else {
+	    startingLine = 0;
+	    startingChar = 0;
+	}
     }
     if (argsLeft == 1) {
 	if (TkTextGetIndex(interp, textPtr, LangString(args[i+2]), &stopIndex) != TCL_OK) {
@@ -1581,7 +1594,7 @@ TextSearchCmd(textPtr, interp, argc, args)
     if (exact) {
 	patLength = strlen(pattern);
     } else {
-	regexp = Tcl_RegExpCompile(interp, pattern);
+	regexp = Lang_RegExpCompile(interp, pattern, noCase);
 	if (regexp == NULL) {
 	    return TCL_ERROR;
 	}
@@ -1621,6 +1634,7 @@ TextSearchCmd(textPtr, interp, argc, args)
 	 * If we're ignoring case, convert the line to lower case.
 	 */
 
+#if 0
 	if (noCase) {
 	    for (p = Tcl_DStringValue(&line); *p != 0; p++) {
 		if (isupper(UCHAR(*p))) {
@@ -1628,6 +1642,7 @@ TextSearchCmd(textPtr, interp, argc, args)
 		}
 	    }
 	}
+#endif
 
 	/*
 	 * Check for matches within the current line.  If so, and if we're
@@ -1691,7 +1706,7 @@ TextSearchCmd(textPtr, interp, argc, args)
 		char *start, *end;
 		int match;
 
-		match = Tcl_RegExpExec(interp, regexp,
+		match = Lang_RegExpExec(interp, regexp,
 			startOfLine + firstChar, startOfLine);
 		if (match < 0) {
 		    code = TCL_ERROR;
@@ -1801,9 +1816,11 @@ TextSearchCmd(textPtr, interp, argc, args)
     }
     done:
     Tcl_DStringFree(&line);
+#if 0
     if (noCase) {
 	Tcl_DStringFree(&patDString);
     }
+#endif
     if (regexp) {
 	Lang_FreeRegExp(regexp);
     }
