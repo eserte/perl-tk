@@ -1,18 +1,6 @@
-BEGIN
-  {
-    $^W = 1;
-    $| = 1;
-
-    eval { require Test; };
-    if ($@)
-      {
-        print "1..0\n";
-        print STDERR "Test.pm module not installed. ";
-        exit;
-      }
-    Test->import;
-  }
+BEGIN { $|=1; $^W=1; }
 use strict;
+use Test;
 use Tk;
 
 BEGIN { plan tests => 22 };

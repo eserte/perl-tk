@@ -93,7 +93,7 @@ Tcl_SetChannelOption(Tcl_Interp *interp, Tcl_Channel chan,
   {
    if (strcmp(newValue,"binary") == 0)
     {
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
      setmode(PerlIO_fileno(f), O_BINARY);
 #endif
      return TCL_OK;

@@ -38,7 +38,11 @@
 #include "pTk/tkWin_f.h"
 #include "pTk/tkWinInt_f.h"
 #else
-#include "pTk/tkUnixInt.h"
+#  ifdef OS2
+#    include "pTk/tkOS2Int.h"
+#  else
+#    include "pTk/tkUnixInt.h"
+#  endif
 #endif
 #include "tkGlue.h"
 #include "tkGlue_f.h"
@@ -104,6 +108,7 @@ static XSdec(FreeAbstract);
 static XSdec(XEventInfo);
 static XSdec(PassEvent);
 extern XSdec(XS_Tk_DoWhenIdle);
+extern XSdec(XS_Tk_CreateGenericHandler);
 
 
 extern void  LangPrint _((SV *sv));
@@ -1427,7 +1432,8 @@ Tcl_Interp **pinterp;
      if (interp)
       {
        *pinterp = interp;
-       return WidgetRef(interp, Tk_PathName(tkwin));
+       if (Tk_PathName(tkwin))
+         return WidgetRef(interp, Tk_PathName(tkwin));
       }
     }
   }
@@ -1908,7 +1914,7 @@ XS(MainWindowCreate)
    Tcl_AddErrorInfo(interp, "Tk::MainWindow::Create");
    croak("%s",Tcl_GetResult(interp));
   }
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__PM__) && !(defined(OS2) && defined(__WIN32__))
  TkCreateXEventSource();
 #endif
  XSRETURN(Return_Results(interp,items,offset));
@@ -2927,8 +2933,10 @@ SV *b;
 {
  char *as;
  char *bs;
- if (SvGMAGICAL(a)) mg_get(a);
- if (SvGMAGICAL(b)) mg_get(b);
+ if (SvGMAGICAL(a)) 
+  mg_get(a);
+ if (SvGMAGICAL(b)) 
+  mg_get(b);
  as = (a && SvOK(a)) ? SvPV(a,na) : "";
  bs = (b && SvOK(b)) ? SvPV(b,na) : "";
  return strcmp(as,bs);
@@ -2986,6 +2994,11 @@ SV *sv;
   Tcl_Panic("Tcl_VarTraceProc returned '%s'", result);
  return 0;
 }
+
+#ifdef __MINGW32__
+#undef vtbl_uvar
+static MGVTBL vtbl_uvar = { magic_getuvar, magic_setuvar, 0, 0, 0};
+#endif
 
 int
 Tcl_TraceVar2(interp, sv, part2, flags, tkproc, clientData)
@@ -4324,24 +4337,24 @@ XEvent *eventPtr;
    info->interp = interp;
    info->tkwin  = tkwin;
    do_watch();
+   Tcl_ResetResult(interp);    
+   Lang_ClearErrorInfo(interp);
    ENTER;
    SAVETMPS;
-   Set_event(e);
-   XPUSHs(sv_mortalcopy(e));
-   PUTBACK;
-   if (tkwin)
-    {
-     w = TkToWidget(tkwin,&info->interp);  /* Pending REFCNT */
-     Set_widget(w);
-    }
-   if (!SvROK(w))
+   if (tkwin)                  
+    w = TkToWidget(tkwin,&info->interp);  /* Pending REFCNT */
+   if (!SvROK(w))              
     w = Blessed("Window", MakeReference(newSViv((IV) (eventPtr->xany.window))));
-   info->window = w;
-   Tcl_ResetResult(interp);
-   Lang_ClearErrorInfo(interp);
+   else
+    Set_widget(w);            
    result = PushCallbackArgs(interp, &sv,info);
    if (result == TCL_OK)
     {
+     SPAGAIN;
+     Set_event(e);               
+     XPUSHs(sv_mortalcopy(e));   
+     XPUSHs(sv_mortalcopy(w));   
+     PUTBACK;                    
      count = CallCallback(sv, G_EVAL);
      result = Check_Eval(interp);
     }
@@ -4355,6 +4368,7 @@ XEvent *eventPtr;
    else
     code = 0;
    Lang_MaybeError(interp,result,"Generic Event");
+
    FREETMPS;
    LEAVE;
   }
@@ -4490,6 +4504,30 @@ XS(XS_Tk_DoWhenIdle)
        p->interp = (Tcl_Interp *)(IncInterp(info->interp,"Tk_DoWhenIdle"));
        p->cb = LangMakeCallback(ST(1));
        Tcl_DoWhenIdle(handle_idle, (ClientData) p);
+      }
+    }
+   else
+    croak("Not a widget %s",SvPV(ST(0),na));
+  }
+ else
+  croak("Usage $w->DoWhenIdle(callback)");
+ XSRETURN(1);
+}
+
+XS(XS_Tk_CreateGenericHandler)
+{
+ dXSARGS;
+ if (items == 2)
+  {
+   Lang_CmdInfo *info = WindowCommand(ST(0), NULL, 0);
+   if (info && info->interp && (info->tkwin || info->image))
+    {
+     if (ResultAv(info->interp, "CreateGenericHandler", 0))
+      {
+       GenericInfo *p = (GenericInfo *) malloc(sizeof(GenericInfo));
+       p->interp = (Tcl_Interp *)(IncInterp(info->interp,"Tk_CreateGenericHandler"));
+       p->cb = LangMakeCallback(ST(1));
+       Tk_CreateGenericHandler(handle_generic, (ClientData) p);
       }
     }
    else
@@ -5042,6 +5080,7 @@ _((void))
  cv = newXS(buf, CallbackCall, __FILE__);
 
  newXS("Tk::DoWhenIdle", XS_Tk_DoWhenIdle, __FILE__);
+ newXS("Tk::CreateGenericHandler", XS_Tk_CreateGenericHandler, __FILE__);
 
  sprintf(buf, "%s::Widget::%s", BASEEXT, "ManageGeometry");
  cv = newXS(buf, ManageGeometry, __FILE__);

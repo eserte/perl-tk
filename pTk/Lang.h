@@ -24,7 +24,15 @@
 #endif
 
 #if !defined(__GNUC__) && !defined(_AIX)
+#ifdef __STDC__
+#ifndef STRINGIFY
+#define STRINGIFY(x)	    STRINGIFY1(x)
+#define STRINGIFY1(x)	    #x
+#endif
 #define __FUNCTION__ __FILE__ ":" STRINGIFY(__LINE__)
+#else /* STDC */
+#endif
+#define __FUNCTION__ ""
 #endif
 
 #define USE_TCLALLOC 1
@@ -84,10 +92,6 @@ typedef long fd_mask;
 #   endif
 #   ifndef USE_TCLALLOC
 #	define USE_TCLALLOC 0
-#   endif
-#   ifndef STRINGIFY
-#	define STRINGIFY(x)	    STRINGIFY1(x)
-#	define STRINGIFY1(x)	    #x
 #   endif
 #endif /* __WIN32__ */
 
@@ -186,11 +190,9 @@ typedef long fd_mask;
  */
 #ifndef VOID
 #define VOID void
-#ifndef __GNUC__
 typedef char CHAR;
 typedef short SHORT;
 typedef long LONG;
-#endif
 #endif
 #endif /* __WIN32__ */
 

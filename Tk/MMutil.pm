@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/MMutil.pm#19$
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/MMutil.pm#22$
 
 use Tk::MakeDepend;
 
@@ -38,8 +38,10 @@ sub arch_prune
     }
    elsif ($win_arch eq 'pm') 
     {
-     delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
-     delete $hash->{$_} if /os2Main|dllMain|tkOS2Dll|^xgc\./;
+     delete $hash->{$_} 
+       if /Unix|Mwm/ and not 
+	 /tclUnix|Unix(3d|Button|Dialog|Color|Embed|Focus|Font|Menu|Scrlbr|Send|Int\.|Scale)/;
+     delete $hash->{$_} if /os2Main|dllMain|tkOS2Dll|^x(colors\.c|gc\.)/;
      delete $hash->{$_} if /ImgUtil|tkWin[A-Z0-9]/ and not /OS2/;
     }
    elsif ($win_arch eq 'MSWin32') 
@@ -252,19 +254,6 @@ sub constants
  $_ .= "\nGCCOPT = $Tk::Config::gccopt\n";
  if ($IsWin32)
   {
-   if (0) 
-    {
-     if ($Config::Config{cc} =~ /^bcc/i) 
-      {
-       $_ .= "LDDLFLAGS = -v -Tpd\n";
-      }
-     else 
-      {
-       $_ .= "!include <win32.mak>\n";
-       $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
-       $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
-      }
-    }
   } 
  $_;
 }
@@ -444,6 +433,14 @@ sub TkExtMakefile
      # Borland compiler is very dumb at finding files 
      $i = "-I$tk $i";
      $i = "-I$ptk $i";
+    }
+   if ($IsWin32 && $Config{'cc'} =~ /^gcc/i)
+    {
+     my $base  = $Config{'libpth'};
+     $base =~ s#lib$#i386-mingw32/lib#;
+     my $extra = "-L$base -lcomdlg32 -lgdi32";
+     my $libs = $att{'LIBS'}->[0];
+     $att{'LIBS'}->[0] = "$extra $libs";
     }
    if (delete $att{'ptk_include'})
     {

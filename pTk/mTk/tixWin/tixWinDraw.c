@@ -72,6 +72,7 @@ TixpDrawTmpLine(x1, y1, x2, y2, tkwin)
  *----------------------------------------------------------------------
  */
 
+#ifndef __PM__
 void
 TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
     Display *display;
@@ -82,9 +83,6 @@ TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
     int w;
     int h;
 {
-#ifdef __PM__
-    panic("Not implemented: TixpDrawAnchorLines");
-#else
     HDC hdc;
     TkWinDCState state;
     HPEN hpen;
@@ -104,8 +102,8 @@ TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
     DeleteObject(hpen);
 
     TkWinReleaseDrawableDC(drawable, hdc, &state);
-#endif
 }
+#endif
 
 /*----------------------------------------------------------------------
  * TixpStartSubRegionDraw --

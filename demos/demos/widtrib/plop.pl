@@ -5,20 +5,6 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use vars qw/@FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
-	    $DX $DY $MIN_PXL $MAX_PXL $MARGIN $ALEN $ORIGINAL_CURSOR $CANV
-	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS $VERSION $TOP/;
-
-sub plop {
-    my($demo) = @_;
-    $TOP = $MW->WidgetDemo(
-        -name             => $demo,
-        -text             => 'This demonstration allows you to enter arithmetic functions in the text widow and plot them.  The X and Y axes limits can be changed to scale the plotting canvas.',
-	-geometry_manager => 'pack',
-        -title            => 'Plot Continuous Functions y=f(x)',
-        -iconname         => 'plop',
-    );
-
 #!/usr/local/bin/perl -w
 #
 # plot_program - plot a series of continuous functions on a Perl/Tk Canvas.
@@ -26,7 +12,7 @@ sub plop {
 # Stephen O. Lidie, Lehigh University Computing Center, lusol@Lehigh.EDU
 # 96/01/27.
 #
-# Copyright (C) 1996 - 1996 Stephen O. Lidie. All rights reserved.
+# Copyright (C) 1996 - 1998 Stephen O. Lidie. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the same terms as Perl itself.
@@ -34,8 +20,8 @@ sub plop {
 require 5.002;
 use strict;
 use Tk;
-require Tk::Dialog;
-require Tk::LabEntry;
+use Tk::Dialog;
+use Tk::LabEntry;
 eval {require "plop.fnc";};	# user supplied math functions
 
 # Predeclare global subroutines and variables.
@@ -50,40 +36,41 @@ sub make_menubutton;
 sub plot_functions;
 sub update_functions;
 
-$VERSION = '1.0';
+my $VERSION = '1.0';
 
 # The default sample functions and limits, each in a different color.
 
-@FUNCTIONS = ('sin($x)', 'cos($x)', 'exp($x)', '$x', 'int($x)');
-@COLORS = qw(red green blue orange olivedrab cyan black salmon purple);
-$NUM_COLORS = scalar @COLORS;
-($X_MIN, $X_MAX, $Y_MIN, $Y_MAX) = (-10, 10, -10, 10);
-($DX, $DY) = ($X_MAX - $X_MIN, $Y_MAX - $Y_MIN);
+my (@FUNCTIONS) = ('sin($x)', 'cos($x)', 'exp($x)', '$x', 'int($x)');
+my (@COLORS) = qw(red green blue orange olivedrab magenta black salmon purple);
+my $NUM_COLORS = scalar @COLORS;
+my ($X_MIN, $X_MAX, $Y_MIN, $Y_MAX) = (-5, 5, -5, 5);
+my ($DX, $DY) = ($X_MAX - $X_MIN, $Y_MAX - $Y_MIN);
 
 # Declare constants that configure the plotting area: a square approximately
 # 500 pixels on a side, with left/right and top/bottom margins of 80 pixles
 # where we can paint axes labels.  With this layout there is a 340x340 area
 # available for graphs.
 
-$MIN_PXL = 0;		        # minimum Canvas pixel coordinate
-$MAX_PXL = 300;		        # maximum Canvas pixel coordinate
-$MARGIN = 80;		        # margin size, in pixels
-$ALEN = $MAX_PXL - 2 * $MARGIN;	# X/Y axes length, in pixels
+my $MIN_PXL = 0;		# minimum Canvas pixel coordinate
+my $MAX_PXL = 300;		# maximum Canvas pixel coordinate
+my $MARGIN = 80;		# margin size, in pixels
+my $ALEN = $MAX_PXL - 2 * $MARGIN; # X/Y axes length, in pixels
 
 # Declare Perl/Tk widgets and other data.
 
-#my $CANV;			# Canvas widget used for plotting functions
-#my $DIALOG_ABOUT;		# Dialog widget showing "About" information
-#my $DIALOG_USAGE;		# Dialog widget describing plot usage
-#my $MBF;			# Menubutton frame
-$ORIGINAL_CURSOR = ($TOP->configure(-cursor))[3]; # restore this cursor
-#my $TEXT;			# Text widget showing function definitions
+my $CANV;			# Canvas widget used for plotting functions
+my $DIALOG_ABOUT;		# Dialog widget showing "About" information
+my $DIALOG_USAGE;		# Dialog widget describing plot usage
+my $MBF;			# Menubutton frame
+my $MW = MainWindow->new;	# program's main window
+my $ORIGINAL_CURSOR = ($MW->configure(-cursor))[3]; # restore this cursor
+my $TEXT;			# Text widget showing function definitions
 
 # %ERRORS is a hash to collect eval() and -w errors.  The keys are the error
 # messages themselves and the values are the number of times a particular
 # error was detected.
 
-#my %ERRORS;
+my %ERRORS;
 
 # Begin main.
 
@@ -128,7 +115,7 @@ sub initialize_canvas {
 
     my($label_offset, $tick_length) = (20, 5);
 
-    $CANV = $TOP->Canvas(
+    $CANV = $MW->Canvas(
 			-width  => $MAX_PXL + $MARGIN * 2, 
 			-height => $MAX_PXL, 
 			-relief => 'sunken',
@@ -153,7 +140,7 @@ sub initialize_canvas {
 
     $CANV->create('window',
 		  $MIN_PXL + $MARGIN, $MAX_PXL - $label_offset,
-		  -window => $TOP->LabEntry(
+		  -window => $MW->LabEntry(
 					   -textvariable => \$X_MIN,
 					   -label => 'X Minimum',
 					   -width => 5,
@@ -166,7 +153,7 @@ sub initialize_canvas {
 
     $CANV->create('window', 
 		  $MAX_PXL - $MARGIN, $MAX_PXL - $label_offset,
-		  -window => $TOP->LabEntry(
+		  -window => $MW->LabEntry(
 					   -textvariable => \$X_MAX,
 					   -label => 'X Maximum',
 					   -width => 5,
@@ -188,7 +175,7 @@ sub initialize_canvas {
 
     $CANV->create('window', 
 		  $MAX_PXL + $label_offset, $MIN_PXL + $MARGIN,
-		  -window => $TOP->LabEntry(
+		  -window => $MW->LabEntry(
 					   -textvariable => \$Y_MAX,
 					   -label => 'Y Maximum',
 					   -width => 5,
@@ -201,7 +188,7 @@ sub initialize_canvas {
 
     $CANV->create('window', 
 		  $MAX_PXL + $label_offset, $MAX_PXL - $MARGIN,
-		  -window => $TOP->LabEntry(
+		  -window => $MW->LabEntry(
 					   -textvariable => \$Y_MIN,
 					   -label => 'Y Minimum',
 					   -width => 5,
@@ -218,7 +205,7 @@ sub initialize_dialogs {
 
     # Create all application Dialog objects.
 
-    $DIALOG_ABOUT = $TOP->Dialog(
+    $DIALOG_ABOUT = $MW->Dialog(
 				-title   => 'About',
 				-text    => 
 "plot_program $VERSION\n\n95/12/04\n\nThis program is described in the Perl/Tk column from Volume 1, Issue 1 of The Perl Journal (http://tpj.com/tpj), and is included in the Perl/Tk distribution with permission.",
@@ -226,7 +213,7 @@ sub initialize_dialogs {
 				-buttons => ['Dismiss'],
 				);
     $DIALOG_ABOUT->configure(-wraplength => '6i');
-    $DIALOG_USAGE = $TOP->Dialog(
+    $DIALOG_USAGE = $MW->Dialog(
 				-title   => 'Usage',
 				-buttons => ['Dismiss'],
 				);
@@ -241,8 +228,8 @@ sub initialize_functions {
 
     # Pack a spacer Frame and then display instructions in a Label widget.
 
-#    $TOP->Frame(-height => 10)->pack;
-    $TOP->Label(
+#    $MW->Frame(-height => 10)->pack;
+    $MW->Label(
 	       -text       => 'Enter your functions here',
 	       -foreground => 'blue',
 	       )->pack;
@@ -250,7 +237,7 @@ sub initialize_functions {
     # Create a Frame with a scrollable Text widget that displays the function
     # list, and a Button to initiate plot activities.
 
-    my $functions_frame = $TOP->Frame;
+    my $functions_frame = $MW->Frame;
     $functions_frame->pack;
     $TEXT = $functions_frame->Text(-height => 3);
     $TEXT->pack;
@@ -258,7 +245,7 @@ sub initialize_functions {
     $functions_frame->configure(-scrollbars => 'e');
     update_functions;
 
-    my $buttons_frame = $TOP->Frame;
+    my $buttons_frame = $MW->Frame;
     $buttons_frame->pack(-padx => 10, -pady => 5, -expand => 1, -fill => 'x');
     my @pack_attributes = qw(-side left -fill x -expand 1);
     $buttons_frame->Button(
@@ -272,12 +259,12 @@ sub initialize_menus {
 
     # Create the Menubuttons and their associated Menu items.
 
-    $MBF = $TOP->Frame(-relief => 'raised', -borderwidth => 1);
+    $MBF = $MW->Frame(-relief => 'raised', -borderwidth => 1);
     $MBF->pack(-fill => 'x');
 	
     make_menubutton($MBF, 'File', 0, 'left',
 		    [
-		     ['Quit',  [$TOP => 'bell'],          0],
+		     ['Quit',  [$MW => 'bell'],          0],
 		    ],
 		   );
     make_menubutton($MBF, 'Help', 0, 'right',
@@ -320,7 +307,7 @@ sub plot_functions {
 
     my($x, $y, $canv_x, $canv_y) = (0, 0, 0, 0);
     $canv_x = $MIN_PXL + $MARGIN; # X minimum
-    $TOP->configure(-cursor => 'watch');
+    $MW->configure(-cursor => 'watch');
     $DX = $X_MAX - $X_MIN;	# update delta X
     $DY = $Y_MAX - $Y_MIN;	# update delta Y
     $CANV->delete('plot');	# erase all previous plots
@@ -334,7 +321,7 @@ sub plot_functions {
 	push @FUNCTIONS, $_;
     }
     update_functions;
-    $TOP->idletasks;
+    $MW->idletasks;
 
     %ERRORS = ();
     local $SIG{'__WARN__'} = sub {collect_errors($_[0])};
@@ -363,8 +350,8 @@ ALL_X_VALUES:
 
     } # forend ALL_X_VALUES
 
-    $TOP->configure(-cursor => $ORIGINAL_CURSOR);
-    $TOP->idletasks;
+    $MW->configure(-cursor => $ORIGINAL_CURSOR);
+    $MW->idletasks;
 
     # Print all the eval() errors to alert the user of malformed functions.
 
@@ -392,6 +379,3 @@ sub update_functions {
     $TEXT->yview('end');
 
 } # end update_function_list
-
-} # end subroutine plop
-

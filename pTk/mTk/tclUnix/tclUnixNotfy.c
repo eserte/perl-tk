@@ -455,7 +455,12 @@ Tcl_WaitForEvent(timePtr)
 	timeout.tv_sec = timePtr->sec;
 	timeout.tv_usec = timePtr->usec;
 	timeoutPtr = &timeout;
-    } else if (notifier.numFdBits == 0) {
+    } else if (
+		notifier.numFdBits == 0
+#if defined(__EMX__) && (defined(__WIN32__) || defined(__PM__))
+		&& !Tcl_WaitForEventProc
+#endif
+	      ) {
 	return -1;
     } else {
 	timeoutPtr = NULL;
@@ -463,6 +468,12 @@ Tcl_WaitForEvent(timePtr)
 
     memcpy((VOID *) notifier.readyMasks, (VOID *) notifier.checkMasks,
 	    3*MASK_SIZE*sizeof(fd_mask));
+#if defined(__EMX__) && (defined(__WIN32__) || defined(__PM__))
+    if (Tcl_WaitForEventProc) {
+	numFound = (*Tcl_WaitForEventProc)(notifier.numFdBits, 
+					   notifier.readyMasks, timePtr);
+    } else
+#endif
     numFound = select(notifier.numFdBits,
 	    (SELECT_MASK *) &notifier.readyMasks[0],
 	    (SELECT_MASK *) &notifier.readyMasks[MASK_SIZE],

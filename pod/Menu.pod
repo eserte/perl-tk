@@ -13,7 +13,7 @@ Tk::Menu - Create and manipulate Menu widgets
 
 =head1 SYNOPSIS
 
-I<$menu> = I<$parent>-E<gt>B<Menu>(?I<options>?);
+S<    >I<$menu> = I<$parent>-E<gt>B<Menu>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
@@ -33,8 +33,8 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-postcommand>
 
-If this option is specified then it provides a callback to execute
-each time the menu is posted.  The command is invoked by the B<post>
+If this option is specified then it provides a L<callback|Tk::callbacks> to execute
+each time the menu is posted.  The callback is invoked by the B<post>
 method before posting the menu. Note that in 8.0 on Macintosh
 and Windows, all commands in a menu systems are executed before any
 are posted. This is due to the limitations in the individual platforms'
@@ -266,14 +266,14 @@ all of its submenus.
 
 =head2 MENUBARS
 
-Any menu can be set as a menubar for a toplevel window (see
-B<toplevel> command for syntax). On the Macintosh, whenever the
+Any menu can be set as a menubar for a toplevel window (see the
+L<Toplevel|Tk::Toplevel> constructor for syntax). On the Macintosh, whenever the
 toplevel is in front, this menu's cascade items will appear in the
 menubar across the top of the main monitor. On Windows and Unix, this
 menu's items will be displayed in a menubar accross the top of the
 window. These menus will behave according to the interface guidelines
 of their platforms. For every menu set as a menubar, a clone menu is
-made. See the B<CLONES> section for more information.
+made. See L<"CLONES"> for more information.
 
 =head2 SPECIAL MENUS IN MENUBARS
 
@@ -389,7 +389,11 @@ matching entry is found.
 (In perl/Tk the matching is under review, but exact match
 should work.)
 
+=back
+
 The following methods are possible for menu widgets:
+
+=over 4
 
 =item I<$menu>-E<gt>B<activate>(I<index>)
 
@@ -593,22 +597,18 @@ causes the currently-selected entry to deselect itself.
 
 =back
 
-=back
-
 The B<add> method returns an empty string.
 
-=over 4
+=item I<$menu>-E<gt>B<clone>(I<$parent> ?, I<cloneType?>)
 
-=item $widget B<clone> I<newPathname ?cloneType?>
-
-Makes a clone of the current menu named I<newPathName>. This clone
+Makes a clone of the current menu as a child of I<$parent>. This clone
 is a menu in its own right, but any changes to the clone are
 propogated to the original menu and vice versa. I<cloneType> can be
 B<normal>, B<menubar>, or B<tearoff>. Should not normally be
-called outside of the Tk library. See the B<CLONES> section for
+called outside of the Tk library. See L<"CLONES"> for
 more information.
 
-=item I<$menu>-E<gt>B<delete>(I<index1, >?I<index2>?)
+=item I<$menu>-E<gt>B<delete>(I<index1>?, I<index2>?)
 
 Delete all of the menu entries between I<index1> and
 I<index2> inclusive.
@@ -623,15 +623,15 @@ the entry given by I<index>.
 I<Option> may have any of the values accepted by the B<add>
 method.
 
-=item I<$menu>-E<gt>B<entryconfigure>(I<index, >?I<options>?)
+=item I<$menu>-E<gt>B<entryconfigure>(I<index> ?,I<options>?)
 
-This command is similar to the B<configure> command, except that
+This method is similar to the B<configure> method, except that
 it applies to the options for an individual entry, whereas B<configure>
 applies to the options for the menu as a whole.
 I<Options> may have any of the values accepted by the B<add>
 method.  If I<options> are specified, options are modified
 as indicated
-in the command and the command returns an empty string.
+in the method call and the method returns an empty string.
 If no I<options> are specified, returns a list describing
 the current options for entry I<index> (see L<Tk::options> for
 information on the format of this list).
@@ -641,13 +641,13 @@ information on the format of this list).
 Returns the numerical index corresponding to I<index>, or
 B<none> if I<index> was specified as B<none>.
 
-=item I<$menu>-E<gt>B<insert>(I<index, >I<type, >?I<option, value, option, value, ...>?)
+=item I<$menu>-E<gt>B<insert>(I<index, type>?, I<-option>=E<gt>I<value>, ...?)
 
 Same as the B<add> method except that it inserts the new
 entry just before the entry given by I<index>, instead of appending
-to the end of the menu.  The I<type>, I<option>, and I<value>
+to the end of the menu.  The I<type>, I<-option>, and I<value>
 arguments have the same interpretation as for the B<add> widget
-command.  It is not possible to insert new menu entries before the
+method.  It is not possible to insert new menu entries before the
 tear-off entry, if the menu has one.
 
 =item I<$menu>-E<gt>B<invoke>(I<index>)
@@ -655,9 +655,9 @@ tear-off entry, if the menu has one.
 Invoke the action of the menu entry.  See the sections on the
 individual entries above for details on what happens.  If the
 menu entry is disabled then nothing happens.  If the
-entry has a command associated with it then the result of that
-command is returned as the result of the B<invoke> widget
-command.  Otherwise the result is an empty string.  Note:  invoking
+entry has a callback associated with it then the result of that
+callback is returned as the result of the B<invoke> widget
+method.  Otherwise the result is an empty string.  Note:  invoking
 a menu entry does not automatically unpost the menu;  the default
 bindings normally take care of this before invoking the B<invoke>
 method.
@@ -667,12 +667,12 @@ method.
 Arrange for the menu to be displayed on the screen at the root-window
 coordinates given by I<x> and I<y>.  These coordinates are
 adjusted if necessary to guarantee that the entire menu is visible on
-the screen.  This command normally returns an empty string.
+the screen.  This method normally returns an empty string.
 If the B<postCommand> option has been specified, then its value is
 executed before posting the menu and the result of
 that callback is returned as the result of the B<post> widget
-command.
-If an error returns while executing the command, then the error is
+method.
+If an error returns while executing the method, then the error is
 returned without posting the menu.
 
 =item I<$menu>-E<gt>B<postcascade>(I<index>)
@@ -680,22 +680,22 @@ returned without posting the menu.
 Posts the submenu associated with the cascade entry given by
 I<index>, and unposts any previously posted submenu.
 If I<index> doesn't correspond to a cascade entry,
-or if $widget isn't posted,
-the command has no effect except to unpost any currently posted
+or if I<$menu> isn't posted,
+the method has no effect except to unpost any currently posted
 submenu.
 
 =item I<$menu>-E<gt>B<type>(I<index>)
 
 Returns the type of the menu entry given by I<index>.
 This is the I<type> argument passed to the B<add> widget
-command when the entry was created, such as B<command>
+method when the entry was created, such as B<command>
 or B<separator>, or B<tearoff> for a tear-off entry.
 
 =item I<$menu>-E<gt>B<unpost>
 
 Unmap the window so that it is no longer displayed.  If a
 lower-level cascaded menu is posted, unpost that menu.  Returns an
-empty string. This subcommand does not work on Windows and the
+empty string. This method does not work on Windows and the
 Macintosh, as those platforms have their own way of unposting menus.
 
 =item I<$menu>-E<gt>B<yposition>(I<index>)

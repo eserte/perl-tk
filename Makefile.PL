@@ -5,7 +5,12 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.006';
+  $VERSION = '800.007';      
+
+  $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
+  require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
+  $win_arch = ($IsWin32) ? $^O : 'x'
+    if not defined $win_arch; # Currently 'x', 'pm', 'open32', 'MSWin32'
 
   $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
@@ -18,6 +23,10 @@ use Tk::MMutil;
 if ($IsWin32)
  {
   *MY::makeaperl = \&makeWin32perl;
+  if ($Config{cc} =~ /^gcc/i)
+   {
+    @libs = ('');
+   }
  }
 else
  {
@@ -43,8 +52,15 @@ foreach my $dir (readdir(DIR))
   next if -l $dir;
   next unless -d $dir;
   if (-f "$dir/Makefile.PL")
-   {
-    $dir{$dir} = 1 unless ($IsWin32 && -f "$dir/NotWin.exc"); 
+   {                            
+    unless ($win_arch eq 'x')
+     {
+      $dir{$dir} = 1 unless -f "$dir/NotWin.exc"; 
+     }
+    else
+     {
+      $dir{$dir} = 1 unless -f "$dir/NotUnix.exc"; 
+     }
    }
  }
 closedir(DIR);
@@ -52,20 +68,33 @@ delete $dir{'pTk'};
 
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
+    'EXE_FILES' => ['ptksh'],
     'NAME'     => 'Tk',
     'DIR'      => ['pTk',reverse(sort(keys %dir))],
     'DISTNAME' => "Tk",
-    'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)' . ($win_arch eq 'open32'
+    'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)' . ($win_arch =~ /^(open32|pm)$/
 					    ? ' pTk/dllInit$(LIB_EXT)'
 					    : ''),
     'LIBS'    => \@libs,
     'OBJECT'  => '$(O_FILES)',
-    'MAP_TARGET' => 'tkperl$(EXE_EXT)',
 #   'PMLIBDIRS'  => ['Tk','pod'],
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
                            
+sub MY::test
+  {
+    # a) Prevent 'test' target searchs for other tests in subdirs
+    # b) Skip regression test if Test.pm is not installed
+    package MY;
+    my $orig = shift->SUPER::test(@_);
+    my $msg = '\n\t--- Test.pm not installed. Grab it from CPAN. ---'
+            . '\n\t---      Regression tests skipped.            ---\n\n';
+    $orig =~ s/(\ntest ::[^\n]+).*(\ntest_dynamic)/$1\n$2/ms;
+    $orig =~ s/runtests \@ARGV/eval {require Test;} ? runtests \@ARGV : print "$msg"/mg;
+    return $orig;
+  }
+
 sub MY::test_hide {
 '
 TEST_VERBOSE=0
@@ -89,7 +118,7 @@ sub MY::top_targets
  my ($self) = @_;
  my $str = $self->MM::top_targets;
  $str =~ s/\bmanifypods\b/html/g;
- $str =~ s/(pure_all\s*:.*linkext)/$1 tkperl\$(EXE_EXT)/ if $IsWin32;
+# $str =~ s/(pure_all\s*:.*linkext)/$1 tkperl\$(EXE_EXT)/ if $IsWin32;
  return $str;
 }
 
@@ -120,12 +149,13 @@ sub MY::post_initialize
   }
  if ($IsWin32)
   {
-   push(@{$self->{'O_FILES'}},'pTk\tkWin32Dll$(OBJ_EXT)');
    if ($Config{cc} =~ /^bcc/i) {
      $ret .= "\nRESFILES = pTk\\tk.res\n";
    }
    else {
-     push(@{$self->{'O_FILES'}},'pTk\tk.res');
+     push(@{$self->{'O_FILES'}},
+          ($Config{'cc'} =~ /^gcc/i) ?
+               'pTk\\tkres$(OBJ_EXT)' : 'pTk\\tk.res');
    }
   }
  $ret;
@@ -156,9 +186,6 @@ perlmain.c : config Makefile
 
 pTk/tk.res : $(MYEXTLIB) 
 
-pTk/tkWin32dll$(OBJ_EXT) : 
-	@$(NOOP)
-
 basic      : $(INST_DYNAMIC) pm_to_blib 
 
 MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
@@ -167,110 +194,4 @@ MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
 ';
 }
 
-sub makeWin32perl
-{
-    my($self, %attribs) = @_;
-    my($makefilename, $searchdirs, $static, $extra, $perlinc, $target, $tmp, $libperl) =
-	@attribs{qw(MAKE DIRS STAT EXTRA INCL TARGET TMP LIBPERL)};
-    my(@m);
-    push @m, "# Tk Win32 makeaperl
-MAP_TARGET    = $target
-FULLPERL      = $self->{FULLPERL}
-";
-    return join '', @m if $self->{PARENT};
-    $tmp = "." unless $tmp;
 
-    my($dir) = join ":", @{$self->{DIR}};
-
-    my($cccmd, $linkcmd, $lperl);
-
-    # We trust that what has been handed in as argument, will be buildable
-    $static = [] unless $static;
-    @static{@{$static}} = (1) x @{$static};
-
-    grep(s/^/-I/, @{$perlinc || []});
-
-    $target = "perl" unless $target;
-
-    push @m, "
-MAP_LINKCMD   = \$(LD) 
-MAP_PERLINC   = @{$perlinc || []}
-MAP_STATIC    = winMain\$(OBJ_EXT)
-
-MAP_PRELIBS   = \$(LDLOADLIBS)
-";
-
-    if (defined $libperl) {
-        $libperl =~ s/libperl/perl/;
-	($lperl = $libperl) =~ s/\$\(A\)/$self->{LIB_EXT}/;
-    }
-    unless ($libperl && -f $lperl) { # Ilya's code...
-	my $dir = $self->{PERL_SRC} || "$self->{PERL_ARCHLIB}/CORE";
-	$libperl ||= "perl$self->{LIB_EXT}";
-	$libperl   = "$dir/$libperl";
-	$lperl   ||= "perl$self->{LIB_EXT}";
-	$lperl     = "$dir/$lperl";
-
-        if (! -f $libperl and ! -f $lperl) {
-          # We did not find a static libperl. Maybe there is a shared one?
-          if ($^O eq 'solaris' or $^O eq 'sunos') {
-            $lperl  = $libperl = "$dir/$Config::Config{libperl}";
-            # SUNOS ld does not take the full path to a shared library
-            $libperl = '' if $^O eq 'sunos';
-          }
-        }
-
-	print STDOUT "Warning: $libperl not found
-    If you're going to build a static perl binary, make sure perl is installed
-    otherwise ignore this warning\n"
-		unless (-f $lperl || defined($self->{PERL_SRC}));
-    }
-
-
-    push @m, "
-MAP_LIBPERL = $libperl
-MAP_LDFLAGS = \$(LDFLAGS) -subsystem:windows
-";
-
-push (@m, "
-$tmp/perlmain\$(OBJ_EXT): $tmp/perlmain.c
-	cd $tmp && \$(CCCMD) -I\$(PERL_INC) perlmain.c\n");
-
-    push @m, qq{
-$tmp/perlmain.c: $makefilename}, q{
-	}.$self->{NOECHO}.q{echo Writing $@
-	}.$self->{NOECHO}.q{$(PERL) $(MAP_PERLINC) -MExtUtils::Miniperl \\
-		-e "writemain(grep s#.*/auto/##, qw|$(MAP_STATIC)|)" > $@t && $(MV) $@t $@
-
-};
-
-    push @m,"
-\$(MAP_TARGET) :: $tmp/perlmain\$(OBJ_EXT) \$(MAP_LIBPERL) \$(MAP_STATIC) 
-".( $Config{cc} =~ /^bcc/i ?	# Borland
-"	\$(LD) -Tpe -aa \$(LDFLAGS) c0w32\$(OBJ_EXT) \\
-	    $tmp\\perlmain\$(OBJ_EXT) \$(MAP_STATIC:s,/,\\,),\$\@,, \\
-	    \$(MAP_LIBPERL:s,/,\\,) \$(MAP_PRELIBS:s,/,\\,)
-" : $Config{cc} =~ /^gcc/i ?	# GCC
-"	\$(LD) -mwindows -o \$\@ \$(LDFLAGS) $tmp/perlmain\$(OBJ_EXT) \\
-	    \$(MAP_STATIC) \$(MAP_LIBPERL) \$(MAP_PRELIBS)
-" :				# VC
-"	\$(LD) -subsystem:windows -out:\$\@ \$(LDFLAGS) $tmp/perlmain\$(OBJ_EXT) \\
-	    \$(MAP_STATIC) \$(MAP_LIBPERL) \$(MAP_PRELIBS)
-");
-
-
-    push @m, q{
-inst_perl: pure_inst_perl doc_inst_perl
-
-pure_inst_perl: $(MAP_TARGET)
-	}.$self->{CP}.q{ $(MAP_TARGET) }.$self->catfile('$(INSTALLBIN)','$(MAP_TARGET)').q{
-
-clean :: map_clean
-
-map_clean :
-	}.$self->{RM_F}.qq{ $tmp/perlmain\$(OBJ_EXT) $tmp/perlmain.c \$(MAP_TARGET) 
-};
-
-    join '', @m;
-
-}

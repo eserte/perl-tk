@@ -1,22 +1,9 @@
-# An N-puzzle implemented via the Grid geometry manager.
+# A N-puzzle implemented via the Grid geometry manager.
 #
 # This program is described in the Perl/Tk column from Volume 1, Issue 4 of
 # The Perl Journal (http://tpj.com/tpj), and is included in the Perl/Tk
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
-
-use vars qw/@LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
-	    @ORDER $PF @PUZ $SIDE $SPACE $SPACE_IMAGE $WIDTRIB $TOP/;
-
-sub npuz {
-    my($demo) = @_;
-    $TOP = $MW->WidgetDemo(
-        -name             => $demo,    
-        -text             => 'An N-puzzle appears below as a collection of button images.  Use "File/New Puzzle" to start a new game, then click on any of the images NSEW of the red space, and that piece will slide over the space.  Continue until the puzzle is solved.',
-        -geometry_manager => 'grid',
-        -title            => 'N-puzzle Demonstration',
-        -iconname         => 'N-Puz',
-	);
 
 #!/usr/local/bin/perl -w
 #
@@ -25,7 +12,7 @@ sub npuz {
 # Stephen O. Lidie, Lehigh University Computing Center, lusol@Lehigh.EDU
 # 96/08/11.
 #
-# Copyright (C) 1996 - 1996 Stephen O. Lidie. All rights reserved.
+# Copyright (C) 1996 - 1998 Stephen O. Lidie. All rights reserved.
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the same terms as Perl itself.
@@ -36,23 +23,24 @@ use Tk::Dialog;
 use strict;
 use subs qw(beep create_puz create_ui puz_fini move_piece new_puz randomly xy);
 
-#my $CAMEL;			# Perl/Tk Xcamel.gif Photo image
-#my $CAMEL_HEIGHT;		# Xcamel height
-#my $CAMEL_WIDTH;		# Xcamel width
-(@LEVELS) = (9, 16, 36, 64);	# possible puzzle piece counts
-#my @ORDER;			# random puzzle piece ordinals
-$PIECES = $LEVELS[1];	        # total puzzle piece count
-$OLD_PIECES = -1;		# previous puzzle piece count
-#my $PF;			# puzzle Frame
-#my @PUZ;			# puzzle piece information
-#my $SIDE;			# pieces per side of puzzle
-#my $SPACE;			# shortcut to puzzle space piece
-#my $SPACE_IMAGE;		# space piece image
+my $CAMEL;			# Perl/Tk Xcamel.gif Photo image
+my $CAMEL_HEIGHT;		# Xcamel height
+my $CAMEL_WIDTH;		# Xcamel width
+my (@LEVELS) = (9, 16, 36, 64);	# possible puzzle piece counts
+my $MW = MainWindow->new;	# program's main window
+my @ORDER;			# random puzzle piece ordinals
+my $PIECES = $LEVELS[1];	# total puzzle piece count
+my $OLD_PIECES = -1;		# previous puzzle piece count
+my $PF;			# puzzle Frame
+my @PUZ;			# puzzle piece information
+my $SIDE;			# pieces per side of puzzle
+my $SPACE;			# shortcut to puzzle space piece
+my $SPACE_IMAGE;		# space piece image
 
 create_ui;
 create_puz;
 
-sub beep {$TOP->bell}
+sub beep {$MW->bell}
 
 sub create_puz {
 
@@ -87,7 +75,7 @@ sub create_puz {
 	$PF->destroy;
     }
 
-    $PF = $TOP->Frame->grid;	# create the puzzle frame grid master
+    $PF = $MW->Frame->grid;	# create the puzzle frame grid master
     $OLD_PIECES = $PIECES;
     $#PUZ = $#ORDER = $PIECES - 1;
     $SIDE = sqrt $PIECES;
@@ -126,19 +114,19 @@ sub create_ui {
 
     # Create a color Photo image of the Xcamel puzzle.
 
-    $CAMEL = $TOP->Photo(-file => "$WIDTRIB/lib/npuz/Xcamel.npuz");
+    $CAMEL = $MW->Photo(-file => "$WIDTRIB/lib/npuz/Xcamel.npuz");
     $CAMEL_WIDTH  = $CAMEL->image('width');
     $CAMEL_HEIGHT = $CAMEL->image('height');
 
     # Create the menubar.
 
-    my $mf = $TOP->Frame(-bg => 'blue')->grid(-sticky => 'ew');
+    my $mf = $MW->Frame(-bg => 'blue')->grid(-sticky => 'ew');
     $mf->gridColumnconfigure(1, -weight => 1);
 
     my $mbf = $mf->Menubutton(-text => 'File', -relief => 'raised');
     $mbf->command(-label => 'New Puzzle', -command => \&new_puz);
     $mbf->separator;
-    $mbf->command(-label => 'Quit', -command => [$TOP => 'bell']);
+    $mbf->command(-label => 'Quit', -command => [$MW => 'bell']);
 
     my $mbp = $mf->Menubutton(-text => 'Prefs', -relief => 'raised');
     my $pieces = 'Pieces';
@@ -155,7 +143,7 @@ sub create_ui {
     }
 
     my $mbq = $mf->Menubutton(-text => 'Help', -relief => 'raised');
-    my $about = $TOP->Dialog(-text => <<"END"
+    my $about = $MW->Dialog(-text => <<"END"
 npuz Version 1.0\n
 Select \"File/New Puzzle\", then click around the red \"space\" to rearrange the pieces and solve the puzzle!\n\nThis program is described in the Perl/Tk column from Volume 1, Issue 4 of The Perl Journal (http://tpj.com/tpj), and is included in the Perl/Tk distribution with permission.
 END
@@ -236,5 +224,3 @@ sub new_puz {
 sub randomly {$a->[1] <=> $b->[1]} # randomize order of puzzle pieces
 
 sub xy {my($n) = @_; ($n % $SIDE, int $n / $SIDE)} # ordinal to X/Y
-
-} # end subroutine npuz

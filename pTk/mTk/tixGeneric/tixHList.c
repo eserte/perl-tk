@@ -3139,11 +3139,11 @@ static int SelectionModifyRange(wPtr, from, to, select)
 
     while (1) {
 	if (!from->hidden && (int)from->selected != select) {
+	    changed = 1;
 	    if (select) {
 		SelectionAdd(wPtr, from);
 	    } else {
 		HL_SelectionClear(wPtr, from);
-		changed = 1;
 	    }
 	}
 

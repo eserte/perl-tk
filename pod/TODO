@@ -4,7 +4,25 @@ Achim.
 
 ################## TO DO  ##########################
 
+Toplevel:
+=========
+
+So it should be moved to 14 The Window Manager or To Toplevel, MainWindow,
+Menu (etc?).  And should be written as:
+
+	$is_a_toplevel->Popup(?I<options>?)
+
+Where options can be
+
+	B<-popover>, B<-popanchor>, B<-overanchor>
+
+or any other I<$is_a_toplevel>.  Mhmm the 3 options above are 'regular'
+Toplevel option that are not mentioned in the Tks pod docs.  Sigh.
+JATI (just another todo item) :-(
+
+
 added ptk special featues:
+==========================
 
 ----
 Achim Bohnet <ach@mpe.mpg.de> writes:

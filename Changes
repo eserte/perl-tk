@@ -4,6 +4,18 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.007
+	Mingw32 build-ability (Still needs a little more work)
+
+	Ilya's OS2 patches
+	Doc updates from Achim
+	Test updates from Achim 
+	Slaven's Balloon & Canvas stuff   
+	Another try at cleaning up __FUNCTION__ snags.
+	Steve's prototype MsgBox (this will change)
+	Re-work tainting stuff again.
+
+                         
 Changes in Tk800.006                         
 	New hook in new for "managing parents" 
 

@@ -1,13 +1,8 @@
-#browseentry2, another example
-#
-# Another BrowseEntry test.
+# BrowseEntry, another example.
 #
 # Chris Dean <ctdean@cogit.com>
 
 use strict;
-
-use lib ".";
-
 use Tk;
 use Tk::BrowseEntry;
 

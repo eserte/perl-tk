@@ -1,10 +1,6 @@
-#browseentry, entry with listbox of to select list of values
+# BrowseEntry, entry with listbox to select list values.
 
-use Tk;
-use English;
-use Carp;
-
-require Tk::BrowseEntry;
+use Tk::BrowseEntry;
 
 my $month = "January";
 
@@ -27,11 +23,9 @@ outer:
     $c->insert("end", "November");
     $c->insert("end", "December");
     my $bf = $f->Frame;
-    $bf->Button(-text => "Quit",
+    $bf->Button(-text => "Print value",
 		-command => sub {
 		    print "The month is $month\n";
-		    print "ok 1\n";
-		    $top->destroy;
 		}, -relief => "raised")->pack;
     
     $bf->pack;

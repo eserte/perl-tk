@@ -17,10 +17,8 @@
 
 #ifndef __OPEN32__
 #include <commdlg.h>    /* includes common dialog functionality */
-#ifndef __GNUC__
 #include <dlgs.h>       /* includes common dialog template defines */
 #include <cderr.h>      /* includes the common dialog error codes */
-#endif
 #endif
 
 #if ((TK_MAJOR_VERSION == 4) && (TK_MINOR_VERSION <= 2))
@@ -1017,7 +1015,6 @@ static int ProcessCDError(interp, dwErrorCode, hWnd)
       case 0:	  /* User has hit CANCEL */
 	return TCL_OK;
 
-#ifndef __GNUC__
       case CDERR_DIALOGFAILURE:   string="CDERR_DIALOGFAILURE";  	break;
       case CDERR_STRUCTSIZE:      string="CDERR_STRUCTSIZE";   		break;
       case CDERR_INITIALIZATION:  string="CDERR_INITIALIZATION";   	break;
@@ -1045,7 +1042,6 @@ static int ProcessCDError(interp, dwErrorCode, hWnd)
       case FNERR_SUBCLASSFAILURE: string="FNERR_SUBCLASSFAILURE";   	break;
       case FNERR_INVALIDFILENAME: string="FNERR_INVALIDFILENAME";   	break;
       case FNERR_BUFFERTOOSMALL:  string="FNERR_BUFFERTOOSMALL";   	break;
-#endif /* __GNUC__ */
       default:
 	string="unknown error";
     }

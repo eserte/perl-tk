@@ -13,7 +13,7 @@ Tk::Toplevel - Create and manipulate Toplevel widgets
 
 =head1 SYNOPSIS
 
-I<$toplevel> = I<$parent>-E<gt>B<Toplevel>(?I<options>?);
+S<    >I<$toplevel> = I<$parent>-E<gt>B<Toplevel>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
@@ -34,7 +34,7 @@ See L<Tk::options> for details of the standard options.
 =item Switch:	B<-background>
 
 This option is the same as the standard B<background> option
-except that its value may also be specified as an empty string.
+except that its value may also be specified as an undefined value.
 In this case, the widget will display no background or border, and
 no colors will be consumed from its colormap for its background
 and border.

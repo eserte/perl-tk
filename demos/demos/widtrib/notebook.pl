@@ -1,12 +1,9 @@
-#Notebook, selectable pages
+# Notebook, selectable pages.
 
 use Tk;
-use English;
-use Carp;
-
-require Tk::DialogBox;
-require Tk::NoteBook;
-require Tk::LabEntry;
+use Tk::DialogBox;
+use Tk::NoteBook;
+use Tk::LabEntry;
 
 my $name = "Rajappa Iyer";
 my $email = "rsi\@netcom.com";
@@ -14,15 +11,11 @@ my $os = "Linux";
 
 use vars qw($top);
 
-outer:
-{
-    $top = MainWindow->new;
-    my $pb = $top->Button(-text => "Notebook", -command => \&donotebook);
-    my $eb = $top->Button(-text => "Exit", -command => [ destroy => $top ]);
-    $pb->pack;
-    $eb->pack;
-    MainLoop;
-}       
+$top = MainWindow->new;
+my $pb = $top->Button(-text => "Notebook", -command => \&donotebook);
+$pb->pack;
+MainLoop;
+
 
 my $f;
 

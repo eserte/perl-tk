@@ -30,9 +30,13 @@
 #include <link.h>
 #endif
 #define NeedPreload() 1
-#else
+#else                                
+
 #define NeedPreload() 0
-#endif
+#endif     
+
+#define Tk_tainting() (tainting)
+#define Tk_tainted(sv) ((sv) ? SvTAINTED(sv) : tainted)
 
 static void
 DebugHook(SV *sv)
@@ -809,6 +813,13 @@ Tk_Uid		name
 
 void
 abort()
+
+int
+Tk_tainting()
+
+int
+Tk_tainted(sv = NULL)
+SV *	sv
 
 void
 DebugHook(arg)

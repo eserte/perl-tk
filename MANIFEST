@@ -189,6 +189,7 @@ Tk/Menu.pm
 Tk/Menu/Item.pm
 Tk/Menubar.pm
 Tk/Message.pm
+Tk/MsgBox.pm
 Tk/Optionmenu.pm
 Tk/Pretty.pm
 Tk/ROText.pm
@@ -226,6 +227,11 @@ Tk/typemap
 Tk/widgets.pm
 Tk/win.xbm
 TkXSUB.def
+Tkperl/Makefile.PL
+Tkperl/NotUnix.exc
+Tkperl/perlmain.c
+Tkperl/winMain.c
+ToDo
 VERSIONS			Description of version naming scheme
 Xlib/GC.def
 Xlib/Makefile.PL
@@ -234,7 +240,6 @@ Xlib/X/Changes
 Xlib/X/Makefile.PL
 Xlib/X/X.pm
 Xlib/X/X.xs
-Xlib/X/t/use.t
 Xlib/Xlib.pm
 Xlib/Xlib.xs
 Xlib/drops
@@ -379,6 +384,7 @@ demos/demos/widtrib/dirtree.pl
 demos/demos/widtrib/form_mgr.pl
 demos/demos/widtrib/labframe.pl
 demos/demos/widtrib/lib/npuz/Xcamel.npuz
+demos/demos/widtrib/msgBox.pl
 demos/demos/widtrib/notebook.pl
 demos/demos/widtrib/npuz.pl
 demos/demos/widtrib/plop.pl
@@ -408,6 +414,7 @@ font_demo
 font_test
 fonts
 forward_test
+gdb.plx
 generate
 geo_mgr
 geom
@@ -434,6 +441,7 @@ lentry
 local_demo
 ls_table
 lsfonts
+mega.t
 menubar
 mitem_test
 mkExt
@@ -1292,6 +1300,7 @@ popup
 popup_menu
 prop_demo
 ptknews
+ptksh
 rebuild
 scale_test
 scrolled_demo
@@ -1300,12 +1309,11 @@ sockets
 style_test
 submethods
 symbols
-t/README
 t/Require.t
+t/X.t
 t/create.t
 t/fileselect.t
 t/font.t
-t/todo.embed-scrolled
 t/widget.t
 t/zzPhoto.t
 t/zzScrolled.t
@@ -1333,6 +1341,7 @@ tkGlue.m
 tkGlue.t
 tkGlue_f.c
 tkGlue_f.h
+tkWin32Dll.c
 tkperldoc
 tkpsh
 tktail
@@ -1341,5 +1350,4 @@ toyedit
 two_main
 uninstall
 wal
-winMain.c
 xlib_demo

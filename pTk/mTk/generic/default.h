@@ -22,7 +22,11 @@
 #   if defined(MAC_TCL)
 #	include "tkMacDefault.h"
 #   else
-#	include "tkUnixDefault.h"
+#      ifdef __PM__
+#         include "tkOS2Default.h"
+#      else
+#         include "tkUnixDefault.h"
+#      endif
 #   endif
 #endif
 

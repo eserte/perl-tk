@@ -8,27 +8,32 @@ require 5.004;
 use English;
 use Tk;
 use lib Tk->findINC('demos/widget_lib');
-use Tk::widgets qw/Dialog ErrorDialog/;
+use Tk::widgets qw/Dialog ErrorDialog ROText/;
 use WidgetDemo;
 use subs qw/inswt invoke lsearch see_code see_vars show_stat view_widget_code/;
 use vars qw/$MW $FONT $WIDTRIB/;
 use vars qw/$CODE $CODE_RERUN $CODE_TEXT $VARS $VIEW $VIEW_TEXT/;
 use vars qw/$BRAKES $LIGHTS $OIL $SOBER $TRANS $WIPERS/;
-use vars qw/$COLOR $FONT_STYLE $POINT_SIZE $demo_file %DemoDescription/;
+use vars qw/$COLOR $FONT_STYLE $POINT_SIZE $DEMO_FILE %DEMO_DESCRIPTION/;
 use strict;                      
 
  
 $MW = Tk::MainWindow->new;
 
-{ package WidgetWrap;
-  @WidgetWrap::ISA = qw(Tk::MainWindow);
+{ 
+    package WidgetWrap;
+    @WidgetWrap::ISA = qw(Tk::MainWindow);
 
-  sub new 
-  {
-   my ($name) = $::demo_file =~ m#([^/]+).pl$#;
-   warn "$::demo_file => $name\n";
-   return $::MW->WidgetDemo(-name => $name, -text => $::DemoDescription{$name} );
-  }
+    # This magic conspires with widget's AUTOLOAD subroutine to make user
+    # contributed demonstrations that don't use WidgetDemo embed properly.
+    # The trick works because widget creates a superclass of Tk::MainWindow
+    # which invokes WidgetDemo() implicitly. You loose if you bypass the
+    # inheritance mechanism and call Tk::MainWindow directly.
+
+    sub new   {
+	my ($name) = $::DEMO_FILE =~ m#([^/]+).pl$#;
+	$::MW->WidgetDemo(-name => $name, -text => $::DEMO_DESCRIPTION{$name});
+    }
 }
 
 @MainWindow::ISA = 'WidgetWrap';
@@ -37,12 +42,11 @@ $MW->title('Widget Demonstration');
 $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $widget_lib = Tk->findINC('demos/widget_lib');
 my $wd = "$widget_lib/WidgetDemo.pm";
-my $WIDTRIB = Tk->findINC('demos/widtrib');
-unless ($^T)
- {
-  $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
-  $WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
- }
+$WIDTRIB = Tk->findINC('demos/widtrib');
+unless (Tk::tainting) {
+    $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
+    $WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
+}
 
 # The code below creates the main window, consisting of a menu bar
 # and a text widget that explains how to use the program, plus lists
@@ -68,7 +72,7 @@ my $about = $menubar->Menubutton(qw/-text About -underline 0 -menuitems/ =>
      [Button    => '~Widget'],
     ])->grid(qw/-row 0 -column 1 -sticky w/); 
 
-my $T = $MW->Scrolled('Text',
+my $T = $MW->Scrolled('ROText',
     -scrollbars => 'e',		  
     -wrap       => 'word',
     -width      => 60,
@@ -76,7 +80,6 @@ my $T = $MW->Scrolled('Text',
     -font       => $FONT,
     -setgrid    => 1,
 )->grid(qw/-sticky nsew/);
-$T->bindtags(qw/widget_demo/);	# remove all bindings but dummy "widget_demo"
 
 my $STATUS_VAR;
 my $status = $MW->Label(-textvariable => \$STATUS_VAR, qw/-anchor w/);
@@ -86,46 +89,46 @@ $status->grid(qw/-sticky ew/);
 # section titles and demo descriptions.  Also define the bindings for
 # tags.
 
-$T->tag(qw/configure title -font -*-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*/);
-$T->tag(qw/configure demo -lmargin1 1c -lmargin2 1c -foreground blue/);
+$T->tagConfigure(qw/title -font -*-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*/);
+$T->tagConfigure(qw/demo -lmargin1 1c -lmargin2 1c -foreground blue/);
 
 if ($MW->depth  == 1) {
-    $T->tag(qw/configure hot -background black -foreground white/);
-    $T->tag(qw/configure visited -lmargin1 1c -lmargin2 1c -underline 1/);
+    $T->tagConfigure(qw/hot -background black -foreground white/);
+    $T->tagConfigure(qw/visited -lmargin1 1c -lmargin2 1c -underline 1/);
 } else {
-    $T->tag(qw/configure hot -relief raised -borderwidth 1 -foreground red/);
-    $T->tag(qw/configure visited -lmargin1 1c -lmargin2 1c -foreground/ =>
+    $T->tagConfigure(qw/hot -relief raised -borderwidth 1 -foreground red/);
+    $T->tagConfigure(qw/visited -lmargin1 1c -lmargin2 1c -foreground/ =>
 	    '#303080');
 }
 
-$T->tag(qw/bind demo <ButtonRelease-1>/ => sub {invoke $T->index('current')});
+$T->tagBind(qw/demo <ButtonRelease-1>/ => sub {invoke $T->index('current')});
 my $last_line = '';
-$T->tag(qw/bind demo <Enter>/ => [sub {
+$T->tagBind(qw/demo <Enter>/ => [sub {
 	my($text, $sv) = @_;
 	my $e = $text->XEvent;
 	my($x, $y) = ($e->x, $e->y);
 	$last_line = $text->index("\@$x,$y linestart");
-	$text->tag(qw/add hot/, $last_line, "$last_line lineend");
+	$text->tagAdd('hot', $last_line, "$last_line lineend");
 	$text->configure(qw/-cursor hand2/);
 	show_stat $sv, $text, $text->index('current');
     }, \$STATUS_VAR]
 );
-$T->tag(qw/bind demo <Leave>/ => [sub {
+$T->tagBind(qw/demo <Leave>/ => [sub {
 	my($text, $sv) = @_;
-	$text->tag(qw/remove hot 1.0 end/);
+	$text->tagRemove(qw/hot 1.0 end/);
 	$text->configure(qw/-cursor xterm/);
 	$$sv = '';
     }, \$STATUS_VAR]
 );
-$T->tag(qw/bind demo <Motion>/ => [sub {
+$T->tagBind(qw/demo <Motion>/ => [sub {
 	my($text, $sv) = @_;
 	my $e = $text->XEvent;
 	my($x, $y) = ($e->x, $e->y);
 	my $new_line = $text->index("\@$x,$y linestart");
 	if ($new_line ne $last_line) {
-	    $text->tag(qw/remove hot 1.0 end/);
+	    $text->tagRemove(qw/hot 1.0 end/);
 	    $last_line = $new_line;
-	    $text->tag(qw/add hot/, $last_line, "$last_line lineend");
+	    $text->tagAdd('hot', $last_line, "$last_line lineend");
 	}
 	show_stat $sv, $text, $text->index('current');
     }, \$STATUS_VAR]
@@ -221,11 +224,10 @@ while ($_ = shift @dirent) {
     my($name) = /^(.*)\.pl$/;
     $_ = <C>;
     my($title) = /^#\s*(.*)$/;
-    $DemoDescription{$name} = $title;
+    $DEMO_DESCRIPTION{$name} = $title;
     close C;
     $T->insert('end', ++$i . ". $title\n", ['demo', "demo-$name"]);
 }
-$T->configure(-state => 'disabled');
 
 # Create all the dialogs required by this demonstration.
 
@@ -235,7 +237,7 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n        98/03/10",
+		       "\nTk Version $Tk::VERSION\n\n        98/05/24",
 );
 $about->entryconfigure('Widget', -command => [$DIALOG_ABOUT => 'Show']);
 
@@ -259,10 +261,9 @@ sub AUTOLOAD {
     $T->Busy;
     {
 	local @Tk::EXPORT;
-	local $demo_file;
-	$demo_file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
-	$demo_file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
-	do $demo_file;
+	$DEMO_FILE = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
+	$DEMO_FILE = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
+	do $DEMO_FILE;
 	warn $EVAL_ERROR if $EVAL_ERROR;
     }
     $T->Unbusy;
@@ -286,11 +287,11 @@ sub inswt {
 
     my $start = $w->index('insert');
     $w->insert('insert', $text);
-    foreach my $tag ($w->tag('names', $start)) {
-	$w->tag('remove', $tag, $start, 'insert');
+    foreach my $tag ($w->tagNames($start)) {
+	$w->tagRemove($tag, $start, 'insert');
     }
     foreach my $i (@args) {
-	$w->tag('add', $i, $start, 'insert');
+	$w->tagAdd($i, $start, 'insert');
     }
 
 } # end inswt
@@ -301,12 +302,11 @@ sub invoke {
 
     my($index) = @_;
 
-    my @tags = $T->tag('names', $index);
+    my @tags = $T->tagNames($index);
     my $i = lsearch('demo\-.*', @tags);
     return if $i < 0;
     my($demo) = $tags[$i] =~ /demo-(.*)/;
-    $T->tag('add', 'visited', "$index linestart",
-                              "$index lineend -1 chars");
+    $T->tagAdd('visited', "$index linestart", "$index lineend -1 chars");
     {no strict 'refs'; &$demo($demo);}
 
 } # end invoke
@@ -367,7 +367,7 @@ sub see_code {
 	$CODE_TEXT->insert('1.0', <CODE>);
     }
     close CODE;
-    $CODE_TEXT->mark(qw/set insert 1.0/);
+    $CODE_TEXT->markSet(qw/insert 1.0/);
 
 } # end see_code
 
@@ -417,7 +417,7 @@ sub show_stat {
 
     my($sv, $text, $index) = @_;
 
-    my @tags = $text->tag('names', $index);
+    my @tags = $text->tagNames($index);
     my $i = lsearch('demo\-.*', @tags);
     return if $i < 0;
     my($demo) = $tags[$i] =~ /demo-(.*)/;
@@ -457,7 +457,7 @@ sub view_widget_code {
 	$VIEW_TEXT->insert('1.0', <VIEW>);
     }
     close VIEW;
-    $VIEW_TEXT->mark(qw/set insert 1.0/);
+    $VIEW_TEXT->markSet(qw/insert 1.0/);
     $VIEW_TEXT->configure(qw/-state disabled/);
 
 } # end view_widget_code

@@ -1,11 +1,11 @@
-#balloon, Descriptive "Balloon" that pops up when mouse lingers over widget
+# Ballon, pop up help window when mouse lingers over widget.
 
 use Tk;
 use English;
 use Carp;
 
-require Tk::Frame;
-require Tk::Balloon;
+use Tk::Frame;
+use Tk::Balloon;
 
 my $lmsg = "";
 
@@ -18,7 +18,7 @@ $status->pack(-side => "bottom", -fill => "y", -padx => 2, -pady => 1);
 
 # create the widgets to be explained
 my $b1 = $top->Button(-text => "Something Unexpected",
-		   -command => sub { $top->destroy;});
+		      -command => sub {$top->destroy;});
 my $b2 = $top->Button(-text => "Something Else Unexpected");
 $b2->configure(-command => sub {$b2->destroy;});
 
@@ -27,7 +27,7 @@ $b2->pack(-side => "top", -expand => 1);
 
 $top->Text(-height => 5)->pack->insert('end',<<END);
 
-Move the mouse cursor over the buttons above and let it "linger".
+Move the mouse cursor over the buttons above and let it linger.
 A message will be displayed in status box below and a descriptive
 balloon will appear.
 

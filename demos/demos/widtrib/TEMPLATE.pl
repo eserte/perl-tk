@@ -28,10 +28,10 @@ The first line of the file is the DDD (Demonstration Description Data), which
 briefly describes the purpose of the demonstration.  The widget program reads
 this line and uses it when building its interface.
 
-Demonstrations may have a unique subroutine which is the same
-as the filename with .pl stripped off.
-When widget calls your subroutine it's passed one argument, the demonstration
-name. So file TEMPLATE.pl contains subroutine TEMPLATE().
+Demonstrations may have a unique subroutine which is the same as the filename
+with .pl stripped off.  When widget calls your subroutine it's passed one
+argument, the demonstration name. So file TEMPLATE.pl contains subroutine
+TEMPLATE().  But a demo can actually be an entire program - read on!
 
 For consistency your demonstration should use the WidgetDemo widget.  This is  
 a toplevel widget with three frames. The top frame contains descriptive
@@ -46,22 +46,21 @@ to "pack".  The call to WidgetDemo() returns a reference to the containing
 frame for your demonstration, so treat it as if it were the MainWindow, the
 top-most window of your widget hierarchy.
 
-Alternatively the .pl file make contain typical perl/Tk code of the form:
+Alternatively the .pl file make contain typical Perl/Tk code of the form:
        
-  # Demo decription comment 
-  use Tk;
-  my $top = MainWindow->new;
-  $top->Label(-text => 'Whatever');
-         
-  MainLoop;
-  __END__
+    # Demonstration Description Data
+
+    use Tk;
+    my $top = MainWindow->new;
+    $top->Label(-text => 'Whatever');
+    MainLoop;
+    __END__
 
 widget has re-defined normal MainWindow to actually create a WidgetDemo
 on your code's behalf. MainLoop is optional in a demo (it will immediately
-return as MainLoop is already active - running the demo).
+return as MainLoop is already active).
 
 Other consideration:
-
 
     . widget global variables are all uppercase, like $MW - be careful not
       to stomp on them! 
@@ -69,8 +68,11 @@ Other consideration:
     . Demo files should really be run in private packages to avoid those 
       problems.
 
+    . Don't subvert the inheritance mechanism by calling Tk::MainWindow
+      in your demo code.
+
     . The description should really be extracted from POD documentation
-      in the .pl file rather than a magic comment.
+      in the .pl file rather than a magic comment.  
 
     . If your demonstration has a Quit button change it to ring the bell
       and use the builtin Dismiss instead. In particular destroying a 

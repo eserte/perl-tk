@@ -16,10 +16,6 @@
 #include "tkWinInt.h"
 #include "tkFont.h"
 
-#if defined(__GNUC__) && !defined(TMPF_FIXED_PITCH)
-#define TMPF_FIXED_PITCH 0x01
-#endif
-
 /*
  * The following structure represents Windows' implementation of a font.
  */
