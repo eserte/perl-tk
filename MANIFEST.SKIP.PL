@@ -34,7 +34,7 @@ C\+\+/Main$
 \bcore$
 \bConfig.pm$
 \bpTk/tkConfig\.h$
-\bpTk/(need|canvas_sources)$
+\bpTk/need$
 \b(pm_to_blib|perl)$
 [%~]$
 \b(blib|merge|Ilya|Pixmap|patches|pod2)/

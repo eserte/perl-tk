@@ -1,6 +1,6 @@
 Tk is a Graphical User Interface ToolKit.           
 
-Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
@@ -15,23 +15,19 @@ This a re-port of a perl interface to Tk8.0.5 (Scriptics's production release).
 It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.006 release.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
 
->>> TK IS KNOWN NOT TO WORK WITH perl5.005_63 <<<          
-(Does work with 5.005_64-to-be as of 7 Jan 2000)
-
-This version (Tk800.017) requires perl5.005 or later on Win32 
+This version (Tk800.016) requires perl5.005 or later on Win32 
 and 5.004_04 or later on UNIX.
 
 This version also contains re-worked Image code based on tcl/tk Img extension
 (version img1.2b2) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/ 
 Jan's "dash" patch is also merged.
 
-Tk800.017 should build and run on Windows NT using Visual C++, Borland, 
+Tk800.016 should build and run on Windows NT using Visual C++, Borland, 
 or with the Mingw32 port of GCC with perl5.005 or later.
 Can be built using ActiveState's binrary distribution 
 (see README-ActiveState.txt).
 
-The Mingw32 builds are stable now using older Mingw32s.
-There are perl build issues with very new Mingw32 (2.95.*).
+The Mingw32 builds are stable now.
 
 I have not tried a Borland build recently.
 
@@ -43,10 +39,8 @@ Author has built against:
   Perl5.00503
    SPARC Solaris2.5.1, gcc-2.8.1
    SPARC Solaris2.6, gcc-2.8.1
-   NT4.0 SP4, VC++6 ActivePerl 518
-
-  Perl5.00502
    NT4.0 SP4, Mingw32/EGCS 1.1.2
+   NT4.0 SP4, VC++6 ActivePerl 518
 
   Perl5.00562
    Pentium Suse Linux-6.1 egcs-1.1.2

@@ -117,20 +117,6 @@ static Tk_CustomOption offsetOption = {
     Tk_OffsetParseProc,
     Tk_OffsetPrintProc,
     (ClientData) TK_OFFSET_RELATIVE
-};                         
-
-static int CanvGroupParseProc _ANSI_ARGS_((ClientData clientData,
-	Tcl_Interp *interp, Tk_Window tkwin, Arg value, char *widgRec,
-	int offset));
-
-static Arg CanvGroupPrintProc _ANSI_ARGS_((ClientData clientData,
-	Tk_Window tkwin, char *widgRec, int offset,
-	Tcl_FreeProc **freeProcPtr));
-
-static Tk_CustomOption groupOption = {
-    CanvGroupParseProc,
-    CanvGroupPrintProc,
-    (ClientData) NULL
 };
 
 /*
@@ -138,8 +124,6 @@ static Tk_CustomOption groupOption = {
  */
 
 static Tk_ConfigSpec configSpecs[] = {
-    {TK_CONFIG_CUSTOM, "-activegroup", "activeGroup", "ActiveGroup", "0",
-	Tk_Offset(TkCanvas, activeGroup), TK_CONFIG_DONT_SET_DEFAULT, &groupOption},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
 	DEF_CANVAS_BG_COLOR, Tk_Offset(TkCanvas, bgBorder),
 	TK_CONFIG_COLOR_ONLY},
@@ -513,8 +497,6 @@ Tk_CanvasObjCmd(clientData, interp, argc, args)
 #ifndef USE_OLD_TAG_SEARCH
     canvasPtr->bindTagExprs = NULL;
 #endif
-    canvasPtr->activeGroup = 0;
-  
     Tcl_InitHashTable(&canvasPtr->idTable, TCL_ONE_WORD_KEYS);
 
     TkClassOptionObj(canvasPtr->tkwin, "Canvas",&argc,&argv);
@@ -945,7 +927,7 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 	      } else {
 		result = (*itemPtr->typePtr->coordProc)(interp,
 			(Tk_Canvas) canvasPtr, itemPtr, argc-3, args+3);
-	      }  
+	      }
 	    }
 	    if (argc != 3) {
 		EventuallyRedrawItem((Tk_Canvas) canvasPtr, itemPtr);
@@ -989,8 +971,7 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 	typePtr = matchPtr;
 	itemPtr = (Tk_Item *) ckalloc((unsigned) typePtr->itemSize);
 	itemPtr->id = canvasPtr->nextId;
-	canvasPtr->nextId++;     
-	itemPtr->group  = NULL;
+	canvasPtr->nextId++;
 	itemPtr->tagPtr = itemPtr->staticTagSpace;
 	itemPtr->tagSpace = TK_TAG_SPACE;
 	itemPtr->numTags = 0;
@@ -1117,9 +1098,6 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 		if (canvasPtr->bindingTable != NULL) {
 		    Tk_DeleteAllBindings(canvasPtr->bindingTable,
 			    (ClientData) itemPtr);
-		}                   
-		if (itemPtr->group != NULL) {
-		    TkGroupRemoveItem(itemPtr);
 		}
 		(*itemPtr->typePtr->deleteProc)((Tk_Canvas) canvasPtr, itemPtr,
 			canvasPtr->display);
@@ -1425,10 +1403,10 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 	    itemPtr->redraw_flags &= ~TK_ITEM_DONT_REDRAW;
 	    if (itemPtr->typePtr->flags & TK_CONFIG_OBJS) {
 		(*itemPtr->typePtr->insertProc)((Tk_Canvas) canvasPtr,
-			itemPtr, beforeThis, args[4]);
+			itemPtr, beforeThis, (char *) args[4]);
 	    } else {
 		(*itemPtr->typePtr->insertProc)((Tk_Canvas) canvasPtr,
-			itemPtr, beforeThis, args[4]);
+			itemPtr, beforeThis, Tcl_GetStringFromObj(args[4], NULL));
 	    }
 	    if (!(itemPtr->redraw_flags & TK_ITEM_DONT_REDRAW)) {
 		Tk_CanvasEventuallyRedraw((Tk_Canvas) canvasPtr,
@@ -1575,10 +1553,7 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 	}
 	for (itemPtr = TagSearchFirst(searchPtr);
 		itemPtr != NULL; itemPtr = TagSearchNext(searchPtr)) {
-#endif /* USE_OLD_TAG_SEARCH */        
-	    if (itemPtr->group != canvasPtr->activeGroup) {
-		continue;
-	    }
+#endif /* USE_OLD_TAG_SEARCH */
 	    EventuallyRedrawItem((Tk_Canvas) canvasPtr, itemPtr);
 	    (void) (*itemPtr->typePtr->translateProc)((Tk_Canvas) canvasPtr,
 		    itemPtr,  xAmount, yAmount);
@@ -1669,10 +1644,7 @@ CanvasWidgetCmd(clientData, interp, argc, args)
 	}
 	for (itemPtr = TagSearchFirst(searchPtr);
 		itemPtr != NULL; itemPtr = TagSearchNext(searchPtr)) {
-#endif /* USE_OLD_TAG_SEARCH */        
-	    if (itemPtr->group != canvasPtr->activeGroup) {
-		continue;
-	    }
+#endif /* USE_OLD_TAG_SEARCH */
 	    EventuallyRedrawItem((Tk_Canvas) canvasPtr, itemPtr);
 	    (void) (*itemPtr->typePtr->scaleProc)((Tk_Canvas) canvasPtr,
 		    itemPtr, xOrigin, yOrigin, xScale, yScale);
@@ -2072,9 +2044,6 @@ DestroyCanvas(memPtr)
     for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;
 	    itemPtr = canvasPtr->firstItemPtr) {
 	canvasPtr->firstItemPtr = itemPtr->nextPtr;
-	if (itemPtr->group != NULL) {
-	    TkGroupRemoveItem(itemPtr);
-	}
 	(*itemPtr->typePtr->deleteProc)((Tk_Canvas) canvasPtr, itemPtr,
 		canvasPtr->display);
 	if (itemPtr->tagPtr != itemPtr->staticTagSpace) {
@@ -2228,9 +2197,10 @@ ConfigureCanvas(interp, canvasPtr, argc, args, flags)
     if (canvasPtr->regionArg != NULL) {
 	int argc2;
 	Arg *args2;
+        LangFreeProc *freeProc = NULL;
 
-	if (Tcl_ListObjGetElements(canvasPtr->interp, canvasPtr->regionArg,
-		&argc2, &args2) != TCL_OK) {
+	if (Lang_SplitList(canvasPtr->interp, canvasPtr->regionArg,
+		&argc2, &args2, &freeProc) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (argc2 != 4) {
@@ -2238,6 +2208,8 @@ ConfigureCanvas(interp, canvasPtr, argc, args, flags)
 		    canvasPtr->regionArg, "\"", (char *) NULL);
 	    badRegion:
 	    /* ckfree(canvasPtr->regionArg); */
+            if (freeProc)
+	     (*freeProc)(argc2,args2);
 	    canvasPtr->regionArg = NULL;
 	    return TCL_ERROR;
 	}
@@ -2251,6 +2223,8 @@ ConfigureCanvas(interp, canvasPtr, argc, args, flags)
 		    LangString(args2[3]), &canvasPtr->scrollY2) != TCL_OK)) {
 	    goto badRegion;
 	}
+        if (freeProc)
+	 (*freeProc)(argc2,args2);
     }
 
     flags = canvasPtr->tsoffset.flags;
@@ -2548,9 +2522,6 @@ DisplayCanvas(clientData)
 		(itemPtr->state == TK_STATE_NULL &&
 		 canvasPtr->canvas_state == TK_STATE_HIDDEN)) {
 		continue;
-	    }                   
-	    if (itemPtr->group != canvasPtr->activeGroup) {
-		continue;
 	    }
 	    (*itemPtr->typePtr->displayProc)((Tk_Canvas) canvasPtr, itemPtr,
 		    canvasPtr->display, pixmap, screenX1, screenY1, width,
@@ -2832,10 +2803,6 @@ EventuallyRedrawItem(canvas, itemPtr)
     Tk_Item *itemPtr;		/* item to be redrawn. */
 {
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
-    if (itemPtr->group) {
-	(itemPtr->group->typePtr->bboxProc)(canvas,itemPtr->group);
-	EventuallyRedrawItem(canvas, itemPtr->group);
-    } 
     if ((itemPtr->x1 >= itemPtr->x2) || (itemPtr->y1 >= itemPtr->y2) ||
  	    (itemPtr->x2 < canvasPtr->xOrigin) ||
 	    (itemPtr->y2 < canvasPtr->yOrigin) ||
@@ -4351,12 +4318,11 @@ FindItems(interp, canvasPtr, argc, args, newTag, first, searchPtrPtr)
     int index;
     static char *optionStrings[] = {
 	"above", "all", "below", "closest",
-	"enclosed", "overlapping", "withtag", "ingroup", NULL
+	"enclosed", "overlapping", "withtag", NULL
     };
     enum options {
 	CANV_ABOVE, CANV_ALL, CANV_BELOW, CANV_CLOSEST,
-	CANV_ENCLOSED, CANV_OVERLAPPING, CANV_WITHTAG,
-	CANV_INGROUP
+	CANV_ENCLOSED, CANV_OVERLAPPING, CANV_WITHTAG
     };
 
     if (newTag != NULL) {
@@ -4401,20 +4367,6 @@ FindItems(interp, canvasPtr, argc, args, newTag, first, searchPtrPtr)
 	for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;
 		itemPtr = itemPtr->nextPtr) {
 	    DoItem(interp, itemPtr, uid);
-	}
-	break;
-      }
-      case CANV_INGROUP: {
-	if (argc != first+1) {
-	    Tcl_WrongNumArgs(interp, first+1, argv, (char *) NULL);
-	    return TCL_ERROR;
-	}
-
-	for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;
-		itemPtr = itemPtr->nextPtr) {
-	    if (itemPtr->group == canvasPtr->activeGroup) {
-		DoItem(interp, itemPtr, uid);                  
-	    }
 	}
 	break;
       }
@@ -4494,7 +4446,6 @@ FindItems(interp, canvasPtr, argc, args, newTag, first, searchPtrPtr)
 
 	itemPtr = startPtr;
 	while(itemPtr && (itemPtr->state == TK_STATE_HIDDEN ||
-            (itemPtr->group != canvasPtr->activeGroup) ||
 	    (itemPtr->state == TK_STATE_NULL && canvasPtr->canvas_state == TK_STATE_HIDDEN))) {
 	    itemPtr = itemPtr->nextPtr;
 	}
@@ -4535,9 +4486,7 @@ FindItems(interp, canvasPtr, argc, args, newTag, first, searchPtrPtr)
 		    DoItem(interp, closestPtr, uid);
 		    return TCL_OK;
 		}
-		if (itemPtr->state == TK_STATE_HIDDEN || 
-		    itemPtr->group != canvasPtr->activeGroup ||
-		    (itemPtr->state == TK_STATE_NULL &&
+		if (itemPtr->state == TK_STATE_HIDDEN || (itemPtr->state == TK_STATE_NULL &&
 			canvasPtr->canvas_state == TK_STATE_HIDDEN)) {
 		    continue;
 		}
@@ -4669,9 +4618,6 @@ FindArea(interp, canvasPtr, args, uid, enclosed)
 	    itemPtr = itemPtr->nextPtr) {
 	if (itemPtr->state == TK_STATE_HIDDEN || (itemPtr->state == TK_STATE_NULL &&
 		canvasPtr->canvas_state == TK_STATE_HIDDEN)) {
-	    continue;
-	}                      
-	if (itemPtr->group != canvasPtr->activeGroup) {
 	    continue;
 	}
 	if ((itemPtr->x1 >= x2) || (itemPtr->x2 <= x1)
@@ -5179,7 +5125,6 @@ CanvasFindClosest(canvasPtr, coords)
     for (itemPtr = canvasPtr->firstItemPtr; itemPtr != NULL;
 	    itemPtr = itemPtr->nextPtr) {
 	if (itemPtr->state == TK_STATE_HIDDEN || itemPtr->state==TK_STATE_DISABLED ||
-		itemPtr->group != canvasPtr->activeGroup ||
 		(itemPtr->state == TK_STATE_NULL && (canvasPtr->canvas_state == TK_STATE_HIDDEN ||
 		canvasPtr->canvas_state == TK_STATE_DISABLED))) {
 	    continue;
@@ -6167,77 +6112,4 @@ Tk_CanvasPsPath(interp, canvas, coordPtr, numPoints)
     Tk_PostscriptPath(interp, ((TkCanvas *) canvas)->psInfo,
 	    coordPtr, numPoints);
 }
-         
-#if 0
-Tk_State
-Tk_GetItemState(canvas, itemPtr)
-    Tk_Canvas canvas;		/* Canvas containing item. */
-    Tk_Item *itemPtr;		/* Item to check against point. */
-{                                
-    TkCanvas *canvasPtr = (TkCanvas *) canvas;
-    if (itemPtr->group != canvasPtr->activeGroup) {
-	return TK_STATE_HIDDEN;
-    } else {
-	Tk_State state = itemPtr->state;
-	if (state == TK_STATE_NULL) {
-	    state = ((TkCanvas *)canvas)->canvas_state;
-	}
-	return state;
-    }
-}    
-#endif
-
-static int 
-CanvGroupParseProc(clientData, interp, tkwin, value, widgRec, offset)
-ClientData clientData;
-Tcl_Interp *interp;
-Tk_Window tkwin;
-Arg value;
-char *widgRec;
-int offset;
-{
-    Tk_Canvas canvas = (Tk_Canvas) widgRec;
-    TkCanvas *canvasPtr = (TkCanvas *) canvas;
-    Tk_Item **valp = (Tk_Item **) (widgRec+offset);
-    Tk_Item *itemPtr = NULL;
-    Tcl_HashEntry *entryPtr = NULL;
-    int id = 0;
-    if (Tcl_GetIntFromObj(interp,value,&id) == TCL_OK) {
-	if (id == 0) {
-	    *valp = NULL;
-	    return TCL_OK;
-	}
-	entryPtr = Tcl_FindHashEntry(&canvasPtr->idTable, (char *) id);
-	if (entryPtr != NULL && (itemPtr = (Tk_Item *) Tcl_GetHashValue(entryPtr)) != NULL) {
-	    if (strcmp(itemPtr->typePtr->name,"group") == 0) {
-		*valp = itemPtr;
-		return TCL_OK;
-	    } else {
-		Tcl_AppendResult(interp,"Id ",LangString(value)," is \"",
-				itemPtr->typePtr->name,"\" not \"group\"",NULL);
-	    }
-	} else {
-	    Tcl_AppendResult(interp,"Id ",LangString(value)," is not a valid item id", NULL);
-	}
-    }
-    return TCL_ERROR;
-}
-
-static Arg 
-CanvGroupPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
-ClientData clientData;
-Tk_Window tkwin;
-char *widgRec; 
-int offset;
-Tcl_FreeProc **freeProcPtr;
-{                                               
-    Tk_Canvas canvas = (Tk_Canvas) widgRec;
-    Tk_Item **valp = (Tk_Item **) (widgRec+offset);
-    Tcl_Obj *result = NULL;
-    if (*valp) {
-	result = Tcl_NewIntObj((*valp)->id);     
-    }
-    return result;
-}
-
 

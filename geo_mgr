@@ -47,7 +47,7 @@ use base  qw(Tk::Frame);
  sub QueueLayout
  {
   my $m = shift;
-  $m->afterIdle(['Layout',$m]) unless ($m->{LayoutPending}++);
+  $m->DoWhenIdle(['Layout',$m]) unless ($m->{LayoutPending}++);
  }
 
  sub SlaveGeometryRequest

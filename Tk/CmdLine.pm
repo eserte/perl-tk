@@ -13,7 +13,7 @@ package Tk::CmdLine; # -*-Perl-*-
 #/----------------------------------------------------------------------------//
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Tk/CmdLine.pm#27 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/CmdLine.pm#23 $
 
 use 5.004;
 
@@ -280,8 +280,6 @@ sub Tk::MainWindow::apply_command_line
 
 #/----------------------------------------------------------------------------//
 
-END { undef $OBJECT }
-
 1;
 
 # __END__
@@ -472,11 +470,6 @@ sub LoadResources # Tk::CmdLine::LoadResources([%options])
     }
 
     return $self;
-}    
-
-sub DESTORY
-{
- # avoid AUTOLOAD
 }
 
 1;

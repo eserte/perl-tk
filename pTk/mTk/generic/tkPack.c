@@ -1029,6 +1029,7 @@ PackAfter(interp, prevPtr, masterPtr, argc, argv)
     register Packer *packPtr;
     Tk_Window tkwin, ancestor, parent;
     Arg *options = NULL;
+    LangFreeProc *freeProc = NULL;
     size_t length;
     int index, tmp, optionCount, c;
 
@@ -1083,7 +1084,7 @@ PackAfter(interp, prevPtr, masterPtr, argc, argv)
 	 * Process options for this window.
 	 */
 
-	if (Tcl_ListObjGetElements(interp, args[1], &optionCount, &options) != TCL_OK) {
+	if (Lang_SplitList(interp, args[1], &optionCount, &options, &freeProc) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	packPtr->side = TOP;
@@ -1205,6 +1206,8 @@ PackAfter(interp, prevPtr, masterPtr, argc, argv)
 	    }
 	    Tk_ManageGeometry(tkwin, &packerType, (ClientData) packPtr);
 	}
+        if (freeProc)
+         (*freeProc)(optionCount,options);
     }
 
     /*
@@ -1222,6 +1225,8 @@ PackAfter(interp, prevPtr, masterPtr, argc, argv)
     return TCL_OK;
 
     error:
+    if (freeProc)
+     (*freeProc)(optionCount,options);
     return TCL_ERROR;
 }
 

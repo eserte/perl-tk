@@ -349,7 +349,7 @@ ConfigureBitmap(interp, canvas, itemPtr, argc, argv, flags)
      * that determine the graphics context.
      */
 
-    state = Tk_GetItemState(canvas, itemPtr);
+    state = itemPtr->state;
 
     if (bmapPtr->activeFgColor!=NULL ||
 	    bmapPtr->activeBgColor!=NULL ||
@@ -359,6 +359,9 @@ ConfigureBitmap(interp, canvas, itemPtr, argc, argv, flags)
 	itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
     }
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     if (state==TK_STATE_HIDDEN) {
 	ComputeBitmapBbox(canvas, bmapPtr);
 	return TCL_OK;	
@@ -505,8 +508,11 @@ ComputeBitmapBbox(canvas, bmapPtr)
     int width, height;
     int x, y;
     Pixmap bitmap;
-    Tk_State state = Tk_GetItemState(canvas, &bmapPtr->header);
+    Tk_State state = bmapPtr->header.state;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     bitmap = bmapPtr->bitmap;
     if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)bmapPtr) {
 	if (bmapPtr->activeBitmap!=None) {
@@ -610,7 +616,7 @@ DisplayBitmap(canvas, itemPtr, display, drawable, x, y, width, height)
     XColor *fgColor;
     XColor *bgColor;
     Pixmap bitmap;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
     /*
      * If the area being displayed doesn't cover the whole bitmap,
@@ -618,6 +624,9 @@ DisplayBitmap(canvas, itemPtr, display, drawable, x, y, width, height)
      * redisplay.
      */
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     fgColor = bmapPtr->fgColor;
     bgColor = bmapPtr->bgColor;
     bitmap = bmapPtr->bitmap;

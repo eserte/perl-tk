@@ -63,7 +63,7 @@ BEGIN
 
    @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32');
 
-   plan test => (12*@class+3);
+   plan test => (10*@class+3);
 
   };
 
@@ -113,15 +113,9 @@ foreach my $class (@class)
           }
         eval { $mw->update; };
         ok ($@, "", "Error during 'update' for $class widget");
-                 
-        my @dummy;
-        eval { @dummy = $w->configure; };
-        ok ($@, "", "Error: configure list for $class");
-        my $dummy;
-        eval { $dummy = $w->configure; };
-        ok ($@, "", "Error: configure scalar for $class");
-        ok (scalar(@dummy),scalar(@$dummy), "Error: scalar config != list config");
 
+        eval { my @dummy = $w->configure; };
+        ok ($@, "", "Error: configure list for $class");
         eval { $mw->update; };
         ok ($@, "", "Error: 'update' after configure for $class widget");
 

@@ -962,9 +962,9 @@ DItemStylePrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
 {
     Tix_DItemStyle *stylePtr = *((Tix_DItemStyle**)(widRec+offset));
     Arg result = NULL;
-    if (stylePtr != NULL && !(stylePtr->base.flags & TIX_STYLE_DEFAULT)) {
+    if (stylePtr != NULL) {
         LangSetArg(&result,LangObjectArg(stylePtr->base.interp, 
                                          stylePtr->base.name));
-    }         
+    } 
     return result;
 }

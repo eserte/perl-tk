@@ -1137,6 +1137,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	int count, i, windowArgc, gotToplevel;
 	char buffer[20];
         Arg *windowArgs;
+        LangFreeProc *freeProc = NULL;
 
 	if ((argc != 3) && (argc != 4)) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
@@ -1169,7 +1170,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    }
 	    return TCL_OK;
 	}
-	if (Tcl_ListObjGetElements(interp, args[3], &windowArgc, &windowArgs)
+	if (Lang_SplitList(interp, args[3], &windowArgc, &windowArgs, &freeProc)
 		!= TCL_OK) {
 	    return TCL_ERROR;
 	}
@@ -1181,6 +1182,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		    tkwin);
 	    if (winPtr2 == NULL) {
 		ckfree((char *) cmapList);
+                if (freeProc)
+                 (*freeProc)(windowArgc,windowArgs); 
 		return TCL_ERROR;
 	    }
 	    if (winPtr2 == winPtr) {
@@ -1202,11 +1205,14 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	XSetWMColormapWindows(winPtr->display, wmPtr->wrapperPtr->window,
 		cmapList, windowArgc);
 	ckfree((char *) cmapList);
+        if (freeProc)
+         (*freeProc)(windowArgc,windowArgs); 
 	return TCL_OK;
     } else if ((c == 'c') && (strncmp(argv[1], "command", length) == 0)
 	    && (length >= 3)) {
 	int cmdArgc;
 	Arg *cmdArgs = NULL;
+        LangFreeProc *freeProc = NULL;
 
 	if ((argc != 3) && (argc != 4)) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
@@ -1230,7 +1236,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    }
 	    return TCL_OK;
 	}
-	if (Tcl_ListObjGetElements(interp, args[3], &cmdArgc, &cmdArgs) != TCL_OK) {
+	if (Lang_SplitList(interp, args[3], &cmdArgc, &cmdArgs, &freeProc) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (wmPtr->cmdArgv != NULL) {
@@ -1247,6 +1253,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    XSetCommand(winPtr->display, wmPtr->wrapperPtr->window,
 		    wmPtr->cmdArgv, cmdArgc);
 	}
+	if (freeProc)
+	    (*freeProc)(cmdArgc,cmdArgs);
     } else if ((c == 'd') && (strncmp(argv[1], "deiconify", length) == 0)) {
 	if (argc != 3) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",

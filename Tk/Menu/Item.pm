@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#25 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#23 $
 
 sub PreInit
 {
@@ -136,7 +136,7 @@ sub menu
   }
  else
   {
-   $menu->configure(%args) if %args;
+   $menu->configure(%args);
   }
  return $menu;
 }

@@ -5,7 +5,7 @@ package Tk::Toplevel;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Tk/Toplevel.pm#27 $
+$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/Toplevel.pm#25 $
 
 use base  qw(Tk::Wm Tk::Frame);
 
@@ -67,7 +67,8 @@ sub menu
  $menu = $w->cget('-menu');                                      
  unless (defined $menu)
   {
-   $w->configure(-menu => ($menu = $w->SUPER::menu)) 
+   require Tk::Menu;
+   $w->configure(-menu => ($menu = $w->Menu)) 
   }
  $menu->configure(@_) if @_;
  return $menu;

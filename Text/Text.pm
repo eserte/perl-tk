@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.038'; # $Id: //depot/Tk8/Text/Text.pm#38 $
+$VERSION = '3.035'; # $Id: //depot/Tk8/Text/Text.pm#35 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -1326,8 +1326,7 @@ sub Transpose
 
 sub Tag
 {
- my $w = shift;
- my $name = shift;
+ my ($w,$name) = @_;
  Carp::confess('No args') unless (ref $w and defined $name);
  $w->{_Tags_} = {} unless (exists $w->{_Tags_});
  unless (exists $w->{_Tags_}{$name})
@@ -1379,9 +1378,32 @@ sub WhatLineNumberPopUp
                 -message => "The cursor is on line $line (column is $col)");
 }
 
-sub MenuLabels
+sub PostPopupMenu
 {
- return qw[~File ~Edit ~Search ~View];
+ my ($w, $x, $y) = @_;
+ my $menu = $w->GetMenu;
+ $menu->Post($x,$y) if defined $menu;
+}
+
+sub GetMenu
+{
+ my ($w) = @_;
+ my $menu = $w->{'POPUP_MENU_REFERENCE'};
+ unless (defined $menu)
+  {
+   $w->{'POPUP_MENU_REFERENCE'} = $menu = $w->Menu (-tearoff => 0);                            
+   $menu->cascade(-label => '~File', -tearoff => 0, -menuitems => $w->FileMenuItems);          
+   $menu->cascade(-label => '~Edit', -tearoff => 0, -menuitems => $w->EditMenuItems );         
+   $menu->cascade(-label => '~Search', -tearoff => 0, -menuitems => $w->SearchMenuItems );         
+   $menu->cascade(-label => '~View', -tearoff => 0, -menuitems => $w->ViewMenuItems);
+  }
+ return $menu;
+}
+
+sub FileMenuItems
+{
+ my ($w) = @_;
+ return [ ["command"=>'E~xit', -command => sub{$w->toplevel->WmDeleteWindow}]];
 }
 
 sub SearchMenuItems
@@ -1574,13 +1596,7 @@ sub clipboardColumnPaste
   }
  
 }
- 
-# Backward compatibility 
-sub GetMenu 
-{    
- carp((caller(0))[3]." is deprecated") if $^W; 
- shift->menu 
-}
+
 
 1;
 __END__

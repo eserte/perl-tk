@@ -210,7 +210,6 @@ Tk/ProgressBar.pm
 Tk/README.Adjust
 Tk/ROText.pm
 Tk/Radiobutton.pm
-Tk/Region.pm
 Tk/Stats.pm
 Tk/Submethods.pm
 Tk/Table.pm
@@ -262,6 +261,7 @@ WinPhoto/try
 Xlib/GC.def
 Xlib/Makefile.PL
 Xlib/README
+Xlib/X/Changes
 Xlib/X/Makefile.PL
 Xlib/X/X.pm
 Xlib/X/X.xs
@@ -1116,7 +1116,6 @@ pTk/p4e
 pTk/patchlevel.h
 pTk/process_object
 pTk/ptkCanvGrid.c
-pTk/ptkCanvGroup.c
 pTk/refs
 pTk/stbDashCustom.c
 pTk/strcasecmp.c
@@ -1142,6 +1141,7 @@ pTk/tix_f.h
 pTk/tk.exc
 pTk/tk.m
 pTk/tk.t
+pTk/tkCanvPoly.c.save
 pTk/tkCanvases.h
 pTk/tkEvent.h
 pTk/tkEvent.m

@@ -5,13 +5,13 @@ package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/After.pm#15 $
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/After.pm#13 $
 
 sub _cancelAll
-{    
- my $w = shift;
- my $h = delete $w->{_After_};
- foreach my $obj (values %$h)
+{
+ my $h = shift;
+ my $obj;
+ foreach $obj (values %$h)
   {
    # carp "Auto cancel ".$obj->[1]." for ".$obj->[0]->PathName;
    $obj->cancel;
@@ -30,7 +30,7 @@ sub submit
  unless (exists $w->{_After_})
   {
    $w->{_After_} = {};
-   $w->OnDestroy([\&_cancelAll, $w]);
+   $w->OnDestroy(sub { _cancelAll($w->{_After_}) });
   }
  $w->{_After_}{$id} = $obj;
  $obj->[1] = $id;
@@ -39,7 +39,7 @@ sub submit
 
 sub DESTROY
 {
- my $obj = shift;
+ my $obj     = shift;
  @{$obj} = ();
 }
 
@@ -59,7 +59,7 @@ sub cancel
  if ($id)
   {
    $w->Tk::after('cancel'=> $id);
-   delete $w->{_After_}{$id} if exists $w->{_After_};
+   delete $w->{_After_}{$id};
    $obj->[1] = undef;
   }
  return $obj;

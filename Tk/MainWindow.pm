@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.046'; # $Id: //depot/Tk8/Tk/MainWindow.pm#46 $
+$VERSION = '3.043'; # $Id: //depot/Tk8/Tk/MainWindow.pm#43 $
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -20,7 +20,7 @@ $| = 1;
 
 my $pid = $$;
 
-my %Windows = ();
+my @Windows = ();
 
 sub CreateArgs
 {
@@ -66,15 +66,8 @@ sub new
 	 $top->geometry($geometry);
      }
  }
- $Windows{$top} = $top;
+ push(@Windows,$top);
  return $top;
-}               
-
-sub _Destroyed
-{
- my $top = shift;
- $top->SUPER::_Destroyed;
- delete $Windows{$top};
 }
 
 sub InitBindings
@@ -108,28 +101,16 @@ sub InitBindings
 }
 
 sub Existing
-{  
- my @Windows;   
- foreach my $name (keys %Windows)
-  {           
-   my $obj = $Windows{$name};
-   if (Tk::Exists($obj))
-    {
-     push(@Windows,$obj);
-    }
-   else
-    {   
-     delete $Windows{$name};
-    }
-  }
- return @Windows;
+{
+ grep( Tk::Exists($_), @Windows);
 }
 
 END
 {
  if ($pid == $$)
-  {         
-   foreach my $top (values %Windows)
+  {
+   my $top;
+   while ($top = pop(@Windows))
     {
      if ($top->IsWidget)
       {

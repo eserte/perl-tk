@@ -509,7 +509,7 @@ ConfigureArc(interp, canvas, itemPtr, argc, argv, flags)
 	return TCL_ERROR;
     }
 
-    state = Tk_GetItemState(canvas, itemPtr);
+    state = itemPtr->state;
 
     /*
      * A few of the options require additional processing, such as
@@ -568,6 +568,9 @@ ConfigureArc(interp, canvas, itemPtr, argc, argv, flags)
     }
     arcPtr->outline.gc = newGC;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     if (state==TK_STATE_HIDDEN) {
 	ComputeArcBbox(canvas, arcPtr);
 	return TCL_OK;
@@ -741,7 +744,11 @@ ComputeArcBbox(canvas, arcPtr)
 {
     double tmp, center[2], point[2];
     double width;
-    Tk_State state = Tk_GetItemState(canvas, &arcPtr->header);
+    Tk_State state = arcPtr->header.state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = arcPtr->outline.width;
     if (width < 1.0) {
@@ -881,11 +888,13 @@ DisplayArc(canvas, itemPtr, display, drawable, x, y, width, height)
     short x1, y1, x2, y2;
     int start, extent, dashnumber;
     double lineWidth;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
-
+    Tk_State state = itemPtr->state;
     Tk_Tile tile;
     Pixmap stipple;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     lineWidth = arcPtr->outline.width;
     if (lineWidth < 1.0) {
 	lineWidth = 1.0;
@@ -1066,9 +1075,12 @@ ArcToPoint(canvas, itemPtr, pointPtr)
     ArcItem *arcPtr = (ArcItem *) itemPtr;
     double vertex[2], pointAngle, diff, dist, newDist;
     double poly[8], polyDist, width, t1, t2;
-    int filled, angleInRange;                         
+    int filled, angleInRange;
+    Tk_State state = itemPtr->state;
 
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = (double) arcPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1239,8 +1251,11 @@ ArcToArea(canvas, itemPtr, rectPtr)
 				 * every test so far shows arc to be outside
 				 * of rectangle. */
     int newInside;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     width = (double) arcPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
 	if (arcPtr->outline.activeWidth>width) {
@@ -1549,7 +1564,7 @@ ComputeArcOutline(canvas,arcPtr)
     double boxWidth, boxHeight;
     double vertex[2], corner1[2], corner2[2];
     double *outlinePtr;
-    Tk_State state = Tk_GetItemState(canvas, &arcPtr->header);
+    Tk_State state = arcPtr->header.state;
 
 
     /*
@@ -1563,6 +1578,10 @@ ComputeArcOutline(canvas,arcPtr)
 	arcPtr->numOutlinePoints = 22;
     }
     outlinePtr = arcPtr->outlinePtr;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     /*
      * First compute the two points that lie at the centers of
@@ -1951,7 +1970,7 @@ ArcToPostscript(interp, canvas, itemPtr, prepass)
     Tk_Tile fillTile;
     XColor *fillColor;
     Pixmap fillStipple;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
     y1 = Tk_CanvasPsY(canvas, arcPtr->bbox[1]);
     y2 = Tk_CanvasPsY(canvas, arcPtr->bbox[3]);
@@ -1962,6 +1981,9 @@ ArcToPostscript(interp, canvas, itemPtr, prepass)
 	ang2 = arcPtr->start;
     }
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     tile = arcPtr->outline.tile;
     color = arcPtr->outline.color;
     stipple = arcPtr->outline.stipple;

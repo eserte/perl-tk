@@ -81,7 +81,7 @@ sub update_indicators
 
 
 
-sub Gedi {
+sub TEMPLATE {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name             => $demo,
@@ -140,7 +140,7 @@ $textwindow->SetGUICallbacks (
  ] 
 );
 
-$menu = $textwindow->menu;
+$menu = $textwindow->GetMenu;
 
 $TOP->configure(-menu => $menu);
 

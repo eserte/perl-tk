@@ -20,8 +20,7 @@ LangDebug(char *fmt,...)
 {
  va_list ap;
  va_start(ap,fmt);
- PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
- PerlIO_flush(PerlIO_stderr());
+ vfprintf(stderr,fmt,ap);
  va_end(ap);
 }
 
@@ -142,9 +141,6 @@ typedef struct PerlIOHandler
   int readyMask;                  /* Mask of events that have been seen since the
                                      * last time file handlers were invoked for
                                      * this file. */
-  int waitMask;                   /* Events on which we are doing blocking wait */
-  int handlerMask;                /* Events for which we have callbacks */
-  int callingMask;                /* Events for which we are in callbacks */
   int pending;
  } PerlIOHandler;
 
@@ -161,27 +157,11 @@ static PerlIOHandler *firstPerlIOHandler;
 
 static void PerlIOEventInit(void);
 
-static void PerlIO_watch(PerlIOHandler *filePtr);
-
-static volatile int stuck;
- 
-void
-PerlIO_MaskCheck(PerlIOHandler *filePtr)
-{
- if (filePtr->mask & ~(filePtr->waitMask|filePtr->handlerMask))
-  {    
-   warn("Mask=%d wait=%d handler=%d",
-         filePtr->mask, filePtr->waitMask, filePtr->handlerMask); 
-   PerlIO_watch(filePtr);
-  }
-}
-
 static void
 PerlIOFileProc(ClientData clientData, int mask)
 {
  PerlIOHandler *filePtr = (PerlIOHandler *) clientData;
- PerlIO_MaskCheck(filePtr);
- filePtr->readyMask |= (mask & filePtr->mask);
+ filePtr->readyMask |= mask;
 }
 
 SV *
@@ -190,176 +170,92 @@ PerlIOHandler *filePtr;
 {
  filePtr->io = sv_2io(filePtr->handle);
  return (filePtr->io) ? newRV((SV *) filePtr->io) : &PL_sv_undef;
-}                                  
-
-void
-PerlIO_unwatch(PerlIOHandler *filePtr)
-{
- filePtr->waitMask = filePtr->handlerMask = 0;
- PerlIO_watch(filePtr);
 }
 
+
 void
-PerlIO_watch(PerlIOHandler *filePtr)
+PerlIO_watch(PerlIOHandler *filePtr, int mask)
 {
  PerlIO *ip = IoIFP(filePtr->io);
  PerlIO *op = IoOFP(filePtr->io);
- int fd     = (ip) ? PerlIO_fileno(ip) : ((op) ? PerlIO_fileno(op) : -1);
- int mask   = filePtr->waitMask|filePtr->handlerMask;
-
- if (mask & ~(TCL_READABLE|TCL_EXCEPTION|TCL_WRITABLE))
+ int ifd    = (ip) ? PerlIO_fileno(ip) : -1;
+ int ofd    = (op) ? PerlIO_fileno(op) : -1;
+ int bits   = TCL_READABLE|TCL_EXCEPTION;
+ if (ifd == ofd)
+  bits |= TCL_WRITABLE;
+ while (1)
   {
-   LangDebug("Invalid mask %x",mask);
-   croak("Invalid mask %x",mask);
-  }
-
- if (mask & (TCL_READABLE|TCL_EXCEPTION))
-  {
-   if (!ip)
-    croak("Handle not opened for input");
-  }
-
- if (mask & (TCL_WRITABLE))
-  {
-   if (!op)
-    croak("Handle not opened for output");
-  }           
-
- if ((mask & TCL_READABLE) && (mask & TCL_WRITABLE))
-  {
-   /* Both read and write IO - make sure buffers not shared */
-   if (op && (op == ip) && fd >= 0)
+   int newmask  = mask & bits;
+   if ((filePtr->mask & bits) != newmask)
     {
-     IoOFP(filePtr->io) = op = PerlIO_fdopen(fd, "w");
+     if (filePtr->mask & bits && ifd >= 0)
+      {
+       Tcl_DeleteFileHandler(ifd);
+      }
+     if (newmask && ifd >= 0)
+      {
+       Tcl_CreateFileHandler(ifd, newmask, PerlIOFileProc, (ClientData) filePtr );
+      }
+     filePtr->mask = (filePtr->mask & ~bits) | newmask;
     }
-   if (PerlIO_fileno(ip) != PerlIO_fileno(op))
-    {
-     croak("fileno not same for read %d  and write %d",
-           PerlIO_fileno(ip) , PerlIO_fileno(op));
-    }
+   if (ifd == ofd || ofd < 0)
+    break;
+   bits = TCL_WRITABLE;
+   ifd  = ofd;
   }
-
- if (filePtr->mask != mask)
-  {
-   if (fd >= 0)
-    {
-     Tcl_DeleteFileHandler(fd);
-    }
-   if (mask && fd >= 0)
-    {
-     Tcl_CreateFileHandler(fd, mask, PerlIOFileProc, (ClientData) filePtr );
-    }
-   filePtr->mask = mask;
-  }
-
 }
 
 int
 PerlIO_writable(filePtr)
 PerlIOHandler *filePtr;
-{           
+{
+ if (!filePtr->mask & TCL_WRITABLE)
+  {
+   PerlIO_watch(filePtr,filePtr->mask | TCL_WRITABLE);
+  }
  if (!(filePtr->readyMask & TCL_WRITABLE))
   {
-   PerlIO *op = IoOFP(filePtr->io);
-   if (op)
+   PerlIO *io = IoOFP(filePtr->io);
+   if (io)
     {
-     if (PerlIO_has_cntptr(op) && PerlIO_get_cnt(op) > 0)
+     if (PerlIO_has_cntptr(io) && PerlIO_get_cnt(io) > 0)
       {
        filePtr->readyMask |= TCL_WRITABLE;
       }
     }
   }
- return (filePtr->readyMask & TCL_WRITABLE);
+ return filePtr->readyMask & TCL_WRITABLE;
 }
 
 int
 PerlIO_readable(filePtr)
 PerlIOHandler *filePtr;
 {
+ if (!filePtr->mask & TCL_READABLE)
+  {
+   PerlIO_watch(filePtr,filePtr->mask | TCL_READABLE);
+  }
  if (!(filePtr->readyMask & TCL_READABLE))
   {
    PerlIO *io = IoIFP(filePtr->io);
    if (io)
     {
-     /* Turn this buffer stuff off for now */
-     if (0 && PerlIO_has_cntptr(io) && PerlIO_get_cnt(io) > 0)
+     if (PerlIO_has_cntptr(io) && PerlIO_get_cnt(io) > 0)
       {
        filePtr->readyMask |= TCL_READABLE;
       }
     }
   }
- return (filePtr->readyMask & TCL_READABLE);
+ return filePtr->readyMask & TCL_READABLE;
 }
 
 int
 PerlIO_exception(filePtr)
 PerlIOHandler *filePtr;
 {
- return (filePtr->readyMask & TCL_EXCEPTION);
+ return filePtr->readyMask & TCL_EXCEPTION;
 }
 
-void
-PerlIO_wait(filePtr,mask)
-PerlIOHandler *	filePtr;
-int		mask;
-{
- /* Return at once if we are in the callback */
- if (!(filePtr->callingMask & mask))
-  {
-   int oldMask = filePtr->mask & mask;  
-   int oldWait = filePtr->waitMask & mask;
-   int (*check)(PerlIOHandler *) = NULL;
-   /* Prepare to poll */       
-   switch (mask)               
-    {                          
-     case TCL_EXCEPTION:       
-      check = PerlIO_exception;
-      break;                   
-     case TCL_WRITABLE:        
-      check = PerlIO_writable; 
-      break;                   
-     case TCL_READABLE:        
-      check = PerlIO_readable; 
-      break;                   
-     default:                  
-      croak("Invalid wait type %d",mask);
-    }                          
-                               
-   /* Inhibit callbacks */     
-   filePtr->waitMask |= mask;  
-                               
-   /* Watch handle if we are not already */
-   if (!oldMask)
-    PerlIO_watch(filePtr);
-
-   while (!(*check)(filePtr))  
-    {  
-     Tcl_DoOneEvent(0);        
-    }                          
-                               
-   /* Restore watch state */   
-   filePtr->waitMask = (filePtr->waitMask&~mask)|oldWait;
-   PerlIO_watch(filePtr);
-                               
-   /* Re-enable callbacks */   
-   /* Consume the readiness */ 
-   filePtr->readyMask &= ~mask;
-  }
-}
-
-void
-PerlIO_debug(filePtr,s)
-PerlIOHandler *filePtr;
-char *s;
-{
- PerlIO *ip = IoIFP(filePtr->io);
- PerlIO *op = IoOFP(filePtr->io);
- int ifd    = (ip) ? PerlIO_fileno(ip) : -1;
- int ofd    = (op) ? PerlIO_fileno(op) : -1;
- LangDebug("%s: ip=%p count=%d, op=%p count=%d\n",s,
-           ip,PerlIO_get_cnt(ip),
-           op,PerlIO_get_cnt(op));
-}
 
 static void
 PerlIOSetupProc(ClientData data, int flags)
@@ -370,15 +266,9 @@ PerlIOSetupProc(ClientData data, int flags)
    PerlIOHandler *filePtr = firstPerlIOHandler;
    while (filePtr != NULL)
     {
-     /* file is ready do not block */
-     if ((filePtr->mask & TCL_READABLE)
-          && PerlIO_readable(filePtr))
+     if ((filePtr->mask & TCL_READABLE) && PerlIO_readable(filePtr) && filePtr->readHandler)
       Tcl_SetMaxBlockTime(&blockTime);
-     if ((filePtr->mask & TCL_WRITABLE)
-          && PerlIO_writable(filePtr))
-      Tcl_SetMaxBlockTime(&blockTime);
-     if ((filePtr->mask & TCL_EXCEPTION)
-          && PerlIO_exception(filePtr))
+     if ((filePtr->mask & TCL_WRITABLE) && PerlIO_writable(filePtr) && filePtr->writeHandler)
       Tcl_SetMaxBlockTime(&blockTime);
      filePtr = filePtr->nextPtr;
     }
@@ -395,6 +285,7 @@ int flags;                        /* Flags that indicate what events to
   {
    PerlIOEvent *fileEvPtr = (PerlIOEvent *) evPtr;
    PerlIOHandler *filePtr = firstPerlIOHandler;
+   int mask;
    dTHR;
    /*
     * Search through the file handlers to find the one whose handle matches
@@ -407,7 +298,7 @@ int flags;                        /* Flags that indicate what events to
     {
      if (filePtr->io == fileEvPtr->io)
       {
-       int doMask;
+
        /*
         * The code is tricky for two reasons:
         * 1. The file handler's desired events could have changed
@@ -418,52 +309,38 @@ int flags;                        /* Flags that indicate what events to
         *    ready mask is stored in the file handler rather than
         *    the queued event:  it will be zeroed when a new
         *    file handler is created for the newly opened file.
-        */      
-       PerlIO_MaskCheck(filePtr);
+        */
 
-       /* clear bits nobody cares about */
-       filePtr->readyMask &= filePtr->mask;
-
-       /* Decide which callbacks will be called */
-       doMask = (filePtr->readyMask) & (~(filePtr->waitMask)) & (filePtr->handlerMask);
-
-       /* clear bits we are going to callback */
-       filePtr->readyMask &= ~doMask;
-       filePtr->pending = 0;                      
-
-       if ((doMask & TCL_READABLE) && filePtr->readHandler)
+       mask = filePtr->readyMask & filePtr->mask;
+       filePtr->readyMask = 0;
+       filePtr->pending = 0;
+       if ((mask & TCL_READABLE) && filePtr->readHandler)
         {
          SV *sv = filePtr->readHandler;
          ENTER;
          SAVETMPS;
-         filePtr->callingMask |= TCL_READABLE;
          LangPushCallbackArgs(&sv);
          LangCallCallback(sv,G_DISCARD);
-         filePtr->callingMask &= ~TCL_READABLE;
          FREETMPS;
          LEAVE;
         }
-       if ((doMask & TCL_WRITABLE) && filePtr->writeHandler)
+       if ((mask & TCL_WRITABLE) && filePtr->writeHandler)
         {
          SV *sv = filePtr->writeHandler;
          ENTER;
          SAVETMPS;
-         filePtr->callingMask |= TCL_WRITABLE;
          LangPushCallbackArgs(&sv);
          LangCallCallback(sv,G_DISCARD);
-         filePtr->callingMask &= ~TCL_WRITABLE;
          FREETMPS;
          LEAVE;
         }
-       if ((doMask & TCL_EXCEPTION) && filePtr->exceptionHandler)
+       if ((mask & TCL_EXCEPTION) && filePtr->exceptionHandler)
         {
          SV *sv = filePtr->exceptionHandler;
          ENTER;
          SAVETMPS;
-         filePtr->callingMask |= TCL_EXCEPTION;
          LangPushCallbackArgs(&sv);
          LangCallCallback(sv,G_DISCARD);
-         filePtr->callingMask &= ~TCL_EXCEPTION;
          FREETMPS;
          LEAVE;
         }
@@ -471,9 +348,9 @@ int flags;                        /* Flags that indicate what events to
       }
      filePtr = filePtr->nextPtr;
     }
-   return 1;    /* Say we have handled event */
+   return 1;
   }
- return 0;      /* Event is deferred */
+ return 0;
 }
 
 static void
@@ -487,9 +364,7 @@ int flags;                        /* Event flags as passed to Tcl_DoOneEvent. */
    PerlIOHandler *filePtr = firstPerlIOHandler;
    while (filePtr)
     {
-     PerlIO_MaskCheck(filePtr);
-     if ((filePtr->readyMask & ~filePtr->waitMask & filePtr->handlerMask)
-         && !filePtr->pending) 
+     if (filePtr->readyMask && !filePtr->pending)
       {
        fileEvPtr = (PerlIOEvent *) ckalloc(sizeof(PerlIOEvent));
        fileEvPtr->io = filePtr->io;
@@ -540,16 +415,13 @@ int mask;                         /* OR'ed TCL_READABLE, TCL_WRITABLE, and TCL_E
  if (!initialized)
   PerlIOEventInit();
  Zero(filePtr,1,PerlIOHandler);
- filePtr->io          = io;
- filePtr->handle      = SvREFCNT_inc(fh);
- filePtr->readyMask   = 0;
- filePtr->handlerMask = 0;
- filePtr->mask        = 0;
- filePtr->waitMask    = mask;
- filePtr->pending     = 0;
- filePtr->nextPtr     = firstPerlIOHandler;
- firstPerlIOHandler   = filePtr;
- PerlIO_watch(filePtr);
+ filePtr->io        = sv_2io(fh);
+ filePtr->handle    = SvREFCNT_inc(fh);
+ filePtr->readyMask = 0;
+ filePtr->pending   = 0;
+ filePtr->nextPtr   = firstPerlIOHandler;
+ firstPerlIOHandler = filePtr;
+ PerlIO_watch(filePtr,mask);
  obj = newRV_noinc(obj);
  sv_bless(obj, stash);
  return obj;
@@ -568,50 +440,15 @@ LangCallback *cb;
    if (!SvROK(cb))
     cb = NULL;
    if (mask & TCL_READABLE)
-    {
-     if (filePtr->readHandler)
-      {
-       LangFreeCallback(filePtr->readHandler);
-       filePtr->readHandler = NULL;
-      }
-     if (cb)
-      {
-       filePtr->readHandler = LangCopyCallback(cb);
-      }
-    }
+    filePtr->readHandler      = (cb) ? SvREFCNT_inc(cb) : NULL;
    if (mask & TCL_WRITABLE)
-    {
-     if (filePtr->writeHandler)
-      {
-       LangFreeCallback(filePtr->writeHandler);
-       filePtr->writeHandler = NULL;
-      }
-     if (cb)
-      {
-       filePtr->writeHandler = LangCopyCallback(cb);
-      }
-    }
+    filePtr->writeHandler     = (cb) ? SvREFCNT_inc(cb) : NULL;
    if (mask & TCL_EXCEPTION)
-    {
-     if (filePtr->exceptionHandler)
-      {
-       LangFreeCallback(filePtr->exceptionHandler);
-       filePtr->exceptionHandler = NULL;
-      }
-     if (cb)
-      {
-       filePtr->exceptionHandler = LangCopyCallback(cb);
-      }
-    }
+    filePtr->exceptionHandler = (cb) ? SvREFCNT_inc(cb) : NULL;
    if (cb)
-    {
-     filePtr->handlerMask |= mask;
-    }
+    PerlIO_watch(filePtr, filePtr->mask | mask);
    else
-    {
-     filePtr->handlerMask &= ~mask;
-    }
-   PerlIO_watch(filePtr);
+    PerlIO_watch(filePtr, filePtr->mask & ~mask);
   }
  else
   {
@@ -630,7 +467,7 @@ LangCallback *cb;
       croak("Invalid handler type %d",mask);
     }
   }
- return LangCallbackArg(cb);
+ return SvREFCNT_inc(cb);
 }
 
 
@@ -647,7 +484,7 @@ PerlIOHandler *thisPtr;
      if (filePtr == thisPtr)
       {
        *link = filePtr->nextPtr;
-       PerlIO_unwatch(filePtr);
+       PerlIO_watch(filePtr,0);
        if (filePtr->readHandler)
         LangFreeCallback(filePtr->readHandler);
        if (filePtr->writeHandler)
@@ -886,7 +723,7 @@ Const_EXCEPTION()
 
 MODULE = Tk::Event	PACKAGE = Tk::Event PREFIX = Const_
 
-PROTOTYPES: ENABLE
+PROTOTYPES: ENABLE  
 
 IV
 Const_DONT_WAIT()
@@ -910,11 +747,6 @@ MODULE = Tk::Event	PACKAGE = Tk::Event::IO	PREFIX = PerlIO_
 
 PROTOTYPES: DISABLE
 
-void
-PerlIO_debug(filePtr,s)
-PerlIOHandler *	filePtr
-char *	s
-
 SV *
 PerlIO_TIEHANDLE(class,fh,mask = 0)
 char *	class
@@ -926,11 +758,7 @@ PerlIO_handle(filePtr)
 PerlIOHandler *	filePtr
 
 void
-PerlIO_unwatch(filePtr)
-PerlIOHandler *	filePtr
-
-void
-PerlIO_wait(filePtr,mode)
+PerlIO_watch(filePtr,mode)
 PerlIOHandler *	filePtr
 int		mode
 

@@ -1452,18 +1452,9 @@ static int Tix_HLBBox(interp, wPtr, chPtr)
 	    y2 = pad+wYSize -1;
 	}
 
-	if (y2 >= y1) {                   
-#ifdef _LANG
-	    Tcl_Obj *result = Tcl_NewListObj(0,NULL);
-	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1));
-	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(y1));
-	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1+wXSize-1));
-	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(y2));
-	    Tcl_SetObjResult(interp, result);
-#else
+	if (y2 >= y1) {
 	    sprintf(buff, "%d %d %d %d", x1, y1, x1+wXSize-1, y2);
 	    Tcl_SetResult(interp, buff, TCL_VOLATILE);
-#endif
 	}
 	return TCL_OK;
     }

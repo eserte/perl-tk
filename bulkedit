@@ -137,7 +137,9 @@ sub populate
  my ($lb,$dir) = @_;
  $lb->delete(0,'end');
  $lb->Busy;
+ Leak::check_arenas();
  $lb->insert('end',sort &{$filefunc{$mode}}($dir));
+ Leak::check_arenas();
  $lb->Unbusy;
 }
 
