@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Menubar;
@@ -7,8 +7,8 @@ require Tk::Derived;
 require Tk::Menu;
 require Tk::Menu::Item;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Menubar.pm#8$
+use vars qw($VERSION);
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Menubar.pm#11$
 
 use base  qw(Tk::Derived Tk::Menu);
 use strict;
@@ -60,7 +60,7 @@ sub Menubutton
   }
  else
   {
-   $mb = $cw->Cascade(%args); 
+   $mb = $cw->Cascade(%args);
    $cw->{'MenuButtons'}{$name} = $mb;
    # $pack{'-side'} = 'left' unless (exists $pack{'-side'});
    # $mb->pack(%pack);
@@ -78,7 +78,7 @@ sub command
  ($button,@bargs) = @$button if (ref($button) && ref $button eq 'ARRAY');
  unless (defined $cw->Subwidget($button))
   {
-   $cw->Component('Menubutton' => $button, -text => $button, 
+   $cw->Component('Menubutton' => $button, -text => $button,
                   '-pack' => [ -side => 'left', -fill => 'y' ], @bargs);
   }
  $cw->Subwidget($button)->command(%args);

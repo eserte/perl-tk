@@ -1,6 +1,6 @@
 package Tk::X11Font;
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/X11Font.pm#5$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/X11Font.pm#8$
 
 require Tk::Widget;
 require Tk::Xlib;
@@ -36,20 +36,20 @@ sub new
    else
     {
      $me{Name} = $pattern;
-  
+
      if($pattern =~ /^[^-]?-([^-]*-){2,}/)
       {
        my $f = $d->XListFonts($pattern,1);
-    
+
        if($f && $f =~ /\A(-[^-]*){14}/)
         {
          my @f = split(/-/, substr($f,1));
          my @n = split(/-/, $pattern);
          my %f = ();
          my $i = 0;
-    
+
          shift @n if($pattern =~ /\A-/);
-  
+
          while(@n && @f)
           {
            if($n[0] eq '*')
@@ -86,7 +86,7 @@ sub new
 sub Pattern
 {
  my $me  = shift;
- return join("-", "",@{$me}{@field});
+ return join('-', '',@{$me}{@field});
 }
 
 sub Name
@@ -121,7 +121,7 @@ sub Name
  else
   {
    my $name = $me->{Name} ||
-              join("-", "",@{$me}{@field});
+              join('-', '',@{$me}{@field});
    return $me->{Display}->XListFonts($name,$max);
   }
 }

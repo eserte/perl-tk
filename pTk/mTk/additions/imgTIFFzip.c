@@ -47,6 +47,7 @@
  * last found at ftp://ftp.uu.net/pub/archiving/zip/zlib/zlib-0.99.tar.gz.
  */
 #include "tif_predict.h"
+#undef EXPORT
 #include "zlib.h"
 
 #include <stdio.h>
@@ -89,9 +90,6 @@ typedef	struct {
 #define	ZState(tif)		((ZIPState*) (tif)->tif_data)
 #define	DecoderState(tif)	ZState(tif)
 #define	EncoderState(tif)	ZState(tif)
-
-static	int ZIPEncode(TIFF*, tidata_t, tsize_t, tsample_t);
-static	int ZIPDecode(TIFF*, tidata_t, tsize_t, tsample_t);
 
 /*
  * Stuff to support dynamical loading of libz.
@@ -156,12 +154,16 @@ ZIPSetupDecode(tif)
  * Setup state for decoding a strip.
  */
 
-static int ZIPPreDecode _ANSI_ARGS_((TIFF* tif, tsample_t s));
-
 static int
+#ifdef _USING_PROTOTYPES_
+ZIPPreDecode (
+    TIFF* tif,
+    tsample_t s)
+#else
 ZIPPreDecode(tif, s)
     TIFF* tif;
     tsample_t s;
+#endif
 {
 	ZIPState* sp = DecoderState(tif);
 
@@ -172,15 +174,20 @@ ZIPPreDecode(tif, s)
 	return (zlib.inflateReset(&sp->stream) == Z_OK);
 }
 
-static int ZIPDecode _ANSI_ARGS_((TIFF* tif, tidata_t op,
-	tsize_t occ, tsample_t s));
-
 static int
+#ifdef _USING_PROTOTYPES_
+ZIPDecode (
+    TIFF* tif,
+    tidata_t op,
+    tsize_t occ,
+    tsample_t s)
+#else
 ZIPDecode(tif, op, occ, s)
     TIFF* tif;
     tidata_t op;
     tsize_t occ;
     tsample_t s;
+#endif
 {
 	ZIPState* sp = DecoderState(tif);
 	static char module[] = "ZIPDecode";
@@ -216,11 +223,14 @@ ZIPDecode(tif, op, occ, s)
 	return (1);
 }
 
-static int ZIPSetupEncode _ANSI_ARGS_((TIFF* tif));
-
 static int
+#ifdef _USING_PROTOTYPES_
+ZIPSetupEncode (
+    TIFF* tif)
+#else
 ZIPSetupEncode(tif)
     TIFF* tif;
+#endif
 {
 	ZIPState* sp = EncoderState(tif);
 	static char module[] = "ZIPSetupEncode";
@@ -239,12 +249,16 @@ ZIPSetupEncode(tif)
  * Reset encoding state at the start of a strip.
  */
 
-static int ZIPPreEncode _ANSI_ARGS_((TIFF* tif, tsample_t s));
-
 static int
+#ifdef _USING_PROTOTYPES_
+ZIPPreEncode (
+    TIFF* tif,
+    tsample_t s)
+#else
 ZIPPreEncode(tif, s)
     TIFF* tif;
     tsample_t s;
+#endif
 {
 	ZIPState *sp = EncoderState(tif);
 
@@ -259,15 +273,19 @@ ZIPPreEncode(tif, s)
  * Encode a chunk of pixels.
  */
 
-static int ZIPEncode _ANSI_ARGS_((TIFF* tif, tidata_t bp, tsize_t cc,
-	tsample_t s));
-
 static int
+#ifdef _USING_PROTOTYPES_
+ZIPEncode (TIFF* tif,
+    tidata_t bp,
+    tsize_t cc,
+    tsample_t s)
+#else
 ZIPEncode(tif, bp, cc, s)
     TIFF* tif;
     tidata_t bp;
     tsize_t cc;
     tsample_t s;
+#endif
 {
 	ZIPState *sp = EncoderState(tif);
 	static char module[] = "ZIPEncode";
@@ -312,7 +330,7 @@ ZIPPostEncode(tif)
 		switch (state) {
 		case Z_STREAM_END:
 		case Z_OK:
-		    if (sp->stream.avail_out != tif->tif_rawdatasize) {
+		    if ((int) sp->stream.avail_out != tif->tif_rawdatasize) {
 			    tif->tif_rawcc =
 				tif->tif_rawdatasize - sp->stream.avail_out;
 			    ImgTIFFFlushData1(tif);

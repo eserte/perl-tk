@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/FBox.pm#3$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/FBox.pm#9$
 
 use base qw(Tk::Toplevel);
 
@@ -69,8 +69,8 @@ sub Populate {
 
     # f1: the frame with the directory option menu
     my $f1 = $w->Frame;
-    my $lab = $f1->Label(-text => "Directory:", -underline => 0);
-    $w->{'dirMenu'} = my $dirMenu = 
+    my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
+    $w->{'dirMenu'} = my $dirMenu =
       $f1->Optionmenu(-textvariable => \$w->{'selectPath'},
 		      -command => ['SetPath', $w]);
     my $upBtn = $f1->Button;
@@ -96,10 +96,10 @@ EOF
     $w->{'icons'} = my $icons =
       $w->IconList(-browsecmd => ['ListBrowse', $w],
 		   -command   => ['ListInvoke', $w]);
-    
+
     # f2: the frame with the OK button and the "file name" field
     my $f2 = $w->Frame(-bd => 0);
-    my $f2_lab = $f2->Label(-text => "File name:", -anchor => 'e',
+    my $f2_lab = $f2->Label(-text => 'File name:', -anchor => 'e',
 			    -width => 14, -underline => 5, -pady => 0);
     $w->{'ent'} = my $ent = $f2->Entry;
 
@@ -116,7 +116,7 @@ EOF
     # use a button widget to emulate a label widget (by setting its
     # bindtags)
     $w->{'typeMenuLab'} = my $typeMenuLab = $f3->Button
-      (-text => "Files of type:",
+      (-text => 'Files of type:',
        -anchor  => 'e',
        -width => 14,
        -underline => 9,
@@ -169,23 +169,21 @@ EOF
     $icons->pack(-expand => 'yes', -fill => 'both', -padx => 4, -pady => 1);
 
     # Set up the event handlers
-    $ent->bind('<Return>', sub { $w->ActivateEnt } );
+    $ent->bind('<Return>',[$w,'ActivateEnt']);
     $upBtn->configure(-command => ['UpDirCmd', $w]);
     $okBtn->configure(-command => ['OkCmd', $w]);
     $cancelBtn->configure(-command, ['CancelCmd', $w]);
-    
-    $w->bind('<Alt-d>', sub { $dirMenu->focus } );
-    $w->bind('<Alt-t>', sub {
-		 if ($typeMenuBtn->cget(-state) eq 'normal') {
-		     $typeMenuBtn->focus;
-		 }
-	     }
-	    );
-    $w->bind('<Alt-n>', sub { $ent->focus } );
-    $w->bind('<KeyPress-Escape>', sub { $cancelBtn->invoke });
-    $w->bind('<Alt-c>', sub { $cancelBtn->invoke });
-    $w->bind('<Alt-o>', sub { $w->InvokeBtn('Open') });
-    $w->bind('<Alt-s>', sub { $w->InvokeBtn('Save') });
+
+    $w->bind('<Alt-d>',[$dirMenu,'focus']);
+    $w->bind('<Alt-t>',sub  {
+                             if ($typeMenuBtn->cget(-state) eq 'normal') {
+                             $typeMenuBtn->focus;
+                             } });
+    $w->bind('<Alt-n>',[$ent,'focus']);
+    $w->bind('<KeyPress-Escape>',[$cancelBtn,'invoke']);
+    $w->bind('<Alt-c>',[$cancelBtn,'invoke']);
+    $w->bind('<Alt-o>',['InvokeBtn','Open']);
+    $w->bind('<Alt-s>',['InvokeBtn','Save']);
     $w->protocol('WM_DELETE_WINDOW', ['CancelCmd', $w]);
 
     # Build the focus group for all the entries
@@ -207,6 +205,7 @@ EOF
 
     $w;
 }
+
 
 sub Show {
     my $w = shift;
@@ -238,17 +237,17 @@ sub Show {
 	$typeMenu->delete(0, 'end');
 	foreach my $ft (@filetypes) {
 	    my $title  = $ft->[0];
-	    my $filter = join(" ", @{ $ft->[1] });
+	    my $filter = join(' ', @{ $ft->[1] });
 	    $typeMenuBtn->command
 	      (-label => $title,
 	       -command => ['SetFilter', $w, $title, $filter],
 	      );
 	}
-	$w->SetFilter($filetypes[0]->[0], join(" ", @{ $filetypes[0]->[1] }));
+	$w->SetFilter($filetypes[0]->[0], join(' ', @{ $filetypes[0]->[1] }));
 	$typeMenuBtn->configure(-state => 'normal');
 	$typeMenuLab->configure(-state => 'normal');
     } else {
-	$w->configure(-filter => "*");
+	$w->configure(-filter => '*');
 	$typeMenuBtn->configure(-state => 'disabled',
 				-takefocus => 0);
 	$typeMenuLab->configure(-state => 'disabled');
@@ -354,7 +353,7 @@ sub Update {
 	# we normally won't come to here. Anyways, give an error and abort
 	# action.
 	$w->messageBox(-type => 'OK',
-		       -message => "Cannot change to the directory \"" .
+		       -message => 'Cannot change to the directory "' .
 		       $w->{'selectPath'} . "\".\nPermission denied.",
 		       -icon => 'warning',
 		      );
@@ -375,7 +374,7 @@ sub Update {
 
     # Make the dir list
     my %hasDoneDir;
-    foreach my $f (sort { lc($a) cmp lc($b) } glob(".* *")) {
+    foreach my $f (sort { lc($a) cmp lc($b) } glob('.* *')) {
 	next if $f eq '.' or $f eq '..';
 	if (-d "./$f" and not exists $hasDoneDir{$f}) {
 	    $icons->Add($folder, $f);
@@ -386,7 +385,7 @@ sub Update {
     # Make the file list
     my @files;
     if ($w->cget(-filter) eq '*') {
-	@files = sort { lc($a) cmp lc($b) } glob(".* *");
+	@files = sort { lc($a) cmp lc($b) } glob('.* *');
     } else {
 	@files = sort { lc($a) cmp lc($b) } glob($w->cget(-filter));
     }
@@ -402,7 +401,7 @@ sub Update {
 
     # Update the Directory: option menu
     my @list;
-    my $dir = "";
+    my $dir = '';
     foreach my $subdir (TclFileSplit($w->{'selectPath'})) {
 	$dir = TclFileJoin($dir, $subdir);
 	push @list, $dir;
@@ -487,23 +486,23 @@ sub ResolveFile {
     my $appPWD = Cwd::cwd();
     my $path = JoinFile($context, $text);
     $path = "$path$defaultext" if ($path !~ /\..+$/) and defined $defaultext;
-    # Cannot just test for existance here as non-existing files are 
+    # Cannot just test for existance here as non-existing files are
     # not an error for getSaveFile type dialogs.
     # return ('ERROR', $path, "") if (!-e $path);
     my($directory, $file, $flag);
     if (-e $path) {
 	if (-d $path) {
 	    if (!chdir $path) {
-		return ('CHDIR', $path, "");
+		return ('CHDIR', $path, '');
 	    }
 	    $directory = Cwd::cwd();
-	    $file = "";
+	    $file = '';
 	    $flag = 'OK';
 	    chdir $appPWD;
 	} else {
 	    my $dirname = File::Basename::dirname($path);
 	    if (!chdir $dirname) {
-		return ('CHDIR', $dirname, "");
+		return ('CHDIR', $dirname, '');
 	    }
 	    $directory = Cwd::cwd();
 	    $file = File::Basename::basename($path);
@@ -514,7 +513,7 @@ sub ResolveFile {
 	my $dirname = File::Basename::dirname($path);
 	if (-e $dirname) {
 	    if (!chdir $dirname) {
-		return ('CHDIR', $dirname, "");
+		return ('CHDIR', $dirname, '');
 	    }
 	    $directory = Cwd::cwd();
 	    $file = File::Basename::basename($path);
@@ -534,7 +533,7 @@ sub ResolveFile {
 }
 
 # Gets called when the entry box gets keyboard focus. We clear the selection
-# from the icon list . This way the user can be certain that the input in the 
+# from the icon list . This way the user can be certain that the input in the
 # entry box is the selection.
 #
 sub EntFocusIn {
@@ -550,9 +549,9 @@ sub EntFocusIn {
     $w->{'icons'}->Unselect;
     my $okBtn = $w->{'okBtn'};
     if ($w->cget(-type) eq 'open') {
-	$okBtn->configure(-text => "Open");
+	$okBtn->configure(-text => 'Open');
     } else {
-	$okBtn->configure(-text => "Save");
+	$okBtn->configure(-text => 'Save');
     }
 }
 
@@ -572,7 +571,7 @@ sub ActivateEnt {
     my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text,
 					  $w->cget(-defaultextension));
     if ($flag eq 'OK') {
-	if ($file eq "") {
+	if ($file eq '') {
 	    # user has entered an existing (sub)directory
 	    $w->SetPath($path);
 	    $ent->delete(0, 'end');
@@ -588,8 +587,8 @@ sub ActivateEnt {
 	if ($w->cget(-type) eq 'open') {
 	    $w->messageBox(-icon => 'warning',
 			   -type => 'OK',
-			   -message => "File \"" . TclFileJoin($path, $file)
-			   . "\" does not exist.");
+			   -message => 'File \"' . TclFileJoin($path, $file)
+			   . '" does not exist.');
 	    $ent->selection('from', 0);
 	    $ent->selection('to', 'end');
 	    $ent->icursor('end');
@@ -601,7 +600,7 @@ sub ActivateEnt {
     } elsif ($flag eq 'PATH') {
 	$w->messageBox(-icon => 'warning',
 		       -type => 'OK',
-		       -message => "Directory \"$path\" does not exist.");
+		       -message => "Directory \'$path\' does not exist.");
 	$ent->selection('from', 0);
 	$ent->selection('to', 'end');
 	$ent->icursor('end');
@@ -635,7 +634,7 @@ sub InvokeBtn {
 sub UpDirCmd {
     my $w = shift;
     $w->SetPath(File::Basename::dirname($w->{'selectPath'}))
-      unless ($w->{'selectPath'} eq "/");
+      unless ($w->{'selectPath'} eq '/');
 }
 
 # Join a file name to a path name. The "file join" command will break
@@ -683,7 +682,7 @@ sub TclFileSplit {
 sub OkCmd {
     my $w = shift;
     my $text = $w->{'icons'}->Get;
-    if (defined $text and $text ne "") {
+    if (defined $text and $text ne '') {
 	my $file = JoinFile($w->{'selectPath'}, $text);
 	if (-d $file) {
 	    $w->ListInvoke($text);
@@ -705,7 +704,7 @@ sub CancelCmd {
 #
 sub ListBrowse {
     my($w, $text) = @_;
-    return if ($text eq "");
+    return if ($text eq '');
     my $file = JoinFile($w->{'selectPath'}, $text);
     my $ent = $w->{'ent'};
     my $okBtn = $w->{'okBtn'};
@@ -713,21 +712,21 @@ sub ListBrowse {
 	$ent->delete(0, 'end');
 	$ent->insert(0, $text);
 	if ($w->cget(-type) eq 'open') {
-	    $okBtn->configure(-text => "Open");
+	    $okBtn->configure(-text => 'Open');
 	} else {
-	    $okBtn->configure(-text => "Save");
+	    $okBtn->configure(-text => 'Save');
 	}
     } else {
-	$okBtn->configure(-text => "Open");
+	$okBtn->configure(-text => 'Open');
     }
 }
 
-# Gets called when user invokes the IconList widget (double-click, 
+# Gets called when user invokes the IconList widget (double-click,
 # Return key, etc)
 #
 sub ListInvoke {
     my($w, $text) = @_;
-    return if ($text eq "");
+    return if ($text eq '');
     my $file = JoinFile($w->{'selectPath'}, $text);
     if (-d $file) {
 	my $appPWD = Cwd::cwd();
@@ -755,8 +754,8 @@ sub ListInvoke {
 #
 sub Done {
     my $w = shift;
-    my $_selectFilePath = (@_) ? shift : "";
-    if ($_selectFilePath eq "") {
+    my $_selectFilePath = (@_) ? shift : '';
+    if ($_selectFilePath eq '') {
 	$_selectFilePath = JoinFile($w->{'selectPath'}, $w->{'selectFile'});
 	if (-e $_selectFilePath and
 	    $w->cget(-type) eq 'save' and
@@ -765,7 +764,7 @@ sub Done {
 	      (-icon => 'warning',
 	       -type => 'YesNo',
 	       -message => "File \"$_selectFilePath\" already exists.\nDo you want to overwrite it?");
-	    return unless (lc($reply) eq "yes");
+	    return unless (lc($reply) eq 'yes');
 	}
     }
     $selectFilePath = ($_selectFilePath ne '' ? $_selectFilePath : undef);
@@ -773,7 +772,7 @@ sub Done {
 
 sub FDialog {
     my $cmd = shift;
-    if ($cmd =~ /Save/) { 
+    if ($cmd =~ /Save/) {
 	push @_, -type => 'save';
     }
     Tk::DialogWrapper('FBox', $cmd, @_);
@@ -808,7 +807,7 @@ sub GetFileTypes {
         next if (exists $hasDoneType{$label});
 
         my $name = "$label (";
-	my $sep = "";
+	my $sep = '';
         foreach my $ext (@{ $fileTypes{$label} }) {
             next if ($ext eq '');
             $ext =~ s/^\./*./;
@@ -819,7 +818,7 @@ sub GetFileTypes {
             }
             $sep = ',';
         }
-        $name .= ")";
+        $name .= ')';
         push @types, [$name, \@exts];
 
         $hasDoneType{$label}++;

@@ -2,8 +2,20 @@
 #define _IMGINT_VM
 #include "imgInt_f.h"
 #ifndef NO_VTABLES
+#ifndef ImgGetByteArrayFromObj
+#  define ImgGetByteArrayFromObj (*ImgintVptr->V_ImgGetByteArrayFromObj)
+#endif
+
 #ifndef ImgGetc
 #  define ImgGetc (*ImgintVptr->V_ImgGetc)
+#endif
+
+#ifndef ImgListObjGetElements
+#  define ImgListObjGetElements (*ImgintVptr->V_ImgListObjGetElements)
+#endif
+
+#ifndef ImgObjInit
+#  define ImgObjInit (*ImgintVptr->V_ImgObjInit)
 #endif
 
 #ifndef ImgPhotoPutBlock
@@ -20,6 +32,10 @@
 
 #ifndef ImgReadInit
 #  define ImgReadInit (*ImgintVptr->V_ImgReadInit)
+#endif
+
+#ifndef ImgSeek
+#  define ImgSeek (*ImgintVptr->V_ImgSeek)
 #endif
 
 #ifndef ImgWrite

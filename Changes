@@ -4,6 +4,12 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
+Changes in Tk800.014
+	A few patches from Steve.
+	Merged tk8.0.5 and associated bits of tcl8.0.5
+	Semi-automatic tidy-up of .pm files 
+	Merge img1.2b2 (may have been a mistake it is still a little rough).
+
 Changes in Tk800.013
 	Various tweaks to work better with -MO::* 'compile' 
 	Stephen Kun's Adjuster re-write.    

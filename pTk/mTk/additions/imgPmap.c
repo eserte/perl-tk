@@ -12,12 +12,11 @@
 
 #include <imgInt.h>
 #include <ctype.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <imgPmap.h>
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined (__GNUC__)
 #define strncasecmp strnicmp
 #endif
 
@@ -33,14 +32,16 @@ extern int	strncmp _ANSI_ARGS_((CONST char *s1, CONST char *s2,
 extern char *	strncpy _ANSI_ARGS_((char *dst, CONST char *src,
 			    size_t numChars));
 
+#ifndef TCL_STUB_MAGIC
 EXTERN void		panic _ANSI_ARGS_(TCL_VARARGS(char *,format));
+#endif
 
 /*
  * Prototypes for procedures used only locally in this file:
  */
 
 static int		ImgXpmCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, struct Tcl_Obj *CONST objv[],
+			    char *name, int argc, Tcl_Obj *CONST objv[],
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgXpmGet _ANSI_ARGS_((Tk_Window tkwin,
@@ -121,7 +122,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    struct Tcl_Obj *CONST objv[];/* Argument strings for options (doesn't
+    Tcl_Obj *objv[];		/* Argument strings for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -131,8 +132,9 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 {
     PixmapMaster *masterPtr;
     int i;
+#if 0
     char *argvbuf[10];
-    char **argv = argvbuf;
+    char **args = argvbuf;
 
     /*
      * Convert the objc/objv arguments into string equivalent.
@@ -141,8 +143,9 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 	argv = (char **) ckalloc(argc * sizeof(char *));
     }
     for (i = 0; i < argc; i++) {
-	argv[i] = ImgGetStringFromObj(objv[i], NULL);
+	args[i] = ImgGetStringFromObj(objv[i], NULL);
     }
+#endif
 
     masterPtr = (PixmapMaster *) ckalloc(sizeof(PixmapMaster));
     masterPtr->tkMaster = master;
@@ -156,17 +159,21 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     masterPtr->isDataAlloced = 0;
     masterPtr->instancePtr = NULL;
 
-    if (ImgXpmConfigureMaster(masterPtr, argc, argv, 0) != TCL_OK) {
+    if (ImgXpmConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgXpmDelete((ClientData) masterPtr);
+#if 0
 	if (argv != argvbuf) {
 	    ckfree((char *) argv);
 	}
+#endif
 	return TCL_ERROR;
     }
     *clientDataPtr = (ClientData) masterPtr;
-    if (argv != argvbuf) {
-	ckfree((char *) argv);
-    }
+#if 0
+    if (args != argvbuf) {
+	ckfree((char *) args);
+    }                       
+#endif
     return TCL_OK;
 }
 
@@ -291,6 +298,11 @@ ImgXpmGetData(interp, masterPtr)
     int code = TCL_OK;
 
     if (masterPtr->fileString != NULL) {
+	if (Tcl_IsSafe(interp)) {
+	    Tcl_AppendResult(interp, "can't get image from a file in a",
+		    " safe interpreter", (char *) NULL);
+	    return TCL_ERROR;
+	}
 	data = ImgXpmGetDataFromFile(interp, masterPtr->fileString, &numLines);
 	isAllocated = 1;
     }
@@ -381,7 +393,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
      * to skip the leading blanks is good for using in-line XPM data in TCL
      * scripts
      */
-    while (isspace(*string)) {
+    while (isspace(UCHAR(*string))) {
 	++ string;
     }
 
@@ -446,7 +458,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
 		continue;
 	    }
 
-	    if (isspace(*p)) {
+	    if (isspace(UCHAR(*p))) {
 		*p = ' ';
 	    }
 	    else if (*p == ',') {
@@ -500,55 +512,41 @@ static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
     char * fileName;
     int * numLines_return;
 {
-    int fileId, size;
-    char ** data;
-    struct stat statBuf;
+    Tcl_Channel chan;
+    int size;
+    char ** data = (char **) NULL;
     char *cmdBuffer = NULL;
-    Tcl_DString buffer;			/* initialized by Tcl_TildeSubst */
 
-    fileName = Tcl_TildeSubst(interp, fileName, &buffer);
-    if (fileName == NULL) {
-	goto error;
+    chan = Tcl_OpenFileChannel(interp, fileName, "r", 0);
+    if (!chan) {
+	return (char **) NULL;
+    }
+    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
+	return (char **) NULL;
     }
 
-    fileId = open(fileName, O_RDONLY, 0);
-    if (fileId < 0) {
-	Tcl_AppendResult(interp, "couldn't read file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
+    size = Tcl_Seek(chan, 0, SEEK_END);
+    if (size > 0) {
+	Tcl_Seek(chan, 0, SEEK_SET);
+	cmdBuffer = (char *) ckalloc(size+1);
+	size = Tcl_Read(chan, cmdBuffer, size);
+    }
+    if (Tcl_Close(interp, chan) != TCL_OK) {
 	goto error;
     }
-    if (fstat(fileId, &statBuf) == -1) {
-	Tcl_AppendResult(interp, "couldn't stat file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
-	close(fileId);
-	goto error;
-    }
-    cmdBuffer = (char *) ckalloc((unsigned) statBuf.st_size+1);
-    size = read(fileId, cmdBuffer, (size_t) statBuf.st_size);
     if (size < 0) {
-	Tcl_AppendResult(interp, "error in reading file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
-	close(fileId);
-	goto error;
-    }
-    if (close(fileId) != 0) {
-	Tcl_AppendResult(interp, "error closing file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
+	Tcl_AppendResult(interp, fileName, ": ",
+		Tcl_PosixError(interp), (char *)NULL);
 	goto error;
     }
     cmdBuffer[size] = 0;
 
     data = ImgXpmGetDataFromString(interp, cmdBuffer, numLines_return);
-    ckfree(cmdBuffer);
-    Tcl_DStringFree(&buffer);
-    return data;
-
-  error:
-    if (cmdBuffer != NULL) {
+    error:
+    if (cmdBuffer) {
 	ckfree(cmdBuffer);
     }
-    Tcl_DStringFree(&buffer);
-    return (char**)NULL;
+    return data;
 }
 
 
@@ -560,34 +558,34 @@ GetType(colorDefn, type_ret)
     char * p = colorDefn;
 
     /* skip white spaces */
-    while (*p && isspace(*p)) {
+    while (*p && isspace(UCHAR(*p))) {
 	p ++;
     }
 
     /* parse the type */
     if (p[0] != '\0' && p[0] == 'm' &&
-	p[1] != '\0' && isspace(p[1])) {
+	p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_MONO;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 'g' &&
 	     p[1] != '\0' && p[1] == '4' &&
-	     p[2] != '\0' && isspace(p[2])) {
+	     p[2] != '\0' && isspace(UCHAR(p[2]))) {
 	*type_ret = XPM_GRAY_4;
 	p += 3;
     }
     else if (p[0] != '\0' && p[0] == 'g' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_GRAY;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 'c' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_COLOR;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 's' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_SYMBOLIC;
 	p += 2;
     }
@@ -624,7 +622,7 @@ GetColor(colorDefn, colorName, type_ret)
     }
 
     /* skip white spaces */
-    while (*colorDefn && isspace(*colorDefn)) {
+    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 	colorDefn ++;
     }
 
@@ -633,7 +631,7 @@ GetColor(colorDefn, colorName, type_ret)
     while (1) {
 	int dummy;
 
-	while (*colorDefn && !isspace(*colorDefn)) {
+	while (*colorDefn && !isspace(UCHAR(*colorDefn))) {
 	    *p++ = *colorDefn++;
 	}
 
@@ -645,7 +643,7 @@ GetColor(colorDefn, colorName, type_ret)
 	    /* the next string should also be considered as a part of a color
 	     * name */
 	    
-	    while (*colorDefn && isspace(*colorDefn)) {
+	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
 	} else {
@@ -924,9 +922,9 @@ ImgXpmCmd(clientData, interp, argc, argv)
     size_t length;
 
     if (argc < 2) {
-	sprintf(interp->result,
-	    "wrong # args: should be \"%.50s option ?arg arg ...?\"",
-	    argv[0]);
+	Tcl_AppendResult(interp, "wrong # args: should be \"",
+		argv[0], " option ?arg arg ...?\"",
+		(char *) NULL);
 	return TCL_ERROR;
     }
     c = argv[1][0];
@@ -963,12 +961,17 @@ ImgXpmCmd(clientData, interp, argc, argv)
 	int count = 0;
 	char buff[30];
 
+	if (argc != 1) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], "\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
 	for (instancePtr=masterPtr->instancePtr; instancePtr;
 	     instancePtr = instancePtr->nextPtr) {
 	    count += instancePtr->refCount;
 	}
 	sprintf(buff, "%d", count);
-	Tcl_SetResult(interp, buff, TCL_VOLATILE);
+	Tcl_AppendResult(interp, buff, (char *) NULL);
 	return TCL_OK;
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],

@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkTest.c 1.50 97/11/06 16:56:32
+ * RCS: @(#) $Id: tkTest.c,v 1.4 1999/02/04 20:57:17 stanton Exp $
  */
 
 #include "tkInt.h"
@@ -121,7 +121,7 @@ static int		CBindingEvalProc _ANSI_ARGS_((ClientData clientData,
 static void		CBindingFreeProc _ANSI_ARGS_((ClientData clientData));
 int			Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
 static int		ImageCmd _ANSI_ARGS_((ClientData dummy,
-			    Tcl_Interp *interp, int argc, char **argv));
+			    Tcl_Interp *interp, int argc, Tcl_Obj *CONST argv[]));
 static int		TestcbindCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
 #ifdef __WIN32__
@@ -151,7 +151,7 @@ static int		TestwrapperCmd _ANSI_ARGS_((ClientData dummy,
  * External (platform specific) initialization routine:
  */
 
-EXTERN int		TkplatformtestInit _ANSI_ARGS_((
+extern int		TkplatformtestInit _ANSI_ARGS_((
 			    Tcl_Interp *interp));
 #ifndef MAC_TCL
 #define TkplatformtestInit(x) TCL_OK
@@ -440,12 +440,12 @@ TestdeleteappsCmd(clientData, interp, argc, argv)
 
 	/* ARGSUSED */
 static int
-ImageCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
+ImageCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
     Tcl_Interp *interp;		/* Interpreter for application containing
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument strings for options (doesn't
+    Tcl_Obj *CONST argv[];	/* Argument objects for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -455,22 +455,24 @@ ImageCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 {
     TImageMaster *timPtr;
     char *varName;
-    int i;
+    int i, index;
+    static char *optionStrings[] = {
+	"-variable",	NULL
+    };
 
     varName = "log";
     for (i = 0; i < argc; i += 2) {
-	char *arg = Tcl_GetStringFromObj(objv[i], NULL);
-	if (strcmp(arg, "-variable") != 0) {
-	    Tcl_AppendResult(interp, "bad option name \"", arg,
-		    "\"", (char *) NULL);
+	if (Tcl_GetIndexFromObj(interp, argv[i], optionStrings, "option name", 0,
+		&index) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if ((i+1) == argc) {
-	    Tcl_AppendResult(interp, "no value given for \"", arg,
+	    Tcl_AppendResult(interp, "no value given for \"",
+		    Tcl_GetStringFromObj(argv[i], NULL),
 		    "\" option", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	varName = Tcl_GetStringFromObj(objv[i+1], NULL);
+	varName = Tcl_GetStringFromObj(argv[i+1], NULL);
     }
     timPtr = (TImageMaster *) ckalloc(sizeof(TImageMaster));
     timPtr->master = master;
@@ -481,7 +483,7 @@ ImageCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     strcpy(timPtr->imageName, name);
     timPtr->varName = (char *) ckalloc((unsigned) (strlen(varName) + 1));
     strcpy(timPtr->varName, varName);
-    Tcl_CreateCommand(interp, name, ImageCmd, (ClientData) timPtr,
+    Tcl_CreateObjCommand(interp, name, ImageCmd, (ClientData) timPtr,
 	    (Tcl_CmdDeleteProc *) NULL);
     *clientDataPtr = (ClientData) timPtr;
     Tk_ImageChanged(master, 0, 0, 30, 15, 30, 15);
@@ -511,38 +513,37 @@ ImageCmd(clientData, interp, argc, argv)
     ClientData clientData;		/* Main window for application. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    char **argv;			/* Argument strings. */
+    Tcl_Obj *CONST argv[];		/* Argument objects. */
 {
     TImageMaster *timPtr = (TImageMaster *) clientData;
-    int x, y, width, height;
+    int x, y, width, height, index;
+    static char *optionStrings[] = {
+	"changed",	NULL
+    };
 
     if (argc < 2) {
-	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], "option ?arg arg ...?", (char *) NULL);
+	Tcl_WrongNumArgs(interp, 1, argv, "option ?arg arg ...?");
 	return TCL_ERROR;
     }
-    if (strcmp(argv[1], "changed") == 0) {
-	if (argc != 8) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " changed x y width height imageWidth imageHeight",
-		    (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if ((Tcl_GetInt(interp, argv[2], &x) != TCL_OK)
-		|| (Tcl_GetInt(interp, argv[3], &y) != TCL_OK)
-		|| (Tcl_GetInt(interp, argv[4], &width) != TCL_OK)
-		|| (Tcl_GetInt(interp, argv[5], &height) != TCL_OK)
-		|| (Tcl_GetInt(interp, argv[6], &timPtr->width) != TCL_OK)
-		|| (Tcl_GetInt(interp, argv[7], &timPtr->height) != TCL_OK)) {
-	    return TCL_ERROR;
-	}
-	Tk_ImageChanged(timPtr->master, x, y, width, height, timPtr->width,
-		timPtr->height);
-    } else {
-	Tcl_AppendResult(interp, "bad option \"", argv[1],
-		"\": must be changed", (char *) NULL);
+    if (Tcl_GetIndexFromObj(interp, argv[1], optionStrings, "option", 0,
+	    &index) != TCL_OK) {
 	return TCL_ERROR;
     }
+    if (argc != 8) {
+	Tcl_WrongNumArgs(interp, 2, argv,
+		"x y width height imageWidth imageHeight");
+	return TCL_ERROR;
+    }
+    if ((Tcl_GetIntFromObj(interp, argv[2], &x) != TCL_OK)
+	    || (Tcl_GetIntFromObj(interp, argv[3], &y) != TCL_OK)
+	    || (Tcl_GetIntFromObj(interp, argv[4], &width) != TCL_OK)
+	    || (Tcl_GetIntFromObj(interp, argv[5], &height) != TCL_OK)
+	    || (Tcl_GetIntFromObj(interp, argv[6], &timPtr->width) != TCL_OK)
+	    || (Tcl_GetIntFromObj(interp, argv[7], &timPtr->height) != TCL_OK)) {
+	return TCL_ERROR;
+    }
+    Tk_ImageChanged(timPtr->master, x, y, width, height, timPtr->width,
+	    timPtr->height);
     return TCL_OK;
 }
 

@@ -4,9 +4,9 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#15$
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#20$
 
-use Tk ();
+use Tk qw(Ev);
 use Carp;
 use strict;
 
@@ -24,28 +24,28 @@ sub Populate {
     # entry widget and arrow button
     my $lpack = delete $args->{-labelPack};
     if (not defined $lpack) {
-	$lpack = [-side => "left", -anchor => "e"];
+	$lpack = [-side => 'left', -anchor => 'e'];
     }
     my $e = $w->LabEntry(-labelPack => $lpack,
 			 -label => delete $args->{-label});
-    my $b = $w->Button(-bitmap => '@' . Tk->findINC("cbxarrow.xbm"));
-    $w->Advertise("entry" => $e);
-    $w->Advertise("arrow" => $b);
-    $b->pack(-side => "right", -padx => 1);
-    $e->pack(-side => "right", -fill => 'x', -expand => 1, -padx => 1);
+    my $b = $w->Button(-bitmap => '@' . Tk->findINC('cbxarrow.xbm'));
+    $w->Advertise('entry' => $e);
+    $w->Advertise('arrow' => $b);
+    $b->pack(-side => 'right', -padx => 1);
+    $e->pack(-side => 'right', -fill => 'x', -expand => 1, -padx => 1);
 
     # popup shell for listbox with values.
-    my $c = $w->Toplevel(-bd => 2, -relief => "raised");
+    my $c = $w->Toplevel(-bd => 2, -relief => 'raised');
     $c->overrideredirect(1);
     $c->withdraw;
     my $sl = $c->Scrolled( qw/Listbox -selectmode browse -scrollbars oe/ );
-    $w->Advertise("choices" => $c);
-    $w->Advertise("slistbox" => $sl);
-    $sl->pack(-expand => 1, -fill => "both");
+    $w->Advertise('choices' => $c);
+    $w->Advertise('slistbox' => $sl);
+    $sl->pack(-expand => 1, -fill => 'both');
 
     # other initializations
     $w->SetBindings;
-    $w->{"popped"} = 0;
+    $w->{'popped'} = 0;
     $w->Delegates('insert' => $sl, 'delete' => $sl, get => $sl, DEFAULT => $e);
     $w->ConfigSpecs(
         -listwidth   => [qw/PASSIVE  listWidth   ListWidth/,   undef],
@@ -54,7 +54,7 @@ sub Populate {
         -choices     => [qw/METHOD   choices     Choices/,     undef],
         -state       => [qw/METHOD   state       State         normal/],
         -arrowimage  => [ {-image => $b}, qw/arrowImage ArrowImage/, undef],
-        -variable    => "-textvariable",
+        -variable    => '-textvariable',
 	-colorstate  => [qw/PASSIVE  colorState  ColorState/,  undef],
         DEFAULT      => [$e] );
 }
@@ -62,61 +62,78 @@ sub Populate {
 sub SetBindings {
     my ($w) = @_;
 
-    my $e = $w->Subwidget("entry");
-    my $b = $w->Subwidget("arrow");
+    my $e = $w->Subwidget('entry');
+    my $b = $w->Subwidget('arrow');
 
     # set bind tags
-    $w->bindtags([$w, 'Tk::BrowseEntry', $w->toplevel, "all"]);
-    $e->bindtags([$e, $e->toplevel, "all"]);
+    $w->bindtags([$w, 'Tk::BrowseEntry', $w->toplevel, 'all']);
+    $e->bindtags([$e, $e->toplevel, 'all']);
 
     # bindings for the button and entry
-    $b->bind("<1>", sub {$w->BtnDown;});
-    $b->toplevel->bind("<ButtonRelease-1>", sub {$w->ButtonHack;});
-    $b->bind("<space>", sub {$w->BtnDown;
-			     $w->{'savefocus'} = $w->focusCurrent;
-			     $w->Subwidget("slistbox")->focus;
-			    });
+    $b->bind('<1>',[$w,'BtnDown']);
+    $b->toplevel->bind('<ButtonRelease-1>',[$w,'ButtonHack']);
+    $b->bind('<space>',[$w,'space']);
 
     # bindings for listbox
-    my $sl = $w->Subwidget("slistbox");
-    my $l = $sl->Subwidget("listbox");
-    $l->bind("<ButtonRelease-1>", sub {
-	$w->ButtonHack;
-	LbChoose($w, $l->XEvent->x, $l->XEvent->y);
-    });
-    $l->bind('<Escape>' => sub { $w->LbClose });
-    $l->bind('<Return>' => sub { my($x, $y) = $l->bbox($l->curselection);
-				 $w->LbChoose($x, $y) });
+    my $sl = $w->Subwidget('slistbox');
+    my $l = $sl->Subwidget('listbox');
+    $l->bind('<ButtonRelease-1>',[$w,'ListboxRelease',Ev('x'),Ev('y')]);
+    $l->bind('<Escape>' => [$w,'LbClose']);
+    $l->bind('<Return>' => [$w,'Return',$l]);
 
     # allow click outside the popped up listbox to pop it down.
-    $w->bind("<1>", sub {$w->BtnDown;});
+    $w->bind('<1>','BtnDown');
 }
+
+sub space
+{
+ my $w = shift;
+ $w->BtnDown;
+ $w->{'savefocus'} = $w->focusCurrent;
+ $w->Subwidget('slistbox')->focus;
+}
+
+
+sub ListboxRelease
+{    
+ my ($w,$x,$y) = @_;
+ $w->ButtonHack;
+ $w->LbChoose($x, $y);
+}
+
+sub Return
+{     
+ my ($w,$l) = @_;
+ my($x, $y) = $l->bbox($l->curselection);
+ $w->LbChoose($x, $y)
+}
+
 
 sub BtnDown {
     my ($w) = @_;
-    return if $w->cget( "-state" ) eq "disabled";
+    return if $w->cget( '-state' ) eq 'disabled';
 
-    if ($w->{"popped"}) {
+    if ($w->{'popped'}) {
 	$w->Popdown;
-	$w->{"buttonHack"} = 0;
+	$w->{'buttonHack'} = 0;
     } else {
 	$w->PopupChoices;
-	$w->{"buttonHack"} = 1;
+	$w->{'buttonHack'} = 1;
     }
 }
 
 sub PopupChoices {
     my ($w) = @_;
 
-    if (!$w->{"popped"}) {
+    if (!$w->{'popped'}) {
 	my $listcmd = $w->cget(-listcmd);
 	if (defined $listcmd) {
 	    &$listcmd($w);
 	}
-	my $e = $w->Subwidget("entry");
-	my $c = $w->Subwidget("choices");
-	my $s = $w->Subwidget("slistbox");
-	my $a = $w->Subwidget("arrow");
+	my $e = $w->Subwidget('entry');
+	my $c = $w->Subwidget('choices');
+	my $s = $w->Subwidget('slistbox');
+	my $a = $w->Subwidget('arrow');
 	my $y1 = $e->rooty + $e->height + 3;
 	my $bd = $c->cget(-bd) + $c->cget(-highlightthickness);
 	my $ht = $s->reqheight + 2 * $bd;
@@ -141,7 +158,7 @@ sub PopupChoices {
 	    }
 	}
 	$width = $rw;
-	
+
 	# if listbox is too far right, pull it back to the left
 	#
 	if ($x2 > $w->vrootwidth) {
@@ -160,13 +177,13 @@ sub PopupChoices {
 	    $y1 = $y1 - $ht - ($e->height - 5);
 	}
 
-	$c->geometry(sprintf("%dx%d+%d+%d", $rw, $ht, $x1, $y1));
+	$c->geometry(sprintf('%dx%d+%d+%d', $rw, $ht, $x1, $y1));
 	$c->deiconify;
 	$c->raise;
 	$e->focus;
-	$w->{"popped"} = 1;
+	$w->{'popped'} = 1;
 
-	$c->configure(-cursor => "arrow");
+	$c->configure(-cursor => 'arrow');
 	$w->grabGlobal;
     }
 }
@@ -174,7 +191,7 @@ sub PopupChoices {
 # choose value from listbox if appropriate
 sub LbChoose {
     my ($w, $x, $y) = @_;
-    my $l = $w->Subwidget("slistbox")->Subwidget("listbox");
+    my $l = $w->Subwidget('slistbox')->Subwidget('listbox');
     if ((($x < 0) || ($x > $l->Width)) ||
 	(($y < 0) || ($y > $l->Height))) {
 	# mouse was clicked outside the listbox... close the listbox
@@ -192,8 +209,8 @@ sub LbChoose {
 # close the listbox after clearing selection
 sub LbClose {
     my ($w) = @_;
-    my $l = $w->Subwidget("slistbox")->Subwidget("listbox");
-    $l->selection("clear", 0, "end");
+    my $l = $w->Subwidget('slistbox')->Subwidget('listbox');
+    $l->selection('clear', 0, 'end');
     $w->Popdown;
 }
 
@@ -202,11 +219,11 @@ sub LbCopySelection {
     my ($w) = @_;
     my $index = $w->LbIndex;
     if (defined $index) {
-	$w->{"curIndex"} = $index;
-	my $l = $w->Subwidget("slistbox")->Subwidget("listbox");
-        my $var_ref = $w->cget( "-textvariable" );
+	$w->{'curIndex'} = $index;
+	my $l = $w->Subwidget('slistbox')->Subwidget('listbox');
+        my $var_ref = $w->cget( '-textvariable' );
         $$var_ref = $l->get($index);
-	if ($w->{"popped"}) {
+	if ($w->{'popped'}) {
 	    $w->Popdown;
 	}
     }
@@ -215,11 +232,11 @@ sub LbCopySelection {
 
 sub LbIndex {
     my ($w, $flag) = @_;
-    my $sel = $w->Subwidget("slistbox")->Subwidget("listbox")->curselection;
+    my $sel = $w->Subwidget('slistbox')->Subwidget('listbox')->curselection;
     if (defined $sel) {
 	return int($sel);
     } else {
-	if (defined $flag && ($flag eq "emptyOK")) {
+	if (defined $flag && ($flag eq 'emptyOK')) {
 	    return undef;
 	} else {
 	    return 0;
@@ -234,11 +251,11 @@ sub Popdown {
 	$w->{'savefocus'}->focus;
 	delete $w->{'savefocus'};
     }
-    if ($w->{"popped"}) {
-	my $c = $w->Subwidget("choices");
+    if ($w->{'popped'}) {
+	my $c = $w->Subwidget('choices');
 	$c->withdraw;
 	$w->grabRelease;
-	$w->{"popped"} = 0;
+	$w->{'popped'} = 0;
     }
 }
 
@@ -246,8 +263,8 @@ sub Popdown {
 #
 sub ButtonHack {
     my ($w) = @_;
-    my $b = $w->Subwidget("arrow");
-    if ($w->{"buttonHack"}) {
+    my $b = $w->Subwidget('arrow');
+    if ($w->{'buttonHack'}) {
 	$b->butUp;
     }
 }
@@ -260,35 +277,35 @@ sub choices {
         my $choices = shift;
         if( $choices ) {
             $w->delete( qw/0 end/ );
-            $w->insert( "end", @$choices );
+            $w->insert( 'end', @$choices );
         }
-        return( "" );
+        return( '' );
     }
 }
 
 sub _set_edit_state {
     my( $w, $state ) = @_;
-    
-    my $entry  = $w->Subwidget( "entry" );
-    my $button = $w->Subwidget( "arrow" );
 
-    if ($w->cget( "-colorstate" )) {
+    my $entry  = $w->Subwidget( 'entry' );
+    my $button = $w->Subwidget( 'arrow' );
+
+    if ($w->cget( '-colorstate' )) {
 	my $color;
-	if( $state eq "normal" ) {                  # Editable
-	    $color = "gray95";
+	if( $state eq 'normal' ) {                  # Editable
+	    $color = 'gray95';
 	} else {                                    # Not Editable
-	    $color = $w->cget( -background ) || "lightgray";
+	    $color = $w->cget( -background ) || 'lightgray';
 	}
-	$entry->Subwidget( "entry" )->configure( -background => $color );
+	$entry->Subwidget( 'entry' )->configure( -background => $color );
     }
 
-    if( $state eq "readonly" ) {
-        $entry->configure( -state => "disabled" );
-        $button->configure( -state => "normal" );
+    if( $state eq 'readonly' ) {
+        $entry->configure( -state => 'disabled' );
+        $button->configure( -state => 'normal' );
     } else {
         $entry->configure( -state => $state );
         $button->configure( -state => $state );
-    }        
+    }
 }
 
 sub state {
@@ -317,7 +334,7 @@ sub shrinkwrap {
         $size = _max( map( length, $w->get( qw/0 end/ ) ) ) || 0;;
     }
 
-    my $lb = $w->Subwidget( "slistbox" )->Subwidget( "listbox" );
+    my $lb = $w->Subwidget( 'slistbox' )->Subwidget( 'listbox' );
     $w->configure(  -width => $size );
     $lb->configure( -width => $size );
 }

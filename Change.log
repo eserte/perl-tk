@@ -1,3 +1,176 @@
+Change 1289 on 1999/04/05 by nick@ni-s
+
+	Attempt to merge Photo docs
+
+Change 1288 on 1999/04/05 by nick@ni-s
+
+	Cheap tricj to avoid warning from t/create.t, root cause
+	needs finding and fixing.
+
+Change 1287 on 1999/04/05 by nick@ni-s
+
+	img stuff no longer uses stdio.
+
+Change 1286 on 1999/04/05 by nick@camel
+
+	Botched List ops in new img code
+
+Change 1285 on 1999/04/05 by nick@ni-s
+
+	Use warning-avoiding install_vtab in Photo
+
+Change 1284 on 1999/04/05 by nick@camel
+
+	PPM is binary format - need to tell channel on Win32
+
+Change 1283 on 1999/04/04 by nick@ni-s
+
+	Missed some configure-messing
+
+Change 1282 on 1999/04/04 by nick@ni-s
+
+	Stop messing with configure options
+
+Change 1281 on 1999/04/04 by nick@ni-s
+
+	Almost right version of new patched Photo & co.
+
+Change 1280 on 1999/04/04 by nick@ni-s
+
+	Raw merge of patched tk8.0.5 + img1.2b2's patch.tk8
+
+Change 1278 on 1999/04/04 by nick@ni-s
+
+	Tweak some Photo write procs and add a test for them.
+
+Change 1277 on 1999/04/03 by nick@ni-s
+
+	img1.2b2 merge compiles, loads and passes "make test" (which does
+	not prove any img stuff works...).
+
+Change 1276 on 1999/04/03 by nick@ni-s
+
+	Raw merge of Img1.2b
+
+Change 1273 on 1999/04/03 by nick@ni-s
+
+	Resolve img1.1 as basis for future merges
+
+Change 1271 on 1999/04/03 by nick@ni-s
+
+	Integrate img1.1 to establish a base for future merges
+
+Change 1269 on 1999/03/31 by nick@ni-s
+
+	Recover truncated file
+
+Change 1268 on 1999/03/31 by nick@ni-s
+
+	Copyright dates and release prep.
+
+Change 1267 on 1999/03/31 by nick@ni-s
+
+	VERSION fixes
+
+Change 1266 on 1999/03/31 by nick@ni-s
+
+	At last - just a typo
+
+Change 1265 on 1999/03/31 by nick@ni-s
+
+	More quote messes.
+	Back-off method callback style stuff for toplevel bindings
+	which apply to nested widgets.
+
+Change 1264 on 1999/03/31 by nick@ni-s
+
+	make test passes, $VERSION update
+
+Change 1263 on 1999/03/31 by nick@ni-s
+
+	Require.t passes again
+
+Change 1262 on 1999/03/31 by nick@ni-s
+
+	Quote fixup fixup
+
+Change 1261 on 1999/03/31 by nick@ni-s
+
+	Botched quotes
+
+Change 1260 on 1999/03/31 by nick@ni-s
+
+	Botched quote fixup
+
+Change 1259 on 1999/03/31 by nick@ni-s
+
+	Auto fixup of quotes and callbacks
+
+Change 1258 on 1999/03/31 by nick@ni-s
+
+	Hand fixup of bind callback
+
+Change 1257 on 1999/03/31 by nick@ni-s
+
+	Fixup of "constant" etc.
+
+Change 1256 on 1999/03/30 by nick@ni-s
+
+	Some binding cleanup
+
+Change 1255 on 1999/03/27 by nick@ni-s
+
+	Tidy up Text.pm :
+	1. convert anon subs in bindings to method calls
+	2. Use '' rather than "" for constants strings.
+
+Change 1254 on 1999/03/27 by nick@gobstopper2
+
+	Add script to prepare for PPM distribution.
+
+Change 1253 on 1999/03/27 by nick@gobstopper
+
+	Tweak for Mingw32 and new tk8.0.5 stuff
+
+Change 1252 on 1999/03/25 by nick@ni-s
+
+	Post merge tweaks, compiles links and passes make test.
+
+Change 1251 on 1999/03/25 by nick@ni-s
+
+	Raw integate/resolve of tcl and tk 8.0.5
+
+Change 1247 on 1999/03/23 by nick@ni-s
+
+	PPM/PPD support - so far only proven harmless on UNIX.
+
+Change 1246 on 1999/03/23 by nick@ni-s
+
+	Fix GIF write. 
+	Found by manual compare with Img1.2b1 which looks worth merging.
+
+Change 1245 on 1999/03/19 by nick@ni-s
+
+	Odds and ends from mail backlog
+
+Change 1244 on 1999/03/19 by nick@ni-s
+
+	WinPhoto doc update, and fix to "file match".
+
+Change 1243 on 1999/03/19 by nick@ni-s
+
+	Shaun Wandler <wandler@shogun.eng.hou.compaq.com>
+	Fix for HList and "nearest" behaviour.
+
+Change 1242 on 1999/03/19 by nick@ni-s
+
+	Steve's patches
+
+Change 1241 on 1999/03/16 by nick@ni-s
+
+	Prep for release
+	Copyright dates
+
 Change 1240 on 1999/03/16 by nick@gobstopper2
 
 	Update README

@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#14$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#15$
 
 use Tk;
 require Tk::Frame;
@@ -23,9 +23,9 @@ sub Populate {
 	delete $args->{-labelside} : 'top';
     my $ltext = delete $args->{-label};
     $cw->SUPER::Populate($args);
-    
+
     if ($lside =~ /acrosstop/) {
-	my $border = $cw->Frame(-relief => "groove", -bd => 2);
+	my $border = $cw->Frame(-relief => 'groove', -bd => 2);
         $cw->Advertise('border' => $border);
 	my $pad = $border->Frame;
 	$f = $border->Frame;
@@ -49,8 +49,8 @@ sub Populate {
     $cw->Advertise('frame' => $f);
     $cw->Advertise('label' => $label);
     $cw->Delegates(DEFAULT => $f);
-    $cw->ConfigSpecs(-labelside => ["PASSIVE", "labelSide", "LabelSide", "acrosstop"],
-		     "DEFAULT" => [$f]);
+    $cw->ConfigSpecs(-labelside => ['PASSIVE', 'labelSide', 'LabelSide', 'acrosstop'],
+		     'DEFAULT' => [$f]);
 }
 
 

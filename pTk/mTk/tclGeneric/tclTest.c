@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclTest.c 1.119 97/10/31 15:57:28
+ * RCS: @(#) $Id: tclTest.c,v 1.8 1999/02/03 02:58:25 stanton Exp $
  */
 
 #define TCL_TEST
@@ -186,8 +186,8 @@ static int		TestPanicCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
 static int		TestsetassocdataCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Interp *interp, int argc, char **argv));
-static int		TestsetnoerrCmd _ANSI_ARGS_((ClientData dummy,
-		            Tcl_Interp *interp, int argc, char **argv));
+static int		TestsetCmd _ANSI_ARGS_((ClientData dummy,
+			    Tcl_Interp *interp, int argc, char **argv));
 static int		TestsetobjerrorcodeCmd _ANSI_ARGS_((
 			    ClientData dummy, Tcl_Interp *interp,
 			    int objc, Tcl_Obj *CONST objv[]));
@@ -217,10 +217,12 @@ static int		TestwordendObjCmd _ANSI_ARGS_((ClientData dummy,
 			    Tcl_Obj *CONST objv[]));
 
 /*
- * External (platform specific) initialization routine:
+ * External (platform specific) initialization routine, this declaration
+ * explicitly does not use EXTERN since this code does not get compiled
+ * into the library:
  */
 
-EXTERN int		TclplatformtestInit _ANSI_ARGS_((
+extern int		TclplatformtestInit _ANSI_ARGS_((
 			    Tcl_Interp *interp));
 
 /*
@@ -311,8 +313,10 @@ Tcltest_Init(interp)
     	    (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateCommand(interp, "testsetassocdata", TestsetassocdataCmd,
             (ClientData) 0, (Tcl_CmdDeleteProc *) NULL);
-    Tcl_CreateCommand(interp, "testsetnoerr", TestsetnoerrCmd,
+    Tcl_CreateCommand(interp, "testsetnoerr", TestsetCmd,
             (ClientData) 0, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "testseterr", TestsetCmd,
+            (ClientData) TCL_LEAVE_ERR_MSG, (Tcl_CmdDeleteProc *) NULL);
     Tcl_CreateObjCommand(interp, "testsetobjerrorcode", 
 	    TestsetobjerrorcodeCmd, (ClientData) 0,
 	    (Tcl_CmdDeleteProc *) NULL);
@@ -2697,51 +2701,47 @@ NoopObjCmd(unused, interp, objc, objv)
 /*
  *----------------------------------------------------------------------
  *
- * TestsetnoerrCmd --
+ * TestsetCmd --
  *
- *	Implements the "testsetnoerr" cmd that is used when testing
- *	the Tcl_Set/GetVar C Api without TCL_LEAVE_ERR_MSG flag
+ *	Implements the "testset{err,noerr}" cmds that are used when testing
+ *	Tcl_Set/GetVar C Api with/without TCL_LEAVE_ERR_MSG flag
  *
  * Results:
  *	A standard Tcl result.
  *
  * Side effects:
- *	None.
+ *     Variables may be set.
  *
  *----------------------------------------------------------------------
  */
 
 	/* ARGSUSED */
-static int
-TestsetnoerrCmd(dummy, interp, argc, argv)
-    ClientData dummy;			/* Not used. */
+TestsetCmd(data, interp, argc, argv)
+    ClientData data;			/* Additional flags for Get/SetVar2. */
     register Tcl_Interp *interp;	/* Current interpreter. */
     int argc;				/* Number of arguments. */
     char **argv;			/* Argument strings. */
 {
+    int flags = (int) data;
     char *value;
+
     if (argc == 2) {
-	Tcl_SetResult(interp, "before get", TCL_STATIC);
-	value = Tcl_GetVar2(interp, argv[1], (char *) NULL, TCL_PARSE_PART1);
-	if (value == NULL) {
-	    return TCL_ERROR;
-	}
-	Tcl_SetResult(interp, value, TCL_VOLATILE);
-	return TCL_OK;
+        Tcl_SetResult(interp, "before get", TCL_STATIC);
+	value = Tcl_GetVar2(interp, argv[1], (char *) NULL,
+		TCL_PARSE_PART1|flags);
+        if (value == NULL) {
+            return TCL_ERROR;
+        }
+	Tcl_AppendElement(interp, value);
+        return TCL_OK;
     } else if (argc == 3) {
-	char *m1 = "before set";
-	char *message=Tcl_Alloc(strlen(m1)+1);
-	
-	strcpy(message,m1);
-
-	Tcl_SetResult(interp, message, TCL_DYNAMIC);
-
-	value = Tcl_SetVar2(interp, argv[1], (char *) NULL, argv[2],
-		            TCL_PARSE_PART1);
-	if (value == NULL) {
-	    return TCL_ERROR;
-	}
-	Tcl_SetResult(interp, value, TCL_VOLATILE);
+	Tcl_SetResult(interp, "before set", TCL_STATIC);
+        value = Tcl_SetVar2(interp, argv[1], (char *) NULL, argv[2],
+		TCL_PARSE_PART1|flags);
+        if (value == NULL) {
+            return TCL_ERROR;
+        }
+	Tcl_AppendElement(interp, value);
 	return TCL_OK;
     } else {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -2824,14 +2824,18 @@ TeststatprocCmd (dummy, interp, argc, argv)
     return retVal;
 }
 
-
+/* Be careful in the compares in these tests, since the Macintosh puts a  
+ * leading : in the beginning of non-absolute paths before passing them 
+ * into the file command procedures.
+ */
+ 
 static int
 TestStatProc1(path, buf)
     CONST char *path;
     TclStat_ *buf;
 {
     buf->st_size = 1234;
-    return (strcmp("testStat1%.fil", path) ? -1 : 0);
+    return ((strstr(path, "testStat1%.fil") == NULL) ? -1 : 0);
 }
 
 
@@ -2841,7 +2845,7 @@ TestStatProc2(path, buf)
     TclStat_ *buf;
 {
     buf->st_size = 2345;
-    return (strcmp("testStat2%.fil", path) ? -1 : 0);
+    return ((strstr(path, "testStat2%.fil") == NULL) ? -1 : 0);
 }
 
 
@@ -2851,7 +2855,7 @@ TestStatProc3(path, buf)
     TclStat_ *buf;
 {
     buf->st_size = 3456;
-    return (strcmp("testStat3%.fil", path) ? -1 : 0);
+    return ((strstr(path, "testStat3%.fil") == NULL) ? -1 : 0);
 }
 
 /*
@@ -2934,7 +2938,7 @@ TestAccessProc1(path, mode)
     CONST char *path;
     int mode;
 {
-    return (strcmp("testAccess1%.fil", path) ? -1 : 0);
+    return ((strstr(path, "testAccess1%.fil") == NULL) ? -1 : 0);
 }
 
 
@@ -2943,7 +2947,7 @@ TestAccessProc2(path, mode)
     CONST char *path;
     int mode;
 {
-    return (strcmp("testAccess2%.fil", path) ? -1 : 0);
+    return ((strstr(path, "testAccess2%.fil") == NULL) ? -1 : 0);
 }
 
 
@@ -2952,7 +2956,7 @@ TestAccessProc3(path, mode)
     CONST char *path;
     int mode;
 {
-    return (strcmp("testAccess3%.fil", path) ? -1 : 0);
+    return ((strstr(path, "testAccess3%.fil") == NULL) ? -1 : 0);
 }
 
 /*

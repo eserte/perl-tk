@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Frame;
@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Frame.pm#14$
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Frame.pm#18$
 
 sub Menubar;
 
@@ -28,11 +28,11 @@ sub CreateOptions
 sub Default
 {
  my ($cw,$name,$widget)  = @_;
- confess "No name" unless (defined $name);
- croak "No widget" unless (defined $widget);
+ confess 'No name' unless (defined $name);
+ croak 'No widget' unless (defined $widget);
  $cw->Delegates(DEFAULT => $widget);
  $cw->ConfigSpecs(DEFAULT => [$widget]);
- $widget->pack('-expand' => 1, -fill => 'both') unless ($widget->manager);  # Suspect 
+ $widget->pack('-expand' => 1, -fill => 'both') unless ($widget->manager);  # Suspect
  $cw->Advertise($name,$widget);
 }
 
@@ -53,9 +53,9 @@ sub ConfigDelegate
    my $option = $info[0];
    unless ($skip{$option})
     {
-     $option =~ s/^-(.*)/-$name\u$1/;            
+     $option =~ s/^-(.*)/-$name\u$1/;
      $info[0] = Tk::Configure->new($sw,$info[0]);
-     pop(@info);                         
+     pop(@info);
      $cw->ConfigSpecs($option => \@info);
     }
   }
@@ -87,7 +87,7 @@ sub Populate
  $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
-}                  
+}
 
 1;
 
@@ -108,7 +108,7 @@ sub labelPack
     {
      require Tk::Label;
      $w = Tk::Label->new($cw,-textvariable => $cw->labelVariable);
-     $cw->Advertise('label' => $w); 
+     $cw->Advertise('label' => $w);
      $cw->ConfigDelegate('label',qw(text textvariable));
     }
    if (defined($val) && defined($w))
@@ -172,7 +172,7 @@ sub label
 
 sub queuePack
 {
- my ($cw) = @_; 
+ my ($cw) = @_;
  unless ($cw->{'pack_pending'})
   {
    $cw->{'pack_pending'} = 1;
@@ -184,7 +184,6 @@ sub sbset
 {
  my ($cw,$sb,$ref,@args) = @_;
  $sb->set(@args);
- # print "sbset $cw ",$sb->cget('-orient')," p=$$ref need=",$sb->Needed," (",join(',',@args),")\n";
  $cw->queuePack if (@args == 2 && $sb->Needed != $$ref);
 }
 
@@ -202,7 +201,7 @@ sub AddScrollbars
 {
  require Tk::Scrollbar;
  my ($cw,$w) = @_;
- my $def = "";
+ my $def = '';
  my ($x,$y) = ('','');
  my $s = 0;
  my $c;
@@ -212,15 +211,15 @@ sub AddScrollbars
    my $opt = $c->[0];
    if ($opt eq '-yscrollcommand')
     {
-     my $slice  = Tk::Frame->new($cw,Name => 'ysbslice');                                       
+     my $slice  = Tk::Frame->new($cw,Name => 'ysbslice');
      my $ysb    = Tk::Scrollbar->new($slice,-orient => 'vertical', -command => [ 'yview', $w ]);
      my $size   = $ysb->cget('-width');
-     my $corner = Tk::Frame->new($slice,Name=>'corner','-relief' => 'raised', 
+     my $corner = Tk::Frame->new($slice,Name=>'corner','-relief' => 'raised',
                   '-width' => $size, '-height' => $size);
      $ysb->pack(-side => 'left', -fill => 'y');
-     $cw->Advertise("yscrollbar" => $ysb); 
-     $cw->Advertise("corner" => $corner);
-     $cw->Advertise("ysbslice" => $slice);
+     $cw->Advertise('yscrollbar' => $ysb);
+     $cw->Advertise('corner' => $corner);
+     $cw->Advertise('ysbslice' => $slice);
      $corner->{'before'} = $ysb;
      $slice->{'before'} = $w;
      $y = 'w';
@@ -229,7 +228,7 @@ sub AddScrollbars
    elsif ($opt eq '-xscrollcommand')
     {
      my $xsb = Tk::Scrollbar->new($cw,-orient => 'horizontal', -command => [ 'xview', $w ]);
-     $cw->Advertise("xscrollbar" => $xsb); 
+     $cw->Advertise('xscrollbar' => $xsb);
      $xsb->{'before'} = $w;
      $x = 's';
      $s = 1;
@@ -261,7 +260,7 @@ sub packscrollbars
    my $ysb    = $cw->Subwidget('yscrollbar');
    if ($opt =~ /(o)?[we]/ && (($reqy = !defined($1)) || $ysb->Needed))
     {
-     my $yside = (($opt =~ /w/) ? 'left' : 'right');  
+     my $yside = (($opt =~ /w/) ? 'left' : 'right');
      $slice->pack(-side => $yside, -fill => 'y',-before => $slice->{'before'});
      $havey = 1;
      if ($reqy)
@@ -310,7 +309,7 @@ sub packscrollbars
      my $anchor = $opt;
      $anchor =~ s/o//g;
      $corner->configure(-height => $xsb->ReqHeight);
-     $corner->pack(-before => $corner->{'before'}, -side => $xside, 
+     $corner->pack(-before => $corner->{'before'}, -side => $xside,
                    -anchor => $anchor, -fill => 'x');
     }
    else

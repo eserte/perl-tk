@@ -7,37 +7,31 @@
 
 /* Author : Jan Nijtmans */
 /* Date   : 7/22/97        */
-#define NEED_REAL_STDIO 
-
 
 #include "tk.h"
 #include "tkVMacro.h"
 #include "imgInt.h"
 #include <string.h>
+#include <stdlib.h>
 
 /*
  * The format record for the BMP file format:
  */
 
-static int ChnMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Arg fileName,
-	Arg formatString, int *widthPtr, int *heightPtr));
-static int FileMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, FILE *f, char *fileName,
-	Arg formatString, int *widthPtr, int *heightPtr));
-static int ObjMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *dataObj,
-	Arg formatString, int *widthPtr, int *heightPtr));
+static int ChnMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Tcl_Obj *fileName,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ObjMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int ChnReadBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-	Arg fileName, Arg formatString, Tk_PhotoHandle imageHandle,
+	Tcl_Obj *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
-static int FileReadBMP _ANSI_ARGS_((Tcl_Interp *interp, FILE *f,
-	char *fileName, Arg formatString, Tk_PhotoHandle imageHandle,
+static int ObjReadBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
+	Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
-static int ObjReadBMP _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *dataObj,
-	Arg formatString, Tk_PhotoHandle imageHandle,
-	int destX, int destY, int width, int height, int srcX, int srcY));
-static int FileWriteBMP _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
-	Arg formatString, Tk_PhotoImageBlock *blockPtr));
+static int ChnWriteBMP _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
+	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 static int StringWriteBMP _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_DString *dataPtr, Arg formatString,
+	Tcl_DString *data, Tcl_Obj *format,
 	Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtBMP = {
@@ -46,7 +40,7 @@ Tk_PhotoImageFormat imgFmtBMP = {
     ObjMatchBMP,	/* stringMatchProc */
     ChnReadBMP,		/* fileReadProc */
     ObjReadBMP,		/* stringReadProc */
-    FileWriteBMP,	/* fileWriteProc */
+    ChnWriteBMP,	/* fileWriteProc */
     StringWriteBMP,	/* stringWriteProc */
 };
 
@@ -61,14 +55,14 @@ static int CommonReadBMP _ANSI_ARGS_((Tcl_Interp *interp, MFile *handle,
 	Tk_PhotoHandle imageHandle, int destX, int destY, int width,
 	int height, int srcX, int srcY));
 static int CommonWriteBMP _ANSI_ARGS_((Tcl_Interp *interp, MFile *handle,
-	Arg formatString, Tk_PhotoImageBlock *blockPtr));
+	Tk_PhotoImageBlock *blockPtr));
 static void putint _ANSI_ARGS_((MFile *handle, int i));
 
-static int ChnMatchBMP(interp, chan, fileName, formatString, widthPtr, heightPtr)
+static int ChnMatchBMP(interp, chan, fileName, format, widthPtr, heightPtr)
     Tcl_Interp *interp;
     Tcl_Channel chan;
-    Arg fileName;
-    Arg formatString;
+    Tcl_Obj *fileName;
+    Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
@@ -79,25 +73,10 @@ static int ChnMatchBMP(interp, chan, fileName, formatString, widthPtr, heightPtr
     return CommonMatchBMP(&handle, widthPtr, heightPtr, NULL, NULL, NULL, NULL);
 }
 
-static int FileMatchBMP(interp, f, fileName, formatString, widthPtr, heightPtr)
+static int ObjMatchBMP(interp, dataObj, format, widthPtr, heightPtr)
     Tcl_Interp *interp;
-    FILE *f;
-    char *fileName;
-    Arg formatString;
-    int *widthPtr, *heightPtr;
-{
-    MFile handle;
-
-    handle.data = (char *) f;
-    handle.state = IMG_FILE;
-
-    return CommonMatchBMP(&handle, widthPtr, heightPtr, NULL, NULL, NULL, NULL);
-}
-
-static int ObjMatchBMP(interp, dataObj, formatString, widthPtr, heightPtr)
-    Tcl_Interp *interp;
-    struct Tcl_Obj *dataObj;
-    Arg formatString;
+    Tcl_Obj *dataObj;
+    Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
@@ -178,12 +157,12 @@ static int CommonMatchBMP(handle, widthPtr, heightPtr, colorMap, numBits, numCol
     return 1;
 }
 
-static int ChnReadBMP(interp, chan, fileName, formatString, imageHandle,
+static int ChnReadBMP(interp, chan, fileName, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
     Tcl_Channel chan;
-    Arg fileName;
-    Arg formatString;
+    Tcl_Obj *fileName;
+    Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
     int width, height;
@@ -198,12 +177,11 @@ static int ChnReadBMP(interp, chan, fileName, formatString, imageHandle,
 	    width, height, srcX, srcY);
 }
 
-static int FileReadBMP(interp, f, fileName, formatString, imageHandle,
+static int ObjReadBMP(interp, data, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
-    FILE *f;
-    char *fileName;
-    Arg formatString;
+    Tcl_Obj *data;
+    Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
     int width, height;
@@ -211,26 +189,7 @@ static int FileReadBMP(interp, f, fileName, formatString, imageHandle,
 {
     MFile handle;
 
-    handle.data = (char *) f;
-    handle.state = IMG_FILE;
-
-    return CommonReadBMP(interp, &handle, imageHandle, destX, destY,
-	    width,height,srcX,srcY);
-}
-
-static int ObjReadBMP(interp, dataObj, formatString, imageHandle,
-	destX, destY, width, height, srcX, srcY)
-    Tcl_Interp *interp;
-    struct Tcl_Obj *dataObj;
-    Arg formatString;
-    Tk_PhotoHandle imageHandle;
-    int destX, destY;
-    int width, height;
-    int srcX, srcY;
-{
-    MFile handle;
-
-    ImgReadInit(dataObj,'B',&handle);
+    ImgReadInit(data,'B',&handle);
 
     return CommonReadBMP(interp, &handle, imageHandle, destX, destY,
 	    width, height, srcX, srcY);
@@ -373,50 +332,45 @@ error:
     return TCL_ERROR;
 }
 
-static int FileWriteBMP(interp, filename, formatString, blockPtr)
+static int ChnWriteBMP(interp, filename, format, blockPtr)
     Tcl_Interp *interp;
     char *filename;
-    Arg formatString;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
-    FILE *outfile = NULL;
+    Tcl_Channel chan;
     MFile handle;
-    Tcl_DString nameBuffer; 
-    char *fullname;
     int result;
 
-    if ((fullname=Tcl_TranslateFileName(interp,filename,&nameBuffer))==NULL) {
+    chan = Tcl_OpenFileChannel(interp, filename, "w", 0644);
+    if (!chan) {
+	return TCL_ERROR;
+    }
+    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 
-    if (!(outfile=fopen(fullname,"wb"))) {
-	Tcl_AppendResult(interp, filename, ": ", Tcl_PosixError(interp),
-		(char *)NULL);
-	Tcl_DStringFree(&nameBuffer);
+    handle.data = (char *) chan;
+    handle.state = IMG_CHAN;
+
+    result = CommonWriteBMP(interp, &handle, blockPtr);
+    if (Tcl_Close(interp, chan) == TCL_ERROR) {
 	return TCL_ERROR;
     }
-
-    Tcl_DStringFree(&nameBuffer);
-
-    handle.data = (char *) outfile;
-    handle.state = IMG_FILE;
-    
-    result = CommonWriteBMP(interp, &handle, formatString, blockPtr);
-    fclose(outfile);
     return result;
 }
 
-static int StringWriteBMP(interp, dataPtr, formatString, blockPtr)
+static int StringWriteBMP(interp, data, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
-    Arg formatString;
+    Tcl_DString *data;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     MFile handle;
     int result;
 
-    ImgWriteInit(dataPtr, &handle);
-    result = CommonWriteBMP(interp, &handle, formatString, blockPtr);
+    ImgWriteInit(data, &handle);
+    result = CommonWriteBMP(interp, &handle, blockPtr);
     ImgPutc(IMG_DONE, &handle);
     return result;
 }
@@ -433,10 +387,9 @@ static void putint(handle, i)
     ImgWrite(handle, (char *) buf, 4);
 }
 
-static int CommonWriteBMP(interp, handle, formatString, blockPtr)
+static int CommonWriteBMP(interp, handle, blockPtr)
     Tcl_Interp *interp;
     MFile *handle;
-    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     int bperline, nbytes, ncolors, i, x, y, greenOffset, blueOffset, alphaOffset;

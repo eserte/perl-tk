@@ -1,11 +1,11 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/After.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/After.pm#11$
 
 sub _cancelAll
 {
@@ -58,7 +58,7 @@ sub cancel
  my $w   = $obj->[0];
  if ($id)
   {
-   $w->Tk::after('cancel'=> $id); 
+   $w->Tk::after('cancel'=> $id);
    delete $w->{_After_}{$id};
    $obj->[1] = undef;
   }

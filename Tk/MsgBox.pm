@@ -9,10 +9,9 @@ package Tk::MsgBox;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/MsgBox.pm#5$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/MsgBox.pm#7$
 
 use Tk::Dialog;
-use vars qw(@ISA);
 use base  'Tk::Dialog';
 Construct Tk::Widget 'MsgBox';
 
@@ -26,7 +25,7 @@ sub Populate {
     $args->{-bitmap} = delete $args->{-icon} if defined $args->{-icon};
     $args->{-text} = delete $args->{-message} if defined $args->{-message};
     $args->{-type} = 'OK' unless defined $args->{-type};
-    
+
     my $type;
     if (defined($type = delete $args->{-type})) {
 	delete $args->{-type};
@@ -47,10 +46,10 @@ sub Populate {
 	$args->{-buttons} = \@buttons;
 	$cw->{-default_button_text} = delete $args->{-default} if defined $args->{-default};
 	if (not defined $cw->{-default_button_text} and scalar(@buttons) == 1) {
-	   $cw->{-default_button_text} = $buttons[0]; 
+	   $cw->{-default_button_text} = $buttons[0];
 	}
     }
 
 } # end Populate
- 
+
 1;

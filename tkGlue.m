@@ -62,5 +62,9 @@
 #  define XSTkCommand (*TkglueVptr->V_XSTkCommand)
 #endif
 
+#ifndef install_vtab
+#  define install_vtab (*TkglueVptr->V_install_vtab)
+#endif
+
 #endif /* NO_VTABLES */
 #endif /* _TKGLUE_VM */

@@ -36,8 +36,8 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
-  sv_setiv(FindTkVarName("TkimgphotoVtab",1),(IV) TkimgphotoVGet());   
-  sv_setiv(FindTkVarName("ImgintVtab",1),(IV) ImgintVGet());   
+  install_vtab("TkimgphotoVtab",TkimgphotoVGet(),sizeof(TkimgphotoVtab));
+  install_vtab("ImgintVtab",ImgintVGet(),sizeof(ImgintVtab));
   Tk_CreateImageType(&tkPhotoImageType);
   Tk_CreatePhotoImageFormat(&tkImgFmtPPM);
   Tk_CreatePhotoImageFormat(&imgFmtGIF);

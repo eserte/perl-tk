@@ -11,10 +11,10 @@ use Carp;
 
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#11$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#15$
 
 sub scan_file;
-      
+
 sub do_include
 {
  my ($inc,$dep,@include) = @_;
@@ -29,7 +29,7 @@ sub do_include
   }
  warn "Cannot find '$inc' assume made\n";
  $dep->{$inc} = 1;
-}    
+}
 
 sub remove_comment
 {
@@ -38,7 +38,7 @@ sub remove_comment
 
 
 sub term
-{          
+{
  remove_comment();
  return !term() if s/^\s*!//;
  return exists($define{$1}) if s/^\s*defined\s*\(([_A-Za-z][_\w]*)\)//;
@@ -52,29 +52,29 @@ sub term
   }
  warn "Invalid term:$_";
  return undef;
-}    
+}
 
-my %pri = ( '&&' => 4, 
-            '||' => 3, 
-            '>=' => 2, '<=' => 2, '<' => 2, '>' => 2, 
+my %pri = ( '&&' => 4,
+            '||' => 3,
+            '>=' => 2, '<=' => 2, '<' => 2, '>' => 2,
             '==' => 1, '!=' => 1  );
 
 sub expression
-{     
+{
  my $pri = shift;
  #printf STDERR "%d# expr . $_\n";
  my $invert = 0;
  my $lhs = term() || 0;
  remove_comment();
  while (/^\s*(&&|\|\||>=?|<=?|==|!=)/)
-  {         
-   my $op = $1;        
+  {
+   my $op = $1;
    last unless ($pri{$op} >= $pri);
    s/^\s*\Q$op\E//;
    # printf STDERR "%d# $lhs $op . $_\n";
    my $rhs = expression($pri{$op}) || 0;
    my $e = "$lhs $op $rhs";
-   $lhs = eval "$e" || 0;    
+   $lhs = eval "$e" || 0;
    die "'$e' $@"  if $@;
    remove_comment();
   }
@@ -96,17 +96,17 @@ sub do_if
     }
   }
  else
-  {                           
+  {
    local $_ = $expr;
-   my $val = expression(0) != 0;  
-   warn "trailing: $_" if /\S/; 
+   my $val = expression(0) != 0;
+   warn "trailing: $_" if /\S/;
 #  printf STDERR "%d from $key $expr\n",$val;
    return $val;
   }
 }
 
 sub scan_file
-{                
+{
  no strict 'refs';
  my ($file,$dep) = @_;
  open($file,"<$file") || die "Cannot open $file:$!";
@@ -125,16 +125,16 @@ sub scan_file
      my $key = $1;
      my $rest = $2;
      if ($key =~ /^if(.*)$/)
-      {                   
+      {
        push(@stack,$live);
-       $live = do_if($key,$rest);       
-      }  
+       $live = do_if($key,$rest);
+      }
      elsif ($key eq 'else')
-      {  
+      {
        $live = ($live) ? 0 : $stack[-1];
-      }  
+      }
      elsif ($key eq 'endif')
-      {  
+      {
        if (@stack)
         {
          $live = pop(@stack);
@@ -143,9 +143,9 @@ sub scan_file
         {
          die "$file:$.: Mismatched #endif\n";
         }
-      }  
+      }
      elsif ($live)
-      {  
+      {
        if ($key eq 'include')
         {
          do_include($1,$dep,$srcdir,@include) if $rest =~ /^"(.*)"/;
@@ -155,7 +155,7 @@ sub scan_file
          if ($rest =~ /^\s*([_A-Za-z][\w_]*)\s*(.*)$/)
           {
            my $sym = $1;
-           my $val = $2 || 1;  
+           my $val = $2 || 1;
            $val =~ s#\s*/\*.*?\*/\s*# #g;
            $define{$sym} = $val;
           }
@@ -181,7 +181,7 @@ sub scan_file
         }
       }
      # printf STDERR "$file:$.: %d $key $rest\n",$live if ($ol != $live);
-    }     
+    }
    else
     {
      # print if $live;
@@ -192,7 +192,7 @@ sub scan_file
   {
    warn "$file:$.: unclosed #if\n";
   }
-}    
+}
 
 sub reset_includes
 {
@@ -202,7 +202,7 @@ sub reset_includes
 }
 
 sub command_line
-{            
+{
  reset_includes();
  my %def = ('__STDC__' => 1 );
  my $data = '';
@@ -224,17 +224,17 @@ sub command_line
    elsif (/^-D([^=]+)(?:=(.*))?$/)
     {
      $def{$1} = $2 || 1;
-    }                      
+    }
    elsif (/^-U(.*)$/)
     {
      delete $def{$1};
-    }                      
+    }
    elsif (/^(-.*)$/)
     {
      warn "Ignoring $1\n";
     }
    elsif (/^(.*)\.[^\.]+$/)
-    { 
+    {
      local %define = %def;
      my $base = $1;
      my $file = $_;
@@ -245,14 +245,14 @@ sub command_line
      delete $dep{$file};
      my @dep = (sort(keys %dep));
      while (@dep)
-      {       
+      {
        my $dep = shift(@dep);
        $dep =~ s#^\./##;
        if (length($str)+length($dep) > 70)
         {
          $data .= "$str \\\n";
-         $str = " ";
-        }   
+         $str = ' ';
+        }
        else
         {
          $str .= ' ';

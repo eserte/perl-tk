@@ -1,7 +1,7 @@
 package Tk::Submethods;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Submethods.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Submethods.pm#11$
 
 sub import
 {

@@ -44,6 +44,22 @@ if (defined $Config{'gccversion'})
    }
  }
 
+if ($] >= 5.005)
+ {
+  # Add PPM support stuff
+  push(@macro,
+       ABSTRACT => 'Tk - a Graphical User Interface Toolkit',
+       AUTHOR   => 'nick@ni-s.u-net.com (Nick Ing-Simmons)'
+      );
+  my $arch = ($^O eq 'MSWin32') ? $ENV{'PROCESSOR_ARCHITECTURE'} : $Config{'archname'};
+  push(@ARGV,"BINARY_LOCATION=$arch/Tk$VERSION-PPM.tar.gz");
+  warn "PPM for perl$]\n";
+ } 
+else
+ {
+  warn "No PPM for perl$]\n";
+ }
+
 $macro[1]->{WINARCH} = $win_arch;
 
 $define{'USE_PROTOTYPE'} = 1     if ($Config{'prototype'});

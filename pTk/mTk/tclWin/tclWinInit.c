@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinInit.c 1.32 97/06/24 17:28:26
+ * RCS: @(#) $Id: tclWinInit.c,v 1.12 1999/02/02 18:36:31 stanton Exp $
  */
 
 #include "tclInt.h"
@@ -220,6 +220,8 @@ TclPlatformInit(interp)
 	    Tcl_SetVar(interp, "tcl_pkgPath", Tcl_JoinPath(2, argv, &ds),
 		    TCL_GLOBAL_ONLY|TCL_LIST_ELEMENT);
 	}
+    } else {
+	Tcl_SetVar(interp, "tcl_pkgPath", "", TCL_GLOBAL_ONLY);
     }
 
     /*
@@ -239,6 +241,18 @@ TclPlatformInit(interp)
 		processors[oemId->wProcessorArchitecture],
 		TCL_GLOBAL_ONLY);
     }
+
+#ifdef _DEBUG
+    /*
+     * The existence of the "debug" element of the tcl_platform array indicates
+     * that this particular Tcl shell has been compiled with debug information.
+     * Using "info exists tcl_platform(debug)" a Tcl script can direct the 
+     * interpreter to load debug versions of DLLs with the load command.
+     */
+
+    Tcl_SetVar2(interp, "tcl_platform", "debug", "1",
+	    TCL_GLOBAL_ONLY);
+#endif
 
     /*
      * Set up the HOME environment variable from the HOMEDRIVE & HOMEPATH

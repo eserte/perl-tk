@@ -10,12 +10,12 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package Tk::Scale; 
+package Tk::Scale;
 require Tk;
 use AutoLoader;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Scale/Scale.pm#6$
+use vars qw($VERSION);
+$VERSION = '3.008'; # $Id: //depot/Tk8/Scale/Scale.pm#8$
 
 use base  qw(Tk::Widget);
 
@@ -25,7 +25,7 @@ bootstrap Tk::Scale $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::scale }
 
-Tk::Methods("coords","get","identify","set");
+Tk::Methods('coords','get','identify','set');
 
 
 import Tk qw(Ev);
@@ -45,36 +45,36 @@ sub ClassInit
 {
  my ($class,$mw) = @_;
 
- $mw->bind($class,"<Enter>",['Enter',Ev('x'),Ev('y')]);
- $mw->bind($class,"<Motion>",['Activate',Ev('x'),Ev('y')]);
- $mw->bind($class,"<Leave>",'Leave');
+ $mw->bind($class,'<Enter>',['Enter',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<Motion>',['Activate',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<Leave>','Leave');
 
- $mw->bind($class,"<1>",['ButtonDown',Ev('x'),Ev('y')]);
- $mw->bind($class,"<B1-Motion>",['Drag',Ev('x'),Ev('y')]);
- $mw->bind($class,"<B1-Leave>",'NoOp');
- $mw->bind($class,"<B1-Enter>",'NoOp');
- $mw->bind($class,"<ButtonRelease-1>",['ButtonUp',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<1>',['ButtonDown',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B1-Motion>',['Drag',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B1-Leave>','NoOp');
+ $mw->bind($class,'<B1-Enter>','NoOp');
+ $mw->bind($class,'<ButtonRelease-1>',['ButtonUp',Ev('x'),Ev('y')]);
 
- $mw->bind($class,"<2>",['ButtonDown',Ev('x'),Ev('y')]);
- $mw->bind($class,"<B2-Motion>",['Drag',Ev('x'),Ev('y')]);
- $mw->bind($class,"<B2-Leave>",'NoOp');
- $mw->bind($class,"<B2-Enter>",'NoOp');
- $mw->bind($class,"<ButtonRelease-2>",['ButtonUp',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<2>',['ButtonDown',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B2-Motion>',['Drag',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B2-Leave>','NoOp');
+ $mw->bind($class,'<B2-Enter>','NoOp');
+ $mw->bind($class,'<ButtonRelease-2>',['ButtonUp',Ev('x'),Ev('y')]);
 
- $mw->bind($class,"<Control-1>",['ControlPress',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<Control-1>',['ControlPress',Ev('x'),Ev('y')]);
 
- $mw->bind($class,"<Up>",['Increment',"up","little","noRepeat"]);
- $mw->bind($class,"<Down>",['Increment',"down","little","noRepeat"]);
- $mw->bind($class,"<Left>",['Increment',"up","little","noRepeat"]);
- $mw->bind($class,"<Right>",['Increment',"down","little","noRepeat"]);
+ $mw->bind($class,'<Up>',['Increment','up','little','noRepeat']);
+ $mw->bind($class,'<Down>',['Increment','down','little','noRepeat']);
+ $mw->bind($class,'<Left>',['Increment','up','little','noRepeat']);
+ $mw->bind($class,'<Right>',['Increment','down','little','noRepeat']);
 
- $mw->bind($class,"<Control-Up>",['Increment',"up","big","noRepeat"]);
- $mw->bind($class,"<Control-Down>",['Increment',"down","big","noRepeat"]);
- $mw->bind($class,"<Control-Left>",['Increment',"up","big","noRepeat"]);
- $mw->bind($class,"<Control-Right>",['Increment',"down","big","noRepeat"]);
+ $mw->bind($class,'<Control-Up>',['Increment','up','big','noRepeat']);
+ $mw->bind($class,'<Control-Down>',['Increment','down','big','noRepeat']);
+ $mw->bind($class,'<Control-Left>',['Increment','up','big','noRepeat']);
+ $mw->bind($class,'<Control-Right>',['Increment','down','big','noRepeat']);
 
- $mw->bind($class,"<Home>",["set",Ev("cget","-from")]);
- $mw->bind($class,"<End>",["set",Ev("cget","-to")]);
+ $mw->bind($class,'<Home>',['set',Ev('cget','-from')]);
+ $mw->bind($class,'<End>',['set',Ev('cget','-to')]);
  return $class;
 }
 
@@ -95,23 +95,23 @@ sub Activate
  my $w = shift;
  my $x = shift;
  my $y = shift;
- return if ($w->cget("-state") eq "disabled");
+ return if ($w->cget('-state') eq 'disabled');
  my $ident = $w->identify($x,$y);
  if (defined($ident) && $ident eq 'slider')
   {
-   $w->configure(-state => "active")
+   $w->configure(-state => 'active')
   }
  else
   {
-   $w->configure(-state => "normal")
+   $w->configure(-state => 'normal')
   }
 }
 
 sub Leave
 {
  my ($w) = @_;
- $w->configure("-activebackground",$w->{'activeBg'}) if ($Tk::strictMotif);
- $w->configure("-state","normal")  if ($w->cget("-state") eq "active");
+ $w->configure('-activebackground',$w->{'activeBg'}) if ($Tk::strictMotif);
+ $w->configure('-state','normal')  if ($w->cget('-state') eq 'active');
 }
 
 sub Enter
@@ -119,8 +119,8 @@ sub Enter
  my ($w,$x,$y) = @_;
  if ($Tk::strictMotif)
   {
-   $w->{'activeBg'} = $w->cget("-activebackground");
-   $w->configure("-activebackground",$w->cget("-background"));
+   $w->{'activeBg'} = $w->cget('-activebackground');
+   $w->configure('-activebackground',$w->cget('-background'));
   }
  $w->Activate($x,$y);
 }
@@ -149,15 +149,15 @@ sub ButtonDown
  $Tk::dragging = 0;
  $el = $w->identify($x,$y);
  return unless ($el);
- if ($el eq "trough1")
+ if ($el eq 'trough1')
   {
-   $w->Increment("up","little","initial")
+   $w->Increment('up','little','initial')
   }
- elsif ($el eq "trough2")
+ elsif ($el eq 'trough2')
   {
-   $w->Increment("down","little","initial")
+   $w->Increment('down','little','initial')
   }
- elsif ($el eq "slider")
+ elsif ($el eq 'slider')
   {
    $Tk::dragging = 1;
    my @coords = $w->coords();
@@ -221,34 +221,34 @@ sub Increment
  my $big = shift;
  my $repeat = shift;
  my $inc;
- if ($big eq "big")
+ if ($big eq 'big')
   {
-   $inc = $w->cget("-bigincrement");
+   $inc = $w->cget('-bigincrement');
    if ($inc == 0)
     {
-     $inc = abs(($w->cget("-to")-$w->cget("-from")))/10.0
+     $inc = abs(($w->cget('-to')-$w->cget('-from')))/10.0
     }
-   if ($inc < $w->cget("-resolution"))
+   if ($inc < $w->cget('-resolution'))
     {
-     $inc = $w->cget("-resolution")
+     $inc = $w->cget('-resolution')
     }
   }
  else
   {
-   $inc = $w->cget("-resolution")
+   $inc = $w->cget('-resolution')
   }
- if (($w->cget("-from") > $w->cget("-to")) ^ ($dir eq "up"))
+ if (($w->cget('-from') > $w->cget('-to')) ^ ($dir eq 'up'))
   {
    $inc = -$inc
   }
  $w->set($w->get()+$inc);
- if ($repeat eq "again")
+ if ($repeat eq 'again')
   {
-   $w->RepeatId($w->after($w->cget("-repeatinterval"),"Increment",$w,$dir,$big,"again"));
+   $w->RepeatId($w->after($w->cget('-repeatinterval'),'Increment',$w,$dir,$big,'again'));
   }
- elsif ($repeat eq "initial")
+ elsif ($repeat eq 'initial')
   {
-   $w->RepeatId($w->after($w->cget("-repeatdelay"),"Increment",$w,$dir,$big,"again"));
+   $w->RepeatId($w->after($w->cget('-repeatdelay'),'Increment',$w,$dir,$big,'again'));
   }
 }
 # ControlPress --
@@ -264,13 +264,13 @@ sub ControlPress
  my ($w,$x,$y) = @_;
  my $el = $w->identify($x,$y);
  return unless ($el);
- if ($el eq "trough1")
+ if ($el eq 'trough1')
   {
-   $w->set($w->cget("-from"))
+   $w->set($w->cget('-from'))
   }
- elsif ($el eq "trough2")
+ elsif ($el eq 'trough2')
   {
-   $w->set($w->cget("-to"))
+   $w->set($w->cget('-to'))
   }
 }
 

@@ -1,13 +1,13 @@
 package Tk::Configure;
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Configure.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Configure.pm#6$
 
 use Carp;
 use Tk::Pretty;
 
 
-# Class that handles cget/configure for options that 
-# need translating from public form 
+# Class that handles cget/configure for options that
+# need translating from public form
 # e.g. $cw->configure(-label => 'fred')
 # into $cw->subwiget('label')->configure(-text => 'fred')
 # Should probably do something clever with regexp's here
@@ -22,7 +22,7 @@ sub new
 
 sub cget
 {
- croak("Wrong number of args to cget") unless (@_ == 2);
+ croak('Wrong number of args to cget') unless (@_ == 2);
  my ($alias,$key) = @_;
  my ($set,$get,$widget,@args) = @$alias;
  my @result = $widget->$get(@args);

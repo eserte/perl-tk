@@ -42,9 +42,9 @@ use Carp;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
-$Tk::version     = "8.0";
-$Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.013';
+$Tk::version     = '8.0';
+$Tk::patchLevel  = '8.0';
+$Tk::VERSION     = '800.014';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -118,17 +118,17 @@ sub __DIE__
 }
 
 sub XEvent::xy { shift->Info('xy') }
-            
+
 sub XEvent::AUTOLOAD
-{                                             
- my ($meth) = $XEvent::AUTOLOAD =~ /(\w)$/; 
+{
+ my ($meth) = $XEvent::AUTOLOAD =~ /(\w)$/;
  no strict 'refs';
  *{$XEvent::AUTOLOAD} = sub { shift->Info($meth) };
  goto &$XEvent::AUTOLOAD;
 }
 
 #foreach my $meth ('xy',split('','abcdfhkmopstvwxyABDEKNRSTWXY#'))
-# {            
+# {
 #  no strict 'refs';
 #  *{'XEvent::'.$meth} = sub { shift->Info($meth) };
 # }
@@ -148,7 +148,7 @@ sub Ev
   {
    $obj = \@args;
   }
- return bless $obj,"Tk::Ev";
+ return bless $obj,'Tk::Ev';
 }
 
 sub InitClass
@@ -187,17 +187,17 @@ sub SelectionOwn
 
 sub SelectionOwner
 {
- selection('own',"-displayof",@_);
+ selection('own','-displayof',@_);
 }
 
 sub SelectionClear
 {
- selection('clear',"-displayof",@_);
+ selection('clear','-displayof',@_);
 }
 
 sub SelectionExists
 {
- selection('exists',"-displayof",@_);
+ selection('exists','-displayof',@_);
 }
 
 sub SelectionHandle
@@ -209,7 +209,6 @@ sub SelectionHandle
 sub SplitString
 {
  local $_ = shift;
- # carp "SplitString '$_'";
  my (@arr, $tmp);
  while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
    if (defined $1) { push @arr, $1 }
@@ -245,7 +244,7 @@ sub MessageBox {
     $args->{-bitmap} = delete $args->{-icon} if defined $args->{-icon};
     $args->{-text} = delete $args->{-message} if defined $args->{-message};
     $args->{-type} = 'OK' unless defined $args->{-type};
-    
+
     my $type;
     if (defined($type = delete $args->{-type})) {
 	delete $args->{-type};
@@ -256,7 +255,7 @@ sub MessageBox {
 	$args->{-default_button} = delete $args->{-default} if
 	    defined $args->{-default};
 	if (not defined $args->{-default_button} and scalar(@buttons) == 1) {
-	   $args->{-default_button} = $buttons[0]; 
+	   $args->{-default_button} = $buttons[0];
 	}
 	return $parent->Dialog(%$args)->Show;
     }
@@ -343,7 +342,7 @@ sub MainLoop
      DoOneEvent(0);
     }
   }
-} 
+}
 
 sub tkinit { return MainWindow->new(@_) }
 
@@ -352,7 +351,7 @@ sub catch (&)
 {
  my $sub = shift;
  eval {local $SIG{'__DIE__'}; &$sub };
-} 
+}
 
 my $Home;
 
@@ -540,7 +539,7 @@ sub FocusOK
    return 0;
   }
  catch { $value = $w->cget('-state') } ;
- if (!$@ && defined($value) && $value eq "disabled")
+ if (!$@ && defined($value) && $value eq 'disabled')
   {
    return 0;
   }
@@ -564,7 +563,7 @@ sub EnterFocus
  my $w  = shift;
  my $Ev = $w->XEvent;
  my $d  = $Ev->d;
- $w->Tk::focus() if ($d eq "NotifyAncestor" ||  $d eq "NotifyNonlinear" ||  $d eq "NotifyInferior");
+ $w->Tk::focus() if ($d eq 'NotifyAncestor' ||  $d eq 'NotifyNonlinear' ||  $d eq 'NotifyInferior');
 }
 
 sub tabFocus
@@ -575,7 +574,7 @@ sub tabFocus
 sub focusFollowsMouse
 {
  my $widget = shift;
- $widget->bind('all',"<Enter>","EnterFocus");
+ $widget->bind('all','<Enter>','EnterFocus');
 }
 
 # tkTraverseToMenu --
@@ -593,7 +592,7 @@ sub TraverseToMenu
 {
  my $w = shift;
  my $char = shift;
- return unless(defined $char && $char ne "");
+ return unless(defined $char && $char ne '');
  $w = $w->toplevel->FindMenu($char);
 }
 # tkFirstMenu --
@@ -606,7 +605,7 @@ sub TraverseToMenu
 sub FirstMenu
 {
  my $w = shift;
- $w = $w->toplevel->FindMenu("");
+ $w = $w->toplevel->FindMenu('');
 }
 
 # These wrappers don't use method syntax so need to live
@@ -615,7 +614,7 @@ sub FirstMenu
 sub Selection
 {my $widget = shift;
  my $cmd    = shift;
- croak "Use SelectionOwn/SelectionOwner" if ($cmd eq 'own');
+ croak 'Use SelectionOwn/SelectionOwner' if ($cmd eq 'own');
  croak "Use Selection\u$cmd()";
 }
 
@@ -628,8 +627,8 @@ sub Clipboard
 sub Receive
 {
  my $w = shift;
- warn "Receive(" . join(',',@_) .")";
- die "Tk rejects send(" . join(',',@_) .")\n";
+ warn 'Receive(' . join(',',@_) .')';
+ die 'Tk rejects send(' . join(',',@_) .")\n";
 }
 
 sub break
@@ -691,6 +690,6 @@ sub lsearch
  return -1;
 }
 
- 
+
 
 

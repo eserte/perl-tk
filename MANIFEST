@@ -80,6 +80,7 @@ Mwm/NotWin.exc
 NBFrame/Makefile.PL
 NBFrame/NBFrame.pm
 NBFrame/NBFrame.xs
+PPM-HowTo
 Photo/Makefile.PL
 Photo/Photo.pm
 Photo/Photo.xs
@@ -260,6 +261,7 @@ canvas_ps			Writes PostScript for Canvas to a file.
 canvas_scroll			Basic test of scrolling a Canvas
 cbtest				Test of callback returns.
 check_source
+check_syms
 checklen			Check names not > 14 chars long for old UNIXes.
 chnGlue.c
 classtree
@@ -377,6 +379,7 @@ demos/demos/widget_lib/texts.pl
 demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/vscale.pl
 demos/demos/widtrib/HList.pl
+demos/demos/widtrib/HList2.pl
 demos/demos/widtrib/TEMPLATE.pl
 demos/demos/widtrib/Tiler.pl
 demos/demos/widtrib/balloon.pl
@@ -446,6 +449,7 @@ menubug
 mitem_test
 mkExt
 mkdist
+mkppm.bat
 motif_hack
 myConfig
 needed
@@ -508,23 +512,28 @@ pTk/mTk/MANIFEST.SKIP
 pTk/mTk/README
 pTk/mTk/additions/ClientWin.c
 pTk/mTk/additions/exWinHandle.c
+pTk/mTk/additions/img.h
 pTk/mTk/additions/imgBMP.c
-pTk/mTk/additions/imgDllEntry.c
 pTk/mTk/additions/imgGIF.c
 pTk/mTk/additions/imgInit.c
 pTk/mTk/additions/imgInt.h
 pTk/mTk/additions/imgJPEG.c
+pTk/mTk/additions/imgObj.c
 pTk/mTk/additions/imgPNG.c
 pTk/mTk/additions/imgPS.c
 pTk/mTk/additions/imgPmap.c
 pTk/mTk/additions/imgPmap.h
 pTk/mTk/additions/imgTIFF.c
 pTk/mTk/additions/imgTIFFjpeg.c
+pTk/mTk/additions/imgTIFFpixar.c
 pTk/mTk/additions/imgTIFFzip.c
+pTk/mTk/additions/imgUnixPmap.c
+pTk/mTk/additions/imgUtil.c
+pTk/mTk/additions/imgWinPmap.c
+pTk/mTk/additions/imgWindow.c
 pTk/mTk/additions/imgXBM.c
 pTk/mTk/additions/imgXPM.c
 pTk/mTk/additions/pTk.exc
-pTk/mTk/additions/tkMacInt.h
 pTk/mTk/generic/README
 pTk/mTk/generic/default.h
 pTk/mTk/generic/ks_names.h
@@ -674,6 +683,7 @@ pTk/mTk/tclGeneric/tclResolve.c
 pTk/mTk/tclGeneric/tclStringObj.c
 pTk/mTk/tclGeneric/tclTest.c
 pTk/mTk/tclGeneric/tclTestObj.c
+pTk/mTk/tclGeneric/tclTestProcBodyObj.c
 pTk/mTk/tclGeneric/tclTimer.c
 pTk/mTk/tclGeneric/tclUtil.c
 pTk/mTk/tclGeneric/tclVar.c
@@ -1305,6 +1315,7 @@ pod/send.pod
 pod/subs
 pod/tidypod
 pod/tixWm.pod
+pod/tkpod2ipf
 pod/tkvars.pod
 pod/widgets.pod
 popup
@@ -1332,6 +1343,7 @@ t/font.t
 t/geomgr.t
 t/mega.t
 t/mwm.t
+t/photo.t
 t/widget.t
 t/zzHList.t
 t/zzPhoto.t

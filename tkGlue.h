@@ -92,7 +92,7 @@ EXTERN Tk_Window mainWindow;
 EXTERN void DumpStack _ANSI_ARGS_((void));
 EXTERN void  Boot_Glue _ANSI_ARGS_((void));
 EXTERN void  Boot_Tix  _ANSI_ARGS_((void));
-EXTERN void install_vtab _((char *name, void *table, size_t size));
+EXTERN void install_vtab _ANSI_ARGS_((char *name, void *table, size_t size));
 extern SV *TagIt _((SV *sv, char *type));
 extern void Font_DESTROY _((SV *sv));
 

@@ -1,22 +1,22 @@
-package Tk::Canvas; 
+package Tk::Canvas;
 require Tk;
-use base qw(Tk::Widget); 
+use base qw(Tk::Widget);
 Construct Tk::Widget 'Canvas';
 
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Canvas/Canvas.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Canvas/Canvas.pm#6$
 
 bootstrap Tk::Canvas $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::canvas }
 
-Tk::Methods("addtag","bbox","bind","canvasx","canvasy","coords","create",
-            "dchars","delete","dtag","find","focus","gettags","icursor",
-            "index","insert","itemcget","itemconfigure","lower","move",
-            "postscript","raise","scale","scan","select","type","xview","yview");
+Tk::Methods('addtag','bbox','bind','canvasx','canvasy','coords','create',
+            'dchars','delete','dtag','find','focus','gettags','icursor',
+            'index','insert','itemcget','itemconfigure','lower','move',
+            'postscript','raise','scale','scan','select','type','xview','yview');
 
-use Tk::Submethods ( 'create' => [qw(arc bitmap image line oval 
+use Tk::Submethods ( 'create' => [qw(arc bitmap image line oval
                                  polygon rectangle text window)],
                      'scan'   => [qw(mark dragto)],
                      'select' => [qw(from clear item to)],

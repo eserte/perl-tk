@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWinPointer.c 1.28 97/10/31 08:40:07
+ * RCS: @(#) $Id: tkWinPointer.c,v 1.4 1999/02/04 21:00:57 stanton Exp $
  */
 
 #include "tkWinInt.h"
@@ -236,6 +236,31 @@ MouseTimerProc(clientData)
 
     GetCursorPos(&pos);
     Tk_PointerEvent(NULL, pos.x, pos.y);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinCancelMouseTimer --
+ *
+ *    If the mouse timer is set, cancel it.
+ *
+ * Results:
+ *    None.
+ *
+ * Side effects:
+ *    May cancel the mouse timer.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkWinCancelMouseTimer()
+{
+    if (mouseTimerSet) {
+	Tcl_DeleteTimerHandler(mouseTimer);
+	mouseTimerSet = 0;
+    }
 }
 
 /*

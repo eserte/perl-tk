@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclObj.c 1.47 97/10/30 13:39:00
+ * RCS: @(#) $Id: tclObj.c,v 1.3 1998/10/05 22:32:09 escoffon Exp $
  */
 
 #include "tclInt.h"
@@ -134,6 +134,7 @@ InitTypeTable()
     Tcl_RegisterObjType(&tclStringType);
     Tcl_RegisterObjType(&tclListType);
     Tcl_RegisterObjType(&tclByteCodeType);
+    Tcl_RegisterObjType(&tclProcBodyType);
 
     tclEmptyStringRep = (char *) ckalloc((unsigned) 1);
     tclEmptyStringRep[0] = '\0';

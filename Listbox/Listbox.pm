@@ -10,10 +10,10 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package Tk::Listbox; 
+package Tk::Listbox;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Listbox/Listbox.pm#19$
+use vars qw($VERSION);
+$VERSION = '3.021'; # $Id: //depot/Tk8/Listbox/Listbox.pm#21$
 
 use Tk qw(Ev);
 require Tk::Clipboard;
@@ -23,18 +23,18 @@ use base  qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Listbox';
 
-bootstrap Tk::Listbox $Tk::VERSION; 
+bootstrap Tk::Listbox $Tk::VERSION;
 
-sub Tk_cmd { \&Tk::listbox } 
+sub Tk_cmd { \&Tk::listbox }
 
-Tk::Methods("activate","bbox","curselection","delete","get","index",
-            "insert","nearest","scan","see","selection","size",
-            "xview","yview");
+Tk::Methods('activate','bbox','curselection','delete','get','index',
+            'insert','nearest','scan','see','selection','size',
+            'xview','yview');
 
 use Tk::Submethods ( 'selection' => [qw(anchor clear includes set)],
                      'scan' => [qw(mark dragto)]
                    );
- 
+
 *Getselected = \&getSelected;
 
 sub clipEvents
@@ -69,81 +69,85 @@ sub ClassInit
  my ($class,$mw) = @_;
  $class->SUPER::ClassInit($mw);
  # Standard Motif bindings:
- $mw->bind($class,"<1>",['BeginSelect',Ev('index',Ev('@'))]);
- $mw->bind($class,"<B1-Motion>",['Motion',Ev('index',Ev('@'))]);
- $mw->bind($class,"<ButtonRelease-1>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->CancelRepeat;
-		$w->activate($Ev->xy);
-	       }
-	      )
+ $mw->bind($class,'<1>',['BeginSelect',Ev('index',Ev('@'))]);
+ $mw->bind($class,'<B1-Motion>',['Motion',Ev('index',Ev('@'))]);
+ $mw->bind($class,'<ButtonRelease-1>','ButtonRelease_1');
  ;
- $mw->bind($class,"<Shift-1>",['BeginExtend',Ev('index',Ev('@'))]);
- $mw->bind($class,"<Control-1>",['BeginToggle',Ev('index',Ev('@'))]);
+ $mw->bind($class,'<Shift-1>',['BeginExtend',Ev('index',Ev('@'))]);
+ $mw->bind($class,'<Control-1>',['BeginToggle',Ev('index',Ev('@'))]);
 
- $mw->bind($class,"<B1-Leave>",['AutoScan',Ev('x'),Ev('y')]);
- $mw->bind($class,"<B1-Enter>",'CancelRepeat');
- $mw->bind($class,"<Up>",['UpDown',-1]);
- $mw->bind($class,"<Shift-Up>",['ExtendUpDown',-1]);
- $mw->bind($class,"<Down>",['UpDown',1]);
- $mw->bind($class,"<Shift-Down>",['ExtendUpDown',1]);
+ $mw->bind($class,'<B1-Leave>',['AutoScan',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B1-Enter>','CancelRepeat');
+ $mw->bind($class,'<Up>',['UpDown',-1]);
+ $mw->bind($class,'<Shift-Up>',['ExtendUpDown',-1]);
+ $mw->bind($class,'<Down>',['UpDown',1]);
+ $mw->bind($class,'<Shift-Down>',['ExtendUpDown',1]);
 
- $mw->XscrollBind($class); 
- $mw->PriorNextBind($class); 
+ $mw->XscrollBind($class);
+ $mw->PriorNextBind($class);
 
- $mw->bind($class,"<Control-Home>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->activate(0);
-		$w->see(0);
-		$w->selectionClear(0,"end");
-		$w->selectionSet(0)
-	       }
-	      )
+ $mw->bind($class,'<Control-Home>','Cntrl_Home');
  ;
- $mw->bind($class,"<Shift-Control-Home>",['DataExtend',0]);
- $mw->bind($class,"<Control-End>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		$w->activate("end");
-		$w->see("end");
-		$w->selectionClear(0,"end");
-		$w->selectionSet('end')
-	       }
-	      )
+ $mw->bind($class,'<Shift-Control-Home>',['DataExtend',0]);
+ $mw->bind($class,'<Control-End>','Cntrl_End');
  ;
- $mw->bind($class,"<Shift-Control-End>",['DataExtend','end']);
+ $mw->bind($class,'<Shift-Control-End>',['DataExtend','end']);
  # $class->clipboardOperations($mw,'Copy');
- $mw->bind($class,"<space>",['BeginSelect',Ev('index','active')]);
- $mw->bind($class,"<Select>",['BeginSelect',Ev('index','active')]);
- $mw->bind($class,"<Control-Shift-space>",['BeginExtend',Ev('index','active')]);
- $mw->bind($class,"<Shift-Select>",['BeginExtend',Ev('index','active')]);
- $mw->bind($class,"<Escape>",'Cancel');
- $mw->bind($class,"<Control-slash>",'SelectAll');
- $mw->bind($class,"<Control-backslash>",
-	       sub
-	       {
-		my $w = shift;
-		my $Ev = $w->XEvent;
-		if ($w->cget("-selectmode") ne "browse")
-		 {
-		  $w->selectionClear(0,"end");
-		 }
-	       }
-	      )
+ $mw->bind($class,'<space>',['BeginSelect',Ev('index','active')]);
+ $mw->bind($class,'<Select>',['BeginSelect',Ev('index','active')]);
+ $mw->bind($class,'<Control-Shift-space>',['BeginExtend',Ev('index','active')]);
+ $mw->bind($class,'<Shift-Select>',['BeginExtend',Ev('index','active')]);
+ $mw->bind($class,'<Escape>','Cancel');
+ $mw->bind($class,'<Control-slash>','SelectAll');
+ $mw->bind($class,'<Control-backslash>','Cntrl_backslash');
  ;
  # Additional Tk bindings that aren't part of the Motif look and feel:
- $mw->bind($class,"<2>",['scan','mark',Ev('x'),Ev('y')]);
- $mw->bind($class,"<B2-Motion>",['scan','dragto',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<2>',['scan','mark',Ev('x'),Ev('y')]);
+ $mw->bind($class,'<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
  return $class;
 }
+
+sub ButtonRelease_1
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $w->CancelRepeat;
+ $w->activate($Ev->xy);
+}
+
+
+sub Cntrl_Home
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $w->activate(0);
+ $w->see(0);
+ $w->selectionClear(0,'end');
+ $w->selectionSet(0)
+}
+
+
+sub Cntrl_End
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $w->activate('end');
+ $w->see('end');
+ $w->selectionClear(0,'end');
+ $w->selectionSet('end')
+}
+
+
+sub Cntrl_backslash
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ if ($w->cget('-selectmode') ne 'browse')
+ {
+ $w->selectionClear(0,'end');
+ }
+}
+
 # BeginSelect --
 #
 # This procedure is typically invoked on button-1 presses. It begins
@@ -159,7 +163,7 @@ sub BeginSelect
 {
  my $w = shift;
  my $el = shift;
- if ($w->cget("-selectmode") eq "multiple")
+ if ($w->cget('-selectmode') eq 'multiple')
   {
    if ($w->selectionIncludes($el))
     {
@@ -172,12 +176,12 @@ sub BeginSelect
   }
  else
   {
-   $w->selectionClear(0,"end");
+   $w->selectionClear(0,'end');
    $w->selectionSet($el);
    $w->selectionAnchor($el);
    @Selection = ();
    $Prev = $el
-  }     
+  }
  $w->focus if ($w->cget('-takefocus'));
 }
 # Motion --
@@ -197,26 +201,26 @@ sub Motion
   {
    return;
   }
- $anchor = $w->index("anchor");
- my $mode = $w->cget("-selectmode");
- if ($mode eq "browse")
+ $anchor = $w->index('anchor');
+ my $mode = $w->cget('-selectmode');
+ if ($mode eq 'browse')
   {
-   $w->selectionClear(0,"end");
+   $w->selectionClear(0,'end');
    $w->selectionSet($el);
    $Prev = $el;
   }
- elsif ($mode eq "extended")
+ elsif ($mode eq 'extended')
   {
    $i = $Prev;
    if ($w->selectionIncludes('anchor'))
     {
      $w->selectionClear($i,$el);
-     $w->selectionSet("anchor",$el)
+     $w->selectionSet('anchor',$el)
     }
    else
     {
      $w->selectionClear($i,$el);
-     $w->selectionClear("anchor",$el)
+     $w->selectionClear('anchor',$el)
     }
    while ($i < $el && $i < $anchor)
     {
@@ -252,7 +256,7 @@ sub BeginExtend
 {
  my $w = shift;
  my $el = shift;
- if ($w->cget("-selectmode") eq "extended" && $w->selectionIncludes("anchor"))
+ if ($w->cget('-selectmode') eq 'extended' && $w->selectionIncludes('anchor'))
   {
    $w->Motion($el)
   }
@@ -272,7 +276,7 @@ sub BeginToggle
 {
  my $w = shift;
  my $el = shift;
- if ($w->cget("-selectmode") eq "extended")
+ if ($w->cget('-selectmode') eq 'extended')
   {
    @Selection = $w->curselection();
    $Prev = $el;
@@ -305,26 +309,26 @@ sub AutoScan
  my $y = shift;
  if ($y >= $w->height)
   {
-   $w->yview("scroll",1,"units")
+   $w->yview('scroll',1,'units')
   }
  elsif ($y < 0)
   {
-   $w->yview("scroll",-1,"units")
+   $w->yview('scroll',-1,'units')
   }
  elsif ($x >= $w->width)
   {
-   $w->xview("scroll",2,"units")
+   $w->xview('scroll',2,'units')
   }
  elsif ($x < 0)
   {
-   $w->xview("scroll",-2,"units")
+   $w->xview('scroll',-2,'units')
   }
  else
   {
    return;
   }
  $w->Motion($w->index("@" . $x . ',' . $y));
- $w->RepeatId($w->after(50,"AutoScan",$w,$x,$y));
+ $w->RepeatId($w->after(50,'AutoScan',$w,$x,$y));
 }
 # UpDown --
 #
@@ -339,20 +343,20 @@ sub UpDown
 {
  my $w = shift;
  my $amount = shift;
- $w->activate($w->index("active")+$amount);
- $w->see("active");
- $LNet__0 = $w->cget("-selectmode");
- if ($LNet__0 eq "browse")
+ $w->activate($w->index('active')+$amount);
+ $w->see('active');
+ $LNet__0 = $w->cget('-selectmode');
+ if ($LNet__0 eq 'browse')
   {
-   $w->selectionClear(0,"end");
-   $w->selectionSet("active")
+   $w->selectionClear(0,'end');
+   $w->selectionSet('active')
   }
- elsif ($LNet__0 eq "extended")
+ elsif ($LNet__0 eq 'extended')
   {
-   $w->selectionClear(0,"end");
-   $w->selectionSet("active");
-   $w->selectionAnchor("active");
-   $Prev = $w->index("active");
+   $w->selectionClear(0,'end');
+   $w->selectionSet('active');
+   $w->selectionAnchor('active');
+   $Prev = $w->index('active');
    @Selection = ();
   }
 }
@@ -369,13 +373,13 @@ sub ExtendUpDown
 {
  my $w = shift;
  my $amount = shift;
- if ($w->cget("-selectmode") ne "extended")
+ if ($w->cget('-selectmode') ne 'extended')
   {
    return;
   }
- $w->activate($w->index("active")+$amount);
- $w->see("active");
- $w->Motion($w->index("active"))
+ $w->activate($w->index('active')+$amount);
+ $w->see('active');
+ $w->Motion($w->index('active'))
 }
 # DataExtend
 #
@@ -391,17 +395,17 @@ sub DataExtend
 {
  my $w = shift;
  my $el = shift;
- $mode = $w->cget("-selectmode");
- if ($mode eq "extended")
+ $mode = $w->cget('-selectmode');
+ if ($mode eq 'extended')
   {
    $w->activate($el);
    $w->see($el);
-   if ($w->selectionIncludes("anchor"))
+   if ($w->selectionIncludes('anchor'))
     {
      $w->Motion($el)
     }
   }
- elsif ($mode eq "multiple")
+ elsif ($mode eq 'multiple')
   {
    $w->activate($el);
    $w->see($el)
@@ -419,11 +423,11 @@ sub DataExtend
 sub Cancel
 {
  my $w = shift;
- if ($w->cget("-selectmode") ne "extended" || !defined $Prev)
+ if ($w->cget('-selectmode') ne 'extended' || !defined $Prev)
   {
    return;
   }
- $first = $w->index("anchor");
+ $first = $w->index('anchor');
  $last = $Prev;
  if ($first > $last)
   {
@@ -452,23 +456,23 @@ sub Cancel
 sub SelectAll
 {
  my $w = shift;
- my $mode = $w->cget("-selectmode");
- if ($mode eq "single" || $mode eq "browse")
+ my $mode = $w->cget('-selectmode');
+ if ($mode eq 'single' || $mode eq 'browse')
   {
-   $w->selectionClear(0,"end");
-   $w->selectionSet("active")
+   $w->selectionClear(0,'end');
+   $w->selectionSet('active')
   }
  else
   {
-   $w->selectionSet(0,"end")
+   $w->selectionSet(0,'end')
   }
 }
 
 sub SetList
 {
  my $w = shift;
- $w->delete(0,"end");
- $w->insert("end",@_);
+ $w->delete(0,'end');
+ $w->insert('end',@_);
 }
 
 sub deleteSelected
@@ -492,10 +496,10 @@ sub clipboardPaste
   {
    $w->insert($index++,$_);
   }
-}      
+}
 
 sub getSelected
-{   
+{
  my ($w) = @_;
  my $i;
  my (@result) = ();

@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#13$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#14$
 
 sub PreInit
 {
@@ -40,11 +40,11 @@ sub new
    else
     {
      $name = $minfo{'-bitmap'} || $minfo{'-image'};
-     croak("No -label") unless defined($name);
+     croak('No -label') unless defined($name);
      $minfo{'-label'} = $name;
     }
-   $class->PreInit($menu,\%minfo);    
-   $menu->add($kind,%minfo);          
+   $class->PreInit($menu,\%minfo);
+   $menu->add($kind,%minfo);
    $menu->invoke('last') if ($invoke);
   }
  else
@@ -52,7 +52,7 @@ sub new
    $menu->add('separator');
   }
  return bless [$menu,$name],$class;
-} 
+}
 
 sub configure
 {
@@ -77,7 +77,7 @@ sub parentMenu
 # Default "kind" is a command
 sub kind { return 'command' }
 
-# Now the derived packages 
+# Now the derived packages
 
 package Tk::Menu::Separator;
 use base qw(Tk::Menu::Item);
@@ -122,7 +122,7 @@ sub menu
  if (!defined $menu)
   {
    require Tk::Menu;
-   $w->ColorOptions(\%args); 
+   $w->ColorOptions(\%args);
    my $name = $self->cget('-label');
    warn "Had to (re-)reate menu for $name";
    $menu = $w->Menu(Name => $name, %args);
@@ -133,9 +133,9 @@ sub menu
    $menu->configure(%args);
   }
  return $menu;
-}             
+}
 
-# Some convenience methods 
+# Some convenience methods
 
 sub separator   {  shift->menu->Separator(@_);   }
 sub command     {  shift->menu->Command(@_);     }
@@ -143,8 +143,8 @@ sub cascade     {  shift->menu->Cascade(@_);     }
 sub checkbutton {  shift->menu->Checkbutton(@_); }
 sub radiobutton {  shift->menu->Radiobutton(@_); }
 
-sub pack 
-{                    
+sub pack
+{
  my $w = shift;
  carp "Cannot 'pack' $w - done automatically" if $^W;
 }

@@ -1,9 +1,9 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/Widget.pm#45$
+$VERSION = '3.048'; # $Id: //depot/Tk8/Tk/Widget.pm#48$
 
 require Tk;
 use AutoLoader;
@@ -39,7 +39,7 @@ sub Optionmenu;
 sub import
 {
  my $package = shift;
- carp "use Tk::Widget () to pre-load widgets is deprecated" if (@_ && $^W);
+ carp 'use Tk::Widget () to pre-load widgets is deprecated' if (@_ && $^W);
  my $need;
  foreach $need (@_)
   {
@@ -173,7 +173,7 @@ sub new
   {
    ($leaf) = "\L$package" =~ /([a-z][a-z0-9_]*)$/;
   }
- my $lname  = $pname . "." . $leaf;
+ my $lname  = $pname . '.' . $leaf;
  # create a hash indexed by leaf name to speed up
  # creation of a lot of sub-widgets of the same type
  # e.g. entries in Table
@@ -181,7 +181,7 @@ sub new
  $parent->{$key} = 0 unless (exists $parent->{$key});
  while (defined ($parent->Widget($lname)))
   {
-   $lname = $pname . "." . $leaf . ++$parent->{$key};
+   $lname = $pname . '.' . $leaf . ++$parent->{$key};
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
@@ -365,10 +365,10 @@ sub Getimage
 
  return $images->{$name} if $images->{$name};
 
- ImageMethod(xpm => "Pixmap",
-    gif => "Photo",
-    ppm => "Photo",
-    xbm => "Bitmap" ) unless @image_types;
+ ImageMethod(xpm => 'Pixmap',
+    gif => 'Photo',
+    ppm => 'Photo',
+    xbm => 'Bitmap' ) unless @image_types;
 
  foreach my $type (@image_types)
   {
@@ -438,9 +438,12 @@ sub afterCancel
 {
  my $w = shift;
  my $what = shift;
- $what->cancel if ref $what;
- carp "dubious cancel of $what";
- $w->Tk::after('cancel' => $what);
+ if (defined $what)
+  {
+   return $what->cancel if ref($what);
+   carp "dubious cancel of $what";
+   $w->Tk::after('cancel' => $what);
+  }
 }
 
 sub after
@@ -481,7 +484,7 @@ sub repeat
 
 sub Inherit
 {
- carp "Inherit is deprecated - use SUPER::";
+ carp 'Inherit is deprecated - use SUPER::';
  my $w = shift;
  my $method = shift;
  my ($class) = caller;
@@ -493,7 +496,7 @@ sub Inherit
 
 sub InheritThis
 {
- carp "InheritThis is deprecated - use SUPER::";
+ carp 'InheritThis is deprecated - use SUPER::';
  my $w      = shift;
  my $what   = (caller(1))[3];
  my ($class,$method) = $what =~ /^(.*)::([^:]+)$/;
@@ -509,7 +512,7 @@ sub FindMenu
  return undef;
 }
 
-sub XEvent { shift->{"_XEvent_"} }
+sub XEvent { shift->{'_XEvent_'} }
 
 sub propertyRoot
 {
@@ -574,18 +577,18 @@ sub Palette
    my $c = $w->Checkbutton();
    my $e = $w->Entry();
    my $s = $w->Scrollbar();
-   $Palette{"activeBackground"}    = ($c->configure("-activebackground"))[3] ;
-   $Palette{"activeForeground"}    = ($c->configure("-activeforeground"))[3];
-   $Palette{"background"}          = ($c->configure("-background"))[3];
-   $Palette{"disabledForeground"}  = ($c->configure("-disabledforeground"))[3];
-   $Palette{"foreground"}          = ($c->configure("-foreground"))[3];
-   $Palette{"highlightBackground"} = ($c->configure("-highlightbackground"))[3];
-   $Palette{"highlightColor"}      = ($c->configure("-highlightcolor"))[3];
-   $Palette{"insertBackground"}    = ($e->configure("-insertbackground"))[3];
-   $Palette{"selectColor"}         = ($c->configure("-selectcolor"))[3];
-   $Palette{"selectBackground"}    = ($e->configure("-selectbackground"))[3];
-   $Palette{"selectForeground"}    = ($e->configure("-selectforeground"))[3];
-   $Palette{"troughColor"}         = ($s->configure("-troughcolor"))[3];
+   $Palette{'activeBackground'}    = ($c->configure('-activebackground'))[3] ;
+   $Palette{'activeForeground'}    = ($c->configure('-activeforeground'))[3];
+   $Palette{'background'}          = ($c->configure('-background'))[3];
+   $Palette{'disabledForeground'}  = ($c->configure('-disabledforeground'))[3];
+   $Palette{'foreground'}          = ($c->configure('-foreground'))[3];
+   $Palette{'highlightBackground'} = ($c->configure('-highlightbackground'))[3];
+   $Palette{'highlightColor'}      = ($c->configure('-highlightcolor'))[3];
+   $Palette{'insertBackground'}    = ($e->configure('-insertbackground'))[3];
+   $Palette{'selectColor'}         = ($c->configure('-selectcolor'))[3];
+   $Palette{'selectBackground'}    = ($e->configure('-selectbackground'))[3];
+   $Palette{'selectForeground'}    = ($e->configure('-selectforeground'))[3];
+   $Palette{'troughColor'}         = ($s->configure('-troughcolor'))[3];
    $c->destroy;
    $e->destroy;
    $s->destroy;
@@ -614,22 +617,22 @@ sub setPalette
  # Create an array that has the complete new palette. If some colors
  # aren't specified, compute them from other colors that are specified.
 
- die "must specify a background color" if (!exists $new{background});
- $new{"foreground"} = "black" unless (exists $new{foreground});
- my @bg = $w->rgb($new{"background"});
- my @fg = $w->rgb($new{"foreground"});
- my $darkerBg = sprintf("#%02x%02x%02x",9*$bg[0]/2560,9*$bg[1]/2560,9*$bg[2]/2560);
- foreach my $i ("activeForeground","insertBackground","selectForeground","highlightColor")
+ die 'must specify a background color' if (!exists $new{background});
+ $new{'foreground'} = 'black' unless (exists $new{foreground});
+ my @bg = $w->rgb($new{'background'});
+ my @fg = $w->rgb($new{'foreground'});
+ my $darkerBg = sprintf('#%02x%02x%02x',9*$bg[0]/2560,9*$bg[1]/2560,9*$bg[2]/2560);
+ foreach my $i ('activeForeground','insertBackground','selectForeground','highlightColor')
   {
-   $new{$i} = $new{"foreground"} unless (exists $new{$i});
+   $new{$i} = $new{'foreground'} unless (exists $new{$i});
   }
- unless (exists $new{"disabledForeground"})
+ unless (exists $new{'disabledForeground'})
   {
-   $new{"disabledForeground"} = sprintf("#%02x%02x%02x",(3*$bg[0]+$fg[0])/1024,(3*$bg[1]+$fg[1])/1024,(3*$bg[2]+$fg[2])/1024);
+   $new{'disabledForeground'} = sprintf('#%02x%02x%02x',(3*$bg[0]+$fg[0])/1024,(3*$bg[1]+$fg[1])/1024,(3*$bg[2]+$fg[2])/1024);
   }
- $new{"highlightBackground"} = $new{"background"} unless (exists $new{"highlightBackground"});
+ $new{'highlightBackground'} = $new{'background'} unless (exists $new{'highlightBackground'});
 
- unless (exists $new{"activeBackground"})
+ unless (exists $new{'activeBackground'})
   {
    my @light;
    # Pick a default active background that is lighter than the
@@ -651,11 +654,11 @@ sub setPalette
       }
      $light[$i] = 255 if ($light[$i] > 255);
     }
-   $new{"activeBackground"} = sprintf("#%02x%02x%02x",@light);
+   $new{'activeBackground'} = sprintf('#%02x%02x%02x',@light);
   }
- $new{"selectBackground"} = $darkerBg unless (exists $new{"selectBackground"});
- $new{"troughColor"} = $darkerBg unless (exists $new{"troughColor"});
- $new{"selectColor"} = "#b03060" unless (exists $new{"selectColor"});
+ $new{'selectBackground'} = $darkerBg unless (exists $new{'selectBackground'});
+ $new{'troughColor'} = $darkerBg unless (exists $new{'troughColor'});
+ $new{'selectColor'} = '#b03060' unless (exists $new{'selectColor'});
 
  # Before doing this, make sure that the Tk::Palette variable holds
  # the default values of all options, so that tkRecolorTree can
@@ -671,7 +674,7 @@ sub setPalette
  # same colors.
  foreach my $option (keys %new)
   {
-   $w->option("add","*$option",$new{$option},$priority);
+   $w->option('add',"*$option",$new{$option},$priority);
    # Save the options in the global variable Tk::Palette, for use the
    # next time we change the options.
    $Palette->{$option} = $new{$option};
@@ -736,7 +739,7 @@ sub Darken
  $green = 255 if ($green > 255);
  $blue = int($blue*$percent/100);
  $blue = 255 if ($blue > 255);
- sprintf("#%02x%02x%02x",$red,$green,$blue)
+ sprintf('#%02x%02x%02x',$red,$green,$blue)
 }
 # tk_bisque --
 # Reset the Tk color palette to the old "bisque" colors.
@@ -745,18 +748,18 @@ sub Darken
 # None.
 sub bisque
 {
- shift->setPalette("activeBackground" => "#e6ceb1",
-               "activeForeground" => "black",
-               "background" => "#ffe4c4",
-               "disabledForeground" => "#b0b0b0",
-               "foreground" => "black",
-               "highlightBackground" => "#ffe4c4",
-               "highlightColor" => "black",
-               "insertBackground" => "black",
-               "selectColor" => "#b03060",
-               "selectBackground" => "#e6ceb1",
-               "selectForeground" => "black",
-               "troughColor" => "#cdb79e"
+ shift->setPalette('activeBackground' => '#e6ceb1',
+               'activeForeground' => 'black',
+               'background' => '#ffe4c4',
+               'disabledForeground' => '#b0b0b0',
+               'foreground' => 'black',
+               'highlightBackground' => '#ffe4c4',
+               'highlightColor' => 'black',
+               'insertBackground' => 'black',
+               'selectColor' => '#b03060',
+               'selectBackground' => '#e6ceb1',
+               'selectForeground' => 'black',
+               'troughColor' => '#cdb79e'
               );
 }
 

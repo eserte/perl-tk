@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkUnixSend.c 1.74 97/11/04 17:12:18
+ * RCS: @(#) $Id: tkUnixSend.c,v 1.3 1999/02/04 21:00:36 stanton Exp $
  */
 
 #include "tkPort.h"
@@ -255,7 +255,7 @@ static int		ValidateName _ANSI_ARGS_((TkDisplay *dispPtr,
  *	If "lock" is set then the server will be locked.  It is the
  *	caller's responsibility to call RegClose when finished with
  *	the registry, so that we can write back the registry if
- *	neeeded, unlock the server if needed, and free memory.
+ *	needed, unlock the server if needed, and free memory.
  *
  *----------------------------------------------------------------------
  */
@@ -783,6 +783,7 @@ Tk_SetAppName(tkwin, name)
 	    riPtr->interp = interp;
 	    riPtr->dispPtr = winPtr->dispPtr;
 	    riPtr->nextPtr = registry;
+	    riPtr->name = NULL;
 	    registry = riPtr;
 	    Tcl_CreateCommand(interp, "send", Tk_SendCmd, (ClientData) riPtr,
 		    DeleteProc);
@@ -797,8 +798,10 @@ Tk_SetAppName(tkwin, name)
 	     * the name registry.
 	     */
 
-	    RegDeleteName(regPtr, riPtr->name);
-	    ckfree(riPtr->name);
+	    if (riPtr->name) {
+		RegDeleteName(regPtr, riPtr->name);
+		ckfree(riPtr->name);
+	    }
 	    break;
 	}
     }
@@ -1149,7 +1152,7 @@ Tk_SendCmd(clientData, interp, argc, argv)
 	Lang_SetErrorCode(interp, pending.errorCode);
 	ckfree(pending.errorCode);
     }
-    Tcl_SetResult(interp, pending.result, TCL_DYNAMIC);
+    Tcl_SetResult(interp, pending.result, TCL_VOLATILE);
     return pending.code;
 }
 

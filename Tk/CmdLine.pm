@@ -13,7 +13,7 @@ package Tk::CmdLine; # -*-Perl-*-
 #/----------------------------------------------------------------------------//
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/CmdLine.pm#17$
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/CmdLine.pm#18$
 
 use 5.004;
 
@@ -265,7 +265,7 @@ sub Tk::MainWindow::apply_command_line
 	    $mw->positionfrom('user');
 	}
 	if ($self->{methods}->{geometry} =~ /\d+x\d+/)
-	{	    
+	{
 	    $mw->sizefrom('user');
 	}
 	delete $self->{methods}->{geometry}; # XXX needed?

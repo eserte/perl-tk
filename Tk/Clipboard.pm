@@ -1,11 +1,11 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
-package Tk::Clipboard; 
+package Tk::Clipboard;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Clipboard.pm#10$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Clipboard.pm#14$
 
 use AutoLoader qw(AUTOLOAD);
 use Tk qw(catch);
@@ -40,7 +40,7 @@ sub clipboardCopy
   {
    $w->clipboardSet('--',$val);
   }
- return $val; 
+ return $val;
 }
 
 sub clipboardCut
@@ -57,19 +57,19 @@ sub clipboardCut
 sub clipboardGet
 {
  my $w = shift;
- $w->SelectionGet("-selection","CLIPBOARD",@_);
+ $w->SelectionGet('-selection','CLIPBOARD',@_);
 }
 
 sub clipboardPaste
 {
  my $w = shift;
  local $@;
- catch { $w->insert("insert",$w->clipboardGet)};
+ catch { $w->insert('insert',$w->clipboardGet)};
 }
 
 sub clipboardOperations
 {
- my @class = (); 
+ my @class = ();
  my $mw    = shift;
  if (ref $mw)
   {
@@ -104,7 +104,7 @@ sub getSelected
 {
  my $w   = shift;
  my $val = Tk::catch { $w->get('sel.first','sel.last') };
- return $val; 
+ return $val;
 }
 
 

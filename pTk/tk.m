@@ -50,6 +50,10 @@
 #  define Tk_3DVerticalBevel (*TkVptr->V_Tk_3DVerticalBevel)
 #endif
 
+#ifndef Tk_BellObjCmd
+#  define Tk_BellObjCmd (*TkVptr->V_Tk_BellObjCmd)
+#endif
+
 #ifndef Tk_BindEvent
 #  define Tk_BindEvent (*TkVptr->V_Tk_BindEvent)
 #endif
@@ -444,6 +448,10 @@
 
 #ifndef Tk_ImageChanged
 #  define Tk_ImageChanged (*TkVptr->V_Tk_ImageChanged)
+#endif
+
+#ifndef Tk_ImageObjCmd
+#  define Tk_ImageObjCmd (*TkVptr->V_Tk_ImageObjCmd)
 #endif
 
 #ifndef Tk_InternAtom

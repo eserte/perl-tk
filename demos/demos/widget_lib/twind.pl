@@ -178,7 +178,8 @@ sub twind_restore_bg {
 
     my($text) = @_;
 
-    $text->configure(-background => ($text->configure(-background))[3]);
+    $text->configure(-background => 
+		     ($text->Subwidget('text')->configure(-background))[3]);
 
 } # end twind_restore_bg
 

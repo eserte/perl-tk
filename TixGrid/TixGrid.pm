@@ -9,7 +9,7 @@
 #	o FloatEntry 'sometimes not activeted immediately on selection
 #	o check also Leave Binding. Looks like entry does get unpost'ed
 
-package Tk::TixGrid; 
+package Tk::TixGrid;
 
 BEGIN
   {
@@ -17,29 +17,29 @@ BEGIN
     $DEBUG = (defined($ENV{USER}) and $ENV{USER} eq 'ach') ? 1 : 0;
     print STDERR "tixGrid: debug = $DEBUG\n" if $DEBUG;
   }
-      
+
 use strict;
-use vars qw($VERSION @ISA);
-$VERSION = '3.014'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#14$
+use vars qw($VERSION);
+$VERSION = '3.018'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#18$
 
 use Tk 'Ev';
 use Tk::Widget;
 use Carp;
 
-carp __PACKAGE__ . " is deprecated";
+carp __PACKAGE__ . ' is deprecated';
 
 use base  'Tk::Widget';
 
 Construct Tk::Widget 'TixGrid';
 
-bootstrap Tk::TixGrid $Tk::VERSION; 
+bootstrap Tk::TixGrid $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::tixGrid }
 
 sub Tk::Widget::SrclTixGrid { shift->Scrolled('TixGrid' => @_) }
 
 Tk::Methods qw(anchor bdtype delete entrycget entryconfigure format index
-               move set size unset xview yview 
+               move set size unset xview yview
                to_list_commands dragsite dropsite geometryinfo info
                nearest selection sort );
 
@@ -131,52 +131,12 @@ sub ClassInit
     $mw->bind($class, '<Control-ButtonPress-1>',['Control_Button_1',	Ev('x'), Ev('y')]);
     $mw->bind($class, '<ButtonRelease-1>',	['ButtonRelease_1',	Ev('x'), Ev('y')]);
     $mw->bind($class, '<Double-ButtonPress-1>', ['Double_1',		Ev('x'), Ev('y')]);
-    $mw->bind($class, '<B1-Motion>',
-				sub
-				{
-				    my $w = shift;
-				    my $Ev = $w->XEvent;
-				    $Tk::x =  $Ev->x;
-				    $Tk::y =  $Ev->y;
-				    $Tk::X =  $Ev->X;
-				    $Tk::Y =  $Ev->Y;
-				    $w->B1_Motion($Tk::x, $Tk::y);
-    				} );
-    $mw->bind($class, '<Control-B1-Motion>', 
-				sub
-				{
-				    my $w = shift;
-				    my $Ev = $w->XEvent;
-				    $Tk::x =  $Ev->x;
-				    $Tk::y =  $Ev->y;
-				    $Tk::X =  $Ev->X;
-				    $Tk::Y =  $Ev->Y;
-				    $w->Control_B1_Motion($Tk::x, $Tk::y);
-    				} );
-    $mw->bind($class, '<B1-Leave>',
-                                sub 
-                                {   
-                                    my $w = shift;
-                                    my $Ev = $w->XEvent;
-                                    $Tk::x =  $Ev->x;
-                                    $Tk::y =  $Ev->y;
-                                    $Tk::X =  $Ev->X;
-                                    $Tk::Y =  $Ev->Y;
-                                    $w->B1_Leave();
-                                } );
+    $mw->bind($class, '<B1-Motion>','Button_Motion');
+    $mw->bind($class, '<Control-B1-Motion>','Control_Button_Motion');
+    $mw->bind($class, '<B1-Leave>','Button_Leave');
     $mw->bind($class, '<Double-ButtonPress-1>', ['Double_1',		Ev('x'), Ev('y')]);
     $mw->bind($class, '<B1-Enter>',		['B1_Enter',		Ev('x'), Ev('y')]);
-    $mw->bind($class, '<Control-B1-Leave>',
-                                sub
-                                {
-                                    my $w = shift;
-                                    my $Ev = $w->XEvent;
-                                    $Tk::x =  $Ev->x;
-                                    $Tk::y =  $Ev->y;
-                                    $Tk::X =  $Ev->X;
-                                    $Tk::Y =  $Ev->Y;
-                                    $w->Control_B1_Leave();
-                                } );
+    $mw->bind($class, '<Control-B1-Leave>','Control_Button_Leave');
     $mw->bind($class, '<Control-B1-Enter>',	['Control_B1_Enter',	Ev('x'), Ev('y')]);
 
     ##
@@ -193,7 +153,7 @@ sub ClassInit
     $mw->bind($class, '<Return>',	'Return');
     $mw->bind($class, '<space>',	'Space'	);
 
-    return $class; 
+    return $class;
   }
 
 #----------------------------------------------------------------------
@@ -205,11 +165,11 @@ sub ClassInit
 #----------------------------------------------------------------------
 
 sub Button_1
-  { 
+  {
     my $w = shift;
 
     return if $w->cget('-state') eq 'disabled';
-    $w->SetFocus; 
+    $w->SetFocus;
     $w->ChgState(@_,
 		[
 		'0'=>'1',
@@ -222,20 +182,20 @@ sub Shift_Button_1
     my $w = shift;
 
     return if $w->cget('-state') eq 'disabled';
-    $w->SetFocus; 
+    $w->SetFocus;
 
 #    $w->ChgState(@_,
 #		[
 #		]
 #		);
-  } 
+  }
 
 sub Control_Button_1
   {
     my $w = shift;
 
     return if $w->cget('-state') eq 'disabled';
-    $w->SetFocus; 
+    $w->SetFocus;
 
     $w->ChgState(@_,
 		[
@@ -245,7 +205,7 @@ sub Control_Button_1
 		'e0'	=> 'e10',
 		]
 	 	);
-  } 
+  }
 
 sub ButtonRelease_1
   {
@@ -255,7 +215,7 @@ sub ButtonRelease_1
 		'4'	=> '3',
 		]
 		);
-  } 
+  }
 
 sub B1_Motion
   {
@@ -265,7 +225,7 @@ sub B1_Motion
 		'4'	=> '4',
 		]
 		);
-  } 
+  }
 
 
 sub Control_B1_Motion
@@ -280,7 +240,7 @@ sub Control_B1_Motion
 		'm5'	=> 'm4',
 		]
 		);
-  } 
+  }
 
 
 sub Double_1
@@ -291,7 +251,7 @@ sub Double_1
 		'b0'	=> 'b7',
 		]
 		);
-  } 
+  }
 
 
 sub B1_Leave
@@ -308,7 +268,7 @@ sub B1_Leave
 		'e5'	=> 'e8',
 		]
 		);
-  } 
+  }
 
 
 sub B1_Enter
@@ -325,7 +285,7 @@ sub B1_Enter
 		'e9'	=> 'e4',
 		]
 		);
-  } 
+  }
 
 
 sub Control_B1_Leave
@@ -340,7 +300,7 @@ sub Control_B1_Leave
 		'm5'	=> 'm8',
 		]
 		);
-  } 
+  }
 
 
 sub Control_B1_Enter
@@ -355,7 +315,7 @@ sub Control_B1_Enter
 		'm9'	=> 'm4',
 		]
 		);
-  } 
+  }
 
 
 sub AutoScan
@@ -372,7 +332,7 @@ sub AutoScan
 		'e9'	=> 'm9',
 		]
 		);
-  } 
+  }
 
 #----------------------------------------------------------------------
 #
@@ -395,7 +355,7 @@ print STDERR "$w->DirKey($key)\n" if $DEBUG;
 		'b0'	=> 'b8',
 		]
 		);
-  } 
+  }
 
 
 sub Return
@@ -410,7 +370,7 @@ sub Return
 		'b0'	=> 'b9',
 		]
 		);
-  } 
+  }
 
 
 sub Space
@@ -425,7 +385,7 @@ sub Space
 		'b0'	=> 'b10',
 		]
 		);
-  } 
+  }
 
 
 #----------------------------------------------------------------------
@@ -435,13 +395,61 @@ sub Space
 #
 #----------------------------------------------------------------------
 
-sub GetState 
+sub GetState
   {
     my ($w) = @_;
     my $data = $w->privateData();
     $data->{state} = 0 unless exists $data->{state};
     return $data->{state};
 }
+
+sub Button_Motion
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $Tk::x =  $Ev->x;
+ $Tk::y =  $Ev->y;
+ $Tk::X =  $Ev->X;
+ $Tk::Y =  $Ev->Y;
+ $w->B1_Motion($Tk::x, $Tk::y);
+}
+
+
+sub Control_Button_Motion
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $Tk::x =  $Ev->x;
+ $Tk::y =  $Ev->y;
+ $Tk::X =  $Ev->X;
+ $Tk::Y =  $Ev->Y;
+ $w->Control_B1_Motion($Tk::x, $Tk::y);
+}
+
+
+sub Button_Leave
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $Tk::x =  $Ev->x;
+ $Tk::y =  $Ev->y;
+ $Tk::X =  $Ev->X;
+ $Tk::Y =  $Ev->Y;
+ $w->B1_Leave();
+}
+
+
+sub Control_Button_Leave
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ $Tk::x =  $Ev->x;
+ $Tk::y =  $Ev->y;
+ $Tk::X =  $Ev->X;
+ $Tk::Y =  $Ev->Y;
+ $w->Control_B1_Leave();
+}
+
 
 sub SetState
   {
@@ -452,17 +460,17 @@ sub SetState
 sub GoState
   {
     my ($w, $state) = (shift, shift);
-    print STDERR "Gostate:  ", $w->GetState, " --> $state, " if $DEBUG;
-    $w->SetState($state); 
+    print STDERR 'Gostate:  ', $w->GetState, " --> $state, " if $DEBUG;
+    $w->SetState($state);
     my $method = "GoState_$state";
 
-    print STDERR "args=(", join(',',@_), ")".
+    print STDERR 'args=(', join(',',@_), ')'.
 	"\t(",$w->cget('-selectmode').
-	",",$w->cget('-selectunit').")\n" if $DEBUG;
+	',',$w->cget('-selectunit').")\n" if $DEBUG;
 
     if (0)
       {
-	$@ = ''; 
+	$@ = '';
 	%@ = (); 		# Workaround to prevent spurious loss of $@
 	eval { $w->$method(@_) };
 	print STDERR "Error Gostate: '$state': ", $@ if $@;
@@ -481,14 +489,14 @@ sub ChgState
   {
     my $w   = shift;
     my $map = pop;
-    print STDERR "ChgState(", join(',',@_,'['), join(",",@$map,),"])  " if $DEBUG;
+    print STDERR 'ChgState(', join(',',@_,'['), join(',',@$map,),'])  ' if $DEBUG;
     my $state = $w->GetState;
 
     my ($match, $to);
     while (@$map)
       {
-        $match = shift @$map; 
-        $to    = shift @$map; 
+        $match = shift @$map;
+        $to    = shift @$map;
         if ($match eq $state)
           {
 	    print STDERR "$state --> $to \n" if $DEBUG;
@@ -534,7 +542,7 @@ sub GoState_0
       }
     undef(@$list); 		# XXX should really delete? Maybe on needed in TCL
   }
- 
+
 # XXXX how to translate global context
 #      what does unset
 #proc tixGrid:GoState-0 {w} {
@@ -574,7 +582,7 @@ sub GoState_2
   {
     my ($w) = @_;
   }
-     
+
 sub GoState_3
    {
      my ($w, $x, $y) = @_;
@@ -643,7 +651,7 @@ sub split_s2a
       {
 my $tmp = $ent[0];
         @ent = split(/ /, $ent[0]) if @ent == 1;
-print STDERR join("|","$method splitted '$tmp' =>",@ent,"\n") if $DEBUG;
+print STDERR join('|',"$method splitted '$tmp' =>",@ent,"\n") if $DEBUG;
       }
     else
       {
@@ -685,7 +693,7 @@ sub GoState_s7
 sub GoState_s8
   {
     my ($w, $key) = @_;
-    
+
     ## BUGS ....
     ## - anchor is bad, only bbox, exists8
     ## - looks like anchor is 1-dim: set anchor 0
@@ -700,10 +708,10 @@ sub GoState_s8
       {
         @anchor = $w->info($key, @anchor);
       }
- 
+
     $w->anchor('set', @anchor);
     $w->see(@anchor);
- 
+
     $w->GoState('s0');
   }
 
@@ -723,7 +731,7 @@ sub GoState_s8
 
 
 sub GoState_s9
-  { 
+  {
     my ($w, $key) = @_;
 
 #print STDERR "GoState_s9 is not implemented\n";
@@ -735,7 +743,7 @@ sub GoState_s9
         $w->anchor('set', @anchor);
         $w->see(@anchor);
       }
- 
+
     unless ($w->info('anchor'))
       {
         # ! may not have any elements
@@ -744,13 +752,13 @@ sub GoState_s9
         $w->selection('clear');
         $w->selection('set', @anchor);
       }
- 
+
       $w->GoState('s0');
   }
 
 
 sub GoState_s10
-  { 
+  {
     my ($w, $key) = @_;
 
     my (@anchor) = $w->info('anchor');
@@ -760,7 +768,7 @@ sub GoState_s10
         $w->anchor('set', @anchor);
         $w->see(@anchor);
       }
- 
+
     unless ($w->info('anchor'))
       {
         # ! may not have any elements
@@ -769,7 +777,7 @@ sub GoState_s10
         $w->selection('clear');
         $w->selection('set', @anchor);
       }
- 
+
     $w->GoState('s0');
   }
 
@@ -870,12 +878,12 @@ sub GoState_b8
       {
         @anchor = (0,0);   # ?????
       }
- 
+
     $w->anchor('set', @anchor);
     $w->selection('clear');
     $w->selection('set', @anchor);
     $w->see(@anchor);
- 
+
     $w->Callback('-browsecmd' => @anchor);
     $w->GoState('b0');
   }
@@ -1027,10 +1035,10 @@ sub GoState_m7
     $w->GoState('m5');
   }
 
-   
+
 sub GoState_m8 { shift->StartScan() }
 
-   
+
 sub GoState_m9 { shift->DoScan() }
 
 
@@ -1119,7 +1127,7 @@ sub GoState_e6
         $w->Callback('-browsecmd' => @ent);
       }
     $w->GoState('e0');
-  } 
+  }
 
 sub GoState_e7
   {
@@ -1139,7 +1147,7 @@ sub GoState_e7
         $w->Callback('-browsecmd' => @to);
       }
     $w->GoState('e5');
-  } 
+  }
 
 sub GoState_e8 { shift->StartScan(); }
 
@@ -1197,7 +1205,7 @@ sub GoState_12
   }
 #proc tixGrid:GoState-12 {w x y} {
 #    tkCancelRepeat
-#    tixGrid:GoState 5 $w $x $y 
+#    tixGrid:GoState 5 $w $x $y
 #}
 
 sub GoState_13
@@ -1507,7 +1515,7 @@ sub SetEdit
 
     my $efc = $w->cget('-editnotifycmd');
     return unless ( defined($efc) && length($efc) );
-     
+
     unless ($w->Callback('-editnotifycmd' => $px, $py))
       {
 	print STDERR "editnotifycmd not defined or returned false\n";
@@ -1530,7 +1538,7 @@ sub SetEdit
       }
     else
       {
-	$oldvalue = "";
+	$oldvalue = '';
       }
 
     my @bbox = $w->info('bbox', $px, $py);
@@ -1572,7 +1580,7 @@ sub DoneEdit
 	# This needs to be catch'ed because the default itemtype may
 	# not support the -text option
 	#
-	Tk::catch { $w->set($x,$y,-text $value); }; 
+	Tk::catch { $w->set($x,$y,-text $value); };
         if ($@)
           {
 	    return;

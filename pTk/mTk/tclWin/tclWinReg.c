@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclWinReg.c 1.8 97/08/01 11:17:49
+ * RCS: @(#) $Id: tclWinReg.c,v 1.7 1999/02/02 22:25:21 stanton Exp $
  */
 
 #include <tcl.h>
@@ -61,7 +61,8 @@
 
 static char *rootKeyNames[] = {
     "HKEY_LOCAL_MACHINE", "HKEY_USERS", "HKEY_CLASSES_ROOT",
-    "HKEY_CURRENT_USER", "HKEY_CURRENT_CONFIG", NULL
+    "HKEY_CURRENT_USER", "HKEY_CURRENT_CONFIG",
+    "HKEY_PERFORMANCE_DATA", "HKEY_DYN_DATA", NULL
 };
 
 static HKEY rootKeys[] = {

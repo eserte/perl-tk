@@ -19,8 +19,8 @@ require Tk::Widget;
 require Tk::Derived;
 require Tk::Entry;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.003'; # $Id: //depot/Tk8/TixGrid/FloatEntry.pm#3$
+use vars qw($VERSION);
+$VERSION = '3.004'; # $Id: //depot/Tk8/TixGrid/FloatEntry.pm#4$
 
 use base  qw(Tk::Derived Tk::Entry);
 

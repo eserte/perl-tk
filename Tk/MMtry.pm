@@ -1,12 +1,12 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MMtry;
 use Config;
 require Exporter;
 
-use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/MMtry.pm#6$
+use vars qw($VERSION @EXPORT);
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/MMtry.pm#8$
 
 use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);

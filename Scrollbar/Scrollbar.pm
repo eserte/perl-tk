@@ -1,29 +1,29 @@
 # Conversion from Tk4.0 scrollbar.tcl competed.
-package Tk::Scrollbar; 
+package Tk::Scrollbar;
 require Tk;
 use AutoLoader;
 
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#6$
+use vars qw($VERSION);
+$VERSION = '3.008'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#8$
 
 use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Scrollbar';
 
-bootstrap Tk::Scrollbar $Tk::VERSION; 
+bootstrap Tk::Scrollbar $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::scrollbar }
 
-Tk::Methods("activate","delta","fraction","get","identify","set");
+Tk::Methods('activate','delta','fraction','get','identify','set');
 
 sub Needed
 {
  my ($sb) = @_;
- my @val = $sb->get; 
+ my @val = $sb->get;
  return 1 unless (@val == 2);
- return 1 if $val[0] != 0.0; 
- return 1 if $val[1] != 1.0; 
+ return 1 if $val[0] != 0.0;
+ return 1 if $val[1] != 1.0;
  return 0;
 }
 
@@ -35,39 +35,39 @@ __END__
 sub ClassInit
 {
  my ($class,$mw) = @_;
- $mw->bind($class, "<Enter>", "Enter");
- $mw->bind($class, "<Motion>", "Motion");
- $mw->bind($class, "<Leave>", "Leave");
+ $mw->bind($class, '<Enter>', 'Enter');
+ $mw->bind($class, '<Motion>', 'Motion');
+ $mw->bind($class, '<Leave>', 'Leave');
 
- $mw->bind($class, "<1>", "ButtonDown");
- $mw->bind($class, "<B1-Motion>", "Drag");
- $mw->bind($class, "<ButtonRelease-1>", "ButtonUp");
- $mw->bind($class, "<B1-Leave>", 'NoOp'); # prevent generic <Leave>
- $mw->bind($class, "<B1-Enter>", 'NoOp'); # prevent generic <Enter>
- $mw->bind($class, "<Control-1>", "ScrlTopBottom"); 
+ $mw->bind($class, '<1>', 'ButtonDown');
+ $mw->bind($class, '<B1-Motion>', 'Drag');
+ $mw->bind($class, '<ButtonRelease-1>', 'ButtonUp');
+ $mw->bind($class, '<B1-Leave>', 'NoOp'); # prevent generic <Leave>
+ $mw->bind($class, '<B1-Enter>', 'NoOp'); # prevent generic <Enter>
+ $mw->bind($class, '<Control-1>', 'ScrlTopBottom');
 
- $mw->bind($class, "<2>", "ButtonDown");
- $mw->bind($class, "<B2-Motion>", "Drag");
- $mw->bind($class, "<ButtonRelease-2>", "ButtonUp");
- $mw->bind($class, "<B2-Leave>", 'NoOp'); # prevent generic <Leave>
- $mw->bind($class, "<B2-Enter>", 'NoOp'); # prevent generic <Enter>
- $mw->bind($class, "<Control-2>", "ScrlTopBottom"); 
+ $mw->bind($class, '<2>', 'ButtonDown');
+ $mw->bind($class, '<B2-Motion>', 'Drag');
+ $mw->bind($class, '<ButtonRelease-2>', 'ButtonUp');
+ $mw->bind($class, '<B2-Leave>', 'NoOp'); # prevent generic <Leave>
+ $mw->bind($class, '<B2-Enter>', 'NoOp'); # prevent generic <Enter>
+ $mw->bind($class, '<Control-2>', 'ScrlTopBottom');
 
- $mw->bind($class, "<Up>",            ["ScrlByUnits","v",-1]);
- $mw->bind($class, "<Down>",          ["ScrlByUnits","v", 1]);
- $mw->bind($class, "<Control-Up>",    ["ScrlByPages","v",-1]);
- $mw->bind($class, "<Control-Down>",  ["ScrlByPages","v", 1]);
+ $mw->bind($class, '<Up>',            ['ScrlByUnits','v',-1]);
+ $mw->bind($class, '<Down>',          ['ScrlByUnits','v', 1]);
+ $mw->bind($class, '<Control-Up>',    ['ScrlByPages','v',-1]);
+ $mw->bind($class, '<Control-Down>',  ['ScrlByPages','v', 1]);
 
- $mw->bind($class, "<Left>",          ["ScrlByUnits","h",-1]);
- $mw->bind($class, "<Right>",         ["ScrlByUnits","h", 1]);
- $mw->bind($class, "<Control-Left>",  ["ScrlByPages","h",-1]);
- $mw->bind($class, "<Control-Right>", ["ScrlByPages","h", 1]);
+ $mw->bind($class, '<Left>',          ['ScrlByUnits','h',-1]);
+ $mw->bind($class, '<Right>',         ['ScrlByUnits','h', 1]);
+ $mw->bind($class, '<Control-Left>',  ['ScrlByPages','h',-1]);
+ $mw->bind($class, '<Control-Right>', ['ScrlByPages','h', 1]);
 
- $mw->bind($class, "<Prior>",         ["ScrlByPages","hv",-1]);
- $mw->bind($class, "<Next>",          ["ScrlByPages","hv", 1]);
+ $mw->bind($class, '<Prior>',         ['ScrlByPages','hv',-1]);
+ $mw->bind($class, '<Next>',          ['ScrlByPages','hv', 1]);
 
- $mw->bind($class, "<Home>",          ["ScrlToPos", 0]);
- $mw->bind($class, "<End>",           ["ScrlToPos", 1]);
+ $mw->bind($class, '<Home>',          ['ScrlToPos', 0]);
+ $mw->bind($class, '<End>',           ['ScrlToPos', 1]);
 
  return $class;
 
@@ -79,9 +79,9 @@ sub Enter
  my $e = $w->XEvent;
  if ($Tk::strictMotif)
   {
-   my $bg = $w->cget("-background");
-   $activeBg = $w->cget("-activebackground");
-   $w->configure("-activebackground" => $bg);
+   my $bg = $w->cget('-background');
+   $activeBg = $w->cget('-activebackground');
+   $w->configure('-activebackground' => $bg);
   }
  $w->activate($w->identify($e->x,$e->y));
 }
@@ -91,9 +91,9 @@ sub Leave
  my $w = shift;
  if ($Tk::strictMotif)
   {
-   $w->configure("-activebackground" => $activeBg) if (defined $activeBg) ;
+   $w->configure('-activebackground' => $activeBg) if (defined $activeBg) ;
   }
- $w->activate("");
+ $w->activate('');
 }
 
 sub Motion
@@ -112,13 +112,13 @@ sub Motion
 # w -		The scrollbar widget.
 # x, y -	Mouse coordinates.
 
-sub ButtonDown 
+sub ButtonDown
 {my $w = shift;
  my $e = $w->XEvent;
  my $element = $w->identify($e->x,$e->y);
- $w->configure("-activerelief" => "sunken");
+ $w->configure('-activerelief' => 'sunken');
  if ($e->b == 1 and
-     (defined($element) && $element eq "slider"))
+     (defined($element) && $element eq 'slider'))
   {
    $w->StartDrag($e->x,$e->y);
   }
@@ -128,7 +128,7 @@ sub ButtonDown
 	my $pos = $w->fraction($e->x, $e->y);
 	my($head, $tail) = $w->get;
 	my $len = $tail - $head;
-		 
+
 	$head = $pos - $len/2;
 	$tail = $pos + $len/2;
 	if ($head < 0) {
@@ -146,7 +146,7 @@ sub ButtonDown
    }
  else
   {
-   $w->Select($element,"initial");
+   $w->Select($element,'initial');
   }
 }
 
@@ -163,7 +163,7 @@ sub ButtonUp
 {my $w = shift;
  my $e = $w->XEvent;
  $w->CancelRepeat;
- $w->configure("-activerelief" => "raised");
+ $w->configure('-activerelief' => 'raised');
  $w->EndDrag($e->x,$e->y);
  $w->activate($w->identify($e->x,$e->y));
 }
@@ -182,40 +182,40 @@ sub ButtonUp
 #		first action in an auto-repeat sequence, and "again"
 #		means this is the second repetition or later.
 
-sub Select 
+sub Select
 {
  my $w = shift;
  my $element = shift;
  my $repeat  = shift;
  return unless defined ($element);
- if ($element eq "arrow1")
+ if ($element eq 'arrow1')
   {
-   $w->ScrlByUnits("hv",-1);
+   $w->ScrlByUnits('hv',-1);
   }
- elsif ($element eq "trough1")
+ elsif ($element eq 'trough1')
   {
-   $w->ScrlByPages("hv",-1);
+   $w->ScrlByPages('hv',-1);
   }
- elsif ($element eq "trough2")
+ elsif ($element eq 'trough2')
   {
-   $w->ScrlByPages("hv", 1);
+   $w->ScrlByPages('hv', 1);
   }
- elsif ($element eq "arrow2")
+ elsif ($element eq 'arrow2')
   {
-   $w->ScrlByUnits("hv", 1);
+   $w->ScrlByUnits('hv', 1);
   }
  else
   {
    return;
   }
 
- if ($repeat eq "again")
+ if ($repeat eq 'again')
   {
-   $w->RepeatId($w->after($w->cget("-repeatinterval"),["Select",$w,$element,"again"]));
+   $w->RepeatId($w->after($w->cget('-repeatinterval'),['Select',$w,$element,'again']));
   }
- elsif ($repeat eq "initial")
+ elsif ($repeat eq 'initial')
   {
-   $w->RepeatId($w->after($w->cget("-repeatdelay"),["Select",$w,$element,"again"]));
+   $w->RepeatId($w->after($w->cget('-repeatdelay'),['Select',$w,$element,'again']));
   }
 }
 
@@ -231,7 +231,7 @@ sub StartDrag
 {my $w = shift;
  my $x = shift;
  my $y = shift;
- return unless (defined ($w->cget("-command")));
+ return unless (defined ($w->cget('-command')));
  $initMouse  = $w->fraction($x,$y);
  @initValues = $w->get();
  if (@initValues == 2)
@@ -254,13 +254,13 @@ sub StartDrag
 # w -		The scrollbar widget.
 # x, y -	The current mouse position.
 
-sub Drag 
+sub Drag
 {my $w = shift;
  my $e = $w->XEvent;
  return unless (defined $initMouse);
  my $f = $w->fraction($e->x,$e->y);
  my $delta = $f - $initMouse;
- if ($w->cget("-jump"))
+ if ($w->cget('-jump'))
   {
    if (@initValues == 2)
     {
@@ -294,9 +294,9 @@ sub EndDrag
  my $x = shift;
  my $y = shift;
  return unless defined($initMouse);
- if ($w->cget("-jump"))
+ if ($w->cget('-jump'))
   {
-   $w->ScrlToPos($initPos + $w->fraction($x,$y) - $initMouse); 
+   $w->ScrlToPos($initPos + $w->fraction($x,$y) - $initMouse);
   }
  undef $initMouse;
 }
@@ -312,17 +312,17 @@ sub EndDrag
 #		horizontal, "v" for vertical, "hv" for both.
 # amount -	How many units to scroll:  typically 1 or -1.
 
-sub ScrlByUnits 
+sub ScrlByUnits
 {my $w = shift;
  my $orient = shift;
  my $amount = shift;
- my $cmd    = $w->cget("-command");
+ my $cmd    = $w->cget('-command');
  return unless (defined $cmd);
- return if (index($orient,substr($w->cget("-orient"),0,1)) < 0); 
+ return if (index($orient,substr($w->cget('-orient'),0,1)) < 0);
  my @info = $w->get;
  if (@info == 2)
   {
-   $cmd->Call("scroll",$amount,"units");
+   $cmd->Call('scroll',$amount,'units');
   }
  else
   {
@@ -341,18 +341,18 @@ sub ScrlByUnits
 #		horizontal, "v" for vertical, "hv" for both.
 # amount -	How many screens to scroll:  typically 1 or -1.
 
-sub ScrlByPages 
+sub ScrlByPages
 {
  my $w = shift;
  my $orient = shift;
  my $amount = shift;
- my $cmd    = $w->cget("-command");
+ my $cmd    = $w->cget('-command');
  return unless (defined $cmd);
- return if (index($orient,substr($w->cget("-orient"),0,1)) < 0); 
+ return if (index($orient,substr($w->cget('-orient'),0,1)) < 0);
  my @info = $w->get;
  if (@info == 2)
   {
-   $cmd->Call("scroll",$amount,"pages");
+   $cmd->Call('scroll',$amount,'pages');
   }
  else
   {
@@ -374,12 +374,12 @@ sub ScrlToPos
 {
  my $w = shift;
  my $pos = shift;
- my $cmd = $w->cget("-command");
+ my $cmd = $w->cget('-command');
  return unless (defined $cmd);
  my @info = $w->get;
  if (@info == 2)
   {
-   $cmd->Call("moveto",$pos);
+   $cmd->Call('moveto',$pos);
   }
  else
   {
@@ -395,7 +395,7 @@ sub ScrlToPos
 # w -		The scrollbar widget.
 # x, y -	Mouse coordinates within the widget.
 
-sub ScrlTopBottom 
+sub ScrlTopBottom
 {
  my $w = shift;
  my $e = $w->XEvent;

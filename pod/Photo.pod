@@ -2,12 +2,11 @@
 #  Copyright (c) 1994-1997 Sun Microsystems, Inc.
 #  See the file "license.terms" for information on usage and redistribution
 #  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
 #  Author: Paul Mackerras (paulus@cs.anu.edu.au),
 # 	    Department of Computer Science,
 # 	    Australian National University.
-#  "@(#) photo.n 1.12 97/10/14 10:52:30"
-#
+#  RCS: @(#) $Id: photo.n,v 1.2 1998/09/14 18:22:59 stanton Exp $
+#  
 
 =head1 NAME
 
@@ -22,7 +21,7 @@ S<    >I<$widget>-E<gt>B<Photo>(?I<name>??, I<options>?)
 =head1 DESCRIPTION
 
 A photo is an L<image|Tk::Image> whose pixels can display any color or be
-transparent.  A photo image is stored internally in full color (24
+transparent.  A photo image is stored internally in full color (32
 bits per pixel), and is displayed using dithering if necessary.  Image
 data for a photo image can be obtained from a file or a string, or it
 can be supplied from
@@ -186,6 +185,12 @@ The following options may be specified:
 
 =over 8
 
+=item B<-background> =E<gt> I< color>
+
+If the color is specified, the data will not contain any transparency
+information. In all transparent pixels the color will be replaced by
+the specified color.
+
 =item B<-format> =E<gt> I<format-name>
 
 Specifies the name of the image file format handler to be used to
@@ -206,6 +211,11 @@ if this option is not given, is the whole image.
 
 =back
 
+=item B<-grayscale>
+
+If this options is specified, the data will not contain color
+information. All pixel data will be transformed into grayscale.
+
 =item I<$image>-E<gt>B<get>(I<x,y>)
 
 Returns the color of the pixel at coordinates (I<x>,I<y>) in the
@@ -214,21 +224,51 @@ red, green and blue components respectively.
 
 =item I<$image>-E<gt>B<put>(I<data> ?,B<-format>=E<gt>I<format-name>? ?,B<-to>=E<gt>I< x1 y1 ?x2 y2?>?)
 
-Sets pixels in I<$image> to the data specified in I<data>.
-If the -format option is supplied, a string read function for this
-format should be available and the data is expected to match this format.
-Otherwise I<data> is used to form a two-dimensional array of pixels
+Sets pixels in I< imageName> to the data specified in
+I<data>. This command first searches the list of image file
+format handlers for a handler that can interpret the data
+in I<data>, and then reads the image in I<filename> into
+I<imageName> (the destination image). The following options
+may be specified:
+
+=over 4
+
+=item B<-format >I<format-name>
+
+Specifies the format of the image data in I<data>.
+Specifically, only image file format handlers whose names begin with
+I<format-name> will be used while searching for an image data
+format handler to read the data. Otherwise I<data> is used to form a two-dimensional array of pixels
 that are then copied into the I<$image>. I<data> is structured
 then as a list of horizontal rows, from top to bottom, each of which is
 a list of colors, listed from left to right.  Each color may be specified
-by name (e.g., blue) or in hexadecimal form (e.g., #2376af).  The
-B<-to> option can be used to specify the area of I<$image> to be
-affected.  If only I<x1> and I<y1> are given, the area affected
-has its top-left corner at (I<x1,y1>) and is the same size as the
-array given in I<data>.  If all four coordinates are given, they
-specify diagonally opposite corners of the affected rectangle, and the
-array given in I<data> will be replicated as necessary in the X and
-Y directions to fill the rectangle.
+by name (e.g., blue) or in hexadecimal form (e.g., #2376af).
+
+=item B<-from >I<x1 y1 x2 y2>
+
+Specifies a rectangular sub-region of the image file data to be
+returned. If only I<x1> and I<y1> are specified, the region
+extends from (I<x1,y1>) to the bottom-right corner of the image
+in the image file.  If all four coordinates are specified, they
+specify diagonally opposite corners or the region. The default,
+if this option is not specified, is the whole of the image.
+
+=item B<-shrink>
+
+If this option, the size of I<imageName> will be reduced, if
+necessary, so that the region into which the image file data are read
+is at the bottom-right corner of the I<imageName>.  This option
+will not affect the width or height of the image if the user has
+specified a non-zero value for the B<-width> or B<-height>
+configuration option, respectively.
+
+=item B<-to >I<x y>
+
+Specifies the coordinates of the top-left corner of the region of
+I<imageName> into which data from I<filename> are to be read.
+The default is (0,0).
+
+=back
 
 =item I<$image>-E<gt>B<read>(I<filename> ?,I<option value(s), ...>?)
 
@@ -292,6 +332,12 @@ The following options may be specified:
 
 =over 8
 
+=item B<-background>I< color>
+
+If the color is specified, the data will not contain any transparency
+information. In all transparent pixels the color will be replaced by
+the specified color.
+
 =item B<-format> =E<gt> I<format-name>
 
 Specifies the name of the image file format handler to be used to
@@ -309,6 +355,12 @@ extends from I<(x1,y1)> to the bottom-right corner of
 I<$image>.  If all four coordinates are given, they specify
 diagonally opposite corners of the rectangular region.  The default,
 if this option is not given, is the whole image.
+
+
+=item B<-grayscale>
+
+If this options is specified, the data will not contain color
+information. All pixel data will be transformed into grayscale.
 
 =back
 
@@ -391,4 +443,5 @@ L<Tk::Pixmap|Tk::Pixmap>
 photo, image, color
 
 =cut
+
 

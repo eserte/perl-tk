@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkImgBmap.c 1.33 97/07/31 09:08:22
+ * RCS: @(#) $Id: tkImgBmap.c,v 1.5 1999/02/04 20:56:15 stanton Exp $
  */
 #define NEED_REAL_STDIO
 #include "tkInt.h"
@@ -150,13 +150,13 @@ typedef struct ParseInfo {
  */
 
 static int		ImgBmapCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, char **argv));
+			    Tcl_Interp *interp, int argc, Tcl_Obj *objv[]));
 static void		ImgBmapCmdDeletedProc _ANSI_ARGS_((
 			    ClientData clientData));
 static void		ImgBmapConfigureInstance _ANSI_ARGS_((
 			    BitmapInstance *instancePtr));
 static int		ImgBmapConfigureMaster _ANSI_ARGS_((
-			    BitmapMaster *masterPtr, int argc, Tcl_Obj **argv,
+			    BitmapMaster *masterPtr, int argc, Tcl_Obj *objv[],
 			    int flags));
 static int		NextBitmapWord _ANSI_ARGS_((ParseInfo *parseInfoPtr));
 
@@ -193,7 +193,6 @@ ImgBmapCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 				 * it will be returned in later callbacks. */
 {
     BitmapMaster *masterPtr;
-    int i;
 
     masterPtr = (BitmapMaster *) ckalloc(sizeof(BitmapMaster));
     masterPtr->tkMaster = master;
@@ -210,7 +209,6 @@ ImgBmapCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     masterPtr->maskFileString = NULL;
     masterPtr->maskDataString = NULL;
     masterPtr->instancePtr = NULL;
-
     if (ImgBmapConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgBmapDelete((ClientData) masterPtr);
 	return TCL_ERROR;
@@ -240,11 +238,11 @@ ImgBmapCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
  */
 
 static int
-ImgBmapConfigureMaster(masterPtr, argc, argv, flags)
+ImgBmapConfigureMaster(masterPtr, argc, objv, flags)
     BitmapMaster *masterPtr;	/* Pointer to data structure describing
 				 * overall bitmap image to (reconfigure). */
-    int argc;			/* Number of entries in argv. */
-    Tcl_Obj **argv;		/* Pairs of configuration options for image. */
+    int argc;			/* Number of entries in objv. */
+    Tcl_Obj **objv;		/* Pairs of configuration options for image. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget,
 				 * such as TK_CONFIG_ARGV_ONLY. */
 {
@@ -252,7 +250,7 @@ ImgBmapConfigureMaster(masterPtr, argc, argv, flags)
     int maskWidth, maskHeight, dummy1, dummy2;
 
     if (Tk_ConfigureWidget(masterPtr->interp, Tk_MainWindow(masterPtr->interp),
-	    configSpecs, argc, argv, (char *) masterPtr, flags)
+	    configSpecs, argc, objv, (char *) masterPtr, flags)
 	    != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -343,6 +341,7 @@ ImgBmapConfigureInstance(instancePtr)
     XGCValues gcValues;
     GC gc;
     unsigned int mask;
+    Pixmap oldMask;
 
     /*
      * For each of the options in masterPtr, translate the string
@@ -385,16 +384,23 @@ ImgBmapConfigureInstance(instancePtr)
 		(unsigned) masterPtr->height);
     }
 
-    if (instancePtr->mask != None) {
-	Tk_FreePixmap(Tk_Display(instancePtr->tkwin), instancePtr->mask);
-	instancePtr->mask = None;
-    }
+    /*
+     * Careful:  We have to allocate a new mask Pixmap before deleting
+     * the old one.  Otherwise, The XID allocator will always return
+     * the same XID for the new Pixmap as was used for the old Pixmap.
+     * And that will prevent the mask from changing in the GC below.
+     */
+    oldMask = instancePtr->mask;
+    instancePtr->mask = None;
     if (masterPtr->maskData != NULL) {
 	instancePtr->mask = XCreateBitmapFromData(
 		Tk_Display(instancePtr->tkwin),
 		RootWindowOfScreen(Tk_Screen(instancePtr->tkwin)),
 		masterPtr->maskData, (unsigned) masterPtr->width,
 		(unsigned) masterPtr->height);
+    }
+    if (oldMask != None) {
+      Tk_FreePixmap(Tk_Display(instancePtr->tkwin), oldMask);
     }
 
     if (masterPtr->data != NULL) {
@@ -724,52 +730,52 @@ NextBitmapWord(parseInfoPtr)
  */
 
 static int
-ImgBmapCmd(clientData, interp, argc, argv)
+ImgBmapCmd(clientData, interp, argc, objv)
     ClientData clientData;	/* Information about the image master. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Tcl_Obj *objv[];	/* Argument objects. */
 {
+    static char *bmapOptions[] = {"cget", "configure", (char *) NULL};
     BitmapMaster *masterPtr = (BitmapMaster *) clientData;
-    int c, code;
-    size_t length;
+    int code, index;
 
     if (argc < 2) {
-	sprintf(interp->result,
-		"wrong # args: should be \"%.50s option ?arg arg ...?\"",
-		argv[0]);
+	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg arg ...?");
 	return TCL_ERROR;
     }
-    c = argv[1][0];
-    length = strlen(argv[1]);
-    if ((c == 'c') && (strncmp(argv[1], "cget", length) == 0)
-	    && (length >= 2)) {
+    if (Tcl_GetIndexFromObj(interp, objv[1], bmapOptions, "option", 0,
+	    &index) != TCL_OK) {
+	return TCL_ERROR;
+    }
+    switch (index) {
+      case 0: {
 	if (argc != 3) {
-	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " cget option\"",
-		    (char *) NULL);
+	    Tcl_WrongNumArgs(interp, 2, objv, "option");
 	    return TCL_ERROR;
 	}
 	return Tk_ConfigureValue(interp, Tk_MainWindow(interp), configSpecs,
-		(char *) masterPtr, argv[2], 0);
-    } else if ((c == 'c') && (strncmp(argv[1], "configure", length) == 0)
-	    && (length >= 2)) {
+		(char *) masterPtr, Tcl_GetStringFromObj(objv[2], NULL), 0);
+      }
+      case 1: {
 	if (argc == 2) {
 	    code = Tk_ConfigureInfo(interp, Tk_MainWindow(interp),
 		    configSpecs, (char *) masterPtr, (char *) NULL, 0);
 	} else if (argc == 3) {
 	    code = Tk_ConfigureInfo(interp, Tk_MainWindow(interp),
-		    configSpecs, (char *) masterPtr, argv[2], 0);
+		    configSpecs, (char *) masterPtr,
+		    Tcl_GetStringFromObj(objv[2], NULL), 0);
 	} else {
-	    code = ImgBmapConfigureMaster(masterPtr, argc-2, argv+2,
+	    code = ImgBmapConfigureMaster(masterPtr, argc-2, objv+2,
 		    TK_CONFIG_ARGV_ONLY);
 	}
 	return code;
-    } else {
-	Tcl_AppendResult(interp, "bad option \"", argv[1],
-		"\": must be cget or configure", (char *) NULL);
+      }
+      default: {
+	panic("bad const entries to bmapOptions in ImgBmapCmd");
+      }
     }
- return TCL_ERROR;
+    return TCL_OK;
 }
 
 /*

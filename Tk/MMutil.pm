@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MMutil;
@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.036'; # $Id: //depot/Tk8/Tk/MMutil.pm#36$
+$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/MMutil.pm#42$
 
 use Tk::MakeDepend;
 
@@ -27,31 +27,31 @@ sub arch_prune
  my $hash = shift;
  foreach (keys %$hash)
   {
-   if ($win_arch eq 'x') 
+   if ($win_arch eq 'x')
     {
      delete $hash->{$_} if /Win[A-Z0-9]/ or /OS2/ or /ImgUtil/ or /^x/;
-    } 
-   elsif ($win_arch eq 'open32') 
+    }
+   elsif ($win_arch eq 'open32')
     {
      delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
      delete $hash->{$_} if /winMain|dllMain/;
     }
-   elsif ($win_arch eq 'pm') 
+   elsif ($win_arch eq 'pm')
     {
-     delete $hash->{$_} 
-       if /Unix|Mwm/ and not 
+     delete $hash->{$_}
+       if /Unix|Mwm/ and not
 	 /tclUnix|Unix(3d|Button|Dialog|Color|Embed|Focus|Font|Menu|Scrlbr|Send|Int\.|Scale)/;
      delete $hash->{$_} if /os2Main|dllMain|tkOS2Dll|^x(colors\.c|gc\.)/;
      delete $hash->{$_} if /ImgUtil|tkWin[A-Z0-9]/ and not /OS2/;
     }
-   elsif ($win_arch eq 'MSWin32') 
+   elsif ($win_arch eq 'MSWin32')
     {
      delete $hash->{$_} if /Mwm/ and not /tclUnix/;
      delete $hash->{$_} if /winMain|dllMain/;
      # delete $hash->{$_} if /^Xrm/;
     }
-  } 
-}                                        
+  }
+}
 
 sub mTk_postamble
 {
@@ -106,19 +106,19 @@ sub mTk_CHO
   {
    print "perl=$perl X=$^X\n";
    $perl = "$perl.exe";
-   $self->{'PERL'} = $perl; 
+   $self->{'PERL'} = $perl;
   }
  foreach my $file (sort keys %$mTk)
   {
    unless (-f $file)
-    {                   
+    {
      warn "Extracting $file\n";
      system($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
     }
   }
 }
 
-my %visited;          
+my %visited;
 
 sub abspath
 {
@@ -172,8 +172,8 @@ sub relpath
      else
       {
        unless(exists $visited{$here})
-        {                         
-         $visited{$here} = 1;     
+        {
+         $visited{$here} = 1;
          warn "$here does not start with $dir\n";
          warn "i.e. building outside Tk itself\n";
         }
@@ -195,8 +195,8 @@ use strict;
 
 sub upgrade_pic
 {
- my $flags = "";
- die "upgrade_pic is obsolete";
+ my $flags = '';
+ die 'upgrade_pic is obsolete';
  return $flags;
 }
 
@@ -219,14 +219,14 @@ sub perldepend
  if (@files)
   {
    my $tk = installed_tk();
-   my @inc   = split(/\s+/,$self->{'INC'});   
+   my @inc   = split(/\s+/,$self->{'INC'});
    my @def   = split(/\s+/,$self->{'DEFINE'});
    push(@def,qw(-DWIN32 -D__WIN32__)) if ($IsWin32);
    foreach (@inc)
     {
      s/\$\(TKDIR\)/$tk/g;
-     warn "Odd:$_" if /\$\(/; 
-    } 
+     warn "Odd:$_" if /\$\(/;
+    }
    $str .= Tk::MakeDepend::command_line(@inc,@def,@files) unless ($ENV{'TKNOMAKEDEPEND'});
   }
  return $str;
@@ -241,7 +241,7 @@ sub const_config
    delete $self->{PM}->{$name};
   }
  my $flags = $self->{'CCCDLFLAGS'};
- $flags =~ s/(-[fK]?\s*)pic\b/${1}PIC/; 
+ $flags =~ s/(-[fK]?\s*)pic\b/${1}PIC/;
  $self->{'CCCDLFLAGS'} = $flags;
  if ($^O eq 'MSWin32' && $Config{'ccflags'} =~ /-DPERL_OBJECT/)
   {
@@ -259,7 +259,7 @@ sub constants
  $_ .= "\nGCCOPT = $Tk::Config::gccopt\n";
  if ($IsWin32)
   {
-  } 
+  }
  $_;
 }
 
@@ -270,10 +270,10 @@ sub cflags
  if (0 && $IsWin32)
   {
    if ($Config::Config{cc} =~ /^bcc/i) {
-     # s/(CCFLAGS\s*=)/$1/; 
+     # s/(CCFLAGS\s*=)/$1/;
    }
    else {
-     s/(CCFLAGS\s*=)/$1 \$(cflags) \$(cvarsdll)/; 
+     s/(CCFLAGS\s*=)/$1 \$(cflags) \$(cvarsdll)/;
      s/(OPTIMIZE\s*=).*/$1 \$(cdebug)/;
    }
   }
@@ -340,7 +340,7 @@ sub makefile
 
 sub installed_tk
 {
- my $tk; 
+ my $tk;
  my $dir;
  foreach $dir (@INC)
   {
@@ -366,7 +366,7 @@ sub installbin
  my ($self) = @_;
  my $str  = $self->MM::installbin;
  my $prog = 'perl'; # $self->{'MAP_TARGET'} || 'perl';
- my $inc  = findINC("Tk/MMutil.pm");
+ my $inc  = findINC('Tk/MMutil.pm');
  $inc =~ s,/Tk/MMutil.pm$,,;
  $inc = relpath($inc);
  $str =~ s/^\tcp\s/\t\$(PERL) -I$inc -MTk::install -e installbin $prog /mg;
@@ -386,7 +386,7 @@ sub findpTk
      last;
     }
   }
- confess "Cannot locate pTk\n" unless (defined $ptk); 
+ confess "Cannot locate pTk\n" unless (defined $ptk);
  return $ptk;
 }
 
@@ -400,7 +400,7 @@ sub find_subdir
    next if -l $dir;
    next unless -d $dir;
    if (-f "$dir/Makefile.PL")
-    {    
+    {
      my $exc = ($win_arch eq 'x') ? 'Unix' : 'Win';
      if (-f "$dir/Not${exc}.exc")
       {
@@ -408,7 +408,7 @@ sub find_subdir
       }
      else
       {
-       $dir{$dir} = 1 
+       $dir{$dir} = 1
       }
     }
   }
@@ -422,9 +422,9 @@ sub TkExtMakefile
  if ($Config{'ccflags'} =~ /-DPERL_OBJECT/)
   {
    $att{'CAPI'} = 'TRUE' unless exists $att{'CAPI'};
-  }             
+  }
  unless (exists $att{'DIR'})
-  {            
+  {
    my $dir = find_subdir();
    $att{'DIR'} = [sort(keys %$dir)];
   }
@@ -444,11 +444,11 @@ sub TkExtMakefile
  my $tk = installed_tk();
  $att{'macro'} = {} unless (exists $att{'macro'});
  $att{'macro'}{'TKDIR'} = $tk;
- my @opt = ('VERSION'     => $Tk::Config::VERSION, 
+ my @opt = ('VERSION'     => $Tk::Config::VERSION,
             'XS_VERSION'  => $Tk::Config::VERSION);
  push(@opt,'clean' => {} ) unless (exists $att{'clean'});
  $att{'clean'}->{FILES} = '' unless (exists $att{'clean'}->{FILES});
- $att{'clean'}->{FILES} .= " *.bak";
+ $att{'clean'}->{FILES} .= ' *.bak';
  unless (exists($att{'linkext'}) && $att{linkext}{LINKTYPE} eq '')
   {
    my $ptk = findpTk($tk);
@@ -459,14 +459,14 @@ sub TkExtMakefile
    $i = (defined $i) ? "$i $inc" : $inc;
    if (delete $att{'dynamic_ptk'})
     {
-     push(@opt, 
+     push(@opt,
           'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
 #         'dynamic_lib' => { INST_DYNAMIC_DEP => "$ptk/libpTk\$(LIB_EXT)" }
-         ); 
+         );
     }
    if ($IsWin32 && $Config{'cc'} =~ /^bcc/)
     {
-     # Borland compiler is very dumb at finding files 
+     # Borland compiler is very dumb at finding files
      $i = "-I$tk $i";
      $i = "-I$ptk $i";
     }

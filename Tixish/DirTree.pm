@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tixish/DirTree.pm#16$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tixish/DirTree.pm#17$
 
 use Tk;
 use Tk::Derived;
@@ -26,12 +26,12 @@ sub Populate {
     $cw->SUPER::Populate( $args );
 
     $cw->ConfigSpecs(
-        -dircmd         => [qw/CALLBACK dirCmd DirCmd/, 
-                            sub { $cw->dircmd( @_ ) } ], 
-        -showhidden     => [qw/PASSIVE showHidden ShowHidden 0/], 
-        -image          => [qw/PASSIVE image Image folder/], 
+        -dircmd         => [qw/CALLBACK dirCmd DirCmd/,
+                            sub { $cw->dircmd( @_ ) } ],
+        -showhidden     => [qw/PASSIVE showHidden ShowHidden 0/],
+        -image          => [qw/PASSIVE image Image folder/],
         -directory      => [qw/SETMETHOD directory Directory ./],
-        -value          => "-directory" );
+        -value          => '-directory' );
 
     $cw->configure( -separator => '/', -itemtype => 'imagetext' );
     $args->{-opencmd} = sub { $cw->opencmd( @_ ) };
@@ -41,7 +41,7 @@ sub dircmd {
     my( $w, $dir, $showhidden ) = @_;
 
     my $h = DirHandle->new( $dir ) or return();
-    my @names = grep( $_ ne "." && $_ ne "..", $h->read );
+    my @names = grep( $_ ne '.' && $_ ne '..', $h->read );
     @names = grep( ! /^[.]/, @names ) unless $showhidden;
     return( @names );
 }
@@ -62,7 +62,7 @@ sub fullpath
  return $path;
 }
 
-sub directory {                    
+sub directory {
     my ($w,$key,$val) = @_;
     if (defined $w->cget('-image'))
      {
@@ -90,28 +90,28 @@ sub chdir {
        }
      }
     $w->add_to_tree( $parent, $parent)  unless $w->infoExists($parent);
-    
+
     my @dirs = ($parent);
     foreach my $name (split( /[\/\\]/, $fulldir )) {
         next unless length $name;
         push @dirs, $name;
-        my $dir = join( "/", @dirs );
-        $w->add_to_tree( $dir, $name, $parent ) 
+        my $dir = join( '/', @dirs );
+        $w->add_to_tree( $dir, $name, $parent )
             unless $w->infoExists( $dir );
         $parent = $dir;
     }
 
     $w->opencmd( $parent );
-    $w->setmode( $parent, "close" );
+    $w->setmode( $parent, 'close' );
 }
 
 sub opencmd {
     my( $w, $dir ) = @_;
 
     my $parent = $dir;
-    $dir = "" if $dir eq "/";
+    $dir = '' if $dir eq '/';
     foreach my $name ($w->dirnames( $parent )) {
-        next if ($name eq "." || $name eq "..");
+        next if ($name eq '.' || $name eq '..');
         my $subdir = "$dir/$name";
         next unless -d $subdir;
         if( $w->infoExists( $subdir ) ) {
@@ -126,8 +126,8 @@ sub add_to_tree {
     my( $w, $dir, $name, $parent ) = @_;
 
     my $image = $w->Getimage( $w->cget('-image') );
-    my $mode = "none";
-    $mode = "open" if $w->has_subdir( $dir );
+    my $mode = 'none';
+    $mode = 'open' if $w->has_subdir( $dir );
 
     my @args = (-image => $image, -text => $name);
     if( $parent ) {             # Add in alphabetical order.
@@ -146,7 +146,7 @@ sub add_to_tree {
 sub has_subdir {
     my( $w, $dir ) = @_;
     foreach my $name ($w->dirnames( $dir )) {
-        next if ($name eq "." || $name eq "..");
+        next if ($name eq '.' || $name eq '..');
         next if ($name =~ /^\.+$/);
         return( 1 ) if -d "$dir/$name";
     }
@@ -155,7 +155,7 @@ sub has_subdir {
 
 sub dirnames {
     my( $w, $dir ) = @_;
-    my @names = $w->Callback( "-dircmd", $dir, $w->cget( "-showhidden" ) );
+    my @names = $w->Callback( '-dircmd', $dir, $w->cget( '-showhidden' ) );
     return( @names );
 }
 
@@ -164,7 +164,7 @@ __END__
 #  Copyright (c) 1996, Expert Interface Technologies
 #  See the file "license.terms" for information on usage and redistribution
 #  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#  
+#
 #  The file man.macros and some of the macros used by this file are
 #  copyrighted: (c) 1990 The Regents of the University of California.
 #               (c) 1994-1995 Sun Microsystems, Inc.

@@ -5,7 +5,7 @@
 # "autoconf" program (constructs like "@foo@" will get replaced in the
 # actual Makefile.
 #
-# SCCS: @(#) Makefile.in 1.190 97/11/05 10:57:38
+# RCS: @(#) $Id: Makefile.in,v 1.17 1999/02/02 23:00:07 stanton Exp $
 
 # Current Tcl version;  used in various names.
 
@@ -192,7 +192,7 @@ TCL_LIB_FLAG = @TCL_LIB_FLAG@
 
 COMPAT_OBJS =		@LIBOBJS@
 
-AC_FLAGS =		@DEFS@
+AC_FLAGS =		@EXTRA_CFLAGS@ @DEFS@
 RANLIB =		@RANLIB@
 SRC_DIR =		@srcdir@
 TOP_DIR =		@srcdir@/..
@@ -224,7 +224,8 @@ ${GENERIC_FLAGS} ${PROTO_FLAGS} ${MEM_DEBUG_FLAGS} \
 
 TCLSH_OBJS = tclAppInit.o
 
-TCLTEST_OBJS = tclTestInit.o tclTest.o tclTestObj.o tclUnixTest.o
+TCLTEST_OBJS = tclTestInit.o tclTest.o tclTestObj.o tclTestProcBodyObj.o \
+	tclUnixTest.o
 
 XTTEST_OBJS = tclTest.o tclTestObj.o tclUnixTest.o tclXtNotify.o \
 	tclXtTest.o xtTestInit.o
@@ -292,6 +293,7 @@ GENERIC_SRCS = \
 	$(GENERIC_DIR)/tclStringObj.c \
 	$(GENERIC_DIR)/tclTest.c \
 	$(GENERIC_DIR)/tclTestObj.c \
+	$(GENERIC_DIR)/tclTestProcBodyObj.c \
 	$(GENERIC_DIR)/tclTimer.c \
 	$(GENERIC_DIR)/tclUtil.c \
 	$(GENERIC_DIR)/tclVar.c
@@ -376,7 +378,7 @@ test: tcltest
 	( echo cd $(TOP_DIR)/tests\; source all ) | ./tcltest
 
 # Useful target to launch a built tcltest with the proper path,...
-runtest:
+runtest: tcltest
 	LD_LIBRARY_PATH=`pwd`:${LD_LIBRARY_PATH}; export LD_LIBRARY_PATH; \
 	SHLIB_PATH=`pwd`:${SHLIB_PATH}; export SHLIB_PATH; \
 	TCL_LIBRARY=${TOP_DIR}/library; export TCL_LIBRARY; \
@@ -401,7 +403,7 @@ topDirName:
 gendate:
 	yacc -l $(GENERIC_DIR)/tclGetDate.y
 	sed -e 's/yy/TclDate/g' -e '/^#include <values.h>/d' \
-	    -e 's/SCCSID/%Z\% %M\% %I\% %E\% %U\%/g' \
+	    -e 's/SCCSID/RCS: @(#) $Id: Makefile.in,v 1.17 1999/02/02 23:00:07 stanton Exp $'
 	    -e '/#ifdef __STDC__/,/#endif/d' -e '/TclDateerrlab:/d' \
 	    -e '/TclDatenewstate:/d' -e '/#pragma/d' \
 	    <y.tab.c >$(GENERIC_DIR)/tclDate.c
@@ -436,7 +438,7 @@ install-binaries: $(TCL_LIB_FILE) tclsh
 	    do \
 	    if [ ! -d $$i ] ; then \
 		echo "Making directory $$i"; \
-		mkdir $$i; \
+		mkdir -p $$i; \
 		chmod 755 $$i; \
 		else true; \
 		fi; \
@@ -456,7 +458,7 @@ install-libraries:
 	    do \
 	    if [ ! -d $$i ] ; then \
 		echo "Making directory $$i"; \
-		mkdir $$i; \
+		mkdir -p $$i; \
 		chmod 755 $$i; \
 		else true; \
 		fi; \
@@ -465,7 +467,7 @@ install-libraries:
 	    do \
 	    if [ ! -d $(SCRIPT_INSTALL_DIR)/$$i ] ; then \
 		echo "Making directory $(SCRIPT_INSTALL_DIR)/$$i"; \
-		mkdir $(SCRIPT_INSTALL_DIR)/$$i; \
+		mkdir -p $(SCRIPT_INSTALL_DIR)/$$i; \
 		chmod 755 $(SCRIPT_INSTALL_DIR)/$$i; \
 		else true; \
 		fi; \
@@ -491,7 +493,7 @@ install-man:
 	    do \
 	    if [ ! -d $$i ] ; then \
 		echo "Making directory $$i"; \
-		mkdir $$i; \
+		mkdir -p $$i; \
 		chmod 755 $$i; \
 		else true; \
 		fi; \
@@ -743,6 +745,9 @@ tclTest.o: $(GENERIC_DIR)/tclTest.c
 tclTestObj.o: $(GENERIC_DIR)/tclTestObj.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tclTestObj.c
 
+tclTestProcBodyObj.o: $(GENERIC_DIR)/tclTestProcBodyObj.c
+	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tclTestProcBodyObj.c
+
 tclTimer.o: $(GENERIC_DIR)/tclTimer.c
 	$(CC) -c $(CC_SWITCHES) $(GENERIC_DIR)/tclTimer.c
 
@@ -885,6 +890,9 @@ dist: $(UNIX_DIR)/configure
 	cp -p $(TOP_DIR)/tests/*.test $(TOP_DIR)/tests/README \
 		$(TOP_DIR)/tests/all $(TOP_DIR)/tests/*.tcl \
 		$(TOP_DIR)/tests/defs $(DISTDIR)/tests
+	mkdir $(DISTDIR)/tests/pkg
+	cp -p $(TOP_DIR)/license.terms $(DISTDIR)/tests/pkg
+	cp -p $(TOP_DIR)/tests/pkg/*.tcl $(DISTDIR)/tests/pkg
 	mkdir $(DISTDIR)/win
 	cp -p $(TOP_DIR)/win/*.c $(TOP_DIR)/win/*.h $(TOP_DIR)/win/*.rc \
 		$(DISTDIR)/win
@@ -894,10 +902,7 @@ dist: $(UNIX_DIR)/configure
 	cp -p $(TOP_DIR)/win/pkgIndex.tcl $(DISTDIR)/win
 	cp -p $(TOP_DIR)/license.terms $(DISTDIR)/win
 	mkdir $(DISTDIR)/mac
-	sccs edit -s $(TOP_DIR)/mac/tclMacProjects.sea.hqx
-	cp -p tclMacProjects.sea.hqx $(DISTDIR)/mac
-	sccs unedit $(TOP_DIR)/mac/tclMacProjects.sea.hqx
-	rm -f tclMacProjects.sea.hqx
+	cp -p $(TOP_DIR)/mac/tclMacProjects.sea.hqx $(DISTDIR)/mac
 	cp -p $(TOP_DIR)/mac/*.c $(TOP_DIR)/mac/*.h $(TOP_DIR)/mac/*.r \
 		$(DISTDIR)/mac
 	cp -p $(TOP_DIR)/mac/porting.notes $(TOP_DIR)/mac/README $(DISTDIR)/mac
@@ -951,7 +956,9 @@ allpatch: dist
 # programs found only in the Tcl group's tool workspace.
 #
 
-macdist: dist
+macdist: dist machtml
+
+machtml:
 	rm -f $(DISTDIR)/mac/tclMacProjects.sea.hqx
 	tclsh $(TOOL_DIR)/man2html.tcl $(DISTDIR)/tmp ../.. tcl$(VERSION)
 	mv $(DISTDIR)/tmp/tcl$(VERSION) $(DISTDIR)/html

@@ -1,4 +1,4 @@
-package Tk::Button;  
+package Tk::Button;
 # Conversion from Tk4.0 button.tcl competed.
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
@@ -6,10 +6,10 @@ package Tk::Button;
 # Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Button.pm#9$
+use vars qw($VERSION);
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Button.pm#11$
 
-# modify it under the same terms as Perl itself, subject 
+# modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
 
@@ -18,11 +18,11 @@ use strict;
 require Tk::Widget;
 use base  qw(Tk::Widget);
 
-use vars qw($buttonWindow $relief); 
+use vars qw($buttonWindow $relief);
 
-Tk::Methods("deselect","flash","invoke","select","toggle");
+Tk::Methods('deselect','flash','invoke','select','toggle');
 
-sub Tk_cmd { \&Tk::button }         
+sub Tk_cmd { \&Tk::button }
 
 Construct Tk::Widget 'Button';
 
@@ -49,10 +49,10 @@ sub Enter
 {
  my $w = shift;
  my $E = shift;
- if ($w->cget("-state") ne "disabled")
+ if ($w->cget('-state') ne 'disabled')
   {
-   $w->configure("-state" => "active");
-   $w->configure("-state" => "active", "-relief" => "sunken") if (defined($buttonWindow) && $w == $buttonWindow)
+   $w->configure('-state' => 'active');
+   $w->configure('-state' => 'active', '-relief' => 'sunken') if (defined($buttonWindow) && $w == $buttonWindow)
   }
  $Tk::window = $w;
 }
@@ -69,8 +69,8 @@ sub Enter
 sub Leave
 {
  my $w = shift;
- $w->configure("-state"=>"normal") if ($w->cget("-state") ne "disabled");
- $w->configure("-relief" => $relief) if (defined($buttonWindow) && $w == $buttonWindow);
+ $w->configure('-state'=>'normal') if ($w->cget('-state') ne 'disabled');
+ $w->configure('-relief' => $relief) if (defined($buttonWindow) && $w == $buttonWindow);
  undef $Tk::window;
 }
 
@@ -85,11 +85,11 @@ sub Leave
 sub butDown
 {
  my $w = shift;
- $relief = $w->cget("-relief");
- if ($w->cget("-state") ne "disabled")
+ $relief = $w->cget('-relief');
+ if ($w->cget('-state') ne 'disabled')
   {
    $buttonWindow = $w;
-   $w->configure("-relief" => "sunken")
+   $w->configure('-relief' => 'sunken')
   }
 }
 
@@ -106,8 +106,8 @@ sub butUp
  if (defined($buttonWindow) && $buttonWindow == $w)
   {
    undef $buttonWindow;
-   $w->configure("-relief" => $relief);
-   if ($w->IS($Tk::window) && $w->cget("-state") ne "disabled")
+   $w->configure('-relief' => $relief);
+   if ($w->IS($Tk::window) && $w->cget('-state') ne 'disabled')
     {
      $w->invoke;
     }
@@ -120,17 +120,17 @@ sub butUp
 #
 # Arguments:
 # w -		The name of the widget.
-sub Invoke 
+sub Invoke
 {
  my $w = shift;
- if ($w->cget("-state") ne "disabled")
+ if ($w->cget('-state') ne 'disabled')
   {
-   my $oldRelief = $w->cget("-relief");
-   my $oldState  = $w->cget("-state");
-   $w->configure("-state" => "active", "-relief" => "sunken");
+   my $oldRelief = $w->cget('-relief');
+   my $oldState  = $w->cget('-state');
+   $w->configure('-state' => 'active', '-relief' => 'sunken');
    $w->idletasks;
    $w->after(100);
-   $w->configure("-state" => $oldState, "-relief" => $oldRelief);
+   $w->configure('-state' => $oldState, '-relief' => $oldRelief);
    $w->invoke;
   }
 }

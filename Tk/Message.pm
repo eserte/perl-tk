@@ -1,11 +1,11 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Message;
 use strict;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Message.pm#6$
+use vars qw($VERSION);
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Message.pm#8$
 
 require Tk::Widget;
 

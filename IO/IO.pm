@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
-use vars qw($VERSION @ISA);
-$VERSION = '3.023'; # $Id: //depot/Tk8/IO/IO.pm#23$
+use vars qw($VERSION);
+$VERSION = '3.025'; # $Id: //depot/Tk8/IO/IO.pm#25$
 
 require 5.002;
 require Tk;
@@ -23,8 +23,8 @@ sub new
  # Do whatever IO::Handle does
  my $fh  = $package->SUPER::new;
  %{*$fh} = ();  # The hash is used for configure options
- ${*$fh} = "";  # The scalar is used as the 'readable' buffer
- @{*$fh} = ();  # The array 
+ ${*$fh} = '';  # The scalar is used as the 'readable' buffer
+ @{*$fh} = ();  # The array
  $fh->configure(%args);
  return $fh;
 }
@@ -57,7 +57,7 @@ sub killpg
 {
  my ($fh,$sig) = @_;
  my $pid = $fh->pid;
- croak "No child" unless (defined $pid);
+ croak 'No child' unless (defined $pid);
  kill($sig,-$pid);
 }
 
@@ -65,12 +65,12 @@ sub kill
 {
  my ($fh,$sig) = @_;
  my $pid = $fh->pid;
- croak "No child" unless (defined $pid);
+ croak 'No child' unless (defined $pid);
  kill($sig,$pid) || croak "Cannot kill($sig,$pid):$!";
 }
 
 sub readable
-{     
+{
  my $fh     = shift;
  my $count  = sysread($fh,${*$fh},1,length(${*$fh}));
  if ($count < 0)
@@ -93,7 +93,7 @@ sub readable
      if ($eol >= 0)
       {
        my $line = substr(${*$fh},0,++$eol);
-       substr(${*$fh},0,$eol) = "";
+       substr(${*$fh},0,$eol) = '';
        ${*$fh}{-linecommand}->Call($line);
       }
     }
@@ -120,10 +120,10 @@ sub command
 sub exec
 {
  my $fh  = shift;
- my $pid = open($fh,"-|");
+ my $pid = open($fh,'-|');
  if ($pid)
   {
-   ${*$fh} = "" unless (defined ${*$fh});
+   ${*$fh} = '' unless (defined ${*$fh});
    ${*$fh}{'-exec'} = [@_];
    ${*$fh}{'-pid'}  = $pid;
    if (exists ${*$fh}{-linecommand})
@@ -143,7 +143,7 @@ sub exec
   {
    # make STDERR same as STDOUT here
    setpgrp;
-   exec(@_) || die "Cannot exec ",join(' ',@_),":$!";
+   exec(@_) || die 'Cannot exec ',join(' ',@_),":$!";
   }
 }
 
@@ -157,7 +157,7 @@ sub wait
  if (defined $ch)
   {
    ${*$fh}{-childcommand} = $ch;
-   $ch->Call($code,$fh) 
+   $ch->Call($code,$fh)
   }
  return $code;
 }
@@ -177,7 +177,7 @@ sub close
     }
   }
  return $code;
-}  
+}
 
 sub PrintArgs
 {
@@ -211,25 +211,25 @@ sub PRINT
 }
 
 sub PRINTF
-{       
+{
  &PrintArgs;
  my $h = shift;
  return printf $h @_;
 }
 
 sub WRITE
-{              
+{
  return syswrite($_[0],$_[1],$_[2]);
 }
 
 sub READLINE
-{       
+{
  my $h = shift;
  return <$h>;
 }
 
 sub READ
-{   
+{
  return sysread($_[0],$_[1],$_[2],defined $_[3] ? $_[3] : 0);
 }
 
@@ -240,14 +240,14 @@ sub GETC
 
 sub CLOSE
 {
- my $h = shift;  
+ my $h = shift;
  my $fd  = fileno($h);
  foreach my $mode (keys %{${*$h}{'Handlers'}})
   {
    $h->deleteHandler($mode);
   }
  DeleteFileHandler($fd) if (defined $fd);
- return $h->close; 
+ return $h->close;
 }
 
 sub imode
@@ -274,8 +274,8 @@ sub IOready
 sub addHandler
 {
  my ($h,$mode,$cb) = @_;
- my $fd = fileno($h);                                             
- croak("Cannot add fileevent to unopened handle") unless defined $fd;
+ my $fd = fileno($h);
+ croak('Cannot add fileevent to unopened handle') unless defined $fd;
  $cb = Tk::Callback->new($cb);
  my $imode = imode($mode);
  ${*$h}{'Handlers'}{$mode} = $cb;
@@ -296,7 +296,7 @@ sub deleteHandler
    ${*$h}{'imode'} &= ~$imode;
    if (defined $fd)
     {
-     DeleteFileHandler($fd);                                  
+     DeleteFileHandler($fd);
      CreateFileHandler($fd, ${*$h}{'imode'}, $h) if (${*$h}{'imode'});
     }
   }

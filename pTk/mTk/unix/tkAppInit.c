@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkAppInit.c 1.22 96/05/29 09:47:08
+ * RCS: @(#) $Id: tkAppInit.c,v 1.3 1999/02/04 20:57:18 stanton Exp $
  */
 
 #include "tk.h"
@@ -24,7 +24,7 @@ extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
 
 #ifdef TK_TEST
-EXTERN int		Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
+extern int		Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
 #endif /* TK_TEST */
 
 /*

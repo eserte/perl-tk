@@ -31,8 +31,8 @@
 #endif
 
 #include <assert.h>
-#include <stdio.h>
 #include <setjmp.h>
+#include <stdio.h>
 #include "jpeglib.h"
 #include "jerror.h"
 
@@ -138,7 +138,7 @@ void ImgTIFFsetByteArray _ANSI_ARGS_((VOID **, VOID*, long));
 int ImgTIFFSetField _ANSI_ARGS_(TCL_VARARGS(TIFF *, tif));
 tsize_t ImgTIFFTileSize _ANSI_ARGS_((TIFF*));
 
-int Imgjpeg_resync_to_restart _ANSI_ARGS_((j_decompress_ptr, int));
+boolean Imgjpeg_resync_to_restart _ANSI_ARGS_((j_decompress_ptr, int));
 JDIMENSION Imgjpeg_read_scanlines _ANSI_ARGS_((j_decompress_ptr,
 			JSAMPARRAY, JDIMENSION));
 int Imgjpeg_set_colorspace _ANSI_ARGS_((j_compress_ptr, J_COLOR_SPACE));
@@ -766,12 +766,16 @@ JPEGSetupDecode(tif)
  * Set up for decoding a strip or tile.
  */
 
-static int JPEGPreDecode _ANSI_ARGS_((TIFF* tif, tsample_t s));
-
 static int
+#ifdef _USING_PROTOTYPES_
+JPEGPreDecode (
+    TIFF* tif,
+    tsample_t s)
+#else
 JPEGPreDecode(tif, s)
     TIFF* tif;
     tsample_t s;
+#endif
 {
 	JPEGState *sp = JState(tif);
 	TIFFDirectory *td = &tif->tif_dir;
@@ -900,13 +904,20 @@ JPEGPreDecode(tif, s)
  * "Standard" case: returned data is not downsampled.
  */
 
-static int JPEGDecode _ANSI_ARGS_((TIFF*, tidata_t, tsize_t, tsample_t));
 static int
+#ifdef _USING_PROTOTYPES_
+JPEGDecode (
+    TIFF* tif,
+    tidata_t buf,
+    tsize_t cc,
+    tsample_t s)
+#else
 JPEGDecode(tif, buf, cc, s)
     TIFF* tif;
     tidata_t buf;
     tsize_t cc;
     tsample_t s;
+#endif
 {
 	JPEGState *sp = JState(tif);
 	tsize_t nrows;
@@ -938,13 +949,20 @@ JPEGDecode(tif, buf, cc, s)
  * Returned data is downsampled per sampling factors.
  */
 
-static int JPEGDecodeRaw _ANSI_ARGS_((TIFF*, tidata_t, tsize_t, tsample_t));
 static int
+#ifdef _USING_PROTOTYPES_
+JPEGDecodeRaw (
+    TIFF* tif,
+    tidata_t buf,
+    tsize_t cc,
+    tsample_t s)
+#else
 JPEGDecodeRaw(tif, buf, cc, s)
     TIFF* tif;
     tidata_t buf;
     tsize_t cc;
     tsample_t s;
+#endif
 {
 	JPEGState *sp = JState(tif);
 	JSAMPLE* inptr;
@@ -1199,11 +1217,16 @@ JPEGSetupEncode(tif)
  * Set encoding state at the start of a strip or tile.
  */
 
-static int JPEGPreEncode _ANSI_ARGS_((TIFF*, tsample_t));
 static int
+#ifdef _USING_PROTOTYPES_
+JPEGPreEncode (
+    TIFF* tif,
+    tsample_t s)
+#else
 JPEGPreEncode(tif, s)
     TIFF* tif;
     tsample_t s;
+#endif
 {
 	JPEGState *sp = JState(tif);
 	TIFFDirectory *td = &tif->tif_dir;
@@ -1490,6 +1513,8 @@ JPEGCleanup(tif)
 	}
 }
 
+static int JPEGVSetField _ANSI_ARGS_((TIFF* tif, ttag_t tag, va_list ap));
+
 static int
 JPEGVSetField(tif, tag, ap)
     TIFF* tif;
@@ -1549,6 +1574,8 @@ JPEGVSetField(tif, tag, ap)
 	return (1);
 }
 
+static int JPEGVGetField _ANSI_ARGS_((TIFF* tif, ttag_t tag, va_list ap));
+
 static int
 JPEGVGetField(tif, tag, ap)
     TIFF* tif;
@@ -1577,21 +1604,6 @@ JPEGVGetField(tif, tag, ap)
 		return (*sp->vgetparent)(tif, tag, ap);
 	}
 	return (1);
-}
-
-static void JPEGPrintDir _ANSI_ARGS_((TIFF*, FILE*, long));
-static void
-JPEGPrintDir(tif, fd, flags)
-    TIFF* tif;
-    FILE* fd;
-    long flags;
-{
-	JPEGState* sp = JState(tif);
-
-	(void) flags;
-	if (TIFFFieldSet(tif,FIELD_JPEGTABLES))
-		fprintf(fd, "  JPEG Tables: (%lu bytes)\n",
-			(u_long) sp->jpegtables_length);
 }
 
 static uint32 JPEGDefaultStripSize _ANSI_ARGS_((TIFF*, uint32));
@@ -1658,7 +1670,6 @@ ImgInitTIFFjpeg(handle, scheme)
 	tif->tif_vgetfield = JPEGVGetField;	/* hook for codec tags */
 	sp->vsetparent = tif->tif_vsetfield;
 	tif->tif_vsetfield = JPEGVSetField;	/* hook for codec tags */
-	tif->tif_printdir = JPEGPrintDir;	/* hook for codec tags */
 
 	/* Default values for codec-specific fields */
 	sp->jpegtables = NULL;

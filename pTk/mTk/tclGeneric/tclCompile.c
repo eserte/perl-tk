@@ -6,11 +6,12 @@
  *	sequence of instructions ("bytecodes"). 
  *
  * Copyright (c) 1996-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1998-1999 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclCompile.c 1.10 98/08/07 11:46:30
+ * RCS: @(#) $Id: tclCompile.c,v 1.13 1999/02/03 00:55:04 stanton Exp $
  */
 
 #include "tclInt.h"
@@ -3878,7 +3879,7 @@ TclCompileExprCmd(interp, string, lastChar, flags, envPtr)
 
     /*
      * Scan the concatenated expression's characters looking for any
-     * '['s or (for now) '\'s. If any are found, just call the expr cmd
+     * '['s or '\'s or '$'s. If any are found, just call the expr cmd
      * at runtime.
      */
     
@@ -3887,7 +3888,7 @@ TclCompileExprCmd(interp, string, lastChar, flags, envPtr)
     last = first + (Tcl_DStringLength(&buffer) - 1);
     for (p = first;  p <= last;  p++) {
 	c = *p;
-	if ((c == '[') || (c == '\\')) {
+	if ((c == '[') || (c == '\\') || (c == '$')) {
 	    inlineCode = 0;
 	    break;
 	}
@@ -6321,9 +6322,10 @@ CompileExprWord(interp, string, lastChar, flags, envPtr)
 		envPtr->excRangeArrayNext = startRangeNext;
 		inlineCode = 0;
 	    } else {
-		TclEmitOpcode(INST_END_CATCH, envPtr);
+		TclEmitOpcode(INST_END_CATCH, envPtr); /* for ok case */
 		TclEmitForwardJump(envPtr, TCL_UNCONDITIONAL_JUMP, &jumpFixup);
 		envPtr->excRangeArrayPtr[range].catchOffset = TclCurrCodeOffset();
+		TclEmitOpcode(INST_END_CATCH, envPtr); /* for error case */
 	    }
 	}
 	    
