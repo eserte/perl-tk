@@ -1627,13 +1627,25 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	     * button events for a window.
 	     */
 
-	    atts.event_mask = Tk_Attributes(tkwin2)->event_mask
-		    & ~ButtonPressMask;
-	    Tk_ChangeWindowAttributes(tkwin2, CWEventMask, &atts);
+	    Tk_Attributes(tkwin2)->event_mask
+		    &= ~(ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+	    Tk_ChangeWindowAttributes(tkwin2, CWEventMask, Tk_Attributes(tkwin2));
 	    Tk_MakeWindowExist(tkwin2);
+
 	    if (wmPtr2->wrapperPtr == NULL) {
 		CreateWrapper(wmPtr2);
+	    }            
+
+	    /* Now disable btoon events on the wrapper as well ! */             
+
+	    if (wmPtr2->wrapperPtr != NULL) {
+		Tk_Attributes((Tk_Window) wmPtr2->wrapperPtr)->event_mask
+		    &= ~(ButtonPressMask | ButtonReleaseMask | ButtonMotionMask);
+		Tk_ChangeWindowAttributes(
+		(Tk_Window) wmPtr2->wrapperPtr, 
+		CWEventMask, Tk_Attributes((Tk_Window) wmPtr2->wrapperPtr));
 	    }
+
 	    wmPtr->hints.icon_window = Tk_WindowId(wmPtr2->wrapperPtr);
 	    wmPtr->hints.flags |= IconWindowHint;
 	    wmPtr->icon = tkwin2;

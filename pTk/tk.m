@@ -10,6 +10,10 @@
 #  define LangFindVar (*TkVptr->V_LangFindVar)
 #endif
 
+#ifndef LangFontArg
+#  define LangFontArg (*TkVptr->V_LangFontArg)
+#endif
+
 #ifndef LangObjectArg
 #  define LangObjectArg (*TkVptr->V_LangObjectArg)
 #endif

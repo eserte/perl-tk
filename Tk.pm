@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.0_01';
+$Tk::VERSION     = '800.0_02';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -212,6 +212,73 @@ sub fileevent
 {
  require Tk::IO;
  goto &Tk::IO::fileevent;
+} 
+
+sub messageBox
+{
+ tk_messageBox(-parent => shift,@_);
+}
+   
+
+sub getOpenFile
+{
+ tk_getOpenFile(-parent => shift,@_);
+}
+
+sub getSaveFile
+{
+ tk_getSaveFile(-parent => shift,@_);
+}
+
+sub chooseColor
+{
+ tk_chooseColor(-parent => shift,@_);
+}               
+
+sub DialogWrapper
+{
+ my ($method,$kind,%args) = @_;      
+ my $created = 0;
+ my $w = delete $args{'-parent'};
+ if (defined $w)
+  {
+   $args{'-popover'} = $w;
+  }
+ else
+  {
+   $w = MainWindow->new;                    
+   $w->withdraw;
+   $created = 1;
+  }                  
+ my $mw = $w->MainWindow;
+ my $fs = $mw->{$kind};
+ unless (defined $fs)
+  {
+   $mw->{$kind} = $fs = $mw->$method(%args);
+  }
+ else
+  {
+   $fs->configure(%args);
+  }
+ my $val = $fs->Show;
+ $w->destroy if $created;
+ return $val;
+}
+
+sub ColorDialog
+{
+ require Tk::ColorEditor;
+ DialogWrapper('ColorDialog',@_);
+}
+
+sub FDialog
+{           
+ require Tk::FileSelect;  
+ if ($_[0] =~ /Save/)
+  {
+   push(@_,-create => 1, -verify => [qw(!-d -w)]);
+  }
+ DialogWrapper('FileSelect',@_);
 }
 
 1;

@@ -1608,6 +1608,7 @@ EXTERN void		Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN Var		LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
 
 EXTERN Arg		LangWidgetArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
+EXTERN Arg		LangFontArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font));
 EXTERN Arg		LangObjectArg _ANSI_ARGS_((Tcl_Interp *interp, char *));
 
 

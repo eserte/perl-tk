@@ -11,8 +11,8 @@ package Tk::Entry;
 # Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
-use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Entry/Entry.pm#8$
+use vars qw($VERSION @ISA);
+$VERSION = '3.009'; # $Id: //depot/Tk8/Entry/Entry.pm#9$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -20,7 +20,6 @@ $VERSION = '3.007'; # $Id: //depot/Tk8/Entry/Entry.pm#8$
 
 require Tk::Widget;
 require Tk::Clipboard;
-use AutoLoader;
 
 @ISA = qw(Tk::Clipboard Tk::Widget); 
 
@@ -254,7 +253,7 @@ sub ClassInit
 
  $class->clipboardOperations($mw,qw[Copy Cut Paste]);
 
- $mw->bind($class,"<KeyPress>", ['Insert',Ev(A)]);
+ $mw->bind($class,"<KeyPress>", ['Insert',Ev('A')]);
 
  # Ignore all Alt, Meta, and Control keypresses unless explicitly bound.
  # Otherwise, if a widget binding for one of these is defined, the
@@ -504,7 +503,7 @@ sub Insert
  return unless (defined $s && $s ne "");
  eval
   {local $SIG{__DIE__};
-   $insert = $w->index("insert");
+   my $insert = $w->index("insert");
    if ($w->index("sel.first") <= $insert && $w->index("sel.last") >= $insert)
     {
      $w->deleteSelected

@@ -3,8 +3,8 @@ require Tk::DragDrop::Common;
 require Tk::Toplevel;
 require Tk::Label;
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#3$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#4$
 
 @ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
 

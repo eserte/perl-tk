@@ -32,9 +32,11 @@
 
 #ifdef __WIN32__
 #define strncasecmp strnicmp
-#else
+#else        
+#ifndef AIX
 extern VOID *	memcpy _ANSI_ARGS_((VOID *s1, CONST VOID *s2,
 			    size_t nChars));
+#endif
 extern char *	strchr _ANSI_ARGS_((CONST char *string, int c));
 extern char *	strcpy _ANSI_ARGS_((char *s1, CONST char *s2));
 extern size_t	strlen _ANSI_ARGS_((CONST char *string));

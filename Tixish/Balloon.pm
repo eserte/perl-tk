@@ -1,4 +1,3 @@
-# $Id: //depot/Tk8/Tixish/Balloon.pm#5$
 #
 # The help widget that provides both "balloon" and "status bar"
 # types of help messages.
@@ -7,7 +6,7 @@ package Tk::Balloon;
 
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tixish/Balloon.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tixish/Balloon.pm#6$
 
 use Tk qw(Ev Exists);
 use Carp;

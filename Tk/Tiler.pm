@@ -6,8 +6,8 @@ package Tk::Tiler;
 require Tk;
 require Tk::Frame;
 
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Tiler.pm#4$
+use vars qw($VERSION @ISA);
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Tiler.pm#5$
 
 @ISA = qw(Tk::Frame);
 
@@ -30,11 +30,11 @@ sub Populate
  $obj->{Start} = 0;
  $obj->{Sw}    = 0;
  $obj->{Sh}    = 0;
- $obj->ConfigSpecs('-takefocus'      => [SELF, 'takeFocus','TakeFocus',1],
-                   '-highlightthickness' => [SELF, 'highlightThickness','HighlightThickness',2],
-                   '-yscrollcommand' => [CALLBACK,undef,undef,undef],
-                   '-columns'        => [PASSIVE,'columns','Columns',5],
-                   '-rows'           => [PASSIVE,'rows','Rows',10]
+ $obj->ConfigSpecs('-takefocus'      => ['SELF', 'takeFocus','TakeFocus',1],
+                   '-highlightthickness' => ['SELF', 'highlightThickness','HighlightThickness',2],
+                   '-yscrollcommand' => ['CALLBACK',undef,undef,undef],
+                   '-columns'        => ['PASSIVE','columns','Columns',5],
+                   '-rows'           => ['PASSIVE','rows','Rows',10]
                   );
  return $obj;
 }

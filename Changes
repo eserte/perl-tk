@@ -4,25 +4,47 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.0_01   
+
+	Added generic dialog support. See toyedit for example use.
+	Tested on Win32, and implemented more-or-less for UNIX/X,
+	based on our existing widgets.
+
+	Fixed ->Icon to allow for new wrapper window 
+
+	Implemented font command - hardly tested doc's still tcl-ish.
+
+	Changed default value handling of ConfigSpecs to ask default
+	widget for value(s).            
+
+	Added LangIO.h.PL
+
+	Patches from the list.  
+
+	Handle Name => stuff better in menus.
+
+
+
+
 Changes in Tk800.0_01 
 
-Various fixes - many thanks to Slaven Rezic <eserte@cs.tu-berlin.de>
-in particular. 
+	Various fixes - many thanks to Slaven Rezic <eserte@cs.tu-berlin.de>
+	in particular. 
 
-Found systematic bug in returning lists - this was setPalette bug, and tab focus
-bug.
+	Found systematic bug in returning lists - this was setPalette bug, and tab focus
+	bug.
 
-Documentaion updates from Achim Bohnet <ach@mpe.mpg.de>
+	Documentaion updates from Achim Bohnet <ach@mpe.mpg.de>
 
-Implemented use of virtual events e.g. <<Copy>>
+	Implemented use of virtual events e.g. <<Copy>>
 
-Tk::Menubar now uses new menubar features.
+	Tk::Menubar now uses new menubar features.
 
-Tk::Photo now handles overlay in (e.g.) animated GIFs again.
+	Tk::Photo now handles overlay in (e.g.) animated GIFs again.
 
-Some testing of embedding hooks - seem to work.
+	Some testing of embedding hooks - seem to work.
 
-fileevent works again on UNIX, and after a fashion on Win32.
+	fileevent works again on UNIX, and after a fashion on Win32.
 
 
 Changes in Tk800.000

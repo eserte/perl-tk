@@ -103,7 +103,6 @@ static TkCmd commands[] = {
      * Commands that are part of the intrinsics:
      */
 #if 0
-
     {"bell",		Tk_BellCmd,		NULL,			0},
     {"bind",		Tk_BindCmd,		NULL,			1},
     {"bindtags",	Tk_BindtagsCmd,		NULL,			1},
@@ -116,7 +115,9 @@ static TkCmd commands[] = {
     {"grid",		Tk_GridCmd,		NULL,			1},
     {"image",		NULL,			Tk_ImageCmd,		1},
     {"lower",		Tk_LowerCmd,		NULL,			1},
+#ifndef Tk_OptionCmd
     {"option",		Tk_OptionCmd,		NULL,			1},
+#endif
     {"pack",		Tk_PackCmd,		NULL,			1},
     {"place",		Tk_PlaceCmd,		NULL,			1},
     {"raise",		Tk_RaiseCmd,		NULL,			1},
@@ -149,14 +150,13 @@ static TkCmd commands[] = {
     {"scrollbar",	Tk_ScrollbarCmd,	NULL,			1},
     {"text",		Tk_TextCmd,		NULL,			1},
     {"toplevel",	Tk_ToplevelCmd,		NULL,			0},
-
+#endif
     /*
      * Misc.
      */
 
 #ifdef MAC_TCL
     {"unsupported1",	TkUnsupported1Cmd,	NULL,			1},
-#endif
 #endif
     {(char *) NULL,	(int (*) _ANSI_ARGS_((ClientData, Tcl_Interp *, int, Arg *))) NULL, NULL, 0}
 };

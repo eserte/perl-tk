@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Derived.pm#4$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Derived.pm#7$
 
 
 
@@ -214,11 +214,12 @@ sub _callback
 
 sub cget
 {my ($cw,$opt) = @_;
- my (@subwidget) = $cw->Subconfigure($opt);
- my @result = $cw->{Configure}{$opt};
- if (@subwidget == 1)
+ my @result;
+ local $SIG{'__DIE__'};
+ foreach my $sw ($cw->Subconfigure($opt))
   {
-   @result = $subwidget[0]->cget($opt);
+   eval {  @result = $sw->cget($opt) };
+   last unless @_;
   }
  return (wantarray) ? @result : $result[0];
 }
@@ -239,7 +240,7 @@ sub configure
  # The default composite widget configuration method uses hash stored
  # in the widget's hash to map configuration options
  # onto subwidgets. 
- #
+ #                
  my @results = ();
  my $cw = shift;
  if (@_ <= 1)
@@ -259,6 +260,18 @@ sub configure
       {
        if (ref $info)
         {
+         unless (defined $info->[3])
+          {local $SIG{'__DIE__'};
+           my @def;              
+           foreach my $sw ($cw->Subconfigure($opt))
+            {
+             eval { @def = $sw->configure($opt) };
+             last unless $@;
+            }
+           $info->[3] = $def[3];
+           $info->[1] = $def[1] unless defined $info->[1];
+           $info->[2] = $def[2] unless defined $info->[2];
+          }
          push(@results,$opt,$info->[1],$info->[2],$info->[3],$cw->cget($opt));
         }
        else
@@ -309,13 +322,14 @@ sub configure
      $$var = $val;
      my $accepted = 0;
      my $error = "No widget handles $opt";
-     foreach $subwidget ($cw->Subconfigure($opt))
+     foreach my $subwidget ($cw->Subconfigure($opt))
       {
        next unless (defined $subwidget);
        eval {local $SIG{'__DIE__'};  $subwidget->configure($opt => $val) };
        if ($@)
-        {
-         $error = "Can't set $opt to '$val' for $cw: " . $@; 
+        {   
+         my $val2 = (defined $val) ? $val : 'undef';
+         $error = "Can't set $opt to `$val2' for $cw: " . $@; 
          undef $@;
         }
        else

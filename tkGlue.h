@@ -59,6 +59,7 @@ do {                                                                           \
 
 extern Lang_CmdInfo *WindowCommand _ANSI_ARGS_((SV *win,HV **hptr, int moan));
 extern Tk_Window SVtoWindow _ANSI_ARGS_((SV *win));
+extern Tk_Font SVtoFont _ANSI_ARGS_((SV *win));
 extern int Call_Tk _ANSI_ARGS_((Lang_CmdInfo *info,int argc, SV **args));
 extern HV *InterpHv _ANSI_ARGS_((Tcl_Interp *interp,int fatal));
 extern SV *WidgetRef _ANSI_ARGS_((Tcl_Interp *interp, char *path));

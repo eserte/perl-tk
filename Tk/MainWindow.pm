@@ -5,12 +5,10 @@ package Tk::MainWindow;
 @Tk::MainWindow::ISA = qw(Tk::Toplevel);
 @MainWindow::ISA = 'Tk::MainWindow';
 
-use AutoLoader;  
-
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/MainWindow.pm#8$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/MainWindow.pm#9$
 
 use Tk::CmdLine;
 require Tk;

@@ -2,8 +2,8 @@ package Tk::NBFrame;
 require Tk;
 
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/NBFrame/NBFrame.pm#3$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/NBFrame/NBFrame.pm#4$
 
 @ISA = qw(Tk::Widget);
 

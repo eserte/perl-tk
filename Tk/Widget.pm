@@ -14,7 +14,7 @@ use Carp;
 # stubs for 'autoloaded' widget classes
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Widget.pm#10$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Widget.pm#15$
 
 sub Button;
 sub Canvas;
@@ -67,8 +67,10 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'after' => [qw(cancel idle)],
                     'event' => [qw(add delete generate info)],
                     'place' => [qw(configure forget info slaves)],
-                    'wm'    => [qw(capture release)]
-                  );
+                    'wm'    => [qw(capture release)],
+                    'font'  => [qw(actual configure create delete families measure metrics names)]
+                  );               
+
 
 *IsMenu       = \&False;
 *IsMenubutton = \&False;
@@ -145,26 +147,26 @@ sub new
  my @args  = $package->CreateArgs($parent,\%args);
  my $cmd   = $package->Tk_cmd;
  my $pname = $parent->PathName;
- $pname    = "" if ($pname eq ".");
- my $leaf  = delete $args{'Name'};
- my $lname;
+ $pname    = '' if ($pname eq '.');
+ my $leaf  = delete $args{'Name'};          
  if (defined $leaf)
   {
-   $lname = $pname . "." . $leaf;
+   $leaf =~ s/[^a-z0-9_]+/_/ig;
+   $leaf = lcfirst($leaf);
   }
  else
   {
    ($leaf) = "\L$package" =~ /([a-z][a-z0-9_]*)$/;
-   $lname  = $pname . "." . $leaf;
-   # create a hash indexed by leaf name to speed up 
-   # creation of a lot of sub-widgets of the same type
-   # e.g. entries in Table
-   my $key = "_#$leaf";
-   $parent->{$key} = 0 unless (exists $parent->{$key});
-   while (defined ($parent->Widget($lname)))
-    {
-     $lname = $pname . "." . $leaf . ++$parent->{$key};
-    }
+  }
+ my $lname  = $pname . "." . $leaf;
+ # create a hash indexed by leaf name to speed up   
+ # creation of a lot of sub-widgets of the same type
+ # e.g. entries in Table
+ my $key = "_#$leaf";
+ $parent->{$key} = 0 unless (exists $parent->{$key});
+ while (defined ($parent->Widget($lname)))
+  {
+   $lname = $pname . "." . $leaf . ++$parent->{$key};
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
@@ -178,9 +180,9 @@ sub new
 sub DelegateFor
 {
  my ($w,$method) = @_;
- while(exists $w->{Delegates})
+ while(exists $w->{'Delegates'})
   {
-   my $delegate = $w->{Delegates};
+   my $delegate = $w->{'Delegates'};
    my $widget = $delegate->{$method};
    $widget = $delegate->{DEFAULT} unless (defined $widget);
    $widget = $w->Subwidget($widget) if (defined $widget && !ref $widget);

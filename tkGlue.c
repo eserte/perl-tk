@@ -1483,6 +1483,43 @@ Tcl_Interp *interp;
 char *name;
 {
  return ObjectRef(interp, name);
+}   
+
+Tk_Font
+SVtoFont(SV *sv)
+{
+ if (sv_isobject(sv))
+  {          
+   sv = SvRV(sv);
+   if (SvPOK(sv) && SvIOK(sv))
+    {                                            
+     Tk_Font tkfont = (Tk_Font) SvIV(sv);
+#if 1
+     if (tkfont)
+      {
+       STRLEN len;
+       char *s = Tk_NameOfFont(tkfont);
+       if (strcmp(s,SvPV(sv,len)) != 0)
+        {
+         croak("Font %p name '%s' string '%s'",tkfont,s,SvPV(sv,len));
+        }
+      }
+#endif
+     return tkfont;
+    }
+  }
+ return NULL;
+}
+
+Arg
+LangFontArg(interp, tkfont)
+Tcl_Interp *interp;
+Tk_Font tkfont;
+{char *s = Tk_NameOfFont(tkfont);
+ SV *sv = newSVpv(s,0);
+ sv_setiv(sv,(IV) tkfont);
+ SvPOK_on(sv);
+ return Blessed("Tk::font", MakeReference(sv));
 }
 
 void
@@ -2705,8 +2742,11 @@ Tcl_CmdDeleteProc *deleteProc;
     }
    if (!cv)
     {
+     warn("No XSUB for %s",cmdName);
+#if 0
      abort();
      croak("No XSUB for %s\n",cmdName);
+#endif
     }
   }
  return NULL;
@@ -3808,6 +3848,41 @@ va_dcl
    return count;
   }
  return TCL_ERROR;
+}   
+
+int
+Lang_CallWithArgs(interp, sub, argc, argv)
+Tcl_Interp *interp;
+char *sub;
+int argc;
+SV **argv;
+{
+ dSP;
+ STRLEN len;
+ int count;
+ SV *sv = newSVpv("",0);
+ if (!strncmp(sub,"tk",2))
+  {
+   sv_catpv(sv,"Tk::");
+   sub += 2;
+  }
+ sv_catpv(sv,sub);
+ sub = SvPV(sv,len);
+ ENTER;
+ SAVETMPS;                  
+ EXTEND(sp, argc);
+ PUSHMARK(sp); 
+ while (argc-- > 0)
+  {
+   XPUSHs(*argv++);
+  }
+ PUTBACK;       
+ count = perl_call_pv(sub, G_EVAL|G_SCALAR);
+ SetTclResult(interp,count);
+ SvREFCNT_dec(sv);
+ FREETMPS;
+ LEAVE;
+ return Check_Eval(interp);
 }
 
 int

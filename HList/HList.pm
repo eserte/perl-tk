@@ -1,7 +1,7 @@
 package Tk::HList; 
 
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/HList/HList.pm#4$
+use vars qw($VERSION @ISA);
+$VERSION = '3.006'; # $Id: //depot/Tk8/HList/HList.pm#6$
 
 use Tk qw(Ev);
 
@@ -529,6 +529,13 @@ sub LeftRight
 
    $w->Callback(-browsecmd =>$ent);
   }
+}   
+
+sub KeyboardHome
+{
+ my $w = shift;
+ $w->yview('moveto' => 0);
+ $w->xview('moveto' => 0);
 }
 
 sub KeyboardActivate

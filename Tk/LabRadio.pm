@@ -2,10 +2,9 @@
 
 package Tk::LabRadiobutton;
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/LabRadio.pm#3$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/LabRadio.pm#4$
 
-use Tk::Pretty;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
 

@@ -854,7 +854,9 @@ Tk_GetFontFromObj(interp, tkwin, objPtr)
 	 */
 
 	fontPtr = (TkFont *) Tcl_GetHashValue(cacheHashPtr);
-	fontPtr->refCount++;
+	if (fontPtr != NULL) {
+	    fontPtr->refCount++;  
+	}
 	return (Tk_Font) fontPtr;
     }
 
@@ -889,7 +891,7 @@ Tk_GetFontFromObj(interp, tkwin, objPtr)
 
 	    fontPtr = TkpGetFontFromAttributes(NULL, tkwin, &fa);
 	}
-    }
+    }         
     Tcl_SetHashValue(cacheHashPtr, fontPtr);
 
     fontPtr->refCount	    = 1;

@@ -26,6 +26,10 @@
 #  define MakeReference (*TkglueVptr->V_MakeReference)
 #endif
 
+#ifndef SVtoFont
+#  define SVtoFont (*TkglueVptr->V_SVtoFont)
+#endif
+
 #ifndef SVtoWindow
 #  define SVtoWindow (*TkglueVptr->V_SVtoWindow)
 #endif

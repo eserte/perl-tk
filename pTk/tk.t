@@ -7,6 +7,10 @@ VFUNC(int,LangEventCallback,V_LangEventCallback,_ANSI_ARGS_((ClientData, Tcl_Int
 VFUNC(Var,LangFindVar,V_LangFindVar,_ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name)))
 #endif
 
+#ifndef LangFontArg
+VFUNC(Arg,LangFontArg,V_LangFontArg,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Font)))
+#endif
+
 #ifndef LangObjectArg
 VFUNC(Arg,LangObjectArg,V_LangObjectArg,_ANSI_ARGS_((Tcl_Interp *interp, char *)))
 #endif

@@ -15,11 +15,9 @@
 
 package Tk::Menubutton; 
 require Tk;
-use AutoLoader;
 
-
-use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#5$
+use vars qw($VERSION @ISA);
+$VERSION = '3.006'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#6$
 
 @ISA = qw(Tk::Widget);
 
@@ -108,8 +106,8 @@ sub ClassInit
  $mw->bind($class,"<Enter>",'Enter');
  $mw->bind($class,"<Leave>",'Leave');
  $mw->bind($class,"<1>",'ButtonDown');
- $mw->bind($class,"<Motion>",['Motion',"up",Ev(X),Ev(Y)]);
- $mw->bind($class,"<B1-Motion>",['Motion',"down",Ev(X),Ev(Y)]);
+ $mw->bind($class,"<Motion>",['Motion',"up",Ev('X'),Ev('Y')]);
+ $mw->bind($class,"<B1-Motion>",['Motion',"down",Ev('X'),Ev('Y')]);
  $mw->bind($class,"<ButtonRelease-1>",'ButtonUp');
  $mw->bind($class,"<space>",'PostFirst');
  $mw->bind($class,"<Return>",'PostFirst');
