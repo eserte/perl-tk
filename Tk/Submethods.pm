@@ -54,6 +54,10 @@ Tk::Submethods - add aliases for tk sub-commands
 Creates C<-E<gt>commandSub(...)> as an alias for C<-E<gt>command('sub',...)>
 e.g. C<-E<gt>grabRelease> for C<-E<gt>grab('release')>.
 
+For each command/subcommand pair this creates a closure with command
+and subcommand as bound lexical variables and assigns a reference to this
+to a 'glob' in the callers package.
+
 Someday the sub-commands may be created directly in the C code.
 
 =cut

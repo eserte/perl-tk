@@ -153,7 +153,9 @@ sub menubar
 {my $top  = shift;
  require Tk::Menubar;
  my $menu = $top->Menubar;
- my $file = $menu->Menubutton("-text" => "File","-underline" => 0, -bg => 'ivory');
+ my $file = $menu->Menubutton("-text" => "File","-underline" => 0, -bg => 'ivory',
+            -tearoff => 0
+           );
  $file->command("-label","Save","-command" => sub { print "Save\n" },"-underline" => 0);
  $file->command("-label","Delete","-command" => sub { print "Delete\n" },"-underline" => 0);
  $file->separator;

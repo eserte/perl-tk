@@ -15,7 +15,7 @@ sub clipboardCopy
  my $w = shift;
  if ($w->IS($w->SelectionOwner))
   {
-   $w->clipboardSet($w->SelectionGet);
+   $w->clipboardSet('--',$w->SelectionGet);
   }
 }
 
@@ -24,7 +24,7 @@ sub clipboardCut
  my $w = shift;
  if ($w->IS($w->SelectionOwner))
   {
-   $w->clipboardSet($w->SelectionGet);
+   $w->clipboardSet('--',$w->SelectionGet);
    $w->deleteSelected;
   }
 }

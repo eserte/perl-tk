@@ -62,6 +62,8 @@ extern FILE *popen();
 #include "pTk/Lang.h"
 #include "pTk/tkVMacro.h"
 
+#define VOID_SPRINTF 
+
 #ifdef __alpha
 #ifndef LONG64
 #define LONG64

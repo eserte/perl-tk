@@ -1,6 +1,22 @@
 Within each 'release' time advances down the file, but most recent
 release is at the top.
 
+Changes in Tk400.202
+
+* Corrected #includes in Xlib/X/X.xs so that X.d file is platform netural
+
+* Ilya's tkman2pod patch.
+
+* Cleaned up Balloon.pm to be warning clean when cursor crosses balloon.
+  Thanks to Graham Barr for finding the problem and most of the fix.
+
+* Workround for taint in FileSelect.pm - pending root-cause location.
+
+* Removed old non-magical conditional code from tkGlue.c - '~' magic is now 
+  used to locate C info for objects.
+
+* Added Steve's new demo widget framework.
+
 Changes in Tk400.201
 
 * Adopted new FileSelect.pm from  Frederick L Wagner <derf@ti.com>

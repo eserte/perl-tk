@@ -54,6 +54,10 @@ sub Vfunc
      my ($type,$name) = ($2,$3);
      $VVar{$name} = "VVAR($type,$name,V_$name)\n";
     }
+   elsif (/\b(EXTERN|extern)\s*"C"/)
+    {
+
+    }
    elsif (/\b(EXTERN|extern)\b/)
     {
      die "$hfile:$.: $_" unless (/^\s*#\s*define/);
