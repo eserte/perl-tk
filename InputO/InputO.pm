@@ -1,6 +1,10 @@
 package Tk::InputO; 
 require Tk;
 
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/InputO/InputO.pm#5$
+
 @ISA = qw(Tk::Widget);
 
 Construct Tk::Widget 'InputO';

@@ -2,6 +2,10 @@ require Tk::Ghostscript;
 require Tk::DSC;
 
 package Tk::Ghostview;
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Ghostview/Ghostview.pm#4$
+
 use strict qw(subs);
 
 use Tk::Pretty;

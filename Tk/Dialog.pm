@@ -10,6 +10,11 @@
 # dialog, waits for a button to be invoked, and returns the text label of the 
 # selected button.
 #
+
+
+use vars qw($VERSION);
+$VERSION = '2.000'; # $Id: //depot/Tk/Tk/Dialog.pm#9$
+
 # A Dialog object essentially consists of two subwidgets: a Label widget for
 # the bitmap and a Label wigdet for the text of the dialog.  If required, you 
 # can invoke the `configure' method to change any characteristic of these 
@@ -57,6 +62,11 @@ use Carp;
 use strict qw(vars);
 require Tk::Toplevel;
 @Tk::Dialog::ISA = qw(Tk::Toplevel);
+
+use vars qw($VERSION);
+$VERSION = '2.009'; # $Id: //depot/Tk/Tk/Dialog.pm#9$
+
+
 
 Construct Tk::Widget 'Dialog';
 

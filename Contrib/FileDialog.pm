@@ -30,6 +30,11 @@ Tk::FileDialog - A highly configurable File Dialog widget for Perl/Tk.
 =head1 DESCRIPTION
 
 The widget is composed of a number
+
+
+use vars qw($VERSION);
+$VERSION = '2.000'; # $Id: //depot/Tk/Contrib/FileDialog.pm#7$
+
 of sub-widgets, namely, a listbox for files and (optionally) directories, an entry
 for filename, an (optional) entry for pathname, an entry for a filter pattern, a 'ShowAll'
 checkbox (for enabling display of .* files and directories), and three buttons, namely
@@ -400,6 +405,9 @@ use Carp;
 use strict;
 
 @Tk::FileDialog::ISA = qw(Tk::Toplevel);
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Contrib/FileDialog.pm#7$
 
 Construct Tk::Widget 'FileDialog';
 

@@ -6,7 +6,13 @@ use ExtUtils::MakeMaker;
 use Cwd;
 use Config;
 use Carp;
-use Tk::Config;
+use File::Basename;
+
+use Tk::Config qw(!$VERSION);
+
+use vars qw($VERSION);
+$VERSION = '2.023'; # $Id: //depot/Tk/Tk/MMutil.pm#23$
+
 @MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
 
 sub arch_prune
@@ -88,16 +94,22 @@ sub mTk_CHO
  $self->{'MTK'}   = $mTk;
 }
 
+my %visited;
+
 sub relpath
 {
- my ($path) = @_;
- if (defined $dir)
+ my ($path,$dir) = @_;
+ unless (defined $dir)
   {
-   if ($path =~ m#^$dir\b(.*)$#)
+   $dir = (-d $path) ? $path : dirname($path);
+  }
+ if (defined $dir and -d $dir)
+  {
+   if ($path =~ m#^\Q$dir\E\b(.*)$#)
     {
      my $base  = $1;
      my $here  = getcwd;
-     if ($here =~ m#^$dir\b(.*)#)
+     if ($here =~ m#^\Q$dir\E\b(.*)#)
       {
        my $depth = reverse($1);
        if ($depth)
@@ -116,12 +128,28 @@ sub relpath
          # print "$path is $depth from $here\n";
          return $depth;
         }
+       else
+        {
+         warn "Cannot find $depth\n";
+        }
       }
+     else
+      {
+       unless(exists $visited{$here})
+        {
+         $visited{$here} = 1;
+         warn "Seem to be building outside Tk itself\n";
+        }
+      }
+    }
+   else
+    {
+     die "$path not under $dir\n";
     }
   }
  else
   {
-   warn "No directory defined";
+   die "Cannot get directory for $path\n";
   }
  return $path;
 }
@@ -290,19 +318,19 @@ sub installed_tk
   {
    if (-f "$dir/tkGlue.h")
     {
-     $tk = $dir;
+     $tk = relpath($dir);
      last;
     }
    my $try = "$dir/Tk";
    if (-f "$try/tkGlue.h")
     {
-     $tk = $try;
+     $tk = relpath($try,$dir);
      last;
     }
   }
  die "Cannot find perl/Tk include files\n" unless (defined $tk);
  $tk =~ s,^(\./)+,,;
- return relpath($tk);
+ return $tk;
 }
 
 sub installbin
@@ -326,12 +354,12 @@ sub findpTk
    my $try = "$dir/pTk";
    if (-d $try && (-f "$try/Lang.h" || -f "$try/libpTk\$(LIB_EXT)"))
     {
-     $ptk = $try;
+     $ptk = relpath($try,$dir);
      last;
     }
   }
  die "Cannot locate pTk\n" unless (defined $ptk); 
- return relpath($ptk);
+ return $ptk;
 }
 
 sub TkExtMakefile
@@ -355,7 +383,8 @@ sub TkExtMakefile
  $att{'macro'}{'TKDIR'} = $tk;
  # 'INST_LIB' => '../blib',
  # 'INST_ARCHLIB' => '../blib',
- my @opt = ('VERSION'     => $Tk::Config::VERSION);
+ my @opt = ('VERSION'     => $Tk::Config::VERSION, 
+            'XS_VERSION'  => $Tk::Config::VERSION);
  push(@opt,'clean' => {} ) unless (exists $att{'clean'});
  $att{'clean'}->{FILES} = '' unless (exists $att{'clean'}->{FILES});
  $att{'clean'}->{FILES} .= " *.bak";

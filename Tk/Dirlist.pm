@@ -3,6 +3,10 @@ require Tk::Derived;
 require Tk::HList;
 require DirHandle;
 use Cwd;
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/Dirlist.pm#6$
+
 @ISA = qw(Tk::Derived Tk::HList);
 use strict;
 Construct Tk::Widget 'Dirlist';

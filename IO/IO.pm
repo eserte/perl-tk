@@ -1,6 +1,10 @@
 package Tk::IO;
 require 5.002;
 require Tk;
+
+use vars qw($VERSION);
+$VERSION = '2.003'; # $Id: //depot/Tk/IO/IO.pm#3$
+
 use Tk::Pretty;
 require DynaLoader;
 require Exporter;

@@ -1,6 +1,6 @@
 package LWP::IO;
 
-# $Id: TkIO.pm,v 1.3 1995/12/29 15:12:04 aas Exp $
+# $Id: //depot/Tk/HTML/HTML/IO.pm#3$
 
 require Tk;
 require LWP::Debug;
@@ -12,6 +12,10 @@ use MIME::QuotedPrint qw(encode_qp);
 LWP::TkIO - Tk I/O routines for the LWP library
 
 =head1 SYNOPSIS
+
+
+use vars qw($VERSION);
+$VERSION = '2.003'; # $Id: //depot/Tk/HTML/HTML/IO.pm#3$
 
  use Tk;
  require LWP::TkIO;

@@ -1,6 +1,6 @@
 package Bundle::Tk;
 
-$VERSION = '1.00'
+$VERSION = '1.007'; # $Id: //depot/Tk/Bundle/Tk.pm#7$
 
 1;
 

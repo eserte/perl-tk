@@ -1,5 +1,9 @@
 package Dial;
 require Tk::Frame;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Contrib/Dial.pm#5$
+
 @ISA = qw(Tk::Frame);           
 
 $pi = atan2(1, 1) * 4;

@@ -5,6 +5,10 @@ package Tk::Parse;
 require Exporter;
 
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Pod/Parse.pm#4$
+
 @ISA=qw(Exporter);
 @EXPORT=qw(Parse Simplify hide start_hide unhide Normalize Normalize2 Escapes
 	$VERBATIM $HEADING $ITEM $INDEX $TEXT $PRAGMA $INDENT );

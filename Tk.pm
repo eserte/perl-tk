@@ -37,7 +37,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.2";
 $Tk::patchLevel  = "4.2";
-$Tk::VERSION     = '402.002';
+$Tk::VERSION     = '402.003';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -49,7 +49,7 @@ $Tk::event   = undef;
 # Supress used once warnings on function table pointers 
 # How can we do this in the C code?
 use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab $TkoptionVtab);  
-use vars qw($TixVtab $TixintVtab $TiximgxpmVtab);
+use vars qw($TixVtab $TixintVtab $TiximgxpmVtab $TkimgphotoVtab);
 
 bootstrap Tk $Tk::VERSION;
 
@@ -222,12 +222,12 @@ sub fileevent
 sub SplitString
 {
  local $_ = shift;
- carp "SplitString '$_'";
  my (@arr, $tmp);
  while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
    if (defined $1) { push @arr, $1 }
    else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
  }
+ # carp "SplitString '$_':(".join(',',@arr).")\n";
  return @arr;
  #return split(/\s+/,$_);
 }

@@ -1,5 +1,9 @@
 package Tk::DragDrop::SunSite;
 require Tk::DropSite;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/DragDrop/DragDrop/SunSite.pm#5$
+
 use Tk::DragDrop::SunConst;
 @ISA = qw(Tk::DropSite);
 use strict;

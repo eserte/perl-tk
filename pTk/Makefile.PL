@@ -41,19 +41,19 @@ sub MY::post_initialize
  my @list;
  if ($^O eq 'MSWin32')
   {
-   @list = qw(win xlib generic tixWin tixGeneric tclWin tclGeneric);
+   @list = qw(win xlib additions generic tixWin tixGeneric tclWin tclGeneric);
   }
  elsif ($win_arch eq 'open32')
   {
-   @list = qw(open32 open32/h win xlib generic tixWin tixGeneric tclUnix tclGeneric );
+   @list = qw(open32 open32/h win xlib additions generic tixWin tixGeneric tclUnix tclGeneric );
   }
  elsif ($win_arch eq 'pm')
   {
-   @list = qw(os2 open32 xlib generic tixWin tixGeneric tclUnix tclGeneric );
+   @list = qw(os2 open32 xlib additions generic tixWin tixGeneric tclUnix tclGeneric );
   }
  else
   {
-   @list = qw(unix generic tixUnix tixGeneric tclUnix tclGeneric );
+   @list = qw(unix additions generic tixUnix tixGeneric tclUnix tclGeneric );
   }
  print STDERR "Generating Dependencies for $^O, win_arch=$win_arch\n";
  foreach $dir (@list)
@@ -159,9 +159,9 @@ install :: all
 ';
 }
 
-sub MY::dynamic_lib { my $self = shift; "dynamic_lib : static_lib\n\t".$self->{'NOECHO'}."\$(NOOP)\n" }
+sub MY::dynamic_lib { my $self = shift; "dynamic_lib :: static_lib\n\t".$self->{'NOECHO'}."\$(NOOP)\n" }
 
-sub MY::dynamic     { my $self = shift; "dynamic : static\n\t".$self->{'NOECHO'}."\$(NOOP)\n" }
+sub MY::dynamic     { my $self = shift; "dynamic :: static\n\t".$self->{'NOECHO'}."\$(NOOP)\n" }
 
 sub MY::static 
 {
@@ -216,7 +216,7 @@ Xlib.t : Xlib.h  Xlib.excwin mkVFunc
 tix.t    : tix.h tix.exc mkVFunc
 tixInt.t : tixInt.h tixInt.exc mkVFunc
 
-config :: Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t 
+config :: LangIO.h Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t 
 	'.$self->{NOECHO}.'$(NOOP)
 
 Methods.def : mkmethods $(C_FILES)

@@ -1,8 +1,12 @@
-# $Id: BrowseEntry.pm,v 1.4 1997/02/08 19:19:35 rsi Exp $
+# $Id: //depot/Tk/Tixish/BrowseEntry.pm#6$
 #
 # BrowseEntry is a stripped down version of ComboBox.tcl from Tix4.0
 
 package Tk::BrowseEntry;
+
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tixish/BrowseEntry.pm#6$
 
 use Tk;
 use Carp;

@@ -5,6 +5,10 @@
 package Tk::Label; 
 require Tk;
 
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/Label.pm#6$
+
 @ISA = qw(Tk::Widget);
 
 Construct Tk::Widget 'Label';

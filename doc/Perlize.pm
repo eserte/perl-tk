@@ -1,6 +1,10 @@
 package Perlize;
 use Carp;
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/doc/Perlize.pm#4$
+
 sub widget
 {
  $$var = '$widget' unless (defined $$var);

@@ -5,7 +5,7 @@ require 5.004;
 BEGIN 
  {
   $IsWin32   = $^O eq 'MSWin32';
-  $VERSION = '402.002';
+  $VERSION = '402.003';
 
   $win_arch = ($IsWin32) ? $^O : 'x';		# Currently 'x' and 'open32' supported
 

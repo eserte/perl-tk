@@ -1,9 +1,13 @@
-# $Id: Balloon.pm,v 1.3 1997/02/08 19:20:49 rsi Exp $
+# $Id: //depot/Tk/Tixish/Balloon.pm#8$
 #
 # The help widget that provides both "balloon" and "status bar"
 # types of help messages.
 
 package Tk::Balloon;
+
+
+use vars qw($VERSION);
+$VERSION = '2.008'; # $Id: //depot/Tk/Tixish/Balloon.pm#8$
 
 use Tk qw(Ev Exists);
 use Carp;

@@ -3,6 +3,10 @@ package Tk::Scrollbar;
 require Tk;
 use AutoLoader;
 
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Scrollbar/Scrollbar.pm#6$
+
 @ISA = qw(Tk::Widget);
 
 Construct Tk::Widget 'Scrollbar';

@@ -1,5 +1,9 @@
 package Tk::ColorEditor;
 
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/ColorEditor.pm#7$
+
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
 @Tk::ColorEditor::ISA = qw(Tk::Toplevel);

@@ -1,4 +1,4 @@
-# $Id: VStack.pm,v 1.4 1997/02/08 19:12:36 rsi Exp $
+# $Id: //depot/Tk/Tixish/VStack.pm#6$
 #
 # Virtual base class needed to implement the NoteBook widget. This should
 # not be used directly by the application programmer.
@@ -12,6 +12,10 @@ use strict;
 use Carp;
 
 @Tk::VStack::ISA = qw(Tk::Frame);
+
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tixish/VStack.pm#6$
 
 sub Populate {
     my ($w, $args) = @_;

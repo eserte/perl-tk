@@ -1,4 +1,8 @@
 package Tk::HList; 
+
+use vars qw($VERSION);
+$VERSION = '2.013'; # $Id: //depot/Tk/HList/HList.pm#13$
+
 use Tk qw(Ev);
 
 @ISA = qw(Tk::Widget);
@@ -21,7 +25,7 @@ sub CreateArgs
 
 EnterMethods Tk::HList __FILE__,qw(add addchild anchor column
                                    delete dragsite dropsite entrycget
-                                   entryconfigure geometryinfo indicator hide item info
+                                   entryconfigure geometryinfo indicator header hide item info
                                    nearest see select selection show xview yview);
 
 use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
@@ -32,6 +36,7 @@ use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
                      'item' => [qw(configure cget create delete exists)],
                      'selection' => [qw(clear get includes set)],
                      'anchor' => [qw(clear set)],
+                     'column' => [qw(width)],
                    );
 
 
@@ -108,9 +113,17 @@ sub Button1
 
  my $ent = $w->GetNearest($Ev->y);
 
- return unless( $ent );
+ return unless (defined($ent) and length($ent));
 
  my @info = $w->info('item',$Ev->x, $Ev->y);
+ if (@info)
+  {
+   die "Assert" unless $info[0] eq $ent;
+  }
+ else
+  {
+   @info = $ent;
+  }
 
  if (defined($info[1]) && $info[1] eq 'indicator')
   {
@@ -148,7 +161,7 @@ sub Button1
      
    if ($browse)
     {
-     $w->Callback(-browsecmd => $ent);
+     $w->Callback(-browsecmd => @info);
     }
   }
 }
@@ -162,7 +175,7 @@ sub ShiftButton1
 
  delete $w->{'shiftanchor'}; 
 
- return unless($to);
+ return unless (defined($to) and length($to));
 
  my $mode = $w->cget('-selectmode');
 
@@ -212,7 +225,7 @@ sub ButtonRelease1
  my ($x, $y) = ($Ev->x, $Ev->y);
  my $ent = $w->GetNearest($y);
 
- return unless($ent);
+ return unless (defined($ent) and length($ent));
 
  if($x < 0 || $y < 0 || $x > $w->width || $y > $w->height)
   {
@@ -260,13 +273,13 @@ sub Button1Motion
 
  my $ent = $w->GetNearest($Ev->y);
 
- return unless($ent);
+ return unless (defined($ent) and length($ent));
 
- if($mode eq "single")
+ if ($mode eq "single")
   {
    $w->anchor('set', $ent);
   }
- elsif($mode eq "multiple" || $mode eq "extended")
+ elsif ($mode eq "multiple" || $mode eq "extended")
   {
    my $from = $w->info('anchor');
    if($from)
@@ -282,7 +295,7 @@ sub Button1Motion
     }
   }
 
- if($mode ne "single")
+ if ($mode ne "single")
   {
    $w->Callback(-browsecmd =>$ent);
   }
@@ -297,7 +310,7 @@ sub Double1
 
  my $ent = $w->GetNearest($Ev->y);
 
- return unless($ent);
+ return unless (defined($ent) and length($ent));
 
  $w->anchor('set', $ent)
 	unless($w->info('anchor'));
@@ -315,7 +328,7 @@ sub CtrlButton1
 
  my $ent = $w->GetNearest($Ev->y);
 
- return unless( $ent );
+ return unless (defined($ent) and length($ent));
 
  my $mode = $w->cget('-selectmode');
 
@@ -349,7 +362,7 @@ sub UpDown
   {
    $anchor = ($w->info('children'))[0] || "";
 
-   return unless( $anchor );
+   return unless (defined($anchor) and length($anchor));
 
    if($w->entrycget($anchor, '-state') ne "disabled")
     {
@@ -405,7 +418,7 @@ sub ShiftUpDown
 
  my $anchor = $w->info('anchor');
 
- return $w->UpDown($spec) unless( $anchor );
+ return $w->UpDown($spec) unless (defined($anchor) and length($anchor));
 
  my $done = 0;
 
@@ -501,7 +514,7 @@ sub KeyboardActivate
 
  my $anchor = $w->info('anchor');
 
- return unless( $anchor );
+ return unless (defined($anchor) and length($anchor));
 
  if($w->cget('-selectmode'))
   {
@@ -517,7 +530,7 @@ sub KeyboardBrowse
 
  my $anchor = $w->info('anchor');
 
- return unless( $anchor );
+ return unless (defined($anchor) and length($anchor));
 
  if ($w->indicatorExists($anchor))
   {

@@ -18,6 +18,15 @@
 #include "tkGlue.h"
 #include "tkGlue.m"
 
+/* Old here means FILE * rather than Tcl_Chan 
+ * Switch to later ASAP ...
+ */
+extern Tk_PhotoImageFormat	imgOldFmtBMP;
+extern Tk_PhotoImageFormat	imgOldFmtGIF;
+extern Tk_PhotoImageFormat	imgOldFmtXBM;
+extern Tk_PhotoImageFormat	imgOldFmtXPM;
+
+
 DECLARE_VTABLES;
 
 
@@ -31,5 +40,8 @@ BOOT:
   sv_setiv(FindTkVarName("TkimgphotoVtab",1),(IV) TkimgphotoVGet());   
   Tk_CreateImageType(&tkPhotoImageType);
   Tk_CreatePhotoImageFormat(&tkImgFmtPPM);
-  Tk_CreatePhotoImageFormat(&tkImgFmtGIF);
+  Tk_CreatePhotoImageFormat(&imgOldFmtGIF);
+  Tk_CreatePhotoImageFormat(&imgOldFmtXBM);
+  Tk_CreatePhotoImageFormat(&imgOldFmtXPM);
+  Tk_CreatePhotoImageFormat(&imgOldFmtBMP);
  }

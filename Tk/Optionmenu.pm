@@ -5,6 +5,10 @@ package Tk::Optionmenu;
 require Tk::Menubutton;
 require Tk::Menu;
 
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/Optionmenu.pm#6$
+
 @ISA = qw(Tk::Derived Tk::Menubutton);
 
 Construct Tk::Widget 'Optionmenu';

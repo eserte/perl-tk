@@ -2281,6 +2281,9 @@ XS(XStoImage)
     }
   }
  ST(0) = name;                      /* Fill in command name */
+#if 0
+ Dump_vec("Image",items,&ST(0));
+#endif
  XSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 

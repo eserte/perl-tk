@@ -1,5 +1,9 @@
 package Tk::DragDrop::SunDrop;
 require  Tk::DragDrop::Rect;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/DragDrop/DragDrop/SunDrop.pm#5$
+
 @ISA = qw(Tk::DragDrop::Rect);
 use strict;
 use Tk::DragDrop::SunConst;

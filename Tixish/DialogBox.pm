@@ -1,4 +1,4 @@
-# $Id: DialogBox.pm,v 1.4 1996/12/02 00:34:21 rsi Exp rsi $
+# $Id: //depot/Tk/Tixish/DialogBox.pm#5$
 #
 # DialogBox is similar to Dialog except that it allows any widget
 # in the top frame. Widgets can be added with the add method. Currently
@@ -11,6 +11,10 @@ use Carp;
 
 require Tk::Toplevel;
 require Tk::Frame;
+
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Tixish/DialogBox.pm#5$
 
 @ISA = qw(Tk::Toplevel Tk::Frame);
 

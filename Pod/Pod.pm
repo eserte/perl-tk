@@ -2,6 +2,10 @@ package Tk::Pod;
 require Tk::Toplevel;
 require Tk::Text;
 require Tk::Menubar;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Pod/Pod.pm#5$
+
 use Tk qw(Ev);
 use AutoLoader;
 use Carp;

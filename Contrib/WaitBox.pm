@@ -31,6 +31,7 @@ Tk::WaitBox - An Object Oriented Wait Dialog for Perl/Tk, of the Please Wait var
 
 =head1 DESCRIPTION
 
+
 A WaitBox consists of a number of subwidgets:
 
 =over 4
@@ -162,6 +163,11 @@ This code may be distributed under the same conditions as perl itself.
 package Tk::WaitBox;
 use strict;
 require Tk::Toplevel;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Contrib/WaitBox.pm#7$
+
+
 
 @Tk::WaitBox::ISA = qw (Tk::Toplevel);
 

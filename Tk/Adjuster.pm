@@ -1,4 +1,8 @@
 package Tk::Adjuster::Item;
+
+use vars qw($VERSION);
+$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Adjuster.pm#8$
+
 @ISA = qw(Tk::Frame);
 
 sub ClassInit
@@ -76,6 +80,9 @@ package Tk::Adjuster;
 use AutoLoader;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
+
+use vars qw($VERSION);
+$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Adjuster.pm#8$
 
 Construct Tk::Widget qw(Adjuster);
 

@@ -12,6 +12,10 @@ use Carp;
 
 Construct Tk::Widget 'Frame';
 
+
+use vars qw($VERSION);
+$VERSION = '2.011'; # $Id: //depot/Tk/Tk/Frame.pm#11$
+
 sub Menubar;
 
 sub Tk_cmd { \&Tk::frame }

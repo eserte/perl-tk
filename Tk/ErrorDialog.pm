@@ -13,6 +13,11 @@
 # error occurs.  However, in order to configure the ErrorDialog object you
 # must call the constructor and create it manually.
 #
+
+
+use vars qw($VERSION);
+$VERSION = '2.000'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#7$
+
 # The ErrorDialog object essentially consists of two subwidgets: an
 # ErrorDialog widget to display the background error and a Text widget for the
 # traceback information.  If required, you can invoke the configure() method
@@ -46,6 +51,10 @@ use English;
 use Tk ();
 require Tk::Dialog;
 @Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/ErrorDialog.pm#7$
+
 
 Construct Tk::Widget 'ErrorDialog';
 

@@ -200,6 +200,7 @@ Tk.pm				"Base" class/package
 Tk.xs
 Tk/Adjuster.pm
 Tk/After.pm
+Tk/Animation.pm
 Tk/Button.pm
 Tk/Camel.xpm
 Tk/Checkbutton.pm
@@ -247,6 +248,7 @@ Tk/Xcamel.gif
 Tk/Xrm.pm
 Tk/act_folder.xbm
 Tk/act_folder.xpm
+Tk/anim.gif
 Tk/cbxarrow.xbm
 Tk/file.xbm
 Tk/file.xpm
@@ -262,6 +264,7 @@ Tk/pTk.pod
 Tk/prolog.ps
 Tk/srcfile.xpm
 Tk/textfile.xpm
+Tk/tranicon.gif
 Tk/typemap
 Tk/widgets.pm
 Tk/win.xbm
@@ -283,10 +286,12 @@ Xlib/drops
 Xlib/load
 Xlib/motif_site
 Xlib/tree_demo
+add_version
 adj_demo			Example of packAdjust usage.
 after_demo			Simple (= boring) demo of after.
 after_leak			Check for "leaked" values when using after.
 al_bug				Simple Table app.
+animate
 autoraise			Popup which attempts to keep itself "on top"
 basic_demo			Scruffy demo/test of many Tk constucts.
 bin/defs
@@ -297,7 +302,6 @@ bin/tkman
 bin/unres
 bin/uselib
 bindtest			Test of key bindings with qualifiers
-blib.pm				Latest module for perl -Mblib ... testing 
 bugs
 bulkedit			Utility to make changes in many files - with Tk GUI
 canvas_ps			Writes PostScript for Canvas to a file.
@@ -305,6 +309,7 @@ canvas_scroll			Basic test of scrolling a Canvas
 capture_demo
 cbtest				Test of callback returns.
 checklen			Check names not > 14 chars long for old UNIXes.
+chext
 cleanup				Remove authour's junk files
 clip_bug			Demonstrates some "features" of clipping.
 config/Ksprintf.c
@@ -623,6 +628,7 @@ pTk/Lang.h
 pTk/Lang.m
 pTk/Lang.t
 pTk/LangIO.h
+pTk/LangIO.h.PL
 pTk/Lang_f.c
 pTk/Lang_f.d
 pTk/Lang_f.h
@@ -665,10 +671,32 @@ pTk/findcore
 pTk/findstrings
 pTk/from
 pTk/genexc
+pTk/imgBMP.d
+pTk/imgGIF.d
+pTk/imgInit.d
+pTk/imgXBM.d
+pTk/imgXPM.d
 pTk/license.html_lib
 pTk/license.terms
 pTk/mTk/MANIFEST.SKIP
 pTk/mTk/README
+pTk/mTk/additions/imgBMP.c
+pTk/mTk/additions/imgDllEntry.c
+pTk/mTk/additions/imgGIF.c
+pTk/mTk/additions/imgInit.c
+pTk/mTk/additions/imgInt.h
+pTk/mTk/additions/imgJPEG.c
+pTk/mTk/additions/imgPNG.c
+pTk/mTk/additions/imgPS.c
+pTk/mTk/additions/imgPmap.c
+pTk/mTk/additions/imgPmap.h
+pTk/mTk/additions/imgTIFF.c
+pTk/mTk/additions/imgTIFFjpeg.c
+pTk/mTk/additions/imgTIFFzip.c
+pTk/mTk/additions/imgXBM.c
+pTk/mTk/additions/imgXPM.c
+pTk/mTk/additions/pTk.exc
+pTk/mTk/additions/tkMacInt.h
 pTk/mTk/generic/README
 pTk/mTk/generic/default.h
 pTk/mTk/generic/ks_names.h
@@ -920,6 +948,7 @@ pTk/mTk/unix/Makefile.in
 pTk/mTk/unix/README
 pTk/mTk/unix/configure
 pTk/mTk/unix/configure.in
+pTk/mTk/unix/imgUnixPmap.c
 pTk/mTk/unix/install-sh
 pTk/mTk/unix/license.terms
 pTk/mTk/unix/mkLinks
@@ -940,6 +969,7 @@ pTk/mTk/unix/tkUnixSelect.c
 pTk/mTk/unix/tkUnixWm.c
 pTk/mTk/unix/tkUnixXId.c
 pTk/mTk/win/README
+pTk/mTk/win/imgWinPmap.c
 pTk/mTk/win/license.terms
 pTk/mTk/win/makefile.bc
 pTk/mTk/win/makefile.vc

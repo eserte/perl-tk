@@ -5,6 +5,10 @@ package Tk::TextUndo;
 require Tk::Text;
 use AutoLoader;
 
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/TextUndo.pm#8$
+
 @ISA = qw(Tk::Text);
 
 Construct Tk::Widget 'TextUndo';
@@ -92,7 +96,11 @@ sub Save
      print FILE $text->get($index,$end);
      $index = $end;
     }
-   delete $text->{UNDO} if (close(FILE));
+   if (close(FILE))
+    {
+     delete $text->{UNDO}; 
+     $text->{FILE} = $file;
+    }
   }
  else
   {
@@ -110,7 +118,11 @@ sub OldSave
  if (open(FILE,">$file"))
   {
    print FILE $text->get('1.0','end');
-   delete $text->{UNDO} if (close(FILE));
+   if (close(FILE))
+    {
+     delete $text->{UNDO}; 
+     $text->{FILE} = $file;
+    }
   }
  else
   {

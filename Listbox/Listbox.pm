@@ -11,6 +11,10 @@
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
 package Tk::Listbox; 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Listbox/Listbox.pm#4$
+
 use Tk qw(Ev);
 require Tk::Clipboard;
 use AutoLoader;

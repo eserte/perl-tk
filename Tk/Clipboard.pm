@@ -3,6 +3,10 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 
+
+use vars qw($VERSION);
+$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Clipboard.pm#10$
+
 sub clipboardSet
 {
  my $w = shift;

@@ -1,8 +1,8 @@
-package Axis;
+package Tk::Axis;
 
 =head1 NAME 
 
-Axis - Canvas with Axes
+Tk::Axis - Canvas with Axes
 
 =head1 SYNOPSIS
 
@@ -39,6 +39,10 @@ piece of code draws a line between the points (2 , 3.1)  (4 , 4).
 require 5.002;
 require Tk::Canvas;
 use Carp;
+
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Contrib/Axis.pm#7$
 
 @ISA = qw(Tk::Derived Tk::Canvas);
 

@@ -12,6 +12,10 @@ use strict qw(vars);
 # There are issues with this stuff now we have Tix's wm release/capture
 # as toplevel-ness is now dynamic.
 
+
+use vars qw($VERSION);
+$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Wm.pm#10$
+
 use Tk::Submethods ( 'wm' => [qw(grid)] );
 
 Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command 
@@ -45,6 +49,7 @@ sub Post
  my ($w,$X,$Y) = @_;
  $X = int($X);
  $Y = int($Y);
+ $w->positionfrom('program');
  $w->geometry("+$X+$Y");
  $w->deiconify;
  $w->raise;
@@ -84,7 +89,7 @@ sub Popup
   }
  else
   {
-   my $sc = $w->parent->toplevel;
+   my $sc = ($w->parent) ? $w->parent->toplevel : $w;
    $rx = -$sc->vrootx;
    $ry = -$sc->vrooty;
    $rw = $w->screenwidth;
@@ -93,6 +98,15 @@ sub Popup
  my ($X,$Y) = AnchorAdjust($w->cget('-overanchor'),$rx,$ry,$rw,$rh);
  ($X,$Y)    = AnchorAdjust($w->cget('-popanchor'),$X,$Y,-$mw,-$mh);
  $w->Post($X,$Y);
+}
+
+sub FullScreen
+{
+ my $w = shift;
+ my $over = (@_) ? shift : 0;
+ $w->GeometryRequest($w->screenwidth,$w->screenheight);
+ $w->overrideredirect($over);
+ $w->Post(0,0);
 }
 
 sub iconposition

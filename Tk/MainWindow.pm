@@ -8,6 +8,10 @@ package Tk::MainWindow;
 use AutoLoader;  
 
 use strict;
+
+use vars qw($VERSION);
+$VERSION = '2.011'; # $Id: //depot/Tk/Tk/MainWindow.pm#11$
+
 use Tk::CmdLine;
 require Tk;
 require Tk::Toplevel;
