@@ -702,6 +702,27 @@ Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
  return TCL_ERROR;
 }
 
+void
+Tcl_AppendElement(interp, string)
+Tcl_Interp *interp;
+CONST char *string;
+{
+ dTHX;
+ Tcl_Obj *result = Tcl_GetObjResult(interp);
+ Tcl_Obj *value  = Tcl_NewStringObj(string,-1);
+ if (1 || SvOK(result))
+  {
+   Tcl_ListObjAppendElement(interp,result,value);
+  }
+ else
+  {
+   SvSetMagicSV(result, value);
+   LangDumpVec(__FUNCTION__,1,&result);
+  }
+}
+
+
+
 AV *
 MaybeForceList(pTHX_ Tcl_Interp *interp, Tcl_Obj *sv)
 {

@@ -14,7 +14,7 @@ sub mega {
         -iconname         => 'mega',
     );
 
-    my $t = $TOP->Scrolled( qw/ ROText -wrap word -scrollbars ow/ );
+    my $t = $TOP->Scrolled( qw/ ROText -wrap word -scrollbars oe/ );
     $t->pack( qw/ -fill both -expand 1 / );
     $t->insert( 'end', <<'end-of-instructions' );
 
@@ -46,7 +46,7 @@ You create a Nil just like any other Perl/Tk widget:
 
     my $nil = $mw->Nil;
 
-And an empty Nil window appears that functions just like a Toplevel! But other than that, the Nil widget doesn't do anything more since no additonal subwidgets or behavior has been defined. The purpose of that example was to demonstrate how much the Perl/Tk mega-widget mechanism did for the mega-widget author - a fully functional composite mega-widget in three lines of code.
+And an empty Nil window appears that functions just like a Toplevel! But other than that, the Nil widget doesn't do anything more since no additonal subwidgets or behavior have been defined. The purpose of that example was to demonstrate how much the Perl/Tk mega-widget mechanism did for the mega-widget author - a fully functional composite mega-widget in three lines of code.
 
 There's a second container-like mega-widget in Perl/Tk, based on a Frame. But other than the logical container, the two mega-widget types are more-or-less equivalent. The third and final mega-widget type we call a derived mega-widget, because it adds or subtracts behavior to/from an existing widget.
 

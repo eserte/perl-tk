@@ -16,6 +16,7 @@ sub System
  die "Cannot " . join(' ',@_) if (system(@_));
 }
 
+
 open(MF,"<Tk.pm") || die "Cannot open Tk.pm:$!";
 while (<MF>)
  {
@@ -38,6 +39,29 @@ my $dir   = $path;
 my $files = maniread();
 $dir      = 'Tk';
 
+$opt_sfx = '_'.$opt_sfx if (length($opt_sfx) && $opt_sfx !~ /^_/);
+
+system(p4 => edit => 'Tk.pm', 'Change.log');
+system("p4 changes -l ./... > Change.log");
+open(my $fh,"|p4 submit -i") || die;
+print $fh <<"END";
+Change:	new
+
+Client:	llama
+
+User:	nick
+
+Status:	new
+
+Description:
+	$dir-$version$opt_sfx Release Preparation
+
+Files:
+	//depot/Tkutf8/Change.log	# edit
+	//depot/Tkutf8/Tk.pm	# edit
+END
+close($fh);
+
 my $snag = 0;
 
 foreach my $file (keys %$files)
@@ -56,7 +80,6 @@ foreach my $file (keys %$files)
 
 exit(1) if $snag && !$opt_lax;
 
-$opt_sfx = '_'.$opt_sfx if (length($opt_sfx) && $opt_sfx !~ /^_/);
 
 my @files = map("$dir-$version$opt_sfx/$_",sort(keys %$files));
 chdir("..");

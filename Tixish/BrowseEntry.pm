@@ -8,7 +8,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /#(\d+)/;
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev);
 use Carp;
@@ -323,7 +323,7 @@ sub LbCopySelection {
 
 sub LbIndex {
     my ($w, $flag) = @_;
-    my $sel = $w->Subwidget('slistbox')->Subwidget('listbox')->curselection;
+    my ($sel) = $w->Subwidget('slistbox')->Subwidget('listbox')->curselection;
     if (defined $sel) {
 	return int($sel);
     } else {

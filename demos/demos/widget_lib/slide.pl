@@ -75,7 +75,6 @@ sub rlabel {
 
 package main;
 
-use Tk::widgets qw/ Trace /;
 use vars qw / $TOP /;
 use strict;
 

@@ -955,12 +955,12 @@ $lb->delete(0, "end");
 $lb->insert(qw(0 el0 el1 el2 el3 el4 el5 el6 el7 el8));
 $lb->selection("set", 1, 1);
 ok($mw->SelectionGet, "el1");
-ok($lb->curselection, "1");
+ok(join(',',$lb->curselection), "1"); # join forces list context
 $lb->configure(-exportselection => 0);
 eval { $mw->SelectionGet };
 ok($@ ,qr/PRIMARY selection doesn\'t exist or form \"(UTF8_)?STRING\" not defined/,
    "wrong error message: $@");
-ok($lb->curselection, "1");
+ok(join(',',$lb->curselection), "1"); # join forces list context
 $lb->selection("clear", 0, "end");
 eval { $mw->SelectionGet };
 ok($@ ,qr/PRIMARY selection doesn\'t exist or form \"(UTF8_)?STRING\" not defined/,

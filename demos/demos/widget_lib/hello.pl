@@ -1,7 +1,6 @@
 # hello.pl
 
 use Config;
-use File::Basename;
 use Tk::widgets qw/ ROText /;
 use vars qw/ $TOP /;
 use strict;
@@ -12,7 +11,13 @@ sub hello {
 
     $TOP = $MW->WidgetDemo(
         -name             => $demo,
-        -text             => "This demonstration describes the basics of Perl/Tk programming.  MORE HERE, PLEASE.",
+        -text             => [ "This demonstration describes the basics of Perl/Tk programming. Besides this small user guide, there are various FAQs and other resources and tutorials available on the web, such as:
+
+http://phaseit.net/claird/comp.lang.perl.tk/ptkFAQ.html
+http://www.perltk.org
+http://user.cs.tu-berlin.de/~eserte
+http://www.lehigh.edu/sol0/ptk
+", -wraplength => '7i' ],
         -title            => 'Perl/Tk User Guide',
         -iconname         => 'hello',
     );
@@ -20,9 +25,9 @@ sub hello {
     # Pipe perldoc help output via fileevent() into a Scrolled ROText widget.
 
     my $t = $TOP->Scrolled(
-        qw/ ROText -width 80 -height 25 -wrap none -scrollbars osow/,
+        qw/ ROText -width 80 -height 25 -wrap none -scrollbars osoe/,
     );
-    my $cmd = dirname( $Config{perlpath} ) . '/perldoc -t Tk::UserGuide';
+    my $cmd = $Config{installbin} . '/perldoc -t Tk::UserGuide';
     $t->pack( qw/ -expand 1 -fill both / );
 
     open( H, "$cmd|" ) or die "Cannot get pTk user guide: $!";

@@ -4,6 +4,7 @@ $Tk::TraceText::VERSION = '1.0';
 
 package Tk::TraceText;
 
+use Tk::widgets qw/ Trace /;
 use base qw/ Tk::Derived Tk::Text /;
 use strict;
 

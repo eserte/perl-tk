@@ -4,16 +4,16 @@ Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
-derived from those of the orignal Tix4.1.3 or Tk8.4 sources. See doc/license.html
-for details of this license.
+derived from those of the orignal Tix4.1.3 or Tk8.4.* sources.
+See doc/license.html for details of this license.
 
-Tk804.025 is late-alpha/beta level.
+Tk804.025 is beta level.
 (Previous stable release being Tk800.025.)
 The code itself is probably at least as solid as Tk800 series, but
 build process/tests need shaking down on non/Linux.
 
 This a re-port of a perl interface to Tk8.4.
-C code is derived from Tcl/Tk8.4.4.
+C code is derived from Tcl/Tk8.4.5.
 
 Perl API is essentially the same as Tk800.025 but has not
 been verified as compliant.
@@ -27,7 +27,7 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This Tk804 is only likely to work with perl5.8+
 Perl's UTF-8 support has improved since int was introduced in perl5.6.0.
 Some functions (regular expression match in Text widgets) are known
-to only work with perl5.8.1
+to only work with perl5.8.1 and later
 
 Author has built against:
 
@@ -35,14 +35,19 @@ Author has built against:
    Earlier versions worked with this - but it has Unicode mis-features.
    Not tried it recently.
 
-  Perl5.8.1-RC*
-   Pentium Suse Linux-8.2 gcc-3.3
-   Visual C++ 6.0, Windows-XP, dmake
-   Mingw 2.0, Windows-XP, dmake  (perl without PERL_IMP_SYS, that is
-   broken for MinGW).
+   Note that on RedHat Linux in particular the build process must be
+   done in a non UTF-8 locale i.e. LANG=en_GB not LANG=en_GB.utf8
+   (This is due to bugs in perl5.8.0 as shipped by RedHat.)
 
   Perl5.8.1
    Pentium Suse Linux-8.2 gcc-3.3
+   Visual C++ 6.0, Windows-XP, dmake/nmake
+   Mingw 2.0, Windows-XP, dmake  (perl without PERL_IMP_SYS, that is
+   broken for MinGW).
+   ActivePerl based on 5.8.1 also works with Visual C++ 6.0/nmake
+
+  Perl5.8.2
+   Pentium Suse Linux-8.2/9.0 gcc-3.3
    Visual C++ 6.0, Windows-XP, dmake/nmake
 
 For questions on this package try news:comp.lang.perl.tk or e-mail

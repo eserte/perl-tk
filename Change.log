@@ -1,3 +1,53 @@
+Change 3060 on 2003/12/21 by nick@llama
+
+	Fix $hlist->infoChildren for children with spaces
+	(e.g. Win32 pathnames). The fix is to make Tcl_AppendElement
+	cause result to be a list. This has consequences that
+	$listbox->curselection returns a list even when (as is common)
+	only a single element is selected - so fixup those
+	as revealed by test suite.
+
+Change 3059 on 2003/12/21 by nick@llama
+
+	Use platfrom CTL_FONT as default for Tix items.
+
+Change 3058 on 2003/12/21 by nick@llama
+
+	Fixup UTF-8 chars to PostScript
+
+Change 3057 on 2003/12/21 by nick@llama
+
+	Automate Change.log and $Tk::CHANGE in mkdist
+
+Change 3056 on 2003/12/21 by nick@llama
+
+	Tk-804.025_trial Release Preparation
+
+Change 3055 on 2003/12/21 by nick@llama
+
+	More MANIFEST tweaks
+
+Change 3054 on 2003/12/21 by nick@llama
+
+	Steve's beta11 relative patch to widget + spelling
+	corrections, and tweaks to user guide.
+
+Change 3053 on 2003/12/21 by nick@llama
+
+	Steve's re-work of demos structure
+
+Change 3052 on 2003/12/21 by nick@llama
+
+	UTF-8 avoidance in Tcl-pTk, remove some debug
+
+Change 3051 on 2003/12/20 by nick@llama
+
+	Missing '-' on -fill in LabFrame.pm
+
+Change 3050 on 2003/12/20 by nick@llama
+
+	Update change log
+
 Change 3049 on 2003/12/19 by nick@llama
 
 	tk8.4.5 tests for image1 etc. already existing with

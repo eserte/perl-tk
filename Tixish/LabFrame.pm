@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '4.010'; # $Id: //depot/Tkutf8/Tixish/LabFrame.pm#10 $
+$VERSION = '4.010'; # $Id: //depot/Tkutf8/Tixish/LabFrame.pm#11 $
 
 use Tk;
 use base qw(Tk::Frame);
@@ -92,7 +92,7 @@ sub labelside {
 
         $label->pack(-side => $side);
         $frame->pack(-expand => 1, -fill => 'both');
-        $border->pack(-side => $side, -expand => 1, fill => 'both');
+        $border->pack(-side => $side, -expand => 1, -fill => 'both');
         $cw->{m_geoMgr} = "pack";
     }
 }

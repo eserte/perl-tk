@@ -5,7 +5,7 @@ use Tk 804.000;
 use lib Tk->findINC( 'demos/widget_lib' );
 use Tk::widgets qw/ DialogBox ErrorDialog LabEntry ROText /;
 use WidgetDemo;
-use subs qw/ 
+use subs qw/
     build_about_dialog demos invoke lsearch
     see_code see_vars show_stat view_widget
 /;
@@ -142,101 +142,114 @@ $T->tagBind(qw/demo <Motion>/ => [sub {
 
 $T->insert('end', "Perl/Tk Widget Demonstrations\n", 'title');
 $T->insert('end',
-"\nThis application provides a front end for several short scripts that demonstrate what you can do with Tk widgets.  Each of the numbered lines below describes a demonstration;  you can click on it to invoke the demonstration.  Once the demonstration window appears, you can click the ", '', 'See Code', 'bold', " button to see the Perl/Tk code that created the demonstration.  If you wish, you can edit the code and click the ", '', "Rerun Demo", 'bold', " button in the code window to reinvoke the demonstration with the modified code.\n");
+"\nThis application provides a front end for several short scripts that demonstrate what you can do with Tk widgets.  Each of the numbered lines below describes a demonstration;  you can click on it to invoke the demonstration.  Once the demonstration window appears, you can click the ", '', 'See Code', 'bold', " button to see the Perl/Tk code that created the demonstration.  If you wish, you can edit the code and click the ", '', "Rerun Demo", 'bold', " button in the code window to reinvoke the demonstration with the modified code.\n"
+);
 
 demos 'Getting Started', (
-    'hello'      => 'An introduction to Perl/Tk',
+    'hello'        => 'An introduction to Perl/Tk',
 );
 
 demos 'Labels, buttons, checkbuttons, and radiobuttons', (
-    'labels'     => 'Labels (text and images)',
-    'unicodeout' => 'Labels and Unicode text',
-    'button'     => 'Buttons',
-    'check'      => 'Checkbuttons (select any of a group)',
-    'radio'      => 'Radiobuttons (select one of a group)',
-    'puzzle'     => 'A 15-puzzle game made out of buttons',
-    'icon'       => 'Iconic buttons that use bitmaps',
-    'image1'     => 'Two labels displaying images',
-    'image2'     => 'A simple user interface for viewing images',
-    'labelframe' => 'Labelled frames',
+    'labels'       => 'Labels (text and images)',
+    'unicodeout'   => 'Labels and Unicode text',
+    'button'       => 'Buttons',
+    'check'        => 'Checkbuttons (select any of a group)',
+    'radio'        => 'Radiobuttons (select one of a group)',
+    'puzzle'       => 'A 15-puzzle game made out of buttons',
+    'icon'         => 'Iconic buttons that use bitmaps',
+    'image1'       => 'Two labels displaying images',
+    'image2'       => 'A simple user interface for viewing images',
+    'labelframe'   => 'Labelled frames',
 );
 
 demos 'Listboxes', (
-    'states'     => 'The 50 states',
-    'colors'     => 'Change widget\'s color scheme',
-    'sayings'    => 'A collection of famous and infamous sayings',
+    'states'       => 'The 50 states',
+    'colors'       => 'Change widget\'s color scheme',
+    'sayings'      => 'A collection of famous and infamous sayings',
 );
 
 demos 'Entries and Spin-boxes', (
-    'entry1'     => 'Entries without scrollbars',
-    'entry2'     => 'Entries with scrollbars',
-    'entry3'     => 'Validated entries and password fields',
-    'spin'       => 'Spin-boxes',
-    'form'       => 'Simple Rolodex-like form',
+    'entry1'       => 'Entries without scrollbars',
+    'entry2'       => 'Entries with scrollbars',
+    'entry3'       => 'Validated entries and password fields',
+    'spin'         => 'Spin-boxes',
+    'form'         => 'Simple Rolodex-like form',
 );
 
 demos 'Text', (
-    'texts'      => 'Basic editable text',
-    'style'      => 'Text display styles',
-    'bind'       => 'Hypertext (tag bindings)',
-    'twind'      => 'A text widget with embedded windows',
-    'search'     => 'A search tool built with a text widget',
+    'texts'        => 'Basic editable text',
+    'style'        => 'Text display styles',
+    'bind'         => 'Hypertext (tag bindings)',
+    'twind'        => 'A text widget with embedded windows',
+    'search'       => 'A search tool built with a text widget',
 );
 
 demos 'Canvases', (
-    'items'      => 'The canvas item types',
-    'plot'       => 'A simple 2-D plot',
-    'ctext'      => 'Text items in canvases',
-    'arrows'     => 'An editor for arrowheads on canvas lines',
-    'ruler'      => 'A ruler with adjustable tab stops',
-    'floor'      => 'A building floor plan',
-    'cscroll'    => 'A simple scrollable canvas',
-    'transtile'  => 'Tiles and transparent images',
+    'items'        => 'The canvas item types',
+    'plot'         => 'A simple 2-D plot',
+    'ctext'        => 'Text items in canvases',
+    'arrows'       => 'An editor for arrowheads on canvas lines',
+    'ruler'        => 'A ruler with adjustable tab stops',
+    'floor'        => 'A building floor plan',
+    'cscroll'      => 'A simple scrollable canvas',
+    'transtile'    => 'Tiles and transparent images',
 );
 
 demos 'Scales', (
-    'hscale'     => 'Horizontal scale',
-    'vscale'     => 'Vertical scale',
+    'hscale'       => 'Horizontal scale',
+    'vscale'       => 'Vertical scale',
 );
 
 demos 'Paned Windows', (
-    'paned1'     => 'Horizontal paned window',
-    'paned2'     => 'Vertical paned window',
+    'paned1'       => 'Horizontal paned window',
+    'paned2'       => 'Vertical paned window',
 );
 
 demos 'Photos and Images', (
-    'photo1'     => 'Transparent pixels',
-    'photo2'     => 'Alpha channel compositing',
+    'photo1'       => 'Transparent pixels',
+    'photo2'       => 'Alpha channel compositing',
 );
 
 demos 'Menus', (
-    'menus'      => 'Menus and cascades (sub-menus)',
-    'menus2'     => 'As above, but using Perl/Tk -menuitems',
-    'menbut'     => 'Menubuttons',
+    'menus'        => 'Menus and cascades (sub-menus)',
+    'menus2'       => 'As above, but using Perl/Tk -menuitems',
+    'menbut'       => 'Menubuttons',
 );
 
 demos 'Common Dialogs', (
-    'msgBox'     => 'Message boxes',
-    'filebox'    => 'File selection dialog',
-    'choosedir'  => 'Directory selection dialog',
-    'clrpick'    => 'Color picker',
+    'msgBox'       => 'Message boxes',
+    'filebox'      => 'File selection dialog',
+    'choosedir'    => 'Directory selection dialog',
+    'clrpick'      => 'Color picker',
+);
+
+demos 'Tix Widgets', (
+    'balloon'      => 'Popup help window when mouse lingers over widget',
+    'browseentry'  => 'Entry with Listbox to select list values',
+    'browseentry2' => 'Another BrowseEntry example',
+    'dirtree'      => 'Display a directory tree',
+    'form_mgr'     => 'The form geometry manager',
+    'HList'        => 'A hierarchical listbox widget',
+    'HList2'       => 'Multicolumn listbox with individual cell styles',
+    'labframe'     => 'A Frame with embedded label (deprecated)',
 );
 
 demos 'Simulations', (
-    'bounce'     => 'Balls bouncing in a cavity',
+    'bounce'       => 'Balls bouncing in a cavity',
 );
 
 demos 'Sample Perl Mega-Widgets', (
-    'mega'       => 'Introduction to writing pure Perl mega-widgets',
-    'slide'      => 'Composite Tk::SlideSwitch - binary on/off switch',
-    'trace2'     => 'Derived   Tk::TraceText - Text contents defined by a traced variable',
+    'mega'         => 'Introduction to writing pure Perl mega-widgets',
+    'slide'        => 'Composite Tk::SlideSwitch - binary on/off switch',
+    'trace2'       => 'Derived   Tk::TraceText - Text contents defined by a traced variable',
 );
 
 demos 'Miscellaneous', (
-    'bitmaps'    => 'The built-in bitmaps',
-    'dialog1'    => 'A dialog box with a local grab',
-    'dialog2'    => 'A dialog box with a global grab',
-    'trace1'     => 'Trace a variable\'s value',
+    'bitmaps'      => 'The built-in bitmaps',
+    'dialog1'      => 'A dialog box with a local grab',
+    'dialog2'      => 'A dialog box with a global grab',
+    'trace1'       => 'Trace a variable\'s value',
+    'progress'     => 'Various ProgressBar widgets',
 );
 
 $T->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
@@ -260,6 +273,7 @@ while ($_ = shift @dirent) {
 }
 
 build_about_dialog $help;
+$T->focus;
 
 MainLoop;
 
@@ -331,7 +345,7 @@ sub demos {
     $T->insert('end', "\n", '', "$title\n", 'title');
 
     for (my $n = 0; $n <= $#demos; $n += 2) {
-	$T->insert('end', $n / 2 + 1 . '. ' . $demos[$n + 1] . ".\n", 
+	$T->insert('end', $n / 2 + 1 . '. ' . $demos[$n + 1] . ".\n",
 		   ['demo', 'demo-' . $demos[$n]]);
     }
 
@@ -392,7 +406,7 @@ sub see_code {
             -command => [$CODE => 'withdraw'],
 	);
 	$CODE_RERUN = $code_buttons->Button(-text => 'Rerun Demo');
-	$CODE_TEXT = $CODE->Scrolled('Text', qw/ -height 40 -scrollbars ow /);
+	$CODE_TEXT = $CODE->Scrolled('Text', qw/ -height 40 -scrollbars oe /);
 	$code_buttons_dismiss->pack(qw/-side left -expand 1/);
 	$CODE_RERUN->pack(qw/-side left -expand 1/);
 	$CODE_TEXT->pack(qw/-side left -expand 1 -fill both/);
@@ -419,6 +433,7 @@ sub see_code {
     }
     close CODE;
     $CODE_TEXT->markSet(qw/insert 1.0/);
+    $CODE_TEXT->focus;
 
 } # end see_code
 
@@ -492,7 +507,7 @@ sub view_widget {
             -command => [$VIEW => 'withdraw'],
 	);
 	$view_buttons_dismiss->pack(qw/-side left -expand 1/);
-	$VIEW_TEXT = $VIEW->Scrolled('Text', qw/ -height 40 -wrap none /);
+	$VIEW_TEXT = $VIEW->Scrolled('Text', qw/ -height 40 -scrollbars oe /);
 	$VIEW_TEXT->pack(qw/-side left -expand 1 -fill both/);
     } else {
 	$VIEW->deiconify;

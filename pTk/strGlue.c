@@ -15,8 +15,10 @@ int flags;
  Tcl_Obj *temp2 = NULL;
  Tcl_Obj *ret;
  if (part2)
-  temp2 = Tcl_NewStringObj(part2,-1);
- ret  = Tcl_ObjGetVar2(interp, temp, NULL, flags);
+  {
+   temp2 = Tcl_NewStringObj(part2,-1);
+  }
+ ret  = Tcl_ObjGetVar2(interp, temp, temp2, flags);
  Tcl_DecrRefCount(temp);
  if (temp2)
    Tcl_DecrRefCount(temp2);

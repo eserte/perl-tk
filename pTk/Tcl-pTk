@@ -1,7 +1,6 @@
 #!/usr/local/bin/perl -w
-
+use open IO => ':bytes'; # Avoid UTF-8 issues with some perl5.8.0 (RedHat)
 use Carp;
-
 my $verbose = 0;
 
 $SIG{'__WARN__'} = sub { print STDERR $_; Carp::confess(shift) };

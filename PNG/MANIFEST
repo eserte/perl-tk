@@ -63,7 +63,6 @@ libpng/contrib/visupng/VisualPng.ico
 libpng/contrib/visupng/VisualPng.png
 libpng/contrib/visupng/VisualPng.rc
 libpng/example.c
-libpng/example.c.diff
 libpng/INSTALL
 libpng/KNOWNBUG
 libpng/libpng.3
@@ -71,14 +70,6 @@ libpng/libpng.txt
 libpng/libpngpf.3
 libpng/LICENSE
 libpng/Makefile.maybe
-libpng/makefile.vc
-libpng/msvc/libpng.dsp
-libpng/msvc/libpng.dsw
-libpng/msvc/png.rc
-libpng/msvc/png32ms.def
-libpng/msvc/README.txt
-libpng/msvc/zlib.def
-libpng/msvc/zlib.dsp
 libpng/png.5
 libpng/png.c
 libpng/png.h

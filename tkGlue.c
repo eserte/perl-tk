@@ -1133,24 +1133,6 @@ SV *sv;
 }
 
 void
-Tcl_AppendElement(interp, string)
-Tcl_Interp *interp;
-CONST char *string;
-{
- dTHX;
- Tcl_Obj *result = Tcl_GetObjResult(interp);
- Tcl_Obj *value  = Tcl_NewStringObj(string,-1);
- if (SvOK(result))
-  {
-   Tcl_ListObjAppendElement(interp,result,value);
-  }
- else
-  {
-   SvSetMagicSV(result, value);
-  }
-}
-
-void
 #ifdef STANDARD_C
 Tcl_SprintfResult(Tcl_Interp * interp, char *fmt,...)
 #else
@@ -3549,7 +3531,7 @@ int flags;
   {
    STRLEN len;
    char *s = SvPV(sv,len);
-   if (!strncmp(s,"::tk::",6))
+   if (len > 6 && !strncmp(s,"::tk::",6))
     {
      sv = FindTkVarName(s+6,0);
     }
@@ -3559,7 +3541,9 @@ int flags;
    sv = SvRV(sv);
   }
  if (part2)
-  sv = LangVar2(interp, sv, Tcl_GetString(part2), 0);
+  {
+   sv = LangVar2(interp, sv, Tcl_GetString(part2), 0);
+  }
  return sv;
 }
 
@@ -5534,6 +5518,10 @@ void
 LangSelectHook(CONST char *what,Tk_Window tkwin,
                Atom selection, Atom target, Atom type)
 {
+#if 0
+ /* There is still something not-quite-right about Selection
+    but we don't want all this noise in the release
+  */
  TkWindow *winPtr = (TkWindow *)tkwin;
  char *name = (tkwin == winPtr->dispPtr->clipWindow)
               ? "ClipWindow" : Tk_PathName(tkwin);
@@ -5542,6 +5530,7 @@ LangSelectHook(CONST char *what,Tk_Window tkwin,
 	      Tk_GetAtomName(tkwin, target),
 	      (type == None) ? "None" : Tk_GetAtomName(tkwin, type),
               tkwin, name);
+#endif
 }
 
 

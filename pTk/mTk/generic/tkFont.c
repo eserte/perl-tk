@@ -2865,7 +2865,9 @@ Tk_TextLayoutToPostscript(interp, layout)
 			    buf[used++] = *glyphname++ ;
 			buf[used++] = '(';
 		    }
-
+                    else {
+		        LangDebug("No PostScript glyph for U+%04x\n",ch);
+		    }
 		}
 		if (used >= MAXUSE) {
 		    buf[used] = '\0';
