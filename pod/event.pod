@@ -19,7 +19,7 @@ I<$widget>-E<gt>B<event>I<Action>(?I<arg, arg, ...>?);
 The B<event>I<Action> methods provides several facilities for dealing with
 window system events, such as defining virtual events and synthesizing
 events.  Virtual events are shared by all widgets of the same
-B<MainWindow>.  Different B<MainWindow> can have different
+B<MainWindow>.  Different L<MainWindow|Tk::MainWindow>s can have different
 virtual event.
 
 The following methods are currently supported:
@@ -34,7 +34,7 @@ the virtual event will trigger whenever any one of the I<sequence>s
 occurs.
 I<Virtual> may be any string value and I<sequence> may have
 any of the values allowed for the I<sequence> argument to the
-B<bind> method.
+L<bind|Tk::bind> method.
 If I<virtual> is already defined, the new physical event sequences
 add to the existing sequences for the event.
 
@@ -44,7 +44,7 @@ Deletes each of the I<sequence>s from those associated with
 the virtual event given by I<virtual>.
 I<Virtual> may be any string value and I<sequence> may have
 any of the values allowed for the I<sequence> argument to the
-B<bind> method.
+L<bind|Tk::bind> method.
 Any I<sequence>s not currently associated with I<virtual>
 are ignored.
 If no I<sequence> argument is provided, all physical event sequences
@@ -60,11 +60,11 @@ will be generated.
 I<Event> provides a basic description of
 the event, such as B<E<lt>Shift-Button-2E<gt>> or B<E<lt>E<lt>PasteE<gt>E<gt>>.
 I<Event> may have any of the forms allowed for the I<sequence>
-argument of the B<bind> command except that it must consist
+argument of the L<bind|Tk::bind> method except that it must consist
 of a single event pattern, not a sequence.
 I<Option-value> pairs may be used to specify additional
 attributes of the event, such as the x and y mouse position;
-see L</EVENT FIELDS> below.  If the B<-when> option is not specified, the
+see L<"EVENT FIELDS"> below.  If the B<-when> option is not specified, the
 event is processed immediately:  all of the handlers for the event
 will complete before the B<eventGenerate> method returns.
 If the B<-when> option is specified then it determines when the
@@ -86,43 +86,43 @@ not defined then B<undef> is returned.
 
 The following options are supported for the B<eventGenerate>
 method.  These correspond to the ``%'' expansions
-allowed in binding callback for the B<bind> method.
+allowed in binding callback for the L<bind|Tk::bind> method.
 
 =over 4
 
-=item B<-above>I< window>
+=item B<-above> => I<window>
 
 I<Window> specifies the I<above> field for the event,
 either as a window path name or as an integer window id.
 Valid for B<Configure> events.
-Corresponds to the B<%a> substitution for binding scripts.
+Corresponds to the L<%a|Tk::bind/'a'> substitution for binding scripts.
 
-=item B<-borderwidth>I< size>
+=item B<-borderwidth> => I<size>
 
 I<Size> must be a screen distance;  it specifies the
 I<border_width> field for the event.
 Valid for B<Configure> events.
-Corresponds to the B<%B> substitution for binding scripts.
+Corresponds to the L<%B|Tk::bind/'B'> substitution for binding scripts.
 
-=item B<-button>I< number>
+=item B<-button> => I<number>
 
 I<Number> must be an integer;  it specifies the I<detail> field
 for a B<ButtonPress> or B<ButtonRelease> event, overriding
 any button  number provided in the base I<event> argument.
-Corresponds to the B<%b> substitution for binding scripts.
+Corresponds to the L<%b|Tk::bind/'b'> substitution for binding scripts.
 
-=item B<-count>I< number>
+=item B<-count> => I<number>
 
 I<Number> must be an integer;  it specifies the I<count> field
 for the event.  Valid for B<Expose> events.
-Corresponds to the B<%c> substitution for binding scripts.
+Corresponds to the L<%c|Tk::bind/'c'> substitution for binding scripts.
 
-=item B<-detail>I< detail>
+=item B<-detail> => I<detail>
 
 I<Detail> specifies the I<detail> field for the event
 and must be one of the following:
 
-=over 4
+=over 8
 
  NotifyAncestor	NotifyNonlinearVirtual
  NotifyDetailNone	NotifyPointer
@@ -131,7 +131,7 @@ and must be one of the following:
 
 Valid for B<Enter>, B<Leave>, B<FocusIn> and
 B<FocusOut> events.
-Corresponds to the B<%d> substitution for binding scripts.
+Corresponds to the L<%d|Tk::bind/'d'> substitution for binding scripts.
 
 =back
 
@@ -140,20 +140,20 @@ Corresponds to the B<%d> substitution for binding scripts.
 I<Boolean> must be a boolean value;  it specifies the I<focus>
 field for the event.
 Valid for B<Enter> and B<Leave> events.
-Corresponds to the B<%f> substitution for binding scripts.
+Corresponds to the L<%f|Tk::bind/'f'> substitution for binding scripts.
 
 =item B<-height>I< size>
 
 I<Size> must be a screen distance;  it specifies the I<height>
 field for the event.  Valid for B<Configure> events.
-Corresponds to the B<%h> substitution for binding scripts.
+Corresponds to the L<%h|Tk::bind/'h'> substitution for binding scripts.
 
 =item B<-keycode>I< number>
 
 I<Number>  must be an integer;  it specifies the I<keycode>
 field for the event.
 Valid for B<KeyPress> and B<KeyRelease> events.
-Corresponds to the B<%k> substitution for binding scripts.
+Corresponds to the L<%k|Tk::bind/'k'> substitution for binding scripts.
 
 =item B<-keysym>I< name>
 
@@ -162,7 +162,7 @@ B<space>, or B<Return>;  its corresponding
 keycode value is used as the I<keycode> field for event, overriding
 any detail specified in the base I<event> argument.
 Valid for B<KeyPress> and B<KeyRelease> events.
-Corresponds to the B<%K> substitution for binding scripts.
+Corresponds to the L<%K|Tk::bind/'K'> substitution for binding scripts.
 
 =item B<-mode>I< notify>
 
@@ -171,21 +171,21 @@ one of B<NotifyNormal>, B<NotifyGrab>, B<NotifyUngrab>, or
 B<NotifyWhileGrabbed>.
 Valid for B<Enter>, B<Leave>, B<FocusIn>, and
 B<FocusOut> events.
-Corresponds to the B<%m> substitution for binding scripts.
+Corresponds to the L<%m|Tk::bind/'m'> substitution for binding scripts.
 
 =item B<-override>I< boolean>
 
 I<Boolean> must be a boolean value;  it specifies the
 I<override_redirect> field for the event.
 Valid for B<Map>, B<Reparent>, and B<Configure> events.
-Corresponds to the B<%o> substitution for binding scripts.
+Corresponds to the L<%o|Tk::bind/'o'> substitution for binding scripts.
 
 =item B<-place>I< where>
 
 I<Where> specifies the I<place> field for the event;  it must be
 either B<PlaceOnTop> or B<PlaceOnBottom>.
 Valid for B<Circulate> events.
-Corresponds to the B<%p> substitution for binding scripts.
+Corresponds to the L<%p|Tk::bind/'p'> substitution for binding scripts.
 
 =item B<-root>I< window>
 
@@ -194,7 +194,7 @@ identifier;  it specifies the I<root> field for the event.
 Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Enter>, B<Leave>, and B<Motion>
 events.
-Corresponds to the B<%R> substitution for binding scripts.
+Corresponds to the L<%R|Tk::bind/'R'> substitution for binding scripts.
 
 =item B<-rootx>I< coord>
 
@@ -202,7 +202,7 @@ I<Coord> must be a screen distance;  it specifies the I<x_root>
 field for the event.
 Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Enter>, B<Leave>, and B<Motion>
-events.  Corresponds to the B<%X> substitution for binding scripts.
+events.  Corresponds to the L<%X|Tk::bind/'X'> substitution for binding scripts.
 
 =item B<-rooty>I< coord>
 
@@ -211,19 +211,19 @@ field for the event.
 Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Enter>, B<Leave>, and B<Motion>
 events.
-Corresponds to the B<%Y> substitution for binding scripts.
+Corresponds to the L<%Y|Tk::bind/'Y'> substitution for binding scripts.
 
 =item B<-sendevent>I< boolean>
 
 B<Boolean> must be a boolean value;  it specifies the I<send_event>
 field for the event.  Valid for all events.  Corresponds to the
-B<%E> substitution for binding scripts.
+L<%E|Tk::bind/'E'> substitution for binding scripts.
 
 =item B<-serial>I< number>
 
 I<Number> must be an integer;  it specifies the I<serial> field
 for the event.  Valid for all events.
-Corresponds to the B<%#> substitution for binding scripts.
+Corresponds to the L<%#|Tk::bind/'#'> substitution for binding scripts.
 
 =item B<-state>I< state>
 
@@ -235,7 +235,7 @@ For B<Visibility> events it must be one of B<VisibilityUnobscured>,
 B<VisibilityPartiallyObscured>, or B<VisibilityFullyObscured>.
 This option overrides any modifiers such as B<Meta> or B<Control>
 specified in the base I<event>.
-Corresponds to the B<%s> substitution for binding scripts.
+Corresponds to the L<%s|Tk::bind/'s'> substitution for binding scripts.
 
 =item B<-subwindow>I< window>
 
@@ -243,7 +243,7 @@ I<Window> specifies the I<subwindow> field for the event, either
 as a path name for a Tk widget or as an integer window identifier.
 Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Enter>, B<Leave>, and B<Motion> events.
-Similar to B<%S> substitution for binding scripts.
+Similar to L<%S|Tk::bind/'S'> substitution for binding scripts.
 
 =item B<-time>I< integer>
 
@@ -252,21 +252,21 @@ for the event.
 Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Enter>, B<Leave>, B<Motion>,
 and B<Property> events.
-Corresponds to the B<%t> substitution for binding scripts.
+Corresponds to the L<%t|Tk::bind/'t'> substitution for binding scripts.
 
 =item B<-width>I< size>
 
 I<Size> must be a screen distance;  it specifies the I<width> field
 for the event.
 Valid for B<Configure> events.
-Corresponds to the B<%w> substitution for binding scripts.
+Corresponds to the L<%w|Tk::bind/'w'> substitution for binding scripts.
 
 =item B<-when>I< when>
 
 I<When> determines when the event will be processed;  it must have one
 of the following values:
 
-=over 4
+=over 8
 
 =item B<now>
 
@@ -300,7 +300,7 @@ Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Motion>, B<Enter>, B<Leave>,
 B<Expose>, B<Configure>, B<Gravity>, and B<Reparent>
 events.
-Corresponds to the the B<%x> substitution for binding scripts.
+Corresponds to the the L<%x|Tk::bind/'x'> substitution for binding scripts.
 
 =item B<-y>I< coord>
 
@@ -310,7 +310,7 @@ Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
 B<ButtonRelease>, B<Motion>, B<Enter>, B<Leave>,
 B<Expose>, B<Configure>, B<Gravity>, and B<Reparent>
 events.
-Corresponds to the the B<%y> substitution for binding scripts.
+Corresponds to the the L<%y|Tk::bind/'y'> substitution for binding scripts.
 
 Any options that are not specified when generating an event are filled
 with the value 0, except for I<serial>, which is filled with the
@@ -379,8 +379,12 @@ pressing the F6 key will now also invoke the B<E<lt>E<lt>PasteE<gt>E<gt>> bindin
 
 =head1 SEE ALSO
 
-Tk::bind, Tk::callbacks
+L<Tk::bind|Tk::bind>
+L<Tk::callbacks|Tk::callbacks>
 
 =head1 KEYWORDS
 
 event, binding, define, handle, virtual event
+
+=cut
+

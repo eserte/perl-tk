@@ -173,11 +173,9 @@ to make the toplevel appear raised or sunken.
 The B<Toplevel> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class, and the L<Tk::Wm> class.                 
-
-=over 4
+L<Tk::Widget|Tk::Widget> class, and the L<Tk::Wm|Tk::Wm> class.
 
 =head1 BINDINGS
 
@@ -186,9 +184,12 @@ toplevels are not intended to be interactive.
 
 =head1 SEE ALSO
 
-L<Tk::Widget>
-L<Tk::Wm>
+L<Tk::Widget|Tk::Widget>
+L<Tk::Wm|Tk::Wm>
 
 =head1 KEYWORDS
 
 toplevel, widget
+
+=cut
+

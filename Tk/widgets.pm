@@ -2,7 +2,7 @@ package Tk::widgets;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/widgets.pm#8$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/widgets.pm#9$
 
 sub import
 {
@@ -17,20 +17,5 @@ sub import
 
 1;
 __END__
-
-=head1 NAME
-
-Tk::widgets - preload widget classes
-
-=for category Implementation
-
-=head1 SYNOPSIS
-
-  use Tk::widgets qw(Button Label Frame);
-
-=head1 DESCRIPTION
-
-Does a 'require Tk::Foo' for each 'Foo' in the list.
-May speed startup by avoiding AUTOLOADs.
 
 =cut

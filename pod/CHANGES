@@ -1,3 +1,101 @@
+tk8pod 800_003.13
+
+  o Perlized Photo.pod (unfinished see TODO)
+  o SEE ALSO addition and small fixes to Bitmap/Image
+
+  o tkpoddiff now against version Nick grabbed 13-Apr-1998
+
+tk8pod 800_003.12
+
+  o fixed over #.   pod2html ignore num, pod2man use abs. value
+    tkpod indent item but item text uses abs value  (all optical
+    inspection)
+
+  o fixed some missing backs and removed an unnecessary item/back
+    pair in text.
+
+tk8pod 800_003.11
+
+  Replace L</[A-Z ]*> -> L<"..."
+
+tk8pod 800_003.10
+
+o Canvas.pod
+
+	o perlized TCL term to perlish notation
+
+	o added a very terse describtion of default bindings
+
+	o added tcl diff to ptkdifftcl.pod
+
+   More changes need (see TODO).  Some could be considered a
+   misfeature/bug in perl/Tk.
+
+tk8pod 800_003.9
+
+o tidypod:
+	fix unnecessary usage of E<gt> to get more readable out
+	put and to save some bits :-)
+
+	Tested here but not applied to keep diff smaller.
+	Nick should do it.
+
+tk8pod 800_003.8
+
+o Changes:
+
+	L<Tk::Widget> class  (, and the L<Tk::Wm> class.)?
+
+  to
+
+	L<Tk::Widget|Tk::Widget> class  (, and the L<Tk::Wm|Tk::Wm> class.)?
+
+  so pod2man gives right output.
+
+tk8pod 800_003.7
+
+o Pixmap & tkerror
+	o minor POD markup changes
+	
+  !! tkerror enhancements still pending !!
+
+tk8pod 800_003.6
+
+o Tlist.pod: =item <N> fix & minor markup correction
+
+tk8pod 800_003.5
+
+o event.pod & bind.pod
+
+	o added L<> from event <-> bind
+	o minor perlize markup changes
+
+tk8pod 800_003.4
+
+o pod/Font.pod
+
+	o perlized it.
+
+        o '-displayof=>window' and 'defaults to mainwindow' removed 
+
+        o remove window defaults to widgets mainwindow  but mention font settings
+          are *per* MainWindow  
+
+	o see TODO for 'unsolved' L<> stuff
+
+tk8pod 800_003.3
+
+o minor fixes to tkerror.pod.  Raised more question
+  (see TODO) than I could solved :-(
+
+tk8pod 800_003.2
+
+o fixed L<> in SEE ALSO
+o moved KEYWORDS after SEE ALSO for consistency
+
+tk8pod 800_003.1
+
+o sync with pod of Tk800.003
 
 tk8pod 19980328.1
 

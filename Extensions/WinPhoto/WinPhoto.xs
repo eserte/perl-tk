@@ -24,16 +24,16 @@
  * The format record for the Window file format:
  */
 
-static int      FileMatchWindow _ANSI_ARGS_((Tcl_Channel chan, Arg fileName,
-		    char *formatString, int *widthPtr, int *heightPtr));
+static int      FileMatchWindow _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Arg fileName,
+		    Arg formatString, int *widthPtr, int *heightPtr));
 static int      FileReadWindow  _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tcl_Channel chan, Arg fileName, char *formatString,
+		    Tcl_Channel chan, Arg fileName, Arg formatString,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
-static int	StringMatchWindow _ANSI_ARGS_(( Tcl_Obj *dataObj,
-		    char *formatString, int *widthPtr, int *heightPtr));
+static int	StringMatchWindow _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
+		    Arg formatString, int *widthPtr, int *heightPtr));
 static int	StringReadWindow _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
-		    char *formatString, Tk_PhotoHandle imageHandle,
+		    Arg formatString, Tk_PhotoHandle imageHandle,
 		    int destX, int destY, int width, int height,
 		    int srcX, int srcY));
 
@@ -48,10 +48,11 @@ Tk_PhotoImageFormat tkImgFmtWindow = {
 };          
 
 static int
-FileMatchWindow(chan, fileName, formatString, widthPtr, heightPtr)
+FileMatchWindow(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image file, open for reading. */
     Arg fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw Window file. */
@@ -66,7 +67,7 @@ FileReadWindow(interp, chan, fileName, formatString, imageHandle, destX, destY,
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image file, open for reading. */
     Arg fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -76,68 +77,36 @@ FileReadWindow(interp, chan, fileName, formatString, imageHandle, destX, destY,
 				 * in image being read. */
 {    
  return TCL_ERROR;
-}                   
+}                               
+
+
+static IV
+PointToWindow(Tk_Window tkwin, int x, int y)
+{    
+ Display *dpy = Tk_Display(tkwin);
+ Window root = RootWindowOfScreen(Tk_Screen(tkwin));
+ Window win;
+ if (!XTranslateCoordinates(dpy, root, root, x, y, &x, &y, &win))
+  {
+   win = None;
+  }           
+ return (IV) win;
+}
  
 static int
-DataToWin(Tcl_Obj *sv, Display **dpy, Window *win)
-{  
- *win = None;
- if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
-  {                   
-   AV *av = (AV *) SvRV(sv);
-   SV **svp = av_fetch(av, 0, 0);
-   Tk_Window tkwin = NULL;
-   if (!svp || !(tkwin = SVtoWindow(*svp)))
-    return 0;
-   *dpy = Tk_Display(tkwin);
-   if (av_len(av) == 2)
-    {
-     Window root = RootWindowOfScreen(Tk_Screen(tkwin));
-     int x = 0;
-     int y = 0;
-     svp = av_fetch(av,1,0);
-     if (svp)
-      x = SvIV(*svp);
-     svp = av_fetch(av,2,0);
-     if (svp)
-      y = SvIV(*svp);      
-     return XTranslateCoordinates(*dpy, root, root, x, y, &x, &y, win);
-    }
-   else if (av_len(av) == 1)
-    {          
-     svp = av_fetch(av,1,0);
-     if (svp && SvIOK(*svp))
-      {
-       *win = (Window) SvIV(*svp);
-       return 1; 
-      }
-    }
-   return 0;
-  }
- else
-  {
-   Tk_Window tkwin = SVtoWindow(sv);
-   if (tkwin)
-    {
-     *dpy = Tk_Display(tkwin);
-     *win = Tk_WindowId(tkwin);
-     return 1;
-    }
-  }
- return 0;
-}
-
-static int
-StringMatchWindow(dataObj, formatString, widthPtr, heightPtr)
+StringMatchWindow(interp, dataObj, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Obj *dataObj;		/* the object containing the image data */
-    char *formatString;		/* the image format string */
+    Arg formatString;		/* the image format string */
     int *widthPtr;		/* where to put the string width */
     int *heightPtr;		/* where to put the string height */
 {                              
- Display *dpy = NULL;
- Window  win = None;
- if (DataToWin(dataObj,&dpy,&win))
+ long val = 0;
+ if (Tcl_GetLongFromObj(interp, dataObj, &val) == TCL_OK)
   {
+   Tk_Window tkwin = Tk_MainWindow(interp);
+   Display *dpy = Tk_Display(tkwin);
+   Window  win = val;
    XWindowAttributes attr;
    XGetWindowAttributes(dpy, win, &attr);
    *widthPtr  = attr.width;
@@ -152,20 +121,22 @@ StringReadWindow(interp,dataObj,formatString,imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;		/* interpreter for reporting errors in */
     Tcl_Obj *dataObj;		/* object containing the image */
-    char *formatString;		/* format string if any */
+    Arg formatString;		/* format string if any */
     Tk_PhotoHandle imageHandle;	/* the image to write this data into */
     int destX, destY;		/* The rectangular region of the  */
     int  width, height;		/*   image to copy */
     int srcX, srcY;
 {    
- Display *dpy = NULL;
- Window  win = None;
- int x;
- int y;
- unsigned char *p;
- Tk_PhotoImageBlock block;
- if (DataToWin(dataObj,&dpy,&win))
+ long val = 0;
+ if (Tcl_GetLongFromObj(interp, dataObj, &val) == TCL_OK)
   {
+   int x;                   
+   int y;                   
+   unsigned char *p;        
+   Tk_PhotoImageBlock block;
+   Tk_Window tkwin = Tk_MainWindow(interp);
+   Display *dpy = Tk_Display(tkwin);
+   Window  win = val;
    XWindowAttributes attr;
    XImage *img;
    XColor color;
@@ -239,6 +210,14 @@ StringReadWindow(interp,dataObj,formatString,imageHandle,
 
 DECLARE_VTABLES;
 TkimgphotoVtab *TkimgphotoVptr;
+
+MODULE = Tk::WinPhoto	PACKAGE = Tk::Widget
+
+IV
+PointToWindow(tkwin,x,y)
+Tk_Window	tkwin
+int		x
+int		y
 
 MODULE = Tk::WinPhoto	PACKAGE = Tk::WinPhoto
 

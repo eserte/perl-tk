@@ -1,0 +1,30 @@
+
+=head1 NAME
+
+Tk::ROText - 'readonly' perl/tk Text widget
+
+=for pm Tk/ROText.pm
+
+=for category Derived Widgets
+
+=head1 SYNOPSIS
+
+    use Tk::ROText;
+    ...
+    $ro = $mw->ROText(?options,...?);
+
+=head1 DESCRIPTION
+
+This IS-A text widget with all bindings removed that would alter the contents
+of the text widget.
+
+=head1 KEYS
+
+widget, text, readonly
+
+=head1 SEE ALSO
+
+Tk::Text(3)
+
+=cut
+

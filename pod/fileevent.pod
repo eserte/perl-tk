@@ -106,10 +106,13 @@ by Mark Diekhans.
 
 =head1 SEE ALSO
 
-L<Tk::IO>
-L<Tk::callbacks>
+L<Tk::IO|Tk::IO>
+L<Tk::callbacks|Tk::callbacks>
 
 =head1 KEYWORDS
 
 asynchronous I/O, blocking, filehandle, event handler, nonblocking, readable,
 callback, writable.
+
+=cut
+

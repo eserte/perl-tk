@@ -56,7 +56,7 @@ Ioi Kim Lam - ioi@graphics.cis.upenn.edu
 
 =head1 SEE ALSO
 
-L<Tk::wm>
+L<Tk::Wm|Tk::Wm>
 
 =head1 KEYWORDS
 

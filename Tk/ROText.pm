@@ -6,7 +6,7 @@ package Tk::ROText;
 require Tk::Text;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/ROText.pm#13$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/ROText.pm#14$
 
 @ISA = qw(Tk::Text);
 Construct Tk::Widget 'ROText';
@@ -33,29 +33,4 @@ sub Tk::Widget::ScrlROText { shift->Scrolled('ROText' => @_) }
 1;
 
 __END__
-
-=head1 NAME
-
-Tk::ROText - 'readonly' perl/tk Text widget
-
-=for category Derived Widgets
-
-=head1 SYNOPSIS
-
-    use Tk::ROText;
-    ...
-    $ro = $mw->ROText(?options,...?);
-
-=head1 DESCRIPTION
-
-This IS-A text widget with all bindings removed that would alter the contents
-of the text widget.
-
-=head1 KEYS
-
-widget, text, readonly
-
-=head1 SEE ALSO
-
-Tk::Text(3)
 

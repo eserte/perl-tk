@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#9$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#10$
 
 use Tk;
 use Carp;
@@ -314,101 +314,3 @@ sub shrinkwrap {
 
 __END__
 
-=head1 NAME
-
-Tk::BrowseEntry - entry widget with popup choices.
-
-=for category Tix Extensions
-
-=head1 SYNOPSIS
-
-    use Tk::BrowseEntry;
-
-    $b = $frame->BrowseEntry(-label => "Label", -variable => \$var);
-    $b->insert("end", "opt1");
-    $b->insert("end", "opt2");
-    $b->insert("end", "opt3");
-    ...
-    $b->pack;
-
-=head1 DESCRIPTION
-
-BrowseEntry is a poor man's ComboBox. It may be considered an
-enhanced version of LabEntry which provides a button to popup the
-choices of the possible values that the Entry may
-take. BrowseEntry supports all the options LabEntry supports
-except B<-textvariable>. This is replaced by B<-variable>. Other
-options that BrowseEntry supports.
-
-=over 4
-
-=item B<-listwidth>
-
-Specifies the width of the popup listbox.
-
-=item B<-variable>
-
-Specifies the variable in which the entered value is to be stored.
-
-=item B<-browsecmd>
-
-Specifies a function to call when a selection is made in the
-popped up listbox. It is passed the widget and the text of the
-entry selected. This function is called after the entry variable
-has been assigned the value.
-
-=item B<-listcmd>
-
-Specifies the function to call when the button next to the entry
-is pressed to popup the choices in the listbox. This is called before
-popping up the listbox, so can be used to populate the entries in
-the listbox.
-
-=item B<-arrowimage>
-
-Specifies the image to be used in the arrow button beside the entry
-widget. The default is an downward arrow image in the file cbxarrow.xbm
-
-=item B<-choices>
-
-Specifies the list of choices to pop up.  This is a reference to an
-array of strings specifying the choices.
-
-=item B<-state>
- 
-Specifies one of three states for the widget: normal, readonly, or
-disabled.  If the widget is disabled then the value may not be changed
-and the arrow button won't activate.  If the widget is readonly, the
-entry may not be edited, but it may be changed by choosing a value
-from the popup listbox.  normal is the default.
-
-=back
-
-=head1 METHODS
-
-=over 4
-
-=item B<insert(>I<index>, I<string>B<)>
-
-Inserts the text of I<string> at the specified I<index>. This string
-then becomes available as one of the choices.
-
-=item B<delete(>I<index1>, I<index2>B<)>
-
-Deletes items from I<index1> to I<index2>.
-
-=back
-
-=head1 BUGS
-
-BrowseEntry should really provide more of the ComboBox options.
-
-=head1 AUTHOR
-
-B<Rajappa Iyer> rsi@earthling.net
-
-B<Chris Dean> ctdean@cogit.com made additions.
-
-This code was inspired by ComboBox.tcl in Tix4.0 by Ioi Lam and
-bears more than a passing resemblance to ComboBox code. This may
-be distributed under the same conditions as Perl.

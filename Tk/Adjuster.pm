@@ -1,7 +1,7 @@
 package Tk::Adjuster::Item;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Adjuster.pm#10$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Adjuster.pm#11$
 
 @ISA = qw(Tk::Frame);
 
@@ -78,7 +78,7 @@ package Tk::Adjuster;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Adjuster.pm#10$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Adjuster.pm#11$
 
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
@@ -216,54 +216,6 @@ sub vert
 
 1;
 __END__
-
-=head1 NAME
-
-Tk::Adjuster, packAdjust - Allow size of packed widgets to be adjusted by user
-
-=for category Tk Geometry Management
-
-=head1 SYNOPSIS
-
-  use Tk;
-  use Tk::Adjuster;
-
-  $widget->packAdjust([pack options]);
-
-=head1 DESCRIPTION
-
-C<packAdjust> calls pack on the widget and then creates an instance of 
-Tk::Adjuster and packs that "after" the widget. Tk::Adjust is a Frame
-containing a "line" and a blob. 
-
-Dragging either with Mouse Button-1 results in a line being dragged 
-to indicate new size. Releasing Button submits GeometryRequests 
-on behalf of the widget which will cause the packer to change widget's size. 
-
-If Drag is done with Shift button down, then GeometryRequests are made
-in "real time" so that text-flow effects can be seen, but as a lot more
-work is done behaviour may be sluggish.
-
-If widget is packed with -side => left or -side => right then width is 
-adjusted. If packed -side => top or -side => bottom then height is adjusted.
-
-C<packPropagate> is turned off for the master window to prevent adjustment
-changing overall window size. Similarly C<packPropagate> is turned off
-for the managed widget if it has things packed inside it. This is so that 
-the GeometryRequests that Tk::Adjuster are not overriden by pack.
-
-=head1 NOTES
-
-The 'line' which is used to feedback position is in fact a 'Menu' widget
-set to an unorthodox shape, and with a black background.
-
-=head1 BUGS
-
-If the size of adjustable widget is increased to the limit there is no longer
-room for the Tk::Ajuster widget. As a work-round it forcibly makes room for 
-itself if it is unmapped. However the "grab" it held will have been lost 
-and button-motion events may be sent to other widgets which are not expecting 
-them, which can result in error messages. 
 
 =cut #' emacs hilighting...
 

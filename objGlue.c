@@ -252,19 +252,23 @@ Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
 char *
 Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 {
- STRLEN len;
- if (!lengthPtr)
-  lengthPtr = (int *) &len;
+ char *s;
  if (SvTYPE(objPtr) == SVt_PVAV)
   objPtr = ForceScalar(objPtr);
  if (SvPOK(objPtr))
-  return SvPV(objPtr, *lengthPtr);
+  {
+   STRLEN len;
+   s = SvPV(objPtr, len);
+   if (lengthPtr)
+    *lengthPtr = len;
+  }
  else
   {
-   char *s = LangString(objPtr);
-   *lengthPtr = strlen(s);
-   return s;
+   s = LangString(objPtr);
+   if (lengthPtr)
+    *lengthPtr = strlen(s);
   }
+ return s;
 }
 
 AV *
@@ -318,15 +322,20 @@ Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
 int
 Tcl_ListObjGetElements (Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    int *objcPtr, Tcl_Obj ***objvPtr)
-{
- AV *av = ForceList(interp,listPtr);
- if (av)
+{          
+ if (listPtr)
   {
-   *objcPtr = av_len(av)+1;
-   *objvPtr = AvARRAY(av);
-   return TCL_OK;
+   AV *av = ForceList(interp,listPtr);
+   if (av)
+    {
+     *objcPtr = av_len(av)+1;
+     *objvPtr = AvARRAY(av);
+     return TCL_OK;
+    }
   }
- return TCL_ERROR;
+ *objcPtr = 0;
+ *objvPtr = NULL;
+ return TCL_OK;
 }
 
 int
@@ -559,6 +568,8 @@ Tcl_AppendToObj(objPtr, bytes, length)
 				 * up to NULL byte. */
 {
  SV *sv = ForceScalar(objPtr);
+ if (length < 0)
+  length = strlen(bytes);
  sv_catpvn(sv, bytes, length);
 }
 

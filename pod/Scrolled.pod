@@ -32,28 +32,33 @@ scrollbar will only show up if there is a 'real' need to scroll.
 
 =item all other option
 
-All options beside <-scrollbars> are passed to the 'Whatever' widget
+All options beside B<-scrollbars> are passed to the 'Whatever' widget
 constructor.
 
 =back
 
 =head1 BUGS
 
-If a widget does not support C<-{x,y}scrollcommand> options,
+If a widget does not support I<-{x,y}scrollcommand> options,
 B<Scrolled> does not complain if the specified widget class does
-not support them. E.g.,
+not support them.  E.g.,
 
-    $parent->Scrolled('Button', ...)
+S<    >I<$parent>->B<Scrolled>(B<'Button'>, ...)
 
 One does not get an error message or warning when one tries to
 configure scrollbars after the widget construction:
 
-    $ascrolled->scrollbars('e')
-    $ascrolled->configure(-scrollbars => 'e');
+S<    >I<$ascrolled>->B<configure>(B<-scrollbars> => 'e');
 
 =head1 SEE ALSO
 
-Scrollbar, Tk::Widget.pm(sub Scrollbars), Tk::Frame.pm(sub AddScrollbars)
+L<Tk::Scrollbar|Tk::Scrollbar>
+L<Tk::Widget/Scrollbars|Tk::Widget/Scrollbars>
+L<Tk::Frame/AddScrollbars|Tk::Frame/AddScrollbars>
+
+head1 KEYWORDS
+
+scrolled, scrollbar
 
 =cut
 

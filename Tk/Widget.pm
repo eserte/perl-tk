@@ -2,19 +2,17 @@
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
+use vars qw($VERSION);
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Widget.pm#28$
+
 require Tk;
 use AutoLoader;
-require DynaLoader;
 use strict;
-
 use Carp;
 
 @Tk::Widget::ISA = qw(DynaLoader Tk);
 
 # stubs for 'autoloaded' widget classes
-
-use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Widget.pm#23$
 
 sub Button;
 sub Canvas;
@@ -37,7 +35,7 @@ sub Bitmap;
 sub Photo;
 
 sub ScrlListbox;
-sub Optionmenu; 
+sub Optionmenu;
 
 sub import
 {
@@ -48,7 +46,7 @@ sub import
   {
    unless (defined &{$need})
     {
-     require "Tk/${need}.pm"; 
+     require "Tk/${need}.pm";
     }
    croak "Cannot locate $need" unless (defined &{$need});
   }
@@ -69,12 +67,12 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'place' => [qw(configure forget info slaves)],
                     'wm'    => [qw(capture release)],
                     'font'  => [qw(actual configure create delete families measure metrics names)]
-                  );               
+                  );
 
 *IsMenu       = \&False;
-*IsMenubutton = \&False;
+*IsMenubutton = \&False;                
 
-Direct Tk::Submethods ( 
+Direct Tk::Submethods (
   'winfo' => [qw(cells class colormapfull depth exists
                geometry height id ismapped manager name parent reqheight
                reqwidth rootx rooty screen screencells screendepth screenheight
@@ -84,16 +82,17 @@ Direct Tk::Submethods (
                server fpixels rgb )],
    'tk'   => [qw(appname scaling)]);
 
+
 sub DESTROY
 {
  my $w = shift;
  $w->destroy if ($w->IsWidget);
 }
 
-sub Install 
+sub Install
 {
- # Dynamically loaded widgets add their core commands 
- # to the Tk base class here 
+ # Dynamically loaded widgets add their core commands
+ # to the Tk base class here
  my ($package,$mw) = @_;
 }
 
@@ -113,10 +112,10 @@ sub CreateArgs
  # Augment same hash with default values for missing mandatory options,
  # allthough this can be done later in InitObject.
 
- # Honour -class => if present, we have hacked Tk_ConfigureWidget to 
- # allow -class to be passed to any widget.                         
+ # Honour -class => if present, we have hacked Tk_ConfigureWidget to
+ # allow -class to be passed to any widget.
  my @result = ();
- my $class = delete $args->{'-class'};                     
+ my $class = delete $args->{'-class'};
  ($class) = $package =~ /([A-Z][A-Z0-9_]*)$/i unless (defined $class);
  push(@result, '-class' => "\u$class") if (defined $class);
  return @result;
@@ -125,7 +124,7 @@ sub CreateArgs
 sub InitObject
 {
  my ($obj,$args) = @_;
- # per object initialization, for example populating 
+ # per object initialization, for example populating
  # with sub-widgets, adding a few object bindings to augment
  # inherited class bindings, changing binding tags.
  # Also another chance to mess with %$args before configure...
@@ -149,7 +148,7 @@ sub new
  my $cmd   = $package->Tk_cmd;
  my $pname = $parent->PathName;
  $pname    = '' if ($pname eq '.');
- my $leaf  = delete $args{'Name'};          
+ my $leaf  = delete $args{'Name'};
  if (defined $leaf)
   {
    $leaf =~ s/[^a-z0-9_]+/_/ig;
@@ -160,7 +159,7 @@ sub new
    ($leaf) = "\L$package" =~ /([a-z][a-z0-9_]*)$/;
   }
  my $lname  = $pname . "." . $leaf;
- # create a hash indexed by leaf name to speed up   
+ # create a hash indexed by leaf name to speed up
  # creation of a lot of sub-widgets of the same type
  # e.g. entries in Table
  my $key = "_#$leaf";
@@ -268,37 +267,37 @@ sub AUTOLOAD
      # carp "Assuming 'require Tk::$method;'" if ($^W);
      require "Tk/$method.pm";
     }
-   else 
+   else
     {
      if (ref $_[0] && $method !~ /^(ConfigSpecs|Delegates)/ )
-      {                                    
-       my $delegate = $_[0]->Delegates;    
-       if (%$delegate || tied %$delegate)                     
-        {                                  
+      {
+       my $delegate = $_[0]->Delegates;
+       if (%$delegate || tied %$delegate)
+        {
          my $widget = $delegate->{$method};
          $widget = $delegate->{DEFAULT} unless (defined $widget);
-         if (defined $widget)              
-          {                                
+         if (defined $widget)
+          {
            my $subwidget = (ref $widget) ? $widget : $_[0]->Subwidget($widget);
-           if (defined $subwidget)         
-            {                              
+           if (defined $subwidget)
+            {
              no strict 'refs';
              # print "AUTOLOAD: $what\n";
-             *{$what} = sub { shift->Delegate($method,@_) }; 
-            }                              
-           else                            
-            {                              
+             *{$what} = sub { shift->Delegate($method,@_) };
+            }
+           else
+            {
              croak "No delegate subwidget '$widget' for $what";
-            }                              
-          }                                
-        }                                  
+            }
+          }
+        }
        if (!defined(&$what) && $method =~ /^[A-Z]\w+$/ && ref($_[0]) && $_[0]->isa('Tk::Widget'))
         {
          $what = "Tk::Widget::$method";
          carp "Assuming 'require Tk::$method;'" if ($^W);
          require "Tk/$method.pm";
         }
-      }                                    
+      }
     }
   }
  $@ = $save;
@@ -312,7 +311,7 @@ sub AUTOLOAD
 *cget_self = \&Tk::cget;
 
 sub _Destroyed
-{ 
+{
  my $w = shift;
  my $a = delete $w->{'_Destroy_'};
  return unless ref $a;
@@ -343,7 +342,7 @@ sub ImageMethod
   }
 }
 
-sub Getimage 
+sub Getimage
 {
  my ($w, $name) = @_;
  my $mw = $w->MainWindow;
@@ -356,7 +355,7 @@ sub Getimage
     ppm => "Photo",
     xbm => "Bitmap" ) unless @image_types;
 
- foreach my $type (@image_types) 
+ foreach my $type (@image_types)
   {
    my $method = $image_method{$type};
    my $file = Tk->findINC( "$name.$type" );
@@ -370,8 +369,8 @@ sub Getimage
  return $images->{$name};
 }
 
-sub SaveGrabInfo 
-{               
+sub SaveGrabInfo
+{
  my $w = shift;
  $Tk::oldGrab = $w->grabCurrent;
  if (defined $Tk::oldGrab)
@@ -392,7 +391,7 @@ sub grabSave
 sub focusCurrent
 {
  my ($w) = @_;
- $w->Tk::focus('-displayof'); 
+ $w->Tk::focus('-displayof');
 }
 
 sub focusSave
@@ -487,7 +486,7 @@ sub propertyRoot
  return $w->property(@_,'root');
 }
 
-# atom, atomname, containing, interps, pathname 
+# atom, atomname, containing, interps, pathname
 # don't work this way - there is no window arg
 # So we pretend there was an call the C versions from Tk.xs
 
@@ -505,12 +504,12 @@ sub containing { shift->Containing(@_)  }
 # Walk should possibly be enhanced so allow early termination
 # like '-prune' of find.
 
-sub Walk 
+sub Walk
 {
  # Traverse a widget hierarchy while executing a subroutine.
  my($cw, $proc, @args) = @_;
  my $subwidget;
- foreach $subwidget ($cw->children) 
+ foreach $subwidget ($cw->children)
   {
    $subwidget->Walk($proc,@args);
    &$proc($subwidget, @args);
@@ -520,20 +519,20 @@ sub Walk
 sub Descendants
 {
  # Return a list of widgets derived from a parent widget and all its
- # descendants of a particular class.  
+ # descendants of a particular class.
  # If class is not passed returns the entire widget hierarchy.
- 
+
  my($widget, $class) = @_;
  my(@widget_tree)    = ();
- 
+
  $widget->Walk(
                sub { my ($widget,$list,$class) = @_;
                      push(@$list, $widget) if  (!defined($class) or $class eq $widget->class);
-                   }, 
+                   },
                \@widget_tree, $class
               );
  return @widget_tree;
-} 
+}
 
 sub Palette
 {
@@ -680,7 +679,7 @@ sub RecolorTree
     }
   }
  foreach my $child ($w->children)
-  {                
+  {
    $child->RecolorTree($colors);
   }
 }
@@ -739,7 +738,7 @@ sub PrintConfig
   {
    print Tk::Pretty::Pretty(@$c),"\n";
   }
-} 
+}
 
 sub Busy
 {
@@ -748,8 +747,8 @@ sub Busy
  $args{'-cursor'} = 'watch' unless (exists $args{'-cursor'});
  unless (exists $w->{'Busy'})
   {
-   my %old = ();           
-   my $key;                
+   my %old = ();
+   my $key;
    my @tags = $w->bindtags;
    foreach $key (keys %args)
     {
@@ -758,10 +757,10 @@ sub Busy
    $old{'bindtags'} = \@tags;
    $old{'grab'}     = $w->grabSave;
    unless ($w->Tk::bind('Busy'))
-    {                     
+    {
      $w->Tk::bind('Busy','<KeyPress>','bell');
      $w->Tk::bind('Busy','<ButtonPress>','bell');
-    }                     
+    }
    $w->bindtags(['Busy']);
    $w->{'Busy'} = \%old;
   }
@@ -780,7 +779,7 @@ sub Unbusy
    my $grab = delete $old->{'grab'};
    $w->update;  # flush events that happened with Busy bindings
    $w->bindtags(delete $old->{'bindtags'});
-   $w->Tk::configure(%{$old}); 
+   $w->Tk::configure(%{$old});
    $w->update;
    &$grab;
   }
@@ -869,7 +868,7 @@ sub XYscrollBind
 
 sub ScrlListbox
 {
- my $parent = shift; 
+ my $parent = shift;
  return $parent->Scrolled('Listbox',-scrollbars => 'w', @_);
 }
 
@@ -933,7 +932,7 @@ sub place
  else
   {
    # Two things going on here:
-   # 1. Add configure on the front so that we can drop leading '-' 
+   # 1. Add configure on the front so that we can drop leading '-'
    $w->Tk::place('configure',@_);
    # 2. Return the widget rather than nothing
    return $w;
@@ -951,7 +950,7 @@ sub pack
  else
   {
    # Two things going on here:
-   # 1. Add configure on the front so that we can drop leading '-' 
+   # 1. Add configure on the front so that we can drop leading '-'
    $w->Tk::pack('configure',@_);
    # 2. Return the widget rather than nothing
    return $w;
@@ -970,7 +969,7 @@ sub grid
  else
   {
    # Two things going on here:
-   # 1. Add configure on the front so that we can drop leading '-' 
+   # 1. Add configure on the front so that we can drop leading '-'
    Tk::grid('configure',$w,@_);
    # 2. Return the widget rather than nothing
    return $w;
@@ -988,7 +987,7 @@ sub form
  else
   {
    # Two things going on here:
-   # 1. Add configure on the front so that we can drop leading '-' 
+   # 1. Add configure on the front so that we can drop leading '-'
    $w->Tk::form('configure',@_);
    # 2. Return the widget rather than nothing
    return $w;
@@ -998,24 +997,27 @@ sub form
 sub Scrolled
 {
  my ($parent,$kind,%args) = @_;
+ # Find args that are Frame create time args
  my @args = Tk::Frame->CreateArgs($parent,\%args);
  my $name = delete $args{'Name'};
  push(@args,'Name' => $name) if (defined $name);
  my $cw = $parent->Frame(@args);
  @args = ();
- my $k;
- # Need to consider other 'Frame' configure options...
- foreach $k ('-scrollbars',map($_->[0],$cw->configure))
+ # Now remove any args that Frame can handle
+ foreach my $k ('-scrollbars',map($_->[0],$cw->configure))
   {
    push(@args,$k,delete($args{$k})) if (exists $args{$k})
   }
- $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars','se'],
-                  '-background' => ['CHILDREN','background','Background'], 
-                 );
+ # Anything else must be for target widget - pass at widget create time
  my $w  = $cw->$kind(%args);
+ # Now re-set %args to be ones Frame can handle
  %args = @args;
+ $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars','se'],
+                  '-background' => [$w,'background','Background'],
+                  '-foreground' => [$w,'foreground','Foreground'],
+                 );
  $cw->AddScrollbars($w);
- $cw->Default("\L$kind" => $w); 
+ $cw->Default("\L$kind" => $w);
  $cw->Delegates('bind' => $w, 'bindtags' => $w);
  $cw->ConfigDefault(\%args);
  $cw->configure(%args);
@@ -1033,7 +1035,7 @@ sub ForwardEvent
  my $to   = shift;
  $to->PassEvent($self->XEvent);
 }
- 
+
 # Save / Return abstract event type as in Tix.
 sub EventType
 {
@@ -1042,7 +1044,7 @@ sub EventType
  return $w->{'_EventType_'};
 }
 
-1; 
+1;
 
 __END__
 
@@ -1056,12 +1058,12 @@ __END__
 # cut - Name of the key used for the cut operation.
 # paste - Name of the key used for the paste operation.
 #
-# This method is obsolete use clipboardOperations and abstract 
+# This method is obsolete use clipboardOperations and abstract
 # event types instead. See Clipboard.pm and Mainwindow.pm
 
 sub clipboardKeysyms
 {
- my @class = (); 
+ my @class = ();
  my $mw    = shift;
  if (ref $mw)
   {
@@ -1084,8 +1086,16 @@ sub clipboardKeysyms
   }
  if (@_)
   {
-   my $paste = shift;                                                
+   my $paste = shift;
    $mw->Tk::bind(@class,"<$paste>",'clipboardPaste') if (defined $paste);
   }
-}        
+}
+
+sub pathname
+{
+ my ($w,$id) = @_;
+ my $x = $w->winfo('pathname',-displayof  => oct($id));
+ return $x->PathName;
+}
+
 

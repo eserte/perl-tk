@@ -79,7 +79,7 @@ I<format> defaults to STRING.  If I<callback> is an empty string
 then any existing handler for I<$widget>, I<type>, and
 I<selection> is removed.
 
-=over 4
+=over 8
 
 When I<selection> is requested, I<$widget> is the selection owner,
 and I<type> is the requested type, I<callback> will be executed

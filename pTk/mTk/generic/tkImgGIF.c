@@ -69,13 +69,13 @@ typedef struct mFile {
  * The format record for the GIF file format:
  */
 
-static int      FileMatchGIF _ANSI_ARGS_((Tcl_Channel chan, Arg fileName,
+static int      FileMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Arg fileName,
 		    char *formatString, int *widthPtr, int *heightPtr));
 static int      FileReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tcl_Channel chan, Arg fileName, char *formatString,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
-static int	StringMatchGIF _ANSI_ARGS_(( Tcl_Obj *dataObj,
+static int	StringMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 		    char *formatString, int *widthPtr, int *heightPtr));
 static int	StringReadGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 		    char *formatString, Tk_PhotoHandle imageHandle,
@@ -169,7 +169,8 @@ static void		mInit _ANSI_ARGS_((unsigned char *string,
  */
 
 static int
-FileMatchGIF(chan, fileName, formatString, widthPtr, heightPtr)
+FileMatchGIF(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image file, open for reading. */
     Arg fileName;		/* The name of the image file. */
     char *formatString;		/* User-specified format string, or NULL. */
@@ -393,7 +394,8 @@ FileReadGIF(interp, chan, fileName, formatString, imageHandle, destX, destY,
  */
 
 static int
-StringMatchGIF(dataObj, formatString, widthPtr, heightPtr)
+StringMatchGIF(interp, dataObj, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Obj *dataObj;		/* the object containing the image data */
     char *formatString;		/* the image format string */
     int *widthPtr;		/* where to put the string width */

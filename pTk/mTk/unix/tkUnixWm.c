@@ -800,13 +800,7 @@ TkWmSetClass(winPtr)
  *----------------------------------------------------------------------
  */
 
-static int ErrorHandler(ClientData clientData, XErrorEvent *errEventPtr)
-{
- abort();
-}
-
-
-	/* ARGSUSED */
+/* ARGSUSED */
 int
 Tk_WmCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with

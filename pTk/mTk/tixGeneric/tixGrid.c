@@ -1672,13 +1672,13 @@ Tix_GrBdType(clientData, interp, argc, argv)
     Tcl_ResetResult(interp);
     if (inX && inY) {  
 	Tcl_AppendElement(interp,"xy");
-	Tcl_IntResults(interp,1,2," %d %d", bd[0], bd[1]); 
+	Tcl_IntResults(interp,2,1, bd[0], bd[1]); 
     } else if (inX) {
 	Tcl_AppendElement(interp,"x");
-	Tcl_IntResults(interp,1,2," %d %d", bd[0], bd[1]); 
+	Tcl_IntResults(interp,2,1, bd[0], bd[1]); 
     } else if (inY) {
 	Tcl_AppendElement(interp,"y");
-	Tcl_IntResults(interp,1,2," %d %d", bd[0], bd[1]); 
+	Tcl_IntResults(interp,2,1, bd[0], bd[1]); 
     } else {
 	buf[0] = '\0';
     }
@@ -2046,7 +2046,7 @@ Tix_GrIndex(clientData, interp, argc, argv)
     if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)!=TCL_OK) {
 	return TCL_ERROR;
     }
-    Tcl_IntResults(interp,0,2," %d %d", x, y); 
+    Tcl_IntResults(interp,2,0, x, y); 
     return TCL_OK;
 }
 
@@ -2176,7 +2176,7 @@ Tix_GrNearest(clientData, interp, argc, argv)
     }
     rePtr = &(wPtr->mainRB->elms[rbPos[0]][rbPos[1]]);
 
-    Tcl_IntResults(interp, 0, 2, "%d %d", rePtr->index[0], rePtr->index[1]);
+    Tcl_IntResults(interp, 2, 0, rePtr->index[0], rePtr->index[1]);
     return TCL_OK;
 }
 
@@ -2217,7 +2217,7 @@ Tix_GrSetSite(clientData, interp, argc, argv)
 
     len = strlen(argv[0]);
     if (strncmp(argv[0], "get", len)==0) {
-        Tcl_IntResults(interp, 0, 2, "%d %d", changePtr[0], changePtr[1]);
+        Tcl_IntResults(interp, 2, 0, changePtr[0], changePtr[1]);
 	return TCL_OK;
     } else if (strncmp(argv[0], "set", len)==0) {
 	if (argc == 3) {
@@ -3194,7 +3194,7 @@ static int Tix_GrBBox(interp, wPtr, x, y)
     if (!visible) {
 	return TCL_OK;
     }
-    Tcl_IntResults(interp,0,4,"%d %d %d %d", rect[0][0], rect[1][0],
+    Tcl_IntResults(interp,4,0, rect[0][0], rect[1][0],
 	rect[0][1] - rect[0][0] + 1,
 	rect[1][1] - rect[1][0] + 1);
     return TCL_OK;

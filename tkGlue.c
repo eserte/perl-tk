@@ -89,31 +89,34 @@ static char CMD_KEY[]      = "_CmdInfo_";
 #define BASEEXT "Tk"
 #endif
 
+static XSdec(SelectionGet);
+static XSdec(ManageGeometry);
+static XSdec(MainWindowCreate);
+static XSdec(InterpDestroy);
+static XSdec(XStoSubCmd);
+static XSdec(XStoDisplayof);
+static XSdec(XStoTk);
+static XSdec(XStoBind);
+static XSdec(XStoEvent);
+static XSdec(BindClientMessage);
+static XSdec(CallbackCall);
+static XSdec(FreeAbstract);
+static XSdec(XEventInfo);
+static XSdec(PassEvent);
+extern XSdec(XS_Tk_DoWhenIdle);
+
+
 extern void  LangPrint _((SV *sv));
 
 static void handle_idle _((ClientData clientData));
-static void SelectionGet _((CV * cv));
-static void ManageGeometry _((CV * cv));
-static void MainWindowCreate _((CV * cv));
-static void InterpDestroy _((CV * cv));
-static void XStoSubCmd _((CV * cv));
-static void XStoDisplayof _((CV * cv));
-static void XStoTk _((CV * cv));
-static void XStoBind _((CV * cv));
-static void XStoEvent _((CV * cv));
 static AV *CopyAv _((AV * dst, AV * src));
 static void LangCatArg _((SV * out, SV * sv, int refs));
-static void BindClientMessage _((CV * cv));
-static void CallbackCall _((CV * cv));
 static int CallCallback _((SV * sv, int flags));
 static SV *NameFromCv _((CV * cv));
-static void FreeAbstract _((CV * cv));
 static AV *FindAv _((Tcl_Interp *interp, char *who, int create, char *key));
 static HV *FindHv _((HV *interp, char *who, int create, char *key));
 static AV *ResultAv _((Tcl_Interp *interp, char *who, int create));
 static SV *Blessed _((char *package, SV * sv));
-static void XEventInfo _((CV * cv));
-static void PassEvent  _((CV * cv));
 static int PushCallbackArgs _((Tcl_Interp *interp, SV **svp,EventAndKeySym *obj));
 static int Check_Eval _((Tcl_Interp *interp));
 static SV *EventToSv _((I32 ix,EventAndKeySym *obj));
@@ -123,7 +126,6 @@ static I32 LinkIntVal _((IV ix, SV * sv));
 static I32 LinkDoubleSet _((IV ix, SV * sv));
 static I32 LinkDoubleVal _((IV ix, SV * sv));
 static I32 LinkCannotSet _((IV ix, SV * sv));
-extern void XS_Tk_DoWhenIdle _((CV * cv));
 static int handle_generic _((ClientData clientData, XEvent * eventPtr));
 static void HandleBgErrors _((ClientData clientData));
 static void SetTclResult _((Tcl_Interp *interp,int count));
@@ -1006,7 +1008,10 @@ Tcl_Interp *interp;
    if (len)
     {
      if (len == 1)
-      return SvPV(*av_fetch(av, 0, 0), len);
+      {
+       STRLEN slen;
+       return SvPV(*av_fetch(av, 0, 0), slen);
+      }
      else
       return LangMergeString(len, AvALLOC(av));
     }
@@ -1130,8 +1135,12 @@ va_dcl
 #endif
  if (!append)
   Tcl_ResetResult(interp);
- if (!count)
-  Tcl_Panic("No results");
+ if (!count) 
+  {
+   LangDebug(__FUNCTION__ " - No Results\n");
+   abort();
+   Tcl_Panic("No results");
+  }
  while (count--)
   {
    int value = va_arg(ap, int);
@@ -1163,8 +1172,12 @@ va_dcl
 #endif
  if (!append)
   Tcl_ResetResult(interp);
- if (!count)
-  Tcl_Panic("No results");
+ if (!count) 
+  {
+   LangDebug(__FUNCTION__ " - No Results\n");
+   abort();
+   Tcl_Panic("No results");
+  }
  while (count--)
   {
    double value = va_arg(ap, double);
@@ -1214,7 +1227,7 @@ SV **args;
    av_store(av,i,sv);
   }
  return (SV *) av;
-}
+}    
 
 int
 Lang_SplitList(interp, sv, argcPtr, argvPtr, freeProc)
@@ -1224,47 +1237,29 @@ int *argcPtr;
 Arg **argvPtr;
 LangFreeProc **freeProc;
 {
- /* Maybe inverse of Merge i.e. simply return av_len/AvALLOC
-    and (probably) mess with REFCNTs again
-  */
- do_watch();
- /* Issue here is with "undef" being passed in as a result
-    of a LangSetString with "NULL"
-  */
- if (sv)
+ *freeProc = NULL;
+ if (sv && SvOK(sv))
   {
-   if (SvOK(sv))
+   if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
-     *freeProc = NULL;
-     if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
-      {
-       AV *av = (AV *) (SvRV(sv));
-       *argcPtr = av_len(av) + 1;
-       *argvPtr = AvALLOC(av);
-      }
-     else
-      {
-       SV **vec = LangAllocVec(1);
-       *freeProc = LangFreeVec;
-       *argcPtr = 1;
-       *argvPtr = vec;
-       Increment(sv, "Lang_SplitList");
-       *vec = sv;
-      }
+     AV *av = (AV *) (SvRV(sv));
+     *argcPtr = av_len(av) + 1;
+     *argvPtr = AvALLOC(av);
     }
    else
     {
-     LangDumpVec("Odd list", 1, &sv);
-     *argcPtr = *((int *) 0);
-     return EXPIRE((interp, "Don't understand %s", LangMergeString(1, &sv)));
+     SV **vec = LangAllocVec(1);
+     *freeProc = LangFreeVec;
+     *argcPtr = 1;
+     *argvPtr = vec;
+     Increment(sv, "Lang_SplitList");
+     *vec = sv;
     }
   }
  else
   {
-   *freeProc = NULL;
    *argcPtr = 0;
   }
- do_watch();
  return TCL_OK;
 }
 
@@ -1601,8 +1596,10 @@ Lang_ClearErrorInfo(interp)
 Tcl_Interp *interp;
 {
  AV *av = FindAv(interp, "Lang_ClearErrorInfo", -1, "_ErrorInfo_");
- if (av)
-  SvREFCNT_dec((SV *) av);
+ if (av)   
+  {
+   SvREFCNT_dec((SV *) av);
+  }
 }
 
 void
@@ -1625,7 +1622,8 @@ static int
 Check_Eval(interp)
 Tcl_Interp *interp;
 {
- SV *sv = perl_get_sv("@", TRUE);
+ dTHR;
+ SV *sv = ERRSV;
  if (SvTRUE(sv))
   {
    char *s = SvPV(sv, na);
@@ -3690,7 +3688,7 @@ XS(CallbackCall)
  count = CallCallback(ST(0),GIMME|G_EVAL);
  SPAGAIN;
 
- err = GvSV(gv_fetchpv("@", TRUE, SVt_PV));
+ err = ERRSV;
  if (SvTRUE(err))
   {
    croak("%s",SvPV(err,na));
@@ -4889,14 +4887,13 @@ Tcl_CmdInfo *infoPtr;
 }
 
 #define MkXSUB(str,name,xs,proc)                  \
-extern void name _((CV * cv));                    \
+extern XSdec(name);                               \
 XS(name)                                          \
 {                                                 \
  CvXSUB(cv) = xs;                                 \
  CvXSUBANY(cv).any_ptr = (VOID *) proc;           \
  xs(cv);                                          \
 }
-
 #include "TkXSUB.def"
 #undef MkXSUB
 

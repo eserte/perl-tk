@@ -1,5 +1,4 @@
 #ifdef _TKIMGPHOTO
-VVAR(Tk_PhotoImageFormat,tkImgFmtGIF,V_tkImgFmtGIF)
 VVAR(Tk_PhotoImageFormat,tkImgFmtPPM,V_tkImgFmtPPM)
 #ifndef Tk_CreatePhotoImageFormat
 VFUNC(void,Tk_CreatePhotoImageFormat,V_Tk_CreatePhotoImageFormat,_ANSI_ARGS_((
@@ -18,6 +17,11 @@ VFUNC(void,Tk_PhotoBlank,V_Tk_PhotoBlank,_ANSI_ARGS_((Tk_PhotoHandle handle)))
 #ifndef Tk_PhotoExpand
 VFUNC(void,Tk_PhotoExpand,V_Tk_PhotoExpand,_ANSI_ARGS_((Tk_PhotoHandle handle,
 			    int width, int height )))
+#endif
+
+#ifndef Tk_PhotoFormatName
+VFUNC(char *,Tk_PhotoFormatName,V_Tk_PhotoFormatName,_ANSI_ARGS_((Tcl_Interp *interp, 
+			    Tcl_Obj *formatString)))
 #endif
 
 #ifndef Tk_PhotoGetImage

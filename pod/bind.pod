@@ -13,17 +13,21 @@ bind - Arrange for X events to invoke callbacks
 
 =head1 SYNOPSIS
 
-I<$widget>-E<gt>B<bind>
+Retrieve bindings:
 
-I<$widget>-E<gt>B<bind>(I<tag>)
+S<    >I<$widget>-E<gt>B<bind>
 
-I<$widget>-E<gt>B<bind>(I<sequence>)
+S<    >I<$widget>-E<gt>B<bind>(I<tag>)
 
-I<$widget>-E<gt>B<bind>(I<tag>,I<sequence>)
+S<    >I<$widget>-E<gt>B<bind>(I<sequence>)
 
-I<$widget>-E<gt>B<bind>(I<sequence>,I<callback>)
+S<    >I<$widget>-E<gt>B<bind>(I<tag>,I<sequence>)
 
-I<$widget>-E<gt>B<bind>(I<tag>,I<sequence>,I<callback>)
+Associate and destroy bindings:
+
+S<    >I<$widget>-E<gt>B<bind>(I<sequence>,I<callback>)
+
+S<    >I<$widget>-E<gt>B<bind>(I<tag>,I<sequence>,I<callback>)
 
 =head1 DESCRIPTION
 
@@ -67,7 +71,7 @@ If the tag is the name of a class of widgets, such as B<Tk::Button>,
 the binding applies to all widgets in that class;
 
 If I<tag> has the value B<all>,
-the binding applies to all windows descended form the MainWindow
+the binding applies to all windows descended from the MainWindow
 of the application.
 
 =head1 EVENT PATTERNS
@@ -76,7 +80,7 @@ The I<sequence> argument specifies a sequence of one or more
 event patterns, with optional white space between the patterns.  Each
 event pattern has the following syntax:
 
- '<modifier-modifier-type-detail>'
+S<    >'<modifier-modifier-type-detail>'
 
 The entire event pattern is surrounded by angle brackets, and normally
 needs to be quoted, as angle brackets are special to perl.
@@ -87,9 +91,9 @@ as long as at least one of I<type> and I<detail> is present.
 The fields must be separated by white space or dashes.
 
 A second form of pattern is used to specify a user-defined, named virtual
-event.  It has the following syntax:
+event; see L<Tk::event> for details.  It has the following syntax:
 
- <<name>>
+S<    ><<name>>
 
 The entire virtual event pattern is surrounded by double angle brackets.
 Inside the angle brackets is the user-defined name of the virtual event.
@@ -104,14 +108,14 @@ respond immediately to the new definition.
 Modifiers consist of any of the following values:
 
  Control	Mod2, M2
- Shift	Mod3, M3
- Lock	Mod4, M4
+ Shift          Mod3, M3
+ Lock          	Mod4, M4
  Button1, B1	Mod5, M5
  Button2, B2	Meta, M
  Button3, B3	Alt
  Button4, B4	Double
  Button5, B5	Triple
- Mod1, M1
+ Mod1,    M1
 
 Where more than one value is listed, separated by commas, the values
 are equivalent.
@@ -248,7 +252,7 @@ a string identifying the detail.  For B<Enter>,
 B<Leave>, B<FocusIn>, and B<FocusOut> events,
 the string will be one of the following:
 
-=over 4
+=over 8
 
  NotifyAncestor	NotifyNonlinearVirtual
  NotifyDetailNone	NotifyPointer
@@ -499,10 +503,12 @@ as the callback was invoked.
 
 =head1 SEE ALSO
 
-L<Tk::tkerror>
-L<Tk::callbacks>
-L<Tk::bindtags>
+L<Tk::tkerror|Tk::tkerror>
+L<Tk::callbacks|Tk::callbacks>
+L<Tk::bindtags|Tk::bindtags>
 
 =head1 KEYWORDS
 
 Event, binding
+
+=cut

@@ -155,7 +155,7 @@ typedef struct PhotoMaster {
     double gamma;		/* Display gamma value to correct for. */
     Arg fileString;		/* Name of file to read into image. */
     Tcl_Obj *dataObj;		/* Object to use as contents of image. */
-    char *format;		/* User-specified format of data in image
+    Arg format;			/* User-specified format of data in image
 				 * file or string value. */
     unsigned char *pix24;	/* Local storage for 24-bit image. */
     int ditherX, ditherY;	/* Location of first incorrectly
@@ -225,7 +225,8 @@ struct SubcommandOptions {
     int toX2, toY2;		/* Second coordinate pair for -to option. */
     int zoomX, zoomY;		/* Values specified for -zoom option. */
     int subsampleX, subsampleY;	/* Values specified for -subsample option. */
-    char *format;		/* Value specified for -format option. */
+    Arg format;			/* Value specified for -format option. */   
+    char *formatName;		/* The string value of 1st element of above */ 
     XColor *background;		/* Value specified for -background option. */
 };
 
@@ -236,7 +237,7 @@ struct SubcommandOptions {
  * photo image subcommand.  On return, the bit is set in the options
  * field of the SubcommandOptions structure if that option was specified.
  *
- * OPT_BACKGROUND:		Set if -format option allowed/specified.
+ * OPT_BACKGROUND:		Set if -background option allowed/specified.
  * OPT_FORMAT:			Set if -format option allowed/specified.
  * OPT_FROM:			Set if -from option allowed/specified.
  * OPT_GRAYSCALE:		Set if -grayscale option allowed/specified.
@@ -315,7 +316,7 @@ Tk_ImageType tkPhotoImageType = {
 static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_LANGARG, "-data", (char *) NULL, (char *) NULL,
 	 (char *) NULL, Tk_Offset(PhotoMaster, dataObj), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_STRING, "-format", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_LANGARG, "-format", (char *) NULL, (char *) NULL,
 	 (char *) NULL, Tk_Offset(PhotoMaster, format), TK_CONFIG_NULL_OK},
     {TK_CONFIG_LANGARG, "-file", (char *) NULL, (char *) NULL,
 	 (char *) NULL, Tk_Offset(PhotoMaster, fileString), TK_CONFIG_NULL_OK},
@@ -368,7 +369,7 @@ static void		ImgPhotoSetSize _ANSI_ARGS_((PhotoMaster *masterPtr,
 static void		ImgPhotoInstanceSetSize _ANSI_ARGS_((
 			    PhotoInstance *instancePtr));
 static int		ImgStringWrite _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_DString *dataPtr, char *formatString,
+			    Tcl_DString *dataPtr, Arg formatString,
 			    Tk_PhotoImageBlock *blockPtr));
 static char *		ImgGetPhoto _ANSI_ARGS_((PhotoMaster *masterPtr,
 			    Tk_PhotoImageBlock *blockPtr,
@@ -385,11 +386,11 @@ static int		ReclaimColors _ANSI_ARGS_((ColorTableId *id,
 			    int numColors));
 static int		MatchFileFormat _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Channel chan, Arg fileName,
-			    char *formatString,
+			    Arg formatString,
 			    Tk_PhotoImageFormat **imageFormatPtr,
 			    int *widthPtr, int *heightPtr));
 static int		MatchStringFormat _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Obj *dataObj, char *formatString,
+			    Tcl_Obj *dataObj, Arg formatString,
 			    Tk_PhotoImageFormat **imageFormatPtr,
 			    int *widthPtr, int *heightPtr));
 static void		Dither _ANSI_ARGS_((PhotoMaster *masterPtr,
@@ -596,36 +597,12 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	char *opt, *arg;
 
 	if (argc == 2) {
-	    result = Tk_ConfigureInfo(interp, Tk_MainWindow(interp),
+	    return Tk_ConfigureInfo(interp, Tk_MainWindow(interp),
 		    configSpecs, (char *) masterPtr, (char *) NULL, 0);
-	    if (result != TCL_OK) {
-		return result;
-	    }
-	    opt = Tcl_GetStringFromObj(Tcl_GetObjResult(interp), &length);
-	    arg = (char *) ckalloc(length + 1);
-	    strcpy(arg, opt);
-	    Tcl_ResetResult(interp);
-	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
-		    "{-data {} {} {} {}} ", arg, (char*) NULL);
-	    ckfree(arg);
-	    return TCL_OK;
 	}
 	if (argc == 3) {
-	  if (strncmp(argv[2], "-data", length)) {
 	    return Tk_ConfigureInfo(interp, Tk_MainWindow(interp),
 		    configSpecs, (char *) masterPtr, argv[2], 0);
-	  } else {
-	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
-		"-data {} {} {} ", (char *) NULL);
-	    if (masterPtr->dataObj) {
-		Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp),
-			masterPtr->dataObj);
-	    } else {
-		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
-		"{}", (char *) NULL);
-	    }
-	    return TCL_OK;
-	  }
 	}
 	return ImgPhotoConfigureMaster(interp, masterPtr, argc-2, objv+2,
 		TK_CONFIG_ARGV_ONLY);
@@ -738,6 +715,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	memset((VOID *) &options, 0, sizeof(options));
 	options.name = NULL;
 	options.format = NULL;
+	options.formatName = NULL;
 	options.fromX = 0;
 	options.fromY = 0;
 	if (ParseSubcommandOptions(&options, interp,
@@ -776,7 +754,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	if (options.options & OPT_FORMAT) {
 	    for (imageFormat = formatList; imageFormat != NULL;
 	 	imageFormat = imageFormat->nextPtr) {
-		if ((strncasecmp(options.format, imageFormat->name,
+		if ((strncasecmp(options.formatName, imageFormat->name,
 		    strlen(imageFormat->name)) == 0)) {
 		    if (imageFormat->stringWriteProc != NULL) {
 			stringWriteProc = imageFormat->stringWriteProc;
@@ -785,7 +763,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 		}
 	    }
 	    if (stringWriteProc == NULL) {
-		Tcl_AppendResult(interp, "image string format \"", options.format,
+		Tcl_AppendResult(interp, "image string format \"", options.formatName,
 			"\" is not supported", (char *) NULL);
 		return TCL_ERROR;
 	    }
@@ -815,6 +793,17 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	    Tcl_DStringFree(&buffer);
 	}
 	return result;
+    } else if ((c == 'f') && (strncmp(arg1, "formats", length) == 0)) {
+	Tk_PhotoImageFormat *formatPtr;
+
+	/*
+	 * Scan through the table of file format handlers
+	 */
+	Tcl_ResetResult(interp);
+	for (formatPtr = formatList; formatPtr != NULL; 
+		formatPtr = formatPtr->nextPtr) {
+	    Tcl_AppendElement(interp, formatPtr->name);
+	}
     } else if ((c == 'g') && (strncmp(arg1, "get", length) == 0)) {
 	/*
 	 * photo get command - first parse and check parameters.
@@ -977,6 +966,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	memset((VOID *) &options, 0, sizeof(options));
 	options.name = NULL;
 	options.format = NULL;
+	options.formatName = NULL;
 	if (ParseSubcommandOptions(&options, interp,
 		OPT_FORMAT | OPT_FROM | OPT_TO | OPT_SHRINK,
 		&index, argc, argv) != TCL_OK) {
@@ -1152,7 +1142,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	for (imageFormat = formatList; imageFormat != NULL;
 	     imageFormat = imageFormat->nextPtr) {
 	    if ((options.format == NULL)
-		    || (strncasecmp(options.format, imageFormat->name,
+		    || (strncasecmp(options.formatName, imageFormat->name,
 		    strlen(imageFormat->name)) == 0)) {
 		matched = 1;
 		if (imageFormat->fileWriteProc != NULL) {
@@ -1166,10 +1156,10 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 			"has file writing capability", (char *) NULL);
 	    } else if (!matched) {
 		Tcl_AppendResult(interp, "image file format \"",
-			options.format, "\" is unknown", (char *) NULL);
+			options.formatName, "\" is unknown", (char *) NULL);
 	    } else {
 		Tcl_AppendResult(interp, "image file format \"",
-			options.format, "\" has no file writing capability",
+			options.formatName, "\" has no file writing capability",
 			(char *) NULL);
 	    }
 	    return TCL_ERROR;
@@ -1327,7 +1317,8 @@ ParseSubcommandOptions(optPtr, interp, allowedOptions, optIndexPtr, argc, argv)
 
 	    if (index + 1 < argc) {
 		*optIndexPtr = ++index;
-		optPtr->format = argv[index];
+		optPtr->format = args[index];
+		optPtr->formatName = Tk_PhotoFormatName(interp, args[index]);
 	    } else {
 		Tcl_AppendResult(interp, "the \"-format\" option ",
 			"requires a value", (char *) NULL);
@@ -1470,8 +1461,8 @@ ImgPhotoConfigureMaster(interp, masterPtr, argc, objv, flags)
 				 * such as TK_CONFIG_ARGV_ONLY. */
 {
     PhotoInstance *instancePtr;
-    char *oldPaletteString, *oldFormat;
-    Arg oldFileString;
+    char *oldPaletteString;
+    Arg oldFileString, oldFormat;
     Tcl_Obj *oldDataObj;
     int length;
     double oldGamma;
@@ -1523,9 +1514,12 @@ ImgPhotoConfigureMaster(interp, masterPtr, argc, objv, flags)
 	    masterPtr->dataObj = NULL;
 	}
     }
-    if ((masterPtr->format != NULL) && (masterPtr->format[0] == 0)) {
-	ckfree(masterPtr->format);
-	masterPtr->format = NULL;
+    if (masterPtr->format) { 
+	Tcl_GetStringFromObj(masterPtr->format, &length);
+	if (!length) {
+	    Tcl_DecrRefCount(masterPtr->format);
+	    masterPtr->format = NULL;
+	}
     }
 
     /*
@@ -2127,9 +2121,6 @@ ImgPhotoDelete(masterData)
     }
     if (masterPtr->validRegion != NULL) {
 	TkDestroyRegion(masterPtr->validRegion);
-    }
-    if (masterPtr->dataObj != NULL) {
-	Tcl_DecrRefCount(masterPtr->dataObj);
     }
     Tk_FreeOptions(configSpecs, (char *) masterPtr, (Display *) NULL, 0);
     ckfree((char *) masterPtr);
@@ -3219,13 +3210,28 @@ DisposeInstance(clientData)
  *----------------------------------------------------------------------
  */
 
+char *
+Tk_PhotoFormatName(interp, formatString)
+Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
+Arg formatString;		/* User-specified format string, or NULL. */
+{
+    int objc = 0;
+    Tcl_Obj **objv;
+    if (formatString != NULL && 
+        Tcl_ListObjGetElements(interp, formatString, &objc, &objv) == TCL_OK && 
+        objc != 0) {
+	return LangString(objv[0]);
+    }
+    return NULL;
+}
+
 static int
 MatchFileFormat(interp, chan, fileName, formatString, imageFormatPtr,
 	widthPtr, heightPtr)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image file, open for reading. */
     Arg fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoImageFormat **imageFormatPtr;
 				/* A pointer to the photo image format
 				 * record is returned here. */
@@ -3234,6 +3240,7 @@ MatchFileFormat(interp, chan, fileName, formatString, imageFormatPtr,
 {
     int matched;
     Tk_PhotoImageFormat *formatPtr;
+    char *formatName = Tk_PhotoFormatName(interp, formatString);
 
     /*
      * Scan through the table of file format handlers to find
@@ -3243,22 +3250,22 @@ MatchFileFormat(interp, chan, fileName, formatString, imageFormatPtr,
     matched = 0;
     for (formatPtr = formatList; formatPtr != NULL;
 	 formatPtr = formatPtr->nextPtr) {
-	if (formatString != NULL) {
-	    if (strncasecmp(formatString, formatPtr->name,
+	if (formatName != NULL) {
+	    if (strncasecmp(formatName, formatPtr->name,
 		    strlen(formatPtr->name)) != 0) {
 		continue;
 	    }
 	    matched = 1;
 	    if (formatPtr->fileMatchProc == NULL) {
 		Tcl_AppendResult(interp, "-file option isn't supported for ",
-			formatString, " images", (char *) NULL);
+			formatPtr->name, " images", (char *) NULL);
 		return TCL_ERROR;
 	    }
 	}
 	if (formatPtr->fileMatchProc != NULL) {
 	    (void) Tcl_Seek(chan, 0L, SEEK_SET);
 	    
-	    if ((*formatPtr->fileMatchProc)(chan, fileName, formatString,
+	    if ((*formatPtr->fileMatchProc)(interp, chan, fileName, formatString,
 		    widthPtr, heightPtr)) {
 		if (*widthPtr < 1) {
 		    *widthPtr = 1;
@@ -3272,8 +3279,8 @@ MatchFileFormat(interp, chan, fileName, formatString, imageFormatPtr,
     }
 
     if (formatPtr == NULL) {
-	if ((formatString != NULL) && !matched) {
-	    Tcl_AppendResult(interp, "image file format \"", formatString,
+	if ((formatName != NULL) && !matched) {
+	    Tcl_AppendResult(interp, "image file format \"", formatName,
 		    "\" is not supported", (char *) NULL);
 	} else {
 	    Tcl_AppendResult(interp,
@@ -3315,7 +3322,7 @@ MatchStringFormat(interp, dataObj, formatString, imageFormatPtr,
 	widthPtr, heightPtr)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Obj *dataObj;		/* Object containing the image data. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoImageFormat **imageFormatPtr;
 				/* A pointer to the photo image format
 				 * record is returned here. */
@@ -3324,6 +3331,7 @@ MatchStringFormat(interp, dataObj, formatString, imageFormatPtr,
 {
     int matched;
     Tk_PhotoImageFormat *formatPtr;
+    char *formatName = Tk_PhotoFormatName(interp, formatString);
 
     /*
      * Scan through the table of file format handlers to find
@@ -3333,29 +3341,29 @@ MatchStringFormat(interp, dataObj, formatString, imageFormatPtr,
     matched = 0;
     for (formatPtr = formatList; formatPtr != NULL;
 	    formatPtr = formatPtr->nextPtr) {
-	if (formatString != NULL) {
-	    if (strncasecmp(formatString, formatPtr->name,
+	if (formatName != NULL) {
+	    if (strncasecmp(formatName, formatPtr->name,
 		    strlen(formatPtr->name)) != 0) {
 		continue;
 	    }
 	    matched = 1;
 	    if (formatPtr->stringMatchProc == NULL) {
 		Tcl_AppendResult(interp, "-data option isn't supported for ",
-			formatString, " images", (char *) NULL);
+			formatPtr->name, " images", (char *) NULL);
 		return TCL_ERROR;
 	    }
 	}
 	if ((formatPtr->stringMatchProc != NULL)
 		&& (formatPtr->stringReadProc != NULL)
-		&& (*formatPtr->stringMatchProc)(dataObj, formatString,
+		&& (*formatPtr->stringMatchProc)(interp, dataObj, formatString,
 		widthPtr, heightPtr)) {
 	    break;
 	}
     }
 
     if (formatPtr == NULL) {
-	if ((formatString != NULL) && !matched) {
-	    Tcl_AppendResult(interp, "image format \"", formatString,
+	if ((formatName != NULL) && !matched) {
+	    Tcl_AppendResult(interp, "image format \"", formatName,
 		    "\" is not supported", (char *) NULL);
 	} else {
 	    Tcl_AppendResult(interp, "couldn't recognize image data",
@@ -4553,7 +4561,7 @@ static int
 ImgStringWrite (interp, dataPtr, formatString, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     int row,col;

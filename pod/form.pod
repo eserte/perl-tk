@@ -39,7 +39,7 @@ depending on I<Option>:
 Sets or adjusts the attachment values of the slave window
 according to the I<-option>=>I<value> argument pairs.
 
-=over 4
+=over 8
 
 =item B<-b> => I<attachment>
 
@@ -380,13 +380,15 @@ S<    >I<$c>->B<form>(B<-top>=>I<$b>);
 
 Springs have not been fully implemented yet.
 
+=head1 SEE ALSO
+
+L<grid|Tk::grid>
+L<pack|Tk::pack>
+L<place|Tk::place>
+
 =head1 KEYWORDS
 
 geometry manager, form, attachment, spring, propagation, size, pack,
 tix, master, slave
 
-=head1 SEE ALSO
-
-L<grid|Tk::grid>,
-L<pack|Tk::pack>,
-L<place|Tk::place>
+=cut

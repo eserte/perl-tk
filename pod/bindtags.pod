@@ -95,9 +95,12 @@ passed to /fIset/fR the bindtags.
 
 =head1 SEE ALSO
 
-L<Tk::bind>
-L<Tk::callbacks>
+L<Tk::bind|Tk::bind>
+L<Tk::callbacks|Tk::callbacks>
 
 =head1 KEYWORDS
 
 binding, event, tag
+
+=cut
+

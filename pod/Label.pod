@@ -84,11 +84,9 @@ changing its relief or text, using the commands described below.
 The B<Label> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.                 
-
-=over 4
+L<Tk::Widget|Tk::Widget> class.
 
 =head1 BINDINGS
 

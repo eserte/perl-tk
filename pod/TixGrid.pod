@@ -270,8 +270,13 @@ the method returns an empty string.  I<Option> may have any of the
 values accepted by the B<set> method.
 
 =item I<$tixgrid>->B<format>
+=item I<$tixgrid>->B<formatBorder>(I<x1,y1>, I<x2,y2>, I<options>);
+=item I<$tixgrid>->B<formatGrid>(I<x1,y1>, I<x2,y2>, I<options>);
 
 ???
+
+the B<format> method can only be called by the B<-formatcmd> callback
+of the tixGrid widget.
 
 =item I<$tixgrid>->B<index>
 

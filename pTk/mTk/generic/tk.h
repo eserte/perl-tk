@@ -917,21 +917,21 @@ typedef struct Tk_PhotoImageBlock {
  */
 
 typedef struct Tk_PhotoImageFormat Tk_PhotoImageFormat;
-typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((Tcl_Channel chan,
-	Arg fileName, char *formatString, int *widthPtr, int *heightPtr));
-typedef int (Tk_ImageStringMatchProc) _ANSI_ARGS_((Tcl_Obj *dataObj,
-	char *formatString, int *widthPtr, int *heightPtr));
+typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+	Arg fileName, Arg formatString, int *widthPtr, int *heightPtr));
+typedef int (Tk_ImageStringMatchProc) _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
+	Arg formatString, int *widthPtr, int *heightPtr));
 typedef int (Tk_ImageFileReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_Channel chan, Arg fileName, char *formatString,
+	Tcl_Channel chan, Arg fileName, Arg formatString,
 	Tk_PhotoHandle imageHandle, int destX, int destY,
 	int width, int height, int srcX, int srcY));
 typedef int (Tk_ImageStringReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_Obj *dataObj, char *formatString, Tk_PhotoHandle imageHandle,
+	Tcl_Obj *dataObj, Arg formatString, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 typedef int (Tk_ImageFileWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	char *fileName, char *formatString, Tk_PhotoImageBlock *blockPtr));
+	char *fileName, Arg formatString, Tk_PhotoImageBlock *blockPtr));
 typedef int (Tk_ImageStringWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_DString *dataPtr, char *formatString,
+	Tcl_DString *dataPtr, Arg formatString,
 	Tk_PhotoImageBlock *blockPtr));
 
 /*

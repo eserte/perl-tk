@@ -108,9 +108,9 @@ for details).  They also support scanning, as described below.
 The B<Entry> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.
+L<Tk::Widget|Tk::Widget> class.
 
 Many of the additional methods for entries take one or more indices as
 arguments.  An index specifies a particular character in the entry's
@@ -303,7 +303,7 @@ This command is used to query and change the horizontal position of the
 text in the widget's window.  It can take any of the following
 forms:
 
-=over 4
+=over 8
 
 =item I<$entry>-E<gt>B<xview>
 

@@ -1,5 +1,4 @@
-Solaris2.* is what perl/Tk's was delveloped on, so most things
-work.
+SPARC Solaris2.5* is what perl/Tk's was delveloped on, so most things work.
 
 I normally use gcc-2.7.2 but have tested (occasionally) with SunPRO compilers.
 
@@ -10,11 +9,7 @@ I have one report that /usr/ccs/bin/make fails to build correctly.
 I cannot reproduce the problem with current MakeMaker, but it was 
 reported that using GNU make (which is what I _usually_ use) fixed the problem.
 
-I have implemented a work-round to the 'locale' problem with 
-but it is a little messy, See the Preload() line near top of Tk.pm - if it
-causes more problems than it solves remove that line. Without that line behaviour
-will be as perl Tk-b9 which is set out below. 
+There is code to comprehend the way openwindows deals with locale issues.
 The workround may _cause_ problems if you are using another X11 not openwin. 
 
------------------------------------------------------------------------------
 

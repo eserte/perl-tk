@@ -1,3 +1,141 @@
+Change 779 on 1998/04/19 by nick@ni-s
+
+	Fix mis-remembered Tcl_IntResults() use in tixGrid
+
+Change 778 on 1998/04/19 by nick@ni-s
+
+	Fix nearest issue in TixGrid
+
+Change 777 on 1998/04/18 by nick@ni-s
+
+		Update pod list, invert sense of "failing" test 
+
+Change 776 on 1998/04/18 by nick@ni-s
+
+	Merge two After.pod s
+
+Change 775 on 1998/04/18 by nick@ni-s
+
+	Run tidypod
+
+Change 774 on 1998/04/18 by nick@ni-s
+
+	Fix -create case for ->windowCreate of Text.
+
+Change 773 on 1998/04/18 by nick@ni-s
+
+	Add tests, fix ->pathname, document (more useful) ->PathName
+
+Change 772 on 1998/04/18 by nick@ni-s
+
+	Tweak Lang_SplitList() to be more-like Tcl_ListObjGetElements(),
+	they really should be the same ...
+
+Change 771 on 1998/04/18 by nick@ni-s
+
+		Spurious =cut due to _my_ botched hack to pod extractor
+
+Change 770 on 1998/04/18 by nick@ni-s
+
+	A little re-arranging of pod stuff
+
+Change 769 on 1998/04/18 by nick@ni-s
+
+	Catalogue duplicate named pods 
+
+Change 768 on 1998/04/18 by nick@ni-s
+
+	Move _ALL_ pod docs to pod directory for easier bulk edit
+
+Change 767 on 1998/04/18 by nick@ni-s
+
+	Merge Achim's pod changes
+
+Change 765 on 1998/04/17 by nick@ni-s
+
+	Photo changes to allow -format to take a list
+
+Change 764 on 1998/04/16 by nick@pluto
+
+	WinPhoto upgrade to new API.
+	Fix a few things to build with threaded perl
+	Use XS() macro where appropriate to co-exist with PERL_OBJECT ?
+
+Change 763 on 1998/04/14 by nick@ni-s
+
+	Use ERRSV rather than groping about for $@ (which is wrong threaded)
+
+Change 762 on 1998/04/14 by nick@ni-s
+
+	Partial re-work of error reporting, probably a blink alley.
+	I _think_ we should just use $@ and warp Tk error reporting to 
+	perl model rather than vice versa ($@ is already nicely per-thread
+	for example).
+
+Change 761 on 1998/04/14 by nick@pluto
+
+	WinPhoto fixup to use new feature
+	Add ->formats method to Photo
+	Tweak to FileSelect for use a dialog
+	1st part of error backtrace fixup.
+	"Correct" -fg for ->Scrolled ?
+
+Change 759 on 1998/04/13 by nick@ni-s
+
+	Pass interp to Photo match procs.
+	Tidy up some freeProc problems
+
+Change 757 on 1998/04/13 by nick@ni-s
+
+	Pod renames etc.
+
+Change 756 on 1998/04/13 by nick@ni-s
+
+	Resolve pod patches into mainline
+
+Change 754 on 1998/04/13 by nick@ni-s
+
+	Achim's pod patches
+
+Change 753 on 1998/04/13 by nick@camel
+
+	Tweak tkWinWm to honour ->geometry immediately
+	to allow it to be used to move balloon etc.
+
+Change 752 on 1998/04/13 by nick@ni-s
+
+	Fix int and size_t mis-matches
+
+Change 751 on 1998/04/11 by nick@ni-s
+
+	Steve's ColorEditor tweak
+	Another crack at ConfigSpecs
+	Add (tweaked) testsuite stuff 
+
+Change 750 on 1998/04/11 by nick@ni-s
+
+	Revert ConfigSpecs to Tk402 style, bump $VERSION of Tk
+
+Change 749 on 1998/04/11 by nick@ni-s
+
+	Handle length of -1 as "go look for NUL" in Tcl_Obj strings.
+
+Change 745 on 1998/04/08 by nick@pluto
+
+	Update English.pm
+
+Change 744 on 1998/04/06 by nick@ni-s
+
+	Another try at best of both/all worlds on default front.
+
+Change 741 on 1998/04/06 by nick@pluto
+
+	Debug transparent window issues
+
+Change 738 on 1998/04/04 by nick@ni-s
+
+	MANIFEST cleanup
+
 Change 737 on 1998/04/04 by nick@ni-s
 
 	add_version :-/

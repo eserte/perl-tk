@@ -53,7 +53,7 @@ the user choose a filetype in the listbox, only the files of that type
 are listed. If this option is unspecified, or if it is set to the
 empty list, or if the B<File types> listbox is not supported by the
 particular platform then all files are listed regardless of their
-types. See L</SPECIFYING FILE PATTERNS> below for a
+types. See L<"SPECIFYING FILE PATTERNS"> below for a
 discussion on the contents of I<filePatternList>.
 
 =item B<-initialdir> I<directory>

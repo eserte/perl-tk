@@ -273,12 +273,12 @@ this HList widget's B<-itemtype> option is used.
 
 =head1 WIDGET METHODS
 
-The B<HList> method creates a widget object.          
+The B<HList> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.
+L<Tk::Widget|Tk::Widget> class.
 
 The following additional methods are available HList widgets:
 
@@ -292,7 +292,7 @@ is a top-level entry, which has no parent). This command returns the
 entryPath of the newly created list entry. The following
 configuration options can be given to configure the list entry:
 
-=over 4
+=over 8
 
 =item B<-at>I< position>
 
@@ -373,7 +373,7 @@ are given, returns the current width of this column (in number of
 pixels). Additional parameters can be given to set the width of this
 column:
 
-=over 4
+=over 8
 
 =item I<$hlist>-E<gt>B<columnWidth>(I<col>, B<''>)
 
@@ -399,7 +399,7 @@ of this HList widget.
 Delete one or more list entries. I<option> may be one of the
 following:
 
-=over 4
+=over 8
 
 =item B<all>
 
@@ -482,7 +482,7 @@ argument for this command must be a valid integer. 0 indicates the
 first column, 1 the second column, ... and so on. This command
 supports the following options:
 
-=over 4
+=over 8
 
 =item I<$widget>-E<gt>B<header>(B<cget, >I<col, >I<option>)
 
@@ -521,7 +521,7 @@ can be passed to configure the appearance of the display item. Each
 I<option-value> pair must be a valid option for this type of
 display item or one of the following:
 
-=over 4
+=over 12
 
 =item B<-borderwidth>
 
@@ -556,10 +556,10 @@ returns an error if the header display item does not exist.
 
 =item I<$widget>-E<gt>B<hide>(I<option, ?entryPath?>)
 
-Makes some of entries invisible invisible without deleting them.
+Makes some of entries invisible without deleting them.
 I<Option> can be one of the following:
 
-=over 4
+=over 8
 
 =item B<entry>
 
@@ -574,11 +574,11 @@ be added in the next release.
 
 Manipulates the indicator on the list entries. An indicator is usually
 a small display item (such as an image) that is displayed to the left
-to an entry to indicate the status of the entry. For example, it may
-be used to indicator whether a directory is opened or
-closed. I<option> can be one of the following:
+to an entry to indicate the status of the entry.  For example, it may
+be used to indicate whether a directory is opened or
+closed.  I<Option> can be one of the following:
 
-=over 4
+=over 8
 
 =item I<$widget>-E<gt>B<indicator>(B<cget, >I<entryPath, >I<option>)
 
@@ -641,7 +641,7 @@ does not exist.
 Query information about the HList widget. I<option> can be one
 of the following:
 
-=over 4
+=over 8
 
 =item I<$widget>-E<gt>B<info>(B<anchor>)
 
@@ -716,7 +716,7 @@ Creates and configures the display items at individual columns the
 entries. The form of additional of arguments depends on the choice of
 I<option>:
 
-=over 4
+=over 8
 
 =item I<$hlist>-E<gt>B<itemCget>(entryPath, col, option)
 
@@ -787,7 +787,7 @@ HList widget scrolls to center the entry.
 This command is used to adjust the selection within a HList widget. It
 has several forms, depending on I<option>:
 
-=over 4
+=over 8
 
 =item I<$hlist>-E<gt>B<selectionClear>(?I<from>?, ?I<to>?)
 
@@ -801,14 +801,13 @@ selection state of elements outside that range.
 =item I<$widget>-E<gt>B<selectionGet>
 
 This is an alias for the B<infoSelection> method.
-,
 
 =item I<$hlist>-E<gt>B<selectionIncludes>(I<entryPath>)
 
 Returns 1 if the list entry indicated by I<entryPath> is currently
 selected; returns 0 otherwise.
 
-=item I<$hlist>-E<gt>B<selectionSet>(I<from, >?I<to>?)
+=item I<$hlist>-E<gt>B<selectionSet>(I<from>?, I<to>?)
 
 Selects all of the list entrie(s) between between I<from> and
 I<to>, inclusive, without affecting the selection state of entries
@@ -817,12 +816,12 @@ identified by I<from> is selected.
 
 =back
 
-=item I<$hlist>-E<gt>B<show>(I<option, ?entryPath?>)
+=item I<$hlist>-E<gt>B<show>(I<option>?, I<entryPath>?)
 
 Show the entries that are hidden by the B<hide> command,
 I<option> can be one of the following:
 
-=over 4
+=over 8
 
 =item B<entry>
 
@@ -839,7 +838,7 @@ This command is used to query and change the horizontal position of the
 information in the widget's window. It can take any of the following
 forms:
 
-=over 4
+=over 8
 
 =item I<$hlist>-E<gt>B<xview>
 
@@ -881,7 +880,7 @@ then characters farther to the right become visible.
 This command is used to query and change the vertical position of the
 entries in the widget's window. It can take any of the following forms:
 
-=over 4
+=over 8
 
 =item I<$hlist>-E<gt>B<yview>
 

@@ -18,11 +18,11 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk800.003) requires perl5.004 or later.
+This version (Tk800.004) requires perl5.004_02 or later.
 Some of Tk::IO and 'fileevent' programly won't work without 
 Graham Barr's TIEHANDLE patches e.g. perl5.004_62
 
-Tk800.003 should build and run on Windows NT using Visual C++, or 
+Tk800.004 should build and run on Windows NT using Visual C++, or 
 Borland with and perl5.004_6X.
 
 Goal of 800.* is to incorporate native look-and-feel to Win32 port introduced

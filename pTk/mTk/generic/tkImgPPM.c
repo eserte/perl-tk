@@ -37,16 +37,16 @@
  * The format record for the PPM file format:
  */
 
-static int		FileMatchPPM _ANSI_ARGS_((Tcl_Channel chan,
-			    Arg fileName, char *formatString,
+static int		FileMatchPPM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+			    Arg fileName, Arg formatString,
 			    int *widthPtr, int *heightPtr));
 static int		FileReadPPM  _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Channel chan, Arg fileName,
-			    char *formatString, Tk_PhotoHandle imageHandle,
+			    Arg formatString, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int		FileWritePPM _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *fileName, char *formatString,
+			    char *fileName, Arg formatString,
 			    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat tkImgFmtPPM = {
@@ -86,10 +86,11 @@ static int		ReadPPMFileHeader _ANSI_ARGS_((Tcl_Channel chan,
  */
 
 static int
-FileMatchPPM(chan, fileName, formatString, widthPtr, heightPtr)
+FileMatchPPM(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image file, open for reading. */
     Arg fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw PPM file. */
@@ -125,7 +126,7 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image file, open for reading. */
     Arg fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -255,7 +256,7 @@ static int
 FileWritePPM(interp, fileName, formatString, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     Tcl_Channel chan;

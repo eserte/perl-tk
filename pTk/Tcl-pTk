@@ -16,6 +16,7 @@ unlink($dst);
 open(DST,">$dst") || die "Cannot open $dst;$!";
 select(DST);
 
+my $copyright;
 
 @ARGV = ($src);
 
@@ -77,6 +78,7 @@ sub complete
   }
  $_ .= $tail;
 }
+
 
 
 PROCESS:
@@ -198,22 +200,18 @@ while ($_ = &getline)
 #            1             2                 3           4                  5                           6
   s/\(c == '(.)'\)\s*&&\s*(\(?)\(strncmp\(([^,]+),\s*("-\1[^"]*"),\s*(\w+|strlen\(\3\))\s*\)\s*==\s*0\)(\)?)/(c == '$1') && $2 LangCmpOpt($4,$3,$5) == 0 $6/g;
   s/\(c == '(.)'\)\s*&&\s*\(strcmp\(([^,]+),\s*("-\1[^"]*")\s*\)\s*==\s*0\)/(c == '$1') && LangCmpOpt($3,$2,0) == 0/g;
+
+  if (defined($copyright) && !/^\s\*\s*Copyright/)
+   {
+    print $copyright;
+    undef $copyright;
+   }
   
   print;
 
-  if (0)
+  if (0 && /^((\s\*)\s*)Copyright/)
    {
-    if (/^\s\*\s*Copyright/)
-     {
-      print " *\n * Modifications Copyright (c) 1994-1998 Nick Ing-Simmons\n";
-     }
-      
-    if (/^\s\*\s*all copies of this software./)
-     {
-      print 
-" * References to THE UNIVERSITY OF CALIFORNIA in the following paragraphs
- * should be read as THE UNIVERSITY OF CALIFORNIA OR ANY OF THE AUTHORS.\n";
-     }
+    $copyright = "$2\n$1Modifications Copyright (c) 1994-1998 Nick Ing-Simmons\n";
    }
  }
 

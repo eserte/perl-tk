@@ -44,61 +44,51 @@ typedef struct ParseInfo {
  * The format record for the XBM file format:
  */
 
-static int		ChnMatchXBM _ANSI_ARGS_((Tcl_Channel chan,
-			    char *fileName, char *formatString, int *widthPtr,
+static int		ChnMatchXBM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+			    Arg fileName, Arg formatString, int *widthPtr,
 			    int *heightPtr));
-static int		FileMatchXBM _ANSI_ARGS_((FILE *f, char *fileName,
-			    char *formatString, int *widthPtr,
+static int		FileMatchXBM _ANSI_ARGS_((Tcl_Interp *interp, FILE *f, 
+			    Arg fileName, Arg formatString, int *widthPtr,
 			    int *heightPtr));
-static int      	ObjMatchXBM _ANSI_ARGS_((struct Tcl_Obj *dataObj,
-		            char *formatString, int *widthPtr, int *heightPtr));
+static int      	ObjMatchXBM _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *dataObj,
+		            Arg formatString, int *widthPtr, int *heightPtr));
 static int		ChnReadXBM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Channel chan, char *fileName,
-			    char *formatString, Tk_PhotoHandle imageHandle,
+			    Tcl_Channel chan, Arg fileName,
+			    Arg formatString, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int		FileReadXBM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    FILE *f, char *fileName, char *formatString,
+			    FILE *f, Arg fileName, Arg formatString,
 			    Tk_PhotoHandle imageHandle, int destX, int destY,
 			    int width, int height, int srcX, int srcY));
 static int	        ObjReadXBM _ANSI_ARGS_((Tcl_Interp *interp,
-			    struct Tcl_Obj *dataObj, char *formatString,
+			    struct Tcl_Obj *dataObj, Arg formatString,
               		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		            int width, int height, int srcX, int srcY));
 static int	        StringWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
-               		    Tcl_DString *dataPtr, char *formatString,
+               		    Tcl_DString *dataPtr, Arg formatString,
 		            Tk_PhotoImageBlock *blockPtr));
 static int              FileWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
-                            char *fileName, char *formatString,
+                            char *fileName, Arg formatString,
                             Tk_PhotoImageBlock *blockPtr));
 
 static int		CommonReadXBM _ANSI_ARGS_((Tcl_Interp *interp,
 			    ParseInfo *parseInfo,
-			    char *formatString, Tk_PhotoHandle imageHandle,
+			    Arg formatString, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int		CommonWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *fileName, Tcl_DString *dataPtr,
-			    char *formatString, Tk_PhotoImageBlock *blockPtr));
+			    Arg formatString, Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtXBM = {
     "XBM",					/* name */
-    (Tk_ImageFileMatchProc *) ChnMatchXBM,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchXBM,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) ChnReadXBM,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadXBM,	/* stringReadProc */
-    FileWriteXBM,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteXBM	/* stringWriteProc */
-};
-
-Tk_PhotoImageFormat imgOldFmtXBM = {
-    "XBM",					/* name */
-    (Tk_ImageFileMatchProc *) FileMatchXBM,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchXBM,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) FileReadXBM,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadXBM,	/* stringReadProc */
-    FileWriteXBM,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteXBM	/* stringWriteProc */
+    ChnMatchXBM,	/* fileMatchProc */
+    ObjMatchXBM,	/* stringMatchProc */
+    ChnReadXBM,		/* fileReadProc */
+    ObjReadXBM,		/* stringReadProc */
+    FileWriteXBM,	/* fileWriteProc */
+    StringWriteXBM	/* stringWriteProc */
 };
 
 /*
@@ -127,9 +117,10 @@ static int	NextBitmapWord _ANSI_ARGS_((ParseInfo *parseInfoPtr));
  *----------------------------------------------------------------------
  */
 static int
-ObjMatchXBM(dataObj, formatString, widthPtr, heightPtr)
+ObjMatchXBM(interp, dataObj, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     struct Tcl_Obj *dataObj;	/* The data supplied by the image */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XBM file. */
@@ -160,10 +151,11 @@ ObjMatchXBM(dataObj, formatString, widthPtr, heightPtr)
  */
 
 static int
-ChnMatchXBM(chan, fileName, formatString, widthPtr, heightPtr)
+ChnMatchXBM(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XBM file. */
@@ -196,10 +188,11 @@ ChnMatchXBM(chan, fileName, formatString, widthPtr, heightPtr)
  */
 
 static int
-FileMatchXBM(f, fileName, formatString, widthPtr, heightPtr)
+FileMatchXBM(interp, f, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     FILE *f;			/* The image file, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XBM file. */
@@ -247,7 +240,7 @@ CommonReadXBM(interp, parseInfo, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     ParseInfo *parseInfo;
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -342,8 +335,8 @@ ChnReadXBM(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -387,8 +380,8 @@ FileReadXBM(interp, f, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     FILE *f;			/* The image file, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -432,7 +425,7 @@ ObjReadXBM(interp, dataObj, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     struct Tcl_Obj *dataObj;
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -673,7 +666,7 @@ static int
 FileWriteXBM(interp, fileName, formatString, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     return CommonWriteXBM(interp, fileName, (Tcl_DString *)NULL, formatString, blockPtr);
@@ -700,7 +693,7 @@ static int
 StringWriteXBM(interp, dataPtr, formatString, blockPtr) 
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
   return CommonWriteXBM(interp, (char *) NULL, dataPtr, formatString, blockPtr);
@@ -733,7 +726,7 @@ CommonWriteXBM(interp, fileName, dataPtr, formatString, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
     Tcl_DString *dataPtr;
-    char *formatString;    
+    Arg formatString;    
     Tk_PhotoImageBlock *blockPtr;
 {
     FILE *f = (FILE *) NULL;

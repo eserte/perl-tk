@@ -66,10 +66,11 @@ extern SV *WidgetRef _ANSI_ARGS_((Tcl_Interp *interp, char *path));
 extern SV *TkToWidget _ANSI_ARGS_((Tk_Window tkwin,Tcl_Interp **pinterp));
 extern SV *FindTkVarName _ANSI_ARGS_((char *varName,int flags));
 extern void EnterWidgetMethods _ANSI_ARGS_((char *package, ...));
-extern void XStoWidget _ANSI_ARGS_((CV * cv));
 extern SV *MakeReference _ANSI_ARGS_((SV * sv));
 extern void Lang_TkCommand _ANSI_ARGS_ ((char *name, Tcl_CmdProc *proc));
 extern Tk_Window TkToMainWindow _ANSI_ARGS_((Tk_Window tkwin));
+
+extern XS(XStoWidget);
 
 EXTERN void ClearErrorInfo _ANSI_ARGS_((SV *interp));
 EXTERN Tk_Window mainWindow;

@@ -2025,7 +2025,8 @@ TkTextGetTabs(interp, tkwin, arg)
 
     error:
     ckfree((char *) tabArrayPtr);
-    ckfree((char *) argv);
+    if (freeProc)
+      (*freeProc)(argc,argv);
     return NULL;
 }
 

@@ -60,7 +60,7 @@ default value is an empty string.
 Arranges for a predefined set of buttons to be displayed. The
 following values are possible for I<predefinedType>:
 
-=over 4
+=over 8
 
 =item B<abortretryignore>
 

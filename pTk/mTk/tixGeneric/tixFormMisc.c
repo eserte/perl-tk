@@ -163,39 +163,34 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
     int offset;
     int grid;
     int argc;
-    char ** argv;
-    LangFreeProc *freeproc = NULL;
+    char ** argv;                                      
+    int delta = 0;
+    LangFreeProc *freeProc = NULL;
 
-    if (Lang_SplitList(interp, value, &argc, &argv, &freeproc) != TCL_OK) {
+    if (Lang_SplitList(interp, value, &argc, &argv, &freeProc) != TCL_OK) {
 	return TCL_ERROR;
-    }
-    if (argc < 1 || argc > 2) {
-	Tcl_AppendResult(interp, "Malformed attachment value \"", value,
-	    "\"", NULL);
-	code = TCL_ERROR;
-	goto done;
     }
 
     switch (argv[0][0]) {
       case '#':		/* Attached to grid */
       case '%': 	/* Attached to percent (aka grid) */
-	if (Tcl_GetInt(interp, argv[0]+1, &grid) == TCL_ERROR) {
-	    code = TCL_ERROR;
-	    goto done;
+	if (argc < 2 || Tcl_GetInt(interp, args[++delta], &grid) == TCL_ERROR) {
+	    goto malformed;
 	}
 	clientPtr->attType[axis][which]   = ATT_GRID;
 	clientPtr->att[axis][which].grid  = grid;
 	break;
 
       case '&': 		/* Attached to parallel widget */
-	tkwin = Tk_NameToWindow(interp, LangString(args[0])+1, topLevel);
+	if (argc < 2)
+	   goto malformed;   
+	tkwin = Tk_NameToWindow(interp, LangString(args[++delta]), topLevel);
 
 	if (tkwin != NULL) {
 	    if (Tk_IsTopLevel(tkwin)) {
-		Tcl_AppendResult(interp, "can't attach to \"", value,
+		Tcl_AppendResult(interp, "can't attach to \"", LangString(args[1]),
 	    	    "\": it's a top-level window", (char *) NULL);
-		code = TCL_ERROR;
-		goto done;
+		goto error;
 	    }
 	    attWidget = TixFm_GetFormInfo(tkwin, 1);
 	    TixFm_AddToMaster(clientPtr->master, attWidget);
@@ -203,20 +198,18 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
 	    clientPtr->attType[axis][which]    = ATT_PARALLEL;
 	    clientPtr->att[axis][which].widget = attWidget;
 	} else {
-	    code = TCL_ERROR;
-	    goto done;
+	    goto error;
 	}
 	break;
 
       case '.': 		/* Attach to opposite widget */
-	tkwin = Tk_NameToWindow(interp, argv[0], topLevel);
+	tkwin = Tk_NameToWindow(interp, LangString(args[0]), topLevel);
 
 	if (tkwin != NULL) {
 	    if (Tk_IsTopLevel(tkwin)) {
 		Tcl_AppendResult(interp, "can't attach to \"", value,
 	    	    "\": it's a top-level window", (char *) NULL);
-		code = TCL_ERROR;
-		goto done;
+		goto error;
 	    }
 	    attWidget = TixFm_GetFormInfo(tkwin, 1);
 	    TixFm_AddToMaster(clientPtr->master, attWidget);
@@ -224,8 +217,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
 	    clientPtr->attType[axis][which]    = ATT_OPPOSITE;
 	    clientPtr->att[axis][which].widget = attWidget;
 	} else {
-	    code = TCL_ERROR;
-	    goto done;
+	    goto error;
 	}
 	break;
 
@@ -234,10 +226,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
 	    clientPtr->attType[axis][which]    = ATT_NONE;
 	    goto done;
 	} else {
-	    Tcl_AppendResult(interp, "Malformed attachment value \"", value,
-		"\"", NULL);
-	    code = TCL_ERROR;
-	    goto done;
+	    goto malformed;
 	}
 	break;
 
@@ -246,18 +235,10 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
 	 * anchor point 0% or max_grid%
 	 */
 	if (argc != 1) {
-	    Tcl_AppendResult(interp, "Malformed attachment value \"", value,
-		"\"", NULL);
-	    code = TCL_ERROR;
-	    goto done;
+	    goto malformed;
 	}
-#if 1
 	if (Tk_GetPixels(interp, topLevel, argv[0], &offset) != TCL_OK) {
-#else
-	if (Tcl_GetInt(interp, argv[0], &offset) == TCL_ERROR) {
-#endif
-	    code = TCL_ERROR;
-	    goto done;
+	    goto error;
 	}
 
 	clientPtr->attType[axis][which]      = ATT_GRID;
@@ -271,23 +252,26 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
 	goto done;	/* We have already gotten both anchor and offset */
     }
 
-    if (argc  == 2) {
-#if 1
-	if (Tk_GetPixels(interp, topLevel, argv[1], &offset) != TCL_OK) {
-#else
-	if (Tcl_GetInt(interp, argv[1], &offset) == TCL_ERROR) {
-#endif
-	    code = TCL_ERROR;
-	    goto done;
+    if (argc  == 2+delta) {
+	if (Tk_GetPixels(interp, topLevel, argv[1+delta], &offset) != TCL_OK) {
+	    goto error;
 	}
     	clientPtr->off[axis][which] = offset;
     } else {
 	clientPtr->off[axis][which] = 0;
+	if (argc != 1+delta) {
+     malformed:
+	    Tcl_AppendResult(interp, "Malformed attachment value \"", value,
+		"\"", NULL);
+     error:
+	    code = TCL_ERROR;
+	    goto done;
+	}
     }
 
   done:
-    if (argv) {
-	ckfree((char*) argv);
+    if (freeProc) {
+	(*freeProc)(argc, argv);
     }
     if (code == TCL_ERROR) {
 	clientPtr->attType[axis][which] = ATT_NONE;

@@ -222,8 +222,8 @@ point, then the closest element to that point is used.
 
 Each list entry in an TList widget is associated with a B<display>
 item.  The display item determines what visual information should
-be displayed for this list entry. Please see the L<Tk::DItem> documentation
-page for a list of all display items.
+be displayed for this list entry. Please see L<Tk::DItem>
+for a list of all display items.
 
 When a list entry is created by the B<insert> command, the type of
 its display item is determined by the B<-itemtype> option passed
@@ -237,10 +237,10 @@ The B<TList> method creates a widget object.
 
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.                 
-                                                                  
+L<Tk::Widget|Tk::Widget> class.
+
 The following additional methods are available for TList widgets:
 
 =over 4
@@ -318,9 +318,9 @@ Creates a new list entry at the position indicated by I<index>. The
 following configuration options can be given to configure the list
 entry:
 
-=over 4
+=over 8
 
-=item B<-itemtype>I< type>
+=item B<-itemtype> => I<type>
 
 Specifies the type of display item to be display for the new list
 entry. I<type> must be a valid display item type. Currently the
@@ -329,7 +329,7 @@ B<text>, and I<$widget>. If this option is not specified, then by
 default the type specified by this TList widget's B<-itemtype>
 option is used.
 
-=item B<-state>
+=item B<-state> => I<state>
 
 Specifies whether this entry can be selected or invoked by the user.
 Must be either B<normal> or B<disabled>.
@@ -348,7 +348,7 @@ each of the display item types.
 Query information about the TList widget. I<option> can be one
 of the following:
 
-=over 4
+=over 8
 
 =item I<$tlist>-E<gt>B<info>(B<anchor, >I<index>)
 
@@ -368,7 +368,7 @@ widget. If the dropsite is not set, returns the empty string.
 =item I<$tlist>-E<gt>B<info>(B<selection>)
 
 Returns a list of selected elements in the TList widget. If no entries
-are selectd, returns an empty string.
+are selected, returns an empty string.
 
 =back
 
@@ -390,7 +390,7 @@ TList widget scrolls to center the entry.
 This command is used to adjust the selection within a TList widget. It
 has several forms, depending on I<option>:
 
-=over 4
+=over 8
 
 =item I<$tlist>-E<gt>B<selectionClear>(?I<from>?, ?I<to>?)
 
@@ -421,7 +421,7 @@ This command is used to query and change the horizontal position of the
 information in the widget's window. It can take any of the following
 forms:
 
-=over 4
+=over 8
 
 =item I<$tlist>-E<gt>B<xview>
 
@@ -463,7 +463,7 @@ then characters farther to the right become visible.
 This command is used to query and change the vertical position of the
 entries in the widget's window. It can take any of the following forms:
 
-=over 4
+=over 8
 
 =item I<$tlist>-E<gt>B<yview>
 
@@ -578,12 +578,16 @@ numbers:
 
     Tk::MainLoop;
 
+=head1 SEE ALSO
+
+L<Tk::options|Tk::options>
+L<Tk::Widget|Tk::Widget>
+L<Tk::DItem|Tk::DItem>
+L<Tk::HList|Tk::HList>
+L<Tk::TixGrid|Tk::TixGrid>
+
 =head1 KEYWORDS
 
 Tix(n), Tabular Listbox, Display Items
-
-=head1 SEE ALSO
-
-Tk::DItem, Tk::HList, Tk::TixGrid
 
 =cut

@@ -1,0 +1,144 @@
+
+=head1 NAME
+
+Tk::Balloon - pop up help balloons.
+
+=for pm Tixish/Balloon.pm
+
+=for category Tix Extensions
+
+=head1 SYNOPSIS
+
+    use Tk::Balloon;
+    ...
+    $b = $top->Balloon(-statusbar => $status_bar_widget);
+
+    # Normal Balloon:
+    $b->attach($widget,
+	       -balloonmsg => "Balloon help message",
+	       -statusmsg => "Status bar message");
+
+    # Balloon attached to a menu widget:
+    $b->attach($file_menu->menu, -msg => ['first menu entry',
+					  'second menu entry',
+					  ...
+					 ],
+	      );
+
+=head1 DESCRIPTION
+
+B<Balloon> provides the framework to create and attach help
+balloons to various widgets so that when the mouse pauses over the
+widget for more than a specified amount of time, a help balloon is
+popped up. If the balloon is attached to a menu widget then it
+will expect the message arguments to be array references with
+each element in the array corresponding to a menu entry. The balloon
+message will then be shown for the active menu entry.
+
+B<Balloon> accepts all of the options that the B<Frame> widget
+accepts. In addition, the following options are also recognized.
+
+=over 4
+
+=item B<-initwait>
+
+Specifies the amount of time to wait without activity before
+popping up a help balloon. Specified in milliseconds. Defaults to
+350 milliseconds. This applies to both the popped up balloon and
+the status bar message.
+
+=item B<-state>
+
+Can be one of B<balloon>, B<status>, B<both> or B<none> indicating
+that the help balloon, status bar help, both or none respectively
+should be activated when the mouse pauses over the client widget.
+
+=item B<-statusbar>
+
+Specifies the widget used to display the status message. This
+widget should accept the B<-text> option and is typically a
+B<Label>. If the widget accepts the B<-textvariable> option and
+that option is defined then it is used instead of the B<-text>
+option.
+
+=item B<-postcommand>
+
+This option takes a CODE reference which is to be executed before
+the balloon and statusbar messages are displayed. Useful in combination
+with the B<-followmouse> option when used with a B<Text> or B<Canvas>
+widget and you want the message to be different depending on what
+object in the widget the mouse is over.
+
+=item B<-followmouse>
+
+This option can be set to 0 or 1 and has 2 effects. It will cause
+the balloon to be displayed only if the mouse is completely
+motionless for the B<-initwait> time interval, and it will make
+the balloon appear under and to the right of the mouse.
+
+=item B<-show>
+
+This option can be set to 0 or 1 and will disable or enable the
+balloon or statusbar message. Useful in the postcommand if you
+want to cancel the current balloon before it is displayed.
+
+=back
+
+=head1 METHODS
+
+The B<Balloon> widget supports only two non-standard methods:
+
+=over 4
+
+=item B<attach(>I<widget>, I<options>B<)>
+
+Attaches the widget indicated by I<widget> to the help system. The
+options can be:
+
+=over 4
+
+=item B<-statusmsg>
+
+The argument is the message to be shown on the status bar when the
+mouse pauses over this client. If this is not specified, but
+B<-msg> is specified then the message displayed on the status bar
+is the same as the argument for B<-msg>. If you give it a scalar
+reference then it is dereferenced before being displayed. Useful
+if the postcommand is used to change the message.
+
+=item B<-balloonmsg>
+
+The argument is the message to be displayed in the balloon that
+will be popped up when the mouse pauses over this client. As with
+B<-statusmsg> if this is not specified, then it takes its value
+from the B<-msg> specification if any. If neither B<-balloonmsg>
+nor B<-msg> are specified, or they are the empty string then
+no balloon is popped up instead of an empty balloon. If you
+give it a scalar reference then it is dereferenced before being
+displayed. Useful if the postcommand is used to change the message.
+
+=item B<-msg>
+
+The catch-all for B<-statusmsg> and B<-balloonmsg>. This is a
+convenient way of specifying the same message to be displayed in
+both the balloon and the status bar for the client.
+
+=back
+
+=item B<detach(>I<widget>B<)>
+
+Detaches the specified widget I<widget> from the help system.
+
+=back
+
+=head1 AUTHORS
+
+B<Rajappa Iyer> rsi@earthling.net did the original coding.
+Jason A Smith <smithj4@rpi.edu> added support for menus.
+
+This code and documentation is derived from Balloon.tcl from the
+Tix4.0 distribution by Ioi Lam. This code may be redistributed
+under the same terms as Perl.
+
+=cut
+

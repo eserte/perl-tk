@@ -648,7 +648,8 @@ ConfigureFrame(interp, framePtr, argc, argv, flags)
 	TkSetWindowMenuBar(interp, framePtr->tkwin, oldMenuName,
 		framePtr->menuName);
     }
-    
+        
+    /* FIXME: Suspicious */
     if (framePtr->border != NULL) {
 	Tk_SetBackgroundFromBorder(framePtr->tkwin, framePtr->border);
     } else {
@@ -704,6 +705,7 @@ DisplayFrame(clientData)
     GC gc;
 
     framePtr->flags &= ~REDRAW_PENDING;
+    /* FIXME: do we get here ? */
     if ((framePtr->tkwin == NULL) || !Tk_IsMapped(tkwin)
         || framePtr->isContainer) {
 	return;

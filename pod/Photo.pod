@@ -17,11 +17,11 @@ photo - Full-color images
 
 =head1 SYNOPSIS
 
-B<image create photo >?I<name>? ?I<options>?
+S<    >I<$widget>-E<gt>B<Photo>(?I<name>??, I<options>?)
 
 =head1 DESCRIPTION
 
-A photo is an image whose pixels can display any color or be
+A photo is an L<image|Tk::Image> whose pixels can display any color or be
 transparent.  A photo image is stored internally in full color (24
 bits per pixel), and is displayed using dithering if necessary.  Image
 data for a photo image can be obtained from a file or a string, or it
@@ -33,9 +33,8 @@ in regions where no image data has been supplied.
 
 =head1 CREATING PHOTOS
 
-Like all images, photos are created using the B<image create>
-command.
-Photos support the following I<options>:
+Photos are created using the B<Photo> method.
+B<Photo> supports the following I<options>:
 
 =over 4
 
@@ -47,7 +46,7 @@ handler that will accept string data.  If both the B<-data>
 and B<-file> options are specified, the B<-file> option takes
 precedence.
 
-=item B<-format >I<format-name>
+=item B<-format> =E<gt> I<format-name>
 
 Specifies the name of the file format for the data specified with the
 B<-data> or B<-file> option.
@@ -77,7 +76,7 @@ primarily in situations where the user wishes to build up the contents
 of the image piece by piece.  A value of zero (the default) allows the
 image to expand or shrink vertically to fit the data stored in it.
 
-=item B<-palette >I<palette-spec>
+=item B<-palette> =E<gt> I<palette-spec>
 
 Specifies the resolution of the color cube to be allocated for
 displaying this image, and thus the number of colors used from the
@@ -127,13 +126,13 @@ window it is displayed in will show through.
 Copies a region from the image called I<sourceImage> (which must
 be a photo image) to the image called I<$image>, possibly with
 pixel zooming and/or subsampling.  If no options are specified, this
-command copies the whole of I<sourceImage> into I<$image>,
+method copies the whole of I<sourceImage> into I<$image>,
 starting at coordinates (0,0) in I<$image>.  The following
 options may be specified:
 
 =over 8
 
-=item B<-from >I<x1 y1 x2 y2>
+=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
 
 Specifies a rectangular sub-region of the source image to be copied.
 (I<x1,y1>) and (I<x2,y2>) specify diagonally opposite corners of
@@ -143,7 +142,7 @@ pixels copied will include the left and top edges of the specified
 rectangle but not the bottom or right edges.  If the B<-from>
 option is not given, the default is the whole source image.
 
-=item B<-to >I<x1 y1 x2 y2>
+=item B<-to> =E<gt> I<x1 y1 ?x2 y2?>
 
 Specifies a rectangular sub-region of the destination image to be
 affected.  (I<x1,y1>) and (I<x2,y2>) specify diagonally opposite
@@ -161,7 +160,7 @@ corner of the image.  This option will not affect the width or height
 of the image if the user has specified a non-zero value for the
 B<-width> or B<-height> configuration option, respectively.
 
-=item B<-zoom >I<x y>
+=item B<-zoom> =E<gt> I<x y>
 
 Specifies that the source region should be magnified by a factor of
 I<x> in the X direction and I<y> in the Y direction.  If I<y>
@@ -170,7 +169,7 @@ option, each pixel in the source image will be expanded into a block
 of I<x> x I<y> pixels in the destination image, all the same
 color.  I<x> and I<y> must be greater than 0.
 
-=item B<-subsample >I<x y>
+=item B<-subsample> =E<gt> I<x y>
 
 Specifies that the source image should be reduced in size by using
 only every I<x>th pixel in the X direction and I<y>th pixel in
@@ -180,23 +179,23 @@ default value is the same as I<x>.
 
 =back
 
-=item I<$image>-E<gt>B<data>(?>I<option value(s) ...>?)
+=item I<$image>-E<gt>B<data>(?I<option value(s), ...>?)
 
 returns image data in the form of a string.
 The following options may be specified:
 
-=over 4
+=over 8
 
-=item B<-format>I< format-name>
+=item B<-format> =E<gt> I<format-name>
 
 Specifies the name of the image file format handler to be used to
-convert the data.  Specifically, this subcommand searches
+convert the data.  Specifically, this method searches
 for the first handler whose name matches a initial substring of
 I<format-name> and which has the capability to write an string.
 If this option is not given, the data is returned in the default
-format as accepted by I<$image>B<put>?.
+format as accepted by I<$image>-E<gt>B<put>.
 
-=item B<-from >I<x1 y1 x2 y2>
+=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
 
 Specifies a rectangular region of I<$image> to be written to the
 string.  If only I<x1> and I<y1> are specified, the region
@@ -213,7 +212,7 @@ Returns the color of the pixel at coordinates (I<x>,I<y>) in the
 image as a list of three integers between 0 and 255, representing the
 red, green and blue components respectively.
 
-=item I<$image>-E<gt>B<put>(I<data> ?B<-format>I< format-name>? ?B<-to>I< x1 y1 x2 y2>?)
+=item I<$image>-E<gt>B<put>(I<data> ?,B<-format>=E<gt>I<format-name>? ?,B<-to>=E<gt>I< x1 y1 ?x2 y2?>?)
 
 Sets pixels in I<$image> to the data specified in I<data>.
 If the -format option is supplied, a string read function for this
@@ -231,25 +230,25 @@ specify diagonally opposite corners of the affected rectangle, and the
 array given in I<data> will be replicated as necessary in the X and
 Y directions to fill the rectangle.
 
-=item I<$image>-E<gt>B<read>(I<filename> ?I<option value(s) ...>?)
+=item I<$image>-E<gt>B<read>(I<filename> ?,I<option value(s), ...>?)
 
 Reads image data from the file named I<filename> into the image.
-This command first searches the list of
+This method first searches the list of
 image file format handlers for a handler that can interpret the data
 in I<filename>, and then reads the image in I<filename> into
 I<$image> (the destination image).  The following options may be
 specified:
 
-=over 4
+=over 8
 
-=item B<-format >I<format-name>
+=item B<-format> =E<gt> I<format-name>
 
 Specifies the format of the image data in I<filename>.
 Specifically, only image file format handlers whose names begin with
 I<format-name> will be used while searching for an image data
 format handler to read the data.
 
-=item B<-from >I<x1 y1 x2 y2>
+=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
 
 Specifies a rectangular sub-region of the image file data to be copied
 to the destination image.  If only I<x1> and I<y1> are
@@ -268,7 +267,7 @@ will not affect the width or height of the image if the user has
 specified a non-zero value for the B<-width> or B<-height>
 configuration option, respectively.
 
-=item B<-to >I<x y>
+=item B<-to> =E<gt> I<x y>
 
 Specifies the coordinates of the top-left corner of the region of
 I<$image> into which data from I<filename> are to be read.
@@ -282,18 +281,18 @@ The dithering algorithm used in displaying photo images propagates
 quantization errors from one pixel to its neighbors.
 If the image data for I<$image> is supplied in pieces, the
 dithered image may not be exactly correct.  Normally the difference is
-not noticeable, but if it is a problem, this command can be used to
+not noticeable, but if it is a problem, this method can be used to
 recalculate the dithered image in each window where the image is
 displayed.
 
-=item I<$image>-E<gt>B<write>(I<filename> ?I<option value(s) ...>?)
+=item I<$image>-E<gt>B<write>(I<filename> ?,I<option value(s), ...>?)
 
 Writes image data from I<$image> to a file named I<filename>.
 The following options may be specified:
 
-=over 4
+=over 8
 
-=item B<-format>I< format-name>
+=item B<-format> =E<gt> I<format-name>
 
 Specifies the name of the image file format handler to be used to
 write the data to the file.  Specifically, this subcommand searches
@@ -302,7 +301,7 @@ I<format-name> and which has the capability to write an image
 file.  If this option is not given, this subcommand uses the first
 handler that has the capability to write an image file.
 
-=item B<-from >I<x1 y1 x2 y2>
+=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
 
 Specifies a rectangular region of I<$image> to be written to the
 image file.  If only I<x1> and I<y1> are specified, the region
@@ -381,6 +380,14 @@ The photo image type was designed and implemented by Paul Mackerras,
 based on his earlier photo widget and some suggestions from
 John Ousterhout.
 
+=head1 SEE ALSO
+
+L<Tk::Bitmap|Tk::Bitmap>
+L<Tk::Image|Tk::Image>
+L<Tk::Pixmap|Tk::Pixmap>
+
 =head1 KEYWORDS
 
 photo, image, color
+
+=cut

@@ -2,7 +2,7 @@ package Tk::DragDrop::SunConst;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#8$
+$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#9$
 
 @ISA = qw(Exporter);
 
@@ -32,15 +32,3 @@ sub FORWARDED_FLAG {1<<3}
 
 __END__ 
 
-=head1 NAME
-
-Tk::DragDrop::SunConst - Constants for Sun's Drag&Drop protocol 
-
-=for category User Interaction
-
-=head1 DESCRIPTION
-
-This module defines symbolic name subs for the numeric constants that 
-make up Sun's Drag&Drop protocol. They are in this module with Exporter
-as they are shared between the two halves (Dropper and Receiver) of 
-the protocol.
