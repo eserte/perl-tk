@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkEntry.c 1.90 95/05/28 17:49:57";
+static char sccsid[] = "@(#) tkEntry.c 1.91 95/09/26 13:33:13";
 
 #include "default.h"
 #include "tkPort.h"
@@ -300,6 +300,7 @@ static char *		EntryTextVarProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, Var name1, char *name2,
 			    int flags));
 static void		EntryUpdateScrollbar _ANSI_ARGS_((Entry *entryPtr));
+static void		EntryValueChanged _ANSI_ARGS_((Entry *entryPtr));
 static void		EntryVisibleRange _ANSI_ARGS_((Entry *entryPtr,
 			    double *firstPtr, double *lastPtr));
 static int		EntryWidgetCmd _ANSI_ARGS_((ClientData clientData,
@@ -864,8 +865,7 @@ ConfigureEntry(interp, entryPtr, argc, args, flags)
 
 	value = Tcl_GetVar(interp, entryPtr->textVarName, TCL_GLOBAL_ONLY);
 	if (value == NULL) {
-	    Tcl_SetVar(interp, entryPtr->textVarName, entryPtr->string,
-		    TCL_GLOBAL_ONLY);
+	    EntryValueChanged(entryPtr);
 	} else {
 	    EntrySetValue(entryPtr, LangString(value));
 	}
@@ -1335,14 +1335,7 @@ InsertChars(entryPtr, index, string)
     if (entryPtr->insertPos >= index) {
 	entryPtr->insertPos += length;
     }
-
-    if (entryPtr->textVarName != NULL) {
-	Tcl_SetVar(entryPtr->interp, entryPtr->textVarName, entryPtr->string,
-		TCL_GLOBAL_ONLY);
-    }
-    entryPtr->flags |= UPDATE_SCROLLBAR;
-    EntryComputeGeometry(entryPtr);
-    EventuallyRedraw(entryPtr);
+    EntryValueChanged(entryPtr);
 }
 
 /*
@@ -1428,14 +1421,60 @@ DeleteChars(entryPtr, index, count)
 	    entryPtr->insertPos = index;
 	}
     }
+    EntryValueChanged(entryPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * EntryValueChanged --
+ *
+ *	This procedure is invoked when characters are inserted into
+ *	an entry or deleted from it.  It updates the entry's associated
+ *	variable, if there is one, and does other bookkeeping such
+ *	as arranging for redisplay.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
 
-    if (entryPtr->textVarName != NULL) {
-	Tcl_SetVar(entryPtr->interp, entryPtr->textVarName, entryPtr->string,
-		TCL_GLOBAL_ONLY);
+static void
+EntryValueChanged(entryPtr)
+    Entry *entryPtr;		/* Entry whose value just changed. */
+{
+    char *newValue;
+
+    if (entryPtr->textVarName == NULL) {
+	newValue = NULL;
+    } else {
+	newValue = Tcl_SetVar(entryPtr->interp, entryPtr->textVarName,
+		entryPtr->string, TCL_GLOBAL_ONLY);
     }
-    entryPtr->flags |= UPDATE_SCROLLBAR;
-    EntryComputeGeometry(entryPtr);
-    EventuallyRedraw(entryPtr);
+
+    if ((newValue != NULL) && (strcmp(newValue, entryPtr->string) != 0)) {
+	/*
+	 * The value of the variable is different than what we asked for.
+	 * This means that a trace on the variable modified it.  In this
+	 * case our trace procedure wasn't invoked since the modification
+	 * came while a trace was already active on the variable.  So,
+	 * update our value to reflect the variable's latest value.
+	 */
+
+	EntrySetValue(entryPtr, newValue);
+    } else {
+	/*
+	 * Arrange for redisplay.
+	 */
+
+	entryPtr->flags |= UPDATE_SCROLLBAR;
+	EntryComputeGeometry(entryPtr);
+	EventuallyRedraw(entryPtr);
+    }
 }
 
 /*

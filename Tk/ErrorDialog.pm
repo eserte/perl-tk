@@ -2,7 +2,7 @@
 #
 # Currently TkPerl background errors are sent to stdout/stderr; use this
 # module if you want them in a window.  You can also "roll your own" by 
-# supplying the routine Tk::BackgroundError.
+# supplying the routine Tk::Error.
 #
 # Stephen O. Lidie, Lehigh University Computing Center.  95/03/02
 # lusol@Lehigh.EDU
@@ -15,10 +15,10 @@
 #
 # The ErrorDialog object essentially consists of two subwidgets: an
 # ErrorDialog widget to display the background error and a Text widget for the
-# traceback information.  If required, you can invoke the `configure' method
+# traceback information.  If required, you can invoke the configure() method
 # to change some characteristics of these subwidgets.
 #
-# Because an ErrorDialog object is a Frame widget all the 'composite' base
+# Because an ErrorDialog object is a Frame widget all the composite base
 # class methods are available to you.
 #
 # Advertised widgets:  error_dialog, text.
@@ -42,36 +42,43 @@
 #
 
 package Tk::ErrorDialog;
-use Carp;
 use English;
-require Tk::Toplevel;
-require Tk::Dialog;
+use Tk ();
+use Tk::Toplevel;
+use Tk::Dialog;
 @Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
 
 Tk::Widget->Construct('ErrorDialog');
 
+my %options = ( -buttons => ['OK', 'Skip Messages', 'Stack trace'],
+                -bitmap  => 'error'
+              );
+my $ED_OBJECT;
 
-BEGIN {
-    ($ok, $sm, $st) = ('OK', 'Skip Messages', 'Stack trace');
-    $ED_OBJECT = undef;
+sub import
+{
+ my $class = shift;
+ while (@_)
+  {
+   my $key = shift;
+   my $val = shift;
+   $options{$key} = $val;
+  }
 }
 
-
-sub Populate 
-{
+sub Populate {
 
     # ErrorDialog constructor.  Uses `new' method from base class
     # to create object container then creates the dialog toplevel and the
     # traceback toplevel.
 
-    my($cw, %args) = @ARG;
+    my($cw, $args) = @ARG;
 
     my $dr = $cw->Dialog(
-        -title          => 'Error in Perl Script',
+        -title          => 'Error in '.$cw->MainWindow->name,
         -text           => 'on-the-fly-text',
-        -bitmap         => 'error',
-        -default_button => $ok,
-	-buttons        => [$ok, $sm, $st],
+        -bitmap         => $options{'-bitmap'},
+	-buttons        => $options{'-buttons'},
     );
     $cw->minsize(1, 1);
     $cw->title('Stack Trace for Error');
@@ -111,7 +118,7 @@ sub Populate
 } # end new, ErrorDialog constructor
 
 
-sub Tk::BackgroundError {
+sub Tk::Error {
 
     # Post a dialog box with the error message and give the user a chance
     # to see a more detailed stack trace.
@@ -139,13 +146,13 @@ sub Tk::BackgroundError {
     }
     $t->yview('ltb');
 
-    $ED_OBJECT->deiconify if ($ans eq $st);
+    $ED_OBJECT->deiconify if ($ans =~ /trace/i);
 
     my $c = $ED_OBJECT->{Configure}{'-cleanupcode'};
     &$c if defined $c;		# execute any cleanup code if it was defined
-    $w->break if $ans eq $sm;
+    $w->break if ($ans =~ /skip/i);
 
-} # end Tk::BackgroundError
+} # end Tk::Error
 
 
 1;

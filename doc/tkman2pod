@@ -1,10 +1,14 @@
 #!/usr/local/bin/perl -w
-use lib ('../blib');
+
 
 $POD::Verbose = 0;
+$POD::enables = 1;
+
 
 use strict qw(subs vars);
 use Carp; 
+
+use Perlize;
 
 {
  package POD;
@@ -86,7 +90,7 @@ use Carp;
    }
   my $text = join(' ',@_);
   $obj->para;
-  $obj->print("=$tag $text\n\n");
+  $obj->print("\n=$tag $text\n\n");
  }
 
  sub force_list
@@ -144,7 +148,7 @@ use Carp;
      }
     else
      {
-      warn "$ARGV:$.:No '$sec'" if ($POD::enabled && $sec !~ /[a-z]/);
+      warn "$.:No '$sec'" if ($POD::enabled && $sec !~ /[a-z]/);
      }
    }
   else
@@ -348,6 +352,7 @@ sub BE
  my $obj = shift;
  $obj->end_lists;
 #$obj->print("<HR>\n");
+ fi($obj);
 }
 
 sub SH
@@ -474,7 +479,7 @@ sub TP
 {
  my $obj = shift;
  my $heading = <MAN>;
- IP($obj,fontstuff($heading));
+ IP($obj,fontstuff(Perlize::munge($heading,\$obj->{WidgetKind})));
 }
 
 sub RS
@@ -523,12 +528,13 @@ sub process
   my $pod = POD->new($podname);
   while (<MAN>)
    {
-    if (m#^'[\\/]"(.*$)#)
+    if (/^'/)
      {
-      $pod->comment($1);
+      $pod->comment($1) if (m#^'[\\/]"(.*$)#);
       next;
      }
     # Do the font changes first
+    $_ = Perlize::munge($_,\$pod->{WidgetKind});
     $_ = fontstuff($_);
     if (/^\.(\w+)\s*(.*)$/)
      {

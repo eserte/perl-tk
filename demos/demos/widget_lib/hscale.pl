@@ -8,9 +8,9 @@ sub hscale {
 
     my($demo) = @ARG;
 
-    $SCALE->destroy if Exists($SCALE);
-    $SCALE = $MW->Toplevel;
-    my $w = $SCALE;
+    $HSCALE->destroy if Exists($HSCALE);
+    $HSCALE = $MW->Toplevel;
+    my $w = $HSCALE;
     dpos $w;
     $w->title('Horizontal Scale Demonstration');
     $w->iconname('hscale');
@@ -24,7 +24,7 @@ sub hscale {
     $w_msg->pack(-padx => '.5c');
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -32,20 +32,20 @@ sub hscale {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
     my $w_frame = $w->Frame(-borderwidth => 10);
     $w_frame->pack(-side => 'top', -fill => 'x');
-    $w_frame_canvas = $w_frame->Canvas(
+    my $w_frame_canvas = $w_frame->Canvas(
         qw(-width 50 -height 50 -bd 0 -highlightthickness 0),
     );
     $w_frame_canvas->create(
         qw(polygon 0 0 1 1 2 2 -fill DeepSkyBlue3 -tags poly),
     );
     $w_frame_canvas->create(qw(line 0 0 1 1 2 2 0 0 -fill black -tags line));
-    $w_frame_scale = $w_frame->Scale(
+    my $w_frame_scale = $w_frame->Scale(
         qw(-orient horizontal -length 284 -from 0 -to 250 -tickinterval 50),
 	-command => [\&hscale_width, $w_frame_canvas],
     );

@@ -275,25 +275,16 @@ typedef struct Tcl_DString {
  * of debugging hooks defined in tclCkalloc.c.
  */
 
+#if 0 
+#include "debug_malloc.h"
+#endif
+
+
 #  define ckalloc(x) malloc(x)
 #  define ckfree(x)  free(x)
 #  define ckrealloc(x,y) realloc(x,y)
 #  define Tcl_DumpActiveMemory(x)
 #  define Tcl_ValidateAllMemory(x,y)
-
-/*
- * Macro to free up result of interpreter.
- */
-
-#define Tcl_FreeResult(interp)					\
-    if ((interp)->freeProc != 0) {				\
-	if ((interp)->freeProc == (Tcl_FreeProc *) free) {	\
-	    ckfree((interp)->result);				\
-	} else {						\
-	    (*(interp)->freeProc)((interp)->result);		\
-	}							\
-	(interp)->freeProc = 0;					\
-    }
 
 /*
  * Forward declaration of Tcl_HashTable.  Needed by some C++ compilers
@@ -565,8 +556,8 @@ EXTERN void		Tcl_DStringSetLength _ANSI_ARGS_((Tcl_DString *dsPtr,
 EXTERN Tcl_RegExp	Lang_RegExpCompile _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int fold));
 EXTERN int		Lang_RegExpExec _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_RegExp regexp, char *string, char *start));
-EXTERN void		Tcl_RegExpRange _ANSI_ARGS_((Tcl_RegExp regexp,
+			    Tcl_RegExp reg_exp, char *string, char *start));
+EXTERN void		Tcl_RegExpRange _ANSI_ARGS_((Tcl_RegExp reg_exp,
 			    int index, char **startPtr, char **endPtr));
 
 EXTERN void Lang_SetErrorCode _ANSI_ARGS_((Tcl_Interp *interp,char *code));
@@ -588,11 +579,12 @@ EXTERN int LangEventCallback _ANSI_ARGS_((Tcl_Interp *,LangCallback *,XEvent *,K
 EXTERN int LangEventHook _ANSI_ARGS_((int flags));
 EXTERN void LangBadFile  _ANSI_ARGS_((int fd));
 EXTERN void Lang_BuildInImages _ANSI_ARGS_((void));
-EXTERN void Lang_FreeRegExp _ANSI_ARGS_((Tcl_RegExp regexp));
+EXTERN void Lang_FreeRegExp _ANSI_ARGS_((Tcl_RegExp reg_exp));
 EXTERN int TkReadDataPending _ANSI_ARGS_((FILE *f));
 EXTERN int	TclOpen _ANSI_ARGS_((char *path, int oflag, int mode));
 EXTERN int	TclRead _ANSI_ARGS_((int fd, VOID *buf, size_t numBytes));
 EXTERN int	TclWrite _ANSI_ARGS_((int fd, VOID *buf, size_t numBytes));
+EXTERN void *	TclCalloc _ANSI_ARGS_((size_t n,size_t s));
 
 EXTERN void Lang_DeleteObject _ANSI_ARGS_((Tcl_Interp *,Tcl_Command));
 EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,

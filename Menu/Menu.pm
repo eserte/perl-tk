@@ -18,11 +18,11 @@ require DynaLoader;
 require Tk::Wm;
 use AutoLoader;
 
-@ISA = qw(DynaLoader Tk::Wm Tk::Widget);
+@ISA = qw(DynaLoader Tk::Wm Tk::Derived Tk::Widget);
 
 Tk::Widget->Construct('Menu');
 
-bootstrap Tk::Menu;
+bootstrap Tk::Menu $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::menu }
 
@@ -44,6 +44,78 @@ sub CreateArgs
  return @result;
 }
 
+sub InitObject
+{
+ my ($menu,$args) = @_;
+ my $menuitems = delete $args->{-menuitems};
+ $menu->SUPER::InitObject($args);
+ if (defined $menuitems)
+  {
+   # If any other args do configure now
+   if (%$args)
+    {
+     eval { $menu->configure(%$args) };
+     $menu->BackTrace($@) if ($@);
+     %$args = ();
+    }
+   $menu->AddItems($menuitems) 
+  }
+}
+
+sub AddItems
+{
+ my ($menu,$menuitems) = @_;
+ my $item;
+ ITEM:
+ foreach $item (@{$menuitems})
+  { 
+   if (!ref($item))
+    { 
+     $menu->separator;  # A separator
+    }  
+   else
+    {
+     my %minfo = ( @$item );
+     my $invoke = delete $minfo{'-invoke'};
+     my $kind;      
+     foreach $kind (qw(Cascade Button Radiobutton Checkbutton))
+      {
+       my $name = delete($minfo{$kind});
+       $name = delete($minfo{"\L$kind"}) unless (defined $name); 
+       if (defined $name)
+        {
+         $kind = "\L$kind";
+         $kind = 'command' if ($kind eq 'button');
+         # Name is default label 
+         $minfo{-label} = $name unless defined($minfo{-label});
+         # Use ~ in name/label to set -underline
+         if (defined($minfo{-label}) && !defined($minfo{-underline}))
+          {
+           my $cleanlabel = $minfo{-label};
+           my $underline = ($cleanlabel =~ s/^(.*)~/$1/) ? length($1): undef;
+           if (defined($underline) && ($underline >= 0))
+            {
+             $minfo{-underline} = $underline;
+             $name = $cleanlabel if ($minfo{-label} eq $name);
+             $minfo{-label} = $cleanlabel;
+            }
+          }
+         if ($kind eq 'cascade')
+          {
+           my $widgetvar = delete($minfo{-menuvar});
+           $minfo{-menu} = $menu->Menu(-menuitems => delete $minfo{-menuitems});
+           $$widgetvar   = $minfo{-menu} if (defined($widgetvar) && ref($widgetvar));
+          }
+         $menu->$kind(%minfo);
+         $menu->invoke('last') if ($invoke);
+         next ITEM;
+        }
+      }
+     $menu->BackTrace("Don't recognize " . join(' ',%minfo));
+    }  # A non-separator
+  }  # Add another Menu item
+}
+        
 1;
 
 __END__
@@ -249,7 +321,7 @@ sub ButtonDown
  else
   {
    while ($menu->overrideredirect
-          &&  $menu->parent->IsMenu
+          && $menu->parent->IsMenu
           && $menu->parent->ismapped 
          )
     {
@@ -550,7 +622,7 @@ sub FindName
  return if ($last eq 'none');
  for ($i = 0;$i <= $last;$i += 1)
   {
-   my $lable = eval { $menu->entrycget($i,"-label") };
+   my $label = eval { $menu->entrycget($i,"-label") };
    return $i if (defined $label && $label eq $s);
   }
  return undef;
@@ -601,7 +673,7 @@ sub PostOverPoint
 # entry - Index of a menu entry to center over (x,y).
 # If omitted or specified as {}, then menu's
 # upper-left corner goes at (x,y).
-sub Popup
+sub Post
 {
  my $menu = shift;
  return unless (defined $menu);

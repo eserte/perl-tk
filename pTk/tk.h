@@ -1272,6 +1272,8 @@ COREXT int		Tk_FocusCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, Arg *args));
 COREXT int		Tk_GrabCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, Arg *args));
+COREXT int		Tk_GridCmd _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, Arg *args));
 COREXT int		Tk_ImageCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, Arg *args));
 COREXT int		Tk_ListboxCmd _ANSI_ARGS_((ClientData clientData,

@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkColor.c 1.36 95/03/18 15:43:38";
+static char sccsid[] = "@(#) tkColor.c 1.37 95/09/26 17:11:23";
 
 #include "tkPort.h"
 #include "tk.h"
@@ -547,10 +547,11 @@ FindClosestColor(tkwin, desiredColorPtr, actualColorPtr)
 {
     TkStressedCmap *stressPtr;
     float tmp, distance, closestDistance;
-    int i, closest;
+    int i, closest, numFound;
     XColor *colorPtr;
     TkDisplay *dispPtr = ((TkWindow *) tkwin)->dispPtr;
     Colormap colormap = Tk_Colormap(tkwin);
+    XVisualInfo template, *visInfoPtr;
 
     /*
      * Find the TkStressedCmap structure for this colormap, or create
@@ -561,7 +562,13 @@ FindClosestColor(tkwin, desiredColorPtr, actualColorPtr)
 	if (stressPtr == NULL) {
 	    stressPtr = (TkStressedCmap *) ckalloc(sizeof(TkStressedCmap));
 	    stressPtr->colormap = colormap;
-	    stressPtr->numColors = 1<<Tk_Depth(tkwin);
+	    template.visualid = XVisualIDFromVisual(Tk_Visual(tkwin));
+	    visInfoPtr = XGetVisualInfo(Tk_Display(tkwin),
+		    VisualIDMask, &template, &numFound);
+	    if (numFound != 1) {
+		panic("FindClosestColor couldn't lookup visual");
+	    }
+	    stressPtr->numColors = visInfoPtr->colormap_size;
 	    stressPtr->colorPtr = (XColor *) ckalloc((unsigned)
 		    (stressPtr->numColors * sizeof(XColor)));
 	    for (i = 0; i  < stressPtr->numColors; i++) {

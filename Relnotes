@@ -1,0 +1,61 @@
+The user visible changes in Tk-b9 / Tk-b9.01 / Tk-b10.
+
+Most of user-level changes occurred in Tk-b9, Tk-b10 is mainly 
+internal cleanup and documentation improvements and changes to Makefile.PL's
+to suit perl5.002.
+
+Tk-b10 has changed to $Tk::VERSION rather than $Tk:Version to be consistent
+with other packages.
+
+Tk-b10 has renamed Tk::BackgroundError to just Tk::Error - this makes
+it more like Tcl/Tk and will allow C API's  BackgroundError to be exported
+to perl one day.
+
+The major change in Tk-b10 is that the doc subdirectory now contains 
+'man' and HTML docs which are in terms of perl/Tk syntax rather than Tcl/Tk.
+Some of the *.pod files have been incorporated there too.
+The install process for docs is still not sorted though.
+
+Error trapping has been "improved". There may be cases where it is 
+now too strong.
+
+Tk::Widget::after is now a wrapper on core Tk 'after' and auto-cancels
+when widget is destroyed. OnDestroy method is also available for general 
+use.
+
+Added alias handling to derived widgets ConfigSpecs().
+
+Changes for (a little) more detail.
+
+Remaining changes are common to Tk-b9* ...
+
+* Most if not all 'sub commands' now have an alias 
+  e.g. 
+   $w->option('add',...) 
+  can now be written 
+   $w->optionAdd(...) 
+  Please let me know if I have missed any. 
+  Medium term goal is to make second form 
+  call straight into associated C code.
+
+* A few method names have been changed to be more consistent.
+  A script b9names is provided which should translate -b8 
+  applications to -b9 names.
+
+* The short hand constructors e.g. $w->Button(...)
+  are now delegated to nominee widget of a composite.
+  This makes it easier to create widgets with Text as 
+  a parent inside a ScrlText. To create new widgets 
+  as children of the composite 'frame' you need to use
+  new directly:
+
+  Tk::Button->new($cw,...);
+
+* The Inherit mechanism is replaced with 5.002's SUPER::
+
+* There is a Table widget - my own not BLT port.
+
+* Various binding enhancements and two new flavours of Text:
+  a read-only one, and one which allows edits to be undone.
+
+See Changes file for more detail.

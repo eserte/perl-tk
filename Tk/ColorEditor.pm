@@ -1,10 +1,8 @@
 package Tk::ColorEditor;
 
 use Tk qw(lsearch Ev);
-
-require Tk::Toplevel;
+use Tk::Toplevel;
 @Tk::ColorEditor::ISA = qw(Tk::Toplevel);
-
 Tk::Widget->Construct('ColorEditor');
 
 %Tk::ColorEditor::names = ();
@@ -16,7 +14,7 @@ from the Tcl/Tk distribution).
 
 =head1 SYNOPSIS
 
-   require Tk::ColorEditor;
+   use Tk::ColorEditor;
 
    $cref = $mw->ColorEditor(-title => $title, -cursor => @cursor);
 
@@ -27,7 +25,7 @@ from the Tcl/Tk distribution).
 ColorEditor is implemented as an object with various methods, described 
 below.  First, create your ColorEditor object during program initialization 
 (one should be sufficient), and then configure it by specifying a list of Tk
-widgets to colorize. When it's time to use the editor, invoke the `show'
+widgets to colorize. When it's time to use the editor, invoke the Show()
 method.
 
 ColorEditor allows some customization: you may alter the color attribute
@@ -42,7 +40,7 @@ supply your own custom color configurator callback.
 Call the constructor to create the editor object, which in turn returns a
 blessed reference to the new object:
 
-   require Tk::ColorEditor;
+   use Tk::ColorEditor;
 
    $cref = $mw->ColorEditor(
        -title  => $title,
@@ -62,7 +60,7 @@ blessed reference to the new object:
 
 =item 2.
 
-Invoke the `configure' method to change editor characteristics:
+Invoke the configure() method to change editor characteristics:
 
    $cref->configure(-option => value, ..., -option-n => value-n);
    
@@ -89,26 +87,26 @@ Invoke the `configure' method to change editor characteristics:
 
 =item 3.
 
-Invoke the `show' method on the editor object, say, by a button or menu press:
+Invoke the Show() method on the editor object, say, by a button or menu press:
 
    $cref->Show;
 
 =item 4.
 
-The cget('-widgets') method returns a reference to a list of widgets that
+The cget(-widgets) method returns a reference to a list of widgets that
 are colorized by the configurator.  Typically, you add new widgets to
-this list and then use it in a subsequent `configure' call to expand your
+this list and then use it in a subsequent configure() call to expand your
 color list.
 
    $cref->configure(
        -widgets => [
-           @{$Filesystem_ref->cget('widgets')}, @{$cref->cget('-widgets')},
+           @{$Filesystem_ref->cget(-widgets)}, @{$cref->cget(-widgets)},
        ]
    );
 
 =item 5.
 
-The `delete_widgets' method expects a reference to a list of widgets which are
+The delete_widgets() method expects a reference to a list of widgets which are
 then removed from the current color list.
 
    $cref->delete_widgets($OBJTABLE{$objname}->{'-widgets'})
@@ -126,8 +124,7 @@ translation of tcolor.tcl to TkPerl, from which this code has been derived.
 =cut 
 
  
-use Carp;
-require Tk::Dialog;
+use Tk::Dialog;
 use Tk::Pretty;
 
 BEGIN {
@@ -135,7 +132,7 @@ BEGIN {
 }
 
 
-sub color_space; sub hsvToRgb; sub rgbToHsv;
+use subs qw(color_space hsvToRgb rgbToHsv);
 
 # ColorEditor public methods.
 
@@ -262,15 +259,15 @@ sub Populate
 
     # ColorEditor constructor.
 
-    my($cw, %args) = @_;
+    my($cw, $args) = @_;
 
+    $cw->SUPER::Populate($args);
     $cw->withdraw;
 
     my $color_space = 'hsb';    # rgb, cmy, hsb
-    my @cursor = ('top_left_arrow');
-    @cursor = @{$cw->{Configure}{'-cursor'}} if defined $cw->{Configure}{'-cursor'};  
     my(@highlight_list) = qw(
         TEAR_SEP
+        foreground background SEP
         activeForeground activeBackground SEP
         highlightColor highlightBackground SEP
         selectForeground selectBackground SEP 
@@ -293,7 +290,6 @@ sub Populate
     my $mf = $m0->Menubutton(
         -text      => 'File',
         -underline => 0,
-        -cursor    => \@cursor,
         -bd        => 1,
         -relief    => 'raised',
     );
@@ -311,7 +307,6 @@ sub Populate
     my $mc = $m0->Menubutton(
         -text      => 'Colors',
         -underline => 0,
-        -cursor    => \@cursor,
         -bd        => 1,
         -relief    => 'raised',
     );
@@ -364,7 +359,6 @@ sub Populate
     my $mh = $m0->Menubutton(
         -text      => 'Help',
         -underline => 0,
-        -cursor    => \@cursor,
         -bd        => 1,
         -relief    => 'raised',
     );
@@ -380,12 +374,10 @@ sub Populate
     my $bot = $cw->Frame(-relief => 'raised', -bd => 2);
     $bot->pack(-side => 'bottom', -fill =>'x');
     my $update = $bot->Button(
-        -cursor  => \@cursor,
         -command => [
             sub {
-                my($objref) = @_;
-                my $cb = $objref->cget('-command');
-                $cb->Call($objref->{'highlight'}, $objref->cget('-color'));
+                my ($objref) = @_;
+                $objref->Callback(-command => ($objref->{'highlight'}, $objref->cget('-color')));
             }, $cw,
         ],
     );
@@ -422,7 +414,6 @@ sub Populate
             -command     => ["yview", $names],
             -relief      => 'sunken',
             -borderwidth => 2,
-            -cursor      => \@cursor,
         );
         $names->configure(-yscrollcommand => ["set",$scroll]);
         $names->pack(-in => $middle_left, -side => 'left');
@@ -468,7 +459,6 @@ sub Populate
             -to       => 1000,
             '-length' => '6c',
             -orient   => 'horizontal',
-            -cursor   => \@cursor,
             -command  => [\&scale_changed, $cw],
         );
         $scale[$i]->pack(
@@ -511,12 +501,11 @@ sub Populate
     my $swatch = $cw->Canvas(
         -width  => '2.5c',
         -height => '5c',
-        -cursor => \@cursor,
     );
     my $swatch_item = $swatch->create('oval', '.5c', '.3c', '2.26c', '4.76c');
 
     my $value = $cw->Label(
-        -textvariable => \$cw->{'hex'}, 
+        -textvariable => \$cw->{'color'}, 
         -width        => 13,
         -font         => '-Adobe-Courier-Medium-R-Normal-*-120-*-*-*-*-*-*',
     );
@@ -563,14 +552,20 @@ sub Populate
 
     my $pixmap = $cw->Pixmap('-file' => Tk->findINC("ColorEdit.xpm"));
     $cw->Icon(-image => $pixmap);
-    $cw->ConfigSpecs('-color_space'    => [ 'METHOD', undef, undef, 'hsb' ],
-                     '-widgets'        => [ 'PASSIVE', undef, undef, [$cw->parent->Descendants] ],
-                     '-display_status' => [ 'PASSIVE', undef, undef, 0 ],
-                     '-title'          => [ 'METHOD', undef, undef, '' ],
-                     '-color'          => [ 'METHOD', 'background', 'Background', $middle->cget('-background') ],
-                     '-command'        => [ 'CALLBACK', undef, undef, ['set_colors',$cw] ],
-                     '-highlight'      => [ 'METHOD', undef, undef, 'background' ]
-                    );
+
+    $cw->ConfigSpecs(
+        '-color_space'  => ['METHOD', undef, undef, 'hsb'],
+        -widgets        => ['PASSIVE', undef, undef, 
+                               [$cw->parent->Descendants]],
+        -display_status => ['PASSIVE', undef, undef, 0],
+        '-title'        => ['METHOD', undef, undef, ''],
+        '-color'        => ['METHOD', 'background', 'Background', 
+                               $middle->cget('-background')],
+        -command        => ['CALLBACK', undef, undef, ['set_colors',$cw]],
+        '-highlight'    => ['METHOD', undef, undef, 'background'],
+        -cursor         => ['DESCENDANTS', 'cursor', 'Cursor', 'top_left_ptr'],
+    );
+
 } # end Populate, ColorEditor constructor
 
 sub Show {
@@ -614,26 +609,6 @@ sub set_colors {
 } # end set_colors
 
 # ColorEditor private methods.
-
-sub error {
-
-    # Generate a background error, which may even be displayed in a window if
-    # using ErrorDialog.  (Swiped from Carp.)
-
-    my($objref, $msg) = @_;
-
-    my $error = '';
-    my @mess = '';
-    my $i = 0;
-    my ($pack,$file,$line,$sub);
-    while (($pack,$file,$line,$sub) = caller($i++)) {
-        push @mess, "\t$sub " if $error eq "called";
-        push @mess, "$error at $file line $line";
-        $error = "called";
-    }
-    Tk::BackgroundError($objref, $msg, @mess);
-
-} # end error
 
 sub color_space {
 
@@ -695,7 +670,7 @@ sub color
  my ($objref,$name) = @_;
  if (@_ > 1 && defined($name) && length($name))
   {
-   $objref->{'color'} = $name;
+   # $objref->{'color'} = $name;
    my ($format, $shift);
    my ($red, $green, $blue);
 
@@ -711,19 +686,21 @@ sub color
            elsif($len == 10) { $format = "#(...)(...)(...)"; $shift = 4; }
              elsif($len == 13) { $format = "#(....)(....)(....)"; $shift = 0; }
        else { 
-           print STDERR "ColorEditor error:  syntax error in color name \"$name\"\n";
-           return;
+	 $objref->BackTrace(
+	   "ColorEditor error:  syntax error in color name \"$name\"");
+	 return;
        }
        ($red,$green,$blue) = $name =~ /$format/;
        eval "\$red = 0x$red; \$green = 0x$green; \$blue = 0x$blue;";
-       $red = $red << $shift;
+       $red = $red << 										$shift;
        $green = $green << $shift;
        $blue = $blue << $shift;
     }
    $objref->{'red'} = $red;
    $objref->{'blue'} = $blue;
    $objref->{'green'} = $green;
-   $objref->{'color'} = sprintf("#%04x%04x%04x", $red, $green, $blue);
+   my $hex = sprintf("#%04x%04x%04x", $red, $green, $blue);
+   $objref->{'color'} = $hex;
    $objref->{'Entry'} = $name;
    $objref->DoWhenIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
    $objref->{'swatch'}->itemconfigure($objref->{'swatch_item'},

@@ -1,1 +1,1 @@
-tkWidgetTab.o: tkWidgetTab.c tkPort.h tk.h Lang.h
+tkWidgetTab.o: tkWidgetTab.c tkPort.h tkConfig.h tk.h Lang.h

@@ -1,0 +1,30 @@
+#!/usr/local/bin/perl -w
+
+use Tk;
+
+my $m = MainWindow -> new;
+my $b = $m -> Button('-text'    => "Hello World!", 
+                     '-height'  => '10',
+                     '-width'   => '20',
+                    )->pack;
+$b -> configure('-command' => sub{ whatsize($b) } );
+
+print "h=",$b->cget('-height'),"\n";
+print "w=",$b->cget('-width'),"\n";
+
+MainLoop;
+
+sub whatsize {
+    my $b = shift;
+    my $w = $b->cget('-width');
+#    my $h = $b->cget('-height');
+#    my $s = $b->cget('-state');
+#    my $w = $b->width;
+#    my $h = $b->height;
+    print "$b ",$b->PathName;
+    print " \$w = $w\n";
+#   print " \$h = $h";
+    Tk::DebugHook($w);
+}
+__END__
+

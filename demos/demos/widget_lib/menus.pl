@@ -16,7 +16,7 @@ sub menus {
     $w->title('Menu Demonstration');
     $w->iconname('menus');
 
-    $w_menu = $w->Frame(-relief => 'raised', -borderwidth => 2);
+    my $w_menu = $w->Frame(-relief => 'raised', -borderwidth => 2);
     $w_menu->pack(-fill => 'x');
 
     my $w_msg = $w->Label(
@@ -28,7 +28,7 @@ sub menus {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -36,7 +36,7 @@ sub menus {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -59,13 +59,13 @@ sub menus {
              -label => "Print letter \"$label\"",
              -underline => 14,
 	     -accelerator => "Meta+$label",
-             -command => [sub {print "$ARG[0]\n"}, $label],
+             -command => sub {print "$label\n"},
         );
-	$b->bind("<Meta-${label}>" => [sub {print "$ARG[0]\n"},$label]);
+	$b->bind("<Meta-${label}>" => sub {print "$label\n"});
     }
 
-    $menu_cb = 'Check buttons';
-    $menu_rb = 'Radio buttons';
+    my $menu_cb = 'Check buttons';
+    my $menu_rb = 'Radio buttons';
     my $c = $w_menu->Menubutton(-text => 'Cascades', -underline => 0);
     $c->command(
         -label       => 'Print hello', 
@@ -88,14 +88,20 @@ sub menus {
     my $cc = $cm->Menu;
     $c->entryconfigure($menu_cb, -menu => $cc);
 
-    $cc->checkbutton(-label => 'Oil checked', -variable => \$oil);
-    $cc->checkbutton(-label => 'Transmission checked', -variable => \$trans);
-    $cc->checkbutton(-label => 'Brakes checked', -variable => \$brakes);
-    $cc->checkbutton(-label => 'Lights checked', -variable => \$lights);
+    $cc->checkbutton(-label => 'Oil checked', -variable => \$OIL);
+    $cc->checkbutton(-label => 'Transmission checked', -variable => \$TRANS);
+    $cc->checkbutton(-label => 'Brakes checked', -variable => \$BRAKES);
+    $cc->checkbutton(-label => 'Lights checked', -variable => \$LIGHTS);
     $cc->separator;
     $cc->command(
         -label => 'See current values',
-	-command => [\&seeVars, $MW, qw(oil trans brakes lights)],
+	-command => [\&see_vars, $MW, [
+                                       ['oil',     \$OIL],
+                                       ['trans',   \$TRANS],
+                                       ['brakes',  \$BRAKES],
+                                       ['lights',  \$LIGHTS],
+                                      ],
+                    ],
     );
     $cc->invoke(1);
     $cc->invoke(3);
@@ -107,7 +113,7 @@ sub menus {
     foreach $label (qw(10 14 18 24 32)) {
 	$rc->radiobutton(
             -label    => "$label point",
-            -variable => \$pointSize,
+            -variable => \$POINT_SIZE,
             -value    => $label,
         );
     }
@@ -115,14 +121,18 @@ sub menus {
     foreach $label (qw(Roman Bold Italic)) {
 	$rc->radiobutton(
             -label    => $label,
-            -variable => \$style,
+            -variable => \$FONT_STYLE,
             -value    => $label,
         );
     }
     $rc->separator;
     $rc->command(
         -label => 'See current values',
-	-command => [\&seeVars, $MW, qw(pointSize style)],
+	-command => [\&see_vars, $MW, [
+                                      ['point size', \$POINT_SIZE],
+                                      ['font style', \$FONT_STYLE],
+                                     ],
+                    ],
     );
     $rc->invoke(1);
     $rc->invoke(7);
@@ -130,12 +140,12 @@ sub menus {
     my $i = $w_menu->Menubutton(-text => 'Icons', -underline => 0);
     $i->command(
         -bitmap => '@'.Tk->findINC('demos/images/pattern'),
-	-command => [$DIALOG_ICON => 'show'],
+	-command => [$DIALOG_ICON => 'Show'],
     );
     foreach $label (qw(info questhead error)) {
 	$i->command(
             -bitmap  => $label,
-            -command => [sub {print "You invoked the $ARG[0] bitmap\n"},$label]
+            -command => sub {print "You invoked the \"$label\" bitmap\n"},
         );
     }
 
@@ -144,7 +154,7 @@ sub menus {
 		    'Does almost nothing', 'Make life meaningful') {
 	$m->command( 
             -label   => $label, 
-	    -command => [sub {print "You invoked \"$ARG[0]\"\n"},$label]
+	    -command => sub {print "You invoked \"$label\"\n"},
         );
     }
 
@@ -153,7 +163,7 @@ sub menus {
 	$k->command(
             -label      => $label,
             -background => $label,
-	    -command => [sub {print "You invoked \"$ARG[0]\"\n"},$label]
+	    -command => sub {print "You invoked \"$label\"\n"},
         );
     }
     
@@ -168,23 +178,16 @@ sub menus {
 
 sub menus_error {
 
+
     # Generate a background error, which may even be displayed in a window if
-    # using ErrorDialog.  (Swiped from Carp.)
+    # using ErrorDialog. 
 
     my($msg) = @ARG;
 
     $msg = "This is just a demo: no action has been defined for \"$msg\".";
-    my $error = '';
-    my @mess = '';
-    my $i = 0;
-    my ($pack,$file,$line,$sub);
-    while (($pack,$file,$line,$sub) = caller($i++)) {
-        push @mess, "\t$sub " if $error eq "called";
-        push @mess, "$error at $file line $line";
-        $error = "called";
-    }
-    Tk::BackgroundError($MW, $msg, @mess);
+    $MENUS->BackTrace($msg);
 
 } # end menus_error
+
 
 1;

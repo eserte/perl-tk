@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 LFUNC(OpenBuffer, void, (char *buffer, xpmData *mdata));
 
@@ -48,27 +48,31 @@ XpmCreateImageFromBuffer(display, buffer, image_return,
     XpmImage image;
     XpmInfo info;
     int ErrorStatus;
+    xpmData mdata;
 
-    /* create an XpmImage from the buffer */
+    xpmInitXpmImage(&image);
+    xpmInitXpmInfo(&info);
+
+    /* open buffer to read */
+    OpenBuffer(buffer, &mdata);
+
+    /* create the XImage from the XpmData */
     if (attributes) {
 	xpmInitAttributes(attributes);
 	xpmSetInfoMask(&info, attributes);
-	ErrorStatus = XpmCreateXpmImageFromBuffer(buffer, &image, &info);
+	ErrorStatus = xpmParseDataAndCreate(display, &mdata,
+					    image_return, shapeimage_return,
+					    &image, &info, attributes);
     } else
-	ErrorStatus = XpmCreateXpmImageFromBuffer(buffer, &image, NULL);
-
-    if (ErrorStatus != XpmSuccess)
-	return (ErrorStatus);
-
-    /* create the related ximages */
-    ErrorStatus = XpmCreateImageFromXpmImage(display, &image,
-					     image_return, shapeimage_return,
-					     attributes);
+	ErrorStatus = xpmParseDataAndCreate(display, &mdata,
+					    image_return, shapeimage_return,
+					    &image, NULL, attributes);
     if (attributes) {
 	if (ErrorStatus >= 0)		/* no fatal error */
 	    xpmSetAttributes(attributes, &image, &info);
 	XpmFreeXpmInfo(&info);
     }
+
     /* free the XpmImage */
     XpmFreeXpmImage(&image);
 

@@ -148,7 +148,7 @@ sub butPress {
     my($w, $color) = @ARG;
 
     my $i = $w->create(qw(text 25c 18.1c -anchor n), -text => 'Ouch!!', -fill => $color);
-    after(500, [sub {shift->delete($ARG[0])}, $w, $i]);
+    $w->after(500, sub { $w->delete($i) });
 
 } # end butPress
 

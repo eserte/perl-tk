@@ -6,7 +6,7 @@ require DynaLoader;
 
 Tk::Widget->Construct('InputO');
 
-bootstrap Tk::InputO; 
+bootstrap Tk::InputO $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::inputo }
 

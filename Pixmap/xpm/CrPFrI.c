@@ -32,14 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-/*
- * The code related to FOR_MSW has been added by
- * HeDu (hedu@cul-ipn.uni-kiel.de) 4/94
- */
-
-#include "xpmP.h"
-
-#ifndef FOR_MSW
+#include "XpmI.h"
 
 void
 xpmCreatePixmapFromImage(display, d, ximage, pixmap_return)
@@ -49,15 +42,18 @@ xpmCreatePixmapFromImage(display, d, ximage, pixmap_return)
     Pixmap *pixmap_return;
 {
     GC gc;
+    XGCValues values;
 
     *pixmap_return = XCreatePixmap(display, d, ximage->width,
 				   ximage->height, ximage->depth);
-    gc = XCreateGC(display, *pixmap_return, 0, NULL);
+    /* set fg and bg in case we have an XYBitmap */
+    values.foreground = 1;
+    values.background = 0;
+    gc = XCreateGC(display, *pixmap_return,
+		   GCForeground | GCBackground, &values);
 
     XPutImage(display, *pixmap_return, gc, ximage, 0, 0, 0, 0,
 	      ximage->width, ximage->height);
 
     XFreeGC(display, gc);
 }
-
-#endif /* FOR_MSW */

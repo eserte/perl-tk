@@ -11,7 +11,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkMenubutton.c 1.70 95/06/09 08:20:02";
+static char sccsid[] = "@(#) tkMenubutton.c 1.71 95/11/19 16:06:57";
 
 #include "tkPort.h"
 #include "default.h"
@@ -637,7 +637,7 @@ ConfigureMenuButton(interp, mbPtr, argc, args, flags)
 
     gcValues.font = mbPtr->fontPtr->fid;
     gcValues.background = Tk_3DBorderColor(mbPtr->normalBorder)->pixel;
-    if (mbPtr->disabledFg != NULL) {
+    if ((mbPtr->disabledFg != NULL) && (mbPtr->imageString == NULL)) {
 	gcValues.foreground = mbPtr->disabledFg->pixel;
 	mask = GCForeground|GCBackground|GCFont;
     } else {
@@ -890,7 +890,8 @@ DisplayMenuButton(clientData)
      * foreground color, generate the stippled effect.
      */
 
-    if ((mbPtr->state == tkDisabledUid) && (mbPtr->disabledFg == NULL)) {
+    if ((mbPtr->state == tkDisabledUid)
+	    && ((mbPtr->disabledFg == NULL) || (mbPtr->image != NULL))) {
 	XFillRectangle(mbPtr->display, pixmap, mbPtr->disabledGC,
 		mbPtr->inset, mbPtr->inset,
 		(unsigned) (Tk_Width(tkwin) - 2*mbPtr->inset),

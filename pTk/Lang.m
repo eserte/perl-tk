@@ -46,6 +46,7 @@
 #define Lang_RegExpExec (*LangVptr->V_Lang_RegExpExec)
 #define Lang_SetErrorCode (*LangVptr->V_Lang_SetErrorCode)
 #define Lang_SplitList (*LangVptr->V_Lang_SplitList)
+#define TclCalloc (*LangVptr->V_TclCalloc)
 #define TclOpen (*LangVptr->V_TclOpen)
 #define TclRead (*LangVptr->V_TclRead)
 #define TclWrite (*LangVptr->V_TclWrite)

@@ -144,7 +144,7 @@ sub arrow_err {
     my($c) = @ARG;
 
     my $i = $c->create(qw(text .6i .1i -anchor n), -text => "Range error!");
-    after(4000, [sub {shift->delete($ARG[0])}, $c, $i]);
+    $c->after(4000, sub { $c->delete($i) });
 
 } # end errow_err
 
@@ -186,7 +186,7 @@ sub mkArrow {
 	$demoArrowInfo{'boxStyle'}     = [-fill => undef, -outline => 'black', -width => 1];
 	$demoArrowInfo{'activeStyle'}  = [-fill => 'red', -outline => 'black', -width => 1];
     } else {
-	$demoArrowInfo{'bigLineStyle'} = [-fill => black,  -stipple => '@'.Tk->findINC('demos/images/grey.25')];
+	$demoArrowInfo{'bigLineStyle'} = [-fill => 'black',  -stipple => '@'.Tk->findINC('demos/images/grey.25')];
 	$demoArrowInfo{'boxStyle'}     = [-fill => "", -outline => 'black',  -width => 1];
 	$demoArrowInfo{'activeStyle'}  = [-fill => 'black', -outline => 'black', -width => 1];
     }

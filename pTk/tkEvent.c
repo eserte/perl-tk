@@ -503,7 +503,7 @@ Tk_CreateTimerHandler(milliseconds, proc, clientData)
      * Compute when the event should fire.
      */
 
-    (void) gettimeofday(&timerPtr->time, (struct timezone *) NULL);
+    (void) Tk_timeofday(&timerPtr->time);
     timerPtr->time.tv_sec += milliseconds/1000;
     timerPtr->time.tv_usec += (milliseconds%1000)*1000;
     if (timerPtr->time.tv_usec >= 1000000) {
@@ -784,7 +784,7 @@ Tk_DoOneEvent(flags)
     if ((firstTimerHandlerPtr != NULL) && (flags & TK_TIMER_EVENTS)) {
 	register TimerEvent *timerPtr = firstTimerHandlerPtr;
 
-	(void) gettimeofday(&curTime, (struct timezone *) NULL);
+	(void) Tk_timeofday(&curTime);
 	if ((timerPtr->time.tv_sec < curTime.tv_sec)
 		|| ((timerPtr->time.tv_sec == curTime.tv_sec)
 		&&  (timerPtr->time.tv_usec < curTime.tv_usec))) {

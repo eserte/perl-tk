@@ -1,10 +1,12 @@
 #!/usr/local/bin/perl -w
 
-use lib ("./blib");
+
 use English;
 use Tk;
 require Tk::demos::LabEnLabRad;
-$mw = MainWindow->new;
+use strict;
+
+my $MW = MainWindow->new;
 
 # Create and pack the expandable LabeledEntryLabeledRadiobutton widget.  Then
 # globally configure the advertised Frame, Label and Radiobutton widgets.
@@ -13,9 +15,9 @@ $mw = MainWindow->new;
 # entry widget in the advertised composite LabeledEntry widget, and then 
 # create some key bindings.
 
-$entry_var = 'Frogs lacking lipophores are blue.';
-$radio_var = '';
-$cw = $mw->LabeledEntryLabeledRadiobutton(
+my $entry_var = 'Frogs lacking lipophores are blue.';
+my $radio_var = '';
+my $cw = $MW->LabeledEntryLabeledRadiobutton(
     'Name'          => 'frog',
     -entry_label    => 'Entry Label',
     -entry_variable => \$entry_var,
@@ -48,7 +50,7 @@ $cw->Walk(
     }, 'Radiobutton',
 );
 
-$r = $cw->Subwidget('labeled_radiobutton')->Subwidget('RL3');
+my $r = $cw->Subwidget('labeled_radiobutton')->Subwidget('RL3');
 $r->configure(-bg => 'pink', -command =>
     sub {print "radiobutton 'RL3' selected!\n";}
 );
@@ -61,7 +63,8 @@ $cw->Subwidget('labeled_entry')->configure(-bg => 'orange');
 # composite widget by invoking the `configure' method on the composite
 # widget rather than on specific subwidgets, or classes of widgets.
 
-$b = $mw->Button(-text => 'Reconfigure subwidgets', -command =>
+my $b;
+$b = $MW->Button(-text => 'Reconfigure subwidgets', -command =>
     sub {
         $cw->configure(
             -background         => 'cyan',
@@ -78,7 +81,7 @@ $b->pack(-side => 'top', -expand => 1, -fill => 'both');
 
 # Create and pack the Quit button.
 
-$q = $mw->Button(-text => 'Quit', -command => sub{exit});
+my $q = $MW->Button(-text => 'Quit', -command => sub{exit});
 $q->pack(-side => 'top', -expand => 1, -fill => 'both');
 
 MainLoop;

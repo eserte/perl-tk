@@ -22,7 +22,7 @@ sub icon {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -30,16 +30,16 @@ sub icon {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
     $w->Bitmap('flagup',
-        -file => Tk->findINC('demos/images/flagup'),
+        -file     => Tk->findINC('demos/images/flagup'),
 	-maskfile => Tk->findINC('demos/images/flagup'),
     );
     $w->Bitmap('flagdown',
-        -file => Tk->findINC('demos/images/flagdown'),
+        -file     => Tk->findINC('demos/images/flagdown'),
 	-maskfile => Tk->findINC('demos/images/flagdown'),
     );
 
@@ -64,7 +64,7 @@ sub icon {
     );
     $w_frame_b2->pack(@pl);
 
-    $letters = '';
+    my $letters = '';
     @pl = (-side => 'top', -expand => 'yes');
     my $w_frame_left_b3 = $w_frame_left->Radiobutton(
         -bitmap   => '@'.Tk->findINC('demos/images/letters'),

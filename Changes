@@ -1,3 +1,160 @@
+Within each 'release' time advances down the file, but most recent
+release is at the top.
+
+Changes in *****
+
+* Added -ldnet to Makefile.PL (DEC Net library for ultrix)
+
+* Tweeked DoOneEvent to be more tolerant of 'strings' as flags.
+
+
+Changes in b11.02
+
+* Fix for K&R 'cc' (e.g. Sun's /bin/cc) compile.
+
+* 'Scrolled' scrollbars now only get packed (dynamically) when required.
+
+* Tweaks for perl5.002_01 
+
+* Tidied up basic_credentials stuff to HTML/Web.pm a bit
+
+* Brought Pod viewer up to date.
+
+* Fixed memory leak in Tk::Callback->new, highlighted by recent
+  'after' changes. 
+
+Changes in b11.01
+
+* Added ccflags to MMtry 'configure' tests so that trial compile
+  has same flags as real compile.
+
+* Added XQueryTree to Xlib (need it for Motif Drag&Drop hacking ;-))
+
+* Some tweaks to HList 
+
+* Demo patches from Steve.
+
+* Messed with Table to permit empty rows.
+
+* Added basic_credentials stuff to HTML/Web.pm 
+
+* Added selectionSet etc. aliases to Listbox.
+
+
+Changes in b11
+
+* Corrected initialization/malloc/free bug in Text Tag -data option.
+
+* Down graded ConfigDefault not to propagate 'default' values if 
+  ConfigSpec has 'undef' as default value. Changed default -foreground
+  -background to supplied by Tk::Derived to follow this model.
+  These changes allow subwidgets to default their own colours.
+  
+* Made '-class' universal and used it to set class for all Tk::Widgets.
+  Will allows Tix-like options db priming to affect subwidget defaults
+  (e.g. colours).
+
+* Messed with 'Menubar' class - now only exported decendants of 'Frame' and
+  auto-packs itself at top. Its Menubutton method looks for existing
+  menubutton of the supplied name, does maps ~Name to -underline
+  and passes -menuitems to the menu.
+
+* Adopted xpm3.4h for Pixmap/xpm 
+
+* Moved pTk's gettimeofday() tests up to top level myConfig.
+  Changed way C #define's are passed to code; now builds tkConfig.h 
+  and #include's it rather than passing lots of -DXXXX to the compiler.
+
+* Fixed infinite recursion on configure of DEFAULT options on derived widgets.
+
+* Fixed bad case of 'bit rot' in Sun drag&drop - it was broken at time of 
+  Tix code merge. Cleaned up the interface to it and added generic 'Local' 
+  drag&drop independent of Sun's. Drop is always via a selection, as 
+  both Sun's and Motif use that mechanism.
+
+   - 'Local' drop should allow emulation of Tix-like Drag&Drop.
+
+   - Works fine with olvwm4.1 under Solaris2.4.
+   - Works after a fashion under olvwm4.1 on SunOS4 - incoming drops sometimes 
+     fail. (Suspect bugs on 'xview' side...)
+   - SunOS4 olvwm3.* is even worse.
+   
+   - Need to add Motif methods when I can  decipher the protocol.
+
+* Various point fixes suggested to pTk list.
+
+Changes in b10
+
+* Hand-converted Tk::HList.pm from Graham Barr.
+
+* Tk::Font from Graham Barr, added XListFonts to Tk::Xlib to support this.
+
+* Cleaned up demos from Steve - thanks as always.
+
+* Cleaned up error message propagation:
+   - now use $widget->BackTrace('message')  rather than "croak" to get perl call
+     history into "stack trace" for ErrorDialog etc.
+   - Resolved "duplicate" messages to be result of perl5.002b2's $@ handling,
+     and adjusted glue to comprehend this.
+
+* Resolved netbsd problem with certain (unused, undefined) Tix 'extern's. 
+   - will try and remember to run checking scripts in future...
+
+* Added `a' version of tkGrid.c (to be included in tk4.1b*) which 
+  allows folks to play with SpecTcl GUI builder (so I am told).
+
+* Merged tk4.0p3 changes.
+
+* Tested under perl5.002b3
+   - located nasty bug when perl's stack grows (and therfore changes address)
+     during a call to Tk. e.g. if Button callback invoked perl code which
+     puts a large array on the stack. This may explain the 'FileSelect' 
+     bug.
+   - Still some risk in this area - will investigate further before production
+     release. 
+
+* Adopted $VERSION checking via .xs and DynaLoader.
+* Added checks to toplevel Makefile.PL for installed perl5.002.
+* Changed gettimeofday() calls to #define in tkPort.h - as yet 
+  no 'configure' test for right prototype.
+
+* Edited (previously non-distributed) doc/man* directories so that doc/*.ht 
+  relates to perl/Tk rather than Tcl/Tk.
+  May have missed some changes - proof reading by users requested ;-)
+
+* Changed Tk::BackgroundError to Tk::Error, allows C API BackgroundError 
+  to be used and makes documentation read better.
+
+* Cleaned up and adopted Steves mkmenu from Menubar2 as $menu->AddItems
+  and incoprorated into Menu's create process. 
+  Can now say $parent->Menu(-menuitems => [...]);
+  Can also also use method $menu->AddItems([...]) post creation.
+
+- pre testing occured here 
+
+* Fixed various build problems.
+
+* Removed lingering debug. 
+
+* Changed ConfigSpecs to handle 'aliases' e.g. -fg for -foreground
+  in a manner more like core widgets.
+
+* Implemented Tk::Widget::after as a wrapper on core Tk::after.
+  Auto-cancels afters when widget is destroyed.
+
+* Hook for above $widget->OnDestroy(callback) is also available for general
+  use. Arranges for callback to be called just before widget is destroyed.
+  Note that unlike bind('<Destroy>',...) the widget methods are still 
+  available. For example this allows Text to save modified contents.
+
+Changes in b9.01
+
+* Fixed missing function table entry which caused problems on AIX.
+
+* Removed spurious debug from 'place'.
+
+* Patch to ColorEditor.pm from Steve.
+
 Changes in b9
 
 * pod patches from Larry Virden, ColorEditor fix from Steve.

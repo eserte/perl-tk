@@ -11,7 +11,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkPack.c 1.54 95/05/28 14:02:32";
+static char sccsid[] = "@(#) tkPack.c 1.56 95/11/24 17:52:11";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -775,7 +775,15 @@ ArrangePacking(clientData)
 		if (abort) {
 		    goto done;
 		}
-		Tk_MapWindow(slavePtr->tkwin);
+
+		/*
+		 * Don't map the slave if the master isn't mapped: wait
+		 * until the master gets mapped later.
+		 */
+
+		if (Tk_IsMapped(masterPtr->tkwin)) {
+		    Tk_MapWindow(slavePtr->tkwin);
+		}
 	    }
 	} else {
 	    if ((width <= 0) || (height <= 0)) {
@@ -1359,6 +1367,30 @@ PackStructureProc(clientData, eventPtr)
 	}
 	packPtr->tkwin = NULL;
 	Tk_EventuallyFree((ClientData) packPtr, DestroyPacker);
+    } else if (eventPtr->type == MapNotify) {
+	/*
+	 * When a master gets mapped, must redo the geometry computation
+	 * so that all of its slaves get remapped.
+	 */
+
+	if ((packPtr->slavePtr != NULL)
+		&& !(packPtr->flags & REQUESTED_REPACK)) {
+	    packPtr->flags |= REQUESTED_REPACK;
+	    Tk_DoWhenIdle(ArrangePacking, (ClientData) packPtr);
+	}
+    } else if (eventPtr->type == UnmapNotify) {
+	Packer *packPtr2;
+
+	/*
+	 * Unmap all of the slaves when the master gets unmapped,
+	 * so that they don't bother to keep redisplaying
+	 * themselves.
+	 */
+
+	for (packPtr2 = packPtr->slavePtr; packPtr2 != NULL;
+		packPtr2 = packPtr2->nextPtr) {
+	    Tk_UnmapWindow(packPtr2->tkwin);
+	}
     }
 }
 
@@ -1641,7 +1673,8 @@ ConfigureSlaves(interp, tkwin, argc, args)
 
 	/*
 	 * Make sure that the slave's parent is either the master or
-	 * an ancestor of the master.
+	 * an ancestor of the master, and that the master and slave
+	 * aren't the same.
 	 */
     
 	parent = Tk_Parent(slave);
@@ -1655,6 +1688,11 @@ ConfigureSlaves(interp, tkwin, argc, args)
 			         NULL);
 		return TCL_ERROR;
 	    }
+	}
+	if (slave == masterPtr->tkwin) {
+	    Tcl_AppendResult(interp, "can't pack ", LangString(args[j]),
+		    " inside itself",          NULL);
+	    return TCL_ERROR;
 	}
 
 	/*

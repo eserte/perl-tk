@@ -13,7 +13,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkWm.c 1.104 95/06/04 16:07:36";
+static char sccsid[] = "@(#) tkWm.c 1.111 95/11/27 13:02:37";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -282,6 +282,8 @@ static void TkWmFreeCmd _ANSI_ARGS_((WmInfo *wmPtr));
 static int		ComputeReparentGeometry _ANSI_ARGS_((TkWindow *winPtr));
 static void		ConfigureEvent _ANSI_ARGS_((TkWindow *winPtr,
 			    XConfigureEvent *eventPtr));
+static void		GetMaxSize _ANSI_ARGS_((WmInfo *wmPtr,
+			    int *maxWidthPtr, int *maxHeightPtr));
 static int		ParseGeometry _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, TkWindow *winPtr));
 static void		ReparentEvent _ANSI_ARGS_((TkWindow *winPtr,
@@ -637,7 +639,7 @@ TkWmDeadWindow(winPtr)
 
 	protPtr = wmPtr->protPtr;
 	wmPtr->protPtr = protPtr->nextPtr;
-	Tk_EventuallyFree((ClientData) protPtr, (Tk_FreeProc *) free);
+	Tk_EventuallyFree((ClientData) protPtr, ProtocolFree);
     }
     if (wmPtr->cmdArgv != NULL) {
 	ckfree((char *) wmPtr->cmdArgv);
@@ -1538,8 +1540,8 @@ Tk_WmCmd(clientData, interp, argc, args)
 	    return TCL_ERROR;
 	}
 	if (argc == 3) {
-	    Tcl_IntResults(interp,2,0, wmPtr->maxWidth,
-		    wmPtr->maxHeight);
+	    GetMaxSize(wmPtr, &width, &height);
+	    Tcl_IntResults(interp,2,0, width, height);
 	    return TCL_OK;
 	}
 	if ((Tcl_GetInt(interp, args[3], &width) != TCL_OK)
@@ -1985,10 +1987,13 @@ Tk_SetGrid(tkwin, reqWidth, reqHeight, widthInc, heightInc)
      * in pixel units and there's no easy way to translate them to
      * grid units since the new requested size of the top-level window in
      * pixels may not yet have been registered yet (it may filter up
-     * the hierarchy in DoWhenIdle handlers).
+     * the hierarchy in DoWhenIdle handlers).  However, if the window
+     * has never been mapped yet then just leave the window size alone:
+     * assume that it is intended to be in grid units but just happened
+     * to have been specified before this procedure was called.
      */
 
-    if (wmPtr->gridWin == NULL) {
+    if ((wmPtr->gridWin == NULL) && !(wmPtr->flags & WM_NEVER_MAPPED)) {
 	wmPtr->width = -1;
 	wmPtr->height = -1;
     }
@@ -2713,6 +2718,7 @@ UpdateSizeHints(winPtr)
 {
     register WmInfo *wmPtr = winPtr->wmInfoPtr;
     XSizeHints *hintsPtr;
+    int maxWidth, maxHeight;
 
     wmPtr->flags &= ~WM_UPDATE_SIZE_HINTS;
 
@@ -2727,6 +2733,7 @@ UpdateSizeHints(winPtr)
      * our structure.
      */
 
+    GetMaxSize(wmPtr, &maxWidth, &maxHeight);
     if (wmPtr->gridWin != NULL) {
 	hintsPtr->base_width = winPtr->reqWidth
 		- (wmPtr->reqGridWidth * wmPtr->widthInc);
@@ -2743,14 +2750,14 @@ UpdateSizeHints(winPtr)
 	hintsPtr->min_height = hintsPtr->base_height
 		+ (wmPtr->minHeight * wmPtr->heightInc);
 	hintsPtr->max_width = hintsPtr->base_width
-		+ (wmPtr->maxWidth * wmPtr->widthInc);
+		+ (maxWidth * wmPtr->widthInc);
 	hintsPtr->max_height = hintsPtr->base_height
-		+ (wmPtr->maxHeight * wmPtr->heightInc);
+		+ (maxHeight * wmPtr->heightInc);
     } else {
 	hintsPtr->min_width = wmPtr->minWidth;
 	hintsPtr->min_height = wmPtr->minHeight;
-	hintsPtr->max_width = wmPtr->maxWidth;
-	hintsPtr->max_height = wmPtr->maxHeight;
+	hintsPtr->max_width = maxWidth;
+	hintsPtr->max_height = maxHeight;
 	hintsPtr->base_width = 0;
 	hintsPtr->base_height = 0;
     }
@@ -2914,7 +2921,7 @@ WaitForEvent(display, window, mask, eventPtr)
 	masks[i] = 0;
     }
     fd = ConnectionNumber(display);
-    (void) gettimeofday(&startTime, (struct timezone *) NULL);
+    (void) Tk_timeofday(&startTime);
     while (1) {
 	if (XCheckWindowEvent(display, window, mask, eventPtr)) {
 	    return TCL_OK;
@@ -2928,7 +2935,7 @@ WaitForEvent(display, window, mask, eventPtr)
 	if ((numFound == -1) && (errno != EINTR)) {
 	    return TCL_ERROR;
 	}
-	(void) gettimeofday(&curTime, (struct timezone *) NULL);
+	(void) Tk_timeofday(&curTime);
 	i = curTime.tv_sec - startTime.tv_sec;
 	if (i >= TIMEOUT_SECS) {
 	    return TCL_ERROR;
@@ -4037,3 +4044,70 @@ static void UnmanageGeometry(tkwin)
     winPtr->geomMgrPtr = NULL;
     winPtr->geomData = NULL;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetMaxSize --
+ *
+ *	This procedure computes the current maxWidth and maxHeight
+ *	values for a window, taking into account the possibility
+ *	that they may be defaulted.
+ *
+ * Results:
+ *	The values at *maxWidthPtr and *maxHeightPtr are filled
+ *	in with the maximum allowable dimensions of wmPtr's window,
+ *	in grid units.  If no maximum has been specified for the
+ *	window, then this procedure computes the largest sizes that
+ *	will fit on the screen.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+GetMaxSize(wmPtr, maxWidthPtr, maxHeightPtr)
+    WmInfo *wmPtr;		/* Window manager information for the
+				 * window. */
+    int *maxWidthPtr;		/* Where to store the current maximum
+				 * width of the window. */
+    int *maxHeightPtr;		/* Where to store the current maximum
+				 * height of the window. */
+{
+    int tmp;
+
+    if (wmPtr->maxWidth > 0) {
+	*maxWidthPtr = wmPtr->maxWidth;
+    } else {
+	/*
+	 * Must compute a default width.  Fill up the display, leaving a
+	 * bit of extra space for the window manager's borders.
+	 */
+
+	tmp = DisplayWidth(wmPtr->winPtr->display, wmPtr->winPtr->screenNum)
+	    - 15;
+	if (wmPtr->gridWin != NULL) {
+	    /*
+	     * Gridding is turned on;  convert from pixels to grid units.
+	     */
+
+	    tmp = wmPtr->reqGridWidth
+		    + (tmp - wmPtr->winPtr->reqWidth)/wmPtr->widthInc;
+	}
+	*maxWidthPtr = tmp;
+    }
+    if (wmPtr->maxHeight > 0) {
+	*maxHeightPtr = wmPtr->maxHeight;
+    } else {
+	tmp = DisplayHeight(wmPtr->winPtr->display, wmPtr->winPtr->screenNum)
+	    - 30;
+	if (wmPtr->gridWin != NULL) {
+	    tmp = wmPtr->reqGridHeight
+		    + (tmp - wmPtr->winPtr->reqHeight)/wmPtr->heightInc;
+	}
+	*maxHeightPtr = tmp;
+    }
+}
+

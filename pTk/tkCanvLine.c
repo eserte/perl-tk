@@ -10,7 +10,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkCanvLine.c 1.35 95/06/09 09:46:54";
+static char sccsid[] = "@(#) tkCanvLine.c 1.36 95/10/11 14:07:14";
 
 #include <stdio.h>
 #include "tkPort.h"
@@ -813,7 +813,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
 				 * had to be treated as beveled after all
 				 * because the angle was < 11 degrees. */
 
-    bestDist = 1.0e40;
+    bestDist = 1.0e36;
 
     /*
      * Handle smoothed lines by generating an expanded set of points

@@ -46,13 +46,13 @@ while writing. This way comments, default colors and symbol names aren't lost.
 It also handles "transparent pixels" by returning a shape mask in addition to
 the created pixmap.
 
-See the XPM Manual for more details.
+See the XPM Manual for details.
 
 HOW TO GET XPM?
 ===============
 
-New xpm updates are announced on the comp.windows.x newsgroup, and on the
-"xpm-talk" list. All new "official" xpm releases can be found by ftp on:
+New XPM updates are announced on the comp.windows.x newsgroup, and on the
+"xpm-talk" list. All new "official" XPM releases can be found by ftp on:
 
     ftp.x.org          (18.112.44.100) contrib	 (Boston, USA)
     koala.inria.fr     (138.96.24.30) pub/xpm	 (Sophia Antipolis, France)
@@ -64,26 +64,63 @@ DOCUMENTATION:
 Old users might read the CHANGES file for a history of changes interesting
 the user.
 
-Read the doc. The documentation is in PostScript format (file doc/xpm.ps) and
+Read the doc. The documentation is in PostScript format (file doc/xpm.PS) and
 has been produced with FrameMaker. The source files are available on request.
+
+A FAQ (Frequently Asked Questions) is also provided, so if you experience any
+problem you should have a look at this file.
 
 
 INSTALLATION:
 ============
 
 To obtain the XPM library, first uncompress and untar the compressed tar file
-in an approriate directory.
+in an appropriate directory.
 
-Then you can either compile xpm via "imake" or in a stand-alone way.
+Then you can either compile XPM via "imake" or in a stand-alone way.
 
 WITH IMAKE:
 
 	Imakefiles are provided to build both shared and unshared libraries.
-	First have a look at the beginning of the lib/Imakefile and see if you
-	need to do some modification to fit with your system.
-	Then execute the following commands:
+	However, building a shared lib is very OS dependent and often requires
+	specific files which are not available. Also config files are often not
+	set correctly for this task. So if it fails you can avoid trying to
+	build one and simply build the static library instead. In order to do
+	so you should edit the top Imakefile to add -DSharedLibXpm=NO to the
+	definition of IMAKE_DEFINES as described.
+
+	The compilation and installation of the library and the sxpm program
+	should only require you to edit the top Imakefile. But you should do so
+	in order to specify the locations where the various files should be
+	installed and to set the DEFINES variable accordingly to your system.
+
+	On Solaris 2.* the compilation works only in the native svr4
+	environment, avoid the bsd one or it won't compile. Especially you
+	should be using /opt/SUNWspro/bin/cc and not /usr/ucb/cc.
+
+	On Linux, you'd better get the binary distribution available from
+	sunsite, because it is really a pain to build a shared lib and the
+	current XPM distribution doesn't contain the jump files you would need
+	to do so. I have no experience with ELF but the life should be easier
+	though...
+
+	On USL, you must add -DNEED_STRCASECMP to the DEFINES variable in the
+	top Imakefile as described.
+
+
+	Then execute the following command:
 
 		xmkmf -a
+
+	or if this option is not supported by your version of xmkmf:
+
+		xmkmf
+		make Makefiles
+		make includes
+		make depend		(optional)
+
+	Then simply execute: 
+
 		make
 
 	which will build the XPM library and the sxpm application. 
@@ -92,20 +129,29 @@ WITH IMAKE:
 	     	make install
 		make install.man
 
-	which will install the library and the sxpm pregram and man page.
+	which will install the library and the sxpm program and man page.
 
-	If it fails, you may edit the Imakefiles to add compilation flags to
-	suit your machine.
+	If it fails, be sure you have set the DEFINES correctly in the top
+	Imakefile to suit your machine.
+
 
 WITHOUT IMAKE:
 
-	To compile xpm, in the xpm directory you just created, do:
+	A set of makefiles is provided for those who do not have imake
+	available on their system. However, this is only provided as a
+	convenience and you should be considered as a starting point and not as
+	something ready to use. These makefiles, called Makefile.noX, will most
+	likely require some editing in order be set accordingly to your system.
+
+	Once this setting is done, you should be able to compile XPM, by
+	executing the following command:
 
 	        make -f Makefile.noX
 
 	Then to install it, do:
 
 		make -f Makefile.noX install
+
 
 SXPM:
 ====
@@ -126,9 +172,9 @@ function. The pixmap is created from the static variable plaid defined in the
 sxpm.c file. sxpm will end when you press the key 'q' in the created window.
 
 Executing 'sxpm -plaid -sc lines_in_mix blue' will show the feature of
-overriding color symbols giving a colorname, executing 'sxpm -sp lines_in_mix
-1' will show overriding giving a pixel value, and executing 'sxpm -plaid -cp
-red 0' will show overriding giving a color value.
+overriding color symbols giving a colorname, executing 'sxpm -plaid -sp
+lines_in_mix 1' will show overriding giving a pixel value, and executing 'sxpm
+-plaid -cp red 0' will show overriding giving a color value.
 
 Then you should try 'sxpm -plaid -o output' to get an output file using the
 XpmWriteFileFromPixmap function.
@@ -168,6 +214,10 @@ DISCUSSION:
 
 There is a mailing list to discuss about XPM which is xpm-talk@sophia.inria.fr.
 Any request to subscribe should be sent to xpm-talk-request@sophia.inria.fr.
+The archive of the xpm-talk list is available through the web as:
+http://zenon.inria.fr/koala/xpm-talk-hypermail
+and through ftp as:
+ftp://koala.inria.fr/pub/xpm/xpm-talk-archive
 
 COPYRIGHT:
 ==========

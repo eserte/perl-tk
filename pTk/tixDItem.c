@@ -67,7 +67,6 @@ Tix_DItemInfo * Tix_GetDItemType(interp, type)
 
     if (interp) {
 	Tcl_AppendResult(interp, "unknown display type \"", type, "\"", NULL);
-        abort(); 
     }
     return NULL;
 }

@@ -1,10 +1,10 @@
 #!/bin/sh
 cat <<! > .gdbinit
 break XS_DynaLoader_dl_find_symbol
-run $1
+run -Mblib $1
 shared
-break croak 
-break warn
-break die
+break Perl_croak 
+break Perl_warn
+break Perl_die
 !
 gdb perl 

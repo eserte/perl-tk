@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 LFUNC(OpenArray, void, (char **data, xpmData *mdata));
 
@@ -48,27 +48,32 @@ XpmCreateImageFromData(display, data, image_return,
     XpmImage image;
     XpmInfo info;
     int ErrorStatus;
+    xpmData mdata;
+
+    xpmInitXpmImage(&image);
+    xpmInitXpmInfo(&info);
+
+    /* open data */
+    OpenArray(data, &mdata);
 
     /* create an XpmImage from the file */
     if (attributes) {
 	xpmInitAttributes(attributes);
 	xpmSetInfoMask(&info, attributes);
-	ErrorStatus = XpmCreateXpmImageFromData(data, &image, &info);
+	ErrorStatus = xpmParseDataAndCreate(display, &mdata,
+					    image_return, shapeimage_return,
+					    &image, &info, attributes);
     } else
-	ErrorStatus = XpmCreateXpmImageFromData(data, &image, NULL);
-
-    if (ErrorStatus != XpmSuccess)
-	return (ErrorStatus);
-
-    /* create the related ximages */
-    ErrorStatus = XpmCreateImageFromXpmImage(display, &image,
-					     image_return, shapeimage_return,
-					     attributes);
+	ErrorStatus = xpmParseDataAndCreate(display, &mdata,
+					    image_return, shapeimage_return,
+					    &image, NULL, attributes);
     if (attributes) {
 	if (ErrorStatus >= 0)		/* no fatal error */
 	    xpmSetAttributes(attributes, &image, &info);
 	XpmFreeXpmInfo(&info);
     }
+
+    /* free the XpmImage */
     XpmFreeXpmImage(&image);
 
     return (ErrorStatus);

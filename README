@@ -1,12 +1,15 @@
-Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+Copyright (c) 1995,1996 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tk4.0 sources. See pTk/license.terms 
 for details of this license.
 
-This a re-port of a perl interface to Tk4.0p2 
-(John Ousterhout's production release).
+This a re-port of a perl interface to Tk4.0p3 (John Ousterhout's production
+release).  This version (Tk-b10) requires perl5.002.
+
+Major changes are additional documentation, cleanups to composite 
+widgets and error handling. This is likely to be the last "beta".
 
 See INSTALL for how to build it.
 
@@ -54,7 +57,7 @@ Sending problems to ptk@guest.wpi.edu is the best way
 to get answers.
 
 ---------------------------------------------------------------------------
-pTk sub-directory is a modified version of Tk4.0p2
+pTk sub-directory is a modified version of Tk4.0p3
 
 It has been modified to call "glue" functions rather than use libtcl.a - so it
 is completely independant of TCL.

@@ -2,7 +2,7 @@
 
 use strict;
 
-use lib (qw(./blib .));
+
 
 use Tk;
 use Carp;

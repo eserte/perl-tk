@@ -33,7 +33,7 @@
 *                                                                             *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 LFUNC(AtomMake, xpmHashAtom, (char *name, void *data));
 LFUNC(HashTableGrows, int, (xpmHashTable * table));
@@ -224,6 +224,8 @@ xpmHashTableFree(table)
     xpmHashAtom *p;
     xpmHashAtom *atomTable = table->atomTable;
 
+    if (!atomTable)
+	return;
     for (p = atomTable + table->size; p > atomTable;)
 	if (*--p)
 	    XpmFree(*p);

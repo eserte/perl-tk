@@ -121,6 +121,7 @@ extern "C" {
 #endif /* cplusplus */
 
 #define ZPixmap 1			/* not really used */
+#define XYBitmap 1			/* not really used */
 
 #ifndef True
 #define True 1

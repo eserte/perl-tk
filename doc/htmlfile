@@ -1,0 +1,13 @@
+#!/usr/local/bin/perl -w
+
+use Cwd;
+
+my $file = $ARGV[0];
+
+unless ($file =~ m#^/#)
+ {
+  my $dir = getcwd;
+  $file = "$dir/$file";
+ }
+exec ("netscape",-ncol => 64,"file://localhost".$file) unless (fork);
+

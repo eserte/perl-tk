@@ -8,7 +8,7 @@ require Tk::Image;
 
 Tk::Image->Construct('Pixmap');
 
-bootstrap Tk::Pixmap;
+bootstrap Tk::Pixmap $Tk::VERSION;
 
 sub Tk_image { 'pixmap' }
 

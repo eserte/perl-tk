@@ -9,12 +9,11 @@ package Plot;
 #
 # Advertised Plot widgets:  canvas, entry, PostScript_button, view_button.
 
-require 5.001;
+require 5.002;
 use English;
-use Tk;
-require Tk::Frame;
 @ISA = qw(Tk::Frame);
 Tk::Widget->Construct('Plot');
+use strict;
 
 # Plot Virtual Methods
 # 
@@ -30,6 +29,7 @@ sub Populate {
 
     my($cw, $args) = @ARG;
 
+    $cw->SUPER::Populate($args);
     my($tc, $ih, $ah) = (
 	delete $args->{-title_color},
 	delete $args->{-inactive_highlight},
@@ -44,13 +44,13 @@ sub Populate {
 
     my $plot_font = '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*';
 
-    my $c = $cw->Component(
-        Canvas  => 'canvas',
+    my $c = $cw->Canvas(
         -relief => 'raised', 
         -width  => '450', 
         -height => '300',
         -cursor => 'top_left_arrow',
     );
+    $cw->Advertise('canvas' => $c);
     $c->pack(-side => 'top', -fill => 'x');
 
     $c->create('line', 100, 250, 400, 250, -width => 2);
@@ -91,27 +91,27 @@ sub Populate {
     $c->Tk::bind('<2>' => [sub {area_down(@ARG)}, \%pinfo]);
     $c->Tk::bind('<B2-Motion>' => [sub {area_move(@ARG)}, \%pinfo]);
 
-    my $w_prcmd = $cw->Component(
-        Entry         => 'entry',
+    my $w_prcmd = $cw->Entry(
         -textvariable => \$pinfo{'prcmd'},
     );
+    $cw->Advertise('entry' => $w_prcmd);
     $w_prcmd->pack;
 
-    my $w_print = $cw->Component(
-        Button        => 'PostScript_button',
+    my $w_print = $cw->Button(
         -text         => 'Print in PostScript Format',
         -command      => [\&area_save, $c, \%pinfo],
     );
+    $cw->Advertise('PostScript_button' => $w_print);
     $w_print->pack;
     $w_prcmd->bind('<Return>' => [$w_print => 'invoke']);
 
-    my $w_view = $cw->Component(
-        Button => 'view_button',
-        -text => 'View Composite Plot Widget',
-        -command => [\&main::view_widget_code, 
-		        Tk->findINC('demos/widget_lib/Plot.pm'),
+    my $w_view = $cw->Button(
+        -text    => 'View Composite Plot Widget',
+        -command => [\&::view_widget_code,
+	             Tk->findINC('demos/widget_lib/Plot.pm'),
                     ],
     );
+    $cw->Advertise('view_button' => $w_view);
     $w_view->pack;
 
     return $cw;
@@ -165,6 +165,8 @@ sub area_save {
     } else {
 	$a = $w->postscript;
     }
+    
+    $SIG{'PIPE'} = sub {};
     open(LPR, "| $pinfo->{'prcmd'}");
     print LPR $a;
     close(LPR);

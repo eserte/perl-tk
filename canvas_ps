@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-use lib ('blib');
+
 use Tk;
 
 %Tk::FontMap = ();

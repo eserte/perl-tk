@@ -2,11 +2,9 @@ MANIFEST
 MANIFEST.SKIP
 Makefile.PL
 README
-bounce
 browse
 color_editor
 composite
-demos/Ball.pm
 demos/LabEnLabRad.pm
 demos/images/QuitPB.xpm
 demos/images/QuitPBa.xpm
@@ -30,10 +28,12 @@ demos/images/page.icon
 demos/images/page.mask
 demos/images/pattern
 demos/images/teapot.ppm
+demos/widget_lib/Ball.pm
 demos/widget_lib/Plot.pm
 demos/widget_lib/arrows.pl
 demos/widget_lib/bind.pl
 demos/widget_lib/bitmaps.pl
+demos/widget_lib/bounce.pl
 demos/widget_lib/button.pl
 demos/widget_lib/check.pl
 demos/widget_lib/colors.pl

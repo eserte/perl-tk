@@ -13,7 +13,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkTrig.c 1.21 95/06/09 09:46:57";
+static char sccsid[] = "@(#) tkTrig.c 1.22 95/10/11 14:07:16";
 
 #include <stdio.h>
 #include "tkInt.h"
@@ -465,7 +465,7 @@ TkPolygonToPoint(polyPtr, numPoints, pointPtr)
      * count it as two intersections.
      */
 
-    bestDist = 1.0e40;
+    bestDist = 1.0e36;
     intersections = 0;
 
     for (count = numPoints, pPtr = polyPtr; count > 1; count--, pPtr += 2) {

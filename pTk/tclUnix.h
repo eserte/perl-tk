@@ -38,7 +38,6 @@
 #define _TCLUNIX
 #include <errno.h>
 #include <fcntl.h>
-#include <pwd.h>
 #include <signal.h>
 #include <sys/param.h>
 #include <sys/types.h>

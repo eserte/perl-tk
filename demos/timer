@@ -4,19 +4,19 @@
 # Ctrl/c or Ctrl/q.
 #
 # This a more advanced version of `timer', where we conform to a strict style
-# of Perl programming and pass things around as references.  Also, the counter
-# is updated via a -textvariable rather than a configure() method call.
+# of Perl programming and thus use lexicals.  Also, the counter is updated via
+# a -textvariable rather than a configure() method call.
 #
-# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  95/11/12
+# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  96/01/25
 
-require 5.001;
+require 5.002;
 use Tk;
 use strict;
 sub tick;
 
-my $mw = MainWindow->new;
-$mw->bind('<Control-c>' => sub {exit});
-$mw->bind('<Control-q>' => sub {exit});
+my $MW = MainWindow->new;
+$MW->bind('<Control-c>' => \&exit);
+$MW->bind('<Control-q>' => \&exit);
 
 # %tinfo:  the Timer Information hash.
 #
@@ -28,16 +28,16 @@ $mw->bind('<Control-q>' => sub {exit});
 # p         1 IIF paused.
 # t         Value of $counter -textvariable.
 
-my(%tinfo) = ('w' => $mw, 's' => 0, 'h' => 0, 'p' => 1, 't' => '0.00');
+my(%tinfo) = ('w' => $MW, 's' => 0, 'h' => 0, 'p' => 1, 't' => '0.00');
 
-my $start = $mw->Button(
+my $start = $MW->Button(
     -text         => 'Start', 
-    -command      => sub {if($tinfo{'p'}) {$tinfo{'p'} = 0; tick \%tinfo;}},
+    -command      => sub {if($tinfo{'p'}) {$tinfo{'p'} = 0; tick}},
 );
 
-my $stop = $mw->Button(-text => 'Stop', -command => sub {$tinfo{'p'} = 1;});
+my $stop = $MW->Button(-text => 'Stop', -command => sub {$tinfo{'p'} = 1;});
 
-my $counter = $mw->Label(
+my $counter = $MW->Label(
     -relief       => 'raised', 
     -width        => 10,
     -textvariable => \$tinfo{'t'},
@@ -50,21 +50,15 @@ $stop->pack(-side => 'right', -fill => 'both', -expand => 'yes');
 sub tick {
 
     # Update the counter every 50 milliseconds, or 5 hundredths of a second.
-    # Because we use a strict coding style and all variables are lexicals, that
-    # is, `my' variables, anonymous subroutines in Perl/Tk callbacks become
-    # closures where variable values are "compile into" the callback, thus 
-    # %tinfo is passed by reference and deferenced in this subroutine.
 
-    my($ti_ref) = @_;
-
-    return if $ti_ref->{'p'};
-    $ti_ref->{'h'} += 5;
-    if ($ti_ref->{'h'} >= 100) {
-	$ti_ref->{'h'} = 0;
-	$ti_ref->{'s'}++;
+    return if $tinfo{'p'};
+    $tinfo{'h'} += 5;
+    if ($tinfo{'h'} >= 100) {
+	$tinfo{'h'} = 0;
+	$tinfo{'s'}++;
     }
-    $ti_ref->{'t'} = sprintf("%d.%02d", $ti_ref->{'s'}, $ti_ref->{'h'});
-    $ti_ref->{'w'}->after(50, [\&tick, $ti_ref]);
+    $tinfo{'t'} = sprintf("%d.%02d", $tinfo{'s'}, $tinfo{'h'});
+    $tinfo{'w'}->after(50, \&tick);
 
 } # end tick
 

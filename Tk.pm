@@ -8,28 +8,36 @@
 # derivation from Tk4.0 sources.
 #
 package Tk;
+require 5.003;
 use     AutoLoader;
 require Exporter;
 require DynaLoader;
-
 @ISA       = qw(Exporter DynaLoader);
-use Carp;
 
 @EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
 @EXPORT_OK = qw(Exists Ev after exit MainLoop DoOneEvent tkinit NoOp lsearch);
 
+use strict;
+
+use Carp;
+
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
-# is created, $Version is set by bootstrap
+# is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.0";
 $Tk::patchLevel  = "4.0p1";
-$Tk::Version     = "beta";
+$Tk::VERSION     = "b12";
 $Tk::strictMotif = 0;
                                    
 $Tk::library = __FILE__;
 $Tk::library =~ s/\.pm$//;
 $Tk::library = Tk->findINC('.') unless (-d $Tk::library);
 
-bootstrap Tk;
+bootstrap Tk $Tk::VERSION;
+
+my $boot_time = timeofday();
+
+# This is a workround for Solaris X11 locale handling 
+Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11')) if (&NeedPreload && -d '/usr/openwin/lib');
 
 # Supress used once warnings on function table pointers 
 # How can we do this in the C code?
@@ -38,39 +46,51 @@ $Tk::TkintVtab   = $Tk::TkintVtab;
 $Tk::LangVtab    = $Tk::LangVtab;
 $Tk::TkglueVtab  = $Tk::TkglueVtab;
 $Tk::XlibVtab    = $Tk::XlibVtab;
-$Tk::Version     = $Tk::Version;
+$Tk::VERSION     = $Tk::VERSION;
 $Tk::version     = $Tk::version;
 $Tk::patchLevel  = $Tk::patchLevel;
 $Tk::strictMotif = $Tk::strictMotif;
 
 BEGIN 
 {
- my %sub_methods = ( 'option' =>  [qw(add get clear readfile)],
-                     'clipboard' => [qw(clear append)]
-                    );
- my $fn;
- foreach $fn (keys %sub_methods)
-  {my $sub;
-   foreach $sub (@{$sub_methods{$fn}})
-    {
-     my ($suffix) = $sub =~ /(\w+)$/;
-     *{"$fn\u$suffix"} = sub { shift->$fn($sub,@_) };
-    }
-  }
+ sub SubMethods
+ {
+  no strict 'refs';
+  my $package = caller(0);
+  while (@_)
+   {
+    my $fn = shift;
+    my $sm = shift;
+    my $sub;
+    foreach $sub (@{$sm})
+     {
+      my ($suffix) = $sub =~ /(\w+)$/;
+      *{$package.'::'."$fn\u$suffix"} = sub { shift->$fn($sub,@_) };
+     }
+   }
+ }
+ SubMethods( 'option'    =>  [qw(add get clear readfile)],
+             'clipboard' => [qw(clear append)]
+           );
 }
+
 
 sub BackTrace
 {
- my ($w,$msg) = @_;
- my ($pack,$file,$line,$sub);
- my $i = 1;
- while (($pack,$file,$line,$sub) = caller($i))
-  {
-   last if $sub eq '(eval)';
-   $w->AddErrorInfo("$sub called from $file line $line");
-   $i++;
-  }
- croak($msg);
+ my $w = shift;
+ return unless (@_ || $@);
+ my $mess = (@_) ? shift : "$@";
+ my $i = 0;  
+ my ($pack,$file,$line,$sub) = caller($i++);
+ while (1)   
+  {          
+   my $loc = "at $file line $line";
+   ($pack,$file,$line,$sub) = caller($i++);
+   last if (!defined($sub) || $sub eq '(eval)');
+   $w->AddErrorInfo("$sub $loc");
+  }          
+ $@ = "";
+ die "$mess\n";
 }
 
 sub NoOp  { }
@@ -157,6 +177,11 @@ sub SelectionClear
  selection('clear',"-displayof",@_);
 }
 
+sub SelectionExists
+{
+ selection('exists',"-displayof",@_);
+}
+
 sub SelectionHandle
 {my $widget = shift;
  my $command = pop;
@@ -176,23 +201,15 @@ sub findINC
  return undef;
 }
 
-sub SubMethods
+sub Time_So_Far
 {
- my $package = caller(0);
- while (@_)
-  {
-   my $fn = shift;
-   my $sm = shift;
-   my $sub;
-   foreach $sub (@{$sm})
-    {
-     my ($suffix) = $sub =~ /(\w+)$/;
-     my $name = $package . '::' ."$fn\u$suffix";
-     *{"$name"} = sub { shift->$fn($sub,@_) };
-    }
-  }
-}
+ return timeofday() - $boot_time;
+} 
 
+sub Exists
+{my $w = shift;
+ return defined($w) && ref($w) && $w->IsWidget && $w->exists;
+}
 
 1;
 
@@ -201,14 +218,21 @@ __END__
 # before a MainWindow->new()
 sub exit { CORE::exit(@_);}
 
+sub Error
+{my $w = shift;
+ my $error = shift;
+ if (Exists($w))
+  {
+   my $grab = $w->grab('current');  
+   $grab->Unbusy if (defined $grab);
+  }
+ chomp($error);
+ warn "Tk::Error: $error\n " . join("\n ",@_);
+}
+
 sub tkinit
 {
  return MainWindow->new(@_);
-}
-
-sub Exists
-{my $w = shift;
- return defined($w) && ref($w) && $w->IsWidget && $w->exists;
 }
 
 sub CancelRepeat
@@ -447,20 +471,11 @@ sub Clipboard
  croak "Use clipboard\u$cmd()";
 }
 
-sub BackgroundError
-{my $w = shift;
- my $error = shift;
- my $grab = $w->grab('current');
- $grab->Unbusy if (defined $grab);
- chomp($error);
- carp "Background Error: $error\n " . join("\n ",@_);
-}
-
 sub Receive
 {
  my $w = shift;
- warn "receive(" . join(',',@_) .")";
- die "Tk rejects send(" . join(',',@_) .")\n";
+ warn "Receive(" . join(',',@_) .")";
+ $w->BackTrace("Tk rejects send(" . join(',',@_) .")\n");
 }
 
 

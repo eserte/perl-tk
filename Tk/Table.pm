@@ -2,7 +2,6 @@ package Tk::Table;
 use strict;
 use Tk::Pretty;
 use AutoLoader;
-use Carp;
 require Tk::Frame;
 @Tk::Table::ISA = qw(Tk::Frame);
 Tk::Widget->Construct('Table');
@@ -80,7 +79,9 @@ sub sizeN
  my $sum = 0;
  while ($i < @$a && $i < $n)
   {
-   $sum += $a->[$i++];
+   my $n = $a->[$i++];
+   $a->[$i-1] = $n = 0 unless (defined $n);
+   $sum += $n;
   }
  $max = $sum if ($sum > $max);
  while ($i < @$a)
@@ -224,17 +225,20 @@ sub Layout
      my $h = $t->{Height}[$r];
      if (($r < $top && $r >= $frows) || ($y+$h > $H-$badj))
       {
-       my $c;
-       for ($c = 0; $c < @{$t->{Row}[$r]}; $c++)
+       if (defined $t->{Row}[$r])
         {
-         my $s = $t->{Row}[$r][$c];
-         if (defined $s)
+         my $c;
+         for ($c = 0; $c < @{$t->{Row}[$r]}; $c++)
           {
-           $s->UnmapWindow;
-           if ($why & 1)
+           my $s = $t->{Row}[$r][$c];
+           if (defined $s)
             {
-             my $w = $t->{Width}[$c]; 
-             $s->ResizeWindow($w,$h);
+             $s->UnmapWindow;
+             if ($why & 1)
+              {
+               my $w = $t->{Width}[$c]; 
+               $s->ResizeWindow($w,$h);
+              }
             }
           }
         }
@@ -366,7 +370,7 @@ sub LostSlave
   }
  else
   {
-   croak "Cannot find" . $s->PathName;
+   $t->BackTrace("Cannot find" . $s->PathName);
   }
  $t->QueueLayout(2);
 }
@@ -522,4 +526,84 @@ sub see
   }
  return $see;
 }
+
+
+=head1 NAME
+
+Tk::Table - Scrollable 2 dimensional table of Tk widgets
+
+=head1 SYNOPSIS
+
+  use Tk::Table;
+
+  $table = $parent->Table(-rows => number,
+                          -columns => number,
+                          -scrollbars => anchor,
+                          -fixedrows => number,
+                          -fixedcolumns => number,
+                          -takefocus => boolean);
+
+  $widget = $table->Button(...);
+
+  $old = $table->put($row,$col,$widget);
+  $old = $table->put($row,$col,"Text");  # simple Label 
+  $widget = $table->get($row,$col);
+
+  $cols = $table->totalColumns;
+  $rows = $table->totalRows;
+
+  $table->see($widget);
+  $table->see($row,$col);
+
+  ($row,$col) = $table->Posn($widget);
+
+=head1 DESCRIPTION 
+
+Tk::Table is an all-perl widget/geometry manager which allows a two dimensional
+table of arbitary perl/Tk widgets to be displayed.
+
+Entries in the Table are simply ordinary perl/Tk widgets. They should
+be created with the Table as their parent. Widgets are positioned in the 
+table using:
+
+ $table->put($row,$col,$widget)
+
+All the widgets in each column are set to the same width - the requested
+width of the widest widget in the column.
+Likewise, all the widgets in each row are set to the same height - the requested
+height of the tallest widget in the column.             
+
+A number of rows and/or columns can be marked as 'fixed' - and so can serve
+as 'headings' for the remainder the rows which are scrollable.
+
+The requested size of the table as a whole is such that the number of rows
+specified by -rows (default 10), and number of columns specified by -columns
+(default 10) can be displayed.
+
+If the Table is told it can take the keyboard focus then cursor and scroll
+keys scroll the displayed widgets.
+
+The Table will create and manage its own scrollbars if requested via 
+-scrollbars.
+
+The Tk::Table widget is derived from a Tk::Frame, so inherits all its
+configure options.
+
+=head1 BUGS / Snags / Possible enhancements
+
+=over 3
+
+=item * 
+
+Very large Tables consume a lot of X windows
+
+=item * 
+
+No equivalent of pack's -anchor/-pad etc. options 
+
+=back 
+
+=cut
+
+
 

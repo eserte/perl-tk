@@ -1,0 +1,46 @@
+#!/usr/local/bin/perl -w
+
+require LWP::Debug;
+require LWP::Protocol::http;
+require LWP::UserAgent;
+
+#LWP::Debug::level('+');
+
+my $ua = new LWP::UserAgent;    # create a useragent to test
+
+$ua->env_proxy;
+
+my $data;
+
+
+sub callback
+{
+ my ($val,$resp,$proto) = @_;
+ $data .= $val;
+ my $len = $resp->header('Content-Length');
+ print '.';
+ if (length($data) == $len)
+  {
+   print "\nGot it $len\n";
+  }
+}
+
+
+foreach $u (@ARGV)
+ {
+  my $url = new URI::URL($u);
+  my $request = new HTTP::Request('GET', $url);
+  my $response = $ua->request($request, \&callback, 1024);
+  if ($response->is_success)
+   {
+    print $response->content;
+   }
+  else
+   {
+    print STDERR $response->as_string;
+   }
+ }
+
+
+
+

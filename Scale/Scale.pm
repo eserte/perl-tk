@@ -18,7 +18,7 @@ use AutoLoader;
 
 Tk::Widget->Construct('Scale');
 
-bootstrap Tk::Scale;
+bootstrap Tk::Scale $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::scale }
 
@@ -156,6 +156,7 @@ sub ButtonDown
  my $y = shift;
  $Tk::dragging = 0;
  $el = $w->identify($x,$y);
+ return unless ($el);
  if ($el eq "trough1")
   {
    Increment($w,"up","little","initial")
@@ -272,6 +273,7 @@ sub ControlPress
  my $x = shift;
  my $y = shift;
  my $el = $w->identify($x,$y);
+ return unless ($el);
  if ($el eq "trough1")
   {
    $w->set($w->cget("-from"))

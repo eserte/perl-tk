@@ -10,9 +10,10 @@
 
 
 require 5.001;
-use lib ("./blib");use English;
+
 use Tk;
 use Tk::Dialog;
+use English;
 
 $auto_path = "Tk/demos/widget_lib";
 
@@ -200,7 +201,7 @@ mkmb('Menus',          0,
 $mess->bind('<Any-Enter>' => sub {shift->focus});
 $mess->bind('<Control-a>' => sub {print STDOUT "Hello\n"});
 $mess->bind('<Control-b>' => sub {print STDOUT "Goodbye\n"});
-my $menus = $menu_button_list[$#menu_button_list]->cget(-menu); # get Menubutton "Menus" auto-created menu
+my $menus = $menu_button_list[$#menu_button_list]->cget('-menu'); # get Menubutton "Menus" auto-created menu
 $menus->entryconfigure($MENUS_HI, -accelerator => 'Control+a');
 $menus->entryconfigure($MENUS_BY, -accelerator => 'Control+b');
 $menus->cascade(-label => $MENUS_CB, -underline => 0);

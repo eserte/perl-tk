@@ -24,7 +24,7 @@ Tk::Widget->Construct('Menubutton');
 
 import Tk qw(&Ev);
 
-bootstrap Tk::Menubutton;
+bootstrap Tk::Menubutton $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::menubutton }
 

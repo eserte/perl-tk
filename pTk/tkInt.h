@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * @(#) tkInt.h 1.147 95/06/24 17:12:55
+ * @(#) tkInt.h 1.149 95/09/25 13:19:00
  */
 
 #ifndef _TKINT

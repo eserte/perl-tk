@@ -10,24 +10,23 @@
 
 package Tk::Button;  
 use AutoLoader;
-
 @ISA = qw(Tk::Widget);
+
+use strict;
+use vars qw($buttonWindow $relief);
 
 sub Tk_cmd { \&Tk::button }
 
 Tk::Widget->Construct('Button');
 
-1;
-__END__
-
 sub ClassInit
 {
  my ($class,$mw) = @_;
- $mw->bind($class,"<Enter>", "Enter");
- $mw->bind($class,"<Leave>", "Leave");
- $mw->bind($class,"<1>", "butDown");
- $mw->bind($class,"<ButtonRelease-1>", "butUp");
- $mw->bind($class,"<space>", "Invoke");
+ $mw->bind($class,'<Enter>', 'Enter');
+ $mw->bind($class,'<Leave>', 'Leave');
+ $mw->bind($class,'<1>', 'butDown');
+ $mw->bind($class,'<ButtonRelease-1>', 'butUp');
+ $mw->bind($class,'<space>', 'Invoke');
  return $class;
 }
 
@@ -79,8 +78,7 @@ sub Leave
 sub butDown
 {
  my $w = shift;
- my $E = shift;
- $relief = ($w->configure("-relief"))[4];
+ $relief = $w->cget("-relief");
  if ($w->cget("-state") ne "disabled")
   {
    $buttonWindow = $w;
@@ -98,14 +96,13 @@ sub butDown
 sub butUp
 {
  my $w = shift;
- my $E = shift;
  if (defined($buttonWindow) && $buttonWindow == $w)
   {
    undef $buttonWindow;
    $w->configure("-relief" => $relief);
    if ($w->IS($Tk::window) && $w->cget("-state") ne "disabled")
     {
-     $w->invoke();
+     $w->invoke;
     }
   }
 }
@@ -131,7 +128,13 @@ sub Invoke
   }
 }
 
+
+
 1;
+
+__END__
+
+
 
 
 

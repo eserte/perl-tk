@@ -182,7 +182,7 @@ FileReadGIF(interp, f, fileName, formatString, imageHandle, destX, destY,
 	return TCL_OK;
     }
     bitPixel = 2<<(buf[0]&0x07);
-    colorResolution = (((buf[0]&0x70)>>3)+1);
+    colorResolution = (((unsigned) (buf[0]&0x70)>>3)+1);
     background = buf[1];
     aspectRatio = buf[2];
 

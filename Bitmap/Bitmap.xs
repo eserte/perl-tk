@@ -8,18 +8,21 @@
 #include <perl.h>
 #include <XSUB.h>
 
-#include "../tkGlue.def"
+#include "tkGlue.def"
 
-#include "tkPort.h"
-#include "tkInt.h"
-#include "tkVMacro.h"
-#include "../tkGlue.h"
-#include "../tkGlue.m"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
+#include "tkGlue.h"
+#include "tkGlue.m"
 
 DECLARE_VTABLES;
 
 
 MODULE = Tk::Bitmap	PACKAGE = Tk::Bitmap
+
+PROTOTYPES: DISABLE
+
 
 BOOT:
  {

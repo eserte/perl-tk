@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkVisual.c 1.13 95/08/16 10:43:48";
+static char sccsid[] = "@(#) tkVisual.c 1.14 95/10/01 16:35:38";
 
 #include "tkInt.h"
 #include "tkPort.h"
@@ -317,7 +317,7 @@ Tk_GetVisual(interp, tkwin, string, depthPtr, colormapPtr)
 	    cmapPtr->colormap = XCreateColormap(Tk_Display(tkwin),
 		    RootWindowOfScreen(Tk_Screen(tkwin)), visual,
 		    AllocNone);
-	    cmapPtr->visual = NULL;
+	    cmapPtr->visual = visual;
 	    cmapPtr->refCount = 1;
 	    cmapPtr->shareable = 1;
 	    cmapPtr->nextPtr = dispPtr->cmapPtr;

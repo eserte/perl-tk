@@ -15,7 +15,7 @@ sub bind {
     $w->iconname('bind');
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -23,7 +23,7 @@ sub bind {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -36,7 +36,7 @@ sub bind {
 
     # Set up display styles
 
-    my(@bold, @normal, $tags);
+    my(@bold, @normal, $tag);
     if ($w->depth > 1) {
 	@bold   = (-background => '#43ce80', -relief => 'raised',
 		   -borderwidth => 1);
@@ -62,15 +62,11 @@ sub bind {
     $w_t->insert('end', '6. A grid that demonstrates how canvases can be scrolled.', 'd6');
 
     foreach $tag (qw(d1 d2 d3 d4 d5 d6)) {
-	$w_t->tag('bind', $tag, '<Any-Enter>' => [
-            sub {
-		shift->tag('configure', shift, @ARG);
-	    }, $tag, @bold],
+	$w_t->tag('bind', $tag, '<Any-Enter>' => 
+            sub {shift->tag('configure', $tag, @bold)}
         );
-	$w_t->tag('bind', $tag, '<Any-Leave>' => [
-            sub {
-		shift->tag('configure', shift, @ARG);
-            }, $tag, @normal],
+	$w_t->tag('bind', $tag, '<Any-Leave>' =>
+            sub {shift->tag('configure', $tag, @normal)}
         );
     }
     $w_t->tag('bind', 'd1', '<1>' => sub {&items('items')});
@@ -78,7 +74,7 @@ sub bind {
     $w_t->tag('bind', 'd3', '<1>' => sub {&ctext('ctext')});
     $w_t->tag('bind', 'd4', '<1>' => sub {&arrows('arrows')});
     $w_t->tag('bind', 'd5', '<1>' => sub {&ruler('ruler')});
-    $w_t->tag('bind', 'd6', '<1>' => sub {&ccroll('cscroll')});
+    $w_t->tag('bind', 'd6', '<1>' => sub {&cscroll('cscroll')});
 
     $w_t->mark('set', 'insert', '0.0');
 

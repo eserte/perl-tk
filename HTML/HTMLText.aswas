@@ -1,0 +1,76 @@
+package Tk::HTMLText;
+require Tk::ROText;
+require Tk::Photo;
+require Tk::Pixmap;
+require Tk::Bitmap;
+require Tk::HTML;
+use Carp;
+use strict qw(vars subs);
+
+@Tk::HTMLText::ISA = qw(Tk::HTML Tk::Derived Tk::ROText);
+
+Tk::Widget->Construct('HTMLText');
+
+sub ClassInit
+{
+ my ($class,$mw) = @_;
+ $mw->bind($class,'<b>','Back');
+ $mw->bind($class,'<space>',['yview','scroll',1,'pages']);
+ $mw->bind($class,'<BackSpace>',['yview','scroll',-1,'pages']);
+ return $class->SUPER::ClassInit($mw);
+}
+
+sub InitObject
+{
+ my ($w,$args) = @_;
+ $w->Cleanout;
+ $w->SUPER::InitObject($args);
+ 
+ $args->{-wrap} = 'word';
+ $args->{-width} = 80;
+ $args->{-height} = 40;
+ $args->{-font} = $w->Font(family => 'courier');
+
+ $w->tagConfigure('symbol', -font => $w->Font(family => 'symbol', size => 180,  encoding => '*', registry => '*'));
+ $w->tagConfigure('text', -font => $w->Font(family => 'times'));
+ $w->tagConfigure('CODE',-font => $w->Font(family => 'courier', weight => 'bold'));
+ $w->tagConfigure('KBD',-font => $w->Font(family => 'courier'));
+ $w->tagConfigure('VAR',-font => $w->Font(family => 'helvetica',slant => 'o', weight => 'bold'));
+ $w->tagConfigure('B',-font => $w->Font(family => 'times', weight => 'bold' ));
+ $w->tagConfigure('H1',-font => $w->Font(family => 'times', weight => 'bold', size => 180));
+ $w->tagConfigure('H2',-font => $w->Font(family => 'times', weight => 'bold', size => 140));
+ $w->tagConfigure('I',-font => $w->Font(family => 'times',slant => 'i', weight => 'bold' ));
+ $w->tagConfigure('BLOCKQUOTE', -font => $w->Font(family => 'helvetica',slant => 'o', weight => 'bold'),
+         -lmargin1 => 35, -lmargin2 => 30, -rmargin => 30);
+ $w->tagConfigure('ADDRESS', -font => $w->Font(family => 'times',slant => 'i'));
+ $w->tagConfigure('HREF',-underline => 1, -font => $w->Font(family => 'times',slant => 'i', weight => 'bold' ));
+ $w->tagConfigure('CENTER',-justify => 'center');
+ $w->{Configure} = {};
+ $w->ConfigSpecs('-showlink' => ['CALLBACK',undef,undef,undef]);
+}
+
+sub ShowLink
+{
+ my ($w,$link) = @_;
+ $w->Callback(-showlink => $link);
+}
+
+sub AUTOLOAD
+{
+ my $what = $Tk::HTMLText::AUTOLOAD;
+ # print "AUTOLOAD:$what\n";
+ my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
+ if ($method =~ /^[A-Z][A-Z0-9_]*$/)
+  {
+   print STDERR "Don't know how to $method\n";
+   *{$what} = sub { return shift };
+   goto &$what;
+  }
+ $Tk::Widget::AUTOLOAD = $what;
+ goto &Tk::Widget::AUTOLOAD;
+}
+
+
+1;
+
+__END__

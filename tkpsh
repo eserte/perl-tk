@@ -1,17 +1,14 @@
 #!/usr/local/bin/perl -w
 
-BEGIN { unshift(@INC, "./blib") };
+
 
 require 5.001;
-use FileHandle;
+use IO::Handle;
 use Tk;
-use Tk::IO;
 
 $mw = $top = MainWindow->new;
 $mw->title('tkpsh');
 $top->iconname('tkpsh');
-
-my $fh = Tk::IO->new('STDIN');
 
 autoflush STDOUT 1;
 

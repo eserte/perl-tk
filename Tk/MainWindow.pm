@@ -8,7 +8,9 @@ use Carp;
 
 @ISA = qw(Tk::Toplevel);
 
-@Windows = ();
+my $pid = $$;
+
+my @Windows = ();
 
 sub new
 {
@@ -16,6 +18,7 @@ sub new
  my $name = $0;
  $name = 'ptk' if ($name eq '-e'); 
  $name    =~ s#^.*/##; 
+ $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
  my $top = eval { bless CreateMainWindow("\l$name", "\u$name", @_), $package };
  croak($@ . "$package" ."::new(" . join(',',@_) .")") if ($@);
  $top->InitBindings;
@@ -38,23 +41,30 @@ sub InitBindings
 }
 
 
+sub Existing
+{
+ grep( Tk::Exists($_), @Windows);  
+}
+
 
 END
 {
- my $top;
- while ($top = pop(@Windows))
+ if ($pid == $$)
   {
-   if ($top->IsWidget)
+   my $top;
+   while ($top = pop(@Windows))
     {
-     # Tk data structuctures are still in place
-     # this can occur if non-callback perl code did a 'die'.
-     # It will also handle some cases of non-Tk 'exit' being called
-     # Destroy this mainwindow and hence is descendants ...
-     $top->destroy; 
+     if ($top->IsWidget)
+      {
+       # Tk data structuctures are still in place
+       # this can occur if non-callback perl code did a 'die'.
+       # It will also handle some cases of non-Tk 'exit' being called
+       # Destroy this mainwindow and hence is descendants ...
+       $top->destroy; 
+      }
     }
   }
 }
-
 
 1;
 

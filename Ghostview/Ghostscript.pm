@@ -1,6 +1,6 @@
 =head1 NAME
 
-Beginings of a Ghostscript lowlevel PostScript viewing widget
+Ghostscript - Beginings of a lowlevel PostScript viewing widget
 
 =head1 SYNOPSIS
 

@@ -11,7 +11,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkPlace.c 1.21 95/06/04 14:23:50";
+static char sccsid[] = "%Z% %M% %I% %E% %U%";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -558,7 +558,8 @@ ConfigureSlave(interp, slavePtr, argc, args)
 
 	    /*
 	     * Make sure that the new master is either the logical parent
-	     * of the slave or a descendant of that window.
+	     * of the slave or a descendant of that window, and that the
+	     * master and slave aren't the same.
 	     */
 
 	    for (ancestor = tkwin; ; ancestor = Tk_Parent(ancestor)) {
@@ -572,6 +573,13 @@ ConfigureSlave(interp, slavePtr, argc, args)
 		    result = TCL_ERROR;
 		    goto done;
 		}
+	    }
+	    if (slavePtr->tkwin == tkwin) {
+		Tcl_AppendResult(interp, "can't place ",
+			Tk_PathName(slavePtr->tkwin), " relative to itself",
+			         NULL);
+		result = TCL_ERROR;
+		goto done;
 	    }
 	    if ((slavePtr->masterPtr != NULL)
 		    && (slavePtr->masterPtr->tkwin == tkwin)) {
@@ -852,7 +860,15 @@ RecomputePlacement(clientData)
 		    || (height != Tk_Height(slavePtr->tkwin))) {
 		Tk_MoveResizeWindow(slavePtr->tkwin, x, y, width, height);
 	    }
-	    Tk_MapWindow(slavePtr->tkwin);
+
+	    /*
+	     * Don't map the slave unless the master is mapped: the slave
+	     * will get mapped later, when the master is mapped.
+	     */
+
+	    if (Tk_IsMapped(masterPtr->tkwin)) {
+		Tk_MapWindow(slavePtr->tkwin);
+	    }
 	} else {
 	    if ((width <= 0) || (height <= 0)) {
 		Tk_UnmaintainGeometry(slavePtr->tkwin, masterPtr->tkwin);
@@ -912,6 +928,27 @@ MasterStructureProc(clientData, eventPtr)
 	}
 	masterPtr->tkwin = NULL;
 	ckfree((char *) masterPtr);
+    } else if (eventPtr->type == MapNotify) {
+	/*
+	 * When a master gets mapped, must redo the geometry computation
+	 * so that all of its slaves get remapped.
+	 */
+
+	if ((masterPtr->slavePtr != NULL)
+		&& !(masterPtr->flags & PARENT_RECONFIG_PENDING)) {
+	    masterPtr->flags |= PARENT_RECONFIG_PENDING;
+	    Tk_DoWhenIdle(RecomputePlacement, (ClientData) masterPtr);
+	}
+    } else if (eventPtr->type == UnmapNotify) {
+	/*
+	 * Unmap all of the slaves when the master gets unmapped,
+	 * so that they don't keep redisplaying themselves.
+	 */
+
+	for (slavePtr = masterPtr->slavePtr; slavePtr != NULL;
+		slavePtr = slavePtr->nextPtr) {
+	    Tk_UnmapWindow(slavePtr->tkwin);
+	}
     }
 }
 

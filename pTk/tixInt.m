@@ -14,7 +14,6 @@
 #define Tix_DItemDisplay (*TixintVptr->V_Tix_DItemDisplay)
 #define Tix_DItemFree (*TixintVptr->V_Tix_DItemFree)
 #define Tix_GetDItemType (*TixintVptr->V_Tix_GetDItemType)
-#define Tix_Init_Internal (*TixintVptr->V_Tix_Init_Internal)
 #define Tix_MultiConfigureInfo (*TixintVptr->V_Tix_MultiConfigureInfo)
 #define Tix_SetDefaultStyleTemplate (*TixintVptr->V_Tix_SetDefaultStyleTemplate)
 #define Tix_SetWindowItemSerial (*TixintVptr->V_Tix_SetWindowItemSerial)

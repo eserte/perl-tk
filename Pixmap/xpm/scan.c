@@ -37,7 +37,7 @@
  * HeDu (hedu@cul-ipn.uni-kiel.de) 4/94
  */
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 #define MAXPRINTABLE 92			/* number of printable ascii chars
 					 * minus \ and " for string compat
@@ -86,7 +86,8 @@ LFUNC(GetImagePixels1, int, (XImage *image, unsigned int width,
 			     int (*storeFunc) ()));
 #else  /* ndef FOR_MSW */
 LFUNC(MSWGetImagePixels, int, (Display *d, XImage *image, unsigned int width,
-			       unsigned int height, PixelsMap *pmap));
+			       unsigned int height, PixelsMap *pmap,
+			       int (*storeFunc) ()));
 #endif
 LFUNC(ScanTransparentColor, int, (XpmColor *color, unsigned int cpp,
 				  XpmAttributes *attributes));
@@ -266,7 +267,8 @@ XpmCreateXpmImageFromImage(display, image, shapeimage,
 	} else
 	    ErrorStatus = GetImagePixels(image, width, height, &pmap);
 #else					/* FOR_MSW */
-	ErrorStatus = MSWGetImagePixels(display, image, width, height, &pmap);
+	ErrorStatus = MSWGetImagePixels(display, image, width, height, &pmap,
+					storePixel);
 #endif
 	if (ErrorStatus != XpmSuccess)
 	    RETURN(ErrorStatus);
@@ -332,33 +334,35 @@ ScanTransparentColor(color, cpp, attributes)
     *s = '\0';
 
     /* then retreive related info from the attributes if any */
-    if (attributes && attributes->mask_pixel != XpmUndefPixel && (
+    if (attributes && (attributes->valuemask & XpmColorTable
 /* 3.2 backward compatibility code */
-	attributes->valuemask & XpmInfos ||
+		       || attributes->valuemask & XpmInfos)
 /* end 3.2 bc */
-	attributes->valuemask & XpmColorTable)) {
+	&& attributes->mask_pixel != XpmUndefPixel) {
 
 	unsigned int key;
 	char **defaults = (char **) color;
 	char **mask_defaults;
 
 /* 3.2 backward compatibility code */
-	if (attributes->valuemask & XpmInfos)
-	    mask_defaults = (char **)
-		((XpmColor **) attributes->colorTable)[attributes->mask_pixel];
-	else
+	if (attributes->valuemask & XpmColorTable)
 /* end 3.2 bc */
 	    mask_defaults = (char **) (
 		attributes->colorTable + attributes->mask_pixel);
+/* 3.2 backward compatibility code */
+	else
+	    mask_defaults = (char **)
+		((XpmColor **) attributes->colorTable)[attributes->mask_pixel];
+/* end 3.2 bc */
 	for (key = 1; key <= NKEYS; key++) {
 	    if ((s = mask_defaults[key])) {
-		defaults[key] = (char *) strdup(s);
+		defaults[key] = (char *) xpmstrdup(s);
 		if (!defaults[key])
 		    return (XpmNoMemory);
 	    }
 	}
     } else {
-	color->c_color = (char *) strdup(TRANSPARENT_COLOR);
+	color->c_color = (char *) xpmstrdup(TRANSPARENT_COLOR);
 	if (!color->c_color)
 	    return (XpmNoMemory);
     }
@@ -488,7 +492,7 @@ ScanOtherColors(display, colors, ncolors, pixels, mask, cpp, attributes)
 		found = True;
 		for (key = 1; key <= NKEYS; key++) {
 		    if ((s = adefaults[key]))
-			defaults[key] = (char *) strdup(s);
+			defaults[key] = (char *) xpmstrdup(s);
 		}
 	    }
 	}
@@ -499,7 +503,7 @@ ScanOtherColors(display, colors, ncolors, pixels, mask, cpp, attributes)
 		colorname = xpmGetRgbName(rgbn, rgbn_max, xcolor->red,
 					  xcolor->green, xcolor->blue);
 	    if (colorname)
-		color->c_color = (char *) strdup(colorname);
+		color->c_color = (char *) xpmstrdup(colorname);
 	    else {
 		/* at last store the rgb value */
 		char buf[BUFSIZ];
@@ -510,7 +514,7 @@ ScanOtherColors(display, colors, ncolors, pixels, mask, cpp, attributes)
 		sprintf(buf, "#%02x%02x%02x",
 			xcolor->red, xcolor->green, xcolor->blue);
 #endif			
-		color->c_color = (char *) strdup(buf);
+		color->c_color = (char *) xpmstrdup(buf);
 	    }
 	    if (!color->c_color) {
 		XpmFree(xcolors);
@@ -532,7 +536,7 @@ ScanOtherColors(display, colors, ncolors, pixels, mask, cpp, attributes)
  * The idea is to have faster functions than the standard XGetPixel function
  * to scan the image data. Indeed we can speed up things by suppressing tests
  * performed for each pixel. We do exactly the same tests but at the image
- * level. Assuming that we use only ZPixmap images.
+ * level.
  */
 
 static unsigned long Const low_bits_table[] = {
@@ -548,7 +552,7 @@ static unsigned long Const low_bits_table[] = {
 };
 
 /*
- * Default method to scan pixels of a Z image data structure.
+ * Default method to scan pixels of an image data structure.
  * The algorithm used is:
  *
  *	copy the source bitmap_unit or Zpixel into temp
@@ -811,7 +815,6 @@ GetImagePixels1(image, width, height, pmap, storeFunc)
     unsigned int height;
     PixelsMap *pmap;
     int (*storeFunc) ();
-
 {
     unsigned int *iptr;
     int x, y;
@@ -849,12 +852,13 @@ GetImagePixels1(image, width, height, pmap, storeFunc)
 
 #else  /* ndef FOR_MSW */
 static int
-MSWGetImagePixels(display, image, width, height, pmap)
+MSWGetImagePixels(display, image, width, height, pmap, storeFunc)
     Display *display;
     XImage *image;
     unsigned int width;
     unsigned int height;
     PixelsMap *pmap;
+    int (*storeFunc) ();
 {
     unsigned int *iptr;
     unsigned int x, y;
@@ -862,11 +866,11 @@ MSWGetImagePixels(display, image, width, height, pmap)
 
     iptr = pmap->pixelindex;
 
+    SelectObject(*display, image->bitmap);
     for (y = 0; y < height; y++) {
 	for (x = 0; x < width; x++, iptr++) {
-	    /* bitmap must be selected !!! ??? */
 	    pixel = GetPixel(*display, x, y);
-	    if (storePixel(pixel, pmap, iptr))
+	    if ((*storeFunc) (pixel, pmap, iptr))
 		return (XpmNoMemory);
 	}
     }

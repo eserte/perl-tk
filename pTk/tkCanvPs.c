@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkCanvPs.c 1.36 95/08/04 10:05:08";
+static char sccsid[] = "@(#) tkCanvPs.c 1.37 95/11/09 11:34:12";
 
 #include <stdio.h>
 #include "tkPort.h"
@@ -728,7 +728,11 @@ Tk_CanvasPsFont(interp, canvas, fontStructPtr)
 	    }
 	    sprintf(pointString, "%.15g", size);
 	    Tcl_AppendResult(interp, "/", LangString(args[0]), " findfont ",
-		    pointString, " scalefont setfont\n",          NULL);
+		    pointString, " scalefont ",          NULL);
+	    if (strncasecmp(LangString(args[0]), "Symbol", 7) != 0) {
+		Tcl_AppendResult(interp, "ISOEncode ",          NULL);
+	    }
+	    Tcl_AppendResult(interp, "setfont\n",          NULL);
 	    Tcl_CreateHashEntry(&psInfoPtr->fontTable, LangString(args[0]), &i);
             if (freeProc)
 	     (*freeProc)(argc,args);
@@ -821,7 +825,11 @@ Tk_CanvasPsFont(interp, canvas, fontStructPtr)
     }
     sprintf(pointString, "%.15g", ((double) points)/10.0);
     Tcl_AppendResult(interp, "/", fontName, " findfont ",
-	    pointString, " scalefont setfont\n",          NULL);
+	    pointString, " scalefont ",          NULL);
+    if (strcmp(fontName, "Symbol ") != 0) {
+	Tcl_AppendResult(interp, "ISOEncode ",          NULL);
+    }
+    Tcl_AppendResult(interp, "setfont\n",          NULL);
     Tcl_CreateHashEntry(&psInfoPtr->fontTable, fontName, &i);
     return TCL_OK;
 

@@ -1,1 +1,1 @@
-tclUnixUtil.o: tclUnixUtil.c Lang.h tkPort.h tclUnix.h
+tclUnixUtil.o: tclUnixUtil.c Lang.h tkPort.h tkConfig.h tclUnix.h

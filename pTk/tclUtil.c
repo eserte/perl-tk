@@ -260,3 +260,15 @@ Tcl_DStringGetResult(interp, dsPtr)
     Tcl_ResetResult(interp);
 }
 
+void *
+TclCalloc(n,s)
+    size_t n;
+    size_t s;
+{
+    size_t need = s*n;
+    void *p     = malloc(need);
+    if (p) {
+	memset(p, 0, need);
+    } 
+    return p;
+}

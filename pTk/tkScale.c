@@ -18,7 +18,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkScale.c 1.72 95/06/09 08:20:04";
+static char sccsid[] = "@(#) tkScale.c 1.73 95/11/25 22:47:16";
 
 #include "tkPort.h"
 #include "default.h"
@@ -722,7 +722,7 @@ ConfigureScale(interp, scalePtr, argc, args, flags)
 	stringValue = Tcl_GetVar(interp, scalePtr->varName, TCL_GLOBAL_ONLY);
 	if (stringValue != NULL) {
 	    if (Tcl_GetDouble(interp, stringValue, &value) == TCL_OK) {
-		scalePtr->value = value;
+		scalePtr->value = RoundToResolution(scalePtr, value);
 	    }
 	}
 	Tcl_TraceVar(interp, scalePtr->varName,
@@ -1951,20 +1951,23 @@ RoundToResolution(scalePtr, value)
     Scale *scalePtr;		/* Information about scale widget. */
     double value;		/* Value to round. */
 {
-    double rem;
+    double rem, new;
 
     if (scalePtr->resolution <= 0) {
 	return value;
     }
-    rem = fmod(value, scalePtr->resolution);
+    new = scalePtr->resolution * floor(value/scalePtr->resolution);
+    rem = value - new;
     if (rem < 0) {
-	rem = scalePtr->resolution + rem;
+	if (rem <= -scalePtr->resolution/2) {
+	    new -= scalePtr->resolution;
+	}
+    } else {
+	if (rem >= scalePtr->resolution/2) {
+	    new += scalePtr->resolution;
+	}
     }
-    value -= rem;
-    if (rem >= scalePtr->resolution/2) {
-	value += scalePtr->resolution;
-    }
-    return value;
+    return new;
 }
 
 /*
@@ -2031,7 +2034,7 @@ ScaleVarProc(clientData, interp, name1, name2, flags)
         if (Tcl_GetDouble(interp,stringValue,&value) != TCL_OK) {
 	    result = "can't assign non-numeric value to scale variable";
 	} else {
-	    scalePtr->value = value;
+	    scalePtr->value = RoundToResolution(scalePtr, value);
 	}
 
 	/*

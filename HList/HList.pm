@@ -1,16 +1,5 @@
-# Converted from listbox.tcl --
-#
-# This file defines the default bindings for Tk listbox widgets.
-#
-# @(#) listbox.tcl 1.7 94/12/17 16:05:18
-#
-# Copyright (c) 1994 The Regents of the University of California.
-# Copyright (c) 1994 Sun Microsystems, Inc.
-#
-# See the file "license.terms" for information on usage and redistribution
-# of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 package Tk::HList; 
-require Tk;
+use Tk qw(Ev);
 require DynaLoader;
 
 @ISA = qw(DynaLoader Tk::Widget);
@@ -18,20 +7,532 @@ require DynaLoader;
 Tk::Widget->Construct('HList');
 sub Tk::Widget::ScrlHList { shift->Scrolled('HList'=>@_) }
 
-bootstrap Tk::HList; 
+bootstrap Tk::HList $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::hlist }
 
 EnterMethods Tk::HList __FILE__,qw(add addchild anchor column
                                    delete dragsite dropsite entrycget
                                    entryconfigure geometryinfo hide item info
-                                   nearest see selection show xview yview);
+                                   nearest see select selection show xview yview);
+
 
 sub ClassInit
 {
  my ($class,$mw) = @_;
 
+ $mw->bind($class,'<ButtonPress-1>',[ 'Button1' ] );
+ $mw->bind($class,'<Shift-ButtonPress-1>',[ 'ShiftButton1' ] );
+ $mw->bind($class,'<Control-ButtonRelease-1>', sub {} );
+ $mw->bind($class,'<ButtonRelease-1>',
+		sub
+		 {
+		  my $w = shift;
+		  my $Ev = $w->XEvent;
+		  $w->CancelRepeat
+		      if($w->cget('-selectmode') ne "dragdrop");
+		  $w->ButtonRelease1($Ev);
+		 });
+ $mw->bind($class,'<B1-Motion>',[ 'Button1Motion' ] );
+ $mw->bind($class,'<B1-Leave>',[ 'AutoScan' ] );
+
+ $mw->bind($class,'<Double-ButtonPress-1>',['Double1']);
+
+ $mw->bind($class,'<Control-B1-Motion>', sub {} );
+ $mw->bind($class,'<Control-ButtonPress-1>',['CtrlButton1']);
+ $mw->bind($class,'<Control-Double-ButtonPress-1>',['CtrlButton1']);
+
+ $mw->bind($class,'<B1-Enter>',
+		sub
+		 {
+		  my $w = shift;
+		  my $Ev = $w->XEvent;
+		  $w->CancelRepeat
+		      if($w->cget('-selectmode') ne "dragdrop");
+		 });
+
+ $mw->bind($class,'<Up>',['UpDown', 'prev']);
+ $mw->bind($class,'<Down>',['UpDown', 'next']);
+
+ $mw->bind($class,'<Shift-Up>',['ShiftUpDown', 'prev']);
+ $mw->bind($class,'<Shift-Down>',['ShiftUpDown', 'next']);
+
+ $mw->bind($class,'<Left>', ['LeftRight', 'left']);
+ $mw->bind($class,'<Right>',['LeftRight', 'right']);
+
+ $mw->bind($class,'<Prior>', sub {shift->yview('scroll', -1, 'pages') } );
+ $mw->bind($class,'<Next>',  sub {shift->yview('scroll',  1, 'pages') } );
+
+ $mw->bind($class,'<Return>', ['KeyboardActivate']);
+ $mw->bind($class,'<space>',  ['KeyboardBrowse']);
+
  return $class;
+}
+
+sub Button1
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+
+ delete $w->{'shiftanchor'}; 
+
+ $w->focus()
+   if($w->cget("-takefocus"));
+
+ my $mode = $w->cget("-selectmode");
+
+ if ($mode eq "dragdrop")
+  {
+   # $w->Send_WaitDrag($Ev->y);
+   return;
+  }
+
+ my $ent = $w->GetNearest($Ev->y);
+
+ return unless( $ent );
+
+ my $browse = 0;
+
+ if($mode eq "single")
+  {
+   $w->anchor('set', $ent);
+  }
+ elsif($mode eq "browse")
+  {
+   $w->anchor('set', $ent);
+   $w->select('clear' );
+   $w->select('set', $ent);
+   $browse = 1;
+  }
+ elsif($mode eq "multiple")
+  {
+   $w->select('clear');
+   $w->anchor('set', $ent);
+   $w->select('set', $ent);
+   $browse = 1;
+  }
+ elsif($mode eq "extended")
+  {
+   $w->anchor('set', $ent);
+   $w->select('clear');
+   $w->select('set', $ent);
+   $browse = 1;
+  }
+ 
+ if ($browse)
+  {
+   $w->Callback(-browsecmd => $ent);
+  }
+ 
+}
+
+sub ShiftButton1
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+
+ my $to = $w->GetNearest($Ev->y);
+
+ delete $w->{'shiftanchor'}; 
+
+ return unless($to);
+
+ my $mode = $w->cget('-selectmode');
+
+ if($mode eq "extended")
+  {
+   my $from = $w->info('anchor');
+   if($from)
+    {
+     $w->select('clear');
+     $w->select('set', $from, $to);
+    }
+   else
+    {
+     $w->anchor('set', $to);
+     $w->select('clear');
+     $w->select('set', $to);
+    }
+  }
+}
+
+sub GetNearest
+{
+ my ($w,$y) = @_;
+
+ my $ent = $w->nearest($y);
+          
+ undef $ent
+   if($ent && $w->entrycget($ent, "-state") eq "disabled");
+
+ $ent;
+}
+
+sub ButtonRelease1
+{
+ my ($w, $Ev) = @_;
+
+ delete $w->{'shiftanchor'}; 
+
+ my $mode = $w->cget('-selectmode');
+
+ if($mode eq "dragdrop")
+  {
+#   $w->Send_DoneDrag();
+   return;
+  }
+
+ my ($x, $y) = ($Ev->x, $Ev->y);
+ my $ent = $w->GetNearest($y);
+
+ return unless($ent);
+
+ if($x < 0 || $y < 0 || $x > $w->width || $y > $w->height)
+  {
+   $w->select('clear');
+
+   return if($mode eq "single" || $mode eq "browse")
+
+  }
+ else
+  {
+   if($mode eq "single" || $mode eq "browse")
+    {
+     $w->anchor('set', $ent);
+     $w->select('clear');
+     $w->select('set', $ent);
+
+    }
+   elsif($mode eq "multiple")
+    {
+     $w->select('set', $ent);
+    }
+   elsif($mode eq "extended")
+    {
+     $w->select('set', $ent);
+    }
+  }
+
+ $w->Callback(-browsecmd =>$ent);
+}
+
+sub Button1Motion
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+
+ delete $w->{'shiftanchor'}; 
+
+ my $mode = $w->cget('-selectmode');
+
+ if ($mode eq "dragdrop")
+  {
+#   $w->Send_StartDrag();
+   return;
+  }
+
+ my $ent = $w->GetNearest($Ev->y);
+
+ return unless($ent);
+
+ if($mode eq "single")
+  {
+   $w->anchor('set', $ent);
+  }
+ elsif($mode eq "multiple" || $mode eq "extended")
+  {
+   my $from = $w->info('anchor');
+   if($from)
+    {
+     $w->select('clear');
+     $w->select('set', $from, $ent);
+    }
+   else
+    {
+     $w->anchor('set', $ent);
+     $w->select('clear');
+     $w->select('set', $ent);
+    }
+  }
+
+ if($mode ne "single")
+  {
+   $w->Callback(-browsecmd =>$ent);
+  }
+}
+
+sub Double1
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+
+ delete $w->{'shiftanchor'}; 
+
+ my $ent = $w->GetNearest($Ev->y);
+
+ return unless($ent);
+
+ $w->anchor('set', $ent)
+	unless($w->info('anchor'));
+
+ $w->select('set', $ent);
+ $w->Callback(-command => $ent);
+}
+
+sub CtrlButton1
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+
+ delete $w->{'shiftanchor'}; 
+
+ my $ent = $w->GetNearest($Ev->y);
+
+ return unless( $ent );
+
+ my $mode = $w->cget('-selectmode');
+
+ if($mode eq "extended")
+  {
+   $w->anchor('set', $ent) unless( $w->info('anchor') );
+
+   if($w->select('includes', $ent))
+    {
+     $w->select('clear', $ent);
+    }
+   else
+    {
+     $w->select('set', $ent);
+    }
+   $w->Callback(-browsecmd =>$ent);
+  }
+}
+
+sub UpDown
+{
+ my $w = shift;
+ my $spec = shift;
+
+ my $done = 0;
+ my $anchor = $w->info('anchor');
+
+ delete $w->{'shiftanchor'}; 
+
+ unless( $anchor )
+  {
+   $anchor = ($w->info('children'))[0] || "";
+
+   return unless( $anchor );
+
+   if($w->entrycget($anchor, '-state') ne "disabled")
+    {
+     # That's a good anchor
+     $done = 1;
+    }
+   else
+    {
+     # We search for the first non-disabled entry (downward)
+     $spec = 'next';
+    }
+  }
+
+ my $ent = $anchor;
+
+ # Find the prev/next non-disabled entry
+ #
+ while(!$done)
+  {
+   $ent = $w->info($spec, $ent);
+   last unless( $ent );
+   next if( $w->entrycget($ent, '-state') eq "disabled" );
+   next if( $w->info('hidden', $ent) );
+   last;
+  }
+
+ unless( $ent )
+  {
+   $w->yview('scroll', $spec eq 'prev' ? -1 : 1, 'unit');
+   return;
+  }
+
+ $w->anchor('set', $ent);
+ $w->see($ent);
+
+ if($w->cget('-selectmode') ne "single")
+  {
+   $w->select('clear');
+   $w->selection('set', $ent);
+   $w->Callback(-browsecmd =>$ent);
+  }
+}
+
+sub ShiftUpDown
+{
+ my $w = shift;
+ my $spec = shift;
+
+ my $mode = $w->cget('-selectmode');
+
+ return $w->UpDown($spec)
+   if($mode eq "single" || $mode eq "browse");
+
+ my $anchor = $w->info('anchor');
+
+ return $w->UpDown($spec) unless( $anchor );
+
+ my $done = 0;
+
+ $w->{'shiftanchor'} = $anchor unless( $w->{'shiftanchor'} ); 
+
+ my $ent = $w->{'shiftanchor'};
+
+ while( !$done )
+  {
+   $ent = $w->info($spec, $ent);
+   last unless( $ent );
+   next if( $w->entrycget($ent, '-state') eq "disabled" );
+   next if( $w->info('hidden', $ent) );
+   last;
+  }
+
+ unless( $ent )
+  {
+   $w->yview('scroll', $spec eq 'prev' ? -1 : 1, 'unit');
+   return;
+  }
+
+ $w->select('clear');
+ $w->selection('set', $anchor, $ent);
+ $w->see($ent);
+
+ $w->{'shiftanchor'} = $ent; 
+ 
+ $w->Callback(-browsecmd =>$ent);
+}
+
+sub LeftRight
+{
+ my $w = shift;
+ my $spec = shift;
+
+ delete $w->{'shiftanchor'}; 
+
+ my $anchor = $w->info('anchor');
+
+ unless($anchor)
+  {
+   $anchor = ($w->info('children'))[0] || "";
+  }
+
+ my $done = 0;
+ my $ent = $anchor;
+
+ while(!$done)
+  {
+   my $e = $ent;
+
+   if($spec eq "left")
+    {
+     $ent = $w->info('parent', $e);
+
+     $ent = $w->info('prev', $e)
+       unless($ent && $w->entrycget($ent, '-state') ne "disabled")
+    }
+   else
+    {
+     $ent = ($w->info('children', $e))[0];
+
+     $ent = $w->info('next', $e)
+       unless($ent && $w->entrycget($ent, '-state') ne "disabled")
+    }
+
+   last unless( $ent );
+   last if($w->entrycget($ent, '-state') ne "disabled");
+  }
+
+ unless( $ent )
+  {
+   $w->xview('scroll', $spec eq "left" ? -1 : 1, 'unit');
+   return;
+  }
+
+ $w->anchor('set', $ent);
+ $w->see($ent);
+
+ if($w->cget('-selectmode') ne "single")
+  {
+   $w->select('clear');
+   $w->selection('set', $ent);
+
+   $w->Callback(-browsecmd =>$ent);
+  }
+}
+
+sub KeyboardActivate
+{
+ my $w = shift;
+
+ my $anchor = $w->info('anchor');
+
+ return unless( $anchor );
+
+ if($w->cget('-selectmode'))
+  {
+   $w->select('clear');
+   $w->select('set', $anchor);
+  }
+ $w->Callback(-command => $anchor);
+}
+
+sub KeyboardBrowse
+{
+ my $w = shift;
+
+ my $anchor = $w->info('anchor');
+
+ return unless( $anchor );
+
+ if($w->cget('-selectmode'))
+  {
+   $w->select('clear');
+   $w->select('set', $anchor);
+  }
+ $w->Callback(-browsecmd =>$anchor);
+}
+
+sub AutoScan
+{
+ my $w = shift;
+
+ return if($w->cget('-selectmode') eq "dragdrop");
+ 
+ my $Ev = $w->XEvent;
+ my $y = $Ev->y;
+ my $x = $Ev->x;
+
+ if($y >= $w->height)
+  {
+   $w->yview('scroll', 1, 'units');
+  }
+ elsif($y < 0)
+  {
+   $w->yview('scroll', -1, 'units');
+  }
+ elsif($x >= $w->width)
+  {
+   $w->xview('scroll', 2, 'units');
+  }
+ elsif($x < 0)
+  {
+   $w->xview('scroll', -2, 'units');
+  }
+ else
+  {
+   return;
+  }
+
+ $w->RepeatId($w->after(50,"AutoScan",$w));
+ $w->Button1Motion;
 }
 
 1;

@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 int
 XpmCreatePixmapFromData(display, d, data, pixmap_return,

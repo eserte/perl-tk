@@ -18,9 +18,9 @@
 /* Sorry -- no sccsid here, I'm doing it the traditional way round... */
 /* Last update: 95/02/22                                              */
 
-#include "tkInt.h"
-#include "tkPort.h"
-#include "tkVMacro.h"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
 #include "xpm/xpm.h"
 
 /*

@@ -21,7 +21,7 @@ sub check {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -29,24 +29,32 @@ sub check {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
     my $w_var = $w_buttons->Button(
         -text    => 'See Variables',
-        -command => [\&seeVars, $w, qw(wipers brakes sober)],
+        -command => [\&see_vars, $w, [
+	                              ['wipers', \$WIPERS],
+                                      ['brakes', \$BRAKES],
+                                      ['sober',  \$SOBER],
+                                     ],
+                    ],
     );
     $w_var->pack(qw(-side left -expand 1));
 
-    $wipers = 0 if not defined $wipers;
-    $brakes = 0 if not defined $brakes;
-    $sober = 0 if not defined $sober;
-    my $w_b1 = $w->Checkbutton(-text => 'Wipers OK', -variable => \$wipers,
-			       -relief => 'flat');
-    my $w_b2 = $w->Checkbutton(-text => 'Brakes OK', -variable => \$brakes,
-			       -relief => 'flat');
-    my $w_b3 = $w->Checkbutton(-text => 'Driver Sober', -variable => \$sober,
-			       -relief => 'flat');
+    my $w_b1 = $w->Checkbutton(
+        -text     => 'Wipers OK',
+        -variable => \$WIPERS,
+	-relief   => 'flat');
+    my $w_b2 = $w->Checkbutton(
+        -text     => 'Brakes OK',
+        -variable => \$BRAKES,
+	-relie    => 'flat');
+    my $w_b3 = $w->Checkbutton(
+        -text     => 'Driver Sober', 
+        -variable => \$SOBER,
+	-relief   => 'flat');
     my(@pl) = (-side => 'top', -pady => '2', -anchor => 'w');
     $w_b1->pack(@pl);
     $w_b2->pack(@pl);

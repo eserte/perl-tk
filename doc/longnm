@@ -1,0 +1,34 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+@ARGV = '.' unless (@ARGV);
+
+my %dos = {};
+
+my $dir;
+foreach $dir (@ARGV)
+ {
+  opendir(DIR,$dir) || die "Cannot open $dir:$!";
+  my $file;
+  while ($file = readdir(DIR))
+   {
+    my $l = length($file);
+    if ($file =~ /\./)
+     {
+      my ($base,$ext) = $file =~ /(.*)\.([^.]*)$/;
+      substr($base,8) = "" if (length $base > 8);
+      substr($ext,3)  = "" if (length $ext  > 3);
+      my $dos = "\U$base.$ext";
+      if (exists($dos{$dos}) && $file ne $dos{$dos})
+       {
+        print "$dos => $file and $dos{$dos}\n";
+       }
+      $dos{$dos} = $file;
+     }
+    if ($l > 14)
+     {
+      printf "%2d $file\n",$l; 
+     }
+   }
+  closedir(DIR);
+ }

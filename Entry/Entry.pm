@@ -24,7 +24,7 @@ import Tk qw(Ev);
 
 Tk::Widget->Construct('Entry');
 
-bootstrap Tk::Entry;
+bootstrap Tk::Entry $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::entry }
 

@@ -1,8 +1,6 @@
 # cscroll.pl
 
-sub cscroll_button;
-sub cscroll_enter;
-sub cscroll_leave;
+use subs qw(cscroll_button cscroll_enter cscroll_leave);
 
 sub cscroll {
 
@@ -27,7 +25,7 @@ sub cscroll {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -35,7 +33,7 @@ sub cscroll {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -70,9 +68,9 @@ sub cscroll {
     } # forend
 
     my $old_fill = '';
-    $c->bind('all', '<Any-Enter>' => [sub {cscroll_enter(@ARG)}, \$old_fill]);
-    $c->bind('all', '<Any-Leave>' => [sub {cscroll_leave(@ARG)}, \$old_fill]);
-    $c->bind('all', '<1>' => sub {cscroll_button(@ARG)});
+    $c->bind('all', '<Any-Enter>' => [\&cscroll_enter, \$old_fill]);
+    $c->bind('all', '<Any-Leave>' => [\&cscroll_leave, \$old_fill]);
+    $c->bind('all', '<1>' => \&cscroll_button);
     $c->Tk::bind('<2>' => sub {
 	my ($c) = @ARG;
         my $e = $c->XEvent;

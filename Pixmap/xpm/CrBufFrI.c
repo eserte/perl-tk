@@ -35,7 +35,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 LFUNC(WriteColors, int, (char **dataptr, unsigned int *data_size,
 			 unsigned int *used_size, XpmColor *colors,

@@ -37,7 +37,7 @@ sub clipboardPaste
  my $w = shift;
  local ($@);
  eval {$w->insert("insert",$w->clipboardGet)};
- carp("$@") if ($@);
+ $w->BackTrace($@) if ($@);
 }
 
 # clipboardKeysyms --

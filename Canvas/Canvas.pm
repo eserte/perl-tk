@@ -4,9 +4,16 @@ require DynaLoader;
 @Tk::Canvas::ISA = qw(DynaLoader Tk::Widget); 
 Tk::Widget->Construct('Canvas');
 
-bootstrap Tk::Canvas;
+bootstrap Tk::Canvas $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::canvas }
+
+Tk::SubMethods ( 'create' => [qw(arc bitmap image line oval 
+                                 polygon rectangle text window)],
+                 'scan'   => [qw(mark dragto)],
+                 'select' => [qw(from clear item to)],
+               );
+
 
 sub ClassInit
 {

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-use lib ('blib');
+
 use Tk;
 
 # one way of doing menu bars that a collegue has come up with

@@ -1,0 +1,14 @@
+#!/usr/local/bin/perl -w
+
+use Tk;
+
+my $mw = MainWindow->new;
+my $t  = $mw->Scrolled('Text');
+$t->pack(-expand => 1, -fill => 'both');
+
+# tie (*TEXT,'Tk::Text',$t);
+tie (*TEXT,$t);
+
+print TEXT "Hi there\n";
+
+MainLoop;

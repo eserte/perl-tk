@@ -22,7 +22,7 @@ sub button {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -30,21 +30,16 @@ sub button {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
     my $color;
     foreach $color ('PeachPuff1', 'LightBlue1', 'SeaGreen2', 'Yellow1') {  
 	my $b = $w->Button(
-            -text => $color,
-            -width => 10,
-            -command => [
-                sub {
-		    my($w, $c) = @ARG;
-		    $w->configure(-background => lc($c));
-		}, $w, $color,
-            ],
+            -text    => $color,
+            -width   => 10,
+            -command => sub {$w->configure(-background => lc($color))},
         );
 	$b->pack(-side => 'top', -expand => 'yes', -pady => 2);
     }

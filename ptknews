@@ -1,18 +1,19 @@
 #!/usr/local/bin/perl -w
-use lib ('blib');
+
+use strict;
 use Tk;
 use Tk::Pretty;
 use Tk::ErrorDialog;
 require Tk::Text;
-require Mail::RFC822;
+require Mail::Internet;
 require News::NNTPClient;
 
 package News::Group;
 use Tk::Pretty;
 use Carp;
 
-%groups = ();
-@subscribed = ();
+my %groups = ();
+my @subscribed = ();
 
 sub new
 {
@@ -20,7 +21,8 @@ sub new
  my $obj;
  if (@_ == 1)
   {
-   my ($group,$state,$read) = /^([\w+.]+)([:!])\s*(.*)$/;
+   local $_ = shift;
+   my ($group,$state,$read) = /^([\w+.-]+)([:!])\s*(.*)$/;
    my @read = ();
    my %hash = (name => $group, subscribed => ($state eq ':'), Read => \@read);
    if (defined $read)
@@ -180,8 +182,10 @@ sub ReadRC
  my $path = "$ENV{'HOME'}/.Newsrc";
  if (open(RC,"<$path"))
   {
+   local $/ = "\n";
    while (<RC>)
     {
+     print "Got:$_";
      $class->new($_);
     }
    close(RC);
@@ -263,12 +267,14 @@ sub SetGroup
  $lb->focus;
 }
 
+my $n = 0;
+
 sub Reply
 {
  my ($text) = @_;
  my @lines  = split(/\n/,$text->get('1.0','end'));
  foreach (@lines) { $_ .= "\n"; s/^Message-ID:/Message-Id:/ };
- my $mail = Mail::RFC822->new(\@lines);
+ my $mail = Mail::Internet->new(\@lines);
  $mail->remove_sig;
  $mail->tidy_body;
  my $id = $mail->get('Message-Id');

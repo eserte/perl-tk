@@ -1,6 +1,7 @@
 package Tk::Pod;
 require Tk::Toplevel;
 require Tk::Text;
+require Tk::Menubar;
 use Tk qw(Ev);
 use AutoLoader;
 use Carp;
@@ -40,6 +41,26 @@ sub Find
  croak("Cannot find pod for $file in \@INC");
 }
 
+sub file {
+  my $w = shift;
+  if (@_)
+    {
+      my $file = shift;
+      $w->{'File'} = $file;
+      my $path = Find($file);
+      $w->configure('-path' => $path);
+      $w->delete('1.0' => 'end');
+      use Benchmark;
+      # my $t = new Benchmark;
+      $w->process($path);
+      # print &timediff(new Benchmark, $t)->timestr,"\n";
+    }
+  else
+    {
+      return $w->{'File'};
+    }
+}
+
 sub reload
 {
  my ($w) = @_;
@@ -75,14 +96,6 @@ sub edit
       }
     }
   }
-}
-
-sub CreateArgs
-{
- my ($package,$parent,$args) = @_;
- croak "$package needs -file => specified" unless (exists $args->{'-file'});
- $args->{'-path'} = Find($args->{-file});
- return $package->SUPER::CreateArgs($parent,$args);
 }
 
 sub Populate
@@ -123,13 +136,13 @@ sub Populate
  my $help = $mbar->Component('Menubutton' => 'help', '-text' => 'Help', '-underline' => 0);
  $help->pack('-side' => 'right','-anchor' => 'e');
 
- $mbar->pack('-side' => 'top', '-fill' => 'x', '-before' => ($w->packslaves)[0]);
+ $mbar->pack('-side' => 'top', '-fill' => 'x', '-before' => ($w->packSlaves)[0]);
  $w->Delegates(Menubutton => $mbar, DEFAULT => $p);
- $w->ConfigSpecs(-file =>   ['PASSIVE',undef,undef,undef], 
-                 -path =>   ['PASSIVE',undef,undef,undef], 
+ $w->ConfigSpecs('-file' =>   ['METHOD',undef,undef,undef],
+                 -path   =>   ['PASSIVE',undef,undef,undef],
                  -scrollbars => ['METHOD','scrollbars','Scrollbars','w'],
                  DEFAULT => [$p]);
- $w->process($path);
+ # $w->process($path);
  $args->{-width} = $w->{Length};
  $w->protocol('WM_DELETE_WINDOW',['quit',$w]);
 }
@@ -167,7 +180,7 @@ sub DoubleClick
  my $sel = $w->SelectionGet;
  if (defined $sel)
   {
-   $w->MainWindow->Pod(-file => $sel);
+   $w->MainWindow->Pod('-file' => $sel);
   }
 }
 
@@ -185,7 +198,7 @@ sub Link
    my $man = $link;
    my $sec;
    ($man,$sec) = split(m#/#,$link) if ($link =~ m#/#);
-   $mw->Pod(-file => $man);
+   $mw->Pod('-file' => $man);
   }
 }
 
@@ -205,9 +218,9 @@ sub _expand
  if ($line =~ /^(.*?)\b([A-Z])\x7f(.*?)\x7f(.*)$/)
   {
    my ($pre,$tag,$what,$post) = ($1,$2,$3,$4);
-   $w->insert('insert',$pre);
+   $w->insert('end -1c',$pre);
     {
-     my $start = $w->index('insert');
+     my $start = $w->index('end -1c');
      $what = $w->_expand($what);         
      if ($tag eq 'L')
       {
@@ -215,14 +228,14 @@ sub _expand
        $w->tag('bind',$tag,'<Button-1>',[$w,'Link',Ev('@%x,%y'),$what]);
        $w->tag('configure',$tag,-underline=> 1, -font => $w->Font(family => 'times',slant => 'i'));
       }
-     $w->tag('add',$tag,$start,'insert');
+     $w->tag('add',$tag,$start,'end -1c');
     }
    $post = $w->_expand($post);
    return $pre . $what . $post;
   }
  else
   {
-   $w->insert('insert',$line);
+   $w->insert('end -1c',$line);
    return $line;
   }
 }
@@ -251,9 +264,9 @@ sub text
 {
  my ($w,$body) = @_;
  $body = join(' ',split(/\s*\n/,$body));
- my $start = $w->index('insert');
+ my $start = $w->index('end -1c');
  $w->append($body,"\n\n");
- $w->tag('add','text',$start,'insert');
+ $w->tag('add','text',$start,'end -1c');
 }
 
 sub verbatim
@@ -270,16 +283,16 @@ sub verbatim
      $w->configure(-width => $l) if ($w->viewable);
     }
   }
- $w->insert('insert',$body . "\n\n",['verbatim']);
+ $w->insert('end -1c',$body . "\n\n",['verbatim']);
 }
 
 sub head1
 {
  my ($w,$title) = @_;
- my $start = $w->index('insert');
+ my $start = $w->index('end -1c');
  $w->append($title);
  $num = 2 unless (defined $num);
- $w->tag('add',$title,$start,'insert');
+ $w->tag('add',$title,$start,'end -1c');
  $w->tag('configure',$title,-font => $w->Font(family => 'times', 
          weight => 'bold',size => 180));
  $w->tag('raise',$title,'text');
@@ -289,9 +302,9 @@ sub head1
 sub head2
 {
  my ($w,$title) = @_;
- my $start = $w->index('insert');
+ my $start = $w->index('end -1c');
  $w->append($title);
- $w->tag('add',$title,$start,'insert');
+ $w->tag('add',$title,$start,'end -1c');
  $w->tag('configure',$title,
          -font => $w->Font(family => 'times', weight => 'bold'));
  $w->tag('raise',$title,'text');
@@ -322,7 +335,7 @@ sub enditem
  if (defined $item)
   {
    my ($start,$indent) = @$item;
-   $w->tag('add',$w->IndentTag($indent),$start,'insert');
+   $w->tag('add',$w->IndentTag($indent),$start,'end -1c');
   }
 }
 
@@ -333,15 +346,15 @@ sub item
  my $type = $w->{listtype};
  my $indent = $w->{indent};
  print "item(",join(',',@_,$type,$indent),")\n" unless ($type == 1 || $type == 3);
- my $start = $w->index('insert');
+ my $start = $w->index('end -1c');
  $title =~ s/\n/ /;
  $w->append($title);
- $w->tag('add',$title,$start,'insert');
+ $w->tag('add',$title,$start,'end -1c');
  $w->tag('configure',$title,-font => $w->Font(weight => 'bold'));
  $w->tag('raise',$title,'text');
  $w->append("\n") if ($type == 3);
  $w->append(" ")  if ($type != 3);
- $w->{Item} = [ $w->index('insert'), $w->{indent} ];
+ $w->{Item} = [ $w->index('end -1c'), $w->{indent} ];
 }
 
 sub setindent 
@@ -390,10 +403,15 @@ sub process
  my (@pod) = Simplify(Parse());
  my ($cmd,$arg);
  print STDERR "Render $file\n";
+ my $update = 2;
  while ($cmd = shift(@pod))
   {
    my $arg = shift(@pod);
    $w->$cmd($arg);
+   unless ($update--) {
+     $w->update;
+     $update = 2;
+   } 
   }
  @ARGV = @save;
 }

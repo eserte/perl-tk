@@ -1,28 +1,28 @@
 #!/usr/local/bin/perl -w
-use lib ("./blib");
+
 use Tk;
 require Tk::Text;
 
-$top = MainWindow->new;
+my $top = MainWindow->new;
 $top->option('add','*Text.background'=>'white');
 
-$t = $top->Text("-relief" => "raised",
+my $t = $top->Scrolled('Text',"-relief" => "raised",
                      "-bd" => "2",
                      "-setgrid" => "true");
-$s = $top->Scrollbar("-command" => ["yview",$t]);
-$t->configure("-yscrollcommand" => ["set",$s] );
 
-$m = $top->Menu();
+my $m = $t->Menu();
 $m->add("command", "-label" => "Open", "-underline" => 0, 
         "-command" => \&sayopen);
 $m->add("command", "-label" => "Close", "-underline" => 0, 
         "-command" => \&sayclose);
 $m->add("separator");
+$m->add("command", "-label" => "Selection", "-underline" => 0, 
+        "-command" => \&showsel);
+$m->add("separator");
 $m->add("command", "-label" => "Exit", "-underline" => 1, 
         "-command" => \&doexit);
 
-$s->pack("-side"=>"left","-fill" => "y");
-$t->pack("-side"=>"left","-expand" => "y", "-fill"   => "both");
+$t->pack(-expand => 1, "-fill"   => "both");
 
 $t->tag("configure", "underline","-underline","on");
 
@@ -64,9 +64,13 @@ You can also bind commands to tags. Like press button 3 for menu ");
 
 &insertwtag($t,"here","underline");
 
-$t->tag("bind","underline","<3>", [sub { shift; shift->Popup(@_)},$m,Ev(X),Ev(Y)] );
+$t->tag("bind","underline","<3>", [sub { shift; shift->Post(@_)},$m,Ev(X),Ev(Y)] );
 
 $t->bind("<Any-Enter>", sub { $t->focus });
+
+$t->Subwidget('text')->OnDestroy(sub { print "Destroyed!\n"; print $t->get('1.0','end') });
+
+
 Tk::MainLoop;
 
 sub insertwtag {
@@ -77,8 +81,15 @@ sub insertwtag {
   $w->tag("add",$tag,$start,"insert");
 }
 
+
 sub sayopen { print "Open something\n" }
 sub sayclose { print "Close something\n" }
+sub showsel  { my @info = $t->tagRanges('sel');
+               if (@info)
+                {
+                 print "start=$info[0] end=$info[1]\n" 
+                }
+             }
 sub doexit 
 { 
  die "'die' no longer exits"

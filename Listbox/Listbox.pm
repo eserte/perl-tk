@@ -20,10 +20,13 @@ use AutoLoader;
 
 Tk::Widget->Construct('Listbox');
 
-bootstrap Tk::Listbox; 
+bootstrap Tk::Listbox $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::listbox }
 
+Tk::SubMethods ( 'selection' => [qw(anchor clear includes set)],
+                 'scan' => [qw(mark dragto)]
+               );
 
 1;
 __END__
@@ -84,8 +87,8 @@ sub ClassInit
 		my $Ev = $w->XEvent;
 		$w->activate(0);
 		$w->see(0);
-		$w->selection("clear",0,"end");
-		$w->selection("set",0)
+		$w->selectionClear(0,"end");
+		$w->selectionSet(0)
 	       }
 	      )
  ;
@@ -97,8 +100,8 @@ sub ClassInit
 		my $Ev = $w->XEvent;
 		$w->activate("end");
 		$w->see("end");
-		$w->selection("clear",0,"end");
-		$w->selection("set","end")
+		$w->selectionClear(0,"end");
+		$w->selectionSet('end')
 	       }
 	      )
  ;
@@ -117,7 +120,7 @@ sub ClassInit
 		my $Ev = $w->XEvent;
 		if ($w->cget("-selectmode") ne "browse")
 		 {
-		  $w->selection("clear",0,"end")
+		  $w->selectionClear(0,"end");
 		 }
 	       }
 	      )
@@ -144,20 +147,20 @@ sub BeginSelect
  my $el = shift;
  if ($w->cget("-selectmode") eq "multiple")
   {
-   if ($w->selection("includes",$el))
+   if ($w->selectionIncludes($el))
     {
-     $w->selection("clear",$el)
+     $w->selectionClear($el)
     }
    else
     {
-     $w->selection("set",$el)
+     $w->selectionSet($el)
     }
   }
  else
   {
-   $w->selection("clear",0,"end");
-   $w->selection("set",$el);
-   $w->selection("anchor",$el);
+   $w->selectionClear(0,"end");
+   $w->selectionSet($el);
+   $w->selectionAnchor($el);
    @Selection = ();
    $Prev = $el
   }
@@ -175,7 +178,7 @@ sub Motion
 {
  my $w = shift;
  my $el = shift;
- if ($el == $Prev)
+ if (defined($Prev) && $el == $Prev)
   {
    return;
   }
@@ -183,28 +186,28 @@ sub Motion
  my $mode = $w->cget("-selectmode");
  if ($mode eq "browse")
   {
-   $w->selection("clear",0,"end");
-   $w->selection("set",$el);
+   $w->selectionClear(0,"end");
+   $w->selectionSet($el);
    $Prev = $el;
   }
  elsif ($mode eq "extended")
   {
    $i = $Prev;
-   if ($w->selection("includes","anchor"))
+   if ($w->selectionIncludes('anchor'))
     {
-     $w->selection("clear",$i,$el);
-     $w->selection("set","anchor",$el)
+     $w->selectionClear($i,$el);
+     $w->selectionSet("anchor",$el)
     }
    else
     {
-     $w->selection("clear",$i,$el);
-     $w->selection("clear","anchor",$el)
+     $w->selectionClear($i,$el);
+     $w->selectionClear("anchor",$el)
     }
    while ($i < $el && $i < $anchor)
     {
      if (Tk::lsearch(\@Selection,$i) >= 0)
       {
-       $w->selection("set",$i)
+       $w->selectionSet($i)
       }
      $i += 1
     }
@@ -212,7 +215,7 @@ sub Motion
     {
      if (Tk::lsearch(\@Selection,$i) >= 0)
       {
-       $w->selection("set",$i)
+       $w->selectionSet($i)
       }
      $i += -1
     }
@@ -234,7 +237,7 @@ sub BeginExtend
 {
  my $w = shift;
  my $el = shift;
- if ($w->cget("-selectmode") eq "extended" && $w->selection("includes","anchor"))
+ if ($w->cget("-selectmode") eq "extended" && $w->selectionIncludes("anchor"))
   {
    $w->Motion($el)
   }
@@ -258,14 +261,14 @@ sub BeginToggle
   {
    @Selection = $w->curselection();
    $Prev = $el;
-   $w->selection("anchor",$el);
-   if ($w->selection("includes",$el))
+   $w->selectionAnchor($el);
+   if ($w->selectionIncludes($el))
     {
-     $w->selection("clear",$el)
+     $w->selectionClear($el)
     }
    else
     {
-     $w->selection("set",$el)
+     $w->selectionSet($el)
     }
   }
 }
@@ -326,14 +329,14 @@ sub UpDown
  $LNet__0 = $w->cget("-selectmode");
  if ($LNet__0 eq "browse")
   {
-   $w->selection("clear",0,"end");
-   $w->selection("set","active")
+   $w->selectionClear(0,"end");
+   $w->selectionSet("active")
   }
  elsif ($LNet__0 eq "extended")
   {
-   $w->selection("clear",0,"end");
-   $w->selection("set","active");
-   $w->selection("anchor","active");
+   $w->selectionClear(0,"end");
+   $w->selectionSet("active");
+   $w->selectionAnchor("active");
    $Prev = $w->index("active");
    @Selection = ();
   }
@@ -378,7 +381,7 @@ sub DataExtend
   {
    $w->activate($el);
    $w->see($el);
-   if ($w->selection("includes","anchor"))
+   if ($w->selectionIncludes("anchor"))
     {
      $w->Motion($el)
     }
@@ -413,12 +416,12 @@ sub Cancel
    $first = $last;
    $last = $tmp
   }
- $w->selection("clear",$first,$last);
+ $w->selectionClear($first,$last);
  while ($first <= $last)
   {
    if (Tk::lsearch(\@Selection,$first) >= 0)
     {
-     $w->selection("set",$first)
+     $w->selectionSet($first)
     }
    $first += 1
   }
@@ -437,12 +440,12 @@ sub SelectAll
  my $mode = $w->cget("-selectmode");
  if ($mode eq "single" || $mode eq "browse")
   {
-   $w->selection("clear",0,"end");
-   $w->selection("set","active")
+   $w->selectionClear(0,"end");
+   $w->selectionSet("active")
   }
  else
   {
-   $w->selection("set",0,"end")
+   $w->selectionSet(0,"end")
   }
 }
 
@@ -464,3 +467,6 @@ sub Getselected
   }
  return (wantarray) ? @result : $result[0];
 }
+
+1;
+__END__

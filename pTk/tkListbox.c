@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkListbox.c 1.97 95/07/25 12:50:13";
+static char sccsid[] = "@(#) tkListbox.c 1.99 95/09/26 16:18:22";
 
 #include "tkPort.h"
 #include "default.h"
@@ -791,7 +791,7 @@ ListboxWidgetCmd(clientData, interp, argc, args)
 		case TK_SCROLL_ERROR:
 		    goto error;
 		case TK_SCROLL_MOVETO:
-		    offset = fraction*listPtr->maxWidth;
+		    offset = fraction*listPtr->maxWidth + 0.5;
 		    break;
 		case TK_SCROLL_PAGES:
 		    windowUnits = windowWidth/listPtr->xScrollUnit;
@@ -836,7 +836,7 @@ ListboxWidgetCmd(clientData, interp, argc, args)
 		case TK_SCROLL_ERROR:
 		    goto error;
 		case TK_SCROLL_MOVETO:
-		    index = listPtr->numElements*fraction;
+		    index = listPtr->numElements*fraction + 0.5;
 		    break;
 		case TK_SCROLL_PAGES:
 		    if (listPtr->fullLines > 2) {
