@@ -1,6 +1,49 @@
 Within each 'release' time advances down the file, but most recent
 release is at the top.
 
+Changes in 402.001
+
+* Should now build with VC4.0, VC5.0 or Borland
+
+* Right version of Tcl documentation merged.
+
+* Scrollbars and Scales have default widths specified in physical units rather than
+  pixels - so should not get over-large on low-resolution screens.
+
+* Various build fixes.
+
+* Tix4.1.0 (003) C code merged.
+
+* Tixish updates from Rajappa Iyer.
+
+* Changed to use Tix's Pixmap code rather than one using libxpm.
+  (Libxpm has been a portability problem.
+  (When Tk::Pixmap is loaded Tix's additional "builtin" Bitmaps and
+   Pixmap id's are loaded too.)
+
+* 'grid' can now be used "procedurally" :
+    Tk::grid('-', $a, 'x', $b);
+ 
+* New syntax supported to allow ConfigSpecs to cause configure option
+  to configure a subwidget with a different named option.
+
+* DefineBitmap interface added - Bitmaps can now be defined from perl code.
+  Perl's 'pack' is very useful.
+
+* Should build on top of sfio enabled perl.
+
+* Tab traversal of Table's children permitted if Table does not take focus.
+
+* Re-structured MainWindow moving 'CmdLine' into Tk::CmdLine.
+  All perl/Tk apps now accept and honour command line switches described
+  in X11R5 man page.  Some support of 'WM_SAVEYOURSELF' protocol.
+  May need $mw->client setting.
+
+* New demos from Steve Lidie - thanks as always.
+
+* fixed ->wmCapture - NOTE Ioi has dropped "capture" from Tix4.1
+  so we have the "orphan" implementation from Tix4.0.*
+  
 Changes in 402.000
 
 * Put perl/Tk under perforce management 400.200 .. 400.202+

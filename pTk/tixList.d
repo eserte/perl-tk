@@ -1,3 +1,2 @@
-tixList.o: tixList.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h \
- tkInt.h tixInt.h tkVMacro.h Lang.m Lang_f.h Lang.t tk.m tk_f.h tk.t \
- Xlib.h Xlib.m Xlib_f.h Xlib.t tkInt.m tkInt_f.h tkInt.t tix.h
+tixList.o: tixList.c tixPort.h tkPort.h Lang.h tkConfig.h LangIO.h \
+ tk.h tkUnixPort.h tixUnixPort.h tixInt.h tix.h

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #undef _ANSI_ARGS_
-#if defined(USE_PROTO) || ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus)
+#if defined(USE_PROTOTYPE) || ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus)
 #   define _USING_PROTOTYPES_ 1
 #   define _ANSI_ARGS_(x)	x
 #else

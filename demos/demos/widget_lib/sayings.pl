@@ -1,5 +1,7 @@
 # sayings.pl
 
+use vars qw/$TOP/;
+
 sub sayings {
 
     # Create a top-level window containing a listbox with a bunch of
@@ -7,54 +9,19 @@ sub sayings {
     # two dimensions.
 
     my($demo) = @ARG;
-
-    $SAYINGS->destroy if Exists($SAYINGS);
-    $SAYINGS = $MW->Toplevel;
-    my $w = $SAYINGS;
-    dpos $w;
-    $w->title('Listbox Demonstration (well-known sayings)');
-    $w->iconname('sayings');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '4i',
-        -justify    => 'left',
-        -text       => 'The listbox below contains a collection of well-known sayings.  You can scan the list using either of the scrollbars or by dragging in the listbox window with button 2 pressed.',
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'The listbox below contains a collection of well-known sayings.  You can scan the list using either of the scrollbars or by dragging in the listbox window with button 2 pressed.',
+        -title    => 'Listbox Demonstration (well-known sayings)',
+        -iconname => 'sayings',
     );
-    $w_msg->pack;
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    my $list = $TOP->Scrolled(qw/Listbox -width 20 -height 10 -setgrid 1
+			      -scrollbars se/);
+    $list->pack(qw/-expand yes -fill y/);
 
-    my $w_frame = $w->Frame(-borderwidth => 10);
-    $w_frame->pack(-side => 'top', -expand => 'yes', -fill => 'y');
-
-    my $w_frame_yscroll = $w_frame->Scrollbar;
-    $w_frame_yscroll->pack(-side => 'right', -fill => 'y');
-    my $w_frame_xscroll = $w_frame->Scrollbar(-orient => 'horizontal');
-    $w_frame_xscroll->pack(-side => 'bottom', -fill => 'x');
-    my $w_frame_list = $w_frame->Listbox(
-        -width          => 20,
-        -height         => 10,
-        -yscrollcommand => [$w_frame_yscroll => 'set'],
-        -xscrollcommand => [$w_frame_xscroll => 'set'],
-        -setgrid        => '1',
-    );
-    $w_frame_list->pack(-expand => 'yes', -fill => 'y');
-    $w_frame_yscroll->configure(-command => [$w_frame_list => 'yview']);
-    $w_frame_xscroll->configure(-command => [$w_frame_list => 'xview']);
-
-    $w_frame_list->insert(0,
+    $list->insert(0,
       'Waste not, want not',
       'Early to bed and early to rise makes a man healthy, wealthy, and wise',
       'Ask not what your country can do for you, ask what you can do for your country',

@@ -393,6 +393,33 @@ XRaiseWindow(display, w)
 /*
  *----------------------------------------------------------------------
  *
+ * XLowerWindow --
+ *
+ *	Change the stacking order of a window.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Changes the stacking order of the specified window.
+ *
+ *----------------------------------------------------------------------
+ */
+void
+XLowerWindow(display, w)
+    Display* display;
+    Window w;
+{
+    HWND window = TkWinGetHWND(w);
+
+    display->request++;
+    SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0,
+	    SWP_NOMOVE | SWP_NOSIZE);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * XConfigureWindow --
  *
  *	Change the size, position, stacking, or border of the specified

@@ -14,6 +14,8 @@ DialogBox -- Like Dialog but lets you add any widget to the top frame.
 
 Balloon -- Balloon and status bar help message system.
 
+LabFrame -- Labeled frame with "acrosstop" option.
+
 To install:
 
 perl Makefile.PL
@@ -23,7 +25,8 @@ make install
 You'll have to copy the files balArrow.xbm and cbxarrow.xbm to a
 directory where Tk expects to find bitmaps.
 
-Bug reports to rsi@ziplink.net.
+Bug reports to rsi@earthling.net.
 
 Enjoy.
 Rajappa
+

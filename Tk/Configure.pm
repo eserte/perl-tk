@@ -29,7 +29,10 @@ sub configure
  my $alias = shift;
  shift if (@_);
  my ($set,$get,$widget,@args) = @$alias;
- $widget->$set(@args,@_);
+ my @results;
+ eval { @results = $widget->$set(@args,@_) };
+ croak($@) if $@;
+ return @results;
 }
 
 *TIESCALAR = \&new;

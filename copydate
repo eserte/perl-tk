@@ -25,6 +25,7 @@ sub match
 
 sub wanted
 {
+ my $write = -w $_;
  $File::Find::prune = 0;
  if (-T $_ && !/%$/ && !/\.bak/ && (stat($_))[9] >= $yt)
   {
@@ -57,7 +58,11 @@ sub wanted
       }
      print;
     }         
-   if (!$changed)
+   if ($changed)
+    {
+     print "p4 edit $File::Find::name\n";
+    }
+   else
     {
      rename("$file.bak",$file) || die "Cannot rename $file.bak to $file:$!";
     }

@@ -46,12 +46,13 @@ if (defined $Config{'gccversion'})
 
 $macro[1]->{WINARCH} = $win_arch;
 
-$define{'USE_PROTO'} = 1         if ($Config{'prototype'});
+$define{'USE_PROTOTYPE'} = 1     if ($Config{'prototype'});
 $define{'HAVE_UNISTD_H'} = 1     if ($Config{'i_unistd'});
 $define{'HAVE_SYS_SELECT_H'} = 1 if ($Config{'i_sysselct'});
 $define{'NO_STDLIB_H'} = 1       unless ($Config{'i_stdlib'});
 $define{'HAVE_SYS_TIME_H'} = 1   if ($Config{'i_systime'});
 $define{'HAVE_LIMITS_H'} = 1     if ($Config{'i_limits'});
+$define{'HAS_STDARG'} = 1        if ($Config{'i_stdarg'});
 $define{'USE_BCOPY'} = 1         if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
 
 if (defined $Config{'selecttype'})
@@ -85,6 +86,12 @@ else
    {
     $define{'CHAR_UNSIGNED'} = 1;
    }
+ }
+
+if (!try_compile("config/Ksprintf.c") &&
+     try_compile("-DSPRINTF_RETURN_CHAR config/Ksprintf.c"))
+ {
+  $define{'SPRINTF_RETURN_CHAR'} = 1;
  }
 
 if ($^O ne 'MSWin32')

@@ -11,13 +11,16 @@ Canvas/Canvas.d			Dependancies for Makefile generation
 Canvas/Canvas.pm
 Canvas/Canvas.xs
 Canvas/Makefile.PL
+Change.log
 Changes				What has changed
 Contrib/Axis.pm
 Contrib/Dial.pm
 Contrib/FileDialog.pm
 Contrib/Makefile.PL
+Contrib/OlWm.pm
 Contrib/README			Notes on Contrib directory
 Contrib/TickerTape
+Contrib/TiedListbox.pm
 Contrib/WaitBox.pm
 Contrib/book-examples/README	Notes on book-examples
 Contrib/book-examples/f-15.5.pl
@@ -31,6 +34,7 @@ Contrib/book-examples/f-16.8.pl
 Contrib/book-examples/f-16.9.pl
 Contrib/book-examples/lusol-f16.3
 Contrib/fd_demo			Demo of FileDialog
+Contrib/testlistbox
 Debug				Another gdb wrapper
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
@@ -49,9 +53,7 @@ DragDrop/site_test
 Entry/Entry.d			Dependancies for Makefile generation
 Entry/Entry.pm
 Entry/Entry.xs
-Entry/GNUmakefile		GNU make assist for developer
 Entry/Makefile.PL
-Extensions/ImageBack/ImageBack.d
 Extensions/ImageBack/ImageBack.pm
 Extensions/ImageBack/ImageBack.xs
 Extensions/ImageBack/MANIFEST
@@ -60,14 +62,12 @@ Extensions/ImageBack/Makefile.PL
 Extensions/ImageBack/README
 Extensions/ImageBack/background
 Funcs.doc			Ancient but better than nothing list of functions
-GNUmakefile			GNU make assist for developer
 Ghostview/DSC.pm		Code to handle PostScript Document Structure Comments
 Ghostview/Ghostscript.pm	Low level interface to ghostscript 'gs'
 Ghostview/Ghostview.pm		Upper level viewer.
 Ghostview/Makefile.PL
 Ghostview/README
 Ghostview/pgs			PostScript viewer based on Ghost*.pm
-HList/GNUmakefile		GNU make assist for developer
 HList/HList.d			Dependancies for Makefile generation
 HList/HList.pm
 HList/HList.tcl
@@ -99,17 +99,14 @@ HTML/tryit
 HTML/up
 HTML/webget
 INSTALL
-IO/GNUmakefile
 IO/IO.d
 IO/IO.pm
 IO/IO.xs
 IO/Makefile.PL
-InputO/GNUmakefile
 InputO/InputO.d
 InputO/InputO.pm
 InputO/InputO.xs
 InputO/Makefile.PL
-Listbox/GNUmakefile
 Listbox/Listbox.d
 Listbox/Listbox.pm
 Listbox/Listbox.xs
@@ -118,105 +115,27 @@ MANIFEST
 MANIFEST.SKIP
 MANIFEST.SKIP.PL
 Makefile.PL
-Menu/GNUmakefile
 Menu/Makefile.PL
 Menu/Menu.d
 Menu/Menu.pm
 Menu/Menu.xs
 Menu/Menu/Item.pm
-Menubutton/GNUmakefile
 Menubutton/Makefile.PL
 Menubutton/Menubutton.d
 Menubutton/Menubutton.pm
 Menubutton/Menubutton.xs
-Mwm/GNUmakefile
 Mwm/Makefile.PL
 Mwm/Mwm.d
 Mwm/Mwm.pm
 Mwm/Mwm.xs
-NBFrame/GNUmakefile
 NBFrame/Makefile.PL
 NBFrame/NBFrame.d
 NBFrame/NBFrame.pm
 NBFrame/NBFrame.xs
-Photo/GNUmakefile
 Photo/Makefile.PL
 Photo/Photo.d
 Photo/Photo.pm
 Photo/Photo.xs
-Pixmap/GNUmakefile
-Pixmap/Makefile.PL
-Pixmap/Pixmap.d
-Pixmap/Pixmap.pm
-Pixmap/Pixmap.xs
-Pixmap/mTk/tkImgPmap.c
-Pixmap/tkImgPmap.d
-Pixmap/xpm/Attrib.c
-Pixmap/xpm/Attrib.d
-Pixmap/xpm/CHANGES
-Pixmap/xpm/COPYRIGHT
-Pixmap/xpm/CrBufFrI.c
-Pixmap/xpm/CrBufFrI.d
-Pixmap/xpm/CrBufFrP.c
-Pixmap/xpm/CrBufFrP.d
-Pixmap/xpm/CrDatFrI.c
-Pixmap/xpm/CrDatFrI.d
-Pixmap/xpm/CrDatFrP.c
-Pixmap/xpm/CrDatFrP.d
-Pixmap/xpm/CrIFrBuf.c
-Pixmap/xpm/CrIFrBuf.d
-Pixmap/xpm/CrIFrDat.c
-Pixmap/xpm/CrIFrDat.d
-Pixmap/xpm/CrIFrP.c
-Pixmap/xpm/CrIFrP.d
-Pixmap/xpm/CrPFrBuf.c
-Pixmap/xpm/CrPFrBuf.d
-Pixmap/xpm/CrPFrDat.c
-Pixmap/xpm/CrPFrDat.d
-Pixmap/xpm/CrPFrI.c
-Pixmap/xpm/CrPFrI.d
-Pixmap/xpm/GNUmakefile
-Pixmap/xpm/Image.c
-Pixmap/xpm/Image.d
-Pixmap/xpm/Info.c
-Pixmap/xpm/Info.d
-Pixmap/xpm/Makefile.PL
-Pixmap/xpm/README
-Pixmap/xpm/RdFToBuf.c
-Pixmap/xpm/RdFToBuf.d
-Pixmap/xpm/RdFToDat.c
-Pixmap/xpm/RdFToDat.d
-Pixmap/xpm/RdFToI.c
-Pixmap/xpm/RdFToI.d
-Pixmap/xpm/RdFToP.c
-Pixmap/xpm/RdFToP.d
-Pixmap/xpm/WrFFrBuf.c
-Pixmap/xpm/WrFFrBuf.d
-Pixmap/xpm/WrFFrDat.c
-Pixmap/xpm/WrFFrDat.d
-Pixmap/xpm/WrFFrI.c
-Pixmap/xpm/WrFFrI.d
-Pixmap/xpm/WrFFrP.c
-Pixmap/xpm/WrFFrP.d
-Pixmap/xpm/XpmI.h
-Pixmap/xpm/create.c
-Pixmap/xpm/create.d
-Pixmap/xpm/data.c
-Pixmap/xpm/data.d
-Pixmap/xpm/domerge
-Pixmap/xpm/hashtab.c
-Pixmap/xpm/hashtab.d
-Pixmap/xpm/misc.c
-Pixmap/xpm/misc.d
-Pixmap/xpm/parse.c
-Pixmap/xpm/parse.d
-Pixmap/xpm/rgb.c
-Pixmap/xpm/rgb.d
-Pixmap/xpm/rgbtab.h
-Pixmap/xpm/scan.c
-Pixmap/xpm/scan.d
-Pixmap/xpm/simx.h
-Pixmap/xpm/xpm.h
 Pod/MANIFEST
 Pod/MANIFEST.SKIP
 Pod/Makefile.PL
@@ -227,32 +146,44 @@ Pod/tkpod
 README				General Information
 README.AIX
 README.HPUX
+README.IRIX
 README.OSF
 README.SCO
 README.SVR4
 README.Solaris
 README.linux
 README.ultrix
-Scale/GNUmakefile		GNU make assist for developer
 Scale/Makefile.PL
 Scale/Scale.d			Dependancies for Makefile generation
 Scale/Scale.pm
 Scale/Scale.xs
-Scrollbar/GNUmakefile		GNU make assist for developer
 Scrollbar/Makefile.PL
 Scrollbar/Scrollbar.d		Dependancies for Makefile generation
 Scrollbar/Scrollbar.pm
 Scrollbar/Scrollbar.xs
-Text/GNUmakefile		GNU make assist for developer
+TList/Makefile.PL
+TList/TList.d
+TList/TList.pm
+TList/TList.xs
 Text/Makefile.PL
 Text/README
 Text/Text.d			Dependancies for Makefile generation
 Text/Text.pm
 Text/Text.xs
 Text/Text/Tag.pm
+TixGrid/Makefile.PL
+TixGrid/TixGrid.d
+TixGrid/TixGrid.pm
+TixGrid/TixGrid.xs
+TixPixmap/Makefile.PL
+TixPixmap/Pixmap.d
+TixPixmap/Pixmap.pm
+TixPixmap/Pixmap.xs
 Tixish/Balloon.pm
 Tixish/BrowseEntry.pm
+Tixish/Changes
 Tixish/DialogBox.pm
+Tixish/LabFrame.pm
 Tixish/Makefile.PL
 Tixish/NoteBook.pm
 Tixish/README			Notes on Tixish directory
@@ -261,6 +192,7 @@ Tixish/lib/Tk/balArrow.xbm
 Tixish/lib/Tk/cbxarrow.xbm
 Tixish/t/balloon.t
 Tixish/t/browsentry.t
+Tixish/t/labframe.t
 Tixish/t/notebook.t
 Tk.d				Dependancies for Makefile generation
 Tk.pm				"Base" class/package 
@@ -268,11 +200,10 @@ Tk.xs
 Tk/Adjuster.pm
 Tk/After.pm
 Tk/Button.pm
-Tk/Camel.tif
-Tk/Camel.xbm
 Tk/Camel.xpm
 Tk/Checkbutton.pm
 Tk/Clipboard.pm
+Tk/CmdLine.pm
 Tk/ColorEdit.xpm
 Tk/ColorEditor.pm
 Tk/Configure.pm
@@ -370,10 +301,12 @@ bugs
 bulkedit			Utility to make changes in many files - with Tk GUI
 canvas_ps			Writes PostScript for Canvas to a file.
 canvas_scroll			Basic test of scrolling a Canvas
+capture_demo
 cbtest				Test of callback returns.
 checklen			Check names not > 14 chars long for old UNIXes.
 cleanup				Remove authour's junk files
 clip_bug			Demonstrates some "features" of clipping.
+config/Ksprintf.c
 config/signedchar.c		Test to see of 'signed char' is legal 
 config/tod.c			Test for gettimeofday()
 config/unsigned.c		See if 'char' is signed
@@ -435,6 +368,7 @@ demos/demos/widget_lib/image2.pl
 demos/demos/widget_lib/items.pl
 demos/demos/widget_lib/labels.pl
 demos/demos/widget_lib/menus.pl
+demos/demos/widget_lib/menus2.pl
 demos/demos/widget_lib/mkArrow.pl
 demos/demos/widget_lib/mkBasic.pl
 demos/demos/widget_lib/mkBitmaps.pl
@@ -474,6 +408,7 @@ demos/demos/widget_lib/style.pl
 demos/demos/widget_lib/texts.pl
 demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/vscale.pl
+demos/demos/widtrib/HList.pl
 demos/demos/widtrib/TEMPLATE.pl
 demos/demos/widtrib/lib/npuz/Xcamel.npuz
 demos/demos/widtrib/npuz.pl
@@ -492,9 +427,10 @@ destroy_test			Test of <Destroy> binding
 dfpy				Author's utility for putting Tk on a floppy
 dialog_test
 disbutton
-doc/GNUmakefile			GNU make assist for developer
 doc/Makefile.PL
 doc/Perlize.pm
+doc/Tixlic.html
+doc/html_lic.html
 doc/htmlfile
 doc/license.html
 doc/longnm
@@ -573,9 +509,12 @@ doc/man2/Tk_Main.2
 doc/man2/WindowId.2
 doc/man2/license.terms
 doc/man2html
+doc/mann/DItem.n
+doc/mann/Grid.n
 doc/mann/HList.n
 doc/mann/InpOnly.n
 doc/mann/Mwm.n
+doc/mann/TList.n
 doc/mann/after.n
 doc/mann/appname.n
 doc/mann/bell.n
@@ -597,6 +536,7 @@ doc/mann/exit.n
 doc/mann/fileevent.n
 doc/mann/focus.n
 doc/mann/focusNext.n
+doc/mann/form.n
 doc/mann/frame.n
 doc/mann/grab.n
 doc/mann/grid.n
@@ -641,6 +581,7 @@ findbase
 floppy
 font_demo
 font_test
+forward_test
 generate
 geo_mgr
 geom
@@ -675,11 +616,11 @@ motif_hack
 myConfig
 nested_dialog
 oddmenu_demo
-pTk/GNUmakefile
 pTk/Lang.exc
 pTk/Lang.h
 pTk/Lang.m
 pTk/Lang.t
+pTk/LangIO.h
 pTk/Lang_f.c
 pTk/Lang_f.d
 pTk/Lang_f.h
@@ -716,13 +657,14 @@ pTk/config/Hstrdup.c
 pTk/config/Hstrtoul.c
 pTk/config/Xdummy.c
 pTk/counts
+pTk/defs
 pTk/findX
 pTk/findcore
 pTk/findstrings
 pTk/from
 pTk/genexc
+pTk/license.html_lib
 pTk/license.terms
-pTk/mTk/GNUmakefile
 pTk/mTk/MANIFEST.SKIP
 pTk/mTk/README
 pTk/mTk/generic/README
@@ -804,6 +746,7 @@ pTk/mTk/generic/tkUtil.c
 pTk/mTk/generic/tkVisual.c
 pTk/mTk/generic/tkWindow.c
 pTk/mTk/license.terms
+pTk/mTk/mergedir
 pTk/mTk/tclGeneric/pTk.exc
 pTk/mTk/tclGeneric/panic.c
 pTk/mTk/tclGeneric/patchlevel.h
@@ -891,50 +834,84 @@ pTk/mTk/tclWin/tclWinTest.c
 pTk/mTk/tclWin/tclWinTime.c
 pTk/mTk/tclWin/winDumpExts.c
 pTk/mTk/tclmerge
-pTk/mTk/tix/glw3d.c
-pTk/mTk/tix/glwBasic.c
-pTk/mTk/tix/glwCSpace.c
-pTk/mTk/tix/glwCmds.c
-pTk/mTk/tix/glwConfig.c
-pTk/mTk/tix/glwInit.c
-pTk/mTk/tix/glwMatEdit.c
-pTk/mTk/tix/main_sgi.c
-pTk/mTk/tix/pTk.exc
-pTk/mTk/tix/tix.h
-pTk/mTk/tix/tixAppInit.c
-pTk/mTk/tix/tixClass.c
-pTk/mTk/tix/tixCmds.c
-pTk/mTk/tix/tixDItem.c
-pTk/mTk/tix/tixDefault.h
-pTk/mTk/tix/tixDiImgTxt.c
-pTk/mTk/tix/tixDiStyle.c
-pTk/mTk/tix/tixDiText.c
-pTk/mTk/tix/tixDiWin.c
-pTk/mTk/tix/tixError.c
-pTk/mTk/tix/tixForm.c
-pTk/mTk/tix/tixForm.h
-pTk/mTk/tix/tixFormMisc.c
-pTk/mTk/tix/tixGLW.h
-pTk/mTk/tix/tixGeometry.c
-pTk/mTk/tix/tixHLCol.c
-pTk/mTk/tix/tixHList.c
-pTk/mTk/tix/tixHList.h
-pTk/mTk/tix/tixImgCmp.c
-pTk/mTk/tix/tixImgXpm.c
-pTk/mTk/tix/tixInit.c
-pTk/mTk/tix/tixInputO.c
-pTk/mTk/tix/tixInt.h
-pTk/mTk/tix/tixList.c
-pTk/mTk/tix/tixMethod.c
-pTk/mTk/tix/tixMwm.c
-pTk/mTk/tix/tixNBFrame.c
-pTk/mTk/tix/tixOption.c
-pTk/mTk/tix/tixUtils.c
-pTk/mTk/tix/tixWidget.c
-pTk/mTk/tix/tixWish.c
-pTk/mTk/tix/tkMenu.c
-pTk/mTk/tix/tkWm.c
-pTk/mTk/tix/tkXEvent.c
+pTk/mTk/tixGeneric/pTk.exc
+pTk/mTk/tixGeneric/stbDItem.c
+pTk/mTk/tixGeneric/stbDiStyle.c
+pTk/mTk/tixGeneric/tix.h
+pTk/mTk/tixGeneric/tixBitmaps.h
+pTk/mTk/tixGeneric/tixClass.c
+pTk/mTk/tixGeneric/tixCmds.c
+pTk/mTk/tixGeneric/tixCompat.c
+pTk/mTk/tixGeneric/tixConsole.c
+pTk/mTk/tixGeneric/tixDItem.c
+pTk/mTk/tixGeneric/tixDef.h
+pTk/mTk/tixGeneric/tixDiITxt.c
+pTk/mTk/tixGeneric/tixDiImg.c
+pTk/mTk/tixGeneric/tixDiStyle.c
+pTk/mTk/tixGeneric/tixDiText.c
+pTk/mTk/tixGeneric/tixDiWin.c
+pTk/mTk/tixGeneric/tixError.c
+pTk/mTk/tixGeneric/tixForm.c
+pTk/mTk/tixGeneric/tixForm.h
+pTk/mTk/tixGeneric/tixFormMisc.c
+pTk/mTk/tixGeneric/tixGeometry.c
+pTk/mTk/tixGeneric/tixGrData.c
+pTk/mTk/tixGeneric/tixGrData.h
+pTk/mTk/tixGeneric/tixGrFmt.c
+pTk/mTk/tixGeneric/tixGrRC.c
+pTk/mTk/tixGeneric/tixGrSel.c
+pTk/mTk/tixGeneric/tixGrSort.c
+pTk/mTk/tixGeneric/tixGrUtl.c
+pTk/mTk/tixGeneric/tixGrid.c
+pTk/mTk/tixGeneric/tixGrid.h
+pTk/mTk/tixGeneric/tixHLCol.c
+pTk/mTk/tixGeneric/tixHLHdr.c
+pTk/mTk/tixGeneric/tixHLInd.c
+pTk/mTk/tixGeneric/tixHList.c
+pTk/mTk/tixGeneric/tixHList.h
+pTk/mTk/tixGeneric/tixImgCmp.c
+pTk/mTk/tixGeneric/tixImgXpm.c
+pTk/mTk/tixGeneric/tixImgXpm.h
+pTk/mTk/tixGeneric/tixInit.c
+pTk/mTk/tixGeneric/tixInputO.c
+pTk/mTk/tixGeneric/tixInt.h
+pTk/mTk/tixGeneric/tixItcl.c
+pTk/mTk/tixGeneric/tixItcl.h
+pTk/mTk/tixGeneric/tixList.c
+pTk/mTk/tixGeneric/tixMethod.c
+pTk/mTk/tixGeneric/tixMwm.c
+pTk/mTk/tixGeneric/tixNBFrame.c
+pTk/mTk/tixGeneric/tixOption.c
+pTk/mTk/tixGeneric/tixPort.h
+pTk/mTk/tixGeneric/tixScroll.c
+pTk/mTk/tixGeneric/tixSmpLs.c
+pTk/mTk/tixGeneric/tixTList.c
+pTk/mTk/tixGeneric/tixTList.h
+pTk/mTk/tixGeneric/tixUtils.c
+pTk/mTk/tixGeneric/tixWidget.c
+pTk/mTk/tixUnix/pTk.exc
+pTk/mTk/tixUnix/samAppInit.c
+pTk/mTk/tixUnix/tixUnixDraw.c
+pTk/mTk/tixUnix/tixUnixInt.h
+pTk/mTk/tixUnix/tixUnixPort.h
+pTk/mTk/tixUnix/tixUnixSam.c
+pTk/mTk/tixUnix/tixUnixWm.c
+pTk/mTk/tixUnix/tixUnixXpm.c
+pTk/mTk/tixUnix/tk4.2/tclUnixSam76.c
+pTk/mTk/tixUnix/tk4.2/tkUnixSam42.c
+pTk/mTk/tixUnix/tk8.0/tixAppInit.c
+pTk/mTk/tixWin/DLLDemo/Demo.c
+pTk/mTk/tixWin/pTk.exc
+pTk/mTk/tixWin/tixWCmpt.c
+pTk/mTk/tixWin/tixWinDraw.c
+pTk/mTk/tixWin/tixWinInt.h
+pTk/mTk/tixWin/tixWinMain.c
+pTk/mTk/tixWin/tixWinPort.h
+pTk/mTk/tixWin/tixWinWm.c
+pTk/mTk/tixWin/tixWinXpm.c
+pTk/mTk/tixWin/tkConsole42.c
+pTk/mTk/tixWin/tkConsole80a1.c
+pTk/mTk/tixmerge
 pTk/mTk/unix/Makefile.in
 pTk/mTk/unix/README
 pTk/mTk/unix/configure
@@ -1069,8 +1046,6 @@ pTk/mTk/xlib/X11/X.h
 pTk/mTk/xlib/X11/Xatom.h
 pTk/mTk/xlib/X11/Xfuncproto.h
 pTk/mTk/xlib/X11/Xlib.h
-pTk/mTk/xlib/X11/Xproto.h
-pTk/mTk/xlib/X11/Xresource.h
 pTk/mTk/xlib/X11/Xutil.h
 pTk/mTk/xlib/X11/cursorfont.h
 pTk/mTk/xlib/X11/keysym.h
@@ -1079,7 +1054,6 @@ pTk/mTk/xlib/X11/license.terms
 pTk/mTk/xlib/license.terms
 pTk/mTk/xlib/pTk.exc
 pTk/mTk/xlib/xbytes.h
-pTk/mTk/xlib/xcolors.c
 pTk/mTk/xlib/xcolors.h
 pTk/mTk/xlib/xdraw.c
 pTk/mTk/xlib/xgc.c
@@ -1092,11 +1066,12 @@ pTk/mkexc
 pTk/mkmethods
 pTk/mkneed
 pTk/process_object
+pTk/refs
+pTk/stbDItem.d
+pTk/stbDiStyle.d
 pTk/strcasecmp.c
 pTk/strdup.c
-pTk/strdup.d
 pTk/strtoul.c
-pTk/strtoul.d
 pTk/tclAsync.d
 pTk/tclDString.c
 pTk/tclDString.d
@@ -1110,16 +1085,37 @@ pTk/tclUnixTime.d
 pTk/tix.exc
 pTk/tix.m
 pTk/tix.t
+pTk/tixCompat.d
+pTk/tixConsole.d
 pTk/tixDItem.d
+pTk/tixDiITxt.d
+pTk/tixDiImg.d
 pTk/tixDiImgTxt.d
 pTk/tixDiStyle.d
 pTk/tixDiText.d
 pTk/tixDiWin.d
 pTk/tixError.d
+pTk/tixForm.d
+pTk/tixFormMisc.d
+pTk/tixGrData.d
+pTk/tixGrFmt.d
+pTk/tixGrRC.d
+pTk/tixGrSel.d
+pTk/tixGrSort.d
+pTk/tixGrUtl.d
+pTk/tixGrid.d
 pTk/tixHLCol.d
+pTk/tixHLHdr.d
+pTk/tixHLInd.d
 pTk/tixHList.d
 pTk/tixHList.exc
 pTk/tixImgCmp.d
+pTk/tixImgXpm.d
+pTk/tixImgXpm.m
+pTk/tixImgXpm.t
+pTk/tixImgXpm_f.c
+pTk/tixImgXpm_f.d
+pTk/tixImgXpm_f.h
 pTk/tixInputO.d
 pTk/tixInt.exc
 pTk/tixInt.m
@@ -1127,10 +1123,19 @@ pTk/tixInt.t
 pTk/tixInt_f.c
 pTk/tixInt_f.d
 pTk/tixInt_f.h
+pTk/tixItcl.d
 pTk/tixList.d
 pTk/tixMwm.d
 pTk/tixNBFrame.d
+pTk/tixScroll.d
+pTk/tixSmpLs.d
+pTk/tixTList.d
+pTk/tixUnixDraw.d
+pTk/tixUnixWm.d
+pTk/tixUnixXpm.d
 pTk/tixUtils.d
+pTk/tixVars.c
+pTk/tixVars.d
 pTk/tix_f.c
 pTk/tix_f.d
 pTk/tix_f.h
@@ -1188,7 +1193,6 @@ pTk/tkInt.t
 pTk/tkInt_f.c
 pTk/tkInt_f.d
 pTk/tkInt_f.h
-pTk/tkInt_f.m
 pTk/tkListbox.d
 pTk/tkMenu.d
 pTk/tkMenubutton.d
@@ -1237,6 +1241,7 @@ pTk/tk_f.h
 pTk/why
 perlfiles
 pfm
+pictgrid
 pipe_test
 pixmap_test
 popup
@@ -1247,6 +1252,7 @@ rebuild
 scale_test
 scrolled_demo
 sm
+sockets
 submethods
 symbols
 t/Require.t
@@ -1255,10 +1261,13 @@ tainted
 tcl2perl
 tcolour
 text_demo
+tie_basic
 tiehandle
 tietext
 time
 tiny
+tixGlue.c
+tixGlue.d
 tixwm_demo
 tkGlue.c
 tkGlue.d
@@ -1273,6 +1282,7 @@ tkGlue_f.h
 tkperldoc
 tkpsh
 tktail
+tlist_demo
 toyedit
 two_main
 uninstall

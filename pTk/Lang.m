@@ -12,9 +12,6 @@
 #ifndef LangCallbackArg
 #define LangCallbackArg (*LangVptr->V_LangCallbackArg)
 #endif
-#ifndef LangCloseHandler
-#define LangCloseHandler (*LangVptr->V_LangCloseHandler)
-#endif
 #ifndef LangCmpArg
 #define LangCmpArg (*LangVptr->V_LangCmpArg)
 #endif
@@ -428,9 +425,6 @@
 #endif
 #ifndef TclpGetTime
 #define TclpGetTime (*LangVptr->V_TclpGetTime)
-#endif
-#ifndef TkReadDataPending
-#define TkReadDataPending (*LangVptr->V_TkReadDataPending)
 #endif
 #endif /* NO_VTABLES */
 #endif /* _LANG_VM */

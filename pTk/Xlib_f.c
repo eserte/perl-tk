@@ -1,4 +1,6 @@
 #include "tkPort.h"
+/* FIXME - include gard muddle */
+#undef _XLIB
 #include "Xlib.h"
 #include "Xlib_f.h"
 static XlibVtab XlibVtable =

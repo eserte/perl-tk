@@ -1,15 +1,21 @@
 #ifdef _LANG
 #include "Lang.m"
 #endif
+
 #if defined(_TK)
 #include "tk.m"
 #endif 
+
 #if defined(_TK) || defined(_XLIB_H_)
-#ifndef _XLIB
+#if !defined(_XLIB) && !defined(_XLIB_H_)
 #include "Xlib.h"
+#endif
+#if defined(_XLIB_H) && !defined(_XLIB)
+#define _XLIB
 #endif
 #include "Xlib.m"
 #endif
+
 #ifdef _TKINT
 #include "tkInt.m"
 #endif
@@ -24,5 +30,8 @@
 #endif
 #ifdef _TKOPTION
 #include "tkOption.m"
+#endif
+#ifdef _TIXIMGXPM
+#include "tixImgXpm.m"
 #endif
 

@@ -1,73 +1,53 @@
 # puzzle.pl
 
-sub puzzle_switch;
+use vars qw/$TOP/;
+use subs qw/puzzle_switch/;
 
 sub puzzle {
 
     # Create a top-level window containing a 15-puzzle game.
 
     my($demo) = @ARG;
-
-    $PUZZLE->destroy if Exists($PUZZLE);
-    $PUZZLE = $MW->Toplevel;
-    my $w = $PUZZLE;
-    dpos $w;
-    $w->title('15-Puzzle Demonstration');
-    $w->iconname('puzzle');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '4i',
-        -justify    => 'left',
-        -text       => 'A 15-puzzle appears below as a collection of buttons.  Click on any of the pieces next to the space, and that piece will slide over the space.  Continue this until the pieces are arranged in numerical order from upper-left to lower-right.',
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'A 15-puzzle appears below as a collection of buttons.  Click on any of the pieces next to the space, and that piece will slide over the space.  Continue this until the pieces are arranged in numerical order from upper-left to lower-right.',
+        -title    => '15-Puzzle Demonstration',
+        -iconname => 'puzzle',
     );
-    $w_msg->pack;
-
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    $TOP = $demo_widget->Top;	# get geometry master
 
     # Special trick: select a darker color for the space by creating a
     # scrollbar widget and using its trough color.
 
-    my $w_s = $MW->Scrollbar;
-    my $w_frame = $w->Frame(
+    my $s = $TOP->Scrollbar;
+    my $frame = $TOP->Frame(
         -width       => 120,
         -height      => 120,
         -borderwidth => '2',
         -relief      => 'sunken',
-        -background  => $w_s->cget(-troughcolor),
+        -background  => $s->cget(-troughcolor),
     );
-    $w_frame->pack(-side => 'top', -padx => '1c', -pady => '1c');
-    $w_s->destroy;
+    $frame->pack(qw/-side top -padx 1c -pady 1c/);
+    $s->destroy;
 
     my(@order) = (3, 1, 6, 2, 5, 7, 15, 13, 4, 11, 8, 9, 14, 10, 12);
     my %xpos = ();
     my %ypos = ();
 
-    my($i, $num, $w_frame_num);
+    my($i, $num, $frame_num);
     for ($i=0; $i<15; $i++) {
 	$num = $order[$i];
 	$xpos{$num} = ($i%4) * 0.25;
 	$ypos{$num} = (int($i/4)) * 0.25;
-	$w_frame_num = $w_frame->Button(
+	$frame_num = $frame->Button(
             -relief             => 'raised',
             -text               => $num,
             -highlightthickness => 0,
         );
-	$w_frame_num->configure(
-            -command => [\&puzzle_switch, $w_frame_num, $num, \%xpos, \%ypos],
+	$frame_num->configure(
+            -command => [\&puzzle_switch, $frame_num, $num, \%xpos, \%ypos],
         );
-	$w_frame_num->place(
+	$frame_num->place(
             -relx      => $xpos{$num},
             -rely      => $ypos{$num},
             -relwidth  => 0.25,

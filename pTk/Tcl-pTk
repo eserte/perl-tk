@@ -1,5 +1,11 @@
 #!/usr/local/bin/perl -w
 
+use Carp;
+
+my $verbose = 0;
+
+$SIG{'__WARN__'} = sub { print STDERR $_; Carp::confess(shift) };
+
 $src = shift;
 $dst = shift;
 
@@ -129,6 +135,7 @@ while ($_ = &getline)
      }
     s/\bargv\s*\[([^[]*)\]\s*=([^=].*);\s*$/LangSetString(args+$1,$2);\n/;
     s/\bargv\s*\[([^[]*)\]\+\+/args[$1] = LangStringArg(LangString(args[$1])+1)/;
+    s/\bargv\s*\[([^[]*)\]\+([0-9])/LangStringArg(LangString(args[$1])+$2)/;
 #   unless (/\b(str\w+|Tk[A-Za-z0-9_]+)\s*\(/)
 #    {
 #     # skip things that look like parm list 
@@ -143,7 +150,7 @@ while ($_ = &getline)
 #   s/\bargv(\w+)\b/LangString(args$1)/g;
     if (/\bargv\b/)
      {
-      warn "Leak: $_" unless (/\bargv\s*\)/);
+      warn "Leak: $_" if ($verbose && !/\bargv\s*\)/);
       s/\bargv\b/args/;
      }
    }
@@ -178,7 +185,7 @@ while ($_ = &getline)
     die $_ if /(Tk_PathName|->pathName)/;
    }
 #            1             2                 3           4                  5                           6
-  s/\(c == '(.)'\)\s*&&\s*(\()?\(strncmp\(([^,]+),\s*("-\1[^"]*"),\s*(\w+|strlen\(\3\))\s*\)\s*==\s*0\)(\))?/(c == '$1') && $2 LangCmpOpt($4,$3,$5) == 0 $6/g;
+  s/\(c == '(.)'\)\s*&&\s*(\(?)\(strncmp\(([^,]+),\s*("-\1[^"]*"),\s*(\w+|strlen\(\3\))\s*\)\s*==\s*0\)(\)?)/(c == '$1') && $2 LangCmpOpt($4,$3,$5) == 0 $6/g;
   s/\(c == '(.)'\)\s*&&\s*\(strcmp\(([^,]+),\s*("-\1[^"]*")\s*\)\s*==\s*0\)/(c == '$1') && LangCmpOpt($3,$2,0) == 0/g;
   
   print;

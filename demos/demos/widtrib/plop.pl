@@ -5,17 +5,20 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use English;
-use vars qw($TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
+use vars qw/$TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
 	    $DX $DY $MIN_PXL $MAX_PXL $MARGIN $ALEN $ORIGINAL_CURSOR $CANV
-	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS $VERSION);
+	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS $VERSION/;
 
 sub plop {
     my($demo) = @ARG;
-    my $demo_widget = $MW->WidgetDemo(-name => $demo,
-				      -text => 'This demonstration allows you to enter arithmetic functions in the text widow and plot them.  The X and Y axes limits can be changed to scale the plotting canvas.',
-				      -geometry_manager => 'pack');
-    $TOP = $demo_widget->top;
+    my $demo_widget = $MW->WidgetDemo(
+        -name             => $demo,
+        -text             => 'This demonstration allows you to enter arithmetic functions in the text widow and plot them.  The X and Y axes limits can be changed to scale the plotting canvas.',
+	-geometry_manager => 'pack',
+        -title            => 'Plot Continuous Functions y=f(x)',
+        -iconname         => 'plop',
+    );
+    $TOP = $demo_widget->Top;
 
 #!/usr/local/bin/perl -w
 #

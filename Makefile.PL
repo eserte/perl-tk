@@ -1,9 +1,10 @@
 use Cwd;
+use Config;
 no  lib '.';
 BEGIN 
  {
   $IsWin32   = $^O eq 'MSWin32';
-  $VERSION = '402.000';
+  $VERSION = '402.001';
 
   $win_arch = ($IsWin32) ? $^O : 'x';		# Currently 'x' and 'open32' supported
 
@@ -19,7 +20,16 @@ if ($IsWin32)
  }
 else
  {
-  @libs = ("$xlib -lX11 -lpt -lsocket -lnsl -lm") unless $IsWin32;
+  my $plibs = $Config{'libs'};
+  my $libs  = "$xlib -lX11 -lpt";
+  my $lib;
+  # perl needs sockets and math library too 
+  # so only include these if they made it through perl's Configure
+  foreach $lib (qw(-lsocket -lnsl -lm))
+   {
+    $libs .= " $lib" if ($plibs =~ /$lib\b/);
+   }
+  @libs = ("$libs");
  }
 
 Tk::MMutil::TkExtMakefile(
@@ -65,6 +75,7 @@ sub MY::top_targets
 sub MY::post_initialize
 {
  my ($self) = @_;
+ my ($ret) = '';
  my %files = ();
  my $dir = $self->catdir('$(INST_ARCHLIBDIR)','Tk');
  my $name;
@@ -88,9 +99,15 @@ sub MY::post_initialize
   }
  if ($^O eq 'MSWin32')
   {
-   push(@{$self->{'O_FILES'}},'pTk\tk.res');
+   if ($Config{cc} =~ /^bcc/i) {
+     push(@{$self->{'O_FILES'}},'pTk\tkWin32Dll.obj');
+     $ret .= "\nRESFILES = pTk\\tk.res\n";
+   }
+   else {
+     push(@{$self->{'O_FILES'}},'pTk\tk.res');
+   }
   }
- '';
+ $ret;
 }
 
 sub MY::postamble {
@@ -100,6 +117,7 @@ html : subdirs manifypods
 	@cd doc && $(MAKE) html $(PASTHRU)
 
 config       :: tkGlue.t
+	@$(NOOP)
 
 $(BASEEXT)$(OBJ_EXT) : tkGlue.h
 tkGlue$(OBJ_EXT)     : tkGlue.c tkGlue.h pTk/Methods.def tkGlue.t

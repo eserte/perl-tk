@@ -17,6 +17,9 @@
 #include "Lang.h"
 #include <signal.h> 
 #include <errno.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 
 #ifndef MASK_SIZE
 #define MASK_SIZE 256

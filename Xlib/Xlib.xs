@@ -123,6 +123,28 @@ int flags;
   croak("Cannot get graphic context");
 }
 
+#ifdef WIN32
+/* wrap the naive macro versions of these ... */
+static int
+pTk_XSync(Display *dpy, int flush)
+{
+ XSync(dpy,flush);
+ return 0;
+}
+ 
+static int 
+pTk_XFlush(Display *dpy)
+{
+ XFlush(dpy);
+ return 0;
+}
+#else
+#define pTk_XSync  XSync
+#define pTk_XFlush XFlush
+#endif /* WIN32 */
+
+
+
 MODULE = Tk::Xlib	PACKAGE = Tk::Widget
 
 void
@@ -167,7 +189,16 @@ unsigned long
 WhitePixelOfScreen(s)
 Screen *	s
 
-MODULE = Tk::Xlib	PACKAGE = DisplayPtr
+MODULE = Tk::Xlib	PACKAGE = DisplayPtr	PREFIX = pTk_
+
+int
+pTk_XSync(dpy,discard = False)
+Display *	dpy
+int		discard
+
+int
+pTk_XFlush(dpy)
+Display *	dpy
 
 int
 ConnectionNumber(dpy)
@@ -240,7 +271,7 @@ CODE:
  }
 
 Window
-RootWindow(dpy,scr)
+RootWindow(dpy,scr = DefaultScreen(dpy))
 Display *	dpy
 int		scr
 
@@ -253,7 +284,7 @@ DefaultScreen(dpy)
 Display *	dpy
 
 Screen *
-ScreenOfDisplay(dpy,scr)
+ScreenOfDisplay(dpy,scr = DefaultScreen(dpy))
 Display *	dpy
 int		scr
 

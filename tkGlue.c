@@ -23,6 +23,7 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
+#include "pTk/tix.h"  /* for form */
 #include "pTk/tkImgPhoto.h"
 #include "pTk/tkOption.h"
 #include "pTk/tkOption_f.h"
@@ -1039,6 +1040,7 @@ char *fmt;
 va_dcl
 #endif
 {
+/* FIXME - use perl5.004 features ! */
  char buf[1024];
  va_list ap;
 #ifdef I_STDARG
@@ -1800,7 +1802,7 @@ XS(MainWindowCreate)
  int offset = args - sp;
  if (TkCreateFrame(NULL, interp, items-1, &ST(1), 1, appName) != TCL_OK)
   {
-   Tcl_AddErrorInfo(interp, "MainWindow::Create");
+   Tcl_AddErrorInfo(interp, "Tk::MainWindow::Create");
    croak("%s",Tcl_GetResult(interp));
   }
  TkPlatformInit(interp);
@@ -2171,6 +2173,30 @@ XS(XStoAfterSub)
  XSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
+static
+XS(XStoGrid)
+{
+ dXSARGS;
+ Lang_CmdInfo info;                      
+ SV *name = NameFromCv(cv);
+ int posn = InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0));
+ if (posn == 0 && 0)
+  {
+   /* Find a place for the widget arg after a possible subcommands */
+   posn = 1;                          
+   if (posn < items && SvPOK(ST(posn)) && !isSwitch(SvPV(ST(posn),na)))
+    posn++;                           
+   items = InsertArg(mark,posn,ST(0));
+   ST(0) = name;          /* Fill in command name */
+  }
+ items = InsertArg(mark,0, name);
+#if 0
+ Dump_vec("grid", items, &ST(0));
+#endif
+ XSRETURN(Call_Tk(&info, items, &ST(0)));
+}
+
+
 static 
 XS(XStoDisplayof)
 {
@@ -2248,8 +2274,8 @@ XS(XStoImage)
   }
  if (items > 1 && SvPOK(ST(1)))
   {
-   char *op = SvPV(ST(1),na);
-   if (strcmp(op,"create") && strcmp(op,"names") && strcmp(op,"types"))
+   char *opt = SvPV(ST(1),na);
+   if (strcmp(opt,"create") && strcmp(opt,"names") && strcmp(opt,"types"))
     {
     items = InsertArg(mark,2,ST(0));
     }
@@ -3985,7 +4011,9 @@ LangCopyArg(sv)
 SV *sv;
 {
  if (sv)
-  sv = newSVsv(sv);
+  {
+   sv = newSVsv(sv);
+  }
  return sv;
 }
 
@@ -4358,7 +4386,8 @@ char *name;
 Tcl_DString *bufferPtr;
 {
  Tcl_DStringInit(bufferPtr);
- return name;
+ Tcl_DStringAppend(bufferPtr,name,strlen(name));
+ return bufferPtr->string;
 }
 
 char *
@@ -4367,10 +4396,15 @@ int argc;
 char **argv;
 Tcl_DString *result;
 {
- croak("Tcl_JoinPath not implemented");
- return "";
+ Tcl_DStringInit(result);
+ while (argc-- > 0)
+  {char *s = *argv++;
+   Tcl_DStringAppend(result,s,strlen(s));
+   if (argc)
+    Tcl_DStringAppend(result,"/",1);
+  }
+ return result->string;
 }
-
 
 char *
 Tcl_PosixError(interp)
@@ -4540,16 +4574,6 @@ Tcl_Interp *interp;
  return "";
 }
 
-void
-LangCloseHandler(interp, arg, f, proc)
-Tcl_Interp *interp;
-Arg arg;
-PerlIO *f;
-Lang_FileCloseProc *proc;
-{
- /* Cannot catch fclose() in perl */
-}
-
 void 
 LangBadFile(fd)
 int fd;
@@ -4644,7 +4668,12 @@ Tcl_Interp *interp;
 char *fileName;
 char *modeString;
 int permissions;
-{FILE *f = fopen(fileName,modeString);
+{PerlIO *f = PerlIO_open(fileName,modeString);
+ if (!f)
+  {
+   /* FIXME - use strerr() or perl's equivalent */
+   Tcl_SprintfResult(interp,"Cannot open '%s' in mode '%s'",fileName, modeString);
+  }
  return (Tcl_Channel) f;
 }
 
@@ -4654,8 +4683,8 @@ Tcl_Channel chan;
 char *bufPtr;
 int toRead;
 {
- FILE *f = (FILE *) chan;
- return fread(bufPtr,toRead,1,f);
+ PerlIO *f = (PerlIO *) chan;
+ return PerlIO_read(f,bufPtr,toRead);
 }
 
 int
@@ -4664,10 +4693,10 @@ Tcl_Channel chan;
 char *buf;
 int count;
 {
- FILE *f = (FILE *) chan;
+ PerlIO *f = (PerlIO *) chan;
  if (count < 0)
   count = strlen(buf);
- return fwrite(buf,count,1,f);
+ return PerlIO_write(f,buf,count);
 }
 
 int 
@@ -4675,7 +4704,7 @@ Tcl_Close(interp,chan)
 Tcl_Interp *interp;
 Tcl_Channel chan;
 {
- return fclose((FILE *) chan);
+ return PerlIO_close((PerlIO *) chan);
 }
                          
 int
@@ -4684,15 +4713,10 @@ Tcl_Channel chan;
 int offset;
 int mode;
 {
- return fseek((FILE *) chan, offset, mode);
+ PerlIO_seek((PerlIO *) chan, offset, mode);
+ return PerlIO_tell((PerlIO *) chan);
 }
 
-int
-TkReadDataPending(f)
-PerlIO *f;
-{
- return (PerlIO_has_cntptr(f)) ? PerlIO_get_cnt(f) : 0;
-}
 
 ClientData
 Tcl_GetAssocData(interp,name,procPtr)
@@ -4755,9 +4779,8 @@ XS(name)                                          \
 #include "TkXSUB.def"
 #undef MkXSUB
 
-static void install_vtab _((char *name, void *table, size_t size));
 
-static void
+void
 install_vtab(name, table, size)
 char *name;
 void *table;
@@ -4801,7 +4824,9 @@ _((void))
  install_vtab("TkglueVtab",TkglueVGet(),sizeof(TkglueVtab));
  install_vtab("XlibVtab",XlibVGet(),sizeof(XlibVtab));
  install_vtab("TkoptionVtab",TkoptionVGet(),sizeof(TkoptionVtab));
- 
+
+ Boot_Tix(); 
+
  while (*XEventMethods)
   {
    strcpy(buf, "XEvent::@");
@@ -4829,7 +4854,7 @@ _((void))
  sprintf(buf, "%s::Widget::%s", BASEEXT, "SelectionGet");
  cv = newXS(buf, SelectionGet, __FILE__);
 
- cv = newXS("MainWindow::Create", MainWindowCreate, __FILE__);
+ cv = newXS("Tk::MainWindow::Create", MainWindowCreate, __FILE__);
 
  sprintf(buf, "%s::Callback::%s", BASEEXT, "Call");
  cv = newXS(buf, CallbackCall, __FILE__);

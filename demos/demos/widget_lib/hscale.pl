@@ -1,57 +1,34 @@
 # hscale.pl
 
-sub hscale_width;
+use subs qw /hscale_width/;
+use vars qw /$TOP/;
 
 sub hscale {
 
     # Create a top-level window that displays a horizontal scale.
 
     my($demo) = @ARG;
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'An arrow and a horizontal scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
+        -title    => 'Horizontal Scale Demonstration',
+        -iconname => 'hscale',
+    );
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    $HSCALE->destroy if Exists($HSCALE);
-    $HSCALE = $MW->Toplevel;
-    my $w = $HSCALE;
-    dpos $w;
-    $w->title('Horizontal Scale Demonstration');
-    $w->iconname('hscale');
+    my $frame = $TOP->Frame(-borderwidth => 10)->pack(qw/-side top -fill x/);
 
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '3.5i',
-        -justify    => 'left',
-        -text       => 'An arrow and a horizontal scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
-    );
-    $w_msg->pack(-padx => '.5c');
+    my $canvas = $frame->Canvas(
+        qw/width 50 -height 50 -bd 0 -highlightthickness 0/);
+    $canvas->create(qw/polygon 0 0 1 1 2 2 -fill DeepSkyBlue3 -tags poly/);
+    $canvas->create(qw/line 0 0 1 1 2 2 0 0 -fill black -tags line/);
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    my $scale = $frame->Scale(qw/-orient horizontal -length 284 -from 0
+        -to 250 -tickinterval 50 -command/ => [\&hscale_width, $canvas]);
+    $scale->set(75);
 
-    my $w_frame = $w->Frame(-borderwidth => 10);
-    $w_frame->pack(-side => 'top', -fill => 'x');
-    my $w_frame_canvas = $w_frame->Canvas(
-        qw(-width 50 -height 50 -bd 0 -highlightthickness 0),
-    );
-    $w_frame_canvas->create(
-        qw(polygon 0 0 1 1 2 2 -fill DeepSkyBlue3 -tags poly),
-    );
-    $w_frame_canvas->create(qw(line 0 0 1 1 2 2 0 0 -fill black -tags line));
-    my $w_frame_scale = $w_frame->Scale(
-        qw(-orient horizontal -length 284 -from 0 -to 250 -tickinterval 50),
-	-command => [\&hscale_width, $w_frame_canvas],
-    );
-    $w_frame_canvas->pack(qw(-side top -expand yes -anchor s -fill x));
-    $w_frame_scale->pack(qw(-side bottom -expand yes -anchor n));
-    $w_frame_scale->set(75);
+    $canvas->pack(qw/-side top -expand yes -anchor s -fill x/);
+    $scale->pack(qw/-side bottom -expand yes -anchor n/);
 
 } # end hscale
 

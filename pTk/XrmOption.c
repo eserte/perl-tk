@@ -118,8 +118,8 @@ int depth;
       {
        if (index + depth > Qsize)
         {size_t size = (Qsize = depth+Qindex+5) * sizeof(XrmQuark);
-         Qname  = realloc(Qname,size);
-         Qclass = realloc(Qclass,size);
+         Qname  = (XrmQuarkList) realloc(Qname,size);
+         Qclass = (XrmQuarkList) realloc(Qclass,size);
         }
 #ifdef XRM_DEBUG
        printf("using %d for %s\n",index,Tk_PathName(c));

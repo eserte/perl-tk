@@ -32,7 +32,6 @@
 #   endif
 #endif
 
-#include <stdio.h>
 #include <ctype.h>
 #include <fcntl.h>
 #ifdef HAVE_LIMITS_H

@@ -65,14 +65,19 @@
 #include "Lang.h"
 #endif
 
-#ifndef _XLIB_H
+#if !defined(_XLIB_H)
+/* FIXME: There is a _XLIB vs _XLIB_H muddle with .t/.m files */
 #   ifdef MAC_TCL
 #	include <Xlib.h>
 #	include <X.h>
 #   else
 #	include <X11/Xlib.h>
 #   endif
+#if !defined(_XLIB_H)
+#define _XLIB_H
 #endif
+#endif
+
 
 #ifdef __STDC__
 #   include <stddef.h>
@@ -828,12 +833,17 @@ typedef struct Tk_PhotoImageBlock {
  */
 
 typedef struct Tk_PhotoImageFormat Tk_PhotoImageFormat;
-typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((FILE *f, char *fileName,
+
+#ifndef TK_PHOTO_FILE
+#define TK_PHOTO_FILE VOID
+#endif
+
+typedef int (Tk_ImageFileMatchProc) _ANSI_ARGS_((TK_PHOTO_FILE *f, char *fileName,
 	char *formatString, int *widthPtr, int *heightPtr));
 typedef int (Tk_ImageStringMatchProc) _ANSI_ARGS_((char *string,
 	char *formatString, int *widthPtr, int *heightPtr));
 typedef int (Tk_ImageFileReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	FILE *f, char *fileName, char *formatString, Tk_PhotoHandle imageHandle,
+	TK_PHOTO_FILE *f, char *fileName, char *formatString, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 typedef int (Tk_ImageStringReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
 	char *string, char *formatString, Tk_PhotoHandle imageHandle,
@@ -877,6 +887,7 @@ struct Tk_PhotoImageFormat {
 				 * currently known.  Filled in by Tk, not
 				 * by image format handler. */
 };
+
 
 /*
  *--------------------------------------------------------------
@@ -1468,9 +1479,6 @@ EXTERN Var		LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name)
 EXTERN Arg		LangWidgetArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
 EXTERN Arg		LangObjectArg _ANSI_ARGS_((Tcl_Interp *interp, char *));
 
-EXTERN int		Tix_ArgcError _ANSI_ARGS_((Tcl_Interp *interp, 
-			    int argc, char ** argv, int prefixCount,
-			    char *message));
 
 #ifndef NO_EXTERN
 EXTERN void		Lang_DeadMainWindow _ANSI_ARGS_((Tcl_Interp *, Tk_Window));

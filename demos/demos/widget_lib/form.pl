@@ -1,50 +1,31 @@
 # form.pl
 
+use vars qw/$TOP/;
+
 sub form {
 
     # Create a top-level window that displays a bunch of entries with 
     # tabs set up to move between them.
 
     my($demo) = @ARG;
-
-    $FORM->destroy if Exists($FORM);
-    $FORM = $MW->Toplevel;
-    my $w = $FORM;
-    dpos $w;
-    $w->title('Form Demonstration');
-    $w->iconname('form');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '4i',
-        -justify    => 'left',
-        -text       => 'This window contains a simple form where you can type in the various entries and use tabs to move circularly between the entries.',
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'This window contains a simple form where you can type in the various entries and use tabs to move circularly between the entries.',
+        -title    => 'Form Demonstration',
+        -iconname => 'form',
     );
-    $w_msg->pack;
-
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    $TOP = $demo_widget->Top;	# get geometry master
 
     foreach ('Name:', 'Address:', '', '', 'Phone:') {
-	my $f = $w->Frame(-bd => 2);
-	my $e = $f->Entry(-relief => 'sunken', -width => 40);
+	my $f = $TOP->Frame(qw/-borderwidth 2/);
+	my $e = $f->Entry(qw/-relief sunken -width 40/);
 	my $l = $f->Label(-text => $ARG);
-	$f->pack(-side => 'top', -fill => 'x');
-	$e->pack(-side => 'right');
-	$l->pack(-side => 'left');
+	$f->pack(qw/-side top -fill x/);
+	$e->pack(qw/-side right/);
+	$l->pack(qw/-side left/);
 	$e->focus if $ARG eq 'Name:';
     }
-    $w->bind('<Return>' => [$w => 'destroy']);
+    $TOP->bind('<Return>' => [$TOP => 'destroy']);
 
 } # end form
 

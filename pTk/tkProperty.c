@@ -3,7 +3,7 @@
  *
  *                                                                                                  This file manages properties for the Tk toolkit,
  *
- * Copyright (c) 1994, 1995 Nick-Ing-Simmons
+ * Copyright (c) 1994-1997 Nick-Ing-Simmons
  *
  * All rights reserved.
  *

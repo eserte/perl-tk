@@ -15,7 +15,6 @@
  * SCCS: @(#) tkTrig.c 1.23 96/02/15 18:53:05
  */
 
-#include <stdio.h>
 #include "tkInt.h"
 #include "tkPort.h"
 #include "tkCanvas.h"
@@ -1325,7 +1324,7 @@ TkGetMiterPoints(p1, p2, p3, width, m1, m2)
     double deltaX, deltaY;	/* X and y offsets cooresponding to
 				 * dist (fudge factors for bounding
 				 * box). */
-    static float elevenDegrees = (11.0*2.0*PI)/360.0;
+    static float elevenDegrees = (float) ((11.0*2.0*PI)/360.0);
 
     if (p2[1] == p1[1]) {
 	theta1 = (p2[0] < p1[0]) ? 0 : PI;

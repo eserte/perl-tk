@@ -12,14 +12,11 @@ sub getimage
  my ($w,$key) = @_;
  unless (exists $w->{$key})
   {
-   my $file = Tk->findINC("$key.xpm");
-   $w->{$key} = $w->Pixmap(-file => $file) if ($file);
+   $w->{$key} = $w->Pixmap(-id => $key);
    unless ($w->{$key})
     {
-     $file = Tk->findINC("$key.xbm");
-     $w->{$key} = $w->Bitmap(-file => $file) if ($file);
+     $w->{$key} = $w->Bitmap($key);
     }
-   print "$key file=$file\n";
   }
  return $w->{$key}; 
 }
@@ -95,7 +92,7 @@ sub directory
  my $h = DirHandle->new($val);
  $w->AddDir($val = fullpath($val));
  my $f;
- $w->entryconfigure($val,-image => $w->getimage('openfolder'));
+ $w->entryconfigure($val,-image => $w->getimage('act_fold'));
  foreach $f (sort $h->read)
   {
    next if ($f =~ /^\.+$/);

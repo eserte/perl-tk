@@ -73,6 +73,13 @@ sub Subwidget
  return (wantarray) ? @result : $result[0];
 } 
 
+sub _makelist
+{
+ my $widget = shift;
+ my (@specs) = (ref $widget && ref $widget eq "ARRAY") ? (@$widget) : ($widget);
+ return @specs;
+}
+
 sub Subconfigure
 {
  # This finds the widget or widgets to to which to apply a particular 
@@ -107,13 +114,32 @@ sub Subconfigure
   {
    $widget = 'SELF';
   }
- my (@specs) = (ref $widget && ref $widget eq "ARRAY") ? (@$widget) : ($widget);
- foreach $widget (@specs)
+ foreach $widget (_makelist($widget))
   {
    if (ref $widget)
     {
-     $widget = Tk::Configure->new(@$widget) if (ref($widget) eq 'ARRAY');
-     push(@subwidget,$widget)
+     my $ref = ref $widget;
+     if ($ref eq 'ARRAY')
+      {
+       $widget = Tk::Configure->new(@$widget); 
+       push(@subwidget,$widget)
+      }
+     elsif ($ref eq 'HASH')
+      {
+       my $key;
+       foreach $key (%$widget)
+        {
+         my $sw;  
+         foreach $sw (_makelist($widget->{$key}))
+          {
+           push(@subwidget,Tk::Configure->new($sw,$key));
+          }
+        }
+      }
+     else
+      {
+       push(@subwidget,$widget)
+      }
     }
    elsif ($widget eq 'ADVERTISED')
     {
@@ -309,7 +335,12 @@ sub ConfigDefault
  my $specs = $cw->ConfigSpecs;
  # Should we enforce a Delagates(DEFAULT => )  as well ?
  $specs->{'DEFAULT'} = ['SELF'] unless (exists $specs->{'DEFAULT'});
- $specs->{'-cursor'} = ['SELF',undef,undef,undef] unless (exists $specs->{'-cursor'});
+
+ # 
+ # This is a pain with Text or Entry as core widget, they don't
+ # inherit SELF's cursor. So comment it out for Tk402.001
+ # 
+ # $specs->{'-cursor'} = ['SELF',undef,undef,undef] unless (exists $specs->{'-cursor'});
 
  # Now some hacks that cause colours to propogate down a composite widget 
  # tree - really needs more thought, other options adding such as active 

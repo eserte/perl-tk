@@ -1,5 +1,6 @@
 #include "tkPort.h"
 #include "tk.h"
+#include "tixPort.h"
 #include "tix.h"
 #include "tix_f.h"
 static TixVtab TixVtable =

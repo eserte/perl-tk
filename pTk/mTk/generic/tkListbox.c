@@ -770,7 +770,8 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	    - 2*(listPtr->inset + listPtr->selBorderWidth);
 	if (argc == 2) {
 	    if (listPtr->maxWidth == 0) {
-		interp->result = "0 1";
+		fraction = 0.0;
+		fraction2 = 1.0;
 	    } else {
 		fraction = listPtr->xOffset/((double) listPtr->maxWidth);
 		fraction2 = (listPtr->xOffset + windowWidth)
@@ -778,8 +779,8 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		if (fraction2 > 1.0) {
 		    fraction2 = 1.0;
 		}
-		sprintf(interp->result, "%g %g", fraction, fraction2);
 	    }
+	    sprintf(interp->result, "%g %g", fraction, fraction2);
 	} else if (argc == 3) {
 	    if (Tcl_GetInt(interp, argv[2], &index) != TCL_OK) {
 		goto error;
@@ -814,7 +815,8 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 
 	if (argc == 2) {
 	    if (listPtr->numElements == 0) {
-		interp->result = "0 1";
+		fraction = 0.0;
+		fraction2 = 1.0;
 	    } else {
 		fraction = listPtr->topIndex/((double) listPtr->numElements);
 		fraction2 = (listPtr->topIndex+listPtr->fullLines)
@@ -822,8 +824,8 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		if (fraction2 > 1.0) {
 		    fraction2 = 1.0;
 		}
-		sprintf(interp->result, "%g %g", fraction, fraction2);
 	    }
+	    sprintf(interp->result, "%g %g", fraction, fraction2);
 	} else if (argc == 3) {
 	    if (GetListboxIndex(interp, listPtr, args[2], 0, &index)
 		    != TCL_OK) {

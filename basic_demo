@@ -71,7 +71,7 @@ sub entry
  $e->bind("<Any-FocusOut>", sub { shift->configure("-relief" => "ridge" ) });
  if ($scroll)
   {
-   my $es = $f->Scrollbar("-orient"=>"horizontal","-command",["view",$e]);
+   my $es = $f->Scrollbar(-orient=>"horizontal","-command",["view",$e], -width => '4m');
    $e->configure("-scrollcommand",["set",$es]); 
    $es->pack("-side"=>"bottom","-fill"=>"x");
    $f->pack("-side","top");

@@ -1,1 +1,0 @@
-ImageBack.o: ImageBack.c

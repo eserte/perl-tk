@@ -1,5 +1,5 @@
 #include "tkPort.h"
-#include "tk.h"
+#include "tixPort.h"
 #include "tixInt.h"
 #include "tixInt_f.h"
 static TixintVtab TixintVtable =

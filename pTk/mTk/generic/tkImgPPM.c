@@ -15,7 +15,8 @@
  *
  * SCCS: @(#) tkImgPPM.c 1.13 96/03/18 14:56:41
  */
-
+#define NEED_REAL_STDIO
+#define TK_PHOTO_FILE FILE
 #include "tkInt.h"
 #include "tkPort.h"
 #include "tkVMacro.h"

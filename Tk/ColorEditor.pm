@@ -563,7 +563,7 @@ sub Populate
                                $middle->cget('-background')],
         -command        => ['CALLBACK', undef, undef, ['set_colors',$cw]],
         '-highlight'    => ['METHOD', undef, undef, 'background'],
-        -cursor         => ['DESCENDANTS', 'cursor', 'Cursor', 'top_left_ptr'],
+        -cursor         => ['DESCENDANTS', 'cursor', 'Cursor', 'left_ptr'],
     );
 
 } # end Populate, ColorEditor constructor

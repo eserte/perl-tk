@@ -15,7 +15,7 @@
 
 #ifndef _WINPORT
 #define _WINPORT
-
+#define NEED_REAL_STDIO
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>

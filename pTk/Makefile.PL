@@ -18,8 +18,15 @@ Tk::MMutil::TkExtMakefile(
     'DEFINE'	=> $define,
     'INC'	=> "$inc -I. -Ibitmaps",
     'SKIP'	=> [qw( distclean test dist makeaperl xs_o)],
-    'clean'	=> {'FILES' => 'libpTk$(LIB_EXT) *%'}
+    'clean'	=> {'FILES' => 'libpTk$(LIB_EXT)'}
 );
+
+sub MY::top_targets {
+ my ($self) = @_;
+ local $_ = $self->MM::top_targets;
+ s/^(\$\(O_FILES\)\s*:.*)$/# Explicit dependancies provided\n# $1/m;
+ return $_;
+}
 
 sub MY::xs_c {
 '
@@ -38,11 +45,11 @@ sub MY::post_initialize
  my @list;
  if ($^O eq 'MSWin32')
   {
-   @list = qw(win xlib generic tix tclWin tclGeneric);
+   @list = qw(win xlib generic tixWin tixGeneric tclWin tclGeneric);
   }
  else
   {
-   @list = qw(unix generic tix tclUnix tclGeneric );
+   @list = qw(unix generic tixUnix tixGeneric tclUnix tclGeneric );
   }
  print STDERR "Generating Dependencies for $^O\n";
  foreach $dir (@list)
@@ -169,6 +176,8 @@ dllInit$(LIB_EXT): dllMain$(OBJ_EXT)
 sub MY::realclean {
   my $self = shift;
   my $str  = $self->MM::realclean(@_);
+  $str =~ s/(::\s*clean)/$1 mungeclean/;
+  $str .= "\nmungeclean ::\n";
   $str .= "\t\$(RM_F) ".join(" \\\n\t",keys %{$self->{'MTK'}})."\n";
   return $str;
 }
@@ -187,7 +196,9 @@ if ($^O eq 'MSWin32')
  {
   $dep .= '
 tk.res : mTk/win/rc/tk.rc
-	rc -fo $@ -r -i . mTk\win\rc\tk.rc
+	'.($Config{cc} =~ /^bcc/i   # XXX need $Config{rc}
+	   ? 'brc32 -fo $@ -r -i . -i mTk\win\rc mTk\win\rc\tk.rc'
+	   : 'rc    -fo $@ -r -i . -i mTk\win\rc mTk\win\rc\tk.rc').'
 libpTk$(LIB_EXT) : tk.res
 ';
  } 
@@ -201,8 +212,7 @@ tix.t    : tix.h tix.exc mkVFunc
 tixInt.t : tixInt.h tixInt.exc mkVFunc
 
 config :: Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t 
-
-config :: 
+	'.$self->{NOECHO}.'$(NOOP)
 
 Methods.def : mkmethods $(C_FILES)
 	$(PERL) mkmethods $@ $(C_FILES)

@@ -1,0 +1,17 @@
+#!/usr/local/bin/perl -w
+use strict;
+use Tk;
+use Tk::TList;
+
+my $mw = MainWindow->new;
+
+my $tl = $mw->Scrolled('TList', -height => 10)->pack(-expand => 1, -fill => 'both');
+
+for (my $i = 0; $i < 100 ; $i++)
+ {
+  $tl->insert('end',-text => sprintf("Item%04d",$i));
+ }
+
+$mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;
+MainLoop;
+

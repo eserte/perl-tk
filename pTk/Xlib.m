@@ -280,6 +280,9 @@
 #ifndef XLookupString
 #define XLookupString (*XlibVptr->V_XLookupString)
 #endif
+#ifndef XLowerWindow
+#define XLowerWindow (*XlibVptr->V_XLowerWindow)
+#endif
 #ifndef XMapWindow
 #define XMapWindow (*XlibVptr->V_XMapWindow)
 #endif

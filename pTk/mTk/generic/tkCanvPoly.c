@@ -12,7 +12,6 @@
  * SCCS: @(#) tkCanvPoly.c 1.34 96/02/15 18:52:32
  */
 
-#include <stdio.h>
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkCanvases.h"

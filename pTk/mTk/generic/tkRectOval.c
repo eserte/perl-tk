@@ -13,7 +13,6 @@
  * SCCS: @(#) tkRectOval.c 1.39 96/03/02 17:28:06
  */
 
-#include <stdio.h>
 #include "tkPort.h"
 #include "tk.h"
 #include "tkInt.h"

@@ -13,6 +13,9 @@ use Tk::Submethods ( 'create' => [qw(arc bitmap image line oval
                      'select' => [qw(from clear item to)],
                     );
 
+*CanvasBind  = \&Tk::bind;
+*CanvasFocus = \&Tk::focus;
+
 sub ClassInit
 {
  my ($class,$mw) = @_;

@@ -1,6 +1,7 @@
 # menus.pl
 
-sub menus_error;
+use subs qw/menus_error/;
+use vars qw/$TOP/;
 
 sub menus {
 
@@ -8,39 +9,17 @@ sub menus {
     # and cascaded menus.
 
     my ($demo) = @ARG;
-
-    $MENUS->destroy if Exists($MENUS);
-    $MENUS = $MW->Toplevel;
-    my $w = $MENUS;
-    dpos $w;
-    $w->title('Menu Demonstration');
-    $w->iconname('menus');
-
-    my $w_menu = $w->Frame(-relief => 'raised', -borderwidth => 2);
-    $w_menu->pack(-fill => 'x');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '4i',
-        -justify    => 'left',
-        -text       => 'This window contains a collection of menus and cascaded menus.  You can post a menu from the keyboard by typing Alt+x, where "x" is the character underlined on the menu.  You can then traverse among the menus using the arrow keys.  When a menu is posted, you can invoke the current entry by typing space, or you can invoke any entry by typing its underlined character.  If a menu entry has an accelerator, you can invoke the entry without posting the menu just by typing the accelerator.'
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+	-text     => '',
+        -title    => 'Menu Demonstration',
+        -iconname => 'menus',
     );
-    $w_msg->pack;
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
-
-    my $f = $w_menu->Menubutton(-text => 'File', -underline => 0);
+    my $menu = $TOP->Frame(-relief => 'raised', -borderwidth => 2);
+    $menu->pack(-fill => 'x');
+    my $f = $menu->Menubutton(-text => 'File', -underline => 0);
     $f->command(-label => 'Open ...',    -command => [\&menus_error, 'Open']);
     $f->command(-label => 'New',         -command => [\&menus_error, 'New']);
     $f->command(-label  => 'Save',       -command => [\&menus_error, 'Save']);
@@ -49,9 +28,9 @@ sub menus {
     $f->command(-label => 'Setup ...',   -command => [\&menus_error, 'Setup']);
     $f->command(-label => 'Print ...',   -command => [\&menus_error, 'Print']);
     $f->separator;
-    $f->command(-label => 'Quit',        -command => [$w => 'destroy']);
+    $f->command(-label => 'Quit',        -command => [$TOP => 'bell']);
 
-    my $b = $w_menu->Menubutton(-text => 'Basic', -underline => 0);
+    my $b = $menu->Menubutton(-text => 'Basic', -underline => 0);
     $b->command(-label => 'Long entry that does nothing');
     my $label;
     foreach $label (qw(a b c d e f g)) {
@@ -66,21 +45,21 @@ sub menus {
 
     my $menu_cb = 'Check buttons';
     my $menu_rb = 'Radio buttons';
-    my $c = $w_menu->Menubutton(-text => 'Cascades', -underline => 0);
+    my $c = $menu->Menubutton(-text => 'Cascades', -underline => 0);
     $c->command(
         -label       => 'Print hello', 
         -command     => sub {print "Hello\n"},
 	-accelerator => 'Control+a',
         -underline   => 6,
     );
-    $w->bind('<Control-a>' => sub {print "Hello\n"});
+    $TOP->bind('<Control-a>' => sub {print "Hello\n"});
     $c->command(
         -label       => 'Print goodbye', 
         -command     => sub {print "Goodbye\n"},
 	-accelerator => 'Control+b', 
         -underline   => 6,
     );
-    $w->bind('<Control-b>' => sub {print "Goodbye\n"});
+    $TOP->bind('<Control-b>' => sub {print "Goodbye\n"});
     $c->cascade(-label => $menu_cb, -underline => 0);
     $c->cascade(-label => $menu_rb, -underline => 0);
 
@@ -137,7 +116,7 @@ sub menus {
     $rc->invoke(1);
     $rc->invoke(7);
 
-    my $i = $w_menu->Menubutton(-text => 'Icons', -underline => 0);
+    my $i = $menu->Menubutton(-text => 'Icons', -underline => 0);
     $i->command(
         -bitmap => '@'.Tk->findINC('demos/images/pattern'),
 	-command => [$DIALOG_ICON => 'Show'],
@@ -149,7 +128,7 @@ sub menus {
         );
     }
 
-    my $m = $w_menu->Menubutton(-text => 'More', -underline => 0);
+    my $m = $menu->Menubutton(-text => 'More', -underline => 0);
     foreach $label ('An entry', 'Another entry', 'Does nothing',
 		    'Does almost nothing', 'Make life meaningful') {
 	$m->command( 
@@ -158,7 +137,7 @@ sub menus {
         );
     }
 
-    my $k = $w_menu->Menubutton(-text => 'Colors', -underline => 1);
+    my $k = $menu->Menubutton(-text => 'Colors', -underline => 1);
     foreach $label (qw(red orange yellow green blue)) {
 	$k->command(
             -label      => $label,
@@ -167,12 +146,15 @@ sub menus {
         );
     }
     
-    $f->pack(-side=>'left');
-    $b->pack(-side=>'left');
-    $c->pack(-side=>'left');
-    $i->pack(-side=>'left');
-    $m->pack(-side=>'left');
-    $k->pack(-side=>'left');
+    my (@pl) = qw/-side left/;
+    $f->pack(@pl);
+    $b->pack(@pl);
+    $c->pack(@pl);
+    $i->pack(@pl);
+    $m->pack(@pl);
+    $k->pack(@pl);
+
+    my $details = $TOP->Label(qw/-wraplength 4i -justify left -text/ => 'This window contains a collection of menus and cascaded menus.  You can post a menu from the keyboard by typing Alt+x, where "x" is the character underlined on the menu.  You can then traverse among the menus using the arrow keys.  When a menu is posted, you can invoke the current entry by typing space, or you can invoke any entry by typing its underlined character.  If a menu entry has an accelerator, you can invoke the entry without posting the menu just by typing the accelerator.', -font => $FONT)->pack;
 
 } # end menus
 
@@ -185,7 +167,7 @@ sub menus_error {
     my($msg) = @ARG;
 
     $msg = "This is just a demo: no action has been defined for \"$msg\".";
-    $MENUS->BackTrace($msg);
+    $TOP->BackTrace($msg);
 
 } # end menus_error
 

@@ -733,6 +733,9 @@ ConfigureScrollbar(interp, scrollPtr, argc, argv, flags)
 	return TCL_ERROR;
     }
 
+    /* Force width to be odd, so point of arrow has a place to be ... */
+    scrollPtr->width |= 1;
+
     Tk_SetBackgroundFromBorder(scrollPtr->tkwin, scrollPtr->bgBorder);
 
     gcValues.foreground = scrollPtr->troughColorPtr->pixel;

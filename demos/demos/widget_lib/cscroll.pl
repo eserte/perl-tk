@@ -1,6 +1,7 @@
 # cscroll.pl
 
-use subs qw(cscroll_button cscroll_enter cscroll_leave);
+use subs qw/cscroll_button cscroll_enter cscroll_leave/;
+use vars qw/$TOP/;
 
 sub cscroll {
 
@@ -8,48 +9,17 @@ sub cscroll {
     # scrolled in two dimensions.
 
     my($demo) = @ARG;
-
-    $CSCROLL->destroy if Exists($CSCROLL);
-    $CSCROLL = $MW->Toplevel;
-    my $w = $CSCROLL;
-    dpos $w;
-    $w->title('Scrollable Canvas Demonstration');
-    $w->iconname('cscroll');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '4i',
-        -justify    => 'left',
-        -text       => 'This window displays a canvas widget that can be scrolled either using the scrollbars or by dragging with button 2 in the canvas.  If you click button 1 on one of the rectangles, its indices will be printed on stdout.',
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'This window displays a canvas widget that can be scrolled either using the scrollbars or by dragging with button 2 in the canvas.  If you click button 1 on one of the rectangles, its indices will be printed on stdout.',
+        -title    => 'Scrollable Canvas Demonstration',
+        -iconname => 'cscroll',
     );
-    $w_msg->pack;
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
-
-    my $c = $w->Canvas(
-        -relief       => 'sunken',
-        -bd           => 2,
-        -scrollregion => ['-10c', '-10c', '50c', '20c'],
-    );
-    my $w_vscroll = $w->Scrollbar(-command => [$c => 'yview']);
-    my $w_hscroll = $w->Scrollbar(-command =>
-				  [$c => 'xview'], -orient => 'horiz');
-    $c->configure(-xscrollcommand => [$w_hscroll => 'set'],
-		  -yscrollcommand => [$w_vscroll => 'set']);
-    $w_vscroll->pack(-side => 'right', -fill => 'y');
-    $w_hscroll->pack(-side => 'bottom', -fill => 'x');
-    $c->pack(-expand => 'yes', -fill => 'both');
+    my $c = $TOP->Scrolled(qw/Canvas -relief sunken -borderwidth 2
+        -scrollbars se -scrollregion/ => ['-10c', '-10c', '50c', '20c']);
+    $c->pack(qw/-expand yes -fill both/);
 
     my($bg, $i, $j, $x, $y) = ($c->configure(-background))[4];
     for ($i = 0; $i < 20; $i++) {
@@ -71,12 +41,13 @@ sub cscroll {
     $c->bind('all', '<Any-Enter>' => [\&cscroll_enter, \$old_fill]);
     $c->bind('all', '<Any-Leave>' => [\&cscroll_leave, \$old_fill]);
     $c->bind('all', '<1>' => \&cscroll_button);
-    $c->Tk::bind('<2>' => sub {
+
+    $c->CanvasBind('<2>' => sub {
 	my ($c) = @ARG;
         my $e = $c->XEvent;
 	$c->scan('mark', $e->x, $e->y);
     });
-    $c->Tk::bind('<B2-Motion>' => sub {
+    $c->CanvasBind('<B2-Motion>' => sub {
 	my ($c) = @ARG;
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
@@ -88,7 +59,7 @@ sub cscroll_button {
 
     my($c) = @ARG;
 
-    my $id = $c->find('withtag', 'current');
+    my $id = $c->find(qw/withtag current/);
     $id++ if ($c->gettags('current'))[0] ne 'text';
     print STDOUT 'You buttoned at ', ($c->itemconfigure($id, -text))[4], "\n";
 
@@ -98,10 +69,10 @@ sub cscroll_enter {
 
     my($c, $old_fill) = @ARG;
 
-    my $id = $c->find('withtag', 'current');
+    my $id = $c->find(qw/withtag current/);
     $id-- if ($c->gettags('current'))[0] eq 'text';
     $$old_fill = ($c->itemconfigure($id, -fill))[4];
-    if ($CSCROLL->depth > 1) {
+    if ($c->depth > 1) {
 	$c->itemconfigure($id, -fill => 'SeaGreen1');
     } else {
 	$c->itemconfigure($id, -fill => 'black');
@@ -114,7 +85,7 @@ sub cscroll_leave {
 
     my($c, $old_fill) = @ARG;
 
-    my $id = $c->find('withtag', 'current');
+    my $id = $c->find(qw/withtag current/);
     $id-- if ($c->gettags('current'))[0] eq 'text';
     $c->itemconfigure($id, -fill => $$old_fill);
     $c->itemconfigure($id+1, -fill => 'black');

@@ -321,6 +321,8 @@ XParseColor(display, colormap, spec, exact_def_return)
      * probably OK in most cases.  But this is a bug in general.
      */
 
+    /* FIXME - also "rgb:xx/xx/xx" , "rgb:xxxx/xxxx/xxxx" */
+
     if (spec[0] == '#') {
 	return GetColorByValue((char *) spec, exact_def_return);
     } else {

@@ -345,14 +345,14 @@
 #define DEF_SCALE_TROUGH_COLOR		TROUGH
 #define DEF_SCALE_TROUGH_MONO		WHITE
 #define DEF_SCALE_SHOW_VALUE		"1"
-#define DEF_SCALE_SLIDER_LENGTH		"30"
+#define DEF_SCALE_SLIDER_LENGTH		"10m"
 #define DEF_SCALE_SLIDER_RELIEF		"raised"
 #define DEF_SCALE_STATE			"normal"
 #define DEF_SCALE_TAKE_FOCUS		(char *) NULL
 #define DEF_SCALE_TICK_INTERVAL		"0"
 #define DEF_SCALE_TO			"100"
 #define DEF_SCALE_VARIABLE		""
-#define DEF_SCALE_WIDTH			"15"
+#define DEF_SCALE_WIDTH			"5m"
 
 /*
  * Defaults for scrollbars:
@@ -378,7 +378,7 @@
 #define DEF_SCROLLBAR_TAKE_FOCUS	(char *) NULL
 #define DEF_SCROLLBAR_TROUGH_COLOR	TROUGH
 #define DEF_SCROLLBAR_TROUGH_MONO	WHITE
-#define DEF_SCROLLBAR_WIDTH		"15"
+#define DEF_SCROLLBAR_WIDTH		"4m"
 
 /*
  * Defaults for texts:

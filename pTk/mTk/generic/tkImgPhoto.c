@@ -18,6 +18,8 @@
  * SCCS: @(#) tkImgPhoto.c 1.45 96/10/04 13:04:29
  */
 
+#define NEED_REAL_STDIO
+#define TK_PHOTO_FILE FILE
 #include "tkInt.h"
 /*
  * Declaration for internal Xlib function used here:

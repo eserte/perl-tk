@@ -1,4 +1,4 @@
-# $Id: DialogBox.pm,v 1.4 1996/12/02 00:34:21 rsi Exp $
+# $Id: DialogBox.pm,v 1.4 1996/12/02 00:34:21 rsi Exp rsi $
 #
 # DialogBox is similar to Dialog except that it allows any widget
 # in the top frame. Widgets can be added with the add method. Currently
@@ -183,7 +183,7 @@ the bottom always.
 
 =head1 AUTHOR
 
-B<Rajappa Iyer> rsi@ziplink.net
+B<Rajappa Iyer> rsi@earthling.net
 
 This code is distributed under the same terms as Perl.
 

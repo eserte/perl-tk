@@ -277,6 +277,9 @@ VFUNC(int,XLookupColor,V_XLookupColor,_ANSI_ARGS_((Display *, Colormap, const ch
 #ifndef XLookupString
 VFUNC(int,XLookupString,V_XLookupString,_ANSI_ARGS_((XKeyEvent *, char *, int, KeySym *, XComposeStatus *)))
 #endif
+#ifndef XLowerWindow
+VFUNC(int,XLowerWindow,V_XLowerWindow,_ANSI_ARGS_((Display *, Window)))
+#endif
 #ifndef XMapWindow
 VFUNC(int,XMapWindow,V_XMapWindow,_ANSI_ARGS_((Display *, Window)))
 #endif

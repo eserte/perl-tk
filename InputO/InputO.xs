@@ -12,15 +12,17 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "pTk/tix.h"
 #include "pTk/tixInt.h"
+#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
 
 extern int Tix_InputOnlyCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 
 DECLARE_VTABLES;
+TixVtab     *TixVptr     ; 
+TixintVtab  *TixintVptr  ; 
 
 MODULE = Tk::InputO	PACKAGE = Tk::InputO
 
@@ -30,6 +32,8 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
+  TixVptr     =     (TixVtab *) SvIV(perl_get_sv("Tk::TixVtab",5));      
+  TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5));   
   /* Initialize the display item types */
   Lang_TkCommand("inputo",Tix_InputOnlyCmd);
  }
