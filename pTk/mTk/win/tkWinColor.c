@@ -157,6 +157,9 @@ InitColorTable()
     XColorEntry *colorPtr;
     Tcl_HashEntry *hPtr;
     int dummy;
+#ifdef __OPEN32__
+    char tmpclr[64];
+#endif
 
     Tcl_InitHashTable(&colorTable, TCL_STRING_KEYS);
 
@@ -165,8 +168,14 @@ InitColorTable()
      */
 
     for (colorPtr = xColors; colorPtr->name != NULL; colorPtr++) {
+#ifdef __OPEN32__
+	strcpy(tmpclr,colorPtr->name);
+        hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(tmpclr),
+		&dummy);
+#else
         hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(colorPtr->name),
 		&dummy);
+#endif
         Tcl_SetHashValue(hPtr, colorPtr);
     }
     
@@ -176,8 +185,14 @@ InitColorTable()
 
     SetSystemColors();
     for (colorPtr = sysColors; colorPtr->name != NULL; colorPtr++) {
+#ifdef __OPEN32__
+	strcpy(tmpclr,colorPtr->name);
+        hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(tmpclr),
+		&dummy);
+#else
         hPtr = Tcl_CreateHashEntry(&colorTable, strlwr(colorPtr->name),
 		&dummy);
+#endif
         Tcl_SetHashValue(hPtr, colorPtr);
     }
 

@@ -25,7 +25,7 @@ static void 		AttachInfo _ANSI_ARGS_((Tcl_Interp * interp,
 			    FormInfo * clientPtr, int axis, int which));
 static int		ConfigureAttachment _ANSI_ARGS_((FormInfo *clientPtr,
 			    Tk_Window topLevel, Tcl_Interp* interp,
-			    int axis, int which, char *value));
+			    int axis, int which, Arg value));
 static int		ConfigureFill _ANSI_ARGS_((
 			    FormInfo *clientPtr, Tk_Window tkwin,
 			    Tcl_Interp* interp, char *value));
@@ -155,7 +155,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
     Tk_Window topLevel;
     Tcl_Interp* interp;
     int axis, which;
-    char *value;
+    Arg value;
 {
     Tk_Window tkwin;
     FormInfo * attWidget;
@@ -166,7 +166,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
     char ** argv;
     LangFreeProc *freeproc = NULL;
 
-    if (Lang_SplitList(interp, LangStringArg(value), &argc, &argv, &freeproc) != TCL_OK) {
+    if (Lang_SplitList(interp, value, &argc, &argv, &freeproc) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (argc < 1 || argc > 2) {
@@ -406,49 +406,49 @@ int TixFm_Configure(clientPtr, topLevel, interp, argc, argv)
 	    return TCL_ERROR;
 	} else if (strcmp(argv[flag], "-l") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 0, argv[value]) == TCL_ERROR) {
+		0, 0, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-left") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 0, argv[value]) == TCL_ERROR) {
+		0, 0, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-r") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 1, argv[value]) == TCL_ERROR) {
+		0, 1, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-right") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 1, argv[value]) == TCL_ERROR) {
+		0, 1, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-top") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-	        1, 0, argv[value]) == TCL_ERROR) {
+	        1, 0, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-t") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-	        1, 0, argv[value]) == TCL_ERROR) {
+	        1, 0, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-bottom") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		1, 1, argv[value]) == TCL_ERROR) {
+		1, 1, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-b") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		1, 1, argv[value]) == TCL_ERROR) {
+		1, 1, args[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }

@@ -666,6 +666,31 @@ TkWmMapWindow(winPtr)
 		WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	SetParent(child, window);
 
+#ifdef __OPEN32__
+	{
+	    static int tmpParentMoved;
+	    if (!tmpParentMoved) {
+		tmpParentMoved = 1;
+/* 		DestroyWindow(tmpParent);  */
+		tmpParent = window; 
+	    }
+	}
+/* The window was created "without" a parent, so due to differences
+   in window origin it is created, say, at position 0 x 768 instead of 0 x 0.
+   Anyway, it looks like some event is missing here.
+ */
+
+	MoveWindow(child, 0, 0, 
+		       winPtr->changes.width, winPtr->changes.height, TRUE);
+	if (!(wmPtr->sizeHintsFlags & (USPosition | PPosition))) {
+	    RECT r;
+	    GetWindowRect(window, &r);
+	    wmPtr->flags &= ~(WM_NEGATIVE_X | WM_NEGATIVE_Y);
+	    wmPtr->x = winPtr->changes.x = r.left;
+	    wmPtr->y = winPtr->changes.y = r.top;
+	}
+#endif
+
 	/*
 	 * Generate a reparent event.
 	 */
@@ -2412,6 +2437,10 @@ UpdateGeometryInfo(clientData)
 		    width + wmPtr->borderWidth,
 		    height + wmPtr->borderHeight, TRUE);
 	    wmPtr->flags &= ~WM_SYNC_PENDING;
+#ifdef __OPEN32__
+	    MoveWindow(TkWinGetHWND(winPtr->window), 0, 0, 
+		       width, height, TRUE);
+#endif
 	} else {
 	    winPtr->changes.x = x;
 	    winPtr->changes.y = y;

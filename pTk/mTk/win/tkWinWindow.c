@@ -62,8 +62,22 @@ TkMakeWindow(winPtr, parent)
 	parentWin = TkWinGetHWND(parent);
 	style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
     } else {
+#ifdef __OPEN32__
+	/* Open32 treats topmost windows specially, so we keep any
+	   window as not a toplevel. */
+	if (tmpParent == NULL) {
+	    tmpParent = CreateWindow(TK_WIN_CHILD_CLASS_NAME, "", WS_POPUP,
+				     0, 0,
+				     0, 0,
+				     NULL, NULL, TkWinGetAppInstance(), NULL);
+	    ShowWindow(tmpParent, SW_HIDE);
+	}
+	parentWin = tmpParent;
+	style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+#else
 	parentWin = NULL;
 	style = WS_POPUP | WS_CLIPCHILDREN;
+#endif
     }
 
     twdPtr->window.handle = CreateWindow(TK_WIN_CHILD_CLASS_NAME, "", style,

@@ -211,19 +211,20 @@ TixpXpmRealizePixmap(masterPtr, instancePtr, image, mask, isTransp)
 }
 
 void
-TixpXpmFreeInstanceData(instancePtr, delete)
-    PixmapInstance *instancePtr;	/* Pixmap instance. */
-    int delete;				/* Should the instance data structure
-					 * be deleted as well? */
+TixpXpmFreeInstanceData(instancePtr, delete, display)
+    PixmapInstance *instancePtr;/* Pixmap instance. */
+    int delete;			/* Should the instance data structure
+				 * be deleted as well? */
+    Display *display;		/* Display containing window that used image.*/
 {
     PixmapData *dataPtr = (PixmapData*)instancePtr->clientData;
 
     if (dataPtr->mask != None) {
-	Tk_FreePixmap(Tk_Display(instancePtr->tkwin), dataPtr->mask);
+	Tk_FreePixmap(display, dataPtr->mask);
 	dataPtr->mask = None;
     }
     if (dataPtr->gc != None) {
-	Tk_FreeGC(Tk_Display(instancePtr->tkwin), dataPtr->gc);
+	Tk_FreeGC(display, dataPtr->gc);
 	dataPtr->gc = None;
     }
     if (delete) {

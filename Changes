@@ -1,6 +1,19 @@
 Within each 'release' time advances down the file, but most recent
 release is at the top.
 
+Change.log is generated from perforce database, it is therefore
+complete, but short on detail.
+
+Changes in 402.002
+
+* More <stdio.h> detection in pTk/LangIO.h
+
+* Ilya's OS2 patches
+
+* Patches to doc/tkman2pod for back-conversion on machines without 'man'.
+
+* Merged Tix4.1.0.005
+
 Changes in 402.001
 
 * Should now build with VC4.0, VC5.0 or Borland
@@ -47,8 +60,6 @@ Changes in 402.001
 Changes in 402.000
 
 * Put perl/Tk under perforce management 400.200 .. 400.202+
-  - Change.log is generated from perforce database, it is therefore
-    complete, but short on detail.
 
 * Merged perl stuff from Tk400.201
 

@@ -389,7 +389,7 @@ Tix_HListCmd(clientData, interp, argc, argv)
     wPtr->dispData.display	= Tk_Display(tkwin);
     wPtr->dispData.interp	= interp;
     wPtr->dispData.sizeChangedProc = DItemSizeChangedProc;
-    wPtr->font		= NULL;
+    wPtr->font			= NULL;
     wPtr->normalBg		= NULL;
     wPtr->normalFg		= NULL;
     wPtr->border		= NULL;
@@ -1365,9 +1365,6 @@ Tix_HLSee(clientData, interp, argc, argv)
 	    ckfree(wPtr->elmToSee);
 	}
 	wPtr->elmToSee = strdup(argv[0]);
-#if 0
-	RedrawWhenIdle(wPtr);
-#endif
 	return TCL_OK;
     } else {
 	Tix_HLSeeElement(wPtr, chPtr, 1);
@@ -1958,7 +1955,7 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
      *	  stTmpl
      */
 
-    stTmpl.font			= wPtr->font;
+    stTmpl.font				= wPtr->font;
     stTmpl.pad[0]			= wPtr->padX;
     stTmpl.pad[1]			= wPtr->padY;
     stTmpl.colors[TIX_DITEM_NORMAL].fg	= wPtr->normalFg;

@@ -2,8 +2,14 @@
 
 my $win_arch = shift;
 die "Unknown \$win_arch" unless $win_arch eq 'open32'
+                                or $win_arch eq 'pm'
                                 or $win_arch eq 'x'
                                 or $win_arch eq 'MSWin32';
+my $xexcl = <<EOM;
+#if (defined(__WIN32__) || defined(__PM__)) && !defined(DO_X_EXCLUDE)
+#  define DO_X_EXCLUDE
+#endif
+EOM
 
 sub Ignore
 {
@@ -174,6 +180,8 @@ sub Vfunc
    print VMACRO "#define _${gard}_VM\n";
    print VMACRO "#include \"$htfile\"\n"; 
    print VMACRO "#ifndef NO_VTABLES\n";
+   print VMACRO $xexcl if %WinIgnore;
+   print VFUNC  $xexcl if %WinIgnore;
    foreach $func (sort keys %VVar)                     
     {                                                   
      if (!exists($Exclude{$func}) && !exists($Ignore{$func}))                       
@@ -187,16 +195,19 @@ sub Vfunc
     {                                                   
      if (!exists($Exclude{$func}) && !exists($Ignore{$func}))                       
       {                                                 
-       print VFUNC "#ifndef __WIN32__\n" if exists($WinIgnore{$func});  
+       print VFUNC "#ifndef DO_X_EXCLUDE\n" if exists($WinIgnore{$func});  
        print VFUNC "#ifndef $func\n";  
        print VFUNC $VFunc{$func};                     
        print VFUNC "#endif\n";
-       print VFUNC "#endif /* !__WIN32__ */\n" if exists($WinIgnore{$func});  
-       print VMACRO "#ifndef __WIN32__\n" if exists($WinIgnore{$func});  
+       print VFUNC "#endif /* !DO_X_EXCLUDE */\n" if exists($WinIgnore{$func});  
+       print VFUNC "\n";
+
+       print VMACRO "#ifndef DO_X_EXCLUDE\n" if exists($WinIgnore{$func});  
        print VMACRO "#ifndef $func\n";  
-       print VMACRO "#define $func (*${name}ptr->V_$func)\n";
+       print VMACRO "#  define $func (*${name}ptr->V_$func)\n";
        print VMACRO "#endif\n";
-       print VMACRO "#endif /* !__WIN32__ */\n" if exists($WinIgnore{$func});  
+       print VMACRO "#endif /* !DO_X_EXCLUDE */\n" if exists($WinIgnore{$func});  
+       print VMACRO "\n";
       }                                                 
      delete $Ignore{$func};
     }                                                   

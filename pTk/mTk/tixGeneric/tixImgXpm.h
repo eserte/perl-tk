@@ -121,7 +121,8 @@ EXTERN void		TixpXpmRealizePixmap _ANSI_ARGS_((
 			    PixmapInstance * instancePtr,
 			    XImage * image, XImage * mask, int isTransp));
 EXTERN void		TixpXpmFreeInstanceData _ANSI_ARGS_((
-			    PixmapInstance *instancePtr, int delete));
+			    PixmapInstance *instancePtr, int delete,
+			    Display *display));
 EXTERN void		TixpXpmDisplay _ANSI_ARGS_((ClientData clientData,
 			    Display *display, Drawable drawable,
 			    int imageX, int imageY, int width, int height,

@@ -146,7 +146,7 @@ __END__
 
 Tk::Menu::Item - Base class for Menu items
 
-=head1 SYNOPYSIS
+=head1 SYNOPSIS
 
    require Tk::Menu::Item;
 

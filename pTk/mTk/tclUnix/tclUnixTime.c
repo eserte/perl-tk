@@ -15,6 +15,10 @@
 #include "tkPort.h"
 #include "Lang.h"
 
+#ifdef __EMX__
+#   include <sys/time.h>
+#endif
+
 #ifdef TIMEOFDAY_NO_TZ
 #define Tk_timeofday(x) gettimeofday(x)
  extern int gettimeofday _ANSI_ARGS_((struct timeval *tp));

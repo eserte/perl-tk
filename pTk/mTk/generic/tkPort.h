@@ -26,12 +26,18 @@
 
 #if defined(__WIN32__) || defined(_WIN32)
 #   include "tkWinPort.h"
-#define strcasecmp(a,b) stricmp(a,b)
+#   ifndef strcasecmp
+#       define strcasecmp(a,b) stricmp(a,b)
+#   endif
 #else
 #   if defined(MAC_TCL)
 #	include "tkMacPort.h"
 #   else
-#	include "tkUnixPort.h"
+#       ifdef __PM__
+#           include "tkOS2Port.h"
+#       else
+#           include "tkUnixPort.h"
+#       endif
 #   endif
 #endif
 

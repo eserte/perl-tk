@@ -32,6 +32,10 @@ typedef struct CmpMaster {
 				 * it when the image goes away).  NULL means
 				 * the image command has already been
 				 * deleted. */
+    Display * display;		/* Display of the the window associated with
+				 * this image. We need to keep it
+				 * because Tk_Display(CmpMaster.tkwin) may
+				 * be invalid. */
     Tk_Window tkwin;		/* default options are taken from this window.
 				 * If undefined, will use the main window
 				 * of this application */
@@ -387,6 +391,7 @@ ImgCmpCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
     masterPtr->imageCmd = Tcl_CreateCommand(interp, name, ImgCmpCmd,
 	(ClientData)masterPtr, ImgCmpCmdDeletedProc);
     masterPtr->tkwin = NULL;
+    masterPtr->display = NULL;
     masterPtr->width = 0;
     masterPtr->height = 0;
     masterPtr->padX = 0;
@@ -463,10 +468,10 @@ ImgCmpConfigureMaster(masterPtr, argc, argv, flags)
 	    "no value given for -window option.", NULL);
 	return TCL_ERROR;
     }
+    masterPtr->display = Tk_Display(masterPtr->tkwin);
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	configSpecs, argc, argv, (char *) masterPtr, flags)
-	!= TCL_OK) {
+	    configSpecs, argc, argv, (char *) masterPtr, flags) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -630,9 +635,11 @@ ImgCmpCmd(clientData, interp, argc, argv)
 	}
 	return code;
     } else if ((c == 'i') && (strncmp(argv[1], "itemconfigure", length)== 0)) {
-
+	Tcl_AppendResult(interp, "unimplemented", NULL);
+	return TCL_ERROR;
     } else if ((c == 'l') && (strncmp(argv[1], "lineconfigure", length)== 0)) {
-
+	Tcl_AppendResult(interp, "unimplemented", NULL);
+	return TCL_ERROR;
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],
 	    "\": must be cget or configure", (char *) NULL);
@@ -666,14 +673,15 @@ AddNewLine(masterPtr, argc, argv)
     lPtr->anchor = TK_ANCHOR_CENTER;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	lineConfigSpecs, argc, argv, (char *) lPtr, 
-	TK_CONFIG_ARGV_ONLY) != TCL_OK) {
-
+	    lineConfigSpecs, argc, argv, (char *) lPtr, 
+	    TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	FreeLine(lPtr);
 	return NULL;
     }
 
-    /* append to the end of the master's lines */
+    /*
+     * Append to the end of the master's lines
+     */
     if (masterPtr->lineHead == NULL) {
 	masterPtr->lineHead = masterPtr->lineTail = lPtr;
     } else {
@@ -715,9 +723,8 @@ AddNewBitmap(masterPtr, line, argc, argv)
     p.bitmap->gc = None;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	bitmapConfigSpecs, argc, argv, (char *) p.bitmap, 
-	TK_CONFIG_ARGV_ONLY) != TCL_OK) {
-
+	    bitmapConfigSpecs, argc, argv, (char *) p.bitmap, 
+	    TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	goto error;
     }
 
@@ -774,9 +781,8 @@ AddNewImage(masterPtr, line, argc, argv)
     p.image->image = NULL;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	imageConfigSpecs, argc, argv, (char *) p.image, 
-	TK_CONFIG_ARGV_ONLY) != TCL_OK) {
-
+	    imageConfigSpecs, argc, argv, (char *) p.image, 
+	    TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	goto error;
     }
 
@@ -1204,13 +1210,11 @@ ImgCmpFree(clientData, display)
 				 * for instance to be displayed. */
     Display *display;		/* Display containing window that used image.*/
 {
-#if 0
-    /* Since one compound image can only be used in one window, when that 
+    /*
+     * Since one compound image can only be used in one window, when that 
      * window is deleted, this image is now useless and should be deleted as
      * well
      */
-    ImgCmpDelete(clientData);
-#endif
 }
 
 static void FreeLine(lPtr)
@@ -1296,6 +1300,7 @@ ImgCmpDelete(masterData)
     Tk_DeleteEventHandler(masterPtr->tkwin,
 	StructureNotifyMask, CmpEventProc, (ClientData)masterPtr);
 
+#if 0
     if (Tk_Display(masterPtr->tkwin) == NULL) {
 	/* Hack : When we issue "destroy .", 
 	 * Tk_Display(masterPtr->tkwin) will mysteriously become
@@ -1306,6 +1311,7 @@ ImgCmpDelete(masterData)
 	Tcl_Release((ClientData) masterPtr);
 	return;
     }
+#endif
     if (masterPtr->isDeleted) {
 	Tcl_Release((ClientData) masterPtr);
 	return;
@@ -1337,10 +1343,10 @@ ImgCmpDelete(masterData)
 	Tcl_DeleteCommand(masterPtr->interp, cmd);
     }
     if (masterPtr->gc != None) {
-	Tk_FreeGC(Tk_Display(masterPtr->tkwin), masterPtr->gc);
+	Tk_FreeGC(masterPtr->display, masterPtr->gc);
     }
 
-    Tk_FreeOptions(configSpecs, (char *) masterPtr, (Display *) NULL, 0);
+    Tk_FreeOptions(configSpecs, (char *) masterPtr, masterPtr->display, 0);
     Tcl_Release((ClientData) masterPtr);
 
   done:

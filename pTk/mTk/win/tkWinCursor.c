@@ -105,7 +105,11 @@ TkGetCursorByName(interp, tkwin, arg)
 	cursorPtr->winCursor = LoadCursor(NULL, namePtr->id);
 	cursorPtr->system = 1;
     } else {
+#ifdef __OPEN32__
+	cursorPtr->winCursor = os2LoadCursor(TkWinGetTkModule(), string);
+#else
 	cursorPtr->winCursor = LoadCursor(TkWinGetTkModule(), string);
+#endif
 	cursorPtr->system = 0;
     }
     if (cursorPtr->winCursor == NULL) {

@@ -11,7 +11,12 @@
  */
 
 #include <tkInt.h>
-#include <tkWinInt.h>
+#ifdef __PM__
+#    define __PM_WIN__
+#    include <tkOS2Int.h>
+#else
+#    include <tkWinInt.h>
+#endif
 #include "tixInt.h"
 #include "tixPort.h"
 
@@ -36,6 +41,9 @@ TixpDrawTmpLine(x1, y1, x2, y2, tkwin)
     int y2;
     Tk_Window tkwin;
 {
+#ifdef __PM__
+    panic("Not implemented: TixpDrawTmpLine");
+#else
     HWND desktop;
     HDC hdc;
     HPEN hpen;
@@ -54,6 +62,7 @@ TixpDrawTmpLine(x1, y1, x2, y2, tkwin)
     SelectObject(hdc, old);
     DeleteObject(hpen);
     ReleaseDC(desktop, hdc);	
+#endif
 }
 
 /*----------------------------------------------------------------------
@@ -73,6 +82,9 @@ TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
     int w;
     int h;
 {
+#ifdef __PM__
+    panic("Not implemented: TixpDrawAnchorLines");
+#else
     HDC hdc;
     TkWinDCState state;
     HPEN hpen;
@@ -92,6 +104,7 @@ TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
     DeleteObject(hpen);
 
     TkWinReleaseDrawableDC(drawable, hdc, &state);
+#endif
 }
 
 /*----------------------------------------------------------------------

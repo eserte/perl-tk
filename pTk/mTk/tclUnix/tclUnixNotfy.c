@@ -21,6 +21,11 @@
 #include <sys/select.h>
 #endif
 
+#ifdef __EMX__
+#   include <sys/select.h>
+#   include <sys/time.h>
+#endif
+
 #ifndef MASK_SIZE
 #define MASK_SIZE 256
 #endif
@@ -169,6 +174,10 @@ Tcl_FileReady(file, mask)
     return result;
 }
 
+#if defined(__EMX__) && (defined(__WIN32__) || defined(__PM__))
+/* Backdoor into processing of events when from Tk. */
+int (*Tcl_WaitForEventProc)(int, fd_mask *, Tcl_Time *) = NULL;
+#endif
 /*
  *----------------------------------------------------------------------
  *
@@ -242,7 +251,11 @@ Tcl_WaitForEvent(timePtr)
     memcpy((VOID *) readyMasks, (VOID *) checkMasks,
 	    3*MASK_SIZE*sizeof(fd_mask));
     if (timePtr == NULL) {
+#if defined(__EMX__) && (defined(__WIN32__) || defined(__PM__))
+	if (((numFdBits == 0) || (MaskEmpty((long *) readyMasks))) && !Tcl_WaitForEventProc) {
+#else
 	if ((numFdBits == 0) || (MaskEmpty((long *) readyMasks))) {
+#endif
 	    return TCL_ERROR;
 	}
 	timeoutPtr = NULL;
@@ -251,6 +264,11 @@ Tcl_WaitForEvent(timePtr)
 	timeout.tv_sec = timePtr->sec;
 	timeout.tv_usec = timePtr->usec;
     }
+#if defined(__EMX__) && (defined(__WIN32__) || defined(__PM__))
+    if (Tcl_WaitForEventProc) {
+	numFound = (*Tcl_WaitForEventProc)(numFdBits, readyMasks, timePtr);
+    } else
+#endif
     numFound = select(numFdBits, (SELECT_MASK *) &readyMasks[0],
 	    (SELECT_MASK *) &readyMasks[MASK_SIZE],
 	    (SELECT_MASK *) &readyMasks[2*MASK_SIZE], timeoutPtr);

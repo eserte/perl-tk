@@ -9,8 +9,6 @@ use Carp;
 use Tk::Config;
 @MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
 
-*win_arch = \$main::win_arch;
-
 sub arch_prune
 {
  my $hash = shift;
@@ -24,6 +22,12 @@ sub arch_prune
     {
      delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
      delete $hash->{$_} if /winMain|dllMain/;
+    }
+   elsif ($win_arch eq 'pm') 
+    {
+     delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
+     delete $hash->{$_} if /os2Main|dllMain|tkOS2Dll|^xgc\./;
+     delete $hash->{$_} if /ImgUtil|tkWin[A-Z0-9]/ and not /OS2/;
     }
    elsif ($win_arch eq 'MSWin32') 
     {
@@ -150,6 +154,14 @@ sub perldepend
         {
          s/Unix/Win/g;
         }
+       elsif ($win_arch eq 'open32') {
+         s/tixUnix/tixWin/g;
+         s/\btkWinInt\.h\b/tkWinInt.h windows.h/g;
+       }
+       elsif ($win_arch eq 'pm') {
+         s/tixUnix/tixWin/g;
+         s/tkUnix/tkOS2/g;
+       }
        s/^([^:]*)\.o\s*:/$1$self->{OBJ_EXT}:/;
        $str .= $_;
       }

@@ -22,6 +22,12 @@
 #include <stdlib.h>
 #endif
 
+#ifdef __EMX__
+typedef long fd_mask;
+#   define strncasecmp strnicmp
+#   define strcasecmp stricmp
+#endif
+
 /*
  * When version numbers change here, must also go into the following files
  * and update the version numbers:

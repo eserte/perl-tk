@@ -28,7 +28,9 @@
 #include <fcntl.h>
 
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#    ifndef __PM__
+#         include <windows.h>
+#    endif
 #undef WIN32_LEAN_AND_MEAN
 
 struct _TixpSubRegion {

@@ -15,9 +15,11 @@
 #include "tkWinInt.h"
 #include "tkFileFilter.h"
 
+#ifndef __OPEN32__
 #include <commdlg.h>    /* includes common dialog functionality */
 #include <dlgs.h>       /* includes common dialog template defines */
 #include <cderr.h>      /* includes the common dialog error codes */
+#endif
 
 #if ((TK_MAJOR_VERSION == 4) && (TK_MINOR_VERSION <= 2))
 /*

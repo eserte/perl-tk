@@ -112,7 +112,7 @@ sub Button1
 
  my @info = $w->info('item',$Ev->x, $Ev->y);
 
- if ($info[1] eq 'indicator')
+ if (defined($info[1]) && $info[1] eq 'indicator')
   {
    $w->Callback(-indicatorcmd => $ent);
   }

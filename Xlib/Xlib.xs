@@ -123,7 +123,7 @@ int flags;
   croak("Cannot get graphic context");
 }
 
-#ifdef WIN32
+#if defined(WIN32) || defined(__WIN32__) || defined(__PM__)
 /* wrap the naive macro versions of these ... */
 static int
 pTk_XSync(Display *dpy, int flush)
@@ -141,7 +141,7 @@ pTk_XFlush(Display *dpy)
 #else
 #define pTk_XSync  XSync
 #define pTk_XFlush XFlush
-#endif /* WIN32 */
+#endif /* WIN32 or friends */
 
 
 
@@ -217,7 +217,7 @@ int		max
 PPCODE:
  {
   int  count = 0;
-#ifndef __WIN32__
+#if !defined(__WIN32__) && !defined(__PM__)
   char **list = XListFonts(dpy, pattern, max, &count);
   int i;
   EXTEND(sp, count);

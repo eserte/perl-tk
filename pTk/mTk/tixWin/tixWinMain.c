@@ -17,11 +17,20 @@
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 #include <malloc.h>
+#include <locale.h>
 
 #ifdef ITCL_2
 #include "itcl.h"
 #include "itk.h"
 #endif
+
+/*
+ * The following declarations refer to internal Tk routines.  These
+ * interfaces are available for use, but are not supported.
+ */
+
+EXTERN void		TkConsoleCreate _ANSI_ARGS_((void));
+EXTERN int		TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Forward declarations for procedures defined later in this file:
@@ -161,11 +170,27 @@ Tcl_AppInit(interp)
     Tcl_Interp *interp;		/* Interpreter for application. */
 {
     /*
+     * Set up the default locale to be standard "C" locale so parsing
+     * is performed correctly.
+     */
+    setlocale(LC_ALL, "C");
+
+    /*
+     * Increase the application queue size from default value of 8.
+     * At the default value, cross application SendMessage of WM_KILLFOCUS
+     * will fail because the handler will not be able to do a PostMessage!
+     * This is only needed for Windows 3.x, since NT dynamically expands
+     * the queue.
+     */
+    SetMessageQueue(64);
+
+    /*
      * Create the console channels and install them as the standard
      * channels.  All I/O will be discarded until TkConsoleInit is
      * called to attach the console to a text widget.
      */
-    TixConsoleCreate(interp);
+
+    TkConsoleCreate();
 
     if (Tcl_Init(interp) == TCL_ERROR) {
 	if (Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY)) {
@@ -235,7 +260,7 @@ Tcl_AppInit(interp)
 
     if (strcmp(Tcl_GetVar(interp, "tcl_interactive", TCL_GLOBAL_ONLY), "1")
 	    == 0) {
-	if (TixConsoleInit(interp) == TCL_ERROR) {
+	if (TkConsoleInit(interp) == TCL_ERROR) {
 	    return TCL_ERROR;
 	}
     }

@@ -25,6 +25,10 @@ static int		XNameToFont _ANSI_ARGS_((_Xconst char *name,
 			    LOGFONT *logfont));
 static int		HasWhiteSpace _ANSI_ARGS_((_Xconst char *name));
 
+#ifdef __OPEN32__
+static char *lastname;
+#endif
+
 static int
 HasWhiteSpace(name)
 _Xconst char *name;
@@ -97,6 +101,10 @@ NameToFont(name, logfont)
 	logfont->lfCharSet = SYMBOL_CHARSET;
     } else if (stricmp(logfont->lfFaceName, "WingDings") == 0) {
 	logfont->lfCharSet = SYMBOL_CHARSET;
+#ifdef __OPEN32__
+    } else if (stricmp(logfont->lfFaceName, "Symbol Set") == 0) {
+	logfont->lfCharSet = SYMBOL_CHARSET;
+#endif
     }
 	
     /*
@@ -285,6 +293,10 @@ XNameToFont(name, logfont)
 	    logfont->lfCharSet = SYMBOL_CHARSET;
 	} else if (stricmp(logfont->lfFaceName, "WingDings") == 0) {
 	    logfont->lfCharSet = SYMBOL_CHARSET;
+#ifdef __OPEN32__
+	} else if (stricmp(logfont->lfFaceName, "Symbol Set") == 0) {
+	    logfont->lfCharSet = SYMBOL_CHARSET;
+#endif
 	}
     }
 
@@ -399,6 +411,15 @@ XNameToFont(name, logfont)
     return TRUE;
 }
 
+#ifdef __OPEN32__
+static int
+myProc(LOGFONT *pLogFont, TEXTMETRIC *pTM, int iFT, LPARAM userData)
+{
+    LOGFONT *input = (LOGFONT*)userData;
+    *input = *pLogFont;
+    return 0;
+}
+#endif
 /*
  *----------------------------------------------------------------------
  *
@@ -444,8 +465,18 @@ XLoadFont(display, name)
 	    object = DEVICE_DEFAULT_FONT;
 	} else if (stricmp(name, "oemfixed") == 0) {
 	    object = OEM_FIXED_FONT;
+#ifdef __OPEN32__
+	} else {
+	    HDC dc = GetDC(NULL);
+	    
+	    EnumFonts(dc, name, myProc, (LPARAM)&logfont);
+	    ReleaseDC(NULL, dc);
+	    font = CreateFontIndirect(&logfont);
+	    goto havefont;
+#endif
 	}
 	font = GetStockObject(object);
+      havefont: ;
     }
     if (font == NULL) {
 	font = GetStockObject(SYSTEM_FONT);
@@ -500,6 +531,11 @@ XQueryFont(display, font_ID)
 	fontPtr->max_byte1 = 0;
 	fontPtr->min_char_or_byte2 = tm.tmFirstChar;
 	fontPtr->max_char_or_byte2 = tm.tmLastChar;
+#ifdef __OPEN32__
+	if (strstr(lastname,"Symbol") && tm.tmLastChar == 126) {
+	    fontPtr->max_char_or_byte2 = 254;
+	}
+#endif
 	fontPtr->all_chars_exist = True;
 	fontPtr->default_char = tm.tmDefaultChar;
 	fontPtr->n_properties = 0;
@@ -522,7 +558,11 @@ XQueryFont(display, font_ID)
 
 	if (tm.tmAveCharWidth != tm.tmMaxCharWidth) {
 	    int i;
+#ifdef __OPEN32__
+	    int nchars = fontPtr->max_char_or_byte2 - tm.tmFirstChar + 1;
+#else
 	    int nchars = tm.tmLastChar - tm.tmFirstChar + 1;
+#endif
 	    int minWidth = 30000;
 
 	    fontPtr->per_char =
@@ -546,7 +586,11 @@ XQueryFont(display, font_ID)
 	    } else {
 		int *chars = (int *)ckalloc(sizeof(int) * nchars);
 
+#ifdef __OPEN32__
+		GetCharWidth(dc, tm.tmFirstChar, fontPtr->max_char_or_byte2, chars);
+#else
 		GetCharWidth(dc, tm.tmFirstChar, tm.tmLastChar, chars);
+#endif
 
 		for (i = 0; i < nchars ; i++ ) {
 		    fontPtr->per_char[i] = bounds;
@@ -596,6 +640,10 @@ XLoadQueryFont(display, name)
     _Xconst char* name;
 {
     Font font;
+
+#ifdef __OPEN32__
+    lastname = name;
+#endif
     font = XLoadFont(display, name);
     return XQueryFont(display, font);
 }

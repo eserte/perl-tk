@@ -720,9 +720,6 @@ ListAdd(stylePtr, iPtr)
     int isNew;
 
     hashPtr = Tcl_CreateHashEntry(&stylePtr->base.items, (char*)iPtr, &isNew);
-#if 0
-    fprintf(stderr, "%-8x %-8x c\n", stylePtr, iPtr);
-#endif
     if (!isNew) {
 	panic("DItem is already associated with style");
     } else {
@@ -743,9 +740,6 @@ ListDelete(stylePtr, iPtr)
 	panic("DItem is not associated with style");
     }
     Tcl_DeleteHashEntry(hashPtr);
-#if 0
-    fprintf(stderr, "%-8x %-8x d\n", stylePtr, iPtr);
-#endif
     stylePtr->base.refCount--;
 
     if ((stylePtr->base.refCount == 0) &&
@@ -771,9 +765,6 @@ ListDeleteAll(stylePtr)
 	if (stylePtr->base.diTypePtr->lostStyleProc != NULL) {
 	    stylePtr->base.diTypePtr->lostStyleProc(iPtr);
 	}
-#if 0
-	fprintf(stderr, "%-8x %-8x r\n", stylePtr, iPtr);
-#endif
 	Tcl_DeleteHashEntry(hashPtr);
     }
 }

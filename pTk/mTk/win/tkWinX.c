@@ -186,7 +186,11 @@ TkWinXInit(hInstance)
 
     class.lpszClassName = TK_WIN_TOPLEVEL_CLASS_NAME;
     class.lpfnWndProc = TkWinTopLevelProc;
+#ifdef __OPEN32__
+    class.hIcon = os2LoadIcon(TkWinGetTkModule(), "tk");
+#else
     class.hIcon = LoadIcon(TkWinGetTkModule(), "tk");
+#endif
     class.hCursor = LoadCursor(NULL, IDC_ARROW);
 
     topLevelAtom = RegisterClass(&class);
@@ -205,7 +209,9 @@ TkWinXInit(hInstance)
 
     childAtom = RegisterClass(&class);
     if (childAtom == 0) {
+#ifndef __OPEN32__
 	UnregisterClass((LPCTSTR)topLevelAtom, hInstance);
+#endif
 	panic("Unable to register TkChild class");
     }
 }
@@ -464,14 +470,35 @@ TkWinTopLevelProc(hwnd, message, wParam, lParam)
 	    TkWinDrawable *twdPtr =
 		(TkWinDrawable *) GetWindowLong(hwnd, GWL_USERDATA);
 
+#ifdef __OPEN32__
+	    RECT r;
+	    /* Somehow sometimes it is not translated upside-down... */
+	    GetWindowRect(hwnd, &r);
+	    pos->x = r.left;
+	    pos->y = r.top;
+	    pos->cx = r.right - r.left;
+	    pos->cy = r.bottom - r.top;
+#endif
 	    TkWinWmConfigure(TkWinGetWinPtr(twdPtr), pos);
+#ifdef __OPEN32__
+	    break;			/* To update child PM window */
+#endif
 	    return 0;
 	}
 
+#ifndef __OPEN32__
 	case WM_CLOSE:
+#endif
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
+#ifdef __OPEN32__
+	    TranslateEvent(hwnd, message, wParam, lParam);
+	    /* To NOT get focus. */
+	    return 0;
+
+	case WM_CLOSE:
+#endif
 	case WM_LBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
@@ -568,11 +595,21 @@ TkWinChildProc(hwnd, message, wParam, lParam)
 	    return 0;
 	}
 
+#ifndef __OPEN32__
 	case WM_DESTROYCLIPBOARD:
 	case WM_PAINT:
+#endif
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
+#ifdef __OPEN32__
+	    TranslateEvent(hwnd, message, wParam, lParam);
+	    /* To NOT get focus. */
+	    return 0;
+
+	case WM_DESTROYCLIPBOARD:
+	case WM_PAINT:
+#endif
 	case WM_LBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
@@ -655,8 +692,13 @@ TranslateEvent(hwnd, message, wParam, lParam)
 	    BeginPaint(hwnd, &ps);
 	    event.xexpose.x = ps.rcPaint.left;
 	    event.xexpose.y = ps.rcPaint.top;
+#ifdef __OPEN32__
+	    event.xexpose.width = max(ps.rcPaint.right - ps.rcPaint.left,0);
+	    event.xexpose.height = max(ps.rcPaint.bottom - ps.rcPaint.top,0);
+#else
 	    event.xexpose.width = ps.rcPaint.right - ps.rcPaint.left;
 	    event.xexpose.height = ps.rcPaint.bottom - ps.rcPaint.top;
+#endif
 	    EndPaint(hwnd, &ps);
 	    event.xexpose.count = 0;
 	    break;
@@ -789,6 +831,9 @@ TranslateEvent(hwnd, message, wParam, lParam)
 		     * code.
 		     */
 
+#ifdef __OPEN32__
+		    StashedKey = 0;
+#endif
 		    event.type = KeyPress;
 		    event.xany.send_event = -1;
 		    event.xkey.keycode = wParam;
@@ -802,6 +847,9 @@ TranslateEvent(hwnd, message, wParam, lParam)
 		     * because Tk won't know what to do with them.  Instead, we
 		     * wait for the WM_CHAR messages which will follow.
 		     */
+#ifdef __OPEN32__
+		    StashedKey = 0;
+#endif
 		    event.type = KeyRelease;
 		    event.xkey.keycode = wParam;
 		    event.xkey.nchars = 0;
@@ -813,6 +861,9 @@ TranslateEvent(hwnd, message, wParam, lParam)
 		     * Synthesize both a KeyPress and a KeyRelease.
 		     */
 
+#ifdef __OPEN32__
+		    StashedKey = (char) lParam;
+#endif
 		    event.type = KeyPress;
 		    event.xany.send_event = -1;
 		    event.xkey.keycode = 0;
@@ -981,6 +1032,9 @@ GetTranslatedKey(xkey)
 	    && PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 	if ((msg.message == WM_CHAR) || (msg.message == WM_SYSCHAR)) {
 	    xkey->trans_chars[xkey->nchars] = (char) msg.wParam;
+#ifdef __OPEN32__
+	    StashedKey = (char) msg.wParam;
+#endif
 	    xkey->nchars++;
 	    GetMessage(&msg, NULL, 0, 0);
 	    if ((msg.message == WM_CHAR) && (msg.lParam & 0x20000000)) {

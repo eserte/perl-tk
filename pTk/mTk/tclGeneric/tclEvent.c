@@ -21,6 +21,11 @@
 #include "tkInt.h"
 #include "Lang.h"
 
+#ifdef OS2
+#  include <sys/ioctl.h>
+#  include <sys/termio.h>
+#endif 
+
 /*
  * For each file registered in a call to Tcl_CreateFileHandler,
  * there is one record of the following type.  All of these records
@@ -373,6 +378,24 @@ Tcl_CreateFileHandler(file, mask, proc, clientData)
     } else {
 	filePtr->clientData = (ClientData) LangCopyCallback((LangCallback *) clientData);
     }
+#ifdef OS2
+    {
+/*	FileHandle *handlePtr = (FileHandle *) handle;
+	int fd = handlePtr->key.osHandle;
+*/
+	int type;
+	int fd = (int)Tcl_GetFileInfo(file, &type);
+	struct termio tio;
+
+	if (!isatty(fd)) 
+	    return;
+	ioctl(fd, TCGETA, &tio);
+	tio.c_lflag &= ~(IDEFAULT | ICANON);
+	
+	ioctl(fd, TCSETA, &tio);
+    }
+#endif 
+
 }
 
 /*

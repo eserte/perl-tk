@@ -316,8 +316,13 @@ if ($win_arch eq 'x') {
   }
   die "Cannot find OS/2 toolkit" unless $toolkit;
   $inc = "-I../pTk/mTk/xlib -I../../pTk/mTk/xlib -IpTk/mTk/xlib";
+  $inc .= " -I$toolkit/H -I../pTk/mTk/open32/h -IpTk/mTk/open32/h -ImTk/os2_rc";
   $define .= " -D__WIN32__";
   $xlib = "-L$toolkit/LIB -lpmwinx";
+} elsif ($win_arch eq 'pm') {
+  $define .= " -D__PM__";
+  $inc = "-I../pTk/mTk/xlib -I../../pTk/mTk/xlib -IpTk/mTk/xlib -ImTk/os2_rc";
+  $xlib = "";                          # No library is needed
 } elsif ($^O eq 'MSWin32') {
   $inc = '-I$(TKDIR)/pTk/mTk/xlib';
 }
@@ -358,7 +363,7 @@ if (!defined($MakefileName) || $MakefileName eq 'Makefile')
   my $config = "package Tk::Config;\nrequire Exporter;\n\@ISA = qw(Exporter);\n";
   my $sym;
   my @export = (); 
-  foreach $sym (qw(VERSION inc define xlib xinc gccopt))
+  foreach $sym (qw(VERSION inc define xlib xinc gccopt win_arch))
    {         
     my $val = ${$sym};
     $val =~ s/([\\\'])/\\$1/g;

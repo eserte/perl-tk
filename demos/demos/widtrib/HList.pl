@@ -13,7 +13,7 @@ sub HList {
         -text => 'HList - A hierarchial listbox widget.',
 	-geometry_manager => 'grid',
     );
-    $top = $demo_widget->top;	# get grid master
+    $top = $demo_widget->Top;	# get grid master
     my $h = $top->Scrolled(qw\HList -separator / -selectmode single -width 30
 			   -height 20 -indent 35 -scrollbars se
 			   -itemtype imagetext \

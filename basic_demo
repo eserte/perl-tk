@@ -344,7 +344,8 @@ $top->property("set",MYPROP,AREA,32,[1,2,3,4,5]);
 
 $top->update("idletasks");
 
-if (open(Gibberish,"</dev/tty"))
+if (open(Gibberish, $^O eq 'os2' ? '<&STDIN' : "</dev/tty") 
+    and ($^O ne 'os2' or not -t Gibberish))	# XFree86-OS/2 and PM quirks
  {
   $top->fileevent(Gibberish,'readable',[sub { my ($fh) = @_; print "stdin:",scalar <$fh> },\*Gibberish]);
  }

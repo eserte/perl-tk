@@ -8,7 +8,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-#if !defined(__WIN32__) && !defined(_WIN32)
+#if !defined(__WIN32__) && !defined(_WIN32) && !defined(__PM__)
 
 static char sccsid[] = "@(#) tkOption.c 1.41 95/06/25 15:30:42";
 
@@ -749,7 +749,7 @@ void
 Xrm_import(class)
 char *class;
 {
-#if !defined(__WIN32__) && !defined(_WIN32)
+#if !defined(__WIN32__) && !defined(_WIN32) && !defined(__PM__)
  /* This is sneaky - we patch up the function tables so 
      that calls to Tk*Option*() map to Xrm versions.
  */

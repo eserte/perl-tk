@@ -1904,6 +1904,9 @@ MatchPatterns(dispPtr, bindPtr, psPtr, bestPtr, object, bestCommandPtr)
     return bestPtr;
 }
 
+#ifdef __OPEN32__
+extern char StashedKey;
+#endif 
 /*
  *--------------------------------------------------------------
  *
@@ -4053,6 +4056,11 @@ InitKeymapInfo(dispPtr)
     KeyCode *codePtr;
     KeySym keysym;
     int count, i, j, max, arraySize;
+#ifdef __OPEN32__
+    char oldStashed = StashedKey;
+    
+    StashedKey = 0;
+#endif 
 #define KEYCODE_ARRAY_SIZE 20
 
     dispPtr->bindInfoStale = 0;
@@ -4153,6 +4161,9 @@ InitKeymapInfo(dispPtr)
 	nextModCode: continue;
     }
     XFreeModifiermap(modMapPtr);
+#ifdef __OPEN32__
+    StashedKey = oldStashed;
+#endif 
 }
 
 

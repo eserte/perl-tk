@@ -2,7 +2,9 @@
 
 
 $POD::Verbose = 0;
-$POD::enables = 1;
+$POD::enabled = 1;
+$POD::subdirs = 0;
+%POD::Widgets = ();  # ???
 
 use blib;
 use strict qw(subs vars);
@@ -16,15 +18,13 @@ use Perlize;
  use Tk::Pretty;
  use strict qw(subs);
 
- $POD::enabled = 1;
-
  sub new
  {
   my $package = shift;
   my $shortfile = shift;
   my $file = shift || $shortfile;
   my $obj;
-  print STDERR "$file\n";
+  print STDERR "$file ($shortfile)\n";
   if (exists $POD::file{$file})
    {
     $obj = $POD::file{$file};
@@ -44,7 +44,14 @@ use Perlize;
    }
   if ($POD::enabled)
    {
-    open($file,">$file") || die "Cannot open $file:$!";
+    my $output = $file;
+    if (!$POD::subdirs)
+     {
+      $output =~ s|^.*/||;	#strip dirs
+      $output =~ s|\.[^.]$||;  #strip ext.
+      $output .= ".pod";
+     }
+    open($file,">$output") || die "Can't open for write '$file':$!";
    }
   return $obj;
  }
@@ -414,6 +421,14 @@ sub fi
  br($obj);
 }
 
+# Skip definitions (in Tix...)
+sub de
+{
+  while (<MAN>) {
+    last if /^\.\./;
+  }
+}
+
 # low level adjust
 sub na {  }
 sub ad {  }
@@ -532,8 +547,6 @@ my %categories = (
 		  "Tk Selection Handling"	       => 'selection',
 		  "Tk User Interaction"		       => 'interaction',
 		 );
-my $subdirs;
-
 sub process
 {
   my ($file) = @_;
@@ -542,7 +555,7 @@ sub process
   $podname =~ s/\.[^.]*$/.pod/;
   $podname =~ s#^.*/##;
   open(MAN,"<$file") || die "Cannot open $file:$!";
-  if ($subdirs) {
+  if ($POD::subdirs) {
     my $category = 'misc';
     while (<MAN>) {
       $category = $1, last if /^\.TH.*"(.*)"\s*$/;
@@ -575,7 +588,7 @@ sub process
       else
        {
         chomp;
-        die "No $_ ($ARGV:$.)";
+        die "No $_ ($file:$.)";
        }
      }
     else
@@ -610,7 +623,7 @@ sub process
 @ARGV = <man/*.[3n]> unless (@ARGV);
 
 die "No files !" unless (@ARGV);
-$subdirs = 1, shift @ARGV if $ARGV[0] eq '-s';
+$POD::subdirs = 1, shift @ARGV if $ARGV[0] eq '-s';
 
 my $file;
 foreach $file (@ARGV)

@@ -3,11 +3,7 @@ use ExtUtils::MakeMaker;
 
 use Tk::MMtry qw(try_compile);
 use Tk::MMutil;
-use Tk::Config;
-
-if ($win_arch eq 'open32') {
-  $inc .= " -I$toolkit/H -Imtk/open32/h";
-}
+use Tk::Config '!$VERSION';
 
 Tk::MMutil::TkExtMakefile(
     'NAME'	=> 'Tk::pTk',
@@ -47,11 +43,19 @@ sub MY::post_initialize
   {
    @list = qw(win xlib generic tixWin tixGeneric tclWin tclGeneric);
   }
+ elsif ($win_arch eq 'open32')
+  {
+   @list = qw(open32 open32/h win xlib generic tixWin tixGeneric tclUnix tclGeneric );
+  }
+ elsif ($win_arch eq 'pm')
+  {
+   @list = qw(os2 open32 xlib generic tixWin tixGeneric tclUnix tclGeneric );
+  }
  else
   {
    @list = qw(unix generic tixUnix tixGeneric tclUnix tclGeneric );
   }
- print STDERR "Generating Dependencies for $^O\n";
+ print STDERR "Generating Dependencies for $^O, win_arch=$win_arch\n";
  foreach $dir (@list)
   {
    my %exc;
@@ -103,6 +107,7 @@ sub MY::post_initialize
   }
  $self->Tk::MMutil::mTk_CHO(\%mTk,@loose);
  my %files = ();
+ $files{'windows.h'} = 1 if $win_arch eq 'open32';
  my $name;
  $self->{'dir_targets'} = [];
  $dir = $self->catdir('$(INST_ARCHLIBDIR)','pTk');
@@ -117,7 +122,7 @@ sub MY::post_initialize
   {
    $self->{PM}->{$name} = $self->catfile($dir,$name);
   }
- if ($^O eq 'MSWin32')
+ if ($^O eq 'MSWin32' or $win_arch eq 'open32' or $win_arch eq 'pm')
   {my $ddir = $self->catdir('$(INST_ARCHLIBDIR)','X11');
    my $sdir = $self->catdir('mTk','xlib','X11');
    push(@{$self->{'dir_targets'}},$ddir);
@@ -162,7 +167,7 @@ sub MY::static
 {
   my $self = shift;
   my $str  = $self->MM::static(@_);
-  if ($win_arch eq 'open32')
+  if ($win_arch eq 'open32' or $win_arch eq 'pm')
    {
     $str .= '
 static :: dllInit$(LIB_EXT)
