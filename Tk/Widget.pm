@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.066'; # $Id: //depot/Tk8/Tk/Widget.pm#66 $
+$VERSION = '3.072'; # $Id: //depot/Tk8/Tk/Widget.pm#72 $
 
 require Tk;
 use AutoLoader;
@@ -233,19 +233,34 @@ sub Construct
  my $class = (caller(0))[0];
  no strict 'refs';
 
+ # Hack for broken ->isa in perl5.6.0
+ delete ${"$class\::"}{'::ISA::CACHE::'} if $] == 5.006;
+
+ # Pre ->isa scheme
+ *{$base.'::Is'.$name}  = \&False;
+ *{$class.'::Is'.$name} = \&True;
+
  # DelegateFor  trickyness is to allow Frames and other derived things
  # to force creation in a delegate e.g. a ScrlText with embeded windows
  # need those windows to be children of the Text to get clipping right
  # and not of the Frame which contains the Text and the scrollbars.
-
  *{$base.'::'."$name"}  = sub { $class->new(shift->DelegateFor('Construct'),@_) };
- *{$base.'::Is'.$name}  = \&False;
- *{$class.'::Is'.$name} = \&True;
 }
 
 sub IS
 {
  return (defined $_[1]) && $_[0] == $_[1];
+}
+
+sub _AutoloadTkWidget
+{
+ my ($self,$method) = @_;
+ my $what = "Tk::Widget::$method";
+ unless (defined &$what)
+  {
+   require "Tk/$method.pm";
+  }
+ return $what;
 }
 
 sub AUTOLOAD
@@ -276,46 +291,48 @@ sub AUTOLOAD
   {
    croak $@ unless ($@ =~ /Can't locate\s+(?:file\s+)?'?\Q$name\E'?/);
    my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
-   if ($package eq 'Tk::Widget' && $method ne '__ANON__')
+   if (ref $_[0] && $method !~ /^(ConfigSpecs|Delegates)/ )
     {
-     # carp "Assuming 'require Tk::$method;'" if ($^W);
-     require "Tk/$method.pm";
-    }
-   else
-    {
-     if (ref $_[0] && $method !~ /^(ConfigSpecs|Delegates)/ )
+     my $delegate = $_[0]->Delegates;
+     if (%$delegate || tied %$delegate)
       {
-       my $delegate = $_[0]->Delegates;
-       if (%$delegate || tied %$delegate)
+       my $widget = $delegate->{$method};
+       $widget = $delegate->{DEFAULT} unless (defined $widget);
+       if (defined $widget)
         {
-         my $widget = $delegate->{$method};
-         $widget = $delegate->{DEFAULT} unless (defined $widget);
-         if (defined $widget)
+         my $subwidget = (ref $widget) ? $widget : $_[0]->Subwidget($widget);
+         if (defined $subwidget)
           {
-           my $subwidget = (ref $widget) ? $widget : $_[0]->Subwidget($widget);
-           if (defined $subwidget)
-            {
-             no strict 'refs';
-             # print "AUTOLOAD: $what\n";
-             *{$what} = sub { shift->Delegate($method,@_) };
-            }
-           else
-            {
-             croak "No delegate subwidget '$widget' for $what";
-            }
+           no strict 'refs';
+           # print "AUTOLOAD: $what\n";
+           *{$what} = sub { shift->Delegate($method,@_) };
+          }
+         else
+          {
+           croak "No delegate subwidget '$widget' for $what";
           }
         }
-       if (!defined(&$what) && $method =~ /^[A-Z]\w+$/ && ref($_[0]) && $_[0]->isa('Tk::Widget'))
-        {
-         $what = "Tk::Widget::$method";
-         carp "Assuming 'require Tk::$method;'" if ($^W);
-         require "Tk/$method.pm";
-        }
+      }
+    }
+   if (!defined(&$what) && $method =~ /^[A-Z]\w+$/)
+    {
+     # Use ->can as ->isa is broken in perl5.6.0
+     require UNIVERSAL;
+     my $sub = UNIVERSAL::can($_[0],'_AutoloadTkWidget');
+     if ($sub)
+      {
+       carp "Assuming 'require Tk::$method;'" unless $_[0]->can($method);
+       $what = $_[0]->$sub($method)
       }
     }
   }
  $@ = $save;
  $DB::sub = $what; # Tell debugger what is going on...
+ unless (defined &$what)
+  {
+   no strict 'refs';
+   *{$what} = sub { croak("Failed to AUTOLOAD '$what'") };
+  }
  goto &$what;
 }
 
@@ -402,6 +419,12 @@ sub Getimage
    my $method = $image_method{$type};
    my $file = Tk->findINC( "$name.$type" );
    next unless( $file && $method );
+   my $sub = $w->can($method);
+   unless (defined &$sub)
+    {
+     require Tk::widgets;
+     Tk::widgets->import($method);
+    }
    $images->{$name} = $w->$method( -file => $file );
    return $images->{$name};
   }
@@ -816,6 +839,7 @@ sub Busy
      $w->Tk::bind('Busy','<Any-KeyRelease>',[_busy => 0]);
      $w->Tk::bind('Busy','<Any-ButtonPress>',[_busy => 1]);
      $w->Tk::bind('Busy','<Any-ButtonRelease>',[_busy => 0]);
+     $w->Tk::bind('Busy','<Any-Motion>',[_busy => 0]);
     }
    $w->{'Busy'} = BusyRecurse(\@old,$w,$cursor,$recurse,1);
   }

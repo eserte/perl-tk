@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#31 $
+$VERSION = '3.032'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#32 $
 
 use Tk qw(Ev);
 
@@ -126,9 +126,9 @@ sub Populate
         -relief       => 'sunken',
         -borderwidth  => 2,
         -textvariable => \$middle->{'Entry'},
-        -width        => 10,     
+        -width        => 10,
 # For some reason giving this font causes problems at end of t/create.t
-#       -font         => '-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*'  
+#       -font         => '-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*'
     );
 
     $nameLabel->pack(-in => $middle_middle[3], -side => 'left');
@@ -442,11 +442,12 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#31 $
+$VERSION = '3.032'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#32 $
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
 use base  qw(Tk::Toplevel);
+use Tk::widgets qw(Pixmap);
 Construct Tk::Widget 'ColorEditor';
 
 %Tk::ColorEditor::names = ();

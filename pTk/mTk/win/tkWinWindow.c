@@ -1,4 +1,4 @@
-/* 
+/*
  * tkWinWindow.c --
  *
  *	Xlib emulation routines for Windows related to creating,
@@ -41,7 +41,7 @@ static void 		StackWindow _ANSI_ARGS_((Window w, Window sibling,
  * Tk_AttachHWND --
  *
  *	This function binds an HWND and a reflection procedure to
- *	the specified Tk_Window. 
+ *	the specified Tk_Window.
  *
  * Results:
  *	Returns an X Window that encapsulates the HWND.
@@ -152,7 +152,7 @@ Tk_GetHWND(window)
 	return twdPtr->window.handle;
     } else {
         /* None is returned for Root Window */
-	return GetDesktopWindow();   
+	return GetDesktopWindow();
     }
 }
 
@@ -253,7 +253,7 @@ TkpMakeWindow(winPtr, parent)
     HWND parentWin;
     int style;
     HWND hwnd;
-    
+
     if (parent != None) {
 	parentWin = Tk_GetHWND(parent);
 	style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -399,7 +399,7 @@ XMapWindow(display, w)
 	event.xmap.override_redirect = winPtr->atts.override_redirect;
 	Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
     }
-    
+
     /*
      * Generate VisibilityNotify events for this window and its mapped
      * children.
@@ -443,7 +443,7 @@ NotifyVisibility(eventPtr, winPtr)
 	eventPtr->xvisibility.window = winPtr->window;
 	Tk_QueueWindowEvent(eventPtr, TCL_QUEUE_TAIL);
     }
-    for (winPtr = winPtr->childList; winPtr != NULL; 
+    for (winPtr = winPtr->childList; winPtr != NULL;
 	    winPtr = winPtr->nextPtr) {
 	if (winPtr->flags & TK_MAPPED) {
 	    NotifyVisibility(eventPtr, winPtr);
@@ -611,10 +611,7 @@ XRaiseWindow(display, w)
     Window w;
 {
     HWND window = TkWinGetHWND(w);
-
-    display->request++;
-    SetWindowPos(window, HWND_TOP, 0, 0, 0, 0,
-	    SWP_NOMOVE | SWP_NOSIZE);
+    TkWinSetWindowPos(window, NULL, Above); 
 }
 
 /*
@@ -638,10 +635,7 @@ XLowerWindow(display, w)
     Window w;
 {
     HWND window = TkWinGetHWND(w);
-
-    display->request++;
-    SetWindowPos(window, HWND_BOTTOM, 0, 0, 0, 0,
-	    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+    TkWinSetWindowPos(window, NULL, Below); 
 }
 
 /*
@@ -813,13 +807,10 @@ TkWinSetWindowPos(hwnd, siblingHwnd, pos)
 	    hwnd = siblingHwnd;
 	    siblingHwnd = temp;
 	}
-    } else {       
-	if (pos == Above) {
-	     siblingHwnd = HWND_TOP;	
-        } else {
-	     siblingHwnd = HWND_BOTTOM;
-        }
+    } else {
+	siblingHwnd = (pos == Above) ? HWND_TOP : HWND_BOTTOM;
     }
+
     SetWindowPos(hwnd, siblingHwnd, 0, 0, 0, 0,
 	    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }

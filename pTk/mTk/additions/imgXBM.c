@@ -31,7 +31,7 @@
 #define MAX_WORD_LENGTH 100
 typedef struct ParseInfo {
     MFile handle;
-    char word[MAX_WORD_LENGTH+1];
+    char word[MAX_WORD_LENGTH+2];
 				/* Current word of bitmap data, NULL
 				 * terminated. */
     int wordLength;		/* Number of non-NULL bytes in word. */
@@ -404,12 +404,15 @@ NextBitmapWord(parseInfoPtr)
 
     for (num=ImgRead(&parseInfoPtr->handle,&buf,1); isspace(UCHAR(buf)) || (buf == ',');
 	    num=ImgRead(&parseInfoPtr->handle,&buf,1)) {
-	if (buf == EOF) {
+	if (num == 0 || buf == EOF) {
 	    return TCL_ERROR;
 	}
     }
     for ( ; !isspace(UCHAR(buf)) && (buf != ',') && (num != 0);
 	    num=ImgRead(&parseInfoPtr->handle,&buf,1)) {
+	if (UCHAR(buf) < ' ' || UCHAR(buf) > '~') {
+	    return TCL_ERROR;
+	}
 	*dst = buf;
 	dst++;
 	parseInfoPtr->wordLength++;
@@ -505,7 +508,6 @@ ReadXBMFileHeader(pi, widthPtr, heightPtr)
 		}
 	    }
 	} else if ((pi->word[0] == '{') && (pi->word[1] == 0)) {
-
 	    return 0;
 	}
     }
@@ -560,8 +562,8 @@ ChnWriteXBM(interp, fileName, format, blockPtr)
  *
  *----------------------------------------------------------------------
  */
-static int	        
-StringWriteXBM(interp, dataPtr, format, blockPtr) 
+static int	
+StringWriteXBM(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
     Tcl_Obj *format;
@@ -581,7 +583,7 @@ StringWriteXBM(interp, dataPtr, format, blockPtr)
  *
  * CommonWriteXBM
  *
- *	This procedure writes a XBM image to the file filename 
+ *	This procedure writes a XBM image to the file filename
  *      (if filename != NULL) or to dataPtr.
  *
  * Results:
@@ -597,11 +599,11 @@ CommonWriteXBM(interp, fileName, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
     Tcl_DString *dataPtr;
-    Tcl_Obj *format;    
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     Tcl_Channel chan = (Tcl_Channel) NULL;
-    char buffer[256];           
+    char buffer[256];
     unsigned char *pp;
     int x, y, i, value, mask;
     int sep = ' ';
@@ -610,7 +612,7 @@ CommonWriteXBM(interp, fileName, dataPtr, format, blockPtr)
     static CONST char header[] =
 "#define %s_width %d\n\
 #define %s_height %d\n\
-static char %s_bits[] = {\n";  
+static char %s_bits[] = {\n";
 
     alphaOffset = blockPtr->offset[0];
     if (alphaOffset < blockPtr->offset[1]) alphaOffset = blockPtr->offset[1];
@@ -651,11 +653,11 @@ static char %s_bits[] = {\n";
     } else {
         fileName = "unknown";
     }
-    
+
     sprintf(buffer, header, fileName, blockPtr->width, fileName,
 	    blockPtr->height, fileName);
     if (p) {
-	*p = '.';   
+	*p = '.';
     }
     WRITE(buffer);
 
@@ -682,7 +684,7 @@ static char %s_bits[] = {\n";
 	      mask = 1;
 	      sep = ',';
              }
-	}          
+	}
 	if (mask != 1) {
 	      sprintf(buffer,"%c 0x%02x",sep, value);
 	      WRITE(buffer);

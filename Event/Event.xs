@@ -774,9 +774,29 @@ LangCallback *cb;
       croak("Invalid handler type %d",mask);
     }
   }
- return LangCallbackArg(cb);
+ return (cb) ? LangCallbackArg(cb) : &PL_sv_undef;
 }
 
+void
+PerlIO_Cleanup(PerlIOHandler *filePtr)
+{
+ PerlIO_unwatch(filePtr);
+ if (filePtr->readHandler)
+  {
+   LangFreeCallback(filePtr->readHandler);
+   filePtr->readHandler = NULL;
+  }
+ if (filePtr->writeHandler)
+  {
+   LangFreeCallback(filePtr->writeHandler);
+   filePtr->writeHandler = NULL;
+  }
+ if (filePtr->exceptionHandler)
+  {
+   LangFreeCallback(filePtr->exceptionHandler);
+   filePtr->exceptionHandler = NULL;
+  }
+}
 
 void
 PerlIO_DESTROY(thisPtr)
@@ -788,16 +808,25 @@ PerlIOHandler *thisPtr;
    PerlIOHandler *filePtr;
    while ((filePtr = *link))
     {
-     if (filePtr == thisPtr)
+     if (!thisPtr || filePtr == thisPtr)
       {
        *link = filePtr->nextPtr;
        PerlIO_unwatch(filePtr);
        if (filePtr->readHandler)
-        LangFreeCallback(filePtr->readHandler);
+        {
+         LangFreeCallback(filePtr->readHandler);
+         filePtr->readHandler = NULL;
+        }
        if (filePtr->writeHandler)
-        LangFreeCallback(filePtr->writeHandler);
+        {
+         LangFreeCallback(filePtr->writeHandler);
+         filePtr->writeHandler = NULL;
+        }
        if (filePtr->exceptionHandler)
-        LangFreeCallback(filePtr->exceptionHandler);
+        {
+         LangFreeCallback(filePtr->exceptionHandler);
+         filePtr->exceptionHandler = NULL;
+        }
        SvREFCNT_dec(filePtr->handle);
       }
      else
@@ -806,6 +835,12 @@ PerlIOHandler *thisPtr;
       }
     }
   }
+}
+
+void
+PerlIO_END(void)
+{
+ PerlIO_DESTROY(NULL);
 }
 
 static void
@@ -1000,7 +1035,10 @@ XS(XS_Tk__Callback_Call)
  XSRETURN(count);
 }
 
-#define Callback_DESTROY(sv)
+static void
+Callback_DESTROY(SV *sv)
+{
+}
 
 #define Tcl_setup(obj,flags)
 #define Tcl_check(obj,flags)
@@ -1107,6 +1145,9 @@ LangCallback *	cb
 void
 PerlIO_DESTROY(filePtr)
 PerlIOHandler *	filePtr
+
+void
+PerlIO_END()
 
 MODULE = Tk::Event	PACKAGE = Tk::Event::Source	PREFIX = Tcl_
 

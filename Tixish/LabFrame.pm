@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#17 $
+$VERSION = '3.019'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#19 $
 
 use Tk;
 require Tk::Frame;
@@ -53,4 +53,6 @@ sub Populate {
 		     'DEFAULT' => [$f]);
 }
 
+1;
 
+__END__

@@ -453,7 +453,7 @@ int fatal;
  else if (fatal)
   {
    STRLEN na;
-   warn("%p (%s) is not a hash", interp, SvPV((SV *) interp,na));
+   warn("%p is not a hash", interp);
    abort();
   }
  return NULL;
@@ -808,9 +808,9 @@ SV *arg;
   }
  else
   {
-   if (*sp)
-    SvREFCNT_dec(*sp);
    *sp = SvREFCNT_inc(arg);
+   if (sv)
+    SvREFCNT_dec(sv);
   }
 }
 
@@ -2017,7 +2017,6 @@ Return_AV(int items, int offset, AV *av)
    SV *sv;
    if (svp && (sv = *svp) && SvROK(sv) && !sv_isobject(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
-     STRLEN na;
      av = (AV *) SvRV(sv);
      count = av_len(av)+1;
     }
@@ -2146,6 +2145,7 @@ Tk_CheckHash(SV *sv,struct pTkCheckChain *tail)
          /* LangDebug("Check %p{%s}\n",hv,hv_iterkey(he,&len)); */
          Tk_CheckHash(val,&chain);
          skip:
+          /* do nothing */;
         }
       }
     }
@@ -2160,23 +2160,24 @@ SV **args;
 {
  int count = 1;
  STRLEN na;
- do_watch();
  if (info)
-  {Tcl_Interp *interp = info->interp;
-   SV *what = SvREFCNT_inc(args[0]);
+  {
    dSP;
+   SV *what = SvREFCNT_inc(args[0]);
+   Tcl_Interp *interp = info->interp;
    int old_taint = PL_tainted;
    IncInterp(interp, "Call_Tk");
-   Tcl_ResetResult(interp);
    PL_tainted = 0;
    do_watch();
+
+   Tcl_ResetResult(interp);
    if (info->Tk.proc || info->Tk.objProc)
     {
      /* Must find offset of 0'th arg now in case
         stack moves as a result of the call
       */
      int offset = args - sp;
-     /* BEWARE - FIXME ? if Tk code does a callback to perl and perl grow the
+     /* BEWARE - FIXME ? if Tk code does a callback to perl and perl grows the
         stack then args that Tk code has will still point at old stack.
         Thus if Tk tests args[i] *after* the callback it will get junk.
         Only solid fix that occurs to me at present is to take a copy
@@ -2197,13 +2198,12 @@ SV **args;
      if (code == TCL_OK)
       {
        count = Return_Results(interp,items,offset);
-       DecInterp(interp, "Call_Tk");
-       PL_tainted = old_taint;
       }
      else if (code == TCL_BREAK)
       {
-       DecInterp(interp, "Call_Tk");
        PL_tainted = old_taint;
+       DecInterp(interp, "Call_Tk");
+       SvREFCNT_dec(what);
        croak("_TK_BREAK_\n");
       }
      else
@@ -2211,11 +2211,12 @@ SV **args;
        SV *msg = sv_newmortal();
        sv_setpv(msg,"Tk callback for ");
        sv_catpv(msg,LangString(what));
-       SvREFCNT_dec(what);
        Tcl_AddErrorInfo(interp, SvPV(msg,na));
        sv_setpv(msg,Tcl_GetResult(interp));
-       DecInterp(interp, "Call_Tk");
+
        PL_tainted = old_taint;
+       DecInterp(interp, "Call_Tk");
+       SvREFCNT_dec(what);
        croak("%s",SvPV(msg,na));
       }
     }
@@ -2225,11 +2226,9 @@ SV **args;
      if (info->tkwin)
       croak("%s has been deleted",Tk_PathName(info->tkwin));
     }
+   PL_tainted = old_taint;
+   DecInterp(interp, "Call_Tk");
    SvREFCNT_dec(what);
-#if 0
-   if (current_widget)
-    fprintf(stderr,"pop widget is %s\n",SvPV(GvSV(current_widget),na));
-#endif
   }
  else
   {
@@ -5045,9 +5044,18 @@ _((void))
  char *XEventMethods = "abcdfhkmopstvwxyABDEKNRSTWXY#";
  char buf[128];
  CV *cv;
+#ifdef pWARN_NONE
+ SV *old_warn = PL_curcop->cop_warnings;
+ PL_curcop->cop_warnings = pWARN_NONE;
+#endif
 
  /* Arrange to call initialization code - an XSUB called INIT */
  cv = newXS("Tk::INIT", XS_Tk_INIT, __FILE__);
+
+#ifdef pWARN_NONE
+ PL_curcop->cop_warnings = old_warn;
+#endif
+
  InitVtabs();
 
 #ifdef VERSION

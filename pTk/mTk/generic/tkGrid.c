@@ -2569,7 +2569,7 @@ StickyToString(flags, result)
     if (flags&STICK_WEST) {
     	result[count++] = 'w';
     }
-#ifdef LANG
+#ifdef _LANG
     result[count] = '\0';
 #else
     if (count) {

@@ -1,3 +1,129 @@
+Change 1786 on 2000/03/27 by nick@bactrian_nt
+
+	An attempt to get 'ActiveWindow' right on Win32
+
+Change 1785 on 2000/03/27 by nick@bactrian
+
+	Perl5.6.0 workround
+	Revert to Tcl/Tk-like TOPMOST for Raise.
+
+Change 1784 on 2000/03/26 by nick@bactrian_nt
+
+	Update NT testing info
+
+Change 1783 on 2000/03/26 by nick@linux
+
+	Correct version-as-number in perl5.6.0 workround
+
+Change 1782 on 2000/03/26 by nick@bactrian
+
+	More perl-5.6.0 robustness
+
+Change 1781 on 2000/03/26 by nick@bactrian
+
+	More robust AUTOLOAD - and a few more explicit uses.
+
+Change 1780 on 2000/03/25 by nick@bactrian
+
+	Work-round broken ->isa in perl5.6.0
+
+Change 1779 on 2000/03/25 by nick@bactrian
+
+	Avoid core dumps on invalid cursors.
+
+Change 1778 on 2000/03/25 by nick@bactrian
+
+	Various fixes from e-mail backlog
+
+Change 1777 on 2000/03/25 by nick@bactrian
+
+	Cleanup 'make test' deprecated noise
+
+Change 1776 on 2000/03/25 by nick@linux
+
+	More hash order issues for FileSelect configure
+
+Change 1775 on 2000/03/24 by nick@bactrian
+
+	Update VERSIONS etc. for Tk800.020
+
+Change 1774 on 2000/03/24 by nick@bactrian
+
+	Allow ->itemconfigure of grouped canvas items.
+
+Change 1772 on 2000/03/24 by nick@bactrian
+
+	Use <string.h> rather than guess at it
+
+Change 1771 on 2000/03/24 by nick@bactrian
+
+	Tidy up FileSelect a little (mainly for perl5.6.0)
+
+Change 1770 on 2000/03/24 by nick@bactrian
+
+	Avoid warnings about INIT blocks in tests.
+
+Change 1768 on 2000/03/22 by nick@bactrian
+
+	Avoid callback destroy issues if fileevent related tie-s are still
+	in force on program exit.
+
+Change 1767 on 2000/03/22 by nick@bactrian
+
+	Honour -background and -foreground on DialogBox and Dialog
+
+Change 1766 on 2000/03/22 by nick@bactrian
+
+	Steve's demo additions for transparent
+
+Change 1765 on 2000/03/22 by nick@bactrian
+
+	Loose Tkperl sub-dir and bundle Jan's exetype script
+	instead as the way to make guiperl.exe
+
+Change 1764 on 2000/03/22 by nick@bactrian
+
+	Do some more checking on callbacks
+
+Change 1761 on 2000/03/21 by nick@pluto
+
+	Re-institute strong fix for segfault issues. (Still not 100%)
+
+Change 1760 on 2000/03/18 by nick@bactrian
+
+	One probably benign bug (Too many Tcl_Preserves on interp)
+	and some cosmetics in tkGlue.c
+
+Change 1756 on 2000/03/16 by nick@bactrian
+
+	Slaven's pod2man patch for --center vs -center
+
+Change 1755 on 2000/03/16 by nick@bactrian
+
+	Really fix XBM parse - last fix was too strong
+
+Change 1753 on 2000/03/16 by nick@bactrian
+
+	Make imgXPM more robust when attempting to parse things like PPM files which
+	don't match its format it got bogged down trying to read a 'word' at EOF.
+
+Change 1752 on 2000/03/16 by nick@bactrian
+
+	Fix for perdantic C compilers
+
+Change 1750 on 2000/03/13 by nick@gobstopper
+
+	Win32 fix for Tk/Event split
+
+Change 1749 on 2000/03/13 by nick@bactrian
+
+	.m and .t files
+
+Change 1748 on 2000/03/13 by nick@bactrian
+
+	Remove unused 'use Data::Dumper'
+	A few other perl5.00404 sops.
+
 Change 1747 on 2000/03/13 by nick@bactrian
 
 	VERSION updates

@@ -14,12 +14,12 @@
  *
  * <mweilguni@sime.com> Mario Weilguni
  * Jan 1997:
- *      - fixed a bug when reading images with invalid color tables 
+ *      - fixed a bug when reading images with invalid color tables
  *        (if a pixelchar is not in the colormap)
  *      - added FileWriteXPM, StringWriteXPM and WriteXPM.
  *      - modified FileReadXPM, ReadXPM and added StringReadXPM
  *        This makes the XPM reader complete :-)
- *        
+ *
  *
  * SCCS: @(#) tkImgXPM.c 0.1 96/11/22 13:56:24
  */
@@ -29,25 +29,7 @@
 #include <X11/Xlib.h>
 #include <ctype.h>
 #include <stdlib.h>
-
-#if defined(__WIN32__) && !defined(__GNUC__)
-#define strncasecmp strnicmp
-#else        
-#ifndef _AIX
-extern VOID *	memcpy _ANSI_ARGS_((VOID *s1, CONST VOID *s2,
-			    size_t nChars));
-#endif
-extern char *	strchr _ANSI_ARGS_((CONST char *string, int c));
-extern char *	strcpy _ANSI_ARGS_((char *s1, CONST char *s2));
-extern size_t	strlen _ANSI_ARGS_((CONST char *string));
-extern int	strncasecmp _ANSI_ARGS_((CONST char *s1,
-			    CONST char *s2, size_t n));
-extern int	strncmp _ANSI_ARGS_((CONST char *s1, CONST char *s2,
-			    size_t nChars));
-extern char *	strrchr _ANSI_ARGS_((CONST char *string, int c));
-extern char *	strstr _ANSI_ARGS_((CONST char *string,
-			    CONST char *substring));
-#endif
+#include <string.h>
 
 #ifndef MAC_TCL
 #include <sys/types.h>
@@ -465,15 +447,15 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 	    memcpy((char *) &color1, p, byteSize);
 	    hPtr = Tcl_FindHashEntry(&colorTable, (char *) color1);
 
-	    /* 
-	     * if hPtr == NULL, we have an invalid color entry in the XPM 
+	    /*
+	     * if hPtr == NULL, we have an invalid color entry in the XPM
 	     * file. We use transparant as default color
 	     */
-	    if (hPtr != (Tcl_HashEntry *)NULL) 
+	    if (hPtr != (Tcl_HashEntry *)NULL)
 	        col = (int)Tcl_GetHashValue(hPtr);
-	    else 
+	    else
 	        col = (int)0;
-	    
+	
 	    /*
 	     * we've found a non-transparent pixel, let's search the next
 	     * transparent pixel and copy this block to the image
@@ -489,13 +471,13 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 		    i++;
 		    len++;
 		    p += byteSize;
-		    
+		
 		    if (i < width) {
 		        memcpy((char *) &color1, p, byteSize);
 			hPtr = Tcl_FindHashEntry(&colorTable, (char *) color1);
-			if (hPtr != (Tcl_HashEntry *)NULL) 
+			if (hPtr != (Tcl_HashEntry *)NULL)
 			    col = (int)Tcl_GetHashValue(hPtr);
-			else 
+			else
 			    col = (int)0;
 		    }
 		} while ((i < width) && col);
@@ -782,7 +764,7 @@ static char * GetColor(colorDefn, colorName, type_ret)
 	if (GetType(colorDefn, &dummy) == NULL) {
 	    /* the next string should also be considered as a part of a color
 	     * name */
-	    
+	
 	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
@@ -844,8 +826,8 @@ FileWriteXPM(interp, fileName, format, blockPtr)
  *
  *----------------------------------------------------------------------
  */
-static int	        
-StringWriteXPM(interp, dataPtr, format, blockPtr) 
+static int	
+StringWriteXPM(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
     Tcl_Obj *format;
@@ -865,7 +847,7 @@ StringWriteXPM(interp, dataPtr, format, blockPtr)
  *
  * CommonWriteXPM
  *
- *	This procedure writes a XPM image to the file filename 
+ *	This procedure writes a XPM image to the file filename
  *      (if filename != NULL) or to dataPtr.
  *
  * Results:
@@ -885,7 +867,7 @@ CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
     Tcl_DString *dataPtr;
-    Tcl_Obj *format;    
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     int x, y, i;
@@ -1001,21 +983,21 @@ CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
     }
 
     /* write colormap strings */
-    entry = Tcl_FirstHashEntry(&colors, &search); 
+    entry = Tcl_FirstHashEntry(&colors, &search);
     y = 0;
     temp.component[chars_per_pixel] = 0;
     while(entry) {
 	/* compute a color identifier for color #y */
-	for (i = 0, x = y++; i < chars_per_pixel; i++, x /= 64) 
+	for (i = 0, x = y++; i < chars_per_pixel; i++, x /= 64)
 	    temp.component[i] = xpm_chars[x & 63];
 
-	/* 
-	 * and put it in the hashtable 
+	/*
+	 * and put it in the hashtable
 	 * this is a little bit tricky
 	 */
 	Tcl_SetHashValue(entry, (char *) temp.value);
 	pp = (unsigned char *)&entry->key.oneWordValue;
-	sprintf(buffer, "\"%s c #%02x%02x%02x\",\n", 
+	sprintf(buffer, "\"%s c #%02x%02x%02x\",\n",
 		temp.component, pp[0], pp[1], pp[2]);
 	WRITE(buffer);
 	entry = Tcl_NextHashEntry(&search);
@@ -1049,7 +1031,7 @@ CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
     }
 
     /* Delete the hash table */
-    Tcl_DeleteHashTable(&colors);    
+    Tcl_DeleteHashTable(&colors);
 
     /* close the file */
     if (chan) {

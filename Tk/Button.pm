@@ -7,7 +7,7 @@ package Tk::Button;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Button.pm#13 $
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Button.pm#14 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
@@ -34,6 +34,7 @@ sub ClassInit
  $mw->bind($class,'<1>', 'butDown');
  $mw->bind($class,'<ButtonRelease-1>', 'butUp');
  $mw->bind($class,'<space>', 'Invoke');
+ $mw->bind($class,'<Return>', 'Invoke');
  return $class;
 }
 

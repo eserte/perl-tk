@@ -398,36 +398,6 @@ XGetInputFocus(display, focus_return, revert_to_return)
 /*
  *----------------------------------------------------------------------
  *
- * XSetInputFocus --
- *
- *	Set the current focus window.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Changes the keyboard focus and causes the selected window to
- *	be activated.
- *
- *----------------------------------------------------------------------
- */
-
-void
-XSetInputFocus(display, focus, revert_to, time)
-    Display* display;
-    Window focus;
-    int revert_to;
-    Time time;
-{
-    display->request++;
-    if (focus != None) {
-	SetFocus(Tk_GetHWND(focus));
-    }
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * TkpChangeFocus --
  *
  *	This procedure is invoked to move the system focus from

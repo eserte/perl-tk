@@ -1,4 +1,4 @@
-/* 
+/*
  * tkSelect.c --
  *
  *	This file manages the selection for the Tk toolkit,
@@ -65,7 +65,7 @@ static void		SelRcvIncrProc _ANSI_ARGS_((ClientData clientData,
 static void		SelTimeoutProc _ANSI_ARGS_((ClientData clientData));
 static void		FreeHandler _ANSI_ARGS_((ClientData clientData));
 static int		HandleCompat _ANSI_ARGS_((ClientData clientData,
-			    int offset, long *buffer, int maxBytes, 
+			    int offset, long *buffer, int maxBytes,
 			    Atom type, Tk_Window tkwin));
 static int		CompatXSelProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, long *portion,
@@ -187,7 +187,7 @@ typedef struct CompatHandler
  ClientData clientData;		/* Value to pass to proc. */
 } CompatHandler;
 
-static int 
+static int
 HandleCompat(clientData, offset, Xbuffer, maxBytes, type, tkwin)
 ClientData clientData;
 int offset;
@@ -233,7 +233,7 @@ Tk_CreateSelHandler(tkwin, selection, target, proc, clientData, format)
  CompatHandler *cd = (CompatHandler *) ckalloc(sizeof(CompatHandler));
  cd->clientData = clientData;
  cd->proc       = proc;
- Tk_CreateXSelHandler(tkwin, selection, target, HandleCompat, 
+ Tk_CreateXSelHandler(tkwin, selection, target, HandleCompat,
                       (ClientData) cd, format);
 }
 
@@ -270,7 +270,7 @@ Tk_DeleteSelHandler(tkwin, selection, target)
     /*
      * Find the selection handler to be deleted, or return if it doesn't
      * exist.
-     */ 
+     */
 
     for (selPtr = winPtr->selHandlerList, prevPtr = NULL; ;
 	    prevPtr = selPtr, selPtr = selPtr->nextPtr) {
@@ -347,8 +347,8 @@ Tk_OwnSelection(tkwin, selection, proc, clientData)
     Tk_LostSelProc *clearProc = NULL;
     ClientData clearData = NULL;	/* Initialization needed only to
 					 * prevent compiler warning. */
-    
-    
+
+
     if (dispPtr->multipleAtom == None) {
 	TkSelInit(tkwin);
     }
@@ -474,7 +474,7 @@ Tk_ClearSelection(tkwin, selection)
 	}
 	prevPtr = infoPtr;
     }
-    
+
     if (infoPtr != NULL) {
 	clearProc = infoPtr->clearProc;
 	clearData = infoPtr->clearData;
@@ -550,7 +550,7 @@ Tk_GetXSelection(interp, tkwin, selection, target, proc, clientData)
 
     if (dispPtr->multipleAtom == None) {
 	TkSelInit(tkwin);
-    }               
+    }
 
     /*
      * If the selection is owned by a window managed by this
@@ -801,7 +801,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	} else {
 	    selection = XA_PRIMARY;
 	}
-	    
+	
 	Tk_ClearSelection(tkwin, selection);
 	return TCL_OK;
     } else if ((c == 'e') && (strncmp(argv[1], "exists", length) == 0)) {
@@ -854,7 +854,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	    if (tkwin != NULL && tkwin != winPtr->dispPtr->clipWindow) {
 		Tcl_ArgResult(interp,LangWidgetArg(interp,tkwin));
 	    } else {
-		Tcl_IntResults(interp, 1, 0, win);    
+		Tcl_IntResults(interp, 1, 0, win);
 	    }
         }
 	return TCL_OK;
@@ -970,7 +970,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	} else {
 	    selection = XA_PRIMARY;
 	}
-	    
+	
 	if (count > 2) {
 	    target = Tk_InternAtom(tkwin, LangString(argp[2]));
 	} else if (targetName != NULL) {
@@ -1352,7 +1352,7 @@ HandleTclCommand(clientData, offset, buffer, maxBytes)
     }
 
     LangRestoreResult(&interp,oldResult);
-    Tcl_Preserve((ClientData) interp);
+    Tcl_Release((ClientData) interp);
     return length;
 }
 /*
@@ -1389,11 +1389,11 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
     int maxBytes;		/* Maximum # of bytes to store at buffer. */
     Atom *typePtr;		/* Store here the type of the selection,
 				 * for use in converting to proper X format. */
-    int  *formatPtr; 
+    int  *formatPtr;
 {
     register TkWindow *winPtr = (TkWindow *) infoPtr->owner;
     TkDisplay *dispPtr = winPtr->dispPtr;
-    char *buffer = (char *) lbuffer; 
+    char *buffer = (char *) lbuffer;
 
     if (target == dispPtr->timestampAtom) {
 	if (maxBytes < 20) {
@@ -1410,26 +1410,26 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
         Atom *ap = (Atom *) buffer;
 
         if ((char *)ap >= buffer + maxBytes - sizeof(Atom))
-           return -1; 
+           return -1;
         *ap++ = Tk_InternAtom((Tk_Window) winPtr,"MULTIPLE");
         if ((char *)ap >= buffer + maxBytes - sizeof(Atom))
-           return -1; 
+           return -1;
         *ap++ = Tk_InternAtom((Tk_Window) winPtr,"TARGETS");
         if ((char *)ap >= buffer + maxBytes - sizeof(Atom))
-           return -1; 
+           return -1;
         *ap++ = Tk_InternAtom((Tk_Window) winPtr,"TIMESTAMP");
         if ((char *)ap >= buffer + maxBytes - sizeof(Atom))
-           return -1; 
+           return -1;
         *ap++ = Tk_InternAtom((Tk_Window) winPtr,"TK_APPLICATION");
         if ((char *)ap >= buffer + maxBytes - sizeof(Atom))
-           return -1; 
+           return -1;
         *ap++ = Tk_InternAtom((Tk_Window) winPtr,"TK_WINDOW");
 
 	for (selPtr = winPtr->selHandlerList; selPtr != NULL;
 		selPtr = selPtr->nextPtr) {
 	    if (selPtr->selection == infoPtr->selection) {
                 if ((char *)ap >= buffer + maxBytes - sizeof(Atom))
-                   return -1; 
+                   return -1;
 		*ap++ = selPtr->target;
 	    }
 	}
@@ -1448,7 +1448,7 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
 	}
 	strcpy(buffer, name);
 	*typePtr = XA_STRING;
-        *formatPtr = 8; 
+        *formatPtr = 8;
 	return length;
     }
 
@@ -1462,10 +1462,10 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
 	}
 	strcpy(buffer, name);
 	*typePtr = XA_STRING;
-        *formatPtr = 8; 
+        *formatPtr = 8;
 	return length;
     }
-        
+
 #if 0
     LangDebug("Request %s type=%s\n",
               Tk_GetAtomName((Tk_Window) winPtr, infoPtr->selection),
@@ -1503,7 +1503,7 @@ LostSelection(clientData)
 
     interp = lostPtr->interp;
     Tcl_Preserve((ClientData) interp);
-    
+
     /*
      * Execute the command.  Save the interpreter's result, if any, and
      * restore it after executing the command.
@@ -1516,7 +1516,7 @@ LostSelection(clientData)
     LangRestoreResult(&interp,oldResult);
 
     Tcl_Release((ClientData) interp);
-    
+
     /*
      * Free the storage for the command, since we're done with it now.
      */

@@ -89,6 +89,7 @@ demos/widget_lib/showVars.pl
 demos/widget_lib/states.pl
 demos/widget_lib/style.pl
 demos/widget_lib/texts.pl
+demos/widget_lib/transtile.pl
 demos/widget_lib/twind.pl
 demos/widget_lib/vscale.pl
 dialog

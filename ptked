@@ -6,12 +6,12 @@ use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#20 $
+$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#22 $
 
 my %opt;
-INIT 
+INIT
  {
-  my $home = $ENV{'HOME'};
+  my $home = $ENV{'HOME'} || $ENV{'HOMEDRIVE'}.$ENV{'HOMEPATH'};
   $portfile = "$home/.ptkedsn";
   my $port = $ENV{'PTKEDPORT'};
   return if $^C;
@@ -19,14 +19,14 @@ INIT
   unless (defined $port)
    {
     if (open(SN,"$portfile"))
-     {          
+     {
       $port = <SN>;
       close(SN);
      }
    }
   if (defined $port)
    {
-    my $sock = IO::Socket::INET->new(PeerAddr => 'localhost', 
+    my $sock = IO::Socket::INET->new(PeerAddr => 'localhost',
                PeerPort => $port, Proto    => 'tcp');
     if ($sock)
      {
@@ -58,7 +58,7 @@ use Getopt::Std;
 # use Tk::ErrorDialog;
 
 
-my $top = MainWindow->new();  
+my $top = MainWindow->new();
 
 if ($opt{'s'})
  {
@@ -69,29 +69,29 @@ if ($opt{'s'})
   my $port = $sock->sockport;
   $ENV{'PTKEDPORT'} = $port;
   open(SN,">$portfile") || die "Cannot open $portfile:$!";
-  print SN $port; 
+  print SN $port;
   close(SN);
   print "Accepting connections on $port\n";
-  $top->fileevent($sock,'readable', 
-  sub 
+  $top->fileevent($sock,'readable',
+  sub
   {
-   print "accepting $sock\n"; 
+   print "accepting $sock\n";
    my $client = $sock->accept;
    if (defined $client)
-    {     
+    {
      binmode($client);
      print "Connection $client\n";
      $top->fileevent($client,'readable',[\&EditRequest,$client]);
     }
    });
- }          
+ }
 
 Tk::Event::HandleSignals();
 $SIG{'INT'} = sub { $top->WmDeleteWindow };
 
 $top->iconify;
 $top->optionAdd('*TextUndo.Background' => '#fff5e1');
-$top->fontCreate('ptked',-family => 'courier', -size => -12, 
+$top->fontCreate('ptked',-family => 'courier', -size => ($^O eq 'MSWin32' ? 11 : -12),
                  -weight => 'normal', -slant => 'roman');
 $top->optionAdd('*TextUndo.Font' => 'ptked');
 
@@ -106,9 +106,9 @@ sub EditRequest
  my ($client) = @_;
  local $_;
  while (<$client>)
-  {            
+  {
    chomp($_);
-   print "'$_'\n", 
+   print "'$_'\n",
    Create_Edit($_);
   }
  warn "Odd $!" unless eof($client);
@@ -126,37 +126,37 @@ sub Create_Edit
  my $path = shift;
  my $ed   = $top->Toplevel(-title => $path);
  $ed->withdraw;
- $top->{'Edits'}++; 
+ $top->{'Edits'}++;
  $ed->OnDestroy([\&RemoveEdit,$top]);
  my $t = $ed->Scrolled('TextUndo', -wrap => 'none', -scrollbars => 'osre');
  $t->pack(-expand => 1, -fill => 'both');
  $t = $t->Subwidget('textundo');
  my $menu = $t->menu;
  $menu->cascade(-label => '~Help', -menuitems => [
-                [Button => '~About...', -command => [\&About,$ed]],  
+                [Button => '~About...', -command => [\&About,$ed]],
                ]);
  $ed->configure(-menu => $menu);
  my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
  $t->bind(ref($t),'<Meta-B1-Motion>',\&Ouch);
  $t->bind(ref($t),'<Meta-ButtonPress>',\&Ouch);
  $t->bind(ref($t),'<Meta-ButtonRelease>',\&Ouch);
- $dd->configure(-startcommand => 
+ $dd->configure(-startcommand =>
                 sub
                  {
                   return 1 unless (eval { $t->tagNextrange(sel => '1.0','end')});
-                  $dd->configure(-text => $t->get('sel.first','sel.last')); 
+                  $dd->configure(-text => $t->get('sel.first','sel.last'));
                  });
-                
- $t->DropSite(-motioncommand => 
-               sub 
+
+ $t->DropSite(-motioncommand =>
+               sub
                 { my ($x,$y) = @_;
                   $t->markSet(insert => "\@$x,$y");
                 },
                -dropcommand => [\&HandleDrop,$t],
               );
- 
 
- 
+
+
  $ed->protocol('WM_DELETE_WINDOW',[ConfirmExit => $t]);
  $t->bind('<F3>',\&DoFind);
 
@@ -194,7 +194,7 @@ sub HandleDrop
  my $string;
  Tk::catch { $string = $t->SelectionGet(-selection => $seln,'FILE_NAME') };
  if ($@)
-  {  
+  {
    Tk::catch { $string = $t->SelectionGet(-selection => $seln) };
    if ($@)
     {
@@ -202,15 +202,15 @@ sub HandleDrop
      $t->messageBox(-text => "Targets : ".join(' ',@targets));
     }
    else
-    { 
+    {
      $t->markSet(insert => "\@$x,$y");
      $t->insert(insert => $string);
-    } 
+    }
   }
  else
   {
    Create_Edit($string);
-  }   
+  }
 }
 
 
@@ -227,18 +227,18 @@ sub DoFind
   {
    my ($line,$col) = split(/\./,$posn);
    $_ = $t->get("$line.0","$posn lineend");
-   pos($_) = $col; 
+   pos($_) = $col;
    if (/\G(.*)$str/g)
     {
      $col += length($1);
      $posn = "$line.$col";
      $t->SetCursor($posn);
-     $t->tag('add','sel',$posn,"$line.".pos($_)); 
+     $t->tag('add','sel',$posn,"$line.".pos($_));
      $t->focus;
-     return; 
+     return;
     }
    $posn = $t->index("$posn lineend + 1c");
-  } 
+  }
 }
 
 sub AskFind
@@ -257,7 +257,7 @@ sub AskFind
  $t->{'AskFind'}->Popup;
  $t->update;
  $t->{'AskFind'}->focusNext;
-}           
+}
 
 sub About
 {
@@ -274,19 +274,19 @@ END
 
 __END__
 
-=head1 NAME 
+=head1 NAME
 
-ptked - an editor in Perl/Tk 
+ptked - an editor in Perl/Tk
 
 =head1 SYNOPSIS
 
 S<  >B<ptked> [I<file-to-edit>]
 
-=head1 DESCRIPTION 
+=head1 DESCRIPTION
 
 B<ptked> is a simple text editor based on perl/Tk's TextUndo widget.
 
-=cut 
+=cut
 
 
 

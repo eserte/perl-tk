@@ -189,6 +189,7 @@ $T->insert('end', "5. A ruler with adjustable tab stops.\n",
     [qw/demo demo-ruler/]);
 $T->insert('end', "6. A building floor plan.\n", [qw/demo demo-floor/]);
 $T->insert('end', "7. A simple scrollable canvas.\n", [qw/demo demo-cscroll/]);
+$T->insert('end', "8. Tiles and transparent images.\n", [qw/demo demo-transtile/]);
 
 $T->insert('end', "\n", '', "Scales\n", 'title');
 $T->insert('end', "1. Vertical scale.\n", [qw/demo demo-vscale/]);
@@ -242,7 +243,7 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n      2000/01/11",
+		       "\nTk Version $Tk::VERSION\n\n      2000/03/18",
 );
 $help->cget(-menu)->entryconfigure('About',
     -command => [$DIALOG_ABOUT => 'Show'],

@@ -295,7 +295,8 @@ VFUNC(void,TkQueueEventForAllChildren,V_TkQueueEventForAllChildren,_ANSI_ARGS_((
 #endif
 
 #ifndef TkReadBitmapFile
-VFUNC(int,TkReadBitmapFile,V_TkReadBitmapFile,_ANSI_ARGS_((Display* display,
+VFUNC(int,TkReadBitmapFile,V_TkReadBitmapFile,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Display* display,
 			    Drawable d, CONST char* filename,
 			    unsigned int* width_return,
 			    unsigned int* height_return,
@@ -349,7 +350,7 @@ VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
 
 #ifndef TkSetWindowMenuBar
 VFUNC(void,TkSetWindowMenuBar,V_TkSetWindowMenuBar,_ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg oldMenuName, 
+			    Tk_Window tkwin, Arg oldMenuName,
 			    Arg menuName)))
 #endif
 

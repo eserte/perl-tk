@@ -16,6 +16,7 @@ ok($@, "", "loading Tk::BrowseEntry module");
 
 my $mw;
 eval {$mw = Tk::MainWindow->new();};
+eval { $mw->geometry('+10+10'); };
 ok($@, "", "can't create MainWindow");
 ok(Tk::Exists($mw), 1, "MainWindow creation failed");
 

@@ -133,6 +133,8 @@ struct timeval;
 #endif 
 
 extern int gettimeofday(struct timeval *, struct timezone *);
+#if 0
 EXTERN void		panic _ANSI_ARGS_(TCL_VARARGS(char *,format));
+#endif
 
 #endif /* _WINPORT */

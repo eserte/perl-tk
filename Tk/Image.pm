@@ -10,7 +10,7 @@ require DynaLoader;
 use base qw(DynaLoader Tk); # but are they ?
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Image.pm#9 $
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Image.pm#14 $
 
 sub new
 {
@@ -18,7 +18,7 @@ sub new
  my $widget  = shift;
  $package->InitClass($widget);
  my $leaf = $package->Tk_image;
- my $obj = $widget->image('create',$leaf,@_);
+ my $obj = $widget->Tk::image('create',$leaf,@_);
  return bless $obj,$package;
 }
 
@@ -55,6 +55,10 @@ sub Construct
 {
  my ($base,$name) = @_;
  my $class = (caller(0))[0];
+
+ # Hack for broken ->isa in perl5.6.0
+ delete ${"$class\::"}{'::ISA::CACHE::'} if $] == 5.006;
+
  *{"Tk::Widget::$name"}  = sub { $class->new(@_) };
 }
 

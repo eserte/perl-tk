@@ -2,12 +2,15 @@
 # 
 cover true                 
 booktitle 'Perl/Tk Reference'
-release 'Version Tk800.016'
+release 'Version Tk800.019'
 author 'Nick Ing-Simmons'
 linkbox off color
 pagesize a4
 output tkman.ps 
 path .
+beginBookmark 'Contents'
+file ../Tk.pod '' 'Contents' ''
+endBookmark
 beginBookmark 'Introduction'
 file ../pod/UserGuide.pod '' 'Introduction' ''
 file ../pod/overview.pod '' 'Introduction' ''
@@ -23,7 +26,6 @@ file ../pod/pack.pod '' 'Tk Geometry Management' ''
 file ../pod/place.pod '' 'Tk Geometry Management' ''
 endBookmark
 beginBookmark 'Binding Events and Callbacks'
-file ../pod/After.pod '' 'Binding Events and Callbacks' ''
 file ../pod/Error.pod '' 'Binding Events and Callbacks' ''
 file ../pod/IO.pod '' 'Binding Events and Callbacks' ''
 file ../pod/bind.pod '' 'Binding Events and Callbacks' ''
@@ -32,6 +34,7 @@ file ../pod/callbacks.pod '' 'Binding Events and Callbacks' ''
 file ../pod/event.pod '' 'Binding Events and Callbacks' ''
 file ../pod/exit.pod '' 'Binding Events and Callbacks' ''
 file ../pod/fileevent.pod '' 'Binding Events and Callbacks' ''
+file ../pod/after.pod '' 'Binding Events and Callbacks' ''
 endBookmark
 beginBookmark 'Tk Image Classes'
 file ../pod/Animation.pod '' 'Tk Image Classes' ''
@@ -116,6 +119,7 @@ file ../pod/configspec.pod '' 'Derived Widgets' ''
 file ../pod/mega.pod '' 'Derived Widgets' ''
 file ../Tk/Pane.pm '' 'Derived Widgets' ''
 file ../Tk/ProgressBar.pm '' 'Derived Widgets' ''
+file ../TextList/Reindex.pm '' 'Derived Widgets' ''
 endBookmark
 beginBookmark 'C Programming'
 file ../pod/Internals.pod '' 'C Programming' ''
