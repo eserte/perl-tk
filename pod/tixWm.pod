@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Wm - Tix's addition to the standard TK wm command.
+Tk::tixWm - Tix's addition to the standard TK wm command.
 
 =for category  Tix Extensions
 

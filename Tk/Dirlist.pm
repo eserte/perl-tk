@@ -5,9 +5,9 @@ require DirHandle;
 use Cwd;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Dirlist.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Dirlist.pm#5$
 
-@ISA = qw(Tk::Derived Tk::HList);
+use base  qw(Tk::Derived Tk::HList);
 use strict;
 Construct Tk::Widget 'Dirlist';
 

@@ -55,8 +55,6 @@ modify the options described above.
 =head1 SEE ALSO
 
 L<Tk::Image|Tk::Image>
-L<pixmap(1)|pixmap(1)>
-L<Tix(n)|Tix(n)>
 
 =head1 KEYWORDS
 

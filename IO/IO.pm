@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.014'; # $Id: //depot/Tk8/IO/IO.pm#14$
+$VERSION = '3.019'; # $Id: //depot/Tk8/IO/IO.pm#19$
 
 require 5.002;
 require Tk;
@@ -10,7 +10,7 @@ require DynaLoader;
 require Exporter;
 require IO::Handle;
 use Carp;
-@ISA = qw(DynaLoader IO::Handle Exporter);
+use base  qw(DynaLoader IO::Handle Exporter);
 
 bootstrap Tk::IO $Tk::VERSION;
 
@@ -50,14 +50,6 @@ sub configure
   }
 }
 
-sub kill
-{
- my ($fh,$sig) = @_;
- my $pid = $fh->pid;
- croak "No child" unless (defined $pid);
- kill($sig,$pid) || croak "Cannot kill($sig,$pid):$!";
-}
-
 sub killpg
 {
  my ($fh,$sig) = @_;
@@ -66,8 +58,16 @@ sub killpg
  kill($sig,-$pid);
 }
 
-sub readable
+sub kill
 {
+ my ($fh,$sig) = @_;
+ my $pid = $fh->pid;
+ croak "No child" unless (defined $pid);
+ kill($sig,$pid) || croak "Cannot kill($sig,$pid):$!";
+}
+
+sub readable
+{     
  my $fh     = shift;
  my $count  = sysread($fh,${*$fh},1,length(${*$fh}));
  if ($count < 0)
@@ -162,16 +162,18 @@ sub wait
 sub close
 {
  my $fh = shift;
+ my $code;
  if (defined fileno($fh))
   {
    my $w = delete ${*$fh}{_readable};
    $w->fileevent($fh,'readable','') if (defined $w);
-   close($fh);
+   $code = close($fh);
    if (exists ${*$fh}{-childcommand})
     {
      ${*$fh}{-childcommand}->Call($?,$fh);
     }
   }
+ return $code;
 }  
 
 sub PrintArgs
@@ -198,7 +200,6 @@ sub DESTROY
 
 sub PRINT
 {
- &PrintArgs;
  my $h = shift;
  return print $h @_;
 }
@@ -211,14 +212,24 @@ sub PRINTF
 }
 
 sub WRITE
-{
- &PrintArgs;
+{              
+ return syswrite($_[0],$_[1],$_[2]);
 }
 
 sub READLINE
-{
+{       
  my $h = shift;
  return <$h>;
+}
+
+sub READ
+{   
+ return sysread($_[0],$_[1],$_[2],$_[3]);
+}
+
+sub GETC
+{
+ return getc($_[0]);
 }
 
 sub CLOSE
@@ -230,7 +241,7 @@ sub CLOSE
    $h->deleteHandler($mode);
   }
  DeleteFileHandler($fd) if (defined $fd);
- close($h);
+ return $h->close; 
 }
 
 sub imode

@@ -9,6 +9,8 @@
 
 Tk::Widget - Base class of all widgets
 
+=for pm Tk/Widget.pm
+
 =for category Tk Generic Methods
 
 =head1 SYNOPSIS
@@ -20,7 +22,7 @@ Tk::Widget - Base class of all widgets
 
    sub Tk_cmd { \&Tk::whatever }
 
-S<   >I<$widget>-E<gt>I<method>(?I<arg arg ...>?)
+S<   >I<$widget>-E<gt>I<method>(?I<arg, arg, ...>?)
 
 =head1 DESCRIPTION
 
@@ -35,16 +37,16 @@ The legal forms are:
 
 =item I<$widget>-E<gt>B<appname>?(I<newName>)?
 
-If I<newName> isn't specified, this command returns the name
+If I<newName> isn't specified, this method returns the name
 of the application (the name that may be used in B<send>
 commands to communicate with the application).
 If I<newName> is specified, then the name of the application
 is changed to I<newName>.
 If the given name is already in use, then a suffix of the form
 ``B< #2>'' or ``B< #3>'' is appended in order to make the name unique.
-The command's result is the name actually chosen.
+The method's result is the name actually chosen.
 I<newName> should not start with a capital letter.
-This will interfere with option processing, since names starting with
+This will interfere with L<option|Tk::option> processing, since names starting with
 capitals are assumed to be classes;  as a result, Tk may not
 be able to find some options for the application.
 If sends have been disabled by deleting the B<send> command,
@@ -343,6 +345,8 @@ window of the screen, of the
 upper-left corner of I<$widget>'s border (or I<$widget> if it
 has no border).
 
+=item B<scaling>
+
 =item I<$widget>-E<gt>B<scaling>?(I<number>)?
 
 Sets and queries the current scaling factor used by Tk to convert between
@@ -419,7 +423,7 @@ is an integer release number provided by the server.
 
 =item I<$widget>-E<gt>B<toplevel>
 
-Returns the path name of the top-level window containing I<$widget>.
+Returns the reference of the top-level window containing I<$widget>.
 
 =item I<$widget>-E<gt>B<viewable>
 

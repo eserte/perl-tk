@@ -53,7 +53,6 @@ BEGIN
 		Table
 		Tiler
 		TextUndo
-		MsgBox
 		Dialog
 		DialogBox
 		FileSelect

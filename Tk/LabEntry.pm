@@ -7,9 +7,9 @@ package Tk::LabEntry;
 require Tk::Frame;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/LabEntry.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/LabEntry.pm#6$
 
-@ISA = qw(Tk::Frame);
+use base  qw(Tk::Frame);
 
 Construct Tk::Widget 'LabEntry';
 

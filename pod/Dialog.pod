@@ -7,13 +7,15 @@
 
 =head1 NAME
 
-tk_dialog - Create modal dialog and wait for response
+Tk::Dialog - Create modal dialog and wait for response
+
+=for pm Tk/Dialog.pm
 
 =for category Popups and Dialogs
 
 =head1 SYNOPSIS
 
-I<$widget>-E<gt>B<tk_dialog>(title text bitmap default string string ...)
+S<    >I<$widget>-E<gt>B<Dialog>(title text bitmap default string string ...)
 
 =head1 DESCRIPTION
 
@@ -22,7 +24,7 @@ Its arguments describe a dialog box:
 
 =over 4
 
-=item $widget
+=item I<$widget>
 
 Name of top-level window to use for dialog.  Any existing window
 by this name is destroyed.

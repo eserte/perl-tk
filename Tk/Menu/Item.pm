@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#13$
 
 sub PreInit
 {
@@ -80,20 +80,20 @@ sub kind { return 'command' }
 # Now the derived packages 
 
 package Tk::Menu::Separator;
-@Tk::Menu::Separator::ISA = qw(Tk::Menu::Item);
+use base qw(Tk::Menu::Item);
 Construct Tk::Menu 'Separator';
 sub kind { return undef }
 
 package Tk::Menu::Button;
-@Tk::Menu::Button::ISA = qw(Tk::Menu::Item);
+use base qw(Tk::Menu::Item);
 Construct Tk::Menu 'Button';
 
 package Tk::Menu::Command;
-@Tk::Menu::Command::ISA = qw(Tk::Menu::Button);
+use base qw(Tk::Menu::Button);
 Construct Tk::Menu 'Command';
 
 package Tk::Menu::Cascade;
-@Tk::Menu::Cascade::ISA = qw(Tk::Menu::Item);
+use base qw(Tk::Menu::Item);
 Construct Tk::Menu 'Cascade';
 sub kind { return 'cascade' }
 use Carp;
@@ -150,12 +150,12 @@ sub pack
 }
 
 package Tk::Menu::Checkbutton;
-@Tk::Menu::Checkbutton::ISA = qw(Tk::Menu::Item);
+use base qw(Tk::Menu::Item);
 Construct Tk::Menu 'Checkbutton';
 sub kind { return 'checkbutton' }
 
 package Tk::Menu::Radiobutton;
-@Tk::Menu::Radiobutton::ISA = qw(Tk::Menu::Item);
+use base qw(Tk::Menu::Item);
 Construct Tk::Menu 'Radiobutton';
 sub kind { return 'radiobutton' }
 

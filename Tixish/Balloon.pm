@@ -5,14 +5,14 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tixish/Balloon.pm#17$
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tixish/Balloon.pm#18$
 
 use Tk qw(Ev Exists);
 use Carp;
 require Tk::Toplevel;
 
 Tk::Widget->Construct("Balloon");
-@Tk::Balloon::ISA = qw(Tk::Toplevel);
+use base qw(Tk::Toplevel);
 
 use strict;
 

@@ -2,9 +2,9 @@ package Tk::Photo;
 require Tk;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Photo/Photo.pm#7$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Photo/Photo.pm#8$
 
-@ISA = qw(Tk::Image);
+use base  qw(Tk::Image);
 
 Construct Tk::Image 'Photo';
 

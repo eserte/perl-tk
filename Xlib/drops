@@ -20,7 +20,7 @@ sub children
 package Hack;
 use Tk::Xlib;
 require Tk::Button;
-@ISA = qw(Tk::Button);
+use base  qw(Tk::Button);
 
 sub Inquire
 {

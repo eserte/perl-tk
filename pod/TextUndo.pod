@@ -21,12 +21,12 @@ a re'undo' capability.
 
 =head2 Bindings
 
-The C<TextUndo> widget has the same bindings as the L<Text> widget.
-Additionally to the L<Text> widget there are the following bindings:
+The C<TextUndo> widget has the same bindings as the L<Text|Tk::Text> widget.
+In addition there are the following bindings:
 
 =over 4
 
-=item Event <L4>
+=item Event <L4> <<Undo>>
 
 undo the last change.  Pressing <L4> several times undo
 step by step the changes made to the text widget.
@@ -36,7 +36,7 @@ step by step the changes made to the text widget.
 =head2 Methods
 
 The C<TextUndo> widget has the same methods as C<Text> widget.
-Additional method for the C<TextUndo> widget are:
+Additional methods for the C<TextUndo> widget are:
 
 =over 4
 
@@ -68,7 +68,7 @@ widget, text, undo
 
 =head1 SEE ALSO
 
-Tk::Text(3), Tk::ROText(3)
+L<Tk::Text>, L<Tk::ROText>
 
 =cut
 

@@ -17,9 +17,9 @@ package Tk::Menubutton;
 require Tk;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#6$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#12$
 
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Menubutton';
 
@@ -231,7 +231,7 @@ sub Post
     }
    elsif ($dir eq 'right')
     {
-     my $x = $w->rootx - $w->Width;
+     my $x = $w->rootx + $w->Width;
      my $y = int((2*$w->rooty + $w->Height) / 2);
      if ($w->cget("-indicatoron") == 1 && defined($w->cget("-textvariable")))
       {
@@ -318,26 +318,20 @@ sub Motion
 #
 # Arguments:
 # w - The name of the menubutton widget.
-sub ButtonUp
-{
- my $w = shift;                          
- if (defined($Tk::postedMb) &&  $w == $Tk::postedMb &&
-     defined($Tk::inMenubutton) && $w == $Tk::inMenubutton)
-  {
-   my $menu = $Tk::postedMb->cget('-menu');
-   if (defined $menu)
-    {
-     my $tearoff = $Tk::platform eq 'unix' || 
-                   (defined($menu) && $menu->cget('-type') eq 'tearoff');
-     if ($tearoff == 0)
-      {
-       $menu->FirstEntry();
-       return;
-      }
+
+sub ButtonUp {
+    my $w = shift;
+
+    my $menu = $Tk::postedMb->cget(-menu);
+    my $tearoff = $Tk::platform eq 'unix' || (defined($menu) && 
+					      $menu->cget('-type') eq 'tearoff');
+    if (($tearoff != 0) && (defined($Tk::postedMb) && $Tk::postedMb == $w)
+	    && (defined($Tk::inMenubutton) && $Tk::inMenubutton == $w)) {
+	$menu->FirstEntry();
+    } else {
+      Tk::Menu->Unpost(undef);
     }
-  }
- Tk::Menu->Unpost(undef); # fixme
-}
+} # end ButtonUp
 
 # Some convenience methods 
 

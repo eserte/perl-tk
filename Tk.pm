@@ -13,7 +13,7 @@ require 5.004;
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 require Exporter;
-@Tk::ISA = qw(Exporter DynaLoader);
+use base qw(Exporter DynaLoader);
 
 BEGIN { $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix' };
 
@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.007';
+$Tk::VERSION     = '800.008';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -61,6 +61,7 @@ bootstrap Tk $Tk::VERSION;
  no strict 'refs';
  *{'exit'} = \&Exit;
 }
+
 my $boot_time = timeofday();
 
 # This is a workround for Solaris X11 locale handling
@@ -115,6 +116,22 @@ sub __DIE__
  return if $w->_backTrace;
  # Not in an eval - should not happen
 }
+
+sub XEvent::xy { shift->Info('xy') }
+            
+sub XEvent::AUTOLOAD
+{                                             
+ my ($meth) = $XEvent::AUTOLOAD =~ /(\w)$/; 
+ no strict 'refs';
+ *{$XEvent::AUTOLOAD} = sub { shift->Info($meth) };
+ goto &$XEvent::AUTOLOAD;
+}
+
+#foreach my $meth ('xy',split('','abcdfhkmopstvwxyABDEKNRSTWXY#'))
+# {            
+#  no strict 'refs';
+#  *{'XEvent::'.$meth} = sub { shift->Info($meth) };
+# }
 
 sub NoOp  { }
 
@@ -214,11 +231,41 @@ sub fileevent
  goto &Tk::IO::fileevent;
 }
 
-sub messageBox
-{
-    print "in Tk::messageBox, args=@_!\n";
- tk_messageBox(-parent => shift,@_);
-}
+sub messageBox {
+    require Tk::Dialog;
+    my $parent = shift;
+    my $args = {@_};		# list to hash ref
+
+    $args->{-bitmap} = delete $args->{-icon} if defined $args->{-icon};
+    $args->{-text} = delete $args->{-message} if defined $args->{-message};
+    $args->{-type} = 'OK' unless defined $args->{-type};
+    
+    my $type;
+    if (defined($type = delete $args->{-type})) {
+	delete $args->{-type};
+	my @buttons;
+	if ($type eq 'AbortRetryIgnore') {
+	    @buttons = qw/Abort Retry Ignore/;
+	} elsif ($type eq 'OK') {
+	    @buttons = qw/OK/;
+	} elsif ($type eq 'OKCancel') {
+	    @buttons = qw/OK Cancel/;
+	} elsif ($type eq 'RetryCancel') {
+	    @buttons = qw/Retry Cancel/;
+	} elsif ($type eq 'YesNo') {
+	    @buttons = qw/Yes No/;
+	} elsif ($type eq 'YesNoCancel') {
+	    @buttons = qw/Yes No cancel/;
+	}
+	$args->{-buttons} = [@buttons];
+	$args->{-default_button} = delete $args->{-default} if
+	    defined $args->{-default};
+	if (not defined $args->{-default_button} and scalar(@buttons) == 1) {
+	   $args->{-default_button} = $buttons[0]; 
+	}
+	$parent->Dialog(%$args)->Show;
+    }
+} # end messageBox
 
 sub getOpenFile
 {
@@ -238,7 +285,6 @@ sub chooseColor
 sub DialogWrapper
 {
  my ($method,$kind,%args) = @_;
- print "in Tk::DialogWrapper, args=@_!\n";
  my $created = 0;
  my $w = delete $args{'-parent'};
  if (defined $w)
@@ -300,7 +346,9 @@ sub MainLoop
      DoOneEvent(0);
     }
   }
-}
+} 
+
+sub tkinit { return MainWindow->new(@_) }
 
 1;
 
@@ -308,11 +356,6 @@ __END__
 # provide an exit() to be exported if exit occurs
 # before a MainWindow->new()
 sub exit { CORE::exit(@_);}
-
-sub Exists
-{my $w = shift;
- return defined($w) && ref($w) && $w->IsWidget && $w->exists;
-}
 
 sub Error
 {my $w = shift;
@@ -324,11 +367,6 @@ sub Error
   }
  chomp($error);
  warn "Tk::Error: $error\n " . join("\n ",@_)."\n";
-}
-
-sub tkinit
-{
- return MainWindow->new(@_);
 }
 
 sub CancelRepeat
@@ -520,7 +558,7 @@ sub tabFocus
 sub focusFollowsMouse
 {
  my $widget = shift;
- $widget->bind('all',"EnterFocus");
+ $widget->bind('all',"<Enter>","EnterFocus");
 }
 
 # tkTraverseToMenu --

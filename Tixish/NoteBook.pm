@@ -9,10 +9,10 @@ package Tk::NoteBook;
 
 use vars qw($VERSION @ISA);
 
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#12$
 require Tk::NBFrame;
 
-@ISA = qw(Tk::Derived Tk::NBFrame);
+use base  qw(Tk::Derived Tk::NBFrame);
 Tk::Widget->Construct("NoteBook");
 use strict;
 

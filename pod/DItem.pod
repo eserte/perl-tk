@@ -185,6 +185,7 @@ in number of pixels.
 The anchor position on the image to which text part is attached.
 This is a perl/Tk addition. Defaults to B<e> for compatibility with standard
 Tix. The interesting cases are
+
 =over 8
 
 =item B<n>

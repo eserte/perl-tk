@@ -12,9 +12,9 @@ require Tk::Toplevel;
 require Tk::Frame;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#12$
 
-@ISA = qw(Tk::Toplevel Tk::Frame);
+use base  qw(Tk::Toplevel Tk::Frame);
 
 Tk::Widget->Construct("DialogBox");
 

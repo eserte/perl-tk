@@ -1,10 +1,10 @@
 package Tk::Animation;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Animation.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Animation.pm#12$
 
 use Tk::Photo;
-@ISA = qw(Tk::Photo);
+use base  qw(Tk::Photo);
 
 Construct Tk::Widget 'Animation';
 

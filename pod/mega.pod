@@ -151,7 +151,7 @@ Usage:
 
 Defines the options of a mega widget and what actions
 are triggered by configure/cget of an option
-(see L<Tk::configspec> for details).
+(see L<Tk::ConfigSpecs> and L<Tk::Derived> for details).
 
 =head2 Construct
 
@@ -398,7 +398,7 @@ mega, composite, derived, widget
 =head1 SEE ALSO
 
 L<Tk::composite|Tk::composite>
-L<Tk::configspec|Tk::configspec>
+L<Tk::ConfigSpecs|Tk::ConfigSpecs>
 L<Tk::option|Tk::option>
 L<Tk::callbacks|Tk::callbacks>
 L<Tk::bind|Tk::bind>

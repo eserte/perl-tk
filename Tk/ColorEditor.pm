@@ -2,14 +2,14 @@ package Tk::ColorSelect;
 use strict;       
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#16$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#17$
 
 use Tk qw(Ev);
 
 require Tk::Frame;
 
 use vars qw(@ISA); 
-@ISA = qw(Tk::Frame);
+use base  qw(Tk::Frame);
 Construct Tk::Widget 'ColorSelect';
 
 sub Populate
@@ -387,7 +387,7 @@ sub set_scales {
 package Tk::ColorDialog;
 require Tk::Toplevel;
 use vars qw(@ISA);
-@ISA = qw(Tk::Toplevel); 
+use base  qw(Tk::Toplevel); 
 
 Construct Tk::Widget 'ColorDialog';
 
@@ -434,11 +434,11 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE @ISA);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#16$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#17$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
-@ISA = qw(Tk::Toplevel);
+use base  qw(Tk::Toplevel);
 Construct Tk::Widget 'ColorEditor';
 
 %Tk::ColorEditor::names = ();

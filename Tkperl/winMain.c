@@ -51,6 +51,7 @@ extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 int
 main(int argc, char *argv[], char *env[])
 {
+    return (RunPerl(argc, argv, env, NULL));
 }
 
 int APIENTRY
@@ -67,9 +68,6 @@ WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     char text[1024];
 
     lpszCmdLine = GetCommandLine();
-
-    sprintf (text,"%p '%s' %d", hInstance, lpszCmdLine, nCmdShow);
-    MessageBox (NULL, text, "Test", MB_OK);
 
     /*
      * Increase the application queue size from default value of 8.
@@ -153,8 +151,9 @@ WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     GetModuleFileName(NULL, buffer, sizeof(buffer));
     argv[0] = buffer;
 
-    return (RunPerl(argc, argv, _environ, NULL));
+    return (main(argc, argv, _environ));
 }
+
 
 #else /* WIN32 */
 /* Allow UNIX to build 'guiperl' if tried, by faking 

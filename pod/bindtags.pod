@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-bindtags - Determine which bindings apply to a window, and order of evaluation
+Tk::bindtags - Determine which bindings apply to a window, and order of evaluation
 
 =for category Binding Events and Callbacks
 

@@ -7,7 +7,7 @@ package Tk::Checkbutton;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Checkbutton.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Checkbutton.pm#6$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -16,7 +16,7 @@ $VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Checkbutton.pm#5$
 require Tk::Widget;
 require Tk::Button;
 
-@ISA = qw(Tk::Button);
+use base  qw(Tk::Button);
 
 Construct Tk::Widget 'Checkbutton';
 

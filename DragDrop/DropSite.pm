@@ -3,9 +3,9 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#7$
 
-@ISA = qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
+use base  qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 
 Construct Tk::Widget 'DropSite';
 

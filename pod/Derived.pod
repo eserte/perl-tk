@@ -48,7 +48,7 @@ The public methods provided by Tk::Derived are as follows:
 
 =head1 SEE ALSO
 
-L<Tk::configspec|Tk::configspec>
+L<Tk::ConfigSpecs|Tk::ConfigSpecs>
 L<Tk::mega|Tk::mega>
 
 =cut

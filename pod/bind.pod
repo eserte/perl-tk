@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-bind - Arrange for X events to invoke callbacks
+Tk::bind - Arrange for X events to invoke callbacks
 
 =for category Binding Events and Callbacks
 
@@ -503,7 +503,7 @@ as the callback was invoked.
 
 =head1 SEE ALSO
 
-L<Tk::tkerror|Tk::tkerror>
+L<Tk::Error|Tk::Error>
 L<Tk::callbacks|Tk::callbacks>
 L<Tk::bindtags|Tk::bindtags>
 

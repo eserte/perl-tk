@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/MMutil.pm#22$
+$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/MMutil.pm#25$
 
 use Tk::MakeDepend;
 
@@ -227,7 +227,7 @@ sub perldepend
      s/\$\(TKDIR\)/$tk/g;
      warn "Odd:$_" if /\$\(/; 
     } 
-   $str .= Tk::MakeDepend::command_line(@inc,@def,@files);
+   $str .= Tk::MakeDepend::command_line(@inc,@def,@files) unless ($ENV{'TKNOMAKEDEPEND'});
   }
  return $str;
 }

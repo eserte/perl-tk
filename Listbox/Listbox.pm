@@ -13,13 +13,13 @@
 package Tk::Listbox; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Listbox/Listbox.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Listbox/Listbox.pm#13$
 
 use Tk qw(Ev);
 require Tk::Clipboard;
 use AutoLoader;
 
-@ISA = qw(Tk::Clipboard Tk::Widget);
+use base  qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Listbox';
 

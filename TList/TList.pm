@@ -1,11 +1,11 @@
 package Tk::TList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/TList/TList.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/TList/TList.pm#7$
 
 use Tk qw(Ev);
 
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 use strict;
 

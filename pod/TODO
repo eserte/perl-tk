@@ -4,6 +4,70 @@ Achim.
 
 ################## TO DO  ##########################
 
+UserGuild.pod
+=============
+
+section Item creation:  Toplevel exception is a bit ambigious.  
+Before talks about 'visual' inclusion.  (Nevertheless Toplevel
+is a child of the parent widget even is visual not true).
+
+options.pod
+===========
+
+$var=$w->configure(-option) is not documented. But there's a
+bug?  Tk::configure and Tk::Derived::configure don't do the
+same, return value and optionname, repectively.
+
+Menuoptions
+===========
+
+	Check args to -command callback. Doc by N.W. as
+	first -textvariablethem -variable 11.25. IMO should
+	be -variable first.  Check!
+
+options.pod:
+
+-takefocus:  Tclish callback describtion.  (uh! Try if this works
+same in perl/tk)
+
+CmdLine:
+
+o09(0) ~/perl > perl -le 'use Tk; MainWindow->new();print @ARGV;MainLoop' -- -a b -bg green -- -c d
+-ab-bggreen---cd
+o09(0) ~/perl >
+
+I think CmdLine should not stop argument processing as soon as
+an unknown unknown switch is found.
+
+Should be fixed and documented.  Also mention priority that the cmd line
+switches have compared to -option name class and resource priority.
+
+Name option:
+===========
+Theo Petersen <theo@acsp.com>:
+Aha, the Name option does this.  I found it while searching docs for
+anything that looked like it assigned a widget's name.  Oddly enough, I
+found it in Tk::Pane's docs (thanks Graham) but not in any generic
+documentation.  Have I missed it in some obvious place?  It's not
+documentend in the Widget or options pod, where standard options are
+listed (perhaps because it wasn't inherited from Tcl).
+
+..Theo
+
+Dialog:
+=======
+
+Docs still very tclish. (Mhmm Dialog should be derived from
+DialogBox and then documented this way).
+
+Menu:
+=====
+
+Check B<tearOffCommand> option.  Still tclish.
+How is it implemented in perl/Tk.
+
+Ditto desc in SPECIAL MENUS IN MENUBARS
+
 Toplevel:
 =========
 
@@ -417,6 +481,7 @@ o windowCreate -create requires pathname as
 
 o windowNames return path of emb. widgets.  So IMO there's a
   windowObjects|Refs missing returning the ref to the widgets
+  (windowSlaves  like in packSlaves, gridSlaves ??)
 
 o Missing (intentional?) Tk::submethods
 
@@ -426,6 +491,9 @@ o Missing (intentional?) Tk::submethods
 
 o sub Tag; and sub Tags; predeclared.  Isn't this be done
   by autosplit.ix and AutoLoader ?
+
+o search and regexp, check if perl or tcl regexp are used
+	and document it.
 
 TList:
 ======

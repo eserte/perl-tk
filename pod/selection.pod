@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-Selection - Manipulate the X selection
+Tk::Selection - Manipulate the X selection
 
 =for category User Interaction
 

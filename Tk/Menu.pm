@@ -20,11 +20,11 @@ require Tk::Derived;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Menu.pm#18$
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Menu.pm#20$
 
 use strict;
 
-@ISA = qw(Tk::Wm Tk::Derived Tk::Widget);
+use base  qw(Tk::Wm Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Menu';
 
@@ -547,7 +547,7 @@ sub Escape
   }
  else
   {
-   $menu->NextEntry(-1)
+   $menu->NextMenu(-1)
   }
 }
 # LeftRight --

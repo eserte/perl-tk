@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/DirTree.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/DirTree.pm#12$
 
 use Tk;
 use Tk::Derived;
@@ -14,7 +14,7 @@ use Tk::Tree;
 use Cwd;
 use DirHandle;
 
-@ISA = qw(Tk::Derived Tk::Tree);
+use base  qw(Tk::Derived Tk::Tree);
 use strict;
 
 Construct Tk::Widget 'DirTree';

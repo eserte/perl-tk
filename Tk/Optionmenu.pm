@@ -6,9 +6,9 @@ require Tk::Menubutton;
 require Tk::Menu;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#14$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#15$
 
-@ISA = qw(Tk::Derived Tk::Menubutton);
+use base  qw(Tk::Derived Tk::Menubutton);
 
 use strict;
 

@@ -15,9 +15,9 @@ require Tk;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Scale/Scale.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Scale/Scale.pm#6$
 
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Scale';
 

@@ -1,7 +1,7 @@
 
 =head1 NAME
 
-FileSelect - a widget for choosing files
+Tk::FileSelect - a widget for choosing files
 
 =for pm Tk/FileSelect.pm
 

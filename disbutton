@@ -3,7 +3,7 @@
 package StickyButton;
 require Tk::Widget;
 require Tk::Button;
-@ISA = qw(Tk::Button);
+use base  qw(Tk::Button);
 Construct Tk::Widget 'StickyButton';
 
 sub invoke

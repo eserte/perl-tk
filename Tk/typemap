@@ -16,6 +16,7 @@ Tk_3DBorder		T_PTROBJ
 Tk_Uid			T_TK_UID
 Tcl_Interp *		T_TK_INTERP
 Tk_Font			T_TK_FONT
+EventAndKeySym *	T_TK_XEVENT
 
 INPUT 
 T_PVOBJ
@@ -30,6 +31,9 @@ T_PVOBJ
 
 T_TK_WINDOW
 	$var = SVtoWindow($arg)
+
+T_TK_XEVENT
+	$var = SVtoEventAndKeySym($arg)
 
 T_TK_FONT
 	$var = SVtoFont($arg)

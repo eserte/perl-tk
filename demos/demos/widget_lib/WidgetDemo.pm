@@ -4,12 +4,12 @@ use 5.004;
 use Carp;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.015'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#15$
+$VERSION = '3.016'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#16$
 
 use Tk;
 use Tk::Toplevel;
 use strict;
-@ISA = 'Tk::Toplevel';
+use base  'Tk::Toplevel';
 Construct Tk::Widget 'WidgetDemo';
 
 # %WIDGDEMO is a class global that tracks all WidgetDemo composite widgets,

@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-Tk_GetPixels, Tk_GetScreenMM - translate between strings and screen units
+Tk::pTk::GetPixels, Tk::pTk::GetScreenMM - translate between strings and screen units
 
 =for category C Programming
 

@@ -51,14 +51,6 @@
 /* #define DEBUG_REFCNT /* */
 
 
-typedef struct EventAndKeySym
- {XEvent event;
-  KeySym keySym;
-  Tcl_Interp  *interp;
-  Tk_Window   tkwin;
-  SV    *window;
- } EventAndKeySym;
-
 typedef struct
 {
  Tcl_VarTraceProc *proc;
@@ -104,8 +96,6 @@ static XSdec(XStoBind);
 static XSdec(XStoEvent);
 static XSdec(BindClientMessage);
 static XSdec(CallbackCall);
-static XSdec(FreeAbstract);
-static XSdec(XEventInfo);
 static XSdec(PassEvent);
 extern XSdec(XS_Tk_DoWhenIdle);
 extern XSdec(XS_Tk_CreateGenericHandler);
@@ -124,7 +114,6 @@ static AV *ResultAv _((Tcl_Interp *interp, char *who, int create));
 static SV *Blessed _((char *package, SV * sv));
 static int PushCallbackArgs _((Tcl_Interp *interp, SV **svp,EventAndKeySym *obj));
 static int Check_Eval _((Tcl_Interp *interp));
-static SV *EventToSv _((I32 ix,EventAndKeySym *obj));
 static I32 Perl_Trace _((IV ix, SV * sv));
 static I32 LinkIntSet _((IV ix, SV * sv));
 static I32 LinkIntVal _((IV ix, SV * sv));
@@ -156,7 +145,6 @@ static int SelGetProc _((ClientData clientData,
 static void Perl_GeomRequest _((ClientData clientData,Tk_Window tkwin));
 static void Perl_GeomLostSlave _((ClientData clientData, Tk_Window tkwin));
 static void StackFree _((int argc,Arg *argv));
-static EventAndKeySym *SVtoEventAndKeySym _((SV *arg));
 
 Tcl_CmdProc *LangOptionCommand = Tk_OptionCmd;
 
@@ -3572,7 +3560,7 @@ EventAndKeySym *obj;
              char *s = SvPV(what,len);
              if (len == 1)
               {
-               arg = EventToSv((I32) *s,obj);
+               arg = XEvent_Info(obj, s);
               }
              else
               {char *x;
@@ -3583,7 +3571,7 @@ EventAndKeySym *obj;
                  if (x > s)
                   sv_catpvn(arg,s,(unsigned) (x-s));
                  if (*++x)
-                  {SV *f = EventToSv((I32) *x++,obj);
+                  {SV *f = XEvent_Info(obj, x++);
                    STRLEN len;
                    char *p = SvPV(f,len);
                    sv_catpvn(arg,p,len);
@@ -4375,8 +4363,6 @@ XEvent *eventPtr;
  return code;
 }
 
-
-
 static void
 Perl_GeomRequest(clientData,tkwin)
 ClientData clientData;
@@ -4397,8 +4383,6 @@ Tk_Window tkwin;
  FREETMPS;
  LEAVE;
 }
-
-
 
 static void
 Perl_GeomLostSlave(clientData,tkwin)
@@ -4539,16 +4523,17 @@ XS(XS_Tk_CreateGenericHandler)
 }
 
 
-static SV *
-EventToSv(ix,obj)
-I32 ix;
+SV *
+XEvent_Info(obj,s)
 EventAndKeySym *obj;
+char *s;
 {
  SV *eventSv = sv_newmortal();
- char scratch[81];
+ I32 ix = (I32) *s;
+ char scratch[256];
  if (obj)
   {
-   if (ix == '@')
+   if (ix == '@' || strncmp(s,"xy",2) == 0)
     {
      char result[80];
      strcpy(result, "@");
@@ -4608,7 +4593,7 @@ EventAndKeySym *obj;
  return eventSv;
 }
 
-static EventAndKeySym *
+EventAndKeySym *
 SVtoEventAndKeySym(arg)
 SV *arg;
 {
@@ -4645,7 +4630,7 @@ XS(PassEvent)
 }
 
 
-static
+#if 0
 XS(XEventInfo)
 {
  dXSARGS;
@@ -4653,16 +4638,12 @@ XS(XEventInfo)
  EventAndKeySym *obj;
  if (items != 1)
   croak("Usage: $event->key");
- ST(0) = EventToSv(ix,SVtoEventAndKeySym(ST(0)));
+ ST(0) = XEvent_Info(SVtoEventAndKeySym(ST(0)),ix);
  XSRETURN(1);
 }
 
-static
-XS(FreeAbstract)
-{
- dXSARGS;
- XSRETURN_UNDEF;
-}
+#endif
+
 
 void
 Tk_ChangeScreen(interp, dispName, screenIndex)
@@ -4984,6 +4965,8 @@ Tcl_CmdInfo *infoPtr;
  return TCL_OK;
 }
 
+static int initialized = 0;                        
+
 #define MkXSUB(str,name,xs,proc)                  \
 extern XSdec(name);                               \
 XS(name)                                          \
@@ -5025,28 +5008,54 @@ size_t size;
   }
 }
 
+
+XS(XS_Tk_INIT)
+{
+ /* Called by Boot_Glue below, re-called in 5.004_50+ at start of run phase. 
+  * If we have been "Compiled" then module this code is defined in
+  * will have been re-linked, so the 'static' above will be 0 again
+  * which will cause us to re-set vtables with addresses where 
+  * we happen to be loaded now, as opposed to where we were loaded
+  * at compile time.
+  */  
+ dXSARGS;
+ if (!initialized)
+  {
+   install_vtab("TkVtab",TkVGet(),sizeof(TkVtab));
+   install_vtab("TkintVtab",TkintVGet(),sizeof(TkintVtab));
+   install_vtab("LangVtab",LangVGet(),sizeof(LangVtab));
+   install_vtab("TkglueVtab",TkglueVGet(),sizeof(TkglueVtab));
+   install_vtab("XlibVtab",XlibVGet(),sizeof(XlibVtab));
+   install_vtab("TkoptionVtab",TkoptionVGet(),sizeof(TkoptionVtab));
+#ifdef WIN32
+   install_vtab("TkwinVtab",TkwinVGet(),sizeof(TkwinVtab));
+   install_vtab("TkwinintVtab",TkwinintVGet(),sizeof(TkwinintVtab));
+#endif
+   Boot_Tix();
+  }
+ initialized++;
+ XSRETURN_EMPTY;
+}
+
 void
 Boot_Glue
 _((void))
-{
+{        
+ dSP;
  /* A wonder how you call $e-># ? */
  char *XEventMethods = "abcdfhkmopstvwxyABDEKNRSTWXY#";
  char buf[128];
  CV *cv;
 
- install_vtab("TkVtab",TkVGet(),sizeof(TkVtab));
- install_vtab("TkintVtab",TkintVGet(),sizeof(TkintVtab));
- install_vtab("LangVtab",LangVGet(),sizeof(LangVtab));
- install_vtab("TkglueVtab",TkglueVGet(),sizeof(TkglueVtab));
- install_vtab("XlibVtab",XlibVGet(),sizeof(XlibVtab));
- install_vtab("TkoptionVtab",TkoptionVGet(),sizeof(TkoptionVtab));
-#ifdef WIN32
- install_vtab("TkwinVtab",TkwinVGet(),sizeof(TkwinVtab));
- install_vtab("TkwinintVtab",TkwinintVGet(),sizeof(TkwinintVtab));
-#endif
+ /* Arrange to call initialization code - an XSUB called INIT */
+ cv = newXS("Tk::INIT", XS_Tk_INIT, __FILE__);
+ PUSHMARK(sp);
+ PUTBACK;
+ XS_Tk_INIT(cv);
+ SPAGAIN;
 
- Boot_Tix();
-
+#if 0
+ 
  while (*XEventMethods)
   {
    strcpy(buf, "XEvent::@");
@@ -5056,9 +5065,10 @@ _((void))
    CvXSUBANY(cv).any_i32 = (I32) buf[8];
   }
  strcpy(buf + 8, "xy");
- cv = newXS(buf, XEventInfo, __FILE__);
+ cv = newXS(buf, XS_XEvent_Info, __FILE__);
  CvXSUBANY(cv).any_i32 = (I32) '@';
- newXS("XEvent::DESTROY", FreeAbstract, __FILE__);
+
+#endif
 
 #ifdef VERSION
  sprintf(buf, "%s::VERSION", BASEEXT);
@@ -5081,6 +5091,7 @@ _((void))
 
  newXS("Tk::DoWhenIdle", XS_Tk_DoWhenIdle, __FILE__);
  newXS("Tk::CreateGenericHandler", XS_Tk_CreateGenericHandler, __FILE__);
+
 
  sprintf(buf, "%s::Widget::%s", BASEEXT, "ManageGeometry");
  cv = newXS(buf, ManageGeometry, __FILE__);

@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-image - Create and manipulate images
+Tk::Image - Create and manipulate images
 
 =for category  Tk Image Classes
 
@@ -115,7 +115,7 @@ B<Pixmap> is derived from Tix. See L<Tk::Pixmap> for more information.
 
 Displays a variety of full-color images, using dithering to
 approximate colors on displays with limited color capabilities.
-See L<Tk::photo> documentation for more information.
+See L<Tk::Photo> documentation for more information.
 
 =back
 

@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-options - Standard options supported by widgets
+Tk::options - Standard options supported by widgets
 
 =for category Creating and Configuring Widgets
 
@@ -29,7 +29,7 @@ and B<cget>. The behaviour of these methods is as follows:
 
 =over 4
 
-=item I<$widget>-E<gt>B<configure>(-I<option> =E<gt> I<value >?,I<option> =E<gt> I<value ...>?);
+=item <$widget>-E<gt>B<configure>(-I<option> =E<gt> I<value >?,I<option> =E<gt> I<value ...>?);
 
 Sets the values of -I<option> to I<value> for each -I<option> =E<gt> I<value>
 pair. The internal B<new> method does an implicit B<configure> in this
@@ -301,7 +301,7 @@ If the value is zero, no focus highlight is drawn around the widget.
 =item Switch:	B<-image>
 
 Specifies an image to display in the widget, which must have been
-created with an image create. (See L<Tk::image> for details of image creation.)
+created with an image create. (See L<Tk::Image> for details of image creation.)
 Typically, if the B<image> option is specified then it overrides other
 options that specify a bitmap or textual value to display in the widget;
 the B<image> option may be reset to an empty string to re-enable
@@ -655,7 +655,8 @@ on how this option is used.
 =head1 SEE ALSO
 
 L<Tk::callbacks|Tk::callbacks>
-L<Tk::configspec|Tk::configspec>
+L<Tk::ConfigSpecs|Tk::ConfigSpecs>
+L<Tk::Derived|Tk::Derived>
 L<Tk_GetPixels|Tk::pTk::GetPixels>
 
 =head1 KEYWORDS

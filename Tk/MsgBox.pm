@@ -9,11 +9,11 @@ package Tk::MsgBox;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/MsgBox.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/MsgBox.pm#5$
 
 use Tk::Dialog;
 use vars qw(@ISA);
-@ISA = 'Tk::Dialog';
+use base  'Tk::Dialog';
 Construct Tk::Widget 'MsgBox';
 
 sub Populate {

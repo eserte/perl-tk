@@ -46,6 +46,7 @@ pod/html$
 \bToDo/
 \bObsolete/
 \b(GNU)?[Mm]akefile(\.aperl)?$
+\bperlmain\.c$
 \btkperl\b
 \bHTML/doc\b
 pod/tkman.ps$

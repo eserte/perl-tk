@@ -1,10 +1,10 @@
 package Tk::ItemStyle;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.001'; # $Id: //depot/Tk8/Tk/ItemStyle.pm#1$
+$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/ItemStyle.pm#2$
 
 require Tk;
-@ISA = qw(Tk);
+use base  qw(Tk);
 require Tk::Widget;
 Construct Tk::Widget 'ItemStyle';
 

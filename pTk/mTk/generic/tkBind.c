@@ -2655,8 +2655,10 @@ char *numStorage;
 	    case 's':
 		if (flags & (KEY_BUTTON_MOTION_VIRTUAL)) {
 		    number = eventPtr->xkey.state;
+		    goto doState;
 		} else if (flags & CROSSING) {
 		    number = eventPtr->xcrossing.state;
+		    goto doState;
 		} else if (flags & VISIBILITY) {
 		    string = TkFindStateString(visNotify,
 			    eventPtr->xvisibility.state);
@@ -2856,6 +2858,35 @@ char *numStorage;
            *type = TK_EVENTTYPE_DATA;
           goto returnNum;
 
+        doState:
+         {
+          TkDisplay *dispPtr = ((TkWindow *) tkwin)->dispPtr;
+          ModInfo *modPtr = modArray;
+          int mods = number;
+          *type = TK_EVENTTYPE_NUMBER;
+          string = numStorage;
+          *string = '\0';
+          if (dispPtr->metaModMask && mods & dispPtr->metaModMask)
+           {
+            strcat(string,"Meta-");
+            mods &= ~dispPtr->metaModMask;
+           }
+          if (dispPtr->altModMask && mods & dispPtr->altModMask)
+           {
+            strcat(string,"Alt-");
+            mods &= ~dispPtr->altModMask;
+           }
+          while (mods != 0 && modPtr->name)
+           {
+            if (mods & modPtr->mask)
+             {
+              strcat(string,modPtr->name);
+              strcat(string,"-");
+              mods &= ~modPtr->mask;
+             }
+            modPtr++;
+           }
+         }
         doBoth: 
          if (type)
           *type = TK_EVENTTYPE_STRING;

@@ -142,9 +142,10 @@ sub keys
       sub { my $w = shift;
             my $e = $w->XEvent;
             # print "Key(",join(',',@_),")\n";
+            my $s = $e->s();
             my $K = $e->K();
             my $A = $e->A();
-            print "press $K $A\n" 
+            print "press $s$K $A\n" 
           });
  $w->pack();
  return $w;

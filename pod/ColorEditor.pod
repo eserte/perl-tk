@@ -1,8 +1,7 @@
 
 =head1 NAME
 
-ColorEditor - a general purpose Tk widget Color Editor (based on tcolor.tcl
-from the Tcl/Tk distribution).
+Tk::ColorEditor - a general purpose Tk widget Color Editor 
 
 =for pm Tk/ColorEditor.pm
 

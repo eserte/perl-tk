@@ -25,13 +25,21 @@ results for both Tk and (say) Motif applications.
 
 =head1 BUGS
 
-Currently C<optionAdd('key' => 'value' [, priority])> ignores optional
+Currently B<optionAdd>(I<key> =E<gt> I<value>?, I<priority>?) ignores optional
 priority completely and just does XrmPutStringResource().
 Perhaps it should be more subtle and do XrmMergeDatabases() or
 XrmCombineDatabase().
 
 This version is a little slower than Tk's re-invention but there is
 more optimization that can be done.
+
+=head1 SEE ALSO
+
+L<Tk::option|Tk::option>
+
+=head1 KEYWORDS
+
+database, option, priority, retrieve
 
 =cut
 

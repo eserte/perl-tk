@@ -1,11 +1,4 @@
 #!/perl -w
-# Tix Demostration Program
-#
-# This sample program is structured in such a way so that it can be
-# executed from the Tix demo program "widget": it must have a
-# procedure called "RunSample". It should also have the "if" statment
-# at the end of this file so that it can be run as a standalone
-# program using tixwish.
 
 # A very simple demonstration of the tixGrid widget
 
@@ -15,12 +8,12 @@ use Tk ();
 use Tk::TixGrid;
 
 my $hadMW = 0;
-$hadMW= 1 unless (Tk::Exists($mw));
+$hadMW= 1 if defined $mw; #(Tk::Exists($mw));
 
-$mw = Tk::MainWindow->new();# unless $hadMW;
+$mw = Tk::MainWindow->new() unless $hadMW;
+$mw->optionAdd('*selectBackground' => 'lightblue');
 MakeGrid($mw);
-Tk::MainLoop;# unless $hadMW;
-
+Tk::MainLoop unless $hadMW;
 
 # This command is called whenever the background of the grid needs to
 # be reformatted. The x1, y1, x2, y2 specifies the four corners of the area
@@ -32,13 +25,10 @@ Tk::MainLoop;# unless $hadMW;
 #  s-margin:	the overlap area of the x- and y-margins
 #  main:	The rest
 #
-#proc SimpleFormat {w area x1 y1 x2 y2} {
-
 
 sub SimpleFormat
   {
     my ($w, $area, @entbox) = @_;
-{local $,="|"; print "Fme:", @_,"\n";};
     my %bg = (
 	's-margin' => 'gray65',
 	'x-margin' => 'gray65',
@@ -50,8 +40,8 @@ sub SimpleFormat
       {
 	# The "grid" format is consecutive boxes without 3d borders
 	#
-	#$w->formatGrid(@entbox[1,4], -bordercolor=>$bg{$area},
-	$w->format('grid', @entbox[1,4], -bordercolor=>$bg{$area},
+	#$w->formatGrid(@entbox, -bordercolor=>$bg{$area},
+	$w->format('grid', @entbox, -bordercolor=>$bg{$area},
 		qw( -relief raised -bd 1
 	 	    -filled 0 -bg red
 		    -xon 1 -yon 1 -xoff 0 -yoff 0 -anchor se
@@ -61,48 +51,20 @@ sub SimpleFormat
       {
 	# border specifies consecutive 3d borders
 	#
-	#$w->formatBorder(@entbox[1,4],  -bg=>$bg{$area},
-	$w->format('border', @entbox[1,4],  -bg=>$bg{$area},
+	#$w->formatBorder(@entbox,  -bg=>$bg{$area},
+	$w->format('border', @entbox,  -bg=>$bg{$area},
 		qw( -fill 1 -relief raised -bd 1
 		    -selectbackground gray80
 		  ) );
       }
   }
 
-# Print a number in $ format
-#
-#
-#proc Dollar {s} {
-
-sub Dollar { return shift()."DM"   }
-
-#    set n [string len $s]
-#    set start [expr $n % 3]
-#    if {$start == 0} {
-#	set start 3
-#    }
-#
-#    set str ""
-#    for {set i 0} {$i < $n} {incr i} {
-#	if {$start == 0} {
-#	    append str ","
-#	    set start 3
-#	}
-#	incr start -1
-#	append str [string index $s $i]
-#    }
-#    return $str
-#}
-
-#proc MakeGrid {w} {
-    # Create the grid
-    #
-
 sub MakeGrid
   {
     my ($w) = @_;
 
-    $g = $w->TixGrid(qw(-bd 0));
+    #$g = $w->TixGrid(qw(-bd 0));
+    $g = $w->Scrolled('TixGrid', -bd=>0);
 
     $g->pack(qw/-expand yes -fill both -padx 3 -pady 3/);
 
@@ -123,13 +85,14 @@ sub MakeGrid
     $g->size(qw/col default -size 5char/);
     $g->size(qw/row default -size 1.1char -pad0 3/);
 
-    for my $x (0..10)
+    for my $x (0..9)
       {
-	for my $y (0..10)
+	for my $y (0..9)
           {
 	    $g->set($x,$y, -itemtype=>'text', -text=>"($x,$y)" );
 	  }
       }
+    $g->configure(-selectunit=>(shift @ARGV)) if @ARGV and $ARGV[0] =~/^(?:row|column|cell)/;
   }
 
 1;

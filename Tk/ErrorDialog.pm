@@ -1,12 +1,12 @@
 package Tk::ErrorDialog;
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#6$
 
 use English;
 use Tk ();
 require Tk::Dialog;
-@Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
+use base qw(Tk::Toplevel);
 
 
 # ErrorDialog - a translation of `tkerror' from Tcl/Tk to TkPerl.

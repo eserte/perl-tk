@@ -1007,7 +1007,7 @@ the ones listed in L<"EMBEDDED IMAGES">.
 Query or modify the configuration options for an embedded image.
 If no I<option> is specified, returns a list describing all of
 the available options for the embedded image at I<index>
-(see L<Tk::configure> for information on the format of this list).
+(see L<Tk::options> for information on the format of this list).
 If I<option> is specified with no I<value>, then the command
 returns a list describing the one named option (this list will be
 identical to the corresponding sublist of the value returned if no
@@ -1337,7 +1337,7 @@ that it modifies options associated with the tag given by I<tagName>
 instead of modifying options for the overall text widget.
 If no I<option> is specified, the command returns a list describing
 all of the available options for I<tagName>
-(see L<Tk::configure> for information on the format of this list).
+(see L<Tk::options> for information on the format of this list).
 If I<option> is specified with no I<value>, then the command returns
 a list describing the one named option (this list will be identical to
 the corresponding sublist of the value returned if no I<option>
@@ -1468,7 +1468,7 @@ the ones listed in L<"EMBEDDED WINDOWS"> above.
 Query or modify the configuration options for an embedded window.
 If no I<option> is specified, returns a list describing all of
 the available options for the embedded window at I<index>
-(see L<Tk::configure> for information on the format of this list).
+(see L<Tk::options> for information on the format of this list).
 If I<option> is specified with no I<value>, then the command
 returns a list describing the one named option (this list will be
 identical to the corresponding sublist of the value returned if no

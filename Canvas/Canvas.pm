@@ -1,11 +1,11 @@
 package Tk::Canvas; 
 require Tk;
-@Tk::Canvas::ISA = qw(Tk::Widget); 
+use base qw(Tk::Widget); 
 Construct Tk::Widget 'Canvas';
 
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Canvas/Canvas.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Canvas/Canvas.pm#5$
 
 bootstrap Tk::Canvas $Tk::VERSION;
 

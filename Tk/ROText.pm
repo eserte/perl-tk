@@ -6,9 +6,9 @@ package Tk::ROText;
 require Tk::Text;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/ROText.pm#14$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/ROText.pm#15$
 
-@ISA = qw(Tk::Text);
+use base  qw(Tk::Text);
 Construct Tk::Widget 'ROText';
 
 sub clipEvents

@@ -8,13 +8,13 @@ use AutoLoader;
 use strict qw(vars);
 use Carp;
 
-@Tk::Frame::ISA = qw(Tk::Derived Tk::Widget);
+use base qw(Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Frame.pm#13$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Frame.pm#14$
 
 sub Menubar;
 

@@ -7,11 +7,10 @@ package Tk::Image;
 # provides a base class for them to inherit from.
 require DynaLoader;
 
-@Tk::Image::ISA = qw(DynaLoader Tk); # but are they ?
-
+use base qw(DynaLoader Tk); # but are they ?
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Image.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Image.pm#5$
 
 sub new
 {

@@ -1,12 +1,12 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/FileSelect.pm#20$
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/FileSelect.pm#21$
 
 use Tk qw(Ev);
 use strict;
 use Carp;
-@Tk::FileSelect::ISA = qw(Tk::Toplevel);
+use base qw(Tk::Toplevel);
 
 Construct Tk::Widget 'FileSelect';
 
