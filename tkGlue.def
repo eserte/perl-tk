@@ -4,6 +4,12 @@
 #define XSdec(x) void x()
 #endif
 
+#define TKXSRETURN(off)					\
+    STMT_START {					\
+	IV ptkAdj = (off);				\
+	XSRETURN(ptkAdj);				\
+    } STMT_END
+
 #ifndef PATCHLEVEL
 #include <patchlevel.h>
 #endif

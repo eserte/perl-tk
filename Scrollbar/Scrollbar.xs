@@ -30,7 +30,7 @@ void
 scrollbar(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tk_ScrollbarCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,1,Tk_ScrollbarCmd,items,&ST(0)));
  }
 
 BOOT:

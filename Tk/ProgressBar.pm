@@ -1,10 +1,11 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/ProgressBar.pm#9 $
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk;
 use Tk::Canvas;
+use Tk::Trace;
 use Carp;
 use strict;
 
@@ -296,27 +297,27 @@ sub value {
 
 sub variable {
     my $c = shift;
-    my $val = \$c->{'-variable'};
-    my $old = $$val;
+    my $oldvarref = $c->{'-variable'};
+    my $oldval = $$oldvarref if $oldvarref;
     if(@_) {
-	my $value = shift;
-        if (ref $old)
+	my $varref = shift;
+        if ($oldvarref)
          {
-          $c->{'-value'} = $$old;
-          untie $$old if tied($$old);
+	  $c->traceVdelete($oldvarref);
          }
-        tie $$value,'Tk::Configure',$c,'-value';
-	$$val = $value;
+	$c->{'-variable'} = $varref;
+	$c->traceVariable($varref, 'w', sub { $c->value($_[1]) });
+	$$varref = $oldval;
 	_layoutRequest($c,2);
     }
-    $old;
+    $oldval;
 }
 
 sub Destroyed
 {
  my $c = shift;
  my $var = delete $c->{'-variable'};
- untie $$var if (defined($var) && ref($var))
+ $c->traceVdelete($var);
 }
 
 1;

@@ -27,7 +27,7 @@ void
 listbox(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,0,Tk_ListboxObjCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,0,Tk_ListboxObjCmd,items,&ST(0)));
  }
 
 BOOT:

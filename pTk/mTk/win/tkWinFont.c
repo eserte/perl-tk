@@ -398,7 +398,7 @@ TkpGetFontFromAttributes(
     found:
     ReleaseDC(hwnd, hdc);
 
-    hFont = GetScreenFont(faPtr, faceName, TkFontGetPixels(tkwin, faPtr->size));
+    hFont = GetScreenFont(faPtr, faceName, TkFontGetPixels(Tk_Screen(tkwin), faPtr->size));
     if (tkFontPtr == NULL) {
 	fontPtr = (WinFont *) ckalloc(sizeof(WinFont));
     } else {
@@ -1097,7 +1097,7 @@ InitFont(
     faPtr		= &fontPtr->font.fa;
     faPtr->family	= Tk_GetUid(Tcl_DStringValue(&faceString));
 #if 0
-    faPtr->size		= TkFontGetPoints(tkwin, -(tm.tmHeight - tm.tmInternalLeading));
+    faPtr->size		= TkFontGetPoints(Tk_Screen(tkwin), -(tm.tmHeight - tm.tmInternalLeading));
 #else
     faPtr->size		= -(tm.tmHeight - tm.tmInternalLeading);
 #endif

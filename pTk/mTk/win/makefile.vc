@@ -51,7 +51,7 @@ the environment.  Jump to this line to read the new instructions.
 #	clean    -- removes the contents of $(TMP_DIR)
 #	hose     -- removes the contents of $(TMP_DIR) and $(OUT_DIR)
 #	genstubs -- rebuilds the Stubs table and support files (dev only).
-#	depend   -- Generates an accurate set of source dependancies for this
+#	depend   -- Generates an accurate set of source dependencies for this
 #		    makefile.  Helpful to avoid problems when the sources are
 #		    refreshed and you rebuild, but can "overbuild" when common
 #		    headers like tkInt.h just get small changes.

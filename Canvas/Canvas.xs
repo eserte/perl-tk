@@ -28,7 +28,7 @@ void
 canvas(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tk_CanvasObjCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,1,Tk_CanvasObjCmd,items,&ST(0)));
  }
 
 

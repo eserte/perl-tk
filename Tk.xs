@@ -461,7 +461,7 @@ SV *	name;
 CODE:
  {
   Lang_CmdInfo *info = WindowCommand(widget, NULL, 1);
-  XSRETURN(Call_Tk(info, items, &ST(0)));
+  TKXSRETURN(Call_Tk(info, items, &ST(0)));
  }
 
 void

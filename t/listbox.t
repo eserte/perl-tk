@@ -21,6 +21,10 @@ use Tk;
 use Tk::Config ();
 my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
+use FindBin;
+use lib "$FindBin::RealBin";
+use TkTest;
+
 BEGIN {
     $Listbox = "Listbox";
     #$Listbox = "TextList";
@@ -40,16 +44,13 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 427, todo => [79,82,83,85..87, 89..91,
-                                    176, 264, 269,271,273,
-                                    265, 266, 275,277,291..294,
-                                    326..329, 333, 338] }
+BEGIN { plan tests => 427 , todo => [264 .. 266] }
 
 my $partial_top;
 my $partial_lb;
 
 my $mw = new MainWindow;
-$mw->geometry('');
+$mw->geometry('+10+10');
 $mw->raise;
 my $fixed = $Xft ? '{Adobe Courier} -12' : 'Courier -12';
 ok(Tk::Exists($mw), 1);
@@ -65,6 +66,48 @@ my $lb = $mw->$Listbox->pack;
 ok(Tk::Exists($lb), 1);
 ok($lb->isa("Tk::$Listbox"), 1);
 $lb->update;
+
+my $skip_font_test;
+if (!$Xft) { # XXX Is this condition necessary?
+    my %fa = $mw->fontActual($lb->cget(-font));
+    my %expected = (
+		    "-weight" => "bold",
+		    "-underline" => 0,
+		    "-family" => "helvetica",
+		    "-slant" => "roman",
+		    "-size" => -12,
+		    "-overstrike" => 0,
+		   );
+    while(my($k,$v) = each %expected) {
+	if ($v ne $fa{$k}) {
+	    $skip_font_test = "font-related tests";
+	    last;
+	}
+    }
+}
+
+my $skip_fixed_font_test;
+{
+    my $fixed_lb = $mw->$Listbox(-font => $fixed);
+    if (!$Xft) { # XXX Is this condition necessary?
+	my %fa = $mw->fontActual($fixed_lb->cget(-font));
+	my %expected = (
+			"-weight" => "normal",
+			"-underline" => 0,
+			"-family" => "courier",
+			"-slant" => "roman",
+			"-size" => -12,
+			"-overstrike" => 0,
+		       );
+	while(my($k,$v) = each %expected) {
+	    if ($v ne $fa{$k}) {
+		$skip_fixed_font_test = "font-related tests (fixed font)";
+		last;
+	    }
+	}
+	$fixed_lb->destroy;
+    }
+}
 
 resetGridInfo();
 
@@ -217,21 +260,21 @@ ok($@, '', "wrong error message");
 
 $lb->yview(3);
 $lb->update;
-ok(join(" ", $lb->bbox(3)), "7 7 17 14");
+skip($skip_font_test, join(" ", $lb->bbox(3)), "7 7 17 14");
 ok(scalar @{[$lb->bbox(3)]}, 4);
-ok(($lb->bbox(3))[0], 7);
-ok(($lb->bbox(3))[-1], 14);
-ok(join(" ", $lb->bbox(4)), "7 26 17 14");
+skip($skip_font_test, ($lb->bbox(3))[0], 7);
+skip($skip_font_test, ($lb->bbox(3))[-1], 14);
+skip($skip_font_test, join(" ", $lb->bbox(4)), "7 26 17 14");
 
 $lb->yview(0);
 $lb->update;
 ok($lb->bbox(-1), undef);
-ok(join(" ", $lb->bbox(0)), "7 7 17 14");
+skip($skip_font_test, join(" ", $lb->bbox(0)), "7 7 17 14");
 
 $lb->yview("end");
 $lb->update;
-ok(join(" ", $lb->bbox(17)), "7 83 24 14");
-ok(join(" ", $lb->bbox("end")), "7 83 24 14");
+skip($skip_font_test, join(" ", $lb->bbox(17)), "7 83 24 14");
+skip($skip_font_test, join(" ", $lb->bbox("end")), "7 83 24 14");
 ok($lb->bbox(18), undef);
 
 {
@@ -245,13 +288,13 @@ ok($lb->bbox(18), undef);
     $lb->pack;
     $lb->update;
     $lb->xview(moveto => 0.2);
-    ok(join(" ", $lb->bbox(2)), '-72 39 393 14');
+    skip($skip_font_test, join(" ", $lb->bbox(2)), '-72 39 393 14');
     $t->destroy;
 }
 
 mkPartial();
-ok(join(" ", $partial_lb->bbox(3)), "5 56 24 14");
-ok(join(" ", $partial_lb->bbox(4)), "5 73 23 14");
+skip($skip_font_test, join(" ", $partial_lb->bbox(3)), "5 56 24 14");
+skip($skip_font_test, join(" ", $partial_lb->bbox(4)), "5 73 23 14");
 
 eval { $lb->cget };
 ok($@,qr/wrong \# args: should be \"\.listbox.* cget option\"/,
@@ -569,10 +612,12 @@ ok($Tk::VERSION < 803
     $lb->scan("mark", 100, 140);
     $lb->scan("dragto", 90, 137);
     $lb->update;
-    ok(join(",",$lb->xview) ,qr/^0\.24936.*,0\.42748.*$/,
-       join(",",$lb->xview));
-    ok(join(",",$lb->yview) ,qr/^0\.071428.*,0\.428571.*$/,
-       join(",",$lb->yview));
+    skip($skip_font_test,
+	 join(",",$lb->xview) ,qr/^0\.24936.*,0\.42748.*$/,
+	 join(",",$lb->xview));
+    skip($skip_font_test,
+	 join(",",$lb->yview) ,qr/^0\.071428.*,0\.428571.*$/,
+	 join(",",$lb->yview));
     $t->destroy;
 }
 
@@ -746,7 +791,7 @@ $lb->pack;
 $lb->update;
 
 $lb->xview(4);
-ok(join(",",$lb->xview), "0.08,0.28");
+ok_float(join(",",$lb->xview), "0.08,0.28");
 
 eval { $lb->xview("foo") };
 ok($@ ,qr/\'foo\' isn\'t numeric/,
@@ -759,25 +804,25 @@ ok($@ ,qr/unknown option \"zoom\": must be moveto or scroll/,
 $lb->xview(0);
 $lb->xview(moveto => 0.4);
 $lb->update;
-ok(($lb->xview)[0], 0.4);
-ok(($lb->xview)[1], 0.6);
+ok_float(($lb->xview)[0], 0.4);
+ok_float(($lb->xview)[1], 0.6);
 
 $lb->xview(0);
 $lb->xview(scroll => 2, "units");
 $lb->update;
-ok("@{[ $lb->xview ]}", '0.04 0.24');
+ok_float("@{[ $lb->xview ]}", '0.04 0.24');
 
 $lb->xview(30);
 $lb->xview(scroll => -1, "pages");
 $lb->update;
-ok("@{[ $lb->xview ]}", '0.44 0.64');
+ok_float("@{[ $lb->xview ]}", '0.44 0.64');
 
 $lb->configure(-width => 1);
 $lb->update;
 $lb->xview(30);
 $lb->xview("scroll", -4, "pages");
 $lb->update;
-ok("@{[ $lb->xview ]}", '0.52 0.54');
+ok_float("@{[ $lb->xview ]}", '0.52 0.54');
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox->pack;
@@ -800,8 +845,8 @@ $lb->pack;
 $lb->update;
 $lb->yview(4);
 $lb->update;
-ok(($lb->yview)[0], 0.2);
-ok(($lb->yview)[1], 0.45);
+ok_float(($lb->yview)[0], 0.2);
+ok_float(($lb->yview)[1], 0.45);
 
 mkPartial();
 ok(($partial_lb->yview)[0], 0);
@@ -818,21 +863,21 @@ ok($@ ,qr/unknown option \"foo\": must be moveto or scroll/,
 
 $lb->yview(0);
 $lb->yview(moveto => 0.31);
-ok("@{[ $lb->yview ]}", "0.3 0.55");
+ok_float("@{[ $lb->yview ]}", "0.3 0.55");
 
 $lb->yview(2);
 $lb->yview(scroll => 2 => "pages");
-ok("@{[ $lb->yview ]}", "0.4 0.65");
+ok_float("@{[ $lb->yview ]}", "0.4 0.65");
 
 $lb->yview(10);
 $lb->yview(scroll => -3 => "units");
-ok("@{[ $lb->yview ]}", "0.35 0.6");
+ok_float("@{[ $lb->yview ]}", "0.35 0.6");
 
 $lb->configure(-height => 2);
 $lb->update;
 $lb->yview(15);
 $lb->yview(scroll => -4 => "pages");
-ok("@{[ $lb->yview ]}", "0.55 0.65");
+ok_float("@{[ $lb->yview ]}", "0.55 0.65");
 
 # No tests for DestroyListbox:  I can't come up with anything to test
 # in this procedure.
@@ -1027,37 +1072,37 @@ my @x = qw/a b c d/;
 
 Tk::catch { $lb->destroy if Tk::Exists($lb) };
 $lb = $mw->$Listbox(-font => $fixed, -width => 15, -height => 20)->pack;
-ok($lb->reqwidth, 115);
-ok($lb->reqheight, 328);
+skip($skip_fixed_font_test, $lb->reqwidth, 115);
+skip($skip_fixed_font_test, $lb->reqheight, 328);
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox(-font => $fixed, -width => 0, -height => 10)->pack;
 $lb->update;
-ok($lb->reqwidth, 17);
-ok($lb->reqheight, 168);
+skip($skip_fixed_font_test, $lb->reqwidth, 17);
+skip($skip_fixed_font_test, $lb->reqheight, 168);
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox(-font => $fixed, -width => 0, -height => 10,
 		   -bd => 3)->pack;
 $lb->insert(0, "Short", "Really much longer", "Longer");
 $lb->update;
-ok($lb->reqwidth, 138);
-ok($lb->reqheight, 170);
+skip($skip_fixed_font_test, $lb->reqwidth, 138);
+skip($skip_fixed_font_test, $lb->reqheight, 170);
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox(-font => $fixed, -width => 10, -height => 0,
 		  )->pack;
 $lb->update;
-ok($lb->reqwidth, 80);
-ok($lb->reqheight, 24);
+skip($skip_fixed_font_test, $lb->reqwidth, 80);
+skip($skip_fixed_font_test, $lb->reqheight, 24);
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox(-font => $fixed, -width => 10, -height => 0,
 		   -highlightthickness => 0)->pack;
 $lb->insert(0, "Short", "Really much longer", "Longer");
 $lb->update;
-ok($lb->reqwidth, 76);
-ok($lb->reqheight, 52);
+skip($skip_fixed_font_test, $lb->reqwidth, 76);
+skip($skip_fixed_font_test, $lb->reqheight, 52);
 
 eval { $lb->destroy };
 # If "0" in selected font had 0 width, caused divide-by-zero error.
@@ -1145,11 +1190,11 @@ ok("$log[1]", qr/x 0 \d[\d\.]*/);
 {
     my $l2 = $mw->$Listbox(-width => 0, -height => 0)->pack(-side => "top");
     $l2->insert(0, "a", "b", "two words", "c", "d");
-    ok($l2->reqwidth, 80);
-    ok($l2->reqheight, 93);
+    skip($skip_font_test, $l2->reqwidth, 80);
+    skip($skip_font_test, $l2->reqheight, 93);
     $l2->insert(0, "much longer entry");
-    ok($l2->reqwidth, 122);
-    ok($l2->reqheight, 110);
+    skip($skip_font_test, $l2->reqwidth, 122);
+    skip($skip_font_test, $l2->reqheight, 110);
     $l2->destroy;
 }
 
@@ -1313,11 +1358,11 @@ ok($log[1], "x 0 1");
 {
     my $l2 = $mw->$Listbox(-width => 0, -height => 0)->pack(-side => "top");
     $l2->insert(0, "a", "b", "two words", qw/c d e f g/);
-    ok($l2->reqwidth, 80);
-    ok($l2->reqheight, 144);
+    skip($skip_font_test, $l2->reqwidth, 80);
+    skip($skip_font_test, $l2->reqheight, 144);
     $l2->delete(2, 4);
-    ok($l2->reqwidth, 17);
-    ok($l2->reqheight, 93);
+    skip($skip_font_test, $l2->reqwidth, 17);
+    skip($skip_font_test, $l2->reqheight, 93);
     $l2->destroy;
 }
 
@@ -1348,8 +1393,8 @@ $lb->pack;
 $lb->update;
 $lb->place(qw/-width 50 -height 80/);
 $lb->update;
-ok(join(" ", $lb->xview), qr/^0 0\.2222/);
-ok(join(" ", $lb->yview), qr/^0 0\.3333/);
+skip($skip_font_test, join(" ", $lb->xview), qr/^0 0\.2222/);
+skip($skip_font_test, join(" ", $lb->yview), qr/^0 0\.3333/);
 
 map { $_->destroy } $mw->children;
 my $l1 = $mw->$Listbox(-bg => "#543210");
@@ -1361,12 +1406,12 @@ $l2->destroy;
 my $top = $mw->Toplevel;
 $top->geometry("+0+0");
 my $top_lb = $top->$Listbox(-setgrid => 1,
-			   -width => 20,
-			   -height => 10)->pack;
+			    -width => 20,
+			    -height => 10)->pack;
 $top_lb->update;
 ok($top->geometry, qr/20x10\+\d+\+\d+/);
 $top_lb->destroy;
-ok($top->geometry, qr/150x178\+\d+\+\d+/);
+skip($skip_font_test, $top->geometry, qr/150x178\+\d+\+\d+/);
 
 $lb = $mw->$Listbox->pack;
 $lb->delete(0, "end");
@@ -1460,8 +1505,8 @@ $lb->update;
 @log = ();
 $lb->yview(qw/2/);
 $lb->update;
-ok("@{[ $lb->yview ]}", "0.2 0.7");
-ok($log[0], "y 0.2 0.7");
+ok_float("@{[ $lb->yview ]}", "0.2 0.7");
+ok_float($log[0], "y 0.2 0.7");
 
 $lb->destroy;
 $lb = $mw->$Listbox(qw/-height 5 -yscrollcommand/, [qw/record y/])->pack;
@@ -1470,8 +1515,8 @@ $lb->update;
 @log = ();
 $lb->yview(qw/8/);
 $lb->update;
-ok("@{[ $lb->yview ]}", "0.5 1");
-ok($log[0], "y 0.5 1");
+ok_float("@{[ $lb->yview ]}", "0.5 1");
+ok_float($log[0], "y 0.5 1");
 
 $lb->destroy;
 $lb = $mw->$Listbox(qw/-height 5 -yscrollcommand/, [qw/record y/])->pack;
@@ -1481,7 +1526,7 @@ $lb->update;
 @log = ();
 $lb->yview(qw/3/);
 $lb->update;
-ok("@{[ $lb->yview ]}", "0.3 0.8");
+ok_float("@{[ $lb->yview ]}", "0.3 0.8");
 ok(scalar @log, 0);
 
 mkPartial();
@@ -1499,23 +1544,23 @@ $lb->update;
 @log = ();
 $lb->xview(qw/99/);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0.9 1");
-ok(($lb->xview)[0], 0.9);
+ok_float("@{[ $lb->xview ]}", "0.9 1");
+ok_float(($lb->xview)[0], 0.9);
 ok(($lb->xview)[1], 1);
-ok($log[0], "x 0.9 1");
+ok_float($log[0], "x 0.9 1");
 
 @log = ();
 $lb->xview(qw/moveto -.25/);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0 0.1");
-ok($log[0], "x 0 0.1");
+ok_float("@{[ $lb->xview ]}", "0 0.1");
+ok_float($log[0], "x 0 0.1");
 
 $lb->xview(qw/10/);
 $lb->update;
 @log = ();
 $lb->xview(qw/10/);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0.1 0.2");
+ok_float("@{[ $lb->xview ]}", "0.1 0.2");
 ok(scalar @log, 0);
 
 $lb->destroy;
@@ -1531,52 +1576,52 @@ $lb->xview(qw/0/);
 $lb->scan(qw/mark 10 20/);
 $lb->scan(qw/dragto/, 10-$width, 20-$height);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0.2 0.4");
-ok("@{[ $lb->yview ]}", "0.5 0.75");
+ok_float("@{[ $lb->xview ]}", "0.2 0.4");
+ok_float("@{[ $lb->yview ]}", "0.5 0.75");
 
 $lb->yview(qw/5/);
 $lb->xview(qw/10/);
 $lb->scan(qw/mark 10 20/);
 $lb->scan(qw/dragto 20 40/);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0 0.2");
-ok("@{[ $lb->yview ]}", "0 0.25");
+ok_float("@{[ $lb->xview ]}", "0 0.2");
+ok_float("@{[ $lb->yview ]}", "0 0.25");
 
 $lb->scan(qw/dragto/, 20-$width, 40-$height);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0.2 0.4");
-ok(join(':',$lb->xview), "0.2:0.4");  # just to prove it is a list
-ok("@{[ $lb->yview ]}", "0.5 0.75");
-ok(join(':',$lb->yview), "0.5:0.75"); # just to prove it is a list
+ok_float("@{[ $lb->xview ]}", "0.2 0.4");
+ok_float(join(',',$lb->xview), "0.2,0.4");  # just to prove it is a list
+ok_float("@{[ $lb->yview ]}", "0.5 0.75");
+ok_float(join(',',$lb->yview), "0.5,0.75"); # just to prove it is a list
 
 $lb->yview(qw/moveto 1.0/);
 $lb->xview(qw/moveto 1.0/);
 $lb->scan(qw/mark 10 20/);
 $lb->scan(qw/dragto 5 10/);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0.8 1");
-ok("@{[ $lb->yview ]}", "0.75 1");
+ok_float("@{[ $lb->xview ]}", "0.8 1");
+ok_float("@{[ $lb->yview ]}", "0.75 1");
 $lb->scan(qw/dragto/, 5+$width, 10+$height);
 $lb->update;
-ok("@{[ $lb->xview ]}", "0.64 0.84");
-ok("@{[ $lb->yview ]}", "0.25 0.5");
+ok_float("@{[ $lb->xview ]}", "0.64 0.84");
+ok_float("@{[ $lb->yview ]}", "0.25 0.5");
 
 mkPartial();
 ok($partial_lb->nearest($partial_lb->height), 4);
 
 $lb->destroy;
 $lb = $mw->$Listbox(-font => $fixed,
-		   -width => 20,
-		   -height => 10);
+		    -width => 20,
+		    -height => 10);
 $lb->insert(qw/0 a b c d e f g h i j k l m n o p q r s t/);
 $lb->yview(qw/4/);
 $lb->pack;
 $lb->update;
 
-ok($lb->index(q/@50,0/), 4);
+skip($skip_fixed_font_test, $lb->index(q/@50,0/), 4);
 
-ok($lb->index(q/@50,35/), 5);
-ok($lb->index(q/@50,36/), 6);
+skip($skip_fixed_font_test, $lb->index(q/@50,35/), 5);
+skip($skip_fixed_font_test, $lb->index(q/@50,36/), 6);
 
 ok($lb->index(q/@50,200/), qr/^\d+/);
 
@@ -1701,7 +1746,7 @@ $lb->update;
 $lb->delete(qw/0 end/);
 $lb->update;
 ok($log[0], "y 0 1");
-ok($log[1], "y 0 0.625");
+ok_float($log[1], "y 0 0.625");
 ok($log[2], "y 0 1");
 
 mkPartial();
@@ -1709,7 +1754,7 @@ $partial_lb->configure(-yscrollcommand => ["record", "y"]);
 @log = ();
 $partial_lb->yview(3);
 $partial_lb->update;
-ok($log[0], qr/^y 0\.2 0\.\d+/);
+ok($log[0], qr/^y 0\.2(0000+\d+)? 0\.\d+/);
 
 @x = ();
 

@@ -1,3 +1,53 @@
+Change 3032 on 2003/12/10 by nick@llama
+
+	Makefile generation tweaks:
+	  Perl's %Config can have leading/trailing spaces
+	  Try propagating perl's values to CFLAGs for JPEG/jpeg/configure
+
+Change 3031 on 2003/12/10 by nick@llama
+
+	Steve's patch for slaves with test etc.
+	(In respnse to report from Christoph Fuchs <j.c.fuchs@gmx.de>)
+
+Change 3030 on 2003/12/10 by nick@llama
+
+	Re-engineer TkFontGet(Points|Pixels) to take a Screen *
+	rather an a tkwin. Tk_Font has one of those, and is all they
+	need. So now Tk_PostscriptFontName() can return points correctly
+	without help or change to public Tk_Xxx API.
+
+Change 3029 on 2003/12/10 by nick@llama
+
+	Slaven's test fixes for font issues.
+
+Change 3028 on 2003/12/10 by nick@llama
+
+	Slaven's FBox as directory chooser patch (thanks)
+
+Change 3027 on 2003/12/10 by nick@llama
+
+	Spelling of dependencies patch from RT.
+
+Change 3026 on 2003/12/09 by nick@llama
+
+	Fix XSRETURN(Function()) properly
+
+Change 3025 on 2003/12/09 by nick@llama
+
+	Specimen XSRETURN(Functtion()) that was segfulting on
+	Steve's G5. 'grep' shows More to come ...
+
+Change 3024 on 2003/12/08 by nick@llama
+
+	Slaven's patches:
+	 TkTest.pm and use in listbox.t for float epsilon
+	 Add ->geometry to all test files.
+	 ProgressBar fix
+
+Change 3023 on 2003/12/07 by nick@llama
+
+	Update Change.log
+
 Change 3019 on 2003/12/06 by nick@camel
 
 	MinGW libpng makefile was not checked in or in MANIFEST

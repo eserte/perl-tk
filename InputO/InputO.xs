@@ -31,7 +31,7 @@ void
 inputo(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tix_InputOnlyCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,1,Tix_InputOnlyCmd,items,&ST(0)));
  }
 
 BOOT:

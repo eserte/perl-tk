@@ -21,7 +21,7 @@ sub Populate {
 
     $self->OnDestroy( sub {
 	my $vref = $self->{_vref};
-	$self->traceVdelete ( $self->{_vref} ) if defined $vref;
+	$self->traceVdelete ( $vref ) if defined $vref;
     } );
 
 } # end Populate
@@ -168,7 +168,7 @@ None.
 
 =head1 EXAMPLE
 
- $thumb = $mw->TraceText( -textvariabel => \$scalar );
+ my $tt = $mw->TraceText( -textvariable => \$scalar );
 
 =head1 AUTHOR
 

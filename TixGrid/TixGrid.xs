@@ -31,7 +31,7 @@ void
 tixGrid(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tix_GridCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,1,Tix_GridCmd,items,&ST(0)));
  }
 
 

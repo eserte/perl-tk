@@ -349,8 +349,10 @@ Tk_PlaceObjCmd(clientData, interp, objc, objv)
 		listPtr = Tcl_NewObj();
 		for (slavePtr = masterPtr->slavePtr; slavePtr != NULL;
 		     slavePtr = slavePtr->nextPtr) {
-		    Tcl_ListObjAppendElement(interp, listPtr,
-			    Tcl_NewStringObj(Tk_PathName(slavePtr->tkwin),-1));
+		  /*Tcl_ListObjAppendElement(interp, listPtr,
+		    Tcl_NewStringObj(Tk_PathName(slavePtr->tkwin),-1));*/
+		  Tcl_ListObjAppendElement(interp, listPtr,
+					   LangWidgetObj(interp,slavePtr->tkwin));
 		}
 		Tcl_SetObjResult(interp, listPtr);
 	    }

@@ -24,14 +24,14 @@ void
 entry(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,0,Tk_EntryObjCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,0,Tk_EntryObjCmd,items,&ST(0)));
  }
 
 void
 spinbox(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,0,Tk_SpinboxObjCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,0,Tk_SpinboxObjCmd,items,&ST(0)));
  }
 
 PROTOTYPES: DISABLE

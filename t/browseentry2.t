@@ -28,7 +28,7 @@ BEGIN { plan tests => 6 }
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 my $top = new MainWindow;
-
+$top->geometry("+10+10");
 my $var;
 my $robe = $top->BrowseEntry
     (

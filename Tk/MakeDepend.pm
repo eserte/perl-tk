@@ -11,7 +11,7 @@ $SIG{__DIE__} = \&Carp::confess;
 
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 sub scan_file;
 
@@ -211,7 +211,9 @@ sub command_line
   {
    unshift(@files,pop(@_));
   }
- foreach (@_, split(/\s+/,$Config{ccflags}))
+ my $flags = $Config{ccflags};
+ $flags =~ s/^\s+|\s+$//g;
+ foreach (@_, split(/\s+/,$flags))
   {
    if (/^-I(.*)$/)
     {
@@ -254,7 +256,7 @@ sub command_line
    my $base = $1;
    my $file = $_;
    my %dep;
-   warn "Finding dependancies for $file\n";
+   warn "Finding dependencies for $file\n";
    scan_file($_,\%dep);
    my $str = "\n$base\$(OBJ_EXT) : $base.c";
    delete $dep{$file};

@@ -1173,9 +1173,11 @@ GridSlavesCommand(tkwin, interp, objc, objv)
 		slavePtr->row+slavePtr->numRows-1 < row)) {
 	    continue;
 	}
-	Tcl_ListObjAppendElement(interp, res,
-		Tcl_NewStringObj(Tk_PathName(slavePtr->tkwin), -1));
-    }
+	/*Tcl_ListObjAppendElement(interp, res,
+	  Tcl_NewStringObj(Tk_PathName(slavePtr->tkwin), -1));*/
+ 	Tcl_ListObjAppendElement(interp, res,
+				 LangWidgetObj(interp,slavePtr->tkwin));
+   }
     Tcl_SetObjResult(interp, res);
     return TCL_OK;
 }

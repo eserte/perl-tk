@@ -34,6 +34,7 @@ if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 }
 
 my $mw = my $top = tkinit;
+$mw->geometry("+10+10");
 my $ne = $mw->SpinboxBrowseEntry(-from => -10,
 			     -to => +10,
 			     -choices => [-6,-3,0,3,6],
@@ -81,7 +82,7 @@ if (!$ENV{BATCH}) {
 }
 else {
   $mw->update;
-  $top->after(4000);
+  $top->after(500);
 }
 
 __END__

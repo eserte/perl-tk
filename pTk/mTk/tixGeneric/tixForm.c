@@ -361,7 +361,9 @@ static int TixFm_Slaves(clientData, interp, argc, argv)
     }
 
     for (clientPtr = masterPtr->client; clientPtr; clientPtr=clientPtr->next) {
-	Tcl_AppendElement(interp, Tk_PathName(clientPtr->tkwin));
+      /*Tcl_AppendElement(interp, Tk_PathName(clientPtr->tkwin));*/
+      Tcl_ListObjAppendElement(interp,Tcl_GetObjResult(interp),
+			       LangWidgetObj(interp,clientPtr->tkwin));
     }
     return TCL_OK;
 }

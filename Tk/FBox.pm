@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = sprintf '4.%03d', q$Revision: #16 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #17 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Tk::Toplevel);
 
@@ -106,7 +106,7 @@ EOF
     $dirMenu->pack(-expand => 'yes', -fill => 'both', -padx => 4);
 
     $w->{'icons'} = my $icons =
-      $w->IconList(-command => ['OkCmd', $w],
+      $w->IconList(-command => ['OkCmd', $w, 'iconlist'],
 		  );
     $icons->bind('<<ListboxSelect>>' => [$w, 'ListBrowse']);
 
@@ -441,8 +441,10 @@ sub Update {
 	} else {
 	    $flt = _rx_to_glob($flt);
 	}
+	my $type_dir = $w->cget(-type) eq 'dir';
 	foreach my $f (sort $sortcmd readdir(FDIR)) {
 	    next if $f eq '.' or $f eq '..';
+	    next if $type_dir && ! -d "$cwd/$f"; # XXX use File::Spec?
 	    if ($fltcb) {
 		next if !$fltcb->($w, $f, $cwd);
 	    } else {
@@ -786,13 +788,16 @@ sub TclFileSplit {
 #
 sub OkCmd {
     my $w = shift;
+    my $from = shift || "button";
 
     my $filenames = [];
     for my $item ($w->{'icons'}->Curselection) {
 	push @$filenames, $w->{'icons'}->Get($item);
     }
 
-    if ((@$filenames && !$w->cget('-multiple')) ||
+    if ($w->cget('-type') eq 'dir' && $from ne "iconlist") {
+	$w->Done($w->{'selectPath'});
+    } elsif ((@$filenames && !$w->cget('-multiple')) ||
 	($w->cget('-multiple') && @$filenames == 1)) {
 	my $filename = $filenames->[0];
 	my $file = JoinFile($w->{'selectPath'}, $filename);
@@ -800,8 +805,6 @@ sub OkCmd {
 	    $w->ListInvoke($filename);
 	    return;
 	}
-    } elsif ($w->cget('-type') eq 'dir') {
-	$w->Done($w->{'selectPath'});
     }
 
     $w->ActivateEnt;

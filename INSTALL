@@ -30,7 +30,7 @@ separately:
 
 perl Makefile.PL X11INC=/usr/local/share/X11R5/include X11LIB=/usr/local/arch/X11R5/lib
 
-'make test' is a little tedious as it re-checks all the dependancies.
+'make test' is a little tedious as it re-checks all the dependencies.
 
 perl -Mblib demos/widget
 

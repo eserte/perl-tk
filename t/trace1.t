@@ -7,6 +7,7 @@ use strict;
 plan test => 17;
 
 my $mw = MainWindow->new;
+$mw->geometry("+10+10");
 my $v = 0;
 
 my $e = $mw->Entry(-textvariable => \$v)->pack;

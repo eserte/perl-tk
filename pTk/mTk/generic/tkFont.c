@@ -1163,7 +1163,7 @@ Tk_AllocFontFromObj(interp, tkwin, objPtr)
 
     descent = fontPtr->fm.descent;
     fontPtr->underlinePos = descent / 2;
-    fontPtr->underlineHeight = TkFontGetPixels(tkwin, fontPtr->fa.size) / 10;
+    fontPtr->underlineHeight = TkFontGetPixels(Tk_Screen(tkwin), fontPtr->fa.size) / 10;
     if (fontPtr->underlineHeight == 0) {
 	fontPtr->underlineHeight = 1;
     }
@@ -1724,7 +1724,7 @@ Tk_PostscriptFontName(tkfont, dsPtr)
 	}
     }
 
-    return fontPtr->fa.size;
+    return TkFontGetPoints(fontPtr->screen, fontPtr->fa.size);
 }
 
 /*
@@ -3547,8 +3547,8 @@ FieldSpecified(field)
  */
 
 int
-TkFontGetPixels(tkwin, size)
-    Tk_Window tkwin;		/* For point->pixel conversion factor. */
+TkFontGetPixels(screen, size)
+    Screen *screen;		/* For point->pixel conversion factor. */
     int size;			/* Font size. */
 {
     double d;
@@ -3558,8 +3558,8 @@ TkFontGetPixels(tkwin, size)
     }
 
     d = size * 25.4 / 72.0;
-    d *= WidthOfScreen(Tk_Screen(tkwin));
-    d /= WidthMMOfScreen(Tk_Screen(tkwin));
+    d *= WidthOfScreen(screen);
+    d /= WidthMMOfScreen(screen);
     return (int) (d + 0.5);
 }
 
@@ -3581,8 +3581,8 @@ TkFontGetPixels(tkwin, size)
  */
 
 int
-TkFontGetPoints(tkwin, size)
-    Tk_Window tkwin;		/* For pixel->point conversion factor. */
+TkFontGetPoints(screen, size)
+    Screen *screen;		/* For pixel->point conversion factor. */
     int size;			/* Font size. */
 {
     double d;
@@ -3592,8 +3592,8 @@ TkFontGetPoints(tkwin, size)
     }
 
     d = -size * 72.0 / 25.4;
-    d *= WidthMMOfScreen(Tk_Screen(tkwin));
-    d /= WidthOfScreen(Tk_Screen(tkwin));
+    d *= WidthMMOfScreen(screen);
+    d /= WidthOfScreen(screen);
     return (int) (d + 0.5);
 }
 

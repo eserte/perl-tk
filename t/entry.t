@@ -31,7 +31,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 336, todo => [181,207] }
+BEGIN { plan tests => 335, todo => [181] }
 
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
@@ -63,8 +63,26 @@ $mw->option("add", "*Entry.highlightThickness", 2);
 $mw->option("add", "*Entry.font", $Xft ? '{Adobe Helvetica} -12' : "Helvetica -12");
 
 my $e = $mw->Entry(qw(-bd 2 -relief sunken))->pack;
-
 $mw->update;
+
+my $skip_font_test;
+if (!$Xft) { # XXX Is this condition necessary?
+    my %fa = $mw->fontActual($e->cget(-font));
+    my %expected = (
+		    "-weight" => "normal",
+		    "-underline" => 0,
+		    "-family" => "helvetica",
+		    "-slant" => "roman",
+		    "-size" => -12,
+		    "-overstrike" => 0,
+		   );
+    while(my($k,$v) = each %expected) {
+	if ($v ne $fa{$k}) {
+	    $skip_font_test = "font-related tests";
+	    last;
+	}
+    }
+}
 
 my $i;
 
@@ -701,40 +719,40 @@ eval { $e->destroy };
 $e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 5))->pack;
 $e->insert(qw(end), "01234567");
 $e->update;
-ok($e->reqwidth, 77);
-ok($e->reqheight, 39);
+skip($skip_font_test, $e->reqwidth, 77);
+skip($skip_font_test, $e->reqheight, 39);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 0))->pack;
 $e->insert(qw(end), "01234567");
 $e->update;
-ok($e->reqwidth, 116);
-ok($e->reqheight, 39);
+skip($skip_font_test, $e->reqwidth, 116);
+skip($skip_font_test, $e->reqheight, 39);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 0 -highlightthickness 2))->pack;
 $e->update;
-ok($e->reqwidth, 25);
-ok($e->reqheight, 39);
+skip($skip_font_test, $e->reqwidth, 25);
+skip($skip_font_test, $e->reqheight, 39);
 
 eval { $e->destroy };
 $e = $mw->Entry(qw(-bd 1 -relief raised -width 0 -show .))->pack;
 $e->insert(0, "12345");
 $e->update;
-ok($e->reqwidth, 23);
+skip($skip_font_test, $e->reqwidth, 23);
 $e->configure(-show => 'X');
-ok($e->reqwidth, 53);
+skip($skip_font_test, $e->reqwidth, 53);
 #$e->configure(-show => '');
-#ok($e->reqwidth, 43);
+#skip($skip_font_test, $e->reqwidth, 43);
 
 eval { $e->destroy };
 $e = $mw->Entry(qw(-bd 1 -relief raised -width 0 -show .),
 		-font => 'helvetica 12')->pack;
 $e->insert(0, "12345");
 $e->update;
-ok($e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "."));
+skip($skip_font_test, $e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "."));
 $e->configure(-show => 'X');
-ok($e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "X"));
+skip($skip_font_test, $e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "X"));
 #$e->configure(-show => '');
 #ok($e->reqwidth, 8+$mw->fontMeasure("helvetica 12", "12345"));
 
@@ -1133,8 +1151,7 @@ if ($^O ne 'MSWin32') {
     # selection range is reset.
 
     eval { $e->index("sel.first") };
-    ok($@ =~ /selection isn\'t in widget/, 1, $@);
-    skip(1,1);
+    skip("Test only for MSWin32", $@ =~ /selection isn\'t in widget/, 1, $@);
 
 } else {
     # On mac and pc, when selection is cleared, entry widget remembers
@@ -1175,8 +1192,8 @@ $e = $mw->Entry(-show => ".");
 $e->insert(qw(0 XXXYZZY));
 $e->pack;
 $e->update;
-ok($e->index('@7'), 0);
-ok($e->index('@8'), 1);
+skip($skip_font_test, $e->index('@7'), 0);
+skip($skip_font_test, $e->index('@8'), 1);
 
 # XXX Still need to write tests for EntryScanTo and EntrySelectTo.
 
@@ -1225,7 +1242,7 @@ $e->update;
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 .............................));
-ok(join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
+skip($skip_font_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
@@ -1239,7 +1256,7 @@ ok(join(" ", map { substr($_, 0, 8) } $e->xview), $Xw);
 $e->configure(-show => '.');
 $e->delete(qw(0 end));
 $e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
-ok(join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
+skip($skip_font_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
 
 $e->configure(-show => "");
 $e->delete(qw(0 end));

@@ -31,7 +31,7 @@ void
 nbframe(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tix_NoteBookFrameCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,1,Tix_NoteBookFrameCmd,items,&ST(0)));
  }
 
 

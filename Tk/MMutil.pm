@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #19 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #20 $ =~ /\D(\d+)\s*$/;
 
 # warn __FILE__." $VERSION\n";
 
@@ -60,13 +60,13 @@ sub mTk_postamble
  my ($self) = @_;
  my $dep = "config :: \$(C_FILES) \$(H_FILES)\n\t$self->{NOECHO}\$(NOOP)\n";
  my $mTk = $self->{'MTK'};
- $dep .= "# Begin Munging dependancies\n";
+ $dep .= "# Begin Munging dependencies\n";
  foreach my $file (sort keys %$mTk)
   {
    $dep .= "$file : ".$mTk->{$file}." \$(TKDIR)/pTk/Tcl-pTk\n";
    $dep .= "\t\$(PERL) \$(TKDIR)/pTk/Tcl-pTk ".$mTk->{$file}." $file\n";
   }
- $dep .= "# End Munging dependancies\n\n";
+ $dep .= "# End Munging dependencies\n\n";
  return $dep;
 }
 

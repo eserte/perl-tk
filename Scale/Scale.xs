@@ -26,7 +26,7 @@ void
 scale(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,0,Tk_ScaleObjCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,0,Tk_ScaleObjCmd,items,&ST(0)));
  }
 
 BOOT:

@@ -322,7 +322,7 @@ sub Vfunc
    print VMACRO "#endif /* _${gard}_VM */\n";
    close(VMACRO);
    print VFUNC  "#endif /* _$gard */\n";
-   close(VFUNC); # Close this last - Makefile dependancy
+   close(VFUNC); # Close this last - Makefile dependency
 
    unlink($mdef) unless $opt{'m'};
    unlink($fdef) unless $opt{'t'};

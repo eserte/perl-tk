@@ -1339,7 +1339,7 @@ CreateClosestFont(tkwin, faPtr, xaPtr)
     if (want.fa.family == NULL) {
 	want.fa.family = Tk_GetUid("fixed");
     }
-    want.fa.size = -TkFontGetPixels(tkwin, faPtr->size);
+    want.fa.size = -TkFontGetPixels(Tk_Screen(tkwin), faPtr->size);
     if (want.xa.charset == NULL || *want.xa.charset == '\0') {
 	want.xa.charset = Tk_GetUid("iso8859-1");	/* locale. */
     }
@@ -1494,10 +1494,10 @@ InitFont(tkwin, fontStructPtr, fontPtr)
     faPtr		= &fontPtr->font.fa;
     faPtr->family	= fa.fa.family;
 #if 0
-    faPtr->size		= TkFontGetPoints(tkwin, fa.fa.size);
+    faPtr->size		= TkFontGetPoints(Tk_Screen(tkwin), fa.fa.size);
 #else
     /* Actuals are in pixels - says NI-S */
-    faPtr->size		= -TkFontGetPixels(tkwin, fa.fa.size);
+    faPtr->size		= -TkFontGetPixels(Tk_Screen(tkwin), fa.fa.size);
 #endif
     faPtr->weight	= fa.fa.weight;
     faPtr->slant	= fa.fa.slant;
@@ -1511,7 +1511,7 @@ InitFont(tkwin, fontStructPtr, fontPtr)
     fmPtr->fixed	= fixed;
 
     fontPtr->display	= display;
-    fontPtr->pixelSize	= TkFontGetPixels(tkwin, fa.fa.size);
+    fontPtr->pixelSize	= TkFontGetPixels(Tk_Screen(tkwin), fa.fa.size);
     fontPtr->xa		= fa.xa;
 
     fontPtr->numSubFonts	= 1;

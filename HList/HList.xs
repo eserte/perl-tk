@@ -31,7 +31,7 @@ void
 hlist(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tix_HListCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,1,Tix_HListCmd,items,&ST(0)));
  }
 
 BOOT:

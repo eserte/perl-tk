@@ -26,7 +26,7 @@ void
 menubutton(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,0,Tk_MenubuttonObjCmd,items,&ST(0)));
+  TKXSRETURN(XSTkCommand(cv,0,Tk_MenubuttonObjCmd,items,&ST(0)));
  }
 
 BOOT:

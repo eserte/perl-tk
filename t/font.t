@@ -4,11 +4,10 @@ use Test;
 use Tk;
 use Tk::Font;
 
-BEGIN { plan tests => 13,
-        todo => [10]
-      };
+BEGIN { plan tests => 13 };
 
 my $mw = Tk::MainWindow->new;
+$mw->geometry("+10+10");
 
 ##
 ## if there's only one (fixed) or no font family
@@ -73,11 +72,12 @@ my $mw = Tk::MainWindow->new;
 }
 
 my @fam = $mw->fontFamilies;
-foreach my $fam ($mw->fontFamilies)
+foreach my $fam (@fam)
  {
   print "# $fam\n";
  }
 
+my $skip_times = (grep { /^times$/i } @fam) ? undef : "Times not available";
 $mw->optionAdd('*Listbox.font','Times -12 bold');
 my $lb = $mw->Listbox()->pack;
 $lb->insert(end => '0',"\xff","\x{20ac}","\x{0289}");
@@ -90,7 +90,7 @@ my %expect = (-family => 'Times',
 foreach my $key (sort keys %expect)
  {
   my $val = $mw->fontActual($lf,$key);
-  ok($val,qr/$expect{$key}/i,"Value of $key");
+  skip($skip_times, $val,qr/$expect{$key}/i,"Value of $key");
  }
 
 my @subfonts = $mw->fontSubfonts($lf);

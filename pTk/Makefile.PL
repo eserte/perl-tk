@@ -20,7 +20,7 @@ Tk::MMutil::TkExtMakefile(
 sub MY::top_targets {
  my ($self) = @_;
  local $_ = $self->MM::top_targets;
- s/^(\$\(O_FILES\)\s*:.*)$/# Explicit dependancies provided\n# $1/m;
+ s/^(\$\(O_FILES\)\s*:.*)$/# Explicit dependencies provided\n# $1/m;
  return $_;
 }
 

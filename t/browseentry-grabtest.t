@@ -30,7 +30,9 @@ BEGIN { plan tests => 1 }
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 my $mw = tkinit;
+$mw->geometry("+10+10");
 my $t = $mw->Toplevel;
+$t->geometry("+20+20");
 
 $mw->Label(-text => "disabled")->pack;
 $mw->Entry->pack;

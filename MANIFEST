@@ -1859,6 +1859,7 @@ t/regexp.t
 t/Require.t
 t/Trace.t
 t/trace1.t
+t/slaves.t
 t/widget.t
 t/wm-time.t
 t/X.t

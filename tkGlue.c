@@ -2357,7 +2357,7 @@ XS(XS_Tk__MainWindow_Create)
 #if !defined(WIN32) && !defined(__PM__) && !(defined(OS2) && defined(__WIN32__))
  TkCreateXEventSource();
 #endif
- XSRETURN(Return_Results(interp,items,offset));
+ TKXSRETURN(Return_Results(interp,items,offset));
 }
 
 
@@ -2609,7 +2609,7 @@ XS(XStoWidget)
  Lang_CmdInfo *info = WindowCommand(ST(0), NULL, 1);
  do_watch();
  items = InsertArg(mark,1,XSANY.any_ptr);
- XSRETURN(Call_Tk(info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(info, items, &ST(0)));
 }
 
 static SV *
@@ -2751,7 +2751,7 @@ XS(XStoSubCmd)
    PUTBACK;                       /* and reset the global */
   }
  ST(0) = name;          /* Fill in command name */
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static
@@ -2789,7 +2789,7 @@ XS(XStoEvent)
     }
   }
  ST(0) = name;          /* Fill in command name */
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 
@@ -2813,7 +2813,7 @@ XS(XStoAfterSub)
  items = InsertArg(mark,posn,ST(0));
  ST(0) = name;          /* Fill in command name */
  Tcl_GetCommandInfo(info.interp,Tcl_GetString(name),&info.Tk);
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static
@@ -2837,7 +2837,7 @@ XS(XStoGrid)
 #if 0
  LangDumpVec("grid", items, &ST(0));
 #endif
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 
@@ -2862,7 +2862,7 @@ XS(XStoDisplayof)
  mark = sp-items;
  items = InsertArg(mark,posn,ST(0));
  ST(0) = name;          /* Fill in command name */
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static
@@ -2883,7 +2883,7 @@ XS(XStoTk)
    items = InsertArg(mark,0,name);
   }
  ST(0) = name;                      /* Fill in command name */
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static
@@ -2904,7 +2904,7 @@ XS(XStoOption)
    items = InsertArg(mark,2,ST(0));
   }
  ST(0) = name;                      /* Fill in command name */
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static
@@ -2932,7 +2932,7 @@ XS(XStoImage)
 #if 0
  LangDumpVec("Image",items,&ST(0));
 #endif
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static
@@ -2963,7 +2963,7 @@ XS(XStoFont)
 #if 0
  LangDumpVec("Font Post",items,&ST(0));
 #endif
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 int
@@ -3004,14 +3004,14 @@ static
 XS(XStoTclCmd)
 {
  dXSARGS;
- XSRETURN(XSTkCommand(cv,1,(Tcl_ObjCmdProc *) XSANY.any_ptr, items, &ST(0)));
+ TKXSRETURN(XSTkCommand(cv,1,(Tcl_ObjCmdProc *) XSANY.any_ptr, items, &ST(0)));
 }
 
 static
 XS(XStoTclCmdNull)
 {
  dXSARGS;
- XSRETURN(XSTkCommand(cv,0,(Tcl_ObjCmdProc *) XSANY.any_ptr, items, &ST(0)));
+ TKXSRETURN(XSTkCommand(cv,0,(Tcl_ObjCmdProc *) XSANY.any_ptr, items, &ST(0)));
 }
 
 static
@@ -3032,7 +3032,7 @@ XS(XStoNoWindow)
   ST(0) = name;         /* Fill in command name */
  else
   items = InsertArg(mark,0,name);
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 static CV *
@@ -3132,7 +3132,7 @@ XS(XStoBind)
     }
 #endif
   }
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ TKXSRETURN(Call_Tk(&info, items, &ST(0)));
 }
 
 
