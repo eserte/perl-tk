@@ -6,17 +6,166 @@
 #   91/11/23 : pda@masi.ibp.fr, jt@ratp.fr : design
 #   92/08/01 : pda@masi.ibp.fr : cleaning
 #
-# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  95/01/16
+# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  96/01/24
 
-require 5.001;
+require 5.002;
 use English;
 use Tk;
 
-use subs qw(dispsettings labelentry readsettings writesettings);
+use subs qw(cancel dispsettings labelentry quit readsettings writesettings);
 
-#
+sub labelentry {
+
+    # Create all windows, and pack them.
+
+    my ($parent, $path, $text, $length) = @ARG;
+
+    ${$path} = $parent->Frame();
+    $w = "${path}_label";
+    ${$w} = ${$path}->Label(-text => $text);
+    ${$w}->pack(-side => 'left', -expand => 'y');
+    $w = "${path}_entry";
+    ${$w} = ${$path}->Entry(-width => $length, -relief => 'sunken');
+    ${$w}->pack(-side => 'right', -expand => 'y');
+
+} # end labelentry
+
+sub createwindows {
+
+    # Buttons
+
+    $buttons = $MW->Frame();
+    $buttons_ok = $buttons->Button(-command => \&ok, -text => 'Ok');
+    $buttons_apply = $buttons->Button(
+        -command => \&writesettings, 
+        -text    => 'Apply',
+    );
+    $buttons_cancel = $buttons->Button(
+        -command => \&cancel, 
+        -text    => 'Cancel',
+    );
+    $buttons_quit = $buttons->Button(-command => \&quit, -text => 'Quit');
+    $buttons_ok->pack(-side => 'left', -expand => 'yes', -pady => '5');
+    $buttons_apply->pack(-side => 'left', -expand => 'yes', -pady => '5');
+    $buttons_cancel->pack(-side => 'left', -expand => 'yes', -pady => '5');
+    $buttons_quit->pack(-side => 'left', -expand => 'yes', -pady => '5');
+
+    # Bell settings
+
+    $bell = $MW->Frame(-relief => 'raised', -borderwidth => '2');
+    $bell_label = $bell->Label(-text => 'Bell Settings');
+    $bell_vol = $bell->Scale(
+        -from         => '0',  
+        -to           => '100', 
+        -length       => '200', 
+        -tickinterval => '20', 
+        -label        => 'Volume (%)',
+	-orient       => 'horizontal',
+    );
+    $bell_val = $bell->Frame();
+    labelentry $bell_val, 'bell_val_pit', 'Pitch (Hz)', 6;
+    labelentry $bell_val, 'bell_val_dur', 'Duration (ms)', 6;
+    $bell_val_pit->pack(-side => 'left', -padx => '5');
+    $bell_val_dur->pack(-side => 'right', -padx => '5');
+    $bell_label->pack(-side => 'top', -expand => 'yes');
+    $bell_vol->pack(-side => 'top', -expand => 'yes');
+    $bell_val->pack(-side => 'top', -expand => 'yes');
+
+    # Keyboard settings
+
+    $kbd = $MW->Frame(-relief => 'raised', -borderwidth => '2');
+    $kbd_label = $kbd->Label(-text => 'Keyboard Repeat Settings');
+    $kbd_val = $kbd->Frame();
+    $kbd_val_onoff = $kbd_val->Checkbutton(
+        -text     => 'On', 
+        -onvalue  => 'on', 
+        -offvalue => 'off', 
+        -variable => \$kbdrpt,
+	-relief   => 'flat',
+    );
+    $kbd_val_cli = $kbd_val->Scale(
+        -from         => '0', 
+        -to           => '100', 
+        -length       => '200', 
+        -tickinterval => '20',
+	-label        => 'Click Volume (%)', 
+        -orient       => 'horizontal',
+    );
+    $kbd_val_onoff->pack(-side => 'left', -expand => 'yes', -fill => 'both');
+    $kbd_val_cli->pack(-side => 'left', -expand => 'yes');
+    $kbd_label->pack(-side => 'top', -expand => 'yes');
+    $kbd_val->pack(-side => 'top', -expand => 1, -pady => '2', -fill => 'x');
+
+    # Mouse settings
+
+    $mouse = $MW->Frame(-relief => 'raised', -borderwidth => '2');
+    $mouse_label = $mouse->Label(-text => 'Mouse Settings');
+    $mouse_hor = $mouse->Frame();
+    labelentry $mouse_hor, 'mouse_hor_acc', 'Acceleration', 3;
+    labelentry $mouse_hor, 'mouse_hor_thr', 'Threshold (pixels)', 3;
+    $mouse_hor_acc->pack(-side => 'left');
+    $mouse_hor_thr->pack(-side => 'right');
+    $mouse_label->pack(-side => 'top');
+    $mouse_hor->pack(-side => 'top', -expand => 'yes');
+
+    # Screen Saver settings
+
+    $screen = $MW->Frame(-relief => 'raised', -borderwidth => '2');
+    $screen_label = $screen->Label(-text => 'Screen-saver Settings');
+    $screen_val = $screen->Frame();
+    $screen_val_rb = $screen_val->Frame();
+    $screen_val_rb_blank = $screen_val_rb->Radiobutton(
+        -text     => 'Blank', 
+        -relief   => 'flat', 
+        -value    => 'blank',
+	-variable => \$screenbla,
+    );
+    $screen_val_rb_pat = $screen_val_rb->Radiobutton(
+        -text     => 'Pattern', 
+        -relief   => 'flat', 
+        -value    => 'noblank',
+	-variable => \$screenbla,
+    );
+    $screen_val_rb_blank->pack(-side => 'top', -pady => '2', -anchor => 'w');
+    $screen_val_rb_pat->pack(-side => 'top', -pady => '2', -anchor => 'w');
+    $screen_val_le = $screen_val->Frame();
+    labelentry $screen_val_le, 'screen_val_le_tim', 'Timeout (s)', 5;
+    labelentry $screen_val_le, 'screen_val_le_cyc', 'Cycle (s)', 5;
+    $screen_val_le_tim->pack(-side => 'top', -pady => '2', -anchor => 'e');
+    $screen_val_le_cyc->pack(-side => 'top', -pady => '2', -anchor => 'e');
+    $screen_val_rb->pack(-side => 'left');
+    $screen_val_le->pack(-side => 'left');
+
+    $screen_label->pack(-side => 'top');
+    $screen_val->pack(-side => 'top', -expand => 'y');
+
+    # Main window
+
+    $buttons->pack(-side => 'top', -fill => 'both');
+    my(@pl)= (-side => 'top', -fill => 'both', -ipady => '5', -expand =>1);
+    $bell->pack(@pl);
+    $kbd->pack(@pl);
+    $mouse->pack(@pl);
+    $screen->pack(@pl);
+
+    # Let the user resize our window
+
+    $MW->minsize(10, 10);
+
+} # end createwindows
+
+
+# Main program
+
+$MW = MainWindow->new;
+
+readsettings;
+createwindows;
+dispsettings;
+
+MainLoop;
+
 # Define button actions.
-#
 
 sub quit {
     exit;
@@ -138,126 +287,3 @@ sub dispsettings {
     $screen_val_le_cyc_entry->insert('0', $screencyc);
 
 } # end dispsettings
-
-
-#
-# Create all windows, and pack them.
-#
-
-sub labelentry {
-
-    my ($parent, $path, $text, $length) = @ARG;
-
-    ${$path} = $parent->Frame();
-    $w = "${path}_label";
-    ${$w} = ${$path}->Label(-text => $text);
-    ${$w}->pack(-side => 'left', -expand => 'y');
-    $w = "${path}_entry";
-    ${$w} = ${$path}->Entry(-width => $length, -relief => 'sunken');
-    ${$w}->pack(-side => 'right', -expand => 'y');
-
-} # end labelentry
-
-sub createwindows {
-
-    # Buttons
-
-    $buttons = $top->Frame();
-    $buttons_ok = $buttons->Button(-command => \&ok, -text => 'Ok');
-    $buttons_apply = $buttons->Button(-command => \&writesettings, -text => 'Apply');
-    $buttons_cancel = $buttons->Button(-command => \&cancel, -text => 'Cancel');
-    $buttons_quit = $buttons->Button(-command => \&quit, -text => 'Quit');
-    $buttons_ok->pack(-side => 'left', -expand => 'yes', -pady => '5');
-    $buttons_apply->pack(-side => 'left', -expand => 'yes', -pady => '5');
-    $buttons_cancel->pack(-side => 'left', -expand => 'yes', -pady => '5');
-    $buttons_quit->pack(-side => 'left', -expand => 'yes', -pady => '5');
-
-    # Bell settings
-
-    $bell = $top->Frame(-relief => 'raised', -borderwidth => '2');
-    $bell_label = $bell->Label(-text => 'Bell Settings');
-    $bell_vol = $bell->Scale(-from => '0', -to => '100', -length => '200', -tickinterval => '20', -label => 'Volume (%)',
-			      -orient => 'horizontal');
-    $bell_val = $bell->Frame();
-    labelentry $bell_val, 'bell_val_pit', 'Pitch (Hz)', 6;
-    labelentry $bell_val, 'bell_val_dur', 'Duration (ms)', 6;
-    $bell_val_pit->pack(-side => 'left', -padx => '5');
-    $bell_val_dur->pack(-side => 'right', -padx => '5');
-    $bell_label->pack(-side => 'top', -expand => 'yes');
-    $bell_vol->pack(-side => 'top', -expand => 'yes');
-    $bell_val->pack(-side => 'top', -expand => 'yes');
-
-    # Keyboard settings
-
-    $kbd = $top->Frame(-relief => 'raised', -borderwidth => '2');
-    $kbd_label = $kbd->Label(-text => 'Keyboard Repeat Settings');
-    $kbd_val = $kbd->Frame();
-    $kbd_val_onoff = $kbd_val->Checkbutton(-text => 'On', -onvalue => 'on', -offvalue => 'off', -variable => \$kbdrpt,
-					 -relief => 'flat');
-    $kbd_val_cli = $kbd_val->Scale(-from => '0', -to => '100', -length => '200', -tickinterval => '20',
-				 -label => 'Click Volume (%)', -orient => 'horizontal');
-    $kbd_val_onoff->pack(-side => 'left', -expand => 'yes', -fill => 'both');
-    $kbd_val_cli->pack(-side => 'left', -expand => 'yes');
-    $kbd_label->pack(-side => 'top', -expand => 'yes');
-    $kbd_val->pack(-side => 'top', -expand => 'yes', -pady => '2', -fill => 'x');
-
-    # Mouse settings
-
-    $mouse = $top->Frame(-relief => 'raised', -borderwidth => '2');
-    $mouse_label = $mouse->Label(-text => 'Mouse Settings');
-    $mouse_hor = $mouse->Frame();
-    labelentry $mouse_hor, 'mouse_hor_acc', 'Acceleration', 3;
-    labelentry $mouse_hor, 'mouse_hor_thr', 'Threshold (pixels)', 3;
-    $mouse_hor_acc->pack(-side => 'left');
-    $mouse_hor_thr->pack(-side => 'right');
-    $mouse_label->pack(-side => 'top');
-    $mouse_hor->pack(-side => 'top', -expand => 'yes');
-
-    # Screen Saver settings
-
-    $screen = $top->Frame(-relief => 'raised', -borderwidth => '2');
-    $screen_label = $screen->Label(-text => 'Screen-saver Settings');
-    $screen_val = $screen->Frame();
-    $screen_val_rb = $screen_val->Frame();
-    $screen_val_rb_blank = $screen_val_rb->Radiobutton(-text => 'Blank', -relief => 'flat', -value => 'blank',
-					    -variable => \$screenbla);
-    $screen_val_rb_pat = $screen_val_rb->Radiobutton(-text => 'Pattern', -relief => 'flat', -value => 'noblank',
-					  -variable => \$screenbla);
-    $screen_val_rb_blank->pack(-side => 'top', -pady => '2', -anchor => 'w');
-    $screen_val_rb_pat->pack(-side => 'top', -pady => '2', -anchor => 'w');
-    $screen_val_le = $screen_val->Frame();
-    labelentry $screen_val_le, 'screen_val_le_tim', 'Timeout (s)', 5;
-    labelentry $screen_val_le, 'screen_val_le_cyc', 'Cycle (s)', 5;
-    $screen_val_le_tim->pack(-side => 'top', -pady => '2', -anchor => 'e');
-    $screen_val_le_cyc->pack(-side => 'top', -pady => '2', -anchor => 'e');
-    $screen_val_rb->pack(-side => 'left');
-    $screen_val_le->pack(-side => 'left');
-
-    $screen_label->pack(-side => 'top');
-    $screen_val->pack(-side => 'top', -expand => 'y');
-
-    # Main window
-
-    $buttons->pack(-side => 'top', -fill => 'both');
-    my(@pl)= (-side => 'top', -fill => 'both', -ipady => '5', -expand => 'yes');
-    $bell->pack(@pl);
-    $kbd->pack(@pl);
-    $mouse->pack(@pl);
-    $screen->pack(@pl);
-
-    # Let the user resize our window
-
-    $top->minsize(10, 10);
-
-} # end createwindows
-
-
-# Main program
-
-$top = MainWindow->new;
-
-readsettings;
-createwindows;
-dispsettings;
-
-MainLoop;

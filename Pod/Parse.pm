@@ -35,7 +35,7 @@ require Exporter;
 
 =head1 NAME
 
-Pod::Parse
+Pod::Parse - Parse perl's pod files.
 
 =head1 DESCRIPTION
 
@@ -599,7 +599,8 @@ sub Simplify2 {
 		push(@result,"setline",$line);
 		push(@result,"setloc",$loc);
 		if( $code == $INDENT) {
-			my($code,$line,$loc,$i,$t,@more) = @{$_};
+			my($code_dummy,$line,$loc,$i,$t,@more) = @{$_};
+			#   ^^^^^^^^^^ This may be bug of perl5.002b2
 			push(@result,"listtype",$t);
 			push(@result,"listbegin",$t);
 			push(@result,"setindent",$i);
@@ -741,8 +742,9 @@ sub Parse2 {
 			}
 			push(@result,[3,$line,$loc,0,Normalize($data)]);
 			
-		} elsif( /^=over\s+(\d+)/ ) {
+		} elsif( /^=over(?:\s+(\d+))?/ ) {
 			my($indent,$l1,$l2)=($1,$line,$loc);
+			$indent ||= 5; # good?
 			$recurse++;
 			local($type)=0;
 			local($typecount)=0;
@@ -766,7 +768,7 @@ sub Parse2 {
 			#push(@result,[5,$line,$loc]);
 		} elsif( /^=/ ) {
 			m/^(=\S+)/;
-			warn "Unknown pod command `$s' near line $line of $ARGV\n";
+			warn "Unknown pod command `$1' near line $line of $ARGV\n";
 		} else {
 			if($saveindex) {
 				$_ = join("",map("X<$_>",grep(!/^\s*$/,split(/\n/,$saveindex))))

@@ -1,13 +1,7 @@
 # floor.pl
 
-sub floor_bg1;
-sub floor_bg2;
-sub floor_bg3;
-sub floor_display;
-sub floor_fg1;
-sub floor_fg2;
-sub floor_fg3;
-sub floor_room_changed;
+use subs qw(floor_bg1 floor_bg2 floor_bg3 floor_display floor_fg1 floor_fg2
+	    floor_fg3 floor_room_changed);
 
 sub floor {
 
@@ -22,6 +16,8 @@ sub floor {
     dpos $w;
     $w->title('Floorplan Canvas Demonstration');
     $w->iconname('floor');
+    my $quit_code = sub {untie $floor::current_room; $w->destroy};
+    $FLOOR->protocol('WM_DELETE_WINDOW' => $quit_code);
 
     my $w_msg = $w->Label(
         -font       => $FONT,
@@ -32,15 +28,15 @@ sub floor {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
+        -command => $quit_code,
     );
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -48,7 +44,7 @@ sub floor {
     $w_vscroll->pack(-side => 'right', -fill => 'y');
     my $w_hscroll = $w->Scrollbar(-orient => 'horiz');
     $w_hscroll->pack(-side => 'bottom', -fill => 'x');
-    $w_frame = $w->Frame(-bd => 2, -relief => 'sunken',
+    my $w_frame = $w->Frame(-bd => 2, -relief => 'sunken',
 			 -highlightthickness => 2);
     $w_frame->pack(-side => 'top', -fill => 'both', -expand => 'yes');
     my $c = $w_frame->Canvas(
@@ -66,7 +62,7 @@ sub floor {
     $c->pack(-expand => 'yes', -fill => 'both');
 
     # Create an entry for displaying and typing in current room.
-
+    untie $floor::current_room;
     $floor::current_room = '';
     my $c_entry = $c->Entry(-width => '10', -relief => 'sunken',
         -bd => '2', -textvariable => \$floor::current_room);
@@ -102,20 +98,20 @@ sub floor {
 
     # Set up event bindings for canvas.
 
-    for (1..3) {
-	$c->bind("floor${ARG}", '<1>' => [
-            sub {floor_display(@ARG)},
-                $ARG, \%floor_labels, \%floor_items, \%cinfo, \$active_floor,
-		$c_entry],
+    my $floor_number;
+    for $floor_number (1..3) {
+	$c->bind("floor${floor_number}", '<1>' =>
+            [\&floor_display, $floor_number, \%floor_labels, \%floor_items, 
+	    \%cinfo, \$active_floor, $c_entry],
         );
     }
-    $c->bind('room', '<Enter>' => [sub {
-	my($c, $floor_labels) = @ARG;
+    $c->bind('room', '<Enter>' => sub {
+	my($c) = @ARG;
 	my $id = $c->find('withtag' => 'current');
-	$floor::current_room  = $floor_labels->{$c->find('withtag','current')}
+	$floor::current_room  = $floor_labels{$c->find('withtag','current')}
 	    if defined $id;
 	$c->idletasks;
-    }, \%floor_labels]);
+    });
     $c->bind('room', '<Leave>' => sub {$floor::current_room = ''});
     $c->Tk::bind('<2>' => sub {
 	my($c) = @ARG;
@@ -128,9 +124,7 @@ sub floor {
 	$c->scan('dragto', $e->x, $e->y);
     });
     $c->Tk::bind('<Enter>', => [sub {shift; shift->focus}, $c_entry]);
-    tie($floor::current_room, 'floor',
-	$floor::current_room, $c, \%floor_items, \%cinfo,
-    ); # trace current_room
+    tie $floor::current_room, 'floor', $c, \%floor_items, \%cinfo;
 
 } # floor
 
@@ -171,7 +165,10 @@ sub floor_display {
     # polygons are on top.
 	
     my $cmd = "floor_fg${active}";
-    &$cmd($w, $cinfo->{'offices'}, $floor_labels, $floor_items);
+    {
+	no strict qw(refs);
+	&$cmd($w, $cinfo->{'offices'}, $floor_labels, $floor_items);
+    }
     $w->raise('room');
 
     # Offset the floors diagonally from each other.
@@ -1354,23 +1351,52 @@ sub floor_fg3 {;
 
 } # end floor_fg3;
 
-# current_room is tied to package "floor" for tracing purposes.  All other
-# global variables are also "floor" qualified.
-
 package floor;
 
+# $current_room is tied to package "floor" for tracing purposes, thus, when
+# characters are typed in the Entry widget we can call floor_room_changed()
+# at every keystroke, and when a valid room number is found light the room up.
+#
+# All other global variables are also "floor" qualified.
+
+use English;;
+
+my($class, $current_room, $canvas, $floor_items, $cinfo);
+
 sub TIESCALAR {
-    $canvas = $_[2];
-    $floor_items = $_[3];
-    $cinfo = $_[4];
-    bless \($_[1]);
+
+    # "new" method for scalars.  Save reference to the floorplan canvas,
+    # item descriptions and canvas info hash in this package's namespace.
+    #
+    # Return a blessed reference, which is what FETCH and STORE will get.
+
+    ($class, $canvas, $floor_items, $cinfo) = @ARG;
+    my $self;
+    bless \$self, $class;
+
 }
 
 sub FETCH {
+
+    # Method to handle reads of the tied variable:  simply return it's value.
+   
+    my($current_room) = @ARG;
+    return $$current_room;
+
 }
 
 sub STORE {
-    &main::floor_room_changed($canvas, $floor_items, $cinfo);
+
+    # Method to handle writes to the tied variable:  simply store it's value.
+    # Call floor_room_changed() to highlight a room, if possible.
+
+    my($current_room, $value) = @ARG;
+    $$current_room = $value;
+    &::floor_room_changed($canvas, $floor_items, $cinfo);
+
+}
+
+sub DESTROY {			# class destructor (unused)
 }
 
 1;

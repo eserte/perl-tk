@@ -4,30 +4,20 @@ require Tk;
 use Tk::Pretty;
 require DynaLoader;
 require Exporter;
-require FileHandle;
+require IO::Handle;
 use Carp;
-@Tk::IO::ISA = qw(FileHandle DynaLoader Exporter);
-@EXPORT_OK   = qw(System);
+@Tk::IO::ISA = qw(DynaLoader IO::Handle Exporter);
 
-bootstrap Tk::IO;
-
-my $seq = 0;
-
-# Copied from POSIX
-sub gensym 
-{
- my $pkg = @_ ? ref($_[0]) || $_[0] : "";
- local *{$pkg . "::GLOB" . ++$seq};
- \delete ${$pkg . "::"}{'GLOB' . $seq};
-}
+bootstrap Tk::IO $Tk::VERSION;
 
 sub new
 {
  my ($package,%args) = @_;
- my $fh  = bless $package->gensym,$package;
- %{*$fh} = ();
- @{*$fh} = ();
- ${*$fh} = "";
+ # Do whatever IO::Handle does
+ my $fh  = $package->SUPER::new;
+ %{*$fh} = ();  # The hash is used for configure options
+ ${*$fh} = "";  # The scalar is used as the 'readable' buffer
+ @{*$fh} = ();  # The array 
  $fh->configure(%args);
  return $fh;
 }
@@ -95,8 +85,9 @@ sub readable
      my $eol = index(${*$fh},"\n");
      if ($eol >= 0)
       {
-       ${*$fh}{-linecommand}->Call(substr(${*$fh},0,++$eol));
+       my $line = substr(${*$fh},0,++$eol);
        substr(${*$fh},0,$eol) = "";
+       ${*$fh}{-linecommand}->Call($line);
       }
     }
   }
@@ -151,11 +142,10 @@ sub exec
 
 sub wait
 {
- &Tk::Pretty::PrintArgs;
  my $fh = shift;
  my $code;
  my $ch = delete ${*$fh}{-childcommand};
- ${*$fh}{-childcommand} = Tk::Callbacksub->new(sub { $code = shift });
+ ${*$fh}{-childcommand} = Tk::Callback->new(sub { $code = shift });
  Tk->DoOneEvent until (defined $code);
  if (defined $ch)
   {
@@ -182,8 +172,48 @@ sub close
 
 sub DESTROY
 {  
- my $fh = shift;
- $fh->close;
+ shift->close;
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Tk::IO - high level interface to Tk's 'fileevent' mechanism
+
+=head1 SYNOPSIS
+  my $fh = Tk::IO->new(-linecommand => callback, -childcommand => callback);
+  $fh->exec("command")
+  $fh->wait
+  $fh->kill
+
+=head1 DESCRIPTION
+
+Tk::IO is now layered on perl's IO::Handle class. Interfaces 
+have changed, and are still evolving. 
+
+In theory C methods which enable non-blocking IO as in earlier Tk-b*
+release(s) are still there. I have not changed them to use perl's 
+additional Configure information, or tested them much.
+
+Assumption is that B<exec> is 
+used to fork a child process and a callback is called each time a 
+complete line arrives up the implied pipe.
+
+"line" should probably be defined in terms of perl's input record
+separator but is not yet.
+
+The -childcommand callback is called when end-of-file occurs.
+
+$fh->B<wait> can be used to wait for child process while processing
+other Tk events.
+
+$fh->B<kill> can be used to send signal to child process.
+
+=head1 BUGS
+
+Still not finished.
+Idea is to use "exec" to emulate "system" in a non-blocking manner.
+
+

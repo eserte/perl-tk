@@ -5,7 +5,7 @@
 #
 # Note also that embedded windows do not behave properly
 # when covered by other canvas items: they stay on top.
-use lib ("./blib");
+
 
 use strict;
 use Tk;

@@ -125,6 +125,19 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, args, widgRec, flags)
     for ( ; argc > 0; argc -= 2, args += 2) {
 	specPtr = FindConfigSpec(interp, specs, LangString(args[0]), needFlags, hateFlags);
 	if (specPtr == NULL) {
+	    if (!(flags & TK_CONFIG_ARGV_ONLY)) {
+		/*
+		 * Handle generic, tkwin related create-time only options 
+		 */
+		char *string  = LangString(*args);
+		size_t length = strlen(string);
+
+		if (LangCmpOpt("-class", string, length) == 0) {
+		    Tk_SetClass(tkwin, LangString(args[1]));  
+		    continue;
+		}
+
+	    } 
 	    return TCL_ERROR;
 	}
 

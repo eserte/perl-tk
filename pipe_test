@@ -1,9 +1,7 @@
 #!/usr/local/bin/perl -w
-
-use lib ("./blib");
-
 use Tk;
-use Tk::IO;
+
+require Tk::IO;
 
 my $top = MainWindow->new;
 my $status = "Ready for job ...";

@@ -1,1 +1,1 @@
-tkError.o: tkError.c tkPort.h tkInt.h tk.h Lang.h
+tkError.o: tkError.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h

@@ -19,18 +19,26 @@ sub Populate
   }
  $w->menu(-tearoff => 0);
  $w->configure(-textvariable => $var);
+
+ # Should we allow -menubackground etc. as in -label* of Frame ?
+
  $w->ConfigSpecs(-command => [CALLBACK,undef,undef,undef],
-                 -options => [METHOD, undef, undef, undef] 
+                 -options => [METHOD, undef, undef, undef],
+		 -variable=> [PASSIVE, undef, undef, undef],
                 );
+
+ $w->configure(-variable => delete $args->{-variable});
 }
 
 sub setOption
 {
- my ($w,$val) = @_;
+ my ($w, $label, $val) = @_;
+ $val = $label if @_ == 2;
  my $var = $w->cget(-textvariable);
- $$var = $val;
- my $cb = $w->cget('-command');
- $cb->Call($val) if (defined $cb);
+ $$var = $label;
+ $var = $w->cget(-variable);
+ $$var = $val if $var;
+ $w->Callback(-command => $val);
 }
 
 sub options
@@ -41,13 +49,18 @@ sub options
    my $menu = $w->menu;
    my $var = $w->cget(-textvariable);
    my $width = $w->cget('-width');
-   my $val;
+   my($val, $label);
    foreach $val (@$opts) 
     {
-     my $len = length($val);
+     if (ref $val) {
+	($label, $val) = @$val;
+     } else {
+	$label = $val;
+     }
+     my $len = length($label);
      $width = $len if (!defined($width) || $len > $width);
-     $menu->command(-label => $val, -command => [ $w , 'setOption', $val ]);
-     $w->setOption($val) unless (defined $$var);
+     $menu->command(-label => $label, -command => [ $w , 'setOption', $label, $val ]);
+     $w->setOption($label, $val) unless (defined $$var);
     }
    $w->configure('-width' => $width);
   }

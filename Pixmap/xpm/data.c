@@ -33,12 +33,12 @@
 \*****************************************************************************/
 
 /* Official version number */
-static char *RCS_Version = "$XpmVersion: 3.4e $";
+static char *RCS_Version = "$XpmVersion: 3.4h $";
 
 /* Internal version number */
-static char *RCS_Id = "$Id: xpm.shar,v 3.42 1995/03/01 12:16:54 lehors Exp $";
+static char *RCS_Id = "$Id: xpm.shar,v 3.58 96/02/01 23:48:51 lehors Exp $";
 
-#include "xpmP.h"
+#include "XpmI.h"
 #include <ctype.h>
 
 
@@ -64,7 +64,7 @@ ParseComment(mdata)
 	    *++s = c;
 	    n++;
 	    s2++;
-	} while (c == *s2 && *s2 != '\0' && c && c != mdata->Bos);
+	} while (c == *s2 && *s2 != '\0' && c);
 
 	if (*s2 != '\0') {
 	    /* this wasn't the beginning of a comment */
@@ -78,18 +78,26 @@ ParseComment(mdata)
 	n = 0;
 	while (notend) {
 	    s2 = mdata->Ecmt;
-	    while (*s != *s2 && c && c != mdata->Bos) {
+	    while (*s != *s2 && c) {
 		c = *mdata->cptr++;
+		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
+		    s = mdata->Comment;
+		    n = 0;
+		}
 		*++s = c;
 		n++;
 	    }
 	    mdata->CommentLength = n;
 	    do {
 		c = *mdata->cptr++;
-		n++;
+		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
+		    s = mdata->Comment;
+		    n = 0;
+		}
 		*++s = c;
+		n++;
 		s2++;
-	    } while (c == *s2 && *s2 != '\0' && c && c != mdata->Bos);
+	    } while (c == *s2 && *s2 != '\0' && c);
 	    if (*s2 == '\0') {
 		/* this is the end of the comment */
 		notend = 0;
@@ -114,8 +122,7 @@ ParseComment(mdata)
 	    *++s = c;
 	    n++;
 	    s2++;
-	} while (c == *s2 && *s2 != '\0'
-		 && c != EOF && c != mdata->Bos);
+	} while (c == *s2 && *s2 != '\0' && c != EOF);
 
 	if (*s2 != '\0') {
 	    /* this wasn't the beginning of a comment */
@@ -131,19 +138,26 @@ ParseComment(mdata)
 	n = 0;
 	while (notend) {
 	    s2 = mdata->Ecmt;
-	    while (*s != *s2 && c != EOF && c != mdata->Bos) {
+	    while (*s != *s2 && c != EOF) {
 		c = getc(file);
+		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
+		    s = mdata->Comment;
+		    n = 0;
+		}
 		*++s = c;
 		n++;
 	    }
 	    mdata->CommentLength = n;
 	    do {
 		c = getc(file);
-		n++;
+		if (n == XPMMAXCMTLEN - 1)  { /* forget it */
+		    s = mdata->Comment;
+		    n = 0;
+		}
 		*++s = c;
+		n++;
 		s2++;
-	    } while (c == *s2 && *s2 != '\0'
-		     && c != EOF && c != mdata->Bos);
+	    } while (c == *s2 && *s2 != '\0' && c != EOF);
 	    if (*s2 == '\0') {
 		/* this is the end of the comment */
 		notend = 0;
@@ -294,7 +308,6 @@ xpmGetString(mdata, sptr, l)
 	if ((c = getc(file)) == EOF)
 	    return (XpmFileInvalid);
 
-	p = NULL;
 	i = 0;
 	q = buf;
 	p = (char *) XpmMalloc(1);
@@ -402,7 +415,7 @@ xpmParseHeader(mdata)
 	    if (!l)
 		return (XpmFileInvalid);
 	    buf[l] = '\0';
-	    ptr = rindex(buf, '_');
+	    ptr = strrchr(buf, '_');
 	    if (!ptr || strncmp("_format", ptr, l - (ptr - buf)))
 		return XpmFileInvalid;
 	    /* this is definitely an XPM 1 file */

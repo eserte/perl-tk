@@ -24,7 +24,7 @@ sub vscale {
     $w_msg->pack(-padx => '.5c');
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -32,7 +32,7 @@ sub vscale {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -65,7 +65,7 @@ sub vscale_height {
     my($w, $height) = @ARG;
 
     $height += 21;
-    $y2 = $height - 30;
+    my $y2 = $height - 30;
     $y2 = 21 if $y2 < 21;
     $w->coords('poly', 15, 20, 35, 20, 35, $y2, 45, $y2, 25, $height, 5, $y2,
 	       15, $y2, 15, 20);

@@ -1,6 +1,8 @@
-=head1 Introduction
+=head1 NAME
 
-Writing Tk applications in perl5.
+perl/Tk - Writing Tk applications in perl5.
+
+=head1 DESCRIPTION
 
 This manual page is for beginners.  It assumes you know some perl, 
 and have got perl+Tk running.

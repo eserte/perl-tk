@@ -1,6 +1,6 @@
 =head1 NAME
 
-CallingTk: what is Perl Tk interface doing when you call Tk functions.
+CallingTk -  what is Perl Tk interface doing when you call Tk functions.
 
 This information is worse than useless for C<perlTk> users, but can of
 some help for people interested in using modified Tk source with
@@ -10,7 +10,7 @@ I<This document is under construction. The information is believed to
 be pertinent to the version of> C<portableTk> I<available when it was
 created. All the details are subject to change.>
 
-=head1 Description
+=head1 DESCRIPTION
 
 =over 5
 

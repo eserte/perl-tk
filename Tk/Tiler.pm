@@ -109,10 +109,7 @@ sub Layout
    $s->MapWindow;
   }
  $m->{Prev} = $m->{Start};
- if (defined ($cb = $m->cget('-yscrollcommand')))
-  {
-   $cb->Call($m->{Start}/$need,$row/$need);
-  }
+ $m->Callback(-yscrollcommand => $m->{Start}/$need,$row/$need);
 }
 
 sub QueueLayout

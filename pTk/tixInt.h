@@ -447,7 +447,7 @@ EXTERN Tix_DItemInfo *	Tix_GetDItemType _ANSI_ARGS_((
 EXTERN void 		TixGetColorDItemGC _ANSI_ARGS_((
 			    Tix_DItem * iPtr, GC * backGC_ret,
 			    GC * foreGC_ret, int flags));
-EXTERN int 		Tix_Init_Internal _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT int 		Tix_Init_Internal _ANSI_ARGS_((Tcl_Interp *interp,
 			    int * argcPtr, Arg *args, int doSource));
 EXTERN int 		Tix_MultiConfigureInfo _ANSI_ARGS_((
 			    Tcl_Interp * interp,

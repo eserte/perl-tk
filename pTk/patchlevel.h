@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * @(#) patchlevel.h 1.9 95/09/18 11:42:14
+ * @(#) patchlevel.h 1.10 95/11/27 09:03:19
  */
 
-#define TK_PATCH_LEVEL "4.0p2"
+#define TK_PATCH_LEVEL "4.0p3"

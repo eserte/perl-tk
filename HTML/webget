@@ -8,20 +8,20 @@ require LWP::UserAgent;
 
 my $ua = new LWP::UserAgent;    # create a useragent to test
 
-$ua->envProxy;
+$ua->env_proxy;
 
 foreach $u (@ARGV)
  {
   my $url = new URI::URL($u);
   my $request = new HTTP::Request('GET', $url);
   my $response = $ua->request($request, undef, undef);
-  if ($response->isSuccess)
+  if ($response->is_success)
    {
     print $response->content;
    }
   else
    {
-    print STDERR $response->asString;
+    print STDERR $response->as_string;
    }
  }
 

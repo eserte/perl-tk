@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkTextDisp.c 1.92 95/07/22 17:17:18";
+static char sccsid[] = "@(#) tkTextDisp.c 1.96 95/11/21 13:15:27";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -747,6 +747,10 @@ LayoutDLine(textPtr, indexPtr)
 					 * style for first character on line. */
     int tabSize;			/* Number of pixels consumed by current
 					 * tab stop. */
+    TkTextDispChunk *lastCharChunkPtr;	/* Pointer to last chunk in display
+					 * lines with numChars > 0.  Used to
+					 * drop 0-sized chunks from the end
+					 * of the line. */
     int offset, ascent, descent, code;
     StyleValues *sValuePtr;
 
@@ -785,6 +789,7 @@ LayoutDLine(textPtr, indexPtr)
     rMargin = 0;
     wrapMode = tkTextCharUid;
     tabSize = 0;
+    lastCharChunkPtr = NULL;
 
     /*
      * Find the first segment to consider for the line.  Can't call
@@ -885,6 +890,7 @@ LayoutDLine(textPtr, indexPtr)
 	}
 	if (chunkPtr->numChars > 0) {
 	    noCharsYet = 0;
+	    lastCharChunkPtr = chunkPtr;
 	}
 	if (lastChunkPtr == NULL) {
 	    dlPtr->chunkPtr = chunkPtr;
@@ -940,6 +946,18 @@ LayoutDLine(textPtr, indexPtr)
      * potentially require the last chunk to be layed out again.
      */
 
+    if (breakChunkPtr == NULL) {
+	/*
+	 * This code makes sure that we don't accidentally display
+	 * chunks with no characters at the end of the line (such as
+	 * the insertion cursor).  These chunks belong on the next
+	 * line.  So, throw away everything after the last chunk that
+	 * has characters in it.
+	 */
+
+	breakChunkPtr = lastCharChunkPtr;
+	breakCharOffset = breakChunkPtr->numChars;
+    }
     if ((breakChunkPtr != NULL) && ((lastChunkPtr != breakChunkPtr)
 	    || (breakCharOffset != lastChunkPtr->numChars))) {
 	while (1) {
@@ -1200,6 +1218,11 @@ UpdateDisplayInfo(textPtr)
 	    newPtr = dlPtr->nextPtr;
 	    FreeDLines(textPtr, dlPtr, newPtr, 0);
 	    dlPtr = newPtr;
+	    if (prevPtr != NULL) {
+		prevPtr->nextPtr = newPtr;
+	    } else {
+		dInfoPtr->dLinePtr = newPtr;
+	    }
 	    continue;
 	}
 
@@ -2773,7 +2796,7 @@ TkTextSetYView(textPtr, indexPtr, pickPlace)
 {
     DInfo *dInfoPtr = textPtr->dInfoPtr;
     register DLine *dlPtr;
-    int bottomY, close, lineIndex;
+    int bottomY, close, lineIndex, lineHeight;
     TkTextIndex tmpIndex, rounded;
 
     /*
@@ -2829,11 +2852,20 @@ TkTextSetYView(textPtr, indexPtr, pickPlace)
     }
 
     /*
-     * The desired line isn't already on-screen.
+     * The desired line isn't already on-screen.  Figure out what
+     * it means to be "close" to the top or bottom of the screen.
+     * Close means within 1/3 of the screen height or within three
+     * lines, whichever is greater.  Add one extra line also, to
+     * account for the way MeasureUp rounds.
      */
 
-    bottomY = (dInfoPtr->y + dInfoPtr->maxY)/2;
+    lineHeight = textPtr->fontPtr->ascent + textPtr->fontPtr->descent;
+    bottomY = (dInfoPtr->y + dInfoPtr->maxY + lineHeight)/2;
     close = (dInfoPtr->maxY - dInfoPtr->y)/3;
+    if (close < 3*lineHeight) {
+	close = 3*lineHeight;
+    }
+    close += lineHeight;
     if (dlPtr != NULL) {
 	/*
 	 * The desired line is above the top of screen.  If it is
@@ -2864,7 +2896,7 @@ TkTextSetYView(textPtr, indexPtr, pickPlace)
      * as low on the screen as possible but with its bottom no lower
      * than bottomY.  BottomY is the bottom of the window if the
      * desired line is just below the current screen, otherwise it
-     * is the center of the window.
+     * is a half-line lower than the center of the window.
      */
 
     MeasureUp(textPtr, indexPtr, bottomY, &textPtr->topIndex);
@@ -3147,7 +3179,14 @@ TkTextXviewCmd(textPtr, interp, argc, args)
 	case TK_SCROLL_ERROR:
 	    return TCL_ERROR;
 	case TK_SCROLL_MOVETO:
-	    newOffset = (fraction * dInfoPtr->maxLength) / textPtr->charWidth;
+	    if (fraction > 1.0) {
+		fraction = 1.0;
+	    }
+	    if (fraction < 0) {
+		fraction = 0;
+	    }
+  	    newOffset = ((fraction * dInfoPtr->maxLength) / textPtr->charWidth)
+		    + 0.5;
 	    break;
 	case TK_SCROLL_PAGES:
 	    charsPerPage = ((dInfoPtr->maxX - dInfoPtr->x) / textPtr->charWidth)
@@ -3373,16 +3412,22 @@ TkTextYviewCmd(textPtr, interp, argc, args)
 	case TK_SCROLL_ERROR:
 	    return TCL_ERROR;
 	case TK_SCROLL_MOVETO:
+	    if (fraction > 1.0) {
+		fraction = 1.0;
+	    }
+	    if (fraction < 0) {
+		fraction = 0;
+	    }
 	    fraction *= TkBTreeNumLines(textPtr->tree);
 	    lineNum = fraction;
-	    TkTextMakeIndex(textPtr->tree, lineNum+1, 0, &index);
-	    TkTextIndexBackChars(&index, 1, &index);
-	    index.charIndex = (index.charIndex+1)*(fraction-lineNum);
+	    TkTextMakeIndex(textPtr->tree, lineNum, 0, &index);
+	    index.charIndex = TkBTreeCharsInLine(index.linePtr)
+		    * (fraction-lineNum) + 0.5;
 	    TkTextSetYView(textPtr, &index, 0);
 	    break;
 	case TK_SCROLL_PAGES:
 	    /*
-	     * Scroll up or down by screenfulls.  Actually, use the
+	     * Scroll up or down by screenfuls.  Actually, use the
 	     * window height minus two lines, so that there's some
 	     * overlap between adjacent pages.
 	     */

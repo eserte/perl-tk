@@ -1,13 +1,14 @@
 /*
-  Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995,1996 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
 
-#include "EXTERN.h"
-#include "perl.h"
-#include "XSUB.h"
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
 #include "leak_util.h"
+
 
 #define MAX_HASH 1009
 
@@ -49,18 +50,38 @@ void *tag;
  return NULL;
 }
 
+void
+check_arenas()
+{
+ SV *sva;
+ for (sva = sv_arenaroot; sva; sva = (SV *) SvANY(sva))
+  {
+   SV *sv = sva + 1;
+   SV *svend = &sva[SvREFCNT(sva)];
+   while (sv < svend)
+    {
+     if (SvROK(sv) && ((IV) SvANY(sv)) & 1)
+      {
+       warn("Odd SvANY for %p @ %p[%d]",sv,sva,(sv-sva));
+       abort();
+      }
+     ++sv;
+    }
+  }
+}
+
 long int
 sv_apply_to_used(p, proc,n)
 void *p;
 used_proc *proc;
 long int n;
 {
- SV *sv;
- register SV *svend;
-
- for (sv = sv_arenaroot; sv; sv = (SV *) SvANY(sv))
+ SV *sva;
+ for (sva = sv_arenaroot; sva; sva = (SV *) SvANY(sva))
   {
-   svend = &sv[1008 / sizeof(SV)];
+   SV *sv = sva + 1;
+   SV *svend = &sva[SvREFCNT(sva)];
+
    while (sv < svend)
     {
      if (SvTYPE(sv) != SVTYPEMASK)
@@ -90,7 +111,9 @@ long
 note_used(x)
 hash_ptr **x;
 {
- hash_ptr *ht = (hash_ptr *) calloc(MAX_HASH,sizeof(hash_ptr));
+ size_t need = MAX_HASH*sizeof(hash_ptr);
+ hash_ptr *ht = (hash_ptr *) safemalloc(need);
+ memzero(ht,need);
  *x = ht;
  return sv_apply_to_used(ht, note_sv, 0);
 }

@@ -8,13 +8,18 @@ BEGIN
  }
 
 use Tk;
+use Tk::DropSite qw(Sun);
+use Tk::DragDrop qw(Sun);
 require Tk::TextUndo;
 require Tk::FileSelect;
+require Tk::Menubar;
 use Tk::ErrorDialog;
 
 my $top = MainWindow->new();
-my $mb  = $top->Component(Menubar => 'menubar',
-                       '-pack' => [ -side => 'top', -fill => 'x' ]);
+
+my $mb = $top->Menubar;
+
+$top->optionAdd('*TextUndo.Background' => '#fff5e1');
 
 my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                        '-accept'   => sub 
@@ -24,25 +29,46 @@ my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                                      },
                        Name => 'fs', -filter => '*');
 
-my $t = $top->Component(TextUndo => 'text', -wrap => 'none', -bg => 'white');
+my $t = $top->Scrolled(TextUndo, -wrap => 'none');
 
-$mb->command(-button => ['File',-underline => 0],
-             -label => 'Open', -underline => 0, 
-             -command => sub { my $file = $fs->Show(-popover => $top);
+my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
+$dd->configure(-startcommand => 
+               sub
+                {
+                 return 1 unless (eval { $t->tagNextrange(sel => '1.0','end')});
+                 $dd->configure(-text => $t->get('sel.first','sel.last')); 
+                });
+                
+$t->DropSite(-motioncommand => 
+              sub 
+               { my ($x,$y) = @_;
+                 $t->markSet(insert => "\@$x,$y");
+               },
+              -dropcommand => 
+              sub 
+               { my ($seln,$x,$y) = @_;
+                 $t->markSet(insert => "\@$x,$y");
+                 $t->insert(insert => $t->SelectionGet(-selection => $seln));
+               }
+             );
+
+$mb->Menubutton(-text => '~File', -menuitems => 
+                  [[Button => '~Open',
+                   -command => sub { my $file = $fs->Show(-popover => $top);
                                $t->Load($file) if (defined $file);
-                             });
-$mb->command(-button => 'File', 
-             -label => 'Save', -underline => 0, 
-             -command => [ $t , 'Save' ]);
-$mb->command(-button => 'File', -label => 'Quit', -underline => 0, 
-              -command => [ 'destroy',$top ] );
+                             }
+                  ]]);
 
-$top->Delegates(DEFAULT => $t); 
-$top->ConfigSpecs(DEFAULT => [$t]); 
+$mb->Menubutton(-text => '~File', -menuitems => 
+                 [['Button' => '~Save', -command => [ $t , 'Save' ]],
+                  ['Button' => '~Quit', -command => [ 'destroy',$top ]],
+                  ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']]
+                 ]);
+
+$mb->Menubutton(-text => '~Help', -side => 'right');
+
+
 $t->pack(-expand => 1, -fill => 'both');
-$top->AddScrollbars($t);
-$top->ConfigDefault(\%args);
-$top->configure(%args) if (%args);
 
 $t->Load($ARGV[0]) if (@ARGV);
 

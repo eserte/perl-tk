@@ -3,42 +3,58 @@
 # This script generates a directory browser, which lists the working directory and allows you to open files or subdirectories
 # by double-clicking.
 #
-# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  95/01/16
+# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  96/01/24
 
-require 5.001;
+require 5.002;
 use English;
 use File::Basename;
 use Tk;
+use strict;
+sub browse;
 
-$top = MainWindow->new;
+sub invokeself
+{
+ my @args = ($^X,__FILE__,@_);
+ system(join(' ',@args));
+}
 
-# Create a scrollbar on the right side of the main window and a listbox on the left side.
+my $MW = MainWindow->new;
 
-$scroll = $top->Scrollbar();
+# Create a scrollbar on the right side of the main window and a listbox on 
+# the left side.
+
+my $scroll = $MW->Scrollbar();
 $scroll->pack(-side => 'right', -fill => 'y');
-$list = $top->Listbox(-yscrollcommand => ['set', $scroll], -relief => 'sunken', -width => 20, -height => 20, -setgrid => 'yes');
+my $list = $MW->Listbox(
+    -yscrollcommand => ['set', $scroll], 
+    -relief => 'sunken', 
+    -width => 20, 
+    -height => 20, 
+    -setgrid => 'yes',
+);
 $list->pack(-side => 'left', -fill => 'both', -expand => 'yes');
 $scroll->configure(-command => ['yview', $list]);
-$top->minsize(1, 1);
+$MW->minsize(1, 1);
 
 # Fill the listbox with a list of all the files in the directory.
 
+my $dir;
 if (scalar @ARGV > 0) {
     $dir = $ARGV[0];
 } else {
     $dir = '.';
 }
-foreach $i (<${dir}/*>) {
-    $list->insert('end', basename($i));
+foreach (<${dir}/*>) {
+    $list->insert('end', basename($::ARG));
 }
 
 # Set up bindings for the browser.
 
-$list->bind('all', '<Control-c>' => sub {exit});
+$list->bind('all', '<Control-c>' => \&exit);
 $list->bind('<Double-Button-1>' => sub {
-    my($l, $e, $i) = @ARG;
-    foreach $i (split ' ', $l->get('active')) {
-	&browse($dir, $i);
+    my($listbox) = @ARG;
+    foreach (split ' ', $listbox->get('active')) {
+	browse $dir, $::ARG;
     }
 });
 
@@ -47,8 +63,10 @@ MainLoop;
 
 sub browse {
 
-    # The procedure below is invoked to open a browser on a given file;  if the file is a directory then another instance of
-    # this program is invoked; if the file is a regular file then an editor is invoked to display the file.
+    # The procedure below is invoked to open a browser on a given file;  
+    # if the file is a directory then another instance of this program is 
+    # invoked; if the file is a regular file then an editor is invoked to 
+    # display the file.
 
     my($dir, $file) = @ARG;
 
@@ -56,7 +74,7 @@ sub browse {
 	$file = "$dir/$file";
     }
     if (-d $file) {
-	system "browse $file &";
+	invokeself("$file &");
     } else {
 	if (-f $file) {
 	    print STDOUT "Viewing file $file ...\n";

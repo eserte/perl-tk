@@ -1,0 +1,101 @@
+'\"
+'\" Copyright (c) 1990 The Regents of the University of California.
+'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" @(#) option.n 1.8 95/06/07 21:15:24
+'\" 
+.so man.macros
+.TH option n "" Tk "Tk Generic Methods"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+option \- Add/retrieve window options to/from the option database
+.SH SYNOPSIS
+\fI$widget\fR->\fBoptionAdd\fR(\fIpattern\fR=>\fIvalue \fR?,\fIpriority\fR?)
+.sp
+\fI$widget\fR->\fBoptionClear\fR
+.sp
+\fI$widget\fR->\fBoptionGet\fR(\fIname,class\fR)
+.sp
+\fI$widget\fR->\fBoptionReadfile\fR(\fIfileName\fR?,\fIpriority\fR?)
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBoption\fR methods allow you to add entries to the Tk option
+database or to retrieve options from the database.  The \fBoptionAdd\fR
+method adds a new option to the database.
+\fIPattern\fR contains
+the option being specified, and consists of names and/or classes
+separated by asterisks or dots, in the usual X format.  \fIValue\fR
+contains a text string to associate with \fIpattern\fR;  this is the
+value that will be returned in calls to \fBTk_GetOption\fR or by
+invocations of the \fBoptionGet\fR method.  If \fIpriority\fR
+is specified, it indicates the priority level for this option 
+(see below for legal values);  it defaults to \fBinteractive\fR.
+This method always returns an empty string.
+.PP
+The \fBoptionClear\fR method clears the option database.  Default
+options (from the
+\fBRESOURCE_MANAGER\fR property or the \fB.Xdefaults\fR
+file) will be reloaded automatically the next time an
+option is added to the database or removed from it.  This method
+always returns an empty string.
+.PP
+The \fBoptionGet\fR method returns the value of the option
+specified for \fI$widget\fR under \fIname\fR and \fIclass\fR.  
+The "pathname" to \fI$widget\fR from its \fBMainWindow\fR
+and the classes of the widgets that "path" passes through 
+are used to determine the prefix to use when looking up the option.
+(The \fBMainWindow\fR's name is the \fBappname\fR and its class
+is (by default) derived from the name of the script.)
+.PP
+If several entries in the option
+database match \fI$widget\fR, \fIname\fR, and \fIclass\fR, then
+the method returns whichever was created with highest
+\fIpriority\fR level.  If there are several matching
+entries at the same priority level, then it returns whichever entry
+was \fImost recently entered\fP into the option database.  If there are
+no matching entries, then the empty string is returned.
+.PP
+The \fBoptionReadfile\fR method reads \fIfileName\fR,
+which should have the standard format for an
+X resource database such as \fB.Xdefaults\fR, and adds all the
+options specified in that file to the option database.  If \fIpriority\fR
+is specified, it indicates the priority level at which to enter the
+options;  \fIpriority\fR defaults to \fBinteractive\fR.
+.PP
+The \fIpriority\fR arguments to the \fBoption\fR methods are
+normally specified symbolically using one of the following values:
+.TP
+\fBwidgetDefault\fR
+Level 20.  Used for default values hard-coded into widgets.
+.TP
+\fBstartupFile\fR
+Level 40.  Used for options specified in application-specific
+startup files.
+.TP
+\fBuserDefault\fR
+Level 60.  Used for options specified in user-specific defaults
+files, such as \fB.Xdefaults\fR, resource databases loaded into
+the X server, or user-specific startup files.
+.TP
+\fBinteractive\fR
+Level 80.  Used for options specified interactively after the application
+starts running.  If \fIpriority\fR isn't specified, it defaults to
+this level.
+.LP
+Any of the above keywords may be abbreviated.  In addition, priorities
+may be specified numerically using integers between 0 and 100,
+inclusive.  The numeric form is probably a bad idea except for new priority
+levels other than the ones given above.
+
+.SH BUGS
+The priority scheme used by core Tk is not the same as used by normal Xlib
+routines. In particular is assumes that the order of the entries is defined,
+but user commands like \fBxrdb -merge\fR can change the order.
+.SH KEYWORDS
+database, option, priority, retrieve

@@ -768,7 +768,8 @@ ImgPhotoCmd(clientData, interp, argc, args)
 		    Tcl_AppendResult(interp, "all elements of color list must",
 			     " have the same number of elements",
 			             NULL);
-		    ckfree((char *) listArgv);
+		    if (listFreeProc)
+			(*listFreeProc)(listArgc, listArgv);
 		    break;
 		}
 	    }
@@ -788,7 +789,8 @@ ImgPhotoCmd(clientData, interp, argc, args)
 	    if (x < dataWidth)
 		break;
 	}
-	ckfree((char *) srcArgv);
+	if (srcFreeProc)
+	    (*srcFreeProc)(dataHeight, srcArgv);
 	if (y < dataHeight || dataHeight == 0 || dataWidth == 0) {
 	    if (block.pixelPtr != NULL) {
 		ckfree((char *) block.pixelPtr);
@@ -1974,6 +1976,7 @@ ImgPhotoSetSize(masterPtr, width, height)
     XRectangle validBox, clipBox;
     Region clipRegion;
     PhotoInstance *instancePtr;
+    size_t memsize;
 
     if (masterPtr->userWidth > 0) {
 	width = masterPtr->userWidth;
@@ -2011,7 +2014,8 @@ ImgPhotoSetSize(masterPtr, width, height)
 	 */
 
 	pitch = width * 3;
-	newPix24 = (unsigned char *) ckalloc((unsigned) (height * pitch));
+	memsize  = (height * pitch);
+	newPix24 = (memsize) ? ((unsigned char *) ckalloc(memsize)) : NULL;
 
 	/*
 	 * Zero the new array.  The dithering code shouldn't read the
@@ -2029,8 +2033,8 @@ ImgPhotoSetSize(masterPtr, width, height)
 		memset((VOID *) (newPix24 + h * pitch), 0,
 			(size_t) ((height - h) * pitch));
 	    }
-	} else {
-	    memset((VOID *) newPix24, 0, (size_t) (height * pitch));
+	} else if (newPix24 != NULL) {
+	    memset((VOID *) newPix24, 0, memsize);
 	}
 
 	if (masterPtr->pix24 != NULL) {
@@ -2040,7 +2044,13 @@ ImgPhotoSetSize(masterPtr, width, height)
 	     * free the old array.
 	     */
 
-	    if (width == masterPtr->width) {
+	    if (newPix24 == NULL) {
+
+		/*
+		 * Nowhere to copy to ...
+		 */
+
+	    } else if (width == masterPtr->width) {
 
 		/*
 		 * The region to be copied is contiguous.

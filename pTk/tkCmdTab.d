@@ -1,1 +1,1 @@
-tkCmdTab.o: tkCmdTab.c tkPort.h tk.h Lang.h
+tkCmdTab.o: tkCmdTab.c tkPort.h tkConfig.h tk.h Lang.h

@@ -1,7 +1,10 @@
 package Tk::Derived;
 require Tk::Widget;
 require Tk::Configure;
+use strict;
 use Carp;
+
+$Tk::Derived::Debug = 0;
 
 sub Subwidget 
 {
@@ -29,13 +32,11 @@ sub Subconfigure
 {
  # This finds the widget or widgets to to which to apply a particular 
  # configure option
-
  my ($cw,$opt) = @_;
  my $config = $cw->ConfigSpecs;
  my $widget;
  my @subwidget = ();
- my (@arg) = ();
- push(@arg,$opt) unless ($opt eq DEFAULT);
+ my @arg = ();
  if (defined $opt)
   {
    $widget = $config->{$opt};
@@ -43,11 +44,18 @@ sub Subconfigure
     {
      $widget = ($opt =~ /^-(.*)$/) ? $config->{$1} : $config->{-$opt};
     }
+   # Handle alias entries
+   if (defined($widget) && !ref($widget))
+    {
+     $opt    = $widget;
+     $widget = $config->{$widget};
+    }
+   push(@arg,$opt) unless ($opt eq 'DEFAULT');
   }
  $widget = $config->{DEFAULT} unless (defined $widget);
  if (defined $widget)
   {
-   croak "Invalid ConfigSpecs $widget" unless (ref($widget) && (ref $widget eq "ARRAY"));
+   $cw->BackTrace("Invalid ConfigSpecs $widget") unless (ref($widget) && (ref $widget eq "ARRAY"));
    $widget = $widget->[0];
   }
  else
@@ -79,6 +87,11 @@ sub Subconfigure
      my ($method) = ($opt =~ /^-?(.*)$/);
      push(@subwidget,Tk::Configure->new($method,$method,$cw))
     }
+   elsif ($widget eq 'SETMETHOD')
+    {
+     my ($method) = ($opt =~ /^-?(.*)$/);
+     push(@subwidget,Tk::Configure->new($method,'_cget',$cw,@arg))
+    }
    elsif ($widget eq 'SELF')
     {
      push(@subwidget,Tk::Configure->new('Tk::configure', 'Tk::cget', $cw,@arg))
@@ -96,82 +109,101 @@ sub Subconfigure
      push(@subwidget,$cw->Subwidget($widget));
     }
   }
- croak "No delegate subwidget '$widget' for $opt" unless (@subwidget);
+ $cw->BackTrace("No delegate subwidget '$widget' for $opt") unless (@subwidget);
  return (wantarray) ? @subwidget : $subwidget[0];
 }
 
 sub _cget
 {
- croak("Wrong number of args to cget") unless (@_ == 2);
  my ($cw,$opt) = @_;
+ $cw->BackTrace("Wrong number of args to cget") unless (@_ == 2);
  return $cw->{Configure}{$opt}
 }
 
 sub _configure
 {
- croak("Wrong number of args to configure") unless (@_ == 3);
  my ($cw,$opt,$val) = @_;
+ $cw->BackTrace("Wrong number of args to configure") unless (@_ == 3);
  $cw->{Configure}{$opt} = $val;
 }
 
 sub _callback
 {
- croak("Wrong number of args to configure") unless (@_ == 3);
  my ($cw,$opt,$val) = @_;
+ $cw->BackTrace("Wrong number of args to configure") unless (@_ == 3);
  $cw->{Configure}{$opt} = Tk::Callback->new($val);
 }
 
 sub cget
 {my ($cw,$opt) = @_;
-# croak "Invalid option $opt" unless ($opt =~ /^-/);
  my (@subwidget) = $cw->Subconfigure($opt);
  my @result = $cw->{Configure}{$opt};
  if (@subwidget == 1)
   {
    eval { @result = $subwidget[0]->cget($opt) };
-   croak "cget: $@" if ($@);
+   $cw->BackTrace($@) if ($@);
   }
  return (wantarray) ? @result : $result[0];
 }
 
 sub configure
 {
- # The default composite widget configuration method uses %Configure
- # in the widgets package to map configuration options
- # onto subwidgets. If such an array does not exist it applies
- # option/value pairs to every subwidget of the composite widget.  If
- # this is too general then use the `subwidget' method on an advertised
- # component widget for detailed configuration possibilities (the widget
- # developer shall have published a list of subwidget names).
+ # The default composite widget configuration method uses hash stored
+ # in the widget's hash to map configuration options
+ # onto subwidgets. 
  #
- # Or, use the `walk' method to traverse a composite widget hierarchy and
- # do your own thing.
  my @results = ();
  my $cw = shift;
  if (@_ <= 1)
   {
+   # Enquiry cases 
+   my $spec = $cw->ConfigSpecs;
    if (@_)
     {
-     my $sw = $cw->Subconfigure(@_);
-     @results = $sw->configure(@_);
-    }
-   else
-    {
-     my $spec = $cw->ConfigSpecs;
-     my $opt;
-     foreach $opt (keys %$spec)
+     # Return info on the nominated option
+     my $opt  = $_[0];
+     my $info = $spec->{$opt};
+     unless (defined $info)
       {
-       my $sw = $cw->Subconfigure($opt);
-       my (@info) = @{$spec->{$opt}};
-       if ($opt eq 'DEFAULT')
+       $info = ($opt =~ /^-(.*)$/) ? $spec->{$1} : $spec->{-$opt};
+      }
+     if (defined $info)
+      {
+       if (ref $info)
         {
-         push(@results,$sw->configure);
+         push(@results,$opt,$info->[1],$info->[2],$info->[3],$cw->cget($opt));
         }
        else
         {
-         # Bug here if cget fails  
-         push(@results,[$opt,$info[1],$info[2],$info[3],$sw->cget($opt)]);
+         # Real (core) Tk widgets return db name rather than option name 
+         # for aliases so recurse to get that ...
+         my @real = $cw->configure($info);
+         push(@results,$opt,$real[1]);
         }
+      }
+     else
+      {
+       push(@results,$cw->Subconfigure($opt)->configure($opt));
+      }
+    }
+   else
+    {
+     my $opt;
+     my %results;
+     if (exists $spec->{'DEFAULT'})
+      {
+       foreach $opt ($cw->Subconfigure('DEFAULT')->configure)
+        {
+         $results{$opt->[0]} = $opt;
+        }
+      }
+     foreach $opt (keys %$spec)
+      {
+       $results{$opt} = [$cw->configure($opt)] if ($opt ne 'DEFAULT');
+      }
+     foreach $opt (sort keys %results)
+      {
+       push(@results,$results{$opt});
       }
     }
   }
@@ -190,9 +222,12 @@ sub configure
       {
        next unless (defined $subwidget);
        eval { $subwidget->configure($opt => $val) };
-       croak "$@" if ($Tk::Frame::Debug && $@);
+       if ($@)
+        {
+         $cw->BackTrace($@) if ($Tk::Derived::Debug);
+         undef $@;
+        }
       }
-     $cw->ClearErrorInfo; 
      $val = $$var;
      $changed{$opt} = $val if (!defined $old || !defined $val || $old ne $val);
     }
@@ -205,11 +240,11 @@ sub ConfigDefault
 {
  my ($cw,$args) = @_;
 
- croak "Bad args" unless (defined $args && ref $args eq 'HASH');
-
+ $cw->BackTrace("Bad args") unless (defined $args && ref $args eq 'HASH');
 
  my $specs = $cw->ConfigSpecs;
  my $opt; 
+ # Should we enforce a Delagates(DEFAULT => )  as well ?
  $specs->{'DEFAULT'} = ['SELF'] unless (exists $specs->{'DEFAULT'});
  $specs->{'-cursor'} = ['SELF',undef,undef,undef] unless (exists $specs->{'-cursor'});
 
@@ -218,87 +253,104 @@ sub ConfigDefault
  # colours too and maybe fonts
 
  my $children = scalar($cw->children);
- my (@bg) = ('SELF');
- unshift(@bg,'CHILDREN') if $children;
- $specs->{'-bg'} = [\@bg,undef,undef,undef] unless (exists($specs->{'-bg'}) || exists($specs->{'-background'}));
-
- my (@fg) = ('PASSIVE');
- unshift(@fg,'CHILDREN') if $children;
- $specs->{'-fg'} = [\@fg,undef,undef,undef] unless (exists($specs->{'-fg'}) || exists($specs->{'-foreground'}));
+ unless (exists($specs->{'-background'}))
+  {
+   my (@bg) = ('SELF');
+   push(@bg,'CHILDREN') if $children;
+   $specs->{'-background'} = [\@bg,'background','Background',undef]; 
+  }
+ unless (exists($specs->{'-foreground'}))
+  {
+   my (@fg) = ('PASSIVE');
+   unshift(@fg,'CHILDREN') if $children;
+   $specs->{'-foreground'} = [\@fg,'foreground','Foreground',undef];
+  }
  $cw->ConfigAlias(-fg => '-foreground', -bg => '-background');
-  
 
- # Now walk %$specs supplying defaults for all the options mentioned,
- # potentially looking up .Xdefaults database options for the name/class
- # of the 'frame' 
+ # Pre-scan args for aliases - this avoids defaulting
+ # options specified via alias
+ foreach $opt (keys %$args)
+  {
+   my $info = $specs->{$opt};
+   if (defined($info) && !ref($info))
+    {
+     $args->{$info} = delete $args->{$opt};
+    }
+  }
+
+ # Now walk %$specs supplying defaults for all the options 
+ # which have a defined default value, potentially looking up .Xdefaults database
+ # options for the name/class of the 'frame' 
 
  foreach $opt (keys %$specs)
   {
-   if ($opt eq 'DEFAULT')
-    {
-     # What to do here ?  
-    }
-   else
+   if ($opt ne 'DEFAULT')
     {
      unless (exists $args->{$opt})
       {
-       my (@info) = @{$specs->{$opt}};
-       $args->{$opt} = $info[3] if (defined $info[3]);
-       # maybe should convert -fred info 'fred','Fred' here 
-       if (defined $info[1] && defined $info[2])
+       my $info = $specs->{$opt};
+       if (ref $info)
         {
-         my $db = $cw->optionGet($info[1],$info[2]);
-         $args->{$opt} = $db if (defined $db);
+         # Not an alias
+         if (defined $info->[3])
+          {
+           # Only propagate if a default is supplied
+           $args->{$opt} = $info->[3];
+           # maybe should convert -fred info 'fred','Fred' here 
+           if (defined $info->[1] && defined $info->[2])
+            {
+             my $db = $cw->optionGet($info->[1],$info->[2]);
+             $args->{$opt} = $db if (defined $db);
+            }
+          }
         }
       }
     }
   }
- # Should we enforce a Delagates(DEFAULT => )  as well ?
 }
 
 sub ConfigSpecs
 {
- my ($cw,%args) = @_;
+ my $cw = shift;
  if (exists $cw->{'ConfigSpecs'})
   {
    my $specs = $cw->{'ConfigSpecs'};
-   if (%args)
+   while (@_)
     {
-     my ($key,$val);
-     while (($key,$val) = each %args)
-      {
-       $specs->{$key} = $val;
-      }
+     my $key = shift;
+     my $val = shift;
+     $specs->{$key} = $val;
     }
   }
  else
   {
-   $cw->{'ConfigSpecs'} = \%args;
+   $cw->{'ConfigSpecs'} = { @_ };
   }
  return $cw->{'ConfigSpecs'};
 }
 
 sub ConfigAlias
 {
- my ($cw,%args) = @_;
+ my $cw = shift;
  my $specs = $cw->ConfigSpecs;
- my $opt;
- foreach $opt (keys %args)
+ while (@_ >= 2)
   {
-   my $main = $args{$opt};
-   if (exists $specs->{$opt})
+   my $opt  = shift;
+   my $main = shift;
+   if (exists($specs->{$opt}) && ref($specs->{$opt}))
     {
-     $specs->{$main} = $specs->{$opt};
+     $specs->{$main} = $opt unless (exists $specs->{$main});
     }
-   elsif (exists $specs->{$main})
+   elsif (exists($specs->{$main}) && ref($specs->{$main}))
     {
-     $specs->{$opt} = $specs->{$main};
+     $specs->{$opt}  = $main unless (exists $specs->{$opt});
     }
    else 
     {
-     croak "Neither $opt nor $main exist";
+     $cw->BackTrace("Neither $opt nor $main exist");
     }
   }
+ $cw->BackTrace("Odd number of args to ConfigAlias") if (@_);
 }
 
 sub Delegate
@@ -319,7 +371,7 @@ sub Delegate
  return (wantarray) ? @result : $result[0];
 }
 
-sub Populate
+sub Tk::Widget::Populate
 {
  my ($cw,$args) = @_;
 }

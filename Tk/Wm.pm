@@ -12,7 +12,7 @@ BEGIN
  foreach $fn (qw(aspect client colormapwindows command deiconify focusmodel
 		frame geometry grid group iconbitmap iconify iconmask
 		iconname iconposition iconwindow maxsize minsize
-		overrideredirect positionfrom protocol saveunder
+		overrideredirect positionfrom protocol resizable saveunder
 		sizefrom state title transient withdraw))
  {
   *{"$fn"} = sub { shift->wm("$fn",@_) };
@@ -42,6 +42,15 @@ sub AnchorAdjust
  $Y += ($anchor =~ /s/) ? $h : ($anchor =~ /n/) ? 0 : $h/2;
  $X += ($anchor =~ /e/) ? $w : ($anchor =~ /w/) ? 0 : $w/2;
  return ($X,$Y);
+}
+
+sub Populate
+{
+ my ($cw,$args) = @_;
+ $cw->ConfigSpecs('-overanchor' => ['PASSIVE',undef,undef,undef],
+                  '-popanchor'  => ['PASSIVE',undef,undef,undef],
+                  '-popover'    => ['PASSIVE',undef,undef,undef] 
+                 );
 }
 
 sub Popup

@@ -42,7 +42,8 @@
  * W. Snitily but has been modified for my special need
  */
 
-#include "xpmP.h"
+#include "XpmI.h"
+#include <ctype.h>
 
 #ifndef FOR_MSW				/* normal part first, MSW part at
 					 * the end, (huge ifdef!) */
@@ -208,7 +209,7 @@ xpmGetRGBfromName(inname, r, g, b)
     char *name;
     char *grey, *p;
 
-    name = strdup(inname);
+    name = xpmstrdup(inname);
 
     /*
      * the table in rgbtab.c has no names with spaces, and no grey, but a
@@ -240,7 +241,7 @@ xpmGetRGBfromName(inname, r, g, b)
     right = numTheRGBRecords - 1;
     do {
 	middle = (left + right) / 2;
-	cmp = strcasecmp(name, theRGBRecords[middle].name);
+	cmp = xpmstrcasecmp(name, theRGBRecords[middle].name);
 	if (cmp == 0) {
 	    rgbVal = theRGBRecords[middle].rgb;
 	    *r = GetRValue(rgbVal);

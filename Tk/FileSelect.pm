@@ -1,9 +1,9 @@
 package Tk::FileSelect; 
 
 use Tk qw(Ev);
-use Carp;
 use English;
 use strict;
+use Carp;
 require Tk::Dialog;
 require Tk::Toplevel;
 require Tk::LabEntry;       
@@ -251,19 +251,17 @@ sub Populate {
     # Add a label.
     
     my $f = $w->Frame();
-    $f->pack(-side => 'right', -fill => 'y');
+    $f->pack(-side => 'right', -fill => 'y', -expand => 0);
     $b = $f->Button('-text' => 'Accept', -command => [ 'Accept', $w ]);
     $b->pack(-side => 'top', -fill => 'x', -expand => 1);
     $b = $f->Button('-text' => 'Cancel', -command => [ 'Cancel', $w ]);
     $b->pack(-side => 'top', -fill => 'x', -expand => 1);
-    $b = $f->Button(
-        '-text'  => 'Reset', 
-        -command => [$w => 'configure','-directory','.'],
+    $b = $f->Button( '-text'  => 'Reset', 
+                     -command => [$w => 'configure','-directory','.'],
     );
     $b->pack(-side => 'top', -fill => 'x', -expand => 1);
-    $b = $f->Button(
-        '-text'  => 'Home', 
-        -command => [$w => 'configure','-directory',$ENV{'HOME'}],
+    $b = $f->Button( '-text'  => 'Home', 
+                     -command => [$w => 'configure','-directory',$ENV{'HOME'}],
     );
     $b->pack(-side => 'top', -fill => 'x', -expand => 1);
     
@@ -287,8 +285,8 @@ sub Populate {
     );
     
     $w->ConfigSpecs(
-        -width           => [ ['file_list','dir_list'], undef, undef, 20 ], 
-	-height          => [ ['file_list','dir_list'], undef, undef, 20 ], 
+        -width           => [ ['file_list','dir_list'], undef, undef, 14 ], 
+	-height          => [ ['file_list','dir_list'], undef, undef, 14 ], 
 	-directory       => [ 'METHOD', undef, undef, '.' ],
 	-filelabel       => [ 'PASSIVE', undef, undef, 'File' ],
 	-filelistlabel   => [ 'PASSIVE', undef, undef, 'Files' ],
@@ -418,9 +416,9 @@ sub reread
      my $panic = $w->{Configure}{'-directory'};
      $w->Unbusy;                                        
      $w->{'reread'} = 0;                                
-     chdir($panic) || croak "Cannot chdir($panic) : $!";
+     chdir($panic) || $w->BackTrace("Cannot chdir($panic) : $!");
      $w->{Directory} = $dir . "/" . $w->cget('-filter');
-     croak "Cannot opendir('$dir') :$!";
+     $w->BackTrace("Cannot opendir('$dir') :$!");
     }
   }
  else
@@ -428,7 +426,7 @@ sub reread
    $w->Unbusy;                                        
    $w->{'reread'} = 0;                                
    $w->{Directory} = $dir . "/" . $w->cget('-filter');
-   croak "Cannot chdir($dir) :$!";
+   $w->BackTrace("Cannot chdir($dir) :$!");
   }
 } 
 

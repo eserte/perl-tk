@@ -1,17 +1,27 @@
 #!/usr/local/bin/perl
 
+use ExtUtils::Manifest "/mani/";
+use Cwd;
 
 sub System
 {
- print STDERR join(' ',@_),"\n";
- die "Cannot " . join(' ',@_) if (system(@_));
+ my $pid = fork;
+ if ($pid)
+  {
+   local %SIG;
+   $SIG{INT} = sub { warn "\nInterrupt"; kill 9,$pid; exit 1 };
+   wait;
+   die "Error $?" if ($?);
+  }
+ else
+  {
+   exec(@_) || die "Cannot exec".join(' ',@_).":$!";
+  }
 }
 
 System("perl","Makefile.PL") unless (-r "Makefile");
 
-System('make manifest');
-
-chomp($dir = `pwd`);
+$dir = getcwd;
 $dir =~ s#^.*/##;
 
 sub grab
@@ -19,41 +29,39 @@ sub grab
  my $dir;
  foreach $dir (@_)
   {
-   next unless (-d $dir);
-   if (open(MANIFEST,"<$dir/MANIFEST"))
+   my $pref = $dir eq '.' ? '' : "$dir/";
+   unless (-d $dir)
     {
-     while (<MANIFEST>)
-      {
-       my ($file) = /^(\S+)/;
-       if (-f "$dir/$file")
-        {
-         push(@files,"$dir/$file"); 
-        }
-       else
-        {
-         warn "Not a file $dir/$file";
-        }
-      }
-     close(MANIFEST);
+     warn "No $dir";
+     next; 
     }
-   else
-    {
-     warn "Cannot open $dir/MANIFEST:$!";
-    }
+   my $files = maniread("${pref}MANIFEST");
+   push(@files,grep(-f $_,sort map("${pref}$_",keys %$files)));
   }
 }
 
-grab(".","pTk/mTk","Ned",<Extensions/*>);
+System('make','-C','.','manifest');
+push(@files,"../unpack","../Tkpatch","../newest");
+grab(".","../Ned","../DPS");
 @files = grep(-w $_,@files);
-push(@files,grep(-M $_ < 7,<../../useful/*>));
-push(@files,grep(-M $_ < 7,<ToDo/*>));
-# grab(grep(-M $_ < 7,<../../Packages/*>));
-@files = grep(!/\.(ps|ppm|n|3|ht)$/,@files);
-@files = grep(!m#/(mTk\.b\d|merge)/#,@files);
-# @files = grep(!m/patches\.001/,@files);
+# push(@files,grep(-M $_ < 7,<../../useful/*>));
+push(@files,grep(-M $_ < 14,<ToDo/*>));
+@files = grep(!/\.(ps|ppm|n|2|htm|gif)$/ || -M $_ < 7,@files);
+# @files = grep(!m#/(mTk\.b\d|merge)/#,@files);
 push(@files,"Tix/tcl2perl");
 
-foreach ("/dev/rdiskette","/dev/rfd0")
+foreach (grep(!-r $_,@files))
+ {
+  print "$_ does not exist\n";
+ }
+
+@files = grep(-r $_,@files);
+
+print "$^O\n";
+
+system("volcheck") if ($^O eq 'solaris');
+
+foreach ("/vol/dev/aliases/floppy0","/dev/rdiskette","/dev/rfd0")
  {
   if (-c $_)
    {
@@ -68,7 +76,7 @@ $mon++;
 $name = "Tk-$year.$mon.$mday.tar.gz";
 
 chdir("..");
-system("gtar","-czvf",$name,'--block-compress',map("$dir/". $_,@files));
+System("gtar","-czvf",$name,'--block-compress',map("$dir/". $_,@files));
 System("tar","-cvfb",$floppy,36,$name);
 System("tar","-tvfb",$floppy,36);
 

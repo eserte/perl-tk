@@ -11,7 +11,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkRectOval.c 1.31 95/01/03 17:06:03";
+static char sccsid[] = "@(#) tkRectOval.c 1.32 95/10/01 16:28:50";
 
 #include <stdio.h>
 #include "tkPort.h"
@@ -453,8 +453,15 @@ ComputeRectOvalBbox(canvas, rectOvalPtr)
     } else {
 	bloat = (rectOvalPtr->width+1)/2;
     }
-    rectOvalPtr->header.x1 = rectOvalPtr->bbox[0] - bloat;
-    rectOvalPtr->header.y1 = rectOvalPtr->bbox[1] - bloat;
+
+    /*
+     * Note:  add an extra pixel to the bounding box on all sides to
+     * account for rounding error (e.g. negative coords will be rounded
+     * differently than positive ones).
+     */
+
+    rectOvalPtr->header.x1 = rectOvalPtr->bbox[0] - bloat - 1;
+    rectOvalPtr->header.y1 = rectOvalPtr->bbox[1] - bloat - 1;
     rectOvalPtr->header.x2 = rectOvalPtr->bbox[2] + bloat + 1;
     rectOvalPtr->header.y2 = rectOvalPtr->bbox[3] + bloat + 1;
 }

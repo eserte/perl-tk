@@ -1,8 +1,8 @@
 #!/usr/local/bin/perl -w
-use lib ('../blib','blib');
+use strict;
 use Tk;
 
-$fw_font  = "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*";
+my $fw_font  = "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*";
 
 use Tk;
 require Tk::Ghostview;
@@ -10,27 +10,27 @@ require Tk::Ghostview;
 use strict qw(subs);
 
 
-$top = MainWindow->new();
-$gs  = $top->Ghostview(-file => $ARGV[0]);
-$f = $top->Frame();
-$l = $top->ScrlListbox('-width' => $gs->Doc->{'LabelLen'});
+my $top = MainWindow->new();
+my $gs  = $top->Ghostview(-file => $ARGV[0]);
+my $f = $top->Frame();
+my $l = $top->ScrlListbox('-width' => $gs->Doc->{'LabelLen'});
 $l->bind('<Double-1>',[sub { shift; shift->SetPage(@_) },$gs,Ev('index','active')]);
 $l->insert("end",@{$gs->Doc->{'Label'}});
 $f->Button('-text'=>'Quit','-command'=>['destroy',$top])->pack('-side'=>'left');
 $f->pack('-side'=>'top','-fill'=>'x');
 $l->pack('-side'=>'left','-fill'=>'y');
 
-$mb = $f->Menubutton('-text'=>'Contents');
+my $mb = $f->Menubutton('-text'=>'Contents');
 
-$contents = $gs->Doc->Contents;
-
+my $contents = $gs->Doc->Contents;
+my $kind;
 foreach $kind (sort keys %{$contents})
  {
   if ($kind !~ /#[LT]len$/)
    {
-    Contents($mb,$kind,$contents{$kind},
-             $contents{$kind.'#Llen'},
-             $contents{$kind.'#Tlen'},
+    Contents($mb,$kind,$contents->{$kind},
+             $contents->{$kind.'#Llen'},
+             $contents->{$kind.'#Tlen'},
              $gs);
    }
  }
@@ -52,16 +52,17 @@ sub Contents
 {
  my ($mb,$kind,$it,$lw,$tw,$gs) = @_;
  my $base = $mb->toplevel;
- my $top  = $base->Toplevel();
+ my $top  = $base->Toplevel(-popover => $base, -popanchor => 'nw', 
+                   -overanchor => 'ne');
  $top->withdraw;
  $top->title($kind);
-# $top->transient($base);
+ $top->transient($base);
  $top->protocol('WM_DELETE_WINDOW',['withdraw',$top]);
- my $lb = $top->ScrlListbox('-width' => $lw+$tw,'-font' => $fw_font);
+ my $lb = $top->Scrolled('Listbox','-width' => $lw+$tw,'-font' => $fw_font);
  $top->Label('-text'=>$kind)->pack('-side'=>'top');
  $lb->insert('end',map(sprintf("%-${lw}s %s",${$_}[0],${$_}[1]),@$it));
  $lb->pack('-side'=>'right','-fill'=>'y');
- $mb->command('-label'=>$kind,'-command'=>['TopRight',$top,$base]);
+ $mb->command('-label'=>$kind,'-command'=>['Popup',$top]);
  $lb->bind('<Double-1>',[\&DoContent,$it,$gs]);
 }
 

@@ -40,16 +40,17 @@ VFUNC(Tcl_Command,Lang_CreateObject,V_Lang_CreateObject,_ANSI_ARGS_((Tcl_Interp 
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc)))
 VFUNC(void,Lang_DeleteObject,V_Lang_DeleteObject,_ANSI_ARGS_((Tcl_Interp *,Tcl_Command)))
-VFUNC(void,Lang_FreeRegExp,V_Lang_FreeRegExp,_ANSI_ARGS_((Tcl_RegExp regexp)))
+VFUNC(void,Lang_FreeRegExp,V_Lang_FreeRegExp,_ANSI_ARGS_((Tcl_RegExp reg_exp)))
 VFUNC(char *,Lang_GetErrorCode,V_Lang_GetErrorCode,_ANSI_ARGS_((Tcl_Interp *interp)))
 VFUNC(char *,Lang_GetErrorInfo,V_Lang_GetErrorInfo,_ANSI_ARGS_((Tcl_Interp *interp)))
 VFUNC(Tcl_RegExp,Lang_RegExpCompile,V_Lang_RegExpCompile,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int fold)))
 VFUNC(int,Lang_RegExpExec,V_Lang_RegExpExec,_ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_RegExp regexp, char *string, char *start)))
+			    Tcl_RegExp reg_exp, char *string, char *start)))
 VFUNC(void,Lang_SetErrorCode,V_Lang_SetErrorCode,_ANSI_ARGS_((Tcl_Interp *interp,char *code)))
 VFUNC(int,Lang_SplitList,V_Lang_SplitList,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Arg list, int *argcPtr, Arg **argsPtr, LangFreeProc **)))
+VFUNC(void *,TclCalloc,V_TclCalloc,_ANSI_ARGS_((size_t n,size_t s)))
 VFUNC(int,TclOpen,V_TclOpen,_ANSI_ARGS_((char *path, int oflag, int mode)))
 VFUNC(int,TclRead,V_TclRead,_ANSI_ARGS_((int fd, VOID *buf, size_t numBytes)))
 VFUNC(int,TclWrite,V_TclWrite,_ANSI_ARGS_((int fd, VOID *buf, size_t numBytes)))
@@ -113,7 +114,7 @@ VFUNC(Tcl_HashEntry *,Tcl_NextHashEntry,V_Tcl_NextHashEntry,_ANSI_ARGS_((
 			    Tcl_HashSearch *searchPtr)))
 VFUNC(void,Tcl_Panic,V_Tcl_Panic,_ANSI_ARGS_((char *,...)))
 VFUNC(char *,Tcl_PosixError,V_Tcl_PosixError,_ANSI_ARGS_((Tcl_Interp *interp)))
-VFUNC(void,Tcl_RegExpRange,V_Tcl_RegExpRange,_ANSI_ARGS_((Tcl_RegExp regexp,
+VFUNC(void,Tcl_RegExpRange,V_Tcl_RegExpRange,_ANSI_ARGS_((Tcl_RegExp reg_exp,
 			    int index, char **startPtr, char **endPtr)))
 VFUNC(void,Tcl_ResetResult,V_Tcl_ResetResult,_ANSI_ARGS_((Tcl_Interp *interp)))
 VFUNC(Arg,Tcl_ResultArg,V_Tcl_ResultArg,_ANSI_ARGS_((Tcl_Interp *interp)))

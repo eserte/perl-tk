@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 #ifdef NEED_STRDUP
 /*
@@ -40,7 +40,7 @@
  * which does the trick
  */
 char *
-strdup(s1)
+xpmstrdup(s1)
     char *s1;
 {
     char *s2;

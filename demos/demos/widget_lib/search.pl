@@ -1,8 +1,6 @@
 # search.pl
 
-sub search_flash_matches;
-sub search_load_file;
-sub search_text;
+use subs qw(search_flash_matches search_load_file search_text);
 
 sub search {
 
@@ -19,7 +17,7 @@ sub search {
     $w->iconname('search');
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -27,11 +25,11 @@ sub search {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
-    $file_name = '';
+    my $file_name = '';
     my $w_file = $w->Frame;
     my $w_file_label = $w_file->Label(-text => 'File name:', -width => 13,
 				      -anchor => 'w');
@@ -43,7 +41,7 @@ sub search {
     $w_file_button->pack(-side => 'left', -pady => 5, -padx => 10);
     $w_file_entry->focus;
 
-    $search_string = '';
+    my $search_string = '';
     my $w_string = $w->Frame;
     my $w_string_label = $w_string->Label(-text => 'Search string:',
 					  -width => 13, -anchor => 'w');
@@ -62,13 +60,11 @@ sub search {
     $w_s->pack(-side => 'right', -fill => 'y');
     $w_t->pack(-expand => 'yes', -fill => 'both');
 
-    my $command = [sub {shift @ARG if ref $ARG[0] eq 'Tk::Entry'; 
-        search_load_file(@ARG)}, $w_t, \$file_name, $w_string_entry];
+    my $command =  sub {search_load_file($w_t, \$file_name, $w_string_entry)};
     $w_file_button->configure(-command => $command);
     $w_file_entry->bind('<Return>' => $command);
 
-    $command = [sub {shift @ARG if ref $ARG[0] eq 'Tk::Entry';
-        search_text(@ARG)}, $w_t, \$search_string, 'search'];
+    $command = sub {search_text($w_t, \$search_string, 'search')};
     $w_string_button->configure(-command => $command);
     $w_string_entry->bind('<Return>' => $command);
 
@@ -119,16 +115,16 @@ sub search_flash_matches {
     my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @ARG;
 
     $w->tag(@{$cmd1});
-    after($sleep1, [sub {search_flash_matches(@ARG)}, $w, $cmd2, $sleep2, 
-		    $cmd1, $sleep1]);
+    $w->after($sleep1, 
+	      [\&search_flash_matches, $w, $cmd2, $sleep2, $cmd1, $sleep1]);
 
 } # end search_flash_matches
 
 sub search_load_file {
 
     # The utility procedure below loads a file into a text widget, discarding
-    # the previous contents of the widget. Tags for the
-    # old widget are not affected, however.
+    # the previous contents of the widget. Tags for the old widget are not
+    # affected, however.
     # Arguments:
     #
     # w -	The window into which to load the file.  Must be a text widget.

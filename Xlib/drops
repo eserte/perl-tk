@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-use lib ('../blib','blib');
+
 
 use Tk;
 

@@ -6,7 +6,7 @@ require DynaLoader;
 
 Tk::Widget->Construct('NBFrame');
 
-bootstrap Tk::NBFrame; 
+bootstrap Tk::NBFrame $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::nbframe }
 

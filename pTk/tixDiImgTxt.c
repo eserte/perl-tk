@@ -26,7 +26,7 @@ static Tk_ConfigSpec imageTextConfigSpecs[] = {
        DEF_IMAGETEXT_BITMAP, Tk_Offset(TixImageText, bitmap),
        TK_CONFIG_NULL_OK},
 
-    {TK_CONFIG_STRING, "-image", "image", "Image",
+    {TK_CONFIG_OBJECT, "-image", "image", "Image",
        DEF_IMAGETEXT_IMAGE, Tk_Offset(TixImageText, imageString),
        TK_CONFIG_NULL_OK},
 

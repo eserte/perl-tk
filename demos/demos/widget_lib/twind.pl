@@ -1,13 +1,9 @@
 # twind.pl
 
-BEGIN {unshift @INC, Tk->findINC('demos/widget_lib')};
-require Plot;
+use Plot;
 
-sub twind_create_plot;
-sub twind_delete_plot;
-sub twind_hide_scroll;
-sub twind_realize_scroll;
-sub twind_restore_bg;
+use subs qw(twind_create_plot twind_delete_plot twind_hide_scroll
+	    twind_realize_scroll twind_restore_bg);
 
 sub twind {
 
@@ -24,7 +20,7 @@ sub twind {
     $w->iconname('twind');
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text               => 'Dismiss',
         -command            => [$w => 'destroy'],
@@ -32,7 +28,7 @@ sub twind {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -133,7 +129,7 @@ sub twind {
 	-cursor  => 'top_left_arrow',
     );
     $w_t->window('create', 'end', -window => $w_t_default, -padx => 3);
-    $embToggle = 'Short';
+    my $embToggle = 'Short';
     my $w_t_toggle = $w_t->Checkbutton(
         -textvariable => \$embToggle,
         -indicatoron  => 0, 
@@ -149,16 +145,15 @@ sub twind {
 		       SlateBlue3 RoyalBlue1 SteelBlue2 DeepSkyBlue3
 		       LightBlue1 DarkSlateGray1 Aquamarine2 DarkSeaGreen2
 		       SeaGreen1 Yellow1 IndianRed1 IndianRed2 Tan1 Tan4)) {
-	my $color_name = "w_t_color${i}";
-	${$color_name} = $w_t->Button(
+	my $w_col = $w_t->Button(
             -text   => "$color",
 	    -cursor => 'top_left_arrow',
         );
-        ${$color_name}->configure(-command => [sub {
-	    shift->configure(@ARG);
-	}, $w_t, -background => $color]);
-        $w_t->window('create', 'end', -window => ${$color_name},
-                                 -padx => 3, -pady => 2);
+        $w_col->configure(-command => sub {
+	    $w_t->configure(-background => $color);
+	});
+        $w_t->window('create', 'end', -window => $w_col, 
+	             -padx => 3, -pady => 2);
         $i++;
     }
     $w_t->tag('add', 'buttons', $w_t_default, 'end');

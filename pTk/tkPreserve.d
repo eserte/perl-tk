@@ -1,1 +1,1 @@
-tkPreserve.o: tkPreserve.c tkPort.h tk.h Lang.h
+tkPreserve.o: tkPreserve.c tkPort.h tkConfig.h tk.h Lang.h

@@ -11,7 +11,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkBind.c 1.98 95/06/04 17:37:03";
+static char sccsid[] = "@(#) tkBind.c 1.100 95/09/25 13:18:59";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -1667,6 +1667,7 @@ GetKeySym(dispPtr, eventPtr)
     register XEvent *eventPtr;		/* Description of X event. */
 {
     KeySym sym;
+#if 0
     int index;
 
     /*
@@ -1721,6 +1722,11 @@ GetKeySym(dispPtr, eventPtr)
 	sym = XKeycodeToKeysym(dispPtr->display, eventPtr->xkey.keycode,
 		    index & ~1);
     }
+#else
+    char buf[8];
+    int count;
+    count = XLookupString(&eventPtr->xkey,buf,sizeof(buf),&sym,(XComposeStatus *)NULL);
+#endif
     return sym;
 }
 

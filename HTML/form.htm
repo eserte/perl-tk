@@ -1,0 +1,54 @@
+<HTML>
+<HEAD><TITLE>Example of a Form</TITLE>
+<ISINDEX>
+</HEAD>
+<BODY>
+<H1>An Image which is pickable</H1>
+<a href="/external_ref/image"><img src="icon.gif" ismap></a>
+<HR>
+<H1>A Form</H1>
+<FORM METHOD="POST" ACTION="~a904209/cgi-bin/form-test">
+  <INPUT type=submit VALUE=Table>
+  <INPUT type=reset value=reset>
+<p>
+<H2>Input Field</H2>
+Maximum number of rows : <input name="numrows" size=10 maxlength=10 value="1000">
+<p>
+<H2>Radio items:</H2>
+<br><input type=radio name=radio value=Helvetica>     <B>Helvetica</B>
+<br><input type=radio name=radio value=Times checked> <I>Times</I>
+<H2>Checkbox items:</H2>
+<input type=checkbox name=checkbox value=lights> Lights Ok<br>
+<input type=checkbox name=checkbox value=sober checked> Driver Sober
+<H2>Input Fields In a &lt;PRE&gt; table</H2>
+<br> User Id : <INPUT name="user" size=18>
+<br>Password : <INPUT type=password name="passwd" size=8 value=secret>
+<H3>Inputs in a <I>&lt;pre&gt;</I> table</H3>
+<pre>
+       Position     Length      Order
+<B>CARTE </B><INPUT type=password NAME="source_CARTE" size=6 maxlength=3 VALUE="1">       <INPUT NAME="longueur_CARTE" size=6 maxlength=4 VALUE="10">       <INPUT NAME="ordre_CARTE" size=6 maxlength=5>
+<B>REF   </B><INPUT NAME="source_REF" size=6 maxlength=3 VALUE="2">       <INPUT NAME="longueur_REF" size=6 maxlength=4 VALUE="5">       <INPUT NAME="ordre_REF" size=6 maxlength=5>
+</pre>
+<H2>An input image</H2>
+<input type=image name=aa src="Xcamel.gif">
+<H2>A Multiple Selection</H2>
+<SELECT NAME="sel_mult" multiple>
+<OPTION>Vanilla
+<OPTION selected>Strawberry
+<OPTION value="RumRasin">Rum and Raisin
+<OPTION selected>Peach and Orange
+</SELECT>
+<H2>A Single Selection</H2>
+<SELECT NAME="sel_sing">
+<OPTION>Vanilla
+<OPTION>Strawberry
+<OPTION value="RumRasin">Rum and Raisin
+<OPTION SELECTED>Peach and Orange
+</SELECT>
+<H2>A Text Area</H2>
+<TEXTAREA cols=28 rows=5 name=bb>bonjour
+au revoir
+</textarea>
+</FORM>
+<HR>
+</BODY>

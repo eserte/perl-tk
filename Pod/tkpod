@@ -1,7 +1,4 @@
 #!/usr/local/bin/perl -w
-
-use lib ("../blib","blib");
-
 use Tk;
 require Tk::ErrorDialog;
 require Tk::Pod;

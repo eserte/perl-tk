@@ -4,9 +4,11 @@
 # It creates something that has some of the look and feel of a rolodex program,# although it's lifeless and doesn't actually do the rolodex application.
 #
 # Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  95/01/16
-require 5.001;
+# This needs a good re-write, but no time now (SOL), 96/01/25.
+
+require 5.002;
 use English;
-use lib ("./blib");
+
 use Tk;
 use Tk::Dialog;
 

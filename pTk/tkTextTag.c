@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkTextTag.c 1.28 95/05/25 10:36:17";
+static char sccsid[] = "@(#) tkTextTag.c 1.29 95/11/24 15:46:17";
 
 #include "default.h"
 #include "tkPort.h"
@@ -65,6 +65,9 @@ static Tk_ConfigSpec tagConfigSpecs[] = {
 	TK_CONFIG_NULL_OK},
     {TK_CONFIG_UID, "-wrap",          NULL,          NULL,
 	         NULL, Tk_Offset(TkTextTag, wrapMode),
+	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_LANGARG, "-data",          NULL,          NULL,
+	         NULL, Tk_Offset(TkTextTag, userData),
 	TK_CONFIG_NULL_OK},
     {TK_CONFIG_END,          NULL,          NULL,          NULL,
 	         NULL, 0, 0}
@@ -721,6 +724,7 @@ TkTextCreateTag(textPtr, tagName)
      */
 
     tagPtr = (TkTextTag *) ckalloc(sizeof(TkTextTag));
+    memset(tagPtr,0,sizeof(TkTextTag));
     tagPtr->name = Tcl_GetHashKey(&textPtr->tagTable, hPtr);
     tagPtr->priority = textPtr->numTags;
     tagPtr->border = NULL;
@@ -755,6 +759,7 @@ TkTextCreateTag(textPtr, tagName)
     tagPtr->underlineString = NULL;
     tagPtr->underline = 0;
     tagPtr->wrapMode = NULL;
+    tagPtr->userData = NULL;
     tagPtr->affectsDisplay = 0;
     textPtr->numTags++;
     Tcl_SetHashValue(hPtr, tagPtr);
@@ -823,6 +828,8 @@ TkTextFreeTag(textPtr, tagPtr)
     TkText *textPtr;			/* Info about overall widget. */
     register TkTextTag *tagPtr;		/* Tag being deleted. */
 {
+    Tk_FreeOptions(tagConfigSpecs,(char *) tagPtr,textPtr->display, 0);
+    /* Now added above these should be redundant */
     if (tagPtr->border != None) {
 	Tk_Free3DBorder(tagPtr->border);
     }
@@ -879,6 +886,9 @@ TkTextFreeTag(textPtr, tagPtr)
     }
     if (tagPtr->tabArrayPtr != NULL) {
 	ckfree((char *) tagPtr->tabArrayPtr);
+    }
+    if (tagPtr->userData != NULL) {
+	LangFreeArg(tagPtr->userData,TCL_DYNAMIC);
     }
     ckfree((char *) tagPtr);
 }
@@ -1108,7 +1118,8 @@ TkTextBindProc(clientData, eventPtr)
 	}
 	TkTextPickCurrent(textPtr, eventPtr);
     }
-    if ((textPtr->numCurTags > 0) && (textPtr->bindingTable != NULL)) {
+    if ((textPtr->numCurTags > 0) && (textPtr->bindingTable != NULL)
+	    && (textPtr->tkwin != NULL)) {
 	Tk_BindEvent(textPtr->bindingTable, eventPtr, textPtr->tkwin,
 		textPtr->numCurTags, (ClientData *) textPtr->curTagArrayPtr);
     }
@@ -1143,7 +1154,9 @@ TkTextBindProc(clientData, eventPtr)
  * Side effects:
  *	The current mark for textPtr may change.  If it does,
  *	then the commands associated with character entry and leave
- *	could do just about anything.
+ *	could do just about anything.  For example, the text widget
+ *	might be deleted.  It is up to the caller to protect itself
+ *	with calls to Tk_Preserve and Tk_Release.
  *
  *--------------------------------------------------------------
  */
@@ -1278,7 +1291,7 @@ TkTextPickCurrent(textPtr, eventPtr)
     oldArrayPtr = textPtr->curTagArrayPtr;
     textPtr->curTagArrayPtr = newArrayPtr;
     if (numOldTags != 0) {
-	if (textPtr->bindingTable != NULL) {
+	if ((textPtr->bindingTable != NULL) && (textPtr->tkwin != NULL)) {
 	    event = textPtr->pickEvent;
 	    event.type = LeaveNotify;
 
@@ -1306,7 +1319,7 @@ TkTextPickCurrent(textPtr, eventPtr)
 	    textPtr->pickEvent.xcrossing.y, &index);
     TkTextSetMark(textPtr, "current", &index);
     if (numNewTags != 0) {
-	if (textPtr->bindingTable != NULL) {
+	if ((textPtr->bindingTable != NULL) && (textPtr->tkwin != NULL)) {
 	    event = textPtr->pickEvent;
 	    event.type = EnterNotify;
 	    event.xcrossing.detail = NotifyAncestor;

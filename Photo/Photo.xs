@@ -10,18 +10,20 @@
 
 #define Tcl_Interp SV 
 
-#include "tkPort.h"
-#include "tkInt.h"
-#include "tkVMacro.h"
-#include "../tkGlue.h"
-#include "../tkGlue.m"
-#include "tkImgPhoto.h"
-#include "tkImgPhoto.m"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
+#include "pTk/tkImgPhoto.h"
+#include "pTk/tkImgPhoto.m"
+#include "tkGlue.h"
+#include "tkGlue.m"
 
 DECLARE_VTABLES;
 
 
 MODULE = Tk::Photo	PACKAGE = Tk::Photo
+
+PROTOTYPES: DISABLE
 
 BOOT:
  {

@@ -27,7 +27,7 @@ sub image2 {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -35,26 +35,26 @@ sub image2 {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
-    $w_dirLabel = $w->Label(-text => 'Directory:');
-    my $dirName = Tk->findINC('demos/images');
-    $w_dirName = $w->Entry(-width => 30, -textvariable => \$dirName);
-    $w_spacer1 = $w->Frame(-height => '3m', -width => 20);
-    $w_fileLabel = $w->Label(-text => 'File:');
-    $w_f = $w->Frame;
+    my $w_dir_label = $w->Label(-text => 'Directory:');
+    my $dir_name = Tk->findINC('demos/images');
+    my $w_dir_name = $w->Entry(-width => 30, -textvariable => \$dir_name);
+    my $w_spacer1 = $w->Frame(-height => '3m', -width => 20);
+    my $w_file_label = $w->Label(-text => 'File:');
+    my $w_f = $w->Frame;
     my(@pl) = (-side => 'top', -anchor => 'w');
-    $w_dirLabel->pack(@pl);
-    $w_dirName->pack(@pl);
+    $w_dir_label->pack(@pl);
+    $w_dir_name->pack(@pl);
     $w_spacer1->pack(@pl);
-    $w_fileLabel->pack(@pl);
+    $w_file_label->pack(@pl);
     $w_f->pack(@pl);
 
-    $w_f_list = $w_f->Listbox(-width => 20, -height => 10);
-    $w_dirName->bind('<Return>', [\&image2_load_dir, $w_f_list, \$dirName]);
-    $w_f_scroll = $w_f->Scrollbar(-command => [$w_f_list => 'yview']);
+    my $w_f_list = $w_f->Listbox(-width => 20, -height => 10);
+    $w_dir_name->bind('<Return>' => [\&image2_load_dir, $w_f_list, \$dir_name]);
+    my $w_f_scroll = $w_f->Scrollbar(-command => [$w_f_list => 'yview']);
     $w_f_list->configure(-yscrollcommand => [$w_f_scroll => 'set']);
     @pl = (-side => 'left', -fill => 'y', -expand => 1);
     $w_f_list->pack(@pl);
@@ -62,13 +62,13 @@ sub image2 {
     $w_f_list->insert(0, qw(earth.gif earthris.gif mickey.gif teapot.ppm));
 
     my $image2a = $w->Photo;
-    $w_f_list->bind('<Double-1>' => [\&image2_load_image, $image2a, \$dirName]);
-    $w_spacer2 = $w->Frame(-height => '3m', -width => 20);
-    $w_imageLabel = $w->Label(-text => 'Image:');
-    $w_image = $w->Label(-image => $image2a);
+    $w_f_list->bind('<Double-1>' => [\&image2_load_image, $image2a, \$dir_name]);
+    my $w_spacer2 = $w->Frame(-height => '3m', -width => 20);
+    my $w_image_label = $w->Label(-text => 'Image:');
+    my $w_image = $w->Label(-image => $image2a);
     @pl = (-side => 'top', -anchor => 'w');
     $w_spacer2->pack(@pl);
-    $w_imageLabel->pack(@pl);
+    $w_image_label->pack(@pl);
     $w_image->pack(@pl);
 
 } # end image2
@@ -81,13 +81,13 @@ sub image2_load_dir {
     # Arguments:
     # e       -                 Reference to entry widget.
     # l       -                 Reference to listbox widget.
-    # dirName -                 Directory name reference.
+    # dir_name -                 Directory name reference.
 
-    my($e, $l, $dirName) = @ARG;
+    my($e, $l, $dir_name) = @ARG;
 
     $l->delete(0, 'end');
     my $i;
-    foreach $i (sort <$$dirName/*>) {
+    foreach $i (sort <$$dir_name/*>) {
 	$l->insert('end', basename($i));
     }
 
@@ -102,13 +102,13 @@ sub image2_load_image {
     # Arguments:
     # l       -         Reference to listbox widget.
     # i       -         Reference to image object.
-    # dirName -         Directory name reference.
+    # dir_name -         Directory name reference.
 
-    my($l, $i, $dirName) = @ARG;
+    my($l, $i, $dir_name) = @ARG;
 
     my $e = $l->XEvent;
     my($x, $y) = ($e->x, $e->y);
-    $i->configure(-file => "$$dirName/" . $l->get("\@$x,$y"));
+    $i->configure(-file => "$$dir_name/" . $l->get("\@$x,$y"));
 
     # NOTE:  $l->get('active') works just as well.  
 

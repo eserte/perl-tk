@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkCanvas.c 1.103 95/08/16 09:42:13";
+static char sccsid[] = "@(#) tkCanvas.c 1.104 95/11/24 15:46:15";
 
 #include "default.h"
 #include "tkInt.h"
@@ -2880,7 +2880,9 @@ CanvasBindProc(clientData, eventPtr)
  * Side effects:
  *	The current item for canvasPtr may change.  If it does,
  *	then the commands associated with item entry and exit
- *	could do just about anything.
+ *	could do just about anything.  A binding script could
+ *	delete the canvas, so callers should protect themselves
+ *	with Tk_Preserve and Tk_Release.
  *
  *--------------------------------------------------------------
  */
@@ -3116,7 +3118,9 @@ CanvasFindClosest(canvasPtr, coords)
  *	None.
  *
  * Side effects:
- *	Depends on the bindings for the canvas.
+ *	Depends on the bindings for the canvas.  A binding script
+ *	could delete the canvas, so callers should protect themselves
+ *	with Tk_Preserve and Tk_Release.
  *
  *--------------------------------------------------------------
  */
@@ -3172,8 +3176,10 @@ CanvasDoEvent(canvasPtr, eventPtr)
      * it was malloc-ed.
      */
 
-    Tk_BindEvent(canvasPtr->bindingTable, eventPtr, canvasPtr->tkwin,
-	    numObjects, objectPtr);
+    if (canvasPtr->tkwin != NULL) {
+	Tk_BindEvent(canvasPtr->bindingTable, eventPtr, canvasPtr->tkwin,
+		numObjects, objectPtr);
+    }
     if (objectPtr != staticObjects) {
 	ckfree((char *) objectPtr);
     }

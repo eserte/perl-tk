@@ -74,8 +74,9 @@ sub text_toggle {
 
     my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @ARG;
 
+    # return if not Exists $w;
     $w->tag(@{$cmd1});
-    after($sleep1, [sub {text_toggle(@ARG)}, $w, $cmd2, $sleep2, $cmd1, $sleep1]);
+    $w->after($sleep1, [sub {text_toggle(@ARG)}, $w, $cmd2, $sleep2, $cmd1, $sleep1]);
 
 } # end text_toggle
 

@@ -7,35 +7,34 @@
 # separate ".pl" files in the "widget_lib" directory, which are autoloaded 
 # by this script as needed.
 #
-# Stephen O. Lidie, LUCC, 95/09/17.  lusol@Lehigh.EDU
+# Stephen O. Lidie, LUCC, 96/03/11.  lusol@Lehigh.EDU
 
-use lib 'blib';
+require 5.002;
 
-require 5.001;
 use English;
 use Tk;
-require Tk::Dialog;
-require Tk::ErrorDialog;
+use Tk::Dialog;
+use Tk::ErrorDialog;
+use lib Tk->findINC('demos/widget_lib');
+use strict;
 
-sub dpos;
-sub inswt;
-sub invoke;
-sub lsearch;
-sub seeCode;
-sub seeVars;
-sub view_widget_code;
+# Global subroutine and variable declarations required by my() and use strict.
 
-$demos_path = Tk->findINC("demos");
-$auto_path = "$demos_path/widget_lib";
+use subs qw(dpos inswt invoke lsearch see_code see_vars view_widget_code);
 
-$MW = MainWindow->new;
+my($CODE, $CODE_TEXT, $SEE_DEMO, $VARS, $VIEW, $VIEW_TEXT);
+my($BRAKES, $LIGHTS, $OIL, $SOBER, $TRANS, $WIPERS);
+my($COLOR, $FONT_STYLE, $POINT_SIZE);
+
+my $MW = MainWindow->new;
 $MW->title('Widget Demonstration');
+my $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
+my $WIDGET_LIB = Tk->findINC('demos/widget_lib');
 
 # The code below creates the main window, consisting of a menu bar
 # and a text widget that explains how to use the program, plus lists
 # all of the demos as hypertext items.
 
-$FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $menuBar = $MW->Frame;
 $menuBar->pack(-side => 'top', -fill => 'x');
 my $menuBar_file = $menuBar->Menubutton(
@@ -45,13 +44,13 @@ my $menuBar_file = $menuBar->Menubutton(
 $menuBar_file->command(
     -label     => 'View',
     -underline => 0,
-    -command   => [\&view_widget_code, "$demos_path/widget"],
+    -command   => [\&view_widget_code, __FILE__],
 );
 $menuBar_file->separator;
 $menuBar_file->command(
     -label     => 'Quit',
     -underline => 0,
-    -command   => [sub {exit}],
+    -command   => \&exit,
 );
 $menuBar_file->pack(-side => 'left');
 
@@ -67,6 +66,7 @@ my $t = $MW->Text(
 );
 $s->configure(-command => [$t => 'yview']);
 $t->pack(-expand => 1, -fill => 'both');
+$t->bindtags(qw(widget_demo));	# remove all bindings but dummy "widget_demo"
 
 # Create a bunch of tags to use in the text widget, such as those for
 # section titles and demo descriptions.  Also define the bindings for
@@ -94,7 +94,7 @@ $t->tag('bind', 'demo',
 	invoke $t->index('current');
     }
 );
-$lastLine = '';
+my $lastLine = '';
 $t->tag('bind', 'demo',
     '<Enter>' => sub {
 	my $e = $t->XEvent;
@@ -112,7 +112,7 @@ $t->tag('bind', 'demo',
     '<Motion>' => sub {
 	my $e = $t->XEvent;
 	my($x, $y) = ($e->x, $e->y);
-	$newLine = $t->index("\@$x,$y linestart");
+	my $newLine = $t->index("\@$x,$y linestart");
 	if ($newLine ne $lastLine) {
 	    $t->tag('remove', 'hot', '1.0', 'end');
 	    $lastLine = $newLine;
@@ -127,9 +127,13 @@ $t->insert('end', "Tk Widget Demonstrations\n", 'title');
 $t->insert('end', 
 "\nThis application provides a front end for several short scripts that demonstrate what you can do with Tk widgets.  Each of the numbered lines below describes a demonstration;  you can click on it to invoke the demonstration.  Once the demonstration window appears, you can click the \"See Code\" button to see the Perl/Tk code that created the demonstration.  If you wish, you can edit the code and click the \"Rerun Demo\" button in the code window to reinvoke the demonstration with the modified code.\n");
 
+# Define globals for demo toplevels, informative text with tags for
+# highlighting and specifying the demo's file name.
+
+my($LABEL, $BUTTON, $CHECK, $RADIO, $PUZZLE, $ICON, $IMAGE1, $IMAGE2);
 $t->insert('end', "\n", '', 
 	   "Labels, buttons, checkbuttons, and radiobuttons\n", 'title');
-$t->insert('end', "1. Labels (text and bitmaps).\n", [qw(demo demo-labels)]);
+$t->insert('end', "1. Labels (text and images).\n", [qw(demo demo-labels)]);
 $t->insert('end', "2. Buttons.\n", [qw(demo demo-button)]);
 $t->insert('end', "3. Checkbuttons (select any of a group).\n",
     [qw(demo demo-check)]);
@@ -144,6 +148,7 @@ $t->insert('end', "7. Two labels displaying images.\n",
 $t->insert('end', "8. A simple user interface for viewing images.\n",
     [qw(demo demo-image2)]);
 
+my($STATES, $COLORS, $SAYINGS);
 $t->insert('end', "\n", '', "Listboxes\n", 'title');
 $t->insert('end', "1. 50 states.\n", [qw(demo demo-states)]);
 $t->insert('end', "2. Colors: change the color scheme for the application.\n",
@@ -151,11 +156,13 @@ $t->insert('end', "2. Colors: change the color scheme for the application.\n",
 $t->insert('end', "3. A collection of famous sayings.\n",
     [qw(demo demo-sayings)]);
 
+my($ENTRY1, $ENTRY2, $FORM);
 $t->insert('end', "\n", '', "Entries\n", 'title');
 $t->insert('end', "1. Without scrollbars.\n", [qw(demo demo-entry1)]);
 $t->insert('end', "2. With scrollbars.\n", [qw(demo demo-entry2)]);
 $t->insert('end', "3. Simple Rolodex-like form.\n", [qw(demo demo-form)]);
 
+my($TEXTS, $STYLE, $BIND, $TWIND, $SEARCH);
 $t->insert('end', "\n", '', "Text\n", 'title');
 $t->insert('end', "1. Basic editable text.\n", [qw(demo demo-texts)]);
 $t->insert('end', "2. Text display styles.\n", [qw(demo demo-style)]);
@@ -165,6 +172,7 @@ $t->insert('end', "4. A text widget with embedded windows.\n",
 $t->insert('end', "5. A search tool built with a text widget.\n",
     [qw(demo demo-search)]);
 
+my($ITEMS, $PLOT, $CTEXT, $ARROWS, $RULER, $FLOOR, $CSCROLL);
 $t->insert('end', "\n", '', "Canvases\n", 'title');
 $t->insert('end', "1. The canvas item types.\n", [qw(demo demo-items)]);
 $t->insert('end', "2. A simple 2-D plot.\n", [qw(demo demo-plot)]);
@@ -176,14 +184,21 @@ $t->insert('end', "5. A ruler with adjustable tab stops.\n",
 $t->insert('end', "6. A building floor plan.\n", [qw(demo demo-floor)]);
 $t->insert('end', "7. A simple scrollable canvas.\n", [qw(demo demo-cscroll)]);
 
+my($VSCALE, $HSCALE);
 $t->insert('end', "\n", '', "Scales\n", 'title');
 $t->insert('end', "1. Vertical scale.\n", [qw(demo demo-vscale)]);
 $t->insert('end', "2. Horizontal scale.\n", [qw(demo demo-hscale)]);
 
+my($MENUS);
 $t->insert('end', "\n", '', "Menus\n", 'title');
 $t->insert('end', "1. A window containing several menus and cascades.\n",
     [qw(demo demo-menus)]);
 
+my($BOUNCE);
+$t->insert('end', "\n", '', "Simulations\n", 'title');
+$t->insert('end', "1. Balls bouncing in a cavity.\n", [qw(demo demo-bounce)]);
+
+my($BITMAPS, $DIALOG1, $DIALOG2);
 $t->insert('end', "\n", '', "Miscellaneous\n", 'title');
 $t->insert('end', "1. The built-in bitmaps.\n", [qw(demo demo-bitmaps)]);
 $t->insert('end', "2. A dialog box with a local grab.\n",
@@ -195,7 +210,7 @@ $t->configure(-state => 'disabled');
 
 # Create all the dialogs required by this demonstration.
 
-$DIALOG_ICON = $MW->Dialog(
+my $DIALOG_ICON = $MW->Dialog(
     -title          => 'Bitmap Menu Entry',
     -bitmap         => undef,
     -default_button => 'OK',
@@ -213,11 +228,17 @@ sub AUTOLOAD {
     my($demo) = @ARG;
     $t->configure(-cursor => 'watch');
     $t->update;
-    eval "require \"$auto_path/${demo}.pl\"";
-    die $@ if $@;
+    {
+	local $INPUT_RECORD_SEPARATOR = undef;
+	open(DEMO, "<$WIDGET_LIB/${demo}.pl") or
+	    die("cannot open demo file $WIDGET_LIB/${demo}.pl!");
+	eval <DEMO>;
+	die $EVAL_ERROR if $EVAL_ERROR;
+	close DEMO;
+    }
     $t->configure(-cursor => 'xterm');
     $t->update;
-    goto &$AUTOLOAD;
+    goto &$::AUTOLOAD;
 
 } # end AUTOLOAD
 
@@ -265,7 +286,7 @@ sub invoke {
     my $i = lsearch('demo\-.*', @tags);
     return if $i < 0;
     my($demo) = $tags[$i] =~ /demo-(.*)/;
-    &$demo($demo);
+    {no strict 'refs'; &$demo($demo);}
 
 } # end invoke
 
@@ -284,28 +305,28 @@ sub lsearch {
 
 } # end lsearch
 
-sub seeCode {
+sub see_code {
 
     # This procedure creates a toplevel window that displays the code for
     # a demonstration and allows it to be edited and reinvoked.
 
     my($demo) = @ARG;
 
-    $file = "${demo}.pl";
+    my $file = "${demo}.pl";
     $SEE_DEMO = $demo;
     if (not Exists $CODE) {
 	$CODE = $MW->Toplevel;
 	my $code_buttons=$CODE->Frame;
-	$code_buttons->pack(-side => 'bottom',  -expand => 1, -fill => 'x');
-	$code_buttons_dismiss = $code_buttons->Button(
+	$code_buttons->pack(-side => 'bottom', -fill => 'x');
+	my $code_buttons_dismiss = $code_buttons->Button(
             -text    => 'Dismiss',
             -command => [$CODE => 'withdraw'],
 	);
-	$code_buttons_rerun = $code_buttons->Button(
+	my $code_buttons_rerun = $code_buttons->Button(
             -text => 'Rerun Demo',
             -command => [sub {
 		    eval $CODE_TEXT->get('1.0', 'end');
-		    &$SEE_DEMO($SEE_DEMO);
+		    {no strict qw(refs); &$SEE_DEMO($SEE_DEMO);}
 		}],
         );
 	$code_buttons_dismiss->pack(-side => 'left', -expand => 1);
@@ -321,20 +342,32 @@ sub seeCode {
 	$CODE->deiconify;
 	$CODE->raise;
     }
-    $CODE->title("Demo code: $auto_path/$file");
+    $CODE->title("Demo code: $WIDGET_LIB/$file");
     $CODE->iconname($file);
     $CODE_TEXT->delete('1.0', 'end');
-    $CODE_TEXT->insert('1.0', scalar(`cat $auto_path/$file`));
+    open(CODE, "<$WIDGET_LIB/$file") or
+	die("cannot open widget demo file $WIDGET_LIB/$file!");
+    {
+	local $INPUT_RECORD_SEPARATOR = undef;
+	$CODE_TEXT->insert('1.0', <CODE>);
+    }
+    close CODE;
     $CODE_TEXT->mark('set', 'insert', '1.0');
 
-} # end seeCode
+} # end see_code
 
-sub seeVars {
+sub see_vars {
 
     # Create a top-level window that displays a bunch of global variable values
     # and keeps the display up-to-date even when the variables change value.
+    # $args is a pointer to a list of list of 2: 
+    #
+    #   ["variable description", \$VAR]
+    #
+    # The old trick of passing a string to serve as the description and a soft
+    # reference to the variable no longer works with lexicals and use strict.
 
-    my($parent, @args) = @ARG;
+    my($parent, $args) = @ARG;
 
     $VARS->destroy if Exists($VARS);
     $VARS = $parent->Toplevel;
@@ -350,19 +383,17 @@ sub seeVars {
         -font   => '-*-helvetica-medium-r-normal--*-180-*-*-*-*-*-*',
     );
     $w_title->pack(-side => 'top', -fill => 'x');
-    my $i;
-    foreach $i (@args) {
-	my $w_i = $w->Frame;
-	my $w_i_name = $w_i->Label(-text => "$i: ");
-	my $w_i_value = $w_i->Label(-textvariable => \${$i});
-	$w_i_name->pack(-side => 'left');
-	$w_i_value->pack(-side => 'left');
-	$w_i->pack(-side => 'top', -anchor => 'w');
+    my($i, $label, $var);
+    foreach $i (@$args) {
+	($label, $var) = @$i;
+	my $wf = $w->Frame->pack(-anchor => 'w');
+	$wf->Label(-text => "$label: ")->pack(-side => 'left');
+	$wf->Label(-textvariable => $var)->pack(-side => 'left');
     }
     $w->Button(-text => 'OK', -command => [$w => 'destroy'])->
         pack(-side => 'bottom', -pady => 2);
 
-} # end seeVars
+} # end see_vars
 
 sub view_widget_code {
 
@@ -375,7 +406,7 @@ sub view_widget_code {
 	$VIEW->iconname('Demo');
 	my $view_buttons=$VIEW->Frame;
 	$view_buttons->pack(-side => 'bottom',  -expand => 1, -fill => 'x');
-	$view_buttons_dismiss = $view_buttons->Button(
+	my $view_buttons_dismiss = $view_buttons->Button(
             -text    => 'Dismiss',
             -command => [$VIEW => 'withdraw'],
 	);
@@ -387,7 +418,6 @@ sub view_widget_code {
         );
 	$view_scroll->pack(-side => 'right', -fill => 'y');
 	$VIEW_TEXT->configure(-yscrollcommand =>  [$view_scroll => 'set']);
-	$VIEW_TEXT->configure(-state => 'disabled');
     } else {
 	$VIEW->deiconify;
 	$VIEW->raise;
@@ -395,7 +425,13 @@ sub view_widget_code {
     $VIEW->title("Demo code: $widget");
     $VIEW_TEXT->configure(-state => 'normal');
     $VIEW_TEXT->delete('1.0', 'end');
-    $VIEW_TEXT->insert('1.0', scalar(`cat $widget`));
+    open(VIEW, "<$widget") or
+	die("cannot open widget demo file $widget!");
+    {
+	local $INPUT_RECORD_SEPARATOR = undef;
+	$VIEW_TEXT->insert('1.0', <VIEW>);
+    }
+    close VIEW;
     $VIEW_TEXT->mark('set', 'insert', '1.0');
     $VIEW_TEXT->configure(-state => 'disabled');
 

@@ -37,13 +37,20 @@
  * HeDu (hedu@cul-ipn.uni-kiel.de) 4/94
  */
 
-#include "xpmP.h"
+#include "XpmI.h"
 #include <sys/stat.h>
+#ifndef FOR_MSW
+#include <unistd.h>
+#endif
 #ifndef VAX11C
 #include <fcntl.h>
 #endif
 #ifdef FOR_MSW
 #include <io.h>
+#define stat _stat
+#define fstat _fstat
+#define fdopen _fdopen
+#define O_RDONLY _O_RDONLY
 #endif
 
 int
@@ -58,7 +65,11 @@ XpmReadFileToBuffer(filename, buffer_return)
 
     *buffer_return = NULL;
 
-    fd = open(filename, O_RDONLY, 0777);
+#ifndef VAX11C
+    fd = open(filename, O_RDONLY, 0);
+#else
+    fd = open(filename, O_RDONLY, NULL);
+#endif
     if (fd < 0)
 	return XpmOpenFailed;
 
@@ -77,9 +88,27 @@ XpmReadFileToBuffer(filename, buffer_return)
 	fclose(fp);
 	return XpmNoMemory;
     }
-    fcheck = fread(ptr, len, 1, fp);
+    fcheck = fread(ptr, 1, len, fp);
     fclose(fp);
-    if (fcheck != 1) {
+#ifdef VMS
+    /* VMS often stores text files in a variable-length record format,
+       where there are two bytes of size followed by the record.  fread	
+       converts this so it looks like a record followed by a newline.	
+       Unfortunately, the size reported by fstat() (and fseek/ftell)	
+       counts the two bytes for the record terminator, while fread()	
+       counts only one.  So, fread() sees fewer bytes in the file (size	
+       minus # of records) and thus when asked to read the amount	
+       returned by stat(), it fails.
+       The best solution, suggested by DEC, seems to consider the length
+       returned from fstat() as an upper bound and call fread() with
+       a record length of 1. Then don't check the return value.
+       We'll check for 0 for gross error that's all.
+    */
+    len = fcheck;
+    if (fcheck == 0) {
+#else
+    if (fcheck != len) {
+#endif
 	XpmFree(ptr);
 	return XpmOpenFailed;
     }

@@ -1,10 +1,7 @@
 # ruler.pl
 
-sub ruler_make_tab;
-sub ruler_move_tab;
-sub ruler_new_tab;
-sub ruler_release_tab;
-sub ruler_select_tab;
+use subs qw(ruler_make_tab ruler_move_tab ruler_new_tab ruler_release_tab
+	    ruler_select_tab);
 
 sub ruler {
 
@@ -29,7 +26,7 @@ sub ruler {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -37,7 +34,7 @@ sub ruler {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -67,6 +64,7 @@ sub ruler {
     }
 
     $c->create(qw(line 1c 0.5c 1c 1c 13c 1c 13c 0.5c -width 1));
+    my $i;
     for ($i = 0; $i < 12; $i++) {
 	my $x = $i+1;
 	$c->create('line', "$x.c",  '1c', "$x.c",  '0.6c', -width => 1);
@@ -80,10 +78,10 @@ sub ruler {
     $c->addtag('well', 'withtag', ruler_make_tab($c, $c->pixels('13.5c'),
         $c->pixels('.65c'), \%rinfo));
 
-    $c->bind('well', '<1>' => [sub{ruler_new_tab(@ARG)}, \%rinfo]);
-    $c->bind('tab', '<1>' => [sub {ruler_select_tab(@ARG)}, \%rinfo]);
-    $c->Tk::bind('<B1-Motion>' => [sub {ruler_move_tab(@ARG)}, \%rinfo]);
-    $c->Tk::bind('<Any-ButtonRelease-1>', [sub {ruler_release_tab(@ARG)}, \%rinfo]);
+    $c->bind('well', '<1>' => [\&ruler_new_tab, \%rinfo]);
+    $c->bind('tab', '<1>' => [\&ruler_select_tab, \%rinfo]);
+    $c->Tk::bind('<B1-Motion>' => [\&ruler_move_tab, \%rinfo]);
+    $c->Tk::bind('<Any-ButtonRelease-1>', [\&ruler_release_tab, \%rinfo]);
 
 } # end ruler
 

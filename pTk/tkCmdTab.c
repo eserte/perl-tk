@@ -36,6 +36,7 @@ Tk_Cmd Tk_Commands[] = {
     {"fileevent",	Tk_FileeventCmd},
     {"focus",		Tk_FocusCmd},
     {"grab",		Tk_GrabCmd},
+    {"grid",		Tk_GridCmd},
     {"image",		Tk_ImageCmd},
     {"lower",		Tk_LowerCmd},
     {"option",		Tk_OptionCmd},

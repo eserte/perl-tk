@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 #include <sys/stat.h>
 
 LFUNC(OpenReadFile, int, (char *filename, xpmData *mdata));
@@ -50,27 +50,33 @@ XpmReadFileToImage(display, filename,
     XpmImage image;
     XpmInfo info;
     int ErrorStatus;
+    xpmData mdata;
 
-    /* create an XpmImage from the file */
+    xpmInitXpmImage(&image);
+    xpmInitXpmInfo(&info);
+
+    /* open file to read */
+    if ((ErrorStatus = OpenReadFile(filename, &mdata)) != XpmSuccess)
+	return (ErrorStatus);
+
+    /* create the XImage from the XpmData */
     if (attributes) {
 	xpmInitAttributes(attributes);
 	xpmSetInfoMask(&info, attributes);
-	ErrorStatus = XpmReadFileToXpmImage(filename, &image, &info);
+	ErrorStatus = xpmParseDataAndCreate(display, &mdata,
+					    image_return, shapeimage_return,
+					    &image, &info, attributes);
     } else
-	ErrorStatus = XpmReadFileToXpmImage(filename, &image, NULL);
-
-    if (ErrorStatus != XpmSuccess)
-	return (ErrorStatus);
-
-    /* create the related ximages */
-    ErrorStatus = XpmCreateImageFromXpmImage(display, &image,
-					     image_return, shapeimage_return,
-					     attributes);
+	ErrorStatus = xpmParseDataAndCreate(display, &mdata,
+					    image_return, shapeimage_return,
+					    &image, NULL, attributes);
     if (attributes) {
 	if (ErrorStatus >= 0)		/* no fatal error */
 	    xpmSetAttributes(attributes, &image, &info);
 	XpmFreeXpmInfo(&info);
     }
+
+    xpmDataClose(&mdata);
     /* free the XpmImage */
     XpmFreeXpmImage(&image);
 
@@ -110,7 +116,7 @@ OpenReadFile(filename, mdata)
     char *filename;
     xpmData *mdata;
 {
-#ifdef ZPIPE
+#ifndef NO_ZPIPE
     char *compressfile, buf[BUFSIZ];
     struct stat status;
 
@@ -120,18 +126,18 @@ OpenReadFile(filename, mdata)
 	mdata->stream.file = (stdin);
 	mdata->type = XPMFILE;
     } else {
-#ifdef ZPIPE
+#ifndef NO_ZPIPE
 	if (((int) strlen(filename) > 2) &&
 	    !strcmp(".Z", filename + (strlen(filename) - 2))) {
 	    mdata->type = XPMPIPE;
-	    sprintf(buf, "uncompress -c %s", filename);
+	    sprintf(buf, "uncompress -c \"%s\"", filename);
 	    if (!(mdata->stream.file = popen(buf, "r")))
 		return (XpmOpenFailed);
 
 	} else if (((int) strlen(filename) > 3) &&
 		   !strcmp(".gz", filename + (strlen(filename) - 3))) {
 	    mdata->type = XPMPIPE;
-	    sprintf(buf, "gunzip -qc %s", filename);
+	    sprintf(buf, "gunzip -qc \"%s\"", filename);
 	    if (!(mdata->stream.file = popen(buf, "r")))
 		return (XpmOpenFailed);
 
@@ -142,7 +148,7 @@ OpenReadFile(filename, mdata)
 	    strcpy(compressfile, filename);
 	    strcat(compressfile, ".Z");
 	    if (!stat(compressfile, &status)) {
-		sprintf(buf, "uncompress -c %s", compressfile);
+		sprintf(buf, "uncompress -c \"%s\"", compressfile);
 		if (!(mdata->stream.file = popen(buf, "r"))) {
 		    XpmFree(compressfile);
 		    return (XpmOpenFailed);
@@ -152,7 +158,7 @@ OpenReadFile(filename, mdata)
 		strcpy(compressfile, filename);
 		strcat(compressfile, ".gz");
 		if (!stat(compressfile, &status)) {
-		    sprintf(buf, "gunzip -c %s", compressfile);
+		    sprintf(buf, "gunzip -c \"%s\"", compressfile);
 		    if (!(mdata->stream.file = popen(buf, "r"))) {
 			XpmFree(compressfile);
 			return (XpmOpenFailed);
@@ -161,13 +167,13 @@ OpenReadFile(filename, mdata)
 		} else {
 #endif
 		    if (!(mdata->stream.file = fopen(filename, "r"))) {
-#ifdef ZPIPE
+#ifndef NO_ZPIPE
 			XpmFree(compressfile);
 #endif
 			return (XpmOpenFailed);
 		    }
 		    mdata->type = XPMFILE;
-#ifdef ZPIPE
+#ifndef NO_ZPIPE
 		}
 	    }
 	    XpmFree(compressfile);
@@ -190,7 +196,7 @@ xpmDataClose(mdata)
 	if (mdata->stream.file != (stdin))
 	    fclose(mdata->stream.file);
 	break;
-#ifdef ZPIPE
+#ifndef NO_ZPIPE
     case XPMPIPE:
 	pclose(mdata->stream.file);
 	break;

@@ -1,1 +1,1 @@
-tkArgv.o: tkArgv.c tkPort.h tk.h Lang.h
+tkArgv.o: tkArgv.c tkPort.h tkConfig.h tk.h Lang.h

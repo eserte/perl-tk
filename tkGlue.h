@@ -24,10 +24,10 @@ do {                                                                  \
   XlibVptr   =   (XlibVtab *) SvIV(perl_get_sv("Tk::XlibVtab",5));    \
  } while (0)
 
-extern Lang_CmdInfo *WindowCommand _ANSI_ARGS_((SV *win,HV **hptr));
+extern Lang_CmdInfo *WindowCommand _ANSI_ARGS_((SV *win,HV **hptr, int moan));
 extern Tk_Window GetWindow _ANSI_ARGS_((SV *win));
 extern int Call_Tk _ANSI_ARGS_((Lang_CmdInfo *info,int argc, SV **args));
-extern HV *InterpHv _ANSI_ARGS_((Tcl_Interp *interp));
+extern HV *InterpHv _ANSI_ARGS_((Tcl_Interp *interp,int fatal));
 extern SV *WidgetRef _ANSI_ARGS_((Tcl_Interp *interp, char *path));
 extern SV *TkToWidget _ANSI_ARGS_((Tk_Window tkwin,Tcl_Interp **pinterp));
 extern SV *FindTkVarName _ANSI_ARGS_((char *varName,int flags));

@@ -8,9 +8,19 @@ use AutoLoader;
 
 Tk::Widget->Construct('Scrollbar');
 
-bootstrap Tk::Scrollbar; 
+bootstrap Tk::Scrollbar $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::scrollbar }
+
+sub Needed
+{
+ my ($sb) = @_;
+ my @val = $sb->get; 
+ return 1 unless (@val == 2);
+ return 1 if $val[0] != 0.0; 
+ return 1 if $val[1] != 1.0; 
+ return 0;
+}
 
 
 1;
@@ -362,6 +372,7 @@ sub ScrlTopBottom
  my $w = shift;
  my $e = $w->XEvent;
  my $element = $w->identify($e->x,$e->y);
+ return unless ($element);
  if ($element =~ /1$/)
   {
    $w->ScrlToPos(0);

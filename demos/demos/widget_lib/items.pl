@@ -1,13 +1,7 @@
 # items.pl
 
-sub items_button_press;
-sub items_drag;
-sub items_enter;
-sub items_leave;
-sub items_mark;
-sub items_start_drag;
-sub items_stroke;
-sub items_under_area;
+use subs qw(items_button_press items_drag items_enter items_leave items_mark
+	    items_start_drag items_stroke items_under_area);
 
 sub items {
 
@@ -32,7 +26,7 @@ sub items {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -40,7 +34,7 @@ sub items {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -82,6 +76,7 @@ sub items {
 
     my $font1 = '-*-Helvetica-Medium-R-Normal--*-120-*-*-*-*-*-*';
     my $font2 = '-*-Helvetica-Bold-R-Normal--*-240-*-*-*-*-*-*';
+    my($blue, $red, $bisque, $green);
     if ($w->depth > 1) {
 	$blue = 'DeepSkyBlue3';
 	$red = 'red';
@@ -163,7 +158,7 @@ sub items {
 	       qw(-justify center -tags item));
     $c->create(qw(rectangle 24.9c 13.9c 25.1c 14.1c));
     $c->create(qw(text 25c 14c -anchor c), -font => $font2, -fill => $red,
-	       -stipple => '@'.Tk->findINC('demos/images/grey.5'),
+	       -stipple => 'gray50',
 	       -text => 'Stippled characters', qw(-tags item));
 
     $c->create(qw(text 5c 16.2c -text Arcs -anchor n));
@@ -191,7 +186,7 @@ sub items {
 
     $c->create(qw(text 25c 16.2c -text Windows -anchor n));
     my $c_button = $c->Button(-text => 'Press Me',
-        -command => [sub {items_button_press(@ARG)}, $c, $red],
+        -command => [\&items_button_press, $c, $red],
     );
     $c->create(qw(window 21c 18c), -window => $c_button,
 	       qw(-anchor nw -tags item));
@@ -210,18 +205,18 @@ sub items {
 
     # Set up event bindings for canvas.
 
-    $c->bind('item', '<Any-Enter>' => [sub {items_enter(@ARG)}, \%iinfo]);
-    $c->bind('item', '<Any-Leave>' => [sub {items_leave(@ARG)}, \%iinfo]);
-    $c->Tk::bind('<1>' => [sub {
-	my($c, $iinfo) = @ARG;
+    $c->bind('item', '<Any-Enter>' => [\&items_enter, \%iinfo]);
+    $c->bind('item', '<Any-Leave>' => [\&items_leave, \%iinfo]);
+    $c->Tk::bind('<1>' => sub {
+	my($c) = @ARG;
         my $e = $c->XEvent;
-	items_start_drag $c, $e->x, $e->y, $iinfo;
-    }, \%iinfo]);
-    $c->Tk::bind('<B1-Motion>' => [sub {
-	my($c, $iinfo) = @ARG;
+	items_start_drag $c, $e->x, $e->y, \%iinfo;
+    });
+    $c->Tk::bind('<B1-Motion>' => sub {
+	my($c) = @ARG;
         my $e = $c->XEvent;
-	items_drag $c, $e->x, $e->y, $iinfo;
-    }, \%iinfo]);
+	items_drag $c, $e->x, $e->y, \%iinfo;
+    });
     $c->Tk::bind('<2>' => sub {
 	my($c) = @ARG;
         my $e = $c->XEvent;
@@ -232,26 +227,25 @@ sub items {
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
     });
-    $c->Tk::bind('<3>' => [sub {
-	my($c, $iinfo) = @ARG;
+    $c->Tk::bind('<3>' => sub {
+	my($c) = @ARG;
         my $e = $c->XEvent;
-	items_mark $c, $e->x, $e->y, $iinfo;
-    }, \%iinfo]);
-    $c->Tk::bind('<B3-Motion>' => [sub {
-	my($c, $iinfo) = @ARG;
+	items_mark $c, $e->x, $e->y, \%iinfo;
+    });
+    $c->Tk::bind('<B3-Motion>' => sub {
+	my($c) = @ARG;
         my $e = $c->XEvent;
-	items_stroke $c, $e->x, $e->y, $iinfo;
-    }, \%iinfo]);
+	items_stroke $c, $e->x, $e->y, \%iinfo;
+    });
     $c->Tk::bind('<Control-f>' => [sub {
 	my($c, $iinfo) = @ARG;
         my $e = $c->XEvent;
 	items_under_area $c, $iinfo;
     }, \%iinfo]);
-    $w->bind('<Any-Enter>' => [sub {
-	my($w, $c) = @ARG;
+    $w->bind('<Any-Enter>' => sub {
         my $e = $c->XEvent;
 	$c->Tk::focus;
-    }, $c]);
+    });
 
 } # end items
 
@@ -266,7 +260,7 @@ sub items_button_press {
 
     my $i = $w->create(qw(text 25c 18.1c -anchor n), -text => 'Ouch!!',
 		       -fill => $color);
-    after(500, [sub {shift->delete($ARG[0])}, $w, $i]);
+    $w->after(500, sub { $w->delete($i) });
 
 } # end items_button_press
 

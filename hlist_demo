@@ -1,5 +1,6 @@
-#!/usr/local/bin/perl -w
-use lib ('blib');
+#!/usr/local/bin/nperl -w
+
+use lib qw(blib .);
 use Tk;
 require Tk::HList;
 
@@ -7,8 +8,22 @@ $mw = MainWindow->new;
 
 my $hl = $mw->ScrlHList(-separator => '.', -width => 25, 
                         -drawbranch => 1,
+                        -selectmode => 'extended',
                         -indent => 10);
 
+$hl->configure( -command => [ sub 
+                               {
+                                my $hl = shift;
+                                my $ent = shift;
+                                my $data = $hl->info('data',$ent);
+                                foreach ($hl,$ent,$data)
+                                 {
+                                  print ref($_) ? "ref $_\n" : "string $_\n";
+                                 }
+                                print "\n";
+                               }, $hl
+                             ]
+               );
 
 $hl->pack(-expand => 1, -fill => 'both');
 
@@ -16,11 +31,11 @@ $hl->pack(-expand => 1, -fill => 'both');
 
 foreach $item (@list)
  {
-  $hl->add($item,-itemtype => 'text', -text => $item);
+  $hl->add($item,-itemtype => 'text', -text => $item, -data => {});
   my $subitem;
   foreach $subitem (@list)
    {
-    $hl->addchild($item,-itemtype => 'text', -text => $subitem);
+    $hl->addchild($item,-itemtype => 'text', -text => $subitem, -data => []);
    }
  }
 

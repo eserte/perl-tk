@@ -1,5 +1,9 @@
 =head1 NAME
 
+Tcl vs perl - very old suspect documentation on porting.
+
+=head1 DESCRIPTION
+
 This isn't really a .pod yet, nor is it Tcl vs perl
 it is a copy of John's comparison of Malcolm's original perl/Tk
 port with the current one. It is also out-of-date in places.

@@ -22,7 +22,7 @@ sub image1 {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -30,16 +30,16 @@ sub image1 {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
     $w->Photo('image1a', -file => Tk->findINC('demos/images/earth.gif'));
-    $w_l1 = $w->Label(-image => 'image1a');
+    my $w_l1 = $w->Label(-image => 'image1a');
     $w_l1->pack(-side => 'top', -padx => '.5m', -pady => '.5m');
 
     $w->Photo('image1b', -file => Tk->findINC('demos/images/earthris.gif'));
-    $w_l2 = $w->Label(-image => 'image1b');
+    my $w_l2 = $w->Label(-image => 'image1b');
     $w_l2->pack(-side => 'top', -padx => '.5m', -pady => '.5m');
 
 } # end image1

@@ -9,7 +9,7 @@ Ilya Zakharevich <ilya@math.ohio-state.edu>  has contributed most of
 this document. Many thanks.
 
 
-=head1 Portable Tk
+=head1 DESCRIPTION
 
 B<PortableTk> is an attempt to make B<Tk> useful from other
 languages. Currently tk4.0 runs under Perl using this

@@ -13,7 +13,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkButton.c 1.120 95/07/22 16:05:25";
+static char sccsid[] = "@(#) tkButton.c 1.121 95/09/25 14:56:29";
 
 #include "default.h"
 #include "tkPort.h"
@@ -1315,9 +1315,13 @@ DisplayButton(clientData)
 	    y += butPtr->borderWidth;
 	    dim -= 2*butPtr->borderWidth;
 	    if (butPtr->flags & SELECTED) {
-		XFillRectangle(butPtr->display, pixmap, Tk_3DBorderGC(tkwin,
-			butPtr->selectBorder, TK_3D_FLAT_GC),
-			x, y, (unsigned int) dim, (unsigned int) dim);
+		GC gc;
+
+		gc = Tk_3DBorderGC(tkwin,(butPtr->selectBorder != NULL)
+			? butPtr->selectBorder : butPtr->normalBorder,
+			TK_3D_FLAT_GC);
+		XFillRectangle(butPtr->display, pixmap, gc, x, y,
+			(unsigned int) dim, (unsigned int) dim);
 	    } else {
 		Tk_Fill3DRectangle(tkwin, pixmap, butPtr->normalBorder, x, y,
 			dim, dim, butPtr->borderWidth, TK_RELIEF_FLAT);
@@ -1337,9 +1341,13 @@ DisplayButton(clientData)
 	points[3].x = points[1].x;
 	points[3].y = points[0].y - radius;
 	if (butPtr->flags & SELECTED) {
-	    XFillPolygon(butPtr->display, pixmap,
-		    Tk_3DBorderGC(tkwin, butPtr->selectBorder, TK_3D_FLAT_GC),
-		    points, 4, Convex, CoordModeOrigin);
+	    GC gc;
+
+	    gc = Tk_3DBorderGC(tkwin, (butPtr->selectBorder != NULL)
+		    ? butPtr->selectBorder : butPtr->normalBorder,
+		    TK_3D_FLAT_GC);
+	    XFillPolygon(butPtr->display, pixmap, gc, points, 4, Convex,
+		    CoordModeOrigin);
 	} else {
 	    Tk_Fill3DPolygon(tkwin, pixmap, butPtr->normalBorder, points,
 		    4, butPtr->borderWidth, TK_RELIEF_FLAT);

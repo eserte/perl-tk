@@ -1,0 +1,24 @@
+#!/usr/local/bin/perl -w
+
+my %Have = ();
+
+foreach (glob('*.[ch]'))
+ {
+  $Have{$_} = 1;
+ }
+
+@ARGV = qw(Tk Tix) unless (@ARGV);
+
+foreach $dir (@ARGV)
+ {
+  foreach (sort glob("$dir/*.[ch]"))
+   {
+    my ($name) = m#.*/(.*)$#;
+    unless (exists $Have{$name})
+     {
+      print "Don't have $dir/$name\n";
+     }
+   }
+ }
+
+

@@ -170,7 +170,7 @@ static Tk_ConfigSpec configSpecs[] = {
 };
 
 static Tk_ConfigSpec entryConfigSpecs[] = {
-    {TK_CONFIG_STRING, "-data",          NULL,          NULL,
+    {TK_CONFIG_LANGARG, "-data",          NULL,          NULL,
        DEF_HLISTENTRY_DATA, Tk_Offset(HListElement, data), TK_CONFIG_NULL_OK},
 
     {TK_CONFIG_UID, "-state",          NULL,          NULL,
@@ -887,9 +887,14 @@ Tix_HLGeometryInfo(clientData, interp, argc, args)
     Tix_GetScrollFractions(wPtr->totalSize[1], qSize[1], wPtr->topPixel,
 	&first[1], &last[1]);
 
+#if 0
+    /* FIXME */
     sprintf(string, "{%f %f} {%f %f}", first[0], last[0], first[1], last[1]);
     Tcl_AppendResult(interp, string, NULL);
-
+#else
+    /* Not quite right - one list of four rather than two lists of two */
+    Tcl_DoubleResults(interp, 4, 1, first[0], last[0], first[1], last[1]);
+#endif
     return TCL_OK;
 }
 
@@ -996,7 +1001,7 @@ Tix_HLInfo(clientData, interp, argc, args)
 	    return TCL_ERROR;
 	}
 
-	Tcl_AppendResult(interp, chPtr->data, NULL);
+	Tcl_AppendArg(interp, chPtr->data);
 	return TCL_OK;
     }
     else if (strncmp(LangString(args[0]), "dragsite", len)==0) {
@@ -1015,10 +1020,9 @@ Tix_HLInfo(clientData, interp, argc, args)
 	chPtr = Tix_HLFindElement(interp, wPtr, LangString(args[1]));
 
 	if (chPtr) {
-	    Tcl_AppendResult(interp, "1", NULL);
+	    Tcl_IntResults(interp, 1, 1, 1);
 	} else {
-	    Tcl_ResetResult(interp);
-	    Tcl_AppendResult(interp, "0", NULL);
+	    Tcl_IntResults(interp, 1, 0, 0);
 	}
 	return TCL_OK;
     }
@@ -1027,9 +1031,9 @@ Tix_HLInfo(clientData, interp, argc, args)
 	    return TCL_ERROR;
 	}
 	if (chPtr->hidden) {
-	    Tcl_AppendElement(interp, "1");
+	    Tcl_IntResults(interp, 1, 1, 1);
 	} else {
-	    Tcl_AppendElement(interp, "0");
+	    Tcl_IntResults(interp, 1, 1, 0);
 	}
 
 	return TCL_OK;
@@ -1239,9 +1243,9 @@ Tix_HLSelection(clientData, interp, argc, args)
 	    goto done;
 	}
 	if (chPtr->selected) {
-	    Tcl_AppendResult(interp, "1", NULL);
+	    Tcl_IntResults(interp, 1, 1, 1);
 	} else {
-	    Tcl_AppendResult(interp, "0", NULL);
+	    Tcl_IntResults(interp, 1, 1, 0);
 	}
     }
     else if (strncmp(LangString(args[0]), "set", len)==0) {
@@ -1306,10 +1310,7 @@ Tix_HLXView(clientData, interp, argc, args)
     int leftPixel;
 
     if (argc == 0) {
-	char string[20];
-
-	sprintf(string, "%d", wPtr->leftPixel);
-	Tcl_AppendResult(interp, string, NULL);
+	Tcl_IntResults(interp, 1, 1, wPtr->leftPixel);
 	return TCL_OK;
     }
     else if ((chPtr = Tix_HLFindElement(interp, wPtr, LangString(args[0]))) != NULL) {
@@ -1371,10 +1372,7 @@ Tix_HLYView(clientData, interp, argc, args)
 
 
     if (argc == 0) {
-	char string[20];
-
-	sprintf(string, "%d", wPtr->topPixel);
-	Tcl_AppendResult(interp, string, NULL);
+        Tcl_IntResults(interp, 1, 1, wPtr->topPixel);
 	return TCL_OK;
     }
     else if ((chPtr = Tix_HLFindElement(interp, wPtr, LangString(args[0]))) != NULL) {

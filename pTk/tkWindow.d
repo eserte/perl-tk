@@ -1,1 +1,2 @@
-tkWindow.o: tkWindow.c tkPort.h tkInt.h tk.h Lang.h patchlevel.h
+tkWindow.o: tkWindow.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h \
+ patchlevel.h

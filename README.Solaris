@@ -1,0 +1,57 @@
+Solaris2.* is what perl/Tk's was delveloped on, so most things
+work.
+
+I have one report that /usr/ccs/bin/make fails to build correctly.
+I cannot reproduce the problem with current MakeMaker, but it was 
+reported that using GNU make (which is what I _usually_ use) fixed the problem.
+
+I have implemented a work-round to the 'locale' problem with 
+Tk-b9 but it is a little messy, See the Preload() line near top of Tk.pm - if it
+causes more problems than it solves remove that line. Without that line behaviour
+will be as perl Tk-b9 which is set out below. 
+The workround may _cause_ problems if you are using another X11 not openwin. 
+
+-----------------------------------------------------------------------------
+
+
+There is one snag. If you have 'locale' environment variables
+set you get error like: 
+
+alconbury 87% setenv LANG en_US
+alconbury 88% basic_demo
+ld.so.1: /usr/local/bin/perl: fatal: relocation error: symbol not found: _XlcDefaultInitLocale: referenced in /usr/openwin/lib/locale/en_US/XLIBI18N/xlibi18n.so.1
+Killed
+alconbury 89% 
+
+This is due to way Solaris locale handling interacts with dynamic linking.
+Openwindows dynamically loads a module based on locale setting.
+This module expects to be able to call _XlcDefaultInitLocale which is defined in
+Xlib (-lX11). However as -lX11 is not linked to 'base' executable (i.e. perl),
+but to a module which is dynamically loaded (i.e. Tk), the symbol is not 
+resolved.
+
+I will be investigating a clean solution. This will involve poking 
+about in DynaLoader. Issue is how to do it so not to break perl/Tk
+builds on other platforms.
+
+However there are workrounds:
+
+1. setenv LD_PRELOAD /usr/openwin/lib/libX11.so
+   This tell OS to load X11 before Tk.so asks it to, and will 
+   use it to resolve synbols. See man ld.
+
+2. Build a 'tkperl' i.e. a perl with Tk (and libraries it needs e.g. -lX11)
+   linked in 'statically'.
+   Note that this still dynamically load Tk's sub modules (we are using 
+   a 'feature' of MakeMaker here which gets static/dynamic a little 
+   'muddled').
+
+   Procedure is : 
+
+   perl Makefile.PL
+   make
+   make tkperl
+   make -f Makefile.aperl inst_perl MAP_TARGET=tkperl
+   
+   Change #!/usr/local/bin/perl in scripts to #!/usr/local/bin/tkperl
+

@@ -331,6 +331,7 @@ typedef struct TkTextTag {
     int affectsDisplay;		/* Non-zero means that this tag affects the
 				 * way information is displayed on the screen
 				 * (so need to redisplay if tag changes). */
+    Arg userData;		/* arbitary user data */
 } TkTextTag;
 
 #define TK_TAG_AFFECTS_DISPLAY	0x1

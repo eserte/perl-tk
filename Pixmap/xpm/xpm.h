@@ -54,15 +54,11 @@
  */
 #define XpmFormat 3
 #define XpmVersion 4
-#define XpmRevision 5
+#define XpmRevision 8
 #define XpmIncludeVersion ((XpmFormat * 100 + XpmVersion) * 100 + XpmRevision)
 
 #ifndef XPM_NUMBERS
 
-#ifdef VMS
-#include "decw$include:Xlib.h"
-#include "decw$include:Xutil.h"
-#else /* VMS */
 #ifdef FOR_MSW
 #define SYSV			/* uses memcpy string.h etc. */
 #include <malloc.h>
@@ -72,7 +68,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif /* FOR_MSW */
-#endif /* VMS */
 
 /* let's define Pixel if it is not done yet */
 #if ! defined(_XtIntrinsic_h) && ! defined(PIXEL_ALREADY_TYPEDEFED)
@@ -155,7 +150,7 @@ typedef struct {
     unsigned int cpp;			/* Specifies the number of char per
 					 * pixel */
     Pixel *pixels;			/* List of used color pixels */
-    unsigned int npixels;		/* Number of pixels */
+    unsigned int npixels;		/* Number of used pixels */
     XpmColorSymbol *colorsymbols;	/* Array of color symbols to
 					 * override */
     unsigned int numsymbols;		/* Number of symbols */
@@ -174,12 +169,23 @@ typedef struct {
                                          * index */
 
     /* Color Allocation Directives */
-    unsigned int exactColors;		/* Only use exact colors for visual */
+    Bool exactColors;			/* Only use exact colors for visual */
     unsigned int closeness;		/* Allowable RGB deviation */
     unsigned int red_closeness;		/* Allowable red deviation */
     unsigned int green_closeness;	/* Allowable green deviation */
     unsigned int blue_closeness;	/* Allowable blue deviation */
     int color_key;			/* Use colors from this color set */
+
+    Pixel *alloc_pixels;		/* Returns the list of alloc'ed color
+					   pixels */
+    Bool nalloc_pixels;			/* Returns the number of alloc'ed
+					   color pixels */
+
+    Bool alloc_close_colors;    	/* Specify whether close colors should
+					   be allocated using XAllocColor
+					   or not */
+    int bitmap_format;			/* Specify the format of 1bit depth
+					   images: ZPixmap or XYBitmap */
 
 }      XpmAttributes;
 
@@ -208,6 +214,10 @@ typedef struct {
 #define XpmColorTable      (1L<<15)
 #define XpmReturnColorTable XpmColorTable
 
+#define XpmReturnAllocPixels (1L<<16)
+#define XpmAllocCloseColors (1L<<17)
+#define XpmBitmapFormat    (1L<<18)
+
 /* XpmInfo value masks bits */
 #define XpmComments        XpmInfos
 #define XpmReturnComments  XpmComments
@@ -222,7 +232,7 @@ typedef struct {
 
 /*
  * color keys for visual type, they must fit along with the number key of
- * each related element in xpmColorKeys[] defined in xpmP.h
+ * each related element in xpmColorKeys[] defined in XpmI.h
  */
 #define XPM_MONO	2
 #define XPM_GREY4	3
@@ -238,7 +248,7 @@ typedef struct {
 
 /* forward declaration of functions with prototypes */
 
-#if __STDC__ || defined(__cplusplus) || defined(c_plusplus)
+#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
  /* ANSI || C++ */
 #define FUNC(f, t, p) extern t f p
 #define LFUNC(f, t, p) static t f p

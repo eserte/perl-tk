@@ -1,10 +1,23 @@
+require 5.002;
+my $path = "$Config{'archlibexp'}/CORE/perl.h";
+die "Cannot find '$path' have you installed $^X?\n" unless (-r $path);
+print "$^X is installed in $Config{'archlibexp'} okay\n";
 use Config;
+use Cwd;
+use Tk::MMtry;
+warn "No VERSION" unless (defined $VERSION);
+
+my %define = ();
+
+$inc    = "";        
+$xlib   = "";        
+$define = '-DBASEEXT=\\"$(BASEEXT)\\"';
+$gccopt = "";
+@macro  = ();
+
 #
 # Convert perls Config info into -DXXXX for Tk
 #
-$define = "" unless (defined $define);
-
-$gccopt = "";
 
 if (defined $Config{'gccversion'})
  {
@@ -12,47 +25,88 @@ if (defined $Config{'gccversion'})
   if ($ver ge "2.6")
    { 
     # retain author's favourite warnings if using gcc
-    $gccopt .= " -Wall -Wno-comment -Wno-unused -MMD -D__USE_FIXED_PROTOTYPES__";
+    $gccopt .= " -Wall -Wno-comment -Wno-unused -D__USE_FIXED_PROTOTYPES__";
     eval 
      {
       if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
        {
         # This is the author - catch as many bugs as possible
-        $gccopt .= " -pedantic -Werror";
+        $gccopt .= " -MMD -Werror";
+        # $gccopt .= " -ansi -D__EXTENSIONS__" if ($^O eq 'solaris');
         # $gccopt .= " -Wmissing-prototypes" if (-f "/etc/shadow");
+        @macro = ( macro => { INSTALLDIRS => 'perl' } );
        }
      }
    }
  }
 
-$define .= " -DUSE_PROTO" if ($Config{'prototype'});
-$define .= " -DHAVE_UNISTD_H" if ($Config{'i_unistd'});
-$define .= " -DHAVE_SYS_SELECT_H" if ($Config{'i_sysselct'});
-$define .= " -DNO_STDLIB_H" unless ($Config{'i_stdlib'});
-$define .= " -DHAVE_SYS_TIME_H" if ($Config{'i_systime'});
-$define .= " -DHAVE_LIMITS_H" if ($Config{'i_limits'});
-$define .= " -DUSE_BCOPY" if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
+$define{'USE_PROTO'} = 1         if ($Config{'prototype'});
+$define{'HAVE_UNISTD_H'} = 1     if ($Config{'i_unistd'});
+$define{'HAVE_SYS_SELECT_H'} = 1 if ($Config{'i_sysselct'});
+$define{'NO_STDLIB_H'} = 1       unless ($Config{'i_stdlib'});
+$define{'HAVE_SYS_TIME_H'} = 1   if ($Config{'i_systime'});
+$define{'HAVE_LIMITS_H'} = 1     if ($Config{'i_limits'});
+$define{'USE_BCOPY'} = 1         if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
 
 if (defined $Config{'selecttype'})
  {
    my $type = $Config{'selecttype'};
    $type =~ s/\s*\*\s*$//;
-   $define .= " \"-DSELECT_MASK=$type\"";
+   $define{'SELECT_MASK'} = $type;
  }
 
 if (!$Config{'i_unistd'} && defined $Config{'lseektype'})
  {
    my $type = $Config{'lseektype'};
    $type =~ s/\s*\*\s*$//;
-   $define .= " \"-DLSEEK_TYPE=$type\"";
+   $define{'LSEEK_TYPE'} =$type;
  }
 
 
 my $voidflags = $Config{'voidflags'};
 my $voidused  = $Config{'defvoidused'}+0;
 
-$define .= " -DNOVOID" if (($voidflags & $voidused) != $voidused);
-$define .= " -DNOCONST" unless ($Config{'d_const'});
+$define{'NOVOID'}  = 1 if (($voidflags & $voidused) != $voidused);
+$define{'NOCONST'} = 1 unless ($Config{'d_const'});
+
+if (try_compile("config/signedchar.c"))
+ {
+  $define{'ANSI_SIGNED_CHAR'} = 1;
+ }
+else
+ {
+  if (try_run("config/unsigned.c"))
+   {
+    $define{'CHAR_UNSIGNED'} = 1;
+   }
+ }
+
+if (!try_compile("config/tod.c"))
+ {
+  my $d;
+  my $def;
+  foreach $d (qw(TZ NO_TZ DOTS))
+   {
+    if (try_compile("-DTIMEOFDAY_$d config/tod.c"))
+     {
+      $def = "TIMEOFDAY_$d";
+      print STDERR "$d gettimeofday()\n";
+      last;
+     }
+   }
+  if (defined $def)
+   {
+    $define{$def} = 1;
+   }
+  else
+   {
+    print STDERR "Problem gettimeofday()\n";
+   }
+ }
+else
+ {
+  print STDERR "Generic gettimeofday()\n";
+ }
 
 #
 # Hunt down X Library - first a function
@@ -66,7 +120,10 @@ sub lX11
    if (-d $_)
     {
      local ($lib);
-     foreach $lib (reverse(<$_/libX11.*>))
+     my $pattern = "$_/libX11.*";
+     $pattern .= " $_/X11$Config::Config{lib_ext}" 
+       if $Config::Config{osname} eq 'os2';
+     foreach $lib (reverse(<$ {pattern}>))
       {
        if (-r $lib)
         {
@@ -128,10 +185,14 @@ else
  {
   # Find the X Library through xmkmf!
   $xmkmf = undef;
-  foreach $dir (split(/:/,$ENV{'PATH'})) {
-    if (-x "$dir/xmkmf" && -r "$dir/xmkmf") {
-      $xmkmf = "$dir/xmkmf";
-      last;
+  my @exts = ("", ".cmd", ".bat");
+ LOOK:
+  foreach $dir (split($Config::Config{path_sep},$ENV{'PATH'})) {
+    foreach $ext (@exts) {
+      if (-x "$dir/xmkmf$ext" && -r "$dir/xmkmf$ext") {
+$xmkmf = "$dir/xmkmf$ext";
+last LOOK;
+      }
     }
   }
   $uiline = undef;
@@ -146,6 +207,7 @@ else
     while (defined $uidir) {
       last unless ($uidir =~ s!^.*-I(\S+)/lib/X11/config!!o);
       $try = $1;
+      $try =~ s/'x11root'/$ENV{X11ROOT}/;
       push(@xdirs,$try);
     }
   }
@@ -163,11 +225,15 @@ if (!defined($xlib) && defined($X11))
   $xlib = &lX11(1,"$X11/lib") 
  }
 $xlib = &lX11(0,map("$_/lib",@xdirs)) unless (defined $xlib);
-#
-# Try places perl looks for libraries
-#
 
-$xlib = &lX11(0,split(/\s+/,$Config{'libpth'})) unless defined $xlib;
+# Special case for sun-machines 
+unless (defined $xlib)
+ {
+  if ($Config{'osname'} eq 'solaris' || $Config{'osname'} eq 'sunos')
+   {
+    $xlib = &lX11(0,'/usr/openwin/lib');
+   }
+ }
 
 sub chooseX11
 {
@@ -180,7 +246,17 @@ sub chooseX11
 #
 unless (defined $xlib)
  {
-  $xlib = &lX11(0,'/usr/openwin/lib',chooseX11(</usr/X11*/lib>),chooseX11(</usr/lib/X11*>),</usr/Xfree*/lib>,'/usr/X386/lib')
+  $xlib = &lX11(0,chooseX11(</usr/X11*/lib>),chooseX11(</usr/lib/X11*>),</usr/Xfree*/lib>,'/usr/X386/lib')
+ }
+
+#
+# Try places perl looks for libraries
+# This is now "last resort" as /lib and /usr/local/lib are so often
+# full of dubious links
+#
+unless (defined $xlib)
+ {
+  $xlib = &lX11(0,split(/\s+/,$Config{'libpth'})) 
  }
 
 die "Cannot find -lX11 anywhere" unless(defined $xlib);
@@ -209,20 +285,57 @@ die "Cannot find X include files anywhere" unless (defined $xinc);
 
 $inc = ($xinc eq "-I/usr/include") ? "" : $xinc;
 
+if ($Config{'osname'} eq 'solaris' && $xlib =~ /\bopenwin\b/ )
+ {
+  $define{'NEED_PRELOAD'} = 1; 
+ }
+
+sub WriteIfChanged
+{
+ my ($file,$string) = @_;
+ my ($dir) = $file =~ m#^(.*)/[^/]+$#; 
+ if (defined($dir) && !-d $dir)
+  {
+   mkdir($dir,0777) || die "Cannot mkdir $dir:$!";
+  }
+ my $ok = -f $file;
+ if ($ok = open(IN,"$file"))
+  { 
+   my $old = join('',<IN>);
+   close(IN);
+   $ok = $old eq $string;
+   print STDERR "$file has changed\n" unless ($ok);
+  }
+ unless ($ok)
+  {
+   open(OUT,">$file") || die "Cannot open $file:$!";
+   print STDERR "Writing $file\n";
+   print OUT $string;
+   close(OUT);
+  }
+}
+
 if (!defined($MakefileName) || $MakefileName eq 'Makefile')
  {
-  my $file = __FILE__.".out";
-  open(OUT,">$file") || die "Cannot open $file:$!";
-  print OUT "use Config;\n";
+  my $config = "package Tk::Config;\nrequire Exporter;\n\@ISA = qw(Exporter);\n";
   my $sym;
-  foreach $sym (qw(inc define xlib xinc gccopt))
+  my @export = (); 
+  foreach $sym (qw(VERSION inc define xlib xinc gccopt))
    {         
     my $val = ${$sym};
     $val =~ s/([\\'])/\\$1/g;
-    print OUT "\$$sym = '$val';\n";
+    $config .= "\$$sym = '$val';\n";
+    push(@export,"\$$sym");
    }         
-  print OUT "1;\n";
-  close(OUT);
+  $config .= "\@EXPORT = qw(".join(' ',@export).");\n1;\n";
+  WriteIfChanged("Tk/Config.pm",$config);
+  $config = "#ifndef _TKCONFIG\n#define _TKCONFIG\n";
+  foreach $sym (sort keys %define)
+   {
+    $config .= "#define $sym $define{$sym}\n";
+   }
+  $config .= "#endif\n";
+  WriteIfChanged("pTk/tkConfig.h",$config);
  }
 
 1;

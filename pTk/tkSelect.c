@@ -1038,6 +1038,60 @@ Tk_SelectionCmd(clientData, interp, argc, args)
 	    
 	Tk_ClearSelection(tkwin, selection);
 	return TCL_OK;
+    } else if ((c == 'e') && (strncmp(LangString(args[1]), "exists", length) == 0)) {
+	Window win = None;
+	for (count = argc-2, argp = args+2; count > 0; count -= 2, argp += 2) {
+            char *string = LangString(argp[0]);
+	    if (*string != '-') {
+		break;
+	    }
+	    if (count < 2) {
+		Tcl_AppendResult(interp, "value for \"", string,
+			"\" missing",          NULL);
+		return TCL_ERROR;
+	    }
+	    c = string[1];
+	    length = strlen(string);
+	    if ((c == 'd') &&  LangCmpOpt("-displayof",string,length) == 0 ) {
+		path = LangString(argp[1]);
+	    } else if ((c == 's') &&  LangCmpOpt("-selection",string,length) == 0 ) {
+
+		selName = LangString(argp[1]);
+	    } else {
+		Tcl_AppendResult(interp, "unknown option \"", string,
+			"\"",          NULL);
+		return TCL_ERROR;
+	    }
+	}
+	if (count == 1) {
+	    path = LangString(*argp);
+	} else if (count > 1) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", LangString(args[0]),
+		    " clear ?options?\"",          NULL);
+	    return TCL_ERROR;
+	}
+	if (path != NULL) {
+	    tkwin = Tk_NameToWindow(interp, path, tkwin);
+	}
+	if (tkwin == NULL) {
+	    return TCL_ERROR;
+	}
+	if (selName != NULL) {
+	    selection = Tk_InternAtom(tkwin, selName);
+	} else {
+	    selection = XA_PRIMARY;
+	}
+	win = XGetSelectionOwner(Tk_Display(tkwin), selection);
+	if (win != None) {
+	    TkWindow *winPtr = (TkWindow *) tkwin;
+	    tkwin = Tk_IdToWindow(Tk_Display(tkwin), win);
+	    if (tkwin != NULL && tkwin != winPtr->dispPtr->clipWindow) {
+		Tcl_ArgResult(interp,LangWidgetArg(interp,tkwin));
+	    } else {
+		Tcl_IntResults(interp, 1, 0, win);    
+	    }
+        }
+	return TCL_OK;
     } else if ((c == 'g') && (strncmp(LangString(args[1]), "get", length) == 0)) {
 	Atom target;
 	char *targetName = NULL;

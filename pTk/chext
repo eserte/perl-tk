@@ -23,8 +23,13 @@ while (<>)
  {
   if (/(extern|EXTERN|COREXT)\s*(.*)\s(\w+)\s+_ANSI_ARGS_/)
    {
+    my $kind = $1;
     if (!exists($def{$3}))
      {
+      if ($kind ne 'COREXT')
+       {
+        print STDERR "$ARGV:$.: $kind $3 not defined\n";
+       }
       print "$ARGV:$.: $3 not defined";
       print " - but not referenced" unless (exists($ref{$3}));
       print "\n";
@@ -32,8 +37,13 @@ while (<>)
    }
   elsif (/(extern|EXTERN|COREXT)\s*(.*)\s(\w+)\s*;/)
    {
+    my $kind = $1;
     if (!exists($def{$3}))
      {
+      if ($kind ne 'COREXT')
+       {
+        print STDERR "$ARGV:$.: $kind $3 not defined\n";
+       }
       print "$ARGV:$.: $3 not defined";
       print " - but not referenced" unless (exists($ref{$3}));
       print "\n";

@@ -1474,9 +1474,7 @@ TextSearchCmd(textPtr, interp, argc, args)
     char buffer[20];
     TkTextIndex index, stopIndex;
     Tcl_DString line;
-#if 0
     Tcl_DString patDString;
-#endif
     TkTextSegment *segPtr;
     TkTextLine *linePtr;
     Tcl_RegExp regexp = NULL;		/* Initialization needed only to
@@ -1537,12 +1535,11 @@ TextSearchCmd(textPtr, interp, argc, args)
     }
     pattern = LangString(args[i]);
 
-#if 0
     /*
      * Convert the pattern to lower-case if we're supposed to ignore case.
      */
 
-    if (noCase) {
+    if (noCase && exact) {
 	Tcl_DStringInit(&patDString);
 	Tcl_DStringAppend(&patDString, pattern, -1);
 	pattern = Tcl_DStringValue(&patDString);
@@ -1552,7 +1549,6 @@ TextSearchCmd(textPtr, interp, argc, args)
 	    }
 	}
     }
-#endif
 
     if (TkTextGetIndex(interp, textPtr, LangString(args[i+1]), &index) != TCL_OK) {
 	return TCL_ERROR;
@@ -1634,15 +1630,13 @@ TextSearchCmd(textPtr, interp, argc, args)
 	 * If we're ignoring case, convert the line to lower case.
 	 */
 
-#if 0
-	if (noCase) {
+	if (noCase && exact) {
 	    for (p = Tcl_DStringValue(&line); *p != 0; p++) {
 		if (isupper(UCHAR(*p))) {
 		    *p = tolower(UCHAR(*p));
 		}
 	    }
 	}
-#endif
 
 	/*
 	 * Check for matches within the current line.  If so, and if we're
@@ -1816,11 +1810,9 @@ TextSearchCmd(textPtr, interp, argc, args)
     }
     done:
     Tcl_DStringFree(&line);
-#if 0
-    if (noCase) {
+    if (noCase && exact) {
 	Tcl_DStringFree(&patDString);
     }
-#endif
     if (regexp) {
 	Lang_FreeRegExp(regexp);
     }

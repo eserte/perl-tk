@@ -17,12 +17,12 @@ sub labels {
         -font       => $FONT,
         -wraplength => '4i',
         -justify    => 'left',
-        -text       => 'Five labels are displayed below: three textual ones on the left, and a bitmap label and a text label on the right.  Labels are pretty boring because you can\'t do anything with them.',
+        -text       => 'Five labels are displayed below: three textual ones on the left, and an image label and a text label on the right.  Labels are pretty boring because you can\'t do anything with them.',
     );
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -30,7 +30,7 @@ sub labels {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -56,11 +56,11 @@ sub labels {
     $w_left_l3->pack(@pl);
 
     my $w_right_bitmap = $w_right->Label(
-        -bitmap => '@'.Tk->findINC('demos/images/face'),
+        -image => $LABEL->Photo(-file => Tk->findINC('Xcamel.gif')),
         -borderwidth => 2,
 	-relief => 'sunken',
     );
-    my $w_right_caption = $w_right->Label(-text => 'Tcl/Tk Proprietor');
+    my $w_right_caption = $w_right->Label(-text => 'Perl/Tk');
     $w_right_bitmap->pack(-side => 'top');
     $w_right_caption->pack(-side => 'top');
 

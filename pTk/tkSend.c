@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkSend.c 1.50 95/08/21 10:49:10";
+static char sccsid[] = "@(#) tkSend.c 1.51 95/11/09 10:29:13";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -1218,8 +1218,6 @@ SendInit(interp, dispPtr)
 				 * interpreter is needed anyway). */
     TkDisplay *dispPtr;		/* Display to initialize. */
 {
-    TkMainInfo *mainPtr;
-    TkWindow *winPtr;
     XSetWindowAttributes atts;
 
     /*
@@ -1240,28 +1238,13 @@ SendInit(interp, dispPtr)
     Tk_MakeWindowExist(dispPtr->commTkwin);
 
     /*
-     * Find a window on the display to use for registering property
-     * names.
-     */
-
-    for (mainPtr = tkMainWindowList; ; mainPtr = mainPtr->nextPtr) {
-	if (mainPtr == NULL) {
-	    return TCL_OK;
-	}
-	if (mainPtr->winPtr->dispPtr == dispPtr) {
-	    winPtr = mainPtr->winPtr;
-	    break;
-	}
-    }
-
-    /*
      * Get atoms used as property names.
      */
 
-    dispPtr->commProperty = Tk_InternAtom((Tk_Window) winPtr, "Comm");
-    dispPtr->registryProperty = Tk_InternAtom((Tk_Window) winPtr,
+    dispPtr->commProperty = Tk_InternAtom(dispPtr->commTkwin, "Comm");
+    dispPtr->registryProperty = Tk_InternAtom(dispPtr->commTkwin,
 	    "InterpRegistry");
-    dispPtr->appNameProperty = Tk_InternAtom((Tk_Window) winPtr,
+    dispPtr->appNameProperty = Tk_InternAtom(dispPtr->commTkwin,
 	    "TK_APPLICATION");
 
     return TCL_OK;

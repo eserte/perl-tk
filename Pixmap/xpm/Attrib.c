@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 /* 3.2 backward compatibility code */
 LFUNC(CreateOldColorTable, int, (XpmColor *ct, int ncolors,
@@ -163,6 +163,8 @@ xpmInitAttributes(attributes)
 /* end 3.2 bc */
 	attributes->extensions = NULL;
 	attributes->nextensions = 0;
+	attributes->alloc_pixels = NULL;
+	attributes->nalloc_pixels = 0;
     }
 }
 
@@ -285,6 +287,12 @@ XpmFreeAttributes(attributes)
 	XpmFreeExtensions(attributes->extensions, attributes->nextensions);
 	attributes->extensions = NULL;
 	attributes->nextensions = 0;
+    }
+    if (attributes->valuemask & XpmReturnAllocPixels
+	&& attributes->nalloc_pixels) {
+	XpmFree(attributes->alloc_pixels);
+	attributes->alloc_pixels = NULL;
+	attributes->nalloc_pixels = 0;
     }
     attributes->valuemask = 0;
 }

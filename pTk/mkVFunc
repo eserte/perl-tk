@@ -64,7 +64,6 @@ sub Vfunc
 
  if (keys %VFunc || keys %VVar)
   {
-   my $cfile = $hfile;
    my $gard = "\U$hfile";             
    $gard =~ s/\..*$//;                 
    $gard =~ s#/#_#g;
@@ -153,3 +152,58 @@ foreach (@ARGV)
   Vfunc($_);
  }
 
+__END__
+
+=head1 NAME
+
+mkVFunc - Support for "nested" dynamic loading
+
+=head1 SYNOPSIS
+
+ mkVFunc xxx.h  
+
+=head1 DESCRIPTION
+
+B<perl/Tk> is designed so that B<Tk> can be dynamically loaded 'on top of'
+perl. That is the easy bit. What it also does is allow Tk::Xxxx to be
+dynamically loaded 'on top of' the B<perl/Tk> composite. Thus when 
+you 'require Tk::HList' the shared object F<.../HList.so> needs to be 
+able to call functions defined in perl I<and> functions defined in loadable
+.../Tk.so . Now functions in 'base executable' are a well known problem,
+and are solved by DynaLoader. However most of dynamic loading schemes 
+cannot handle one loadable calling another loadable.
+
+Thus what Tk does is build a table of functions that should be callable.
+This table is auto-generated from the .h file by looking for 
+'extern' (and EXTERN which is #defined to 'extern'). 
+Thus any function marked as 'extern' is 'referenced' by the table.
+The address of the table is then stored in a perl variable when Tk is loaded.
+When HList is loaded it looks in the perl variable (via functions
+in perl - the 'base executable') to get the address of the table.
+
+The same utility that builds the table also builds a set of #define's.
+HList.c (and any other .c files which comprise HList) #include these
+#define's. So that 
+
+  Tk_SomeFunc(x,y,z)
+
+Is actually compiled as 
+
+  (*TkVptr->V_Tk_SomeFunc)(x,y,z)
+
+Where Tk_ptr is pointer to the table.
+
+See:
+
+ Tk-b*/pTk/mkVFunc - perl script that produces tables
+          /tk.h        - basis from which table is generated
+          /tk.m        - #define's to include in sub-extension
+          /tk_f.h      - #included both sides.
+          /tk_f.c      - Actual table definition.
+          /tk.t        - 'shared' set of macros which produce table
+                         included in tk_f.c and tk_f.h
+          /tkVMacro.h  - Wrapper to include *.m files
+
+In addition to /tk* there are /tkInt*, /Lang* and /tix*
+
+=cut 

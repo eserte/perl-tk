@@ -2,33 +2,34 @@
 #
 # ColorEditor demonstration.
 
-use lib ("./blib");
+
 use Tk;
 require Tk::ColorEditor;
 require Tk::ErrorDialog;
 use English;
+use strict;
 
-$mw = MainWindow->new;
-$f = $mw->Frame(-bg => 'blue');
+my $MW = MainWindow->new;
+my $f = $MW->Frame(-bg => 'blue');
 $f->pack;
-$ce = $f->Button(-text => 'Color Editor');
+my $ce = $f->Button(-text => 'Color Editor');
 $ce->pack;
-$qu = $f->Button(-text => 'Quit', -command => ['destroy', $mw]);
+my $qu = $f->Button(-text => 'Quit', -command => \&exit);
 $qu->pack;
 
-$f2=$f->Frame;
+my $f2=$f->Frame;
 $f2->pack;
-$f2b1=$f2->Button(-text => 'f2b1');
+my $f2b1=$f2->Button(-text => 'f2b1');
 $f2b1->pack(-side=>'left');
-$f2b2=$f2->Button(-text => 'f2b1');
+my $f2b2=$f2->Button(-text => 'f2b1');
 $f2b2->pack(-side=>'left');
 
-$cref = $mw->ColorEditor(
+my $cref = $MW->ColorEditor(
     -title  => 'Test CE',
     -cursor => ['@' . Tk->findINC('demos/images/cursor.xbm'), 
                  Tk->findINC('demos/images/cursor.mask'), 'red', 'green'],
 );
-$ce->configure(-command => [sub {shift->Show}, $cref]);
+$ce->configure(-command => [$cref => 'Show']);
 
 # Configure the color menu slightly.  The default color_list explicity 
 # references only three of the four buttons so applying colors only effects
@@ -65,7 +66,7 @@ $cref->configure(
 #    -command           => [\&my_special_configurator,$cref]
 );
 
-$e = $mw->ErrorDialog;
+my $e = $MW->ErrorDialog;
 $e->Subwidget('error_dialog')->Subwidget('message')->configure(-bg => 'red');
 
 MainLoop;

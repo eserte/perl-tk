@@ -1,0 +1,159 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" @(#) FileHndlr.3 1.12 95/05/06 15:29:24
+'\" 
+.so man.macros
+.TH Tk_CreateFileHandler 3 4.0 Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_CreateFileHandler, Tk_CreateFileHandler2, Tk_DeleteFileHandler \- associate procedure callbacks with files or devices
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+\fBTk_CreateFileHandler\fR(\fIid, mask, proc, clientData\fR)
+.sp
+.VS
+\fBTk_CreateFileHandler2\fR(\fIid, proc2, clientData\fR)
+.VE
+.sp
+\fBTk_DeleteFileHandler\fR(\fIid\fR)
+.SH ARGUMENTS
+.AS Tk_FileProc clientData
+.AP int id in
+Integer identifier for an open file or device (such as returned by
+\fBopen\fR system call).
+.AP int mask in
+Conditions under which \fIproc\fR should be called:
+OR-ed combination of \fBTK_READABLE\fR, \fBTK_WRITABLE\fR,
+and \fBTK_EXCEPTION\fR.
+.AP Tk_FileProc *proc in
+Procedure to invoke whenever the file or device indicated
+by \fIid\fR meets the conditions specified by \fImask\fR.
+.AP Tk_FileProc2 *proc2 in
+Procedure to invoke from event loop to check whether \fIfd\fR
+is ready and, if so, handle it.
+.AP ClientData clientData in
+Arbitrary one-word value to pass to \fIproc\fR.
+.BE
+
+.SH DESCRIPTION
+.PP
+\fBTk_CreateFileHandler\fR arranges for \fIproc\fR to be
+invoked in the future whenever I/O becomes possible on a file
+or an exceptional condition exists for the file.  The file
+is indicated by \fIid\fR, and the conditions of interest
+are indicated by \fImask\fR.  For example, if \fImask\fR
+is \fBTK_READABLE\fR, \fIproc\fR will be called when
+the file is readable.
+The callback to \fIproc\fR is made by \fBTk_DoOneEvent\fR, so
+\fBTk_CreateFileHandler\fR is only useful
+in programs that dispatch events
+through \fBTk_DoOneEvent\fR or through other Tk procedures that
+call \fBTk_DoOneEvent\fR, such as \fBTk_MainLoop\fR.
+.PP
+\fIProc\fP should have arguments and result that match the
+type \fBTk_FileProc\fR:
+.nf
+.RS
+typedef void Tk_FileProc(
+.RS
+ClientData \fIclientData\fR,
+int \fImask\fR);
+.RE
+.RE
+.fi
+The \fIclientData\fP parameter to \fIproc\fR is a copy
+of the \fIclientData\fP
+argument given to \fBTk_CreateFileHandler\fR when the callback
+was created.  Typically, \fIclientData\fR points to a data
+structure containing application-specific information about
+the file.  \fIMask\fR is an integer mask indicating which
+of the requested conditions actually exists for the file;  it
+will contain a subset of the bits in the \fImask\fR argument
+to \fBTk_CreateFileHandler\fR.
+.PP
+.VS
+\fBTk_CreateFileHandler2\fR also creates a file handler,
+but it provides a lower-level and more flexible interface.
+The callback procedure \fIproc2\fR must have arguments and result
+that match the following prototype:
+.nf
+.RS
+typedef int Tk_FileProc2(
+.RS
+ClientData \fIclientData\fR,
+int \fImask\fR,
+int \fIflags\fR);
+.RE
+.RE
+.fi
+.LP
+Whereas a file handler created by \fBTk_CreateFileHandler\fR is
+only invoked when the file is known to be ``ready'', a file handler
+created by \fBTk_CreateFileHandler2\fR is invoked on every pass
+through the the event loop (\fBTk_DoWhenIdle\fR); it gets to
+determine whether the file is ``ready'' or not.
+The \fImask\fR argument contains an OR'ed combination of the
+bits \fBTK_READABLE\fR, \fBTK_WRITABLE\fR, and \fBTK_EXCEPTION\fR,
+which indicate whether the file is known to be readable, writable,
+or to have an exceptional condition present (this is the case if
+\fBselect\fR has been invoked since the previous call to \fIproc2\fR,
+and if it indicated that the specified conditions were present).
+\fIproc2\fR may use this information along with additional information
+of its own, such as knowledge about buffered data, to decide whether
+the file is really ``ready''.
+The \fIflags\fR argument is a copy of the flags passed to
+\fBTk_DoOneEvent\fR, which may be used by \fIproc2\fR to ignore
+the file if the appropriate bit, such as \fBTK_FILE_EVENTS\fR,
+is not present.
+.PP
+\fIproc2\fR must return an integer value that is either \fBTK_FILE_HANDLED\fR
+or an OR-ed combination of \fBTK_READABLE\fR, \fBTK_WRITABLE\fR, and
+\fBTK_EXCEPTION\fR.
+If the return value is \fBTK_FILE_HANDLED\fR it means that the file
+was ``ready'' and that \fIproc2\fR handled the ready condition;
+\fBTk_DoOneEvent\fR will return immediately.
+If the return value is not \fBTK_FILE_HANDLED\fR, then it indicates
+the set of conditions that should be checked for the file if the
+current invocation of \fBTk_DoWhenIdle\fR invokes \fBselect\fR.
+Typically the return value reflects all of the conditions that
+\fIproc2\fR cares about.
+A zero return value means that the file should be ignored if
+\fBTk_DoWhenIdle\fR calls \fBselect\fR (this could happen, for
+example, if the \fIflags\fR
+argument specified that this file's events should be ignored).
+The value returned by \fIproc2\fR only affects a \fBselect\fR call
+from the current invocation of \fBTk_DoOneEvent\fR;  the next
+invocation of \fBTk_DoOneEvent\fR will call \fIproc2\fR afresh
+to get new information.
+.VE
+.PP
+There may exist only one handler for a given file at a given
+time.  If \fBTk_CreateFileHandler\fR or \fBTk_CreateFileHandler2\fR
+is called when a handler already exists for \fIid\fR, then the
+new callback replaces the information that was
+previously recorded.
+.PP
+\fBTk_DeleteFileHandler\fR may be called to delete the
+file handler for \fIid\fR;  if no handler exists for the
+file given by \fIid\fR then the procedure has no effect.
+.PP
+The purpose of file handlers is to enable an application to
+respond to X events and other events while waiting for files
+to become ready for I/O.  For this to work correctly, the
+application may need to use non-blocking I/O operations on the
+files for which handlers are declared.  Otherwise the application
+may be put to sleep if it reads or writes too much data;
+while waiting for the I/O to complete the
+application won't be able to service other events.  In BSD-based
+UNIX systems, non-blocking I/O can be specified for a file using
+the \fBfcntl\fR kernel call with the \fBFNDELAY\fR flag.
+
+.SH KEYWORDS
+callback, file, handler

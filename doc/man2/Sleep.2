@@ -1,0 +1,37 @@
+'\"
+'\" Copyright (c) 1990 The Regents of the University of California.
+'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" @(#) Sleep.3 1.6 95/05/06 15:30:32
+'\" 
+.so man.macros
+.TH Tk_Sleep 3 "" Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_Sleep \- delay execution for a given number of milliseconds
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+\fBTk_Sleep\fR(\fIms\fR)
+.SH ARGUMENTS
+.AP int ms in
+Number of milliseconds to sleep.
+.BE
+
+.SH DESCRIPTION
+.PP
+This procedure delays the calling process by the number of
+milliseconds given by the \fIms\fR parameter, and returns
+after that time has elapsed.  It is typically used for things
+like flashing a button, where the delay is short and the
+application needn't do anything while it waits.  For longer
+delays where the application needs to respond to other events
+during the delay, the procedure \fBTk_CreateTimerHandler\fR
+should be used instead of \fBTk_Sleep\fR.
+
+.SH KEYWORDS
+sleep, time, wait

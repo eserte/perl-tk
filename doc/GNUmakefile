@@ -1,18 +1,21 @@
-vpath %.1 man
-vpath %.3 man
-vpath %.n man
+vpath %.1 man1
+vpath %.3 man3
+vpath %.2 man2
+vpath %.n mann
 
-MANn = $(notdir $(wildcard man/*.n))
-HTn  = $(subst .n,.ht,$(MAN))
-MAN3 = $(notdir $(wildcard man/*.3))
-HT3  = $(subst .3,.ht,$(MAN))
+%.htm : %.2 man2html 
+	man2html -tk $< 
 
-HT : $(MAN3) $(MANn)
-	tkman2ht $^
+%.htm : %.n man2html 
+	man2html -tk $< 
 
-%.ht : %.3 tkman2ht
-	tkman2ht $< 
+%.pod : %.n tkman2pod 
+	tkman2pod $< 
 
-%.ht : %.n tkman2ht
-	tkman2ht $< 
+-include Makefile
+
+install_ti : index.html
+	rm -f /usr/local/doc/perl/Tk/*
+	install -m 644 *.htm *.html /usr/local/doc/perl/Tk
+
 

@@ -3,24 +3,25 @@
 # Demonstrate how to use Dialog to create and manipulate dialog objects.
 # lusol@Lehigh.EDU  95/06/14
 
-use lib ("./blib");
-require 5.001;
+
+require 5.002;
 use Tk;
 require Tk::Dialog;
+use strict;
 
-$mw = MainWindow->new;
-$but = $mw->Button(-text => 'Quit', -command => \&exit);
+my $MW = MainWindow->new;
+my $but = $MW->Button(-text => 'Quit', -command => \&exit);
 $but->pack;
-$bitmaps = Tk->findINC("demos/images");
+my $bitmaps = Tk->findINC("demos/images");
 
-$D1 = $mw->Dialog(
+my $D1 = $MW->Dialog(
     -title          => 'Dialog Example 1',
     -text           => '',
     -bitmap         => "\@${bitmaps}/noletters",
     -default_button => '3',
     -buttons        => ['OK', '2', '3'],
 );
-$D2 = $mw->Dialog(
+my $D2 = $MW->Dialog(
     -title          => 'Dialog Example 2',
     -text           => 'Frogs lacking lipophores are blue!',
     -bitmap         => 'warning'

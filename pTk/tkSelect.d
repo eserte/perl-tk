@@ -1,1 +1,1 @@
-tkSelect.o: tkSelect.c tkPort.h tkInt.h tk.h Lang.h
+tkSelect.o: tkSelect.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h

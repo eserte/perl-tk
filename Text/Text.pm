@@ -21,7 +21,7 @@ use Carp;
 
 Tk::Widget->Construct('Text');
 
-bootstrap Tk::Text;
+bootstrap Tk::Text $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::text }
 
@@ -35,6 +35,24 @@ Tk::SubMethods ( 'mark' => [qw(gravity names set unset)],
                                names  nextrange raise ranges remove)],
                  'window' => [qw(cget configure create)]
                );
+
+sub Tag;
+sub Tags;
+
+sub TIEHANDLE
+{
+ my ($class,$obj) = @_;
+ return $obj;
+}
+
+sub PRINT
+{
+ my $w = shift;
+ while (@_)
+  {
+   $w->insert('end',shift);
+  }
+}
 
 1;
 
@@ -65,8 +83,10 @@ sub bindRdOnly
              $w->Button1($Ev->x,$Ev->y);
              $w->tag("remove","sel","0.0","end")
             }
-           )
- ;
+           );
+ $mw->bind($class,"<Meta-B1-Motion>",'NoOp');
+ $mw->bind($class,"<Meta-1>",'NoOp');
+
  $mw->bind($class,"<B1-Motion>",
             sub
             {
@@ -148,9 +168,9 @@ sub bindRdOnly
  $mw->bind($class,"<Shift-Next>",['KeySelect',Ev('ScrollPages',1)]);
  $mw->bind($class,"<Control-Prior>",["xview","scroll",-1,"page"]);
  $mw->bind($class,"<Control-Next>",["xview","scroll",1,"page"]);
- $mw->bind($class,"<Home>",['SetCursor',"insert","linestart"]);
+ $mw->bind($class,"<Home>",['SetCursor',"insert linestart"]);
  $mw->bind($class,"<Shift-Home>",['KeySelect',"insert","linestart"]);
- $mw->bind($class,"<End>",['SetCursor',"insert","lineend"]);
+ $mw->bind($class,"<End>",['SetCursor',"insert lineend"]);
  $mw->bind($class,"<Shift-End>",['KeySelect',"insert","lineend"]);
  $mw->bind($class,"<Control-Home>",['SetCursor',"1.0"]);
  $mw->bind($class,"<Control-Shift-Home>",['KeySelect',"1.0"]);
@@ -211,6 +231,7 @@ sub bindRdOnly
              );
 
   }
+ $mw->bind($class,"<Destroy>",'Destroy');
  return $class;
 }
                                          
@@ -778,6 +799,12 @@ sub Contents
   }
 }
 
+sub Destroy
+{
+ my $w = shift;
+ delete $w->{_Tags_};
+}
+
 sub Transpose
 {
  my ($w) = @_;
@@ -794,3 +821,32 @@ sub deleteSelected
 {
  shift->delete("sel.first","sel.last")
 }
+
+sub Tag
+{
+ my $w = shift;
+ my $name = shift;
+ Carp::confess("No args") unless (ref $w and defined $name);
+ $w->{_Tags_} = {} unless (exists $w->{_Tags_});
+ unless (exists $w->{_Tags_}{$name})
+  {
+   require Tk::Text::Tag;
+   $w->{_Tags_}{$name} = 'Tk::Text::Tag'->new($w,$name);
+  }
+ $w->{_Tags_}{$name}->configure(@_) if (@_); 
+ return $w->{_Tags_}{$name};
+}
+
+sub Tags
+{
+ my $w = shift;
+ my $name;
+ my @result = ();
+ foreach $name ($w->tagNames(@_))
+  {
+   push(@result,$w->Tag($name));
+  }
+ return @result;
+}
+
+

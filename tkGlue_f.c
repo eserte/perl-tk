@@ -1,3 +1,15 @@
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+#include "tkGlue.def"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkImgPhoto.h"
+#include "pTk/Lang_f.h"
+#include "pTk/Xlib.h"
+#include "pTk/tk_f.h"
+#include "pTk/tkInt_f.h"
+#include "pTk/Xlib_f.h"
 #include "tkGlue.h"
 #include "tkGlue_f.h"
 static TkglueVtab TkglueVtable =

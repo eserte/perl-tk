@@ -33,8 +33,6 @@ VFUNC(void,Tix_DItemFree,V_Tix_DItemFree,_ANSI_ARGS_((
 			    Tix_DItem * iPtr)))
 VFUNC(Tix_DItemInfo *,Tix_GetDItemType,V_Tix_GetDItemType,_ANSI_ARGS_((
 			    Tcl_Interp * interp, char *type)))
-VFUNC(int,Tix_Init_Internal,V_Tix_Init_Internal,_ANSI_ARGS_((Tcl_Interp *interp,
-			    int * argcPtr, Arg *args, int doSource)))
 VFUNC(int,Tix_MultiConfigureInfo,V_Tix_MultiConfigureInfo,_ANSI_ARGS_((
 			    Tcl_Interp * interp,
 			    Tk_Window tkwin, Tk_ConfigSpec **specsList,

@@ -1,0 +1,44 @@
+#!/usr/local/bin/perl -w
+use Tk;
+use strict;
+use Tk::DropSite qw(Sun);
+
+my $top = MainWindow->new();
+
+my $lb = $top->Scrolled('Listbox',-width => 40);
+
+my $sun = $top->Message('-text' => "Sun Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
+$sun->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => 'Sun');
+
+my $loc = $top->Message('-text' => "Local Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
+$loc->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => ['Local']);
+
+my $loc = $top->Message('-text' => "Either Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
+$loc->DropSite(-dropcommand => [\&ShowTargets,$lb]);
+
+$lb->pack(-side => 'bottom');
+
+$top->Button('-text' => "Primary Targets", '-command' => [\&ShowTargets,$lb,'PRIMARY'])->pack('-side'=>'left');
+$top->Button('-text' => "Quit", '-command' => ['destroy',$top])->pack('-side'=>'right');
+
+MainLoop;
+
+sub ShowTargets
+{
+ my $lb = shift;
+ my $seln = shift;
+ my $own =  $lb->SelectionExists('-selection'=>$seln);
+ printf "owner of $seln is %x\n",$own;
+ my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
+ $lb->delete(0,'end');
+ $lb->insert('end',@targ);
+ foreach (@targ)
+  {
+   if (/FILE_NAME/)
+    {
+     print $lb->SelectionGet('-selection'=>$seln,'FILE_NAME'),"\n";
+    }
+  }
+}
+
+

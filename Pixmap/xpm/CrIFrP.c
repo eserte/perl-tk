@@ -32,14 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-/*
- * The code related to FOR_MSW has been added by
- * HeDu (hedu@cul-ipn.uni-kiel.de) 4/94
- */
-
-#include "xpmP.h"
-
-#ifndef FOR_MSW
+#include "XpmI.h"
 
 void
 xpmCreateImageFromPixmap(display, pixmap, ximage_return, width, height)
@@ -60,5 +53,3 @@ xpmCreateImageFromPixmap(display, pixmap, ximage_return, width, height)
     *ximage_return = XGetImage(display, pixmap, 0, 0, *width, *height,
 			       AllPlanes, ZPixmap);
 }
-
-#endif /* FOR_MSW */

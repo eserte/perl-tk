@@ -8,21 +8,24 @@
 #include <perl.h>
 #include <XSUB.h>
 
-#include "../tkGlue.def"
+#include "tkGlue.def"
 
-#include "tkPort.h"
-#include "tkInt.h"
-#include "tkVMacro.h"
-#include "tix.h"
-#include "tixInt.h"
-#include "../tkGlue.h"
-#include "../tkGlue.m"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
+#include "pTk/tix.h"
+#include "pTk/tixInt.h"
+#include "tkGlue.h"
+#include "tkGlue.m"
 
 extern int Tix_InputOnlyCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 
 DECLARE_VTABLES;
 
 MODULE = Tk::InputO	PACKAGE = Tk::InputO
+
+PROTOTYPES: DISABLE
+
 
 BOOT:
  {

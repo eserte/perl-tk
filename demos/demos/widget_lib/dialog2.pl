@@ -13,7 +13,7 @@ sub dialog2 {
             -default_button => $ok,
             -buttons        => [$ok, $can, $see],
         );
-	$DIALOG2->Subwidget('message')->configure(
+	$DIALOG2->configure(
             -wraplength => '4i',
             -text       => 'This dialog box uses a global grab, so it prevents you from interacting with anything on your display until you invoke one of the buttons below.  Global grabs are almost always a bad idea; don\'t use them unless you\'re truly desperate.',
         );
@@ -23,7 +23,7 @@ sub dialog2 {
 
     print "You pressed OK\n" if $button eq $ok;
     print "You pressed Cancel\n" if $button eq $can;
-    &seeCode('dialog2') if $button eq $see;
+    &see_code('dialog2') if $button eq $see;
 
 } # end dialog2
 

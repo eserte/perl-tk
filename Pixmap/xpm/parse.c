@@ -38,25 +38,13 @@
  * HeDu (hedu@cul-ipn.uni-kiel.de) 4/94
  */
 
-#include "xpmP.h"
+#include "XpmI.h"
 #include <ctype.h>
-
-LFUNC(ParseValues, int, (xpmData *data, unsigned int *width,
-			 unsigned int *height, unsigned int *ncolors,
-			 unsigned int *cpp, unsigned int *x_hotspot,
-			 unsigned int *y_hotspot, unsigned int *hotspot,
-			 unsigned int *extensions));
-
-LFUNC(ParseColors, int, (xpmData *data, unsigned int ncolors, unsigned int cpp,
-			 XpmColor **colorTablePtr, xpmHashTable *hashtable));
 
 LFUNC(ParsePixels, int, (xpmData *data, unsigned int width,
 			 unsigned int height, unsigned int ncolors,
 			 unsigned int cpp, XpmColor *colorTable,
 			 xpmHashTable *hashtable, unsigned int **pixels));
-
-LFUNC(ParseExtensions, int, (xpmData *data, XpmExtension **extensions,
-			     unsigned int *nextensions));
 
 char *xpmColorKeys[] = {
     "s",				/* key #1: symbol */
@@ -114,8 +102,9 @@ xpmParseData(data, image, info)
     /*
      * read values
      */
-    ErrorStatus = ParseValues(data, &width, &height, &ncolors, &cpp,
-			    &x_hotspot, &y_hotspot, &hotspot, &extensions);
+    ErrorStatus = xpmParseValues(data, &width, &height, &ncolors, &cpp,
+				 &x_hotspot, &y_hotspot, &hotspot,
+				 &extensions);
     if (ErrorStatus != XpmSuccess)
 	return (ErrorStatus);
 
@@ -137,9 +126,12 @@ xpmParseData(data, image, info)
     /*
      * read colors
      */
-    ErrorStatus = ParseColors(data, ncolors, cpp, &colorTable, &hashtable);
-    if (ErrorStatus != XpmSuccess)
+    ErrorStatus = xpmParseColors(data, ncolors, cpp, &colorTable, &hashtable);
+    if (ErrorStatus != XpmSuccess) {
+	if (USE_HASHTABLE)
+	    xpmHashTableFree(&hashtable);
 	RETURN(ErrorStatus);
+    }
 
     /*
      * store the colors comment line
@@ -173,8 +165,8 @@ xpmParseData(data, image, info)
      */
     if (info && (info->valuemask & XpmReturnExtensions))
 	if (extensions) {
-	    ErrorStatus = ParseExtensions(data, &info->extensions,
-					  &info->nextensions);
+	    ErrorStatus = xpmParseExtensions(data, &info->extensions,
+					     &info->nextensions);
 	    if (ErrorStatus != XpmSuccess)
 		RETURN(ErrorStatus);
 	} else {
@@ -207,8 +199,8 @@ xpmParseData(data, image, info)
     return (XpmSuccess);
 }
 
-static int
-ParseValues(data, width, height, ncolors, cpp,
+int
+xpmParseValues(data, width, height, ncolors, cpp,
 	    x_hotspot, y_hotspot, hotspot, extensions)
     xpmData *data;
     unsigned int *width, *height, *ncolors, *cpp;
@@ -250,6 +242,8 @@ ParseValues(data, width, height, ncolors, cpp,
 	 */
 	int i;
 	char *ptr;
+	Bool got_one, saw_width = False, saw_height = False;
+	Bool saw_ncolors = False, saw_chars_per_pixel = False;
 
 	for (i = 0; i < 4; i++) {
 	    l = xpmNextWord(data, buf, BUFSIZ);
@@ -259,41 +253,64 @@ ParseValues(data, width, height, ncolors, cpp,
 	    if (!l)
 		return (XpmFileInvalid);
 	    buf[l] = '\0';
-	    ptr = rindex(buf, '_');
-	    if (!ptr)
-		return (XpmFileInvalid);
-	    switch (l - (ptr - buf)) {
-	    case 6:
-		if (!strncmp("_width", ptr, 6) && !xpmNextUI(data, width))
+	    ptr = buf;
+	    got_one = False;
+	    while (!got_one) {
+		ptr = strrchr(ptr, '_');
+		if (!ptr)
 		    return (XpmFileInvalid);
-		break;
-	    case 7:
-		if (!strncmp("_height", ptr, 7) && !xpmNextUI(data, height))
-		    return (XpmFileInvalid);
-		break;
-	    case 8:
-		if (!strncmp("_ncolors", ptr, 8) && !xpmNextUI(data, ncolors))
-		    return (XpmFileInvalid);
-		break;
-	    case 16:
-		if (!strncmp("_chars_per_pixel", ptr, 16)
-		    && !xpmNextUI(data, cpp))
-		    return (XpmFileInvalid);
-		break;
-	    default:
-		return (XpmFileInvalid);
+		switch (l - (ptr - buf)) {
+		case 6:
+		    if (saw_width || strncmp("_width", ptr, 6)
+			|| !xpmNextUI(data, width))
+			return (XpmFileInvalid);
+		    else
+			saw_width = True;
+		    got_one = True;
+		    break;
+		case 7:
+		    if (saw_height || strncmp("_height", ptr, 7)
+			|| !xpmNextUI(data, height))
+			return (XpmFileInvalid);
+		    else
+			saw_height = True;
+		    got_one = True;
+		    break;
+		case 8:
+		    if (saw_ncolors || strncmp("_ncolors", ptr, 8)
+			|| !xpmNextUI(data, ncolors))
+			return (XpmFileInvalid);
+		    else
+			saw_ncolors = True;
+		    got_one = True;
+		    break;
+		case 16:
+		    if (saw_chars_per_pixel
+			|| strncmp("_chars_per_pixel", ptr, 16)
+			|| !xpmNextUI(data, cpp))
+			return (XpmFileInvalid);
+		    else
+			saw_chars_per_pixel = True;
+		    got_one = True;
+		    break;
+		default:
+		    ptr++;
+		}
 	    }
 	    /* skip the end of line */
 	    xpmNextString(data);
 	}
+	if (!saw_width || !saw_height || !saw_ncolors || !saw_chars_per_pixel)
+	  return (XpmFileInvalid);
+
 	*hotspot = 0;
 	*extensions = 0;
     }
     return (XpmSuccess);
 }
 
-static int
-ParseColors(data, ncolors, cpp, colorTablePtr, hashtable)
+int
+xpmParseColors(data, ncolors, cpp, colorTablePtr, hashtable)
     xpmData *data;
     unsigned int ncolors;
     unsigned int cpp;
@@ -489,17 +506,17 @@ ParsePixels(data, width, height, ncolors, cpp, colorTable, hashtable, pixels)
 	{
 	    unsigned short colidx[256];
 
-	    bzero(colidx, 256 * sizeof(short));
+	    memset((char *)colidx, 0, 256 * sizeof(short));
 	    for (a = 0; a < ncolors; a++)
-		colidx[(unsigned)(colorTable[a].string[0])] = a + 1;
+		colidx[(unsigned char)colorTable[a].string[0]] = a + 1;
 
 	    for (y = 0; y < height; y++) {
 		xpmNextString(data);
 		for (x = 0; x < width; x++, iptr++) {
-		    int idx = colidx[xpmGetC(data)];
+		    int c = xpmGetC(data);
 
-		    if (idx != 0)
-			*iptr = idx - 1;
+		    if (c > 0 && c < 256 && colidx[c] != 0)
+			*iptr = colidx[c] - 1;
 		    else {
 			XpmFree(iptr2);
 			return (XpmFileInvalid);
@@ -521,7 +538,7 @@ if (cidx[f]) XpmFree(cidx[f]);}
 	    unsigned short *cidx[256];
 	    int char1;
 
-	    bzero(cidx, 256 * sizeof(unsigned short *)); /* init */
+	    memset((char *)cidx, 0, 256 * sizeof(unsigned short *)); /* init */
 	    for (a = 0; a < ncolors; a++) {
 		char1 = colorTable[a].string[0];
 		if (cidx[char1] == NULL) { /* get new memory */
@@ -533,18 +550,23 @@ if (cidx[f]) XpmFree(cidx[f]);}
 			return (XpmNoMemory);
 		    }
 		}
-		cidx[char1][colorTable[a].string[1]] = a + 1;
+		cidx[char1][(unsigned char)colorTable[a].string[1]] = a + 1;
 	    }
 
 	    for (y = 0; y < height; y++) {
 		xpmNextString(data);
 		for (x = 0; x < width; x++, iptr++) {
 		    int cc1 = xpmGetC(data);
-		    int idx = cidx[cc1][xpmGetC(data)];
-
-		    if (idx != 0)
-			*iptr = idx - 1;
-		    else {
+		    if (cc1 > 0 && cc1 < 256) {
+			int cc2 = xpmGetC(data);
+			if (cc2 > 0 && cc2 < 256 && cidx[cc1][cc2] != 0)
+			    *iptr = cidx[cc1][cc2] - 1;
+			else {
+			    FREE_CIDX;
+			    XpmFree(iptr2);
+			    return (XpmFileInvalid);
+			}
+		    } else {
 			FREE_CIDX;
 			XpmFree(iptr2);
 			return (XpmFileInvalid);
@@ -602,8 +624,8 @@ if (cidx[f]) XpmFree(cidx[f]);}
     return (XpmSuccess);
 }
 
-static int
-ParseExtensions(data, extensions, nextensions)
+int
+xpmParseExtensions(data, extensions, nextensions)
     xpmData *data;
     XpmExtension **extensions;
     unsigned int *nextensions;

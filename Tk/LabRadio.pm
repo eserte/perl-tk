@@ -1,7 +1,6 @@
 # Class LabeledRadiobutton
 
 package Tk::LabRadiobutton;
-use Carp;
 use Tk::Pretty;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
@@ -17,7 +16,7 @@ Tk::Widget->Construct('LabRadiobutton');
 sub CreateArgs
 {
  my ($package,$parent,$args) = @_;
- croak("Must specify -radiobuttons for $package") 
+ $parent->BackTrace("Must specify -radiobuttons for $package") 
     unless (defined $args->{'-radiobuttons'});
  return $package->SUPER::CreateArgs($parent,$args);
 }
@@ -48,7 +47,7 @@ sub Populate
        $cw->{Configure}{-value} = $rl;
      }
 
-    croak("No buttons") unless (@widgets);
+    $cw->BackTrace("No buttons") unless (@widgets);
 
     $cw->ConfigSpecs('-variable'     => [ \@widgets, undef, undef, \$cw->{Configure}{-value} ],
                      '-radiobuttons' => [ 'PASSIVE', undef, undef, undef ],

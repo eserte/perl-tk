@@ -258,49 +258,49 @@ COREXT Tk_CustomOption tixConfigRelief;
 /*     tixInit.c	*/
 /************************/
 
-EXTERN int		Tix_AppInit _ANSI_ARGS_((Tcl_Interp *interp));
+COREXT int		Tix_AppInit _ANSI_ARGS_((Tcl_Interp *interp));
 
-EXTERN int 		Tix_CallMethod _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT int 		Tix_CallMethod _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *context, char *widRec, char *method,
 			    int argc, Arg *args));
-EXTERN int		Tix_ChangeOneOption _ANSI_ARGS_((
+COREXT int		Tix_ChangeOneOption _ANSI_ARGS_((
 			    Tcl_Interp *interp, TixClassRecord *cPtr,
 			    char * widRec, TixConfigSpec *spec, char * value,
 			    int isDefault, int isInit));
-EXTERN void		Tix_CreateCommands _ANSI_ARGS_((
+COREXT void		Tix_CreateCommands _ANSI_ARGS_((
 			    Tcl_Interp *interp, Tix_TclCmd *commands,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc));
-EXTERN void 		Tk_Draw3DArc _ANSI_ARGS_((Display *display,
+COREXT void 		Tk_Draw3DArc _ANSI_ARGS_((Display *display,
 			    Drawable drawable, Tk_3DBorder border, int x,
 			    int y, int width, int height, int angle1,
 			    int angle2, int borderWidth, int relief));
-EXTERN int 		Tix_ExistMethod _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT int 		Tix_ExistMethod _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *context, char *method));
-EXTERN void		Tix_Exit _ANSI_ARGS_((Tcl_Interp * interp, int code));
-EXTERN TixConfigSpec * 	Tix_FindConfigSpecByName _ANSI_ARGS_((
+COREXT void		Tix_Exit _ANSI_ARGS_((Tcl_Interp * interp, int code));
+COREXT TixConfigSpec * 	Tix_FindConfigSpecByName _ANSI_ARGS_((
 			    Tcl_Interp * interp,
 			    TixClassRecord * cPtr, char * name));
-EXTERN char  * 		Tix_FindMethod _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT char  * 		Tix_FindMethod _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *context, char *method));
-EXTERN char * 		Tix_FindPublicMethod _ANSI_ARGS_((
+COREXT char * 		Tix_FindPublicMethod _ANSI_ARGS_((
 			    Tcl_Interp *interp, TixClassRecord * cPtr, 
 			    char * method));
-EXTERN TixClassRecord *	Tix_GetClassByName _ANSI_ARGS_((
+COREXT TixClassRecord *	Tix_GetClassByName _ANSI_ARGS_((
 			    Tcl_Interp * interp, char * classRec));
-EXTERN char  * 		Tix_GetConfigSpecFullName _ANSI_ARGS_((char *clasRec,
+COREXT char  * 		Tix_GetConfigSpecFullName _ANSI_ARGS_((char *clasRec,
 			    char *flag));
-EXTERN char  * 		Tix_GetContext _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT char  * 		Tix_GetContext _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *widRec));
-EXTERN char  * 		Tix_GetMethodFullName _ANSI_ARGS_((char *context,
+COREXT char  * 		Tix_GetMethodFullName _ANSI_ARGS_((char *context,
 			    char *method));
-EXTERN void 		Tix_GetPublicMethods _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT void 		Tix_GetPublicMethods _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *widRec, int *numMethods,
 			    char *** validMethods));
 EXTERN void		Tix_GetScrollFractions _ANSI_ARGS_((int total,
 			    int window, int first,
 			    double * first_ret, double * last_ret));
-EXTERN int		Tix_GetWidgetOption _ANSI_ARGS_((
+COREXT int		Tix_GetWidgetOption _ANSI_ARGS_((
 			    Tcl_Interp *interp, Tk_Window tkwin,
 			    char *argvName, char *dbName, char *dbClass,
 			    char *defValue, int argc, Arg *args,
@@ -310,32 +310,32 @@ EXTERN int		Tix_HandleSubCmds _ANSI_ARGS_((
 			    Tix_SubCmdInfo * subCmdInfo,
 			    ClientData clientData, Tcl_Interp *interp,
 			    int argc, Arg *args));
-EXTERN int 		Tix_Init _ANSI_ARGS_((Tcl_Interp *interp));
+COREXT int 		Tix_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
-EXTERN int		Tix_LoadTclLibrary _ANSI_ARGS_((
+COREXT int		Tix_LoadTclLibrary _ANSI_ARGS_((
 			    Tcl_Interp *interp, char *envName,
 			    char *tclName, char *initFile,
 			    char *defDir, char * appName));
-EXTERN void 		Tix_MainLoop _ANSI_ARGS_((Tcl_Interp * interp));
+COREXT void 		Tix_MainLoop _ANSI_ARGS_((Tcl_Interp * interp));
 
-EXTERN void 		Tix_OpenStdin _ANSI_ARGS_(());
+COREXT void 		Tix_OpenStdin _ANSI_ARGS_(());
 
-EXTERN void		Tix_RestoreContext _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT void		Tix_RestoreContext _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *widRec, char *oldContext));
-EXTERN char  * 		Tix_SaveContext _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT char  * 		Tix_SaveContext _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *widRec));
-EXTERN void 		Tix_SetArgv _ANSI_ARGS_((Tcl_Interp *interp, 
+COREXT void 		Tix_SetArgv _ANSI_ARGS_((Tcl_Interp *interp, 
 			    int argc, Arg *args));
-EXTERN int 		Tix_SuperClass _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT int 		Tix_SuperClass _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *widClass, char ** superClass_ret));
-EXTERN int		Tix_SysInit _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT int		Tix_SysInit _ANSI_ARGS_((Tcl_Interp *interp,
 			    int *argcPtr, Arg *args));
-EXTERN int		Tix_UnknownPublicMethodError _ANSI_ARGS_((
+COREXT int		Tix_UnknownPublicMethodError _ANSI_ARGS_((
 			    Tcl_Interp *interp, TixClassRecord * cPtr,
 			    char * widRec, char * method));
-EXTERN int		Tix_ValueMissingError _ANSI_ARGS_((Tcl_Interp *interp,
+COREXT int		Tix_ValueMissingError _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *spec));
-EXTERN Tcl_Interp *	Tix_WishInit _ANSI_ARGS_((int *argcPtr, Arg *args,
+COREXT Tcl_Interp *	Tix_WishInit _ANSI_ARGS_((int *argcPtr, Arg *args,
 			    char * rcFileName, int readStdin));
 
 #define SET_RECORD(interp, record, var, value) \
@@ -348,7 +348,7 @@ EXTERN Tcl_Interp *	Tix_WishInit _ANSI_ARGS_((int *argcPtr, Arg *args,
  * Internal !!
  *---------------------------------------------------------------------- 
  */
-EXTERN Tcl_HashTable specTable;
+COREXT Tcl_HashTable specTable;
 
 #define FLAG_READONLY	0
 #define FLAG_STATIC	1

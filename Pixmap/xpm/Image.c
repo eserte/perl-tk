@@ -32,7 +32,7 @@
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
 
-#include "xpmP.h"
+#include "XpmI.h"
 
 /*
  * Init returned data to free safely later on
@@ -55,6 +55,7 @@ XpmFreeXpmImage(image)
 {
     if (image->colorTable)
 	xpmFreeColorTable(image->colorTable, image->ncolors);
-    XpmFree(image->data);
+    if (image->data)
+	XpmFree(image->data);
     image->data = NULL;
 }

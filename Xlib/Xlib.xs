@@ -2,13 +2,13 @@
 #include <perl.h>
 #include <XSUB.h>
 
-#include "../tkGlue.def"
+#include "tkGlue.def"
 
-#include "tkPort.h"
-#include "tkInt.h"
-#include "tkVMacro.h"
-#include "../tkGlue.h"
-#include "../tkGlue.m"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
+#include "tkGlue.h"
+#include "tkGlue.m"
 
 DECLARE_VTABLES;
 
@@ -64,6 +64,8 @@ SV *value;
 
 MODULE = Tk::Xlib	PACKAGE = ScreenPtr
 
+PROTOTYPES: DISABLE
+
 int
 WidthOfScreen(s)
 Screen *	s
@@ -98,6 +100,25 @@ Font
 XLoadFont(dpy,name)
 Display *	dpy
 char *		name
+
+void
+XListFonts(dpy,pattern,max)
+Display *	dpy
+char *		pattern
+int		max 
+PPCODE:
+ {
+  int  count = 0;
+  char **list = XListFonts(dpy, pattern, max, &count);
+  int i;
+  EXTEND(sp, count);
+  for (i=0; i < count; i++) 
+   {
+    PUSHs(sv_2mortal(newSVpv(list[i],0)));
+   }
+  XFreeFontNames(list);
+  XSRETURN(count);
+ }
 
 void
 XDrawRectangle(dpy,win,gc,x,y,width,height)
@@ -151,6 +172,50 @@ GC
 DefaultGC(dpy,scr)
 Display *	dpy
 int		scr
+
+void
+XQueryTree(dpy,w,root = NULL,parent = NULL)
+Display *	dpy
+Window		w
+SV *		root
+SV *		parent
+PPCODE:
+ {Window *children = NULL;
+  unsigned int count = 0;
+  Window pw = None;
+  Window rw = None;
+  if (XQueryTree(dpy, w, &rw, &pw, &children, &count))
+   {
+    int i;
+    for (i=0; i < count; i++)
+     {
+      SV *sv = sv_newmortal();
+      sv_setref_iv(sv, "Window", (IV) (children[i]));
+      XPUSHs(sv);
+     }
+    XFree((char *) children);
+   }
+  else
+   {
+    count = 0;
+    XSRETURN(0);
+   }
+  if (parent)
+   {
+    if (pw == None)
+     sv_setsv(parent,&sv_undef);
+    else
+     sv_setref_iv(parent, "Window", (IV) (pw));
+   }
+  if (root)
+   {
+    if (rw == None)
+     sv_setsv(root,&sv_undef);
+    else
+     sv_setref_iv(root, "Window", (IV) (rw));
+   }
+  XSRETURN(count);
+ }
 
 MODULE = Tk::Xlib	PACKAGE = GC	PREFIX = XSet
 

@@ -1,1 +1,1 @@
-tkPlace.o: tkPlace.c tkPort.h tkInt.h tk.h Lang.h
+tkPlace.o: tkPlace.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h

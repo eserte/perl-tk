@@ -1,12 +1,9 @@
 #!/usr/local/bin/perl -w
-
-use lib ("./blib");
-
 use POSIX qw(getcwd);
 
 use Tk;
 # use Tk::ErrorDialog;
-require Tk::SunDragDrop;
+use Tk::DragDrop qw(Sun);
 require Tk::Tiler;
 
 {package Dragable;
@@ -40,45 +37,15 @@ require Tk::Tiler;
   {my $class  = shift;
    my $parent = shift;
    my $obj = $parent->Label(@_,-takefocus => 1);
-   $obj->bind('<B1-Motion>',['DragDrop',Ev(['LabelInfo'])]);
+   # $obj->bind('<B1-Motion>',['DragDrop',Ev(['LabelInfo'])]);
    return bless $obj,$class;
   }
-
- sub Handle
- {
-  my $w = shift;
-  my $seln = $w->{'DragDrop'};
-  $seln = $w->DragDropSource unless(defined $seln);
-  $w->SelectionHandle('-selection'=>$seln,@_);
- }
 
 }
 
 $icon_dir = Tk->findINC("demos/images");
 
 %icons = ();
-
-sub choose_icon
-{
- my $w    = shift;
- my $name = shift;
- my $icon = (-d $name) ? "dir" : ($name =~ /\.([^\.]+)$/) ? $1 : "page";
- if (!defined $icons{$icon})
-  {
-  RESTART:
-   my $file = "$icon_dir/$icon.icon";
-   my $mask = "$icon_dir/$icon.mask";
-   $file = "$icon_dir/page.icon" unless (-f $file);
-   $mask = "$icon_dir/page.mask" unless (-f $mask);
-   $icons{$icon} = $w->Bitmap($icon,-file=> $file,-maskfile=>$mask); 
-   if ($icons{$icon}->width != 32)
-    {
-     $icon = 'page';
-     goto RESTART;
-    }
-  }
- return $icons{$icon};
-}
 
 sub Edit
 {
@@ -89,6 +56,36 @@ sub Edit
    fork || exec("$ENV{EDITOR} $path");
   }
 }
+
+sub choose_icon
+{
+ my $w    = shift;
+ my $name = shift;
+ my $icon = (-d $name) ? "dir" : ($name =~ /\.([^\.]+)$/) ? $1 : "page";
+ if (!defined $icons{$icon})
+  {
+   my $file = "$icon_dir/$icon.xpm";
+   if (-f "$file")
+    {
+     $icons{$icon} = $w->Pixmap($icon,-file=>"$file");
+    }
+   else
+    {
+     my $file = "$icon_dir/$icon.icon";              
+     my $mask = "$icon_dir/$icon.mask";              
+     $file = "$icon_dir/page.icon" unless (-f $file);
+     $mask = "$icon_dir/page.mask" unless (-f $mask);
+     $icons{$icon} = $w->Bitmap($icon,-file=> $file,-maskfile=>$mask); 
+    }
+   if ($icons{$icon}->width != 32)
+    {
+     $icons{$icon} = choose_icon($w,"page");
+    }
+  }
+ return $icons{$icon};
+}
+
+
 
 sub handle_string
 {my ($string,$offset,$max) = @_;
@@ -112,7 +109,7 @@ sub do_dir
    my $path = "$dir/$_";
    my $f = $w->Frame();
    my $i = $f->Dragable(-image=> choose_icon($w,$path));
-   $i->Handle('-type'=>'FILE_NAME',[\&handle_string,"$dir/$_"]);
+   $i->DragDrop(-image => $i->cget('-image'),-handlers => [[-type =>'FILE_NAME',[\&handle_string,"$dir/$_"]]]);
    my $l = $f->Label(-text=> $_);
    $i->bind('<FocusIn>','break');
    $i->pack(-side=>'top');

@@ -8,15 +8,15 @@
 #include <perl.h>
 #include <XSUB.h>
 
-#include "../tkGlue.def"
+#include "tkGlue.def"
 
-#include "tkPort.h"
-#include "tkInt.h"
-#include "tkVMacro.h"
-#include "tix.h"
-#include "tixInt.h"
-#include "../tkGlue.h"
-#include "../tkGlue.m"
+#include "pTk/tkPort.h"
+#include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
+#include "pTk/tix.h"
+#include "pTk/tixInt.h"
+#include "tkGlue.h"
+#include "tkGlue.m"
 
 extern int Tix_HListCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 extern Tix_DItemInfo tix_TextItemType;
@@ -26,6 +26,8 @@ extern Tix_DItemInfo tix_WindowItemType;
 DECLARE_VTABLES;
 
 MODULE = Tk::HList	PACKAGE = Tk::HList
+
+PROTOTYPES: DISABLE
 
 BOOT:
  {

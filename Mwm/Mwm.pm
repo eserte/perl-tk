@@ -4,7 +4,7 @@ require DynaLoader;
 
 @ISA = qw(DynaLoader Tk::Widget);
 
-bootstrap Tk::Mwm; 
+bootstrap Tk::Mwm $Tk::VERSION; 
 
 1;
 

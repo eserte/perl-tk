@@ -24,7 +24,7 @@ sub puzzle {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -32,7 +32,7 @@ sub puzzle {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
@@ -54,6 +54,7 @@ sub puzzle {
     my %xpos = ();
     my %ypos = ();
 
+    my($i, $num, $w_frame_num);
     for ($i=0; $i<15; $i++) {
 	$num = $order[$i];
 	$xpos{$num} = ($i%4) * 0.25;

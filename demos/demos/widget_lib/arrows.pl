@@ -1,10 +1,6 @@
 # arrows.pl
 
-sub arrow_err;
-sub arrow_move1;
-sub arrow_move2;
-sub arrow_move3;
-sub arrow_setup;
+use subs qw(arrow_err arrow_move1 arrow_move2 arrow_move3 arrow_setup);
 
 sub arrows {
 
@@ -29,7 +25,7 @@ sub arrows {
     $w_msg->pack;
 
     my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
+    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
         -command => [$w => 'destroy'],
@@ -37,12 +33,15 @@ sub arrows {
     $w_dismiss->pack(qw(-side left -expand 1));
     my $w_see = $w_buttons->Button(
         -text    => 'See Code',
-        -command => [\&seeCode, $demo],
+        -command => [\&see_code, $demo],
     );
     $w_see->pack(qw(-side left -expand 1));
 
-    my $c = $w->Canvas(-width => '500', -height => '350', -relief => 'sunken',
-		       -bd => 2);
+    my $c = $w->Canvas(
+        -width       => '500', 
+        -height      => '350',
+        -relief      => 'sunken',
+	-borderwidth => 2);
     $c->pack(-expand => 'yes', -fill => 'both');
 
     my %ainfo;			# arrow information hash
@@ -50,7 +49,7 @@ sub arrows {
     $ainfo{'b'} = 10;
     $ainfo{'c'} = 3;
     $ainfo{'width'} = 2;
-    $ainfo{'move'} = undef;
+    $ainfo{'move_sub'} = undef;
     $ainfo{'x1'} = 40;
     $ainfo{'x2'} = 350;
     $ainfo{'y'} = 150;
@@ -73,11 +72,11 @@ sub arrows {
     # Bindings to highlight the 3 tiny resize boxes.
 
     foreach ([qw(<Enter> activeStyle)], [qw(<Leave> boxStyle)]) {
-        $c->bind('box', $ARG->[0] => [
+        $c->bind('box', $ARG->[0] =>[
             sub {
-                my($c, @args) = @ARG;
-                $c->itemconfigure(@args);
-	    }, 'current', @{$ainfo{$ARG->[1]}}],
+		my($c, $style) = @ARG;
+		$c->itemconfigure('current', @{$ainfo{$style}})
+	    }, $ARG->[1]],
         );
     }
     $c->bind('box', '<B1-Enter>' => undef);
@@ -85,22 +84,17 @@ sub arrows {
 
     # Bindings that select one of the 3 tiny resize boxes' "move code".
 
+    my $n;
     for $n (1..3) {
-	$c->bind("box${n}", '<1>' => [
-            sub {
-                my($c, $a, $m) = @ARG;
-                $a->{'move_sub'} = $m;
-            }, \%ainfo, \&{"arrow_move${n}"}],
+	$c->bind("box${n}", '<1>' =>
+            sub {$ainfo{'move_sub'} = \&{"arrow_move${n}"}}
         );
     }
     
     # Bindings to move a resize box and redraw the arrow.
 
-    $c->bind('box', '<B1-Motion>' => [
-        sub {
-	    my($c, $a) = @ARG;
-	    &{$a->{'move_sub'}}($c, $a);
-	}, \%ainfo],
+    $c->bind('box', '<B1-Motion>' =>
+        sub {&{$ainfo{'move_sub'}}($c, \%ainfo)}
     );
     $c->Tk::bind('<Any-ButtonRelease-1>' => [\&arrow_setup, \%ainfo]);
 
@@ -111,7 +105,7 @@ sub arrow_err {
     my($c) = @ARG;
 
     my $i = $c->create(qw(text .6i .1i -anchor n), -text => "Range error!");
-    after(4000, [sub {shift->delete($ARG[0])}, $c, $i]);
+    $c->after(4000, sub { $c->delete($i) });
 
 } # end errow_err
 

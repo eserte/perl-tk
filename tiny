@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-use lib (qw(./blib .));
+
 
 require Tk;
 {
