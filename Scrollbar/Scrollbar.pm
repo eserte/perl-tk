@@ -1,12 +1,11 @@
 # Conversion from Tk4.0 scrollbar.tcl competed.
 package Tk::Scrollbar; 
 require Tk;
-require DynaLoader;
 use AutoLoader;
 
-@ISA = qw(DynaLoader Tk::Widget);
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('Scrollbar');
+Construct Tk::Widget 'Scrollbar';
 
 bootstrap Tk::Scrollbar $Tk::VERSION; 
 

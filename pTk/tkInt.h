@@ -691,7 +691,7 @@ extern int		TkMeasureChars _ANSI_ARGS_((XFontStruct *fontStructPtr,
 			    char *source, int maxChars, int startX, int maxX,
 			    int tabOrigin, int flags, int *nextXPtr));
 extern void		TkOptionClassChanged _ANSI_ARGS_((TkWindow *winPtr));
-COREXT void		TkOptionDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
+extern void		TkOptionDeadWindow _ANSI_ARGS_((TkWindow *winPtr));
 MOVEXT int		TkOvalToArea _ANSI_ARGS_((double *ovalPtr,
 			    double *rectPtr));
 MOVEXT double		TkOvalToPoint _ANSI_ARGS_((double ovalPtr[4],

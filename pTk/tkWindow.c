@@ -17,8 +17,45 @@ static char sccsid[] = "@(#) tkWindow.c 1.187 95/09/25 13:18:57";
 
 #include "tkPort.h"
 #include "tkInt.h"
+#include "tkVMacro.h"
 #include "patchlevel.h"
 
+#undef tk_NumMainWindows
+#undef tkMainWindowList
+#undef tkDisplayList
+#undef tkDisabledUid
+#undef tkActiveUid
+#undef tkNormalUid
+#undef TkGetDisplay
+#undef Tk_CreateMainWindow
+#undef Tk_CreateWindow
+#undef Tk_CreateWindowFromPath
+#undef Tk_DestroyWindow
+#undef Tk_MapWindow
+#undef Tk_MakeWindowExist
+#undef Tk_UnmapWindow
+#undef Tk_ConfigureWindow
+#undef Tk_MoveWindow
+#undef Tk_ResizeWindow
+#undef Tk_MoveResizeWindow
+#undef Tk_SetWindowBorderWidth
+#undef Tk_ChangeWindowAttributes
+#undef Tk_SetWindowBackground
+#undef Tk_SetWindowBackgroundPixmap
+#undef Tk_SetWindowBorder
+#undef Tk_SetWindowBorderPixmap
+#undef Tk_DefineCursor
+#undef Tk_UndefineCursor
+#undef Tk_SetWindowColormap
+#undef Tk_SetWindowVisual
+#undef Tk_SetClass
+#undef Tk_NameToWindow
+#undef Tk_IdToWindow
+#undef Tk_DisplayName
+#undef Tk_RestackWindow
+#undef Tk_Init
+#undef Tk_MainWindow
+#undef Tk_StrictMotif
 /*
  * Count of number of main windows currently open in this process.
  */

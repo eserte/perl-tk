@@ -125,8 +125,13 @@ XpmCreateBufferFromXpmImage(buffer_return, image, info)
 	cmt_size = CommentsSize(info);
 
     /* write the header line */
+#ifndef VOID_SPRINTF
+    used_size =
+#endif
     sprintf(buf, "/* XPM */\nstatic char * image_name[] = {\n");
+#ifdef VOID_SPRINTF
     used_size = strlen(buf);
+#endif
     ptr_size = used_size + ext_size + cmt_size + 1;
     ptr = (char *) XpmMalloc(ptr_size);
     if (!ptr)
@@ -135,23 +140,48 @@ XpmCreateBufferFromXpmImage(buffer_return, image, info)
 
     /* write the values line */
     if (cmts && info->hints_cmt) {
+#ifndef VOID_SPRINTF
+	used_size +=
+#endif
 	sprintf(ptr + used_size, "/*%s*/\n", info->hints_cmt);
+#ifdef VOID_SPRINTF
 	used_size += strlen(info->hints_cmt) + 5;
+#endif
     }
+#ifndef VOID_SPRINTF
+    l =
+#endif
     sprintf(buf, "\"%d %d %d %d", image->width, image->height,
 	    image->ncolors, image->cpp);
+#ifdef VOID_SPRINTF
     l = strlen(buf);
+#endif
 
     if (info && (info->valuemask & XpmHotspot)) {
+#ifndef VOID_SPRINTF
+	l +=
+#endif
 	sprintf(buf + l, " %d %d", info->x_hotspot, info->y_hotspot);
+#ifdef VOID_SPRINTF
 	l = strlen(buf);
+#endif
     }
     if (extensions) {
+#ifndef VOID_SPRINTF
+	l +=
+#endif
 	sprintf(buf + l, " XPMEXT");
+#ifdef VOID_SPRINTF
 	l = strlen(buf);
+#endif
     }
+#ifndef VOID_SPRINTF
+    l +=
+#endif
     sprintf(buf + l, "\",\n");
+#ifdef VOID_SPRINTF
     l = strlen(buf);
+#endif
     ptr_size += l;
     p = (char *) XpmRealloc(ptr, ptr_size);
     if (!p)
@@ -162,8 +192,13 @@ XpmCreateBufferFromXpmImage(buffer_return, image, info)
 
     /* write colors */
     if (cmts && info->colors_cmt) {
+#ifndef VOID_SPRINTF
+	used_size +=
+#endif
 	sprintf(ptr + used_size, "/*%s*/\n", info->colors_cmt);
+#ifdef VOID_SPRINTF
 	used_size += strlen(info->colors_cmt) + 5;
+#endif
     }
     ErrorStatus = WriteColors(&ptr, &ptr_size, &used_size,
 			      image->colorTable, image->ncolors, image->cpp);
@@ -185,8 +220,13 @@ XpmCreateBufferFromXpmImage(buffer_return, image, info)
 
     /* print pixels */
     if (cmts && info->pixels_cmt) {
+#ifndef VOID_SPRINTF
+	used_size +=
+#endif
 	sprintf(ptr + used_size, "/*%s*/\n", info->pixels_cmt);
+#ifdef VOID_SPRINTF
 	used_size += strlen(info->pixels_cmt) + 5;
+#endif
     }
     WritePixels(ptr + used_size, &used_size, image->width, image->height,
 		image->cpp, image->data, image->colorTable);
@@ -197,7 +237,7 @@ XpmCreateBufferFromXpmImage(buffer_return, image, info)
 			info->extensions, info->nextensions);
 
     /* close the array */
-    sprintf(ptr + used_size, "};\n");
+    strcpy(ptr + used_size, "};\n");
 
     *buffer_return = ptr;
 
@@ -233,7 +273,7 @@ WriteColors(dataptr, data_size, used_size, colors, ncolors, cpp)
 	    }
 	}
 	strcpy(s, "\",\n");
-	l = strlen(buf);
+	l = s + 3 - buf;
 	s = (char *) XpmRealloc(*dataptr, *data_size + l);
 	if (!s)
 	    return (XpmNoMemory);
@@ -311,12 +351,22 @@ WriteExtensions(dataptr, used_size, ext, num)
     char *s = dataptr;
 
     for (x = 0; x < num; x++, ext++) {
+#ifndef VOID_SPRINTF
+	s += 11 +
+#endif
 	sprintf(s, ",\n\"XPMEXT %s\"", ext->name);
+#ifdef VOID_SPRINTF
 	s += strlen(ext->name) + 11;
+#endif
 	a = ext->nlines;
 	for (y = 0, line = ext->lines; y < a; y++, line++) {
+#ifndef VOID_SPRINTF
+	    s += 4 +
+#endif
 	    sprintf(s, ",\n\"%s\"", *line);
+#ifdef VOID_SPRINTF
 	    s += strlen(*line) + 4;
+#endif
 	}
     }
     strcpy(s, ",\n\"XPMENDEXT\"");

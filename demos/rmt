@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/local/bin/perl -wT
 #
 # This script implements a simple remote-control mechanism for Tk 
 # applications.  It allows you to select an application and then type 
@@ -112,7 +112,7 @@ $t->bind('<Control-x>' => sub {
 $t->tag('configure', 'bold', 
     -font => "*-Courier-Bold-R-Normal-*-120-*-*-*-*-*-*",
 );
-my $app = $MW->name;
+$app = $MW->name;
 prompt;
 $t->focus();
 
@@ -203,11 +203,14 @@ sub get_eval_status {
 
 sub Tk::Receive {
 
-    # For security you must roll you own `receive' command.
+    # For security you must roll you own `receive' command, run with
+    # taint checks on and untaint the received data.
 
     my($window, $cmd) = @ARG;
 
     chop $cmd;
+    $cmd =~ /(.*)/;
+    $cmd = $1;
     eval $cmd; get_eval_status;
 
 } # end receive

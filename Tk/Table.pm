@@ -7,7 +7,7 @@ use Tk::Pretty;
 use AutoLoader;
 require Tk::Frame;
 @Tk::Table::ISA = qw(Tk::Frame);
-Tk::Widget->Construct('Table');
+Construct Tk::Widget 'Table';
 
 sub ClassInit
 {

@@ -58,7 +58,7 @@ use strict qw(vars);
 require Tk::Toplevel;
 @Tk::Dialog::ISA = qw(Tk::Toplevel);
 
-Tk::Widget->Construct('Dialog');
+Construct Tk::Widget 'Dialog';
 
 sub Populate
 {
@@ -181,6 +181,7 @@ sub Show {
         $cw->grab;
     }
     $cw->waitVisibility;
+    $cw->update;
     if (defined $cw->{'default_button'}) 
      {
       $cw->{'default_button'}->focus;

@@ -22,7 +22,7 @@ use English;
 use Tk::Canvas;
 use Tk::Widget;
 use Tk qw(DoOneEvent);
-Tk::Canvas->Construct('Ball');
+Construct Tk::Canvas 'Ball';
 use strict;
 
 # Class Ball global variables.

@@ -401,7 +401,7 @@ use strict;
 
 @Tk::FileDialog::ISA = qw(Tk::Toplevel);
 
-Tk::Widget->Construct('FileDialog');
+Construct Tk::Widget 'FileDialog';
 
 ### Global Variables (Convenience only)
 my(@topPack) = (-side => 'top', -anchor => 'center');

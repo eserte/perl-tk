@@ -14,6 +14,13 @@ static char sccsid[] = "@(#) tkConfig.c 1.49 95/05/03 08:23:50";
 
 #include "tkPort.h"
 #include "tk.h"
+#include "tkVMacro.h"
+
+#undef Tk_ConfigureWidget
+#undef Tk_ConfigureInfo
+#undef Tk_ConfigureValue
+#undef Tk_FreeOptions
+
 
 /*
  * Values for "flags" field of Tk_ConfigSpec structures.  Be sure
@@ -64,7 +71,6 @@ static Arg		FormatConfigValue _ANSI_ARGS_((Tcl_Interp *interp,
  *
  *--------------------------------------------------------------
  */
-
 int
 Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
     Tcl_Interp *interp;		/* Interpreter for error reporting. */

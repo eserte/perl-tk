@@ -12,6 +12,7 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
+#include "pTk/tkXrm.h"
 #include "tkGlue.h"
 #include "leak_util.h"
 
@@ -34,12 +35,19 @@ SV *sv;
 
 }
 
+#define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
 Tk_Window mainWindow = NULL;
 
+MODULE = Tk	PACKAGE = Tk::Xrm	PREFIX = Xrm_
+PROTOTYPES: DISABLE
+
+void
+Xrm_import(class,...)
+char *	class
+
 MODULE = Tk	PACKAGE = MainWindow
 
-PROTOTYPES: DISABLE
 
 int
 Count(self)
@@ -166,7 +174,7 @@ PPCODE:
   PUSHs(sv_2mortal(newSViv(y)));
  }
 
-MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
+MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_ 
 
 void
 EnterMethods(package,file,...)
@@ -422,6 +430,16 @@ int		x
 int		y
 
 void
+Tk_XRaiseWindow(win)
+Tk_Window	win
+
+void
+Tk_MoveToplevelWindow(win,x,y)
+Tk_Window	win
+int		x
+int		y
+
+void
 Tk_MoveResizeWindow(win,x,y,width,height)
 Tk_Window	win
 int		x
@@ -587,6 +605,9 @@ Tcl_Interp *	interp
 char *		message
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
+
+void
+abort()
 
 void
 DebugHook(arg)

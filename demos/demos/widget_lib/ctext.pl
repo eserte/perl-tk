@@ -84,7 +84,7 @@ sub ctext {
     $c->bind('text', '<BackSpace>' => \&ctext_bs);
     $c->bind('text', '<Delete>' => sub {
 	my($c) = @ARG;
-	eval {$c->dchars('text', 'sel.first', 'sel.last')};
+	eval {local $SIG{__DIE__}; $c->dchars('text', 'sel.first', 'sel.last')};
 	$c->dchars('text', 'insert');
     });
     $c->bind('text', '<2>' => sub {
@@ -138,7 +138,7 @@ sub ctext_bs {
 
     my($c) = @ARG;
 
-    eval {$c->dchars('text', 'sel.first', 'sel.last')};
+    eval {local $SIG{__DIE__}; $c->dchars('text', 'sel.first', 'sel.last')};
     my $char = $c->index('text', 'insert') - 1;
     $c->dchars('text', $char) if $char >= 0;
 

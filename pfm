@@ -10,7 +10,7 @@ require Tk::Tiler;
  require Tk::Label;
  use Tk qw(Ev);
  @ISA = qw(Tk::Label);
- Tk::Widget->Construct(Dragable);
+ Construct Tk::Widget Dragable;
 
  sub ClassInit
  {

@@ -4,7 +4,7 @@ require Tk::Frame;
 
 $pi = atan2(1, 1) * 4;
 
-Tk::Widget->Construct('Dial');
+Construct Tk::Widget 'Dial';
 
 =head1 NAME
 

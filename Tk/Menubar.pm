@@ -7,7 +7,7 @@ require Tk::Menubutton;
 @ISA = qw(Tk::Frame);
 use strict;
 
-Tk::Frame->Construct('Menubar');
+Construct Tk::Frame 'Menubar';
 
 # Just make it a Frame until we figure out what else
 # it should do.
@@ -61,7 +61,7 @@ sub Menubutton
    $cw->{'MenuButtons'}{$name} = $mb;
    $mb->pack(%pack);
   }
- $mb->menu->AddItems($items) if (defined $items);
+ $mb->menu->AddItems(@$items) if (defined $items);
  return $mb;
 }
 

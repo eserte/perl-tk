@@ -18,6 +18,7 @@ static char sccsid[] = "@(#) tkFrame.c 1.59 95/06/04 14:08:47";
 #include "default.h"
 #include "tkPort.h"
 #include "tkInt.h"
+#include "tkVMacro.h"
 
 /*
  * A data structure of the following type is kept for each

@@ -5,7 +5,7 @@ require Tk;
 package Tk::ROText;
 require Tk::Text;
 @ISA = qw(Tk::Text);
-Tk::Widget->Construct('ROText');
+Construct Tk::Widget 'ROText';
 
 sub ClassInit
 {

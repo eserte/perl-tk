@@ -12,7 +12,7 @@ package Plot;
 require 5.002;
 use English;
 @ISA = qw(Tk::Frame);
-Tk::Widget->Construct('Plot');
+Construct Tk::Widget 'Plot';
 use strict;
 
 # Plot Virtual Methods
@@ -130,7 +130,7 @@ sub area_down {
     $pinfo->{'areaY1'} = $y;
     $pinfo->{'areaX2'} = -1;
     $pinfo->{'areaY2'} = -1;
-    eval {$w->delete('area');};
+    eval {local $SIG{__DIE__}; $w->delete('area');};
 
 } # end area_down
 
@@ -141,7 +141,7 @@ sub area_move {
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
     if($x != $pinfo->{'areaX1'} && $y != $pinfo->{'areaY1'}) {
-      eval {$w->delete('area');};
+      eval {local $SIG{__DIE__}; $w->delete('area');};
       $w->addtag('area','withtag',$w->create('rect',$pinfo->{'areaX1'},
                                            $pinfo->{'areaY1'},$x,$y));
       $pinfo->{'areaX2'} = $x;

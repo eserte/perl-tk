@@ -66,6 +66,8 @@ XpmCreateBufferFromPixmap(display, buffer_return, pixmap, shapemask,
 					   shapeimage, attributes);
 
     /* destroy the ximages */
+    xpmFreeImageData(ximage);
+    xpmFreeImageData(shapeimage);
     if (ximage)
 	XDestroyImage(ximage);
     if (shapeimage)

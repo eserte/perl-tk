@@ -1,6 +1,84 @@
 Within each 'release' time advances down the file, but most recent
 release is at the top.
 
+Changes in Tk400.201
+
+* Adopted new FileSelect.pm from  Frederick L Wagner <derf@ti.com>
+
+* Fixed memory leak in ->repeat due to failing to delete expired
+  entries in the private hash.
+
+* Fixed infinite loop if Photo was asked to 'copy' zero size source image.
+
+* Applied patch to "Notebook"
+
+* Changed all :
+
+   Tk::Widget->Construct('Foo')
+
+  to equivalent in 'I/O syntax' :
+
+   Construct Tk::Widget 'Foo';
+
+  because it reads better and is less "noisy".
+
+* Added Tk::Adjuster and $widget->packAdjust construct.
+  This allows interactive re-sizing of packed widgets.
+  Exported some more C API e.g. MoveToplevelWindow to assist this. 
+
+* Cleaned up whole AUTOLOADER inheritance.
+  All widgets/images now inherit DynaLoader::bootstrap (if required)
+  via Tk::Widget or Tk::Image, otherwise they get AUTOLOAD via DynaLoader
+  and AutoLoader instead of from Tk::Widget.
+  Copied core of AutoLoader.pm into Tk::Widgets AUTOLOAD and cleaned 
+  up interactions. 
+  Re-instated automatic "require Tk::Foo" when Foo "looks like" a Constructor.
+
+* Made more methods AutoLoaded.
+
+* Changed ->Scrolled to better handle create-time args of the inner widget.
+  Still not sure it is right.
+  Added -columns as create-time arg of HList.
+
+* Experimental use of perl's 'local' as follows:
+   - implcit {local $Tk::widget } round all calls to core Tk code.
+     Thus in any callbacks the widget may invoke, $Tk::widget is 
+     available to discover which widget invoked it.
+     This is a perl local with all caveats (variable suicide etc.)
+     that pertain to locals.
+
+     This is of potential general use - let me know what you think.
+
+   - Added implcit {local $SIG{__DIE__} = \&Tk::__DIE__ }
+     round all callbacks to perl code where C glue is trapping errors.
+     Tk::__DIE__ uses $Tk::widget to add backtrace info.
+
+* Added local $SIG{__DIE__} (or equivalent Tk::catch) to most of 
+  eval { }  constructs so that user's $SIG{__DIE__} is not bothered by 
+  error we are "expecting".
+
+* Adopted Tixish sub directory from Rajappa Iyer <rsi@ziplink.net>.
+  This includes NoteBook, Balloon, BrowseEntry and an alternate DialogBox.
+
+* Implemented 'option' command via routines in <X11/Xresource.h> 
+  currently optional 
+  use Tk::Xrm; 
+  to enable.
+
+* Loaded latest WaitBox and FileDialog from CPAN. 
+
+* Added Tk::Menu::Item base class and Tk::Menu::Button Tk::Menu::Cascade
+  etc. as sub-classes. 
+  $menu->Button now returns a (non-widget) object, which can be configure'd
+  You can inherit from Tk::Menu::* to derive "kinds of" menu items.
+
+* Changed Tk::Menu::AddItems to take an array of items rather than 
+  a reference to an array of items - this makes calling it directly a little
+  easier *BUT IS INCOMPATIBLE* if it was called directly.
+
+* Configuring an Optionmenu's -options now replaces existing options
+  rather than appending.
+
 Changes in Tk400.200
 
 * Fixed typos in tkPort.h, accept perl5.002 and later, including

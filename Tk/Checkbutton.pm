@@ -13,7 +13,7 @@ require Tk::Button;
 
 @ISA = qw(Tk::Button);
 
-Tk::Widget->Construct('Checkbutton');
+Construct Tk::Widget 'Checkbutton';
 
 sub Tk_cmd { \&Tk::checkbutton }
 

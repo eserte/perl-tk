@@ -15,14 +15,13 @@
 package Tk::Entry; 
 require Tk::Widget;
 require Tk::Clipboard;
-require DynaLoader;
 use AutoLoader;
 
-@ISA = qw(DynaLoader Tk::Widget); 
+@ISA = qw(Tk::Widget); 
 
 import Tk qw(Ev);
 
-Tk::Widget->Construct('Entry');
+Construct Tk::Widget 'Entry';
 
 bootstrap Tk::Entry $Tk::VERSION;
 
@@ -86,7 +85,7 @@ sub ClassInit
               my $Ev = $w->XEvent;
               $Tk::selectMode = "word";
               MouseSelect($w,$Ev->x);
-              eval { $w->icursor("sel.first") }
+              eval {local $SIG{__DIE__}; $w->icursor("sel.first") }
              } ) ;
  $mw->bind($class,"<Triple-1>",
              sub
@@ -262,7 +261,7 @@ sub ClassInit
              sub
              {
               my $w = shift;
-              eval { Insert($w,$w->SelectionGet)}
+              eval {local $SIG{__DIE__}; Insert($w,$w->SelectionGet)}
              } ) ;
  # Additional emacs-like bindings:
  if (!$Tk::strictMotif)
@@ -314,7 +313,7 @@ sub ClassInit
                 my $w = shift;
                 my $Ev = $w->XEvent;
                 eval
-                 {
+                 {local $SIG{__DIE__};
                   $w->insert("insert",$w->SelectionGet);
                   $w->SeeInsert;
                  }
@@ -355,7 +354,7 @@ sub ClassInit
                 if (!$Tk::mouseMoved)
                  {
                   eval
-                   {
+                   {local $SIG{__DIE__};
                     $w->insert("insert",$w->SelectionGet);
                     $w->SeeInsert;
                    }
@@ -506,7 +505,7 @@ sub Insert
  my $s = shift;
  return unless (defined $s && $s ne "");
  eval
-  {
+  {local $SIG{__DIE__};
    $insert = $w->index("insert");
    if ($w->index("sel.first") <= $insert && $w->index("sel.last") >= $insert)
     {

@@ -9,7 +9,7 @@ C\+\+/Main$
 \bpTk/need$
 \bpm_to_blib$
 %$
-\bblib/
+\b(blib|merge)/
 \bTix/
 tcl\.pm$
 \bcore\b
@@ -44,5 +44,6 @@ HList/HList\.c
 InputO/InputO\.c
 Mwm/Mwm\.c
 NBFrame/NBFrame\.c
-
+Xlib/X/X\.c
+Extensions/Xm/.*\.c
 

@@ -34,6 +34,15 @@
 
 #include "XpmI.h"
 #include <sys/stat.h>
+#if !defined(NO_ZPIPE) && defined(WIN32)
+# define popen _popen
+# define pclose _pclose
+# if defined(STAT_ZFILE)
+#  include <io.h>
+#  define stat _stat
+#  define fstat _fstat
+# endif
+#endif
 
 LFUNC(OpenReadFile, int, (char *filename, xpmData *mdata));
 LFUNC(xpmDataClose, void, (xpmData *mdata));
@@ -118,8 +127,9 @@ OpenReadFile(filename, mdata)
 {
 #ifndef NO_ZPIPE
     char *compressfile, buf[BUFSIZ];
+# ifdef STAT_ZFILE
     struct stat status;
-
+# endif
 #endif
 
     if (!filename) {
@@ -127,26 +137,25 @@ OpenReadFile(filename, mdata)
 	mdata->type = XPMFILE;
     } else {
 #ifndef NO_ZPIPE
-	if (((int) strlen(filename) > 2) &&
-	    !strcmp(".Z", filename + (strlen(filename) - 2))) {
+	int len = strlen(filename);
+	if ((len > 2) && !strcmp(".Z", filename + (len - 2))) {
 	    mdata->type = XPMPIPE;
 	    sprintf(buf, "uncompress -c \"%s\"", filename);
 	    if (!(mdata->stream.file = popen(buf, "r")))
 		return (XpmOpenFailed);
 
-	} else if (((int) strlen(filename) > 3) &&
-		   !strcmp(".gz", filename + (strlen(filename) - 3))) {
+	} else if ((len > 3) && !strcmp(".gz", filename + (len - 3))) {
 	    mdata->type = XPMPIPE;
 	    sprintf(buf, "gunzip -qc \"%s\"", filename);
 	    if (!(mdata->stream.file = popen(buf, "r")))
 		return (XpmOpenFailed);
 
 	} else {
-	    if (!(compressfile = (char *) XpmMalloc(strlen(filename) + 4)))
+# ifdef STAT_ZFILE
+	    if (!(compressfile = (char *) XpmMalloc(len + 4)))
 		return (XpmNoMemory);
 
-	    strcpy(compressfile, filename);
-	    strcat(compressfile, ".Z");
+	    sprintf(compressfile, "%s.Z", filename);
 	    if (!stat(compressfile, &status)) {
 		sprintf(buf, "uncompress -c \"%s\"", compressfile);
 		if (!(mdata->stream.file = popen(buf, "r"))) {
@@ -155,8 +164,7 @@ OpenReadFile(filename, mdata)
 		}
 		mdata->type = XPMPIPE;
 	    } else {
-		strcpy(compressfile, filename);
-		strcat(compressfile, ".gz");
+		sprintf(compressfile, "%s.gz", filename);
 		if (!stat(compressfile, &status)) {
 		    sprintf(buf, "gunzip -c \"%s\"", compressfile);
 		    if (!(mdata->stream.file = popen(buf, "r"))) {
@@ -165,18 +173,21 @@ OpenReadFile(filename, mdata)
 		    }
 		    mdata->type = XPMPIPE;
 		} else {
+# endif
 #endif
 		    if (!(mdata->stream.file = fopen(filename, "r"))) {
-#ifndef NO_ZPIPE
+#if !defined(NO_ZPIPE) && defined(STAT_ZFILE)
 			XpmFree(compressfile);
 #endif
 			return (XpmOpenFailed);
 		    }
 		    mdata->type = XPMFILE;
 #ifndef NO_ZPIPE
+# ifdef STAT_ZFILE
 		}
 	    }
 	    XpmFree(compressfile);
+# endif
 	}
 #endif
     }

@@ -36,10 +36,13 @@ Nick Ing-Simmons nik@tiuk.ti.com
 
 =cut 
 
+use Cwd;
+
+
 sub import
 {
  my $package = shift;
- my $dir = ".";
+ my $dir = getcwd;
  if (@_)
   {
    print join(',',@_),"\n";
@@ -56,7 +59,7 @@ sub import
    if (-d $blib && -d "$blib/arch" && -d "$blib/lib")
     {
      unshift(@INC,"$blib/arch","$blib/lib");
-     warn "Using $blib";
+     warn "Using $blib\n";
      return;
     }
    $dir .= "/..";

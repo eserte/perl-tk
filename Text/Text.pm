@@ -12,14 +12,12 @@
 
 require Tk;
 package Tk::Text; 
-require Tk::Clipboard;
-require DynaLoader;
 use AutoLoader;
 use Carp;
 
-@ISA = qw(DynaLoader Tk::Widget);
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('Text');
+Construct Tk::Widget 'Text';
 
 bootstrap Tk::Text $Tk::VERSION;
 
@@ -29,30 +27,15 @@ import Tk qw(Ev);
 
 sub Tk::Widget::ScrlText { shift->Scrolled('Text' => @_) }
 
-Tk::SubMethods ( 'mark' => [qw(gravity names set unset)],
-                 'scan' => [qw(mark dragto)],
-                 'tag'  => [qw(add bind cget configure delete lower 
+use Tk::Submethods ( 'mark' => [qw(gravity names set unset)],
+                     'scan' => [qw(mark dragto)],
+                     'tag'  => [qw(add bind cget configure delete lower 
                                names  nextrange raise ranges remove)],
-                 'window' => [qw(cget configure create)]
-               );
+                     'window' => [qw(cget configure create)]
+                   );
 
 sub Tag;
 sub Tags;
-
-sub TIEHANDLE
-{
- my ($class,$obj) = @_;
- return $obj;
-}
-
-sub PRINT
-{
- my $w = shift;
- while (@_)
-  {
-   $w->insert('end',shift);
-  }
-}
 
 1;
 
@@ -72,6 +55,8 @@ __END__
 
 sub bindRdOnly
 {
+ require Tk::Clipboard;
+
  my ($class,$mw) = @_;
 
  # Standard Motif bindings:
@@ -104,7 +89,7 @@ sub bindRdOnly
              my $w = shift;
              my $Ev = $w->XEvent;
              $w->SelectTo($Ev->xy,"word");
-             eval { $w->mark("set","insert","sel.first") }
+             Tk::catch { $w->mark("set","insert","sel.first") }
             }
            )
  ;
@@ -114,7 +99,7 @@ sub bindRdOnly
              my $w = shift;
              my $Ev = $w->XEvent;
              $w->SelectTo($Ev->xy,"line");
-             eval { $w->mark("set","insert","sel.first") };
+             Tk::catch { $w->mark("set","insert","sel.first") };
             }
            )
  ;
@@ -255,7 +240,7 @@ sub ClassInit
             sub
             {
              my $w = shift;
-             eval { $w->Insert($w->SelectionGet) }
+             Tk::catch { $w->Insert($w->SelectionGet) }
             }
            )
  ;
@@ -312,7 +297,7 @@ sub ClassInit
               sub
               {
                my $w = shift;
-               eval
+               Tk::catch
                 {
                  $w->insert("insert",$w->SelectionGet);
                  $w->see("insert")
@@ -324,7 +309,7 @@ sub ClassInit
               sub
               {
                my $w = shift;
-               eval { $w->delete("sel.first","sel.last") }
+               Tk::catch { $w->delete("sel.first","sel.last") }
               }
              )
    ;
@@ -335,7 +320,7 @@ sub ClassInit
                my $Ev = $w->XEvent;
                if (!$Tk::mouseMoved)
                 {
-                 eval
+                 Tk::catch
                   {
                    $w->insert($Ev->xy,$w->SelectionGet);
                   }
@@ -352,7 +337,7 @@ sub ClassInit
 sub Backspace
 {
  my $w = shift;
- my $sel = eval { $w->tag("nextrange","sel","1.0","end") };
+ my $sel = Tk::catch { $w->tag("nextrange","sel","1.0","end") };
  if (defined $sel)
   {
    $w->delete("sel.first","sel.last")
@@ -367,7 +352,7 @@ sub Backspace
 sub Delete
 {
  my $w = shift;
- my $sel = eval { $w->tag("nextrange","sel","1.0","end") };
+ my $sel = Tk::catch { $w->tag("nextrange","sel","1.0","end") };
  if (defined $sel)
   {
    $w->delete("sel.first","sel.last")
@@ -418,16 +403,19 @@ sub SelectTo
  my $index = shift;
  $Tk::selectMode = shift if (@_);
  my $cur = $w->index($index);
- my $anchor = $w->index("anchor");
+ my $anchor = Tk::catch { $w->index("anchor") };
  if (!defined $anchor)
   {
-   $w->mark("set","anchor",$anchor = $cur)
+   $w->mark("set","anchor",$anchor = $cur);
+   $Tk::mouseMoved = 0;
   }
  elsif ($w->compare($cur,"!=",$anchor))
   {
-   $Tk::mouseMoved = 1
+   $Tk::mouseMoved = 1;
   }
+ $Tk::selectMode = 'char' unless (defined $Tk::selectMode);
  my $mode = $Tk::selectMode;
+ my ($first,$last);
  if ($mode eq "char")
   {
    if ($w->compare($cur,"<","anchor"))
@@ -650,7 +638,7 @@ sub Insert
  my $w = shift;
  my $s = shift;
  return unless (defined $s && $s ne "");
- eval
+ Tk::catch
   {
    if ($w->compare("sel.first","<=","insert") && 
        $w->compare("sel.last",">=","insert"))
@@ -847,6 +835,21 @@ sub Tags
    push(@result,$w->Tag($name));
   }
  return @result;
+}
+
+sub TIEHANDLE
+{
+ my ($class,$obj) = @_;
+ return $obj;
+}
+
+sub PRINT
+{
+ my $w = shift;
+ while (@_)
+  {
+   $w->insert('end',shift);
+  }
 }
 
 

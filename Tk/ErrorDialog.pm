@@ -44,11 +44,10 @@
 package Tk::ErrorDialog;
 use English;
 use Tk ();
-use Tk::Toplevel;
-use Tk::Dialog;
+require Tk::Dialog;
 @Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
 
-Tk::Widget->Construct('ErrorDialog');
+Construct Tk::Widget 'ErrorDialog';
 
 my %options = ( -buttons => ['OK', 'Skip Messages', 'Stack trace'],
                 -bitmap  => 'error'

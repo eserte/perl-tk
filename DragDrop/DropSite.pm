@@ -2,7 +2,9 @@ package Tk::DropSite;
 require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 @ISA = qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
-Tk::Widget->Construct('DropSite');
+
+Construct Tk::Widget 'DropSite';
+
 use strict;
 use vars qw(%type @types);
 

@@ -5,7 +5,7 @@ require DirHandle;
 use Cwd;
 @ISA = qw(Tk::Derived Tk::HList);
 use strict;
-Tk::Widget->Construct('Dirlist');
+Construct Tk::Widget 'Dirlist';
 
 sub getimage
 {

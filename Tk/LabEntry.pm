@@ -7,7 +7,7 @@ package Tk::LabEntry;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
 
-Tk::Widget->Construct('LabEntry');
+Construct Tk::Widget 'LabEntry';
 
 sub Populate 
 {

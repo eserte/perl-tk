@@ -42,7 +42,7 @@ use Carp;
 
 @ISA = qw(Tk::Derived Tk::Canvas);
 
-Tk::Widget->Construct('Axis');
+Construct Tk::Widget 'Axis';
 
 
 # Added since v 0.1

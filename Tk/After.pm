@@ -19,10 +19,11 @@ sub submit
 {
  my $obj     = shift;
  my $w       = $obj->[0];
+ my $id      = $obj->[1];
  my $t       = $obj->[2];
  my $method  = $obj->[3];
- $obj->delete if (defined $obj->[1]);
- my $id  = $w->Tk::after($t,[$method => $obj]);
+ delete($w->{_After_}{$id}) if (defined $id);
+ $id  = $w->Tk::after($t,[$method => $obj]);
  unless (exists $w->{_After_})
   {
    $w->{_After_} = {};
@@ -64,8 +65,8 @@ sub cancel
 sub repeat
 {
  my $obj = shift;
- $obj->[1] = undef;
  $obj->submit;
+ local $Tk::widget = $obj->[0];
  $obj->[4]->Call;
 }
 
@@ -75,6 +76,7 @@ sub once
  my $w   = $obj->[0];
  my $id  = $obj->[1];
  delete $w->{_After_}{$id};
+ local $Tk::widget = $w;
  $obj->[4]->Call;
 }
 

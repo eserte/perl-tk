@@ -6,11 +6,26 @@ derived from those of the orignal Tk4.0 sources. See pTk/license.terms
 for details of this license.
 
 This a re-port of a perl interface to Tk4.0p3 (John Ousterhout's production
-release).  This version (Tk400.200) requires perl5.002 or later.
+release).  This version (Tk400.201) requires perl5.002 or later.
 
-This version is the first 'production' release.
-There is little change from beta release Tk-b11.02 and even less
-from Tk-b12.  See Changes for what is different.
+This version is a patch release.
+
+It should build with perl5.002 ... perl5.003_11, it has problems
+with 5.003_12 ... 5.003_15.
+5.003_16 works but 5.003_17 does not.
+Issues with late _xx releases are to do with closures.
+I will do my best to make sure perl5.004 works ...
+
+Note particularly : 
+
+* Changed Tk::Menu::AddItems to take an array of items rather than 
+  a reference to an array of items - this makes calling it directly a little
+  easier *BUT IS INCOMPATIBLE* if it was called directly.
+
+* Configuring an Optionmenu's -options now replaces existing options
+  rather than appending.
+
+See Changes for more detail of what is different.
 
 Although this is a production release it should be noted that 
 some sub-modules are not as "finished" as others.
@@ -36,8 +51,8 @@ The less finished parts include:
    - Most of the Tix stuff only has C code ported, the many of the tcl parts still
      needing converting to perl.
        - HList works reasonably well
-       - There is a port of NoteBook in Contrib - I want to clean up
-         the inheritance and widget hierachy.
+       - There is a reasonably complete port of NoteBook and Balloon now.
+       - BrowseEntry is a simplified combo-box
        - InputO has not been tested. 
    - There is an intent to add an object oriented interface to Canvas items,
      (existing interface will still work).
@@ -49,11 +64,7 @@ See INSTALL for how to build it.
 
 The two Camel/X 'logo' GIFs were produced by :
 
-Grafix,
-http://www.pncl.co.uk/subs/rsmith/rsmith.html,
-rsmith@pncl.co.uk,
-Sussex, UK,
-(01293) 886725
+Grafix, Sussex, UK, +44-1293-886725
 
 For a very reasonable fee. We have rights to distribute them.
 
@@ -81,13 +92,4 @@ Please don't send subscribe requests to the list itself.
 Sending problems to ptk@lists.Stanford.EDU is the best way 
 to get answers.
 
----------------------------------------------------------------------------
-pTk sub-directory is a modified version of Tk4.0p3
 
-It has been modified to call "glue" functions rather than use libtcl.a - so it
-is completely independant of TCL.
-
-When Tcl/Tk make changes for Tcl's byte-compiler it will make
-very similar changes - at that point pTk _may_ be replaced by real libtk.* 
-
-There are still serious snags with the others.

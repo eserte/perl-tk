@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
 
-Tk::Widget->Construct('Tiler');
+Construct Tk::Widget 'Tiler';
 sub Tk::Widget::ScrlTiler { shift->Scrolled('Tiler' => @_) }
 
 use Tk::Pretty;

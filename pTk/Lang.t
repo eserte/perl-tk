@@ -1,4 +1,5 @@
 #ifdef _LANG
+VVAR(Tcl_CmdProc *,LangOptionCommand,V_LangOptionCommand)
 VFUNC(Arg *,LangAllocVec,V_LangAllocVec,_ANSI_ARGS_((int count)))
 VFUNC(void,LangBadFile,V_LangBadFile,_ANSI_ARGS_((int fd)))
 VFUNC(Arg,LangCallbackArg,V_LangCallbackArg,_ANSI_ARGS_((LangCallback *)))
@@ -47,6 +48,8 @@ VFUNC(Tcl_RegExp,Lang_RegExpCompile,V_Lang_RegExpCompile,_ANSI_ARGS_((Tcl_Interp
 			    char *string, int fold)))
 VFUNC(int,Lang_RegExpExec,V_Lang_RegExpExec,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_RegExp reg_exp, char *string, char *start)))
+VFUNC(void,Lang_SetBinaryResult,V_Lang_SetBinaryResult,_ANSI_ARGS_((Tcl_Interp *interp,
+			    char *string, int len, Tcl_FreeProc *freeProc)))
 VFUNC(void,Lang_SetErrorCode,V_Lang_SetErrorCode,_ANSI_ARGS_((Tcl_Interp *interp,char *code)))
 VFUNC(int,Lang_SplitList,V_Lang_SplitList,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Arg list, int *argcPtr, Arg **argsPtr, LangFreeProc **)))

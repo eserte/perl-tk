@@ -10,27 +10,32 @@
 package Tk;
 require 5.002;
 use     AutoLoader;
+use     DynaLoader;
 require Exporter;
-require DynaLoader;
-@ISA       = qw(Exporter DynaLoader);
+
+@Tk::ISA  = qw(Exporter DynaLoader);
+
 
 @EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
-@EXPORT_OK = qw(Exists Ev after exit MainLoop DoOneEvent tkinit NoOp lsearch);
+@EXPORT_OK = qw(NoOp *widget *event lsearch catch);
+
+use vars qw($widget $event $library $version $patchlevel $VERSION $strictMotif);
 
 use strict;
-
 use Carp;
 
-# $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
+# $version and $patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.0";
 $Tk::patchLevel  = "4.0p3";
-$Tk::VERSION     = '400.200';
+$Tk::VERSION     = '400.201';
 $Tk::strictMotif = 0;
                                    
-$Tk::library = __FILE__;
-$Tk::library =~ s/\.pm$//;
+{($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
 $Tk::library = Tk->findINC('.') unless (-d $Tk::library);
+
+$Tk::widget  = undef;
+$Tk::event   = undef;
 
 bootstrap Tk $Tk::VERSION;
 
@@ -41,39 +46,11 @@ Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11')) if (&NeedPreload 
 
 # Supress used once warnings on function table pointers 
 # How can we do this in the C code?
-$Tk::TkVtab      = $Tk::TkVtab;
-$Tk::TkintVtab   = $Tk::TkintVtab;
-$Tk::LangVtab    = $Tk::LangVtab;
-$Tk::TkglueVtab  = $Tk::TkglueVtab;
-$Tk::XlibVtab    = $Tk::XlibVtab;
-$Tk::VERSION     = $Tk::VERSION;
-$Tk::version     = $Tk::version;
-$Tk::patchLevel  = $Tk::patchLevel;
-$Tk::strictMotif = $Tk::strictMotif;
+use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab);  
 
-BEGIN 
-{
- sub SubMethods
- {
-  no strict 'refs';
-  my $package = caller(0);
-  while (@_)
-   {
-    my $fn = shift;
-    my $sm = shift;
-    my $sub;
-    foreach $sub (@{$sm})
-     {
-      my ($suffix) = $sub =~ /(\w+)$/;
-      *{$package.'::'."$fn\u$suffix"} = sub { shift->$fn($sub,@_) };
-     }
-   }
- }
- SubMethods( 'option'    =>  [qw(add get clear readfile)],
-             'clipboard' => [qw(clear append)]
-           );
-}
-
+use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
+                    'clipboard' =>  [qw(clear append)]
+                   );
 
 sub BackTrace
 {
@@ -89,7 +66,6 @@ sub BackTrace
    last if (!defined($sub) || $sub eq '(eval)');
    $w->AddErrorInfo("$sub $loc");
   }          
- $@ = "";
  die "$mess\n";
 }
 
@@ -111,56 +87,21 @@ sub Ev
  return bless $obj,"Tk::Ev";
 }
 
-
-sub lsearch
-{my $ar = shift;
- my $x  = shift;
- my $i;
- for ($i = 0; $i < scalar @$ar; $i++)
-  {
-   return $i if ($$ar[$i] eq $x);
-  }
- return -1;
-}
-
 require Tk::Widget;
 require Tk::Image;
 require Tk::MainWindow;
 
-sub break
-{
- die "_TK_BREAK_\n";
+sub Exists
+{my $w = shift;
+ return defined($w) && ref($w) && $w->IsWidget && $w->exists;
 }
 
-sub idletasks
+sub Time_So_Far
 {
- shift->update('idletasks');
-}
+ return timeofday() - $boot_time;
+} 
 
-sub updateWidgets
-{
- my ($w) = @_;
- while ($w->DoOneEvent(0x13))   # No wait, X events and idle events
-  {
-  }
- $w;
-}
-
-sub ImageNames
-{
- image('names');
-}
-
-sub ImageTypes
-{
- image('types');
-}
-
-sub interps
-{
- my $w = shift;
- return $w->winfo('interps','-displayof');
-}
+# Selection* are not autoloaded as names are too long.
 
 sub SelectionOwn
 {my $widget = shift;
@@ -188,27 +129,29 @@ sub SelectionHandle
  selection('handle',@_,$widget,$command);
 }
 
-sub findINC
+#
+# This is a $SIG{__DIE__} handler which does not change the $@
+# string in the way 'croak' does, but rather add to Tk's ErrorInfo.
+# It stops at 1st enclosing eval on assumption that the eval
+# is part of Tk call process and will add its own context to ErrorInfo
+# and then pass on the error.
+# 
+sub __DIE__
 {
- my $file = join('/',@_);
- my $dir;
- $file  =~ s,::,/,g;
- foreach $dir (@INC)
+ my $mess = shift;
+ my $w = $Tk::widget;
+ if (defined $w)
   {
-   my $path;
-   return $path if (-e ($path = "$dir/$file"));
+   my $i = 0;  
+   my ($pack,$file,$line,$sub) = caller($i++);
+   while (1)   
+    {          
+     my $loc = "at $file line $line";
+     ($pack,$file,$line,$sub) = caller($i++);
+     last if (!defined($sub) || $sub eq '(eval)');
+     $w->AddErrorInfo("$sub $loc");
+    }          
   }
- return undef;
-}
-
-sub Time_So_Far
-{
- return timeofday() - $boot_time;
-} 
-
-sub Exists
-{my $w = shift;
- return defined($w) && ref($w) && $w->IsWidget && $w->exists;
 }
 
 1;
@@ -376,7 +319,7 @@ sub FocusOK
 {
  my $w = shift;
  my $value;
- eval { $value = $w->cget('-takefocus') };
+ catch { $value = $w->cget('-takefocus') };
  if (!$@ && defined($value))
   {
    return 0 if ($value eq '0');
@@ -388,7 +331,7 @@ sub FocusOK
   {
    return 0;
   }
- eval { $value = $w->cget('-state') } ;
+ catch { $value = $w->cget('-state') } ;
  if (!$@ && defined($value) && $value eq "disabled")
   {
    return 0;
@@ -475,7 +418,72 @@ sub Receive
 {
  my $w = shift;
  warn "Receive(" . join(',',@_) .")";
- $w->BackTrace("Tk rejects send(" . join(',',@_) .")\n");
+ die "Tk rejects send(" . join(',',@_) .")\n";
 }
 
+sub break
+{
+ die "_TK_BREAK_\n";
+}
+
+sub idletasks
+{
+ shift->update('idletasks');
+}
+
+sub updateWidgets
+{
+ my ($w) = @_;
+ while ($w->DoOneEvent(0x13))   # No wait, X events and idle events
+  {
+  }
+ $w;
+}
+
+sub ImageNames
+{
+ image('names');
+}
+
+sub ImageTypes
+{
+ image('types');
+}
+
+sub interps
+{
+ my $w = shift;
+ return $w->winfo('interps','-displayof');
+}
+
+sub findINC
+{
+ my $file = join('/',@_);
+ my $dir;
+ $file  =~ s,::,/,g;
+ foreach $dir (@INC)
+  {
+   my $path;
+   return $path if (-e ($path = "$dir/$file"));
+  }
+ return undef;
+}
+
+sub lsearch
+{my $ar = shift;
+ my $x  = shift;
+ my $i;
+ for ($i = 0; $i < scalar @$ar; $i++)
+  {
+   return $i if ($$ar[$i] eq $x);
+  }
+ return -1;
+}
+
+# a wrapper on eval which turns off user $SIG{__DIE__}
+sub catch (&)
+{
+ my $sub = shift;
+ eval {local $SIG{'__DIE__'}; &$sub };
+}
 

@@ -20,9 +20,7 @@ sub cget
  croak("Wrong number of args to cget") unless (@_ == 2);
  my ($alias,$key) = @_;
  my ($set,$get,$widget,@args) = @$alias;
- my @result;
- eval { @result = $widget->$get(@args) };
- croak "$get: $@" if ($@);
+ my @result = $widget->$get(@args);
  return (wantarray) ? @result : $result[0];
 }
 

@@ -43,13 +43,18 @@
 
 LFUNC(xpmVisualType, int, (Visual *visual));
 
+LFUNC(AllocColor, int, (Display *display, Colormap colormap,
+			char *colorname, XColor *xcolor, void *closure));
+LFUNC(FreeColors, int, (Display *display, Colormap colormap,
+			Pixel *pixels, int n, void *closure));
+
 #ifndef FOR_MSW
 LFUNC(SetCloseColor, int, (Display *display, Colormap colormap,
 			   Visual *visual, XColor *col,
 			   Pixel *image_pixel, Pixel *mask_pixel,
 			   Pixel *alloc_pixels, unsigned int *nalloc_pixels,
-			   XpmAttributes *attributes,
-			   XColor *cols, int ncols));
+			   XpmAttributes *attributes, XColor *cols, int ncols,
+			   XpmAllocColorFunc allocColor, void *closure));
 #else
 /* let the window system take care of close colors */
 #endif
@@ -60,7 +65,8 @@ LFUNC(SetColor, int, (Display *display, Colormap colormap, Visual *visual,
 		      unsigned int *mask_pixel_index,
 		      Pixel *alloc_pixels, unsigned int *nalloc_pixels,
 		      Pixel *used_pixels, unsigned int *nused_pixels,
-		      XpmAttributes *attributes, XColor *cols, int ncols));
+		      XpmAttributes *attributes, XColor *cols, int ncols,
+		      XpmAllocColorFunc allocColor, void *closure));
 
 LFUNC(CreateXImage, int, (Display *display, Visual *visual,
 			  unsigned int depth, int format, unsigned int width,
@@ -199,6 +205,28 @@ closeness_cmp(a, b)
     return (int) (x->closeness - y->closeness);
 }
 
+
+/* default AllocColor function:
+ *   call XParseColor if colorname is given, return negative value if failure
+ *   call XAllocColor and return 0 if failure, positive otherwise
+ */
+static int
+AllocColor(display, colormap, colorname, xcolor, closure)
+    Display *display;
+    Colormap colormap;
+    char *colorname;
+    XColor *xcolor;
+    void *closure;		/* not used */
+{
+    int status;
+    if (colorname)
+	if (!XParseColor(display, colormap, colorname, xcolor))
+	    return -1;
+    status = XAllocColor(display, colormap, xcolor);
+    return status != 0 ? 1 : 0;
+}
+
+
 #ifndef FOR_MSW
 /*
  * set a close color in case the exact one can't be set
@@ -207,7 +235,8 @@ closeness_cmp(a, b)
 
 static int
 SetCloseColor(display, colormap, visual, col, image_pixel, mask_pixel,
-	      alloc_pixels, nalloc_pixels, attributes, cols, ncols)
+	      alloc_pixels, nalloc_pixels, attributes, cols, ncols,
+	      allocColor, closure)
     Display *display;
     Colormap colormap;
     Visual *visual;
@@ -218,6 +247,8 @@ SetCloseColor(display, colormap, visual, col, image_pixel, mask_pixel,
     XpmAttributes *attributes;
     XColor *cols;
     int ncols;
+    XpmAllocColorFunc allocColor;
+    void *closure;
 {
 
     /*
@@ -316,7 +347,7 @@ SetCloseColor(display, colormap, visual, col, image_pixel, mask_pixel,
 	       (long) cols[c].blue >= (long) col->blue - blue_closeness &&
 	       (long) cols[c].blue <= (long) col->blue + blue_closeness) {
 	    if (alloc_color) {
-		if (XAllocColor(display, colormap, &cols[c])) {
+		if ((*allocColor)(display, colormap, NULL, &cols[c], closure)){
 		    if (n == ITERATIONS)
 			XUngrabServer(display);
 		    XpmFree(closenesses);
@@ -349,7 +380,7 @@ SetCloseColor(display, colormap, visual, col, image_pixel, mask_pixel,
 	if (i == 0 || i == ncols)	/* no color close enough or cannot */
 	    return (1);			/* alloc any color (full of r/w's) */
 
-	if (XAllocColor(display, colormap, col)) {
+	if ((*allocColor)(display, colormap, NULL, col, closure)) {
 	    *image_pixel = col->pixel;
 	    *mask_pixel = 1;
 	    alloc_pixels[(*nalloc_pixels)++] = col->pixel;
@@ -391,7 +422,7 @@ static int
 SetColor(display, colormap, visual, colorname, color_index,
 	 image_pixel, mask_pixel, mask_pixel_index,
 	 alloc_pixels, nalloc_pixels, used_pixels, nused_pixels,
-	 attributes, cols, ncols)
+	 attributes, cols, ncols, allocColor, closure)
     Display *display;
     Colormap colormap;
     Visual *visual;
@@ -406,19 +437,25 @@ SetColor(display, colormap, visual, colorname, color_index,
     XpmAttributes *attributes;
     XColor *cols;
     int ncols;
+    XpmAllocColorFunc allocColor;
+    void *closure;
 {
     XColor xcolor;
+    int status;
 
     if (xpmstrcasecmp(colorname, TRANSPARENT_COLOR)) {
-	if (!XParseColor(display, colormap, colorname, &xcolor))
+	status = (*allocColor)(display, colormap, colorname, &xcolor, closure);
+	if (status < 0)		/* parse color failed */
 	    return (1);
-	if (!XAllocColor(display, colormap, &xcolor)) {
+
+	if (status == 0) {
 #ifndef FOR_MSW
 	    if (USE_CLOSECOLOR)
 		return (SetCloseColor(display, colormap, visual, &xcolor,
 				      image_pixel, mask_pixel,
 				      alloc_pixels, nalloc_pixels,
-				      attributes, cols, ncols));
+				      attributes, cols, ncols,
+				      allocColor, closure));
 	    else
 #endif /* ndef FOR_MSW */
 		return (1);
@@ -458,6 +495,8 @@ CreateColors(display, attributes, colors, ncolors, image_pixels, mask_pixels,
     Colormap colormap;
     XpmColorSymbol *colorsymbols = NULL;
     unsigned int numsymbols;
+    XpmAllocColorFunc allocColor;
+    void *closure;
 
     char *colorname;
     unsigned int color, key;
@@ -485,15 +524,24 @@ CreateColors(display, attributes, colors, ncolors, image_pixels, mask_pixels,
     else
 	visual = XDefaultVisual(display, XDefaultScreen(display));
 
-    if (attributes && attributes->valuemask & XpmColormap)
+    if (attributes && (attributes->valuemask & XpmColormap))
 	colormap = attributes->colormap;
     else
 	colormap = XDefaultColormap(display, XDefaultScreen(display));
 
-    if (attributes && attributes->valuemask & XpmColorKey)
+    if (attributes && (attributes->valuemask & XpmColorKey))
 	key = attributes->color_key;
     else
 	key = xpmVisualType(visual);
+
+    if (attributes && (attributes->valuemask & XpmAllocColor))
+	allocColor = attributes->alloc_color;
+    else
+	allocColor = AllocColor;
+    if (attributes && (attributes->valuemask & XpmColorClosure))
+	closure = attributes->color_closure;
+    else
+	closure = NULL;
 
 #ifndef FOR_MSW
     if (USE_CLOSECOLOR) {
@@ -590,7 +638,8 @@ CreateColors(display, attributes, colors, ncolors, image_pixels, mask_pixels,
 		if (!SetColor(display, colormap, visual, colorname, color,
 			      image_pixels, mask_pixels, mask_pixel_index,
 			      alloc_pixels, nalloc_pixels, used_pixels,
-			      nused_pixels, attributes, cols, ncols))
+			      nused_pixels, attributes, cols, ncols,
+			      allocColor, closure))
 		    pixel_defined = True;
 		else
 		    ErrorStatus = XpmColorError;
@@ -602,7 +651,8 @@ CreateColors(display, attributes, colors, ncolors, image_pixels, mask_pixels,
 				  color, image_pixels, mask_pixels,
 				  mask_pixel_index, alloc_pixels,
 				  nalloc_pixels, used_pixels, nused_pixels,
-				  attributes, cols, ncols)) {
+				  attributes, cols, ncols,
+				  allocColor, closure)) {
 			pixel_defined = True;
 			break;
 		    } else
@@ -617,7 +667,8 @@ CreateColors(display, attributes, colors, ncolors, image_pixels, mask_pixels,
 				  color, image_pixels, mask_pixels,
 				  mask_pixel_index, alloc_pixels,
 				  nalloc_pixels, used_pixels, nused_pixels,
-				  attributes, cols, ncols)) {
+				  attributes, cols, ncols,
+				  allocColor, closure)) {
 			pixel_defined = True;
 			break;
 		    } else
@@ -650,16 +701,31 @@ CreateColors(display, attributes, colors, ncolors, image_pixels, mask_pixels,
 }
 
 
+/* default FreeColors function, simply call XFreeColors */
+static int
+FreeColors(display, colormap, pixels, n, closure)
+    Display *display;
+    Colormap colormap;
+    Pixel *pixels;
+    int n;
+    void *closure;		/* not used */
+{
+    return XFreeColors(display, colormap, pixels, n, 0);
+}
+
+
 /* function call in case of error, frees only locally allocated variables */
 #undef RETURN
 #define RETURN(status) \
 { \
+    xpmFreeImageData(ximage);		\
+    xpmFreeImageData(shapeimage);	\
     if (ximage) XDestroyImage(ximage); \
     if (shapeimage) XDestroyImage(shapeimage); \
     if (image_pixels) XpmFree(image_pixels); \
     if (mask_pixels) XpmFree(mask_pixels); \
     if (nalloc_pixels) \
-	XFreeColors(display, colormap, alloc_pixels, nalloc_pixels, 0); \
+	(*freeColors)(display, colormap, alloc_pixels, nalloc_pixels, NULL); \
     if (alloc_pixels) XpmFree(alloc_pixels); \
     if (used_pixels) XpmFree(used_pixels); \
     return (status); \
@@ -679,6 +745,8 @@ XpmCreateImageFromXpmImage(display, image,
     Colormap colormap;
     unsigned int depth;
     int bitmap_format;
+    XpmFreeColorsFunc freeColors;
+    void *closure;
 
     /* variables to return */
     XImage *ximage = NULL;
@@ -720,6 +788,15 @@ XpmCreateImageFromXpmImage(display, image,
 	bitmap_format = attributes->bitmap_format;
     else
 	bitmap_format = ZPixmap;
+
+    if (attributes && (attributes->valuemask & XpmFreeColors))
+	freeColors = attributes->free_colors;
+    else
+	freeColors = FreeColors;
+    if (attributes && (attributes->valuemask & XpmColorClosure))
+	closure = attributes->color_closure;
+    else
+	closure = NULL;
 
     ErrorStatus = XpmSuccess;
 
@@ -1537,10 +1614,12 @@ XpmCreatePixmapFromXpmImage(display, d, image,
     /* create the pixmaps and destroy images */
     if (pixmap_return && ximage) {
 	xpmCreatePixmapFromImage(display, d, ximage, pixmap_return);
+	xpmFreeImageData(ximage);
 	XDestroyImage(ximage);
     }
     if (shapemask_return && shapeimage) {
 	xpmCreatePixmapFromImage(display, d, shapeimage, shapemask_return);
+	xpmFreeImageData(shapeimage);
 	XDestroyImage(shapeimage);
     }
     return (ErrorStatus);
@@ -1770,12 +1849,14 @@ PutPixel1LSB(ximage, x, y, pixel)
     if (hints_cmt)  XpmFree(hints_cmt); \
     if (colors_cmt) XpmFree(colors_cmt); \
     if (pixels_cmt) XpmFree(pixels_cmt); \
+    xpmFreeImageData(ximage);		\
     if (ximage) XDestroyImage(ximage); \
+    xpmFreeImageData(shapeimage);	\
     if (shapeimage) XDestroyImage(shapeimage); \
     if (image_pixels) XpmFree(image_pixels); \
     if (mask_pixels) XpmFree(mask_pixels); \
     if (nalloc_pixels) \
-	XFreeColors(display, colormap, alloc_pixels, nalloc_pixels, 0); \
+	(*freeColors)(display, colormap, alloc_pixels, nalloc_pixels, NULL); \
     if (alloc_pixels) XpmFree(alloc_pixels); \
     if (used_pixels) XpmFree(used_pixels); \
     return(status); \
@@ -1800,6 +1881,8 @@ xpmParseDataAndCreate(display, data, image_return, shapeimage_return,
     Colormap colormap;
     unsigned int depth;
     int bitmap_format;
+    XpmFreeColorsFunc freeColors;
+    void *closure;
 
     /* variables to return */
     XImage *ximage = NULL;
@@ -1852,6 +1935,15 @@ xpmParseDataAndCreate(display, data, image_return, shapeimage_return,
 	bitmap_format = attributes->bitmap_format;
     else
 	bitmap_format = ZPixmap;
+
+    if (attributes && (attributes->valuemask & XpmFreeColors))
+	freeColors = attributes->free_colors;
+    else
+	freeColors = FreeColors;
+    if (attributes && (attributes->valuemask & XpmColorClosure))
+	closure = attributes->color_closure;
+    else
+	closure = NULL;
 
     cmts = info && (info->valuemask & XpmReturnComments);
 

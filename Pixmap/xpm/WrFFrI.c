@@ -33,6 +33,10 @@
 \*****************************************************************************/
 
 #include "XpmI.h"
+#if !defined(NO_ZPIPE) && defined(WIN32)
+# define popen _popen
+# define pclose _pclose
+#endif
 
 /* MS Windows define a function called WriteFile @#%#&!!! */
 LFUNC(xpmWriteFile, int, (FILE *file, XpmImage *image, char *name,
@@ -299,15 +303,14 @@ OpenWriteFile(filename, mdata)
 	mdata->type = XPMFILE;
     } else {
 #ifndef NO_ZPIPE
-	if ((int) strlen(filename) > 2
-	    && !strcmp(".Z", filename + (strlen(filename) - 2))) {
+	int len = strlen(filename);
+	if (len > 2 && !strcmp(".Z", filename + (len - 2))) {
 	    sprintf(buf, "compress > \"%s\"", filename);
 	    if (!(mdata->stream.file = popen(buf, "w")))
 		return (XpmOpenFailed);
 
 	    mdata->type = XPMPIPE;
-	} else if ((int) strlen(filename) > 3
-		   && !strcmp(".gz", filename + (strlen(filename) - 3))) {
+	} else if (len > 3 && !strcmp(".gz", filename + (len - 3))) {
 	    sprintf(buf, "gzip -q > \"%s\"", filename);
 	    if (!(mdata->stream.file = popen(buf, "w")))
 		return (XpmOpenFailed);

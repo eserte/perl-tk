@@ -143,10 +143,20 @@ sub cget
  my @result = $cw->{Configure}{$opt};
  if (@subwidget == 1)
   {
-   eval { @result = $subwidget[0]->cget($opt) };
-   $cw->BackTrace($@) if ($@);
+   @result = $subwidget[0]->cget($opt);
   }
  return (wantarray) ? @result : $result[0];
+}
+
+sub Configured
+{
+ # Called whenever a derived widget is re-configured
+ my ($cw,$args,$changed) = @_;
+ if (@_ > 1)
+  {
+   $cw->DoWhenIdle(['ConfigChanged',$cw,$changed]) if (%$changed);
+  }
+ return exists $cw->{'Configure'};
 }
 
 sub configure
@@ -213,8 +223,9 @@ sub configure
  else
   {
    my (%args) = @_;
-   my ($opt,$val);
    my %changed = ();
+   my ($opt,$val);
+   $cw->{Configure} = {} unless exists $cw->{Configure};
    while (($opt,$val) = each %args)
     {
      my $var = \$cw->{Configure}{$opt};
@@ -224,7 +235,7 @@ sub configure
      foreach $subwidget ($cw->Subconfigure($opt))
       {
        next unless (defined $subwidget);
-       eval { $subwidget->configure($opt => $val) };
+       eval {local $SIG{'__DIE__'};  $subwidget->configure($opt => $val) };
        if ($@)
         {
          $cw->BackTrace($@) if ($Tk::Derived::Debug);
@@ -234,7 +245,7 @@ sub configure
      $val = $$var;
      $changed{$opt} = $val if (!defined $old || !defined $val || $old ne $val);
     }
-   $cw->DoWhenIdle(['ConfigChanged',$cw,\%changed]) if (%changed);
+   $cw->Configured(\%args,\%changed);
   }
  return (wantarray) ? @results : $results[0];
 }
@@ -364,32 +375,25 @@ sub Delegate
  my @result;
  if (wantarray)
   {
-   eval { @result   = $widget->$method(@args) };
+   @result   = $widget->$method(@args);
   }
  else
   {
-   eval { $result[0] = $widget->$method(@args) };
+   $result[0] = $widget->$method(@args);
   }
- $cw->BackTrace("$@") if ($@);
  return (wantarray) ? @result : $result[0];
-}
-
-sub Tk::Widget::Populate
-{
- my ($cw,$args) = @_;
 }
 
 sub InitObject
 {
  my ($cw,$args) = @_;
- $cw->{Configure} = {};
  $cw->Populate($args);    
  $cw->ConfigDefault($args);
 }
 
 sub ConfigChanged
 {
- my ($cw,$args);
+ my ($cw,$args) = @_;
 }       
 
 1;

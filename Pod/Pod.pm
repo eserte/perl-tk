@@ -9,7 +9,7 @@ use Tk::Pretty;
 use Tk::Parse;
 @ISA = qw(Tk::Toplevel);
 
-Tk::Widget->Construct('Pod');
+Construct Tk::Widget 'Pod';
 
 BEGIN { @POD = @INC };
 

@@ -1,26 +1,21 @@
-Bitmap/Bitmap.d
+Bitmap/Bitmap.d			Dependancies for Makefile generation
 Bitmap/Bitmap.pm
 Bitmap/Bitmap.xs
 Bitmap/Makefile.PL
-COPYING
-Canvas/Canvas.d
+COPYING				CopyRight and License info.
+Canvas/Canvas.d			Dependancies for Makefile generation
 Canvas/Canvas.pm
 Canvas/Canvas.xs
 Canvas/Makefile.PL
-Changes
+Changes				What has changed
 Contrib/Axis.pm
-Contrib/BrowseEntry.pm
 Contrib/Dial.pm
-Contrib/DialogBox.pm
 Contrib/FileDialog.pm
-Contrib/Getopts.pm
 Contrib/Makefile.PL
-Contrib/NoteBook.pm
-Contrib/README
+Contrib/README			Notes on Contrib directory
 Contrib/TickerTape
-Contrib/VStack.pm
 Contrib/WaitBox.pm
-Contrib/book-examples/README
+Contrib/book-examples/README	Notes on book-examples
 Contrib/book-examples/f-15.5.pl
 Contrib/book-examples/f-16.1.pl
 Contrib/book-examples/f-16.10.pl
@@ -30,12 +25,9 @@ Contrib/book-examples/f-16.6.pl
 Contrib/book-examples/f-16.7.pl
 Contrib/book-examples/f-16.8.pl
 Contrib/book-examples/f-16.9.pl
-Contrib/book-examples/lusol96May10.1655.98
-Contrib/fd_demo
-Contrib/gotest
-Contrib/test/browsentry.pl
-Contrib/test/notebook.pl
-Debug
+Contrib/book-examples/lusol-f16.3
+Contrib/fd_demo			Demo of FileDialog
+Debug				Another gdb wrapper
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
 DragDrop/DragDrop/Rect.pm
@@ -48,13 +40,14 @@ DragDrop/drag_test
 DragDrop/has_sun
 DragDrop/local_test
 DragDrop/motion_test
+DragDrop/selection
 DragDrop/site_test
-Entry/Entry.d
+Entry/Entry.d			Dependancies for Makefile generation
 Entry/Entry.pm
 Entry/Entry.xs
-Entry/GNUmakefile
+Entry/GNUmakefile		GNU make assist for developer
 Entry/Makefile.PL
-Extensions/ImageBack/ImageBack.d
+Extensions/ImageBack/ImageBack.d	Dependancies for Makefile generation
 Extensions/ImageBack/ImageBack.pm
 Extensions/ImageBack/ImageBack.xs
 Extensions/ImageBack/MANIFEST
@@ -62,16 +55,16 @@ Extensions/ImageBack/MANIFEST.SKIP
 Extensions/ImageBack/Makefile.PL
 Extensions/ImageBack/README
 Extensions/ImageBack/background
-Funcs.doc
-GNUmakefile
-Ghostview/DSC.pm
-Ghostview/Ghostscript.pm
-Ghostview/Ghostview.pm
+Funcs.doc			Ancient but better than nothing list of functions
+GNUmakefile			GNU make assist for developer
+Ghostview/DSC.pm		Code to handle PostScript Document Structure Comments
+Ghostview/Ghostscript.pm	Low level interface to ghostscript 'gs'
+Ghostview/Ghostview.pm		Upper level viewer.
 Ghostview/Makefile.PL
 Ghostview/README
-Ghostview/pgs
-HList/GNUmakefile
-HList/HList.d
+Ghostview/pgs			PostScript viewer based on Ghost*.pm
+HList/GNUmakefile		GNU make assist for developer
+HList/HList.d			Dependancies for Makefile generation
 HList/HList.pm
 HList/HList.tcl
 HList/HList.xs
@@ -101,122 +94,124 @@ HTML/tkweb
 HTML/tryit
 HTML/up
 HTML/webget
-INSTALL
-IO/GNUmakefile
-IO/IO.d
+INSTALL				Install Instructions
+IO/GNUmakefile			GNU make assist for developer
+IO/IO.d				Dependancies for Makefile generation
 IO/IO.pm
 IO/IO.xs
 IO/Makefile.PL
-InputO/GNUmakefile
-InputO/InputO.d
+InputO/GNUmakefile		GNU make assist for developer
+InputO/InputO.d			Dependancies for Makefile generation
 InputO/InputO.pm
 InputO/InputO.xs
 InputO/Makefile.PL
-Listbox/GNUmakefile
-Listbox/Listbox.d
+Listbox/GNUmakefile		GNU make assist for developer
+Listbox/Listbox.d		Dependancies for Makefile generation
 Listbox/Listbox.pm
 Listbox/Listbox.xs
 Listbox/Makefile.PL
-MANIFEST
-MANIFEST.SKIP
-Makefile.PL
-Menu/GNUmakefile
+MANIFEST			This file
+MANIFEST.SKIP			Things to exclude from MANIFEST 
+Makefile.PL			Generates Makefile
+Menu/GNUmakefile		GNU make assist for developer
 Menu/Makefile.PL
-Menu/Menu.d
+Menu/Menu.d			Dependancies for Makefile generation
 Menu/Menu.pm
 Menu/Menu.xs
-Menubutton/GNUmakefile
+Menu/Menu/Item.pm
+Menubutton/GNUmakefile		GNU make assist for developer
 Menubutton/Makefile.PL
-Menubutton/Menubutton.d
+Menubutton/Menubutton.d		Dependancies for Makefile generation
 Menubutton/Menubutton.pm
 Menubutton/Menubutton.xs
-Mwm/GNUmakefile
+Mwm/GNUmakefile			GNU make assist for developer
 Mwm/Makefile.PL
-Mwm/Mwm.d
+Mwm/Mwm.d			Dependancies for Makefile generation
 Mwm/Mwm.pm
 Mwm/Mwm.xs
-NBFrame/GNUmakefile
+NBFrame/GNUmakefile		GNU make assist for developer
 NBFrame/Makefile.PL
-NBFrame/NBFrame.d
+NBFrame/NBFrame.d		Dependancies for Makefile generation
 NBFrame/NBFrame.pm
 NBFrame/NBFrame.xs
-Photo/GNUmakefile
+Photo/GNUmakefile		GNU make assist for developer
 Photo/Makefile.PL
-Photo/Photo.d
+Photo/Photo.d			Dependancies for Makefile generation
 Photo/Photo.pm
 Photo/Photo.xs
-Pixmap/GNUmakefile
+Pixmap/GNUmakefile		GNU make assist for developer
 Pixmap/Makefile.PL
-Pixmap/Pixmap.d
+Pixmap/Pixmap.d			Dependancies for Makefile generation
 Pixmap/Pixmap.pm
 Pixmap/Pixmap.xs
 Pixmap/mTk/tkImgPmap.c
 Pixmap/tkImgPmap.c
-Pixmap/tkImgPmap.d
+Pixmap/tkImgPmap.d		Dependancies for Makefile generation
 Pixmap/xpm/Attrib.c
-Pixmap/xpm/Attrib.d
+Pixmap/xpm/Attrib.d		Dependancies for Makefile generation
 Pixmap/xpm/CHANGES
 Pixmap/xpm/COPYRIGHT
 Pixmap/xpm/CrBufFrI.c
-Pixmap/xpm/CrBufFrI.d
+Pixmap/xpm/CrBufFrI.d		Dependancies for Makefile generation
 Pixmap/xpm/CrBufFrP.c
-Pixmap/xpm/CrBufFrP.d
+Pixmap/xpm/CrBufFrP.d		Dependancies for Makefile generation
 Pixmap/xpm/CrDatFrI.c
-Pixmap/xpm/CrDatFrI.d
+Pixmap/xpm/CrDatFrI.d		Dependancies for Makefile generation
 Pixmap/xpm/CrDatFrP.c
-Pixmap/xpm/CrDatFrP.d
+Pixmap/xpm/CrDatFrP.d		Dependancies for Makefile generation
 Pixmap/xpm/CrIFrBuf.c
-Pixmap/xpm/CrIFrBuf.d
+Pixmap/xpm/CrIFrBuf.d		Dependancies for Makefile generation
 Pixmap/xpm/CrIFrDat.c
-Pixmap/xpm/CrIFrDat.d
+Pixmap/xpm/CrIFrDat.d		Dependancies for Makefile generation
 Pixmap/xpm/CrIFrP.c
-Pixmap/xpm/CrIFrP.d
+Pixmap/xpm/CrIFrP.d		Dependancies for Makefile generation
 Pixmap/xpm/CrPFrBuf.c
-Pixmap/xpm/CrPFrBuf.d
+Pixmap/xpm/CrPFrBuf.d		Dependancies for Makefile generation
 Pixmap/xpm/CrPFrDat.c
-Pixmap/xpm/CrPFrDat.d
+Pixmap/xpm/CrPFrDat.d		Dependancies for Makefile generation
 Pixmap/xpm/CrPFrI.c
-Pixmap/xpm/CrPFrI.d
-Pixmap/xpm/GNUmakefile
+Pixmap/xpm/CrPFrI.d		Dependancies for Makefile generation
+Pixmap/xpm/GNUmakefile		GNU make assist for developer
 Pixmap/xpm/Image.c
-Pixmap/xpm/Image.d
+Pixmap/xpm/Image.d		Dependancies for Makefile generation
 Pixmap/xpm/Info.c
-Pixmap/xpm/Info.d
+Pixmap/xpm/Info.d		Dependancies for Makefile generation
 Pixmap/xpm/Makefile.PL
 Pixmap/xpm/README
 Pixmap/xpm/RdFToBuf.c
-Pixmap/xpm/RdFToBuf.d
+Pixmap/xpm/RdFToBuf.d		Dependancies for Makefile generation
 Pixmap/xpm/RdFToDat.c
-Pixmap/xpm/RdFToDat.d
+Pixmap/xpm/RdFToDat.d		Dependancies for Makefile generation
 Pixmap/xpm/RdFToI.c
-Pixmap/xpm/RdFToI.d
+Pixmap/xpm/RdFToI.d		Dependancies for Makefile generation
 Pixmap/xpm/RdFToP.c
-Pixmap/xpm/RdFToP.d
+Pixmap/xpm/RdFToP.d		Dependancies for Makefile generation
 Pixmap/xpm/WrFFrBuf.c
-Pixmap/xpm/WrFFrBuf.d
+Pixmap/xpm/WrFFrBuf.d		Dependancies for Makefile generation
 Pixmap/xpm/WrFFrDat.c
-Pixmap/xpm/WrFFrDat.d
+Pixmap/xpm/WrFFrDat.d		Dependancies for Makefile generation
 Pixmap/xpm/WrFFrI.c
-Pixmap/xpm/WrFFrI.d
+Pixmap/xpm/WrFFrI.d		Dependancies for Makefile generation
 Pixmap/xpm/WrFFrP.c
-Pixmap/xpm/WrFFrP.d
+Pixmap/xpm/WrFFrP.d		Dependancies for Makefile generation
 Pixmap/xpm/XpmI.h
 Pixmap/xpm/create.c
-Pixmap/xpm/create.d
+Pixmap/xpm/create.d		Dependancies for Makefile generation
 Pixmap/xpm/data.c
-Pixmap/xpm/data.d
+Pixmap/xpm/data.d		Dependancies for Makefile generation
+Pixmap/xpm/domerge
 Pixmap/xpm/hashtab.c
-Pixmap/xpm/hashtab.d
+Pixmap/xpm/hashtab.d		Dependancies for Makefile generation
 Pixmap/xpm/misc.c
-Pixmap/xpm/misc.d
+Pixmap/xpm/misc.d		Dependancies for Makefile generation
 Pixmap/xpm/parse.c
-Pixmap/xpm/parse.d
+Pixmap/xpm/parse.d		Dependancies for Makefile generation
 Pixmap/xpm/rgb.c
-Pixmap/xpm/rgb.d
+Pixmap/xpm/rgb.d		Dependancies for Makefile generation
 Pixmap/xpm/rgbtab.h
 Pixmap/xpm/scan.c
-Pixmap/xpm/scan.d
-Pixmap/xpm/simx.d
+Pixmap/xpm/scan.d		Dependancies for Makefile generation
+Pixmap/xpm/simx.d		Dependancies for Makefile generation
 Pixmap/xpm/simx.h
 Pixmap/xpm/xpm.h
 Pod/MANIFEST
@@ -226,7 +221,7 @@ Pod/Parse.pm
 Pod/Pod.pm
 Pod/README
 Pod/tkpod
-README
+README				General Information
 README.AIX
 README.HPUX
 README.OSF
@@ -235,26 +230,39 @@ README.SVR4
 README.Solaris
 README.linux
 README.ultrix
-Scale/GNUmakefile
+Scale/GNUmakefile		GNU make assist for developer
 Scale/Makefile.PL
-Scale/Scale.d
+Scale/Scale.d			Dependancies for Makefile generation
 Scale/Scale.pm
 Scale/Scale.xs
-Scrollbar/GNUmakefile
+Scrollbar/GNUmakefile		GNU make assist for developer
 Scrollbar/Makefile.PL
-Scrollbar/Scrollbar.d
+Scrollbar/Scrollbar.d		Dependancies for Makefile generation
 Scrollbar/Scrollbar.pm
 Scrollbar/Scrollbar.xs
-Text/GNUmakefile
+Text/GNUmakefile		GNU make assist for developer
 Text/Makefile.PL
 Text/README
-Text/Text.d
+Text/Text.d			Dependancies for Makefile generation
 Text/Text.pm
 Text/Text.xs
 Text/Text/Tag.pm
-Tk.d
-Tk.pm
+Tixish/Balloon.pm
+Tixish/BrowseEntry.pm
+Tixish/DialogBox.pm
+Tixish/Makefile.PL
+Tixish/NoteBook.pm
+Tixish/README			Notes on Tixish directory
+Tixish/VStack.pm
+Tixish/lib/Tk/balArrow.xbm
+Tixish/lib/Tk/cbxarrow.xbm
+Tixish/t/balloon.t
+Tixish/t/browsentry.t
+Tixish/t/notebook.t
+Tk.d				Dependancies for Makefile generation
+Tk.pm				"Base" class/package 
 Tk.xs
+Tk/Adjuster.pm
 Tk/After.pm
 Tk/Button.pm
 Tk/Checkbutton.pm
@@ -262,7 +270,7 @@ Tk/Clipboard.pm
 Tk/ColorEdit.xpm
 Tk/ColorEditor.pm
 Tk/Configure.pm
-Tk/Credits
+Tk/Credits			Credits for .gif files
 Tk/Derived.pm
 Tk/Dialog.pm
 Tk/Dirlist.pm
@@ -285,6 +293,8 @@ Tk/Optionmenu.pm
 Tk/Pretty.pm
 Tk/ROText.pm
 Tk/Radiobutton.pm
+Tk/Stats.pm
+Tk/Submethods.pm
 Tk/Table.pm
 Tk/Tcl-perl.pod
 Tk/TextUndo.pm
@@ -295,6 +305,7 @@ Tk/UserGuide.pod
 Tk/Widget.pm
 Tk/Wm.pm
 Tk/Xcamel.gif
+Tk/Xrm.pm
 Tk/act_folder.xbm
 Tk/act_folder.xpm
 Tk/cbxarrow.xbm
@@ -303,6 +314,7 @@ Tk/file.xpm
 Tk/folder.xbm
 Tk/folder.xpm
 Tk/icon.gif
+Tk/install.pm
 Tk/license.terms
 Tk/openfile.xbm
 Tk/openfolder.xbm
@@ -312,22 +324,31 @@ Tk/prolog.ps
 Tk/srcfile.xpm
 Tk/textfile.xpm
 Tk/typemap
+Tk/widgets.pm
 Tk/win.xbm
-VERSIONS
+TkXSUB.def
+VERSIONS			Description of version naming scheme
 Xlib/GC.def
 Xlib/Makefile.PL
 Xlib/README
-Xlib/Xlib.d
+Xlib/X/Changes
+Xlib/X/Makefile.PL
+Xlib/X/X.d
+Xlib/X/X.pm
+Xlib/X/X.xs
+Xlib/X/t/use.t
+Xlib/Xlib.d			Dependancies for Makefile generation
 Xlib/Xlib.pm
 Xlib/Xlib.xs
 Xlib/drops
+Xlib/motif_site
 Xlib/tree_demo
-after_demo
-after_leak
-al_bug
-autoraise
-b9names
-basic_demo
+adj_demo			Example of packAdjust usage.
+after_demo			Simple (= boring) demo of after.
+after_leak			Check for "leaked" values when using after.
+al_bug				Simple Table app.
+autoraise			Popup which attempts to keep itself "on top"
+basic_demo			Scruffy demo/test of many Tk constucts.
 bin/defs
 bin/defunc
 bin/newstyle
@@ -335,24 +356,21 @@ bin/perms
 bin/tkman
 bin/unres
 bin/uselib
-bindtest
-blib.pm
-bulkedit
-canvas_ps
-canvas_scroll
-cbtest
-checklen
-cleanup
-clip_bug
-cmds
-config/signedchar.c
-config/tod.c
-config/unsigned.c
-copydate
-cursor_demo
-deENGLISH
-debug
-dehyphen
+bindtest			Test of key bindings with qualifiers
+blib.pm				Latest module for perl -Mblib ... testing 
+bulkedit			Utility to make changes in many files - with Tk GUI
+canvas_ps			Writes PostScript for Canvas to a file.
+canvas_scroll			Basic test of scrolling a Canvas
+cbtest				Test of callback returns.
+checklen			Check names not > 14 chars long for old UNIXes.
+cleanup				Remove authour's junk files
+clip_bug			Demonstrates some "features" of clipping.
+config/signedchar.c		Test to see of 'signed char' is legal 
+config/tod.c			Test for gettimeofday()
+config/unsigned.c		See if 'char' is signed
+copydate			Utility to update copyright notices
+cursor_demo			Lists all built-in (X) cursors.
+debug				Run perl Tk script under GNU gdb 
 demos/MANIFEST
 demos/MANIFEST.SKIP
 demos/Makefile.PL
@@ -455,10 +473,10 @@ demos/timer
 demos/tom
 demos/widget
 demos/widget_old
-derived_test
-destroy_test
-diebug
-doc/GNUmakefile
+derived_test			Test of Tk::Derived 
+destroy_test			Test of <Destroy> binding
+dfpy				Author's utility for putting Tk on a floppy
+doc/GNUmakefile			GNU make assist for developer
 doc/Makefile.PL
 doc/Perlize.pm
 doc/htmlfile
@@ -525,7 +543,6 @@ doc/man2/MoveToplev.2
 doc/man2/Name.2
 doc/man2/NameOfImg.2
 doc/man2/OwnSelect.2
-doc/man2/ParseArgv.2
 doc/man2/Preserve.2
 doc/man2/Restack.2
 doc/man2/RestrictEv.2
@@ -602,54 +619,49 @@ doc/tk4.0.ps
 doc/tkman2pod
 doc/tkuserguide.ps
 doc/xpm.ps
-error_prop
-ewidth_demo
-exit_test
-floppy
-font_demo
-font_test
-generate
-geo_mgr
-geom
-grepc
-grepperl
-greppm
-grept
-grid_test
-hackMM
-hlfm
-hlist_bg
-hlist_demo
-iconwin
-image_test
-keyWords
-labelpack
+error_prop			Can be edited to test various error cases.
+ewidth_demo			Limit Entry to finite width.
+floppy				Author's utility for putting Tk on a floppy
+font_demo			Show use of Font package.
+font_test			More primitive font code.
+generate			Utility script to run at end of a pipe
+geo_mgr				Geometry Manager in perl.
+geom				Check for basic window manager geometry handling
+grepc				grep in .c files
+grepperl			grep in perl files (.pm or #!.../perl)
+grept				grep in text files
+grid_test			Simple use of 'grid' geometry manager.
+hackMM				Make a change to all Makefile.PL's - may be handly again
+hlfm				Test of Dirlist
+hlist_bg			Shows BUGS in Scrolled HList colours
+hlist_demo			Associating data with HList items.
+iconwin				Shows use of a Window icon
+image_test			Basic image types
+keyWords			Utility of dubious value
+labelpack			Example of -labelPack 
+lbformat_demo			Formatted text in listbox, shows Tk::Font
+leak_test			Look for perl constructs "left behind" after Tk.
 leak_util.c
-leak_util.d
+leak_util.d			Dependancies for Makefile generation
 leak_util.h
-lentry
-ls_table
-lsfonts
-malloc_fix.h
-menubar
-merge/Tix
-merge/domerge
-merge/domergetix
-merge/domergetixtk
-merge/mergeman
-merge/remerge
-mkExt
-mkdist
-myConfig
-nested_dialog
-no_hyphen
-p
-pTk/GNUmakefile
+lentry				One way to limit Entry's width
+local_demo			Demonstrate auto local $widget
+ls_table			Populate Table with 'ls' like info.
+lsfonts				Print some fonts using XListFonts
+menubar				Obsolete Menubar code
+mitem_test			Test of derived menu item.
+mkExt				Create skeleton Tk extension 
+mkdist				Write "the" distribution tar.gz file
+motif_hack			Attempt to decipher Motif Drag&Drop protocol - no luck yet.
+myConfig			Configure utility
+nested_dialog			Check of one dialog calling another.
+oddmenu_demo			Test of strange use of menu.
+pTk/GNUmakefile			GNU make assist for developer
 pTk/Lang.h
 pTk/Lang.m
 pTk/Lang.t
 pTk/Lang_f.c
-pTk/Lang_f.d
+pTk/Lang_f.d			Dependancies for Makefile generation
 pTk/Lang_f.h
 pTk/Makefile.PL
 pTk/Methods.def
@@ -662,8 +674,10 @@ pTk/Xlib.h.solaris
 pTk/Xlib.m
 pTk/Xlib.t
 pTk/Xlib_f.c
-pTk/Xlib_f.d
+pTk/Xlib_f.d			Dependancies for Makefile generation
 pTk/Xlib_f.h
+pTk/XrmOption.c
+pTk/XrmOption.d			Dependancies for Makefile generation
 pTk/bitmaps/error
 pTk/bitmaps/gray25
 pTk/bitmaps/gray50
@@ -688,7 +702,7 @@ pTk/findcore
 pTk/findstrings
 pTk/ks_names.h
 pTk/license.terms
-pTk/mTk/GNUmakefile
+pTk/mTk/GNUmakefile		GNU make assist for developer
 pTk/mTk/MANIFEST
 pTk/mTk/MANIFEST.SKIP
 pTk/mTk/license.terms
@@ -764,262 +778,260 @@ pTk/makeenglish
 pTk/mkVFunc
 pTk/mkXinfo
 pTk/mkmethods
+pTk/options
 pTk/patchlevel.h
 pTk/process_object
 pTk/strdup.c
-pTk/strdup.d
+pTk/strdup.d			Dependancies for Makefile generation
 pTk/strtoul.c
-pTk/strtoul.d
+pTk/strtoul.d			Dependancies for Makefile generation
 pTk/tclHash.c
-pTk/tclHash.d
+pTk/tclHash.d			Dependancies for Makefile generation
 pTk/tclUnix.h
 pTk/tclUnixUtil.c
-pTk/tclUnixUtil.d
+pTk/tclUnixUtil.d		Dependancies for Makefile generation
 pTk/tclUtil.c
-pTk/tclUtil.d
+pTk/tclUtil.d			Dependancies for Makefile generation
 pTk/tix.h
 pTk/tix.m
 pTk/tix.t
 pTk/tixDItem.c
-pTk/tixDItem.d
+pTk/tixDItem.d			Dependancies for Makefile generation
 pTk/tixDefault.h
 pTk/tixDiImgTxt.c
-pTk/tixDiImgTxt.d
+pTk/tixDiImgTxt.d		Dependancies for Makefile generation
 pTk/tixDiStyle.c
-pTk/tixDiStyle.d
+pTk/tixDiStyle.d		Dependancies for Makefile generation
 pTk/tixDiText.c
-pTk/tixDiText.d
+pTk/tixDiText.d			Dependancies for Makefile generation
 pTk/tixDiWin.c
-pTk/tixDiWin.d
+pTk/tixDiWin.d			Dependancies for Makefile generation
 pTk/tixError.c
-pTk/tixError.d
+pTk/tixError.d			Dependancies for Makefile generation
 pTk/tixHLCol.c
-pTk/tixHLCol.d
+pTk/tixHLCol.d			Dependancies for Makefile generation
 pTk/tixHList.c
-pTk/tixHList.d
+pTk/tixHList.d			Dependancies for Makefile generation
 pTk/tixHList.h
 pTk/tixImgCmp.c
-pTk/tixImgCmp.d
+pTk/tixImgCmp.d			Dependancies for Makefile generation
 pTk/tixInputO.c
-pTk/tixInputO.d
+pTk/tixInputO.d			Dependancies for Makefile generation
 pTk/tixInt.h
 pTk/tixInt.m
 pTk/tixInt.t
 pTk/tixInt_f.c
-pTk/tixInt_f.d
+pTk/tixInt_f.d			Dependancies for Makefile generation
 pTk/tixInt_f.h
 pTk/tixList.c
-pTk/tixList.d
+pTk/tixList.d			Dependancies for Makefile generation
 pTk/tixMwm.c
-pTk/tixMwm.d
+pTk/tixMwm.d			Dependancies for Makefile generation
 pTk/tixNBFrame.c
-pTk/tixNBFrame.d
+pTk/tixNBFrame.d		Dependancies for Makefile generation
 pTk/tixUtils.c
-pTk/tixUtils.d
+pTk/tixUtils.d			Dependancies for Makefile generation
 pTk/tix_f.c
-pTk/tix_f.d
+pTk/tix_f.d			Dependancies for Makefile generation
 pTk/tix_f.h
 pTk/tk.h
 pTk/tk.m
 pTk/tk.t
 pTk/tk3d.c
-pTk/tk3d.d
-pTk/tkArgv.c
-pTk/tkArgv.d
+pTk/tk3d.d			Dependancies for Makefile generation
 pTk/tkAtom.c
-pTk/tkAtom.d
+pTk/tkAtom.d			Dependancies for Makefile generation
 pTk/tkBind.c
-pTk/tkBind.d
+pTk/tkBind.d			Dependancies for Makefile generation
 pTk/tkBitmap.c
-pTk/tkBitmap.d
+pTk/tkBitmap.d			Dependancies for Makefile generation
 pTk/tkButton.c
-pTk/tkButton.d
+pTk/tkButton.d			Dependancies for Makefile generation
 pTk/tkCanvArc.c
-pTk/tkCanvArc.d
+pTk/tkCanvArc.d			Dependancies for Makefile generation
 pTk/tkCanvBmap.c
-pTk/tkCanvBmap.d
+pTk/tkCanvBmap.d		Dependancies for Makefile generation
 pTk/tkCanvImg.c
-pTk/tkCanvImg.d
+pTk/tkCanvImg.d			Dependancies for Makefile generation
 pTk/tkCanvLine.c
-pTk/tkCanvLine.d
+pTk/tkCanvLine.d		Dependancies for Makefile generation
 pTk/tkCanvPoly.c
-pTk/tkCanvPoly.d
+pTk/tkCanvPoly.d		Dependancies for Makefile generation
 pTk/tkCanvPs.c
-pTk/tkCanvPs.d
+pTk/tkCanvPs.d			Dependancies for Makefile generation
 pTk/tkCanvText.c
-pTk/tkCanvText.d
+pTk/tkCanvText.d		Dependancies for Makefile generation
 pTk/tkCanvUtil.c
-pTk/tkCanvUtil.d
+pTk/tkCanvUtil.d		Dependancies for Makefile generation
 pTk/tkCanvWind.c
-pTk/tkCanvWind.d
+pTk/tkCanvWind.d		Dependancies for Makefile generation
 pTk/tkCanvas.c
-pTk/tkCanvas.d
+pTk/tkCanvas.d			Dependancies for Makefile generation
 pTk/tkCanvas.h
 pTk/tkCanvases.h
 pTk/tkClipboard.c
-pTk/tkClipboard.d
+pTk/tkClipboard.d		Dependancies for Makefile generation
 pTk/tkCmdTab.c
-pTk/tkCmdTab.d
+pTk/tkCmdTab.d			Dependancies for Makefile generation
 pTk/tkCmds.c
-pTk/tkCmds.d
+pTk/tkCmds.d			Dependancies for Makefile generation
 pTk/tkColor.c
-pTk/tkColor.d
+pTk/tkColor.d			Dependancies for Makefile generation
 pTk/tkConfig.c
-pTk/tkConfig.d
+pTk/tkConfig.d			Dependancies for Makefile generation
 pTk/tkCursor.c
-pTk/tkCursor.d
+pTk/tkCursor.d			Dependancies for Makefile generation
 pTk/tkEntry.c
-pTk/tkEntry.d
+pTk/tkEntry.d			Dependancies for Makefile generation
 pTk/tkError.c
-pTk/tkError.d
+pTk/tkError.d			Dependancies for Makefile generation
 pTk/tkEvent.c
-pTk/tkEvent.d
+pTk/tkEvent.d			Dependancies for Makefile generation
 pTk/tkFocus.c
-pTk/tkFocus.d
+pTk/tkFocus.d			Dependancies for Makefile generation
 pTk/tkFont.c
-pTk/tkFont.d
+pTk/tkFont.d			Dependancies for Makefile generation
 pTk/tkFrame.c
-pTk/tkFrame.d
+pTk/tkFrame.d			Dependancies for Makefile generation
 pTk/tkGC.c
-pTk/tkGC.d
+pTk/tkGC.d			Dependancies for Makefile generation
 pTk/tkGeometry.c
-pTk/tkGeometry.d
+pTk/tkGeometry.d		Dependancies for Makefile generation
 pTk/tkGet.c
-pTk/tkGet.d
+pTk/tkGet.d			Dependancies for Makefile generation
 pTk/tkGrab.c
-pTk/tkGrab.d
+pTk/tkGrab.d			Dependancies for Makefile generation
 pTk/tkGrid.c
-pTk/tkGrid.d
+pTk/tkGrid.d			Dependancies for Makefile generation
 pTk/tkImage.c
-pTk/tkImage.d
+pTk/tkImage.d			Dependancies for Makefile generation
 pTk/tkImgBmap.c
-pTk/tkImgBmap.d
+pTk/tkImgBmap.d			Dependancies for Makefile generation
 pTk/tkImgFmtGIF.c
-pTk/tkImgFmtGIF.d
+pTk/tkImgFmtGIF.d		Dependancies for Makefile generation
 pTk/tkImgFmtPPM.c
-pTk/tkImgFmtPPM.d
+pTk/tkImgFmtPPM.d		Dependancies for Makefile generation
 pTk/tkImgPhoto.c
-pTk/tkImgPhoto.d
+pTk/tkImgPhoto.d		Dependancies for Makefile generation
 pTk/tkImgPhoto.h
 pTk/tkImgPhoto.m
 pTk/tkImgPhoto.t
 pTk/tkImgPhoto_f.c
-pTk/tkImgPhoto_f.d
+pTk/tkImgPhoto_f.d		Dependancies for Makefile generation
 pTk/tkImgPhoto_f.h
 pTk/tkInt.h
 pTk/tkInt.m
 pTk/tkInt.t
 pTk/tkInt_f.c
-pTk/tkInt_f.d
+pTk/tkInt_f.d			Dependancies for Makefile generation
 pTk/tkInt_f.h
 pTk/tkListbox.c
-pTk/tkListbox.d
+pTk/tkListbox.d			Dependancies for Makefile generation
 pTk/tkMenu.c
-pTk/tkMenu.d
+pTk/tkMenu.d			Dependancies for Makefile generation
 pTk/tkMenubutton.c
-pTk/tkMenubutton.d
+pTk/tkMenubutton.d		Dependancies for Makefile generation
 pTk/tkMessage.c
-pTk/tkMessage.d
+pTk/tkMessage.d			Dependancies for Makefile generation
 pTk/tkOption.c
-pTk/tkOption.d
+pTk/tkOption.d			Dependancies for Makefile generation
 pTk/tkPack.c
-pTk/tkPack.d
+pTk/tkPack.d			Dependancies for Makefile generation
 pTk/tkPlace.c
-pTk/tkPlace.d
+pTk/tkPlace.d			Dependancies for Makefile generation
 pTk/tkPort.h
 pTk/tkPreserve.c
-pTk/tkPreserve.d
+pTk/tkPreserve.d		Dependancies for Makefile generation
 pTk/tkProperty.c
-pTk/tkProperty.d
+pTk/tkProperty.d		Dependancies for Makefile generation
 pTk/tkRectOval.c
-pTk/tkRectOval.d
+pTk/tkRectOval.d		Dependancies for Makefile generation
 pTk/tkScale.c
-pTk/tkScale.d
+pTk/tkScale.d			Dependancies for Makefile generation
 pTk/tkScrollbar.c
-pTk/tkScrollbar.d
+pTk/tkScrollbar.d		Dependancies for Makefile generation
 pTk/tkSelect.c
-pTk/tkSelect.d
+pTk/tkSelect.d			Dependancies for Makefile generation
 pTk/tkSend.c
-pTk/tkSend.d
+pTk/tkSend.d			Dependancies for Makefile generation
 pTk/tkSquare.c
-pTk/tkSquare.d
+pTk/tkSquare.d			Dependancies for Makefile generation
 pTk/tkText.c
-pTk/tkText.d
+pTk/tkText.d			Dependancies for Makefile generation
 pTk/tkText.h
 pTk/tkTextBTree.c
-pTk/tkTextBTree.d
+pTk/tkTextBTree.d		Dependancies for Makefile generation
 pTk/tkTextDisp.c
-pTk/tkTextDisp.d
+pTk/tkTextDisp.d		Dependancies for Makefile generation
 pTk/tkTextIndex.c
-pTk/tkTextIndex.d
+pTk/tkTextIndex.d		Dependancies for Makefile generation
 pTk/tkTextMark.c
-pTk/tkTextMark.d
+pTk/tkTextMark.d		Dependancies for Makefile generation
 pTk/tkTextTag.c
-pTk/tkTextTag.d
+pTk/tkTextTag.d			Dependancies for Makefile generation
 pTk/tkTextWind.c
-pTk/tkTextWind.d
+pTk/tkTextWind.d		Dependancies for Makefile generation
 pTk/tkTrig.c
-pTk/tkTrig.d
+pTk/tkTrig.d			Dependancies for Makefile generation
 pTk/tkUnix.c
-pTk/tkUnix.d
+pTk/tkUnix.d			Dependancies for Makefile generation
 pTk/tkUtil.c
-pTk/tkUtil.d
+pTk/tkUtil.d			Dependancies for Makefile generation
 pTk/tkVMacro.h
 pTk/tkVisual.c
-pTk/tkVisual.d
+pTk/tkVisual.d			Dependancies for Makefile generation
 pTk/tkWidgetTab.c
-pTk/tkWidgetTab.d
+pTk/tkWidgetTab.d		Dependancies for Makefile generation
 pTk/tkWindow.c
-pTk/tkWindow.d
+pTk/tkWindow.d			Dependancies for Makefile generation
 pTk/tkWm.c
-pTk/tkWm.d
+pTk/tkWm.d			Dependancies for Makefile generation
 pTk/tkXEvent.c
-pTk/tkXEvent.d
+pTk/tkXEvent.d			Dependancies for Makefile generation
 pTk/tkXId.c
-pTk/tkXId.d
+pTk/tkXId.d			Dependancies for Makefile generation
+pTk/tkXrm.h
 pTk/tk_f.c
-pTk/tk_f.d
+pTk/tk_f.d			Dependancies for Makefile generation
 pTk/tk_f.h
-perlfiles
-pfm
-pipe_test
-popup
-popup_menu
-prop_demo
-ptknews
-rebuild
-reghack.h
-rmMakefiles
-sb_test
-scale_test
-scrolled_demo
-sm
-submethods
-symbols
-table_demo
-tainted
-tcl2perl
-tcolour
-text_demo
-tiehandle
-tietext
-tiny
-tixwm_demo
-tkGlue.c
-tkGlue.d
+perlfiles			pseudo-module to find all perl modules/scripts 
+pfm				Simplistic clone of Sun's desktop 'file manager'
+pipe_test			Reading from pipe example
+popup				Example/demo of popup toplevels.
+popup_menu			Above using a Menu instead.
+prop_demo			Example of accessing X properties.
+ptknews				News reader in Tk - needs work...
+rebuild				Author's cold rebuild script.
+scale_test			Test for Scale !
+scrolled_demo			Demonstrates Scrolled's scrollbar placement.
+sm				List of all 'sub methods' of Tk commands
+submethods			Script that generates 'sm' ??
+symbols				Utility to check for unresolved symbols.
+t/Require.t			A basic can we load it test.
+table_demo			Example of use of Tk::Table
+tainted				Check that perl/Tk works 'tainted'
+tcl2perl			Alpha-ish tcl to perl converter, use for some of Tix stuff
+tcolour				very simple Text Tag colour text - used to fail...
+text_demo			Example/Demo of Text widget.
+tiehandle			Treating Text as a "file" Handle
+tietext				Non-functional 'tie' of array to a Text.
+time				Measure Tk startup times 
+tiny				Small (obscure) example of perl/Tk.
+tixwm_demo			Example of using Tix capture/release wm commands.
+tkGlue.c			Stuff that makes perl look (a bit like) Tcl to core Tk.
+tkGlue.d			Dependancies for Makefile generation
 tkGlue.def
 tkGlue.h
 tkGlue.m
 tkGlue.t
 tkGlue_f.c
-tkGlue_f.d
+tkGlue_f.d			Dependancies for Makefile generation
 tkGlue_f.h
-tkperldoc
-tkpsh
-tktail
-toyedit
-trace_bug
-two_main
-uninstall
-upperCase
-xlib_demo
+tkperldoc			View a 'man' page in a Text widget
+tkpsh				A perl Tk 'shell' for quick checks
+tktail				Tk::Text version of tail -f
+toyedit				Tk::TextUndo as an editor.
+two_main			Example of two MainWindows in one application
+uninstall			Delete (old I hope ;-)) Tk from installed perl area(s)
+wal				Solaris script to see what gets Autoloaded.
+xlib_demo			Basic check for Tk::Xlib stuff

@@ -54,6 +54,7 @@ foreach $tag (qw(tagAdd insert))
   *{"$tag"} = sub { shift->{widget}->$tag(@_) };
  }
 
+
 *th   = \&td;
 *link = \&a;
 
@@ -522,7 +523,7 @@ sub textarea
    } 
   else 
    {
-    pop(@{$w->{'Text'}});
+    pop(@{$h->{'Text'}});
    }
  return $f;
 }

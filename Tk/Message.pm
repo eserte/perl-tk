@@ -6,7 +6,7 @@ use AutoLoader;
 
 @ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('Message');
+Construct Tk::Widget 'Message';
 
 sub Tk_cmd { \&Tk::message }
 

@@ -1,6 +1,7 @@
 #ifndef _LANG_VM
 #define _LANG_VM
 #include "Lang_f.h"
+#define LangOptionCommand (*LangVptr->V_LangOptionCommand)
 #define LangAllocVec (*LangVptr->V_LangAllocVec)
 #define LangBadFile (*LangVptr->V_LangBadFile)
 #define LangCallbackArg (*LangVptr->V_LangCallbackArg)
@@ -44,6 +45,7 @@
 #define Lang_GetErrorInfo (*LangVptr->V_Lang_GetErrorInfo)
 #define Lang_RegExpCompile (*LangVptr->V_Lang_RegExpCompile)
 #define Lang_RegExpExec (*LangVptr->V_Lang_RegExpExec)
+#define Lang_SetBinaryResult (*LangVptr->V_Lang_SetBinaryResult)
 #define Lang_SetErrorCode (*LangVptr->V_Lang_SetErrorCode)
 #define Lang_SplitList (*LangVptr->V_Lang_SplitList)
 #define TclCalloc (*LangVptr->V_TclCalloc)

@@ -7,7 +7,7 @@ use AutoLoader;
 
 @ISA = qw(Tk::Text);
 
-Tk::Widget->Construct('TextUndo');
+Construct Tk::Widget 'TextUndo';
 
 sub ClassInit
 {

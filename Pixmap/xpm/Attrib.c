@@ -161,10 +161,14 @@ xpmInitAttributes(attributes)
 	attributes->colors_cmt = NULL;
 	attributes->pixels_cmt = NULL;
 /* end 3.2 bc */
-	attributes->extensions = NULL;
-	attributes->nextensions = 0;
-	attributes->alloc_pixels = NULL;
-	attributes->nalloc_pixels = 0;
+	if (attributes->valuemask & XpmReturnExtensions) {
+	    attributes->extensions = NULL;
+	    attributes->nextensions = 0;
+	}
+	if (attributes->valuemask & XpmReturnAllocPixels) {
+	    attributes->alloc_pixels = NULL;
+	    attributes->nalloc_pixels = 0;
+	}
     }
 }
 

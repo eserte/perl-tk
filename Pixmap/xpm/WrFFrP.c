@@ -65,6 +65,8 @@ XpmWriteFileFromPixmap(display, filename, pixmap, shapemask, attributes)
 					attributes);
 
     /* destroy the ximages */
+    xpmFreeImageData(ximage);
+    xpmFreeImageData(shapeimage);
     if (ximage)
 	XDestroyImage(ximage);
     if (shapeimage)

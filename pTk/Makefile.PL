@@ -27,6 +27,7 @@ sub MY::xs_c {
 
 sub MY::post_constants 
 {
+ my $self = shift;
  my $objects = "LIBOBJS =";
  unless (defined($Config{'i_stdlib'}) && try_compile("config/Hstrtoul.c"))
   {
@@ -37,16 +38,19 @@ sub MY::post_constants
    $objects .= ' strdup$(OBJ_EXT)'
   }
  my $len     = length($objects);
- foreach (<[LXt]*.c>)
+ foreach ($self->lsdir("."))
   {
-   s/\.c/\$(OBJ_EXT)/;
-   if (($len+length($_)+1) > 72)
+   if (/^[LXt].*\.c$/i)
     {
-     $objects .= "\\\n\t";
-     $len = 8;
+     s/\.c/\$(OBJ_EXT)/;      
+     if (($len+length($_)+1) > 72)
+      {                       
+       $objects .= "\\\n\t";  
+       $len = 8;              
+      }                       
+     $objects .= " $_";       
+     $len     += 1+length($_);
     }
-   $objects .= " $_";
-   $len     += 1+length($_);
   } 
  return "\n" . $objects . "\n";
 };

@@ -88,7 +88,7 @@ sub SiteList
   {
    my @data  = ();
    my @sites = ();
-   eval { @data = $token->SelectionGet( '-selection'=>"_SUN_DRAGDROP_DSDM",  "_SUN_DRAGDROP_SITE_RECTS") } ;
+   eval {local $SIG{__DIE__}; @data = $token->SelectionGet( '-selection'=>"_SUN_DRAGDROP_DSDM",  "_SUN_DRAGDROP_SITE_RECTS") } ;
    if ($@)
     {
      $token->configure('-cursor'=>'hand2');

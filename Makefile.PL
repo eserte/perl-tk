@@ -2,7 +2,7 @@ use Cwd;
 no  lib '.';
 BEGIN 
  {
-  $VERSION = '400.200';
+  $VERSION = '400.201';
   require "./myConfig";
   use lib ($Tk::MMutil::dir=getcwd);
  }
@@ -51,8 +51,12 @@ sub MY::post_initialize
 {
  my ($self) = @_;
  my %files = ();
- my $name;
  my $dir = $self->catdir('$(INST_ARCHLIBDIR)','Tk');
+ my $name;
+ foreach $name (grep /%$/,keys %{$self->{PM}})
+  {
+   delete $self->{PM}->{$name};
+  }
  delete $self->{PM}->{'Tk/Config.pm'};
  $self->{PM}->{'Tk/Config.pm'} = $self->catfile($dir,'Config.pm');
  # $files{'typemap'} = 1;

@@ -134,18 +134,29 @@ XpmCreateDataFromXpmImage(data_return, image, info)
 
     /* print the hints line */
     s = buf;
+#ifndef VOID_SPRINTF
+    s +=
+#endif
     sprintf(s, "%d %d %d %d", image->width, image->height,
 	    image->ncolors, image->cpp);
+#ifdef VOID_SPRINTF
     s += strlen(s);
+#endif
 
     if (info && (info->valuemask & XpmHotspot)) {
+#ifndef VOID_SPRINTF
+	s +=
+#endif
 	sprintf(s, " %d %d", info->x_hotspot, info->y_hotspot);
+#ifdef VOID_SPRINTF
 	s += strlen(s);
+#endif
     }
-    if (extensions)
-	sprintf(s, " XPMEXT");
-
-    l = strlen(buf) + 1;
+    if (extensions) {
+	strcpy(s, " XPMEXT");
+	s += 7;
+    }
+    l = s - buf + 1;
     *header = (char *) XpmMalloc(l);
     if (!*header)
 	RETURN(XpmNoMemory);
@@ -219,13 +230,12 @@ CreateColors(dataptr, data_size, colors, ncolors, cpp)
 		s += strlen(s);
 	    }
 	}
-	l = strlen(buf) + 1;
+	l = s - buf + 1;
 	s = (char *) XpmMalloc(l);
 	if (!s)
 	    return (XpmNoMemory);
 	*data_size += l;
-	strcpy(s, buf);
-	*dataptr = s;
+	*dataptr = strcpy(s, buf);
     }
     return (XpmSuccess);
 }

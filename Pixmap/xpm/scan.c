@@ -912,6 +912,8 @@ XpmCreateXpmImageFromPixmap(display, pixmap, shapemask,
 					     xpmimage, attributes);
 
     /* destroy the ximages */
+    xpmFreeImageData(ximage);
+    xpmFreeImageData(shapeimage);
     if (ximage)
 	XDestroyImage(ximage);
     if (shapeimage)

@@ -38,9 +38,8 @@ sub clipboardGet
 sub clipboardPaste
 {
  my $w = shift;
- local ($@);
- eval {$w->insert("insert",$w->clipboardGet)};
- $w->BackTrace($@) if ($@);
+ local $@;
+ eval {local $SIG{__DIE__}; $w->insert("insert",$w->clipboardGet)};
 }
 
 # clipboardKeysyms --

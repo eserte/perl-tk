@@ -47,7 +47,7 @@ xpmstrdup(s1)
     int l = strlen(s1) + 1;
 
     if (s2 = (char *) XpmMalloc(l))
-	strncpy(s2, s1, l);
+	strcpy(s2, s1);
     return s2;
 }
 
@@ -108,4 +108,17 @@ int
 XpmLibraryVersion()
 {
     return XpmIncludeVersion;
+}
+
+
+/* The following should help people wanting to use their own functions */
+#ifdef XpmFree
+#undef XpmFree
+#endif
+
+void
+XpmFree(ptr)
+    void *ptr;
+{
+    free(ptr);
 }

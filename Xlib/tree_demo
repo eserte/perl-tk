@@ -16,12 +16,12 @@ sub AddChildren
  foreach $w ($hl->Display->XQueryTree($id))
   {
    my $name = sprintf("#%X",$$w);
-   my $text = ($hl->property(exists => 'WM_NAME',$$w))
+   my $text = ($hl->property('exists' => 'WM_NAME',$$w))
                 ? $hl->property(get => 'WM_NAME',$$w)
                 : $name;
 
    $hl->add("$path.$name", -itemtype => 'imagetext', -image => $win_image, -text => $text, -data => $w);
-   # AddChildren($hl,"$path.$name",$w);
+   AddChildren($hl,"$path.$name",$w);
   }
 }
 
@@ -51,7 +51,7 @@ $mw->Display->XQueryTree($mw->WindowId,$root);
 
 if (defined $root)
  {
-  $win_image = $mw->Bitmap(-file => '../Tk/win.xbm');
+  $win_image = $mw->Bitmap(-file => Tk->findINC('win.xbm'));
   my $hl = $mw->Scrolled('HList',-separator => '.',-drawbranch => 1, -width => '4i');
   $hl->configure(-command => [\&More,$hl]);
   my $name = sprintf("%X",$$root);

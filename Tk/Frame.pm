@@ -6,11 +6,11 @@ require Tk::Widget;
 require Tk::Derived;
 use AutoLoader;
 use strict qw(vars);
-use Tk::Pretty;
+use Carp;
 
 @Tk::Frame::ISA = qw(Tk::Derived Tk::Widget);
 
-Tk::Widget->Construct('Frame');
+Construct Tk::Widget 'Frame';
 
 sub Menubar;
 
@@ -28,6 +28,8 @@ sub CreateArgs
 sub Advertise
 {
  my ($cw,$name,$widget)  = @_;
+ confess "No name" unless (defined $name);
+ croak "No widget" unless (defined $widget);
  $cw->{SubWidget} = {} unless (exists $cw->{SubWidget});
  $cw->{SubWidget}{$name} = $widget;              # advertise it
  return $widget;
@@ -36,10 +38,12 @@ sub Advertise
 sub Default
 {
  my ($cw,$name,$widget)  = @_;
+ confess "No name" unless (defined $name);
+ croak "No widget" unless (defined $widget);
  $cw->Delegates(DEFAULT => $widget);
  $cw->ConfigSpecs(DEFAULT => [$widget]);
  $widget->pack('-expand' => 1, -fill => 'both') unless ($widget->manager);  # Suspect 
- goto &Advertise;
+ goto \&Advertise;
 }
 
 sub ConfigDelegate
@@ -81,6 +85,32 @@ sub selection
 {my ($cw,@args) = @_;
  $cw->Delegate('selection',@args);
 }
+
+sub Component
+{
+ my ($cw,$kind,$name,%args) = @_;
+ $args{'Name'} = "\l$name" if (defined $name && !exists $args{'Name'});
+ my $pack = delete $args{'-pack'};
+ my $delegate = delete $args{'-delegate'};
+ my $w = $cw->$kind(%args);            # Create it
+ $w->pack(@$pack) if (defined $pack);
+ $cw->Advertise($name,$w) if (defined $name);
+ $cw->Delegates(map(($_ => $w),@$delegate)) if (defined $delegate); 
+ return $w;                            # and return it
+}
+
+sub Populate
+{
+ my ($cw,$args) = @_;
+ $cw->ConfigSpecs('-labelPack'     => [ METHOD, undef, undef, undef]);
+ $cw->ConfigSpecs('-labelVariable' => [ METHOD, undef, undef, undef]);
+ $cw->ConfigSpecs('-label'         => [ METHOD, undef, undef, undef]);
+}
+
+
+1;
+
+__END__
 
 sub labelPack
 {
@@ -159,30 +189,6 @@ sub label
  return (defined $var) ? $$var : undef;;
 }
 
-sub Component
-{
- my ($cw,$kind,$name,%args) = @_;
- $args{'Name'} = "\l$name" if (defined $name && !exists $args{'Name'});
- my $w;
- my $pack = delete $args{'-pack'};
- my $delegate = delete $args{'-delegate'};
- eval { $w = $cw->$kind(%args) };            # Create it
- $cw->BackTrace($@) if ($@);
- $w->pack(@$pack) if (defined $pack);
- $cw->Advertise($name,$w) if (defined $name);
- $cw->Delegates(map(($_ => $w),@$delegate)) if (defined $delegate); 
- return $w;                            # and return it
-}
-
-sub Populate
-{
- my ($cw,$args) = @_;
- $cw->ConfigSpecs('-labelPack'     => [ METHOD, undef, undef, undef]);
- $cw->ConfigSpecs('-labelVariable' => [ METHOD, undef, undef, undef]);
- $cw->ConfigSpecs('-label'         => [ METHOD, undef, undef, undef]);
-}
-
-
 sub queuePack
 {
  my ($cw) = @_; 
@@ -252,6 +258,8 @@ sub AddScrollbars
    $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars',$y.$x]);
   }
 }
+
+
 
 
 sub packscrollbars
@@ -345,11 +353,6 @@ sub scrollbars
   }
  return $$var;
 }
-
-1;
-
-__END__
-
 
 sub FindMenu
 {

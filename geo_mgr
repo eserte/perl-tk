@@ -5,7 +5,7 @@ use Tk;
 {
  package Packer;
  @ISA = qw(Tk::Frame);
- Tk::Widget->Construct('Packer');
+ Construct Tk::Widget 'Packer';
 
  sub new
   {my $class  = shift;

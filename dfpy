@@ -1,0 +1,88 @@
+#!/usr/local/bin/perl
+
+use ExtUtils::Manifest "/mani/";
+use Cwd;
+
+sub System
+{
+ my $pid = fork;
+ if ($pid)
+  {
+   local %SIG;
+   $SIG{INT} = sub { warn "\nInterrupt"; kill 9,$pid; exit 1 };
+   wait;
+   die "Error $?" if ($?);
+  }
+ else
+  {
+   exec(@_) || die "Cannot exec".join(' ',@_).":$!";
+  }
+}
+
+System("perl","Makefile.PL") unless (-r "Makefile");
+
+$dir = getcwd;
+$dir =~ s#^.*/##;
+
+sub grab
+{
+ my $dir;
+ foreach $dir (@_)
+  {
+   my $pref = $dir eq '.' ? '' : "$dir/";
+   unless (-d $dir)
+    {
+     warn "No $dir";
+     next; 
+    }
+   my $files = maniread("${pref}MANIFEST");
+   push(@files,grep(-f $_,sort map("${pref}$_",keys %$files)));
+  }
+}
+
+System('make','-C','.','manifest');
+push(@files,"../unpack","../Tkpatch","../newest");
+grab(".","../Ned","../DPS");
+@files = grep(-w $_,@files);
+# push(@files,grep(-M $_ < 7,<../../useful/*>));
+push(@files,grep(-M $_ < 14,<ToDo/*>));
+@files = grep(!/\.(ps|ppm|n|2|htm|gif)$/ || -M $_ < 7,@files);
+# @files = grep(!m#/(mTk\.b\d|merge)/#,@files);
+push(@files,"Tix/tcl2perl");
+
+
+@files = grep(!/\.d$/,@files);
+
+foreach (grep(!-r $_,@files))
+ {
+  print "$_ does not exist\n";
+ }
+
+@files = grep(-r $_,@files);
+
+@files = grep(-M $_ < 7,@files);
+
+print "$^O\n";
+
+system("volcheck") if ($^O eq 'solaris');
+
+foreach ("/vol/dev/aliases/floppy0","/dev/rdiskette","/dev/rfd0")
+ {
+  if (-c $_)
+   {
+    $floppy = $_;
+    last;
+   }
+ }
+
+($sec,$min,$hour,$mday,$mon,$year) = localtime;
+
+$mon++;
+$name = "TkRecent-$year.$mon.$mday.tar.gz";
+
+chdir("..");
+System("gtar","-czvf",$name,'--block-compress',map("$dir/". $_,@files));
+System("tar","-cvfb",$floppy,36,$name);
+System("tar","-tvfb",$floppy,36);
+
+

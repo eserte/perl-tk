@@ -22,12 +22,10 @@ sub new
  $name = 'ptk' if ($name eq '-e'); 
  $name    =~ s#^.*/##; 
  $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
- my $top = eval { bless CreateMainWindow("\l$name", "\u$name", @_), $package };
- croak($@ . "$package" ."::new(" . join(',',@_) .")") if ($@);
+ my $top = bless CreateMainWindow("\l$name", "\u$name", @_), $package;
  $top->InitBindings;
  $top->InitObject(\%args);
- eval { $top->configure(%args) };
- croak "$@" if ($@);
+ $top->configure(%args);
  $top->SetBindtags;
  push(@Windows,$top);
  return $top;

@@ -5,9 +5,9 @@
 package Tk::Label; 
 require Tk;
 
-@ISA = qw(Tk::Widget); 
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('Label');
+Construct Tk::Widget 'Label';
 
 sub Tk_cmd { \&Tk::label }
 
