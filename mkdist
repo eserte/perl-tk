@@ -36,8 +36,8 @@ System("make","manifest") if ($opt_man);
 my $path  = getcwd();
 my $dir   = $path;
 my $files = maniread();
-$dir   =~ s#^.*/([^/]+)\d+$#$1#;
-  
+$dir      = 'Tk';
+
 my $snag = 0;
 
 foreach my $file (keys %$files)
@@ -45,12 +45,12 @@ foreach my $file (keys %$files)
   unless (-f $file)
    {
     $snag++;
-    warn "$file not found\n"; 
+    warn "$file not found\n";
    }
   if (-z $file)
    {
     $snag++;
-    warn "$file is zero sized\n"; 
+    warn "$file is zero sized\n";
    }
  }
 

@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '3.024'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#24 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tixish/NoteBook.pm#4 $
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);

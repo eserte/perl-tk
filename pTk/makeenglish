@@ -13,18 +13,18 @@ use base  (Exporter);
 
 EOH
 
-my %found = ();   
+my %found = ();
 
 opendir(DIR,'.') || die "Cannot open '.':$!";
 @ARGV = grep(/\.c/,readdir(DIR));
 closedir(DIR);
 
-while (<>) 
+while (<>)
  {
   if (/strn?cmp\s*\(.*"([a-z][a-z0-9]+)"/)
    {my $key = $1;
     my $name = "\U$key";
-    if (!defined $found{$name}) 
+    if (!defined $found{$name})
      {
       $found{$name} = $key;
      }
@@ -34,12 +34,12 @@ while (<>)
 
 print "\n\@EXPORT = qw(\n";
 $line = "";
-foreach (sort keys %found) 
+foreach (sort keys %found)
  {
   if (length($line)+length($_)+2 > 76)
    {
     print "    $line\n";
-    $line = ""; 
+    $line = "";
    }
   else
    {

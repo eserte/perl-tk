@@ -4,7 +4,7 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION);
-$VERSION = '3.029'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#29 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/DragDrop/DragDrop.pm#9 $
 
 use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 
@@ -12,7 +12,7 @@ use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 # define a Tk_cmd to actually build a 'Label', then
 # use wmRelease in Populate to make it a toplevel.
 
-my $useWmRelease = 1; # ($^O ne 'MSWin32');
+my $useWmRelease = Tk::Wm->can('release'); # ($^O ne 'MSWin32');
 
 sub Tk_cmd { ($useWmRelease) ? \&Tk::label : \&Tk::toplevel }
 
@@ -46,7 +46,6 @@ sub Populate
  if ($useWmRelease)
   {
    $token->wmRelease;
-   $token->saveunder(1);
    $token->ConfigSpecs(-text => ['SELF','text','Text',$parent->class]);
   }
  else
@@ -279,11 +278,13 @@ sub Drop
    my $seln = $token->cget('-selection');
    unless ($token->Callback(-predropcommand => $seln, $site))
     {
-     my $id = $token->after(2000,[$token,'Done']);
+# XXX This is ugly if the user restarts a drag within the 2000 ms:
+#     my $id = $token->after(2000,[$token,'Done']);
      my $w = $token->parent;
      $token->InstallHandlers;
      $site->Drop($token,$seln,$e);
      $token->Callback(-postdropcommand => $seln);
+     $token->Done;
     }
   }
  else

@@ -6,7 +6,7 @@ To: Nick Ing-Simmons <nick@ni-s.u-net.com>
 
 
 
-3. How do I find out whether slave is a pack or grid master or if it is not a 
+3. How do I find out whether slave is a pack or grid master or if it is not a
 master (for setting packPropagate(0))
 Currently I set both on the slave.
 

@@ -1,15 +1,15 @@
-From  kris@bionmr1.rug.ac.be  Fri Jan 19 16:16:00 1996 
-Return-Path: <kris@bionmr1.rug.ac.be> 
+From  kris@bionmr1.rug.ac.be  Fri Jan 19 16:16:00 1996
+Return-Path: <kris@bionmr1.rug.ac.be>
 From: kris@bionmr1.rug.ac.be (Kris Boulez)
-Message-Id: <9601191714.ZM15917@bionmr1.rug.ac.be> 
-Date: Fri, 19 Jan 1996 17:14:30 +0100 
-X-Mailer: Z-Mail (3.2.0 26oct94 MediaMail) 
-To: ptk@guest.wpi.edu 
-Subject: Examples of the Ousterhout book translated to ptk 
-Cc: Nick Ing-Simmons <nik@tiuk.ti.com> 
-Content-Type: multipart/mixed; 
+Message-Id: <9601191714.ZM15917@bionmr1.rug.ac.be>
+Date: Fri, 19 Jan 1996 17:14:30 +0100
+X-Mailer: Z-Mail (3.2.0 26oct94 MediaMail)
+To: ptk@guest.wpi.edu
+Subject: Examples of the Ousterhout book translated to ptk
+Cc: Nick Ing-Simmons <nik@tiuk.ti.com>
+Content-Type: multipart/mixed;
     boundary="PART-BOUNDARY=.19601191714.ZM15917.rug.ac.be"
-P-From: "Kris Boulez" <kris@bionmr1.rug.ac.be> 
+P-From: "Kris Boulez" <kris@bionmr1.rug.ac.be>
 
 --
 --PART-BOUNDARY=.19601191714.ZM15917.rug.ac.be

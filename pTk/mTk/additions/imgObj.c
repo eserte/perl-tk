@@ -116,7 +116,7 @@ ImgGetStringFromObj(objPtr, lengthPtr)
     } else
 #ifdef _LANG
     {
-	char *string = LangString((Arg) objPtr);
+	char *string = Tcl_GetString(objPtr);
 	if (lengthPtr != NULL) {
 	    *lengthPtr = string ? strlen(string) : 0;
 	}
@@ -165,7 +165,7 @@ ImgGetByteArrayFromObj(objPtr, lengthPtr)
 				 * stored. If NULL, no length is stored. */
 {
 #ifdef _LANG
-    char *string = LangString((Arg) objPtr);
+    char *string = Tcl_GetString(objPtr);
     if (lengthPtr != NULL) {
 	*lengthPtr = string ? strlen(string) : 0;
     }
@@ -356,7 +356,7 @@ ImgFixStringWriteProc(data, interp, dataPtr, format, blockPtr)
     Tk_PhotoImageBlock **blockPtr;
 {
     if (!*blockPtr) {
-	*blockPtr = (Tk_PhotoImageBlock *) *format;	
+	*blockPtr = (Tk_PhotoImageBlock *) *format;
 	*format   = (Tcl_Obj *) *dataPtr;
 	*dataPtr  = data;
 	Tcl_DStringInit(data);

@@ -15,7 +15,7 @@ sub mkCanvText {
     dpos $w;
     $w->title('Canvas Text Demonstration');
     $w->iconname('Text');
- 
+
     my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '5i',
 			   -justify => 'left', -text => 'This window displays a string of text to demonstrate the text ' .
 			   'facilities of canvas widgets.  You can point, click, and type.  You can also select and then ' .
@@ -32,7 +32,7 @@ sub mkCanvText {
     $c->create(qw(rectangle 245 195 255 205 -outline black -fill red));
 
     # First, create the text item and give it bindings so it can be edited.
-	
+
     $c->addtag('text', 'withtag', $c->create('text', 250, 200, -text => 'This is just a string of text to demonstrate the ' .
 					     'text facilities of canvas widgets. You can point, click, and type.  You can ' .
 					     'also select and then delete with Control-d.', -width => 440, -anchor => 'n',
@@ -98,7 +98,7 @@ sub mkCanvText {
 	       -font => '-Adobe-times-medium-r-normal--*-240-*-*-*-*-*-*', -fill => 'brown');
 
     # Lastly, create some items that allow the text's justification to be changed.
-    
+
     $x = 350; $y = 50; $color = 'SeaGreen2';
     mkTextConfig $c, $x,    $y,    -justify => 'left',   $color;
     mkTextConfig $c, $x+30, $y,    -justify => 'center', $color;

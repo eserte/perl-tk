@@ -4,6 +4,7 @@ use File::Basename;
 
 my %skip;
 my %files;
+my %maybe;
 
 sub wanted
 {
@@ -15,13 +16,46 @@ sub wanted
    $s =~ s#\.xs$#.c#;
    $skip{$s} = 1;
   }
- if ($s =~ m#^(.*)/mTk/.*?([^/]+\.[ch])$#x)
+ if ($s =~ m#^((.*)/mTk/.*?)/([^/]+\.[ch])$#x)
   {
-   $skip{"$1/$2"} = 1 unless ($_ eq 'Xlib.h');
+   $maybe{$1}{$3} = $2 unless $_ eq 'Xlib.h';
   }
 }
 
 find(\&wanted,'.');
+
+foreach my $dir (sort keys %maybe)
+ {
+  if (open(INC,"$dir/pTk.inc"))
+   {
+    warn "Reading $dir/pTk.inc\n";
+    my %only;
+    while (<INC>)
+     {
+      $only{$1} = 1 if (/(\S+)/);
+     }
+    close(INC);
+    foreach my $name (keys %{$maybe{$dir}})
+     {
+      delete $maybe{$dir}{$name} unless exists $only{$name};
+     }
+   }
+  elsif (open(EXC,"$dir/pTk.exc"))
+   {
+    warn "Reading $dir/pTk.exc\n";
+    while (<EXC>)
+     {
+      delete $maybe{$dir}{$1} if /(\S+)/;
+     }
+    close(EXC);
+   }
+  foreach my $name (sort keys %{$maybe{$dir}})
+   {
+    my $wh = $maybe{$dir}{$name};
+    $skip{"$wh/$name"} = 1;
+   }
+ }
+
 
 chmod(0666,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";

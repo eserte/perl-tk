@@ -1,7 +1,7 @@
 package Tk::Adjuster;
 
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/Adjuster.pm#25 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Adjuster.pm#4 $
 
 use base  qw(Tk::Frame);
 
@@ -89,6 +89,7 @@ sub packed
 {
  my ($w,$s,%args) = @_;
  delete $args{'-before'};
+ delete $args{'-in'};
  $args{'-expand'} = 0;
  $args{'-after'} = $s;
  $args{'-fill'} = (($w->vert) ? 'y' : 'x');
@@ -173,7 +174,7 @@ sub Populate
                  -background => [['SELF',$w->{'sep'},$w->{'but'}],'background','Background',undef],
                  -foreground => [Tk::Configure->new($w->{'lin'},'-background'),'foreground','Foreground','black'],
 		 -restore    => ['PASSIVE','restore', 'Restore', 1],
-                ); 
+                );
  $w->_OnDestroy(qw(sep but lin master));
 }
 

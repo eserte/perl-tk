@@ -228,7 +228,7 @@ Tk_DeleteErrorHandler(handler)
  *	invokes any handlers that want to deal with the error.
  *
  *--------------------------------------------------------------
- */             
+ */
 
 static void
 UnhandledXError()

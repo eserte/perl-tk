@@ -1,3 +1,6 @@
+
+/*	$Id: tixUnixXpm.c,v 1.1.1.1 2000/05/17 11:08:54 idiscovery Exp $	*/
+
 /*
  * tixUnixImgXpm.c --
  *
@@ -25,7 +28,7 @@ typedef struct PixmapData {
 				 * be displayed. */
 } PixmapData;
 
-
+
 /*----------------------------------------------------------------------
  * TixpInitPixmapInstance --
  *
@@ -47,7 +50,7 @@ TixpInitPixmapInstance(masterPtr, instancePtr)
 
     instancePtr->clientData = (ClientData)dataPtr;
 }
-
+
 /*----------------------------------------------------------------------
  * TixpXpmAllocTmpBuffer --
  *
@@ -118,7 +121,7 @@ TixpXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask)
 	XDestroyImage(mask);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixpXpmSetPixel --
  *
@@ -144,7 +147,7 @@ TixpXpmSetPixel(instancePtr, image, mask, x, y, colorPtr, isTranspPtr)
 	*isTranspPtr = 1;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixpXpmRealizePixmap --
  *
@@ -205,7 +208,7 @@ TixpXpmRealizePixmap(masterPtr, instancePtr, image, mask, isTransp)
     }
     gcValues.graphics_exposures = False;
     gcValues.clip_mask = dataPtr->mask;
-    
+
     gc = Tk_GetGC(instancePtr->tkwin, gcMask, &gcValues);
     dataPtr->gc = gc;
 }

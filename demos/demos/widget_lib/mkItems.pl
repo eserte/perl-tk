@@ -121,7 +121,7 @@ sub itemsUnderArea {
     my @items  = ();
     my $i;
     foreach $i ($c->find('enclosed', $mkItems::areaX1, $mkItems::areaY1, $mkItems::areaX2, $mkItems::areaY2)) {
-	my @tags = $c->gettags($i); 
+	my @tags = $c->gettags($i);
 	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
@@ -130,7 +130,7 @@ sub itemsUnderArea {
     print STDOUT 'Items enclosed by area:  ', join(' ', @items), ".\n";
     @items = ();
     foreach $i ($c->find('overlapping', $mkItems::areaX1, $mkItems::areaY1, $mkItems::areaX2, $mkItems::areaY2)) {
-	my @tags = $c->gettags($i); 
+	my @tags = $c->gettags($i);
 	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
@@ -187,7 +187,7 @@ sub mkItems {
     $w_frame2_hscroll->pack(-side => 'bottom', -fill => 'x');
     $w_frame2_vscroll->pack(-side => 'right', -fill => 'y');
     $c->pack(-expand => 'yes', -fill => 'both');
-    
+
     # Display a 3x3 rectangular grid.
 
     $c->create(qw(rect 0c 0c 30c 24c -width 2));

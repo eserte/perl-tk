@@ -17,6 +17,6 @@ for $relief('raised','sunken','flat','groove','ridge') {
 		       );
   $$relief->pack(-side => 'left', -padx => '2m', -pady => '2m');
 }
-$flat->configure(-background => 'black');  #perl complains here 
+$flat->configure(-background => 'black');  #perl complains here
 
 MainLoop;

@@ -1,19 +1,19 @@
 #!/usr/local/bin/perl -w
 
 use Tk;
-use Tk::HList;    
+use Tk::HList;
 use Tk::ItemStyle;
 
 $top = new MainWindow;
 $hl = $top->HList->pack;
-$redstyle  = $top->ItemStyle('text', 
+$redstyle  = $top->ItemStyle('text',
 			     -foreground => 'red',
 			     -font => '10x20',
 			     -background => 'green');
 
 print $redstyle,"\n";
 
-$bluestyle = $top->ItemStyle('text', 
+$bluestyle = $top->ItemStyle('text',
 			     -foreground => 'blue',
 			     -background => 'white',
 			    );

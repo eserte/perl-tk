@@ -1,6 +1,6 @@
-#!/usr/local/bin/perl -w
+#!/tools/local/perl -w
 
-use strict;        
+use strict;
 
 my %ref;
 my %def;
@@ -12,15 +12,15 @@ sub read_object
 {
  my $obj = shift;
  open(NM,"nm -p $obj|") || die "Cannot open nm $obj:$!";
- $def{$obj} = {}; 
- $file{$obj} = {};              
+ $def{$obj} = {};
+ $file{$obj} = {};
  my @refs = ();
  while (<NM>)
   {
    if (/\b([A-Z])\b\s*_?(.*)$/)
     {
      my ($kind,$name) = ($1,$2);
-     $file{$obj}{$name} = $kind;                    
+     $file{$obj}{$name} = $kind;
      if ($kind ne 'U')
       {
        $def{$obj}{$name} = $kind;
@@ -40,15 +40,15 @@ sub read_object
 }
 
 warn "Scanning object files\n";
-foreach my $obj (<*.o>,<../*.o>)
+foreach my $obj (<*.o>,<*.obj>)
  {
-  # next if $obj =~ /_f\.o$/;
+  next if $obj =~ /_f\.o(bj)?$/;
   read_object($obj);
  }
 
 my %inc;
 
-warn "Analysing...\n";      
+warn "Analysing...\n";
 
 sub process
 {
@@ -57,27 +57,27 @@ sub process
  if (exists $need{$file})
   {
    foreach my $sym (@{$need{$file}})
-    {                                 
-     if (exists $where{$sym})           
-      {                   
+    {
+     if (exists $where{$sym})
+      {
        print "$file need $sym ",join(' ',@{$where{$sym}}),"\n";
        if (@{$where{$sym}} > 1)
         {
          # warn "Multiply defined $sym\n";
         }
        else
-        {                     
+        {
          my $inc = $where{$sym}->[0];
          unless (exists $inc{$inc})
           {
            process($inc);
-          } 
-        } 
-      }                               
-    }                                 
+          }
+        }
+      }
+    }
   }
 }
-                 
+
 foreach my $file (@ARGV)
  {
   process($file);

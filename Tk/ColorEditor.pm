@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.032'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#32 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/ColorEditor.pm#4 $
 
 use Tk qw(Ev);
 
@@ -442,7 +442,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '3.032'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#32 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/ColorEditor.pm#4 $
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

@@ -1,4 +1,4 @@
-Tcl_TimerProc *			T_IV 
+Tcl_TimerProc *			T_IV
 Tcl_IdleProc *			T_IV
 Tcl_ExitProc *			T_IV
 Tcl_FileProc *			T_IV

@@ -67,7 +67,7 @@ my $help = $menubar->cascade(qw/-label Help -underline 0 -menuitems/ =>
     ]);
 
 my $T = $MW->Scrolled('ROText',
-    -scrollbars => 'e',		
+    -scrollbars => 'e',
     -wrap       => 'word',
     -width      => 60,
     -height     => 30,

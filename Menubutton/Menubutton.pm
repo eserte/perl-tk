@@ -17,7 +17,7 @@ package Tk::Menubutton;
 require Tk;
 
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#25 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Menubutton/Menubutton.pm#2 $
 
 use base  qw(Tk::Widget);
 

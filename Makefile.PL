@@ -1,4 +1,4 @@
-use 5.00404;
+use 5.007;
 use Cwd;
 use Config;
 no  lib '.';
@@ -6,7 +6,7 @@ BEGIN
  {
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.024';
+  $VERSION = '804.024';
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
@@ -23,15 +23,12 @@ use Tk::MMutil;
 if ($IsWin32)
  {
   *MY::makeaperl = \&makeWin32perl;
-  if ($Config{cc} =~ /^gcc/i)
-   {
-    @libs = ('');
-   }
+  @libs = ('-lcomctl32 -limm32');
  }
 else
  {
   my $plibs = $Config{'libs'};
-  my $libs  = "$xlib -lX11";   # Used to have -lpt in here as well.
+  my $libs  = "$xlib -lX11 -lpt";
   my @try   = qw(-lsocket -lnsl -lm);
   push(@try,'-lc') if $^O =~ /svr4/i;
   my $lib;
@@ -62,6 +59,8 @@ Tk::MMutil::TkExtMakefile(
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
+
+
 
 sub MY::top_targets
 {

@@ -1,7 +1,7 @@
 package Tk::ErrorDialog;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#9 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/ErrorDialog.pm#2 $
 
 use English;
 use Tk ();

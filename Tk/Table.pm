@@ -1,11 +1,11 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Table.pm#20 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Table.pm#5 $
 
 use Tk::Pretty;
 use AutoLoader;

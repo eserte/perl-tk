@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-use strict;        
+use strict;
 
 my %ref;
 my %def;
@@ -10,8 +10,8 @@ sub read_object
 {
  my $obj = shift;
  open(NM,"nm -p $obj|") || die "Cannot open nm $obj:$!";
- $def{$obj} = {}; 
- $file{$obj} = {};              
+ $def{$obj} = {};
+ $file{$obj} = {};
  my @refs = ();
  while (<NM>)
   {
@@ -51,33 +51,33 @@ if (@ARGV)
     if (exists $file{$file})
      {
       foreach my $sym (keys %{$def{$file}})
-       {                                 
-        if (exists $ref{$sym})           
-         {                               
+       {
+        if (exists $ref{$sym})
+         {
           my @files = grep(!/_f\.o$/,@{$ref{$sym}});
-          if (@files)                    
-           {                             
+          if (@files)
+           {
             print "$file defines $sym for ",join(',',@files),"\n";
-            next FILE;                   
-           }                             
-         }                               
-       }                                 
+            next FILE;
+           }
+         }
+       }
       warn "No good reason for $file!\n";
      }
     else
-     {             
+     {
       my %exc;
       my @sym = read_object($file);
       foreach my $sym (sort @sym)
        {
         next unless $sym =~ /^[TL]/;
-        if (exists $ref{$sym})           
-         {                               
+        if (exists $ref{$sym})
+         {
           my @files = grep($_ ne $file,grep(!/_f\.o$/,@{$ref{$sym}}));
-          if (@files)                    
-           {                             
+          if (@files)
+           {
             print "$sym needed by ",join(',',@files),"\n";
-           }                             
+           }
           else
            {
             @files = grep(/_f\.o$/,@{$ref{$sym}});
@@ -93,7 +93,7 @@ if (@ARGV)
                }
              }
            }
-         }                               
+         }
        }
       foreach my $exc (keys %exc)
        {

@@ -3,7 +3,7 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#21 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DropSite.pm#2 $
 
 use base  qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 
@@ -37,7 +37,7 @@ sub NewDrag
 }
 
 sub SiteList
-{     
+{
  # this should be inheritable - so that receive side of XDND can re-use it.
  my ($class,$widget) = @_;
  my $t;
@@ -65,7 +65,7 @@ sub Apply
    my $Y = shift;
    $cb->Call(@_,$X - $site->X, $Y - $site->Y);
   }
-}  
+}
 
 sub Drop
 {
@@ -152,8 +152,8 @@ sub delete
 }
 
 sub DropSiteUpdate
-{   
- # Note size of widget and arrange to update properties etc. 
+{
+ # Note size of widget and arrange to update properties etc.
  my $obj = shift;
  my $w   = $obj->widget;
  $obj->{'x'}      = $w->X;

@@ -16,7 +16,7 @@ print INIT <<"END" if ($^O eq 'MSWin32');
 break RunPerl;
 run -Mblib $args
 shared
-break Perl_croak 
+break Perl_croak
 break Perl_warn
 break Perl_die
 break XS_DynaLoader_dl_find_symbol
@@ -26,7 +26,7 @@ handle SIGWINCH pass nostop noprint
 break XS_DynaLoader_dl_find_symbol
 run -Mblib $args
 shared
-break Perl_croak 
+break Perl_croak
 break Perl_warn
 break Perl_die
 END

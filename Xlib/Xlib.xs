@@ -6,21 +6,21 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
-/* A few sample routines to get at Xlib via perl 
+/* A few sample routines to get at Xlib via perl
    Will eventaually be extended to the point where
    simple pTk widgets can be *implemented* in perl
 
-   Main stumbling block is a clean way of filling in 
+   Main stumbling block is a clean way of filling in
    a GC.
 
-   The XDraw*() functions may be a bit messy, but 
-   should be okay via CODE: bodies and variable number 
+   The XDraw*() functions may be a bit messy, but
+   should be okay via CODE: bodies and variable number
    of args and/or passing in array refs
 */
 
@@ -42,7 +42,7 @@ SvGCIVOBJ(class,sv)
 char *class;
 SV *sv;
 {
- if (sv_isa(sv, class)) 
+ if (sv_isa(sv, class))
   return SvIV((SV*)SvRV(sv));
  else
   croak("Not of type %s",class);
@@ -59,9 +59,9 @@ SV *sv;
  if (!strcmp(key,name)) {            \
   values->field = func(value);       \
   valuemask |= bit;                  \
- } else                              
+ } else
 
-unsigned long 
+unsigned long
 GCSetValue(valuemask,values,key,value)
 unsigned long valuemask;
 XGCValues *values;
@@ -82,8 +82,8 @@ int flags;
  GC gc = None;
  XGCValues values;
  Window root = Tk_WindowId(tkwin);
- unsigned long valuemask = GCForeground | GCBackground 
-                           | GCSubwindowMode | GCFunction 
+ unsigned long valuemask = GCForeground | GCBackground
+                           | GCSubwindowMode | GCFunction
 #if 0
                            | GCLineStyle
 #endif
@@ -143,8 +143,8 @@ pTk_XSync(Display *dpy, int flush)
  XSync(dpy,flush);
  return 0;
 }
- 
-static int 
+
+static int
 pTk_XFlush(Display *dpy)
 {
  XFlush(dpy);
@@ -162,11 +162,11 @@ MODULE = Tk::Xlib	PACKAGE = Tk::Widget
 void
 tmpLine(win,x1,y1,x2,y2,onroot = 0)
 Tk_Window	win
-int	x1 
-int	y1 
-int	x2 
-int	y2 
-int	onroot 
+int	x1
+int	y1
+int	x2
+int	y2
+int	onroot
 
 
 MODULE = Tk::Xlib	PACKAGE = ScreenPtr
@@ -225,7 +225,7 @@ void
 XListFonts(dpy,pattern,max)
 Display *	dpy
 char *		pattern
-int		max 
+int		max
 PPCODE:
  {
   int  count = 0;
@@ -233,7 +233,7 @@ PPCODE:
   char **list = XListFonts(dpy, pattern, max, &count);
   int i;
   EXTEND(sp, count);
-  for (i=0; i < count; i++) 
+  for (i=0; i < count; i++)
    {
     PUSHs(sv_2mortal(newSVpv(list[i],0)));
    }
@@ -376,7 +376,7 @@ void
 XSetForeground(dpy,gc,val)
 Display *	dpy
 GC		gc
-unsigned long	val 
+unsigned long	val
 
 BOOT:
  {

@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixGrSel.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixGrSel.c --
  *
  *	This module handles the selection
@@ -55,11 +58,11 @@ Tix_GrSelection(clientData, interp, argc, argv)
 
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
-} 
+}
 
-static int 
+static int
 Selected(WidgetPtr wPtr, int row, int col)
-{   
+{
     int value = 0;
     Tix_ListIterator li;
 
@@ -103,23 +106,23 @@ Tix_GrSelIncludes(clientData, interp, argc, argv)
     if (argc != 2 && argc != 4) {
 	return Tix_ArgcError(interp, argc+2, argv-2, 2, "x1 y1 ?x2 y2?");
     }
-    if (Tcl_GetInt(interp, argv[0], &col) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[0], &col) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetInt(interp, argv[1], &row) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[1], &row) != TCL_OK) {
 	return TCL_ERROR;
-    }                           
+    }
     if (argc == 2)
-     {                       
+     {
       value = Selected(wPtr,row,col);
      }
     else
      {
       int row2;
-      int col2; 
-      if (Tcl_GetInt(interp, argv[0], &col2) != TCL_OK)
+      int col2;
+      if (Tcl_GetIntFromObj(interp, argv[0], &col2) != TCL_OK)
        return TCL_ERROR;
-      if (Tcl_GetInt(interp, argv[1], &row2) != TCL_OK)
+      if (Tcl_GetIntFromObj(interp, argv[1], &row2) != TCL_OK)
        return TCL_ERROR;
       if (row2 < row)
        {
@@ -140,15 +143,15 @@ Tix_GrSelIncludes(clientData, interp, argc, argv)
           if (!Selected(wPtr,row,col))
            {
             value = 0;
-            goto done; 
+            goto done;
            }
           col++;
-         }        
-        row++; 
+         }
+        row++;
        }
      }
    done:
-    Tcl_IntResults(interp,1,0,value);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp),value);
     return TCL_OK;
 }
 
@@ -218,7 +221,7 @@ Tix_GrMergeSelection(wPtr, sbPtr)
 		 Tix_SimpleListNext (&wPtr->selList, &li)) {
 	    }
         }
-	  
+
     }
 #else
 
@@ -317,14 +320,14 @@ Tix_GrSelModify(clientData, interp, argc, argv)
     sbPtr = (SelectBlock*)ckalloc(sizeof(SelectBlock));
     sbPtr->type = type;
 
-    if (Tcl_GetInt(interp, argv[0], &sbPtr->range[0][0]) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[0], &sbPtr->range[0][0]) != TCL_OK) {
 	goto error;
     }
-    if (Tcl_GetInt(interp, argv[1], &sbPtr->range[1][0]) != TCL_OK) {
+    if (Tcl_GetIntFromObj(interp, argv[1], &sbPtr->range[1][0]) != TCL_OK) {
 	goto error;
     }
     if (argc == 4) {
-	if (Tcl_GetInt(interp, argv[2], &sbPtr->range[0][1]) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[2], &sbPtr->range[0][1]) != TCL_OK) {
 	    if (strcmp(argv[2], "max") == 0) {
 		Tcl_ResetResult(interp);
 		sbPtr->range[0][1] = TIX_GR_MAX;
@@ -332,7 +335,7 @@ Tix_GrSelModify(clientData, interp, argc, argv)
 		goto error;
 	    }
 	}
-	if (Tcl_GetInt(interp, argv[3], &sbPtr->range[1][1]) != TCL_OK) {
+	if (Tcl_GetIntFromObj(interp, argv[3], &sbPtr->range[1][1]) != TCL_OK) {
 	    if (strcmp(argv[3], "max") == 0) {
 		Tcl_ResetResult(interp);
 		sbPtr->range[1][1] = TIX_GR_MAX;
@@ -343,12 +346,12 @@ Tix_GrSelModify(clientData, interp, argc, argv)
     } else {
 	sbPtr->range[0][1] = sbPtr->range[0][0];
 	sbPtr->range[1][1] = sbPtr->range[1][0];
-    }               
+    }
 
     if (wPtr->selectUnit != tixRowUid) {
 	if (sbPtr->range[0][0] > sbPtr->range[0][1]) {
 	    tmp = sbPtr->range[0][1];
-	    sbPtr->range[0][1] = sbPtr->range[0][0]; 
+	    sbPtr->range[0][1] = sbPtr->range[0][0];
 	    sbPtr->range[0][0] = tmp;
 	}
     } else {
@@ -359,7 +362,7 @@ Tix_GrSelModify(clientData, interp, argc, argv)
     if (wPtr->selectUnit != tixColumnUid) {
 	if (sbPtr->range[1][0] > sbPtr->range[1][1]) {
 	    tmp = sbPtr->range[1][1];
-	    sbPtr->range[1][1] = sbPtr->range[1][0]; 
+	    sbPtr->range[1][1] = sbPtr->range[1][0];
 	    sbPtr->range[1][0] = tmp;
 	}
     } else {

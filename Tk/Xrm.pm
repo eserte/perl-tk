@@ -1,7 +1,7 @@
 package Tk::Xrm;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Xrm.pm#11 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/Xrm.pm#2 $
 
 use Tk ();
 1;

@@ -12,7 +12,7 @@ my $MW = MainWindow->new;
 # globally configure the advertised Frame, Label and Radiobutton widgets.
 # Lastly, specifically configure the radiobutton widget labeled 'RL3', a tiny
 # widget inside the advertised composite LabeledRadiobutton widget, the
-# entry widget in the advertised composite LabeledEntry widget, and then 
+# entry widget in the advertised composite LabeledEntry widget, and then
 # create some key bindings.
 
 my $entry_var = 'Frogs lacking lipophores are blue.';
@@ -35,7 +35,7 @@ $cw->Walk(
         my($w, $class) = @_;
         $w->configure(-relief => 'ridge', -bd => 5) if $class eq $w->class;
     }, 'Frame',
-);    
+);
 $cw->Walk(
     sub {
         my($w, $class) = @_;

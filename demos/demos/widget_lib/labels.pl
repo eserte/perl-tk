@@ -22,7 +22,7 @@ sub labels {
     @pl = qw/-side top -expand yes -pady 2 -anchor w/;
     my $left_l1 = $left->Label(-text => 'First label')->pack(@pl);
     my $left_l2 = $left->Label(
-        -text   => 'Second label, raised just for fun', 
+        -text   => 'Second label, raised just for fun',
         -relief => 'raised',
     )->pack(@pl);
     my $left_l3 = $left->Label(

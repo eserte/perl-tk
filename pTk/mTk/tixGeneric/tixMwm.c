@@ -1,3 +1,6 @@
+
+/*	$Id: tixMwm.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixMwm.c --
  *
@@ -74,7 +77,7 @@ typedef struct
 } PropMotifWmInfo;
 
 typedef PropMotifWmInfo PropMwmInfo;
- 
+
 #endif	/* HAS_MOTIF_INC */
 
 #define MWM_DECOR_UNKNOWN (-1)
@@ -144,7 +147,7 @@ static void		StructureProc _ANSI_ARGS_((ClientData clientData,
 
 static Tcl_HashTable mwmTable;
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -221,7 +224,7 @@ Tix_MwmCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixMwmProtocolHandler --
@@ -260,7 +263,7 @@ TixMwmProtocolHandler(clientData, eventPtr)
     }
     return 0;
 }
-
+
 static int
 MwmDecor(interp, string)
     Tcl_Interp * interp;
@@ -299,7 +302,7 @@ QueryMwmHints(wmPtr)
 
     wmPtr->prop.flags = MWM_HINTS_DECORATIONS;
 
-    if (XGetWindowProperty(Tk_Display(wmPtr->tkwin),Tk_WindowId(wmPtr->tkwin), 
+    if (XGetWindowProperty(Tk_Display(wmPtr->tkwin),Tk_WindowId(wmPtr->tkwin),
 	wmPtr->mwm_hints_atom, 0, PROP_MWM_HINTS_ELEMENTS,
 	False, wmPtr->mwm_hints_atom, &actualType, &actualFormat, &numItems,
 	&bytesAfter, (unsigned char **) & wmPtr->prop) == Success) {
@@ -365,27 +368,27 @@ int SetMwmDecorations(interp, wmPtr, argc, argv)
 	    /*
 	     * Query all hints
 	     */
-	    sprintf(buff, "-border %d", 
+	    sprintf(buff, "-border %d",
 		((wmPtr->prop.decorations & MWM_DECOR_BORDER)!=0));
 	    Tcl_AppendElement(interp, buff);
 
-	    sprintf(buff, "-resizeh %d", 
+	    sprintf(buff, "-resizeh %d",
 		((wmPtr->prop.decorations &MWM_DECOR_RESIZEH)!=0));
 	    Tcl_AppendElement(interp, buff);
-    
-	    sprintf(buff, "-title %d", 
+
+	    sprintf(buff, "-title %d",
 		((wmPtr->prop.decorations & MWM_DECOR_TITLE)!=0));
 	    Tcl_AppendElement(interp, buff);
-    
-	    sprintf(buff, "-menu %d", 
+
+	    sprintf(buff, "-menu %d",
 		((wmPtr->prop.decorations & MWM_DECOR_MENU)!=0));
 	    Tcl_AppendElement(interp, buff);
-    
-	    sprintf(buff, "-minimize %d", 
+
+	    sprintf(buff, "-minimize %d",
 		((wmPtr->prop.decorations&MWM_DECOR_MINIMIZE)!=0));
 	    Tcl_AppendElement(interp, buff);
-    
-	    sprintf(buff, "-maximize %d", 
+
+	    sprintf(buff, "-maximize %d",
 		((wmPtr->prop.decorations&MWM_DECOR_MAXIMIZE)!=0));
 	    Tcl_AppendElement(interp, buff);
 
@@ -419,7 +422,7 @@ int SetMwmDecorations(interp, wmPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 
-	    if (Tcl_GetBoolean(interp, argv[i+1], &value) != TCL_OK) {
+	    if (Tcl_GetBooleanFromObj(interp, argv[i+1], &value) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 
@@ -510,7 +513,7 @@ static void AddMwmProtocol(interp, wmPtr, name, message)
 
     protocol = Tk_InternAtom(wmPtr->tkwin, name);
     ptPtr = GetMwmProtocol(interp, wmPtr, protocol);
-    
+
     if (ptPtr->menuMessage != NULL) {
 	/* This may happen if "protocol add" called twice for the same name */
 	ckfree(ptPtr->menuMessage);
@@ -654,7 +657,7 @@ static void ResetProtocols(clientData)
      * Update the MWM menu items
      */
     XChangeProperty(Tk_Display(wmPtr->tkwin), Tk_WindowId(wmPtr->tkwin),
-	mwm_menu_atom, mwm_menu_atom, 8, PropModeReplace, 
+	mwm_menu_atom, mwm_menu_atom, 8, PropModeReplace,
 	(unsigned char *)Tcl_DStringValue(&dString), Tcl_DStringLength(&dString));
 
     Tcl_DStringFree(&dString);
@@ -684,7 +687,7 @@ int SetMwmTransientFor(interp, wmPtr, mainWindow, argc, argv)
     if (argc == 0) {
 	return TCL_OK;
     } else if (argc == 1) {
-	master = (TkWindow *) Tk_NameToWindow(interp, argv[0], 
+	master = (TkWindow *) Tk_NameToWindow(interp, argv[0],
 	    (Tk_Window)mainWindow);
 	if (master == NULL) {
 	    return TCL_ERROR;
@@ -697,14 +700,14 @@ int SetMwmTransientFor(interp, wmPtr, mainWindow, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
  * StructureProc --
  *
  *	Gets called in response to StructureNotify events in toplevels
- *	operated by the tixMwm command. 
+ *	operated by the tixMwm command.
  *
  * Results:
  *	none
@@ -723,7 +726,7 @@ StructureProc(clientData, eventPtr)
 {
     register Tix_MwmInfo * wmPtr = (Tix_MwmInfo *) clientData;
     Tcl_HashEntry *hashPtr;
-    
+
     if (eventPtr->type == DestroyNotify) {
 	Tcl_HashSearch 	  hSearch;
 	Tix_MwmProtocol * ptPtr;
@@ -761,7 +764,7 @@ StructureProc(clientData, eventPtr)
 	ckfree((char*)wmPtr);
     }
 }
-
+
 static Tix_MwmInfo *
 GetMwmInfo(interp, tkwin)
     Tcl_Interp * interp;
@@ -816,7 +819,7 @@ GetMwmProtocol(interp,  wmPtr, protocol)
 {
     Tcl_HashEntry     * hashPtr;
     int			isNew;
-    Tix_MwmProtocol   * ptPtr; 
+    Tix_MwmProtocol   * ptPtr;
 
     hashPtr = Tcl_CreateHashEntry(&wmPtr->protocols, (char*)protocol, &isNew);
     if (!isNew) {

@@ -4,7 +4,7 @@ use vars qw/$TOP/;
 
 sub colors {
 
-    # Create a top-level window containing a listbox showing a bunch of 
+    # Create a top-level window containing a listbox showing a bunch of
     # colors from the X color database.
 
     my($demo) = @_;
@@ -19,7 +19,7 @@ sub colors {
 			      -scrollbars e/);
     $list->pack(qw/-side left -fill y/);
 
-    $list->bind('<Double-1>' => 
+    $list->bind('<Double-1>' =>
         sub  {
 	    $_[0]->setPalette($_[0]->get('active'));
 	},

@@ -55,8 +55,8 @@ sub mkListbox2 {
 				gold3 gold4 goldenrod1 goldenrod2 goldenrod3 goldenrod4 DarkGoldenrod1 DarkGoldenrod2
 				DarkGoldenrod3 DarkGoldenrod4 RosyBrown1 RosyBrown2 RosyBrown3 RosyBrown4 IndianRed1 IndianRed2
 				IndianRed3 IndianRed4 sienna1 sienna2 sienna3 sienna4 burlywood1 burlywood2 burlywood3
-				burlywood4 wheat1 wheat2 wheat3 wheat4 tan1 tan2 tan3 tan4 chocolate1 chocolate2 chocolate3 
-				chocolate4 firebrick1 firebrick2 firebrick3 firebrick4 brown1 brown2 brown3 brown4 salmon1 
+				burlywood4 wheat1 wheat2 wheat3 wheat4 tan1 tan2 tan3 tan4 chocolate1 chocolate2 chocolate3
+				chocolate4 firebrick1 firebrick2 firebrick3 firebrick4 brown1 brown2 brown3 brown4 salmon1
 				salmon2 salmon3 salmon4 LightSalmon1 LightSalmon2 LightSalmon3 LightSalmon4 orange1 orange2
 				orange3 orange4 DarkOrange1 DarkOrange2 DarkOrange3 DarkOrange4 coral1 coral2 coral3 coral4
 				tomato1 tomato2 tomato3 tomato4 OrangeRed1 OrangeRed2 OrangeRed3 OrangeRed4 red1 red2 red3 red4

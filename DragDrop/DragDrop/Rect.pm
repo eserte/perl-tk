@@ -1,10 +1,10 @@
 package Tk::DragDrop::Rect;
 use Carp;
-  
-# Proxy class which represents sites to the dropping side 
+
+# Proxy class which represents sites to the dropping side
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#9 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/Rect.pm#2 $
 
 sub Over
 {
@@ -13,7 +13,7 @@ sub Over
  my $y = $site->Y;
  my $w = $site->width;
  my $h = $site->height;
- 
+
  my $val = ($X >= $x && $X < ($x + $w) && $Y >= $y && $Y < ($y + $h));
  # print "Over ",$site->Show," $X,$Y => $val\n";
  return $val;

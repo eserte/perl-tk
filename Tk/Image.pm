@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Image;
@@ -10,7 +10,7 @@ require DynaLoader;
 use base qw(DynaLoader Tk); # but are they ?
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Image.pm#14 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Image.pm#8 $
 
 sub new
 {
@@ -19,6 +19,7 @@ sub new
  $package->InitClass($widget);
  my $leaf = $package->Tk_image;
  my $obj = $widget->Tk::image('create',$leaf,@_);
+ $obj = $widget->_object($obj) unless (ref $obj);
  return bless $obj,$package;
 }
 

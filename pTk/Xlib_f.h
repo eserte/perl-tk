@@ -9,5 +9,5 @@ typedef struct XlibVtab
 #undef VVAR
 } XlibVtab;
 extern XlibVtab *XlibVptr;
-extern XlibVtab *XlibVGet _ANSI_ARGS_((void));
+extern XlibVtab *XlibVGet (void);
 #endif /* XLIB_VT */

@@ -1,3 +1,6 @@
+
+/*	$Id: tix.h,v 1.4.2.2 2001/12/09 03:10:49 idiscovery Exp $	*/
+
 /*
  * tix.h --
  *
@@ -20,12 +23,12 @@
 #define _TIX_H_
 
 #ifndef TIX_VERSION
-#define TIX_VERSION	"4.1"
+#define TIX_VERSION	"8.1"
 #endif
-#define TIX_PATCHLEVEL	"4.1.0"
+#define TIX_PATCHLEVEL	"8.1.4"
 #define TIX_PATCH_LEVEL TIX_PATCHLEVEL
 
-#define TIX_RELEASE     "4.1.0.007"
+#define TIX_RELEASE     "8.1.4"
 
 #ifndef _TK
 #include <tk.h>
@@ -47,9 +50,31 @@
  * NOTE: This ifdef MUST appear after the include of tcl.h and tk.h
  * because the EXTERN declarations in those files need DLLIMPORT.
  */
+/*
+ * These macros are used to control whether functions are being declared for
+ * import or export.  If a function is being declared while it is being built
+ * to be included in a shared library, then it should have the DLLEXPORT
+ * storage class.  If is being declared for use by a module that is going to
+ * link against the shared library, then it should have the DLLIMPORT storage
+ * class.  If the symbol is beind declared for a static build or for use from a
+ * stub library, then the storage class should be empty.
+ *
+ * The convention is that a macro called BUILD_xxxx, where xxxx is the
+ * name of a library we are building, is set on the compile line for sources
+ * that are to be placed in the library.  When this macro is set, the
+ * storage class will be set to DLLEXPORT.  At the end of the header file, the
+ * storage class will be reset to DLLIMPORt.
+ */
+
+#undef TCL_STORAGE_CLASS
 #ifdef BUILD_tix
-# undef TCL_STORAGE_CLASS
 # define TCL_STORAGE_CLASS DLLEXPORT
+#else
+# ifdef USE_TCL_STUBS
+#  define TCL_STORAGE_CLASS
+# else
+#  define TCL_STORAGE_CLASS DLLIMPORT
+# endif
 #endif
 
 #ifdef __cplusplus
@@ -179,7 +204,7 @@ typedef struct _Tix_SubCmdInfo {
  */
 #define TIX_DECLARE_CMD(func) \
     int func _ANSI_ARGS_((ClientData clientData,\
-	Tcl_Interp *interp, int argc, char ** argv))
+	Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]))
 
 /*
  * TIX_DECLARE_SUBCMD --
@@ -189,7 +214,7 @@ typedef struct _Tix_SubCmdInfo {
  */
 #define TIX_DECLARE_SUBCMD(func) \
     int func _ANSI_ARGS_((ClientData clientData,\
-	Tcl_Interp *interp, int argc, char ** argv))
+	Tcl_Interp *interp, int argc, Tcl_Obj *CONST objv[]))
 
 /*
  * TIX_DEFINE_CMD --
@@ -203,9 +228,10 @@ int func(clientData, interp, argc, argv) \
 				 * interpreter. */		\
     Tcl_Interp *interp;		/* Current interpreter. */	\
     int argc;			/* Number of arguments. */	\
-    char **argv;		/* Argument strings. */
+    Tcl_Obj *objv[];		/* Argument strings. */
 
-
+
+
 /*----------------------------------------------------------------------
  * Link-list functions --
  *
@@ -278,7 +304,7 @@ EXTERN void		Tix_LinkListIteratorInit _ANSI_ARGS_(( Tix_ListIterator * liPtr));
 
 #define Tix_LinkListDone(liPtr) ((liPtr)->curr == NULL)
 
-
+
 /*----------------------------------------------------------------------
  * Simple Single Link List --
  *
@@ -466,13 +492,12 @@ extern TIX_DECLARE_CMD(Tix_CreateWidgetCmd);
  * Compatibility section
  *----------------------------------------------------------------------	*/
 
-#undef strdup
-#define strdup DoNotUse_strdup
-EXTERN char * 		tixStrDup _ANSI_ARGS_((CONST char * s));
 
 #ifdef _WINDOWS
 /* This is the way win/tkWinPort.h in tk8.0.5 defines it */
+#ifndef strcasecmp
 #define strcasecmp stricmp
+#endif
 #endif
 
 
@@ -480,4 +505,8 @@ EXTERN char * 		tixStrDup _ANSI_ARGS_((CONST char * s));
 }
 #endif
 
+
 #endif /* _TIX */
+
+
+

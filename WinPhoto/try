@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-use Tk;             
+use Tk;
 use Tk::WinPhoto;
 use Cwd;
 
@@ -21,14 +21,14 @@ $grab->bind('<ButtonRelease-1>', [\&GrabWin,Ev('X'),Ev('Y')]);
 print join(' ',$img->formats),"\n";
 
 my $lab = $mw->Label(-image => $img)->pack;
-MainLoop;                              
+MainLoop;
 
 sub Save
-{                       
- my $file = $mw->getSaveFile(-defaultextension => "\L$format", 
+{
+ my $file = $mw->getSaveFile(-defaultextension => "\L$format",
                              -initialdir => getcwd());
  if (defined $file)
-  {                      
+  {
    $img->write($file, -format => $format);
   }
 }
@@ -43,7 +43,7 @@ sub GrabStart
 sub Self
 {
  my $id = hex($b->id);
- print "id = $id\n"; 
+ print "id = $id\n";
  $img->configure(-format => "Window", -data => $id);
 }
 
@@ -53,6 +53,6 @@ sub GrabWin
  $w->grabRelease;
  $w->configure(-cursor => undef, -relief => 'raised');
  my $id = $w->PointToWindow($x,$y);
- print "id = $id\n"; 
+ print "id = $id\n";
  $img->configure(-format => "Window", -data => $id);
 }

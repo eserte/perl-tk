@@ -4,7 +4,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#14 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/Common.pm#2 $
 
 sub Type
 {

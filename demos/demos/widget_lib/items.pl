@@ -28,8 +28,8 @@ sub items {
     $iinfo{areaX2} = 0;
     $iinfo{areaY2} = 0;
     $iinfo{restore_cmd} = '';
-    
-                         
+
+
     if ($Tk::VERSION cmp '800.015') {
 	# Display a 3x3 rectangular grid (800.016 or greater).
 	$c->createGrid(qw/0c  0c 10c 8c -width 2 -lines 1/);
@@ -191,11 +191,11 @@ sub items {
     });
     $c->CanvasBind('<B1-Motion>' =>
         sub {items_drag shift, $Tk::event->x, $Tk::event->y, \%iinfo});
-    $c->CanvasBind('<2>' => 
+    $c->CanvasBind('<2>' =>
         sub {shift->scan('mark', $Tk::event->x, $Tk::event->y)});
     $c->CanvasBind('<B2-Motion>' =>
          sub {shift->scan('dragto', $Tk::event->x, $Tk::event->y)});
-    $c->CanvasBind('<3>' => 
+    $c->CanvasBind('<3>' =>
          sub {items_mark shift, $Tk::event->x, $Tk::event->y, \%iinfo});
     $c->CanvasBind('<B3-Motion>' =>
          sub {items_stroke shift, $Tk::event->x, $Tk::event->y, \%iinfo});
@@ -335,7 +335,7 @@ sub items_under_area {
     my $i;
     foreach $i ($c->find('enclosed', $iinfo->{areaX1},
             $iinfo->{areaY1}, $iinfo->{areaX2}, $iinfo->{areaY2})) {
-	my @tags = $c->gettags($i); 
+	my @tags = $c->gettags($i);
 	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
@@ -345,7 +345,7 @@ sub items_under_area {
     @items = ();
     foreach $i ($c->find('overlapping', $iinfo->{areaX1}, $iinfo->{areaY1},
             $iinfo->{areaX2}, $iinfo->{areaY2})) {
-	my @tags = $c->gettags($i); 
+	my @tags = $c->gettags($i);
 	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}

@@ -27,7 +27,7 @@ sub new
    if (defined $read)
     {
      foreach (split(/,/,$read))
-      {  
+      {
        if (/^\d+$/)
         {
          push(@read,[$_,$_]);
@@ -80,7 +80,7 @@ sub read
      croak "No state" unless (defined $state);
      my $i;
      for ($i=0; $i < @{$self->{Read}}; $i++)
-      {       
+      {
        my ($low,$high) = @{$self->{Read}[$i]};
        croak "$low > $high" unless ($low <= $high);
        if ($art >= $low && $art <= $high)
@@ -136,20 +136,20 @@ sub read
            return;
           }
         }
-      }       
+      }
      if ($state)
       {
        # read something off the end
-       push(@{$self->{Read}},[$art,$art]) 
+       push(@{$self->{Read}},[$art,$art])
       }
     }
    else
     {
      my $range;
      foreach $range (@{$self->{Read}})
-      {       
+      {
        return 1 if ($art >= $range->[0] && $art <= $range->[1]);
-      }       
+      }
      return 0;
     }
   }
@@ -159,7 +159,7 @@ sub read
    my $str = "";
    my @range = @{$self->{Read}};
    while (@range)
-    {       
+    {
      my $range = shift(@range);
      if ($range->[0] == $range->[1])
       {
@@ -170,7 +170,7 @@ sub read
        $str .= $range->[0] . '-' . $range->[1];
       }
      $str .= ',' if (@range);
-    }       
+    }
    return $str;
   }
 }
@@ -329,7 +329,7 @@ sub GetArticle
    $header = 0 if ($header && /^\s*$/);
   }
  $text->Unbusy;
- $text->focusNext; 
+ $text->focusNext;
  die "No arg in '$sel'" unless (defined $art);
  $lb->{Group}->read($art,1);
 }
@@ -337,7 +337,7 @@ sub GetArticle
 my $menubar = $mw->Frame->pack(-fill => 'x');
 
 my $mb = $menubar->Menubutton(-text => 'File', -underline => 0)->pack(-side => 'left');
-$mb->command(-label => 'Save', -underline => 0, 
+$mb->command(-label => 'Save', -underline => 0,
              -command => sub { $mb->Busy; News::Group->SaveRC; $mb->Unbusy } );
 $mb->command(-label => 'Quit', -underline => 0, -command => [ destroy => $mw ]);
 my $text = $mw->Scrolled('Text', -scrollbars => 'osow',-wrap => 'none');
@@ -348,7 +348,7 @@ $list->pack(-fill => 'both', -expand => 'y');
 
 $list->bind('<1>','focus');
 
-News::Group->ReadRC;         
+News::Group->ReadRC;
 
 my $sel = $menubar->Optionmenu(-options => [ map($_->name,News::Group->subscribed)]);
 $sel->configure(-command => [\&SetGroup,$list->Subwidget('listbox')]);

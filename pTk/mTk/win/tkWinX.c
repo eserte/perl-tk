@@ -5,16 +5,27 @@
  *
  * Copyright (c) 1995-1996 Sun Microsystems, Inc.
  * Copyright (c) 1994 Software Research Associates, Inc.
- * Copyright (c) 1998 by Scriptics Corporation.
+ * Copyright (c) 1998-2000 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinX.c,v 1.4 1998/10/10 00:30:37 rjohnson Exp $
+ * RCS: @(#) $Id: tkWinX.c,v 1.23 2002/06/19 19:37:55 mdejong Exp $
  */
 
-#include "tkInt.h"
 #include "tkWinInt.h"
+
+/*
+ * The w32api 1.1 package (included in Mingw 1.1) does not define _WIN32_IE
+ * by default. Define it here to gain access to the InitCommonControlsEx API
+ * in commctrl.h.
+ */
+
+#ifndef _WIN32_IE
+#define _WIN32_IE 0x0300
+#endif
+
+#include <commctrl.h>
 
 /*
  * The zmouse.h file includes the definition for WM_MOUSEWHEEL.
@@ -30,22 +41,69 @@
 
 
 /*
- * Definitions of extern variables supplied by this file.
+ * imm.h is needed by HandleIMEComposition
  */
 
-int tkpIsWin32s = -1;
+#include <imm.h>
+
+static TkWinProcs asciiProcs = {
+    0,
+
+    (LRESULT (WINAPI *)(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg,
+	    WPARAM wParam, LPARAM lParam)) CallWindowProcA,
+    (LRESULT (WINAPI *)(HWND hWnd, UINT Msg, WPARAM wParam,
+	    LPARAM lParam)) DefWindowProcA,
+    (ATOM (WINAPI *)(CONST WNDCLASS *lpWndClass)) RegisterClassA,
+    (BOOL (WINAPI *)(HWND hWnd, LPCTSTR lpString)) SetWindowTextA,
+    (HWND (WINAPI *)(DWORD dwExStyle, LPCTSTR lpClassName,
+	    LPCTSTR lpWindowName, DWORD dwStyle, int x, int y,
+	    int nWidth, int nHeight, HWND hWndParent, HMENU hMenu,
+	    HINSTANCE hInstance, LPVOID lpParam)) CreateWindowExA,
+};
+
+static TkWinProcs unicodeProcs = {
+    1,
+
+    (LRESULT (WINAPI *)(WNDPROC lpPrevWndFunc, HWND hWnd, UINT Msg,
+	    WPARAM wParam, LPARAM lParam)) CallWindowProcW,
+    (LRESULT (WINAPI *)(HWND hWnd, UINT Msg, WPARAM wParam,
+	    LPARAM lParam)) DefWindowProcW,
+    (ATOM (WINAPI *)(CONST WNDCLASS *lpWndClass)) RegisterClassW,
+    (BOOL (WINAPI *)(HWND hWnd, LPCTSTR lpString)) SetWindowTextW,
+    (HWND (WINAPI *)(DWORD dwExStyle, LPCTSTR lpClassName,
+	    LPCTSTR lpWindowName, DWORD dwStyle, int x, int y,
+	    int nWidth, int nHeight, HWND hWndParent, HMENU hMenu,
+	    HINSTANCE hInstance, LPVOID lpParam)) CreateWindowExW,
+};
+
+TkWinProcs *tkWinProcs;
 
 /*
  * Declarations of static variables used in this file.
  */
 
-static HINSTANCE tkInstance = (HINSTANCE) NULL;
-				/* Global application instance handle. */
-static TkDisplay *winDisplay;	/* Display that represents Windows screen. */
-static char winScreenName[] = ":0";
-				/* Default name of windows display. */
-static WNDCLASS childClass;	/* Window class for child windows. */
-static int childClassInitialized = 0; /* Registered child class? */
+static char winScreenName[] = ":0"; /* Default name of windows display. */
+static HINSTANCE tkInstance;        /* Application instance handle. */
+static int childClassInitialized;   /* Registered child class? */
+static WNDCLASS childClass;	    /* Window class for child windows. */
+static int tkPlatformId = 0;	    /* version of Windows platform */
+static Tcl_Encoding keyInputEncoding = NULL;/* The current character
+				     * encoding for keyboard input */
+static int keyInputCharset = -1;    /* The Win32 CHARSET for the keyboard
+				     * encoding */
+static Tcl_Encoding unicodeEncoding = NULL; /* unicode encoding */
+
+/*
+ * Thread local storage.  Notice that now each thread must have its
+ * own TkDisplay structure, since this structure contains most of
+ * the thread-specific date for threads.
+ */
+typedef struct ThreadSpecificData {
+    TkDisplay *winDisplay;       /* TkDisplay structure that *
+				  *  represents Windows screen. */
+    int updatingClipboard;	/* If 1, we are updating the clipboard */
+} ThreadSpecificData;
+static Tcl_ThreadDataKey dataKey;
 
 /*
  * Forward declarations of procedures used in this file.
@@ -60,7 +118,10 @@ static void		GenerateXEvent _ANSI_ARGS_((HWND hwnd, UINT message,
 static unsigned int	GetState _ANSI_ARGS_((UINT message, WPARAM wParam,
 			    LPARAM lParam));
 static void 		GetTranslatedKey _ANSI_ARGS_((XKeyEvent *xkey));
-
+static void             UpdateInputLanguage _ANSI_ARGS_((int charset));
+static int              HandleIMEComposition _ANSI_ARGS_((HWND hwnd,
+			    LPARAM lParam));
+
 /*
  *----------------------------------------------------------------------
  *
@@ -86,18 +147,22 @@ TkGetServerInfo(interp, tkwin)
     Tk_Window tkwin;		/* Token for window;  this selects a
 				 * particular display and server. */
 {
-    char buffer[50];
-    OSVERSIONINFO info;
+    char buffer[60];
+    OSVERSIONINFO os;
 
-    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    GetVersionEx(&info);
-    sprintf(buffer, "Windows %d.%d %d ", info.dwMajorVersion,
-	    info.dwMinorVersion, info.dwBuildNumber);
-    Tcl_AppendResult(interp, buffer,
-	    (info.dwPlatformId == VER_PLATFORM_WIN32s) ? "Win32s" : "Win32",
-	    (char *) NULL);
+    os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    GetVersionEx(&os);
+    sprintf(buffer, "Windows %d.%d %d %s", os.dwMajorVersion,
+	    os.dwMinorVersion, os.dwBuildNumber,
+#ifdef _WIN64
+	    "Win64"
+#else
+	    "Win32"
+#endif
+	);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -133,7 +198,7 @@ Tk_GetHINSTANCE()
 {
     return tkInstance;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -154,22 +219,47 @@ void
 TkWinXInit(hInstance)
     HINSTANCE hInstance;
 {
-    OSVERSIONINFO info;
-    DWORD mypid = GetCurrentProcessId();
-
-    info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    GetVersionEx(&info);
-    tkpIsWin32s = (info.dwPlatformId == VER_PLATFORM_WIN32s);
-    EnumWindows(FindMyConsole, (LPARAM) &mypid);
-
     if (childClassInitialized != 0) {
 	return;
     }
     childClassInitialized = 1;
 
+    if (TkWinGetPlatformId() == VER_PLATFORM_WIN32_NT) {
+	/*
+	 * This is necessary to enable the use of themeable elements on XP,
+	 * so we don't even try and call it for Win9*.
+	 */
+
+	INITCOMMONCONTROLSEX comctl;
+	ZeroMemory(&comctl, sizeof(comctl));
+	(void) InitCommonControlsEx(&comctl);
+
+	tkWinProcs = &unicodeProcs;
+    } else {
+	tkWinProcs = &asciiProcs;
+    }
+
+#ifdef _LANG
+	TclWinSetInterfaces(TkWinGetPlatformId() == VER_PLATFORM_WIN32_NT);
+#endif
+
     tkInstance = hInstance;
 
+    /*
+     * When threads are enabled, we cannot use CLASSDC because
+     * threads will then write into the same device context.
+     *
+     * This is a hack; we should add a subsystem that manages
+     * device context on a per-thread basis.  See also tkWinWm.c,
+     * which also initializes a WNDCLASS structure.
+     */
+
+#ifdef TCL_THREADS
+    childClass.style = CS_HREDRAW | CS_VREDRAW;
+#else
     childClass.style = CS_HREDRAW | CS_VREDRAW | CS_CLASSDC;
+#endif
+
     childClass.cbClsExtra = 0;
     childClass.cbWndExtra = 0;
     childClass.hInstance = hInstance;
@@ -189,7 +279,7 @@ TkWinXInit(hInstance)
 	panic("Unable to register TkChild class");
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -219,13 +309,51 @@ TkWinXCleanup(hInstance)
         UnregisterClass(TK_WIN_CHILD_CLASS_NAME, hInstance);
     }
 
+    if (unicodeEncoding != NULL) {
+	Tcl_FreeEncoding(unicodeEncoding);
+	unicodeEncoding = NULL;
+    }
+
     /*
      * And let the window manager clean up its own class(es).
      */
 
     TkWinWmCleanup(hInstance);
 }
-
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinGetPlatformId --
+ *
+ *	Determines whether running under NT, 95, or Win32s, to allow
+ *	runtime conditional code.  Win32s is no longer supported.
+ *
+ * Results:
+ *	The return value is one of:
+ *	    VER_PLATFORM_WIN32s		Win32s on Windows 3.1.
+ *	    VER_PLATFORM_WIN32_WINDOWS	Win32 on Windows 95.
+ *	    VER_PLATFORM_WIN32_NT	Win32 on Windows NT
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkWinGetPlatformId()
+{
+    if (tkPlatformId == 0) {
+	OSVERSIONINFO os;
+
+	os.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	GetVersionEx(&os);
+	tkPlatformId = os.dwPlatformId;
+    }
+    return tkPlatformId;
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -243,17 +371,17 @@ TkWinXCleanup(hInstance)
  *----------------------------------------------------------------------
  */
 
-char *
+CONST char *
 TkGetDefaultScreenName(interp, screenName)
     Tcl_Interp *interp;		/* Not used. */
-    char *screenName;		/* If NULL, use default string. */
+    CONST char *screenName;	/* If NULL, use default string. */
 {
     if ((screenName == NULL) || (screenName[0] == '\0')) {
 	screenName = winScreenName;
     }
     return screenName;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -263,32 +391,37 @@ TkGetDefaultScreenName(interp, screenName)
  *	specific information.
  *
  * Results:
- *	Returns a Display structure on success or NULL on failure.
+ *	Returns a TkDisplay structure on success or NULL on failure.
  *
  * Side effects:
- *	Allocates a new Display structure.
+ *	Allocates a new TkDisplay structure.
  *
  *----------------------------------------------------------------------
  */
 
 TkDisplay *
 TkpOpenDisplay(display_name)
-    char *display_name;
+    CONST char *display_name;
 {
     Screen *screen;
     HDC dc;
     TkWinDrawable *twdPtr;
     Display *display;
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
-    if (winDisplay != NULL) {
-	if (strcmp(winDisplay->display->display_name, display_name) == 0) {
-	    return winDisplay;
+    if (tsdPtr->winDisplay != NULL) {
+	if (strcmp(tsdPtr->winDisplay->display->display_name, display_name)
+                == 0) {
+	    return tsdPtr->winDisplay;
 	} else {
 	    return NULL;
 	}
     }
 
     display = (Display *) ckalloc(sizeof(Display));
+    ZeroMemory(display, sizeof(Display));
+
     display->display_name = (char *) ckalloc(strlen(display_name)+1);
     strcpy(display->display_name, display_name);
 
@@ -379,22 +512,18 @@ TkpOpenDisplay(display_name)
     screen->white_pixel = RGB(255, 255, 255);
     screen->black_pixel = RGB(0, 0, 0);
 
-    display->screens = screen;
-    display->nscreens = 1;
-    display->default_screen = 0;
+    display->screens		= screen;
+    display->nscreens		= 1;
+    display->default_screen	= 0;
     screen->cmap = XCreateColormap(display, None, screen->root_visual,
 	    AllocNone);
-    winDisplay = (TkDisplay *) ckalloc(sizeof(TkDisplay));
-    winDisplay->display = display;
-#ifdef __CYGWIN__
-    if((ConnectionNumber(display) = open("/dev/windows", O_RDONLY)) < 0)
-	return NULL;
-    Tcl_CreateFileHandler(ConnectionNumber(display), TCL_READABLE,
-	    DisplayFileProc, (ClientData) winDisplay);
-#endif
-    return winDisplay;
+    tsdPtr->winDisplay = (TkDisplay *) ckalloc(sizeof(TkDisplay));
+    ZeroMemory(tsdPtr->winDisplay, sizeof(TkDisplay));
+    tsdPtr->winDisplay->display = display;
+    tsdPtr->updatingClipboard = FALSE;
+    return tsdPtr->winDisplay;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -418,8 +547,10 @@ TkpCloseDisplay(dispPtr)
 {
     Display *display = dispPtr->display;
     HWND hwnd;
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
-    if (dispPtr != winDisplay) {
+    if (dispPtr != tsdPtr->winDisplay) {
         panic("TkpCloseDisplay: tried to call TkpCloseDisplay on another display");
         return;
     }
@@ -438,7 +569,7 @@ TkpCloseDisplay(dispPtr)
 	}
     }
 
-    winDisplay = NULL;
+    tsdPtr->winDisplay = NULL;
 
     if (display->display_name != (char *) NULL) {
         ckfree(display->display_name);
@@ -462,9 +593,9 @@ TkpCloseDisplay(dispPtr)
     }
 #endif
     ckfree((char *) display);
-    ckfree((char *) dispPtr);
 }
-
+
+
 #ifdef __CYGWIN__
 /*
  *----------------------------------------------------------------------
@@ -512,7 +643,7 @@ DisplayFileProc(clientData, flags)
     }
 }
 #endif
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -536,31 +667,6 @@ XBell(display, percent)
 {
     MessageBeep(MB_OK);
 }
-
-/*
- *----------------------------------------------------------------------
- *
- * XLowerWindow --
- *
- *	Change the stacking order of a window.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Changes the stacking order of the specified window.
- *
- *----------------------------------------------------------------------
- */
-
-#if 0 /* Better one in tkWinWindow.c */
-void
-XLowerWindow(display, w)
-    Display* display;
-    Window w;
-{
-}
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -589,6 +695,18 @@ TkWinChildProc(hwnd, message, wParam, lParam)
     LRESULT result;
 
     switch (message) {
+        case WM_INPUTLANGCHANGE:
+	    UpdateInputLanguage(wParam);
+	    result = 1;
+	    break;
+
+        case WM_IME_COMPOSITION:
+            result = 0;
+            if (HandleIMEComposition(hwnd, lParam) == 0) {
+                result = DefWindowProc(hwnd, message, wParam, lParam);
+            }
+            break;
+
 	case WM_SETCURSOR:
 	    /*
 	     * Short circuit the WM_SETCURSOR message since we set
@@ -600,7 +718,6 @@ TkWinChildProc(hwnd, message, wParam, lParam)
 
 	case WM_CREATE:
 	case WM_ERASEBKGND:
-	case WM_WINDOWPOSCHANGED:
 	    result = 0;
 	    break;
 
@@ -631,7 +748,7 @@ TkWinChildProc(hwnd, message, wParam, lParam)
     Tcl_ServiceAll();
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -730,7 +847,7 @@ Tk_TranslateWinEvent(hwnd, message, wParam, lParam, resultPtr)
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -757,6 +874,9 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 {
     XEvent event;
     TkWindow *winPtr = (TkWindow *)Tk_HWNDToWindow(hwnd);
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
+
     if (!winPtr || winPtr->window == None) {
 	return;
     }
@@ -798,7 +918,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 	case WM_SETFOCUS:
 	case WM_KILLFOCUS: {
 	    TkWindow *otherWinPtr = (TkWindow *)Tk_HWNDToWindow((HWND) wParam);
-	
+
 	    /*
 	     * Compare toplevel windows to avoid reporting focus
 	     * changes within the same toplevel.
@@ -813,6 +933,15 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 	    while (otherWinPtr && !(otherWinPtr->flags & TK_TOP_LEVEL)) {
 		otherWinPtr = otherWinPtr->parentPtr;
 	    }
+
+	    /*
+	     * Do a catch-all Tk_SetCaretPos here to make sure that the
+	     * window receiving focus sets the caret at least once.
+	     */
+	    if (message == WM_SETFOCUS) {
+		Tk_SetCaretPos((Tk_Window) winPtr, 0, 0, 0);
+	    }
+
 	    if (otherWinPtr == winPtr) {
 		return;
 	    }
@@ -821,23 +950,38 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 	    event.type = (message == WM_SETFOCUS) ? FocusIn : FocusOut;
 	    event.xfocus.mode = NotifyNormal;
 	    event.xfocus.detail = NotifyNonlinear;
+
+	    /*
+	     * Destroy the caret if we own it.  If we are moving to another Tk
+	     * window, it will reclaim and reposition it with Tk_SetCaretPos.
+	     */
+	    if (message == WM_KILLFOCUS) {
+		DestroyCaret();
+	    }
 	    break;
 	}
 
 	case WM_DESTROYCLIPBOARD:
+	    if (tsdPtr->updatingClipboard == TRUE) {
+		/*
+		 * We want to avoid this event if we are the ones that caused
+		 * this event.
+		 */
+		return;
+	    }
 	    event.type = SelectionClear;
 	    event.xselectionclear.selection =
 		Tk_InternAtom((Tk_Window)winPtr, "CLIPBOARD");
 	    event.xselectionclear.time = TkpGetMS();
 	    break;
-	
+
 	case WM_MOUSEWHEEL:
 	    /*
 	     * The mouse wheel event is closer to a key event than a
 	     * mouse event in that the message is sent to the window
 	     * that has focus.
 	     */
-	
+
 	case WM_CHAR:
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
@@ -852,7 +996,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 	    /*
 	     * Compute the screen and window coordinates of the event.
 	     */
-	
+
 	    msgPos = GetMessagePos();
 	    rootPoint = MAKEPOINTS(msgPos);
 	    clientPoint.x = rootPoint.x;
@@ -886,7 +1030,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 		     * However, the keycode field has been overloaded
 		     * to hold the zDelta of the wheel.
 		     */
-		
+
 		    event.type = MouseWheelEvent;
 		    event.xany.send_event = -1;
 		    event.xkey.keycode = (short) HIWORD(wParam);
@@ -896,13 +1040,11 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 		    /*
 		     * Check for translated characters in the event queue.
 		     * Setting xany.send_event to -1 indicates to the
-		     * Windows implementation of XLookupString that this
+		     * Windows implementation of TkpGetString() that this
 		     * event was generated by windows and that the Windows
 		     * extension xkey.trans_chars is filled with the
-		     * characters that came from the TranslateMessage
-		     * call.  If it is not -1, xkey.keycode is the
-		     * virtual key being sent programmatically by generic
-		     * code.
+		     * MBCS characters that came from the TranslateMessage
+		     * call.
 		     */
 
 #ifdef __OPEN32__
@@ -926,12 +1068,43 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 #endif
 		    event.type = KeyRelease;
 		    event.xkey.keycode = wParam;
-		    event.xkey.nchars = 0;
+		    event.xkey.nbytes = 0;
 		    break;
 
 		case WM_CHAR:
 		    /*
 		     * Synthesize both a KeyPress and a KeyRelease.
+		     * Strings generated by Input Method Editor are handled
+		     * in the following manner:
+		     * 1. A series of WM_KEYDOWN & WM_KEYUP messages that
+		     *    cause GetTranslatedKey() to be called and return
+		     *    immediately because the WM_KEYDOWNs have no
+		     *	  associated WM_CHAR messages -- the IME window is
+		     *	  accumulating the characters and translating them
+		     *    itself.  In the "bind" command, you get an event
+		     *	  with a mystery keysym and %A == "" for each
+		     *	  WM_KEYDOWN that actually was meant for the IME.
+		     * 2. A WM_KEYDOWN corresponding to the "confirm typing"
+		     *    character.  This causes GetTranslatedKey() to be
+		     *	  called.
+		     * 3. A WM_IME_NOTIFY message saying that the IME is
+		     *	  done.  A side effect of this message is that
+		     *    GetTranslatedKey() thinks this means that there
+		     *	  are no WM_CHAR messages and returns immediately.
+		     *    In the "bind" command, you get an another event
+		     *	  with a mystery keysym and %A == "".
+		     * 4. A sequence of WM_CHAR messages that correspond to
+		     *	  the characters in the IME window.  A bunch of
+		     *    simulated KeyPress/KeyRelease events will be
+		     *    generated, one for each character.  Adjacent
+		     *    WM_CHAR messages may actually specify the high
+		     *	  and low bytes of a multi-byte character -- in that
+		     *    case the two WM_CHAR messages will be combined into
+		     *	  one event.  It is the event-consumer's
+		     *	  responsibility to convert the string returned from
+		     *	  XLookupString from system encoding to UTF-8.
+		     * 5. And finally we get the WM_KEYUP for the "confirm
+		     *    typing" character.
 		     */
 
 #ifdef __OPEN32__
@@ -940,8 +1113,19 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 		    event.type = KeyPress;
 		    event.xany.send_event = -1;
 		    event.xkey.keycode = 0;
-		    event.xkey.nchars = 1;
+		    event.xkey.nbytes = 1;
 		    event.xkey.trans_chars[0] = (char) wParam;
+
+		    if (IsDBCSLeadByte((BYTE) wParam)) {
+			MSG msg;
+
+			if ((PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE) != 0)
+				&& (msg.message == WM_CHAR)) {
+			    GetMessage(&msg, NULL, 0, 0);
+			    event.xkey.nbytes = 2;
+			    event.xkey.trans_chars[1] = (char) msg.wParam;
+			}
+		    }
 		    Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
 		    event.type = KeyRelease;
 		    break;
@@ -954,7 +1138,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
     }
     Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1000,7 +1184,7 @@ GetState(message, wParam, lParam)
 		mask = ControlMask;
 		break;
 	    case VK_MENU:
-		mask = Mod2Mask;
+		mask = ALT_MASK;
 		break;
 	    case VK_CAPITAL:
 		if (message == WM_SYSKEYDOWN || message == WM_KEYDOWN) {
@@ -1029,7 +1213,7 @@ GetState(message, wParam, lParam)
     }
     return state;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1040,7 +1224,7 @@ GetState(message, wParam, lParam)
  *	given KeyPress event.
  *
  * Results:
- *	Sets the trans_chars and nchars member of the key event.
+ *	Sets the trans_chars and nbytes member of the key event.
  *
  * Side effects:
  *	Removes any WM_CHAR messages waiting on the top of the system
@@ -1055,16 +1239,11 @@ GetTranslatedKey(xkey)
 {
     MSG msg;
 
-    xkey->nchars = 0;
+    xkey->nbytes = 0;
 
-    while (xkey->nchars < XMaxTransChars
+    while ((xkey->nbytes < XMaxTransChars)
 	    && PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 	if ((msg.message == WM_CHAR) || (msg.message == WM_SYSCHAR)) {
-	    xkey->trans_chars[xkey->nchars] = (char) msg.wParam;
-#ifdef __OPEN32__
-	    StashedKey = (char) msg.wParam;
-#endif
-	    xkey->nchars++;
 	    GetMessage(&msg, NULL, 0, 0);
 
 	    /*
@@ -1078,18 +1257,276 @@ GetTranslatedKey(xkey)
 	    if ((msg.message == WM_CHAR) && (msg.lParam & 0x20000000)) {
 		xkey->state = 0;
 	    }
+	    xkey->trans_chars[xkey->nbytes] = (char) msg.wParam;
+	    xkey->nbytes++;
+
+	    if (((unsigned short) msg.wParam) > ((unsigned short) 0xff)) {
+                /*
+                 * Some "addon" input devices, such as the popular
+                 * PenPower Chinese writing pad, generate 16 bit
+                 * values in WM_CHAR messages (instead of passing them
+                 * in two separate WM_CHAR messages containing two
+                 * 8-bit values.
+                 */
+
+	        xkey->trans_chars[xkey->nbytes] = (char) (msg.wParam >> 8);
+	        xkey->nbytes ++;
+	    }
 	} else {
 	    break;
 	}
     }
 }
-
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * UpdateInputLanguage --
+ *
+ *	Gets called when a WM_INPUTLANGCHANGE message is received
+ *      by the TK child window procedure. This message is sent
+ *      by the Input Method Editor system when the user chooses
+ *      a different input method. All subsequent WM_CHAR
+ *      messages will contain characters in the new encoding. We record
+ *      the new encoding so that TkpGetString() knows how to
+ *      correctly translate the WM_CHAR into unicode.
+ *
+ * Results:
+ *	Records the new encoding in keyInputEncoding.
+ *
+ * Side effects:
+ *	Old value of keyInputEncoding is freed.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+UpdateInputLanguage(charset)
+    int charset;
+{
+    CHARSETINFO charsetInfo;
+    Tcl_Encoding encoding;
+    char codepage[4 + TCL_INTEGER_SPACE];
+
+    if (keyInputCharset == charset) {
+	return;
+    }
+    if (TranslateCharsetInfo((DWORD*)charset, &charsetInfo, TCI_SRCCHARSET)
+            == 0) {
+	/*
+	 * Some mysterious failure.
+	 */
+
+	return;
+    }
+
+    wsprintfA(codepage, "cp%d", charsetInfo.ciACP);
+
+    if ((encoding = Tcl_GetEncoding(NULL, codepage)) == NULL) {
+	/*
+	 * The encoding is not supported by Tcl.
+	 */
+
+	return;
+    }
+
+    if (keyInputEncoding != NULL) {
+	Tcl_FreeEncoding(keyInputEncoding);
+    }
+
+    keyInputEncoding = encoding;
+    keyInputCharset = charset;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinGetKeyInputEncoding --
+ *
+ *	Returns the current keyboard input encoding selected by the
+ *      user (with WM_INPUTLANGCHANGE events).
+ *
+ * Results:
+ *	The current keyboard input encoding.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+Tcl_Encoding
+TkWinGetKeyInputEncoding()
+{
+    return keyInputEncoding;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinGetUnicodeEncoding --
+ *
+ *	Returns the cached unicode encoding.
+ *
+ * Results:
+ *	The unicode encoding.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+Tcl_Encoding
+TkWinGetUnicodeEncoding()
+{
+    if (unicodeEncoding == NULL) {
+	unicodeEncoding = Tcl_GetEncoding(NULL, "unicode");
+    }
+    return unicodeEncoding;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * HandleIMEComposition --
+ *
+ *      This function works around a definciency in some versions
+ *      of Windows 2000 to make it possible to entry multi-lingual
+ *      characters under all versions of Windows 2000.
+ *
+ *      When an Input Method Editor (IME) is ready to send input
+ *      characters to an application, it sends a WM_IME_COMPOSITION
+ *      message with the GCS_RESULTSTR. However, The DefWindowProc()
+ *      on English Windows 2000 arbitrarily converts all non-Latin-1
+ *      characters in the composition to "?".
+ *
+ *      This function correctly processes the composition data and
+ *      sends the UNICODE values of the composed characters to
+ *      TK's event queue.
+ *
+ * Results:
+ *	If this function has processed the composition data, returns 1.
+ *      Otherwise returns 0.
+ *
+ * Side effects:
+ *	Key events are put into the TK event queue.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+HandleIMEComposition(hwnd, lParam)
+    HWND hwnd;                          /* Window receiving the message. */
+    LPARAM lParam;                      /* Flags for the WM_IME_COMPOSITION
+                                         * message */
+{
+    HIMC hIMC;
+    int i, n;
+    XEvent event;
+    char * buff;
+    TkWindow *winPtr;
+    Tcl_Encoding unicodeEncoding = TkWinGetUnicodeEncoding();
+    BOOL isWinNT = (TkWinGetPlatformId() == VER_PLATFORM_WIN32_NT);
+
+    if ((lParam & GCS_RESULTSTR) == 0) {
+        /*
+         * Composition is not finished yet.
+         */
+
+        return 0;
+    }
+
+    hIMC = ImmGetContext(hwnd);
+    if (hIMC) {
+	if (isWinNT) {
+	    n = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR, NULL, 0);
+	} else {
+	    n = ImmGetCompositionStringA(hIMC, GCS_RESULTSTR, NULL, 0);
+	}
+
+        if ((n > 0) && ((buff = (char *) ckalloc(n)) != NULL)) {
+	    if (isWinNT) {
+		n = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR, buff, n);
+	    } else {
+		Tcl_DString utfString, unicodeString;
+
+		n = ImmGetCompositionStringA(hIMC, GCS_RESULTSTR, buff, n);
+		Tcl_DStringInit(&utfString);
+		Tcl_ExternalToUtfDString(keyInputEncoding, buff, n,
+			&utfString);
+		Tcl_UtfToExternalDString(unicodeEncoding,
+			Tcl_DStringValue(&utfString), -1, &unicodeString);
+		i = Tcl_DStringLength(&unicodeString);
+		if (n < i) {
+		    /*
+		     * Only alloc more space if we need, otherwise just
+		     * use what we've created.  Don't realloc as that may
+		     * copy data we no longer need.
+		     */
+		    ckfree((char *) buff);
+		    buff = (char *) ckalloc(i);
+		}
+		n = i;
+		memcpy(buff, Tcl_DStringValue(&unicodeString), n);
+		Tcl_DStringFree(&utfString);
+		Tcl_DStringFree(&unicodeString);
+	    }
+
+	    /*
+	     * Set up the fields pertinent to key event.
+             *
+             * We set send_event to the special value of -2, so that
+             * TkpGetString() in tkWinKey.c knows that trans_chars[]
+             * already contains a UNICODE char and there's no need to
+             * do encoding conversion.
+	     */
+
+            winPtr = (TkWindow *)Tk_HWNDToWindow(hwnd);
+
+            event.xkey.serial = winPtr->display->request++;
+            event.xkey.send_event = -2;
+            event.xkey.display = winPtr->display;
+            event.xkey.window = winPtr->window;
+	    event.xkey.root = RootWindow(winPtr->display, winPtr->screenNum);
+	    event.xkey.subwindow = None;
+	    event.xkey.state = TkWinGetModifierState();
+	    event.xkey.time = TkpGetMS();
+	    event.xkey.same_screen = True;
+            event.xkey.keycode = 0;
+            event.xkey.nbytes = 2;
+
+            for (i=0; i<n;) {
+                /*
+                 * Simulate a pair of KeyPress and KeyRelease events
+                 * for each UNICODE character in the composition.
+                 */
+
+                event.xkey.trans_chars[0] = (char) buff[i++];
+                event.xkey.trans_chars[1] = (char) buff[i++];
+
+                event.type = KeyPress;
+                Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
+
+                event.type = KeyRelease;
+                Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
+            }
+
+            ckfree(buff);
+        }
+        ImmReleaseContext(hwnd, hIMC);
+        return 1;
+    }
+
+    return 0;
+}
+
 /*
  *----------------------------------------------------------------------
  *
  * Tk_FreeXId --
  *
- *	This inteface is not needed under Windows.
+ *	This interface is not needed under Windows.
  *
  * Results:
  *	None.
@@ -1106,7 +1543,7 @@ Tk_FreeXId(display, xid)
     XID xid;
 {
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1173,7 +1610,7 @@ TkWinResendEvent(wndproc, hwnd, eventPtr)
     }
     return CallWindowProc(wndproc, hwnd, msg, wparam, lparam);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1194,5 +1631,127 @@ TkWinResendEvent(wndproc, hwnd, eventPtr)
 unsigned long
 TkpGetMS()
 {
-    return GetCurrentTime();
+    return GetTickCount();
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkWinUpdatingClipboard --
+ *
+ *
+ * Results:
+ *	Number of milliseconds.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TkWinUpdatingClipboard(int mode)
+{
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
+
+    tsdPtr->updatingClipboard = mode;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_SetCaretPos --
+ *
+ *	This enables correct movement of focus in the MS Magnifier, as well
+ *	as allowing us to correctly position the IME Window.  The following
+ *	Win32 APIs are used to work with MS caret:
+ *
+ *	CreateCaret	DestroyCaret	SetCaretPos	GetCaretPos
+ *
+ *	Only one instance of caret can be active at any time
+ *	(e.g. DestroyCaret API does not take any argument such as handle).
+ *	Since do-it-right approach requires to track the create/destroy
+ *	caret status all the time in a global scope among windows (or
+ *	widgets), we just implement this minimal setup to get the job done.
+ *
+ * Results:
+ *	None
+ *
+ * Side effects:
+ *	Sets the global Windows caret position.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+Tk_SetCaretPos(Tk_Window tkwin, int x, int y, int height)
+{
+    static HWND caretHWND = NULL;
+    TkCaret *caretPtr = &(((TkWindow *) tkwin)->dispPtr->caret);
+    Window win;
+
+    /*
+     * Prevent processing anything if the values haven't changed.
+     * Windows only has one display, so we can do this with statics.
+     */
+    if ((caretPtr->winPtr == ((TkWindow *) tkwin))
+	    && (caretPtr->x == x) && (caretPtr->y == y)) {
+	return;
+    }
+
+    caretPtr->winPtr = ((TkWindow *) tkwin);
+    caretPtr->x = x;
+    caretPtr->y = y;
+    caretPtr->height = height;
+
+    /*
+     * We adjust to the toplevel to get the coords right, as setting
+     * the IME composition window is based on the toplevel hwnd, so
+     * ignore height.
+     */
+
+    while (!Tk_IsTopLevel(tkwin)) {
+	x += Tk_X(tkwin);
+	y += Tk_Y(tkwin);
+	tkwin = Tk_Parent(tkwin);
+	if (tkwin == NULL) {
+	    return;
+	}
+    }
+
+    win = Tk_WindowId(tkwin);
+    if (win) {
+	HIMC hIMC;
+	HWND hwnd = Tk_GetHWND(win);
+
+	if (hwnd != caretHWND) {
+	    DestroyCaret();
+	    if (CreateCaret(hwnd, NULL, 0, 0)) {
+		caretHWND = hwnd;
+	    }
+	}
+
+	if (!SetCaretPos(x, y) && CreateCaret(hwnd, NULL, 0, 0)) {
+	    caretHWND = hwnd;
+	    SetCaretPos(x, y);
+	}
+
+	/*
+	 * The IME composition window should be updated whenever the caret
+	 * position is changed because a clause of the composition string may
+	 * be converted to the final characters and the other clauses still
+	 * stay on the composition window.  -- yamamoto
+	 */
+	hIMC = ImmGetContext(hwnd);
+	if (hIMC) {
+	    COMPOSITIONFORM cform;
+	    cform.dwStyle = CFS_POINT;
+	    cform.ptCurrentPos.x = x;
+	    cform.ptCurrentPos.y = y;
+	    ImmSetCompositionWindow(hIMC, &cform);
+	    ImmReleaseContext(hwnd, hIMC);
+	}
+    }
+}
+

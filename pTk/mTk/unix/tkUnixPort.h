@@ -7,12 +7,11 @@
  *
  * Copyright (c) 1991-1993 The Regents of the University of California.
  * Copyright (c) 1994-1996 Sun Microsystems, Inc.
- * Copyright (c) 1998 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnixPort.h,v 1.3 1998/09/30 19:01:22 rjohnson Exp $
+ * RCS: @(#) $Id: tkUnixPort.h,v 1.8 2002/06/14 13:35:49 dkf Exp $
  */
 
 #ifndef _UNIXPORT
@@ -158,8 +157,10 @@ extern int errno;
 #define TkDestroyRegion(rgn) XDestroyRegion((Region) rgn)
 #define TkIntersectRegion(a, b, r) XIntersectRegion((Region) a, \
 	(Region) b, (Region) r)
-/* #define TkRectInRegion(r, x, y, w, h) XRectInRegion((Region) r, x, y, w, h) */
+#define TkRectInRegion(r, x, y, w, h) XRectInRegion((Region) r, x, y, w, h)
 #define TkSetRegion(d, gc, rgn) XSetRegion(d, gc, (Region) rgn)
+#define TkSubtractRegion(a, b, r) XSubtractRegion((Region) a, \
+	(Region) b, (Region) r)
 #define TkUnionRectWithRegion(rect, src, ret) XUnionRectWithRegion(rect, \
 	(Region) src, (Region) ret)
 
@@ -194,14 +195,12 @@ extern int errno;
  * in any other header file.
  */
 
-#ifndef _LANG
-extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
-#endif
 
 /*
  * These functions do nothing under Unix, so we just eliminate calls to them.
  */
 
+#define TkpButtonSetDefaults(specPtr) {}
 #define TkpDestroyButton(butPtr) {}
 #define TkSelUpdateClipboard(a,b) {}
 #define TkSetPixmapColormap(p,c) {}
@@ -217,18 +216,12 @@ extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
 
 /*
  * This macro stores a representation of the window handle in a string.
+ * This should perhaps use the real size of an XID.
  */
 
 #define TkpPrintWindowId(buf,w) \
-	sprintf((buf), "0x%x", (unsigned int) (w))
-	
-/*
- * TkpScanWindowId is just an alias for Tcl_GetInt on Unix.
- */
+	sprintf((buf), "%#08lx", (unsigned long) (w))
 
-#define TkpScanWindowId(i,s,wp) \
-	Tcl_GetInt((i),(s),(wp))
-	
 /*
  * This macro indicates that entry and text widgets should display
  * the selection highlight regardless of which window has the focus.
@@ -241,8 +234,9 @@ extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
  * that is needed for portability reasons.
  */
 
-#ifndef TclpGetTime
-EXTERN void		TclpGetTime _ANSI_ARGS_((Tcl_Time *time));
+#ifndef _TCLINT
+#include <tclInt.h>
 #endif
 
 #endif /* _UNIXPORT */
+

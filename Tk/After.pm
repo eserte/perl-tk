@@ -1,14 +1,14 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/After.pm#15 $
+$VERSION = '4.003'; # $Id: //depot/Tkutf8/Tk/After.pm#3 $
 
 sub _cancelAll
-{    
+{
  my $w = shift;
  my $h = delete $w->{_After_};
  foreach my $obj (values %$h)

@@ -1,3 +1,6 @@
+
+/*	$Id: tixOption.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixOption.c --
  *
@@ -129,7 +132,7 @@ Tix_FindConfigSpecByName(interp, cPtr, flag)
     classRec = cPtr->className;
 
     /*
-     * First try to look up the confifspec in a hash table, 
+     * First try to look up the confifspec in a hash table,
      * it should be faster.
      */
 
@@ -207,7 +210,7 @@ int Tix_ChangeOptions(interp, cPtr, widRec, argc, argv)
 	    Tcl_AppendResult(interp, "value for \"", argv[argc-1],
 		"\" missing", (char*)NULL);
 	} else {
-	    /* The error message is already appended by 
+	    /* The error message is already appended by
 	     * Tix_FindConfigSpecByName()
 	     */
 	}

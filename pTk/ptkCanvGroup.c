@@ -46,8 +46,8 @@ static Arg		MembersPrintProc _ANSI_ARGS_((ClientData clientData,
 
 
 static Tk_CustomOption stateOption = {
-    Tk_StateParseProc,
-    Tk_StatePrintProc, (ClientData) 3
+    TkStateParseProc,
+    TkStatePrintProc, (ClientData) 3
 };
 static Tk_CustomOption tagsOption = {
     Tk_CanvasTagsParseProc,
@@ -83,10 +83,10 @@ static void		ComputeGroupBbox _ANSI_ARGS_((Tk_Canvas canvas,
 			    GroupItem *groupPtr));
 static int		ConfigureGroup _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    Arg *args, int flags));
+			    Tcl_Obj *CONST *args, int flags));
 static int		CreateGroup _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
-			    int argc, Arg *args));
+			    int argc, Tcl_Obj *CONST *args));
 static void		DeleteGroup _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, Display *display));
 static void		DisplayGroup _ANSI_ARGS_((Tk_Canvas canvas,
@@ -94,7 +94,7 @@ static void		DisplayGroup _ANSI_ARGS_((Tk_Canvas canvas,
 			    int x, int y, int width, int height));
 static int		GroupCoords _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    Arg *args));
+			    Tcl_Obj *CONST *args));
 static int		GroupToPostscript _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int prepass));
 static int		GroupToArea _ANSI_ARGS_((Tk_Canvas canvas,
@@ -144,8 +144,8 @@ Tk_ItemType ptkCanvGroupType = {
     (Tk_ItemType *) NULL,		/* nextPtr */
     (Tk_ItemBboxProc *) ComputeGroupBbox,/* bboxProc */
     Tk_Offset(Tk_VisitorType, visitGroup), /* acceptProc */
-    (Tk_ItemGetCoordProc *) NULL,	/* getCoordPtr */
-    (Tk_ItemSetCoordProc *) NULL	/* setCoordPtr */
+    NULL,	/* getCoordPtr */
+    NULL	/* setCoordPtr */
 };
 
 
@@ -171,7 +171,7 @@ ShowMembers(char *f,GroupItem *groupPtr)
 }
 
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -199,7 +199,7 @@ CreateGroup(interp, canvas, itemPtr, argc, args)
     Tk_Item *itemPtr;			/* Record to hold new item;  header
 					 * has been initialized by caller. */
     int argc;				/* Number of arguments in args. */
-    Arg *args;				/* Arguments describing group. */
+    Tcl_Obj *CONST *args;		/* Arguments describing group. */
 {
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     int i;
@@ -251,7 +251,7 @@ CreateGroup(interp, canvas, itemPtr, argc, args)
     DeleteGroup(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -278,7 +278,7 @@ GroupCoords(interp, canvas, itemPtr, argc, args)
 					 * read or modified. */
     int argc;				/* Number of coordinates supplied in
 					 * args. */
-    Arg *args;				/* Array of coordinates: x1, y1,
+    Tcl_Obj *CONST *args;		/* Array of coordinates: x1, y1,
 					 * x2, y2, ... */
 {
     GroupItem *groupPtr = (GroupItem *) itemPtr;
@@ -295,7 +295,7 @@ GroupCoords(interp, canvas, itemPtr, argc, args)
 	double newX;
 	double newY;
  	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, args[0], &argc, (Tcl_Obj ***)&args) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 2) {
 		sprintf(c0,"%d",argc);
@@ -319,7 +319,7 @@ GroupCoords(interp, canvas, itemPtr, argc, args)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -346,7 +346,7 @@ ConfigureGroup(interp, canvas, itemPtr, argc, args, flags)
     Tk_Canvas canvas;		/* Canvas containing itemPtr. */
     Tk_Item *itemPtr;		/* Rectangle item to reconfigure. */
     int argc;			/* Number of elements in args.  */
-    Arg *args;		/* Arguments describing things to configure. */
+    Tcl_Obj *CONST *args;	/* Arguments describing things to configure. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
@@ -372,7 +372,7 @@ ConfigureGroup(interp, canvas, itemPtr, argc, args, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -445,7 +445,7 @@ Tk_Item *itemPtr;
   LangDebug("Cannot find %d in %d\n",itemPtr->id, groupPtr->header.id);
 }
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -485,8 +485,6 @@ ComputeGroupBbox(canvas, groupPtr)
 	    if (Tk_GetItemState(canvas, subitemPtr) == TK_STATE_HIDDEN) {
 		continue;
 	    }
-	    /* FIXME - do we really need to call bboxProc ? */
-	    (*subitemPtr->typePtr->bboxProc)(canvas, subitemPtr);
 	    if (seen++ == 0) {
 		groupPtr->header.x1 = subitemPtr->x1;
 		groupPtr->header.y1 = subitemPtr->y1;
@@ -519,7 +517,7 @@ ComputeGroupBbox(canvas, groupPtr)
 	groupPtr->header.y2 = groupPtr->header.y1;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -564,7 +562,15 @@ DisplayGroup(canvas, itemPtr, display, drawable, x, y, width, height)
 		continue;
 	    }
 	    if (drawable != None ||
-		(subitemPtr->typePtr->flags & TK_ITEM_ALWAYS_REDRAW)) {
+		(subitemPtr->typePtr->alwaysRedraw & 1)) {
+		if (subitemPtr->updateCmd) {
+		    if (canvasPtr->updateCmds == NULL) {
+			canvasPtr->updateCmds = Tcl_NewListObj(0,NULL);
+		    }
+		    Tcl_IncrRefCount(subitemPtr->updateCmd);
+		    Tcl_ListObjAppendElement(canvasPtr->interp,canvasPtr->updateCmds,
+				subitemPtr->updateCmd);
+		}
 		(*subitemPtr->typePtr->displayProc)(canvas, subitemPtr, display,
 		    drawable, x, y, width, height);
 	    }
@@ -572,7 +578,7 @@ DisplayGroup(canvas, itemPtr, display, drawable, x, y, width, height)
     }
     canvasPtr->activeGroup = saveGroup;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -633,8 +639,8 @@ GroupToPoint(canvas, itemPtr, pointPtr)
     canvasPtr->activeGroup = saveGroup;
     return best;
 }
-
-
+
+
 /*
  *--------------------------------------------------------------
  *
@@ -709,8 +715,8 @@ GroupToArea(canvas, itemPtr, areaPtr)
        return -1;
     }
 }
-
-
+
+
 /*
  *--------------------------------------------------------------
  *
@@ -760,7 +766,7 @@ ScaleGroup(canvas, itemPtr, originX, originY, scaleX, scaleY)
 
     ComputeGroupBbox(canvas, groupPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -803,7 +809,7 @@ TranslateGroup(canvas, itemPtr, deltaX, deltaY)
     canvasPtr->activeGroup = saveGroup;
     ComputeGroupBbox(canvas, groupPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -841,10 +847,18 @@ GroupToPostscript(interp, canvas, itemPtr, prepass)
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
     int code = TCL_OK;
     int i;
+
+    if (state == TK_STATE_HIDDEN) {
+	return code;
+    }
+
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
 	if (subitemPtr != NULL) {
+	    if (Tk_GetItemState(canvas, subitemPtr) == TK_STATE_HIDDEN) {
+		continue;
+	    }
 	    code = (*subitemPtr->typePtr->postscriptProc)(interp, canvas,
 			subitemPtr, prepass);
 	    if (code != TCL_OK) {

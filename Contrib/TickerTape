@@ -1,14 +1,14 @@
 #!/usr/local/bin/perl
 
-=head1 NAME 
+=head1 NAME
 
 TickerTape - Display long message in Tk
 
-=head1 SYNOPSIS    
+=head1 SYNOPSIS
 
 TickerTape Message
 
-=head1 DESCRIPTION 
+=head1 DESCRIPTION
 
 For everyone with a case of Browser envy after using Microsoft's Internet
 Explorer, here's a perl/tk script only slightly more useful than a script
@@ -20,7 +20,7 @@ tog
 Terry Greenlaw (on-site @ Lockheed Martin)               Encompass Technologies
 z50816@mip.lasc.lockheed.com                             terry@encompass.is.net
 
-=cut 
+=cut
 
 
 use Tk;

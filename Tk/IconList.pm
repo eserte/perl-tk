@@ -36,10 +36,12 @@
 
 package Tk::IconList;
 require Tk::Frame;
-use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/IconList.pm#5 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/IconList.pm#4 $
+
+use Tk qw(Ev);
+use strict;
 
 use base 'Tk::Frame';
 
@@ -60,11 +62,13 @@ sub Populate {
 			     -highlightthickness => 0,
 			     -takefocus => 0,
 			    );
+    # make sure that the size does not exceed handhelds' dimensions
+    my($sw,$sh) = ($w->screenwidth, $w->screenheight);
     my $canvas = $w->Component('Canvas' => 'canvas',
 			       -bd => 2,
 			       -relief => 'sunken',
-			       -width => 400,
-			       -height => 120,
+			       -width  => ($sw > 420 ? 400 : $sw-20),
+			       -height => ($sh > 160 ? 120 : $sh-40),
 			       -takefocus => 1,
 			      );
     $sbar->pack(-side => 'bottom', -fill => 'x', -padx => 2);
@@ -83,51 +87,29 @@ sub Populate {
 
     # Creates the event bindings.
     $canvas->Tk::bind('<Configure>', sub { $w->Arrange } );
-    $canvas->Tk::bind('<1>',
-		      sub {
-			  my $c = shift;
-			  my $Ev = $c->XEvent;
-			  $w->Btn1($Ev->x, $Ev->y);
-		      }
-		     );
-    $canvas->Tk::bind('<B1-Motion>',
-		      sub {
-			  my $c = shift;
-			  my $Ev = $c->XEvent;
-			  $w->Motion1($Ev->x, $Ev->y);
-		      }
-		     );
-    $canvas->Tk::bind('<Double-ButtonRelease-1>',
-		      sub {
-			  my $c = shift;
-			  my $Ev = $c->XEvent;
-			  $w->Double1($Ev->x,$Ev->y);
-		      }
-		     );
-    $canvas->Tk::bind('<ButtonRelease-1>', sub { $w->CancelRepeat });
-    $canvas->Tk::bind('<B1-Leave>',
-		      sub {
-			  my $c = shift;
-			  my $Ev = $c->XEvent;
-			  $w->Leave1($Ev->x, $Ev->y);
-		      }
-		     );
-    $canvas->Tk::bind('<B1-Enter>', sub { $w->CancelRepeat });
-    $canvas->Tk::bind('<Up>',     sub { $w->UpDown(-1) });
-    $canvas->Tk::bind('<Down>',   sub { $w->UpDown(1)  });
-    $canvas->Tk::bind('<Left>',   sub { $w->LeftRight(-1) });
-    $canvas->Tk::bind('<Right>',  sub { $w->LeftRight(1) });
-    $canvas->Tk::bind('<Return>', sub { $w->ReturnKey });
-    $canvas->Tk::bind('<KeyPress>',
-		      sub {
-			  my $c = shift;
-			  my $Ev = $c->XEvent;
-			  $w->KeyPress($Ev->A);
-		      }
-		     );
+    $canvas->Tk::bind('<1>', [$w,'Btn1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<B1-Motion>', [$w,'Motion1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<Double-ButtonRelease-1>', [$w,'Double1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<ButtonRelease-1>', [$w,'CancelRepeat']);
+    $canvas->Tk::bind('<B1-Leave>', [$w,'Leave1',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<B1-Enter>', [$w,'CancelRepeat']);
+    $canvas->Tk::bind('<Up>',       [$w,'UpDown',   -1]);
+    $canvas->Tk::bind('<Down>',     [$w,'UpDown',    1]);
+    $canvas->Tk::bind('<Left>',     [$w,'LeftRight',-1]);
+    $canvas->Tk::bind('<Right>',    [$w,'LeftRight', 1]);
+    $canvas->Tk::bind('<Return>',   [$w,'ReturnKey']);
+    $canvas->Tk::bind('<KeyPress>', [$w,'KeyPress',Ev('A')]);
     $canvas->Tk::bind('<Control-KeyPress>', 'NoOp');
     $canvas->Tk::bind('<Alt-KeyPress>', 'NoOp');
     $canvas->Tk::bind('<FocusIn>', sub { $w->FocusIn });
+
+    $canvas->Tk::bind('<2>',['scan','mark',Ev('x'),Ev('y')]);
+    $canvas->Tk::bind('<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
+    # Remove the standard Canvas bindings
+    $canvas->bindtags([$canvas]);
+    # ... and define some again
+    $canvas->Tk::bind('<Home>', ['xview','moveto',0]);
+    $canvas->Tk::bind('<End>',  ['xview','moveto',1]);
 
     $w->ConfigSpecs(-browsecmd =>
 		    ['CALLBACK', 'browseCommand', 'BrowseCommand', undef],
@@ -138,6 +120,8 @@ sub Populate {
 		    -foreground =>
 		    ['PASSIVE', 'foreground', 'Foreground', undef],
 		    -fg => '-foreground',
+		    -selectmode =>
+		    ['PASSIVE', 'selectMode', 'SelectMode', 'browse'],
 		   );
 
     $w;
@@ -295,7 +279,7 @@ sub Arrange {
 	$sbar->configure(-command => ['xview', $canvas]);
 	$w->{'noScroll'} = 0;
     }
-    $w->{'itemsPerColumn'} = ($H - $pad) / $dy;
+    $w->{'itemsPerColumn'} = int(($H - $pad) / $dy);
     $w->{'itemsPerColumn'} = 1 if ($w->{'itemsPerColumn'} < 1);
     $w->Select($w->{'list'}[$w->{'curItem'}][2], 0)
       if (exists $w->{'curItem'});
@@ -392,7 +376,7 @@ sub Get {
 
 sub Btn1 {
     my($w, $x, $y) = @_;
-    $w->Subwidget('canvas')->focus;
+    $w->Subwidget('canvas')->CanvasFocus;
     $w->SelectAtXY($x, $y);
 }
 
@@ -473,6 +457,7 @@ sub LeftRight {
     } else {
 	my $oldRTag = $w->{'list'}[$w->{'curItem'}][2];
 	my $newItem = $w->{'curItem'} + $amount * $w->{'itemsPerColumn'};
+	return if $newItem < 0;
 	$rTag = $w->{'list'}[$newItem][2];
 	$rTag = $oldRTag unless (defined $rTag);
     }
@@ -534,3 +519,4 @@ sub Reset {
 }
 
 1;
+

@@ -1,9 +1,9 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.080'; # $Id: //depot/Tk8/Tk/Widget.pm#80 $
+$VERSION = '4.017'; # $Id: //depot/Tkutf8/Tk/Widget.pm#17 $
 
 require Tk;
 use AutoLoader;
@@ -168,7 +168,7 @@ sub new
  my $leaf  = delete $args{'Name'};
  if (defined $leaf)
   {
-   $leaf =~ s/[^a-z0-9_]+/_/ig;
+   $leaf =~ s/[^a-z0-9_#]+/_/ig;
    $leaf = lcfirst($leaf);
   }
  else
@@ -187,6 +187,13 @@ sub new
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
+ unless (ref $obj)
+  {
+   die "No value from $cmd $lname" unless defined $obj;
+   warn "$cmd '$lname' returned '$obj'" unless $obj eq $lname;
+   $obj = $parent->Widget($lname = $obj);
+   die "$obj from $lname" unless ref $obj;
+  }
  bless $obj,$package;
  $obj->SetBindtags;
  my $notice = $parent->can('NoticeChild');
@@ -319,7 +326,7 @@ sub AUTOLOAD
         }
       }
     }
-   if (!defined(&$what) && $method =~ /^[A-Z]\w+$/)
+   if (!defined(&$what) && ref($_[0]) && $method =~ /^[A-Z]\w+$/)
     {
      # Use ->can as ->isa is broken in perl5.6.0
      my $sub = UNIVERSAL::can($_[0],'_AutoloadTkWidget');
@@ -869,14 +876,14 @@ sub Unbusy
 {
  my ($w) = @_;
  $w->update;
- $w->grabRelease;
+ $w->grabRelease if Tk::Exists($w);
  my $old = delete $w->{'Busy'};
  if (defined $old)
   {
    local $SIG{'__DIE__'};
    eval { &{pop(@$old)} } while (@$old);
   }
- $w->update;
+ $w->update if Tk::Exists($w);
 }
 
 sub waitVisibility
@@ -936,6 +943,7 @@ sub XscrollBind
 
  $mw->bind($class,'<Home>',         ['xview','moveto',0]);
  $mw->bind($class,'<End>',          ['xview','moveto',1]);
+ $mw->XMouseWheelBind($class);
 }
 
 sub PriorNextBind
@@ -945,12 +953,30 @@ sub PriorNextBind
  $mw->bind($class,'<Prior>',    ['yview','scroll',-1,'pages']);
 }
 
+sub XMouseWheelBind
+{
+ my ($mw,$class) = @_;
+ # <4> and <5> are how mousewheel looks on X
+ # <4> and <5> are how mousewheel looks on X
+ $mw->bind($class,'<Shift-4>',      ['xview','scroll',-1,'units']);
+ $mw->bind($class,'<Shift-5>',      ['xview','scroll',1,'units']);
+}
+
+sub YMouseWheelBind
+{
+ my ($mw,$class) = @_;
+ # <4> and <5> are how mousewheel looks on X
+ $mw->bind($class,'<4>',         ['yview','scroll',-1,'units']);
+ $mw->bind($class,'<5>',         ['yview','scroll',1,'units']);
+}
+
 sub YscrollBind
 {
  my ($mw,$class) = @_;
  $mw->PriorNextBind($class);
  $mw->bind($class,'<Up>',       ['yview','scroll',-1,'units']);
  $mw->bind($class,'<Down>',     ['yview','scroll',1,'units']);
+ $mw->YMouseWheelBind($class);
 }
 
 sub XYscrollBind
@@ -958,6 +984,7 @@ sub XYscrollBind
  my ($mw,$class) = @_;
  $mw->YscrollBind($class);
  $mw->XscrollBind($class);
+ # <4> and <5> are how mousewheel looks on X
 }
 
 sub ScrlListbox
@@ -1294,5 +1321,6 @@ sub pathname
  my $x = $w->winfo('pathname',-displayof  => oct($id));
  return $x->PathName;
 }
+
 
 

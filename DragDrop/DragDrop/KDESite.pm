@@ -1,7 +1,7 @@
 package Tk::DragDrop::KDESite;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DragDrop/KDESite.pm#7 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/KDESite.pm#2 $
 use base qw(Tk::DropSite);
 
 Tk::DropSite->Type('KDE');
@@ -16,7 +16,7 @@ sub HandleLoose
 {
  my ($w,$seln) = @_;
  return '';
-}            
+}
 
 sub HandleData
 {
@@ -34,12 +34,12 @@ sub KDEDrop
   {
    # Grab a selection for compatibility with other DND schemes
    my $seln = 'XdndSelection';
-   $w->SelectionHandle('-selection' => $seln, -type => 'FILE_NAME', 
-                        [\&HandleData,"$1"]);   
-   $w->SelectionOwn('-selection' => $seln, 
-                       -command  => [\&HandleLoose,$w,$seln]);    
-   $site->Apply(-dropcommand => $Y, $Y, $seln); 
-  } 
+   $w->SelectionHandle('-selection' => $seln, -type => 'FILE_NAME',
+                        [\&HandleData,"$1"]);
+   $w->SelectionOwn('-selection' => $seln,
+                       -command  => [\&HandleLoose,$w,$seln]);
+   $site->Apply(-dropcommand => $Y, $Y, $seln);
+  }
  else
   {
    print join(' ',$type,$time,$flags,$X,$Y),':"',join(',',@data),'"',"\n";

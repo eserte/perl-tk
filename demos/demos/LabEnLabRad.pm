@@ -2,7 +2,7 @@ package Tk::LabeledEntryLabeledRadiobutton;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/demos/demos/LabEnLabRad.pm#6 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/demos/demos/LabEnLabRad.pm#2 $
 
 use base  qw(Tk::Frame);
 

@@ -31,12 +31,12 @@ sub HList {
     chdir $olddir;
     my $b = $TOP->Button(-text => 'Select All', -command => [\&select_all, $h]);
     Tk::grid($b);
-}                
+}
 
 sub select_all
 {
  my $h = shift;
- my @list = $h->infoChildren(@_);     
+ my @list = $h->infoChildren(@_);
  if (@list)
   {
    $h->selectionSet($list[0],$list[-1]);

@@ -20,16 +20,16 @@ sub invokeself
 
 my $MW = MainWindow->new;
 
-# Create a scrollbar on the right side of the main window and a listbox on 
+# Create a scrollbar on the right side of the main window and a listbox on
 # the left side.
 
 my $scroll = $MW->Scrollbar();
 $scroll->pack(-side => 'right', -fill => 'y');
 my $list = $MW->Listbox(
-    -yscrollcommand => ['set', $scroll], 
-    -relief => 'sunken', 
-    -width => 20, 
-    -height => 20, 
+    -yscrollcommand => ['set', $scroll],
+    -relief => 'sunken',
+    -width => 20,
+    -height => 20,
     -setgrid => 'yes',
 );
 $list->pack(-side => 'left', -fill => 'both', -expand => 'yes');
@@ -63,9 +63,9 @@ MainLoop;
 
 sub browse {
 
-    # The procedure below is invoked to open a browser on a given file;  
-    # if the file is a directory then another instance of this program is 
-    # invoked; if the file is a regular file then an editor is invoked to 
+    # The procedure below is invoked to open a browser on a given file;
+    # if the file is a directory then another instance of this program is
+    # invoked; if the file is a regular file then an editor is invoked to
     # display the file.
 
     my($dir, $file) = @_;

@@ -1,4 +1,4 @@
-/* 
+/*
  * ptkCanvGrid.c --
  *
  *	This file implements grid items for canvas
@@ -37,16 +37,16 @@ typedef struct GridItem  {
  */
 
 static Tk_CustomOption stateOption = {
-    Tk_StateParseProc,
-    Tk_StatePrintProc, (ClientData) 2
+    TkStateParseProc,
+    TkStatePrintProc, (ClientData) 2
 };
 static Tk_CustomOption tagsOption = {
     Tk_CanvasTagsParseProc,
     Tk_CanvasTagsPrintProc, (ClientData) NULL
 };
 static Tk_CustomOption dashOption = {
-    Tk_CanvasDashParseProc,
-    Tk_CanvasDashPrintProc, (ClientData) NULL
+    TkCanvasDashParseProc,
+    TkCanvasDashPrintProc, (ClientData) NULL
 };
 static Tk_CustomOption tileOption = {
     Tk_TileParseProc,
@@ -77,9 +77,11 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_BITMAP, "-disabledstipple",          NULL,          NULL,
 	         NULL, Tk_Offset(GridItem, outline.disabledStipple),
 	TK_CONFIG_NULL_OK},
+#ifdef NOTYET
     {TK_CONFIG_CUSTOM, "-disabledtile",          NULL,          NULL,
 	         NULL, Tk_Offset(GridItem, outline.disabledTile),
 	TK_CONFIG_NULL_OK, &tileOption},
+#endif
     {TK_CONFIG_PIXELS, "-disabledwidth",          NULL,          NULL,
 	"0.0", Tk_Offset(GridItem, outline.disabledWidth),
 	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
@@ -93,9 +95,11 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_BITMAP, "-stipple",          NULL,          NULL,
 	         NULL, Tk_Offset(GridItem, outline.stipple),
 	TK_CONFIG_NULL_OK},
+#ifdef NOT_YET
     {TK_CONFIG_CUSTOM, "-tile",          NULL,          NULL,
 	         NULL, Tk_Offset(GridItem, outline.tile),
 	TK_CONFIG_NULL_OK, &tileOption},
+#endif
     {TK_CONFIG_CUSTOM, "-state",          NULL,          NULL,
 	         NULL, Tk_Offset(Tk_Item, state),TK_CONFIG_NULL_OK,
 	&stateOption},
@@ -118,10 +122,10 @@ static void		ComputeGridBbox _ANSI_ARGS_((Tk_Canvas canvas,
 			    GridItem *gridPtr));
 static int		ConfigureGrid _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    Arg *args, int flags));
+			    CONST84 Tcl_Obj *CONST *args, int flags));
 static int		CreateGrid _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
-			    int argc, Arg *args));
+			    int argc, CONST84 Tcl_Obj *CONST *args));
 static void		DeleteGrid _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, Display *display));
 static void		DisplayGrid _ANSI_ARGS_((Tk_Canvas canvas,
@@ -129,7 +133,7 @@ static void		DisplayGrid _ANSI_ARGS_((Tk_Canvas canvas,
 			    int x, int y, int width, int height));
 static int		GridCoords _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    Arg *args));
+			    CONST84 Tcl_Obj *CONST *args));
 static int		GridToPostscript _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int prepass));
 static int		GridToArea _ANSI_ARGS_((Tk_Canvas canvas,
@@ -170,11 +174,11 @@ Tk_ItemType ptkCanvGridType = {
     (Tk_ItemType *) NULL,		/* nextPtr */
     (Tk_ItemBboxProc *) ComputeGridBbox,/* bboxProc */
     Tk_Offset(Tk_VisitorType, visitGrid), /* acceptProc */
-    (Tk_ItemGetCoordProc *) NULL,	/* getCoordPtr */
-    (Tk_ItemSetCoordProc *) NULL	/* setCoordPtr */
+    NULL,	/* getCoordPtr */
+    NULL	/* setCoordPtr */
 };
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -202,11 +206,11 @@ CreateGrid(interp, canvas, itemPtr, argc, args)
     Tk_Item *itemPtr;			/* Record to hold new item;  header
 					 * has been initialized by caller. */
     int argc;				/* Number of arguments in args. */
-    Arg *args;			/* Arguments describing rectangle. */
+    CONST84 Tcl_Obj *CONST *args;		/* Arguments describing rectangle. */
 {
     GridItem *gridPtr = (GridItem *) itemPtr;
     int i;
-                                                     
+
     if (argc==1) {
 	i = 1;
     } else {
@@ -250,7 +254,7 @@ CreateGrid(interp, canvas, itemPtr, argc, args)
     DeleteGrid(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -277,7 +281,7 @@ GridCoords(interp, canvas, itemPtr, argc, args)
 					 * read or modified. */
     int argc;				/* Number of coordinates supplied in
 					 * args. */
-    Arg *args;				/* Array of coordinates: x1, y1,
+    Tcl_Obj *CONST *args;		/* Array of coordinates: x1, y1,
 					 * x2, y2, ... */
 {
     GridItem *gridPtr = (GridItem *) itemPtr;
@@ -296,7 +300,7 @@ GridCoords(interp, canvas, itemPtr, argc, args)
 	Tcl_SetObjResult(interp, obj);
     } else if ((argc == 1)||(argc == 4)) {
  	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, args[0], &argc, (Tcl_Obj ***)&args) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 4) {
 		sprintf(c0,"%d",argc);
@@ -324,7 +328,7 @@ GridCoords(interp, canvas, itemPtr, argc, args)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -351,7 +355,7 @@ ConfigureGrid(interp, canvas, itemPtr, argc, args, flags)
     Tk_Canvas canvas;		/* Canvas containing itemPtr. */
     Tk_Item *itemPtr;		/* Rectangle item to reconfigure. */
     int argc;			/* Number of elements in args.  */
-    Arg *args;		/* Arguments describing things to configure. */
+    CONST84 Tcl_Obj *CONST *args;	/* Arguments describing things to configure. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
     GridItem *gridPtr = (GridItem *) itemPtr;
@@ -396,7 +400,7 @@ ConfigureGrid(interp, canvas, itemPtr, argc, args, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -424,7 +428,7 @@ DeleteGrid(canvas, itemPtr, display)
     GridItem *gridPtr = (GridItem *) itemPtr;
     Tk_DeleteOutline(display, &(gridPtr->outline));
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -458,7 +462,7 @@ ComputeGridBbox(canvas, gridPtr)
     gridPtr->header.x2 = gridPtr->header.x1+Tk_Width(canvasPtr->tkwin);
     gridPtr->header.y2 = gridPtr->header.y1+Tk_Height(canvasPtr->tkwin);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -494,19 +498,19 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
 
     double cx      = (double) x;
     double cy      = (double) y;
-    double mx      = cx + (double) width; 
+    double mx      = cx + (double) width;
     double my      = cy + (double) height;
     double gx      = gridPtr->bbox[0];
     double gy      = gridPtr->bbox[1];
     double deltaX  = gridPtr->bbox[2]-gridPtr->bbox[0];
     double deltaY  = gridPtr->bbox[3]-gridPtr->bbox[1];
 
-    /* Set our bbox to what is drawable, we have "always redraw" set 
+    /* Set our bbox to what is drawable, we have "always redraw" set
      * so this ensures we overlap the "old" area during scroll etc.
      * and we will get re-called
-     */    
+     */
 
-    ComputeGridBbox(canvas, gridPtr);    
+    ComputeGridBbox(canvas, gridPtr);
 
     /* Clip grid to the scroll region */
     if (cx < (double) (canvasPtr->scrollX1))
@@ -542,7 +546,7 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
     else
      {
       gy = cy + (deltaY - fmod((cy - gy), deltaY));
-     }                                  
+     }
 
     if (gridPtr->outline.gc != None) {
 	Tk_ChangeOutlineGC(canvas, itemPtr, &(gridPtr->outline));
@@ -558,15 +562,15 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
 		Tk_CanvasDrawableCoords(canvas, mx, gy, &x2, &y2);
 		XDrawLine(display, drawable, gridPtr->outline.gc, x1, y1, x2, y2);
 		gy += deltaY;
-	    }                        
-	} else {       
+	    }
+	} else {
 	    double halfWidth = gridPtr->outline.width/2;
 	    double sy = gy;
 	    while (gx < mx) {
 		gy = sy;
 		while (gy < my) {
 		    Tk_CanvasDrawableCoords(canvas, gx-halfWidth, gy-halfWidth, &x1, &y1);
-		    XFillRectangle(display, drawable, gridPtr->outline.gc, x1, y1, 
+		    XFillRectangle(display, drawable, gridPtr->outline.gc, x1, y1,
 				   gridPtr->outline.width, gridPtr->outline.width);
 		    gy += deltaY;
 		}
@@ -576,7 +580,7 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
 	Tk_ResetOutlineGC(canvas, itemPtr, &(gridPtr->outline));
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -607,12 +611,12 @@ GridToPoint(canvas, itemPtr, pointPtr)
     Tk_Item *itemPtr;		/* Item to check against point. */
     double *pointPtr;		/* Pointer to x and y coordinates. */
 {
-    GridItem *gridPtr = (GridItem *) itemPtr; 
+    GridItem *gridPtr = (GridItem *) itemPtr;
     /* A grid is always a long way from anywhere */
     return 1.0e37;
 }
-
-
+
+
 /*
  *--------------------------------------------------------------
  *
@@ -646,8 +650,8 @@ GridToArea(canvas, itemPtr, areaPtr)
     /* A grid is never inside any area */
     return -1;
 }
-
-
+
+
 /*
  *--------------------------------------------------------------
  *
@@ -684,7 +688,7 @@ ScaleGrid(canvas, itemPtr, originX, originY, scaleX, scaleY)
     gridPtr->bbox[3] = originY + scaleY*(gridPtr->bbox[3] - originY);
     ComputeGridBbox(canvas, gridPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -719,7 +723,7 @@ TranslateGrid(canvas, itemPtr, deltaX, deltaY)
     gridPtr->bbox[3] += deltaY;
     ComputeGridBbox(canvas, gridPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -754,3 +758,4 @@ GridToPostscript(interp, canvas, itemPtr, prepass)
     GridItem *gridPtr = (GridItem *) itemPtr;
     return TCL_OK;
 }
+

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl 
+#!/usr/local/bin/perl
 
 use File::Find;
 use Time::Local;
@@ -18,7 +18,7 @@ sub match
 {
  if (/Copyright/i && /Nick/ && !/$year/)
   {
-   print "$File::Find::dir/$file:$.:$_" 
+   print "$File::Find::dir/$file:$.:$_"
   }
  return 0;
 }
@@ -28,23 +28,23 @@ sub wanted
  my $write = -w $_;
  $File::Find::prune = 0;
  if (-T $_ && !/%$/ && !/\.bak/ && (stat($_))[9] >= $yt)
-  {             
+  {
    if (/\.c$/)
     {
      my $xs = $_;
      $xs =~ s/\.c$/.xs/;
-     return -f $xs; 
+     return -f $xs;
     }
    local $file   = ($_);
    local ($_);
    @ARGV = ($file);
-   my $changed = 0; 
+   my $changed = 0;
    $^I = '.bak';
    while (<>)
     {
      if (/Copyright/i && /Nick/ && s/--$year/-$year/)
       {
-       warn "$File::Find::name:$.:$_"; 
+       warn "$File::Find::name:$.:$_";
        $changed++;
       }
      if (/Copyright/i && /Nick/ && /199[0-9]/ && !/$year/)
@@ -56,14 +56,14 @@ sub wanted
           {
            unless (s/(199[0-9])/$1-$year/)
             {
-             die "$File::Find::name:$.:$_" 
+             die "$File::Find::name:$.:$_"
             }
           }
         }
-       warn "$File::Find::name:$.:$_" 
+       warn "$File::Find::name:$.:$_"
       }
      print;
-    }         
+    }
    if ($changed)
     {
      print "p4 edit $File::Find::name\n";

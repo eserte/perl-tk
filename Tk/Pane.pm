@@ -7,7 +7,7 @@
 package Tk::Pane;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Pane.pm#8 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Pane.pm#4 $
 
 use Tk;
 use Tk::Widget;
@@ -19,6 +19,11 @@ use strict;
 use base qw(Tk::Derived Tk::Frame);
 
 Construct Tk::Widget 'Pane';
+
+use Tk::Submethods(
+  grid => [qw/bbox columnconfigure location propagate rowconfigure size slaves/],
+  pack => [qw/propagate slaves/]
+);
 
 sub ClassInit {
     my ($class,$mw) = @_;
@@ -348,7 +353,7 @@ sub see {
     my $slv = $pan->Subwidget('frame');
 
     my $anchor = defined $opt{'-anchor'} ? $opt{'-anchor'} : "";
-    
+
     if($pan->{Configure}{'-yscrollcommand'}) {
 	my $yanchor = lc(($anchor =~ /([NnSs]?)/)[0] || "");
 	my $pty = $pan->rooty;
@@ -403,7 +408,7 @@ Tk::Pane - A window panner
 =head1 SYNOPSIS
 
     use Tk::Pane;
-    
+
     $pane = $mw->Scrolled(Pane, Name => 'fred',
 	-scrollbars => 'soe',
 	-sticky => 'we',
@@ -438,7 +443,7 @@ contains zero or more of the characters n, s, e or w. The string can optionally
 contains spaces or commas, but they are ignored. Each letter refers to a side
 (north, south, east, or west) that the slave will "stick" to. If both n and s
 (or e and w) are specified, the slave will be stretched to fill the entire
-height (or width) of its cavity. 
+height (or width) of its cavity.
 
 =back
 
@@ -479,7 +484,7 @@ window, relative to the Pane as a whole.
 =item I<$pane>-E<gt>B<xview>(I<$widget>)
 
 Adjusts the view in the window so that I<widget> is displayed at the left of
-the window. 
+the window.
 
 =item I<$pane>-E<gt>B<xview>(B<moveto> =E<gt> I<fraction>)
 
@@ -494,7 +499,7 @@ B<pages> or an abbreviation of one of these. If I<what> is B<units>, the view
 adjusts left or right by I<number>*10 screen units on the display; if it is
 B<pages> then the view adjusts by number screenfuls. If number is negative then
 widgets farther to the left become visible; if it is positive then widgets
-farther to the right become visible. 
+farther to the right become visible.
 
 =item I<$pane>-E<gt>B<yview>
 
@@ -507,7 +512,7 @@ window, relative to the Pane as a whole.
 =item I<$pane>-E<gt>B<yview>(I<$widget>)
 
 Adjusts the view in the window so that I<widget> is displayed at the top of the
-window. 
+window.
 
 =item I<$pane>-E<gt>B<yview>(B<moveto> =E<gt> I<fraction>)
 
@@ -522,7 +527,7 @@ B<pages> or an abbreviation of one of these. If I<what> is B<units>, the view
 adjusts up or down by I<number>*10 screen units on the display; if it is
 B<pages> then the view adjusts by number screenfuls. If number is negative then
 widgets farther up become visible; if it is positive then widgets farther down
-become visible. 
+become visible.
 
 =back
 

@@ -1,3 +1,6 @@
+
+/*	$Id: tixDItem.c,v 1.1.1.1 2000/05/17 11:08:38 idiscovery Exp $	*/
+
 /*
  * tixDItem.c --
  *
@@ -161,7 +164,7 @@ char * Tix_DItemComponent(iPtr, x, y)
     return (iPtr->base.diTypePtr->componentProc(iPtr, x, y));
 }
 
-
+
 /*----------------------------------------------------------------------
  * Tix_FreeArgumentList --
  *
@@ -181,7 +184,7 @@ Tix_FreeArgumentList(argListPtr)
 	ckfree((char*)argListPtr->arg);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_SplitConfig --
  *
@@ -260,7 +263,7 @@ Tix_SplitConfig(interp, tkwin, specsList, numLists, argc, argv, argListPtr)
     }
     return code;
 }
-
+
 int
 Tix_MultiConfigureInfo(interp, tkwin, specsList, numLists, widgRecList,
 	argvName, flags, request)
@@ -332,7 +335,7 @@ Tix_MultiConfigureInfo(interp, tkwin, specsList, numLists, widgRecList,
     }
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_ConfigureValue2 --
  *
@@ -367,7 +370,7 @@ Tix_ConfigureValue2(interp, tkwin, entRec, entConfigSpecs, iPtr,
     return Tix_MultiConfigureInfo(interp, tkwin, specsList, 2, widgRecList,
 	argvName, flags, TIX_CONFIG_VALUE);
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_ConfigureInfo2 --
  *
@@ -402,7 +405,7 @@ Tix_ConfigureInfo2(interp, tkwin, entRec, entConfigSpecs, iPtr,
     return Tix_MultiConfigureInfo(interp, tkwin, specsList, 2, widgRecList,
 	argvName, flags, TIX_CONFIG_INFO);
 }
-
+
 int
 Tix_WidgetConfigure2(interp, tkwin, entRec, entConfigSpecs, iPtr,
 		     argc, argv, flags, forced, sizeChanged_ret)
@@ -474,7 +477,7 @@ Tix_WidgetConfigure2(interp, tkwin, entRec, entConfigSpecs, iPtr,
     Tix_FreeArgumentList(&argList);
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  *
  *		 The Tix Customed Config Options
@@ -492,7 +495,7 @@ Tk_CustomOption tixConfigItemType = {
     DItemParseProc, DItemPrintProc, 0,
 };
 #endif
-
+
 /*----------------------------------------------------------------------
  *  DItemParseProc --
  *
@@ -515,7 +518,7 @@ DItemParseProc(clientData, interp, tkwin, value, widRec,offset)
     if (value == NULL) {
 	newPtr = NULL;
     } else {
-	newPtr = Tix_GetDItemType(interp, LangString(value));
+	newPtr = Tix_GetDItemType(interp, Tcl_GetString(value));
 	if (newPtr == NULL) {
 	    return TCL_ERROR;
 	}

@@ -1,8 +1,8 @@
 #!/usr/local/bin/perl -w
 #
-# Simple Tk script to create a button that prints "Hello, world".  Click on 
+# Simple Tk script to create a button that prints "Hello, world".  Click on
 # the button to terminate the program.
-# 
+#
 # The first line below imports the Tk objects into the application, the second
 # line creates the main window, the third through sixth lines create the button
 # and defines the code to execute when the button is pressed, the seventh line
@@ -12,7 +12,7 @@
 use Tk;
 $MW = MainWindow->new;
 $hello = $MW->Button(
-    -text    => 'Hello, world', 
+    -text    => 'Hello, world',
     -command => sub {print STDOUT "Hello, world\n"; exit;},
 );
 $hello->pack;

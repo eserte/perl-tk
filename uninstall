@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-BEGIN {exec('perl5.002',$0,@ARGV)  unless ($] >= 5.002)} 
+BEGIN {exec('perl5.002',$0,@ARGV)  unless ($] >= 5.002)}
 use Config;
 use Getopt::Long;
 

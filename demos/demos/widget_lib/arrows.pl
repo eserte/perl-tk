@@ -17,7 +17,7 @@ sub arrows {
     );
 
     my $c = $TOP->Canvas(
-        -width       => '500', 
+        -width       => '500',
         -height      => '350',
         -relief      => 'sunken',
 	-borderwidth => 2,
@@ -70,7 +70,7 @@ sub arrows {
             sub {$ainfo{move_sub} = \&{"arrow_move${n}"}}
         );
     }
-    
+
     # Bindings to move a resize box and redraw the arrow.
 
     $c->bind('box', '<B1-Motion>' =>
@@ -164,7 +164,7 @@ sub arrow_setup {
     # Create the arrow and outline.
 
     $c->delete('all');
-    $c->create('line', $v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'}, 
+    $c->create('line', $v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'},
 	       -width => 10*$v->{width},
 	       -arrowshape => [10*$v->{a}, 10*$v->{b}, 10*$v->{c}],
 	       -arrow => 'last', @{$v->{bigLineStyle}});
@@ -222,7 +222,7 @@ sub arrow_setup {
     $c->create('text', $v->{x2}-5*$v->{a}, $tmp+5, -text => $v->{a},
 	       -anchor => 'n');
     $tmp = $tmp+25;
-    $c->create('line', $v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp, 
+    $c->create('line', $v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp,
 	       -arrow => 'both', -arrowshape => $v->{smallTips});
     $c->create('text', $v->{x2}-5*$v->{b}, $tmp+5, -text => $v->{b},
 	       -anchor => 'n');
@@ -238,5 +238,5 @@ sub arrow_setup {
     $v->{count}++;
 
 } # end arrow_setup
-    
+
 1;

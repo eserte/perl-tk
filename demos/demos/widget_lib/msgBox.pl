@@ -42,10 +42,10 @@ sub msgBox {
 			    qw/-side top -pady 2 -anchor w -fill x/);
     }
 
-    my $show = $TOP->Button(-text => "Message Box", 
+    my $show = $TOP->Button(-text => "Message Box",
 			    -command => [\&show_messageBox, \$iconvar, \$typevar]);
     $show->pack;
-    
+
 } # end msgBox
 
 sub show_messageBox {

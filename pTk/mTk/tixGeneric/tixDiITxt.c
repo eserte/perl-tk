@@ -1,3 +1,6 @@
+
+/*	$Id: tixDiITxt.c,v 1.2 2000/10/12 02:54:04 idiscovery Exp $	*/
+
 /*
  * tixDiImgTxt.c --
  *
@@ -35,7 +38,7 @@ static Tk_ConfigSpec imageTextItemConfigSpecs[] = {
        DEF_IMAGETEXTITEM_IMAGE, Tk_Offset(TixImageTextItem, imageString),
        TK_CONFIG_NULL_OK},
 
-    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType", 
+    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType",
        DEF_IMAGETEXTITEM_TYPE, Tk_Offset(TixImageTextItem, diTypePtr),
        0, &tixConfigItemType},
 
@@ -68,8 +71,8 @@ static Tk_ConfigSpec imageTextItemConfigSpecs[] = {
  */
 
 
-#define SELECTED_BG SELECT_BG 
-#define DISABLED_BG DISABLED  
+#define SELECTED_BG SELECT_BG
+#define DISABLED_BG DISABLED
 
 #define DEF_IMAGETEXTSTYLE_NORMAL_FG_COLOR	BLACK
 #define DEF_IMAGETEXTSTYLE_NORMAL_FG_MONO	BLACK
@@ -109,7 +112,7 @@ static Tk_ConfigSpec imageTextStyleConfigSpecs[] = {
        (char *) NULL, 0, 0},
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
        (char *) NULL, 0, 0},
- 
+
     {TK_CONFIG_FONT, "-font", "font", "Font",
        DEF_IMAGETEXTSTYLE_FONT, Tk_Offset(TixImageTextStyle, font), 0},
 
@@ -400,7 +403,7 @@ static void Tix_ImageTextItemDisplay(pixmap, gc, iPtr, x, y,
     if (backGC != None) {
 	TixpSubRegFillRectangle(itPtr->ddPtr->display, pixmap,
 		backGC, &subReg, x, y, width, height);
-    }                       
+    }
 
     TixDItemGetAnchor(itPtr->stylePtr->anchor, x, y, width, height,
 	itPtr->size[0], itPtr->size[1], &x, &y);
@@ -416,7 +419,7 @@ static void Tix_ImageTextItemDisplay(pixmap, gc, iPtr, x, y,
       imageH = itPtr->bitmapH;
       imageW = itPtr->bitmapW;
      }
- 
+
     bitX = textX = x + itPtr->stylePtr->pad[0];
     bitY = textY = y + itPtr->stylePtr->pad[1];
     /* Adjust X position according to textanchor */
@@ -497,7 +500,7 @@ static void Tix_ImageTextItemDisplay(pixmap, gc, iPtr, x, y,
 
     if (itPtr->text && itPtr->showText && foreGC != None) {
 	TixpSubRegDisplayText(itPtr->ddPtr->display, pixmap,  foreGC, &subReg,
-		itPtr->stylePtr->font, LangString(itPtr->text), itPtr->numChars,
+		itPtr->stylePtr->font, Tcl_GetString(itPtr->text), itPtr->numChars,
 		textX, textY,
 		itPtr->textW,
 		itPtr->stylePtr->justify,
@@ -517,7 +520,7 @@ static void Tix_ImageTextItemCalculateSize(iPtr)
     itPtr->size[1] = 0;
 
     /* Note: the size of the image or the text are used even when
-     * the showImage or showText options are off. These two options are 
+     * the showImage or showText options are off. These two options are
      * used to "blank" the respective components temporarily without
      * affecting the geometry of the ditem. The main is to indicate
      * transfer during drag+drop.
@@ -540,20 +543,20 @@ static void Tix_ImageTextItemCalculateSize(iPtr)
     }
 
     if (itPtr->text) {
-	itPtr->numChars = strlen(LangString(itPtr->text));
-	TixComputeTextGeometry(itPtr->stylePtr->font, LangString(itPtr->text),
+	itPtr->numChars = strlen(Tcl_GetString(itPtr->text));
+	TixComputeTextGeometry(itPtr->stylePtr->font, Tcl_GetString(itPtr->text),
 		itPtr->numChars, itPtr->stylePtr->wrapLength,
 		&itPtr->textW, &itPtr->textH);
 	/* Adjust size[0] i.e. X for EW-ness */
 	switch(itPtr->stylePtr->textanchor) {
-	  case TK_ANCHOR_SE: case TK_ANCHOR_SW: 
-	  case TK_ANCHOR_NE: case TK_ANCHOR_NW: 
-	  case TK_ANCHOR_E: case TK_ANCHOR_W: 
+	  case TK_ANCHOR_SE: case TK_ANCHOR_SW:
+	  case TK_ANCHOR_NE: case TK_ANCHOR_NW:
+	  case TK_ANCHOR_E: case TK_ANCHOR_W:
 	    itPtr->size[0] += itPtr->stylePtr->gap;
 	    itPtr->size[0] += itPtr->textW;
 	    break;
-	  case TK_ANCHOR_CENTER: 
-	  case TK_ANCHOR_N: case TK_ANCHOR_S: 
+	  case TK_ANCHOR_CENTER:
+	  case TK_ANCHOR_N: case TK_ANCHOR_S:
 	    if (itPtr->textW > itPtr->size[0]) {
 		itPtr->size[0] = itPtr->textW;
 	    }
@@ -561,14 +564,14 @@ static void Tix_ImageTextItemCalculateSize(iPtr)
 	}
 	/* Adjust size[1] i.e. Y for NS-ness */
 	switch(itPtr->stylePtr->textanchor) {
-	  case TK_ANCHOR_NW: case TK_ANCHOR_NE: 
-	  case TK_ANCHOR_SW: case TK_ANCHOR_SE: 
-	  case TK_ANCHOR_N: case TK_ANCHOR_S: 
+	  case TK_ANCHOR_NW: case TK_ANCHOR_NE:
+	  case TK_ANCHOR_SW: case TK_ANCHOR_SE:
+	  case TK_ANCHOR_N: case TK_ANCHOR_S:
 	    itPtr->size[1] += itPtr->stylePtr->gap;
 	    itPtr->size[1] += itPtr->textH;
 	    break;
-	  case TK_ANCHOR_CENTER: 
-	  case TK_ANCHOR_E: case TK_ANCHOR_W: 
+	  case TK_ANCHOR_CENTER:
+	  case TK_ANCHOR_E: case TK_ANCHOR_W:
 	    if (itPtr->textH > itPtr->size[1]) {
 		itPtr->size[1] = itPtr->textH;
 	    }
@@ -620,7 +623,7 @@ static void Tix_ImageTextItemLostStyle(iPtr)
 
     Tix_ImageTextItemStyleChanged(iPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -654,7 +657,7 @@ ImageProc(clientData, x, y, width, height, imgWidth, imgHeight)
 	itPtr->ddPtr->sizeChangedProc((Tix_DItem *)itPtr);
     }
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -692,7 +695,7 @@ Tix_ImageTextStyleCreate(interp, tkwin, diTypePtr, name)
 
     return (Tix_DItemStyle *)stylePtr;
 }
-
+
 static int
 Tix_ImageTextStyleConfigure(style, argc, argv, flags)
     Tix_DItemStyle *style;
@@ -753,7 +756,7 @@ Tix_ImageTextStyleConfigure(style, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 static void Tix_ImageTextStyleFree(style)
     Tix_DItemStyle *style;
 {

@@ -3,3 +3,5 @@ tkConsole.c
 tkMain.c
 tkTest.c
 tkImgGIF.c
+tkStubInit.c
+tkStubLib.c

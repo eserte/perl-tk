@@ -5,7 +5,7 @@
 $^I = ".bak";
 
 # Converts Text->new($parent) into $parent->Text()
-# Converts -variable => $fred into -variable => \$fred 
+# Converts -variable => $fred into -variable => \$fred
 
 foreach $file (@files)
  {

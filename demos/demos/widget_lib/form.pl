@@ -4,7 +4,7 @@ use vars qw/$TOP/;
 
 sub form {
 
-    # Create a top-level window that displays a bunch of entries with 
+    # Create a top-level window that displays a bunch of entries with
     # tabs set up to move between them.
 
     my($demo) = @_;
@@ -21,7 +21,7 @@ sub form {
 	my $l = $f->Label(-text => $_, -anchor => 'e', -justify => 'right');
         Tk::grid( $l, -row => $row, -column => 0, -sticky => 'e');
         Tk::grid( $e, -row => $row++, -column => 1,-sticky => 'ew');
-        $f->gridRowconfigure(1,-weight => 1);  
+        $f->gridRowconfigure(1,-weight => 1);
 	$e->focus if $_ eq 'Name:';
     }
     $TOP->bind('<Return>' => [$TOP => 'destroy']);

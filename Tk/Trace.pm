@@ -1,7 +1,7 @@
 package Tk::Trace;
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/Trace.pm#2 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/Trace.pm#2 $
 
 use Exporter;
 use base qw/Exporter/;

@@ -141,7 +141,9 @@ extern int XChangeGC _ANSI_ARGS_(( Display*, GC, unsigned long, XGCValues *));
 extern char **XListFonts _ANSI_ARGS_(( Display*, const char *, int, int *));
 extern int XFreeFontNames _ANSI_ARGS_((char **));
 extern Window XGetSelectionOwner _ANSI_ARGS_((Display *, Atom));
-extern int XRectInRegion _ANSI_ARGS_(( Region,int,int,unsigned,unsigned));
+extern int XRectInRegion _ANSI_ARGS_((Region,int,int,unsigned,unsigned));
+extern int XSubtractRegion _ANSI_ARGS_((Region, Region, Region));
 #endif /* _XLIB_H_ */
 extern int _XInitImageFuncPtrs _ANSI_ARGS_((XImage *image));
 #endif /* _XLIB */
+

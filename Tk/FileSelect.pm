@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.047'; # $Id: //depot/Tk8/Tk/FileSelect.pm#47 $
+$VERSION = '4.010'; # $Id: //depot/Tkutf8/Tk/FileSelect.pm#10 $
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
@@ -301,7 +301,7 @@ sub regexp
  if (@_ > 1)
   {
    $$var = $val;
-   $cw->{'match'} = sub { shift =~ m|^${val}$| };
+   $cw->{'match'} = (defined $val) ? sub { shift =~ m|^${val}$| } : sub { 1 };
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
@@ -316,6 +316,7 @@ sub defaultextension
  my ($cw,$val) = @_;
  if (@_ > 1)
   {
+   $val = '' unless defined $val;
    $val = ".$val" if ($val !~ /^\./);
    $cw->filter("*$val");
   }
@@ -337,13 +338,30 @@ sub directory
     {
      if (substr($dir,1,1) eq '/')
       {
-       $dir = $ENV{'HOME'} . substr($dir,1);
+       $dir = (defined $ENV{'HOME'} ? $ENV{'HOME'} : '') . substr($dir,1);
       }
      else
       {my ($uid,$rest) = ($dir =~ m#^~([^/]+)(/.*$)#);
        $dir = (getpwnam($uid))[7] . $rest;
       }
     }
+   my $revert_dir = sub
+    {
+     my $message = shift;
+     $$var = $cw->{OldDirectory};
+     $cw->messageBox(-message => $message, -icon => 'error');
+     if (!defined $$var)
+      {
+       # OldDirectory was never set, so force reread...
+       $$var = $cw->{OldDirectory} = Cwd::getcwd(); # XXX maybe use check like code below...
+       unless ($cw->{'reread'}++)
+        {
+         $cw->Busy;
+         $cw->afterIdle(['reread',$cw])
+        }
+      }
+     $$var;
+    };
    $dir =~ s#([^/\\])[\\/]+$#$1#;
    if (-d $dir)
     {
@@ -359,17 +377,20 @@ sub directory
           }
          else
           {
-           carp "Cannot getcwd in '$dir'";
+	   return $revert_dir->("Cannot getcwd in '$dir'");
           }
-         chdir($pwd) || carp "Cannot chdir($pwd) : $!";
-         $cw->{Configure}{'-directory'} = $dir;
+         if (!chdir($pwd))
+          {
+	   return $revert_dir->("Cannot change directory to $pwd:\n$!");
+          }
+	 $$var = $dir;
         }
        else
         {
-         $cw->BackTrace("Cannot chdir($dir) :$!");
+	 return $revert_dir->("Cannot change directory to $dir:\n$!");
         }
+       $$var = $cw->{OldDirectory} = $dir;
       }
-     $$var = $dir;
      unless ($cw->{'reread'}++)
       {
        $cw->Busy;
@@ -392,6 +413,7 @@ sub reread
     }
    my $dl = $w->Subwidget('dir_list');
    $dl->delete(0, 'end');
+   $dl->selectionClear(0,'end');
    my $fl = $w->Subwidget('file_list');
    $fl->delete(0, 'end');
    local *DIR;
@@ -431,10 +453,10 @@ sub reread
        $w->configure(-initialfile => undef) unless $w->cget('-create');
       }
     }
-   $w->{DirectoryString} = $dir . '/' . $w->cget('-filter');
+   $w->{DirectoryString} = $dir . ($dir ne '/' ? '/' : '') . $w->cget('-filter');
   }
  $w->{'reread'} = 0;
- $w->Unbusy;
+ $w->Unbusy if $w->{'Busy'};
 }
 
 sub validateDir

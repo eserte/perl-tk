@@ -29,7 +29,7 @@ sub textWindPlot {
     $mkTextWind_c->create('line', qw(100 250 400 250 -width 2));
     $mkTextWind_c->create('line', qw(100 250 100 50 -width 2));
     $mkTextWind_c->create('text', 225, 20, -text => 'A Simple Plot', -fill => 'brown', -font => $font);
-	
+
     my($i, $x, $y, $point, $item);
     for ($i = 0; $i <= 10; $i++) {
 	$x  = 100 + ($i*30);
@@ -41,7 +41,7 @@ sub textWindPlot {
 	$mkTextWind_c->create('line', 100, $y, 105, $y, -width => 2);
 	$mkTextWind_c->create('text', 96, $y, -text => $i*50.0, -anchor => 'e', -font => $font);
     }
-    
+
     foreach $point ([12, 56], [20, 94], [33, 98], [32, 120], [61, 180], [75, 160], [98, 223]) {
 	$x = 100 + (3 * $point->[0]);
 	$y = 250 - (4 * $point->[1]) / 5;
@@ -68,7 +68,7 @@ sub textWindPlot {
         my $e = $c->XEvent;
 	embPlotMove($c, $e->x, $e->y);
     });
-    
+
     while ($mkTextWind::w_t->get('plot') =~ / |\t|\n/) {
 	$mkTextWind::w_t->delete('plot');
     }
@@ -98,7 +98,7 @@ $mkTextWind::embPlot{'lastY'} = 0;
 
 
 sub embPlotDown {
-    
+
     my($w, $x, $y) = @_;
 
     $w->dtag('selected');

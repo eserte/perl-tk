@@ -27,7 +27,7 @@ color_editor
 composite
 		An example of a composite widget.
 
-dialog	
+dialog
 		An example of Dialog.pm, a composite widget.
 
 hello

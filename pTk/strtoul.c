@@ -1,4 +1,4 @@
-/* 
+/*
  * strtoul.c --
  *
  *	Source code for the "strtoul" library procedure.
@@ -11,7 +11,7 @@
  * software and its documentation for any purpose, provided that the
  * above copyright notice and the following two paragraphs appear in
  * all copies of this software.
- * 
+ *
  * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
  * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
@@ -46,7 +46,7 @@ static char cvtIn[] = {
     10, 11, 12, 13, 14, 15, 16, 17, 18, 19,	/* 'a' - 'z' */
     20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
     30, 31, 32, 33, 34, 35};
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -101,7 +101,7 @@ strtoul(string, endPtr, base)
      * If no base was provided, pick one from the leading characters
      * of the string.
      */
-    
+
     if (base == 0)
     {
 	if (*p == '0') {

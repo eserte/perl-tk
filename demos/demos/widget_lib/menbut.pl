@@ -35,7 +35,7 @@ sub menbut {
 	        -text => 'This is a demonstration of menubuttons. The "Below" menubutton pops its menu below the button; the "Right" button pops to the right, etc. There are two option menus directly below this text; one is just a standard menu and the other is a 16-color palette.')->pack(qw/-side top -padx 25
 						        -pady 25/);
     $bbutt = $body->Frame->pack(qw/-padx 25 -pady 25/);
-    $bbutt->Optionmenu(-options => [qw/one two three/])->pack(qw/-side left 
+    $bbutt->Optionmenu(-options => [qw/one two three/])->pack(qw/-side left
 						        -padx 25 -pady 25/);
 
     my $palette;

@@ -5,7 +5,7 @@ import Tk qw($XS_VERSION);
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#14 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Scrollbar/Scrollbar.pm#7 $
 
 use base  qw(Tk::Widget);
 
@@ -61,6 +61,10 @@ sub ClassInit
 
  $mw->bind($class, '<Prior>',         ['ScrlByPages','hv',-1]);
  $mw->bind($class, '<Next>',          ['ScrlByPages','hv', 1]);
+
+ # X11 mousewheel - honour for horizontal too.
+ $mw->bind($class, '<4>',             ['ScrlByUnits','hv',-5]);
+ $mw->bind($class, '<5>',             ['ScrlByUnits','hv', 5]);
 
  $mw->bind($class, '<Home>',          ['ScrlToPos', 0]);
  $mw->bind($class, '<End>',           ['ScrlToPos', 1]);
@@ -410,5 +414,7 @@ sub ScrlTopBottom
    $w->ScrlToPos(1);
   }
 }
+
+
 
 

@@ -1,8 +1,1 @@
 TkWinChildProc
-TkWinPointerDeadWindow
-TkWinPointerEvent
-TkWinPointerInit
-TkWinReflectMessage
-TkWinUpdateCursor
-TkWinWmFindEmbedAssociation
-TkWinWmStoreEmbedAssociation

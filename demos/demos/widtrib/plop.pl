@@ -85,7 +85,7 @@ sub collect_errors {
 
     # Update the hash %ERRORS with the latest eval() error message.  Remove
     # the eval() line number (it's useless to us) to maintain a compact hash.
-    
+
     my($error) = @_;
 
     $error =~ s/eval\s+(\d+)/eval/;
@@ -100,7 +100,7 @@ sub display_coordinates {
     my($canvas) = @_;
 
     my $e = $canvas->XEvent;
-    my($canv_x, $canv_y) = ($e->x, $e->y); 
+    my($canv_x, $canv_y) = ($e->x, $e->y);
     my($x, $y);
     $x = $X_MIN + $DX * (($canv_x - $MARGIN) / $ALEN);
     $y = $Y_MAX - $DY * (($canv_y - $MARGIN) / $ALEN);
@@ -116,15 +116,15 @@ sub initialize_canvas {
     my($label_offset, $tick_length) = (20, 5);
 
     $CANV = $MW->Canvas(
-			-width  => $MAX_PXL + $MARGIN * 2, 
-			-height => $MAX_PXL, 
+			-width  => $MAX_PXL + $MARGIN * 2,
+			-height => $MAX_PXL,
 			-relief => 'sunken',
 			);
     $CANV->pack;
     $CANV->Tk::bind('<Button-1>' => \&display_coordinates);
 
-    $CANV->create('text', 
-		  225, 25, 
+    $CANV->create('text',
+		  225, 25,
 		  -text => 'Plot Continuous Functions Of The Form y=f($x)',
 		  -fill => 'blue',
 		  );
@@ -134,7 +134,7 @@ sub initialize_canvas {
     # fall.  The axis limits are LabEntry widgets embedded in Canvas windows.
 
     $CANV->create('line',
-		  $MIN_PXL + $MARGIN, $MAX_PXL - $MARGIN, 
+		  $MIN_PXL + $MARGIN, $MAX_PXL - $MARGIN,
 		  $MAX_PXL - $MARGIN, $MAX_PXL - $MARGIN,
 		  );
 
@@ -146,12 +146,12 @@ sub initialize_canvas {
 					   -width => 5,
 					   ),
 		  );
-    $CANV->create('line', 
+    $CANV->create('line',
 		  $MIN_PXL + $MARGIN, $MAX_PXL - $MARGIN - $tick_length,
 		  $MIN_PXL + $MARGIN, $MAX_PXL - $MARGIN + $tick_length,
 		  );
 
-    $CANV->create('window', 
+    $CANV->create('window',
 		  $MAX_PXL - $MARGIN, $MAX_PXL - $label_offset,
 		  -window => $MW->LabEntry(
 					   -textvariable => \$X_MAX,
@@ -159,21 +159,21 @@ sub initialize_canvas {
 					   -width => 5,
 					   ),
 		  );
-    $CANV->create('line', 
+    $CANV->create('line',
 		  $MAX_PXL - $MARGIN, $MAX_PXL - $MARGIN - $tick_length,
 		  $MAX_PXL - $MARGIN, $MAX_PXL - $MARGIN + $tick_length,
 		  );
 
-    # Create the line to represent the Y axis and label it.  Then label the 
+    # Create the line to represent the Y axis and label it.  Then label the
     # minimum and maximum Y values and draw tick marks to indicate where they
     # fall.  The axis limits are LabEntry widgets embedded in Canvas windows.
 
-    $CANV->create('line', 
-		  $MAX_PXL - $MARGIN, $MIN_PXL + $MARGIN, 
+    $CANV->create('line',
+		  $MAX_PXL - $MARGIN, $MIN_PXL + $MARGIN,
 		  $MAX_PXL - $MARGIN, $MAX_PXL - $MARGIN,
 		  );
 
-    $CANV->create('window', 
+    $CANV->create('window',
 		  $MAX_PXL + $label_offset, $MIN_PXL + $MARGIN,
 		  -window => $MW->LabEntry(
 					   -textvariable => \$Y_MAX,
@@ -181,12 +181,12 @@ sub initialize_canvas {
 					   -width => 5,
 					   ),
 		  );
-    $CANV->create('line', 
+    $CANV->create('line',
 		  $MAX_PXL - $MARGIN - $tick_length, $MIN_PXL + $MARGIN,
 		  $MAX_PXL - $MARGIN + $tick_length, $MIN_PXL + $MARGIN,
 		  );
 
-    $CANV->create('window', 
+    $CANV->create('window',
 		  $MAX_PXL + $label_offset, $MAX_PXL - $MARGIN,
 		  -window => $MW->LabEntry(
 					   -textvariable => \$Y_MIN,
@@ -194,7 +194,7 @@ sub initialize_canvas {
 					   -width => 5,
 					   ),
 		  );
-    $CANV->create('line', 
+    $CANV->create('line',
 		  $MAX_PXL - $MARGIN - $tick_length, $MAX_PXL - $MARGIN,
 		  $MAX_PXL - $MARGIN + $tick_length, $MAX_PXL - $MARGIN,
 		  );
@@ -207,7 +207,7 @@ sub initialize_dialogs {
 
     $DIALOG_ABOUT = $MW->Dialog(
 				-title   => 'About',
-				-text    => 
+				-text    =>
 "plot_program $VERSION\n\n95/12/04\n\nThis program is described in the Perl/Tk column from Volume 1, Issue 1 of The Perl Journal (http://tpj.com/tpj), and is included in the Perl/Tk distribution with permission.",
 				-bitmap  => 'info',
 				-buttons => ['Dismiss'],
@@ -249,7 +249,7 @@ sub initialize_functions {
     $buttons_frame->pack(-padx => 10, -pady => 5, -expand => 1, -fill => 'x');
     my @pack_attributes = qw(-side left -fill x -expand 1);
     $buttons_frame->Button(
-			   -text    => 'Plot', 
+			   -text    => 'Plot',
 			   -command => \&plot_functions,
 			   )->pack(@pack_attributes);
 
@@ -261,7 +261,7 @@ sub initialize_menus {
 
     $MBF = $MW->Frame(-relief => 'raised', -borderwidth => 1);
     $MBF->pack(-fill => 'x');
-	
+
     make_menubutton($MBF, 'File', 0, 'left',
 		    [
 		     ['Quit',  [$MW => 'bell'],          0],
@@ -278,22 +278,22 @@ sub initialize_menus {
 } # end initialize_menus
 
 sub make_menubutton {
-	
-    # Make a Menubutton widget; note that the Menu is automatically created.  
+
+    # Make a Menubutton widget; note that the Menu is automatically created.
     # If the label is '', make a separator.
 
     my($mbf, $mb_label, $mb_label_underline, $pack, $mb_list_ref) = @_;
 
     my $mb = $mbf->Menubutton(
-			       -text      => $mb_label, 
+			       -text      => $mb_label,
 			       -underline => $mb_label_underline,
 			      );
     my $mb_list;
     foreach $mb_list (@{$mb_list_ref}) {
 	$mb_list->[0] eq '' ? $mb->separator :
 	    $mb->command(
-			 -label     => $mb_list->[0], 
-			 -command   => $mb_list->[1], 
+			 -label     => $mb_list->[0],
+			 -command   => $mb_list->[1],
 			 -underline => $mb_list->[2],
 			 );
     }
@@ -311,7 +311,7 @@ sub plot_functions {
     $DX = $X_MAX - $X_MIN;	# update delta X
     $DY = $Y_MAX - $Y_MIN;	# update delta Y
     $CANV->delete('plot');	# erase all previous plots
-    
+
     # Fetch the newline-separated Text widget contents and update the function
     # list @FUNCTIONS.  Also update the Text widget with the new colors.
 
@@ -342,7 +342,7 @@ ALL_X_VALUES:
 			  -fill => $COLORS[$_ % $NUM_COLORS],
 			  -tags => ['plot'],
 			  -text => '.',
-			  ) if $canv_y > $MIN_PXL + $MARGIN and 
+			  ) if $canv_y > $MIN_PXL + $MARGIN and
 			       $canv_y < $MAX_PXL - $MARGIN;
 	} # forend ALL_FUNCTIONS
 

@@ -1,3 +1,6 @@
+
+/*	$Id: tixUnixDraw.c,v 1.1.1.1 2000/05/17 11:08:54 idiscovery Exp $	*/
+
 /*
  * tixUnixDraw.c --
  *
@@ -13,7 +16,7 @@
 #include "tixPort.h"
 #include "tixUnixInt.h"
 
-
+
 /*
  *----------------------------------------------------------------------
  * TixpDrawTmpLine --
@@ -77,7 +80,7 @@ TixpDrawTmpLine(x1, y1, x2, y2, tkwin)
     XDrawLine(Tk_Display(tkwin), winId, gc, x1, y1, x2, y2);
     XFreeGC(Tk_Display(tkwin), gc);
 }
-
+
 /*----------------------------------------------------------------------
  * TixpDrawAnchorLines --
  *
@@ -119,7 +122,7 @@ void TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
 
     XDrawPoints(display, drawable, gc, points, 4, CoordModeOrigin);
 }
-
+
 /*----------------------------------------------------------------------
  * TixpStartSubRegionDraw --
  *
@@ -161,7 +164,7 @@ TixpStartSubRegionDraw(display, drawable, gc, subRegPtr, origX, origY,
 	subRegPtr->rectUsed    = 0;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixpEndSubRegionDraw --
  *
@@ -183,7 +186,7 @@ TixpEndSubRegionDraw(display, drawable, gc, subRegPtr)
 	XSetClipRectangles(display, gc, 0, 0, &subRegPtr->rect, 1, Unsorted);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -225,7 +228,7 @@ TixpSubRegDisplayText(display, drawable, gc, subRegPtr, font, string,
     TixDisplayText(display, drawable, font, string,
 	numChars, x, y,	length, justify, underline, gc);
 }
-
+
 /*----------------------------------------------------------------------
  * TixpSubRegFillRectangle --
  *
@@ -245,7 +248,7 @@ TixpSubRegFillRectangle(display, drawable, gc, subRegPtr, x, y, width, height)
 {
     XFillRectangle(display, drawable, gc, x, y, width, height);
 }
-
+
 /*----------------------------------------------------------------------
  * TixpSubRegDrawImage	--
  *

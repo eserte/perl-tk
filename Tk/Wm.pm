@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Wm;
@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Wm.pm#23 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Wm.pm#8 $
 
 use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 
@@ -22,9 +22,9 @@ Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
                        deiconify focusmodel frame geometry group
                        iconbitmap iconify iconimage iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
-                       protocol resizable saveunder sizefrom state title transient
+                       protocol resizable sizefrom state title transient
                        withdraw wrapper)]);
-
+		
 sub SetBindtags
 {
  my ($obj) = @_;
@@ -47,7 +47,7 @@ sub MoveResizeWindow
  $w->geometry($width.'x'.$height);
  $w->MoveToplevelWindow($x,$y);
  $w->deiconify;
-}   
+}
 
 sub WmDeleteWindow
 {
@@ -123,7 +123,10 @@ sub Popup
   }
  my ($X,$Y) = AnchorAdjust($w->cget('-overanchor'),$rx,$ry,$rw,$rh);
  ($X,$Y)    = AnchorAdjust($w->cget('-popanchor'),$X,$Y,-$mw,-$mh);
- $w->Post($X,$Y); 
+ # adjust to not cross screen borders
+ if ($mw > $w->screenwidth)  { $X = 0 }
+ if ($mh > $w->screenheight) { $Y = 0 }
+ $w->Post($X,$Y);
  $w->waitVisibility;
 }
 
@@ -163,3 +166,4 @@ sub iconposition
   }
  $w->wm('iconposition',@_);
 }
+

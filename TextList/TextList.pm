@@ -25,7 +25,7 @@ package Tk::TextList;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/TextList/TextList.pm#2 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/TextList/TextList.pm#2 $
 
 use Tk::Reindex qw(Tk::ROText ReindexedROText);
 

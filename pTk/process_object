@@ -13,9 +13,9 @@ sub do_nm
      $file{$obj}{$name} = $kind;
      if ($kind ne 'U')
       {
-       if (exists $def{$name})
+       if (exists($def{$name}) && ($def{$name}[0] ne $kind || $def{$name}[1] ne $obj))
         {
-         warn "$name " . Dumper($def{$name}) . " and [$kind,$obj]\n"; 
+         warn "$name " . Dumper($def{$name}) . " and [$kind,$obj]\n";
         }
        $def{$name} = [$kind,$obj];
       }

@@ -1,4 +1,5 @@
-/* 
+/* $Id: tixAppInit.c,v 1.2.2.1 2001/11/15 05:18:16 idiscovery Exp $ */
+/*
  * tixAppInit.c --
  *
  *	Provides a default version of the Tcl_AppInit procedure for
@@ -22,7 +23,7 @@
 
 extern int matherr();
 int *tclDummyMathPtr = (int *) matherr;
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -48,7 +49,7 @@ main(argc, argv)
     Tk_Main(argc, argv, Tcl_AppInit);
     return 0;			/* Needed only to prevent compiler warning. */
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -101,10 +102,14 @@ Tcl_AppInit(interp)
      */
 
     /*
-     * Specify a user-specific startup file to invoke if the application
-     * is run interactively.  Typically the startup file is "~/.apprc"
-     * where "app" is the name of the application.  If this line is deleted
-     * then no user-specific startup file will be run under any conditions.
+     Tix_SetRcFileName(interp, "~/.tixwishrc");
+     In the past, the interactive initialization file was inconsistent,
+     and on Windows, $env(HOME) is undefined or most users don't even
+     know where there HOME is (Profiles\User\Application Data\)!
+     So a site wide initialization file tixwishrc.tcl is now used,
+     which must be in the same directory as the executable. To restore
+     the past behaviour, simply add the following line to that file:
+	 if {[file isfile [set file ~/.tixwishrc]]} {source $file}
      */
 
     tcl_RcFileName = "~/.tixwishrc";

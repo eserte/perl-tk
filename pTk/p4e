@@ -6,7 +6,7 @@ my $path = getcwd;
 foreach (@ARGV)
  {
   s/\./\\./;
- }          
+ }
 
 my $re = '^(?:'.join('|',@ARGV).')$';
 $re = qr/$re/;
@@ -21,25 +21,25 @@ sub wanted
     unless (-w $file)
      {
       system('p4','edit',$file);
-     }                           
+     }
     my $cmd = $ENV{'EDITOR'}.' '.$file;
-    invoke($cmd);                  
+    invoke($cmd);
     print "$cmd\n";
    }
  }
-    
+
 sub invoke
 {
  if ($^O eq 'MSWin32')
   {
    system(1,@_);
-  }             
+  }
  else
   {
    if ($pid = fork)
     {
      return $pid;
-    }            
+    }
    else
     {
      exec(@_);

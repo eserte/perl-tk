@@ -27,7 +27,7 @@ outer:
 		-command => sub {
 		    print "The month is $month\n";
 		}, -relief => "raised")->pack;
-    
+
     $bf->pack;
     $f->pack;
     MainLoop;
