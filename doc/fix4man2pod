@@ -61,9 +61,9 @@ while (<>)
        if (@options == 3)
          {
             $_ .= ".LP\n.nf\n" 
+                . "Option:\t\\fB" .$options[0] . "\\fR\n"
                 . "Name:\t\\fB" .  $options[1] . "\\fR\n"
                 . "Class:\t\\fB" . $options[2] . "\\fR\n"
-                . "Switch:\t\\fB" .$options[0] . "\\fR\n"
 	        . ".fi\n.IP\n";
          }
        else
@@ -72,10 +72,10 @@ while (<>)
 	    $options[0] =~ s/^\"//;
 	    $options[2] =~ s/\"$//;
             $_ .= ".LP\n.nf\n" 
+                . "Option:\t\\fB" .$options[0] . "\\fR\n"
+		. "Alias:\t\\fB" . $options[2] . "\\fR\n"
                 . "Name:\t\\fB" .  $options[3] . "\\fR\n"
                 . "Class:\t\\fB" . $options[4] . "\\fR\n"
-                . "Switch:\t\\fB" .$options[0] . "\\fR\n"
-		. "Alias:\t\\fB" . $options[2] . "\\fR\n"
 	        . ".fi\n.IP\n";
 	 }
       

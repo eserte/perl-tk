@@ -740,15 +740,16 @@ Tk_CanvasPsFont(interp, canvas, tkfont)
 	    if (argc != 2) {
 		goto badMapEntry;
 	    }
-	    size = strtod(argv[1], &end);
-	    if ((size <= 0) || (*end != 0)) {
+	    if (Tcl_GetDouble(interp, args[1], &size) != TCL_OK) {
 		goto badMapEntry;
 	    }
 
 	    Tcl_DStringAppend(&ds, argv[0], -1);
 	    points = (int) size;
 	    
-	    ckfree((char *) argv);
+	    if (freeProc) {
+		(*freeProc)(argc,argv);
+	    }
 	    goto findfont;
 	}
     } 

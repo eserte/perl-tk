@@ -5,14 +5,14 @@ package Tk::Tree;
 #
 # Chris Dean <ctdean@cogit.com>
 
-use strict;
-use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tixish/Tree.pm#4$
+use vars qw($VERSION);
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tixish/Tree.pm#10$
 
 use Tk;
 use Tk::Derived;
 use Tk::HList;
 @ISA = qw(Tk::Derived Tk::HList);
+use strict;
 
 Construct Tk::Widget 'Tree';
 
@@ -47,9 +47,8 @@ sub autosetmode
 
 sub IndicatorCmd 
 {
- my( $w, $ent ) = @_;
+ my( $w, $ent, $event ) = @_;
  
- my $event = $w->EventType;
  my $mode = $w->getmode( $ent );
  
  if ( $event eq "<Arm>" ) 
@@ -200,7 +199,8 @@ sub _indicator_image
   {
    if (defined $image)
     {
-     $w->indicatorCreate( $ent,-itemtype => 'image') unless $w->indicatorExists($ent);
+     $w->indicatorCreate( $ent, -itemtype => 'image' )
+         unless $w->indicatorExists($ent);
      $data->{$ent} = $image;
      $w->indicatorConfigure( $ent, -image => $w->Getimage( $image ) );
     }
@@ -230,6 +230,8 @@ __END__
 =head1 NAME
 
 Tk::Tree - Create and manipulate Tree widgets
+
+=for category Tix Extensions
 
 =head1 SYNOPSIS
 

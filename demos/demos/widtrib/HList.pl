@@ -1,20 +1,19 @@
-# HList - A hierarchial listbox widget.
+# HList, a hierarchial listbox widget.
 
 use Tk::HList;
 use Cwd;
-use strict;
 use subs qw/show_dir/;
-use vars qw/$MW $top $FILEIMG $FOLDIMG/;
+use vars qw/$TOP $FILEIMG $FOLDIMG/;
 
 sub HList {
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name => $demo,
         -text => 'HList - A hierarchial listbox widget.',
 	-geometry_manager => 'grid',
     );
-    $top = $demo_widget->Top;	# get grid master
-    my $h = $top->Scrolled(qw\HList -separator / -selectmode single -width 30
+
+    my $h = $TOP->Scrolled(qw\HList -separator / -selectmode single -width 30
 			   -height 20 -indent 35 -scrollbars se
 			   -itemtype imagetext \
 			   )->grid(qw/-sticky nsew/);
@@ -22,8 +21,8 @@ sub HList {
 	print "Double click $_[0], size=", $h->info('data', $_[0]) ,".\n";
     });
 
-    $FILEIMG = $top->Bitmap(-file => Tk->findINC('file.xbm'));
-    $FOLDIMG = $top->Bitmap(-file => Tk->findINC('folder.xbm'));
+    $FILEIMG = $TOP->Bitmap(-file => Tk->findINC('file.xbm'));
+    $FOLDIMG = $TOP->Bitmap(-file => Tk->findINC('folder.xbm'));
 
     my $root = Tk->findINC('demos');
     my $olddir = cwd;
@@ -37,7 +36,7 @@ sub show_dir {
     opendir H, $entry_path;
     my(@dirent) = grep ! /^\.\.?$/, sort(readdir H);
     closedir H;
-    $h->add($entry_path,  -text => $text, -image => $FOLDIMG);
+    $h->add($entry_path,  -text => $text, -image => $FOLDIMG, -data => 'DIR');
     while ($_ = shift @dirent) {
 	my $file = "$entry_path/$_";
 	if (-d $file) {

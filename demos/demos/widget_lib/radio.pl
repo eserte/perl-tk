@@ -7,13 +7,12 @@ sub radio {
     # Create a top-level window that displays a bunch of radio buttons.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['Two groups of radiobuttons are displayed below.  If you click on a button then the button will become selected exclusively among all the buttons in its group.  A Perl variable is associated with each group to indicate which of the group\'s buttons is selected.  Click the "See Variables" button to see the current values of the variables.', qw/-wraplength 5i/],
         -title    => 'Radiobutton Demonstration',
         -iconname => 'radio',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $var = $TOP->Button(
         -text    => 'See Variables',

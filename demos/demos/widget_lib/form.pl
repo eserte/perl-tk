@@ -8,13 +8,12 @@ sub form {
     # tabs set up to move between them.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This window contains a simple form where you can type in the various entries and use tabs to move circularly between the entries.',
         -title    => 'Form Demonstration',
         -iconname => 'form',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     foreach ('Name:', 'Address:', '', '', 'Phone:') {
 	my $f = $TOP->Frame(qw/-borderwidth 2/);

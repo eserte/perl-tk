@@ -5,9 +5,8 @@ package Tk::TextUndo;
 require Tk::Text;
 use AutoLoader;
 
-
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/TextUndo.pm#5$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/TextUndo.pm#10$
 
 @ISA = qw(Tk::Text);
 
@@ -90,7 +89,6 @@ sub numberChanges
  return scalar(@{$w->{'UNDO'}});
 }
 
-
 sub FileName
 {
  my $text = shift;
@@ -127,8 +125,6 @@ sub Save
   }
 }
 
-
-
 sub Load
 {
  my ($text,$file) = @_;
@@ -152,7 +148,6 @@ sub Load
   }
 }
 
-
 #   We have here no <L4> on our keyboard :-(  So TextUndo needs
 
 #	- document the 'undo' method. so other can use Bind
@@ -163,6 +158,8 @@ sub Load
 =head1 NAME
 
 Tk::TextUndo - perl/tk text widget with bindings to undo changes.
+
+=for category Derived Widgets
 
 =head1 SYNOPSIS
 
@@ -187,7 +184,6 @@ Additionally to the L<Text> widget there are the following bindings:
 
 undo the last change.  Pressing <L4> several times undo
 step by step the changes made to the text widget.
-
 
 =back
 
@@ -218,7 +214,6 @@ is not overwriten by $otherfilename.
 If passed an argument sets the file name associated with the loaded
 document. Returns the current file name associated with the document.
 
-
 =back
 
 =head1 KEYS
@@ -230,5 +225,4 @@ widget, text, undo
 Tk::Text(3), Tk::ROText(3)
 
 =cut
-
 

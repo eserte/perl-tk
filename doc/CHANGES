@@ -1,3 +1,41 @@
+version doc.7
+
+o event.n describes perl/Tk
+
+version doc.6
+
+o TixGrid methods: tcl -> perl 
+
+version doc.5
+
+o added pod pod/Makefile.PL pod/pTk/Makefile.PL
+
+o transname prints cp cmds to install into ../pod
+  sh cp.script installs them
+
+version doc.4
+
+o Use .OP for tixish manpages as in tcl manpages (utils/fixoption)
+  Replaced 3 Alias: defs by hand.
+
+o change option description to  Switch,Alias,Name,Class
+  to 'prevent' usage of 'name => bla' instead of '-name => bla)
+
+version doc.3
+
+o replace res. name -> option in STD. OPT section
+
+	HList TList tixGrid frame
+
+version doc.2
+
+o fixed tixGrid -> TixGrid in tixGrid.n
+
+version doc.1
+
+o merged version 0.19
+
+######################################################
 Version 0.19
 
 o Translated example in HList and DItem into perl

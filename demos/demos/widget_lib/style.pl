@@ -8,13 +8,12 @@ sub style {
     # the various display styles that are available in texts.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     =>'',				      
         -title    => 'Text Demonstration - Display Styles',
         -iconname => 'style',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $t = $TOP->Scrolled(qw/Text -setgrid true -width  70 -height 32
 			   -wrap word -scrollbars e/);

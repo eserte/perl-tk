@@ -10,13 +10,12 @@ sub items {
     # item types and allows them to be selected and moved.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ["This window contains a canvas widget with examples of the various kinds of items supported by canvases.  The following operations are supported:\n  Button-1 drag:\tmoves item under pointer.\n  Button-2 drag:\trepositions view.\n  Button-3 drag:\tstrokes out area.\n Ctrl+f:\t\tdisplays items under area.", qw/-wraplength 5i/],
         -title    => 'Canvas Item Demonstration',
         -iconname => 'items',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $c = $TOP->Scrolled(qw/Canvas -width 15c -height 10c -relief sunken
 			   -borderwidth 2 -scrollbars se -scrollregion/ =>

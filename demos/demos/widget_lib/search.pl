@@ -11,13 +11,12 @@ sub search {
     # is used to collect the file name and search string.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     =>'',				      
         -title    => 'Text Demonstration - Search and Highlight',
         -iconname => 'search',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $file_name = '';
     my $file = $TOP->Frame;

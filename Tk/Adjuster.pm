@@ -1,7 +1,7 @@
 package Tk::Adjuster::Item;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Adjuster.pm#4$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Adjuster.pm#10$
 
 @ISA = qw(Tk::Frame);
 
@@ -17,8 +17,7 @@ sub ClassInit
 sub dx
 {
  my $w = shift;
- my $ev = $w->XEvent;
- my $x = $ev->x;                                   
+ my $x = $w->XEvent->x;                                   
  if ($x > 0)                                       
   {                                                
    $x -= $w->Width;                                
@@ -30,8 +29,7 @@ sub dx
 sub dy
 {
  my $w = shift;
- my $ev = $w->XEvent;
- my $y = $ev->y;                                   
+ my $y = $w->XEvent->y;                                   
  if ($y > 0)                                       
   {                                                
    $y -= $w->Height;                                
@@ -80,7 +78,7 @@ package Tk::Adjuster;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Adjuster.pm#4$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Adjuster.pm#10$
 
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
@@ -147,7 +145,7 @@ sub Mapped
 {
  my $w = shift;
  my $m = $w->manager;
- if ($m =~ /^(pack|grid)$/)
+ if ($m =~ /^(?:pack|grid)$/)
   {
    my %info = $w->$m('info');
    $info{'-in'}->$m('propagate',0);
@@ -171,6 +169,7 @@ sub Populate
                  -background => [['SELF',$w->{'sep'},$w->{'but'}],'background','Background',undef], 
                  -foreground => [Tk::Configure->new($w->{'lin'},'-background'),'foreground','Foreground','black'] 
                 );
+ $w->{lastsd} = 0;
 }
 
 sub side
@@ -179,22 +178,22 @@ sub side
  if (@_ > 1)
   {
    $w->{'side'} = $val;
-   my $cursor;                                                                           
-   if ($w->vert)                                                                         
-    {                                                                                    
-     $cursor = 'sb_h_double_arrow';                                                      
-     $w->{'sep'}->configure(-width => 2, -height => 10000);                              
-    }                                                                                    
-   else                                                                                  
-    {                                                                                    
-     $cursor = 'sb_v_double_arrow';                                                      
-     $w->{'sep'}->configure(-height => 2, -width => 10000);                              
-    }                                                                                    
-   my $x;                                                                                
-   foreach $x ($w->{'sep'},$w->{'but'})                                                  
-    {                                                                                    
-     $x->configure(-cursor => $cursor);                                                  
-    }                                                                                    
+   my $cursor;
+   if ($w->vert)
+    {
+     $cursor = 'sb_h_double_arrow';
+     $w->{'sep'}->configure(-width => 2, -height => 10000);
+    }
+   else
+    {
+     $cursor = 'sb_v_double_arrow';
+     $w->{'sep'}->configure(-height => 2, -width => 10000);
+    }
+   my $x;
+   foreach $x ($w->{'sep'},$w->{'but'})
+    {
+     $x->configure(-cursor => $cursor);
+    }
   }
  return $w->{'side'};
 }
@@ -222,6 +221,8 @@ __END__
 
 Tk::Adjuster, packAdjust - Allow size of packed widgets to be adjusted by user
 
+=for category Tk Geometry Management
+
 =head1 SYNOPSIS
 
   use Tk;
@@ -242,7 +243,6 @@ on behalf of the widget which will cause the packer to change widget's size.
 If Drag is done with Shift button down, then GeometryRequests are made
 in "real time" so that text-flow effects can be seen, but as a lot more
 work is done behaviour may be sluggish.
-
 
 If widget is packed with -side => left or -side => right then width is 
 adjusted. If packed -side => top or -side => bottom then height is adjusted.
@@ -265,7 +265,7 @@ itself if it is unmapped. However the "grab" it held will have been lost
 and button-motion events may be sent to other widgets which are not expecting 
 them, which can result in error messages. 
 
-=cut 
+=cut #' emacs hilighting...
 
 sub Restore
 {
@@ -288,15 +288,33 @@ sub dWidth
   {
    my $r = $w->{'sep'};
    $l->GeometryRequest(1,$r->Height) unless $l->IsMapped;
-   $l->MoveToplevelWindow($sdx+$r->rootx,$r->rooty);
-   $l->MapWindow unless ($l->IsMapped);
-   $l->XRaiseWindow;
+
+   my $base = $w->Parent;
+   if ($sdx+$r->rootx >= $base->rootx
+       && $sdx+$r->rootx < $base->rootx + $base->width)
+    {
+     # avoid drag hanging
+     unless ($sdx == $w->{lastsd})
+      {
+       $l->MoveToplevelWindow($sdx+$r->rootx,$r->rooty);
+       $w->{lastsd} = $sdx;
+      }
+
+     $l->MapWindow unless ($l->IsMapped);
+     $l->XRaiseWindow;
+    }
+   # Dragged line out of parent frame the first time...
+   elsif ($l->IsMapped)
+    {
+     $l->UnmapWindow;
+    }
   }
  else
   {
    $l->UnmapWindow;
    my $s = $w->slave;
    $s->GeometryRequest($s->Width+$dx,$s->Height) if (defined $s);
+   $w->XSync(1);
   }
  $w->idletasks;
 }
@@ -309,18 +327,33 @@ sub dHeight
   {
    my $r = $w->{'sep'};
    $l->GeometryRequest($r->Width,1) unless $l->IsMapped;
-   $l->MoveToplevelWindow($r->rootx,$r->rooty+$sdy);
-   $l->MapWindow unless $l->IsMapped;
-   $l->XRaiseWindow;
+
+   my $base = $w->Parent;
+   if ($sdy+$r->rooty >= $base->rooty
+       && $sdy+$r->rooty < $base->rooty + $base->height)
+    {
+     # avoid drag hanging
+     unless ($sdy == $w->{lastsd})
+      {
+       $l->MoveToplevelWindow($r->rootx,$sdy+$r->rooty);
+       $w->{lastsd} = $sdy;
+      }
+
+     $l->MapWindow unless $l->IsMapped;
+     $l->XRaiseWindow;
+    }
+   # Dragged line out of parent frame the first time...
+   elsif ($l->IsMapped)
+    {
+     $l->UnmapWindow;
+    }
   }
  else
   {
    $l->UnmapWindow;
    my $s = $w->slave;
    $s->GeometryRequest($s->Width,$s->Height+$dy) if (defined $s);
+   $w->XSync(1);
   }
  $w->idletasks;
 }
-
-
-

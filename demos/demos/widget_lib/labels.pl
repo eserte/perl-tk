@@ -8,13 +8,12 @@ sub labels {
     # "packing list" variable which specifies the list of packer attributes.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'Five labels are displayed below: three textual ones on the left, and an image label and a text label on the right.  Labels are pretty boring because you can\'t do anything with them.',
         -title    => 'Label Demonstration',
         -iconname => 'label',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my(@pl) = qw/-side left -expand yes -padx 10 -pady 10 -fill both/;
     my $left = $TOP->Frame->pack(@pl);

@@ -288,7 +288,7 @@ Tk_NameOfCursor(display, cursor)
 
     if (!initialized) {
 	printid:
-	sprintf(string, "cursor id 0x%x", (unsigned int) cursor);
+	sprintf(string, "cursor id %p", cursor);
 	return string;
     }
     idKey.display = display;

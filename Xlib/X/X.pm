@@ -3,14 +3,12 @@ package Tk::X;
 use strict;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
+$VERSION = '3.008'; # $Id: //depot/Tk8/Xlib/X/X.pm#8$
 
 require Exporter;
 require DynaLoader;
 require AutoLoader;
 
-
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Xlib/X/X.pm#3$
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -364,7 +362,6 @@ $VERSION = '3.003'; # $Id: //depot/Tk8/Xlib/X/X.pm#3$
 	YXSorted
 	ZPixmap
 );
-$VERSION = '3.003'; # $Id: //depot/Tk8/Xlib/X/X.pm#3$
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -400,6 +397,8 @@ __END__
 =head1 NAME
 
 Tk::X - Perl extension for Xlib constants.
+
+=for category Other Modules and Languages
 
 =head1 SYNOPSIS
 
@@ -759,7 +758,6 @@ constants for possible use with Tk::Xlib.
   YXBanded
   YXSorted
   ZPixmap
-
 
 =head1 AUTHOR
 

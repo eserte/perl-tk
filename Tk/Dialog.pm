@@ -1,3 +1,8 @@
+package Tk::Dialog;
+
+use vars qw($VERSION);
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Dialog.pm#10$
+
 # Dialog - a translation of `tk_dialog' from Tcl/Tk to TkPerl (based on
 # John Stoffel's idea).
 #
@@ -6,11 +11,6 @@
 
 # Documentation after __END__
 
-package Tk::Dialog;
-
-use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Dialog.pm#6$
-
 use Carp;
 use strict;
 
@@ -18,7 +18,6 @@ require Tk::Toplevel;
 @Tk::Dialog::ISA = qw(Tk::Toplevel);
 
 Construct Tk::Widget 'Dialog';
-
 
 sub Populate
 {
@@ -172,6 +171,7 @@ __END__
 
 Tk::Dialog - Perl/Tk Dialog widget
 
+=for category Popups and Dialogs
 
 =head1 SYNOPSIS
 
@@ -186,7 +186,6 @@ Tk::Dialog - Perl/Tk Dialog widget
     );
 
     $selected = $DialogRef->Show(?-global?);
-
 
 =head1 DESCRIPTION
 
@@ -265,7 +264,6 @@ This returns the text label of the selected button.
 to the C<Show> method.)
 
 =back
-
 
 =head1 SEE ALSO
 

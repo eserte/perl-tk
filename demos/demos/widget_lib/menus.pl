@@ -9,13 +9,12 @@ sub menus {
     # and cascaded menus.
 
     my ($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
 	-text     => '',
         -title    => 'Menu Demonstration',
         -iconname => 'menus',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $menu = $TOP->Frame(-relief => 'raised', -borderwidth => 2);
     $menu->pack(-fill => 'x');

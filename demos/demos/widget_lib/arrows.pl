@@ -9,13 +9,12 @@ sub arrows {
     # allows the user to experiment with arrow shapes.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This widget allows you to experiment with different widths and arrowhead shapes for lines in canvases.  To change the line width or the shape of the arrowhead, drag any of the three boxes attached to the oversized arrow.  The arrows on the right give examples at normal scale.  The text at the bottom shows the configuration options as you\'d enter them for a canvas line item.', qw/-wraplength 5i/],
         -title    => 'Arrowhead Editor Demonstration',
         -iconname => 'arrows',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $c = $TOP->Canvas(
         -width       => '500', 

@@ -7,13 +7,12 @@ sub texts {
     # Create a top-level window that displays a basic text widget.
 
     my ($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => '',
         -title    => 'Text Demonstration - Basic Facilities',
         -iconname => 'texts',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $t = $TOP->Scrolled(qw/Text -relief sunken -borderwidth 2 -setgrid true
 			   -height 30 -scrollbars e/);

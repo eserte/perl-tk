@@ -18,11 +18,11 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk800.0_02) requires perl5.004 or later.
+This version (Tk800.003) requires perl5.004 or later.
 Some of Tk::IO and 'fileevent' programly won't work without 
 Graham Barr's TIEHANDLE patches e.g. perl5.004_62
 
-Tk800.0_02 should build and run on Windows NT using Visual C++, or 
+Tk800.003 should build and run on Windows NT using Visual C++, or 
 Borland with and perl5.004_6X.
 
 Goal of 800.* is to incorporate native look-and-feel to Win32 port introduced
@@ -32,10 +32,5 @@ as possible.
 However as internals have changed I am uncertain that everything "works"
 correctly.  
 
-The somewhat strange name 'Tk800.0_02' is so that CPAN does not index
-this version and hence you need to either extract and build manually or
-
-perl -MCPAN -e shell
-make NI-S/Tk800.0_02.tar.gz
 
  

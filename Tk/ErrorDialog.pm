@@ -1,3 +1,14 @@
+package Tk::ErrorDialog;
+
+use vars qw($VERSION);
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#5$
+
+use English;
+use Tk ();
+require Tk::Dialog;
+@Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
+
+
 # ErrorDialog - a translation of `tkerror' from Tcl/Tk to TkPerl.
 #
 # Currently TkPerl background errors are sent to stdout/stderr; use this
@@ -13,11 +24,6 @@
 # error occurs.  However, in order to configure the ErrorDialog object you
 # must call the constructor and create it manually.
 #
-
-
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#4$
-
 # The ErrorDialog object essentially consists of two subwidgets: an
 # ErrorDialog widget to display the background error and a Text widget for the
 # traceback information.  If required, you can invoke the configure() method
@@ -45,15 +51,6 @@ $VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#4$
 #       bool - a boolean indicating whether or not to append successive
 #              tracebacks (default is 1, do append).
 #
-
-package Tk::ErrorDialog;
-use English;
-use Tk ();
-require Tk::Dialog;
-@Tk::ErrorDialog::ISA = qw(Tk::Toplevel);
-
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ErrorDialog.pm#4$
 
 use strict;
 

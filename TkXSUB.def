@@ -24,7 +24,7 @@ MkXSUB("Tk::tk_chooseColor", XS_Tk_tk_chooseColor, XStoTk, Tk_ChooseColorCmd)
 MkXSUB("Tk::tk_getOpenFile", XS_Tk_tk_getOpenFile, XStoTk, Tk_GetOpenFileCmd)
 MkXSUB("Tk::tk_getSaveFile", XS_Tk_tk_getSaveFile, XStoTk, Tk_GetSaveFileCmd)
 MkXSUB("Tk::tk_messageBox", XS_Tk_tk_messageBox, XStoTk, Tk_MessageBoxCmd)
-MkXSUB("Tk::tk", XS_Tk_tk, XStoTk, Tk_TkObjCmd)
+MkXSUB("Tk::tk", XS_Tk_tk, XStoTclCmd, Tk_TkObjCmd)
 
 #if 0
 MkXSUB("Tk::exit", XS_Tk_exit, XStoNoWindow, Tcl_ExitCmd)

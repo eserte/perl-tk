@@ -1,7 +1,7 @@
 package Tk::HList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/HList/HList.pm#6$
+$VERSION = '3.011'; # $Id: //depot/Tk8/HList/HList.pm#11$
 
 use Tk qw(Ev);
 
@@ -83,9 +83,8 @@ sub ClassInit
 
  $mw->bind($class,'<Left>', ['LeftRight', 'left']);
  $mw->bind($class,'<Right>',['LeftRight', 'right']);
-
- $mw->bind($class,'<Prior>', sub {shift->yview('scroll', -1, 'pages') } );
- $mw->bind($class,'<Next>',  sub {shift->yview('scroll',  1, 'pages') } );
+                        
+ $mw->PriorNextBind($class);
 
  $mw->bind($class,'<Return>', ['KeyboardActivate']);
  $mw->bind($class,'<space>',  ['KeyboardBrowse']);
@@ -130,8 +129,7 @@ sub Button1
  if (defined($info[1]) && $info[1] eq 'indicator')
   {
    $w->{tixindicator} = $ent;
-   $w->EventType( "<Arm>" );
-   $w->Callback(-indicatorcmd => $ent);
+   $w->Callback(-indicatorcmd => $ent, "<Arm>");
   }
  else
   {
@@ -238,8 +236,7 @@ sub ButtonRelease1
    my @info = $w->info('item',$Ev->x, $Ev->y);
    if(defined($info[1]) && $info[1] eq 'indicator')
     {
-     $w->EventType( "<Activate>" );
-     $w->Callback(-indicatorcmd => $ent);
+     $w->Callback(-indicatorcmd => $ent, "<Activate>");
     }
    return;
   }
@@ -293,8 +290,8 @@ sub Button1Motion
 
  if($w->{tixindicator})
   {
-   $w->EventType( $w->{tixindicator} eq $ent ? "<Arm>" : "<Disarm>" );
-   $w->Callback(-indicatorcmd => $w->{tixindicator});
+   my $event_type = $w->{tixindicator} eq $ent ? "<Arm>" : "<Disarm>";
+   $w->Callback(-indicatorcmd => $w->{tixindicator}, $event_type );
    return;
   }
 

@@ -3,9 +3,8 @@
 
 package Tk::BrowseEntry;
 
-
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#4$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#9$
 
 use Tk;
 use Carp;
@@ -24,25 +23,23 @@ sub Populate {
     $w->SUPER::Populate($args);
 
     # entry widget and arrow button
-    $w->{-variable} = delete $args->{-variable};
     my $lpack = delete $args->{-labelPack};
     if (not defined $lpack) {
 	$lpack = [-side => "left", -anchor => "e"];
     }
-    my $e = $w->LabEntry(-labelPack => $lpack, %$args);
+    my $e = $w->LabEntry(-labelPack => $lpack);
     delete $args->{-label};
     my $b = $w->Button(-bitmap => '@' . Tk->findINC("cbxarrow.xbm"));
     $w->Advertise("entry" => $e);
     $w->Advertise("arrow" => $b);
     $b->pack(-side => "right", -padx => 1);
     $e->pack(-side => "right", -fill => 'x', -expand => 1, -padx => 1);
-    $e->configure(-textvariable => $w->{-variable});
 
     # popup shell for listbox with values.
     my $c = $w->Toplevel(-bd => 2, -relief => "raised");
     $c->overrideredirect(1);
     $c->withdraw;
-    my $sl = $c->ScrlListbox(-selectmode => "browse");
+    my $sl = $c->Scrolled( qw/Listbox -selectmode browse -scrollbars oe/ );
     $w->Advertise("choices" => $c);
     $w->Advertise("slistbox" => $sl);
     $sl->pack(-expand => 1, -fill => "both");
@@ -50,11 +47,16 @@ sub Populate {
     # other initializations
     $w->SetBindings;
     $w->{"popped"} = 0;
-    $w->Delegates('insert' => $sl, 'delete' => $sl, DEFAULT => $e);
-    $w->ConfigSpecs(-listwidth => ["PASSIVE", "listWidth", "ListWidth", undef],
-		    -listcmd => ["PASSIVE", "listCmd", "ListCmd", undef],
-		    -browsecmd => ["PASSIVE", "browseCmd", "BrowseCmd", undef],
-		    "DEFAULT" => [$e]);
+    $w->Delegates('insert' => $sl, 'delete' => $sl, get => $sl, DEFAULT => $e);
+    $w->ConfigSpecs(
+        -listwidth   => [qw/PASSIVE  listWidth   ListWidth/,   undef],
+        -listcmd     => [qw/CALLBACK listCmd     ListCmd/,     undef],
+        -browsecmd   => [qw/CALLBACK browseCmd   BrowseCmd/,   undef],
+        -choices     => [qw/METHOD   choices     Choices/,     undef],
+        -state       => [qw/METHOD   state       State         normal/],
+        -arrowimage  => [ {-image => $b}, qw/arrowImage ArrowImage/, undef],
+        -variable    => "-textvariable",
+        DEFAULT      => [$e] );
 }
 
 sub SetBindings {
@@ -85,9 +87,8 @@ sub SetBindings {
 
 sub BtnDown {
     my ($w) = @_;
-    if ($w->cget(-state) =~ /disabled/) {
-	return;
-    }
+    return if $w->cget( "-state" ) eq "disabled";
+
     if ($w->{"popped"}) {
 	$w->Popdown;
 	$w->{"buttonHack"} = 0;
@@ -196,7 +197,8 @@ sub LbCopySelection {
     if (defined $index) {
 	$w->{"curIndex"} = $index;
 	my $l = $w->Subwidget("slistbox")->Subwidget("listbox");
-	${$w->{-variable}} = $l->get($index);
+        my $var_ref = $w->cget( "-textvariable" );
+        $$var_ref = $l->get($index);
 	if ($w->{"popped"}) {
 	    $w->Popdown;
 	}
@@ -239,6 +241,75 @@ sub ButtonHack {
     }
 }
 
+sub choices {
+    my $w = shift;
+    unless( @_ ) {
+        return( $w->get( qw/0 end/ ) );
+    } else {
+        my $choices = shift;
+        if( $choices ) {
+            $w->delete( qw/0 end/ );
+            $w->insert( "end", @$choices );
+        }
+        return( "" );
+    }
+}
+
+sub _set_edit_state {
+    my( $w, $state ) = @_;
+    
+    my $entry  = $w->Subwidget( "entry" );
+    my $button = $w->Subwidget( "arrow" );
+
+    my $color;
+    if( $state eq "normal" ) {                  # Editable
+        $color = "gray95";
+    } else {                                    # Not Editable
+        $color = $w->cget( -background ) || "lightgray";
+    }
+    $entry->Subwidget( "entry" )->configure( -background => $color );
+
+    if( $state eq "readonly" ) {
+        $entry->configure( -state => "disabled" );
+        $button->configure( -state => "normal" );
+    } else {
+        $entry->configure( -state => $state );
+        $button->configure( -state => $state );
+    }        
+}
+
+sub state {
+    my $w = shift;
+    unless( @_ ) {
+        return( $w->{Configure}{-state} );
+    } else {
+        my $state = shift;
+        $w->{Configure}{-state} = $state;
+        $w->_set_edit_state( $state );
+    }
+}
+
+sub _max {
+    my $max = shift;
+    foreach my $val (@_) {
+        $max = $val if $max < $val;
+    }
+    return( $max );
+}
+
+sub shrinkwrap {
+    my( $w, $size ) = @_;
+
+    unless( defined $size ) {
+        $size = _max( map( length, $w->get( qw/0 end/ ) ) ) || 0;;
+    }
+
+    my $lb = $w->Subwidget( "slistbox" )->Subwidget( "listbox" );
+    $w->configure(  -width => $size );
+    $lb->configure( -width => $size );
+}
+
+
 1;
 
 __END__
@@ -246,6 +317,8 @@ __END__
 =head1 NAME
 
 Tk::BrowseEntry - entry widget with popup choices.
+
+=for category Tix Extensions
 
 =head1 SYNOPSIS
 
@@ -291,6 +364,24 @@ is pressed to popup the choices in the listbox. This is called before
 popping up the listbox, so can be used to populate the entries in
 the listbox.
 
+=item B<-arrowimage>
+
+Specifies the image to be used in the arrow button beside the entry
+widget. The default is an downward arrow image in the file cbxarrow.xbm
+
+=item B<-choices>
+
+Specifies the list of choices to pop up.  This is a reference to an
+array of strings specifying the choices.
+
+=item B<-state>
+ 
+Specifies one of three states for the widget: normal, readonly, or
+disabled.  If the widget is disabled then the value may not be changed
+and the arrow button won't activate.  If the widget is readonly, the
+entry may not be edited, but it may be changed by choosing a value
+from the popup listbox.  normal is the default.
+
 =back
 
 =head1 METHODS
@@ -315,6 +406,8 @@ BrowseEntry should really provide more of the ComboBox options.
 =head1 AUTHOR
 
 B<Rajappa Iyer> rsi@earthling.net
+
+B<Chris Dean> ctdean@cogit.com made additions.
 
 This code was inspired by ComboBox.tcl in Tix4.0 by Ioi Lam and
 bears more than a passing resemblance to ComboBox code. This may

@@ -7,13 +7,12 @@ sub check {
     # Create a top-level window that displays a bunch of check buttons.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'Three checkbuttons are displayed below.  If you click on a button, it will toggle the button\'s selection state and set a Perl variable to a value indicating the state of the checkbutton.  Click the "See Variables" button to see the current values of the variables.',
         -title    => 'Checkbutton Demonstration',
         -iconname => 'check',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $var = $TOP->Button(
         -text    => 'See Variables',

@@ -3,9 +3,8 @@ package Tk::DragDrop::Common;
 use strict;
 use Carp;
 
-
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#3$
+$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#8$
 
 sub Type
 {
@@ -63,10 +62,10 @@ __END__
 
 Tk::DragDrop::Common - private class used by Drag&Drop
 
+=for category User Interaction
+
 =head1 DESCRIPTION
 
 This class provides methods to automate the the loading and declaring 
 of Drop and Site 'types'.
-
-
 

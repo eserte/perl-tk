@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#6$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#11$
 
 sub PreInit
 {
@@ -168,6 +168,8 @@ __END__
 
 Tk::Menu::Item - Base class for Menu items
 
+=for category Implementation
+
 =head1 SYNOPSIS
 
    require Tk::Menu::Item;
@@ -225,7 +227,6 @@ and C<entrycget>.
 The main purpose of the OO interface is to allow derived item classes to 
 be defined which pre-set the options used to create a more basic item.
 
-
 =head1 BUGS
 
 This OO interface is very new. Using the label as the "key" is a problem
@@ -237,5 +238,4 @@ There should probably be a PostInit entry point too, or a more widget like
 defered 'configure'.
 
 =cut
-
 

@@ -1,0 +1,111 @@
+#  Copyright (c) 1990-1994 The Regents of the University of California.
+#  Copyright (c) 1994-1996 Sun Microsystems, Inc.
+#  See the file "license.terms" for information on usage and redistribution
+#  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
+#
+
+=head1 NAME
+
+Tk::after - Execute a command after a time delay
+
+=for category  Binding Events and Callbacks
+
+=head1 SYNOPSIS
+
+I<$widget>-E<gt>B<after>(I<ms>)
+
+I<$widget>-E<gt>B<after>(I<ms>?,I<callback>?)
+
+I<$widget>-E<gt>B<afterCancel>(I<id>)
+
+I<$widget>-E<gt>B<afterIdle>(?I<callback>?)
+
+I<$widget>-E<gt>B<afterInfo>?(I<id>)?
+
+=head1 DESCRIPTION
+
+This command is used to delay execution of the program or to execute
+a command in background sometime in the future.  It has several forms,
+depending on the first argument to the command:
+
+=over 4
+
+=item B<after>(I<ms>)
+
+I<Ms> must be an integer giving a time in milliseconds.
+The command sleeps for I<ms> milliseconds and then returns.
+While the command is sleeping the application does not respond to
+events.
+
+=item B<after>(I<ms>?,I<callback>?)
+
+In this form the command returns immediately, but it arranges
+for I<callback> be executed I<ms> milliseconds later as an
+event handler.
+The callback will be executed exactly once, at the given time.
+The command will be executed in context of I<$widget>.
+If an error occurs while executing the delayed command then the
+L<Tk::Error> mechanism is used to report the error.
+The B<after> command returns an identifier that can be used
+to cancel the delayed command using B<afterCancel>.
+
+=item B<afterCancel>(I<id>)
+
+Cancels the execution of a delayed command that
+was previously scheduled.
+I<Id> indicates which command should be canceled;  it must have
+been the return value from a previous B<after> command.
+If the command given by I<id> has already been executed then
+the B<after cancel> command has no effect.
+
+=item B<afterCancel>(I<callback>)
+
+This command also cancels the execution of a delayed command.
+The I<callback> arguments is compared with pending callbacks,
+if a match is found, that callback is
+cancelled and will never be executed;  if no such callback is
+currently pending then the B<afterCancel> has no effect.
+I<This form is not robust in perl/Tk - its use is deprecated.>
+
+=item B<afterIdle>(I<callback>)
+
+Arranges for I<callback> to be evaluated later as an idle callback.
+The script will be run exactly once, the next time the event
+loop is entered and there are no events to process.
+The command returns an identifier that can be used
+to cancel the delayed command using B<afterCancel>.
+If an error occurs while executing the script then the
+B<Tk::Error> mechanism is used to report the error.
+
+=item B<afterInfo>?(I<id>)?
+
+This command returns information about existing event handlers.
+If no I<id> argument is supplied, the command returns
+a list of the identifiers for all existing
+event handlers created by the B<after> command for this
+MainWindow.
+If I<id> is supplied, it specifies an existing handler;
+I<id> must have been the return value from some previous call
+to B<after> and it must not have triggered yet or been cancelled.
+In this case the command returns a list with two elements.
+The first element of the list is the callback associated
+with I<id>, and the second element is either
+B<idle> or B<timer> to indicate what kind of event
+handler it is.
+
+=back
+
+The B<after>(I<ms>) and B<afterIdle> forms of the command
+assume that the application is event driven:  the delayed commands
+will not be executed unless the application enters the event loop.
+In applications that are not normally event-driven,
+the event loop can be entered with the B<vwait> and B<update> commands.
+
+=head1 SEE ALSO
+
+L<Tk::callbacks>
+
+=head1 KEYWORDS
+
+cancel, delay, idle callback, sleep, time

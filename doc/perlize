@@ -12,7 +12,7 @@ while (<>)
     my $new    = "man/$leaf";
     close(FILE) if (defined fileno(FILE));
     open(FILE,">$new") || die "Cannot open $new:$!";
-    print STDERR "$ARGV -> $new\n" 
+    print STDERR "diff -u $ARGV $new  # to the compare changes\n" 
    }
   print FILE Perlize::munge($_,\$kind);
   if (eof)

@@ -6,7 +6,7 @@ package Tk::ROText;
 require Tk::Text;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/ROText.pm#7$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/ROText.pm#13$
 
 @ISA = qw(Tk::Text);
 Construct Tk::Widget 'ROText';
@@ -24,6 +24,7 @@ sub ClassInit
  $mw->bind($class,'<space>',$cb) if (defined $cb);
  $cb  = $mw->bind($class,'<Prior>');
  $mw->bind($class,'<BackSpace>',$cb) if (defined $cb);
+ $class->clipboardOperations($mw,'Copy');
  return $val;
 }
 
@@ -36,6 +37,8 @@ __END__
 =head1 NAME
 
 Tk::ROText - 'readonly' perl/tk Text widget
+
+=for category Derived Widgets
 
 =head1 SYNOPSIS
 

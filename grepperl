@@ -33,7 +33,7 @@ sub match
       }
     }
   }
- elsif (/$expr/o)
+ elsif (/\Q$expr\E/o)
   {
    if ($opt{'l'})
     {

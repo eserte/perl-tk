@@ -1,0 +1,77 @@
+
+tk8pod 19980328.1
+
+o TixGrid: should be okay beside missing peaces (marked with ???)
+
+tk8pod 19980328.1
+
+o sync with Nick's pod19980328.tar.gz
+
+tk8pod version 0.8 
+
+o removed 'the section' to prevent dublication by pod2man
+	Text.pod
+	getOpenFile.pod
+
+tk8pod version 0.7 
+
+Once through geometry mgr.  (See TODO)
+o grid perlized'ed. move description from gridConfigure to
+  grid.  Moved paragraph in grid() about already managed
+  widgets above the option list.
+o form improved perlization
+o place "       "
+o pack  "       "  and markup more like other geo.mgr
+
+tk8pod version 0.6 
+
+Merged in my POD changes I did motnth ago
+for the following docs:
+
+o callbacks.pod
+o configspec.pod
+o composite.pod
+o Configure.pod
+
+Things I noticed during merge are collected in TODO
+
+tk8pod version 0.5
+
+o configspec (still not happy)
+
+	o fixed wrong POD markup
+	o sorted items of where
+	o code examples now in C<> (too lazy to add all I<> B<>
+	  in the first go
+	o minor additions (e.g., add {-option=>$widget,...}
+
+tk8pod version 0.4
+
+o added Makefile.PL, CHANGES, TODO to repository
+
+tk8pod version 0.3
+
+o Text:
+
+	o fixed window* methods and some other tcl remnants
+
+tk8pod version 0.2
+
+* TList:  
+	o  example to perl/Tk (example uncovers a bug. see comment)
+	o  misc formatting
+
+* HList:
+	o  added ctdean's doc modification (Tk::DirList.pm is in
+	   (so I assume Tk::HList changes also)
+	o  command -> method
+	o  misc formatting
+
+* DItem:
+	o some spelling errors and updates
+
+tk8pod version 0.1
+
+* Nick pod.tar.gz (Mar 23, 1998)
+
+

@@ -1,7 +1,7 @@
 package Tk::FileSelect; 
                
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/FileSelect.pm#9$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/FileSelect.pm#13$
 
 use Tk qw(Ev);
 use strict;
@@ -125,7 +125,6 @@ sub Accept_dir
  my $dir  = $cw->cget('-directory');
  $cw->configure(-directory => "$dir/$new");
 }
-
 
 sub Populate {
     
@@ -467,6 +466,7 @@ __END__
 
 FileSelect - a widget for choosing files
 
+=for category Popups and Dialogs
 
 =head1 SYNOPSIS
 
@@ -483,7 +483,6 @@ FileSelect - a widget for choosing files
  $FSref->configure(option => value[, ...])
                Please see the Populate subroutine as the configuration
                list changes rapidly.
-
 
 =head1 DESCRIPTION
 
@@ -504,7 +503,6 @@ get destroyed if the file name is not zero length. If you want
 yourself take care of it, change the if(length(.. in sub
 accept_file.
 
-
 =head1 AUTHORS
 
 Based on original FileSelect by
@@ -513,9 +511,7 @@ April 22, 1995 adapted by
 Frederick L. Wagner, derf@ti.com, Texas Instruments Incorporated, Dallas,
 21Jun95
 
-
 =head1 HISTORY 
-
 
 =head2 950621 -- The following changes were made:
 
@@ -563,7 +559,6 @@ of using the Directory entry as a filter. So, if you want to only see the
 
 =back
 
-
 =head2 95/10/17, SOL, LUCC.  lusol@Lehigh.EDU 
 
 =over 4
@@ -601,7 +596,6 @@ $P1 .. $Pn are your optional parameters.  The subroutine should return TRUE
 if success or FALSE if failure.
 
 =back
-
 
 =head2 961008 -- derf@ti.com :
 

@@ -8,13 +8,12 @@ sub bitmaps {
     # Create a top-level window that displays all of Tk's built-in bitmaps.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This window displays all of Tk\'s built-in bitmaps, along with the names you can use for them in Perl scripts.',
         -title    => 'Bitmap Demonstration',
         -iconname => 'bitmaps',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $frame = $TOP->Frame;
     $frame->pack(qw/-side top -expand yes -fill both/);

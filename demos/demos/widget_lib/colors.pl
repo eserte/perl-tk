@@ -8,13 +8,12 @@ sub colors {
     # colors from the X color database.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'A listbox containing several color names is displayed below, along with a scrollbar.  You can scan the list either using the scrollbar or by dragging in the listbox window with button 2 pressed.  If you double-click button 1 on a color, then the application\'s color palette will be set to match that color.',
         -title    => 'Listbox Demonstration (colors)',
         -iconname => 'colors',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $list = $TOP->Scrolled(qw/Listbox -width 20 -height 16 -setgrid 1
 			      -scrollbars e/);

@@ -1,0 +1,27 @@
+#!/usr/local/bin/perl -w
+use Tk;             
+use Tk::Xlib;
+use Tk::WinPhoto;
+
+my $mw = MainWindow->new;
+my $grab = $mw->Label(-text => 'grab')->pack;
+$grab->bind('<1>', \&GrabStart);
+$grab->bind('<ButtonRelease-1>', [\&GrabWin,Ev('X'),Ev('Y')]);
+my $img = $mw->Photo();
+my $lab = $mw->Label(-image => $img)->pack;
+MainLoop;                              
+
+sub GrabStart
+{
+ my $w = shift;
+ $w->grabGlobal;
+ $w->configure(-cursor => 'hand2');
+}
+
+sub GrabWin
+{
+ my ($w,$x,$y) = @_;
+ $w->grabRelease;
+ $w->configure(-cursor => undef);
+ $img->configure(-format => "Window", -data => [$w,$x,$y]);
+}

@@ -1,6 +1,6 @@
 package Bundle::Tk;
 
-$VERSION = '3.003'; # $Id: //depot/Tk8/Bundle/Tk.pm#3$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Bundle/Tk.pm#5$
 
 1;
 
@@ -9,6 +9,8 @@ __END__
 =head1 NAME
 
 Bundle::Tk - CPAN Bundle for Tk and its dependencies
+
+=for category Other Modules and Languages
 
 =head1 SYNOPSIS
 

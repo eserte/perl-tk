@@ -13,7 +13,7 @@ C\+\+/Main$
 \bTix/
 tcl\.pm$
 \bcore\b
-\bdoc/old\b
+\bdoc/man(3|n|)\b
 \bdoc/.*\.log\d*
 \bToDo/
 \bObsolete/
@@ -27,10 +27,12 @@ doc/.*\.htm$
 myConfig\.out
 \bswapm$
 bin/patchls$
+prep_rel$
 Bitmap/Bitmap\.c$
 Canvas/Canvas\.c$
 Entry/Entry\.c$
 Extensions/ImageBack/ImageBack\.c$
+Extensions/WinPhoto/WinPhoto\.c$
 HList/HList\.c$
 IO/IO\.c$
 InputO/InputO\.c$

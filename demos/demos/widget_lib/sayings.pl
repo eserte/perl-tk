@@ -9,13 +9,12 @@ sub sayings {
     # two dimensions.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'The listbox below contains a collection of well-known sayings.  You can scan the list using either of the scrollbars or by dragging in the listbox window with button 2 pressed.',
         -title    => 'Listbox Demonstration (well-known sayings)',
         -iconname => 'sayings',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $list = $TOP->Scrolled(qw/Listbox -width 20 -height 10 -setgrid 1
 			      -scrollbars se/);

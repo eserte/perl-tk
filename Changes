@@ -4,7 +4,17 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
-Changes in Tk800.0_01   
+Changes in Tk800.003
+
+	Various fixes for build of outside Tk extensions
+	Steve's demo patch
+	Jason's Balloon enhancement.
+	Change to pod as primary documentation.
+	   Achim Bohnet <ach@mpe.mpg.de> has helped a lot here.
+	   HTML build not done yet.
+	Fix to HList scrollbar handling
+   
+Changes in Tk800.0_02   
 
 	Added generic dialog support. See toyedit for example use.
 	Tested on Win32, and implemented more-or-less for UNIX/X,

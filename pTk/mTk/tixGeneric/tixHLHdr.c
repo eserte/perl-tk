@@ -77,11 +77,13 @@ AllocHeader(interp, wPtr)
     hPtr->relief	= TK_RELIEF_RAISED;
     hPtr->borderWidth	= 2;
 
-    if (Tk_ConfigureWidget(interp, wPtr->dispData.tkwin, headerConfigSpecs,
+    if (Tk_ConfigureWidget(interp, wPtr->headerWin, headerConfigSpecs,
 	    0, 0, (char *)hPtr, 0) != TCL_OK) {
 	/* some unrecoverable errors */
 	return NULL;
-    }
+    }          
+    Tk_SetBackgroundFromBorder(wPtr->headerWin, hPtr->background);
+
     return hPtr;
 }
 

@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;       
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#7$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#11$
 
 use Tk qw(Ev);
 
@@ -45,7 +45,6 @@ sub Populate
         $names->configure(-yscrollcommand => ["set",$scroll]);
         $names->pack(-in => $middle_left, -side => 'left');
         $scroll->pack(-in => $middle_left, -side => 'right', -fill => 'y');
-
 
         while(<FOO>) {
             chomp;
@@ -279,8 +278,6 @@ sub color
  return $objref->{'color'};
 }
 
-
-
 sub rgbToHsv {
 
     # The procedure below converts an RGB value to HSB.  It takes red, green,
@@ -315,7 +312,6 @@ sub rgbToHsv {
     return ($hue, $sat, $max/65535);
 
 } # end rgbToHsv
-
 
 sub scale_changed {
 
@@ -380,7 +376,6 @@ sub set_scales {
 
 } # end set_scales
 
-
 package Tk::ColorDialog;
 require Tk::Toplevel;
 use vars qw(@ISA);
@@ -430,9 +425,8 @@ sub Show
 
 package Tk::ColorEditor;
 
-
 use vars qw($VERSION $SET_PALETTE @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#7$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#11$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
@@ -499,7 +493,6 @@ sub title
  $w->set_title if (@_ > 1);
  return $w->{Configure}{'-title'};
 }
-
 
 sub delete_menu_item
 {
@@ -763,6 +756,8 @@ __END__
 ColorEditor - a general purpose Tk widget Color Editor (based on tcolor.tcl
 from the Tcl/Tk distribution).
 
+=for category Popups and Dialogs
+
 =head1 SYNOPSIS
 
    use Tk::ColorEditor;
@@ -873,5 +868,4 @@ Many thanks to Guy Decoux (decoux@moulon.inra.fr) for doing the initial
 translation of tcolor.tcl to TkPerl, from which this code has been derived.
 
 =cut 
-
 

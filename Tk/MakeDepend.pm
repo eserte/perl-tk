@@ -4,9 +4,13 @@ use vars qw(%define);
 
 my @include; 
 
+use Carp;
+
+# $SIG{__DIE__} = \&Carp::confess;
+
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#5$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#8$
 
 sub scan_file;
       
@@ -149,7 +153,10 @@ sub scan_file
         {
          if ($rest =~ /^\s*([_A-Za-z][\w_]*)\s*(.*)$/)
           {
-           $define{$1} = $2 || 1;
+           my $sym = $1;
+           my $val = $2 || 1;  
+           $val =~ s#\s*/\*.*?\*/\s*# #g;
+           $define{$sym} = $val;
           }
          else
           {

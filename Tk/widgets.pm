@@ -1,9 +1,8 @@
 package Tk::widgets;
 use Carp;
 
-
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/widgets.pm#3$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/widgets.pm#8$
 
 sub import
 {
@@ -22,6 +21,8 @@ __END__
 =head1 NAME
 
 Tk::widgets - preload widget classes
+
+=for category Implementation
 
 =head1 SYNOPSIS
 

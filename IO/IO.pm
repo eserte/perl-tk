@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.008'; # $Id: //depot/Tk8/IO/IO.pm#8$
+$VERSION = '3.013'; # $Id: //depot/Tk8/IO/IO.pm#13$
 
 require 5.002;
 require Tk;
@@ -13,7 +13,6 @@ use Carp;
 @ISA = qw(DynaLoader IO::Handle Exporter);
 
 bootstrap Tk::IO $Tk::VERSION;
-
 
 sub new
 {
@@ -175,7 +174,6 @@ sub close
   }
 }  
 
-
 sub PrintArgs
 {
  my $func = (caller(1))[3];
@@ -310,6 +308,8 @@ __END__
 
 Tk::IO - high level interface to Tk's 'fileevent' mechanism
 
+=for category Binding Events and Callbacks
+
 =head1 SYNOPSIS
 
   my $fh = Tk::IO->new(-linecommand => callback, -childcommand => callback);
@@ -349,5 +349,4 @@ $fh->B<kill> can be used to send signal to child process.
 
 Still not finished.
 Idea is to use "exec" to emulate "system" in a non-blocking manner.
-
 

@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.0_02';
+$Tk::VERSION     = '800.003';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}

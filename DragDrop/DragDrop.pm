@@ -4,14 +4,17 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#4$
+$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#8$
 
 @ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
 
 # This is a little tricky, ISA says 'Toplevel' but we 
 # define a Tk_cmd to actually build a 'Label', then 
 # use Tix's wmRelease in Populate to make it a toplevel. 
-sub Tk_cmd { \&Tk::label }
+
+my $useWmRelease = ($^O ne 'MSWin32');
+
+sub Tk_cmd { ($useWmRelease) ? \&Tk::label : \&Tk::toplevel }
 
 Construct Tk::Widget 'DragDrop';
 
@@ -35,16 +38,24 @@ sub Populate
 {
  my ($token,$args) = @_;
  my $parent = $token->parent;
- $token->wmRelease;
+ if ($useWmRelease)
+  {
+   $token->wmRelease;
+   $token->saveunder(1);     
+   $token->ConfigSpecs(-text => ['SELF','text','Text',$parent->class]);
+  }
+ else
+  {
+   my $lab = $token->Label;
+   $token->ConfigSpecs(DEFAULT => [$lab]);
+  }
  $token->withdraw;
  $token->overrideredirect(1);
- $token->saveunder(1);     
  $token->ConfigSpecs(-sitetypes       => ['METHOD','siteTypes','SiteTypes',undef],
                      -startcommand    => ['CALLBACK',undef,undef,undef],
                      -predropcommand  => ['CALLBACK',undef,undef,undef],
                      -postdropcommand => ['CALLBACK',undef,undef,undef],
                      -cursor          => ['SELF','cursor','Cursor','hand2'],
-                     -text            => ['SELF','text','Text',$parent->class],
                      -handlers        => ['SETMETHOD','handlers','Handlers',[[[$token,'SendText']]]],  
                      -selection       => ['SETMETHOD','selection','Selection',"dnd_" . $parent->toplevel->name],  
                      -event           => ['SETMETHOD','event','Event','<B1-Motion>']

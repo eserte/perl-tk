@@ -16,14 +16,13 @@ sub MY::post_initialize
 sub MY::postamble
 {
  my ($self) = @_;
- my $sec;
  %{$self->{PM}} = ();
  my $dep = "MANFILES =";
  open(FILE,">MANFILES") || die "Cannot open MANFILES:$!";
- foreach $sec (qw(n 2 3))
+ my @sec = (); # (qw(n 2 3))
+ foreach my $sec (@sec) 
   {
-   my $name;
-   foreach $name ($self->lsdir("man$sec"))
+   foreach my $name ($self->lsdir("man$sec"))
     {
      next if ($name =~ /^\./);
      next unless (-f "man$sec/$name");

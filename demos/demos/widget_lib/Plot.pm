@@ -11,8 +11,8 @@ package Plot;
 
 require 5.002;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#4$
+use vars qw/$VERSION @ISA/;
+$VERSION = '3.007'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#7$
 
 use Tk::Frame;
 @ISA = qw(Tk::Frame);

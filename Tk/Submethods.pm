@@ -1,8 +1,7 @@
 package Tk::Submethods;
 
-
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Submethods.pm#3$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Submethods.pm#8$
 
 sub import
 {
@@ -48,11 +47,12 @@ __END__
 
 Tk::Submethods - add aliases for tk sub-commands
 
+=for category Implementation
+
 =head1 SYNOPSIS
 
   use Tk::Submethods ( 'command1' => [qw(sub1 sub2 sub3)],
                        'command2' => [qw(sub1 sub2 sub3)]);  
-
 
 =head1 DESCRIPTION
 

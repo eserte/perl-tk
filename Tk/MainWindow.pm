@@ -8,7 +8,7 @@ package Tk::MainWindow;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/MainWindow.pm#9$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/MainWindow.pm#14$
 
 use Tk::CmdLine;
 require Tk;
@@ -17,7 +17,6 @@ require Tk::Toplevel;
 use Carp;
 
 $| = 1;
-
 
 my $pid = $$;
 
@@ -86,12 +85,10 @@ sub InitBindings
  $mw->bind($c,"<F10>",'FirstMenu');
 }
 
-
 sub Existing
 {
  grep( Tk::Exists($_), @Windows);  
 }
-
 
 END
 {
@@ -149,7 +146,6 @@ sub WMSaveYourself
  $mw->command([@args]);
 }
 
-
 1;
 
 __END__
@@ -157,6 +153,10 @@ __END__
 =head1 NAME
 
 Tk::MainWindow - Root widget of a widget tree
+
+=for category Creating and Configuring Widgets
+
+=for Creating and Configuring Widgets
 
 =head1 SYNOPSIS
 
@@ -170,42 +170,50 @@ Tk::MainWindow - Root widget of a widget tree
 
     MainLoop;
 
-
 =head1 DESCRIPTION
 
-B<Tk::MainWindow> is a special kind of B<Toplevel> widget. It's
+Perl/Tk applications (which have windows associated with them) create
+one or more B<MainWindow>s which act as the containers and parents 
+of the other widgets.  
+
+B<Tk::MainWindow> is a special kind of L<Tk::Toplevel> widget. It is
 the root of a widget tree. Therefore C<$mw-E<gt>Parent> returns
 C<undef>.
-
-Unlike the standard Tcl/Tk's wish, perl/Tk allows you to create
-several MainWindows.  When the I<last> B<MainWindow> is destroyed
-the Tk eventloop exits (the eventloop is entered with the call of
-C<MainLoop>).
 
 The default title of a MainWindow is the basename of the script
 (actually the Class name used for options lookup, i.e. with basename
 with inital caps) or 'Ptk' as the fallback value.  If more than one MainWindow is created
 or several instances of the script are running at the same time the
-string C<" #n"> is appended where the number C<n> is unset to get
+string C<" #n"> is appended where the number C<n> is set to get
 a unique value.
 
+Unlike the standard Tcl/Tk's wish, perl/Tk allows you to create
+several MainWindows.  When the I<last> B<MainWindow> is destroyed
+the Tk eventloop exits (the eventloop is entered with the call of
+C<MainLoop>). Various resources (bindings, fonts, images, colors) are 
+maintained or cached for each MainWindow, so each MainWindow consumes more
+resources than a Toplevel. However multiple MainWindows can make sense when
+the user can destroy them independently.
 
 =head1 METHODS
 
 You can apply all methods that a L<Tk::Toplevel> accepts.
 
-To access the B<MainWindow> one can use for all widget the method
-C<$w->Mainwindow()> that returns a reference to the B<MainWindow>.
-the widget belongs to (the MainWindow belongs to itself).
-
+The method C<$w-E<gt>MainWindow> applied to any widget will return the
+B<MainWindow> to which the widget belongs (the  MainWindow belongs to itself).
 
 =head1 MISSING
 
-Documentation is incomplete. Category: better than nothing.
-Here are I<some> of missing items that should be explained is
-more details:
+Documentation is incomplete. 
+Here are I<some> of missing items that should be explained in
+more detail:
 
 =over 4
+
+=item *
+
+The new mechanism for MainWindows is slightly different to 
+other widgets.
 
 =item *
 
@@ -219,10 +227,8 @@ arguments of the C<new> method (see L<Tk::CmdLine>).
 
 =back
 
-
 =head1 SEE ALSO
 
 Tk::Toplevel, Tk::CmdLine
-
 
 =cut

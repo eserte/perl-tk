@@ -9,7 +9,7 @@ sub ctext {
     # allowing the string to be edited and re-anchored.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This window displays a string of text to demonstrate the text facilities of canvas widgets.  You can click in the boxes to adijust the position of the text relative to its positioning point or change its justification.  The text also supports the following simple bindings for editing:
   1. You can point, click, and type.
@@ -22,7 +22,6 @@ sub ctext {
         -title    => 'Canvas Text Demonstration',
         -iconname => 'ctext',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $c = $TOP->Canvas(qw/-relief flat -bd 0 -width 500 -height 350/);
     $c->pack(qw/-side top -expand yes -fill both/);

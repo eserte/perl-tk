@@ -3675,6 +3675,10 @@ XS(CallbackCall)
  SV *cb = ST(0);
  SV *err;
  int wantarray = GIMME;
+ if (!items)
+  {
+   croak("No arguments");
+  }
  PushCallbackArgs(NULL,&ST(0),NULL);
  SPAGAIN;
  for (i=1; i < items; i++)
@@ -3935,6 +3939,7 @@ int
 Tcl_EvalObj (Tcl_Interp *interp,Tcl_Obj *objPtr)
 {
  SV *sv = LangMakeCallback(objPtr);
+ dSP;
  ENTER;
  SAVETMPS;
  if (PushCallbackArgs(interp,&sv,NULL) == TCL_OK)

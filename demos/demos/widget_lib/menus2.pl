@@ -1,6 +1,6 @@
 # menus2.pl
 
-use subs qw/menus_error/;
+use subs qw/menus_error2/;
 use vars qw/$TOP/;
 
 sub menus2 {
@@ -9,25 +9,24 @@ sub menus2 {
     # and cascaded menus, but uses -menuitems rather than the Tcl/Tk way.
 
     my ($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => '',				      
         -title    => 'Menuitems Demonstration',
         -iconname => 'menus2',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $menubar = $TOP->Frame(-relief => 'raised', -borderwidth => 2);
     $menubar->grid(qw/-sticky ew/);
     my $f = $menubar->Menubutton(qw/-text File -underline 0 -menuitems/ =>
         [
-         [Button => 'Open ...',    -command => [\&menus_error, 'Open']],
-	 [Button => 'New',         -command => [\&menus_error, 'New']],
-	 [Button => 'Save',        -command => [\&menus_error, 'Save']],
-	 [Button => 'Save As ...', -command => [\&menus_error, 'Save As']],
+         [Button => 'Open ...',    -command => [\&menus_error2, 'Open']],
+	 [Button => 'New',         -command => [\&menus_error2, 'New']],
+	 [Button => 'Save',        -command => [\&menus_error2, 'Save']],
+	 [Button => 'Save As ...', -command => [\&menus_error2, 'Save As']],
 	 [Separator => ''],
-	 [Button => 'Setup ...',   -command => [\&menus_error, 'Setup']],
-	 [Button => 'Print ...',   -command => [\&menus_error, 'Print']],
+	 [Button => 'Setup ...',   -command => [\&menus_error2, 'Setup']],
+	 [Button => 'Print ...',   -command => [\&menus_error2, 'Print']],
 	 [Separator => ''],
 	 [Button => 'Quit',        -command => [$TOP => 'bell']],
 	])->grid(qw/-row 0 -column 0 -sticky w/);
@@ -65,10 +64,10 @@ sub menus2 {
 				['brakes',  \$BRAKES],
 				['lights',  \$LIGHTS],
 				],
-             ], # end see_vars
-	    ], # end button
-	   ], # end checkbutton menuitems
-	  ], # end checkbuttons cascade
+            ], # end see_vars
+	   ], # end button
+	  ], # end checkbutton menuitems
+	 ], # end checkbuttons cascade
 	 [Cascade => $menu_rb, -menuitems =>
 	  [
 	   map (
@@ -94,7 +93,7 @@ sub menus2 {
 	    ], # end button
 	   ], # end radiobutton menuitems
 	  ], # end radiobuttons cascade
-        ])->grid(qw/-row 0 -column 2 -sticky w/);
+         ])->grid(qw/-row 0 -column 2 -sticky w/);
 
     $TOP->bind('<Control-a>' => sub {print "Hello\n"});
     $TOP->bind('<Control-b>' => sub {print "Goodbye\n"});
@@ -150,7 +149,7 @@ sub menus2 {
 
 } # end menus
 
-sub menus_error {
+sub menus_error2 {
 
 
     # Generate a background error, which may even be displayed in a window if

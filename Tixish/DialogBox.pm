@@ -11,9 +11,8 @@ use Carp;
 require Tk::Toplevel;
 require Tk::Frame;
 
-
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#6$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#10$
 
 @ISA = qw(Tk::Toplevel Tk::Frame);
 
@@ -109,6 +108,8 @@ __END__
 =head1 NAME
 
 Tk::DialogBox - create and manipulate a dialog screen.
+
+=for category Tix Extensions
 
 =head1 SYNOPSIS
 

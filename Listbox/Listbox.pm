@@ -13,7 +13,7 @@
 package Tk::Listbox; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Listbox/Listbox.pm#8$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Listbox/Listbox.pm#12$
 
 use Tk qw(Ev);
 require Tk::Clipboard;

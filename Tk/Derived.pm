@@ -8,13 +8,13 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Derived.pm#7$
-
-
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Derived.pm#12$
 
 =head1 NAME
 
 Tk::Derived - Base class for widgets derived from others
+
+=for category Derived Widgets
 
 =head1 SYNOPSIS
 
@@ -260,7 +260,7 @@ sub configure
       {
        if (ref $info)
         {
-         unless (defined $info->[3])
+         unless (@$info  == 4)	# this allows default to be undef !
           {local $SIG{'__DIE__'};
            my @def;              
            foreach my $sw ($cw->Subconfigure($opt))
@@ -407,7 +407,7 @@ sub ConfigDefault
        if (ref $info)
         {
          # Not an alias
-         if (defined $info->[3])
+         if (@$info == 4)	# this allows default to be undef !
           {
            # Only propagate if a default is supplied
            $args->{$opt} = $info->[3];
@@ -474,7 +474,6 @@ sub ConfigAlias
  $cw->BackTrace("Odd number of args to ConfigAlias") if (@_);
 }
 
-
 sub Delegate
 {
  my ($cw,$method,@args) = @_;
@@ -533,5 +532,4 @@ __END__
 =back
 
 =cut
-
 

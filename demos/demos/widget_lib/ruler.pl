@@ -10,13 +10,12 @@ sub ruler {
     # with tab stops that can be set individually.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This canvas widget shows a mock-up of a ruler.  You can create tab stops by dragging them out of the well to the right of the ruler.  You can also drag existing tab stops.  If you drag a tab stop far enough up or down so that it turns dim, it will be deleted when you release the mouse button.', qw/-wraplength 5i/],
         -title    => 'Ruler Demonstration',
         -iconname => 'ruler',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $c = $TOP->Canvas(qw/-width 14.8c -height 2.5c/);
     $c->pack(qw/-side top -fill x/);

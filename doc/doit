@@ -1,31 +1,39 @@
-#!/bin/sh
+#!/usr/local/bin/perl -w
 
-set -ev
+use File::Path qw(rmtree);
 
-# cleanup
+rmtree([qw(man pod3 podn)],0,0);
 
-rm -rf man/*                    #fixed man macros
-rm -rf pod3/*.pod podn/*.pod    #tkman2pod output
-rm -rf *.htm index.html         #man2pod output
+foreach (glob("*.htm"))
+ {
+  unlink($_); 
+ } 
 
 # Fix man markup for tkpod2man
 
-test -d man || mkdir man
-#exit
-./fix4man2pod mann/*.[3n]
+mkdir("man",0777) unless -d "man";
+system($^X,"./fix4man2pod",glob("man3/*.3"),glob("mann/*.n"));
 
 # Convert to pod
 
-test -d pod3 || mkdir pod3
-test -d podn || mkdir podn
-(cd pod3 && perl -wI.. ../tkman2pod ../man/*.3)
-(cd podn && perl -wI.. ../tkman2pod ../man/*.n)
+sub convert
+{
+ my $sfx = shift;
+ mkdir("pod$sfx",0777) unless -d "pod$sfx";
+ chdir("pod$sfx");
+ system($^X,"-wI..","../tkman2pod",glob("../man/*.$sfx"));
+ chdir("..");
+}
+
+convert('3');
+convert('n');
+
 
 # add/override with handish tuned manual pages
 
-cp pod/*.pod podn/
+# cp pod/*.pod podn/
 
 # Try to guess corresponding module name
 
-perl -w ./transname
+system($^X,"./transname");
 

@@ -42,7 +42,7 @@ sub bounce {
           ['Open',      \&NotDone,     0],
           ['New',       \&NotDone,     0],
           ['Print',     \&NotDone,     0],
-          ['Exit',      $quit_code,    0],
+          ['Exit',      \&NotDone,    0],
           ]);
 
     mkmb($menubar, 'Simulate', 0, 'Simulator control',
@@ -145,7 +145,14 @@ sub bounce {
         -velocity => [8.0, 12.0],
     );
 
-    my $bounce_counter = 0;
+    $bounce_counter = 0;
+    $TOP->repeat(1000 => sub {
+	return unless $bounce_running;
+	ClearMsg;
+	ShowMsg(sprintf("%6d interations/second", $bounce_counter));  
+	$bounce_counter = 0
+    });
+	
 
     # This runs the Tk mainloop. Note that the simulation itself has a main
     # loop which must be processed. DoSingleStep runs a bit of the simulation
@@ -261,9 +268,7 @@ sub DoSingleStep {
 
     my($canvas) = @_;
 
-    ClearMsg;
-    ShowMsg(++$bounce_counter);  
-
+    $bounce_counter++;
     Ball->move_all_balls($canvas, $bounce_speed->get() / 100.0);
 
 } # end DoSingle Step

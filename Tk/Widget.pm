@@ -14,7 +14,7 @@ use Carp;
 # stubs for 'autoloaded' widget classes
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Widget.pm#15$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Widget.pm#23$
 
 sub Button;
 sub Canvas;
@@ -71,17 +71,18 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'font'  => [qw(actual configure create delete families measure metrics names)]
                   );               
 
-
 *IsMenu       = \&False;
 *IsMenubutton = \&False;
 
-Direct Tk::Submethods ( 'winfo' => [qw(cells class colormapfull depth exists
+Direct Tk::Submethods ( 
+  'winfo' => [qw(cells class colormapfull depth exists
                geometry height id ismapped manager name parent reqheight
                reqwidth rootx rooty screen screencells screendepth screenheight
                screenmmheight screenmmwidth  screenvisual screenwidth visual
                visualsavailable  vrootheight viewable vrootwidth vrootx vrooty
                width x y toplevel children pixels pointerx pointery pointerxy
-               server fpixels rgb )]);
+               server fpixels rgb )],
+   'tk'   => [qw(appname scaling)]);
 
 sub DESTROY
 {
@@ -379,7 +380,6 @@ sub SaveGrabInfo
   }
 }
 
-
 sub grabSave
 {
  my ($w) = @_;
@@ -412,7 +412,6 @@ sub OnDestroy
 
 # This is supposed to replicate Tk::after behaviour,
 # but does auto-cancel when widget is deleted.
-
 
 sub after
 {
@@ -496,7 +495,6 @@ sub atom       { shift->InternAtom(@_)  }
 sub atomname   { shift->GetAtomName(@_) }
 sub containing { shift->Containing(@_)  }
 
-
 # interps not done yet
 # pathname not done yet
 
@@ -565,7 +563,6 @@ sub Palette
   }
  return $w->{_Palette_};
 }
-
 
 # tk_setPalette --
 # Changes the default color scheme for a Tk application by setting
@@ -1013,7 +1010,7 @@ sub Scrolled
    push(@args,$k,delete($args{$k})) if (exists $args{$k})
   }
  $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars','se'],
-                  '-background' => ['CHILDREN','background','Background',undef], 
+                  '-background' => ['CHILDREN','background','Background'], 
                  );
  my $w  = $cw->$kind(%args);
  %args = @args;
@@ -1091,48 +1088,4 @@ sub clipboardKeysyms
    $mw->Tk::bind(@class,"<$paste>",'clipboardPaste') if (defined $paste);
   }
 }        
-
-
-
-=head1 NAME 
-
-Tk::Widget - Base class of all widgets
-
-=head1 SYNOPSIS
-
-   package Tk::Whatever;
-   require Tk::Widget;
-   @ISA = qw(Tk::Widget);   
-   Construct Tk::Widget 'Whatever';
-
-   sub Tk_cmd { \&Tk::whatever }
-
-=head1 DESCRIPTION 
-
-The B<Tk::Widget> is an abstract base class for all Tk widgets.
-
-Generic methods available to all widgets include:
-
-=over 4
-
-=item Getimage( name )
-
-Given I<name>, look for an image file with that base name and return
-a C<Tk::Image>.  File extensions are tried in this order: F<xpm>,
-F<gif>, F<ppm>, F<xbm> until a valid iamge is found.  If no image is
-found, try a builtin image with that name.
-
-=item EventType( ?value? )
-
-Return or set the tixEvent variable C<option>.  Currently, the only
-C<option> used is "type".
-
-=back 
-
-=head1 CAVEATS
-
-The above documentaion on generic methods is catastrophically incomplete.
-
-=cut 
-
 

@@ -1,20 +1,19 @@
 # hscale.pl
 
 use subs qw /hscale_width/;
-use vars qw /$TOP/;
+use vars qw/$TOP/;
 
 sub hscale {
 
     # Create a top-level window that displays a horizontal scale.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'An arrow and a horizontal scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
         -title    => 'Horizontal Scale Demonstration',
         -iconname => 'hscale',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $frame = $TOP->Frame(-borderwidth => 10)->pack(qw/-side top -fill x/);
 

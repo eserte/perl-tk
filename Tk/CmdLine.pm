@@ -4,9 +4,8 @@ use strict;
 
 *motif = \$Tk::strictMotif;
 
-
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/CmdLine.pm#3$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/CmdLine.pm#7$
 
 use vars qw($synchronous %switch $iconic %options %methods @command %config);
 
@@ -161,6 +160,8 @@ __END__
 
 Tk::CmdLine - Process standard X11 command line options
 
+=for category Creating and Configuring Widgets
+
 =head1 SYNOPSIS
 
 use Tk::CmdLine;
@@ -185,7 +186,6 @@ The options which are processed are :
 
 This option specifies the name of the  X  server  to
 use.
-
 
 =item     -geometry geometry
 

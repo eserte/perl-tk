@@ -9,12 +9,9 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/MMutil.pm#13$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/MMutil.pm#17$
 
 use Tk::MakeDepend;
-
-use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/MMutil.pm#13$
 
 use Tk::Config qw(!$VERSION);
 use vars qw($IsWin32);
@@ -119,7 +116,19 @@ sub mTk_CHO
   }
 }
 
-my %visited;
+my %visited;          
+
+sub abspath
+{
+ my $dir = shift;
+ my $here = getcwd() || die "Cannot get current directory:$!";
+ if (chdir($dir))
+  {
+   $dir = getcwd();
+   chdir($here) || die "Cannot cd back to $here:$!";
+  }
+ return $dir;
+}
 
 sub relpath
 {
@@ -130,11 +139,11 @@ sub relpath
   }
  if (defined $dir and -d $dir)
   {
-   if ($path =~ m#^\Q$dir\E\b(.*)$#)
+   if ($path =~ m#^\Q$dir\E([/\\]?.*)$#)
     {
      my $base  = $1;
      my $here  = getcwd;
-     if ($here =~ m#^\Q$dir\E\b(.*)#)
+     if ($here =~ m#^\Q$dir\E([/\\]?.*)#)
       {
        my $depth = reverse($1);
        if ($depth)
@@ -161,15 +170,16 @@ sub relpath
      else
       {
        unless(exists $visited{$here})
-        {
-         $visited{$here} = 1;
-         warn "Seem to be building outside Tk itself\n";
+        {                         
+         $visited{$here} = 1;     
+         warn "$here does not start with $dir\n";
+         warn "i.e. building outside Tk itself\n";
         }
       }
     }
    else
     {
-     die "$path not under $dir\n";
+     die "'$path' not under '$dir'\n";
     }
   }
  else
@@ -248,7 +258,7 @@ sub const_config
 {
  my $self = shift;
  my $name;
- foreach $name (grep /%$/,keys %{$self->{PM}})
+ foreach $name (grep /(%|\.(old|bak))$/,keys %{$self->{PM}})
   {
    delete $self->{PM}->{$name};
   }
@@ -329,6 +339,8 @@ sub manifypods
   {
    s/(POD2MAN_EXE.*pod2man)/$1 -center \\"perl\/Tk Documentation\\" -release \\"Tk\$(VERSION)\\"/;
   }
+ s/\bpod::/Tk::/mg;
+ s/\bpTk:://mg;
  $_;
 }
 
@@ -395,7 +407,7 @@ sub findpTk
 {
  my $ptk;
  my $dir;
- foreach $dir (@INC)
+ foreach $dir (map(abspath($_),@_),@INC)
   {
    my $try = "$dir/pTk";
    if (-d $try && (-f "$try/Lang.h" || -f "$try/libpTk\$(LIB_EXT)"))
@@ -404,7 +416,7 @@ sub findpTk
      last;
     }
   }
- die "Cannot locate pTk\n" unless (defined $ptk); 
+ confess "Cannot locate pTk\n" unless (defined $ptk); 
  return $ptk;
 }
 
@@ -436,7 +448,7 @@ sub TkExtMakefile
  $att{'clean'}->{FILES} .= " *.bak";
  unless (exists($att{'linkext'}) && $att{linkext}{LINKTYPE} eq '')
   {
-   my $ptk = findpTk();
+   my $ptk = findpTk($tk);
    my @tm = (findINC('Tk/typemap'));
    unshift(@tm,@{$att{'TYPEMAPS'}}) if (exists $att{'TYPEMAPS'});
    $att{'TYPEMAPS'} = \@tm;

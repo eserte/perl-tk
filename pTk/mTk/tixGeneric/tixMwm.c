@@ -767,7 +767,7 @@ GetMwmInfo(interp, tkwin)
     Tcl_Interp * interp;
     Tk_Window tkwin;
 {
-    static inited = 0;
+    static int inited = 0;
     Tcl_HashEntry *hashPtr;
     int isNew;
 

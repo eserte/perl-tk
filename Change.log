@@ -1,3 +1,211 @@
+Change 737 on 1998/04/04 by nick@ni-s
+
+	add_version :-/
+
+Change 736 on 1998/04/04 by nick@ni-s
+
+	$VERSIONs again - can I ever get add_version right?
+
+Change 735 on 1998/04/04 by nick@ni-s
+
+	$VERSION updates etc.
+
+Change 734 on 1998/04/04 by nick@ni-s
+
+	JPEG Fixups
+
+Change 733 on 1998/04/04 by nick@ni-s
+
+	Allow for new 'undef' handling in Scrolled
+	Consistency of docs 
+
+Change 732 on 1998/04/04 by nick@ni-s
+
+	Cleanup after duplicate patch
+
+Change 731 on 1998/04/04 by nick@ni-s
+
+	DirTree patches
+
+Change 730 on 1998/04/04 by nick@ni-s
+
+	Steve's demo patch, Jason's Balloon enhancement.
+
+Change 729 on 1998/04/04 by nick@ni-s
+
+	Remove description of configure and cget from individual
+	pods and refer to Tk::options pod instead.
+	Collapse Configure.pod into options.pod
+
+Change 728 on 1998/04/04 by nick@ni-s
+
+	Generic formating changes
+
+Change 727 on 1998/04/04 by nick@ni-s
+
+	More tiny-pod collapsing
+	Made ->scaling and ->appname work.
+
+Change 726 on 1998/04/04 by nick@ni-s
+
+	Version update
+
+Change 725 on 1998/04/04 by nick@ni-s
+
+	Collapse more trivial pods into Widget.pod
+	Fix for extension build outside Tk 
+
+Change 724 on 1998/04/03 by nick@ni-s
+
+	TixGrid stuff
+
+Change 723 on 1998/04/03 by nick@ni-s
+
+	Fix ckree() if perl stuff in Canvas PS
+	Fix result returns in tixGrid.
+
+Change 722 on 1998/04/03 by nick@ni-s
+
+	Resolve Achim's auto-diff
+
+Change 715 on 1998/04/01 by nick@pluto
+
+	Scrolling tweaks
+
+Change 707 on 1998/03/30 by nick@pluto
+
+	HList/tkmail tidy up (scrollbar settings on 'see' etc.)
+
+Change 706 on 1998/03/28 by nick@ni-s
+
+	Sort out WinPhoto 
+
+Change 705 on 1998/03/28 by nick@pluto
+
+	Add window as Image Type trial to repository
+
+Change 704 on 1998/03/28 by nick@ni-s
+
+	Update for snapshot
+
+Change 703 on 1998/03/28 by nick@ni-s
+
+	Re-tidypod after Achim merge
+
+Change 702 on 1998/03/28 by nick@ni-s
+
+	Re-delete things that re-emerged from Achim branch
+
+Change 701 on 1998/03/28 by nick@ni-s
+
+	Resolve patched Achim branch against mainline
+
+Change 696 on 1998/03/28 by nick@ni-s
+
+	Achim's patch
+
+Change 693 on 1998/03/28 by nick@ni-s
+
+	Start of moving trivia to Widget.pod
+
+Change 692 on 1998/03/24 by nick@pluto
+
+	Change to L<options>
+
+Change 691 on 1998/03/23 by nick@pluto
+
+	More pod tidying
+
+Change 690 on 1998/03/22 by nick@ni-s
+
+	Tidy up sequencing
+
+Change 688 on 1998/03/22 by nick@ni-s
+
+	Bring over docs for Tcl commands (as opposed to Tk) we have adopted.
+
+Change 687 on 1998/03/22 by nick@ni-s
+
+	Add category info amd change others ...
+
+Change 686 on 1998/03/22 by nick@ni-s
+
+	Category changes 
+
+Change 685 on 1998/03/22 by nick@ni-s
+
+	Avoid =back followed by =over - leads to unnecessary extra 
+	structure in HTML
+
+Change 684 on 1998/03/21 by nick@ni-s
+
+	Formatting fixup
+
+Change 682 on 1998/03/21 by nick@ni-s
+
+	Put whitepace into standard form
+
+Change 676 on 1998/03/21 by nick@ni-s
+
+	Cleanup NAME stuff for pod2lwp
+
+Change 675 on 1998/03/21 by nick@ni-s
+
+	MANIFEST adjust for new docs
+
+Change 674 on 1998/03/21 by nick@ni-s
+
+	Add pod docs to the depot
+
+Change 673 on 1998/03/21 by nick@ni-s
+
+	Chris Dean <ctdean@cogit.com>
+	 DirTree.pm: Created.
+	 HList.pm: removed references to EventType.  
+	  The -indicatorcmd callback takes the EventType as an additional argument.
+	 Tree.pm: expect -indicatorcmd to have an additional arg.
+	 perl-tix-dirtree: Created.
+
+Change 672 on 1998/03/21 by nick@ni-s
+
+	Doc build tweaks
+
+Change 671 on 1998/03/20 by nick@camel
+
+	Add files on laptop
+
+Change 670 on 1998/03/20 by nick@ni-s
+
+	Achim's changes to mann
+
+Change 669 on 1998/03/20 by nick@ni-s
+
+	Delete obsolete and duplicate docs
+
+Change 668 on 1998/03/20 by nick@camel
+
+	Add Generated MANIFEST file
+
+Change 665 on 1998/03/19 by nick@camel
+
+	Dallas trip edits - mainly doc stuff
+
+Change 664 on 1998/03/09 by nick@ni-s
+
+	Avoid filevent on Console on Win32
+
+Change 663 on 1998/03/09 by nick@ni-s
+
+	Update Changes and README
+
+Change 658 on 1998/03/09 by nick@ni-s
+
+	Import /home/nick/tools/npdws
+
+Change 656 on 1998/03/09 by nick@pluto
+
+	Patches from the list
+
 Change 655 on 1998/03/07 by nick@ni-s
 
 	$VERSION updates

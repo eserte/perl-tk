@@ -8,13 +8,12 @@ sub bind {
     # commands to regions of text in a text widget.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     =>'',				      
         -title    => 'Text Demonstration - Tag Bindings',
         -iconname => 'bind',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $t = $TOP->Scrolled(qw/Text -setgrid true -width 60 -height 24
 			   -scrollbars e -wrap word/, -font => $FONT);

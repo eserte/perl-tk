@@ -1,21 +1,16 @@
-# Class that handles cget/configure for options that 
-# need translating from public form 
-# e.g. $cw->configure(-label => 'fred')
-
-
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Configure.pm#3$
-
-# into $cw->subwiget('label')->configure(-text => 'fred')
-# Should probably do something clever with regexp's here
-
 package Tk::Configure;
+use vars qw($VERSION);
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Configure.pm#5$
+
 use Carp;
 use Tk::Pretty;
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Configure.pm#3$
 
+# Class that handles cget/configure for options that 
+# need translating from public form 
+# e.g. $cw->configure(-label => 'fred')
+# into $cw->subwiget('label')->configure(-text => 'fred')
+# Should probably do something clever with regexp's here
 
 
 sub new

@@ -1,10 +1,12 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Font.pm#3$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Font.pm#9$
 
 =head1 NAME
 
 Tk::Font - a class for finding X Fonts
+
+=for category Tk Generic Methods
 
 =head1 SYNOPSIS
 
@@ -175,12 +177,36 @@ sub Name
  my $me  = shift;
  my $max = wantarray ? shift || 128 : 1;
 
- my $name = $me->{Name} ||
-            join("-", "",@{$me}{@field});
-
- return $name if ($^O eq 'MSWin32');
-
- $me->{Display}->XListFonts($name,$max);
+ if ($^O eq 'MSWin32')
+  {
+   my $name = $me->{Name};
+   if (!defined $name)
+    {
+     my $fm  = $me->{'family'} || 'system';
+     my $sz  = -int($me->{'point'}/10) || -($me->{'pixel'}) || 12;
+     my @opt = (-family => $fm, -size => $sz );
+     my $wt  = $me->{'weight'};
+     if (defined $wt)
+      {
+       $wt = 'normal' unless $wt =~ /bold/i;
+       push(@opt,-weight => lc($wt));
+      }
+     my $sl  = $me->{'slant'};
+     if (defined $sl)
+      {
+       $sl = ($sl =~ /^[io]/) ? 'italic' : 'roman';
+       push(@opt,-slant => $sl);
+      }
+     $name = join(' ',@opt);
+    }
+   return $name;
+  }
+ else
+  {
+   my $name = $me->{Name} ||
+              join("-", "",@{$me}{@field});
+   return $me->{Display}->XListFonts($name,$max);
+  }
 }
 
 sub as_string

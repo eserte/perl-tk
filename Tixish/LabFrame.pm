@@ -4,9 +4,8 @@
 
 package Tk::LabFrame;
 
-
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#4$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#8$
 
 use Tk;
 require Tk::Frame;
@@ -57,6 +56,8 @@ sub Populate {
 =head1 NAME
 
 Tk::LabFrame - labeled frame.
+
+=for category Tix Extensions
 
 =head1 SYNOPSIS
 

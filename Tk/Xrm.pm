@@ -1,7 +1,7 @@
 package Tk::Xrm;
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Xrm.pm#3$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Xrm.pm#8$
 
 use Tk ();
 1;
@@ -10,6 +10,8 @@ __END__
 =head1 NAME
 
 Tk::Xrm - X Resource/Defaults/Options routines that obey the rules.
+
+=for category Creating and Configuring Widgets
 
 =head1 SYNOPSIS
 
@@ -38,5 +40,4 @@ This version is a little slower than Tk's re-invention but there is
 more optimization that can be done.
 
 =cut
-
 

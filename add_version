@@ -4,7 +4,7 @@ use File::Find;
 use Getopt::Std;
 use Cwd;
 my %opt = ('p' => '3');
-getopts('oap:',\%opt);
+getopts('oeap:',\%opt);
 my $path = getcwd();
 chdir($path);
 $path = getcwd();
@@ -13,7 +13,7 @@ my $rel;
 my $wh = `p4 where ./...`;
 
 if ($wh =~ m#^\s*(.*)/\.\.\.\s+(.*)/\.\.\.\s*$#)
- {            
+ {
   $dep  = $1;
   $rel  = $2;
  }
@@ -25,16 +25,16 @@ else
 if ($opt{'o'})
  {
   foreach (`p4 opened`)
-   {           
+   {
     unless (s#^\Q$dep\E#$path#)
      {
       warn "Not under $path : $_";
-      next; 
+      next;
      }
     unless (/\(kx?text\)/)
      {
       warn "Not ktext : $_";
-      next; 
+      next;
      }
     chomp;
     s/#\d+\s+-.*$//;
@@ -43,14 +43,14 @@ if ($opt{'o'})
  }
 elsif ($opt{'a'})
  {
-  find(sub    
-       {      
+  find(sub
+       {
         $File::Find::prune = 1 if (/^blib$/);
-        push(@ARGV,$File::Find::name) if (/\.pm$/) 
+        push(@ARGV,$File::Find::name) if (/\.pm$/)
        },'.');
  }
 
-@ARGV = grep(!m#Tk\.pm$#,@ARGV);
+@ARGV = grep(!m#(Tk|Config)\.pm$#,@ARGV);
 
 unless (@ARGV)
  {
@@ -60,13 +60,13 @@ unless (@ARGV)
 
 my @undo = ();
 
-$^I = ".old";
+$^I = ".old" if $opt{'e'};
 my $seen = 0;
 my $edit = 0;
 while (<>)
  {
   if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id(.*)\$.*$/)
-   {            
+   {
     $seen = 1;
     my $maj  = $1;
     my $min  = $2;
@@ -75,7 +75,7 @@ while (<>)
     unless ($path =~ /#(\d+)/)
      {
       my $have = `p4 have $ARGV`;
-      ($path,$need)  = $have =~ /^(.*#(\d+))\s+-/; 
+      ($path,$need)  = $have =~ /^(.*#(\d+))\s+-/;
       $need++;
      }
     else
@@ -84,10 +84,12 @@ while (<>)
      }
     if ($maj != $opt{'p'} || $min != $need)
      {
+      warn "-$ARGV:$_";
+      $need++ unless -w $ARGV;
       $_ = sprintf("\$VERSION = '%d.%03d'; # \$Id: $path\$\n",$opt{'p'},$need);
-      warn "$ARGV:$_";                        
+      warn "+$ARGV:$_";
       $edit = 1;
-     }        
+     }
    }
   elsif (/\$[\w:]*VERSION\s*=/)
    {
@@ -110,21 +112,31 @@ while (<>)
     printf "\$VERSION = '%d.%03d'; # \$Id: $dep\$\n\n",$opt{'p'},$ver;
     $seen = $edit = 1;
    }
-  print;
+  print if $opt{'e'};;
   if (!$seen && (eof || /__END__/))
    {
     warn "No insert point found in $ARGV\n";
     $seen = 1;
    }
   if (eof)
-   {        
-    if ($edit)
+   {
+    if ($opt{'e'})
      {
-      system('p4','edit','-t','ktext',$ARGV) unless -w $ARGV;
-     }        
+      if ($edit && $opt{'e'})
+       {
+        system('p4','edit','-t','ktext',$ARGV) unless -w $ARGV;
+       }
+      else
+       {
+        push(@undo,$ARGV);
+       }
+     }
     else
      {
-      push(@undo,$ARGV);
+      if ($edit)
+       {
+        warn "$ARGV needs changing?\n";
+       }
      }
     $seen = $edit = 0;
     $.    = 0;
@@ -132,7 +144,7 @@ while (<>)
  }
 
 foreach my $file (@undo)
- {            
+ {
   chmod(0666,$file) unless -w $file;
   unlink($file);
   rename("$file$^I",$file);

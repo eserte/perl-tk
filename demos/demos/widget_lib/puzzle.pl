@@ -1,20 +1,19 @@
 # puzzle.pl
 
-use vars qw/$TOP/;
 use subs qw/puzzle_switch/;
+use vars qw/$TOP/;
 
 sub puzzle {
 
     # Create a top-level window containing a 15-puzzle game.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'A 15-puzzle appears below as a collection of buttons.  Click on any of the pieces next to the space, and that piece will slide over the space.  Continue this until the pieces are arranged in numerical order from upper-left to lower-right.',
         -title    => '15-Puzzle Demonstration',
         -iconname => 'puzzle',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     # Special trick: select a darker color for the space by creating a
     # scrollbar widget and using its trough color.

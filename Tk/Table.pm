@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Table.pm#4$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Table.pm#8$
 
 use Tk::Pretty;
 use AutoLoader;
@@ -101,7 +101,6 @@ sub sizeN
   }
  return $max;
 }
-
 
 sub total
 {
@@ -536,10 +535,11 @@ sub see
  return $see;
 }
 
-
 =head1 NAME
 
 Tk::Table - Scrollable 2 dimensional table of Tk widgets
+
+=for category Tk Geometry Management
 
 =head1 SYNOPSIS
 
@@ -613,6 +613,4 @@ No equivalent of pack's -anchor/-pad etc. options
 =back 
 
 =cut
-
-
 

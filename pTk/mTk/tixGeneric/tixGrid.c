@@ -1669,17 +1669,20 @@ Tix_GrBdType(clientData, interp, argc, argv)
 	bd[1] = 0;
     }
 
-    if (inX && inY) {
-	sprintf(buf, "xy %d %d", bd[0], bd[1]);
+    Tcl_ResetResult(interp);
+    if (inX && inY) {  
+	Tcl_AppendElement(interp,"xy");
+	Tcl_IntResults(interp,1,2," %d %d", bd[0], bd[1]); 
     } else if (inX) {
-	sprintf(buf, "x %d %d", bd[0], bd[1]);
+	Tcl_AppendElement(interp,"x");
+	Tcl_IntResults(interp,1,2," %d %d", bd[0], bd[1]); 
     } else if (inY) {
-	sprintf(buf, "y %d %d", bd[0], bd[1]);
+	Tcl_AppendElement(interp,"y");
+	Tcl_IntResults(interp,1,2," %d %d", bd[0], bd[1]); 
     } else {
 	buf[0] = '\0';
     }
 
-    Tcl_ResetResult(interp);
     Tcl_AppendResult(interp, buf, NULL);
 
     return TCL_OK;
@@ -1880,13 +1883,10 @@ Tix_GrEdit(clientData, interp, argc, argv)
     ClientData clientData;
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Arg *args;			/* Argument strings. */
 {
-/* FIXME */
-#ifndef _LANG
     WidgetPtr wPtr = (WidgetPtr) clientData;
     int x, y;
-    Tcl_DString dstring;
     char buff[20];
     int len, code;
 
@@ -1901,37 +1901,20 @@ Tix_GrEdit(clientData, interp, argc, argv)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
-	Tcl_DStringInit(&dstring);
-
-	Tcl_DStringAppendElement(&dstring, "tixGrid:EditCell");
-	Tcl_DStringAppendElement(&dstring, Tk_PathName(wPtr->dispData.tkwin));
-	sprintf(buff, "%d", x);
-	Tcl_DStringAppendElement(&dstring, buff);
-	sprintf(buff, "%d", y);
-	Tcl_DStringAppendElement(&dstring, buff);
+        return LangMethodCall(interp,LangWidgetArg(interp,wPtr->dispData.tkwin),
+			      "EditCell",0, 2," %d %d",x, y);
     } else if (strncmp(argv[0], "apply", len) == 0) {
 	if (argc != 1) {
 	    Tcl_AppendResult(interp, "wrong # of arguments, must be: ",
 		argv[-2], " edit apply", NULL);
 	}
-	Tcl_DStringInit(&dstring);
-
-	Tcl_DStringAppendElement(&dstring, "tixGrid:EditApply");
-	Tcl_DStringAppendElement(&dstring, Tk_PathName(wPtr->dispData.tkwin));
+        return LangMethodCall(interp,LangWidgetArg(interp,wPtr->dispData.tkwin),
+			      "EditApply",0, 0);
     } else {
 	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 		"\", must be apply or set", NULL);
 	return TCL_ERROR;
     }
-
-    code = Tcl_GlobalEval(interp, dstring.string);  /* ifdef ed */
-    Tcl_DStringFree(&dstring);
-
-    return code;
-#else
-    Tcl_AppendResult(interp, argv[0], " not implemented", NULL);
-    return TCL_ERROR;
-#endif
 }
 
 /*----------------------------------------------------------------------
@@ -2016,7 +1999,6 @@ Tix_GrGeometryInfo(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     int qSize[2];
     double first[2], last[2];
-    char string[80];
     int i;
     Tix_GridScrollInfo scrollInfo[2];
 
@@ -2042,9 +2024,7 @@ Tix_GrGeometryInfo(clientData, interp, argc, argv)
 	    &first[i], &last[i]);
     }
 
-    sprintf(string, "{%f %f} {%f %f}", first[0], last[0], first[1], last[1]);
-    Tcl_AppendResult(interp, string, NULL);
-
+    Tcl_DoubleResults(interp,1,4,"{%f %f} {%f %f}", first[0], last[0], first[1], last[1]);
     return TCL_OK;
 }
 
@@ -2066,10 +2046,7 @@ Tix_GrIndex(clientData, interp, argc, argv)
     if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)!=TCL_OK) {
 	return TCL_ERROR;
     }
-
-    sprintf(buff, "%d %d", x, y);
-    Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, buff, NULL);
+    Tcl_IntResults(interp,0,2," %d %d", x, y); 
     return TCL_OK;
 }
 
@@ -2199,10 +2176,7 @@ Tix_GrNearest(clientData, interp, argc, argv)
     }
     rePtr = &(wPtr->mainRB->elms[rbPos[0]][rbPos[1]]);
 
-    sprintf(buf, "%d %d", rePtr->index[0], rePtr->index[1]);
-    Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, buf, NULL);
-
+    Tcl_IntResults(interp, 0, 2, "%d %d", rePtr->index[0], rePtr->index[1]);
     return TCL_OK;
 }
 
@@ -2243,11 +2217,7 @@ Tix_GrSetSite(clientData, interp, argc, argv)
 
     len = strlen(argv[0]);
     if (strncmp(argv[0], "get", len)==0) {
-	char buf[100];
-
-	sprintf(buf, "%d %d", changePtr[0], changePtr[1]);
-	Tcl_SetResult(interp, buf, TCL_VOLATILE);
-
+        Tcl_IntResults(interp, 0, 2, "%d %d", changePtr[0], changePtr[1]);
 	return TCL_OK;
     } else if (strncmp(argv[0], "set", len)==0) {
 	if (argc == 3) {
@@ -2478,8 +2448,7 @@ Tix_GrView(clientData, interp, argc, argv)
 	double first, last;
 
 	GetScrollFractions(wPtr, &wPtr->scrollInfo[axis], &first, &last);
-	sprintf(string, "%f %f", first, last);
-	Tcl_AppendResult(interp, string, NULL);
+        Tcl_DoubleResults(interp,0,2,"%f %f",first, last);
 	return TCL_OK;
     }
     else {
@@ -3215,7 +3184,6 @@ static int Tix_GrBBox(interp, wPtr, x, y)
 {
     int rect[2][2];
     int visible;
-    char buff[100];
 
     if (!Tk_IsMapped(wPtr->dispData.tkwin)) {
 	return TCL_OK;
@@ -3226,12 +3194,9 @@ static int Tix_GrBBox(interp, wPtr, x, y)
     if (!visible) {
 	return TCL_OK;
     }
-
-    sprintf(buff, "%d %d %d %d", rect[0][0], rect[1][0],
+    Tcl_IntResults(interp,0,4,"%d %d %d %d", rect[0][0], rect[1][0],
 	rect[0][1] - rect[0][0] + 1,
 	rect[1][1] - rect[1][0] + 1);
-
-    Tcl_AppendResult(interp, buff, NULL);
     return TCL_OK;
 }
 

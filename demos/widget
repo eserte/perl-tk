@@ -3,7 +3,6 @@
 eval 'exec /usr/local/bin/perl -w -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-
 require 5.004;
 
 use English;
@@ -22,6 +21,7 @@ $MW = MainWindow->new;
 $MW->title('Widget Demonstration');
 $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $widget_lib = Tk->findINC('demos/widget_lib');
+my $wd = "$widget_lib/WidgetDemo.pm";
 my $WIDTRIB = Tk->findINC('demos/widtrib');
 $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
 $WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
@@ -36,7 +36,12 @@ $menubar->gridColumnconfigure(qw/0 -weight 1/);
 
 my $file = $menubar->Menubutton(qw/-text File -underline 0 -menuitems/ =>
     [
-     [Button    => '~View', -command => [\&view_widget_code, __FILE__]],
+     [Cascade   => '~View', -menuitems =>
+      [
+       [Button  => '~widget', -command => [\&view_widget_code, __FILE__]],
+       [Button  => '~WidgetDemo', -command => [\&view_widget_code, $wd]],
+      ], # end cascade menuitems
+     ], # end view cascade
      [Separator => ''],
      [Button    => '~Quit', -command => [\&exit]],
     ])->grid(qw/-sticky w/); 
@@ -190,8 +195,10 @@ $T->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
 opendir(C, $WIDTRIB) or warn "Cannot open $WIDTRIB: $OS_ERROR!";
 my(@dirent) = grep /^.+\.pl$/, sort(readdir C);
 closedir C;
-my $i;
+unshift @dirent, 'TEMPLATE.pl';	# I want it first
+my $i = 0;
 while ($_ = shift @dirent) {
+    next if /TEMPLATE\.pl/ and $i != 0;
     open(C, "$WIDTRIB/$_") or warn "Cannot open $_: $OS_ERROR!";
     my($name) = /^(.*)\.pl$/;
     $_ = <C>;
@@ -205,10 +212,11 @@ $T->configure(-state => 'disabled');
 
 my $DIALOG_ABOUT = $MW->Dialog(
     -title          => 'About widget',
-    -bitmap         => undef,
+    -bitmap         => 'info',
     -default_button => 'OK',
     -buttons        => ['OK'],
-    -text           => "       widget\nVersion $Tk::VERSION\n     97/06/07",
+    -text           => "         widget\n\nPerl Version $]" .
+		       "\nTk Version $Tk::VERSION\n\n        98/03/10",
 );
 $about->entryconfigure('Widget', -command => [$DIALOG_ABOUT => 'Show']);
 
@@ -471,10 +479,12 @@ defaults to the released user contributed directory.
  # Stephen O. Lidie, LUCC, 97/06/07.  lusol@Lehigh.EDU
  #     Update for Tk402.00x.  Total revamp:  WidgetDemo, Scrolled, released
  #     composites, -menuitems, qw//, etcetera.  Perl 5.004 required.
+ # Stephen O. Lidie, LUCC, 98/03/10.  lusol@Lehigh.EDU
+ #     Update for Tk8.
 
 =head1 AUTHOR
 
-Steve Lidie <lusol@Lehigh.EDU>
+Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
 
 =cut 
 

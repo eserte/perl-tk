@@ -8,13 +8,12 @@ sub vscale {
     # Create a top-level window that displays a vertical scale.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'An arrow and a vertical scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
         -title    => 'Vertical Scale Demonstration',
         -iconname => 'vscale',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $frame = $TOP->Frame(-borderwidth => 10)->pack;
 

@@ -4,7 +4,7 @@ use 5.004;
 use Carp;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#4$
+$VERSION = '3.010'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#10$
 
 use Tk;
 use Tk::Toplevel;
@@ -16,10 +16,12 @@ Construct Tk::Widget 'WidgetDemo';
 
 WidgetDemo() - create a standard widget demonstration window.
 
+=for category Other Modules and Languages
+
 =head1 SYNOPSIS
 
  use WidgetDemo;
- my $demo_widget = $MW->WidgetDemo(
+ my $TOP = $MW->WidgetDemo(
      -name             => $demo,
      -text             => 'Learn how to write a widget demonstration!',
      -title            => 'WidgetDemo Demonstration',
@@ -27,7 +29,6 @@ WidgetDemo() - create a standard widget demonstration window.
      -geometry_manager => 'grid',
      -font             => $FONT,
  );
- $TOP = $demo_widget->Top;	# get grid master
 
 =head1 DESCRIPTION
 
@@ -45,25 +46,22 @@ will rearrange things as required..
 
     -text => ['Hello World!', qw/-wraplength 6i/],
 
-=head1 METHODS
-
-=head2 $demo_widget->Top;
-
-Returns the frame container reference for the demonstration.  Treat this as
-the top of your window hierarchy, a "main window".
-
 =head1 AUTHOR
 
-Stephen O. Lidie <lusol@Lehigh.EDU>
+Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
 
 =head1 HISTORY
 
 lusol@Lehigh.EDU, LUCC, 97/02/11
 lusol@Lehigh.EDU, LUCC, 97/06/07
+Stephen.O.Lidie@Lehigh.EDU, LUCC, 97/06/07
+ . Add Delegates() call that obviates the need for Top().  Many thanks to
+   Achim Bohnet for this patch.
+ . Fix -title so that it works.
 
 =head1 COPYRIGHT
 
-Copyright (C) 1997 - 1997 Stephen O. Lidie. All rights reserved.
+Copyright (C) 1997 - 1998 Stephen O. Lidie. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
@@ -88,7 +86,6 @@ sub Populate {
     $arg_defaults{-title} = "$name Demonstration",
     $arg_defaults{-iconname} = $name;
 
-
     my(@margs, %ahsh, @args);
     @margs = grep ! defined $args->{$_}, keys %arg_defaults;
     %ahsh = %$args;
@@ -98,7 +95,6 @@ sub Populate {
     delete $args->{-name};
     delete $args->{-font};
     delete $args->{-text};
-    delete $args->{-title};
     delete $args->{-iconname};
     delete $args->{-geometry_manager};
 
@@ -106,7 +102,6 @@ sub Populate {
     $WIDGDEMO{$demo} = $cw;
 
     $cw->SUPER::Populate($args);
-    $cw->title($title);
     $cw->iconname($iconname);
 
     my(@label_attributes) = ();
@@ -123,7 +118,7 @@ sub Populate {
     );
     
     my $demo_frame = $cw->Frame;
-    $cw->Advertise('WidgetDemo' => $demo_frame);
+    $cw->Advertise('WidgetDemo' => $demo_frame); # deprecated
 
     my $buttons = $cw->Frame;
     my $dismiss = $buttons->Button(
@@ -151,11 +146,12 @@ sub Populate {
 	croak "Only pack or grid geometry management supported.";
     }
 
+    $cw->Delegates('Construct' => $demo_frame);
     return $cw;
 
 } # end Populate, WidgetDemo constructor
 
-sub Top {return $_[0]->Subwidget('WidgetDemo')}
+sub Top {return $_[0]->Subwidget('WidgetDemo')}	# deprecated
 *top = *top = \&Top;  # peacify -w
 
 1;

@@ -10,13 +10,12 @@ sub twind {
     # use of embedded windows in Text widgets.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => '',				      
         -title    => 'Text Demonstration - Embedded Windows',
         -iconname => 'twind',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     # By default, when you create a Scrolled instance of a Perl/Tk widget
     # the scrollbars are always displayed; that is, they are required.  But

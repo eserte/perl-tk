@@ -9,13 +9,12 @@ sub cscroll {
     # scrolled in two dimensions.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This window displays a canvas widget that can be scrolled either using the scrollbars or by dragging with button 2 in the canvas.  If you click button 1 on one of the rectangles, its indices will be printed on stdout.',
         -title    => 'Scrollable Canvas Demonstration',
         -iconname => 'cscroll',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $c = $TOP->Scrolled(qw/Canvas -relief sunken -borderwidth 2
         -scrollbars se -scrollregion/ => ['-10c', '-10c', '50c', '20c']);

@@ -1,35 +1,68 @@
 #!/usr/local/bin/perl -w
 
+# usage perl -Mblib transname
+
 use strict;
 use blib;
+use File::Copy;
 
-@ARGV = <pod[3n]/*.pod> unless @ARGV;
+@ARGV = (glob("podn/*.pod"),glob("pod3/*.pod")) unless @ARGV;
 die "No POD documents *.pod given" unless @ARGV;
 
-my $pmlib =  $INC[1];
+my $pmlib =  "../blib/lib/Tk";
 
-my $kind;
-my $name;
-my $pod;
-my $to;
-foreach $pod (@ARGV)
+my $pdir = "../pod2";
+
+mkdir("$pdir",0777) unless -d "$pdir";
+mkdir("$pdir/pTk",0777) unless -d "$pdir/pTk";
+
+
+foreach my $pod (@ARGV)
   {
-     $name = $pod;
+     my $name = $pod;
      $name =~ s/.pod$//;
-     $name =~ s/^.*\///;
-
-     $to = $name;
+     $name =~ s/^(.*)\///;
+     my $dir = $1;
+     my $to = $name;
      foreach ( ucfirst($name), $name, lc($name), ucfirst(lc($name)) )
        {
-         if ( -f "$pmlib/Tk/$_.pm")
+         if ( -f "$pmlib/$_.pm")
            {
              $to = $_;
 	     last;
            }
        }
 
-     printf "%-15s -> %s %s\n", $name,
-		 ( ($name =~ /^pod3/) ? "ptk$to" : $to), # ptk prefix for man3
-		 ( ($name eq $to)     ? '' : '*');	# show what autoconverted
+#     printf "#%-15s -> %s %s\n", $name,
+#		 ( ($pod =~ /^pod3/) ? "ptk$to" : $to), # ptk prefix for man3
+#		 ( ($name eq $to)     ? '' : '*');	# show what autoconverted
+
+#     print "pod2man $dir/$name.pod   > \t$../blib/man3/Tk::$to.3";
+
+#      print "cp $dir/$name.pod   \t$pmlib/$to.pod";
+#      print ($name eq $to ? "\n" : "\t# (has changed)\n");
+
+      if ($pod =~ /^pod3/)
+        { 
+          Copy("$dir/$name.pod","$pdir/pTk/$to.pod");
+	}
+      else 
+        {
+          Copy("$dir/$name.pod","$pdir/$to.pod");
+        }
+      print ($name eq $to ? "\n" : "\t# (has changed)\n");
   }
 
+sub Copy
+{
+ my ($src,$dst) = @_;
+ if (!-e $dst || -w $dst)
+  {
+   copy($src,$dst);
+   print "# ";
+  }
+ print "cp $src $dst";
+}
+
+system($^X,"../pod/tidypod",glob("$pdir/*.pod"));
+system($^X,"../pod/tidypod",glob("$pdir/pTk/*.pod"));

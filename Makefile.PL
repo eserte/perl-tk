@@ -5,7 +5,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.0_02';
+  $VERSION = '800.003';
 
   $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
@@ -61,6 +61,7 @@ Tk::MMutil::TkExtMakefile(
     'LIBS'    => \@libs,
     'OBJECT'  => '$(O_FILES)',
     'MAP_TARGET' => 'tkperl$(EXE_EXT)',
+#   'PMLIBDIRS'  => ['Tk','pod'],
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
@@ -88,6 +89,7 @@ sub MY::top_targets
  my ($self) = @_;
  my $str = $self->MM::top_targets;
  $str =~ s/\bmanifypods\b/html/g;
+ $str =~ s/(pure_all\s*:.*linkext)/$1 tkperl\$(EXE_EXT)/ if $IsWin32;
  return $str;
 }
 
@@ -190,19 +192,16 @@ FULLPERL      = $self->{FULLPERL}
 
     $target = "perl" unless $target;
 
-# MAP_STATIC doesn't look into subdirs yet. Once "all" is made and we
-# regenerate the Makefiles, MAP_STATIC and the dependencies for
-# extralibs.all are computed correctly
     push @m, "
-MAP_LINKCMD   = link 
+MAP_LINKCMD   = \$(LD) 
 MAP_PERLINC   = @{$perlinc || []}
-MAP_STATIC    = ",
-join(" \\\n\t", reverse sort keys %static), " \$(MYEXTLIB) 
+MAP_STATIC    = winMain\$(OBJ_EXT)
 
-MAP_PRELIBS   = \$(guilibsdll)
+MAP_PRELIBS   = \$(LDLOADLIBS)
 ";
 
     if (defined $libperl) {
+        $libperl =~ s/libperl/perl/;
 	($lperl = $libperl) =~ s/\$\(A\)/$self->{LIB_EXT}/;
     }
     unless ($libperl && -f $lperl) { # Ilya's code...
@@ -227,11 +226,10 @@ MAP_PRELIBS   = \$(guilibsdll)
 		unless (-f $lperl || defined($self->{PERL_SRC}));
     }
 
-    $libperl =~ s/libperl/perl/;
 
     push @m, "
 MAP_LIBPERL = $libperl
-MAP_LDFLAGS = \$(guilflags)
+MAP_LDFLAGS = \$(LDFLAGS) -subsystem:windows
 ";
 
 push (@m, "

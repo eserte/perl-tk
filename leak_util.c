@@ -25,7 +25,7 @@ struct hash_s
 
 static char *
 lookup(hash_ptr *ht, SV *sv, void *tag)
-{unsigned hash = ((unsigned) sv) % MAX_HASH;
+{unsigned hash = ((unsigned long) sv) % MAX_HASH;
  hash_ptr p = ht[hash];
  while (p)
   {

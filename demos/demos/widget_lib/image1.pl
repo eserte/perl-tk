@@ -7,13 +7,12 @@ sub image1 {
     # This demonstration script displays two image widgets.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This demonstration displays two images, each in a separate label widget.',
         -title    => 'Image Demonstration #1',
         -iconname => 'image1',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my(@pl) = qw/-side top -padx .5m -pady .5m/;
     $TOP->Photo('image1a', -file => Tk->findINC('demos/images/earth.gif'));

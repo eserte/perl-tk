@@ -1,7 +1,7 @@
 #!/usr/local/bin/nperl -w
 use File::Find;
 use File::Basename;
-
+ 
 my %skip;
 my %files;
 
@@ -41,7 +41,7 @@ C\+\+/Main$
 \bTix/
 tcl\.pm$
 \bcore\b
-\bdoc/old\b
+\bdoc/man(3|n|)\b
 \bdoc/.*\.log\d*
 \bToDo/
 \bObsolete/
@@ -55,6 +55,7 @@ doc/.*\.htm$
 myConfig\.out
 \bswapm$
 bin/patchls$
+prep_rel$
 EOF
 ;
 foreach (sort keys %skip)

@@ -4,9 +4,8 @@
 package Tk::After;
 use Carp;
 
-
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/After.pm#4$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/After.pm#8$
 
 sub _cancelAll
 {
@@ -91,6 +90,8 @@ __END__
 
 Tk::After - support class for Tk::Widget::after
 
+=for category Binding Events and Callbacks
+
 =head1 SYNOPSIS
 
   $id = $widget->after(time,callback);
@@ -114,7 +115,4 @@ or I<'repeat'>
 
 This is first attempt at the code and interface is likely to change.
 So for the time being at least use $widget->after(...) interface.
-
-
-
 

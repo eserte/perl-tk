@@ -1523,6 +1523,9 @@ static int Tix_HLSeeElement(wPtr, chPtr, callRedraw)
 	}
 	else if (y+cYSize > wPtr->topPixel+wYSize){
 	    top = y+cYSize - wYSize ;
+	}                      
+	if (top < 0) {
+	    top = 0;
 	}
     }
 
@@ -1530,8 +1533,8 @@ static int Tix_HLSeeElement(wPtr, chPtr, callRedraw)
 	wPtr->leftPixel = left;
 	wPtr->topPixel	= top;
 
+	UpdateScrollBars(wPtr, 0);
 	if (callRedraw) {
-	    UpdateScrollBars(wPtr, 0);
 	    RedrawWhenIdle(wPtr);
 	}
 	return 1;
@@ -2254,7 +2257,7 @@ Tix_HLComputeGeometry(clientData)
 	    /* This is the req size of the header columns */
 	    int hdrReq = wPtr->headers[i]->width;
 
-	    if (wPtr->useHeader && hdrReq > entReq) {
+	    if (wPtr->useHeader && (hdrReq > entReq)) {
 		wPtr->actualSize[i].width = hdrReq;
 	    } else {
 		wPtr->actualSize[i].width = entReq;

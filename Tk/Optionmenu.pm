@@ -5,9 +5,8 @@ package Tk::Optionmenu;
 require Tk::Menubutton;
 require Tk::Menu;
 
-
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#6$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#11$
 
 @ISA = qw(Tk::Derived Tk::Menubutton);
 
@@ -95,6 +94,8 @@ __END__
 
 Tk::Optionmenu - Let the user select one of some predefined options values
 
+=for category Tk Widget Classes
+
 =head1 SYNOPSIS
 
     use Optionmenu;
@@ -112,8 +113,6 @@ Tk::Optionmenu - Let the user select one of some predefined options values
     #   b)  [ $val1=>$lab1], [$lab2=>val2], ... ] 
     #   c)  combination of a) and b), e.g.,
     #       val1, [$lab2=>val2], val3, val4, [...], ...
-
-
 
 =head1 DESCRIPTION
 
@@ -153,7 +152,6 @@ Adds OPTION_LIST to the already available options.
 
 =back
 
-
 =head1 EXAMPLE
 
     use Tk;
@@ -172,7 +170,6 @@ Adds OPTION_LIST to the already available options.
     $mw->Button(-text=>'Exit', -command=>sub{$mw->destroy})->pack;
 
     MainLoop;
-
 
 =head1 SEE ALSO
 

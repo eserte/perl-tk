@@ -10,13 +10,12 @@ sub image2 {
     # that allow you to select and view images in a Tk label.
 
     my($demo) = @_;
-    my $demo_widget = $MW->WidgetDemo(
+    $TOP = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This demonstration allows you to view images using a Tk "photo" image.  First type a directory name in the listbox, then type Return to load the directory into the listbox.  Then double-click on a file name in the listbox to see that image.',
         -title    => 'Image Demonstration #2',
         -iconname => 'image2',
     );
-    $TOP = $demo_widget->Top;	# get geometry master
 
     my $dir_label = $TOP->Label(-text => 'Directory:');
     my $demo_img = Tk->findINC('demos/images');

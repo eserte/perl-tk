@@ -2,7 +2,7 @@ package Tk::DragDrop::SunConst;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#3$
+$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#8$
 
 @ISA = qw(Exporter);
 
@@ -35,6 +35,8 @@ __END__
 =head1 NAME
 
 Tk::DragDrop::SunConst - Constants for Sun's Drag&Drop protocol 
+
+=for category User Interaction
 
 =head1 DESCRIPTION
 

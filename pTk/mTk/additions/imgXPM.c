@@ -33,7 +33,7 @@
 #ifdef __WIN32__
 #define strncasecmp strnicmp
 #else        
-#ifndef AIX
+#ifndef _AIX
 extern VOID *	memcpy _ANSI_ARGS_((VOID *s1, CONST VOID *s2,
 			    size_t nChars));
 #endif

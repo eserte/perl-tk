@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Animation.pm#5$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Animation.pm#10$
 
 use Tk::Photo;
 @ISA = qw(Tk::Photo);
@@ -88,6 +88,8 @@ __END__
 
 Tk::Animation - Display sequence of Tk::Photo images
 
+=for category Tk Image Classes
+
 =head1 SYNOPSIS
 
   use Tk::Animation
@@ -152,5 +154,4 @@ sub gif_sequence
    $obj->set_frame(0);
   }
 }
-
 

@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION @ISA);
 
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#4$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#8$
 require Tk::NBFrame;
 
 @ISA = qw(Tk::Derived Tk::NBFrame);
@@ -454,6 +454,8 @@ __END__
 =head1 NAME
 
 Tk::NoteBook - display several windows in limited space with notebook metaphor.
+
+=for category Tix Extensions
 
 =head1 SYNOPSIS
 
