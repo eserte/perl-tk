@@ -1,7 +1,7 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/ProgressBar.pm#8 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/ProgressBar.pm#9 $
 
 use Tk;
 use Tk::Canvas;
@@ -86,7 +86,7 @@ sub _arrange {
     my $from = $c->{Configure}{'-from'};
     my $to   = $c->{Configure}{'-to'};
     my $horz = $c->{Configure}{'-anchor'} =~ /[ew]/i ? 1 : 0;
-    my $dir  = $c->{Configure}{'-anchor'} =~ /[ne]/i ? -1 : 1;
+    my $dir  = $c->{Configure}{'-anchor'} =~ /[se]/i ? -1 : 1;
 
     my($minv,$maxv) = $from < $to ? ($from,$to) : ($to,$from);
 

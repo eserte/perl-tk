@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tixish/NoteBook.pm#7 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tixish/NoteBook.pm#8 $
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -357,7 +357,6 @@ sub SlaveGeometryRequest
 
 sub LostSlave {
     my ($w, $s) = @_;
-    print "Loosing $s\n";
     $s->UnmapWindow;
 }
 

@@ -23,11 +23,15 @@
 #endif
 
 #ifndef dTHX
-#define dTHX dTHR
+#define dTHR int maybeTHR
 #endif
 
-#ifndef dTHR
+#ifndef dTHXs
+#ifdef PERL_IMPLICIT_SYS
+#define dTHXs dTHX
+#else
 #define dTHR int maybeTHR
+#endif
 #endif
 
 #ifndef ERRSV

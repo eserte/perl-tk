@@ -81,9 +81,6 @@ int mask;
 #if defined(__WIN32__) && !defined(__CYGWIN__)
 static int
 make_nonblock (pTHX_ PerlIO *f,int *mode,int *newmode)
-PerlIO *f;
-int *mode;
-int *newmode;
 {
  croak("Cannot make nonblocking on Win32 yet");
  return -1;

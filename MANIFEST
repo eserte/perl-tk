@@ -84,7 +84,6 @@ demos/demos/images/earthris.gif
 demos/demos/images/face
 demos/demos/images/flagdown
 demos/demos/images/flagup
-demos/demos/images/flower2.png
 demos/demos/images/grey.25
 demos/demos/images/grey.5
 demos/demos/images/letters
@@ -105,6 +104,7 @@ demos/demos/widget_lib/bitmaps.pl
 demos/demos/widget_lib/bounce.pl
 demos/demos/widget_lib/button.pl
 demos/demos/widget_lib/check.pl
+demos/demos/widget_lib/choosedir.pl
 demos/demos/widget_lib/clrpick.pl
 demos/demos/widget_lib/colors.pl
 demos/demos/widget_lib/cscroll.pl
@@ -131,6 +131,7 @@ demos/demos/widget_lib/msgBox.pl
 demos/demos/widget_lib/paned1.pl
 demos/demos/widget_lib/paned2.pl
 demos/demos/widget_lib/photo1.pl
+demos/demos/widget_lib/photo2.pl
 demos/demos/widget_lib/plot.pl
 demos/demos/widget_lib/Plot.pm
 demos/demos/widget_lib/puzzle.pl
@@ -143,6 +144,8 @@ demos/demos/widget_lib/spin.pl
 demos/demos/widget_lib/states.pl
 demos/demos/widget_lib/style.pl
 demos/demos/widget_lib/texts.pl
+demos/demos/widget_lib/trace1.pl
+demos/demos/widget_lib/trace2.pl
 demos/demos/widget_lib/transtile.pl
 demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/unicodeout.pl
@@ -655,6 +658,7 @@ PNG/libpng/scripts/makefile.intel
 PNG/libpng/scripts/makefile.knr
 PNG/libpng/scripts/makefile.linux
 PNG/libpng/scripts/makefile.macosx
+PNG/libpng/scripts/makefile.mingw
 PNG/libpng/scripts/makefile.mips
 PNG/libpng/scripts/makefile.msc
 PNG/libpng/scripts/makefile.ne12bsd

@@ -61,7 +61,7 @@ use strict;
 use Carp;
 
 # Record author's perforce depot record
-$Tk::CHANGE      = q$Change: 2982 $;
+$Tk::CHANGE      = q$Change: 3011 $;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
@@ -252,6 +252,9 @@ my %dialog = ( tk_chooseColor => 'ColorDialog',
                tk_getOpenFile => 'FDialog',
                tk_getSaveFile => 'FDialog',
                tk_chooseDirectory => 'FDialog'
+# Slaven claims NI-S's version above does not work
+# and provides this
+#              tk_chooseDirectory => 'DirDialog'
              );
 
 foreach my $dialog (keys %dialog)
@@ -380,6 +383,12 @@ sub FDialog
    push @_, -type => 'dir';
   }
  DialogWrapper('FBox', $cmd, @_);
+}
+
+sub DirDialog
+{
+ require Tk::DirTree;
+ DialogWrapper('DirTreeDialog',@_);
 }
 
 *MotifFDialog = \&FDialog;

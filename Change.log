@@ -1,3 +1,51 @@
+Change 3019 on 2003/12/06 by nick@camel
+
+	MinGW libpng makefile was not checked in or in MANIFEST
+
+Change 3017 on 2003/12/06 by nick@camel
+
+	Win32 hangs if you display dialog which is transient
+	to a withdrawn window?
+
+Change 3016 on 2003/12/06 by nick@camel
+
+	dTHXs stuff fow Windows builds with PERL_NO_GET_CONTEXT
+
+Change 3015 on 2003/12/06 by nick@llama
+
+	"Loose some debug prints in Win32 Drag/Drop
+
+Change 3014 on 2003/12/06 by nick@llama
+
+	"Jack" <goodcall@telusplanet.net> - latest version of
+	Balloon.pm tweaks
+
+Change 3013 on 2003/12/06 by nick@llama
+
+	Patch for timestamp for WM_TAKE_FOCUS events.
+	from Scott Smedley <ss@aao.gov.au>
+	There is a bug in Perl/Tk that neglects to pass the timestamp associated
+	with a WM_TAKE_FOCUS event. This leads to focussing race conditions in
+	aplications that use a globally active focussing policy.
+	The correct functionality is documented in:
+	http://tronche.com/gui/x/icccm/sec-4.html#s-4.1.7
+
+Change 3012 on 2003/12/06 by nick@llama
+
+	Demos patch from Steve
+
+Change 3011 on 2003/12/06 by nick@llama
+
+	A number of patches from Slaven.
+
+Change 3010 on 2003/12/06 by nick@llama
+
+	Removed debug as suggested by Jim Winters <jim.winters@ccur.com>
+
+Change 3009 on 2003/12/02 by nick@llama
+
+	Change.log update for beta7
+
 Change 3008 on 2003/12/02 by nick@llama
 
 	Avoid 'nsv' as a variable after scare with encGlue.c in perl5.9

@@ -15,7 +15,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -72,9 +72,9 @@ sub Populate {
     # We give the Label a big borderwidth
     # ..enough to slide a 6x6 gif image along the border including some space
 
-    my $ml = $w->Label(-bd => 10,
-                -padx => 0,
-                -pady => 0,
+    my $ml = $w->Label(-bd => 0,
+                -padx => 10,
+                -pady => 3,
                 -justify => 'left',
                 -relief=>'flat');
     $w->Advertise('message' => $ml);
@@ -108,10 +108,10 @@ sub Populate {
 		    -cancelcommand => ['CALLBACK', 'cancelCommand', 'CancelCommand', undef],
 		    -motioncommand => ['CALLBACK', 'motionCommand', 'MotionCommand', undef],
 		    -background => ['DESCENDANTS', 'background', 'Background', '#C0C080'],
-            -foreground => ['DESCENDANTS', 'foreground', 'Foreground', undef],
+                    -foreground => ['DESCENDANTS', 'foreground', 'Foreground', undef],
 		    -font => [$ml, 'font', 'Font', '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*'],
 		    -borderwidth => ['SELF', 'borderWidth', 'BorderWidth', 1],
-            -numscreens=>['PASSIVE', 'numScreens','NumScreens',1],
+                    -numscreens=>['PASSIVE', 'numScreens','NumScreens',1],
 		   );
 }
 
@@ -344,15 +344,15 @@ sub Popup {
     my $pos = $w->GetOption(-balloonposition => $client);
     my $postpos = delete $w->{'clients'}{$client}{'postposition'};
     if (defined $postpos) {
-	    # The postcommand must have returned a position for the balloon - I will use that:
-	    ($x,$y) = @{$postpos};
+	# The postcommand must have returned a position for the balloon - I will use that:
+	($x,$y) = @{$postpos};
     } elsif ($pos eq 'mouse') {
         ($x,$y)=$client->pointerxy; # We adjust the position later
     } elsif ($pos eq 'widget') {
-	    $x = int($client->rootx + $client->width/2);
-	    $y = int($client->rooty + int ($client->height/1.3));
+	$x = int($client->rootx + $client->width/2);
+	$y = int($client->rooty + int ($client->height/1.3));
     } else {
-	    croak "'$pos' is not a valid position for the balloon - it must be one of: 'widget', 'mouse'.";
+	croak "'$pos' is not a valid position for the balloon - it must be one of: 'widget', 'mouse'.";
     }
 
     $w->idletasks;
@@ -409,12 +409,14 @@ sub Popup {
     my $yy=undef; # to hold final toplevel placement
     my $slideOffsetX = 0;
     my $slideOffsetY = 0;
-    my $testtop = $y - $height;
-    my $testbottom = $y + $height;
-    my $testright = $x + $width;
-    my $testleft = $x - $width;
+    my $cornerOffset = 5; #default - keep corner away from pointer
+    my $testtop = $y - $height - $cornerOffset;
+    my $testbottom = $y + $height + (2*$cornerOffset);
+    my $testright = $x + $width + (2*$cornerOffset);
+    my $testleft = $x - $width - $cornerOffset;
     my $vert='bottom'; #default
     my $horiz='right'; #default
+
 
     if ( defined $w->{'location'} ){
       # Once balloon is activated, **don't** change the location of the balloon.
@@ -445,14 +447,14 @@ sub Popup {
                 $vert = 'top';
             }
             elsif ($y > $sh/2) {
- 	            #still offscreen to top but there is more room above then below
+ 	    #still offscreen to top but there is more room above then below
                 $vert = 'top';
                 $yy=0;
                 $slideOffsetY = $testtop;
  	        }
-	        if ($vert eq 'bottom'){
-            #Calculate Yoffset to fit entire balloon onto screen
-            $slideOffsetY = $testbottom - $sh;
+	    if ($vert eq 'bottom'){
+                #Calculate Yoffset to fit entire balloon onto screen
+                $slideOffsetY = $testbottom - $sh;
             }
         }
         #Test balloon positions in the horizontal
@@ -464,11 +466,11 @@ sub Popup {
             }
             elsif ($x > ($leftedge+$deltax) ) {
                 #still offscreen to left but there is more room to left than right
-	            $horiz = 'left';
+	        $horiz = 'left';
                 $xx=0;
                 $slideOffsetX = $testleft;
-	        }
-	        if ($horiz eq 'right'){
+	    }
+	    if ($horiz eq 'right'){
                 #Calculate Xoffset to fit entire balloon onto screen
                 $slideOffsetX = $testright - $rightedge;
             }
@@ -478,7 +480,7 @@ sub Popup {
     $w->{'location'} = $vert.$horiz unless (defined $w->{'location'});
 
     if ($w->{'location'} eq 'bottomright') {
-        if ($slideOffsetX and $slideOffsetY) {
+        if ( $slideOffsetX or $slideOffsetY ) {
             $w->{'pointer'}->configure(-image => $w->{img_no});
         }
         else {
@@ -487,18 +489,19 @@ sub Popup {
 
         $w->{'pointer'}->place(
             -in=>$w,
-            -relx=>0, -x=>$slideOffsetX + 2,
-            -rely=>0, -y=>$slideOffsetY + 2,
+#            -relx=>0, -x=>$slideOffsetX + 2,
+#            -rely=>0, -y=>$slideOffsetY + 2,
+            -relx=>0, -x=>2,
+            -rely=>0, -y=>2,
             -bordermode=>'outside',
             -anchor=>'nw');
-        # Keep corner away from pointer.
-        # It is okay if it goes offscreen a little, because of our 10 pixel borderwidth
-        $xx=$x-$slideOffsetX+10 unless (defined $xx);
-        $yy=$y-$slideOffsetY+10 unless (defined $yy);
+
+        $xx=$x-$slideOffsetX+(2*$cornerOffset) unless (defined $xx);
+        $yy=$y-$slideOffsetY+(2*$cornerOffset) unless (defined $yy);
 
     }
     elsif ($w->{'location'} eq 'bottomleft') {
-        if ($slideOffsetX and $slideOffsetY) {
+        if ( $slideOffsetX or $slideOffsetY ) {
             $w->{'pointer'}->configure(-image => $w->{img_no});
         }
         else {
@@ -506,16 +509,19 @@ sub Popup {
         }
 
         $w->{'pointer'}->place(-in=>$w,
-            -relx=>1, -x=>$slideOffsetX - 2,
-            -rely=>0, -y=>$slideOffsetY + 2,
+#            -relx=>1, -x=>$slideOffsetX - 2,
+#            -rely=>0, -y=>$slideOffsetY + 2,
+            -relx=>1, -x=>-2,
+            -rely=>0, -y=>2,
             -bordermode=>'outside',
             -anchor=>'ne');
-        $xx=$x-$width-$slideOffsetX-5 unless (defined $xx);
-        $yy=$y-$slideOffsetY+10 unless (defined $yy);
+
+        $xx=$x-$width-$slideOffsetX-$cornerOffset unless (defined $xx);
+        $yy=$y-$slideOffsetY+(2*$cornerOffset) unless (defined $yy);
 
     }
     elsif ($w->{'location'} eq 'topright') {
-        if ($slideOffsetX and $slideOffsetY) {
+        if ( $slideOffsetX or $slideOffsetY ) {
             $w->{'pointer'}->configure(-image => $w->{img_no});
         }
         else {
@@ -523,15 +529,18 @@ sub Popup {
         }
 
         $w->{'pointer'}->place(-in=>$w,
-            -relx=>0, -x=>$slideOffsetX + 2,
-            -rely=>1, -y=>$slideOffsetY - 2,
+#            -relx=>0, -x=>$slideOffsetX + 2,
+#            -rely=>1, -y=>$slideOffsetY - 2,
+            -relx=>0, -x=>2,
+            -rely=>1, -y=>-2,
             -bordermode=>'outside',
             -anchor=>'sw');
-        $xx=$x-$slideOffsetX+5 unless (defined $xx);
-        $yy=$y-$height-$slideOffsetY-5 unless (defined $yy);
+
+        $xx=$x-$slideOffsetX+$cornerOffset unless (defined $xx);
+        $yy=$y-$height-$slideOffsetY-$cornerOffset unless (defined $yy);
     }
     elsif ($w->{'location'} eq 'topleft') {
-        if ($slideOffsetX and $slideOffsetY) {
+        if ( $slideOffsetX or $slideOffsetY ) {
             $w->{'pointer'}->configure(-image => $w->{img_no});
         }
         else {
@@ -539,12 +548,15 @@ sub Popup {
         }
 
         $w->{'pointer'}->place(-in=>$w,
-            -relx=>1, -x=>$slideOffsetX - 2,
-            -rely=>1, -y=>$slideOffsetY - 2,
+#            -relx=>1, -x=>$slideOffsetX - 2,
+#            -rely=>1, -y=>$slideOffsetY - 2,
+            -relx=>1, -x=>-2,
+            -rely=>1, -y=>-2,
             -bordermode=>'outside',
             -anchor=>'se');
-        $xx=$x-$width-$slideOffsetX-5 unless (defined $xx);
-        $yy=$y-$height-$slideOffsetY-5 unless (defined $yy);
+
+        $xx=$x-$width-$slideOffsetX-$cornerOffset unless (defined $xx);
+        $yy=$y-$height-$slideOffsetY-$cornerOffset unless (defined $yy);
     }
 
     $w->{'pointer'}->raise;

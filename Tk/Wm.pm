@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/Wm.pm#12 $
+$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/Wm.pm#13 $
 
 use Tk::Submethods;
 
@@ -127,6 +127,8 @@ sub Popup
  my ($X,$Y) = AnchorAdjust($w->cget('-overanchor'),$rx,$ry,$rw,$rh);
  ($X,$Y)    = AnchorAdjust($w->cget('-popanchor'),$X,$Y,-$mw,-$mh);
  # adjust to not cross screen borders
+ if ($X < 0) { $X = 0 }
+ if ($Y < 0) { $Y = 0 }
  if ($mw > $w->screenwidth)  { $X = 0 }
  if ($mh > $w->screenheight) { $Y = 0 }
  $w->Post($X,$Y);

@@ -99,6 +99,7 @@ LangCallback *
 LangCopyCallback(sv)
 SV *sv;
 {
+ dTHXs;
  if (sv)
   SvREFCNT_inc(sv);
  return sv;

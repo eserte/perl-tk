@@ -1,7 +1,7 @@
 package Tk::DragDrop::Win32Site;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/Win32Site/Win32Site.pm#4 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/Win32Site/Win32Site.pm#5 $
 
 use Tk qw($XS_VERSION);
 require DynaLoader;
@@ -28,7 +28,7 @@ sub InitSite
 
 sub Win32Drop
 {
- print join(',',@_),"\n";
+ # print join(',',@_),"\n";
  my ($w,$site,$msg,$wParam,$lParam) = @_;
  my ($x,$y,@files) = DropInfo($wParam);
  my $cb = $site->{'-dropcommand'};
@@ -36,7 +36,7 @@ sub Win32Drop
   {
    foreach my $file (@files)
     {
-     print "$file @ $x,$y\n";
+     # print "$file @ $x,$y\n";
      $w->clipboardClear;
      $w->clipboardAppend('--',$file);
      $cb->Call('CLIPBOARD',$x,$y);

@@ -292,6 +292,7 @@ Tcl_DumpActiveMemory (CONST char *fileName)
 char *
 Tcl_Realloc(char *p, unsigned int size)
 {
+ dTHXs;
  if ((int) size < 0)
   abort();
  p = PerlMemShared_realloc(p,size*sizeof(char));
@@ -301,6 +302,7 @@ Tcl_Realloc(char *p, unsigned int size)
 char *
 Tcl_Alloc(unsigned int size)
 {
+ dTHXs;
  char *p;
  if ((int) size < 0)
   abort();
@@ -311,6 +313,7 @@ Tcl_Alloc(unsigned int size)
 void
 Tcl_Free(char *p)
 {
+ dTHXs;
  PerlMemShared_free(p);
 }
 

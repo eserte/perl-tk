@@ -5674,7 +5674,7 @@ TkWmProtocolEventProc(winPtr, eventPtr)
 	    Tcl_Preserve((ClientData) protPtr);
             interp = protPtr->interp;
             Tcl_Preserve((ClientData) interp);
-	    result = LangDoCallback(protPtr->interp, protPtr->command, 0, 0);
+	    result = LangDoCallback(protPtr->interp, protPtr->command, 0, 1, "%ld", eventPtr->xclient.data.l[1]);
 	    if (result != TCL_OK) {
 		Tcl_AddErrorInfo(interp, "\n    (command for \"");
 		Tcl_AddErrorInfo(interp, name);

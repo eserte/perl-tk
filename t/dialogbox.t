@@ -14,7 +14,7 @@ eval { require Tk::DialogBox };
 ok($@, "", "loading Tk::DialogBox module");
 
 my $top = new MainWindow;
-$top->withdraw;
+$top->withdraw unless $^O eq 'MSWin32';
 eval { $top->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 {

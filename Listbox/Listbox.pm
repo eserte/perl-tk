@@ -35,8 +35,9 @@
 
 package Tk::Listbox;
 
-use vars qw($VERSION);
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/Listbox/Listbox.pm#12 $
+use vars qw($VERSION @Selection $Prev);
+use strict;
+$VERSION = '4.012'; # $Id: //depot/Tkutf8/Listbox/Listbox.pm#13 $
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Clipboard ();
@@ -94,7 +95,13 @@ sub ClassInit
  my ($class,$mw) = @_;
  $class->SUPER::ClassInit($mw);
  # Standard Motif bindings:
- $mw->bind($class,'<1>',['BeginSelect',Ev('index',Ev('@'))]);
+ $mw->bind($class,'<1>',[sub {
+			   my $w = shift;
+			   if (Tk::Exists($w)) {
+			     $w->BeginSelect(@_);
+			   }
+			 }, Ev('index',Ev('@'))]);
+ $mw->bind($class, '<Double-1>' => \&Tk::NoOp);
  $mw->bind($class,'<B1-Motion>',['Motion',Ev('index',Ev('@'))]);
  $mw->bind($class,'<ButtonRelease-1>','ButtonRelease_1');
  ;
@@ -109,23 +116,26 @@ sub ClassInit
  $mw->bind($class,'<Shift-Down>',['ExtendUpDown',1]);
 
  $mw->XscrollBind($class);
- $mw->bind($class,'<Next>',  sub {
-	       my $w = shift;
-	       $w->yview('scroll',1,'pages');
-	       $w->activate('@0,0');
-	   });
  $mw->bind($class,'<Prior>', sub {
 	       my $w = shift;
 	       $w->yview('scroll',-1,'pages');
 	       $w->activate('@0,0');
 	   });
- $mw->MouseWheelBind($class);
+ $mw->bind($class,'<Next>',  sub {
+	       my $w = shift;
+	       $w->yview('scroll',1,'pages');
+	       $w->activate('@0,0');
+	   });
+ $mw->bind($class,'<Control-Prior>', ['xview', 'scroll', -1, 'pages']);
+ $mw->bind($class,'<Control-Next>',  ['xview', 'scroll',  1, 'pages']);
+ # <Home> and <End> defined in XscrollBind
  $mw->bind($class,'<Control-Home>','Cntrl_Home');
  ;
  $mw->bind($class,'<Shift-Control-Home>',['DataExtend',0]);
  $mw->bind($class,'<Control-End>','Cntrl_End');
  ;
  $mw->bind($class,'<Shift-Control-End>',['DataExtend','end']);
+ # XXX What about <<Copy>>? Already handled in Tk::Clipboard?
  # $class->clipboardOperations($mw,'Copy');
  $mw->bind($class,'<space>',['BeginSelect',Ev('index','active')]);
  $mw->bind($class,'<Select>',['BeginSelect',Ev('index','active')]);
@@ -139,11 +149,13 @@ sub ClassInit
  $mw->bind($class,'<2>',['scan','mark',Ev('x'),Ev('y')]);
  $mw->bind($class,'<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
 
+ $mw->MouseWheelBind($class); # XXX Both needed?
  $mw->YMouseWheelBind($class);
  return $class;
 }
 
-
+1;
+__END__
 
 sub TIEARRAY {
   my ( $class, $obj, %options ) = @_;
@@ -437,9 +449,6 @@ sub SPLICE {
 
 # ----
 
-1;
-__END__
-
 #
 # Bind --
 # This procedure is invoked the first time the mouse enters a listbox
@@ -475,7 +484,8 @@ sub Cntrl_Home
  $w->activate(0);
  $w->see(0);
  $w->selectionClear(0,'end');
- $w->selectionSet(0)
+ $w->selectionSet(0);
+ $w->eventGenerate("<<ListboxSelect>>");
 }
 
 
@@ -486,7 +496,8 @@ sub Cntrl_End
  $w->activate('end');
  $w->see('end');
  $w->selectionClear(0,'end');
- $w->selectionSet('end')
+ $w->selectionSet('end');
+ $w->eventGenerate("<<ListboxSelect>>");
 }
 
 
@@ -496,7 +507,8 @@ sub Cntrl_backslash
  my $Ev = $w->XEvent;
  if ($w->cget('-selectmode') ne 'browse')
  {
- $w->selectionClear(0,'end');
+  $w->selectionClear(0,'end');
+  $w->eventGenerate("<<ListboxSelect>>");
  }
 }
 
@@ -535,6 +547,7 @@ sub BeginSelect
    $Prev = $el
   }
  $w->focus if ($w->cget('-takefocus'));
+ $w->eventGenerate("<<ListboxSelect>>");
 }
 # Motion --
 #
@@ -553,17 +566,23 @@ sub Motion
   {
    return;
   }
- $anchor = $w->index('anchor');
+ my $anchor = $w->index('anchor');
  my $mode = $w->cget('-selectmode');
  if ($mode eq 'browse')
   {
    $w->selectionClear(0,'end');
    $w->selectionSet($el);
    $Prev = $el;
+   $w->eventGenerate("<<ListboxSelect>>");
   }
  elsif ($mode eq 'extended')
   {
-   $i = $Prev;
+   my $i = $Prev;
+   if (!defined $i || $i eq '')
+    {
+     $i = $el;
+     $w->selectionSet($el);
+    }
    if ($w->selectionIncludes('anchor'))
     {
      $w->selectionClear($i,$el);
@@ -574,13 +593,17 @@ sub Motion
      $w->selectionClear($i,$el);
      $w->selectionClear('anchor',$el)
     }
+   if (!@Selection)
+    {
+     @Selection = $w->curselection;
+    }
    while ($i < $el && $i < $anchor)
     {
      if (Tk::lsearch(\@Selection,$i) >= 0)
       {
        $w->selectionSet($i)
       }
-     $i += 1
+     $i++
     }
    while ($i > $el && $i > $anchor)
     {
@@ -588,9 +611,10 @@ sub Motion
       {
        $w->selectionSet($i)
       }
-     $i += -1
+     $i--
     }
-   $Prev = $el
+   $Prev = $el;
+   $w->eventGenerate("<<ListboxSelect>>");
   }
 }
 # BeginExtend --
@@ -611,6 +635,11 @@ sub BeginExtend
  if ($w->cget('-selectmode') eq 'extended' && $w->selectionIncludes('anchor'))
   {
    $w->Motion($el)
+  }
+ else
+  {
+   # No selection yet; simulate the begin-select operation.
+   $w->BeginSelect($el);
   }
 }
 # BeginToggle --
@@ -641,6 +670,7 @@ sub BeginToggle
     {
      $w->selectionSet($el)
     }
+   $w->eventGenerate("<<ListboxSelect>>");
   }
 }
 # AutoScan --
@@ -657,6 +687,7 @@ sub BeginToggle
 sub AutoScan
 {
  my $w = shift;
+ return if !Tk::Exists($w);
  my $x = shift;
  my $y = shift;
  if ($y >= $w->height)
@@ -697,19 +728,21 @@ sub UpDown
  my $amount = shift;
  $w->activate($w->index('active')+$amount);
  $w->see('active');
- $LNet__0 = $w->cget('-selectmode');
- if ($LNet__0 eq 'browse')
+ my $mode = $w->cget('-selectmode');
+ if ($mode eq 'browse')
   {
    $w->selectionClear(0,'end');
-   $w->selectionSet('active')
+   $w->selectionSet('active');
+   $w->eventGenerate("<<ListboxSelect>>");
   }
- elsif ($LNet__0 eq 'extended')
+ elsif ($mode eq 'extended')
   {
    $w->selectionClear(0,'end');
    $w->selectionSet('active');
    $w->selectionAnchor('active');
    $Prev = $w->index('active');
    @Selection = ();
+   $w->eventGenerate("<<ListboxSelect>>");
   }
 }
 # ExtendUpDown --
@@ -729,7 +762,13 @@ sub ExtendUpDown
   {
    return;
   }
- $w->activate($w->index('active')+$amount);
+ my $active = $w->index('active');
+ if (!@Selection)
+  {
+   $w->selectionSet($active);
+   @Selection = $w->curselection;
+  }
+ $w->activate($active + $amount);
  $w->see('active');
  $w->Motion($w->index('active'))
 }
@@ -747,7 +786,7 @@ sub DataExtend
 {
  my $w = shift;
  my $el = shift;
- $mode = $w->cget('-selectmode');
+ my $mode = $w->cget('-selectmode');
  if ($mode eq 'extended')
   {
    $w->activate($el);
@@ -779,13 +818,11 @@ sub Cancel
   {
    return;
   }
- $first = $w->index('anchor');
- $last = $Prev;
+ my $first = $w->index('anchor');
+ my $last = $Prev;
  if ($first > $last)
   {
-   $tmp = $first;
-   $first = $last;
-   $last = $tmp
+   ($first, $last) = ($last, $first);
   }
  $w->selectionClear($first,$last);
  while ($first <= $last)
@@ -794,8 +831,9 @@ sub Cancel
     {
      $w->selectionSet($first)
     }
-   $first += 1
+   $first++
   }
+ $w->eventGenerate("<<ListboxSelect>>");
 }
 # SelectAll
 #
@@ -818,8 +856,10 @@ sub SelectAll
   {
    $w->selectionSet(0,'end')
   }
+ $w->eventGenerate("<<ListboxSelect>>");
 }
 
+# Perl/Tk extensions:
 sub SetList
 {
  my $w = shift;

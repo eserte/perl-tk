@@ -198,7 +198,8 @@ demos 'Paned Windows', (
 );
 
 demos 'Photos and Images', (
-    'photo1'     => 'Transparent Photo pixels',
+    'photo1'     => 'Transparent pixels',
+    'photo2'     => 'Alpha channel compositing',
 );
 
 demos 'Menus', (
@@ -210,6 +211,7 @@ demos 'Menus', (
 demos 'Common Dialogs', (
     'msgBox'     => 'Message boxes',
     'filebox'    => 'File selection dialog',
+    'choosedir'  => 'Directory selection dialog',
     'clrpick'    => 'Color picker',
 );
 
@@ -217,10 +219,15 @@ demos 'Simulations', (
     'bounce'     => 'Balls bouncing in a cavity',
 );
 
+demos 'Pure Perl Mega-Widgets', (
+    'trace2'     => 'Derived Tk::TraceText - Text contents defined by a traced variable',
+);
+
 demos 'Miscellaneous', (
     'bitmaps'    => 'The built-in bitmaps',
     'dialog1'    => 'A dialog box with a local grab',
     'dialog2'    => 'A dialog box with a global grab',
+    'trace1'     => 'Trace a variable\'s value',
 );
 
 $T->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
@@ -251,7 +258,7 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n      2003/11/07",
+		       "\nTk Version $Tk::VERSION\n\n      2004/01/02",
 );
 $help->cget(-menu)->entryconfigure('About',
     -command => [$DIALOG_ABOUT => 'Show'],
@@ -336,7 +343,8 @@ sub see_code {
 
     my($demo) = @_;
 
-    my $file = "${demo}.pl";
+    my $file;
+    $file = ( $demo =~ /\.pl$/ ) ? $demo : "${demo}.pl";
     if (not Exists $CODE) {
 	$CODE = $MW->Toplevel;
 	my $code_buttons = $CODE->Frame;
@@ -363,8 +371,8 @@ sub see_code {
 	}
     });
     $CODE->iconname($file);
-    $file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
-    $file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
+    $file = "$WIDTRIB/$file" if -f "$WIDTRIB/$file";
+    $file = "$widget_lib/$file" if -f "$widget_lib/$file";
     $CODE->title("Demo code: $file");
     $CODE_TEXT->delete(qw/1.0 end/);
     open(CODE, "<$file") or warn "Cannot open demo file $file: $!";

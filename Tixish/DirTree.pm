@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tixish/DirTree.pm#9 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tixish/DirTree.pm#10 $
 
 use Tk;
 use Tk::Derived;
@@ -156,6 +156,81 @@ sub dirnames {
     my( $w, $dir ) = @_;
     my @names = $w->Callback( '-dircmd', $dir, $w->cget( '-showhidden' ) );
     return( @names );
+}
+
+{
+    package Tk::DirTreeDialog;
+    use base qw(Tk::Toplevel);
+    Construct Tk::Widget 'DirTreeDialog';
+
+    sub Populate {
+	my($w, $args) = @_;
+	$w->{curr_dir} = $args->{-initialdir};
+	if (!defined $w->{curr_dir}) {
+	    require Cwd;
+	    $w->{curr_dir} = Cwd::cwd();
+	}
+	if (defined $args->{-mustexist}) {
+	    die "-mustexist is not yet implemented";
+	}
+	my $title = $args->{-title} || "Choose directory:";
+	delete $args->{-popover};
+
+	$w->title($title);
+	$w->{ok} = 0; # flag: "1" means OK, "-1" means cancelled
+
+	# Create Frame widget before the DirTree widget, so it's always visible
+	# if the window gets resized.
+	my $f = $w->Frame->pack(-fill => "x", -side => "bottom");
+
+	my $d;
+	$d = $f->Scrolled('DirTree',
+			  -scrollbars => 'osoe',
+			  -width => 35,
+			  -height => 20,
+			  -selectmode => 'browse',
+			  -exportselection => 1,
+			  -browsecmd => sub {
+			      $w->{curr_dir} = shift;
+			      if ($^O ne 'MSWin32') {
+				  $w->{curr_dir} =~ s|^//|/|; # bugfix
+			      }
+			  },
+
+			  # With this version of -command a double-click will
+			  # select the directory
+			  -command   => sub { $w->{ok} = 1 },
+
+			  # With this version of -command a double-click will
+			  # open a directory. Selection is only possible with
+			  # the Ok button.
+			  #-command   => sub { $d->opencmd($_[0]) },
+			 )->pack(-fill => "both", -expand => 1);
+	# Set the initial directory
+	exists &Tk::DirTree::chdir ? $d->chdir($w->{curr_dir}) : $d->set_dir($w->{curr_dir});
+
+	$f->Button(-text => 'Ok',
+		   -command => sub { $w->{ok} =  1 })->pack(-side => 'left');
+	$f->Button(-text => 'Cancel',
+		   -command => sub { $w->{ok} = -1 })->pack(-side => 'left');
+	$w->OnDestroy(sub { $w->{ok} = -1 });
+    }
+
+    sub Show {
+	my $w = shift;
+	my $old_focus = $w->focusSave;
+	my $old_grab = $w->grabSave;
+	Tk::catch {
+	    $w->grab;
+	};
+	$w->waitVariable(\$w->{ok});
+	my $ret = $w->{ok} == 1 ? $w->{curr_dir} : undef;
+	$w->grabRelease if Tk::Exists($w);
+	&$old_focus;
+	&$old_grab;
+	$w->destroy if Tk::Exists($w);
+	$ret;
+    }
 }
 
 __END__

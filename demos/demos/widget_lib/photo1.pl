@@ -1,8 +1,6 @@
-# Transparent Photo pixels
+# photo1.pl
 
 use vars qw/$TOP/;
-
-use Tk::PNG;
 
 sub photo1 {
 
@@ -10,14 +8,14 @@ sub photo1 {
 
     $TOP = $MW->WidgetDemo(
         -name             => $demo,
-        -text             => 'This demonstration displays a picture of a flower on a green background for two seconds, the proceeeds to make a 50 x 50 pixel rectangular area transparent so that the green background shows through.',
-        -title            => 'Photo Transparency',
+        -text             => 'This demonstration displays, for two seconds, a picture of a teapot over a green background, then proceeeds to render transparent a 50 x 50 pixel area of the teapot so that the green background shows through.',
+        -title            => 'Transparent Pixels',
         -iconname         => 'photo1',
     );
 
-    my $l = $TOP->Label( qw/ -background green -width 500 -height 350 / )->pack;
+    my $l = $TOP->Label( qw/ -background green -width 300 -height 300 / )->pack;
 
-    my $f1 = $TOP->Photo( -file => Tk->findINC('demos/images') . '/flower2.png' );
+    my $f1 = $TOP->Photo( -file => Tk->findINC( 'demos/images/teapot.ppm' ) );
     $l->configure( -image => $f1 );
     $TOP->idletasks;
     $TOP->after(2000);
