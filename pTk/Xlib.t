@@ -93,7 +93,7 @@ VFUNC(GC,XCreateGC,V_XCreateGC,_ANSI_ARGS_((Display *, Drawable, long unsigned i
 #endif
 
 #ifndef XCreateGlyphCursor
-VFUNC(Cursor,XCreateGlyphCursor,V_XCreateGlyphCursor,_ANSI_ARGS_((Display *, Font, Font, unsigned int, unsigned int, XColor *, XColor *)))
+VFUNC(Cursor,XCreateGlyphCursor,V_XCreateGlyphCursor,_ANSI_ARGS_((Display *, Font, Font, unsigned int, unsigned int, XColor const *, XColor const *)))
 #endif
 
 #ifndef XCreateImage
@@ -439,6 +439,10 @@ VFUNC(int,XRaiseWindow,V_XRaiseWindow,_ANSI_ARGS_((Display *, Window)))
 VFUNC(int,XReadBitmapFile,V_XReadBitmapFile,_ANSI_ARGS_((Display *, Drawable, const char *, unsigned int *, unsigned int *, Pixmap *, int *, int *)))
 #endif
 #endif /* !DO_X_EXCLUDE */
+
+#ifndef XRectInRegion
+VFUNC(int,XRectInRegion,V_XRectInRegion,_ANSI_ARGS_(( Region,int,int,unsigned,unsigned)))
+#endif
 
 #ifndef XRefreshKeyboardMapping
 VFUNC(int,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((XMappingEvent *)))

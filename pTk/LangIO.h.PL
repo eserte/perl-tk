@@ -41,7 +41,7 @@ push(@cinc,$Config{'usrinc'});
 foreach $dir (@cinc)
  {
   my $inc = "$dir/stdio.h";
-  if (open(INC,"<$inc")) 
+  if (open(INC,"<$inc"))
    {
     my $gard;
     while (<INC>)
@@ -53,7 +53,7 @@ foreach $dir (@cinc)
        }
      }
     while (<INC>)
-     { 
+     {
       if (/^#define\s+$gard/o)
        {
         warn "stdio.h garded with $gard\n";
@@ -71,7 +71,7 @@ foreach $dir (@cinc)
      {
       warn "Cannot find #include gard in $inc\n";
      }
-    last; 
+    last;
    }
   else
    {
@@ -101,6 +101,7 @@ foreach (@gard)
   print H "#define $_\n";
  }
 print H <<'END';
+#define _FILEDEFED
 #undef FILE
 struct _FILE;
 #define FILE struct _FILE

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCmds.c --
  *
  *	This file contains a collection of Tk-related Tcl commands
@@ -141,12 +141,12 @@ Tk_BindCmd(clientData, interp, argc, argv)
 	    append = 1;
 	}
 	mask = Tk_CreateBinding(interp, winPtr->mainPtr->bindingTable,
-		object, argv[2], args[3], append);
+		object, argv[2], objv[3], append);
 	if (mask == 0) {
 	    return TCL_ERROR;
 	}
     } else if (argc == 3) {
-	Arg command;
+	Tcl_Obj *command;
 
 	command = Tk_GetBinding(interp, winPtr->mainPtr->bindingTable,
 		object, argv[2]);
@@ -154,8 +154,7 @@ Tk_BindCmd(clientData, interp, argc, argv)
 	    Tcl_ResetResult(interp);
 	    return TCL_OK;
 	}
-	Tcl_ArgResult(interp,command);
-	Tcl_DecrRefCount(command);
+	Tcl_SetObjResult(interp,command);
     } else {
 	Tk_GetAllBindings(interp, winPtr->mainPtr->bindingTable, object);
     }
@@ -312,9 +311,9 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     if (argv[2][0] == 0) {
 	return TCL_OK;
     }
-    if (Tcl_ListObjGetElements(interp, args[2], &tagArgc, &tagArgv) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, objv[2], &tagArgc, &tagArgv) != TCL_OK) {
 	return TCL_ERROR;
-    }            
+    }
     winPtr->numTags = tagArgc;
     winPtr->tagPtr = (ClientData *) ckalloc((unsigned)
 	    (tagArgc * sizeof(ClientData)));
@@ -372,7 +371,7 @@ TkFreeBindingTags(winPtr)
 	     * Names starting with "." are malloced rather than Uids, so
 	     * they have to be freed.
 	     */
-    
+
 	    ckfree(p);
 	}
     }
@@ -606,7 +605,7 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 	    Screen *screenPtr;
 	    int skip, width, height;
 	    double d;
-	    
+	
 	    screenPtr = Tk_Screen(tkwin);
 
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
@@ -627,7 +626,7 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 		if (width <= 0) {
 		    width = 1;
 		}
-		height = (int) (d * HeightOfScreen(screenPtr) + 0.5); 
+		height = (int) (d * HeightOfScreen(screenPtr) + 0.5);
 		if (height <= 0) {
 		    height = 1;
 		}
@@ -684,7 +683,7 @@ Tk_TkwaitCmd(clientData, interp, argc, argv)
     if ((c == 'v') && (strncmp(argv[1], "variable", length) == 0)
 	    && (length >= 2)) {
         Var variable;
-        if (LangSaveVar(interp,args[2],&variable,TK_CONFIG_SCALARVAR) != TCL_OK)
+        if (LangSaveVar(interp,objv[2],&variable,TK_CONFIG_SCALARVAR) != TCL_OK)
 	    return TCL_ERROR;
 	if (Tcl_TraceVar(interp, variable,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
@@ -957,7 +956,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
     };
 
     tkwin = (Tk_Window) clientData;
-    
+
     if (objc < 2) {
 	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg?");
 	return TCL_ERROR;
@@ -993,8 +992,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    Tcl_ResetResult(interp);
 	    winPtr = winPtr->childList;
 	    for ( ; winPtr != NULL; winPtr = winPtr->nextPtr) {
-		strPtr = LangWidgetArg(interp,(Tk_Window) winPtr);
-		Tcl_IncrRefCount(strPtr);  /* CHECK REFCNT */
+		strPtr = LangWidgetObj(interp,(Tk_Window) winPtr);
 		Tcl_ListObjAppendElement(NULL,
 		     Tcl_GetObjResult(interp), strPtr);
 	    }
@@ -1057,7 +1055,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	case WIN_PARENT: {
 	    Tcl_ResetResult(interp);
 	    if (winPtr->parentPtr != NULL) {
-		Tcl_ArgResult(interp, LangWidgetArg(interp, (Tk_Window) winPtr->parentPtr)); 
+		Tcl_SetObjResult(interp, LangWidgetObj(interp, (Tk_Window) winPtr->parentPtr));
 	    }
 	    break;
 	}
@@ -1170,7 +1168,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    winPtr = GetToplevel(tkwin);
 	    if (winPtr != NULL) {
 		Tcl_ResetResult(interp);
-		Tcl_ArgResult(interp, LangWidgetArg(interp, (Tk_Window) winPtr)); 
+		Tcl_SetObjResult(interp, LangWidgetObj(interp, (Tk_Window) winPtr));
 	    }
 	    break;
 	}
@@ -1253,7 +1251,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	/*
 	 * Uses -displayof.
 	 */
-	 
+	
 	case WIN_ATOM: {
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
@@ -1273,7 +1271,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	case WIN_ATOMNAME: {
 	    char *name;
 	    long id;
-	    
+	
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
 		return TCL_ERROR;
@@ -1319,13 +1317,13 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    tkwin = Tk_CoordsToWindow(x, y, tkwin);
 	    if (tkwin != NULL) {
 		Tcl_ResetResult(interp);
-		Tcl_ArgResult(interp, LangWidgetArg(interp, tkwin));
+		Tcl_SetObjResult(interp, LangWidgetObj(interp, tkwin));
 	    }
 	    break;
 	}
 	case WIN_INTERPS: {
 	    int result;
-	    
+	
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
 		return TCL_ERROR;
@@ -1372,7 +1370,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    tkwin = (Tk_Window) winPtr;
 	    if (Tk_PathName(tkwin) != NULL) {
 		Tcl_ResetResult(interp);
-		Tcl_ArgResult(interp, LangWidgetArg(interp,tkwin));
+		Tcl_SetObjResult(interp, LangWidgetObj(interp,tkwin));
 	    }
 	    break;
 	}
@@ -1422,7 +1420,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	}
 	case WIN_PIXELS: {
 	    int pixels;
-	    
+	
 	    if (objc != 4) {
 		Tcl_WrongNumArgs(interp, 2, objv, "window number");
 		return TCL_ERROR;
@@ -1481,9 +1479,9 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    }
 
 	    string = Tcl_GetStringFromObj(objv[2], NULL);
-	    tkwin = Tk_NameToWindow(interp, string, tkwin); 
-	    if (tkwin == NULL) { 
-		return TCL_ERROR; 
+	    tkwin = Tk_NameToWindow(interp, string, tkwin);
+	    if (tkwin == NULL) {
+		return TCL_ERROR;
 	    }
 
 	    template.screen = Tk_ScreenNumber(tkwin);
@@ -1561,7 +1559,7 @@ TkGetDisplayOf(interp, objc, objv, tkwinPtr)
 {
     char *string;
     int length;
-    
+
     if (objc < 1) {
 	return 0;
     }

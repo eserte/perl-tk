@@ -456,7 +456,9 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
       }
      else
       {
-       sv_setsv(sv,MakeReference((SV *) av));
+       SV *ref = MakeReference((SV *) av);
+       sv_setsv(sv,ref);
+       SvREFCNT_dec(ref);
       }
      return (AV *) SvRV(sv);
     }
@@ -468,6 +470,8 @@ Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    Tcl_Obj *objPtr)
 {
  AV *av = ForceList(interp,listPtr);
+ if (!objPtr)
+  objPtr = &PL_sv_undef;
  if (av)
   {
    av_push(av, objPtr);

@@ -425,11 +425,18 @@ PerlIOHandler *filePtr;
    PerlIO *io = IoIFP(filePtr->io);
    if (io)
     {
-     /* Turn this buffer stuff off for now */
-     if (0 && PerlIO_has_cntptr(io) && PerlIO_get_cnt(io) > 0)
+#ifdef PERLIO_LAYERS
+     if (PerlIO_has_cntptr(io) && PerlIO_get_cnt(io) > 0)
       {
        filePtr->readyMask |= TCL_READABLE;
       }
+#else
+     /* Turn this buffer stuff off for now */
+     if (PerlIO_has_cntptr(io) && PerlIO_get_cnt(io) > 0)
+      {
+       filePtr->readyMask |= TCL_READABLE;
+      }
+#endif
     }
   }
  return (filePtr->readyMask & TCL_READABLE);
@@ -492,7 +499,7 @@ int		mask;
 }
 
 void
-PerlIO_debug(filePtr,s)
+TkPerlIO_debug(filePtr,s)
 PerlIOHandler *filePtr;
 char *s;
 {
@@ -774,7 +781,7 @@ LangCallback *cb;
       croak("Invalid handler type %d",mask);
     }
   }
- return (cb) ? LangCallbackArg(cb) : &PL_sv_undef;
+ return (cb) ? LangCallbackObj(cb) : &PL_sv_undef;
 }
 
 void
@@ -1106,14 +1113,18 @@ Const_IDLE_EVENTS()
 IV
 Const_ALL_EVENTS()
 
-MODULE = Tk::Event	PACKAGE = Tk::Event::IO	PREFIX = PerlIO_
+MODULE = Tk::Event	PACKAGE = Tk::Event::IO	PREFIX = TkPerlIO_
 
 PROTOTYPES: DISABLE
 
 void
-PerlIO_debug(filePtr,s)
+TkPerlIO_debug(filePtr,s)
 PerlIOHandler *	filePtr
 char *	s
+
+MODULE = Tk::Event	PACKAGE = Tk::Event::IO	PREFIX = PerlIO_
+
+PROTOTYPES: DISABLE
 
 SV *
 PerlIO_TIEHANDLE(class,fh,mask = 0)

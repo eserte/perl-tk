@@ -10,7 +10,7 @@ my %opt;
 getopts("mlce:",\%opt);
 
 my $expr = (defined $opt{'e'}) ? $opt{'e'} : shift;
-print "Matching '$expr'\n";
+warn "Matching '$expr'\n";
 
 my $count = 0;
 

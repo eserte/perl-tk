@@ -50,10 +50,6 @@
 #  define ImgReadInit (*ImgintVptr->V_ImgReadInit)
 #endif
 
-#ifndef ImgSeek
-#  define ImgSeek (*ImgintVptr->V_ImgSeek)
-#endif
-
 #ifndef ImgWrite
 #  define ImgWrite (*ImgintVptr->V_ImgWrite)
 #endif

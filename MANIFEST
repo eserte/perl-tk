@@ -122,6 +122,7 @@ README.OpenBSD
 README.SCO
 README.SVR4
 README.Solaris
+README.cygwin
 README.linux
 README.os2
 README.ultrix
@@ -229,6 +230,7 @@ Tk/Tiler.pm
 Tk/Tk.xbm
 Tk/Tk.xpm
 Tk/Toplevel.pm
+Tk/Trace.pm
 Tk/Widget.pm
 Tk/Wm.pm
 Tk/X11Font.pm
@@ -488,6 +490,7 @@ labelpack
 lbformat_demo
 leak_test
 lentry
+lib/Tie/Watch.pm
 linux-progbar-toy
 local_demo
 ls_table
@@ -545,6 +548,7 @@ pTk/config/Hstrdup.c
 pTk/config/Hstrtoul.c
 pTk/config/Xdummy.c
 pTk/counts
+pTk/deArg
 pTk/defs
 pTk/fakeld
 pTk/findX
@@ -585,6 +589,8 @@ pTk/mTk/additions/imgWindow.c
 pTk/mTk/additions/imgXBM.c
 pTk/mTk/additions/imgXPM.c
 pTk/mTk/additions/pTk.exc
+pTk/mTk/additions/port.h
+pTk/mTk/additions/tkAppInit.c
 pTk/mTk/generic/README
 pTk/mTk/generic/default.h
 pTk/mTk/generic/ks_names.h
@@ -1125,6 +1131,7 @@ pTk/mkmethods
 pTk/mkneed
 pTk/p4e
 pTk/patchlevel.h
+pTk/port.h
 pTk/process_object
 pTk/ptkCanvGrid.c
 pTk/ptkCanvGroup.c

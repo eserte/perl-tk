@@ -300,6 +300,9 @@ ImgFixChanMatchProc(interp, chan, file, format, width, height)
     }
     if (initialized & IMG_OBJS) {
 	tmp = (Tcl_Interp *) *height;
+	if (tmp->result != ((Interp *) tmp)->resultSpace) {
+	    return;
+	}
     } else {
 	tmp = (Tcl_Interp *) NULL;
     }
@@ -330,6 +333,9 @@ ImgFixObjMatchProc(interp, data, format, width, height)
     }
     if (initialized & IMG_OBJS) {
 	tmp = (Tcl_Interp *) *height;
+	if (tmp->result != ((Interp *) tmp)->resultSpace) {
+	    return;
+	}
     } else {
 	tmp = (Tcl_Interp *) NULL;
     }

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkTextDisp.c --
  *
  *	This module provides facilities to display text widgets.  It is
@@ -1089,7 +1089,7 @@ LayoutDLine(textPtr, indexPtr)
 	    (*breakChunkPtr->undisplayProc)(textPtr, breakChunkPtr);
 	    segPtr = TkTextIndexToSeg(&breakIndex, &offset);
 	    (*segPtr->typePtr->layoutProc)(textPtr, &breakIndex,
-		    segPtr, offset, maxX, breakCharOffset, 0, 
+		    segPtr, offset, maxX, breakCharOffset, 0,
 		    wrapMode, breakChunkPtr);
 	}
 	lastChunkPtr = breakChunkPtr;
@@ -1475,7 +1475,7 @@ UpdateDisplayInfo(textPtr)
 		panic("Added too many new lines in UpdateDisplayInfo");
 	    }
 	    dlPtr->y = y;
-	    y += dlPtr->height; 
+	    y += dlPtr->height;
 	}
     }
 
@@ -1852,7 +1852,7 @@ DisplayLineBackground(textPtr, dlPtr, prevPtr, pixmap)
      * assignment was replaced with 0 on 6/18/97.  This has the effect
      * of highlighting the empty space to the left of a line whenever
      * the leftmost character of the line is highlighted.  This way,
-     * multi-line highlights always line up along their left edges. 
+     * multi-line highlights always line up along their left edges.
      * However, this may look funny in the case where a single word is
      * highlighted. To undo the change, replace "leftX = 0" with "leftX
      * = chunkPtr->x" and "rightX2 = 0" with "rightX2 = nextPtr2->x"
@@ -2363,7 +2363,7 @@ DisplayText(clientData)
 		textPtr->borderWidth, textPtr->relief);
 	if (textPtr->highlightWidth != 0) {
 	    GC gc;
-    
+
 	    if (textPtr->flags & GOT_FOCUS) {
 		gc = Tk_GCForColor(textPtr->highlightColorPtr,
 			Tk_WindowId(textPtr->tkwin));
@@ -2503,7 +2503,7 @@ DisplayText(clientData)
      * important to clear REDRAW_PENDING here, just in case the
      * scroll procedure does something that requires redisplay.
      */
-    
+
     if (textPtr->flags & UPDATE_SCROLLBARS) {
 	textPtr->flags &= ~UPDATE_SCROLLBARS;
 	if (textPtr->yScrollCmd != NULL) {
@@ -2815,7 +2815,7 @@ TkTextRedrawTag(textPtr, index1Ptr, index2Ptr, tagPtr, withTag)
 		TkBTreeNumLines(textPtr->tree), 0, &endOfText);
     }
 
-    /* 
+    /*
      * Initialize a search through all transitions on the tag, starting
      * with the first transition where the tag's current state is different
      * from what it will eventually be.
@@ -3173,7 +3173,7 @@ TkTextSetYView(textPtr, indexPtr, pickPlace)
  *	on a display line.  The display line is found by measuring
  *	up "distance" pixels above the pixel just below an imaginary
  *	display line that contains srcPtr.  If the display line
- *	that covers this coordinate actually extends above the 
+ *	that covers this coordinate actually extends above the
  *	coordinate, then return the index of the next lower line
  *	instead (i.e. the returned index will be completely visible
  *	at or below the given y-coordinate).
@@ -3532,14 +3532,14 @@ ScrollByLines(textPtr, offset)
 	     * Discard the display lines, then either return or prepare
 	     * for the next display line to lay out.
 	     */
-    
+
 	    FreeDLines(textPtr, lowestPtr, (DLine *) NULL, 0);
 	    if (offset >= 0) {
 		goto scheduleUpdate;
 	    }
 	    charsToCount = INT_MAX;
 	}
-    
+
 	/*
 	 * Ran off the beginning of the text.  Return the first character
 	 * in the text.
@@ -3610,7 +3610,7 @@ TkTextYviewCmd(textPtr, interp, argc, argv)
     double fraction;
     TkTextIndex index, new;
     TkTextLine *lastLinePtr;
-    DLine *dlPtr;            
+    DLine *dlPtr;
 
     if (dInfoPtr->flags & DINFO_OUT_OF_DATE) {
 	UpdateDisplayInfo(textPtr);
@@ -3639,19 +3639,19 @@ TkTextYviewCmd(textPtr, interp, argc, argv)
 	    }
 	}
     }
-    if ((argc == 3) || pickPlace) {  
+    if ((argc == 3) || pickPlace) {
 	/* FIXME: Disable integer form altogether ??? */
-	if (!strchr(LangString(args[2+pickPlace]),'.') &&
+	if (!strchr(LangString(objv[2+pickPlace]),'.') &&
 	    Tcl_GetInt(interp, argv[2+pickPlace], &lineNum) == TCL_OK) {
 	    TkTextMakeIndex(textPtr->tree, lineNum, 0, &index);
 	    TkTextSetYView(textPtr, &index, 0);
 	    return TCL_OK;
 	}
-    
+
 	/*
 	 * The argument must be a regular text index.
 	 */
-    
+
 	Tcl_ResetResult(interp);
 	if (TkTextGetIndex(interp, textPtr, argv[2+pickPlace],
 		&index) != TCL_OK) {
@@ -4364,7 +4364,7 @@ ElideBboxProc(chunkPtr, index, y, lineHeight, baseline, xPtr, yPtr,
     int baseline;			/* Location of line's baseline, in
 					 * pixels measured down from y. */
     int *xPtr, *yPtr;			/* Gets filled in with coords of
-					 * character's upper-left pixel. 
+					 * character's upper-left pixel.
 					 * X-coord is in same coordinate
 					 * system as chunkPtr->x. */
     int *widthPtr;			/* Gets filled in with width of
@@ -4630,7 +4630,7 @@ CharDisplayProc(chunkPtr, x, y, height, baseline, display, dst, screenY)
 	}
 	if (sValuePtr->overstrike) {
 	    Tk_FontMetrics fm;
-	    
+	
 	    Tk_GetFontMetrics(sValuePtr->tkfont, &fm);
 	    Tk_UnderlineChars(display, dst, stylePtr->fgGC, sValuePtr->tkfont,
 		    ciPtr->chars + offsetChars, offsetX,
@@ -4736,7 +4736,7 @@ CharBboxProc(chunkPtr, index, y, lineHeight, baseline, xPtr, yPtr,
     int baseline;			/* Location of line's baseline, in
 					 * pixels measured down from y. */
     int *xPtr, *yPtr;			/* Gets filled in with coords of
-					 * character's upper-left pixel. 
+					 * character's upper-left pixel.
 					 * X-coord is in same coordinate
 					 * system as chunkPtr->x. */
     int *widthPtr;			/* Gets filled in with width of
@@ -4768,7 +4768,7 @@ CharBboxProc(chunkPtr, index, y, lineHeight, baseline, xPtr, yPtr,
 
 	*widthPtr = maxX - *xPtr;
     } else {
-	MeasureChars(chunkPtr->stylePtr->sValuePtr->tkfont, 
+	MeasureChars(chunkPtr->stylePtr->sValuePtr->tkfont,
 		ciPtr->chars + index, 1, *xPtr, 1000000, 0, widthPtr);
 	if (*widthPtr > maxX) {
 	    *widthPtr = maxX - *xPtr;
@@ -4932,7 +4932,7 @@ AdjustForTab(textPtr, tabArrayPtr, index, chunkPtr)
 	/*
 	 * There wasn't a decimal point.  Right justify the text.
 	 */
-    
+
 	width = 0;
 	for (chunkPtr2 = chunkPtr->nextPtr; chunkPtr2 != NULL;
 		chunkPtr2 = chunkPtr2->nextPtr) {
@@ -5144,7 +5144,7 @@ NextTabStop(tkfont, x, tabOrigin)
 				 * non-zero if text has been scrolled. */
 {
     int tabWidth, rem;
-    
+
     tabWidth = Tk_TextWidth(tkfont, "0", 1) * 8;
     if (tabWidth == 0) {
 	tabWidth = 1;
@@ -5174,7 +5174,7 @@ NextTabStop(tkfont, x, tabOrigin)
  *
  *	If a newline is encountered in the string, the line will be
  *	broken at that point, unless the TK_NEWSLINES_NOT_SPECIAL flag
- *	is specified.  
+ *	is specified.
  *
  * Results:
  *	The return value is the number of characters from source

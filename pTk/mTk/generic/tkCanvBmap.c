@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvBmap.c --
  *
  *	This file implements bitmap items for canvas widgets.
@@ -187,7 +187,7 @@ CreateBitmap(interp, canvas, itemPtr, argc, argv)
     if (argc==1) {
 	i = 1;
     } else {
-	char *arg = Tcl_GetStringFromObj(args[1], NULL);
+	char *arg = Tcl_GetStringFromObj(objv[1], NULL);
 	if (((argc>1) && (arg[0] == '-')
 		&& (arg[1] >= 'a') && (arg[1] <= 'z'))) {
 	    i = 1;
@@ -277,7 +277,7 @@ BitmapCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if (argc <3) {
 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &argv) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &argv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 2) {
 		sprintf(x,"%d",argc);
@@ -286,8 +286,8 @@ BitmapCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, args[0], &bmapPtr->x) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[1], &bmapPtr->y)
+	if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0], &bmapPtr->x) != TCL_OK)
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1], &bmapPtr->y)
  		    != TCL_OK)) {
 	    return TCL_ERROR;
 	}
@@ -676,7 +676,7 @@ DisplayBitmap(canvas, itemPtr, display, drawable, x, y, width, height)
 	 * to line up with the bitmap's origin (in order to make
 	 * bitmaps with "-background {}" work right).
 	 */
- 
+
 	XSetClipOrigin(display, bmapPtr->gc, drawableX - bmapX,
 		drawableY - bmapY);
 	XCopyPlane(display, bitmap, drawable,

@@ -61,7 +61,10 @@ BEGIN
 	)
    );
 
-   @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32');
+   require Tk if ($^O eq 'cygwin');
+   @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32' or
+			    ($^O eq 'cygwin' and defined($Tk::platform)
+					     and $Tk::platform eq 'MSWin32'));
 
    plan test => (13*@class+3);
 

@@ -327,10 +327,10 @@ TkCreateFrame(clientData, interp, argc, argv, toplevel, appName)
 	    screenName = argv[i+1];
 	} else if ((c == 'u') && toplevel
 		&& (strncmp(arg, "-use", strlen(arg)) == 0)) {
-	    useOption = args[i+1];
+	    useOption = objv[i+1];
 	} else if ((c == 'v')
 		&& (strncmp(arg, "-visual", strlen(arg)) == 0)) {
-	    visualName = args[i+1];
+	    visualName = objv[i+1];
 	}
     }
 

@@ -6,8 +6,8 @@
 #  define LangCallCallback (*TkeventVptr->V_LangCallCallback)
 #endif
 
-#ifndef LangCallbackArg
-#  define LangCallbackArg (*TkeventVptr->V_LangCallbackArg)
+#ifndef LangCallbackObj
+#  define LangCallbackObj (*TkeventVptr->V_LangCallbackObj)
 #endif
 
 #ifndef LangCmpCallback
@@ -28,6 +28,10 @@
 
 #ifndef LangMakeCallback
 #  define LangMakeCallback (*TkeventVptr->V_LangMakeCallback)
+#endif
+
+#ifndef LangOldCallbackArg
+#  define LangOldCallbackArg (*TkeventVptr->V_LangOldCallbackArg)
 #endif
 
 #ifndef LangPushCallbackArgs

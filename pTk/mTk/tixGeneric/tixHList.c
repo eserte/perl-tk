@@ -1,4 +1,4 @@
-/* 
+/*
  * tixHList.c --
  *
  *	This module implements "HList" widgets.
@@ -57,7 +57,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_CALLBACK, "-dragcmd", "dragCmd", "DragCmd",
 	DEF_HLIST_DRAG_COMMAND, Tk_Offset(WidgetRecord, dragCmd),
 	TK_CONFIG_NULL_OK},
- 
+
     {TK_CONFIG_BOOLEAN, "-drawbranch", "drawBranch", "DrawBranch",
        DEF_HLIST_DRAW_BRANCH, Tk_Offset(WidgetRecord, drawBranch), 0},
 
@@ -165,7 +165,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_CALLBACK, "-sizecmd", "sizeCmd", "SizeCmd",
        DEF_HLIST_SIZE_COMMAND, Tk_Offset(WidgetRecord, sizeCmd),
        TK_CONFIG_NULL_OK},
- 
+
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_HLIST_TAKE_FOCUS, Tk_Offset(WidgetRecord, takeFocus),
 	TK_CONFIG_NULL_OK},
@@ -221,7 +221,7 @@ static void		WidgetDisplay _ANSI_ARGS_((ClientData clientData));
 	/* Extra procedures for this widget
 	 */
 static HListElement *	AllocElement _ANSI_ARGS_((WidgetPtr wPtr,
-			    HListElement * parent, char * pathName, 
+			    HListElement * parent, char * pathName,
 			    char * name, char * ditemType));
 static void		AppendList _ANSI_ARGS_((WidgetPtr wPtr,
 			    HListElement *parent, HListElement *chPtr, int at,
@@ -238,7 +238,7 @@ static void		ComputeElementGeometry _ANSI_ARGS_((WidgetPtr wPtr,
 static void		ComputeOneElementGeometry _ANSI_ARGS_((WidgetPtr wPtr,
 			    HListElement *chPtr, int indent));
 static int		ConfigElement _ANSI_ARGS_((WidgetPtr wPtr,
-			    HListElement *chPtr, int argc, char ** argv, 
+			    HListElement *chPtr, int argc, char ** argv,
 			    int flags, int forced));
 static int		CurSelection _ANSI_ARGS_((Tcl_Interp * interp,
 			    WidgetPtr wPtr, HListElement * chPtr));
@@ -251,7 +251,7 @@ static void		DeleteSiblings _ANSI_ARGS_((WidgetPtr wPtr,
 static void		DrawElements _ANSI_ARGS_((WidgetPtr wPtr,
 			    Pixmap pixmap, GC gc, HListElement * chPtr,
 			    int x, int y, int xOffset));
-static void		DrawOneElement _ANSI_ARGS_((WidgetPtr wPtr, 
+static void		DrawOneElement _ANSI_ARGS_((WidgetPtr wPtr,
 			    Pixmap pixmap, GC gc, HListElement * chPtr,
 			    int x, int y, int xOffset));
 static HListElement *	FindElementAtPosition _ANSI_ARGS_((WidgetPtr wPtr,
@@ -580,7 +580,7 @@ WidgetCommand(clientData, interp, argc, argv)
 }
 
 /*----------------------------------------------------------------------
- * "add" sub command -- 
+ * "add" sub command --
  *
  *	Add a new item into the list
  *----------------------------------------------------------------------
@@ -840,7 +840,7 @@ Tix_HLDelete(clientData, interp, argc, argv)
 
 wrong_arg:
 
-    Tcl_AppendResult(interp, 
+    Tcl_AppendResult(interp,
 	"wrong # of arguments, should be pathName delete ", argv[0],
 	" entryPath", NULL);
     return TCL_ERROR;
@@ -871,7 +871,7 @@ Tix_HLEntryCget(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
     if (chPtr->col[0].iPtr == NULL) {
-	Tcl_AppendResult(interp, "Item \"", argv[0], 
+	Tcl_AppendResult(interp, "Item \"", argv[0],
 	    "\" does not exist", (char*)NULL);
 	return TCL_ERROR;
     }
@@ -1028,7 +1028,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListElement * chPtr;
     size_t len = strlen(argv[0]);
-    
+
     if (strncmp(argv[0], "anchor", len)==0) {
 	if (wPtr->anchor) {
 	    Tcl_AppendResult(interp, wPtr->anchor->pathName, NULL);
@@ -1073,8 +1073,8 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	if ((chPtr = Tix_HLFindElement(interp, wPtr, argv[1])) == NULL) {
 	    return TCL_ERROR;
 	}
-
-	Tcl_AppendArg(interp, chPtr->data);
+        Tcl_IncrRefCount(chPtr->data);
+	Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp), chPtr->data);
 	return TCL_OK;
     }
     else if (strncmp(argv[0], "dragsite", len)==0) {
@@ -1135,7 +1135,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 
 	if (nextPtr) {
 	    Tcl_AppendResult(interp, nextPtr->pathName, NULL);
-	}	    
+	}	
 
 	return TCL_OK;
     }
@@ -1162,7 +1162,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	prevPtr = FindPrevEntry(wPtr, chPtr);
 	if (prevPtr) {
 	    Tcl_AppendResult(interp, prevPtr->pathName, NULL);
-	}	    
+	}	
 
 	return TCL_OK;
     }
@@ -1170,7 +1170,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	return CurSelection(interp, wPtr, wPtr->root);
     }
     else {
-	Tcl_AppendResult(interp, "unknown option \"", argv[0], 
+	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 	    "\": must be anchor, bbox, children, data, dragsite, dropsite, ",
 	    "exists, hidden, item, next, parent, prev or selection",
 	    NULL);
@@ -1407,7 +1407,7 @@ static int Tix_HLBBox(interp, wPtr, chPtr)
 
     if (wPtr->root->dirty || wPtr->allDirty) {
 	/*
-	 * We must update the geometry NOW otherwise we will wrong geometry 
+	 * We must update the geometry NOW otherwise we will wrong geometry
 	 * info
 	 */
 	Tix_HLCancelResizeWhenIdle(wPtr);
@@ -1456,7 +1456,7 @@ static int Tix_HLBBox(interp, wPtr, chPtr)
 	    y2 = pad+wYSize -1;
 	}
 
-	if (y2 >= y1) {                   
+	if (y2 >= y1) {
 #ifdef _LANG
 	    Tcl_Obj *result = Tcl_NewListObj(0,NULL);
 	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1));
@@ -1495,7 +1495,7 @@ static int Tix_HLSeeElement(wPtr, chPtr, callRedraw)
 	cXSize = chPtr->col[0].width;
     }
     cYSize = chPtr->height;
-    wXSize = Tk_Width(wPtr->dispData.tkwin) - 
+    wXSize = Tk_Width(wPtr->dispData.tkwin) -
       (2*wPtr->borderWidth + 2*wPtr->highlightWidth);
     wYSize = Tk_Height(wPtr->dispData.tkwin) -
       (2*wPtr->borderWidth + 2*wPtr->highlightWidth);
@@ -1536,7 +1536,7 @@ static int Tix_HLSeeElement(wPtr, chPtr, callRedraw)
 	}
 	else if (y+cYSize > wPtr->topPixel+wYSize){
 	    top = y+cYSize - wYSize ;
-	}                      
+	}
 	if (top < 0) {
 	    top = 0;
 	}
@@ -1655,7 +1655,7 @@ Tix_HLSelection(clientData, interp, argc, argv)
 	}
     }
     else {
-	Tcl_AppendResult(interp, "unknown option \"", argv[0], 
+	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 	    "\": must be anchor, clear, get, includes or set", NULL);
 	code = TCL_ERROR;
     }
@@ -2030,7 +2030,7 @@ WidgetEventProc(clientData, eventPtr)
 	if (wPtr->dispData.tkwin != NULL) {
 	    wPtr->dispData.tkwin = NULL;
 	    wPtr->dispData.sizeChangedProc = NULL;
-	    Tcl_DeleteCommand(wPtr->dispData.interp, 
+	    Tcl_DeleteCommand(wPtr->dispData.interp,
 		Tcl_GetCommandName(wPtr->dispData.interp, wPtr->widgetCmd));
 	}
 	Tix_HLCancelResizeWhenIdle(wPtr);
@@ -2244,7 +2244,7 @@ Tix_HLComputeGeometry(clientData)
     int width = 0;
 
     if (wPtr->dispData.tkwin == NULL) {
-	panic("No tkwin");            
+	panic("No tkwin");
 	return;
     }
 
@@ -2330,9 +2330,9 @@ Tix_HLComputeGeometry(clientData)
 void
 Tix_HLResizeWhenIdle(wPtr)
     WidgetPtr wPtr;
-{  
+{
     if (wPtr->dispData.tkwin == NULL) {
-	panic("No tkwin");            
+	panic("No tkwin");
 	return;
     }
 
@@ -2386,7 +2386,7 @@ RedrawWhenIdle(wPtr)
     WidgetPtr wPtr;
 {
     if (wPtr->dispData.tkwin == NULL) {
-	panic("No tkwin");            
+	panic("No tkwin");
 	return;
     }
 
@@ -2404,7 +2404,7 @@ RedrawWhenIdle(wPtr)
 static void
 CancelRedrawWhenIdle(wPtr)
     WidgetPtr wPtr;
-{  
+{
 
     if (wPtr->redrawing) {
 	wPtr->redrawing = 0;
@@ -2729,7 +2729,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
     char ** argv;
     char * pathName;		/* Default pathname, if -pathname is not
 				 * specified in the options */
-    char * defParentName;	/* Default parent name (will NULL if pathName 
+    char * defParentName;	/* Default parent name (will NULL if pathName
 				 * is not NULL */
     int * newArgc;
 {
@@ -2789,7 +2789,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 		continue;
 	    }
 	    else if (strncmp(argv[i], "-at", len) == 0) {
-		if (Tcl_GetInt(interp, args[i+1], &at) != TCL_OK) {
+		if (Tcl_GetInt(interp, objv[i+1], &at) != TCL_OK) {
 		    chPtr = NULL;
 		    goto done;
 		}
@@ -2799,8 +2799,8 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 
 	  copy:
 	    if (n!=i) {
-		args[n] = args[i];
-		args[n+1] = args[i+1];
+		objv[n] = objv[i];
+		objv[n+1] = objv[i+1];
 	    }
 	    n+=2;
 	}
@@ -2889,7 +2889,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 		if ((pathName[0] == sep) && (pathName[1] == '\0')) {
 		    /*
 		     * The separator by itself is also a toplevel entry
-		     */		      
+		     */		
 		    parentName = 0;
 		} else {
 		    parentName[0] = sep;
@@ -2981,7 +2981,7 @@ ConfigElement(wPtr, chPtr, argc, argv, flags, forced)
     int forced;			/* We need a "forced" configure to ensure that
 				 * the DItem is initialized properly */
 {
-    int sizeChanged;   
+    int sizeChanged;
 
     if (wPtr->dispData.tkwin == NULL)
 	panic("No tkwin");
@@ -3099,7 +3099,7 @@ static HListElement * FindElementAtPosition(wPtr, y)
 	/* FIXME: If we fall out of for loop chPtr is NULL, so we
 	 * cannot do chPtr->childHead as while loop implies
 	 * this is a quick-fix.
-	 */  
+	 */
 	return NULL;
     }
 }
@@ -3147,7 +3147,7 @@ HListElement * Tix_HLFindElement(interp, wPtr, pathName)
  *
  * SelectionModifyRange --
  *
- *	Select or de-select all the elements between from and to 
+ *	Select or de-select all the elements between from and to
  *	(inclusive), according to the "select" argument.
  *
  *	select == 1 : select
@@ -3384,7 +3384,7 @@ static void ComputeElementGeometry(wPtr, chPtr, indent)
 	    ComputeElementGeometry(wPtr, ptr, indent);
 	}
 
-	/* Propagate the child's size to the parent 
+	/* Propagate the child's size to the parent
 	 *
 	 */
 	for (i=0; i<wPtr->numColumns; i++) {
@@ -3401,7 +3401,7 @@ static void ComputeElementGeometry(wPtr, chPtr, indent)
  *
  * ComputeOneElementGeometry --
  *
- *	Compute the geometry of the element itself, not including 
+ *	Compute the geometry of the element itself, not including
  *	its children, according to its current display type.
  *
  * Results:
@@ -3484,7 +3484,7 @@ static void ComputeBranchPosition(wPtr, chPtr)
 		branchX = iPtr->imagetext.bitmapW / 2;
 		branchY = iPtr->imagetext.bitmapH;
 		if (Tix_DItemHeight(iPtr) >iPtr->imagetext.bitmapH) {
-		    branchY += (Tix_DItemHeight(iPtr) - 
+		    branchY += (Tix_DItemHeight(iPtr) -
 			iPtr->imagetext.bitmapH) /2;
 		}
 	    }
@@ -3586,7 +3586,7 @@ WidgetDisplay(clientData)
 
     if (wPtr->elmToSee != NULL) {
 	HListElement *chPtr;
-	  
+	
 	if ((chPtr = Tix_HLFindElement(interp, wPtr,
 		wPtr->elmToSee)) == NULL) {
 	    Tcl_ResetResult(interp);
@@ -3605,7 +3605,7 @@ WidgetDisplay(clientData)
      *		Calculate the drawing parameters
      */
     if (wPtr->wideSelect) {
-	wPtr->selectWidth = Tk_Width(wPtr->dispData.tkwin) - 
+	wPtr->selectWidth = Tk_Width(wPtr->dispData.tkwin) -
 	  (2*wPtr->borderWidth + 2*wPtr->highlightWidth);
 	if (wPtr->selectWidth < wPtr->totalSize[0]) {
 	    wPtr->selectWidth = wPtr->totalSize[0];
@@ -3642,7 +3642,7 @@ WidgetDisplay(clientData)
 	/* Draw the border */
 	Tk_Draw3DRectangle(wPtr->dispData.tkwin, buffer, wPtr->border,
 	    wPtr->highlightWidth, wPtr->highlightWidth,
-	    Tk_Width(tkwin)  - 2*wPtr->highlightWidth, 
+	    Tk_Width(tkwin)  - 2*wPtr->highlightWidth,
 	    Tk_Height(tkwin) - 2*wPtr->highlightWidth, wPtr->borderWidth,
 	    wPtr->relief);
     }
@@ -3703,7 +3703,7 @@ WidgetDisplay(clientData)
 	    0, 0, hdrW, hdrH, xOffset);
 
 	if (buffer != Tk_WindowId(wPtr->headerWin)) {
-	    XCopyArea(wPtr->dispData.display, buffer, 
+	    XCopyArea(wPtr->dispData.display, buffer,
 		Tk_WindowId(wPtr->headerWin), wPtr->normalGC,
 		0, 0, hdrW, hdrH, 0, 0);
 
@@ -3779,8 +3779,8 @@ static void DrawElements(wPtr, pixmap, gc, chPtr, x, y, xOffset)
 
     oldY = childY;		/* saved for 2nd iteration */
 
-    /* find the last non-hidden element, 
-     * to determine when to draw the vertical line 
+    /* find the last non-hidden element,
+     * to determine when to draw the vertical line
      */
     lastVisible = NULL;
     for (ptr = chPtr->childTail; ptr!=NULL; ptr=ptr->prev) {
@@ -4215,7 +4215,7 @@ static void DeleteNode(wPtr, chPtr)
     else {
 	chPtr->next->prev = chPtr->prev;
     }
- 
+
     FreeElement(wPtr, chPtr);
 }
 
@@ -4255,7 +4255,7 @@ static void UpdateScrollBars(wPtr, sizeChanged)
 
     CheckScrollBar(wPtr, TIX_X);
     CheckScrollBar(wPtr, TIX_Y);
- 
+
     if (wPtr->xScrollCmd) {
 	total  = wPtr->totalSize[0];
 	window = Tk_Width(wPtr->dispData.tkwin)
@@ -4626,7 +4626,7 @@ HListLostSelection(clientData)
 	if (changed) {
 	    RedrawWhenIdle(wPtr);
 	}
-    } 
+    }
 }
 
 

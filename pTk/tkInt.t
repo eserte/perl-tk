@@ -30,7 +30,7 @@ VFUNC(void,TkBindInit,V_TkBindInit,_ANSI_ARGS_((TkMainInfo *mainPtr)))
 
 #ifndef TkCanvPostscriptCmd
 VFUNC(int,TkCanvPostscriptCmd,V_TkCanvPostscriptCmd,_ANSI_ARGS_((struct TkCanvas *canvasPtr,
-			    Tcl_Interp *interp, int argc, Arg *args)))
+			    Tcl_Interp *interp, int argc, Tcl_Obj **objv)))
 #endif
 
 #ifndef TkChangeEventWindow
@@ -81,7 +81,7 @@ VFUNC(TkCursor *,TkCreateCursorFromData,V_TkCreateCursorFromData,_ANSI_ARGS_((Tk
 
 #ifndef TkCreateFrame
 VFUNC(int,TkCreateFrame,V_TkCreateFrame,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Arg *args,
+			    Tcl_Interp *interp, int argc, Tcl_Obj **objv,
 			    int toplevel, char *appName)))
 #endif
 
@@ -100,7 +100,7 @@ VFUNC(Time,TkCurrentTime,V_TkCurrentTime,_ANSI_ARGS_((TkDisplay *dispPtr)))
 
 #ifndef TkDeadAppCmd
 VFUNC(int,TkDeadAppCmd,V_TkDeadAppCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int argc, Arg *args)))
+			    Tcl_Interp *interp, int argc, Tcl_Obj **objv)))
 #endif
 
 #ifndef TkDeleteAllImages

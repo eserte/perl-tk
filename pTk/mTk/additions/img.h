@@ -12,7 +12,7 @@
 #define IMG_RELEASE_SERIAL 2
 
 #define IMG_VERSION "1.2"
-#define IMG_PATCH_LEVEL "1.2.3"
+#define IMG_PATCH_LEVEL "1.2.4"
 
 #ifndef RESOURCE_INCLUDED
 

@@ -1,6 +1,6 @@
 package Tk::Configure;
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Configure.pm#8 $
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Configure.pm#10 $
 
 use Carp;
 use Tk::Pretty;
@@ -25,8 +25,7 @@ sub cget
  croak('Wrong number of args to cget') unless (@_ == 2);
  my ($alias,$key) = @_;
  my ($set,$get,$widget,@args) = @$alias;
- my @result = $widget->$get(@args);
- return (wantarray) ? @result : $result[0];
+ $widget->$get(@args);
 }
 
 sub configure
@@ -34,10 +33,20 @@ sub configure
  my $alias = shift;
  shift if (@_);
  my ($set,$get,$widget,@args) = @$alias;
- my @results;
- eval { @results = $widget->$set(@args,@_) };
- croak($@) if $@;
- return @results;
+ if (wantarray)
+  {
+   my @results;
+   eval { @results = $widget->$set(@args,@_) };
+   croak($@) if $@;
+   return @results;
+  }
+ else
+  {
+   my $results;
+   eval { $results = $widget->$set(@args,@_) };
+   croak($@) if $@;
+   return $results;
+  }
 }
 
 *TIESCALAR = \&new;

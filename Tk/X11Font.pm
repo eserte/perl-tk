@@ -1,6 +1,6 @@
 package Tk::X11Font;
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/X11Font.pm#12 $
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/X11Font.pm#13 $
 
 require Tk::Widget;
 require Tk::Xlib;
@@ -94,7 +94,7 @@ sub Name
  my $me  = shift;
  my $max = wantarray ? shift || 128 : 1;
 
- if ($^O eq 'MSWin32')
+ if ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))
   {
    my $name = $me->{Name};
    if (!defined $name)

@@ -50,7 +50,6 @@
 #undef EXPORT
 #include "zlib.h"
 
-#include <stdio.h>
 #include <assert.h>
 #include "imgInt.h"
 
@@ -421,6 +420,23 @@ static CONST TIFFFieldInfo zipFieldInfo[] = {
 };
 #define	N(a)	(sizeof (a) / sizeof (a[0]))
 
+static voidpf
+ZipAlloc(opaque, items, size)
+    voidpf opaque;
+    uInt items;
+    uInt size;
+{
+    return (voidpf) ImgTIFFmalloc((tsize_t)(items * size));
+}
+
+static void
+ZipFree(opaque, address)
+    voidpf opaque;
+    voidpf address;
+{
+    ImgTIFFfree((tdata_t) address);
+}
+
 int
 ImgInitTIFFzip(handle, scheme)
     VOID * handle;
@@ -443,8 +459,8 @@ ImgInitTIFFzip(handle, scheme)
 	if (tif->tif_data == NULL)
 		goto bad;
 	sp = ZState(tif);
-	sp->stream.zalloc = NULL;
-	sp->stream.zfree = NULL;
+	sp->stream.zalloc = ZipAlloc;
+	sp->stream.zfree = ZipFree;
 	sp->stream.opaque = NULL;
 	sp->stream.data_type = Z_BINARY;
 

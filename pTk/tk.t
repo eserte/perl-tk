@@ -7,16 +7,16 @@ VFUNC(int,LangEventCallback,V_LangEventCallback,_ANSI_ARGS_((ClientData, Tcl_Int
 VFUNC(Var,LangFindVar,V_LangFindVar,_ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name)))
 #endif
 
-#ifndef LangFontArg
-VFUNC(Arg,LangFontArg,V_LangFontArg,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name)))
+#ifndef LangFontObj
+VFUNC(Tcl_Obj *,LangFontObj,V_LangFontObj,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name)))
 #endif
 
-#ifndef LangObjectArg
-VFUNC(Arg,LangObjectArg,V_LangObjectArg,_ANSI_ARGS_((Tcl_Interp *interp, char *)))
+#ifndef LangObjectObj
+VFUNC(Tcl_Obj *,LangObjectObj,V_LangObjectObj,_ANSI_ARGS_((Tcl_Interp *interp, char *)))
 #endif
 
-#ifndef LangWidgetArg
-VFUNC(Arg,LangWidgetArg,V_LangWidgetArg,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Window)))
+#ifndef LangWidgetObj
+VFUNC(Tcl_Obj *,LangWidgetObj,V_LangWidgetObj,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Window)))
 #endif
 
 #ifndef Lang_CreateImage
@@ -192,7 +192,7 @@ VFUNC(int,Tk_ConfigureValue,V_Tk_ConfigureValue,_ANSI_ARGS_((Tcl_Interp *interp,
 #ifndef Tk_ConfigureWidget
 VFUNC(int,Tk_ConfigureWidget,V_Tk_ConfigureWidget,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, Tk_ConfigSpec *specs,
-			    int argc, Arg *args, char *widgRec,
+			    int argc, Tcl_Obj **objv, char *widgRec,
 			    int flags)))
 #endif
 
@@ -362,8 +362,8 @@ VFUNC(void,Tk_DrawTextLayout,V_Tk_DrawTextLayout,_ANSI_ARGS_((Display *display,
 #endif
 
 #ifndef Tk_EventInfo
-VFUNC(char *,Tk_EventInfo,V_Tk_EventInfo,_ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr, 
-			    KeySym keySym, int *numPtr, int *isNum, int *type, 
+VFUNC(char *,Tk_EventInfo,V_Tk_EventInfo,_ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr,
+			    KeySym keySym, int *numPtr, int *isNum, int *type,
                             int num_size, char *numStorage)))
 #endif
 
@@ -605,7 +605,7 @@ VFUNC(int,Tk_GetScreenMM,V_Tk_GetScreenMM,_ANSI_ARGS_((Tcl_Interp *interp,
 
 #ifndef Tk_GetScrollInfo
 VFUNC(int,Tk_GetScrollInfo,V_Tk_GetScrollInfo,_ANSI_ARGS_((Tcl_Interp *interp,
-			    int argc, Arg *args, double *dblPtr,
+			    int argc, Tcl_Obj **objv, double *dblPtr,
 			    int *intPtr)))
 #endif
 

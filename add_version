@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/tools/local/perl -w
 use strict;
 use File::Find;
 use Getopt::Std;
@@ -10,7 +10,7 @@ chdir($path);
 $path = getcwd();
 my $dep;
 my $rel;
-my $wh = `p4 where ./...`;
+my ($wh) = `p4 where ./...`;
 
 if ($wh =~ m#^\s*(.*)/\.\.\.\s+(.*)/\.\.\.\s*$#)
  {

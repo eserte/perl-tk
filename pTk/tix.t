@@ -29,8 +29,8 @@ VFUNC(char *,TixGetStringFromObj,V_TixGetStringFromObj,_ANSI_ARGS_((
 #endif
 
 #ifndef Tix_ArgcError
-VFUNC(int,Tix_ArgcError,V_Tix_ArgcError,_ANSI_ARGS_((Tcl_Interp *interp, 
-			    int argc, Arg *args, int prefixCount,
+VFUNC(int,Tix_ArgcError,V_Tix_ArgcError,_ANSI_ARGS_((Tcl_Interp *interp,
+			    int argc, Tcl_Obj **objv, int prefixCount,
 			    char *message)))
 #endif
 
@@ -56,7 +56,7 @@ VFUNC(int,Tix_HandleSubCmds,V_Tix_HandleSubCmds,_ANSI_ARGS_((
 			    Tix_CmdInfo * cmdInfo,
 			    Tix_SubCmdInfo * subCmdInfo,
 			    ClientData clientData, Tcl_Interp *interp,
-			    int argc, Arg *args)))
+			    int argc, Tcl_Obj **objv)))
 #endif
 
 #ifndef Tix_LinkListAppend

@@ -87,7 +87,6 @@
 #undef EXPORT
 #include "zlib.h"
 
-#include <stdio.h>
 #include <assert.h>
 #include <math.h>
 #include "imgInt.h"
@@ -1379,6 +1378,23 @@ PixarLogVGetField(tif, tag, ap)
     return (1);
 }
 
+static voidpf
+PixarLogAlloc(opaque, items, size)
+    voidpf opaque;
+    uInt items;
+    uInt size;
+{
+    return (voidpf) ImgTIFFmalloc((tsize_t)(items * size));
+}
+
+static void
+PixarLogFree(opaque, address)
+    voidpf opaque;
+    voidpf address;
+{
+    ImgTIFFfree((tdata_t) address);
+}
+
 static const TIFFFieldInfo pixarlogFieldInfo[] = {
     {TIFFTAG_PIXARLOGDATAFMT,0,0,TIFF_ANY,  FIELD_PSEUDO,FALSE,FALSE,""},
     {TIFFTAG_PIXARLOGQUALITY,0,0,TIFF_ANY,  FIELD_PSEUDO,FALSE,FALSE,""}
@@ -1408,6 +1424,8 @@ ImgInitTIFFpixar(handle, scheme)
 	sp = (PixarLogState*) tif->tif_data;
 	memset(sp, 0, sizeof (*sp));
 	sp->stream.data_type = Z_BINARY;
+	sp->stream.zalloc = PixarLogAlloc;
+	sp->stream.zfree = PixarLogFree;
 	sp->user_datafmt = PIXARLOGDATAFMT_UNKNOWN;
 
 	/*

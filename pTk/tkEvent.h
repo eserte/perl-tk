@@ -2,7 +2,11 @@
 #define _TKEVENT
 
 EXTERN LangCallback *	LangMakeCallback _ANSI_ARGS_((Arg));
-EXTERN Arg		LangCallbackArg _ANSI_ARGS_((LangCallback *));
+EXTERN Tcl_Obj *	LangCallbackObj _ANSI_ARGS_((LangCallback *));
+EXTERN Arg		LangOldCallbackArg _ANSI_ARGS_((LangCallback *,char *,int));
+
+#define LangCallbackArg(x) LangOldCallbackArg(x,__FILE__,__LINE__)
+
 EXTERN void		LangFreeCallback _ANSI_ARGS_((LangCallback *));
 EXTERN LangCallback *	LangCopyCallback _ANSI_ARGS_((LangCallback *));
 EXTERN int		LangCmpCallback _ANSI_ARGS_((LangCallback *a,Arg b));

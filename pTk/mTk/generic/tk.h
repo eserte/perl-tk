@@ -49,8 +49,8 @@
 #define TK_VERSION "8.0"
 #define TK_PATCH_LEVEL "8.0.5"
 
-/* 
- * A special definition used to allow this header file to be included 
+/*
+ * A special definition used to allow this header file to be included
  * in resource files.
  */
 
@@ -355,7 +355,7 @@ typedef enum {
 
 /*
  * The following structure is used by Tk_GetFontMetrics() to return
- * information about the properties of a Tk_Font.  
+ * information about the properties of a Tk_Font.
  */
 
 typedef struct Tk_FontMetrics {
@@ -912,16 +912,16 @@ typedef struct Tk_ItemType {
 typedef struct Tk_CanvasTextInfo {
     Tk_3DBorder selBorder;	/* Border and background for selected
 				 * characters.  Read-only to items.*/
-    int selBorderWidth;		/* Width of border around selection. 
+    int selBorderWidth;		/* Width of border around selection.
 				 * Read-only to items. */
     XColor *selFgColorPtr;	/* Foreground color for selected text.
 				 * Read-only to items. */
     Tk_Item *selItemPtr;	/* Pointer to selected item.  NULL means
 				 * selection isn't in this canvas.
 				 * Writable by items. */
-    int selectFirst;		/* Index of first selected character. 
+    int selectFirst;		/* Index of first selected character.
 				 * Writable by items. */
-    int selectLast;		/* Index of last selected character. 
+    int selectLast;		/* Index of last selected character.
 				 * Writable by items. */
     Tk_Item *anchorItemPtr;	/* Item corresponding to "selectAnchor":
 				 * not necessarily selItemPtr.   Read-only
@@ -1301,7 +1301,7 @@ typedef Tk_RestrictAction (Tk_RestrictProc) _ANSI_ARGS_((
 typedef int (Tk_SelectionProc) _ANSI_ARGS_((ClientData clientData,
 	int offset, char *buffer, int maxBytes));
 typedef int (Tk_XSelectionProc) _ANSI_ARGS_((ClientData clientData,
-	int offset, long *buffer, int maxBytes, 
+	int offset, long *buffer, int maxBytes,
 	Atom type, Tk_Window tkwin));
 
 
@@ -1320,8 +1320,8 @@ typedef struct {
  *--------------------------------------------------------------
  */
 
-EXTERN char *		Tk_EventInfo _ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr, 
-			    KeySym keySym, int *numPtr, int *isNum, int *type, 
+EXTERN char *		Tk_EventInfo _ANSI_ARGS_((int letter, Tk_Window tkwin, XEvent *eventPtr,
+			    KeySym keySym, int *numPtr, int *isNum, int *type,
                             int num_size, char *numStorage));
 
 EXTERN XColor *		Tk_3DBorderColor _ANSI_ARGS_((Tk_3DBorder border));
@@ -1934,7 +1934,7 @@ EXTERN Arg	TkPixelPrintProc _ANSI_ARGS_((
 		    ClientData clientData, Tk_Window tkwin,
 		    char *widgRec, int offset,
 		    Tcl_FreeProc **freeProcPtr));
-        
+
 EXTERN Tcl_Command	Lang_CreateWidget _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window, Tcl_CmdProc *proc,
 			    ClientData clientData,
@@ -1953,9 +1953,13 @@ EXTERN void		Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 
 EXTERN Var		LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
 
-EXTERN Arg		LangWidgetArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
-EXTERN Arg		LangFontArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name));
-EXTERN Arg		LangObjectArg _ANSI_ARGS_((Tcl_Interp *interp, char *));
+EXTERN Tcl_Obj *	LangWidgetObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
+EXTERN Tcl_Obj *	LangFontObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name));
+EXTERN Tcl_Obj *	LangObjectObj _ANSI_ARGS_((Tcl_Interp *interp, char *));
+
+#define LangWidgetArg(interp,win) LangObjArg(LangWidgetObj(interp,win),__FILE__,__LINE__)
+#define LangFontArg(interp,font,name) LangObjArg(LangFontObj(interp,font,name),__FILE__,__LINE__)
+#define LangObjectArg(interp,name) LangObjArg(LangObjectObj(interp,name),__FILE__,__LINE__)
 
 
 #ifndef NO_EXTERN

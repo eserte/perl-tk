@@ -622,7 +622,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetEntryIndex(interp, entryPtr, args[2], &index) != TCL_OK) {
+	if (GetEntryIndex(interp, entryPtr, objv[2], &index) != TCL_OK) {
 	    goto error;
 	}
 	if ((index == entryPtr->numChars) && (index > 0)) {
@@ -662,13 +662,13 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetEntryIndex(interp, entryPtr, args[2], &first) != TCL_OK) {
+	if (GetEntryIndex(interp, entryPtr, objv[2], &first) != TCL_OK) {
 	    goto error;
 	}
 	if (argc == 3) {
 	    last = first+1;
 	} else {
-	    if (GetEntryIndex(interp, entryPtr, args[3], &last) != TCL_OK) {
+	    if (GetEntryIndex(interp, entryPtr, objv[3], &last) != TCL_OK) {
 		goto error;
 	    }
 	}
@@ -690,7 +690,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetEntryIndex(interp, entryPtr, args[2], &entryPtr->insertPos)
+	if (GetEntryIndex(interp, entryPtr, objv[2], &entryPtr->insertPos)
 		!= TCL_OK) {
 	    goto error;
 	}
@@ -704,7 +704,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " index string\"", (char *) NULL);
 	    goto error;
 	}
-	if (GetEntryIndex(interp, entryPtr, args[2], &index) != TCL_OK) {
+	if (GetEntryIndex(interp, entryPtr, objv[2], &index) != TCL_OK) {
 	    goto error;
 	}
 	sprintf(interp->result, "%d", index);
@@ -718,7 +718,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetEntryIndex(interp, entryPtr, args[2], &index) != TCL_OK) {
+	if (GetEntryIndex(interp, entryPtr, objv[2], &index) != TCL_OK) {
 	    goto error;
 	}
 	if (entryPtr->state == TK_STATE_NORMAL) {
@@ -784,7 +784,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 	    goto done;
 	}
 	if (argc >= 4) {
-	    if (GetEntryIndex(interp, entryPtr, args[3], &index) != TCL_OK) {
+	    if (GetEntryIndex(interp, entryPtr, objv[3], &index) != TCL_OK) {
 		goto error;
 	    }
 	}
@@ -827,7 +827,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 			(char *) NULL);
 		goto error;
 	    }
-	    if (GetEntryIndex(interp, entryPtr, args[4], &index2) != TCL_OK) {
+	    if (GetEntryIndex(interp, entryPtr, objv[4], &index2) != TCL_OK) {
 		goto error;
 	    }
 	    if (index >= index2) {
@@ -883,7 +883,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 	    sprintf(interp->result, "%g %g", first, last);
 	    goto done;
 	} else if (argc == 3) {
-	    if (GetEntryIndex(interp, entryPtr, args[2], &index) != TCL_OK) {
+	    if (GetEntryIndex(interp, entryPtr, objv[2], &index) != TCL_OK) {
 		goto error;
 	    }
 	} else {

@@ -29,12 +29,12 @@
 
 #ifndef USE_TCL_STUBS
 #undef Tcl_InitStubs
-#define Tcl_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tcl",TCL_VERSION,1)
+#define Tcl_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tcl","8.0",1)
 #endif
 
 #ifndef USE_TK_STUBS
 #undef Tk_InitStubs
-#define Tk_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tk",TK_VERSION,1)
+#define Tk_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tk","8.0",1)
 #endif
 
 /*
@@ -86,7 +86,7 @@ static Tk_PhotoImageFormat *Formats[] = {
  * version of Tcl or Perl we are running:
  *
  *	IMG_TCL		Tcl
- *	IMG_OBJS	using Tcl_Obj's in stead of char* (patch.tk8)
+ *	IMG_OBJS	using Tcl_Obj's in stead of char* (Tk 8.3 or higher)
  *      IMG_PERL	perl
  *
  * These flags will be determined at runtime (except the IMG_PERL
@@ -131,11 +131,15 @@ EXPORT(int,Img_Init)(interp)
 	while(*formatPtr) {
 	    Tk_CreatePhotoImageFormat(*formatPtr++);
 	}
+#ifdef __WIN32__
+	CreateMutex(NULL, FALSE, "ImgDllMutex"); 
+#endif
+
 #ifndef TCL_MAC
 	Tk_CreateImageType(&imgPixmapImageType);
 #endif
     }
-#ifdef ALLOW_B64
+#ifdef ALLOW_B64 /* Undocumented feature */
     Tcl_CreateObjCommand(interp,"img_to_base64", tob64, (ClientData) NULL, NULL);
     Tcl_CreateObjCommand(interp,"img_from_base64", fromb64, (ClientData) NULL, NULL);
 #endif
@@ -444,30 +448,6 @@ ImgPutc(c, handle)
     }
     return c & 0xff;
 };
-/*
- *-----------------------------------------------------------------------
- *
- * ImgSeek --
- *
- *  This procedure performs seek operations on FILE*'s and Tcl_Channel's
- *
- * Results:
- *  The current file position.
- *
- * Side effects:
- *  The current file position is changed.
- *
- *-----------------------------------------------------------------------
- */
-
-int
-ImgSeek(handle, off, whence)
-    MFile *handle;	/* mmdecode "file" handle */
-    int off;
-    int whence;
-{
-    return Tcl_Seek((Tcl_Channel) handle->data, off, whence);
-}
 
 /*
  *-------------------------------------------------------------------------

@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/Frame.pm#30 $
+$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/Frame.pm#31 $
 
 sub Tk_cmd { \&Tk::frame }
 
@@ -130,7 +130,7 @@ sub labelPack
      require Tk::Label;
      $w = Tk::Label->new($cw,-textvariable => $cw->labelVariable);
      $cw->Advertise('label' => $w);
-     $cw->ConfigDelegate('label',qw(text textvariable));
+     $cw->ConfigDelegate('label',qw(-text -textvariable));
     }
    if (defined($val) && defined($w))
     {

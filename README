@@ -7,8 +7,10 @@ of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
 for details of this license.
 
-Tk800.022 is supposed to be production worthy.
-It has minimal changes from Tk800.021 apart from bug fixes.
+Tk800.023 is supposed to be production worthy.
+It has minimal changes from Tk800.022 apart from bug fixes.
+In particular a rather nasty memory leak that afflicted Canvas rather 
+badly has been fixed.
 
 (Consider Tk800.016..Tk800.021 its beta releases, previous stable
 release being Tk800.015.)
@@ -22,33 +24,33 @@ It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.006 release.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
 
 >>> TK IS KNOWN NOT TO WORK WITH perl5.005_63 <<<
-But does work with perl5.6.0 - although this required a couple of work-rounds
-for perl5.6.0 ->isa bug.
+This Tk has special workrounds for perl-5.6.0 ->isa bug which are 
+only enabled for exactly that version.
+Works with perl-5.7.0 and should work with most other "recent" perl releases.
 
-This version (Tk800.022) requires perl5.005 or later on Win32
+This version (Tk800.023) requires perl5.005 or later on Win32
 and 5.004_04 or later on UNIX.
 
 This version also contains re-worked Image code based on tcl/tk Img extension
 (version img1.2.3) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/
 Jan's "dash" patch is also merged.
 
-Tk800.022 should build and run on Windows NT using Visual C++, Borland,
+Tk800.023 should build and run on Windows NT using Visual C++, Borland,
 or with the Mingw32 port of GCC with perl5.005 or later.
-Can be built using ActiveState's binrary distribution
+Can be built using ActiveState's binary distribution
 (see README-ActiveState.txt).
 
-The Mingw32 builds are stable now using older Mingw32s.
-There are perl build issues with very new Mingw32 (2.95.*).
+The Mingw32 builds are stable now using up-to-date gcc-2.95.2 version 
+of Mingw32. There are perl build issues though you need 
+to change 'fpos_t' to 'long long' in Mingw32/2.95.2's <stdio.h>.
 
 I have not tried a Borland build recently.
 
 Author has built against:
 
-  Perl5.6.0
-   Pentium Suse Linux-6.1 egcs-1.1.2
-
-  Perl5.6.0 (ithreads)
-   Pentium Suse Linux-6.1 egcs-1.1.2
+  Perl5.7.0
+   Pentium Suse Linux-6.4 gcc-2.95.2
+   NT4.0 SP4  Mingw32 (gcc-2.95.2) 
 
   Perl5.00503
    SPARC Solaris2.6, gcc-2.8.1
@@ -56,7 +58,9 @@ Author has built against:
 
   Perl5.00502
    NT4.0 SP4  VC++6.0 (with ActivePerl build 518)
-   NT4.0 SP3  egcs-1.2.1 Mingw32
+
+  Perl5.6.0
+   NT4.0 SP4  VC++6.0 (with ActivePerl build 617)
 
   Perl5.00404
    Pentium Suse Linux-6.1 egcs-1.1.2

@@ -79,7 +79,7 @@ int mask;
 static int restore_mode _((PerlIO *f,int mode));
 static int make_nonblock _((PerlIO *f,int *mode,int *newmode));
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && !defined(__CYGWIN__)
 static int
 make_nonblock(f,mode,newmode)
 PerlIO *f;

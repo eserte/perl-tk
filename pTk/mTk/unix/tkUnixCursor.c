@@ -154,18 +154,18 @@ TkGetCursorByName(interp, tkwin, arg)
     TkUnixCursor *cursorPtr = NULL;
     Cursor cursor = None;
     int argc;
-    Arg *args = NULL;
+    Tcl_Obj **objv = NULL;
     Pixmap source = None;
     Pixmap mask = None;
     Display *display = Tk_Display(tkwin);
 
-    if (Tcl_ListObjGetElements(interp, arg, &argc, &args) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, arg, &argc, &objv) != TCL_OK) {
 	return NULL;
     }
     if (argc == 0) {
 	goto badString;
     }
-    if (LangString(args[0])[0] != '@') {
+    if (LangString(objv[0])[0] != '@') {
 	XColor fg, bg;
 	unsigned int maskIndex;
 	register struct CursorName *namePtr;
@@ -186,8 +186,8 @@ TkGetCursorByName(interp, tkwin, arg)
 	    if (namePtr->name == NULL) {
 		goto badString;
 	    }
-	    if ((namePtr->name[0] == LangString(args[0])[0])
-		    && (strcmp(namePtr->name, LangString(args[0])) == 0)) {
+	    if ((namePtr->name[0] == LangString(objv[0])[0])
+		    && (strcmp(namePtr->name, LangString(objv[0])) == 0)) {
 		break;
 	    }
 	}

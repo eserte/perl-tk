@@ -110,8 +110,8 @@ SV *sv;
  SvREFCNT_dec(sv);
 }
 
-Arg
-LangCallbackArg(sv)
+Tcl_Obj *
+LangCallbackObj(sv)
 SV *sv;
 {
  if (sv && !sv_isa(sv,"Tk::Callback"))
@@ -119,7 +119,18 @@ SV *sv;
    warn("non-Callback arg");
    sv_dump(sv);
   }
- /* Do _NOT_ increment REFCNT - like Widgets, Fonts, etc. */
+ return SvREFCNT_inc(sv);
+}
+
+Arg
+LangOldCallbackArg(sv,file,line)
+SV *sv;
+char *file;
+int line;
+{
+ LangDebug("%s:%d: LangCallbackArg is deprecated\n",file,line);
+ sv = LangCallbackObj(sv);
+ SvREFCNT_dec(sv);
  return sv;
 }
 

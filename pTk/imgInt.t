@@ -25,7 +25,7 @@ VFUNC(int,ImgGetc,V_ImgGetc,_ANSI_ARGS_((MFile *handle)))
 
 #ifndef ImgListObjGetElements
 VFUNC(int,ImgListObjGetElements,V_ImgListObjGetElements,_ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_Obj *objPtr, int *argc, Tcl_Obj ***args)))
+	Tcl_Obj *objPtr, int *argc, Tcl_Obj ***objv)))
 #endif
 
 #ifndef ImgObjInit
@@ -52,10 +52,6 @@ VFUNC(int,ImgRead,V_ImgRead,_ANSI_ARGS_((MFile *handle, char *dst, int count)))
 
 #ifndef ImgReadInit
 VFUNC(int,ImgReadInit,V_ImgReadInit,_ANSI_ARGS_((Tcl_Obj *data, int c, MFile *handle)))
-#endif
-
-#ifndef ImgSeek
-VFUNC(int,ImgSeek,V_ImgSeek,_ANSI_ARGS_((MFile *handle, int off, int whence)))
 #endif
 
 #ifndef ImgWrite

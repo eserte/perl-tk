@@ -260,7 +260,7 @@ CreateText(interp, canvas, itemPtr, argc, argv)
     if (argc==1) {
 	i = 1;
     } else {
-	char *arg = Tcl_GetStringFromObj(args[1],NULL);
+	char *arg = Tcl_GetStringFromObj(objv[1],NULL);
 	if ((argc>1) && (arg[0] == '-')
 		&& (arg[1] >= 'a') && (arg[1] <= 'z')) {
 	    i = 1;
@@ -368,7 +368,7 @@ TextCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if (argc < 3) {
 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 2) {
 		sprintf(x,"%d",argc);
@@ -377,8 +377,8 @@ TextCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, args[0], &textPtr->x) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[1],
+	if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0], &textPtr->x) != TCL_OK)
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
   		    &textPtr->y) != TCL_OK)) {
 	    return TCL_ERROR;
 	}

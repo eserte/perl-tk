@@ -1,9 +1,9 @@
-/* 
+/*
  * tclEvent.c --
  *
  *	This file implements some general event related interfaces including
  *	background errors, exit handlers, and the "vwait" and "update"
- *	command procedures. 
+ *	command procedures.
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
  * Copyright (c) 1994-1997 Sun Microsystems, Inc.
@@ -220,7 +220,7 @@ HandleBgErrors(clientData)
     Tcl_Channel errChannel;
 
     Tcl_Preserve((ClientData) assocPtr);
-    
+
     while (assocPtr->firstBgPtr != NULL) {
 	interp = assocPtr->firstBgPtr->interp;
 	if (interp == NULL) {
@@ -287,13 +287,13 @@ HandleBgErrors(clientData)
                 ckfree(argv[1]);
 
                 goto doneWithInterp;
-            } 
+            }
 
             /*
              * We have to get the error output channel at the latest possible
              * time, because the eval (above) might have changed the channel.
              */
-            
+
             errChannel = Tcl_GetStdChannel(TCL_STDERR);
             if (errChannel != (Tcl_Channel) NULL) {
                 if (strcmp(interp->result,
@@ -344,7 +344,7 @@ doneWithInterp:
 	    ckfree((char *) assocPtr->firstBgPtr);
 	    assocPtr->firstBgPtr = errPtr;
 	}
-        
+
         if (interp != NULL) {
             Tcl_Release((ClientData) interp);
         }
@@ -413,7 +413,7 @@ BgErrorDeleteProc(clientData, interp)
  *	application exits.
  *
  *----------------------------------------------------------------------
- */      
+ */
 
 
 void
@@ -526,7 +526,7 @@ void
 Tcl_Finalize()
 {
     ExitHandler *exitPtr;
-    
+
     /*
      * Invoke exit handler first.
      */
@@ -549,7 +549,7 @@ Tcl_Finalize()
      * after the exit handlers, because there are order dependencies.
      */
 
-#if 0    
+#if 0
     TclFinalizeCompExecEnv();
     TclFinalizeEnvironment();
     TclpFinalize();
@@ -617,7 +617,7 @@ Tcl_VwaitCmd(clientData, interp, argc, argv)
 		argv[0], " name\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    if (LangSaveVar(interp, args[1], &variable, TK_CONFIG_SCALARVAR) != TCL_OK)
+    if (LangSaveVar(interp, objv[1], &variable, TK_CONFIG_SCALARVAR) != TCL_OK)
 	return TCL_ERROR;
     if (Tcl_TraceVar(interp, variable,
 	    TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
@@ -716,6 +716,6 @@ Tcl_UpdateCmd(clientData, interp, argc, argv)
 
     Tcl_ResetResult(interp);
     return TCL_OK;
-}                              
+}
 
 #endif /* TCL_EVENT_IMPLEMENT */

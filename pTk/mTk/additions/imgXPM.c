@@ -5,7 +5,7 @@
  *
  * Written by:
  *	Jan Nijtmans
- *	CMG (Computer Management Group) Arnhem B.V.
+ *	CMG Oost-Nederland B.V.
  *	email: j.nijtmans@chello.nl (private)
  *	       jan.nijtmans@cmg.nl (work)
  *	url:   http://purl.oclc.org/net/nijtmans/
@@ -412,6 +412,9 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 
     Tk_PhotoGetImage(imageHandle, &block.pub);
 	 /* in case Tk_PhotoGetImage doesn't set this */
+    block.pub.offset[0] = 0;
+    block.pub.offset[1] = 1;
+    block.pub.offset[2] = 2;
     block.pub.offset[3] = (block.pub.pixelSize > 3) ? 3 : 0;
     block.pub.width = width;
     block.pub.pitch = block.pub.pixelSize * fileWidth;

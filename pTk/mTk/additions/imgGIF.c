@@ -1,24 +1,23 @@
 /*
  * imgGIF.c --
  *
- * A photo image file handler for GIF files. Reads 87a and 89a GIF files.
- * At present THERE ARE WRITE functions for 87a and 89a GIF.
+ *	A photo image file handler for GIF files. Reads 87a and 89a GIF
+ *	files. At present, there only is a file write function. GIF images may be
+ *	read using the -data option of the photo image.  The data may be
+ *	given as a binary string in a Tcl_Obj or by representing
+ *	the data as BASE64 encoded ascii.  Derived from the giftoppm code
+ *	found in the pbmplus package and tkImgFmtPPM.c in the tk4.0b2
+ *	distribution.
  *
- * GIF images may be read using the -data option of the photo image by
- * representing the data as BASE64 encoded ascii (SAU 6/96)
- *
- * Derived from the giftoppm code found in the pbmplus package
- * and tkImgFmtPPM.c in the tk4.0b2 distribution by -
- *
- * Reed Wade (wade@cs.utk.edu), University of Tennessee
- *
- * Copyright (c) 1995-1996 Sun Microsystems, Inc.
+ * Copyright (c) Reed Wade (wade@cs.utk.edu), University of Tennessee
+ * Copyright (c) 1995-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1997 Australian National University
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * This file also contains code from the giftoppm and the ppmtogif programs,
- * which are copyrighted as follows:
+ * This file also contains code from the giftoppm program, which is
+ * copyrighted as follows:
  *
  * +-------------------------------------------------------------------+
  * | Copyright 1990, David Koblas.                                     |
@@ -30,39 +29,30 @@
  * |   provided "as is" without express or implied warranty.           |
  * +-------------------------------------------------------------------+
  *
- * It also contains parts of the the LUG package developed by Raul Rivero.
- *
- * The GIF write function uses the Xiaolin Wu quantize function:
- *
- * +-------------------------------------------------------------------+
- * |           C Implementation of Wu's Color Quantizer (v. 2)         |
- * |           (see Graphics Gems vol. II, pp. 126-133)                |
- * |                                                                   |
- * | Author: Xiaolin Wu                                                |
- * |         Dept. of Computer Science                                 |
- * |         Univ. of Western Ontario                                  |
- * |         London, Ontario N6A 5B7                                   |
- * |         wu@csd.uwo.ca                                             |
- * |                                                                   |
- * | Algorithm: Greedy orthogonal bipartition of RGB space for         |
- * |            variance minimization aided by inclusion-exclusion     |
- * |            tricks. For speed no nearest neighbor search is done.  |
- * |            Slightly better performance can be expected by more    |
- * |            sophisticated but more expensive versions.             |
- * |                                                                   |
- * | The author thanks Tom Lane at Tom_Lane@G.GP.CS.CMU.EDU for much   |
- * | of additional documentation and a cure to a previous bug.         |
- * |                                                                   |
- * | Free to distribute, comments and suggestions are appreciated.     |
- * +-------------------------------------------------------------------+
- *
- * SCCS: @(#) imgGIF.c 1.13 97/01/21 19:54:13
+ * RCS: @(#) $Id: tkImgGIF.c,v 1.14 2000/03/30 19:44:41 ericm Exp $
  */
+
 #include "tk.h"
 #include "tkVMacro.h"
 #include "imgInt.h"
 #include <string.h>
 #include <stdlib.h>
+
+/*
+ * Non-ASCII encoding support:
+ * Most data in a GIF image is binary and is treated as such.  However,
+ * a few key bits are stashed in ASCII.  If we try to compare those pieces
+ * to the char they represent, it will fail on any non-ASCII (eg, EBCDIC)
+ * system.  To accomodate these systems, we test against the numeric value
+ * of the ASCII characters instead of the characters themselves.  This is
+ * encoding independant.
+ */
+
+#  define GIF87a         "\x47\x49\x46\x38\x37\x61" /* ASCII GIF87a */
+#  define GIF89a         "\x47\x49\x46\x38\x39\x61" /* ASCII GIF89a */
+#  define GIF_TERMINATOR 0x3b                       /* ASCII ; */
+#  define GIF_EXTENSION  0x21                       /* ASCII ! */
+#  define GIF_START      0x2c                       /* ASCII , */
 
 /*
  * The format record for the GIF file format:
@@ -126,8 +116,6 @@ static int		GetCode _ANSI_ARGS_((MFile *handle, int code_size,
 			    int flag));
 static int		GetDataBlock _ANSI_ARGS_((MFile *handle,
 			    unsigned char *buf));
-static int		LWZReadByte _ANSI_ARGS_((MFile *handle, int flag,
-			    int input_code_size));
 static int		ReadColorMap _ANSI_ARGS_((MFile *handle, int number,
 			    unsigned char buffer[MAXCOLORMAPSIZE][4]));
 static int		ReadGIFHeader _ANSI_ARGS_((MFile *handle,
@@ -188,7 +176,7 @@ ChanMatchGIF(interp, chan, fileName, format, widthPtr, heightPtr)
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in interp->result.
+ *	then an error message is left in the interp's result.
  *
  * Side effects:
  *	The access position in channel chan is changed, and new data is
@@ -233,7 +221,7 @@ ChanReadGIF(interp, chan, fileName, format, imageHandle, destX, destY,
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in interp->result.
+ *	then an error message is left in the interp's result.
  *
  * Side effects:
  *	The access position in file f is changed, and new data is
@@ -270,6 +258,7 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
     Tcl_Obj **objv = NULL;
     myblock bl;
     unsigned char buf[100];
+    unsigned char *trashBuffer = NULL;
     int bitPixel;
     unsigned int colorResolution;
     unsigned int background;
@@ -329,7 +318,8 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
     if ((srcY + height) > fileHeight) {
 	height = fileHeight - srcY;
     }
-    if ((width <= 0) || (height <= 0)) {
+    if ((width <= 0) || (height <= 0)
+	    || (srcX >= fileWidth) || (srcY >= fileHeight)) {
 	return TCL_OK;
     }
 
@@ -352,7 +342,7 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 	    break;
 	}
 
-	if (buf[0] == ';') {
+	if (buf[0] == GIF_TERMINATOR) {
 	    /*
 	     * GIF terminator.
 	     */
@@ -362,7 +352,7 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 	    goto error;
 	}
 
-	if (buf[0] == '!') {
+	if (buf[0] == GIF_EXTENSION) {
 	    /*
 	     * This is a GIF extension.
 	     */
@@ -381,7 +371,7 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 	    continue;
 	}
 
-	if (buf[0] != ',') {
+	if (buf[0] != GIF_START) {
 	    /*
 	     * Not a valid start character; ignore it.
 	     */
@@ -401,41 +391,54 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 	bitPixel = 2<<(buf[8]&0x07);
 
 	if (index--) {
-	    int x,y;
-	    unsigned char c;
 	    /* this is not the image we want to read: skip it. */
-
 	    if (BitSet(buf[8], LOCALCOLORMAP)) {
-		if (!ReadColorMap(handle, bitPixel, 0)) {
+		if (!ReadColorMap(handle, bitPixel, colorMap)) {
 		    Tcl_AppendResult(interp,
 			    "error reading color map", (char *) NULL);
 		    goto error;
 		}
 	    }
 
-	    /* read data */
-	    if (!ReadOK(handle,&c,1)) {
-		goto error;
+	    /* If we've not yet allocated a trash buffer, do so now */
+	    if (trashBuffer == NULL) {
+		nBytes = fileWidth * fileHeight * 3;
+		trashBuffer =
+		    (unsigned char *) ckalloc((unsigned int) nBytes);
 	    }
 
-	    LWZReadByte(handle, 1, c);
-
-	    for (y=0; y<fileHeight; y++) {
-		for (x=0; x<fileWidth; x++) {
-		    if (LWZReadByte(handle, 0, c) < 0) {
-			printf("read error\n");
-			goto error;
-		    }
-		}
+	    /*
+	     * Slurp!  Process the data for this image and stuff it in a
+	     * trash buffer.
+	     *
+	     * Yes, it might be more efficient here to *not* store the data
+	     * (we're just going to throw it away later).  However, I elected
+	     * to implement it this way for good reasons.  First, I wanted to
+	     * avoid duplicating the (fairly complex) LWZ decoder in ReadImage.
+	     * Fine, you say, why didn't you just modify it to allow the use of
+	     * a NULL specifier for the output buffer?  I tried that, but it
+	     * negatively impacted the performance of what I think will be the
+	     * common case:  reading the first image in the file.  Rather than
+	     * marginally improve the speed of the less frequent case, I chose
+	     * to maintain high performance for the common case.
+	     */
+	    if (ReadImage(interp, trashBuffer, handle, fileWidth,
+			  fileHeight, colorMap, 0, 0, 0, 0, 0, -1) != TCL_OK) {
+	      goto error;
 	    }
 	    continue;
 	}
 
+	/* If a trash buffer has been allocated, free it now */
+	if (trashBuffer != NULL) {
+	    ckfree((char *)trashBuffer);
+	    trashBuffer = NULL;
+	}
 	if (BitSet(buf[8], LOCALCOLORMAP)) {
 	    if (!ReadColorMap(handle, bitPixel, colorMap)) {
-		Tcl_AppendResult(interp,
-			"error reading color map", (char *) NULL);
-		goto error;
+		    Tcl_AppendResult(interp, "error reading color map",
+			    (char *) NULL);
+		    goto error;
 	    }
 	}
 
@@ -547,7 +550,7 @@ ObjMatchGIF(interp, data, format, widthPtr, heightPtr)
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in interp->result.
+ *	then an error message is left in the interp's result.
  *
  * Side effects:
  *	new data is added to the image given by imageHandle.  This
@@ -604,8 +607,8 @@ ReadGIFHeader(handle, widthPtr, heightPtr)
     unsigned char buf[7];
 
     if ((ImgRead(handle, buf, 6) != 6)
-	    || ((strncmp("GIF87a", (char *) buf, 6) != 0)
-	    && (strncmp("GIF89a", (char *) buf, 6) != 0))) {
+	    || ((strncmp(GIF87a, (char *) buf, 6) != 0)
+	    && (strncmp(GIF89a, (char *) buf, 6) != 0))) {
 	return 0;
     }
 
@@ -627,357 +630,407 @@ ReadGIFHeader(handle, widthPtr, heightPtr)
 
 static int
 ReadColorMap(handle, number, buffer)
-    MFile	*handle;
-    int		number;
-    unsigned char buffer[MAXCOLORMAPSIZE][4];
+     MFile *handle;
+     int number;
+     unsigned char buffer[MAXCOLORMAPSIZE][4];
 {
-    int     i;
-    unsigned char rgb[3];
+	int i;
+	unsigned char rgb[3];
 
-    for (i = 0; i < number; ++i) {
-	if (! ReadOK(handle, rgb, sizeof(rgb)))
-			return 0;
-	if (buffer) {
+	for (i = 0; i < number; ++i) {
+	    if (! ReadOK(handle, rgb, sizeof(rgb))) {
+		return 0;
+	    }
+	
+	    if (buffer) {
 		buffer[i][CM_RED] = rgb[0] ;
 		buffer[i][CM_GREEN] = rgb[1] ;
 		buffer[i][CM_BLUE] = rgb[2] ;
 		buffer[i][CM_ALPHA] = 255 ;
+	    }
 	}
-    }
-    return 1;
+	return 1;
 }
 
 
 
 static int
 DoExtension(handle, label, transparent)
-    MFile    *handle;
-    int label;
-    int	*transparent;
+     MFile    *handle;
+     int label;
+     int *transparent;
 {
-	static unsigned char buf[256];
-	int count = 0;
+    static unsigned char buf[256];
+    int count;
 
-	switch (label) {
-		case 0x01:      /* Plain Text Extension */
-			break;
+    switch (label) {
+	case 0x01:      /* Plain Text Extension */
+	    break;
+	
+	case 0xff:      /* Application Extension */
+	    break;
 
-		case 0xff:      /* Application Extension */
-			break;
+	case 0xfe:      /* Comment Extension */
+	    do {
+		count = GetDataBlock(handle, (unsigned char*) buf);
+	    } while (count > 0);
+	    return count;
 
-		case 0xfe:      /* Comment Extension */
-			do {
-				count = GetDataBlock(handle, (unsigned char*) buf);
-			} while (count > 0);
-			return count;
-
-		case 0xf9:      /* Graphic Control Extension */
-			count = GetDataBlock(handle, (unsigned char*) buf);
-			if (count < 0) {
-				return 1;
-			}
-			if ((buf[0] & 0x1) != 0) {
-				*transparent = buf[3];
-			}
-
-			do {
-			    count = GetDataBlock(handle, (unsigned char*) buf);
-			} while (count > 0);
-			return count;
-	}
-
-	do {
+	case 0xf9:      /* Graphic Control Extension */
 	    count = GetDataBlock(handle, (unsigned char*) buf);
-	} while (count > 0);
-	return count;
+	    if (count < 0) {
+		return 1;
+	    }
+	    if ((buf[0] & 0x1) != 0) {
+		*transparent = buf[3];
+	    }
+
+	    do {
+		count = GetDataBlock(handle, (unsigned char*) buf);
+	    } while (count > 0);
+	    return count;
+    }
+
+    do {
+	count = GetDataBlock(handle, (unsigned char*) buf);
+    } while (count > 0);
+    return count;
 }
 
 static int ZeroDataBlock = 0;
 
 static int
 GetDataBlock(handle, buf)
-    MFile        *handle;
-    unsigned char   *buf;
+     MFile *handle;
+     unsigned char *buf;
 {
-	unsigned char   count;
+    unsigned char count;
 
-	if (! ReadOK(handle,&count,1)) {
-		return -1;
-	}
+    if (! ReadOK(handle,&count,1)) {
+	return -1;
+    }
 
-	ZeroDataBlock = count == 0;
+    ZeroDataBlock = count == 0;
 
-	if ((count != 0) && (! ReadOK(handle, buf, count))) {
-		return -1;
-	}
+    if ((count != 0) && (! ReadOK(handle, buf, count))) {
+	return -1;
+    }
 
-	return count;
+    return count;
 }
 
+
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ReadImage --
+ *
+ *	Process a GIF image from a given source, with a given height,
+ *      width, transparency, etc.
+ *
+ *      This code is based on the code found in the ImageMagick GIF decoder,
+ *      which is (c) 2000 ImageMagick Studio.
+ *
+ *      Some thoughts on our implementation:
+ *      It sure would be nice if ReadImage didn't take 11 parameters!  I think
+ *      that if we were smarter, we could avoid doing that.
+ *
+ *      Possible further optimizations:  we could pull the GetCode function
+ *      directly into ReadImage, which would improve our speed.
+ *
+ * Results:
+ *	Processes a GIF image and loads the pixel data into a memory array.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
 
 static int
 ReadImage(interp, imagePtr, handle, len, rows, cmap,
 	width, height, srcX, srcY, interlace, transparent)
-Tcl_Interp *interp;
-char 	*imagePtr;
-MFile    *handle;
-int len, rows;
-unsigned char   cmap[MAXCOLORMAPSIZE][4];
-int width, height;
-int srcX, srcY;
-int interlace;
-int transparent;
+     Tcl_Interp *interp;
+     char 	*imagePtr;
+     MFile    *handle;
+     int len, rows;
+     unsigned char   cmap[MAXCOLORMAPSIZE][4];
+     int width, height;
+     int srcX, srcY;
+     int interlace;
+     int transparent;
 {
-	unsigned char   c;
-	int     v;
-	int     xpos = 0, ypos = 0, pass = 0;
-	char	*pixelPtr;
+    unsigned char initialCodeSize;
+    int v;
+    int xpos = 0, ypos = 0, pass = 0, i;
+    register char *pixelPtr;
+    CONST static int interlaceStep[] = { 8, 8, 4, 2 };
+    CONST static int interlaceStart[] = { 0, 4, 2, 1 };
+    unsigned short prefix[(1 << MAX_LWZ_BITS)];
+    unsigned char  append[(1 << MAX_LWZ_BITS)];
+    unsigned char  stack[(1 << MAX_LWZ_BITS)*2];
+    register unsigned char *top;
+    int codeSize, clearCode, inCode, endCode, oldCode, maxCode,
+	code, firstCode;
 
+    /*
+     *  Initialize the decoder
+     */
+    if (! ReadOK(handle,&initialCodeSize,1))  {
+	Tcl_AppendResult(interp, "error reading GIF image: ",
+		Tcl_PosixError(interp), (char *) NULL);
+	return TCL_ERROR;
+    }
+    if (transparent!=-1) {
+	cmap[transparent][CM_RED] = 0;
+	cmap[transparent][CM_GREEN] = 0;
+	cmap[transparent][CM_BLUE] = 0;
+	cmap[transparent][CM_ALPHA] = 0;
+    }
 
-	/*
-	 *  Initialize the Compression routines
-	 */
-	if (! ReadOK(handle,&c,1))  {
-	    Tcl_AppendResult(interp, "error reading GIF image: ",
-		    Tcl_PosixError(interp), (char *) NULL);
-	    return TCL_ERROR;
-	}
+    pixelPtr = imagePtr;
 
-	if (LWZReadByte(handle, 1, c) < 0) {
-	    Tcl_AppendResult(interp, "format error in GIF image", (char*) NULL);
-	    return TCL_ERROR;
-	}
+    /* Initialize the decoder */
+    /* Set values for "special" numbers:
+     * clear code	reset the decoder
+     * end code		stop decoding
+     * code size	size of the next code to retrieve
+     * max code		next available table position
+     */
+    clearCode   = 1 << (int) initialCodeSize;
+    endCode     = clearCode + 1;
+    codeSize    = (int) initialCodeSize + 1;
+    maxCode     = clearCode + 2;
+    oldCode     = -1;
+    firstCode   = -1;
 
-	if (transparent!=-1) {
-	    cmap[transparent][CM_RED] = 0;
-	    cmap[transparent][CM_GREEN] = 0;
-	    cmap[transparent][CM_BLUE] = 0;
-	    cmap[transparent][CM_ALPHA] = 0;
-	}
+    memset((void *)prefix, 0, (1 << MAX_LWZ_BITS) * sizeof(short));
+    memset((void *)append, 0, (1 << MAX_LWZ_BITS) * sizeof(char));
+    for (i = 0; i < clearCode; i++) {
+	append[i] = i;
+    }
+    top = stack;
 
-	pixelPtr = imagePtr;
-	while ((v = LWZReadByte(handle,0,c)) >= 0 ) {
+    GetCode(handle, 0, 1);
 
-		if ((xpos>=srcX) && (xpos<srcX+len) &&
-			(ypos>=srcY) && (ypos<srcY+rows)) {
-		    *pixelPtr++ = cmap[v][CM_RED];
-		    *pixelPtr++ = cmap[v][CM_GREEN];
-		    *pixelPtr++ = cmap[v][CM_BLUE];
-		    if (transparent>=0) {
-			*pixelPtr++ = cmap[v][CM_ALPHA];
-		    }
+    /* Read until we finish the image */
+    for (i = 0, ypos = 0; i < rows; i++) {
+	for (xpos = 0; xpos < len; ) {
+
+	    if (top == stack) {
+		/* Bummer -- our stack is empty.  Now we have to work! */
+		code = GetCode(handle, codeSize, 0);
+		if (code < 0) {
+		    return TCL_OK;
 		}
-		++xpos;
-		if (xpos == width) {
-			xpos = 0;
-			if (interlace) {
-				switch (pass) {
-					case 0:
-					case 1:
-						ypos += 8; break;
-					case 2:
-						ypos += 4; break;
-					case 3:
-						ypos += 2; break;
-				}
 
-				while (ypos >= height) {
-					++pass;
-					switch (pass) {
-						case 1:
-							ypos = 4; break;
-						case 2:
-							ypos = 2; break;
-						case 3:
-							ypos = 1; break;
-						default:
-							return TCL_OK;
-					}
-				}
-			} else {
-				++ypos;
-			}
-			pixelPtr = imagePtr + (ypos-srcY) * len * ((transparent>=0)?4:3);
+		if (code > maxCode || code == endCode) {
+		    /*
+		     * If we're doing things right, we should never
+		     * receive a code that is greater than our current
+		     * maximum code.  If we do, bail, because our decoder
+		     * does not yet have that code set up.
+		     *
+		     * If the code is the magic endCode value, quit.
+		     */
+		    return TCL_OK;
 		}
-		if (ypos >= height)
-			break;
+
+		if (code == clearCode) {
+		    /* Reset the decoder */
+		    codeSize    = initialCodeSize + 1;
+		    maxCode     = clearCode + 2;
+		    oldCode     = -1;
+		    continue;
+		}
+		
+		if (oldCode == -1) {
+		    /*
+		     * Last pass reset the decoder, so the first code we
+		     * see must be a singleton.  Seed the stack with it,
+		     * and set up the old/first code pointers for
+		     * insertion into the string table.  We can't just
+		     * roll this into the clearCode test above, because
+		     * at that point we have not yet read the next code.
+		     */
+		    *top++=append[code];
+		    oldCode = code;
+		    firstCode = code;
+		    continue;
+		}
+		
+		inCode = code;
+
+		if (code == maxCode) {
+		    /*
+		     * maxCode is always one bigger than our highest assigned
+		     * code.  If the code we see is equal to maxCode, then
+		     * we are about to add a new string to the table. ???
+		     */
+		    *top++ = firstCode;
+		    code = oldCode;
+		}
+
+		while (code > clearCode) {
+		    /*
+		     * Populate the stack by tracing the string in the
+		     * string table from its tail to its head
+		     */
+		    *top++ = append[code];
+		    code = prefix[code];
+		}
+		firstCode = append[code];
+
+		/*
+		 * If there's no more room in our string table, quit.
+		 * Otherwise, add a new string to the table
+		 */
+		if (maxCode >= (1 << MAX_LWZ_BITS)) {
+		    return TCL_OK;
+		}
+
+		/* Push the head of the string onto the stack */
+		*top++ = firstCode;
+
+		/* Add a new string to the string table */
+		prefix[maxCode] = oldCode;
+		append[maxCode] = firstCode;
+		maxCode++;
+
+		/* maxCode tells us the maximum code value we can accept.
+		 * If we see that we need more bits to represent it than
+		 * we are requesting from the unpacker, we need to increase
+		 * the number we ask for.
+		 */
+		if ((maxCode >= (1 << codeSize))
+			&& (maxCode < (1<<MAX_LWZ_BITS))) {
+		    codeSize++;
+		}
+		oldCode = inCode;
+	    }
+
+	    /* Pop the next color index off the stack */
+	    v = *(--top);
+	    if (v < 0) {
+		return TCL_OK;
+	    }
+
+	    /*
+	     * If pixelPtr is null, we're skipping this image (presumably
+	     * there are more in the file and we will be called to read
+	     * one of them later)
+	     */
+	    *pixelPtr++ = cmap[v][CM_RED];
+	    *pixelPtr++ = cmap[v][CM_GREEN];
+	    *pixelPtr++ = cmap[v][CM_BLUE];
+	    if (transparent >= 0) {
+		*pixelPtr++ = cmap[v][CM_ALPHA];
+	    }
+	    xpos++;
+
 	}
-	return TCL_OK;
+
+	/* If interlacing, the next ypos is not just +1 */
+	if (interlace) {
+	    ypos += interlaceStep[pass];
+	    while (ypos >= height) {
+		pass++;
+		if (pass > 3) {
+		    return TCL_OK;
+		}
+		ypos = interlaceStart[pass];
+	    }
+	} else {
+	    ypos++;
+	}
+	pixelPtr = imagePtr + (ypos) * len * ((transparent>=0)?4:3);
+    }
+    return TCL_OK;
 }
 
-static int
-LWZReadByte(handle, flag, input_code_size)
-MFile    *handle;
-int flag;
-int input_code_size;
-{
-	static int  fresh = 0;
-	int     code, incode;
-	static int  code_size, set_code_size;
-	static int  max_code, max_code_size;
-	static int  firstcode, oldcode;
-	static int  clear_code, end_code;
-	static int  table[2][(1<< MAX_LWZ_BITS)];
-	static int  stack[(1<<(MAX_LWZ_BITS))*2], *sp;
-	register int    i;
-
-
-	if (flag) {
-
-		set_code_size = input_code_size;
-		code_size = set_code_size+1;
-		clear_code = 1 << set_code_size ;
-		end_code = clear_code + 1;
-		max_code_size = 2*clear_code;
-		max_code = clear_code+2;
-
-		GetCode(handle, 0, 1);
-
-		fresh = 1;
-
-		for (i = 0; i < clear_code; ++i) {
-			table[0][i] = 0;
-			table[1][i] = i;
-		}
-		for (; i < (1<<MAX_LWZ_BITS); ++i) {
-			table[0][i] = table[1][0] = 0;
-		}
-
-		sp = stack;
-
-		return 0;
-
-	} else if (fresh) {
-
-		fresh = 0;
-		do {
-			firstcode = oldcode = GetCode(handle, code_size, 0);
-		} while (firstcode == clear_code);
-		return firstcode;
-	}
-
-	if (sp > stack)
-		return *--sp;
-
-	while ((code = GetCode(handle, code_size, 0)) >= 0) {
-		if (code == clear_code) {
-			for (i = 0; i < clear_code; ++i) {
-				table[0][i] = 0;
-				table[1][i] = i;
-			}
-
-			for (; i < (1<<MAX_LWZ_BITS); ++i) {
-				table[0][i] = table[1][i] = 0;
-			}
-
-			code_size = set_code_size+1;
-			max_code_size = 2*clear_code;
-			max_code = clear_code+2;
-			sp = stack;
-			firstcode = oldcode = GetCode(handle, code_size, 0);
-			return firstcode;
-
-	} else if (code == end_code) {
-		int     count;
-		unsigned char   buf[260];
-
-		if (ZeroDataBlock)
-			return -2;
-
-		while ((count = GetDataBlock(handle, buf)) > 0)
-			;
-
-		if (count != 0)
-			return -2;
-	}
-
-	incode = code;
-
-	if (code >= max_code) {
-		*sp++ = firstcode;
-		code = oldcode;
-	}
-
-	while (code >= clear_code) {
-		*sp++ = table[1][code];
-		if (code == table[0][code]) {
-			return -2;
-
-			/*
-			 * Used to be this instead, Steve Ball suggested
-			 * the change to just return.
-
-			printf("circular table entry BIG ERROR\n");
-			*/
-		}
-		code = table[0][code];
-	}
-
-	*sp++ = firstcode = table[1][code];
-
-	if ((code = max_code) <(1<<MAX_LWZ_BITS)) {
-
-		table[0][code] = oldcode;
-		table[1][code] = firstcode;
-		++max_code;
-		if ((max_code>=max_code_size) && (max_code_size < (1<<MAX_LWZ_BITS))) {
-			max_code_size *= 2;
-			++code_size;
-		}
-	}
-
-	oldcode = incode;
-
-	if (sp > stack)
-		return *--sp;
-	}
-	return code;
-}
-
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetCode --
+ *
+ *      Extract the next compression code from the file.  In GIF's, the
+ *      compression codes are between 3 and 12 bits long and are then
+ *      packed into 8 bit bytes, left to right, for example:
+ *                 bbbaaaaa
+ *                 dcccccbb
+ *                 eeeedddd
+ *                 ...
+ *      We use a byte buffer read from the file and a sliding window
+ *      to unpack the bytes.  Thanks to ImageMagick for the sliding window
+ *      idea.
+ *      args:  handle         the handle to read from
+ *             code_size    size of the code to extract
+ *             flag         boolean indicating whether the extractor
+ *                          should be reset or not
+ *
+ * Results:
+ *	code                the next compression code
+ *
+ * Side effects:
+ *	May consume more input from chan.
+ *
+ *----------------------------------------------------------------------
+ */
 
 static int
 GetCode(handle, code_size, flag)
-MFile    *handle;
-int code_size;
-int flag;
+     MFile    *handle;
+     int code_size;
+     int flag;
 {
-	static unsigned char    buf[280];
-	static int      curbit, lastbit, done, last_byte;
-	int         i, j, ret;
-	unsigned char       count;
+    static unsigned char buf[280];
+    static int bytes = 0, done;
+    static unsigned char *c;
 
-	if (flag) {
-		curbit = 0;
-		lastbit = 0;
-		done = 0;
-		return 0;
+    static unsigned int window;
+    static int bitsInWindow = 0;
+    int ret;
+
+    if (flag) {
+	/* Initialize the decoder */
+	bitsInWindow = 0;
+	bytes = 0;
+	window = 0;
+	done = 0;
+	c = NULL;
+	return 0;
+    }
+
+    while (bitsInWindow < code_size) {
+	/* Not enough bits in our window to cover the request */
+	if (done) {
+	    return -1;
 	}
-
-
-	if ( (curbit+code_size) >= lastbit) {
-		if (done) {
-			/* ran off the end of my bits */
-			return -1;
-		}
-		buf[0] = buf[last_byte-2];
-		buf[1] = buf[last_byte-1];
-
-		if ((count = GetDataBlock(handle, &buf[2])) == 0)
-			done = 1;
-
-		last_byte = 2 + count;
-		curbit = (curbit - lastbit) + 16;
-		lastbit = (2+count)*8 ;
+	if (bytes == 0) {
+	    /* Not enough bytes in our buffer to add to the window */
+	    bytes = GetDataBlock(handle, buf);
+	    c = buf;
+	    if (bytes <= 0) {
+		done = 1;
+		break;
+	    }
 	}
+	/* Tack another byte onto the window, see if that's enough */
+	window += (*c) << bitsInWindow;
+	c++;
+	bitsInWindow += 8;
+	bytes--;
+    }
 
-	ret = 0;
-	for (i = curbit, j = 0; j < code_size; ++i, ++j)
-		ret |= ((buf[ i / 8 ] & (1 << (i % 8))) != 0) << j;
 
+    /* The next code will always be the last code_size bits of the window */
+    ret = window & ((1 << code_size) - 1);
 
-	curbit += code_size;
-
-	return ret;
+    /* Shift data in the window to put the next code at the end */
+    window >>= code_size;
+    bitsInWindow -= code_size;
+    return ret;
 }
 
 /*
@@ -1013,6 +1066,10 @@ int flag;
  * e-mail			zz11425958@zeus.etsimo.uniovi.es
  *                  		lolo@pcsig22.etsimo.uniovi.es
  * Date:            		Fri September 20 1996
+ *
+ * Modified for transparency handling (gif89a) and miGIF compression
+ * by Jan Nijtmans <j.nijtmans@chello.nl>
+ *
  *----------------------------------------------------------------------
  * FileWriteGIF-
  *
@@ -1021,7 +1078,7 @@ int flag;
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in interp->result.
+ *	then an error message is left in the interp's result.
  *
  *----------------------------------------------------------------------
  */
@@ -1146,7 +1203,7 @@ CommonWriteGIF(interp, handle, format, blockPtr)
 	alphaOffset = 0;
     }
 
-    ImgWrite(handle, (CONST char *) (alphaOffset ? "GIF89a":"GIF87a"), 6);
+    ImgWrite(handle, (CONST char *) (alphaOffset ? GIF89a:GIF87a), 6);
 
     for (x=0;x<MAXCOLORMAPSIZE;x++) {
 	mapa[x][CM_RED] = 255;
@@ -1201,7 +1258,8 @@ CommonWriteGIF(interp, handle, format, blockPtr)
 	ImgWrite(handle, "!\371\4\1\0\0\0", 8);
     }
 
-    ImgPutc(',',handle);
+    c = GIF_START;
+    ImgPutc(c,handle);
     c=LSB(top);
     ImgPutc(c,handle);
     c=MSB(top);
@@ -1231,7 +1289,8 @@ CommonWriteGIF(interp, handle, format, blockPtr)
     compress(resolution+1, handle, ReadValue);
 
     ImgPutc(0,handle);
-    ImgPutc(';',handle);
+    c = GIF_TERMINATOR;
+    ImgPutc(c,handle);
 
     return TCL_OK;	
 }
@@ -1416,7 +1475,7 @@ static int code_eof;
 static unsigned int obuf;
 static int obits;
 static MFile *ofile;
-static unsigned char oblock[256];
+static unsigned char oblock[MAXCOLORMAPSIZE];
 static int oblen;
 
 /* Used only when debugging GIF compression code */
@@ -1442,7 +1501,7 @@ static int set_verbose(void)
 #endif
 
 
-static const char *
+static CONST char *
 binformat(v, nbits)
     unsigned int v;
     int nbits;
@@ -1456,7 +1515,7 @@ binformat(v, nbits)
  bhand --;
  if (bhand < 0) bhand = (sizeof(bufs)/sizeof(bufs[0]))-1;
  bp = &bufs[bhand][0];
- for (bno=nbits-1,bit=1U<<bno;bno>=0;bno--,bit>>=1)
+ for (bno=nbits-1,bit=1<<bno;bno>=0;bno--,bit>>=1)
   { *bp++ = (v & bit) ? '1' : '0';
     if (((bno&3) == 0) && (bno != 0)) *bp++ = '.';
   }
@@ -1733,7 +1792,7 @@ static void compress( init_bits, handle, readValue )
     give better compression. */
  out_clear_init = (init_bits <= 3) ? 9 : (out_bump_init-1);
 #ifdef DEBUGGING_ENVARS
-  { const char *ocienv;
+  { CONST char *ocienv;
     ocienv = getenv("GIF_OUT_CLEAR_INIT");
     if (ocienv)
      { out_clear_init = atoi(ocienv);

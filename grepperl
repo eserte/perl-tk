@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl 
+#!/tools/local/perl -w
 
 use Getopt::Std;
 
@@ -36,7 +36,7 @@ sub match
      $count++;
      unless ($opt{'c'})
       {
-       print "$File::Find::dir/$file:$.: $_" 
+       print "$File::Find::dir/$file:$.: $_"
       }
     }
   }
@@ -48,9 +48,9 @@ sub match
      return 1;
     }
    $count++;
-   unless ($opt{'c'})
+   unless ($opt{'c'} || $opt{'l'})
     {
-     print "$File::Find::dir/$file:$.: $_" 
+     print "$File::Find::dir/$file:$.: $_"
     }
   }
  return 0;
@@ -65,7 +65,11 @@ sub wanted
    local $file   = ($_);
    local ($_);
    local $count = 0;
-   open($file,"<$file") || die "Cannot open $file:$!";
+   unless (open($file,"<$file"))
+    {
+     warn "Cannot open $file:$!";
+     return;
+    }
    while (<$file>)
     {
      last if &match;
@@ -73,7 +77,7 @@ sub wanted
    close($file);
    if ($opt{'c'} && $count)
     {
-     print "$File::Find::dir/$file: $count\n" 
+     print "$File::Find::dir/$file: $count\n"
     }
   }
  elsif (-d $_)

@@ -1145,7 +1145,7 @@ Tix_TLInsert(clientData, interp, argc, argv)
      */
 
     /* (1.1) Find out where */
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &at, 1) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, objv[0], &at, 1) != TCL_OK) {
 	code = TCL_ERROR; goto done;
     }
 
@@ -1264,7 +1264,7 @@ Tix_TLIndex(clientData, interp, argc, argv)
     int index;
     char buff[100];
 
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &index, 0) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, objv[0], &index, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1408,7 +1408,7 @@ static int Tix_TLGetNeighbor(wPtr, interp, type, argc, argv)
 	Tix_ArgcError(interp, argc+3, argv-3, 3, "index");
     }
 
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &index, 0) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, objv[0], &index, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1822,11 +1822,11 @@ Tix_TLGetFromTo(interp, wPtr, argc, argv, fromPtr_ret, toPtr_ret)
     ListEntry * toPtr;
     int from, to, tmp;
 
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &from, 0) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, objv[0], &from, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (argc == 2) {
-	if (Tix_TranslateIndex(wPtr, interp, args[1], &to, 0) != TCL_OK) {
+	if (Tix_TranslateIndex(wPtr, interp, objv[1], &to, 0) != TCL_OK) {
 	    return TCL_ERROR;
 	}
     } else {

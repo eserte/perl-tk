@@ -1,0 +1,9 @@
+#!/tools/local/perl -w
+use strict;
+$^I = '.bak';
+while (<>)
+ {
+  s/\bArg\b[^\S\n]*/Tcl_Obj */g;
+  s/[^\S\n]+$//;
+  print;
+ }

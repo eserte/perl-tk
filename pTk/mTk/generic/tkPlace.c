@@ -1,4 +1,4 @@
-/* 
+/*
  * tkPlace.c --
  *
  *	This file contains code to implement a simple geometry manager
@@ -303,7 +303,8 @@ Tk_PlaceCmd(clientData, interp, argc, argv)
 	if ((slavePtr->masterPtr != NULL)
 		&& (slavePtr->masterPtr->tkwin != Tk_Parent(slavePtr->tkwin))) {
 	    Tcl_AppendElement(interp, "-in");
-	    Tcl_AppendArg(interp, LangWidgetArg(interp,slavePtr->masterPtr->tkwin));
+	    Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp),
+                LangWidgetObj(interp,slavePtr->masterPtr->tkwin));
 	}
     } else if ((c == 's') && (strncmp(argv[1], "slaves", length) == 0)) {
 	if (argc != 3) {
@@ -317,7 +318,8 @@ Tk_PlaceCmd(clientData, interp, argc, argv)
 	    masterPtr = (Master *) Tcl_GetHashValue(hPtr);
 	    for (slavePtr = masterPtr->slavePtr; slavePtr != NULL;
 		    slavePtr = slavePtr->nextPtr) {
-		Tcl_AppendArg(interp, LangWidgetArg(interp,slavePtr->tkwin));
+		Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp),
+			LangWidgetObj(interp,slavePtr->tkwin));
 	    }
 	}
     } else {
@@ -778,7 +780,7 @@ RecomputePlacement(clientData)
 		height += slavePtr->height;
 	    }
 	    if (slavePtr->flags & CHILD_REL_HEIGHT) {
-		/* 
+		/*
 		 * See note above for rounding errors in width computation.
 		 */
 

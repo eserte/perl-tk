@@ -3,11 +3,12 @@
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
-#ifndef __GNUC__
 #include <windows.h>
 #include <shellapi.h>
-#endif
 
+#ifdef __CYGWIN__
+# undef WIN32
+#endif
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>

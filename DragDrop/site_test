@@ -3,7 +3,11 @@ use Tk;
 use strict;
 use Tk::DropSite;
 use vars qw($kind $STRING $FILE_NAME);           
-BEGIN  { $kind = ($^O eq 'MSWin32') ? ['Win32'] : ['Sun','XDND','KDE'] }
+BEGIN
+{
+ $kind = ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))?
+          ['Win32'] : ['Sun','XDND','KDE']
+}
 use Tk::DropSite @$kind;
 use Tk::DragDrop @$kind;
 use Tk::Menubar;  

@@ -5,7 +5,7 @@
  *
  * Written by:
  *	Jan Nijtmans
- *	CMG (Computer Management Group) Arnhem B.V.
+ *	CMG Oost-Nederland B.V.
  *	email: j.nijtmans@chello.nl (private)
  *	       jan.nijtmans@cmg.nl (work)
  *	url:   http://purl.oclc.org/net/nijtmans/
@@ -420,7 +420,7 @@ NextBitmapWord(parseInfoPtr)
 	*dst = buf;
 	dst++;
 	parseInfoPtr->wordLength++;
-	if (parseInfoPtr->wordLength > MAX_WORD_LENGTH) {
+	if (num == 0 || parseInfoPtr->wordLength > MAX_WORD_LENGTH) {
 	    return TCL_ERROR;
 	}
     }

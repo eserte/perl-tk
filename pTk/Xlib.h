@@ -11,7 +11,7 @@ extern char *XKeysymToString  _ANSI_ARGS_((KeySym));
 extern Atom XInternAtom  _ANSI_ARGS_((Display *, const char *, int));
 extern Colormap XCreateColormap  _ANSI_ARGS_((Display *, Window, Visual *, int));
 extern Cursor XCreatePixmapCursor  _ANSI_ARGS_((Display *, Pixmap, Pixmap, XColor *, XColor *, unsigned int, unsigned int));
-extern Cursor XCreateGlyphCursor  _ANSI_ARGS_((Display *, Font, Font, unsigned int, unsigned int, XColor *, XColor *));
+extern Cursor XCreateGlyphCursor  _ANSI_ARGS_((Display *, Font, Font, unsigned int, unsigned int, XColor const *, XColor const *));
 extern Font XLoadFont  _ANSI_ARGS_((Display *, const char *));
 extern GC XCreateGC  _ANSI_ARGS_((Display *, Drawable, long unsigned int, XGCValues *));
 extern GContext XGContextFromGC  _ANSI_ARGS_((GC));
@@ -141,6 +141,7 @@ extern int XChangeGC _ANSI_ARGS_(( Display*, GC, unsigned long, XGCValues *));
 extern char **XListFonts _ANSI_ARGS_(( Display*, const char *, int, int *));
 extern int XFreeFontNames _ANSI_ARGS_((char **));
 extern Window XGetSelectionOwner _ANSI_ARGS_((Display *, Atom));
+extern int XRectInRegion _ANSI_ARGS_(( Region,int,int,unsigned,unsigned));
 #endif /* _XLIB_H_ */
 extern int _XInitImageFuncPtrs _ANSI_ARGS_((XImage *image));
 #endif /* _XLIB */

@@ -1,4 +1,4 @@
-/* 
+/*
  * tixGrSel.c --
  *
  *	This module handles the sorting of the Grid widget.
@@ -23,7 +23,7 @@
  * "lsort" needs internal mutual exclusion.
  */
 
-static Tcl_Interp *sortInterp = NULL;	/* Interpreter for "lsort" command. 
+static Tcl_Interp *sortInterp = NULL;	/* Interpreter for "lsort" command.
 					 * NULL means no lsort is active. */
 static enum {ASCII, INTEGER, REAL, COMMAND} sortMode;
 					/* Mode for sorting:compare as strings,
@@ -184,20 +184,20 @@ Tix_GrSort(clientData, interp, argc, argv)
     /* get the start and end index
      */
     if (axis == 0) {
-	if (TixGridDataGetIndex(interp, wPtr, args[1], NULL, &start, NULL)
+	if (TixGridDataGetIndex(interp, wPtr, objv[1], NULL, &start, NULL)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
-	if (TixGridDataGetIndex(interp, wPtr, args[2], NULL, &end, NULL)
+	if (TixGridDataGetIndex(interp, wPtr, objv[2], NULL, &end, NULL)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
     } else {
-	if (TixGridDataGetIndex(interp, wPtr, NULL, args[1], NULL, &start)
+	if (TixGridDataGetIndex(interp, wPtr, NULL, objv[1], NULL, &start)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
-	if (TixGridDataGetIndex(interp, wPtr, NULL, args[2], NULL, &end)
+	if (TixGridDataGetIndex(interp, wPtr, NULL, objv[2], NULL, &end)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
@@ -265,14 +265,14 @@ Tix_GrSort(clientData, interp, argc, argv)
 	else if (strncmp(argv[i], "-key", len) == 0) {
 	    if (axis == 0) {
 		/* sort columns: the key is a column index (1) */
-		if (TixGridDataGetIndex(interp, wPtr, NULL, args[i+1], NULL,
+		if (TixGridDataGetIndex(interp, wPtr, NULL, objv[i+1], NULL,
 			&sortKeyIndex) !=TCL_OK) {
 		    sortCode = TCL_ERROR;
 		    goto done;
 		}
 	    } else {
 		/* sort rows: the key is a row index (0)*/
-		if (TixGridDataGetIndex(interp, wPtr, args[i+1], NULL,
+		if (TixGridDataGetIndex(interp, wPtr, objv[i+1], NULL,
 			&sortKeyIndex, NULL) !=TCL_OK) {
 		    sortCode = TCL_ERROR;
 		    goto done;
@@ -281,7 +281,7 @@ Tix_GrSort(clientData, interp, argc, argv)
 	}
 	else if (strncmp(argv[i], "-command", len) == 0) {
 	    sortMode = COMMAND;
-	    command = LangMakeCallback(args[i+1]);
+	    command = LangMakeCallback(objv[i+1]);
 	}
 	else {
 	    Tcl_AppendResult(interp, "wrong option \"", argv[i],
@@ -423,7 +423,7 @@ SortCompareProc(first, second)
 	    order = -1;
 	}
     } else {
-#ifdef _LANG 
+#ifdef _LANG
 	/* FIXME */
 	Tcl_Panic("Need Callback Handling Added");
 	return 0;

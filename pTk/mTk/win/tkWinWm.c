@@ -1303,7 +1303,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    }
 	    return TCL_OK;
 	}
-	if (Tcl_ListObjGetElements(interp, args[3], &windowArgc, &windowArgv)
+	if (Tcl_ListObjGetElements(interp, objv[3], &windowArgc, &windowArgv)
 		!= TCL_OK) {
 	    return TCL_ERROR;
 	}
@@ -1361,7 +1361,8 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (argc == 3) {
 	    if (wmPtr->cmdArgv != NULL) {
-		Tcl_ArgResult(interp, wmPtr->cmdArgv);
+		Tcl_IncrRefCount(wmPtr->cmdArgv);
+		Tcl_SetObjResult(interp, wmPtr->cmdArgv);
 	    }
 	    return TCL_OK;
 	}
@@ -1376,13 +1377,13 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    }
 	    return TCL_OK;
 	}
-	if (Tcl_ListObjGetElements(interp, args[3], &cmdArgc, &cmdArgv) != TCL_OK) {
+	if (Tcl_ListObjGetElements(interp, objv[3], &cmdArgc, &cmdArgv) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (wmPtr->cmdArgv != NULL) {
 	    Tcl_DecrRefCount(wmPtr->cmdArgv);
 	}
-	wmPtr->cmdArgv = args[3];
+	wmPtr->cmdArgv = objv[3];
 	Tcl_IncrRefCount(wmPtr->cmdArgv);
 	if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
 	    char **cmdArgs = (char **) ckalloc((cmdArgc+1)*sizeof(char *));
@@ -2024,7 +2025,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    for (protPtr = wmPtr->protPtr; protPtr != NULL;
 		    protPtr = protPtr->nextPtr) {
 		if (protPtr->protocol == protocol) {
-		    Tcl_ArgResult(interp,LangCallbackArg(protPtr->command));
+		    Tcl_SetObjResult(interp,LangCallbackObj(protPtr->command));
 		    return TCL_OK;
 		}
 	    }
@@ -2056,7 +2057,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    protPtr->nextPtr = wmPtr->protPtr;
 	    wmPtr->protPtr = protPtr;
 	    protPtr->interp = interp;
-	    protPtr->command = LangMakeCallback(args[4]);
+	    protPtr->command = LangMakeCallback(objv[4]);
 	}
     } else if ((c == 'r') && (strncmp(argv[1], "resizable", length) == 0)) {
 	int width, height;
@@ -2177,7 +2178,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	}
 	if (argc == 3) {
 	    if (wmPtr->masterPtr != NULL) {
-		Tcl_ArgResult(interp, LangWidgetArg(interp, (Tk_Window)(wmPtr->masterPtr)));
+		Tcl_SetObjResult(interp, LangWidgetObj(interp, (Tk_Window)(wmPtr->masterPtr)));
 	    }
 	    return TCL_OK;
 	}

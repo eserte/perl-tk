@@ -324,7 +324,7 @@ static void		DumpLine _ANSI_ARGS_((Tcl_Interp *interp,
 			    TkText *textPtr, int what, TkTextLine *linePtr,
 			    int start, int end, int lineno, LangCallback *command));
 static int		DumpSegment _ANSI_ARGS_((Tcl_Interp *interp, char *key,
-			    char *value, Arg arg, LangCallback *command, int lineno, int offset,
+			    char *value, Tcl_Obj *arg, LangCallback *command, int lineno, int offset,
 			    int what));
 static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
 			    Tk_Tile tile, Tk_Item *itemPtr));
@@ -758,7 +758,7 @@ TextWidgetCmd(clientData, interp, argc, argv)
 			}
 			ckfree((char *) oldTagArrayPtr);
 		    }
-		    if (Tcl_ListObjGetElements(interp, args[j+1], &numTags, &tagNames)
+		    if (Tcl_ListObjGetElements(interp, objv[j+1], &numTags, &tagNames)
 			    != TCL_OK) {
 			result = TCL_ERROR;
 			goto done;
@@ -1788,7 +1788,7 @@ TextSearchCmd(textPtr, interp, argc, argv)
 		return TCL_ERROR;
 	    }
 	    i++;
-	    varName = args[i];
+	    varName = objv[i];
 	} else if ((c == 'e') && (strncmp(argv[i], "-exact", length) == 0)) {
 	    exact = 1;
 	} else if ((c == 'e') && (strncmp(argv[i], "-elide", length) == 0)) {
@@ -2277,7 +2277,7 @@ TextDumpCmd(textPtr, interp, argc, argv)
 		Tcl_AppendResult(interp, "Usage: ", argv[0], " dump ?-all -image -text -mark -tag -window? ?-command script? index ?index2?", NULL);
 		return TCL_ERROR;
 	    }
-	    command = LangMakeCallback(args[arg]);
+	    command = LangMakeCallback(objv[arg]);
 	} else {
 	    Tcl_AppendResult(interp, "Usage: ", argv[0], " dump ?-all -image -text -mark -tag -window? ?-command script? index ?index2?", NULL);
 	    return TCL_ERROR;
@@ -2417,8 +2417,10 @@ DumpLine(interp, textPtr, what, linePtr, start, end, lineno, command)
 		  DumpSegment(interp, "image", eiPtr->name, NULL,
 			command, lineno, offset, what);
 		} else {
-		  DumpSegment(interp, "image", NULL, LangObjectArg( interp, eiPtr->name),
+		    Tcl_Obj *obj = LangObjectObj( interp, eiPtr->name);
+		    DumpSegment(interp, "image", NULL, obj,
 			command, lineno, offset, what);
+		    Tcl_DecrRefCount(obj);
 		}
 	    } else if ((what & TK_DUMP_WIN) &&
 			(segPtr->typePtr->name[0] == 'w')) {
@@ -2427,8 +2429,10 @@ DumpLine(interp, textPtr, what, linePtr, start, end, lineno, command)
 		    DumpSegment(interp, "window", NULL,  NULL,
 			command, lineno, offset, what);
 		} else {
-		    DumpSegment(interp, "window", NULL,  LangWidgetArg(interp, ewPtr->tkwin),
+		    Tcl_Obj *obj = LangWidgetObj(interp, ewPtr->tkwin);
+		    DumpSegment(interp, "window", NULL,  obj,
 			command, lineno, offset, what);
+		    Tcl_DecrRefCount(obj);
 		}
 	    }
 	}
@@ -2462,7 +2466,8 @@ DumpSegment(interp, key, value, arg, command, lineno, offset, what)
     if (command == (LangCallback *) NULL) {
 	Tcl_AppendElement(interp, key);
 	if (arg || !value) {
-	    Tcl_AppendArg(interp, arg);
+	    Tcl_IncrRefCount(arg);
+	    Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp), arg);
 	} else {
 	    Tcl_AppendElement(interp, value);
 	}

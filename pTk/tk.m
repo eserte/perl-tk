@@ -10,16 +10,16 @@
 #  define LangFindVar (*TkVptr->V_LangFindVar)
 #endif
 
-#ifndef LangFontArg
-#  define LangFontArg (*TkVptr->V_LangFontArg)
+#ifndef LangFontObj
+#  define LangFontObj (*TkVptr->V_LangFontObj)
 #endif
 
-#ifndef LangObjectArg
-#  define LangObjectArg (*TkVptr->V_LangObjectArg)
+#ifndef LangObjectObj
+#  define LangObjectObj (*TkVptr->V_LangObjectObj)
 #endif
 
-#ifndef LangWidgetArg
-#  define LangWidgetArg (*TkVptr->V_LangWidgetArg)
+#ifndef LangWidgetObj
+#  define LangWidgetObj (*TkVptr->V_LangWidgetObj)
 #endif
 
 #ifndef Lang_CreateImage

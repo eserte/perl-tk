@@ -226,7 +226,7 @@ static int CommonReadBMP(interp, handle, imageHandle, destX, destY,
     CommonMatchBMP(handle, &fileWidth, &fileHeight, &colorMap, &numBits,
 	    &numCols, &comp);
 
-    /*printf("reading %d-bit BMP %dx%d\n", numBits, width, height);*/
+    /* printf("reading %d-bit BMP %dx%d\n", numBits, width, height); */
     if (comp != 0) {
 	Tcl_AppendResult(interp,
 		"Compressed BMP files not (yet) supported", (char *) NULL);
@@ -405,7 +405,6 @@ static int CommonWriteBMP(interp, handle, blockPtr)
     unsigned char *imagePtr, *pixelPtr;
     unsigned char buf[4];
     int colors[256];
-    int testnum = 10;
 
     greenOffset = blockPtr->offset[1] - blockPtr->offset[0];
     blueOffset = blockPtr->offset[2] - blockPtr->offset[0];
@@ -429,8 +428,12 @@ static int CommonWriteBMP(interp, handle, blockPtr)
 		else
 		    pixel = (pixelPtr[0]<<16) | (pixelPtr[greenOffset]<<8) | pixelPtr[blueOffset];
 		for (i = 0; i < ncolors && pixel != colors[i]; i++);
-		if ((i == ncolors) && (ncolors < 256))
-		    colors[ncolors++] = pixel;
+		if (i == ncolors) {
+		    if (ncolors < 256) {
+			colors[ncolors] = pixel;
+		    }
+		    ncolors++;
+		}
 		pixelPtr += blockPtr->pixelSize;
 	    }
 	}
@@ -472,17 +475,6 @@ static int CommonWriteBMP(interp, handle, blockPtr)
 
     imagePtr =  blockPtr->pixelPtr + blockPtr->offset[0]
 	    + blockPtr->height * blockPtr->pitch;
-    greenOffset = blockPtr->offset[1] - blockPtr->offset[0];
-    blueOffset = blockPtr->offset[2] - blockPtr->offset[0];
-    alphaOffset = blockPtr->offset[0];
-    if (alphaOffset < blockPtr->offset[2]) {
-	alphaOffset = blockPtr->offset[2];
-    }
-    if (++alphaOffset < blockPtr->pixelSize) {
-	alphaOffset -= blockPtr->offset[0];
-    } else {
-	alphaOffset = 0;
-    }
     for (y = 0; y < blockPtr->height; y++) {
 	pixelPtr = imagePtr -= blockPtr->pitch;
 	for (x=0; x<blockPtr->width; x++) {
@@ -502,9 +494,6 @@ static int CommonWriteBMP(interp, handle, blockPtr)
 		buf[2] = pixelPtr[0];
 	    }
 	    ImgWrite(handle, (char *) buf, nbytes);
-	    if (testnum >0) {
-		testnum--;
-	    }
 	    pixelPtr += blockPtr->pixelSize;
 	}
 	if (bperline) {

@@ -1,4 +1,4 @@
-/* 
+/*
  * ptkCanvGroup.c --
  *
  *	This file implements grid items for canvas
@@ -35,7 +35,7 @@ typedef struct GroupItem  {
 
 /*
  * Information used for parsing configuration specs:
- */       
+ */
 
 static int		MembersParseProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, Tk_Window tkwin,
@@ -47,7 +47,7 @@ static Arg		MembersPrintProc _ANSI_ARGS_((ClientData clientData,
 
 static Tk_CustomOption stateOption = {
     Tk_StateParseProc,
-    Tk_StatePrintProc, (ClientData) 2
+    Tk_StatePrintProc, (ClientData) 3
 };
 static Tk_CustomOption tagsOption = {
     Tk_CanvasTagsParseProc,
@@ -108,7 +108,7 @@ static void		TranslateGroup _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, double deltaX, double deltaY));
 static int		GroupIndex _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, Tcl_Obj *indexString,
-			    int *indexPtr));         
+			    int *indexPtr));
 static int		GroupInsert _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, int beforeThis, Tcl_Obj *string));
 static void		GroupInsertProc _ANSI_ARGS_((Tk_Canvas canvas,
@@ -137,7 +137,7 @@ Tk_ItemType ptkCanvGroupType = {
     ScaleGroup,				/* scaleProc */
     TranslateGroup,			/* translateProc */
     GroupIndex,				/* indexProc */
-    (Tk_ItemCursorProc *) NULL,		/* icursorProc */  /* Abuse to set active? */   
+    (Tk_ItemCursorProc *) NULL,		/* icursorProc */  /* Abuse to set active? */
     (Tk_ItemSelectionProc *) NULL,	/* selectionProc */
     GroupInsertProc,			/* insertProc */
     GroupDChars,			/* dTextProc */
@@ -203,7 +203,7 @@ CreateGroup(interp, canvas, itemPtr, argc, args)
 {
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     int i;
-                                                     
+
     if (argc==1) {
 	i = 1;
     } else {
@@ -353,7 +353,7 @@ ConfigureGroup(interp, canvas, itemPtr, argc, args, flags)
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;       
+    int i;
     Tk_Window tkwin = Tk_CanvasTkwin(canvas);
 
     if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, args,
@@ -401,24 +401,24 @@ DeleteGroup(canvas, itemPtr, display)
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;       
+    int i;
 
     canvasPtr->activeGroup = itemPtr;
     for (i=groupPtr->numMembers-1; i >= 0; i--) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	TkGroupRemoveItem(subitemPtr);  
+	TkGroupRemoveItem(subitemPtr);
 	
 #ifdef DELETE_GROUP_DELETES_MEMBERS
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    (*subitemPtr->typePtr->deleteProc)(canvas, subitemPtr, display);
 	}
 #endif
     }
     canvasPtr->activeGroup = saveGroup;
     if (groupPtr->members) {
-	ckfree((char *) groupPtr->members);      
+	ckfree((char *) groupPtr->members);
     }
-}              
+}
 
 
 void
@@ -432,13 +432,13 @@ Tk_Item *itemPtr;
 	    if (groupPtr->members[i] == itemPtr) {
 		int j;
 		for (j=i+1; j < groupPtr->numMembers; j++) {
-		    groupPtr->members[j-1] = groupPtr->members[j];   
+		    groupPtr->members[j-1] = groupPtr->members[j];
 		}
 		itemPtr->redraw_flags |= FORCE_REDRAW;
 		groupPtr->numMembers--;
 		itemPtr->group = NULL;
 		return;
-	    }     
+	    }
 	}
     }
   itemPtr->group = NULL;
@@ -476,12 +476,12 @@ ComputeGroupBbox(canvas, groupPtr)
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, &groupPtr->header);
     int seen = 0;
-    int i;       
+    int i;
 
     canvasPtr->activeGroup = &groupPtr->header;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    if (Tk_GetItemState(canvas, subitemPtr) == TK_STATE_HIDDEN) {
 		continue;
 	    }
@@ -493,21 +493,21 @@ ComputeGroupBbox(canvas, groupPtr)
 		groupPtr->header.x2 = subitemPtr->x2;
 		groupPtr->header.y2 = subitemPtr->y2;
 	    } else {
-		if (subitemPtr->x1 < groupPtr->header.x1) { 
+		if (subitemPtr->x1 < groupPtr->header.x1) {
 		     groupPtr->header.x1 = subitemPtr->x1;
 		}
-		if (subitemPtr->y1 < groupPtr->header.y1) { 
+		if (subitemPtr->y1 < groupPtr->header.y1) {
 		     groupPtr->header.y1 = subitemPtr->y1;
 		}
-		if (subitemPtr->x2 > groupPtr->header.x2) { 
+		if (subitemPtr->x2 > groupPtr->header.x2) {
 		     groupPtr->header.x2 = subitemPtr->x2;
 		}
-		if (subitemPtr->y2 > groupPtr->header.y2) { 
+		if (subitemPtr->y2 > groupPtr->header.y2) {
 		     groupPtr->header.y2 = subitemPtr->y2;
 		}
 	    }
 	}
-    }          
+    }
     canvasPtr->activeGroup = saveGroup;
 
     /* If all items were hidden then have a "null" bbox */
@@ -552,20 +552,20 @@ DisplayGroup(canvas, itemPtr, display, drawable, x, y, width, height)
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;       
+    int i;
     if (state == TK_STATE_HIDDEN) {
 	return;
     }
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    if (Tk_GetItemState(canvas, subitemPtr) == TK_STATE_HIDDEN) {
 		continue;
 	    }
-	    if (drawable != None || 
+	    if (drawable != None ||
 		(subitemPtr->typePtr->flags & TK_ITEM_ALWAYS_REDRAW)) {
-		(*subitemPtr->typePtr->displayProc)(canvas, subitemPtr, display, 
+		(*subitemPtr->typePtr->displayProc)(canvas, subitemPtr, display,
 		    drawable, x, y, width, height);
 	    }
 	}
@@ -585,7 +585,7 @@ DisplayGroup(canvas, itemPtr, display, drawable, x, y, width, height)
  *	The return value is 0 if the point whose x and y coordinates
  *	are coordPtr[0] and coordPtr[1] is inside the group.  If the
  *	point isn't inside the rectangle then the return value is the
- *	distance from the point to the group. 
+ *	distance from the point to the group.
  *
  * Side effects:
  *	None.
@@ -604,7 +604,7 @@ GroupToPoint(canvas, itemPtr, pointPtr)
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;       
+    int i;
 
     double best = 1.0e36;
 
@@ -612,10 +612,15 @@ GroupToPoint(canvas, itemPtr, pointPtr)
 	return best;
     }
 
+    /* If the group is active it is invisible to picking */
+    if (state == TK_STATE_ACTIVE) {
+	return best;
+    }
+
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    double try = (*subitemPtr->typePtr->pointProc)(canvas, subitemPtr, pointPtr);
 	    if (try < best) {
 		best = try;
@@ -663,19 +668,24 @@ GroupToArea(canvas, itemPtr, areaPtr)
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;                                            
+    int i;
 #define ALL_OUTSIDE 1
 #define ALL_INSIDE  2
-    int seen    = ALL_INSIDE|ALL_OUTSIDE;          
+    int seen    = ALL_INSIDE|ALL_OUTSIDE;
 
     if (state == TK_STATE_HIDDEN) {
+	return -1;
+    }
+
+    /* If the group is active it is invisible to picking */
+    if (state == TK_STATE_ACTIVE) {
 	return -1;
     }
 
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    int inner =  (*subitemPtr->typePtr->areaProc)(canvas, subitemPtr, areaPtr);
 	    if (inner < 0)   /* outside */
 		seen &= ~ALL_INSIDE;  /* clear the inside option */
@@ -690,12 +700,12 @@ GroupToArea(canvas, itemPtr, areaPtr)
     canvasPtr->activeGroup = saveGroup;
 
     switch (seen) {
-      case 0 : 
+      case 0 :
        return 0;
-      case ALL_INSIDE  : 
+      case ALL_INSIDE  :
        return 1;
       default:
-      case ALL_OUTSIDE : 
+      case ALL_OUTSIDE :
        return -1;
     }
 }
@@ -734,7 +744,7 @@ ScaleGroup(canvas, itemPtr, originX, originY, scaleX, scaleY)
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;       
+    int i;
 
     groupPtr->posn[0] = originX + scaleX*(groupPtr->posn[0] - originX);
     groupPtr->posn[1] = originY + scaleY*(groupPtr->posn[1] - originY);
@@ -742,7 +752,7 @@ ScaleGroup(canvas, itemPtr, originX, originY, scaleX, scaleY)
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    (*subitemPtr->typePtr->scaleProc)(canvas, subitemPtr, originX, originY, scaleX, scaleY);
 	}
     }
@@ -780,13 +790,13 @@ TranslateGroup(canvas, itemPtr, deltaX, deltaY)
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
-    int i;       
+    int i;
     groupPtr->posn[0] += deltaX;
     groupPtr->posn[1] += deltaY;
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
+	if (subitemPtr != NULL) {
 	    (*subitemPtr->typePtr->translateProc)(canvas, subitemPtr, deltaX, deltaY);
 	}
     }
@@ -830,12 +840,12 @@ GroupToPostscript(interp, canvas, itemPtr, prepass)
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
     int code = TCL_OK;
-    int i;       
+    int i;
     canvasPtr->activeGroup = itemPtr;
     for (i=0; i < groupPtr->numMembers; i++) {
 	Tk_Item *subitemPtr = groupPtr->members[i];
-	if (subitemPtr != NULL) {            
-	    code = (*subitemPtr->typePtr->postscriptProc)(interp, canvas, 
+	if (subitemPtr != NULL) {
+	    code = (*subitemPtr->typePtr->postscriptProc)(interp, canvas,
 			subitemPtr, prepass);
 	    if (code != TCL_OK) {
 		break;
@@ -858,7 +868,7 @@ int *indexPtr;
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i;  
+    int i;
     int length;
     int id;
     char *string;
@@ -873,7 +883,7 @@ int *indexPtr;
 	&& Tk_CanvasGetCoordFromObj(interp, canvas, objv[0], &point[0]) == TCL_OK
 	&& Tk_CanvasGetCoordFromObj(interp, canvas, objv[1], &point[1]) == TCL_OK) {
 	goto doxy;
-    } 
+    }
 
     string = Tcl_GetStringFromObj(obj, &length);
     if (string[0] == 'e') {
@@ -902,7 +912,7 @@ int *indexPtr;
 	point[1] = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
-	}                 
+	}
      doxy:
 	bestDist = 1.0e36;
 	*indexPtr = 0;
@@ -931,7 +941,7 @@ int *indexPtr;
 	}
     }
     return TCL_OK;
-}         
+}
 
 static int
 GroupInsert(canvas, itemPtr, beforeThis, string)
@@ -939,7 +949,7 @@ Tk_Canvas canvas;
 Tk_Item *itemPtr;
 int beforeThis;
 Tcl_Obj *string;
-{  
+{
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
@@ -947,7 +957,7 @@ Tcl_Obj *string;
     Tcl_Obj **objv;
     int argc;
     int i;
-    int id;                            
+    int id;
     if (Tcl_ListObjGetElements(groupPtr->interp,string,&argc,&objv) == TCL_OK) {
 	int count = 0;
 	for (i=0; i < argc; i++) {
@@ -955,15 +965,15 @@ Tcl_Obj *string;
 		Tcl_HashEntry *entryPtr = Tcl_FindHashEntry(&canvasPtr->idTable, (char *) id);
 		if (entryPtr != NULL) {
 		    Tk_Item *subitemPtr = (Tk_Item *) Tcl_GetHashValue(entryPtr);
-		    if (subitemPtr == NULL 
+		    if (subitemPtr == NULL
 			|| subitemPtr == itemPtr
 			|| subitemPtr->group == itemPtr) {
 			continue;
 		    }
 		    if (subitemPtr->group != NULL) {
 			TkGroupRemoveItem(subitemPtr);
-		    }       
-		    count++;                        
+		    }
+		    count++;
 		}
 	    } else {
 		return TCL_ERROR;
@@ -974,7 +984,7 @@ Tcl_Obj *string;
 	    if (groupPtr->members == NULL) {
 		groupPtr->members = (Tk_Item **)ckalloc(i*sizeof(Tk_Item *));
 	    } else {
-		groupPtr->members = (Tk_Item **)ckrealloc((char *)groupPtr->members, 
+		groupPtr->members = (Tk_Item **)ckrealloc((char *)groupPtr->members,
 					i*sizeof(Tk_Item *));
 	    }
 	    if (groupPtr->members != NULL) {
@@ -984,12 +994,12 @@ Tcl_Obj *string;
 		groupPtr->numSlots   = 0;
 		Tcl_SetResult(groupPtr->interp,"Out of memory",TCL_STATIC);
 		return TCL_ERROR;
-	    }   
+	    }
 	}
 	/* Move tail up */
 	for (i=groupPtr->numMembers-1; i >= beforeThis; i--) {
 		groupPtr->members[i+count] = groupPtr->members[i];
-	}                                 
+	}
 	/* Fill in slots */
 	groupPtr->numMembers += count;
 	for (i=0; i < argc; i++) {
@@ -998,7 +1008,7 @@ Tcl_Obj *string;
 		Tcl_HashEntry *entryPtr = Tcl_FindHashEntry(&canvasPtr->idTable, (char *) id);
 		if (entryPtr != NULL) {
 		    Tk_Item *subitemPtr = (Tk_Item *) Tcl_GetHashValue(entryPtr);
-		    if (subitemPtr == NULL 
+		    if (subitemPtr == NULL
 			|| subitemPtr == itemPtr
 			|| subitemPtr->group == itemPtr) {
 			continue;
@@ -1008,9 +1018,9 @@ Tcl_Obj *string;
 		    groupPtr->members[beforeThis] = subitemPtr;
 		    beforeThis++;
 		    count--;
-		} 
-	    } 
-	} 
+		}
+	    }
+	}
 	if (count != 0) {
 	   abort();
 	}
@@ -1044,17 +1054,17 @@ int last;
     GroupItem *groupPtr = (GroupItem *) itemPtr;
     Tk_Item *saveGroup  = canvasPtr->activeGroup;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
-    int i; 
+    int i;
 
     if (first < 0) {
 	first = 0;
-    }           
+    }
     if (last >=  groupPtr->numMembers) {
 	last = groupPtr->numMembers-1;
     }
     if (first > last) {
 	return;
-    }         
+    }
     for (i=last; i >= first; i--) {
 	TkGroupRemoveItem(groupPtr->members[i]);
     }
@@ -1064,31 +1074,31 @@ int last;
 static int
 MembersParseProc(clientData,interp,tkwin,value,recordPtr,offset)
 ClientData clientData;
-Tcl_Interp *interp; 
+Tcl_Interp *interp;
 Tk_Window tkwin;
-Arg value; 
-char *recordPtr; 
+Arg value;
+char *recordPtr;
 int offset;
-{          
-    Tk_Item *itemPtr    = (Tk_Item *) recordPtr;   
-    GroupItem *groupPtr = (GroupItem *) itemPtr;   
+{
+    Tk_Item *itemPtr    = (Tk_Item *) recordPtr;
+    GroupItem *groupPtr = (GroupItem *) itemPtr;
     int code = TCL_OK;
     Tk_CanvasEventuallyRedraw(groupPtr->canvas, itemPtr->x1, itemPtr->y1, itemPtr->x2, itemPtr->y2);
-    GroupDChars(groupPtr->canvas, itemPtr, 0, groupPtr->numMembers-1); 
+    GroupDChars(groupPtr->canvas, itemPtr, 0, groupPtr->numMembers-1);
     code = GroupInsert(groupPtr->canvas, itemPtr, 0, value);
     Tk_CanvasEventuallyRedraw(groupPtr->canvas, itemPtr->x1, itemPtr->y1, itemPtr->x2, itemPtr->y2);
     return code;
 }
 
 static Arg
-MembersPrintProc(clientData,tkwin,recordPtr,offset,freeProcPtr) 
+MembersPrintProc(clientData,tkwin,recordPtr,offset,freeProcPtr)
 ClientData clientData;
 Tk_Window tkwin;
 char *recordPtr;
 int offset;
 Tcl_FreeProc **freeProcPtr;
 {
-    GroupItem *groupPtr = (GroupItem *) recordPtr;   
+    GroupItem *groupPtr = (GroupItem *) recordPtr;
     Tcl_Obj *result = Tcl_NewListObj(0,NULL);
     int i;
     for (i=0; i < groupPtr->numMembers; i++) {

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkConfig.c --
  *
  *	This file contains the Tk_ConfigureWidget procedure.
@@ -43,7 +43,7 @@ static Arg 		FormatConfigInfo _ANSI_ARGS_ ((Tcl_Interp *interp,
 			    char *widgRec));
 static Arg		FormatConfigValue _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, Tk_ConfigSpec *specPtr,
-			    char *widgRec, 
+			    char *widgRec,
 			    Tcl_FreeProc **freeProcPtr));
 
 /*
@@ -128,7 +128,7 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 	char *arg;
 
 	if (flags & TK_CONFIG_OBJS) {
-	    arg = Tcl_GetStringFromObj(*args, NULL);
+	    arg = Tcl_GetStringFromObj(*objv, NULL);
 	} else {
 	    arg = *argv;
 	}
@@ -136,16 +136,16 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 	if (specPtr == NULL) {
 	    if (!(flags & TK_CONFIG_ARGV_ONLY)) {
 		/*
-		 * Handle generic, tkwin related create-time only options 
+		 * Handle generic, tkwin related create-time only options
 		 */
-		char *string  = LangString(*args);
+		char *string  = LangString(*objv);
 		size_t length = strlen(string);
 
 		if (LangCmpOpt("-class", string, length) == 0) {
-		    Tk_SetClass(tkwin, LangString(args[1]));  
+		    Tk_SetClass(tkwin, LangString(objv[1]));
 		    continue;
 		}
-	    }                
+	    }
 	    Tcl_SprintfResult(interp,"Bad option `%s'",*argv);
 	    return TCL_ERROR;
 	}
@@ -167,7 +167,7 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 	}
 	if (DoConfig(interp, tkwin, specPtr, arg, 0, widgRec) != TCL_OK) { }
 #endif /* DASH PATCH */
-	if (DoConfig(interp, tkwin, specPtr, args[1], widgRec) != TCL_OK) {
+	if (DoConfig(interp, tkwin, specPtr, objv[1], widgRec) != TCL_OK) {
 	    char msg[100];
 
 	    sprintf(msg, "\n    (processing \"%.40s\" option)",
@@ -206,7 +206,7 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 		if (DoConfig(interp, tkwin, specPtr, value, widgRec) !=
 			TCL_OK) {
 		    char msg[200];
-    
+
 		    sprintf(msg, "\n    (%s \"%.50s\" in widget \"%.50s\")",
 			    "database entry for",
 			    specPtr->dbName, Tk_PathName(tkwin));
@@ -227,7 +227,7 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 			sprintf(msg,
 				"\n    (%s \"%.50s\" in widget \"%.50s\")",
 				"default value for",
-				(specPtr->dbName) ? specPtr->dbName : specPtr->argvName, 
+				(specPtr->dbName) ? specPtr->dbName : specPtr->argvName,
 				Tk_PathName(tkwin));
 			Tcl_AddErrorInfo(interp, msg);
 			if (value) {
@@ -339,7 +339,7 @@ FindConfigSpec(interp, specs, argvName, needFlags, hateFlags)
 			argvName, "\"", (char *) NULL);
 		return (Tk_ConfigSpec *) NULL;
 	    }
-	    if ((specPtr->dbName == matchPtr->dbName) 
+	    if ((specPtr->dbName == matchPtr->dbName)
 		    && (specPtr->type != TK_CONFIG_SYNONYM)
 		    && ((specPtr->specFlags & needFlags) == needFlags)
 		    && !(specPtr->specFlags & hateFlags)) {
@@ -408,7 +408,7 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 		    return TCL_ERROR;
 		}
 		break;
-	    case TK_CONFIG_OBJECT: 
+	    case TK_CONFIG_OBJECT:
 	    case TK_CONFIG_STRING: {
 		char *old, *new;
 
@@ -441,22 +441,22 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 		break;
             }
             case TK_CONFIG_LANGARG: {
-		Arg old, new;
+		Tcl_Obj *old, *new;
 
 		if (nullValue) {
 		    new = NULL;
 		} else {
 		    new = LangCopyArg(value);
 		}
-		old = *((Arg *) ptr);
+		old = *((Tcl_Obj **) ptr);
 		if (old != NULL) {
 		    LangFreeArg(old,TCL_DYNAMIC);
 		}
-		*((Arg *) ptr) = new;
+		*((Tcl_Obj **) ptr) = new;
 		break;
             }
-            case TK_CONFIG_SCALARVAR: 
-            case TK_CONFIG_HASHVAR: 
+            case TK_CONFIG_SCALARVAR:
+            case TK_CONFIG_HASHVAR:
             case TK_CONFIG_ARRAYVAR: {
 		Var old, new;
 
@@ -506,7 +506,7 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 
 		if (nullValue) {
 		    new = NULL;
-		} else {   
+		} else {
 		    Arg tmp = LangCopyArg(value);
 		    new = Tk_GetFontFromObj(interp, tkwin, tmp);
 		    LangFreeArg(tmp, TCL_DYNAMIC);
@@ -521,8 +521,8 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 	    case TK_CONFIG_BITMAP: {
 		Pixmap new, old;
 
-		if (nullValue || 
-		   (( specPtr->specFlags & TK_CONFIG_NULL_OK) && 
+		if (nullValue ||
+		   (( specPtr->specFlags & TK_CONFIG_NULL_OK) &&
                       !*LangString(value)))  {
 		    new = None;
 	        } else {
@@ -568,8 +568,8 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 	    case TK_CONFIG_ACTIVE_CURSOR: {
 		Tk_Cursor new, old;
 
-		if (nullValue || 
-		   (( specPtr->specFlags & TK_CONFIG_NULL_OK) && 
+		if (nullValue ||
+		   (( specPtr->specFlags & TK_CONFIG_NULL_OK) &&
                       !*LangString(value)))  {
 		    new = None;
 		} else {
@@ -724,8 +724,7 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
 	    return TCL_ERROR;
 	}
         result = FormatConfigInfo(interp, tkwin, specPtr, widgRec);
-        Tcl_ArgResult(interp,result);
-        LangFreeArg(result,TCL_DYNAMIC);
+        Tcl_SetObjResult(interp,result);
 	return TCL_OK;
     }
 
@@ -733,8 +732,8 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
      * Loop through all the specs, creating a big list with all
      * their information.
      */
-                                              
-    result = Tcl_NewListObj(0,NULL);    
+
+    result = Tcl_NewListObj(0,NULL);
 
     for (specPtr = specs; specPtr->type != TK_CONFIG_END; specPtr++) {
 	Arg val;
@@ -750,11 +749,10 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
 	    continue;
 	}
 	val = FormatConfigInfo(interp, tkwin, specPtr, widgRec);
-	Tcl_ListObjAppendElement(interp,result,val); 
+	Tcl_ListObjAppendElement(interp,result,val);
     }
 
-    Tcl_ArgResult(interp,result);
-    LangFreeArg(result,TCL_DYNAMIC);
+    Tcl_SetObjResult(interp,result);
     return TCL_OK;
 }
 
@@ -797,23 +795,23 @@ FormatConfigInfo(interp, tkwin, specPtr, widgRec)
         args[2] = Tcl_NewStringObj(specPtr->dbClass,-1);
         args[3] = Tcl_NewStringObj(specPtr->defValue,-1);
 
-        args[4] = FormatConfigValue(interp, tkwin, specPtr, widgRec, 
+        args[4] = FormatConfigValue(interp, tkwin, specPtr, widgRec,
 		&freeProc);
 
         if (args[1] == NULL) {
 	    LangSetDefault(&args[1],"");
-        }                         
-        if (args[2] == NULL) {    
+        }
+        if (args[2] == NULL) {
 	    LangSetDefault(&args[2],"");
-        }                         
-        if (args[3] == NULL) {    
+        }
+        if (args[3] == NULL) {
 	    LangSetDefault(&args[3],"");
-        }                         
-        if (args[4] == NULL) {    
+        }
+        if (args[4] == NULL) {
 	    LangSetDefault(&args[4],"");
         }
         return Tcl_NewListObj(5, args);
-    } 
+    }
 }
 
 /*
@@ -838,7 +836,7 @@ FormatConfigInfo(interp, tkwin, specPtr, widgRec)
  *----------------------------------------------------------------------
  */
 
-static Arg 
+static Arg
 FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
     Tcl_Interp *interp;		/* Interpreter for use in real conversions. */
     Tk_Window tkwin;		/* Window corresponding to widget. */
@@ -873,16 +871,17 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	    LangSetString(&result,*(char **) ptr);
 	    break;
 	case TK_CONFIG_OBJECT:
-	    LangSetArg(&result,LangObjectArg(interp, *(char **) ptr));
+	    LangSetObj(&result,LangObjectObj(interp, *(char **) ptr));
 	    break;
 	case TK_CONFIG_CALLBACK:
-	    LangSetArg(&result,LangCallbackArg(*(LangCallback **) ptr));
+	    LangSetObj(&result,LangCallbackObj(*(LangCallback **) ptr));
 	    break;
 	case TK_CONFIG_LANGARG:
-	    LangSetArg(&result,*((Arg *) ptr));
+            Tcl_IncrRefCount(*((Tcl_Obj **) ptr));
+	    LangSetObj(&result,*((Tcl_Obj **) ptr));
 	    break;
-        case TK_CONFIG_SCALARVAR: 
-        case TK_CONFIG_HASHVAR: 
+        case TK_CONFIG_SCALARVAR:
+        case TK_CONFIG_HASHVAR:
         case TK_CONFIG_ARRAYVAR:
 	    LangSetVar(&result,*(Var *) ptr);
 	    break;
@@ -903,7 +902,7 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	case TK_CONFIG_FONT: {
 	    Tk_Font tkfont = *((Tk_Font *) ptr);
 	    if (tkfont != NULL) {
-		LangSetArg(&result, LangFontArg(interp, tkfont, NULL));
+		LangSetObj(&result, LangFontObj(interp, tkfont, NULL));
 	    }
 	    break;
 	}
@@ -948,10 +947,10 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	    LangSetInt(&result,*((int *) ptr));
 	    break;
 	case TK_CONFIG_MM:
-	    LangSetDouble(&result, *((double *) ptr)); 
+	    LangSetDouble(&result, *((double *) ptr));
 	    break;
 	case TK_CONFIG_WINDOW: {
-	    LangSetArg(&result, LangWidgetArg(interp, *((Tk_Window *) ptr)));
+	    LangSetObj(&result, LangWidgetObj(interp, *((Tk_Window *) ptr)));
 	    break;
 	}
 	case TK_CONFIG_CUSTOM:
@@ -959,10 +958,10 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 		    specPtr->customPtr->clientData, tkwin, widgRec,
 		    specPtr->offset, freeProcPtr);
 	    break;
-	default: 
+	default:
 	    LangSetString(&result,"?? unknown type ??");
     }
-    if (!result)    
+    if (!result)
 	LangSetDefault(&result,"");
     return result;
 }
@@ -1002,7 +1001,7 @@ Tk_ConfigureValue(interp, tkwin, specs, widgRec, argvName, flags)
 {
     Tk_ConfigSpec *specPtr;
     int needFlags, hateFlags;
-    Arg value;
+    Tcl_Obj *value;
     Tcl_FreeProc *freeProc = NULL;
     needFlags = flags & ~(TK_CONFIG_USER_BIT - 1);
     if (Tk_Depth(tkwin) <= 1) {
@@ -1017,8 +1016,7 @@ Tk_ConfigureValue(interp, tkwin, specs, widgRec, argvName, flags)
 
     value = FormatConfigValue(interp, tkwin, specPtr, widgRec, &freeProc);
 
-    Tcl_ArgResult(interp, value);
-    LangFreeArg(value,freeProc);
+    Tcl_SetObjResult(interp, value);
     return TCL_OK;
 }
 
@@ -1073,9 +1071,9 @@ Tk_FreeOptions(specs, widgRec, display, needFlags)
 		    *((Arg *) ptr) = NULL;
 		}
 		break;
-            case TK_CONFIG_SCALARVAR: 
-            case TK_CONFIG_HASHVAR: 
-            case TK_CONFIG_ARRAYVAR: 
+            case TK_CONFIG_SCALARVAR:
+            case TK_CONFIG_HASHVAR:
+            case TK_CONFIG_ARRAYVAR:
 		if (*((Var *) ptr) != NULL) {
 		    LangFreeVar(*((Var *) ptr));
 		    *((Var *) ptr) = NULL;

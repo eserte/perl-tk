@@ -1,18 +1,24 @@
-#!/usr/local/bin/nperl 
+#!/tools/local/perl -w
+use strict;
 
 use File::Find;
 use Getopt::Std;
 
 my %opt;
-getopts("mlc",\%opt);
+getopts("milce:",\%opt);
 
-$expr = shift;
+my $count;
+use vars qw($file);
 
-print "Matching '$expr'\n";
+my $expr = (defined $opt{'e'}) ? $opt{'e'} : shift;
+warn "Matching '$expr'\n";
+
+my $re = ($opt{'i'}) ? qr/$expr/i : qr/$expr/;
+
 
 sub match
 {
- if (/$expr/o)
+ if ($_ =~ $re)
   {
    if ($opt{'l'})
     {
@@ -22,7 +28,7 @@ sub match
    $count++;
    unless ($opt{'c'})
     {
-     print "$File::Find::name:$.: $_" 
+     print "$File::Find::name:$.: $_"
     }
   }
  return 0;
@@ -35,6 +41,7 @@ sub wanted
   {
    local $file   = ($_);
    local ($_);
+   no strict 'refs';
    open($file,"<$file") || die "Cannot open $file:$!";
    while (<$file>)
     {
@@ -43,7 +50,7 @@ sub wanted
    close($file);
    if ($opt{'c'} && $count)
     {
-     print "$File::Find::name: $count\n" 
+     print "$File::Find::name: $count\n"
     }
   }
  elsif (-d $_)
