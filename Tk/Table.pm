@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use Tk::Pretty;
 use AutoLoader;
@@ -13,10 +13,19 @@ use base qw(Tk::Frame);
 
 Construct Tk::Widget 'Table';
 
+# Constants for QueueLayout flags
+sub _SlaveSize   () {  1 } # Slave has asked for change of width or height
+sub _SlaveChange () {  2 } # We lost or gained a slave
+sub _ViewChange  () {  4 } # xview or yview called
+sub _ConfigEvent () {  8 } # Table has changed size
+sub _ScrollBars  () { 32 } # Scrollabrs came or went
+sub _RowColCount () { 16 } # rows or columns configured
+
+
 sub ClassInit
 {
  my ($class,$mw) = @_;
- $mw->bind($class,'<Configure>',['QueueLayout',8]);
+ $mw->bind($class,'<Configure>',['QueueLayout',_ConfigEvent]);
  $mw->bind($class,'<FocusIn>',  'NoOp');
  $mw->XYscrollBind($class);
  return $class;
@@ -35,7 +44,7 @@ sub _view
    $$s += $num;
   }
  $$s = 0 if ($$s < 0);
- $t->QueueLayout(4);
+ $t->QueueLayout(_ViewChange);
 }
 
 sub xview
@@ -69,15 +78,7 @@ sub Populate
                  '-fixedcolumns'       => [METHOD => 'fixedColumn','FixedColumns',0],
                  '-highlightthickness' => [SELF => 'highlightThickness','HighlightThickness',2]
                  );
- $t->{'Width'}  = [];
- $t->{'Height'} = [];
- $t->{'Row'}    = [];
- $t->{'Slave'}  = {};
- $t->{'Top'}    = 0;
- $t->{'Left'}   = 0;
- $t->{'Bottom'} = 0;
- $t->{'Right'}  = 0;
- $t->{LayoutPending} = 0;
+ $t->_init;
 }
 
 sub sizeN
@@ -128,6 +129,7 @@ sub constrain
   }
  for ($i=$n; $total < $pixels && $i < @$a; $i++)
   {
+   $a->[$i] ||= 0;
    $total += $a->[$i];
   }
  while ($n > $fixed)
@@ -212,7 +214,7 @@ sub Layout
  my $top  = $t->{Top}+$frows;
  my $left = $t->{Left}+$fcols;
 
- if ($why & 49)
+ if ($why & (_ScrollBars|_RowColCount|_SlaveSize))
   {
    # Width and/or Height of element or
    # number of rows and/or columns or
@@ -232,6 +234,7 @@ sub Layout
    for ($r = 0; $r < $rows; $r++)
     {
      my $h = $t->{Height}[$r];
+     next unless defined $h;
      if (($r < $top && $r >= $frows) || ($y+$h > $H-$badj))
       {
        if (defined $t->{Row}[$r])
@@ -346,13 +349,13 @@ sub SlaveGeometryRequest
  if ($sw > $m->{Width}[$col])
   {
    $m->{Width}[$col] = $sw;
-   $m->QueueLayout(1);
+   $m->QueueLayout(_SlaveSize);
    $sz++;
   }
- if ($sh > $m->{Height}[$row])
+ if ( (not defined ($m->{Height}[$row])) or $sh > $m->{Height}[$row])
   {
    $m->{Height}[$row] = $sh;
-   $m->QueueLayout(1);
+   $m->QueueLayout(_SlaveSize);
    $sz++;
   }
  if (!$sz)
@@ -381,7 +384,36 @@ sub LostSlave
   {
    $t->BackTrace('Cannot find' . $s->PathName);
   }
- $t->QueueLayout(2);
+ $t->QueueLayout(_SlaveChange);
+}
+
+sub clear {
+    my $self = shift;
+    my $rows = $self->cget(-rows);
+    my $cols = $self->cget(-columns);
+    foreach my $r (1 .. $rows) {
+	foreach my $c (1 .. $cols) {
+	    my $old = $self->get( $r, $c );
+	    next unless $old;
+	    $self->LostSlave($old);
+	    $old->destroy;
+	}
+    }
+    $self->_init;
+    $self->QueueLayout(_SlaveSize);
+}
+
+sub _init {
+    my $self = shift;
+    $self->{'Width'}  = [];
+    $self->{'Height'} = [];
+    $self->{'Row'}    = [];
+    $self->{'Slave'}  = {};
+    $self->{'Top'}    = 0;
+    $self->{'Left'}   = 0;
+    $self->{'Bottom'} = 0;
+    $self->{'Right'}  = 0;
+    $self->{LayoutPending} = 0;
 }
 
 sub put
@@ -407,7 +439,7 @@ sub put
  $t->{Row}[$row][$col] = $w;
  $t->{Slave}{$w->PathName} = [$row,$col];
  $t->SlaveGeometryRequest($w);
- $t->QueueLayout(2);
+ $t->QueueLayout(_SlaveChange);
  return $old;
 }
 
@@ -421,7 +453,7 @@ sub scrollbars
  if (@_ > 1)
   {
    $t->_configure(-scrollbars => $v);
-   $t->QueueLayout(32);
+   $t->QueueLayout(_ScrollBars);
   }
  return $t->_cget('-scrollbars');
 }
@@ -443,7 +475,7 @@ sub rows
       }
      splice @{ $t->{Row} }, $r;
     }
-   $t->QueueLayout(16);
+   $t->QueueLayout(_RowColCount);
   }
  return $t->_cget('-rows');
 }
@@ -454,7 +486,7 @@ sub fixedrows
  if (@_ > 1)
   {
    $t->_configure(-fixedrows => $r);
-   $t->QueueLayout(16);
+   $t->QueueLayout(_RowColCount);
   }
  return $t->_cget('-fixedrows');
 }
@@ -480,7 +512,7 @@ sub columns
        }
       }
     }
-   $t->QueueLayout(16);
+   $t->QueueLayout(_RowColCount);
   }
  return $t->_cget('-columns');
 }
@@ -491,7 +523,7 @@ sub fixedcolumns
  if (@_ > 1)
   {
    $t->_configure(-fixedcolumns => $r);
-   $t->QueueLayout(16);
+   $t->QueueLayout(_RowColCount);
   }
  return $t->_cget('-fixedcolumns');
 }
@@ -534,13 +566,13 @@ sub see
    if ($row < $t->{Top})
     {
      $t->{Top} = $row;
-     $t->QueueLayout(4);
+     $t->QueueLayout(_ViewChange);
      $see = 0;
     }
    elsif ($row >= $t->{Bottom})
     {
      $t->{Top} += ($row - $t->{Bottom}+1);
-     $t->QueueLayout(4);
+     $t->QueueLayout(_ViewChange);
      $see = 0;
     }
   }
@@ -549,13 +581,13 @@ sub see
    if ($col < $t->{Left})
     {
      $t->{Left} = $col;
-     $t->QueueLayout(4);
+     $t->QueueLayout(_ViewChange);
      $see = 0;
     }
    elsif ($col >= $t->{Right})
     {
      $t->{Left} += ($col - $t->{Right}+1);
-     $t->QueueLayout(4);
+     $t->QueueLayout(_ViewChange);
      $see = 0;
     }
   }

@@ -1,3 +1,39 @@
+Change 2996 on 2003/11/16 by nick@llama
+
+	Steve's ->clear method for Table. (Add to POD as well).
+	Then re-work Table not to use magical numbers in the flags.
+
+Change 2995 on 2003/11/16 by nick@llama
+
+	MakeDepend should take account of -I and -D in ccflags
+	which is passed to test compiles and real build.
+	This will find "png.h" in /usr/local/include for example
+
+Change 2989 on 2003/11/16 by nick@llama
+
+	Propagate CC= from %Config to ./configure i zlib
+
+Change 2988 on 2003/11/10 by nick@llama
+
+	Avoid using winPtr of original owner to clean up after
+	a INCR slection request.
+
+Change 2987 on 2003/11/10 by nick@llama
+
+	Modern MakeMaker does not need/have ->dir_target()
+
+Change 2986 on 2003/11/09 by nick@llama
+
+	Steve's Photo tweaks, docs and demo
+
+Change 2985 on 2003/11/02 by nick@llama
+
+	New style $VERSION for files we touched.
+
+Change 2984 on 2003/11/02 by nick@llama
+
+	Update Change.log
+
 Change 2983 on 2003/11/02 by nick@llama
 
 	HList's ->header('size',0) command is unreliable as measure of height

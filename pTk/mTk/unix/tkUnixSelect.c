@@ -1147,7 +1147,8 @@ ConvertSelection(winPtr, eventPtr)
 	    Tcl_DoOneEvent(0);
 	}
 	Tcl_DeleteTimerHandler(incr.timeout);
-	errorHandler = Tk_CreateErrorHandler(winPtr->display,
+	/* winPtr may have been destroyed now */
+	errorHandler = Tk_CreateErrorHandler(reply.display,
 		-1, -1,-1, (int (*)()) NULL, (ClientData) NULL);
 	XSelectInput(reply.display, reply.requestor, 0L);
 	Tk_DeleteErrorHandler(errorHandler);

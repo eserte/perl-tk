@@ -21,6 +21,7 @@ if ($^O eq 'MSWin32')
  }
 else
  {
+  $ENV{CC} = $Config{cc};
   system(sh => "./configure");
  }
 1;

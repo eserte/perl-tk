@@ -43,6 +43,9 @@ table using:
 
  $table->put($row,$col,$widget)
 
+If I<$widget> is not a reference it is treated as a string, and
+a Lable widget is created with the string as its text.
+
 All the widgets in each column are set to the same width - the requested
 width of the widest widget in the column.
 Likewise, all the widgets in each row are set to the same height - the requested
@@ -61,6 +64,13 @@ keys scroll the displayed widgets.
 The Table will create and manage its own scrollbars if requested via
 -scrollbars.
 
+The table can be emptied using
+
+ $table->clear
+
+the widgets which were in the table are destroyed.
+
+
 The Tk::Table widget is derived from a Tk::Frame, so inherits all its
 configure options.
 
@@ -70,7 +80,7 @@ configure options.
 
 =item *
 
-Very large Tables consume a lot of X windows
+Very large Tables consume a lot of X windows.
 
 =item *
 

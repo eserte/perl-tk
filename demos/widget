@@ -197,6 +197,10 @@ demos 'Paned Windows', (
     'paned2'     => 'Vertical paned window',
 );
 
+demos 'Photos and Images', (
+    'photo1'     => 'Transparent Photo pixels',
+);
+
 demos 'Menus', (
     'menus'      => 'Menus and cascades (sub-menus)',
     'menus2'     => 'As above, but using Perl/Tk -menuitems',
@@ -247,7 +251,7 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n      2003/08/05",
+		       "\nTk Version $Tk::VERSION\n\n      2003/11/07",
 );
 $help->cget(-menu)->entryconfigure('About',
     -command => [$DIALOG_ABOUT => 'Show'],

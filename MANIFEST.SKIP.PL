@@ -69,7 +69,7 @@ C\+\+/Main$
 \bConfig.pm$
 \bpTk/tkConfig\.h$
 \bpTk/(need|canvas_sources)$
-\b(pm_to_blib|perl|wedge|efdebug)$
+\b(pm_to_blib|blibdirs|perl|wedge|efdebug)$
 [%~]$
 \b(blib|merge|Ilya|Pixmap|patches|pod2)/
 \bTix/

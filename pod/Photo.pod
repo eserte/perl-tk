@@ -25,10 +25,13 @@ transparent.  A photo image is stored internally in full color (32
 bits per pixel), and is displayed using dithering if necessary.  Image
 data for a photo image can be obtained from a file or a string, or it
 can be supplied from
-C code through a procedural interface.  At present, only GIF and PPM/PGM
+C code through a procedural interface.  At present, only GIF,
+XBM, XPM, BMP, JPEG, PNG and PPM/PGM
 formats are supported, but an interface exists to allow additional
 image file formats to be added easily.  A photo image is transparent
-in regions where no image data has been supplied.
+in regions where no image data has been supplied
+or where it has been set transparent by the B<transparencySet>
+subcommand.
 
 =head1 CREATING PHOTOS
 
@@ -39,7 +42,10 @@ B<Photo> supports the following I<options>:
 
 =item B<-data> =E<gt> I<string>
 
-Specifies the contents of the image as a string.  The format of the
+Specifies the contents of the image as a string.
+The string can
+contain base64 encoded data or binary data.
+The format of the
 string must be one of those for which there is an image file format
 handler that will accept string data.  If both the B<-data>
 and B<-file> options are specified, the B<-file> option takes
@@ -122,16 +128,16 @@ window it is displayed in will show through.
 
 =item I<$image>-E<gt>B<copy>(I<sourceImage> ?,I<option value(s) ...>?)
 
-Copies a region from the image called I<sourceImage> (which must
+Copies a region from the image called I<$sourceImage> (which must
 be a photo image) to the image called I<$image>, possibly with
 pixel zooming and/or subsampling.  If no options are specified, this
-method copies the whole of I<sourceImage> into I<$image>,
+method copies the whole of I<$sourceImage> into I<$image>,
 starting at coordinates (0,0) in I<$image>.  The following
 options may be specified:
 
 =over 8
 
-=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
+=item B<-from> =E<gt> I<x1, y1, ? ,x2, y2?>
 
 Specifies a rectangular sub-region of the source image to be copied.
 (I<x1,y1>) and (I<x2,y2>) specify diagonally opposite corners of
@@ -141,7 +147,7 @@ pixels copied will include the left and top edges of the specified
 rectangle but not the bottom or right edges.  If the B<-from>
 option is not given, the default is the whole source image.
 
-=item B<-to> =E<gt> I<x1 y1 ?x2 y2?>
+=item B<-to> =E<gt> I<x1, y1, ?, x2, y2?>
 
 Specifies a rectangular sub-region of the destination image to be
 affected.  (I<x1,y1>) and (I<x2,y2>) specify diagonally opposite
@@ -159,7 +165,7 @@ corner of the image.  This option will not affect the width or height
 of the image if the user has specified a non-zero value for the
 B<-width> or B<-height> configuration option, respectively.
 
-=item B<-zoom> =E<gt> I<x y>
+=item B<-zoom> =E<gt> I<x, y>
 
 Specifies that the source region should be magnified by a factor of
 I<x> in the X direction and I<y> in the Y direction.  If I<y>
@@ -168,7 +174,7 @@ option, each pixel in the source image will be expanded into a block
 of I<x> x I<y> pixels in the destination image, all the same
 color.  I<x> and I<y> must be greater than 0.
 
-=item B<-subsample> =E<gt> I<x y>
+=item B<-subsample> =E<gt> I<x, y>
 
 Specifies that the source image should be reduced in size by using
 only every I<x>th pixel in the X direction and I<y>th pixel in
@@ -176,11 +182,22 @@ the Y direction.  Negative values will cause the image to be flipped
 about the Y or X axes, respectively.  If I<y> is not given, the
 default value is the same as I<x>.
 
+=item B<-compositingrule> =E<gt> I<rule>
+
+Specifies how transparent pixels in the source image are combined with
+the destination image.  When a compositing rule of I<overlay> is
+set, the old contents of the destination image are visible, as if the
+source image were printed on a piece of transparent film and placed
+over the top of the destination.  When a compositing rule of I<set>
+is set, the old contents of the destination image are discarded and
+the source image is used as-is.  The default compositing rule is
+I<overlay>.
+
 =back
 
 =item I<$image>-E<gt>B<data>(?I<option value(s), ...>?)
 
-returns image data in the form of a string.
+Returns image data in the form of a string.
 The following options may be specified:
 
 =over 8
@@ -193,30 +210,31 @@ the specified color.
 
 =item B<-format> =E<gt> I<format-name>
 
-Specifies the name of the image file format handler to be used to
-convert the data.  Specifically, this method searches
+Specifies the name of the image file format handler to be used.
+Specifically, this method searches
 for the first handler whose name matches a initial substring of
-I<format-name> and which has the capability to write an string.
-If this option is not given, the data is returned in the default
-format as accepted by I<$image>-E<gt>B<put>.
+I<format-name> and which has the capability to read this image data.
+If this option is not given, this method uses the first
+handler that has the capability to read the image data.
 
-=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
+=item B<-from> =E<gt> I<x1, y1, ?, x2, y2?>
 
-Specifies a rectangular region of I<$image> to be written to the
-string.  If only I<x1> and I<y1> are specified, the region
+Specifies a rectangular region of I<$image> to be 
+returned.  If only I<x1> and I<y1> are specified, the region
 extends from I<(x1,y1)> to the bottom-right corner of
 I<$image>.  If all four coordinates are given, they specify
-diagonally opposite corners of the rectangular region.  The default,
+diagonally opposite corners of the rectangular region, including x1,y1
+and excluding x2,y2.  The default,
 if this option is not given, is the whole image.
-
-=back
 
 =item B<-grayscale>
 
 If this options is specified, the data will not contain color
 information. All pixel data will be transformed into grayscale.
 
-=item I<$image>-E<gt>B<get>(I<x,y>)
+=back
+
+=item I<$image>-E<gt>B<get>(I<x, y>)
 
 Returns the color of the pixel at coordinates (I<x>,I<y>) in the
 image as a list of three integers between 0 and 255, representing the
@@ -224,49 +242,37 @@ red, green and blue components respectively.
 
 =item I<$image>-E<gt>B<put>(I<data> ?,B<-format>=E<gt>I<format-name>? ?,B<-to>=E<gt>I< x1 y1 ?x2 y2?>?)
 
-Sets pixels in I< imageName> to the data specified in
-I<data>. This command first searches the list of image file
-format handlers for a handler that can interpret the data
-in I<data>, and then reads the image in I<filename> into
-I<imageName> (the destination image). The following options
-may be specified:
+Sets pixels in I<$image> to the data specified in I<data>.
+This command first searches the list of image file format handlers for
+a handler that can interpret the data in I<data>, and then reads
+the image encoded within into I<$image> (the destination image).
+If I<data> does not match any known format, an attempt to interpret
+it as a (top-to-bottom) list of scan-lines is made, with each
+scan-line being a (left-to-right) list of pixel colors (see
+B<Tk_GetColor> for a description of valid colors.)  Every scan-line
+must be of the same length.  Note that when I<data> is a single
+color name, you are instructing Tk to fill a rectangular region with
+that color.  The following options may be specified:
 
 =over 4
 
-=item B<-format >I<format-name>
+=item B<-format> =E<gt>I<format-name>
 
 Specifies the format of the image data in I<data>.
 Specifically, only image file format handlers whose names begin with
 I<format-name> will be used while searching for an image data
-format handler to read the data. Otherwise I<data> is used to form a two-dimensional array of pixels
-that are then copied into the I<$image>. I<data> is structured
-then as a list of horizontal rows, from top to bottom, each of which is
-a list of colors, listed from left to right.  Each color may be specified
-by name (e.g., blue) or in hexadecimal form (e.g., #2376af).
+format handler to read the data.
 
-=item B<-from >I<x1 y1 x2 y2>
+=item B<-to> =E<gt>I<x, y> ?I<, x2, y2>?
 
-Specifies a rectangular sub-region of the image file data to be
-returned. If only I<x1> and I<y1> are specified, the region
-extends from (I<x1,y1>) to the bottom-right corner of the image
-in the image file.  If all four coordinates are specified, they
-specify diagonally opposite corners or the region. The default,
-if this option is not specified, is the whole of the image.
-
-=item B<-shrink>
-
-If this option, the size of I<imageName> will be reduced, if
-necessary, so that the region into which the image file data are read
-is at the bottom-right corner of the I<imageName>.  This option
-will not affect the width or height of the image if the user has
-specified a non-zero value for the B<-width> or B<-height>
-configuration option, respectively.
-
-=item B<-to >I<x y>
-
-Specifies the coordinates of the top-left corner of the region of
-I<imageName> into which data from I<filename> are to be read.
-The default is (0,0).
+Specifies the coordinates of the top-left corner (I<x1>,I<y1>)
+of the region of I<$image> into which data from I<filename>
+are to be read.  The default is (0,0).  If I<x2>,I<y2> is given
+and I<data> is not large enough to cover the rectangle specified by
+this option, the image data extracted will be tiled so it covers the
+entire destination rectangle.  Note that if I<data> specifies a
+single color value, then a region extending to the bottom-right corner
+represented by (I<x2>,I<y2>) will be filled with that color.
 
 =back
 
@@ -288,7 +294,7 @@ Specifically, only image file format handlers whose names begin with
 I<format-name> will be used while searching for an image data
 format handler to read the data.
 
-=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
+=item B<-from> =E<gt> I<x1, y1, x2, y2>
 
 Specifies a rectangular sub-region of the image file data to be copied
 to the destination image.  If only I<x1> and I<y1> are
@@ -300,14 +306,14 @@ image in the image file.
 
 =item B<-shrink>
 
-If this option, the size of I<$image> will be reduced, if
+If this option is specified, the size of I<$image> will be reduced, if
 necessary, so that the region into which the image file data are read
 is at the bottom-right corner of the I<$image>.  This option
 will not affect the width or height of the image if the user has
 specified a non-zero value for the B<-width> or B<-height>
 configuration option, respectively.
 
-=item B<-to> =E<gt> I<x y>
+=item B<-to> =E<gt> I<x, y>
 
 Specifies the coordinates of the top-left corner of the region of
 I<$image> into which data from I<filename> are to be read.
@@ -325,6 +331,25 @@ not noticeable, but if it is a problem, this method can be used to
 recalculate the dithered image in each window where the image is
 displayed.
 
+=item I<$image>-E<gt>B<transparency>(I<subcommand, ?arg, arg ...?>);
+
+Allows examination and manipulation of the transparency information in
+the photo image.  Several subcommands are available:
+
+=over 4
+
+=item I<$image>-E<gt>B<transparencyGet>(I<x, y>);
+
+Returns a boolean indicating if the pixel at (I<x>,I<y>) is
+transparent.
+
+=item I<$image>-E<gt>B<transparencySet>(I<x, y, boolean>);
+
+Makes the pixel at (I<x>,I<y>) transparent if I<boolean> is
+true, and makes that pixel opaque otherwise.
+
+=back
+
 =item I<$image>-E<gt>B<write>(I<filename> ?,I<option value(s), ...>?)
 
 Writes image data from I<$image> to a file named I<filename>.
@@ -332,7 +357,7 @@ The following options may be specified:
 
 =over 8
 
-=item B<-background>I< color>
+=item B<-background> =E<gt> I< color>
 
 If the color is specified, the data will not contain any transparency
 information. In all transparent pixels the color will be replaced by
@@ -347,7 +372,7 @@ I<format-name> and which has the capability to write an image
 file.  If this option is not given, this subcommand uses the first
 handler that has the capability to write an image file.
 
-=item B<-from> =E<gt> I<x1 y1 ?x2 y2?>
+=item B<-from> =E<gt> I<x1, y1, ?, x2, y2?>
 
 Specifies a rectangular region of I<$image> to be written to the
 image file.  If only I<x1> and I<y1> are specified, the region
@@ -384,7 +409,7 @@ user may give a format name with the B<-format> option to specify
 which handler to use.  In fact the photo image code will try those
 handlers whose names begin with the string specified for the
 B<-format> option (the comparison is case-insensitive).  For
-example, if the user specifies B<-format gif>, then a handler
+example, if the user specifies B<-format> B<=E<gt>> B<gif>, then a handler
 named GIF87 or GIF89 may be invoked, but a handler
 named JPEG may not (assuming that such handlers had been
 registered).
@@ -395,6 +420,8 @@ for the B<-format> option must begin with the complete name of the
 requested handler, and may contain additional information following
 that, which the handler can use, for example, to specify which variant
 to use of the formats supported by the handler.
+Note that not all image handlers may support writing transparency data
+to a file, even where the target image format does.
 
 =head1 COLOR ALLOCATION
 

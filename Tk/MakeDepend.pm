@@ -11,7 +11,7 @@ $SIG{__DIE__} = \&Carp::confess;
 
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/MakeDepend.pm#9 $
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 sub scan_file;
 
@@ -201,73 +201,80 @@ sub scan_file
   }
 }
 
-sub reset_includes
-{
- undef @include;
- push @include, $Config{'usrinc'}
-   if (defined $Config{'usrinc'} and $Config{'usrinc'} ne '');
-}
-
 sub command_line
 {
- reset_includes();
- my %def = ('__STDC__' => 1 );
+ @include = ();
+ local %define = ('__STDC__' => 1 );
  my $data = '';
- while (@_)
+ my @files;
+ while (@_ && $_[-1] !~ /^-/)
   {
-   $_ = shift(@_);
+   unshift(@files,pop(@_));
+  }
+ foreach (@_, split(/\s+/,$Config{ccflags}))
+  {
    if (/^-I(.*)$/)
     {
-     # force /usr/include to be last element of @include
-     if (@include)
-      {
-       splice @include, $#include, 0, $1;
-      }
-     else
-      {
-       @include = ($1);
-      }
+     push @include,$1;
     }
    elsif (/^-D([^=]+)(?:=(.*))?$/)
     {
-     $def{$1} = $2 || 1;
+     $define{$1} = $2 || 1;
     }
    elsif (/^-U(.*)$/)
     {
-     delete $def{$1};
+     delete $define{$1};
+    }
+   elsif (/^-[fm][\w-]*$/)
+    {
+     # GCC-ish
     }
    elsif (/^(-.*)$/)
     {
      warn "Ignoring $1\n";
     }
-   elsif (/^(.*)\.[^\.]+$/)
+   else
     {
-     local %define = %def;
-     my $base = $1;
-     my $file = $_;
-     my %dep;
-     warn "Finding dependancies for $file\n";
-     scan_file($_,\%dep);
-     my $str = "\n$base\$(OBJ_EXT) : $base.c";
-     delete $dep{$file};
-     my @dep = (sort(keys %dep));
-     while (@dep)
-      {
-       my $dep = shift(@dep);
-       $dep =~ s#^\./##;
-       if (length($str)+length($dep) > 70)
-        {
-         $data .= "$str \\\n";
-         $str = ' ';
-        }
-       else
-        {
-         $str .= ' ';
-        }
-       $str .= $dep;
-      }
-     $data .= "$str\n";
+     croak "Unexpected arg $_\n";
     }
+  }
+ # force /usr/include to be last element of @include
+ push @include, $Config{'usrinc'}
+   if (defined $Config{'usrinc'} and $Config{'usrinc'} ne '');
+ # warn "Include:@include\n";
+ while (@files)
+  {
+   $_ = shift(@files);
+   unless (/^(.*)\.[^\.]+$/)
+    {
+     warn "Skip $_";
+     next;
+    }
+   local %define = %define;
+   my $base = $1;
+   my $file = $_;
+   my %dep;
+   warn "Finding dependancies for $file\n";
+   scan_file($_,\%dep);
+   my $str = "\n$base\$(OBJ_EXT) : $base.c";
+   delete $dep{$file};
+   my @dep = (sort(keys %dep));
+   while (@dep)
+    {
+     my $dep = shift(@dep);
+     $dep =~ s#^\./##;
+     if (length($str)+length($dep) > 70)
+      {
+       $data .= "$str \\\n";
+       $str = ' ';
+      }
+     else
+      {
+       $str .= ' ';
+      }
+     $str .= $dep;
+    }
+   $data .= "$str\n";
   }
  return $data;
 }
