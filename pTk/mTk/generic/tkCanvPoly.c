@@ -329,7 +329,7 @@ CreatePolygon(interp, canvas, itemPtr, argc, argv)
      */
 
     for (i = 0; i < argc; i++) {
-	char *arg = Tcl_GetStringFromObj(args[i], NULL);
+	char *arg = Tcl_GetStringFromObj(objv[i], NULL);
 	if ((arg[0] == '-') && (arg[1] >= 'a')
 		&& (arg[1] <= 'z')) {
 	    break;
@@ -395,7 +395,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
 	return TCL_OK;
     }
     if (argc == 1) {
-	if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
 	    return TCL_ERROR;
 	}
     }
@@ -421,7 +421,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
 	    polyPtr->pointsAllocated = numPoints+1;
 	}
 	for (i = argc-1; i >= 0; i--) {
-	    if (Tk_CanvasGetCoordFromObj(interp, canvas, args[i],
+	    if (Tk_CanvasGetCoordFromObj(interp, canvas, objv[i],
 		    &polyPtr->coordPtr[i]) != TCL_OK) {
 		return TCL_ERROR;
 	    }

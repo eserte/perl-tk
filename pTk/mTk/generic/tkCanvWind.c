@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvWind.c --
  *
  *	This file implements window items for canvas widgets.
@@ -194,7 +194,7 @@ CreateWinItem(interp, canvas, itemPtr, argc, argv)
     if (argc==1) {
 	i = 1;
     } else {
-	char *arg = Tcl_GetStringFromObj(args[1], NULL);
+	char *arg = Tcl_GetStringFromObj(objv[1], NULL);
 	if (((argc>1) && (arg[0] == '-')
 		&& (arg[1] >= 'a') && (arg[1] <= 'z'))) {
 	    i = 1;
@@ -278,7 +278,7 @@ WinItemCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if (argc < 3) {
 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 2) {
 		sprintf(x,"%d",argc);
@@ -287,8 +287,8 @@ WinItemCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, args[0], &winItemPtr->x)
-		!= TCL_OK) || (Tk_CanvasGetCoordFromObj(interp, canvas, args[1],
+	if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0], &winItemPtr->x)
+		!= TCL_OK) || (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
 		&winItemPtr->y) != TCL_OK)) {
 	    return TCL_ERROR;
 	}
@@ -612,7 +612,7 @@ DisplayWinItem(canvas, itemPtr, display, drawable, regionX, regionY,
     if (((x + width) <= 0) || ((y + height) <= 0)
 	    || (x >= Tk_Width(canvasTkwin)) || (y >= Tk_Height(canvasTkwin))) {
 	if (canvasTkwin == Tk_Parent(winItemPtr->tkwin)) {
-	    Tk_UnmapWindow(winItemPtr->tkwin); 
+	    Tk_UnmapWindow(winItemPtr->tkwin);
 	} else {
 	    Tk_UnmaintainGeometry(winItemPtr->tkwin, canvasTkwin);
 	}
@@ -808,7 +808,7 @@ WinItemToPostscript(interp, canvas, itemPtr, prepass)
     if (prepass || winItemPtr->tkwin == NULL) {
         return TCL_OK;
     }
-    
+
     width = Tk_Width(tkwin);
     height = Tk_Height(tkwin);
 
@@ -819,7 +819,7 @@ WinItemToPostscript(interp, canvas, itemPtr, prepass)
 
     x = winItemPtr->x;
     y = Tk_CanvasPsY(canvas, winItemPtr->y);
-    
+
     switch (winItemPtr->anchor) {
 	case TK_ANCHOR_NW:			y -= height;		break;
 	case TK_ANCHOR_N:	x -= width/2.0; y -= height;		break;
@@ -855,6 +855,7 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
 #ifdef X_GetImage
     Tk_ErrorHandler	handle;
 #endif
+    Tcl_Obj *obj = NULL;
 
     sprintf(buffer, "\n%%%% %s item (%s, %d x %d)\n%.15g %.15g translate\n",
 	    Tk_Class(tkwin), Tk_PathName(tkwin), width, height, x, y);
@@ -869,12 +870,13 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
     Tcl_DStringInit(&buffer1);
     Tcl_DStringInit(&buffer2);
     Tcl_DStringGetResult(interp, &buffer2);
-#ifndef _LANG     
+#ifndef _LANG
     sprintf (buffer, "%s postscript -prolog 0\n", Tk_PathName(tkwin));
     result = Tcl_Eval(interp, buffer);
-#else      
-    result = LangMethodCall(interp,LangWidgetArg(interp,tkwin),"postscript",
-                            1,2,"%s %d","-prolog",0);
+#else
+    obj = LangWidgetObj(interp,tkwin);
+    result = LangMethodCall(interp,obj,"postscript",1,2,"%s %d","-prolog",0);
+    Tcl_DecrRefCount(obj);
 #endif /* _LANG */
     Tcl_DStringGetResult(interp, &buffer1);
     Tcl_DStringResult(interp, &buffer2);
@@ -915,7 +917,7 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
 #endif
 
     /*
-     * Generate an XImage from the window.  We can then read pixel 
+     * Generate an XImage from the window.  We can then read pixel
      * values out of the XImage.
      */
 
@@ -926,7 +928,7 @@ CanvasPsWindow(interp, tkwin, canvas, x, y, width, height)
     Tk_DeleteErrorHandler(handle);
 #endif
 
-    if (ximage == (XImage*) NULL) { 
+    if (ximage == (XImage*) NULL) {
 	return TCL_OK;
     }
 

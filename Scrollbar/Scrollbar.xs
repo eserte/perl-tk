@@ -12,7 +12,7 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#ifdef WIN32
+#if defined(WIN32) || (defined(__WIN32__) && defined(__CYGWIN__))
 #include "pTk/tkWin.h"
 #include "pTk/tkWinInt.h"
 #endif

@@ -24,7 +24,7 @@ VFUNC(void,TixDItemStyleChanged,V_TixDItemStyleChanged,_ANSI_ARGS_((
 #endif
 
 #ifndef TixDItemStyleFree
-VFUNC(void,TixDItemStyleFree,V_TixDItemStyleFree,_ANSI_ARGS_((Tix_DItem *iPtr, 
+VFUNC(void,TixDItemStyleFree,V_TixDItemStyleFree,_ANSI_ARGS_((Tix_DItem *iPtr,
 			    Tix_DItemStyle * stylePtr)))
 #endif
 
@@ -85,7 +85,7 @@ VFUNC(char *,Tix_DItemComponent,V_Tix_DItemComponent,_ANSI_ARGS_((Tix_DItem * di
 #ifndef Tix_DItemConfigure
 VFUNC(int,Tix_DItemConfigure,V_Tix_DItemConfigure,_ANSI_ARGS_((
 			    Tix_DItem * diPtr, int argc,
-			    Arg *args, int flags)))
+			    Tcl_Obj **objv, int flags)))
 #endif
 
 #ifndef Tix_DItemCreate
@@ -147,7 +147,7 @@ VFUNC(void,Tix_SetDefaultStyleTemplate,V_Tix_SetDefaultStyleTemplate,_ANSI_ARGS_
 #ifndef Tix_SetScrollBarView
 VFUNC(int,Tix_SetScrollBarView,V_Tix_SetScrollBarView,_ANSI_ARGS_((
 			    Tcl_Interp *interp, Tix_ScrollInfo * siPtr,
-			    int argc, Arg *args, int compat)))
+			    int argc, Tcl_Obj **objv, int compat)))
 #endif
 
 #ifndef Tix_SetWindowItemSerial
@@ -159,7 +159,7 @@ VFUNC(void,Tix_SetWindowItemSerial,V_Tix_SetWindowItemSerial,_ANSI_ARGS_((
 #ifndef Tix_SplitConfig
 VFUNC(int,Tix_SplitConfig,V_Tix_SplitConfig,_ANSI_ARGS_((Tcl_Interp * interp,
 			    Tk_Window tkwin, Tk_ConfigSpec  ** specsList,
-			    int numLists, int argc, Arg *args,
+			    int numLists, int argc, Tcl_Obj **objv,
 			    Tix_ArgumentList * argListPtr)))
 #endif
 
@@ -177,7 +177,7 @@ VFUNC(void,Tix_UpdateScrollBar,V_Tix_UpdateScrollBar,_ANSI_ARGS_((
 VFUNC(int,Tix_WidgetConfigure2,V_Tix_WidgetConfigure2,_ANSI_ARGS_((
 			    Tcl_Interp *interp, Tk_Window tkwin, char * entRec,
 			    Tk_ConfigSpec *entConfigSpecs,
-			    Tix_DItem * iPtr, int argc, Arg *args,
+			    Tix_DItem * iPtr, int argc, Tcl_Obj **objv,
 			    int flags, int forced, int * sizeChanged_ret)))
 #endif
 

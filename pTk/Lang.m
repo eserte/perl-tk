@@ -59,6 +59,14 @@
 #  define LangNull (*LangVptr->V_LangNull)
 #endif
 
+#ifndef LangObjArg
+#  define LangObjArg (*LangVptr->V_LangObjArg)
+#endif
+
+#ifndef LangOldSetArg
+#  define LangOldSetArg (*LangVptr->V_LangOldSetArg)
+#endif
+
 #ifndef LangRestoreResult
 #  define LangRestoreResult (*LangVptr->V_LangRestoreResult)
 #endif
@@ -75,10 +83,6 @@
 #  define LangScalarResult (*LangVptr->V_LangScalarResult)
 #endif
 
-#ifndef LangSetArg
-#  define LangSetArg (*LangVptr->V_LangSetArg)
-#endif
-
 #ifndef LangSetDefault
 #  define LangSetDefault (*LangVptr->V_LangSetDefault)
 #endif
@@ -89,6 +93,10 @@
 
 #ifndef LangSetInt
 #  define LangSetInt (*LangVptr->V_LangSetInt)
+#endif
+
+#ifndef LangSetObj
+#  define LangSetObj (*LangVptr->V_LangSetObj)
 #endif
 
 #ifndef LangSetString
@@ -137,6 +145,10 @@
 
 #ifndef Lang_GetStrInt
 #  define Lang_GetStrInt (*LangVptr->V_Lang_GetStrInt)
+#endif
+
+#ifndef Lang_OldArgResult
+#  define Lang_OldArgResult (*LangVptr->V_Lang_OldArgResult)
 #endif
 
 #ifndef Lang_RegExpCompile

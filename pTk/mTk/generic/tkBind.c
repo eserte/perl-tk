@@ -1307,7 +1307,7 @@ Tk_GetBinding(interp, bindingTable, object, eventString)
     if (psPtr->eventProc == LangEventCallback) {
 	/* REFCNT is not incremented so mimic what tkConfig.c does */
 	Arg result = NULL;
-	LangSetArg(&result,LangCallbackArg((LangCallback *) psPtr->clientData));
+	LangSetObj(&result,LangCallbackObj((LangCallback *) psPtr->clientData));
 	return result;
     }
     return Tcl_NewStringObj("",0);

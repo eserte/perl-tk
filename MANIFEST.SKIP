@@ -101,6 +101,7 @@ pTk/pkgc\.c$
 pTk/pkgd\.c$
 pTk/pkge\.c$
 pTk/pkgf\.c$
+pTk/port\.h$
 pTk/regexp\.c$
 pTk/samAppInit\.c$
 pTk/stbDItem\.c$

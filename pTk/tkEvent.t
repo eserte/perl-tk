@@ -3,8 +3,8 @@
 VFUNC(int,LangCallCallback,V_LangCallCallback,_ANSI_ARGS_((LangCallback *cb, int flags)))
 #endif
 
-#ifndef LangCallbackArg
-VFUNC(Arg,LangCallbackArg,V_LangCallbackArg,_ANSI_ARGS_((LangCallback *)))
+#ifndef LangCallbackObj
+VFUNC(Tcl_Obj *,LangCallbackObj,V_LangCallbackObj,_ANSI_ARGS_((LangCallback *)))
 #endif
 
 #ifndef LangCmpCallback
@@ -25,6 +25,10 @@ VFUNC(void,LangFreeCallback,V_LangFreeCallback,_ANSI_ARGS_((LangCallback *)))
 
 #ifndef LangMakeCallback
 VFUNC(LangCallback *,LangMakeCallback,V_LangMakeCallback,_ANSI_ARGS_((Arg)))
+#endif
+
+#ifndef LangOldCallbackArg
+VFUNC(Arg,LangOldCallbackArg,V_LangOldCallbackArg,_ANSI_ARGS_((LangCallback *,char *,int)))
 #endif
 
 #ifndef LangPushCallbackArgs

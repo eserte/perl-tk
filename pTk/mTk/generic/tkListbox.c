@@ -1,4 +1,4 @@
-/* 
+/*
  * tkListbox.c --
  *
  *	This module implements listbox widgets for the Tk
@@ -516,7 +516,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	    goto error;
 	}
 	ListboxRedrawRange(listPtr, listPtr->active, listPtr->active);
-	if (GetListboxIndex(interp, listPtr, args[2], 0, &index) != TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index >= listPtr->numElements) {
@@ -536,7 +536,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " bbox index\"", (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[2], 0, &index) != TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if ((index >= listPtr->numElements) || (index < 0)) {
@@ -611,14 +611,14 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[2], 0, &first) != TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, objv[2], 0, &first) != TCL_OK) {
 	    goto error;
 	}
 	if (first < listPtr->numElements) {
 	    if (argc == 3) {
 		last = first;
 	    } else {
-		if (GetListboxIndex(interp, listPtr, args[3], 0,
+		if (GetListboxIndex(interp, listPtr, objv[3], 0,
 			&last) != TCL_OK) {
 		    goto error;
 		}
@@ -637,10 +637,10 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " get first ?last?\"", (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[2], 0, &first) != TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, objv[2], 0, &first) != TCL_OK) {
 	    goto error;
 	}
-	if ((argc == 4) && (GetListboxIndex(interp, listPtr, args[3],
+	if ((argc == 4) && (GetListboxIndex(interp, listPtr, objv[3],
 		0, &last) != TCL_OK)) {
 	    goto error;
 	}
@@ -676,7 +676,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[2], 1, &index)
+	if (GetListboxIndex(interp, listPtr, objv[2], 1, &index)
 		!= TCL_OK) {
 	    goto error;
 	}
@@ -691,7 +691,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[2], 1, &index)
+	if (GetListboxIndex(interp, listPtr, objv[2], 1, &index)
 		!= TCL_OK) {
 	    goto error;
 	}
@@ -748,7 +748,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[2], 0, &index) != TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index >= listPtr->numElements) {
@@ -785,11 +785,11 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (GetListboxIndex(interp, listPtr, args[3], 0, &first) != TCL_OK) {
+	if (GetListboxIndex(interp, listPtr, objv[3], 0, &first) != TCL_OK) {
 	    goto error;
 	}
 	if (argc == 5) {
-	    if (GetListboxIndex(interp, listPtr, args[4], 0, &last) != TCL_OK) {
+	    if (GetListboxIndex(interp, listPtr, objv[4], 0, &last) != TCL_OK) {
 		goto error;
 	    }
 	} else {
@@ -815,7 +815,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	} else if ((c == 'i') && (strncmp(argv[2], "includes", length) == 0)) {
 	    int i;
 	    Element *elPtr;
-    
+
 	    if (argc != 4) {
 		Tcl_AppendResult(interp, "wrong # args: should be \"",
 			argv[0], " selection includes index\"", (char *) NULL);
@@ -916,7 +916,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	    }
 	    sprintf(interp->result, "%g %g", fraction, fraction2);
 	} else if (argc == 3) {
-	    if (GetListboxIndex(interp, listPtr, args[2], 0, &index)
+	    if (GetListboxIndex(interp, listPtr, objv[2], 0, &index)
 		    != TCL_OK) {
 		goto error;
 	    }
@@ -1119,7 +1119,7 @@ ConfigureListbox(interp, listPtr, argc, argv, flags)
  *
  *---------------------------------------------------------------------------
  */
- 
+
 static void
 ListboxWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
@@ -1290,7 +1290,7 @@ DisplayListbox(clientData)
 	    continue;
 	}
 	x = listPtr->inset;
-	y = ((i - listPtr->topIndex) * listPtr->lineHeight) 
+	y = ((i - listPtr->topIndex) * listPtr->lineHeight)
 		+ listPtr->inset;
 	gc = listPtr->textGC;
 	if (elPtr->selected) {

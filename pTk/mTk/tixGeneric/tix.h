@@ -91,7 +91,7 @@ extern "C" {
 #  define TkPutImage(a, b, c, d, e, f, g, h, i, j, k, l) \
 	XPutImage(c, d, e, f, g, h, i, j, k, l)
 
-#  define TkStringToKeysym XStringToKeysym 
+#  define TkStringToKeysym XStringToKeysym
 
 #endif /* TK_4_1_OR_LATER */
 
@@ -274,7 +274,7 @@ EXTERN void		Tix_LinkListInsert _ANSI_ARGS_((
 			    Tix_ListInfo * infoPtr,
 			    Tix_LinkList * lPtr, char * itemPtr,
 			    Tix_ListIterator * liPtr));
-EXTERN void		Tix_LinkListIteratorInit _ANSI_ARGS_(( Tix_ListIterator * liPtr)); 
+EXTERN void		Tix_LinkListIteratorInit _ANSI_ARGS_(( Tix_ListIterator * liPtr));
 
 #define Tix_LinkListDone(liPtr) ((liPtr)->curr == NULL)
 
@@ -340,7 +340,7 @@ EXTERN Tk_CustomOption tixConfigRelief;
  * C functions exported by Tix
  */
 
-EXTERN int		Tix_ArgcError _ANSI_ARGS_((Tcl_Interp *interp, 
+EXTERN int		Tix_ArgcError _ANSI_ARGS_((Tcl_Interp *interp,
 			    int argc, char ** argv, int prefixCount,
 			    char *message));
 EXTERN void		Tix_CreateCommands _ANSI_ARGS_((
@@ -386,7 +386,7 @@ EXTERN int		Tix_LoadTclLibrary _ANSI_ARGS_((
 			    char *tclName, char *initFile,
 			    char *defDir, char * appName));
 EXTERN void 		Tix_OpenStdin _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN void 		Tix_SetArgv _ANSI_ARGS_((Tcl_Interp *interp, 
+EXTERN void 		Tix_SetArgv _ANSI_ARGS_((Tcl_Interp *interp,
 			    int argc, char **argv));
 EXTERN void		Tix_SetRcFileName _ANSI_ARGS_((
 			    Tcl_Interp * interp,  char * rcFileName));
@@ -394,7 +394,7 @@ EXTERN char *		TixGetStringFromObj _ANSI_ARGS_((
 			    char *objPtr,int *lengthPtr));
 
 /*
- * Entry points for Tk_CONFIG_CUSTOM stubs to call 
+ * Entry points for Tk_CONFIG_CUSTOM stubs to call
  */
 
 EXTERN int   TixDItemParseProc _ANSI_ARGS_((ClientData clientData,
@@ -466,7 +466,8 @@ extern TIX_DECLARE_CMD(Tix_CreateWidgetCmd);
  * Compatibility section
  *----------------------------------------------------------------------	*/
 
-#define strdup tixStrDup
+#undef strdup
+#define strdup DoNotUse_strdup
 EXTERN char * 		tixStrDup _ANSI_ARGS_((CONST char * s));
 
 #ifdef _WINDOWS

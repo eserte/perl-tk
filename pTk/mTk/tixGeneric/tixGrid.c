@@ -1,4 +1,4 @@
-/* 
+/*
  * tixGrid.c --
  *
  *	This module implements "tixGrid" widgets.
@@ -145,7 +145,7 @@ static Tk_ConfigSpec configSpecs[] = {
 
     {TK_CONFIG_UID, "-state", (char*)NULL, (char*)NULL,
        DEF_GRID_STATE, Tk_Offset(WidgetRecord, state), 0},
- 
+
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_GRID_TAKE_FOCUS, Tk_Offset(WidgetRecord, takeFocus),
 	TK_CONFIG_NULL_OK},
@@ -711,7 +711,7 @@ WidgetEventProc(clientData, eventPtr)
       case DestroyNotify:
 	if (wPtr->dispData.tkwin != NULL) {
 	    wPtr->dispData.tkwin = NULL;
-	    Tcl_DeleteCommand(wPtr->dispData.interp, 
+	    Tcl_DeleteCommand(wPtr->dispData.interp,
 	        Tcl_GetCommandName(wPtr->dispData.interp, wPtr->widgetCmd));
 	}
 	Tix_GrCancelDoWhenIdle(wPtr);
@@ -890,7 +890,7 @@ RecalScrollRegion(wPtr, winW, winH, scrollInfo)
 
     winSize[0] = winW;
     winSize[1] = winH;
-    
+
     TixGridDataGetGridSize(wPtr->dataSet, &gridSize[0],
 	&gridSize[1]);
 
@@ -951,7 +951,7 @@ RecalScrollRegion(wPtr, winW, winH, scrollInfo)
 	    totalSize += pad0 + pad1;
 	}
 
-	/* 
+	/*
 	 *we may need some left over spaces after the last element.
 	 */
 	totalSize += (-winSize[i]);
@@ -1104,7 +1104,7 @@ IdleHandler(clientData)
     if (!wPtr->idleEvent) {	/* sanity check */
 	return;
     }
-    wPtr->idleEvent = 0;    
+    wPtr->idleEvent = 0;
 
     if (wPtr->toResize) {
 	wPtr->toResize = 0;
@@ -1223,7 +1223,7 @@ WidgetDisplay(clientData)
     Tk_Draw3DRectangle(tkwin, Tk_WindowId(tkwin), wPtr->border,
 	wPtr->highlightWidth,
 	wPtr->highlightWidth,
-	Tk_Width(tkwin)  - 2*wPtr->highlightWidth, 
+	Tk_Width(tkwin)  - 2*wPtr->highlightWidth,
 	Tk_Height(tkwin) - 2*wPtr->highlightWidth,
 	wPtr->borderWidth, wPtr->relief);
 
@@ -1231,7 +1231,7 @@ WidgetDisplay(clientData)
 	if (wPtr->hasFocus) {
 	    highlightGC = wPtr->highlightGC;
 	} else {
-	    highlightGC = Tk_3DBorderGC(tkwin, wPtr->border, 
+	    highlightGC = Tk_3DBorderGC(tkwin, wPtr->border,
 	        TK_3D_FLAT_GC);
 	}
 
@@ -1370,10 +1370,10 @@ static void Tix_GrDrawCells(wPtr, riPtr, drawable)
 			    wPtr->mainRB->elms[i][j].borderW[0][0],
 			y+riPtr->origin[1]+
 			    wPtr->mainRB->elms[i][j].borderW[1][0],
-			wPtr->mainRB->dispSize[0][i].total - 
+			wPtr->mainRB->dispSize[0][i].total -
 			    wPtr->mainRB->elms[i][j].borderW[0][0] -
 			    wPtr->mainRB->elms[i][j].borderW[0][1],
-			wPtr->mainRB->dispSize[1][j].total - 
+			wPtr->mainRB->dispSize[1][j].total -
 			    wPtr->mainRB->elms[i][j].borderW[1][0] -
 			    wPtr->mainRB->elms[i][j].borderW[1][1],
 		    	0, TK_RELIEF_FLAT);
@@ -1384,7 +1384,7 @@ static void Tix_GrDrawCells(wPtr, riPtr, drawable)
 	    if (chPtr != NULL) {
 		if (Tix_DItemType(chPtr->iPtr) == TIX_DITEM_WINDOW) {
 		    Tix_DItemDisplay(Tk_WindowId(wPtr->dispData.tkwin), None,
-			chPtr->iPtr, x1, y1, 
+			chPtr->iPtr, x1, y1,
 			wPtr->mainRB->dispSize[0][i].size,
 	       		wPtr->mainRB->dispSize[1][j].size,
 		        TIX_DITEM_NORMAL_FG);
@@ -1408,7 +1408,7 @@ static void Tix_GrDrawCells(wPtr, riPtr, drawable)
       nextCol:
 	x+= wPtr->mainRB->dispSize[0][i].total;
     }
- 
+
     for (i=0; i<wPtr->mainRB->size[0]; i++) {
 	for (j=0; j<wPtr->mainRB->size[1]; j++) {
 	    chPtr = wPtr->mainRB->elms[i][j].chPtr;
@@ -1661,7 +1661,7 @@ Tix_GrBdType(clientData, interp, argc, argv)
     else if (in[1] < wPtr->hdrSize[1] && bd[0] >= 0) {
 	inX = 1;
     }
-    
+
     if (bd[0] < 0) {
 	bd[0] = 0;
     }
@@ -1670,15 +1670,15 @@ Tix_GrBdType(clientData, interp, argc, argv)
     }
 
     Tcl_ResetResult(interp);
-    if (inX && inY) {  
+    if (inX && inY) {
 	Tcl_AppendElement(interp,"xy");
-	Tcl_IntResults(interp,2,1, bd[0], bd[1]); 
+	Tcl_IntResults(interp,2,1, bd[0], bd[1]);
     } else if (inX) {
 	Tcl_AppendElement(interp,"x");
-	Tcl_IntResults(interp,2,1, bd[0], bd[1]); 
+	Tcl_IntResults(interp,2,1, bd[0], bd[1]);
     } else if (inY) {
 	Tcl_AppendElement(interp,"y");
-	Tcl_IntResults(interp,2,1, bd[0], bd[1]); 
+	Tcl_IntResults(interp,2,1, bd[0], bd[1]);
     } else {
 	buf[0] = '\0';
     }
@@ -1689,7 +1689,7 @@ Tix_GrBdType(clientData, interp, argc, argv)
 }
 
 /*----------------------------------------------------------------------
- * "set" sub command -- 
+ * "set" sub command --
  *
  *	Sets the item at the position on the grid. This either creates
  *	a new element or modifies the existing element. (if you don't want
@@ -1715,7 +1715,7 @@ Tix_GrSet(clientData, interp, argc, argv)
      * (0) We need to find out where you want to set
      *------------------------------------------------------------
      */
-    if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)!=TCL_OK) {
+    if (TixGridDataGetIndex(interp, wPtr, objv[0], objv[1], &x, &y)!=TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1796,7 +1796,7 @@ Tix_GrUnset(clientData, interp, argc, argv)
     TixGrEntry * chPtr;
     int x, y;
 
-    if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)
+    if (TixGridDataGetIndex(interp, wPtr, objv[0], objv[1], &x, &y)
 	    !=TCL_OK) {
 	return TCL_ERROR;
     }
@@ -1883,12 +1883,14 @@ Tix_GrEdit(clientData, interp, argc, argv)
     ClientData clientData;
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    Arg *args;			/* Argument strings. */
+    Tcl_Obj **objv;		/* Argument strings. */
 {
     WidgetPtr wPtr = (WidgetPtr) clientData;
     int x, y;
     char buff[20];
-    int len, code;
+    int len;
+    int code = TCL_OK;
+    Tcl_Obj *obj = NULL;
 
 
     len = strlen(argv[0]);
@@ -1897,24 +1899,28 @@ Tix_GrEdit(clientData, interp, argc, argv)
 	    Tcl_AppendResult(interp, "wrong # of arguments, must be: ",
 		argv[-2], " edit set x y", NULL);
 	}
-	if (TixGridDataGetIndex(interp, wPtr, args[1], args[2], &x, &y)
+	if (TixGridDataGetIndex(interp, wPtr, objv[1], objv[2], &x, &y)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
-        return LangMethodCall(interp,LangWidgetArg(interp,wPtr->dispData.tkwin),
-			      "EditCell",0, 2," %d %d",x, y);
+	obj = LangWidgetObj(interp,wPtr->dispData.tkwin);
+	code = LangMethodCall(interp,obj, "EditCell",0, 2," %d %d",x, y);
     } else if (strncmp(argv[0], "apply", len) == 0) {
 	if (argc != 1) {
 	    Tcl_AppendResult(interp, "wrong # of arguments, must be: ",
 		argv[-2], " edit apply", NULL);
 	}
-        return LangMethodCall(interp,LangWidgetArg(interp,wPtr->dispData.tkwin),
-			      "EditApply",0, 0);
+	obj  = LangWidgetObj(interp,wPtr->dispData.tkwin);
+        code = LangMethodCall(interp,obj, "EditApply",0, 0);
     } else {
 	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 		"\", must be apply or set", NULL);
 	return TCL_ERROR;
     }
+    if (obj) {
+	Tcl_DecrRefCount(obj);
+    }
+    return code;
 }
 
 /*----------------------------------------------------------------------
@@ -1932,7 +1938,7 @@ Tix_GrEntryCget(clientData, interp, argc, argv)
     int x, y;
     TixGrEntry * chPtr;
 
-    if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)!=TCL_OK) {
+    if (TixGridDataGetIndex(interp, wPtr, objv[0], objv[1], &x, &y)!=TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1962,7 +1968,7 @@ Tix_GrEntryConfig(clientData, interp, argc, argv)
     int x, y;
     TixGrEntry * chPtr;
 
-    if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)!=TCL_OK) {
+    if (TixGridDataGetIndex(interp, wPtr, objv[0], objv[1], &x, &y)!=TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -2043,10 +2049,10 @@ Tix_GrIndex(clientData, interp, argc, argv)
     int x, y;
     char buff[100];
 
-    if (TixGridDataGetIndex(interp, wPtr, args[0], args[1], &x, &y)!=TCL_OK) {
+    if (TixGridDataGetIndex(interp, wPtr, objv[0], objv[1], &x, &y)!=TCL_OK) {
 	return TCL_ERROR;
     }
-    Tcl_IntResults(interp,2,0, x, y); 
+    Tcl_IntResults(interp,2,0, x, y);
     return TCL_OK;
 }
 
@@ -2069,7 +2075,7 @@ Tix_GrInfo(clientData, interp, argc, argv)
 	if (argc != 3) {
 	    return Tix_ArgcError(interp, argc+2, argv-2, 3, "x y");
 	}
-	if (TixGridDataGetIndex(interp, wPtr, args[1], args[2], &x, &y)
+	if (TixGridDataGetIndex(interp, wPtr, objv[1], objv[2], &x, &y)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
@@ -2080,7 +2086,7 @@ Tix_GrInfo(clientData, interp, argc, argv)
 	if (argc != 3) {
 	    return Tix_ArgcError(interp, argc+2, argv-2, 3, "x y");
 	}
-	if (TixGridDataGetIndex(interp, wPtr, args[1], args[2], &x, &y)
+	if (TixGridDataGetIndex(interp, wPtr, objv[1], objv[2], &x, &y)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
@@ -2092,7 +2098,7 @@ Tix_GrInfo(clientData, interp, argc, argv)
 	return TCL_OK;
     }
     else {
-	Tcl_AppendResult(interp, "unknown option \"", argv[0], 
+	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 	    "\": must be bbox or exists",
 	    NULL);
 	return TCL_ERROR;
@@ -2223,7 +2229,7 @@ Tix_GrSetSite(clientData, interp, argc, argv)
 	if (argc == 3) {
 	    int x, y;
 
-	    if (TixGridDataGetIndex(interp, wPtr, args[1], args[2],
+	    if (TixGridDataGetIndex(interp, wPtr, objv[1], objv[2],
 		     &x, &y)!=TCL_OK) {
 		return TCL_ERROR;
 	    }
@@ -2335,7 +2341,7 @@ void Tix_GrScrollPage(wPtr, count, axis)
 {
     int k, i = axis;
     int winSize, sz, start, num;
-    int pad0, pad1; 
+    int pad0, pad1;
 
     Tix_GridScrollInfo * siPtr = &wPtr->scrollInfo[axis];
     int gridSize[2];
@@ -2498,7 +2504,7 @@ Tix_GrView(clientData, interp, argc, argv)
     }
 
 #if 0
-    printf("Configing Scrollbars: (%d %f %d) (%d %f %d)\n", 
+    printf("Configing Scrollbars: (%d %f %d) (%d %f %d)\n",
         wPtr->scrollInfo[0].max,
         wPtr->scrollInfo[0].window,
         wPtr->scrollInfo[0].offset,
@@ -2569,9 +2575,9 @@ Tix_GrCallFormatCmd(wPtr, which)
     wPtr->renderInfo->fmt.whichArea = which;
     code = LangDoCallback(wPtr->dispData.interp, wPtr->formatCmd, 0, 5, "%s %d %d %d %d",
 	areaNames[which],
-	wPtr->renderInfo->fmt.x1, 
-	wPtr->renderInfo->fmt.y1, 
-	wPtr->renderInfo->fmt.x2, 
+	wPtr->renderInfo->fmt.x1,
+	wPtr->renderInfo->fmt.y1,
+	wPtr->renderInfo->fmt.x2,
 	wPtr->renderInfo->fmt.y2);
 
     if (code != TCL_OK) {
@@ -2639,14 +2645,14 @@ static void Tix_GrDrawBackground(wPtr, riPtr, drawable)
     if (wPtr->hdrSize[0] > 0 && mainSize[1] > 0) {
 	wPtr->renderInfo->fmt.x1 = 0;
 	wPtr->renderInfo->fmt.x2 = visibleHdr[0] - 1;
-	wPtr->renderInfo->fmt.y1 = 
+	wPtr->renderInfo->fmt.y1 =
 	  wPtr->scrollInfo[1].offset + wPtr->hdrSize[1];
 	wPtr->renderInfo->fmt.y2 =
 	  wPtr->renderInfo->fmt.y1 + mainSize[1] - 1;
 
 	Tix_GrCallFormatCmd(wPtr, TIX_Y_MARGIN);
     }
-    
+
     /* the stationary part of the margin
      */
     if (visibleHdr[0] > 0 && visibleHdr[1] > 0) {
@@ -2654,7 +2660,7 @@ static void Tix_GrDrawBackground(wPtr, riPtr, drawable)
 	wPtr->renderInfo->fmt.x2 = visibleHdr[0] - 1;
 	wPtr->renderInfo->fmt.y1 = 0;
 	wPtr->renderInfo->fmt.y2 = visibleHdr[1] - 1;
-    
+
 	Tix_GrCallFormatCmd(wPtr, TIX_S_MARGIN);
     }
 
@@ -2665,11 +2671,11 @@ static void Tix_GrDrawBackground(wPtr, riPtr, drawable)
 	  wPtr->scrollInfo[0].offset + wPtr->hdrSize[0];
 	wPtr->renderInfo->fmt.x2 =
 	  wPtr->renderInfo->fmt.x1 + mainSize[0] - 1;
-	wPtr->renderInfo->fmt.y1 = 
+	wPtr->renderInfo->fmt.y1 =
 	  wPtr->scrollInfo[1].offset + wPtr->hdrSize[1];
 	wPtr->renderInfo->fmt.y2 =
 	  wPtr->renderInfo->fmt.y1 + mainSize[1] - 1;
-    
+
 	Tix_GrCallFormatCmd(wPtr, TIX_MAIN);
     }
 }
@@ -2738,7 +2744,7 @@ Tix_GrComputeSubSelection(wPtr, rect, offs)
 		    wPtr->mainRB->elms[x][y].selected = 1;
 		    break;
 		  case TIX_GR_TOGGLE:
-		    wPtr->mainRB->elms[x][y].selected = 
+		    wPtr->mainRB->elms[x][y].selected =
 		      !wPtr->mainRB->elms[x][y].selected;
 		    break;
 
@@ -2785,7 +2791,7 @@ static void Tix_GrComputeSelection(wPtr)
     } else {
 	visibleHdr[1] = wPtr->hdrSize[1];
     }
-    
+
     /* Compute selection on the stationary part of the margin
      */
     if (visibleHdr[0] > 0 && visibleHdr[1] > 0) {
@@ -2795,8 +2801,8 @@ static void Tix_GrComputeSelection(wPtr)
 	rect[1][1] = visibleHdr[1] - 1;
 	offs[0]    = 0;
 	offs[1]    = 0;
-    
-	Tix_GrComputeSubSelection(wPtr, rect, offs);    
+
+	Tix_GrComputeSubSelection(wPtr, rect, offs);
     }
 
     /* Compute selection on the horizontal margin
@@ -2808,7 +2814,7 @@ static void Tix_GrComputeSelection(wPtr)
 	rect[1][1] = visibleHdr[1] - 1;
 	offs[0]    = wPtr->scrollInfo[0].offset;;
 	offs[1]    = 0;
-    
+
 	Tix_GrComputeSubSelection(wPtr, rect, offs);
     }
 
@@ -2821,7 +2827,7 @@ static void Tix_GrComputeSelection(wPtr)
 	rect[1][1] = rect[1][0] + mainSize[1] - 1;
 	offs[0]    = 0;
 	offs[1]    = wPtr->scrollInfo[1].offset;;
-    
+
 	Tix_GrComputeSubSelection(wPtr, rect, offs);
     }
 
@@ -2834,7 +2840,7 @@ static void Tix_GrComputeSelection(wPtr)
 	rect[1][1] = rect[1][0] + mainSize[1] - 1;
 	offs[0]    = wPtr->scrollInfo[0].offset;;
 	offs[1]    = wPtr->scrollInfo[1].offset;;
-    
+
 	Tix_GrComputeSubSelection(wPtr, rect, offs);
     }
 }
@@ -2854,7 +2860,7 @@ GetScrollFractions(wPtr, siPtr, first_ret, last_ret)
     double usuable;
 
     usuable = 1.0 - siPtr->window;
-    
+
     if (siPtr->max > 0) {
 	first = usuable * (double)(siPtr->offset) / (double)(siPtr->max);
 	last  = first + siPtr->window;
@@ -3013,7 +3019,7 @@ static RenderBlock * Tix_GrAllocateRenderBlock(wPtr, winW, winH, exactW,exactH)
     int winSize[2];
     int exactSize[2];		/* BOOL: are all the visible coloums and rows
 				 * displayed in whole */
-    int pad0, pad1; 
+    int pad0, pad1;
 
     offset[0] = wPtr->scrollInfo[0].offset + wPtr->hdrSize[0];
     offset[1] = wPtr->scrollInfo[1].offset + wPtr->hdrSize[1];
@@ -3089,7 +3095,7 @@ static RenderBlock * Tix_GrAllocateRenderBlock(wPtr, winW, winH, exactW,exactH)
 		index = k + offset[i] - wPtr->hdrSize[i];
 	    }
 
-	    rbPtr->dispSize[i][k].size = TixGridDataGetRowColSize(wPtr, 
+	    rbPtr->dispSize[i][k].size = TixGridDataGetRowColSize(wPtr,
 		wPtr->dataSet, i, index, &wPtr->defSize[i], &pad0, &pad1);
 	    rbPtr->dispSize[i][k].preBorder  = pad0;
 	    rbPtr->dispSize[i][k].postBorder = pad1;
@@ -3137,7 +3143,7 @@ static RenderBlock * Tix_GrAllocateRenderBlock(wPtr, winW, winH, exactW,exactH)
 
     for (k=0; k<2; k++) {
 	for (i=0; i<rbPtr->size[k]; i++) {
-	    rbPtr->dispSize[k][i].total = 
+	    rbPtr->dispSize[k][i].total =
 	          rbPtr->dispSize[k][i].preBorder
 	        + rbPtr->dispSize[k][i].size
 	        + rbPtr->dispSize[k][i].postBorder;
@@ -3230,12 +3236,12 @@ TranslateFromTo(interp, wPtr, argc, argv, from, to, which)
     if (strncmp(argv[0], "row", len) == 0) {
 	*which = 1;
 
-	if (TixGridDataGetIndex(interp, wPtr, NULL, args[1], &dummy, from)
+	if (TixGridDataGetIndex(interp, wPtr, NULL, objv[1], &dummy, from)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (argc == 3) {
-	    if (TixGridDataGetIndex(interp, wPtr, NULL, args[2], &dummy, to)
+	    if (TixGridDataGetIndex(interp, wPtr, NULL, objv[2], &dummy, to)
 		    !=TCL_OK) {
 		return TCL_ERROR;
 	    }
@@ -3244,13 +3250,13 @@ TranslateFromTo(interp, wPtr, argc, argv, from, to, which)
 	}
     } else if (strncmp(argv[0], "column", len) == 0) {
 	*which = 0;
-	if (TixGridDataGetIndex(interp, wPtr, args[1], NULL, from, &dummy)
+	if (TixGridDataGetIndex(interp, wPtr, objv[1], NULL, from, &dummy)
 		!=TCL_OK) {
 	    return TCL_ERROR;
 	}
 
 	if (argc == 3) {
-	    if (TixGridDataGetIndex(interp, wPtr, args[2], NULL, to, &dummy)
+	    if (TixGridDataGetIndex(interp, wPtr, objv[2], NULL, to, &dummy)
 		    !=TCL_OK) {
 		return TCL_ERROR;
 	    }

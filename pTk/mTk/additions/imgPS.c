@@ -272,18 +272,11 @@ CommonReadPS(interp, handle, format, imageHandle,
     int len, i, j, fileWidth, fileHeight, maxintensity, index;
     char *p, type;
     unsigned char buffer[1025], *line = NULL, *line3 = NULL;
+	char zoom[64], papersize[64];
     Tcl_Channel chan;
     Tcl_DString dstring;
     myblock bl;
     int zoomx, zoomy;
-
-    argv[0] = "gs";
-    argv[1] = "-sDEVICE=ppmraw";
-    argv[2] = (char *) buffer;
-    argv[3] = "-q";
-    argv[4] = "-dNOPAUSE";
-    argv[5] = "-sOutputFile=-";
-    argv[6] = "-";
 
     index = parseFormat(format, &zoomx, &zoomy);
     if (index < 0) {
@@ -291,25 +284,17 @@ CommonReadPS(interp, handle, format, imageHandle,
 		ImgGetStringFromObj(format, NULL), "\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    sprintf((char *) buffer, "-r%dx%d", zoomx, zoomy);
-    chan = Tcl_OpenCommandChannel(interp, 7, argv,
-	    TCL_STDIN|TCL_STDOUT|TCL_STDERR|TCL_ENFORCE_MODE);
-    if (!chan) {
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
-	return TCL_ERROR;
-    }
-
+    sprintf(zoom, "-r%dx%d", zoomx, zoomy);
 
     len = ImgRead(handle, buffer, 1024);
     buffer[1024] = 0;
     p = strstr(buffer,"%%BoundingBox:");
+    fileHeight = height + srcY;
     if (p) {
 	/* postscript */
 	p += 14;
 	srcX += (strtoul(p, &p, 0) * zoomx + 36) / 72;
-	strtoul(p, &p, 0);
+	fileHeight += (strtoul(p, &p, 0) * zoomy + 36) / 72;
 	strtoul(p, &p, 0);
 	srcY -= (strtoul(p, &p, 0) * zoomy + 36) / 72;
     } else {
@@ -323,6 +308,27 @@ CommonReadPS(interp, handle, format, imageHandle,
 	srcX += (0 * zoomx + 36) / 72;
 	srcY -= (792 * zoomy + 36) /72;
     }
+
+    sprintf(papersize, "-g%dx%d", srcX+width, fileHeight);
+
+    argv[0] = "gs";
+    argv[1] = "-sDEVICE=ppmraw";
+    argv[2] = zoom;
+    argv[3] = papersize;
+    argv[4] = "-q";
+    argv[5] = "-dNOPAUSE";
+    argv[6] = "-sOutputFile=-";
+    argv[7] = "-";
+
+    chan = Tcl_OpenCommandChannel(interp, 8, argv,
+	    TCL_STDIN|TCL_STDOUT|TCL_STDERR|TCL_ENFORCE_MODE);
+    if (!chan) {
+	return TCL_ERROR;
+    }
+    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
+	return TCL_ERROR;
+    }
+
     while (len > 0) {
 	Tcl_Write(chan, (char *) buffer, 1024);
 	len = ImgRead(handle, buffer, 1024);
@@ -375,6 +381,7 @@ CommonReadPS(interp, handle, format, imageHandle,
     block.offset[0] = 0;
     block.offset[1] = 0;
     block.offset[2] = 0;
+    block.offset[3] = 0;
     switch(type) {
 	case '4':
 	    i = (fileWidth+7)/8;

@@ -388,7 +388,7 @@ ButtonCreate(clientData, interp, argc, argv, type)
 	return TCL_ERROR;
     }
 
-    TkClassOption(new, classNames[type],&argc,&args);
+    TkClassOption(new, classNames[type],&argc,&objv);
     butPtr = TkpCreateButton(new);
 
     TkSetClassProcs(new, &tkpButtonProcs, (ClientData) butPtr);

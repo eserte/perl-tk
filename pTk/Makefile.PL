@@ -45,6 +45,10 @@ sub MY::post_initialize
   {
    @list = qw(win xlib additions generic tixWin tixGeneric tclWin tclGeneric);
   }
+ elsif ($win_arch eq 'MSWin32' and $^O eq 'cygwin')
+  {
+   @list = qw(win xlib additions generic tixWin tixGeneric tclUnix tclGeneric);
+  }
  elsif ($win_arch eq 'open32')
   {
    @list = qw(open32 open32/h win xlib additions generic tixWin tixGeneric tclUnix tclGeneric );
@@ -145,7 +149,8 @@ sub MY::post_initialize
    $self->{PM}->{$name} = $self->catfile($dir,$name);
   }
 
- if ($Tk::MMutil::IsWin32 or $win_arch eq 'open32' or $win_arch eq 'pm')
+ if ($Tk::MMutil::IsWin32 or $win_arch eq 'open32' or $win_arch eq 'pm' or
+     ($win_arch eq 'MSWin32' and $^O eq 'cygwin'))
   {my $ddir = $self->catdir('$(INST_ARCHLIBDIR)','X11');
    my $sdir = $self->catdir('mTk','xlib','X11');
    push(@{$self->{'dir_targets'}},$ddir);
@@ -228,7 +233,7 @@ $dep .= $self->dir_target(@{$self->{'dir_targets'}});
 $dep .= "config :: " . join(" \\\n\t",map($self->catfile($_,".exists"),@{$self->{'dir_targets'}})) .
         "\n\t".$self->{NOECHO}."\$(NOOP)\n";
 
-if ($Tk::MMutil::IsWin32)
+if ($Tk::MMutil::IsWin32 or ($win_arch eq 'MSWin32' and $^O eq 'cygwin'))
  {
   my $cc = $Config{'cc'};
   my $file = 'tk.res';

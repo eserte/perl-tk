@@ -17,7 +17,18 @@ use base qw(Exporter DynaLoader);
 
 *fileevent = \&Tk::Event::IO::fileevent;
 
-BEGIN { $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix' };
+BEGIN {
+ if($^O eq 'cygwin')
+  {
+   require Tk::Config;
+   $Tk::platform = $Tk::Config::win_arch;
+   $Tk::platform = 'unix' if $Tk::platform eq 'x';
+  }
+ else
+  {
+   $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix';
+  }
+};
 
 $Tk::tearoff = 1 if ($Tk::platform eq 'unix');
 
@@ -42,7 +53,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.0';
 $Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.022';
+$Tk::VERSION     = '800.023';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 

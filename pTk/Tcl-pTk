@@ -49,7 +49,7 @@ sub int_results
 sub result
 {my ($interp,$value,$tail) = @_;
  my $line = &getline;
- my $kind = "TCL_STATIC"; 
+ my $kind = "TCL_STATIC";
  if (defined $line)
   {
    if ($line =~ /^\s*$interp\s*->\s*freeProc\s*=\s*(.*)\s*;\s*$/)
@@ -119,7 +119,7 @@ while ($_ = &getline)
     if (/Tcl_(Create|Delete)Command[^;{]*$/)
      {
       &complete;
-      redo PROCESS;   
+      redo PROCESS;
      }
     s/Tcl_CreateCommand\s*\(\s*((\w+->)*interp)\s*,\s*Tk_PathName\s*\(([^\)]+)\)/Lang_CreateWidget($1,$3/;
     s/Tcl_DeleteCommand\s*\(\s*((\w+->)*(\w+\.)?interp)\s*,\s*Tcl_GetCommandName\s*\([^,]+,\s*([^\)]+->(\w+\.style|image)Cmd)\)/Lang_DeleteObject($1,$4/;
@@ -131,40 +131,33 @@ while ($_ = &getline)
     if (/\bargv\w*\s*\[([^[]*)\]\s*=[^=][^;{]*$/)
      {
       &complete;
-      redo PROCESS;   
+      redo PROCESS;
      }
     if (/\bchar\b.*\bargv\w*\b/)
      {
       # convert char *argv[] to char **argv
       s/char\s*\*\s*\bargv\s*\[\s*\]/char **argv/;
-      # convert char **argv to Arg *args
-      s/char\s*\*\*\s*\bargv\b/Arg *args/;
-      # convert char *argv[n] to Arg *args = LangAllocVec(n)
-      s/char\s*\*\s*\bargv\s*\[\s*([^[]+)\]/Arg *args = LangAllocVec($1)/;
+      # convert char **argv to Tcl_Obj **objv
+      s/char\s*\*\*\s*\bargv\b/Tcl_Obj **objv/;
+      # convert char *argv[n] to Tcl_Obj **objv = LangAllocVec(n)
+      s/char\s*\*\s*\bargv\s*\[\s*([^[]+)\]/Tcl_Obj **objv = LangAllocVec($1)/;
      }
     else
      {
       s/([^*])\*(argv\w*(\[[^[]*\])?)/${1}${2}[0]/g;
      }
-    s/\bargv\s*\[([^[]*)\]\s*=([^=].*);\s*$/LangSetString(args+$1,$2);\n/;
-    s/\bargv\s*\[([^[]*)\]\+\+/args[$1] = LangStringArg(LangString(args[$1])+1)/;
-    s/\bargv\s*\[([^[]*)\]\+([0-9])/LangStringArg(LangString(args[$1])+$2)/;
-#   unless (/\b(str\w+|Tk[A-Za-z0-9_]+)\s*\(/)
-#    {
-#     # skip things that look like parm list 
-#     s/([(,])\s*argv(\w*|\[[^[]*\])\s*([,)])/$1args$2$3/;
-#    }
+    s/\bargv\s*\[([^[]*)\]\s*=([^=].*);\s*$/LangSetString(objv+$1,$2);\n/;
+    s/\bargv\s*\[([^[]*)\]\+\+/objv[$1] = LangStringArg(LangString(objv[$1])+1)/;
+    s/\bargv\s*\[([^[]*)\]\+([0-9])/LangStringArg(LangString(objv[$1])+$2)/;
     if (/Tcl_Get(Boolean|Int|Double)/ || /Tk_Get(Cursor)/)
      {
-      s/\bargv(\w*)\b/args$1/g;
+      s/\bargv(\w*)\b/objv$1/g;
      }
-    s/\bargv\s*(\[[^[]*\])/LangString(args$1)/g;
-#   s/((\w+->)+)\bargv(\w+)\b/LangString(${1}args$3)/g;
-#   s/\bargv(\w+)\b/LangString(args$1)/g;
+    s/\bargv\s*(\[[^[]*\])/LangString(objv$1)/g;
     if (/\bargv\b/)
      {
       warn "Leak: $_" if ($verbose && !/\bargv\s*\)/);
-      s/\bargv\b/args/;
+      s/\bargv\b/objv/;
      }
    }
   if (/->\s*result\b/)
@@ -179,7 +172,7 @@ while ($_ = &getline)
     if (/\binterp->result\s*=[^;]*$/)
      {
       &complete;
-      redo PROCESS;   
+      redo PROCESS;
      }
     s/\b((\w+\s*->\s*)*interp)->result\s*=([^;]*);/&result($1,$3,";")/e;
     s/\b((\w+\s*->\s*)*interp)->result\s*=(.*);\s*$/&result($1,$3,";\n")/e;
@@ -191,11 +184,11 @@ while ($_ = &getline)
     if (/Tcl_SetResult\s*\([^;{]*$/)
      {
       &complete;
-      redo PROCESS;   
-     }         
+      redo PROCESS;
+     }
     s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*"(\d+)",\s*TCL_STATIC\s*\)/Tcl_SetObjResult($1, Tcl_NewIntObj($3))/;
-    s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*Tk_PathName\(([^)]+)\),\s*TCL_STATIC\s*\)/Tcl_ArgResult($1,LangWidgetArg($1,$3))/; 
-    s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*((\w+->)*\w+)->pathName\s*,\s*TCL_STATIC\s*\)/Tcl_ArgResult($1,LangWidgetArg($1,(Tk_Window)($3)))/; 
+    s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*Tk_PathName\(([^)]+)\),\s*TCL_STATIC\s*\)/Tcl_SetObjResult($1,LangWidgetObj($1,$3))/;
+    s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*((\w+->)*\w+)->pathName\s*,\s*TCL_STATIC\s*\)/Tcl_SetObjResult($1,LangWidgetObj($1,(Tk_Window)($3)))/;
     die $_ if /(Tk_PathName|->pathName)/;
    }
 #            1             2                 3           4                  5                           6
@@ -207,12 +200,13 @@ while ($_ = &getline)
     print $copyright;
     undef $copyright;
    }
-  
+
+  s/[^\S\n]+$//;
   print;
 
   if (0 && /^((\s\*)\s*)Copyright/)
    {
-    $copyright = "$2\n$1Modifications Copyright (c) 1994-1998 Nick Ing-Simmons\n";
+    $copyright = "$2\n$1Modifications Copyright (c) 1994-2000 Nick Ing-Simmons\n";
    }
  }
 

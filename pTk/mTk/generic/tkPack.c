@@ -1,4 +1,4 @@
-/* 
+/*
  * tkPack.c --
  *
  *	This file contains code to implement the "packer"
@@ -301,7 +301,8 @@ Tk_PackCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	Tcl_AppendElement(interp, "-in");
-	Tcl_AppendArg(interp, LangWidgetArg(interp,slavePtr->masterPtr->tkwin));
+        Tcl_ListObjAppendElement(interp,Tcl_GetObjResult(interp),
+			LangWidgetObj(interp,slavePtr->masterPtr->tkwin));
 	Tcl_AppendElement(interp, "-anchor");
 	Tcl_AppendElement(interp, Tk_NameOfAnchor(slavePtr->anchor));
 	Tcl_AppendElement(interp, "-expand");
@@ -391,7 +392,8 @@ Tk_PackCmd(clientData, interp, argc, argv)
 	masterPtr = GetPacker(master);
 	for (slavePtr = masterPtr->slavePtr; slavePtr != NULL;
 		slavePtr = slavePtr->nextPtr) {
-	    Tcl_AppendArg(interp, LangWidgetArg(interp,slavePtr->tkwin));
+            Tcl_ListObjAppendElement(interp,Tcl_GetObjResult(interp),
+	                LangWidgetObj(interp,slavePtr->tkwin));
 	}
     } else if ((c == 'u') && (strncmp(argv[1], "unpack", length) == 0)) {
 	Tk_Window tkwin2;
@@ -553,7 +555,7 @@ ArrangePacking(clientData)
     /*
      * Abort any nested call to ArrangePacking for this window, since
      * we'll do everything necessary here, and set up so this call
-     * can be aborted if necessary.  
+     * can be aborted if necessary.
      */
 
     if (masterPtr->abortPtr != NULL) {
@@ -1083,7 +1085,7 @@ PackAfter(interp, prevPtr, masterPtr, argc, argv)
 	 * Process options for this window.
 	 */
 
-	if (Tcl_ListObjGetElements(interp, args[1], &optionCount, &options) != TCL_OK) {
+	if (Tcl_ListObjGetElements(interp, objv[1], &optionCount, &options) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	packPtr->side = TOP;
@@ -1480,7 +1482,7 @@ ConfigureSlaves(interp, tkwin, argc, argv)
 	}
 
 	for (i = numWindows; i < argc; i+=2) {
-            string = argv[i]; 
+            string = argv[i];
 	    if ((i+2) > argc) {
 		Tcl_AppendResult(interp, "extra option \"", string,
 			"\" (option with no value?)", (char *) NULL);
@@ -1651,13 +1653,13 @@ ConfigureSlaves(interp, tkwin, argc, argv)
 	    masterPtr = slavePtr->masterPtr;
 	    goto scheduleLayout;
 	}
-    
+
 	/*
 	 * If none of the "-in", "-before", or "-after" options has
 	 * been specified, arrange for the slave to go at the end of
 	 * the order for its parent.
 	 */
-    
+
 	if (!positionGiven) {
 	    masterPtr = GetPacker(Tk_Parent(slave));
 	    prevPtr = masterPtr->slavePtr;
@@ -1673,7 +1675,7 @@ ConfigureSlaves(interp, tkwin, argc, argv)
 	 * an ancestor of the master, and that the master and slave
 	 * aren't the same.
 	 */
-    
+
 	parent = Tk_Parent(slave);
 	for (ancestor = masterPtr->tkwin; ; ancestor = Tk_Parent(ancestor)) {
 	    if (ancestor == parent) {

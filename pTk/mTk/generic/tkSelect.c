@@ -852,7 +852,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	    TkWindow *winPtr = (TkWindow *) tkwin;
 	    tkwin = Tk_IdToWindow(Tk_Display(tkwin), win);
 	    if (tkwin != NULL && tkwin != winPtr->dispPtr->clipWindow) {
-		Tcl_ArgResult(interp,LangWidgetArg(interp,tkwin));
+		Tcl_SetObjResult(interp,LangWidgetObj(interp,tkwin));
 	    } else {
 		Tcl_IntResults(interp, 1, 0, win);
 	    }
@@ -1061,7 +1061,7 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 
 	    if ((infoPtr != NULL)
 		    && (infoPtr->owner != winPtr->dispPtr->clipWindow)) {
-		Tcl_ArgResult(interp,LangWidgetArg(interp,infoPtr->owner));
+		Tcl_SetObjResult(interp,LangWidgetObj(interp,infoPtr->owner));
 	    }
 	    return TCL_OK;
 	}

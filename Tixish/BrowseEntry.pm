@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.028'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#28 $
+$VERSION = '3.030'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#30 $
 
 use Tk qw(Ev);
 use Carp;
@@ -281,7 +281,7 @@ sub choices
      $w->insert( 'end', $val);
      $hash{$val} = 1;
     }
-   $old = $choices->[0] unless exists $hash{$old};
+   $old = (@$choices) ? $choices->[0] : undef unless exists $hash{$old};
    $$var = $old;
   }
  else

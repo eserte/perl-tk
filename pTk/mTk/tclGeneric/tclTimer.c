@@ -1,4 +1,4 @@
-/* 
+/*
  * tclTimer.c --
  *
  *	This file provides timer event management facilities for Tcl,
@@ -205,7 +205,7 @@ TimerExitProc(clientData)
  *	exactly once.
  *
  *--------------------------------------------------------------
- */   
+ */
 
 
 Tcl_TimerToken
@@ -235,7 +235,7 @@ Tcl_CreateTimerHandler(milliseconds, proc, clientData)
 	timerHandlerPtr->time.usec -= 1000000;
 	timerHandlerPtr->time.sec += 1;
     }
-    
+
     /*
      * Fill in other fields for the event.
      */
@@ -502,7 +502,7 @@ TimerHandlerEventProc(evPtr, flags)
 	if (timerHandlerPtr == NULL) {
 	    break;
 	}
-	    
+	
 	if ((timerHandlerPtr->time.sec > time.sec)
 		|| ((timerHandlerPtr->time.sec == time.sec)
 			&& (timerHandlerPtr->time.usec > time.usec))) {
@@ -694,7 +694,7 @@ TclServiceIdle()
 	Tcl_SetMaxBlockTime(&blockTime);
     }
     return 1;
-}   
+}
 
 #else
 
@@ -747,7 +747,7 @@ Tcl_AfterObjCmd(clientData, interp, objc, objv)
     static char *subCmds[] = {
         "cancel", "idle", "info",
         (char *) NULL};
-    
+
     if (objc < 2) {
 	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg arg ...?");
 	return TCL_ERROR;
@@ -779,7 +779,7 @@ Tcl_AfterObjCmd(clientData, interp, objc, objv)
     /*
      * First lets see if the command was passed a number as the first argument.
      */
-    
+
     arg = Tcl_GetStringFromObj(objv[1], &length);
     if (isdigit(UCHAR(arg[0]))) {
 	if (Tcl_GetIntFromObj(interp, objv[1], &ms) != TCL_OK) {
@@ -834,7 +834,7 @@ Tcl_AfterObjCmd(clientData, interp, objc, objv)
 		    return TCL_ERROR;
 		}
 		if (objc == 3) {
-		    objPtr = objv[2];  
+		    objPtr = objv[2];
 		    Tcl_IncrRefCount(objPtr);
 		} else {
 		    objPtr = Tcl_ConcatObj(objc-2, objv+2);;
@@ -846,7 +846,7 @@ Tcl_AfterObjCmd(clientData, interp, objc, objv)
 		    }
 		}
 		if (afterPtr == NULL) {
-		    arg = Tcl_GetStringFromObj( objPtr, &length ); 
+		    arg = Tcl_GetStringFromObj( objPtr, &length );
 		    afterPtr = GetAfterEvent(assocPtr, arg);
 		}
 		if (objPtr != NULL) {
@@ -887,7 +887,7 @@ Tcl_AfterObjCmd(clientData, interp, objc, objv)
 	case 2:		/* info */
 	    if (objc == 2) {
 		char buffer[30];
-	    
+	
 		for (afterPtr = assocPtr->firstAfterPtr; afterPtr != NULL;
 		     afterPtr = afterPtr->nextPtr) {
 		    if (assocPtr->interp == interp) {
@@ -908,7 +908,8 @@ Tcl_AfterObjCmd(clientData, interp, objc, objv)
 			"\" doesn't exist", (char *) NULL);
 		return TCL_ERROR;
 	    }
-	    Tcl_AppendArg(interp, LangCallbackArg(afterPtr->command));
+	    Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp),
+               LangCallbackObj(afterPtr->command));
 	    Tcl_AppendElement(interp,
 		    (afterPtr->token == NULL) ? "idle" : "timer");
 	    break;
@@ -1021,7 +1022,7 @@ AfterProc(clientData)
 	Tcl_BackgroundError(interp);
     }
     Tcl_Release((ClientData) interp);
-    
+
     /*
      * Free the memory for the callback.
      */
@@ -1109,5 +1110,5 @@ AfterCleanupProc(clientData, interp)
     }
     ckfree((char *) assocPtr);
 }
-     
+
 #endif

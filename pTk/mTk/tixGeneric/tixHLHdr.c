@@ -81,7 +81,7 @@ AllocHeader(interp, wPtr)
 	    0, 0, (char *)hPtr, 0) != TCL_OK) {
 	/* some unrecoverable errors */
 	return NULL;
-    }          
+    }
     Tk_SetBackgroundFromBorder(wPtr->headerWin, hPtr->background);
 
     return hPtr;
@@ -210,7 +210,7 @@ Tix_HLDrawHeader(wPtr, pixmap, gc, hdrX, hdrY, hdrW, hdrH, xOffset)
     if (wPtr->needToRaise) {
 	/* the needToRaise flag is set every time a new window item is
 	 * created inside the header of the HList.
-	 * 
+	 *
 	 * We need to make sure that the windows items in the list
 	 * body are clipped by the header subwindow. However, the window
 	 * items inside the header should be over the header subwindow.
@@ -260,7 +260,7 @@ Tix_HLDrawHeader(wPtr, pixmap, gc, hdrX, hdrY, hdrW, hdrH, xOffset)
 		wPtr->headerHeight        - 2*hPtr->borderWidth,
 		TIX_DITEM_NORMAL_FG);
 
-	    if (wPtr->needToRaise && 
+	    if (wPtr->needToRaise &&
 		Tix_DItemType(hPtr->iPtr) == TIX_DITEM_WINDOW) {
 		TixWindowItem * wiPtr;
 
@@ -320,7 +320,7 @@ void Tix_HLComputeHeaderGeometry(wPtr)
 
     wPtr->headerDirty = 0;
 }
- 
+
 /*----------------------------------------------------------------------
  * "header" sub command
  *----------------------------------------------------------------------
@@ -368,7 +368,7 @@ Tix_HLHdrCGet(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListHeader * hPtr;
 
-    if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 1)) == NULL) {
+    if ((hPtr=Tix_HLGetHeader(interp, wPtr, objv[0], 1)) == NULL) {
 	return TCL_ERROR;
     }
 
@@ -390,7 +390,7 @@ Tix_HLHdrConfig(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListHeader * hPtr;
 
-    if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 1)) == NULL) {
+    if ((hPtr=Tix_HLGetHeader(interp, wPtr, objv[0], 1)) == NULL) {
 	return TCL_ERROR;
     }
 
@@ -436,7 +436,7 @@ Tix_HLHdrCreate(clientData, interp, argc, argv)
     Tix_DItem * iPtr;
     char * ditemType = NULL;
 
-    if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 0)) == NULL) {
+    if ((hPtr=Tix_HLGetHeader(interp, wPtr, objv[0], 0)) == NULL) {
 	return TCL_ERROR;
     }
 
@@ -502,7 +502,7 @@ Tix_HLHdrDelete(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListHeader * hPtr;
 
-    if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 1)) == NULL) {
+    if ((hPtr=Tix_HLGetHeader(interp, wPtr, objv[0], 1)) == NULL) {
 	return TCL_ERROR;
     }
 
@@ -533,7 +533,7 @@ Tix_HLHdrExist(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListHeader * hPtr;
 
-    if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 0)) == NULL) {
+    if ((hPtr=Tix_HLGetHeader(interp, wPtr, objv[0], 0)) == NULL) {
 	return TCL_ERROR;
     }
 
@@ -560,17 +560,17 @@ Tix_HLHdrSize(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListHeader * hPtr;
 
-    if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 1)) == NULL) {
+    if ((hPtr=Tix_HLGetHeader(interp, wPtr, objv[0], 1)) == NULL) {
 	return TCL_ERROR;
     }
 
     if (hPtr->iPtr == NULL) {
 	Tcl_AppendResult(interp, "entry \"", argv[0],
-	    "\" does not have a header", (char*)NULL); 
+	    "\" does not have a header", (char*)NULL);
 	return TCL_ERROR;
     }
-    Tcl_IntResults(interp,2, 0, 
-		   Tix_DItemWidth(hPtr->iPtr), 
-		   Tix_DItemHeight(hPtr->iPtr)); 
+    Tcl_IntResults(interp,2, 0,
+		   Tix_DItemWidth(hPtr->iPtr),
+		   Tix_DItemHeight(hPtr->iPtr));
     return TCL_OK;
 }

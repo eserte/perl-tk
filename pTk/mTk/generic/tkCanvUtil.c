@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvUtil.c --
  *
  *	This procedure contains a collection of utility procedures
@@ -675,7 +675,7 @@ TkSmoothParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     register Tk_SmoothMethod **smoothPtr = (Tk_SmoothMethod **) (widgRec + offset);
     Tk_SmoothMethod *smooth = NULL;
     int b, length;
-    SmoothAssocData *method;                  
+    SmoothAssocData *method;
     char *value = LangString(ovalue);
 
     if(value == NULL || *value == 0) {
@@ -773,8 +773,8 @@ Tk_GetDash(interp, ovalue, dash)
 				 * store dash information. */
 {
     int argc, i;
-    Arg *largv = NULL; 
-    Arg *args = NULL;
+    Tcl_Obj **largv = NULL;
+    Tcl_Obj **objv = NULL;
     char *pt;
     char *value = LangString(ovalue);
 
@@ -798,7 +798,7 @@ Tk_GetDash(interp, ovalue, dash)
 	dash->number = -i;
 	return TCL_OK;
     }
-    if (Tcl_ListObjGetElements(interp, ovalue, &argc, &args) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, ovalue, &argc, &objv) != TCL_OK) {
 	Tcl_ResetResult(interp);
     badDashList:
 	Tcl_AppendResult(interp, "bad dash list \"", value,
@@ -820,7 +820,7 @@ Tk_GetDash(interp, ovalue, dash)
     }
     dash->number = argc;
 
-    largv = argv;
+    largv = objv;
     while(argc>0) {
 	if (Tcl_GetInt(interp, *largv, &i) != TCL_OK ||
 	    i < 1 || i>255) {
@@ -830,9 +830,9 @@ Tk_GetDash(interp, ovalue, dash)
 	    goto syntaxError;
 	}
 	*pt++ = i;
-	argc--; largv++; 
+	argc--; largv++;
     }
-  
+
     return TCL_OK;
 }
 
@@ -1156,7 +1156,7 @@ Tk_Outline *outline;
     if (color==NULL) {
 	return 0;
     }
-                    
+
     if ((dash->number<-1) || ((dash->number == -1) && (dash->pattern.array[1]!=','))) {
 	char *q;
 	int i = -dash->number;
@@ -1213,7 +1213,7 @@ Tk_Outline *outline;
  *
  * Tk_ResetOutlineGC
  *
- *	Restores the GC to the situation before 
+ *	Restores the GC to the situation before
  *	Tk_ChangeDashGC() was called.
  *	This function should be called just after the dashed
  *	item is drawn, because the GC is supposed to be

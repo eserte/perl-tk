@@ -29,6 +29,9 @@
 #   ifndef strcasecmp
 #       define strcasecmp(a,b) stricmp(a,b)
 #   endif
+#   ifdef __CYGWIN__
+#       undef strcasecmp
+#   endif
 #else
 #   if defined(MAC_TCL)
 #	include "tkMacPort.h"

@@ -14,7 +14,6 @@
 #include "imgInt.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #if defined(__STDC__) || defined(HAS_STDARG)
 #include <stdarg.h>
 #else
@@ -133,15 +132,15 @@ static char *symbols[] = {
     "TIFFSetErrorHandler",
     "TIFFSetWarningHandler",
     "TIFFClientOpen",
-    "TIFFRegisterCODEC",
+    "TIFFRegisterCODEC",	/* not in libtiff.def */
     "TIFFError",
-    "TIFFPredictorInit",
-    "_TIFFMergeFieldInfo",
-    "TIFFFlushData1",
-    "_TIFFNoPostDecode",
+    "TIFFPredictorInit",	/* not in libtiff.def */
+    "_TIFFMergeFieldInfo",	/* not in libtiff.def */
+    "TIFFFlushData1",		/* not in libtiff.def */
+    "_TIFFNoPostDecode",	/* not in libtiff.def */
     "TIFFTileRowSize",
     "TIFFScanlineSize",
-    "_TIFFsetByteArray",
+    "_TIFFsetByteArray",	/* not in libtiff.def */
     "TIFFVSetField",
     "TIFFSwabArrayOfShort",
     (char *) NULL
@@ -335,12 +334,12 @@ static int closeDummy _ANSI_ARGS_((thandle_t));
 static tsize_t writeDummy _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
 
 static tsize_t readMFile _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
-static tsize_t seekMFile _ANSI_ARGS_((thandle_t, toff_t, int));
+static toff_t  seekMFile _ANSI_ARGS_((thandle_t, toff_t, int));
 static toff_t  sizeMFile _ANSI_ARGS_((thandle_t));
 
 static tsize_t readString _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
 static tsize_t writeString _ANSI_ARGS_((thandle_t, tdata_t, tsize_t));
-static tsize_t seekString _ANSI_ARGS_((thandle_t, toff_t, int));
+static toff_t  seekString _ANSI_ARGS_((thandle_t, toff_t, int));
 static toff_t  sizeString _ANSI_ARGS_((thandle_t));
 
 static char *errorMessage = NULL;
@@ -473,13 +472,13 @@ readMFile(fd, data, size)
     return (tsize_t) ImgRead((MFile *) fd, (char *) data, (int) size) ;
 }
 
-static tsize_t
+static toff_t
 seekMFile(fd, off, whence)
     thandle_t fd;
     toff_t off;
     int whence;
 {
-    return (tsize_t) ImgSeek((MFile *) fd, (int) off, whence);
+    return Tcl_Seek((Tcl_Channel) ((MFile *) fd)->data, (int) off, whence);
 }
 
 static toff_t
@@ -487,7 +486,8 @@ sizeMFile(fd)
     thandle_t fd;
 {
     int fsize;
-    return (fsize = ImgSeek((MFile *) fd, 0, SEEK_END)) < 0 ? 0 : (toff_t) fsize;
+    return (fsize = Tcl_Seek((Tcl_Channel) ((MFile *) fd)->data,
+	    (int) 0, SEEK_END)) < 0 ? 0 : (toff_t) fsize;
 }
 
 /*
@@ -537,7 +537,7 @@ writeString(fd, data, size)
     return size;
 }
 
-static tsize_t
+static toff_t
 seekString(fd, off, whence)
     thandle_t fd;
     toff_t off;
@@ -994,7 +994,7 @@ static int ChnWriteTIFF(interp, filename, format, blockPtr)
     Tcl_DString nameBuffer; 
     char *fullname, *mode;
 
-    if ((fullname=Tcl_TranslateFileName(interp,filename,&nameBuffer))==NULL) {
+    if (!(fullname=Tcl_TranslateFileName(interp, filename, &nameBuffer))) {
 	return TCL_ERROR;
     }
 
@@ -1004,10 +1004,11 @@ static int ChnWriteTIFF(interp, filename, format, blockPtr)
     }
 
     if (ParseWriteFormat(interp, format, &comp, &mode) != TCL_OK) {
+	Tcl_DStringFree(&nameBuffer);
     	return TCL_ERROR;
     }
 
-    if (!(tif = tiff.Open(fullname,mode))) {
+    if (!(tif = tiff.Open(fullname, mode))) {
 	Tcl_AppendResult(interp, filename, ": ", Tcl_PosixError(interp),
 		(char *)NULL);
 	Tcl_DStringFree(&nameBuffer);

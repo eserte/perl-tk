@@ -30,8 +30,8 @@
 #define DItemParseProc TixDItemParseProc
 #define DItemPrintProc TixDItemPrintProc
 #else
-#define FORWARD static 
-#define LINKAGE static 
+#define FORWARD static
+#define LINKAGE static
 #endif
 
 FORWARD int   DItemParseProc _ANSI_ARGS_((ClientData clientData,
@@ -221,7 +221,7 @@ Tix_SplitConfig(interp, tkwin, specsList, numLists, argc, argv, argListPtr)
     argListPtr->numLists = numLists;
     for (i=0; i<numLists; i++) {
 	arg[i].argc = 0;
-	arg[i].argv = (Arg *)ckalloc(argc * sizeof(char*));
+	arg[i].objv = (Tcl_Obj **)ckalloc(argc * sizeof(Tcl_Obj *));
     }
 
     /* Split the arguments for the appropriate objects */
@@ -239,8 +239,8 @@ Tix_SplitConfig(interp, tkwin, specsList, numLists, argc, argv, argListPtr)
 		}
 
 		if (strncmp(argv[n], specPtr->argvName, len) == 0) {
-		    arg[i].args[arg[i].argc++] = args[n  ];
-		    arg[i].args[arg[i].argc++] = args[n+1];
+		    arg[i].objv[arg[i].argc++] = objv[n  ];
+		    arg[i].objv[arg[i].argc++] = objv[n+1];
 		    found = 1;
 		    break;
 		}
@@ -500,7 +500,7 @@ Tk_CustomOption tixConfigItemType = {
  *	inside the widget record.
  *----------------------------------------------------------------------
  */
-LINKAGE int 
+LINKAGE int
 DItemParseProc(clientData, interp, tkwin, value, widRec,offset)
     ClientData clientData;
     Tcl_Interp *interp;
@@ -525,7 +525,7 @@ DItemParseProc(clientData, interp, tkwin, value, widRec,offset)
     return TCL_OK;
 }
 
-LINKAGE Arg 
+LINKAGE Arg
 DItemPrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
     ClientData clientData;
     Tk_Window tkwin;

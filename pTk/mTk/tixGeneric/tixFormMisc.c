@@ -95,7 +95,7 @@ int TixFm_Info(clientData, interp, argc, argv)
     /* Otherwise, give full info */
 
     for (i=0; i<2; i++) {
-	for (j=0; j<2; j++) {     
+	for (j=0; j<2; j++) {
 	    /* The information about attachment */
 	    Tcl_AppendElement(interp,sideNames[i][j]);
 	    AttachInfo(interp, clientPtr, i, j);
@@ -103,7 +103,7 @@ int TixFm_Info(clientData, interp, argc, argv)
 	    /* The information about padding */
 	    Tcl_AppendElement(interp, padNames[i][j]);
 	    sprintf(buff, "%d", clientPtr->pad[i][j]);
-	    Tcl_IntResults(interp, 1, 1, clientPtr->pad[i][j]); 
+	    Tcl_IntResults(interp, 1, 1, clientPtr->pad[i][j]);
 	}
     }
     return TCL_OK;
@@ -155,7 +155,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     Tcl_Interp* interp;
     int axis, which;
     Arg avalue;
-{             
+{
     char *value = LangString(avalue);
     Tk_Window tkwin;
     FormInfo * attWidget;
@@ -163,7 +163,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     int offset;
     int grid;
     int argc;
-    char ** argv;                                      
+    char ** argv;
     int delta = 0;
 
     if (Tcl_ListObjGetElements(interp, avalue, &argc, &argv) != TCL_OK) {
@@ -173,7 +173,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     switch (argv[0][0]) {
       case '#':		/* Attached to grid */
       case '%': 	/* Attached to percent (aka grid) */
-	{Tcl_Obj *temp = Tcl_NewStringObj(LangString(args[0])+1,-1);
+	{Tcl_Obj *temp = Tcl_NewStringObj(LangString(objv[0])+1,-1);
 	 if (Tcl_GetIntFromObj(interp,temp,&grid) != TCL_OK) {
 	    Tcl_DecrRefCount(temp);
 	    goto error;
@@ -186,12 +186,12 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
 
       case '&': 		/* Attached to parallel widget */
 	if (argc < 2)
-	   goto malformed;   
-	tkwin = Tk_NameToWindow(interp, LangString(args[++delta]), topLevel);
+	   goto malformed;
+	tkwin = Tk_NameToWindow(interp, LangString(objv[++delta]), topLevel);
 
 	if (tkwin != NULL) {
 	    if (Tk_IsTopLevel(tkwin)) {
-		Tcl_AppendResult(interp, "can't attach to \"", LangString(args[1]),
+		Tcl_AppendResult(interp, "can't attach to \"", LangString(objv[1]),
 	    	    "\": it's a top-level window", (char *) NULL);
 		goto error;
 	    }
@@ -206,7 +206,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
 	break;
 
       case '.': 		/* Attach to opposite widget */
-	tkwin = Tk_NameToWindow(interp, LangString(args[0]), topLevel);
+	tkwin = Tk_NameToWindow(interp, LangString(objv[0]), topLevel);
 
 	if (tkwin != NULL) {
 	    if (Tk_IsTopLevel(tkwin)) {
@@ -390,49 +390,49 @@ int TixFm_Configure(clientPtr, topLevel, interp, argc, argv)
 	    return TCL_ERROR;
 	} else if (strcmp(argv[flag], "-l") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 0, args[value]) == TCL_ERROR) {
+		0, 0, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-left") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 0, args[value]) == TCL_ERROR) {
+		0, 0, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-r") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 1, args[value]) == TCL_ERROR) {
+		0, 1, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-right") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		0, 1, args[value]) == TCL_ERROR) {
+		0, 1, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-top") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-	        1, 0, args[value]) == TCL_ERROR) {
+	        1, 0, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-t") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-	        1, 0, args[value]) == TCL_ERROR) {
+	        1, 0, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-bottom") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		1, 1, args[value]) == TCL_ERROR) {
+		1, 1, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-b") == 0) {
 	    if (ConfigureAttachment(clientPtr, topLevel, interp,
-		1, 1, args[value]) == TCL_ERROR) {
+		1, 1, objv[value]) == TCL_ERROR) {
 
 		return TCL_ERROR;
 	    }
@@ -508,42 +508,42 @@ int TixFm_Configure(clientPtr, topLevel, interp, argc, argv)
 	    }
 	} else if (strcmp(argv[flag], "-leftspring") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		0, 0, args[value]) == TCL_ERROR) {
+		0, 0, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-ls") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		0, 0, args[value]) == TCL_ERROR) {
+		0, 0, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-rightspring") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		0, 1, args[value]) == TCL_ERROR) {
+		0, 1, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-rs") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		0, 1, args[value]) == TCL_ERROR) {
+		0, 1, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-topspring") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		1, 0, args[value]) == TCL_ERROR) {
+		1, 0, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-ts") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		1, 0, args[value]) == TCL_ERROR) {
+		1, 0, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-bottomspring") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		1, 1, args[value]) == TCL_ERROR) {
+		1, 1, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-bs") == 0) {
 	    if (ConfigureSpring(clientPtr, topLevel, interp,
-		1, 1, args[value]) == TCL_ERROR) {
+		1, 1, objv[value]) == TCL_ERROR) {
 		return TCL_ERROR;
 	    }
 	} else if (strcmp(argv[flag], "-fill") == 0) {

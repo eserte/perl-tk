@@ -477,7 +477,8 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	}
 
 	Tcl_AppendElement(interp, "-in");
-	Tcl_AppendArg(interp, LangWidgetArg(interp, slavePtr->masterPtr->tkwin));
+	Tcl_ListObjAppendElement(interp,Tcl_GetObjResult(interp),
+	        LangWidgetObj(interp, slavePtr->masterPtr->tkwin));
 	Tcl_AppendElement(interp, "-column");
 	Tcl_IntResults(interp, 1, 1, slavePtr->column);
 	Tcl_AppendElement(interp, "-row");
@@ -685,7 +686,8 @@ Tk_GridCmd(clientData, interp, argc, argv)
 		    slavePtr->row+slavePtr->numRows-1 < row)) {
 		continue;
 	    }
-	    Tcl_AppendArg(interp, LangWidgetArg(interp, slavePtr->tkwin));
+	    Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp),
+		LangWidgetObj(interp, slavePtr->tkwin));
 	}
 
     /*
@@ -726,7 +728,7 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 
-	if (Tcl_ListObjGetElements(interp, args[3], &argcPtr, &argsPtr) != TCL_OK) {
+	if (Tcl_ListObjGetElements(interp, objv[3], &argcPtr, &argsPtr) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 

@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.043'; # $Id: //depot/Tk8/Text/Text.pm#43 $
+$VERSION = '3.044'; # $Id: //depot/Tk8/Text/Text.pm#44 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -339,6 +339,7 @@ sub Button1
 sub B1_Motion
 {
  my ($w) = @_;
+ return unless defined $Tk::mouseMoved;
  my $Ev = $w->XEvent;
  $Tk::x = $Ev->x;
  $Tk::y = $Ev->y;

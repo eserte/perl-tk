@@ -327,7 +327,7 @@ Tk_ImageObjCmd(clientData, interp, argc, objv)
 		masterPtr->height);
 	   }
 	}
-        Tcl_ArgResult(interp, LangObjectArg( interp, Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
+        Tcl_SetObjResult(interp, LangObjectObj( interp, Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
     } else if ((c == 'd') && (strncmp(strv[1], "delete", length) == 0)) {
 	for (i = 2; i < argc; i++) {
 	    hPtr = Tcl_FindHashEntry(&winPtr->mainPtr->imageTable, strv[i]);
@@ -361,7 +361,8 @@ Tk_ImageObjCmd(clientData, interp, argc, objv)
 	}
 	for (hPtr = Tcl_FirstHashEntry(&winPtr->mainPtr->imageTable, &search);
 		hPtr != NULL; hPtr = Tcl_NextHashEntry(&search)) {
-	    Tcl_AppendArg(interp, LangObjectArg(interp,Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
+	    Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp),
+			LangObjectObj(interp,Tcl_GetHashKey(&winPtr->mainPtr->imageTable, hPtr)));
 	}
     } else if ((c == 't') && (strcmp(strv[1], "type") == 0)) {
 	if (argc != 3) {

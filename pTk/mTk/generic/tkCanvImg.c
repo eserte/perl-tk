@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvImg.c --
  *
  *	This file implements image items for canvas widgets.
@@ -179,7 +179,7 @@ CreateImage(interp, canvas, itemPtr, argc, argv)
     if (argc==1) {
 	i = 1;
     } else {
-	char *arg = Tcl_GetStringFromObj(args[1], NULL);
+	char *arg = Tcl_GetStringFromObj(objv[1], NULL);
 	if (((argc>1) && (arg[0] == '-')
 		&& (arg[1] >= 'a') && (arg[1] <= 'z'))) {
 	    i = 1;
@@ -266,7 +266,7 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if (argc < 3) {
 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 2) {
 		sprintf(x,"%d",argc);
@@ -275,8 +275,8 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, args[0], &imgPtr->x) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[1],
+	if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0], &imgPtr->x) != TCL_OK)
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
   		    &imgPtr->y) != TCL_OK)) {
 	    return TCL_ERROR;
 	}
@@ -751,7 +751,7 @@ ImageToPostscript(interp, canvas, itemPtr, prepass)
 
     x = imgPtr->x;
     y = Tk_CanvasPsY(canvas, imgPtr->y);
-    
+
     switch (imgPtr->anchor) {
 	case TK_ANCHOR_NW:			y -= height;		break;
 	case TK_ANCHOR_N:	x -= width/2.0; y -= height;		break;
@@ -767,7 +767,7 @@ ImageToPostscript(interp, canvas, itemPtr, prepass)
     if (image == NULL) {
         return TCL_OK;
     }
-    
+
     if (!prepass) {
 	sprintf(buffer, "%.15g %.15g", x, y);
 	Tcl_AppendResult(interp, buffer, " translate\n", (char *) NULL);
@@ -887,7 +887,7 @@ ImageChangedProc(clientData, x, y, width, height, imgWidth, imgHeight)
 	height = imgHeight;
 	Tk_CanvasEventuallyRedraw(imgPtr->canvas, imgPtr->header.x1,
 		imgPtr->header.y1, imgPtr->header.x2, imgPtr->header.y2);
-    } 
+    }
     ComputeImageBbox(imgPtr->canvas, imgPtr);
     Tk_CanvasEventuallyRedraw(imgPtr->canvas, imgPtr->header.x1 + x,
 	    imgPtr->header.y1 + y, (int) (imgPtr->header.x1 + x + width),

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvPs.c --
  *
  *	This module provides Postscript output support for canvases,
@@ -635,8 +635,8 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
                     " safe interpreter", (char *) NULL);
             result = TCL_ERROR;
             goto cleanup;
-        }         
-        
+        }
+
 	p = Tcl_TranslateFileName(interp, psInfo.fileName, &buffer);
 	if (p == NULL) {
 	    goto cleanup;
@@ -650,7 +650,7 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
 
     if (psInfo.channelName != NULL) {
         int mode;
-        
+
         /*
          * Check that the channel is found in this interpreter and that it
          * is open for writing.
@@ -670,7 +670,7 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
             goto cleanup;
         }
     }
-    
+
     /*
      *--------------------------------------------------------
      * Make a pre-pass over all of the items, generating Postscript
@@ -687,7 +687,7 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
 	if ((itemPtr->x1 >= psInfo.x2) || (itemPtr->x2 < psInfo.x)
 		|| (itemPtr->y1 >= psInfo.y2) || (itemPtr->y2 < psInfo.y)) {
 	    continue;
-	}                     
+	}
 	if (itemPtr->group != canvasPtr->activeGroup) {
 	    continue;
 	}
@@ -751,7 +751,7 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
     }
     Tcl_AppendResult(interp, "%%BoundingBox: ", string,
 	    "\n", (char *) NULL);
-    Tcl_AppendResult(interp, "%%Pages: 1\n", 
+    Tcl_AppendResult(interp, "%%Pages: 1\n",
 	    "%%DocumentData: Clean7Bit\n", (char *) NULL);
     Tcl_AppendResult(interp, "%%Orientation: ",
 	    psInfo.rotate ? "Landscape\n" : "Portrait\n", (char *) NULL);
@@ -817,7 +817,7 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
 	    Tk_PostscriptY((double) psInfo.y, (Tk_PostscriptInfo) &psInfo),
 	    psInfo.x2,
 	    Tk_PostscriptY((double) psInfo.y, (Tk_PostscriptInfo) &psInfo),
-	    psInfo.x2, 
+	    psInfo.x2,
 	    Tk_PostscriptY((double) psInfo.y2, (Tk_PostscriptInfo) &psInfo),
 	    psInfo.x,
 	    Tk_PostscriptY((double) psInfo.y2, (Tk_PostscriptInfo) &psInfo));
@@ -1049,9 +1049,10 @@ Tk_PostscriptFont(interp, psInfo, tkfont)
      */
 
     Tcl_DStringInit(&ds);
-    
+
     if (psInfoPtr->fontVar != NULL) {
-	Arg list, *args;
+	Tcl_Obj *list;
+	Tcl_Obj **objv;
 	int argc;
 	double size;
 	char *name;
@@ -1070,16 +1071,16 @@ Tk_PostscriptFont(interp, psInfo, tkfont)
 	    if (argc != 2) {
 		goto badMapEntry;
 	    }
-	    if (Tcl_GetDouble(interp, args[1], &size) != TCL_OK) {
+	    if (Tcl_GetDouble(interp, objv[1], &size) != TCL_OK) {
 		goto badMapEntry;
 	    }
 
 	    Tcl_DStringAppend(&ds, argv[0], -1);
 	    points = (int) size;
-	    
+	
 	    goto findfont;
 	}
-    } 
+    }
 
     points = Tk_PostscriptFontName(tkfont, &ds);
 
@@ -1119,7 +1120,7 @@ Tk_PostscriptFont(interp, psInfo, tkfont)
  *--------------------------------------------------------------
  */
 
-#undef TkGetProlog 
+#undef TkGetProlog
 int
 Tk_PostscriptBitmap(interp, tkwin, psInfo, bitmap, startX, startY, width,
 	height)
@@ -1408,13 +1409,13 @@ GetPostscriptPoints(interp, string, doublePtr)
  * TkImageGetColor --
  *
  *	This procedure converts a pixel value to three floating
- *      point numbers, representing the amount of red, green, and 
+ *      point numbers, representing the amount of red, green, and
  *      blue in that pixel on the screen.  It makes use of colormap
  *      data passed as an argument, and should work for all Visual
  *      types.
  *
  * Results:
- *	Returns red, green, and blue color values in the range 
+ *	Returns red, green, and blue color values in the range
  *      0 to 1.  There are no error returns.
  *
  * Side effects:
@@ -1449,8 +1450,8 @@ TkImageGetColor(cdata, pixel, red, green, blue)
  * TkPostscriptImage --
  *
  *	This procedure is called to output the contents of an
- *	image in Postscript, using a format appropriate for the 
- *      current color mode (i.e. one bit per pixel in monochrome, 
+ *	image in Postscript, using a format appropriate for the
+ *      current color mode (i.e. one bit per pixel in monochrome,
  *      one byte per pixel in gray, and three bytes per pixel in
  *      color).
  *
@@ -1536,9 +1537,9 @@ TkPostscriptImage(interp, tkwin, psInfo, ximage, x, y, width, height)
     XQueryColors(Tk_Display(tkwin), cmap, cdata.colors, ncolors);
 
     /*
-     * Figure out which color level to use (possibly lower than the 
+     * Figure out which color level to use (possibly lower than the
      * one specified by the user).  For example, if the user specifies
-     * color with monochrome screen, use gray or monochrome mode instead. 
+     * color with monochrome screen, use gray or monochrome mode instead.
      */
 
     if (!cdata.color && level == 2) {
@@ -1551,10 +1552,10 @@ TkPostscriptImage(interp, tkwin, psInfo, ximage, x, y, width, height)
 
     /*
      * Check that at least one row of the image can be represented
-     * with a string less than 64 KB long (this is a limit in the 
+     * with a string less than 64 KB long (this is a limit in the
      * Postscript interpreter).
      */
-    
+
     switch (level)
     {
         case 0: bytesPerLine = (width + 7) / 8;  maxWidth = 240000;  break;
@@ -1630,7 +1631,7 @@ TkPostscriptImage(interp, tkwin, psInfo, ximage, x, y, width, height)
                 }
                 case 1: {
                     /*
-                     * Generate data in gray mode--in this case, take a 
+                     * Generate data in gray mode--in this case, take a
                      * weighted sum of the red, green, and blue values.
                      */
                     for (xx = x; xx < x+width; xx ++) {

@@ -20,10 +20,8 @@
  * The zmouse.h file includes the definition for WM_MOUSEWHEEL.
  */
 
-#ifndef __GNUC__       // not in Minw32 yet
 #ifndef __BORLANDC__
 #include <zmouse.h>
-#endif
 #endif
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL (WM_MOUSELAST+1)  // message that will be supported
@@ -53,6 +51,10 @@ static int childClassInitialized = 0; /* Registered child class? */
  * Forward declarations of procedures used in this file.
  */
 
+#ifdef __CYGWIN__
+static void		DisplayFileProc _ANSI_ARGS_((ClientData clientData,
+			    int flags));
+#endif
 static void		GenerateXEvent _ANSI_ARGS_((HWND hwnd, UINT message,
 			    WPARAM wParam, LPARAM lParam));
 static unsigned int	GetState _ANSI_ARGS_((UINT message, WPARAM wParam,
@@ -384,6 +386,12 @@ TkpOpenDisplay(display_name)
 	    AllocNone);
     winDisplay = (TkDisplay *) ckalloc(sizeof(TkDisplay));
     winDisplay->display = display;
+#ifdef __CYGWIN__
+    if((ConnectionNumber(display) = open("/dev/windows", O_RDONLY)) < 0)
+	return NULL;
+    Tcl_CreateFileHandler(ConnectionNumber(display), TCL_READABLE,
+	    DisplayFileProc, (ClientData) winDisplay);
+#endif
     return winDisplay;
 }
 
@@ -447,9 +455,63 @@ TkpCloseDisplay(dispPtr)
         }
         ckfree((char *) display->screens);
     }
+#ifdef __CYGWIN__
+    if (dispPtr->display != 0) {
+        Tcl_DeleteFileHandler(ConnectionNumber(dispPtr->display));
+	close(ConnectionNumber(dispPtr->display));
+    }
+#endif
     ckfree((char *) display);
     ckfree((char *) dispPtr);
 }
+
+#ifdef __CYGWIN__
+/*
+ *----------------------------------------------------------------------
+ *
+ * DisplayFileProc --
+ *
+ *	This procedure implements the file handler for the /dev/windows
+ *	connection.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Process Win32 message queue.  Compare to tclWin/tclWinNotify.c
+ *	Tcl_WaitForEvent() event loop.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+DisplayFileProc(clientData, flags)
+    ClientData clientData;		/* The display pointer. */
+    int flags;				/* Should be TCL_READABLE. */
+{
+    TkDisplay *dispPtr = (TkDisplay *) clientData;
+    Display *display = dispPtr->display;
+    MSG msg;
+    int n;
+
+    /* NOTE: read returns the result of GetMessage */
+    /*       *not* the number of bytes read */
+    n = read(ConnectionNumber(display), &msg, sizeof(MSG));
+    if(n == 0) {
+	/*
+	 * The application is exiting, so repost the quit message
+	 * and start unwinding.
+	 */
+
+	PostQuitMessage(msg.wParam);
+	return;
+    }
+    if(n > 0) {
+	TranslateMessage(&msg);
+	DispatchMessage(&msg);
+    }
+}
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -1132,9 +1194,5 @@ TkWinResendEvent(wndproc, hwnd, eventPtr)
 unsigned long
 TkpGetMS()
 {
-#ifdef __GNUC__
-    return GetTickCount();
-#else
     return GetCurrentTime();
-#endif
 }

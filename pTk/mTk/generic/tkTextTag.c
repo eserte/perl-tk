@@ -1,4 +1,4 @@
-/* 
+/*
  * tkTextTag.c --
  *
  *	This module implements the "tag" subcommand of the widget command
@@ -183,7 +183,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		index2 = index1;
 		TkTextIndexForwChars(&index2, 1, &index2);
 	    }
-    
+
 	    if (tagPtr->affectsDisplay) {
 		TkTextRedrawTag(textPtr, &index1, &index2, tagPtr, !addTag);
 	    } else {
@@ -191,17 +191,17 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		 * Still need to trigger enter/leave events on tags that
 		 * have changed.
 		 */
-    
+
 		TkTextEventuallyRepick(textPtr);
 	    }
 	    TkBTreeTag(&index1, &index2, tagPtr, addTag);
-    
+
 	    /*
 	     * If the tag is "sel" then grab the selection if we're supposed
 	     * to export it and don't already have it.  Also, invalidate
 	     * partially-completed selection retrievals.
 	     */
-    
+
 	    if (tagPtr == textPtr->selTagPtr) {
 		if (addTag && textPtr->exportSelection
 			&& !(textPtr->flags & GOT_SELECTION)) {
@@ -243,7 +243,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		append = 1;
 	    }
 	    mask = Tk_CreateBinding(interp, textPtr->bindingTable,
-		    (ClientData) tagPtr, argv[4], args[5], append);
+		    (ClientData) tagPtr, argv[4], objv[5], append);
 	    if (mask == 0) {
 		return TCL_ERROR;
 	    }
@@ -261,15 +261,14 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		return TCL_ERROR;
 	    }
 	} else if (argc == 5) {
-	    Arg command;
-    
+	    Tcl_Obj *command;
+
 	    command = Tk_GetBinding(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr, argv[4]);
 	    if (command == NULL) {
 		return TCL_ERROR;
 	    }
-	    Tcl_ArgResult(interp,command);
-	    Tcl_DecrRefCount(command);
+	    Tcl_SetObjResult(interp,command);
 	} else {
 	    Tk_GetAllBindings(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr);
@@ -612,7 +611,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	     * skip to the end of this tagged range.
 	     */
 
-	    for (segPtr = index1.linePtr->segPtr, offset = index1.charIndex; 
+	    for (segPtr = index1.linePtr->segPtr, offset = index1.charIndex;
 		    offset >= 0;
 		    offset -= segPtr->size, segPtr = segPtr->nextPtr) {
 		if ((offset == 0) && (segPtr->typePtr == &tkTextToggleOnType)

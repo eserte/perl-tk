@@ -6,12 +6,12 @@ BEGIN
  {
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.022';
+  $VERSION = '800.023';
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
 
-  $win_arch = ($IsWin32) ? 'MSWin32' : 'x'
+  $win_arch = ($IsWin32 or $^O eq 'cygwin') ? 'MSWin32' : 'x'
     if not defined $win_arch; # Currently 'x', 'pm', 'open32', 'MSWin32'
 
   require "./myConfig";
@@ -107,6 +107,10 @@ sub MY::post_initialize
                'pTk\\tkres$(OBJ_EXT)' : 'pTk\\tk.res');
    }
   }
+ if ($win_arch eq 'MSWin32' and $^O eq 'cygwin')
+  {
+     push(@{$self->{'O_FILES'}}, 'pTk/tkres$(OBJ_EXT)');
+  }
  $ret;
 }
 
@@ -168,7 +172,7 @@ tkGlue.m     : tkGlue.h pTk/mkVFunc
 	$(PERL) pTk/mkVFunc -m $(WINARCH) tkGlue.h
 
 $(MYEXTLIB)  : config FORCE
-	cd pTk && $(MAKE)
+	cd pTk && $(MAKE) DEFINE="$(DEFINE)"
 
 perlmain.c : config Makefile
 

@@ -13,7 +13,6 @@
 #include <imgInt.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include <imgPmap.h>
 
@@ -93,6 +92,9 @@ Tk_ImageType imgPixmapImageType = {
     ImgXpmDisplay,			/* displayProc */
     ImgXpmFree,				/* freeProc */
     ImgXpmDelete,			/* deleteProc */
+#ifdef TK_CONFIG_OBJS
+    (Tk_ImagePostscriptProc *) NULL,	/* postscriptProc */
+#endif
     (Tk_ImageType *) NULL		/* nextPtr */
 };
 

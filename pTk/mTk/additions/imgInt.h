@@ -53,7 +53,6 @@ EXTERN int ImgGetc _ANSI_ARGS_((MFile *handle));
 EXTERN int ImgRead _ANSI_ARGS_((MFile *handle, char *dst, int count));
 EXTERN int ImgPutc _ANSI_ARGS_((int c, MFile *handle));
 EXTERN int ImgWrite _ANSI_ARGS_((MFile *handle, CONST char *src, int count));
-EXTERN int ImgSeek _ANSI_ARGS_((MFile *handle, int off, int whence));
 EXTERN void ImgWriteInit _ANSI_ARGS_((Tcl_DString *buffer, MFile *handle));
 EXTERN int ImgReadInit _ANSI_ARGS_((Tcl_Obj *data, int c, MFile *handle));
 EXTERN Tcl_Channel ImgOpenFileChannel _ANSI_ARGS_((Tcl_Interp *interp,

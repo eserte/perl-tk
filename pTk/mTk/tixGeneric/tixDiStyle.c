@@ -269,7 +269,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 	    RefWindowStructureProc, (ClientData)stylePtr);
 
     Tcl_ResetResult(interp);
-    Tcl_ArgResult(interp, LangObjectArg( interp, styleName));
+    Tcl_SetObjResult(interp, LangObjectObj( interp, styleName));
     return TCL_OK;
 }
 
@@ -976,7 +976,7 @@ DItemStylePrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
     Tix_DItemStyle *stylePtr = *((Tix_DItemStyle**)(widRec+offset));
     Arg result = NULL;
     if (stylePtr != NULL && !(stylePtr->base.flags & TIX_STYLE_DEFAULT)) {
-        LangSetArg(&result,LangObjectArg(stylePtr->base.interp,
+        LangSetObj(&result,LangObjectObj(stylePtr->base.interp,
                                          stylePtr->base.name));
     }
     return result;

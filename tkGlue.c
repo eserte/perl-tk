@@ -8,6 +8,10 @@
 #include <perl.h>
 #include <XSUB.h>
 #include <patchlevel.h>
+#ifdef __CYGWIN__
+#  undef XS
+#  define XS(name) void name(pTHXo_ CV* cv)
+#endif
 
 #define Tkgv_fullname(x,y,z) gv_fullname3(x,y,z)
 
@@ -26,7 +30,7 @@
 #include "pTk/Xlib_f.h"
 #include "pTk/tkEvent.h"
 #include "pTk/tkEvent.m"
-#ifdef WIN32
+#if defined(WIN32) || (defined(__WIN32__) && defined(__CYGWIN__))
 #include "pTk/tkWin.h"
 #include "pTk/tkWinInt.h"
 #include "pTk/tkWin_f.h"
@@ -102,6 +106,11 @@ extern XSdec(XS_Tk_INIT);
 extern XSdec(XS_Tk_DoWhenIdle);
 extern XSdec(XS_Tk_CreateGenericHandler);
 
+#ifdef PERL_MG_UFUNC
+#define DECL_MG_UFUNC(name,a,b) PERL_MG_UFUNC(name,a,b)
+#else
+#define DECL_MG_UFUNC(name,a,b) I32 name(IV a, SV *b)
+#endif
 
 extern void  LangPrint _((SV *sv));
 
@@ -115,12 +124,6 @@ static AV *ResultAv _((Tcl_Interp *interp, char *who, int create));
 static SV *Blessed _((char *package, SV * sv));
 static int PushObjCallbackArgs _((Tcl_Interp *interp, SV **svp,EventAndKeySym *obj));
 static int Check_Eval _((Tcl_Interp *interp));
-static I32 Perl_Trace _((IV ix, SV * sv));
-static I32 LinkIntSet _((IV ix, SV * sv));
-static I32 LinkIntVal _((IV ix, SV * sv));
-static I32 LinkDoubleSet _((IV ix, SV * sv));
-static I32 LinkDoubleVal _((IV ix, SV * sv));
-static I32 LinkCannotSet _((IV ix, SV * sv));
 static int handle_generic _((ClientData clientData, XEvent * eventPtr));
 static void HandleBgErrors _((ClientData clientData));
 static void SetTclResult _((Tcl_Interp *interp,int count));
@@ -790,7 +793,7 @@ char *s;
 }
 
 void
-LangSetArg(sp, arg)
+LangSetObj(sp, arg)
 SV **sp;
 SV *arg;
 {
@@ -799,18 +802,36 @@ SV *arg;
  if (!arg)
   arg = &PL_sv_undef;
  if (SvTYPE(arg) == SVt_PVAV)
-  arg = newRV(arg);
+  arg = newRV_noinc(arg);
  if (sv && SvMAGICAL(sv))
   {
    sv_setsv(sv, arg);
    SvSETMAGIC(sv);
+   SvREFCNT_dec(arg);
   }
  else
   {
-   *sp = SvREFCNT_inc(arg);
+   *sp = arg;
    if (sv)
     SvREFCNT_dec(sv);
   }
+}
+
+static void
+Deprecated(char *what, char *file, int line)
+{
+ LangDebug("%s:%d: %s is deprecated\n",file,line,what);
+}
+
+void
+LangOldSetArg(sp, arg, file, line)
+SV **sp;
+SV *arg;
+char *file;
+int line;
+{
+ Deprecated("LangSetArg",file,line);
+ LangSetObj(sp,(arg) ? SvREFCNT_inc(arg) : arg);
 }
 
 /* This replaces LangSetArg(sp,LangVarArg(var)) which leaked RVs */
@@ -822,11 +843,10 @@ Var sv;
  if (sv)
   {
    SV *rv = newRV(sv);
-   LangSetArg(sp,rv);
-   SvREFCNT_dec(rv);
+   LangSetObj(sp,rv);
   }
  else
-  LangSetArg(sp,NULL);
+  LangSetObj(sp,NULL);
 }
 
 void
@@ -1102,7 +1122,6 @@ va_dcl
 #endif
  sv_vsetpvfn(sv, fmt, strlen(fmt), &ap, Null(SV**), 0, Null(bool*));
  Tcl_SetObjResult(interp, sv);
- SvREFCNT_dec(sv);
  va_end(ap);
 }
 
@@ -1262,14 +1281,36 @@ SV *sv;
  SV *result;
  Tcl_ResetResult(interp);
  result = Tcl_GetObjResult(interp);
+ Tcl_ListObjAppendElement(interp, result, sv);
+}
+
+void
+Lang_OldArgResult(interp,sv,file,line)
+Tcl_Interp *interp;
+SV *sv;
+char *file;
+int line;
+{
  /*
   * It is caller's responsibility to free the incoming sv if it
   * is a temporary, we increment refcount here as common case is
   * LangWidgetArg() which just returns a raw un-incremented value
   * from the hash.
   */
+ Deprecated("Tcl_ArgResult",file,line);
  Increment(sv, "Tcl_ArgResult");
- Tcl_ListObjAppendElement(interp, result, sv);
+ Tcl_SetObjResult(interp,sv);
+}
+
+SV *
+LangObjArg(sv,file,line)
+SV *sv;
+char *file;
+int line;
+{
+ Deprecated("LangXxxxArg",file,line);
+ SvREFCNT_dec(sv);
+ return sv;
 }
 
 static SV *
@@ -1350,19 +1391,19 @@ Tk_Window tkwin;
 }
 
 Arg
-LangWidgetArg(interp, tkwin)
+LangWidgetObj(interp, tkwin)
 Tcl_Interp *interp;
 Tk_Window tkwin;
 {
- return TkToWidget(tkwin,NULL);
+ return SvREFCNT_inc(TkToWidget(tkwin,NULL));
 }
 
 Arg
-LangObjectArg(interp, name)
+LangObjectObj(interp, name)
 Tcl_Interp *interp;
 char *name;
 {
- return ObjectRef(interp, name);
+ return SvREFCNT_inc(ObjectRef(interp, name));
 }
 
 Tk_Font
@@ -1395,7 +1436,7 @@ SVtoFont(SV *sv)
 }
 
 Arg
-LangFontArg(interp, tkfont, name)
+LangFontObj(interp, tkfont, name)
 Tcl_Interp *interp;
 Tk_Font tkfont;
 char *name;
@@ -1424,7 +1465,7 @@ char *name;
    sv = Blessed("Tk::Font", MakeReference(sv));
    hv_store(fonts, name, strlen(name), sv, 0);
   }
- return sv; /* Not SvREFCNT_inc(sv) for symetry with Widget */;
+ return SvREFCNT_inc(sv);
 }
 
 void
@@ -1454,8 +1495,7 @@ Tcl_FreeProc *freeProc;
  if (string)
   {
    SV *sv = newSVpv(string, len);
-   Tcl_ArgResult(interp, sv);
-   SvREFCNT_dec(sv);
+   Tcl_SetObjResult(interp, sv);
    if (freeProc != TCL_STATIC && freeProc != TCL_VOLATILE)
     (*freeProc) (string);
   }
@@ -1940,6 +1980,7 @@ ClientData clientData;
  FREETMPS;
  LEAVE;
  Tcl_ResetResult(interp);
+ DecInterp(interp,"HandleBgErrors");
 }
 
 void
@@ -1971,6 +2012,7 @@ Tcl_Interp *interp;
    if (av_len(pend) <= 0)
     {
      /* 1st one - setup callback */
+     IncInterp(interp,"Tk_BackgroundError");
      Tcl_DoWhenIdle(HandleBgErrors, (ClientData) interp);
     }
    Tcl_ResetResult(interp);
@@ -3378,8 +3420,8 @@ int flags;
  return SvPV(sv, na);
 }
 
-static I32
-Perl_Value(IV ix, SV *sv)
+static
+DECL_MG_UFUNC(Perl_Value, ix, sv)
 {
  Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
  char *result;
@@ -3410,10 +3452,7 @@ Perl_Value(IV ix, SV *sv)
  return 0;
 }
 
-static I32
-Perl_Trace(ix, sv)
-IV ix;
-SV *sv;
+static DECL_MG_UFUNC(Perl_Trace, ix, sv)
 {
  Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
  char *result;
@@ -3556,49 +3595,39 @@ LangLibraryDir()
  return NULL;
 }
 
-static I32
-LinkIntSet(ix, sv)
-IV ix;
-SV *sv;
+static
+DECL_MG_UFUNC(LinkIntSet,ix,sv)
 {
  int *p = (int *) ix;
  (*p) = SvIV(sv);
  return 0;
 }
 
-static I32
-LinkDoubleSet(ix, sv)
-IV ix;
-SV *sv;
+static
+DECL_MG_UFUNC(LinkDoubleSet,ix,sv)
 {
  double *p = (double *) ix;
  (*p) = SvNV(sv);
  return 0;
 }
 
-static I32
-LinkCannotSet(ix, sv)
-IV ix;
-SV *sv;
+static
+DECL_MG_UFUNC(LinkCannotSet,ix,sv)
 {
  croak("Attempt to set readonly linked variable");
  return 0;
 }
 
-static I32
-LinkIntVal(ix, sv)
-IV ix;
-SV *sv;
+static
+DECL_MG_UFUNC(LinkIntVal,ix,sv)
 {
  int *p = (int *) ix;
  sv_setiv(sv,*p);
  return 0;
 }
 
-static I32
-LinkDoubleVal(ix, sv)
-IV ix;
-SV *sv;
+static
+DECL_MG_UFUNC(LinkDoubleVal,ix,sv)
 {
  double *p = (double *) ix;
  sv_setnv(sv,*p);
@@ -5123,7 +5152,7 @@ long
 Lang_OSHandle(fd)
 int fd;
 {
-#ifdef WIN32
+#if defined(WIN32) && !defined(__CYGWIN__)
  return win32_get_osfhandle(fd);
 #else
  return fd;

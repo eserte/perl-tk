@@ -331,7 +331,7 @@ CreateArc(interp, canvas, itemPtr, argc, argv)
     if (argc==1) {
 	i = 1;
     } else {
-	char *arg = Tcl_GetStringFromObj(args[1], NULL);
+	char *arg = Tcl_GetStringFromObj(objv[1], NULL);
 	if ((argc>1) && (arg[0] == '-')
 		&& (arg[1] >= 'a') && (arg[1] <= 'z')) {
 	    i = 1;
@@ -433,7 +433,7 @@ ArcCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if ((argc == 1)||(argc == 4)) {
 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 4) {
 		sprintf(c0,"%d",argc);
@@ -442,13 +442,13 @@ ArcCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, args[0],
+	if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0],
  		    &arcPtr->bbox[0]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[1],
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
 		    &arcPtr->bbox[1]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[2],
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[2],
 			&arcPtr->bbox[2]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[3],
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[3],
 			&arcPtr->bbox[3]) != TCL_OK)) {
 	    return TCL_ERROR;
 	}

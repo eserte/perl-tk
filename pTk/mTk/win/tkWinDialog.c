@@ -76,14 +76,14 @@ typedef struct _ChooseColorData {
 
 
 static int 		TkGetFileName _ANSI_ARGS_((ClientData clientData,
-    			    Tcl_Interp *interp, int argc, Arg *args,
+    			    Tcl_Interp *interp, int argc, Tcl_Obj **objv,
     			    int isOpen));
 static UINT CALLBACK	ColorDlgHookProc _ANSI_ARGS_((HWND hDlg, UINT uMsg,
 			    WPARAM wParam, LPARAM lParam));
 static int 		MakeFilter _ANSI_ARGS_((Tcl_Interp *interp,
     			    OPENFILENAME *ofnPtr, Arg string));
 static int		ParseFileDlgArgs _ANSI_ARGS_((Tcl_Interp * interp,
-    			    OPENFILENAME *ofnPtr, int argc, Arg *args,
+    			    OPENFILENAME *ofnPtr, int argc, Tcl_Obj **objv,
 			    int isOpen));
 static int 		ProcessCDError _ANSI_ARGS_((Tcl_Interp * interp,
 			    DWORD dwErrorCode, HWND hWnd));
@@ -387,13 +387,13 @@ CALLBACK ColorDlgHookProc(hDlg, uMsg, wParam, lParam)
  */
 
 int
-Tk_GetOpenFileCmd(clientData, interp, argc, argv)
+Tk_GetOpenFileCmd(clientData, interp, argc, objv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    Arg *args;			/* Argument strings. */
+    Tcl_Obj **objv;		/* Argument strings. */
 {
-    return TkGetFileName(clientData, interp, argc, args, OPEN_FILE);
+    return TkGetFileName(clientData, interp, argc, objv, OPEN_FILE);
 }
 
 /*
@@ -418,9 +418,9 @@ Tk_GetSaveFileCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    Arg *args;			/* Argument strings. */
+    Tcl_Obj **objv;			/* Argument strings. */
 {
-    return TkGetFileName(clientData, interp, argc, args, SAVE_FILE);
+    return TkGetFileName(clientData, interp, argc, objv, SAVE_FILE);
 }
 
 /*
@@ -440,11 +440,11 @@ Tk_GetSaveFileCmd(clientData, interp, argc, argv)
  */
 
 static int 
-TkGetFileName(clientData, interp, argc, args, isOpen)
+TkGetFileName(clientData, interp, argc, objv, isOpen)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    Arg *args;			/* Argument strings. */
+    Tcl_Obj **objv;			/* Argument strings. */
     int isOpen;			/* true if we should call GetOpenFileName(),
 				 * false if we should call GetSaveFileName() */
 {
@@ -458,7 +458,7 @@ TkGetFileName(clientData, interp, argc, args, isOpen)
     /*
      * 1. Parse the arguments.
      */
-    if (ParseFileDlgArgs(interp, ofnPtr, argc, args, isOpen) != TCL_OK) {
+    if (ParseFileDlgArgs(interp, ofnPtr, argc, objv, isOpen) != TCL_OK) {
 	return TCL_ERROR;
     }
     custData = (OpenFileData*) ofnPtr->lCustData;
@@ -542,7 +542,7 @@ ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
     Tcl_Interp * interp;	/* Current interpreter. */
     OPENFILENAME *ofnPtr;	/* Info about the file dialog */
     int argc;			/* Number of arguments. */
-    Arg *args;			/* Argument strings. */
+    Tcl_Obj **objv;		/* Argument strings. */
     int isOpen;			/* true if we should call GetOpenFileName(),
 				 * false if we should call GetSaveFileName() */
 {
@@ -611,7 +611,7 @@ ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
 	else if (strncmp(argv[i], "-filetypes", len)==0) {
 	    if (v==argc) {goto arg_missing;}
 
-	    if (MakeFilter(interp, ofnPtr, args[v]) != TCL_OK) {
+	    if (MakeFilter(interp, ofnPtr,objv[v]) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	    doneFilter = 1;

@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.049'; # $Id: //depot/Tk8/Tk/MMutil.pm#49 $
+$VERSION = '3.050'; # $Id: //depot/Tk8/Tk/MMutil.pm#50 $
 
 use Tk::MakeDepend;
 
@@ -222,6 +222,19 @@ sub perldepend
    my @inc   = split(/\s+/,$self->{'INC'});
    my @def   = split(/\s+/,$self->{'DEFINE'});
    push(@def,qw(-DWIN32 -D__WIN32__)) if ($IsWin32);
+   if ($^O eq 'cygwin')
+    {
+     push(@def,qw(-D__CYGWIN__));
+     if ($win_arch eq 'MSWin32')
+      {
+       push(@def,qw(-D__WIN32__)) unless $self->{'DEFINE'} =~ /-D__WIN32__/;
+       push(@def,qw(-DWIN32)) if $self->{'NAME'} eq 'Tk::pTk';
+      }
+     elsif ($win_arch eq 'x')
+      {
+       push(@def,qw(-U_WIN32));
+      }
+    }
    foreach (@inc)
     {
      s/\$\(TKDIR\)/$tk/g;
@@ -486,6 +499,25 @@ sub TkExtMakefile
      my $extra = "-L$base -lcomdlg32 -lgdi32";
      my $libs = $att{'LIBS'}->[0];
      $att{'LIBS'}->[0] = "$extra $libs";
+    }
+   if ($^O eq 'cygwin')
+    {
+     # NOTE: use gcc -shared instead of dllwrap (ld2),
+     # dllwrap tries to resolve all symbols, even those
+     # that are brought in from libraries like libpTk.a
+     push(@opt,'LD' => 'gcc -shared');
+     if ($win_arch eq 'MSWin32')
+      {
+       my $extra = "-lcomdlg32 -lgdi32";
+       my $libs = $att{'LIBS'}->[0];
+       $att{'LIBS'}->[0] = "$extra $libs";
+       $att{'DEFINE'} .= ' -D__WIN32__';
+       $att{'DEFINE'} .= ' -DWIN32' if($att{'NAME'} eq 'Tk::pTk');
+      }
+     elsif ($win_arch eq 'x')
+      {
+       $att{'DEFINE'} .= ' -U_WIN32';
+      }
     }
    if (delete $att{'ptk_include'})
     {

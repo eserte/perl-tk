@@ -291,7 +291,7 @@ CreateRectOval(interp, canvas, itemPtr, argc, argv)
     if (argc==1) {
 	i = 1;
     } else {
-	char *arg = Tcl_GetStringFromObj(args[1], NULL);
+	char *arg = Tcl_GetStringFromObj(objv[1], NULL);
 	if ((argc>1) && (arg[0] == '-')
 		&& (arg[1] >= 'a') && (arg[1] <= 'z')) {
 	    i = 1;
@@ -364,21 +364,21 @@ CreateRectOval(interp, canvas, itemPtr, argc, argv)
  */
 
 static int
-RectOvalCoords(interp, canvas, itemPtr, argc, argv)
+RectOvalCoords(interp, canvas, itemPtr, argc, objv)
     Tcl_Interp *interp;			/* Used for error reporting. */
     Tk_Canvas canvas;			/* Canvas containing item. */
     Tk_Item *itemPtr;			/* Item whose coordinates are to be
 					 * read or modified. */
     int argc;				/* Number of coordinates supplied in
 					 * args. */
-    Arg *args;				/* Array of coordinates: x1, y1,
+    Arg *objv;				/* Array of coordinates: x1, y1,
 					 * x2, y2, ... */
 {
     RectOvalItem *rectOvalPtr = (RectOvalItem *) itemPtr;
     char c0[TCL_DOUBLE_SPACE];
 
     if (argc == 0) {
-	Tcl_Obj *obj = Tcl_NewObj();
+	Tcl_Obj *obj = Tcl_NewListObj(0,NULL);
 	Tcl_Obj *subobj = Tcl_NewDoubleObj(rectOvalPtr->bbox[0]);
 	Tcl_ListObjAppendElement(interp, obj, subobj);
 	subobj = Tcl_NewDoubleObj(rectOvalPtr->bbox[1]);
@@ -390,7 +390,7 @@ RectOvalCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if ((argc == 1)||(argc == 4)) {
  	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, args[0], &argc, &args) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 4) {
 		sprintf(c0,"%d",argc);
@@ -399,13 +399,13 @@ RectOvalCoords(interp, canvas, itemPtr, argc, argv)
 		return TCL_ERROR;
 	    }
 	}
-	if ((Tk_CanvasGetCoordFromObj(interp, canvas, args[0],
+	if ((Tk_CanvasGetCoordFromObj(interp, canvas, objv[0],
  		    &rectOvalPtr->bbox[0]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[1],
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[1],
 		    &rectOvalPtr->bbox[1]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[2],
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[2],
 			&rectOvalPtr->bbox[2]) != TCL_OK)
-		|| (Tk_CanvasGetCoordFromObj(interp, canvas, args[3],
+		|| (Tk_CanvasGetCoordFromObj(interp, canvas, objv[3],
 			&rectOvalPtr->bbox[3]) != TCL_OK)) {
 	    return TCL_ERROR;
 	}

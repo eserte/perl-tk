@@ -249,16 +249,16 @@ struct TixBaseItem {
     Tix_DItemInfo * diTypePtr; \
     Tk_Anchor anchor;		/* Anchor information */ \
     char * name;		/* Name of this style */ \
-    int pad[2]			/* paddings */ 
+    int pad[2]			/* paddings */
 
 
 #if 0
     Tix_Relief relief
     /* %bordercolor not used */
-    int borderWidth; 
-    XColor * borderColor;	/* color of the border when it is displayed 
-				 * in "flat border" mode 
-				 */ 
+    int borderWidth;
+    XColor * borderColor;	/* color of the border when it is displayed
+				 * in "flat border" mode
+				 */
     GC borderGC
 #endif
 
@@ -332,7 +332,7 @@ struct TixImageTextStyle {
     Tk_Justify justify;		/* Justification to use for multi-line text. */
     TixFont font;
     int gap;			/* Gap between text and image */
-    Tk_Anchor textanchor;	/* Text anchor information */ 
+    Tk_Anchor textanchor;	/* Text anchor information */
 };
 
 /*----------------------------------------------------------------------
@@ -445,7 +445,7 @@ union Tix_DItemStyle {
 
 /*----------------------------------------------------------------------
  * Tix_ArgumentList --
- * 
+ *
  *	This data structure is used to split command arguments for
  *	the display item types
  *----------------------------------------------------------------------
@@ -453,7 +453,7 @@ union Tix_DItemStyle {
 #define FIXED_SIZE 4
 typedef struct {
     int argc;
-    Arg *args;
+    Tcl_Obj **objv;
 } Tix_Argument;
 
 typedef struct {
@@ -464,7 +464,7 @@ typedef struct {
 
 /*----------------------------------------------------------------------
  * Tix_ScrollInfo --
- * 
+ *
  *	This data structure encapsulates all the necessary operations
  *	for scrolling widgets
  *----------------------------------------------------------------------
@@ -476,10 +476,10 @@ typedef struct {
 typedef struct Tix_ScrollInfo {
     int type;		/* TIX_SCROLL_INT or TIX_SCROLL_DOUBLE */
     LangCallback *command;
-    /* place holder for actual space - double must be mentioned 
+    /* place holder for actual space - double must be mentioned
        to force alignment for too-clever-by-half compilers
      */
-    union {  
+    union {
      int    iscroll[4];
      double dscroll[4];
     } info;
@@ -673,7 +673,7 @@ EXTERN TixConfigSpec *	Tix_FindConfigSpecByName _ANSI_ARGS_((
 EXTERN char  *		Tix_FindMethod _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *context, char *method));
 EXTERN char *		Tix_FindPublicMethod _ANSI_ARGS_((
-			    Tcl_Interp *interp, TixClassRecord * cPtr, 
+			    Tcl_Interp *interp, TixClassRecord * cPtr,
 			    char * method));
 EXTERN int		Tix_GetChars _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, double *doublePtr));
@@ -737,7 +737,7 @@ EXTERN void		Tix_DItemFree _ANSI_ARGS_((
 EXTERN void		TixDItemStyleChanged _ANSI_ARGS_((
 			    Tix_DItemInfo * diTypePtr,
 			    Tix_DItemStyle * stylePtr));
-EXTERN void		TixDItemStyleFree  _ANSI_ARGS_((Tix_DItem *iPtr, 
+EXTERN void		TixDItemStyleFree  _ANSI_ARGS_((Tix_DItem *iPtr,
 			    Tix_DItemStyle * stylePtr));
 EXTERN void		TixDItemGetAnchor _ANSI_ARGS_((Tk_Anchor anchor,
 			    int x, int y, int cav_w, int cav_h,
@@ -788,7 +788,7 @@ EXTERN void		Tix_WindowItemListRemove  _ANSI_ARGS_((
 
 typedef struct _TixpSubRegion TixpSubRegion;
 
-/* 
+/*
  * Functions that should be used by Tix only. Functions prefixed by "Tix"
  * are generic functions that has one implementation for all platforms.
  * Functions prefixed with "Tixp" requires one implementation on each
@@ -838,8 +838,8 @@ extern void		TixpSubRegFillRectangle _ANSI_ARGS_((Display *display,
 			    TixpSubRegion * subRegPtr, int x, int y,
 			    int width, int height));
 
-/* These functions are also, and originaly declared in tixPort.h but 
- * that would mean even more Vtables 
+/* These functions are also, and originaly declared in tixPort.h but
+ * that would mean even more Vtables
  */
 
 EXTERN void		TixComputeTextGeometry _ANSI_ARGS_((

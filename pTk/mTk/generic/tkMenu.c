@@ -513,12 +513,13 @@ Tk_MenuCmd(clientData, interp, argc, argv)
 		    && ((cascadeListPtr->menuPtr->masterMenuPtr
 		    == cascadeListPtr->menuPtr)))) {
 		newArgv[0] = Tcl_NewStringObj("-menu",-1);
-		newArgv[1] = LangWidgetArg(interp,menuPtr->tkwin);
+		newArgv[1] = LangWidgetObj(interp,menuPtr->tkwin);
 		ConfigureMenuEntry(cascadeListPtr, 2, newArgv,
 		    TK_CONFIG_ARGV_ONLY);
 		Tcl_DecrRefCount(newArgv[0]);
+		Tcl_DecrRefCount(newArgv[1]);
 	    } else {
-		newMenuName = LangWidgetArg(menuPtr->interp, cascadeListPtr->menuPtr->tkwin);
+		newMenuName = LangWidgetObj(menuPtr->interp, cascadeListPtr->menuPtr->tkwin);
 		CloneMenu(menuPtr, &newMenuName, "normal");
 
 		/*
@@ -547,6 +548,7 @@ Tk_MenuCmd(clientData, interp, argc, argv)
 	TkMenuTopLevelList *topLevelListPtr = menuRefPtr->topLevelListPtr;
 	TkMenuTopLevelList *nextPtr;
 	Tk_Window listtkwin;
+	Tcl_Obj *menuObj;
 	while (topLevelListPtr != NULL) {
 
 	    /*
@@ -557,9 +559,9 @@ Tk_MenuCmd(clientData, interp, argc, argv)
 
 	    nextPtr = topLevelListPtr->nextPtr;
 	    listtkwin = topLevelListPtr->tkwin;
-	    TkSetWindowMenuBar(menuPtr->interp, listtkwin,
-		    LangWidgetArg(menuPtr->interp,menuPtr->tkwin),
-		    LangWidgetArg(menuPtr->interp,menuPtr->tkwin));
+	    menuObj = LangWidgetObj(menuPtr->interp,menuPtr->tkwin);
+	    TkSetWindowMenuBar(menuPtr->interp, listtkwin, menuObj, menuObj);
+	    Tcl_DecrRefCount(menuObj);
 	    topLevelListPtr = nextPtr;
 	}
     }
@@ -623,7 +625,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " activate index\"", (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (menuPtr->active == index) {
@@ -665,10 +667,10 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	result = CloneMenu(menuPtr, &args[2], (argc == 3) ? NULL : argv[3]);
+	Tcl_IncrRefCount(objv[2]);
+	result = CloneMenu(menuPtr, &objv[2], (argc == 3) ? NULL : argv[3]);
 	if (result == TCL_OK) {
-		Tcl_ArgResult(interp, args[2]);
-		LangFreeArg(args[2], TCL_DYNAMIC);
+		Tcl_SetObjResult(interp, objv[2]);
 	}
     } else if ((c == 'c') && (strncmp(argv[1], "configure", length) == 0)
 	    && (length >= 2)) {
@@ -690,13 +692,13 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " delete first ?last?\"", (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &first) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &first) != TCL_OK) {
 	    goto error;
 	}
 	if (argc == 3) {
 	    last = first;
 	} else {
-	    if (TkGetMenuIndex(interp, menuPtr, args[3], 0, &last) != TCL_OK) {
+	    if (TkGetMenuIndex(interp, menuPtr, objv[3], 0, &last) != TCL_OK) {
 		goto error;
 	    }
 	}
@@ -723,7 +725,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index < 0) {
@@ -745,7 +747,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index < 0) {
@@ -776,7 +778,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " index string\"", (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index < 0) {
@@ -791,7 +793,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " insert index type ?options?\"", (char *) NULL);
 	    goto error;
 	}
-	if (MenuAddOrInsert(interp, menuPtr, args[2],
+	if (MenuAddOrInsert(interp, menuPtr, objv[2],
 		argc-3, argv+3) != TCL_OK) {
 	    goto error;
 	}
@@ -804,7 +806,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " invoke index\"", (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index < 0) {
@@ -845,7 +847,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " postcascade index\"", (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if ((index < 0) || (menuPtr->entries[index]->type != CASCADE_ENTRY)) {
@@ -860,7 +862,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " type index\"", (char *) NULL);
 	    goto error;
 	}
-	if (TkGetMenuIndex(interp, menuPtr, args[2], 0, &index) != TCL_OK) {
+	if (TkGetMenuIndex(interp, menuPtr, objv[2], 0, &index) != TCL_OK) {
 	    goto error;
 	}
 	if (index < 0) {
@@ -901,7 +903,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 		    argv[0], " yposition index\"", (char *) NULL);
 	    goto error;
 	}
-	result = MenuDoYPosition(interp, menuPtr, args[2]);
+	result = MenuDoYPosition(interp, menuPtr, objv[2]);
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],
 		"\": must be activate, add, cget, clone, configure, delete, ",
@@ -947,6 +949,7 @@ TkInvokeMenu(interp, menuPtr, index)
 {
     int result = TCL_OK;
     TkMenuEntry *mePtr;
+    Tcl_Obj *obj = NULL;
 
     if (index < 0) {
 	goto done;
@@ -957,8 +960,9 @@ TkInvokeMenu(interp, menuPtr, index)
     }
     Tcl_Preserve((ClientData) mePtr);
     if (mePtr->type == TEAROFF_ENTRY) {
-	result = LangMethodCall(interp, LangWidgetArg(interp,menuPtr->tkwin),
-			       "tearOffMenu", 0, 0);
+        obj = LangWidgetObj(interp,menuPtr->tkwin);
+ 	result = LangMethodCall(interp, obj, "tearOffMenu", 0, 0);
+	Tcl_DecrRefCount(obj);
     } else if (mePtr->type == CHECK_BUTTON_ENTRY) {
 	if (mePtr->entryFlags & ENTRY_SELECTED) {
 	    if (Tcl_SetVarArg(interp, mePtr->variable, mePtr->offValue,
@@ -1773,7 +1777,7 @@ ConfigureMenuCloneEntries(interp, menuPtr, index, argc, argv, flags)
 		Arg newArgV[2];
 		Arg newCloneName;
 
-		newCloneName = LangWidgetArg(menuPtr->interp, menuListPtr->tkwin);
+		newCloneName = LangWidgetObj(menuPtr->interp, menuListPtr->tkwin);
 		CloneMenu(cascadeMenuRefPtr->menuPtr, &newCloneName,
 			"normal");
 
@@ -2146,7 +2150,7 @@ MenuAddOrInsert(interp, menuPtr, indexString, argc, argv)
 		Arg newArgv[2];
 		TkMenuReferences *menuRefPtr;
 
-		newCascadeName = LangWidgetArg(menuListPtr->interp, menuListPtr->tkwin);
+		newCascadeName = LangWidgetObj(menuListPtr->interp, menuListPtr->tkwin);
 		CloneMenu(cascadeMenuPtr, &newCascadeName, "normal");
 
 		menuRefPtr = TkFindMenuReferences(menuListPtr->interp,
@@ -2388,8 +2392,8 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
 	    Tcl_NewStringObj("MenuDup", -1));
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
-	    LangCopyArg(LangWidgetArg(menuPtr->interp, menuPtr->tkwin)));
-    Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr, LangCopyArg(*widget));
+	    LangWidgetObj(menuPtr->interp, menuPtr->tkwin));
+    Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr, *widget);
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
 		Tcl_NewStringObj(newMenuTypeString, -1));
     Tcl_Preserve((ClientData) menuPtr);
@@ -2485,6 +2489,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 		    oldCascadePtr = cascadeRefPtr->menuPtr;
 
 		    newCascadeName = newMenuName;
+		    Tcl_IncrRefCount(newCascadeName);
 		    CloneMenu(oldCascadePtr, &newCascadeName, NULL);
 
 		    newArgv[0] = Tcl_NewStringObj("-menu",-1);
@@ -2843,7 +2848,7 @@ TkSetWindowMenuBar(interp, tkwin, oldMenuName, menuName)
 	     * Clone the menu and all of the cascades underneath it.
 	     */
 
-	    cloneMenuName = LangWidgetArg(interp, tkwin);
+	    cloneMenuName = LangWidgetObj(interp, tkwin);
 	    CloneMenu(menuPtr, &cloneMenuName, "menubar");
 	    cloneMenuRefPtr = TkFindMenuReferences(interp, LangString(cloneMenuName));
 	    if ((cloneMenuRefPtr != NULL)

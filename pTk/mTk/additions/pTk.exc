@@ -1,6 +1,6 @@
 imgPmap.c
-imgPmap.h 
-imgUnixPmap.c 
+imgPmap.h
+imgUnixPmap.c
 imgWinPmap.c
 imgPS.c
 imgJPEG.c
@@ -11,3 +11,4 @@ imgTIFF.c
 imgTIFFzip.c
 imgTIFFpixar.c
 imgPNG.c
+tkAppInit.c
