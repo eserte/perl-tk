@@ -708,11 +708,13 @@ WidgetDestroy(clientData)
 
     if (wPtr->entList.numItems > 0) {
 	ListEntry * fromPtr=NULL, *toPtr=NULL;
-	char * argv[2];
-	argv[0] = "0";
-	argv[1] = "end";
+	Tcl_Obj *objv[2];
+	objv[0] = Tcl_NewIntObj(0);
+	objv[1] = Tcl_NewStringObj("end",3);
 
-	Tix_TLGetFromTo(wPtr->dispData.interp, wPtr, 2, argv, &fromPtr,&toPtr);
+	Tix_TLGetFromTo(wPtr->dispData.interp, wPtr, 2, objv, &fromPtr,&toPtr);
+	Tcl_DecrRefCount(objv[0]);
+	Tcl_DecrRefCount(objv[1]);
 	Tcl_ResetResult(wPtr->dispData.interp);
 
 	if (fromPtr && toPtr) {
@@ -790,6 +792,10 @@ WidgetComputeGeometry(clientData)
     Tk_Window tkwin = wPtr->dispData.tkwin;
 
     wPtr->resizing = 0;
+
+    if (tkwin == NULL) {
+	return;
+    }
 
     winW = Tk_Width(tkwin)  - 2*wPtr->highlightWidth - 2*wPtr->borderWidth;
     winH = Tk_Height(tkwin) - 2*wPtr->highlightWidth - 2*wPtr->borderWidth;
@@ -2098,9 +2104,13 @@ Tix_TLView(clientData, interp, argc, argv)
 
 	Tix_GetScrollFractions((Tix_ScrollInfo*)&wPtr->scrollInfo[axis],
 	    &first, &last);
-
+                                  
+#if 0
 	sprintf(string, "{%f %f}", first, last);
 	Tcl_AppendResult(interp, string, NULL);
+#else
+	Tcl_DoubleResults(interp, 2, 1, first, last);
+#endif
 	return TCL_OK;
     }
     else if (Tix_SetScrollBarView(interp, 

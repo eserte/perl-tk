@@ -136,10 +136,9 @@ long unsigned int *count;
   }
  else
   {
-   LangFreeProc *freeProc = NULL;
    int valc = 0;
    Arg *valv = NULL;
-   result = Lang_SplitList(interp, arg, &valc, &valv, &freeProc);
+   result = Tcl_ListObjGetElements(interp, arg, &valc, &valv);
    if (result == TCL_OK)
     {
      unsigned char *p = (unsigned char *) ckalloc(valc * format / 8);
@@ -184,8 +183,6 @@ long unsigned int *count;
         }
        p += (format / 8);
       }
-     if (freeProc)
-      (*freeProc) (valc, valv);
      if (result != TCL_OK)
       {
        ckfree(*prop);

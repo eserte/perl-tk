@@ -294,18 +294,29 @@ Tcl_NewDoubleObj(double value)
 Tcl_Obj *
 Tcl_NewStringObj (char *bytes, int length)
 {
- if (length < 0)
-  length = strlen(bytes);
- return newSVpv(bytes,length);
+ if (bytes)
+  {
+   if (length < 0)              
+    length = strlen(bytes);     
+   return newSVpvn(bytes,length);
+  }
+ else
+  return &PL_sv_undef;
 }
 
 Tcl_Obj *
 Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
 {
  AV *av = newAV();
- while (objc-- > 0)
-  {
-   av_store(av,objc,SvREFCNT_inc(objv[objc])); /* Should we bump ref ?? */
+ if (objc)
+  {  
+   while (objc-- > 0)
+    {            
+     if (objv[objc]) 
+      {
+       av_store(av,objc,objv[objc]); /* Should we bump ref ?? */
+      }
+    }
   }
  return MakeReference((SV *) av);
 }
@@ -335,39 +346,101 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 
 AV *
 ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
-{
+{    
  if (SvTYPE(sv) == SVt_PVAV)
-  return (AV *) sv;
- if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVAV || sv_isobject(sv))
   {
-   int argc= 0;
-   LangFreeProc *freeProc = NULL;
-   SV **argv;
-   if (Lang_SplitString(interp,LangString(sv),&argc,&argv,&freeProc) == TCL_OK)
+   return (AV *) sv;
+  }
+ else 
+  {
+   int object = sv_isobject(sv);
+   if (!object && SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
-     int n = argc;
-     AV *av = newAV();
-     while (n-- > 0)
-      {
-       av_store(av,n,SvREFCNT_inc(argv[n]));
-      }       
-     if (freeProc)
-      (*freeProc)(argc,argv);
-     if (SvREADONLY(sv))
-      {
-       sv_2mortal((SV *) av);
-       return av;
-      }
-     else
-      {
-       sv_setsv(sv,MakeReference((SV *) av));
-       /* DUBIOUS : SvREFCNT_dec((SV *) av); */
-      }
+     return (AV *) SvRV(sv);
     }
    else
-    return NULL;
+    {
+     AV *av = newAV();
+     if (!object && (SvIOK(sv) || SvNOK(sv)))
+      {                     
+       /* Simple case of single number */
+       av_store(av,0,SvREFCNT_inc(sv));
+      }                     
+     else
+      {                     
+       /* Parse TCL like strings 
+          {} are quotes - and can be nested
+          \ quotes \ itself and whitespace 
+
+          Older Tk used this perl code ... 
+          local $_ = shift;
+          my (@arr, $tmp);
+          while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
+            if (defined $1) { push @arr, $1 }
+            else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
+          }
+       */
+       unsigned char *s = (unsigned char *) LangString(sv);
+       int i = 0;
+       while (*s)
+        {       
+         unsigned char *base; 
+         /* Skip leading whitespace */
+         while (isspace(*s))
+          s++;
+         if (!*s)
+          break;
+         base = s;
+         if (*s == '{')
+          {     
+           /* Slurp chars till we find matching '}' */
+           int count = 1;  /* number of open '{' */
+           base = ++s; 
+           while (*s)
+            {
+             if (*s == '{')
+              count++;
+             else if (*s == '}' && (--count <= 0))
+              break;
+             s++;
+            }
+           if (*s != '}')
+            {
+             /* Found end of string before closing '}' 
+                TCL would set an error, we will just include the
+                un-matched opening '{' in the string.
+              */
+             base--;
+            }
+          } 
+         else if (*s)
+          {
+           /* Find a "word" */
+           while (*s && !isspace(*s))
+            {
+             if (*s == '\\' && s[1]) /* \ quotes anything except end of string */
+              s++;
+             s++;
+            }
+          }
+         av_store(av,i++,newSVpvn(base,(s-base)));
+         if (*s == '}')
+          s++; 
+        }
+      }
+     /* Now have an AV populated decide how to return */                     
+     if (SvREADONLY(sv))    
+      {                     
+       sv_2mortal((SV *) av);
+       return av;           
+      }                     
+     else                   
+      {                     
+       sv_setsv(sv,MakeReference((SV *) av));
+      }                     
+     return (AV *) SvRV(sv);
+    }
   }
- return (AV *) SvRV(sv);
 }
 
 int
@@ -383,13 +456,43 @@ Tcl_ListObjAppendElement (Tcl_Interp *interp, Tcl_Obj *listPtr,
  return TCL_ERROR;
 }
 
+AV *
+MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
+{
+ AV *av;
+ if (SvIOK(sv) || SvNOK(sv))
+  {
+   av = newAV();
+   av_store(av,0,SvREFCNT_inc(sv));
+   sv_2mortal((SV *) av);
+   return av;
+  }            
+ else if (SvREADONLY(sv))   
+  {
+   /* returns mortal list anyway */
+   return ForceList(interp,sv);
+  }
+ else 
+  {       
+   SvREADONLY_on(sv);
+   av = ForceList(interp,sv);  
+   SvREADONLY_off(sv);
+   /* If there was more than one element set the SV */
+   if (av && av_len(av) > 2)
+    {
+     sv_setsv(sv,MakeReference((SV *) av));
+    }
+   return av;
+  }
+}
+
 int
 Tcl_ListObjGetElements (Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    int *objcPtr, Tcl_Obj ***objvPtr)
 {          
  if (listPtr)
-  {
-   AV *av = ForceList(interp,listPtr);
+  {        
+   AV *av = MaybeForceList(interp,listPtr);
    if (av)
     {
      *objcPtr = av_len(av)+1;

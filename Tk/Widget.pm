@@ -2,8 +2,8 @@
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
-use vars qw($VERSION);
-$VERSION = '3.054'; # $Id: //depot/Tk8/Tk/Widget.pm#54 $
+use vars qw($VERSION @DefaultMenuLabels);
+$VERSION = '3.063'; # $Id: //depot/Tk8/Tk/Widget.pm#63 $
 
 require Tk;
 use AutoLoader;
@@ -51,6 +51,8 @@ sub import
   }
 }
 
+@DefaultMenuLabels = qw[~File ~Help];
+
 # Some tidy-ness functions for winfo stuff
 
 sub True  { 1 }
@@ -91,6 +93,7 @@ Direct Tk::Submethods (
 sub DESTROY
 {
  my $w = shift;
+ $w->CheckHash;
  $w->destroy if ($w->IsWidget);
 }
 
@@ -177,11 +180,11 @@ sub new
  # create a hash indexed by leaf name to speed up
  # creation of a lot of sub-widgets of the same type
  # e.g. entries in Table
- my $key = "_#$leaf";
- $parent->{$key} = 0 unless (exists $parent->{$key});
+ my $nhash = $parent->TkHash('_names_');
+ $nhash->{$leaf} = 0 unless (exists $nhash->{$leaf});
  while (defined ($parent->Widget($lname)))
   {
-   $lname = $pname . '.' . $leaf . ++$parent->{$key};
+   $lname = $pname . '.' . $leaf . ++$nhash->{$leaf};
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
@@ -215,21 +218,14 @@ sub DelegateFor
 sub Delegates
 {
  my $cw = shift;
- if (exists $cw->{'Delegates'})
+ my $specs = $cw->TkHash('Delegates');
+ while (@_)
   {
-   my $specs = $cw->{'Delegates'};
-   while (@_)
-    {
-     my $key = shift;
-     my $val = shift;
-     $specs->{$key} = $val;
-    }
+   my $key = shift;
+   my $val = shift;
+   $specs->{$key} = $val;
   }
- else
-  {
-   $cw->{'Delegates'} = { @_ };
-  }
- return $cw->{'Delegates'}
+ return $specs;
 }
 
 sub Construct
@@ -323,16 +319,49 @@ sub AUTOLOAD
  $DB::sub = $what; # Tell debugger what is going on...
  goto &$what;
 }
-
+            
+use Data::Dumper;
 sub _Destroyed
 {
  my $w = shift;
  my $a = delete $w->{'_Destroy_'};
- return unless ref $a;
- while (@$a)
+ if (ref($a))
   {
-   eval {local $SIG{'__DIE__'}; pop(@$a)->Call };
-  }
+   while (@$a)
+    {  
+     my $ent = pop(@$a);
+     if (ref $ent)
+      {
+       eval {local $SIG{'__DIE__'}; $ent->Call };
+      }
+     else
+      {
+       delete $w->{$ent};  
+      }
+    }
+  }  
+}   
+
+sub _OnDestroy          
+{    
+ my $w = shift;
+ $w->{'_Destroy_'} = [] unless (exists $w->{'_Destroy_'});
+ push(@{$w->{'_Destroy_'}},@_);
+}
+
+sub OnDestroy
+{
+ my $w = shift;
+ $w->_OnDestroy(Tk::Callback->new(@_));
+}
+
+sub TkHash
+{
+ my ($w,$key) = @_;
+ return $w->{$key} if exists $w->{$key};
+ my $hash = $w->{$key} = {};
+ $w->_OnDestroy($key);
+ return $hash;
 }
 
 sub privateData
@@ -415,13 +444,6 @@ sub focusSave
  my $focus = $w->focusCurrent;
  return sub {} if (!defined $focus);
  return sub { eval {local $SIG{'__DIE__'};  $focus->focus } };
-}
-
-sub OnDestroy
-{
- my $w = shift;
- $w->{'_Destroy_'} = [] unless (exists $w->{'_Destroy_'});
- push(@{$w->{'_Destroy_'}},Tk::Callback->new(@_));
 }
 
 # This is supposed to replicate Tk::after behaviour,
@@ -935,7 +957,11 @@ sub Callback
  my $w = shift;
  my $name = shift;
  my $cb = $w->cget($name);
- return $cb->Call(@_) if (defined $cb);
+ if (defined $cb)
+  {
+   return $cb->Call(@_) if (ref $cb);
+   return $w->$cb(@_);
+  }
  return (wantarray) ? () : undef;
 }
 
@@ -990,7 +1016,8 @@ sub pack
  local $SIG{'__DIE__'} = \&Carp::croak;
  my $w = shift;
  if (@_ && $_[0] =~ /^(?:configure|forget|info|propagate|slaves)$/x)
-  {
+  {               
+   # maybe array/scalar context issue with slaves
    $w->Tk::pack(@_);
   }
  else
@@ -1064,7 +1091,7 @@ sub Scrolled
                  );
  $cw->AddScrollbars($w);
  $cw->Default("\L$kind" => $w);
- $cw->Delegates('bind' => $w, 'bindtags' => $w);
+ $cw->Delegates('bind' => $w, 'bindtags' => $w, 'menu' => $w);
  $cw->ConfigDefault(\%args);
  $cw->configure(%args);
  return $cw;
@@ -1089,6 +1116,81 @@ sub EventType
  $w->{'_EventType_'} = $_[0] if @_;
  return $w->{'_EventType_'};
 }
+
+sub PostPopupMenu
+{
+ my ($w, $X, $Y) = @_;
+ if (@_ < 3)
+  {
+   my $e = $w->XEvent;
+   $X = $e->X;
+   $Y = $e->Y;
+  }
+ my $menu = $w->menu;
+ $menu->Post($X,$Y) if defined $menu;
+}
+
+sub FillMenu
+{
+ my ($w,$menu,@labels) = @_;
+ foreach my $lab (@labels)
+  {
+   my $method = $lab.'MenuItems';
+   $method =~ s/~//g;   
+   $method =~ s/[\s-]+/_/g;   
+   if ($w->can($method))
+    {
+     $menu->Menubutton(-label => $lab, -tearoff => 0, -menuitems => $w->$method());          
+    }
+  }
+ return $menu;
+} 
+
+sub menu
+{
+ my ($w,$menu) = @_;
+ if (@_ > 1)
+  {         
+   $w->_OnDestroy('_MENU_') unless exists $w->{'_MENU_'};
+   $w->{'_MENU_'} = $menu;
+  }
+ return unless defined wantarray;
+ unless (exists $w->{'_MENU_'})
+  {                    
+   $w->_OnDestroy('_MENU_');
+   $w->{'_MENU_'} = $menu = $w->Menu(-tearoff => 0);
+   $w->FillMenu($menu,$w->MenuLabels);
+  }
+ return $w->{'_MENU_'};
+}        
+
+sub MenuLabels
+{
+ return @DefaultMenuLabels;
+}
+
+sub FileMenuItems
+{
+ my ($w) = @_;
+ return [ ["command"=>'E~xit', -command => [ $w, 'WmDeleteWindow']]];
+}              
+
+sub WmDeleteWindow
+{
+ shift->toplevel->WmDeleteWindow
+}
+
+sub BalloonInfo
+{
+ my ($widget,$balloon,$X,$Y,@opt) = @_;
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$widget);
+   return $info if defined $info;
+  }
+}
+
+
 
 1;
 __END__

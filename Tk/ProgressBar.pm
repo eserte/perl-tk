@@ -1,7 +1,7 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#8 $
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#12 $
 
 use Tk;
 use Tk::Canvas;
@@ -18,7 +18,6 @@ sub ClassInit {
     $class->SUPER::ClassInit($mw);
 
     $mw->bind($class,'<Configure>', ['_layoutRequest',1]);
-    $mw->bind($class,'<Destroy>', 'Destroyed');
 }
 
 
@@ -47,6 +46,7 @@ sub Populate {
 		  => [PASSIVE => 'troughColor', 'Background', 'grey55'],
     );
     _layoutRequest($c,1);
+    $c->OnDestroy(['Destroyed' => $c]);
 }
 
 sub anchor {
@@ -67,7 +67,7 @@ sub anchor {
 sub _layoutRequest {
     my $c = shift;
     my $why = shift;
-    $c->DoWhenIdle(['_arrange',$c]) unless $c->{'layout_pending'};
+    $c->afterIdle(['_arrange',$c]) unless $c->{'layout_pending'};
     $c->{'layout_pending'} |= $why;
 }
 
@@ -280,9 +280,9 @@ sub _arrange {
 
 sub value {
     my $c = shift;
-    my $val = defined($c->{Configure}{'-variable'})
-		? $c->{Configure}{'-variable'}
-		: \$c->{Configure}{'-value'};
+    my $val = defined($c->{'-variable'})
+		? $c->{'-variable'}
+		: \$c->{'-value'};
     my $old = defined($$val) ? $$val : $c->{Configure}{'-from'};
 
     if(@_) {
@@ -296,13 +296,13 @@ sub value {
 
 sub variable {
     my $c = shift;
-    my $val = \$c->{Configure}{'-variable'};
+    my $val = \$c->{'-variable'};
     my $old = $$val;
     if(@_) {
 	my $value = shift;
         if (ref $old)
          {
-          $c->{Configure}{'-value'} = $$old;
+          $c->{'-value'} = $$old;
           untie $$old if tied($$old);
          }
         tie $$value,'Tk::Configure',$c,'-value';
@@ -314,8 +314,8 @@ sub variable {
 
 sub Destroyed
 {
- my $c = shift;
- my $var = delete $c->{Configure}{'-variable'};
+ my $c = shift;   
+ my $var = delete $c->{'-variable'};
  untie $$var if (defined($var) && ref($var))
 }
 

@@ -687,6 +687,9 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
 	if ((itemPtr->x1 >= psInfo.x2) || (itemPtr->x2 < psInfo.x)
 		|| (itemPtr->y1 >= psInfo.y2) || (itemPtr->y2 < psInfo.y)) {
 	    continue;
+	}                     
+	if (itemPtr->group != canvasPtr->activeGroup) {
+	    continue;
 	}
 	if (itemPtr->typePtr->postscriptProc == NULL) {
 	    continue;
@@ -838,6 +841,9 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, argv)
 	    itemPtr = itemPtr->nextPtr) {
 	if ((itemPtr->x1 >= psInfo.x2) || (itemPtr->x2 < psInfo.x)
 		|| (itemPtr->y1 >= psInfo.y2) || (itemPtr->y2 < psInfo.y)) {
+	    continue;
+	}
+	if (itemPtr->group != canvasPtr->activeGroup) {
 	    continue;
 	}
 	if (itemPtr->typePtr->postscriptProc == NULL) {
@@ -1046,7 +1052,6 @@ Tk_PostscriptFont(interp, psInfo, tkfont)
     
     if (psInfoPtr->fontVar != NULL) {
 	Arg list, *args;
-        LangFreeProc *freeProc = NULL;
 	int argc;
 	double size;
 	char *name;
@@ -1054,7 +1059,7 @@ Tk_PostscriptFont(interp, psInfo, tkfont)
 	name = Tk_NameOfFont(tkfont);
 	list = Tcl_GetVar2(interp, psInfoPtr->fontVar, name, 0);
 	if (list != NULL) {
-	    if (Lang_SplitList(interp, list, &argc, &argv, &freeProc)
+	    if (Tcl_ListObjGetElements(interp, list, &argc, &argv)
 		    != TCL_OK) {
 		badMapEntry:
 		Tcl_ResetResult(interp);
@@ -1072,9 +1077,6 @@ Tk_PostscriptFont(interp, psInfo, tkfont)
 	    Tcl_DStringAppend(&ds, argv[0], -1);
 	    points = (int) size;
 	    
-	    if (freeProc) {
-		(*freeProc)(argc,argv);
-	    }
 	    goto findfont;
 	}
     } 

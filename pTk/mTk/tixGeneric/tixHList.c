@@ -304,6 +304,12 @@ static int		Tix_HLSeeElement _ANSI_ARGS_((
 			    int callRedraw));
 static int		Tix_HLBBox _ANSI_ARGS_((Tcl_Interp * interp,
 			    WidgetPtr wPtr, HListElement * chPtr));
+static void		GetSelectedText _ANSI_ARGS_((WidgetPtr wPtr,
+			    HListElement * chPtr, Tcl_DString * selection));
+
+static int		HListFetchSelection _ANSI_ARGS_((
+			    ClientData clientData, int offset, char *buffer,
+			    int maxBytes));
 static void		HListLostSelection _ANSI_ARGS_((ClientData clientData));
 
 static TIX_DECLARE_SUBCMD(Tix_HLAdd);
@@ -458,10 +464,8 @@ Tix_HListCmd(clientData, interp, argc, argv)
     Tk_CreateEventHandler(wPtr->headerWin,
 	ExposureMask|StructureNotifyMask,
 	SubWindowEventProc, (ClientData) wPtr);
-#if 0
     Tk_CreateSelHandler(wPtr->dispData.tkwin, XA_PRIMARY, XA_STRING,
-	    HListFetchSelection, (ClientData) wPtr, XA_STRING);
-#endif
+	HListFetchSelection, (ClientData) wPtr, XA_STRING);
 
     wPtr->widgetCmd = Tcl_CreateCommand(interp,
 	Tk_PathName(wPtr->dispData.tkwin), WidgetCommand, (ClientData) wPtr,
@@ -1452,9 +1456,18 @@ static int Tix_HLBBox(interp, wPtr, chPtr)
 	    y2 = pad+wYSize -1;
 	}
 
-	if (y2 >= y1) {
+	if (y2 >= y1) {                   
+#ifdef _LANG
+	    Tcl_Obj *result = Tcl_NewListObj(0,NULL);
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1));
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(y1));
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(x1+wXSize-1));
+	    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(y2));
+	    Tcl_SetObjResult(interp, result);
+#else
 	    sprintf(buff, "%d %d %d %d", x1, y1, x1+wXSize-1, y2);
 	    Tcl_SetResult(interp, buff, TCL_VOLATILE);
+#endif
 	}
 	return TCL_OK;
     }
@@ -4437,6 +4450,130 @@ FindPrevEntry(wPtr, chPtr)
     }
 }
 
+
+/*----------------------------------------------------------------------
+ * Recurse through all items and gather the -text arguments of selected
+ * entries.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+GetSelectedText(wPtr, chPtr, selection)
+     WidgetPtr wPtr;
+     HListElement * chPtr;
+     Tcl_DString * selection;
+{
+    register HListElement * ptr;
+    int needTab, j;
+
+    for (ptr = chPtr->childHead; ptr; ptr = ptr->next) {
+	if (ptr->selected && !ptr->hidden) {
+	    needTab = 0;
+	    for (j = 0; j < wPtr->numColumns; j++) {
+	        Tix_DItem *iPtr = ptr->col[j].iPtr;
+	        if (needTab) {
+		    Tcl_DStringAppend(selection, "\t", 1);
+		}
+		if (iPtr) {
+		    switch (Tix_DItemType(iPtr)) {
+		        case TIX_DITEM_TEXT:
+			    Tcl_DStringAppend(selection,
+					      LangString(iPtr->text.text),
+					      iPtr->text.numChars);
+			    break;
+		        case TIX_DITEM_IMAGETEXT:
+			    Tcl_DStringAppend(selection,
+					      LangString(iPtr->imagetext.text),
+					      iPtr->imagetext.numChars);
+			    break;
+		    }
+		}
+		needTab = 1;
+	    }
+	    Tcl_DStringAppend(selection, "\n", 1);
+	}
+	if (!ptr->hidden) {
+	    if (ptr->childHead) {
+		GetSelectedText(wPtr, ptr, selection);
+	    }
+	}
+    }
+}
+
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * HListFetchSelection --
+ *
+ *	This procedure is called back by Tk when the selection is
+ *	requested by someone.  It returns part or all of the selection
+ *	in a buffer provided by the caller.
+ *
+ * Results:
+ *	The return value is the number of non-NULL bytes stored
+ *	at buffer.  Buffer is filled (or partially filled) with a
+ *	NULL-terminated string containing part or all of the selection,
+ *	as given by offset and maxBytes.  The selection is returned
+ *	as a Tcl list with one list element for each element in the
+ *	listbox.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+HListFetchSelection(clientData, offset, buffer, maxBytes)
+    ClientData clientData;		/* Information about hlist widget. */
+    int offset;				/* Offset within selection of first
+					 * byte to be returned. */
+    char *buffer;			/* Location in which to place
+					 * selection. */
+    int maxBytes;			/* Maximum number of bytes to place
+					 * at buffer, not including terminating
+					 * NULL character. */
+{
+    register WidgetPtr wPtr = (WidgetPtr ) clientData;
+    Tcl_DString selection;
+    int length, count;
+
+    if (!wPtr->exportSelection) {
+	return -1;
+    }
+
+    /*
+     * Use a dynamic string to accumulate the contents of the selection.
+     */
+
+    Tcl_DStringInit(&selection);
+    GetSelectedText(wPtr, wPtr->root, &selection);
+
+    length = Tcl_DStringLength(&selection);
+    if (length == 0) {
+	return -1;
+    }
+
+    /*
+     * Copy the requested portion of the selection to the buffer.
+     */
+
+    count = length - offset;
+    if (count <= 0) {
+	count = 0;
+    } else {
+	if (count > maxBytes) {
+	    count = maxBytes;
+	}
+	memcpy((VOID *) buffer,
+		(VOID *) (Tcl_DStringValue(&selection) + offset),
+		(size_t) count);
+    }
+    buffer[count] = '\0';
+    Tcl_DStringFree(&selection);
+    return count;
+}
 
 /*
  *----------------------------------------------------------------------

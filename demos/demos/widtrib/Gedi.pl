@@ -1,5 +1,7 @@
 # Gedi master advanced text editor.
 
+use Tk::TextEdit;
+
 use vars qw/$TOP/;
 
 my $TOP;
@@ -81,7 +83,7 @@ sub update_indicators
 
 
 
-sub TEMPLATE {
+sub Gedi {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name             => $demo,
@@ -140,7 +142,7 @@ $textwindow->SetGUICallbacks (
  ] 
 );
 
-$menu = $textwindow->GetMenu;
+$menu = $textwindow->menu;
 
 $TOP->configure(-menu => $menu);
 

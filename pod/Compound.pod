@@ -184,8 +184,6 @@ image type are:
 
 =over 4
 
-=item '
-
 =item B<-image> =E<gt> I<name>
 
 Specifies an image to display in this item. I<name>
@@ -202,8 +200,6 @@ compound image. Additional I<options> accepted by the image type
 are:
 
 =over 4
-
-=item '
 
 =item B<-width> =E<gt> I<value>
 

@@ -476,6 +476,13 @@ typedef struct {
 typedef struct Tix_ScrollInfo {
     int type;		/* TIX_SCROLL_INT or TIX_SCROLL_DOUBLE */
     LangCallback *command;
+    /* place holder for actual space - double must be mentioned 
+       to force alignment for too-clever-by-half compilers
+     */
+    union {  
+     int    iscroll[4];
+     double dscroll[4];
+    } info;
 } Tix_ScrollInfo;
 
 typedef struct Tix_IntScrollInfo {

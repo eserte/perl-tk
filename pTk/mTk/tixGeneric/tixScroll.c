@@ -13,19 +13,19 @@ void Tix_InitScrollInfo(siPtr, type)
     Tix_ScrollInfo * siPtr;
     int type;
 {
-    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
-    Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
 
     siPtr->command 	= NULL;
     siPtr->type 	= type;
 
     if (type == TIX_SCROLL_INT) {
+	Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
 	isiPtr->total	= 1;
 	isiPtr->window	= 1;
 	isiPtr->offset	= 0;
 	isiPtr->unit	= 1;
     }
     else {
+	Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
 	dsiPtr->total	= 1.0;
 	dsiPtr->window	= 1.0;
 	dsiPtr->offset	= 0.0;
@@ -44,15 +44,15 @@ void Tix_GetScrollFractions(siPtr, first_ret, last_ret)
     double * first_ret;
     double * last_ret;
 {
-    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
-    Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
     double total, window, first;
 
     if (siPtr->type == TIX_SCROLL_INT) {
+	Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
 	total  = isiPtr->total;
 	window = isiPtr->window;
 	first  = isiPtr->offset;
     } else {
+	Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
 	total  = dsiPtr->total;
 	window = dsiPtr->window;
 	first  = dsiPtr->offset;
@@ -71,11 +71,10 @@ void Tix_UpdateScrollBar(interp, siPtr)
     Tcl_Interp *interp;
     Tix_ScrollInfo * siPtr;
 {
-    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
-    Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
     double d_first, d_last;
 
     if (siPtr->type == TIX_SCROLL_INT) {
+	Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
 	/* Check whether the topPixel is out of bound */
 	if (isiPtr->offset < 0) {
 	    isiPtr->offset = 0;
@@ -88,6 +87,7 @@ void Tix_UpdateScrollBar(interp, siPtr)
 	    }
 	}
     } else {
+	Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
 	/* Check whether the topPixel is out of bound */
 	if (dsiPtr->offset < 0) {
 	    dsiPtr->offset = 0;
@@ -121,16 +121,16 @@ int Tix_SetScrollBarView(interp, siPtr, argc, argv, compat)
     char **argv;		/* Argument strings. */
     int compat;			/* compatibility mode */
 {
-    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
-    Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
     int offset;
 
     if (compat && Tcl_GetInt(interp, argv[0], &offset) == TCL_OK) {
 	/* backward-compatible mode */
 	if (siPtr->type == TIX_SCROLL_INT) {
+	    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
 	    isiPtr->offset = offset;
 	}
 	else {
+	    Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
 	    dsiPtr->offset = (double)offset;
 	}
 
@@ -146,6 +146,7 @@ int Tix_SetScrollBarView(interp, siPtr, argc, argv, compat)
 	type = Tk_GetScrollInfo(interp, argc+2, argv-2, &fraction, &count);
 
 	if (siPtr->type == TIX_SCROLL_INT) {
+	    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
 	    switch (type) {
 	      case TK_SCROLL_ERROR:
 		return TCL_ERROR;
@@ -164,6 +165,7 @@ int Tix_SetScrollBarView(interp, siPtr, argc, argv, compat)
 		break;
 	    }
 	} else {
+	    Tix_DoubleScrollInfo* dsiPtr = (Tix_DoubleScrollInfo*)siPtr;
 	    switch (type) {
 	      case TK_SCROLL_ERROR:
 		return TCL_ERROR;

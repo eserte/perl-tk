@@ -267,16 +267,16 @@ Tk_ItemType tkLineType = {
     LineToPostscript,			/* postscriptProc */
     ScaleLine,				/* scaleProc */
     TranslateLine,			/* translateProc */
-    (Tk_ItemIndexProc *) GetLineIndex,	/* indexProc */
+    GetLineIndex,			/* indexProc */
     (Tk_ItemCursorProc *) NULL,		/* icursorProc */
     (Tk_ItemSelectionProc *) NULL,	/* selectionProc */
-    (Tk_ItemInsertProc *) LineInsert,	/* insertProc */
+    LineInsert,				/* insertProc */
     LineDeleteCoords,			/* dTextProc */
     (Tk_ItemType *) NULL,		/* nextPtr */
     (Tk_ItemBboxProc *) ComputeLineBbox,/* bboxProc */
     Tk_Offset(Tk_VisitorType, visitLine), /* acceptProc */
-    (Tk_ItemGetCoordProc *) NULL,	/* getCoordProc */
-    (Tk_ItemSetCoordProc *) NULL	/* setCoordProc */
+    NULL,				/* getCoordProc */
+    NULL				/* setCoordProc */
 };
 
 /*
@@ -518,11 +518,7 @@ ConfigureLine(interp, canvas, itemPtr, argc, argv, flags)
      * graphics contexts.
      */
 
-    state = itemPtr->state;
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    state = Tk_GetItemState(canvas, itemPtr);
 
     if (linePtr->outline.activeWidth > linePtr->outline.width ||
 	    linePtr->outline.activeTile != None ||
@@ -675,12 +671,8 @@ ComputeLineBbox(canvas, linePtr)
     double *coordPtr;
     int i, intWidth;
     double width;
-    Tk_State state = linePtr->header.state;
+    Tk_State state = Tk_GetItemState(canvas, &linePtr->header);
     Tk_TSOffset *tsoffset;
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
 
     if (!(linePtr->numPoints) || (state==TK_STATE_HIDDEN)) {
 	linePtr->header.x1 = -1;
@@ -865,7 +857,7 @@ DisplayLine(canvas, itemPtr, display, drawable, x, y, width, height)
     XPoint *pPtr;
     double *coordPtr, linewidth;
     int i, numPoints;
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
     Tk_Tile tile = linePtr->outline.tile;
     Pixmap stipple = linePtr->outline.stipple;
 
@@ -873,9 +865,6 @@ DisplayLine(canvas, itemPtr, display, drawable, x, y, width, height)
 	return;
     }
 
-    if (state == TK_STATE_NULL) {
-	    state = ((TkCanvas *)canvas)->canvas_state;
-    }
     linewidth = linePtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
 	if (linePtr->outline.activeWidth>linewidth) {
@@ -997,12 +986,9 @@ LineInsert(canvas, itemPtr, beforeThis, obj)
     LineItem *linePtr = (LineItem *) itemPtr;
     int length, argc, i;
     double *new, *coordPtr;
-    Tk_State state = itemPtr->state;
-    Tcl_Obj **objv;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    Tcl_Obj **objv;
 
     if (!obj || (Tcl_ListObjGetElements((Tcl_Interp *) NULL, obj, &argc, &objv) != TCL_OK)
 	    || !argc || argc&1) {
@@ -1166,11 +1152,7 @@ LineDeleteCoords(canvas, itemPtr, first, last)
     int count, i, first1, last1;
     int length = 2*linePtr->numPoints;
     double *coordPtr;
-    Tk_State state = itemPtr->state;
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
     first &= -2;
     last &= -2;
@@ -1316,7 +1298,7 @@ LineToPoint(canvas, itemPtr, pointPtr)
     Tk_Item *itemPtr;		/* Item to check against point. */
     double *pointPtr;		/* Pointer to x and y coordinates. */
 {
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
     LineItem *linePtr = (LineItem *) itemPtr;
     double *coordPtr, *linePoints;
     double staticSpace[2*MAX_STATIC_POINTS];
@@ -1333,10 +1315,6 @@ LineToPoint(canvas, itemPtr, pointPtr)
      * Handle smoothed lines by generating an expanded set of points
      * against which to do the check.
      */
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
 
     width = linePtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1554,11 +1532,8 @@ LineToArea(canvas, itemPtr, rectPtr)
     double *linePoints;
     int numPoints, result;
     double radius, width;
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
     width = linePtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
 	if (linePtr->outline.activeWidth>width) {
@@ -1744,8 +1719,19 @@ GetLineIndex(interp, canvas, itemPtr, obj, indexPtr)
 {
     LineItem *linePtr = (LineItem *) itemPtr;
     int length;
-    char *string = Tcl_GetStringFromObj(obj, &length);
+    char *string;
+    int i;
+    double x ,y, bestDist, dist, *coordPtr;
+    char *end, *p;
+    Tcl_Obj **objv;
 
+    if (Tcl_ListObjGetElements(interp, obj, &i, &objv) == TCL_OK && i == 2
+	&& Tcl_GetDoubleFromObj(interp, objv[0], &x) == TCL_OK
+	&& Tcl_GetDoubleFromObj(interp, objv[1], &y) == TCL_OK) {
+	goto doxy;
+    } 
+
+    string = Tcl_GetStringFromObj(obj, &length);
     if (string[0] == 'e') {
 	if (strncmp(string, "end", length) == 0) {
 	    *indexPtr = 2*linePtr->numPoints;
@@ -1763,10 +1749,6 @@ GetLineIndex(interp, canvas, itemPtr, obj, indexPtr)
 	    return TCL_ERROR;
 	}
     } else if (string[0] == '@') {
-	int i;
-	double x ,y, bestDist, dist, *coordPtr;
-	char *end, *p;
-
 	p = string+1;
 	x = strtod(p, &end);
 	if ((end == p) || (*end != ',')) {
@@ -1776,7 +1758,8 @@ GetLineIndex(interp, canvas, itemPtr, obj, indexPtr)
 	y = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
-	}
+	}                 
+     doxy:
 	bestDist = 1.0e36;
 	coordPtr = linePtr->coordPtr;
 	*indexPtr = 0;
@@ -1878,7 +1861,7 @@ ParseArrowShape(clientData, interp, tkwin, value, recordPtr, offset)
     ClientData clientData;	/* Not used. */
     Tcl_Interp *interp;		/* Used for error reporting. */
     Tk_Window tkwin;		/* Not used. */
-    Arg value;		/* Textual specification of arrow shape. */
+    Arg value;			/* Textual specification of arrow shape. */
     char *recordPtr;		/* Pointer to item record in which to
 				 * store arrow information. */
     int offset;			/* Offset of shape information in widget
@@ -1887,38 +1870,32 @@ ParseArrowShape(clientData, interp, tkwin, value, recordPtr, offset)
     LineItem *linePtr = (LineItem *) recordPtr;
     double a, b, c;
     int argc;
-    char **argv = NULL;
-    LangFreeProc *freeProc = NULL;
+    Tcl_Obj **objv = NULL;
 
     if (offset != Tk_Offset(LineItem, arrowShapeA)) {
 	panic("ParseArrowShape received bogus offset");
     }
 
-    if (Lang_SplitList(interp, value, &argc, &argv, &freeProc) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, value, &argc, &objv) != TCL_OK) {
 	syntaxError:
 	Tcl_ResetResult(interp);
-	Tcl_AppendResult(interp, "bad arrow shape \"", value,
+	Tcl_AppendResult(interp, "bad arrow shape \"", LangString(value),
 		"\": must be list with three numbers", (char *) NULL);
-	if (argv != NULL && freeProc) {
-	    (*freeProc)(argc,argv);
-	}
 	return TCL_ERROR;
-    }
+    }                             
     if (argc != 3) {
 	goto syntaxError;
     }
-    if ((Tk_CanvasGetCoord(interp, linePtr->canvas, argv[0], &a) != TCL_OK)
-	    || (Tk_CanvasGetCoord(interp, linePtr->canvas, argv[1], &b)
+    if ((Tk_CanvasGetCoordFromObj(interp, linePtr->canvas, objv[0], &a) != TCL_OK)
+	    || (Tk_CanvasGetCoordFromObj(interp, linePtr->canvas, objv[1], &b)
 		!= TCL_OK)
-	    || (Tk_CanvasGetCoord(interp, linePtr->canvas, argv[2], &c)
+	    || (Tk_CanvasGetCoordFromObj(interp, linePtr->canvas, objv[2], &c)
 		!= TCL_OK)) {
 	goto syntaxError;
     }
     linePtr->arrowShapeA = (float) a;
     linePtr->arrowShapeB = (float) b;
     linePtr->arrowShapeC = (float) c;
-    if (freeProc)
-     (*freeProc)(argc,argv);
     return TCL_OK;
 }
 
@@ -1951,15 +1928,10 @@ PrintArrowShape(clientData, tkwin, recordPtr, offset, freeProcPtr)
 				 * free string here. */
 {
     LineItem *linePtr = (LineItem *) recordPtr;
-    Arg *args = LangAllocVec(3);
-    Arg result = NULL;
-    LangSetDouble(args+0,linePtr->arrowShapeA); 
-    LangSetDouble(args+1,linePtr->arrowShapeB); 
-    LangSetDouble(args+2,linePtr->arrowShapeC); 
-    result = Tcl_Merge(3, args);
-    LangFreeVec(3,args);
-    /* freeProc set correct for Tcl */
-    *freeProcPtr = (Tcl_FreeProc *) free;
+    Arg result = Tcl_NewListObj(0,NULL);
+    Tcl_ListObjAppendElement(NULL,result,Tcl_NewDoubleObj(linePtr->arrowShapeA));
+    Tcl_ListObjAppendElement(NULL,result,Tcl_NewDoubleObj(linePtr->arrowShapeB));
+    Tcl_ListObjAppendElement(NULL,result,Tcl_NewDoubleObj(linePtr->arrowShapeC));
     return result;
 }
 
@@ -2072,7 +2044,7 @@ ArrowPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
       case ARROWS_BOTH:
 	return LangStringArg("both");
       default:
-	return LangStringArg("first");
+	return LangStringArg("none");
   }                 
 }
 
@@ -2116,14 +2088,10 @@ ConfigureArrows(canvas, linePtr)
     double shapeA, shapeB, shapeC;	/* Adjusted coordinates (see
 					 * explanation below). */
     double width;
-    Tk_State state = linePtr->header.state;
+    Tk_State state = Tk_GetItemState(canvas, &linePtr->header);
 
     if (linePtr->numPoints <2) {
 	return TCL_OK;
-    }
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
     }
 
     width = linePtr->outline.width;
@@ -2278,11 +2246,7 @@ LineToPostscript(interp, canvas, itemPtr, prepass)
     double width;
     XColor *color;
     Pixmap stipple;
-    Tk_State state = itemPtr->state;
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
     width = linePtr->outline.width;
     color = linePtr->outline.color;
@@ -2458,11 +2422,7 @@ ArrowheadPostscript(interp, canvas, linePtr, arrowPtr)
 					 * describing arrowhead polygon. */
 {
     Pixmap stipple;
-    Tk_State state = linePtr->header.state;
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    Tk_State state = Tk_GetItemState(canvas, &linePtr->header);
 
     stipple = linePtr->outline.stipple;
     if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)linePtr) {

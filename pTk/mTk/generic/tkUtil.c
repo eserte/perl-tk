@@ -582,9 +582,7 @@ TkPixelPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     Tcl_FreeProc **freeProcPtr;	/* not used */
 {
     double *doublePtr = (double *)(widgRec + offset);
-    Arg result;
-    LangSetDouble(&result,*doublePtr);
-    return result;
+    return Tcl_NewDoubleObj(*doublePtr);
 }
 
 /*

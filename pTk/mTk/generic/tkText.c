@@ -749,7 +749,6 @@ TextWidgetCmd(clientData, interp, argc, argv)
 	    for (j = 3;  j < argc; j += 2) {
 		InsertChars(textPtr, &index1, argv[j]);
 		if (argc > (j+1)) {
-		    LangFreeProc *freeProc = NULL;
 		    TkTextIndexForwChars(&index1, (int) strlen(argv[j]),
 			    &index2);
 		    oldTagArrayPtr = TkBTreeGetTags(&index1, &numTags);
@@ -759,7 +758,7 @@ TextWidgetCmd(clientData, interp, argc, argv)
 			}
 			ckfree((char *) oldTagArrayPtr);
 		    }
-		    if (Lang_SplitList(interp, args[j+1], &numTags, &tagNames, &freeProc)
+		    if (Tcl_ListObjGetElements(interp, args[j+1], &numTags, &tagNames)
 			    != TCL_OK) {
 			result = TCL_ERROR;
 			goto done;
@@ -768,8 +767,6 @@ TextWidgetCmd(clientData, interp, argc, argv)
 			TkBTreeTag(&index1, &index2,
 				TkTextCreateTag(textPtr, LangString(tagNames[i])), 1);
 		    }
-		    if (freeProc)
-			(*freeProc) (numTags, tagNames);
 		    index1 = index2;
 		}
 	    }
@@ -2140,9 +2137,8 @@ TkTextGetTabs(interp, tkwin, arg)
     char **argv;
     TkTextTabArray *tabArrayPtr;
     TkTextTab *tabPtr;
-     LangFreeProc *freeProc = NULL;
 
-    if (Lang_SplitList(interp, arg, &argc, &argv, &freeProc) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, arg, &argc, &argv) != TCL_OK) {
 	return NULL;
     }
 
@@ -2207,14 +2203,10 @@ TkTextGetTabs(interp, tkwin, arg)
 	    goto error;
 	}
     }
-    if (freeProc)
-      (*freeProc)(argc,argv);
     return tabArrayPtr;
 
     error:
     ckfree((char *) tabArrayPtr);
-    if (freeProc)
-      (*freeProc)(argc,argv);
     return NULL;
 }
 

@@ -7,13 +7,13 @@
 
 =head1 NAME
 
-Tk::Text - Create and manipulate text widgets
+Tk::Text - Create and manipulate Text widgets
 
 =for category  Tk Widget Classes
 
 =head1 SYNOPSIS
 
-B<text> $widget ?I<options>?
+B<text> $text ?I<options>?
 
 B<-background>	B<-highlightbackground>	B<-insertontime>	B<-selectborderwidth>
 B<-borderwidth>	B<-highlightcolor>	B<-insertwidth>	B<-selectforeground>
@@ -152,8 +152,8 @@ in B<word> mode a line break will only be made at word boundaries.
 
 =head1 DESCRIPTION
 
-The B<text> command creates a new window (given by the
-$widget argument) and makes it into a text widget.
+The B<Text> method creates a new window (given by the
+$text argument) and makes it into a text widget.
 Additional
 options, described above, may be specified on the command line
 or in the option database
@@ -837,7 +837,7 @@ The following additional methods are available for text widgets:
 
 =over 4
 
-=item I<$widget>-E<gt>B<bbox>(I<index>)
+=item I<$text>-E<gt>B<bbox>(I<index>)
 
 Returns a list of four elements describing the screen area
 of the character given by I<index>.
@@ -877,7 +877,7 @@ debugging on or off in any widget turns it on or off for all widgets.
 For widgets with large amounts of text, the consistency checks may
 cause a noticeable slow-down.
 
-=item I<$widget>-E<gt>B<delete>(I<index1, >?I<index2>?)
+=item I<$text>-E<gt>B<delete>(I<index1, >?I<index2>?)
 
 Delete a range of characters from the text.
 If both I<index1> and I<index2> are specified, then delete
@@ -892,7 +892,7 @@ It is not allowable to delete characters in a way that would leave
 the text without a newline as the last character.
 The command returns an empty string.
 
-=item I<$widget>-E<gt>B<dlineinfo>(I<index>)
+=item I<$text>-E<gt>B<dlineinfo>(I<index>)
 
 Returns a list with five elements describing the area occupied
 by the display line containing I<index>.
@@ -912,7 +912,7 @@ by characters and embedded windows.
 If the display line containing I<index> is not visible on
 the screen then the return value is an empty list.
 
-=item I<$widget>-E<gt>B<dump>(?I<switches>?, I<index1, >?I<index2>?)
+=item I<$text>-E<gt>B<dump>(?I<switches>?, I<index1, >?I<index2>?)
 
 Return the contents of the text widget from I<index1> up to,
 but not including I<index2>,
@@ -927,7 +927,7 @@ I<key1 value1 index1 key2 value2 index2> ...
 =back
 
 The possible I<key> values are B<text>, B<mark>,
-B<tagon>, B<tagoff>, and I<$widget>.  The corresponding
+B<tagon>, B<tagoff>, and I<$text>.  The corresponding
 I<value> is the text, mark name, tag name, or window name.
 The I<index> information is the index of the
 start of the text, the mark, the tag transition, or the window.
@@ -975,7 +975,7 @@ has not been created yet.  (It must have a create script.)
 In this case an empty string is returned, and you must query the
 window by its index position to get more information.
 
-=item I<$widget>-E<gt>B<get>(I<index1, >?I<index2>?)
+=item I<$text>-E<gt>B<get>(I<index1, >?I<index2>?)
 
 Return a range of characters from the text.
 The return value will be all the characters in the text starting
@@ -1001,14 +1001,14 @@ The following forms of the methods are currently supported:
 
 =over 8
 
-=item I<$widget>-E<gt>B<imageCget>(I<index, option>)
+=item I<$text>-E<gt>B<imageCget>(I<index, option>)
 
 Returns the value of a configuration option for an embedded image.
 I<Index> identifies the embedded image, and I<option>
 specifies a particular configuration option, which must be one of
 the ones listed in L<"EMBEDDED IMAGES">.
 
-=item I<$widget>-E<gt>B<imageConfigure>(I<index, >?I<option, value, ...>?)
+=item I<$text>-E<gt>B<imageConfigure>(I<index, >?I<option, value, ...>?)
 
 Query or modify the configuration options for an embedded image.
 If no I<option> is specified, returns a list describing all of
@@ -1024,7 +1024,7 @@ this case the command returns an empty string.
 See L<"EMBEDDED IMAGES"> for information on the options that
 are supported.
 
-=item I<$widget>-E<gt>B<imageCreate>(I<index, >?I<option, value, ...>?)
+=item I<$text>-E<gt>B<imageCreate>(I<index, >?I<option, value, ...>?)
 
 This command creates a new image annotation, which will appear
 in the text at the position given by I<index>.
@@ -1035,21 +1035,21 @@ this image.
 See L<"EMBEDDED IMAGES"> for information on the options that
 are supported, and a description of the identifier returned.
 
-=item I<$widget>-E<gt>B<imageNames>
+=item I<$text>-E<gt>B<imageNames>
 
 Returns a list whose elements are the names of all image instances currently
-embedded in $widget.
+embedded in $text.
 
 =back
 
-=item I<$widget>-E<gt>B<index>(I<index>)
+=item I<$text>-E<gt>B<index>(I<index>)
 
 Returns the position corresponding to I<index> in the form
 I<line.char> where I<line> is the line number and I<char>
 is the character number.
 I<Index> may have any of the forms described under L<"INDICES"> above.
 
-=item I<$widget>-E<gt>B<insert>(I<index, chars, >?I<tagList, chars, tagList, ...>?)
+=item I<$text>-E<gt>B<insert>(I<index, chars, >?I<tagList, chars, tagList, ...>?)
 
 Inserts all of the I<chars> arguments just before the character at
 I<index>.
@@ -1070,7 +1070,7 @@ they produce the same effect as if a separate B<insert> widget
 command had been issued for each pair, in order.
 The last I<tagList> argument may be omitted.
 
-=item I<$widget>-E<gt>B<mark>(I<option, >?I<arg, arg, ...>?)
+=item I<$text>-E<gt>B<mark>(I<option, >?I<arg, arg, ...>?)
 
 This command is used to manipulate marks.  The exact behavior of
 the command depends on the I<option> argument that follows
@@ -1079,7 +1079,7 @@ are currently supported:
 
 =over 8
 
-=item I<$widget>-E<gt>B<markGravity>(I<markName, >?I<direction>?)
+=item I<$text>-E<gt>B<markGravity>(I<markName, >?I<direction>?)
 
 If I<direction> is not specified, returns B<left> or B<right>
 to indicate which of its adjacent characters I<markName> is attached
@@ -1087,12 +1087,12 @@ to.
 If I<direction> is specified, it must be B<left> or B<right>;
 the gravity of I<markName> is set to the given value.
 
-=item I<$widget>-E<gt>B<markNames>
+=item I<$text>-E<gt>B<markNames>
 
 Returns a list whose elements are the names of all the marks that
 are currently set.
 
-=item I<$widget>-E<gt>B<markNext>(I<index>)
+=item I<$text>-E<gt>B<markNext>(I<index>)
 
 Returns the name of the next mark at or after I<index>.
 If I<index> is specified in numerical form, then the search for
@@ -1108,7 +1108,7 @@ If a mark has been set to the special B<end> index,
 then it appears to be I<after> B<end> with respect to the B<mark next> operation.
 An empty string is returned if there are no marks after I<index>.
 
-=item I<$widget>-E<gt>B<markPrevious>(I<index>)
+=item I<$text>-E<gt>B<markPrevious>(I<index>)
 
 Returns the name of the mark at or before I<index>.
 If I<index> is specified in numerical form, then the search for
@@ -1122,7 +1122,7 @@ step through all the marks in a text widget in the reverse order
 as the mark information returned by the B<dump> operation.
 An empty string is returned if there are no marks before I<index>.
 
-=item I<$widget>-E<gt>B<markSet>(I<markName, index>)
+=item I<$text>-E<gt>B<markSet>(I<markName, index>)
 
 Sets the mark named I<markName> to a position just before the
 character at I<index>.
@@ -1148,14 +1148,14 @@ two forms, depending on I<option>:
 
 =over 8
 
-=item I<$widget>-E<gt>B<scanMark>(I<x, y>)
+=item I<$text>-E<gt>B<scanMark>(I<x, y>)
 
 Records I<x> and I<y> and the current view in the text window,
 for use in conjunction with later B<scanDragto> method.
 Typically this method is associated with a mouse button press in
 the widget.  It returns an empty string.
 
-=item I<$widget>-E<gt>B<scanDragto>(I<x, y>)
+=item I<$text>-E<gt>B<scanDragto>(I<x, y>)
 
 This command computes the difference between its I<x> and I<y>
 arguments and the I<x> and I<y> arguments to the last
@@ -1243,7 +1243,7 @@ again;  if I<stopIndex> is specified, no wrap-around will occur.
 
 =over 4
 
-=item I<$widget>-E<gt>B<see>(I<index>)
+=item I<$text>-E<gt>B<see>(I<index>)
 
 Adjusts the view in the window so that the character given by I<index>
 is completely visible.
@@ -1254,7 +1254,7 @@ edge of the window.
 If I<index> is far out of view, then the command centers
 I<index> in the window.
 
-=item I<$widget>-E<gt>B<tag>(I<option, >?I<arg, arg, ...>?)
+=item I<$text>-E<gt>B<tag>(I<option, >?I<arg, arg, ...>?)
 
 This command is used to manipulate tags.  The exact behavior of the
 command depends on the I<option> argument that follows the
@@ -1263,7 +1263,7 @@ supported:
 
 =over 8
 
-=item I<$widget>-E<gt>B<tagAdd>(I<tagName, index1, >?I<index2, index1, index2, ...>?)
+=item I<$text>-E<gt>B<tagAdd>(I<tagName, index1, >?I<index2, index1, index2, ...>?)
 
 Associate the tag I<tagName> with all of the characters starting
 with I<index1> and ending just before
@@ -1276,7 +1276,7 @@ If there are no characters in the specified range (e.g. I<index1>
 is past the end of the file or I<index2> is less than or equal
 to I<index1>) then the command has no effect.
 
-=item I<$widget>-E<gt>B<tagBind>(I<tagName, >?I<sequence>?, ?I<script>?)
+=item I<$text>-E<gt>B<tagBind>(I<tagName, >?I<sequence>?, ?I<script>?)
 
 This command associates I<script> with the tag given by
 I<tagName>.
@@ -1340,7 +1340,7 @@ associated with the tag given by I<tagName>.
 I<Option> may have any of the values accepted by the B<tag configure>
 method.
 
-=item I<$widget>-E<gt>B<tagConfigure>(I<tagName, >?I<option>?, ?I<value>?, ?I<option, value, ...>?)
+=item I<$text>-E<gt>B<tagConfigure>(I<tagName, >?I<option>?, ?I<value>?, ?I<option, value, ...>?)
 
 This command is similar to the B<configure> method except
 that it modifies options associated with the tag given by I<tagName>
@@ -1357,7 +1357,7 @@ modifies the given option(s) to have the given value(s) in I<tagName>;
 in this case the command returns an empty string.
 See L<"TAGS"> above for details on the options available for tags.
 
-=item I<$widget>-E<gt>B<tagDelete>(I<tagName, >?I<tagName, ...>?)
+=item I<$text>-E<gt>B<tagDelete>(I<tagName, >?I<tagName, ...>?)
 
 Deletes all tag information for each of the I<tagName>
 arguments.
@@ -1373,7 +1373,7 @@ in priority than the tag whose name is I<belowThis>.
 If I<belowThis> is omitted, then I<tagName>'s priority
 is changed to make it lowest priority of all tags.
 
-=item I<$widget>-E<gt>B<tagNames>(?I<index>?)
+=item I<$text>-E<gt>B<tagNames>(?I<index>?)
 
 Returns a list whose elements are the names of all the tags that
 are active at the character position given by I<index>.
@@ -1386,7 +1386,7 @@ the tag).
 The list will be sorted in order from lowest priority to highest
 priority.
 
-=item I<$widget>-E<gt>B<tagNextrange>(I<tagName, index1, >?I<index2>?)
+=item I<$text>-E<gt>B<tagNextrange>(I<tagName, index1, >?I<index2>?)
 
 This command searches the text for a range of characters tagged
 with I<tagName> where the first character of the range is
@@ -1402,7 +1402,7 @@ If no matching range is found then the return value is an
 empty string.
 If I<index2> is not given then it defaults to the end of the text.
 
-=item I<$widget>-E<gt>B<tagPrevrange>(I<tagName, index1, >?I<index2>?)
+=item I<$text>-E<gt>B<tagPrevrange>(I<tagName, index1, >?I<index2>?)
 
 This command searches the text for a range of characters tagged
 with I<tagName> where the first character of the range is
@@ -1418,14 +1418,14 @@ If no matching range is found then the return value is an
 empty string.
 If I<index2> is not given then it defaults to the beginning of the text.
 
-=item I<$widget>-E<gt>B<tagRaise>(I<tagName, >?I<aboveThis>?)
+=item I<$text>-E<gt>B<tagRaise>(I<tagName, >?I<aboveThis>?)
 
 Changes the priority of tag I<tagName> so that it is just higher
 in priority than the tag whose name is I<aboveThis>.
 If I<aboveThis> is omitted, then I<tagName>'s priority
 is changed to make it highest priority of all tags.
 
-=item I<$widget>-E<gt>B<tagRanges>(I<tagName>)
+=item I<$text>-E<gt>B<tagRanges>(I<tagName>)
 
 Returns a list describing all of the ranges of text that have been
 tagged with I<tagName>.
@@ -1439,7 +1439,7 @@ range.
 If there are no characters tagged with I<tag> then an
 empty string is returned.
 
-=item I<$widget>-E<gt>B<tagRemove>(I<tagName, index1, >?I<index2, index1, index2, ...>?)
+=item I<$text>-E<gt>B<tagRemove>(I<tagName, index1, >?I<index2, index1, index2, ...>?)
 
 Remove the tag I<tagName> from all of the characters starting
 at I<index1> and ending just before
@@ -1531,13 +1531,13 @@ much wider than the window.
 These are the same values passed to scrollbars via the B<-xscrollcommand>
 option.
 
-=item I<$widget>-E<gt>B<xviewMoveto>(I<fraction>)
+=item I<$text>-E<gt>B<xviewMoveto>(I<fraction>)
 
 Adjusts the view in the window so that I<fraction> of the horizontal
 span of the text is off-screen to the left.
 I<Fraction> is a fraction between 0 and 1.
 
-=item I<$widget>-E<gt>B<xviewScroll>(I<number, what>)
+=item I<$text>-E<gt>B<xviewScroll>(I<number, what>)
 
 This command shifts the view in the window left or right according to
 I<number> and I<what>.
@@ -1553,7 +1553,7 @@ become visible.
 
 =back
 
-=item I<$widget>-E<gt>B<yview>(I<?args>?)
+=item I<$text>-E<gt>B<yview>(I<?args>?)
 
 This command is used to query and change the vertical position of the
 text in the widget's window.
@@ -1561,7 +1561,7 @@ It can take any of the following forms:
 
 =over 8
 
-=item I<$widget>-E<gt>B<yview>
+=item I<$text>-E<gt>B<yview>
 
 Returns a list containing two elements, both of which are real fractions
 between 0 and 1.
@@ -1574,7 +1574,7 @@ relative to the text as a whole.
 These are the same values passed to scrollbars via the B<-yscrollcommand>
 option.
 
-=item I<$widget>-E<gt>B<yviewMoveto>(I<fraction>)
+=item I<$text>-E<gt>B<yviewMoveto>(I<fraction>)
 
 Adjusts the view in the window so that the character given by I<fraction>
 appears on the top line of the window.
@@ -1582,7 +1582,7 @@ I<Fraction> is a fraction between 0 and 1;  0 indicates the first
 character in the text, 0.33 indicates the character one-third the
 way through the text, and so on.
 
-=item I<$widget>-E<gt>B<yviewScroll>(I<number, what>)
+=item I<$text>-E<gt>B<yviewScroll>(I<number, what>)
 
 This command adjust the view in the window up or down according to
 I<number> and I<what>.
@@ -1636,7 +1636,7 @@ visible, whereas B<-pickplace> only handles motion in y).
 
 =over 4
 
-=item I<$widget>-E<gt>B<yview>(I<number>)
+=item I<$text>-E<gt>B<yview>(I<number>)
 
 This command makes the first character on the line after
 the one given by I<number> visible at the top of the window.

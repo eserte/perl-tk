@@ -21,8 +21,8 @@ BEGIN { $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix' };
 
 $Tk::tearoff = 1 if ($Tk::platform eq 'unix');
 
-@EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
-@EXPORT_OK = qw(NoOp *widget *event lsearch catch $XS_VERSION
+@EXPORT    = qw(Exists Ev exit MainLoop DoOneEvent tkinit);
+@EXPORT_OK = qw(NoOp after *widget *event lsearch catch $XS_VERSION
                 DONT_WAIT WINDOW_EVENTS  FILE_EVENTS TIMER_EVENTS
                 IDLE_EVENTS ALL_EVENTS
                 NORMAL_BG ACTIVE_BG SELECT_BG
@@ -42,7 +42,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.0';
 $Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.016';
+$Tk::VERSION     = '800.018';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 
@@ -145,10 +145,11 @@ sub InitClass
  croak "Unexpected type of parent $parent" unless(ref $parent);
  croak "$parent is not a widget" unless($parent->IsWidget);
  my $mw = $parent->MainWindow;
- unless (exists $mw->{'_ClassInit_'}{$package})
-  {
+ my $hash = $mw->TkHash('_ClassInit_');
+ unless (exists $hash->{$package})
+  {     
    $package->Install($mw);
-   $mw->{'_ClassInit_'}{$package} = $package->ClassInit($mw);
+   $hash->{$package} = $package->ClassInit($mw);
   }
 }
 

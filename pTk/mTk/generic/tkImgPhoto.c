@@ -546,6 +546,8 @@ ImgPhotoCmd(clientData, interp, argc, objv)
     size_t length;
     char *arg1;
     static char **strv = NULL;
+    Tcl_Obj *obj;
+    int i;
 
     if (argc < 2) {
 	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg arg ...?");
@@ -903,9 +905,11 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	 */
 
 	pixelPtr = masterPtr->pix24 + (y * masterPtr->width + x) * 4;
-	sprintf(string, "%d %d %d", pixelPtr[0], pixelPtr[1],
-		pixelPtr[2]);
-	Tcl_AppendResult(interp, string, (char *) NULL);
+        obj = Tcl_NewListObj(0,NULL);
+	for (c=0; c < 3; c++) {
+	    Tcl_ListObjAppendElement(interp, obj, Tcl_NewIntObj(pixelPtr[c]));
+        }
+	Tcl_SetObjResult(interp, obj);
     } else if ((c == 'p') && (strncmp(strv[1], "put", length) == 0)) {
 	/*
 	 * photo put command - first parse the options and colors specified.

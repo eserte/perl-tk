@@ -568,7 +568,7 @@ sub tix_callmethod
 
 sub tix_idle
 {
- my @args = ('->',find_widget(),'DoWhenIdle');
+ my @args = ('->',find_widget(),'afterIdle');
  push(@args,callback(join(' ',@_)));
  return \@args;
 }

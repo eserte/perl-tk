@@ -85,7 +85,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
     {TK_CONFIG_BOOLEAN, "-lines",          NULL,          NULL,
 	"0", Tk_Offset(GridItem, drawLines), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_COLOR, "-color",            NULL,          NULL,
+    {TK_CONFIG_COLOR, "-fill",            NULL,          NULL,
 	"black", Tk_Offset(GridItem, outline.color), TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-offset",          NULL,          NULL,
 	"0,0", Tk_Offset(GridItem, outline.tsoffset),
@@ -169,7 +169,7 @@ Tk_ItemType ptkCanvGridType = {
     (Tk_ItemDCharsProc *) NULL,		/* dTextProc */
     (Tk_ItemType *) NULL,		/* nextPtr */
     (Tk_ItemBboxProc *) ComputeGridBbox,/* bboxProc */
-    Tk_Offset(Tk_VisitorType, visitRectangle), /* acceptProc */
+    Tk_Offset(Tk_VisitorType, visitGrid), /* acceptProc */
     (Tk_ItemGetCoordProc *) NULL,	/* getCoordPtr */
     (Tk_ItemSetCoordProc *) NULL	/* setCoordPtr */
 };
@@ -490,7 +490,8 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
     GridItem *gridPtr = (GridItem *) itemPtr;
     short x1, y1, x2, y2;
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+
     double cx      = (double) x;
     double cy      = (double) y;
     double mx      = cx + (double) width; 
@@ -507,6 +508,25 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
 
     ComputeGridBbox(canvas, gridPtr);    
 
+    /* Clip grid to the scroll region */
+    if (cx < (double) (canvasPtr->scrollX1))
+     {
+      cx = (double) (canvasPtr->scrollX1);
+     }
+    if (cy < (double) (canvasPtr->scrollY1))
+     {
+      cy = (double) (canvasPtr->scrollY1);
+     }
+    if (mx > (double) (canvasPtr->scrollX2))
+     {
+      mx = (double) (canvasPtr->scrollX2);
+     }
+    if (my > (double) (canvasPtr->scrollY2))
+     {
+      my = (double) (canvasPtr->scrollY2);
+     }
+
+    /* Compute first grid point within the region to be drawn */
     if (cx <= gx)
      {
       gx = cx + fmod((gx-cx), deltaX);
@@ -522,7 +542,8 @@ DisplayGrid(canvas, itemPtr, display, drawable, x, y, width, height)
     else
      {
       gy = cy + (deltaY - fmod((cy - gy), deltaY));
-     }
+     }                                  
+
     if (gridPtr->outline.gc != None) {
 	Tk_ChangeOutlineGC(canvas, itemPtr, &(gridPtr->outline));
 	if (gridPtr->drawLines) {

@@ -13,19 +13,12 @@ package Tk::CmdLine; # -*-Perl-*-
 #/----------------------------------------------------------------------------//
 
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/CmdLine.pm#23 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/CmdLine.pm#28 $
 
 use 5.004;
 
 use strict;
-
-use AutoLoader qw(AUTOLOAD);
-use base qw(AutoLoader);
-
-sub import {  } # else we inherit AutoLoader's import
-
-use vars qw($OBJECT); # define the current object
-$OBJECT = undef; # global so that it will be accessible in AutoLoader methods
+my $OBJECT = undef; # define the current object
 
 #/----------------------------------------------------------------------------//
 #/ Constructor
@@ -51,7 +44,7 @@ sub new # Tk::CmdLine::new()
         motif       => $Tk::strictMotif,
         resources   => {} };
 
-    return bless $self,$class;
+    return bless($self, $class);
 }
 
 #/----------------------------------------------------------------------------//
@@ -137,11 +130,13 @@ my %Method = (
     xrm          => 'Resource_'
 );
 
-
 sub SetArguments # Tk::CmdLine::SetArguments([@argument])
 {
-    my $self = (@_) ? shift : __PACKAGE__;
-    
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq __PACKAGE__)
+            ? shift(@_)
+            : (($_[0] eq __PACKAGE__) ? shift(@_) : 1) && ($OBJECT ||= __PACKAGE__->new()))
+        : ($OBJECT ||= __PACKAGE__->new()));
     $OBJECT = $self; # update the current object
     $self->{argv}   = (@_ ? [ @_ ] : \@ARGV);
     $self->{offset} = 0; # its existence will denote that this method has been called
@@ -184,7 +179,7 @@ sub SetArguments # Tk::CmdLine::SetArguments([@argument])
     return $self;
 }
 
-*process = \&SetArguments; # for compatibility with old code
+use vars qw(&process); *process = \&SetArguments; # alias to keep old code happy
 
 #/----------------------------------------------------------------------------//
 #/ Get the value of a configuration option (default: -class).
@@ -193,11 +188,11 @@ sub SetArguments # Tk::CmdLine::SetArguments([@argument])
 
 sub cget # Tk::CmdLine::cget([$option])
 {
-    my $self = (@_) ? shift : __PACKAGE__;
-    unless (ref $self)
-     {
-      $self = $OBJECT || $self->new;
-     }
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq __PACKAGE__)
+            ? shift(@_)
+            : (($_[0] eq __PACKAGE__) ? shift(@_) : 1) && ($OBJECT ||= __PACKAGE__->new()))
+        : ($OBJECT ||= __PACKAGE__->new()));
     $OBJECT = $self; # update the current object
     my $option = shift(@_) || '-class';
 
@@ -210,13 +205,15 @@ sub cget # Tk::CmdLine::cget([$option])
 
 sub CreateArgs # Tk::CmdLine::CreateArgs()
 {
-    my $self = (@_) ? shift : __PACKAGE__;
-    unless (ref $self)
-     {
-      $self = $OBJECT || $self->new;
-     }
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq __PACKAGE__)
+            ? shift(@_)
+            : (($_[0] eq __PACKAGE__) ? shift(@_) : 1) && ($OBJECT ||= __PACKAGE__->new()))
+        : ($OBJECT ||= __PACKAGE__->new()));
     $OBJECT = $self; # update the current object
+
     $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
+
     return $self->{config};
 }
 
@@ -250,15 +247,15 @@ sub Tk::MainWindow::apply_command_line
 
     if ($self->{methods}->{geometry})
     {
-	if ($self->{methods}->{geometry} =~ /[+-]\d+[+-]\d+/)
-	{
-	    $mw->positionfrom('user');
-	}
-	if ($self->{methods}->{geometry} =~ /\d+x\d+/)
-	{
-	    $mw->sizefrom('user');
-	}
-	delete $self->{methods}->{geometry}; # XXX needed?
+        if ($self->{methods}->{geometry} =~ /[+-]\d+[+-]\d+/)
+        {
+            $mw->positionfrom('user');
+        }
+        if ($self->{methods}->{geometry} =~ /\d+x\d+/)
+        {
+            $mw->sizefrom('user');
+        }
+        delete $self->{methods}->{geometry}; # XXX needed?
     }
 
     $mw->Synchronize() if $self->{synchronous};
@@ -279,23 +276,17 @@ sub Tk::MainWindow::apply_command_line
 }
 
 #/----------------------------------------------------------------------------//
-
-1;
-
-# __END__
-
-#/----------------------------------------------------------------------------//
 #/ Set the initial resources.
 #/   Returns the object reference.
 #/----------------------------------------------------------------------------//
 
 sub SetResources # Tk::CmdLine::SetResources((\@resource | $resource) [, $priority])
 {
-    my $self = (@_) ? shift : __PACKAGE__;
-    unless (ref $self)
-     {
-      $self = $OBJECT || $self->new;
-     }
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq __PACKAGE__)
+            ? shift(@_)
+            : (($_[0] eq __PACKAGE__) ? shift(@_) : 1) && ($OBJECT ||= __PACKAGE__->new()))
+        : ($OBJECT ||= __PACKAGE__->new()));
     $OBJECT = $self; # update the current object
 
     $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
@@ -331,12 +322,11 @@ sub SetResources # Tk::CmdLine::SetResources((\@resource | $resource) [, $priori
 
 sub LoadResources # Tk::CmdLine::LoadResources([%options])
 {
-    my $self = (@_) ? shift : __PACKAGE__;
-    unless (ref $self)
-     {
-      $self = $OBJECT || $self->new;
-     }
-	
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq __PACKAGE__)
+            ? shift(@_)
+            : (($_[0] eq __PACKAGE__) ? shift(@_) : 1) && ($OBJECT ||= __PACKAGE__->new()))
+        : ($OBJECT ||= __PACKAGE__->new()));
     $OBJECT = $self; # update the current object
 
     $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
@@ -390,7 +380,8 @@ sub LoadResources # Tk::CmdLine::LoadResources([%options])
                 };
             }
 
-            my @postfix = map { $_ . '/' . $self->{config}->{-class} } ('/' . $self->{translation}->{'%L'}), '';
+            my @postfix = map({ $_ . '/' . $self->{config}->{-class} }
+                ('/' . $self->{translation}->{'%L'}), '');
 
             ITEM: foreach $fileSpec (split(':', $xpath))
             {
@@ -471,6 +462,8 @@ sub LoadResources # Tk::CmdLine::LoadResources([%options])
 
     return $self;
 }
+
+#/----------------------------------------------------------------------------//
 
 1;
 

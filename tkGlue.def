@@ -16,7 +16,10 @@
 #define PL_stack_sp	stack_sp
 #define PL_curcop	curcop
 #endif
-
+                              
+#ifndef dTHR
+#define dTHR int maybeTHR
+#endif
 
 #ifndef ERRSV
 #define ERRSV GvSV(errgv)

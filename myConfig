@@ -317,7 +317,7 @@ if ($win_arch eq 'x') {
   
   die "Cannot find X include files anywhere" unless (defined $xinc);
 
-  if ($xinc =~ /^-I(.*openwin.*)$/)
+  if (defined($Config{'gccversion'}) && $xinc =~ /^-I(.*openwin.*)$/)
    {
     $gccopt .= " -isystem $1";
    }

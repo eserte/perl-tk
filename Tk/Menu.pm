@@ -20,7 +20,7 @@ require Tk::Derived;
 
 
 use vars qw($VERSION);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Tk/Menu.pm#33 $
+$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/Menu.pm#42 $
 
 use strict;
 
@@ -28,7 +28,7 @@ use base  qw(Tk::Wm Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Menu';
 
-sub Tk_cmd { \&Tk::menu }
+sub Tk_cmd { \&Tk::_menu }
 
 Tk::Methods('activate','add','clone','delete','entrycget','entryconfigure',
             'index','insert','invoke','post','postcascade','type',
@@ -991,6 +991,7 @@ sub tearOffMenu
 # menu descendants will be duplicated at dst.
 # dst - Name to use for topmost menu in duplicate
 # hierarchy.
+use Data::Dumper;
 sub MenuDup
 {
  my $src    = shift;
@@ -999,14 +1000,14 @@ sub MenuDup
  my %args  = (-type => $type) ;
  foreach my $option ($src->configure())
   {
-   next if (@$option == 2);
+   next if (@$option == 2);  
    $args{$$option[0]} = $$option[4] unless exists $args{$$option[0]};
   }
- my $dst = $parent->Menu(%args);
+ my $dst = ref($src)->new($parent,%args); 
  if ($type eq 'tearoff')
   {
    $dst->transient($parent->MainWindow);
-  }
+  }    
  my $last = $src->index('last');
  if ($last ne 'none')
   {
@@ -1023,21 +1024,20 @@ sub MenuDup
         }
        $dst->add($type,@args);
       }
-
-     # Duplicate the binding tags and bindings from the source menu.
-     my @bindtags = $src->bindtags;
-     my $path = $src->PathName;
-     foreach (@bindtags)
-      {
-       $_ = $dst if ($_ eq $path);
-      }
-     $dst->bindtags([@bindtags]);
-     foreach my $event ($src->bind)
-      {
-       my $cb = $src->bind($event);
-       $dst->bind($event,$cb->Substitute($src,$dst));
-      }
     }
+  } 
+ # Duplicate the binding tags and bindings from the source menu.
+ my @bindtags = $src->bindtags;
+ my $path = $src->PathName;
+ foreach (@bindtags)
+  {       
+   $_ = $dst if ($_ eq $path);
+  }
+ $dst->bindtags([@bindtags]);
+ foreach my $event ($src->bind)
+  {
+   my $cb = $src->bind($event);
+   $dst->bind($event,$cb->Substitute($src,$dst));
   }
  return $dst;
 }
@@ -1047,11 +1047,82 @@ sub MenuDup
 # Some convenience methods
 
 sub separator   { require Tk::Menu::Item; shift->Separator(@_);   }
-sub command     { require Tk::Menu::Item; shift->Command(@_);     }
 sub cascade     { require Tk::Menu::Item; shift->Cascade(@_);     }
 sub checkbutton { require Tk::Menu::Item; shift->Checkbutton(@_); }
 sub radiobutton { require Tk::Menu::Item; shift->Radiobutton(@_); }
 
+sub command
+{
+ my ($menu,%args) = @_;
+ require Tk::Menu::Item; 
+ if (exists $args{-button})
+  {
+   # Backward compatible stuff from 'Menubar'
+   my $button = delete $args{-button};       
+   $button = ['Misc', -underline => 0 ] unless (defined $button);
+   my @bargs = ();                           
+   ($button,@bargs) = @$button if (ref($button) && ref $button eq 'ARRAY');
+   $menu = $menu->Menubutton(-label => $button, @bargs);                                 
+  }
+ $menu->Command(%args);  
+}
+
+sub Menubutton
+{
+ my ($menu,%args) = @_;
+ my $name = delete($args{'-text'}) || $args{'-label'};;
+ $args{'-label'} = $name if (defined $name);
+ my $items = delete $args{'-menuitems'};
+ foreach my $opt (qw(-pack -after -before -side -padx -ipadx -pady -ipady -fill))
+  {
+   delete $args{$opt};
+  }
+ if (defined($name) && !defined($args{-underline}))
+  {
+   my $underline = ($name =~ s/^(.*)~/$1/) ? length($1): undef;
+   if (defined($underline) && ($underline >= 0))
+    {
+     $args{-underline} = $underline;
+     $args{-label} = $name;
+    }
+  }
+ my $hash = $menu->TkHash('MenuButtons');
+ my $mb = $hash->{$name};
+ if (defined $mb)
+  {   
+   delete $args{'-tearoff'}; # too late!  
+   $mb->configure(%args) if %args;
+  }
+ else
+  {
+   $mb = $menu->cascade(%args);
+   $hash->{$name} = $mb;
+  }
+ $mb->menu->AddItems(@$items) if defined($items) && @$items;
+ return $mb;
+}
+
+sub BalloonInfo
+{
+ my ($menu,$balloon,$X,$Y,@opt) = @_;
+ my $i = $menu->index('active');
+ if ($i eq 'none') 
+  {
+   my $y = $Y - $menu->rooty;
+   $i = $menu->index("\@$y");
+  }                             
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$menu);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'ARRAY'))
+    {           
+     $balloon->Subclient($i);
+     return '' if $i eq 'none';
+     return ${$info}[$i] || '';
+    }           
+   return $info;
+  }
+}       
 
 1;
 

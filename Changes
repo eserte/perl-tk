@@ -2,7 +2,27 @@ Within each 'release' time advances down the file, but most recent
 release is at the top.
 
 Change.log is generated from perforce database, it is therefore
-complete, but short on detail.
+complete, but short on detail.               
+
+Changes in Tk800.018
+	Mainly a bug-fix release  
+	The "new" honouring of perl context has been added to Photo and fixed 
+	for derived widgets.     
+	Added Greg London's TextList 
+	A gross mess in parsing legacy Tcl-like lists has been fixed - this 
+	would have been worst on Win32 where that style is used for fonts.
+	Patches from Slaven that fixed bugs and finished selection support to HList.
+	Patches from Steve for the demos.                      
+	Adopted Ben Pavon's fixes for Tk::CmdLine   
+
+Changes in Tk800.017                              
+	Move most of C code to use Tcl/Tk supported Tcl_Obj type calls rather
+	than ad hoc Lang calls - should aid future merges.
+	Added (experimental) group item to Canvas                
+	bbox etc. (e.g. Canvas items) return reference [] or list () depending on perl's context.
+	Major overhaul of internals to assist in cleaner, non-delayed destruction of
+	widget data structures.
+	Move Text's menu handling to Widget and renamed it ->menu
 
 Changes in Tk800.016
 	Steve's merge of :
