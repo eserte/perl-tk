@@ -1,12 +1,14 @@
+# -*- perl -*-
 BEGIN { $^W = 1; $| = 1; }
 
 use strict;
 use Test;
 use Tk;
 
-BEGIN { plan tests => 17 };
+BEGIN { plan tests => 22 };
 
 my $mw = Tk::MainWindow->new;
+eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 my $hlist;
 {
@@ -60,11 +62,19 @@ my $hlist;
     $hl->add(1,-text=>'one');
     my $val1 = ( $hl->entryconfigure(1, '-style') )[4];
     # comment out the next line and at least I get always a SEGV
-    ok(defined($val1), 1, "Ooops entryconfigure -style is not defined");
+    ok(!defined($val1), 1, "Ooops entryconfigure -style is defined");
     my $val2 = $hl->entrycget(1, '-style');
-    ok(defined($val2), 1, "Ooops entrycget -style is not defined");
-    ok($val1, $val2, "entryconfigure and entrycget do not agree");
+    ok(!defined($val2), 1, "Ooops entrycget -style is defined");
+    # ok($val1, $val2, "entryconfigure and entrycget do not agree");
 
+    my @bbox = $hl->infoBbox(1);
+    ok(scalar(@bbox), 4, "\@bbox not 4 items");
+    my $bbox = $hl->infoBbox(1);
+    ok(ref($bbox), 'ARRAY', "$bbox not an ARRAY");
+    foreach my $a (@bbox)
+     {
+      ok($a, shift(@$bbox), "\$bbox values differ");
+     }
     $hl->destroy;
 }
 

@@ -1,0 +1,82 @@
+#!/usr/local/bin/perl -w
+use strict;
+
+use ExtUtils::Manifest "/mani/";
+use POSIX qw(getcwd);
+
+use vars qw($opt_dev $opt_man $opt_lax $version);
+
+use Getopt::Long;
+
+GetOptions('dev=s','man','lax');
+
+sub System
+{
+ print STDERR join(' ',@_),"\n" if (@_ < 8);
+ die "Cannot " . join(' ',@_) if (system(@_));
+}
+
+open(MF,"<Makefile.PL") || die "Cannot open Makefile.PL:$!";
+while (<MF>)
+ {
+  if (/\$VERSION\s*=\s*'([^']+)'/)
+   {
+    $version = $1;
+    last;
+   }
+ }
+close(MF);
+
+die "Cannot find version\n" unless defined $version;
+
+System("perl","Makefile.PL") unless (-r "Makefile");
+
+System("make","manifest") if ($opt_man);
+
+my $path  = getcwd();
+my $dir   = $path;
+my $files = maniread();
+$dir   =~ s#^.*/([^/]+)\d+$#$1#;
+  
+my $snag = 0;
+
+foreach my $file (keys %$files)
+ {
+  unless (-f $file)
+   {
+    $snag++;
+    warn "$file not found\n"; 
+   }
+  if (-z $file)
+   {
+    $snag++;
+    warn "$file is zero sized\n"; 
+   }
+ }
+
+exit(1) if $snag && !$opt_lax;
+
+my @files = map("$dir$version/$_",sort(keys %$files));
+chdir("..");
+
+unlink("$dir$version") if (-l "$dir$version");
+symlink($path,"$dir$version") || die "Cannot link $dir $dir$version:$!";
+
+$dir .= $version;
+
+system("mv","$dir.tar.gz","$dir.tar.gz%") if (-e "$dir.tar.gz");
+
+if (defined $opt_dev)
+ {
+  System("tar","-cf",$opt_dev,@files);
+  System("tar","-tvf",$opt_dev);
+ }
+else
+ {
+  warn "Writing $dir.tar\n";
+  System("tar","-cf","$dir.tar",@files);
+  warn "gzip'ing $dir.tar\n";
+  System("gzip",'-9',"$dir.tar");
+ }
+
+

@@ -1,8 +1,0 @@
-# Index created by AutoSplit for blib/lib/Tk/TextUndo.pm
-#    (file acts as timestamp)
-package Tk::TextUndo;
-sub numberChanges ;
-sub FileName ;
-sub Save ;
-sub Load ;
-1;

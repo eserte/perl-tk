@@ -1,0 +1,47 @@
+#!/usr/local/bin/perl -w
+
+use File::Find;
+
+my $area = "$ENV{'HOME'}/Tk/..";
+
+@tk = qw(Tk-b11.02 Tk-b12);
+
+sub findbase
+{
+ return unless (-f $_);
+ my $file = "$File::Find::dir/$_";
+ # return if $file =~ m,/pTk/,;
+ my $t = -M $file;
+ my $d = -100000;
+ my $where = "Not found";
+ foreach $dir (@tk)
+  {
+   my $path = "$area/$dir/$file";
+   if (-f $path)
+    {
+     my $r = (-M $path)-$t;
+     if ($r > $d)
+      {
+       $d = $r;
+       $where = $path;
+      }
+    }
+  }
+  if ($d > 0)
+   {
+    my $code = system("merge",$_,$where,"$area/Tk400.200/$file");
+    if ($code)
+     {
+      warn "Overlaps in $file\n";
+      print "$file\n";
+     }
+   }
+  else
+   {
+    warn "$file $d $where\n" if ($d > -100000);
+   }
+}
+
+
+
+find(\&findbase,".");

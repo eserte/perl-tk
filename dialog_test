@@ -1,0 +1,13 @@
+use Tk;
+my $mw = MainWindow->new;
+my $dialog = $mw->Dialog(-text => 'Hello There');
+foreach $meth (qw(Show withdraw deiconify iconify Popup))
+ {
+  $mw->Button(-text => "\u$meth", -command => [$meth => $dialog])->pack(-side => 'left');
+ }
+$|  = 1;
+select STDERR;
+$|  = 1;
+select STDOUT;
+# $^D = 8;
+MainLoop;

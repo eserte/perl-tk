@@ -1,12 +1,12 @@
 #!/usr/local/bin/perl -w
 use Tk;
-use Tk::Font;
+use Tk::X11Font;
 use Tk::ROText;
 
 my $mw   = MainWindow->new;
-my $font = $mw->Font(space   => 'm', 
-                     weight  => 'medium',
-                     point   => 140);
+my $font = $mw->X11Font(space   => 'm', 
+			weight  => 'medium',
+			point   => 140);
 my $mb    = $mw->Frame->pack(-fill => 'x');
 my $text  = $mw->ROText(-font => $font)->pack(-expand => 1, -fill => 'both');
 my $bfont = $font->Clone(weight =>'bold');

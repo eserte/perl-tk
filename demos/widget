@@ -1,28 +1,25 @@
 #!/usr/local/bin/perl -w
 
-eval 'exec /usr/local/bin/perl -w -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 require 5.004;
 
-use English;
-use Tk;
+use Tk 800.000;
 use lib Tk->findINC('demos/widget_lib');
 use Tk::widgets qw/Dialog ErrorDialog ROText/;
 use WidgetDemo;
-use subs qw/inswt invoke lsearch see_code see_vars show_stat view_widget_code/;
+use subs qw/invoke lsearch see_code see_vars show_stat view_widget_code/;
 use vars qw/$MW $FONT $WIDTRIB/;
 use vars qw/$CODE $CODE_RERUN $CODE_TEXT $VARS $VIEW $VIEW_TEXT/;
 use vars qw/$BRAKES $LIGHTS $OIL $SOBER $TRANS $WIPERS/;
 use vars qw/$COLOR $FONT_STYLE $POINT_SIZE $DEMO_FILE %DEMO_DESCRIPTION/;
-use strict;                      
+use strict;
 
- 
+
 $MW = Tk::MainWindow->new;
+$MW->configure(-menu => my $menubar = $MW->Menu);
 
-{ 
+{
     package WidgetWrap;
-    @WidgetWrap::ISA = qw(Tk::MainWindow);
+    @WidgetWrap::ISA = qw/Tk::MainWindow/;
 
     # This magic conspires with widget's AUTOLOAD subroutine to make user
     # contributed demonstrations that don't use WidgetDemo embed properly.
@@ -44,42 +41,41 @@ my $widget_lib = Tk->findINC('demos/widget_lib');
 my $wd = "$widget_lib/WidgetDemo.pm";
 $WIDTRIB = Tk->findINC('demos/widtrib');
 unless (Tk::tainting) {
-    $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
-    $WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
+    $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB};
+    $WIDTRIB = $ARGV[0] if defined $ARGV[0];
 }
 
 # The code below creates the main window, consisting of a menu bar
 # and a text widget that explains how to use the program, plus lists
 # all of the demos as hypertext items.
 
-my $menubar = $MW->Frame;
-$menubar->grid(qw/-sticky ew/);
-$menubar->gridColumnconfigure(qw/0 -weight 1/);
+my $file = $menubar->cascade(qw/-label File -underline 0 -menuitems/ =>
+    [
+      [cascade    => '~View', -menuitems =>
+        [
+          [command  => '~widget', -command => [\&view_widget_code, __FILE__]],
+          [command  => '~WidgetDemo', -command => [\&view_widget_code, $wd]],
+        ], # end cascade menuitems
+      ], # end view cascade
+      '',
+      [command    => '~Quit', -command => [\&exit]],
+    ]);
 
-my $file = $menubar->Menubutton(qw/-text File -underline 0 -menuitems/ =>
+my $help = $menubar->cascade(qw/-label Help -underline 0 -menuitems/ =>
     [
-     [Cascade   => '~View', -menuitems =>
-      [
-       [Button  => '~widget', -command => [\&view_widget_code, __FILE__]],
-       [Button  => '~WidgetDemo', -command => [\&view_widget_code, $wd]],
-      ], # end cascade menuitems
-     ], # end view cascade
-     [Separator => ''],
-     [Button    => '~Quit', -command => [\&exit]],
-    ])->grid(qw/-sticky w/); 
-my $about = $menubar->Menubutton(qw/-text About -underline 0 -menuitems/ =>
-    [
-     [Button    => '~Widget'],
-    ])->grid(qw/-row 0 -column 1 -sticky w/); 
+      [command    => '~About'],
+    ]);
 
 my $T = $MW->Scrolled('ROText',
-    -scrollbars => 'e',		  
+    -scrollbars => 'e',		
     -wrap       => 'word',
     -width      => 60,
-    -height     => 30, 
+    -height     => 30,
     -font       => $FONT,
     -setgrid    => 1,
 )->grid(qw/-sticky nsew/);
+$MW->gridRowconfigure(   0, -weight => 1); # allow expansion in both ...
+$MW->gridColumnconfigure(0, -weight => 1); # ... X and Y dimensions
 
 my $STATUS_VAR;
 my $status = $MW->Label(-textvariable => \$STATUS_VAR, qw/-anchor w/);
@@ -101,7 +97,7 @@ if ($MW->depth  == 1) {
 	    '#303080');
 }
 
-$T->tagBind(qw/demo <ButtonRelease-1>/ => sub {invoke $T->index('current')});
+$T->tagBind(qw/demo <ButtonRelease-1>/ => \&invoke);
 my $last_line = '';
 $T->tagBind(qw/demo <Enter>/ => [sub {
 	my($text, $sv) = @_;
@@ -137,13 +133,13 @@ $T->tagBind(qw/demo <Motion>/ => [sub {
 # Create the text for the text widget.
 
 $T->insert('end', "Perl/Tk Widget Demonstrations\n", 'title');
-$T->insert('end', 
+$T->insert('end',
 "\nThis application provides a front end for several short scripts that demonstrate what you can do with Tk widgets.  Each of the numbered lines below describes a demonstration;  you can click on it to invoke the demonstration.  Once the demonstration window appears, you can click the \"See Code\" button to see the Perl/Tk code that created the demonstration.  If you wish, you can edit the code and click the \"Rerun Demo\" button in the code window to reinvoke the demonstration with the modified code.\n");
 
 # Define globals for demo toplevels, informative text with tags for
 # highlighting and specifying the demo's file name.
 
-$T->insert('end', "\n", '', 
+$T->insert('end', "\n", '',
 	   "Labels, buttons, checkbuttons, and radiobuttons\n", 'title');
 $T->insert('end', "1. Labels (text and images).\n", [qw/demo demo-labels/]);
 $T->insert('end', "2. Buttons.\n", [qw/demo demo-button/]);
@@ -191,6 +187,7 @@ $T->insert('end', "5. A ruler with adjustable tab stops.\n",
     [qw/demo demo-ruler/]);
 $T->insert('end', "6. A building floor plan.\n", [qw/demo demo-floor/]);
 $T->insert('end', "7. A simple scrollable canvas.\n", [qw/demo demo-cscroll/]);
+$T->insert('end', "8. Tiles and transparent images.\n", [qw/demo demo-transtile/]);
 
 $T->insert('end', "\n", '', "Scales\n", 'title');
 $T->insert('end', "1. Vertical scale.\n", [qw/demo demo-vscale/]);
@@ -220,14 +217,17 @@ $T->insert('end', "3. A dialog box with a global grab.\n",
     [qw/demo demo-dialog2/]);
 
 $T->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
-opendir(C, $WIDTRIB) or warn "Cannot open $WIDTRIB: $OS_ERROR!";
+opendir(C, $WIDTRIB) or warn "Cannot open $WIDTRIB: $!";
 my(@dirent) = grep /^.+\.pl$/, sort(readdir C);
 closedir C;
 unshift @dirent, 'TEMPLATE.pl';	# I want it first
 my $i = 0;
 while ($_ = shift @dirent) {
     next if /TEMPLATE\.pl/ and $i != 0;
-    open(C, "$WIDTRIB/$_") or warn "Cannot open $_: $OS_ERROR!";
+    unless (open(C, "$WIDTRIB/$_")) {
+	warn "Cannot open $_: $!" unless /TEMPLATE\.pl/;
+	next;
+    }
     my($name) = /^(.*)\.pl$/;
     $_ = <C>;
     my($title) = /^#\s*(.*)$/;
@@ -244,9 +244,11 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n        98/05/24",
+		       "\nTk Version $Tk::VERSION\n\n      2000/07/07",
 );
-$about->entryconfigure('Widget', -command => [$DIALOG_ABOUT => 'Show']);
+$help->cget(-menu)->entryconfigure('About',
+    -command => [$DIALOG_ABOUT => 'Show'],
+);
 
 my $DIALOG_ICON = $MW->Dialog(
     -title          => 'Bitmap Menu Entry',
@@ -267,55 +269,30 @@ sub AUTOLOAD {
 
     $T->Busy;
     {
-	local @Tk::EXPORT;
 	$DEMO_FILE = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
 	$DEMO_FILE = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
 	do $DEMO_FILE;
-	warn $EVAL_ERROR if $EVAL_ERROR;
+	warn $@ if $@;
     }
     $T->Unbusy;
     goto &$::AUTOLOAD if defined &$::AUTOLOAD;
 
 } # end AUTOLOAD
 
-sub inswt {
-
-    # insert_with_tags
-    #
-    # The procedure below inserts text into a given text widget and applies
-    # one or more tags to that text.  The arguments are:
-    #
-    # w		Window in which to insert
-    # text	Text to insert (it's inserted at the "insert" mark)
-    # args	One or more tags to apply to text.  If this is empty then all
-    #           tags are removed from the text.
-
-    my($w, $text, @args) = @_;
-
-    my $start = $w->index('insert');
-    $w->insert('insert', $text);
-    foreach my $tag ($w->tagNames($start)) {
-	$w->tagRemove($tag, $start, 'insert');
-    }
-    foreach my $i (@args) {
-	$w->tagAdd($i, $start, 'insert');
-    }
-
-} # end inswt
-
 sub invoke {
 
     # This procedure is called when the user clicks on a demo description.
 
-    my($index) = @_;
+    my($text) = @_;
 
+    my $index = $text->index('current');
     my @tags = $T->tagNames($index);
     my $i = lsearch('demo\-.*', @tags);
     return if $i < 0;
     my($demo) = $tags[$i] =~ /demo-(.*)/;
     $T->tagAdd('visited', "$index linestart", "$index lineend");
     {
-	no strict 'refs'; 
+	no strict 'refs';
 	&$demo($demo);
     }
 
@@ -353,7 +330,7 @@ sub see_code {
             -command => [$CODE => 'withdraw'],
 	);
 	$CODE_RERUN = $code_buttons->Button(-text => 'Rerun Demo');
-	$CODE_TEXT = $CODE->Scrolled('Text', 
+	$CODE_TEXT = $CODE->Scrolled('Text',
 				     qw/-scrollbars e -height 40 -setgrid 1/);
 	$code_buttons_dismiss->pack(qw/-side left -expand 1/);
 	$CODE_RERUN->pack(qw/-side left -expand 1/);
@@ -365,7 +342,7 @@ sub see_code {
     $CODE_RERUN->configure(-command => sub {
 	eval $CODE_TEXT->get(qw/1.0 end/);
 	{
-	    no strict 'refs'; 
+	    no strict 'refs';
 	    &$demo($demo);
 	}
     });
@@ -374,9 +351,9 @@ sub see_code {
     $file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
     $CODE->title("Demo code: $file");
     $CODE_TEXT->delete(qw/1.0 end/);
-    open(CODE, "<$file") or warn "Cannot open demo file $file: $OS_ERROR!";
+    open(CODE, "<$file") or warn "Cannot open demo file $file: $!";
     {
-	local $INPUT_RECORD_SEPARATOR = undef;
+	local $/ = undef;
 	$CODE_TEXT->insert('1.0', <CODE>);
     }
     close CODE;
@@ -388,7 +365,7 @@ sub see_vars {
 
     # Create a top-level window that displays a bunch of global variable values
     # and keeps the display up-to-date even when the variables change value.
-    # $args is a pointer to a list of list of 2: 
+    # $args is a pointer to a list of list of 2:
     #
     #   ["variable description", \$VAR]
     #
@@ -464,9 +441,9 @@ sub view_widget_code {
     $VIEW->title("Demo code: $widget");
     $VIEW_TEXT->configure(qw/-state normal/);
     $VIEW_TEXT->delete(qw/1.0 end/);
-    open(VIEW, "<$widget") or warn "Cannot open demo file $widget: $OS_ERROR!";
+    open(VIEW, "<$widget") or warn "Cannot open demo file $widget: $!";
     {
-	local $INPUT_RECORD_SEPARATOR = undef;
+	local $/ = undef;
 	$VIEW_TEXT->insert('1.0', <VIEW>);
     }
     close VIEW;
@@ -482,23 +459,23 @@ __END__
 widget - Demonstration of Perl/Tk widgets
 
 =head1 SYNOPSYS
-  
-  widget [ directory ] 
 
-=head1 DESCRIPTION 
+  widget [ directory ]
+
+=head1 DESCRIPTION
 
 This script demonstrates the various widgets provided by Tk, along with
 many of the features of the Tk toolkit.  This file only contains code to
 generate the main window for the application, which invokes individual
 demonstrations.  The code for the actual demonstrations is contained in
-separate ".pl" files in the "widget_lib" directory, which are autoloaded 
+separate ".pl" files in the "widget_lib" directory, which are autoloaded
 by this script as needed.
 
 widget looks in the directory specified on the command line to load user
 contributed demonstrations.  If no directory name is specified when widget is
 invoked and the environment variable WIDTRIB is defined then demonstrations
 are loaded from the WIDTRIB directory. If WIDTRIB is undefined then widget
-defaults to the released user contributed directory.
+defaults to the released user contributed directory, "widtrib".
 
 =head2 History
 
@@ -513,11 +490,16 @@ defaults to the released user contributed directory.
  #     Update for Tk8.
  # Stephen O. Lidie, LUCC, 98/06/26.  Stephen.O.Lidie@Lehigh.EDU
  #     Add Common Dialogs for Tk800.007.
+ # Stephen.O.Lidie@Lehigh.EDU, 1999/11/29, Lehigh University.
+ #     Demo some "dash patch" changes.
+ # Stephen.O.Lidie@Lehigh.EDU, 2000/01/11, Lehigh University.
+ #     Update menubar to Tk 8, fix color palette Menubutton demo.
+ # Stephen.O.Lidie@Lehigh.EDU, 2000/07/06, Lehigh University.
+ #     Remove inswt() from widget and styles.pl to show the proper Perl/Tk
+ #     idiom for inserting Text tags.  Various and sundry cleanups.
 
 =head1 AUTHOR
 
 Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
 
-=cut 
-
-
+=cut

@@ -14,9 +14,9 @@ use strict;
 
 sub get_eval_status; sub prompt;
 
+$ENV{HOME} = '/home/bug';
+
 my $MW = MainWindow->new;
-$MW->title('Tk Remote Controller');
-$MW->iconname('Tk Remote');
 $MW->minsize(1, 1);
 $MW->ErrorDialog->configure('-cleanupcode' => \&prompt);
 
@@ -113,6 +113,8 @@ $t->tag('configure', 'bold',
     -font => "*-Courier-Bold-R-Normal-*-120-*-*-*-*-*-*",
 );
 $app = $MW->name;
+$MW->title("Tk Remote Controller - $app");
+$MW->iconname($app);
 prompt;
 $t->focus();
 
