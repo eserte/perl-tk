@@ -1,0 +1,73 @@
+TYPEMAP
+Tk_Window		T_TK_WINDOW
+Tk_Image		T_TK_IMAGE
+TkWindow *		T_TKWINDOW
+Display *		T_PTROBJ
+Screen *		T_PTROBJ
+Visual *		T_PTROBJ
+Window			T_IVOBJ
+Colormap		T_IVOBJ
+GC			T_PTROBJ
+Font			T_IVOBJ
+Atom			T_IV
+FILE *			T_NIO
+hash_ptr *		T_PTR
+Tk_3DBorder		T_PTROBJ
+Tk_Uid			T_TK_UID
+Tcl_Interp *		T_TK_INTERP
+
+INPUT 
+T_PVOBJ
+	if (sv_object($arg)) {
+	    STRLEN sz;
+	    $var = ($type) SvPV((SV*)SvRV($arg),sz);
+	    if (sz != sizeof(*$var))
+	     croak(\"$var too small for $type\");
+	}
+	else
+	    croak(\"$var is not an object\")
+
+T_TK_WINDOW
+	$var = SVtoWindow($arg)
+
+T_TK_IMAGE
+	$var = SVtoImage($arg)
+
+T_TKWINDOW
+	$var = (TkWindow *) SVtoWindow($arg)
+
+T_TK_INTERP
+	$var = WindowCommand($arg,NULL,1)->interp
+
+T_TK_UID
+	$var = Tk_GetUid(SvPV($arg,na))
+
+T_IVOBJ
+	if (sv_isa($arg, \"${ntype}\")) {
+	    IV tmp = SvIV((SV*)SvRV($arg));
+	    $var = ($type) tmp;
+	}
+	else
+	    croak(\"$var is not of type ${ntype}\")
+
+T_NIO
+	if (sv_isa($arg, \"${Package}\")) {
+	    $var = IoIFP(sv_2io(SvRV($arg)));
+	}
+	else
+	    croak(\"$var is not of type ${Package}\")
+
+
+OUTPUT
+T_IVOBJ
+	sv_setref_iv($arg, \"${ntype}\", (IV) $var);
+
+T_TK_UID
+	sv_setpv($arg,$var);
+
+T_TK_WINDOW
+	sv_setsv($arg,TkToWidget($var,NULL));
+
+T_TKWINDOW
+	sv_setsv($arg,TkToWidget((Tk_Window) $var,NULL));
+

@@ -32,19 +32,19 @@ $cw->Walk(sub {print "  subwidget=", shift->PathName, "\n";});
 
 $cw->Walk(
     sub {
-        my($w, $class) = @_;
+        my($w, $class) = @ARG;
         $w->configure(-relief => 'ridge', -bd => 5) if $class eq $w->class;
     }, 'Frame',
 );    
 $cw->Walk(
     sub {
-        my($w, $class) = @_;
+        my($w, $class) = @ARG;
         $w->configure(-relief => 'flat', -bg => 'azure') if $class eq $w->class;
     }, 'Label',
 );
 $cw->Walk(
     sub {
-        my($w, $class) = @_;
+        my($w, $class) = @ARG;
         $w->configure(-selectcolor => 'red', -indicatoron => 0, -bg => 'green')
             if $class eq $w->class;
     }, 'Radiobutton',
@@ -88,7 +88,7 @@ MainLoop;
 
 sub process_return {
 
-    my($objref) = @_;
+    my($objref) = @ARG;
 
     print "In entry callback, objref=$objref, \$entry_var=\'$entry_var\'.\n";
 

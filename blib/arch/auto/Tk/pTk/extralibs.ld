@@ -1,0 +1,1 @@
+-lsocket -lm -lbsd

@@ -1,0 +1,3 @@
+# Index created by AutoSplit for ./blib/lib/Tk/Button.pm (file acts as timestamp)
+package Tk::Button;
+1;

@@ -1,5 +1,4 @@
 #!perl -w
-use strict;
 BEGIN { $ENV{'PERL_DL_NONLAZY'} = 1 }
 require Tk;
 # $SIG{__WARN__} = sub { die shift };
@@ -23,5 +22,15 @@ foreach $file (@files)
      }
     print "ok ",$count++,"\n";
    }
+ }
+
+foreach my $path (sort grep /^Tk.*\.pm$/,keys %INC)
+ {
+  my $mod = $path;
+  $mod =~ s#/#::#g;
+  $mod =~ s#\.pm$##;
+  next unless defined %{$mod.'::'};
+  die "No VERSION in $mod\n" unless defined ${$mod.'::VERSION'};
+  print "$mod = ",${$mod.'::VERSION'},"\n";
  }
 

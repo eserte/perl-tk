@@ -157,7 +157,7 @@ ${"frame_1_e"}->focus;
 #----------------------------------------------------
 
 sub Help {
-    my($topic, $x, $y) = @_;
+    my($topic, $x, $y) = @ARG;
     if ($topic eq '') {return;};
     while (defined $helpCmds{$topic}) {
 	$topic = $helpCmds{$topic};

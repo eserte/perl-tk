@@ -1,0 +1,21 @@
+# Index created by AutoSplit for .././blib/lib/Tk/Menubutton.pm (file acts as timestamp)
+package Tk::Menubutton;
+sub ClassInit ;
+sub ButtonDown ;
+sub PostFirst ;
+sub Enter ;
+sub Leave ;
+sub Post ;
+sub Motion ;
+sub ButtonUp ;
+sub menu ;
+sub separator ;
+sub command ;
+sub cascade ;
+sub checkbutton ;
+sub radiobutton ;
+sub AddItems ;
+sub entryconfigure ;
+sub entrycget ;
+sub FindMenu ;
+1;

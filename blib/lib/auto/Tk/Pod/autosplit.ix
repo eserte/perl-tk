@@ -1,0 +1,4 @@
+# Index created by AutoSplit for .././blib/lib/Tk/Pod.pm (file acts as timestamp)
+package Tk::Pod;
+sub old_process ;
+1;

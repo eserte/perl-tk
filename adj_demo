@@ -14,7 +14,7 @@ my $mw = MainWindow->new;
 my $t1 = $mw->Scrolled('TextUndo', -wrap => 'none');
 my $lb = $mw->Scrolled('Listbox');
 $lb->packAdjust(-side => 'left', -fill => 'both', -delay => 1);
-$lb->bind('<Double-ButtonRelease-1>',sub { $t1->Load($lb->getSelected) });
+$lb->bind('<Double-ButtonRelease-1>',sub { $t1->Load($lb->Getselected) });
 
 $t1->pack(-side => 'right', -fill => 'both', -expand => 1);
 

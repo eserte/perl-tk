@@ -27,7 +27,7 @@ MainLoop;
 sub GetSelected
 {
  my ($lb,$tx) = @_;
- my $name = $lb->getSelected;
+ my $name = $lb->Getselected;
  if (defined $name)
   {
    my @targ = $lb->SelectionGet('-selection'=>$seln,$name);

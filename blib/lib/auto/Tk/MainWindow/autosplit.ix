@@ -1,0 +1,3 @@
+# Index created by AutoSplit for ./blib/lib/Tk/MainWindow.pm (file acts as timestamp)
+package Tk::MainWindow;
+1;

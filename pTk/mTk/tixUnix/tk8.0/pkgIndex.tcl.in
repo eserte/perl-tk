@@ -1,4 +1,0 @@
-# Tcl package index file, version 1.0
-
-package ifneeded Tix @TIX_VERSION_PKG@ [list load "@TIX_PKG_FILE@" Tix]
-@TIX_SAM_PACKAGE_IFNEEDED@

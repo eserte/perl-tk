@@ -1,0 +1,16 @@
+# Index created by AutoSplit for .././blib/lib/Tk/Entry.pm (file acts as timestamp)
+package Tk::Entry;
+sub wordstart ;
+sub wordend ;
+sub ClassInit ;
+sub Button1 ;
+sub MouseSelect ;
+sub AutoScan ;
+sub KeySelect ;
+sub Insert ;
+sub Backspace ;
+sub SeeInsert ;
+sub SetCursor ;
+sub Transpose ;
+sub deleteSelected ;
+1;

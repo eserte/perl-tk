@@ -20,7 +20,7 @@ $lb->grid(-col => 0, -row => 0, -sticky => 'nsew');
 $aj->grid(-col => 1, -row => 0, -sticky => 'nsew');
 $t1->grid(-col => 2, -row => 0, -sticky => 'nsew');
 $mw->gridColumnconfigure(2, -weight => 1);
-$lb->bind('<Double-ButtonRelease-1>',sub { $t1->Load($lb->getSelected) });
+$lb->bind('<Double-ButtonRelease-1>',sub { $t1->Load($lb->Getselected) });
 
 # $mw->idletasks;
 # $mw->gridPropagate(0);

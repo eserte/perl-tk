@@ -1,9 +1,0 @@
-#!/usr/local/bin/perl -w
-
-$^I = ".bak";
-
-while (<>)
- {
-  s/([xy]view)([A-Z][a-z]+)\\fR\(/$1\\fR(\\fB\L$2\E\\fR => /;
-  print;
- }
