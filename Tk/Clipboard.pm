@@ -5,7 +5,7 @@ package Tk::Clipboard;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Clipboard.pm#6$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Clipboard.pm#10$
 
 use AutoLoader qw(AUTOLOAD);
 use Tk qw(catch);
@@ -83,6 +83,7 @@ sub clipboardOperations
  while (@_)
   {
    my $op = shift;
+   $mw->Tk::bind(@class,"<<$op>>","clipboard$op");
   }
 }
 

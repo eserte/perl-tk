@@ -1,5 +1,5 @@
 \.[oaid]$
-\.(bso?|old|bak|out|hide|q4|gz|tcl|rtf|orig)$
+\.(bso?|old|bak|broke|out|hide|q4|gz|tcl|rtf|orig)$
 ^\.
 /\.
 C\+\+/Main$

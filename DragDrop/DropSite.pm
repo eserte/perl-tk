@@ -3,7 +3,7 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#9$
 
 use base  qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 
@@ -72,6 +72,7 @@ sub Drop
  my ($site,$win,$seln,$event) = @_;
  $site->SUPER::Drop($win,$seln,$event);
  $site->Apply(-dropcommand => $event, $seln);
+ $site->Apply(-entercommand => $event, 0);
 }
 
 sub Enter

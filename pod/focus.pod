@@ -152,3 +152,6 @@ you use C code to query the X server directly.
 =head1 KEYWORDS
 
 events, focus, keyboard, top-level, window manager
+
+=cut
+

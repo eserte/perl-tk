@@ -77,6 +77,7 @@ extern void EnterWidgetMethods _ANSI_ARGS_((char *package, ...));
 extern SV *MakeReference _ANSI_ARGS_((SV * sv));
 extern void Lang_TkCommand _ANSI_ARGS_ ((char *name, Tcl_CmdProc *proc));
 extern Tk_Window TkToMainWindow _ANSI_ARGS_((Tk_Window tkwin));
+extern void Lang_TkSubCommand _ANSI_ARGS_ ((char *name, Tcl_CmdProc *proc));
 extern SV *XEvent_Info _((EventAndKeySym *obj,char *s));
 extern EventAndKeySym *SVtoEventAndKeySym _((SV *arg));
 

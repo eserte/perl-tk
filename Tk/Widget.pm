@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.036'; # $Id: //depot/Tk8/Tk/Widget.pm#36$
+$VERSION = '3.038'; # $Id: //depot/Tk8/Tk/Widget.pm#38$
 
 require Tk;
 use AutoLoader;
@@ -184,7 +184,9 @@ sub new
  my $notice = $parent->can('NoticeChild');
  $parent->$notice($obj,\%args) if $notice;
  $obj->InitObject(\%args);
+# ASkludge(\%args,1);
  $obj->configure(%args) if (%args);
+# ASkludge(\%args,0);
  return $obj;
 }
 
@@ -1058,6 +1060,30 @@ sub EventType
 1;
 
 __END__
+
+sub ASkludge
+{
+ my ($hash,$sense) = @_;
+ foreach my $key (%$hash)
+  {
+   if ($key =~ /-.*variable/ && ref($hash->{$key}) eq 'SCALAR')
+    {
+     if ($sense)
+      {
+       my $val = ${$hash->{$key}};
+       require Tie::Scalar;
+       tie ${$hash->{$key}},'Tie::StdScalar';
+       ${$hash->{$key}} = $val;
+      }
+     else
+      {
+       untie ${$hash->{$key}};
+      }
+    }
+  }
+} 
+
+
 
 # clipboardKeysyms --
 # This procedure is invoked to identify the keys that correspond to

@@ -3,6 +3,19 @@ release is at the top.
 
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
+Changes in Tk800.010
+	Fix -variable stuff on PERL_OBJECT
+	Achim's new tests and fixes for most of them.
+	Fix for UNIX Drag&Drop when window has Menubar
+	Virtual event for <<LeftTab>>   
+	Patches to make testsuite non-interactive  
+	Jason's latest Balloon  
+	Re-enable Alt-x stuff for UNIX.
+
+Changes in Tk800.009
+	A few tweaks to options documentation
+	Perl5.005 tolerance, remove excessive groping in perl's internals.
+	PERL_OBJECT awareness.
 
 Changes in Tk800.008
 	Fixed up some L<> problems in the pods, merged Achim's pod edits.

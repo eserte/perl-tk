@@ -290,7 +290,7 @@ The following additional methods are available HList widgets:
 
 Creates a new list entry with the pathname I<$entryPath>. A list
 entry must be created after its parent is created (unless this entry
-is a top-level entry, which has no parent).  See also L<BUGS/"BUGS"> below.
+is a top-level entry, which has no parent).  See also L<"BUGS"> below.
 This method returns the
 entryPath of the newly created list entry. The following
 configuration options can be given to configure the list entry:
@@ -300,7 +300,7 @@ configuration options can be given to configure the list entry:
 =item B<-at> =E<gt> I<position>
 
 Insert the new list at the position given by I<position>.
-I<position> must be a valid integer. the Position B<0> indicates
+I<position> must be a valid integer. The position B<0> indicates
 the first position, B<1> indicates the second position, and so on.
 
 =item B<-after> =E<gt> I<afterWhich>
@@ -1037,3 +1037,7 @@ entries.
 =head1 KEYWORDS
 
 Hierarchical Listbox
+
+=cut
+
+

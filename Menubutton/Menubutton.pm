@@ -17,7 +17,7 @@ package Tk::Menubutton;
 require Tk;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#14$
 
 use base  qw(Tk::Widget);
 
@@ -385,12 +385,13 @@ sub FindMenu
    $char2 = substr("\L$char2",$ul,1) if (defined $char2);
    if (!defined($char) || $char eq "" || (defined($char2) && "\l$char" eq $char2))
     {
+     $child->PostFirst;
      return $child;
     }
   }
  return undef;
 }
-
+    
 1;
 
 __END__

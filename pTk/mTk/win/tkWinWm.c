@@ -2123,7 +2123,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	TkpWmSetState(winPtr, WithdrawnState);
     } else if ((c == 'w') && (strncmp(argv[1], "wrapper", length) == 0)
 	    && (length >= 2)) {          
-	Tcl_IntResults(interp,1,0,0);
+	Tcl_IntResults(interp,2,0,0,0);
     } else {
 	Tcl_AppendResult(interp, "unknown or ambiguous option \"", argv[1],
 		"\": must be aspect, client, command, deiconify, ",

@@ -146,3 +146,6 @@ The most common result is that the line is justified wrong.
 =head1 KEYWORDS
 
 message, widget
+
+=cut
+

@@ -369,9 +369,5 @@ constants for possible use with Tk::Xlib.
 
 Nick Ing-Simmons ran h2xs ...
 
-=head1 SEE ALSO
-
-Tk::Xlib(3).
-
 =cut
 

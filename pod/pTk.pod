@@ -546,3 +546,5 @@ operation, so the C<Arg> you get should be the only mean to access the
 data from this moment on. After you use this C<Arg>, you should free
 it with C<freeProc> C<LANG_DYNAMIC> (you can do LangSet...() in between).
 
+=cut
+

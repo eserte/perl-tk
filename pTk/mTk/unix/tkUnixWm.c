@@ -2091,7 +2091,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	if (wmPtr->wrapperPtr == NULL) {
 	    CreateWrapper(wmPtr);
 	}
-	Tcl_IntResults(interp,1,0,wmPtr->wrapperPtr->window);
+	Tcl_IntResults(interp,2,0,wmPtr->wrapperPtr->window,wmPtr->menuHeight);
     } else {
 	Tcl_AppendResult(interp, "unknown or ambiguous option \"", argv[1],
 		"\": must be aspect, client, command, deiconify, ",
@@ -2435,7 +2435,6 @@ ConfigureEvent(wmPtr, configEventPtr)
      * Make sure that the toplevel and menubar are properly positioned within
      * the wrapper.
      */
-
     XMoveResizeWindow(winPtr->display, winPtr->window, 0,
 	    wmPtr->menuHeight, (unsigned) wrapperPtr->changes.width,
 	    (unsigned) (wrapperPtr->changes.height - wmPtr->menuHeight));
@@ -3643,14 +3642,12 @@ Tk_GetRootCoords(tkwin, xPtr, yPtr)
 	     * y coordinates, then continue with the toplevel (in case
 	     * it's embedded).
 	     */
-
 	    y -= winPtr->wmInfoPtr->menuHeight;
 	    winPtr = winPtr->wmInfoPtr->winPtr;
 	    continue;
 	}
 	if (winPtr->flags & TK_TOP_LEVEL) {
 	    TkWindow *otherPtr;
-
 	    if (!(winPtr->flags & TK_EMBEDDED)) {
 		break;
 	    }
@@ -4943,6 +4940,10 @@ TkUnixSetMenubar(tkwin, menubar)
     WmInfo *wmPtr = ((TkWindow *) tkwin)->wmInfoPtr;
     Tk_Window parent;
     TkWindow *menubarPtr = (TkWindow *) menubar;
+
+    if (wmPtr == NULL) {
+	return;
+    }
 
     if (wmPtr->menubar != NULL) {
 	/*

@@ -51,7 +51,7 @@ sub msgBox {
 sub show_messageBox {
     my($iconvar, $typevar) = @_;
 
-    my $button = $TOP->messageBox(-icon => $$iconvar, -type => $$typevar,
+    my $button = $TOP->messageBox('-icon' => $$iconvar, -type => $$typevar,
 	-title => 'Message',
         -message => "This is a \"$$typevar\" type messagebox with the \"$$iconvar\" icon");
 

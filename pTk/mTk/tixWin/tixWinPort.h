@@ -15,7 +15,6 @@
 #ifndef _TIX_WINPORT_H_
 #define _TIX_WINPORT_H_
 
-#include <malloc.h>
 #include <stdio.h>
 
 #include <stdlib.h>

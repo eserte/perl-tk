@@ -13,7 +13,7 @@ A dialog widget consists of a message, an icon and a set of buttons (see
 the I<-type> option).  After the message window is popped up,  B<messageBox>
 waits  for the user to select one of the buttons and return the button text.
 NOTE:  unlike B<Tk::Dialog> which creates its widget once and can be used
-many times, the B<messageBox> window is created every time its used.
+many times, the B<messageBox> window is created every time it's used.
 
 The following option/value pairs are supported:
 

@@ -2,7 +2,7 @@ package Tk::DragDrop::SunSite;
 require Tk::DropSite;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#6$
+$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#8$
 
 use Tk::DragDrop::SunConst;
 use base  qw(Tk::DropSite);
@@ -27,7 +27,8 @@ sub SunDrop
   {
    eval {local $SIG{__DIE__};  $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_DONE");};
   }
- $w->configure('-relief' => $w->{'_DND_RELIEF_'}) if (defined $w->{'_DND_RELIEF_'})
+ $w->configure('-relief' => $w->{'_DND_RELIEF_'}) if (defined $w->{'_DND_RELIEF_'});
+ $site->Callback(-entercommand => 0, $x, $y);
 }
 
 sub SunPreview
@@ -64,19 +65,20 @@ sub NoteSites
  my ($class,$t,$sites) = @_;
  my $count = @$sites;
  my @data  = (0,0);
+ my ($wrapper,$offset) = $t->wrapper;
  if ($t->viewable)
   {
    my $s;              
    my $i = 0;          
    my @win;            
    my $bx = $t->rootx; 
-   my $by = $t->rooty; 
+   my $by = $t->rooty - $offset; 
    $t->MakeWindowExist;
    foreach $s (@$sites)
     {                  
      my $w = $s->widget; 
      if ($w->viewable) 
-      {                
+      {           
        $w->MakeWindowExist;                                     
        $data[1]++;     
        push(@data,${$w->WindowId});                   # XID     
@@ -94,11 +96,11 @@ sub NoteSites
                 "_SUN_DRAGDROP_INTEREST",           # name
                 "_SUN_DRAGDROP_INTEREST",           # type
                 32,                                 # format 
-                \@data,$t->wrapper);                # the data 
+                \@data,$wrapper);                   # the data 
   }
  else
   {
-   $t->property('delete',"_SUN_DRAGDROP_INTEREST",$t->wrapper);
+   $t->property('delete',"_SUN_DRAGDROP_INTEREST",$wrapper);
   }
 }
 

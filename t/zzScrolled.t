@@ -1,3 +1,4 @@
+# -*- perl -*-
 BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
@@ -6,6 +7,7 @@ use Tk;
 BEGIN { plan tests => 94};
 
 my $mw = Tk::MainWindow->new;
+eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 my $scrl;
 my $text;

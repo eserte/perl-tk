@@ -12,7 +12,7 @@ package Plot;
 require 5.002;
 
 use vars qw/$VERSION @ISA/;
-$VERSION = '3.008'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#8$
+$VERSION = '3.010'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#10$
 
 use Tk::Frame;
 use base  qw(Tk::Frame);
@@ -57,22 +57,22 @@ sub Populate {
     $cw->Advertise('canvas' => $c);
     $c->pack(-side => 'top', -fill => 'x');
 
-    $c->create('line', 100, 250, 400, 250, -width => 2);
-    $c->create('line', 100, 250, 100, 50, -width => 2);
-    $c->create('text', 225, 20, -text => 'A Simple Plot', -font => $plot_font,
+    $c->createLine(100, 250, 400, 250, -width => 2);
+    $c->createLine(100, 250, 100, 50, -width => 2);
+    $c->createText(225, 20, -text => 'A Simple Plot', -font => $plot_font,
 	       -fill => $tc);
     
     my($i, $x, $y, $point, $item);
     for($i = 0; $i <= 10; $i++) {
 	$x = 100 + ($i * 30);
-	$c->create('line', $x, 250, $x, 245, -width => 2);
-	$c->create('text', $x, 254, -text => 10 * $i, -anchor => 'n',
+	$c->createLine($x, 250, $x, 245, -width => 2);
+	$c->createText($x, 254, -text => 10 * $i, -anchor => 'n',
 		   -font => $plot_font);
     } # forend
     for ($i = 0; $i <= 5; $i++) {
 	$y =  250 - ($i * 40);
-	$c->create('line', 100, $y, 105, $y, -width => 2);
-	$c->create('text', 96, $y, -text => $i * 50.0, -anchor => 'e',
+	$c->createLine(100, $y, 105, $y, -width => 2);
+	$c->createText(96, $y, -text => $i * 50.0, -anchor => 'e',
 		   -font => $plot_font);
     } # forend
     
@@ -80,7 +80,7 @@ sub Populate {
 		    [75, 160], [98, 223]) {
 	$x = 100 + (3 * ${$point}[0]);
         $y = 250 - (4 * ${$point}[1]) / 5;
-        $item = $c->create('oval', $x-6, $y-6, $x+6, $y+6, -width => 1,
+        $item = $c->createOval($x-6, $y-6, $x+6, $y+6, -width => 1,
 			   -outline => 'black', -fill => $ih);
         $c->addtag('point', 'withtag', $item);
     }
@@ -91,9 +91,9 @@ sub Populate {
 					'current', -fill => $ih]);
     $c->bind('point', '<1>' => [sub {plot_down(@_)}, \%pinfo]);
     $c->bind('point', '<ButtonRelease-1>' => sub {shift->dtag('selected')});
-    $c->Tk::bind('<B1-Motion>' => [sub {plot_move(@_)}, \%pinfo]);
-    $c->Tk::bind('<2>' => [sub {area_down(@_)}, \%pinfo]);
-    $c->Tk::bind('<B2-Motion>' => [sub {area_move(@_)}, \%pinfo]);
+    $c->CanvasBind('<B1-Motion>' => [sub {plot_move(@_)}, \%pinfo]);
+    $c->CanvasBind('<2>' => [sub {area_down(@_)}, \%pinfo]);
+    $c->CanvasBind('<B2-Motion>' => [sub {area_move(@_)}, \%pinfo]);
 
     my $w_prcmd = $cw->Entry(
         -textvariable => \$pinfo{'prcmd'},
@@ -146,7 +146,7 @@ sub area_move {
     my($x, $y) = ($e->x, $e->y);
     if($x != $pinfo->{'areaX1'} && $y != $pinfo->{'areaY1'}) {
       eval {local $SIG{'__DIE__'}; $w->delete('area');};
-      $w->addtag('area','withtag',$w->create('rect',$pinfo->{'areaX1'},
+      $w->addtag('area','withtag',$w->createRectangle($pinfo->{'areaX1'},
                                            $pinfo->{'areaY1'},$x,$y));
       $pinfo->{'areaX2'} = $x;
       $pinfo->{'areaY2'} = $y;

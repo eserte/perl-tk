@@ -9,10 +9,9 @@ Tk::TextUndo - perl/tk text widget with bindings to undo changes.
 
 =head1 SYNOPSIS
 
-    use Tk::TextUndo;
-    ...
-    $testundo = $parent->TextUndo(?option => value, ...?);
-    ...
+S<    >B<use Tk::TextUndo;>
+
+S<    >I<$testundo> = I<$parent>-E<gt>B<TextUndo>(?I<-option>=E<gt>I<value>, ...?);
 
 =head1 DESCRIPTION
 

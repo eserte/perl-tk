@@ -4,7 +4,7 @@ use 5.004;
 use Carp;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.016'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#16$
+$VERSION = '3.018'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#18$
 
 use Tk;
 use Tk::Toplevel;
@@ -73,11 +73,11 @@ sub Populate {
 			       -command => [\&main::see_code, $demo]);
 
     if ($gm eq 'pack') {
-	$msg->pack;
-	$demo_frame->pack(qw/-fill both/);
 	$buttons->pack(qw/-side bottom -fill x -pady 2m/);
 	$dismiss->pack(qw/-side left -expand 1/);
 	$see->pack(qw/-side left -expand 1/);
+	$msg->pack;
+	$demo_frame->pack(qw/-fill both/);
     } elsif ($gm eq 'grid') {
 	$msg->grid;
 	$demo_frame->grid;

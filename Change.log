@@ -1,3 +1,149 @@
+Change 1031 on 1998/08/06 by nick@camel
+
+	Mwm is meaningless on Win32, update ->wrapper to 
+	new form.
+
+Change 1030 on 1998/08/06 by nick@ni-s
+
+	VERSONS
+
+Change 1029 on 1998/08/06 by nick@pluto
+
+	Fix Drag&Drop with Menubar
+
+Change 1026 on 1998/08/04 by nick@ni-s
+
+	Update VERSION perl-ize 'build' script
+
+Change 1025 on 1998/08/04 by nick@ni-s
+
+	Virtual event <<LeftTab>>
+
+Change 1024 on 1998/08/04 by nick@ni-s
+
+	Key bindings for BrowseEntry
+
+Change 1023 on 1998/08/01 by nick@ni-s
+
+	Fixup some of TixGrid selection mess. 
+	Expect the remaining errors.
+
+Change 1022 on 1998/08/01 by nick@ni-s
+
+	Fix formInfo (superficially...)
+
+Change 1021 on 1998/08/01 by nick@ni-s
+
+	Fixup Mwm and Hlist to pass Achim's tests, add the tests.
+
+Change 1019 on 1998/08/01 by nick@ni-s
+
+	Broken L<>
+
+Change 1017 on 1998/07/31 by nick@ni-s
+
+	Resolve Achim's pod changes
+
+Change 1015 on 1998/07/31 by nick@ni-s
+
+	Achim's demo highlight tweak
+
+Change 1014 on 1998/07/31 by nick@ni-s
+
+	Jason Smith's patch for non-interactive testsuite.
+
+Change 1013 on 1998/07/31 by nick@ni-s
+
+	Update $VERSION in changed files
+
+Change 1012 on 1998/07/31 by nick@ni-s
+
+	Jason Smith's Ballon patch.
+
+Change 1011 on 1998/07/31 by nick@ni-s
+
+	Steve's patches 2&3 (#1 already applied?)
+
+Change 1006 on 1998/07/29 by nick@pluto
+
+	Sort out Alt-x Menu traversal (UNIX)
+
+Change 1005 on 1998/07/28 by nick@pluto
+
+	Fix core dumps when menu of same PathName is re-created
+	Due to Toplevel disassociating itself from menu "Object"
+	Menu had ceased to exist in TK sense so name not known.
+
+Change 1002 on 1998/07/26 by nick@camel
+
+	winMain nop'ed correctly
+	Develop, then comment out work-round for resource kit
+	bug if AS's patch used as-is.
+
+Change 1001 on 1998/07/26 by nick@ni-s
+
+	Add chop test 
+
+Change 1000 on 1998/07/26 by nick@ni-s
+
+	Add test for magic-based tracing of perl variables
+
+Change 999 on 1998/07/26 by nick@ni-s
+
+	Fixup ActiveState merge
+
+Change 998 on 1998/07/26 by nick@ni-s
+
+	Move forward adopting bits of Resource kit 
+
+Change 997 on 1998/07/26 by nick@ni-s
+
+	Re-add leak stuff that ActiveState had...
+
+Change 996 on 1998/07/26 by nick@ni-s
+
+	Reverse engineer Murry's build
+
+Change 995 on 1998/07/22 by nick@ni-s
+
+	Tweaks suggested by Achim, a little more PERL_OBJECT stuff
+
+Change 994 on 1998/07/22 by nick@camel
+
+	Prepare Tkperl for non CAPI guiperl.exe build
+
+Change 993 on 1998/07/22 by nick@camel
+
+	PERL_OBJECT build fixes/workrounds
+
+Change 992 on 1998/07/21 by nick@ni-s
+
+	Theoretical OK for Resource kit
+
+Change 991 on 1998/07/21 by nick@ni-s
+
+	 theo@unix10.acsp.com  patch to option*.pod
+
+Change 990 on 1998/07/21 by nick@pluto
+
+	Cleanup for 5.005 - loose internals over exposure
+
+Change 989 on 1998/07/20 by nick@ni-s
+
+	Undo work-rounds for PL_ stuff in 5.005 to be (fixed by perl now).
+
+Change 988 on 1998/07/19 by nick@ni-s
+
+	Odd tweaks for 5.005-to-be tolerance
+
+Change 987 on 1998/07/18 by nick@ni-s
+
+	Steve's patch 
+
+Change 986 on 1998/07/18 by nick@ni-s
+
+	Tail end of 800.008
+
 Change 985 on 1998/07/17 by nick@ni-s
 
 	Integrate Achim's pod changes as of 1998/07/17

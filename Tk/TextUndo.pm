@@ -6,17 +6,16 @@ require Tk::Text;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/TextUndo.pm#12$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/TextUndo.pm#16$
 
-use base  qw(Tk::Text);
+use base qw(Tk::Text);
 
 Construct Tk::Widget 'TextUndo';
 
 sub ClassInit
 {
  my ($class,$mw) = @_;
- $mw->bind($class,'<L4>','undo');
- $mw->bind($class,'<Control-z>','undo');
+ $mw->bind($class,'<<Undo>>','undo');
  return $class->SUPER::ClassInit($mw);
 }
 
@@ -148,12 +147,4 @@ sub Load
   }
 }
 
-#   We have here no <L4> on our keyboard :-(  So TextUndo needs
-
-#	- document the 'undo' method. so other can use Bind
-#	- an BindUndo method
-#	- or use/document *textUndo.undo resource (defaults
-#	  to <L4>
-
-=cut
 

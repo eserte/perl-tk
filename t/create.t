@@ -1,3 +1,4 @@
+# -*- perl -*-
 BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
@@ -73,6 +74,7 @@ my $mw;
 eval {$mw = Tk::MainWindow->new();};
 ok($@, "", "can't create MainWindow");
 ok(Tk::Exists($mw), 1, "MainWindow creation failed");
+eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 my $w;
 foreach my $class (@class)

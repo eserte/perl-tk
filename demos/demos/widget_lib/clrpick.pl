@@ -28,9 +28,7 @@ sub setColor {
     my $initialColor = $button->cget($name);
     my $color = $button->chooseColor(-title => "Choose a $name color",
 				     -initialcolor => $initialColor);
-    if ($color ne '') {
-	setColor_helper $top, $options, $color;
-    }
+    setColor_helper $top, $options, $color if defined $color;
 }
 
 sub setColor_helper {

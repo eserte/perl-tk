@@ -46,7 +46,6 @@
 #endif
 #include "tkGlue.h"
 #include "tkGlue_f.h"
-#include "leak_util.h"
 
 /* #define DEBUG_REFCNT /* */
 
@@ -97,6 +96,7 @@ static XSdec(XStoEvent);
 static XSdec(BindClientMessage);
 static XSdec(CallbackCall);
 static XSdec(PassEvent);
+static XSdec(XS_Tk_INIT);
 extern XSdec(XS_Tk_DoWhenIdle);
 extern XSdec(XS_Tk_CreateGenericHandler);
 
@@ -663,9 +663,7 @@ Tk_Window tkwin;
  Display *dpy = Tk_Display(tkwin);
  if (dpy)
   XSync(dpy,FALSE);
-
  sv_unmagic((SV *) hv, '~');
-
  Tcl_DeleteInterp(interp);
 }
 
@@ -944,16 +942,29 @@ SV *sv;
        if (SvOBJECT(rv))
         {
          if (SvTYPE(rv) == SVt_PVHV)
-          {
-           Lang_CmdInfo *info = WindowCommand(sv, NULL, 0);
-           if (info)
+          {                                                
+           SV **p = hv_fetch((HV *) rv,"_TkValue_",9,0);
+           if (p)
             {
-             if (info->tkwin)
-              return Tk_PathName(info->tkwin);
-             if (info->image)
-              return SvPV(info->image,na);
+             return SvPV(*p,na);
             }
-           /* If (say) TkValue is in the hash return that ??? */
+           else
+            {
+             Lang_CmdInfo *info = WindowCommand(sv, NULL, 0);
+             if (info)
+              {                
+               if (info->tkwin)
+                {
+                 char *val = Tk_PathName(info->tkwin);
+                 hv_store((HV *) rv,"_TkValue_",9,newSVpv(val,strlen(val)),0);
+                 return val;
+                }
+               if (info->image)
+                {
+                 return SvPV(info->image,na);
+                }
+              }
+            }
           }
          else if (SvPOK(rv))
           {
@@ -2502,6 +2513,14 @@ Tcl_CmdProc *proc;
  TkXSUB(name,XStoTclCmd,proc);
 }
 
+void
+Lang_TkSubCommand(name,proc)
+char *name;
+Tcl_CmdProc *proc;
+{
+ TkXSUB(name,XStoSubCmd,proc);
+}
+
 
 /*
   The bind command is handled specially, it must *always* be called
@@ -3001,6 +3020,7 @@ ClientData clientData;
  struct ufuncs *ufp;
  MAGIC **mgp;
  MAGIC *mg;
+ MAGIC *mg_list;
 
  if (SvTHINKFIRST(sv))
   {
@@ -3033,29 +3053,29 @@ ClientData clientData;
 
  /* We want to be last in the chain so that any
     other magic has been called first
+    save the list so that this magic can be moved to the end
   */
+ mg_list = SvMAGIC(sv);
+ SvMAGIC(sv) = NULL;
+ sv_magic(sv, 0, 'U', 0, 0);
 
- mgp = &SvMAGIC(sv);
- while ((mg = *mgp))
-  {
-   mgp = &mg->mg_moremagic;
-  }
-
- Newz(702, mg, 1, MAGIC);
- mg->mg_moremagic = NULL;
- *mgp = mg;
-
- mg->mg_obj = 0;
- mg->mg_type = 'U';
- mg->mg_len = 0;
- mg->mg_virtual = &vtbl_uvar;
-
- mg_magical(sv);
  New(666, ufp, 1, struct ufuncs);
  ufp->uf_val = 0;
  ufp->uf_set = Perl_Trace;
  ufp->uf_index = (IV) p;
+
+ mg = SvMAGIC(sv);
  mg->mg_ptr = (char *) ufp;
+
+ /* put list back and add mg to end */
+
+ SvMAGIC(sv) = mg_list;
+ mgp = &SvMAGIC(sv);
+ while ((mg_list = *mgp))
+  {
+   mgp = &mg_list->mg_moremagic;
+  }
+ *mgp = mg;
 
  if (!SvMAGICAL(sv))
   abort();
@@ -5009,6 +5029,7 @@ size_t size;
 }
 
 
+static
 XS(XS_Tk_INIT)
 {
  /* Called by Boot_Glue below, re-called in 5.004_50+ at start of run phase. 

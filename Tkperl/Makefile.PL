@@ -11,6 +11,7 @@ else
  }
 
 Tk::MMutil::TkExtMakefile(
+ CAPI       => '',
  MAP_TARGET => '$(INST_BIN)/guiperl$(EXE_EXT)',
  LINKTYPE   => 'static',
  OBJECT     => '$(O_FILES)',

@@ -18,7 +18,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
-#include <malloc.h>
 #include <locale.h>
 #include <stdlib.h>
 
@@ -51,15 +50,19 @@ extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 int
 main(int argc, char *argv[], char *env[])
 {
+#ifndef WIN32
     return (RunPerl(argc, argv, env, NULL));
+#else
+    fprintf(stderr, "Error: RunPerl() is unimplemented on this platform\n");
+    fflush(stderr);
+    abort();
+    return 1;
+#endif
 }
 
 int APIENTRY
-WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
-    HINSTANCE hInstance;
-    HINSTANCE hPrevInstance;
-    LPSTR lpszCmdLine;
-    int nCmdShow;
+WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+        LPSTR lpszCmdLine, int nCmdShow)
 {
     char **argv, **argvlist, *p;
     int argc, size, i;

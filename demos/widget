@@ -312,7 +312,7 @@ sub invoke {
     my $i = lsearch('demo\-.*', @tags);
     return if $i < 0;
     my($demo) = $tags[$i] =~ /demo-(.*)/;
-    $T->tagAdd('visited', "$index linestart", "$index lineend -1 chars");
+    $T->tagAdd('visited', "$index linestart", "$index lineend");
     {
 	no strict 'refs'; 
 	&$demo($demo);

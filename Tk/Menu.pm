@@ -20,7 +20,7 @@ require Tk::Derived;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Menu.pm#20$
+$VERSION = '3.022'; # $Id: //depot/Tk8/Tk/Menu.pm#22$
 
 use strict;
 
@@ -171,6 +171,7 @@ sub ClassInit
  $mw->bind($class,"<Up>",'UpArrow');
  $mw->bind($class,"<Down>",'DownArrow');
  $mw->bind($class,"<KeyPress>", ['TraverseWithinMenu',Ev('A')]);
+ $mw->bind($class,"<Alt-KeyPress>", ['TraverseWithinMenu',Ev('A')]);
  return $class;
 }                     
 
@@ -742,6 +743,26 @@ sub TraverseWithinMenu
     }
   }
 }
+
+sub FindMenu
+{
+ my ($menu,$char) = @_;
+ if ($menu->cget('-type') eq 'menubar')
+  {
+   if (!defined($char) || $char eq '')
+    {
+     $menu->FirstEntry;
+    }           
+   else
+    {
+     $menu->TraverseWithinMenu($char);
+    }
+   return $menu;
+  }
+ return undef;
+}
+
+
 # FirstEntry --
 # Given a menu, this procedure finds the first entry that isn't
 # disabled or a tear-off or separator, and activates that entry.

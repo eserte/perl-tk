@@ -8,10 +8,10 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/MainWindow.pm#23$
+$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/MainWindow.pm#31$
 
 use Tk::CmdLine;
-require Tk;
+use Tk qw(catch);
 require Tk::Toplevel;
 
 use Carp;
@@ -68,18 +68,22 @@ sub InitBindings
 {
  my $mw = shift;
  $mw->bind('all',"<Tab>","focusNext");
- $mw->bind('all',"<Shift-Tab>","focusPrev");  
+ $mw->eventAdd(qw[<<LeftTab>> <Shift-Tab>]);
+ catch {  $mw->eventAdd(qw[<<LeftTab>> <ISO_Left_Tab>]) };
+ $mw->bind('all',"<<LeftTab>>","focusPrev");  
  if ($Tk::platform eq 'unix')
   {
    $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F20> <Meta-Key-w>]);
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F16> <Control-Key-w>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F18> <Control-Key-y>]);
+   $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-Undo> <Key-F14>]);
   }
  else
   {
    $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Shift-Key-Delete>]);
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Control-Key-Insert>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Shift-Key-Insert>]);
+   $mw->eventAdd(qw[<<Undo>> <Control-Key-z>]);
   }
 
  # FIXME - Should these move to Menubutton ? 

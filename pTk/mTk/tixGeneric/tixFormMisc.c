@@ -83,8 +83,7 @@ int TixFm_Info(clientData, interp, argc, argv)
 
 		/* Do you want to know padding? */
 		if (strcmp(argv[1], padNames[i][j]) == 0) {
-		    sprintf(buff, "%d", clientPtr->pad[i][j]);
-		    Tcl_AppendResult(interp, buff, NULL);
+		    Tcl_IntResults(interp, 1, 0, clientPtr->pad[i][j]);
 		    return TCL_OK;
 		}
 	    }
@@ -96,15 +95,15 @@ int TixFm_Info(clientData, interp, argc, argv)
     /* Otherwise, give full info */
 
     for (i=0; i<2; i++) {
-	for (j=0; j<2; j++) {
+	for (j=0; j<2; j++) {     
 	    /* The information about attachment */
-	    Tcl_AppendResult(interp, sideNames[i][j], " ", NULL);
+	    Tcl_AppendElement(interp,sideNames[i][j]);
 	    AttachInfo(interp, clientPtr, i, j);
 
 	    /* The information about padding */
-	    Tcl_AppendResult(interp, padNames[i][j], " ", NULL);
+	    Tcl_AppendElement(interp, padNames[i][j]);
 	    sprintf(buff, "%d", clientPtr->pad[i][j]);
-	    Tcl_AppendResult(interp, buff, " ", NULL);
+	    Tcl_IntResults(interp, 1, 1, clientPtr->pad[i][j]); 
 	}
     }
     return TCL_OK;

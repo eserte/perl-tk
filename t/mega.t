@@ -1,3 +1,4 @@
+# -*- perl -*-
 BEGIN { $|=1; $^W=1; }
 
 use strict;
@@ -13,6 +14,7 @@ use Tk::Button;
 
 
 my $mw = Tk::MainWindow->new;
+eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 ##
 ## Tests Component and therefore Subwidget, Delegate a bit

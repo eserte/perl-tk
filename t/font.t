@@ -38,7 +38,7 @@ my $mw = Tk::MainWindow->new;
 ## SEGV on linux and AIX.
 ##
 {
-  my $fontname = 'fixed';
+  my $fontname = ($^O eq 'MSWin32') ? 'ansifixed': 'fixed';
   eval { $mw->fontMeasure; };
   ok(
 	($@ ne "") , 1,

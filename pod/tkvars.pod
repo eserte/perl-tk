@@ -102,3 +102,6 @@ use B<$Tk::VERSION> described above.
 =head1 KEYWORDS
 
 variables, version
+
+=cut
+
