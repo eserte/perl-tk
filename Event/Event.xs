@@ -472,6 +472,7 @@ PerlIOHandler *filePtr;
    IO *tmpio = GvIOp(filePtr->untied);
    IoIFP(tmpio) = IoIFP(filePtr->io);
    IoOFP(tmpio) = IoOFP(filePtr->io);
+   IoFLAGS(tmpio) = IoFLAGS(filePtr->io);
    return newRV((SV *) filePtr->untied);
   }
  return &PL_sv_undef;

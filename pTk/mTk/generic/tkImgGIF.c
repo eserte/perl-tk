@@ -33,7 +33,6 @@
  */
 
 #include "tkPort.h"
-#include "tkVMacro.h"
 
 /*
  * GIF's are represented as data in base64 format.

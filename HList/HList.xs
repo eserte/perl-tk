@@ -20,8 +20,7 @@
 
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ;
-TixintVtab  *TixintVptr  ;
+DECLARE_TIX;
 
 MODULE = Tk::HList	PACKAGE = Tk
 
@@ -37,6 +36,5 @@ CODE:
 BOOT:
  {
   IMPORT_VTABLES;
-  TixVptr     =     INT2PTR(TixVtab *, SvIV(perl_get_sv("Tk::TixVtab",5)));
-  TixintVptr  =  INT2PTR(TixintVtab *, SvIV(perl_get_sv("Tk::TixintVtab",5)));
+  IMPORT_TIX;
  }

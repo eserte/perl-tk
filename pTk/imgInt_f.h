@@ -2,6 +2,7 @@
 #define IMGINT_VT
 typedef struct ImgintVtab
 {
+ unsigned (*tabSize)(void);
 #define VFUNC(type,name,mem,args) type (*mem) args;
 #define VVAR(type,name,mem)       type (*mem);
 #include "imgInt.t"
@@ -9,5 +10,5 @@ typedef struct ImgintVtab
 #undef VVAR
 } ImgintVtab;
 extern ImgintVtab *ImgintVptr;
-extern ImgintVtab *ImgintVGet _ANSI_ARGS_((void));
+extern ImgintVtab *ImgintVGet(void);
 #endif /* IMGINT_VT */

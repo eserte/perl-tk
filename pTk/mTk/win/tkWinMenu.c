@@ -1134,7 +1134,14 @@ TkWinHandleMenuEvent(phwnd, pMessage, pwParam, plParam, plResult)
 	    	    mePtr = NULL;
 		    if (flags != 0xFFFF) {
 			if (flags & MF_POPUP) {
-			    mePtr = menuPtr->entries[LOWORD(*pwParam)];
+                            int index = LOWORD(*pwParam);
+                            if ((menuPtr->menuType == MENUBAR) && (menuPtr->tearoff)) {
+			    	/* Code above has skipped the tearoff entry on a menubar
+                               	   so Windows's index differs from Tk's
+                             	 */
+				index++;
+                            }
+			    mePtr = menuPtr->entries[index];
 			} else {
 			    hashEntryPtr = Tcl_FindHashEntry(
                                     &tsdPtr->commandTable,

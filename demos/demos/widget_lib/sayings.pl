@@ -19,6 +19,7 @@ sub sayings {
     my $list = $TOP->Scrolled(qw/Listbox -width 20 -height 10 -setgrid 1
 			      -scrollbars se/);
     $list->pack(qw/-expand yes -fill y/);
+    $list->focus;
 
     $list->insert(0,
       'Waste not, want not',
@@ -39,6 +40,8 @@ sub sayings {
       'I\'m mad as hell and I\'m not going to take it any more',
       'An apple a day keeps the doctor away',
       'Don\'t look a gift horse in the mouth');
+
+    $list->activate(0);
 
 } # end sayings
 

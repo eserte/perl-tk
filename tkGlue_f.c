@@ -12,8 +12,10 @@
 #include "pTk/Xlib_f.h"
 #include "tkGlue.h"
 #include "tkGlue_f.h"
+static unsigned TkglueVSize(void) { return sizeof(TkglueVtab);}
 static TkglueVtab TkglueVtable =
 {
+ TkglueVSize,
 #define VFUNC(type,name,mem,args) name,
 #define VVAR(type,name,mem)      &name,
 #include "tkGlue.t"

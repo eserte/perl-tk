@@ -12,11 +12,13 @@
 
 #include <pTk/tkPort.h>
 #include <pTk/tkInt.h>
-#include <pTk/tkImgPhoto.h>
-#include <pTk/tkImgPhoto.m>
-#include <pTk/tkVMacro.h>
 #include <tkGlue.h>
 #include <tkGlue.m>
+#include <pTk/tkImgPhoto.h>
+#include <pTk/tkImgPhoto.m>
+#include "pTk/imgInt.h"
+#include "pTk/imgInt.m"
+#include <pTk/tkVMacro.h>
 
 #undef memcpy
 
@@ -196,7 +198,7 @@ StringReadWindow(interp,dataObj,formatString,imageHandle,
 
 
 DECLARE_VTABLES;
-TkimgphotoVtab *TkimgphotoVptr;
+DECLARE_PHOTO;
 
 MODULE = Tk::WinPhoto	PACKAGE = Tk::WinPhoto
 
@@ -205,7 +207,7 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
-  TkimgphotoVptr  =   (TkimgphotoVtab *) SvIV(FindTkVarName("TkimgphotoVtab",5));    \
+  IMPORT_PHOTO;
   Tk_CreatePhotoImageFormat(&tkImgFmtWindow);
  }
 

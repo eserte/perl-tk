@@ -3,8 +3,10 @@
 #include "Lang.h"
 #include "tkIntXlibDecls.h"
 #include "tkIntXlibDecls_f.h"
+static unsigned TkintxlibdeclsVSize(void) { return sizeof(TkintxlibdeclsVtab);}
 static TkintxlibdeclsVtab TkintxlibdeclsVtable =
 {
+ TkintxlibdeclsVSize,
 #define VFUNC(type,name,mem,args) name,
 #define VVAR(type,name,mem)      &name,
 #include "tkIntXlibDecls.t"
@@ -14,4 +16,3 @@ static TkintxlibdeclsVtab TkintxlibdeclsVtable =
 TkintxlibdeclsVtab *TkintxlibdeclsVptr;
 TkintxlibdeclsVtab *TkintxlibdeclsVGet() { return TkintxlibdeclsVptr = &TkintxlibdeclsVtable;}
 #endif
-

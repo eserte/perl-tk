@@ -2,6 +2,7 @@
 #define TCLDECLS_VT
 typedef struct TcldeclsVtab
 {
+ unsigned (*tabSize)(void);
 #define VFUNC(type,name,mem,args) type (*mem) args;
 #define VVAR(type,name,mem)       type (*mem);
 #include "tclDecls.t"
@@ -9,5 +10,5 @@ typedef struct TcldeclsVtab
 #undef VVAR
 } TcldeclsVtab;
 extern TcldeclsVtab *TcldeclsVptr;
-extern TcldeclsVtab *TcldeclsVGet _ANSI_ARGS_((void));
+extern TcldeclsVtab *TcldeclsVGet(void);
 #endif /* TCLDECLS_VT */

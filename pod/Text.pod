@@ -2144,6 +2144,32 @@ individual widgets or by redefining the class bindings.
 
 =back
 
+=head1 TIED INTERFACE
+
+The Perl/Tk Text widget also has built-in TIEHANDLE methods for
+B<print> and B<printf> statements. This means you can print to file
+handles tied to a Text widget, and the tied methods automatically
+insert the print statement's arguments into the Text widget.
+
+For example:
+
+ #!/usr/local/bin/perl -w
+ use POSIX 'acos';
+ use Tk;
+ use strict;
+
+ my $mw = MainWindow->new;
+ my $text = $mw->Text(qw/-width 40 -height 10/)->pack;
+
+ tie *STDOUT, ref $text, $text;
+
+ print "Hello Text World!\n";
+ printf "pi ~= %1.5f", acos(-1.0);
+
+ MainLoop;
+
+=back
+
 =head1 PERFORMANCE ISSUES
 
 Text widgets should run efficiently under a variety

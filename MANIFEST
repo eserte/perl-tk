@@ -658,6 +658,7 @@ PNG/libpng/scripts/makefile.gcc
 PNG/libpng/scripts/makefile.gcmmx
 PNG/libpng/scripts/makefile.hpgcc
 PNG/libpng/scripts/makefile.hpux
+PNG/libpng/scripts/makefile.hpux.ia64
 PNG/libpng/scripts/makefile.ibmc
 PNG/libpng/scripts/makefile.intel
 PNG/libpng/scripts/makefile.knr

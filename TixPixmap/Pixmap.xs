@@ -20,9 +20,8 @@
 #include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ;
-TixintVtab  *TixintVptr  ;
-TiximgxpmVtab  *TiximgxpmVptr  ;
+DECLARE_TIX;
+DECLARE_TIXXPM;
 
 extern Tk_ImageType tixPixmapImageType;
 
@@ -61,9 +60,7 @@ TkWindow *	win
 BOOT:
  {
   IMPORT_VTABLES;
-  TixVptr     =     INT2PTR(TixVtab *, SvIV(perl_get_sv("Tk::TixVtab",5)));
-  TixintVptr  =  INT2PTR(TixintVtab *, SvIV(perl_get_sv("Tk::TixintVtab",5)));
-  TiximgxpmVptr  =  INT2PTR(TiximgxpmVtab *, SvIV(perl_get_sv("Tk::TiximgxpmVtab",5)));
-
+  IMPORT_TIX;
+  IMPORT_TIXXPM;
   Tk_CreateImageType(&tixPixmapImageType);
  }

@@ -2,6 +2,7 @@
 #define TIXINT_VT
 typedef struct TixintVtab
 {
+ unsigned (*tabSize)(void);
 #define VFUNC(type,name,mem,args) type (*mem) args;
 #define VVAR(type,name,mem)       type (*mem);
 #include "tixInt.t"
@@ -9,5 +10,5 @@ typedef struct TixintVtab
 #undef VVAR
 } TixintVtab;
 extern TixintVtab *TixintVptr;
-extern TixintVtab *TixintVGet _ANSI_ARGS_((void));
+extern TixintVtab *TixintVGet(void);
 #endif /* TIXINT_VT */

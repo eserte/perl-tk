@@ -2,6 +2,7 @@
 #define TKEVENT_VT
 typedef struct TkeventVtab
 {
+ unsigned (*tabSize)(void);
 #define VFUNC(type,name,mem,args) type (*mem) args;
 #define VVAR(type,name,mem)       type (*mem);
 #include "tkEvent.t"
@@ -9,5 +10,5 @@ typedef struct TkeventVtab
 #undef VVAR
 } TkeventVtab;
 extern TkeventVtab *TkeventVptr;
-extern TkeventVtab *TkeventVGet _ANSI_ARGS_((void));
+extern TkeventVtab *TkeventVGet(void);
 #endif /* TKEVENT_VT */

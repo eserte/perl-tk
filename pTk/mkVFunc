@@ -238,6 +238,7 @@ sub Vfunc
      print C "#ifndef ${gard}_VT\n";
      print C "#define ${gard}_VT\n";
      print C "typedef struct ${name}tab\n{\n";
+     print C " unsigned (*tabSize)(void);\n";
      print C "#define VFUNC(type,name,mem,args) type (*mem) args;\n";
      print C "#define VVAR(type,name,mem)       type (*mem);\n";
      print C "#include \"$fdef\"\n";
@@ -245,7 +246,7 @@ sub Vfunc
      print C "#undef VVAR\n";
      print C "} ${name}tab;\n";
      print C "extern ${name}tab *${name}ptr;\n";
-     print C "extern ${name}tab *${name}Get _ANSI_ARGS_((void));\n";
+     print C "extern ${name}tab *${name}Get(void);\n";
      print C "#endif /* ${gard}_VT */\n";
      close(C);
     }
@@ -257,7 +258,9 @@ sub Vfunc
      openRO(\*C,$cfile) || die "Cannot open $cfile:$!";
      print C "#include \"$hfile\"\n";
      print C "#include \"$htfile\"\n";
+     print C "static unsigned ${name}Size(void) { return sizeof(${name}tab);}\n";
      print C "static ${name}tab ${name}table =\n{\n";
+     print C " ${name}Size,\n";
      print C "#define VFUNC(type,name,mem,args) name,\n";
      print C "#define VVAR(type,name,mem)      &name,\n";
      print C "#include \"$fdef\"\n";

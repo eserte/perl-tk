@@ -20,8 +20,7 @@
 #include "tkGlue.h"
 #include "tkGlue.m"
 
-TkeventVtab *TkeventVptr;
-
+DECLARE_EVENT;
 
 #define InputStream PerlIO *
 #define OutputStream PerlIO *
@@ -291,5 +290,5 @@ InputStream	f
 
 BOOT:
  {
-  TkeventVptr  = INT2PTR(TkeventVtab *, SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD)));
+  IMPORT_EVENT;
  }

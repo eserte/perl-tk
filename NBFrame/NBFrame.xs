@@ -20,8 +20,7 @@
 
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ;
-TixintVtab  *TixintVptr  ;
+DECLARE_TIX;
 
 MODULE = Tk::NBFrame	PACKAGE = Tk
 
@@ -34,10 +33,8 @@ CODE:
   TKXSRETURN(XSTkCommand(cv,1,Tix_NoteBookFrameCmd,items,&ST(0)));
  }
 
-
 BOOT:
  {
   IMPORT_VTABLES;
-  TixVptr     =     INT2PTR(TixVtab *, SvIV(perl_get_sv("Tk::TixVtab",5)));
-  TixintVptr  =  INT2PTR(TixintVtab *, SvIV(perl_get_sv("Tk::TixintVtab",5)));
+  IMPORT_TIX;
  }

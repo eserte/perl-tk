@@ -29,13 +29,20 @@ else
    }
   else
    {
-    $file = 'scripts/makefile.std';
-    my %makefiles = map { /makefile\.(.*)/ && ($1 => $_) } glob('scripts/makefile.*');
-    foreach my $arch (sort keys %makefiles)
+    if (($Config{archname} =~ /^IA64\./) && ($^O eq "hpux"))
      {
-      if ($^O =~ /$arch/i)
+      $file = 'scripts/makefile.hpux.ia64';
+     }
+    else
+     {
+      $file = 'scripts/makefile.std';
+      my %makefiles = map { /makefile\.(.*)/ && ($1 => $_) } glob('scripts/makefile.*');
+      foreach my $arch (sort keys %makefiles)
        {
-        $file = $makefiles{$arch};
+        if ($^O =~ /$arch/i)
+         {
+          $file = $makefiles{$arch};
+         }
        }
      }
    }
@@ -45,3 +52,4 @@ else
 copy($file,"Makefile")
    || die "Cannot copy $file to Makefile:$!";
 1;
+

@@ -23,8 +23,7 @@
 extern Tk_PhotoImageFormat	imgFmtJPEG;
 
 DECLARE_VTABLES;
-TkimgphotoVtab *TkimgphotoVptr;
-ImgintVtab *ImgintVptr;
+DECLARE_PHOTO;
 
 MODULE = Tk::JPEG	PACKAGE = Tk::JPEG
 
@@ -33,7 +32,6 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
-  TkimgphotoVptr  =   (TkimgphotoVtab *) SvIV(FindTkVarName("TkimgphotoVtab",5));    \
-  ImgintVptr  =   (ImgintVtab *) SvIV(FindTkVarName("ImgintVtab",5));    \
+  IMPORT_PHOTO;
   Tk_CreatePhotoImageFormat(&imgFmtJPEG);
  }

@@ -51,7 +51,7 @@
 #include "tkGlue.h"
 #include "tkGlue_f.h"
 
-TkeventVtab *TkeventVptr;
+DECLARE_EVENT;
 
 /* #define DEBUG_REFCNT /* */
 
@@ -2334,7 +2334,8 @@ InitVtabs(void)
   */
  if (!initialized)
   {
-   TkeventVptr  = (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));               install_vtab("LangVtab",LangVGet(),sizeof(LangVtab));
+   IMPORT_EVENT;
+   install_vtab("LangVtab",LangVGet(),sizeof(LangVtab));
    install_vtab("TcldeclsVtab",TcldeclsVGet(),sizeof(TcldeclsVtab));
    install_vtab("TkVtab",TkVGet(),sizeof(TkVtab));
    install_vtab("TkdeclsVtab",TkdeclsVGet(),sizeof(TkdeclsVtab));
@@ -5413,9 +5414,13 @@ size_t size;
  dTHX;
  if (table)
   {
-   typedef int (*fptr)_((void));
+   typedef unsigned (*fptr)_((void));
    fptr *q = table;
    unsigned i;
+   if ((*q[0])() != size)
+    {
+     croak("%s table is %u not %u",name,(*q[0])(),(unsigned) size);
+    }
    sv_setiv(FindTkVarName(name,GV_ADD|GV_ADDMULTI),(IV) table);
    if (size % sizeof(fptr))
     {

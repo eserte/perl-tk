@@ -1,10 +1,9 @@
-#include "tkPort.h"
-#include "tk.h"
-#include "tixPort.h"
 #include "tix.h"
 #include "tix_f.h"
+static unsigned TixVSize(void) { return sizeof(TixVtab);}
 static TixVtab TixVtable =
 {
+ TixVSize,
 #define VFUNC(type,name,mem,args) name,
 #define VVAR(type,name,mem)      &name,
 #include "tix.t"

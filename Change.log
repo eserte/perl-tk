@@ -1,3 +1,58 @@
+Change 3173 on 2004/03/07 by nick@llama
+
+	Work round LVs (e.g. substr) not upgrading to UTF-8
+	when asked. (https://rt.cpan.org/Ticket/Display.html?id=5529)
+
+Change 3172 on 2004/03/07 by nick@llama
+
+	fileevent fix for socket with autoflush
+	from MHX@cpan.org (which long been sitting in RT queue)
+
+Change 3171 on 2004/03/06 by nick@llama
+
+	Remove some gcc-isms from PNG/libpng makefile.solaris
+	Based on mail from Mun Johl <mun_johl@sierralogic.com>
+
+Change 3170 on 2004/03/06 by nick@camel
+
+	Allow for possible skipped tearoff entry in a menubar
+	menu when computing index for active element
+	for <<MenuSelect>> etc.
+
+Change 3169 on 2004/03/06 by nick@llama
+
+	Steve's patch to TIEHANDLE docs in Text.
+
+Change 3168 on 2004/03/06 by nick@llama
+
+	HPUX/IA64 fix for libpng from
+	"SEIP,CHRISTOPHER (HP-Roseville,ex1)" <chris.seip@hp.com>
+
+Change 3167 on 2004/03/06 by nick@llama
+
+	Steve's patch to make listbox demos take focus.
+
+Change 3166 on 2004/02/29 by nick@llama
+
+	VTABLE cleanup load side
+
+Change 3165 on 2004/02/29 by nick@llama
+
+	A little more protection on loading
+	wrong vtables.
+
+Change 3164 on 2004/02/29 by nick@llama
+
+	tkImgGIF does not need vtables
+
+Change 3163 on 2004/02/29 by nick@llama
+
+	AIX PNG patch
+
+Change 3162 on 2004/02/28 by nick@llama
+
+	Tk-804.025_beta15 Release Preparation
+
 Change 3161 on 2004/02/28 by nick@llama
 
 	Fix my e-mail address in a few spots

@@ -18,6 +18,7 @@ sub colors {
     my $list = $TOP->Scrolled(qw/Listbox -width 20 -height 16 -setgrid 1
 			      -scrollbars e/);
     $list->pack(qw/-side left -fill y/);
+    $list->focus;
 
     $list->bind('<Double-1>' =>
         sub  {
@@ -76,6 +77,8 @@ MediumOrchid1 MediumOrchid2 MediumOrchid3 MediumOrchid4 DarkOrchid1
 DarkOrchid2 DarkOrchid3 DarkOrchid4 purple1 purple2 purple3 purple4
 MediumPurple1 MediumPurple2 MediumPurple3 MediumPurple4 thistle1
 thistle2 thistle3 thistle4/);
+
+    $list->activate(0);
 
 } # end colors
 

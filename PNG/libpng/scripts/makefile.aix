@@ -42,7 +42,10 @@ CDEBUG = -g -DPNG_DEBUG=5
 LDDEBUG =
 CRELEASE = -O2
 LDRELEASE = -s
+# gcc
 WARNMORE=-Wall
+# AX CC
+WARNMORE=
 CFLAGS = -I$(ZLIBINC) $(WARNMORE) $(CRELEASE)
 LDFLAGS = -L. -L$(ZLIBLIB) -lpng -lz -lm $(LDRELEASE)
 
@@ -58,6 +61,9 @@ OBJS = png$(O) pngerror$(O) pngget$(O) pngmem$(O) pngpread$(O) \
 
 # Targets
 all: libpng$(A) pngtest$(E)
+
+libpng$(A): $(LIBNAME)$(A)
+	ln -s $(LIBNAME)$(A) libpng$(A)
 
 $(LIBNAME)$(A): $(OBJS)
 	$(AR) $@ $(OBJS)
@@ -83,7 +89,7 @@ install: $(LIBNAME)$(A)
 	(cd $(DI); ln -f -s libpng/* .;)
 
 clean:
-	/bin/rm -f *.o $(LIBNAME)$(A) pngtest pngout.png
+	/bin/rm -f *.o $(LIBNAME)$(A) libpng$(A) pngtest pngout.png
 
 png$(O): png.h pngconf.h
 pngerror$(O): png.h pngconf.h

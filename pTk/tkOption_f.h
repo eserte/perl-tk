@@ -2,6 +2,7 @@
 #define TKOPTION_VT
 typedef struct TkoptionVtab
 {
+ unsigned (*tabSize)(void);
 #define VFUNC(type,name,mem,args) type (*mem) args;
 #define VVAR(type,name,mem)       type (*mem);
 #include "tkOption.t"
@@ -9,5 +10,5 @@ typedef struct TkoptionVtab
 #undef VVAR
 } TkoptionVtab;
 extern TkoptionVtab *TkoptionVptr;
-extern TkoptionVtab *TkoptionVGet _ANSI_ARGS_((void));
+extern TkoptionVtab *TkoptionVGet(void);
 #endif /* TKOPTION_VT */

@@ -19,8 +19,7 @@
 #include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ;
-TixintVtab  *TixintVptr  ;
+DECLARE_TIX;
 
 extern Tk_ImageType tixCompoundImageType;
 
@@ -33,7 +32,6 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
-  TixVptr     =     INT2PTR(TixVtab *, SvIV(perl_get_sv("Tk::TixVtab",5)));
-  TixintVptr  =  INT2PTR(TixintVtab *, SvIV(perl_get_sv("Tk::TixintVtab",5)));
+  IMPORT_TIX;
   Tk_CreateImageType(&tixCompoundImageType);
  }

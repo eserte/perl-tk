@@ -3,6 +3,7 @@
 #include "tkPlatDecls.h"
 typedef struct TkplatdeclsVtab
 {
+ unsigned (*tabSize)(void);
 #define VFUNC(type,name,mem,args) type (*mem) args;
 #define VVAR(type,name,mem)       type (*mem);
 #include "tkPlatDecls.t"
@@ -10,5 +11,5 @@ typedef struct TkplatdeclsVtab
 #undef VVAR
 } TkplatdeclsVtab;
 extern TkplatdeclsVtab *TkplatdeclsVptr;
-extern TkplatdeclsVtab *TkplatdeclsVGet _ANSI_ARGS_((void));
+extern TkplatdeclsVtab *TkplatdeclsVGet(void);
 #endif /* TKPLATDECLS_VT */

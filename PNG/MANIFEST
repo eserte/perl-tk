@@ -148,6 +148,7 @@ libpng/scripts/makefile.gcc
 libpng/scripts/makefile.gcmmx
 libpng/scripts/makefile.hpgcc
 libpng/scripts/makefile.hpux
+libpng/scripts/makefile.hpux.ia64
 libpng/scripts/makefile.ibmc
 libpng/scripts/makefile.intel
 libpng/scripts/makefile.knr
