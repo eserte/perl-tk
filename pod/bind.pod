@@ -501,6 +501,14 @@ The B<Tk::Error> mechanism will be executed at same call level,
 and associated with the same B<MainWindow> as
 as the callback was invoked.
 
+=head1 CAVEATS
+
+Note that for the B<Canvas> widget, the call to B<bind> has to be
+fully qualified. This is because there is already a bind method for
+the B<Canvas> widget, which binds individual canvas tags.
+
+S<    >I<$canvas>-E<gt>B<Tk::bind>
+
 =head1 SEE ALSO
 
 L<Tk::Error|Tk::Error>

@@ -2757,7 +2757,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 		continue;
 	    }
 	    else if (strncmp(argv[i], "-at", len) == 0) {
-		if (Tcl_GetInt(interp, argv[i+1], &at) != TCL_OK) {
+		if (Tcl_GetInt(interp, args[i+1], &at) != TCL_OK) {
 		    chPtr = NULL;
 		    goto done;
 		}
@@ -2767,8 +2767,8 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 
 	  copy:
 	    if (n!=i) {
-		argv[n] = argv[i];
-		argv[n+1] = argv[i+1];
+		args[n] = args[i];
+		args[n+1] = args[i+1];
 	    }
 	    n+=2;
 	}

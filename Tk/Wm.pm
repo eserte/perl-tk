@@ -14,13 +14,13 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Wm.pm#18$
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/Wm.pm#21$
 
 use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 
 Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
                        deiconify focusmodel frame geometry group
-                       iconbitmap iconify iconmask iconname
+                       iconbitmap iconify iconimage iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
                        protocol resizable saveunder sizefrom state title transient
                        withdraw wrapper)]);
@@ -47,6 +47,20 @@ sub MoveResizeWindow
  $w->geometry($width.'x'.$height);
  $w->MoveToplevelWindow($x,$y);
  $w->deiconify;
+}   
+
+sub WmDeleteWindow
+{
+ my ($w) = @_;
+ my $cb  = $w->protocol('WM_DELETE_WINDOW');
+ if (defined $cb)
+  {
+   $cb->Call;
+  }
+ else
+  {
+   $w->destroy;
+  }
 }
 
 
@@ -109,7 +123,8 @@ sub Popup
   }
  my ($X,$Y) = AnchorAdjust($w->cget('-overanchor'),$rx,$ry,$rw,$rh);
  ($X,$Y)    = AnchorAdjust($w->cget('-popanchor'),$X,$Y,-$mw,-$mh);
- $w->Post($X,$Y);
+ $w->Post($X,$Y); 
+ $w->waitVisibility;
 }
 
 sub FullScreen

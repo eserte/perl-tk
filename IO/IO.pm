@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/IO/IO.pm#25$
+$VERSION = '3.031'; # $Id: //depot/Tk8/IO/IO.pm#32$
 
 require 5.002;
 require Tk;
@@ -179,145 +179,123 @@ sub close
  return $code;
 }
 
+{package Tk::Event::IO;
+
 sub PrintArgs
 {
  my $func = (caller(1))[3];
  print "$func(",join(',',@_),")\n";
 }
 
-sub TIEHANDLE
-{
- my ($class,$src) = @_;
- my $fh = new IO::Handle;
- *{$fh} = *{*$src}{IO};
- ${*$fh}{Handlers} = {};
- ${*$fh}{imode} = 0;
-$fh2obj{$src} = $fh;
-$obj2fh{$fh} = $src;
- return bless $fh,$class;
-}
-
-sub DESTROY
-{
- my $obj = shift;
-delete $fh2obj{$obj2fh{$obj}};
- $obj->CLOSE;
-}
-
 sub PRINT
 {
- my $h = shift;
+ my $obj = shift;
+ unless ($obj->handler(WRITABLE))
+  {
+   Tk::DoOneEvent(0) until $obj->writable;
+  }
+ my $h = $obj->handle;
  return print $h @_;
-}
+}   
 
 sub PRINTF
 {
- &PrintArgs;
- my $h = shift;
+ my $obj = shift;
+ unless ($obj->handler(WRITABLE))
+  {
+   Tk::DoOneEvent(0) until $obj->writable;
+  }
+ my $h = $obj->handle;
  return printf $h @_;
 }
 
 sub WRITE
 {
- return syswrite($_[0],$_[1],$_[2]);
+ my $obj = $_[0];
+ unless ($obj->handler(WRITABLE))
+  {
+   Tk::DoOneEvent(0) until $obj->writable;
+  }
+ return syswrite($obj->handle,$_[1],$_[2]);
 }
-
+            
+my $depth = 0;
 sub READLINE
-{
- my $h = shift;
- return <$h>;
+{         
+ my $obj = shift;
+ my $h = $obj->handle;
+ unless ($obj->handler(READABLE))
+  {
+   Tk::DoOneEvent(0) until $obj->readable;
+  }
+ my $w = <$h>;
+ return $w;
 }
 
 sub READ
 {
- return sysread($_[0],$_[1],$_[2],defined $_[3] ? $_[3] : 0);
+ my $obj = $_[0];
+ unless ($obj->handler(READABLE))
+  {
+   Tk::DoOneEvent(0) until $obj->readable;
+  }
+ my $h = $obj->handle;
+ return read($h,$_[1],$_[2],defined $_[3] ? $_[3] : 0);
 }
 
 sub GETC
 {
- return getc($_[0]);
+ my $obj = $_[0];
+ unless ($obj->handler(READABLE))
+  {
+   Tk::DoOneEvent(0) until $obj->readable;
+  }
+ my $h = $obj->handle;
+ return getc($h);
 }
 
 sub CLOSE
 {
- my $h = shift;
- my $fd  = fileno($h);
- foreach my $mode (keys %{${*$h}{'Handlers'}})
-  {
-   $h->deleteHandler($mode);
-  }
- DeleteFileHandler($fd) if (defined $fd);
- return $h->close;
+ my $obj = shift;
+ $obj->watch(0);
+ my $h = $obj->handle;
+ return close($h);
+}   
+
 }
 
 sub imode
 {
  my $mode = shift;
- my $imode = ${{'readable' => READABLE(), 'writable' => WRITABLE()}}{$mode};
+ my $imode = ${{'readable' => Tk::Event::IO::READABLE(), 
+                'writable' => Tk::Event::IO::WRITABLE()}}{$mode};
  croak("Invalid handler type '$mode'") unless (defined $imode);
  return $imode;
-}
-
-sub IOready
-{
- my ($h,$rmode) = @_;
- foreach my $mode (keys %{${*$h}{'Handlers'}})
-  {
-   my $imode = imode($mode);
-   if ($rmode & $imode)
-    {
-     ${*$h}{'Handlers'}{$mode}->Call;
-    }
-  }
-}
-
-sub addHandler
-{
- my ($h,$mode,$cb) = @_;
- my $fd = fileno($h);
- croak('Cannot add fileevent to unopened handle') unless defined $fd;
- $cb = Tk::Callback->new($cb);
- my $imode = imode($mode);
- ${*$h}{'Handlers'}{$mode} = $cb;
- unless (${*$h}{'imode'} & $imode)
-  {
-   DeleteFileHandler($fd);
-   CreateFileHandler($fd, ${*$h}{'imode'} |= $imode, $h);
-  }
-}
-
-sub deleteHandler
-{
- my ($h,$mode) = @_;
- my $imode = imode($mode);
- my $fd  = fileno($h);
- if (${*$h}{'imode'} & $imode)
-  {
-   ${*$h}{'imode'} &= ~$imode;
-   if (defined $fd)
-    {
-     DeleteFileHandler($fd);
-     CreateFileHandler($fd, ${*$h}{'imode'}, $h) if (${*$h}{'imode'});
-    }
-  }
- delete ${*$h}{'Handlers'}{$mode};
 }
 
 sub fileevent
 {
  my ($widget,$file,$mode,$cb) = @_;
- croak "Unknown mode '$mode'" unless $mode =~ /^(readable|writable)$/;
+ my $imode = imode($mode);
  unless (ref $file)
   {
    no strict 'refs';
    $file = Symbol::qualify($file,(caller)[0]);
    $file = \*{$file};
   }
- my $obj = (exists $fh2obj{$file} ? $fh2obj{$file} : tie *$file,'Tk::IO', $file);
- $obj->deleteHandler($mode);
- $obj->addHandler($mode,$cb) if ($cb);
+ my $obj = tied(*$file);
+ $obj = tie *$file,'Tk::Event::IO', $file unless $obj && $obj->isa('Tk::Event::IO');
+ if (@_ == 3)
+  {
+   return $obj->handler($imode);
+  }
+ else
+  {
+   $obj->handler($imode,$cb);
+  }
 }
 
 1;
 __END__
+
 

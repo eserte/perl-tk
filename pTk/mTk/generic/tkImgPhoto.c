@@ -906,7 +906,6 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 		pixelPtr[2]);
 	Tcl_AppendResult(interp, string, (char *) NULL);
     } else if ((c == 'p') && (strncmp(strv[1], "put", length) == 0)) {
-        LangFreeProc *srcFreeProc = NULL;
 	/*
 	 * photo put command - first parse the options and colors specified.
 	 */
@@ -949,8 +948,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	    return TCL_ERROR;
 	}
 	Tcl_ResetResult(interp);
-	if (Lang_SplitList(interp, options.name, &dataHeight, &srcArgv, &srcFreeProc)
-		!= TCL_OK) {
+	if (Tcl_ListObjGetElements(interp, options.name, &dataHeight, &srcArgv) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	tkwin = Tk_MainWindow(interp);
@@ -958,9 +956,7 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	dataWidth = 0;
 	pixelPtr = NULL;
 	for (y = 0; y < dataHeight; ++y) {
-            LangFreeProc *listFreeProc = NULL;
-	    if (Lang_SplitList(interp, srcArgv[y], &listArgc, &listArgv,&listFreeProc)
-		    != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, srcArgv[y], &listArgc, &listArgv) != TCL_OK) {
 		break;
 	    }
 	    if (y == 0) {
@@ -973,8 +969,6 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 		    Tcl_AppendResult(interp, "all elements of color list must",
 			     " have the same number of elements",
 			    (char *) NULL);
-		    if (listFreeProc)
-			(*listFreeProc)(listArgc, listArgv);
 		    break;
 		}
 	    }
@@ -982,20 +976,16 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 		if (!XParseColor(Tk_Display(tkwin), Tk_Colormap(tkwin),
 			LangString(listArgv[x]), &color)) {
 		    Tcl_AppendResult(interp, "can't parse color \"",
-			    listArgv[x], "\"", (char *) NULL);
+			    LangString(listArgv[x]), "\"", (char *) NULL);
 		    break;
 		}
 		*pixelPtr++ = color.red >> 8;
 		*pixelPtr++ = color.green >> 8;
 		*pixelPtr++ = color.blue >> 8;
 	    }
-            if (listFreeProc)
-             (*listFreeProc)(listArgc, listArgv);
 	    if (x < dataWidth)
 		break;
 	}
-	if (srcFreeProc)
-	    (*srcFreeProc)(dataHeight, srcArgv);
 	if (y < dataHeight || dataHeight == 0 || dataWidth == 0) {
 	    if (block.pixelPtr != NULL) {
 		ckfree((char *) block.pixelPtr);

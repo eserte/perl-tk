@@ -80,19 +80,6 @@ FileReadWindow(interp, chan, fileName, formatString, imageHandle, destX, destY,
 }                               
 
 
-static IV
-PointToWindow(Tk_Window tkwin, int x, int y)
-{    
- Display *dpy = Tk_Display(tkwin);
- Window root = RootWindowOfScreen(Tk_Screen(tkwin));
- Window win;
- if (!XTranslateCoordinates(dpy, root, root, x, y, &x, &y, &win))
-  {
-   win = None;
-  }           
- return (IV) win;
-}
- 
 static int
 StringMatchWindow(interp, dataObj, formatString, widthPtr, heightPtr)
     Tcl_Interp *interp;
@@ -210,14 +197,6 @@ StringReadWindow(interp,dataObj,formatString,imageHandle,
 
 DECLARE_VTABLES;
 TkimgphotoVtab *TkimgphotoVptr;
-
-MODULE = Tk::WinPhoto	PACKAGE = Tk::Widget
-
-IV
-PointToWindow(tkwin,x,y)
-Tk_Window	tkwin
-int		x
-int		y
 
 MODULE = Tk::WinPhoto	PACKAGE = Tk::WinPhoto
 

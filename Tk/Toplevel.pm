@@ -5,7 +5,7 @@ package Tk::Toplevel;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/Toplevel.pm#19$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Toplevel.pm#23$
 
 use base  qw(Tk::Wm Tk::Frame);
 
@@ -51,13 +51,29 @@ sub Icon
    $lab->DisableButtonEvents;
    $lab->update;
   }
+ $top->iconimage($args{'-image'}) if (exists $args{'-image'});
  $icon->configure(%args);
  $icon->idletasks; # Let size request propogate
  $icon->geometry($icon->ReqWidth . 'x' . $icon->ReqHeight);
  $icon->update;    # Let attributes propogate
  $top->deiconify if ($state eq 'normal');
  $top->iconify   if ($state eq 'iconic');
+}       
+
+sub menu
+{
+ my $w = shift;
+ my $menu;
+ $menu = $w->cget('-menu');                                      
+ unless (defined $menu)
+  {
+   require Tk::Menu;
+   $w->configure(-menu => ($menu = $w->Menu)) 
+  }
+ $menu->configure(@_) if @_;
+ return $menu;
 }
+
 
 1;
 __END__

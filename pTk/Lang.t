@@ -8,16 +8,8 @@ VFUNC(Arg *,LangAllocVec,V_LangAllocVec,_ANSI_ARGS_((int count)))
 VFUNC(void,LangBadFile,V_LangBadFile,_ANSI_ARGS_((int fd)))
 #endif
 
-#ifndef LangCallbackArg
-VFUNC(Arg,LangCallbackArg,V_LangCallbackArg,_ANSI_ARGS_((LangCallback *)))
-#endif
-
 #ifndef LangCmpArg
 VFUNC(int,LangCmpArg,V_LangCmpArg,_ANSI_ARGS_((Arg,Arg)))
-#endif
-
-#ifndef LangCmpCallback
-VFUNC(int,LangCmpCallback,V_LangCmpCallback,_ANSI_ARGS_((LangCallback *a,Arg b)))
 #endif
 
 #ifndef LangCmpOpt
@@ -26,10 +18,6 @@ VFUNC(int,LangCmpOpt,V_LangCmpOpt,_ANSI_ARGS_((char *opt,char *arg,size_t length
 
 #ifndef LangCopyArg
 VFUNC(Arg,LangCopyArg,V_LangCopyArg,_ANSI_ARGS_((Arg)))
-#endif
-
-#ifndef LangCopyCallback
-VFUNC(LangCallback *,LangCopyCallback,V_LangCopyCallback,_ANSI_ARGS_((LangCallback *)))
 #endif
 
 #ifndef LangDebug
@@ -60,10 +48,6 @@ VFUNC(void,LangExit,V_LangExit,_ANSI_ARGS_((int)))
 VFUNC(void,LangFreeArg,V_LangFreeArg,_ANSI_ARGS_((Arg,Tcl_FreeProc *freeProc)))
 #endif
 
-#ifndef LangFreeCallback
-VFUNC(void,LangFreeCallback,V_LangFreeCallback,_ANSI_ARGS_((LangCallback *)))
-#endif
-
 #ifndef LangFreeVar
 VFUNC(void,LangFreeVar,V_LangFreeVar,_ANSI_ARGS_((Var)))
 #endif
@@ -74,10 +58,6 @@ VFUNC(void,LangFreeVec,V_LangFreeVec,_ANSI_ARGS_((int,Arg *)))
 
 #ifndef LangLibraryDir
 VFUNC(char *,LangLibraryDir,V_LangLibraryDir,_ANSI_ARGS_((void)))
-#endif
-
-#ifndef LangMakeCallback
-VFUNC(LangCallback *,LangMakeCallback,V_LangMakeCallback,_ANSI_ARGS_((Arg)))
 #endif
 
 #ifndef LangMergeString
@@ -216,18 +196,9 @@ VFUNC(int,Lang_SplitString,V_Lang_SplitString,_ANSI_ARGS_((Tcl_Interp *interp,
 			    LangFreeProc **)))
 #endif
 
-#ifndef TclServiceIdle
-VFUNC(int,TclServiceIdle,V_TclServiceIdle,_ANSI_ARGS_((void)))
-#endif
-
 #ifndef Tcl_AddErrorInfo
 VFUNC(void,Tcl_AddErrorInfo,V_Tcl_AddErrorInfo,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *message)))
-#endif
-
-#ifndef Tcl_AfterObjCmd
-VFUNC(int,Tcl_AfterObjCmd,V_Tcl_AfterObjCmd,_ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])))
 #endif
 
 #ifndef Tcl_Alloc
@@ -259,28 +230,6 @@ VFUNC(void,Tcl_AppendStringsToObj,V_Tcl_AppendStringsToObj,_ANSI_ARGS_(TCL_VARAR
 VFUNC(void,Tcl_ArgResult,V_Tcl_ArgResult,_ANSI_ARGS_((Tcl_Interp *interp, Arg)))
 #endif
 
-#ifndef Tcl_AsyncCreate
-VFUNC(Tcl_AsyncHandler,Tcl_AsyncCreate,V_Tcl_AsyncCreate,_ANSI_ARGS_((Tcl_AsyncProc *proc,
-			    ClientData clientData)))
-#endif
-
-#ifndef Tcl_AsyncDelete
-VFUNC(void,Tcl_AsyncDelete,V_Tcl_AsyncDelete,_ANSI_ARGS_((Tcl_AsyncHandler async)))
-#endif
-
-#ifndef Tcl_AsyncInvoke
-VFUNC(int,Tcl_AsyncInvoke,V_Tcl_AsyncInvoke,_ANSI_ARGS_((Tcl_Interp *interp,
-			    int code)))
-#endif
-
-#ifndef Tcl_AsyncMark
-VFUNC(void,Tcl_AsyncMark,V_Tcl_AsyncMark,_ANSI_ARGS_((Tcl_AsyncHandler async)))
-#endif
-
-#ifndef Tcl_AsyncReady
-VFUNC(int,Tcl_AsyncReady,V_Tcl_AsyncReady,_ANSI_ARGS_((void)))
-#endif
-
 #ifndef Tcl_BackgroundError
 VFUNC(void,Tcl_BackgroundError,V_Tcl_BackgroundError,_ANSI_ARGS_((Tcl_Interp *interp)))
 #endif
@@ -288,11 +237,6 @@ VFUNC(void,Tcl_BackgroundError,V_Tcl_BackgroundError,_ANSI_ARGS_((Tcl_Interp *in
 #ifndef Tcl_CallWhenDeleted
 VFUNC(void,Tcl_CallWhenDeleted,V_Tcl_CallWhenDeleted,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_InterpDeleteProc *proc,
-			    ClientData clientData)))
-#endif
-
-#ifndef Tcl_CancelIdleCall
-VFUNC(void,Tcl_CancelIdleCall,V_Tcl_CancelIdleCall,_ANSI_ARGS_((Tcl_IdleProc *idleProc,
 			    ClientData clientData)))
 #endif
 
@@ -312,24 +256,6 @@ VFUNC(Tcl_Command,Tcl_CreateCommand,V_Tcl_CreateCommand,_ANSI_ARGS_((Tcl_Interp 
 			    Tcl_CmdDeleteProc *deleteProc)))
 #endif
 
-#ifndef Tcl_CreateEventSource
-VFUNC(void,Tcl_CreateEventSource,V_Tcl_CreateEventSource,_ANSI_ARGS_((
-			    Tcl_EventSetupProc *setupProc,
-			    Tcl_EventCheckProc *checkProc,
-			    ClientData clientData)))
-#endif
-
-#ifndef Tcl_CreateExitHandler
-VFUNC(void,Tcl_CreateExitHandler,V_Tcl_CreateExitHandler,_ANSI_ARGS_((Tcl_ExitProc *proc,
-			    ClientData clientData)))
-#endif
-
-#ifndef Tcl_CreateFileHandler
-VFUNC(void,Tcl_CreateFileHandler,V_Tcl_CreateFileHandler,_ANSI_ARGS_((
-    			    int fd, int mask, Tcl_FileProc *proc,
-			    ClientData clientData)))
-#endif
-
 #ifndef Tcl_CreateInterp
 VFUNC(Tcl_Interp *,Tcl_CreateInterp,V_Tcl_CreateInterp,_ANSI_ARGS_((void)))
 #endif
@@ -339,11 +265,6 @@ VFUNC(Tcl_Command,Tcl_CreateObjCommand,V_Tcl_CreateObjCommand,_ANSI_ARGS_((
 			    Tcl_Interp *interp, char *cmdName,
 			    Tcl_ObjCmdProc *proc, ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc)))
-#endif
-
-#ifndef Tcl_CreateTimerHandler
-VFUNC(Tcl_TimerToken,Tcl_CreateTimerHandler,V_Tcl_CreateTimerHandler,_ANSI_ARGS_((int milliseconds,
-			    Tcl_TimerProc *proc, ClientData clientData)))
 #endif
 
 #ifndef Tcl_DStringAppend
@@ -395,28 +316,6 @@ VFUNC(int,Tcl_DeleteCommandFromToken,V_Tcl_DeleteCommandFromToken,_ANSI_ARGS_((
 			    Tcl_Interp *interp, Tcl_Command command)))
 #endif
 
-#ifndef Tcl_DeleteEventSource
-VFUNC(void,Tcl_DeleteEventSource,V_Tcl_DeleteEventSource,_ANSI_ARGS_((
-			    Tcl_EventSetupProc *setupProc,
-			    Tcl_EventCheckProc *checkProc,
-			    ClientData clientData)))
-#endif
-
-#ifndef Tcl_DeleteEvents
-VFUNC(void,Tcl_DeleteEvents,V_Tcl_DeleteEvents,_ANSI_ARGS_((
-			    Tcl_EventDeleteProc *proc,
-                            ClientData clientData)))
-#endif
-
-#ifndef Tcl_DeleteExitHandler
-VFUNC(void,Tcl_DeleteExitHandler,V_Tcl_DeleteExitHandler,_ANSI_ARGS_((Tcl_ExitProc *proc,
-			    ClientData clientData)))
-#endif
-
-#ifndef Tcl_DeleteFileHandler
-VFUNC(void,Tcl_DeleteFileHandler,V_Tcl_DeleteFileHandler,_ANSI_ARGS_((int fd)))
-#endif
-
 #ifndef Tcl_DeleteHashEntry
 VFUNC(void,Tcl_DeleteHashEntry,V_Tcl_DeleteHashEntry,_ANSI_ARGS_((
 			    Tcl_HashEntry *entryPtr)))
@@ -429,20 +328,6 @@ VFUNC(void,Tcl_DeleteHashTable,V_Tcl_DeleteHashTable,_ANSI_ARGS_((
 
 #ifndef Tcl_DeleteInterp
 VFUNC(void,Tcl_DeleteInterp,V_Tcl_DeleteInterp,_ANSI_ARGS_((Tcl_Interp *interp)))
-#endif
-
-#ifndef Tcl_DeleteTimerHandler
-VFUNC(void,Tcl_DeleteTimerHandler,V_Tcl_DeleteTimerHandler,_ANSI_ARGS_((
-			    Tcl_TimerToken token)))
-#endif
-
-#ifndef Tcl_DoOneEvent
-VFUNC(int,Tcl_DoOneEvent,V_Tcl_DoOneEvent,_ANSI_ARGS_((int flags)))
-#endif
-
-#ifndef Tcl_DoWhenIdle
-VFUNC(void,Tcl_DoWhenIdle,V_Tcl_DoWhenIdle,_ANSI_ARGS_((Tcl_IdleProc *proc,
-			    ClientData clientData)))
 #endif
 
 #ifndef Tcl_DoubleResults
@@ -461,14 +346,6 @@ VFUNC(int,Tcl_EvalObj,V_Tcl_EvalObj,_ANSI_ARGS_((Tcl_Interp *interp,
 #ifndef Tcl_EventuallyFree
 VFUNC(void,Tcl_EventuallyFree,V_Tcl_EventuallyFree,_ANSI_ARGS_((ClientData clientData,
 			    Tcl_FreeProc *freeProc)))
-#endif
-
-#ifndef Tcl_Exit
-VFUNC(void,Tcl_Exit,V_Tcl_Exit,_ANSI_ARGS_((int status)))
-#endif
-
-#ifndef Tcl_Finalize
-VFUNC(void,Tcl_Finalize,V_Tcl_Finalize,_ANSI_ARGS_((void)))
 #endif
 
 #ifndef Tcl_FirstHashEntry
@@ -546,10 +423,6 @@ VFUNC(int,Tcl_GetOpenFile,V_Tcl_GetOpenFile,_ANSI_ARGS_((Tcl_Interp *interp,
 
 #ifndef Tcl_GetResult
 VFUNC(char *,Tcl_GetResult,V_Tcl_GetResult,_ANSI_ARGS_((Tcl_Interp *)))
-#endif
-
-#ifndef Tcl_GetServiceMode
-VFUNC(int,Tcl_GetServiceMode,V_Tcl_GetServiceMode,_ANSI_ARGS_((void)))
 #endif
 
 #ifndef Tcl_GetStringFromObj
@@ -669,11 +542,6 @@ VFUNC(char *,Tcl_PosixError,V_Tcl_PosixError,_ANSI_ARGS_((Tcl_Interp *interp)))
 VFUNC(void,Tcl_Preserve,V_Tcl_Preserve,_ANSI_ARGS_((ClientData data)))
 #endif
 
-#ifndef Tcl_QueueEvent
-VFUNC(void,Tcl_QueueEvent,V_Tcl_QueueEvent,_ANSI_ARGS_((Tcl_Event *evPtr,
-			    Tcl_QueuePosition position)))
-#endif
-
 #ifndef Tcl_Read
 VFUNC(int,Tcl_Read,V_Tcl_Read,_ANSI_ARGS_((Tcl_Channel chan,
 	        	    char *bufPtr, int toRead)))
@@ -704,14 +572,6 @@ VFUNC(Arg,Tcl_ResultArg,V_Tcl_ResultArg,_ANSI_ARGS_((Tcl_Interp *interp)))
 #ifndef Tcl_Seek
 VFUNC(int,Tcl_Seek,V_Tcl_Seek,_ANSI_ARGS_((Tcl_Channel chan,
         		    int offset, int mode)))
-#endif
-
-#ifndef Tcl_ServiceAll
-VFUNC(int,Tcl_ServiceAll,V_Tcl_ServiceAll,_ANSI_ARGS_((void)))
-#endif
-
-#ifndef Tcl_ServiceEvent
-VFUNC(int,Tcl_ServiceEvent,V_Tcl_ServiceEvent,_ANSI_ARGS_((int flags)))
 #endif
 
 #ifndef Tcl_SetAssocData
@@ -751,10 +611,6 @@ VFUNC(void,Tcl_SetLongObj,V_Tcl_SetLongObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 			    long longValue)))
 #endif
 
-#ifndef Tcl_SetMaxBlockTime
-VFUNC(void,Tcl_SetMaxBlockTime,V_Tcl_SetMaxBlockTime,_ANSI_ARGS_((Tcl_Time *timePtr)))
-#endif
-
 #ifndef Tcl_SetObjResult
 VFUNC(void,Tcl_SetObjResult,V_Tcl_SetObjResult,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *resultObjPtr)))
@@ -765,17 +621,9 @@ VFUNC(void,Tcl_SetResult,V_Tcl_SetResult,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, Tcl_FreeProc *freeProc)))
 #endif
 
-#ifndef Tcl_SetServiceMode
-VFUNC(int,Tcl_SetServiceMode,V_Tcl_SetServiceMode,_ANSI_ARGS_((int mode)))
-#endif
-
 #ifndef Tcl_SetStringObj
 VFUNC(void,Tcl_SetStringObj,V_Tcl_SetStringObj,_ANSI_ARGS_((Tcl_Obj *objPtr, 
 			    char *bytes, int length)))
-#endif
-
-#ifndef Tcl_SetTimer
-VFUNC(void,Tcl_SetTimer,V_Tcl_SetTimer,_ANSI_ARGS_((Tcl_Time *timePtr)))
 #endif
 
 #ifndef Tcl_SetVar
@@ -792,10 +640,6 @@ VFUNC(char *,Tcl_SetVar2,V_Tcl_SetVar2,_ANSI_ARGS_((Tcl_Interp *interp,
 #ifndef Tcl_SetVarArg
 VFUNC(char *,Tcl_SetVarArg,V_Tcl_SetVarArg,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Var varName, Arg newValue, int flags)))
-#endif
-
-#ifndef Tcl_Sleep
-VFUNC(void,Tcl_Sleep,V_Tcl_Sleep,_ANSI_ARGS_((int ms)))
 #endif
 
 #ifndef Tcl_SprintfResult
@@ -836,10 +680,6 @@ VFUNC(void,Tcl_UntraceVar2,V_Tcl_UntraceVar2,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_VarTraceProc *proc, ClientData clientData)))
 #endif
 
-#ifndef Tcl_WaitForEvent
-VFUNC(int,Tcl_WaitForEvent,V_Tcl_WaitForEvent,_ANSI_ARGS_((Tcl_Time *timePtr)))
-#endif
-
 #ifndef Tcl_Write
 VFUNC(int,Tcl_Write,V_Tcl_Write,_ANSI_ARGS_((Tcl_Channel chan,
         		    char *s, int slen)))
@@ -848,10 +688,6 @@ VFUNC(int,Tcl_Write,V_Tcl_Write,_ANSI_ARGS_((Tcl_Channel chan,
 #ifndef Tcl_WrongNumArgs
 VFUNC(void,Tcl_WrongNumArgs,V_Tcl_WrongNumArgs,_ANSI_ARGS_((Tcl_Interp *interp,
 			    int objc, Tcl_Obj *CONST objv[], char *message)))
-#endif
-
-#ifndef TclpGetTime
-VFUNC(void,TclpGetTime,V_TclpGetTime,_ANSI_ARGS_((Tcl_Time *time)))
 #endif
 
 #endif /* _LANG */

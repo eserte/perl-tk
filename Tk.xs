@@ -110,6 +110,21 @@ SV *source;
 #define pTk_Synchronize(win,flag) \
    XSynchronize(Tk_Display(win), flag)
 
+static IV
+PointToWindow(Tk_Window tkwin, int x, int y, Window dest)
+{    
+ Display *dpy = Tk_Display(tkwin);
+ Window root = RootWindowOfScreen(Tk_Screen(tkwin));
+ Window win;
+ if (dest == None)
+  dest = root;
+ if (!XTranslateCoordinates(dpy, root, dest, x, y, &x, &y, &win))
+  {
+   win = None;
+  }           
+ return (IV) win;
+}
+
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Const_
 PROTOTYPES: ENABLE
@@ -360,6 +375,33 @@ OUTPUT:
  RETVAL
 
 MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = pTk_
+
+IV
+PointToWindow(tkwin,x,y,parent = None)
+Tk_Window	tkwin
+int		x                    
+int		y
+IV		parent
+
+void
+WindowXY(tkwin,src = None, dst = None)
+Tk_Window	tkwin
+IV		src
+IV		dst
+PPCODE:
+{    
+ Display *dpy = Tk_Display(tkwin);
+ Window root = RootWindowOfScreen(Tk_Screen(tkwin));
+ int x = 0;
+ int y = 0;
+ if (src == None)
+  src = Tk_WindowId(tkwin);
+ if (dst == None)
+  dst = root;
+ XTranslateCoordinates(dpy, src, dst, 0, 0, &x, &y, &root);
+ XPUSHs(sv_2mortal(newSViv(x)));
+ XPUSHs(sv_2mortal(newSViv(y)));
+} 
 
 void
 pTk_DefineBitmap (win, name, width, height, source)

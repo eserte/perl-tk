@@ -238,7 +238,9 @@ extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
  * The following declaration is used to get access to a private Tcl interface
  * that is needed for portability reasons.
  */
-
+        
+#ifndef TclpGetTime
 EXTERN void		TclpGetTime _ANSI_ARGS_((Tcl_Time *time));
+#endif
 
 #endif /* _UNIXPORT */

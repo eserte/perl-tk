@@ -11,6 +11,10 @@
 #  define TkWin32DllPresent (*TkwinintVptr->V_TkWin32DllPresent)
 #endif
 
+#ifndef TkWinCancelMouseTimer
+#  define TkWinCancelMouseTimer (*TkwinintVptr->V_TkWinCancelMouseTimer)
+#endif
+
 #ifndef TkWinClipboardRender
 #  define TkWinClipboardRender (*TkwinintVptr->V_TkWinClipboardRender)
 #endif

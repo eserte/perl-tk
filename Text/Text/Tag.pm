@@ -1,11 +1,11 @@
 package Tk::Text::Tag;
 require Tk::Text;
 
-use overload '''' => \&name;
+use overload '""' => \&name;
 
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Text/Text/Tag.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Text/Text/Tag.pm#5$
 
 sub _apply
 {

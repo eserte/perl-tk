@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#14$
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#18$
 
 sub PreInit
 {
@@ -104,13 +104,18 @@ sub PreInit
  my $tearoff   = delete $minfo->{-tearoff};
  my $items     = delete $minfo->{-menuitems};
  my $widgetvar = delete $minfo->{-menuvar};
+ my $command   = delete $minfo->{-postcommand};
  my $name = delete $minfo->{'Name'};
  $name = $minfo->{'-label'} unless defined $name;
  my @args = ();
  push(@args, '-tearoff' => $tearoff) if (defined $tearoff);
  push(@args, '-menuitems' => $items) if (defined $items);
- my $submenu = $menu->Menu(Name => $name, @args);
- $minfo->{'-menu'} = $submenu;
+ push(@args, '-postcommand' => $command) if (defined $command);
+ my $submenu = $minfo->{'-menu'};
+ unless (defined $submenu)
+  {
+   $minfo->{'-menu'} = $submenu = $menu->Menu(Name => $name, @args);
+  }
  $$widgetvar = $submenu if (defined($widgetvar) && ref($widgetvar));
 }
 

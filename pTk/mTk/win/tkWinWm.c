@@ -86,6 +86,7 @@ typedef struct TkWmInfo {
 				 * get updated if leader is destroyed. */
     Tk_Window icon;		/* Window to use as icon for this window,
 				 * or NULL. */
+    Tk_Image  iconImage;	/* Image used to generate Icon - or NULL */ 
     Tk_Window iconFor;		/* Window for which this window is icon, or
 				 * NULL if this isn't an icon for anyone. */
 
@@ -314,6 +315,9 @@ static void		GetMaxSize _ANSI_ARGS_((WmInfo *wmPtr,
 static void		GetMinSize _ANSI_ARGS_((WmInfo *wmPtr,
 			    int *minWidthPtr, int *minHeightPtr));
 static TkWindow *	GetTopLevel _ANSI_ARGS_((HWND hwnd));
+static void ImageChangedProc _ANSI_ARGS_((ClientData clientData,
+			    int x, int y, int width, int height, 
+			    int imageWidth, int imageHeight));
 static void		InitWm _ANSI_ARGS_((void));
 static int		InstallColormaps _ANSI_ARGS_((HWND hwnd, int message,
 			    int isForemost));
@@ -331,6 +335,7 @@ static void		TopLevelReqProc _ANSI_ARGS_((ClientData dummy,
 			    Tk_Window tkwin));
 static void		UpdateGeometryInfo _ANSI_ARGS_((
 			    ClientData clientData));
+static void		UpdateIcon _ANSI_ARGS_((TkWindow *winPtr));
 static void		UpdateWrapper _ANSI_ARGS_((TkWindow *winPtr));  
 static void		UnmanageGeometry _ANSI_ARGS_((Tk_Window tkwin));
 
@@ -568,6 +573,7 @@ TkWmNewWindow(winPtr)
     wmPtr->hints.window_group = None;
     wmPtr->leaderName = NULL;
     wmPtr->icon = NULL;
+    wmPtr->iconImage = NULL;
     wmPtr->iconFor = NULL;
     wmPtr->sizeHintsFlags = 0;
 
@@ -1006,11 +1012,16 @@ TkWmDeadWindow(winPtr)
 	}
     }
     
-    if (wmPtr->hints.flags & IconPixmapHint) {
-	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
-    }
     if (wmPtr->hints.flags & IconMaskHint) {
 	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_mask);
+    }
+    if (wmPtr->hints.flags & IconPixmapHint) {      
+	if (wmPtr->iconImage) {
+	    Tk_FreePixmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	    Tk_FreeImage(wmPtr->iconImage);
+	} else {
+	    Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	}
     }
     if (wmPtr->leaderName != NULL) {
 	ckfree(wmPtr->leaderName);
@@ -1577,25 +1588,78 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	if (argc == 3) {
-	    if (wmPtr->hints.flags & IconPixmapHint) {
+	    if (wmPtr->hints.flags & IconPixmapHint && !wmPtr->iconImage) {
 		interp->result = Tk_NameOfBitmap(winPtr->display,
 			wmPtr->hints.icon_pixmap);
 	    }
 	    return TCL_OK;
 	}
-	if (*argv[3] == '\0') {
-	    if (wmPtr->hints.icon_pixmap != None) {
+	/* clear any existing pixmap hints and free associated resources */
+	if (wmPtr->hints.icon_pixmap != None) {
+	    if (wmPtr->iconImage) {
+		Tk_FreePixmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	    } else {
 		Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
 	    }
-	    wmPtr->hints.flags &= ~IconPixmapHint;
-	} else {
+	    wmPtr->hints.icon_pixmap = None;
+	}
+	if (wmPtr->iconImage) {
+	    Tk_FreeImage(wmPtr->iconImage);
+	    wmPtr->iconImage = NULL;
+	}
+	wmPtr->hints.flags &= ~IconPixmapHint;
+	if (*argv[3] != '\0') {
 	    pixmap = Tk_GetBitmap(interp, (Tk_Window) winPtr,
 		    Tk_GetUid(argv[3]));
 	    if (pixmap == None) {
+		UpdateIcon(winPtr);
 		return TCL_ERROR;
 	    }
 	    wmPtr->hints.icon_pixmap = pixmap;
 	    wmPtr->hints.flags |= IconPixmapHint;
+	    UpdateIcon(winPtr);
+	}
+    } else if ((c == 'i') && (strncmp(argv[1], "iconimage", length) == 0)
+	    && (length >= 5)) {
+	Pixmap pixmap;
+
+	if ((argc != 3) && (argc != 4)) {
+	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+		    argv[0], " iconimage window ?image?\"",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (argc == 3) {
+	    if (wmPtr->hints.flags & IconPixmapHint && wmPtr->iconImage) {
+		interp->result = Tk_NameOfBitmap(winPtr->display,
+			wmPtr->hints.icon_pixmap);
+	    }
+	    return TCL_OK;
+	}
+	/* clear any existing pixmap hints and free associated resources */
+	if (wmPtr->hints.icon_pixmap != None) {
+	    if (wmPtr->iconImage) {
+		Tk_FreePixmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	    } else {
+		Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	    }
+	    wmPtr->hints.icon_pixmap = None;
+	}
+	if (wmPtr->iconImage) {
+	    Tk_FreeImage(wmPtr->iconImage);
+	    wmPtr->iconImage = NULL;
+	}
+	wmPtr->hints.flags &= ~IconPixmapHint;
+	wmPtr->iconImage = Tk_GetImage(interp, tkwin, argv[3],
+                                       ImageChangedProc, (ClientData) winPtr);
+	if (wmPtr->iconImage != NULL) {       
+	    int width = 0;
+	    int height = 0;
+	    Tk_SizeOfImage(wmPtr->iconImage, &width, &height);
+	    ImageChangedProc((ClientData) winPtr, 0, 0, width, height, width, height);
+	} else {
+	    UpdateIcon(winPtr);
+	    return TCL_ERROR;
 	}
     } else if ((c == 'i') && (strncmp(argv[1], "iconify", length) == 0)
 	    && (length >= 5)) {
@@ -4122,9 +4186,8 @@ WmProc(hwnd, message, wParam, lParam)
 
 	    if (winPtr) { 
 		eventPtr = (ActivateEvent *)ckalloc(sizeof(ActivateEvent));
-		eventPtr->ev.proc = ActivateWindow;
 		eventPtr->winPtr = winPtr;
-		Tcl_QueueEvent((Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
+		Tcl_QueueProcEvent(ActivateWindow, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
 	    }
 	    result = MA_NOACTIVATE;
 	    goto done;
@@ -4357,4 +4420,77 @@ static void UnmanageGeometry(tkwin)
     winPtr->geomData = NULL;
 }
 
+static void
+ImageChangedProc(clientData, x, y, width, height, imageWidth, imageHeight)
+ClientData clientData;
+int x;
+int y;
+int width;
+int height;
+int imageWidth;
+int imageHeight;
+{
+    register TkWindow *winPtr = (TkWindow *) clientData;
+    WmInfo *wmPtr = winPtr->wmInfoPtr;
+    Pixmap old = wmPtr->hints.icon_pixmap;
+    Pixmap pixmap = Tk_GetPixmap(winPtr->display, 
+                    RootWindowOfScreen(Tk_Screen((Tk_Window)winPtr)),
+                    imageWidth, imageHeight, 
+                    DefaultDepthOfScreen(Tk_Screen((Tk_Window)winPtr)));
+    if (pixmap != None) {
+	Tk_RedrawImage(wmPtr->iconImage, 0, 0, imageWidth, imageHeight, pixmap, 0, 0);
+	wmPtr->hints.flags |= IconPixmapHint;
+    } else {
+	wmPtr->hints.flags &= ~IconPixmapHint;
+    }
+    wmPtr->hints.icon_pixmap = pixmap;
+    UpdateIcon(winPtr);
+    if (old != None) {
+	Tk_FreePixmap(winPtr->display, old);
+    }
+}
 
+#if defined(__GNUC__) && !defined(ICON_BIG)
+#define ICON_BIG 1
+#endif
+
+static void
+UpdateIcon(winPtr)
+TkWindow *winPtr;
+{
+    WmInfo *wmPtr = winPtr->wmInfoPtr;
+    Pixmap old = wmPtr->hints.icon_pixmap;
+    int lWidth = GetSystemMetrics(SM_CXICON);
+    int lHeight = GetSystemMetrics(SM_CYICON);
+    ICONINFO info;
+    HICON icon;
+    info.fIcon = TRUE;
+    info.xHotspot = 0;
+    info.yHotspot = 0;
+    if (wmPtr->hints.icon_pixmap)
+     {
+      info.hbmColor  = TkWinGetHBITMAP(wmPtr->hints.icon_pixmap);
+      if (wmPtr->hints.icon_mask)
+       {
+        info.hbmMask  = TkWinGetHBITMAP(wmPtr->hints.icon_mask);
+       }
+      else
+       {
+        int size   = (lWidth+7)/8*lHeight; 
+        char *bits = ckalloc(size);
+        memset(bits,0,size);
+        info.hbmMask  = CreateBitmap(lWidth,lHeight,1,1,bits);
+        ckfree(bits);
+       }
+      icon = CreateIconIndirect(&info);
+      SendMessage(wmPtr->wrapper, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) icon);
+      if (!wmPtr->hints.icon_mask)
+       {
+        DeleteObject(info.hbmMask);
+       }
+     }
+    else
+     {
+      SendMessage(wmPtr->wrapper, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) 0);
+     }
+}

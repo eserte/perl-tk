@@ -1,47 +1,37 @@
 package Tk::DragDrop::Rect;
-
+use Carp;
+  
+# Proxy class which represents sites to the dropping side 
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#4$
-
-sub NewDrag
-{
- my ($class,$widget) = @_;
-}
-
-sub Enter
-{
- my ($site,$token,$event) = @_;
- $token->configure(-relief => 'sunken');
- $token->{'Over'} = $site;
-}
-
-sub Leave
-{
- my ($site,$token,$event) = @_;
- $token->configure(-relief => 'flat');
- delete $token->{'Over'};
-}
-
-sub Motion
-{
- my ($site,$token,$event) = @_;
-}
-
-sub Drop
-{
- my ($site,$win,$seln,$event) = @_;
-}
+$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#7$
 
 sub Over
 {
  my ($site,$X,$Y) = @_;
  my $x = $site->X;
  my $y = $site->Y;
- my $val = ($X >= $x && $X < ($x + $site->width) &&
-         $Y >= $y && $Y < ($y + $site->height));
+ my $w = $site->width;
+ my $h = $site->height;
+ 
+ my $val = ($X >= $x && $X < ($x + $w) && $Y >= $y && $Y < ($y + $h));
  # print "Over ",$site->Show," $X,$Y => $val\n";
  return $val;
+}
+
+sub FindSite
+{
+ my ($class,$widget,$X,$Y) = @_;
+ foreach my $site ($class->SiteList($widget))
+  {
+   return $site if ($site->Over($X,$Y));
+  }
+ return undef;
+}
+
+sub NewDrag
+{
+ my ($class,$widget) = @_;
 }
 
 sub Match

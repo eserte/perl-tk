@@ -13,6 +13,8 @@
  * RCS: @(#) $Id: tclWinNotify.c,v 1.2 1998/09/14 18:40:20 stanton Exp $
  */
 
+#ifdef TCL_EVENT_IMPLEMENT
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winsock.h>
@@ -389,4 +391,4 @@ Tcl_WatchHandle(HANDLE h, Tcl_HandleProc *proc, ClientData clientData)
 }                    
 
 
-
+#endif

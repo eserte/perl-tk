@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.048'; # $Id: //depot/Tk8/Tk/Widget.pm#48$
+$VERSION = '3.050'; # $Id: //depot/Tk8/Tk/Widget.pm#51$
 
 require Tk;
 use AutoLoader;
@@ -436,36 +436,30 @@ sub afterIdle
 
 sub afterCancel
 {
- my $w = shift;
- my $what = shift;
+ my ($w,$what) = @_;
  if (defined $what)
   {
    return $what->cancel if ref($what);
-   carp "dubious cancel of $what";
+   carp "dubious cancel of $what" if 0 && $^W;
    $w->Tk::after('cancel' => $what);
   }
 }
 
 sub after
 {
- require Tk::After;
  my $w = shift;
  my $t = shift;
  if (@_)
   {
-   return Tk::After->new($w,$t,'once',@_) if ($t ne 'cancel');
+   if ($t ne 'cancel')
+    {
+     require Tk::After;                     
+     return Tk::After->new($w,$t,'once',@_) 
+    }
    while (@_)
     {
      my $what = shift;
-     if (ref $what)
-      {
-       $what->cancel;
-      }
-     else
-      {
-       carp "dubious cancel of $what";
-       $w->Tk::after('cancel' => $what);
-      }
+     $w->afterCancel($what);
     }
   }
  else
@@ -482,33 +476,9 @@ sub repeat
  return Tk::After->new($w,$t,'repeat',@_);
 }
 
-sub Inherit
-{
- carp 'Inherit is deprecated - use SUPER::';
- my $w = shift;
- my $method = shift;
- my ($class) = caller;
- *{$class.'::Inherit::ISA'} = \@{$class.'::ISA'} unless (defined @{$class.'::Inherit::ISA'});
- $class .= '::Inherit::';
- $class .= $method;
- return $w->$class(@_);
-}
-
-sub InheritThis
-{
- carp 'InheritThis is deprecated - use SUPER::';
- my $w      = shift;
- my $what   = (caller(1))[3];
- my ($class,$method) = $what =~ /^(.*)::([^:]+)$/;
- *{$class.'::Inherit::ISA'} = \@{$class.'::ISA'} unless (defined @{$class.'::Inherit::ISA'});
- $class .= '::Inherit::';
- $class .= $method;
- return $w->$class(@_);
-}
-
 sub FindMenu
 {
- # default FindMenu is that there no menu.
+ # default FindMenu is that there is no menu.
  return undef;
 }
 

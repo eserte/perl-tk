@@ -233,11 +233,7 @@ typedef long LONG;
  * Note: Tcl_ObjCmdProc procedures do not directly set result and freeProc.
  * Instead, they set a Tcl_Obj member in the "real" structure that can be
  * accessed with Tcl_GetObjResult() and Tcl_SetObjResult().
- */
-
-#ifndef LangCallback
-typedef struct LangCallback *LangCallback;
-#endif
+ */         
 
 #ifndef Tcl_Interp
 typedef struct Tcl_Interp
@@ -895,10 +891,19 @@ typedef struct Tcl_HashSearch {
  * event.
  */
 
+#if defined(USE_TCL_STRUCTS) || defined(TCL_EVENT_IMPLEMENT) 
+
 struct Tcl_Event {
     Tcl_EventProc *proc;	/* Procedure to call to service this event. */
     struct Tcl_Event *nextPtr;	/* Next in list of pending events, or NULL. */
 };
+
+#else 
+struct Tcl_Event {
+    void *(*spaceforproc)(void);
+    void *spaceforlink;
+};
+#endif
 
 /*
  * Positions to pass to Tcl_QueueEvent:
@@ -1402,6 +1407,9 @@ EXTERN void		Tcl_PrintDouble _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN int		Tcl_PutEnv _ANSI_ARGS_((CONST char *string));
 EXTERN void		Tcl_QueueEvent _ANSI_ARGS_((Tcl_Event *evPtr,
 			    Tcl_QueuePosition position));
+EXTERN void		Tcl_QueueProcEvent _ANSI_ARGS_((Tcl_EventProc *proc,
+			    Tcl_Event *evPtr,
+			    Tcl_QueuePosition position));
 EXTERN int		Tcl_Read _ANSI_ARGS_((Tcl_Channel chan,
 	        	    char *bufPtr, int toRead));
 EXTERN void		Tcl_ReapDetachedProcs _ANSI_ARGS_((void));
@@ -1600,11 +1608,6 @@ EXTERN char *Tcl_GetResult _ANSI_ARGS_((Tcl_Interp *));
 EXTERN void Tcl_Panic _ANSI_ARGS_((char *,...));
 #define panic Tcl_Panic
 
-EXTERN LangCallback *LangMakeCallback _ANSI_ARGS_((Arg));
-EXTERN Arg LangCallbackArg _ANSI_ARGS_((LangCallback *));
-EXTERN void LangFreeCallback _ANSI_ARGS_((LangCallback *));
-EXTERN int LangDoCallback _ANSI_ARGS_((Tcl_Interp *,LangCallback *,int result,int argc,...));
-EXTERN int LangMethodCall _ANSI_ARGS_((Tcl_Interp *,Arg,char *,int result,int argc,...));
 
 EXTERN int  LangNull _ANSI_ARGS_((Arg));
 
@@ -1640,10 +1643,6 @@ EXTERN Arg LangVarArg _ANSI_ARGS_((Var));
 EXTERN Arg Tcl_ResultArg _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN Arg LangScalarResult _ANSI_ARGS_((Tcl_Interp *interp));
 
-EXTERN int LangCmpCallback _ANSI_ARGS_((LangCallback *a,Arg b));
-
-EXTERN LangCallback *LangCopyCallback _ANSI_ARGS_((LangCallback *));
-
 EXTERN void		Tcl_WrongNumArgs _ANSI_ARGS_((Tcl_Interp *interp,
 			    int objc, Tcl_Obj *CONST objv[], char *message));
 
@@ -1667,6 +1666,13 @@ EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN int Lang_CallWithArgs _ANSI_ARGS_ ((Tcl_Interp *interp, 
 					char *sub, int argc, Arg *argv));
 
+#ifndef LangCallback
+typedef struct LangCallback *LangCallback;
+#endif
+
+EXTERN int LangDoCallback _ANSI_ARGS_((Tcl_Interp *,LangCallback *,int result,int argc,...));
+EXTERN int LangMethodCall _ANSI_ARGS_((Tcl_Interp *,Arg,char *,int result,int argc,...));
+
 EXTERN char *LangLibraryDir _ANSI_ARGS_((void));
 EXTERN void Lang_SetBinaryResult _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int len, Tcl_FreeProc *freeProc));
@@ -1687,6 +1693,11 @@ EXTERN long Lang_OSHandle _ANSI_ARGS_((int fd));
 #pragma warning(disable:4101 4102 4244 4018)
 #pragma warning(disable:4133) /* init incompatible for xlib */
 #endif
+#endif   
+
+#if !defined(TCL_EVENT_IMPLEMENT)
+#include "tkEvent.h"          
+#include "tkEvent.m"          
 #endif
 
 #endif /* RESOURCE_INCLUDED */

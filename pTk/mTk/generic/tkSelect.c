@@ -550,7 +550,7 @@ Tk_GetXSelection(interp, tkwin, selection, target, proc, clientData)
 
     if (dispPtr->multipleAtom == None) {
 	TkSelInit(tkwin);
-    }
+    }               
 
     /*
      * If the selection is owned by a window managed by this
@@ -1465,7 +1465,12 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
         *formatPtr = 8; 
 	return length;
     }
-
+        
+#if 0
+    LangDebug("Request %s type=%s\n",
+              Tk_GetAtomName((Tk_Window) winPtr, infoPtr->selection),
+              Tk_GetAtomName((Tk_Window) winPtr, target));
+#endif
     return -1;
 }
 

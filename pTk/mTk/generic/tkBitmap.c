@@ -40,6 +40,7 @@
 #include "questhead.bmp"
 #include "question.bmp"
 #include "warning.bmp"
+#include "tk.bmp"
 
 #if defined(__WIN32__) || defined(_WIN32)
 #pragma warning (default : 4305)
@@ -560,6 +561,8 @@ BitmapInit()
 
     Tk_DefineBitmap(dummy, Tk_GetUid("error"), (char *) error_bits,
 	    error_width, error_height);
+    Tk_DefineBitmap(dummy, Tk_GetUid("Tk"), (char *) Tkbmp_bits,
+	    Tkbmp_width, Tkbmp_height);
     Tk_DefineBitmap(dummy, Tk_GetUid("gray75"), (char *) gray75_bits,
 	    gray75_width, gray75_height);
     Tk_DefineBitmap(dummy, Tk_GetUid("gray50"), (char *) gray50_bits,

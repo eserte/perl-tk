@@ -1304,11 +1304,7 @@ Tix_TLInfo(clientData, interp, argc, argv)
 	     chPtr=chPtr->next, i++) {
 	    
 	    if (chPtr->selected) {
-		if (i) {
-		    Tcl_AppendResult(interp, " ", (char *) NULL);
-		}
-		sprintf(buffer, "%d", i);
-		Tcl_AppendResult(interp, buffer, (char *) NULL);
+		Tcl_IntResults(interp,1,1,i);
 	    }
 	}
 	return TCL_OK;

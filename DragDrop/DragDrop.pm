@@ -4,7 +4,7 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#19$
+$VERSION = '3.025'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#25$
 
 use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 
@@ -21,7 +21,13 @@ Construct Tk::Widget 'DragDrop';
 use strict;
 use vars qw(%type @types);
 use Carp;
+                      
 
+# There is a snag with having a token window and moving to 
+# exactly where cursor is - the cursor is "inside" the token 
+# window - hence it is not "inside" the dropsite window
+# so we offset X,Y by OFFSET pixels.
+sub OFFSET () {3}
 
 sub ClassInit
 {
@@ -32,7 +38,6 @@ sub ClassInit
  $mw->bind($class,'<Any-Motion>','Drag');
  return $class;
 }
-
 
 sub Populate
 {
@@ -56,11 +61,13 @@ sub Populate
  $token->overrideredirect(1);
  $token->ConfigSpecs(-sitetypes       => ['METHOD','siteTypes','SiteTypes',undef],
                      -startcommand    => ['CALLBACK',undef,undef,undef],
+                     -endcommand      => ['CALLBACK',undef,undef,undef],
                      -predropcommand  => ['CALLBACK',undef,undef,undef],
                      -postdropcommand => ['CALLBACK',undef,undef,undef],
+                     -delta           => ['PASSIVE','delta','Delta',10],
                      -cursor          => ['SELF','cursor','Cursor','hand2'],
                      -handlers        => ['SETMETHOD','handlers','Handlers',[[[$token,'SendText']]]],
-                     -selection       => ['SETMETHOD','selection','Selection','dnd_' . $parent->toplevel->name],
+                     -selection       => ['SETMETHOD','selection','Selection','XdndSelection'],
                      -event           => ['SETMETHOD','event','Event','<B1-Motion>']
                     );
  $token->{InstallHandlers} = 0;
@@ -119,6 +126,47 @@ sub event
  $w->parent->Tk::bind($value,[$w,'StartDrag']);
 }
 
+# 
+
+sub FindSite
+{
+ my ($token,$X,$Y,$e) = @_;
+ my $site;
+ my $types = $token->sitetypes;
+ if (defined $types && @$types)
+  {
+   foreach my $type (@$types)
+    {
+     my $class = $type{$type};
+     last if (defined($class) && ($site = $class->FindSite($token,$X,$Y)));
+    }
+  }
+ else
+  {
+   warn 'No sitetypes';
+  }                                       
+ my $new = $site || 'undef';
+ my $over = $token->{'Over'};
+ if ($over)
+  {
+   if (!$over->Match($site))
+    {             
+     $over->Leave($token,$e);
+     delete $token->{'Over'};
+    }
+  }
+ if ($site)
+  {
+   unless ($token->{'Over'})
+    {
+     $site->Enter($token,$e); 
+     $token->{'Over'} = $site;
+    }
+   $site->Motion($token,$e) if (defined $site)
+  }
+ return $site;
+}
+
 sub Mapped
 {
  my ($token) = @_;
@@ -130,37 +178,10 @@ sub Mapped
   {
    my $X = $e->X;
    my $Y = $e->Y;
-   $token->MoveToplevelWindow($X,$Y);
+   $token->MoveToplevelWindow($X+OFFSET,$Y+OFFSET);
    $token->NewDrag;
-   $token->FindSite($X,$Y);
+   $token->FindSite($X,$Y,$e);
   }
-}
-
-sub FindSite
-{
- my ($token,$X,$Y) = @_;
- my $types = $token->sitetypes;
- if (defined $types && @$types)
-  {
-   my $type;
-   foreach $type (@$types)
-    {
-     my $site;
-     my $class = $type{$type};
-     if (defined $class)
-      {
-       foreach $site ($class->SiteList($token))
-        {
-         return $site if ($site->Over($X,$Y));
-        }
-      }
-    }
-  }
- else
-  {
-   warn 'No sitetypes';
-  }
- return undef;
 }
 
 sub NewDrag
@@ -175,11 +196,11 @@ sub NewDrag
      my $class = $type{$type};
      if (defined $class)
       {
-       $class->CheckSites($token);
+       $class->NewDrag($token);
       }
     }
   }
-}
+}                      
 
 sub Drag
 {
@@ -188,45 +209,62 @@ sub Drag
  my $X  = $e->X;
  my $Y  = $e->Y;
  $token = $token->toplevel;
- my $site = $token->FindSite($X,$Y);
- my $over = $token->{'Over'};
- if ($over)
-  {
-   if (!defined($site) || !$over->Match($site))
-    {
-     $over->Leave($token,$e);
-     $site->Enter($token,$e) if (defined $site);
-    }
-   else
-    {
-     $over->Motion($token,$e);
-    }
-  }
- elsif (defined $site)
-  {
-   $site->Enter($token,$e);
-  }
- $token->MoveToplevelWindow($X,$Y);
-}
+ $token->MoveToplevelWindow($X+OFFSET,$Y+OFFSET);
+ $token->FindSite($X,$Y,$e);
+}       
 
 sub Done
 {
  my $token = shift;
  my $e     = $token->XEvent;
  $token    = $token->toplevel;
- my $over  = $token->{'Over'};
+ my $over  = delete $token->{'Over'};
  $over->Leave($token,$e) if (defined $over);
  my $w     = $token->parent;
  eval {local $SIG{__DIE__}; $token->grabRelease };
  $token->withdraw;
  delete $w->{'Dragging'};
  $w->update;
+}        
+
+sub AcceptDrop
+{
+ my ($token) = @_;
+ $token->configure(-relief => 'sunken');
+ $token->{'Accepted'} = 1;
+}
+
+sub RejectDrop
+{
+ my ($token) = @_;
+ $token->configure(-relief => 'flat');
+ $token->{'Accepted'} = 0;
 }
 
 sub HandleLoose
 {
  my ($w,$seln) = @_;
  return '';
+}            
+
+sub InstallHandlers
+{
+ my ($token,$seln) = @_;
+ my $w = $token->parent;                  
+ $token->configure(-selection => $seln) if $seln;
+ $seln = $token->cget('-selection');
+ if ($token->{InstallHandlers})
+  {
+   foreach my $h (@{$token->cget('-handlers')})
+    {
+     $w->SelectionHandle('-selection' => $seln,@$h);
+    }
+   $token->{InstallHandlers} = 0;
+  }
+ if (!$w->IS($w->SelectionOwner('-selection'=>$seln)))
+  {
+   $w->SelectionOwn('-selection' => $seln, -command => [\&HandleLoose,$w,$seln]);
+  }
 }
 
 sub Drop
@@ -234,31 +272,25 @@ sub Drop
  my $ewin  = shift;
  my $e     = $ewin->XEvent;
  my $token = $ewin->toplevel;
- Done($ewin);
- my $site  = $token->FindSite($e->X,$e->Y);
+ my $site  = $token->FindSite($e->X,$e->Y,$e);
+ Tk::catch { $token->grabRelease };
  if (defined $site)
   {
    my $seln = $token->cget('-selection');
    unless ($token->Callback(-predropcommand => $seln, $site))
     {
+     my $id = $token->after(2000,[$token,'Done']);
      my $w = $token->parent;
-     if ($token->{InstallHandlers})
-      {
-       my $h;
-       foreach $h (@{$token->cget('-handlers')})
-        {
-         $w->SelectionHandle('-selection' => $seln,@$h);
-        }
-       $token->{InstallHandlers} = 0;
-      }
-     if (!$w->IS($w->SelectionOwner('-selection'=>$seln)))
-      {
-       $w->SelectionOwn('-selection' => $seln, -command => [\&HandleLoose,$w,$seln]);
-      }
-     $site->Drop($w,$seln,$e);
+     $token->InstallHandlers;
+     $site->Drop($token,$seln,$e);
      $token->Callback(-postdropcommand => $seln);
     }
   }
+ else
+  {
+   $token->Done;
+  }
+ $token->Callback('-endcommand');
 }
 
 sub StartDrag
@@ -273,16 +305,18 @@ sub StartDrag
    my $was = $token->{'XY'};
    if ($was)
     {
-     if ($was->[0] != $X || $was->[1] != $Y)
+     my $dx = $was->[0] - $X;
+     my $dy = $was->[1] - $Y;
+     if (sqrt($dx*$dx+$dy*$dy) > $token->cget('-delta')) 
       {
-       unless ($token->Callback('-startcommand'))
+       unless ($token->Callback('-startcommand',$token,$e))
         {
          delete $token->{'XY'};
          $w->{'Dragging'} = $token;
-         $token->MoveToplevelWindow($X,$Y);
+         $token->MoveToplevelWindow($X+OFFSET,$Y+OFFSET);
          $token->raise;
          $token->deiconify;
-         $token->FindSite($X,$Y);
+         $token->FindSite($X,$Y,$e);
         }
       }
     }

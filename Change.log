@@ -1,3 +1,349 @@
+Change 1397 on 1999/07/28 by nick@ni-s
+
+	VERSIONS, perl5.00404 fixes
+	Rename placeholder 'Event' to Tk::Event
+	Some release prep.
+
+Change 1396 on 1999/07/28 by nick@pluto
+
+	5.00558 tweaks
+
+Change 1395 on 1999/07/27 by nick@bactrian_nt
+
+	->iconimg more-or-less works on Win32 (NT4.0 SP4, VC++, ActivePerl)
+
+Change 1394 on 1999/07/27 by nick@bactrian_nt
+
+	Skeleton of iconimg etc.
+
+Change 1393 on 1999/07/27 by nick@pluto
+
+	Implement ->iconimage as alternative to ->iconbitmap or ->iconwin
+
+Change 1392 on 1999/07/26 by nick@ni-s
+
+	Versions etc.
+
+Change 1391 on 1999/07/26 by nick@ni-s
+
+	Raw adoption of Graham's Tk::Pane and Tk::ProgressBar
+
+Change 1389 on 1999/07/26 by nick@pluto
+
+	Allow ->put to work with array data
+
+Change 1387 on 1999/07/24 by nick@bactrian
+
+	Tidy up some more (linux)
+
+Change 1385 on 1999/07/24 by nick@bactrian
+
+	Finish off KDE Drag&Drop
+
+Change 1384 on 1999/07/24 by nick@ni-s
+
+	Renove debug, tidy up 
+
+Change 1383 on 1999/07/24 by nick@ni-s
+
+	Cleanup merge of Greg's TextUndo stuff
+
+Change 1381 on 1999/07/24 by nick@bactrian
+
+	Check in raw PTkFM
+
+Change 1380 on 1999/07/24 by nick@ni-s
+
+	$VERSION updates
+
+Change 1379 on 1999/07/24 by nick@ni-s
+
+	More Greg edits to editor stuff
+
+Change 1378 on 1999/07/24 by nick@ni-s
+
+	Greg's latest TextUndo 
+
+Change 1377 on 1999/07/23 by nick@pluto
+
+	File manager work and associated tweaks to DragDrop
+
+Change 1376 on 1999/07/22 by nick@bactrian
+
+	Start if TList based filemanager
+
+Change 1375 on 1999/07/22 by nick@pluto
+
+	Text to graphics stuff for canvas
+
+Change 1374 on 1999/07/19 by nick@bactrian2
+
+	Add dummy drop-side to Win32 stuff
+
+Change 1373 on 1999/07/19 by nick@ni-s
+
+	Out of date vtables 
+
+Change 1372 on 1999/07/16 by nick@pluto
+
+	Fixup Sun Drag&Drop - now does not need dropsite manager.
+
+Change 1371 on 1999/07/14 by nick@ni-s
+
+	auto $VERSION
+
+Change 1370 on 1999/07/14 by nick@pluto
+
+	Tolerate KDE drag&drop, beginings of supporting it.
+
+Change 1369 on 1999/07/13 by nick@pluto
+
+	Best guess at XDND working between perl/Tk apps.
+
+Change 1368 on 1999/07/12 by nick@pluto
+
+	Implement XDNDSite protocol
+
+Change 1367 on 1999/07/11 by nick@ni-s
+
+	Tidy local drops
+
+Change 1366 on 1999/07/11 by nick@ni-s
+
+	Re-work Dropping side 
+
+Change 1365 on 1999/07/11 by nick@ni-s
+
+	Make 'property' handle incoming numeric Atom-s.
+
+Change 1364 on 1999/07/10 by nick@ni-s
+
+	XDND dropping nearly working.
+
+Change 1363 on 1999/07/09 by nick@ni-s
+
+	Move PointToWindow to core and enhance it.
+
+Change 1362 on 1999/07/09 by nick@bactrian
+
+	Skeleton XDND support
+
+Change 1361 on 1999/07/08 by nick@pluto
+
+	Use ->SetCursor in ->Button1
+
+Change 1360 on 1999/07/06 by nick@pluto
+
+	Tolerate egcs-1.1.2 warning behaviour
+
+Change 1358 on 1999/07/02 by nick@pluto
+
+	Re-worked filevent working (Solaris)
+
+Change 1357 on 1999/07/01 by nick@ni-s
+
+	Re-work tie scheme for Event::IO/Tk::IO/fileevent
+
+Change 1356 on 1999/06/30 by nick@bactrian
+
+	Update Tk::IO to use new Event::CreateIOHandler to mimic
+	fileevent rather than Tcl_CreateFileHandler.
+
+Change 1355 on 1999/06/30 by nick@ni-s
+
+	Add file to depot
+
+Change 1354 on 1999/06/30 by nick@pluto
+
+	Move Callback to Tk::Event module
+
+Change 1353 on 1999/06/26 by nick@bactrian
+
+	Allow ->fileevent(handle,mode) to "inquire" current callback.
+
+Change 1352 on 1999/06/26 by nick@bactrian
+
+	Avoid uninialized warnings from egcs.
+
+Change 1349 on 1999/06/22 by nick@bactrian
+
+	Update README to say built under linux
+
+Change 1348 on 1999/06/13 by nick@camel
+
+	Tidy up Event.xs signal stuff to not crash on Win32
+	Debug for socket part of ptked.
+
+Change 1347 on 1999/06/13 by nick@ni-s
+
+	Optional (and prototype) "Plug" into perl signal handling.
+
+Change 1346 on 1999/06/13 by nick@ni-s
+
+	Use socket to avoid startup cost
+
+Change 1345 on 1999/06/12 by nick@ni-s
+
+	Fix -at -after etc in HList.
+	Re-word docs on focusNext
+
+Change 1344 on 1999/06/12 by nick@ni-s
+
+	Virtual Event <<Redo>>
+
+Change 1343 on 1999/06/12 by nick@ni-s
+
+	Version update
+
+Change 1342 on 1999/06/12 by nick@ni-s
+
+	Use get(Save|Open)File for TextUndo menu items
+
+Change 1341 on 1999/06/12 by nick@ni-s
+
+	Tidy up Tk::after support
+
+Change 1340 on 1999/06/10 by nick@ni-s
+
+	AutoScan fixup.
+
+Change 1339 on 1999/06/08 by nick@ni-s
+
+	Another merge of Greg's 'gedi' stuff
+
+Change 1338 on 1999/06/06 by nick@ni-s
+
+	Resonably stable integration of Greg's stuff
+
+Change 1337 on 1999/06/06 by nick@ni-s
+
+	Remove extra waitVisibility
+
+Change 1336 on 1999/06/06 by nick@ni-s
+
+	Remove extra waitVisibility
+
+Change 1335 on 1999/06/06 by nick@ni-s
+
+	Make Dialog a decendant of DialogBox.
+	Allow -menu to be passed in to a ->cascade
+	Wait for visibility after Popup.
+
+Change 1334 on 1999/06/03 by nick@ni-s
+
+	New Text feature cleanup
+
+Change 1333 on 1999/06/03 by nick@ni-s
+
+	VERSIONS of DIalog fixes.
+
+Change 1332 on 1999/06/03 by nick@ni-s
+
+	Raw merge of Greg Bartels <gbartels@xli.com> Text and TextUndo 
+	changes.
+
+Change 1331 on 1999/05/31 by nick@ni-s
+
+	Avoid problems when mouse strays into (say) entry part
+	of a browseentry.
+
+Change 1330 on 1999/05/31 by nick@ni-s
+
+	Fix <Return> binding of dialogs
+
+Change 1329 on 1999/05/31 by nick@ni-s
+
+	More suggestions from the list
+
+Change 1328 on 1999/05/29 by nick@ni-s
+
+	VERSION updates, add to MANIFEST
+
+Change 1327 on 1999/05/29 by nick@ni-s
+
+	Seek out and apply patches from all mailboxes.
+
+Change 1326 on 1999/05/27 by nick@ni-s
+
+	Fixup 5.005_57+ #if mess
+
+Change 1324 on 1999/05/26 by nick@ni-s
+
+	MANIFEST updates
+
+Change 1323 on 1999/05/24 by nick@pluto
+
+	Allow grepc -e <expr>
+
+Change 1320 on 1999/05/16 by nick@camel
+
+	Leaky Win32 edits to derived files
+
+Change 1318 on 1999/05/15 by nick@ni-s
+
+	Back out 1/2 done thought
+
+Change 1317 on 1999/05/14 by nick@ni-s
+
+	Default postion to tail
+
+Change 1315 on 1999/05/01 by nick@ni-s
+
+	Fix typo in overload
+	Destroy messageBox dialogs (from Steve)
+
+Change 1314 on 1999/05/01 by nick@ni-s
+
+	Set event proc (via API) in delayed motion handler
+
+Change 1306 on 1999/04/11 by nick@camel
+
+	Win32 event API works
+
+Change 1303 on 1999/04/10 by nick@ni-s
+
+	Slightly better typemap
+
+Change 1302 on 1999/04/10 by nick@ni-s
+
+	VTable file updates
+
+Change 1301 on 1999/04/10 by nick@ni-s
+
+	"Stupid" typemap for Event
+
+Change 1300 on 1999/04/10 by nick@ni-s
+
+	Win32 Handle stuff
+
+Change 1299 on 1999/04/10 by nick@ni-s
+
+	Guess at Event/Win32 issues MANIFEST etc.
+
+Change 1298 on 1999/04/10 by nick@ni-s
+
+	Auto VERSION
+
+Change 1297 on 1999/04/10 by nick@ni-s
+
+	Make perforce version aware of Event.pm
+
+Change 1296 on 1999/04/10 by nick@ni-s
+
+	Event API as separate extension
+
+Change 1295 on 1999/04/10 by nick@ni-s
+
+	Separate Vtable for event API.
+
+Change 1291 on 1999/04/05 by nick@ni-s
+
+	MANIFEST updates
+
+Change 1290 on 1999/04/05 by nick@ni-s
+
+	Pre-release tidy up (including loosing @ISA from use vars).
+
 Change 1289 on 1999/04/05 by nick@ni-s
 
 	Attempt to merge Photo docs

@@ -876,6 +876,24 @@ Tk_QueueWindowEvent(eventPtr, position)
 	}
     }
 
+    if (eventPtr->xany.window == PointerWindow && eventPtr->type == ClientMessage) 
+     {         
+      /* XDE Drag&Drop does SendEvent to 0 which is "PointerWindow".
+         X does not fill in real Window so do so here
+         The pointer may have moved - but what else can we do ?
+       */
+      Window root = DefaultRootWindow(eventPtr->xany.display);
+      Window child = None;       
+      int rx, ry, wx, wy, mask;
+      if (!XQueryPointer(eventPtr->xany.display, root, &root, &child, &rx, &ry, &wx, &wy, &mask) || child == None)
+       child = root;
+      while (child != None)
+       {                                                                   
+        eventPtr->xany.window = child;
+        XTranslateCoordinates(eventPtr->xany.display, root, child, rx, ry, &wx, &wy, &child);
+       }
+    }
+
     if ((dispPtr->delayedMotionPtr != NULL) && (position == TCL_QUEUE_TAIL)) {
 	if ((eventPtr->type == MotionNotify) && (eventPtr->xmotion.window
 		== dispPtr->delayedMotionPtr->event.xmotion.window)) {
@@ -896,14 +914,13 @@ Tk_QueueWindowEvent(eventPtr, position)
 	     * the new event.
 	     */
 
-	    Tcl_QueueEvent(&dispPtr->delayedMotionPtr->header, position);
+	    Tcl_QueueProcEvent(WindowEventProc, &dispPtr->delayedMotionPtr->header, position);
 	    dispPtr->delayedMotionPtr = NULL;
 	    Tcl_CancelIdleCall(DelayedMotionProc, (ClientData) dispPtr);
 	}
     }
 
     wevPtr = (TkWindowEvent *) ckalloc(sizeof(TkWindowEvent));
-    wevPtr->header.proc = WindowEventProc;
     wevPtr->event = *eventPtr;
     if ((eventPtr->type == MotionNotify) && (position == TCL_QUEUE_TAIL)) {
 	/*
@@ -918,7 +935,7 @@ Tk_QueueWindowEvent(eventPtr, position)
 	dispPtr->delayedMotionPtr = wevPtr;
 	Tcl_DoWhenIdle(DelayedMotionProc, (ClientData) dispPtr);
     } else {
-	Tcl_QueueEvent(&wevPtr->header, position);
+	Tcl_QueueProcEvent(WindowEventProc, &wevPtr->header, position);
     }
 }
 
@@ -1047,7 +1064,7 @@ DelayedMotionProc(clientData)
     if (dispPtr->delayedMotionPtr == NULL) {
 	panic("DelayedMotionProc found no delayed mouse motion event");
     }
-    Tcl_QueueEvent(&dispPtr->delayedMotionPtr->header, TCL_QUEUE_TAIL);
+    Tcl_QueueProcEvent(WindowEventProc, &dispPtr->delayedMotionPtr->header, TCL_QUEUE_TAIL);
     dispPtr->delayedMotionPtr = NULL;
 }
 

@@ -12,6 +12,7 @@ package Tk;
 require 5.00404;
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
+use     Tk::Event ();
 require Exporter;
 use base qw(Exporter DynaLoader);
 
@@ -44,7 +45,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.0';
 $Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.014';
+$Tk::VERSION     = '800.015';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -256,8 +257,11 @@ sub MessageBox {
 	    defined $args->{-default};
 	if (not defined $args->{-default_button} and scalar(@buttons) == 1) {
 	   $args->{-default_button} = $buttons[0];
-	}
-	return $parent->Dialog(%$args)->Show;
+	}  
+        my $md = $parent->Dialog(%$args);
+        my $an = $md->Show;
+        $md->destroy;
+        return $an;
     }
 } # end messageBox
 

@@ -11,7 +11,6 @@
  *
  * RCS: @(#) $Id: tclTimer.c,v 1.2 1998/09/14 18:40:02 stanton Exp $
  */
-
 #include "tkPort.h"
 #include "Lang.h"
 
@@ -113,12 +112,14 @@ static int idleGeneration;	/* Used to fill in the "generation" fields
  * Prototypes for procedures referenced only in this file:
  */
 
+#ifndef TCL_EVENT_IMPLEMENT
 static void		AfterCleanupProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp));
 static void		AfterProc _ANSI_ARGS_((ClientData clientData));
 static void		FreeAfterPtr _ANSI_ARGS_((AfterInfo *afterPtr));
 static AfterInfo *	GetAfterEvent _ANSI_ARGS_((AfterAssocData *assocPtr,
 			    char *string));
+#else
 static void		InitTimer _ANSI_ARGS_((void));
 static void		TimerExitProc _ANSI_ARGS_((ClientData clientData));
 static int		TimerHandlerEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
@@ -127,6 +128,9 @@ static void		TimerCheckProc _ANSI_ARGS_((ClientData clientData,
 			    int flags));
 static void		TimerSetupProc _ANSI_ARGS_((ClientData clientData,
 			    int flags));
+#endif
+#ifdef TCL_EVENT_IMPLEMENT
+
 
 /*
  *----------------------------------------------------------------------
@@ -201,7 +205,8 @@ TimerExitProc(clientData)
  *	exactly once.
  *
  *--------------------------------------------------------------
- */
+ */   
+
 
 Tcl_TimerToken
 Tcl_CreateTimerHandler(milliseconds, proc, clientData)
@@ -689,7 +694,10 @@ TclServiceIdle()
 	Tcl_SetMaxBlockTime(&blockTime);
     }
     return 1;
-}
+}   
+
+#else
+
 
 /*
  *----------------------------------------------------------------------
@@ -1101,3 +1109,5 @@ AfterCleanupProc(clientData, interp)
     }
     ckfree((char *) assocPtr);
 }
+     
+#endif

@@ -111,7 +111,7 @@ at the tab position;  if there is no decimal point then the least
 significant digit of the number is positioned just to the left of the
 tab position;  if there is no number in the text then the text is
 right-justified at the tab position.
-For example, B<-tabs =E<gt> "2c left 4c 6c center"> creates three
+For example, B<-tabs =E<gt> [qw/2c left 4c 6c center/]> creates three
 tab stops at two-centimeter intervals;  the first two use left
 justification and the third uses center justification.
 If the list of tab stops does not have enough elements to cover all

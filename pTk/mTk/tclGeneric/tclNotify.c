@@ -15,9 +15,10 @@
  *
  * RCS: @(#) $Id: tclNotify.c,v 1.3 1998/10/14 21:12:09 rjohnson Exp $
  */
-
 #include "tkPort.h"
 #include "Lang.h"
+
+#ifdef TCL_EVENT_IMPLEMENT
 
 /*
  * The following static indicates whether this module has been initialized.
@@ -308,6 +309,35 @@ Tcl_QueueEvent(evPtr, position)
 	    notifier.lastEventPtr = evPtr;
 	}
     }
+}
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tcl_QueueProcEvent --
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+Tcl_QueueProcEvent(proc, evPtr, position)
+    Tcl_EventProc *proc;	
+    Tcl_Event* evPtr;		/* Event to add to queue.  The storage
+				 * space must have been allocated the caller
+				 * with malloc (ckalloc), and it becomes
+				 * the property of the event queue.  It
+				 * will be freed after the event has been
+				 * handled. */
+    Tcl_QueuePosition position;	/* One of TCL_QUEUE_TAIL, TCL_QUEUE_HEAD,
+				 * TCL_QUEUE_MARK. */
+{
+    evPtr->proc = proc;
+    Tcl_QueueEvent(evPtr, position);
 }
 
 /*
@@ -881,3 +911,5 @@ Tcl_ServiceAll()
     notifier.serviceMode = TCL_SERVICE_ALL;
     return result;
 }
+
+#endif

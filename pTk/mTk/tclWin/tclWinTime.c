@@ -11,7 +11,7 @@
  *
  * RCS: @(#) $Id: tclWinTime.c,v 1.2 1998/09/14 18:40:20 stanton Exp $
  */
-
+#ifdef TCL_EVENT_IMPLEMENT
 #include "tkPort.h"
 #include "Lang.h"
 
@@ -381,3 +381,5 @@ ComputeGMT(tp)
 
     return &tm;
 }
+
+#endif

@@ -34,8 +34,6 @@ typedef struct
   int eof; 
  } nIO_read;
 
-static void CallbackHandler _((ClientData clientData, int mask));
-
 static void read_handler _((ClientData clientData, int mask));
 static void
 read_handler(clientData, mask)
@@ -72,20 +70,6 @@ int mask;
     }
    SvPVX(buf)[SvCUR(buf)] = '\0';
   }
-}
-
-static void
-CallbackHandler(clientData, mask)
-ClientData clientData;
-int mask;
-{
- dSP;
- SV *handle = (SV *) clientData;
- PUSHMARK(sp);
- XPUSHs(sv_2mortal(newRV(handle)));
- XPUSHs(sv_2mortal(newSViv(mask)));   
- PUTBACK;
- perl_call_method("IOready", G_DISCARD);
 }
 
 static int restore_mode _((PerlIO *f,int mode));
@@ -180,42 +164,6 @@ SV *sv;
   }
  return 0;
 }
-
-#define Const_READABLE() TCL_READABLE
-#define Const_WRITABLE() TCL_WRITABLE
-#define Const_EXCEPTION() TCL_EXCEPTION
-
-MODULE = Tk::IO	PACKAGE = Tk::IO PREFIX = Const_
-
-PROTOTYPES: DISABLE
-
-int
-Const_READABLE()
-
-int
-Const_WRITABLE()
-
-int
-Const_EXCEPTION()
-
-MODULE = Tk::IO	PACKAGE = Tk::IO PREFIX = Tcl_
-
-PROTOTYPES: DISABLE
-
-
-void
-Tcl_CreateFileHandler(fd,mode,obj)
-int	fd
-int	mode
-SV *	obj
-CODE:
- {
-  Tcl_CreateFileHandler(fd, mode, CallbackHandler , (ClientData) SvRV(obj));
- }
-
-void
-Tcl_DeleteFileHandler(fd)
-int	fd
 
 MODULE = Tk::IO	PACKAGE = Tk::IO
 
@@ -339,8 +287,6 @@ InputStream	f
      croak("Cannot make non-blocking");
     }
   }
-
-
 
 BOOT:
  {

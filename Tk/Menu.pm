@@ -20,7 +20,7 @@ require Tk::Derived;
 
 
 use vars qw($VERSION);
-$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/Menu.pm#30$
+$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/Menu.pm#31$
 
 use strict;
 
@@ -515,7 +515,7 @@ sub Invoke
  elsif ($w->typeIS('active','tearoff'))
   {
    $w->Unpost();
-   $w->TearOffMenu();
+   $w->tearOffMenu();
   }
  elsif ($w->typeIS('active','menubar'))
   {
@@ -932,7 +932,7 @@ sub GenerateMenuSelect
 #
 # Arguments:
 # w - The menu to be torn-off (duplicated).
-sub TearOffMenu
+sub tearOffMenu
 {
  my $w = shift;
  my $x = (@_) ? shift : 0;

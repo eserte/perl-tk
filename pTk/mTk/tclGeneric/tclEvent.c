@@ -13,7 +13,6 @@
  *
  * RCS: @(#) $Id: tclEvent.c,v 1.3 1998/09/14 18:39:58 stanton Exp $
  */
-
 #include "tkPort.h"
 #include "tkInt.h"
 #include "Lang.h"
@@ -67,6 +66,8 @@ typedef struct ExitHandler {
 				 * this application, or NULL for end of list. */
 } ExitHandler;
 
+#ifdef TCL_EVENT_IMPLEMENT
+
 static ExitHandler *firstExitPtr = NULL;
 				/* First in list of all exit handlers for
 				 * application. */
@@ -88,6 +89,9 @@ char *tclMemDumpFileName = NULL;
  */
 
 static int tclInExit = 0;
+
+#endif
+
 
 /*
  * Prototypes for procedures referenced only in this file:
@@ -390,6 +394,8 @@ BgErrorDeleteProc(clientData, interp)
     Tcl_EventuallyFree((ClientData) assocPtr, TCL_DYNAMIC);
 }
 #endif
+#ifdef TCL_EVENT_IMPLEMENT
+
 
 /*
  *----------------------------------------------------------------------
@@ -407,7 +413,8 @@ BgErrorDeleteProc(clientData, interp)
  *	application exits.
  *
  *----------------------------------------------------------------------
- */
+ */      
+
 
 void
 Tcl_CreateExitHandler(proc, clientData)
@@ -463,6 +470,7 @@ Tcl_DeleteExitHandler(proc, clientData)
 	}
     }
 }
+
 
 /*
  *----------------------------------------------------------------------
@@ -571,6 +579,10 @@ TclInExit()
 {
     return tclInExit;
 }
+
+#else /* TCL_EVENT_IMPLEMENT */
+
+
 
 /*
  *----------------------------------------------------------------------
@@ -704,4 +716,6 @@ Tcl_UpdateCmd(clientData, interp, argc, argv)
 
     Tcl_ResetResult(interp);
     return TCL_OK;
-}
+}                              
+
+#endif /* TCL_EVENT_IMPLEMENT */

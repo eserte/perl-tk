@@ -11,16 +11,8 @@
 #  define LangBadFile (*LangVptr->V_LangBadFile)
 #endif
 
-#ifndef LangCallbackArg
-#  define LangCallbackArg (*LangVptr->V_LangCallbackArg)
-#endif
-
 #ifndef LangCmpArg
 #  define LangCmpArg (*LangVptr->V_LangCmpArg)
-#endif
-
-#ifndef LangCmpCallback
-#  define LangCmpCallback (*LangVptr->V_LangCmpCallback)
 #endif
 
 #ifndef LangCmpOpt
@@ -29,10 +21,6 @@
 
 #ifndef LangCopyArg
 #  define LangCopyArg (*LangVptr->V_LangCopyArg)
-#endif
-
-#ifndef LangCopyCallback
-#  define LangCopyCallback (*LangVptr->V_LangCopyCallback)
 #endif
 
 #ifndef LangDebug
@@ -63,10 +51,6 @@
 #  define LangFreeArg (*LangVptr->V_LangFreeArg)
 #endif
 
-#ifndef LangFreeCallback
-#  define LangFreeCallback (*LangVptr->V_LangFreeCallback)
-#endif
-
 #ifndef LangFreeVar
 #  define LangFreeVar (*LangVptr->V_LangFreeVar)
 #endif
@@ -77,10 +61,6 @@
 
 #ifndef LangLibraryDir
 #  define LangLibraryDir (*LangVptr->V_LangLibraryDir)
-#endif
-
-#ifndef LangMakeCallback
-#  define LangMakeCallback (*LangVptr->V_LangMakeCallback)
 #endif
 
 #ifndef LangMergeString
@@ -207,16 +187,8 @@
 #  define Lang_SplitString (*LangVptr->V_Lang_SplitString)
 #endif
 
-#ifndef TclServiceIdle
-#  define TclServiceIdle (*LangVptr->V_TclServiceIdle)
-#endif
-
 #ifndef Tcl_AddErrorInfo
 #  define Tcl_AddErrorInfo (*LangVptr->V_Tcl_AddErrorInfo)
-#endif
-
-#ifndef Tcl_AfterObjCmd
-#  define Tcl_AfterObjCmd (*LangVptr->V_Tcl_AfterObjCmd)
 #endif
 
 #ifndef Tcl_Alloc
@@ -247,36 +219,12 @@
 #  define Tcl_ArgResult (*LangVptr->V_Tcl_ArgResult)
 #endif
 
-#ifndef Tcl_AsyncCreate
-#  define Tcl_AsyncCreate (*LangVptr->V_Tcl_AsyncCreate)
-#endif
-
-#ifndef Tcl_AsyncDelete
-#  define Tcl_AsyncDelete (*LangVptr->V_Tcl_AsyncDelete)
-#endif
-
-#ifndef Tcl_AsyncInvoke
-#  define Tcl_AsyncInvoke (*LangVptr->V_Tcl_AsyncInvoke)
-#endif
-
-#ifndef Tcl_AsyncMark
-#  define Tcl_AsyncMark (*LangVptr->V_Tcl_AsyncMark)
-#endif
-
-#ifndef Tcl_AsyncReady
-#  define Tcl_AsyncReady (*LangVptr->V_Tcl_AsyncReady)
-#endif
-
 #ifndef Tcl_BackgroundError
 #  define Tcl_BackgroundError (*LangVptr->V_Tcl_BackgroundError)
 #endif
 
 #ifndef Tcl_CallWhenDeleted
 #  define Tcl_CallWhenDeleted (*LangVptr->V_Tcl_CallWhenDeleted)
-#endif
-
-#ifndef Tcl_CancelIdleCall
-#  define Tcl_CancelIdleCall (*LangVptr->V_Tcl_CancelIdleCall)
 #endif
 
 #ifndef Tcl_Close
@@ -291,28 +239,12 @@
 #  define Tcl_CreateCommand (*LangVptr->V_Tcl_CreateCommand)
 #endif
 
-#ifndef Tcl_CreateEventSource
-#  define Tcl_CreateEventSource (*LangVptr->V_Tcl_CreateEventSource)
-#endif
-
-#ifndef Tcl_CreateExitHandler
-#  define Tcl_CreateExitHandler (*LangVptr->V_Tcl_CreateExitHandler)
-#endif
-
-#ifndef Tcl_CreateFileHandler
-#  define Tcl_CreateFileHandler (*LangVptr->V_Tcl_CreateFileHandler)
-#endif
-
 #ifndef Tcl_CreateInterp
 #  define Tcl_CreateInterp (*LangVptr->V_Tcl_CreateInterp)
 #endif
 
 #ifndef Tcl_CreateObjCommand
 #  define Tcl_CreateObjCommand (*LangVptr->V_Tcl_CreateObjCommand)
-#endif
-
-#ifndef Tcl_CreateTimerHandler
-#  define Tcl_CreateTimerHandler (*LangVptr->V_Tcl_CreateTimerHandler)
 #endif
 
 #ifndef Tcl_DStringAppend
@@ -359,22 +291,6 @@
 #  define Tcl_DeleteCommandFromToken (*LangVptr->V_Tcl_DeleteCommandFromToken)
 #endif
 
-#ifndef Tcl_DeleteEventSource
-#  define Tcl_DeleteEventSource (*LangVptr->V_Tcl_DeleteEventSource)
-#endif
-
-#ifndef Tcl_DeleteEvents
-#  define Tcl_DeleteEvents (*LangVptr->V_Tcl_DeleteEvents)
-#endif
-
-#ifndef Tcl_DeleteExitHandler
-#  define Tcl_DeleteExitHandler (*LangVptr->V_Tcl_DeleteExitHandler)
-#endif
-
-#ifndef Tcl_DeleteFileHandler
-#  define Tcl_DeleteFileHandler (*LangVptr->V_Tcl_DeleteFileHandler)
-#endif
-
 #ifndef Tcl_DeleteHashEntry
 #  define Tcl_DeleteHashEntry (*LangVptr->V_Tcl_DeleteHashEntry)
 #endif
@@ -385,18 +301,6 @@
 
 #ifndef Tcl_DeleteInterp
 #  define Tcl_DeleteInterp (*LangVptr->V_Tcl_DeleteInterp)
-#endif
-
-#ifndef Tcl_DeleteTimerHandler
-#  define Tcl_DeleteTimerHandler (*LangVptr->V_Tcl_DeleteTimerHandler)
-#endif
-
-#ifndef Tcl_DoOneEvent
-#  define Tcl_DoOneEvent (*LangVptr->V_Tcl_DoOneEvent)
-#endif
-
-#ifndef Tcl_DoWhenIdle
-#  define Tcl_DoWhenIdle (*LangVptr->V_Tcl_DoWhenIdle)
 #endif
 
 #ifndef Tcl_DoubleResults
@@ -413,14 +317,6 @@
 
 #ifndef Tcl_EventuallyFree
 #  define Tcl_EventuallyFree (*LangVptr->V_Tcl_EventuallyFree)
-#endif
-
-#ifndef Tcl_Exit
-#  define Tcl_Exit (*LangVptr->V_Tcl_Exit)
-#endif
-
-#ifndef Tcl_Finalize
-#  define Tcl_Finalize (*LangVptr->V_Tcl_Finalize)
 #endif
 
 #ifndef Tcl_FirstHashEntry
@@ -481,10 +377,6 @@
 
 #ifndef Tcl_GetResult
 #  define Tcl_GetResult (*LangVptr->V_Tcl_GetResult)
-#endif
-
-#ifndef Tcl_GetServiceMode
-#  define Tcl_GetServiceMode (*LangVptr->V_Tcl_GetServiceMode)
 #endif
 
 #ifndef Tcl_GetStringFromObj
@@ -583,10 +475,6 @@
 #  define Tcl_Preserve (*LangVptr->V_Tcl_Preserve)
 #endif
 
-#ifndef Tcl_QueueEvent
-#  define Tcl_QueueEvent (*LangVptr->V_Tcl_QueueEvent)
-#endif
-
 #ifndef Tcl_Read
 #  define Tcl_Read (*LangVptr->V_Tcl_Read)
 #endif
@@ -613,14 +501,6 @@
 
 #ifndef Tcl_Seek
 #  define Tcl_Seek (*LangVptr->V_Tcl_Seek)
-#endif
-
-#ifndef Tcl_ServiceAll
-#  define Tcl_ServiceAll (*LangVptr->V_Tcl_ServiceAll)
-#endif
-
-#ifndef Tcl_ServiceEvent
-#  define Tcl_ServiceEvent (*LangVptr->V_Tcl_ServiceEvent)
 #endif
 
 #ifndef Tcl_SetAssocData
@@ -651,10 +531,6 @@
 #  define Tcl_SetLongObj (*LangVptr->V_Tcl_SetLongObj)
 #endif
 
-#ifndef Tcl_SetMaxBlockTime
-#  define Tcl_SetMaxBlockTime (*LangVptr->V_Tcl_SetMaxBlockTime)
-#endif
-
 #ifndef Tcl_SetObjResult
 #  define Tcl_SetObjResult (*LangVptr->V_Tcl_SetObjResult)
 #endif
@@ -663,16 +539,8 @@
 #  define Tcl_SetResult (*LangVptr->V_Tcl_SetResult)
 #endif
 
-#ifndef Tcl_SetServiceMode
-#  define Tcl_SetServiceMode (*LangVptr->V_Tcl_SetServiceMode)
-#endif
-
 #ifndef Tcl_SetStringObj
 #  define Tcl_SetStringObj (*LangVptr->V_Tcl_SetStringObj)
-#endif
-
-#ifndef Tcl_SetTimer
-#  define Tcl_SetTimer (*LangVptr->V_Tcl_SetTimer)
 #endif
 
 #ifndef Tcl_SetVar
@@ -685,10 +553,6 @@
 
 #ifndef Tcl_SetVarArg
 #  define Tcl_SetVarArg (*LangVptr->V_Tcl_SetVarArg)
-#endif
-
-#ifndef Tcl_Sleep
-#  define Tcl_Sleep (*LangVptr->V_Tcl_Sleep)
 #endif
 
 #ifndef Tcl_SprintfResult
@@ -719,20 +583,12 @@
 #  define Tcl_UntraceVar2 (*LangVptr->V_Tcl_UntraceVar2)
 #endif
 
-#ifndef Tcl_WaitForEvent
-#  define Tcl_WaitForEvent (*LangVptr->V_Tcl_WaitForEvent)
-#endif
-
 #ifndef Tcl_Write
 #  define Tcl_Write (*LangVptr->V_Tcl_Write)
 #endif
 
 #ifndef Tcl_WrongNumArgs
 #  define Tcl_WrongNumArgs (*LangVptr->V_Tcl_WrongNumArgs)
-#endif
-
-#ifndef TclpGetTime
-#  define TclpGetTime (*LangVptr->V_TclpGetTime)
 #endif
 
 #endif /* NO_VTABLES */
