@@ -4,6 +4,15 @@
 #define XSdec(x) void x()
 #endif
 
+#if defined(PATCHLEVEL) && (PATCHLEVEL < 5)
+#define PL_sv_undef	sv_undef
+#define PL_tainting	tainting
+#define PL_tainted	tainted
+#define PL_stack_base	stack_base
+#define PL_curcop	curcop
+#endif
+
+
 #ifndef ERRSV
 #define ERRSV GvSV(errgv)
 #endif
@@ -17,6 +26,11 @@
 #ifdef colors
 #undef colors
 #endif
+
+#ifdef na
+#undef na
+#endif
+
 
 #define Tcl_Interp     HV
 #define LangCallback   SV

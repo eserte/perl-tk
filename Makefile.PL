@@ -1,3 +1,4 @@
+use 5.00404;
 use Cwd;
 use Config;
 no  lib '.';
@@ -5,14 +6,13 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.011';      
+  $VERSION = '800.012';      
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
-  $win_arch = ($IsWin32) ? $^O : 'x'
-    if not defined $win_arch; # Currently 'x', 'pm', 'open32', 'MSWin32'
 
-  $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
+  $win_arch = ($IsWin32) ? 'MSWin32' : 'x'
+    if not defined $win_arch; # Currently 'x', 'pm', 'open32', 'MSWin32'
 
   require "./myConfig";
   use lib ($Tk::MMutil::dir=getcwd);
@@ -44,33 +44,14 @@ else
   @libs = ("$libs");
  }   
 
-my %dir;
-opendir(DIR,'.') || die "Cannot opendir:$!";
-foreach my $dir (readdir(DIR))
- {
-  next if $dir =~ /^\.\.?$/;
-  next if -l $dir;
-  next unless -d $dir;
-  if (-f "$dir/Makefile.PL")
-   {                            
-    unless ($win_arch eq 'x')
-     {
-      $dir{$dir} = 1 unless -f "$dir/NotWin.exc"; 
-     }
-    else
-     {
-      $dir{$dir} = 1 unless -f "$dir/NotUnix.exc"; 
-     }
-   }
- }
-closedir(DIR);
-delete $dir{'pTk'};
+my $dir = Tk::MMutil::find_subdir();
+delete $dir->{'pTk'};
 
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
     'EXE_FILES' => [qw(ptksh ptked)],
     'NAME'     => 'Tk',
-    'DIR'      => ['pTk',reverse(sort(keys %dir))],
+    'DIR'      => ['pTk',reverse(sort(keys %$dir))],
     'DISTNAME' => "Tk",
     'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)' . ($win_arch =~ /^(open32|pm)$/
 					    ? ' pTk/dllInit$(LIB_EXT)'

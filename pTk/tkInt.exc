@@ -1,7 +1,8 @@
 tkSendSerial
 TkpTestembedCmd
 TkAlignImageData
-TkCopyAndGlobalEval
+TkCopyAndGlobalEval 
+TkCreateBitmapFromData
 TkFillPolygon
 TkGetNativeProlog
 TkIDToWindow
@@ -12,6 +13,7 @@ TkOptionClassChanged
 TkOptionDeadWindow
 TkEventCleanupProc
 TkGenerateActivateEvents
+TkGetProlog
 TkListAppend
 TkListDelete
 TkListFind

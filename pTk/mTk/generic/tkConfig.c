@@ -883,7 +883,7 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	case TK_CONFIG_FONT: {
 	    Tk_Font tkfont = *((Tk_Font *) ptr);
 	    if (tkfont != NULL) {
-		LangSetArg(&result, LangFontArg(interp, tkfont));
+		LangSetArg(&result, LangFontArg(interp, tkfont, NULL));
 	    }
 	    break;
 	}

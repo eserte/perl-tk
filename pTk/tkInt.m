@@ -160,10 +160,6 @@
 #  define TkGetPointerCoords (*TkintVptr->V_TkGetPointerCoords)
 #endif
 
-#ifndef TkGetProlog
-#  define TkGetProlog (*TkintVptr->V_TkGetProlog)
-#endif
-
 #ifndef TkGetServerInfo
 #  define TkGetServerInfo (*TkintVptr->V_TkGetServerInfo)
 #endif
@@ -210,6 +206,10 @@
 
 #ifndef TkQueueEventForAllChildren
 #  define TkQueueEventForAllChildren (*TkintVptr->V_TkQueueEventForAllChildren)
+#endif
+
+#ifndef TkReadBitmapFile
+#  define TkReadBitmapFile (*TkintVptr->V_TkReadBitmapFile)
 #endif
 
 #ifndef TkRectInRegion

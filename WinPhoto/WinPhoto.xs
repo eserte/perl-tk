@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -178,7 +178,7 @@ StringReadWindow(interp,dataObj,formatString,imageHandle,
        he = Tcl_CreateHashEntry(&ctable,(char *) color.pixel, &new);
        if (new)
         {
-         XQueryColor(dpy, attr.colormap, &color);
+         XQueryColors(dpy, attr.colormap, &color, 1);
          p[0] = color.red   >> 8;         
          p[1] = color.green >> 8;        
          p[2] = color.blue  >> 8;                   

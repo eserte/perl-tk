@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tcl.h 1.326 97/11/20 12:40:43
+ * SCCS: @(#) tcl.h 1.24 98/08/06 12:10:41
  */
 
 #ifndef _TCL
@@ -21,11 +21,11 @@
  * When version numbers change here, must also go into the following files
  * and update the version numbers:
  *
- * library/init.tcl
+ * README
+ * library/init.tcl	(only if major.minor changes, not patchlevel)
  * unix/configure.in
- * unix/pkginfo
- * win/makefile.bc
- * win/makefile.vc
+ * win/makefile.bc	(only if major.minor changes, not patchlevel)
+ * win/makefile.vc	(only if major.minor changes, not patchlevel)
  *
  * The release level should be  0 for alpha, 1 for beta, and 2 for
  * final/patch.  The release serial value is the number that follows the
@@ -38,10 +38,10 @@
 #define TCL_MAJOR_VERSION   8
 #define TCL_MINOR_VERSION   0
 #define TCL_RELEASE_LEVEL   2
-#define TCL_RELEASE_SERIAL  2
+#define TCL_RELEASE_SERIAL  3
 
 #define TCL_VERSION	    "8.0"
-#define TCL_PATCH_LEVEL	    "8.0p2"
+#define TCL_PATCH_LEVEL	    "8.0.3"
 
 /*
  * The following definitions set up the proper options for Windows
@@ -70,10 +70,6 @@
 #   ifndef USE_TCLALLOC
 #	define USE_TCLALLOC 1
 #   endif
-#   ifndef STRINGIFY
-#	define STRINGIFY(x)	    STRINGIFY1(x)
-#	define STRINGIFY1(x)	    #x
-#   endif
 #endif /* __WIN32__ */
 
 /*
@@ -91,6 +87,34 @@
 #   ifndef NO_STRERROR
 #	define NO_STRERROR 1
 #   endif
+#endif
+
+/*
+ * Utility macros: STRINGIFY takes an argument and wraps it in "" (double
+ * quotation marks), JOIN joins two arguments.
+ */
+
+#define VERBATIM(x) x
+#ifdef _MSC_VER
+# define STRINGIFY(x) STRINGIFY1(x)
+# define STRINGIFY1(x) #x
+# define JOIN(a,b) JOIN1(a,b)
+# define JOIN1(a,b) a##b
+#else
+# ifdef RESOURCE_INCLUDED
+#  define STRINGIFY(x) STRINGIFY1(x)
+#  define STRINGIFY1(x) #x
+#  define JOIN(a,b) JOIN1(a,b)
+#  define JOIN1(a,b) a##b
+# else
+#  ifdef __STDC__
+#   define STRINGIFY(x) #x
+#   define JOIN(a,b) a##b
+#  else
+#   define STRINGIFY(x) "x"
+#   define JOIN(a,b) VERBATIM(a)VERBATIM(b)
+#  endif
+# endif
 #endif
 
 /* 
@@ -133,6 +157,45 @@
 #endif
 
 /*
+ * Macros used to declare a function to be exported by a DLL.
+ * Used by Windows, maps to no-op declarations on non-Windows systems.
+ * The default build on windows is for a DLL, which causes the DLLIMPORT
+ * and DLLEXPORT macros to be nonempty. To build a static library, the
+ * macro STATIC_BUILD should be defined.
+ * The support follows the convention that a macro called BUILD_xxxx, where
+ * xxxx is the name of a library we are building, is set on the compile line
+ * for sources that are to be placed in the library. See BUILD_tcl in this
+ * file for an example of how the macro is to be used.
+ */
+
+#ifdef __WIN32__
+# ifdef STATIC_BUILD
+#  define DLLIMPORT
+#  define DLLEXPORT
+# else
+#  ifdef _MSC_VER
+#   define DLLIMPORT __declspec(dllimport)
+#   define DLLEXPORT __declspec(dllexport)
+#  else
+#   define DLLIMPORT
+#   define DLLEXPORT
+#  endif
+# endif
+#else
+# define DLLIMPORT
+# define DLLEXPORT
+#endif
+
+#ifdef TCL_STORAGE_CLASS
+# undef TCL_STORAGE_CLASS
+#endif
+#ifdef BUILD_tcl
+# define TCL_STORAGE_CLASS DLLEXPORT
+#else
+# define TCL_STORAGE_CLASS DLLIMPORT
+#endif
+
+/*
  * Definitions that allow this header file to be used either with or
  * without ANSI C features like function prototypes.
  */
@@ -150,9 +213,9 @@
 #endif
 
 #ifdef __cplusplus
-#   define EXTERN extern "C"
+#   define EXTERN extern "C" TCL_STORAGE_CLASS
 #else
-#   define EXTERN extern
+#   define EXTERN extern TCL_STORAGE_CLASS
 #endif
 
 /*
@@ -949,6 +1012,7 @@ typedef struct Tcl_ChannelType {
     Tcl_DriverGetHandleProc *getHandleProc;
 					/* Get an OS handle from the channel
                                          * or NULL if not supported. */
+    VOID *reserved;			/* reserved for future expansion */
 } Tcl_ChannelType;
 
 /*
@@ -1236,6 +1300,7 @@ EXTERN int		Tcl_GetIntFromObj _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN int		Tcl_GetLongFromObj _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *objPtr, long *longPtr));
 EXTERN Tcl_Interp *	Tcl_GetMaster _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN CONST char *	Tcl_GetNameOfExecutable _ANSI_ARGS_((void));
 EXTERN Tcl_Obj *	Tcl_GetObjResult _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN Tcl_ObjType *	Tcl_GetObjType _ANSI_ARGS_((char *typeName));
 EXTERN int		Tcl_GetOpenFile _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1485,4 +1550,8 @@ EXTERN void		Tcl_WrongNumArgs _ANSI_ARGS_((Tcl_Interp *interp,
 			    int objc, Tcl_Obj *CONST objv[], char *message));
 
 #endif /* RESOURCE_INCLUDED */
+
+#undef TCL_STORAGE_CLASS
+#define TCL_STORAGE_CLASS DLLIMPORT
+
 #endif /* _TCL */

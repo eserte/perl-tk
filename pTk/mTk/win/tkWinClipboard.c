@@ -91,6 +91,36 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
 	"\" not defined", (char *) NULL);
     return TCL_ERROR;
 }
+
+/* 
+ * Stub version that allows ->selectionExists
+ * to work after a fashion if we own the CLIPBOARD
+ */
+
+Window 
+XGetSelectionOwner(Display *display,
+	           Atom    selection)
+{
+ /*
+  * This is a gross hack because the Tk_InternAtom interface is broken.
+  * It expects a Tk_Window, even though it only needs a Tk_Display.
+  */
+ Tk_Window tkwin = (Tk_Window)tkMainWindowList->winPtr;
+ if (selection == Tk_InternAtom(tkwin, "CLIPBOARD"))
+  {
+   HWND owner = GetClipboardOwner();
+   if (owner)
+    {
+     Tk_Window tkwin = Tk_HWNDToWindow(owner);  
+     if (tkwin)
+      {
+       return Tk_WindowId(tkwin);
+      } 
+    }
+  }
+ return None; 
+}
+
 
 /*
  *----------------------------------------------------------------------
@@ -109,6 +139,8 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
  *
  *----------------------------------------------------------------------
  */
+
+
 
 void
 XSetSelectionOwner(display, selection, owner, time)

@@ -189,10 +189,6 @@ VFUNC(void,TkGetPointerCoords,V_TkGetPointerCoords,_ANSI_ARGS_((Tk_Window tkwin,
 			    int *xPtr, int *yPtr)))
 #endif
 
-#ifndef TkGetProlog
-VFUNC(int,TkGetProlog,V_TkGetProlog,_ANSI_ARGS_((Tcl_Interp *interp)))
-#endif
-
 #ifndef TkGetServerInfo
 VFUNC(void,TkGetServerInfo,V_TkGetServerInfo,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin)))
@@ -251,6 +247,15 @@ VFUNC(void,TkPutImage,V_TkPutImage,_ANSI_ARGS_((unsigned long *colors,
 #ifndef TkQueueEventForAllChildren
 VFUNC(void,TkQueueEventForAllChildren,V_TkQueueEventForAllChildren,_ANSI_ARGS_((
 			    TkWindow *winPtr, XEvent *eventPtr)))
+#endif
+
+#ifndef TkReadBitmapFile
+VFUNC(int,TkReadBitmapFile,V_TkReadBitmapFile,_ANSI_ARGS_((Display* display,
+			    Drawable d, CONST char* filename,
+			    unsigned int* width_return,
+			    unsigned int* height_return,
+			    Pixmap* bitmap_return,
+			    int* x_hot_return, int* y_hot_return)))
 #endif
 
 #ifndef TkRectInRegion

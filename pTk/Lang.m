@@ -499,10 +499,6 @@
 #  define Tcl_GetVar2 (*LangVptr->V_Tcl_GetVar2)
 #endif
 
-#ifndef Tcl_HashStats
-#  define Tcl_HashStats (*LangVptr->V_Tcl_HashStats)
-#endif
-
 #ifndef Tcl_HideCommand
 #  define Tcl_HideCommand (*LangVptr->V_Tcl_HideCommand)
 #endif

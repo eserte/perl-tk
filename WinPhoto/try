@@ -7,7 +7,10 @@ my $mw = MainWindow->new;
 my $img = $mw->Photo();
 my @fmt = grep($_ ne 'Window',$img->formats);
 my $frm  = $mw->Frame->pack;
-$frm->Button(-text => 'Quit', -command => [destroy => $mw ])->pack(-side => 'left');
+$frm->Button(-text => 'Quit', -command => [destroy => $mw ])
+    ->pack(-side => 'left');
+my $b = $frm->Button(-text => 'Capture This', -command => \&Self)
+    ->pack(-side => 'left');
 my $grab = $frm->Label(-text => 'Grab',-relief => 'raised')->pack(-side => 'left');
 $frm->Button(-text => 'Save', -command => \&Save)->pack(-side => 'left');
 my $fmt  = $frm->Optionmenu(-variable => \$format,
@@ -37,10 +40,19 @@ sub GrabStart
  $w->configure(-cursor => 'hand2', -relief => 'sunken');
 }
 
+sub Self
+{
+ my $id = hex($b->id);
+ print "id = $id\n"; 
+ $img->configure(-format => "Window", -data => $id);
+}
+
 sub GrabWin
 {
  my ($w,$x,$y) = @_;
  $w->grabRelease;
  $w->configure(-cursor => undef, -relief => 'raised');
- $img->configure(-format => "Window", -data => $w->PointToWindow($x,$y));
+ my $id = $w->PointToWindow($x,$y);
+ print "id = $id\n"; 
+ $img->configure(-format => "Window", -data => $id);
 }

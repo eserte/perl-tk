@@ -17,7 +17,7 @@ package Tk::Menubutton;
 require Tk;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#14$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Menubutton/Menubutton.pm#16$
 
 use base  qw(Tk::Widget);
 
@@ -322,12 +322,11 @@ sub Motion
 sub ButtonUp {
     my $w = shift;
 
-    my $menu = $Tk::postedMb->cget(-menu);
     my $tearoff = $Tk::platform eq 'unix' || (defined($menu) && 
-					      $menu->cget('-type') eq 'tearoff');
+					      $w->cget(-menu)->cget('-type') eq 'tearoff');
     if (($tearoff != 0) && (defined($Tk::postedMb) && $Tk::postedMb == $w)
 	    && (defined($Tk::inMenubutton) && $Tk::inMenubutton == $w)) {
-	$menu->FirstEntry();
+	$Tk::postedMb->cget(-menu)->FirstEntry();
     } else {
       Tk::Menu->Unpost(undef);
     }

@@ -77,6 +77,20 @@ This command also resets the screen saver for the screen.  Some
 screen savers will ignore this, but others will reset so that the
 screen becomes visible again.
 
+=item I<$widget>-E<gt>B<Busy>?(?-recurse => 1?I<-option => value>?)?
+
+This method B<configure>s a B<-cursor> option for I<$widget> and 
+(if B<-recurse => 1> is specified) all its descendants. The cursor to 
+be set may be passed as S<B<-cursor> => I<cursor>> or defaults to 'watch'.
+Additional B<configure> options are applied to I<$widget> only.
+It also adds a special tag B<'Busy'> to the B<bindtags> of the widgets so
+configured so that  B<KeyPress>, B<KeyRelease>, B<ButtonPress> and
+B<ButtonRelease> events are ignored (with press events generating a call to
+B<bell>). It then acquires a local B<grab> for I<$widget>.
+The state of the widgets and the grab is restored by a call to 
+I<$widget>-E<gt>B<Unbusy>.
+
+
 =item I<$widget>-E<gt>B<cells>
 
 Returns a decimal string giving the number of cells in the
@@ -424,6 +438,10 @@ is an integer release number provided by the server.
 =item I<$widget>-E<gt>B<toplevel>
 
 Returns the reference of the top-level window containing I<$widget>.
+
+=item I<$widget>-E<gt>B<Unbusy>
+
+Restores widget state after a call to  I<$widget>-E<gt>B<Busy>.
 
 =item I<$widget>-E<gt>B<viewable>
 

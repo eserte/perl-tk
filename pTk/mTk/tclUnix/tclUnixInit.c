@@ -30,7 +30,7 @@
  * symbol is defined by Makefile.
  */
 
-static char defaultLibraryDir[200] = TCL_LIBRARY;
+static char defaultLibraryDir[sizeof(TCL_LIBRARY)+200] = TCL_LIBRARY;
 
 /*
  * Directory in which to look for packages (each package is typically
@@ -38,7 +38,7 @@ static char defaultLibraryDir[200] = TCL_LIBRARY;
  * defined by Makefile.
  */
 
-static char pkgPath[200] = TCL_PACKAGE_PATH;
+static char pkgPath[sizeof(TCL_PACKAGE_PATH)+200] = TCL_PACKAGE_PATH;
 
 /*
  * Is this module initialized?
@@ -47,52 +47,12 @@ static char pkgPath[200] = TCL_PACKAGE_PATH;
 static int initialized = 0;
 
 /*
- * The following string is the startup script executed in new
- * interpreters.  It looks on disk in several different directories
- * for a script "init.tcl" that is compatible with this version
- * of Tcl.  The init.tcl script does all of the real work of
- * initialization.
+ * The Init script, tclPreInitScript variable, and the routine
+ * TclSetPreInitScript (common to Windows and Unix platforms) are defined
+ * in generic/tclInitScript.h.
  */
 
-static char initScript[] =
-"proc tclInit {} {\n\
-    global tcl_library tcl_version tcl_patchLevel env errorInfo\n\
-    global tcl_pkgPath\n\
-    rename tclInit {}\n\
-    set errors {}\n\
-    set dirs {}\n\
-    if [info exists env(TCL_LIBRARY)] {\n\
-	lappend dirs $env(TCL_LIBRARY)\n\
-    }\n\
-    lappend dirs [info library]\n\
-    set parentDir [file dirname [file dirname [info nameofexecutable]]]\n\
-    lappend dirs $parentDir/lib/tcl$tcl_version\n\
-    if [string match {*[ab]*} $tcl_patchLevel] {\n\
-	set lib tcl$tcl_patchLevel\n\
-    } else {\n\
-	set lib tcl$tcl_version\n\
-    }\n\
-    lappend dirs [file dirname $parentDir]/$lib/library\n\
-    lappend dirs $parentDir/library\n\
-    foreach i $dirs {\n\
-	set tcl_library $i\n\
-	set tclfile [file join $i init.tcl]\n\
-	if {[file exists $tclfile]} {\n\
-            lappend tcl_pkgPath [file dirname $i]\n\
-	    if ![catch {uplevel #0 [list source $tclfile]} msg] {\n\
-		return\n\
-	    } else {\n\
-		append errors \"$tclfile: $msg\n$errorInfo\n\"\n\
-	    }\n\
-	}\n\
-    }\n\
-    set msg \"Can't find a usable init.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\n\"\n\
-    append msg \"$errors\n\n\"\n\
-    append msg \"This probably means that Tcl wasn't installed properly.\n\"\n\
-    error $msg\n\
-}\n\
-tclInit";
+#include "tclInitScript.h"
 
 /*
  * Static routines in this file:
@@ -147,8 +107,6 @@ static void
 PlatformInitExitHandler(clientData)
     ClientData clientData;		/* Unused. */
 {
-    strcpy(defaultLibraryDir, TCL_LIBRARY);
-    strcpy(pkgPath, TCL_PACKAGE_PATH);
     initialized = 0;
 }
 
@@ -180,7 +138,8 @@ TclPlatformInit(interp)
     int unameOK;
 
     tclPlatform = TCL_PLATFORM_UNIX;
-    Tcl_SetVar(interp, "tcl_library", defaultLibraryDir, TCL_GLOBAL_ONLY);
+    Tcl_SetVar(interp, "tclDefaultLibrary", defaultLibraryDir,
+	    TCL_GLOBAL_ONLY);
     Tcl_SetVar(interp, "tcl_pkgPath", pkgPath, TCL_GLOBAL_ONLY);
     Tcl_SetVar2(interp, "tcl_platform", "platform", "unix", TCL_GLOBAL_ONLY);
     unameOK = 0;
@@ -197,7 +156,8 @@ TclPlatformInit(interp)
 	 * name.version and the minor version number is in name.release.
 	 */
 
-	if ((strchr(name.release, '.') != NULL) || !isdigit(name.version[0])) {
+	if ((strchr(name.release, '.') != NULL)
+		|| !isdigit(UCHAR(name.version[0]))) {
 	    Tcl_SetVar2(interp, "tcl_platform", "osVersion", name.release,
 		    TCL_GLOBAL_ONLY);
 	} else {
@@ -279,7 +239,12 @@ int
 Tcl_Init(interp)
     Tcl_Interp *interp;		/* Interpreter to initialize. */
 {
-    return Tcl_Eval(interp, initScript);
+    if (tclPreInitScript != NULL) {
+	if (Tcl_Eval(interp, tclPreInitScript) == TCL_ERROR) {
+	    return (TCL_ERROR);
+	};
+    }
+    return(Tcl_Eval(interp, initScript));
 }
 
 /*

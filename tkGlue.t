@@ -31,6 +31,10 @@ VFUNC(SV *,MakeReference,V_MakeReference,_ANSI_ARGS_((SV * sv)))
 VFUNC(Tk_Font,SVtoFont,V_SVtoFont,_ANSI_ARGS_((SV *win)))
 #endif
 
+#ifndef SVtoHWND
+VFUNC(HWND,SVtoHWND,V_SVtoHWND,_ANSI_ARGS_((SV *win)))
+#endif
+
 #ifndef SVtoWindow
 VFUNC(Tk_Window,SVtoWindow,V_SVtoWindow,_ANSI_ARGS_((SV *win)))
 #endif

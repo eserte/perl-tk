@@ -1038,6 +1038,10 @@ entries.
 
 Hierarchical Listbox
 
+=head1 SEE ALSO
+
+L<Tk::DItem|Tk::DItem>
+
 =cut
 
 

@@ -1,7 +1,18 @@
 #!/usr/local/bin/perl -w
 use Tk;
 use strict;
-use Tk::DropSite qw(Sun);
+use Tk::DropSite;
+my $kind;
+if ($^O eq 'MSWin32')
+ {
+  use Tk::DropSite qw(Win32);
+  $kind = 'Win32';
+ }
+else
+ {
+  use Tk::DropSite qw(Sun);
+  $kind = 'Sun';
+ }
 use Tk::Menubar;  
 
 sub enter_leave
@@ -21,9 +32,8 @@ $mb->Menubutton(-text => '~File', -menuitems => [
 
 my $lb = $top->Scrolled('Listbox',-width => 40);
 
-my $sun = $top->Message('-text' => "Sun Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
-$sun->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => 'Sun'
-              );
+my $sun = $top->Message('-text' => "$kind Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
+$sun->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => $kind);
 
 my $loc = $top->Message('-text' => "Local Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
 $loc->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => ['Local']);
@@ -55,6 +65,10 @@ sub ShowTargets
     {
      print $lb->SelectionGet('-selection'=>$seln,'FILE_NAME'),"\n";
     }
+   if ($^O eq 'MSWin32' && /STRING/)
+    {
+     print $lb->SelectionGet('-selection'=>$seln,$_),"\n";
+    } 
   }
 }
 

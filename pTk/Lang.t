@@ -567,10 +567,6 @@ VFUNC(Arg,Tcl_GetVar2,V_Tcl_GetVar2,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Var part1, char *part2, int flags)))
 #endif
 
-#ifndef Tcl_HashStats
-VFUNC(char *,Tcl_HashStats,V_Tcl_HashStats,_ANSI_ARGS_((Tcl_HashTable *tablePtr)))
-#endif
-
 #ifndef Tcl_HideCommand
 VFUNC(int,Tcl_HideCommand,V_Tcl_HideCommand,_ANSI_ARGS_((Tcl_Interp *interp,
 		            char *cmdName, char *hiddenCmdName)))

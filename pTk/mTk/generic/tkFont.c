@@ -118,12 +118,22 @@ typedef struct TextLayout {
 static TkStateMap weightMap[] = {
     {TK_FW_NORMAL,	"normal"},
     {TK_FW_BOLD,	"bold"},
+    /* These are additions from the X world */
+    {TK_FW_NORMAL,	"medium"},
+    {TK_FW_NORMAL,	"book"},
+    {TK_FW_NORMAL,	"light"},
+    {TK_FW_BOLD,	"demi"},
+    {TK_FW_BOLD,	"demibold"},
     {TK_FW_UNKNOWN,	NULL}
 };
 
 static TkStateMap slantMap[] = {
     {TK_FS_ROMAN,	"roman"},
     {TK_FS_ITALIC,	"italic"},
+    /* These are additions from the X world */
+    {TK_FS_ROMAN,	"r"},
+    {TK_FS_ITALIC,	"i"},
+    {TK_FS_ITALIC,	"o"},
     {TK_FS_UNKNOWN,	NULL}
 };
 
@@ -457,7 +467,7 @@ Tk_FontObjCmd(clientData, interp, objc, objv)
 	    if (TkCreateNamedFont(interp, tkwin, name, &fa) != TCL_OK) {
 		return TCL_ERROR;
 	    }
-	    Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
+	    Tcl_ArgResult(interp, LangFontArg( interp, NULL, name));
 	    break;
 	}
 	case FONT_DELETE: {
@@ -555,12 +565,15 @@ Tk_FontObjCmd(clientData, interp, objc, objv)
 	    objc -= skip;
 	    objv += skip;
 	    fmPtr = GetFontMetrics(tkfont);
-	    if (objc == 3) {
-		sprintf(buf, "-ascent %d -descent %d -linespace %d -fixed %d",
-			fmPtr->ascent, fmPtr->descent,
-			fmPtr->ascent + fmPtr->descent,
-			fmPtr->fixed);
-		Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+	    if (objc == 3) { 
+		Tcl_AppendElement(interp, "-ascent");
+		Tcl_IntResults(interp, 1, 1, fmPtr->ascent);
+		Tcl_AppendElement(interp, "-descent");
+		Tcl_IntResults(interp, 1, 1, fmPtr->descent);
+		Tcl_AppendElement(interp, "-linespace");
+		Tcl_IntResults(interp, 1, 1, fmPtr->ascent + fmPtr->descent);
+		Tcl_AppendElement(interp, "-fixed");
+		Tcl_IntResults(interp, 1, 1, fmPtr->fixed);
 	    } else {
 		if (Tcl_GetIndexFromObj(interp, objv[3], switches,
 			"metric", 0, &index) != TCL_OK) {
@@ -596,8 +609,7 @@ Tk_FontObjCmd(clientData, interp, objc, objv)
 		nfPtr = (NamedFont *) Tcl_GetHashValue(namedHashPtr);
 		if (nfPtr->deletePending == 0) {
 		    string = Tcl_GetHashKey(&fiPtr->namedTable, namedHashPtr);
-		    strPtr = Tcl_NewStringObj(string, -1);
-		    Tcl_ListObjAppendElement(NULL, Tcl_GetObjResult(interp), strPtr);
+		    Tcl_AppendArg(interp, LangFontArg(interp, NULL, string));
 		}
 		namedHashPtr = Tcl_NextHashEntry(&search);
 	    }
@@ -731,7 +743,7 @@ TkCreateNamedFont(interp, tkwin, name, faPtr)
     if (new == 0) {
 	nfPtr = (NamedFont *) Tcl_GetHashValue(namedHashPtr);
 	if (nfPtr->deletePending == 0) {
-	    interp->result[0] = '\0';
+ 	    Tcl_ResetResult(interp);
 	    Tcl_AppendResult(interp, "font \"", name,
 		    "\" already exists", (char *) NULL);
 	    return TCL_ERROR;
@@ -751,10 +763,9 @@ TkCreateNamedFont(interp, tkwin, name, faPtr)
 
     nfPtr = (NamedFont *) ckalloc(sizeof(NamedFont));
     nfPtr->deletePending = 0;
-    Tcl_SetHashValue(namedHashPtr, nfPtr);
     nfPtr->fa = *faPtr;
     nfPtr->refCount = 0;	
-    nfPtr->deletePending = 0;
+    Tcl_SetHashValue(namedHashPtr, nfPtr);
     return TCL_OK;
 }
 

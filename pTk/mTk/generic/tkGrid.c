@@ -469,7 +469,7 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	}
 	slavePtr = GetGrid(slave);
 	if (slavePtr->masterPtr == NULL) {
-	    interp->result[0] = '\0';
+	    Tcl_ResetResult(interp);
 	    return TCL_OK;
 	}
     
@@ -1397,7 +1397,7 @@ ResolveConstraints(masterPtr, slotType, maxOffset)
      * to avoid the overhead of a malloc and free for every layout.
      */
 
-    GridLayout layoutData[TYPICAL_SIZE + 1];
+    GridLayout layoutData[TYPICAL_SIZE + 2];
 
     if (slotType == COLUMN) {
 	constraintCount = masterPtr->masterDataPtr->columnMax;
@@ -1415,7 +1415,7 @@ ResolveConstraints(masterPtr, slotType, maxOffset)
 
     gridCount = MAX(constraintCount,slotCount);
     if (gridCount >= TYPICAL_SIZE) {
-	layoutPtr = (GridLayout *) Tcl_Alloc(sizeof(GridLayout) * (1+gridCount));
+	layoutPtr = (GridLayout *) Tcl_Alloc(sizeof(GridLayout) * (2+gridCount));
     } else {
 	layoutPtr = layoutData;
     }

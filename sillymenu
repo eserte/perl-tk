@@ -1,0 +1,20 @@
+#!/usr/local/bin/perl -w
+use strict;
+use Tk;
+
+my $mw = MainWindow->new;                                        
+my $menu = $mw->Menu;
+for my $i (1..20)
+ {
+  my $sm = $menu->cascade(-label => "Button$i");
+  $sm->command(-label => 'Quit', -command => [destroy => $mw]);
+ }
+my $h = $menu->cascade(-label => "Help"); 
+$h->command(-label => 'Quit', -command => [destroy => $mw]);
+
+$mw->configure(-menu => $menu);
+$mw->Scrolled('Text')->pack(-fill => 'both', -expand => 1);
+$mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;
+
+MainLoop;
+

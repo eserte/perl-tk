@@ -437,9 +437,11 @@
 #  define XRaiseWindow (*XlibVptr->V_XRaiseWindow)
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XReadBitmapFile
 #  define XReadBitmapFile (*XlibVptr->V_XReadBitmapFile)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XRefreshKeyboardMapping
 #  define XRefreshKeyboardMapping (*XlibVptr->V_XRefreshKeyboardMapping)

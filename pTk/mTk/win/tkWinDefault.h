@@ -29,6 +29,7 @@
 #define WHITE		"White"
 
 #define CTL_FONT	"{MS Sans Serif} 8"
+#define FIXED_FONT	"{Courier New} 8"
 #define NORMAL_BG	"SystemButtonFace"
 #define NORMAL_FG	"SystemButtonText"
 #define ACTIVE_BG	NORMAL_BG
@@ -405,7 +406,7 @@
 #define DEF_TEXT_CURSOR			"xterm"
 #define DEF_TEXT_FG			TEXT_FG
 #define DEF_TEXT_EXPORT_SELECTION	"1"
-#define DEF_TEXT_FONT			CTL_FONT
+#define DEF_TEXT_FONT			FIXED_FONT
 #define DEF_TEXT_HEIGHT			"24"
 #define DEF_TEXT_HIGHLIGHT_BG		NORMAL_BG
 #define DEF_TEXT_HIGHLIGHT		HIGHLIGHT

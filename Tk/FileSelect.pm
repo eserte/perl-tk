@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/FileSelect.pm#21$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/FileSelect.pm#23$
 
 use Tk qw(Ev);
 use strict;
@@ -11,6 +11,15 @@ use base qw(Tk::Toplevel);
 Construct Tk::Widget 'FileSelect';
 
 # Documentation after __END__
+
+sub import {
+    if (defined $_[1] and $_[1] eq 'as_default') {
+	local $^W = 0;
+	package Tk;
+	*FDialog      = \&Tk::FileSelect::FDialog;
+	*MotifFDialog = \&Tk::FileSelect::FDialog;
+    }
+}
 
 sub Cancel
 {
@@ -267,7 +276,8 @@ sub filter
 sub defaultextension
 {
  my ($cw,$key,$val) = @_;
- $cw->filter("*.$val");
+ $val = ".$val" if ($val !~ /^\./);
+ $cw->filter("*$val");
 }
 
 sub directory
@@ -467,6 +477,19 @@ sub Show
       ? (wantarray) ? @{$cw->{Selected}} : $cw->{Selected}[0]
       : undef;
 
+}
+
+sub FDialog
+{
+ my($cmd, %args) = @_;
+ if ($cmd =~ /Save/)
+  {
+   $args{-create} = 1;
+   $args{-verify} = [qw(!-d -w)];
+  }
+ delete $args{-filetypes};
+ delete $args{-force};
+ Tk::DialogWrapper('FileSelect',$cmd, %args);
 }
 
 1;

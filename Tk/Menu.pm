@@ -20,7 +20,7 @@ require Tk::Derived;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.022'; # $Id: //depot/Tk8/Tk/Menu.pm#22$
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/Menu.pm#26$
 
 use strict;
 
@@ -30,9 +30,9 @@ Construct Tk::Widget 'Menu';
 
 sub Tk_cmd { \&Tk::menu }    
 
-Tk::Methods("activate","add","clone","delete","entrycget","entryconfigure",
-            "index","insert","invoke","post","postcascade","type",
-            "unpost","yposition");
+Tk::Methods('activate','add','clone','delete','entrycget','entryconfigure',
+            'index','insert','invoke','post','postcascade','type',
+            'unpost','yposition');
 
 import Tk qw(Ev);
 
@@ -170,8 +170,8 @@ sub ClassInit
  $mw->bind($class,"<Right>",'RightArrow');
  $mw->bind($class,"<Up>",'UpArrow');
  $mw->bind($class,"<Down>",'DownArrow');
- $mw->bind($class,"<KeyPress>", ['TraverseWithinMenu',Ev('A')]);
- $mw->bind($class,"<Alt-KeyPress>", ['TraverseWithinMenu',Ev('A')]);
+ $mw->bind($class,"<KeyPress>", ['TraverseWithinMenu',Ev('K')]);
+ $mw->bind($class,"<Alt-KeyPress>", ['TraverseWithinMenu',Ev('K')]);
  return $class;
 }                     
 
@@ -261,15 +261,18 @@ sub Unpost
  eval {local $SIG{__DIE__}; 
    if (defined $mb)
      {
-      $menu = $mb->cget("-menu");
+      $menu = $mb->cget('-menu');
       $menu->unpost();
       $Tk::postedMb = undef;
-      $mb->configure("-cursor",$Tk::cursor);
-      $mb->configure("-relief",$Tk::relief)
+      $mb->configure('-cursor',$Tk::cursor);
+      $mb->configure('-relief',$Tk::relief)
      }
     elsif (defined $Tk::popup)
      {
       $Tk::popup->unpost();
+      my $grab = $Tk::popup->grabCurrent;
+      $grab->grabRelease if (defined $grab);
+
       undef $Tk::popup;
      }
     elsif (defined $menu && ref $menu && 
@@ -285,8 +288,9 @@ sub Unpost
        {
         my $parent = $menu->parent;
         last if (!$parent->IsMenu || !$parent->ismapped);
-        $parent->postcascade("none");        
+        $parent->postcascade('none');        
         $parent->GenerateMenuSelect;
+        $parent->activate('none');
         my $type = $parent->cget('-type');
         last if ($type eq 'menubar' || $type eq 'tearoff');
         $menu = $parent
@@ -379,7 +383,7 @@ sub Motion
   }
  if (($state & 0x1f00) != 0)
   {
-   $menu->postcascade("active")
+   $menu->postcascade('active')
   }
 }
 # ButtonDown --
@@ -399,7 +403,7 @@ sub Motion
 sub ButtonDown
 {
  my $menu = shift;
- $menu->postcascade("active");
+ $menu->postcascade('active');
  if (defined $Tk::postedMb)
   {
    $Tk::postedMb->grabGlobal
@@ -466,13 +470,13 @@ sub Leave
  my $rooty = shift;
  my $state = shift;
  undef $Tk::window;
- return if ($menu->index("active") eq "none");
- if ($menu->typeIS("active","cascade"))
+ return if ($menu->index('active') eq 'none');
+ if ($menu->typeIS('active','cascade'))
   {
    my $c = $menu->Containing($rootx,$rooty);
-   return if (defined $c && $menu->entrycget("active","-menu")->IS($c));
+   return if (defined $c && $menu->entrycget('active','-menu')->IS($c));
   }
- $menu->activate("none");
+ $menu->activate('none');
  $menu->GenerateMenuSelect;
 }
 
@@ -501,19 +505,19 @@ sub Invoke
    return;
   }
 
- my $type = $w->type("active");
- if ($w->typeIS("active","cascade"))
+ my $type = $w->type('active');
+ if ($w->typeIS('active','cascade'))
   {
-   $w->postcascade("active");
-   my $menu = $w->entrycget("active","-menu");
+   $w->postcascade('active');
+   my $menu = $w->entrycget('active','-menu');
    $menu->FirstEntry() if (defined $menu);
   }
- elsif ($w->typeIS("active","tearoff"))
+ elsif ($w->typeIS('active','tearoff'))
   {
    $w->Unpost();
    $w->TearOffMenu();
   }
- elsif ($w->typeIS("active","menubar"))
+ elsif ($w->typeIS('active','menubar'))
   {
    $w->postcascade('none');
    $w->activate('none');
@@ -523,7 +527,7 @@ sub Invoke
  else
   {
    $w->Unpost();
-   $w->invoke("active")
+   $w->invoke('active')
   }
 }
 # Escape --
@@ -566,13 +570,13 @@ sub NextMenu
  my $direction = shift;
  # First handle traversals into and out of cascaded menus.
  my $count;
- if ($direction eq "right")
+ if ($direction eq 'right')
   {
    $count = 1;
-   if ($menu->typeIS("active","cascade"))
+   if ($menu->typeIS('active','cascade'))
     {
-     $menu->postcascade("active");
-     my $m2 = $menu->entrycget("active","-menu");
+     $menu->postcascade('active');
+     my $m2 = $menu->entrycget('active','-menu');
      $m2->FirstEntry if (defined $m2);
      return;
     }
@@ -641,7 +645,7 @@ sub NextMenu
      $i += -$length
     }
    $mb = $buttons[$i];
-   last if ($mb->IsMenubutton && $mb->cget("-state") ne "disabled"
+   last if ($mb->IsMenubutton && $mb->cget('-state') ne 'disabled'
             && defined($mb->cget('-menu'))
             && $mb->cget('-menu')->index('last') ne 'none'
            );
@@ -662,14 +666,14 @@ sub NextEntry
 {
  my $menu = shift;
  my $count = shift;
- if ($menu->index("last") eq "none")
+ if ($menu->index('last') eq 'none')
   {
    return;
   }
- my $length = $menu->index("last")+1;
+ my $length = $menu->index('last')+1;
  my $quitAfter = $length;
- my $active = $menu->index("active");
- my $i = ($active eq "none") ? 0 : $active+$count; 
+ my $active = $menu->index('active');
+ my $i = ($active eq 'none') ? 0 : $active+$count; 
  while (1)
   {
    return if ($quitAfter <= 0);
@@ -681,8 +685,8 @@ sub NextEntry
     {
      $i += -$length
     }
-   my $state = eval {local $SIG{__DIE__};  $menu->entrycget($i,"-state") };
-   last if (defined($state) && $state ne "disabled");
+   my $state = eval {local $SIG{__DIE__};  $menu->entrycget($i,'-state') };
+   last if (defined($state) && $state ne 'disabled');
    return if ($i == $active);
    $i += $count;
    $quitAfter -= 1;
@@ -714,13 +718,13 @@ sub TraverseWithinMenu
  my $char = shift;
  return unless (defined $char);
  $char = "\L$char";
- my $last = $w->index("last");
- return if ($last eq "none");
+ my $last = $w->index('last');
+ return if ($last eq 'none');
  for (my $i = 0;$i <= $last;$i += 1)
   {
-   my $label = eval {local $SIG{__DIE__};  $w->entrycget($i,"-label") };
+   my $label = eval {local $SIG{__DIE__};  $w->entrycget($i,'-label') };
    next unless defined($label);
-   my $ul = $w->entrycget($i,"-underline");
+   my $ul = $w->entrycget($i,'-underline');
    if (defined $ul && $ul >= 0)
     {
      $label = substr("\L$label",$ul,1);
@@ -778,13 +782,13 @@ sub FirstEntry
  my $menu = shift;
  return if (!defined($menu) || $menu eq "" || !ref($menu));
  $menu->SetFocus;
- return if ($menu->index("active") ne "none");
- my $last = $menu->index("last");
+ return if ($menu->index('active') ne 'none');
+ my $last = $menu->index('last');
  return if ($last eq 'none');
  for (my $i = 0;$i <= $last;$i += 1)
   {
-   my $state = eval {local $SIG{__DIE__};  $menu->entrycget($i,"-state") };
-   if (defined $state && $state ne "disabled" && !$menu->typeIS($i,"tearoff"))
+   my $state = eval {local $SIG{__DIE__};  $menu->entrycget($i,'-state') };
+   if (defined $state && $state ne 'disabled' && !$menu->typeIS($i,'tearoff'))
     {
      $menu->activate($i);
      $menu->GenerateMenuSelect;
@@ -822,11 +826,11 @@ sub FindName
    $i = eval {local $SIG{__DIE__};  $menu->index($s) };
    return $i;
   }
- my $last = $menu->index("last");
+ my $last = $menu->index('last');
  return if ($last eq 'none');
  for ($i = 0;$i <= $last;$i += 1)
   {
-   my $label = eval {local $SIG{__DIE__};  $menu->entrycget($i,"-label") };
+   my $label = eval {local $SIG{__DIE__};  $menu->entrycget($i,'-label') };
    return $i if (defined $label && $label eq $s);
   }
  return undef;
@@ -850,7 +854,7 @@ sub PostOverPoint
  my $entry = shift;
  if (defined $entry)
   {
-   if ($entry == $menu->index("last"))
+   if ($entry == $menu->index('last'))
     {
      $y -= ($menu->yposition($entry)+$menu->height)/2;
     }
@@ -861,7 +865,7 @@ sub PostOverPoint
    $x -= $menu->reqwidth/2;
   }
  $menu->post($x,$y);
- if (defined($entry) && $menu->entrycget($entry,"-state") ne "disabled")
+ if (defined($entry) && $menu->entrycget($entry,'-state') ne 'disabled')
   {
    $menu->activate($entry);
    $menu->GenerateMenuSelect;
@@ -961,11 +965,11 @@ sub TearOffMenu
    $parent = $w->parent;
    if ($parent->IsMenubutton)
     {
-     $title = $parent->cget("-text");
+     $title = $parent->cget('-text');
     }
    elsif ($parent->IsMenu)
     {
-     $title = $parent->entrycget("active","-label");
+     $title = $parent->entrycget('active','-label');
     }
   }
  $menu->title($title) if (defined $title && length($title));
@@ -1003,10 +1007,10 @@ sub MenuDup
   {
    $dst->transient($parent->MainWindow);
   }
- my $last = $src->index("last");
+ my $last = $src->index('last');
  if ($last ne 'none')
   {
-   for (my $i = $src->cget("-tearoff"); $i <= $last; $i++)
+   for (my $i = $src->cget('-tearoff'); $i <= $last; $i++)
     {
      my $type = $src->type($i);
      if (defined $type)

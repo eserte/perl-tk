@@ -12,7 +12,7 @@ require Tk::Toplevel;
 require Tk::Frame;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#13$
 
 use base  qw(Tk::Toplevel Tk::Frame);
 
@@ -47,11 +47,18 @@ sub Populate {
 			  -command => [ sub {
 			      $_[0]->{"selected_button"} = $_[1];
 			  }, $cw, $bl]);
+        if ($Tk::platform eq 'MSWin32') {
+            $b->configure(-width => 10, -pady => 0); 
+        }
 	if ($bl eq $default_button) {
-	    my $db = $bot->Frame(-relief => "sunken", -bd => 1);
-	    $b->raise($db);
-	    $b->pack(-in => $db, -padx => "2", -pady => "2");
-	    $db->pack(-side => "left", -expand => 1, -padx => 1, -pady => 1);
+            if ($Tk::platform eq 'MSWin32') {
+                $b->pack(-side => "left", -expand => 1,  -padx => 1, -pady => 1);
+            } else {
+	        my $db = $bot->Frame(-relief => "sunken", -bd => 1);
+	        $b->raise($db);
+	        $b->pack(-in => $db, -padx => "2", -pady => "2");
+	        $db->pack(-side => "left", -expand => 1, -padx => 1, -pady => 1);
+            }
 	    $cw->bind("<Return>" => [ sub {
 		$_[2]->flash;
 		$_[1]->{"selected_button"} = $_[3];

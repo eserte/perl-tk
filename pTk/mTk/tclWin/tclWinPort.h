@@ -36,6 +36,11 @@
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
 
+#ifdef BUILD_tcl
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
+#endif
+
 /*
  * Define EINPROGRESS in terms of WSAEINPROGRESS.
  */
@@ -368,13 +373,11 @@ EXTERN size_t		TclStrftime _ANSI_ARGS_((char *s, size_t maxsize,
  * well or consistantly.
  */
 
-#define stat(path, buf)		TclWinStat(path, buf)
-#define lstat			stat
-#define access(path, mode)	TclWinAccess(path, mode)
+#define lstat		TclStat
 
-EXTERN int		TclWinStat _ANSI_ARGS_((CONST char *path, 
+EXTERN int		TclpStat _ANSI_ARGS_((CONST char *path, 
 			    struct stat *buf));
-EXTERN int		TclWinAccess _ANSI_ARGS_((CONST char *path, 
+EXTERN int		TclpAccess _ANSI_ARGS_((CONST char *path, 
 			    int mode));
 
 #define TclpReleaseFile(file)	ckfree((char *) file)
@@ -396,4 +399,8 @@ EXTERN u_short PASCAL FAR
 			TclWinNToHS _ANSI_ARGS_((u_short ns));
 EXTERN int PASCAL FAR	TclWinSetSockOpt _ANSI_ARGS_((SOCKET s, int level,
 		            int optname, const char FAR * optval, int optlen));
+
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLIMPORT
+
 #endif /* _TCLWINPORT */

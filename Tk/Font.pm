@@ -1,188 +1,164 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Font.pm#13$
-
-{package Tk::font;
- use overload '""' => 'as_string'; 
- sub as_string { return ${$_[0]} }
-}
-
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/Font.pm#17$
 require Tk::Widget;
-require Tk::Xlib;
 use strict;
+use Data::Dumper;
+use Carp;
+use overload '""' => 'as_string'; 
+sub as_string { return ${$_[0]} }       
+
+*MainWindow = \&Tk::Widget::MainWindow;
+
+foreach my $key (qw(actual metrics measure configure))
+ {
+  no strict 'refs';
+  *{$key} = sub { shift->Tk::font($key,@_) };
+ }
 
 Construct Tk::Widget 'Font';
 
-my @field = qw(foundry family weight slant swidth adstyle pixel
+my @xfield  = qw(foundry family weight slant swidth adstyle pixel
                point xres yres space avgwidth registry encoding);
+my @tkfield = qw(family size weight slant underline overstrike);
+my %tkfield = map { $_ => "-$_" } @tkfield;
 
-map { eval "sub \u$_ { shift->elem('$_', \@_) }" } @field;
+sub _xonly { my $old = '*'; return $old }
+                 
+sub Pixel 
+{
+ my $me  = shift;
+ my $old = $me->configure('-size');
+ $old = '*' if ($old > 0);
+ if (@_)
+  {                          
+   $me->configure(-size => -$_[0]); 
+  }
+ return $old;
+}
 
-use overload '""' => 'as_string';
+sub Point
+{
+ my $me  = shift;
+ my $old = 10*$me->configure('-size');
+ $old = '*' if ($old < 0);
+ if (@_)
+  {                          
+   $me->configure(-size => int($_[0]/10)); 
+  }
+ return $old;
+}
+
+foreach my $f (@tkfield,@xfield)
+ {
+  no strict 'refs';
+  my $sub = "\u$f";  
+  unless (defined &{$sub})
+   {
+    my $key = $tkfield{$f};
+    if (defined $key)
+     {
+      *{$sub} = sub { shift->configure($key,@_) };
+     }
+    else
+     {
+      *{$sub} = \&_xonly;
+     }
+   }   
+ }
 
 sub new
 {
- my $pkg = shift;
- my $w   = shift;
-
- my %me = ();
- my $d  = $w->Display;
-
- local $_;
-
- if(scalar(@_) == 1)
+ my $pkg  = shift;
+ my $w    = shift;
+ my $me;
+ if (scalar(@_) == 1)
   {
-   my $pattern = shift;
-
-   if($pattern =~ /\A(-[^-]*){14}\Z/)
-    {
-     @me{@field} = split(/-/, substr($pattern,1));
-    }
-   else
-    {
-     $me{Name} = $pattern;
-  
-     if($pattern =~ /^[^-]?-([^-]*-){2,}/)
-      {
-       my $f = $d->XListFonts($pattern,1);
-    
-       if($f && $f =~ /\A(-[^-]*){14}/)
-        {
-         my @f = split(/-/, substr($f,1));
-         my @n = split(/-/, $pattern);
-         my %f = ();
-         my $i = 0;
-    
-         shift @n if($pattern =~ /\A-/);
-  
-         while(@n && @f)
-          {
-           if($n[0] eq '*')
-            {
-             shift @n;
-            }
-           elsif($n[0] eq $f[0])
-            {
-             $f{$field[$i]} = shift @n;
-            }
-           $i++;
-           shift @f;
-          }
-
-         %me = %f
-           unless(@n);
-        }
-      }
-    }
+   $me = $w->Tk::font('create',@_);
   }
  else
-  {
-   %me = @_;
+  {       
+   croak "Odd number of args" if @_ & 1;
+   my %attr;
+   while (@_)
+    {
+     my $k = shift;
+     my $v = shift;
+     my $t = (substr($k,0,1) eq '-') ? $k : $tkfield{$k};
+     if (defined $t)
+      {
+       $attr{$t} = $v;
+      }  
+     elsif ($k eq 'point')
+      {
+       $attr{'-size'} = -int($v/10+0.5);
+      }
+     elsif ($k eq 'pixel')
+      {
+       $attr{'-size'} = -$v;
+      }
+     else
+      {
+       carp "$k ignored" if $^W; 
+      }
+    }
+   $me = $w->Tk::font('create',%attr);
+   # print Dumper(\%attr,[$me->actual]);
   }
-
- map { $me{$_} ||= '*' } @field;
-
- $me{Display} = $d;
- $me{MainWin} = $w->MainWindow;
-
- bless \%me, $pkg;
+ return bless $me,$pkg;
 }
 
 sub Pattern
 {
- my $me  = shift;
- return join("-", "",@{$me}{@field});
+ my $me  = shift;              
+ my @str;
+ foreach my $f (@xfield)
+  {    
+   my $meth = "\u$f";
+   my $str  = $me->$meth();
+   if ($f eq 'family')
+    {
+     $str =~ s/(?:Times\s+New\s+Roman|New York)/Times/i;
+     $str =~ s/(?:Courier\s+New|Monaco)/Courier/i;
+     $str =~ s/(?:Arial|Geneva)/Helvetica/i;
+    }
+   elsif ($f eq 'slant')
+    {
+     $str = substr($str,0,1);
+    }
+   elsif ($f eq 'weight')
+    {
+     $str = 'medium' if ($str eq 'normal');
+    }
+   push(@str,$str);
+  }
+ return join("-", "", @str);
 }
 
 sub Name
 {
  my $me  = shift;
- my $max = wantarray ? shift || 128 : 1;
-
- if ($^O eq 'MSWin32')
-  {
-   my $name = $me->{Name};
-   if (!defined $name)
-    {
-     my $fm  = $me->{'family'} || 'system';
-     my $sz  = -int($me->{'point'}/10) || -($me->{'pixel'}) || 12;
-     my @opt = (-family => $fm, -size => $sz );
-     my $wt  = $me->{'weight'};
-     if (defined $wt)
-      {
-       $wt = 'normal' unless $wt =~ /bold/i;
-       push(@opt,-weight => lc($wt));
-      }
-     my $sl  = $me->{'slant'};
-     if (defined $sl)
-      {
-       $sl = ($sl =~ /^[io]/) ? 'italic' : 'roman';
-       push(@opt,-slant => $sl);
-      }
-     $name = join(' ',@opt);
-    }
-   return $name;
-  }
- else
-  {
-   my $name = $me->{Name} ||
-              join("-", "",@{$me}{@field});
-   return $me->{Display}->XListFonts($name,$max);
-  }
-}
-
-sub as_string
-{
- return shift->Name;
-}
-
-sub elem
-{
- my $me   = shift;
- my $elem = shift;
-
- return undef
-   if(exists $me->{'Name'});
-
- my $old  = $me->{$elem};
-
- $me->{$elem} = shift
-   if(@_);
-
- $old;
+ return $$me if (!wantarray || ($^O eq 'MSWin32'));
+ my $max = shift || 128;
+ my $w = $me->MainWindow;
+ my $d = $w->Display;
+ return $d->XListFonts($me->Pattern,$max);
 }
 
 sub Clone
 {
  my $me = shift;
-
- $me = bless { %$me }, ref($me);
-
- unless(exists $me->{'Name'})
-  {
-   while(@_)
-    {
-     my $k = shift;
-     my $v = shift || $me->{MainWin}->BackTrace('Tk::Font->Clone( key => value, ... )');
-     $me->{$k} = $v;
-    }
-  }
-
- $me;
+ return ref($me)->new($me,$me->actual,@_);
 }
 
 sub ascent
 {
- my $me = shift;
- my $name = $me->Name;
- $me->{MainWin}->FontAscent($name);
+ return shift->metrics('-ascent');
 }
 
 sub descent
 {
- my $me = shift;
- my $name = $me->Name;
- $me->{MainWin}->FontDescent($name);
+ return shift->metrics('-descent');
 }
 
 1;

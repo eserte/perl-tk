@@ -2,7 +2,6 @@ LangClientMessage
 LangDeadWindow
 Lang_DeadMainWindow
 Lang_NewMainWindow
-Tix_FormCmd
 Tk_AfterCmd
 Tk_BellCmd
 Tk_BindCmd
@@ -40,7 +39,6 @@ Tk_SendCmd
 Tk_TextCmd
 Tk_TkwaitCmd
 Tk_UpdateCmd
-Tk_WinfoCmd
 Tk_WmCmd
 Tk_Init
 Tk_ParseArgv

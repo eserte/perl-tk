@@ -335,14 +335,14 @@ PPCODE:
   if (parent)
    {
     if (pw == None)
-     sv_setsv(parent,&sv_undef);
+     sv_setsv(parent,&PL_sv_undef);
     else
      sv_setref_iv(parent, "Window", (IV) (pw));
    }
   if (root)
    {
     if (rw == None)
-     sv_setsv(root,&sv_undef);
+     sv_setsv(root,&PL_sv_undef);
     else
      sv_setref_iv(root, "Window", (IV) (rw));
    }
@@ -358,6 +358,7 @@ Window		win
 CODE:
   {unsigned long valuemask = 0;
    XGCValues values;
+   STRLEN na;
    int i;
    for (i=3; i < items; i += 2)
     {char *key = SvPV(ST(i),na);

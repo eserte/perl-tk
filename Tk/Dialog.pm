@@ -1,7 +1,7 @@
 package Tk::Dialog;
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/Dialog.pm#17$
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Dialog.pm#20$
 
 # Dialog - a translation of `tk_dialog' from Tcl/Tk to TkPerl (based on
 # John Stoffel's idea).
@@ -41,8 +41,10 @@ sub Populate
 
     $cw->{'selected_button'} = '';
     my (@pl) = (-side => 'top', -fill => 'both');
+
     ($pad1, $pad2) =
         ([-padx => '3m', -pady => '3m'], [-padx => '3m', -pady => '2m']);
+
 
     $cw->iconname('Dialog');
     $cw->protocol('WM_DELETE_WINDOW' => sub {});
@@ -76,16 +78,26 @@ sub Populate
                     $_[0]->{'selected_button'} = $_[1];
                 }, $cw, $bl,
             ]
-        );
+        );       
+        if ($Tk::platform eq 'MSWin32') {
+            $w_but->configure(-width => 10, -pady => 0); 
+        }
+
         if ($bl eq $default_button) {
-            $w_default_button = $w_bot->Frame(
-                -relief      => 'sunken',
-                -borderwidth => 1
-            );
-            $w_but->raise($w_default_button);
-            $w_default_button->pack(@pl, -expand => 1, @$pad2);
-            $w_but->pack(-in => $w_default_button, -padx => '2m',
-                         -pady => '2m');
+            if ($Tk::platform eq 'MSWin32') {
+                $w_default_button = $w_but;
+                $w_but->configure(-borderwidth => 2);
+                $w_but->pack(@pl, -expand => 1, @$pad2);
+            } else {
+                my $w_default_frame = $w_bot->Frame(
+                    -relief      => 'sunken',
+                    -borderwidth => 1
+                );
+                $w_but->raise($w_default_frame);
+                $w_default_frame->pack(@pl, -expand => 1, @$pad2);
+                $w_but->pack(-in => $w_default_frame, -padx => '2m',
+                             -pady => '2m');
+            }
             $cw->bind(
                 '<Return>' => [
                     sub {
@@ -94,6 +106,7 @@ sub Populate
                     }, $w_but, $cw, $bl,
                 ]
             );
+	    $w_default_button = $w_but;
         } else {
          $w_but->pack(@pl, -expand => 1, @$pad2);
         }

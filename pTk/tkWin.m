@@ -2,6 +2,10 @@
 #define _TKWIN_VM
 #include "tkWin_f.h"
 #ifndef NO_VTABLES
+#ifndef Lang_WinEvent
+#  define Lang_WinEvent (*TkwinVptr->V_Lang_WinEvent)
+#endif
+
 #ifndef Tcl_WatchHandle
 #  define Tcl_WatchHandle (*TkwinVptr->V_Tcl_WatchHandle)
 #endif

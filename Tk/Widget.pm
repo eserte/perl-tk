@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.038'; # $Id: //depot/Tk8/Tk/Widget.pm#38$
+$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/Widget.pm#42$
 
 require Tk;
 use AutoLoader;
@@ -69,7 +69,7 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                   );
 
 *IsMenu       = \&False;
-*IsMenubutton = \&False;                
+*IsMenubutton = \&False;
 
 Direct Tk::Submethods (
   'winfo' => [qw(cells class colormapfull depth exists
@@ -100,7 +100,7 @@ sub ClassInit
  # Carry out class bindings (or whatever)
  my ($package,$mw) = @_;
  return $package;
-}    
+}
 
 sub CreateOptions
 {
@@ -250,7 +250,7 @@ sub IS
 sub AUTOLOAD
 {
  # Take a copy into a 'my' variable so we can recurse
- my $what = $Tk::Widget::AUTOLOAD; 
+ my $what = $Tk::Widget::AUTOLOAD;
  my $save = $@;
  my $name;
  # Braces used to preserve $1 et al.
@@ -312,8 +312,8 @@ sub AUTOLOAD
         }
       }
     }
-  }     
- $@ = $save;                                          
+  }
+ $@ = $save;
  $DB::sub = $what; # Tell debugger what is going on...
  goto &$what;
 }
@@ -359,6 +359,7 @@ sub Getimage
 {
  my ($w, $name) = @_;
  my $mw = $w->MainWindow;
+ croak "Usage \$widget->Getimage('name')" unless defined($name);
  my $images = ($mw->{'__Images__'} ||= {});
 
  return $images->{$name} if $images->{$name};
@@ -753,49 +754,91 @@ sub PrintConfig
   }
 }
 
+sub BusyRecurse
+{
+ my ($restore,$w,$cursor,$recurse,$top) = @_;
+ my $c = $w->cget('-cursor');
+ my @tags = $w->bindtags;
+ if ($top || defined($c))
+  {
+   push(@$restore, sub { $w->configure(-cursor => $c); $w->bindtags(\@tags) });
+   $w->configure(-cursor => $cursor);
+  }
+ else
+  {
+   push(@$restore, sub { $w->bindtags(\@tags) });
+  }
+ $w->bindtags(['Busy',@tags]);
+ if ($recurse)
+  {
+   foreach my $child ($w->children)
+    {
+     BusyRecurse($restore,$child,$cursor,1,0);
+    }
+  }
+ return $restore;
+}
+
 sub Busy
 {
  my ($w,%args) = @_;
  return unless $w->viewable;
- $args{'-cursor'} = 'watch' unless (exists $args{'-cursor'});
+ my $cursor  = delete $args{'-cursor'};
+ my $recurse = delete $args{'-recurse'};
+ $cursor  = 'watch' unless defined $cursor;
  unless (exists $w->{'Busy'})
   {
-   my %old = ();
+   my @old = ($w->grabSave);
    my $key;
-   my @tags = $w->bindtags;
+   my @config;
    foreach $key (keys %args)
     {
-     $old{$key} = $w->Tk::cget($key);
+     push(@config,$key => $w->Tk::cget($key));
     }
-   $old{'bindtags'} = \@tags;
-   $old{'grab'}     = $w->grabSave;
+   if (@config)
+    {
+     push(@old, sub { $w->Tk::configure(@config) });
+     $w->Tk::configure(%args);
+    }
    unless ($w->Tk::bind('Busy'))
     {
-     $w->Tk::bind('Busy','<KeyPress>','bell');
-     $w->Tk::bind('Busy','<ButtonPress>','bell');
+     $w->Tk::bind('Busy','<Any-KeyPress>',[_busy => 1]);
+     $w->Tk::bind('Busy','<Any-KeyRelease>',[_busy => 0]);
+     $w->Tk::bind('Busy','<Any-ButtonPress>',[_busy => 1]);
+     $w->Tk::bind('Busy','<Any-ButtonRelease>',[_busy => 0]);
     }
-   $w->bindtags(['Busy']);
-   $w->{'Busy'} = \%old;
+   $w->{'Busy'} = BusyRecurse(\@old,$w,$cursor,$recurse,1);
   }
- $w->Tk::configure(%args);
+ my $g = $w->grabCurrent;
+ if (defined $g)
+  {
+   warn "$g has the grab";
+   $g->grabRelease;
+  }
+ $w->update;
  eval {local $SIG{'__DIE__'};  $w->grab };
  $w->update;
+}
+
+sub _busy
+{
+ my ($w,$f) = @_;
+ $w->bell if $f;
+ $w->break;
 }
 
 sub Unbusy
 {
  my ($w) = @_;
+ $w->update;
  $w->grabRelease;
  my $old = delete $w->{'Busy'};
  if (defined $old)
   {
-   my $grab = delete $old->{'grab'};
-   $w->update;  # flush events that happened with Busy bindings
-   $w->bindtags(delete $old->{'bindtags'});
-   $w->Tk::configure(%{$old});
-   $w->update;
-   &$grab;
+   local $SIG{'__DIE__'};
+   eval { &{pop(@$old)} } while (@$old);
   }
+ $w->update;
 }
 
 sub waitVisibility
@@ -1058,7 +1101,6 @@ sub EventType
 }
 
 1;
-
 __END__
 
 sub ASkludge
@@ -1081,7 +1123,7 @@ sub ASkludge
       }
     }
   }
-} 
+}
 
 
 

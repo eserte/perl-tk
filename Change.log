@@ -1,3 +1,309 @@
+Change 1179 on 1998/11/15 by nick@ni-s
+
+	Make last separator entry right justify remaining items on a UNIX
+	menubar (already done for Win32).
+	Update pods for Menu (this change), and Widget (document Busy/Unbusy).
+
+Change 1178 on 1998/11/14 by nick@ni-s
+
+	Forgot the ##%*%^#$% $VERSION _again_.
+
+Change 1177 on 1998/11/14 by nick@ni-s
+
+	Insist on 5.00404 at top of Makefile.PL, try and remove
+	duplicate dependancy waffle from dmake
+
+Change 1176 on 1998/11/14 by nick@ni-s
+
+	First stab and Changes and README
+
+Change 1175 on 1998/11/14 by nick@camel
+
+	Don't move raised windows down
+
+Change 1174 on 1998/11/14 by nick@ni-s
+
+	pTk-ize new Menu code
+
+Change 1173 on 1998/11/14 by nick@gobstopper
+
+	Mingw32 build fixes
+
+Change 1172 on 1998/11/14 by nick@ni-s
+
+	Botched merge
+
+Change 1171 on 1998/11/14 by nick@ni-s
+
+	Loose binary "makefiles"
+
+Change 1170 on 1998/11/14 by nick@ni-s
+
+	Copyright dates, MANIFEST update etc. after merge
+
+Change 1169 on 1998/11/14 by nick@ni-s
+
+	Mark change-via-patch as integated
+
+Change 1168 on 1998/11/14 by nick@ni-s
+
+	Diff tk8.0p2 our version of tkCanvPs.c
+	Apply result as patch to tk8.0.3 version
+
+Change 1167 on 1998/11/14 by nick@ni-s
+
+	Bulk of tcl8.0.3/tk8.0.3 merge
+
+Change 1166 on 1998/11/14 by nick@ni-s
+
+	Copy in gross change prior to merge
+
+Change 1164 on 1998/11/13 by nick@ni-s
+
+	tk8.0.3 merge
+	diff -ru tk8.0p2 tk8.0.3 ; apply as patch
+	cpt -md tk.8.0.3 . 
+	make_manifest 
+	p4manifest
+	p4 diff -se ./... > e
+	p4 -x e edit
+
+Change 1163 on 1998/11/13 by nick@camel
+
+	Tweak basic_demo to have right-side menu items
+	Works on Win32.
+
+Change 1162 on 1998/11/13 by nick@ni-s
+
+	1st stab and allowing right-justified menu items on Win32.
+
+Change 1161 on 1998/11/13 by nick@ni-s
+
+	$VERSION and MANIFEST cleanup again
+
+Change 1160 on 1998/11/13 by nick@camel
+
+	Don't use TOPMOST XRaiseWindow()
+
+Change 1159 on 1998/11/13 by nick@ni-s
+
+	Suggested patch for 'raise' window.
+
+Change 1158 on 1998/11/13 by nick@camel
+
+	Make arrow keys clear selection
+
+Change 1157 on 1998/11/13 by nick@pluto
+
+	Re-work ->Busy to (optionaly) recurse with cursor setting.
+
+Change 1156 on 1998/11/12 by nick@camel
+
+	Make TranslateFileName actually work...
+
+Change 1155 on 1998/11/12 by nick@camel
+
+	To compile with VC++ needs <shellapi.h>
+
+Change 1154 on 1998/11/12 by nick@ni-s
+
+	Simple minded Tcl_TranslateFileName() via call to Tk::TranslateFileName
+	now defined in Tk.pm
+
+Change 1153 on 1998/11/09 by nick@pluto
+
+	More Font tolerance
+
+Change 1152 on 1998/11/08 by nick@ni-s
+
+	Update MANIFEST for docs and Win32 tweaks
+
+Change 1151 on 1998/11/08 by nick@ni-s
+
+	We have done some things in ToDo list!
+
+Change 1150 on 1998/11/08 by nick@ni-s
+
+	Tweaks to X11Font docs in its new home.
+
+Change 1149 on 1998/11/08 by nick@ni-s
+
+	Stage 1 of Font docs update.
+
+Change 1147 on 1998/11/08 by nick@ni-s
+
+	Default offset in IO::READ
+
+Change 1146 on 1998/11/07 by nick@gobstopper
+
+	Win32 debug assist script
+
+Change 1142 on 1998/11/07 by nick@gobstopper
+
+	There are several problems with WinPhoto on Win32
+	- Cannot get XGetWindowAttributes().
+	- Cannot get XGetImage() from a Window (fixable)
+	- Not clear if XQueryColors() is right due to above.
+	Disable for now.
+
+Change 1141 on 1998/11/07 by nick@ni-s
+
+	Make XGetWindowAttributes() less stub-like.
+
+Change 1140 on 1998/11/07 by nick@ni-s
+
+	Move XQueryColors() to tkWinColour and implement.
+
+Change 1139 on 1998/11/07 by nick@gobstopper
+
+	Change default Text font to a Fixed width font
+	Change WinPhoto to call a XQueryColors() which at least
+	has a stub on Win32.
+
+Change 1138 on 1998/11/07 by nick@ni-s
+
+	Switch to Tk::Font C-side, make tkFont.c accept X-like names
+	for bold-ness etc. Fill in a few more holes in Font.pm
+
+Change 1137 on 1998/11/07 by nick@ni-s
+
+	David Town's <dtown@fore.com> tweaks for more native-look dialogs on
+	Win32
+
+Change 1136 on 1998/11/06 by nick@ni-s
+
+	I always botch at least one $VERSION per-try 
+
+Change 1135 on 1998/11/06 by nick@ni-s
+
+	MANIFEST abd $VERSION updates
+
+Change 1134 on 1998/11/06 by nick@ni-s
+
+	Move WinPhoto to build by default (at least on UNIX)
+
+Change 1133 on 1998/11/05 by nick@ni-s
+
+	1st stab at unified Tk::font / Tk::Font 
+
+Change 1132 on 1998/11/03 by nick@pluto
+
+	Perl-side (mostly) fonts-as-objects. Tweak C side to allow Tk::font 
+	glue to accept either $font->actual or $widget->fontNames style.
+
+Change 1131 on 1998/11/02 by nick@ni-s
+
+	More C-side twiddling of fonts.
+	 Return list of key/value pairs for font('metrics',...)
+	 Return list of Tk::font objects for font('names')
+
+Change 1130 on 1998/11/02 by nick@ni-s
+
+	Implement Tk_GetUid using perl's shared hash keys.
+	Does not seem to help memory size at all - odd.
+
+Change 1129 on 1998/10/31 by nick@ni-s
+
+	We don't need Tcl_HashStats (remnant of attempt to replace
+	Tcl_Hash* with HVs)
+
+Change 1128 on 1998/10/31 by nick@ni-s
+
+	Slightly better C hooks for fonts as objects
+
+Change 1127 on 1998/10/30 by nick@ni-s
+
+	First pass of C code mods for fonts as objects
+
+Change 1124 on 1998/10/27 by nick@gobstopper
+
+	A 'na' that only shows up on Win32
+
+Change 1117 on 1998/10/18 by nick@ni-s
+
+	VERSION updates
+
+Change 1115 on 1998/10/17 by nick@ni-s
+
+	Changes to allow build under 5.005_52+ which insists on 5.005
+	style access to perl global variables.
+
+Change 1113 on 1998/10/16 by nick@ni-s
+
+	Slaven Rezic linux/FreeBSD patches
+
+Change 1111 on 1998/10/15 by nick@pluto
+
+	Add keycode to basic_deno diags
+
+Change 1109 on 1998/10/13 by nick@ni-s
+
+	Use keysyms rather than char code for Alt- Menu bindings.
+	(OS2 request, seems to make sense in general.)
+
+Change 1108 on 1998/10/13 by nick@ni-s
+
+	Slaven Rezic's fixes for raw ->interp[0] and DItem pods.
+
+Change 1105 on 1998/10/05 by nick@gobstopper
+
+	Derived files 
+
+Change 1102 on 1998/09/30 by nick@ni-s
+
+	Ilya's OS2 patch
+
+Change 1100 on 1998/09/28 by nick@pluto
+
+	Build on UNIX after Win32 D&D stuff
+
+Change 1099 on 1998/09/26 by nick@gobstopper
+
+	More Win32 Drop stuff
+
+Change 1098 on 1998/09/26 by nick@gobstopper
+
+	Add Basic Win32 dropsite support, still needs to map list back onto
+	a 'selection', before it is usable.
+
+Change 1097 on 1998/09/21 by nick@ni-s
+
+	Patch for popups on Win32
+
+Change 1093 on 1998/09/15 by nick@pluto
+
+	Avoid &NeedPreload as it re-uses @_ and XS complains
+
+Change 1085 on 1998/09/13 by nick@ni-s
+
+	Add test, update README, implement $$ as literal $ 
+	Call this 0.03
+
+Change 1080 on 1998/09/08 by nick@pluto
+
+	De-activate top-level Menubar item after invoke
+	Allow non-existing files for getSaveFile via Fbox.
+
+Change 1078 on 1998/09/05 by nick@ni-s
+
+	Slaven Rezic's Tk::FBox
+
+Change 1077 on 1998/09/05 by nick@ni-s
+
+	The missed Balloon patch
+
+Change 1076 on 1998/09/05 by nick@ni-s
+
+	Slaven Rezic's Menunutton and Dialog fixes 
+
+Change 1075 on 1998/09/05 by nick@ni-s
+
+	Manifest
+
+Change 1074 on 1998/09/01 by nick@ni-s
+
+	Prepare for Tk800.011
+
 Change 1073 on 1998/08/30 by nick@linux
 
 	Add file name to title of ptked

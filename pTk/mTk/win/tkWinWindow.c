@@ -115,7 +115,12 @@ Tk_Window
 Tk_HWNDToWindow(hwnd)
     HWND hwnd;
 {
-    Tcl_HashEntry *entryPtr = Tcl_FindHashEntry(&windowTable, (char*)hwnd);
+    Tcl_HashEntry *entryPtr;
+    if (!initialized) {
+	Tcl_InitHashTable(&windowTable, TCL_ONE_WORD_KEYS);
+	initialized = 1;
+    }
+    entryPtr = Tcl_FindHashEntry(&windowTable, (char*)hwnd);
     if (entryPtr != NULL) {
 	return (Tk_Window) Tcl_GetHashValue(entryPtr);
     }
@@ -276,9 +281,9 @@ TkpMakeWindow(winPtr, parent)
      * stacking order.
      */
 
-    hwnd = CreateWindow(TK_WIN_CHILD_CLASS_NAME, NULL, style,
-	    Tk_X(winPtr), Tk_Y(winPtr), Tk_Width(winPtr), Tk_Height(winPtr),
-	    parentWin, NULL, Tk_GetHINSTANCE(), NULL);
+    hwnd = CreateWindowEx(WS_EX_NOPARENTNOTIFY, TK_WIN_CHILD_CLASS_NAME, NULL,
+	    style, Tk_X(winPtr), Tk_Y(winPtr), Tk_Width(winPtr),
+	    Tk_Height(winPtr), parentWin, NULL, Tk_GetHINSTANCE(), NULL);
     SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0,
 		    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     return Tk_AttachHWND((Tk_Window)winPtr, hwnd);
@@ -608,7 +613,7 @@ XRaiseWindow(display, w)
     HWND window = TkWinGetHWND(w);
 
     display->request++;
-    SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0,
+    SetWindowPos(window, HWND_TOP, 0, 0, 0, 0,
 	    SWP_NOMOVE | SWP_NOSIZE);
 }
 
@@ -635,8 +640,8 @@ XLowerWindow(display, w)
     HWND window = TkWinGetHWND(w);
 
     display->request++;
-    SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0,
-	    SWP_NOMOVE | SWP_NOSIZE);
+    SetWindowPos(window, HWND_BOTTOM, 0, 0, 0, 0,
+	    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }
 
 /*
@@ -808,10 +813,15 @@ TkWinSetWindowPos(hwnd, siblingHwnd, pos)
 	    hwnd = siblingHwnd;
 	    siblingHwnd = temp;
 	}
-    } else {
-	siblingHwnd = (pos == Above) ? HWND_TOP : HWND_BOTTOM;
+    } else {       
+	if (pos == Above) {
+	    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
+		    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+	     siblingHwnd = HWND_NOTOPMOST;	
+        } else {
+	     siblingHwnd = HWND_BOTTOM;
+        }
     }
-
     SetWindowPos(hwnd, siblingHwnd, 0, 0, 0, 0,
 	    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 }
@@ -841,3 +851,25 @@ TkpWindowWasRecentlyDeleted(win, dispPtr)
 {
     return 0;
 }
+
+int
+XGetWindowAttributes(display, w, attrib)
+    Display* display;
+    Window w;
+    XWindowAttributes* attrib;
+{
+    HWND hwnd = Tk_GetHWND(w);
+    memset(attrib,0,sizeof(*attrib));
+    if (hwnd) {
+	RECT rc;
+	GetWindowRect(hwnd, &rc);
+	attrib->width  = rc.right - rc.left;
+	attrib->height = rc.bottom - rc.top;
+	attrib->x      = rc.left;
+	attrib->y      = rc.top;
+	return 1;
+    }
+    return 0;
+}
+
+

@@ -16,10 +16,6 @@ S<    >I<$widget>-E<gt>B<getSaveFile>(?I<-option>=E<gt>value, ...>?)
 
 =head1 DESCRIPTION
 
-	The current implementation of getOpen/Save File does
-	not work exactly as documented here (at least on Unix).
-	Work in progress ...
-
 The methods B<getOpenFile> and B<getSaveFile> pop up a
 dialog box for the user to select a file to open or save.
 
@@ -37,7 +33,7 @@ whether the existing file should be overwritten or not.
 
 If the user selects a file, both B<getOpenFile> and
 B<getSaveFile> return the full pathname of this file. If the
-user cancels the operation, both commands return the empty string.
+user cancels the operation, both commands return an undefined value.
 
 The following I<option-value> pairs are possible as command line
 arguments to these two commands:
@@ -51,9 +47,6 @@ enters a filename without an extension. The default value is the empty
 string, which means no extension will be appended to the filename in
 any case. This option is ignored on the Macintosh platform, which
 does not require extensions to filenames.
-
-Note: On Unix the '.' is automaticly added so use B<pm> if you want that
-B<.pm> gets appended as default.
 
 =item B<-filetypes> =E<gt> [I<filePattern> ?, ...?]
 
@@ -94,7 +87,7 @@ The I<filePattern>s given by the B<-filetypes> option
 are a list of file patterns. Each file pattern is a list of the
 form
 
- typeName {extension ?extension ...?} ?{macType ?macType ...?}?
+ typeName [extension ?extension ...?] ?[macType ?macType ...?]?
 
 I<typeName> is the name of the file type described by this
 file pattern and is the text string that appears in the B<File types>
@@ -146,12 +139,12 @@ work on all platforms.
 =head1 EXAMPLE
 
  my $types = [
-     "{Text Files}       {.txt}        ",
-     "{TCL Scripts}      {.tcl}        ",
-     "{C Source Files}   {.c}      TEXT",
-     "{GIF Files}        {.gif}        ",
-     "{GIF Files}        {}        GIFF",
-     "{All Files}        *             ",
+     ['Text Files',       ['.txt', '.text']],
+     ['TCL Scripts',      '.tcl'           ],
+     ['C Source Files',   '.c',      'TEXT'],
+     ['GIF Files',        '.gif',          ],
+     ['GIF Files',        '',        'GIFF'],
+     ['All Files',        '*',             ],
  ];
  my $filename = $widget->getOpenFile(-filetypes=>$types);
 
@@ -159,13 +152,9 @@ work on all platforms.
      # Open the file ...
  }
 
-=head1 BUGS
-
-See F<pod/TODO> in the perl/Tk distribution for a list of known bugs
-
 =head1 SEE ALSO
 
-L<Tk::FileSelect|Tk::FileSelect>
+L<Tk::FBox|Tk::FBox>, L<Tk::FileSelect|Tk::FileSelect>
 
 =head1 KEYWORDS
 

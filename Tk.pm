@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.011';
+$Tk::VERSION     = '800.012';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -66,7 +66,7 @@ my $boot_time = timeofday();
 
 # This is a workround for Solaris X11 locale handling
 Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11'))
-  if (&NeedPreload && -d '/usr/openwin/lib');
+  if (NeedPreload() && -d '/usr/openwin/lib');
 
 use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
                     'clipboard' =>  [qw(clear append)]
@@ -317,12 +317,13 @@ sub ColorDialog
 
 sub FDialog
 {
- require Tk::FileSelect;
- if ($_[0] =~ /Save/)
+ require Tk::FBox;
+ my $cmd = shift;
+ if ($cmd =~ /Save/)
   {
-   push(@_,-create => 1, -verify => [qw(!-d -w)]);
+   push @_, -type => 'save';
   }
- DialogWrapper('FileSelect',@_);
+ DialogWrapper('FBox', $cmd, @_);
 }
 
 *MotifFDialog = \&FDialog;
@@ -346,6 +347,22 @@ sub catch (&)
 {
  my $sub = shift;
  eval {local $SIG{'__DIE__'}; &$sub };
+} 
+
+my $Home;
+
+sub TranslateFileName
+{
+ local $_ = shift;
+ unless (defined $Home)
+  {
+   $Home = $ENV{'HOME'} || ($ENV{'HOMEDRIVE'}.$ENV{'HOMEPATH'});
+   $Home =~ s#\\#/#g;
+   $Home .= '/' unless $Home =~ m#/$#;
+  }
+ s#~/#$Home#g;
+ # warn $_;
+ return $_;
 }
 
 1;
@@ -672,4 +689,5 @@ sub lsearch
  return -1;
 }
 
+ 
 

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclExecute.c 1.102 97/11/06 11:36:35
+ * SCCS: @(#) tclExecute.c 1.3 98/07/01 17:57:42
  */
 
 #include "tclInt.h"
@@ -449,8 +449,9 @@ TclCreateExecEnv(interp)
     eePtr->stackEnd = (TCL_STACK_INITIAL_SIZE - 1);
 
     if (!execInitialized) {
-	InitByteCodeExecution(interp);
-	execInitialized = 1;
+        TclInitAuxDataTypeTable();
+        InitByteCodeExecution(interp);
+        execInitialized = 1;
     }
 
     return eePtr;
@@ -504,6 +505,7 @@ void
 TclFinalizeExecEnv()
 {
     execInitialized = 0;
+    TclFinalizeAuxDataTypeTable();
 }
 
 /*
@@ -2736,9 +2738,6 @@ TclExecuteByteCode(interp, codePtr)
 		if (oldValuePtr == NULL) {
 		    iterVarPtr->value.objPtr = Tcl_NewLongObj(-1);
 		    Tcl_IncrRefCount(iterVarPtr->value.objPtr);
-		    if (oldValuePtr != NULL) {
-			Tcl_DecrRefCount(oldValuePtr);
-		    }
 		} else {
 		    Tcl_SetLongObj(oldValuePtr, -1);
 		}

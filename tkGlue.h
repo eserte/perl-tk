@@ -27,6 +27,7 @@ typedef struct Lang_CmdInfo
   Tcl_Interp  *interp;
   Tk_Window   tkwin;
   SV          *image; 
+  Tk_Font     tkfont;
  } Lang_CmdInfo;
 
 #ifdef WIN32
@@ -90,6 +91,12 @@ EXTERN void  Boot_Glue _ANSI_ARGS_((void));
 EXTERN void  Boot_Tix  _ANSI_ARGS_((void));
 EXTERN void install_vtab _((char *name, void *table, size_t size));
 extern SV *TagIt _((SV *sv, char *type));
+extern void Font_DESTROY _((SV *sv));
 
+
+#ifndef WIN32
+#define HWND void *
+#endif
+EXTERN HWND SVtoHWND _ANSI_ARGS_((SV *win));
 
 #endif

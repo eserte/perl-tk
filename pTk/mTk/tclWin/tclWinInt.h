@@ -21,6 +21,11 @@
 #include "tclPort.h"
 #endif
 
+#ifdef BUILD_tcl
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
+#endif
+
 /*
  * Some versions of Borland C have a define for the OSVERSIONINFO for
  * Win32s and for NT, but not for Windows 95.
@@ -30,9 +35,12 @@
 #define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
 
+EXTERN int		TclWinGetPlatformId(void);
+EXTERN void		TclWinInit(HINSTANCE hInst);
 EXTERN int		TclWinSynchSpawn(void *args, int type, void **trans,
 				      Tcl_Pid *pidPtr);
-EXTERN int		TclWinGetPlatformId(void);
 
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLIMPORT
 
 #endif	/* _TCLWININT */
