@@ -23,6 +23,9 @@ EXTERN void		Tk_PhotoGetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
 EXTERN void		Tk_PhotoSetSize _ANSI_ARGS_((Tk_PhotoHandle handle,
 			    int width, int height));
 
+EXTERN char *		Tk_PhotoFormatName _ANSI_ARGS_((Tcl_Interp *interp, 
+			    Tcl_Obj *formatString));
+
 extern Tk_PhotoImageFormat	tkImgFmtPPM;
 extern Tk_PhotoImageFormat	tkImgFmtGIF;
 

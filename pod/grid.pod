@@ -32,7 +32,7 @@ The arguments consist of the references of one or more slave windows
 followed by pairs of arguments that specify how to manage the slaves.
 The characters B<->,  B<x> and B<^>,
 can be specified instead of a window reference to alter the default
-location of a I<$slave>, as described in the L</"RELATIVE PLACEMENT">
+location of a I<$slave>, as described in the L<""RELATIVE PLACEMENT"">
 section, below.
 
 If any of the slaves are already managed by the geometry manager
@@ -41,7 +41,7 @@ than receiving default values.
 
 The following options are supported:
 
-=over 4
+=over 8
 
 =item B<-column> => I<n>
 
@@ -195,7 +195,7 @@ For locations that are above or to the left of the grid, B<-1> is returned.
 
 If I<boolean> has a true boolean value such as B<1> or B<on>
 then propagation is enabled for I<$master>, which must be a window
-name (see L</GEOMETRY PROPAGATION> below).
+name (see L<"GEOMETRY PROPAGATION"> below).
 If I<boolean> has a false boolean value then propagation is
 disabled for I<$master>.
 In either of these cases an empty string is returned.
@@ -366,15 +366,15 @@ The B<grid> method is based on ideas taken from the I<GridBag>
 geometry manager written by Doug. Stein, and the B<blt_table> geometry
 manager, written by George Howlett.
 
-=head1 KEYWORDS
-
-geometry manager, location, grid, cell, propagation, size, pack,
-master, slave
-
 =head1 SEE ALSO
 
 L<form|Tk::form>
 L<pack|Tk::pack>
 L<place|Tk::place>
+
+=head1 KEYWORDS
+
+geometry manager, location, grid, cell, propagation, size, pack,
+master, slave
 
 =cut

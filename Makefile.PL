@@ -5,7 +5,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.003';
+  $VERSION = '800.004';
 
   $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
@@ -66,7 +66,7 @@ Tk::MMutil::TkExtMakefile(
     @macro
    );
                            
-sub MY::test {
+sub MY::test_hide {
 '
 TEST_VERBOSE=0
 TEST_TYPE=test_$(LINKTYPE)

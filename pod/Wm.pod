@@ -143,7 +143,7 @@ the form B<=>I<width>B<x>I<height>B<+->I<x>B<+->I<y>, where
 any of B<=>, I<width>B<x>I<height>, or B<+->I<x>B<+->I<y>
 may be omitted.  I<Width> and I<height> are positive integers
 specifying the desired dimensions of I<$toplevel>.  If I<$toplevel>
-is gridded (see L</GRIDDED GEOMETRY MANAGEMENT> below) then the dimensions
+is gridded (see L<"GRIDDED GEOMETRY MANAGEMENT"> below) then the dimensions
 are specified in grid units;  otherwise they are specified in pixel
 units.  I<X> and I<y> specify the desired location of
 I<$toplevel> on the screen, in pixels.
@@ -369,7 +369,7 @@ Lastly, if neither I<name> nor I<callback> is specified, the
 method returns a list of all the protocols for which handlers
 are currently defined for I<$toplevel>.
 
-=over 4
+=over 8
 
 Tk always defines a protocol handler for B<WM_DELETE_WINDOW>, even if
 you haven't asked for one with B<protocol>.
@@ -530,10 +530,12 @@ to be withdrawn and de-iconified in order to make the change happen.
 
 =head1 SEE ALSO
 
-L<Tk::tixWm>
-L<Tk::winfo>
-L<Tk::Mwm>
+L<Tk::Widget|Tk::Widget>
+L<Tk::tixWm|Tk::tixWm>
+L<Tk::Mwm|Tk::Mwm>
 
 =head1 KEYWORDS
 
 aspect ratio, deiconify, focus model, geometry, grid, group, icon, iconify, increments, position, size, title, top-level window, units, window manager
+
+=cut

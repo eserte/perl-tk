@@ -4,6 +4,17 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.004
+                                       
+	Revert ConfigSpecs to Tk402 style
+	Fix Balloon on Win32
+	Re-work Photo C API   
+	Various fixed to tixGrid
+	Moved all POD to pod directory
+	Fixed Achim's failing testcases     
+	Various pod tweaks
+
+
 Changes in Tk800.003
 
 	Various fixes for build of outside Tk extensions

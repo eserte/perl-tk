@@ -79,8 +79,11 @@ robust and X11R5's color support probably even more so.
 
 =head1 SEE ALSO
 
-L<Tk::configure>
+L<Tk::options|Tk::options>
 
 =head1 KEYWORDS
 
 bisque, color, palette
+
+=cut
+

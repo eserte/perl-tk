@@ -254,10 +254,10 @@ B<ITEM OPTIONS>
 =item Switch:	B<-style>
 
 Specifies the display style to use for this window item. Must be the
-name of a $widget display style that has already be created by
+name of a I<$widget> display style that has already be created by
 the B<tixDisplayStyle(n)> command.
 
-=item Name:	$widget
+=item Name:	B<window>
 
 =item Class:	B<Window>
 
@@ -425,4 +425,13 @@ that the income data is aligned properly.
 
 =head1 SEE ALSO
 
-L<Tk::HList>, L<Tk::TList>
+L<Tk::HList|Tk::HList>
+L<Tk::TixGrid|Tk::TixGrid>
+L<Tk::TList|Tk::TList>
+
+=head1 KEYWORDS
+
+display item, display style
+
+=cut
+

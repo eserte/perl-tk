@@ -753,6 +753,16 @@ void
 Tcl_BackgroundError(interp)
 Tcl_Interp *	interp
 
+void
+Fail(interp,message)
+Tcl_Interp *	interp
+char *		message
+CODE:
+ {
+  Tcl_SetResult(interp,message,TCL_VOLATILE);
+  Tcl_BackgroundError(interp);
+ }
+
 int
 Tcl_DoOneEvent(...)
 CODE:

@@ -13,7 +13,7 @@ bitmap - Images that display two colors
 
 =head1 SYNOPSIS
 
-I<$widget>-E<gt>B<Bitmap>?(I<name>?,?I<options>?)
+S<    >I<$image> = I<$widget>-E<gt>B<Bitmap>?(I<name>??,I<options>?)
 
 =head1 DESCRIPTION
 
@@ -90,6 +90,14 @@ This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
 modify the options described above.
 
+=head1 SEE ALSO
+
+L<Tk::Image|Tk::Image>
+L<Tk::Pixmap|Tk::Pixmap>
+L<Tk::Photo|Tk::Photo>
+
 =head1 KEYWORDS
 
 bitmap, image
+
+=cut

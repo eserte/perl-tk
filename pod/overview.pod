@@ -132,3 +132,6 @@ A Composite widget is typically defined as derived
 from B<Tk::Frame> or B<Tk::Toplevel>
 (e.g. B<Tk::Dialog>).
 
+=back
+
+=cut

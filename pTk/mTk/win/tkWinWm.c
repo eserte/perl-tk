@@ -719,7 +719,6 @@ UpdateWrapper(winPtr)
 	GetWindowPlacement(wmPtr->wrapper, &place);
 	wmPtr->x = place.rcNormalPosition.left;
 	wmPtr->y = place.rcNormalPosition.top;
-
 	TkInstallFrameMenu((Tk_Window) winPtr);
     }
 
@@ -2693,8 +2692,20 @@ ParseGeometry(interp, string, winPtr)
     wmPtr->height = height;
     wmPtr->x = x;
     wmPtr->y = y;
+
     flags |= WM_MOVE_PENDING;
     wmPtr->flags = flags;
+
+    /* If already mapped do it now in case Configure event
+     * clobbers position - compare Tk_MoveToplevelWindow()
+     */
+    if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
+	if (wmPtr->flags & WM_UPDATE_PENDING) {
+	    Tcl_CancelIdleCall(UpdateGeometryInfo, (ClientData) winPtr);
+	}
+	UpdateGeometryInfo((ClientData) winPtr);
+	return TCL_OK;
+    } 
 
     if (!(wmPtr->flags & (WM_UPDATE_PENDING|WM_NEVER_MAPPED))) {
 	Tcl_DoWhenIdle(UpdateGeometryInfo, (ClientData) winPtr);
@@ -3328,7 +3339,6 @@ ConfigureTopLevel(pos)
     if (state == WithdrawnState || state == IconicState) {
 	return;
     }
-
 
     /*
      * Compute the current geometry of the client area, reshape the

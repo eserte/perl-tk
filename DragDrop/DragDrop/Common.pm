@@ -4,7 +4,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#8$
+$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/Common.pm#9$
 
 sub Type
 {
@@ -57,15 +57,4 @@ sub import
 
 1;
 __END__
-
-=head1 NAME
-
-Tk::DragDrop::Common - private class used by Drag&Drop
-
-=for category User Interaction
-
-=head1 DESCRIPTION
-
-This class provides methods to automate the the loading and declaring 
-of Drop and Site 'types'.
 

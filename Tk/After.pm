@@ -5,7 +5,7 @@ package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/After.pm#8$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/After.pm#9$
 
 sub _cancelAll
 {
@@ -85,34 +85,4 @@ sub once
 
 1;
 __END__
-
-=head1 NAME
-
-Tk::After - support class for Tk::Widget::after
-
-=for category Binding Events and Callbacks
-
-=head1 SYNOPSIS
-
-  $id = $widget->after(time,callback);
-  $id = $widget->afterIdle(callback);
-  $widget->afterCancel($id);
-
-  $id = $widget->repeat(period,callback);
-
-Internally this class is used to implement above.
-
-  $id = Tk::After->new($widget,$time,'method',callback);
-  $id->cancel;
-
-=head1 DESCRIPTION
-
-This class is a wrapper used by Tk::Widget::after to auto-cancel
-after calls when a widget is destroyed.
-
-I<callback> is a normal perl/Tk callback. Method is either I<'once'> 
-or I<'repeat'>
-
-This is first attempt at the code and interface is likely to change.
-So for the time being at least use $widget->after(...) interface.
 

@@ -784,13 +784,14 @@ EmbWinLayoutProc(textPtr, indexPtr, ewPtr, offset, maxX, maxChars,
 	if (code != TCL_OK) {
 	    createError:
 	    Tcl_BackgroundError(textPtr->interp);
-	    goto gotWindow;
+	    goto gotWindow;                   
 	}
-	Tcl_DStringInit(&name);
-	Tcl_DStringAppend(&name, textPtr->interp->result, -1);
+	Tcl_DStringInit(&name);             
+	Tcl_DStringAppend(&name, LangString(LangScalarResult(textPtr->interp)), -1);
 	Tcl_ResetResult(textPtr->interp);
 	ewPtr->body.ew.tkwin = Tk_NameToWindow(textPtr->interp,
 		Tcl_DStringValue(&name), textPtr->tkwin);
+	Tcl_DStringFree(&name);
 	if (ewPtr->body.ew.tkwin == NULL) {
 	    goto createError;
 	}

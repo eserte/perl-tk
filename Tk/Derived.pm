@@ -8,52 +8,11 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Derived.pm#12$
-
-=head1 NAME
-
-Tk::Derived - Base class for widgets derived from others
-
-=for category Derived Widgets
-
-=head1 SYNOPSIS
-
-  package Tk::Whatever;
-  require Tk::Something; 
-  require Tk::Derived;
-
-  @ISA = qw(Tk::Derived Tk::Something);
-
-  sub Populate
-  {
-   my ($cw,$args) = @_;
-   ...
-   $cw->SUPER::Populate($args);
-   $cw->ConfigSpecs(...);
-   ...
-  }
-
-=head1 DESCRIPTION 
-
-Tk::Derived is used with perl5's multiple inheritance to override some
-methods normally inherited from Tk::Widget.
-
-Tk::Derived should precede any Tk widgets in the class's @ISA.
-
-Tk::Derived's main purpose is to apply wrappers to C<configure> and C<cget>
-methods of widgets to allow the derived widget to add to or modify behaviour
-of the configure options supported by the base widget.
-
-The derived class should normally override the C<Populate> method provided
-by Tk::Derived and call C<ConfigSpecs> to declare configure options.
-
-The public methods provided by Tk::Derived are as follows:
-
-=over 4
-
-=cut
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Derived.pm#20$
 
 $Tk::Derived::Debug = 0;
+
+my $ENHANCED_CONFIGSPECS = 0; # disable for now
 
 use Tk qw(NORMAL_BG BLACK);
 
@@ -122,6 +81,7 @@ sub Subconfigure
   }
  foreach $widget (_makelist($widget))
   {
+   $widget = 'SELF' if (ref($widget) && $widget == $cw);
    if (ref $widget)
     {
      my $ref = ref $widget;
@@ -259,8 +219,10 @@ sub configure
      if (defined $info)
       {
        if (ref $info)
-        {
-         unless (@$info  == 4)	# this allows default to be undef !
+        {                            
+         # If the default slot is undef then ask subwidgets in turn 
+         # for their default value until one accepts it.
+         if ($ENHANCED_CONFIGSPECS && !defined($info->[3]))
           {local $SIG{'__DIE__'};
            my @def;              
            foreach my $sw ($cw->Subconfigure($opt))
@@ -367,6 +329,7 @@ sub ConfigDefault
  # colours too and maybe fonts
 
  my $children = scalar($cw->children);
+
  unless (exists($specs->{'-background'}))
   {
    my (@bg) = ('SELF');
@@ -406,19 +369,22 @@ sub ConfigDefault
        my $info = $specs->{$opt};
        if (ref $info)
         {
-         # Not an alias
-         if (@$info == 4)	# this allows default to be undef !
+         # Not an alias   
+         if ($ENHANCED_CONFIGSPECS && !defined $info->[3])
+          {       
+           # configure inquire to fill in default slot from subwidget
+           $cw->configure($opt);
+          }
+         if (defined $info->[3])
           {
-           # Only propagate if a default is supplied
-           $args->{$opt} = $info->[3];
-           # maybe should convert -fred into 'fred','Fred' here 
            if (defined $info->[1] && defined $info->[2])
             {
              # Should we do this on the Subconfigure widget instead?
              # to match *Entry.Background 
              my $db = $cw->optionGet($info->[1],$info->[2]);
-             $args->{$opt} = $db if (defined $db);
-            }
+             $info->[3] = $db if (defined $db);
+            }                   
+           $args->{$opt} = $info->[3];
           }
         }
       }
@@ -426,9 +392,6 @@ sub ConfigDefault
   }
 }
 
-=item -E<gt>ConfigSpecs(-I<key> =E<gt> [I<kind>, I<name>, I<Class>, I<default], ...)
-
-=cut 
 
 sub ConfigSpecs
 {
@@ -529,7 +492,4 @@ sub Component
 1;
 __END__
 
-=back
-
-=cut
 

@@ -1,0 +1,68 @@
+# $ID$
+
+Please feel to pick an item, fix it, and send a patch to
+
+		<ptk@lists.stanford.edu>
+
+
+Achim Bohnet <ach@mpe.mpg.de>
+
+-------------
+
+KNOWN BUGS not covered by the test suite:
+
+t/HList.t (tobe)
+
+	o nearest  gives 'TCL panic' and aborts
+
+t/font.t (tobe)
+
+	o $w->fontMeasure(), fontMeasure($f) gives SEGV on
+	  AIX V3.whatwasit and Linux (Stephen)
+
+	o warnings:
+		o	'ont' instead of 'font'
+		o	-displayof removed from doc but still
+			in error message
+
+t/Text.t
+
+	o windowCreate expects pathname instead of widget ref
+
+	o windowNames	returns list of pathnames instead of
+	  widget refs
+
+t/widget.t
+
+	o pathname of Pathname method not implemented yet
+
+
+--------------------------
+
+MISSING features of the test suite
+
+
+general
+
+	o add more tests, More Tests, MORE TESTS.
+
+	o create utility functions for the test. Especially
+	  a set of standard test that all widget has to pass
+	  to call itself a widget.
+
+	o better error messages so reporting problems gets
+	  easier.
+
+t/create.t
+
+	o LabRadio.pm creates LabRadiobutton class. So it's not
+	  tested here
+
+	o create 'skip' logic (see Test::Harness). So if e.g.,
+	  widget creation fails that exits, pack, destroy are
+	  skipped.
+
+	o Add 'expected to fail' logic for known but pending
+	  bugs so we don't get same error again and again.
+
+__END__

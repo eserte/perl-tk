@@ -19,7 +19,7 @@ __END__
 
 Tk::WinPhoto - Load a Photo image from a window
 
-=for category Other Documents
+=for category Experimental Modules
 
 =head1 SYNOPSIS
 

@@ -1,3 +1,17 @@
+#ifdef CAN_PROTOTYPE
+#define XSdec(x) XS(x)
+#else
+#define XSdec(x) void x()
+#endif
+
+#ifndef ERRSV
+#define ERRSV GvSV(errgv)
+#endif
+
+#ifdef dirty
+#undef dirty
+#endif
+
 #define Tcl_Interp     HV
 #define LangCallback   SV
 #define Arg            SV *

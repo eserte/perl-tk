@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Animation.pm#10$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Animation.pm#11$
 
 use Tk::Photo;
 @ISA = qw(Tk::Photo);
@@ -83,43 +83,6 @@ sub stop_animation
 
 1;
 __END__
-
-=head1 NAME
-
-Tk::Animation - Display sequence of Tk::Photo images
-
-=for category Tk Image Classes
-
-=head1 SYNOPSIS
-
-  use Tk::Animation
-  my $img = $widget->Animation('-format' => 'gif', -file => 'somefile.gif');
-  
-  $img->start_animation($period);
-  $img->stop_animation;
-
-  $img->add_frames(@images);
-
-=head1 DESCRIPTION
-
-In the simple case when C<Animation> is passed a GIF89 style GIF with 
-multiple 'frames', it will build an internal array of C<Photo> images.
-
-C<start_animation($period)> then initiates a C<repeat> with specified I<$period>
-to sequence through these images.
-
-C<stop_animation> cancels the C<repeat> and resets the image to the first
-image in the sequence.
-
-The C<add_frames> method adds images to the sequence. It is provided
-to allow animations to be constructed from separate images.
-All images must be C<Photo>s and should all be the same size.
-
-=head1 BUGS
-
-The 'period' should probably be a property of the Animation object
-rather than specified at 'start' time. It may even be embedded 
-in the GIF.
 
 =cut
 

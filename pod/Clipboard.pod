@@ -40,7 +40,7 @@ display in the form given by I<type> with the representation given
 by I<format> and claims ownership of the clipboard on $widget's
 display.
 
-=over 4
+=over 8
 
 I<Type> specifies the form in which the selection is to be returned
 (the desired ``target'' for conversion, in ICCCM terminology), and

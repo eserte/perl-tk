@@ -55,7 +55,7 @@ a widget object and either B<xview> (if the scrollbar is for
 horizontal scrolling) or B<yview> (for vertical scrolling).
 All scrollable widgets have B<xview> and B<yview> methods
 that take exactly the additional arguments appended by the scrollbar
-as described in L</SCROLLING COMMANDS> below.
+as described in L<"SCROLLING COMMANDS"> below.
 
 =item Name:	B<elementBorderWidth>
 
@@ -108,7 +108,7 @@ the top third of its document.
 
 Scrollbars can be used to adjust the view in the associated window
 by clicking or dragging with the mouse.
-See L</BINDINGS> below for details.
+See L<"BINDINGS"> below for details.
 
 =head1 ELEMENTS
 
@@ -144,12 +144,11 @@ The bottom or right arrow in the scrollbar.
 The B<Scrollbar> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.                 
-                                                                  
-The following additional methods are available for scrollbar widgets:
+L<Tk::Widget|Tk::Widget> class.
 
+The following additional methods are available for scrollbar widgets:
 
 =over 4
 
@@ -419,9 +418,12 @@ The End key adjusts the view to the bottom (right edge) of the document.
 
 =head1 SEE ALSO
 
-L<Tk::callbacks>
-Scrolled
+L<Tk::callbacks|Tk::callbacks>
+L<Tk::Scrolled|Tk::Scrolled>
 
 =head1 KEYWORDS
 
 scrollbar, widget
+
+=cut
+

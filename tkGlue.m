@@ -50,9 +50,5 @@
 #  define WindowCommand (*TkglueVptr->V_WindowCommand)
 #endif
 
-#ifndef XStoWidget
-#  define XStoWidget (*TkglueVptr->V_XStoWidget)
-#endif
-
 #endif /* NO_VTABLES */
 #endif /* _TKGLUE_VM */

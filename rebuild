@@ -7,6 +7,7 @@ chomp($host);
 my $cwd = getcwd();
 print "$host in $cwd executing $0\n";
 print $ENV{'PATH'},"\n";
+System("make",'-f','Makefile.old',"clean") if -f "Makefile.old";
 System("make","clean") if -f "Makefile";
 System("cleanup"); 
 System("$^X","Makefile.PL");

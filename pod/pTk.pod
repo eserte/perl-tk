@@ -105,7 +105,7 @@ variables of type C<char*>.
 
 The following data types are defined:
 
-=over 15
+=over 4
 
 =item C<Arg>
 
@@ -229,7 +229,7 @@ done, you should use C<LangFreeArg> with C<TCL_DYNAMIC> as C<freeProc>.
 
 Use
 
-=over 25
+=over 4
 
 =item C<int  LangNull(Arg)>
 
@@ -314,7 +314,7 @@ be an array variable), use
 
 We mark items that can be dealt with by C<munge> by I<Autoconverted>.
 
-=over 20
+=over 4
 
 =item C<Tcl_AppendResult>
 
@@ -369,7 +369,7 @@ C<ptclGlue.c>.
 
 These files currently implement the following:
 
-=over 5
+=over 4
 
 =item Additional config types:
 

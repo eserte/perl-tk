@@ -213,9 +213,9 @@ changes to and from the button's ``on'' value.
 The B<Checkbutton> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.
+L<Tk::Widget|Tk::Widget> class.
 
 The following additional methods are available for checkbutton widgets:
 

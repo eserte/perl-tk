@@ -47,8 +47,4 @@ VFUNC(SV *,WidgetRef,V_WidgetRef,_ANSI_ARGS_((Tcl_Interp *interp, char *path)))
 VFUNC(Lang_CmdInfo *,WindowCommand,V_WindowCommand,_ANSI_ARGS_((SV *win,HV **hptr, int moan)))
 #endif
 
-#ifndef XStoWidget
-VFUNC(void,XStoWidget,V_XStoWidget,_ANSI_ARGS_((CV * cv)))
-#endif
-
 #endif /* _TKGLUE */

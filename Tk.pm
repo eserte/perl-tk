@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.003';
+$Tk::VERSION     = '800.004';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -74,22 +74,53 @@ use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
                     'clipboard' =>  [qw(clear append)]
                    );
 
-sub BackTrace
+
+sub _backTrace
 {
  my $w = shift;
- return unless (@_ || $@);
- my $mess = (@_) ? shift : "$@";
- my $i = 0;  
+ my $i = 1;  
  my ($pack,$file,$line,$sub) = caller($i++);
  while (1)   
   {          
    my $loc = "at $file line $line";
    ($pack,$file,$line,$sub) = caller($i++);
-   last if (!defined($sub) || $sub eq '(eval)');
+   last unless defined($sub);
+   return 1 if $sub eq '(eval)';
    $w->AddErrorInfo("$sub $loc");
-  }          
- die "$mess\n";
+  }        
+ return 0;
 }
+
+sub BackTrace
+{
+ my $w = shift;
+ return unless (@_ || $@);
+ my $mess = (@_) ? shift : "$@";
+ die "$mess\n" if $w->_backTrace;
+ # if we get here we are not in an eval so report now
+ $w->Fail($mess);
+ $w->idletasks;
+ die "$mess\n";
+}   
+
+#
+# This is a $SIG{__DIE__} handler which does not change the $@
+# string in the way 'croak' does, but rather add to Tk's ErrorInfo.
+# It stops at 1st enclosing eval on assumption that the eval
+# is part of Tk call process and will add its own context to ErrorInfo
+# and then pass on the error.                
+# 
+sub __DIE__
+{
+ my $mess = shift;
+ my $w = $Tk::widget;
+ # Note that if a __DIE__ handler returns it re-dies up the chain.
+ return unless defined $w;
+ return if $w->_backTrace;
+ # Not in an eval - should not happen
+}
+
+
 
 sub NoOp  { }
 
@@ -162,31 +193,6 @@ sub SelectionHandle
 {my $widget = shift;
  my $command = pop;
  selection('handle',@_,$widget,$command);
-}
-
-#
-# This is a $SIG{__DIE__} handler which does not change the $@
-# string in the way 'croak' does, but rather add to Tk's ErrorInfo.
-# It stops at 1st enclosing eval on assumption that the eval
-# is part of Tk call process and will add its own context to ErrorInfo
-# and then pass on the error.
-# 
-sub __DIE__
-{
- my $mess = shift;
- my $w = $Tk::widget;
- if (defined $w)
-  {
-   my $i = 0;  
-   my ($pack,$file,$line,$sub) = caller($i++);
-   while (1)   
-    {          
-     my $loc = "at $file line $line";
-     ($pack,$file,$line,$sub) = caller($i++);
-     last if (!defined($sub) || $sub eq '(eval)');
-     $w->AddErrorInfo("$sub $loc");
-    }          
-  }
 }
 
 sub SplitString
@@ -302,7 +308,7 @@ sub Error
    $grab->Unbusy if (defined $grab);
   }
  chomp($error);
- warn "Tk::Error: $error\n " . join("\n ",@_);
+ warn "Tk::Error: $error\n " . join("\n ",@_)."\n";
 }
 
 sub tkinit

@@ -70,56 +70,46 @@
  * The format record for the GIF file format:
  */
 
-static int      ChanMatchGIF _ANSI_ARGS_((Tcl_Channel chan, char *fileName,
-		    char *formatString, int *widthPtr, int *heightPtr));
+static int      ChanMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Arg fileName,
+		    Arg formatString, int *widthPtr, int *heightPtr));
 static int      FileMatchGIF _ANSI_ARGS_((FILE *f, char *fileName,
-		    char *formatString, int *widthPtr, int *heightPtr));
-static int	ObjMatchGIF _ANSI_ARGS_((struct Tcl_Obj *dataObj,
-		    char *formatString, int *widthPtr, int *heightPtr));
+		    Arg formatString, int *widthPtr, int *heightPtr));
+static int	ObjMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *dataObj,
+		    Arg formatString, int *widthPtr, int *heightPtr));
 static int      ChanReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tcl_Channel chan, char *fileName, char *formatString,
+		    Tcl_Channel chan, Arg fileName, Arg formatString,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
 static int      FileReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
-		    FILE *f, char *fileName, char *formatString,
+		    FILE *f, Arg fileName, Arg formatString,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
 static int	ObjReadGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    struct Tcl_Obj *dataObj, char *formatString,
+		    struct Tcl_Obj *dataObj, Arg formatString,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
 static int 	FileWriteGIF _ANSI_ARGS_(( Tcl_Interp *interp,  
-		    char *filename, char *formatString, 
+		    char *filename, Arg formatString, 
 		    Tk_PhotoImageBlock *blockPtr));
 static int	StringWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tcl_DString *dataPtr, char *formatString,
+		    Tcl_DString *dataPtr, Arg formatString,
 		    Tk_PhotoImageBlock *blockPtr));
 static int      CommonReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
-		    MFile *handle, char *fileName, char *formatString,
+		    MFile *handle, char *fileName, Arg formatString,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
 static int	CommonWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    MFile *handle, char *formatString,
+		    MFile *handle, Arg formatString,
 		    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtGIF = {
     "GIF",					/* name */
-    (Tk_ImageFileMatchProc *) ChanMatchGIF,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchGIF,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) ChanReadGIF,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadGIF,	/* stringReadProc */
-    FileWriteGIF,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteGIF,	/* stringWriteProc */
-};
-
-Tk_PhotoImageFormat imgOldFmtGIF = {
-    "GIF",					/* name */
-    (Tk_ImageFileMatchProc *) FileMatchGIF,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchGIF,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) FileReadGIF,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadGIF,	/* stringReadProc */
-    FileWriteGIF,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteGIF,	/* stringWriteProc */
+    ChanMatchGIF,	/* fileMatchProc */
+    ObjMatchGIF,	/* stringMatchProc */
+    ChanReadGIF,	/* fileReadProc */
+    ObjReadGIF,		/* stringReadProc */
+    FileWriteGIF,	/* fileWriteProc */
+    StringWriteGIF,	/* stringWriteProc */
 };
 
 #define INTERLACE		0x40
@@ -176,10 +166,11 @@ static int		ReadImage _ANSI_ARGS_((Tcl_Interp *interp,
  */
 
 static int
-ChanMatchGIF(chan, fileName, formatString, widthPtr, heightPtr)
+ChanMatchGIF(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw GIF file. */
@@ -214,7 +205,7 @@ static int
 FileMatchGIF(f, fileName, formatString, widthPtr, heightPtr)
     FILE *f;			/* The image file, open for reading. */
     char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw GIF file. */
@@ -252,8 +243,8 @@ ChanReadGIF(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -267,7 +258,7 @@ ChanReadGIF(interp, chan, fileName, formatString, imageHandle, destX, destY,
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
 
-    return CommonReadGIF(interp, &handle, fileName, formatString,
+    return CommonReadGIF(interp, &handle, LangString(fileName), formatString,
     	    imageHandle, destX, destY, width, height, srcX, srcY);
 }
 
@@ -296,8 +287,8 @@ FileReadGIF(interp, f, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     FILE *f;			/* The image file, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -311,7 +302,7 @@ FileReadGIF(interp, f, fileName, formatString, imageHandle, destX, destY,
     handle.data = (char *) f;
     handle.state = IMG_FILE;
 
-    return CommonReadGIF(interp, &handle, fileName, formatString,
+    return CommonReadGIF(interp, &handle, LangString(fileName), formatString,
     	    imageHandle, destX, destY, width, height, srcX, srcY);
 }
 /*
@@ -348,7 +339,7 @@ CommonReadGIF(interp, handle, fileName, formatString, imageHandle, destX, destY,
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     MFile *handle;		/* The image file, open for reading. */
     char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -371,8 +362,7 @@ CommonReadGIF(interp, handle, fileName, formatString, imageHandle, destX, destY,
     if (formatString != NULL) {
 	int argc;
 	Arg *args;
-	LangFreeProc *freeProc;
-	if (Lang_SplitString(interp, formatString, &argc, &args, &freeProc) != TCL_OK ||
+	if (Tcl_ListObjGetElements(interp, formatString, &argc, &args) != TCL_OK ||
 		(argc > 3) || ((argc == 3) && ((argv[1][0] != '-') ||
 		(argv[1][1] != 'i')||strncmp(argv[1],"-index",strlen(argv[1]))))) {
 	    Tcl_ResetResult(interp);
@@ -381,13 +371,9 @@ CommonReadGIF(interp, handle, fileName, formatString, imageHandle, destX, destY,
 	    return TCL_ERROR;
 	}
 	if (argc > 1) {
-	    if (Tcl_GetInt(interp, argv[argc-1], &index) != TCL_OK) {
-		ckfree((char *) argv);
+	    if (Tcl_GetInt(interp, args[argc-1], &index) != TCL_OK) {
 		return TCL_ERROR;
 	    }
-	}
-	if (freeProc) {
-	    (*freeProc)(argc,args);
 	}
     }
 
@@ -614,9 +600,10 @@ CommonReadGIF(interp, handle, fileName, formatString, imageHandle, destX, destY,
  */
 
 static int
-ObjMatchGIF(dataObj, formatString, widthPtr, heightPtr)
+ObjMatchGIF(interp, dataObj, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     struct Tcl_Obj *dataObj;	/* the object containing the image data */
-    char *formatString;		/* the image format string */
+    Arg formatString;		/* the image format string */
     int *widthPtr;		/* where to put the string width */
     int *heightPtr;		/* where to put the string height */
 {
@@ -654,13 +641,14 @@ ObjReadGIF(interp,dataObj,formatString,imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;		/* interpreter for reporting errors in */
     struct Tcl_Obj *dataObj;	/* string containing the image */
-    char *formatString;		/* format string if any */
+    Arg formatString;		/* format string if any */
     Tk_PhotoHandle imageHandle;	/* the image to write this data into */
     int destX, destY;		/* The rectangular region of the  */
     int  width, height;		/*   image to copy */
     int srcX, srcY;
 {
-    MFile handle;
+    MFile handle;                         
+    int code;
 
     ImgReadInit(dataObj, 'G', &handle);
     return CommonReadGIF(interp, &handle, "inline data",
@@ -1158,8 +1146,8 @@ static int no_bits _ANSI_ARGS_((int colors));
 static int
 FileWriteGIF (interp, filename, formatString, blockPtr)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
-    char	*filename;
-    char	*formatString;
+    char *filename;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     FILE *fp;
@@ -1192,7 +1180,7 @@ static int
 StringWriteGIF(interp, dataPtr, formatString, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     int result;
@@ -1211,7 +1199,7 @@ static int
 CommonWriteGIF(interp, handle, formatString, blockPtr)
     Tcl_Interp *interp;
     MFile *handle;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     int  resolution;

@@ -49,7 +49,7 @@ I<-option>=>I<value> pairs modify the configuration for I<$slave>.
 The B<place> method returns an empty string as result.
 The following I<-option>=>I<value> pairs are supported:
 
-=over 4
+=over 8
 
 =item B<-in> => I<$master>
 
@@ -257,14 +257,14 @@ set their requested sizes).
 To control the sizes of these windows, make them windows like
 frames and canvases that provide configuration options for this purpose.
 
+=head1 SEE ALSO
+
+L<form|Tk::form>
+L<grid|Tk::grid>
+L<pack|Tk::pack>
+
 =head1 KEYWORDS
 
 geometry manager, height, location, master, place, rubber sheet, slave, width
-
-=head1 SEE ALSO
-
-L<form|Tk::form>,
-L<grid|Tk::grid>,
-L<pack|Tk::pack>
 
 =cut

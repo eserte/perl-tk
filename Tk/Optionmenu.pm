@@ -6,7 +6,7 @@ require Tk::Menubutton;
 require Tk::Menu;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#12$
 
 @ISA = qw(Tk::Derived Tk::Menubutton);
 
@@ -89,91 +89,6 @@ sub options
 1;
 
 __END__
-
-=head1 NAME
-
-Tk::Optionmenu - Let the user select one of some predefined options values
-
-=for category Tk Widget Classes
-
-=head1 SYNOPSIS
-
-    use Optionmenu;
-
-    $opt = $w->Optionmenu(
-			-options => REFERENCE_to_OPTIONLIST,
-			-command => CALLBACK,
-			-variable => SCALAR_REF,
-			);
-
-    $opt->addOptions( OPTIONLIST );
-
-    # OPTION LIST is
-    #   a)  $val1, $val2, $val3,...
-    #   b)  [ $val1=>$lab1], [$lab2=>val2], ... ] 
-    #   c)  combination of a) and b), e.g.,
-    #       val1, [$lab2=>val2], val3, val4, [...], ...
-
-=head1 DESCRIPTION
-
-The B<Optionmenu> widget allows the user chose between a given set
-of options.
-
-If the user should be able to change the available option have a look
-at L<Tk::BrowseEntry>.
-
-=head1 OPTIONS
-
-=over 4
-
-=item -options
-
-(Re)sets the list of options presented.
-
-=item -command
-
-Defines the L<callback> that is invokes when a new option
-is selected.
-
-=item -variable
-
-Reference to a scalar that contains the current value of the
-selected option.
-
-=back
-
-=head1 METHODS
-
-=over 4
-
-=item addOptions
-
-Adds OPTION_LIST to the already available options.
-
-=back
-
-=head1 EXAMPLE
-
-    use Tk;
-    my $mw = MainWindow->new();
-
-    my $var;
-    my $opt = $mw->Optionmenu(
-                -options => [qw(jan feb mar apr)],
-                -command => sub { print "got: ", shift, "\n" },
-		-variable => \$var,
-                )->pack;
-
-    $opt->addOptions([may=>5],[jun=>6],[jul=>7],[aug=>8]);
-
-    $mw->Label(-textvariable=>\$var, -relief=>'groove')->pack;
-    $mw->Button(-text=>'Exit', -command=>sub{$mw->destroy})->pack;
-
-    MainLoop;
-
-=head1 SEE ALSO
-
-L<Menubutton>, L<BrowseEntry>
 
 =cut
 

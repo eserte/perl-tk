@@ -96,7 +96,7 @@ recursively applies the callback process to them.
 L<Tk::bind|Tk::bind>
 L<Tk::after|Tk::after>
 L<Tk::options|Tk::options>
-L<Tk::fileevent>
+L<Tk::fileevent|Tk::fileevent>
 
 =head1 KEYWORDS
 

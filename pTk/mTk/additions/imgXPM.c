@@ -78,60 +78,50 @@ typedef struct XPM_DString {
  * The format record for the XPM file format:
  */
 
-static int		ChanMatchXPM _ANSI_ARGS_((Tcl_Channel chan,
-			    char *fileName, char *formatString, int *widthPtr,
+static int		ChanMatchXPM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+			    Arg fileName, Arg formatString, int *widthPtr,
 			    int *heightPtr));
-static int		FileMatchXPM _ANSI_ARGS_((FILE *f, char *fileName,
-			    char *formatString, int *widthPtr,
+static int		FileMatchXPM _ANSI_ARGS_((Tcl_Interp *interp, FILE *f, Arg fileName,
+			    Arg formatString, int *widthPtr,
 			    int *heightPtr));
-static int      	ObjMatchXPM _ANSI_ARGS_((struct Tcl_Obj *dataObj,
-		            char *formatString, int *widthPtr, int *heightPtr));
+static int      	ObjMatchXPM _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *dataObj,
+		            Arg formatString, int *widthPtr, int *heightPtr));
 static int		ChanReadXPM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Channel chan, char *fileName,
-			    char *formatString, Tk_PhotoHandle imageHandle,
+			    Tcl_Channel chan, Arg fileName,
+			    Arg formatString, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int		FileReadXPM  _ANSI_ARGS_((Tcl_Interp *interp,
-			    FILE *f, char *fileName, char *formatString,
+			    FILE *f, Arg fileName, Arg formatString,
 			    Tk_PhotoHandle imageHandle, int destX, int destY,
 			    int width, int height, int srcX, int srcY));
 static int	        ObjReadXPM _ANSI_ARGS_((Tcl_Interp *interp,
-			    struct Tcl_Obj *dataObj, char *formatString,
+			    struct Tcl_Obj *dataObj, Arg formatString,
               		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		            int width, int height, int srcX, int srcY));
 static int		ReadXPM _ANSI_ARGS_((Tcl_Interp *interp, int type,
 			    Tcl_Channel chan, char *fileName,
-			    char *formatString, Tk_PhotoHandle imageHandle,
+			    Arg formatString, Tk_PhotoHandle imageHandle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int	        StringWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-               		    Tcl_DString *dataPtr, char *formatString,
+               		    Tcl_DString *dataPtr, Arg formatString,
 		            Tk_PhotoImageBlock *blockPtr));
 static int              FileWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-                            char *fileName, char *formatString,
+                            char *fileName, Arg formatString,
                             Tk_PhotoImageBlock *blockPtr));
 static int		WriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *fileName, Tcl_DString *dataPtr, char *formatString,
+			    char *fileName, Tcl_DString *dataPtr, Arg formatString,
 			    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtXPM = {
     "XPM",					/* name */
-    (Tk_ImageFileMatchProc *) ChanMatchXPM,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchXPM,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) ChanReadXPM,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadXPM,	/* stringReadProc */
-    FileWriteXPM,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteXPM	/* stringWriteProc */
-};
-
-Tk_PhotoImageFormat imgOldFmtXPM = {
-    "XPM",					/* name */
-    (Tk_ImageFileMatchProc *) FileMatchXPM,	/* fileMatchProc */
-    (Tk_ImageStringMatchProc *) ObjMatchXPM,	/* stringMatchProc */
-    (Tk_ImageFileReadProc *) FileReadXPM,	/* fileReadProc */
-    (Tk_ImageStringReadProc *) ObjReadXPM,		/* stringReadProc */
-    FileWriteXPM,				/* fileWriteProc */
-    (Tk_ImageStringWriteProc *) StringWriteXPM	/* stringWriteProc */
+    ChanMatchXPM,	/* fileMatchProc */
+    ObjMatchXPM,	/* stringMatchProc */
+    ChanReadXPM,	/* fileReadProc */
+    ObjReadXPM,		/* stringReadProc */
+    FileWriteXPM,	/* fileWriteProc */
+    StringWriteXPM	/* stringWriteProc */
 };
 
 /*
@@ -239,9 +229,10 @@ Gets(type, chan, buffer, size)
  *----------------------------------------------------------------------
  */
 static int
-ObjMatchXPM(dataObj, formatString, widthPtr, heightPtr)
+ObjMatchXPM(interp, dataObj, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     struct Tcl_Obj *dataObj;	/* The data supplied by the image */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
@@ -273,10 +264,11 @@ ObjMatchXPM(dataObj, formatString, widthPtr, heightPtr)
  */
 
 static int
-FileMatchXPM(f, fileName, formatString, widthPtr, heightPtr)
+FileMatchXPM(interp, f, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     FILE *f;			/* The image file, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
@@ -305,10 +297,11 @@ FileMatchXPM(f, fileName, formatString, widthPtr, heightPtr)
  */
 
 static int
-ChanMatchXPM(chan, fileName, formatString, widthPtr, heightPtr)
+ChanMatchXPM(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
@@ -351,7 +344,7 @@ ReadXPM(interp, input, chan, fileName, formatString, imageHandle, destX, destY,
     int input;                  /* Where to read from*/
     Tcl_Channel chan;		/* The image channel, open for reading. */
     char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -629,8 +622,8 @@ FileReadXPM(interp, f, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     FILE *f;			/* The image file, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -639,7 +632,7 @@ FileReadXPM(interp, f, fileName, formatString, imageHandle, destX, destY,
     int srcX, srcY;		/* Coordinates of top-left pixel to be used
 				 * in image being read. */
 {
-  return ReadXPM(interp, FILE_INPUT, (Tcl_Channel) f, fileName, formatString, imageHandle,
+  return ReadXPM(interp, FILE_INPUT, (Tcl_Channel) f, LangString(fileName), formatString, imageHandle,
 		 destX, destY, width, height, srcX, srcY);
 }
 
@@ -669,8 +662,8 @@ ChanReadXPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Channel chan;		/* The image channel, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg fileName;		/* The name of the image file. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -679,7 +672,7 @@ ChanReadXPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
     int srcX, srcY;		/* Coordinates of top-left pixel to be used
 				 * in image being read. */
 {
-    return ReadXPM(interp, CHANNEL_INPUT, chan, fileName, formatString, imageHandle,
+    return ReadXPM(interp, CHANNEL_INPUT, chan, LangString(fileName), formatString, imageHandle,
 		 destX, destY, width, height, srcX, srcY);
 }
 
@@ -708,7 +701,7 @@ ObjReadXPM(interp, dataObj, formatString, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     struct Tcl_Obj *dataObj;
-    char *formatString;		/* User-specified format string, or NULL. */
+    Arg formatString;		/* User-specified format string, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -944,7 +937,7 @@ static int
 FileWriteXPM(interp, fileName, formatString, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
     return WriteXPM(interp, fileName, (Tcl_DString *)NULL, formatString, blockPtr);
@@ -971,7 +964,7 @@ static int
 StringWriteXPM(interp, dataPtr, formatString, blockPtr) 
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    char *formatString;
+    Arg formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
   return WriteXPM(interp, (char *) NULL, dataPtr, formatString, blockPtr);
@@ -1008,7 +1001,7 @@ WriteXPM(interp, fileName, dataPtr, formatString, blockPtr)
     Tcl_Interp *interp;
     char *fileName;
     Tcl_DString *dataPtr;
-    char *formatString;    
+    Arg formatString;    
     Tk_PhotoImageBlock *blockPtr;
 {
     int x, y, i;

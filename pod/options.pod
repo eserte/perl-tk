@@ -24,10 +24,10 @@ I<@var> = I<$widget>-E<gt>B<configure>;
 =head1 DESCRIPTION
 
 All widgets, and images have a standard mechanism for setting and querying
-attibutes or options. The mechanism is based on two methods B<configure> 
+attibutes or options. The mechanism is based on two methods B<configure>
 and B<cget>. The behaviour of these methods is as follows:
 
-=over 4           
+=over 4
 
 =item I<$widget>-E<gt>B<configure>(-I<option> =E<gt> I<value >?,I<option> =E<gt> I<value ...>?);
 
@@ -96,7 +96,7 @@ call:
 
  $widget->configure(-foreground => 'black')
 
-may be used to specify the value B<black> for the option in the widget $widget. 
+may be used to specify the value B<black> for the option in the widget $widget.
 Configure options may be abbreviated, as long as the abbreviation is unambiguous
 (abbreviation is deprecated in perl/Tk).
 
@@ -654,10 +654,13 @@ on how this option is used.
 
 =head1 SEE ALSO
 
-L<Tk::callbacks>
-Tk_GetPixels
+L<Tk::callbacks|Tk::callbacks>
 L<Tk::configspec|Tk::configspec>
+L<Tk_GetPixels|Tk::pTk::GetPixels>
 
 =head1 KEYWORDS
 
 class, name, standard option, switch
+
+=cut
+

@@ -141,6 +141,10 @@ even though original variables may have gone out of scope.
 Returns 1 if there exists a window for I<$widget>, 0 if no such
 window exists.
 
+=item I<$widget>-E<gt>B<font>(I<option>?, I<arg, arg, ...>?)
+
+Create and inspect fonts. See L<Tk::Font> for further details.
+
 =item I<$widget>-E<gt>B<fpixels>(I<number>)
 
 Returns a floating-point value giving the number of pixels
@@ -237,6 +241,11 @@ OnDestroy was required for new B<after> mechanism.
 
 Returns I<$widget>'s parent, or an empty string
 if I<$widget> is the main window of the application.
+
+=item I<$widget>-E<gt>B<PathName>
+
+Returns the tk path name of I<$widget>. (This is an import from the
+C interface.)
 
 =item I<$widget>-E<gt>B<pathname>(I<id>)
 

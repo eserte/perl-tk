@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#8$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#11$
 
 use Tk;
 require Tk::Frame;
@@ -53,61 +53,4 @@ sub Populate {
 		     "DEFAULT" => [$f]);
 }
 
-=head1 NAME
 
-Tk::LabFrame - labeled frame.
-
-=for category Tix Extensions
-
-=head1 SYNOPSIS
-
-    use Tk::LabFrame;
-    $f = $top->LabFrame(-label => "Something",
-			-labelside => 'acrosstop');
-
-=head1 DESCRIPTION
-
-B<LabFrame> is exactly like B<Frame> except that it takes two
-additional options:
-
-=over 4
-
-=item B<-label>
-The text of the label to be placed with the Frame.
-
-=item B<-labelside>
-Can be one of B<left>, B<right>, B<top>, B<bottom> or B<acrosstop>.
-The first four work as might be expected and place the label to the
-left, right, above or below the frame respectively. The last one
-creates a grooved frame around the central frame and puts the label
-near the northwest corner such that it appears to "overwrite" the
-groove. Run the following test program to see this in action:
-
-    use Tk;
-    require Tk::LabFrame;
-    require Tk::LabEntry;
-
-    my $test = 'Test this';
-    $top = MainWindow->new;
-    my $f = $top->LabFrame(-label => "This is a label",
-			   -labelside => "acrosstop");
-    $f->LabEntry(-label => "Testing", -textvariable => \$test)->pack;
-    $f->pack;
-    MainLoop;
-    
-=back
-    
-=head1 BUGS
-
-Perhaps B<LabFrame> should be subsumed within the generic pTk
-labeled widget mechanism.
-    
-=head1 AUTHOR
-
-B<Rajappa Iyer> rsi@earthling.net
-
-This code is derived from LabFrame.tcl and LabWidg.tcl in the Tix4.0
-distribution by Ioi Lam. The code may be redistributed under the same
-terms as Perl.
-    
-=cut

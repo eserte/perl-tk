@@ -2,7 +2,6 @@
 #define _TKIMGPHOTO_VM
 #include "tkImgPhoto_f.h"
 #ifndef NO_VTABLES
-#define tkImgFmtGIF (*TkimgphotoVptr->V_tkImgFmtGIF)
 #define tkImgFmtPPM (*TkimgphotoVptr->V_tkImgFmtPPM)
 #ifndef Tk_CreatePhotoImageFormat
 #  define Tk_CreatePhotoImageFormat (*TkimgphotoVptr->V_Tk_CreatePhotoImageFormat)
@@ -18,6 +17,10 @@
 
 #ifndef Tk_PhotoExpand
 #  define Tk_PhotoExpand (*TkimgphotoVptr->V_Tk_PhotoExpand)
+#endif
+
+#ifndef Tk_PhotoFormatName
+#  define Tk_PhotoFormatName (*TkimgphotoVptr->V_Tk_PhotoFormatName)
 #endif
 
 #ifndef Tk_PhotoGetImage

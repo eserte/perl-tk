@@ -8,7 +8,7 @@
 #include <perl.h>
 #include <XSUB.h>
 
-#define Tcl_Interp SV 
+#include "tkGlue.def"
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"

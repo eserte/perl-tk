@@ -174,21 +174,21 @@ to be displayed with different fonts and colors.
 In addition, Tcl commands can be associated with tags so
 that scripts are invoked when particular actions such as keystrokes
 and mouse button presses occur in particular ranges of the text.
-See L</TAGS> below for more details.
+See L<"TAGS"> below for more details.
 
 The second form of annotation consists of marks, which are floating
 markers in the text.
 Marks are used to keep track of various interesting positions in the
 text as it is edited.
-See L</MARKS> below for more details.
+See L<"MARKS"> below for more details.
 
 The third form of annotation allows arbitrary windows to be
 embedded in a text widget.
-See L</EMBEDDED WINDOWS> below for more details.
+See L<"EMBEDDED WINDOWS"> below for more details.
 
 The fourth form of annotation allows Tk images to be embedded in a text
 widget.
-See L</EMBEDDED IMAGES> below for more details.
+See L<"EMBEDDED IMAGES"> below for more details.
 
 =head1 INDICES
 
@@ -560,7 +560,7 @@ For details, see the description of the B<tag bind> widget
 command below.
 
 The third use for tags is in managing the selection.
-See L</THE SELECTION> below.
+See L<"THE SELECTION"> below.
 
 =back
 
@@ -600,7 +600,7 @@ to different things.
 
 Two marks have special significance.
 First, the mark B<insert> is associated with the insertion cursor,
-as described under L</THE INSERTION CURSOR> below.
+as described under L<"THE INSERTION CURSOR"> below.
 Second, the mark B<current> is associated with the character
 closest to the mouse and is adjusted automatically to track the
 mouse position and any changes to the text in the widget (one
@@ -819,9 +819,9 @@ this point whenever the text widget has the input focus.
 The B<Text> method creates a widget object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
-modify the options described above. 
+modify the options described above.
 The widget also inherits all the methods provided by the generic
-L<Tk::Widget> class.                 
+L<Tk::Widget|Tk::Widget> class.
 
 The following additional methods are available for text widgets:
 
@@ -987,7 +987,7 @@ The behavior of the command depends on the I<option> argument
 that follows the B<tag> argument.
 The following forms of the command are currently supported:
 
-=over 4
+=over 8
 
 =item I<$text>-E<gt>B<imageCget>(I<index, option>)
 
@@ -1035,7 +1035,7 @@ embedded in $widget.
 Returns the position corresponding to I<index> in the form
 I<line.char> where I<line> is the line number and I<char>
 is the character number.
-I<Index> may have any of the forms described under L</INDICES> above.
+I<Index> may have any of the forms described under L<"INDICES"> above.
 
 =item I<$text>-E<gt>B<insert>(I<index, chars, >?I<tagList, chars, tagList, ...>?)
 
@@ -1065,7 +1065,7 @@ the command depends on the I<option> argument that follows
 the B<mark> argument.  The following forms of the command
 are currently supported:
 
-=over 4
+=over 8
 
 =item I<$text>-E<gt>B<markGravity>(I<markName, >?I<direction>?)
 
@@ -1134,7 +1134,7 @@ This command returns an empty string.
 This method is used to implement scanning on texts.  It has
 two forms, depending on I<option>:
 
-=over 4
+=over 8
 
 =item I<$text>-E<gt>B<scanMark>(I<x, y>)
 
@@ -1165,7 +1165,7 @@ returned as result;  otherwise an empty string is returned.
 One or more of the following switches (or abbreviations thereof)
 may be specified to control the search:
 
-=over 4
+=over 8
 
 =item B<-forwards>
 
@@ -1245,7 +1245,7 @@ command depends on the I<option> argument that follows the
 B<tag> argument.  The following forms of the command are currently
 supported:
 
-=over 4
+=over 8
 
 =item I<$text>-E<gt>B<tagAdd>(I<tagName, index1, >?I<index2, index1, index2, ...>?)
 
@@ -1284,13 +1284,11 @@ If both I<script> and I<sequence> are omitted then the command
 returns a list of all the sequences for which bindings have been
 defined for I<tagName>.
 
-=over 4
-
 The only events for which bindings may be specified are those related
 to the mouse and keyboard (such as B<Enter>, B<Leave>,
 B<ButtonPress>, B<Motion>, and B<KeyPress>) or virtual events.
 Event bindings for a text widget use the B<current> mark described
-under L</MARKS> above.  An B<Enter> event triggers for a tag when the tag
+under L<"MARKS"> above.  An B<Enter> event triggers for a tag when the tag
 first becomes present on the current character, and a B<Leave> event
 triggers for a tag when it ceases to be present on the current character.
 B<Enter> and B<Leave> events can happen either because the
@@ -1319,8 +1317,6 @@ tag bindings.
 The tag bindings will be invoked first, followed by bindings
 for the window as a whole.
 
-=back
-
 =item I<$text>-E<gt>B<tagCget>(I<tagName, option>)
 
 This command returns the current value of the option named I<option>
@@ -1343,7 +1339,7 @@ is specified).
 If one or more I<option-value> pairs are specified, then the command
 modifies the given option(s) to have the given value(s) in I<tagName>;
 in this case the command returns an empty string.
-See L</TAGS> above for details on the options available for tags.
+See L<"TAGS"> above for details on the options available for tags.
 
 =item I<$text>-E<gt>B<tagDelete>(I<tagName, >?I<tagName, ...>?)
 
@@ -1452,14 +1448,14 @@ The behavior of the method depends on the I<option> argument
 that follows the B<window> argument.
 The following forms of the method are currently supported:
 
-=over 4
+=over 8
 
 =item I<$text>->B<windowCget>(I<index, option>)
 
 Returns the value of a configuration option for an embedded window.
 I<Index> identifies the embedded window, and I<option>
 specifies a particular configuration option, which must be one of
-the ones listed in L</EMBEDDED WINDOWS> above.
+the ones listed in L<"EMBEDDED WINDOWS"> above.
 
 =item I<$text>->B<windowConfigure>(I<index>?, I<option, value, ...>?)
 
@@ -1474,7 +1470,7 @@ I<option> is specified).
 If one or more I<option-value> pairs are specified, then the command
 modifies the given option(s) to have the given value(s);  in
 this case the command returns an empty string.
-See L</EMBEDDED WINDOWS> above for information on the options that
+See L<"EMBEDDED WINDOWS"> above for information on the options that
 are supported.
 
 =item I<$text>->B<windowCreate>(I<index>?, I<option, value, ...>?)
@@ -1483,7 +1479,7 @@ This command creates a new window annotation, which will appear
 in the text at the position given by I<index>.
 Any number of I<option-value> pairs may be specified to
 configure the annotation.
-See L</EMBEDDED WINDOWS> above for information on the options that
+See L<"EMBEDDED WINDOWS"> above for information on the options that
 are supported.
 Returns an empty string.
 
@@ -1500,7 +1496,7 @@ This command is used to query and change the horizontal position of the
 text in the widget's window.  It can take any of the following
 forms:
 
-=over 4
+=over 8
 
 =item I<$text>->B<xview>
 
@@ -1547,7 +1543,7 @@ This command is used to query and change the vertical position of the
 text in the widget's window.
 It can take any of the following forms:
 
-=over 4
+=over 8
 
 =item I<$text>-E<gt>B<yview>
 
@@ -1591,7 +1587,7 @@ appear at the top of the window.
 If B<-pickplace> is specified then the widget chooses where
 I<index> appears in the window:
 
-=over 4
+=over 12
 
 =item [1]
 
@@ -1889,13 +1885,15 @@ especially if they have many marks and tags within them.
 
 The display line with the insert cursor is redrawn each time the
 cursor blinks, which causes a steady stream of graphics traffic.
-Set the B<insertOffTime> attribute to 0 avoid this.
+Set the B<-insertofftime> option to 0 avoid this.
 
 =head1 SEE ALSO
 
-ROText
-TextUndo
+L<Tk::ROText|Tk::ROText>
+L<Tk::TextUndo|Tk::TextUndo>
 
 =head1 KEYWORDS
 
 text, widget
+
+=cut
