@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/FBox.pm#13 $
+$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/FBox.pm#19 $
 
 use base qw(Tk::Toplevel);
 
@@ -383,6 +383,7 @@ sub Update {
     my $flt = join('|', split(' ', $w->cget(-filter)) );
     $flt =~ s!([\.\+])!\\$1!g;
     $flt =~ s!\*!.*!g;
+    local *FDIR;
     if( opendir( FDIR,  _cwd() )) {
       my @files;
         foreach my $f (sort { lc($a) cmp lc($b) } readdir FDIR) {
@@ -404,10 +405,7 @@ sub Update {
 	push @list, $dir;
     }
     my $dirMenu = $w->{'dirMenu'};
-    $dirMenu->options([]);
-    my $var = $w->{'selectPath'};
-    $dirMenu->addOptions(@list);
-    $w->{'selectPath'} = $var; # workaround
+    $dirMenu->configure(-options => \@list);
 
     # Restore the PWD to the application's PWD
     ext_chdir($appPWD);
@@ -655,6 +653,9 @@ sub TclFileJoin {
     my $path = '';
     foreach (@_) {
 	if (m|^/|) {
+	    $path = $_;
+	}
+	elsif (m|^[a-z]:/|i) {  # DOS-ish
 	    $path = $_;
 	} elsif ($_ eq '~') {
 	    $path = _get_homedir();

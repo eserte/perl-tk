@@ -1,4 +1,4 @@
-/* 
+/*
  * XrmOption.c --
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
@@ -39,7 +39,7 @@ XrmDatabase db;
 
 }
 
-static void 
+static void
 XrmCombineFileDatabase(filename, target_db, override)
 char *filename;
 XrmDatabase *target_db;
@@ -86,7 +86,7 @@ static XrmQuarkList Qname;      /* name Quark list (malloced) */
 static XrmQuarkList Qclass;     /* class Quark list (malloced) */
 static int Qsize  = 0;          /* Number of slots in Quark lists */
 static int Qindex = 0;          /* index just beyond cacheWindow in Quark list */
- 
+
 
 #ifdef XRM_DEBUG
 static void
@@ -150,20 +150,20 @@ int depth;
 /*
  *--------------------------------------------------------------
  *
- * Xrm_GetOption --
+ * Xrm_GetOption  --
  *
- *                                                                                                                              Retrieve an option from the option database.
+ *  Retrieve  an  option  from  the  option  database.
  *
  * Results:
- *                                                                                                                              The return value is the value specified in the option
- *                                                                                                                              database for the given name and class on the given
- *                                                                                                                              window.  If there is nothing specified in the database
- *                                                                                                                              for that option, then NULL is returned.
+ *  The  return  value  is  the  value  specified  in  the  option
+ *  database  for  the  given  name  and  class  on  the  given
+ *  window.  If  there  is  nothing  specified  in  the  database
+ *  for  that  option,  then  NULL  is  returned.
  *
- * Side effects:
- *                                                                                                                              The internal caches used to speed up option mapping
- *                                                                                                                              may be modified, if this tkwin is different from the
- *                                                                                                                              last tkwin used for option retrieval.
+ * Side  effects:
+ *  The  internal  caches  used  to  speed  up  option  mapping
+ *  may  be  modified,  if  this  tkwin  is  different  from  the
+ *  last  tkwin  used  for  option  retrieval.
  *
  *--------------------------------------------------------------
  */
@@ -195,7 +195,7 @@ char *className;                  /* Class of option.  NULL means there
 
 #ifdef DEBUGGING
  if (Qindex + 1 > Qsize)
-  abort(); 
+  abort();
 #endif
 
  Qname[Qindex] = XrmStringToQuark(name);
@@ -217,8 +217,8 @@ char *className;                  /* Class of option.  NULL means there
  if (database && XrmQGetResource(database, Qname, Qclass, &type, &value))
   {
 #ifdef XRM_DEBUG
-   fprintf(stdout, "%s(%s/%s) type=%s val=%.*s\n", 
-           Tk_PathName(winPtr), name, className, 
+   fprintf(stdout, "%s(%s/%s) type=%s val=%.*s\n",
+           Tk_PathName(winPtr), name, className,
            XrmQuarkToString(type), (int) value.size, value.addr);
 #endif
    return Tk_GetUid(value.addr);
@@ -232,13 +232,13 @@ char *className;                  /* Class of option.  NULL means there
  *
  * Xrm_AddOption --
  *
- *                                                                                                                              Add a new option to the option database.
+ *  Add a new option to the option database.
  *
  * Results:
- *                                                                                                                              None.
+ *  None.
  *
  * Side effects:
- *                                                                                                                              Information is added to the option database.
+ *  Information is added to the option database.
  *
  *--------------------------------------------------------------
  */
@@ -275,16 +275,16 @@ int priority;                     /* Overall priority level to use for
 /*
  *--------------------------------------------------------------
  *
- * Xrm_OptionCmd --
+ *  Xrm_OptionCmd  --
  *
- *                                                                                                                              This procedure is invoked to process the "option" Tcl command.
- *                                                                                                                              See the user documentation for details on what it does.
+ *  This  procedure  is  invoked  to  process  the  "option"  Tcl  command.
+ *  See  the  user  documentation  for  details  on  what  it  does.
  *
- * Results:
- *                                                                                                                              A standard Tcl result.
+ *  Results:
+ *  A  standard  Tcl  result.
  *
- * Side effects:
- *                                                                                                                              See the user documentation.
+ *  Side  effects:
+ *  See  the  user  documentation.
  *
  *--------------------------------------------------------------
  */
@@ -413,18 +413,18 @@ Arg *args;                        /* Argument strings. */
 /*
  *--------------------------------------------------------------
  *
- * TkOptionDeadWindow --
+ *  TkOptionDeadWindow  --
  *
- *                                                                                                                              This procedure is called whenever a window is deleted.
- *                                                                                                                              It cleans up any option-related stuff associated with
- *                                                                                                                              the window.
+ *  This  procedure  is  called  whenever  a  window  is  deleted.
+ *  It  cleans  up  any  option-related  stuff  associated  with
+ *  the  window.
  *
- * Results:
- *                                                                                                                              None.
+ *  Results:
+ *  None.
  *
- * Side effects:
- *                                                                                                                              Option-related resources are freed.  See code below
- *                                                                                                                              for details.
+ *  Side  effects:
+ *  Option-related  resources  are  freed.  See  code  below
+ *  for  details.
  *
  *--------------------------------------------------------------
  */
@@ -443,7 +443,11 @@ register TkWindow *winPtr;        /* Window to be cleaned up. */
  if ((winPtr->mainPtr->winPtr == winPtr)
      && (winPtr->mainPtr->optionRootPtr != NULL))
   {
-   ClearOptionTree(winPtr->mainPtr);
+   if (winPtr->dispPtr->refCount <= 0)
+    {
+     XrmDestroyDatabase((XrmDatabase) winPtr->mainPtr->optionRootPtr);
+     XrmSetDatabase(winPtr->display,(XrmDatabase) NULL);
+    }
    winPtr->mainPtr->optionRootPtr = NULL;
   }
 }
@@ -453,16 +457,16 @@ register TkWindow *winPtr;        /* Window to be cleaned up. */
  *
  * TkOptionClassChanged --
  *
- *                                                                                                                              This procedure is invoked when a window's class changes.  If
- *                                                                                                                              the window is on the option cache, this procedure flushes
- *                                                                                                                              any information for the window, since the new class could change
- *                                                                                                                              what is relevant.
+ *  This  procedure  is  invoked  when  a  window's  class  changes.  If
+ *  the  window  is  on  the  option  cache,  this  procedure  flushes
+ *  any  information  for  the  window,  since  the  new  class  could  change
+ *  what  is  relevant.
  *
- * Results:
- *                                                                                                                              None.
+ *  Results:
+ *  None.
  *
- * Side effects:
- *                                                                                                                              The option cache may be flushed in part or in whole.
+ *  Side  effects:
+ *  The  option  cache  may  be  flushed  in  part  or  in  whole.
  *
  *----------------------------------------------------------------------
  */
@@ -489,17 +493,17 @@ TkWindow *winPtr;                 /* Window whose class changed. */
 /*
  *----------------------------------------------------------------------
  *
- * ParsePriority --
+ *  ParsePriority  --
  *
- *                                                                                                                              Parse a string priority value.
+ *  Parse  a  string  priority  value.
  *
- * Results:
- *                                                                                                                              The return value is the integer priority level corresponding
- *                                                                                                                              to string, or -1 if string doesn't point to a valid priority level.
- *                                                                                                                              In this case, an error message is left in Tcl_GetResult(interp).
+ *  Results:
+ *  The  return  value  is  the  integer  priority  level  corresponding
+ *  to  string,  or  -1  if  string  doesn't  point  to  a  valid  priority  level.
+ *  In  this  case,  an  error  message  is  left  in  Tcl_GetResult(interp).
  *
- * Side effects:
- *                                                                                                                              None.
+ *  Side  effects:
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -559,16 +563,16 @@ char *string;                     /* Describes a priority level, either
  *
  * ReadOptionFile --
  *
- *                                                                                                                              Read a file of options ("resources" in the old X terminology)
- *                                                                                                                              and load them into the option database.
+ *   Read a file of options ("resources" in the old X terminology)
+ *   and load them into the option database.
  *
  * Results:
- *                                                                                                                              The return value is a standard Tcl return code.  In the case of
- *                                                                                                                              an error in parsing string, TCL_ERROR will be returned and an
- *                                                                                                                              error message will be left in Tcl_GetResult(interp).
+ *   The return value is a standard Tcl return code.   In the case of
+ *   an error in parsing string, TCL_ERROR will be returned and an
+ *   error message will be left in Tcl_GetResult(interp).
  *
  * Side effects:
- *                                                                                                                              None.
+ *   None.
  *
  *----------------------------------------------------------------------
  */
@@ -594,7 +598,7 @@ int priority;                     /* Priority level to use for options in
    if (database)
     {
      TkWindow *winPtr = (TkWindow *) tkwin;
-     if (priority > TK_WIDGET_DEFAULT_PRIO && 
+     if (priority > TK_WIDGET_DEFAULT_PRIO &&
        winPtr->mainPtr->optionRootPtr == NULL)
       {
        OptionInit(winPtr->mainPtr);
@@ -622,13 +626,13 @@ int priority;                     /* Priority level to use for options in
  *
  * OptionInit --
  *
- *                                                                                                                              Initialize data structures for option handling.
+ *   Initialize data structures for option handling.
  *
  * Results:
- *                                                                                                                              None.
+ *   None.
  *
  * Side effects:
- *                                                                                                                              Option-related data structures get initialized.
+ *   Option-related data structures get initialized.
  *
  *--------------------------------------------------------------
  */
@@ -656,7 +660,7 @@ register TkMainInfo *mainPtr;     /* Top-level information about
   }
 
  /*
-  * Then, per-main-window initialization. 
+  * Then, per-main-window initialization.
   */
 
  mainPtr->optionRootPtr = (void *) XrmGetDatabase(winPtr->display);
@@ -682,7 +686,7 @@ register TkMainInfo *mainPtr;     /* Top-level information about
                                  XA_RESOURCE_MANAGER, 0, 100000,
                                  False, XA_STRING, &actualType, &actualFormat,
                              &numItems, &bytesAfter, (unsigned char **) &regProp);
-       
+
      if ((result == Success) && (actualType == XA_STRING) && (actualFormat == 8))
       {
        mainPtr->optionRootPtr = (void *) XrmGetStringDatabase(regProp);
@@ -718,16 +722,16 @@ register TkMainInfo *mainPtr;     /* Top-level information about
  *
  * ClearOptionTree --
  *
- *                                                                                                                              This procedure is called to erase everything in a
- *                                                                                                                              hierarchical option database.
+ *   This procedure is called to erase everything in a
+ *   hierarchical option database.
  *
  * Results:
- *                                                                                                                              None.
+ *   None.
  *
  * Side effects:
- *                                                                                                                              All the options associated with arrayPtr are deleted,
- *                                                                                                                              along with all option subtrees.  The space pointed to
- *                                                                                                                              by arrayPtr is freed.
+ *   All the options associated with arrayPtr are deleted,
+ *   along with all option subtrees.   The space pointed to
+ *   by arrayPtr is freed.
  *
  *--------------------------------------------------------------
  */
@@ -738,7 +742,6 @@ TkMainInfo *mainPtr;
 {
  if (mainPtr->optionRootPtr)
   {
-   XrmDestroyDatabase((XrmDatabase) mainPtr->optionRootPtr);
    mainPtr->optionRootPtr = NULL;
   }
 }
@@ -750,7 +753,7 @@ Xrm_import(class)
 char *class;
 {
 #if !defined(__WIN32__) && !defined(_WIN32) && !defined(__PM__)
- /* This is sneaky - we patch up the function tables so 
+ /* This is sneaky - we patch up the function tables so
      that calls to Tk*Option*() map to Xrm versions.
  */
  LangOptionCommand = Xrm_OptionCmd;

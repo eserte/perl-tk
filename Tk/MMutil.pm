@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.047'; # $Id: //depot/Tk8/Tk/MMutil.pm#47 $
+$VERSION = '3.049'; # $Id: //depot/Tk8/Tk/MMutil.pm#49 $
 
 use Tk::MakeDepend;
 
@@ -247,6 +247,11 @@ sub const_config
   {
    $self->{'LDFLAGS'} =~ s/-(debug|pdb:\w+)\s+//g;
    $self->{'LDDLFLAGS'} =~ s/-(debug|pdb:\w+)\s+//g;
+  }
+ elsif ($^O =~ /(openbsd)/i)
+  {
+   # -Bforcearchive is bad news for Tk - we don't want all of libpTk.a in all .so-s.
+   $self->{'LDDLFLAGS'} =~ s/-Bforcearchive\s*//g;
   }
  return $self->MM::const_config;
 }

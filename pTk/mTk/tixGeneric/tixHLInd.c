@@ -74,10 +74,10 @@ Tix_HLIndCGet(clientData, interp, argc, argv)
     }
     if (chPtr->indicator == NULL) {
 	Tcl_AppendResult(interp, "entry \"", argv[0],
-	    "\" does not have an indicator", (char*)NULL); 
+	    "\" does not have an indicator", (char*)NULL);
 	return TCL_ERROR;
     }
-    return Tk_ConfigureValue(interp, wPtr->dispData.tkwin, 
+    return Tk_ConfigureValue(interp, wPtr->dispData.tkwin,
 	chPtr->indicator->base.diTypePtr->itemConfigSpecs,
 	(char *)chPtr->indicator, argv[1], 0);
 }
@@ -101,15 +101,15 @@ Tix_HLIndConfig(clientData, interp, argc, argv)
     }
     if (chPtr->indicator == NULL) {
 	Tcl_AppendResult(interp, "entry \"", argv[0],
-	    "\" does not have an indicator", (char*)NULL); 
+	    "\" does not have an indicator", (char*)NULL);
 	return TCL_ERROR;
     }
     if (argc == 1) {
-	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin, 
+	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin,
 	    chPtr->indicator->base.diTypePtr->itemConfigSpecs,
 	    (char *)chPtr->indicator, NULL, 0);
     } else if (argc == 2) {
-	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin, 
+	return Tk_ConfigureInfo(interp, wPtr->dispData.tkwin,
 	    chPtr->indicator->base.diTypePtr->itemConfigSpecs,
 	    (char *)chPtr->indicator, argv[1], 0);
     } else {
@@ -202,7 +202,7 @@ Tix_HLIndDelete(clientData, interp, argc, argv)
     }
     if (chPtr->indicator == NULL) {
 	Tcl_AppendResult(interp, "entry \"", argv[0],
-	    "\" does not have an indicator", (char*)NULL); 
+	    "\" does not have an indicator", (char*)NULL);
 	return TCL_ERROR;
     }
 
@@ -267,12 +267,11 @@ Tix_HLIndSize(clientData, interp, argc, argv)
     }
     if (chPtr->indicator == NULL) {
 	Tcl_AppendResult(interp, "entry \"", argv[0],
-	    "\" does not have an indicator", (char*)NULL); 
+	    "\" does not have an indicator", (char*)NULL);
 	return TCL_ERROR;
     }
-    sprintf(buff, "%d %d",
+    Tcl_IntResults(interp, 2, 0,
 	Tix_DItemWidth(chPtr->indicator),
 	Tix_DItemHeight(chPtr->indicator));
-    Tcl_AppendResult(interp, buff, NULL);
     return TCL_OK;
 }

@@ -51,7 +51,6 @@ typedef struct
  Tcl_VarTraceProc *proc;
  ClientData clientData;
  Tcl_Interp *interp;
- SV *sv;
  char *part2;
 } Tk_TraceInfo;
 
@@ -736,7 +735,7 @@ SV **data;
 void
 DumpStack _((void))
 {
- dTHR;
+ dTHX;
  do_watch();
  LangDumpVec("stack", PL_stack_sp - PL_stack_base, PL_stack_base + 1);
 }
@@ -1549,7 +1548,7 @@ static int
 Check_Eval(interp)
 Tcl_Interp *interp;
 {
- dTHR;
+ dTHX;
  STRLEN na;
  SV *sv = ERRSV;
  if (SvTRUE(sv))
@@ -1867,7 +1866,7 @@ va_dcl
  int count = 0;
  int code;
  SV *cb    = sv;
- dTHR;
+ dTHX;
  ENTER;
  SAVETMPS;
  if (interp)
@@ -1910,7 +1909,7 @@ void HandleBgErrors(clientData)
 ClientData clientData;
 {Tcl_Interp *interp = (Tcl_Interp *) clientData;
  AV *pend   = FindAv(interp, "HandleBgErrors", 0, "_PendingErrors_");
- dTHR;
+ dTHX;
  ENTER;
  SAVETMPS;
  TAINT_NOT;
@@ -1947,7 +1946,7 @@ void
 Tcl_BackgroundError(interp)
 Tcl_Interp *interp;
 {
- dTHR;
+ dTHX;
  int old_taint = PL_tainted;
  TAINT_NOT;
  if (InterpHv(interp,0))
@@ -1968,7 +1967,7 @@ Tcl_Interp *interp;
    av_store(av, 0, newSVpv("Tk::Error",0));
    av_store(av, 1, obj);
    av_store(av, 2, newSVpv(Tcl_GetResult(interp),0));
-   av_push( pend, LangMakeCallback((SV *) av));
+   av_push( pend, LangMakeCallback(MakeReference((SV *) av)));
    if (av_len(pend) <= 0)
     {
      /* 1st one - setup callback */
@@ -3384,7 +3383,6 @@ Perl_Value(IV ix, SV *sv)
 {
  Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
  char *result;
- assert(sv == p->sv);
 
  /* We are a "magic" set processor, whether we like it or not
     because this is the hook we use to get called.
@@ -3419,7 +3417,6 @@ SV *sv;
 {
  Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
  char *result;
- assert(sv == p->sv);
 
  /* We are a "magic" set processor, whether we like it or not
     because this is the hook we use to get called.
@@ -3444,16 +3441,15 @@ SV *sv;
  if (!SvIOK(sv) && SvIOKp(sv))
   SvIOK_on(sv);
 
+ ENTER;
+ SvREFCNT_inc(sv);
+ save_freesv(sv);
  result = (*p->proc) (p->clientData, p->interp, sv, p->part2, 0);
  if (result)
   Tcl_Panic("Tcl_VarTraceProc returned '%s'", result);
+ LEAVE;
  return 0;
 }
-
-#ifdef __MINGW32__
-#undef vtbl_uvar
-static MGVTBL vtbl_uvar = { magic_getuvar, magic_setuvar, 0, 0, 0};
-#endif
 
 int
 Tcl_TraceVar2(interp, sv, part2, flags, tkproc, clientData)
@@ -3496,7 +3492,6 @@ ClientData clientData;
  p->proc = tkproc;
  p->clientData = clientData;
  p->interp = interp;
- p->sv = SvREFCNT_inc(sv);
  p->part2 = part2;
 
  /* We want to be last in the chain so that any
@@ -3505,15 +3500,18 @@ ClientData clientData;
   */
  mg_list = SvMAGIC(sv);
  SvMAGIC(sv) = NULL;
+
+ /* Add 'U' magic to sv with all NULL args */
  sv_magic(sv, 0, 'U', 0, 0);
 
- New(666, ufp, 1, struct ufuncs);
+ Newz(666, ufp, 1, struct ufuncs);
  ufp->uf_val = Perl_Value;
  ufp->uf_set = Perl_Trace;
  ufp->uf_index = (IV) p;
 
  mg = SvMAGIC(sv);
  mg->mg_ptr = (char *) ufp;
+ mg->mg_len = sizeof(struct ufuncs);
 
  /* put list back and add mg to end */
 
@@ -3686,25 +3684,32 @@ ClientData clientData;
       * Trawl through the linked list of magic looking
       * for the 'U' one which is our proc and ix.
       */
-     if (mg->mg_type == 'U'
-         && mg->mg_ptr
-         && ((struct ufuncs *) (mg->mg_ptr))->uf_set == Perl_Trace)
+     if (mg->mg_type == 'U' && mg->mg_ptr &&
+         mg->mg_len  == sizeof(struct ufuncs) &&
+         ((struct ufuncs *) (mg->mg_ptr))->uf_set == Perl_Trace)
       {
-       Tk_TraceInfo *p = (Tk_TraceInfo *) (((struct ufuncs *) (mg->mg_ptr))->uf_index);
-       if (p->proc == tkproc && p->interp == interp &&
+       struct ufuncs *uf = (struct ufuncs *) (mg->mg_ptr);
+       Tk_TraceInfo *p = (Tk_TraceInfo *) (uf->uf_index);
+       if (p && p->proc == tkproc && p->interp == interp &&
            p->clientData == clientData)
         {
          *mgp = mg->mg_moremagic;
-         Safefree(mg->mg_ptr);
-         Safefree(mg);
-         SvREFCNT_dec(p->sv);
          Safefree(p);
+         uf->uf_index = 0;
+         Safefree(mg->mg_ptr);
+         mg->mg_ptr = NULL;
+         Safefree(mg);
         }
        else
         mgp = &mg->mg_moremagic;
       }
      else
       mgp = &mg->mg_moremagic;
+    }
+   if (!SvMAGIC(sv))
+    {
+     SvMAGICAL_off(sv);
+     SvFLAGS(sv) |= (SvFLAGS(sv) & (SVp_IOK|SVp_NOK|SVp_POK)) >> PRIVSHIFT;
     }
   }
 }
@@ -3798,7 +3803,7 @@ Arg sv;
 Var *vp;
 int type;
 {
- dTHR;
+ dTHX;
  STRLEN na;
  int old_taint = PL_tainted;
  TAINT_NOT;
@@ -3830,7 +3835,7 @@ int type;
   }
  else if (SvPOK(sv))
   {
-   dTHR;
+   dTHX;
    HV *old_stash = CopSTASH(PL_curcop);
    char *name;
    SV *x = NULL;
@@ -5097,14 +5102,21 @@ Tcl_AllowExceptions (Tcl_Interp *interp)
  /* FIXME: What should this do ? */
 }
 
+
+static HV *uidHV;
+
 Tk_Uid
 Tk_GetUid(key)
     CONST char *key;		/* String to convert. */
 {
-    STRLEN klen = strlen(key);
-    U32 hash = 0;
-    PERL_HASH(hash, (char *) key, klen);
-    return (Tk_Uid) sharepvn( (char *) key, klen, hash);
+    STRLEN klen;
+    SV *svkey = newSVpv((char *)key,strlen(key));
+    HE *he;
+    if (!uidHV)
+     uidHV = newHV();
+    he = hv_fetch_ent(uidHV,svkey,1,0);
+    SvREFCNT_dec(svkey);
+    return (Tk_Uid) HePV(he,klen);
 }
 
 long

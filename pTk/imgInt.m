@@ -2,6 +2,18 @@
 #define _IMGINT_VM
 #include "imgInt_f.h"
 #ifndef NO_VTABLES
+#ifndef ImgFixChanMatchProc
+#  define ImgFixChanMatchProc (*ImgintVptr->V_ImgFixChanMatchProc)
+#endif
+
+#ifndef ImgFixObjMatchProc
+#  define ImgFixObjMatchProc (*ImgintVptr->V_ImgFixObjMatchProc)
+#endif
+
+#ifndef ImgFixStringWriteProc
+#  define ImgFixStringWriteProc (*ImgintVptr->V_ImgFixStringWriteProc)
+#endif
+
 #ifndef ImgGetByteArrayFromObj
 #  define ImgGetByteArrayFromObj (*ImgintVptr->V_ImgGetByteArrayFromObj)
 #endif
@@ -16,6 +28,10 @@
 
 #ifndef ImgObjInit
 #  define ImgObjInit (*ImgintVptr->V_ImgObjInit)
+#endif
+
+#ifndef ImgOpenFileChannel
+#  define ImgOpenFileChannel (*ImgintVptr->V_ImgOpenFileChannel)
 #endif
 
 #ifndef ImgPhotoPutBlock

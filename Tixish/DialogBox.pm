@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#31 $
+$VERSION = '3.032'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#32 $
 
 use base  qw(Tk::Toplevel);
 
@@ -63,8 +63,8 @@ sub Populate {
 	}
     }
     $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ],
-                     -foreground => ['ADVERTISED', undef, undef, undef],
-                     -background => ['ADVERTISED', undef, undef, undef],
+                     -foreground => ['DESCENDANTS', 'foreground','Foreground', 'black'],
+                     -background => ['DESCENDANTS', 'background','Background',  undef],
                     );
     $cw->Delegates('Construct',$top);
 }

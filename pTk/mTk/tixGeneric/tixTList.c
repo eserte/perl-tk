@@ -1,4 +1,4 @@
-/* 
+/*
  * tixTList.c --
  *
  *	This module implements "TList" widgets.
@@ -137,7 +137,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_CALLBACK, "-sizecmd", "sizeCmd", "SizeCmd",
        DEF_TLIST_SIZE_COMMAND, Tk_Offset(WidgetRecord, sizeCmd),
        TK_CONFIG_NULL_OK},
- 
+
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_TLIST_TAKE_FOCUS, Tk_Offset(WidgetRecord, takeFocus),
 	TK_CONFIG_NULL_OK},
@@ -641,7 +641,7 @@ WidgetEventProc(clientData, eventPtr)
 	if (wPtr->dispData.tkwin != NULL) {
 	    wPtr->dispData.tkwin = NULL;
 	    wPtr->dispData.sizeChangedProc = NULL;
-	    Tcl_DeleteCommand(wPtr->dispData.interp, 
+	    Tcl_DeleteCommand(wPtr->dispData.interp,
 	        Tcl_GetCommandName(wPtr->dispData.interp, wPtr->widgetCmd));
 	}
 	CancelResizeWhenIdle(wPtr);
@@ -762,7 +762,7 @@ WidgetCmdDeletedProc(clientData)
      */
     if (wPtr->dispData.tkwin != NULL) {
 	Tk_Window tkwin = wPtr->dispData.tkwin;
-	wPtr->dispData.tkwin = NULL;           
+	wPtr->dispData.tkwin = NULL;
 	wPtr->dispData.sizeChangedProc = NULL;
 	Tk_DestroyWindow(tkwin);
     }
@@ -814,7 +814,7 @@ MakeGeomRequest(wPtr)
     WidgetPtr wPtr;
 {
     int reqW, reqH;
-    
+
     reqW = wPtr->width  * wPtr->scrollInfo[0].unit;
     reqH = wPtr->height * wPtr->scrollInfo[1].unit;
 
@@ -971,10 +971,10 @@ WidgetDisplay(clientData)
     /* Draw the border */
     Tk_Draw3DRectangle(wPtr->dispData.tkwin, pixmap, wPtr->border,
 	wPtr->highlightWidth, wPtr->highlightWidth,
-	Tk_Width(tkwin)  - 2*wPtr->highlightWidth, 
+	Tk_Width(tkwin)  - 2*wPtr->highlightWidth,
 	Tk_Height(tkwin) - 2*wPtr->highlightWidth, wPtr->borderWidth,
 	wPtr->relief);
-  
+
     /* Draw the highlight */
     if (wPtr->highlightWidth > 0) {
 	GC gc;
@@ -982,7 +982,7 @@ WidgetDisplay(clientData)
 	if (wPtr->hasFocus) {
 	    gc = wPtr->highlightGC;
 	} else {
-	    gc = Tk_3DBorderGC(wPtr->dispData.tkwin, wPtr->border, 
+	    gc = Tk_3DBorderGC(wPtr->dispData.tkwin, wPtr->border,
 		TK_3D_FLAT_GC);
 	}
 	Tk_DrawFocusHighlight(tkwin, gc, wPtr->highlightWidth, pixmap);
@@ -1118,7 +1118,7 @@ FreeEntry(wPtr, chPtr)
 }
 
 /*----------------------------------------------------------------------
- * "insert" sub command -- 
+ * "insert" sub command --
  *
  *	Insert a new item into the list
  *----------------------------------------------------------------------
@@ -1203,7 +1203,7 @@ Tix_TLInsert(clientData, interp, argc, argv)
     if (code == TCL_ERROR) {
 	if (chPtr != NULL) {
 	    if (added) {
-		Tix_LinkListFindAndDelete(&entListInfo, &wPtr->entList, 
+		Tix_LinkListFindAndDelete(&entListInfo, &wPtr->entList,
 		    (char*)chPtr, NULL);
 	    }
 	    FreeEntry(wPtr, chPtr);
@@ -1216,7 +1216,7 @@ Tix_TLInsert(clientData, interp, argc, argv)
     return code;
 }
 
-static int 
+static int
 Tix_TLSpecialEntryInfo(wPtr, interp, chPtr)
     WidgetPtr wPtr;
     Tcl_Interp *interp;
@@ -1310,7 +1310,7 @@ Tix_TLInfo(clientData, interp, argc, argv)
 	for (chPtr=(ListEntry*)wPtr->entList.head, i=0;
 	     chPtr;
 	     chPtr=chPtr->next, i++) {
-	    
+	
 	    if (chPtr->selected) {
 		Tcl_IntResults(interp,1,1,i);
 	    }
@@ -1329,7 +1329,7 @@ Tix_TLInfo(clientData, interp, argc, argv)
 	return Tix_TLGetNeighbor(wPtr, interp, TIX_UP,    argc-1, argv+1);
     }
     else {
-	Tcl_AppendResult(interp, "unknown option \"", argv[0], 
+	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 	    "\": must be anchor or selection",
 	    NULL);
 	return TCL_ERROR;
@@ -1535,9 +1535,14 @@ Tix_TLGeometryInfo(clientData, interp, argc, argv)
 	    &first[i], &last[i]);
     }
 
+#if 0
+    /* FIXME */
     sprintf(string, "{%f %f} {%f %f}", first[0], last[0], first[1], last[1]);
     Tcl_AppendResult(interp, string, NULL);
-
+#else
+    /* Not quite right - one list of four rather than two lists of two */
+    Tcl_DoubleResults(interp, 4, 1, first[0], last[0], first[1], last[1]);
+#endif
     return TCL_OK;
 }
 
@@ -1961,7 +1966,7 @@ Tix_TLSelection(clientData, interp, argc, argv)
 	}
     }
     else {
-	Tcl_AppendResult(interp, "unknown option \"", argv[0], 
+	Tcl_AppendResult(interp, "unknown option \"", argv[0],
 	    "\": must be anchor, clear, includes or set", NULL);
 	code = TCL_ERROR;
     }
@@ -2106,7 +2111,7 @@ Tix_TLView(clientData, interp, argc, argv)
 
 	Tix_GetScrollFractions((Tix_ScrollInfo*)&wPtr->scrollInfo[axis],
 	    &first, &last);
-                                  
+
 #if 0
 	sprintf(string, "{%f %f}", first, last);
 	Tcl_AppendResult(interp, string, NULL);
@@ -2115,7 +2120,7 @@ Tix_TLView(clientData, interp, argc, argv)
 #endif
 	return TCL_OK;
     }
-    else if (Tix_SetScrollBarView(interp, 
+    else if (Tix_SetScrollBarView(interp,
 	(Tix_ScrollInfo*)&wPtr->scrollInfo[axis], argc, argv, 0) != TCL_OK) {
 
 	return TCL_ERROR;
@@ -2208,7 +2213,7 @@ static void ResizeRows(wPtr, winW, winH)
 
     winSize[0] = winW;
     winSize[1] = winH;
-    
+
     if (wPtr->entList.numItems == 0) {
 	wPtr->rows[0].chPtr = NULL;
 	wPtr->rows[0].size[0] = 1;
@@ -2369,7 +2374,7 @@ RedrawRows(wPtr, pixmap)
 		size = wPtr->rows[r].size[i];
 		break;
 	    }
-	} 
+	}
 
 	if ((wPtr->scrollInfo[i].offset + windowSize) < (start + size)) {
 	    wPtr->scrollInfo[i].offset = start + size - windowSize;
@@ -2390,7 +2395,7 @@ RedrawRows(wPtr, pixmap)
 	    total += wPtr->rows[r].size[i];
 
 	    if (total > wPtr->scrollInfo[i].offset) {
-		p[i] -= wPtr->scrollInfo[i].offset - 
+		p[i] -= wPtr->scrollInfo[i].offset -
 		        (total - wPtr->rows[r].size[i]);
 		break;
 	    }
@@ -2416,7 +2421,7 @@ RedrawRows(wPtr, pixmap)
 		total += chPtr->iPtr->base.size[j];
 		if (total > wPtr->scrollInfo[j].offset) {
 		    /* Adjust for the shift due to partially visible elements*/
-		    p[j] -= wPtr->scrollInfo[j].offset - 
+		    p[j] -= wPtr->scrollInfo[j].offset -
 		      (total - chPtr->iPtr->base.size[j]);
 		    break;
 		}

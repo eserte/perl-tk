@@ -1,4 +1,19 @@
 #ifdef _IMGINT
+#ifndef ImgFixChanMatchProc
+VFUNC(void,ImgFixChanMatchProc,V_ImgFixChanMatchProc,_ANSI_ARGS_((Tcl_Interp **interp, Tcl_Channel *chan,
+	Tcl_Obj **file, Tcl_Obj **format, int **width, int **height)))
+#endif
+
+#ifndef ImgFixObjMatchProc
+VFUNC(void,ImgFixObjMatchProc,V_ImgFixObjMatchProc,_ANSI_ARGS_((Tcl_Interp **interp, Tcl_Obj **data,
+	Tcl_Obj **format, int **width, int **height)))
+#endif
+
+#ifndef ImgFixStringWriteProc
+VFUNC(void,ImgFixStringWriteProc,V_ImgFixStringWriteProc,_ANSI_ARGS_((Tcl_DString *data, Tcl_Interp **interp,
+	Tcl_DString **dataPtr, Tcl_Obj **format, Tk_PhotoImageBlock **blockPtr)))
+#endif
+
 #ifndef ImgGetByteArrayFromObj
 VFUNC(char *,ImgGetByteArrayFromObj,V_ImgGetByteArrayFromObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 	int *lengthPtr)))
@@ -15,6 +30,11 @@ VFUNC(int,ImgListObjGetElements,V_ImgListObjGetElements,_ANSI_ARGS_((Tcl_Interp 
 
 #ifndef ImgObjInit
 VFUNC(int,ImgObjInit,V_ImgObjInit,_ANSI_ARGS_((Tcl_Interp *interp)))
+#endif
+
+#ifndef ImgOpenFileChannel
+VFUNC(Tcl_Channel,ImgOpenFileChannel,V_ImgOpenFileChannel,_ANSI_ARGS_((Tcl_Interp *interp,
+	CONST char *fileName, int permissions)))
 #endif
 
 #ifndef ImgPhotoPutBlock

@@ -7,7 +7,7 @@
  * GIF images may be read using the -data option of the photo image by
  * representing the data as BASE64 encoded ascii (SAU 6/96)
  *
- * Derived from the giftoppm code found in the pbmplus package 
+ * Derived from the giftoppm code found in the pbmplus package
  * and tkImgFmtPPM.c in the tk4.0b2 distribution by -
  *
  * Reed Wade (wade@cs.utk.edu), University of Tennessee
@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * This file also contains code from the giftoppm and the ppmtogif programs, 
+ * This file also contains code from the giftoppm and the ppmtogif programs,
  * which are copyrighted as follows:
  *
  * +-------------------------------------------------------------------+
@@ -57,7 +57,7 @@
  * +-------------------------------------------------------------------+
  *
  * SCCS: @(#) imgGIF.c 1.13 97/01/21 19:54:13
- */ 
+ */
 #include "tk.h"
 #include "tkVMacro.h"
 #include "imgInt.h"
@@ -77,25 +77,25 @@ static int      ChanReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
 static int	ObjReadGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    struct Tcl_Obj *data, struct Tcl_Obj *format,
+		    Tcl_Obj *data, Tcl_Obj *format,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
-static int 	ChanWriteGIF _ANSI_ARGS_(( Tcl_Interp *interp,  
-		    char *filename, struct Tcl_Obj *format, 
+static int 	ChanWriteGIF _ANSI_ARGS_(( Tcl_Interp *interp,
+		    char *filename, Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 static int	StringWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tcl_DString *dataPtr, struct Tcl_Obj *format,
+		    Tcl_DString *dataPtr, Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 static int      CommonReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
-		    MFile *handle, char *fileName, struct Tcl_Obj *format,
+		    MFile *handle, CONST char *fileName, Tcl_Obj *format,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
 static int	CommonWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    MFile *handle, struct Tcl_Obj *format,
+		    MFile *handle, Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtGIF = {
-    "GIF",		/* name */
+    "gif",		/* name */
     ChanMatchGIF,	/* fileMatchProc */
     ObjMatchGIF,	/* stringMatchProc */
     ChanReadGIF,	/* fileReadProc */
@@ -133,7 +133,7 @@ static int		ReadColorMap _ANSI_ARGS_((MFile *handle, int number,
 static int		ReadGIFHeader _ANSI_ARGS_((MFile *handle,
 			    int *widthPtr, int *heightPtr));
 static int		ReadImage _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *imagePtr, MFile *handle, int len, int rows, 
+			    char *imagePtr, MFile *handle, int len, int rows,
 			    unsigned char cmap[MAXCOLORMAPSIZE][4],
 			    int width, int height, int srcX, int srcY,
 			    int interlace, int transparent));
@@ -168,6 +168,8 @@ ChanMatchGIF(interp, chan, fileName, format, widthPtr, heightPtr)
 				 * raw GIF file. */
 {
     MFile handle;
+
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
 
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
@@ -210,7 +212,7 @@ ChanReadGIF(interp, chan, fileName, format, imageHandle, destX, destY,
     int srcX, srcY;		/* Coordinates of top-left pixel to be used
 				 * in image being read. */
 {
-    MFile handle; 
+    MFile handle;
     int nBytes;
 
     handle.data = (char *) chan;
@@ -253,8 +255,8 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 	width, height, srcX, srcY)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     MFile *handle;		/* The image file, open for reading. */
-    char *fileName;		/* The name of the image file. */
-    struct Tcl_Obj *format;	/* User-specified format object, or NULL. */
+    CONST char *fileName;	/* The name of the image file. */
+    Tcl_Obj *format;		/* User-specified format object, or NULL. */
     Tk_PhotoHandle imageHandle;	/* The photo image to write into. */
     int destX, destY;		/* Coordinates of top-left pixel in
 				 * photo image to be written to. */
@@ -266,7 +268,6 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
     int fileWidth, fileHeight;
     int nBytes, index = 0, objc = 0;
     Tcl_Obj **objv = NULL;
-    char *c = "";
     myblock bl;
     unsigned char buf[100];
     int bitPixel;
@@ -280,13 +281,13 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 	return TCL_ERROR;
     }
     if (objc > 1) {
-	c = Tcl_GetStringFromObj(objv[1], &nBytes);
-    }
-    if ((objc > 3) || ((objc == 3) && ((c[0] != '-') ||
-	    (c[1] != 'i') || strncmp(c, "-index", strlen(c))))) {
-	Tcl_AppendResult(interp, "invalid format: \"",
-		ImgGetStringFromObj(format, NULL), "\"", (char *) NULL);
-	return TCL_ERROR;
+	char *c = Tcl_GetStringFromObj(objv[1], &nBytes);
+	if ((objc > 3) || ((objc == 3) && ((c[0] != '-') ||
+		(c[1] != 'i') || strncmp(c, "-index", strlen(c))))) {
+	    Tcl_AppendResult(interp, "invalid format: \"",
+		    ImgGetStringFromObj(format, NULL), "\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
     }
     if (objc > 1) {
 	if (Tcl_GetIntFromObj(interp, objv[objc-1], &index) != TCL_OK) {
@@ -519,13 +520,15 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
 
 static int
 ObjMatchGIF(interp, data, format, widthPtr, heightPtr)
-    Tcl_Interp *interp;
-    struct Tcl_Obj *data;	/* the object containing the image data */
-    struct Tcl_Obj *format;	/* the image format object */
+    Tcl_Interp *interp;		/* interpreter */
+    Tcl_Obj *data;		/* the object containing the image data */
+    Tcl_Obj *format;		/* the image format object */
     int *widthPtr;		/* where to put the image width */
     int *heightPtr;		/* where to put the image height */
 {
     MFile handle;
+
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
 
     if (!ImgReadInit(data, 'G', &handle)) {
 	return 0;
@@ -558,15 +561,14 @@ static int
 ObjReadGIF(interp, data, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;		/* interpreter for reporting errors in */
-    struct Tcl_Obj *data;	/* object containing the image */
-    struct Tcl_Obj *format;	/* format object if any */
+    Tcl_Obj *data;		/* object containing the image */
+    Tcl_Obj *format;		/* format object if any */
     Tk_PhotoHandle imageHandle;	/* the image to write this data into */
     int destX, destY;		/* The rectangular region of the  */
     int  width, height;		/*   image to copy */
     int srcX, srcY;
 {
-    MFile handle;                         
-    int code;
+    MFile handle;
 
     ImgReadInit(data, 'G', &handle);
     return CommonReadGIF(interp, &handle, "inline data", format,
@@ -1005,8 +1007,8 @@ int flag;
  * ChanWriteGIF - writes a image in GIF format.
  *-------------------------------------------------------------------------
  * Author:          		Lolo
- *                              Engeneering Projects Area 
- *	            		Department of Mining 
+ *                              Engeneering Projects Area
+ *	            		Department of Mining
  *                  		University of Oviedo
  * e-mail			zz11425958@zeus.etsimo.uniovi.es
  *                  		lolo@pcsig22.etsimo.uniovi.es
@@ -1015,7 +1017,7 @@ int flag;
  * FileWriteGIF-
  *
  *    This procedure is called by the photo image type to write
- *    GIF format data from a photo image into a given file 
+ *    GIF format data from a photo image into a given file
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
@@ -1066,18 +1068,15 @@ static int
 ChanWriteGIF (interp, filename, format, blockPtr)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     char	*filename;
-    struct Tcl_Obj *format;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     Tcl_Channel chan = NULL;
     MFile handle;
     int result;
 
-    chan = Tcl_OpenFileChannel(interp, filename, "w", 0644);
+    chan = ImgOpenFileChannel(interp, filename, 0644);
     if (!chan) {
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1095,11 +1094,14 @@ static int
 StringWriteGIF(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
-    struct Tcl_Obj *format;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     int result;
     MFile handle;
+    Tcl_DString data;
+
+    ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
 
     Tcl_DStringSetLength(dataPtr, 1024);
     ImgWriteInit(dataPtr, &handle);
@@ -1107,14 +1109,17 @@ StringWriteGIF(interp, dataPtr, format, blockPtr)
     result = CommonWriteGIF(interp, &handle, format, blockPtr);
     ImgPutc(IMG_DONE, &handle);
 
-    return(result);
+    if ((result == TCL_OK) && (dataPtr == &data)) {
+	Tcl_DStringResult(interp, dataPtr);
+    }
+    return result;
 }
 
 static int
 CommonWriteGIF(interp, handle, format, blockPtr)
     Tcl_Interp *interp;
     MFile *handle;
-    struct Tcl_Obj *format;
+    Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     int  resolution;
@@ -1224,7 +1229,7 @@ CommonWriteGIF(interp, handle, format, blockPtr)
     ssize = rsize = blockPtr->width;
     csize = blockPtr->height;
     compress(resolution+1, handle, ReadValue);
- 
+
     ImgPutc(0,handle);
     ImgPutc(';',handle);
 
@@ -1290,7 +1295,7 @@ savemap(blockPtr,mapa)
 		green = colores[greenOffset];
 		blue = colores[blueOffset];
 		if (nuevo(red,green,blue,mapa)) {
-		    if (num>255) 
+		    if (num>255)
 			return -1;
 
 		    mapa[num][CM_RED]=red;
@@ -1348,373 +1353,6 @@ int colors;
 
 
 
-#ifdef IMG_USE_LZW
-
-/*
- *
- * GIF Image compression - modified 'compress'
- *
- * Based on: compress.c - File compression ala IEEE Computer, June 1984.
- *
- * By Authors:  Spencer W. Thomas       (decvax!harpo!utah-cs!utah-gr!thomas)
- *              Jim McKie               (decvax!mcvax!jim)
- *              Steve Davies            (decvax!vax135!petsd!peora!srd)
- *              Ken Turkowski           (decvax!decwrl!turtlevax!ken)
- *              James A. Woods          (decvax!ihnp4!ames!jaw)
- *              Joe Orost               (decvax!vax135!petsd!joe)
- *
- */
-#include <ctype.h>
-
-static void output _ANSI_ARGS_((long code));
-static void cl_block _ANSI_ARGS_((void));
-static void cl_hash _ANSI_ARGS_((int hsize));
-static void char_init _ANSI_ARGS_((void));
-static void char_out _ANSI_ARGS_((int c));
-static void flush_char _ANSI_ARGS_((void));
-
-static int n_bits;		/* number of bits/code */
-static int maxbits = GIFBITS;	/* user settable max # bits/code */
-static long maxcode;		/* maximum code, given n_bits */
-static long maxmaxcode = (long)1 << GIFBITS;
-				/* should NEVER generate this code */
-#define MAXCODE(n_bits)		(((long) 1 << (n_bits)) - 1)
-
-static int		htab[HSIZE];
-static unsigned int	codetab[HSIZE];
-#define HashTabOf(i)	htab[i]
-#define CodeTabOf(i)	codetab[i]
-
-static long hsize = HSIZE;	/* for dynamic table sizing */
-
-/*
- * To save much memory, we overlay the table used by compress() with those
- * used by decompress().  The tab_prefix table is the same size and type
- * as the codetab.  The tab_suffix table needs 2**GIFBITS characters.  We
- * get this from the beginning of htab.  The output stack uses the rest
- * of htab, and contains characters.  There is plenty of room for any
- * possible stack (stack used to be 8000 characters).
- */
-
-static int free_ent = 0;  /* first unused entry */
-
-/*
- * block compression parameters -- after all codes are used up,
- * and compression rate changes, start over.
- */
-static int clear_flg = 0;
-
-static int offset;
-static unsigned int in_count = 1;            /* length of input */
-static unsigned int out_count = 0;           /* # of codes output (for debugging) */
-
-/*
- * compress stdin to stdout
- *
- * Algorithm:  use open addressing double hashing (no chaining) on the
- * prefix code / next character combination.  We do a variant of Knuth's
- * algorithm D (vol. 3, sec. 6.4) along with G. Knott's relatively-prime
- * secondary probe.  Here, the modular division first probe is gives way
- * to a faster exclusive-or manipulation.  Also do block compression with
- * an adaptive reset, whereby the code table is cleared when the compression
- * ratio decreases, but after the table fills.  The variable-length output
- * codes are re-sized at this point, and a special CLEAR code is generated
- * for the decompressor.  Late addition:  construct the table according to
- * file size for noticeable speed improvement on small files.  Please direct
- * questions about this implementation to ames!jaw.
- */
-
-static int g_init_bits;
-static MFile *g_outfile;
-
-static int ClearCode;
-static int EOFCode;
-
-static void compress( init_bits, handle, readValue )
-    int init_bits;
-    MFile *handle;
-    ifunptr readValue;
-{
-    register long fcode;
-    register long i = 0;
-    register int c;
-    register long ent;
-    register long disp;
-    register long hsize_reg;
-    register int hshift;
-
-    /*
-     * Set up the globals:  g_init_bits - initial number of bits
-     *                      g_outfile   - pointer to output file
-     */
-    g_init_bits = init_bits;
-    g_outfile = handle;
-
-    /*
-     * Set up the necessary values
-     */
-    offset = 0;
-    out_count = 0;
-    clear_flg = 0;
-    in_count = 1;
-    maxcode = MAXCODE(n_bits = g_init_bits);
-
-    ClearCode = (1 << (init_bits - 1));
-    EOFCode = ClearCode + 1;
-    free_ent = ClearCode + 2;
-
-    char_init();
-
-    ent = readValue();
-
-    hshift = 0;
-    for ( fcode = (long) hsize;  fcode < 65536L; fcode *= 2L )
-        hshift++;
-    hshift = 8 - hshift;                /* set hash code range bound */
-
-    hsize_reg = hsize;
-    cl_hash( (int) hsize_reg);            /* clear hash table */
-
-    output( (long)ClearCode );
-
-#ifdef SIGNED_COMPARE_SLOW
-    while ( (c = readValue() ) != (unsigned) EOF ) {
-#else
-    while ( (c = readValue()) != EOF ) {
-#endif
-
-        in_count++;
-
-        fcode = (long) (((long) c << maxbits) + ent);
-        i = (((long)c << hshift) ^ ent);    /* xor hashing */
-
-        if ( HashTabOf (i) == fcode ) {
-            ent = CodeTabOf (i);
-            continue;
-        } else if ( (long) HashTabOf (i) < 0 )      /* empty slot */
-            goto nomatch;
-        disp = hsize_reg - i;           /* secondary hash (after G. Knott) */
-        if ( i == 0 )
-            disp = 1;
-probe:
-        if ( (i -= disp) < 0 )
-            i += hsize_reg;
-
-        if ( HashTabOf(i) == fcode ) {
-            ent = CodeTabOf (i);
-            continue;
-        }
-        if ( (long) HashTabOf(i) > 0 )
-            goto probe;
-nomatch:
-        output ( (long) ent );
-        out_count++;
-        ent = c;
-#ifdef SIGNED_COMPARE_SLOW
-        if ( (unsigned) free_ent < (unsigned) maxmaxcode) {
-#else
-        if ( free_ent < maxmaxcode ) {
-#endif
-            CodeTabOf (i) = free_ent++; /* code -> hashtable */
-            HashTabOf (i) = fcode;
-        } else
-                cl_block();
-    }
-    /*
-     * Put out the final code.
-     */
-    output( (long)ent );
-    out_count++;
-    output( (long) EOFCode );
-
-    return;
-}
-
-/*****************************************************************
- * TAG( output )
- *
- * Output the given code.
- * Inputs:
- *      code:   A n_bits-bit integer.  If == -1, then EOF.  This assumes
- *              that n_bits =< (long) wordsize - 1.
- * Outputs:
- *      Outputs code to the file.
- * Assumptions:
- *      Chars are 8 bits long.
- * Algorithm:
- *      Maintain a GIFBITS character long buffer (so that 8 codes will
- * fit in it exactly).  Use the VAX insv instruction to insert each
- * code in turn.  When the buffer fills up empty it and start over.
- */
-
-static unsigned long cur_accum = 0;
-static int  cur_bits = 0;
-
-static
-unsigned long masks[] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
-                                  0x001F, 0x003F, 0x007F, 0x00FF,
-                                  0x01FF, 0x03FF, 0x07FF, 0x0FFF,
-                                  0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
-
-static void
-output(code)
-    long  code;
-{
-    cur_accum &= masks[cur_bits];
-
-    if (cur_bits > 0) {
-	cur_accum |= ((long) code << cur_bits);
-    } else {
-	cur_accum = code;
-    }
-
-    cur_bits += n_bits;
-
-    while (cur_bits >= 8 ) {
-	char_out((unsigned int)(cur_accum & 0xff));
-	cur_accum >>= 8;
-	cur_bits -= 8;
-    }
-
-    /*
-     * If the next entry is going to be too big for the code size,
-     * then increase it, if possible.
-     */
-
-    if ((free_ent > maxcode)|| clear_flg ) {
-	if (clear_flg) {
-	    maxcode = MAXCODE(n_bits = g_init_bits);
-	    clear_flg = 0;
-	} else {
-	    n_bits++;
-	    if (n_bits == maxbits) {
-		maxcode = maxmaxcode;
-	    } else {
-		maxcode = MAXCODE(n_bits);
-	    }
-	}
-    }
-
-    if (code == EOFCode) {
-	/*
-	 * At EOF, write the rest of the buffer.
-	 */
-        while (cur_bits > 0) {
-	    char_out((unsigned int)(cur_accum & 0xff));
-	    cur_accum >>= 8;
-	    cur_bits -= 8;
-	}
-	flush_char();
-    }
-}
-
-/*
- * Clear out the hash table
- */
-static void
-cl_block()             /* table clear for block compress */
-{
-
-        cl_hash ( (int) hsize );
-        free_ent = ClearCode + 2;
-        clear_flg = 1;
-
-        output((long) ClearCode);
-}
-
-static void
-cl_hash(hsize)          /* reset code table */
-    int hsize;
-{
-    register int *htab_p = htab+hsize;
-    register long i;
-    register long m1 = -1;
-
-    i = hsize - 16;
-    do {                            /* might use Sys V memset(3) here */
-	*(htab_p-16) = m1;
-	*(htab_p-15) = m1;
-	*(htab_p-14) = m1;
-	*(htab_p-13) = m1;
-	*(htab_p-12) = m1;
-	*(htab_p-11) = m1;
-	*(htab_p-10) = m1;
-	*(htab_p-9) = m1;
-	*(htab_p-8) = m1;
-	*(htab_p-7) = m1;
-	*(htab_p-6) = m1;
-	*(htab_p-5) = m1;
-	*(htab_p-4) = m1;
-	*(htab_p-3) = m1;
-	*(htab_p-2) = m1;
-	*(htab_p-1) = m1;
-	htab_p -= 16;
-    } while ((i -= 16) >= 0);
-
-    for (i += 16; i > 0; i--) {
-	*--htab_p = m1;
-    }
-}
-
-
-/******************************************************************************
- *
- * GIF Specific routines
- *
- ******************************************************************************/
-
-/*
- * Number of characters so far in this 'packet'
- */
-static int a_count;
-
-/*
- * Set up the 'byte output' routine
- */
-static void
-char_init()
-{
-    a_count = 0;
-    cur_accum = 0;
-    cur_bits = 0;
-}
-
-/*
- * Define the storage for the packet accumulator
- */
-static unsigned char accum[256];
-
-/*
- * Add a character to the end of the current packet, and if it is 254
- * characters, flush the packet to disk.
- */
-static void
-char_out( c )
-    int c;
-{
-    accum[a_count++] = c;
-    if (a_count >= 254) {
-	flush_char();
-    }
-}
-
-/*
- * Flush the packet to disk, and reset the accumulator
- */
-static void
-flush_char()
-{
-    unsigned char c;
-    if (a_count > 0) {
-	c = a_count;
-	ImgWrite(g_outfile, (CONST char *) &c, 1);
-	ImgWrite(g_outfile, (CONST char *) accum, a_count);
-	a_count = 0;
-    }
-}
-
-/* The End */
-#else
 /*-----------------------------------------------------------------------
  *
  * miGIF Compression - mouse and ivo's GIF-compatible compression
@@ -1729,22 +1367,22 @@ flush_char()
  * documentation for any purpose and without fee is hereby granted, provided
  * that the above copyright notice appear in all copies and that both that
  * copyright notice and this permission notice appear in supporting
- * documentation.  This software is provided "AS IS." The Hutchison Avenue 
- * Software Corporation disclaims all warranties, either express or implied, 
- * including but not limited to implied warranties of merchantability and 
+ * documentation.  This software is provided "AS IS." The Hutchison Avenue
+ * Software Corporation disclaims all warranties, either express or implied,
+ * including but not limited to implied warranties of merchantability and
  * fitness for a particular purpose, with respect to this code and accompanying
- * documentation. 
- * 
- * The miGIF compression routines do not, strictly speaking, generate files 
- * conforming to the GIF spec, since the image data is not LZW-compressed 
- * (this is the point: in order to avoid transgression of the Unisys patent 
- * on the LZW algorithm.)  However, miGIF generates data streams that any 
+ * documentation.
+ *
+ * The miGIF compression routines do not, strictly speaking, generate files
+ * conforming to the GIF spec, since the image data is not LZW-compressed
+ * (this is the point: in order to avoid transgression of the Unisys patent
+ * on the LZW algorithm.)  However, miGIF generates data streams that any
  * reasonably sane LZW decompresser will decompress to what we want.
  *
- * miGIF compression uses run length encoding. It compresses horizontal runs 
+ * miGIF compression uses run length encoding. It compresses horizontal runs
  * of pixels of the same color. This type of compression gives good results
- * on images with many runs, for example images with lines, text and solid 
- * shapes on a solid-colored background. It gives little or no compression 
+ * on images with many runs, for example images with lines, text and solid
+ * shapes on a solid-colored background. It gives little or no compression
  * on images with few runs, for example digital or scanned photos.
  *
  *                               der Mouse
@@ -2092,7 +1730,7 @@ static void compress( init_bits, handle, readValue )
  rl_basecode = code_eof + 1;
  out_bump_init = (1 << (init_bits - 1)) - 1;
  /* for images with a lot of runs, making out_clear_init larger will
-    give better compression. */ 
+    give better compression. */
  out_clear_init = (init_bits <= 3) ? 9 : (out_bump_init-1);
 #ifdef DEBUGGING_ENVARS
   { const char *ocienv;
@@ -2129,6 +1767,3 @@ static void compress( init_bits, handle, readValue )
  * End of miGIF section  - See copyright notice at start of section.
  *
  *-----------------------------------------------------------------------*/
-
-
-#endif

@@ -1,8 +1,8 @@
 package Tk::Event;
 use vars qw($VERSION $XS_VERSION @EXPORT_OK);
 END { CleanupGlue() }
-$VERSION = '3.021'; # $Id: //depot/Tk8/Event/Event.pm#21 $
-$XS_VERSION = '800.020';
+$VERSION = '3.022'; # $Id: //depot/Tk8/Event/Event.pm#22 $
+$XS_VERSION = '800.021';
 require DynaLoader;
 use base  qw(Exporter DynaLoader);
 @EXPORT_OK = qw($XS_VERSION DONT_WAIT WINDOW_EVENTS  FILE_EVENTS

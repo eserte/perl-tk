@@ -4,6 +4,19 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
+Changes in Tk800.021
+	Steve's patches for fileevent and -labelXxxxx
+	Fixed the 'Delagate' bug introduced trying to make AUTOLOAD clean.
+	Tweaks to Optionmenu and BrowseEntry to make them more like each other
+	and better tolerate changing the options/choices list.
+	Made B::C* work again for perl5.005_03 (perl5.6.0 has problems).
+	Use dTHX every where we had dTHR - should build against threaded perl
+	(STILL NOT THREAD SAFE).
+	Fix name clash in Event for VMS.
+	Merge production Img1.2.3
+	Fix Tk::Xrm and Tix Style with multiple MainWindows
+	Found and fixed the 'Attempt to free unreferenced scalar' issue.
+
 Changes in Tk800.020
 	Various tweaks for perl5.6.0
 	Fix ->itemconfigure of grouped canvas items.

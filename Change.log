@@ -1,3 +1,160 @@
+Change 1826 on 2000/04/21 by nick@bactrian
+
+	A few more sprintf's converted to return int SVs directly
+
+Change 1825 on 2000/04/21 by nick@bactrian
+
+	Fix REFCNT botch which has been plaguing us for so long.
+
+Change 1824 on 2000/04/20 by nick@pluto
+
+	Use private handle for reading director for FBox
+
+Change 1823 on 2000/04/20 by nick@pluto
+
+	Attempting to debug PERL_DESTRUCT_LEVEL=3 issues.
+	Seems to SEGFAULT during exit of t/fbox.t (Linux and Solaris2.7,
+	perl5.005_03). 
+	
+	Two more exit cleanup attempts:
+	1. Stop using raw sharepvn() for Tk_GetUid() so we 
+	   don't get all the refcount issues with string table.
+	2. Remove (redundant?) self-reference in Tcl_TraceVar* 'U' magic.
+
+Change 1822 on 2000/04/15 by nick@linux
+
+	'Too late for INIT hackery for Event.xs'
+
+Change 1821 on 2000/04/15 by nick@bactrian
+
+	Re-enable B::C compile (at least with 5.00503)
+
+Change 1820 on 2000/04/10 by nick@bactrian
+
+	Fix new Optionmenu to not call callback unless it is
+	setting value or FBox at least goes into a loop.
+	Also remove work-round for old Optionmenu behaviour from FBox
+
+Change 1819 on 2000/04/10 by nick@pluto
+
+	Add aliases to BrowseEntry config options to make it more like Optionmenu.
+	Make both Optionmenu and BrowseEntry honour incoming -textvariable
+	if valid, but re-set it if -options set to list which 
+	does not include it.
+
+Change 1818 on 2000/04/07 by nick@bactrian
+
+	Avoid use of undef when Entry part of BrowseEntry gets
+	ButtonMotion events.
+
+Change 1815 on 2000/04/05 by nick@pluto
+
+	Don't hard-code /usr/local/perl
+
+Change 1814 on 2000/04/03 by nick@bactrian
+
+	dTHR -> dTHX everywhere (+ fallback to dTHR if not defined).
+
+Change 1813 on 2000/04/02 by nick@bactrian
+
+	Fix typo
+
+Change 1812 on 2000/04/02 by nick@bactrian
+
+	Increment version to 800.021 for testing
+
+Change 1811 on 2000/04/02 by nick@bactrian
+
+	Win32-ish tolerance of (e.g. C:/) as path in Fbox.
+
+Change 1810 on 2000/04/02 by nick@bactrian
+
+	Avoid READABLE/readable name clash in Event.xs for VMS.
+
+Change 1809 on 2000/04/01 by nick@bactrian
+
+	Merge img1.2.3 builds and passes t/photo.t
+
+Change 1808 on 2000/04/01 by nick@bactrian
+
+	Raw merge of img1.2.3
+
+Change 1805 on 2000/04/01 by nick@bactrian
+
+	Make patch for XrmOption tidier
+
+Change 1804 on 2000/04/01 by nick@bactrian
+
+	Fix Tk::Xrm with multiple mainwindows
+
+Change 1803 on 2000/03/31 by nick@bactrian
+
+	VERSION tweaks (I must automate that somehow ...)
+
+Change 1802 on 2000/03/31 by nick@bactrian
+
+	- allow ->index in TList
+	- Exist check in Table's layout method
+	- Document corner in Scrolled.
+
+Change 1801 on 2000/03/31 by nick@bactrian
+
+	Various tweaks from mailbox backlog
+	- Tiler scroll behaviour
+	- remove 'use English' from demos/widget.
+	- rename configspec.pod ConfigSpecs.pod
+	- Loose MsgBox.pm
+
+Change 1800 on 2000/03/31 by nick@bactrian
+
+	Dialog(Box) foreground/background propagation
+	Add <Control-underscore> as <<Undo>>
+	Protect Tiler from divide by zero
+	Avoid gcc options to non gcc.
+
+Change 1799 on 2000/03/31 by nick@bactrian
+
+	Fix Tix style issues with multiple MainWindows.
+
+Change 1798 on 2000/03/31 by nick@bactrian
+
+	Steve's -labelXxxx patch.
+	More
+
+Change 1797 on 2000/03/30 by nick@bactrian
+
+	Dratted $VERSION again.
+
+Change 1796 on 2000/03/30 by nick@bactrian
+
+	Document and attempt to work round the -Bforcearchive issue on OpenBSD.
+	While in there restrict types of files in t directory that are considered.
+
+Change 1794 on 2000/03/30 by nick@bactrian
+
+	Don't create callback for BackgroundError with raw array.
+
+Change 1792 on 2000/03/30 by nick@bactrian
+
+	Update versions of patched files.
+
+Change 1791 on 2000/03/30 by nick@linux
+
+	Avoid ->Delegate AUTOLOAD scheme if not appropriate
+
+Change 1790 on 2000/03/30 by nick@bactrian
+
+	Add README.OpenBSD discussing the -Bforcearchive issue.
+	Steve's fileevent.t
+
+Change 1788 on 2000/03/27 by nick@bactrian
+
+	Steve's tweak to untie issue with Tk::Event::IO
+
+Change 1787 on 2000/03/27 by nick@bactrian
+
+	Tk800.020 release prep.
+
 Change 1786 on 2000/03/27 by nick@bactrian_nt
 
 	An attempt to get 'ActiveWindow' right on Win32

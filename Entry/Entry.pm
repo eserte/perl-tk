@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.032'; # $Id: //depot/Tk8/Entry/Entry.pm#32 $
+$VERSION = '3.033'; # $Id: //depot/Tk8/Entry/Entry.pm#33 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
@@ -281,7 +281,9 @@ sub MouseSelect
  my $x = shift;
  $Tk::selectMode = shift if (@_);
  my $cur = $w->index('@' . $x);
+ return unless defined $cur;
  my $anchor = $w->index('anchor');
+ return unless defined $anchor;
  if (($cur != $anchor) || (abs($Tk::pressX - $x) >= 3))
   {
    $Tk::mouseMoved = 1

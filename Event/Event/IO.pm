@@ -1,7 +1,7 @@
 package Tk::Event::IO;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.034'; # $Id: //depot/Tk8/Event/Event/IO.pm#10 $ +24
+$VERSION = '3.036'; # $Id: //depot/Tk8/Event/Event/IO.pm#12 $ +24
 
 use base qw(Exporter);
 use Symbol ();
@@ -112,7 +112,9 @@ sub fileevent
   }
  else
   {
-   untie *$file unless $obj->handler($imode,$cb);
+   my $h = $obj->handler($imode,$cb);
+   undef $obj;
+   untie *$file unless $h;
   }
 }
 

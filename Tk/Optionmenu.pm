@@ -6,7 +6,7 @@ require Tk::Menubutton;
 require Tk::Menu;
 
 use vars qw($VERSION);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#20 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#23 $
 
 use base  qw(Tk::Derived Tk::Menubutton);
 
@@ -20,7 +20,7 @@ sub Populate
  $w->SUPER::Populate($args);
  $args->{-indicatoron} = 1;
  my $var = delete $args->{-textvariable};
- unless (defined $var && exists $args->{-variable})
+ if (!defined($var) && exists($args->{-variable}))
   {
    $var = $args->{-variable};
   }
@@ -45,7 +45,10 @@ sub Populate
 
                 );
 
- $w->configure(-variable => delete $args->{-variable});
+ # configure -variable and -command now so that when -options
+ # is set by main-line configure they are there to be set/called.
+ $w->configure(-variable => $var) if ($var = delete $args->{-variable});
+ $w->configure(-command  => $var) if ($var = delete $args->{-command});
 }
 
 sub setOption
@@ -64,7 +67,10 @@ sub addOptions
  my $w = shift;
  my $menu = $w->menu;
  my $var = $w->cget(-textvariable);
+ my $old = $$var;
  my $width = $w->cget('-width');
+ my %hash;
+ my $first;
  while (@_)
   {
    my $val = shift;
@@ -76,7 +82,12 @@ sub addOptions
    my $len = length($label);
    $width = $len if (!defined($width) || $len > $width);
    $menu->command(-label => $label, -command => [ $w , 'setOption', $label, $val ]);
-   $w->setOption($label, $val) unless (defined $$var);
+   $hash{$label} = $val;
+   $first = $label unless defined $first;
+  }
+ if (!defined($old) || !exists($hash{$old}))
+  {
+   $w->setOption($first, $hash{$first}) if defined $first;
   }
  $w->configure('-width' => $width);
 }

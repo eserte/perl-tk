@@ -22,6 +22,9 @@
 #define CopSTASH_set(c,h)	(CopSTASH(c) = h)
 #endif
 
+#ifndef dTHX
+#define dTHX dTHR
+#endif
 
 #ifndef dTHR
 #define dTHR int maybeTHR

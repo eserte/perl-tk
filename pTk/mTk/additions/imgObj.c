@@ -14,7 +14,8 @@
  *
  *      IMG_PERL	perl
  *	IMG_TCL		Tcl
- *	IMG_OBJS	using Tcl_Obj in stead of char *
+ *	IMG_OBJS	using (Tcl_Obj *) in stead of (char *)
+ *	IMG_UTF		Tcl supports UTF-8
  *
  * These flags will be determined at runtime (except the IMG_PERL
  * flag, for now), so we can use the same dynamic library for all
@@ -32,6 +33,7 @@ ImgObjInit(interp)
 #ifdef _LANG
     return (initialized = IMG_PERL|IMG_OBJS);
 #else
+    char *version;
     initialized = IMG_TCL;
     if (!Tcl_GetCommandInfo(interp,"image", &cmdInfo)) {
 	    Tcl_AppendResult(interp, "cannot find the \"image\" command",
@@ -41,6 +43,10 @@ ImgObjInit(interp)
     }
     if (cmdInfo.isNativeObjectProc == 1) {
 	initialized |= IMG_OBJS; /* we use objects */
+    }
+    version = Tcl_PkgRequire(interp, "Tcl", "8.0", 0);
+    if (version && (version[2] > '0')) {
+	initialized |= IMG_UTF;
     }
     return initialized;
 #endif
@@ -235,4 +241,118 @@ ImgListObjGetElements(interp, objPtr, objc, objv)
     }
 #endif
     return Tcl_ListObjGetElements(interp, objPtr, objc, objv);
+}
+/*
+ *----------------------------------------------------------------------
+ *
+ * ImgOpenFileChannel --
+ *
+ *	Open a file channel in binary mode. If permissions is 0, the
+ *	file will be opened in read mode, otherwise in write mode.
+ *
+ * Results:
+ *	The same as Tcl_OpenFileChannel, only the file will
+ *	always be opened in binary mode without encoding.
+ *
+ * Side effects:
+ *	If function fails, an error message will be left in the
+ *	interpreter.
+ *
+ *----------------------------------------------------------------------
+ */
+
+Tcl_Channel
+ImgOpenFileChannel(interp, fileName, permissions)
+    Tcl_Interp *interp;
+    CONST char *fileName;
+    int permissions;
+{
+    Tcl_Channel chan = Tcl_OpenFileChannel(interp, (char *) fileName,
+	    permissions?"w":"r", permissions);
+    if (!chan) {
+	return (Tcl_Channel) NULL;
+    }
+    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
+	Tcl_Close(interp, chan);
+	return (Tcl_Channel) NULL;
+    }
+    return chan;
+}
+
+/*
+ *    Various Compatibility functions
+ */
+
+void
+ImgFixChanMatchProc(interp, chan, file, format, width, height)
+    Tcl_Interp **interp;
+    Tcl_Channel *chan;
+    Tcl_Obj **file;
+    Tcl_Obj **format;
+    int **width;
+    int **height;
+{
+#ifndef _LANG
+    Tcl_Interp *tmp;
+
+    if (initialized & IMG_PERL) {
+	return;
+    }
+    if (initialized & IMG_OBJS) {
+	tmp = (Tcl_Interp *) *height;
+    } else {
+	tmp = (Tcl_Interp *) NULL;
+    }
+
+    *height = *width;
+    *width = (int *) *format;
+    *format = (Tcl_Obj *) *file;
+    *file = (CONST char *) *chan;
+    *chan = (Tcl_Channel) *interp;
+    *interp = tmp;
+#endif
+}
+
+
+void
+ImgFixObjMatchProc(interp, data, format, width, height)
+    Tcl_Interp **interp;
+    Tcl_Obj **data;
+    Tcl_Obj **format;
+    int **width;
+    int **height;
+{
+#ifndef _LANG
+    Tcl_Interp *tmp;
+
+    if (initialized & IMG_PERL) {
+	return;
+    }
+    if (initialized & IMG_OBJS) {
+	tmp = (Tcl_Interp *) *height;
+    } else {
+	tmp = (Tcl_Interp *) NULL;
+    }
+    *height = *width;
+    *width = (int *) *format;
+    *format = (Tcl_Obj *) *data;
+    *data = (Tcl_Obj *) *interp;
+    *interp = tmp;
+#endif
+}
+
+void
+ImgFixStringWriteProc(data, interp, dataPtr, format, blockPtr)
+    Tcl_DString *data;
+    Tcl_Interp **interp;
+    Tcl_DString **dataPtr;
+    Tcl_Obj **format;
+    Tk_PhotoImageBlock **blockPtr;
+{
+    if (!*blockPtr) {
+	*blockPtr = (Tk_PhotoImageBlock *) *format;	
+	*format   = (Tcl_Obj *) *dataPtr;
+	*dataPtr  = data;
+	Tcl_DStringInit(data);
+    }
 }

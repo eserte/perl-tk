@@ -4,7 +4,7 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#27 $
+$VERSION = '3.029'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#29 $
 
 use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 
@@ -21,10 +21,10 @@ Construct Tk::Widget 'DragDrop';
 use strict;
 use vars qw(%type @types);
 use Carp;
-                      
 
-# There is a snag with having a token window and moving to 
-# exactly where cursor is - the cursor is "inside" the token 
+
+# There is a snag with having a token window and moving to
+# exactly where cursor is - the cursor is "inside" the token
 # window - hence it is not "inside" the dropsite window
 # so we offset X,Y by OFFSET pixels.
 sub OFFSET () {3}
@@ -126,7 +126,7 @@ sub event
  $w->parent->Tk::bind($value,[$w,'StartDrag']);
 }
 
-# 
+#
 
 sub FindSite
 {
@@ -144,13 +144,13 @@ sub FindSite
  else
   {
    warn 'No sitetypes';
-  }                                       
+  }
  my $new = $site || 'undef';
  my $over = $token->{'Over'};
  if ($over)
   {
    if (!$over->Match($site))
-    {             
+    {
      $over->Leave($token,$e);
      delete $token->{'Over'};
     }
@@ -159,7 +159,7 @@ sub FindSite
   {
    unless ($token->{'Over'})
     {
-     $site->Enter($token,$e); 
+     $site->Enter($token,$e);
      $token->{'Over'} = $site;
     }
    $site->Motion($token,$e) if (defined $site)
@@ -200,7 +200,7 @@ sub NewDrag
       }
     }
   }
-}                      
+}
 
 sub Drag
 {
@@ -211,7 +211,7 @@ sub Drag
  $token = $token->toplevel;
  $token->MoveToplevelWindow($X+OFFSET,$Y+OFFSET);
  $token->FindSite($X,$Y,$e);
-}       
+}
 
 sub Done
 {
@@ -225,7 +225,7 @@ sub Done
  $token->withdraw;
  delete $w->{'Dragging'};
  $w->update;
-}        
+}
 
 sub AcceptDrop
 {
@@ -245,13 +245,13 @@ sub HandleLoose
 {
  my ($w,$seln) = @_;
  return '';
-}            
+}
 
 sub InstallHandlers
 {
  my ($token,$seln) = @_;
- my $w = $token->parent;                  
- $token->configure(-selection => $seln) if $seln;
+ my $w = $token->parent;
+ $token->configure('-selection' => $seln) if $seln;
  $seln = $token->cget('-selection');
  if ($token->{InstallHandlers})
   {
@@ -307,7 +307,7 @@ sub StartDrag
     {
      my $dx = $was->[0] - $X;
      my $dy = $was->[1] - $Y;
-     if (sqrt($dx*$dx+$dy*$dy) > $token->cget('-delta')) 
+     if (sqrt($dx*$dx+$dy*$dy) > $token->cget('-delta'))
       {
        unless ($token->Callback('-startcommand',$token,$e))
         {

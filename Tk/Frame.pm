@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/Frame.pm#26 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Frame.pm#28 $
 
 sub Tk_cmd { \&Tk::frame }
 
@@ -94,7 +94,7 @@ sub Populate
 
 sub Menubar
 {
- my $frame = shift;         
+ my $frame = shift;
  my $menu = $frame->cget('-menu');
  if (defined $menu)
   {
@@ -103,7 +103,7 @@ sub Menubar
  else
   {
    $menu = $frame->Menu(-type => 'menubar',@_);
-   $frame->configure(-menu => $menu);    
+   $frame->configure('-menu' => $menu);
   }
  $frame->Advertise('menubar' => $menu);
  return $menu;

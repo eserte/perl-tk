@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tixish/DirTree.pm#21 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tixish/DirTree.pm#23 $
 
 use Tk;
 use Tk::Derived;
@@ -73,7 +73,7 @@ sub directory {
       # We have a default for -image, so its being undefined
       # is probably caused by order of handling config defaults
       # so defer it.
-      $w->afterIdle([$w, chdir => $val]);
+      $w->afterIdle([$w, 'chdir' => $val]);
      }
 }
 
@@ -103,7 +103,7 @@ sub chdir {
 
     $w->OpenCmd( $parent );
     $w->setmode( $parent, 'close' );
-}          
+}
 
 
 sub OpenCmd {

@@ -94,6 +94,8 @@
 
 #ifdef __WIN32__
 #define Z_LIB_NAME "zlib.dll"
+#else
+#define WINAPI /**/
 #endif
 
 #ifndef Z_LIB_NAME
@@ -120,16 +122,16 @@ static float  LogK1, LogK2;
 
 static struct LibzFunctions {
     VOID *handle;
-    int (* deflate) _ANSI_ARGS_((z_streamp, int));
-    int (* dInit) _ANSI_ARGS_((z_streamp, int, CONST char *, int));
-    int (* deflateReset) _ANSI_ARGS_((z_streamp));
-    int (* deflateParams) _ANSI_ARGS_((z_streamp, int, int));
-    int (* deflateEnd) _ANSI_ARGS_((z_streamp));
-    int (* inflate) _ANSI_ARGS_((z_streamp, int));
-    int (* iInit) _ANSI_ARGS_((z_streamp, CONST char *, int));
-    int (* inflateReset) _ANSI_ARGS_((z_streamp));
-    int (* inflateSync) _ANSI_ARGS_((z_streamp));
-    int (* inflateEnd) _ANSI_ARGS_((z_streamp));
+    int (WINAPI * deflate) _ANSI_ARGS_((z_streamp, int));
+    int (WINAPI * dInit) _ANSI_ARGS_((z_streamp, int, CONST char *, int));
+    int (WINAPI * deflateReset) _ANSI_ARGS_((z_streamp));
+    int (WINAPI * deflateParams) _ANSI_ARGS_((z_streamp, int, int));
+    int (WINAPI * deflateEnd) _ANSI_ARGS_((z_streamp));
+    int (WINAPI * inflate) _ANSI_ARGS_((z_streamp, int));
+    int (WINAPI * iInit) _ANSI_ARGS_((z_streamp, CONST char *, int));
+    int (WINAPI * inflateReset) _ANSI_ARGS_((z_streamp));
+    int (WINAPI * inflateSync) _ANSI_ARGS_((z_streamp));
+    int (WINAPI * inflateEnd) _ANSI_ARGS_((z_streamp));
 } zlib = {0};
 
 static char *symbols[] = {

@@ -6,9 +6,9 @@
  * Written by:
  *	Jan Nijtmans
  *	CMG (Computer Management Group) Arnhem B.V.
- *	email: Jan.Nijtmans@wxs.nl (private)
- *	       Jan.Nijtmans@cmg.nl (work)
- *	url:   http://home.wxs.nl/~nijtmans/
+ *	email: j.nijtmans@chello.nl (private)
+ *	       jan.nijtmans@cmg.nl (work)
+ *	url:   http://purl.oclc.org/net/nijtmans/
  *
  */
 #include "tk.h"
@@ -55,12 +55,12 @@ static int	        ObjReadXBM _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *dataObj, Tcl_Obj *format,
               		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		            int width, int height, int srcX, int srcY));
-static int	        StringWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
-               		    Tcl_DString *dataPtr, Tcl_Obj *format,
-		            Tk_PhotoImageBlock *blockPtr));
 static int              ChnWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
                             char *fileName, Tcl_Obj *format,
                             Tk_PhotoImageBlock *blockPtr));
+static int	        StringWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
+               		    Tcl_DString *dataPtr, Tcl_Obj *format,
+		            Tk_PhotoImageBlock *blockPtr));
 
 static int		CommonReadXBM _ANSI_ARGS_((Tcl_Interp *interp,
 			    ParseInfo *parseInfo,
@@ -68,11 +68,11 @@ static int		CommonReadXBM _ANSI_ARGS_((Tcl_Interp *interp,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int		CommonWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *fileName, Tcl_DString *dataPtr,
+			    CONST char *fileName, Tcl_DString *dataPtr,
 			    Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtXBM = {
-    "XBM",					/* name */
+    "xbm",					/* name */
     ChnMatchXBM,	/* fileMatchProc */
     ObjMatchXBM,	/* stringMatchProc */
     ChnReadXBM,	/* fileReadProc */
@@ -117,6 +117,8 @@ ObjMatchXBM(interp, data, format, widthPtr, heightPtr)
 {
     ParseInfo parseInfo;
 
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
+
     parseInfo.handle.data = ImgGetStringFromObj(data, &parseInfo.handle.length);
     parseInfo.handle.state = IMG_STRING;
 
@@ -153,6 +155,8 @@ ChnMatchXBM(interp, chan, fileName, format, widthPtr, heightPtr)
 				 * raw XBM file. */
 {
     ParseInfo parseInfo;
+
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
 
     parseInfo.handle.data = (char *) chan;
     parseInfo.handle.state = IMG_CHAN;
@@ -569,7 +573,17 @@ StringWriteXBM(interp, dataPtr, format, blockPtr)
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
-  return CommonWriteXBM(interp, (char *) NULL, dataPtr, format, blockPtr);
+    int result;
+    Tcl_DString data;
+
+    ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
+
+    result = CommonWriteXBM(interp, (CONST char *) NULL, dataPtr, format, blockPtr);
+
+    if ((result == TCL_OK) && (dataPtr == &data)) {
+	Tcl_DStringResult(interp, dataPtr);
+    }
+    return result;
 }
 
 
@@ -597,7 +611,7 @@ StringWriteXBM(interp, dataPtr, format, blockPtr)
 static int
 CommonWriteXBM(interp, fileName, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
-    char *fileName;
+    CONST char *fileName;
     Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
@@ -626,7 +640,7 @@ static char %s_bits[] = {\n";
 
     /* open the output file (if needed) */
     if (fileName) {
-      chan = Tcl_OpenFileChannel(interp, fileName, "w", 0644);
+      chan = Tcl_OpenFileChannel(interp, (char *) fileName, "w", 0644);
       if (!chan) {
 	return TCL_ERROR;
       }
@@ -648,7 +662,7 @@ static char %s_bits[] = {\n";
 	}
 	p = strchr(fileName, '.');
 	if (p) {
-	    *p = 0;
+	    *(char *)p = 0;
 	}
     } else {
         fileName = "unknown";

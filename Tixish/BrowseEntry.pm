@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.026'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#26 $
+$VERSION = '3.027'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#27 $
 
 use Tk qw(Ev);
 use Carp;
@@ -56,6 +56,8 @@ sub Populate {
         -arrowimage  => [ {-image => $b}, qw/arrowImage ArrowImage/, undef],
         -variable    => '-textvariable',
 	-colorstate  => [qw/PASSIVE  colorState  ColorState/,  undef],
+        -command     => '-browsecmd',
+        -options     => '-choices',
         DEFAULT      => [$e] );
 }
 
@@ -95,14 +97,14 @@ sub space
 
 
 sub ListboxRelease
-{    
+{
  my ($w,$x,$y) = @_;
  $w->ButtonHack;
  $w->LbChoose($x, $y);
 }
 
 sub Return
-{     
+{
  my ($w,$l) = @_;
  my($x, $y) = $l->bbox($l->curselection);
  $w->LbChoose($x, $y)
@@ -263,18 +265,27 @@ sub ButtonHack {
     }
 }
 
-sub choices {
-    my $w = shift;
-    unless( @_ ) {
-        return( $w->get( qw/0 end/ ) );
-    } else {
-        my $choices = shift;
-        if( $choices ) {
-            $w->delete( qw/0 end/ );
-            $w->insert( 'end', @$choices );
-        }
-        return( '' );
+sub choices
+{
+ my ($w,$choices) = @_;
+ if (@_ > 1)
+  {
+   $w->delete( qw/0 end/ );
+   my %hash;
+   my $var = $w->cget('-textvariable');
+   my $old = $$var;
+   foreach my $val (@$choices)
+    {
+     $w->insert( 'end', $val);
+     $hash{$val} = 1;
     }
+   $old = $choices->[0] unless exists $hash{$old};
+   $$var = $old;
+  }
+ else
+  {
+   return( $w->get( qw/0 end/ ) );
+  }
 }
 
 sub _set_edit_state {

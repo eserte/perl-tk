@@ -9,36 +9,26 @@ warn "No VERSION" unless (defined $VERSION);
 
 my %define = ();
 
-$inc    = "";        
-$xlib   = "";        
+$inc    = "";
+$xlib   = "";
 $define = '';
 $gccopt = "";
-@macro  = ();
-
-#
-# Convert perls Config info into -DXXXX for Tk
-#
-
 @macro = ( macro => {} );
 
 if (defined $Config{'gccversion'})
  {
   $ver = $Config{'gccversion'};
   if ($ver ge "2.8")
-   { 
+   {
     # retain author's favourite warnings if using gcc
     $gccopt .= " -Wall -Wno-implicit-int -Wno-comment -Wno-unused -D__USE_FIXED_PROTOTYPES__";
-    eval 
+    eval
      {
       if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
        {
         # This is the author - catch as many bugs as possible
         $gccopt .= "  -MMD -Werror";
-        # $gccopt .= " -ansi -D__EXTENSIONS__" if ($^O eq 'solaris');
-        # $gccopt .= " -Wmissing-prototypes" if (-f "/etc/shadow");
-        @macro = ( macro => { INSTALLDIRS => 'perl' ,
-			      WINARCH     => $win_arch } ,
-		 );
+        @macro = ( macro => { INSTALLDIRS => 'perl' });
        }
      }
    }
@@ -54,13 +44,17 @@ if ($] >= 5.005)
   my $arch = ($^O eq 'MSWin32') ? $ENV{'PROCESSOR_ARCHITECTURE'} : $Config{'archname'};
   push(@ARGV,"BINARY_LOCATION=$arch/Tk$VERSION-PPM.tar.gz");
   warn "PPM for perl$]\n";
- } 
+ }
 else
  {
   warn "No PPM for perl$]\n";
  }
 
 $macro[1]->{WINARCH} = $win_arch;
+
+#
+# Convert perls Config info into -DXXXX for Tk
+#
 
 $define{'USE_PROTOTYPE'} = 1     if ($Config{'prototype'});
 $define{'HAVE_UNISTD_H'} = 1     if ($Config{'i_unistd'});
@@ -84,7 +78,6 @@ if (!$Config{'i_unistd'} && defined $Config{'lseektype'})
    $type =~ s/\s*\*\s*$//;
    $define{'LSEEK_TYPE'} =$type;
  }
-
 
 my $voidflags = $Config{'voidflags'};
 my $voidused  = $Config{'defvoidused'}+0;
@@ -111,7 +104,7 @@ if (!try_compile("config/Ksprintf.c") &&
  }
 
 if (!$IsWin32)
- { 
+ {
   if (!try_compile("config/tod.c"))
    {
     my $d;
@@ -139,6 +132,7 @@ if (!$IsWin32)
     print STDERR "Generic gettimeofday()\n";
    }
  }
+
 #
 # Hunt down X Library - first a function
 #
@@ -152,14 +146,14 @@ sub lX11
     {
      local ($lib);
      my $pattern = "$_/libX11.*";
-     $pattern .= " $_/X11$Config::Config{lib_ext}" 
+     $pattern .= " $_/X11$Config::Config{lib_ext}"
        if $Config::Config{osname} eq 'os2';
      foreach $lib (reverse(<$ {pattern}>))
       {
        if (-r $lib)
         {
-         print "Using -L$_ to find $lib\n"; 
-         return "-L$_" 
+         print "Using -L$_ to find $lib\n";
+         return "-L$_"
         }
       }
     }
@@ -201,7 +195,7 @@ $win_arch or die '$win_arch not set in myConfig';
 
 if ($win_arch eq 'x') {
   @xdirs = ();
-  
+
   if (defined $X11)
     {
       my $dir = $X11;
@@ -247,20 +241,20 @@ if ($win_arch eq 'x') {
       }
       print "$xmkmf suggests ",join(' ',@xdirs),"\n" if (@xdirs);
     }
-  
+
   undef $xlib;			# Make sure
-  
+
   if (defined $X11LIB)
     {
-      $xlib = &lX11(1,$X11LIB) 
+      $xlib = &lX11(1,$X11LIB)
     }
   if (!defined($xlib) && defined($X11))
     {
-      $xlib = &lX11(1,"$X11/lib") 
+      $xlib = &lX11(1,"$X11/lib")
     }
   $xlib = &lX11(0,map("$_/lib",@xdirs)) unless (defined $xlib);
-  
-  # Special case for sun-machines 
+
+  # Special case for sun-machines
   unless (defined $xlib)
     {
       if ($Config{'osname'} eq 'solaris' || $Config{'osname'} eq 'sunos')
@@ -268,21 +262,21 @@ if ($win_arch eq 'x') {
 	  $xlib = &lX11(0,'/usr/openwin/lib');
 	}
     }
-  
+
   sub chooseX11
     {
       # Aim to prefer X11R5 over X11R4 over X11
       (reverse(sort(@_)));
     }
-  
+
   #
-  # If no luck there try "common" places 
+  # If no luck there try "common" places
   #
   unless (defined $xlib)
     {
       $xlib = &lX11(0,chooseX11(</usr/X11*/lib>),chooseX11(</usr/lib/X11*>),</usr/Xfree*/lib>,'/usr/X386/lib')
     }
-  
+
   #
   # Try places perl looks for libraries
   # This is now "last resort" as /lib and /usr/local/lib are so often
@@ -290,19 +284,19 @@ if ($win_arch eq 'x') {
   #
   unless (defined $xlib)
     {
-      $xlib = &lX11(0,split(/\s+/,$Config{'libpth'})) 
+      $xlib = &lX11(0,split(/\s+/,$Config{'libpth'}))
     }
-  
+
   die "Cannot find -lX11 anywhere" unless(defined $xlib);
-  
+
   ($base) = $xlib =~ m#-L(.*)(?:/lib)$#x;
   if (defined $X11INC)
     {
       $xinc = &IX11("$X11INC");
     }
-  
+
   $xinc = &IX11("$base/include") unless (defined $xinc);
-  
+
   unless (defined $xinc)
     {
       warn "Cannot find X include files via $base/include\n";
@@ -314,14 +308,16 @@ if ($win_arch eq 'x') {
 		    '/usr/X386/include',
 		    $Config{'usrinc'});
     }
-  
+
   die "Cannot find X include files anywhere" unless (defined $xinc);
 
-  if (defined($Config{'gccversion'}) && $xinc =~ /^-I(.*openwin.*)$/)
+  if (defined($Config{'gccversion'}) &&
+      $Config{'gccversion'} =~ /\S/  &&
+      $xinc =~ /^-I(.*openwin.*)$/)
    {
     $gccopt .= " -isystem $1";
    }
-  
+
   $inc = ($xinc eq "-I/usr/include") ? "" : $xinc;
 } elsif ($win_arch eq 'open32') {
   unless (defined $toolkit) {
@@ -351,20 +347,20 @@ if ($win_arch eq 'x') {
 
 if ($Config{'osname'} eq 'solaris' && $xlib =~ /\bopenwin\b/ )
  {
-  $define{'NEED_PRELOAD'} = 1; 
+  $define{'NEED_PRELOAD'} = 1;
  }
 
 sub WriteIfChanged
 {
  my ($file,$string) = @_;
- my ($dir) = $file =~ m#^(.*)/[^/]+$#; 
+ my ($dir) = $file =~ m#^(.*)/[^/]+$#;
  if (defined($dir) && !-d $dir)
   {
    mkdir($dir,0777) || die "Cannot mkdir $dir:$!";
   }
  my $ok = -f $file;
  if ($ok = open(IN,"$file"))
-  { 
+  {
    my $old = join('',<IN>);
    close(IN);
    $ok = $old eq $string;
@@ -383,14 +379,14 @@ if (!defined($MakefileName) || $MakefileName eq 'Makefile')
  {
   my $config = "package Tk::Config;\nrequire Exporter;\nuse base qw(Exporter);\n";
   my $sym;
-  my @export = (); 
+  my @export = ();
   foreach $sym (qw(VERSION inc define xlib xinc gccopt win_arch))
-   {         
+   {
     my $val = ${$sym};
     $val =~ s/([\\\'])/\\$1/g;
     $config .= "\$$sym = '$val';\n";
     push(@export,"\$$sym");
-   }         
+   }
   $config .= "\@EXPORT = qw(".join(' ',@export).");\n1;\n";
   WriteIfChanged("Tk/Config.pm",$config);
   $config = "#ifndef _TKCONFIG\n#define _TKCONFIG\n";

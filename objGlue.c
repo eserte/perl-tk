@@ -480,7 +480,12 @@ AV *
 MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
 {
  AV *av;
- if (SvIOK(sv) || SvNOK(sv))
+ int object = sv_isobject(sv);
+ if (!object && SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
+  {
+   return (AV *) SvRV(sv);
+  }
+ else if (!object && (SvIOK(sv) || SvNOK(sv)))
   {
    av = newAV();
    av_store(av,0,SvREFCNT_inc(sv));
@@ -500,7 +505,8 @@ MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
    /* If there was more than one element set the SV */
    if (av && av_len(av) > 0)
     {
-     sv_setsv(sv,MakeReference((SV *) av));
+     /* AV is mortal - so we want newRV not MakeReference as we need extra REFCNT */
+     sv_setsv(sv,newRV((SV *) av));
     }
    return av;
   }

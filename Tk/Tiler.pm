@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Tiler.pm#14 $
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Tiler.pm#16 $
 
 use base  qw(Tk::Frame);
 
@@ -65,10 +65,11 @@ sub Layout
  my $y = $bw;
  my $start = 0;
  # Set size and position of slaves
- my $rows = $m->{Rows} = ($H-2*$bw)/$h;
- my $cols = $m->{Cols} = ($W-2*$bw)/$w;
+ my $rows = $m->{Rows} = int(($H-2*$bw)/$h) || 1;
+ my $cols = $m->{Cols} = int(($W-2*$bw)/$w) || 1;
  my $need = $m->{Need} = int( (@{$m->{Slaves}}+$cols-1)/$cols );
  $m->{Start} = ($need - $rows) if ($m->{Start} + $rows > $need);
+
  $m->{Start} = 0               if ($m->{Start} < 0);
  my $row = 0;
  my @posn  = ();
@@ -103,7 +104,7 @@ sub Layout
     }
    $s->ResizeWindow($w,$h) if ($why & 1);
   }
- $row++ if ($x);
+ $row++ if ($x > $bw);
  if (defined $m->{Prev} && $m->{Prev} > $m->{Start})
   {
    @posn = reverse(@posn);
@@ -116,7 +117,7 @@ sub Layout
    $s->MapWindow;
   }
  $m->{Prev} = $m->{Start};
- $m->Callback(-yscrollcommand => $m->{Start}/$need,$row/$need);
+ $m->Callback(-yscrollcommand => $m->{Start}/$need,$row/$need) if $need;
 }
 
 sub QueueLayout

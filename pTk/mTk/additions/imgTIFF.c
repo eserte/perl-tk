@@ -51,12 +51,12 @@ extern int unlink _ANSI_ARGS_((CONST char *));
  * Prototypes for local procedures defined in this file:
  */
 
-static int ChnMatchTIFF _ANSI_ARGS_((Tcl_Channel chan, char *fileName,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr));
-static int ObjMatchTIFF _ANSI_ARGS_((Tcl_Obj *dataObj,
+static int ChnMatchTIFF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+	CONST char *fileName, Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ObjMatchTIFF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 	Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int ChnReadTIFF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-	char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
+	CONST char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 static int ObjReadTIFF _ANSI_ARGS_((Tcl_Interp *interp,
 	Tcl_Obj *dataObj, Tcl_Obj *format,
@@ -69,7 +69,7 @@ static int StringWriteTIFF _ANSI_ARGS_((Tcl_Interp *interp,
 	Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtTIFF = {
-    "TIFF",					/* name */
+    "tiff",					/* name */
     (Tk_ImageFileMatchProc *) ChnMatchTIFF,	/* fileMatchProc */
     (Tk_ImageStringMatchProc *) ObjMatchTIFF,	/* stringMatchProc */
     (Tk_ImageFileReadProc *) ChnReadTIFF,	/* fileReadProc */
@@ -590,13 +590,16 @@ sizeString(fd)
  */
 
 static int
-ObjMatchTIFF(data, format, widthPtr, heightPtr)
+ObjMatchTIFF(interp, data, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Obj *data;		/* the object containing the image data */
     Tcl_Obj *format;		/* the image format string */
     int *widthPtr;		/* where to put the string width */
     int *heightPtr;		/* where to put the string height */
 {
     MFile handle;
+
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
 
     if (!ImgReadInit(data, '\111', &handle) &&
 	    !ImgReadInit(data, '\115', &handle)) {
@@ -606,13 +609,16 @@ ObjMatchTIFF(data, format, widthPtr, heightPtr)
     return CommonMatchTIFF(&handle, widthPtr, heightPtr);
 }
 
-static int ChnMatchTIFF(chan, fileName, format, widthPtr, heightPtr)
+static int ChnMatchTIFF(interp, chan, fileName, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;
-    char *fileName;
+    CONST char *fileName;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
+
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
 
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
@@ -706,11 +712,8 @@ static int ObjReadTIFF(interp, data, format, imageHandle,
     } else {
 	Tcl_Channel outchan;
 	tmpnam(tempFileName);
-	outchan = Tcl_OpenFileChannel(interp, tempFileName, "w", 0644);
+	outchan = ImgOpenFileChannel(interp, tempFileName, 0644);
 	if (!outchan) {
-	    return TCL_ERROR;
-	}
-	if (Tcl_SetChannelOption(interp, outchan, "-translation", "binary") != TCL_OK) {
 	    return TCL_ERROR;
 	}
 
@@ -752,7 +755,7 @@ static int ChnReadTIFF(interp, chan, fileName, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
     Tcl_Channel chan;
-    char *fileName;
+    CONST char *fileName;
     Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
@@ -779,11 +782,8 @@ static int ChnReadTIFF(interp, chan, fileName, format, imageHandle,
     } else {
 	Tcl_Channel outchan;
 	tmpnam(tempFileName);
-	outchan = Tcl_OpenFileChannel(interp, tempFileName, "w", 0644);
+	outchan = ImgOpenFileChannel(interp, tempFileName, 0644);
 	if (!outchan) {
-	    return TCL_ERROR;
-	}
-	if (Tcl_SetChannelOption(interp, outchan, "-translation", "binary") != TCL_OK) {
 	    return TCL_ERROR;
 	}
 
@@ -914,10 +914,13 @@ static int StringWriteTIFF(interp, dataPtr, format, blockPtr)
     char tempFileName[256];
     Tcl_DString dstring;
     char *mode;
+    Tcl_DString data;
 
     if (load_tiff_library(interp) != TCL_OK) {
 	return TCL_ERROR;
     }
+
+    ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
 
     if (ParseWriteFormat(interp, format, &comp, &mode) != TCL_OK) {
     	return TCL_ERROR;
@@ -951,11 +954,8 @@ static int StringWriteTIFF(interp, dataPtr, format, blockPtr)
     if (tempFileName[0]) {
 	Tcl_Channel inchan;
 	char buffer[1024];
-	inchan = Tcl_OpenFileChannel(interp, tempFileName, "w", 0644);
+	inchan = ImgOpenFileChannel(interp, tempFileName, 0644);
 	if (!inchan) {
-	    return TCL_ERROR;
-	}
-	if (Tcl_SetChannelOption(interp, inchan, "-translation", "binary") != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	ImgWriteInit(dataPtr, &handle);
@@ -977,6 +977,9 @@ static int StringWriteTIFF(interp, dataPtr, format, blockPtr)
 	Tcl_DStringFree(&dstring);
     }
     ImgPutc(IMG_DONE, &handle);
+    if ((result == TCL_OK) && (dataPtr == &data)) {
+	Tcl_DStringResult(interp, dataPtr);
+    }
     return result;
 }
 
@@ -1061,10 +1064,12 @@ static int ParseWriteFormat(interp, format, comp, mode)
 	    *comp = COMPRESSION_DEFLATE;
 	} else if ((c == 'j') && (!strncmp(compression,"jpeg",length))) {
 	    *comp = COMPRESSION_JPEG;
-	} else if ((c == 'l') && (length>1) && (!strncmp(compression,"logluv",length))) {
+	} else if ((c == 'l') && (!strncmp(compression,"logluv",length))) {
 	    *comp = COMPRESSION_SGILOG;
+/* disabled, because of patented lzw-algorithm.
 	} else if ((c == 'l') && (length>1) && (!strncmp(compression,"lzw",length))) {
 	    *comp = COMPRESSION_LZW;
+*/
 	} else if ((c == 'p') && (length>1) && (!strncmp(compression,"packbits",length))) {
 	    *comp = COMPRESSION_PACKBITS;
 	} else if ((c == 'p') && (length>1) && (!strncmp(compression,"pixarlog",length))) {
