@@ -8,17 +8,20 @@
 '\" SCCS: @(#) toplevel.n 1.29 97/10/31 12:58:53
 '\" 
 .so man.macros
-.TH toplevel n 8.0 Tk "Tk Generic Methods"
+.TH Tk::Toplevel n 8.0 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-toplevel \- Create and manipulate toplevel widgets
+Tk::Toplevel \- Create and manipulate Toplevel widgets
 .SH SYNOPSIS
-\fBtoplevel\fR $widget \fR?\fIoptions\fR?
+\fI$toplevel\fR = \fI$parent\fR->\fBToplevel\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-borderwidth	\-highlightbackground	\-highlightthickness	\-takefocus
-\-cursor	\-highlightcolor	\-relief
+\-class	\-highlightcolor	\-relief
+\-cursor
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-background background Background
 This option is the same as the standard \fBbackground\fR option
@@ -26,13 +29,6 @@ except that its value may also be specified as an empty string.
 In this case, the widget will display no background or border, and
 no colors will be consumed from its colormap for its background
 and border.
-.OP \-class class Class
-Specifies a class for the window.
-This class will be used when querying the option database for
-the window's other options, and it will also be used later for
-other purposes such as bindings.
-The \fBclass\fR option may not be changed with the \fBconfigure\fR
-method.
 .OP \-colormap colormap Colormap
 Specifies a colormap to use for the window.
 The value may be either \fBnew\fR, in which case a new colormap is
@@ -104,7 +100,7 @@ not request any size at all.
 
 .SH DESCRIPTION
 .PP
-The \fBtoplevel\fR command creates a new toplevel widget (given
+The \fBToplevel\fR method creates a new toplevel widget (given
 by the $widget\fR argument).  Additional
 options, described above, may be specified on the command line
 or in the option database
@@ -122,25 +118,25 @@ to make the toplevel appear raised or sunken.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBtoplevel\fR command creates a widget object whose
+The \fBToplevel\fR method creates a widget object whose
 name is the same as the path name of the toplevel's window.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$toplevel\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIPathName\fR is the name of the command, which is the same as
 the toplevel widget's path name.  \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for toplevel widgets:
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$toplevel->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBtoplevel\fR
 command.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$toplevel->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for

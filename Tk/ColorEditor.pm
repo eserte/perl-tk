@@ -2,7 +2,7 @@ package Tk::ColorEditor;
 
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#3$
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#4$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
@@ -410,7 +410,7 @@ sub Populate
             -exportselection => 0,
         );
 
-        $names->bind('<Double-1>' => [$cw,'color',Ev(['Getselected'])]);
+        $names->bind('<Double-1>' => [$cw,'color',Ev(['getSelected'])]);
 
         my $scroll = $cw->Scrollbar(
             -orient      => 'vertical',

@@ -11,18 +11,18 @@
 '\" license.tcl.
 .so man.macros
 '----------------------------------------------------------------------
-.HS tixTList tix 4.0
+.TH Tk::TList n 4.0 Tix "Tk Widget Classes"
 .BS
 '
 '
 '----------------------------------------------------------------------
 .SH NAME
-tixTList \- Create and manipulate Tix Tabular List widgets
+Tk::TList \- Create and manipulate Tix Tabular List widgets
 '
 '
 '----------------------------------------------------------------------
 .SH SYNOPSIS
-\fBtixTList\fI $widget ?\fIoptions\fR?
+\fI$tlist\fR = \fI$parent->\fBTList\fR(\fR?\fIoptions\fR?\fR);
 '
 '
 '----------------------------------------------------------------------
@@ -57,7 +57,7 @@ Class:		\fBBrowseCmd\fR
 Switch:		\fB\-browsecmd\fR
 .fi
 .IP
-Specifies a TCL command to be executed when the user browses through the
+Specifies a perl/Tk \fBcallback\fR to be executed when the user browses through the
 entries in the TList widget.
 '----------END
 '
@@ -69,7 +69,7 @@ Class:		\fBCommand\fR
 Switch:		\fB\-command\fR
 .fi
 .IP
-Specifies the TCL command to be executed when the user invokes a list
+Specifies the perl/Tk \fBcallback\fR to be executed when the user invokes a list
 entry in the TList widget. Normally the user invokes a list
 entry by double-clicking it or pressing the Return key.
 '----------END
@@ -205,7 +205,7 @@ Class:		\fBSizeCmd\fR
 Switch:		\fB\-sizecmd\fR
 .fi
 .IP
-Specifies a TCL script to be called whenever the TList widget
+Specifies a perl/Tk \fBcallback\fR to be called whenever the TList widget
 changes its size. This command can be useful to implement "user scroll
 bars when needed" features.
 '----------END
@@ -242,7 +242,7 @@ Specifies the desired width for the window in characters.
 '
 .PP
 '
-The \fBtixTList\fR command creates a new window (given by the
+The \fBTList\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a TList widget.
 Additional options, described above, may be specified on the command
 line or in the option database to configure aspects of the
@@ -298,46 +298,41 @@ used.
 .SH "WIDGET METHODS"
 .PP
 '
-The \fBtixTList\fR command creates a widget object whose name is the
+The \fBTList\fR method creates a widget object whose name is the
 same as the path name of the TList widget's window.  This command
 may be used to invoke various operations on the widget.  It has the
 following general form:
-'
-.DS C
-'
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
-.PP
-.DE
-'
+.CS
+\fI$tlist\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+.CE
 \fIPathName\fR is the name of the command, which is the same as
 the TList widget's path name.  \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for TList widgets:
 '
 .TP
-\fI$widget->\fBanchorSet\fR(\fIindex\fR)
+\fI$tlist->\fBanchorSet\fR(\fIindex\fR)
 '
 Sets the anchor to the list entry identified by \fIindex\fR. The
 anchor is the end of the selection that is fixed while dragging out a
 selection with the mouse.
 '
 .TP
-\fI$widget->\fBanchorClear\fR
+\fI$tlist->\fBanchorClear\fR
 '
 Removes the anchor, if any, from this TList widget. This only removes
 the surrounding highlights of the anchor entry and does not affect its
 selection status.
 '
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$tlist->\fBcget\fR(\fIoption\fR)
 '
 Returns the current value of the configuration option given by
 \fIoption\fR. \fIOption\fR may have any of the values accepted by the
 \fBtixTList\fR command.
 '
 .TP
-'
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
+\fI$tlist->\fBconfigure\fR(?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
 '
 Query or modify the configuration options of the widget.  If no
 \fIoption\fR is specified, returns a list describing all of the
@@ -352,13 +347,13 @@ this case the command returns an empty string.  \fIOption\fR may have
 any of the values accepted by the \fBtixTList\fR command.
 '
 .TP
-\fI$widget->\fBdelete\fR(\fIfrom, \fR?\fIto\fR?\fR)
+\fI$tlist->\fBdelete\fR(\fIfrom, \fR?\fIto\fR?\fR)
 Deletes one or more list entries between the two entries specified by
 the indices \fIfrom\fR and \fIto\fR. If \fIto\fR is not specified, deletes
 the single entry specified by \fIfrom\fR.
 '
 .TP
-\fI$widget->\fBdragsiteSet\fR(\fIindex\fR)
+\fI$tlist->\fBdragsiteSet\fR(\fIindex\fR)
 '
 Sets the dragsite to the list entry identified by
 \fIindex\fR. The dragsite is used to indicate the source of a
@@ -366,14 +361,14 @@ drag-and-drop action. Currently drag-and-drop functionality has not
 been implemented in Tix yet.
 '
 .TP
-\fI$widget->\fBdragsiteClear\fR
+\fI$tlist->\fBdragsiteClear\fR
 Remove the dragsite, if any, from the this TList widget. This only
 removes the surrounding highlights of the dragsite entry and does not
 affect its selection status.
 '
 '
 .TP
-\fI$widget->\fBdropsiteSet\fR(\fIindex\fR)
+\fI$tlist->\fBdropsiteSet\fR(\fIindex\fR)
 '
 Sets the dropsite to the list entry identified by \fIindex\fR. The
 dropsite is used to indicate the target of a grag-and-drop
@@ -381,21 +376,21 @@ action. Currently drag-and-drop functionality has not been implemented
 in Tix yet.
 '
 .TP
-\fI$widget->\fBdropsiteClear\fR
+\fI$tlist->\fBdropsiteClear\fR
 '
 Remove the dropsite, if any, from the this TList widget. This only
 removes the surrounding highlights of the dropsite entry and does not
 affect its selection status.
 '
 .TP
-\fI$widget->\fBentrycget\fR(\fIindex, option\fR)
+\fI$tlist->\fBentrycget\fR(\fIindex, option\fR)
 '
 Returns the current value of the configuration option given by
 \fIoption\fR for the entry indentfied by \fIindex\fR. \fIOption\fR may
 have any of the values accepted by the \fBinsert\fR method.
 '
 .TP
-\fI$widget->\fBentryconfigure\fR(\fIindex, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
+\fI$tlist->\fBentryconfigure\fR(\fIindex, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
 '
 Query or modify the configuration options of the list entry indentfied
 by \fIindex\fR. If no \fIoption\fR is specified, returns a list
@@ -413,7 +408,7 @@ value of the \fB\-itemtype\fR option passed to the the \fBinsert\fR
 method when this list entry is created.
 '
 .TP
-\fI$widget->\fBinsert\fR(\fIindex, \fR?\fIoption, value, ...\fR?\fR)
+\fI$tlist->\fBinsert\fR(\fIindex, \fR?\fIoption, value, ...\fR?\fR)
 '
 Creates a new list entry at the position indicated by \fIindex\fR. The
 following configuration options can be given to configure the list
@@ -447,43 +442,43 @@ item given by the \fB\-itemtype\fR option. Please see the
 each of the display item types.
 '
 .TP
-\fI$widget->\fBinfo\fR(\fIoption, \fR\fIarg, ...\fR)
+\fI$tlist->\fBinfo\fR(\fIoption, \fR\fIarg, ...\fR)
 '
 Query information about the TList widget. \fIoption\fR can be one
 of the following:
 .RS
 .TP
-\fI$widget->\fBinfo\fR(\fBanchor, \fR\fIindex\fR)
-;
+\fI$tlist->\fBinfo\fR(\fBanchor, \fR\fIindex\fR)
+'
 Returns the index of the current anchor, if any, of the TList
 widget. If the anchor is not set, returns the empty string.
 '
 .TP
-\fI$widget->\fBinfo\fR(\fBdragsite, \fR\fIindex\fR)
+\fI$tlist->\fBinfo\fR(\fBdragsite, \fR\fIindex\fR)
 Returns the index of the current dragsite, if any, of the TList
 widget. If the dragsite is not set, returns the empty string.
 '
 .TP
-\fI$widget->\fBinfo\fR(\fBdropsite, \fR\fIindex\fR)
+\fI$tlist->\fBinfo\fR(\fBdropsite, \fR\fIindex\fR)
 Returns the index of the current dropsite, if any, of the TList
 widget. If the dropsite is not set, returns the empty string.
 '
 .TP
-\fI$widget->\fBinfo\fR(\fBselection\fR)
+\fI$tlist->\fBinfo\fR(\fBselection\fR)
 '
 Returns a list of selected elements in the TList widget. If no entries
 are selectd, returns an empty string.
 .RE
 '
 .TP
-\fI$widget->\fBnearest\fR(\fIx, y\fR)
+\fI$tlist->\fBnearest\fR(\fIx, y\fR)
 '
 Given an (x,y) coordinate within the TList window, this command
 returns the index of the TList element nearest to that coordinate.
 '
 '
 .TP
-\fI$widget->\fBsee\fR(\fIindex\fR)
+\fI$tlist->\fBsee\fR(\fIindex\fR)
 '
 Adjust the view in the TList so that the entry given by \fIindex\fR is
 visible. If the entry is already visible then the command has no
@@ -492,14 +487,14 @@ scrolls to bring the element into view at the edge; otherwise the
 TList widget scrolls to center the entry.
 '
 .TP
-\fI$widget->\fBselection\fR(\fIoption, \fR\fIarg, ...\fR)
+\fI$tlist->\fBselection\fR(\fIoption, \fR\fIarg, ...\fR)
 '
 This command is used to adjust the selection within a TList widget. It
 has several forms, depending on \fIoption\fR:
 .RS
 '
 .TP
-\fI$widget->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?\fR)
+\fI$tlist->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?\fR)
 '
 When no extra arguments are given, deselects all of the list entrie(s)
 in this TList widget. When only \fIfrom\fR is given, only the list
@@ -509,13 +504,13 @@ between \fIfrom\fR and \fIto\fR, inclusive, without affecting the
 selection state of entries outside that range.
 '
 .TP
-\fI$widget->\fBselectionIncludes\fR(\fIindex\fR)
+\fI$tlist->\fBselectionIncludes\fR(\fIindex\fR)
 '
 Returns 1 if the list entry indicated by \fIindex\fR is currently
 selected; returns 0 otherwise.
 '
 .TP
-\fI$widget->\fBselectionSet\fR(\fIfrom, \fR?\fIto\fR?\fR)
+\fI$tlist->\fBselectionSet\fR(\fIfrom, \fR?\fIto\fR?\fR)
 '
 Selects all of the list entrie(s) between between \fIfrom\fR and
 \fIto\fR, inclusive, without affecting the selection state of entries
@@ -524,13 +519,13 @@ identified by \fIfrom\fR is selected.
 .RE
 '
 .TP
-\fI$widget->\fBxview\fR(\fIargs\fR)
+\fI$tlist->\fBxview\fR(\fIargs\fR)
 This command is used to query and change the horizontal position of the
 information in the widget's window. It can take any of the following
 forms:
 .RS
 .TP
-\fI$widget->\fBxview\fR
+\fI$tlist->\fBxview\fR
 '
 Returns a list containing two elements.  Each element is a real
 fraction between 0 and 1; together they describe the horizontal span
@@ -540,19 +535,19 @@ off-screen to the left, the middle 40% is visible in the window, and
 40% of the entry is off-screen to the right. These are the same values
 passed to scrollbars via the \fB\-xscrollcommand\fR option.
 .TP
-\fI$widget->\fBxview\fR(\fIindex\fR)
+\fI$tlist->\fBxview\fR(\fIindex\fR)
 '
 Adjusts the view in the window so that the list entry identified by
 \fIindex\fR is aligned to the left edge of the window.
 .TP
-\fI$widget->\fBxviewMoveto\fR(\fIfraction\fR)
+\fI$tlist->\fBxviewMoveto\fR(\fIfraction\fR)
 '
 Adjusts the view in the window so that \fIfraction\fR of the total
 width of the TList is off-screen to the left. \fIfraction\fR must be
 a fraction between 0 and 1.
 '
 .TP
-\fI$widget->\fBxviewScroll\fR(\fInumber, what\fR)
+\fI$tlist->\fBxviewScroll\fR(\fInumber, what\fR)
 '
 This command shifts the view in the window left or right according to
 \fInumber\fR and \fIwhat\fR. \fINumber\fR must be an integer.
@@ -567,14 +562,14 @@ then characters farther to the right become visible.
 .RE
 '
 .TP
-\fI$widget->\fByview\fR(\fI?args\fR?\fR)
+\fI$tlist->\fByview\fR(\fI?args\fR?\fR)
 '
 This command is used to query and change the vertical position of the
 entries in the widget's window. It can take any of the following forms:
 '
 .RS
 .TP
-\fI$widget->\fByview\fR
+\fI$tlist->\fByview\fR
 '
 Returns a list containing two elements, both of which are real
 fractions between 0 and 1.  The first element gives the position of
@@ -586,13 +581,13 @@ the same values passed to scrollbars via the \fB\-yscrollcommand\fR
 option.
 '
 .TP
-\fI$widget->\fByview\fR(\fIindex\fR)
+\fI$tlist->\fByview\fR(\fIindex\fR)
 '
 Adjusts the view in the window so that the list entry given by
 \fIindex\fR is displayed at the top of the window.
 '
 .TP
-\fI$widget->\fByviewMoveto\fR(\fIfraction\fR)
+\fI$tlist->\fByviewMoveto\fR(\fIfraction\fR)
 '
 Adjusts the view in the window so that the list entry given by
 \fIfraction\fR appears at the top of the window. \fIFraction\fR is a
@@ -600,7 +595,7 @@ fraction between 0 and 1; 0 indicates the first entry in the TList,
 0.33 indicates the entry one-third the way through the TList, and so
 on.
 .TP
-\fI$widget->\fByviewScroll\fR(\fInumber, what\fR)
+\fI$tlist->\fByviewScroll\fR(\fInumber, what\fR)
 '
 This command adjust the view in the window up or down according to
 \fInumber\fR and \fIwhat\fR.  \fINumber\fR must be an integer.

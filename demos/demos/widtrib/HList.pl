@@ -1,6 +1,7 @@
 # HList - A hierarchial listbox widget.
 
 use Tk::HList;
+use Cwd;
 use strict;
 use subs qw/show_dir/;
 use vars qw/$MW $top $FILEIMG $FOLDIMG/;
@@ -25,8 +26,10 @@ sub HList {
     $FOLDIMG = $top->Bitmap(-file => Tk->findINC('folder.xbm'));
 
     my $root = Tk->findINC('demos');
+    my $olddir = cwd;
     chdir $root;
     show_dir '.', $root, $h;
+    chdir $olddir;
 }
 
 sub show_dir {

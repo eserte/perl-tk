@@ -8,19 +8,21 @@
 '\" SCCS: @(#) scrollbar.n 1.33 97/10/31 12:58:52
 '\" 
 .so man.macros
-.TH scrollbar n 4.1 Tk "Tk Generic Methods"
+.TH Tk::Scrollbar n 4.1 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-scrollbar \- Create and manipulate scrollbar widgets
+Tk::Scrollbar \- Create and manipulate Scrollbar widgets
 .SH SYNOPSIS
-\fBscrollbar\fR $widget \fR?\fIoptions\fR?
+\fI$scrollbar\fR = \fI$parent\fR->\fBScrollbar\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-activebackground	\-highlightbackground	\-orient	\-takefocus
 \-background	\-highlightcolor	\-relief	\-troughcolor
 \-borderwidth	\-highlightthickness	\-repeatdelay
 \-cursor	\-jump	\-repeatinterval
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-activerelief activeRelief ActiveRelief
 Specifies the relief to use when displaying the element that is
@@ -28,13 +30,7 @@ active, if any.
 Elements other than the active element are always displayed with
 a raised relief.
 .VE
-.LP
-.nf
-Name:	\fBcommand\fR
-Class:	\fBCommand\fR
-Configure Option:	\fB\-command\fR
-.fi
-.IP
+.OP \-command command Command
 Specifies a callback to invoke to change the view
 in the widget associated with the scrollbar.  When a user requests
 a view change by manipulating the scrollbar, the callback is
@@ -46,13 +42,7 @@ horizontal scrolling) or \fByview\fR (for vertical scrolling).
 All scrollable widgets have \fBxview\fR and \fByview\fR methods
 that take exactly the additional arguments appended by the scrollbar
 as described in SCROLLING COMMANDS below.
-.LP
-.nf
-Name:	\fBelementBorderWidth\fR
-Class:	\fBBorderWidth\fR
-Configure Option:	\fB\-elementborderwidth\fR
-.fi
-.IP
+.OP \-elementborderwidth elementBorderWidth BorderWidth
 Specifies the width of borders drawn around the internal elements
 of the scrollbar (the two arrows and the slider).  The value may
 have any of the forms acceptable to \fBTk_GetPixels\fR.
@@ -68,7 +58,7 @@ The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
 
 .SH DESCRIPTION
 .PP
-The \fBscrollbar\fR command creates a new window (given by the
+The \fBScrollbar\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a scrollbar widget.
 Additional options, described above, may be specified on the command
 line or in the option database to configure aspects of the scrollbar
@@ -115,18 +105,18 @@ The bottom or right arrow in the scrollbar.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBscrollbar\fR command creates a widget object whose
+The \fBScrollbar\fR method creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$scrollbar\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for scrollbar widgets:
 .TP
-\fI$widget->\fBactivate\fR(?\fIelement\fR?\fR)
+\fI$scrollbar->\fBactivate\fR(?\fIelement\fR?\fR)
 Marks the element indicated by \fIelement\fR as active, which
 causes it to be displayed as specified by the \fBactiveBackground\fR
 and \fBactiveRelief\fR options.
@@ -138,13 +128,13 @@ If \fIelement\fR is not specified, the command returns
 the name of the element that is currently active, or an empty string
 if no element is active.
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$scrollbar->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBscrollbar\fR
 command.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$scrollbar->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for
@@ -158,7 +148,7 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBscrollbar\fR
 command.
 .TP
-\fI$widget->\fBdelta\fR(\fIdeltaX, deltaY\fR)
+\fI$scrollbar->\fBdelta\fR(\fIdeltaX, deltaY\fR)
 Returns a real number indicating the fractional change in
 the scrollbar setting that corresponds to a given change
 in slider position.  For example, if the scrollbar is horizontal,
@@ -169,7 +159,7 @@ If the scrollbar is vertical, the result indicates how much the
 scrollbar setting must change to move the slider \fIdeltaY\fR pixels
 down.  The arguments and the result may be zero or negative.
 .TP
-\fI$widget->\fBfraction\fR(\fIx, y\fR)
+\fI$scrollbar->\fBfraction\fR(\fIx, y\fR)
 Returns a real number between 0 and 1 indicating where the point
 given by \fIx\fR and \fIy\fR lies in the trough area of the scrollbar.
 The value 0 corresponds to the top or left of the trough, the
@@ -180,18 +170,18 @@ widget.
 If \fIx\fR and \fIy\fR refer to a point outside the trough, the closest
 point in the trough is used.
 .TP
-\fI$widget->\fBget\fR
+\fI$scrollbar->\fBget\fR
 Returns the scrollbar settings in the form of a list whose
 elements are the arguments to the most recent \fBset\fR method.
 .TP
-\fI$widget->\fBidentify\fR(\fIx, y\fR)
+\fI$scrollbar->\fBidentify\fR(\fIx, y\fR)
 Returns the name of the element under the point given by \fIx\fR and
 \fIy\fR (such as \fBarrow1\fR), or an empty string if the point does
 not lie in any element of the scrollbar.
 \fIX\fR and \fIy\fR must be pixel coordinates relative to the scrollbar
 widget.
 .TP
-\fI$widget->\fBset\fR(\fIfirst, last\fR)
+\fI$scrollbar->\fBset\fR(\fIfirst, last\fR)
 This command is invoked by the scrollbar's associated widget to
 tell the scrollbar about the current view in the widget.
 The command takes two arguments, each of which is a real fraction
@@ -253,7 +243,7 @@ is deprecated.
 In the old command syntax, the \fBset\fR method has the
 following form:
 .TP
-\fI$widget->\fBset\fR(\fItotalUnits, windowUnits, firstUnit, lastUnit\fR)
+\fI$scrollbar->\fBset\fR(\fItotalUnits, windowUnits, firstUnit, lastUnit\fR)
 In this form the arguments are all integers.
 \fITotalUnits\fR gives the total size of the object being displayed in the
 associated widget.  The meaning of one unit depends on the associated
@@ -356,6 +346,7 @@ The End key adjusts the view to the bottom (right edge) of the document.
 
 .SH "SEE ALSO"
 callbacks
+Scrolled
 
 .SH KEYWORDS
 scrollbar, widget

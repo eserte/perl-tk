@@ -225,7 +225,7 @@ void
 check_arenas()
 
 MODULE = Tk	PACKAGE = Tk::Callback
-
+ 
 void
 new(package,what)
 char *	package
@@ -234,6 +234,55 @@ CODE:
  {
   ST(0) = sv_2mortal(sv_bless(LangMakeCallback(what),gv_stashpv(package, TRUE)));
  }
+
+void
+Substitute(cb,src,dst)
+SV *	cb
+SV *	src
+SV *	dst
+CODE:
+{
+ if (!SvROK(cb))
+  croak("callback is not a reference");
+ cb = SvRV(cb);                          
+ if (!SvROK(src))
+  croak("src is not a reference");
+ src = SvRV(src);                          
+ if (!SvROK(dst))
+  croak("dst is not a reference");
+ 
+ if (SvTYPE(cb) == SVt_PVAV)
+  {
+   AV *av = newAV();                        
+   int n = av_len((AV *) cb);
+   int i;           
+   int match = 0;
+   for (i=0; i <= n; i++)
+    {
+     SV **svp = av_fetch((AV *) cb,i,0);
+     if (svp)
+      {
+       if (SvROK(*svp) && SvRV(*svp) == src)
+        {
+         av_store(av, i, SvREFCNT_inc(dst));
+         match++; 
+        }
+       else
+        {
+         av_store(av, i, SvREFCNT_inc(*svp));
+        }
+      }
+    }
+   if (match)
+    {
+     ST(0) = sv_2mortal(sv_bless(MakeReference((SV *) av),SvSTASH(cb)));
+    }           
+   else
+    {
+     SvREFCNT_dec(av);
+    }
+  }
+}
 
 void 
 DESTROY(object)

@@ -1,0 +1,140 @@
+Version 0.19
+
+o Translated example in HList and DItem into perl
+  and fixed (some) command -> method
+
+Version 0.18
+
+o Added See options(n) manual entry .... to
+  all widget docs
+
+o TixGrid, ?List: fixed TCL command -> perl/Tk callback
+
+o fix4man2pod: Changes Option listings to Name,Class,Switch,Alias
+  as for Tix manpages. (STD OPT section should also
+  list names instead of options?)
+
+o added some SEE ALSO to refer to perl/Tk widgets
+
+Version 0.17
+
+o fixed some typos in SECTION reference names
+
+o make tkman2pod use 2 passes over pod to create
+  more L<>
+
+o moved configure.n and callback.n back from old/mann
+  to mann so tkpod2man creates the L<> for them.
+
+Version 0.16
+
+o removed -class from toplevel,frame and added it to options
+
+Version 0.15
+
+o tkman2pod: write =for category entry after =head1 NAME
+	section is writen.
+
+o fixed loadTk .TH value
+
+Version 0.14
+
+o tkpod2man  does not handle forward references =>
+  disabled check. It's dirty but nevertheless right
+  for mann pages
+o minor fixes to tkman2pod link resolution
+
+o mann/*: joined reverences that were broken over two lines.
+
+  => # of L<...>  is now 92 (before 28)
+
+Version 0.13
+
+o (H|T)List.  Changed .TP\n'\n to .TP\n that produced
+  wrong =item '
+
+o Fixed some wrong ' at line end
+  
+Version 0.12
+
+o applied Ilya tkman2pod patch
+
+   From: Ilya Zakharevich <ilya@math.ohio-state.edu>
+   Subject: Newer tkman2pod
+   To: ptk@lists.stanford.edu (Mailing list Perl/Tk)
+
+Version 0.11
+
+o added =for category ... to doc/pod/*.pod
+
+Version 0.10
+
+o added my handtuned PODs from tkdoc into pod/*
+  moved corresponding mann pages to old/mann
+
+o added scripts to repository
+
+Version 0.9
+
+o DItem.n: mimor formatting tweaks. Needs more work
+
+Version 0.8
+
+o tixGrid: made it more like the others:
+	* removed man macro defs at header
+	o rename 'Command-line switch' to 'Switch'
+
+Version 0.7
+
+o converted expanded Name:,Class:,Configure Option: to .OP
+  in scrollbar.n and options.n.
+  .OP is expanded by fix4man2pod)
+
+Version 0.6
+
+o tkman2pod: fixed logic bug when called with no arguments
+
+Version 0.5
+
+o fixsynop
+	o fixed synopsis
+		whatever $widget ?options?
+	  ->
+		$whatever = $parent->Whatever(?options?)
+		.SH "STANDARD OPTIONS"
+Version 0.4
+
+o names2tkname:
+	* replace in .TH of widgets
+		whatever -> Tk::Whatever
+		Tk Generic Methods -> Tk Widget Classes
+	* .SH NAME replace
+		whatever - ... whatever ...
+	  ->
+		Tk::Whatever - ... Whatever ...
+
+Version 0.3
+
+o renamed InpOnly.n to InputOnly.n for consistency
+
+o replaced 'the whatever command' with 'the Whatever method
+
+o replaced $widget->xxx to $whatever->xxx in whatever.n widget manpages
+
+o moved pack-old.n into old
+
+Version 0.2
+
+o Renamed man3/* to old/man3/*. The files are identical to Tk4.2
+  files
+
+o perlized mann/checkbutton.n . Moved old version checkbut.n
+  to old/mann/checkbut.n
+
+o same for radiobut{,ton} as above
+
+o perlize tixGrid
+
+Version 0.1
+
+Orig. from Nick

@@ -3478,9 +3478,9 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
     greenOffset = blockPtr->offset[1] - blockPtr->offset[0];
     blueOffset = blockPtr->offset[2] - blockPtr->offset[0];
     alphaOffset = 0;
-    while ((alphaOffset != blockPtr->offset[0]) &&
-	    (alphaOffset != blockPtr->offset[1]) &&
-	    (alphaOffset != blockPtr->offset[2])) {
+    while ((alphaOffset == blockPtr->offset[0]) ||
+	    (alphaOffset == blockPtr->offset[1]) ||
+	    (alphaOffset == blockPtr->offset[2])) {
 	alphaOffset++;
     }
     if (alphaOffset >= blockPtr->pixelSize) {
@@ -3501,6 +3501,7 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
     pitch = masterPtr->width * 4;
 
     if ((blockPtr->pixelSize == 4) && (greenOffset == 1) && (blueOffset == 2)
+	    && (alphaOffset == 0)
 	    && (width <= blockPtr->width) && (height <= blockPtr->height)
 	    && ((height == 1) || ((x == 0) && (width == masterPtr->width)
 		&& (blockPtr->pitch == pitch)))) {
@@ -3519,10 +3520,14 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
 		    wLeft -= wCopy;
 		    srcPtr = srcLinePtr;
 		    for (; wCopy > 0; --wCopy) {
-			*destPtr++ = srcPtr[0];
-			*destPtr++ = srcPtr[greenOffset];
-			*destPtr++ = srcPtr[blueOffset];
-			*destPtr++ = alphaOffset ? srcPtr[alphaOffset] : 255;
+			if (!alphaOffset || srcPtr[alphaOffset] == 255) {
+			    *destPtr++ = srcPtr[0];
+			    *destPtr++ = srcPtr[greenOffset];
+			    *destPtr++ = srcPtr[blueOffset];
+			    *destPtr++ = alphaOffset ? srcPtr[alphaOffset] : 255;
+			} else {
+			    destPtr += 4;
+			}
 			srcPtr += blockPtr->pixelSize;
 		    }
 		}
@@ -3652,9 +3657,9 @@ Tk_PhotoPutZoomedBlock(handle, blockPtr, x, y, width, height, zoomX, zoomY,
     greenOffset = blockPtr->offset[1] - blockPtr->offset[0];
     blueOffset = blockPtr->offset[2] - blockPtr->offset[0];
     alphaOffset = 0;
-    while ((alphaOffset != blockPtr->offset[0]) &&
-	    (alphaOffset != blockPtr->offset[1]) &&
-	    (alphaOffset != blockPtr->offset[2])) {
+    while ((alphaOffset == blockPtr->offset[0]) ||
+	    (alphaOffset == blockPtr->offset[1]) ||
+	    (alphaOffset == blockPtr->offset[2])) {
 	alphaOffset++;
     }
     if (alphaOffset >= blockPtr->pixelSize) {
@@ -3713,10 +3718,14 @@ Tk_PhotoPutZoomedBlock(handle, blockPtr, x, y, width, height, zoomX, zoomY,
 		srcPtr = srcLinePtr;
 		for (; wCopy > 0; wCopy -= zoomX) {
 		    for (xRepeat = MIN(wCopy, zoomX); xRepeat > 0; xRepeat--) {
-			*destPtr++ = srcPtr[0];
-			*destPtr++ = srcPtr[greenOffset];
-			*destPtr++ = srcPtr[blueOffset];
-			*destPtr++ = alphaOffset ? srcPtr[alphaOffset] : 255;
+			if (!alphaOffset || srcPtr[alphaOffset] == 255) {
+			    *destPtr++ = srcPtr[0];
+			    *destPtr++ = srcPtr[greenOffset];
+			    *destPtr++ = srcPtr[blueOffset];
+			    *destPtr++ = alphaOffset ? srcPtr[alphaOffset] : 255;
+			} else {
+			    destPtr += 4;
+			}
 		    }
 		    srcPtr += blockXSkip;
 		}

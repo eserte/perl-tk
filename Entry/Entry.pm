@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Entry/Entry.pm#5$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Entry/Entry.pm#8$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -22,7 +22,7 @@ require Tk::Widget;
 require Tk::Clipboard;
 use AutoLoader;
 
-@ISA = qw(Tk::Widget); 
+@ISA = qw(Tk::Clipboard Tk::Widget); 
 
 import Tk qw(Ev);
 
@@ -33,11 +33,10 @@ bootstrap Tk::Entry $Tk::VERSION;
 sub Tk_cmd { \&Tk::entry }
 
 Tk::Methods("bbox","delete","get","icursor","index","insert","scan",
-            "selection","xview");
+            "selection","xview");  
 
-1;
-
-__END__
+use Tk::Submethods ( 'selection' => [qw(clear range adjust present to from)]
+                   ); 
 
 sub wordstart
 {my ($w,$pos) = @_;
@@ -69,12 +68,15 @@ sub wordend
 # event - Indicates which event caused the procedure to be invoked
 # (Enter or FocusIn). It is used so that we can carry out
 # the functions of that event in addition to setting up
-# bindings.
+# bindings.                   
 sub ClassInit
 {
  my ($class,$mw) = @_;
+
+ $class->SUPER::ClassInit($mw);
+
  # Standard Motif bindings:
- $mw->bind($class,'<Escape>',['selection','clear']);
+ $mw->bind($class,'<Escape>','selectionClear');
 
  $mw->bind($class,"<1>",
              sub
@@ -111,7 +113,7 @@ sub ClassInit
               my $w = shift;
               my $Ev = $w->XEvent;
               $Tk::selectMode = "char";
-              $w->selection("adjust","@" . $Ev->x)
+              $w->selectionAdjust('@' . $Ev->x)
              } ) ;
  $mw->bind($class,"<Double-Shift-1>",
              sub
@@ -206,7 +208,7 @@ sub ClassInit
              sub
              {
               my $w = shift;
-              if ($w->selection("present"))
+              if ($w->selectionPresent)
                {
                 $w->deleteSelected
                }
@@ -222,48 +224,46 @@ sub ClassInit
              sub
              {
               my $w = shift;
-              $w->selection("from","insert")
+              $w->selectionFrom("insert")
              } ) ;
  $mw->bind($class,"<Select>",
              sub
              {
               my $w = shift;
-              $w->selection("from","insert")
+              $w->selectionFrom("insert")
              } ) ;
  $mw->bind($class,"<Control-Shift-space>",
              sub
              {
               my $w = shift;
-              $w->selection("adjust","insert")
+              $w->selectionAdjust("insert")
              } ) ;
  $mw->bind($class,"<Shift-Select>",
              sub
              {
               my $w = shift;
-              $w->selection("adjust","insert")
+              $w->selectionAdjust("insert")
              } ) ;
  $mw->bind($class,"<Control-slash>",
              sub
              {
               my $w = shift;
-              $w->selection("range",0,"end")
+              $w->selectionRange(0,"end")
              } ) ;
- $mw->bind($class,"<Control-backslash>",['selection','clear']);
+ $mw->bind($class,"<Control-backslash>",'selectionClear');
 
- $class->clipboardKeysyms($mw,"F16","F20","F18");
- $class->clipboardKeysyms($mw,'Control-c','Control-x','Control-v');
+ $class->clipboardOperations($mw,qw[Copy Cut Paste]);
 
  $mw->bind($class,"<KeyPress>", ['Insert',Ev(A)]);
 
  # Ignore all Alt, Meta, and Control keypresses unless explicitly bound.
  # Otherwise, if a widget binding for one of these is defined, the
  # <KeyPress> class binding will also fire and insert the character,
- # which is wrong.  Ditto for Escape, Return, and Tab.
+ # which is wrong.  Ditto for Return, and Tab.
 
  $mw->bind($class,'<Alt-KeyPress>' ,'NoOp');
  $mw->bind($class,'<Meta-KeyPress>' ,'NoOp');
  $mw->bind($class,'<Control-KeyPress>' ,'NoOp');
- $mw->bind($class,'<Escape>' ,'NoOp');
  $mw->bind($class,'<Return>' ,'NoOp');
  $mw->bind($class,'<Tab>' ,'NoOp');
 
@@ -315,7 +315,6 @@ sub ClassInit
                 my $w = shift;
                 $w->delete($w->wordstart ,"insert")
                } ) ;
-   $class->clipboardKeysyms($mw,"Meta-w","Control-w","Control-y");
    # A few additional bindings of my own.
    $mw->bind($class,"<Control-w>",
                sub
@@ -378,7 +377,7 @@ sub Button1
  $Tk::mouseMoved = 0;
  $Tk::pressX = $x;
  $w->icursor("@" . $x);
- $w->selection("from","@" . $x);
+ $w->selectionFrom("@" . $x);
  if ($w->cget("-state") eq "normal")
   {
    $w->focus()
@@ -411,11 +410,11 @@ sub MouseSelect
     {
      if ($cur < $anchor)
       {
-       $w->selection("to",$cur)
+       $w->selectionTo($cur)
       }
      else
       {
-       $w->selection("to",$cur+1)
+       $w->selectionTo($cur+1)
       }
     }
   }
@@ -423,16 +422,16 @@ sub MouseSelect
   {
    if ($cur < $w->index("anchor"))
     {
-     $w->selection("range",$w->wordstart($cur),$w->wordend($anchor-1))
+     $w->selectionRange($w->wordstart($cur),$w->wordend($anchor-1))
     }
    else
     {
-     $w->selection("range",$w->wordstart($anchor),$w->wordend($cur))
+     $w->selectionRange($w->wordstart($anchor),$w->wordend($cur))
     }
   }
  elsif ($mode eq "line")
   {
-   $w->selection("range",0,"end")
+   $w->selectionRange(0,"end")
   }
  $w->idletasks;
 }
@@ -478,14 +477,14 @@ sub KeySelect
 {
  my $w = shift;
  my $new = shift;
- if (!$w->selection("present"))
+ if (!$w->selectionPresent)
   {
-   $w->selection("from","insert");
-   $w->selection("to",$new)
+   $w->selectionFrom("insert");
+   $w->selectionTo($new)
   }
  else
   {
-   $w->selection("adjust",$new)
+   $w->selectionAdjust($new)
   }
  $w->icursor($new);
  $w->SeeInsert;
@@ -522,7 +521,7 @@ sub Insert
 sub Backspace
 {
  my $w = shift;
- if ($w->selection("present"))
+ if ($w->selectionPresent)
   {
    $w->deleteSelected
   }
@@ -599,14 +598,28 @@ sub Transpose
  $w->delete($first,$i);
  $w->insert('insert',$new);
  $w->SeeInsert;
+}          
+
+sub tabFocus
+{
+ my $w = shift;
+ $w->selectionRange(0,'end');
+ $w->icursor('end');
+ $w->SUPER::tabFocus;
 }
 
 sub getSelected
 {
  my $w = shift;
- return undef unless $w->selection('present');
+ return undef unless $w->selectionPresent;
  my $str = $w->get;
  my $s = $w->index('sel.first');
  my $e = $w->index('sel.last');
  return substr($str,$s,$e+1-$s);
 }
+
+1;
+
+__END__
+
+

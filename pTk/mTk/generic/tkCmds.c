@@ -273,7 +273,7 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     int i, tagArgc;
     char *p, **tagArg;
     Arg *tagArgv;
-    LangFreeProc *freeProc = NULL;
+    LangFreeProc *freeProc = NULL;    
 
     if ((argc < 2) || (argc > 3)) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
@@ -286,15 +286,15 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     }
     if (argc == 2) {
 	if (winPtr->numTags == 0) {
-	    Tcl_AppendArg(interp, LangWidgetArg(interp, (Tk_Window) winPtr));
 	    Tcl_AppendElement(interp, winPtr->classUid);
+	    Tcl_AppendElement(interp, winPtr->pathName);
 	    for (winPtr2 = winPtr;
 		    (winPtr2 != NULL) && !(winPtr2->flags & TK_TOP_LEVEL);
 		    winPtr2 = winPtr2->parentPtr) {
 		/* Empty loop body. */
 	    }
 	    if ((winPtr != winPtr2) && (winPtr2 != NULL)) {
-		Tcl_AppendArg(interp, LangWidgetArg(interp, (Tk_Window) winPtr2));
+		Tcl_AppendElement(interp, winPtr2->pathName);
 	    }
 	    Tcl_AppendElement(interp, "all");
 	} else {
@@ -312,7 +312,7 @@ Tk_BindtagsCmd(clientData, interp, argc, argv)
     }
     if (Lang_SplitList(interp, args[2], &tagArgc, &tagArgv, &freeProc) != TCL_OK) {
 	return TCL_ERROR;
-    }
+    }            
     winPtr->numTags = tagArgc;
     winPtr->tagPtr = (ClientData *) ckalloc((unsigned)
 	    (tagArgc * sizeof(ClientData)));
@@ -1085,8 +1085,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    }
 	    Tcl_ResetResult(interp);
 	    if (useX & useY) {
-		sprintf(buf, "%d %d", x, y);
-		Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+		Tcl_IntResults(interp, 2, 0, x, y);
 	    } else if (useX) {
 		Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
 	    } else {
@@ -1458,11 +1457,9 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    if (colorPtr == NULL) {
 		return TCL_ERROR;
 	    }
-	    sprintf(buf, "%d %d %d", colorPtr->red, colorPtr->green,
+	    Tcl_IntResults(interp, 3, 0, colorPtr->red, colorPtr->green,
 		    colorPtr->blue);
 	    Tk_FreeColor(colorPtr);
-	    Tcl_ResetResult(interp);
-	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
 	    break;
 	}
 	case WIN_VISUALSAVAILABLE: {

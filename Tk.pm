@@ -4,12 +4,9 @@
 # Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
-use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk.pm#10$
-
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in Tk/license.terms due to partial
-# derivation from Tk4.0 sources.
+# derivation from Tk8.0 sources.
 #
 package Tk;
 require 5.004;
@@ -20,6 +17,10 @@ require Exporter;
 
 BEGIN { $Tk::platform = ($^O eq 'MSWin32') ? $^O : 'unix' };
 
+# XXX
+if ($Tk::platform eq 'unix') {
+    $Tk::tearoff = 1;
+}
 
 @EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
 @EXPORT_OK = qw(NoOp *widget *event lsearch catch 
@@ -43,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.000';
+$Tk::VERSION     = '800.0_01';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -57,7 +58,7 @@ $Tk::event   = undef;
 use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab $TkoptionVtab);  
 use vars qw($TixVtab $TixintVtab $TiximgxpmVtab);
 use vars qw($TkwinVtab $TkwinintVtab);
-
+ 
 bootstrap Tk $Tk::VERSION;
 
 {
@@ -188,44 +189,6 @@ sub __DIE__
   }
 }
 
-sub fileevent
-{
- require Tk::IO;
- my ($obj,$file,$mode,$cb) = @_;
- croak "Unknown mode '$mode'" unless $mode =~ /^(readable|writeable)$/;
- unless (ref $file)
-  {
-   require IO::Handle;
-   no strict 'refs';
-   $file = Symbol::qualify($file,(caller)[0]);
-   $file = bless \*{$file},'IO::Handle';
-  }
- if ($cb)
-  {
-   # Adding the handler
-   $cb = Tk::Callback->new($cb);
-   if ($mode eq 'readable')
-    {
-     Tk::IO::CreateReadHandler($file,$cb);
-    }
-   else
-    {
-     Tk::IO::CreateWriteHandler($file,$cb);
-    }
-  }
- else
-  {
-   if ($mode eq 'readable')
-    {
-     Tk::IO::DeleteReadHandler($file);
-    }
-   else
-    {
-     Tk::IO::DeleteWriteHandler($file);
-    }
-  }
-}
-
 sub SplitString
 {
  local $_ = shift;
@@ -243,6 +206,12 @@ sub Methods
 {
  my ($package,$file) = caller;   
  $package->EnterMethods($file,@_);
+}
+
+sub fileevent
+{
+ require Tk::IO;
+ goto &Tk::IO::fileevent;
 }
 
 1;
@@ -349,7 +318,7 @@ sub focusNext
     }
    if ($cur == $w || $cur->FocusOK)
     {
-     $cur->Tk::focus;
+     $cur->tabFocus;
      return;
     }
   }
@@ -404,7 +373,7 @@ sub focusPrev
    $cur = $parent;
    if ($cur == $w || $cur->FocusOK)
     {
-     $cur->Tk::focus;
+     $cur->tabFocus;
      return;
     }
   }
@@ -453,6 +422,11 @@ sub EnterFocus
  my $Ev = $w->XEvent;
  my $d  = $Ev->d;
  $w->Tk::focus() if ($d eq "NotifyAncestor" ||  $d eq "NotifyNonlinear" ||  $d eq "NotifyInferior");
+}
+
+sub tabFocus
+{
+ shift->Tk::focus;
 }
 
 sub focusFollowsMouse

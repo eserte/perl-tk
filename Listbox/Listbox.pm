@@ -13,13 +13,13 @@
 package Tk::Listbox; 
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Listbox/Listbox.pm#4$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Listbox/Listbox.pm#7$
 
 use Tk qw(Ev);
 require Tk::Clipboard;
 use AutoLoader;
 
-@ISA = qw(Tk::Widget);
+@ISA = qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Listbox';
 
@@ -34,6 +34,13 @@ Tk::Methods("activate","bbox","curselection","delete","get","index",
 use Tk::Submethods ( 'selection' => [qw(anchor clear includes set)],
                      'scan' => [qw(mark dragto)]
                    );
+ 
+*Getselected = \&getSelected;
+
+sub clipEvents
+{
+ return qw[Copy];
+}
 
 1;
 __END__
@@ -60,7 +67,7 @@ sub xyIndex
 sub ClassInit
 {
  my ($class,$mw) = @_;
-
+ $class->SUPER::ClassInit($mw);
  # Standard Motif bindings:
  $mw->bind($class,"<1>",['BeginSelect',Ev('index',Ev('@'))]);
  $mw->bind($class,"<B1-Motion>",['Motion',Ev('index',Ev('@'))]);
@@ -113,7 +120,7 @@ sub ClassInit
 	      )
  ;
  $mw->bind($class,"<Shift-Control-End>",['DataExtend','end']);
- $class->clipboardKeysyms($mw,"F16");
+ $class->clipboardOperations($mw,'Copy');
  $mw->bind($class,"<space>",['BeginSelect',Ev('index','active')]);
  $mw->bind($class,"<Select>",['BeginSelect',Ev('index','active')]);
  $mw->bind($class,"<Control-Shift-space>",['BeginExtend',Ev('index','active')]);
@@ -463,18 +470,6 @@ sub SetList
  $w->insert("end",@_);
 }
 
-sub Getselected
-{
- my ($w) = @_;
- my $i;
- my (@result) = ();
- foreach $i ($w->curselection)
-  {
-   push(@result,$w->get($i));
-  }
- return (wantarray) ? @result : $result[0];
-}
-
 sub deleteSelected
 {
  my $w = shift;
@@ -496,7 +491,21 @@ sub clipboardPaste
   {
    $w->insert($index++,$_);
   }
+}      
+
+sub getSelected
+{
+ my ($w) = @_;
+ my $i;
+ my (@result) = ();
+ foreach $i ($w->curselection)
+  {
+   push(@result,$w->get($i));
+  }
+ return (wantarray) ? @result : $result[0];
 }
+
+
 
 1;
 __END__

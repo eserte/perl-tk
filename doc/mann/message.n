@@ -8,19 +8,21 @@
 '\" SCCS: @(#) message.n 1.32 97/10/31 12:58:50
 '\" 
 .so man.macros
-.TH message n 4.0 Tk "Tk Generic Methods"
+.TH Tk::Message n 4.0 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-message \- Create and manipulate message widgets
+Tk::Message \- Create and manipulate Message widgets
 .SH SYNOPSIS
-\fBmessage\fR $widget \fR?\fIoptions\fR?
+\fI$message\fR = \fI$parent\fR->\fBMessage\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-anchor	\-font	\-highlightthickness	\-takefocus
 \-background	\-foreground	\-padx	\-text
 \-borderwidth	\-highlightbackground	\-pady	\-textvariable
 \-cursor	\-highlightcolor	\-relief	\-width
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-aspect aspect Aspect
 Specifies a non-negative integer value indicating desired
@@ -64,7 +66,7 @@ the \fBaspect\fR option determines the line length.
 
 .SH DESCRIPTION
 .PP
-The \fBmessage\fR command creates a new window (given by the
+The \fBMessage\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a message widget.
 Additional
 options, described above, may be specified on the command line
@@ -102,24 +104,24 @@ characters and undefined characters are not displayed at all.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBmessage\fR command creates a widget object whose
+The \fBMessage\fR method creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$message\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for message widgets:
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$message->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBmessage\fR
 command.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$message->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for

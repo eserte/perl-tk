@@ -9,18 +9,13 @@
 '\" 
 .so man.macros
 .TH send n 4.0 Tk "Partially Converted Methods"
-.BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
 send \- Execute a command in a different application
 .SH SYNOPSIS
-.VS
 $result = \fI$widget\fR->\fBsend\fR(?\fIoptions\fR,?\fIapp\fR=>\fIcmd\fR?\fIarg arg ...\fR?)
-.VE
-.BE
 
 .SH DESCRIPTION
-.PP
 This method arranges for \fIcmd\fR (and \fIarg\fRs) to be 'sent' to the
 application named by \fIapp\fR.  It returns the result or
 an error (hence above should probably be 'wrapped' in \fBeval{}\fR and $@ tested).

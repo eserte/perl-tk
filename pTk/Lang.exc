@@ -19,7 +19,6 @@ Tcl_CreateAliasObj
 Tcl_CreateChannel
 Tcl_CreateChannelHandler
 Tcl_CreateCloseHandler
-Tcl_CreateFileHandler
 Tcl_CreateMathFunc
 Tcl_CreateSlave
 Tcl_CreateTrace
@@ -39,7 +38,6 @@ Tcl_DeleteAssocData
 Tcl_DeleteChannelHandler
 Tcl_DeleteCloseHandler
 Tcl_DeleteCommand
-Tcl_DeleteFileHandler
 Tcl_DeleteTrace
 Tcl_DetachPids
 Tcl_DontCallWhenDeleted

@@ -7,7 +7,7 @@ use strict;
 
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#2$
+$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#4$
 
 sub PreInit
 {
@@ -97,6 +97,7 @@ package Tk::Menu::Cascade;
 @Tk::Menu::Cascade::ISA = qw(Tk::Menu::Item);
 Construct Tk::Menu 'Cascade';
 sub kind { return 'cascade' }
+use Carp;
 
 sub PreInit
 {
@@ -129,6 +130,20 @@ sub menu
    $menu->configure(%args);
   }
  return $menu;
+}             
+
+# Some convenience methods 
+
+sub separator   {  shift->menu->Separator(@_);   }
+sub command     {  shift->menu->Command(@_);     }
+sub cascade     {  shift->menu->Cascade(@_);     }
+sub checkbutton {  shift->menu->Checkbutton(@_); }
+sub radiobutton {  shift->menu->Radiobutton(@_); }
+
+sub pack 
+{                    
+ my $w = shift;
+ carp "Cannot 'pack' $w - done automatically" if $^W;
 }
 
 package Tk::Menu::Checkbutton;

@@ -14,7 +14,7 @@ use Carp;
 # stubs for 'autoloaded' widget classes
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Widget.pm#7$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Widget.pm#10$
 
 sub Button;
 sub Canvas;
@@ -377,9 +377,6 @@ sub SaveGrabInfo
   }
 }
 
-1;                     
-
-__END__
 
 sub grabSave
 {
@@ -584,7 +581,6 @@ sub setPalette
  my $w = shift->MainWindow;
  my %new = (@_ == 1) ? (background => $_[0]) : @_;
  my $priority = delete($new{'priority'}) || 'widgetDefault';
- my $i;
 
  # Create an array that has the complete new palette. If some colors
  # aren't specified, compute them from other colors that are specified.
@@ -594,7 +590,7 @@ sub setPalette
  my @bg = $w->rgb($new{"background"});
  my @fg = $w->rgb($new{"foreground"});
  my $darkerBg = sprintf("#%02x%02x%02x",9*$bg[0]/2560,9*$bg[1]/2560,9*$bg[2]/2560);
- foreach $i ("activeForeground","insertBackground","selectForeground","highlightColor")
+ foreach my $i ("activeForeground","insertBackground","selectForeground","highlightColor")
   {
    $new{$i} = $new{"foreground"} unless (exists $new{$i});
   }
@@ -611,7 +607,7 @@ sub setPalette
    # normal background. To do this, round each color component
    # up by 15% or 1/3 of the way to full white, whichever is
    # greater.
-   foreach $i (0, 1, 2)
+   foreach my $i (0, 1, 2)
     {
      $light[$i] = $bg[$i]/256;
      my $inc1 = $light[$i]*15/100;
@@ -644,8 +640,7 @@ sub setPalette
  $w->RecolorTree(\%new);
  # Change the option database so that future windows will get the
  # same colors.
- my $option;
- foreach $option (keys %new)
+ foreach my $option (keys %new)
   {
    $w->option("add","*$option",$new{$option},$priority);
    # Save the options in the global variable Tk::Palette, for use the
@@ -670,10 +665,9 @@ sub setPalette
 sub RecolorTree
 {
  my ($w,$colors) = @_;
- my $dbOption;
  local ($@);
  my $Palette = $w->Palette;
- foreach $dbOption (keys %$colors)
+ foreach my $dbOption (keys %$colors)
   {
    my $option = "-\L$dbOption";
    my $value;
@@ -682,13 +676,12 @@ sub RecolorTree
     {
      if ($value eq $Palette->{$dbOption})
       {
-       $w->configure($option,$colors->{$dbOption})
+       $w->configure($option,$colors->{$dbOption});
       }
     }
   }
- my $child;
- foreach $child ($w->children)
-  {
+ foreach my $child ($w->children)
+  {                
    $child->RecolorTree($colors);
   }
 }
@@ -834,7 +827,7 @@ sub ColorOptions
                   -activebackground -activeforeground
               ))
   {
-   $args->{$opt} = $w->cget($opt) unless (exists $arg{$opt})
+   $args->{$opt} = $w->cget($opt) unless (exists $args->{$opt})
   }
  return (wantarray) ? %$args : $args;
 }
@@ -1050,6 +1043,55 @@ sub EventType
  return $w->{'_EventType_'};
 }
 
+1; 
+
+__END__
+
+# clipboardKeysyms --
+# This procedure is invoked to identify the keys that correspond to
+# the "copy", "cut", and "paste" functions for the clipboard.
+#
+# Arguments:
+# copy - Name of the key (keysym name plus modifiers, if any,
+# such as "Meta-y") used for the copy operation.
+# cut - Name of the key used for the cut operation.
+# paste - Name of the key used for the paste operation.
+#
+# This method is obsolete use clipboardOperations and abstract 
+# event types instead. See Clipboard.pm and Mainwindow.pm
+
+sub clipboardKeysyms
+{
+ my @class = (); 
+ my $mw    = shift;
+ if (ref $mw)
+  {
+   $mw = $mw->DelegateFor('bind');
+  }
+ else
+  {
+   push(@class,$mw);
+   $mw = shift;
+  }
+ if (@_)
+  {
+   my $copy  = shift;
+   $mw->Tk::bind(@class,"<$copy>",'clipboardCopy')   if (defined $copy);
+  }
+ if (@_)
+  {
+   my $cut   = shift;
+   $mw->Tk::bind(@class,"<$cut>",'clipboardCut')     if (defined $cut);
+  }
+ if (@_)
+  {
+   my $paste = shift;                                                
+   $mw->Tk::bind(@class,"<$paste>",'clipboardPaste') if (defined $paste);
+  }
+}        
+
+
+
 =head1 NAME 
 
 Tk::Widget - Base class of all widgets
@@ -1090,4 +1132,5 @@ C<option> used is "type".
 The above documentaion on generic methods is catastrophically incomplete.
 
 =cut 
+
 

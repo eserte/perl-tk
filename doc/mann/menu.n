@@ -8,18 +8,20 @@
 '\" SCCS: @(#) menu.n 1.61 97/10/31 12:58:40
 '\" 
 .so man.macros
-.TH menu n 4.1 Tk "Tk Generic Methods"
+.TH Tk::Menu n 4.1 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-menu \- Create and manipulate menu widgets
+Tk::Menu \- Create and manipulate Menu widgets
 .SH SYNOPSIS
-\fBmenu\fR $widget \fR?\fIoptions\fR?
+\fI$menu\fR = \fI$parent\fR->\fBMenu\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-activebackground	\-background	\-disabledforeground	\-relief
 \-activeborderwidth	\-borderwidth	\-font	\-takefocus
 \-activeforeground	\-cursor	\-foreground
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .VS
 .OP \-postcommand postCommand Command
@@ -68,7 +70,7 @@ library.
 
 .SH INTRODUCTION
 .PP
-The \fBmenu\fR command creates a new top-level window (given
+The \fBMenu\fR method creates a new top-level window (given
 by the $widget\fR argument) and makes it into a menu widget.
 Additional
 options, described above, may be specified on the command line
@@ -300,12 +302,12 @@ destroyed.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBmenu\fR command creates a widget object whose
+The \fBMenu\fR method creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$menu\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.
@@ -356,7 +358,7 @@ should work.)
 .PP
 The following methods are possible for menu widgets:
 .TP
-\fI$widget->\fBactivate\fR(\fIindex\fR)
+\fI$menu->\fBactivate\fR(\fIindex\fR)
 Change the state of the entry indicated by \fIindex\fR to \fBactive\fR
 and redisplay it using its active colors.
 Any previously-active entry is deactivated.  If \fIindex\fR
@@ -364,7 +366,7 @@ is specified as \fBnone\fR, or if the specified entry is
 disabled, then the menu ends up with no active entry.
 Returns an empty string.
 .TP
-\fI$widget->\fBadd\fR(\fItype, \fR?\fIoption, value, option, value, ...\fR?\fR)
+\fI$menu->\fBadd\fR(\fItype, \fR?\fIoption, value, option, value, ...\fR?\fR)
 Add a new entry to the bottom of the menu.  The new entry's type
 is given by \fItype\fR and must be one of \fBcascade\fR,
 \fBcheckbutton\fR, \fBcommand\fR, \fBradiobutton\fR, or \fBseparator\fR,
@@ -539,7 +541,7 @@ causes the currently-selected entry to deselect itself.
 The \fBadd\fR method returns an empty string.
 .RE
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$menu->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBmenu\fR
@@ -555,7 +557,7 @@ called outside of the Tk library. See the \fBCLONES\fR section for
 more information.
 .VE
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$menu->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for
@@ -569,20 +571,20 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBmenu\fR
 command.
 .TP
-\fI$widget->\fBdelete\fR(\fIindex1, \fR?\fIindex2\fR?\fR)
+\fI$menu->\fBdelete\fR(\fIindex1, \fR?\fIindex2\fR?\fR)
 Delete all of the menu entries between \fIindex1\fR and
 \fIindex2\fR inclusive.
 If \fIindex2\fR is omitted then it defaults to \fIindex1\fR.
 Attempts to delete a tear-off menu entry are ignored (instead, you
 should change the \fBtearOff\fR option to remove the tear-off entry).
 .TP
-\fI$widget->\fBentrycget\fR(\fIindex, option\fR)
+\fI$menu->\fBentrycget\fR(\fIindex, option\fR)
 Returns the current value of a configuration option for
 the entry given by \fIindex\fR.
 \fIOption\fR may have any of the values accepted by the \fBadd\fR
 method.
 .TP
-\fI$widget->\fBentryconfigure\fR(\fIindex, \fR?\fIoptions\fR?\fR)
+\fI$menu->\fBentryconfigure\fR(\fIindex, \fR?\fIoptions\fR?\fR)
 This command is similar to the \fBconfigure\fR command, except that
 it applies to the options for an individual entry, whereas \fBconfigure\fR
 applies to the options for the menu as a whole.
@@ -594,11 +596,11 @@ If no \fIoptions\fR are specified, returns a list describing
 the current options for entry \fIindex\fR (see \fBconfigure\fR for
 information on the format of this list).
 .TP
-\fI$widget->\fBindex\fR(\fIindex\fR)
+\fI$menu->\fBindex\fR(\fIindex\fR)
 Returns the numerical index corresponding to \fIindex\fR, or
 \fBnone\fR if \fIindex\fR was specified as \fBnone\fR.
 .TP
-\fI$widget->\fBinsert\fR(\fIindex, \fR\fItype, \fR?\fIoption, value, option, value, ...\fR?\fR)
+\fI$menu->\fBinsert\fR(\fIindex, \fR\fItype, \fR?\fIoption, value, option, value, ...\fR?\fR)
 Same as the \fBadd\fR method except that it inserts the new
 entry just before the entry given by \fIindex\fR, instead of appending
 to the end of the menu.  The \fItype\fR, \fIoption\fR, and \fIvalue\fR
@@ -606,7 +608,7 @@ arguments have the same interpretation as for the \fBadd\fR widget
 command.  It is not possible to insert new menu entries before the
 tear-off entry, if the menu has one.
 .TP
-\fI$widget->\fBinvoke\fR(\fIindex\fR)
+\fI$menu->\fBinvoke\fR(\fIindex\fR)
 Invoke the action of the menu entry.  See the sections on the
 individual entries above for details on what happens.  If the
 menu entry is disabled then nothing happens.  If the
@@ -617,7 +619,7 @@ a menu entry does not automatically unpost the menu;  the default
 bindings normally take care of this before invoking the \fBinvoke\fR
 method.
 .TP
-\fI$widget->\fBpost\fR(\fIx, y\fR)
+\fI$menu->\fBpost\fR(\fIx, y\fR)
 Arrange for the menu to be displayed on the screen at the root-window
 coordinates given by \fIx\fR and \fIy\fR.  These coordinates are
 adjusted if necessary to guarantee that the entire menu is visible on
@@ -629,7 +631,7 @@ command.
 If an error returns while executing the command, then the error is
 returned without posting the menu.
 .TP
-\fI$widget->\fBpostcascade\fR(\fIindex\fR)
+\fI$menu->\fBpostcascade\fR(\fIindex\fR)
 Posts the submenu associated with the cascade entry given by
 \fIindex\fR, and unposts any previously posted submenu.
 If \fIindex\fR doesn't correspond to a cascade entry,
@@ -637,21 +639,21 @@ or if $widget\fR isn't posted,
 the command has no effect except to unpost any currently posted
 submenu.
 .TP
-\fI$widget->\fBtype\fR(\fIindex\fR)
+\fI$menu->\fBtype\fR(\fIindex\fR)
 Returns the type of the menu entry given by \fIindex\fR.
 This is the \fItype\fR argument passed to the \fBadd\fR widget
 command when the entry was created, such as \fBcommand\fR
 or \fBseparator\fR, or \fBtearoff\fR for a tear-off entry.
 .TP
 .VS
-\fI$widget->\fBunpost\fR
+\fI$menu->\fBunpost\fR
 Unmap the window so that it is no longer displayed.  If a
 lower-level cascaded menu is posted, unpost that menu.  Returns an
 empty string. This subcommand does not work on Windows and the
 Macintosh, as those platforms have their own way of unposting menus.
 .VE
 .TP
-\fI$widget->\fByposition\fR(\fIindex\fR)
+\fI$menu->\fByposition\fR(\fIindex\fR)
 Returns a decimal string giving the y-coordinate within the menu
 window of the topmost pixel in the entry specified by \fIindex\fR.
 

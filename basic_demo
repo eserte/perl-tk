@@ -160,7 +160,6 @@ sub menubar
  $file->command("-label","Delete","-command" => sub { print "Delete\n" },"-underline" => 0);
  $file->separator;
  $file->command("-label","Quit","-command" => sub { $top->destroy },"-underline" => 0);
- $file->pack("-side" => "left");
 
  $file = $menu->Menubutton(-text => "Options", -underline => 0, -font => 'fixed');
 
@@ -168,11 +167,11 @@ sub menubar
 
  $file->separator;
  $file->checkbutton('-label' => 'Oil checked', '-variable' => 'main::oil');
- $file->checkbutton('-label' => 'Water checked', '-variable' => \$Water);
- $file->cget('-menu')->bind('<ButtonRelease-1>',sub {print "Hey\n";});
+ $file->checkbutton('-label' => 'Water checked', '-variable' => \$Water); 
+ my $om = $file->cget('-menu');
+ $om->bind('<ButtonRelease-1>',[ sub {my ($b,$arg,$orig) = @_; print "Hey ",join(' ',map($_->PathName,$b,$arg),$orig),"\n";}, $om, $om->PathName] );
  $file->command("-label","Interps", "-underline" => 0,
    "-command"  =>  sub { print 'Interps(',join(',',$file->interps),")\n" } );
- $file->pack("-side" => "left");
 
  $file = $menu->Menubutton(-text => "Exceptions",  -underline => 0);
 
@@ -183,12 +182,10 @@ sub menubar
  $file->command("-label","Wrong","-command" => sub { $top->configure(-gibberish => 'junk') });
  $file->command("-label","Send","-command"  => [\&send_test,$top] );
 
- $file->pack("-side" => "left");
 
  my $help = $menu->Menubutton(-text => 'Help', -underline => 0,
                               -menuitems => [[ Command => '~Versions', -command => [\&ShowVersion, $top ]]]
                              );
- $help->pack(-side => 'right');
  return $menu;
 }
 
@@ -344,8 +341,7 @@ $top->property("set",MYPROP,AREA,32,[1,2,3,4,5]);
 
 $top->update("idletasks");
 
-if (open(Gibberish, $^O eq 'os2' ? '<&STDIN' : "</dev/tty") 
-    and ($^O ne 'os2' or not -t Gibberish))	# XFree86-OS/2 and PM quirks
+if (open(Gibberish, '<&STDIN')) 
  {
   $top->fileevent(Gibberish,'readable',[sub { my ($fh) = @_; print "stdin:",scalar <$fh> },\*Gibberish]);
  }

@@ -3,12 +3,14 @@
 # modify it under the same terms as Perl itself.
 package Tk::Menubar;
 require Tk::Frame;
-require Tk::Menubutton;
+require Tk::Derived;
+require Tk::Menu;
+require Tk::Menu::Item;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Menubar.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Menubar.pm#6$
 
-@ISA = qw(Tk::Frame);
+@ISA = qw(Tk::Derived Tk::Menu);
 use strict;
 
 Construct Tk::Frame 'Menubar';
@@ -21,18 +23,16 @@ sub Populate
  my ($cw,$args) = @_;
  $cw->SUPER::Populate($args);
  my $parent = $cw->parent;
- my @pack   = (-fill => 'x', -side => 'top', -expand => 0);
- my $before = ($parent->packSlaves)[0];
- unshift(@pack,-before => $before) if (defined $before);
  $parent->Advertise('menubar' => $cw);
  $cw->{'MenuButtons'} = {};
- $cw->pack(@pack);
+ $parent->configure(-menu => $cw);
 }
 
 sub Menubutton
 {
  my ($cw,%args) = @_;
- my $name = $args{'-text'};
+ my $name = delete($args{'-text'}) || $args{'-label'};;
+ $args{'-label'} = $name if (defined $name);
  my $items = delete $args{'-menuitems'};
  my %pack = ();
  my $pack = delete $args{'-pack'};
@@ -49,23 +49,21 @@ sub Menubutton
    if (defined($underline) && ($underline >= 0))
     {
      $args{-underline} = $underline;
-     $args{-text} = $name;
+     $args{-label} = $name;
     }
   }
- $name = lcfirst($name);
- $name =~ s/\s/_/g; 
  my $mb = $cw->{'MenuButtons'}{$name};
  if (defined $mb)
   {
    $mb->configure(%args);
-   $mb->pack(%pack) if (%pack);
+   # $mb->pack(%pack) if (%pack);
   }
  else
   {
-   $pack{'-side'} = 'left' unless (exists $pack{'-side'});
-   $mb = $cw->SUPER::Menubutton(Name => $name,%args); 
+   $mb = $cw->Cascade(%args); 
    $cw->{'MenuButtons'}{$name} = $mb;
-   $mb->pack(%pack);
+   # $pack{'-side'} = 'left' unless (exists $pack{'-side'});
+   # $mb->pack(%pack);
   }
  $mb->menu->AddItems(@$items) if (defined $items);
  return $mb;

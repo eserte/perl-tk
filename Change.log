@@ -1,3 +1,164 @@
+Change 633 on 1998/03/01 by nick@camel
+
+	Some tidy up
+
+Change 632 on 1998/03/01 by nick@ni-s
+
+	Remove debug prints
+
+Change 631 on 1998/03/01 by nick@ni-s
+
+	Typo corrections
+
+Change 630 on 1998/03/01 by nick@ni-s
+
+	Re-structure Win32 HANDLE event stuff
+
+Change 629 on 1998/03/01 by nick@camel
+
+	Win32 - bug found - go edit on UNIX
+
+Change 628 on 1998/03/01 by nick@camel
+
+	Save Typo corrections before trying in case 
+	it crashed the machine ...
+
+Change 627 on 1998/03/01 by nick@ni-s
+
+	Untested Win32 FileHandler implementation
+
+Change 626 on 1998/03/01 by nick@ni-s
+
+	Part 1 on n re-implemeting fileevent and Tk::IO
+	Move fileevent into Tk::IO.
+	Re-work XSUB'ing of Tcl_CreateFileHandler and Tcl_DeleteFileHandler
+	Make Tk::IO a TIEHANDLE package so that we can catch close.
+	add stubs for those to Win32 side. 
+	Intent is for Win32 to do OS level HANDLE wait on files (untested).
+
+Change 625 on 1998/03/01 by nick@ni-s
+
+	Fixup menubar usage in basic_demo, extend compatibility
+
+Change 624 on 1998/03/01 by nick@camel
+
+	Remove mess from toyedit which did not work on Win32
+
+Change 623 on 1998/03/01 by nick@ni-s
+
+	Change to getSelection combined with Clipboard.pm wedging methods
+	into Widget meant ->getSelection did not delegate to scrolled listboxes.
+	Make Tk::Clibboard a pseudo-base class instead.
+
+Change 622 on 1998/02/28 by nick@camel
+
+	Tweak toyedit to avoid DragDrop till we
+	either avoid Tix's wmRelease or make it work on Win32
+
+Change 621 on 1998/02/28 by nick@ni-s
+
+	First attempt at mapping Menubar onto a real one now they exist.
+
+Change 620 on 1998/02/28 by nick@ni-s
+
+	Use <<Copy>> & co. new method in Tk/Clipboard.pm to use them
+	code in MainWindow.pm to define them. Testing revealed Listbox Copy
+	not working as expected due to name mis-match Getselected vs getSelected
+	standardize on latter for symetry with other clipboard stuff.
+
+Change 619 on 1998/02/28 by nick@camel
+
+	update embed example's PERL5LIB hackery for Win32
+
+Change 618 on 1998/02/28 by nick@ni-s
+
+	Test case and fix-up for embeding windows 
+
+Change 617 on 1998/02/28 by nick@ni-s
+
+	Re-do alpha-channel fixup e.g. aminated GIFs
+
+Change 616 on 1998/02/28 by nick@ni-s
+
+	Sort out SvREFCNT muddle with cloned (e.g. torn-off) menus.
+	Implement bindtags replication and 'cloning' of callbacks
+	Note that only [] style callbacks get widget objects changed,
+	no attempt is made to fix-up closures.
+
+Change 615 on 1998/02/28 by nick@ni-s
+
+	Mwm tix Vtable glitch
+
+Change 614 on 1998/02/28 by nick@ni-s
+
+	Copydates again, HList demo tweak 
+
+Change 613 on 1998/02/27 by nick@ni-s
+
+	Add O'Reilly RTF template to move to NT machine
+
+Change 612 on 1998/02/27 by nick@ni-s
+
+	Contrib tweak to eventGenerate 
+
+Change 611 on 1998/02/27 by nick@pluto
+
+	Use sv_setpvfn(), remove debug in palette stuff, beginings of event?
+
+Change 610 on 1998/02/26 by nick@ni-s
+
+	Re-work mechanism for returning result(s) from Tk to perl to be essentially
+	same as it was prior to Tk8 merge. Instead of trying to mimic Tcl return
+	scheme in perl, comprehend special case of perl/Tk's 'result' object 
+	in objGlue.c. Without this re-work it was impossible to tell an empty
+	string from an empty list. e.g. $widget->children returned undef 
+	rather than () when there were no children.  
+
+Change 609 on 1998/02/26 by nick@pluto
+
+	Contrib fixes to Menu stuff + one of my own
+	Tweak winfo stuff to return list for rgb again.
+
+Change 607 on 1998/02/25 by nick@ni-s
+
+	Slaven Rezic <eserte@cs.tu-berlin.de>
+	The only event command working is "generate". Here's a patch to make
+	"add", "delete" and "info" working (it is probably suboptimal, but it
+	seems to work):
+
+Change 606 on 1998/02/25 by nick@pluto
+
+	Add other doc files 
+
+Change 605 on 1998/02/25 by nick@pluto
+
+	Achim's doc updates
+
+Change 604 on 1998/02/24 by nick@ni-s
+
+	Remove spurious extra $VERSION in Tk.pm, and bump to 800.001
+	while I am there...
+
+Change 603 on 1998/02/24 by nick@ni-s
+
+	Patches from the list
+	Slaven Rezic <eserte@cs.tu-berlin.de> - OnDestroy fix
+	by update to munging code.
+	Steve Lidie <Stephen.O.Lidie@Lehigh.EDU> - AIX memcpy stuff
+	Chris Dean <ctdean@cogit.com> - Menu.pm debug removal
+
+Change 602 on 1998/02/24 by nick@ni-s
+
+	Fix mkdist to handle Tk8 directory structure
+
+Change 601 on 1998/02/24 by nick@pluto
+
+	Remove remains of DString debug
+
+Change 600 on 1998/02/22 by nick@ni-s
+
+	Manifest, copyright date, and version update
+
 Change 599 on 1998/02/22 by nick@camel
 
 	Fix Win32 cascades - 'variable' vs 'name' issue

@@ -5,13 +5,13 @@
 .SH NAME
 configure, cget \- Change or inquire the attributes of an object.
 .SH SYNOPSIS
-\fI$var\fR = \fI$widget\fR->\fBcget\fR('\fIoption\fR')
+\fI$var\fR = \fI$widget\fR->\fBcget\fR('\fIoption\fR');
 .br
-\fI$widget\fR->\fBconfigure\fR(\fIoption\fR => \fIvalue \fR?,\fIoption\fR => \fIvalue ...\fR?\fR)'
+\fI$widget\fR->\fBconfigure\fR(\fIoption\fR => \fIvalue \fR?,\fIoption\fR => \fIvalue ...\fR?\fR);
 .br
-\fI@var\fR = \fI$widget\fR->\fBconfigure\fR('\fIoption\fR')
+\fI@var\fR = \fI$widget\fR->\fBconfigure\fR('\fIoption\fR');
 .br
-\fI@var\fR = \fI$widget\fR->\fBconfigure\fR
+\fI@var\fR = \fI$widget\fR->\fBconfigure\fR;
 .BE
 .SH DESCRIPTION
 .TP 12
@@ -19,7 +19,7 @@ configure, cget \- Change or inquire the attributes of an object.
 Returns the current value of \fIoption\fP for \fI$widget\fR.
 .LP
 .TP 12
-\fI$widget\fR->\fBconfigure\fR(\fIoption\fR => \fIvalue \fR?,\fIoption\fR => \fIvalue ...\fR?\fR)'
+\fI$widget\fR->\fBconfigure\fR(\fIoption\fR => \fIvalue \fR?,\fIoption\fR => \fIvalue ...\fR?\fR);
 Sets the values of \fIoption\fR to \fIvalue\fR for each \fIoption\fR => \fIvalue\fR 
 pair. The internal \fBnew\fR method does an implicit \fBconfigure\fR in this 
 form with options passed in at widget create time.
@@ -53,7 +53,7 @@ Each sub-list is in the form returned by \fBconfigure\fR('\fIoption\fR').
 (This mechanism is used by the \fBTk::Derived\fP class to determine
 the options available from base class.)
 .SH "SEE ALSO"
-ConfigSpecs
+configspec
 
 .SH BUGS
 \fBcget\fR('\fIoption\fR') is clumsy with the need for '' due to perl's

@@ -101,6 +101,17 @@ while ($_ = &getline)
      }
    }
 
+  if (/Tcl_DeleteCommandFromToken/)
+   {
+    if (/Tcl_DeleteCommandFromToken[^;{]*$/)
+     {
+      &complete;
+      redo PROCESS;
+     }
+    s/Tcl_DeleteCommandFromToken(.*imageCmd)/Lang_DeleteObject$1/;
+    s/Tcl_DeleteCommandFromToken(.*widgetCmd)/Lang_DeleteWidget$1/;
+   }
+
   if (/Tcl_(Create|Delete)Command/)
    {
     if (/Tcl_(Create|Delete)Command[^;{]*$/)
@@ -194,7 +205,7 @@ while ($_ = &getline)
    {
     if (/^\s\*\s*Copyright/)
      {
-      print " *\n * Modifications Copyright (c) 1994-1997 Nick Ing-Simmons\n";
+      print " *\n * Modifications Copyright (c) 1994-1998 Nick Ing-Simmons\n";
      }
       
     if (/^\s\*\s*all copies of this software./)

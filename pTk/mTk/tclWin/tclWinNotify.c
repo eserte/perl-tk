@@ -31,12 +31,20 @@ static int initialized = 0;
 /*
  * The following static structure contains the state information for the
  * Windows implementation of the Tcl notifier.
- */
+ */                 
+
+typedef struct HandleHandler {
+    Tcl_HandleProc *proc;
+    ClientData clientData;	/* Argument to pass to proc. */
+} HandleHandler;
 
 static struct {
-    HWND hwnd;			/* Messaging window. */
-    int timeout;		/* Current timeout value. */
-    int timerActive;		/* 1 if interval timer is running. */
+    HWND hwnd;					/* Messaging window. */
+    int timeout;				/* Current timeout value. */
+    int timerActive;				/* 1 if interval timer is running. */
+    DWORD hCount;				/* Count of Handles */
+    HANDLE hArray[MAXIMUM_WAIT_OBJECTS];
+    HandleHandler pArray[MAXIMUM_WAIT_OBJECTS];
 } notifier;
 
 /*
@@ -72,6 +80,7 @@ InitNotifier(void)
 
     initialized = 1;
     notifier.timerActive = 0;
+    notifier.hCount = 0;
     class.style = 0;
     class.cbClsExtra = 0;
     class.cbWndExtra = 0;
@@ -118,7 +127,8 @@ NotifierExitHandler(
 	DestroyWindow(notifier.hwnd);
 	UnregisterClass("TclNotifier", TclWinGetTclInstance());
 	notifier.hwnd = NULL;
-    }
+    }               
+    notifier.hCount = 0;
 }
 
 /*
@@ -273,8 +283,34 @@ Tcl_WaitForEvent(
     } else {
 	timeout = 0;
     }
-    UpdateTimer(timeout);
-	
+
+    /* If there are HANDLEs to wait for wait for any of them or a message of any type 
+     * If there are no handles or we get a message rather than 
+     * a handle then fall through into original code.
+     */
+    if (notifier.hCount) {
+	DWORD count = notifier.hCount;
+	DWORD which;
+	/* Turn off any timer to avoid race between timer and out use of timeout */
+	UpdateTimer(0);
+	notifier.hCount = 0;
+	which = MsgWaitForMultipleObjects(count, notifier.hArray, FALSE, timeout, QS_ALLINPUT);
+	which -= WAIT_OBJECT_0;
+        if (which >= 0 && which < count) {
+	    HandleHandler *p = &notifier.pArray[which];
+	    (*p->proc)(p->clientData,notifier.hArray[which]);
+	    return 1;
+        }
+	/* Either there is a message or something is wrong
+	 * so indicate to code below to do a poll
+         */
+	timeout = 0;
+    } else {
+	/* Set then timer to avoid hanging ... */
+	UpdateTimer(timeout);
+    }
+
+
     if (!timePtr || (timeout != 0)
 	    || PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 	if (!GetMessage(&msg, NULL, 0, 0)) {
@@ -325,4 +361,32 @@ Tcl_Sleep(ms)
     int ms;			/* Number of milliseconds to sleep. */
 {
     Sleep(ms);
-}
+}    
+
+void
+Tcl_WatchHandle(HANDLE h, Tcl_HandleProc *proc, ClientData clientData)
+{
+ int i = 0;
+ while (i < notifier.hCount)
+  {
+   if (notifier.hArray[i] == h)
+    break;                  
+   i++;
+  }
+ if (i == notifier.hCount)
+  {
+   if (notifier.hCount < MAXIMUM_WAIT_OBJECTS) 
+    {
+     notifier.hArray[i] = h;
+     notifier.hCount++;
+    }
+  }
+ if (i < notifier.hCount)
+  {
+   notifier.pArray[i].proc = proc;
+   notifier.pArray[i].clientData = clientData;
+  }
+}                    
+
+
+

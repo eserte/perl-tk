@@ -1,0 +1,93 @@
+'\"
+.so man.macros
+.TH Tk::InputOnly n 4.0 Tk "Tk Widget Classes"
+.BS
+'----------------------------------------------------------------------
+.SH NAME
+Tk::InputOnly \- Create and manipulate TIX InputOnly widgets
+.SH SYNOPSIS
+\fI$inputonly\fR = \fI$parent\fR->\fBInputOnly\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
+Only the following three standard options are supported by
+\fBInputOnly\fR:
+.LP
+.nf
+.ta 4c 8c 12c
+\fBcursor\fR	\fBwidth\fR	\fBheight\fR
+.ta 4c
+.fi
+.LP
+'
+See the \fBoptions(n)\fR manual entry for details on the standard options.
+'----------------------------------------------------------------------
+.SH "WIDGET-SPECIFIC OPTIONS"
+'
+\fBInputOnly\fR does not have any widget specific options.
+'
+.BE
+'----------------------------------------------------------------------
+.SH DESCRIPTION
+'
+.PP
+'
+The \fBInputOnly\fR method creates a new window (given by the
+$widget\fR argument) and makes it into a \fBInputOnly\fR
+widget.  Additional options, described above, may be specified on the
+command line or in the option database to configure aspects of the
+\fBInputOnly\fR such as its cursor or width.
+.PP
+\fBInputOnly\fR widgets are not visible to the user. The only
+purpose of \fBTixInputOnly\fR widgets are to accept inputs from the
+user, which can be done with the \fBbind\fR command.
+'
+'----------------------------------------------------------------------
+.SH "WIDGET METHODS"
+.PP
+'
+The \fBInputOnly\fR method creates a widget object whose name is
+the same as the path name of the \fBInputOnly\fR's window. This
+command may be used to invoke various operations on the widget. It
+has the following general form:
+'
+.TP
+\fI$inputonly\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+'
+\fIPathName\fR is the name of the command, which is the same as the
+InputOnly widget's path name. \fIOption\fR and the \fIarg\fRs determine
+the exact behavior of the command.  The following commands are
+possible for \fBInputOnly\fR widgets:
+'
+.TP
+\fI$inputonly->\fBcget\fR(\fIoption\fR)
+'
+Returns the current value of the
+configuration option given by \fIoption\fR. \fIOption\fR may have any
+of the values accepted by the \fBInputOnly\fR command.
+'
+.TP
+\fI$inputonly->\fBconfigure\fR(?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
+'
+Query or modify the configuration options of the widget.  If
+no \fIoption\fR is specified, returns a list describing all of the
+available options for $widget\fR (see \fBconfigure\fR for
+information on the format of this list).  If \fIoption\fR is specified
+with no \fIvalue\fR, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no \fIoption\fR is specified).  If
+one or more \fIoption\-value\fR pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s); in
+this case the command returns an empty string.  \fIOption\fR may have
+any of the values accepted by the \fBInputOnly\fR command.
+'
+'
+'
+'----------------------------------------------------------------------
+.SH BINDINGS
+.TP
+\fBInputOnly\fR widgets have no default bindings.
+'
+'
+'
+'----------------------------------------------------------------------
+.SH KEYWORDS
+

@@ -1,6 +1,5 @@
 ClearErrorInfo
 mainWindow
-Dump_vec
 DumpStack
 Boot_Glue
 Boot_Tix

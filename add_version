@@ -50,6 +50,8 @@ elsif ($opt{'a'})
        },'.');
  }
 
+@ARGV = grep(!m#Tk\.pm$#,@ARGV);
+
 unless (@ARGV)
  {
   warn "No files specified\n";
@@ -98,7 +100,7 @@ while (<>)
    {
     warn "Did not match:$_";
    }
-  elsif (!$seen && /^\s*(\@ISA|bootstrap|use\s(Tk))|sub/)
+  elsif (!$seen && /^\s*(\@ISA|bootstrap|use\s(Tk)|sub)/)
    {
     my $have = `p4 have $ARGV`;
     my ($dep,$ver)  = $have =~ /^(.*#(\d+))\s+-/;

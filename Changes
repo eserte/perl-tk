@@ -4,6 +4,27 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.0_01 
+
+Various fixes - many thanks to Slaven Rezic <eserte@cs.tu-berlin.de>
+in particular. 
+
+Found systematic bug in returning lists - this was setPalette bug, and tab focus
+bug.
+
+Documentaion updates from Achim Bohnet <ach@mpe.mpg.de>
+
+Implemented use of virtual events e.g. <<Copy>>
+
+Tk::Menubar now uses new menubar features.
+
+Tk::Photo now handles overlay in (e.g.) animated GIFs again.
+
+Some testing of embedding hooks - seem to work.
+
+fileevent works again on UNIX, and after a fashion on Win32.
+
+
 Changes in Tk800.000
 
 Adopt tk8.0p2 and associated tcl8.0p2 where required.

@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Frame.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Frame.pm#6$
 
 sub Menubar;
 
@@ -24,8 +24,7 @@ sub CreateArgs
 {
  my ($package,$parent,$args) = @_;
  my @result = $package->SUPER::CreateArgs($parent,$args);
- my $opt;
- foreach $opt ('-colormap','-visual')
+ foreach my $opt ('-colormap','-visual','-container')
   {
    my $val = delete $args->{$opt};
    push(@result, $opt => $val) if (defined $val);
