@@ -29,20 +29,20 @@ sub about_pop_up
 		my $pop = $TOP->Toplevel();
 		$pop->title("About");
 
-		$pop->Label(text=>"Gedi (Gregs EDItor)")->pack();
-		$pop->Label(text=>"Ver. 1.0")->pack();
-		$pop->Label(text=>"Copyright 1999")->pack();
-		$pop->Label(text=>"Greg London")->pack();
-		$pop->Label(text=>"All Rights Reserved.")->pack();
-		$pop->Label(text=>"This program is free software.")->pack();
-		$pop->Label(text=>"You can redistribute it and/or")->pack();
-		$pop->Label(text=>"modify it under the same terms")->pack();
-		$pop->Label(text=>"as Perl itself.")->pack();
-		$pop->Label(text=>"Special Thanks to")->pack();
-		$pop->Label(text=>"Nick Ing-Simmons.")->pack();
+		$pop->Label(-text=>"Gedi (Gregs EDItor)")->pack();
+		$pop->Label(-text=>"Ver. 1.0")->pack();
+		$pop->Label(-text=>"Copyright 1999")->pack();
+		$pop->Label(-text=>"Greg London")->pack();
+		$pop->Label(-text=>"All Rights Reserved.")->pack();
+		$pop->Label(-text=>"This program is free software.")->pack();
+		$pop->Label(-text=>"You can redistribute it and/or")->pack();
+		$pop->Label(-text=>"modify it under the same terms")->pack();
+		$pop->Label(-text=>"as Perl itself.")->pack();
+		$pop->Label(-text=>"Special Thanks to")->pack();
+		$pop->Label(-text=>"Nick Ing-Simmons.")->pack();
 
-		my $button_ok = $pop->Button(text=>'OK',
-			command => sub {$pop->destroy();
+		my $button_ok = $pop->Button(-text=>'OK',
+			-command => sub {$pop->destroy();
 			$about_pop_up_reference = undef;
 			} )
 			->pack();

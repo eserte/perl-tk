@@ -1203,6 +1203,10 @@ Tix_HLItemInfo(interp, wPtr, argc, argv)
     int i, m, n;
     char column[20];
 
+    /* A hack to make result a list */
+    Tcl_Obj *result = Tcl_NewListObj(0,NULL);
+    Tcl_SetObjResult(interp,result);
+
     if (argc != 2) {
 	return Tix_ArgcError(interp, argc+3, argv-3, 3, "x y");
     }

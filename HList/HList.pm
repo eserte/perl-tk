@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = '4.011'; # $Id: //depot/Tkutf8/HList/HList.pm#11 $
+$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -232,8 +232,15 @@ sub GetNearest
      my $highlightthickness = $w->cget('-highlightthickness');
      my $bottomy = ($w->infoBbox($ent))[3];
      $bottomy += $borderwidth + $highlightthickness;
-     if ($w->header('exist', 0)){ $bottomy += ($w->header('size', 0))[1]; };
-     if ($y > $bottomy){ return undef; }
+     if ($w->header('exist', 0))
+      {
+       $bottomy += $w->header('height');
+      }
+     if ($y > $bottomy)
+      {
+       print "$y > $bottomy\n";
+       return undef;
+      }
     }
    my $state = $w->entrycget($ent, '-state');
    return $ent if (!defined($state) || $state ne 'disabled');

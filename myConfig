@@ -28,7 +28,7 @@ if (defined $Config{'gccversion'})
        {
         # This is the author - catch as many bugs as possible
         $gccopt .= "  -MMD -Werror -Wno-format";
-        @macro = ( macro => { INSTALLDIRS => 'perl' });
+#       @macro = ( macro => { INSTALLDIRS => 'perl' });
        }
      }
    }

@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '4.017'; # $Id: //depot/Tkutf8/Text/Text.pm#18 $
+$VERSION = sprintf '4.%03d', q$Revision: #20 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -1000,7 +1000,7 @@ sub findandreplacepopup
  my ($w,$find_only)=@_;
 
  my $pop = $w->Toplevel;
- $pop->transient($w->MainWindow);
+ $pop->transient($w->toplevel);
  if ($find_only)
   { $pop->title("Find"); }
  else

@@ -1141,7 +1141,7 @@ if ($^O ne 'MSWin32') {
     # last selected range.  When selection ownership is restored to
     # entry, the old range will be rehighlighted.
 
-    ok($e->getSelected, '123456');
+    ok($e->getSelected, '12345');
     ok($e->index("sel.first"), 1);
 }
 

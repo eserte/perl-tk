@@ -3,7 +3,7 @@ package WidgetDemo;
 use 5.005_03;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/WidgetDemo.pm#9 $
+$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
 
 use Tk 800.000;
 use Carp;
@@ -78,10 +78,14 @@ sub Populate {
 	$dismiss->pack(qw/-side left -expand 1/);
 	$see->pack(qw/-side left -expand 1/);
 	$msg->pack;
-	$demo_frame->pack(qw/-fill both/);
+	$demo_frame->pack(qw/-fill both -expand 1 -anchor n/);
     } elsif ($gm eq 'grid') {
 	$msg->grid;
-	$demo_frame->grid;
+	$demo_frame->grid(-sticky => "news");
+	$demo_frame->gridColumnconfigure(0,-weight=>1);
+	$demo_frame->gridRowconfigure(0,-weight=>1);
+	$self->gridColumnconfigure(qw/0 -weight 1/);
+	$self->gridRowconfigure(qw/1 -weight 1/);
 	$buttons->grid(qw/-pady 2m -sticky ew/);
 	$buttons->gridColumnconfigure(qw/0 -weight 1/);
 	$buttons->gridColumnconfigure(qw/1 -weight 1/);
@@ -115,7 +119,7 @@ sub text {
 	@label_attributes = @$text[1 .. $#{$text}];
 	$text = $text->[0];
     }
-    
+
     $self->{msg}->configure(
         -text       => $text,
         @label_attributes,

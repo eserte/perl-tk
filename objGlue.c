@@ -478,6 +478,14 @@ LangString(SV *sv)
     {
      if (SvROK(sv) && SvPOK(SvRV(sv)) && !SvUTF8(SvRV(sv)))
       sv_utf8_upgrade(SvRV(sv));
+     /* FIXME: Slaven's quick fix for magical (tied) SVs with only SvPOKp */
+     else if (SvPOKp(sv) && !SvPOK(sv))
+      {
+       SvPOK_on(sv);
+       sv_utf8_upgrade(sv);
+       SvPOK_off(sv);
+       SvPOKp_on(sv);
+      }
      else if (!SvUTF8(sv))
        sv_utf8_upgrade(sv);
      return SvPV_nolen(sv);

@@ -24,11 +24,11 @@ my(@listcmd, @browsecmd);
 my $listcmd   = sub { @listcmd = @_ };
 my $browsecmd = sub { @browsecmd = @_ };
 
-my $bla;
-my $be = $mw->BrowseEntry(-listcmd => $listcmd,
+my( $bla, $be );
+eval { $be = $mw->BrowseEntry(-listcmd => $listcmd,
 			  -browsecmd => $browsecmd,
 			  -textvariable => \$bla,
-			 )->pack;
+				 )->pack; };
 ok("$@", "", "can't create BrowseEntry");
 ok(Tk::Exists($be), 1, "BrowseEntry creation failed");
 
@@ -56,10 +56,11 @@ ok($browsecmd[0]->isa('Tk::BrowseEntry'), 1,
    "wrong 1st argument in -browsecmd");
 ok($browsecmd[1], 1, "wrong 2nd argument in -browsecmd");
 
-my $be2 = $mw->BrowseEntry(-choices => [qw/a b c d e/],
+my $be2;
+eval { $be2 = $mw->BrowseEntry(-choices => [qw/a b c d e/],
 			   -textvariable => \$bla,
 			   -state => "normal",
-			  )->pack;
+				  )->pack; };
 ok("$@", "", "can't create BrowseEntry");
 ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
 

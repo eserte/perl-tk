@@ -1,7 +1,7 @@
 package Tk::Photo;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', 4+q$Revision: #2 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', 4+q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw($XS_VERSION);
 
@@ -11,7 +11,8 @@ Construct Tk::Image 'Photo';
 
 sub Tk_image { 'photo' }
 
-Tk::Methods('blank','copy','data','formats','get','put','read','redither','write');
+Tk::Methods('blank','copy','data','formats','get','put','read',
+            'redither','transparency','write');
 
 1;
 __END__

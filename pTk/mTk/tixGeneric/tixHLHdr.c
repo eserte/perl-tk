@@ -25,6 +25,7 @@ static TIX_DECLARE_SUBCMD(Tix_HLHdrCGet);
 static TIX_DECLARE_SUBCMD(Tix_HLHdrDelete);
 static TIX_DECLARE_SUBCMD(Tix_HLHdrExist);
 static TIX_DECLARE_SUBCMD(Tix_HLHdrSize);
+static TIX_DECLARE_SUBCMD(Tix_HLHdrHeight);
 
 static void		FreeWindowItem _ANSI_ARGS_((Tcl_Interp  *interp,
 			    WidgetPtr wPtr, HListHeader *hPtr));
@@ -348,6 +349,8 @@ Tix_HLHeader(clientData, interp, argc, argv)
 	   "column"},
 	{TIX_DEFAULT_LEN, "size", 1, 1, Tix_HLHdrSize,
 	   "column"},
+	{TIX_DEFAULT_LEN, "height", 0, 0, Tix_HLHdrHeight,
+	   ""},
     };
     static Tix_CmdInfo cmdInfo = {
 	Tix_ArraySize(subCmdInfo), 1, TIX_VAR_ARGS, "?option? ?arg ...?",
@@ -577,3 +580,25 @@ Tix_HLHdrSize(clientData, interp, argc, argv)
 		   Tix_DItemHeight(hPtr->iPtr));
     return TCL_OK;
 }
+
+/*----------------------------------------------------------------------
+ * "header height" sub command
+ *----------------------------------------------------------------------
+ */
+static int
+Tix_HLHdrHeight(clientData, interp, argc, argv)
+    ClientData clientData;
+    Tcl_Interp *interp;		/* Current interpreter. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
+{
+    WidgetPtr wPtr = (WidgetPtr) clientData;
+
+    if (wPtr->headerDirty) {
+	Tix_HLComputeHeaderGeometry(wPtr);
+    }
+
+    Tcl_SetObjResult(interp,Tcl_NewIntObj(wPtr->headerHeight));
+    return TCL_OK;
+}
+

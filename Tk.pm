@@ -61,7 +61,7 @@ use strict;
 use Carp;
 
 # Record author's perforce depot record
-$Tk::CHANGE      = q$Change: 2901 $;
+$Tk::CHANGE      = q$Change: 2982 $;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
@@ -346,7 +346,7 @@ sub DialogWrapper
    $w->withdraw;
    $created = 1;
   }
- my $mw = $w->MainWindow;
+ my $mw = $w->toplevel;
  my $fs = $mw->{$kind};
  unless (defined $fs)
   {
@@ -624,8 +624,11 @@ sub FocusOK
   {
    return 0 if ($value eq '0');
    return $w->viewable if ($value eq '1');
-   $value = $w->$value();
-   return $value if (defined $value);
+   if ($value)
+    {
+     $value = $w->$value();
+     return $value if (defined $value);
+    }
   }
  if (!$w->viewable)
   {

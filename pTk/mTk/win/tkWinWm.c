@@ -7331,6 +7331,48 @@ Tcl_Interp *interp;
 int objc;
 Tcl_Obj *CONST objv[];
 {
+    register WmInfo *wmPtr = winPtr->wmInfoPtr;
+	Pixmap pixmap;
+
+	if ((objc != 3) && (objc != 4)) {
+	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+		    argv[0], " iconimage window ?image?\"",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (objc == 3) {
+	    if (wmPtr->hints.flags & IconPixmapHint && wmPtr->iconImage) {
+		interp->result = Tk_NameOfBitmap(winPtr->display,
+			wmPtr->hints.icon_pixmap);
+	    }
+	    return TCL_OK;
+	}
+	/* clear any existing pixmap hints and free associated resources */
+	if (wmPtr->hints.icon_pixmap != None) {
+	    if (wmPtr->iconImage) {
+		Tk_FreePixmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	    } else {
+		Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
+	    }
+	    wmPtr->hints.icon_pixmap = None;
+	}
+	if (wmPtr->iconImage) {
+	    Tk_FreeImage(wmPtr->iconImage);
+	    wmPtr->iconImage = NULL;
+	}
+	wmPtr->hints.flags &= ~IconPixmapHint;
+	wmPtr->iconImage = Tk_GetImage(interp, tkwin, argv[3],
+                                       ImageChangedProc, (ClientData) winPtr);
+	if (wmPtr->iconImage != NULL) {
+	    int width = 0;
+	    int height = 0;
+	    Tk_SizeOfImage(wmPtr->iconImage, &width, &height);
+	    ImageChangedProc((ClientData) winPtr, 0, 0, width, height, width, height);
+	} else {
+	    UpdateIcon(winPtr);
+	    return TCL_ERROR;
+	}
+
     return TCL_OK;
 }
 

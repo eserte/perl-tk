@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tixish/DialogBox.pm#9 $
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::Toplevel);
 
@@ -62,6 +62,7 @@ sub Populate {
 	        $db->pack(-side => 'left', -expand => 1, -padx => 1, -pady => 1);
             }
 	    $cw->{'default_button'} = $b;
+	    $cw->bind('<Return>' => [ $b, 'Invoke']);
 	} else {
 	    $b->pack(-side => 'left', -expand => 1,  -padx => 1, -pady => 1);
 	}
@@ -117,6 +118,13 @@ sub Show {
     &$old_focus;
     &$old_grab;
     return $cw->{'selected_button'};
+}
+
+sub Exit
+{
+ my $cw = shift;
+ #kill the dialogbox, by faking a 'DONE'
+ $cw->{'selected_button'} = $cw->{'default_button'}->cget(-text);
 }
 
 1;

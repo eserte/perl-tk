@@ -5,7 +5,7 @@ use strict;
 use Test;
 use Tk;
 
-BEGIN { plan tests => 22 };
+BEGIN { plan tests => 23 };
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -21,6 +21,12 @@ my $hlist;
    ok($@, "", '$hlist->grid problem');
    eval { $hlist->update; };
    ok($@, "", '$hlist->update problem.');
+
+   $hlist->delete("all");
+   $hlist->add("entry with spaces");
+   my @bbox = $hlist->info('bbox', 'entry with spaces');
+   my @info = $hlist->info('item', @bbox[0, 1]);
+   ok($info[0], 'entry with spaces', 'Problems with spaces in entry path');
 }
 ##
 ## With Tk800.004:

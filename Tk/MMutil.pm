@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '4.017'; # $Id: //depot/Tkutf8/Tk/MMutil.pm#17 $
+$VERSION = sprintf '4.%03d', q$Revision: #19 $ =~ /\D(\d+)\s*$/;
 
 # warn __FILE__." $VERSION\n";
 
@@ -525,6 +525,13 @@ sub TkExtMakefile
 	  'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
 #         'dynamic_lib' => { INST_DYNAMIC_DEP => "$ptk/libpTk\$(LIB_EXT)" }
 	 );
+    }
+   # Several loadable widgets use things from -lm
+   # if platform does not have a shared -lm need to link against it
+   if ($Config{libs} =~/-lm\b/)
+    {
+     my $libs = $att{'LIBS'}->[0];
+     $att{'LIBS'}->[0] = "$libs -lm" unless $libs =~ /-lm\b/;
     }
    if ($IsWin32 && $Config{'cc'} =~ /^bcc/)
     {

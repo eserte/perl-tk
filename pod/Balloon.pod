@@ -149,6 +149,14 @@ I<Warning:> the subroutine should be extremely fast or the balloon
 response will appear slow and consume a lot of CPU time (it is executed
 every time the mouse moves over the widgets the balloon is attached to).
 
+=item B<-numscreens>
+
+This option accepts an integer 1 or greater. This option should be used
+to avoid disjointed balloons across multiple screens in single logical
+sceen (SLS) mode. This only currently works in the horizontal direction.
+Example: If you are running dual screens in SLS mode then you would set
+this value to 2. Default value is 1.
+
 =back
 
 =head1 METHODS
@@ -260,6 +268,9 @@ B<Slaven Rezic> <eserte@cs.tu-berlin.de> added support for canvas items.
 
 B<Gerhard Petrowitsch> <gerhard@petrowitsch.de> added intelligent positioning
 
+B<Jack Dunnigan> <dunniganj@cpan.org> Made positioning I<more> intelligent and
+added support for multiple monitors under single logical screen.
+
 =head1 HISTORY
 
 The code and documentation was derived from Balloon.tcl from the
@@ -267,4 +278,5 @@ Tix4.0 distribution by Ioi Lam and modified by the above mentioned
 authors. This code may be redistributed under the same terms as Perl.
 
 =cut
+
 

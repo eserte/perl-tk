@@ -8,7 +8,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /#(\d+)/;
+$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /#(\d+)/;
 
 use Tk qw(Ev);
 use Carp;
@@ -56,7 +56,14 @@ sub Populate {
     my $b = $w->$Button(-bitmap => '@' . Tk->findINC($w->{_BE_Style} eq 'MSWin32' ? 'arrowdownwin.xbm' : 'cbxarrow.xbm'));
     $w->Advertise('entry' => $e);
     $w->Advertise('arrow' => $b);
-    $b->pack(-side => 'right', -padx => 1);
+
+    # Pack the button to align vertically with the entry widget
+    my @anch;
+    my $edge = {@$lpack}->{-side};
+    push(@anch,-anchor => 's') if ($edge && $edge eq 'top');
+    push(@anch,-anchor => 'n') if ($edge && $edge eq 'bottom');
+    $b->pack(-side => 'right', -padx => 1, @anch);
+
     $e->pack(-side => 'right', -fill => 'x', -expand => 1); #XXX, -padx => 1);
 
     # popup shell for listbox with values.

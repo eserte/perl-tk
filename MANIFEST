@@ -563,7 +563,6 @@ PNG/libpng/contrib/visupng/VisualPng.ico
 PNG/libpng/contrib/visupng/VisualPng.png
 PNG/libpng/contrib/visupng/VisualPng.rc
 PNG/libpng/example.c
-PNG/libpng/example.c.diff
 PNG/libpng/INSTALL
 PNG/libpng/KNOWNBUG
 PNG/libpng/libpng.3
@@ -571,14 +570,6 @@ PNG/libpng/libpng.txt
 PNG/libpng/libpngpf.3
 PNG/libpng/LICENSE
 PNG/libpng/Makefile.maybe
-PNG/libpng/makefile.vc
-PNG/libpng/msvc/libpng.dsp
-PNG/libpng/msvc/libpng.dsw
-PNG/libpng/msvc/png.rc
-PNG/libpng/msvc/png32ms.def
-PNG/libpng/msvc/README.txt
-PNG/libpng/msvc/zlib.def
-PNG/libpng/msvc/zlib.dsp
 PNG/libpng/png.5
 PNG/libpng/png.c
 PNG/libpng/png.h
@@ -1851,6 +1842,7 @@ t/KR.t
 t/leak.t
 t/list.t
 t/listbox.t
+t/magic.t
 t/mega.t
 t/mwm.t
 t/optmenu.t

@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/FBox.pm#14 $
+$VERSION = sprintf '4.%03d', q$Revision: #16 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Tk::Toplevel);
 
@@ -295,16 +295,6 @@ sub Show {
     }
     $w->UpdateWhenIdle;
 
-    # Withdraw the window, then update all the geometry information
-    # so we know how big it wants to be, then center the window in the
-    # display and de-iconify it.
-#XXX use Tk::Wm::Popup? or Tk::PlaceWindow?
-    $w->withdraw;
-    $w->idletasks;
-    my $x = int($w->screenwidth / 2 - $w->reqwidth / 2 - $w->parent->vrootx);
-    my $y = int($w->screenheight / 2 - $w->reqheight / 2 - $w->parent->vrooty);
-    $w->geometry("+$x+$y");
-
     {
 	my $title = $w->cget(-title);
 	if (!defined $title) {
@@ -315,7 +305,24 @@ sub Show {
 	$w->title($title);
     }
 
-    $w->deiconify;
+    # Withdraw the window, then update all the geometry information
+    # so we know how big it wants to be, then center the window in the
+    # display and de-iconify it.
+    $w->withdraw;
+    $w->idletasks;
+    if (0)
+     {
+      #XXX use Tk::Wm::Popup? or Tk::PlaceWindow?
+      my $x = int($w->screenwidth / 2 - $w->reqwidth / 2 - $w->parent->vrootx);
+      my $y = int($w->screenheight / 2 - $w->reqheight / 2 - $w->parent->vrooty);
+      $w->geometry("+$x+$y");
+      $w->deiconify;
+     }
+    else
+     {
+      $w->Popup;
+     }
+
     # Set a grab and claim the focus too.
 #XXX use Tk::setFocusGrab when it's available
     my $oldFocus = $w->focusCurrent;

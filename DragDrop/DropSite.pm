@@ -3,7 +3,7 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DropSite.pm#5 $
+$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 
@@ -245,6 +245,7 @@ sub new
  $w->bindtags([$w->bindtags,$obj]);
  $w->Tk::bind($obj,'<Map>',[$obj,'DropSiteUpdate']);
  $w->Tk::bind($obj,'<Unmap>',[$obj,'DropSiteUpdate']);
+ $w->Tk::bind($obj,'<Configure>',[$obj,'DropSiteUpdate']);
  $t->Tk::bind($class,'<Configure>',[\&TopSiteUpdate,$t]);
  unless (grep($_ eq $class,$t->bindtags))
   {

@@ -1,3 +1,139 @@
+Change 2983 on 2003/11/02 by nick@llama
+
+	HList's ->header('size',0) command is unreliable as measure of height
+	of header window. Add new sub-command ->header('height') which
+	uses computed geometry based height of _all_ column headers.
+	Use that to compute nearest info.
+	Fixes snag reported by Petr Pajas <pajas@ufal.ms.mff.cuni.cz>
+
+Change 2982 on 2003/11/02 by nick@llama
+
+	Create common dialogs as child of toplevel not MainWindow
+	which avoids spurious raise of MainWindow.
+	Try using ->Popup in FBox's ->Show rather than centred.
+
+Change 2981 on 2003/11/02 by nick@llama
+
+	Add -lm if perl's Configure has found it.
+
+Change 2980 on 2003/11/02 by nick@llama
+
+	Steve's browseentry.t patch
+
+Change 2979 on 2003/11/02 by nick@llama
+
+	Enable transparency
+
+Change 2978 on 2003/11/02 by nick@llama
+
+	If site gets <Configure> event (size change etc.) need
+	to update site info.  Thanks to Scott Smedley <scottie7@tpg.com.au>
+
+Change 2977 on 2003/11/02 by nick@llama
+
+	Tweaks for Ballon and DialogBox from "Michael Krause" <VKrauseM@web.de>
+
+Change 2976 on 2003/11/02 by nick@llama
+
+	Jack's Ballon pod too
+
+Change 2975 on 2003/11/02 by nick@llama
+
+	Improved Balloon.pm from "Jack" <goodcall1@hotmail.com>
+
+Change 2974 on 2003/11/01 by nick@camel
+
+	MANIFEST stuff
+
+Change 2973 on 2003/11/01 by nick@camel
+
+	Tweak icon stuff (still not working on XP?)
+	Now entry selection range bug is fixed test needs to reflect 
+	that.
+
+Change 2972 on 2003/11/01 by nick@llama
+
+	Naive copy/paste of old iconimage code
+
+Change 2971 on 2003/11/01 by nick@llama
+
+	Slaven's patch for Gedi.pl
+
+Change 2970 on 2003/11/01 by nick@llama
+
+	Fix -foreground on widgets which use Tk::Derived but
+	inherit from a widget which has the option (e.g. ROText from Text)
+
+Change 2969 on 2003/11/01 by nick@llama
+
+	Tab focus fix - something is returning '' rather than undef now.
+
+Change 2966 on 2003/10/28 by nick@llama
+
+	Update change log
+
+Change 2965 on 2003/10/28 by nick@llama
+
+	Fix for spaces in HList entry name
+
+Change 2964 on 2003/10/28 by nick@llama
+
+	More Slaven/Steve patches
+
+Change 2963 on 2003/10/28 by nick@llama
+
+	Something almost quite unlike  Dan Rawson's <Daniel.Rawson@asml.com>
+	patch for BrowseEntry button packing which should have same effect.
+
+Change 2962 on 2003/10/28 by nick@llama
+
+	Slaven's dialog box <Return> binding (Tk800 -like)
+
+Change 2961 on 2003/10/28 by nick@llama
+
+	Slaven's hlist with spaces test.
+
+Change 2960 on 2003/10/28 by nick@llama
+
+	Slaven's tied SV test and fix
+
+Change 2959 on 2003/10/26 by nick@llama
+
+	Steve's PNG Makefile.PL patch (RANLIB with spaces).
+
+Change 2958 on 2003/10/26 by nick@llama
+
+	Try some tuning from CPANPLUS fail reports
+
+Change 2957 on 2003/10/26 by nick@llama
+
+	When we are using real Xrm calls we need extra
+	check these days that mainwindow still exists.
+
+Change 2956 on 2003/10/26 by nick@llama
+
+	LangDoCallback() as used by Entry's -validatecmd etc. was
+	not assuming UTF-8 (Thanks to Petr Pajas <pajas@ufal.ms.mff.cuni.cz>
+	once again for finding this.)
+
+Change 2954 on 2003/10/26 by nick@llama
+
+	More panic avoidance
+
+Change 2953 on 2003/10/26 by nick@llama
+
+	Avoid using unqualified 'panic'
+
+Change 2952 on 2003/10/26 by nick@llama
+
+	Add some sort-s so that 5.8.1's randomized hashes
+	don't keep changing generated .t/.m files.
+
+Change 2951 on 2003/10/20 by nick@llama
+
+	Update changes
+	Dist name Tk-804... rather than Tk804...
+
 Change 2950 on 2003/10/20 by nick@llama
 
 	Avoid poking our noses in the internals of objects.
