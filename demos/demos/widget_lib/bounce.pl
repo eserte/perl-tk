@@ -42,7 +42,7 @@ sub bounce {
           ['Open',      \&NotDone,     0],
           ['New',       \&NotDone,     0],
           ['Print',     \&NotDone,     0],
-          ['Exit',      \&NotDone,    0],
+          ['Exit',      sub{$TOP->bell},        0],
           ]);
 
     mkmb($menubar, 'Simulate', 0, 'Simulator control',

@@ -10,6 +10,10 @@
  *
  * SCCS: @(#) winMain.c 1.28 96/07/23 16:58:12
  */
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -20,25 +24,8 @@
 
 #include <stdio.h>
 
-#if 0
-#include <win32io.h>
-extern __declspec(dllimport) WIN32_IOSUBSYSTEM	win32stdio;
-#endif
 extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 
-#ifdef __GNUC__
-char *_environ[] = { NULL };
-#endif
-
-/*
- * The following declarations refer to internal Tk routines.  These
- * interfaces are available for use, but are not supported.
- */
-
-#if 0
-EXTERN void		TkConsoleCreate _ANSI_ARGS_((void));
-EXTERN int		TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
-#endif
 
 /*
  * Forward declarations for procedures defined later in this file:
@@ -61,6 +48,11 @@ EXTERN int		TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
  *----------------------------------------------------------------------
  */
 
+int
+main(int argc, char *argv[], char *env[])
+{
+}
+
 int APIENTRY
 WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     HINSTANCE hInstance;
@@ -71,6 +63,13 @@ WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     char **argv, **argvlist, *p;
     int argc, size, i;
     char buffer[MAX_PATH];
+
+    char text[1024];
+
+    lpszCmdLine = GetCommandLine();
+
+    sprintf (text,"%p '%s' %d", hInstance, lpszCmdLine, nCmdShow);
+    MessageBox (NULL, text, "Test", MB_OK);
 
     /*
      * Increase the application queue size from default value of 8.
@@ -157,4 +156,21 @@ WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     return (RunPerl(argc, argv, _environ, NULL));
 }
 
+#else /* WIN32 */
+/* Allow UNIX to build 'guiperl' if tried, by faking 
+ * a degnerate static-linked extension
+ */
+
+
+#ifdef __cplusplus
+extern "C"
 #endif
+
+XS(boot_Tk__Tkperl)
+{
+ dXSARGS;
+ ST(0) = &sv_yes;
+ XSRETURN(1);
+}
+
+#endif /* WIN32 */

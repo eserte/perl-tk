@@ -8,7 +8,7 @@ package Tk::MainWindow;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/MainWindow.pm#20$
+$VERSION = '3.022'; # $Id: //depot/Tk8/Tk/MainWindow.pm#22$
 
 use Tk::CmdLine;
 require Tk;
@@ -33,7 +33,7 @@ sub CreateArgs
   }
  my %result = $class->SUPER::CreateArgs(undef,$args);
  my $name = delete($args->{'-name'});
- unless ($^T)
+ unless (Tk::tainting)
   {
    $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});               
    $result{'-screen'} = $ENV{'DISPLAY'} unless exists $result{'-screen'};

@@ -2,19 +2,20 @@ BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
 use Tk;
-use Tk::TixGrid;
 
-BEGIN { plan tests => 6 };
+BEGIN { plan tests => 7 };
 
 my $mw = Tk::MainWindow->new;
 
 my $tixgrid;
 {
+   eval { require Tk::TixGrid; };
+   ok($@, "", 'Problem loading Tk::TixGrid');
    eval { $tixgrid = $mw->TixGrid(); };
-   ok($@ eq "");
+   ok($@, "", 'Problem creating TixGrid widget');
    ok( Tk::Exists($tixgrid) );
-   eval { $tixgrid->pack; };
-   ok($@ eq "");
+   eval { $tixgrid->grid; };
+   ok($@, "", '\$tixgrid->grid problem');
 }
 ##
 ## TixGrid->nearest gives always a 'TCL panic' if tixgrid is visible in Tk800.003

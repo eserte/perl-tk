@@ -25,7 +25,7 @@ Perl/Tk applications (which have windows associated with them) create
 one or more B<MainWindow>s which act as the containers and parents
 of the other widgets.
 
-B<Tk::MainWindow> is a special kind of L<Tk::Toplevel> widget. It is
+B<Tk::MainWindow> is a special kind of L<Toplevel|Tk::Toplevel> widget. It is
 the root of a widget tree. Therefore C<$mw-E<gt>Parent> returns
 C<undef>.
 
@@ -46,15 +46,15 @@ the user can destroy them independently.
 
 =head1 METHODS
 
-You can apply all methods that a L<Tk::Toplevel> accepts.
+You can apply all methods that a L<Toplevel|Tk::Toplevel> widget accepts.
 
-The method C<$w-E<gt>MainWindow> applied to any widget will return the
+The method I<$w>-E<gt>B<MainWindow> applied to any widget will return the
 B<MainWindow> to which the widget belongs (the  MainWindow belongs to itself).
 
 =head1 MISSING
 
 Documentation is incomplete.
-Here are I<some> of missing items that should be explained in
+Here are I<some> missing items that should be explained in
 more detail:
 
 =over 4
@@ -78,7 +78,8 @@ arguments of the C<new> method (see L<Tk::CmdLine>).
 
 =head1 SEE ALSO
 
-Tk::Toplevel, Tk::CmdLine
+L<Tk::Toplevel|Tk::Toplevel>
+L<Tk::CmdLine|Tk::CmdLine>
 
 =cut
 

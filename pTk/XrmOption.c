@@ -268,7 +268,7 @@ int priority;                     /* Overall priority level to use for
 
  XrmPutStringResource(&database, name, value);
 #ifdef XRM_DEBUG
- fprintf(stdout, __FUNCTION__ " %p %s %s %d\n", database, name, value, priority);
+ fprintf(stdout, "Xrm_AddOption %p %s %s %d\n", database, name, value, priority);
 #endif
 }
 

@@ -13,7 +13,7 @@ sub HList {
 	-geometry_manager => 'grid',
     );
 
-    my $h = $TOP->Scrolled(qw\HList -separator / -selectmode single -width 30
+    my $h = $TOP->Scrolled(qw\HList -separator / -selectmode extended -width 30
 			   -height 20 -indent 35 -scrollbars se
 			   -itemtype imagetext \
 			   )->grid(qw/-sticky nsew/);
@@ -29,6 +29,22 @@ sub HList {
     chdir $root;
     show_dir '.', $root, $h;
     chdir $olddir;
+    my $b = $TOP->Button(-text => 'Select All', -command => [\&select_all, $h]);
+    Tk::grid($b);
+}                
+
+sub select_all
+{
+ my $h = shift;
+ my @list = $h->infoChildren(@_);     
+ if (@list)
+  {
+   $h->selectionSet($list[0],$list[-1]);
+   foreach my $e (@list)
+    {
+     select_all($h,$e);
+    }
+  }
 }
 
 sub show_dir {

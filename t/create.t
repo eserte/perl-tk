@@ -1,18 +1,6 @@
-BEGIN
-  {
-    $| = 1;
-    $^W = 1;
-
-    eval { require Test; };
-    if ($@)
-      {
-	print "1..0\n";
-	print STDERR "Test.pm module not installed. ";
-	exit;
-      }
-    Test->import;
-  }
+BEGIN { $|=1; $^W=1; }
 use strict;
+use Test;
 ##
 ## Almost all widget classes:  load module, create, pack, and
 ## destory an instance.
@@ -65,7 +53,7 @@ BEGIN
 		Table
 		Tiler
 		TextUndo
-
+		MsgBox
 		Dialog
 		DialogBox
 		FileSelect
@@ -75,7 +63,7 @@ BEGIN
 
    @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32');
 
-   plan test => (8*@class+3);
+   plan test => (10*@class+3);
 
   };
 
@@ -90,6 +78,7 @@ ok(Tk::Exists($mw), 1, "MainWindow creation failed");
 my $w;
 foreach my $class (@class)
   {
+    print "Testing $class\n";
     undef($w);
 
     eval "require Tk::$class;";
@@ -124,9 +113,29 @@ foreach my $class (@class)
         eval { $mw->update; };
         ok ($@, "", "Error during 'update' for $class widget");
 
+        eval { my @dummy = $w->configure; };
+        ok ($@, "", "Error: configure list for $class");
+        eval { $mw->update; };
+        ok ($@, "", "Error: 'update' after configure for $class widget");
+
         eval { $w->destroy; };
         ok($@, "", "can't destroy $class widget");
         ok(!Tk::Exists($w), 1, "$class: widget not really destroyed");
+
+        # XXX: destroy-destroy test disabled because nobody vote for this feature
+	# Nick Ing-Simmmons wrote:
+	# The only way to make test pass, is when Tk800 would fail, to specifcally look 
+	# and see if method is 'destroy', and ignore it. Can be done but is it worth it?
+	# Note I cannot call tk's internal destroy as I have no way of relating 
+	# (now destroy has happened) the object back to interp/MainWindow that it used
+	# to be associated with, and hence cannot create the args I need to pass
+	# to the core.
+        
+        # since Tk8.0 a destroy on an already destroyed widget should
+        # not complain
+        #eval { $w->destroy; };
+        #ok($@, "", "Ooops, destroying a destroyed widget should not complain");
+
       }
     else
       { 

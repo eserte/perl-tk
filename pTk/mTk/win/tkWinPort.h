@@ -128,6 +128,7 @@ struct timezone {
     int tz_dsttime;
 };
 #else
+#undef timezone
 struct timezone;
 struct timeval;
 #endif 

@@ -808,7 +808,6 @@ TopLevelLostSlaveProc(clientData, tkwin)
 ClientData clientData;
 Tk_Window tkwin;
 {                  
-    LangDebug(__FUNCTION__ " %s\n", Tk_PathName(tkwin));
     /* Don't do anything yet */
 }
 
@@ -2769,7 +2768,11 @@ WrapperEventProc(clientData, eventPtr)
 	goto doMapEvent;
     } else if (eventPtr->type == ReparentNotify) {
 	ReparentEvent(wmPtr, &eventPtr->xreparent);
-    }
+    } else if (0 && eventPtr->type == Expose) {
+	mapEvent = *eventPtr;
+	mapEvent.xexpose.window = wmPtr->winPtr->window;
+	Tk_HandleEvent(&mapEvent);
+    } 
     return;
 
     doMapEvent:

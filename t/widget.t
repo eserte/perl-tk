@@ -28,15 +28,14 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
     ok( scalar($scale=~/^[0-9.]+$/), 1, "Scaling factor not a number: '$scale'" );
 }
 ##
-## pathname does not work in Tk800.004
-## 	the test, Widget.pod or both are wrong :-)
+## pathname did not work until Tk800.004
 ##
 {
     my $path;
     my $c = $w->PathName;
     eval { $path = $mw->pathname($w->id); };
     ok($@, "", "Problem \$mw->pathname.");
-    ok( ($path eq $c) ? 1 : 0, 1, "Got pathname '$path', not '$c'" );
+    ok( $path, $c, "Pathname and pathname don't agree" );
 }
 
 1;

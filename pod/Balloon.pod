@@ -25,6 +25,13 @@ Tk::Balloon - pop up help balloons.
 					 ],
 	      );
 
+    # Balloon attached to canvas widget items and tags:
+    $b->attach($canvas, -msg => {'item1' => 'msg1',
+				 'tag2'  => 'msg2',
+				  ...
+				},
+	      );
+
 =head1 DESCRIPTION
 
 B<Balloon> provides the framework to create and attach help
@@ -34,6 +41,10 @@ popped up. If the balloon is attached to a menu widget then it
 will expect the message arguments to be array references with
 each element in the array corresponding to a menu entry. The balloon
 message will then be shown for the active menu entry.
+
+Balloon messages may also be attached to individual canvas items and
+tags. The message arguments have to be references to hashes with the
+items and tags as keys and the corresponding messages as values.
 
 B<Balloon> accepts all of the options that the B<Frame> widget
 accepts. In addition, the following options are also recognized.
@@ -135,6 +146,7 @@ Detaches the specified widget I<widget> from the help system.
 
 B<Rajappa Iyer> rsi@earthling.net did the original coding.
 Jason A Smith <smithj4@rpi.edu> added support for menus.
+Slaven Rezic <eserte@cs.tu-berlin.de> added support for canvas items.
 
 This code and documentation is derived from Balloon.tcl from the
 Tix4.0 distribution by Ioi Lam. This code may be redistributed

@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.006';
+$Tk::VERSION     = '800.007';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -216,6 +216,7 @@ sub fileevent
 
 sub messageBox
 {
+    print "in Tk::messageBox, args=@_!\n";
  tk_messageBox(-parent => shift,@_);
 }
 
@@ -237,6 +238,7 @@ sub chooseColor
 sub DialogWrapper
 {
  my ($method,$kind,%args) = @_;
+ print "in Tk::DialogWrapper, args=@_!\n";
  my $created = 0;
  my $w = delete $args{'-parent'};
  if (defined $w)
@@ -268,6 +270,12 @@ sub ColorDialog
 {
  require Tk::ColorEditor;
  DialogWrapper('ColorDialog',@_);
+}
+
+sub MessageBox {
+    print "in Tk::MessageBox, args=@_!\n";
+    require Tk::msgBox;
+    DialogWrapper('msgBox', @_);
 }
 
 sub FDialog

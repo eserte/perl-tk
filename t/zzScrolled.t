@@ -10,7 +10,7 @@ my $mw = Tk::MainWindow->new;
 my $scrl;
 my $text;
 {
-   require Tk::Text;
+   eval { require Tk::Text; };
    ok($@, "", "Problem loading Tk::Text");
    eval { $scrl = $mw->Scrolled('Text', -scrollbars=>'sw', -setgrid=>1); };
    ok($@, "", "Problem creating Scrolled('Text')");

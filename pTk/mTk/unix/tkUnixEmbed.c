@@ -229,12 +229,16 @@ TkpMakeWindow(winPtr, parent)
 	parent = containerPtr->parentRoot;
     }
 
+#ifdef __PM__
+    return TkMakeWindow(winPtr, parent);
+#else
     return XCreateWindow(winPtr->display, parent, winPtr->changes.x,
 	    winPtr->changes.y, (unsigned) winPtr->changes.width,
 	    (unsigned) winPtr->changes.height,
 	    (unsigned) winPtr->changes.border_width, winPtr->depth,
 	    InputOutput, winPtr->visual, winPtr->dirtyAtts,
 	    &winPtr->atts);
+#endif
 }
 
 /*

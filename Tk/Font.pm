@@ -1,6 +1,11 @@
 package Tk::Font;
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Font.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Font.pm#13$
+
+{package Tk::font;
+ use overload '""' => 'as_string'; 
+ sub as_string { return ${$_[0]} }
+}
 
 require Tk::Widget;
 require Tk::Xlib;

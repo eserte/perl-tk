@@ -51,7 +51,7 @@ sub MY::post_initialize
   }
  elsif ($win_arch eq 'pm')
   {
-   @list = qw(os2 open32 xlib additions generic tixWin tixGeneric tclUnix tclGeneric );
+   @list = qw(os2 os2/unix open32 xlib additions generic tixWin tixGeneric tclUnix unix tclGeneric );
   }
  else
   {
@@ -225,13 +225,25 @@ $dep .= "config :: " . join(" \\\n\t",map($self->catfile($_,".exists"),@{$self->
 
 if ($Tk::MMutil::IsWin32)
  {
-  $dep .= '
-tk.res : mTk/win/rc/tk.rc
-	'.($Config{cc} =~ /^bcc/i   # XXX need $Config{rc}
-	   ? 'brc32 -fo $@ -r -i . -i mTk\win\rc mTk\win\rc\tk.rc'
-	   : 'rc    -fo $@ -r -i . -i mTk\win\rc mTk\win\rc\tk.rc').'
-libpTk$(LIB_EXT) : tk.res
-';
+  my $cc = $Config{'cc'};
+  my $file = 'tk.res';
+  if ($cc =~ /^gcc/i)
+   {
+    $file = 'tkres$(OBJ_EXT)';
+    $dep .= "$file : mTk/win/rc/tk.rc\n\t";
+    $dep .= 'windres -o $@ --include-dir . --include-dir mTk/win/rc mTk/win/rc/tk.rc';
+   }
+  elsif ($cc =~ /^bcc/i)
+   {
+    $dep .= "$file : mTk/win/rc/tk.rc\n\t";
+    $dep .= 'brc32 -fo $@ -r -i . -i mTk\win\rc mTk\win\rc\tk.rc';
+   }
+  else
+   {
+    $dep .= "$file : mTk/win/rc/tk.rc\n\t";
+    $dep .= 'rc -fo $@ -r -i . -i mTk\win\rc mTk\win\rc\tk.rc';
+   }
+  $dep .= "\nlibpTk\$(LIB_EXT) : $file\n";
  } 
 $dep . '
 Lang.t  Lang.m : Lang.h  Lang.exc  mkVFunc

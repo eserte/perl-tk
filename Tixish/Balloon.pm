@@ -5,7 +5,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tixish/Balloon.pm#16$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tixish/Balloon.pm#17$
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -63,6 +63,7 @@ sub Populate {
     $w->{"popped"} = 0;
     $w->{"buttonDown"} = 0;
     $w->{"menu_index"} = 'none';
+    undef $w->{"canvas_tag"};
     $w->ConfigSpecs(-installcolormap => ["PASSIVE", "installColormap", "InstallColormap", 0],
 		    -initwait => ["PASSIVE", "initWait", "InitWait", 350],
 		    -state => ["PASSIVE", "state", "State", "both"],
@@ -133,6 +134,12 @@ sub Motion {
 		} else {
 		    $deactivate = 0;
 		}
+	    } elsif ($client->name eq 'canvas' &&
+		     ref $w->{"clients"}->{$client}->{-balloonmsg} eq 'HASH') {
+		my @tags = ($client->find('withtag', 'current'),
+			    $client->gettags('current'));
+		$deactivate = ($tags[0] ne $w->{"canvas_tag"} and
+			       $w->{"popped"});
 	    }
 	    if ($deactivate or not $client->IS($w->{"client"})) {
 		$w->Deactivate;
@@ -146,6 +153,7 @@ sub Motion {
 	    $w->Deactivate if ($w->{"popped"} || $w->{"delay"});
 	    $w->{"client"} = undef;
 	    $w->{"menu_index"} = 'none';
+	    undef $w->{"canvas_tag"};
 	}
     }
 }
@@ -196,6 +204,19 @@ sub Verify {
 	    $w->{"client"} = $client;
 	    $w->{"delay"}  = $client->after($w->cget(-initwait), sub {$w->SwitchToClient($client);});
 	}
+    } elsif ($client->name eq 'canvas' &&
+	     ref $w->{"clients"}->{$client}->{-balloonmsg} eq 'HASH') {
+	my $over = $client->Containing($client->pointerxy);
+	return if not defined $over or $over->toplevel eq $w;
+	my @tags = ($client->find('withtag', 'current'),
+		    $client->gettags('current'));
+	my $deactivate;
+	$deactivate = ($tags[0] ne $w->{"canvas_tag"} and $w->{"popped"});
+	if ($deactivate or not $client->IS($w->{"client"})) {
+	    $w->Deactivate;
+	    $w->{"client"} = $client;
+	    $w->{"delay"}  = $client->after($w->cget(-initwait), sub {$w->SwitchToClient($client);});
+	}
     } else {
 	$w->Deactivate if ($w->grabCurrent);
     }
@@ -210,6 +231,7 @@ sub Deactivate {
 	$w->ClearStatus;
 	$w->{"popped"} = 0;
 	$w->{"menu_index"} = 'none';
+	undef $w->{"canvas_tag"};
     } else {
 	$w->{"client"} = undef;
     }
@@ -231,6 +253,18 @@ sub Popup {
 	croak "'".$w->{"clients"}->{$client}->{-balloonmsg}."' is not an array reference"
 	  if ref $w->{"clients"}->{$client}->{-balloonmsg} ne 'ARRAY';
 	$msg = (@{$w->{"clients"}->{$client}->{-balloonmsg}})[$i] || '';
+    } elsif ($client->name eq 'canvas' &&
+	     ref $w->{"clients"}->{$client}->{-balloonmsg} eq 'HASH') {
+	my @tags = ($client->find('withtag', 'current'),
+		    $client->gettags('current'));
+	$w->{"canvas_tag"} = $tags[0];
+	$msg = '';
+	foreach (@tags) {
+	    if (exists $w->{"clients"}->{$client}->{-balloonmsg}->{$_}) {
+		$msg = $w->{"clients"}->{$client}->{-balloonmsg}->{$_};
+		last;
+	    }
+	}
     } else {
 	$msg = $w->{"clients"}->{$client}->{-balloonmsg};
     }
@@ -276,6 +310,18 @@ sub SetStatus {
 	    croak "'".$w->{"clients"}->{$client}->{-statusmsg}."' is not an array reference"
 	      if ref $w->{"clients"}->{$client}->{-statusmsg} ne 'ARRAY';
 	    $msg = (@{$w->{"clients"}->{$client}->{-statusmsg}})[$i] || '';
+	} elsif ($client->name eq 'canvas' &&
+		 ref $w->{"clients"}->{$client}->{-statusmsg} eq 'HASH') {
+	    my @tags = ($client->find('withtag', 'current'),
+			$client->gettags('current'));
+	    $w->{"canvas_tag"} = $tags[0];
+	    $msg = '';
+	    foreach (@tags) {
+		if (exists $w->{"clients"}->{$client}->{-statusmsg}->{$_}) {
+		    $msg = $w->{"clients"}->{$client}->{-statusmsg}->{$_};
+		    last;
+		}
+	    }
 	} else {
 	    $msg = $w->{"clients"}->{$client}->{-statusmsg} || '';
 	}
@@ -310,6 +356,3 @@ sub destroy {
 
 1;
 
-__END__
-
-=cut

@@ -2,8 +2,9 @@ BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
 use Tk;
+use Tk::Font;
 
-BEGIN { plan tests => 8 };
+BEGIN { plan tests => 9, todo => [9] };
 
 my $mw = Tk::MainWindow->new;
 
@@ -59,6 +60,13 @@ my $mw = Tk::MainWindow->new;
   ok(
 	($num > 2), 1,
 	"Opps fontMeasure claims string 'Hi' is only $num pixels wide."
+    );
+  my $l = $mw->Label(-font => $fontname);
+  my $name;
+  eval { $name = $l->cget('-font') };
+  ok(
+        "$name", $fontname,
+        "cget(-font) returns wrong value."
     );
 }
 

@@ -1032,5 +1032,9 @@ TkWinResendEvent(wndproc, hwnd, eventPtr)
 unsigned long
 TkpGetMS()
 {
+#ifdef __GNUC__
+    return GetTickCount();
+#else
     return GetCurrentTime();
+#endif
 }

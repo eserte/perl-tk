@@ -1167,7 +1167,7 @@ Tk_DestroyWindow(tkwin)
 	TkWmRemoveFromColormapWindows(winPtr);
     }
     if (winPtr->window != None) {
-#if defined(MAC_TCL) || defined(__WIN32__)
+#if defined(MAC_TCL) || defined(__WIN32__) || defined(__PM__)
 	XDestroyWindow(winPtr->display, winPtr->window);
 #else
 	if ((winPtr->flags & TK_TOP_LEVEL)

@@ -1,3 +1,115 @@
+Change 953 on 1998/06/26 by nick@ni-s
+
+	Ilya's OS2 patch
+
+Change 952 on 1998/06/26 by nick@ni-s
+
+	Re-instate ability to have generic event handler, used
+	one to try and find iconwin-does-not-redraw problem. (Failed).
+
+Change 951 on 1998/06/26 by nick@ni-s
+
+	Test case for selection range in HList, fix the bug.
+
+Change 949 on 1998/06/26 by nick@ni-s
+
+	Update MANIFEST
+
+Change 948 on 1998/06/26 by nick@ni-s
+
+	Integrate Achim's tkpoddiff
+
+Change 946 on 1998/06/26 by nick@camel
+
+	More attempts at guiperl.exe
+
+Change 945 on 1998/06/26 by nick@ni-s
+
+	Slaven Rezic's Tixish/Balloon.pm for Canvas patch
+
+Change 944 on 1998/06/26 by nick@ni-s
+
+	Achim's test updates 
+
+Change 943 on 1998/06/25 by nick@camel
+
+	Cleanup Win32 guiperl stuff - still some issues...
+
+Change 942 on 1998/06/25 by nick@ni-s
+
+	Add ability to exclude subdirs for UNIX too. (e.g. Tkperl)
+
+Change 941 on 1998/06/25 by nick@ni-s
+
+	Tkperl dir tweaks
+
+Change 940 on 1998/06/25 by nick@ni-s
+
+	Build guiperl
+
+Change 939 on 1998/06/25 by nick@ni-s
+
+	Build tkperl.exe in a subdir
+
+Change 938 on 1998/06/24 by nick@pluto
+
+	Update manifest for snag with symbolic link build.
+
+Change 935 on 1998/06/22 by nick@ni-s
+
+	Version updates
+
+Change 934 on 1998/06/22 by nick@camel
+
+	Mingw32 fixes
+	 - vtbl_uvar fails to "import"
+	 - use windres to include resources.
+
+Change 932 on 1998/06/20 by nick@camel
+
+	Minw32 builds all Tk, passes Require.t but won't run
+	basic_demo yet...
+
+Change 931 on 1998/06/20 by nick@camel
+
+	Mingw32 (egcs-1.0.2) builds and runs 'tiny'
+
+Change 930 on 1998/06/20 by nick@ni-s
+
+	Remove uses of __FUNCTION__, try harder on workround if I forget again...
+
+Change 929 on 1998/06/20 by nick@camel
+
+	Mingw32 links but Tk.dll fails to load
+
+Change 928 on 1998/06/19 by nick@ni-s
+
+	Add ptksh, and a Win32 tweak
+
+Change 926 on 1998/06/18 by nick@camel
+
+	Bump version Mingw32 tweaks
+
+Change 925 on 1998/06/18 by nick@pluto
+
+	MsgBox tweaks
+
+Change 924 on 1998/06/16 by nick@ni-s
+
+	Tweaks as suggested by  Slaven Rezic 
+
+Change 923 on 1998/06/16 by nick@ni-s
+
+	$^T has nothing to do with -T (tainting), alternate solution.
+
+Change 922 on 1998/06/15 by nick@ni-s
+
+	Steve's demos and msgBox aka MsgBox
+
+Change 921 on 1998/06/14 by nick@ni-s
+
+	Tidy for release
+
 Change 920 on 1998/06/14 by nick@camel
 
 	More Mingw32 tweaks

@@ -1,4 +1,5 @@
-#form, a very basic window managed by the Tix ->form geoemetry manager
+# form, window management by Tix->form.
+
 use Tk;
 
 my $Main = MainWindow->new();

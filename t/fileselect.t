@@ -1,19 +1,7 @@
 # -*- perl -*-
-BEGIN
-  {
-    $^W = 1;
-    $| = 1;
-
-    eval { require Test; };
-    if ($@)
-      {
-        print "1..0\n";
-        print STDERR "Test.pm module not installed. Grab it from CPAN. ";
-        exit;
-      }
-    Test->import;
-  }
+BEGIN { $|=1; $^W=1; }
 use strict;
+use Test;
 
 BEGIN { plan test => 5 };
 
