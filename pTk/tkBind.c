@@ -1667,7 +1667,6 @@ GetKeySym(dispPtr, eventPtr)
     register XEvent *eventPtr;		/* Description of X event. */
 {
     KeySym sym;
-#if 0
     int index;
 
     /*
@@ -1722,11 +1721,6 @@ GetKeySym(dispPtr, eventPtr)
 	sym = XKeycodeToKeysym(dispPtr->display, eventPtr->xkey.keycode,
 		    index & ~1);
     }
-#else
-    char buf[8];
-    int count;
-    count = XLookupString(&eventPtr->xkey,buf,sizeof(buf),&sym,(XComposeStatus *)NULL);
-#endif
     return sym;
 }
 
@@ -2461,7 +2455,7 @@ InitKeymapInfo(dispPtr)
 	    continue;
 	}
 	keysym = XKeycodeToKeysym(dispPtr->display, *codePtr, 0);
-	if (keysym == XK_Mode_switch) {
+	if ((keysym == XK_Mode_switch) || (keysym == XK_Num_Lock)) {
 	    dispPtr->modeModMask |= ShiftMask << (i/modMapPtr->max_keypermod);
 	}
 	if ((keysym == XK_Meta_L) || (keysym == XK_Meta_R)) {

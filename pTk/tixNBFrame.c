@@ -85,6 +85,8 @@ typedef struct NoteBookFrameStruct {
     unsigned int redrawing : 1;
     unsigned int gotFocus : 1;
 
+    LangCallback *command;
+
 } NoteBookFrame;
 
 typedef struct _Tab {
@@ -109,6 +111,9 @@ typedef struct _Tab {
     char * imageString;
 
     Pixmap bitmap;
+
+    Arg data;			/* user data field */
+
 } Tab;
 
 typedef NoteBookFrame   WidgetRecord;
@@ -146,6 +151,9 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
        DEF_NOTEBOOKFRAME_BORDER_WIDTH, Tk_Offset(WidgetRecord, borderWidth),
        0},
+
+    {TK_CONFIG_CALLBACK, "-command", "command", "Command",
+       "", Tk_Offset(WidgetRecord, command), TK_CONFIG_NULL_OK},
 
     {TK_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
        DEF_NOTEBOOKFRAME_CURSOR, Tk_Offset(WidgetRecord, cursor),
@@ -233,6 +241,9 @@ static Tk_ConfigSpec tabConfigSpecs[] = {
 
     {TK_CONFIG_BITMAP, "-bitmap",          NULL,          NULL,
        DEF_NBF_TAB_BITMAP, Tk_Offset(Tab, bitmap), TK_CONFIG_NULL_OK},
+
+    {TK_CONFIG_LANGARG, "-data",          NULL,          NULL,
+       "", Tk_Offset(Tab, data), TK_CONFIG_NULL_OK},
 
     {TK_CONFIG_STRING, "-image",          NULL,          NULL,
        DEF_NBF_TAB_IMAGE, Tk_Offset(Tab, imageString),
@@ -1134,8 +1145,10 @@ static void DeleteTab(tPtr)
 	Tk_FreeImage(tPtr->image);
     }
 
-    Tk_FreeOptions(tabConfigSpecs, (char *)tPtr, 
-	Tk_Display(tPtr->wPtr->tkwin), 0);
+    if (tPtr->wPtr->tkwin) {
+	Tk_FreeOptions(tabConfigSpecs, (char *)tPtr, 
+	    Tk_Display(tPtr->wPtr->tkwin), 0);
+    }
     ckfree((char*)tPtr);
 }
 

@@ -109,7 +109,7 @@ sub menus {
     my $rm = $c->cget(-menu); 
     my $rc = $rm->Menu;
     $c->entryconfigure($menu_rb, -menu => $rc);
-    my($label);
+
     foreach $label (qw(10 14 18 24 32)) {
 	$rc->radiobutton(
             -label    => "$label point",

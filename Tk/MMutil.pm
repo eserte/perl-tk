@@ -1,8 +1,11 @@
+# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
 package Tk::MMutil;
 use ExtUtils::MakeMaker;
 use Cwd;
 use Tk::Config;
-@MYEXPORT = qw(perldepend const_config constants c_o xs_o makefile);
+@MYEXPORT = qw(perldepend const_config constants c_o xs_o makefile manifypods);
 
 sub relpath
 {
@@ -60,7 +63,17 @@ sub perldepend
  my @files;
  foreach $name ($self->lsdir("."))
   {
-   $str .= `cat $name` if ($name =~ /\.d$/);
+   if ($name =~ /\.d$/)
+    {
+     local $_;
+     open(DEP,"<$name") || die "Cannot open $name:$!";
+     while (<DEP>)
+      {
+       s/^([^:]*)\.o\s*:/$1\$(OBJ_EXT):/;
+       $str .= $_;
+      }
+     close(DEP);
+    }
   }
  return $str;
 }
@@ -99,6 +112,14 @@ sub xs_o
  $_;
 }
 
+sub manifypods
+{
+ my $self = shift;
+ local $_ = $self->MM::manifypods;
+ s/(POD2MAN_EXE.*pod2man)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
+ $_;
+}
+
 sub findINC
 {
  my $file = shift;
@@ -110,6 +131,7 @@ sub findINC
   }
  die "Cannot find $file in \@INC\n";
 }
+
 
 sub makefile
 {

@@ -1,8 +1,0 @@
-#!/usr/local/bin/perl -w
-
-print join(',',-text => 0),"\n";
-
-use integer;
-
-print join(',',-text => 0),"\n";
-

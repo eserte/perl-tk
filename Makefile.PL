@@ -2,7 +2,7 @@ use Cwd;
 no  lib '.';
 BEGIN 
  {
-  $VERSION = 'b12';
+  $VERSION = '400.200';
   require "./myConfig";
   use lib ($Tk::MMutil::dir=getcwd);
  }
@@ -39,6 +39,14 @@ test_static :: all $(MAP_TARGET)
 ';
 }
 
+sub MY::top_targets
+{
+ my ($self) = @_;
+ my $str = $self->MM::top_targets;
+ $str =~ s/\bmanifypods\b/html/g;
+ return $str;
+}
+
 sub MY::post_initialize
 {
  my ($self) = @_;
@@ -64,6 +72,10 @@ sub MY::post_initialize
 
 sub MY::postamble {
     '
+
+html : subdirs manifypods
+	@cd doc && $(MAKE) html $(PASTHRU)
+
 config       :: tkGlue.t
 
 $(BASEEXT)$(OBJ_EXT) : tkGlue.h

@@ -1,3 +1,6 @@
+# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
 package Tk::Frame;
 require Tk::Widget;
 require Tk::Derived;
@@ -259,20 +262,21 @@ sub packscrollbars
  my $xsb    = $cw->Subwidget('xscrollbar');
  my $corner = $cw->Subwidget('corner');
  my $w      = $cw->Subwidget('scrolled');
- my $req    = $opt =~ /r/;
  my $xside  = (($opt =~ /n/) ? 'top' : 'bottom');
  my $havex  = 0;
  my $havey  = 0;
+ $opt =~ s/r//;
  $cw->{'pack_pending'} = 0;
  if (defined $slice)
   {
+   my $reqy;
    my $ysb    = $cw->Subwidget('yscrollbar');
-   if ($opt =~ /[we]/ && ($req || $ysb->Needed))
+   if ($opt =~ /(o)?[we]/ && (($reqy = !defined($1)) || $ysb->Needed))
     {
      my $yside = (($opt =~ /w/) ? 'left' : 'right');  
      $slice->pack(-side => $yside, -fill => 'y',-before => $slice->{'before'});
      $havey = 1;
-     if ($req)
+     if ($reqy)
       {
        $w->configure(-yscrollcommand => ['set', $ysb]);
       }
@@ -290,11 +294,12 @@ sub packscrollbars
   }
  if (defined $xsb)
   {
-   if ($opt =~ /[ns]/ && ($req || $xsb->Needed))
+   my $reqx;
+   if ($opt =~ /(o)?[ns]/ && (($reqx = !defined($1)) || $xsb->Needed))
     {
      $xsb->pack(-side => $xside, -fill => 'x',-before => $xsb->{'before'});
      $havex = 1;
-     if ($req)
+     if ($reqx)
       {
        $w->configure(-xscrollcommand => ['set', $xsb]);
       }
@@ -315,7 +320,7 @@ sub packscrollbars
    if ($havex && $havey && defined $corner->{'before'})
     {
      my $anchor = $opt;
-     $anchor =~ s/r//;
+     $anchor =~ s/o//g;
      $corner->pack(-before => $corner->{'before'}, -side => $xside, -anchor => $anchor,  -pady => 2, -fill => 'x');
     }
    else

@@ -66,7 +66,7 @@ typedef struct TkDisplay {
 				 * corresponding to the "Meta" key.  If no
 				 * such modifier, then this is zero. */
     unsigned int altModMask;	/* Has one bit set to indicate the modifier
-				 * corresponding to the "Meta" key.  If no
+				 * corresponding to the "Alt" key.  If no
 				 * such modifier, then this is zero. */
     enum {LU_IGNORE, LU_CAPS, LU_SHIFT} lockUsage;
 				/* Indicates how to interpret lock modifier. */

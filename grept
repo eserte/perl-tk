@@ -16,7 +16,7 @@ sub match
 sub wanted
 {
  $File::Find::prune = 0;
- if (-T $_)
+ if (-T $_ && !/%$/)
   {
    local $file   = ($_);
    local ($_);

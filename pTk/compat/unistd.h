@@ -20,7 +20,7 @@
 
 #include <sys/types.h>
 #ifndef _TCL
-#   include "Lang.h"
+#   include "../Lang.h"
 #endif
 
 #ifndef NULL
@@ -29,6 +29,18 @@
 
 #ifndef LSEEK_TYPE
 #define LSEEK_TYPE long
+#endif
+
+#ifndef SEEK_SET
+#define SEEK_SET 0
+#endif
+
+#ifndef SEEK_CUR
+#define SEEK_CUR 1
+#endif
+
+#ifndef SEEK_END
+#define SEEK_END 2
 #endif
 
 /* 

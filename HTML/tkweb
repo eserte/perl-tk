@@ -1,5 +1,24 @@
 #!/usr/local/bin/perl -w
 
+=head1 NAME
+
+tkweb - rough and ready web browser
+
+=head1 SYNOPSIS 
+
+tkweb <url to view>
+
+=head1 DESCRIPTION
+
+Uses a derivative of Tk::Text and  libwww package to 
+produce a web browser.
+
+=head1 BUGS
+
+Lots...
+
+=cut  
+
 use Tk;
 require Tk::Web;
 # require Tk::ErrorDialog;

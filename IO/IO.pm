@@ -183,10 +183,16 @@ __END__
 Tk::IO - high level interface to Tk's 'fileevent' mechanism
 
 =head1 SYNOPSIS
+
   my $fh = Tk::IO->new(-linecommand => callback, -childcommand => callback);
   $fh->exec("command")
   $fh->wait
   $fh->kill
+
+=head1 WARNING
+
+INTERFACES TO THIS MODULE MAY CHANGE AS PERL'S IO EVOLVES
+AND WITH PORT OF TK4.1
 
 =head1 DESCRIPTION
 

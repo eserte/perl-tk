@@ -50,8 +50,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(sequent) || defined(__sgi)
 /* stdio.h doesn't declare popen on a Sequent DYNIX OS */
-#ifdef sequent
+/* on SGI default perl build puts it in POSIX mode which
+ * avoids declaring popen()
+ */
 extern FILE *popen();
 #endif
 

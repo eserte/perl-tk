@@ -29,7 +29,7 @@ my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                                      },
                        Name => 'fs', -filter => '*');
 
-my $t = $top->Scrolled(TextUndo, -wrap => 'none');
+my $t = $top->Scrolled(TextUndo, -wrap => 'none', -scrollbars => 'osre');
 
 my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
 $dd->configure(-startcommand => 
