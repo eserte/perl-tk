@@ -10,7 +10,7 @@
 
 =head1 NAME
 
-form - Geometry manager based on attachment rules
+Tk::form - Geometry manager based on attachment rules
 
 =for category  Tk Geometry Management
 

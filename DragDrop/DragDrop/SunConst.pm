@@ -2,9 +2,9 @@ package Tk::DragDrop::SunConst;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#12$
 
-@ISA = qw(Exporter);
+use base  qw(Exporter);
 
 @EXPORT = qw(_enter _leave _motion 
              ENTERLEAVE MOTION DEFAULT_SITE

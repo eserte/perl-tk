@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-place - Geometry manager for fixed or rubber-sheet placement
+Tk::place - Geometry manager for fixed or rubber-sheet placement
 
 =for category  Tk Geometry Management
 

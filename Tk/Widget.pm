@@ -3,14 +3,13 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.035'; # $Id: //depot/Tk8/Tk/Widget.pm#35$
+$VERSION = '3.036'; # $Id: //depot/Tk8/Tk/Widget.pm#36$
 
 require Tk;
 use AutoLoader;
 use strict;
 use Carp;
-
-@Tk::Widget::ISA = qw(DynaLoader Tk);
+use base qw(DynaLoader Tk);
 
 # stubs for 'autoloaded' widget classes
 

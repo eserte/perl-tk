@@ -624,7 +624,7 @@ I<tagOrId> instead of modifying options for the overall
 canvas widget.
 If no I<option> is specified, returns a list describing all of
 the available options for the first item given by I<tagOrId>
-(see L<Tk::configure> for
+(see L<Tk::options> for
 information on the format of this list).  If I<option> is specified
 with no I<value>, then the method returns a list describing the
 one named option (this list will be identical to the corresponding

@@ -11,7 +11,7 @@
 
 =head1 NAME
 
-photo - Full-color images
+Tk::Photo - Full-color images
 
 =for category Tk Image Classes
 

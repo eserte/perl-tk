@@ -3,9 +3,9 @@ package Tk::English;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/English.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/English.pm#7$
 
-@ISA = (Exporter);
+use base  (Exporter);
 
 # This file is generated automatically by pTk/makeenglish from Tk distribution.
 

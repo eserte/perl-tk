@@ -6,12 +6,12 @@ package Tk::Tree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/Tree.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/Tree.pm#12$
 
 use Tk;
 use Tk::Derived;
 use Tk::HList;
-@ISA = qw(Tk::Derived Tk::HList);
+use base  qw(Tk::Derived Tk::HList);
 use strict;
 
 Construct Tk::Widget 'Tree';

@@ -6,7 +6,7 @@
 
 =head1 NAME
 
-grid - Geometry manager that arranges widgets in a grid
+Tk::grid - Geometry manager that arranges widgets in a grid
 
 =for category Tk Geometry Management
 
@@ -120,7 +120,7 @@ commas, but they are ignored.  Each letter refers to a side (north, south,
 east, or west) that the slave will "stick" to.  If both B<n> and B<s> (or
 B<e> and B<w>) are specified, the slave will be stretched to fill the entire
 height (or width) of its cavity.  The B<sticky> option subsumes the
-combination of B<-anchor> and B<-fill> that is used by L<pack|Tk::Pack>.
+combination of B<-anchor> and B<-fill> that is used by L<pack|Tk::pack>.
 The default is B<''>, which causes the slave to be centered in its cavity,
 at its requested size.
 

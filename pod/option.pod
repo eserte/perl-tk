@@ -7,19 +7,19 @@
 
 =head1 NAME
 
-option - Add/retrieve window options to/from the option database
+Tk::option - Add/retrieve window options to/from the option database
 
 =for category Creating and Configuring Widgets
 
 =head1 SYNOPSIS
 
-I<$widget>-E<gt>B<optionAdd>(I<pattern>=E<gt>I<value >?,I<priority>?)
+S<    >I<$widget>-E<gt>B<optionAdd>(I<pattern>=E<gt>I<value >?,I<priority>?)
 
-I<$widget>-E<gt>B<optionClear>
+S<    >I<$widget>-E<gt>B<optionClear>
 
-I<$widget>-E<gt>B<optionGet>(I<name,class>)
+S<    >I<$widget>-E<gt>B<optionGet>(I<name,class>)
 
-I<$widget>-E<gt>B<optionReadfile>(I<fileName>?,I<priority>?)
+S<    >I<$widget>-E<gt>B<optionReadfile>(I<fileName>?,I<priority>?)
 
 =head1 DESCRIPTION
 
@@ -105,6 +105,13 @@ The priority scheme used by core Tk is not the same as used by normal Xlib
 routines. In particular is assumes that the order of the entries is defined,
 but user commands like B<xrdb -merge> can change the order.
 
+=head1 SEE ALSO
+
+L<Tk::Xrm|Tk::Xrm>
+
 =head1 KEYWORDS
 
 database, option, priority, retrieve
+
+=cut
+

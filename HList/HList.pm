@@ -1,11 +1,11 @@
 package Tk::HList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/HList/HList.pm#12$
+$VERSION = '3.013'; # $Id: //depot/Tk8/HList/HList.pm#13$
 
 use Tk qw(Ev);
 
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'HList';
 sub Tk::Widget::ScrlHList { shift->Scrolled('HList'=>@_) }

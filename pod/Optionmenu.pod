@@ -43,7 +43,7 @@ at L<Tk::BrowseEntry>.
 
 =item -command
 
-Defines the L<callback> that is invokes when a new option
+Defines the L<callback|Tk::callbacks> that is invokes when a new option
 is selected.
 
 =item -variable
@@ -84,7 +84,7 @@ Adds OPTION_LIST to the already available options.
 
 =head1 SEE ALSO
 
-L<Menubutton>, L<BrowseEntry>
+L<Tk::Menubutton>, L<Tk::BrowseEntry>
 
 =cut
 

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-callbacks - Specifying code for Tk to call.
+Tk::callbacks - Specifying code for Tk to call.
 
 =for category Binding Events and Callbacks
 

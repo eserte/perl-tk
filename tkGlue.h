@@ -12,7 +12,15 @@
 
 #ifndef dTHR
 #define dTHR int maybeTHR
-#endif
+#endif          
+
+typedef struct EventAndKeySym
+ {XEvent event;
+  KeySym keySym;
+  Tcl_Interp  *interp;
+  Tk_Window   tkwin;
+  SV    *window;
+ } EventAndKeySym;
 
 typedef struct Lang_CmdInfo 
  {Tcl_CmdInfo Tk;
@@ -69,6 +77,8 @@ extern void EnterWidgetMethods _ANSI_ARGS_((char *package, ...));
 extern SV *MakeReference _ANSI_ARGS_((SV * sv));
 extern void Lang_TkCommand _ANSI_ARGS_ ((char *name, Tcl_CmdProc *proc));
 extern Tk_Window TkToMainWindow _ANSI_ARGS_((Tk_Window tkwin));
+extern SV *XEvent_Info _((EventAndKeySym *obj,char *s));
+extern EventAndKeySym *SVtoEventAndKeySym _((SV *arg));
 
 extern XS(XStoWidget);
 

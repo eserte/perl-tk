@@ -7,7 +7,7 @@ print <<'EOH';
 package Tk::English;
 
 require Exporter;
-@ISA = (Exporter);
+use base  (Exporter);
 
 # This file is generated automatically by pTk/makeenglish from Tk distribution.
 

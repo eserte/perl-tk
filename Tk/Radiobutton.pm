@@ -7,7 +7,7 @@
 package Tk::Radiobutton; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#7$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#8$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -16,7 +16,7 @@ $VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#7$
 require Tk::Button;
 
 
-@ISA = qw(Tk::Button);
+use base  qw(Tk::Button);
 Construct Tk::Widget 'Radiobutton';
 
 sub Tk_cmd { \&Tk::radiobutton }

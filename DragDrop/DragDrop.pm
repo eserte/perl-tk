@@ -4,9 +4,9 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.016'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#16$
+$VERSION = '3.017'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#17$
 
-@ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
+use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 
 # This is a little tricky, ISA says 'Toplevel' but we 
 # define a Tk_cmd to actually build a 'Label', then 

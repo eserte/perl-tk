@@ -4,6 +4,14 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.008
+	Fixed up some L<> problems in the pods, merged Achim's pod edits.
+	Fixed up some Copy/Paste issues.
+	Fixed some Tk::IO and fileevent problems  
+	Prepared for compiler by 'use base' rather than @ISA assign.
+	Ev('s') and $event->s now have a string form usable in bind.
+	Various build fixes.
+
 Changes in Tk800.007
 	Mingw32 build-ability (Still needs a little more work)
 

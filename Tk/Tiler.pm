@@ -7,9 +7,9 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Tiler.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Tiler.pm#7$
 
-@ISA = qw(Tk::Frame);
+use base  qw(Tk::Frame);
 
 Construct Tk::Widget 'Tiler';
 sub Tk::Widget::ScrlTiler { shift->Scrolled('Tiler' => @_) }

@@ -5,16 +5,15 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#12$
 
 use Tk;
 require Tk::Frame;
 
 use strict;
+use base qw(Tk::Frame);
+Construct Tk::Widget 'LabFrame';
 
-Tk::Widget->Construct("LabFrame");
-
-@Tk::LabFrame::ISA = qw(Tk::Frame);
 
 sub Populate {
     my ($cw, $args) = @_;

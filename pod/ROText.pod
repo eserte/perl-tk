@@ -1,7 +1,7 @@
 
 =head1 NAME
 
-Tk::ROText - 'readonly' perl/tk Text widget
+Tk::ROText - 'readonly' perl/Tk Text widget
 
 =for pm Tk/ROText.pm
 
@@ -15,8 +15,9 @@ Tk::ROText - 'readonly' perl/tk Text widget
 
 =head1 DESCRIPTION
 
-This IS-A text widget with all bindings removed that would alter the contents
-of the text widget.
+This "I<IS A>" text widget with all bindings removed that would alter 
+the contents of the text widget. The contents can still be modified
+via method calls. 
 
 =head1 KEYS
 
@@ -24,7 +25,7 @@ widget, text, readonly
 
 =head1 SEE ALSO
 
-Tk::Text(3)
+L<Tk::Text>
 
 =cut
 

@@ -3,9 +3,9 @@ require Tk;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/NBFrame/NBFrame.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/NBFrame/NBFrame.pm#5$
 
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'NBFrame';
 

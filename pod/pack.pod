@@ -7,15 +7,15 @@
 
 =head1 NAME
 
-pack - Geometry manager that packs around edges of cavity
+Tk::pack - Geometry manager that packs around edges of cavity
 
 =for category  Tk Geometry Management
 
 =head1 SYNOPSIS
 
-S<    >I<$widget>->B<pack>?(I<args>)?
+S<    >I<$widget>-E<gt>B<pack>?(I<args>)?
 
-S<    >I<$widget>->B<pack>I<Option>?(I<args>)?
+S<    >I<$widget>-E<gt>B<pack>I<Option>?(I<args>)?
 
 =head1 DESCRIPTION
 
@@ -34,7 +34,7 @@ on I<Option>:
 
 =over 4
 
-=item I<$slave>->B<pack>?(I<options>)?
+=item I<$slave>-E<gt>B<pack>?(I<options>)?
 
 The options consist of pairs of arguments that specify how
 to manage the slave.
@@ -44,26 +44,26 @@ The following options are supported:
 
 =over 8
 
-=item B<-after> => I<$other>
+=item B<-after> =E<gt> I<$other>
 
 I<$other> must be another window.
 Use its master as the master for the slave, and insert
 the slave just after I<$other> in the packing order.
 
-=item B<-anchor> => I<anchor>
+=item B<-anchor> =E<gt> I<anchor>
 
 I<Anchor> must be a valid anchor position such as B<n>
 or B<sw>; it specifies where to position each slave in its
 parcel.
 Defaults to B<center>.
 
-=item B<-before> => I<$other>
+=item B<-before> =E<gt> I<$other>
 
 I<$other> must be another window.
 Use its master as the master for the slave, and insert
 the slave just before I<$other> in the packing order.
 
-=item B<-expand> => I<boolean>
+=item B<-expand> =E<gt> I<boolean>
 
 Specifies whether the slave should be expanded to consume
 extra space in their master.
@@ -71,7 +71,7 @@ I<Boolean> may have any proper boolean value, such as B<1>
 or B<no>.
 Defaults to 0.
 
-=item B<-fill> => I<style>
+=item B<-fill> =E<gt> I<style>
 
 If a slave's parcel is larger than its requested dimensions, this
 option may be used to stretch the slave.
@@ -100,37 +100,37 @@ Stretch the slave both horizontally and vertically.
 
 =back
 
-=item B<-in> => I<$master>
+=item B<-in> =E<gt> I<$master>
 
 Insert the slave(s) at the end of the packing order for the master
 window given by I<$master>.
 
-=item B<-ipadx> => I<amount>
+=item B<-ipadx> =E<gt> I<amount>
 
 I<Amount> specifies how much horizontal internal padding to
 leave on each side of the slave(s).
 I<Amount> must be a valid screen distance, such as B<2> or B<.5c>.
 It defaults to 0.
 
-=item B<-ipady> => I<amount>
+=item B<-ipady> =E<gt> I<amount>
 
 I<Amount> specifies how much vertical internal padding to
 leave on each side of the slave(s).
 I<Amount>  defaults to 0.
 
-=item B<-padx> => I<amount>
+=item B<-padx> =E<gt> I<amount>
 
 I<Amount> specifies how much horizontal external padding to
 leave on each side of the slave(s).
 I<Amount> defaults to 0.
 
-=item B<-pady> => I<amount>
+=item B<-pady> =E<gt> I<amount>
 
 I<Amount> specifies how much vertical external padding to
 leave on each side of the slave(s).
 I<Amount> defaults to 0.
 
-=item B<-side> => I<side>
+=item B<-side> =E<gt> I<side>
 
 Specifies which side of the master the slave(s) will be packed against.
 Must be B<left>, B<right>, B<top>, or B<bottom>.
@@ -152,21 +152,21 @@ than receiving default values.
 
 =over 4
 
-=item I<$slave>->B<packForget>
+=item I<$slave>-E<gt>B<packForget>
 
 Removes I<slave> from the packing order for its
 master and unmaps its window.
 The slave will no longer be managed by the packer.
 
-=item I<$slave>->B<packInfo>
+=item I<$slave>-E<gt>B<packInfo>
 
 Returns a list whose elements are the current configuration state of
 the slave given by I<$slave> in the same option-value form that
 might be specified to B<packConfigure>.
-The first two elements of the list are ``B<-in>=>I<$master>'' where
+The first two elements of the list are ``B<-in>=E<gt>I<$master>'' where
 I<$master> is the slave's master.
 
-=item I<$master>->B<packPropagate>?(I<boolean>)?
+=item I<$master>-E<gt>B<packPropagate>?(I<boolean>)?
 
 If I<boolean> has a true boolean value such as B<1> or B<on>
 then propagation is enabled for I<$master>,
@@ -179,12 +179,13 @@ B<1> to indicate whether propagation is currently enabled
 for I<$master>.
 Propagation is enabled by default.
 
-=item I<$master>->B<packSlaves>
+=item I<$master>-E<gt>B<packSlaves>
 
 Returns a list of all of the slaves in the packing order for I<$master>.
 The order of the slaves in the list is the same as their order in
 the packing order.
-If I<$master> has no slaves then an empty string is returned.
+If I<$master> has no slaves then an empty list/string is returned in
+array/scalar context, respectively
 
 =back
 

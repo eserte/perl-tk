@@ -5,11 +5,11 @@ package Tk::Message;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Message.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Message.pm#6$
 
 require Tk::Widget;
 
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Message';
 

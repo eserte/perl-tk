@@ -96,6 +96,20 @@ TkGetServerInfo(interp, tkwin)
  *----------------------------------------------------------------------
  */
 
+static BOOL CALLBACK 
+FindMyConsole( HWND win, LPARAM arg )
+{
+ DWORD mypid = *((DWORD *) arg);
+ DWORD pid;
+ GetWindowThreadProcessId(win,&pid);
+ if (pid == mypid)
+  {
+   ShowWindow(win,SW_SHOWMINNOACTIVE);
+  }
+ return TRUE;
+}
+
+
 HINSTANCE
 Tk_GetHINSTANCE()
 {
@@ -123,10 +137,12 @@ TkWinXInit(hInstance)
     HINSTANCE hInstance;
 {
     OSVERSIONINFO info;
+    DWORD mypid = GetCurrentProcessId();
 
     info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     GetVersionEx(&info);
     tkpIsWin32s = (info.dwPlatformId == VER_PLATFORM_WIN32s);
+    EnumWindows(FindMyConsole, &mypid);
 
     if (childClassInitialized != 0) {
 	return;

@@ -5,12 +5,12 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Table.pm#9$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Table.pm#10$
 
 use Tk::Pretty;
 use AutoLoader;
-require Tk::Frame;
-@Tk::Table::ISA = qw(Tk::Frame);
+use base qw(Tk::Frame);  
+
 Construct Tk::Widget 'Table';
 
 sub ClassInit

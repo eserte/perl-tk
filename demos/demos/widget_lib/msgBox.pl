@@ -1,6 +1,5 @@
-# messageBox, post common message windows.
+# msgBox.pl
 
-use subs qw/show_messageBox/;
 use vars qw/$TOP/;
 
 sub msgBox {
@@ -52,11 +51,11 @@ sub msgBox {
 sub show_messageBox {
     my($iconvar, $typevar) = @_;
 
-    my $button = $TOP->MsgBox(-icon => $$iconvar, -type => $$typevar,
+    my $button = $TOP->messageBox(-icon => $$iconvar, -type => $$typevar,
 	-title => 'Message',
-        -message => "This is a \"$$typevar\" type messagebox with the \"$$iconvar\" icon")->Show;
+        -message => "This is a \"$$typevar\" type messagebox with the \"$$iconvar\" icon");
 
-    $TOP->MsgBox(qw/-icon info -type OK -message/ => "You have selected \"$button\"")->Show;
+    $TOP->messageBox(qw/-icon info -type OK -message/ => "You have selected \"$button\"");
 
-}
+} # end show_messageBox
 

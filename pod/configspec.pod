@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-ConfigSpecs - Defining behaviour of 'configure' for composite widgets.
+Tk::ConfigSpecs - Defining behaviour of 'configure' for composite widgets.
 
 =for category Derived Widgets
 
@@ -24,7 +24,7 @@ ConfigSpecs - Defining behaviour of 'configure' for composite widgets.
 
 The aim is to make the composite widget configure method look as much like
 a regular Tk widget's configure as possible.
-(See L<Tk::configure> for a description of this behaviour.)
+(See L<Tk::options> for a description of this behaviour.)
 To enable this the attributes that the composite as a whole accepts
 needs to be defined.
 
@@ -233,7 +233,7 @@ sufficient.
 =head1 SEE ALSO
 
 L<Tk::composite|Tk::composite>,
-L<Tk::configure|Tk::configure>
+L<Tk::options|Tk::options>
 
 =cut
 

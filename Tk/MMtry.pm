@@ -6,9 +6,9 @@ use Config;
 require Exporter;
 
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/MMtry.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/MMtry.pm#6$
 
-@ISA = qw(Exporter);
+use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);
 use strict;
 use File::Basename;

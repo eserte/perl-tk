@@ -7,7 +7,7 @@ package Tk::Button;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Button.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Button.pm#7$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -17,7 +17,7 @@ use strict;
 use AutoLoader;
 
 require Tk::Widget;
-@ISA = qw(Tk::Widget);
+use base  qw(Tk::Widget);
 
 use vars qw($buttonWindow $relief); 
 

@@ -17,11 +17,11 @@ use Carp;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Text/Text.pm#9$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Text/Text.pm#10$
 
 require Tk::Clipboard;
 
-@ISA = qw(Tk::Clipboard Tk::Widget);
+use base  qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Text';
 

@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#10$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#11$
 
 use Tk;
 use Carp;
@@ -13,9 +13,8 @@ use strict;
 require Tk::Frame;
 require Tk::LabEntry;
 
-Tk::Widget->Construct("BrowseEntry");
-
-@Tk::BrowseEntry::ISA = qw(Tk::Frame);
+use base qw(Tk::Frame);
+Construct Tk::Widget 'BrowseEntry';
 
 sub Populate {
     my ($w, $args) = @_;

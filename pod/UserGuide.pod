@@ -51,7 +51,7 @@ A trivial one-window example is show below:
         my $main = MainWindow->new;
         $main->Label(-text => 'Hello, world!')->pack;
         $main->Button(-text => 'Quit',
-                      -command => sub{exit}
+                      -command => [$main => 'destroy']
                       )->pack;
         MainLoop;
 
@@ -249,7 +249,7 @@ The example below shows the use of pack and frames:
 
 Most real applications require more than one window.  As you read before,
 you can create more outermost windows by using Toplevel.  Each window
-is independent; exiting a toplevel window does not affect the others as
+is independent; destroying a toplevel window does not affect the others as
 long as they are not a child of the closed toplevel.
 Exiting the main window will end the application.
 The example below shows a trivial three-window application:
@@ -271,10 +271,10 @@ The example below shows a trivial three-window application:
             my ($window, $header) = @_;
             $window->Label(-text => $header)->pack;
             $window->Button(-text => 'close',
-                            -command => sub{destroy $window}
+                            -command => [$window => 'destroy']
                             )->pack(-side => 'left');
             $window->Button(-text => 'exit',
-                            -command => sub{exit}
+                            -command => [$main => 'destroy']
                             )->pack(-side => 'right');
         }
 

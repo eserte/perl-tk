@@ -219,7 +219,7 @@ use vars qw($NAME $VERSION $FONT @FONT $WIN32 $HOME $HISTFILE $HISTSAVE $PROMPT 
 $NAME = 'ptksh';
 $VERSION = '2.01';
 $WIN32 = 1 if $^O =~ /Win32/;
-$HOME = $WIN32 ? ($ENV{HOMEDRIVE} . $ENV{HOMEPATH}) || 'C:\\' : $ENV{HOME} & "/";
+$HOME = $WIN32 ? ($ENV{HOMEDRIVE} . $ENV{HOMEPATH}) || 'C:\\' : $ENV{HOME} . "/";
 @FONT = ($WIN32 ? (-font => 'systemfixed') : () );
 #@FONT = ($WIN32 ? (-font => ['courier', 9, 'normal']) : () );
 $HISTFILE = "${HOME}.${NAME}_history";

@@ -37,7 +37,7 @@ errors in some other manner.
 A background error is one that occurs in a command that didn't
 originate with the application.  For example, if an error occurs
 while executing a L<callback|Tk::callbacks> specified with a
-L<bind|Tk::bind> or a L<after|Tk::After>
+L<bind|Tk::bind> or a L<after|Tk::after>
 command, then it is a background error.  For a non-background error,
 the error can simply be returned up through nested subroutines
 until it reaches the top-level code in the application;
@@ -100,7 +100,7 @@ which only have one (a very common case) should be provided.
 =head1 SEE ALSO
 
 L<Tk::bind|Tk::bind>
-L<Tk::After|Tk::After>
+L<Tk::after|Tk::after>
 L<Tk::fileevent|Tk::fileevent>
 
 =head1 KEYWORDS

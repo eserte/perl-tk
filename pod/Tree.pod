@@ -34,7 +34,7 @@ See L<Tk::options> for details on the standard options.
 
 =item Switch:		B<-browsecmd>
 
-Specifies a L<callback/Tk::callbacks> to call whenever the user browses on an entry
+Specifies a L<callback|Tk::callbacks> to call whenever the user browses on an entry
 (usually by single-clicking on the entry). The callback is called with
 one argument, the pathname of the entry.
 
@@ -44,7 +44,7 @@ one argument, the pathname of the entry.
 
 =item Switch:		B<-closecmd>
 
-Specifies a L<callback/Tk::callbacks> to call whenever an entry needs to be closed (See
+Specifies a L<callback|Tk::callbacks> to call whenever an entry needs to be closed (See
 L<"BINDINGS"> below). This method is called with one argument,
 the pathname of the entry. This method should perform appropriate
 actions to close the specified entry. If the B<-closecmd> option
@@ -57,7 +57,7 @@ entries of the specified entry.
 
 =item Switch:		B<-command>
 
-Specifies a L<callback/Tk::callbacks> to call whenever the user activates an entry
+Specifies a L<callback|Tk::callbacks> to call whenever the user activates an entry
 (usually by double-clicking on the entry). The callback
 is called with one argument, the pathname of the entry.
 
@@ -80,7 +80,7 @@ setting).
 
 =item Switch:		B<-opencmd>
 
-Specifies a L<callback/Tk::callbacks> to call whenever an entry needs to be opened (See
+Specifies a L<callback|Tk::callbacks> to call whenever an entry needs to be opened (See
 L<"BINDINGS"> below). This method is called with one argument,
 the pathname of the entry. This method should perform appropriate
 actions to open the specified entry. If the B<-opencmd> option

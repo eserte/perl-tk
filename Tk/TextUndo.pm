@@ -6,9 +6,9 @@ require Tk::Text;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/TextUndo.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/TextUndo.pm#12$
 
-@ISA = qw(Tk::Text);
+use base  qw(Tk::Text);
 
 Construct Tk::Widget 'TextUndo';
 

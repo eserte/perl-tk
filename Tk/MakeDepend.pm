@@ -1,8 +1,9 @@
 package Tk::MakeDepend;
 use strict;
 use vars qw(%define);
+use Config;
 
-my @include; 
+my @include;
 
 use Carp;
 
@@ -10,7 +11,7 @@ use Carp;
 
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#10$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#11$
 
 sub scan_file;
       
@@ -193,8 +194,16 @@ sub scan_file
   }
 }    
 
+sub reset_includes
+{
+ undef @include;
+ push @include, $Config{'usrinc'}
+   if (defined $Config{'usrinc'} and $Config{'usrinc'} ne '');
+}
+
 sub command_line
 {            
+ reset_includes();
  my %def = ('__STDC__' => 1 );
  my $data = '';
  while (@_)
@@ -202,7 +211,15 @@ sub command_line
    $_ = shift(@_);
    if (/^-I(.*)$/)
     {
-     push(@include,$1);
+     # force /usr/include to be last element of @include
+     if (@include)
+      {
+       splice @include, $#include, 0, $1;
+      }
+     else
+      {
+       @include = ($1);
+      }
     }
    elsif (/^-D([^=]+)(?:=(.*))?$/)
     {

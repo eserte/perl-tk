@@ -5,7 +5,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.007';      
+  $VERSION = '800.008';      
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
@@ -68,7 +68,7 @@ delete $dir{'pTk'};
 
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
-    'EXE_FILES' => ['ptksh'],
+    'EXE_FILES' => [qw(ptksh ptked)],
     'NAME'     => 'Tk',
     'DIR'      => ['pTk',reverse(sort(keys %dir))],
     'DISTNAME' => "Tk",
@@ -82,43 +82,11 @@ Tk::MMutil::TkExtMakefile(
     @macro
    );
                            
-sub MY::test
-  {
-    # a) Prevent 'test' target searchs for other tests in subdirs
-    # b) Skip regression test if Test.pm is not installed
-    package MY;
-    my $orig = shift->SUPER::test(@_);
-    my $msg = '\n\t--- Test.pm not installed. Grab it from CPAN. ---'
-            . '\n\t---      Regression tests skipped.            ---\n\n';
-    $orig =~ s/(\ntest ::[^\n]+).*(\ntest_dynamic)/$1\n$2/ms;
-    $orig =~ s/runtests \@ARGV/eval {require Test;} ? runtests \@ARGV : print "$msg"/mg;
-    return $orig;
-  }
-
-sub MY::test_hide {
-'
-TEST_VERBOSE=0
-TEST_TYPE=test_$(LINKTYPE)
-
-test :: $(TEST_TYPE)
-
-test_dynamic :: all
-	$(PERL) -I$(INST_ARCHLIB) -I$(INST_LIB) demos/widget
-
-test_ : test_dynamic
-
-test_static :: all $(MAP_TARGET)
-	./$(MAP_TARGET) -I$(INST_ARCHLIB) -I$(INST_LIB) demos/widget
-
-';
-}
-
 sub MY::top_targets
 {
  my ($self) = @_;
  my $str = $self->MM::top_targets;
  $str =~ s/\bmanifypods\b/html/g;
-# $str =~ s/(pure_all\s*:.*linkext)/$1 tkperl\$(EXE_EXT)/ if $IsWin32;
  return $str;
 }
 
@@ -129,7 +97,7 @@ sub MY::post_initialize
  my %files = ();
  my $dir = $self->catdir('$(INST_ARCHLIBDIR)','Tk');
  my $name;
- foreach $name (grep /%$/,keys %{$self->{PM}})
+ foreach $name (grep /(%|\.q4)$/,keys %{$self->{PM}})
   {
    delete $self->{PM}->{$name};
   }
@@ -159,6 +127,45 @@ sub MY::post_initialize
    }
   }
  $ret;
+} 
+
+sub needs_Test
+{            
+ my $file = shift;           
+ local $_;        
+ unless (open(TFILE,"$file"))
+  {
+   warn "Cannot open $file:$!";
+   return 1;
+  }
+ my $code = 0;
+ while (<TFILE>)
+  {
+   last if ($code = /^\s*(use|require)\s+Test\b/);
+  }     
+ close(TFILE);
+ warn "Skipping test $file needs 'Test.pm':$_" if $code;
+ return $code;
+}
+
+sub MY::test 
+{
+ my ($self,%attrib) = @_;
+ my @tests = sort glob($self->catfile('t','*'));
+ eval { require Test };
+ if ($@)
+  {
+   @tests = grep(!needs_Test($_),@tests);
+  }
+ $attrib{'TESTS'} = join(' ',@tests);
+
+ # Temporarily remove sub-dirs from $self as we 'know'
+ # there are no tests down there 
+ my $dir  = delete $self->{'DIR'};
+ my $str  = $self->MM::test(%attrib);
+ # Put sub-dirs back
+ $self->{'DIR'} = $dir;
+ return $str;
 }
 
 sub MY::postamble {

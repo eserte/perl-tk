@@ -1,12 +1,31 @@
+
+# TODO:
+#
+#	o How to get into state 's0' 'b0' so cursor keys start
+#	  working (compare with Tk/Widget  XYscrollBind
+#	o the options -browsecmd and -command callback are not
+#	  not implemented (as in Tix)
+#	o privateData 'state' used only once (check again Grid.tcl)
+#	o FloatEntry 'sometimes not activeted immediately on selection
+#	o check also Leave Binding. Looks like entry does get unpost'ed
+
 package Tk::TixGrid; 
 
+BEGIN
+  {
+    use vars '$DEBUG';
+    $DEBUG = (defined($ENV{USER}) and $ENV{USER} eq 'ach') ? 1 : 0;
+    print STDERR "tixGrid: debug = $DEBUG\n" if $DEBUG;
+  }
+      
+use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.008'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#8$
+$VERSION = '3.011'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#11$
 
 use Tk 'Ev';
 use Tk::Widget;
 
-@ISA = 'Tk::Widget';
+use base  'Tk::Widget';
 
 Construct Tk::Widget 'TixGrid';
 
@@ -390,7 +409,7 @@ sub DirKey
 
     return if $w->cget('-state') eq 'disabled';
 
-print "$w->DirKey($key)\n";
+print STDERR "$w->DirKey($key)\n" if $DEBUG;
     $w->ChgState($key,
 		[
 		's0'	=> 's8',
@@ -402,11 +421,11 @@ print "$w->DirKey($key)\n";
 
 sub Return
   {
-    my ($w, $key) = @_;
+    my ($w) = @_;
 
     return if $w->cget('-state') eq 'disabled';
 
-    $w->ChgState($key,
+    $w->ChgState(
 		[
 		's0'	=> 's9',
 		'b0'	=> 'b9',
@@ -417,11 +436,11 @@ sub Return
 
 sub Space
   {
-    my ($w, $key) = @_;
+    my ($w) = @_;
 
     return if $w->cget('-state') eq 'disabled';
 
-    $w->ChgState($key,
+    $w->ChgState(
 		[
 		's0'	=> 's10',
 		'b0'	=> 'b10',
@@ -454,9 +473,13 @@ sub SetState
 sub GoState
   {
     my ($w, $state) = (shift, shift);
-print STDERR "Gostate: '", $w->GetState, "' --> '$state'\n";
+    print STDERR "Gostate:  ", $w->GetState, " --> $state, " if $DEBUG;
     $w->SetState($state); 
     my $method = "GoState_$state";
+
+    print STDERR "args=(", join(',',@_), ")".
+	"\t(",$w->cget('-selectmode').
+	",",$w->cget('-selectunit').")\n" if $DEBUG;
 
     if (0)
       {
@@ -466,9 +489,8 @@ print STDERR "Gostate: '", $w->GetState, "' --> '$state'\n";
 	print STDERR "Error Gostate: '$state': ", $@ if $@;
 	return undef;
       }
-print "$method(", join(',',@_), ")\n";
-    #eval { $w->$method(@_); };
-    eval { $w->$method(@_); };
+
+    $w->$method(@_);
     return undef
   }
 
@@ -480,26 +502,23 @@ sub ChgState
   {
     my $w   = shift;
     my $map = pop;
-print "ChgState(", join(',',@_,'['), join(",",@$map,),"])\n";
+    print STDERR "ChgState(", join(',',@_,'['), join(",",@$map,),"])  " if $DEBUG;
     my $state = $w->GetState;
+
     my ($match, $to);
-my @tmp = @$map;
     while (@$map)
       {
         $match = shift @$map; 
         $to    = shift @$map; 
-# 3rd try:
-        #if ($match =~ /$state/) 
         if ($match eq $state)
           {
-print STDERR "Chg: $state  ===>>  $to \n";
+	    print STDERR "$state --> $to \n" if $DEBUG;
 	    $w->GoState($to, @_);
 	    return;
 	  }
       }
-print STDERR join('|', "Chg no new state for '$state' in ", @tmp, "\n");
+    print STDERR "*no* chg for $state\n" if $DEBUG;
   }
-
 
 
 #----------------------------------------------------------------------
@@ -513,9 +532,10 @@ print STDERR join('|', "Chg no new state for '$state' in ", @tmp, "\n");
 
 sub SelectSingle
   {
-    my ($w, $ent) = @_;
-    $w->selectionSet($ent->[0], $ent->[1]);
-    #$w->Call('browsecmd', @$ent);
+    my ($w, $n1, $n2) = @_;
+    $w->selection('set', $n1, $n2);
+    #FIX: -options -browsecmd not implemented jet
+    #$w->Callback('-browsecmd' => $n1, $n2);
   }
 
 #----------------------------------------------------------------------
@@ -530,6 +550,7 @@ sub GoState_0
 
     foreach my $cmd (@$list)
       {
+        # XXX should do more something like $w->Callback'('__pending_cmds__');
 	eval $cmd;		# XXX why in tcl in global context (binding?)
       }
     undef(@$list); 		# XXX should really delete? Maybe on needed in TCL
@@ -551,7 +572,6 @@ sub GoState_0
 #    }
 #}
 
-
 sub GoState_1
    {
      my ($w, $x, $y) = @_;
@@ -562,19 +582,20 @@ sub GoState_1
          $w->SetAnchor(@ent);
        }
      $w->CheckEdit;
-     $w->selectionClear(0, 0, 'max', 'max');
+     $w->selection('clear', 0, 0, 'max', 'max');
 
-     if ($w->cget('-selectmode') eq 'single')
+     if ($w->cget('-selectmode') ne 'single')
        {
          $w->SelectSingle(@ent);
        }
-     $w->GoState_2
+     $w->GoState(2);
    }
 
-
-sub GoState_2 { }
+sub GoState_2
+  {
+    my ($w) = @_;
+  }
      
-
 sub GoState_3
    {
      my ($w, $x, $y) = @_;
@@ -584,50 +605,9 @@ sub GoState_3
        {
          $w->SelectSingle(@ent);
        }
-     $w->GoState_0;
+     $w->GoState(0);
 
    }
-
-
-sub GoState_5
-   {
-     my ($w, $x, $y) = @_;
-
-     my @ent = $w->mynearest($x,$y);
-     if (@ent)
-       {
-         $w->SelectSingle(@ent);
-         $w->SetEdit(@ent);
-       }
-     $w->GoState_0;
-
-   }
-
-##############################################
-# BUG xxx
-#	return scalar instead of errors
-
-sub mynearest   { shift->split_s2a('nearest', @_); }
-sub myanchorGet { shift->split_s2a('anchorGet', @_); }
-
-my $DEBUG_SPLIT_S2A = 1;
-
-sub split_s2a
-  {
-    my $w = shift;
-    my $method = shift;
-    my @ent = $w->$method(@_);
-    if (@ent == 1)
-      {
-my $tmp = $ent[0];
-        @ent = split(/ /, $ent[0]) if @ent == 1;
-print STDERR join("|","$method splitted '$tmp' =>",@ent,"\n") if $DEBUG_SPLIT_S2A;
-      }
-    return @ent;
-  }
-
-##############################################
-
 
 sub GoState_4
   {
@@ -643,27 +623,68 @@ sub GoState_4
     elsif ($mode eq 'browse')
       {
 	$w->SetAnchor(@ent);
-	$w->selectionClear(0, 0, 'max', 'max');
+	$w->selection('clear', 0, 0, 'max', 'max');
 	$w->SelectSingle(@ent);
       }
     elsif ($mode eq 'multiple' ||
 	   $mode eq 'extended')
       {
-	my (@anchor) = $w->anchorGet;
-	$w->selectionAdjust(@anchor[0,1], @ent[0,1]);
+	my (@anchor) = $w->anchor('get');
+	$w->selection('adjust', @anchor[0,1], @ent[0,1]);
       }
   }
+
+sub GoState_5
+   {
+     my ($w, $x, $y) = @_;
+
+     my @ent = $w->mynearest($x,$y);
+     if (@ent)
+       {
+         $w->SelectSingle(@ent);
+         $w->SetEdit(@ent);
+       }
+     $w->GoState(0);
+
+   }
+
+##############################################
+# BUG xxx
+#	return scalar instead of errors
+
+sub mynearest   { shift->split_s2a('nearest', @_); }
+sub myanchorGet { shift->split_s2a('anchor', 'get', @_); }
+
+sub split_s2a
+  {
+    my $w = shift;
+    my $method = shift;
+    my @ent = $w->$method(@_);
+    if (@ent == 1)
+      {
+my $tmp = $ent[0];
+        @ent = split(/ /, $ent[0]) if @ent == 1;
+print STDERR join("|","$method splitted '$tmp' =>",@ent,"\n") if $DEBUG;
+      }
+    else
+      {
+#print STDERR join("|","$method splitted is okay :",@ent,"\n") if $DEBUG;
+      }
+    return @ent;
+  }
+
+##############################################
 
 
 sub GoState_s5
   {
-    shift->StartScan;
+    shift->StartScan();
   }
 
 
 sub GoState_s6
   {
-    shift->DoScan;
+    shift->DoScan();
   }
 
 
@@ -674,11 +695,11 @@ sub GoState_s7
     my @ent = $w->mynearest($x, $y);
     if (@ent)
       {
-        $w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->Call('command', @ent);
+        $w->selection('clear');
+	$w->selection('set', @ent);
+	$w->Callback('-command' => @ent);
       }
-    $w->GoState_s0;
+    $w->GoState('s0');
   }
 
 
@@ -691,8 +712,6 @@ sub GoState_s8
     ## - looks like anchor is 1-dim: set anchor 0
     ## - method see unknown  (even when defined with Tk::Method)
 
-#print  "GoState_s8 is not implemented\n";
-
     my (@anchor) = $w->info('anchor');
     if (@anchor)
       {
@@ -703,10 +722,10 @@ sub GoState_s8
         @anchor = $w->info($key, @anchor);
       }
  
-    $w->anchorSet(@anchor);
+    $w->anchor('set', @anchor);
     $w->see(@anchor);
  
-    $w->GoState_s0  
+    $w->GoState('s0');
   }
 
 #proc tixGrid:GoState-s8 {w key} {
@@ -728,13 +747,13 @@ sub GoState_s9
   { 
     my ($w, $key) = @_;
 
-#print  "GoState_s9 is not implemented\n";
+#print STDERR "GoState_s9 is not implemented\n";
 
     my (@anchor) = $w->info('anchor');
     unless (@anchor)
       {
         @anchor = ();
-        $w->anchorSet(@anchor);
+        $w->anchor('set', @anchor);
         $w->see(@anchor);
       }
  
@@ -742,12 +761,12 @@ sub GoState_s9
       {
         # ! may not have any elements
         #
-        $w->Call('command', $w->info('anchor'));
-        $w->selectionClear;
-        $w->selectionSet(@anchor);
+        $w->Callback('-command' => $w->info('anchor'));
+        $w->selection('clear');
+        $w->selection('set', @anchor);
       }
  
-      $w->GoState_s0;
+      $w->GoState('s0');
   }
 
 
@@ -759,7 +778,7 @@ sub GoState_s10
     if (@anchor)
       {
         @anchor = ();
-        $w->anchorSet(@anchor);
+        $w->anchor('set', @anchor);
         $w->see(@anchor);
       }
  
@@ -767,12 +786,12 @@ sub GoState_s10
       {
         # ! may not have any elements
         #
-        $w->Call('browsecmd', $w->info('anchor'));
-        $w->selectionClear;
-        $w->selectionSet(@anchor);
+        $w->Callback('-browsecmd' => $w->info('anchor'));
+        $w->selection('clear');
+        $w->selection('set', @anchor);
       }
  
-    $w->GoState_s0;
+    $w->GoState('s0');
   }
 
 
@@ -780,7 +799,10 @@ sub GoState_s10
 #	BROWSE SELECTION
 #----------------------------------------------------------------------
 
-sub GoState_b0 { }
+sub GoState_b0
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_b1
   {
@@ -789,16 +811,19 @@ sub GoState_b1
     my (@ent) = $w->mynearest($x, $y);
     if (@ent)
       {
-	$w->anchorSet(@ent);
-	$w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->Call('browsecmd', @ent);
+	$w->anchor('set', @ent);
+	$w->selection('clear');
+	$w->selection('set', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
 
-    $w->GoState_b2
+    $w->GoState('b2');
   }
 
-sub GoState_b2 { }
+sub GoState_b2
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_b3
   {
@@ -807,13 +832,13 @@ sub GoState_b3
     my (@ent) = $w->info('anchor');
     if (@ent)
       {
-	$w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->selectionSet(@ent);
-	$w->Call('browsecmd', @ent);
+	$w->selection('clear');
+	$w->selection('set', @ent);
+	$w->selection('set', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
 
-    $w->GoState_b0
+    $w->GoState('b0');
   }
 
 
@@ -824,18 +849,18 @@ sub GoState_b4
     my (@ent) = $w->mynearest($x, $y);
     if (@ent)
       {
-	$w->anchorSet(@ent);
-	$w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->Call('browsecmd', @ent);
+	$w->anchor('set', @ent);
+	$w->selection('clear');
+	$w->selection('set', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
   }
 
 
-sub GoState_b5 { shift->StartScan }
+sub GoState_b5 { shift->StartScan(); }
 
 
-sub GoState_b6 { shift->DoScan }
+sub GoState_b6 { shift->DoScan(); }
 
 
 sub GoState_b7
@@ -845,10 +870,11 @@ sub GoState_b7
      my (@ent) = $w->mynearest($x, $y);
      if (@ent)
        {
-         $w->selectionClear;
-	 $w->selectionSet(@ent);
-         $w->Call('command', @ent);
+         $w->selection('clear');
+	 $w->selection('set', @ent);
+         $w->Callback('-command' => @ent);
        }
+     $w->GoState('b0');
   }
 
 
@@ -866,13 +892,13 @@ sub GoState_b8
         @anchor = (0,0);   # ?????
       }
  
-    $w->anchorSet(@anchor);
-    $w->selectionClear;
-    $w->selectionSet(@anchor);
+    $w->anchor('set', @anchor);
+    $w->selection('clear');
+    $w->selection('set', @anchor);
     $w->see(@anchor);
  
-    $w->Call('browsecmd', @anchor);
-    $w->GoState_b0;
+    $w->Callback('-browsecmd' => @anchor);
+    $w->GoState('b0');
   }
 
 
@@ -884,7 +910,7 @@ sub GoState_b9
     unless (@anchor)
       {
 	@anchor = (0,0);
-        $w->anchorSet(@anchor);
+        $w->anchor('set', @anchor);
 	$w->see(@anchor);
       }
 
@@ -892,12 +918,12 @@ sub GoState_b9
       {
 	# ! may not have any elements
 	#
-	$w->Call('command', $w->info('anchor'));
-	$w->selectionClear;
-	$w->selectionSet(@anchor);
+	$w->Callback('-command' => $w->info('anchor'));
+	$w->selection('clear');
+	$w->selection('set', @anchor);
       }
 
-    $w->GoState_b0;
+    $w->GoState('b0');
   }
 
 
@@ -909,7 +935,7 @@ sub GoState_b10
     unless (@anchor)
       {
 	@anchor = (0,0);
-        $w->anchorSet(@anchor);
+        $w->anchor('set', @anchor);
 	$w->see(@anchor);
       }
 
@@ -917,12 +943,12 @@ sub GoState_b10
       {
 	# ! may not have any elements
 	#
-	$w->Call('browsecmd', $w->info('anchor'));
-	$w->selectionClear;
-	$w->selectionSet(@anchor);
+	$w->Callback('-browsecmd' => $w->info('anchor'));
+	$w->selection('clear');
+	$w->selection('set', @anchor);
       }
 
-    $w->GoState_b0;
+    $w->GoState('b0');
   }
 
 #----------------------------------------------------------------------
@@ -930,8 +956,10 @@ sub GoState_b10
 #----------------------------------------------------------------------
 
 
-sub GoState_m0 { }
-
+sub GoState_m0
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_m1
   {
@@ -940,17 +968,19 @@ sub GoState_m1
     my (@ent) = $w->mynearest($x,$y);
     if (@ent)
       {
-	$w->anchorSet(@ent);
-	$w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->Call('browsecmd', @ent);
+	$w->anchor('set', @ent);
+	$w->selection('clear');
+	$w->selection('set', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
 
-    $w->GoState_m2;
+    $w->GoState('m2');
   }
 
-
-sub GoState_m2 { }
+sub GoState_m2
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_m3
   {
@@ -959,10 +989,10 @@ sub GoState_m3
     my (@ent) = $w->info('anchor');
     if (@ent)
       {
-	$w->Call('browsecmd', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
 
-    $w->GoState_m0;
+    $w->GoState('m0');
   }
 
 
@@ -974,16 +1004,17 @@ sub GoState_m4
     my (@to)   = $w->mynearest($x, $y);
     if (@to)
       {
-	$w->selectionClear;
-	$w->selectionSet(@from, @to);
-	$w->Call('browsecmd', @to);
+	$w->selection('clear');
+	$w->selection('set', @from, @to);
+	$w->Callback('-browsecmd' => @to);
       }
-
-    $w->GoState_m5;
+    $w->GoState('m5');
   }
 
-sub GoState_m5 { }
-
+sub GoState_m5
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_m6
   {
@@ -992,10 +1023,9 @@ sub GoState_m6
     my (@ent)   = $w->mynearest($x, $y);
     if (@ent)
       {
-	$w->Call('browsecmd', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
-
-    $w->GoState_m0;
+    $w->GoState('m0');
   }
 
 sub GoState_m7
@@ -1007,23 +1037,22 @@ sub GoState_m7
     unless (@from)
       {
 	@from = @to;
-	$w->anchorSet(@from);
+	$w->anchor('set', @from);
       }
     if (@to)
       {
-	$w->selectionClear;
-	$w->selectionSet(@from, @to);
-	$w->Call('browsecmd', @to);
+	$w->selection('clear');
+	$w->selection('set', @from, @to);
+	$w->Callback('-browsecmd' => @to);
       }
-
-    $w->GoState_m5;
+    $w->GoState('m5');
   }
 
    
-sub GoState_m8 { shift->StartScan }
+sub GoState_m8 { shift->StartScan() }
 
    
-sub GoState_m9 { shift->DoScan }
+sub GoState_m9 { shift->DoScan() }
 
 
 sub GoState_xm7
@@ -1033,20 +1062,21 @@ sub GoState_xm7
     my (@ent)   = $w->mynearest($x, $y);
     if (@ent)
       {
-	$w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->Call('browsecmd', @ent);
+	$w->selection('clear');
+	$w->selection('set', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
-
-    $w->GoState_m0;
+    $w->GoState('m0');
   }
-
 
 #----------------------------------------------------------------------
 #	EXTENDED SELECTION
 #----------------------------------------------------------------------
 
-sub GoState_e0 { }
+sub GoState_e0
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_e1
   {
@@ -1054,16 +1084,19 @@ sub GoState_e1
     my (@ent) = $w->mynearest($x, $y);
     if (@ent)
       {
-	$w->anchorSet(@ent);
-	$w->selectionClear;
-	$w->selectionSet(@ent);
-	$w->Call('browsecmd', @ent);
+	$w->anchor('set', @ent);
+	$w->selection('clear');
+	$w->selection('set', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
-    $w->GoState_e2;
+    $w->GoState('e2');
   }
 
 
-sub GoState_e2 { }
+sub GoState_e2
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_e3
   {
@@ -1072,30 +1105,30 @@ sub GoState_e3
     my (@ent) = $w->info('anchor');
     if (@ent)
       {
-        $w->Call('browsecmd', @ent);
+        $w->Callback('-browsecmd' => @ent);
       }
-
-    $w->GoState_e0
+    $w->GoState('e0');
   }
-
 
 sub GoState_e4
   {
     my ($w, $x, $y) = @_;
+
     my (@from) = $w->info('anchor');
     my (@to)   = $w->mynearest($x, $y);
     if (@to)
       {
-        $w->selectionClear;
-        $w->selectionSet(@from, @to);
-        $w->Call('browsecmd', @to);
+        $w->selection('clear');
+        $w->selection('set', @from, @to);
+        $w->Callback('-browsecmd' => @to);
       }
-    $w->GoState_e5;
+    $w->GoState('e5');
   }
 
-
-sub GoState_e5 { }
-
+sub GoState_e5
+  {
+    my ($w) = @_;
+  }
 
 sub GoState_e6
   {
@@ -1104,9 +1137,9 @@ sub GoState_e6
     my (@ent)   = $w->mynearest($x, $y);
     if (@ent)
       {
-        $w->Call('browsecmd', @ent);
+        $w->Callback('-browsecmd' => @ent);
       }
-    $w->GoState_e0;
+    $w->GoState('e0');
   } 
 
 sub GoState_e7
@@ -1118,61 +1151,57 @@ sub GoState_e7
     unless (@from)
       {
         @from = @to;
-        $w->anchorSet(@from);
+        $w->anchor('set', @from);
       }
     if (@to)
       {
-        $w->selectionClear;
-        $w->selectionSet(@from, @to);
-        $w->Call('browsecmd', @to);
+        $w->selection('clear');
+        $w->selection('set', @from, @to);
+        $w->Callback('-browsecmd' => @to);
       }
-    $w->GoState_e5;
+    $w->GoState('e5');
   } 
 
+sub GoState_e8 { shift->StartScan(); }
 
-sub GoState_e8 { }
-
-
-sub GoState_e9 { shift->DoScan }
-
+sub GoState_e9 { shift->DoScan(); }
 
 sub GoState_e10
   {
     my ($w, $x, $y) = @_;
+
     my (@ent)   = $w->mynearest($x, $y);
     if (@ent)
       {
 	if ($w->info('anchor'))
 	  {
-	    $w->anchorSet(@ent);
+	    $w->anchor('set', @ent);
 	  }
-	if ($w->selectionIncludes(@ent))
+	if ($w->selection('includes', @ent))
 	  {
-	    $w->selectionClear(@ent);
+	    $w->selection('clear', @ent);
 	  }
 	else
 	  {
-	    $w->selectionSet(@ent);
+	    $w->selection('set', @ent);
 	  }
-	$w->Call('browsecmd', @ent);
+	$w->Callback('-browsecmd' => @ent);
       }
-    $w->GoState_e2;
+    $w->GoState('e2');
   }
-
 
 sub GoState_xe7
   {
     my ($w, $x, $y) = @_;
 
-    my (@ent)   = $w->mynearest($x, $y);
+    my (@ent) = $w->mynearest($x, $y);
     if (@ent)
       {
-        $w->selectionClear;
-        $w->selectionSet(@ent);
-        $w->Call('command', @ent);
+        $w->selection('clear');
+        $w->selection('set', @ent);
+        $w->Callback('-command' => @ent);
       }
-
-    $w->GoState_e0;
+    $w->GoState('e0');
   }
 
 
@@ -1183,8 +1212,9 @@ sub GoState_xe7
 sub GoState_12
   {
     my ($w, $x, $y) = @_;
+
     $w->CancelRepeat;		# xxx  will not work
-    $w->GoState_5($x, $y);
+    $w->GoState(5, $x, $y);
   }
 #proc tixGrid:GoState-12 {w x y} {
 #    tkCancelRepeat
@@ -1193,15 +1223,14 @@ sub GoState_12
 
 sub GoState_13
   {
-    my ($w, $ent, $oldEnt) = @_;
+    # FIX:  a) $ent or @ent, b) 13 is never called!!? same in Grid.tcl
+    my ($w, @ent, @oldEnt) = @_;
+
     my $data = $w->MainWindow->privateData('Tix');
-    $data->{indicator} = $ent;
-    $data->{oldEntry}  = $oldEnt;
-    $w->IndicatorCmd('<Arm>', @$ent);
+    $data->{indicator} = \@ent;
+    $data->{oldEntry}  = \@oldEnt;
+    $w->IndicatorCmd('<Arm>', @ent);
   }
-#proc tixGrid:GoState-13 {w ent oldEnt} {
-#    global tkPriv
-#    set tkPriv(tix,indicator) $ent
 #    set tkPriv(tix,oldEnt)    $oldEnt
 #    tixGrid:IndicatorCmd $w <Arm> $ent
 #}
@@ -1209,12 +1238,13 @@ sub GoState_13
 sub GoState_14
   {
     my ($w, $x, $y) = @_;
+
     my $data = $w->MainWindow->privateData('Tix');
     if ($w->InsideArmedIndicator($x, $y))
       {
-	$w->anchorSet(@{ $data->{indicator} });
-	$w->selectionClear;
-	$w->selectionSet(@{ $data->{indicator} });
+	$w->anchor('set', @{ $data->{indicator} });
+	$w->selection('clear');
+	$w->selection('set', @{ $data->{indicator} });
 	$w->IndicatorCmd('<Activate>', @{ $data->{indicator} });
       }
     else
@@ -1222,30 +1252,33 @@ sub GoState_14
 	$w->IndicatorCmd('<Disarm>', @{ $data->{indicator} });
       }
     delete($data->{indicator});
-    $w->GoState_0;
+    $w->GoState(0);
   }
 
 sub GoState_16
   {
-    my ($w, $ent) = @_;
-    return unless (@$ent);
+    my ($w, @ent) = @_;
+
+    return unless (@ent);
     if ($w->cget('-selectmode') ne 'single')
       {
-	$w->Select(@$ent);
-	$w->Browse(@$ent);
+	$w->Select(@ent);
+	$w->Browse(@ent);
       }
   }
 
 sub GoState_18
   {
     my ($w) = @_;
+
     $w->CancelRepeat;	## xxx
-    $w->GoState_6($w, $Tk::x, $Tk::y);
+    $w->GoState(6, $Tk::x, $Tk::y);
   }
 
 sub GoState_20
   {
     my ($w, $x, $y) = @_;
+
     my $data = $w->MainWindow->privateData('Tix');
     if ($w->InsideArmedIndicator($x, $y))
       {
@@ -1253,13 +1286,14 @@ sub GoState_20
       }
     else
       {
-	$w->GoState_21($x, $y);
+	$w->GoState(21, $x, $y);
       }
   }
 
 sub GoState_21
   {
     my ($w, $x, $y) = @_;
+
     my $data = $w->MainWindow->privateData('Tix');
     unless ($w->InsideArmedIndicator($x, $y))
       {
@@ -1267,10 +1301,9 @@ sub GoState_21
       }
     else
       {
-	$w->GoState_20($x, $y);
+	$w->GoState(20, $x, $y);
       }
   }
-
 
 sub GoState_22
   {
@@ -1278,13 +1311,13 @@ sub GoState_22
     my $data = $w->MainWindow->privateData('Tix');
     if (@{ $data->{oldEntry} })
       {
-	$w->anchorSet(@{ $data->{oldEntry} });
+	$w->anchor('set', @{ $data->{oldEntry} });
       }
     else
       {
-	$w->anchorClear;
+	$w->anchor('clear');
       }
-    $w->GoState_0;
+    $w->GoState(0);
   }
 
 
@@ -1292,13 +1325,13 @@ sub GoState_22
 #			callback actions
 #----------------------------------------------------------------------
 
-# xxx check @ent of @$ent
 sub SetAnchor
   {
     my ($w, @ent) = @_;
+
     if (@ent)
       {
-	$w->anchorSet(@ent);
+	$w->anchor('set', @ent);
 #	$w->see(@ent);
       }
   }
@@ -1307,8 +1340,8 @@ sub SetAnchor
 sub Select
   {
     my ($w, @ent) = @_;
-    $w->selectionClear;
-    $w->selectionSet(@ent)
+    $w->selection('clear');
+    $w->selection('set', @ent)
   }
 
 # xxx check new After handling
@@ -1386,13 +1419,13 @@ sub EditCell
   {
     my ($w, $x, $y) = @_;
     my $list = $w->privateData()->{'list'};
-    if ($w->GetState eq 0)
+    if ($w->GetState == 0)
       {
 	$w->SetEdit($x, $y);	# xxx really correct ? once 2, once 4 args?
       }
     else
       {
-	push(@$list, $w->SetEdit($x, $y));
+	push(@$list, [ $w, 'SetEdit', $x, $y]);
       }
   }
 #proc tixGrid:EditCell {w x y} {
@@ -1481,8 +1514,6 @@ $w->focus;
       }
   }
 
-1;
-__END__
 
 # tixGrid:SetEdit --
 #
@@ -1491,86 +1522,89 @@ __END__
 
 sub SetEdit
   {
-    my ($w, $ent) = @_;		# xxx @$ent or @ent ???
+    my ($w, $px, $py) = @_;
+
     $w->CheckEdit;
 
-proc tixGrid:SetEdit {w ent} {
-    set edit $w.tixpriv__edit
-    tixGrid:CheckEdit $w
+    my $efc = $w->cget('-editnotifycmd');
+    return unless ( defined($efc) && length($efc) );
+     
+    unless ($w->Callback('-editnotifycmd' => $px, $py))
+      {
+	print STDERR "editnotifycmd not defined or returned false\n";
+        return;
+      }
 
-    set editnotifycmd [$w cget -editnotifycmd]
-    if [tixStrEq $editnotifycmd ""] {
-	return
-    }
-    set px [lindex $ent 0]
-    set py [lindex $ent 1]
+    my $oldvalue;
+    if ($w->info('exists', $px, $py))
+      {
+	# if entry doesn't support -text option. Can't edit it.
+	#
+	# If the application wants to force editing of an entry, it could
+	# delete or replace the entry in the editnotifyCmd procedure.
+	#
+	Tk::catch { $oldvalue = $w->entrycget($px, $py, '-text'); };
+        if ($@)
+          {
+	    return;
+	  }
+      }
+    else
+      {
+	$oldvalue = "";
+      }
 
-    if ![uplevel #0 $editnotifycmd $px $py] {
-	return
-    }
-    if [$w info exists $px $py] {
-	if [catch {
-	    set oldValue [$w entrycget $px $py -text]
-	}] {
-	    # The entry doesn't support -text option. Can't edit it.
-	    #
-	    # If the application wants to force editing of an entry, it could
-	    # delete or replace the entry in the editnotifyCmd procedure.
-	    #
-	    return
-	}
-    } else {
-	set oldValue ""
-    }
+    my @bbox = $w->info('bbox', $px, $py);
 
-    set bbox [$w info bbox [lindex $ent 0] [lindex $ent 1]]
-    set x [lindex $bbox 0]
-    set y [lindex $bbox 1]
-    set W [lindex $bbox 2]
-    set H [lindex $bbox 3]
-
-    if ![winfo exists $edit] {
-	tixFloatEntry $edit
-    }
-
-    $edit config -command "tixGrid:DoneEdit $w $ent"
-    $edit post $x $y $W $H
-
-    $edit config -value $oldValue
+    my $edit = $w->privateData()->{__EDIT__};
+    unless (Tk::Exists($edit))
+      {
+        require Tk::FloatEntry;
+        $edit = $w->FloatEntry();
+	$w->privateData()->{__EDIT__} = $edit;
+      }
+    $edit->configure(-command=>[\&DoneEdit, $w,  $px, $py]);
+    $edit->post(@bbox);
+    $edit->configure(-value=>$oldvalue);
 }
 
-proc tixGrid:DoneEdit {w x y args} {
-    set edit $w.tixpriv__edit
-    $edit config -command ""
-    $edit unpost
 
-    set value [tixEvent value]
-    if [$w info exists $x $y] {
-	if [catch {
-	    $w entryconfig $x $y -text $value
-	}] {
+sub DoneEdit
+  {
+    my ($w, $x, $y, @args) = @_;
+
+    my $edit = $w->privateData()->{__EDIT__};
+    $edit->configure(-command=>undef);
+    $edit->unpost;
+
+    # FIX xxx
+    # set value [tixEvent value]
+    my $value = $edit->get;
+    if ($w->info('exists', $x, $y))
+      {
+	Tk::catch { $w->entryconfigure($x, $y, -text=>$value) };
+        if ($@)
+	  {
 	    return
-	}
-    } elseif ![tixStrEq $value ""] {	
-	if [catch {
-	    # This needs to be catch'ed because the default itemtype may
-	    # not support the -text option
-	    #
-	    $w set $x $y -text $value
-	}] {
-	    return
-	}
-    } else {
-	return
-    }
-
-    set editDoneCmd [$w cget -editdonecmd]
-    if ![tixStrEq $editDoneCmd ""] {
-	uplevel #0 $editDoneCmd $x $y
-    }
-}
-
+	  }
+      }
+    elsif ( length($value) )
+      {
+	# This needs to be catch'ed because the default itemtype may
+	# not support the -text option
+	#
+	Tk::catch { $w->set($x,$y,-text $value); }; 
+        if ($@)
+          {
+	    return;
+          }
+      }
+    else
+      {
+	return;
+      }
+    $w->Callback('-editdonecmd' => $x, $y);
+  }
 
 1;
-
 __END__

@@ -6,7 +6,7 @@ use Tk;
  # This could/should go in Tk/LEntry.pm 
  package Tk::LEntry;
  require Tk::Entry;
- @ISA = qw(Tk::Derived Tk::Entry);
+use base  qw(Tk::Derived Tk::Entry);
  Construct Tk::Widget 'LEntry';
 
  sub Populate

@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Entry/Entry.pm#9$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Entry/Entry.pm#10$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -21,7 +21,7 @@ $VERSION = '3.009'; # $Id: //depot/Tk8/Entry/Entry.pm#9$
 require Tk::Widget;
 require Tk::Clipboard;
 
-@ISA = qw(Tk::Clipboard Tk::Widget); 
+use base  qw(Tk::Clipboard Tk::Widget); 
 
 import Tk qw(Ev);
 

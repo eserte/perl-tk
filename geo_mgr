@@ -4,7 +4,7 @@ use Tk;
 
 {
  package Packer;
- @ISA = qw(Tk::Frame);
+use base  qw(Tk::Frame);
  Construct Tk::Widget 'Packer';
 
  sub new

@@ -3,7 +3,7 @@ package Tk::X;
 use strict;
 use Carp;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Xlib/X/X.pm#10$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Xlib/X/X.pm#11$
 require Tk;
 
 require Exporter;
@@ -11,7 +11,7 @@ require DynaLoader;
 require AutoLoader;
 
 
-@ISA = qw(Exporter DynaLoader);
+use base  qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.

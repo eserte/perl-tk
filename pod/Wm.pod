@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-wm - Communicate with window manager
+Tk::Wm - Communicate with window manager
 
 =for category Tk Geometry Management
 

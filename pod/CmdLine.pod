@@ -76,6 +76,7 @@ for the application should be found.  This option is
 useful in shell aliases to distinguish between invocations
 of  an  application,  without  resorting to
 creating links to alter the executable file name.
+See also L<Tk::option> for details about resources.
 
 =item B<-rv>, B<-reverse>
 

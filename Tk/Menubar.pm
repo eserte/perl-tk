@@ -8,9 +8,9 @@ require Tk::Menu;
 require Tk::Menu::Item;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Menubar.pm#7$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Menubar.pm#8$
 
-@ISA = qw(Tk::Derived Tk::Menu);
+use base  qw(Tk::Derived Tk::Menu);
 use strict;
 
 Construct Tk::Frame 'Menubar';

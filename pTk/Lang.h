@@ -22,18 +22,18 @@
 #ifndef NO_STDLIB_H
 #include <stdlib.h>
 #endif
-
+                
 #if !defined(__GNUC__) && !defined(_AIX)
 #ifdef __STDC__
 #ifndef STRINGIFY
-#define STRINGIFY(x)	    STRINGIFY1(x)
-#define STRINGIFY1(x)	    #x
-#endif
+#define STRINGIFY(x)        STRINGIFY1(x)
+#define STRINGIFY1(x)       #x
+#endif	/* STRINGIFY */
 #define __FUNCTION__ __FILE__ ":" STRINGIFY(__LINE__)
-#else /* STDC */
-#endif
+#else 	/* STDC */
 #define __FUNCTION__ ""
-#endif
+#endif	/* STDC */
+#endif	/* GNUC or AIX */
 
 #define USE_TCLALLOC 1
 

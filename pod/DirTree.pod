@@ -33,7 +33,7 @@ L<Tk::options> for details on the standard options.
 
 =item Switch:		B<-browsecmd>
 
-Specifies a L<callback/Tk::callbacks> to call whenever the user browses on a directory
+Specifies a L<callback|Tk::callbacks> to call whenever the user browses on a directory
 (usually by single-clicking on the name of the directory). The callback
 is called with one argument, the complete pathname of the directory.
 
@@ -43,7 +43,7 @@ is called with one argument, the complete pathname of the directory.
 
 =item Switch:		B<-command>
 
-Specifies the L<callback/Tk::callbacks> to be called when the user activates on a directory
+Specifies the L<callback|Tk::callbacks> to be called when the user activates on a directory
 (usually by double-clicking on the name of the directory). The callback
 is called with one argument, the complete pathname of the directory.
 
@@ -53,7 +53,7 @@ is called with one argument, the complete pathname of the directory.
 
 =item Switch:		B<-dircmd>
 
-Specifies the L<callback/Tk::callbacks> to be called when a directory listing is needed
+Specifies the L<callback|Tk::callbacks> to be called when a directory listing is needed
 for a particular directory. If this option is not specified, by
 default the DirTree widget will attempt to read the directory as a
 Unix directory. On special occasions, the application programmer may

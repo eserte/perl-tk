@@ -44,6 +44,8 @@ DebugHook(SV *sv)
 
 }
 
+#define XEvent_DESTROY(obj) 
+
 #define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
 #define Const_DONT_WAIT()     (TCL_DONT_WAIT)
@@ -183,8 +185,24 @@ void
 Xrm_import(class,...)
 char *	class
 
+MODULE = Tk	PACKAGE = XEvent	PREFIX = XEvent_
+
+void
+XEvent_Info(obj,s)
+EventAndKeySym *	obj
+char *	s
+CODE:
+{
+ ST(0) = XEvent_Info(obj,s);
+}
+
+void
+XEvent_DESTROY(obj)
+SV *	obj
+
 
 MODULE = Tk	PACKAGE = Tk::MainWindow	PREFIX = pTk_
+
 
 PROTOTYPES: DISABLE
 

@@ -2,13 +2,13 @@
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MainWindow;
-@Tk::MainWindow::ISA = qw(Tk::Toplevel);
-@MainWindow::ISA = 'Tk::MainWindow';
+use base qw(Tk::Toplevel);
+BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.022'; # $Id: //depot/Tk8/Tk/MainWindow.pm#22$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/MainWindow.pm#23$
 
 use Tk::CmdLine;
 require Tk;

@@ -30,7 +30,7 @@ $MW = Tk::MainWindow->new;
     # which invokes WidgetDemo() implicitly. You loose if you bypass the
     # inheritance mechanism and call Tk::MainWindow directly.
 
-    sub new   {
+    sub new {
 	my ($name) = $::DEMO_FILE =~ m#([^/]+).pl$#;
 	$::MW->WidgetDemo(-name => $name, -text => $::DEMO_DESCRIPTION{$name});
     }
@@ -201,6 +201,12 @@ $T->insert('end', "1. A window containing several menus and cascades.\n",
     [qw/demo demo-menus/]);
 $T->insert('end', "2. Like above, but in a manner particular to Perl/Tk.\n",
     [qw/demo demo-menus2/]);
+$T->insert('end', "3. Menubuttons.\n",  [qw/demo demo-menbut/]);
+
+$T->insert('end', "\n", '', "Common Dialogs\n", 'title');
+$T->insert('end', "1. Message boxes.\n", [qw/demo demo-msgBox/]);
+#$T->insert('end', "2. File selector.\n", [qw/demo demo-fselect/]);
+$T->insert('end', "2. Color picker.\n",  [qw/demo demo-clrpick/]);
 
 $T->insert('end', "\n", '', "Simulations\n", 'title');
 $T->insert('end', "1. Balls bouncing in a cavity.\n", [qw/demo demo-bounce/]);
@@ -307,7 +313,10 @@ sub invoke {
     return if $i < 0;
     my($demo) = $tags[$i] =~ /demo-(.*)/;
     $T->tagAdd('visited', "$index linestart", "$index lineend -1 chars");
-    {no strict 'refs'; &$demo($demo);}
+    {
+	no strict 'refs'; 
+	&$demo($demo);
+    }
 
 } # end invoke
 
@@ -354,7 +363,10 @@ sub see_code {
     }
     $CODE_RERUN->configure(-command => sub {
 	eval $CODE_TEXT->get(qw/1.0 end/);
-	{no strict 'refs'; &$demo($demo);}
+	{
+	    no strict 'refs'; 
+	    &$demo($demo);
+	}
     });
     $CODE->iconname($file);
     $file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
@@ -498,6 +510,8 @@ defaults to the released user contributed directory.
  #     composites, -menuitems, qw//, etcetera.  Perl 5.004 required.
  # Stephen O. Lidie, LUCC, 98/03/10.  lusol@Lehigh.EDU
  #     Update for Tk8.
+ # Stephen O. Lidie, LUCC, 98/06/26.  Stephen.O.Lidie@Lehigh.EDU
+ #     Add Common Dialogs for Tk800.007.
 
 =head1 AUTHOR
 

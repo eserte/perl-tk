@@ -1,3 +1,107 @@
+Change 985 on 1998/07/17 by nick@ni-s
+
+	Integrate Achim's pod changes as of 1998/07/17
+
+Change 981 on 1998/07/16 by nick@pluto
+
+	Tidy up Copy/Paste/Cut handling, add <<Undo>> for TextUndo.
+	Allow '' as "no bitmap"
+	Avoid a core-dump during obscure destroy sequence
+
+Change 980 on 1998/07/15 by nick@ni-s
+
+	VERSION tweak 
+
+Change 978 on 1998/07/15 by nick@pluto
+
+	Pod utilities tweaks + corrections to L<>
+
+Change 977 on 1998/07/14 by nick@pluto
+
+	Implement READ and GETC tie methods for use via fileevent
+
+Change 975 on 1998/07/11 by nick@ni-s
+
+	Mend <Escape> binding in cascade menus,
+	Tolerate bug/behaviour change in 5.004_69 with for (1..3) closures.
+
+Change 974 on 1998/07/11 by nick@ni-s
+
+	Change all the "@ISA = ..." to "use base ..." for perlcc 
+
+Change 973 on 1998/07/11 by nick@camel
+
+	Update perl/tk editor
+
+Change 972 on 1998/07/11 by nick@ni-s
+
+	MANIFEST and version tweaks
+
+Change 971 on 1998/07/09 by nick@pluto
+
+	Cause Ev('s') and equivalents to return bind-like string 
+	for modifiers (as well as numeric value)
+
+Change 970 on 1998/07/04 by nick@camel
+
+	Iconize (close) console window on Tk.dll load
+
+Change 969 on 1998/07/03 by nick@ni-s
+
+	Remove obsolete Pod and HTML now distributed separately.
+
+Change 967 on 1998/07/03 by nick@pluto
+
+	Fix make test recurse and Test.pm issues
+
+Change 966 on 1998/07/02 by nick@pluto
+
+	Add size-reducing strip utility
+
+Change 965 on 1998/07/02 by nick@pluto
+
+	Make Tk compiler-ready (when compiler can do OO)
+
+Change 964 on 1998/07/01 by nick@ni-s
+
+	Get repository and MANIFEST back in sync
+
+Change 963 on 1998/07/01 by nick@ni-s
+
+	Steve's patches #3 and #4
+
+Change 961 on 1998/06/30 by nick@ni-s
+
+	Update versions
+
+Change 960 on 1998/06/30 by nick@ni-s
+
+	ptksh patch
+
+Change 959 on 1998/06/30 by nick@ni-s
+
+	Achim's TixGrid patch
+
+Change 958 on 1998/06/29 by nick@ni-s
+
+	Steve's #2 patch
+
+Change 957 on 1998/06/29 by nick@ni-s
+
+	Steve's patch#1
+
+Change 956 on 1998/06/29 by nick@pluto
+
+	Slaven's patches, and Steve's quick-fixes
+
+Change 955 on 1998/06/26 by nick@camel
+
+	Borland trial
+
+Change 954 on 1998/06/26 by nick@ni-s
+
+	Prepare for .007
+
 Change 953 on 1998/06/26 by nick@ni-s
 
 	Ilya's OS2 patch

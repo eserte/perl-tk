@@ -1,5 +1,7 @@
-This version is a (late) beta. I some respects code is in better shape
-than Tk40? series. But I still expect to tweak it some more.
+This version is a (late) beta. I MOST respects code is in better shape
+than Tk40? series! But I still expect to tweak it some more.  
+The documentation is in the best shape it has ever been and 
+reflects perl/Tk syntax. 
 
 Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
@@ -17,12 +19,12 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk800.007) requires perl5.004_02 or later.
-Some of Tk::IO and 'fileevent' programly won't work without 
+This version (Tk800.008) requires perl5.004_02 or later.
+Some of Tk::IO and 'fileevent' do not work without 
 Graham Barr's TIEHANDLE patches e.g. perl5.004_62
 
-Tk800.007 should build and run on Windows NT using Visual C++, Borland, 
-or (a 1st for .007) with the EGCS-1.0.2 Mingw32 port of GCC with perl5.004_68.
+Tk800.008 should build and run on Windows NT using Visual C++, Borland, 
+or with the EGCS-1.0.2 Mingw32 port of GCC with perl5.004_68 or later.
 Note that the 2.8.0 Mingw32 port does not work, because the GUI parts of the 
 include files and import libraries supplied with it are not correct enough
 to build Tk. The 2.8.1 port may work I have not tried it yet.
@@ -32,5 +34,3 @@ in tk8.0 while retaining as much of the perl-level API as it exists in Tk40?.*
 as possible.
 
 
-
- 

@@ -4,7 +4,9 @@ use Test;
 use Tk;
 use Tk::Font;
 
-BEGIN { plan tests => 9, todo => [9] };
+BEGIN { plan tests => 9
+        # , todo => [9]
+      };
 
 my $mw = Tk::MainWindow->new;
 

@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-bitmap - Images that display two colors
+Tk::Bitmap - Images that display two colors
 
 =for category  Tk Image Classes
 

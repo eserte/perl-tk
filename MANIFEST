@@ -55,24 +55,6 @@ HList/HList.pm
 HList/HList.xs
 HList/Makefile.PL
 HList/Tix2perl
-HTML/HTML.aswas
-HTML/HTMLText.aswas
-HTML/MANIFEST
-HTML/MANIFEST.SKIP
-HTML/README
-HTML/Xcamel.gif
-HTML/example.htm
-HTML/form.htm
-HTML/icon.gif
-HTML/places.htm
-HTML/prof
-HTML/speed
-HTML/t
-HTML/t.htm
-HTML/tkweb
-HTML/tryit
-HTML/up
-HTML/webget
 INSTALL
 IO/IO.pm
 IO/IO.xs
@@ -101,10 +83,6 @@ NBFrame/NBFrame.xs
 Photo/Makefile.PL
 Photo/Photo.pm
 Photo/Photo.xs
-Pod/MANIFEST
-Pod/MANIFEST.SKIP
-Pod/README
-Pod/tkpod
 README				General Information
 README.AIX
 README.HPUX
@@ -130,11 +108,14 @@ Text/README
 Text/Text.pm
 Text/Text.xs
 Text/Text/Tag.pm
+TixGrid/FloatEntry.pm
 TixGrid/Makefile.PL
 TixGrid/TixGrid.pm
 TixGrid/TixGrid.xs
-TixGrid/tixgrid_test
-TixGrid/tt.pl
+TixGrid/fedemo
+TixGrid/tgdemo_config
+TixGrid/tgdemo_edit
+TixGrid/tgdemo_simple
 TixPixmap/Makefile.PL
 TixPixmap/Pixmap.pm
 TixPixmap/Pixmap.xs
@@ -229,7 +210,6 @@ Tk/win.xbm
 TkXSUB.def
 Tkperl/Makefile.PL
 Tkperl/NotUnix.exc
-Tkperl/perlmain.c
 Tkperl/winMain.c
 ToDo
 VERSIONS			Description of version naming scheme
@@ -318,6 +298,7 @@ demos/demos/widget_lib/bitmaps.pl
 demos/demos/widget_lib/bounce.pl
 demos/demos/widget_lib/button.pl
 demos/demos/widget_lib/check.pl
+demos/demos/widget_lib/clrpick.pl
 demos/demos/widget_lib/colors.pl
 demos/demos/widget_lib/cscroll.pl
 demos/demos/widget_lib/ctext.pl
@@ -333,6 +314,7 @@ demos/demos/widget_lib/image1.pl
 demos/demos/widget_lib/image2.pl
 demos/demos/widget_lib/items.pl
 demos/demos/widget_lib/labels.pl
+demos/demos/widget_lib/menbut.pl
 demos/demos/widget_lib/menus.pl
 demos/demos/widget_lib/menus2.pl
 demos/demos/widget_lib/mkArrow.pl
@@ -362,6 +344,7 @@ demos/demos/widget_lib/mkTextBind.pl
 demos/demos/widget_lib/mkTextWind.pl
 demos/demos/widget_lib/mkTxtSearch.pl
 demos/demos/widget_lib/mkVScale.pl
+demos/demos/widget_lib/msgBox.pl
 demos/demos/widget_lib/plot.pl
 demos/demos/widget_lib/puzzle.pl
 demos/demos/widget_lib/radio.pl
@@ -384,7 +367,6 @@ demos/demos/widtrib/dirtree.pl
 demos/demos/widtrib/form_mgr.pl
 demos/demos/widtrib/labframe.pl
 demos/demos/widtrib/lib/npuz/Xcamel.npuz
-demos/demos/widtrib/msgBox.pl
 demos/demos/widtrib/notebook.pl
 demos/demos/widtrib/npuz.pl
 demos/demos/widtrib/plop.pl
@@ -409,6 +391,7 @@ error_prop
 evtGlue.c
 ewidth_demo
 findbase
+fix_4_os2.pl
 floppy
 font_demo
 font_test
@@ -441,8 +424,8 @@ lentry
 local_demo
 ls_table
 lsfonts
-mega.t
 menubar
+menubug
 mitem_test
 mkExt
 mkdist
@@ -496,7 +479,6 @@ pTk/defs
 pTk/findX
 pTk/findcore
 pTk/findstrings
-pTk/foo
 pTk/from
 pTk/genexc
 pTk/imgInt.exc
@@ -690,7 +672,6 @@ pTk/mTk/tclUnix/dltest/pkgc.c
 pTk/mTk/tclUnix/dltest/pkgd.c
 pTk/mTk/tclUnix/dltest/pkge.c
 pTk/mTk/tclUnix/dltest/pkgf.c
-pTk/mTk/tclUnix/foo
 pTk/mTk/tclUnix/install-sh
 pTk/mTk/tclUnix/ldAix
 pTk/mTk/tclUnix/mkLinks
@@ -1091,7 +1072,6 @@ pTk/tkOption.m
 pTk/tkOption.t
 pTk/tkOption_f.c
 pTk/tkOption_f.h
-pTk/tkPatch.h
 pTk/tkProperty.c
 pTk/tkVMacro.h
 pTk/tkWin.m
@@ -1299,6 +1279,7 @@ pod/widgets.pod
 popup
 popup_menu
 prop_demo
+ptked
 ptknews
 ptksh
 rebuild
@@ -1306,6 +1287,7 @@ scale_test
 scrolled_demo
 sm
 sockets
+stripblib
 style_test
 submethods
 symbols
@@ -1314,6 +1296,7 @@ t/X.t
 t/create.t
 t/fileselect.t
 t/font.t
+t/mega.t
 t/widget.t
 t/zzPhoto.t
 t/zzScrolled.t
@@ -1346,7 +1329,6 @@ tkperldoc
 tkpsh
 tktail
 tlist_demo
-toyedit
 two_main
 uninstall
 wal

@@ -7,9 +7,9 @@ require Tk::Wm;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Toplevel.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Toplevel.pm#12$
 
-@ISA = qw(Tk::Wm Tk::Frame);
+use base  qw(Tk::Wm Tk::Frame);
 
 Construct Tk::Widget 'Toplevel';
 

@@ -12,10 +12,10 @@ package Plot;
 require 5.002;
 
 use vars qw/$VERSION @ISA/;
-$VERSION = '3.007'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#7$
+$VERSION = '3.008'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#8$
 
 use Tk::Frame;
-@ISA = qw(Tk::Frame);
+use base  qw(Tk::Frame);
 Construct Tk::Widget 'Plot';
 use strict;
 

@@ -25,6 +25,8 @@
 
 Tk::TixGrid - Create and manipulate Tix Grid widgets
 
+=for pm TixGrid/TixGrid.pm
+
 =for category Tix Extensions
 
 =head1 SYNOPSIS
@@ -492,6 +494,7 @@ to be done.
 
 L<Tk::DItem|Tk::DItem>
 L<Tk::callbacks|Tk::callbacks>
+L<Tk::FloatEntry|Tk::FloatEntry>
 
 =head1 BUGS
 

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-composite - Defining a new composite widget class
+Tk::composite - Defining a new composite widget class
 
 =for category Derived Widgets
 
@@ -185,7 +185,8 @@ the options.
 
 =head1 SEE ALSO
 
-L<Tk::configspecs|Tk::configspecs>
+L<Tk::ConfigSpecs|Tk::ConfigSpecs>
+L<Tk::Derived|Tk::Derived>
 
 =cut
 
