@@ -5,11 +5,11 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use vars qw/$TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
+use vars qw/$MW $TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
 	    @ORDER $PF @PUZ $SIDE $SPACE $SPACE_IMAGE $WIDTRIB/;
 
 sub npuz {
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name             => $demo,    
         -text             => 'An N-puzzle appears below as a collection of button images.  Use "File/New Puzzle" to start a new game, then click on any of the images NSEW of the red space, and that piece will slide over the space.  Continue until the puzzle is solved.',
@@ -32,7 +32,6 @@ sub npuz {
 # the same terms as Perl itself.
 
 require 5.002;
-use English;
 use Tk;
 use Tk::Dialog;
 use strict;
@@ -82,7 +81,7 @@ sub create_puz {
     if (Exists $PF) {
 	my $image;
 	foreach (@PUZ) {
-	    $image = $ARG->cget(-image);
+	    $image = $_->cget(-image);
 	    $image = $SPACE_IMAGE if not defined $image;
 	    $image->delete;
 	}
@@ -96,7 +95,7 @@ sub create_puz {
 
     my($i, $o, $c, $r, $w, $h, $x, $y, $but, $gif);
 
-    foreach (0..$#ORDER) {$ORDER[$ARG] = [$ARG, undef]}
+    foreach (0..$#ORDER) {$ORDER[$_] = [$_, undef]}
 
     for($i = 0; $i <= $#PUZ; $i++) {
 	$o = $ORDER[$i]->[0];
@@ -149,9 +148,9 @@ sub create_ui {
     my $mbpmp = $mbpm->Menu;
     $mbp->entryconfigure($pieces, -menu => $mbpmp);
     foreach (@LEVELS) {
-	$mbpmp->radiobutton(-label    => $ARG,
+	$mbpmp->radiobutton(-label    => $_,
 			    -variable => \$PIECES,
-			    -value    => $ARG,
+			    -value    => $_,
 			    -command  => \&create_puz,
 			    );
     }
@@ -187,7 +186,7 @@ sub puz_fini {
 
 sub move_piece {
 
-    my($piece) = @ARG;
+    my($piece) = @_;
 
     my(%info, $c, $r, $sc, $sr);
     %info = $piece->gridInfo; ($c, $r)   = @info{-column,-row};
@@ -204,7 +203,7 @@ sub move_piece {
 			  -background       => $color,
 			  -relief           => 'flat',
 			  );
-	foreach (@PUZ) {$ARG->configure(-command => \&beep)}
+	foreach (@PUZ) {$_->configure(-command => \&beep)}
     }
 
 } # end move_piece
@@ -212,7 +211,7 @@ sub move_piece {
 sub new_puz {
 
     srand time;
-    foreach (0..$#ORDER) {$ORDER[$ARG]->[1] = rand $#ORDER}
+    foreach (0..$#ORDER) {$ORDER[$_]->[1] = rand $#ORDER}
     my @order = sort randomly @ORDER;
     #@order = @ORDER; # here's how I solve the puzzle (;
     my($i, $o, $c, $r, $but);
@@ -237,6 +236,6 @@ sub new_puz {
 
 sub randomly {$a->[1] <=> $b->[1]} # randomize order of puzzle pieces
 
-sub xy {my($n) = @ARG; ($n % $SIDE, int $n / $SIDE)} # ordinal to X/Y
+sub xy {my($n) = @_; ($n % $SIDE, int $n / $SIDE)} # ordinal to X/Y
 
 } # end subroutine npuz

@@ -1,0 +1,327 @@
+'\"
+'\" Copyright (c) 1990-1994 The Regents of the University of California.
+'\" Copyright (c) 1994-1997 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" SCCS: @(#) winfo.n 1.45 97/01/25 13:45:04
+'\" 
+.so man.macros
+.TH winfo n 4.3 Tk "Tk Generic Methods"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+winfo \- Return window-related information
+.SH SYNOPSIS
+\fI$widget\fR->\fImethod\fR(?\fIarg arg ...\fR?)
+.BE
+
+.SH DESCRIPTION
+.PP
+These methods are used to retrieve information about windows
+managed by Tk.  They can take any of a number of different forms,
+depending on the \fImethod\fR.  The legal forms are:
+.TP
+\fI$widget\fR->\fBatom\fR(\fIname\fR)
+Returns a decimal string giving the integer identifier for the
+atom whose name is \fIname\fR.  If no atom exists with the name
+\fIname\fR then a new one is created.
+.TP
+\fI$widget\fR->\fBatomname\fR(\fIid\fR)
+Returns the textual name for the atom whose integer identifier is
+\fIid\fR.
+This command is the inverse of the \fI$widget\fR->\fBatom\fR command.
+It generates an error if no such atom exists.
+.TP
+\fI$widget\fR->\fBcells\fR
+Returns a decimal string giving the number of cells in the
+color map for \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBchildren\fR
+\fI$widget->\fBchildren\fR
+Returns a list containing all the children
+of $widget\fR.  The list is in stacking order, with the lowest
+window first.  Top-level windows are returned as children
+of their logical parents.
+.TP
+\fI$widget\fR->\fBclass\fR
+Returns the class name for \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBcolormapfull\fR
+.VS
+Returns 1 if the colormap for \fI$widget\fR is known to be full, 0
+otherwise.  The colormap for a window is ``known'' to be full if the last
+attempt to allocate a new color on that window failed and this
+application hasn't freed any colors in the colormap since the
+failed allocation.
+.TP
+\fI$widget\fR->\fBcontaining\fR(\fIrootX,rootY\fR)
+Returns the window containing the point given
+by \fIrootX\fR and \fIrootY\fR.
+\fIRootX\fR and \fIrootY\fR are specified in screen units (i.e.
+any form acceptable to \fBTk_GetPixels\fR) in the coordinate
+system of the root window (if a virtual-root window manager is in
+use then the coordinate system of the virtual root window is used).
+If no window in this application contains the point then an empty
+string is returned.
+In selecting the containing window, children are given higher priority
+than parents and among siblings the highest one in the stacking order is
+chosen.
+.TP
+\fI$widget\fR->\fBdepth\fR
+Returns a decimal string giving the depth of \fI$widget\fR (number
+of bits per pixel).
+.TP
+\fBExists(\fI$widget\fR)
+Returns 1 if there exists a window for \fI$widget\fR, 0 if no such
+window exists.
+.TP
+\fI$widget\fR->\fBfpixels\fR(\fInumber\fR)
+Returns a floating-point value giving the number of pixels
+in \fI$widget\fR corresponding to the distance given by \fInumber\fR.
+\fINumber\fR may be specified in any of the forms acceptable
+to \fBTk_GetScreenMM\fR, such as ``2.0c'' or ``1i''.
+The return value may be fractional;  for an integer value, use
+\fI$widget\fR->\fBpixels\fR.
+.TP
+\fI$widget\fR->\fBgeometry\fR
+Returns the geometry for \fI$widget\fR, in the form
+\fIwidth\fBx\fIheight\fB+\fIx\fB+\fIy\fR.  All dimensions are
+in pixels.
+.TP
+\fI$widget\fR->\fBheight\fR
+Returns a decimal string giving \fI$widget\fR's height in pixels.
+When a window is first created its height will be 1 pixel;  the
+height will eventually be changed by a geometry manager to fulfill
+the window's needs.
+If you need the true height immediately after creating a widget,
+invoke \fBupdate\fR to force the geometry manager to arrange it,
+or use \fI$widget\fR->\fBreqheight\fR to get the window's requested height
+instead of its actual height.
+.TP
+\fI$widget\fR->\fBid\fR
+Returns a hexadecimal string giving a low-level platform-specific
+identifier for $widget\fR.  On Unix platforms, this is the X
+window identifier.  Under Windows, this is the Windows
+HWND.  On the Macintosh the value has no meaning outside Tk.
+.VE
+.TP
+\fI$widget\fR->\fBinterps\fR
+Returns a list whose members are the names of all Tcl interpreters
+(e.g. all Tk-based applications) currently registered for
+a particular display.
+The return value refers
+to the display of \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBismapped\fR
+Returns \fB1\fR if \fI$widget\fR is currently mapped, \fB0\fR otherwise.
+.TP
+\fI$widget\fR->\fBmanager\fR
+.VS
+Returns the name of the geometry manager currently
+responsible for \fI$widget\fR, or an empty string if \fI$widget\fR
+isn't managed by any geometry manager.
+The name is usually the name of the method for the geometry
+manager, such as \fBpack\fR or \fBplace\fR.
+If the geometry manager is a widget, such as canvases or text, the
+name is the widget's class command, such as \fBcanvas\fR.
+.TP
+\fI$widget\fR->\fBname\fR
+Returns \fI$widget\fR's name (i.e. its name within its parent, as opposed
+to its full path name).
+The command \fI$mainwin\fR->\fBname\fR will return the name of the application.
+.TP
+\fI$widget\fR->\fBparent\fR
+Returns \fI$widget\fR's parent, or an empty string
+if \fI$widget\fR is the main window of the application.
+.TP
+\fI$widget\fR->\fBpathname\fR(\fIid\fR)
+Returns the path name of the window whose X identifier is \fIid\fR.
+\fIId\fR must be a decimal, hexadecimal, or octal integer and must
+correspond to a window in the invoking application.
+The identifier is looked
+up on the display of \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBpixels\fR(\fInumber\fR)
+Returns the number of pixels in \fI$widget\fR corresponding
+to the distance given by \fInumber\fR.
+\fINumber\fR may be specified in any of the forms acceptable
+to \fBTk_GetPixels\fR, such as ``2.0c'' or ``1i''.
+The result is rounded to the nearest integer value;  for a
+fractional result, use \fI$widget\fR->\fBfpixels\fR.
+.TP
+\fI$widget\fR->\fBpointerx\fR
+.VS
+If the mouse pointer is on the same screen as \fI$widget\fR, returns the
+pointer's x coordinate, measured in pixels in the screen's root window.
+If a virtual root window is in use on the screen, the position is
+measured in the virtual root.
+If the mouse pointer isn't on the same screen as \fI$widget\fR then
+-1 is returned.
+.TP
+\fI$widget\fR->\fBpointerxy\fR
+If the mouse pointer is on the same screen as \fI$widget\fR, returns a list
+with two elements, which are the pointer's x and y coordinates measured
+in pixels in the screen's root window.
+If a virtual root window is in use on the screen, the position
+is computed in the virtual root.
+If the mouse pointer isn't on the same screen as \fI$widget\fR then
+both of the returned coordinates are -1.
+.TP
+\fI$widget\fR->\fBpointery\fR
+If the mouse pointer is on the same screen as \fI$widget\fR, returns the
+pointer's y coordinate, measured in pixels in the screen's root window.
+If a virtual root window is in use on the screen, the position
+is computed in the virtual root.
+If the mouse pointer isn't on the same screen as \fI$widget\fR then
+-1 is returned.
+.TP
+\fI$widget\fR->\fBreqheight\fR
+Returns a decimal string giving \fI$widget\fR's requested height,
+in pixels.  This is the value used by \fI$widget\fR's geometry
+manager to compute its geometry.
+.TP
+\fI$widget\fR->\fBreqwidth\fR
+Returns a decimal string giving \fI$widget\fR's requested width,
+in pixels.  This is the value used by \fI$widget\fR's geometry
+manager to compute its geometry.
+.TP
+\fI$widget\fR->\fBrgb\fR(\fIcolor\fR)
+Returns a list containing three decimal values, which are the
+red, green, and blue intensities that correspond to \fIcolor\fR in
+the window given by \fI$widget\fR.  \fIColor\fR
+may be specified in any of the forms acceptable for a color
+option.
+.TP
+\fI$widget\fR->\fBrootx\fR
+Returns a decimal string giving the x-coordinate, in the root
+window of the screen, of the
+upper-left corner of \fI$widget\fR's border (or \fI$widget\fR if it
+has no border).
+.TP
+\fI$widget\fR->\fBrooty\fR
+Returns a decimal string giving the y-coordinate, in the root
+window of the screen, of the
+upper-left corner of \fI$widget\fR's border (or \fI$widget\fR if it
+has no border).
+.TP
+\fI$widget\fR->\fBscreen\fR
+Returns the name of the screen associated with \fI$widget\fR, in
+the form \fIdisplayName\fR.\fIscreenIndex\fR.
+.TP
+\fI$widget\fR->\fBscreencells\fR
+Returns a decimal string giving the number of cells in the default
+color map for \fI$widget\fR's screen.
+.TP
+\fI$widget\fR->\fBscreendepth\fR
+Returns a decimal string giving the depth of the root window
+of \fI$widget\fR's screen (number of bits per pixel).
+.TP
+\fI$widget\fR->\fBscreenheight\fR
+Returns a decimal string giving the height of \fI$widget\fR's screen,
+in pixels.
+.TP
+\fI$widget\fR->\fBscreenmmheight\fR
+Returns a decimal string giving the height of \fI$widget\fR's screen,
+in millimeters.
+.TP
+\fI$widget\fR->\fBscreenmmwidth\fR
+Returns a decimal string giving the width of \fI$widget\fR's screen,
+in millimeters.
+.TP
+\fI$widget\fR->\fBscreenvisual\fR
+Returns one of the following strings to indicate the default visual
+class for \fI$widget\fR's screen: \fBdirectcolor\fR, \fBgrayscale\fR,
+\fBpseudocolor\fR, \fBstaticcolor\fR, \fBstaticgray\fR, or
+\fBtruecolor\fR.
+.TP
+\fI$widget\fR->\fBscreenwidth\fR
+Returns a decimal string giving the width of \fI$widget\fR's screen,
+in pixels.
+.TP
+\fI$widget\fR->\fBserver\fR
+.VS
+Returns a string containing information about the server for
+\fI$widget\fR's display.  The exact format of this string may vary
+from platform to platform.  For X servers the string
+has the form ``\fBX\fImajor\fBR\fIminor vendor vendorVersion\fR''
+where \fImajor\fR and \fIminor\fR are the version and revision
+numbers provided by the server (e.g., \fBX11R5\fR), \fIvendor\fR
+is the name of the vendor for the server, and \fIvendorRelease\fR
+is an integer release number provided by the server.
+.TP
+\fI$widget\fR->\fBtoplevel\fR
+Returns the path name of the top-level window containing \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBviewable\fR
+.VS
+Returns 1 if \fI$widget\fR and all of its ancestors up through the
+nearest toplevel window are mapped.  Returns 0 if any of these
+windows are not mapped.
+.TP
+\fI$widget\fR->\fBvisual\fR
+Returns one of the following strings to indicate the visual
+class for \fI$widget\fR: \fBdirectcolor\fR, \fBgrayscale\fR,
+\fBpseudocolor\fR, \fBstaticcolor\fR, \fBstaticgray\fR, or
+\fBtruecolor\fR.
+.TP
+\fI$widget\fR->\fBvisualid\fR
+.VS
+Returns the X identifier for the visual for $widget\fR.
+.TP
+\fI$widget\fR->\fBvisualsavailable\fR(?\fBincludeids\fR?\fR)
+.VS
+Returns a list whose elements describe the visuals available for
+\fI$widget\fR's screen.
+Each element consists of a visual class followed by an integer depth.
+The class has the same form as returned by \fI$widget\fR->\fBvisual\fR.
+The depth gives the number of bits per pixel in the visual.
+In addition, if the \fBincludeids\fR argument is provided, then the
+depth is followed by the X identifier for the visual.
+.TP
+\fI$widget\fR->\fBvrootheight\fR
+Returns the height of the virtual root window associated with \fI$widget\fR
+if there is one;  otherwise returns the height of \fI$widget\fR's screen.
+.TP
+\fI$widget\fR->\fBvrootwidth\fR
+Returns the width of the virtual root window associated with \fI$widget\fR
+if there is one;  otherwise returns the width of \fI$widget\fR's screen.
+.TP
+\fI$widget\fR->\fBvrootx\fR
+Returns the x-offset of the virtual root window associated with \fI$widget\fR,
+relative to the root window of its screen.
+This is normally either zero or negative.
+Returns 0 if there is no virtual root window for \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBvrooty\fR
+Returns the y-offset of the virtual root window associated with \fI$widget\fR,
+relative to the root window of its screen.
+This is normally either zero or negative.
+Returns 0 if there is no virtual root window for \fI$widget\fR.
+.TP
+\fI$widget\fR->\fBwidth\fR
+Returns a decimal string giving \fI$widget\fR's width in pixels.
+When a window is first created its width will be 1 pixel;  the
+width will eventually be changed by a geometry manager to fulfill
+the window's needs.
+If you need the true width immediately after creating a widget,
+invoke \fBupdate\fR to force the geometry manager to arrange it,
+or use \fI$widget\fR->\fBreqwidth\fR to get the window's requested width
+instead of its actual width.
+.TP
+\fI$widget\fR->\fBx\fR
+Returns a decimal string giving the x-coordinate, in \fI$widget\fR's
+parent, of the
+upper-left corner of \fI$widget\fR's border (or \fI$widget\fR if it
+has no border).
+.TP
+\fI$widget\fR->\fBy\fR
+Returns a decimal string giving the y-coordinate, in \fI$widget\fR's
+parent, of the
+upper-left corner of \fI$widget\fR's border (or \fI$widget\fR if it
+has no border).
+
+.SH KEYWORDS
+atom, children, class, geometry, height, identifier, information, interpreters,
+mapped, parent, path name, screen, virtual root, width, window

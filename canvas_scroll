@@ -2,7 +2,7 @@
 
 use Tk;
 
-$top = MainWindow->new("");
+$top = MainWindow->new();
 
 $top->wm("minsize",  10, 10);
 $top->wm("geometry", "100x100");

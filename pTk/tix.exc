@@ -1,0 +1,15 @@
+Tix_CreateCommands
+Tix_ExistMethod
+Tix_Exit
+Tix_Init
+Tix_LoadTclLibrary
+Tix_OpenStdin
+Tix_SetArgv
+tixConfigItemStyle 
+tixConfigRelief
+tixStrCaseCmp
+tixConfigItemType
+Tix_DefinePixmap
+Tix_EvalArgv
+Tix_SetRcFileName
+

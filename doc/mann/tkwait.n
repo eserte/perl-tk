@@ -1,0 +1,54 @@
+'\"
+'\" Copyright (c) 1992 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" SCCS: @(#) tkwait.n 1.13 96/07/31 08:19:23
+'\" 
+.so man.macros
+.TH tkwait n "" Tk "Tk User Interaction"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+wait\fIOption\fP \- Wait for variable to change or window to be destroyed
+.SH SYNOPSIS
+\fI$widget->\fBwaitVariable\fR(\e$\fIname\fR)
+.br
+\fI$widget->\fBwaitVisibility\fR
+.br
+\fI$widget->\fBwaitWindow\fR
+.BE
+
+.SH DESCRIPTION
+.PP
+The \fBtk wait\fR methods wait for one of several things to happen,
+then it returns without taking any other actions.
+The return value is always an empty string.
+\fBwaitVariable\fR expects a reference to a perl 
+variable and the command waits for that variable to be modified.
+This form is typically used to wait for a user to finish interacting
+with a dialog which sets the variable as part (possibly final) 
+part of the interaction.
+
+\fBwaitVisibility\fR waits for a change in \fI$widget\fR's
+visibility state (as indicated by the arrival of a VisibilityNotify
+event).  This form is typically used to wait for a newly-created
+window to appear on the screen before taking some action.
+
+\fBwaitWindow\fR waits for \fI$widget\fR to be destroyed.
+This form is typically used to wait for a user to finish interacting
+with a dialog box before using the result of that interaction.
+Note that creating and destroying the window each time a dialog is required
+makes code modular but imposes overhead which can be avoided by \fBwithdrawing\fR
+the window instead and using \fBwaitVisibility\fR.
+.PP
+While the \fBtk wait\fR methods are waiting they processes events in
+the normal fashion, so the application will continue to respond
+to user interactions.
+If an event handler invokes \fBtkwait\fR again, the nested call
+to \fBtkwait\fR must complete before the outer call can complete.
+
+.SH KEYWORDS
+variable, visibility, wait, window

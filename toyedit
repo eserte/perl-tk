@@ -25,7 +25,6 @@ my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                        '-accept'   => sub 
                                      { my $file = shift ; 
                                        return 0 if (-s $file && !(stat(_))[12]);
-                                       return 1 unless -e $file;
                                        return (-r $file) && (-T $file);  
                                      },
                        Name => 'fs', -filter => '*');
@@ -55,17 +54,13 @@ $t->DropSite(-motioncommand =>
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                   [[Button => '~Open',
-                   -command => sub { my $file = $fs->Show(-popover => $top, -create => 0, -verify => ['-r']);
-                                      $t->Load($file) if (defined $file);
-                                   }]]);
+                   -command => sub { my $file = $fs->Show(-popover => $top);
+                               $t->Load($file) if (defined $file);
+                             }
+                  ]]);
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                  [['Button' => '~Save', -command => [ $t , 'Save' ]],
-                  ['Button' => 'Save ~As', -command =>
-                      sub { 
-                           my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
-                           $t->Save($file) if (defined $file);
-                          }],
                   ['Button' => '~Quit', -command => [ 'destroy',$top ]],
                   ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']]
                  ]);
@@ -75,12 +70,6 @@ $mb->Menubutton(-text => '~Help', -side => 'right');
 
 $t->pack(-expand => 1, -fill => 'both');
 
-if (@ARGV) {
-    if (! -e $ARGV[0]) {
-        open(FILE,">$ARGV[0]") or die "Could not open $ARGV[0]: $!";
-        close(FILE) or die "There was trouble with $ARGV[0]: $!";
-    }
-    $t->Load($ARGV[0]);
-}
+$t->Load($ARGV[0]) if (@ARGV);
 
 MainLoop;

@@ -1,0 +1,81 @@
+'\"
+'\" Copyright (c) 1990 The Regents of the University of California.
+'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" @(#) DoWhenIdle.3 1.11 95/05/06 15:29:19
+'\" 
+.so man.macros
+.TH Tk_DoWhenIdle 3 "" Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_DoWhenIdle, Tk_CancelIdleCall \- invoke a procedure when there are no pending events
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+\fBTk_DoWhenIdle\fR(\fIproc, clientData\fR)
+.sp
+\fBTk_CancelIdleCall\fR(\fIproc, clientData\fR)
+.SH ARGUMENTS
+.AS Tk_IdleProc clientData
+.AP Tk_IdleProc *proc in
+Procedure to invoke.
+.AP ClientData clientData in
+Arbitrary one-word value to pass to \fIproc\fR.
+.BE
+
+.SH DESCRIPTION
+.PP
+\fBTk_DoWhenIdle\fR arranges for \fIproc\fR to be invoked
+when the application becomes idle.  The application is
+considered to be idle when \fBTk_DoOneEvent\fR has been
+called, it couldn't find any events to handle, and it is about
+to go to sleep waiting for an event to occur.  At this
+point all pending \fBTk_DoWhenIdle\fR handlers are
+invoked.  For each call to \fBTk_DoWhenIdle\fR there will
+be a single call to \fIproc\fR;  after \fIproc\fR is
+invoked the handler is automatically removed.
+\fBTk_DoWhenIdle\fR is only useable in programs that
+use \fBTk_DoOneEvent\fR to dispatch events.
+.PP
+\fIProc\fP should have arguments and result that match the
+type \fBTk_IdleProc\fR:
+.nf
+.RS
+typedef void Tk_IdleProc(ClientData \fIclientData\fR);
+.RE
+.fi
+The \fIclientData\fP parameter to \fIproc\fR is a copy of the \fIclientData\fP
+argument given to \fBTk_DoWhenIdle\fR.  Typically, \fIclientData\fR
+points to a data structure containing application-specific information about
+what \fIproc\fR should do.
+.PP
+\fBTk_CancelIdleCall\fR
+may be used to cancel one or more previous
+calls to \fBTk_DoWhenIdle\fR:  if there is a \fBTk_DoWhenIdle\fR
+handler registered for \fIproc\fR and \fIclientData\fR, then it
+is removed without invoking it.  If there is more than one
+handler on the idle list that refers to \fIproc\fR and \fIclientData\fR,
+all of the handlers are removed.  If no existing handlers match
+\fIproc\fR and \fIclientData\fR then nothing happens.
+.PP
+\fBTk_DoWhenIdle\fR is most useful in situations where
+(a) a piece of work will have to be done but (b) it's
+possible that something will happen in the near future
+that will change what has to be done, or require something
+different to be done.  \fBTk_DoWhenIdle\fR allows the
+actual work to be deferred until all pending events have
+been processed.  At this point the exact work to be done
+will presumably be known and it can be done exactly once.
+.PP
+For example, \fBTk_DoWhenIdle\fR might be used by an editor
+to defer display updates until all pending commands have
+been processed.  Without this feature, redundant redisplays
+might occur in some situations, such as the processing of
+a command file.
+
+.SH KEYWORDS
+callback, defer, handler, idle

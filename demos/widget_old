@@ -46,7 +46,7 @@ sub insert_with_tags {
     # text	Text to insert (it's inserted at the "insert" mark)
     # args	One or more tags to apply to text.  If this is empty then all tags are removed from the text.
 
-    my($w, $text, @args) = @ARG;
+    my($w, $text, @args) = @_;
     my($tag, $i, $start);
 
     $start = $w->index('insert');
@@ -65,7 +65,7 @@ sub lsearch {
 
     # Search the list using the supplied regular expression and return it's ordinal, or -1 if not found.
 
-    my($regexp, @list) = @ARG;
+    my($regexp, @list) = @_;
     my($i);
 
     for ($i=0; $i<=$#list; $i++) {
@@ -81,7 +81,7 @@ sub mkmb {
     # Make a Menubutton widget; note that the menu is automatically created.  We maintain a list of the Menubutton references
     # since some callers need to refer to the Menubutton, as well as to suppress stray name warnings with Perl -w.
 
-    my($mb_label, $mb_label_underline, $mb_list_ref) = @ARG;
+    my($mb_label, $mb_label_underline, $mb_list_ref) = @_;
 
     my $mb = $menu->Menubutton(-text => $mb_label, -underline => $mb_label_underline);
     foreach $mb_list (@{$mb_list_ref}) {

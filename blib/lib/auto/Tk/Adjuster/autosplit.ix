@@ -1,6 +1,0 @@
-# Index created by AutoSplit for ./blib/lib/Tk/Adjuster.pm (file acts as timestamp)
-package Tk::Adjuster;
-sub Restore ;
-sub dWidth ;
-sub dHeight ;
-1;

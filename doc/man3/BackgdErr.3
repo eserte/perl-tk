@@ -1,0 +1,60 @@
+'\"
+'\" Copyright (c) 1992-1994 The Regents of the University of California.
+'\" Copyright (c) 1994 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" @(#) BackgdErr.3 1.6 95/05/06 15:29:07
+'\" 
+.so man.macros
+.TH Tk_BackgroundError 3 4.0 Tk "Tk Library Procedures"
+.BS
+.SH NAME
+Tk_BackgroundError \- report Tcl error that occurred in background processing
+.SH SYNOPSIS
+.nf
+\fB#include <tk.h>\fR
+.sp
+\fBTk_BackgroundError\fR(\fIinterp\fR)
+.SH ARGUMENTS
+.AS Tcl_Interp *interp
+.AP Tcl_Interp *interp in
+Interpreter in which the error occurred.
+.BE
+
+.SH DESCRIPTION
+.PP
+This procedure is typically invoked when a Tcl error occurs during
+``background processing'' such as executing a Tcl command in response
+to a button press or menu entry invocation.
+When such an error occurs, the error condition is reported to Tk
+or to a widget or some other C code, and there is not usually any
+obvious way for that code to report the error to the user.
+In these cases the code calls \fBTk_BackgroundError\fR with an
+\fIinterp\fR argument identifying the interpreter in which the
+error occurred.
+\fBTk_BackgroundError\fR attempts to invoke the \fBtkerror\fR
+Tcl command to report the error in an application-specific fashion.
+If no \fBtkerror\fR command exists, or if it returns with an error condition,
+then \fBTk_BackgroundError\fR reports the error itself by printing
+a message on the standard error file.
+.PP
+.VS
+\fBTk_BackgroundError\fR does not invoke \fBtkerror\fR immediately
+(in some cases this could interfere with scripts that are in process
+at the time the error occurred).
+Instead, it invokes \fBtkerror\fR later as an idle callback.
+\fBTk_BackgroundError\fR saves the values of the \fBerrorInfo\fR and
+\fBerrorCode\fR variables and restores these values just before
+invoking \fBtkerror\fR.
+.PP
+It is possible for many background errors to accumulate before
+\fBtkerror\fR is invoked.  When this happens, each of the errors
+is processed in order.  However, if \fBtkerror\fR returns a
+break exception, then all remaining error reports for the
+interpreter are skipped.
+.VE
+
+.SH KEYWORDS
+background, error, tkerror

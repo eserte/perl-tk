@@ -5,12 +5,12 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use vars qw/$TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
+use vars qw/$MW $TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
 	    $DX $DY $MIN_PXL $MAX_PXL $MARGIN $ALEN $ORIGINAL_CURSOR $CANV
 	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS $VERSION/;
 
 sub plop {
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name             => $demo,
         -text             => 'This demonstration allows you to enter arithmetic functions in the text widow and plot them.  The X and Y axes limits can be changed to scale the plotting canvas.',
@@ -33,7 +33,6 @@ sub plop {
 # the same terms as Perl itself.
 
 require 5.002;
-use English;
 use strict;
 use Tk;
 require Tk::Dialog;
@@ -101,7 +100,7 @@ sub collect_errors {
     # Update the hash %ERRORS with the latest eval() error message.  Remove
     # the eval() line number (it's useless to us) to maintain a compact hash.
     
-    my($error) = @ARG;
+    my($error) = @_;
 
     $error =~ s/eval\s+(\d+)/eval/;
     $ERRORS{$error}++;
@@ -112,7 +111,7 @@ sub display_coordinates {
 
     # Print Canvas and Plot coordinates.
 
-    my($canvas) = @ARG;
+    my($canvas) = @_;
 
     my $e = $canvas->XEvent;
     my($canv_x, $canv_y) = ($e->x, $e->y); 
@@ -297,7 +296,7 @@ sub make_menubutton {
     # Make a Menubutton widget; note that the Menu is automatically created.  
     # If the label is '', make a separator.
 
-    my($mbf, $mb_label, $mb_label_underline, $pack, $mb_list_ref) = @ARG;
+    my($mbf, $mb_label, $mb_label_underline, $pack, $mb_list_ref) = @_;
 
     my $mb = $mbf->Menubutton(
 			       -text      => $mb_label, 
@@ -332,29 +331,29 @@ sub plot_functions {
 
     @FUNCTIONS = ();
     foreach (split /\n/, $TEXT->get('0.0', 'end')) {
-	next if $ARG eq '';
-	push @FUNCTIONS, $ARG;
+	next if $_ eq '';
+	push @FUNCTIONS, $_;
     }
     update_functions;
     $TOP->idletasks;
 
     %ERRORS = ();
-    local $SIG{'__WARN__'} = sub {collect_errors($ARG[0])};
+    local $SIG{'__WARN__'} = sub {collect_errors($_[0])};
 
 ALL_X_VALUES:
     for ($x = $X_MIN; $x <= $X_MAX; $x += ($X_MAX - $X_MIN) / $ALEN) {
 
       ALL_FUNCTIONS:
 	foreach (0 .. $#FUNCTIONS) {
-	    next if $FUNCTIONS[$ARG] =~ /^ERROR:/;
-	    $y = eval $FUNCTIONS[$ARG];
+	    next if $FUNCTIONS[$_] =~ /^ERROR:/;
+	    $y = eval $FUNCTIONS[$_];
 	    if ($::EVAL_ERROR) {
 		collect_errors($::EVAL_ERROR);
 		next;
 	    }
 	    $canv_y = (($Y_MAX - $y) / $DY) * $ALEN + $MARGIN;
 	    $CANV->create('text', $canv_x, $canv_y,
-			  -fill => $COLORS[$ARG % $NUM_COLORS],
+			  -fill => $COLORS[$_ % $NUM_COLORS],
 			  -tags => ['plot'],
 			  -text => '.',
 			  ) if $canv_y > $MIN_PXL + $MARGIN and 
@@ -372,7 +371,7 @@ ALL_X_VALUES:
 
     print STDOUT "\n" if %ERRORS;
     foreach (keys %ERRORS) {
-	print STDOUT "$ERRORS{$ARG} occurrences of $ARG";
+	print STDOUT "$ERRORS{$_} occurrences of $_";
     }
 
 } # end plot_functions
@@ -384,7 +383,7 @@ sub update_functions {
     $TEXT->delete('0.0', 'end');
     my $i = 0;
     foreach (@FUNCTIONS) {
-	$TEXT->insert('end', "$ARG\n", [$i]);
+	$TEXT->insert('end', "$_\n", [$i]);
 	$TEXT->tagConfigure($i,
 		   -foreground => $COLORS[$i % $NUM_COLORS],
 		   -font       => 'fixed',

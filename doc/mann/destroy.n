@@ -1,0 +1,38 @@
+'\"
+'\" Copyright (c) 1990 The Regents of the University of California.
+'\" Copyright (c) 1994-1996 Sun Microsystems, Inc.
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" SCCS: @(#) destroy.n 1.14 96/12/12 17:54:59
+'\" 
+.so man.macros
+.TH destroy n "" Tk "Tk Generic Methods"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+destroy \- Destroy one or more windows
+.SH SYNOPSIS
+\fI$widget\fR->\fBdestroy\fR
+.BE
+
+.SH DESCRIPTION
+.VS
+.PP
+This command deletes the window related to 
+\fI$widget\fR, plus all its descendants.
+If all the \fBMainWindows\fR are deleted then the entire application
+will be destroyed.
+.PP
+The perl object \fI$widget\fR continues to exist while references
+to it still exist, e.g. until variable goes out of scope.
+However any attempt to use Tk methods on the object will fail.
+\fBExists\fR(\fI$widget\fR) will return false on such objects.
+.PP
+Note however that while a window exists for \fI$widget\fR the 
+perl object is maintained (due to "references" in perl/Tk internals)
+even though original variables may have gone out of scope.
+(Normally this is intuitive.)
+.SH KEYWORDS
+application, destroy, window
