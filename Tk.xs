@@ -199,8 +199,12 @@ LangFontRank(unsigned int suggested,
    result = Nullsv;
    sv = newSV(UTF8_MAXLEN);
    sv_upgrade(sv,SVt_PVIV);
+#ifdef UNICODE_ALLOW_ANY
    count = uvchr_to_utf8_flags((U8 *) SvPVX(sv),ch, UNICODE_ALLOW_ANY)
                - (U8 *) SvPVX(sv);
+#else
+   count = Perl_uv_to_utf8(aTHX_ (U8 *) SvPVX(sv),ch) - (U8 *) SvPVX(sv);
+#endif
    SvCUR_set(sv,count);
    SvPOK_on(sv);
    SvUTF8_on(sv);

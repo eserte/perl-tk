@@ -143,7 +143,11 @@ Tcl_UniCharToUtf(int ch, char * buf)
 {
  dTHX;
  /* We "allow any" as the page cache algorithm hits at least U+FFFE */
+#ifdef UNICODE_ALLOW_ANY
  U8 *p = uvchr_to_utf8_flags((U8 *) buf,ch, UNICODE_ALLOW_ANY);
+#else
+ U8 *p = Perl_uv_to_utf8(aTHX_ (U8 *) buf,ch);
+#endif
  return p - (U8 *) buf;
 }
 

@@ -1,3 +1,75 @@
+Change 2943 on 2003/10/10 by nick@llama
+
+	Suggestions from Tom.Horsley@ccur.com
+
+Change 2942 on 2003/10/10 by nick@llama
+
+	Were leaking SVs for option DB values.
+
+Change 2941 on 2003/10/10 by nick@llama
+
+	More size tests (XFT=0 ssh-ed to SuSE8.2)
+
+Change 2940 on 2003/10/10 by nick@llama
+
+	Fix nasty pseudo-list SV leak (e.g. fonts with 'helvetica 12 bold'
+	got temp AV to get at elements and we lost them.)
+
+Change 2939 on 2003/10/10 by nick@dromedary
+
+	More todo skips (XFT on stock SuSE8.2)
+
+Change 2938 on 2003/10/09 by nick@bactrian
+
+	UnixFont todo of listbox.t
+
+Change 2937 on 2003/10/09 by nick@dromedary
+
+	Check leaks
+
+Change 2936 on 2003/10/09 by nick@camel
+
+	Loose some debug - Win32 calls ->focus after window
+	has been destroyed.
+
+Change 2935 on 2003/10/09 by nick@camel
+
+	Avoid JPEG<=>GIF compare
+
+Change 2934 on 2003/10/09 by nick@camel
+
+	Test todo-ing and correction for Win32
+
+Change 2933 on 2003/10/09 by nick@llama
+
+	perl5.6 tolerance (maybe)
+
+Change 2932 on 2003/10/09 by nick@llama
+
+	Another try an PNG/zlib build
+
+Change 2928 on 2003/10/06 by nick@llama
+
+	Decls.[tm] seem to have changed again...
+
+Change 2927 on 2003/10/06 by nick@llama
+
+	Avoid UNIVERSAL.pm
+
+Change 2926 on 2003/10/04 by nick@llama
+
+	Sub-dir MANIFEST issues reported by.
+	Vinicius Jose Latorre <vinicius@cpqd.com.br>
+
+Change 2925 on 2003/10/04 by nick@llama
+
+	Steve Hay's <steve.hay@uk.radan.com> diagnosis of Win32 PNG/zlib
+	issues.
+
+Change 2924 on 2003/09/28 by nick@llama
+
+	pre-release prep
+
 Change 2923 on 2003/09/28 by nick@camel
 
 	Skip ColorEditor test on Win32 - it seems to leave a 

@@ -52,6 +52,7 @@ use Tk::Canvas;
 }
 
 my $mw = new MainWindow;
+$mw->optionAdd("*Button.Background",'#dcdcdc');
 my $handle;
 my($c1,$c2);
 
@@ -115,13 +116,15 @@ ok(($c2-$c1) < 10, 1);
 # Tests for leaking widget destroys
 my $btn2 = $mw->Button;
 $btn2->destroy;
+undef $btn2;
 
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
-    my $btn2 = $mw->Button;
+    $btn2 = $mw->Button;
     $btn2->destroy;
 }
-$c2 = Devel::Leak::NoteSV($handle);
+$c2 = Devel::Leak::CheckSV($handle);
+print "# was $c1 now $c2 ",($c2-$c1)/100," per iter\n";
 ok(($c2-$c1) < 10, 1);
 
 # Tests for leaking fileevent callbacks

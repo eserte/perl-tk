@@ -4,11 +4,11 @@ use strict;
 use ExtUtils::Manifest "/mani/";
 use POSIX qw(getcwd);
 
-use vars qw($opt_dev $opt_man $opt_lax $version);
+use vars qw($opt_dev $opt_man $opt_lax $opt_sfx $version);
 
 use Getopt::Long;
 
-GetOptions('dev=s','man','lax');
+GetOptions('dev=s','man','lax','sfx=s');
 
 sub System
 {
@@ -56,13 +56,15 @@ foreach my $file (keys %$files)
 
 exit(1) if $snag && !$opt_lax;
 
-my @files = map("$dir$version/$_",sort(keys %$files));
+$opt_sfx = '_'.$opt_sfx if (length($opt_sfx) && $opt_sfx !~ /^_/);
+
+my @files = map("$dir$version$opt_sfx/$_",sort(keys %$files));
 chdir("..");
 
-unlink("$dir$version") if (-l "$dir$version");
-symlink($path,"$dir$version") || die "Cannot link $dir $dir$version:$!";
+unlink("$dir$version$opt_sfx") if (-l "$dir$version$opt_sfx");
+symlink($path,"$dir$version$opt_sfx") || die "Cannot link $dir $dir$version$opt_sfx:$!";
 
-$dir .= $version;
+$dir .= $version.$opt_sfx;
 
 system("mv","$dir.tar.gz","$dir.tar.gz%") if (-e "$dir.tar.gz");
 

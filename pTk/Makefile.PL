@@ -267,8 +267,7 @@ tkDecls.t tkDecls.m : tkDecls.h tkDecls.exc mkVFunc
 tclDecls.t tclDecls.m : tclDecls.h tclDecls.exc mkVFunc
 tkIntDecls.t tkIntDecls.m : tkIntDecls.h tkIntDecls.exc mkVFunc
 
-config :: LangIO.h \
-          Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t \
+config :: Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t \
           tkDecls.t tkIntDecls.t tclDecls.t \
           Xlib.m Lang.m tk.m tkInt.m tkImgPhoto.m tix.m tixInt.m \
           tkDecls.m tkIntDecls.m tclDecls.m

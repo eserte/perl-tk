@@ -31,7 +31,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 336 }
+BEGIN { plan tests => 336, todo => [181,207] }
 
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
@@ -1141,7 +1141,7 @@ if ($^O ne 'MSWin32') {
     # last selected range.  When selection ownership is restored to
     # entry, the old range will be rehighlighted.
 
-    ok($mw->SelectionGet, 1);
+    ok($e->getSelected, '123456');
     ok($e->index("sel.first"), 1);
 }
 

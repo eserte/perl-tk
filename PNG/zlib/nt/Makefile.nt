@@ -1,4 +1,7 @@
 # Makefile for zlib
+# This has been hacked for perl/Tk use by NI-S
+# Now builds zlib.lib rather than zlib.dll to avoid test/install issues
+# Makefile is also now dmake/nmake neutral (I think).
 
 #!include <ntwin32.mak>
 dlllflags = /INCREMENTAL:NO /PDB:NONE /RELEASE /NOLOGO \
@@ -16,7 +19,7 @@ OBJ1 = adler32$(O) compress$(O) crc32$(O) gzio$(O) uncompr$(O) deflate$(O) \
 OBJ2 = zutil$(O) inflate$(O) infblock$(O) inftrees$(O) infcodes$(O) \
   infutil$(O) inffast$(O)
 
-all:  zlib.dll example.exe minigzip.exe
+all:  zlib.lib example.exe minigzip.exe
 
 adler32.obj: adler32.c zutil.h zlib.h zconf.h
 	$(CC) -c $(cvarsdll) $(CFLAGS) $*.c
@@ -85,5 +88,5 @@ minigzip.exe: minigzip.obj zlib.lib
 
 test: example.exe minigzip.exe
 	example
-	echo hello world | minigzip | minigzip -d 
+	echo hello world | minigzip | minigzip -d
 

@@ -22,6 +22,7 @@ Tk_Font			T_TK_FONT
 EventAndKeySym *	T_TK_XEVENT
 LangCallback *		T_TK_CALLBACK
 LangFontInfo *		T_PVOBJ
+const char *		T_PV
 
 INPUT
 T_PVOBJ

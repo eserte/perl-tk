@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = sprintf '4.%03d', q$Revision: #26 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #27 $ =~ /\D(\d+)\s*$/;
 
 require Tk;
 use AutoLoader;
@@ -272,7 +272,7 @@ sub _AutoloadTkWidget
  return $what;
 }
 
-require UNIVERSAL;
+# require UNIVERSAL; don't load .pm use XS code from perl core though
 
 sub AUTOLOAD
 {
@@ -1386,7 +1386,7 @@ sub bindDump {
 sub ConfigSpecs {
 
     my $w = shift;
-    
+
     return map { ( $_->[0], [ $w, @$_[ 1 .. 4 ] ] ) } $w->configure;
 
 }

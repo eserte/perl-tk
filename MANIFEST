@@ -1036,8 +1036,6 @@ pTk/Lang.m
 pTk/Lang.t
 pTk/Lang_f.c
 pTk/Lang_f.h
-pTk/LangIO.h
-pTk/LangIO.h.PL
 pTk/license.html_lib
 pTk/license.terms
 pTk/makeenglish

@@ -11,7 +11,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #6 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -20,7 +20,7 @@ require Tk::Toplevel;
 Tk::Widget->Construct('Balloon');
 use base qw(Tk::Toplevel);
 
-use UNIVERSAL;
+# use UNIVERSAL; avoid the UNIVERSAL.pm file subs are XS in perl core
 
 use strict;
 

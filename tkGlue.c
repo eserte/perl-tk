@@ -2723,7 +2723,9 @@ XS(XStoSubCmd)
  int posn = InfoFromArgs(&info,(Tcl_ObjCmdProc *) XSANY.any_ptr,1,items,&ST(0));
  if (posn < 0)
   {
+#if 0
    LangDumpVec(Tcl_GetString(name),items,&ST(0));
+#endif
    die_with_trace(ST(0),"XStoSubCmd: Not a Tk Window");
   }
  if (posn == 0)

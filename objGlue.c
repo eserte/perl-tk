@@ -718,7 +718,9 @@ MaybeForceList(pTHX_ Tcl_Interp *interp, Tcl_Obj *sv)
    if (av && av_len(av) > 0)
     {
      /* AV is mortal - so we want newRV not MakeReference as we need extra REFCNT */
-     SvSetMagicSV(sv,newRV((SV *) av));
+     SV *ref = newRV((SV *) av);
+     SvSetMagicSV(sv,ref);
+     SvREFCNT_dec(ref);
     }
    return av;
   }

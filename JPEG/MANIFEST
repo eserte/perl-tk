@@ -126,7 +126,6 @@ jpeg/makefile.sas
 jpeg/makefile.unix
 jpeg/makefile.v32
 jpeg/makefile.vc
-jpeg/makefile.vc.orig
 jpeg/makefile.vms
 jpeg/makefile.wat
 jpeg/makelib.ds

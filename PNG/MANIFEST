@@ -76,7 +76,6 @@ libpng/msvc/libpng.dsp
 libpng/msvc/libpng.dsw
 libpng/msvc/png.rc
 libpng/msvc/png32ms.def
-libpng/msvc/png32ms.def.orig
 libpng/msvc/README.txt
 libpng/msvc/zlib.def
 libpng/msvc/zlib.dsp

@@ -18,9 +18,9 @@ $mw->geometry('+10+10');  # This works for mwm and interactivePlacement
 
 if ($Tk::platform eq 'MSWin32') {
     my $curfile = "demos/demos/images/cursor.cur";
-    $mw->configure(-cursor => $curfile);
+    $mw->configure(-cursor => '@'.$curfile);
     $mw->update;
-    ok($mw->cget(-cursor), $curfile);
+    ok($mw->cget(-cursor), '@'.$curfile);
 } else {
     $mw->configure(-cursor => ['@demos/demos/images/cursor.xbm','black']);
     $mw->update;

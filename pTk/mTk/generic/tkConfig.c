@@ -594,6 +594,11 @@ Tk_InitOptions(interp, recordPtr, optionTable, tkwin)
 	    return TCL_ERROR;
 	}
 	Tcl_DecrRefCount(valuePtr);
+
+	if (source == OPTION_DATABASE) {
+		Tcl_DecrRefCount(valuePtr);
+	}
+
     }
     return TCL_OK;
 }

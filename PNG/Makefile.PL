@@ -50,7 +50,7 @@ else
    {
     warn "Building libpng$l\n";
     my $extlib = "libpng/libpng$l";
-    if ($cc eq 'cl') 
+    if ($cc eq 'cl')
      {
       $extlib .= " zlib/zlib$l";
       $zlib   = "zlib$l";
@@ -79,6 +79,10 @@ else
 
 package MY;
 
+sub pasthru {
+  qq[PASTHRU="CC=$Config::Config{cc} $Config::Config{cccdlflags}" RANLIB=$Config::Config{ranlib}];
+}
+
 sub postamble {
   my $s = '';
   if (-f "libpng/Makefile.PL")
@@ -86,7 +90,7 @@ sub postamble {
     $s .=
 "
 libpng/libpng$l : zlib/$zlib
-	cd libpng && \$(MAKE) libpng".$l.'
+	cd libpng && \$(MAKE) libpng".$l.' $(PASTHRU)
 ';
 
    }
@@ -95,7 +99,7 @@ libpng/libpng$l : zlib/$zlib
     $s .=
 "
 zlib/$zlib : FORCE
-	cd zlib && \$(MAKE) $zlib".'
+	cd zlib && \$(MAKE) $zlib".' $(PASTHRU)
 ';
 
    }

@@ -114,10 +114,8 @@ clean:
 test: cjpeg.exe djpeg.exe
 	-del testout.*
 	djpeg -dct int -ppm -outfile testout.ppm  testorig.jpg
-	djpeg -dct int -gif -outfile testout.gif  testorig.jpg
 	cjpeg -dct int -outfile testout.jpg  testimg.ppm
 	fc /b testimg.ppm testout.ppm
-	fc /b testimg.gif testout.gif
 	fc /b testimg.jpg testout.jpg
 
 
