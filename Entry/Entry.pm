@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d',q$Revision: #15 $ =~ /#(\d+)/;
+$VERSION = sprintf '4.%03d',q$Revision: #16 $ =~ /#(\d+)/;
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
@@ -522,7 +522,7 @@ sub getSelected
  $str = $show x length($str) if (defined $show);
  my $s = $w->index('sel.first');
  my $e = $w->index('sel.last');
- return substr($str,$s,$e+1-$s);
+ return substr($str,$s,$e-$s);
 }
 
 1;

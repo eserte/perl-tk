@@ -1,3 +1,29 @@
+Change 2950 on 2003/10/20 by nick@llama
+
+	Avoid poking our noses in the internals of objects.
+	Catch simple case of recursive lists.
+
+Change 2949 on 2003/10/20 by nick@llama
+
+	Allow empty -background on bitmaps.
+
+Change 2948 on 2003/10/20 by nick@llama
+
+	Part fix for problem found by Petr Pajas <pajas@ufal.ms.mff.cuni.cz>.
+	Avoid stringify of config options to test for emptiness:
+	Use LangNull for ObjctIsEmpty in _new_ config code.
+	Enhance LangNull to return true for string "".
+	Fix _old_ config code to avoid NULL for non-optional
+	options for which LangNull() now returns true.
+
+Change 2946 on 2003/10/20 by nick@llama
+
+	Selection was off-by-1 as pointed out by  Simon.Lux@etas.de
+
+Change 2944 on 2003/10/10 by nick@llama
+
+	Update change log
+
 Change 2943 on 2003/10/10 by nick@llama
 
 	Suggestions from Tom.Horsley@ccur.com

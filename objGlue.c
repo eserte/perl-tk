@@ -129,10 +129,12 @@ Scalarize(pTHX_ SV *sv, AV *av)
         {
          SV *el = *svp;
          int temp = 0;
-         if (SvROK(el) && SvTYPE(SvRV(el)) == SVt_PVAV)
+         if (SvROK(el) && !SvOBJECT(SvRV(el)) && SvTYPE(SvRV(el)) == SVt_PVAV)
           {
            el = newSVpv("",0);
            temp = 1;
+           if ((AV *) SvRV(*svp) == av)
+            abort();
            Scalarize(aTHX_ el,(AV *) SvRV(*svp));
           }
          Tcl_DStringAppendElement(&ds,Tcl_GetString(el));
@@ -163,7 +165,7 @@ ForceScalar(pTHX_ SV *sv)
   }
  else
   {
-   if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
+   if (SvROK(sv) && !SvOBJECT(SvRV(sv)) && SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
      /* Callbacks and lists often get stringified by mistake due to
         Tcl/Tk's string fixation - don't change the real value
@@ -405,76 +407,80 @@ static char *
 LangString(SV *sv)
 {
  dTHX;
- STRLEN na;
  if (!sv)
   return "";
  if (SvGMAGICAL(sv)) mg_get(sv);
  if (SvPOK(sv))
-  return SvPV(sv, na);
+  {
+   if (!SvUTF8(sv))
+    sv_utf8_upgrade(sv);
+   return SvPV_nolen(sv);
+  }
  else
   {
    if (SvROK(sv))
     {
      SV *rv = SvRV(sv);
-     if (SvTYPE(rv) == SVt_PVCV || SvTYPE(rv) == SVt_PVAV)
-      return SvPV(sv, na);
-     else
+     STRLEN len;
+     char *s;
+     if (SvOBJECT(rv))
       {
-       if (SvOBJECT(rv))
+       /* Special case "our" objects and certainb legacy hacks ... */
+       if (SvTYPE(rv) == SVt_PVHV)
         {
-         if (SvTYPE(rv) == SVt_PVHV)
+         SV **p = hv_fetch((HV *) rv,"_TkValue_",9,0);
+         if (p)
           {
-           SV **p = hv_fetch((HV *) rv,"_TkValue_",9,0);
-           if (p)
-            {
-             return SvPV(*p,na);
-            }
-           else
-            {
-             Lang_CmdInfo *info = WindowCommand(sv, NULL, 0);
-             if (info)
-              {
-               if (info->tkwin)
-                {
-                 char *val = Tk_PathName(info->tkwin);
-                 hv_store((HV *) rv,"_TkValue_",9,Tcl_NewStringObj(val,strlen(val)),0);
-                 return val;
-                }
-               if (info->image)
-                {
-                 return SvPV(info->image,na);
-                }
-              }
-            }
-          }
-         else if (SvPOK(rv))
-          {
-#ifdef SvUTF8
-           if (!SvUTF8(rv))
-            sv_utf8_upgrade(rv);
-#endif
-           return SvPV(rv,na);
+           return SvPV_nolen(*p);
           }
          else
           {
-           if (!mg_find(rv,PERL_MAGIC_qr))
+           Lang_CmdInfo *info = WindowCommand(sv, NULL, 0);
+           if (info)
             {
-             LangDumpVec("Odd object type", 1, &rv);
+             if (info->tkwin)
+              {
+               char *val = Tk_PathName(info->tkwin);
+               hv_store((HV *) rv,"_TkValue_",9,Tcl_NewStringObj(val,strlen(val)),0);
+               return val;
+              }
+             if (info->image)
+              {
+               return SvPV_nolen(info->image);
+              }
             }
           }
         }
+       else if (SvPOK(rv))
+        {
+         /* ref to string is special cased for some reason ? */
+         if (!SvUTF8(rv))
+          sv_utf8_upgrade(rv);
+         return SvPV_nolen(rv);
+        }
+      } /* Object */
+     s = SvPV(sv, len);
+     if (!is_utf8_string(s,len))
+      {
+       sv_setpvn(sv,s,len);
+       sv_utf8_upgrade(sv);
+       s = SvPV(sv, len);
       }
-    }
-   if (SvOK(sv))
+     if (!is_utf8_string(s,len))
+      {
+       LangDebug("%s @ %d not utf8 '%.*s'\n",__FUNCTION__,__LINE__,(int) len, s);
+       sv_dump(sv);
+       abort();
+      }
+     return s;
+    } /* reference */
+   else if (SvOK(sv))
     {
-#ifdef SvUTF8
      if (SvROK(sv) && SvPOK(SvRV(sv)) && !SvUTF8(SvRV(sv)))
       sv_utf8_upgrade(SvRV(sv));
-     else
-      if (!SvUTF8(sv))
+     else if (!SvUTF8(sv))
        sv_utf8_upgrade(sv);
-#endif
-     return SvPV(sv, na);
+     return SvPV_nolen(sv);
     }
    else
     return "";
@@ -483,7 +489,6 @@ LangString(SV *sv)
 
 void utf8Whoops(pTHX_ SV *objPtr)
 {
-
  sv_utf8_upgrade(objPtr);
  sv_dump(objPtr);
 }
@@ -495,8 +500,9 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
   {
    dTHX;
    char *s;
-   if ((SvROK(objPtr) && SvTYPE(SvRV(objPtr)) == SVt_PVAV) ||
-        (SvTYPE(objPtr) == SVt_PVAV))
+   if ((SvROK(objPtr) && !SvOBJECT(SvRV(objPtr))
+        && SvTYPE(SvRV(objPtr)) == SVt_PVAV) ||
+       (SvTYPE(objPtr) == SVt_PVAV))
     objPtr = ForceScalar(aTHX_ objPtr);
    if (SvPOK(objPtr))
     {
@@ -537,7 +543,7 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
       {
        LangDebug("%s @ %d not utf8\n",__FUNCTION__,__LINE__);
        sv_dump(objPtr);
-       /*//     abort();*/
+       abort();
       }
 #endif
      if (lengthPtr)

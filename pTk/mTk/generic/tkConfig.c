@@ -1075,8 +1075,12 @@ ObjectIsEmpty(objPtr)
 	return (objPtr->length == 0);
     }
 #endif
+#if 0
     Tcl_GetStringFromObj(objPtr, &length);
     return (length == 0);
+#else
+    return LangNull(objPtr);
+#endif
 }
 
 /*

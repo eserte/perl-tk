@@ -286,7 +286,7 @@ LangNull(sv)
 Tcl_Obj * sv;
 {
  STRLEN len = 0;
- if (!sv || !SvOK(sv) /* || (SvPOK(sv) && !*SvPV(sv,len) && !len) */)
+ if (!sv || !SvOK(sv) || (SvPOK(sv) && !SvCUR(sv)))
   return 1;
  return 0;
 }
@@ -908,18 +908,18 @@ CONST char *s;
  dTHX;
  SV *sv = *sp;
  do_watch();
+ if (!s)
+  {
+   /* tkOldConfig uses LangSetString when TK_CONFIG_NULL_OK is _NOT_ set
+      we must set something.
+    */
+   s = "";
+  }
  if (sv)
   {
-   if (!s /* || SvREADONLY(sv) */)
-    {
-     Decrement(sv, "LangSetString");
-    }
-   else
-    {
-     sv_setpv(sv, s);
-     SvSETMAGIC(sv_maybe_utf8(sv));
-     return;
-    }
+   sv_setpv(sv, s);
+   SvSETMAGIC(sv_maybe_utf8(sv));
+   return;
   }
  *sp = Tcl_NewStringObj(s, -1);
 }

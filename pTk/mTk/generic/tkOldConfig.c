@@ -226,7 +226,7 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 		    LangSetDefault(&value,specPtr->defValue);
                 else
 		    LangSetString(&value,specPtr->defValue);
-		if (!LangNull(value) && !(specPtr->specFlags
+		if ((value != NULL) && !(specPtr->specFlags
 			& TK_CONFIG_DONT_SET_DEFAULT)) {
 		    if (DoConfig(interp, tkwin, specPtr, value, 0, widgRec) !=
 			    TCL_OK) {

@@ -114,7 +114,7 @@ Tk_ImageType tkBitmapImageType = {
 
 static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_UID, "-background", (char *) NULL, (char *) NULL,
-	"", Tk_Offset(BitmapMaster, bgUid), 0},
+	"", Tk_Offset(BitmapMaster, bgUid), TK_CONFIG_NULL_OK},
     {TK_CONFIG_STRING, "-data", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(BitmapMaster, dataString), TK_CONFIG_NULL_OK},
     {TK_CONFIG_STRING, "-file", (char *) NULL, (char *) NULL,
@@ -355,7 +355,7 @@ ImgBmapConfigureInstance(instancePtr)
      * form into an internal form appropriate for instancePtr.
      */
 
-    if (*masterPtr->bgUid != 0) {
+    if ((masterPtr->bgUid != NULL) && (masterPtr->bgUid[0] != '\0')) {
 	colorPtr = Tk_GetColor(masterPtr->interp, instancePtr->tkwin,
 		masterPtr->bgUid);
 	if (colorPtr == NULL) {
@@ -1252,7 +1252,7 @@ ImgBmapPostscript(clientData, interp, tkwin, psinfo, x, y, width, height,
      * encloses the bitmap.  If there is a background mask, then only apply
      * color to the bits specified by the mask.
      */
-    if ((masterPtr->bgUid != NULL) && (masterPtr->bgUid[0] != '\000')) {
+    if ((masterPtr->bgUid != NULL) && (masterPtr->bgUid[0] != '\0')) {
 	XColor color;
 	XParseColor(Tk_Display(tkwin), Tk_Colormap(tkwin), masterPtr->bgUid,
 		&color);

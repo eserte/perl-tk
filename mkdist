@@ -58,13 +58,13 @@ exit(1) if $snag && !$opt_lax;
 
 $opt_sfx = '_'.$opt_sfx if (length($opt_sfx) && $opt_sfx !~ /^_/);
 
-my @files = map("$dir$version$opt_sfx/$_",sort(keys %$files));
+my @files = map("$dir-$version$opt_sfx/$_",sort(keys %$files));
 chdir("..");
 
-unlink("$dir$version$opt_sfx") if (-l "$dir$version$opt_sfx");
-symlink($path,"$dir$version$opt_sfx") || die "Cannot link $dir $dir$version$opt_sfx:$!";
+unlink("$dir-$version$opt_sfx") if (-l "$dir-$version$opt_sfx");
+symlink($path,"$dir-$version$opt_sfx") || die "Cannot link $dir $dir-$version$opt_sfx:$!";
 
-$dir .= $version.$opt_sfx;
+$dir .= "-$version$opt_sfx";
 
 system("mv","$dir.tar.gz","$dir.tar.gz%") if (-e "$dir.tar.gz");
 
