@@ -42,7 +42,7 @@ typedef struct ImageItem  {
 static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_ANCHOR, "-anchor",          NULL,          NULL,
 	"center", Tk_Offset(ImageItem, anchor), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_IMAGE, "-image",          NULL,          NULL,
+    {TK_CONFIG_OBJECT, "-image",          NULL,          NULL,
 	         NULL, Tk_Offset(ImageItem, imageString), TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-tags",          NULL,          NULL,
 	         NULL, 0, TK_CONFIG_NULL_OK, &tk_CanvasTagsOption},

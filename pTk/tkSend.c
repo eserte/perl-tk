@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkSend.c 1.49 95/07/26 17:13:25";
+static char sccsid[] = "@(#) tkSend.c 1.50 95/08/21 10:49:10";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -65,10 +65,10 @@ typedef struct NameRegistry {
 				 * been modified, so it needs to be written
 				 * out when the NameRegistry is closed. */
     unsigned long propLength;	/* Length of the property, in bytes. */
-    char *property;		/* The contents of the property.  See format
-				 * above;  this is *not* terminated by the
-				 * first null character.  Dynamically
-				 * allocated. */
+    char *property;		/* The contents of the property, or NULL
+				 * if none.  See format description above;
+				 * this is *not* terminated by the first
+				 * null character.  Dynamically allocated. */
     int allocedByX;		/* Non-zero means must free property with
 				 * XFree;  zero means use ckfree. */
 } NameRegistry;
@@ -328,7 +328,9 @@ RegOpen(interp, dispPtr, lock)
     /*
      * Xlib placed an extra null byte after the end of the property, just
      * to make sure that it is always NULL-terminated.  Be sure to include
-     * this byte in our count if it's needed to ensure null termination.
+     * this byte in our count if it's needed to ensure null termination
+     * (note: as of 8/95 I'm no longer sure why this code is needed;  seems
+     * like it shouldn't be).
      */
 
     if ((regPtr->propLength > 0)
@@ -455,7 +457,7 @@ RegDeleteName(regPtr, name)
  *	None.
  *
  * Side effects:
- *	The open registry is exapanded;  it is marked as modified so that
+ *	The open registry is expanded;  it is marked as modified so that
  *	it will be written back when closed.
  *
  *----------------------------------------------------------------------
@@ -481,7 +483,7 @@ RegAddName(regPtr, name, commWindow)
     newProp = (char *) ckalloc((unsigned) (regPtr->propLength + newBytes));
     strcpy(newProp, id);
     strcpy(newProp+idLength, name);
-    if (regPtr->propLength > 0) {
+    if (regPtr->property != NULL) {
 	memcpy((VOID *) (newProp + newBytes), (VOID *) regPtr->property,
 		regPtr->propLength);
 	if (regPtr->allocedByX) {
@@ -537,7 +539,7 @@ RegClose(regPtr)
     }
     XFlush(regPtr->dispPtr->display);
 
-    if (regPtr->propLength > 0) {
+    if (regPtr->property != NULL) {
 	if (regPtr->allocedByX) {
 	    XFree(regPtr->property);
 	} else {
@@ -903,11 +905,11 @@ Tk_SendCmd(clientData, interp, argc, args)
 	}
 	c = LangString(args[i])[1];
 	length = strlen(LangString(args[i]));
-	if ((c == 'a') && (strncmp(LangString(args[i]), "-async", length) == 0)) {
+	if ((c == 'a') &&  LangCmpOpt("-async",LangString(args[i]),length) == 0 ) {
 	    async = 1;
 	    i++;
-	} else if ((c == 'd') && (strncmp(LangString(args[i]), "-displayof",
-		length) == 0)) {
+	} else if ((c == 'd') &&  LangCmpOpt("-displayof",LangString(args[i]),length) == 0 ) {
+
 	    winPtr = (TkWindow *) Tk_NameToWindow(interp, LangString(args[i+1]),
 		    (Tk_Window) winPtr);
 	    if (winPtr == NULL) {

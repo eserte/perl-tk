@@ -223,17 +223,17 @@ Tk_FrameCmd(clientData, interp, argc, args)
 	    continue;
 	}
 	c = arg[1];
-	if ((c == 'c') && (strncmp(arg, "-class", strlen(arg)) == 0)
+	if ((c == 'c') &&  LangCmpOpt("-class",arg,strlen(arg)) == 0 
 		&& (length >= 3)) {
 	    className = LangString(args[i+1]);
-	} else if ((c == 'c')
-		&& (strncmp(arg, "-colormap", strlen(arg)) == 0)) {
+	} else if ((c == 'c') &&  LangCmpOpt("-colormap",arg,strlen(arg)) == 0 ) {
+
 	    colormapName = LangString(args[i+1]);
 	} else if ((c == 's') && toplevel
-		&& (strncmp(arg, "-screen", strlen(arg)) == 0)) {
+		&& (LangCmpOpt("-screen", arg, strlen(arg)) == 0)) {
 	    screenName = LangString(args[i+1]);
-	} else if ((c == 'v')
-		&& (strncmp(arg, "-visual", strlen(arg)) == 0)) {
+	} else if ((c == 'v') &&  LangCmpOpt("-visual",arg,strlen(arg)) == 0 ) {
+
 	    visualName = LangString(args[i+1]);
 	}
     }
@@ -450,14 +450,14 @@ FrameWidgetCmd(clientData, interp, argc, args)
 		    continue;
 		}
 		c = LangString(args[i])[1];
-		if (((c == 'c') && (strncmp(LangString(args[i]), "-class", length) == 0)
+		if (((c == 'c') &&  LangCmpOpt("-class",LangString(args[i]),length) == 0 
 			&& (length >= 2))
 			|| ((c == 'c') && (framePtr->mask == TOPLEVEL)
-			&& (strncmp(LangString(args[i]), "-colormap", length) == 0))
+			&& (LangCmpOpt("-colormap", LangString(args[i]), length) == 0))
 			|| ((c == 's') && (framePtr->mask == TOPLEVEL)
-			&& (strncmp(LangString(args[i]), "-screen", length) == 0))
+			&& (LangCmpOpt("-screen", LangString(args[i]), length) == 0))
 			|| ((c == 'v') && (framePtr->mask == TOPLEVEL)
-			&& (strncmp(LangString(args[i]), "-visual", length) == 0))) {
+			&& (LangCmpOpt("-visual", LangString(args[i]), length) == 0))) {
 		    Tcl_AppendResult(interp, "can't modify ", LangString(args[i]),
 			    " option after widget is created",          NULL);
 		    result = TCL_ERROR;

@@ -14,7 +14,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkEvent.c 1.97 95/06/21 15:16:33";
+static char sccsid[] = "@(#) tkEvent.c 1.98 95/08/28 09:33:14";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -263,7 +263,7 @@ Tk_CreateFileHandler(fd, mask, proc, clientData)
     register FileHandler *filePtr;
     int index;
 
-    if (fd >= OPEN_MAX) {
+    if (fd >= FD_SETSIZE) {
 	panic("Tk_CreatefileHandler can't handle file id %d", fd);
     }
 

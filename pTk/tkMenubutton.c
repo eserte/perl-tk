@@ -232,7 +232,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_PIXELS, "-highlightthickness", "highlightThickness",
 	"HighlightThickness", DEF_MENUBUTTON_HIGHLIGHT_WIDTH,
 	Tk_Offset(MenuButton, highlightWidth), 0},
-    {TK_CONFIG_IMAGE, "-image", "image", "Image",
+    {TK_CONFIG_OBJECT, "-image", "image", "Image",
 	DEF_MENUBUTTON_IMAGE, Tk_Offset(MenuButton, imageString),
 	TK_CONFIG_NULL_OK},
     {TK_CONFIG_BOOLEAN, "-indicatoron", "indicatorOn", "IndicatorOn",

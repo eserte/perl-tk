@@ -1,3 +1,4 @@
+<HTML>
 <H1>Tk Documentation Table of Contents</H1>
 <A HREF="license.terms.ht"> License terms</A><A NAME=Widgets><H2>Widgets</H2>
 </A><DIR>
@@ -130,4 +131,8 @@
 <LI><A HREF="Sleep.ht"> Tk_Sleep</A>
 <LI><A HREF="StrictMotif.ht"> Tk_StrictMotif</A>
 <LI><A HREF="WindowId.ht"> Tk_WindowId</A>
+</DIR>
+<A NAME=tix><H2>tix</H2>
+</A><DIR>
+<LI><A HREF="Wm.ht"> wm</A>
 </DIR>

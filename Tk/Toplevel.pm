@@ -1,12 +1,36 @@
 package Tk::Toplevel; 
 require Tk::Frame;
 require Tk::Wm;
+require Tk::Pretty;
 use AutoLoader;
+use Carp;
 @ISA = qw(Tk::Wm Tk::Frame);
 
 Tk::Widget->Construct('Toplevel');
 
 sub Tk_cmd { \&Tk::toplevel }
+
+sub CreateArgs
+{
+ my ($package,$parent,$args) = @_;
+ my @result = $package->SUPER::CreateArgs($parent,$args);
+ my $screen = delete $args->{-screen};                     
+ push(@result, '-screen' => $screen) if (defined $screen);
+ return @result;
+}
+
+sub Populate
+{
+ my ($cw,$arg) = @_;
+ $cw->ConfigSpecs('-title',[METHOD,undef,undef,$cw->class],
+                  '-overanchor' => ['PASSIVE',undef,undef,undef],
+                  '-popanchor'  => ['PASSIVE',undef,undef,undef],
+                  '-popover'    => ['PASSIVE',undef,undef,undef] 
+                 );
+}
+
+1;
+__END__
 
 sub Icon
 {
@@ -40,27 +64,6 @@ sub Icon
  $icon->update;    # Let attributes propogate
  $top->deiconify if ($state eq 'normal');
  $top->iconify   if ($state eq 'iconic');
-}
-
-sub SetBindtags
-{
- my ($obj) = @_;
- $obj->bindtags([ref($obj),$obj,'all']);
-}
-
-
-1;
-
-__END__
-
-sub Populate
-{
- my ($cw,$arg) = @_;
- $cw->ConfigSpecs('-title',[METHOD,undef,undef,$cw->class],
-                  '-overanchor' => ['PASSIVE',undef,undef,undef],
-                  '-popanchor'  => ['PASSIVE',undef,undef,undef],
-                  '-popover'    => ['PASSIVE',undef,undef,undef] 
-                 );
 }
 
 

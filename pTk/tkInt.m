@@ -1,3 +1,5 @@
+#ifndef _TKINT_VM
+#define _TKINT_VM
 #include "tkInt_f.h"
 #define tkActiveUid (*TkintVptr->V_tkActiveUid)
 #define tkDelayedEventProc (*TkintVptr->V_tkDelayedEventProc)
@@ -36,3 +38,4 @@
 #define TkWmSetClass (*TkintVptr->V_TkWmSetClass)
 #define TkWmUnmapWindow (*TkintVptr->V_TkWmUnmapWindow)
 #define TkXFileProc (*TkintVptr->V_TkXFileProc)
+#endif /* _TKINT_VM */

@@ -19,16 +19,32 @@ Tk_Window mainWindow = NULL;
 
 MODULE = Tk	PACKAGE = MainWindow
 
+int
+Count(self)
+SV *	self
+CODE:
+ {
+  ST(0) = sv_2mortal(newSViv(tk_NumMainWindows));
+ }
+
+
 SV *
-CreateMainWindow(name, Class, display = NULL,sync = 0)
+CreateMainWindow(name, Class, ...)
 	char *		name
 	char *		Class
-	char *		display
-	int		sync
     CODE:
        {
         Tcl_Interp *interp = Tcl_CreateInterp(); 
+        char *display = NULL;
+        int  sync     = 0; 
         RETVAL = &sv_undef; 
+        
+        if (items > 3)
+         display = (char *)SvPV(ST(2),na);
+
+        if (items > 4)
+          sync = (int)SvIV(ST(3));
+
         if ((mainWindow = Tk_CreateMainWindow(interp, display, name, Class)))
          {
           if (sync)
@@ -84,6 +100,28 @@ CODE:
   XSRETURN_UNDEF;
  }
 
+MODULE = Tk	PACKAGE = Tk	PREFIX = Tk
+
+TkWindow *
+TkGetFocus(win)
+TkWindow *	win
+
+void
+TkGetPointerCoords(win)
+Tk_Window	win
+PPCODE:
+ {
+  int x, y;
+  TkGetPointerCoords(win, &x, &y);
+  if (items < 2)
+   {
+    EXTEND(sp,2-items);
+   }
+  ST(0) = sv_2mortal(newSViv(x));
+  ST(1) = sv_2mortal(newSViv(y));
+  XSRETURN(2);
+ }
+
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 
 void
@@ -124,16 +162,49 @@ OUTPUT:
  RETVAL
 
 void
-Tk_MainLoop(...)
+Tk_MainLoop(class = "Tk")
+char *	class
 CODE:
  Tk_MainLoop(); 
 
 int
-Tk_DoOneEvent(flags)
-int	flags
+Tk_DoOneEvent(...)
+CODE:
+ {
+  int flags = 0;
+  if (items)
+   {int i;
+    for (i=0; i < items; i++)
+     {
+      SV *sv = ST(i);
+      if (SvIOK(sv))
+       flags |= SvIV(sv);
+      else if (!sv_isobject(sv))
+       {STRLEN l;
+        char *s = SvPV(sv,l);
+        if (strcmp(s,BASEEXT))
+         {
+          /* string to integer lookup here */
+          croak("Usage [$object->]DoOneEvent([flags]) got '%s'\n",s);
+         }
+       }
+     }
+   }
+  RETVAL = Tk_DoOneEvent(flags);
+ }
+OUTPUT:
+  RETVAL
 
 
 MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = Tk_
+
+void
+UnmanageGeometry(win)
+Tk_Window	win
+CODE:
+ {
+  Tk_ManageGeometry(win, NULL, NULL);
+ }
 
 void
 DisableButtonEvents(win)
@@ -185,6 +256,41 @@ CODE:
  {
   XSync(Tk_Display(win),flush);
  }
+
+void
+Tk_GetRootCoords(win)
+Tk_Window	win
+PPCODE:
+ {
+  int x, y;
+  Tk_GetRootCoords(win, &x, &y);
+  if (items < 2)
+   {
+    EXTEND(sp, 2 - items);
+   }
+  ST(0) = sv_2mortal(newSViv(x));
+  ST(1) = sv_2mortal(newSViv(y));
+  XSRETURN(2);
+ }
+
+void
+Tk_GetVRootGeometry(win)
+Tk_Window	win
+PPCODE:
+ {
+  int x, y;
+  int width, height;
+  Tk_GetVRootGeometry(win, &x, &y, &width, &height);
+  if (items < 4)
+   {
+    EXTEND(sp, 4 - items);
+   }
+  ST(0) = sv_2mortal(newSViv(x));
+  ST(1) = sv_2mortal(newSViv(y));
+  ST(2) = sv_2mortal(newSViv(width));
+  ST(3) = sv_2mortal(newSViv(height));
+  XSRETURN(4);
+ } 
 
 Display *
 Tk_Display(win)
@@ -303,6 +409,15 @@ int		width
 int		height
 
 void
+Tk_SetGrid(win,reqWidth,reqHeight,gridWidth,gridHeight)
+Tk_Window	win
+int		reqWidth
+int		reqHeight
+int		gridWidth
+int		gridHeight
+
+
+void
 Tk_UnmaintainGeometry(slave,master)
 Tk_Window	slave
 Tk_Window	master
@@ -315,16 +430,50 @@ void
 Tk_UnmapWindow(win)
 Tk_Window	win
 
+void
+Tk_UnsetGrid(win)
+Tk_Window	win
+
+void
+Tk_AddOption(win,name,value,priority)
+Tk_Window	win
+char *	name
+char *	value
+int	priority
+
 char *
 Tk_GetAtomName(win,atom)
 Tk_Window	win
 Atom		atom
+
+void
+Tk_ClearSelection(win,selection)
+Tk_Window	win
+Atom		selection
+
+char *
+Tk_DisplayName(win)
+Tk_Window	win
+
+char *
+Tk_GetOption(win,name,class)
+Tk_Window	win
+char *	name
+char *	class
 
 IV
 Tk_InternAtom(win,name)
 Tk_Window	win
 char *		name
 
+void
+Tk_Ungrab(win)
+Tk_Window	win
+
+char *
+Tk_SetAppName(win,name)
+Tk_Window	win
+char *		name
 
 int
 IsWidget(win)
@@ -342,6 +491,16 @@ CODE:
 OUTPUT:
  RETVAL
 
+int
+Tk_Grab(win,global)
+SV *	win
+int	global
+CODE:
+ {
+  Lang_CmdInfo *info = WindowCommand(win,NULL);
+  RETVAL = Tk_Grab(info->interp,info->tkwin,global);
+ }
+
 SV *
 Widget(win,path)
 SV *	win
@@ -352,37 +511,21 @@ CODE:
   ST(0) = sv_mortalcopy(WidgetRef(info->interp,path));
  }
 
-SV *
+Tk_Window
 Containing(win,X,Y)
-SV *	win
+Tk_Window	win
 int	X
 int	Y
 CODE:
  {
-  Lang_CmdInfo *info = WindowCommand(win,NULL);
-  if (info && info->tkwin)
-   {
-    Tk_Window subwin = Tk_CoordsToWindow(X, Y, info->tkwin);
-    if (subwin)
-     {
-      ST(0) = sv_mortalcopy(TkToWidget(subwin,NULL));
-      XSRETURN(1);
-     }
-   }
-  XSRETURN_UNDEF;
+  RETVAL = Tk_CoordsToWindow(X, Y, win);
  }
+OUTPUT:
+  RETVAL
 
-SV *
-Parent(win)
-SV *	win
-CODE:
- {Lang_CmdInfo *info = WindowCommand(win,NULL);
-  Tk_Window parent = Tk_Parent(info->tkwin);
-  if (parent)
-   ST(0) = sv_mortalcopy(TkToWidget(parent,NULL));
-  else
-   ST(0) = &sv_undef;
- }
+Tk_Window
+Tk_Parent(win)
+Tk_Window	win
 
 SV *
 MainWindow(win)
@@ -393,14 +536,6 @@ MainWindow(win)
      }
     OUTPUT:
      RETVAL
-
-void
-call(win,...)
-	SV *	win
-    PPCODE:
-     {
-      XSRETURN(Call_Tk(WindowCommand(win,NULL),items,&ST(0)));
-     }
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 

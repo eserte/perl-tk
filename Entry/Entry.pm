@@ -13,7 +13,8 @@
 # derivation from Tk4.0 sources.
 
 package Tk::Entry; 
-
+require Tk::Widget;
+require Tk::Clipboard;
 require DynaLoader;
 use AutoLoader;
 
@@ -63,7 +64,7 @@ sub wordend
 # (Enter or FocusIn). It is used so that we can carry out
 # the functions of that event in addition to setting up
 # bindings.
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  # Standard Motif bindings:
@@ -134,70 +135,64 @@ sub classinit
              sub
              {
               my $w = shift;
-              SetCursor($w,$w->index("insert")-1)
+              $w->SetCursor($w->index("insert")-1)
              } ) ;
  $mw->bind($class,"<Right>",
              sub
              {
               my $w = shift;
-              SetCursor($w,$w->index("insert")+1)
+              $w->SetCursor($w->index("insert")+1)
              } ) ;
  $mw->bind($class,"<Shift-Left>",
              sub
              {
               my $w = shift;
-              KeySelect($w,$w->index("insert")-1);
-              $w->SeeInsert();
+              $w->KeySelect($w->index("insert")-1);
              } ) ;
  $mw->bind($class,"<Shift-Right>",
              sub
              {
               my $w = shift;
-              KeySelect($w,$w->index("insert")+1);
-              $w->SeeInsert();
+              $w->KeySelect($w->index("insert")+1);
              } ) ;
  $mw->bind($class,"<Control-Left>",
              sub
              {
               my $w = shift;
-              SetCursor($w,$w->wordstart)
+              $w->SetCursor($w->wordstart)
              } ) ;
  $mw->bind($class,"<Control-Right>",
              sub
              {
               my $w = shift;
-              SetCursor($w,$w->wordend)
+              $w->SetCursor($w->wordend)
              } ) ;
  $mw->bind($class,"<Shift-Control-Left>",
              sub
              {
               my $w = shift;
               my $Ev = $w->XEvent;
-              KeySelect($w,$w->wordstart) ;
-              $w->SeeInsert();
+              $w->KeySelect($w->wordstart) ;
              } ) ;
  $mw->bind($class,"<Shift-Control-Right>",
              sub
              {
               my $w = shift;
-              KeySelect($w,$w->wordend) ;
-              $w->SeeInsert();
+              $w->KeySelect($w->wordend) ;
              } ) ;
  $mw->bind($class,"<Home>",['SetCursor',0]);
  $mw->bind($class,"<Shift-Home>",
              sub
              {
               my $w = shift;
-              KeySelect($w,0);
-              $w->SeeInsert();
+              $w->KeySelect(0);
              } ) ;
  $mw->bind($class,"<End>",['SetCursor',"end"]);
  $mw->bind($class,"<Shift-End>",
              sub
              {
               my $w = shift;
-              KeySelect($w,"end");
-              $w->SeeInsert();
+              $w->KeySelect("end");
              } ) ;
  $mw->bind($class,"<Delete>",
              sub
@@ -205,7 +200,7 @@ sub classinit
               my $w = shift;
               if ($w->selection("present"))
                {
-                $w->delete("sel.first","sel.last")
+                $w->deleteSelected
                }
               else
                {
@@ -247,7 +242,7 @@ sub classinit
              } ) ;
  $mw->bind($class,"<Control-backslash>",'SelectionClear');
 
- $class->ClipboardKeysyms($mw,"F16","F20","F18");
+ $class->clipboardKeysyms($mw,"F16","F20","F18");
 
  $mw->bind($class,"<KeyPress>", ['Insert',Ev(A)]);
 
@@ -256,12 +251,12 @@ sub classinit
  # <KeyPress> class binding will also fire and insert the character,
  # which is wrong.  Ditto for Escape, Return, and Tab.
 
- $mw->   bind($class,'<Alt-KeyPress>' ,'NoOp');
- $mw->   bind($class,'<Meta-KeyPress>' ,'NoOp');
- $mw->   bind($class,'<Control-KeyPress>' ,'NoOp');
- $mw->   bind($class,'<Escape>' ,'NoOp');
- $mw->   bind($class,'<Return>' ,'NoOp');
- $mw->   bind($class,'<Tab>' ,'NoOp');
+ $mw->bind($class,'<Alt-KeyPress>' ,'NoOp');
+ $mw->bind($class,'<Meta-KeyPress>' ,'NoOp');
+ $mw->bind($class,'<Control-KeyPress>' ,'NoOp');
+ $mw->bind($class,'<Escape>' ,'NoOp');
+ $mw->bind($class,'<Return>' ,'NoOp');
+ $mw->bind($class,'<Tab>' ,'NoOp');
 
  $mw->bind($class,"<Insert>",
              sub
@@ -270,14 +265,14 @@ sub classinit
               eval { Insert($w,$w->SelectionGet)}
              } ) ;
  # Additional emacs-like bindings:
- if (!$Tk::tk_strictMotif)
+ if (!$Tk::strictMotif)
   {
    $mw->bind($class,"<Control-a>",['SetCursor',0]);
    $mw->bind($class,"<Control-b>",
                sub
                {
                 my $w = shift;
-                SetCursor($w,$w->index("insert")-1)
+                $w->SetCursor($w->index("insert")-1)
                } ) ;
    $mw->bind($class,"<Control-d>",['delete','insert']);
    $mw->bind($class,"<Control-e>",['SetCursor',"end"]);
@@ -285,7 +280,7 @@ sub classinit
                sub
                {
                 my $w = shift;
-                SetCursor($w,$w->index("insert")+1)
+                $w->SetCursor($w->index("insert")+1)
                } ) ;
    $mw->bind($class,"<Control-h>","Backspace");
    $mw->bind($class,"<Control-k>",["delete","insert","end"]);
@@ -303,17 +298,15 @@ sub classinit
                sub
                {
                 my $w = shift;
-                my $Ev = $w->XEvent;
-                SetCursor($w,$w->wordend)
+                $w->SetCursor($w->wordend)
                } ) ;
    $mw->bind($class,"<Meta-BackSpace>",
                sub
                {
                 my $w = shift;
-                my $Ev = $w->XEvent;
                 $w->delete($w->wordstart ,"insert")
                } ) ;
-   $class->ClipboardKeysyms($mw,"Meta-w","Control-w","Control-y");
+   $class->clipboardKeysyms($mw,"Meta-w","Control-w","Control-y");
    # A few additional bindings of my own.
    $mw->bind($class,"<Control-v>",
                sub
@@ -323,7 +316,7 @@ sub classinit
                 eval
                  {
                   $w->insert("insert",$w->SelectionGet);
-                  $w->SeeInsert();
+                  $w->SeeInsert;
                  }
                } ) ;
    $mw->bind($class,"<Control-w>",
@@ -364,62 +357,12 @@ sub classinit
                   eval
                    {
                     $w->insert("insert",$w->SelectionGet);
-                    $w->SeeInsert();
+                    $w->SeeInsert;
                    }
                  }
                } )
   }
  return $class;
-}
-# ClipboardKeysyms --
-# This procedure is invoked to identify the keys that correspond to
-# the "copy", "cut", and "paste" functions for the clipboard.
-#
-# Arguments:
-# copy - Name of the key (keysym name plus modifiers, if any,
-# such as "Meta-y") used for the copy operation.
-# cut - Name of the key used for the cut operation.
-# paste - Name of the key used for the paste operation.
-sub ClipboardKeysyms
-{
- my $class = shift;
- my $mw    = shift;
- my $copy  = shift;
- my $cut   = shift;
- my $paste = shift;
- $mw->bind($class,"<$copy>",
-             sub
-             {
-              my $w = shift;
-              my $Ev = $w->XEvent;
-              if ($w->IS($w->SelectionOwner))
-               {
-                $w->Clipboard("clear");
-                $w->Clipboard("append",$w->SelectionGet);
-               }
-             } ) ;
- $mw->bind($class,"<$cut>",
-             sub
-             {
-              my $w = shift;
-              my $Ev = $w->XEvent;
-              if ($w->IS($w->SelectionOwner))
-               {
-                $w->Clipboard("clear");
-                $w->Clipboard("append",$w->SelectionGet);
-                $w->delete("sel.first","sel.last")
-               }
-             } ) ;
- $mw->bind($class,"<$paste>",
-             sub
-             {
-              my $w = shift;
-              my $Ev = $w->XEvent;
-              eval
-               {
-                $w->insert("insert",$w->SelectionGet("-selection","CLIPBOARD"))
-               }
-             } );
 }
 # Button1 --
 # This procedure is invoked to handle button-1 presses in entry
@@ -522,7 +465,7 @@ sub AutoScan
    return;
   }
  MouseSelect($w,$x);
- $w->afterId($w->after(50,"AutoScan",$w,$x))
+ $w->RepeatId($w->after(50,"AutoScan",$w,$x))
 }
 # KeySelect
 # This procedure is invoked when stroking out selections using the
@@ -546,7 +489,8 @@ sub KeySelect
   {
    $w->selection("adjust",$new)
   }
- $w->icursor($new)
+ $w->icursor($new);
+ $w->SeeInsert;
 }
 # Insert --
 # Insert a string into an entry at the point of the insertion cursor.
@@ -566,11 +510,11 @@ sub Insert
    $insert = $w->index("insert");
    if ($w->index("sel.first") <= $insert && $w->index("sel.last") >= $insert)
     {
-     $w->delete("sel.first","sel.last")
+     $w->deleteSelected
     }
   };
  $w->insert("insert",$s);
- $w->SeeInsert()
+ $w->SeeInsert
 }
 # Backspace --
 # Backspace over the character just before the insertion cursor.
@@ -582,15 +526,12 @@ sub Backspace
  my $w = shift;
  if ($w->selection("present"))
   {
-   $w->delete("sel.first","sel.last")
+   $w->deleteSelected
   }
  else
   {
    my $x = $w->index("insert")-1;
-   if ($x >= 0)
-    {
-     $w->delete($x)
-    }
+   $w->delete($x) if ($x >= 0);
   }
 }
 # SeeInsert
@@ -637,7 +578,7 @@ sub SetCursor
  my $pos = shift;
  $w->icursor($pos);
  $w->SelectionClear;
- $w->SeeInsert();
+ $w->SeeInsert;
 }
 # Transpose
 # This procedure implements the "transpose" function for entry widgets.
@@ -662,4 +603,7 @@ sub Transpose
  $w->SeeInsert;
 }
 
-
+sub deleteSelected
+{
+ shift->delete("sel.first","sel.last")
+}

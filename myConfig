@@ -19,6 +19,7 @@ if (defined $Config{'gccversion'})
        {
         # This is the author - catch as many bugs as possible
         $gccopt .= " -pedantic -Werror";
+        # $gccopt .= " -Wmissing-prototypes" if (-f "/etc/shadow");
        }
      }
    }
@@ -67,7 +68,7 @@ sub lX11
      local ($lib);
      foreach $lib (reverse(<$_/libX11.*>))
       {
-       if (-r $lib && ($user || !-l $lib))
+       if (-r $lib)
         {
          print "Using -L$_ to find $lib\n"; 
          return "-L$_" 
@@ -102,6 +103,7 @@ foreach $arg (@ARGV)
    }
   else
    {
+    $MakefileName = $1 if ($arg =~ /^MAKEFILE=(.*)$/);
     push(@args,$arg);
    }
  }
@@ -205,18 +207,22 @@ unless (defined $xinc)
 
 die "Cannot find X include files anywhere" unless (defined $xinc);
 
-$inc = ($xinc eq "/usr/include") ? "" : $xinc;
+$inc = ($xinc eq "-I/usr/include") ? "" : $xinc;
 
-$file = __FILE__.".out";
-open(OUT,">$file") || die "Cannot open $file:$!";
-print OUT "use Config;\n";
-foreach $sym (qw(inc define xlib xinc gccopt))
+if (!defined($MakefileName) || $MakefileName eq 'Makefile')
  {
-  my $val = ${$sym};
-  $val =~ s/([\\'])/\\$1/g;
-  print OUT "\$$sym = '$val';\n";
+  my $file = __FILE__.".out";
+  open(OUT,">$file") || die "Cannot open $file:$!";
+  print OUT "use Config;\n";
+  my $sym;
+  foreach $sym (qw(inc define xlib xinc gccopt))
+   {         
+    my $val = ${$sym};
+    $val =~ s/([\\'])/\\$1/g;
+    print OUT "\$$sym = '$val';\n";
+   }         
+  print OUT "1;\n";
+  close(OUT);
  }
-print OUT "1;\n";
-close(OUT);
 
 1;

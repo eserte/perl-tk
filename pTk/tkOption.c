@@ -693,17 +693,17 @@ ParsePriority(interp, string)
 
     c = string[0];
     length = strlen(string);
-    if ((c == 'w')
-	    && (strncmp(string, "widgetDefault", length) == 0)) {
+    if ((c == 'w') && (strncmp(string, "widgetDefault", length) == 0)) {
+
 	return TK_WIDGET_DEFAULT_PRIO;
-    } else if ((c == 's')
-	    && (strncmp(string, "startupFile", length) == 0)) {
+    } else if ((c == 's') && (strncmp(string, "startupFile", length) == 0)) {
+
 	return TK_STARTUP_FILE_PRIO;
-    } else if ((c == 'u')
-	    && (strncmp(string, "userDefault", length) == 0)) {
+    } else if ((c == 'u') && (strncmp(string, "userDefault", length) == 0)) {
+
 	return TK_USER_DEFAULT_PRIO;
-    } else if ((c == 'i')
-	    && (strncmp(string, "interactive", length) == 0)) {
+    } else if ((c == 'i') && (strncmp(string, "interactive", length) == 0)) {
+
 	return TK_INTERACTIVE_PRIO;
     } else {
 	char *end;

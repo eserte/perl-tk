@@ -13,11 +13,11 @@ use strict qw(vars subs);
 %Tk::Web::Loading = ();
 %Tk::Web::Image   = ();
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,'<b>','Back');
- return $class->InheritThis($mw);
+ return $class->SUPER::ClassInit($mw);
 }
 
 sub LoadImage
@@ -40,6 +40,10 @@ sub LoadImage
     }                                      
    unlink($file);                          
   }                                        
+ else
+  {
+   print Tk::Pretty::Pretty($response),"\n";
+  }
  $Tk::Web::Image{$name} = $image;
  my $l;
  while ($l = shift(@{$Tk::Web::Loading{$name}}))
@@ -47,7 +51,7 @@ sub LoadImage
    $l->configure(-image => $image);
   }
  delete $Tk::Web::Loading{$name};
- $w->update;
+ $w->updateWidgets;
 }
 
 sub FindImage
@@ -69,6 +73,7 @@ sub FindImage
    unless (exists $Tk::Web::Loading{$name})
     {
      $Tk::Web::Loading{$name} = [];
+     $w->updateWidgets;
      $w->DoWhenIdle([$w,'LoadImage',$url]); 
     }
    push(@{$Tk::Web::Loading{$name}},$l); 
@@ -88,7 +93,7 @@ sub UserAgent
 sub InitObject
 {
  my ($w,$args) = @_;
- $w->InheritThis($args);
+ $w->SUPER::InitObject($args);
  my $ua = $w->UserAgent(LWP::UserAgent->new);
  $w->{'BACK'} = [];
 }
@@ -114,7 +119,7 @@ sub Back
  my ($w) = @_;
  if (@{$w->{BACK}})
   {
-   $w->url(pop(@{$w->{BACK}}));
+   $w->url('GET', pop(@{$w->{BACK}}));
   }
  $w->break;
 }
@@ -171,7 +176,7 @@ sub url
     {
      $html = $response->errorAsHTML;
     }
-   $w->html($html);
+   $w->html($html) if $response->code != &HTTP::Status::RC_NO_CONTENT;
    $w->Unbusy;
   }
  return $$var;

@@ -1,3 +1,5 @@
+#ifndef _LANG_VM
+#define _LANG_VM
 #include "Lang_f.h"
 #define LangAllocVec (*LangVptr->V_LangAllocVec)
 #define LangBadFile (*LangVptr->V_LangBadFile)
@@ -5,6 +7,7 @@
 #define LangCloseHandler (*LangVptr->V_LangCloseHandler)
 #define LangCmpArg (*LangVptr->V_LangCmpArg)
 #define LangCmpCallback (*LangVptr->V_LangCmpCallback)
+#define LangCmpOpt (*LangVptr->V_LangCmpOpt)
 #define LangCopyArg (*LangVptr->V_LangCopyArg)
 #define LangCopyCallback (*LangVptr->V_LangCopyCallback)
 #define LangDoCallback (*LangVptr->V_LangDoCallback)
@@ -16,6 +19,7 @@
 #define LangFreeCallback (*LangVptr->V_LangFreeCallback)
 #define LangFreeVar (*LangVptr->V_LangFreeVar)
 #define LangFreeVec (*LangVptr->V_LangFreeVec)
+#define LangLibraryDir (*LangVptr->V_LangLibraryDir)
 #define LangMakeCallback (*LangVptr->V_LangMakeCallback)
 #define LangMergeString (*LangVptr->V_LangMergeString)
 #define LangMethodCall (*LangVptr->V_LangMethodCall)
@@ -33,9 +37,13 @@
 #define LangStringMatch (*LangVptr->V_LangStringMatch)
 #define LangVarArg (*LangVptr->V_LangVarArg)
 #define Lang_BuildInImages (*LangVptr->V_Lang_BuildInImages)
+#define Lang_CreateObject (*LangVptr->V_Lang_CreateObject)
+#define Lang_DeleteObject (*LangVptr->V_Lang_DeleteObject)
 #define Lang_FreeRegExp (*LangVptr->V_Lang_FreeRegExp)
 #define Lang_GetErrorCode (*LangVptr->V_Lang_GetErrorCode)
 #define Lang_GetErrorInfo (*LangVptr->V_Lang_GetErrorInfo)
+#define Lang_RegExpCompile (*LangVptr->V_Lang_RegExpCompile)
+#define Lang_RegExpExec (*LangVptr->V_Lang_RegExpExec)
 #define Lang_SetErrorCode (*LangVptr->V_Lang_SetErrorCode)
 #define Lang_SplitList (*LangVptr->V_Lang_SplitList)
 #define TclOpen (*LangVptr->V_TclOpen)
@@ -76,8 +84,6 @@
 #define Tcl_NextHashEntry (*LangVptr->V_Tcl_NextHashEntry)
 #define Tcl_Panic (*LangVptr->V_Tcl_Panic)
 #define Tcl_PosixError (*LangVptr->V_Tcl_PosixError)
-#define Tcl_RegExpCompile (*LangVptr->V_Tcl_RegExpCompile)
-#define Tcl_RegExpExec (*LangVptr->V_Tcl_RegExpExec)
 #define Tcl_RegExpRange (*LangVptr->V_Tcl_RegExpRange)
 #define Tcl_ResetResult (*LangVptr->V_Tcl_ResetResult)
 #define Tcl_ResultArg (*LangVptr->V_Tcl_ResultArg)
@@ -93,3 +99,4 @@
 #define Tcl_UntraceVar (*LangVptr->V_Tcl_UntraceVar)
 #define Tcl_UntraceVar2 (*LangVptr->V_Tcl_UntraceVar2)
 #define TkReadDataPending (*LangVptr->V_TkReadDataPending)
+#endif /* _LANG_VM */

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-BEGIN { unshift(@INC,'../blib') }
+use lib ('../blib');
 
 require Tk::HTMLtest;
 

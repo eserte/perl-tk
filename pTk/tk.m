@@ -1,12 +1,14 @@
+#ifndef _TK_VM
+#define _TK_VM
 #include "tk_f.h"
 #define tk_NumMainWindows (*TkVptr->V_tk_NumMainWindows)
 #define LangFindVar (*TkVptr->V_LangFindVar)
-#define LangImageArg (*TkVptr->V_LangImageArg)
+#define LangObjectArg (*TkVptr->V_LangObjectArg)
 #define LangWidgetArg (*TkVptr->V_LangWidgetArg)
 #define Lang_CreateImage (*TkVptr->V_Lang_CreateImage)
 #define Lang_CreateWidget (*TkVptr->V_Lang_CreateWidget)
-#define Lang_DeleteImage (*TkVptr->V_Lang_DeleteImage)
 #define Lang_DeleteWidget (*TkVptr->V_Lang_DeleteWidget)
+#define Tix_ArgcError (*TkVptr->V_Tix_ArgcError)
 #define Tk_3DBorderColor (*TkVptr->V_Tk_3DBorderColor)
 #define Tk_3DBorderGC (*TkVptr->V_Tk_3DBorderGC)
 #define Tk_3DHorizontalBevel (*TkVptr->V_Tk_3DHorizontalBevel)
@@ -160,3 +162,4 @@
 #define Tk_UnmaintainGeometry (*TkVptr->V_Tk_UnmaintainGeometry)
 #define Tk_UnmapWindow (*TkVptr->V_Tk_UnmapWindow)
 #define Tk_UnsetGrid (*TkVptr->V_Tk_UnsetGrid)
+#endif /* _TK_VM */

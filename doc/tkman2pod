@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-BEGIN { unshift(@INC,'../blib') }
+use lib ('../blib');
 
 $POD::Verbose = 0;
 
@@ -172,7 +172,7 @@ use Carp;
          }
         else
          {
-          warn "No $sec " . pretty($doc->{'SECTIONS'}) if ($POD::enabled);
+          warn "No $sec " . Pretty($doc->{'SECTIONS'}) if ($POD::enabled);
          }
         $text .= " $sec";
        }

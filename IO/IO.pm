@@ -1,67 +1,189 @@
 package Tk::IO;
+require 5.002;
 require Tk;
+use Tk::Pretty;
 require DynaLoader;
-@Tk::IO::ISA = qw(DynaLoader);
+require Exporter;
+require FileHandle;
+use Carp;
+@Tk::IO::ISA = qw(FileHandle DynaLoader Exporter);
+@EXPORT_OK   = qw(System);
 
 bootstrap Tk::IO;
 
-%open  = ();
+my $seq = 0;
+
+# Copied from POSIX
+sub gensym 
+{
+ my $pkg = @_ ? ref($_[0]) || $_[0] : "";
+ local *{$pkg . "::GLOB" . ++$seq};
+ \delete ${$pkg . "::"}{'GLOB' . $seq};
+}
 
 sub new
 {
- my $package = shift;
- my $fh  = caller() . "::" . shift;
- return bless \$fh;
+ my ($package,%args) = @_;
+ my $fh  = bless $package->gensym,$package;
+ %{*$fh} = ();
+ @{*$fh} = ();
+ ${*$fh} = "";
+ $fh->configure(%args);
+ return $fh;
 }
 
-sub open
+sub pending
 {
- my $package = shift;
- my $fh;
- my $count = 0;
- do { $fh = $package . "::F" . $count++ } while (defined $open{$fh});
- if (open($fh,shift))
-  {
-   return bless $open{$fh} = \$fh;
-  }
- warn "Cannot open $fh:$!";
- return undef;
+ my $fh = shift;
+ return ${*$fh};
 }
 
-sub preadline
+sub cget
+{
+ my ($fh,$key) = @_;
+ return ${*$fh}{$key};
+}
+
+sub configure
+{
+ my ($fh,%args) = @_;
+ my $key;
+ foreach $key (keys %args)
+  {
+   my $val = $args{$key};
+   $val = Tk::Callback->new($val) if ($key =~ /command$/);
+   ${*$fh}{$key} = $val;
+  }
+}
+
+sub kill
+{
+ my ($fh,$sig) = @_;
+ my $pid = $fh->pid;
+ croak "No child" unless (defined $pid);
+ kill($sig,$pid) || croak "Cannot kill($sig,$pid):$!";
+}
+
+sub killpg
+{
+ my ($fh,$sig) = @_;
+ my $pid = $fh->pid;
+ croak "No child" unless (defined $pid);
+ kill($sig,-$pid);
+}
+
+sub readable
+{
+ my $fh     = shift;
+ my $count  = sysread($fh,${*$fh},1,length(${*$fh}));
+ if ($count < 0)
+  {
+   if (exists ${*$fh}{-errorcommand})
+    {
+     ${*$fh}{-errorcommand}->Call($!);
+    }
+   else
+    {
+     warn "Cannot read $fh:$!";
+     $fh->close;
+    }
+  }
+ elsif ($count)
+  {
+   if (exists ${*$fh}{-linecommand})
+    {
+     my $eol = index(${*$fh},"\n");
+     if ($eol >= 0)
+      {
+       ${*$fh}{-linecommand}->Call(substr(${*$fh},0,++$eol));
+       substr(${*$fh},0,$eol) = "";
+      }
+    }
+  }
+ else
+  {
+   $fh->close;
+  }
+}
+
+sub pid
+{
+ my $fh = shift;
+ return ${*$fh}{-pid};
+}
+
+sub command
 {
  my $fh  = shift;
- my $var = "";
- my $offset = 0; 
-# print "readline\n";
- until (index($var,"\n") >= 0)
+ my $cmd = ${*$fh}{'-exec'};
+ return (wantarray) ? @$cmd : $cmd;
+}
+
+sub exec
+{
+ my $fh  = shift;
+ my $pid = open($fh,"-|");
+ if ($pid)
   {
-   my $count = $fh->read($var,1,$offset);
-   last unless (defined $count && $count > 0);
-   $offset += $count;
+   ${*$fh} = "" unless (defined ${*$fh});
+   ${*$fh}{'-exec'} = [@_];
+   ${*$fh}{'-pid'}  = $pid;
+   if (exists ${*$fh}{-linecommand})
+    {
+     my $w = ${*$fh}{-widget};
+     $w = 'Tk' unless (defined $w);
+     $w->fileevent($fh,'readable',[$fh,'readable']);
+     ${*$fh}{_readable} = $w;
+    }
+   else
+    {
+     croak Tk::Pretty::Pretty(\%{*$fh});
+    }
+   return $pid;
   }
- return $var;
+ else
+  {
+   # make STDERR same as STDOUT here
+   setpgrp;
+   exec(@_) || die "Cannot exec ",join(' ',@_),":$!";
+  }
+}
+
+sub wait
+{
+ &Tk::Pretty::PrintArgs;
+ my $fh = shift;
+ my $code;
+ my $ch = delete ${*$fh}{-childcommand};
+ ${*$fh}{-childcommand} = Tk::Callbacksub->new(sub { $code = shift });
+ Tk->DoOneEvent until (defined $code);
+ if (defined $ch)
+  {
+   ${*$fh}{-childcommand} = $ch;
+   $ch->Call($code,$fh) 
+  }
+ return $code;
 }
 
 sub close
 {
  my $fh = shift;
- if (defined $open{$$fh})
+ if (defined fileno($fh))
   {
-   my $code = close($$fh);
-   $open{$$fh} = undef;
-   return $code;
+   my $w = delete ${*$fh}{_readable};
+   $w->fileevent($fh,'readable','') if (defined $w);
+   close($fh);
+   if (exists ${*$fh}{-childcommand})
+    {
+     ${*$fh}{-childcommand}->Call($?,$fh);
+    }
   }
- return 1;
 }
 
 sub DESTROY
 {  
  my $fh = shift;
- if (defined $open{$$fh})
-  {
-   warn "Cannot close $$fh" unless $fh->close;
-  }
+ $fh->close;
 }
 
 1;

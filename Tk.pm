@@ -15,32 +15,49 @@ require DynaLoader;
 @ISA       = qw(Exporter DynaLoader);
 use Carp;
 
-@EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit tkmainloop
-		$tk_library $tk_patchLevel $tk_strictMotif $tk_version $nTk_version);
-@EXPORT_OK = qw(Exists Ev after exit MainLoop DoOneEvent tkinit tkmainloop
-		$tk_library $tk_patchLevel $tk_strictMotif $tk_version $nTk_version NoOp lsearch);
+@EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
+@EXPORT_OK = qw(Exists Ev after exit MainLoop DoOneEvent tkinit NoOp lsearch);
 
-$tk_library        = Tk->findINC(".");
-$ENV{'TK_LIBRARY'} = $tk_library;
-
-$tk_version     = "4.0";
-$tk_patchLevel  = "4.0";
-$Tk_module      = "alpha";
-$tk_strictMotif = 0;
+# $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
+# is created, $Version is set by bootstrap
+$Tk::version     = "4.0";
+$Tk::patchLevel  = "4.0p1";
+$Tk::Version     = "beta";
+$Tk::strictMotif = 0;
+                                   
+$Tk::library = __FILE__;
+$Tk::library =~ s/\.pm$//;
+$Tk::library = Tk->findINC('.') unless (-d $Tk::library);
 
 bootstrap Tk;
 
 # Supress used once warnings on function table pointers 
 # How can we do this in the C code?
-$TkVtab     = $TkVtab;
-$TkintVtab  = $TkintVtab;
-$LangVtab   = $LangVtab;
-$TkglueVtab = $TkglueVtab;
-$XlibVtab   = $XlibVtab;
+$Tk::TkVtab      = $Tk::TkVtab;
+$Tk::TkintVtab   = $Tk::TkintVtab;
+$Tk::LangVtab    = $Tk::LangVtab;
+$Tk::TkglueVtab  = $Tk::TkglueVtab;
+$Tk::XlibVtab    = $Tk::XlibVtab;
+$Tk::Version     = $Tk::Version;
+$Tk::version     = $Tk::version;
+$Tk::patchLevel  = $Tk::patchLevel;
+$Tk::strictMotif = $Tk::strictMotif;
 
-
-# $tk_library , $tk_version and $tk_patchLevel are set by pTk when a mainwindow
-# is created, $Version is set by bootstrap
+BEGIN 
+{
+ my %sub_methods = ( 'option' =>  [qw(add get clear readfile)],
+                     'clipboard' => [qw(clear append)]
+                    );
+ my $fn;
+ foreach $fn (keys %sub_methods)
+  {my $sub;
+   foreach $sub (@{$sub_methods{$fn}})
+    {
+     my ($suffix) = $sub =~ /(\w+)$/;
+     *{"$fn\u$suffix"} = sub { shift->$fn($sub,@_) };
+    }
+  }
+}
 
 sub BackTrace
 {
@@ -81,7 +98,7 @@ sub lsearch
  my $i;
  for ($i = 0; $i < scalar @$ar; $i++)
   {
-   return $i if ($$ar[$i] == $x);
+   return $i if ($$ar[$i] eq $x);
   }
  return -1;
 }
@@ -97,9 +114,16 @@ sub break
 
 sub idletasks
 {
+ shift->update('idletasks');
+}
+
+sub updateWidgets
+{
  my ($w) = @_;
- croak "Not a widget" unless (ref $w);
- $w->update('idletasks');
+ while ($w->DoOneEvent(0x13))   # No wait, X events and idle events
+  {
+  }
+ $w;
 }
 
 sub ImageNames
@@ -152,6 +176,24 @@ sub findINC
  return undef;
 }
 
+sub SubMethods
+{
+ my $package = caller(0);
+ while (@_)
+  {
+   my $fn = shift;
+   my $sm = shift;
+   my $sub;
+   foreach $sub (@{$sm})
+    {
+     my ($suffix) = $sub =~ /(\w+)$/;
+     my $name = $package . '::' ."$fn\u$suffix";
+     *{"$name"} = sub { shift->$fn($sub,@_) };
+    }
+  }
+}
+
+
 1;
 
 __END__
@@ -162,11 +204,6 @@ sub exit { CORE::exit(@_);}
 sub tkinit
 {
  return MainWindow->new(@_);
-}
-
-sub tkmainloop
-{
- Tk->MainLoop();
 }
 
 sub Exists
@@ -181,7 +218,7 @@ sub CancelRepeat
  $w->after('cancel',$id) if (defined $id);
 }
 
-sub afterId
+sub RepeatId
 {
  my ($w,$id) = @_;
  $w = $w->MainWindow;
@@ -204,7 +241,7 @@ sub afterId
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-sub focuschildren { shift->children }
+sub FocusChildren { shift->children }
 
 #
 # focusNext --
@@ -226,7 +263,7 @@ sub focusNext
   {
    # Descend to just before the first child of the current widget.
    my $parent = $cur;
-   my @children = $cur->focuschildren();
+   my @children = $cur->FocusChildren();
    my $i = -1;
    # Look for the next sibling that isn't a top-level.
    while (1)
@@ -244,7 +281,7 @@ sub focusNext
      $cur = $parent;
      last if ($cur->toplevel() == $cur);
      $parent = $parent->parent();
-     @children = $parent->focuschildren();
+     @children = $parent->FocusChildren();
      $i = lsearch(\@children,$cur);
     }
    if ($cur == $w || $cur->FocusOK)
@@ -279,13 +316,13 @@ sub focusPrev
    if ($cur->toplevel() == $cur)
     {
      $parent = $cur;
-     @children = $cur->focuschildren();
+     @children = $cur->FocusChildren();
      $i = @children;
     }
    else
     {
      $parent = $cur->parent();
-     @children = $parent->focuschildren();
+     @children = $parent->FocusChildren();
      $i = lsearch(\@children,$cur);
     }
    # Go to the previous sibling, then descend to its last descendant
@@ -298,7 +335,7 @@ sub focusPrev
      $cur = $children[$i];
      next if ($cur->toplevel() == $cur);
      $parent = $cur;
-     @children = $parent->focuschildren();
+     @children = $parent->FocusChildren();
      $i = @children;
     }
    $cur = $parent;
@@ -400,18 +437,14 @@ sub FirstMenu
 sub Selection
 {my $widget = shift;
  my $cmd    = shift;
- die "Use SelectionOwn/SelectionOwner" if ($cmd eq 'own');
- die "Use Selection\u$cmd()";
+ croak "Use SelectionOwn/SelectionOwner" if ($cmd eq 'own');
+ croak "Use Selection\u$cmd()";
 }
 
 sub Clipboard
 {my $w = shift;
- $w->clipboard(@_);
-}
-
-sub OptionGet
-{
- shift->option('get',@_);
+ my $cmd    = shift;
+ croak "Use clipboard\u$cmd()";
 }
 
 sub BackgroundError
@@ -423,7 +456,7 @@ sub BackgroundError
  carp "Background Error: $error\n " . join("\n ",@_);
 }
 
-sub receive
+sub Receive
 {
  my $w = shift;
  warn "receive(" . join(',',@_) .")";

@@ -1,0 +1,71 @@
+#!/usr/local/bin/perl -w
+#
+# This script generates a counter with start and stop buttons.  Exit with 
+# Ctrl/c or Ctrl/q.
+#
+# This a more advanced version of `timer', where we conform to a strict style
+# of Perl programming and pass things around as references.  Also, the counter
+# is updated via a -textvariable rather than a configure() method call.
+#
+# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  95/11/12
+
+require 5.001;
+use Tk;
+use strict;
+sub tick;
+
+my $mw = MainWindow->new;
+$mw->bind('<Control-c>' => sub {exit});
+$mw->bind('<Control-q>' => sub {exit});
+
+# %tinfo:  the Timer Information hash.
+#
+# Key       Contents
+#
+# w         Reference to MainWindow.
+# s         Accumulated seconds.
+# h         Accumulated hundredths of a second.
+# p         1 IIF paused.
+# t         Value of $counter -textvariable.
+
+my(%tinfo) = ('w' => $mw, 's' => 0, 'h' => 0, 'p' => 1, 't' => '0.00');
+
+my $start = $mw->Button(
+    -text         => 'Start', 
+    -command      => sub {if($tinfo{'p'}) {$tinfo{'p'} = 0; tick \%tinfo;}},
+);
+
+my $stop = $mw->Button(-text => 'Stop', -command => sub {$tinfo{'p'} = 1;});
+
+my $counter = $mw->Label(
+    -relief       => 'raised', 
+    -width        => 10,
+    -textvariable => \$tinfo{'t'},
+);
+
+$counter->pack(-side => 'bottom', -fill => 'both');
+$start->pack(-side => 'left', -fill => 'both', -expand => 'yes');
+$stop->pack(-side => 'right', -fill => 'both', -expand => 'yes');
+
+sub tick {
+
+    # Update the counter every 50 milliseconds, or 5 hundredths of a second.
+    # Because we use a strict coding style and all variables are lexicals, that
+    # is, `my' variables, anonymous subroutines in Perl/Tk callbacks become
+    # closures where variable values are "compile into" the callback, thus 
+    # %tinfo is passed by reference and deferenced in this subroutine.
+
+    my($ti_ref) = @_;
+
+    return if $ti_ref->{'p'};
+    $ti_ref->{'h'} += 5;
+    if ($ti_ref->{'h'} >= 100) {
+	$ti_ref->{'h'} = 0;
+	$ti_ref->{'s'}++;
+    }
+    $ti_ref->{'t'} = sprintf("%d.%02d", $ti_ref->{'s'}, $ti_ref->{'h'});
+    $ti_ref->{'w'}->after(50, [\&tick, $ti_ref]);
+
+} # end tick
+
+MainLoop;

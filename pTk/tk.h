@@ -186,7 +186,7 @@ typedef struct Tk_ConfigSpec {
 #define TK_CONFIG_SCALARVAR	24
 #define TK_CONFIG_HASHVAR	25
 #define TK_CONFIG_ARRAYVAR	26
-#define TK_CONFIG_IMAGE		27
+#define TK_CONFIG_OBJECT	27
 #define TK_CONFIG_END		28
 
 /*
@@ -1333,7 +1333,6 @@ EXTERN Tcl_Command	Lang_CreateImage _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_ImageType *typePtr));
 
 EXTERN void		Lang_DeleteWidget _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd));
-EXTERN void		Lang_DeleteImage  _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd));
 
 EXTERN void		Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *dispName, int screenIndex));
@@ -1341,7 +1340,11 @@ EXTERN void		Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN Var		LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
 
 EXTERN Arg		LangWidgetArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
-EXTERN Arg		LangImageArg  _ANSI_ARGS_((Tcl_Interp *interp, char *));
+EXTERN Arg		LangObjectArg _ANSI_ARGS_((Tcl_Interp *interp, char *));
+
+EXTERN int		Tix_ArgcError _ANSI_ARGS_((Tcl_Interp *interp, 
+			    int argc, Arg *args, int prefixCount,
+			    char *message));
 
 #ifndef NO_COREXT
 COREXT int		Tk_ParseArgv _ANSI_ARGS_((Tcl_Interp *interp,

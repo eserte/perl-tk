@@ -20,7 +20,7 @@ Tk::Widget->Construct('Button');
 1;
 __END__
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,"<Enter>", "Enter");

@@ -13,7 +13,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkWm.c 1.107 95/07/22 16:04:57";
+static char sccsid[] = "@(#) tkWm.c 1.104 95/06/04 16:07:36";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -302,6 +302,10 @@ static int		WaitForEvent _ANSI_ARGS_((Display *display,
 			    Window window, long mask, XEvent *eventPtr));
 static void		WaitForMapNotify _ANSI_ARGS_((TkWindow *winPtr,
 			    int mapped));
+
+static void		IdleMapToplevel _ANSI_ARGS_((ClientData clientData));
+static void		UnmanageGeometry _ANSI_ARGS_((Tk_Window tkwin));
+
 
 /*
  *--------------------------------------------------------------
@@ -327,61 +331,64 @@ TkWmNewWindow(winPtr)
 {
     register WmInfo *wmPtr;
 
-    wmPtr = (WmInfo *) ckalloc(sizeof(WmInfo));
-    wmPtr->winPtr = winPtr;
-    wmPtr->reparent = None;
-    wmPtr->titleUid = NULL;
-    wmPtr->iconName = NULL;
-    wmPtr->master = None;
-    wmPtr->hints.flags = InputHint | StateHint;
-    wmPtr->hints.input = True;
-    wmPtr->hints.initial_state = NormalState;
-    wmPtr->hints.icon_pixmap = None;
-    wmPtr->hints.icon_window = None;
-    wmPtr->hints.icon_x = wmPtr->hints.icon_y = 0;
-    wmPtr->hints.icon_mask = None;
-    wmPtr->hints.window_group = None;
-    wmPtr->leaderName = NULL;
-    wmPtr->masterWindowName = NULL;
-    wmPtr->icon = NULL;
-    wmPtr->iconFor = NULL;
-    wmPtr->withdrawn = 0;
-    wmPtr->sizeHintsFlags = 0;
-    wmPtr->minWidth = wmPtr->minHeight = 1;
+    if (winPtr->wmInfoPtr == NULL) {
+	wmPtr = (WmInfo *) ckalloc(sizeof(WmInfo));
+	wmPtr->winPtr = winPtr;
+	wmPtr->reparent = None;
+	wmPtr->titleUid = NULL;
+	wmPtr->iconName = NULL;
+	wmPtr->master = None;
+	wmPtr->hints.flags = InputHint | StateHint;
+	wmPtr->hints.input = True;
+	wmPtr->hints.initial_state = NormalState;
+	wmPtr->hints.icon_pixmap = None;
+	wmPtr->hints.icon_window = None;
+	wmPtr->hints.icon_x = wmPtr->hints.icon_y = 0;
+	wmPtr->hints.icon_mask = None;
+	wmPtr->hints.window_group = None;
+	wmPtr->leaderName = NULL;
+	wmPtr->masterWindowName = NULL;
+	wmPtr->icon = NULL;
+	wmPtr->iconFor = NULL;
+	wmPtr->withdrawn = 0;
+	wmPtr->sizeHintsFlags = 0;
+	wmPtr->minWidth = wmPtr->minHeight = 1;
 
-    /*
-     * Default the maximum dimensions to the size of the display, minus
-     * a guess about how space is needed for window manager decorations.
-     */
+	/*
+	 * Default the maximum dimensions to the size of the display, minus
+	 * a guess about how space is needed for window manager decorations.
+	 */
 
-    wmPtr->maxWidth = DisplayWidth(winPtr->display, winPtr->screenNum) - 15;
-    wmPtr->maxHeight = DisplayHeight(winPtr->display, winPtr->screenNum) - 30;
-    wmPtr->gridWin = NULL;
-    wmPtr->widthInc = wmPtr->heightInc = 1;
-    wmPtr->minAspect.x = wmPtr->minAspect.y = 1;
-    wmPtr->maxAspect.x = wmPtr->maxAspect.y = 1;
-    wmPtr->reqGridWidth = wmPtr->reqGridHeight = -1;
-    wmPtr->gravity = NorthWestGravity;
-    wmPtr->width = -1;
-    wmPtr->height = -1;
-    wmPtr->x = winPtr->changes.x;
-    wmPtr->y = winPtr->changes.y;
-    wmPtr->parentWidth = winPtr->changes.width
+	wmPtr->maxWidth = DisplayWidth(winPtr->display, winPtr->screenNum)- 15;
+	wmPtr->maxHeight= DisplayHeight(winPtr->display, winPtr->screenNum)-30;
+	wmPtr->gridWin = NULL;
+	wmPtr->widthInc = wmPtr->heightInc = 1;
+	wmPtr->minAspect.x = wmPtr->minAspect.y = 1;
+	wmPtr->maxAspect.x = wmPtr->maxAspect.y = 1;
+	wmPtr->reqGridWidth = wmPtr->reqGridHeight = -1;
+	wmPtr->gravity = NorthWestGravity;
+	wmPtr->width = -1;
+	wmPtr->height = -1;
+	wmPtr->x = winPtr->changes.x;
+	wmPtr->y = winPtr->changes.y;
+	wmPtr->parentWidth = winPtr->changes.width
 	    + 2*winPtr->changes.border_width;
-    wmPtr->parentHeight = winPtr->changes.height
+	wmPtr->parentHeight = winPtr->changes.height
 	    + 2*winPtr->changes.border_width;
-    wmPtr->xInParent = wmPtr->yInParent = 0;
-    wmPtr->configWidth = -1;
-    wmPtr->configHeight = -1;
-    wmPtr->vRoot = None;
-    wmPtr->protPtr = NULL;
-    wmPtr->cmdArgv = NULL;
-    wmPtr->cmdArg  = NULL;
-    wmPtr->clientMachine = NULL;
-    wmPtr->flags = WM_NEVER_MAPPED;
-    wmPtr->nextPtr = firstWmPtr;
-    firstWmPtr = wmPtr;
-    winPtr->wmInfoPtr = wmPtr;
+	wmPtr->xInParent = wmPtr->yInParent = 0;
+	wmPtr->configWidth = -1;
+	wmPtr->configHeight = -1;
+	wmPtr->vRoot = None;
+	wmPtr->protPtr = NULL;
+	wmPtr->cmdArgv = NULL;
+	wmPtr->clientMachine = NULL;
+	wmPtr->flags = WM_NEVER_MAPPED;
+	wmPtr->nextPtr = firstWmPtr;
+	firstWmPtr = wmPtr;
+	winPtr->wmInfoPtr = wmPtr;
+    } else {
+	wmPtr = winPtr->wmInfoPtr;
+    }
 
     UpdateVRootGeometry(wmPtr);
 
@@ -747,9 +754,54 @@ Tk_WmCmd(clientData, interp, argc, args)
 	return TCL_ERROR;
     }
     if (!(winPtr->flags & TK_TOP_LEVEL)) {
-	Tcl_AppendResult(interp, "window \"", winPtr->pathName,
+	if ((c == 'r') && (strncmp(LangString(args[1]), "release", length) == 0)) {
+	    if (winPtr->parentPtr == NULL) {
+		Tcl_AppendResult(interp, "Cannot release main window", NULL);
+		return TCL_ERROR;
+	    }
+
+	    /* detach the window from its gemoetry manager, if any */
+	    UnmanageGeometry(tkwin);
+	    if (winPtr->window == None) {
+		/* Good, the window is not created yet, we still have time
+		 * to make it an legitimate toplevel window
+		 */
+		winPtr->dirtyAtts |= CWBorderPixel;
+		winPtr->atts.event_mask |= StructureNotifyMask;
+
+		winPtr->flags |= TK_TOP_LEVEL;
+		TkWmNewWindow(winPtr);
+		Tk_DoWhenIdle(IdleMapToplevel, (ClientData) winPtr);
+	    } else {
+		Window parent;
+		XSetWindowAttributes atts;
+
+		atts.event_mask = winPtr->atts.event_mask;
+		atts.event_mask |= StructureNotifyMask;
+
+		Tk_ChangeWindowAttributes((Tk_Window)winPtr, CWEventMask,
+		    &atts);
+
+		if (winPtr->flags & TK_MAPPED) {
+		    Tk_UnmapWindow((Tk_Window)winPtr);
+		}
+		parent = XRootWindow(winPtr->display, winPtr->screenNum);
+		XReparentWindow(winPtr->display, winPtr->window,
+		    parent, 0, 0);
+
+		/* Should flush the events here */
+		winPtr->flags |= TK_TOP_LEVEL;
+		TkWmNewWindow(winPtr);
+
+		Tk_DoWhenIdle(IdleMapToplevel, (ClientData) winPtr);
+	    }
+	    return TCL_OK;
+	}
+	else {
+	    Tcl_AppendResult(interp, "window \"", winPtr->pathName,
 		"\" isn't a top-level window",          NULL);
-	return TCL_ERROR;
+	    return TCL_ERROR;
+	}
     }
     wmPtr = winPtr->wmInfoPtr;
     if ((c == 'a') && (strncmp(LangString(args[1]), "aspect", length) == 0)) {
@@ -791,6 +843,110 @@ Tk_WmCmd(clientData, interp, argc, args)
 	}
 	wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
 	goto updateGeom;
+    } else if ((c == 'c') && (strncmp(LangString(args[1]), "capture", length) == 0)) {
+	if (winPtr->parentPtr == NULL) {
+	    Tcl_AppendResult(interp, "Cannot capture main window", NULL);
+	    return TCL_ERROR;
+	}
+
+	if ((winPtr->flags & TK_TOP_LEVEL)==0) {
+	    /* Window is already captured */
+	    return TCL_OK;
+	}
+
+	if (winPtr->window == None) {
+	    /* cause this and parent window to exist*/
+	    winPtr->atts.event_mask &= ~StructureNotifyMask;
+	    winPtr->flags &= ~TK_TOP_LEVEL;
+
+	    UnmanageGeometry((Tk_Window) winPtr);
+	    Tk_DeleteEventHandler((Tk_Window)winPtr, StructureNotifyMask,
+	        TopLevelEventProc, (ClientData) winPtr);
+	} else {
+	    XEvent event;
+	    unsigned long serial;
+	    XSetWindowAttributes atts;
+	    int i, done1 = 0, done2 = 0, count = 0;
+
+	    /* wmDontReparent is set to 2 if it is determined that
+	     * the window manager does not do a reparent after 
+	     * "wm capture" does the reparent. If that's the case, we don't
+	     * need to perform the hack
+	     */
+	    static int wmDontReparent = 0;
+
+
+	    /* Hack begins here --
+	     *
+	     * To change a widget from  a toplevel window to a non-toplevel
+	     * window, we reparent it (from the root window) to its
+	     * real (TK) parent. However, after we do that, some window 
+	     * managers (mwm in particular), will reparent the widget, again,
+	     * to its decoration frames. In that case, we need to perform the
+	     * reparenting again.
+	     *
+	     * The following code keeps reparenting the widget to its
+	     * real parent until it detects the stupid move by the window
+	     * manager. After that, it reparents once more and the widget
+	     * will be finally reparented to its real parent.
+	     */
+	    while (done2 == 0) {
+		XUnmapWindow(winPtr->display, winPtr->window);
+		XReparentWindow(winPtr->display, winPtr->window,
+		    winPtr->parentPtr->window, 0, 0);
+		if (wmDontReparent >= 2) {
+		    goto done;
+		}
+
+		do {
+		    if (WaitForEvent(winPtr->display, winPtr->window,
+		    	StructureNotifyMask, &event) != TCL_OK) {
+			goto done;
+		    }
+		    Tk_HandleEvent(&event);
+		} while (event.type != ReparentNotify);
+
+		if (event.xreparent.parent == winPtr->parentPtr->window ) {
+		    if (done1 == 1) {
+			done2 = 1;
+			if (wmTracing) {
+			    printf("tixdebug: done reparenting.\n");
+			}
+		    } else {
+			++ count;
+		    }
+		} else {
+		    if (wmTracing) {
+			printf("tixdebug: wm reparenting, retry ...\n");
+		    }
+		    done1 = 1;
+		}
+		if (count > 15) {
+		    ++ wmDontReparent;
+		    if (wmTracing) {
+			printf("tixdebug: window manager doesn't reparent.\n");
+		    }
+		    goto done;
+		}
+	    }
+	    /* Hack ends here
+	     */
+
+	  done:
+	    /* clear those attributes that non-toplevel windows don't
+	     * possess
+	     */
+	    winPtr->flags &= ~TK_TOP_LEVEL;
+	    atts.event_mask = winPtr->atts.event_mask;
+	    atts.event_mask &= ~StructureNotifyMask;
+	    Tk_ChangeWindowAttributes((Tk_Window)winPtr, CWEventMask,
+		&atts);
+
+	    Tk_DeleteEventHandler((Tk_Window)winPtr, StructureNotifyMask,
+	        TopLevelEventProc, (ClientData) winPtr);
+	    UnmanageGeometry((Tk_Window) winPtr);
+	}
+	return TCL_OK;
     } else if ((c == 'c') && (strncmp(LangString(args[1]), "client", length) == 0)
 	    && (length >= 2)) {
 	if ((argc != 3) && (argc != 4)) {
@@ -1153,8 +1309,8 @@ Tk_WmCmd(clientData, interp, argc, args)
 	if (LangString(args[3])[0] == '\0') {
 	    if (wmPtr->hints.icon_pixmap != None) {
 		Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
-		wmPtr->hints.icon_pixmap = None;
 	    }
+	    wmPtr->hints.icon_pixmap = None;
 	    wmPtr->hints.flags &= ~IconPixmapHint;
 	} else {
 	    pixmap = Tk_GetBitmap(interp, (Tk_Window) winPtr,
@@ -1415,8 +1571,8 @@ Tk_WmCmd(clientData, interp, argc, args)
 	wmPtr->minHeight = height;
 	wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
 	goto updateGeom;
-    } else if ((c == 'o')
-	    && (strncmp(LangString(args[1]), "overrideredirect", length) == 0)) {
+    } else if ((c == 'o') && (strncmp(LangString(args[1]), "overrideredirect", length) == 0)) {
+
 	int boolean;
 	XSetWindowAttributes atts;
 
@@ -1440,8 +1596,8 @@ Tk_WmCmd(clientData, interp, argc, args)
 	atts.override_redirect = (boolean) ? True : False;
 	Tk_ChangeWindowAttributes((Tk_Window) winPtr, CWOverrideRedirect,
 		&atts);
-    } else if ((c == 's')
-	    && (strncmp(LangString(args[1]), "saveunder", length) == 0)) {
+    } else if ((c == 's') && (strncmp(LangString(args[1]), "saveunder", length) == 0)) {
+
 	int boolean;
 	XSetWindowAttributes atts;
 
@@ -1568,6 +1724,10 @@ Tk_WmCmd(clientData, interp, argc, args)
 	if (!(wmPtr->flags & WM_NEVER_MAPPED)) {
 	    UpdateWmProtocols(wmPtr);
 	}
+    } else if ((c == 'r') && (strncmp(LangString(args[1]), "release", length) == 0)) {
+	Tcl_AppendResult(interp, "Window \"", LangString(args[2]),
+	    "\" is already a toplevel", NULL);
+	return TCL_ERROR;
     } else if ((c == 'r') && (strncmp(LangString(args[1]), "resizable", length) == 0)) {
 	int width, height;
 
@@ -1623,8 +1783,8 @@ Tk_WmCmd(clientData, interp, argc, args)
 	    if ((c == 'u') && (strncmp(LangString(args[3]), "user", length) == 0)) {
 		wmPtr->sizeHintsFlags &= ~PSize;
 		wmPtr->sizeHintsFlags |= USSize;
-	    } else if ((c == 'p')
-		    && (strncmp(LangString(args[3]), "program", length) == 0)) {
+	    } else if ((c == 'p') && (strncmp(LangString(args[3]), "program", length) == 0)) {
+
 		wmPtr->sizeHintsFlags &= ~USSize;
 		wmPtr->sizeHintsFlags |= PSize;
 	    } else {
@@ -1815,7 +1975,7 @@ Tk_SetGrid(tkwin, reqWidth, reqHeight, widthInc, heightInc)
 	    && (wmPtr->widthInc == widthInc)
 	    && (wmPtr->heightInc == heightInc)
 	    && ((wmPtr->sizeHintsFlags & (PBaseSize|PResizeInc))
-		    == PBaseSize|PResizeInc)) {
+		    == (PBaseSize|PResizeInc))) {
 	return;
     }
 
@@ -3635,13 +3795,15 @@ TkWmRestackToplevel(winPtr, aboveBelow, otherPtr)
      *     toplevels themselves aren't siblings).
      * The only solution I can see is to switch to using the window
      * itself instead of its frame, if there's no sibling, but use
-     * the frame if there's a sibling.  This means that raising
+     * the frames if there's a sibling.  This means that raising
      * relative to a sibling won't work under olvwm.
      */
 
+    if (!(mask & CWSibling)) {
+	window = winPtr->window;
+    }
     serial = NextRequest(winPtr->display);
-    XConfigureWindow(winPtr->display,
-	    (mask & CWSibling) ? window : winPtr->window, mask, &changes);
+    XConfigureWindow(winPtr->display, window, mask, &changes);
 
     /*
      * Wait for the reconfiguration to complete.  If we don't wait, then
@@ -3816,4 +3978,62 @@ TkGetPointerCoords(tkwin, xPtr, yPtr)
 	*xPtr = -1;
 	*yPtr = -1;
     }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * IdleMapTopLevel -- stolen from tkFrame.c
+ *
+ *	This procedure is invoked as a when-idle handler to map a
+ *	newly-released toplevel window
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The window given by the clientData argument is mapped.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+IdleMapToplevel(clientData)
+    ClientData clientData;
+{
+    TkWindow * winPtr = (TkWindow *) clientData;
+
+    if (winPtr->flags & TK_TOP_LEVEL) {
+	Tk_MapWindow((Tk_Window)winPtr);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * UnmanageGeometry --
+ *
+ *	Since there is a bug in tkGeometry.c, we need this routine to
+ *	replace Tk_ManageGeometry(tkwin, NULL, NULL);
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The window given by the clientData argument is mapped.
+ *
+ *----------------------------------------------------------------------
+ */
+static void UnmanageGeometry(tkwin)
+    Tk_Window tkwin;		/* Window whose geometry is to
+				 * be unmanaged.*/
+{
+    register TkWindow *winPtr = (TkWindow *) tkwin;
+
+    if ((winPtr->geomMgrPtr != NULL) &&
+	(winPtr->geomMgrPtr->lostSlaveProc != NULL)) {
+	(*winPtr->geomMgrPtr->lostSlaveProc)(winPtr->geomData, tkwin);
+    }
+
+    winPtr->geomMgrPtr = NULL;
+    winPtr->geomData = NULL;
 }

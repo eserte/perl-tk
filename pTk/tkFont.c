@@ -13,7 +13,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkFont.c 1.36 95/06/04 15:27:43";
+static char sccsid[] = "@(#) tkFont.c 1.37 95/08/16 10:27:54";
 
 #include "tkPort.h"
 #include "tkInt.h"
@@ -572,7 +572,11 @@ TkMeasureChars(fontStructPtr, source, maxChars, startX, maxX,
 	if (newX > maxX) {
 	    break;
 	}
-	c = p[1] & 0xff;
+	if (maxChars > 1) {
+	    c = p[1] & 0xff;
+	} else {
+	    c = 0;
+	}
 	if (isspace(UCHAR(c)) || (c == 0)) {
 	    term = p+1;
 	    termX = newX;

@@ -11,10 +11,4 @@ sub Tk_cmd { \&Tk::message }
 1;
 __END__
 
-sub classinit
-{
- my ($class,$mw) = @_;
- return $class;
-}
-
 

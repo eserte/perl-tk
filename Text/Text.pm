@@ -10,8 +10,9 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package Tk::Text; 
 require Tk;
+package Tk::Text; 
+require Tk::Clipboard;
 require DynaLoader;
 use AutoLoader;
 use Carp;
@@ -25,6 +26,15 @@ bootstrap Tk::Text;
 sub Tk_cmd { \&Tk::text }
 
 import Tk qw(Ev);
+
+sub Tk::Widget::ScrlText { shift->Scrolled('Text' => @_) }
+
+Tk::SubMethods ( 'mark' => [qw(gravity names set unset)],
+                 'scan' => [qw(mark dragto)],
+                 'tag'  => [qw(add bind cget configure delete lower 
+                               names  nextrange raise ranges remove)],
+                 'window' => [qw(cget configure create)]
+               );
 
 1;
 
@@ -98,8 +108,8 @@ sub bindRdOnly
             }
            )
  ;
- $mw->bind($class,"<Double-Shift-1>",['SelectTo',Ev('@%x,%y'),"word"]);
- $mw->bind($class,"<Triple-Shift-1>",['SelectTo',Ev('@%x,%y'),"line"]);
+ $mw->bind($class,"<Double-Shift-1>",['SelectTo',Ev('@'),"word"]);
+ $mw->bind($class,"<Triple-Shift-1>",['SelectTo',Ev('@'),"line"]);
 
  $mw->bind($class,"<B1-Leave>",
             sub
@@ -115,7 +125,7 @@ sub bindRdOnly
 
  $mw->bind($class,"<B1-Enter>",'CancelRepeat');
  $mw->bind($class,"<ButtonRelease-1>",'CancelRepeat');
- $mw->bind($class,"<Control-1>",["mark","set","insert",Ev('@%x,%y')]);
+ $mw->bind($class,"<Control-1>",["mark","set","insert",Ev('@')]);
  $mw->bind($class,"<Left>",['SetCursor',Ev("index","insert-1c")]);
  $mw->bind($class,"<Shift-Left>",['KeySelect',Ev("index","insert-1c")]);
  $mw->bind($class,"<Right>",['SetCursor',Ev("index","insert+1c")]);
@@ -124,12 +134,12 @@ sub bindRdOnly
  $mw->bind($class,"<Shift-Up>",['KeySelect',Ev('UpDownLine',-1)]);
  $mw->bind($class,"<Down>",['SetCursor',Ev('UpDownLine',1)]);
  $mw->bind($class,"<Shift-Down>",['KeySelect',Ev('UpDownLine',1)]);
- $mw->bind($class,"<Control-Left>",['SetCursor',Ev("index","insert-1c","wordstart")]);
- $mw->bind($class,"<Control-Right>",['SetCursor',Ev("index","insert+1c","wordend")]);
+ $mw->bind($class,"<Control-Left>",['SetCursor',Ev("index","insert-1c wordstart")]);
+ $mw->bind($class,"<Control-Right>",['SetCursor',Ev("index","insert+1c wordend")]);
  $mw->bind($class,"<Control-Up>",['SetCursor',Ev('PrevPara',"insert")]);
  $mw->bind($class,"<Control-Down>",['SetCursor',Ev('NextPara',"insert")]);
- $mw->bind($class,"<Shift-Control-Left>",['KeySelect',Ev("index","insert-1c","wordstart")]);
- $mw->bind($class,"<Shift-Control-Right>",['KeySelect',Ev("index","insert","wordend")]);
+ $mw->bind($class,"<Shift-Control-Left>",['KeySelect',Ev("index","insert-1c wordstart")]);
+ $mw->bind($class,"<Shift-Control-Right>",['KeySelect',Ev("index","insert wordend")]);
  $mw->bind($class,"<Shift-Control-Up>",['KeySelect',Ev('PrevPara',"insert")]);
  $mw->bind($class,"<Shift-Control-Down>",['KeySelect',Ev('NextPara',"insert")]);
  $mw->bind($class,"<Prior>",['SetCursor',Ev('ScrollPages',-1)]);
@@ -158,7 +168,7 @@ sub bindRdOnly
  $mw->bind($class,"<Control-slash>",["tag","add","sel","1.0","end"]);
  $mw->bind($class,"<Control-backslash>",["tag","remove","sel","1.0","end"]);
 
- if (!$Tk::tk_strictMotif)
+ if (!$Tk::strictMotif)
   {
    $mw->bind($class,"<Control-a>",    ['SetCursor',"insert linestart"]);
    $mw->bind($class,"<Control-b>",    ['SetCursor',"insert-1c"]);
@@ -201,12 +211,11 @@ sub bindRdOnly
              );
 
   }
-
  return $class;
 }
                                          
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
 
@@ -219,7 +228,7 @@ sub classinit
  $mw->bind($class,"<Delete>",'Delete');
  $mw->bind($class,"<BackSpace>",'Backspace');
 
- $class->ClipKeysyms($mw,"F16","F20","F18");
+ $class->clipboardKeysyms($mw,"F16","F20","F18");
 
  $mw->bind($class,"<Insert>",
             sub
@@ -232,7 +241,7 @@ sub classinit
  $mw->bind($class,"<KeyPress>",['Insert',Ev('A')]);
  # Additional emacs-like bindings:
 
- if (!$Tk::tk_strictMotif)
+ if (!$Tk::strictMotif)
   {
 
    $mw->bind($class,"<Control-d>",['delete','insert']);
@@ -260,20 +269,11 @@ sub classinit
               }
              )
    ;
-   $mw->bind($class,"<Control-t>",
-              sub
-              {
-               my $w = shift;
-               $w->insert("insert+2c",$w->get("insert"));
-               $w->delete("insert");
-               $w->see("insert")
-              }
-             )
-   ;
+   $mw->bind($class,"<Control-t>",'Transpose');
    $mw->bind($class,"<Meta-d>",['delete','insert','insert wordend']);
    $mw->bind($class,"<Meta-BackSpace>",['delete','insert-1c wordstart','insert']);
 
-   $class->ClipKeysyms($mw,"Meta-w","Control-w","Control-y");
+   $class->clipboardKeysyms($mw,"Meta-w","Control-w","Control-y");
    # A few additional bindings of my own.
    $mw->bind($class,"<Control-h>",
               sub
@@ -355,66 +355,6 @@ sub Delete
   {
    $w->delete("insert");
    $w->see("insert")
-  }
-}
-
-# ClipKeysyms --
-# This procedure is invoked to identify the keys that correspond to
-# the "copy", "cut", and "paste" functions for the clipboard.
-#
-# Arguments:
-# copy - Name of the key (keysym name plus modifiers, if any,
-# such as "Meta-y") used for the copy operation.
-# cut - Name of the key used for the cut operation.
-# paste - Name of the key used for the paste operation.
-
-sub ClipCopy
-{
- my $w = shift;
- if ($w->IS($w->SelectionOwner))
-  {
-   $w->Clipboard("clear");
-   $w->Clipboard("append",$w->SelectionGet)
-  }
-}
-
-sub ClipCut
-{
- my $w = shift;
- if ($w->IS($w->SelectionOwner))
-  {
-   $w->Clipboard("clear");
-   $w->Clipboard("append",$w->SelectionGet);
-   $w->delete("sel.first","sel.last")
-  }
-}
-
-sub ClipPaste
-{
- my $w = shift;
- local ($@);
- eval {$w->insert("insert",$w->SelectionGet("-selection","CLIPBOARD"))};
- carp("$@") if ($@);
-}
-
-sub ClipKeysyms
-{
- my $class = shift;
- my $mw    = shift;
- if (@_)
-  {
-   my $copy  = shift;
-   $mw->bind($class,"<$copy>",'ClipCopy')   if (defined $copy);
-  }
- if (@_)
-  {
-   my $cut   = shift;
-   $mw->bind($class,"<$cut>",'ClipCut')     if (defined $cut);
-  }
- if (@_)
-  {
-   my $paste = shift;                                                
-   $mw->bind($class,"<$paste>",'ClipPaste') if (defined $paste);
   }
 }
 
@@ -548,7 +488,7 @@ sub AutoScan
    return;
   }
  $w->SelectTo("@" . $Tk::x . ",". $Tk::y);
- $w->afterId($w->after(50,"AutoScan",$w));
+ $w->RepeatId($w->after(50,"AutoScan",$w));
 }
 # SetCursor
 # Move the insertion cursor to a given position in a text. Also
@@ -836,4 +776,21 @@ sub Contents
   {
    return $w->get('1.0','end');
   }
+}
+
+sub Transpose
+{
+ my ($w) = @_;
+ my $pos = 'insert';
+ $pos = $w->index("$pos + 1 char") if ($w->compare($pos,'!=',"$pos lineend"));
+ return if ($w->compare("$pos - 1 char",'==','1.0'));
+ my $new = $w->get("$pos - 1 char").$w->get("$pos - 2 char");
+ $w->delete("$pos - 2 char",$pos);
+ $w->insert('insert',$new); 
+ $w->see('insert');
+}
+
+sub deleteSelected
+{
+ shift->delete("sel.first","sel.last")
 }

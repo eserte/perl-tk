@@ -35,6 +35,7 @@ VFUNC(int,XDrawArc,V_XDrawArc,_ANSI_ARGS_((Display *, Drawable, GC, int, int, un
 VFUNC(int,XDrawImageString,V_XDrawImageString,_ANSI_ARGS_((Display *, Drawable, GC, int, int, const char *, int)))
 VFUNC(int,XDrawLine,V_XDrawLine,_ANSI_ARGS_((Display *, Drawable, GC, int, int, int, int)))
 VFUNC(int,XDrawLines,V_XDrawLines,_ANSI_ARGS_((Display *, Drawable, GC, XPoint *, int, int)))
+VFUNC(int,XDrawPoints,V_XDrawPoints,_ANSI_ARGS_(( Display*, Drawable, GC, XPoint*, int, int)))
 VFUNC(int,XDrawRectangle,V_XDrawRectangle,_ANSI_ARGS_((Display *, Drawable, GC, int, int, unsigned int, unsigned int)))
 VFUNC(int,XDrawString,V_XDrawString,_ANSI_ARGS_((Display *, Drawable, GC, int, int, const char *, int)))
 VFUNC(int,XEventsQueued,V_XEventsQueued,_ANSI_ARGS_((Display *, int)))

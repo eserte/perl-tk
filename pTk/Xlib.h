@@ -136,6 +136,7 @@ extern int XUnionRectWithRegion  _ANSI_ARGS_((XRectangle *, Region, Region));
 extern int XSetBackground _ANSI_ARGS_((Display *, GC, unsigned long));
 extern int XDrawImageString _ANSI_ARGS_((Display *, Drawable, GC, int, int, const char *, int));
 extern int XWarpPointer _ANSI_ARGS_(( Display *, Window, Window, int, int, unsigned int, unsigned int, int, int ));
+extern int XDrawPoints _ANSI_ARGS_(( Display*, Drawable, GC, XPoint*, int, int));
 #endif /* _XLIB_H_ */
 extern int _XInitImageFuncPtrs _ANSI_ARGS_((XImage *image));
 #endif /* _XLIB */

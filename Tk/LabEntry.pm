@@ -12,7 +12,7 @@ sub Populate
  # LabeledEntry constructor.
  #
  my($cw, $args) = @_;
- $cw->InheritThis($args);
+ $cw->SUPER::Populate($args);
  # Advertised subwidgets:  entry.
  my $e = $cw->Entry();
  $e->pack('-expand' => 1, '-fill' => 'both');

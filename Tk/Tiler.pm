@@ -1,32 +1,47 @@
 # An example of a geometry manager "widget" in perl
 package Tk::Tiler;
+require Tk;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
 
 Tk::Widget->Construct('Tiler');
+sub Tk::Widget::ScrlTiler { shift->Scrolled('Tiler' => @_) }
 
 use Tk::Pretty;
 
-sub focuschildren
+sub FocusChildren
 {
  return (wantarray) ? () : 0;
 }
 
 sub Populate
 {
- my ($obj,%args) = @_;
+ my ($obj,$args) = @_;
+ $obj->SUPER::Populate($args);
  $obj->{Slaves} = [];
  $obj->{LayoutPending} = 0;
  $obj->{Start} = 0;
- $obj->{Rows}  = 10;
- $obj->{Cols}  = 5;
  $obj->{Sw}    = 0;
  $obj->{Sh}    = 0;
  $obj->ConfigSpecs('-takefocus'      => [SELF, 'takeFocus','TakeFocus',1],
                    '-highlightthickness' => [SELF, 'highlightThickness','HighlightThickness',2],
-                   '-yscrollcommand' => [CALLBACK,undef,undef,undef]
+                   '-yscrollcommand' => [CALLBACK,undef,undef,undef],
+                   '-columns'        => [PASSIVE,'columns','Columns',5],
+                   '-rows'           => [PASSIVE,'rows','Rows',10]
                   );
  return $obj;
+}
+
+sub change_size
+{
+ my ($w) = shift;
+ my $r  = $w->cget('-rows');
+ my $c  = $w->cget('-columns');
+ my $bw = $w->cget(-highlightthickness);
+ if (defined $r && defined $c)
+  {
+   $w->GeometryRequest($c*$w->{Sw}+2*$bw,$r*$w->{Sh}+2*$bw);
+  }
 }
 
 sub Layout
@@ -37,39 +52,33 @@ sub Layout
  $m->{LayoutPending} = 0;
  my $W = $m->Width;
  my $H = $m->Height;
- my $w = $m->{Sw};
- my $h = $m->{Sh};
+ my $w = $m->{Sw};  # max width of slave
+ my $h = $m->{Sh};  # max height of slave
  my $x = $bw; 
  my $y = $bw; 
  my $start = 0;
- my $s;
- if ($W < $w || $H < $h)
-  {
-   $W = 5*$w;                 
-   $H = 10*$h;                
-   $m->GeometryRequest($W,$H);
-  }
  # Set size and position of slaves
- $m->{Cols}  = $cols = int($W/$w);
- $m->{Rows}  = $rows = int($H/$h);
- $m->{Need}  = $need = int( (@{$m->{Slaves}}+$cols-1)/$cols );
- $m->{Start} = $need - $rows if ($m->{Start} + $rows > $need);
- $m->{Start} = 0             if ($m->{Start} < 0);
+ my $rows = $m->{Rows} = ($H-2*$bw)/$h;
+ my $cols = $m->{Cols} = ($W-2*$bw)/$w;
+ my $need = $m->{Need} = int( (@{$m->{Slaves}}+$cols-1)/$cols );
+ $m->{Start} = ($need - $rows) if ($m->{Start} + $rows > $need);
+ $m->{Start} = 0               if ($m->{Start} < 0);
  my $row = 0;
  my @posn  = ();
+ my $s;
  foreach $s (@{$m->{Slaves}})
   {
    if ($row < $m->{Start})
     {
      $s->UnmapWindow;
      $x += $w;
-     if ($x+$w > $W)
+     if ($x+$w+$bw > $W)
       {
        $x = $bw;
        $row++;
       }
     }
-   elsif ($y+$h > $H)
+   elsif ($y+$h+$bw > $H)
     {
      $s->UnmapWindow;
      $s->ResizeWindow($w,$h) if ($why & 1);
@@ -78,7 +87,7 @@ sub Layout
     {
      push(@posn,[$s,$x,$y]);
      $x += $w;
-     if ($x+$w > $W)
+     if ($x+$w+$bw > $W)
       {
        $x = $bw;
        $y += $h;
@@ -118,16 +127,20 @@ sub SlaveGeometryRequest
  my ($m,$s) = @_;
  my $sw = $s->ReqWidth;
  my $sh = $s->ReqHeight;
+ my $sz = 0;
  if ($sw > $m->{Sw})
   {
    $m->{Sw} = $sw;
    $m->QueueLayout(1);
+   $sz++;
   }
  if ($sh > $m->{Sh})
   {
    $m->{Sh} = $sh;
    $m->QueueLayout(1);
+   $sz++;
   }
+ $m->change_size if ($sz);
 }
 
 sub LostSlave
@@ -173,17 +186,12 @@ sub FocusIn
  print "Focus ",$w->PathName,"\n";
 }
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,'<Configure>',['QueueLayout',8]);
- $mw->bind($class,'<Up>',       ['scroll',-1,'units']);
- $mw->bind($class,'<Down>',     ['scroll',1,'units']);
- $mw->bind($class,'<Next>',     ['scroll',1,'pages']);
- $mw->bind($class,'<Prior>',    ['scroll',-1,'pages']);
- $mw->bind($class,'<Home>',     ['moveto',0]);
- $mw->bind($class,'<End>',      ['moveto',1]);
  $mw->bind($class,'<FocusIn>',  'NoOp');
+ $mw->YscrollBind($class);
  return $class;
 }
 

@@ -1,0 +1,21 @@
+#!/bin/sh 
+src=../doc/man
+old=$HOME/tcl/tk4.0/doc
+new=$HOME/tcl/tk4.0p2/doc
+files=`(cd $src; ls *.[3n])`
+rm -f Fixup 
+for f in $files
+ do 
+  if [ -f $old/$f ]
+   then 
+    rm -f $f
+    cp $src/$f .
+    chmod +w $f 
+    if merge $f $old/$f $new/$f 
+     then echo "    $f is okay"
+     else 
+      echo ">>> $f needs fixing"
+      echo $f >> Fixup 
+    fi 
+  fi 
+ done

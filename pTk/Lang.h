@@ -426,7 +426,7 @@ EXTERN void		Tcl_CallWhenDeleted _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_InterpDeleteProc *proc,
 			    ClientData clientData));
 EXTERN Arg		Tcl_Concat _ANSI_ARGS_((int argc, Arg *argv));
-EXTERN void		Tcl_CreateCommand _ANSI_ARGS_((Tcl_Interp *interp,
+EXTERN Tcl_Command	Tcl_CreateCommand _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *cmdName, Tcl_CmdProc *proc,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc));
@@ -452,7 +452,7 @@ EXTERN int		Tcl_GetDouble _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN int		Tcl_GetInt _ANSI_ARGS_((Tcl_Interp *interp,
 			    Arg string, int *intPtr));
 EXTERN int		Tcl_GetOpenFile _ANSI_ARGS_((Tcl_Interp *interp,
-			    Arg string, int write, int checkUsage,
+			    Arg string, int doWrite, int checkUsage,
 			    FILE **filePtr));
 EXTERN Arg 		Tcl_GetVar _ANSI_ARGS_((Tcl_Interp *interp,
 			    Var varName, int flags));
@@ -507,7 +507,6 @@ EXTERN void		Tcl_AppendResult _ANSI_ARGS_((Tcl_Interp *interp,...));
 #define Tcl_GlobalEval(interp,cmd) LangEval(interp,cmd,1)
 EXTERN int LangEval _ANSI_ARGS_((Tcl_Interp *interp, char *cmd, int global));
 
-
 EXTERN char *LangString _ANSI_ARGS_((Arg));
 EXTERN void LangSetString _ANSI_ARGS_((Arg *,char *));
 EXTERN void LangSetDefault _ANSI_ARGS_((Arg *,char *));
@@ -516,6 +515,7 @@ EXTERN void LangSetDouble _ANSI_ARGS_((Arg *,double));
 EXTERN void LangSetArg _ANSI_ARGS_((Arg *,Arg));
 EXTERN Arg  LangStringArg _ANSI_ARGS_((char *));
 EXTERN int  LangCmpArg  _ANSI_ARGS_((Arg,Arg));
+EXTERN int  LangCmpOpt  _ANSI_ARGS_((char *opt,char *arg,size_t length));
 
 /* FIXME:
    Tk will set freeProc as for Tcl e.g. NULL for statics & UIDs
@@ -562,9 +562,9 @@ EXTERN void		Tcl_DStringGetResult _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN void		Tcl_DStringSetLength _ANSI_ARGS_((Tcl_DString *dsPtr,
 			    int length));
 
-EXTERN Tcl_RegExp	Tcl_RegExpCompile _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string));
-EXTERN int		Tcl_RegExpExec _ANSI_ARGS_((Tcl_Interp *interp,
+EXTERN Tcl_RegExp	Lang_RegExpCompile _ANSI_ARGS_((Tcl_Interp *interp,
+			    char *string, int fold));
+EXTERN int		Lang_RegExpExec _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_RegExp regexp, char *string, char *start));
 EXTERN void		Tcl_RegExpRange _ANSI_ARGS_((Tcl_RegExp regexp,
 			    int index, char **startPtr, char **endPtr));
@@ -593,5 +593,14 @@ EXTERN int TkReadDataPending _ANSI_ARGS_((FILE *f));
 EXTERN int	TclOpen _ANSI_ARGS_((char *path, int oflag, int mode));
 EXTERN int	TclRead _ANSI_ARGS_((int fd, VOID *buf, size_t numBytes));
 EXTERN int	TclWrite _ANSI_ARGS_((int fd, VOID *buf, size_t numBytes));
+
+EXTERN void Lang_DeleteObject _ANSI_ARGS_((Tcl_Interp *,Tcl_Command));
+EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,
+			    char *cmdName, Tcl_CmdProc *proc,
+			    ClientData clientData,
+			    Tcl_CmdDeleteProc *deleteProc));
+
+EXTERN char *LangLibraryDir _ANSI_ARGS_((void));
+#define TK_LIBRARY LangLibraryDir()
 
 #endif /* _LANG */

@@ -1,6 +1,6 @@
 use ExtUtils::MakeMaker qw(%att &WriteMakefile);
 
-$Version = 'b8';
+$Version = 'b9';
 
 $define = '-DBASEEXT=\\"$(BASEEXT)\\"';
 $define .= " -DNTK_VERSION=\\\"$Version\\\"";
@@ -28,7 +28,7 @@ WriteMakefile(
     'MAP_TARGET' => 'tkperl'
 );
 
-sub MY::staticmake {
+sub Hide::staticmake {
     my($self, %attribs) = @_;
     my $rules = "";
 
@@ -59,7 +59,7 @@ sub MY::staticmake {
 }
 
 
-sub MY::post_initialize {
+sub Hide::post_initialize {
  my $dir = `pwd`;
  chomp($dir);
  while (($key,$val) = each %att)
@@ -88,7 +88,7 @@ sub MY::post_constants {
 sub MY::test {
 '
 test : all
-	$(PERL) -I$(INST_LIBDIR) Tk/demos/widget
+	$(PERL) -I$(INST_ARCHLIB) -I$(INST_LIB) demos/widget
 ';
 }
 
@@ -117,7 +117,7 @@ installpm   :: $(INST_PM)
 ';
 }
 
-sub MY::installpm_x { # called by installpm per file
+sub Hide::installpm_x { # called by installpm per file
     my($self, $dist, $inst, $splitlib) = @_;
     warn "Warning: Most probably 'make' will have problems processing this file: $inst\n"
 	if $inst =~ m![:#]!;

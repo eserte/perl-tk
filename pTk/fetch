@@ -9,7 +9,13 @@ while [ $# -gt 0 ]
       cp Tk/$1 mTk/$1
       chmod +w mTk/$1
      else
-      echo "No Tk/$1"
+      if [ -f Tix/$1 ]
+       then 
+        cp Tix/$1 mTk/$1
+        chmod +w mTk/$1
+       else
+        echo "No Tk/$1"
+      fi 
     fi 
   fi
   shift

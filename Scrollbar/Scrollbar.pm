@@ -17,7 +17,7 @@ sub Tk_cmd { \&Tk::scrollbar }
 
 __END__
 
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class, "<Enter>", "Enter");
@@ -62,7 +62,7 @@ sub Enter
 {
  my $w = shift;
  my $e = $w->XEvent;
- if ($Tk::tk_strictMotif)
+ if ($Tk::strictMotif)
   {
    my $bg = $w->cget("-background");
    $activeBg = $w->cget("-activebackground");
@@ -74,7 +74,7 @@ sub Enter
 sub Leave
 {
  my $w = shift;
- if ($Tk::tk_strictMotif)
+ if ($Tk::strictMotif)
   {
    $w->configure("-activebackground" => $activeBg) if (defined $activeBg) ;
   }
@@ -173,11 +173,11 @@ sub Select
 
  if ($repeat eq "again")
   {
-   $w->afterId($w->after($w->cget("-repeatinterval"),["Select",$w,$element,"again"]));
+   $w->RepeatId($w->after($w->cget("-repeatinterval"),["Select",$w,$element,"again"]));
   }
  elsif ($repeat eq "initial")
   {
-   $w->afterId($w->after($w->cget("-repeatdelay"),["Select",$w,$element,"again"]));
+   $w->RepeatId($w->after($w->cget("-repeatdelay"),["Select",$w,$element,"again"]));
   }
 }
 

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-BEGIN { unshift(@INC,'../blib') }
+use lib ('../blib');
 use Tk;
 require Tk::Web;
 require URI::URL;
@@ -8,23 +8,26 @@ my $pwd = `pwd`;
 chomp($pwd);
 
 my $url = URI::URL->new($ARGV[0],URI::URL->newlocal);
+my $showlink;
 
 my $mw = MainWindow->new();
-my $w  = Tk::Web->new($mw);
+my $w  = Tk::Web->new($mw,-showlink => sub { $showlink = shift } );
 $w->UserAgent->envProxy;
 $w->{'-header'} = {'Accept' => join(',','text/html', 'text/plain', 'image/gif', 
-		      'image/x-xbitmap', 'image/x-pixmap', '*/*'),
+                                    'image/x-xbitmap', 'image/x-pixmap', '*/*'),
 		   'User-Agent' => 'tkweb/.xx'};
-$w->url('GET',$url);
 
 $w->pack(-expand => 1, -fill => 'both');
-
 $mw->AddScrollbars($w);
+my $show = $mw->Frame(-label => 'URL : ',-labelPack => [-side => 'left'])->pack(-fill => 'x');
+$show->Label(-textvariable => \$showlink, -anchor => 'w')->pack(-fill => 'x',-anchor => 'w');
+my $but = $mw->Frame->pack(-fill => 'x');
+$but->Button(-text => 'Back', -command => [$w,'Back'])->pack(-side => 'left');
+$but->Button(-text => 'Quit', -command => [$mw,'destroy'])->pack(-side => 'left');
 my %args = (-scrollbars => 'w');
 $mw->ConfigDefault(\%args);
 $mw->configure(%args);
-
-$mw->update;
+$w->url('GET',$url);
 $w->focus;
 
 MainLoop;

@@ -41,7 +41,7 @@ __END__
 # (Enter or FocusIn). It is used so that we can carry out
 # the functions of that event in addition to setting up
 # bindings.
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,"<Enter>",
@@ -49,7 +49,7 @@ sub classinit
 	     {
 	      my $w = shift;
 	      my $Ev = $w->XEvent;
-	      if ($Tk::tk_strictMotif)
+	      if ($Tk::strictMotif)
 	       {
 		$Tk::activeBg = $w->cget("-activebackground");
 		$w->configure("-activebackground",$w->cget("-background"))
@@ -64,7 +64,7 @@ sub classinit
 	     {
 	      my $w = shift;
 	      my $Ev = $w->XEvent;
-	      if ($Tk::tk_strictMotif)
+	      if ($Tk::strictMotif)
 	       {
 		$w->configure("-activebackground",$Tk::activeBg)
 	       }
@@ -244,18 +244,18 @@ sub Increment
   {
    $inc = $w->cget("-resolution")
   }
- if ($w->cget("-from") > $w->cget("-to") ^ $dir eq "up")
+ if (($w->cget("-from") > $w->cget("-to")) ^ ($dir eq "up"))
   {
    $inc = -$inc
   }
  $w->set($w->get()+$inc);
  if ($repeat eq "again")
   {
-   $w->afterId($w->after($w->cget("-repeatinterval"),"Increment",$w,$dir,$big,"again"));
+   $w->RepeatId($w->after($w->cget("-repeatinterval"),"Increment",$w,$dir,$big,"again"));
   }
  elsif ($repeat eq "initial")
   {
-   $w->afterId($w->after($w->cget("-repeatdelay"),"Increment",$w,$dir,$big,"again"));
+   $w->RepeatId($w->after($w->cget("-repeatdelay"),"Increment",$w,$dir,$big,"again"));
   }
 }
 # ControlPress --

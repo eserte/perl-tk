@@ -1,9 +1,13 @@
 package Tk::ColorEditor;
+
+use Tk qw(lsearch Ev);
+
 require Tk::Toplevel;
 @Tk::ColorEditor::ISA = qw(Tk::Toplevel);
 
 Tk::Widget->Construct('ColorEditor');
 
+%Tk::ColorEditor::names = ();
 
 =head1 NAME 
 
@@ -16,7 +20,7 @@ from the Tcl/Tk distribution).
 
    $cref = $mw->ColorEditor(-title => $title, -cursor => @cursor);
 
-   $cref->show;
+   $cref->Show;
 
 =head1 DESCRIPTION
 
@@ -79,7 +83,7 @@ Invoke the `configure' method to change editor characteristics:
           -add_menu_item      => 'SEP',
           -add_menu_item      => 'New color attribute',
           -widgets            => [$ce, $qu, $f2b2],
-          -widgets            => [$f2->descendants],
+          -widgets            => [$f2->Descendants],
           -command            => [\&my_special_configurator, some, args ]
       );
 
@@ -87,7 +91,7 @@ Invoke the `configure' method to change editor characteristics:
 
 Invoke the `show' method on the editor object, say, by a button or menu press:
 
-   $cref->show;
+   $cref->Show;
 
 =item 4.
 
@@ -131,7 +135,7 @@ BEGIN {
 }
 
 
-sub color_space; sub hsvToRgb; sub lsearch; sub rgbToHsv;
+sub color_space; sub hsvToRgb; sub rgbToHsv;
 
 # ColorEditor public methods.
 
@@ -159,7 +163,7 @@ sub set_title
  my ($w) = @_;
  my $t = $w->{Configure}{'-title'} || '' ;
  my $h = $w->{Configure}{'-highlight'} || '';
- $w->Inherit('title',"$t $h Color Editor");
+ $w->SUPER::title("$t $h Color Editor");
 }
 
 sub highlight
@@ -171,6 +175,7 @@ sub highlight
    my $state = ($h eq 'background') ? 'normal' : 'disabled';
    $w->{'palette'}->entryconfigure( $SET_PALETTE, -state => $state);
    $w->{'highlight'} = $h;
+   $w->color($w->Palette->{$h});
    $w->set_title;
   }
  return $w->{'highlight'};
@@ -204,7 +209,7 @@ sub configure {
 
     my($option, $value);
     while (($option, $value) = splice(@hook_list, 0, 2)) {
-	$objref->Inherit('configure',$option => $value);
+	$objref->SUPER::configure($option => $value);
     } # whilend all options/values          
 
 } # end configure
@@ -216,7 +221,7 @@ sub delete_widgets {
 
     my($objref, $widgets_ref) = @_;
 
-    my(@wl, $i, $found, $r1, $r2) = (@{$objref->cget(-widgets)}, 0, 0, 0, 0);
+    my($i, $found, $r1, $r2, @wl) = (0, 0, 0, 0, @{$objref->cget(-widgets)});
     foreach $r1 (@{$widgets_ref}) {
         $i = -1;
         $found = 0;
@@ -245,6 +250,13 @@ sub ApplyDefault
   }
 }
 
+sub Hex
+{
+ my $w = shift;
+ my @rgb = (@_ == 3) ? @_ : $w->rgb(@_);
+ sprintf("#%04x%04x%04x",@rgb)
+}
+
 sub Populate
 {
 
@@ -259,11 +271,10 @@ sub Populate
     @cursor = @{$cw->{Configure}{'-cursor'}} if defined $cw->{Configure}{'-cursor'};  
     my(@highlight_list) = qw(
         TEAR_SEP
-        foreground background SEP
-        activeforeground activebackground SEP
-        highlightcolor highlightbackground SEP
-        selectforeground selectbackground SEP 
-        disabledforeground insertbackground selectcolor troughcolor
+        activeForeground activeBackground SEP
+        highlightColor highlightBackground SEP
+        selectForeground selectBackground SEP 
+        disabledForeground insertBackground selectColor troughColor
     );
 
     # Create the Usage Dialog;
@@ -361,7 +372,7 @@ sub Populate
     $mh->command(
         -label       => 'Usage', 
         -underline   => 0, 
-        -command     => [sub {shift->show}, $usage],
+        -command     => [sub {shift->Show}, $usage],
     );
 
     # Create the Apply button.
@@ -403,11 +414,9 @@ sub Populate
             -borderwidth     => 2,
             -exportselection => 0,
         );
-        $names->bind('<Double-1>' => [sub {
-            my($l, $t) = @_;
-            $t->{'Entry'} = $l->get($l->curselection);
-            \&load_named_color($t);
-        }, $cw]);
+
+        $names->bind('<Double-1>' => [$cw,'color',Ev(['Getselected'])]);
+
         my $scroll = $cw->Scrollbar(
             -orient      => 'vertical',
             -command     => ["yview", $names],
@@ -420,8 +429,17 @@ sub Populate
         $scroll->pack(-in => $middle_left, -side => 'right', -fill => 'y');
         while(<FOO>) {
             chomp;
-            @a = split /\s+/;
-            $names->insert('end', $a[3]) if $#a == 3;
+            my @a = split /\s+/;
+            if (@a == 4)
+             {
+              my $hex = $cw->Hex($a[3]);
+              if (!exists($Tk::ColorEditor::names{$hex}) || 
+                  length($Tk::ColorEditor::names{$hex}) > length($a[3]))
+               {
+                $Tk::ColorEditor::names{$hex} = $a[3];
+                $names->insert('end', $a[3]);
+               }
+             }
           }
         close FOO;
         last;
@@ -479,10 +497,7 @@ sub Populate
         -expand => 1, 
         -fill   => 'x',
     );
-    $name->bind('<Return>' => [sub {
-        shift;
-        \&load_named_color(shift());
-    }, $cw]);
+    $name->bind('<Return>' => [ $cw, 'color', Ev(['get'])]);
 
     # Create the color display swatch on the right side of the window.
 
@@ -501,7 +516,7 @@ sub Populate
     my $swatch_item = $swatch->create('oval', '.5c', '.3c', '2.26c', '4.76c');
 
     my $value = $cw->Label(
-        -textvariable => \$cw->{'color'}, 
+        -textvariable => \$cw->{'hex'}, 
         -width        => 13,
         -font         => '-Adobe-Courier-Medium-R-Normal-*-120-*-*-*-*-*-*',
     );
@@ -537,9 +552,9 @@ sub Populate
     $cw->{'swatch_item'} = $swatch_item;
     $cw->{'Entry'} = '';
     $cw->{'scale'} = [@scale];
-    $cw->{'red'} = $red;
-    $cw->{'blue'} = $blue;
-    $cw->{'green'} = $green;
+    $cw->{'red'} = 0;
+    $cw->{'blue'} = 0;
+    $cw->{'green'} = 0;
     $cw->{'Status'} = $status;
     $cw->{'Status_l'} = $status_l;
     $cw->{'update'} = $update;
@@ -549,7 +564,7 @@ sub Populate
     my $pixmap = $cw->Pixmap('-file' => Tk->findINC("ColorEdit.xpm"));
     $cw->Icon(-image => $pixmap);
     $cw->ConfigSpecs('-color_space'    => [ 'METHOD', undef, undef, 'hsb' ],
-                     '-widgets'        => [ 'PASSIVE', undef, undef, [$cw->parent->descendants] ],
+                     '-widgets'        => [ 'PASSIVE', undef, undef, [$cw->parent->Descendants] ],
                      '-display_status' => [ 'PASSIVE', undef, undef, 0 ],
                      '-title'          => [ 'METHOD', undef, undef, '' ],
                      '-color'          => [ 'METHOD', 'background', 'Background', $middle->cget('-background') ],
@@ -558,7 +573,7 @@ sub Populate
                     );
 } # end Populate, ColorEditor constructor
 
-sub show {
+sub Show {
 
     my($objref) = @_;
 
@@ -590,8 +605,8 @@ sub set_colors {
             );
             $objref->update;
         } 
-        eval {$color = ($widget->configure("-${type}"))[3]} if $reset;
-        eval {$widget->configure("-${type}" => $color)};
+        eval {$color = ($widget->configure("-\L${type}"))[3]} if $reset;
+        eval {$widget->configure("-\L${type}" => $color)};
     }
 
     $objref->{'Status'}->withdraw if $display;
@@ -635,6 +650,7 @@ sub color_space {
       # appropriate values for the current color in the new color space
                           
       $space = 'hsb' unless (exists $Labels{$space});
+      my $i;
       for $i (0..2)       
        {                  
         $objref->{'Labels'}[$i] = $Labels{$space}->[$i];
@@ -677,7 +693,7 @@ sub hsvToRgb {
 sub color
 {
  my ($objref,$name) = @_;
- if (@_ > 1)
+ if (@_ > 1 && defined($name) && length($name))
   {
    $objref->{'color'} = $name;
    my ($format, $shift);
@@ -708,6 +724,7 @@ sub color
    $objref->{'blue'} = $blue;
    $objref->{'green'} = $green;
    $objref->{'color'} = sprintf("#%04x%04x%04x", $red, $green, $blue);
+   $objref->{'Entry'} = $name;
    $objref->DoWhenIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
    $objref->{'swatch'}->itemconfigure($objref->{'swatch_item'},
             -fill => $objref->{'color'});
@@ -716,32 +733,6 @@ sub color
 }
 
 
-sub load_named_color {
-
-    # The procedure below is invoked when a named color has been selected from
-    # the listbox or typed into the entry.  It loads the color into the editor.
-
-    my($objref) = @_;
-
-    my $name = $objref->{'Entry'};
-    return if $name eq '';
-
-    $objref->color($name);
-} # end load_named_color
-
-sub lsearch {
-
-    # Search a list for an entry; return list ordinal, or -1 if not found.
-
-    my($ar, $x) = @_;
-
-    my $i;
-    for ($i = 0; $i < scalar @$ar; $i++) {
-        return $i if ($$ar[$i] eq $x);
-    }
-    return -1;
-
-} # end lsearch
 
 sub rgbToHsv {
 

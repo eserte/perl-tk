@@ -35,6 +35,7 @@ extern void EnterWidgetMethods _ANSI_ARGS_((char *package, ...));
 extern void XStoWidget _ANSI_ARGS_((CV * cv));
 extern SV *MakeReference _ANSI_ARGS_((SV * sv));
 extern void Lang_TkCommand _ANSI_ARGS_ ((char *name, Tcl_CmdProc *proc));
+extern Tk_Window TkToMainWindow _ANSI_ARGS_((Tk_Window tkwin));
 
 COREXT void ClearErrorInfo _ANSI_ARGS_((SV *interp));
 COREXT Tk_Window mainWindow;

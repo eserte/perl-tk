@@ -82,13 +82,13 @@ sub CreateArgs
  my ($package,$parent,$args) = @_;
  croak "$package needs -file => specified" unless (exists $args->{'-file'});
  $args->{'-path'} = Find($args->{-file});
- return $package->InheritThis($parent,$args);
+ return $package->SUPER::CreateArgs($parent,$args);
 }
 
 sub Populate
 {
  my ($w,$args) = @_;
- $w->InheritThis($args);
+ $w->SUPER::Populate($args);
  my $path = $args->{-path};
  my $p = $w->Component('Text' => 'pod', -wrap => 'word',
                        -background => 'white',
@@ -189,32 +189,26 @@ sub Link
   }
 }
 
-sub translate
-{
- my ($code) = @_;
- return "<" if ($code eq 'lt');
- return ">" if ($code eq 'gt');
- return "&" if ($code eq 'amp');
- warn "Cannot translate '$code'";
- return "E<$code>";
-}
+%translate =
+(
+ 'lt' => '<',
+ 'gt' => '>',
+ 'amp' => '&'
+ );
 
-sub expand
+# '<' and '>' have been replaced with \x7f because E<..> have been
+# turned into real characters.
+sub _expand
 {
  my ($w,$line) = @_;
- if ($line =~ /^(.*?)\b([A-Z])<(.*?)>(.*)$/)
+
+ if ($line =~ /^(.*?)\b([A-Z])\x7f(.*?)\x7f(.*)$/)
   {
    my ($pre,$tag,$what,$post) = ($1,$2,$3,$4);
    $w->insert('insert',$pre);
-   if ($tag eq 'E')
-    {
-     $what = translate($what);
-     $w->insert('insert',$what);
-    }
-   else
     {
      my $start = $w->index('insert');
-     $what = $w->expand($what);         
+     $what = $w->_expand($what);         
      if ($tag eq 'L')
       {
        $tag = '!'.$what;
@@ -223,7 +217,7 @@ sub expand
       }
      $w->tag('add',$tag,$start,'insert');
     }
-   $post = $w->expand($post);
+   $post = $w->_expand($post);
    return $pre . $what . $post;
   }
  else
@@ -231,6 +225,16 @@ sub expand
    $w->insert('insert',$line);
    return $line;
   }
+}
+
+sub expand
+{
+ my ($w,$line) = @_;
+
+ $line =~ s/[<>]/\x7f/g;
+
+ $line =~ s/E\x7f([a-z]*)\x7f/$translate{$1}/g;
+ return (_expand ($w, $line));
 }
 
 sub append

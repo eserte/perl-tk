@@ -240,7 +240,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_BUTTON_ACTIVE_FG_MONO, Tk_Offset(Button, activeFg), 
 	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK
 	|TK_CONFIG_MONO_ONLY},
-    {TK_CONFIG_IMAGE, "-activeimage", "activeImage", "ActiveImage",
+    {TK_CONFIG_OBJECT, "-activeimage", "activeImage", "ActiveImage",
 	DEF_BUTTON_SELECT_IMAGE, Tk_Offset(Button, selectImageString),
 	BUTTON_MASK|TK_CONFIG_NULL_OK},
     {TK_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor",
@@ -297,7 +297,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	"HighlightThickness",
 	DEF_BUTTON_HIGHLIGHT_WIDTH, Tk_Offset(Button, highlightWidth),
 	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK},
-    {TK_CONFIG_IMAGE, "-image", "image", "Image",
+    {TK_CONFIG_OBJECT, "-image", "image", "Image",
 	DEF_BUTTON_IMAGE, Tk_Offset(Button, imageString),
 	ALL_MASK|TK_CONFIG_NULL_OK},
     {TK_CONFIG_BOOLEAN, "-indicatoron", "indicatorOn", "IndicatorOn",
@@ -334,7 +334,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_BUTTON_SELECT_MONO, Tk_Offset(Button, selectBorder),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_MONO_ONLY
 	|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_IMAGE, "-selectimage", "selectImage", "SelectImage",
+    {TK_CONFIG_OBJECT, "-selectimage", "selectImage", "SelectImage",
 	DEF_BUTTON_SELECT_IMAGE, Tk_Offset(Button, selectImageString),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_NULL_OK},
     {TK_CONFIG_UID, "-state", "state", "State",

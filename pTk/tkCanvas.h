@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * @(#) tkCanvas.h 1.36 95/03/18 16:47:07
+ * @(#) tkCanvas.h 1.37 95/08/16 09:39:35
  */
 
 #ifndef _TKCANVAS
@@ -126,6 +126,12 @@ typedef struct TkCanvas {
 				 * the address of an item named by id. */
     Tk_Item *currentItemPtr;	/* The item currently containing the mouse
 				 * pointer, or NULL if none. */
+    Tk_Item *newCurrentPtr;	/* The item that is about to become the
+				 * current one, or NULL.  This field is
+				 * used to detect deletions  of the new
+				 * current item pointer that occur during
+				 * Leave processing of the previous current
+				 * item.  */
     double closeEnough;		/* The mouse is assumed to be inside an
 				 * item if it is this close to it. */
     XEvent pickEvent;		/* The event upon which the current choice

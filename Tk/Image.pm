@@ -33,7 +33,6 @@ sub Construct
  my ($base,$name) = @_;
  my $class = (caller(0))[0];
 #print "$base->$name is $class\n";
- @{"${class}::Inherit::ISA"} = @{"${class}::ISA"};
  *{"Tk::Widget::$name"}  = sub { $class->new(@_) };
 }
 

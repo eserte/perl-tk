@@ -1,0 +1,17 @@
+#!/usr/local/bin/perl -w
+
+use Tk;
+require Tk::LabEntry;
+
+my $mw = MainWindow->new;
+
+my $canvas_total = 'Entry Text';
+my $le_t_text    = 'The Label';
+
+$le = $mw->LabEntry(-textvariable =>\$canvas_total, 
+               -labelvariable => \$le_t_text,
+               -labelpack => [-side => 'left']);
+
+$le->pack(-expand => 1, -fill => 'x');
+
+MainLoop;

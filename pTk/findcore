@@ -25,13 +25,13 @@ foreach $file (sort keys %need)
  {
   my $src = $file;
   $src =~ s/\.o$/.c/;
-  print "$src ($depth{$file}) : ",pretty($need{$file}),"\n";
+  print "$src ($depth{$file}) : ",Pretty($need{$file}),"\n";
  }
 
 print "\n";
 
 foreach $name (sort keys %unres)
  {
-  print "$name : ",pretty($unres{$name}),"\n";
+  print "$name : ",Pretty($unres{$name}),"\n";
  }
 

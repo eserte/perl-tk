@@ -1,17 +1,16 @@
 \.[oan3]$
-\.bso?$
-\.old$
-\.bak$
+\.(bso?|old|bak|out|hide)$
+\.(exists|gdbinit|mirror)$
 %$
 \bblib\b
+\bTix\b
+tcl\.pm$
 \bcore\b
-\bToDo\b
+\b(ToDo|Extensions|Ned)/
 \bObsolete\b
+\bmTk\b
 \braw\b
-\bNed\b
 \bdoc/man\b
-\.gdbinit
-\.hide
 Makefile$
 perlmain\.c$
 \btkperl\b
@@ -19,12 +18,12 @@ perlmain\.c$
 extralibs\.ld
 \bTk\.c$
 \bnIO\.c$
-mon\.out$
 Bitmap/Bitmap\.c
 Canvas/Canvas\.c
 Entry/Entry\.c
 Listbox/Listbox\.c
 Menu/Menu\.c
+Table/Table\.c
 Menubutton/Menubutton\.c
 Photo/Photo\.c
 Pixmap/Pixmap\.c
@@ -34,4 +33,9 @@ Scrollbar/Scrollbar\.c
 Text/Text\.c
 Xlib/Xlib\.c
 IO/IO\.c
+HList/HList\.c
+InputO/InputO\.c
+Mwm/Mwm\.c
+NBFrame/NBFrame\.c
+
 

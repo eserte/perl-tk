@@ -3334,7 +3334,7 @@ TkTextYviewCmd(textPtr, interp, argc, args)
     if (LangString(args[2])[0] == '-') {
 	switchLength = strlen(LangString(args[2]));
 	if ((switchLength >= 2)
-		&& (strncmp(LangString(args[2]), "-pickplace", switchLength) == 0)) {
+		&& (LangCmpOpt("-pickplace", LangString(args[2]), switchLength) == 0)) {
 	    pickPlace = 1;
 	    if (argc != 4) {
 		Tcl_AppendResult(interp, "wrong # args: should be \"",

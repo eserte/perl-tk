@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 
-BEGIN { unshift(@INC,"./blib") }
+use lib ("./blib");
 
 use POSIX qw(getcwd);
 
@@ -15,7 +15,7 @@ require Tk::Tiler;
  @ISA = qw(Tk::Label);
  Tk::Widget->Construct(Dragable);
 
- sub classinit
+ sub ClassInit
  {
   my ($class,$mw) = @_;
   $mw->bind($class,'<FocusIn>','Bell');

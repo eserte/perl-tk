@@ -12,6 +12,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
+
 package Tk::Menubutton; 
 require Tk;
 require DynaLoader;
@@ -86,7 +87,7 @@ __END__
 # (Enter or FocusIn). It is used so that we can carry out
 # the functions of that event in addition to setting up
 # bindings.
-sub classinit
+sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,"<Enter>",'Enter');
@@ -186,7 +187,7 @@ sub Post
  $w->configure("-cursor","arrow");
  $w->configure("-relief","raised");
  $Tk::postedMb = $w;
- $Tk::focus = $w->currentfocus;
+ $Tk::focus = $w->focusCurrent;
  $menu->activate("none");
  # If this looks like an option menubutton then post the menu so
  # that the current entry is on top of the mouse. Otherwise post
@@ -204,7 +205,7 @@ sub Post
   {
    $menu->post($w->rootx,$w->rooty+$w->height);
   }
- $menu->focus();
+ $menu->Enter();
  $w->grab("-global")
 }
 # Motion --
@@ -266,37 +267,37 @@ sub ButtonUp
 
 # Some convenience methods 
 
-sub addtomenu
+sub menu
 {
- my $w = shift;
- my $type = shift;
+ my ($w,%args) = @_;
  my $menu = $w->cget('-menu');
  if (!defined $menu)
   {
-   $menu = $w->Menu();
+   $w->ColorOptions(\%args); 
+   $menu = $w->Menu(%args);
    $w->configure('-menu'=>$menu);
   }
- $menu->add($type,@_);
+ else
+  {
+   $menu->configure(%args);
+  }
+ return $menu;
 }
 
-sub separator   { shift->addtomenu('separator',@_);   }
-sub command     { shift->addtomenu('command',@_);     }
-sub cascade     { shift->addtomenu('cascade',@_);     }
-sub checkbutton { shift->addtomenu('checkbutton',@_); }
-sub radiobutton { shift->addtomenu('radiobutton',@_); }
+sub separator   { shift->menu->separator(@_);   }
+sub command     { shift->menu->command(@_);     }
+sub cascade     { shift->menu->cascade(@_);     }
+sub checkbutton { shift->menu->checkbutton(@_); }
+sub radiobutton { shift->menu->radiobutton(@_); }
 
 sub entryconfigure
 {
- my $w = shift;
- my $menu = $w->cget('-menu');
- $menu->entryconfigure(@_);
+ shift->menu->entryconfigure(@_);
 }
 
 sub entrycget
 {
- my $w = shift;
- my $menu = $w->cget('-menu');
- $menu->entrycget(@_);
+ shift->menu->entrycget(@_);
 }
 
 sub FindMenu

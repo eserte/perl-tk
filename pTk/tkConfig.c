@@ -251,23 +251,32 @@ FindConfigSpec(interp, specs, argvName, needFlags, hateFlags)
     register char c;		/* First character of current argument. */
     Tk_ConfigSpec *matchPtr;	/* Matching spec, or NULL. */
     size_t length;
-
-    c = argvName[1];
+    int offset;
+    c = argvName[0];
     length = strlen(argvName);
+    if (c == '-')
+     {
+      c = argvName[1];
+      offset = 0;
+     }
+    else
+     {
+      offset = 1;
+     }
     matchPtr = NULL;
     for (specPtr = specs; specPtr->type != TK_CONFIG_END; specPtr++) {
 	if (specPtr->argvName == NULL) {
 	    continue;
 	}
 	if ((specPtr->argvName[1] != c)
-		|| (strncmp(specPtr->argvName, argvName, length) != 0)) {
+		|| (LangCmpOpt(specPtr->argvName, argvName, length) != 0)) {
 	    continue;
 	}
 	if (((specPtr->specFlags & needFlags) != needFlags)
 		|| (specPtr->specFlags & hateFlags)) {
 	    continue;
 	}
-	if (specPtr->argvName[length] == 0) {
+	if (specPtr->argvName[length+offset] == 0) {
 	    matchPtr = specPtr;
 	    goto gotMatch;
 	}
@@ -369,7 +378,7 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 		    return TCL_ERROR;
 		}
 		break;
-	    case TK_CONFIG_IMAGE: 
+	    case TK_CONFIG_OBJECT: 
 	    case TK_CONFIG_STRING: {
 		char *old, *new;
 
@@ -828,8 +837,8 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	case TK_CONFIG_STRING:
 	    LangSetString(&result,*(char **) ptr);
 	    break;
-	case TK_CONFIG_IMAGE:
-	    LangSetArg(&result,LangImageArg(interp, *(char **) ptr));
+	case TK_CONFIG_OBJECT:
+	    LangSetArg(&result,LangObjectArg(interp, *(char **) ptr));
 	    break;
 	case TK_CONFIG_CALLBACK:
 	    LangSetArg(&result,LangCallbackArg(*(LangCallback **) ptr));
@@ -1037,7 +1046,7 @@ Tk_FreeOptions(specs, widgRec, display, needFlags)
 		    *((Var *) ptr) = NULL;
 		}
 		break;
-	    case TK_CONFIG_IMAGE:
+	    case TK_CONFIG_OBJECT:
 	    case TK_CONFIG_STRING:
 		if (*((char **) ptr) != NULL) {
 		    ckfree(*((char **) ptr));

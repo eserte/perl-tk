@@ -121,7 +121,7 @@ Tk_FocusCmd(clientData, interp, argc, args)
 
     length = strlen(LangString(args[1]));
     c = LangString(args[1])[1];
-    if ((c == 'd') && (strncmp(LangString(args[1]), "-displayof", length) == 0)) {
+    if ((c == 'd') &&  LangCmpOpt("-displayof",LangString(args[1]),length) == 0 ) {
 	if (argc != 3) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
 		    LangString(args[0]), " -displayof window\"",          NULL);
@@ -135,7 +135,7 @@ Tk_FocusCmd(clientData, interp, argc, args)
 	if (newPtr != NULL) {
 	    Tcl_ArgResult(interp,LangWidgetArg(interp,(Tk_Window)(newPtr)));
 	}
-    } else if ((c == 'f') && (strncmp(LangString(args[1]), "-force", length) == 0)) {
+    } else if ((c == 'f') &&  LangCmpOpt("-force",LangString(args[1]),length) == 0 ) {
 	if (argc != 3) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
 		    LangString(args[0]), " -force window\"",          NULL);
@@ -149,7 +149,7 @@ Tk_FocusCmd(clientData, interp, argc, args)
 	    return TCL_ERROR;
 	}
 	SetFocus(newPtr, 1);
-    } else if ((c == 'l') && (strncmp(LangString(args[1]), "-lastfor", length) == 0)) {
+    } else if ((c == 'l') &&  LangCmpOpt("-lastfor",LangString(args[1]),length) == 0 ) {
 	if (argc != 3) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
 		    LangString(args[0]), " -lastfor window\"",          NULL);

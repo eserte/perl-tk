@@ -12,7 +12,7 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-static char sccsid[] = "@(#) tkCanvPs.c 1.35 95/06/19 10:04:58";
+static char sccsid[] = "@(#) tkCanvPs.c 1.36 95/08/04 10:05:08";
 
 #include <stdio.h>
 #include "tkPort.h"
@@ -164,7 +164,6 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, args)
     Tcl_HashEntry *hPtr;
     Tcl_DString buffer;
     char *libDir;
-    Var variable;
 
     /*
      *----------------------------------------------------------------
@@ -401,16 +400,12 @@ TkCanvPostscriptCmd(canvasPtr, interp, argc, args)
      * the Postscript.
      */
 
-    variable = LangFindVar(canvasPtr->interp, NULL, "tk_library" );
-
-    libDir = LangString(Tcl_GetVar(canvasPtr->interp, variable, TCL_GLOBAL_ONLY));
-
-    LangFreeVar(variable);
+    libDir = LangLibraryDir();
 
     if (libDir == NULL) {
 	Tcl_ResetResult(canvasPtr->interp);
-	Tcl_AppendResult(canvasPtr->interp, "couldn't find library directory: ",
-		"tk_library variable doesn't exist",          NULL);
+	Tcl_AppendResult(canvasPtr->interp, "couldn't find library directory",
+		         NULL);
 	goto cleanup;
     }
     sprintf(string, "%.350s/prolog.ps", libDir);
@@ -779,11 +774,11 @@ Tk_CanvasPsFont(interp, canvas, fontStructPtr)
     }
     strncpy(fontName, fieldPtrs[FAMILY_FIELD], (size_t) nameSize);
     if (islower(UCHAR(fontName[0]))) {
-	fontName[0] = toupper(fontName[0]);
+	fontName[0] = toupper(UCHAR(fontName[0]));
     }
     for (p = fontName+1, i = nameSize-1; i > 0; p++, i--) {
 	if (isupper(UCHAR(*p))) {
-	    *p = tolower(*p);
+	    *p = tolower(UCHAR(*p));
 	}
     }
     *p = 0;

@@ -1,8 +1,10 @@
 package Tk::Wm;
 require Tk;
-# use AutoLoader;  # Broken at present
 
 use strict qw(vars);
+
+# There are issues with this stuff now we have Tix's wm release/capture
+# as toplevel-ness is now dynamic.
 
 BEGIN 
 {
@@ -15,6 +17,12 @@ BEGIN
  {
   *{"$fn"} = sub { shift->wm("$fn",@_) };
  }
+}
+
+sub SetBindtags
+{
+ my ($obj) = @_;
+ $obj->bindtags([ref($obj),$obj,'all']);
 }
 
 sub Post

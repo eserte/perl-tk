@@ -66,7 +66,7 @@ Tk_BellCmd(clientData, interp, argc, args)
 
     if (argc == 3) {
 	length = strlen(LangString(args[1]));
-	if ((length < 2) || (strncmp(LangString(args[1]), "-displayof", length) != 0)) {
+	if ((length < 2) || (LangCmpOpt("-displayof", LangString(args[1]), length) != 0)) {
 	    Tcl_AppendResult(interp, "bad option \"", LangString(args[1]),
 		    "\": must be -displayof",          NULL);
 	    return TCL_ERROR;
@@ -1379,7 +1379,7 @@ GetDisplayOf(interp, tkwin, args)
     size_t length;
 
     length = strlen(LangString(args[0]));
-    if ((length < 2) || (strncmp(LangString(args[0]), "-displayof", length) != 0)) {
+    if ((length < 2) || (LangCmpOpt("-displayof", LangString(args[0]), length) != 0)) {
 	Tcl_AppendResult(interp, "bad argument \"", LangString(args[0]),
 		"\": must be -displayof",          NULL);
 	return (Tk_Window) NULL;

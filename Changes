@@ -1,3 +1,108 @@
+Changes in b9
+
+* pod patches from Larry Virden, ColorEditor fix from Steve.
+
+* Applied AIX patch to tkImgPhoto.c - also added code to test signed-ness
+  of chars in general.
+
+* Added <HTML> at start of doc/*.ht files so Mosaic realises that is
+  what they are.
+
+* Added some checking on -*variable options - similar to use strict vars.
+
+* Tidied up Tk::Tiler to get requested size and border handling correct,
+  added configure options -rows and -columns.
+
+* Moved ConfigSpecs and related methods out of Tk::Frame to Tk::Derived 
+  to allow non-frame derived widgets. Tk::Frame now inherits from 
+  Tk::Derived and Tk::Widget.
+
+* re-Implemented Optionmenu using Tk::Derived - adding -command option
+  where -command is invoked when option is set.
+
+* Made leading '-' on core-widget configure options optional,
+  by changing compare code in tkConfig.c 
+  Similar changes in ConfigSpecs handling perl code in Tk/Derived.pm.
+
+* Changed names as per new script b9names which can be used
+  to update old applications.
+  b9names script script script...
+
+* Brought Ghostview sub-directory into line with changes in last few releases,
+  still needs polish.
+
+* New demos from Steve.
+
+* Modified glue code to allow -0+0 and similar geometry specs though
+  to Tk.
+
+* Tweaked Menu and Menubutton bindings and Unpost scheme
+
+* Merged tk4.0p2 C code changes
+
+* Removed setting of $ENV{'TK_LIBRARY'} - replaced most of uses (demos etc.)
+  of Tcl's $tk_library with Tk->findINC 
+
+* Abstracted case insensitive regexp's and changed tkText.c not to 
+  downcase pattern.
+
+* Common case $w->pack now returns $w. 
+
+* Merged Extended FileSelect from Steve.
+
+* Make Read-Only Text available as ROText
+
+* Fixed $w->Containing but which prevented dragging along a menubar.
+
+* Changed InheritThis to use 5.002's ->SUPER:: instead.
+
+* Re-worked Tk:IO a bit to use new "anonymous globs", and give access to 
+  child process pids.
+
+* Added simple Up,Down,Left,Right,Home,End bindings to Canvas.
+
+* Cleaned up clipboard bindings for Text/Entry/Listbox.
+
+* Did rest of nameSubmethod aliases etc. that Steve reported missing.
+
+* Implemented simple Tk::Table in perl (modeled on Tiler) as one 
+  ported from 'blt' core-dumps.
+
+* Used hash in 'new' to speed up creating names for a lot of widgets of 
+  same class, now O(1) not O(N) for Nth such widget.
+
+* Implemented 'tie' of scalars to conigure options as 'obvious' 
+  enhancement to Tk::Config class.
+
+* Adjusted tkGlue.c's handling of perl 'magic' to make above ties 
+  work in more cases. In particular using a tied -variable in a 
+  check- or radio-button now allows them to re-configure widgets.
+  (See table_demo).
+
+* Generalized Canvas bindings (above) to (AutoLoaded) methods in Tk::Widget 
+  usable by any widget which supports new-style [xy]view and does not need 
+  special arrow key handling. Used these in Table and Tiler.
+
+* Arranged for short-hand 'constructors' e.g. $w->Button(...) to use 
+  the delegate mechanism so that once a 'composite' has a default subwidget
+  (i.e. after its Populate) further widgets are created as children 
+  of the subwidget. This allows (for example) correct parentage of 
+  sub-windows of a ScrlText 'Frame'. 
+
+* Implemented TextUndo class derived from Text but re-defining ->insert and
+  ->delete to record their inverses on an 'undo' stack.
+  Changed toyedit to use this class.
+
+* Changed Tk::Config to be Tk::Configure - it makes 'tie' make more sense
+  and avoids confusion between Tk/Config.pm and perl's Config.pm
+
+* Moved demos to be their own sub-directory. Will allow more subtle
+  handling of #! line when that is in place and allows demos to 
+  be uninstalled separately
+
+* Merged Tix-4.0 (production) C code. Adopted Tix's tkWm and tkMenu
+  enhancements.
+
 Changes in b8
 
 * Adjusted handling of 'const' in pTk C code.
@@ -193,6 +298,7 @@ Changes in b4
   by perl5-porters.
 
 * Other minor cleanups.
+
 
 
 

@@ -45,7 +45,7 @@
 #
 # 2) Invoke the `show' method on a dialog object:
 #
-#    $button_label = $DialogRef->show;
+#    $button_label = $DialogRef->Show;
 #
 #       This returns the text label of the selected button.
 #
@@ -68,7 +68,7 @@ sub Populate
 
     my($cw, $args) = @_;
 
-    $cw->InheritThis($args);
+    $cw->SUPER::Populate($args);
 
     my ($w_bitmap,$w_but,$pad1,$pad2);
 
@@ -145,6 +145,7 @@ sub Populate
     $cw->{'default_button'} = $w_default_button;
 
     $cw->ConfigSpecs(
+                      -image      => ['bitmap',undef,undef,undef],
                       -bitmap     => ['bitmap',undef,undef,undef],
                       -fg         => ['ADVERTISED','foreground','Foreground','black'],
                       -foreground => ['ADVERTISED','foreground','Foreground','black'],
@@ -155,16 +156,17 @@ sub Populate
                      );
 } # end Dialog constructor
 
-sub show {
+sub Show {
 
     # Dialog object public method - display the dialog.
 
-    my($cw, $grab_type) = @_;
+    my ($cw, $grab_type) = @_;
 
     croak "Dialog:  `show' method requires at least 1 argument"
         if scalar @_ < 1 ;
 
-    my $old_focus = $cw->currentfocus;
+    my $old_focus = $cw->focusSave;
+    my $old_grab  = $cw->grabSave;
 
     # Update all geometry information, center the dialog in the display
     # and deiconify it
@@ -178,7 +180,7 @@ sub show {
     } else {
         $cw->grab;
     }
-    $cw->tkwait('visibility', $cw);
+    $cw->waitVisibility;
     if (defined $cw->{'default_button'}) 
      {
       $cw->{'default_button'}->focus;
@@ -191,11 +193,11 @@ sub show {
     # Wait for the user to respond, restore the focus and grab, withdraw
     # the dialog and return the label of the selected button.
 
-    $cw->tkwait('variable' => \$cw->{'selected_button'});
-    $cw->grab('release');
-    eval { $old_focus->focus } if defined $old_focus;
+    $cw->waitVariable(\$cw->{'selected_button'});
+    $cw->grabRelease;
     $cw->withdraw;
-
+    &$old_focus;
+    &$old_grab;
     return $cw->{'selected_button'};
 
 } # end Dialog show method
