@@ -12,15 +12,14 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Entry/Entry.pm#33 $
+$VERSION = '3.035'; # $Id: //depot/Tk8/Entry/Entry.pm#35 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
 
-require Tk::Widget;
-require Tk::Clipboard;
-
+use Tk::Widget ();
+use Tk::Clipboard ();
 use base  qw(Tk::Clipboard Tk::Widget);
 
 import Tk qw(Ev $XS_VERSION);

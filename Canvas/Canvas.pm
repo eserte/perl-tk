@@ -1,6 +1,6 @@
 package Tk::Canvas;
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Canvas/Canvas.pm#16 $
+$VERSION = '3.018'; # $Id: //depot/Tk8/Canvas/Canvas.pm#18 $
 
 use Tk qw($XS_VERSION);
 
@@ -16,7 +16,7 @@ Tk::Methods('addtag','bbox','bind','canvasx','canvasy','coords','create',
             'index','insert','itemcget','itemconfigure','lower','move',
             'postscript','raise','scale','scan','select','type','xview','yview');
 
-use Tk::Submethods ( 'create' => [qw(arc bitmap grid image line oval 
+use Tk::Submethods ( 'create' => [qw(arc bitmap grid group image line oval
 				     polygon rectangle text window)],
 		     'scan'   => [qw(mark dragto)],
 		     'select' => [qw(from clear item to)],
@@ -32,7 +32,7 @@ sub ClassInit
  my ($class,$mw) = @_;
  $mw->XYscrollBind($class);
  return $class;
-}          
+}
 
 sub BalloonInfo
 {
@@ -42,17 +42,17 @@ sub BalloonInfo
   {
    my $info = $balloon->GetOption($opt,$canvas);
    if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'HASH'))
-    {                     
+    {
      $balloon->Subclient($tags[0]);
-     foreach my $tag (@tags) 
-      {              
+     foreach my $tag (@tags)
+      {
        return $info->{$tag} if exists $info->{$tag};
-      }         
-     return ''; 
-    }           
+      }
+     return '';
+    }
    return $info;
   }
-}                                  
+}
 
 
 

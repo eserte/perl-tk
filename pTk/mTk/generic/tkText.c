@@ -1,4 +1,4 @@
-/* 
+/*
  * tkText.c --
  *
  *	This module provides a big chunk of the implementation of
@@ -118,7 +118,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_TEXT_INSERT_ON_TIME, Tk_Offset(TkText, insertOnTime), 0},
     {TK_CONFIG_PIXELS, "-insertwidth", "insertWidth", "InsertWidth",
 	DEF_TEXT_INSERT_WIDTH, Tk_Offset(TkText, insertWidth), 0},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkText, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_PIXELS, "-padx", "padX", "Pad",
@@ -320,7 +320,7 @@ static void		TextWorldChanged _ANSI_ARGS_((
 			    ClientData instanceData));
 static int		TextDumpCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-static void		DumpLine _ANSI_ARGS_((Tcl_Interp *interp, 
+static void		DumpLine _ANSI_ARGS_((Tcl_Interp *interp,
 			    TkText *textPtr, int what, TkTextLine *linePtr,
 			    int start, int end, int lineno, LangCallback *command));
 static int		DumpSegment _ANSI_ARGS_((Tcl_Interp *interp, char *key,
@@ -1113,7 +1113,7 @@ ConfigureText(interp, textPtr, argc, argv, flags)
  *
  *---------------------------------------------------------------------------
  */
- 
+
 static void
 TextWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
@@ -1658,7 +1658,7 @@ TkTextLostSelection(clientData)
 
     /*
      * On Windows and Mac systems, we want to remember the selection
-     * for the next time the focus enters the window.  On Unix, 
+     * for the next time the focus enters the window.  On Unix,
      * just remove the "sel" tag from everything in the widget.
      */
 
@@ -2391,26 +2391,26 @@ DumpLine(interp, textPtr, what, linePtr, start, end, lineno, command)
 	    }
 	    savedChar = segPtr->body.chars[last];
 	    segPtr->body.chars[last] = '\0';
-	    DumpSegment(interp, "text", segPtr->body.chars + first, NULL, 
+	    DumpSegment(interp, "text", segPtr->body.chars + first, NULL,
 		    command, lineno, offset + first, what);
 	    segPtr->body.chars[last] = savedChar;
 	} else if ((offset >= start)) {
 	    if ((what & TK_DUMP_MARK) && (segPtr->typePtr->name[0] == 'm')) {
 		TkTextMark *markPtr = (TkTextMark *)&segPtr->body;
 		char *name = Tcl_GetHashKey(&textPtr->markTable, markPtr->hPtr);
-		DumpSegment(interp, "mark", name, NULL, 
+		DumpSegment(interp, "mark", name, NULL,
 			command, lineno, offset, what);
 	    } else if ((what & TK_DUMP_TAG) &&
 			(segPtr->typePtr == &tkTextToggleOnType)) {
 		DumpSegment(interp, "tagon",
-			segPtr->body.toggle.tagPtr->name, NULL, 
+			segPtr->body.toggle.tagPtr->name, NULL,
 			command, lineno, offset, what);
-	    } else if ((what & TK_DUMP_TAG) && 
+	    } else if ((what & TK_DUMP_TAG) &&
 			(segPtr->typePtr == &tkTextToggleOffType)) {
 		DumpSegment(interp, "tagoff",
-			segPtr->body.toggle.tagPtr->name, NULL, 
+			segPtr->body.toggle.tagPtr->name, NULL,
 			command, lineno, offset, what);
-	    } else if ((what & TK_DUMP_IMG) && 
+	    } else if ((what & TK_DUMP_IMG) &&
 			(segPtr->typePtr->name[0] == 'i')) {
 		TkTextEmbImage *eiPtr = (TkTextEmbImage *)&segPtr->body;
 		if (eiPtr->name ==  NULL) {
@@ -2420,7 +2420,7 @@ DumpLine(interp, textPtr, what, linePtr, start, end, lineno, command)
 		  DumpSegment(interp, "image", NULL, LangObjectArg( interp, eiPtr->name),
 			command, lineno, offset, what);
 		}
-	    } else if ((what & TK_DUMP_WIN) && 
+	    } else if ((what & TK_DUMP_WIN) &&
 			(segPtr->typePtr->name[0] == 'w')) {
 		TkTextEmbWindow *ewPtr = (TkTextEmbWindow *)&segPtr->body;
 		if (ewPtr->tkwin == (Tk_Window) NULL) {
@@ -2481,11 +2481,11 @@ DumpSegment(interp, key, value, arg, command, lineno, offset, what)
 	list = Tcl_Merge(3, argv);
 	result = Tcl_VarEval(interp, command, " ", list, (char *) NULL);
 	ckfree(list);
-#else                                                
+#else
 	if (arg) {
-	    result = LangDoCallback(interp, command, 1, 3, "%s %_ %s", key, arg, buffer);    
-	} else {       
-	    result = LangDoCallback(interp, command, 1, 3, "%s %s %s", key, value, buffer);    
+	    result = LangDoCallback(interp, command, 1, 3, "%s %_ %s", key, arg, buffer);
+	} else {
+	    result = LangDoCallback(interp, command, 1, 3, "%s %s %s", key, value, buffer);
 	}
 #endif
 	return result;

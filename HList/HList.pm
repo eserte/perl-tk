@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = '3.034'; # $Id: //depot/Tk8/HList/HList.pm#34 $
+$VERSION = '3.035'; # $Id: //depot/Tk8/HList/HList.pm#35 $
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -50,6 +50,7 @@ sub ClassInit
  $mw->bind($class,'<Shift-ButtonPress-1>',[ 'ShiftButton1' ] );
  $mw->bind($class,'<Control-ButtonRelease-1>','Control_ButtonRelease_1');
  $mw->bind($class,'<ButtonRelease-1>','ButtonRelease_1');
+ $mw->bind($class,'<Double-ButtonRelease-1>','NoOp');
  $mw->bind($class,'<B1-Motion>',[ 'Button1Motion' ] );
  $mw->bind($class,'<B1-Leave>',[ 'AutoScan' ] );
 
@@ -368,7 +369,7 @@ sub Double1
 	unless(defined $w->info('anchor'));
 
  $w->selectionSet($ent);
- 
+
  $w->Callback(-command => $ent);
 }
 
@@ -579,7 +580,7 @@ sub KeyboardActivate
 {
  my $w = shift;
 
- my $anchor = $w->info('anchor'); 
+ my $anchor = $w->info('anchor');
 
  return unless (defined($anchor) and length($anchor));
 
@@ -614,7 +615,7 @@ sub KeyboardBrowse
 }
 
 sub AutoScan
-{                                                  
+{
  my ($w,$x,$y) = @_;
 
  return if ($w->cget('-selectmode') eq 'dragdrop');

@@ -1,7 +1,7 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#12 $
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#14 $
 
 use Tk;
 use Tk::Canvas;
@@ -83,7 +83,7 @@ sub _arrange {
     my $x = abs(int($c->{Configure}{'-padx'})) + $bw;
     my $y = abs(int($c->{Configure}{'-pady'})) + $bw;
     my $value = $c->value;
-    my $from = $c->{Configure}{'-from'}; 
+    my $from = $c->{Configure}{'-from'};
     my $to   = $c->{Configure}{'-to'};
     my $horz = $c->{Configure}{'-anchor'} =~ /[ew]/i ? 1 : 0;
     my $dir  = $c->{Configure}{'-anchor'} =~ /[ne]/i ? -1 : 1;
@@ -112,7 +112,7 @@ sub _arrange {
 
     my $length = $horz ? $w : $h;
     my $width  = $horz ? $h : $w;
-   
+
     my $blocks = int($c->{Configure}{'-blocks'});
     my $gap    = int($c->{Configure}{'-gap'});
 
@@ -306,7 +306,7 @@ sub variable {
           untie $$old if tied($$old);
          }
         tie $$value,'Tk::Configure',$c,'-value';
-	$$val = $value;   
+	$$val = $value;
 	_layoutRequest($c,2);
     }
     $old;
@@ -314,7 +314,7 @@ sub variable {
 
 sub Destroyed
 {
- my $c = shift;   
+ my $c = shift;
  my $var = delete $c->{'-variable'};
  untie $$var if (defined($var) && ref($var))
 }
@@ -331,10 +331,11 @@ Tk::ProgressBar - A graphical progress bar
 =head1 SYNOPSIS
 
     use Tk::ProgressBar;
-    
+
     $progress = $parent->ProgressBar(
 	-width => 200,
-	-height => 20,
+	-length => 20,
+        -anchor => 's',
 	-from => 0,
 	-to => 100,
 	-blocks => 10,
@@ -342,6 +343,7 @@ Tk::ProgressBar - A graphical progress bar
 	-variable => \$percent_done
     );
 
+    $progress->value($position);
 
 =head1 DESCRIPTION
 
@@ -350,51 +352,120 @@ of a value, given maximum and minimum reference values.
 
 =head1 STANDARD OPTIONS
 
-B<-padx -pady -troughcolor -highlightthickness -borderwidth -relief>
+The following standard widget options are supported:
 
+=over 4
+
+=item B<-borderwidth>
+
+=item B<-highlightthickness>
+
+Defaults to 0.
+
+=item B<-padx>
+
+Defaults to 0.
+
+=item B<-pady>
+
+Defaults to 0.
+
+=item B<-relief>
+
+Defaults to C<sunken>
+
+=item B<-troughcolor>
+
+The color to be used for the background (trough) of the progress bar.
+Default is to use grey55.
+
+=back
 
 =head1 WIDGET-SPECIFIC OPTIONS
 
 =over 4
 
-=item -width
+=item B<-anchor>
 
-Specifies the desired narrow dimension of the ProgressBar in screen units (i.e.
-any of the forms acceptable to Tk_GetPixels). For vertical ProgressBars this is
-the ProgressBars width; for horizontal bars this is the ProgressBars height. 
+This can be used to position the start point of the bar. Default
+is 'w' (horizontal bar starting from the left). A vertical bar can be
+configured by using either 's' or 'n'.
+
+=item B<-blocks>
+
+This controls the number of blocks to be used to construct the progress
+bar. The default is to break the bar into 10 blocks.
+
+=item B<-colors>
+
+Controls the colors to be used for different positions of the progress bar.
+The colors should be supplied as a reference to an array containing pairs
+of positions and colors.
+
+  -colors => [ 0, 'green', 50, 'red' ]
+
+means that for the range 0 to 50 the progress bar should be green
+and for higher values it should be red.
 
 
-=item -length
+=item B<-from>
 
-Specifies the desired long dimension of the ProgressBar in screen units (i.e. any
-of the forms acceptable to Tk_GetPixels). For vertical ProgressBars this is the
-ProgressBars height; for horizontal scales it is the ProgressBars width. 
+This sets the lower limit of the progress bar.  If the bar is set to a
+value below the lower limt no bar will be displayed. Defaults to 0.
+See the C<-to> description for more information.
 
-=item -colors
+=item B<-gap>
 
-=item -blocks
+This is the spacing (in pixels) between each block. Defaults to 1.
+Use 0 to get a continuous bar.
 
-=item -resolution
+
+=item B<-length>
+
+Specifies the desired long dimension of the ProgressBar in screen
+units (i.e. any of the forms acceptable to Tk_GetPixels). For vertical
+ProgressBars this is the ProgressBars height; for horizontal scales it
+is the ProgressBars width.  The default length is calculated from the
+values of C<-padx>, C<-borderwidth>, C<-highlightthickness> and the
+difference between C<-from> and C<-to>.
+
+
+=item B<-resolution>
 
 A real value specifying the resolution for the scale. If this value is greater
 than zero then the scale's value will always be rounded to an even multiple of
 this value, as will tick marks and the endpoints of the scale. If the value is
 less than zero then no rounding occurs. Defaults to 1 (i.e., the value will be
-integral). 
+integral).
 
-=item -anchor
+=item B<-to>
 
-=item -variable
+This sets the upper limit of the progress bar. If a value is specified
+(for example, using the C<value> method) that lies above this value the
+full progress bar will be displayed. Defaults to 100.
+
+
+
+=item B<-variable>
 
 Specifies the reference to a scalar variable to link to the ProgressBar.
 Whenever the value of the variable changes, the ProgressBar will upate
 to reflect this value. (See also the B<value> method below.)
 
-=item -from
+=item B<-value>
 
-=item -to
+The can be used to set the current position of the progress bar
+when used in conjunction with the standard C<configure>. It is
+usually recommended to use the B<value> method instead.
 
-=item -gap
+
+=item B<-width>
+
+Specifies the desired narrow dimension of the ProgressBar in screen
+units (i.e.  any of the forms acceptable to Tk_GetPixels). For
+vertical ProgressBars this is the ProgressBars width; for horizontal
+bars this is the ProgressBars height.  The default width is derived
+from the values of C<-borderwidth> and C<-pady> and C<-highlightthickness>.
 
 =back
 
@@ -402,7 +473,7 @@ to reflect this value. (See also the B<value> method below.)
 
 =over 4
 
-=item I<$ProgressBar>->B<value>(?I<value>?)
+=item I<$ProgressBar>-E<gt>B<value>(?I<value>?)
 
 If I<value> is omitted, returns the current value of the ProgressBar.  If
 I<value> is given, the value of the ProgressBar is set. If I<$value> is

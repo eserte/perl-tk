@@ -1409,6 +1409,7 @@ t/autoload.t
 t/balloon.t
 t/browseentry.t
 t/create.t
+t/dash.t
 t/fbox.t
 t/fileevent.t
 t/fileselect.t

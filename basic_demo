@@ -13,8 +13,8 @@ use Tk qw(exit);
 # use Tk::Xrm;
 
 use Tk::widgets qw(Button Label Menu Photo Optionmenu Pixmap Balloon);
-#use Tk::widgets qw(ErrorDialog Checkbutton Radiobutton Entry Message Listbox);
-use Tk::widgets qw(Scrollbar Checkbutton Radiobutton Entry Message Listbox);
+use Tk::widgets qw(Scrollbar Checkbutton Radiobutton Entry
+                   Message BrowseEntry Listbox);
 
 
 use Config;
@@ -155,7 +155,6 @@ sub keys
 
 sub menubar
 {my $top  = shift;
- require Tk::Menubar;
  my $menu = $top->Menubar;
  my $file = $menu->Menubutton("-text" => "File","-underline" => 0, -bg => 'ivory',
             -tearoff => 0

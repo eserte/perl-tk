@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#23 $
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#24 $
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -127,7 +127,7 @@ sub add
  $w->ManageGeometry($f);
  # create default bindings
  $f->bind('<Configure>',[$w,'ClientGeomProc','-configure', $f]);
- $f->bind('<Destroy>',  [$w,'delete',$child,1]); 
+ $f->bind('<Destroy>',  [$w,'delete',$child,1]);
  $w->page_widget($child,$f);
  $w->{'nWindows'}++;
  push(@{$w->{'windows'}}, $child);
@@ -378,7 +378,7 @@ sub Resize {
 
     return unless Tk::Exists($w) && $w->{'nWindows'} && $w->{'resize'};
 
-    my ($tW, $tH) = split(' ', $w->geometryinfo);
+    my ($tW, $tH) = $w->geometryinfo;
     $w->{'pad-x1'} = 2;
     $w->{'pad-x2'} = 2;
     $w->{'pad-y1'} = $tH + (defined $w->{'-ipadx'} ? $w->{'-ipadx'} : 0) + 1;

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkRectOval.c --
  *
  *	This file implements rectangle and oval items for canvas
@@ -129,12 +129,12 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_COLOR, "-fill", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(RectOvalItem, fillColor), TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(RectOvalItem, tsoffset),
+	"0 0", Tk_Offset(RectOvalItem, tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_COLOR, "-outline", (char *) NULL, (char *) NULL,
 	"black", Tk_Offset(RectOvalItem, outline.color), TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-outlineoffset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(RectOvalItem, outline.tsoffset),
+	"0 0", Tk_Offset(RectOvalItem, outline.tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_BITMAP, "-outlinestipple", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(RectOvalItem, outline.stipple),
@@ -287,7 +287,7 @@ CreateRectOval(interp, canvas, itemPtr, argc, argv)
 {
     RectOvalItem *rectOvalPtr = (RectOvalItem *) itemPtr;
     int i;
-                                                     
+
     if (argc==1) {
 	i = 1;
     } else {

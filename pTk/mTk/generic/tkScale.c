@@ -1,4 +1,4 @@
-/* 
+/*
  * tkScale.c --
  *
  *	This module implements a scale widgets for the Tk toolkit.
@@ -113,7 +113,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_SCALE_LABEL, Tk_Offset(TkScale, label), TK_CONFIG_NULL_OK},
     {TK_CONFIG_PIXELS, "-length", "length", "Length",
 	DEF_SCALE_LENGTH, Tk_Offset(TkScale, length), 0},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkScale, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_CUSTOM, "-orient", "orient", "Orient",
@@ -591,7 +591,7 @@ ConfigureScale(interp, scalePtr, argc, argv, flags)
      */
 
     if (scalePtr->varName != NULL) {
-	Tcl_UntraceVar(interp, scalePtr->varName, 
+	Tcl_UntraceVar(interp, scalePtr->varName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		ScaleVarProc, (ClientData) scalePtr);
     }
@@ -686,7 +686,7 @@ ConfigureScale(interp, scalePtr, argc, argv, flags)
  *
  *---------------------------------------------------------------------------
  */
- 
+
 static void
 ScaleWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
@@ -1240,7 +1240,7 @@ ScaleVarProc(clientData, interp, name1, name2, flags)
 
 	/*
 	 * This code is a bit tricky because it sets the scale's value before
-	 * calling TkpSetScaleValue.  This way, TkpSetScaleValue won't bother 
+	 * calling TkpSetScaleValue.  This way, TkpSetScaleValue won't bother
 	 * to set the variable again or to invoke the -command.  However, it
 	 * also won't redisplay the scale, so we have to ask for that
 	 * explicitly.

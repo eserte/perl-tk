@@ -1,4 +1,4 @@
-/* 
+/*
  * tkUtil.c --
  *
  *	This file contains miscellaneous utility procedures that
@@ -29,7 +29,7 @@ static Tcl_ObjType stateKeyType = {
     (Tcl_DupInternalRepProc *) NULL,	/* dupIntRepProc */
     (Tcl_UpdateStringProc *) NULL,	/* updateStringProc */
     (Tcl_SetFromAnyProc *) NULL		/* setFromAnyProc */
-};           
+};
 #endif
 
 
@@ -131,7 +131,7 @@ TkStateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
  *--------------------------------------------------------------
  */
 
-Arg 
+Arg
 TkStatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     ClientData clientData;		/* Ignored. */
     Tk_Window tkwin;			/* Window containing canvas widget. */
@@ -341,13 +341,13 @@ TkOffsetParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     CONST char *q, *p;
     int result;
     Tcl_Obj **args;
-    int argc;  
+    int argc;
     char *value = NULL;
     if (Tcl_ListObjGetElements(NULL,ovalue,&argc,&args) != TCL_OK) {
-	goto badTSOffset;        
+	goto badTSOffset;
     }
-    if (argc == 1) { 
-	char *value = LangString(args[1]);
+    if (argc > 0) {
+	value = LangString(args[0]);
     }
     if ((value == NULL) || (*value == 0)) {
 	tsoffset.flags = TK_OFFSET_CENTER|TK_OFFSET_MIDDLE;
@@ -360,7 +360,7 @@ TkOffsetParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
 	case '#':
 	    if (((int)clientData) & TK_OFFSET_RELATIVE) {
 		tsoffset.flags = TK_OFFSET_RELATIVE;
-		argc--; 
+		argc--;
 		args++;
 		break;
 	    }
@@ -513,13 +513,13 @@ TkOffsetPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	    return LangStringArg("s");
 	} else if ((offsetPtr->flags) & TK_OFFSET_RIGHT) {
 	    return LangStringArg("se");
-	}                                
+	}
     }
-    {         
-        Tcl_Obj *result = Tcl_NewListObj(0,NULL);   
+    {
+        Tcl_Obj *result = Tcl_NewListObj(0,NULL);
         if ((offsetPtr->flags) & TK_OFFSET_RELATIVE) {
 	    Tcl_ListObjAppendElement(NULL,result,LangStringArg("#"));
-	}                                                       
+	}
 	Tcl_ListObjAppendElement(NULL,result,Tcl_NewIntObj(offsetPtr->xoffset));
 	Tcl_ListObjAppendElement(NULL,result,Tcl_NewIntObj(offsetPtr->yoffset));
 	return result;
@@ -913,7 +913,7 @@ TkFindStateNum(interp, field, mapPtr, strKey)
 	}
     }
     return mPtr->numKey;
-}                                       
+}
 
 
 int
@@ -944,7 +944,7 @@ TkFindStateNumObj(interp, optionPtr, mapPtr, keyPtr)
 	    }
 	    keyPtr->internalRep.twoPtrValue.ptr1 = (VOID *) mapPtr;
 	    keyPtr->internalRep.twoPtrValue.ptr2 = (VOID *) mPtr->numKey;
-	    keyPtr->typePtr = &stateKeyType;	    
+	    keyPtr->typePtr = &stateKeyType;	
 	    return mPtr->numKey;
 	}
     }
@@ -960,5 +960,5 @@ TkFindStateNumObj(interp, optionPtr, mapPtr, keyPtr)
     return mPtr->numKey;
 #endif
 }
-             
+
 

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvText.c --
  *
  *	This file implements text items for canvas widgets.
@@ -33,7 +33,7 @@ typedef struct TextItem  {
     /*
      * Fields that are set by widget commands other than "configure".
      */
-     
+
     double x, y;		/* Positioning point for text. */
     int insertPos;		/* Insertion cursor is displayed just to left
 				 * of character with this index. */
@@ -127,7 +127,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	"left", Tk_Offset(TextItem, justify),
 	TK_CONFIG_DONT_SET_DEFAULT},
     {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(TextItem, tsoffset),
+	"0 0", Tk_Offset(TextItem, tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_CUSTOM, "-state", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(Tk_Item, state), TK_CONFIG_NULL_OK,
@@ -844,7 +844,7 @@ DisplayCanvText(canvas, itemPtr, display, drawable, x, y, width, height)
 	    for (y = yFirst ; y <= yLast; y += height) {
 		if (y == yLast) {
 		    width = (xLast + wLast) - x;
-		} else {	    
+		} else {	
 		    width = textPtr->rightEdge - textPtr->leftEdge - x;
 		}
 		Tk_CanvasDrawableCoords(canvas,
@@ -956,7 +956,7 @@ TextInsert(canvas, itemPtr, beforeThis, ostring)
     char *new;
     Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
-    char * string = Tcl_GetStringFromObj(ostring, &length); 
+    char * string = Tcl_GetStringFromObj(ostring, &length);
 
     if (length == 0) {
 	return;
@@ -1272,14 +1272,14 @@ GetTextIndex(interp, canvas, itemPtr, obj, indexPtr)
     char *string;
     int x, y;
     double dx,dy;
-    char *end, *p;      
-    Tcl_Obj **objv;                                    
+    char *end, *p;
+    Tcl_Obj **objv;
 
     if (Tcl_ListObjGetElements(interp, obj, &c, &objv) == TCL_OK && c == 2
 	&& Tcl_GetDoubleFromObj(interp, objv[0], &dx) == TCL_OK
 	&& Tcl_GetDoubleFromObj(interp, objv[1], &dy) == TCL_OK) {
 	goto doxy;
-    } 
+    }
 
     string = Tcl_GetStringFromObj(obj, &length);
     c = string[0];

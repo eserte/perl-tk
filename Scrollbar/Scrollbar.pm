@@ -5,7 +5,7 @@ import Tk qw($XS_VERSION);
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#12 $
+$VERSION = '3.014'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#14 $
 
 use base  qw(Tk::Widget);
 
@@ -27,10 +27,6 @@ sub Needed
  return 0;
 }
 
-
-1;
-
-__END__
 
 sub ClassInit
 {
@@ -72,6 +68,10 @@ sub ClassInit
  return $class;
 
 }
+
+1;
+
+__END__
 
 sub Enter
 {

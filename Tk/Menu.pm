@@ -17,10 +17,11 @@ require Tk;
 require Tk::Widget;
 require Tk::Wm;
 require Tk::Derived;
+require Tk::Menu::Item;
 
 
 use vars qw($VERSION);
-$VERSION = '3.043'; # $Id: //depot/Tk8/Tk/Menu.pm#43 $
+$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/Menu.pm#45 $
 
 use strict;
 
@@ -71,7 +72,6 @@ sub InitObject
 
 sub AddItems
 {
- require Tk::Menu::Item;
  my $menu = shift;
  ITEM:
  while (@_)

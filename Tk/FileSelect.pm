@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/FileSelect.pm#45 $
+$VERSION = '3.047'; # $Id: //depot/Tk8/Tk/FileSelect.pm#47 $
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
@@ -237,7 +237,7 @@ sub Populate {
         -filelistlabel    => [ 'PASSIVE', undef, undef, 'Files' ],
         -filter           => [ 'METHOD',  undef, undef, undef ],
         -defaultextension => [ 'METHOD',  undef, undef, undef ],
-        -regexp           => [ 'PASSIVE', undef, undef, undef ],
+        -regexp           => [ 'METHOD', undef, undef, undef ],
         -dirlistlabel     => [ 'PASSIVE', undef, undef, 'Directories'],
         -dirlabel         => [ 'PASSIVE', undef, undef, 'Directory'],
         '-accept'         => [ 'CALLBACK',undef,undef, undef ],
@@ -284,7 +284,24 @@ sub filter
   {
    $val = '*' unless defined $val;
    $$var = $val;
-   $cw->{'match'} = glob_to_re($val);
+   $cw->{'match'} = glob_to_re($val)  unless defined $cw->{'match'};
+   unless ($cw->{'reread'}++)
+    {
+     $cw->Busy;
+     $cw->afterIdle(['reread',$cw,$cw->cget('-directory')])
+    }
+  }
+ return $$var;
+}
+
+sub regexp
+{
+ my ($cw,$val) = @_;
+ my $var = \$cw->{Configure}{'-regexp'};
+ if (@_ > 1)
+  {
+   $$var = $val;
+   $cw->{'match'} = sub { shift =~ m|^${val}$| };
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
@@ -333,7 +350,7 @@ sub directory
      unless (Tk::tainting())
       {
        my $pwd = Cwd::getcwd();
-       if (chdir($dir))
+       if (chdir( (defined($dir) ? $dir : '') ) )
         {
          my $new = Cwd::getcwd();
          if ($new)

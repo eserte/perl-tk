@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvLine.c --
  *
  *	This file implements line items for canvas widgets.
@@ -220,7 +220,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_JOIN_STYLE, "-joinstyle", (char *) NULL, (char *) NULL,
 	"round", Tk_Offset(LineItem, joinStyle), TK_CONFIG_DONT_SET_DEFAULT},
     {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(LineItem, outline.tsoffset),
+	"0 0", Tk_Offset(LineItem, outline.tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_CUSTOM, "-smooth", (char *) NULL, (char *) NULL,
 	"0", Tk_Offset(LineItem, smooth),
@@ -783,7 +783,7 @@ ComputeLineBbox(canvas, linePtr)
 		i--, coordPtr += 2) {
 	    double miter[4];
 	    int j;
-    
+
 	    if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
 		    width, miter, miter+2)) {
 		for (j = 0; j < 4; j += 2) {
@@ -1589,7 +1589,7 @@ LineToArea(canvas, itemPtr, rectPtr)
 	width = 1.0;
     }
 
-    result = TkThickPolyLineToArea(linePoints, numPoints, 
+    result = TkThickPolyLineToArea(linePoints, numPoints,
 	    width, linePtr->capStyle, linePtr->joinStyle,
 	    rectPtr);
     if (result == 0) {
@@ -1729,7 +1729,7 @@ GetLineIndex(interp, canvas, itemPtr, obj, indexPtr)
 	&& Tcl_GetDoubleFromObj(interp, objv[0], &x) == TCL_OK
 	&& Tcl_GetDoubleFromObj(interp, objv[1], &y) == TCL_OK) {
 	goto doxy;
-    } 
+    }
 
     string = Tcl_GetStringFromObj(obj, &length);
     if (string[0] == 'e') {
@@ -1758,7 +1758,7 @@ GetLineIndex(interp, canvas, itemPtr, obj, indexPtr)
 	y = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
-	}                 
+	}
      doxy:
 	bestDist = 1.0e36;
 	coordPtr = linePtr->coordPtr;
@@ -1882,7 +1882,7 @@ ParseArrowShape(clientData, interp, tkwin, value, recordPtr, offset)
 	Tcl_AppendResult(interp, "bad arrow shape \"", LangString(value),
 		"\": must be list with three numbers", (char *) NULL);
 	return TCL_ERROR;
-    }                             
+    }
     if (argc != 3) {
 	goto syntaxError;
     }
@@ -1917,7 +1917,7 @@ ParseArrowShape(clientData, interp, tkwin, value, recordPtr, offset)
  */
 
     /* ARGSUSED */
-static Arg 
+static Arg
 PrintArrowShape(clientData, tkwin, recordPtr, offset, freeProcPtr)
     ClientData clientData;	/* Not used. */
     Tk_Window tkwin;		/* Window associated with linePtr's widget. */
@@ -1994,7 +1994,7 @@ ArrowParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
 	return TCL_OK;
     }
 
-    Tcl_AppendResult(interp, "bad arrow spec \"", value, 
+    Tcl_AppendResult(interp, "bad arrow spec \"", value,
 	    "\": must be none, first, last, or both",
 	    (char *) NULL);
     *arrowPtr = ARROWS_NONE;
@@ -2045,7 +2045,7 @@ ArrowPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	return LangStringArg("both");
       default:
 	return LangStringArg("none");
-  }                 
+  }
 }
 
 /*

@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#19 $
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#21 $
 
 use Tk;
 require Tk::Frame;
@@ -36,10 +36,11 @@ sub Populate {
 	    $ph = 0;
 	}
 	$label->form(-top => 0, -left => 4, -padx => 6, -pady => 2);
+        # $label->place('-y' => 2, '-x' => 10);
 	$border->form(-top => $y, -bottom => -1, -left => 0, -right => -1, -padx => 2, -pady => 2);
 	$pad->form(-left => 0, -right => -1, -top => 0, -bottom => $ph);
 	$f->form(-top => $pad, -bottom => -1, -left => 0, -right => -1);
-	$cw->Delegates('pack' => $cw);
+	# $cw->Delegates('pack' => $cw);
     } else {
 	$f = $cw->Frame(-relief => 'groove', -bd => 2, %{$args});
 	$label = $cw->Label(-text => $ltext);

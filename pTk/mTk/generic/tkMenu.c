@@ -167,7 +167,7 @@ Tk_ConfigSpec tkMenuEntryConfigSpecs[] = {
     {TK_CONFIG_LANGARG, "-menu", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_MENU, Tk_Offset(TkMenuEntry, name),
 	CASCADE_MASK|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkMenuEntry, tsoffset), COMMAND_MASK|CHECK_BUTTON_MASK|
 	RADIO_BUTTON_MASK|CASCADE_MASK|TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
@@ -259,7 +259,7 @@ Tk_ConfigSpec tkMenuConfigSpecs[] = {
 	DEF_MENU_FONT, Tk_Offset(TkMenu, tkfont), 0},
     {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_MENU_FG, Tk_Offset(TkMenu, fg), 0},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkMenu, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_CALLBACK, "-postcommand", "postCommand", "Command",
@@ -2459,7 +2459,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 			    menuPtr->interp, 3, newArgv);
 		    break;
 		}
-	    }    
+	    }
 	    Tcl_DecrRefCount(bindingsPtr);
 	}
 	Tcl_DecrRefCount(newArgv[0]);

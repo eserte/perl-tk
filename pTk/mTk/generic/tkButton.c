@@ -1,4 +1,4 @@
-/* 
+/*
  * tkButton.c --
  *
  *	This module implements a collection of button-like
@@ -75,13 +75,13 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
 	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK
 	|TK_CONFIG_MONO_ONLY},
     {TK_CONFIG_COLOR, "-activeforeground", "activeForeground", "Background",
-	DEF_BUTTON_ACTIVE_FG_COLOR, Tk_Offset(TkButton, activeFg), 
+	DEF_BUTTON_ACTIVE_FG_COLOR, Tk_Offset(TkButton, activeFg),
 	BUTTON_MASK|TK_CONFIG_COLOR_ONLY},
     {TK_CONFIG_COLOR, "-activeforeground", "activeForeground", "Background",
-	DEF_CHKRAD_ACTIVE_FG_COLOR, Tk_Offset(TkButton, activeFg), 
+	DEF_CHKRAD_ACTIVE_FG_COLOR, Tk_Offset(TkButton, activeFg),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_COLOR_ONLY},
     {TK_CONFIG_COLOR, "-activeforeground", "activeForeground", "Background",
-	DEF_BUTTON_ACTIVE_FG_MONO, Tk_Offset(TkButton, activeFg), 
+	DEF_BUTTON_ACTIVE_FG_MONO, Tk_Offset(TkButton, activeFg),
 	BUTTON_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK
 	|TK_CONFIG_MONO_ONLY},
     {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
@@ -164,7 +164,7 @@ Tk_ConfigSpec tkpButtonConfigSpecs[] = {
     {TK_CONFIG_LANGARG, "-offvalue", "offValue", "Value",
 	DEF_BUTTON_OFF_VALUE, Tk_Offset(TkButton, offValue),
 	CHECK_BUTTON_MASK},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkButton, tsoffset),ALL_MASK|TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_LANGARG, "-onvalue", "onValue", "Value",
@@ -772,16 +772,16 @@ ConfigureButton(interp, butPtr, argc, argv, flags)
      */
 
     if (butPtr->textVarName != NULL) {
-	Tcl_UntraceVar(interp, butPtr->textVarName, 
+	Tcl_UntraceVar(interp, butPtr->textVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		ButtonTextVarProc, (ClientData) butPtr);
     }
     if (butPtr->selVarName != NULL) {
-	Tcl_UntraceVar(interp, butPtr->selVarName, 
+	Tcl_UntraceVar(interp, butPtr->selVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		ButtonVarProc, (ClientData) butPtr);
     }
-    
+
     if (Tk_ConfigureWidget(interp, butPtr->tkwin, tkpButtonConfigSpecs,
 	    argc, argv, (char *) butPtr, flags) != TCL_OK) {
 	return TCL_ERROR;
@@ -927,7 +927,7 @@ ConfigureButton(interp, butPtr, argc, argv, flags)
 	    goto heightError;
 	}
     }
-    
+
     TkButtonWorldChanged((ClientData) butPtr);
     return TCL_OK;
 }
@@ -949,7 +949,7 @@ ConfigureButton(interp, butPtr, argc, argv, flags)
  *
  *---------------------------------------------------------------------------
  */
- 
+
 void
 TkButtonWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
@@ -970,7 +970,7 @@ TkButtonWorldChanged(instanceData)
     gcValues.font = Tk_FontId(butPtr->tkfont);
     gcValues.foreground = butPtr->normalFg->pixel;
     gcValues.background = Tk_3DBorderColor(butPtr->normalBorder)->pixel;
-    
+
     /*
      * Note: GraphicsExpose events are disabled in normalTextGC because it's
      * used to copy stuff from an off-screen pixmap onto the screen (we know
@@ -1007,7 +1007,7 @@ TkButtonWorldChanged(instanceData)
 	    gcValues.foreground = gcValues.background;
 	    mask = GCForeground;
 	    if (butPtr->gray == None) {
-		butPtr->gray = Tk_GetBitmap(NULL, butPtr->tkwin, 
+		butPtr->gray = Tk_GetBitmap(NULL, butPtr->tkwin,
 			Tk_GetUid("gray50"));
 	    }
 	    if (butPtr->gray != None) {
@@ -1034,7 +1034,7 @@ TkButtonWorldChanged(instanceData)
 	    (ClientData) NULL, (Tk_Item *) NULL);
     Tk_SetTileChangedProc(butPtr->activeTile, (Tk_TileChangedProc *) NULL,
 	    (ClientData) NULL, (Tk_Item *) NULL);
-    Tk_SetTileChangedProc(butPtr->tile, (Tk_TileChangedProc *) NULL, 
+    Tk_SetTileChangedProc(butPtr->tile, (Tk_TileChangedProc *) NULL,
 	    (ClientData)NULL, (Tk_Item *)NULL);
     Tk_SetTileChangedProc(tile, TileChangedProc,
 	    (ClientData) butPtr, (Tk_Item *) NULL);
