@@ -159,7 +159,7 @@ sub mkArrow {
     $w->title('Arrowhead Editor Demonstration');
     $w->iconname('Arrow');
 
-    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '5i', 
+    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '5i',
 				-justify => 'left', -text => 'This widget allows you to experiment with different widths ' .
 				'and arrowhead shapes for lines in canvases.  To change the line width or the shape of the ' .
 				'arrowhead, drag any of the three boxes attached to the oversized arrow.  The arrows on ' .
@@ -216,5 +216,5 @@ sub mkArrow {
     $c->Tk::bind('<Any-ButtonRelease-1>', sub {arrowSetup(@_)});
 
 } # end mkArrow
-    
+
 1;

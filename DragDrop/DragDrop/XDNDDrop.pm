@@ -1,7 +1,7 @@
 package Tk::DragDrop::XDNDDrop;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/XDNDDrop.pm#9 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/XDNDDrop.pm#2 $
 use base qw(Tk::DragDrop::Rect);
 
 sub XDND_PROTOCOL_VERSION () { 3 }
@@ -10,7 +10,7 @@ Tk::DragDrop->Type('XDND');
 
 sub NewDrag
 {
- my ($class,$token) = @_;  
+ my ($class,$token) = @_;
  $token->{$class} = {};
 }
 
@@ -33,7 +33,7 @@ sub Drop
  my $w   = $token->parent;
  my $data = pack('LLLLL',oct($w->id),0,$e->t,0,0);
  $w->SendClientMessage('XdndDrop',$site->{id},32,$data);
-}    
+}
 
 sub FindSite
 {
@@ -44,7 +44,7 @@ sub FindSite
    my @prop;
    Tk::catch { @prop = $token->property('get','XdndAware', $id) };
    if (!$@ && shift(@prop) eq 'ATOM')
-    {                        
+    {
      my $hash = $token->{$class};
      my $site = $hash->{$id};
      if (!defined $site)
@@ -53,25 +53,25 @@ sub FindSite
        $hash->{$id} = $site;
       }
      return $site;
-    } 
+    }
    $id = $token->PointToWindow($X,$Y,$id)
   }
  return undef;
-}          
+}
 
 sub Enter
 {
  my ($site,$token,$e) = @_;
  my $w   = $token->parent;
- $token->InstallHandlers('XdndSelection'); 
+ $token->InstallHandlers('XdndSelection');
  my $seln = $token->cget('-selection');
  my @targets = grep(!/^(TARGETS|MULTIPLE|TIMESTAMP)$/,reverse($token->SelectionGet('-selection'=> 'XdndSelection','TARGETS')));
  # print join(' ',@targets),"\n";
  my $flags   = ($site->{ver} << 24);
  my @atarg   = map($token->InternAtom($_),@targets);
  my $ntarg   = @atarg;
- if ($ntarg > 3) 
-  { 
+ if ($ntarg > 3)
+  {
    $flags |= 1;
    $w->property('set','XdndTypeList','ATOM',32,\@atarg);
    splice(@atarg,3);
@@ -79,7 +79,7 @@ sub Enter
  else
   {
    splice(@atarg,$ntarg,(0 x 3 - $ntarg));
-  }                           
+  }
  unshift(@atarg,oct($w->id),$flags);
  # print join(' ',map(sprintf("%08X",$_),@atarg)),"\n";
  my $data = pack('LLLLL',@atarg);
@@ -109,7 +109,7 @@ sub Motion
 
 sub XdndFinished
 {
- my ($site) = @_;  
+ my ($site) = @_;
  my $token = $site->{token};
  # printf "XdndFinished $site\n",
  $token->Done;
@@ -117,7 +117,7 @@ sub XdndFinished
 
 sub XdndStatus
 {
- my ($site) = @_;  
+ my ($site) = @_;
  my $token = $site->{token};
  my $w   = $token->parent;
  my $event = $w->XEvent;

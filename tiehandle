@@ -18,6 +18,6 @@ while (<DATA>)
 
 MainLoop;
 
-__DATA__ 
+__DATA__
 
 

@@ -37,11 +37,11 @@ sub createwindows {
     $buttons = $MW->Frame();
     $buttons_ok = $buttons->Button(-command => \&ok, -text => 'Ok');
     $buttons_apply = $buttons->Button(
-        -command => \&writesettings, 
+        -command => \&writesettings,
         -text    => 'Apply',
     );
     $buttons_cancel = $buttons->Button(
-        -command => \&cancel, 
+        -command => \&cancel,
         -text    => 'Cancel',
     );
     $buttons_quit = $buttons->Button(-command => \&quit, -text => 'Quit');
@@ -55,10 +55,10 @@ sub createwindows {
     $bell = $MW->Frame(-relief => 'raised', -borderwidth => '2');
     $bell_label = $bell->Label(-text => 'Bell Settings');
     $bell_vol = $bell->Scale(
-        -from         => '0',  
-        -to           => '100', 
-        -length       => '200', 
-        -tickinterval => '20', 
+        -from         => '0',
+        -to           => '100',
+        -length       => '200',
+        -tickinterval => '20',
         -label        => 'Volume (%)',
 	-orient       => 'horizontal',
     );
@@ -77,18 +77,18 @@ sub createwindows {
     $kbd_label = $kbd->Label(-text => 'Keyboard Repeat Settings');
     $kbd_val = $kbd->Frame();
     $kbd_val_onoff = $kbd_val->Checkbutton(
-        -text     => 'On', 
-        -onvalue  => 'on', 
-        -offvalue => 'off', 
+        -text     => 'On',
+        -onvalue  => 'on',
+        -offvalue => 'off',
         -variable => \$kbdrpt,
 	-relief   => 'flat',
     );
     $kbd_val_cli = $kbd_val->Scale(
-        -from         => '0', 
-        -to           => '100', 
-        -length       => '200', 
+        -from         => '0',
+        -to           => '100',
+        -length       => '200',
         -tickinterval => '20',
-	-label        => 'Click Volume (%)', 
+	-label        => 'Click Volume (%)',
         -orient       => 'horizontal',
     );
     $kbd_val_onoff->pack(-side => 'left', -expand => 'yes', -fill => 'both');
@@ -115,14 +115,14 @@ sub createwindows {
     $screen_val = $screen->Frame();
     $screen_val_rb = $screen_val->Frame();
     $screen_val_rb_blank = $screen_val_rb->Radiobutton(
-        -text     => 'Blank', 
-        -relief   => 'flat', 
+        -text     => 'Blank',
+        -relief   => 'flat',
         -value    => 'blank',
 	-variable => \$screenbla,
     );
     $screen_val_rb_pat = $screen_val_rb->Radiobutton(
-        -text     => 'Pattern', 
-        -relief   => 'flat', 
+        -text     => 'Pattern',
+        -relief   => 'flat',
         -value    => 'noblank',
 	-variable => \$screenbla,
     );

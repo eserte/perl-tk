@@ -5,55 +5,134 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#21 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tixish/LabFrame.pm#7 $
 
 use Tk;
-require Tk::Frame;
-
-use strict;
 use base qw(Tk::Frame);
-Construct Tk::Widget 'LabFrame';
+Tk::Widget->Construct('LabFrame');
 
+sub autoLabel { 0 }
 
 sub Populate {
     my ($cw, $args) = @_;
-    my $f;
-    my $label;
-    my $lside = exists $args->{-labelside} ?
-	delete $args->{-labelside} : 'top';
-    my $ltext = delete $args->{-label};
+
+    $cw->{m_geoMgr} = "";
+
+    my $border = $cw->Component(
+    Frame => 'border',
+        -relief => 'groove',
+        -bd => 2,
+    );
+
+    my $pad = $border->Frame;
+    $cw->Advertise(pad => $pad);
+
+    my $frame = $border->Frame;
+    $cw->Advertise(frame => $frame);
+
+    my $label = $cw->Component(Label => 'label');
+
     $cw->SUPER::Populate($args);
 
-    if ($lside =~ /acrosstop/) {
-	my $border = $cw->Frame(-relief => 'groove', -bd => 2);
-        $cw->Advertise('border' => $border);
-	my $pad = $border->Frame;
-	$f = $border->Frame;
-	$label = $cw->Label(-text => $ltext);
-	my $y = int($label->winfo('reqheight')) / 2;
-	my $ph = $y - int($border->cget(-bd));
-	if ($ph < 0) {
-	    $ph = 0;
-	}
-	$label->form(-top => 0, -left => 4, -padx => 6, -pady => 2);
-        # $label->place('-y' => 2, '-x' => 10);
-	$border->form(-top => $y, -bottom => -1, -left => 0, -right => -1, -padx => 2, -pady => 2);
-	$pad->form(-left => 0, -right => -1, -top => 0, -bottom => $ph);
-	$f->form(-top => $pad, -bottom => -1, -left => 0, -right => -1);
-	# $cw->Delegates('pack' => $cw);
-    } else {
-	$f = $cw->Frame(-relief => 'groove', -bd => 2, %{$args});
-	$label = $cw->Label(-text => $ltext);
-	$label->pack(-side => $lside);
-	$f->pack(-side => $lside, -fill => 'both', -expand => 1);
+    $cw->Delegates(DEFAULT => $frame);
+    $cw->ConfigSpecs(
+        -background    => [[qw/SELF ADVERTISED/],
+                            qw/background Background/],
+        -borderwidth   => [$border, qw/borderWidth Border 2/],
+        -font          => [$label, qw/font Font/],
+        -foreground    => [$label, qw/foreground Foreground black/],
+        -label         => [{-text => $label}, qw/label Label/],
+        -labelside     => [qw/METHOD labelSide LabelSide acrosstop/],
+        -labelvariable => [{-textvariable => $label}],
+        -relief        => [$border, qw/relief Relief groove/],
+        DEFAULT        => [$frame]
+    );
+    return $cw;
+}
+
+use Tk::Submethods(
+    form  => [qw/check forget grid info slaves/],
+    grid  => [qw/bbox columnconfigure configure forget info location
+                 propagate rowconfigure remove size slaves/],
+    pack  => [qw/forget info propagate slaves/],
+    place => [qw/forget info slaves/]
+);
+
+sub labelside {
+    my ($cw, $side) = @_;
+    return $cw->{Configure}{-labelside} unless $side;
+
+    my $border = $cw->Subwidget('border');
+    my $pad = $cw->Subwidget('pad');
+    my $frame = $cw->Subwidget('frame');
+    my $label = $cw->Subwidget('label');
+
+    ## packForget/formForget as appropriate
+    foreach ($border, $label, $pad, $frame) {
+        $_->formForget if $cw->{m_geoMgr} eq "form";
+        $_->packForget if ($cw->{m_geoMgr} eq "pack" && $_->ismapped);
     }
-    $cw->Advertise('frame' => $f);
-    $cw->Advertise('label' => $label);
-    $cw->Delegates(DEFAULT => $f);
-    $cw->ConfigSpecs(-labelside => ['PASSIVE', 'labelSide', 'LabelSide', 'acrosstop'],
-		     'DEFAULT' => [$f]);
+
+    if ($side eq "acrosstop") {
+
+        my $y = $label->reqheight / 2;
+        my $ph = $y - ($border->cget(-bd));
+        $ph = 0 if $ph < 0;
+
+        $label->form(qw/-top 0 -left 4 -padx 6 -pady 2/);
+        $border->form(-top => $y,
+            qw/-bottom -1 -left 0 -right -1 -padx 2 -pady 2/);
+        $pad->form(-bottom => $ph,
+            qw/-top 0 -left 0 -right -1/);
+        $frame->form(-top => $pad,
+            qw/-bottom -1 -left 0 -right -1 -fill both/);
+        $cw->{m_geoMgr} = "form";
+
+    } else {
+
+        $label->pack(-side => $side);
+        $frame->pack(-expand => 1, -fill => 'both');
+        $border->pack(-side => $side, -expand => 1, fill => 'both');
+        $cw->{m_geoMgr} = "pack";
+    }
+}
+
+sub form {
+    my $cw = shift;
+    $cw = $cw->Subwidget('frame')
+        if (@_ && $_[0] =~ /^(?:slaves)$/);
+    $cw->SUPER::form(@_);
+}
+
+sub grid {
+    my $cw = shift;
+    $cw = $cw->Subwidget('frame') if (@_ && $_[0] =~
+        /^(?:bbox
+            |columnconfigure
+            |location
+            |propagate
+            |rowconfigure
+            |size
+            |slaves)
+        $/x);
+    $cw->SUPER::grid(@_);
+}
+
+
+sub pack {
+    my $cw = shift;
+    $cw = $cw->Subwidget('frame')
+        if (@_ && $_[0] =~ /^(?:propagate|slaves)$/);
+    $cw->SUPER::pack(@_);
+}
+
+sub place {
+    my $cw = shift;
+    $cw = $cw->Subwidget('frame')
+        if (@_ && $_[0] =~ /^(?:slaves)$/);
+    $cw->SUPER::place(@_);
 }
 
 1;
 
-__END__
+

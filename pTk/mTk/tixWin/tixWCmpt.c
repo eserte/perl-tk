@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixWCmpt.c,v 1.1.1.1 2000/05/17 11:08:55 idiscovery Exp $	*/
+
+/*
  * tixWCmpt.c --
  *
  *	Windows compatibility module: implements missing functions in Windows.
@@ -31,7 +34,7 @@ int strcasecmp(char * a, char *b)
     }
 }
 #endif
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -58,7 +61,7 @@ XLowerWindow(display, w)
     SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0,
 	    SWP_NOMOVE | SWP_NOSIZE);
 }
-
+
 
 
 #if 1
@@ -115,7 +118,7 @@ DllEntryPoint(hInst, reason, reserved)
 {
     return DllMain(hInst, reason, reserved);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -143,7 +146,7 @@ DllMain(hInstance, reason, reserved)
      * the hInstance to use. If we are detaching then clean up any
      * data structures related to this DLL.
      */
-    
+
     return(TRUE);
 }
 #else

@@ -10,7 +10,7 @@ sub bind {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     =>'',				      
+        -text     =>'',
         -title    => 'Text Demonstration - Tag Bindings',
         -iconname => 'bind',
     );
@@ -44,7 +44,7 @@ sub bind {
     $t->insert('end', '6. A grid that demonstrates how canvases can be scrolled.', 'd6');
 
     foreach $tag (qw(d1 d2 d3 d4 d5 d6)) {
-	$t->tag('bind', $tag, '<Any-Enter>' => 
+	$t->tag('bind', $tag, '<Any-Enter>' =>
             sub {shift->tag('configure', $tag, @bold)}
         );
 	$t->tag('bind', $tag, '<Any-Leave>' =>

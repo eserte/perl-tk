@@ -130,7 +130,7 @@ sub floorDisplay {
 
     # Add the walls and labels for the active floor, along with transparent polygons that define the rooms on the floor.
     # Make sure that the room polygons are on top.
-	
+
     eval 'undef $mkFloor::floorLabels; undef $mkFloor::floorItems';
     my $cmd = "fg${active}";
     &$cmd($w, $mkFloor::colors{'offices'});

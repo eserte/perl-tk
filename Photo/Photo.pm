@@ -1,12 +1,12 @@
 package Tk::Photo;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Photo/Photo.pm#14 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Photo/Photo.pm#2 $
 
 use Tk qw($XS_VERSION);
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Photo/Photo.pm#14 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Photo/Photo.pm#2 $
 
 use base  qw(Tk::Image);
 

@@ -59,7 +59,7 @@ sub mkPlot {
     $c->create('line', 100, 250, 400, 250, -width => 2);
     $c->create('line', 100, 250, 100, 50, -width => 2);
     $c->create('text', 225, 20, -text => 'A Simple Plot', -font => $font, -fill => 'brown');
-    
+
     my($i, $x, $y, $point, $item);
     for($i = 0; $i <= 10; $i++) {
 	$x = 100 + ($i * 30);
@@ -71,7 +71,7 @@ sub mkPlot {
 	$c->create('line', 100, $y, 105, $y, -width => 2);
 	$c->create('text', 96, $y, -text => $i * 50.0, -anchor => 'e',  -font => $font);
     } # forend
-    
+
     foreach $point ([12, 56], [20, 94], [33, 98], [32, 120], [61, 180], [75, 160], [98, 223]) {
 	$x = 100 + (3 * ${$point}[0]);
         $y = 250 - (4 * ${$point}[1]) / 5;
@@ -86,6 +86,6 @@ sub mkPlot {
     $c->Tk::bind('<B1-Motion>' => sub {plot_move(@_)});
 
 } # end mkPlot
- 
+
 
 1;

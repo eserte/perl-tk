@@ -11,7 +11,7 @@ sub menus2 {
     my ($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     => '',				      
+        -text     => '',
         -title    => 'Menuitems Demonstration',
         -iconname => 'menus2',
     );
@@ -39,13 +39,13 @@ sub menus2 {
 	        -command     => [sub {print "$_[0]\n"}, $_],
 	        -accelerator => "Meta+$_" ],
 	       ('a' .. 'g')
-	  ), 
+	  ),
 	])->grid(qw/-row 0 -column 1 -sticky w/);
 
     my $menu_cb = '~Check buttons';
     my $menu_rb = '~Radio buttons';
     my $c = $menubar->Menubutton(qw/-text Cascades -underline 0 -menuitems/ =>
-        [        
+        [
 	 [Button => 'Print ~hello',   -command => sub {print "Hello\n"},
 	  -accelerator => 'Control+a'],
 	 [Button => 'Print ~goodbye', -command => sub {print "Goodbye\n"},
@@ -57,7 +57,7 @@ sub menus2 {
 	   [Checkbutton => 'Brakes checked',       -variable => \$BRAKES],
 	   [Checkbutton => 'Lights checked',       -variable => \$LIGHTS],
 	   [Separator => ''],
-	   [Button => 'See current values', -command => 
+	   [Button => 'See current values', -command =>
 	    [\&see_vars, $TOP, [
 				['oil',     \$OIL],
 				['trans',   \$TRANS],
@@ -117,7 +117,7 @@ sub menus2 {
 	  -command => [$DIALOG_ICON => 'Show']],
 	 map (
 	      [Button  => '', -bitmap => $_,
-	      -command => 
+	      -command =>
 	       [sub {print "You invoked the \"$_[0]\" bitmap\n"}, $_]],
 	      (qw/info questhead error/),
 	      ),
@@ -127,7 +127,7 @@ sub menus2 {
         [
 	 map (
 	      [Button   => $_,
-	       -command => 
+	       -command =>
 	       [sub {print "You invoked \"$_[0]\"\n"}, $_]],
 	      ('An entry', 'Another entry', 'Does nothing',
 	       'Does almost nothing', 'Make life meaningful'),
@@ -139,7 +139,7 @@ sub menus2 {
 	 map (
 	      [Button      => $_,
 	       -background => $_,
-	       -command    => 
+	       -command    =>
 	       [sub {print "You invoked \"$_[0]\"\n"}, $_]],
 	      (qw/red orange yellow green blue/),
 	      ),
@@ -153,7 +153,7 @@ sub menus_error2 {
 
 
     # Generate a background error, which may even be displayed in a window if
-    # using ErrorDialog. 
+    # using ErrorDialog.
 
     my($msg) = @_;
 

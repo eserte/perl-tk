@@ -35,7 +35,7 @@ sub check {
         -variable => \$BRAKES,
 	-relief   => 'flat')->pack(@pl);
     my $b3 = $TOP->Checkbutton(
-        -text     => 'Driver Sober', 
+        -text     => 'Driver Sober',
         -variable => \$SOBER,
 	-relief   => 'flat')->pack(@pl);
 

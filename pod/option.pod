@@ -121,37 +121,37 @@ identifies the widget within the application.
 =item I<$widget>-E<gt>B<optionAdd>(I<pattern>=E<gt>I<value >?, I<priority>?);
 
 The B<optionAdd> method adds a new option to the database.
-I<Pattern> contains the option being specified, and consists of 
-names and/or classes separated by asterisks or dots, in the usual 
-X format.  I<Value> contains a text string to associate with 
+I<Pattern> contains the option being specified, and consists of
+names and/or classes separated by asterisks or dots, in the usual
+X format.  I<Value> contains a text string to associate with
 I<pattern>; this is the value that will be returned in calls to
-the B<optionGet> method.  If I<priority> is specified, it indicates 
-the priority level for this option (see below for legal values);  
-it defaults to B<interactive>. This method always returns an empty 
+the B<optionGet> method.  If I<priority> is specified, it indicates
+the priority level for this option (see below for legal values);
+it defaults to B<interactive>. This method always returns an empty
 string.
 
 =item I<$widget>-E<gt>B<optionClear>;
 
 The B<optionClear> method clears the option database.  Default
 options (from the B<RESOURCE_MANAGER> property or the B<.Xdefaults>
-file) will be reloaded automatically the next time an option is 
-added to the database or removed from it.  This method always returns 
+file) will be reloaded automatically the next time an option is
+added to the database or removed from it.  This method always returns
 an empty string.
 
 =item I<$widget>-E<gt>B<optionGet>(I<name,class>);
 
-The B<optionGet> method returns the value of the option specified for 
-I<$widget> under I<name> and I<class>.  To look up the option, 
-B<optionGet> matches the patterns in the resource database against 
-I<$widget>'s I<pathname> along with the class of I<$widget> 
-(or its parent if I<$widget> has no class specified).  The widget's 
-class and name are options set when the widget is created (not 
-related to class in the sense of L<bless>); the B<MainWindow>'s name 
-is the B<appname> and its class is (by default) derived from the name 
+The B<optionGet> method returns the value of the option specified for
+I<$widget> under I<name> and I<class>.  To look up the option,
+B<optionGet> matches the patterns in the resource database against
+I<$widget>'s I<pathname> along with the class of I<$widget>
+(or its parent if I<$widget> has no class specified).  The widget's
+class and name are options set when the widget is created (not
+related to class in the sense of L<bless>); the B<MainWindow>'s name
+is the B<appname> and its class is (by default) derived from the name
 of the script.
 
-If several entries in the option database match I<$widget>'s I<pathname>, 
-I<name>, and I<class>, then the method returns whichever was created with 
+If several entries in the option database match I<$widget>'s I<pathname>,
+I<name>, and I<class>, then the method returns whichever was created with
 highest I<priority> level.  If there are several matching
 entries at the same priority level, then it returns whichever entry
 was I<most recently entered> into the option database.  If there are
@@ -159,10 +159,10 @@ no matching entries, then the empty string is returned.
 
 =item I<$widget>-E<gt>B<optionReadfile>(I<fileName>?,I<priority>?);
 
-The B<optionReadfile> method reads I<fileName>, which should have the 
-standard format for an X resource database such as B<.Xdefaults>, and 
-adds all the options specified in that file to the option database.  
-If I<priority> is specified, it indicates the priority level at which 
+The B<optionReadfile> method reads I<fileName>, which should have the
+standard format for an X resource database such as B<.Xdefaults>, and
+adds all the options specified in that file to the option database.
+If I<priority> is specified, it indicates the priority level at which
 to enter the options;  I<priority> defaults to B<interactive>.
 
 The I<priority> arguments to the B<option> methods are

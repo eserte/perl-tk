@@ -5,7 +5,7 @@ use Tk;
 
 my $top = MainWindow->new;
 
-my $p = $top->Menu(-menuitems => 
+my $p = $top->Menu(-menuitems =>
                    [ '------',
                      [Button => 'Quit', -command => ['destroy' => $top]],
                      '------'
@@ -40,13 +40,13 @@ sub Anchor
 }
 
 my $w = $top->Frame;
-my $b = $w->Radiobutton(-text => 'Window', -variable => \$where, 
+my $b = $w->Radiobutton(-text => 'Window', -variable => \$where,
                 -value => $top, -command => \&Show);
 $b->pack(-side=>'left');
 
-$w->Radiobutton(-text => 'Screen', -variable => \$where, 
+$w->Radiobutton(-text => 'Screen', -variable => \$where,
                 -value => undef, -command => \&Show)->pack(-side=>'left');
-$w->Radiobutton(-text => 'Cursor', -variable => \$where, 
+$w->Radiobutton(-text => 'Cursor', -variable => \$where,
                 -value => 'cursor', -command => \&Show)->pack(-side=>'left');
 $w->pack;
 

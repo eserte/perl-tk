@@ -28,7 +28,7 @@ use base  qw(Tk::Frame);
    }
   return $w->Subwidget('label')->cget('-background');
  }
- 
+
 }
 
 my $mw = MainWindow->new;

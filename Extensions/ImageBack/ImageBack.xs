@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -42,7 +42,7 @@ char *imageString;
  Display *dpy   = Tk_Display(tkwin);
  Tcl_Interp *interp = ((TkWindow*) tkwin)->mainPtr->interp;
  Tk_Image image = Tk_GetImage(interp, tkwin,
-		  imageString, BackgroundImageProc, (ClientData) tkwin); 
+		  imageString, BackgroundImageProc, (ClientData) tkwin);
  int width, height;
  Pixmap pixmap;
  Tk_SizeOfImage(image, &width, &height);

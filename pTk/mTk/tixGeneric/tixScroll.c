@@ -1,3 +1,6 @@
+
+/*	$Id: tixScroll.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixScroll.c -- Handle all the mess of Tk scroll bars
  *
@@ -32,7 +35,7 @@ void Tix_InitScrollInfo(siPtr, type)
 	dsiPtr->unit	= 1.0;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_GetScrollFractions --
  *
@@ -123,7 +126,7 @@ int Tix_SetScrollBarView(interp, siPtr, argc, argv, compat)
 {
     int offset;
 
-    if (compat && Tcl_GetInt(interp, argv[0], &offset) == TCL_OK) {
+    if (compat && Tcl_GetIntFromObj(interp, argv[0], &offset) == TCL_OK) {
 	/* backward-compatible mode */
 	if (siPtr->type == TIX_SCROLL_INT) {
 	    Tix_IntScrollInfo*    isiPtr = (Tix_IntScrollInfo*)   siPtr;
@@ -152,7 +155,7 @@ int Tix_SetScrollBarView(interp, siPtr, argc, argv, compat)
 		return TCL_ERROR;
 
 	      case TK_SCROLL_MOVETO:
-		isiPtr->offset = 
+		isiPtr->offset =
 		  (int)(fraction * (double)isiPtr->total);
 		break;
 
@@ -171,7 +174,7 @@ int Tix_SetScrollBarView(interp, siPtr, argc, argv, compat)
 		return TCL_ERROR;
 
 	      case TK_SCROLL_MOVETO:
-		dsiPtr->offset = 
+		dsiPtr->offset =
 		  fraction * dsiPtr->total;
 		break;
 

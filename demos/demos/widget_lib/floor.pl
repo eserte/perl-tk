@@ -61,7 +61,7 @@ sub floor {
     my $floor_number;
     for $floor_number (1..3) {
 	$c->bind("floor${floor_number}", '<1>' =>
-            [\&floor_display, $floor_number, \%floor_labels, \%floor_items, 
+            [\&floor_display, $floor_number, \%floor_labels, \%floor_items,
 	    \%cinfo, \$active_floor, $c_entry],
         );
     }
@@ -124,7 +124,7 @@ sub floor_display {
     # Add the walls and labels for the active floor, along with transparent
     # polygons that define the rooms on the floor.  Make sure that the room
     # polygons are on top.
-	
+
     my $cmd = "floor_fg${active}";
     {
 	no strict qw(refs);
@@ -148,7 +148,7 @@ sub floor_display {
 
 sub floor_room_changed {
 
-    # Whenever the current_room variable changes, this procedure highlights 
+    # Whenever the current_room variable changes, this procedure highlights
     # the current room and unhighlights any previous room.
 
     my($w, $floor_items, $cinfo) = @_;
@@ -169,7 +169,7 @@ sub floor_room_changed {
 } # end floor_room_changed
 
 # The following procedures are invoked to instantiate various portions of
-# the building floorplan.  The bodies of these procedures were generated 
+# the building floorplan.  The bodies of these procedures were generated
 # automatically from database files describing the building.
 
 
@@ -1338,7 +1338,7 @@ sub TIESCALAR {
 sub FETCH {
 
     # Method to handle reads of the tied variable:  simply return it's value.
-   
+
     my($current_room) = @_;
     return $$current_room;
 

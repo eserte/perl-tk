@@ -7,7 +7,7 @@ my $mw = MainWindow->new;
 
 $mw->scaling($ARGV[0]) if (@ARGV);
 
-my $screen = $mw->Screen;            
+my $screen = $mw->Screen;
 
 my $width    = $screen->WidthOfScreen;
 my $widthMM  = $screen->WidthMMOfScreen;

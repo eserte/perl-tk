@@ -12,7 +12,7 @@ package Plot;
 require 5.002;
 
 use vars qw/$VERSION @ISA/;
-$VERSION = '3.013'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#13 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Plot.pm#2 $
 
 use Tk::Frame;
 use base  qw(Tk::Frame);
@@ -20,7 +20,7 @@ Construct Tk::Widget 'Plot';
 use strict;
 
 # Plot Virtual Methods
-# 
+#
 # 	$plot = $MW->Plot(
 #           -title_color        => 'Brown',
 #           -inactive_highlight => 'Skyblue2',
@@ -49,8 +49,8 @@ sub Populate {
     my $plot_font = '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*';
 
     my $c = $cw->Canvas(
-        -relief => 'raised', 
-        -width  => '450', 
+        -relief => 'raised',
+        -width  => '450',
         -height => '300',
         -cursor => 'top_left_arrow',
     );
@@ -61,7 +61,7 @@ sub Populate {
     $c->createLine(100, 250, 100, 50, -width => 2);
     $c->createText(225, 20, -text => 'A Simple Plot', -font => $plot_font,
 	       -fill => $tc);
-    
+
     my($i, $x, $y, $point, $item);
     for($i = 0; $i <= 10; $i++) {
 	$x = 100 + ($i * 30);
@@ -75,7 +75,7 @@ sub Populate {
 	$c->createText(96, $y, -text => $i * 50.0, -anchor => 'e',
 		   -font => $plot_font);
     } # forend
-    
+
     foreach $point ([12, 56], [20, 94], [33, 98], [32, 120], [61, 180],
 		    [75, 160], [98, 223]) {
 	$x = 100 + (3 * ${$point}[0]);
@@ -154,13 +154,13 @@ sub area_move {
 } # end area_move
 
 sub area_save {
-    
+
     my($w, $pinfo) = @_;
-    
+
     my($x1, $x2, $y1, $y2, $a);
-    
+
     if($pinfo->{'areaX2'} != -1) {
-	($x1, $x2, $y1, $y2) = 
+	($x1, $x2, $y1, $y2) =
 	  @$pinfo{'areaX1', 'areaX2', 'areaY1', 'areaY2'}; # slice !
 	($x1, $x2) = @$pinfo{'areaX2', 'areaX1'} if $x2 <= $x1;
 	($y1, $y2) = @$pinfo{'areaY2', 'areaY1'} if $y2 <= $y1;
@@ -169,7 +169,7 @@ sub area_save {
     } else {
 	$a = $w->postscript;
     }
-    
+
     $SIG{'PIPE'} = sub {};
     open(LPR, "| $pinfo->{'prcmd'}");
     print LPR $a;

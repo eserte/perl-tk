@@ -13,7 +13,7 @@ sub Compass
    my $j = 0;
    foreach $a (@$r)
     {
-     $b = $out->Create($i,$j++,'Radiobutton',-text=> $a, 
+     $b = $out->Create($i,$j++,'Radiobutton',-text=> $a,
                        -variable => $var, -value => $a, -anchor => 'w');
     }
    $i++;
@@ -57,9 +57,9 @@ tie $cl,Tk::Configure,$t,'-fixedrows';
 Compass($mw,\$sb)->pack(-side => 'bottom');
 
 $mw->Checkbutton(-text => 'Row labels', -variable => \$rl, -onvalue => 1, -offvalue => 0)
- ->pack(-side => 'left'); 
+ ->pack(-side => 'left');
 $mw->Checkbutton(-text => 'Column labels', -variable => \$cl, -onvalue => 1,-offvalue => 0)
- ->pack(-side => 'right'); 
+ ->pack(-side => 'right');
 
 $t->focus;
 $t->update;

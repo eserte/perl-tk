@@ -174,7 +174,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 #endif
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -261,7 +261,7 @@ ImgXpmConfigureMaster(masterPtr, argc, argv, flags)
     masterPtr->fileString = oldFile;
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -372,10 +372,10 @@ ImgXpmGetData(interp, masterPtr)
     if (listArgv) {
 	ckfree((char*)listArgv);
     }
-		
+
     return code;
 }
-
+
 static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
     Tcl_Interp * interp;
     char * string;
@@ -504,7 +504,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
     Tcl_AppendResult(interp, "File format error", NULL);
     return (char**) NULL;
 }
-
+
 static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
     Tcl_Interp * interp;
     char * fileName;
@@ -637,7 +637,7 @@ GetColor(colorDefn, colorName, type_ret)
 	if (GetType(colorDefn, &dummy) == NULL) {
 	    /* the next string should also be considered as a part of a color
 	     * name */
-	
+
 	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
@@ -654,7 +654,7 @@ GetColor(colorDefn, colorName, type_ret)
 
     return colorDefn;
 }
-
+
 /*----------------------------------------------------------------------
  * ImgXpmGetPixmapFromData --
  *
@@ -830,7 +830,7 @@ ImgXpmGetPixmapFromData(interp, masterPtr, instancePtr)
     ImgXpmRealizePixmap(masterPtr, instancePtr, image, mask, isTransp);
     ImgXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -886,7 +886,7 @@ ImgXpmConfigureInstance(instancePtr)
      */
     ImgXpmGetPixmapFromData(masterPtr->interp, masterPtr, instancePtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -974,7 +974,7 @@ ImgXpmCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1048,7 +1048,7 @@ ImgXpmGet(tkwin, masterData)
 
     return (ClientData) instancePtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1081,7 +1081,7 @@ ImgXpmDisplay(clientData, display, drawable, imageX, imageY, width,
     ImgpXpmDisplay(clientData, display, drawable, imageX, imageY, width,
 	height, drawableX, drawableY);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1146,7 +1146,7 @@ ImgXpmFree(clientData, display)
     }
     ckfree((char *) instancePtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1187,7 +1187,7 @@ ImgXpmDelete(masterData)
     Tk_FreeOptions(configSpecs, (char *) masterPtr, (Display *) NULL, 0);
     ckfree((char *) masterPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

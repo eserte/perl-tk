@@ -20,7 +20,7 @@ BEGIN
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#23 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/TixGrid/TixGrid.pm#4 $
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Widget;

@@ -79,6 +79,8 @@ sub complete
  $_ .= $tail;
 }
 
+#use Carp;
+#$SIG{'INT'} = sub {  Carp::confess($_) };
 
 
 PROCESS:
@@ -91,6 +93,37 @@ while ($_ = &getline)
   next if (/^\s*extern.*\bpanic\s*\(/);
 
   s/\(char\s*\*\)\s*NULL\b/         NULL/g;
+
+  if (/^#(define|ifn?def|endif)\b/)
+   {
+    print;
+    while (/\\$/)
+     {
+      $_ = &getline;
+      print;
+     }
+    next;
+   }
+
+  if (m#^ */\*# && !m#\*/#)
+   {
+    print;
+    while (!m#\*/#)
+     {
+      $_ = &getline;
+      print;
+     }
+    next;
+   }
+
+  s/tclStubs\.t(\w+)/TkeventVptr->V_T$1/;
+
+
+  s/\b(\w+Ptr)->internalRep\./TclObjInternal($1)->/g;
+
+  s/(\w+bjPtr)->typePtr\s*=\s*(.*);/TclObjSetType($1,$2);/g;
+
+  s/\b(\w*bjPtr)->typePtr\b/TclObjGetType($1)/g;
 
   if (/if\s*\(\(c == '.'\)\s*$/)
    {
@@ -126,6 +159,9 @@ while ($_ = &getline)
     s/Tcl_DeleteCommand\s*\(\s*((\w+->)*(\w+\.)?interp)\s*,\s*Tcl_GetCommandName\s*\([^,]+,\s*([^\)]+->widgetCmd)\)/Lang_DeleteWidget($1,$4/;
    }
 
+  s/\(char \*\*\)\s*objv\b/objv/g;
+
+# s/Tcl_Obj\s+\*(CONST\s+)?objv\b/Tcl_Obj *objv/;
   if (/\bargv\w*\b/)
    {
     if (/\bargv\w*\s*\[([^[]*)\]\s*=[^=][^;{]*$/)
@@ -133,12 +169,13 @@ while ($_ = &getline)
       &complete;
       redo PROCESS;
      }
+    s/Tcl_Obj\s+\*(CONST\s+)?argv\b/Tcl_Obj *objv/;
     if (/\bchar\b.*\bargv\w*\b/)
      {
       # convert char *argv[] to char **argv
       s/char\s*\*\s*\bargv\s*\[\s*\]/char **argv/;
       # convert char **argv to Tcl_Obj **objv
-      s/char\s*\*\*\s*\bargv\b/Tcl_Obj **objv/;
+      s/(CONST\s+)?char\s*\*\*\s*\bargv\b/Tcl_Obj *CONST *objv/;
       # convert char *argv[n] to Tcl_Obj **objv = LangAllocVec(n)
       s/char\s*\*\s*\bargv\s*\[\s*([^[]+)\]/Tcl_Obj **objv = LangAllocVec($1)/;
      }
@@ -146,14 +183,15 @@ while ($_ = &getline)
      {
       s/([^*])\*(argv\w*(\[[^[]*\])?)/${1}${2}[0]/g;
      }
+    s/\(Tcl_Obj\s\*\)\s*argv\b/objv/g;
     s/\bargv\s*\[([^[]*)\]\s*=([^=].*);\s*$/LangSetString(objv+$1,$2);\n/;
-    s/\bargv\s*\[([^[]*)\]\+\+/objv[$1] = LangStringArg(LangString(objv[$1])+1)/;
-    s/\bargv\s*\[([^[]*)\]\+([0-9])/LangStringArg(LangString(objv[$1])+$2)/;
+    s/\bargv\s*\[([^[]*)\]\+\+/objv[$1] = Tcl_NewStringObj(Tcl_GetString(objv[$1])+1,-1)/;
+    s/\bargv\s*\[([^[]*)\]\+([0-9])/Tcl_NewStringObj(Tcl_GetString(objv[$1])+$2,-1)/;
     if (/Tcl_Get(Boolean|Int|Double)/ || /Tk_Get(Cursor)/)
      {
       s/\bargv(\w*)\b/objv$1/g;
      }
-    s/\bargv\s*(\[[^[]*\])/LangString(objv$1)/g;
+    s/\bargv\s*(\[[^[]*\])/Tcl_GetString(objv$1)/g;
     if (/\bargv\b/)
      {
       warn "Leak: $_" if ($verbose && !/\bargv\s*\)/);
@@ -216,3 +254,4 @@ close(DST);
 chmod(0444,$dst);
 
 exit 0;
+

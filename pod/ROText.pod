@@ -15,9 +15,9 @@ Tk::ROText - 'readonly' perl/Tk Text widget
 
 =head1 DESCRIPTION
 
-This "I<IS A>" text widget with all bindings removed that would alter 
+This "I<IS A>" text widget with all bindings removed that would alter
 the contents of the text widget. The contents can still be modified
-via method calls. 
+via method calls.
 
 =head1 KEYS
 

@@ -1,3 +1,6 @@
+
+/*	$Id: tixInt.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
 /*
  * tixInt.h --
  *
@@ -284,7 +287,7 @@ struct TixColorStyle {
     STYLE_COMMON_MEMBERS;
     STYLE_COLOR_MEMBERS;
 };
-
+
 /*----------------------------------------------------------------------
  * ImageTextItem --
  *
@@ -334,7 +337,7 @@ struct TixImageTextStyle {
     int gap;			/* Gap between text and image */
     Tk_Anchor textanchor;	/* Text anchor information */
 };
-
+
 /*----------------------------------------------------------------------
  * ImageItem --
  *
@@ -388,7 +391,7 @@ struct TixTextStyle {
     Tk_Justify justify;		/* Justification to use for multi-line text. */
     TixFont font;
 };
-
+
 /*----------------------------------------------------------------------
  * WindowItem --
  *
@@ -406,7 +409,7 @@ struct TixWindowItem {
 struct TixWindowStyle {
     STYLE_COMMON_MEMBERS;
 };
-
+
 /*----------------------------------------------------------------------
  * Tix_DItem and Tix_DItemStyle --
  *

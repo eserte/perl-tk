@@ -196,7 +196,7 @@ sub EditGrid_editNotify
 	    $editgrid{oldValue} = $grid->entrycget($x, $y, '-text');
 	    return 1;
 	  }
-      }	
+      }
     return 0;
   }
 
@@ -225,7 +225,7 @@ sub EditGrid_editDone
 	    $grid->entryconfigure(4, $editgrid{result}, -text=>"-");
 	    EditGrid_calPop();
 	}
-      } 
+      }
     else
       {
 	my $income = $grid->entrycget($x, $y, '-text');

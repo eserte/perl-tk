@@ -1,12 +1,12 @@
 
 =head1 NAME
 
-Tk::Event - ToolKit for Events 
+Tk::Event - ToolKit for Events
 
 =for category Implementation
 
 =head1 SYNOPSIS
- 
+
  use Tk::Event;
 
  Tk::Event->fileevent(\*FH, 'readable' => callback);
@@ -22,9 +22,9 @@ Tk::Event - ToolKit for Events
  Tk::Event->proc($pid, callback);
 
  QueueEvent(callback [, position])
-  
 
-=head1 DESCRIPTION   
+
+=head1 DESCRIPTION
 
 
 That is better than nothing but still hard to use. Most scripts want higher
@@ -49,7 +49,7 @@ sub READLINE
    {
     DoOneEvent();
    }
-  Event->io(*$obj,'readable',''); # unregister 
+  Event->io(*$obj,'readable',''); # unregister
   $pos += length($/);
   my $result = substr(${*$obj},0,$pos);
   substr(${*$obj},0,$pos) = '';
@@ -61,4 +61,4 @@ as a buffer in which to accumulate chars.
 
 
 
- 
+

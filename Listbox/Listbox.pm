@@ -36,7 +36,7 @@
 package Tk::Listbox;
 
 use vars qw($VERSION);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Listbox/Listbox.pm#33 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/Listbox/Listbox.pm#9 $
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Clipboard ();
@@ -71,6 +71,7 @@ sub BalloonInfo
 {
  my ($listbox,$balloon,$X,$Y,@opt) = @_;
  my $e = $listbox->XEvent;
+ return if !$e;
  my $index = $listbox->index('@' . $e->x . ',' . $e->y);
  foreach my $opt (@opt)
   {
@@ -108,7 +109,16 @@ sub ClassInit
  $mw->bind($class,'<Shift-Down>',['ExtendUpDown',1]);
 
  $mw->XscrollBind($class);
- $mw->PriorNextBind($class);
+ $mw->bind($class,'<Next>',  sub {
+	       my $w = shift;
+	       $w->yview('scroll',1,'pages');
+	       $w->activate('@0,0');
+	   });
+ $mw->bind($class,'<Prior>', sub {
+	       my $w = shift;
+	       $w->yview('scroll',-1,'pages');
+	       $w->activate('@0,0');
+	   });
 
  $mw->bind($class,'<Control-Home>','Cntrl_Home');
  ;
@@ -128,6 +138,8 @@ sub ClassInit
  # Additional Tk bindings that aren't part of the Motif look and feel:
  $mw->bind($class,'<2>',['scan','mark',Ev('x'),Ev('y')]);
  $mw->bind($class,'<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
+
+ $mw->YMouseWheelBind($class);
  return $class;
 }
 
@@ -854,3 +866,5 @@ sub getSelected
 
 1;
 __END__
+
+

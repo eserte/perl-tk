@@ -29,7 +29,7 @@ sub ctext {
     $c->create(qw/rectangle 245 195 255 205 -outline black -fill red/);
 
     # First, create the text item and give it bindings so it can be edited.
-	
+
     $c->addtag(qw/text withtag/,
         $c->create('text', 250, 200,
             -text      => 'This is just a string of text to demonstrate the text facilities of canvas widgets. Bindings have been been defined to support editing (see above)."',
@@ -93,7 +93,7 @@ sub ctext {
 
     # Lastly, create some items that allow the text's justification
     # to be changed.
-    
+
     $x = 350; $y = 50; $color = 'SeaGreen2';
     ctext_configure $c, $x,    $y,    -justify => 'left',   $color;
     ctext_configure $c, $x+30, $y,    -justify => 'center', $color;
@@ -104,7 +104,7 @@ sub ctext {
 
     my $config_fill = '';
     $c->bind(qw/config <Enter>/ =>  [\&ctext_enter, \$config_fill]);
-    $c->bind(qw/config <Leave>/ => 
+    $c->bind(qw/config <Leave>/ =>
         sub {$c->itemconfigure('current', -fill => $config_fill)}
     );
 
@@ -126,7 +126,7 @@ sub ctext_configure {
 
     my $item = $w->create('rectangle', $x, $y, $x+30, $y+30,
 			  -outline => 'black', -fill => $color, -width => 1);
-    $w->bind($item, '<1>', 
+    $w->bind($item, '<1>',
         sub {$w->itemconfigure('text', $option => $value)}
     );
     $w->addtag(qw/config withtag/, $item);

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
- 
+
 require 5.003;
 use English;
 use Tk;
@@ -12,20 +12,20 @@ use Tk::Menubutton;
 use base  Tk::Menu::Button;
 
  Construct Tk::Menu 'NoisyButton';
- 
+
  sub PreInit
  {
   my ($class,$menu,$minfo) = @_;
   $minfo->{'-command'} = sub { print "$minfo->{-label} pressed.\n";};
  }
- 
+
 }
- 
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- 
+
 $mw     = MainWindow->new;
 $mw->title('Menuitem demo');
- 
+
 $MB = $mw->Menubutton(-text => 'File');
 $M = $MB->Menu(-menuitems => [
                          [Button => 'Howdy', -command => sub{print "Howdy\n";}],
@@ -34,7 +34,7 @@ $M = $MB->Menu(-menuitems => [
                 ]);
 $MB->configure(-menu => $M);
 $MB->pack(-side => 'top');
- 
+
 MainLoop;
 exit;
 # End of Menuitem demo

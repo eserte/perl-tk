@@ -16,7 +16,7 @@ sub TEMPLATE {
 __END__
 
 The template code above specifies how user contributed widget demonstrations
-can be written.  
+can be written.
 
 widget looks in the directory specified on the command line to load user
 contributed demonstrations.  If no directory name is specified when widget is
@@ -33,13 +33,13 @@ with .pl stripped off.  When widget calls your subroutine it's passed one
 argument, the demonstration name. So file TEMPLATE.pl contains subroutine
 TEMPLATE().  But a demo can actually be an entire program - read on!
 
-For consistency your demonstration should use the WidgetDemo widget.  This is  
+For consistency your demonstration should use the WidgetDemo widget.  This is
 a toplevel widget with three frames. The top frame contains descriptive
 demonstration text.  The bottom frame contains the "Dismiss" and "See Code"
 buttons.  The middle frame is the demonstration container, which can be
 managed by either the pack or grid geometry manager.
 
-Since your subroutine can "see" all of widget's global variables, you 
+Since your subroutine can "see" all of widget's global variables, you
 use $MW (the main window reference) to create the WidgetDemo toplevel; be sure
 to pass at least the -name and -text parameters.  -geometry_manager defaults
 to "pack".  The call to WidgetDemo() returns a reference to the containing
@@ -47,7 +47,7 @@ frame for your demonstration, so treat it as if it were the MainWindow, the
 top-most window of your widget hierarchy.
 
 Alternatively the .pl file make contain typical Perl/Tk code of the form:
-       
+
     # Demonstration Description Data
 
     use Tk;
@@ -63,19 +63,19 @@ return as MainLoop is already active).
 Other consideration:
 
     . widget global variables are all uppercase, like $MW - be careful not
-      to stomp on them! 
+      to stomp on them!
 
-    . Demo files should really be run in private packages to avoid those 
+    . Demo files should really be run in private packages to avoid those
       problems.
 
     . Don't subvert the inheritance mechanism by calling Tk::MainWindow
       in your demo code.
 
     . The description should really be extracted from POD documentation
-      in the .pl file rather than a magic comment.  
+      in the .pl file rather than a magic comment.
 
     . If your demonstration has a Quit button change it to ring the bell
-      and use the builtin Dismiss instead. In particular destroying a 
+      and use the builtin Dismiss instead. In particular destroying a
       MainWindow is acceptable, but exit will shut down widget itself!
 
     . Be sure $TOP is declared in a "use vars" statement and not as a
@@ -89,4 +89,4 @@ Other consideration:
       all "global" my() variables and place them within a "use vars".
       This practice is prone to subtle bugs and is not recommended!
 
-      
+

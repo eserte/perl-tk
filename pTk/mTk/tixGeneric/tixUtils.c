@@ -1,3 +1,6 @@
+
+/*	$Id: tixUtils.c,v 1.3 2000/10/12 04:06:58 idiscovery Exp $	*/
+
 /*
  * tixUtils.c --
  *
@@ -20,16 +23,16 @@
 static void		Prompt _ANSI_ARGS_((Tcl_Interp *interp, int partial));
 static void		StdinProc _ANSI_ARGS_((ClientData clientData,
 			    int mask));
-static int		 ReliefParseProc _ANSI_ARGS_((ClientData clientData, 
-			    Tcl_Interp *interp, 
-			    Tk_Window tkwin, 
-			    Arg avalue, 
+static int		 ReliefParseProc _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp,
+			    Tk_Window tkwin,
+			    Arg avalue,
 			    char *widRec,
 			    int offset));
-static Arg		 ReliefPrintProc _ANSI_ARGS_((ClientData clientData, 
-			    Tk_Window tkwin, 
+static Arg		 ReliefPrintProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Window tkwin,
 			    char *widRec,
-			    int offset, 
+			    int offset,
 			    Tcl_FreeProc **freeProcPtr));
 /*
  * Global vars used in this file
@@ -41,7 +44,7 @@ static Tcl_DString command;	/* Used to assemble lines of terminal input
 #define WRONG_ARGC 1
 #define NO_MATCH   2
 
-
+
 #ifndef _LANG
 /*----------------------------------------------------------------------
  * TixSaveInterpState --
@@ -84,7 +87,7 @@ TixSaveInterpState(interp, statePtr)
 	statePtr->errorCode = NULL;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixRestoreInterpState --
  *
@@ -116,7 +119,7 @@ TixRestoreInterpState(interp, statePtr)
     }
 }
 #endif
-
+
 /*----------------------------------------------------------------------
  * Tix_HandleSubCmds --
  *
@@ -147,11 +150,11 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
     Tix_SubCmdInfo * s;
 
     /*
-     * First check if the number of arguments to the major command 
+     * First check if the number of arguments to the major command
      * is correct
      */
     argc -= 1;
-    if (argc < cmdInfo->minargc || 
+    if (argc < cmdInfo->minargc ||
 	(cmdInfo->maxargc != TIX_VAR_ARGS && argc > cmdInfo->maxargc)) {
 
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
@@ -188,7 +191,7 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 		break;
 	    }
 
-	    if (s->maxargc != TIX_VAR_ARGS && 
+	    if (s->maxargc != TIX_VAR_ARGS &&
 		argc > s->maxargc) {
 		error = WRONG_ARGC;
 		break;
@@ -215,7 +218,7 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 	 */
 	Tcl_AppendResult(interp, "unknown option \"",
 	    argv[1], "\".",  (char *) NULL);
-	
+
 	if (cmdInfo->numSubCmds == 0) {
 	    max = 0;
 	} else {
@@ -231,7 +234,7 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 		" This command does not take any options.",
 		(char *) NULL);
 	} else if (max == 1) {
-	    Tcl_AppendResult(interp, 
+	    Tcl_AppendResult(interp,
 		" Must be ", subCmdInfo->name, ".", (char *)NULL);
 	} else {
 	    Tcl_AppendResult(interp, " Must be ", (char *) NULL);
@@ -240,12 +243,12 @@ int Tix_HandleSubCmds(cmdInfo, subCmdInfo, clientData, interp, argc, argv)
 		if (i == max-1) {
 		    Tcl_AppendResult(interp,"or ",s->name, ".", (char *) NULL);
 		} else if (i == max-2) {
-		    Tcl_AppendResult(interp, s->name, " ", (char *) NULL); 
+		    Tcl_AppendResult(interp, s->name, " ", (char *) NULL);
 		} else {
-		    Tcl_AppendResult(interp, s->name, ", ", (char *) NULL); 
+		    Tcl_AppendResult(interp, s->name, ", ", (char *) NULL);
 		}
 	    }
-	} 
+	}
     }
     return TCL_ERROR;
 }
@@ -266,22 +269,22 @@ void Tix_Exit(interp, code)
 {
     if (code != 0 && interp && interp->result != 0) {
 	fprintf(stderr, "%s\n", interp->result);
-	fprintf(stderr, "%s\n", 
+	fprintf(stderr, "%s\n",
 	    Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY));
     }
 
     if (interp) {
-	Tcl_GlobalEval(interp, "exit");
+	Tcl_GlobalEval(interp, tixStrDup("exit"));
     }
     exit(code);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
  * Tix_LoadTclLibrary --
  *
- *	Loads in a TCL library for an application according to 
+ *	Loads in a TCL library for an application according to
  *	the library settings.
  *
  * Results:
@@ -344,7 +347,7 @@ Tix_LoadTclLibrary(interp, envName, tclName, initFile, defDir, appName)
     ckfree(initCmd);
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_CreateCommands --
  *
@@ -389,7 +392,7 @@ void Tix_CreateCommands(interp, commands, clientData, deleteProc)
 
 #endif
 
-
+
 /*----------------------------------------------------------------------
  * Tix_DrawAnchorLines --
  *
@@ -408,7 +411,7 @@ void Tix_DrawAnchorLines(display, drawable, gc, x, y, w, h)
 {
     TixpDrawAnchorLines(display, drawable, gc, x, y, w, h);
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_CreateSubWindow --
  *
@@ -439,7 +442,7 @@ Tix_CreateSubWindow(interp, tkwin, subPath)
 
     return subwin;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_GetRenderBuffer --
  *
@@ -498,7 +501,7 @@ Drawable Tix_GetRenderBuffer(display, windowId, width, height, depth)
 	return windowId;
     }
 }
-
+
 #ifndef _LANG
 /*
  *----------------------------------------------------------------------
@@ -581,7 +584,7 @@ Tix_GlobalVarEval(iPtr, p, va_alist)
 #endif
 }
 #endif
-
+
 /*----------------------------------------------------------------------
  * TixGetHashTable --
  *
@@ -676,7 +679,7 @@ TixGetHashTable(interp, name)
  *
  *----------------------------------------------------------------------
  */
-
+
 /*----------------------------------------------------------------------
  *  ReliefParseProc --
  *
@@ -694,7 +697,7 @@ static int ReliefParseProc(clientData, interp, tkwin, avalue, widRec,offset)
 {
     Tix_Relief * ptr = (Tix_Relief *)(widRec + offset);
     Tix_Relief   newVal;
-    char *value = LangString(avalue);
+    char *value = Tcl_GetString(avalue);
 
     if (value != NULL) {
 	size_t len = strlen(value);
@@ -728,7 +731,7 @@ static int ReliefParseProc(clientData, interp, tkwin, avalue, widRec,offset)
     return TCL_ERROR;
 }
 
-static Arg 
+static Arg
 ReliefPrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
     ClientData clientData;
     Tk_Window tkwin;
@@ -839,16 +842,16 @@ TixComputeTextGeometry(font, string, numChars, wrapLength,
     Tk_TextLayout textLayout;
 
     /*
-     * The justification itself doesn't affect the geometry (size) of 
+     * The justification itself doesn't affect the geometry (size) of
      * the text string. We pass TK_JUSTIFY_LEFT.
      */
 
     textLayout = Tk_ComputeTextLayout(font,
-	string, numChars, wrapLength, TK_JUSTIFY_LEFT, 0,
+	string, -1, wrapLength, TK_JUSTIFY_LEFT, 0,
 	widthPtr, heightPtr);
     Tk_FreeTextLayout(textLayout);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -891,7 +894,7 @@ TixDisplayText(display, drawable, font, string, numChars, x, y,
     int dummy;
 
     textLayout = Tk_ComputeTextLayout(font,
-	string, numChars, length, justify, 0,
+	string, -1, length, justify, 0,
 	&dummy, &dummy);
 
     Tk_DrawTextLayout(display, drawable, gc, textLayout,
@@ -910,7 +913,7 @@ TixDisplayText(display, drawable, font, string, numChars, x, y,
  */
 
 typedef void (Tcl_FreeInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
-typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *srcPtr, 
+typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *srcPtr,
         struct Tcl_Obj *dupPtr));
 typedef void (Tcl_UpdateStringProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
 typedef int (Tcl_SetFromAnyProc) _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1032,7 +1035,7 @@ TixGetStringFromObj(objPtr, lengthPtr)
 	return (char *) NULL;
     }
 #ifdef _LANG
-    objPtr = Tcl_GetStringFromObj(obj,lengthPtr); 
+    objPtr = Tcl_GetStringFromObj(obj,lengthPtr);
     if (*lengthPtr)
      return NULL;
     return objPtr;

@@ -12,11 +12,11 @@ Achim Bohnet <ach@mpe.mpg.de>
 >	I still have my Tk402.004 html documents here and they include
 >the update.htm file, but I do not see an update document in the latest
 >Tk800.008 distribution.  Are there some documents missing from the
->latest distribution? 
+>latest distribution?
 
 Oh dear what has happened here?
 The update and idletask fragments were merged into Widget.pod (I thought),
-and then the update.pod disposed of. But looks like something has lost 
+and then the update.pod disposed of. But looks like something has lost
 the stuff from Widget.pod :-(
 --------------------------------------
 
@@ -62,7 +62,7 @@ the time to post your solution to the perl/Tk mailing
 list ptk@lists.stanford.edu.  So other can find it later
 in the list archive http://www.xray.mpe.mpg.de/mailing-lists/ptk/
 If it's a common problem this may be even enough to enhance/extend
-the perl/Tk FAQ 
+the perl/Tk FAQ
 
 But wait there is more you can do without much afford:
 
@@ -103,7 +103,7 @@ Simply send mail to ptk
 UserGuild.pod
 =============
 
-section Item creation:  Toplevel exception is a bit ambigious.  
+section Item creation:  Toplevel exception is a bit ambigious.
 Before talks about 'visual' inclusion.  (Nevertheless Toplevel
 is a child of the parent widget even is visual not true).
 
@@ -192,7 +192,7 @@ Achim Bohnet <ach@mpe.mpg.de> writes:
 >Are there other places where pTk has more options than tcltk that
 >are waiting to be documented?
 
-Not many, but I would not be surprised. 
+Not many, but I would not be surprised.
 
 HList and TList elements have -data too.
 
@@ -291,7 +291,7 @@ one.two|
 Wm.pod (BUG?)
 ======
 
-Eh? What's that? 	
+Eh? What's that?
 
 ptksh> print "okay\n\n" if defined($mw->wm('aspect') )
 ptksh> print "okay\n\n" if ("" eq $mw->wm('aspect') )
@@ -306,23 +306,23 @@ Image stuff:
 
 	o ?? Extract standard constructor options like -file, -data into
 	  Tk::Image/"STANDARD OPTIONS"
-	o same for common method, e.g., type() 
+	o same for common method, e.g., type()
 	o Use $image or $bitmap, $photo, $pixmap (like $widget and $text, ...)
 
 	o DefineBitmap shares names between mainwindows and croak on dubl. names
 	  (See e.g., Tk::Numentry)
 
 Dunnigan,Jack [Edm] wrote:
-> 
+>
 > How does one ingest a bitmap into an icon for a perl/Tk application?
-> 
+>
 > The reference guide has:
-> 
+>
 >         $main->iconbitmap(?bitmap?);
-> 
+>
 > but I'm unsure as to what form (?bitmap?) should be written?
 > My full path name to the file is: /users/im/perlscripts/image/pirep.bmp
-> 
+>
 > Can someone show me the proper format?
 
 You need an X11 bitmap (typical "externsion" is .xbm):
@@ -352,11 +352,11 @@ SYNTAX:
 	(?I<switches>,? I<pattern, index, >?I<stopIndex>?)
     should be IMO
 	(?I<switches>,? I<pattern, index>?, I<stopIndex>?)
-    But first ,? is correct second isn't.   !!!!	
+    But first ,? is correct second isn't.   !!!!
 
   o Inconsistency in submethod describtion some one methSub, I've
     added some meth('sub'.. and methSub, other use only methSub
-    
+
 MARKUP:
 ======
 	still lot of   $widget  instead of I<$widget>	Maybe still
@@ -437,7 +437,7 @@ o $w->BackTrace not mentioned/explained.  Should it be mentioned?
 
 
 o what to do with 'command Tk::Error'?  Use  'method  Tk::Error'?
-  (Hmm Tk.pm provides default Tk::Error so $w->Tk::Error(...) 
+  (Hmm Tk.pm provides default Tk::Error so $w->Tk::Error(...)
   is effectively always the same as Tk::Error($w,...)   So it would
   IMO make more sense to write  'Tk::Error subroutine'  or use 'Error
   method'.
@@ -473,7 +473,7 @@ Geometry manager:
 		o make undocumented/partial impl. 'spring' invisible
 		  and a add TODO ???
 		o add a intro I<-side>, I<-side>B<spring>, -pad<side> so one
-		  faster sees what's going on 
+		  faster sees what's going on
 		o check TRUE FALSE return of formCheck
 		o try formGrid.  the description seem wrong. Missing 'not'?
 		o check form(-top... -left...) != form(-left...-top...)
@@ -493,7 +493,7 @@ composite:
 
 	o note that ..$opt=delete $args->{-opt}.. handles const.
 	  only options is confusing. a) There would not be a
-	  'readonly' option as for -class, visual, ... 
+	  'readonly' option as for -class, visual, ...
 	  Using CreateArgs does not work for composites, cries
 	  for a support method  (where=READONLY in configspec?)
 	o Add skeleton of a Frame based composite?
@@ -504,7 +504,7 @@ callbacks:
 	  especially they are not (?) useable in ClassInit
 	o add some more 'normal' callback examples.
 	o 'pronouce' that the actual arguments list passed to a
-	   callback may differ. 
+	   callback may differ.
 	o Then concentate 'special' handling of a bind callback in
 	  it's own section.
 	o Describe how emulate bind in your callback handling
@@ -538,7 +538,7 @@ Text:
 
 o Intentional(?):
 	o Tag and Tags not documented (doc for Text::Tag?)
-	o TIE interface undocumented 
+	o TIE interface undocumented
 
 o Go through EMB IMAGE and image method stuff
 

@@ -2,10 +2,10 @@
 use IO::File;
 
 while (<>)
- {                  
+ {
   last if /^static int perl_init()/;
   print;
- }                   
+ }
 
 my @head = ($_);
 
@@ -26,7 +26,7 @@ sub new_chunk
  ++$name;
  print "static void Chunk_$name (void)\n{\n";
  push(@head,"\tChunk_$name();\n");
- $count = 0;              
+ $count = 0;
 }
 
 while (<>)
@@ -38,7 +38,7 @@ while (<>)
    {
     while (<>)
      {
-      print; 
+      print;
       $count++;
       last if /^\t+\}/;
      }

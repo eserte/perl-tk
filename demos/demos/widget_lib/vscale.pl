@@ -22,7 +22,7 @@ sub vscale {
     $canvas->create(qw/polygon 0 0 1 1 2 2 -fill SeaGreen3 -tags poly/);
     $canvas->create(qw/line 0 0 1 1 2 2 0 0 -fill black -tags line/);
 
-    my $scale = $frame->Scale(qw/-orient vertical -length 284 -from 0 
+    my $scale = $frame->Scale(qw/-orient vertical -length 284 -from 0
         -to 250 -tickinterval 50 -command/ => [\&vscale_height, $canvas]);
     $scale->set(75);
 

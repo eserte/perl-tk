@@ -23,7 +23,7 @@ sub bitmaps {
 } # end bitmaps
 
 sub bitmaps_row {
- 
+
     # The procedure below creates a new row of bitmaps in a window.
 
     my($w, @names) = @_;

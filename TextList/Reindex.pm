@@ -2,7 +2,7 @@ package Tk::Reindex;
 
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/TextList/Reindex.pm#2 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/TextList/Reindex.pm#2 $
 
 use Tk;
 use base qw(Tk::Derived);

@@ -8,10 +8,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnixDialog.c,v 1.2 1998/09/14 18:23:55 stanton Exp $
+ * RCS: @(#) $Id: tkUnixDialog.c,v 1.3 2001/08/01 16:21:12 dgp Exp $
  *
  */
- 
+
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkUnixInt.h"
@@ -63,7 +63,7 @@ static int EvalArgv(interp, cmdName, argc, argv)
 	cmdArgv[0] = "auto_load";
 	cmdArgv[1] = cmdName;
 
-	if ((*cmdInfo.proc)(cmdInfo.clientData, interp, 2, cmdArgv)!= TCL_OK){ 
+	if ((*cmdInfo.proc)(cmdInfo.clientData, interp, 2, cmdArgv)!= TCL_OK){
 	    return TCL_ERROR;
 	}
 
@@ -76,15 +76,16 @@ static int EvalArgv(interp, cmdName, argc, argv)
     }
 
     return (*cmdInfo.proc)(cmdInfo.clientData, interp, argc, argv);
-}    
+}
+
 
-#else 
+#else
 
 #define EvalArgv(interp,sub,argc,args) Lang_CallWithArgs(interp,sub, argc, args)
 
 #endif
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -112,7 +113,7 @@ Tk_ChooseColorCmd(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-    return EvalArgv(interp, "tkColorDialog", argc, argv);
+    return EvalArgv(interp, "tk::ColorDialog", argc, argv);
 }
 
 /*
@@ -146,9 +147,9 @@ Tk_GetOpenFileCmd(clientData, interp, argc, argv)
     Tk_Window tkwin = (Tk_Window)clientData;
 
     if (Tk_StrictMotif(tkwin)) {
-	return EvalArgv(interp, "tkMotifFDialog", argc, argv);
+	return EvalArgv(interp, "tk::MotifFDialog", argc, argv);
     } else {
-	return EvalArgv(interp, "tkFDialog", argc, argv);
+	return EvalArgv(interp, "tk::FDialog", argc, argv);
     }
 }
 
@@ -179,9 +180,9 @@ Tk_GetSaveFileCmd(clientData, interp, argc, argv)
     Tk_Window tkwin = (Tk_Window)clientData;
 
     if (Tk_StrictMotif(tkwin)) {
-	return EvalArgv(interp, "tkMotifFDialog", argc, argv);
+	return EvalArgv(interp, "tk::MotifFDialog", argc, argv);
     } else {
-	return EvalArgv(interp, "tkFDialog", argc, argv);
+	return EvalArgv(interp, "tk::FDialog", argc, argv);
     }
 }
 
@@ -211,6 +212,6 @@ Tk_MessageBoxCmd(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-    return EvalArgv(interp, "tkMessageBox", argc, argv);
+    return EvalArgv(interp, "tk::MessageBox", argc, argv);
 }
 

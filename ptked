@@ -6,7 +6,7 @@ use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#23 $
+$VERSION = '3.006'; # $Id: //depot/Tkutf8/ptked#3 $
 
 my %opt;
 INIT
@@ -53,10 +53,25 @@ INIT
 use Tk;
 use Tk::DropSite qw(XDND KDE Sun);
 use Tk::DragDrop qw(XDND KDE Sun);
-use Tk::widgets qw(TextUndo Scrollbar Menu);
+use Tk::widgets qw(TextUndo Scrollbar Menu Dialog);
 use Getopt::Std;
 # use Tk::ErrorDialog;
 
+{
+ package Tk::TextUndoPtked;
+ @Tk::TextUndoPtked::ISA = qw(Tk::TextUndo);
+ Construct Tk::Widget 'TextUndoPtked';
+ sub Save {
+  my $w = shift;
+  $w->SUPER::Save(@_);
+  $w->toplevel->title($w->FileName);
+ }
+ sub Load {
+  my $w = shift;
+  $w->SUPER::Load(@_);
+  $w->toplevel->title($w->FileName);
+ }
+}
 
 my $top = MainWindow->new();
 
@@ -90,10 +105,10 @@ Tk::Event::HandleSignals();
 $SIG{'INT'} = sub { $top->WmDeleteWindow };
 
 $top->iconify;
-$top->optionAdd('*TextUndo.Background' => '#fff5e1');
+$top->optionAdd('*TextUndoPtked.Background' => '#fff5e1');
 $top->fontCreate('ptked',-family => 'courier', -size => ($^O eq 'MSWin32' ? 11 : -12),
                  -weight => 'normal', -slant => 'roman');
-$top->optionAdd('*TextUndo.Font' => 'ptked');
+$top->optionAdd('*TextUndoPtked.Font' => 'ptked');
 
 foreach my $file (@ARGV)
  {
@@ -128,9 +143,11 @@ sub Create_Edit
  $ed->withdraw;
  $top->{'Edits'}++;
  $ed->OnDestroy([\&RemoveEdit,$top]);
- my $t = $ed->Scrolled('TextUndo', -wrap => 'none', -scrollbars => 'osre');
+ my $t = $ed->Scrolled('TextUndoPtked', -wrap => 'none', 
+           -scrollbars => 'se', # both required till optional fixed!
+         );
  $t->pack(-expand => 1, -fill => 'both');
- $t = $t->Subwidget('textundo');
+ $t = $t->Subwidget('scrolled');
  my $menu = $t->menu;
  $menu->cascade(-label => '~Help', -menuitems => [
                 [Button => '~About...', -command => [\&About,$ed]],
@@ -262,11 +279,12 @@ sub AskFind
 sub About
 {
  my $mw = shift;
+ 
  $mw->Dialog(-text => <<"END",-popover => $mw)->Show;
 $0 version $VERSION
 perl$]/Tk$Tk::VERSION
 
-Copyright © 1995-2000 Nick Ing-Simmons. All rights reserved.
+Copyright © 1995-2002 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 END
@@ -287,6 +305,9 @@ S<  >B<ptked> [I<file-to-edit>]
 B<ptked> is a simple text editor based on perl/Tk's TextUndo widget.
 
 =cut
+
+
+
 
 
 

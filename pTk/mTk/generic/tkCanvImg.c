@@ -4,12 +4,12 @@
  *	This file implements image items for canvas widgets.
  *
  * Copyright (c) 1994 The Regents of the University of California.
- * Copyright (c) 1994-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkCanvImg.c,v 1.2 1998/09/14 18:23:05 stanton Exp $
+ * RCS: @(#) $Id: tkCanvImg.c,v 1.5 2002/08/05 04:30:38 dgp Exp $
  */
 
 #include "tkInt.h"
@@ -47,8 +47,8 @@ typedef struct ImageItem  {
  */
 
 static Tk_CustomOption stateOption = {
-    Tk_StateParseProc,
-    Tk_StatePrintProc, (ClientData) 2
+    TkStateParseProc,
+    TkStatePrintProc, (ClientData) 2
 };
 static Tk_CustomOption tagsOption = {
     Tk_CanvasTagsParseProc,
@@ -86,7 +86,7 @@ static void		ImageChangedProc _ANSI_ARGS_((ClientData clientData,
 			    int imgHeight));
 static int		ImageCoords _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    char **argv));
+			    Tcl_Obj *CONST objv[]));
 static int		ImageToArea _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, double *rectPtr));
 static double		ImageToPoint _ANSI_ARGS_((Tk_Canvas canvas,
@@ -97,10 +97,10 @@ static void		ComputeImageBbox _ANSI_ARGS_((Tk_Canvas canvas,
 			    ImageItem *imgPtr));
 static int		ConfigureImage _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    char **argv, int flags));
+			    Tcl_Obj *CONST objv[], int flags));
 static int		CreateImage _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
-			    int argc, char **argv));
+			    int argc, Tcl_Obj *CONST objv[]));
 static void		DeleteImage _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, Display *display));
 static void		DisplayImage _ANSI_ARGS_((Tk_Canvas canvas,
@@ -126,7 +126,7 @@ Tk_ItemType tkImageType = {
     ImageCoords,			/* coordProc */
     DeleteImage,			/* deleteProc */
     DisplayImage,			/* displayProc */
-    TK_ITEM_VISITOR_SUPPORT|TK_CONFIG_OBJS,/* flags */
+    TK_CONFIG_OBJS,			/* flags */
     ImageToPoint,			/* pointProc */
     ImageToArea,			/* areaProc */
     ImageToPostscript,	                /* postscriptProc */
@@ -138,12 +138,8 @@ Tk_ItemType tkImageType = {
     (Tk_ItemInsertProc *) NULL,		/* insertProc */
     (Tk_ItemDCharsProc *) NULL,		/* dTextProc */
     (Tk_ItemType *) NULL,		/* nextPtr */
-    (Tk_ItemBboxProc *) ComputeImageBbox,/* bboxProc */
-    Tk_Offset(Tk_VisitorType, visitImage), /* acceptProc */
-    (Tk_ItemGetCoordProc *) NULL,	/* getCoordProc */
-    (Tk_ItemSetCoordProc *) NULL	/* setCoordProc */
 };
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -155,7 +151,7 @@ Tk_ItemType tkImageType = {
  * Results:
  *	A standard Tcl return value.  If an error occurred in
  *	creating the item, then an error message is left in
- *	interp->result;  in this case itemPtr is left uninitialized,
+ *	the interp's result;  in this case itemPtr is left uninitialized,
  *	so it can be safely freed by the caller.
  *
  * Side effects:
@@ -165,13 +161,13 @@ Tk_ItemType tkImageType = {
  */
 
 static int
-CreateImage(interp, canvas, itemPtr, argc, argv)
+CreateImage(interp, canvas, itemPtr, argc, objv)
     Tcl_Interp *interp;			/* Interpreter for error reporting. */
     Tk_Canvas canvas;			/* Canvas to hold new item. */
     Tk_Item *itemPtr;			/* Record to hold new item;  header
 					 * has been initialized by caller. */
     int argc;				/* Number of arguments in argv. */
-    char **argv;			/* Arguments describing rectangle. */
+    Tcl_Obj *CONST objv[];		/* Arguments describing rectangle. */
 {
     ImageItem *imgPtr = (ImageItem *) itemPtr;
     int i;
@@ -224,7 +220,7 @@ CreateImage(interp, canvas, itemPtr, argc, argv)
     DeleteImage(canvas, itemPtr, Tk_Display(Tk_CanvasTkwin(canvas)));
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -235,7 +231,7 @@ CreateImage(interp, canvas, itemPtr, argc, argv)
  *	details on what it does.
  *
  * Results:
- *	Returns TCL_OK or TCL_ERROR, and sets interp->result.
+ *	Returns TCL_OK or TCL_ERROR, and sets the interp's result.
  *
  * Side effects:
  *	The coordinates for the given item may be changed.
@@ -244,18 +240,17 @@ CreateImage(interp, canvas, itemPtr, argc, argv)
  */
 
 static int
-ImageCoords(interp, canvas, itemPtr, argc, argv)
+ImageCoords(interp, canvas, itemPtr, argc, objv)
     Tcl_Interp *interp;			/* Used for error reporting. */
     Tk_Canvas canvas;			/* Canvas containing item. */
     Tk_Item *itemPtr;			/* Item whose coordinates are to be
 					 * read or modified. */
     int argc;				/* Number of coordinates supplied in
 					 * argv. */
-    char **argv;			/* Array of coordinates: x1, y1,
+    Tcl_Obj *CONST objv[];		/* Array of coordinates: x1, y1,
 					 * x2, y2, ... */
 {
     ImageItem *imgPtr = (ImageItem *) itemPtr;
-    char x[TCL_DOUBLE_SPACE];
 
     if (argc == 0) {
 	Tcl_Obj *obj = Tcl_NewObj();
@@ -266,12 +261,13 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
 	Tcl_SetObjResult(interp, obj);
     } else if (argc < 3) {
 	if (argc==1) {
-	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, &objv) != TCL_OK) {
+	    if (Tcl_ListObjGetElements(interp, objv[0], &argc, (Tcl_Obj ***)&objv) != TCL_OK) {
 		return TCL_ERROR;
 	    } else if (argc != 2) {
-		sprintf(x,"%d",argc);
-		Tcl_AppendResult(interp, "wrong # coordinates: expected 2, got ",
-		x, (char *) NULL);
+		char buf[64];
+
+		sprintf(buf, "wrong # coordinates: expected 2, got %d", argc);
+		Tcl_SetResult(interp, buf, TCL_VOLATILE);
 		return TCL_ERROR;
 	    }
 	}
@@ -282,14 +278,15 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
 	}
 	ComputeImageBbox(canvas, imgPtr);
     } else {
-	sprintf(x,"%d",argc);
-	Tcl_AppendResult(interp, "wrong # coordinates: expected 0 or 2, got ",
-	x, (char *) NULL);
+	char buf[64];
+
+	sprintf(buf, "wrong # coordinates: expected 0 or 2, got %d", argc);
+	Tcl_SetResult(interp, buf, TCL_VOLATILE);
 	return TCL_ERROR;
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -300,7 +297,7 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
  *
  * Results:
  *	A standard Tcl result code.  If an error occurs, then
- *	an error message is left in interp->result.
+ *	an error message is left in the interp's result.
  *
  * Side effects:
  *	Configuration information may be set for itemPtr.
@@ -309,12 +306,12 @@ ImageCoords(interp, canvas, itemPtr, argc, argv)
  */
 
 static int
-ConfigureImage(interp, canvas, itemPtr, argc, argv, flags)
+ConfigureImage(interp, canvas, itemPtr, argc, objv, flags)
     Tcl_Interp *interp;		/* Used for error reporting. */
     Tk_Canvas canvas;		/* Canvas containing itemPtr. */
     Tk_Item *itemPtr;		/* Image item to reconfigure. */
     int argc;			/* Number of elements in argv.  */
-    char **argv;		/* Arguments describing things to configure. */
+    Tcl_Obj *CONST objv[];	/* Arguments describing things to configure. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
     ImageItem *imgPtr = (ImageItem *) itemPtr;
@@ -322,8 +319,8 @@ ConfigureImage(interp, canvas, itemPtr, argc, argv, flags)
     Tk_Image image;
 
     tkwin = Tk_CanvasTkwin(canvas);
-    if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, argv,
-	    (char *) imgPtr, flags|TK_CONFIG_OBJS) != TCL_OK) {
+    if (TCL_OK != Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, 
+	    argv, (char *) imgPtr, flags|TK_CONFIG_OBJS)) {
 	return TCL_ERROR;
     }
 
@@ -381,7 +378,7 @@ ConfigureImage(interp, canvas, itemPtr, argc, argv, flags)
     ComputeImageBbox(canvas, imgPtr);
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -427,7 +424,7 @@ DeleteImage(canvas, itemPtr, display)
 	Tk_FreeImage(imgPtr->disabledImage);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -527,7 +524,7 @@ ComputeImageBbox(canvas, imgPtr)
     imgPtr->header.x2 = x + width;
     imgPtr->header.y2 = y + height;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -585,7 +582,7 @@ DisplayImage(canvas, itemPtr, display, drawable, x, y, width, height)
     Tk_RedrawImage(image, x - imgPtr->header.x1, y - imgPtr->header.y1,
 	    width, height, drawable, drawableX, drawableY);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -642,7 +639,7 @@ ImageToPoint(canvas, itemPtr, coordPtr)
 
     return hypot(xDiff, yDiff);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -687,7 +684,7 @@ ImageToArea(canvas, itemPtr, rectPtr)
     }
     return 0;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -720,9 +717,6 @@ ImageToPostscript(interp, canvas, itemPtr, prepass)
 					 * collect font information;  0 means
 					 * final Postscript is being created.*/
 {
-#if defined(__WIN32__) || defined(MAC_TCL)
-    return TCL_OK;
-#else
     ImageItem *imgPtr = (ImageItem *)itemPtr;
     Tk_Window canvasWin = Tk_CanvasTkwin(canvas);
 
@@ -775,9 +769,8 @@ ImageToPostscript(interp, canvas, itemPtr, prepass)
 
     return Tk_PostscriptImage(image, interp, canvasWin,
 	    ((TkCanvas *) canvas)->psInfo, 0, 0, width, height, prepass);
-#endif
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -811,7 +804,7 @@ ScaleImage(canvas, itemPtr, originX, originY, scaleX, scaleY)
     imgPtr->y = originY + scaleY*(imgPtr->y - originY);
     ComputeImageBbox(canvas, imgPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -843,7 +836,7 @@ TranslateImage(canvas, itemPtr, deltaX, deltaY)
     imgPtr->y += deltaY;
     ComputeImageBbox(canvas, imgPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -893,3 +886,4 @@ ImageChangedProc(clientData, x, y, width, height, imgWidth, imgHeight)
 	    imgPtr->header.y1 + y, (int) (imgPtr->header.x1 + x + width),
 	    (int) (imgPtr->header.y1 + y + height));
 }
+

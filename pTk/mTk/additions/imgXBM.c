@@ -41,11 +41,11 @@ typedef struct ParseInfo {
  * The format record for the XBM file format:
  */
 
-static int		ChnMatchXBM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+static int		ChnMatchXBM _ANSI_ARGS_((Tcl_Channel chan,
 			    Tcl_Obj *fileName, Tcl_Obj *format, int *widthPtr,
-			    int *heightPtr));
-static int      	ObjMatchXBM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *data,
-		            Tcl_Obj *format, int *widthPtr, int *heightPtr));
+			    int *heightPtr, Tcl_Interp *interp));
+static int      	ObjMatchXBM _ANSI_ARGS_((Tcl_Obj *data,
+		            Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
 static int		ChnReadXBM  _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Channel chan, Tcl_Obj *fileName,
 			    Tcl_Obj *format, Tk_PhotoHandle imageHandle,
@@ -107,13 +107,13 @@ static int	NextBitmapWord _ANSI_ARGS_((ParseInfo *parseInfoPtr));
  *----------------------------------------------------------------------
  */
 static int
-ObjMatchXBM(interp, data, format, widthPtr, heightPtr)
-    Tcl_Interp *interp;
+ObjMatchXBM(data, format, widthPtr, heightPtr, interp)
     Tcl_Obj *data;		/* The data supplied by the image */
     Tcl_Obj *format;		/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XBM file. */
+    Tcl_Interp *interp;
 {
     ParseInfo parseInfo;
 
@@ -145,14 +145,14 @@ ObjMatchXBM(interp, data, format, widthPtr, heightPtr)
  */
 
 static int
-ChnMatchXBM(interp, chan, fileName, format, widthPtr, heightPtr)
-    Tcl_Interp *interp;
+ChnMatchXBM(chan, fileName, format, widthPtr, heightPtr, interp)
     Tcl_Channel chan;		/* The image channel, open for reading. */
     Tcl_Obj *fileName;		/* The name of the image file. */
     Tcl_Obj *format;		/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XBM file. */
+    Tcl_Interp *interp;
 {
     ParseInfo parseInfo;
 
@@ -163,7 +163,7 @@ ChnMatchXBM(interp, chan, fileName, format, widthPtr, heightPtr)
 
     return ReadXBMFileHeader(&parseInfo, widthPtr, heightPtr);
 }
-
+
 
 /*
  *----------------------------------------------------------------------
@@ -266,7 +266,7 @@ CommonReadXBM(interp, parseInfo, format, imageHandle, destX, destY,
     ckfree((char *) data);
     return TCL_OK;
 }
-
+
 
 /*
  *----------------------------------------------------------------------
@@ -566,7 +566,7 @@ ChnWriteXBM(interp, fileName, format, blockPtr)
  *
  *----------------------------------------------------------------------
  */
-static int	
+static int
 StringWriteXBM(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
@@ -619,7 +619,7 @@ CommonWriteXBM(interp, fileName, dataPtr, format, blockPtr)
     Tcl_Channel chan = (Tcl_Channel) NULL;
     char buffer[256];
     unsigned char *pp;
-    int x, y, i, value, mask;
+    int x, y, value, mask;
     int sep = ' ';
     int alphaOffset;
     char *p = NULL;
@@ -687,8 +687,7 @@ static char %s_bits[] = {\n";
 	    } else {
 		/* make transparent pixel */
 	    }
-	    pp += blockPtr->pixelSize;	
-	    i++;
+	    pp += blockPtr->pixelSize;
 	    mask <<= 1;
 	    if (mask >= 256)
              {

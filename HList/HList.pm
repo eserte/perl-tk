@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = '3.037'; # $Id: //depot/Tk8/HList/HList.pm#37 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/HList/HList.pm#8 $
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -77,6 +77,9 @@ sub ClassInit
  $mw->bind($class,'<space>',  ['KeyboardBrowse']);
  $mw->bind($class,'<Home>',   ['KeyboardHome']);
  $mw->bind($class,'<End>',    ['KeyboardEnd']);
+
+ $mw->YMouseWheelBind($class);
+ $mw->XMouseWheelBind($class);
 
  return $class;
 }
@@ -665,4 +668,5 @@ sub children
 }
 
 1;
+
 

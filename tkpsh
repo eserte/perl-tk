@@ -6,7 +6,7 @@ use Tk;
 
 {package WrapMain;
  sub new
- { 
+ {
   my $class = shift;
   my $mw = $::mw;
   $mw->configure(@_) if @_;
@@ -40,12 +40,12 @@ sub doline
    $mw->destroy;
   }
  else
-  { 
-   if ($line =~ /^p\s(.*)$/) 
-    {              
+  {
+   if ($line =~ /^p\s(.*)$/)
+    {
      $line = "print $1, \"!\\n\";";
-    }              
-   eval $line;     
+    }
+   eval $line;
    print "$@\n" if $@;
    print "tkpsh> ";
   }

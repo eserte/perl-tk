@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixList.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixList.c --
  *
  *	Implements easy-to-use link lists.
@@ -104,7 +107,7 @@ void Tix_LinkListNext(infoPtr, lPtr, liPtr)
     liPtr->last = liPtr->curr;
     liPtr->curr = NEXT(infoPtr, liPtr->curr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * Tix_LinkListDelete --
@@ -167,7 +170,7 @@ Tix_LinkListDelete(infoPtr, lPtr, liPtr)
 
     liPtr->deleted = 1;
 }
-
+
 /*----------------------------------------------------------------------
  *  Tix_LinkListInsert --
  *
@@ -214,7 +217,7 @@ void Tix_LinkListInsert(infoPtr, lPtr, itemPtr, liPtr)
     }
     ++ lPtr->numItems;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_LinkListFindAndDelete --
  *

@@ -1,4047 +1,786 @@
-Change 1860 on 2000/05/13 by nick@bactrian
+Change 2385 on 2002/04/11 by nick@bactrian
 
-	Avoid goto xError which upsets one compiler.
+	Keep tix's argument order but use our GetStyleTable() scheme.
 
-Change 1859 on 2000/05/13 by nick@bactrian
+Change 2384 on 2002/04/11 by nick@bactrian
 
-	Doc patch for progress bar
+	Raw merge of tix-8.1.3
 
-Change 1857 on 2000/05/02 by nick@bactrian
+Change 2382 on 2002/04/10 by nick@nick-w2k
 
-	FileSelect -regexp enhancement from Helmut Jarausch
+	Win32-isms part 1 of who can guess...
 
-Change 1856 on 2000/05/02 by nick@pluto
+Change 2381 on 2002/04/09 by nick@bactrian
 
-	See end on tied Text if yview is appropriate.
+	Aliases for Dan's current Encode module
 
-Change 1855 on 2000/05/02 by nick@pluto
+Change 2380 on 2002/04/09 by nick@bactrian
 
-	Allow createGroup in Canvas
+	tkGrid gross issues
 
-Change 1853 on 2000/05/01 by nick@bactrian
+Change 2379 on 2002/04/09 by nick@dromedary
 
-	Tidy MANIFEST for patch posting
+	Experimental tweak to UnixFont and test sanity
 
-Change 1851 on 2000/04/30 by nick@bactrian
+Change 2378 on 2002/04/05 by nick@dromedary
 
-	More -offset default fallout.
+	Fix after (needed more type emulation)
 
-Change 1849 on 2000/04/30 by nick@bactrian
+Change 2376 on 2002/04/05 by nick@dromedary
 
-	Checkin -MO=Script (B::Script) based version of script-to-exec tool
+	Some sanity in font handling
 
-Change 1848 on 2000/04/29 by nick@bactrian
+Change 2375 on 2002/04/05 by nick@dromedary
 
-	Do not rely on 'use base' to load XS modules - it is booled by static linked
-	XS code.
+	Use flags forms of to/from UTF-8 (5.7+) and enable tolerance.
 
-Change 1847 on 2000/04/29 by nick@bactrian
+Change 2374 on 2002/04/04 by nick@dromedary
 
-	Fix -offset defaults to match new parse code.
+	Start some serious Unicode testing
 
-Change 1846 on 2000/04/29 by nick@bactrian
+Change 2373 on 2002/04/04 by nick@dromedary
 
-	Slaven's patches and suggestions.
-	 HList Double binding
-	 BrowseEntry hash tolerance
-	 -dash bug fix
+	Avoid skipping -format which Tcl/Tk has "parsed" long hand...
 
-Change 1845 on 2000/04/29 by nick@bactrian
+Change 2372 on 2002/04/04 by nick@dromedary
 
-	Increment to 800.022
+	basic_demo (tweaked) runs without core dumps.
+	All but t/fbox.t pass.
+	Needed to fix UnixWm to cope with images of zero size (not allocate Pixmap
+	but still free Image).
+	Tk::Font is interfering with Tcl_Obj fonts. For now just caches Tk_font
+	and avoids freeing it as it does not have a legitimate ref to it.
 
-Change 1844 on 2000/04/29 by nick@bactrian
+Change 2371 on 2002/04/04 by nick@dromedary
 
-	More pseudo-compile tweaks
+	Fixup list returns
 
-Change 1843 on 2000/04/29 by nick@bactrian
+Change 2370 on 2002/04/04 by nick@dromedary
 
-	Correct octal escape, allow perl command line flags
+	Avoid warning for malloc leak - breaks tests
+	#undef JOIN (threads) collides with tcl.h
 
-Change 1842 on 2000/04/28 by nick@bactrian
+Change 2369 on 2002/04/04 by nick@dromedary
 
-	Use writemain() and avoid using B::* to try and get load file name.
-	(Works with 5.005_03, 5.6.0 and ithreaded 5.6.0.)
+	Integrate fileevent recursion fix from Tk800
+	Integrate .pm changes from Tk800
 
-Change 1841 on 2000/04/28 by nick@pluto
+Change 2368 on 2002/04/04 by nick@dromedary
 
-	More tweaks for pseudo-compile
+	Fake more Tcl_Obj type stuff
 
-Change 1840 on 2000/04/28 by nick@pluto
+Change 2366 on 2002/04/04 by nick@dromedary
 
-	Preload and bootstrap support
+	t/create.t runs without core-dumps.
+	Still an issue with OptionMenu -options.
 
-Change 1839 on 2000/04/28 by nick@bactrian
+Change 2365 on 2002/04/01 by nick@dromedary
 
-	Add 1st pass script2c
+	'tiny' loads and runs
 
-Change 1838 on 2000/04/27 by nick@pluto
+Change 2364 on 2002/04/01 by nick@dromedary
 
-	Add Serial.pm to depot.
+	Tk.so loads (still core dumps but hey its a start...)
 
-Change 1837 on 2000/04/27 by nick@bactrian
+Change 2363 on 2002/04/01 by nick@dromedary
 
-	VERSION edits (p4 client on work machine will not run add_version script).
+	pTk sub-dir compiles
 
-Change 1836 on 2000/04/27 by nick@pluto
+Change 2362 on 2002/03/31 by nick@bactrian
 
-	Tweaks for "compile" to flat script:
-	 Avoid "use base qw(Tk::Clipboard ...)" calling Tk::Clipboard() !
-	 Don't AUTOLOAD ClassInit subs
-	 require a few modules a compile time.
+	Missed files
 
-Change 1835 on 2000/04/23 by nick@bactrian
+Change 2361 on 2002/03/31 by nick@bactrian
 
-	LabFrame tinkering
+	Porting part1 of N (move process to faster machine)
 
-Change 1834 on 2000/04/23 by nick@bactrian
+Change 2358 on 2002/03/17 by nick@bactrian
 
-	Make NoteBook.pm match the tidied up C code.
+	Integrate tcl/tk 8.4a3
 
-Change 1829 on 2000/04/21 by nick@bactrian
+Change 2353 on 2002/03/16 by nick@bactrian
 
-	Final(?) VERSION update for 800.021
+	Integrate tcl8.3.4 and tk8.3.4
 
-Change 1828 on 2000/04/21 by nick@linux
+Change 2352 on 2002/03/16 by nick@bactrian
 
-	Perl5.00404 noise abatement due to non-autoquote.
+	Remove iconimage to aid merge
 
-Change 1827 on 2000/04/21 by nick@bactrian
+Change 2351 on 2002/03/16 by nick@bactrian
 
-	Release prep for 800.021
+	Wtitepsace normalize
 
-Change 1826 on 2000/04/21 by nick@bactrian
+Change 2225 on 2001/05/22 by nick@dromedary
 
-	A few more sprintf's converted to return int SVs directly
+	Integrate perl code from Tk800.023+
 
-Change 1825 on 2000/04/21 by nick@bactrian
+Change 2172 on 2001/04/07 by nick@dromedary
 
-	Fix REFCNT botch which has been plaguing us for so long.
+	Minor iso-10646-1 speedup
 
-Change 1824 on 2000/04/20 by nick@pluto
+Change 2171 on 2001/04/07 by nick@dromedary
 
-	Use private handle for reading director for FBox
+	Integrate PerlIO fix
 
-Change 1823 on 2000/04/20 by nick@pluto
+Change 2166 on 2001/04/04 by nick@bactrian
 
-	Attempting to debug PERL_DESTRUCT_LEVEL=3 issues.
-	Seems to SEGFAULT during exit of t/fbox.t (Linux and Solaris2.7,
-	perl5.005_03). 
-	
-	Two more exit cleanup attempts:
-	1. Stop using raw sharepvn() for Tk_GetUid() so we 
-	   don't get all the refcount issues with string table.
-	2. Remove (redundant?) self-reference in Tcl_TraceVar* 'U' magic.
+	Tweak for warning-less build (-Werror) against
+	current XFree86's Xlib.h
 
-Change 1822 on 2000/04/15 by nick@linux
+Change 2165 on 2001/04/04 by nick@bactrian
 
-	'Too late for INIT hackery for Event.xs'
+	Integrate changes made to Tk8 branch
 
-Change 1821 on 2000/04/15 by nick@bactrian
+Change 2162 on 2001/03/29 by nick@dromedary
 
-	Re-enable B::C compile (at least with 5.00503)
+	Perl5.7.* tolerance.
 
-Change 1820 on 2000/04/10 by nick@bactrian
+Change 2160 on 2001/03/28 by nick@dromedary
 
-	Fix new Optionmenu to not call callback unless it is
-	setting value or FBox at least goes into a loop.
-	Also remove work-round for old Optionmenu behaviour from FBox
+	Integrate MULTIPLICTY tweak from Tk800.
 
-Change 1819 on 2000/04/10 by nick@pluto
+Change 2112 on 2001/01/27 by nick@dromedary
 
-	Add aliases to BrowseEntry config options to make it more like Optionmenu.
-	Make both Optionmenu and BrowseEntry honour incoming -textvariable
-	if valid, but re-set it if -options set to list which 
-	does not include it.
+	Avoid utf8-isms on old perls.
 
-Change 1818 on 2000/04/07 by nick@bactrian
+Change 2106 on 2001/01/01 by nick@dromedary
 
-	Avoid use of undef when Entry part of BrowseEntry gets
-	ButtonMotion events.
+	Various utf8 fixes.
 
-Change 1815 on 2000/04/05 by nick@pluto
+Change 2103 on 2000/12/12 by nick@pluto
 
-	Don't hard-code /usr/local/perl
+	Obey latest utf8_to_uv prototype
 
-Change 1814 on 2000/04/03 by nick@bactrian
+Change 2102 on 2000/12/12 by nick@pluto
 
-	dTHR -> dTHX everywhere (+ fallback to dTHR if not defined).
+	Integrate perlio co-existance issue
 
-Change 1813 on 2000/04/02 by nick@bactrian
+Change 2097 on 2000/11/02 by nick@pluto
 
-	Fix typo
+	Honour hidden-ness in PostScript.
 
-Change 1812 on 2000/04/02 by nick@bactrian
+Change 2095 on 2000/11/02 by nick@pluto
 
-	Increment version to 800.021 for testing
+	Do gsave/grestore in DrawText PostScript - else its translate
+	messes other drawing ops (at least when called via a group).
 
-Change 1811 on 2000/04/02 by nick@bactrian
+Change 2093 on 2000/10/30 by nick@pluto
 
-	Win32-ish tolerance of (e.g. C:/) as path in Fbox.
+	(Failed) attempt to localize failing error propagation.
 
-Change 1810 on 2000/04/02 by nick@bactrian
+Change 2091 on 2000/10/26 by nick@pluto
 
-	Avoid READABLE/readable name clash in Event.xs for VMS.
+	Avoid using ST(0) as the scratch variable in Tk::Callback::Call
+	XS code - issue if stack moves pushing the args.
 
-Change 1809 on 2000/04/01 by nick@bactrian
+Change 2089 on 2000/10/25 by nick@pluto
 
-	Merge img1.2.3 builds and passes t/photo.t
+	Text xview/yview were not returning lists, hidden by implcit split.
 
-Change 1808 on 2000/04/01 by nick@bactrian
+Change 2088 on 2000/10/25 by nick@pluto
 
-	Raw merge of img1.2.3
+	When returning Tcl result to perl only call Tcl_ListObjGetElements
+	if value is already an array ref. Also if value is not SvOK do
+	not return any elements (ListObjGetElements did that for us
+	but now we don't call it). Otherwise things like TextUndo::Save
+	which do
+	  print FILE $t->get(...);
+	"split" the text line and we loose "\n" and other whitespace.
 
-Change 1805 on 2000/04/01 by nick@bactrian
+Change 2087 on 2000/10/19 by nick@pluto
 
-	Make patch for XrmOption tidier
+	Call update commands when item redrawn via group.
 
-Change 1804 on 2000/04/01 by nick@bactrian
+Change 2086 on 2000/10/19 by nick@pluto
 
-	Fix Tk::Xrm with multiple mainwindows
+	Ignore group issues in Tk_ItemState() or lines etc. think
+	they are hidden and set null bbox, and groups bbox is then
+	garbage.
 
-Change 1803 on 2000/03/31 by nick@bactrian
+Change 2085 on 2000/10/19 by nick@pluto
 
-	VERSION tweaks (I must automate that somehow ...)
+	Allow local $Tk::LangDebug to control debug hook.
 
-Change 1802 on 2000/03/31 by nick@bactrian
+Change 2083 on 2000/10/19 by nick@pluto
 
-	- allow ->index in TList
-	- Exist check in Table's layout method
-	- Document corner in Scrolled.
+	Avoid re-draw everything approach when a sub item of a group
+	needs to be redrawn. Instead have new flag NEEDS_DISPLAY which
+	we set on enclosing group(s).
+	Also defer calling updateCmd till end of redraw to avoid issues
+	with recusring.
 
-Change 1801 on 2000/03/31 by nick@bactrian
+Change 2082 on 2000/10/18 by nick@pluto
 
-	Various tweaks from mailbox backlog
-	- Tiler scroll behaviour
-	- remove 'use English' from demos/widget.
-	- rename configspec.pod ConfigSpecs.pod
-	- Loose MsgBox.pm
+	Allow $canvas->move regardless of group-ness (like ->coord).
 
-Change 1800 on 2000/03/31 by nick@bactrian
+Change 2078 on 2000/10/11 by nick@pluto
 
-	Dialog(Box) foreground/background propagation
-	Add <Control-underscore> as <<Undo>>
-	Protect Tiler from divide by zero
-	Avoid gcc options to non gcc.
+	Sort out merge
 
-Change 1799 on 2000/03/31 by nick@bactrian
+Change 2077 on 2000/10/11 by nick@pluto
 
-	Fix Tix style issues with multiple MainWindows.
+	Merge Tk800.*
 
-Change 1798 on 2000/03/31 by nick@bactrian
+Change 2076 on 2000/10/11 by nick@pluto
 
-	Steve's -labelXxxx patch.
-	More
+	Implement pick-through on canvas groups with -state => 'active'
 
-Change 1797 on 2000/03/30 by nick@bactrian
+Change 2074 on 2000/10/08 by nick@bactrian
 
-	Dratted $VERSION again.
+	Reinstate iso8859-1 with bleadperl.
 
-Change 1796 on 2000/03/30 by nick@bactrian
+Change 2073 on 2000/10/08 by nick@bactrian
 
-	Document and attempt to work round the -Bforcearchive issue on OpenBSD.
-	While in there restrict types of files in t directory that are considered.
+	Tweaks for AIX build
 
-Change 1794 on 2000/03/30 by nick@bactrian
+Change 2072 on 2000/10/07 by nick@bactrian
 
-	Don't create callback for BackgroundError with raw array.
+	Exclude loadables Text, Canvas, ... from Tk.so by avoiding mentioning them
+	in tkWindow.c, while still passing extra info from "commands" table.
 
-Change 1792 on 2000/03/30 by nick@bactrian
+Change 2071 on 2000/10/07 by nick@bactrian
 
-	Update versions of patched files.
+	Reinstate generic -class processing
 
-Change 1791 on 2000/03/30 by nick@linux
+Change 2070 on 2000/10/07 by nick@bactrian
 
-	Avoid ->Delegate AUTOLOAD scheme if not appropriate
+	Add a VERSION
 
-Change 1790 on 2000/03/30 by nick@bactrian
+Change 2069 on 2000/10/07 by nick@bactrian
 
-	Add README.OpenBSD discussing the -Bforcearchive issue.
-	Steve's fileevent.t
+	More MANIFEST gotcha-s
 
-Change 1788 on 2000/03/27 by nick@bactrian
+Change 2068 on 2000/10/07 by nick@pluto
 
-	Steve's tweak to untie issue with Tk::Event::IO
+	Add Dummy Encode for perl5.005
 
-Change 1787 on 2000/03/27 by nick@bactrian
+Change 2067 on 2000/10/07 by nick@bactrian
 
-	Tk800.020 release prep.
+	Update MANIFEST.SKIP.PL to use pTk.inc and pTk.exc files rather
+	than blindly excluding everything which also exists under mTk.
 
-Change 1786 on 2000/03/27 by nick@bactrian_nt
+Change 2066 on 2000/10/06 by nick@pluto
 
-	An attempt to get 'ActiveWindow' right on Win32
+	Fix use of alwaysRedraw
 
-Change 1785 on 2000/03/27 by nick@bactrian
+Change 2064 on 2000/10/06 by nick@pluto
 
-	Perl5.6.0 workround
-	Revert to Tcl/Tk-like TOPMOST for Raise.
+	Return bbox as a list
 
-Change 1784 on 2000/03/26 by nick@bactrian_nt
+Change 2061 on 2000/10/05 by nick@pluto
 
-	Update NT testing info
+	Fix Arc configure.
 
-Change 1783 on 2000/03/26 by nick@linux
+Change 2057 on 2000/10/04 by nick@pluto
 
-	Correct version-as-number in perl5.6.0 workround
+	Play safe in DuplicateObj
 
-Change 1782 on 2000/03/26 by nick@bactrian
+Change 2054 on 2000/10/04 by nick@pluto
 
-	More perl-5.6.0 robustness
+	Canvas does not really have bbox proc anymore.
 
-Change 1781 on 2000/03/26 by nick@bactrian
+Change 2053 on 2000/10/04 by nick@pluto
 
-	More robust AUTOLOAD - and a few more explicit uses.
+	Loose degenerate IntResults with one non-appened value.
 
-Change 1780 on 2000/03/25 by nick@bactrian
+Change 2050 on 2000/10/03 by nick@pluto
 
-	Work-round broken ->isa in perl5.6.0
+	workround - don't force list on AppendElement till 2nd one,
+	likewise in IntResults. Fix append-ness in HList use of latter.
+	Listbox should be fixed to return IntObj-s fror CURSELN
 
-Change 1779 on 2000/03/25 by nick@bactrian
+Change 2048 on 2000/10/03 by nick@bactrian
 
-	Avoid core dumps on invalid cursors.
+	Use perl_utf8_to_uv for now.
 
-Change 1778 on 2000/03/25 by nick@bactrian
+Change 2047 on 2000/10/03 by nick@pluto
 
-	Various fixes from e-mail backlog
+	Remove debug from Optionmenu.
+	Allow more time for FBox, and change ->after to avoid
+	error after destroy in case time is not enough.
 
-Change 1777 on 2000/03/25 by nick@bactrian
+Change 2046 on 2000/10/03 by nick@pluto
 
-	Cleanup 'make test' deprecated noise
+	Make FBox and Optionmenu work together.
 
-Change 1776 on 2000/03/25 by nick@linux
+Change 2045 on 2000/10/03 by nick@pluto
 
-	More hash order issues for FileSelect configure
+	Builds under perl5.005_03 again with dummy "unicode/iso8859-1".
 
-Change 1775 on 2000/03/24 by nick@bactrian
+Change 2044 on 2000/10/02 by nick@pluto
 
-	Update VERSIONS etc. for Tk800.020
+	Add a Unicode demo
 
-Change 1774 on 2000/03/24 by nick@bactrian
+Change 2043 on 2000/10/02 by nick@pluto
 
-	Allow ->itemconfigure of grouped canvas items.
+	Perl-based encode seems to work at last.
 
-Change 1772 on 2000/03/24 by nick@bactrian
+Change 2042 on 2000/10/02 by nick@pluto
 
-	Use <string.h> rather than guess at it
+	Encoding files
 
-Change 1771 on 2000/03/24 by nick@bactrian
+Change 2041 on 2000/10/01 by nick@bactrian
 
-	Tidy up FileSelect a little (mainly for perl5.6.0)
+	Avoid "Assuming require" style AUTOLOAD for class methods,
+	This avoids problems with utf8 'IsUpper' stuff.
 
-Change 1770 on 2000/03/24 by nick@bactrian
+Change 2040 on 2000/10/01 by nick@bactrian
 
-	Avoid warnings about INIT blocks in tests.
+	Encoding using calls to perl objects.
 
-Change 1768 on 2000/03/22 by nick@bactrian
+Change 2039 on 2000/10/01 by nick@bactrian
 
-	Avoid callback destroy issues if fileevent related tie-s are still
-	in force on program exit.
+	Our headers in case we ever use it
 
-Change 1767 on 2000/03/22 by nick@bactrian
+Change 2038 on 2000/10/01 by nick@bactrian
 
-	Honour -background and -foreground on DialogBox and Dialog
+	Fail in the expected manner on out-of-range chars.
+	Tweak UnixFont to only read in pages of 256 so that iso-8859-1 does
+	not ask for 0x200..0x3FF by default.
 
-Change 1766 on 2000/03/22 by nick@bactrian
+Change 2037 on 2000/09/30 by nick@bactrian
 
-	Steve's demo additions for transparent
+	Dummy iso-8859-1 decode.
 
-Change 1765 on 2000/03/22 by nick@bactrian
+Change 2036 on 2000/09/30 by nick@bactrian
 
-	Loose Tkperl sub-dir and bundle Jan's exetype script
-	instead as the way to make guiperl.exe
+	In theory we now always expect hi-bits to/from Tcl_Xxxxx/Tk_Xxxxx to mean UTF8.
+	Tests still pass...
 
-Change 1764 on 2000/03/22 by nick@bactrian
+Change 2035 on 2000/09/30 by nick@bactrian
 
-	Do some more checking on callbacks
+	Loose dummy.dir stuff
 
-Change 1761 on 2000/03/21 by nick@pluto
+Change 2034 on 2000/09/30 by nick@bactrian
 
-	Re-institute strong fix for segfault issues. (Still not 100%)
+	Tar file writing tweaks.
 
-Change 1760 on 2000/03/18 by nick@bactrian
+Change 2033 on 2000/09/30 by nick@bactrian
 
-	One probably benign bug (Too many Tcl_Preserves on interp)
-	and some cosmetics in tkGlue.c
+	Copyright dates
 
-Change 1756 on 2000/03/16 by nick@bactrian
-
-	Slaven's pod2man patch for --center vs -center
-
-Change 1755 on 2000/03/16 by nick@bactrian
-
-	Really fix XBM parse - last fix was too strong
-
-Change 1753 on 2000/03/16 by nick@bactrian
-
-	Make imgXPM more robust when attempting to parse things like PPM files which
-	don't match its format it got bogged down trying to read a 'word' at EOF.
-
-Change 1752 on 2000/03/16 by nick@bactrian
-
-	Fix for perdantic C compilers
-
-Change 1750 on 2000/03/13 by nick@gobstopper
-
-	Win32 fix for Tk/Event split
-
-Change 1749 on 2000/03/13 by nick@bactrian
-
-	.m and .t files
-
-Change 1748 on 2000/03/13 by nick@bactrian
-
-	Remove unused 'use Data::Dumper'
-	A few other perl5.00404 sops.
-
-Change 1747 on 2000/03/13 by nick@bactrian
-
-	VERSION updates
-
-Change 1746 on 2000/03/13 by nick@bactrian
-
-	Real fix for sporadic core dump problem.
-	Remove or comment out all the debug used to track it.
-
-Change 1745 on 2000/03/13 by nick@bactrian
-
-	Add built in transparent bitmap for use with Canvas's -fill
-
-Change 1744 on 2000/03/13 by nick@bactrian
-
-	Avoid using global RepeatId for animations
-
-Change 1743 on 2000/03/13 by nick@bactrian
-
-	Notice ->configure(-label => ...) on Tk::Menu::Item-s and update object's key.
-
-Change 1742 on 2000/03/13 by nick@bactrian
-
-	Major memory mis-use issue fix - if a callback got destroyed
-	while being executed (e.g. did $button->destroy) then closure's
-	pad would get freed and perl's scope exit code would do nasty
-	things. So increment REFCNT and use save_freesv() to decrement.
-
-Change 1741 on 2000/03/11 by nick@bactrian
-
-	Avoid writing to free'd memory
-
-Change 1740 on 2000/03/11 by nick@bactrian
-
-	Debugging malloc hooks
-
-Change 1728 on 2000/03/06 by nick@bactrian
-
-	Slaven's Canvas -fill => undef doc patch
-
-Change 1723 on 2000/03/04 by nick@ni-s
-
-	Some checking on HList and TList
-
-Change 1698 on 2000/02/28 by nick@pluto
-
-	Record compiler version issues in AIX readme
-
-Change 1679 on 2000/02/20 by nick@bactrian
-
-	Tidy up objGlue.c during bug hunt.
-
-Change 1678 on 2000/02/19 by nick@bactrian
-
-	Various oddities noticed while bug hunting.
-
-Change 1677 on 2000/02/19 by nick@bactrian
-
-	New file to demo progress bar on linux
-
-Change 1676 on 2000/02/19 by nick@bactrian
-
-	Finish off Event/Tk non-share
-	Fix reference loops shown by new debug
-	Bump version to Tk800.019 as VTables are different
-
-Change 1675 on 2000/02/19 by nick@ni-s
-
-	Cleanup duplicate code between Tk and Event, so that
-	one debugging copy of Tcl_Alloc et. al. can be installed.
-	Tweak some #include <> to #include "" so that dependancies
-	get built right.
-
-Change 1674 on 2000/02/19 by nick@ni-s
-
-	Rename After.pod to after.pod
-
-Change 1673 on 2000/02/17 by nick@bactrian
-
-	Slaven's tcl2perl patch
-
-Change 1672 on 2000/02/13 by nick@ni-s
-
-	Add some checking for the case that seems to occur during
-	global destruction - have not caught it yet...
-
-Change 1671 on 2000/02/13 by nick@ni-s
-
-	More destroy-time REFCNT issues:                                 
-	configure inquiries were causing incorrect REFCNT_inc-s of Callbacks
-	and Vars.
-	1. Make all LangXxxxArg functions which return SVs for tkConfig.c etc.
-	   return SV _without_ incrementing REFCNT.
-	2. Tweak odd uses of above where that was not correct assumption.
-	3. Remove LangVarArg(), and replace with LangSetVar, only use was
-	   in configure code and it could not be made to obey (1) above.  
-	4. Tcl_ConcatObj and Tcl_NewListObj differ only in incomming REFCNT 
-	   expectation.
-
-Change 1670 on 2000/02/12 by nick@bactrian
-
-	PERL_ITHREADS fix from Sarathy.
-
-Change 1667 on 2000/02/06 by nick@bactrian
-
-	Slaven's pod patches
-
-Change 1666 on 2000/02/01 by nick@bactrian
-
-	Loose merge garbage in pod
-
-Change 1661 on 2000/01/29 by nick@bactrian
-
-	Slaven's BalloonInfo for Listbox
-
-Change 1660 on 2000/01/29 by nick@bactrian
-
-	Slaven's FBox patch and test
-
-Change 1659 on 2000/01/29 by nick@bactrian
-
-	Slaven's FileSelect patch
-
-Change 1658 on 2000/01/29 by nick@bactrian
-
-	Treat XK_Meta_* as Alt- if there is no XK_Alt_*
-
-Change 1654 on 2000/01/22 by nick@bactrian
-
-	Prepare for Tk800.018
-
-Change 1653 on 2000/01/22 by nick@bactrian
-
-	Make Tk::Photo->get return perl list rather than string of three numbers
-
-Change 1651 on 2000/01/22 by nick@bactrian
-
-	Auto $VERSION
-
-Change 1650 on 2000/01/22 by nick@bactrian
-
-	Raw TextList entry
-
-Change 1649 on 2000/01/22 by nick@bactrian
-
-	Honour context (like rest of Tk) in Tk::Derived::cget
-
-Change 1648 on 2000/01/22 by nick@bactrian
-
-	Fix legacy Tcl-list parsing
-
-Change 1644 on 2000/01/17 by nick@pluto
-
-	Loose debug from Balloon
-
-Change 1642 on 2000/01/16 by nick@ni-s
-
-	Tidy up tabs in tkMenu.c
-	Try removing closures from Text menu commands in hunt
-	for destroy-time issues.
-
-Change 1641 on 2000/01/15 by nick@bactrian
-
-	Move Tk::VERSION to 800.018
-	Avoid gcc-isms in C flags unless using gcc.
-
-Change 1640 on 2000/01/15 by nick@bactrian
-
-	Attempt to fix segfault from TList on IRIX -O3 
-	 Guess A. WidgetComputeGeometry called via idle after widget has gone.
-	 Guess B. Compiler is accessing 'double' args in under-align integer struct.
-
-Change 1639 on 2000/01/15 by nick@bactrian
-
-	Slaven's HList -exportselection completion.
-
-Change 1638 on 2000/01/15 by nick@bactrian
-
-	Steve's demo patches
-
-Change 1637 on 2000/01/15 by nick@bactrian
-
-	Slaven's patch for Balloon.pm bug
-
-Change 1636 on 2000/01/15 by nick@bactrian
-
-	Move dTHR backward compatibility stuff to tkGlue.def (Which Event.xs) uses
-	rather than tkGlue.h (which Event.xs does NOT use).
-
-Change 1635 on 2000/01/15 by nick@bactrian
-
-	Adopt Ben Pavon's version of Tk::CmdLine.
-
-Change 1634 on 2000/01/15 by nick@bactrian
-
-	Implement way to force $VERSION above perforce version
-	Use it to fix VERSION in Tk::Event::IO
-
-Change 1619 on 2000/01/08 by nick@bactrian
-
-	Cleanup for Tk800.017 release
-
-Change 1618 on 2000/01/08 by nick@gobstopper
-
-	Win32/perl5.005_02 tweaks
-
-Change 1616 on 2000/01/05 by nick@pluto
-
-	Update to README.Solaris for gcc and sun Solaris7 patch issues
-
-Change 1614 on 2000/01/04 by nick@pluto
-
-	Keep _XEvent_ around after even has happened, existing .pm files
-	depend on that. (But make HList.pm less dependant.)
-
-Change 1613 on 2000/01/04 by nick@pluto
-
-	Revert LangNull() to previous definition - NULL strings
-	causing more problems elsewhere, instead special case 
-	TK_CONFIG_CURSOR (c.f. Tk_CONFIG_BITMAP)
-
-Change 1612 on 1999/12/30 by nick@bactrian
-
-	VERSIONs
-
-Change 1611 on 1999/12/30 by nick@bactrian
-
-	Re-instate NULL tolerance in LangCmpArg
-
-Change 1610 on 1999/12/30 by nick@ni-s
-
-	Allow method names as Callbacks, use in Tree.pm and DirTree.pm
-	Make Gedi demo work.
-	Fix daft widths in progress bar demo (multi-tie is broken)
-
-Change 1609 on 1999/12/30 by nick@ni-s
-
-	More exit leak cleanup
-
-Change 1608 on 1999/12/29 by nick@ni-s
-
-	All CloneMenu() calls need to REFCNT_dec the returned Arg.
-
-Change 1607 on 1999/12/29 by nick@ni-s
-
-	Menu related leaks:
-	1. FontArg was having its REFCNT incremented - unlike widgets
-	2. On-the-fly callback created to call MenuDup was leaking.
-	3. Returned result of ->clone was leaking.
-	Tidy up END {} block in MainWindow
-	Add END {} block to CmdLine  
-
-Change 1606 on 1999/12/24 by nick@bactrian
-
-	VERSION updates
-
-Change 1605 on 1999/12/24 by nick@ni-s
-
-	Fix leak of callback during menu clone process
-
-Change 1604 on 1999/12/23 by nick@ni-s
-
-	Enhance Tk::Text's GetMenu, rename to ->menu  (official)
-	Fixup ptked and gedi to use ->menu 
-	Stop exporting after from Tk by default - it is supposed to be
-	a method.
-	Move Tk::Xxxx::BalloonInfo to the Xxxx.pm files (Menu and Canvas)
-	Move ->menu and associated methods be a Tk::Widget methods (experimental)
-	Rename innermost menu constructor to _menu to get it out of the way.
-	Delegate ->menu through Scrolled Frames.
-
-Change 1603 on 1999/12/23 by nick@pluto
-
-	Balloon / Tree issues
-
-Change 1602 on 1999/12/22 by nick@pluto
-
-	Add initial thoughts at 'Region'
-
-Change 1601 on 1999/12/19 by nick@bactrian
-
-	Update diag tools to use (or not) Devel::Leak
-
-Change 1600 on 1999/12/19 by nick@bactrian
-
-	Check in generated Vtable files
-
-Change 1599 on 1999/12/19 by nick@bactrian
-
-	Slaven's Text ->Tag fixes
-
-Change 1598 on 1999/12/19 by nick@bactrian
-
-	Versions
-
-Change 1597 on 1999/12/19 by nick@ni-s
-
-	Various measures to cleanup on widget ->destroy, in particular
-	new scheme to delete Tk sub-hashes of main object which might
-	hold references to other widgets.
-
-Change 1596 on 1999/12/18 by nick@bactrian
-
-	VERSION updates
-
-Change 1595 on 1999/12/18 by nick@bactrian
-
-	s/DoWhenIdle/afterIdle/ - auto-cancel is useful in all cases
-	as far as I can see. Should re-instate C level optimization of 
-	DoWhenIdle when it does auto-cancel too.
-
-Change 1594 on 1999/12/18 by nick@ni-s
-
-	Debug weird delayed destroy of Tk::Derived things.
-	(DoWhenIdle was hold a ref to widget in its callback,
-	switch to afterIdle to auto-cleanup.)
-
-Change 1593 on 1999/12/18 by nick@ni-s
-
-	Warn about bug in 5.005_63
-
-Change 1591 on 1999/12/18 by nick@bactrian
-
-	Report better error on 5.005_63 regexp bug
-
-Change 1590 on 1999/12/12 by nick@ni-s
-
-	Avoid AUTOLOAD fail on DESTROY
-
-Change 1588 on 1999/12/12 by nick@ni-s
-
-	Comprehend bbox returns a real list as it always should have done.
-	Change ->select('set',...) to ->selectionSet(...) etc. to match 
-	documentation.
-
-Change 1587 on 1999/12/12 by nick@ni-s
-
-	Found long-standing weirdness of ->DoWhenIdle which was
-	highlighted by changes to "result" handling.
-
-Change 1586 on 1999/12/12 by nick@ni-s
-
-	Cleanup "harmless" oddities shown by Scalar/Array debug.
-
-Change 1584 on 1999/12/11 by nick@bactrian
-
-	Invert the logic of the scalar/array context assumption:
-	 Rather than returning \@results in scalar context
-	 return @$result if array ref is sole result in array context.
-	This has same effect on the canvas and bbox cases and causes 
-	less surprises with things like ->packSlaves.
-	To make ->configure() work either way change it to return list 
-	rather than appending items one at a time. That distinction is
-	probably a bug...
-
-Change 1583 on 1999/12/11 by nick@ni-s
-
-	Honour scalar/list context when returning results
-	This is (mainly) so that new canvas coords etc. are backward
-	compatible with Tk800.015. Also affects bbox and configure
-	but no one should notice...
-	Add some tests for this, make Tk::Derived::configure conform
-	and delete degenerate 'sub configure' in ColorEditor.
-
-Change 1582 on 1999/12/11 by nick@ni-s
-
-	Replace all Lang_SplitList, Lang_SplitString, LangAllocVec calls
-	with equivalent Tcl_ListObj* code.
-
-Change 1581 on 1999/12/11 by nick@ni-s
-
-	Handle Tcl_ListObjGetElements() more intelligently:
-	  1. Do not convert simple IVs and NVs to array refs 
-	  2. Do Tcl string conversion in C    
-	Change munging code to return "0" "1" etc. as integers 
-	rather than strings.      
-	Return bbox from HList as [x1,y1,x2,y2] rather than "x1 y1 x2 y2"
-	Return count from tixImgXpm as integer.
-
-Change 1579 on 1999/12/08 by nick@bactrian
-
-	VERSIONs!!!!
-
-Change 1578 on 1999/12/08 by nick@pluto
-
-	More Tk:Event::IO tie module abuse tolerance.
-
-Change 1574 on 1999/12/08 by nick@bactrian
-
-	Use ->wait scheme rather than doing DoOneEvent perl-side
-
-Change 1573 on 1999/12/08 by nick@bactrian
-
-	Versions
-
-Change 1572 on 1999/12/08 by nick@pluto
-
-	Much more rigorous Tk::Event::IO tie module, which behaves
-	much better when fileevent and regular IO are mixed on
-	same handle (e.g. pseudo tty with event on read but not on write).
-
-Change 1570 on 1999/12/07 by nick@pluto
-
-	Make index convert id's to position 
-
-Change 1569 on 1999/12/06 by nick@pluto
-
-	Add -activegroup as configure option
-	Stab at how to handle groups in 'find' etc. (no right yet). 
-	Note-to-self - could use 'focus' on groups?
-
-Change 1565 on 1999/12/05 by nick@ni-s
-
-	Basic group operations seem to work.
-
-Change 1564 on 1999/12/04 by nick@ni-s
-
-	Experimental "group" canvas item type.
-	Also abstracted out item state fetch in item code
-	so that rules can be changed in one place. 
-	(tkCanvas.c and tkCanvPs.c still do it long hand ...)
-
-Change 1563 on 1999/12/04 by nick@bactrian
-
-	Allow [$x,$y] as equivalent to (and prefered to) "@x,y" for canvas->index()
-
-Change 1562 on 1999/12/04 by nick@bactrian
-
-	Steve's patch for demos and pods.
-
-Change 1555 on 1999/12/03 by nick@pluto
-
-	Fix non-loading of Tk::Menu::Item when $menu->Menubutton is used.
-
-Change 1554 on 1999/12/03 by nick@bactrian
-
-	Add to MANIFEST<enter description here>
-
-Change 1552 on 1999/12/02 by nick@pluto
-
-	Correctly handle ->MenuDup of classes derived from Menu.
-	
-	To avoid silliness due to Menubar being a "kind of" Menu
-	move all remaining functionality of Tk::Menubar into 
-	either Frame (a pseudo constructor) or Menu (grandfather
-	its methods as Menu methods). 
-	
-	Avoid an accidental list-of-options build due to ->configure() 
-	when creating ->cascades with no arguments.
-
-Change 1551 on 1999/12/02 by nick@pluto
-
-	Allow -fg/-foreground etc. to be aliases to other things as well
-	as each other.
-
-Change 1546 on 1999/12/01 by nick@bactrian
-
-	Clip grid drawing on canvas to the scroll region.
-	More bugs in canvas configure results.
-
-Change 1544 on 1999/12/01 by nick@pluto
-
-	Canvas configure option parse/return issues
-
-Change 1540 on 1999/11/29 by nick@bactrian
-
-	Fix Tcl_Obj-ness of insert and index (canvas text insert broken)
-
-Change 1537 on 1999/11/27 by nick@ni-s
-
-	Re-institute -Wno-implicit-int for Solaris2.6, egcs  
-
-Change 1535 on 1999/11/27 by nick@bactrian_nt
-
-	Win32 merge of dash patch 
-
-Change 1534 on 1999/11/27 by nick@bactrian
-
-	Pre-release tidy up
-
-Change 1533 on 1999/11/27 by nick@ni-s
-
-	Add release prep script to depot
-
-Change 1530 on 1999/11/25 by nick@pluto
-
-	Use grid in the demo, re-draw tweak.
-
-Change 1529 on 1999/11/25 by nick@pluto
-
-	Tidy up grid items and document.
-
-Change 1528 on 1999/11/25 by nick@bactrian
-
-	Add utility script
-
-Change 1527 on 1999/11/24 by nick@pluto
-
-	First attempt at grid item drawing (it's wrong...)
-
-Change 1526 on 1999/11/24 by nick@pluto
-
-	Experimental 'grid' canvas item type
-
-Change 1525 on 1999/11/24 by nick@pluto
-
-	More perl-izing of Canvas (e.g. -updatecommand)
-
-Change 1524 on 1999/11/24 by nick@pluto
-
-	Perl-ize Entry's -validate support, including making -textvariable
-	obey validation.
-	update docs, add ventry_demo as testcase/demo 
-
-Change 1521 on 1999/11/22 by nick@pluto
-
-	Attempt to demo -dash / -activedash 
-	 - does not work - partial fix
-
-Change 1520 on 1999/11/22 by nick@pluto
-
-	A little documentation tidying
-
-Change 1519 on 1999/11/22 by nick@pluto
-
-	Use specific -isystem /usr/openwin/include rather than global 
-	-Wno-implicit-int to clean up Solaris X header mess.
-
-Change 1518 on 1999/11/22 by nick@pluto
-
-	Rename Event.pod to Eventloop.pod to avoid clash with event.pod
-	Merge dash-patch changes to event.pod
-	Tweak tkman2pod to handle canvas.n 
-
-Change 1517 on 1999/11/22 by nick@pluto
-
-	Merge Dash patch doc changes
-
-Change 1516 on 1999/11/21 by nick@bactrian
-
-	Attempt to re-code Tcl_GetStringFromObj() to behave better.
-	Document snag with Lang_SplitString.
-
-Change 1515 on 1999/11/21 by nick@bactrian
-
-	Tcl_GetStringFromObj() forces lists like incoming callbacks to 
-	string form. There is little we can do as only surounding code
-	knows if it wants a callback or a list (e.g. font stuff) so 
-	just avoid "native" stringify in favour of LangString() when 
-	we want callbacks or other perl stuff. Suspect this is 1st of many...
-
-Change 1514 on 1999/11/20 by nick@bactrian
-
-	Move tkCanvPs to core as it provides useful utilities.
-	 - note that the 'Cmd' part really should move back to Canvas.so 
-
-Change 1513 on 1999/11/20 by nick@bactrian
-
-	Restructure Vtable generation 
-	 - avoid MOVEXT add .exc file instead
-	Move tkImgBmap to core as i provides utility for -bitmap of Button etc.
-
-Change 1512 on 1999/11/20 by nick@bactrian
-
-	Loose Tk_OptionParseProc casts too.
-
-Change 1511 on 1999/11/20 by nick@bactrian
-
-	Loose (Tcl_Obj *) casts 
-
-Change 1510 on 1999/11/20 by nick@bactrian
-
-	Passes all tests - Canvases still suspect 
-
-Change 1509 on 1999/11/20 by nick@bactrian
-
-	tiny demo runs after dash
-
-Change 1508 on 1999/11/20 by nick@bactrian
-
-	pTk subdir compiles after dash patch merge
-
-Change 1507 on 1999/11/19 by nick@bactrian
-
-	Raw merge of dash-patched Tk
-
-Change 1504 on 1999/11/19 by nick@pluto
-
-	Tweak README to get Jan's e-mail out of sight, and add better
-	contact info.
-
-Change 1503 on 1999/11/16 by nick@bactrian
-
-	Document ->MapWindow and ->UnmapWindow
-
-Change 1502 on 1999/11/13 by nick@bactrian_nt
-
-	Provide dummy aTHX_ for old perls
-
-Change 1501 on 1999/11/13 by nick@bactrian_nt
-
-	Disable guiperl again does not build on ActivePerl
-
-Change 1500 on 1999/11/10 by nick@pluto
-
-	Relax restrictions on Compound images being tied to 
-	single widget. Apart from some housekeeping and checking in tixImgCmp.c
-	it is necessary to do bulk image cleanup before bulk font cleanup
-	as we must give images a chance to release fonts.
-	Other snaglet was need to use cached Display * in Compound exit code
-	rather than asking now non-existant window.
-
-Change 1499 on 1999/11/10 by nick@pluto
-
-	Change to explcit ->configure(-image => ...) 
-
-Change 1497 on 1999/11/09 by nick@bactrian
-
-	Tidy up compounds
-
-Change 1494 on 1999/11/09 by nick@bactrian
-
-	Basic Compound Image support (from Tix)
-
-Change 1490 on 1999/10/14 by nick@pluto
-
-	Thread tolerance + minor typo in pod
-
-Change 1483 on 1999/10/02 by nick@bactrian
-
-	$VERSION tolerating new perforce scheme
-
-Change 1482 on 1999/10/02 by nick@bactrian
-
-	Patches from the list (Also tedious $Id$ difference with new perforce)
-
-Change 1455 on 1999/09/02 by nick@bactrian
-
-	On-the-road Monterey/San Jose/Dallas changes
-
-Change 1454 on 1999/08/19 by nick@ni-s
-
-	Pre-conference snap shot
-
-Change 1453 on 1999/08/19 by nick@bactrian
-
-	Pre-conference tweaks 1999/08/19
-
-Change 1452 on 1999/08/18 by nick@bactrian
-
-	Pre-conference tweaks 1999.08.19
-
-Change 1450 on 1999/08/16 by nick@pluto
-
-	Add Win32-ish Tk icon as xpm
-
-Change 1444 on 1999/08/14 by nick@gobstopper2
-
-	Long standing ppm edit
-
-Change 1442 on 1999/08/14 by nick@bactrian
-
-	Change where breakpoints go for gdb'ing perl5.005_60+
-
-Change 1437 on 1999/08/12 by nick@pluto
-
-	Add -elide and -data docs.
-
-Change 1435 on 1999/08/09 by nick@bactrian
-
-	Increment VERSION
-
-Change 1434 on 1999/08/09 by nick@ni-s
-
-	Tix merge compiles (UNIX).
-
-Change 1433 on 1999/08/09 by nick@ni-s
-
-	Raw merge of Tix4.1.0.007
-
-Change 1431 on 1999/08/09 by nick@pluto
-
-	Avoid failure due to grab
-
-Change 1430 on 1999/08/08 by nick@bactrian
-
-	MANIFEST tidy
-
-Change 1427 on 1999/08/08 by nick@bactrian
-
-	Compile ready + VERSIONs
-
-Change 1425 on 1999/08/07 by nick@bactrian
-
-	Import $XS_VERSION so that bootstrap needs no args to help 
-	out B::C and B::CC compilers (which canno guess version to pass).
-
-Change 1424 on 1999/08/07 by nick@bactrian
-
-	Slaven's doc tweak
-
-Change 1423 on 1999/08/06 by nick@bactrian
-
-	Be more robust about re-parsing mail that may have dubious 
-	Content-Length etc.
-
-Change 1422 on 1999/08/06 by nick@pluto
-
-	Document -variable for Check/Radio buttons
-
-Change 1421 on 1999/08/06 by nick@pluto
-
-	Work round 5.00560base.pm bug
-
-Change 1420 on 1999/08/06 by nick@pluto
-
-	Re-work Balloon to allow easier extension s for otherwidget types
-
-Change 1418 on 1999/08/04 by nick@pluto
-
-	Make progress barbehave likeits docs.
-
-Change 1417 on 1999/08/02 by nick@pluto
-
-	Compiler fixes
-
-Change 1416 on 1999/08/02 by nick@pluto
-
-	Fix send name lookup 
-
-Change 1415 on 1999/08/01 by nick@bactrian_nt
-
-	False start on fileevent for Win32
-	WINSOCK2 could help perhaps ?
-
-Change 1414 on 1999/08/01 by nick@bactrian
-
-	VERSION updates
-
-Change 1413 on 1999/08/01 by nick@bactrian
-
-	Comment RedoShuffle and make it work correctly.
-
-Change 1412 on 1999/07/31 by nick@ni-s
-
-	More tidying
-
-Change 1411 on 1999/07/31 by nick@ni-s
-
-	Tidy up TextUndo a bit 
-
-Change 1410 on 1999/07/31 by nick@bactrian
-
-	Greg's name change and copyright tweaks
-
-Change 1409 on 1999/07/31 by nick@ni-s
-
-	Copyright dates.
-
-Change 1408 on 1999/07/31 by nick@ni-s
-
-	Use ->dump rather than brute force for delete_UNDO
-
-Change 1407 on 1999/07/31 by nick@ni-s
-
-	VERSIONS
-
-Change 1406 on 1999/07/30 by nick@bactrian
-
-	xviewMoveto etc.
-
-Change 1403 on 1999/07/30 by nick@pluto
-
-	Patches from the list
-
-Change 1402 on 1999/07/29 by nick@bactrian
-
-	Seems to need an explcit require DynaLoader in some perls.
-
-Change 1401 on 1999/07/29 by nick@pluto
-
-	Missed file
-
-Change 1400 on 1999/07/29 by nick@pluto
-
-	Decoupel Event and Tk::IO
-
-Change 1399 on 1999/07/28 by nick@bactrian2
-
-	Mingw32 does not define ICON_BIG 
-
-Change 1398 on 1999/07/28 by nick@ni-s
-
-	Hopefully 800.015
-
-Change 1397 on 1999/07/28 by nick@ni-s
-
-	VERSIONS, perl5.00404 fixes
-	Rename placeholder 'Event' to Tk::Event
-	Some release prep.
-
-Change 1396 on 1999/07/28 by nick@pluto
-
-	5.00558 tweaks
-
-Change 1395 on 1999/07/27 by nick@bactrian_nt
-
-	->iconimg more-or-less works on Win32 (NT4.0 SP4, VC++, ActivePerl)
-
-Change 1394 on 1999/07/27 by nick@bactrian_nt
-
-	Skeleton of iconimg etc.
-
-Change 1393 on 1999/07/27 by nick@pluto
-
-	Implement ->iconimage as alternative to ->iconbitmap or ->iconwin
-
-Change 1392 on 1999/07/26 by nick@ni-s
-
-	Versions etc.
-
-Change 1391 on 1999/07/26 by nick@ni-s
-
-	Raw adoption of Graham's Tk::Pane and Tk::ProgressBar
-
-Change 1389 on 1999/07/26 by nick@pluto
-
-	Allow ->put to work with array data
-
-Change 1387 on 1999/07/24 by nick@bactrian
-
-	Tidy up some more (linux)
-
-Change 1385 on 1999/07/24 by nick@bactrian
-
-	Finish off KDE Drag&Drop
-
-Change 1384 on 1999/07/24 by nick@ni-s
-
-	Renove debug, tidy up 
-
-Change 1383 on 1999/07/24 by nick@ni-s
-
-	Cleanup merge of Greg's TextUndo stuff
-
-Change 1381 on 1999/07/24 by nick@bactrian
-
-	Check in raw PTkFM
-
-Change 1380 on 1999/07/24 by nick@ni-s
-
-	$VERSION updates
-
-Change 1379 on 1999/07/24 by nick@ni-s
-
-	More Greg edits to editor stuff
-
-Change 1378 on 1999/07/24 by nick@ni-s
-
-	Greg's latest TextUndo 
-
-Change 1377 on 1999/07/23 by nick@pluto
-
-	File manager work and associated tweaks to DragDrop
-
-Change 1376 on 1999/07/22 by nick@bactrian
-
-	Start if TList based filemanager
-
-Change 1375 on 1999/07/22 by nick@pluto
-
-	Text to graphics stuff for canvas
-
-Change 1374 on 1999/07/19 by nick@bactrian2
-
-	Add dummy drop-side to Win32 stuff
-
-Change 1373 on 1999/07/19 by nick@ni-s
-
-	Out of date vtables 
-
-Change 1372 on 1999/07/16 by nick@pluto
-
-	Fixup Sun Drag&Drop - now does not need dropsite manager.
-
-Change 1371 on 1999/07/14 by nick@ni-s
-
-	auto $VERSION
-
-Change 1370 on 1999/07/14 by nick@pluto
-
-	Tolerate KDE drag&drop, beginings of supporting it.
-
-Change 1369 on 1999/07/13 by nick@pluto
-
-	Best guess at XDND working between perl/Tk apps.
-
-Change 1368 on 1999/07/12 by nick@pluto
-
-	Implement XDNDSite protocol
-
-Change 1367 on 1999/07/11 by nick@ni-s
-
-	Tidy local drops
-
-Change 1366 on 1999/07/11 by nick@ni-s
-
-	Re-work Dropping side 
-
-Change 1365 on 1999/07/11 by nick@ni-s
-
-	Make 'property' handle incoming numeric Atom-s.
-
-Change 1364 on 1999/07/10 by nick@ni-s
-
-	XDND dropping nearly working.
-
-Change 1363 on 1999/07/09 by nick@ni-s
-
-	Move PointToWindow to core and enhance it.
-
-Change 1362 on 1999/07/09 by nick@bactrian
-
-	Skeleton XDND support
-
-Change 1361 on 1999/07/08 by nick@pluto
-
-	Use ->SetCursor in ->Button1
-
-Change 1360 on 1999/07/06 by nick@pluto
-
-	Tolerate egcs-1.1.2 warning behaviour
-
-Change 1358 on 1999/07/02 by nick@pluto
-
-	Re-worked filevent working (Solaris)
-
-Change 1357 on 1999/07/01 by nick@ni-s
-
-	Re-work tie scheme for Event::IO/Tk::IO/fileevent
-
-Change 1356 on 1999/06/30 by nick@bactrian
-
-	Update Tk::IO to use new Event::CreateIOHandler to mimic
-	fileevent rather than Tcl_CreateFileHandler.
-
-Change 1355 on 1999/06/30 by nick@ni-s
-
-	Add file to depot
-
-Change 1354 on 1999/06/30 by nick@pluto
-
-	Move Callback to Tk::Event module
-
-Change 1353 on 1999/06/26 by nick@bactrian
-
-	Allow ->fileevent(handle,mode) to "inquire" current callback.
-
-Change 1352 on 1999/06/26 by nick@bactrian
-
-	Avoid uninialized warnings from egcs.
-
-Change 1349 on 1999/06/22 by nick@bactrian
-
-	Update README to say built under linux
-
-Change 1348 on 1999/06/13 by nick@camel
-
-	Tidy up Event.xs signal stuff to not crash on Win32
-	Debug for socket part of ptked.
-
-Change 1347 on 1999/06/13 by nick@ni-s
-
-	Optional (and prototype) "Plug" into perl signal handling.
-
-Change 1346 on 1999/06/13 by nick@ni-s
-
-	Use socket to avoid startup cost
-
-Change 1345 on 1999/06/12 by nick@ni-s
-
-	Fix -at -after etc in HList.
-	Re-word docs on focusNext
-
-Change 1344 on 1999/06/12 by nick@ni-s
-
-	Virtual Event <<Redo>>
-
-Change 1343 on 1999/06/12 by nick@ni-s
-
-	Version update
-
-Change 1342 on 1999/06/12 by nick@ni-s
-
-	Use get(Save|Open)File for TextUndo menu items
-
-Change 1341 on 1999/06/12 by nick@ni-s
-
-	Tidy up Tk::after support
-
-Change 1340 on 1999/06/10 by nick@ni-s
-
-	AutoScan fixup.
-
-Change 1339 on 1999/06/08 by nick@ni-s
-
-	Another merge of Greg's 'gedi' stuff
-
-Change 1338 on 1999/06/06 by nick@ni-s
-
-	Resonably stable integration of Greg's stuff
-
-Change 1337 on 1999/06/06 by nick@ni-s
-
-	Remove extra waitVisibility
-
-Change 1336 on 1999/06/06 by nick@ni-s
-
-	Remove extra waitVisibility
-
-Change 1335 on 1999/06/06 by nick@ni-s
-
-	Make Dialog a decendant of DialogBox.
-	Allow -menu to be passed in to a ->cascade
-	Wait for visibility after Popup.
-
-Change 1334 on 1999/06/03 by nick@ni-s
-
-	New Text feature cleanup
-
-Change 1333 on 1999/06/03 by nick@ni-s
-
-	VERSIONS of DIalog fixes.
-
-Change 1332 on 1999/06/03 by nick@ni-s
-
-	Raw merge of Greg Bartels <gbartels@xli.com> Text and TextUndo 
-	changes.
-
-Change 1331 on 1999/05/31 by nick@ni-s
-
-	Avoid problems when mouse strays into (say) entry part
-	of a browseentry.
-
-Change 1330 on 1999/05/31 by nick@ni-s
-
-	Fix <Return> binding of dialogs
-
-Change 1329 on 1999/05/31 by nick@ni-s
-
-	More suggestions from the list
-
-Change 1328 on 1999/05/29 by nick@ni-s
-
-	VERSION updates, add to MANIFEST
-
-Change 1327 on 1999/05/29 by nick@ni-s
-
-	Seek out and apply patches from all mailboxes.
-
-Change 1326 on 1999/05/27 by nick@ni-s
-
-	Fixup 5.005_57+ #if mess
-
-Change 1324 on 1999/05/26 by nick@ni-s
-
-	MANIFEST updates
-
-Change 1323 on 1999/05/24 by nick@pluto
-
-	Allow grepc -e <expr>
-
-Change 1320 on 1999/05/16 by nick@camel
-
-	Leaky Win32 edits to derived files
-
-Change 1318 on 1999/05/15 by nick@ni-s
-
-	Back out 1/2 done thought
-
-Change 1317 on 1999/05/14 by nick@ni-s
-
-	Default postion to tail
-
-Change 1315 on 1999/05/01 by nick@ni-s
-
-	Fix typo in overload
-	Destroy messageBox dialogs (from Steve)
-
-Change 1314 on 1999/05/01 by nick@ni-s
-
-	Set event proc (via API) in delayed motion handler
-
-Change 1306 on 1999/04/11 by nick@camel
-
-	Win32 event API works
-
-Change 1303 on 1999/04/10 by nick@ni-s
-
-	Slightly better typemap
-
-Change 1302 on 1999/04/10 by nick@ni-s
-
-	VTable file updates
-
-Change 1301 on 1999/04/10 by nick@ni-s
-
-	"Stupid" typemap for Event
-
-Change 1300 on 1999/04/10 by nick@ni-s
-
-	Win32 Handle stuff
-
-Change 1299 on 1999/04/10 by nick@ni-s
-
-	Guess at Event/Win32 issues MANIFEST etc.
-
-Change 1298 on 1999/04/10 by nick@ni-s
+Change 2032 on 2000/09/30 by nick@bactrian
 
 	Auto VERSION
 
-Change 1297 on 1999/04/10 by nick@ni-s
+Change 2031 on 2000/09/30 by nick@bactrian
 
-	Make perforce version aware of Event.pm
+	Avoid 'bool' which we have undef'ed
 
-Change 1296 on 1999/04/10 by nick@ni-s
+Change 2030 on 2000/09/30 by nick@bactrian
 
-	Event API as separate extension
+	Fix random memory corruption due to mis-rememebring how Compatibility
+	wrapper worked.
 
-Change 1295 on 1999/04/10 by nick@ni-s
+Change 2029 on 2000/09/30 by nick@bactrian
 
-	Separate Vtable for event API.
+	MANIFEST tidy up
 
-Change 1291 on 1999/04/05 by nick@ni-s
+Change 2028 on 2000/09/29 by nick@pluto
 
-	MANIFEST updates
+	Map Tcl's UTF8 stuff onto perl's - ugh.
 
-Change 1290 on 1999/04/05 by nick@ni-s
+Change 2027 on 2000/09/29 by nick@pluto
 
-	Pre-release tidy up (including loosing @ISA from use vars).
+	perl5.005_03 build.
+	Fix result restore issue with SelectionGet
 
-Change 1289 on 1999/04/05 by nick@ni-s
+Change 2026 on 2000/09/29 by nick@pluto
 
-	Attempt to merge Photo docs
+	Debug hooks for magic
 
-Change 1288 on 1999/04/05 by nick@ni-s
+Change 2025 on 2000/09/29 by nick@pluto
 
-	Cheap tricj to avoid warning from t/create.t, root cause
-	needs finding and fixing.
+	Correct string compare for menu names.
 
-Change 1287 on 1999/04/05 by nick@ni-s
+Change 2024 on 2000/09/29 by nick@pluto
 
-	img stuff no longer uses stdio.
+	Another backtrace
 
-Change 1286 on 1999/04/05 by nick@camel
+Change 2023 on 2000/09/29 by nick@pluto
 
-	Botched List ops in new img code
+	Re-implement our (pTk's) "tidy" menu bars.
 
-Change 1285 on 1999/04/05 by nick@ni-s
+Change 2022 on 2000/09/29 by nick@pluto
 
-	Use warning-avoiding install_vtab in Photo
+	Copy in just-like-Tcl tkUnixMenu.c till we can figure
+	out why merged version does not work.
+	When menu button destroys MainWindow tail end of bind
+	cannot reset result in non-existant interp.
 
-Change 1284 on 1999/04/05 by nick@camel
+Change 2021 on 2000/09/29 by nick@pluto
 
-	PPM is binary format - need to tell channel on Win32
+	Move wrappers on common dialogs to perl code.
 
-Change 1283 on 1999/04/04 by nick@ni-s
+Change 2020 on 2000/09/28 by nick@pluto
 
-	Missed some configure-messing
+	Flesh out stub Tk_Tile routines so t/dash.t passes.
 
-Change 1282 on 1999/04/04 by nick@ni-s
+Change 2019 on 2000/09/28 by nick@pluto
 
-	Stop messing with configure options
+	Reinstate returning only element of list as scalar value.
 
-Change 1281 on 1999/04/04 by nick@ni-s
+Change 2018 on 2000/09/28 by nick@pluto
 
-	Almost right version of new patched Photo & co.
+	Major overhaul of Result handling
+	 - Result is always a real scalar
+	 - SetObjResult does what it says.
+	 - GetObjResult gets current or new scalar.
+	 - ResetResult free's the scalar so GetObjResult creates new.
+	 - perl->Tcl makes copies to avoid pads, temp, and other weird things
+	 - Tcl->perl calls ListObjGetElements in array context, but
+	   always makes mortal copies.
+	 - Other "result-ish" things now implemented in Tcl-ish manner
+	   using above.
 
-Change 1280 on 1999/04/04 by nick@ni-s
+Change 2017 on 2000/09/28 by nick@pluto
 
-	Raw merge of patched tk8.0.5 + img1.2b2's patch.tk8
+	configure ordering issues
 
-Change 1278 on 1999/04/04 by nick@ni-s
+Change 2016 on 2000/09/28 by nick@pluto
 
-	Tweak some Photo write procs and add a test for them.
+	Loose obsolete Lang*() decls
 
-Change 1277 on 1999/04/03 by nick@ni-s
+Change 2015 on 2000/09/28 by nick@pluto
 
-	img1.2b2 merge compiles, loads and passes "make test" (which does
-	not prove any img stuff works...).
+	Use Tcl_Obj * scheme rather than LangSaveResult().
 
-Change 1276 on 1999/04/03 by nick@ni-s
+Change 2014 on 2000/09/28 by nick@pluto
 
-	Raw merge of Img1.2b
+	Re-instate Tk::Derived in Tk::Menu's ISA (though why we did
+	that is unclear).
 
-Change 1273 on 1999/04/03 by nick@ni-s
+Change 2013 on 2000/09/28 by nick@pluto
 
-	Resolve img1.1 as basis for future merges
+	Use Tcl_GetInt rather than coined Lang_GetStrInt for original
+	Tcl behaviour.
 
-Change 1271 on 1999/04/03 by nick@ni-s
+Change 2012 on 2000/09/28 by nick@pluto
 
-	Integrate img1.1 to establish a base for future merges
+	Make Tcl_ListObjReplace match REFCNT assumptions in tkListbox.c
 
-Change 1269 on 1999/03/31 by nick@ni-s
+Change 2011 on 2000/09/28 by nick@pluto
 
-	Recover truncated file
+	-menu is a TK_OPTION_WINDOW
 
-Change 1268 on 1999/03/31 by nick@ni-s
+Change 2010 on 2000/09/28 by nick@pluto
 
-	Copyright dates and release prep.
+	Propagate wantarray-ness
 
-Change 1267 on 1999/03/31 by nick@ni-s
+Change 2009 on 2000/09/28 by nick@pluto
 
-	VERSION fixes
+	Make Tcl_SetObjResult of element match REFCNT assumptions
+	used elsewhere.
 
-Change 1266 on 1999/03/31 by nick@ni-s
+Change 2008 on 2000/09/28 by nick@pluto
 
-	At last - just a typo
+	Use "Normal" Tcl style way of accessing result.
 
-Change 1265 on 1999/03/31 by nick@ni-s
+Change 2007 on 2000/09/27 by nick@pluto
 
-	More quote messes.
-	Back-off method callback style stuff for toplevel bindings
-	which apply to nested widgets.
+	Re-instate options for -tile and -disabled tile in Canvas.
 
-Change 1264 on 1999/03/31 by nick@ni-s
+Change 2006 on 2000/09/27 by nick@pluto
 
-	make test passes, $VERSION update
+	Entry not saving commands as Tcl_Obj
+	Text's embedded widget forcing stringify of return widget.
 
-Change 1263 on 1999/03/31 by nick@ni-s
+Change 2005 on 2000/09/27 by nick@pluto
 
-	Require.t passes again
+	Two tweaks : re-instate ListBox returning list for bbox.
+	Auto-de-ref in LangTraceVar as we don't have special Configure
+	support (yet?) for variables.
+	Mostly working "make test"
 
-Change 1262 on 1999/03/31 by nick@ni-s
+Change 2004 on 2000/09/27 by nick@pluto
 
-	Quote fixup fixup
+	More save Tcl_Obj issues in Entry and Scale
+	Do not require blessing of callbacks.
 
-Change 1261 on 1999/03/31 by nick@ni-s
+Change 2003 on 2000/09/27 by nick@pluto
 
-	Botched quotes
+	Possible overkill using perl's magic vtable scheme
+	to call Tcl's freeInternalRep.
+	 - Maybe 'get' should call update string ?
+	 - Maybe 'set' should not de-type the TclObj?
 
-Change 1260 on 1999/03/31 by nick@ni-s
+Change 2002 on 2000/09/27 by nick@pluto
 
-	Botched quote fixup
+	Use SvSetMagicSV() rather than sv_setsv() everywhere - we have more
+	magicals about now...
 
-Change 1259 on 1999/03/31 by nick@ni-s
+Change 2001 on 2000/09/27 by nick@pluto
 
-	Auto fixup of quotes and callbacks
+	Tcl_Obj not 'Var' in .h file
 
-Change 1258 on 1999/03/31 by nick@ni-s
+Change 2000 on 2000/09/27 by nick@pluto
 
-	Hand fixup of bind callback
+	Make a copy of args for _LANG objv has pad, temps and other
+	stuff.
 
-Change 1257 on 1999/03/31 by nick@ni-s
+Change 1999 on 2000/09/27 by nick@pluto
 
-	Fixup of "constant" etc.
+	Save Tcl_Obj for varName
 
-Change 1256 on 1999/03/30 by nick@ni-s
+Change 1998 on 2000/09/26 by nick@bactrian
 
-	Some binding cleanup
+	Copy data in convert to external!
 
-Change 1255 on 1999/03/27 by nick@ni-s
+Change 1997 on 2000/09/26 by nick@bactrian
 
-	Tidy up Text.pm :
-	1. convert anon subs in bindings to method calls
-	2. Use '' rather than "" for constants strings.
+	Update Xlib vtable to include XRectInRegion
+	Copy Tcl's Tcl_StringMatch (glob-ish) to encGlue.c (glob-ish match used by fonts)
 
-Change 1254 on 1999/03/27 by nick@gobstopper2
+Change 1996 on 2000/09/26 by nick@pluto
 
-	Add script to prepare for PPM distribution.
+	Allow refs in new style 'Var' glue.
 
-Change 1253 on 1999/03/27 by nick@gobstopper
+Change 1995 on 2000/09/26 by nick@pluto
 
-	Tweak for Mingw32 and new tk8.0.5 stuff
+	Menus create and clone approximately correctly.
+	Menubar display still a little suspect, and have removed
+	Tk::Derived from Menu's ISA till we resolve -background => undef
+	issue.
 
-Change 1252 on 1999/03/25 by nick@ni-s
+Change 1994 on 2000/09/26 by nick@pluto
 
-	Post merge tweaks, compiles links and passes make test.
+	Loose "is dummy" warnings
+	Fix gross REFCNT issue in new tkConfig code.
 
-Change 1251 on 1999/03/25 by nick@ni-s
+Change 1993 on 2000/09/26 by nick@bactrian
 
-	Raw integate/resolve of tcl and tk 8.0.5
+	Tcl_GetCommandInfo returns boolean (and used on widgets).
 
-Change 1247 on 1999/03/23 by nick@ni-s
+Change 1992 on 2000/09/25 by nick@pluto
 
-	PPM/PPD support - so far only proven harmless on UNIX.
+	Script to test widgets by name
 
-Change 1246 on 1999/03/23 by nick@ni-s
+Change 1991 on 2000/09/25 by nick@pluto
 
-	Fix GIF write. 
-	Found by manual compare with Img1.2b1 which looks worth merging.
+	Honour clientData for 'menu' and such as passed by
+	code in tkWindow.c or where-ever
 
-Change 1245 on 1999/03/19 by nick@ni-s
+Change 1990 on 2000/09/25 by nick@pluto
 
-	Odds and ends from mail backlog
+	Save the Tcl_Obj's for width/height
 
-Change 1244 on 1999/03/19 by nick@ni-s
+Change 1989 on 2000/09/25 by nick@pluto
 
-	WinPhoto doc update, and fix to "file match".
+	Restore list-ness of Photo and ->formats sub-method.
 
-Change 1243 on 1999/03/19 by nick@ni-s
+Change 1988 on 2000/09/25 by nick@pluto
 
-	Shaun Wandler <wandler@shogun.eng.hou.compaq.com>
-	Fix for HList and "nearest" behaviour.
+	Missed files
 
-Change 1242 on 1999/03/19 by nick@ni-s
+Change 1987 on 2000/09/25 by nick@pluto
 
-	Steve's patches
+	Image objects from strings and channel binary via encoding.
 
-Change 1241 on 1999/03/16 by nick@ni-s
+Change 1986 on 2000/09/25 by nick@pluto
 
-	Prep for release
-	Copyright dates
+	Diags in Tk::Widget::new.
+	Make Tcl_GetCommandInfo() work for loaded commands.
 
-Change 1240 on 1999/03/16 by nick@gobstopper2
+Change 1985 on 2000/09/25 by nick@pluto
 
-	Update README
+	Use 'AllocFromObj' not 'GetFromObj' for Font and Cursor.
 
-Change 1239 on 1999/03/16 by nick@gobstopper
+Change 1984 on 2000/09/25 by nick@pluto
 
-	#if to avoid warnings
+	Better dummy encode routines
 
-Change 1238 on 1999/03/16 by nick@gobstopper2
+Change 1983 on 2000/09/25 by nick@pluto
 
-	Remove debug now it works
+	Sort out vtables so all extns pass t/Require.t
 
-Change 1237 on 1999/03/16 by nick@ni-s
+Change 1982 on 2000/09/25 by nick@pluto
 
-	Calc size of open dialog string
+	Basic button works. But:
+	 - no universal '-class' for now
+	 - Button's error recovery scheme shows major snag with current
+	   ResultAv() scheme used by Tcl_GetObjResult.
 
-Change 1236 on 1999/03/16 by nick@gobstopper
+Change 1981 on 2000/09/25 by nick@pluto
 
-	Debugging for Win32 FileSelect
+	Extra arg for client data info
 
-Change 1235 on 1999/03/13 by nick@ni-s
+Change 1980 on 2000/09/24 by nick@bactrian
 
-	VERSIONs after patches from list
+	Created and configuring a button.
 
-Change 1234 on 1999/03/13 by nick@ni-s
+Change 1979 on 2000/09/24 by nick@bactrian
 
-	Slaven Rezic's Canvas.pod patch.
+	TK_CONFIG_OBJS and objClientData issues - MainWindow created.
 
-Change 1233 on 1999/03/13 by nick@ni-s
+Change 1977 on 2000/09/24 by nick@bactrian
 
-	My tweaks for new CmdLIne stuff 
-	 1. avoid undefined warnings in geometry hack
-	 2. More iconposition parsing to accept /[+-]\d+[+-]\d+/
-	    more like "geometry".
+	Allow Tcl_CreateObjCmd to build widgets by looking up tkwin.
 
-Change 1232 on 1999/03/13 by nick@ni-s
+Change 1976 on 2000/09/24 by nick@bactrian
 
-	Slaven Rezic's tweak to new CmdLine.
+	Our coinage 'LangString' replaced everywhere with Tcl's Tcl_GetString().
 
-Change 1231 on 1999/03/13 by nick@ni-s
+Change 1975 on 2000/09/24 by nick@bactrian
 
-	Updated CmdLine from Ben Pavon <ben.pavon@hsc.hac.com>
+	Stubs for rest of threadish things that should live here.
 
-Change 1230 on 1999/03/13 by nick@ni-s
+Change 1974 on 2000/09/24 by nick@bactrian
 
-	Slaven Rezic's patch for IO/IO.pm 
+	Stubs update - avoid Tcl_Encoding as non-opaque struct.
 
-Change 1229 on 1999/03/13 by nick@linux
+Change 1973 on 2000/09/23 by nick@bactrian
 
-	Linux fixup for compile stuff	
+	Stubs or best guesses at imlementations of all unresolved refs.
 
-Change 1228 on 1999/03/13 by nick@ni-s
+Change 1971 on 2000/09/21 by nick@pluto
 
-	VERSION tweaks, compile support
+	Various vtable things.
+	A few of new stubs needed.
 
-Change 1227 on 1999/03/13 by nick@ni-s
+Change 1970 on 2000/09/21 by nick@pluto
 
-	Add compile directory
+	Auto fossick with tkEvent.h and *.exc to represent
+	what actually is in Event/*.o
 
-Change 1225 on 1999/03/11 by nick@ni-s
+Change 1969 on 2000/09/21 by nick@pluto
 
-	Remove INIT from loadables, no point as are instanced after
-	perl_run is has called PL_initav.
-	Revisit after trials
+	Auto-generated form
 
-Change 1223 on 1999/03/10 by nick@pluto
+Change 1968 on 2000/09/20 by nick@bactrian
 
-	Fix 'after' problem in Entry 
+	Event sanity
 
-Change 1222 on 1999/03/06 by nick@ni-s
+Change 1967 on 2000/09/20 by nick@pluto
 
-	Loose OldCmdLine
+	Add the prune utility to the depot
 
-Change 1220 on 1999/03/04 by nick@ni-s
+Change 1966 on 2000/09/20 by nick@pluto
 
-	Versions
+	Prune vtables to things that are actually called
 
-Change 1219 on 1999/03/04 by nick@ni-s
+Change 1965 on 2000/09/20 by nick@pluto
 
-	Avoid -DBASEEXT junk in Makefiles
-	Slaven's "widget #2" fix to tests
-	Backward compatible tkGlue.h 
+	Map Tcl's stub table hacking on to our vtable hacking.
 
-Change 1218 on 1999/03/04 by nick@ni-s
+Change 1964 on 2000/09/20 by nick@pluto
 
-	Don't bless sub itself into Tk::Callback.
+	All sub-extensions build too.
 
-Change 1217 on 1999/03/02 by nick@ni-s
+Change 1963 on 2000/09/20 by nick@pluto
 
-	Ben Pavon's <ben.pavon@hsc.hac.com> new Tk::CmdLine and associated 
-	docs.
+	Tk.so will build (no chance of loading) with vtables back on
 
-Change 1212 on 1999/02/01 by nick@ni-s
+Change 1962 on 2000/09/20 by nick@bactrian
 
-	Quote -x and -y to avoid warnings.
+	Start on xxGlue code - avoid conflict with Tcl's Var, CONST changes
 
-Change 1211 on 1999/01/31 by nick@ni-s
+Change 1961 on 2000/09/19 by nick@pluto
 
-	tkman's -elide patch for Text tags
+	Avoid only-used-once func
 
-Change 1210 on 1999/01/31 by nick@ni-s
+Change 1960 on 2000/09/19 by nick@pluto
 
-	$VERSION as ever...
+	Setup for findcore etc. to probe for things we need to glue.
 
-Change 1209 on 1999/01/31 by nick@ni-s
+Change 1959 on 2000/09/19 by nick@pluto
 
-	Fix slave_expand_off when gridded to only mess with -weight, which
-	is equivalent of pack's -expand, and not -sticky, which is equivalent
-	to packs -fill. 
-	With this change Adjuster + grid is no worse than it ever was.
+	All _compiles_ (now will it link?)
 
-Change 1208 on 1999/01/30 by nick@ni-s
+Change 1957 on 2000/09/18 by nick@bactrian
 
-	Slaven's Listbox tweak.
+	Sort out merge of pTk's wrap and help menu tweaks.
 
-Change 1207 on 1999/01/23 by nick@ni-s
+Change 1956 on 2000/09/18 by nick@bactrian
 
-	Non-interactive tests fix.
+	Almost there - just some obscure Unix port issues left
 
-Change 1206 on 1999/01/23 by nick@ni-s
+Change 1955 on 2000/09/18 by nick@pluto
 
-	Stephen Kun's <stephen.kun@is.gaertner.de> Adjuster changes.
+	More tidying
 
-Change 1202 on 1999/01/09 by nick@camel
+Change 1954 on 2000/09/18 by nick@pluto
 
-	Use perl's configured make
+	Convert Tk_Tile stuff to dummies till we can decipher
+	what inherited BLT code was trying to do.
 
-Change 1197 on 1998/12/23 by nick@ni-s
+Change 1953 on 2000/09/18 by nick@pluto
 
-	Pre-holiday tidy up
+	More fixups
 
-Change 1196 on 1998/12/19 by nick@ni-s
+Change 1952 on 2000/09/18 by nick@pluto
 
-	Document idletasks and update
+	Mangled {} nesting
 
-Change 1195 on 1998/12/17 by nick@ni-s
+Change 1951 on 2000/09/18 by nick@pluto
 
-	Stephen Kun's <stephen.kun@is.gaertner.de> Adjuster tweaks
+	Tcl_GetVar/Tcl_SetVar use Tcl_Obj forms.
 
-Change 1194 on 1998/12/14 by nick@ni-s
+Change 1950 on 2000/09/18 by nick@pluto
 
-	Change Lang_TkSubCmd() to use XStoAfterSub() as that _seems_
-	to be the correct wrapper for Tk::Mwm - which is as far 
-	as I can tell its only caller.
+	Tcl_TraceVar muddle worked round
 
-Change 1193 on 1998/12/10 by nick@ni-s
+Change 1949 on 2000/09/18 by nick@pluto
 
-	$VERSION #$%$
+	Various fixups
 
-Change 1192 on 1998/12/10 by nick@ni-s
+Change 1948 on 2000/09/18 by nick@pluto
 
-	Tweaks for compiler
+	Fixup all the Photo formats to use new arg ordering.
 
-Change 1190 on 1998/12/10 by nick@ni-s
+Change 1947 on 2000/09/18 by nick@pluto
 
-	Don't use a hash so that ->add('Scrolled',...) works
-	(Patch from Ben Pavon <ben.pavon@hsc.hac.com>).
+	Abstraction for internals access to Tcl_Obj
 
-Change 1188 on 1998/11/26 by nick@pluto
+Change 1946 on 2000/09/17 by nick@bactrian
 
-	Pseudo taint stupidity
+	Make tck.h's structs opaque again
 
-Change 1187 on 1998/11/24 by nick@ni-s
+Change 1945 on 2000/09/17 by nick@bactrian
 
-	Bump $VERSIONs - updated .pm-s for compiler tweaks
+	Round-the-houses merge of pTk's tkConfig.c into tkOldConfig.c
 
-Change 1186 on 1998/11/24 by nick@ni-s
+Change 1944 on 2000/09/17 by nick@bactrian
 
-	Use compiler-compatible way of defining methods in loadables.
+	Edits pre abortive merge idea
 
-Change 1185 on 1998/11/21 by nick@ni-s
+Change 1943 on 2000/09/17 by nick@bactrian
 
-	Perl-side work-rounds for perl compiler - "tiny" runs!
+	Branch tcl.h and tkOldConfig.c
 
-Change 1184 on 1998/11/21 by nick@ni-s
+Change 1942 on 2000/09/16 by nick@bactrian
 
-	Work round lack of working INIT in -MO=C
+	Resolve / merge the files using new TK_OPTION stuff - mostly accept
+	Tcl's version for now.
 
-Change 1183 on 1998/11/21 by nick@ni-s
+Change 1941 on 2000/09/16 by nick@bactrian
 
-	Changes to allow 'tiny' to build (but not work yet) with (tweaked) 
-	-MO=C backed to perl compiler.
-	Make XS names conform to to what B::C compiler back-end expects.
-	Avoid EnterMethods at C level as XSUBs by right names don't exist.
-	Achieve equivalent with closures in Tk::Methods and new XSUB 
-	Tk::WidgetMethod
+	Rough 1st resolve/merge of most of tk8.3.2
 
-Change 1182 on 1998/11/18 by nick@ni-s
+Change 1940 on 2000/09/12 by nick@bactrian
 
-	Comment out left-over debug.
-	Collapse afterIdle and afterCancel to avoid one level of wrapper.
+	Raw merge of tk8.3.2 docs
 
-Change 1181 on 1998/11/16 by nick@ni-s
+Change 1930 on 2000/09/12 by nick@bactrian
 
-	Patch for perl5.00404 
+	White space our side
 
-Change 1180 on 1998/11/15 by nick@ni-s
+Change 1926 on 2000/09/12 by nick@bactrian
 
-	Pre-Tk800.012 release tweaks.
+	Merge Tk800.023
 
-Change 1179 on 1998/11/15 by nick@ni-s
+Change 1862 on 2000/05/13 by nick@bactrian
 
-	Make last separator entry right justify remaining items on a UNIX
-	menubar (already done for Win32).
-	Update pods for Menu (this change), and Widget (document Busy/Unbusy).
+	Integrate Tk800.022
 
-Change 1178 on 1998/11/14 by nick@ni-s
+Change 1759 on 2000/03/16 by nick@bactrian
 
-	Forgot the ##%*%^#$% $VERSION _again_.
+	resolve -ay as basis for TclTkutf8 merges
 
-Change 1177 on 1998/11/14 by nick@ni-s
+Change 1758 on 2000/03/16 by nick@bactrian
 
-	Insist on 5.00404 at top of Makefile.PL, try and remove
-	duplicate dependancy waffle from dmake
+	Auto VERSION update to 4.*
 
-Change 1176 on 1998/11/14 by nick@ni-s
+Change 1757 on 2000/03/16 by nick@bactrian
 
-	First stab and Changes and README
-
-Change 1175 on 1998/11/14 by nick@camel
-
-	Don't move raised windows down
-
-Change 1174 on 1998/11/14 by nick@ni-s
-
-	pTk-ize new Menu code
-
-Change 1173 on 1998/11/14 by nick@gobstopper
-
-	Mingw32 build fixes
-
-Change 1172 on 1998/11/14 by nick@ni-s
-
-	Botched merge
-
-Change 1171 on 1998/11/14 by nick@ni-s
-
-	Loose binary "makefiles"
-
-Change 1170 on 1998/11/14 by nick@ni-s
-
-	Copyright dates, MANIFEST update etc. after merge
-
-Change 1169 on 1998/11/14 by nick@ni-s
-
-	Mark change-via-patch as integated
-
-Change 1168 on 1998/11/14 by nick@ni-s
-
-	Diff tk8.0p2 our version of tkCanvPs.c
-	Apply result as patch to tk8.0.3 version
-
-Change 1167 on 1998/11/14 by nick@ni-s
-
-	Bulk of tcl8.0.3/tk8.0.3 merge
-
-Change 1166 on 1998/11/14 by nick@ni-s
-
-	Copy in gross change prior to merge
-
-Change 1164 on 1998/11/13 by nick@ni-s
-
-	tk8.0.3 merge
-	diff -ru tk8.0p2 tk8.0.3 ; apply as patch
-	cpt -md tk.8.0.3 . 
-	make_manifest 
-	p4manifest
-	p4 diff -se ./... > e
-	p4 -x e edit
-
-Change 1163 on 1998/11/13 by nick@camel
-
-	Tweak basic_demo to have right-side menu items
-	Works on Win32.
-
-Change 1162 on 1998/11/13 by nick@ni-s
-
-	1st stab and allowing right-justified menu items on Win32.
-
-Change 1161 on 1998/11/13 by nick@ni-s
-
-	$VERSION and MANIFEST cleanup again
-
-Change 1160 on 1998/11/13 by nick@camel
-
-	Don't use TOPMOST XRaiseWindow()
-
-Change 1159 on 1998/11/13 by nick@ni-s
-
-	Suggested patch for 'raise' window.
-
-Change 1158 on 1998/11/13 by nick@camel
-
-	Make arrow keys clear selection
-
-Change 1157 on 1998/11/13 by nick@pluto
-
-	Re-work ->Busy to (optionaly) recurse with cursor setting.
-
-Change 1156 on 1998/11/12 by nick@camel
-
-	Make TranslateFileName actually work...
-
-Change 1155 on 1998/11/12 by nick@camel
-
-	To compile with VC++ needs <shellapi.h>
-
-Change 1154 on 1998/11/12 by nick@ni-s
-
-	Simple minded Tcl_TranslateFileName() via call to Tk::TranslateFileName
-	now defined in Tk.pm
-
-Change 1153 on 1998/11/09 by nick@pluto
-
-	More Font tolerance
-
-Change 1152 on 1998/11/08 by nick@ni-s
-
-	Update MANIFEST for docs and Win32 tweaks
-
-Change 1151 on 1998/11/08 by nick@ni-s
-
-	We have done some things in ToDo list!
-
-Change 1150 on 1998/11/08 by nick@ni-s
-
-	Tweaks to X11Font docs in its new home.
-
-Change 1149 on 1998/11/08 by nick@ni-s
-
-	Stage 1 of Font docs update.
-
-Change 1147 on 1998/11/08 by nick@ni-s
-
-	Default offset in IO::READ
-
-Change 1146 on 1998/11/07 by nick@gobstopper
-
-	Win32 debug assist script
-
-Change 1142 on 1998/11/07 by nick@gobstopper
-
-	There are several problems with WinPhoto on Win32
-	- Cannot get XGetWindowAttributes().
-	- Cannot get XGetImage() from a Window (fixable)
-	- Not clear if XQueryColors() is right due to above.
-	Disable for now.
-
-Change 1141 on 1998/11/07 by nick@ni-s
-
-	Make XGetWindowAttributes() less stub-like.
-
-Change 1140 on 1998/11/07 by nick@ni-s
-
-	Move XQueryColors() to tkWinColour and implement.
-
-Change 1139 on 1998/11/07 by nick@gobstopper
-
-	Change default Text font to a Fixed width font
-	Change WinPhoto to call a XQueryColors() which at least
-	has a stub on Win32.
-
-Change 1138 on 1998/11/07 by nick@ni-s
-
-	Switch to Tk::Font C-side, make tkFont.c accept X-like names
-	for bold-ness etc. Fill in a few more holes in Font.pm
-
-Change 1137 on 1998/11/07 by nick@ni-s
-
-	David Town's <dtown@fore.com> tweaks for more native-look dialogs on
-	Win32
-
-Change 1136 on 1998/11/06 by nick@ni-s
-
-	I always botch at least one $VERSION per-try 
-
-Change 1135 on 1998/11/06 by nick@ni-s
-
-	MANIFEST abd $VERSION updates
-
-Change 1134 on 1998/11/06 by nick@ni-s
-
-	Move WinPhoto to build by default (at least on UNIX)
-
-Change 1133 on 1998/11/05 by nick@ni-s
-
-	1st stab at unified Tk::font / Tk::Font 
-
-Change 1132 on 1998/11/03 by nick@pluto
-
-	Perl-side (mostly) fonts-as-objects. Tweak C side to allow Tk::font 
-	glue to accept either $font->actual or $widget->fontNames style.
-
-Change 1131 on 1998/11/02 by nick@ni-s
-
-	More C-side twiddling of fonts.
-	 Return list of key/value pairs for font('metrics',...)
-	 Return list of Tk::font objects for font('names')
-
-Change 1130 on 1998/11/02 by nick@ni-s
-
-	Implement Tk_GetUid using perl's shared hash keys.
-	Does not seem to help memory size at all - odd.
-
-Change 1129 on 1998/10/31 by nick@ni-s
-
-	We don't need Tcl_HashStats (remnant of attempt to replace
-	Tcl_Hash* with HVs)
-
-Change 1128 on 1998/10/31 by nick@ni-s
-
-	Slightly better C hooks for fonts as objects
-
-Change 1127 on 1998/10/30 by nick@ni-s
-
-	First pass of C code mods for fonts as objects
-
-Change 1124 on 1998/10/27 by nick@gobstopper
-
-	A 'na' that only shows up on Win32
-
-Change 1117 on 1998/10/18 by nick@ni-s
-
-	VERSION updates
-
-Change 1115 on 1998/10/17 by nick@ni-s
-
-	Changes to allow build under 5.005_52+ which insists on 5.005
-	style access to perl global variables.
-
-Change 1113 on 1998/10/16 by nick@ni-s
-
-	Slaven Rezic linux/FreeBSD patches
-
-Change 1111 on 1998/10/15 by nick@pluto
-
-	Add keycode to basic_deno diags
-
-Change 1109 on 1998/10/13 by nick@ni-s
-
-	Use keysyms rather than char code for Alt- Menu bindings.
-	(OS2 request, seems to make sense in general.)
-
-Change 1108 on 1998/10/13 by nick@ni-s
-
-	Slaven Rezic's fixes for raw ->interp[0] and DItem pods.
-
-Change 1105 on 1998/10/05 by nick@gobstopper
-
-	Derived files 
-
-Change 1102 on 1998/09/30 by nick@ni-s
-
-	Ilya's OS2 patch
-
-Change 1100 on 1998/09/28 by nick@pluto
-
-	Build on UNIX after Win32 D&D stuff
-
-Change 1099 on 1998/09/26 by nick@gobstopper
-
-	More Win32 Drop stuff
-
-Change 1098 on 1998/09/26 by nick@gobstopper
-
-	Add Basic Win32 dropsite support, still needs to map list back onto
-	a 'selection', before it is usable.
-
-Change 1097 on 1998/09/21 by nick@ni-s
-
-	Patch for popups on Win32
-
-Change 1093 on 1998/09/15 by nick@pluto
-
-	Avoid &NeedPreload as it re-uses @_ and XS complains
-
-Change 1085 on 1998/09/13 by nick@ni-s
-
-	Add test, update README, implement $$ as literal $ 
-	Call this 0.03
-
-Change 1080 on 1998/09/08 by nick@pluto
-
-	De-activate top-level Menubar item after invoke
-	Allow non-existing files for getSaveFile via Fbox.
-
-Change 1078 on 1998/09/05 by nick@ni-s
-
-	Slaven Rezic's Tk::FBox
-
-Change 1077 on 1998/09/05 by nick@ni-s
-
-	The missed Balloon patch
-
-Change 1076 on 1998/09/05 by nick@ni-s
-
-	Slaven Rezic's Menunutton and Dialog fixes 
-
-Change 1075 on 1998/09/05 by nick@ni-s
-
-	Manifest
-
-Change 1074 on 1998/09/01 by nick@ni-s
-
-	Prepare for Tk800.011
-
-Change 1073 on 1998/08/30 by nick@linux
-
-	Add file name to title of ptked
-
-Change 1072 on 1998/08/30 by nick@ni-s
-
-	Increment version, deprecate TixGrid
-
-Change 1071 on 1998/08/30 by nick@ni-s
-
-	Unix tweaks
-
-Change 1070 on 1998/08/30 by nick@gobstopper
-
-	Win32 tweaks 
-
-Change 1069 on 1998/08/30 by nick@ni-s
-
-	Various fixes from the list
-	   - $0 tainting 
-	   - DND tweaks
-	   - Two different BrowseEntry fixes
-	   - LabFrame label stuff
-
-Change 1068 on 1998/08/30 by nick@ni-s
-
-	Doc tweak
-
-Change 1066 on 1998/08/26 by nick@ni-s
-
-	1st attempt
-
-Change 1062 on 1998/08/24 by nick@camel
-
-	Tweaks for Conference demo
-
-Change 1060 on 1998/08/15 by nick@ni-s
-
-	Tweak style demo so it does not look silly when 
-	a default font option is in effect (make a bit larger as well).
-
-Change 1058 on 1998/08/15 by nick@ni-s
-
-	Allow Dirlist to have its image configured, 
-	Supply two captured images
-
-Change 1056 on 1998/08/15 by nick@ni-s
-
-	Re-work MessageBox UNIX side to work with Win32 mandated lower-case
-	types.
-
-Change 1055 on 1998/08/15 by nick@camel
-
-	Sort out Win32 native messageBox
-
-Change 1054 on 1998/08/15 by nick@ni-s
-
-	Vector 'messageBox' via tk_messageBox so native dialogs catch on Win32.
-
-Change 1052 on 1998/08/15 by nick@ni-s
-
-	Be more cautious about Traced variables
-
-Change 1046 on 1998/08/14 by nick@ni-s
-
-	$VERSIONs again
-
-Change 1045 on 1998/08/14 by nick@ni-s
-
-	Avoid passing args to be merged to ->after
-
-Change 1044 on 1998/08/14 by nick@ni-s
-
-	Allow normal callbacks for Notebook page commands
-
-Change 1043 on 1998/08/14 by nick@pluto
-
-	Conference prep. at work
-
-Change 1041 on 1998/08/13 by nick@pluto
-
-	Tweaks for demo
-
-Change 1034 on 1998/08/08 by nick@ni-s
-
-	Prepare for Tk800.010
-
-Change 1031 on 1998/08/06 by nick@camel
-
-	Mwm is meaningless on Win32, update ->wrapper to 
-	new form.
-
-Change 1030 on 1998/08/06 by nick@ni-s
-
-	VERSONS
-
-Change 1029 on 1998/08/06 by nick@pluto
-
-	Fix Drag&Drop with Menubar
-
-Change 1026 on 1998/08/04 by nick@ni-s
-
-	Update VERSION perl-ize 'build' script
-
-Change 1025 on 1998/08/04 by nick@ni-s
-
-	Virtual event <<LeftTab>>
-
-Change 1024 on 1998/08/04 by nick@ni-s
-
-	Key bindings for BrowseEntry
-
-Change 1023 on 1998/08/01 by nick@ni-s
-
-	Fixup some of TixGrid selection mess. 
-	Expect the remaining errors.
-
-Change 1022 on 1998/08/01 by nick@ni-s
-
-	Fix formInfo (superficially...)
-
-Change 1021 on 1998/08/01 by nick@ni-s
-
-	Fixup Mwm and Hlist to pass Achim's tests, add the tests.
-
-Change 1019 on 1998/08/01 by nick@ni-s
-
-	Broken L<>
-
-Change 1017 on 1998/07/31 by nick@ni-s
-
-	Resolve Achim's pod changes
-
-Change 1015 on 1998/07/31 by nick@ni-s
-
-	Achim's demo highlight tweak
-
-Change 1014 on 1998/07/31 by nick@ni-s
-
-	Jason Smith's patch for non-interactive testsuite.
-
-Change 1013 on 1998/07/31 by nick@ni-s
-
-	Update $VERSION in changed files
-
-Change 1012 on 1998/07/31 by nick@ni-s
-
-	Jason Smith's Ballon patch.
-
-Change 1011 on 1998/07/31 by nick@ni-s
-
-	Steve's patches 2&3 (#1 already applied?)
-
-Change 1006 on 1998/07/29 by nick@pluto
-
-	Sort out Alt-x Menu traversal (UNIX)
-
-Change 1005 on 1998/07/28 by nick@pluto
-
-	Fix core dumps when menu of same PathName is re-created
-	Due to Toplevel disassociating itself from menu "Object"
-	Menu had ceased to exist in TK sense so name not known.
-
-Change 1002 on 1998/07/26 by nick@camel
-
-	winMain nop'ed correctly
-	Develop, then comment out work-round for resource kit
-	bug if AS's patch used as-is.
-
-Change 1001 on 1998/07/26 by nick@ni-s
-
-	Add chop test 
-
-Change 1000 on 1998/07/26 by nick@ni-s
-
-	Add test for magic-based tracing of perl variables
-
-Change 999 on 1998/07/26 by nick@ni-s
-
-	Fixup ActiveState merge
-
-Change 998 on 1998/07/26 by nick@ni-s
-
-	Move forward adopting bits of Resource kit 
-
-Change 997 on 1998/07/26 by nick@ni-s
-
-	Re-add leak stuff that ActiveState had...
-
-Change 996 on 1998/07/26 by nick@ni-s
-
-	Reverse engineer Murry's build
-
-Change 995 on 1998/07/22 by nick@ni-s
-
-	Tweaks suggested by Achim, a little more PERL_OBJECT stuff
-
-Change 994 on 1998/07/22 by nick@camel
-
-	Prepare Tkperl for non CAPI guiperl.exe build
-
-Change 993 on 1998/07/22 by nick@camel
-
-	PERL_OBJECT build fixes/workrounds
-
-Change 992 on 1998/07/21 by nick@ni-s
-
-	Theoretical OK for Resource kit
-
-Change 991 on 1998/07/21 by nick@ni-s
-
-	 theo@unix10.acsp.com  patch to option*.pod
-
-Change 990 on 1998/07/21 by nick@pluto
-
-	Cleanup for 5.005 - loose internals over exposure
-
-Change 989 on 1998/07/20 by nick@ni-s
-
-	Undo work-rounds for PL_ stuff in 5.005 to be (fixed by perl now).
-
-Change 988 on 1998/07/19 by nick@ni-s
-
-	Odd tweaks for 5.005-to-be tolerance
-
-Change 987 on 1998/07/18 by nick@ni-s
-
-	Steve's patch 
-
-Change 986 on 1998/07/18 by nick@ni-s
-
-	Tail end of 800.008
-
-Change 985 on 1998/07/17 by nick@ni-s
-
-	Integrate Achim's pod changes as of 1998/07/17
-
-Change 981 on 1998/07/16 by nick@pluto
-
-	Tidy up Copy/Paste/Cut handling, add <<Undo>> for TextUndo.
-	Allow '' as "no bitmap"
-	Avoid a core-dump during obscure destroy sequence
-
-Change 980 on 1998/07/15 by nick@ni-s
-
-	VERSION tweak 
-
-Change 978 on 1998/07/15 by nick@pluto
-
-	Pod utilities tweaks + corrections to L<>
-
-Change 977 on 1998/07/14 by nick@pluto
-
-	Implement READ and GETC tie methods for use via fileevent
-
-Change 975 on 1998/07/11 by nick@ni-s
-
-	Mend <Escape> binding in cascade menus,
-	Tolerate bug/behaviour change in 5.004_69 with for (1..3) closures.
-
-Change 974 on 1998/07/11 by nick@ni-s
-
-	Change all the "@ISA = ..." to "use base ..." for perlcc 
-
-Change 973 on 1998/07/11 by nick@camel
-
-	Update perl/tk editor
-
-Change 972 on 1998/07/11 by nick@ni-s
-
-	MANIFEST and version tweaks
-
-Change 971 on 1998/07/09 by nick@pluto
-
-	Cause Ev('s') and equivalents to return bind-like string 
-	for modifiers (as well as numeric value)
-
-Change 970 on 1998/07/04 by nick@camel
-
-	Iconize (close) console window on Tk.dll load
-
-Change 969 on 1998/07/03 by nick@ni-s
-
-	Remove obsolete Pod and HTML now distributed separately.
-
-Change 967 on 1998/07/03 by nick@pluto
-
-	Fix make test recurse and Test.pm issues
-
-Change 966 on 1998/07/02 by nick@pluto
-
-	Add size-reducing strip utility
-
-Change 965 on 1998/07/02 by nick@pluto
-
-	Make Tk compiler-ready (when compiler can do OO)
-
-Change 964 on 1998/07/01 by nick@ni-s
-
-	Get repository and MANIFEST back in sync
-
-Change 963 on 1998/07/01 by nick@ni-s
-
-	Steve's patches #3 and #4
-
-Change 961 on 1998/06/30 by nick@ni-s
-
-	Update versions
-
-Change 960 on 1998/06/30 by nick@ni-s
-
-	ptksh patch
-
-Change 959 on 1998/06/30 by nick@ni-s
-
-	Achim's TixGrid patch
-
-Change 958 on 1998/06/29 by nick@ni-s
-
-	Steve's #2 patch
-
-Change 957 on 1998/06/29 by nick@ni-s
-
-	Steve's patch#1
-
-Change 956 on 1998/06/29 by nick@pluto
-
-	Slaven's patches, and Steve's quick-fixes
-
-Change 955 on 1998/06/26 by nick@camel
-
-	Borland trial
-
-Change 954 on 1998/06/26 by nick@ni-s
-
-	Prepare for .007
-
-Change 953 on 1998/06/26 by nick@ni-s
-
-	Ilya's OS2 patch
-
-Change 952 on 1998/06/26 by nick@ni-s
-
-	Re-instate ability to have generic event handler, used
-	one to try and find iconwin-does-not-redraw problem. (Failed).
-
-Change 951 on 1998/06/26 by nick@ni-s
-
-	Test case for selection range in HList, fix the bug.
-
-Change 949 on 1998/06/26 by nick@ni-s
-
-	Update MANIFEST
-
-Change 948 on 1998/06/26 by nick@ni-s
-
-	Integrate Achim's tkpoddiff
-
-Change 946 on 1998/06/26 by nick@camel
-
-	More attempts at guiperl.exe
-
-Change 945 on 1998/06/26 by nick@ni-s
-
-	Slaven Rezic's Tixish/Balloon.pm for Canvas patch
-
-Change 944 on 1998/06/26 by nick@ni-s
-
-	Achim's test updates 
-
-Change 943 on 1998/06/25 by nick@camel
-
-	Cleanup Win32 guiperl stuff - still some issues...
-
-Change 942 on 1998/06/25 by nick@ni-s
-
-	Add ability to exclude subdirs for UNIX too. (e.g. Tkperl)
-
-Change 941 on 1998/06/25 by nick@ni-s
-
-	Tkperl dir tweaks
-
-Change 940 on 1998/06/25 by nick@ni-s
-
-	Build guiperl
-
-Change 939 on 1998/06/25 by nick@ni-s
-
-	Build tkperl.exe in a subdir
-
-Change 938 on 1998/06/24 by nick@pluto
-
-	Update manifest for snag with symbolic link build.
-
-Change 935 on 1998/06/22 by nick@ni-s
-
-	Version updates
-
-Change 934 on 1998/06/22 by nick@camel
-
-	Mingw32 fixes
-	 - vtbl_uvar fails to "import"
-	 - use windres to include resources.
-
-Change 932 on 1998/06/20 by nick@camel
-
-	Minw32 builds all Tk, passes Require.t but won't run
-	basic_demo yet...
-
-Change 931 on 1998/06/20 by nick@camel
-
-	Mingw32 (egcs-1.0.2) builds and runs 'tiny'
-
-Change 930 on 1998/06/20 by nick@ni-s
-
-	Remove uses of __FUNCTION__, try harder on workround if I forget again...
-
-Change 929 on 1998/06/20 by nick@camel
-
-	Mingw32 links but Tk.dll fails to load
-
-Change 928 on 1998/06/19 by nick@ni-s
-
-	Add ptksh, and a Win32 tweak
-
-Change 926 on 1998/06/18 by nick@camel
-
-	Bump version Mingw32 tweaks
-
-Change 925 on 1998/06/18 by nick@pluto
-
-	MsgBox tweaks
-
-Change 924 on 1998/06/16 by nick@ni-s
-
-	Tweaks as suggested by  Slaven Rezic 
-
-Change 923 on 1998/06/16 by nick@ni-s
-
-	$^T has nothing to do with -T (tainting), alternate solution.
-
-Change 922 on 1998/06/15 by nick@ni-s
-
-	Steve's demos and msgBox aka MsgBox
-
-Change 921 on 1998/06/14 by nick@ni-s
-
-	Tidy for release
-
-Change 920 on 1998/06/14 by nick@camel
-
-	More Mingw32 tweaks
-
-Change 919 on 1998/06/14 by nick@ni-s
-
-	Update versions from Win32
-
-Change 918 on 1998/06/14 by nick@camel
-
-	Win32 / Mingw32 fixes and workrounds
-
-Change 917 on 1998/06/14 by nick@ni-s
-
-	Thread tolerance
-
-Change 916 on 1998/06/13 by nick@ni-s
-
-	$VERSION stuff
-
-Change 915 on 1998/06/13 by nick@ni-s
-
-	Correct one SUPER:: snag in mega.pod, run tidypod
-
-Change 914 on 1998/06/13 by nick@ni-s
-
-	Integrate Achim's pod changes to mainline
-
-Change 913 on 1998/06/13 by nick@ni-s
-
-	Achim's tkpoddiff Sat 13th June
-
-Change 912 on 1998/06/12 by nick@ni-s
-
-	Sarathy's build with borland patch (Mk II)
-
-Change 911 on 1998/06/12 by nick@pluto
-
-	Allow -initialfile to not be found if -create
-
-Change 910 on 1998/06/11 by nick@ni-s
-
-	Add modified version of Alan's ->form bug report as a "demo"
-
-Change 909 on 1998/06/11 by nick@ni-s
-
-	Fix ->yview('13.0') problem (but should we...)
-
-Change 908 on 1998/06/11 by nick@ni-s
-
-	Update VERSIONs in .pm files
-	Restore ->form to accept '%100', update form.pod
-	to give perl/Tk syntax of ['&',$widget,$offset] for the '&' case.
-
-Change 907 on 1998/06/10 by nick@ni-s
-
-	Backlog of at-work edits mainly tainting stuff
-
-Change 906 on 1998/06/06 by nick@camel
-
-	Make wmRelease work on Win32, it more-or-less did, but 
-	as Label is handled as "native" then needed to pass "a"
-	window handle to its CreateProc or create failed.
-	RootWindow is returned as "NULL", translate that to 
-	GetDesktopWindow().
-
-Change 905 on 1998/06/06 by nick@camel
-
-	Avoid wmRelease on Win32 till we add a parent Tk_Window
-
-Change 903 on 1998/06/03 by nick@camel
-
-	Wm + hacks compiles, gets mem fault when wmRelease used...
-
-Change 902 on 1998/06/03 by nick@ni-s
-
-	Copypaste saveunder and wrapper command to Win32
-
-Change 901 on 1998/06/03 by nick@pluto
-
-	Re-work wmRelease and use for Drag&Drop
-
-Change 900 on 1998/06/03 by nick@pluto
-
-	Patches from the list
-
-Change 897 on 1998/06/02 by nick@ni-s
-
-	Update VERSION for TList and DragDrop changes
-
-Change 896 on 1998/06/02 by nick@pluto
-
-	Fix Sun Drag&Drop for tk8.8's wrapper windows and 
-	wm's tendancy to 'eat' selection events.
-	Track map/unmap of drop sites (e.g. on NoteBook pages).
-
-Change 894 on 1998/06/01 by nick@pluto
-
-	Fix various snags with TList
-	Add -textanchor to imagetext style options
-
-Change 862 on 1998/05/23 by nick@ni-s
-
-	Suppy dummy 'make test' target
-
-Change 859 on 1998/05/23 by nick@ni-s
-
-	Tolerate yet another error message format
-
-Change 849 on 1998/05/22 by nick@ni-s
-
-	Bump version, 
-	attempt to build under threads,
-	->after snag in an HList
-	Missed Mwm patch
-	Test updates
-
-Change 848 on 1998/05/22 by nick@pluto
-
-	Avoid coredump when last entry is hidden
-
-Change 828 on 1998/05/17 by nick@ni-s
-
-	Handle html target
-
-Change 827 on 1998/05/17 by nick@ni-s
-
-	Release preparation
-
-Change 826 on 1998/05/17 by nick@ni-s
-
-	Unbundle Bundle ;-)
-
-Change 825 on 1998/05/17 by nick@camel
-
-	Fixup tests for Win32
-
-Change 824 on 1998/05/17 by nick@ni-s
-
-	Tidy MANIFEST and VERSIONs
-
-Change 823 on 1998/05/17 by nick@ni-s
-
-	Non-standard "tests" moved to demos
-
-Change 822 on 1998/05/17 by nick@ni-s
-
-	Make Tk::Widget::CreateArgs more generic, so that widgets can provide
-	a list (via CreateOptions) rather than replicating arglist manipulation.
-
-Change 821 on 1998/05/17 by nick@ni-s
-
-	Move MainLoop from C to perl, and make it smart enough to
-	not need overriding from demos/widget or tkpsh
-	Move VTable declare from perl to C where it belongs.
-
-Change 820 on 1998/05/16 by nick@ni-s
-
-	Fix Text ->dump code to return objects for windows and images
-
-Change 818 on 1998/05/16 by nick@ni-s
-
-	Integrate Achim's pod changes 
-
-Change 816 on 1998/05/16 by nick@ni-s
-
-	Manifest fixup
-
-Change 815 on 1998/05/15 by nick@ni-s
-
-	Tolerate 5.00465-tobe's error message from failed require
-
-Change 814 on 1998/05/15 by nick@ni-s
-
-	Avoid warnings with gcc-2.8.1
-
-Change 813 on 1998/05/15 by nick@ni-s
-
-	Steves tweak to ColorEditor
-
-Change 810 on 1998/05/14 by nick@pluto
-
-	DragDrop fix and add demo 
-
-Change 804 on 1998/05/09 by nick@ni-s
-
-	Add Tiler demo
-
-Change 803 on 1998/05/09 by nick@ni-s
-
-	Adopt most of Achim's Tk::Demo concept into widget and tkpsh
-
-Change 802 on 1998/05/09 by nick@ni-s
-
-	perl-ify cleanup
-
-Change 801 on 1998/05/09 by nick@ni-s
-
-	"Lost edits"
-
-Change 800 on 1998/05/09 by nick@ni-s
-
-	Avoid divide by zero with empty Tiler,
-	Allow AddScrollbars with only yscroll (e.g. Tiler)
-
-Change 799 on 1998/05/09 by nick@ni-s
-
-	Initial ItemStyle
-
-Change 796 on 1998/05/08 by nick@camel
-
-	Add Win32 *.t and *.m to depot
-
-Change 795 on 1998/05/08 by nick@ni-s
-
-	Modify Photo to export VTable for imgInt.h so that PNG and JPEG modules
-	can use the functions defined there.
-
-Change 793 on 1998/05/05 by nick@pluto
-
-	Set up Uids used by tixGrid
-
-Change 792 on 1998/04/25 by nick@ni-s
-
-	Handle read-only args to ForceList() e.g. -format => 'gif' to Photo.
-
-Change 791 on 1998/04/25 by nick@ni-s
-
-	Integrate tkpoddiff
-
-Change 787 on 1998/04/20 by nick@ni-s
-
-	Add test to repository
-
-Change 786 on 1998/04/20 by nick@pluto
-
-	Patches to make tests follow standard pattern
-
-Change 785 on 1998/04/19 by nick@ni-s
-
-	Remove attempt to make in doc
-
-Change 783 on 1998/04/19 by nick@ni-s
-
-	Move '=for pm' after '=head1 NAME' to keep pod2man happy
-
-Change 782 on 1998/04/19 by nick@ni-s
-
-	Hide Makefile.PL in obsolete doc directory
-
-Change 780 on 1998/04/19 by nick@ni-s
-
-	Pre-release tidyup
-
-Change 779 on 1998/04/19 by nick@ni-s
-
-	Fix mis-remembered Tcl_IntResults() use in tixGrid
-
-Change 778 on 1998/04/19 by nick@ni-s
-
-	Fix nearest issue in TixGrid
-
-Change 777 on 1998/04/18 by nick@ni-s
-
-		Update pod list, invert sense of "failing" test 
-
-Change 776 on 1998/04/18 by nick@ni-s
-
-	Merge two After.pod s
-
-Change 775 on 1998/04/18 by nick@ni-s
-
-	Run tidypod
-
-Change 774 on 1998/04/18 by nick@ni-s
-
-	Fix -create case for ->windowCreate of Text.
-
-Change 773 on 1998/04/18 by nick@ni-s
-
-	Add tests, fix ->pathname, document (more useful) ->PathName
-
-Change 772 on 1998/04/18 by nick@ni-s
-
-	Tweak Lang_SplitList() to be more-like Tcl_ListObjGetElements(),
-	they really should be the same ...
-
-Change 771 on 1998/04/18 by nick@ni-s
-
-		Spurious =cut due to _my_ botched hack to pod extractor
-
-Change 770 on 1998/04/18 by nick@ni-s
-
-	A little re-arranging of pod stuff
-
-Change 769 on 1998/04/18 by nick@ni-s
-
-	Catalogue duplicate named pods 
-
-Change 768 on 1998/04/18 by nick@ni-s
-
-	Move _ALL_ pod docs to pod directory for easier bulk edit
-
-Change 767 on 1998/04/18 by nick@ni-s
-
-	Merge Achim's pod changes
-
-Change 765 on 1998/04/17 by nick@ni-s
-
-	Photo changes to allow -format to take a list
-
-Change 764 on 1998/04/16 by nick@pluto
-
-	WinPhoto upgrade to new API.
-	Fix a few things to build with threaded perl
-	Use XS() macro where appropriate to co-exist with PERL_OBJECT ?
-
-Change 763 on 1998/04/14 by nick@ni-s
-
-	Use ERRSV rather than groping about for $@ (which is wrong threaded)
-
-Change 762 on 1998/04/14 by nick@ni-s
-
-	Partial re-work of error reporting, probably a blink alley.
-	I _think_ we should just use $@ and warp Tk error reporting to 
-	perl model rather than vice versa ($@ is already nicely per-thread
-	for example).
-
-Change 761 on 1998/04/14 by nick@pluto
-
-	WinPhoto fixup to use new feature
-	Add ->formats method to Photo
-	Tweak to FileSelect for use a dialog
-	1st part of error backtrace fixup.
-	"Correct" -fg for ->Scrolled ?
-
-Change 759 on 1998/04/13 by nick@ni-s
-
-	Pass interp to Photo match procs.
-	Tidy up some freeProc problems
-
-Change 757 on 1998/04/13 by nick@ni-s
-
-	Pod renames etc.
-
-Change 756 on 1998/04/13 by nick@ni-s
-
-	Resolve pod patches into mainline
-
-Change 754 on 1998/04/13 by nick@ni-s
-
-	Achim's pod patches
-
-Change 753 on 1998/04/13 by nick@camel
-
-	Tweak tkWinWm to honour ->geometry immediately
-	to allow it to be used to move balloon etc.
-
-Change 752 on 1998/04/13 by nick@ni-s
-
-	Fix int and size_t mis-matches
-
-Change 751 on 1998/04/11 by nick@ni-s
-
-	Steve's ColorEditor tweak
-	Another crack at ConfigSpecs
-	Add (tweaked) testsuite stuff 
-
-Change 750 on 1998/04/11 by nick@ni-s
-
-	Revert ConfigSpecs to Tk402 style, bump $VERSION of Tk
-
-Change 749 on 1998/04/11 by nick@ni-s
-
-	Handle length of -1 as "go look for NUL" in Tcl_Obj strings.
-
-Change 745 on 1998/04/08 by nick@pluto
-
-	Update English.pm
-
-Change 744 on 1998/04/06 by nick@ni-s
-
-	Another try at best of both/all worlds on default front.
-
-Change 741 on 1998/04/06 by nick@pluto
-
-	Debug transparent window issues
-
-Change 738 on 1998/04/04 by nick@ni-s
-
-	MANIFEST cleanup
-
-Change 737 on 1998/04/04 by nick@ni-s
-
-	add_version :-/
-
-Change 736 on 1998/04/04 by nick@ni-s
-
-	$VERSIONs again - can I ever get add_version right?
-
-Change 735 on 1998/04/04 by nick@ni-s
-
-	$VERSION updates etc.
-
-Change 734 on 1998/04/04 by nick@ni-s
-
-	JPEG Fixups
-
-Change 733 on 1998/04/04 by nick@ni-s
-
-	Allow for new 'undef' handling in Scrolled
-	Consistency of docs 
-
-Change 732 on 1998/04/04 by nick@ni-s
-
-	Cleanup after duplicate patch
-
-Change 731 on 1998/04/04 by nick@ni-s
-
-	DirTree patches
-
-Change 730 on 1998/04/04 by nick@ni-s
-
-	Steve's demo patch, Jason's Balloon enhancement.
-
-Change 729 on 1998/04/04 by nick@ni-s
-
-	Remove description of configure and cget from individual
-	pods and refer to Tk::options pod instead.
-	Collapse Configure.pod into options.pod
-
-Change 728 on 1998/04/04 by nick@ni-s
-
-	Generic formating changes
-
-Change 727 on 1998/04/04 by nick@ni-s
-
-	More tiny-pod collapsing
-	Made ->scaling and ->appname work.
-
-Change 726 on 1998/04/04 by nick@ni-s
-
-	Version update
-
-Change 725 on 1998/04/04 by nick@ni-s
-
-	Collapse more trivial pods into Widget.pod
-	Fix for extension build outside Tk 
-
-Change 724 on 1998/04/03 by nick@ni-s
-
-	TixGrid stuff
-
-Change 723 on 1998/04/03 by nick@ni-s
-
-	Fix ckree() if perl stuff in Canvas PS
-	Fix result returns in tixGrid.
-
-Change 722 on 1998/04/03 by nick@ni-s
-
-	Resolve Achim's auto-diff
-
-Change 715 on 1998/04/01 by nick@pluto
-
-	Scrolling tweaks
-
-Change 707 on 1998/03/30 by nick@pluto
-
-	HList/tkmail tidy up (scrollbar settings on 'see' etc.)
-
-Change 706 on 1998/03/28 by nick@ni-s
-
-	Sort out WinPhoto 
-
-Change 705 on 1998/03/28 by nick@pluto
-
-	Add window as Image Type trial to repository
-
-Change 704 on 1998/03/28 by nick@ni-s
-
-	Update for snapshot
-
-Change 703 on 1998/03/28 by nick@ni-s
-
-	Re-tidypod after Achim merge
-
-Change 702 on 1998/03/28 by nick@ni-s
-
-	Re-delete things that re-emerged from Achim branch
-
-Change 701 on 1998/03/28 by nick@ni-s
-
-	Resolve patched Achim branch against mainline
-
-Change 696 on 1998/03/28 by nick@ni-s
-
-	Achim's patch
-
-Change 693 on 1998/03/28 by nick@ni-s
-
-	Start of moving trivia to Widget.pod
-
-Change 692 on 1998/03/24 by nick@pluto
-
-	Change to L<options>
-
-Change 691 on 1998/03/23 by nick@pluto
-
-	More pod tidying
-
-Change 690 on 1998/03/22 by nick@ni-s
-
-	Tidy up sequencing
-
-Change 688 on 1998/03/22 by nick@ni-s
-
-	Bring over docs for Tcl commands (as opposed to Tk) we have adopted.
-
-Change 687 on 1998/03/22 by nick@ni-s
-
-	Add category info amd change others ...
-
-Change 686 on 1998/03/22 by nick@ni-s
-
-	Category changes 
-
-Change 685 on 1998/03/22 by nick@ni-s
-
-	Avoid =back followed by =over - leads to unnecessary extra 
-	structure in HTML
-
-Change 684 on 1998/03/21 by nick@ni-s
-
-	Formatting fixup
-
-Change 682 on 1998/03/21 by nick@ni-s
-
-	Put whitepace into standard form
-
-Change 676 on 1998/03/21 by nick@ni-s
-
-	Cleanup NAME stuff for pod2lwp
-
-Change 675 on 1998/03/21 by nick@ni-s
-
-	MANIFEST adjust for new docs
-
-Change 674 on 1998/03/21 by nick@ni-s
-
-	Add pod docs to the depot
-
-Change 673 on 1998/03/21 by nick@ni-s
-
-	Chris Dean <ctdean@cogit.com>
-	 DirTree.pm: Created.
-	 HList.pm: removed references to EventType.  
-	  The -indicatorcmd callback takes the EventType as an additional argument.
-	 Tree.pm: expect -indicatorcmd to have an additional arg.
-	 perl-tix-dirtree: Created.
-
-Change 672 on 1998/03/21 by nick@ni-s
-
-	Doc build tweaks
-
-Change 671 on 1998/03/20 by nick@camel
-
-	Add files on laptop
-
-Change 670 on 1998/03/20 by nick@ni-s
-
-	Achim's changes to mann
-
-Change 669 on 1998/03/20 by nick@ni-s
-
-	Delete obsolete and duplicate docs
-
-Change 668 on 1998/03/20 by nick@camel
-
-	Add Generated MANIFEST file
-
-Change 665 on 1998/03/19 by nick@camel
-
-	Dallas trip edits - mainly doc stuff
-
-Change 664 on 1998/03/09 by nick@ni-s
-
-	Avoid filevent on Console on Win32
-
-Change 663 on 1998/03/09 by nick@ni-s
-
-	Update Changes and README
-
-Change 658 on 1998/03/09 by nick@ni-s
-
-	Import /home/nick/tools/npdws
-
-Change 656 on 1998/03/09 by nick@pluto
-
-	Patches from the list
-
-Change 655 on 1998/03/07 by nick@ni-s
-
-	$VERSION updates
-
-Change 654 on 1998/03/07 by nick@ni-s
-
-	Massage Tk::ColorEditor so that middle portion of Steve's 
-	widget is re-usable as a generic colour chooser.
-	Tweak FileSelect to handle generic SaveFile case too.
-	Make dialogs 'persist' so we retain values (even if Win32 ones don't)
-
-Change 653 on 1998/03/07 by nick@ni-s
-
-	Apply olvwm Icon tweaks to wrapper on icon windows
-
-Change 651 on 1998/03/06 by nick@ni-s
-
-	More dialog wrapper stuff
-
-Change 650 on 1998/03/06 by nick@camel
-
-	Add more common dialogs to toyedit
-
-Change 649 on 1998/03/06 by nick@ni-s
-
-	Wrappers for getOpenFile etc. - trial use in toyedit.
-
-Change 648 on 1998/03/06 by nick@ni-s
-
-	Make .m files independantly of .t files
-
-Change 647 on 1998/03/06 by nick@camel
-
-	Add diagnostic to treating READONLY as a list
-
-Change 646 on 1998/03/06 by nick@ni-s
-
-	Work-round Win32 Font code trying to 'split' a read-only string
-
-Change 645 on 1998/03/06 by nick@ni-s
-
-	If a Tk::Derived widget does not have default value, and
-	configure is used to inquire the default, then ask delegate
-	widget(s) for the default. e.g. restoring default background
-	in Scrolled Text widget in the demos.
-
-Change 644 on 1998/03/06 by nick@ni-s
-
-	Cleanup fonts a bit, pTk-ize tkFileFilter.c
-
-Change 643 on 1998/03/06 by nick@ni-s
-
-	Add generic dialogs and Fonts as objects
-
-Change 642 on 1998/03/06 by nick@camel
-
-	Derived file should not be in repository
-
-Change 641 on 1998/03/06 by nick@ni-s
-
-	Honour Name => in incoming cascade args
-	Grab copy of generated LangIO.h
-
-Change 640 on 1998/03/06 by nick@ni-s
-
-	Achim Bohnet <ach@mpe.mpg.de>
-	Patch below has IMO 'useful cosmetic' changes for -w and strict checks
-	so it's easier to spot possible errors
-	
-	o remove use AutoLoader when there's almost/ nothing to
-	  autoload
-	  Here I was not sure:
-		X.pm: uses AutoLoader as fallback in it's own
-			autoload routine but there's nothing to
-			autoload.  Remove ???
-		Toplevel.pm:  Only Autoloads Icon (and sub Icon
-			has require Tk::Toplevel.  Why ???
-	o ClassInit not autoloaded.
-		Text, Scrollbar, Listbox still have ClassInit
-		autoloaded.  I guess it's also no win here.
-	o @ISA @EXPORT(_OK)? into use vars
-	o Fixed one wrong $VERSION/package order in Radiobutton
-	o added require Whatever before @ISA = Whatever
-
-Change 639 on 1998/03/06 by nick@ni-s
-
-	Make Name => handling in Tk::Widget::new more generic so that 
-	menu -label values can be passed. Do so in Tk::Menu::Cascade
-	so that a Help entry gets a menu called "help" and is 
-	hence shown on the right.
-
-Change 638 on 1998/03/05 by nick@pluto
-
-	Add LangIO.h generator from mainline (AIX IO.xs at least 
-	needs this.)
-
-Change 637 on 1998/03/04 by nick@pluto
-
-	Add <Home> method to HList
-	Correct -w warnings in IO.pm
-
-Change 635 on 1998/03/03 by nick@pluto
-
-	Allow for 5.004 series by using AvFILL - vs AvFILLp
-	re-aply Steve's AIX #ifdef on memcpy
-
-Change 634 on 1998/03/01 by nick@ni-s
-
-	Pre Tk800.0_01 cleanup
-
-Change 633 on 1998/03/01 by nick@camel
-
-	Some tidy up
-
-Change 632 on 1998/03/01 by nick@ni-s
-
-	Remove debug prints
-
-Change 631 on 1998/03/01 by nick@ni-s
-
-	Typo corrections
-
-Change 630 on 1998/03/01 by nick@ni-s
-
-	Re-structure Win32 HANDLE event stuff
-
-Change 629 on 1998/03/01 by nick@camel
-
-	Win32 - bug found - go edit on UNIX
-
-Change 628 on 1998/03/01 by nick@camel
-
-	Save Typo corrections before trying in case 
-	it crashed the machine ...
-
-Change 627 on 1998/03/01 by nick@ni-s
-
-	Untested Win32 FileHandler implementation
-
-Change 626 on 1998/03/01 by nick@ni-s
-
-	Part 1 on n re-implemeting fileevent and Tk::IO
-	Move fileevent into Tk::IO.
-	Re-work XSUB'ing of Tcl_CreateFileHandler and Tcl_DeleteFileHandler
-	Make Tk::IO a TIEHANDLE package so that we can catch close.
-	add stubs for those to Win32 side. 
-	Intent is for Win32 to do OS level HANDLE wait on files (untested).
-
-Change 625 on 1998/03/01 by nick@ni-s
-
-	Fixup menubar usage in basic_demo, extend compatibility
-
-Change 624 on 1998/03/01 by nick@camel
-
-	Remove mess from toyedit which did not work on Win32
-
-Change 623 on 1998/03/01 by nick@ni-s
-
-	Change to getSelection combined with Clipboard.pm wedging methods
-	into Widget meant ->getSelection did not delegate to scrolled listboxes.
-	Make Tk::Clibboard a pseudo-base class instead.
-
-Change 622 on 1998/02/28 by nick@camel
-
-	Tweak toyedit to avoid DragDrop till we
-	either avoid Tix's wmRelease or make it work on Win32
-
-Change 621 on 1998/02/28 by nick@ni-s
-
-	First attempt at mapping Menubar onto a real one now they exist.
-
-Change 620 on 1998/02/28 by nick@ni-s
-
-	Use <<Copy>> & co. new method in Tk/Clipboard.pm to use them
-	code in MainWindow.pm to define them. Testing revealed Listbox Copy
-	not working as expected due to name mis-match Getselected vs getSelected
-	standardize on latter for symetry with other clipboard stuff.
-
-Change 619 on 1998/02/28 by nick@camel
-
-	update embed example's PERL5LIB hackery for Win32
-
-Change 618 on 1998/02/28 by nick@ni-s
-
-	Test case and fix-up for embeding windows 
-
-Change 617 on 1998/02/28 by nick@ni-s
-
-	Re-do alpha-channel fixup e.g. aminated GIFs
-
-Change 616 on 1998/02/28 by nick@ni-s
-
-	Sort out SvREFCNT muddle with cloned (e.g. torn-off) menus.
-	Implement bindtags replication and 'cloning' of callbacks
-	Note that only [] style callbacks get widget objects changed,
-	no attempt is made to fix-up closures.
-
-Change 615 on 1998/02/28 by nick@ni-s
-
-	Mwm tix Vtable glitch
-
-Change 614 on 1998/02/28 by nick@ni-s
-
-	Copydates again, HList demo tweak 
-
-Change 613 on 1998/02/27 by nick@ni-s
-
-	Add O'Reilly RTF template to move to NT machine
-
-Change 612 on 1998/02/27 by nick@ni-s
-
-	Contrib tweak to eventGenerate 
-
-Change 611 on 1998/02/27 by nick@pluto
-
-	Use sv_setpvfn(), remove debug in palette stuff, beginings of event?
-
-Change 610 on 1998/02/26 by nick@ni-s
-
-	Re-work mechanism for returning result(s) from Tk to perl to be essentially
-	same as it was prior to Tk8 merge. Instead of trying to mimic Tcl return
-	scheme in perl, comprehend special case of perl/Tk's 'result' object 
-	in objGlue.c. Without this re-work it was impossible to tell an empty
-	string from an empty list. e.g. $widget->children returned undef 
-	rather than () when there were no children.  
-
-Change 609 on 1998/02/26 by nick@pluto
-
-	Contrib fixes to Menu stuff + one of my own
-	Tweak winfo stuff to return list for rgb again.
-
-Change 607 on 1998/02/25 by nick@ni-s
-
-	Slaven Rezic <eserte@cs.tu-berlin.de>
-	The only event command working is "generate". Here's a patch to make
-	"add", "delete" and "info" working (it is probably suboptimal, but it
-	seems to work):
-
-Change 606 on 1998/02/25 by nick@pluto
-
-	Add other doc files 
-
-Change 605 on 1998/02/25 by nick@pluto
-
-	Achim's doc updates
-
-Change 604 on 1998/02/24 by nick@ni-s
-
-	Remove spurious extra $VERSION in Tk.pm, and bump to 800.001
-	while I am there...
-
-Change 603 on 1998/02/24 by nick@ni-s
-
-	Patches from the list
-	Slaven Rezic <eserte@cs.tu-berlin.de> - OnDestroy fix
-	by update to munging code.
-	Steve Lidie <Stephen.O.Lidie@Lehigh.EDU> - AIX memcpy stuff
-	Chris Dean <ctdean@cogit.com> - Menu.pm debug removal
-
-Change 602 on 1998/02/24 by nick@ni-s
-
-	Fix mkdist to handle Tk8 directory structure
-
-Change 601 on 1998/02/24 by nick@pluto
-
-	Remove remains of DString debug
-
-Change 600 on 1998/02/22 by nick@ni-s
-
-	Manifest, copyright date, and version update
-
-Change 599 on 1998/02/22 by nick@camel
-
-	Fix Win32 cascades - 'variable' vs 'name' issue
-
-Change 598 on 1998/02/21 by nick@camel
-
-	Turns out menus have been working all along,
-	but Menubutton::menu has been messing with colours
-	so we could not tell! 
-
-Change 597 on 1998/02/21 by nick@ni-s
-
-	Remove debug
-
-Change 596 on 1998/02/21 by nick@ni-s
-
-	Enable 'event' command
-
-Change 595 on 1998/02/21 by nick@camel
-
-	Fix __FUNCTION__ kludge for non-GNU
-
-Change 594 on 1998/02/21 by nick@ni-s
-
-	MenuDup using clone, and associated fixup of C glue.
-
-Change 593 on 1998/02/21 by nick@ni-s
-
-	More menu.tcl conversion - for Menubutton 
-
-Change 592 on 1998/02/20 by nick@camel
-
-	Typo's in menu support
-
-Change 591 on 1998/02/20 by nick@ni-s
-
-	Part 1 of menu.tcl -> Menu.pm updates - so far we have most of 
-	grab avoidance on non-unix - which may be why Win32 menus behave oddly.
-
-Change 590 on 1998/02/18 by nick@ni-s
-
-	Remove old libxpm based Pixmap completely now we have Tix and Img versions
-
-Change 589 on 1998/02/18 by nick@pluto
-
-	Fix strdup to use ckalloc() - Tix needs this if ckalloc != system malloc
-
-Change 588 on 1998/02/17 by nick@ni-s
-
-	Re-work mapping if Tcl_Obj's refCount to Perl's SvREFCNT
-	they are more-similar than I thought. 
-
-Change 587 on 1998/02/17 by nick@pluto
-
-	Tweaks to Pod-Util, two trivia in Tk8
-
-Change 586 on 1998/02/15 by nick@ni-s
-
-	DStringSetLength didn't
-
-Change 585 on 1998/02/15 by nick@ni-s
-
-	Break out channel stuff into separate file
-
-Change 584 on 1998/02/15 by nick@camel
-
-	Tone down tkWin32dll.obj dependancy
-
-Change 583 on 1998/02/15 by nick@camel
-
-	API tweaks for tkWinWm behaviour:
-	 - 'transient' deiconifies window
-	 - 'geometry' will not move a window that already exists,
-	          and transient makes it exist ... 	    
-
-Change 582 on 1998/02/15 by nick@ni-s
-
-	MANIFEST update
-
-Change 581 on 1998/02/15 by nick@ni-s
-
-	Add diff utility to depot
-
-Change 580 on 1998/02/15 by nick@borland
-
-	Add tkWin32dll.obj to toplevel objects explcitly, else Borland
-	finds some other DllMain.
-	Add prototypes to tkGlue, which discovered bug in that 
-	newSV() takes args (unlike newAV and newHV)
-
-Change 579 on 1998/02/15 by nick@borland
-
-	Don't ckfree() and Arg`
-
-Change 578 on 1998/02/14 by nick@borland
-
-	Remove Status in favour of plain int,
-	undo .h file reordering which attempted to solve
-	same problem
-
-Change 577 on 1998/02/14 by nick@ni-s
-
-	Add prototypes
-
-Change 576 on 1998/02/14 by nick@borland
-
-	Undo Minw32/GNU-ism
-
-Change 575 on 1998/02/14 by nick@cross
-
-	GCC-cross-compile cleanups
-
-Change 574 on 1998/02/13 by nick@cross
-
-	More windows / X11 reordering
-
-Change 573 on 1998/02/13 by nick@cross
-
-	Cross compile tweaks - looks promising way of flushing bugs
-
-Change 572 on 1998/02/13 by nick@ni-s
-
-	Integrate Optionmenu fix and test
-
-Change 570 on 1998/02/12 by nick@borland
-
-	Botched #ifdef + try and get -I right
-
-Change 569 on 1998/02/12 by nick@ni-s
-
-	Borland warning #pragmas
-
-Change 568 on 1998/02/12 by nick@borland
-
-	Fix MMutil to find perl in borland/dmake world
-	Add HINSTANCE finder func to WinInt and pull that in 
-	in WinNotify. Arg-ify tkWinEmbed.
-	Now runs large slab of demos/widget - but not basic demo.
-	Menus seem to cause segfaults as does HList and text search.
-
-Change 567 on 1998/02/12 by nick@pluto
-
-	Leak fixes and blink Win32 'Eval' removal
-
-Change 566 on 1998/02/11 by nick@camel
-
-	Use Tcl_Alloc & co. to direct Tk's malloc/free to
-	routines in tkGlue which use same malloc as perl.
-	Worry was we had malloc / free mismatch. But seems
-	we are leaking SVs in a major way.
-
-Change 565 on 1998/02/11 by nick@ni-s
-
-	Seems new Tcl_Obj have refcount of 0, so make SV's etc. we 
-	create in their place 'mortal'.
-
-Change 564 on 1998/02/11 by nick@ni-s
-
-	Finish DString removal 
-
-Change 563 on 1998/02/11 by nick@pluto
-
-	Re-work menus to store object as cascade menu again.
-	Improve modeling of Tcl_DStringAppendElement to be more Tcl-like
-	Make Tcl_DString and SV-in-disguise.
-	Cleanup non-use of DSTring access macros.
-
-Change 562 on 1998/02/10 by nick@ni-s
-
-	Need not, and can not set binary mode on UNIX.
-
-Change 561 on 1998/02/10 by nick@ni-s
-
-	Worst problems with finding cascade menus by name worked round.
-	Still a problem when destroying as menu's tkwin is NULL.
-	Perhaps objects were better after all.
-
-Change 560 on 1998/02/10 by nick@camel
-
-	Win32 tweaks
-
-Change 559 on 1998/02/10 by nick@ni-s
-
-	Un-bundle Ghostview
-
-Change 558 on 1998/02/10 by nick@pluto
-
-	Sort out Images
-
-Change 557 on 1998/02/09 by nick@ni-s
-
-	Raw integrate of tcltk + Img patch
-
-Change 555 on 1998/02/09 by nick@camel
-
-	Win32 isms
-
-Change 554 on 1998/02/09 by nick@ni-s
-
-	Unprune
-
-Change 553 on 1998/02/09 by nick@ni-s
-
-	Move quasi generic files to generic directory
-
-Change 552 on 1998/02/09 by nick@ni-s
-
-	Exclude functions which don't exist!
-
-Change 551 on 1998/02/09 by nick@ni-s
-
-	Win32 VTABLE stuff
-
-Change 550 on 1998/02/09 by nick@pluto
-
-	Tk load issues - will now run Most of demos/widget, images
-	remain a problem. Also passed t/Require.t
-
-Change 549 on 1998/02/08 by nick@camel
-
-	Win32 builds fundamental Tk.dll
-
-Change 548 on 1998/02/08 by nick@ni-s
-
-	Add cut-down Tcl_DStringAppendElement for WinMenu
-
-Change 547 on 1998/02/08 by nick@camel
-
-	FileHandlers don't exist on Win32, so we had better
-	do without them altogether. Time to look at channels ?
-
-Change 546 on 1998/02/08 by nick@camel
-
-	Win32-isms - in particular "selection exists" is no longer
-	in tcltk, and property listing is not supported and we have
-	and issue with convert to/from X selection form which needs
-	following up.
-
-Change 545 on 1998/02/08 by nick@camel
-
-	Correct suffix 
-
-Change 544 on 1998/02/08 by nick@ni-s
-
-	Win32 tweaks
-
-Change 543 on 1998/02/08 by nick@ni-s
-
-	MANIFEST update
-
-Change 542 on 1998/02/08 by nick@ni-s
-
-	Oops on .inc file
-
-Change 541 on 1998/02/08 by nick@ni-s
-
-	Use .inc style for platform tcl directories
-
-Change 540 on 1998/02/08 by nick@ni-s
-
-	Enter widget methods in perl code
-
-Change 539 on 1998/02/08 by nick@ni-s
-
-	Call TkCreateXEventSource - or things are a bit slugish, surprised 
-	they worked at all!
-
-Change 538 on 1998/02/08 by nick@ni-s
-
-	Handle 'objProc' fields of Tcl_Command correctly so that 
-	Tcl_FooObjCmd() (e.g. 'after') can associate client data as they 
-	expect. 
-
-Change 537 on 1998/02/07 by nick@camel
-
-	Add exclude file for tkWinInt func with tricky proto
-
-Change 536 on 1998/02/07 by nick@ni-s
-
-	cleanup #include hierachy (will get this right one day...)
-
-Change 535 on 1998/02/07 by nick@camel
-
-	Vtables for Win32 functions
-
-Change 534 on 1998/02/07 by nick@ni-s
-
-	Auto-extract munge files and re-order subdir build
-
-Change 533 on 1998/02/07 by nick@ni-s
-
-	Munge file leakage into depot
-
-Change 532 on 1998/02/07 by nick@ni-s
-
-	Be less agressive with Menu cleverness - menus seem to work again.
-
-Change 531 on 1998/02/07 by nick@ni-s
-
-	Add tixPort.h EXTERNs to tixInt.h to simplify VTable
-
-Change 530 on 1998/02/07 by nick@ni-s
-
-	Add stab at defs for new man macros
-
-Change 529 on 1998/02/07 by nick@camel
-
-	Win32 depend and special file fixes
-
-Change 528 on 1998/02/07 by nick@ni-s
-
-	Auto-generate dependancies with perl code not gcc hack
-
-Change 527 on 1998/02/06 by nick@ni-s
-
-	Move __FUNCTION__ hack to more public place
-
-Change 526 on 1998/02/06 by nick@ni-s
-
-	More mess
-
-Change 525 on 1998/02/06 by nick@ni-s
-
-	Bodged merge
-
-Change 524 on 1998/02/06 by nick@ni-s
-
-	Spurious code from merge
-
-Change 523 on 1998/02/06 by nick@ni-s
-
-	#endif mess
-
-Change 522 on 1998/02/06 by nick@ni-s
-
-	Trailing newline!
-
-Change 521 on 1998/02/06 by nick@ni-s
-
-	Weird 'inc' file
-
-Change 520 on 1998/02/06 by nick@ni-s
-
-	Misc prodding at bugs
-
-Change 519 on 1998/02/06 by nick@ni-s
-
-	Scale Vtable problems and a callback tweak
-
-Change 518 on 1998/02/06 by nick@ni-s
-
-	Re-work bind to that perl events essentially use C API
-	avoiding a log of messing with tkBind.c
-	bind now works. Menus are still broken. 
-
-Change 517 on 1998/02/06 by nick@ni-s
-
-	Vtable stuff in unix bits
-
-Change 516 on 1998/02/06 by nick@ni-s
-
-	re-Fix 'idle' stuff now it has moved files
-
-Change 515 on 1998/02/06 by nick@ni-s
-
-	Integrate demos from mainline
-
-Change 514 on 1998/02/06 by nick@ni-s
-
-	Cleanup Menu move
-
-Change 513 on 1998/02/06 by nick@ni-s
-
-	Move Tk::Menu into core
-
-Change 512 on 1998/02/06 by nick@ni-s
-
-	'Result' and REFCNT issues
-
-Change 511 on 1998/02/05 by nick@ni-s
-
-	Loads and displays 'tiny' - bindings broken, something
-	odd on closedown
-
-Change 510 on 1998/02/05 by nick@ni-s
-
-	Links and loads
-
-Change 509 on 1998/02/05 by nick@ni-s
-
-	Some more wrappers for Tcl_Obj stuff
-
-Change 508 on 1998/02/05 by nick@ni-s
-
-	Merge exclude files
-
-Change 507 on 1998/02/05 by nick@ni-s
-
-	Hide object-ness stuff for now
-
-Change 506 on 1998/02/05 by nick@ni-s
-
-	Bring across add_version
-
-Change 505 on 1998/02/05 by nick@ni-s
-
-	Bring in additions i.e. Img - and merge Makefile.PL
-
-Change 504 on 1998/02/05 by nick@ni-s
-
-	Integrate mainline .pm files
-
-Change 503 on 1998/02/05 by nick@ni-s
-
-	Make Tcl_Obj opaque (it is going to be a perl SV...)
-
-Change 502 on 1998/02/05 by nick@ni-s
-
-	Merge .c .h from top-level of mainline
-
-Change 501 on 1998/02/04 by nick@ni-s
-
-	Tk.so links (with unresolved refs!)
-
-Change 500 on 1998/02/04 by nick@ni-s
-
-	Tk8 pTk compiles - probably won't link, known callback trouble in Menu
-
-Change 499 on 1998/02/04 by nick@ni-s
-
-	Compile fixups part 1 of N
-
-Change 498 on 1998/02/04 by nick@ni-s
-
-	Flow tweaks
-
-Change 497 on 1998/02/04 by nick@ni-s
-
-	Merge docs against tk8.0 docs
-
-Change 495 on 1998/02/04 by nick@ni-s
-
-	Resolve against 4.2 command docs
-
-Change 494 on 1998/02/04 by nick@ni-s
-
-	Resolve tk4.2p? against C API docs
-
-Change 493 on 1998/02/04 by nick@ni-s
-
-	Resolve against head of Tk402 tree
-
-Change 492 on 1998/02/04 by nick@ni-s
-
-	Sync against oldest Tcl/Tk docs we have
-
-Change 491 on 1998/02/04 by nick@ni-s
-
-	More man2/man3 branches
-
-Change 490 on 1998/02/04 by nick@ni-s
-
-	Move man2/*.2 to man3/*.3 for easier tcl/tk merge
-
-Change 457 on 1998/01/18 by nick@ni-s
-
-	Home changes
-
-Change 455 on 1997/12/31 by nick@ni-s
-
-	Resolve against latest tcl/tk (8.0p2)
-
-Change 454 on 1997/12/31 by nick@ni-s
-
-	Resolve Tk8 against Tk4.1.0.005
-
-Change 453 on 1997/12/31 by nick@ni-s
-
-	Resolve Tk8 against tcl8.0b2
-
-Change 452 on 1997/12/31 by nick@ni-s
-
-	Resolve Tk8 vs tk8.0b2
-
-Change 451 on 1997/12/31 by nick@ni-s
-
-	Resolve Tk8 against Tix4.1.0 as a basis
-
-Change 450 on 1997/12/31 by nick@ni-s
-
-	Resolve Tk8 vs tcl8.0a2 as basis 
-
-Change 449 on 1997/12/31 by nick@ni-s
-
-	Resolve Tk8 vs tk8.0a2 as a base for future integration
-
-Change 421 on 1997/12/09 by nick@camel
-
-	Resolve .pm files from mainline into Tk8
-
-Change 419 on 1997/12/09 by nick@camel
-
-	Dallas Trip edits
-
-Change 310 on 1997/07/13 by nick@ni-s
-
-	Partial merge of tk8.0b2
-
-Change 309 on 1997/07/11 by nick@ni-s
-
-	Populate tk8 branch
+	Populate TKutf8 from Tk8
 

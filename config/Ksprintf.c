@@ -18,4 +18,4 @@ int main()
  char buf[16];
  sprintf(buf,"%d",0);
  return 0;
-} 
+}

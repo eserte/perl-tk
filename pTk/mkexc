@@ -3,11 +3,28 @@ use strict;
 use vars qw(%ref %def);
 require "process_object";
 
+my @libs;
+foreach (`ldd $^X`)
+ {
+  push @libs,$1 if (/=>\s+(.*?)\s+/ && -r $1);
+ }  
+warn("@libs");
+
 my $file;
-foreach $file (grep(!/_f\./,glob('*.n')),'../tkGlue.o','/usr/openwin/lib/libX11.so')
+foreach $file (grep(!/_f\./,glob('*.n')),glob('../*.o'),
+               glob('../Event/*.o'),
+               '/usr/X11R6/lib/libX11.so.6',$^X,@libs)
  {
   print STDERR "Scanning $file\n";
   do_nm($file);
+ }
+
+foreach my $sym (sort keys %ref)
+ {
+  unless (exists $def{$sym})
+   {
+    print "$sym not defined\n";
+   }
  }
 
 @ARGV = glob('*.t') unless (@ARGV);
@@ -27,14 +44,18 @@ foreach $tab (@ARGV)
    {
     if (/^VFUNC\([^,]*,([A-Za-z][A-Za-z0-9_]*)/)
      {
-      unless (exists($ref{$1}) || exists ($def{$1}))
+      my $sym = $1;
+      unless (exists($ref{$1}) || (exists ($def{$1}) && $x !~ /^tcl/)
+             )
        {
-        print X "$1\n"; 
+        print X "$sym\n";
         $count++;
        }
      }
    }
-  close(X); 
+  close(X);
   unlink($x) unless ($count);
   close(T);
  }
+
+

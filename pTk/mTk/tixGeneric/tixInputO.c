@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixInputO.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixInputO.c --
  *
  *	This module implements "InputOnly" widgets.
@@ -115,7 +118,7 @@ static XSetWindowAttributes inputOnlyAtts = {
 
 static void Tix_MakeInputOnlyWindowExist _ANSI_ARGS_((WidgetPtr wPtr));
 
-
+
 static
 void Tix_MakeInputOnlyWindowExist(wPtr)
     WidgetPtr wPtr;
@@ -138,7 +141,7 @@ void Tix_MakeInputOnlyWindowExist(wPtr)
 	parent = winPtr->parentPtr->window;
     }
 
-    winPtr->window = XCreateWindow(winPtr->display, 
+    winPtr->window = XCreateWindow(winPtr->display,
 	parent,
 	winPtr->changes.x, winPtr->changes.y,
 	(unsigned) winPtr->changes.width,
@@ -159,7 +162,7 @@ void Tix_MakeInputOnlyWindowExist(wPtr)
     winPtr->inputContext = NULL;
 #endif /* TK_USE_INPUT_METHODS */
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -227,7 +230,7 @@ Tix_InputOnlyCmd(clientData, interp, argc, argv)
     interp->result = Tk_PathName(wPtr->tkwin);
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -298,7 +301,7 @@ WidgetCommand(clientData, interp, argc, argv)
     Tcl_Release((ClientData) wPtr);
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -338,7 +341,7 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -368,7 +371,7 @@ WidgetEventProc(clientData, eventPtr)
       case DestroyNotify:
 	if (wPtr->tkwin != NULL) {
 	    wPtr->tkwin = NULL;
-	    Tcl_DeleteCommand(wPtr->interp, 
+	    Tcl_DeleteCommand(wPtr->interp,
 	        Tcl_GetCommandName(wPtr->interp, wPtr->widgetCmd));
 	}
 	Tcl_EventuallyFree((ClientData) wPtr, WidgetDestroy);
@@ -379,7 +382,7 @@ WidgetEventProc(clientData, eventPtr)
 	break;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -407,7 +410,7 @@ WidgetDestroy(clientData)
     Tk_FreeOptions(configSpecs, (char *) wPtr, wPtr->display, 0);
     ckfree((char *) wPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

@@ -1,7 +1,7 @@
 package Tk::DragDrop::XDNDSite;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/DragDrop/DragDrop/XDNDSite.pm#10 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/XDNDSite.pm#2 $
 use base qw(Tk::DropSite);
 
 sub XDND_PROTOCOL_VERSION () { 3 }
@@ -19,7 +19,7 @@ sub XdndEnter
  my $event = $t->XEvent;
  my ($src,$flags,@types) = unpack('LLLLL',$event->A);
  # print "XdndEnter $src\n";
- my $ver = ($flags >> 24) & 0xFF;        
+ my $ver = ($flags >> 24) & 0xFF;
  if ($flags & 1)
   {
    my @prop;
@@ -40,10 +40,10 @@ sub XdndLeave
   {
    my $over = $info->{site};
    if ($over)
-    {   
+    {
      my $X = $info->{X};
      my $Y = $info->{Y};
-     $over->Apply(-entercommand => $X, $Y, 0) 
+     $over->Apply(-entercommand => $X, $Y, 0)
     }
   }
  delete $t->{"XDND$src"};
@@ -62,8 +62,8 @@ sub XdndPosition
  $info->{action} = $action;
  $info->{t}      = $time;
  my $id    = oct($t->id);
- my $sxy   = 0; 
- my $swh   = 0; 
+ my $sxy   = 0;
+ my $swh   = 0;
  my $sflags = 0;
  my $saction = 0;
  my $over = $info->{site};
@@ -71,27 +71,27 @@ sub XdndPosition
   {
    if ($site->Over($X,$Y))
     {
-     $sxy = ($site->X << 16)     | $site->Y;    
+     $sxy = ($site->X << 16)     | $site->Y;
      $swh = ($site->width << 16) | $site->height;
-     $saction = $action;                        
-     $sflags |= 1;                              
-     if ($over)                                 
-      {                                         
-       if ($over == $site)                      
-        {                                       
+     $saction = $action;
+     $sflags |= 1;
+     if ($over)
+      {
+       if ($over == $site)
+        {
          $site->Apply(-motioncommand => $X, $Y);
-        }                                       
-       else                                     
-        {                                       
+        }
+       else
+        {
          $over->Apply(-entercommand => $X, $Y, 0);
          $site->Apply(-entercommand => $X, $Y, 1);
-        }                                       
-      }                                         
-     else                                       
-      {                                         
+        }
+      }
+     else
+      {
        $site->Apply(-entercommand => $X, $Y, 1);
-      }     
-     $info->{site} = $site;                     
+      }
+     $info->{site} = $site;
      last;
     }
   }
@@ -99,7 +99,7 @@ sub XdndPosition
   {
    if ($over)
     {
-     $over->Apply(-entercommand => $X, $Y, 0) 
+     $over->Apply(-entercommand => $X, $Y, 0)
     }
    delete $info->{site};
   }
@@ -112,16 +112,16 @@ sub XdndDrop
  my ($t,$sites) = @_;
  my $event = $t->XEvent;
  my ($src,$flags,$time,$res1,$res2) = unpack('LLLLL',$event->A);
- my $info   = $t->{"XDND$src"};        
+ my $info   = $t->{"XDND$src"};
  my $sflags = 0;
  if ($info)
-  {         
+  {
    $info->{t} = $time;
    my $site = $info->{'site'};
    if ($site)
     {
-     my $X = $info->{'X'};                  
-     my $Y = $info->{'Y'};                  
+     my $X = $info->{'X'};
+     my $Y = $info->{'Y'};
      $site->Apply(-dropcommand => $Y, $Y, 'XdndSelection');
      $site->Apply(-entercommand => $X, $Y, 0);
     }

@@ -5,7 +5,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.037'; # $Id: //depot/Tk8/Tixish/Balloon.pm#37 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tixish/Balloon.pm#2 $
 
 use Tk qw(Ev Exists);
 use Carp;

@@ -59,7 +59,7 @@ sub puzzle {
 } # end puzzle
 
 sub puzzle_switch {
-    
+
     # Procedure invoked by buttons in the puzzle to resize the puzzle entries.
 
     my($w, $num, $xpos, $ypos) = @_;

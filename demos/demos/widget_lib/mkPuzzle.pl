@@ -39,7 +39,7 @@ sub mkPuzzle {
 
 
 sub puzzle_switch {
-    
+
     # Procedure invoked by buttons in the puzzle to resize the puzzle entries.
 
     my($w, $num) = @_;

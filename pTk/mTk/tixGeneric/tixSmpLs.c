@@ -1,4 +1,7 @@
-/* 
+
+/*	$Id: tixSmpLs.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
+
+/*
  * tixSmpLs.c --
  *
  *	To implement simple link lists (next is always the first
@@ -64,7 +67,7 @@ void Tix_SimpleListDelete(lPtr, liPtr)
 {
     Tix_LinkListDelete(&simpleListInfo, lPtr, liPtr);
 }
-
+
 /*----------------------------------------------------------------------
  *  Tix_SimpleListInsert --
  *
@@ -78,7 +81,7 @@ void Tix_SimpleListInsert(lPtr, itemPtr, liPtr)
 {
     Tix_LinkListInsert(&simpleListInfo, lPtr, itemPtr, liPtr);
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_SimpleListFindAndDelete --
  *

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons.
+# Copyright (c) 1995-2000 Nick Ing-Simmons.
 # Copyright (c) 1999 Greg London.
 # All rights reserved.
 # This program is free software; you can redistribute it and/or
@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '3.050'; # $Id: //depot/Tk8/Tk/TextUndo.pm#50 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#9 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -173,7 +173,7 @@ sub CheckForRedoShuffle
  while ($w->SizeRedo)
   {
    my $ref = $w->ShiftRedo;
-   $w->PushUndo($ref);		
+   $w->PushUndo($ref);
   }
 
  # Finally undo whatever we did to compensate for doing it

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkGet.c --
  *
  *	This file contains a number of "Tk_GetXXX" procedures, which
@@ -8,224 +8,82 @@
  *	files.
  *
  * Copyright (c) 1991-1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkGet.c,v 1.2 1998/09/14 18:23:11 stanton Exp $
+ * RCS: @(#) $Id: tkGet.c,v 1.10 2002/08/05 04:30:38 dgp Exp $
  */
 
 #include "tkInt.h"
 #include "tkPort.h"
 
 /*
- * The hash table below is used to keep track of all the Tk_Uids created
- * so far.
+ * One of these structures is created per thread to store
+ * thread-specific data.  In this case, it is used to house the
+ * Tk_Uid structs used by each thread.  The "dataKey" below is
+ * used to locate the ThreadSpecificData for the current thread.
  */
 
-static Tcl_HashTable uidTable;
-static int initialized = 0;
-static Tcl_ObjType *intType = NULL;
-static Tcl_ObjType *doubleType = NULL;
+typedef struct ThreadSpecificData {
+    int initialized;
+    Tcl_HashTable uidTable;
+} ThreadSpecificData;
+static Tcl_ThreadDataKey dataKey;
+
+static void	FreeUidThreadExitProc _ANSI_ARGS_((ClientData clientData));
 
 /*
- * Prototypes for procedures defined later in this file:
+ * The following tables defines the string values for reliefs, which are
+ * used by Tk_GetAnchorFromObj and Tk_GetJustifyFromObj.
  */
 
-#ifndef _LANG
-static void		DupPixelInternalRep _ANSI_ARGS_((Tcl_Obj *srcPtr,
-			    Tcl_Obj *copyPtr));
-static int		SetPixelFromAny _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Obj *objPtr));
-static void		UpdateStringOfPixel _ANSI_ARGS_((Tcl_Obj *objPtr));
-static int		LooksLikeInt _ANSI_ARGS_((char *p));
+static CONST char *anchorStrings[] = {
+    "n", "ne", "e", "se", "s", "sw", "w", "nw", "center", (char *) NULL
+};
+static CONST char *justifyStrings[] = {
+    "left", "right", "center", (char *) NULL
+};
 
-static Tcl_ObjType pixelType = {
-    "pixel",				/* name */
-    (Tcl_FreeInternalRepProc *) NULL,   /* freeIntRepProc */
-    DupPixelInternalRep,		/* dupIntRepProc */
-    UpdateStringOfPixel,		/* updateStringProc */
-    SetPixelFromAny			/* setFromAnyProc */
-};           
 
 /*
  *----------------------------------------------------------------------
  *
- * DupPixelInternalRep --
+ * Tk_GetAnchorFromObj --
  *
- *	Initialize the internal representation of a pixel Tcl_Obj to a
- *	copy of the internal representation of an existing pixel object. 
+ *	Return a Tk_Anchor value based on the value of the objPtr.
  *
  * Results:
- *	None.
+ *	The return value is a standard Tcl result. If an error occurs during
+ *	conversion, an error message is left in the interpreter's result
+ *	unless "interp" is NULL.
  *
  * Side effects:
- *	"copyPtr"s internal rep is set to the pixel representation 
- *	corresponding to "srcPtr"s internal rep.
+ *	The object gets converted by Tcl_GetIndexFromObj.
  *
  *----------------------------------------------------------------------
  */
 
-static void
-DupPixelInternalRep(srcPtr, copyPtr)
-    register Tcl_Obj *srcPtr;	/* Object with internal rep to copy. */
-    register Tcl_Obj *copyPtr;	/* Object with internal rep to set. */
+int
+Tk_GetAnchorFromObj(interp, objPtr, anchorPtr)
+    Tcl_Interp *interp;		/* Used for error reporting. */
+    Tcl_Obj *objPtr;		/* The object we are trying to get the
+				 * value from. */
+    Tk_Anchor *anchorPtr;	/* Where to place the Tk_Anchor that
+				 * corresponds to the string value of
+				 * objPtr. */
 {
-    copyPtr->internalRep.doubleValue = srcPtr->internalRep.doubleValue;
-    copyPtr->typePtr = &pixelType;
-}
-/*
- *----------------------------------------------------------------------
- *
- * LooksLikeInt --
- *
- *	This procedure decides whether the leading characters of a
- *	string look like an integer or something else (such as a
- *	floating-point number or string).
- *
- * Results:
- *	The return value is 1 if the leading characters of p look
- *	like a valid Tcl integer.  If they look like a floating-point
- *	number (e.g. "e01" or "2.4"), or if they don't look like a
- *	number at all, then 0 is returned.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
+    int index, code;
 
-static int
-LooksLikeInt(p)
-    char *p;			/* Pointer to string. */
-{
-    while (isspace(UCHAR(*p))) {
-	p++;
+    code = Tcl_GetIndexFromObj(interp, objPtr, anchorStrings, "anchor", 0,
+	    &index);
+    if (code == TCL_OK) {
+	*anchorPtr = (Tk_Anchor) index;
     }
-    if ((*p == '+') || (*p == '-')) {
-	p++;
-    }
-    if (!isdigit(UCHAR(*p))) {
-	return 0;
-    }
-    p++;
-    while (isdigit(UCHAR(*p))) {
-	p++;
-    }
-    if ((*p != '.') && (*p != 'e') && (*p != 'E')) {
-	return 1;
-    }
-    return 0;
+    return code;
 }
 
-/*
- *----------------------------------------------------------------------
- *
- * SetPixelFromAny --
- *
- *	Attempt to generate a pixel internal form
- *	for the Tcl object "objPtr". If the most appropriate
- *	representation is integer or double, this is used
- *	instead.
- *
- * Results:
- *	The return value is a standard Tcl object result. If an error occurs
- *	during conversion, an error message is left in the interpreter's
- *	result unless "interp" is NULL.
- *
- * Side effects:
- *	If no error occurs, a double is stored as "objPtr"s internal
- *	representation.
- *
- *----------------------------------------------------------------------
- */
-
-static int
-SetPixelFromAny(interp, objPtr)
-    Tcl_Interp *interp;		/* Used for error reporting if not NULL. */
-    register Tcl_Obj *objPtr;	/* The object to convert. */
-{
-    char *string, *end;
-    double d;
-
-    if (!intType) intType = Tcl_GetObjType("int");
-    if (objPtr->typePtr == intType) return TCL_OK;
-    if (!doubleType) doubleType = Tcl_GetObjType("double");
-    if (objPtr->typePtr == doubleType) return TCL_OK;
-    
-    string = Tcl_GetStringFromObj(objPtr, NULL);
-    d = strtod(string, &end);
-    if (end == string) {
-	error:
-	if (interp) {
-	    Tcl_AppendResult(interp, "bad screen distance \"", string,
-		    "\"", (char *) NULL);
-	}
-	return TCL_ERROR;
-    }
-    while ((*end != '\0') && isspace(UCHAR(*end))) {
-	end++;
-    }
-    switch (*end) {
-	case 0:
-	    if (LooksLikeInt(string)) {
-		return Tcl_ConvertToType(interp, objPtr, intType);
-	    }
-	    return Tcl_ConvertToType(interp, objPtr, doubleType);
-	case 'c':
-	    d *= 10;
-	    end++;
-	    break;
-	case 'i':
-	    d *= 25.4;
-	    end++;
-	    break;
-	case 'm':
-	    end++;
-	    break;
-	case 'p':
-	    d *= (25.4/72.0);
-	    end++;
-	    break;
-	default:
-	    goto error;
-    }
-    if ((objPtr->typePtr != NULL) && (objPtr->typePtr->freeIntRepProc != NULL)) {
-	objPtr->typePtr->freeIntRepProc(objPtr);
-    }
-
-    objPtr->internalRep.doubleValue = d;
-    objPtr->typePtr = &pixelType;
-
-    return TCL_OK;
-}
-/*
- *----------------------------------------------------------------------
- *
- * UpdateStringOfPixel --
- *
- *	Should never be called, because the string is always left valid.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-UpdateStringOfPixel(objPtr)
-    register Tcl_Obj *objPtr;	/* Pixel obj with string rep to update. */
-{
-	panic("UpdateStringOfPixel should never be called");
-}
-                                 
-#endif /* _LANG */
-
-
 /*
  *--------------------------------------------------------------
  *
@@ -238,7 +96,7 @@ UpdateStringOfPixel(objPtr)
  *	TCL_OK is returned, then everything went well and the
  *	position is stored at *anchorPtr;  otherwise TCL_ERROR
  *	is returned and an error message is left in
- *	interp->result.
+ *	the interp's result.
  *
  * Side effects:
  *	None.
@@ -249,7 +107,7 @@ UpdateStringOfPixel(objPtr)
 int
 Tk_GetAnchor(interp, string, anchorPtr)
     Tcl_Interp *interp;		/* Use this for error reporting. */
-    char *string;		/* String describing a direction. */
+    CONST char *string;		/* String describing a direction. */
     Tk_Anchor *anchorPtr;	/* Where to store Tk_Anchor corresponding
 				 * to string. */
 {
@@ -305,7 +163,7 @@ Tk_GetAnchor(interp, string, anchorPtr)
 	    (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -323,7 +181,7 @@ Tk_GetAnchor(interp, string, anchorPtr)
  *--------------------------------------------------------------
  */
 
-char *
+CONST char *
 Tk_NameOfAnchor(anchor)
     Tk_Anchor anchor;		/* Anchor for which identifying string
 				 * is desired. */
@@ -341,20 +199,20 @@ Tk_NameOfAnchor(anchor)
     }
     return "unknown anchor position";
 }
-
+
 /*
  *--------------------------------------------------------------
  *
  * Tk_GetJoinStyle --
  *
- *	Given a string, return the corresponding Tk_JoinStyle.
+ *	Given a string, return the corresponding Tk JoinStyle.
  *
  * Results:
  *	The return value is a standard Tcl return result.  If
  *	TCL_OK is returned, then everything went well and the
  *	justification is stored at *joinPtr;  otherwise
  *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
+ *	the interp's result.
  *
  * Side effects:
  *	None.
@@ -365,7 +223,7 @@ Tk_NameOfAnchor(anchor)
 int
 Tk_GetJoinStyle(interp, string, joinPtr)
     Tcl_Interp *interp;		/* Use this for error reporting. */
-    char *string;		/* String describing a justification style. */
+    CONST char *string;		/* String describing a justification style. */
     int *joinPtr;		/* Where to store join style corresponding
 				 * to string. */
 {
@@ -393,13 +251,13 @@ Tk_GetJoinStyle(interp, string, joinPtr)
 	    (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
  * Tk_NameOfJoinStyle --
  *
- *	Given a Tk_JoinStyle, return the string that corresponds
+ *	Given a Tk JoinStyle, return the string that corresponds
  *	to it.
  *
  * Results:
@@ -411,7 +269,7 @@ Tk_GetJoinStyle(interp, string, joinPtr)
  *--------------------------------------------------------------
  */
 
-char *
+CONST char *
 Tk_NameOfJoinStyle(join)
     int join;			/* Join style for which identifying string
 				 * is desired. */
@@ -423,20 +281,20 @@ Tk_NameOfJoinStyle(join)
     }
     return "unknown join style";
 }
-
+
 /*
  *--------------------------------------------------------------
  *
  * Tk_GetCapStyle --
  *
- *	Given a string, return the corresponding Tk_CapStyle.
+ *	Given a string, return the corresponding Tk CapStyle.
  *
  * Results:
  *	The return value is a standard Tcl return result.  If
  *	TCL_OK is returned, then everything went well and the
  *	justification is stored at *capPtr;  otherwise
  *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
+ *	the interp's result.
  *
  * Side effects:
  *	None.
@@ -447,7 +305,7 @@ Tk_NameOfJoinStyle(join)
 int
 Tk_GetCapStyle(interp, string, capPtr)
     Tcl_Interp *interp;		/* Use this for error reporting. */
-    char *string;		/* String describing a justification style. */
+    CONST char *string;		/* String describing a justification style. */
     int *capPtr;		/* Where to store cap style corresponding
 				 * to string. */
 {
@@ -475,13 +333,13 @@ Tk_GetCapStyle(interp, string, capPtr)
 	    (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
  * Tk_NameOfCapStyle --
  *
- *	Given a Tk_CapStyle, return the string that corresponds
+ *	Given a Tk CapStyle, return the string that corresponds
  *	to it.
  *
  * Results:
@@ -493,7 +351,7 @@ Tk_GetCapStyle(interp, string, capPtr)
  *--------------------------------------------------------------
  */
 
-char *
+CONST char *
 Tk_NameOfCapStyle(cap)
     int cap;			/* Cap style for which identifying string
 				 * is desired. */
@@ -505,7 +363,44 @@ Tk_NameOfCapStyle(cap)
     }
     return "unknown cap style";
 }
-
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_GetJustifyFromObj --
+ *
+ *	Return a Tk_Justify value based on the value of the objPtr.
+ *
+ * Results:
+ *	The return value is a standard Tcl result. If an error occurs during
+ *	conversion, an error message is left in the interpreter's result
+ *	unless "interp" is NULL.
+ *
+ * Side effects:
+ *	The object gets converted by Tcl_GetIndexFromObj.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+Tk_GetJustifyFromObj(interp, objPtr, justifyPtr)
+    Tcl_Interp *interp;		/* Used for error reporting. */
+    Tcl_Obj *objPtr;		/* The object we are trying to get the
+				 * value from. */
+    Tk_Justify *justifyPtr;	/* Where to place the Tk_Justify that
+				 * corresponds to the string value of
+				 * objPtr. */
+{
+    int index, code;
+
+    code = Tcl_GetIndexFromObj(interp, objPtr, justifyStrings,
+	    "justification", 0, &index);
+    if (code == TCL_OK) {
+	*justifyPtr = (Tk_Justify) index;
+    }
+    return code;
+}
+
 /*
  *--------------------------------------------------------------
  *
@@ -518,7 +413,7 @@ Tk_NameOfCapStyle(cap)
  *	TCL_OK is returned, then everything went well and the
  *	justification is stored at *justifyPtr;  otherwise
  *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
+ *	the interp's result.
  *
  * Side effects:
  *	None.
@@ -529,7 +424,7 @@ Tk_NameOfCapStyle(cap)
 int
 Tk_GetJustify(interp, string, justifyPtr)
     Tcl_Interp *interp;		/* Use this for error reporting. */
-    char *string;		/* String describing a justification style. */
+    CONST char *string;		/* String describing a justification style. */
     Tk_Justify *justifyPtr;	/* Where to store Tk_Justify corresponding
 				 * to string. */
 {
@@ -557,7 +452,7 @@ Tk_GetJustify(interp, string, justifyPtr)
 	    (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -575,7 +470,7 @@ Tk_GetJustify(interp, string, justifyPtr)
  *--------------------------------------------------------------
  */
 
-char *
+CONST char *
 Tk_NameOfJustify(justify)
     Tk_Justify justify;		/* Justification style for which
 				 * identifying string is desired. */
@@ -587,7 +482,33 @@ Tk_NameOfJustify(justify)
     }
     return "unknown justification style";
 }
-
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * FreeUidThreadExitProc --
+ *
+ *	Cleans up memory used for Tk_Uids in the thread.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	All information in the identifier table is deleted.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+FreeUidThreadExitProc(clientData)
+    ClientData clientData;		/* Not used. */
+{
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
+    Tcl_DeleteHashTable(&tsdPtr->uidTable);
+    tsdPtr->initialized = 0;
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -610,23 +531,28 @@ Tk_NameOfJustify(justify)
  *
  *----------------------------------------------------------------------
  */
-      
+
 #ifndef _LANG
 Tk_Uid
 Tk_GetUid(string)
     CONST char *string;		/* String to convert. */
 {
     int dummy;
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
+            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
+    Tcl_HashTable *tablePtr = &tsdPtr->uidTable;
 
-    if (!initialized) {
-	Tcl_InitHashTable(&uidTable, TCL_STRING_KEYS);
-	initialized = 1;
+    if (!tsdPtr->initialized) {
+	Tcl_InitHashTable(tablePtr, TCL_STRING_KEYS);
+	Tcl_CreateThreadExitHandler(FreeUidThreadExitProc, NULL);
+	tsdPtr->initialized = 1;
     }
-    return (Tk_Uid) Tcl_GetHashKey(&uidTable,
-	    Tcl_CreateHashEntry(&uidTable, string, &dummy));
+    return (Tk_Uid) Tcl_GetHashKey(tablePtr,
+	    Tcl_CreateHashEntry(tablePtr, string, &dummy));
 }
+
 #endif
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -640,7 +566,7 @@ Tk_GetUid(string)
  *	TCL_OK is returned, then everything went well and the
  *	screen distance is stored at *doublePtr;  otherwise
  *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
+ *	the interp's result.
  *
  * Side effects:
  *	None.
@@ -654,7 +580,7 @@ Tk_GetScreenMM(interp, tkwin, string, doublePtr)
     Tk_Window tkwin;		/* Window whose screen determines conversion
 				 * from centimeters and other absolute
 				 * units. */
-    char *string;		/* String describing a screen distance. */
+    CONST char *string;		/* String describing a screen distance. */
     double *doublePtr;		/* Place to store converted result. */
 {
     char *end;
@@ -706,17 +632,17 @@ Tk_GetScreenMM(interp, tkwin, string, doublePtr)
 /*
  *--------------------------------------------------------------
  *
- * TkGetScreenMMFromObj --
+ * Tk_GetPixels --
  *
- *	Given a object, returns the number of screen millimeters
- *	corresponding to that string.
+ *	Given a string, returns the number of pixels corresponding
+ *	to that string.
  *
  * Results:
  *	The return value is a standard Tcl return result.  If
  *	TCL_OK is returned, then everything went well and the
- *	screen distance is stored at *doublePtr;  otherwise
+ *	rounded pixel distance is stored at *intPtr;  otherwise
  *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
+ *	the interp's result.
  *
  * Side effects:
  *	None.
@@ -725,40 +651,31 @@ Tk_GetScreenMM(interp, tkwin, string, doublePtr)
  */
 
 int
-TkGetScreenMMFromObj(interp, tkwin, obj, doublePtr)
+Tk_GetPixels(interp, tkwin, string, intPtr)
     Tcl_Interp *interp;		/* Use this for error reporting. */
     Tk_Window tkwin;		/* Window whose screen determines conversion
 				 * from centimeters and other absolute
 				 * units. */
-    Tcl_Obj *obj;		/* Object describing a screen distance. */
-    double *doublePtr;		/* Place to store converted result. */
-{                      
-#ifdef _LANG
-    return Tk_GetScreenMM(interp, tkwin, LangString(obj), doublePtr);
-#else
+    CONST char *string;		/* String describing a number of pixels. */
+    int *intPtr;		/* Place to store converted result. */
+{
     double d;
-    if (Tcl_ConvertToType(interp, obj, &pixelType)) {
+
+    if (TkGetDoublePixels(interp, tkwin, string, &d) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (obj->typePtr == &pixelType) {
-	*doublePtr = obj->internalRep.doubleValue;
-	return TCL_OK;
-    } else if (obj->typePtr == intType) {
-	d = (double) obj->internalRep.longValue;
-    } else { /* must be doubleType */
-	d = obj->internalRep.doubleValue;
-    }
 
-    d *= WidthMMOfScreen(Tk_Screen(tkwin));
-    *doublePtr =  d / WidthOfScreen(Tk_Screen(tkwin));
+    if (d < 0) {
+	*intPtr = (int) (d - 0.5);
+    } else {
+	*intPtr = (int) (d + 0.5);
+    }
     return TCL_OK;
-#endif
 }
-
 /*
  *--------------------------------------------------------------
  *
- * Tk_GetDoublePixels --
+ * TkGetDoublePixels --
  *
  *	Given a string, returns the number of pixels corresponding
  *	to that string.
@@ -777,7 +694,7 @@ TkGetScreenMMFromObj(interp, tkwin, obj, doublePtr)
  */
 
 int
-Tk_GetDoublePixels(interp, tkwin, string, doublePtr)
+TkGetDoublePixels(interp, tkwin, string, doublePtr)
     Tcl_Interp *interp;		/* Use this for error reporting. */
     Tk_Window tkwin;		/* Window whose screen determines conversion
 				 * from centimeters and other absolute
@@ -833,103 +750,7 @@ Tk_GetDoublePixels(interp, tkwin, string, doublePtr)
     *doublePtr = d;
     return TCL_OK;
 }
-
-/*
- *--------------------------------------------------------------
- *
- * Tk_GetPixels --
- *
- *	Given a string, returns the number of pixels corresponding
- *	to that string.
- *
- * Results:
- *	The return value is a standard Tcl return result.  If
- *	TCL_OK is returned, then everything went well and the
- *	rounded pixel distance is stored at *intPtr;  otherwise
- *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
- *
- * Side effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
 
-int
-Tk_GetPixels(interp, tkwin, string, intPtr)
-    Tcl_Interp *interp;		/* Use this for error reporting. */
-    Tk_Window tkwin;		/* Window whose screen determines conversion
-				 * from centimeters and other absolute
-				 * units. */
-    char *string;		/* String describing a number of pixels. */
-    int *intPtr;		/* Place to store converted result. */
-{
-    double d;
 
-    if (Tk_GetDoublePixels(interp, tkwin, string, &d) != TCL_OK) {
-	return TCL_ERROR;
-    }
 
-    if (d < 0) {
-	*intPtr = (int) (d - 0.5);
-    } else {
-	*intPtr = (int) (d + 0.5);
-    }
-    return TCL_OK;
-}
 
-/*
- *--------------------------------------------------------------
- *
- * TkGetPixelsFromObj --
- *
- *	Given a object, returns the number of pixels corresponding
- *	to that object.
- *
- * Results:
- *	The return value is a standard Tcl return result.  If
- *	TCL_OK is returned, then everything went well and the
- *	rounded pixel distance is stored at *intPtr;  otherwise
- *	TCL_ERROR is returned and an error message is left in
- *	interp->result.
- *
- * Side effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
-
-int
-TkGetPixelsFromObj(interp, tkwin, obj, intPtr)
-    Tcl_Interp *interp;		/* Use this for error reporting. */
-    Tk_Window tkwin;		/* Window whose screen determines conversion
-				 * from centimeters and other absolute
-				 * units. */
-    Tcl_Obj *obj;		/* Object describing a number of pixels. */
-    int *intPtr;		/* Place to store converted result. */
-{
-#ifdef _LANG
-    return Tk_GetPixels(interp, tkwin, LangString(obj), intPtr);
-#else
-    double d;
-    if (Tcl_ConvertToType(interp, obj, &pixelType)) {
-	return TCL_ERROR;
-    }
-    if (obj->typePtr == &pixelType) {
-	d = obj->internalRep.doubleValue * WidthOfScreen(Tk_Screen(tkwin));
-	d /= WidthMMOfScreen(Tk_Screen(tkwin));
-    } else if (obj->typePtr == intType) {
-	*intPtr = obj->internalRep.longValue;
-	return TCL_OK;
-    } else { /* must be doubleType */
-	d = obj->internalRep.doubleValue;
-    }
-
-    if (d < 0) {
-	*intPtr = (int) (d - 0.5);
-    } else {
-	*intPtr = (int) (d + 0.5);
-    }
-    return TCL_OK;
-#endif
-}

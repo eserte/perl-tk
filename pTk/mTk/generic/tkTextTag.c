@@ -6,17 +6,17 @@
  *	related to tags.
  *
  * Copyright (c) 1992-1994 The Regents of the University of California.
- * Copyright (c) 1994-1995 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1997 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkTextTag.c,v 1.2 1998/09/14 18:23:19 stanton Exp $
+ * RCS: @(#) $Id: tkTextTag.c,v 1.8 2002/08/05 04:30:40 dgp Exp $
  */
 
 #include "default.h"
 #include "tkPort.h"
-#include "tk.h"
+#include "tkInt.h"
 #include "tkText.h"
 
 /*
@@ -24,8 +24,8 @@
  */
 
 static Tk_CustomOption stateOption = {
-    Tk_StateParseProc,
-    Tk_StatePrintProc, (ClientData) 2
+    TkStateParseProc,
+    TkStatePrintProc, (ClientData) 2
 };
 
 /* The "-elide" is only provided for compatibility with TkMan 2.0,
@@ -52,10 +52,10 @@ static Tk_ConfigSpec tagConfigSpecs[] = {
 	(char *) NULL, Tk_Offset(TkTextTag, bgStipple), TK_CONFIG_NULL_OK},
     {TK_CONFIG_STRING, "-borderwidth", (char *) NULL, (char *) NULL,
 	"0", Tk_Offset(TkTextTag, bdString),
-		TK_CONFIG_DONT_SET_DEFAULT|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-elide", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(TkTextTag, state),
-	TK_CONFIG_NULL_OK, &elideOption},
+	TK_CONFIG_DONT_SET_DEFAULT|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_STRING, "-elide", (char *) NULL, (char *) NULL,
+	"0", Tk_Offset(TkTextTag, elideString),
+	TK_CONFIG_DONT_SET_DEFAULT|TK_CONFIG_NULL_OK},
     {TK_CONFIG_BITMAP, "-fgstipple", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(TkTextTag, fgStipple), TK_CONFIG_NULL_OK},
     {TK_CONFIG_FONT, "-font", (char *) NULL, (char *) NULL,
@@ -108,12 +108,12 @@ static Tk_ConfigSpec tagConfigSpecs[] = {
 static void		ChangeTagPriority _ANSI_ARGS_((TkText *textPtr,
 			    TkTextTag *tagPtr, int prio));
 static TkTextTag *	FindTag _ANSI_ARGS_((Tcl_Interp *interp,
-			    TkText *textPtr, char *tagName));
+			    TkText *textPtr, CONST char *tagName));
 static void		SortTags _ANSI_ARGS_((int numTags,
 			    TkTextTag **tagArrayPtr));
 static int		TagSortProc _ANSI_ARGS_((CONST VOID *first,
 			    CONST VOID *second));
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -137,7 +137,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
     register TkText *textPtr;	/* Information about text widget. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings.  Someone else has already
+    CONST char **argv;		/* Argument strings.  Someone else has already
 				 * parsed this command enough to know that
 				 * argv[1] is "tag". */
 {
@@ -203,6 +203,22 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	     */
 
 	    if (tagPtr == textPtr->selTagPtr) {
+		XEvent event;
+		/*
+		 * Send an event that the selection changed.
+		 * This is equivalent to
+		 * "event generate $textWidget <<Selection>>"
+		 */
+
+		memset((VOID *) &event, 0, sizeof(event));
+		event.xany.type = VirtualEvent;
+		event.xany.serial = NextRequest(Tk_Display(textPtr->tkwin));
+		event.xany.send_event = False;
+		event.xany.window = Tk_WindowId(textPtr->tkwin);
+		event.xany.display = Tk_Display(textPtr->tkwin);
+		((XVirtualEvent *) &event)->name = Tk_GetUid("Selection");
+		Tk_HandleEvent(&event);
+
 		if (addTag && textPtr->exportSelection
 			&& !(textPtr->flags & GOT_SELECTION)) {
 		    Tk_OwnSelection(textPtr->tkwin, XA_PRIMARY,
@@ -238,10 +254,12 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		return Tk_DeleteBinding(interp, textPtr->bindingTable,
 			(ClientData) tagPtr, argv[4]);
 	    }
+#ifndef _LANG
 	    if (argv[5][0] == '+') {
 		argv[5]++;
 		append = 1;
 	    }
+#endif
 	    mask = Tk_CreateBinding(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr, argv[4], objv[5], append);
 	    if (mask == 0) {
@@ -266,9 +284,22 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	    command = Tk_GetBinding(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr, argv[4]);
 	    if (command == NULL) {
-		return TCL_ERROR;
+		CONST char *string = Tcl_GetStringResult(interp);
+
+		/*
+		 * Ignore missing binding errors.  This is a special hack
+		 * that relies on the error message returned by FindSequence
+		 * in tkBind.c.
+		 */
+
+		if (string[0] != '\0') {
+		    return TCL_ERROR;
+		} else {
+		    Tcl_ResetResult(interp);
+		}
+	    } else {
+		Tcl_SetObjResult(interp, command);
 	    }
-	    Tcl_SetObjResult(interp,command);
 	} else {
 	    Tk_GetAllBindings(interp, textPtr->bindingTable,
 		    (ClientData) tagPtr);
@@ -354,7 +385,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		}
 	    }
 	    if (tagPtr->overstrikeString != NULL) {
-		if (Tcl_GetBoolean(interp, tagPtr->overstrikeString,
+		if (Tcl_GetBooleanFromObj(interp, tagPtr->overstrikeString,
 			&tagPtr->overstrike) != TCL_OK) {
 		    return TCL_ERROR;
 		}
@@ -404,13 +435,13 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		}
 	    }
 	    if (tagPtr->underlineString != NULL) {
-		if (Tcl_GetBoolean(interp, tagPtr->underlineString,
+		if (Tcl_GetBooleanFromObj(interp, tagPtr->underlineString,
 			&tagPtr->underline) != TCL_OK) {
 		    return TCL_ERROR;
 		}
 	    }
 	    if (tagPtr->elideString != NULL) {
-		if (Tcl_GetBoolean(interp, tagPtr->elideString,
+		if (Tcl_GetBooleanFromObj(interp, tagPtr->elideString,
 			&tagPtr->elide) != TCL_OK) {
 		    return TCL_ERROR;
 		}
@@ -447,7 +478,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		    || (tagPtr->spacing3String != NULL)
 		    || (tagPtr->tabString != NULL)
 		    || (tagPtr->underlineString != NULL)
-		    || (tagPtr->state != TK_STATE_NULL)
+		    || (tagPtr->elideString != NULL)
 		    || (tagPtr->wrapMode != TEXT_WRAPMODE_NULL)) {
 		tagPtr->affectsDisplay = 1;
 	    }
@@ -477,16 +508,35 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		TkTextRedrawTag(textPtr, (TkTextIndex *) NULL,
 			(TkTextIndex *) NULL, tagPtr, 1);
 	    }
-	    TkBTreeTag(TkTextMakeIndex(textPtr->tree, 0, 0, &first),
-		    TkTextMakeIndex(textPtr->tree,
-			    TkBTreeNumLines(textPtr->tree), 0, &last),
-		    tagPtr, 0);
+	    TkTextMakeByteIndex(textPtr->tree, 0, 0, &first);
+	    TkTextMakeByteIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
+		    0, &last),
+	    TkBTreeTag(&first, &last, tagPtr, 0);
+
+	    if (tagPtr == textPtr->selTagPtr) {
+		XEvent event;
+		/*
+		 * Send an event that the selection changed.
+		 * This is equivalent to
+		 * "event generate $textWidget <<Selection>>"
+		 */
+
+		memset((VOID *) &event, 0, sizeof(event));
+		event.xany.type = VirtualEvent;
+		event.xany.serial = NextRequest(Tk_Display(textPtr->tkwin));
+		event.xany.send_event = False;
+		event.xany.window = Tk_WindowId(textPtr->tkwin);
+		event.xany.display = Tk_Display(textPtr->tkwin);
+		((XVirtualEvent *) &event)->name = Tk_GetUid("Selection");
+		Tk_HandleEvent(&event);
+	    }
+
 	    Tcl_DeleteHashEntry(hPtr);
 	    if (textPtr->bindingTable != NULL) {
 		Tk_DeleteAllBindings(textPtr->bindingTable,
 			(ClientData) tagPtr);
 	    }
-	
+
 	    /*
 	     * Update the tag priorities to reflect the deletion of this tag.
 	     */
@@ -581,7 +631,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	if (TkTextGetIndex(interp, textPtr, argv[4], &index1) != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	TkTextMakeIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
+	TkTextMakeByteIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
 		0, &last);
 	if (argc == 5) {
 	    index2 = last;
@@ -611,7 +661,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	     * skip to the end of this tagged range.
 	     */
 
-	    for (segPtr = index1.linePtr->segPtr, offset = index1.charIndex;
+	    for (segPtr = index1.linePtr->segPtr, offset = index1.byteIndex;
 		    offset >= 0;
 		    offset -= segPtr->size, segPtr = segPtr->nextPtr) {
 		if ((offset == 0) && (segPtr->typePtr == &tkTextToggleOnType)
@@ -660,7 +710,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	if (argc == 5) {
-	    TkTextMakeIndex(textPtr->tree, 0, 0, &index2);
+	    TkTextMakeByteIndex(textPtr->tree, 0, 0, &index2);
 	} else if (TkTextGetIndex(interp, textPtr, argv[5], &index2)
 		!= TCL_OK) {
 	    return TCL_ERROR;
@@ -680,7 +730,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	}
 	if (tSearch.segPtr->typePtr == &tkTextToggleOnType) {
 	    TkTextPrintIndex(&tSearch.curIndex, position1);
-	    TkTextMakeIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
+	    TkTextMakeByteIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
 		    0, &last);
 	    TkBTreeStartSearch(&tSearch.curIndex, &last, tagPtr, &tSearch);
 	    TkBTreeNextTag(&tSearch);
@@ -740,8 +790,8 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 	if (tagPtr == NULL) {
 	    return TCL_OK;
 	}
-	TkTextMakeIndex(textPtr->tree, 0, 0, &first);
-	TkTextMakeIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
+	TkTextMakeByteIndex(textPtr->tree, 0, 0, &first);
+	TkTextMakeByteIndex(textPtr->tree, TkBTreeNumLines(textPtr->tree),
 		0, &last);
 	TkBTreeStartSearch(&first, &last, tagPtr, &tSearch);
 	if (TkBTreeCharTagged(&first, tagPtr)) {
@@ -766,7 +816,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -788,7 +838,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 TkTextTag *
 TkTextCreateTag(textPtr, tagName)
     TkText *textPtr;		/* Widget in which tag is being used. */
-    char *tagName;		/* Name of desired tag. */
+    CONST char *tagName;	/* Name of desired tag. */
 {
     register TkTextTag *tagPtr;
     Tcl_HashEntry *hPtr;
@@ -841,7 +891,8 @@ TkTextCreateTag(textPtr, tagName)
     tagPtr->tabArrayPtr = NULL;
     tagPtr->underlineString = NULL;
     tagPtr->underline = 0;
-    tagPtr->state = TK_STATE_NULL;
+    tagPtr->elideString = NULL;
+    tagPtr->elide = 0;
     tagPtr->wrapMode = TEXT_WRAPMODE_NULL;
     tagPtr->userData = NULL;
     tagPtr->affectsDisplay = 0;
@@ -849,7 +900,7 @@ TkTextCreateTag(textPtr, tagName)
     Tcl_SetHashValue(hPtr, tagPtr);
     return tagPtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -860,7 +911,7 @@ TkTextCreateTag(textPtr, tagName)
  * Results:
  *	If tagName is defined in textPtr, a pointer to its TkTextTag
  *	structure is returned.  Otherwise NULL is returned and an
- *	error message is recorded in interp->result unless interp
+ *	error message is recorded in the interp's result unless interp
  *	is NULL.
  *
  * Side effects:
@@ -875,7 +926,7 @@ FindTag(interp, textPtr, tagName)
 				 * if NULL, then don't record an error
 				 * message. */
     TkText *textPtr;		/* Widget in which tag is being used. */
-    char *tagName;		/* Name of desired tag. */
+    CONST char *tagName;	/* Name of desired tag. */
 {
     Tcl_HashEntry *hPtr;
 
@@ -889,7 +940,7 @@ FindTag(interp, textPtr, tagName)
     }
     return NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -977,7 +1028,7 @@ TkTextFreeTag(textPtr, tagPtr)
     }
     ckfree((char *) tagPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1027,7 +1078,7 @@ SortTags(numTags, tagArrayPtr)
 		    TagSortProc);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1058,7 +1109,7 @@ TagSortProc(first, second)
     tagPtr2 = * (TkTextTag **) second;
     return tagPtr1->priority - tagPtr2->priority;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1118,7 +1169,7 @@ ChangeTagPriority(textPtr, tagPtr, prio)
     }
     tagPtr->priority = prio;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1221,7 +1272,7 @@ TkTextBindProc(clientData, eventPtr)
     done:
     Tcl_Release((ClientData) textPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1446,13 +1497,13 @@ ElideParseProc(clientData, interp, tkwin, value, widgRec, offset)
 {
     int b;
     register Tk_State *statePtr = (Tk_State *) (widgRec + offset);
-    char *svalue = LangString(value);
+    char *svalue = Tcl_GetString(value);
 
     if(svalue == NULL || *svalue == 0) {
 	*statePtr = TK_STATE_NULL;
 	return TCL_OK;
     }
-    if (Tcl_GetBoolean(interp, value, &b) != TCL_OK) {
+    if (Tcl_GetBooleanFromObj(interp, value, &b) != TCL_OK) {
 	*statePtr = TK_STATE_NULL;
 	return TCL_ERROR;
     }
@@ -1501,3 +1552,6 @@ ElidePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	return Tcl_NewIntObj(0);
     }
 }
+
+
+

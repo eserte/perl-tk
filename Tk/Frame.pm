@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Frame;
@@ -12,9 +12,8 @@ use base qw(Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Frame';
 
-
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/Frame.pm#31 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/Frame.pm#7 $
 
 sub Tk_cmd { \&Tk::frame }
 
@@ -84,13 +83,18 @@ sub selection
  $cw->Delegate('selection',@args);
 }
 
+sub autoLabel { 1 } 
+
 sub Populate
 {
  my ($cw,$args) = @_;
- $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
- $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
- $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
- $cw->labelPack([]) if grep /^-label\w+/, keys %$args;
+ if ($cw->autoLabel)
+  {
+   $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
+   $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);  
+   $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
+   $cw->labelPack([]) if grep /^-label\w+/, keys %$args;
+  }
 }
 
 sub Menubar
@@ -369,5 +373,6 @@ sub FindMenu
   }
  return undef;
 }
+
 
 

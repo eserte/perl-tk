@@ -1,11 +1,11 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Tk::LabEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/LabEntry.pm#11 $
+$VERSION = '4.003'; # $Id: //depot/Tkutf8/Tk/LabEntry.pm#3 $
 
 use base  qw(Tk::Frame);
 use Tk::widgets qw(Frame Label Entry);

@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.032'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#32 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tixish/DialogBox.pm#6 $
 
 use base  qw(Tk::Toplevel);
 
@@ -27,7 +27,11 @@ sub Populate {
     $cw->{'selected_button'} = '';
     $cw->transient($cw->Parent->toplevel);
     $cw->withdraw;
-    $cw->protocol('WM_DELETE_WINDOW' => sub {});
+    if (@$buttons == 1) {
+	$cw->protocol('WM_DELETE_WINDOW' => sub { $cw->{'default_button'}->invoke });
+    } else {
+	$cw->protocol('WM_DELETE_WINDOW' => sub {});
+    }
 
     # create the two frames
     my $top = $cw->Component('Frame', 'top');
@@ -42,6 +46,7 @@ sub Populate {
     foreach $bl (@$buttons)
      {
 	my $b = $bot->Button(-text => $bl, -command => sub { $cw->{'selected_button'} = "$bl" } );
+	$b->bind('<Return>' => [ $b, 'Invoke']);
 	$cw->Advertise("B_$bl" => $b);
         if ($Tk::platform eq 'MSWin32')
          {
@@ -56,7 +61,6 @@ sub Populate {
 	        $b->pack(-in => $db, -padx => '2', -pady => '2');
 	        $db->pack(-side => 'left', -expand => 1, -padx => 1, -pady => 1);
             }
-	    $cw->bind('<Return>' => [ $b, 'Invoke']);
 	    $cw->{'default_button'} = $b;
 	} else {
 	    $b->pack(-side => 'left', -expand => 1,  -padx => 1, -pady => 1);

@@ -7,11 +7,11 @@ my @include;
 
 use Carp;
 
-# $SIG{__DIE__} = \&Carp::confess;
+$SIG{__DIE__} = \&Carp::confess;
 
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#17 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/MakeDepend.pm#6 $
 
 sub scan_file;
 
@@ -42,6 +42,8 @@ sub term
  remove_comment();
  return !term() if s/^\s*!//;
  return exists($define{$1}) if s/^\s*defined\s*\(([_A-Za-z][_\w]*)\)//;
+ return exists($define{$1}) if s/^\s*defined\s*([_A-Za-z][_\w]*)//;
+ return eval "$1" if s/^\s*(0x[0-9a-f]+)//i;
  return $1 if s/^\s*(\d+)//;
  return $define{$1} || 0 if s/^\s*([_A-Za-z][_\w]*)//;
  if (s/^\s*\(//)
@@ -100,7 +102,7 @@ sub do_if
    local $_ = $expr;
    my $val = expression(0) != 0;
    warn "trailing: $_" if /\S/;
-#  printf STDERR "%d from $key $expr\n",$val;
+   #printf STDERR "%d from $key $expr\n",$val; 
    return $val;
   }
 }
@@ -127,7 +129,12 @@ sub scan_file
      if ($key =~ /^if(.*)$/)
       {
        push(@stack,$live);
-       $live = do_if($key,$rest);
+       $live &&= do_if($key,$rest);
+      }
+     elsif ($key eq 'elif')
+      {
+       $live = ($live) ? 0 : $stack[-1];
+       $live &&= do_if('if',$rest);
       }
      elsif ($key eq 'else')
       {
@@ -267,3 +274,5 @@ sub command_line
 
 1;
 __END__
+
+

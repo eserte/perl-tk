@@ -38,7 +38,7 @@ with the same pixel depth and visual as the I<$widget> used to create them.
 
 =head1 CREATING COMPOUND IMAGES
 
-Compounds are created using I<$widget>-E<gt>B<Compound>.            
+Compounds are created using I<$widget>-E<gt>B<Compound>.
 Compounds support the following I<options>:
 
 =over 4
@@ -89,13 +89,13 @@ and the compound image appears to have a transparent background.
 
 =back
 
-=head1 IMAGE COMMAND                                        
+=head1 IMAGE COMMAND
 
 When a compound image is created, Tk also creates a new object.
 This object supports the B<configure> and B<cget> methods
 described in L<Tk::options> which can be used to enquire and
 modify the options described above.
-               
+
 The object also supports the following methods:
 
 =over 4
@@ -269,7 +269,7 @@ characters in the text.
 
 The following example creates a compound image with a bitmap and a
 text string and places this image into a B<Button(n)>
-widget. Notice that the image must be created using the widget 
+widget. Notice that the image must be created using the widget
 that it resides in.
 
   my $b = $parent->Button;

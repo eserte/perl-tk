@@ -13,7 +13,7 @@ package Tk::CmdLine; # -*-Perl-*-
 #/----------------------------------------------------------------------------//
 
 use vars qw($VERSION);
-$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/CmdLine.pm#30 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/CmdLine.pm#4 $
 
 use 5.004;
 

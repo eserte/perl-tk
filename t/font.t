@@ -32,7 +32,7 @@ my $mw = Tk::MainWindow->new;
 	"Warning should match /^wrong # args: should be \"font/ but was '". $@ . "'"
     );
 }
-## 
+##
 ## Stephen O. Lidie reported that Tk800.003
 ## fontMeasure() and fontMeasure(fontname) gives
 ## SEGV on linux and AIX.

@@ -40,7 +40,7 @@ sub rulerMoveTab {
 
 
 sub rulerNewTab {
-    
+
     my($c) = @_;
 
     my $e = $c->XEvent;

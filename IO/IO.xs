@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -20,7 +20,7 @@
 #include "tkGlue.h"
 #include "tkGlue.m"
 
-TkeventVtab *TkeventVptr;   
+TkeventVtab *TkeventVptr;
 
 
 #define InputStream PerlIO *
@@ -35,7 +35,7 @@ typedef struct
   int offset;
   int count;
   int error;
-  int eof; 
+  int eof;
  } nIO_read;
 
 static void read_handler _((ClientData clientData, int mask));
@@ -99,7 +99,7 @@ int mode;
  return -1;
 }
 #else
-static int 
+static int
 make_nonblock(f,mode,newmode)
 PerlIO *f;
 int *mode;
@@ -110,9 +110,9 @@ int *newmode;
   {
    *newmode = *mode = RETVAL;
 #ifdef O_NONBLOCK
-   /* POSIX style */ 
+   /* POSIX style */
 #ifdef O_NDELAY
-   /* Ooops has O_NDELAY too - make sure we don't 
+   /* Ooops has O_NDELAY too - make sure we don't
     * get SysV behaviour by mistake
     */
    if ((*mode & O_NDELAY) || !(*mode & O_NONBLOCK))
@@ -121,17 +121,17 @@ int *newmode;
      RETVAL = fcntl(PerlIO_fileno(f),F_SETFL,*newmode);
     }
 #else
-   /* Standard POSIX */ 
+   /* Standard POSIX */
    if (!(*mode & O_NONBLOCK))
     {
      *newmode = *mode | O_NONBLOCK;
      RETVAL = fcntl(PerlIO_fileno(f),F_SETFL,*newmode);
     }
-#endif 
+#endif
 #else
    /* Not POSIX - better have O_NDELAY or we can't cope.
     * for BSD-ish machines this is an acceptable alternative
-    * for SysV we can't tell "would block" from EOF but that is 
+    * for SysV we can't tell "would block" from EOF but that is
     * the way SysV is...
     */
    if (!(*mode & O_NDELAY))
@@ -164,7 +164,7 @@ SV *sv;
  while (n-- > 0)
   {
    if (*p++ == '\n')
-    return 1; 
+    return 1;
   }
  return 0;
 }
@@ -203,14 +203,14 @@ int	offset
    if (count == 0)
     {
      int fd = PerlIO_fileno(f);
-     nIO_read info;   
-     info.f   = f;    
-     info.buf = buf;  
-     info.len = len;  
+     nIO_read info;
+     info.f   = f;
+     info.buf = buf;
+     info.len = len;
      info.offset = offset;
-     info.count  = 0; 
-     info.error  = 0; 
-     info.eof    = 0; 
+     info.count  = 0;
+     info.error  = 0;
+     info.eof    = 0;
      if (!SvUPGRADE(buf, SVt_PV))
       {
        RETVAL = &PL_sv_undef;
@@ -218,9 +218,9 @@ int	offset
       }
      SvPOK_only(buf);		/* validate pointer */
      Tcl_CreateFileHandler(fd, TCL_READABLE, read_handler, (ClientData) &info);
-     do                                        
-      {                                        
-       Tcl_DoOneEvent(0);                       
+     do
+      {
+       Tcl_DoOneEvent(0);
       } while (!info.eof && !info.error && info.count == 0);
      Tcl_DeleteFileHandler(fd);
      if (mode != newmode)
@@ -252,22 +252,22 @@ InputStream	f
     {
      SV *buf =  newSVpv("",0);
      int fd = PerlIO_fileno(f);
-     nIO_read info;   
-     info.f   = f;    
-     info.buf = buf;  
-     info.len = 1;  
+     nIO_read info;
+     info.f   = f;
+     info.buf = buf;
+     info.len = 1;
      info.offset = 0;
-     info.count  = 0; 
-     info.error  = 0; 
-     info.eof    = 0; 
+     info.count  = 0;
+     info.error  = 0;
+     info.eof    = 0;
      Tcl_CreateFileHandler(fd, TCL_READABLE, read_handler, (ClientData) &info);
      while (!info.eof && !info.error && !has_nl(buf))
-      {                                        
+      {
        info.len = 1;
        info.count = 0;
        while (!info.eof && !info.error && !info.count)
-        Tcl_DoOneEvent(0);                       
-      } 
+        Tcl_DoOneEvent(0);
+      }
      Tcl_DeleteFileHandler(fd);
      if (mode != newmode)
       {

@@ -1,7 +1,7 @@
 #!/usr/local/bin/nperl -w
 use strict;
 use Tk;
-                                       
+
 my $mw = MainWindow->new;
 
 $mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;

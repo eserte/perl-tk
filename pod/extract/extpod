@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-use strict;            
+use strict;
 use Getopt::Std;
 use ExtUtils::Manifest "/mani/";
 my $tkdir = "../..";
@@ -39,7 +39,7 @@ while (<>)
     $inpod = 0;
     ($podname = $leaf ) =~ s/[^.]+$/pod/;
    }
-######              
+######
 
   if (/^=[a-z]/ && !defined(fileno(POD)))
    {
@@ -51,17 +51,17 @@ while (<>)
             else
               {
 		open POD, ">podnew/$podname"  or die "can't open podnew/$podname";
-	      }	
+	      }
 	    my ($targ) = $ARGV =~ m#^$tkdir/(.*)$#;
 	    print POD "\n=for pm $targ\n\n";
 
    }
 
   if (/^=cut/)
-    { 
+    {
 	$inpod = 0;
 	print POD "\n" or die "can't print \\n for =cut";
-    }	
+    }
   elsif (/^=[a-z]/)
     {
      $inpod = 1;
@@ -76,7 +76,7 @@ while (<>)
       {
 	print FILE;
       }
-	   
+
 ######
   if (eof)
    {
@@ -87,13 +87,13 @@ while (<>)
 	print POD "\n\n=cut\n\n";
         close POD;
 	if ($opt{'e'})
-          { 
+          {
 	    if (-f "$infile.bak")
              {
               chmod(0644,"$infile.bak") unless -w "$infile.bak";
-              unlink "$infile.bak"; 
-             }                     
-	    rename $infile, "$infile.bak"; 
+              unlink "$infile.bak";
+             }
+	    rename $infile, "$infile.bak";
 	    system('p4',edit => $infile);
 	    rename $outfile, $infile or die "can't rename $ARGV $outfile: $!";
           }

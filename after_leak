@@ -5,7 +5,7 @@ use Devel::Leak;
 
 $count = 0;
 
-sub flash_widget 
+sub flash_widget
 {
  my($w, $option, $val1, $val2, $interval) = @_;
  $w->configure($option => $val1);

@@ -7,7 +7,7 @@
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
 # perl/Tk version:
-# Copyright (c) 1995-1999 Nick Ing-Simmons
+# Copyright (c) 1995-2000 Nick Ing-Simmons
 # Copyright (c) 1999 Greg London
 #
 # See the file "license.terms" for information on usage and redistribution
@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.044'; # $Id: //depot/Tk8/Text/Text.pm#44 $
+$VERSION = '4.013'; # $Id: //depot/Tkutf8/Text/Text.pm#13 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -142,6 +142,8 @@ sub bindRdOnly
   }
  $mw->bind($class,'<Destroy>','Destroy');
  $mw->bind($class, '<3>', ['PostPopupMenu', Ev('X'), Ev('Y')]  );
+ $mw->YMouseWheelBind($class);
+ $mw->XMouseWheelBind($class);
 
  return $class;
 }
@@ -629,6 +631,7 @@ sub ToggleInsertMode
 sub InsertKeypress
 {
  my ($w,$char)=@_;
+ return unless length $char;
  if ($w->OverstrikeMode)
   {
    my $current=$w->get('insert');
@@ -662,7 +665,7 @@ sub GotoLineNumberPopUp
    $w->{'LAST_GOTO_LINE'} = $line;
   }
 
- ## if anything is selected when bring up the pop-up, put it in entry window.	
+ ## if anything is selected when bring up the pop-up, put it in entry window.
  my $selected;
  eval { $selected = $w->SelectionGet(-selection => "PRIMARY"); };
  unless ($@)
@@ -683,8 +686,8 @@ sub GotoLineNumberPopUp
    $w->{'GOTO_LINE_NUMBER_POPUP'}=$popup;
    $popup->resizable('no','no');
    my $frame = $popup->Frame->pack(-fill => 'x');
-   $frame->Label(text=>'Enter line number: ')->pack(-side => 'left');
-   my $entry = $frame->Entry(-background=>'white',width=>25,
+   $frame->Label(-text=>'Enter line number: ')->pack(-side => 'left');
+   my $entry = $frame->Entry(-background=>'white', -width=>25,
                              -textvariable => \$w->{'LAST_GOTO_LINE'})->pack(-side =>'left',-fill => 'x');
    $popup->Advertise(entry => $entry);
   }
@@ -714,7 +717,7 @@ sub GetTextTaggedWith
  my $return_text='';
 
  # if nothing selected, then ignore
- if ($range_total == 0) {return $return_text;}	
+ if ($range_total == 0) {return $return_text;}
 
  # for every range-pair, get selected text
  while(@ranges)
@@ -737,10 +740,10 @@ sub DeleteTextTaggedWith
  my ($w,$tag) = @_;
  my @ranges = $w->tagRanges($tag);
  my $range_total = @ranges;
-	
+
  # if nothing tagged with that tag, then ignore
  if ($range_total == 0) {return;}
-	
+
  # insert marks where selections are located
  # marks will move with text even as text is inserted and deleted
  # in a previous selection.
@@ -760,7 +763,7 @@ sub DeleteTextTaggedWith
  for (my $i=0; $i<$range_total; $i++)
   { $w->markUnset('mark_tag_'.$i); }
 }
-	
+
 
 ########################################################################
 sub FindAll
@@ -768,11 +771,11 @@ sub FindAll
  my ($w,$mode, $case, $pattern ) = @_;
  ### 'sel' tags accumulate, need to remove any previous existing
  $w->unselectAll;
-	
+
  my $match_length=0;
  my $start_index;
- my $end_index = '1.0';	
-	
+ my $end_index = '1.0';
+
  while(defined($end_index))
   {
   if ($case eq '-nocase')
@@ -838,12 +841,12 @@ sub FindSelectionPrevious
 sub FindNext
 {
  my ($w,$direction, $mode, $case, $pattern ) = @_;
-	
+
  ## if searching forward, start search at end of selected block
  ## if backward, start search from start of selected block.
  ## dont want search to find currently selected text.
  ## tag 'sel' may not be defined, use eval loop to trap error
- eval {	
+ eval {
   if ($direction eq '-forward')
    {
    $w->markSet('insert', 'sel.last');
@@ -857,13 +860,13 @@ sub FindNext
  };
 
  my $saved_index=$w->index('insert');
-	
+
  # remove any previous existing tags
  $w->unselectAll;
-	
+
  my $match_length=0;
  my $start_index;
-	
+
  if ($case eq '-nocase')
   {
   $start_index = $w->search(
@@ -885,17 +888,17 @@ sub FindNext
    $pattern ,
    'insert');
   }
-	
+
  unless(defined($start_index)) { return 0; }
  if(length($start_index) == 0) { return 0; }
-	
+
  my ($line,$col) = split(/\./, $start_index);
  $col = $col + $match_length;
  my $end_index = $line.'.'.$col;
  $w->tagAdd('sel', $start_index, $end_index);
-	
+
  $w->see($start_index);
-	
+
  if ($direction eq '-forward')
   {
   $w->markSet('insert', $end_index);
@@ -906,7 +909,7 @@ sub FindNext
   $w->markSet('insert', $start_index);
   $w->markSet('current', $start_index);
   }
-	
+
  my $compared_index = $w->index('insert');
 
  my $ret_val;
@@ -936,7 +939,7 @@ sub ReplaceSelectionsWith
 
  my @ranges = $w->tagRanges('sel');
  my $range_total = @ranges;
-	
+
  # if nothing selected, then ignore
  if ($range_total == 0) {return};
 
@@ -964,7 +967,7 @@ sub ReplaceSelectionsWith
 
   $w->insert($last, $new_text);
   $w->delete($first, $last);
-	
+
   }
  ############################################################
  # set the insert cursor to the end of the last insertion mark
@@ -995,50 +998,50 @@ sub findandreplacepopup
  my ($w,$find_only)=@_;
 
  my $pop = $w->Toplevel;
+ $pop->transient($w->MainWindow);
  if ($find_only)
   { $pop->title("Find"); }
  else
   { $pop->title("Find and/or Replace"); }
  my $frame =  $pop->Frame->pack(-anchor=>'nw');
 
- $frame->Label(text=>"Direction:")
+ $frame->Label(-text=>"Direction:")
   ->grid(-row=> 1, -column=>1, -padx=> 20, -sticky => 'nw');
  my $direction = '-forward';
  $frame->Radiobutton(
-  variable => \$direction,
-  text => '-forward',value => '-forward' )
+  -variable => \$direction,
+  -text => '-forward',-value => '-forward' )
   ->grid(-row=> 2, -column=>1, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  variable => \$direction,
-  text => '-backward',value => '-backward' )
+  -variable => \$direction,
+  -text => '-backward',-value => '-backward' )
   ->grid(-row=> 3, -column=>1, -padx=> 20, -sticky => 'nw');
 
- $frame->Label(text=>"Mode:")
+ $frame->Label(-text=>"Mode:")
   ->grid(-row=> 1, -column=>2, -padx=> 20, -sticky => 'nw');
  my $mode = '-exact';
  $frame->Radiobutton(
-  variable => \$mode, text => '-exact',value => '-exact' )
+  -variable => \$mode, -text => '-exact',-value => '-exact' )
   ->grid(-row=> 2, -column=>2, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  variable => \$mode, text => '-regexp',value => '-regexp' )
+  -variable => \$mode, -text => '-regexp',-value => '-regexp' )
   ->grid(-row=> 3, -column=>2, -padx=> 20, -sticky => 'nw');
 
- $frame->Label(text=>"Case:")
+ $frame->Label(-text=>"Case:")
   ->grid(-row=> 1, -column=>3, -padx=> 20, -sticky => 'nw');
  my $case = '-case';
  $frame->Radiobutton(
-  variable => \$case, text => '-case',value => '-case' )
+  -variable => \$case, -text => '-case',-value => '-case' )
   ->grid(-row=> 2, -column=>3, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  variable => \$case, text => '-nocase',value => '-nocase' )
+  -variable => \$case, -text => '-nocase',-value => '-nocase' )
   ->grid(-row=> 3, -column=>3, -padx=> 20, -sticky => 'nw');
 
  ######################################################
- my $find_entry = $pop->Entry(width=>25);
+ my $find_entry = $pop->Entry(-width=>25);
+ $find_entry->focus;
 
- my $button_find = $pop->Button(text=>'Find',
-  command => sub {$w->FindNext ($direction,$mode,$case,$find_entry->get()),} )
-  -> pack(-anchor=>'nw');
+ my $donext = sub {$w->FindNext ($direction,$mode,$case,$find_entry->get())};
 
  $find_entry -> pack(-anchor=>'nw', '-expand' => 'yes' , -fill => 'x'); # autosizing
 
@@ -1067,37 +1070,42 @@ sub findandreplacepopup
    {$find_entry->insert('insert', $selected);}
   }
 
+ $find_entry->icursor(0);
+
  my ($replace_entry,$button_replace,$button_replace_all);
  unless ($find_only)
   {
-  ######################################################
-  $replace_entry = $pop->Entry(width=>25);
-  ######################################################
-  $button_replace = $pop->Button(text=>'Replace',
-   command => sub {$w->ReplaceSelectionsWith($replace_entry->get());} )
-   -> pack(-anchor=>'nw');
+   $replace_entry = $pop->Entry(-width=>25);
 
   $replace_entry -> pack(-anchor=>'nw', '-expand' => 'yes' , -fill => 'x');
   }
 
- ######################################################
- $pop->Label(text=>" ")->pack();
- ######################################################
+
+ my $button_find = $pop->Button(-text=>'Find', -command => $donext, -default => 'active')
+  -> pack(-side => 'left');
+
+ my $button_find_all = $pop->Button(-text=>'Find All',
+  -command => sub {$w->FindAll($mode,$case,$find_entry->get());} )
+  ->pack(-side => 'left');
+
  unless ($find_only)
   {
-  $button_replace_all = $pop->Button(text=>'Replace All',
-   command => sub {$w->FindAndReplaceAll
+   $button_replace = $pop->Button(-text=>'Replace', -default => 'normal',
+   -command => sub {$w->ReplaceSelectionsWith($replace_entry->get());} )
+   -> pack(-side =>'left');
+   $button_replace_all = $pop->Button(-text=>'Replace All',
+   -command => sub {$w->FindAndReplaceAll
     ($mode,$case,$find_entry->get(),$replace_entry->get());} )
    ->pack(-side => 'left');
   }
 
- my $button_find_all = $pop->Button(text=>'Find All',
-  command => sub {$w->FindAll($mode,$case,$find_entry->get());} )
+
+  my $button_cancel = $pop->Button(-text=>'Cancel',
+  -command => sub {$pop->destroy()} )
   ->pack(-side => 'left');
 
-  my $button_cancel = $pop->Button(text=>'Cancel',
-  command => sub {$pop->destroy()} )
-  ->pack(-side => 'left');
+  $find_entry->bind("<Return>" => [$button_find, 'invoke']);
+  $find_entry->bind("<Escape>" => [$button_cancel, 'invoke']);
 
  $pop->resizable('yes','no');
  return $pop;
@@ -1597,4 +1605,5 @@ sub GetMenu
 
 1;
 __END__
+
 

@@ -17,8 +17,8 @@ $mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;
 MainLoop;
 
 sub validate
-{       
- my @args = @_;  
+{
+ my @args = @_;
  foreach (@args)
   {
    $_ = defined ($_) ? "'$_'" : 'undef';

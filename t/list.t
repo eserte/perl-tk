@@ -1,7 +1,7 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
 use Test;
-use Tk;        
+use Tk;
 use Tk::Font;
 my $mw = new MainWindow;
 my $l1 = $mw->Label( -text => " 6 point font", -font => ['Helvetica',6,'bold']);

@@ -1,3 +1,6 @@
+
+/*	$Id: tixInit.c,v 1.4.2.3 2001/11/10 08:12:45 idiscovery Exp $	*/
+
 /*
  * tixInit.c --
  *
@@ -89,21 +92,20 @@ static OptionStruct tixOption;
  */
 
 #ifndef TIX_DEF_FONTSET
-#define TIX_DEF_FONTSET "14Point"
+#define TIX_DEF_FONTSET "WmDefault"
 #endif
 
 #ifndef TIX_DEF_SCHEME
-#define TIX_DEF_SCHEME "TixGray"
+#define TIX_DEF_SCHEME "WmDefault"
 #endif
 
-
-#define DEF_TIX_TOOLKIT_OPTION_BETA		"1"
-#define DEF_TIX_TOOLKIT_OPTION_BINDING		"Motif"
-#define DEF_TIX_TOOLKIT_OPTION_DEBUG		"1"
+#define DEF_TIX_TOOLKIT_OPTION_BETA		"0"
+#define DEF_TIX_TOOLKIT_OPTION_BINDING		"TK"
+#define DEF_TIX_TOOLKIT_OPTION_DEBUG		"0"
 #define DEF_TIX_TOOLKIT_OPTION_FONTSET		TIX_DEF_FONTSET
 #define DEF_TIX_TOOLKIT_OPTION_LIBRARY		""
 #define DEF_TIX_TOOLKIT_OPTION_SCHEME		TIX_DEF_SCHEME
-#define DEF_TIX_TOOLKIT_OPTION_SCHEME_PRIORITY	"79"
+#define DEF_TIX_TOOLKIT_OPTION_SCHEME_PRIORITY	"75"
 
 static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_BOOLEAN, "-beta", "tixBeta", "TixBeta",
@@ -121,7 +123,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_STRING, "-scheme", "tixScheme", "TixScheme",
        DEF_TIX_TOOLKIT_OPTION_SCHEME, Tk_Offset(OptionStruct, scheme),
        0},
-    {TK_CONFIG_STRING, "-scheme", "tixSchemePriority", "TixSchemePriority",
+    {TK_CONFIG_STRING, "-schemepriority", "tixSchemePriority", "TixSchemePriority",
        DEF_TIX_TOOLKIT_OPTION_SCHEME_PRIORITY,
        Tk_Offset(OptionStruct, schemePriority),
        0},
@@ -133,11 +135,7 @@ static Tk_ConfigSpec configSpecs[] = {
 };
 
 #ifndef TIX_LIBRARY
-#ifndef _WINDOWS
-#define TIX_LIBRARY "/usr/local/lib/tix"
-#else
 #define TIX_LIBRARY "../../library"
-#endif
 #endif
 
 /*----------------------------------------------------------------------
@@ -224,10 +222,10 @@ ParseToolkitOptions(interp)
 	if (tixOption.tixlibrary == NULL) {
 	    tixOption.tixlibrary = TIX_LIBRARY;
 	}
-	Tcl_SetVar2(interp, "tix_priv", "-libdir",  
+	Tcl_SetVar2(interp, "tix_priv", "-libdir",
 	 	tixOption.tixlibrary, flag);
     } else {
-	Tcl_SetVar2(interp, "tix_priv", "-libdir",  
+	Tcl_SetVar2(interp, "tix_priv", "-libdir",
 	 	tixOption.tixlibrary, flag);
 	ckfree((char*)tixOption.tixlibrary);
     }
@@ -241,9 +239,9 @@ ParseToolkitOptions(interp)
 
     Tcl_SetVar2(interp, "tix_priv", "-binding",
 	tixOption.binding,    		flag);
-    Tcl_SetVar2(interp, "tix_priv", "-fontset", 
+    Tcl_SetVar2(interp, "tix_priv", "-fontset",
 	tixOption.fontSet,    		flag);
-    Tcl_SetVar2(interp, "tix_priv", "-scheme",  
+    Tcl_SetVar2(interp, "tix_priv", "-scheme",
 	tixOption.scheme,     		flag);
     Tcl_SetVar2(interp, "tix_priv", "-schemepriority",
 	tixOption.schemePriority,     flag);
@@ -253,7 +251,7 @@ ParseToolkitOptions(interp)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_Init_Internal() --
  *
@@ -283,6 +281,12 @@ Tix_Init_Internal(interp, doSource)
     extern Tk_ImageType tixPixmapImageType;
     extern Tk_ImageType tixCompoundImageType;
 
+#ifdef USE_TCL_STUBS
+	if(Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL)
+		return TCL_ERROR;
+	if(Tk_InitStubs(interp, TCL_VERSION, 0) == NULL)
+		return TCL_ERROR;
+#endif
 
 #ifdef TCL_7_5_OR_LATER
     /*
@@ -367,7 +371,7 @@ Tix_Init_Internal(interp, doSource)
 	(void (*)_ANSI_ARGS_((ClientData))) NULL);
 
 #ifdef _WINDOWS
-    Tcl_GlobalEval(interp, "set tixPriv(isWindows) 1");
+    Tcl_GlobalEval(interp, tixStrDup("set tixPriv(isWindows) 1"));
 #endif
 
     /* Parse options database for fontSets, schemes, etc */
@@ -385,26 +389,7 @@ Tix_Init_Internal(interp, doSource)
 	    return TCL_ERROR;
 	}
 
-	/*
-	 * Check whether the TIX_LIBRARY variable is set to a
-	 * pre-4.0.2 version of Tix. (All 4.0.2+ version will
-	 * correctly identify their own versions and will print out
-	 * warning messages if the version of the binary does not
-	 * match with the script library
-	 */
-	if (Tcl_GlobalEval(interp, "tixScriptVersion") != TCL_OK) {
-	    fprintf(stderr, 
-		"Warning: Tix script library version (pre 4.0.2)\n");
-	    fprintf(stderr, "  in \"%s\"\n", Tcl_GetVar(interp, "tix_library",
-		    TCL_GLOBAL_ONLY));
-	    fprintf(stderr, "  does not match binary version (%s).\n",
-		TIX_PATCHLEVEL);
-	    fprintf(stderr, "  Please check your TIX_LIBRARY environment ");
-	    fprintf(stderr, "variable and your Tix installation.\n");
-	    Tcl_ResetResult(interp);
-	}
-
-	if (Tcl_GlobalEval(interp, "__tixInit") != TCL_OK) {
+	if (Tcl_GlobalEval(interp, tixStrDup("__tixInit")) != TCL_OK) {
 	    return TCL_ERROR;
 	}
     } else {
@@ -414,7 +399,7 @@ Tix_Init_Internal(interp, doSource)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_Init --
  *
@@ -455,7 +440,7 @@ Tix_Init(interp)
 #endif
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * TixInitSam --
  *
@@ -468,7 +453,7 @@ int TixInitSam(interp)
 {
     return Tix_Init_Internal(interp, 0);
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_SafeInit --
  *
@@ -484,7 +469,7 @@ Tix_SafeInit(interp)
     Tcl_SetVar2(interp, "tix_priv", "isSafe", "1", TCL_GLOBAL_ONLY);
     return Tix_Init(interp);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * TixLoadLibrary --
@@ -500,61 +485,43 @@ Tix_SafeInit(interp)
  */
 
 static char *initScript =
-"if [catch {file join a a}] {\n\
-    proc tixFileJoin {args} {\n\
-	set p [join $args /]\n\
-	regsub -all {/+} $p / p\n\
-	return $p\n\
-    }\n\
-} else {\n\
-    proc tixFileJoin {args} {\n\
-	return [eval file join $args]\n\
-   }\n\
-}\n\
-\n\
-proc init {} {\n\
-    global tix_library tix_version tix_patchLevel env\n\
+"proc init {} {\n\
+    global tix_library tix_version tix_patchLevel env errorInfo\n\
     rename init {}\n\
     set dirs {}\n\
-    if [info exists env(TIX_LIBRARY)] {\n\
+    set errors {}\n\
+    set lib tix$tix_version\n\
+    set Lib Tix$tix_version\n\
+    # ../ ../../ library - for uninstalled \n\
+        # [pwd] may not work inside safe Tcl\n\
+    set bindir [file dirname [info nameofexe]]\n\
+    set up [file dirname $bindir]\n\
+    lappend dirs [file join $up library]\n\
+    lappend dirs [file join $up $lib]\n\
+    set upup [file dirname $up]\n\
+    lappend dirs [file join $upup library]\n\
+    lappend dirs [file join $upup $lib]\n\
+    # beside lib/tcl8.x - for installed \n\
+    set instDir [file dirname [info library]]\n\
+    lappend dirs [file join $instDir $lib]\n\
+    # env(TIX_LIBRARY) used to take precedence\n\
+    if {[info exists env(TIX_LIBRARY)]} {\n\
 	lappend dirs $env(TIX_LIBRARY)\n\
     }\n\
-    if [string match {*[ab]*} $tix_patchLevel] {\n\
-	set lib tix$tix_patchLevel\n\
-	set Lib Tix$tix_patchLevel\n\
-    } else {\n\
-	set lib tix$tix_version\n\
-	set Lib Tix$tix_version\n\
-    }\n\
-    catch {\n\
-        # [pwd] may not work inside safe Tcl\n\
-        set p [pwd]\n\
-	lappend dirs [tixFileJoin $p library]\n\
-        set p [file dirname $p]\n\
-	lappend dirs [tixFileJoin $p library]\n\
-        set p [file dirname $p]\n\
-	lappend dirs [tixFileJoin $p library]\n\
-    }\n\
-    set instDir [file dirname [info library]]\n\
-    lappend dirs [tixFileJoin $instDir $lib]\n\
-    lappend dirs [tixFileJoin [tixFileJoin $instDir lib] $lib]\n\
-    catch {\n\
-    lappend dirs [tixFileJoin [tixFileJoin [file dirname [file dirname [info nameofexecutable]]] lib] $lib]\n\
-    }\n\
-    lappend dirs [tixFileJoin [tixFileJoin [file dirname [file dirname [info library]]] $lib] library]\n\
-    lappend dirs [tixFileJoin [tixFileJoin [file dirname [file dirname [info library]]] $Lib] library]\n\
     foreach i $dirs {\n\
-	set tix_library $i\n\
-	if ![catch {uplevel #0 source [tixFileJoin $i Init.tcl]} err] {\n\
+	if {![file isdir $i]} {continue}\n\
+	set tixfile [file join $i Init.tcl]\n\
+	if {![file exists $i]} {continue}\n\
+        set tix_library $i\n\
+	if {![catch {uplevel #0 [list source $tixfile]} err]} {\n\
 	    return\n\
 	} else {\n\
-	    if [info exists env(TIX_DEBUG)] {\n\
-		puts $err\n\
+                 append errors \"$tixfile: $err\n$errorInfo\n\"\n\
 	    }\n\
         }\n\
-    }\n\
-    set msg \"Can't find a usable Init.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\"\n\
+    set msg \"Can't find a usable Tix Init.tcl in the following directories: \n\"\n\
+    append msg \"[join $dirs {\n}]\n\"\n\
+    append msg \"$errors\n\n\"\n\
     append msg \"This probably means that Tix wasn't installed properly.\n\"\n\
     error $msg\n\
 }\n\
@@ -565,5 +532,5 @@ int
 TixLoadLibrary(interp)
     Tcl_Interp * interp;
 {
-    return Tcl_Eval(interp, initScript);
+    return Tcl_Eval(interp, tixStrDup(initScript));
 }

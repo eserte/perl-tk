@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -96,7 +96,7 @@ SV *source;
     {
      Tcl_ResetResult(interp);
      if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
-      croak(Tcl_GetResult(interp));
+      croak(Tcl_GetStringResult(interp));
     }
    else
     {
@@ -297,7 +297,7 @@ timeofday()
 CODE:
 {
  Tcl_Time t;
- TclpGetTime(&t);
+ Tcl_GetTime(&t);
  RETVAL = t.sec + (double) t.usec/1e6;
 }
 OUTPUT:
@@ -582,7 +582,7 @@ int
 Tk_IsTopLevel(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_Name(win)
 Tk_Window	win
 
@@ -590,7 +590,7 @@ char *
 Tk_PathName(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_Class(win)
 Tk_Window	win
 
@@ -681,7 +681,7 @@ char *	name
 char *	value
 int	priority
 
-char *
+const char *
 Tk_GetAtomName(win,atom)
 Tk_Window	win
 Atom		atom
@@ -691,11 +691,11 @@ Tk_ClearSelection(win,selection)
 Tk_Window	win
 Atom		selection
 
-char *
+const char *
 Tk_DisplayName(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_GetOption(win,name,class)
 Tk_Window	win
 char *	name
@@ -710,7 +710,7 @@ void
 Tk_Ungrab(win)
 Tk_Window	win
 
-char *
+const char *
 Tk_SetAppName(win,name)
 Tk_Window	win
 char *		name
@@ -749,6 +749,16 @@ CODE:
  {
   Lang_CmdInfo *info = WindowCommand(win,NULL,1);
   ST(0) = sv_mortalcopy(WidgetRef(info->interp,path));
+ }
+
+SV *
+_object(win,name)
+SV *	win
+char *	name
+CODE:
+ {
+  Lang_CmdInfo *info = WindowCommand(win,NULL,1);
+  ST(0) = sv_mortalcopy(ObjectRef(info->interp,name));
  }
 
 Tk_Window
@@ -870,4 +880,6 @@ BOOT:
 #endif
   Boot_Glue();
  }
+
+
 

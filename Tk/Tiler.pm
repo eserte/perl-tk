@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 # An example of a geometry manager "widget" in perl
@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Tiler.pm#16 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Tiler.pm#5 $
 
 use base  qw(Tk::Frame);
 

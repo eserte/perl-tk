@@ -12,13 +12,13 @@ sub bounce {
 
     # This began as a borrowed idea from Python distribution examples, ended up
     # with a Ball module of its own. It illustrates how one can run something
-    # without blocking XEvent processing in a simple-minded sorta way. 
+    # without blocking XEvent processing in a simple-minded sorta way.
     #
     # Handles resizes to the main window
     #
     # Gurusamy Sarathy (gsar@engin.umich.edu)
     # Tidied up by SOL.
-    # 
+    #
     # 97/06/10 This demo is sufficiently bizarre enough that we don't use
     #          WidgetDemo! (-:  Plus, you get to see Exists() in action.
 
@@ -97,7 +97,7 @@ sub bounce {
         -orient      => 'vert',
 	-showvalue   => 0,
 	-width       => 10,
-	-from        => 100, 
+	-from        => 100,
 	-to          => 0,
         -borderwidth => 1,
     );
@@ -122,25 +122,25 @@ sub bounce {
     $w_see->pack(qw(-side left -expand 1));
     my $w_ball = $w_buttons->Button(
         -text    => 'View Ball Class Module',
-        -command => [\&view_widget_code, 
+        -command => [\&view_widget_code,
 		     Tk->findINC('demos/widget_lib') . '/Ball.pm'],
     );
     $w_ball->pack(qw(-side left -expand 1));
 
-    $bounce_running = 0; 
+    $bounce_running = 0;
     $menu_button_list[1]->cget(-menu)->entryconfigure(1, -state => 'disabled');
 
     $canvas->Ball;
     $canvas->Ball(-color => 'red', -size => 30, -position => [200, 75]);
     $canvas->Ball(
-        -color    => 'green', 
-        -size     => 60, 
-        -position => [490, 275], 
+        -color    => 'green',
+        -size     => 60,
+        -position => [490, 275],
         -velocity => [8.0, 12.0],
     );
     $canvas->Ball(
-        -color    => 'yellow', 
-        -size     => 100, 
+        -color    => 'yellow',
+        -size     => 100,
         -position => [360, 60],
         -velocity => [8.0, 12.0],
     );
@@ -149,16 +149,16 @@ sub bounce {
     $TOP->repeat(1000 => sub {
 	return unless $bounce_running;
 	ClearMsg;
-	ShowMsg(sprintf("%6d interations/second", $bounce_counter));  
+	ShowMsg(sprintf("%6d interations/second", $bounce_counter));
 	$bounce_counter = 0
     });
-	
+
 
     # This runs the Tk mainloop. Note that the simulation itself has a main
     # loop which must be processed. DoSingleStep runs a bit of the simulation
     # during every iteration. Also note  that, with a flag of 0,
-    # Tk::DoOneEvent will suspend the  process until an X-event arrives, 
-    # effectively blocking the  while loop. 
+    # Tk::DoOneEvent will suspend the  process until an X-event arrives,
+    # effectively blocking the  while loop.
     #
     # My original idea was to run the simulation mainloop as an  asynchronous
     # proc handler that runs when Tk is idle, but the necessary Async(3) calls
@@ -169,7 +169,7 @@ sub bounce {
 	    $TOP->destroy;
 	    return;
 	}
-	DoOneEvent($bounce_running ? DONT_WAIT : ALL_EVENTS);   
+	DoOneEvent($bounce_running ? DONT_WAIT : ALL_EVENTS);
 	DoSingleStep($canvas) if $bounce_running;
     }
 
@@ -178,14 +178,14 @@ sub bounce {
 sub mkmb {
 
     # (Ripped from nTk examples)
-    # Make a Menubutton widget; note that the menu is automatically created.  
-    # We maintain a list of the Menubutton references since some callers 
-    # need to refer to the Menubutton, as well as to suppress stray name 
+    # Make a Menubutton widget; note that the menu is automatically created.
+    # We maintain a list of the Menubutton references since some callers
+    # need to refer to the Menubutton, as well as to suppress stray name
     # warnings with Perl -w.
 
     my($mb0, $mb_label, $mb_label_underline, $mb_msg, $mb_list_ref) = @_;
     my $mb = $mb0->Menubutton(
-        -text       => $mb_label, 
+        -text       => $mb_label,
 	-underline  => $mb_label_underline,
 	-background => 'DarkGreen',
         -foreground => 'Yellow',
@@ -196,9 +196,9 @@ sub mkmb {
     my $mb_list;
     foreach $mb_list (@{$mb_list_ref}) {
         $mb->command(
-            -label      => $mb_list->[0], 
-            -command    => $mb_list->[1] , 
-            -underline  => $mb_list->[2], 
+            -label      => $mb_list->[0],
+            -command    => $mb_list->[1] ,
+            -underline  => $mb_list->[2],
             -background => 'DarkGreen',
             -foreground => 'White',
         );
@@ -206,7 +206,7 @@ sub mkmb {
     $mb->pack(-side => 'left');
     $TOP->bind($mb, '<Enter>' => sub {ClearMsg; ShowMsg($mb_msg)});
     $TOP->bind($mb, '<Leave>' => \&ClearMsg);
-    
+
     push @menu_button_list, $mb;
     return $mb;
 
@@ -249,7 +249,7 @@ sub NotDone {
 sub ShowMsg {
 
     my($msg) = shift;
-    $bounce_status->insert('1.0', $msg);  
+    $bounce_status->insert('1.0', $msg);
 
 } # end ShowMsg
 

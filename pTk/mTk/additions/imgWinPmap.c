@@ -33,7 +33,7 @@ static void		CopyTransparent _ANSI_ARGS_((Display* display,
 			    int height, int dest_x, int dest_y,
 			    HDC maskDC));
 
-
+
 /*----------------------------------------------------------------------
  * ImgInitPixmapInstance --
  *
@@ -56,7 +56,7 @@ ImgInitPixmapInstance(masterPtr, instancePtr)
     instancePtr->clientData = (ClientData)dataPtr;
 }
 
-
+
 /*----------------------------------------------------------------------
  * ImgXpmAllocTmpBuffer --
  *
@@ -94,7 +94,7 @@ ImgXpmAllocTmpBuffer(masterPtr, instancePtr, imagePtr, maskPtr)
     *maskPtr = mask;
 }
 
-
+
 void
 ImgXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask)
     PixmapMaster * masterPtr;
@@ -114,7 +114,7 @@ ImgXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask)
     }
 }
 
-
+
 /*----------------------------------------------------------------------
  * ImgXpmSetPixel --
  *
@@ -157,7 +157,7 @@ ImgXpmSetPixel(instancePtr, image, mask, x, y, colorPtr, isTranspPtr)
 	*isTranspPtr = 1;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * ImgXpmRealizePixmap --
  *

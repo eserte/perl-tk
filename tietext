@@ -14,7 +14,7 @@ use Tk;
  {
 # print "FETCH(",join(',',@_),")\n";
   my ($obj,$key) = @_;
-  my $text = ${$obj}[0]; 
+  my $text = ${$obj}[0];
   $key++;
   return $text->get($key.".0" ,$key.".0+1 line");
  }
@@ -23,7 +23,7 @@ use Tk;
  {
 #  print "STORE(",join(',',@_),")\n";
   my ($obj,$key,$val) = @_;
-  my $text = ${$obj}[0]; 
+  my $text = ${$obj}[0];
   $key++;
   while ($text->compare($key.".0",'>','end'))
    {
@@ -37,13 +37,13 @@ use Tk;
   chomp($val);
   $text->insert($key . ".0" ,$val."\n");
   print "$key:$val\n";
-  $text->update; 
+  $text->update;
  }
 
  sub LENGTH
  {
   my ($obj) = @_;
-  my $text = ${$obj}[0]; 
+  my $text = ${$obj}[0];
   print $text->index("end"),"\n";
   my ($line,$col) = split(/\./,$text->index("end"));
   $line -= 3;

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -15,14 +15,14 @@
 #include "pTk/tixPort.h"
 #include "pTk/tixInt.h"
 #include "pTk/tixImgXpm.h"
-#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
+#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
-TixVtab     *TixVptr     ; 
-TixintVtab  *TixintVptr  ; 
-TiximgxpmVtab  *TiximgxpmVptr  ; 
+TixVtab     *TixVptr     ;
+TixintVtab  *TixintVptr  ;
+TiximgxpmVtab  *TiximgxpmVptr  ;
 
 extern Tk_ImageType tixPixmapImageType;
 
@@ -61,9 +61,9 @@ TkWindow *	win
 BOOT:
  {
   IMPORT_VTABLES;
-  TixVptr     =     (TixVtab *) SvIV(perl_get_sv("Tk::TixVtab",5));    
-  TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5));  
-  TiximgxpmVptr  =  (TiximgxpmVtab *) SvIV(perl_get_sv("Tk::TiximgxpmVtab",5));  
+  TixVptr     =     (TixVtab *) SvIV(perl_get_sv("Tk::TixVtab",5));
+  TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5));
+  TiximgxpmVptr  =  (TiximgxpmVtab *) SvIV(perl_get_sv("Tk::TiximgxpmVtab",5));
 
   Tk_CreateImageType(&tixPixmapImageType);
  }

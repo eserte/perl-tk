@@ -6,7 +6,7 @@ package Tk::Tree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tixish/Tree.pm#19 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tixish/Tree.pm#2 $
 
 use Tk ();
 use Tk::Derived;

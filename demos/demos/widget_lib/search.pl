@@ -13,7 +13,7 @@ sub search {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     =>'',				      
+        -text     =>'',
         -title    => 'Text Demonstration - Search and Highlight',
         -iconname => 'search',
     );
@@ -55,13 +55,13 @@ sub search {
 	search_flash_matches $text,
             ['configure', 'search',
                 -background => '#ce5555', -foreground => 'white'], 800,
-            ['configure', 'search', 
+            ['configure', 'search',
                 -background => undef,     -foreground => undef],   200;
       } else {
 	search_flash_matches $text,
-            ['configure', 'search', 
+            ['configure', 'search',
                 -background => 'black',   -foreground => 'white'], 800,
-            ['configure', 'search', 
+            ['configure', 'search',
                -background => undef,      -foreground => undef],   200;
       }
 
@@ -94,7 +94,7 @@ sub search_flash_matches {
     my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @_;
 
     $w->tag(@{$cmd1});
-    $w->after($sleep1, 
+    $w->after($sleep1,
 	      [\&search_flash_matches, $w, $cmd2, $sleep2, $cmd1, $sleep1]);
 
 } # end search_flash_matches
@@ -141,7 +141,7 @@ sub search_text {
     # Arguments:
     #
     # w -	The window in which to search.  Must be a text widget.
-    # string -	Reference to the string to search for.  The search is done 
+    # string -	Reference to the string to search for.  The search is done
     #           using exact matching only;  no special characters.
     # tag -	Tag to apply to each instance of a matching string.
 
@@ -151,7 +151,7 @@ sub search_text {
 
     $w->tag('remove',  $tag, qw/0.0 end/);
     my($current, $length) = ('1.0', 0);
-    
+
     while (1) {
 	$current = $w->search(-count => \$length, $$string, $current, 'end');
 	last if not $current;

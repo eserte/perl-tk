@@ -5,20 +5,20 @@
 use Tk ;
 $top = MainWindow->new;
 
-chomp(@fonts = `xlsfonts`) ; 
+chomp(@fonts = `xlsfonts`) ;
 
-$list = $top->ScrlListbox(-scrollbars => 'e', -width => 70) ; 
-$list->pack ; 
+$list = $top->ScrlListbox(-scrollbars => 'e', -width => 70) ;
+$list->pack ;
 $list->bind('<1>' => [sub {&changeFont} ] ) ;
 
 grep ($list->insert('end',$_), @fonts) ;
 
-MainLoop ; 
+MainLoop ;
 
-sub changeFont { 
+sub changeFont {
 	local($w) = shift ;
-	local($fontName) ; 
+	local($fontName) ;
 	$fontName = $w->get($w->curselection) ;
-	$w->configure(-font => $fontName ) ; 
+	$w->configure(-font => $fontName ) ;
 }
 

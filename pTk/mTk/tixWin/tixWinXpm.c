@@ -1,3 +1,6 @@
+
+/*	$Id: tixWinXpm.c,v 1.1.1.1 2000/05/17 11:08:55 idiscovery Exp $	*/
+
 /*
  * tixWinImgXpm.c --
  *
@@ -34,7 +37,7 @@ static void		CopyTransparent _ANSI_ARGS_((Display* display,
 			    int height, int dest_x, int dest_y,
 			    HDC maskDC));
 
-
+
 /*----------------------------------------------------------------------
  * TixpInitPixmapInstance --
  *
@@ -57,7 +60,7 @@ TixpInitPixmapInstance(masterPtr, instancePtr)
     instancePtr->clientData = (ClientData)dataPtr;
 }
 
-
+
 /*----------------------------------------------------------------------
  * TixpXpmAllocTmpBuffer --
  *
@@ -110,7 +113,7 @@ TixpXpmAllocTmpBuffer(masterPtr, instancePtr, imagePtr, maskPtr)
     *maskPtr = mask;
 }
 
-
+
 void
 TixpXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask)
     PixmapMaster * masterPtr;
@@ -130,7 +133,7 @@ TixpXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask)
     }
 }
 
-
+
 /*----------------------------------------------------------------------
  * TixpXpmSetPixel --
  *
@@ -173,7 +176,7 @@ TixpXpmSetPixel(instancePtr, image, mask, x, y, colorPtr, isTranspPtr)
 	*isTranspPtr = 1;
     }
 }
-
+
 #ifndef __PM__				/* These functions for PM are
 					   implemented elsewhere. */
 
@@ -242,7 +245,7 @@ TixpXpmFreeInstanceData(instancePtr, delete, display)
 					 * be deleted as well? */
     Display * display;			/* Unused on Windows. */
 {
-    PixmapData *dataPtr = (PixmapData*)instancePtr->clientData;    
+    PixmapData *dataPtr = (PixmapData*)instancePtr->clientData;
 
     if (dataPtr->maskDC != NULL) {
 	DeleteObject(SelectObject(dataPtr->maskDC,

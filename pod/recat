@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 use strict;
-my $sec;            
-my %cat;       
+my $sec;
+my %cat;
 my @cat;
 while (<>)
  {
@@ -11,7 +11,7 @@ while (<>)
     unless (exists $cat{$sec})
      {
       $cat{$sec} = [];
-      push(@cat,$sec); 
+      push(@cat,$sec);
      }
     }
   elsif (/^file\s+(\S+)/)
@@ -20,7 +20,7 @@ while (<>)
     push(@{$cat{$sec}},$file);
    }
  }
-                 
+
 $^I = ".bak";
 foreach my $sec (@cat)
  {
@@ -40,7 +40,7 @@ foreach my $sec (@cat)
         if (/^=for\s+category\s+(.*)\n+/)
          {
           if ($1 eq $sec)
-           {          
+           {
             warn "$file okay\n";
             $undo = 1;
            }
@@ -48,8 +48,8 @@ foreach my $sec (@cat)
            {
             warn "Change $file $1 -> $sec\n";
             $_ = "=for category $sec\n\n";
-           }  
-         } 
+           }
+         }
         else
          {
           warn "$_ Add $file -> $sec\n";

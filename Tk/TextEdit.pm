@@ -13,7 +13,7 @@ package Tk::TextEdit;
 
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/TextEdit.pm#4 $
+$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/TextEdit.pm#2 $
 
 use Tk qw (Ev);
 use AutoLoader;
@@ -31,17 +31,17 @@ sub ClassInit
  my ($class,$mw) = @_;
  $class->SUPER::ClassInit($mw);
 
- $mw->bind($class,'<F5>', 'IndentSelectedLines'); 
- $mw->bind($class,'<F6>', 'UnindentSelectedLines'); 
+ $mw->bind($class,'<F5>', 'IndentSelectedLines');
+ $mw->bind($class,'<F6>', 'UnindentSelectedLines');
 
- $mw->bind($class,'<F7>', 'CommentSelectedLines'); 
- $mw->bind($class,'<F8>', 'UncommentSelectedLines'); 
+ $mw->bind($class,'<F7>', 'CommentSelectedLines');
+ $mw->bind($class,'<F8>', 'UncommentSelectedLines');
 
  return $class;
 }
 
 # 8 horizontal pixels in the "space" character in default font.
-my $tab_multiplier = 8;     
+my $tab_multiplier = 8;
 
 sub debug_code_f1
 {
@@ -63,7 +63,7 @@ sub InitObject
  $w->{'INDENT_STRING'} = "\t";   #  Greg mode=>"\t",   Nick mode=>" "
  $w->{'LINE_COMMENT_STRING'} = "#";   #  assuming perl comments
 
- my %pair_descriptor_hash = 
+ my %pair_descriptor_hash =
 	(
 	'PARENS' => [ 'multiline', '(', ')', "[()]" ],
 	'CURLIES' => [ 'multiline', '{', '}', "[{}]" ],
@@ -138,7 +138,7 @@ sub schedule_next_callback
 # any time the widget changes that requires the display to be updated,
 # then these code references will be scheduled in sequence for calling.
 # splitting them up allows them to be prioritized by order,
-# and prevents the widget from "freezing" too long if they were 
+# and prevents the widget from "freezing" too long if they were
 # one large callback. scheduling them apart allows the widget time
 # to respond to user inputs.
 #######################################################################
@@ -157,7 +157,7 @@ sub GetGUICallbacks
 sub SetGUICallbackIndex
 {
  my ($w, $val)=@_;
- $w->{GUI_CALLBACK_ARRAY_INDEX}=$val; 
+ $w->{GUI_CALLBACK_ARRAY_INDEX}=$val;
 }
 
 sub GetGUICallbackIndex
@@ -314,9 +314,9 @@ sub IndicesLookGood
 ########################################################################
 sub searchForBaseCharacterInPair
 {
- my 
+ my
   (
-   $w, $top_index, $searchfromindex, $bot_index, 
+   $w, $top_index, $searchfromindex, $bot_index,
    $direction, $startchar, $endchar, $charpair
   )=@_;
  my ($plus_one_char, $search_end_index, $index_offset, $done_index);
@@ -353,7 +353,7 @@ sub searchForBaseCharacterInPair
   # boundary condition exists when first char in widget is the match char
   # need to be able to determine if search tried to go past index '1.0'
   # if so, set index to undef and return.
-  if ( $at_done_index )   
+  if ( $at_done_index )
    {
    $searchfromindex = undef;
    last;
@@ -422,18 +422,18 @@ sub HighlightAllPairsBracketingCursor
 # cursor and tag them with the given tagname.
 # startchar might be '['
 # endchar would then be ']'
-# tagname is a name of a tag, which has already been 
+# tagname is a name of a tag, which has already been
 # configured to highlight however the user wants them to behave.
-# error tagname is the tag to highlight the chars with if there 
+# error tagname is the tag to highlight the chars with if there
 # is a problem of some kind.
 # singleline indicates whether the character pairs must occur
 # on a single line. quotation marks are single line characters usually.
 ########################################################################
 sub HighlightSinglePairBracketingCursor
 {
- my 
+ my
   (
-   $w, $startchar, $endchar, $charpair, 
+   $w, $startchar, $endchar, $charpair,
    $good_tagname, $bad_tagname, $single_line
   ) = @_;
  $single_line=0 unless defined($single_line);
@@ -452,20 +452,20 @@ sub HighlightSinglePairBracketingCursor
   }
 
  # search backward for the startchar
- #  $top_index, $searchfromindex, $bot_index, 
+ #  $top_index, $searchfromindex, $bot_index,
  #  $direction, $startchar, $endchar, $charpair
 
  my $startindex = $w->searchForBaseCharacterInPair
   (
-   $top_index, $cursor, $bot_index, 
-   '-backward', $startchar, $endchar, $charpair 
+   $top_index, $cursor, $bot_index,
+   '-backward', $startchar, $endchar, $charpair
   );
 
  # search forward for the endchar
  my $endindex = $w->searchForBaseCharacterInPair
   (
-   $top_index, $cursor, $bot_index, 
-   '-forward', $startchar, $endchar, $charpair 
+   $top_index, $cursor, $bot_index,
+   '-forward', $startchar, $endchar, $charpair
   );
  return unless ((defined $startindex) and (defined $endindex));
 
@@ -476,7 +476,7 @@ sub HighlightSinglePairBracketingCursor
   }
 
  $w->tagAdd($final_tag, $startindex, $w->index($startindex.'+1c') );
- $w->tagAdd($final_tag,   $endindex, $w->index(  $endindex.'+1c') ); 
+ $w->tagAdd($final_tag,   $endindex, $w->index(  $endindex.'+1c') );
 }
 
 ####################################################################

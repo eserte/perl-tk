@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/FBox.pm#20 $
+$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/FBox.pm#9 $
 
 use base qw(Tk::Toplevel);
 
@@ -47,7 +47,6 @@ Construct Tk::Widget 'FBox';
 
 my $selectFilePath;
 my $selectFile;
-my $selectPath;
 
 sub import {
     if (defined $_[1] and $_[1] eq 'as_default') {
@@ -57,6 +56,12 @@ sub import {
 	*MotifFDialog = \&Tk::FBox::FDialog;
     }
 }
+
+# Note that -sortcmd is experimental and the interface is likely to change.
+# Using -sortcmd is really strange :-(
+# $top->getOpenFile(-sortcmd => sub { package Tk::FBox; uc $b cmp uc $a});
+# or, un-perlish, but useable (now activated in code):
+# $top->getOpenFile(-sortcmd => sub { uc $_[1] cmp uc $_[0]});
 
 sub Populate {
     my($w, $args) = @_;
@@ -70,15 +75,16 @@ sub Populate {
     # f1: the frame with the directory option menu
     my $f1 = $w->Frame;
     my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
+    $w->{'selectPath'} = '.';
     $w->{'dirMenu'} = my $dirMenu =
       $f1->Optionmenu(-variable => \$w->{'selectPath'},
 		      -textvariable => \$w->{'selectPath'},
 		      -command => ['SetPath', $w]);
     my $upBtn = $f1->Button;
-    if (!defined $updirImage) {
-	$updirImage = $w->Bitmap(-data => "#define updir_width 28\n" .
-	                                  "#define updir_height 16\n" .
-				          <<EOF);
+    if (!defined $updirImage->{$w->MainWindow}) {
+        $updirImage->{$w->MainWindow} = $w->Bitmap(-data => <<EOF);
+#define updir_width 28
+#define updir_height 16
 static char updir_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x80, 0x1f, 0x00, 0x00, 0x40, 0x20, 0x00, 0x00,
    0x20, 0x40, 0x00, 0x00, 0xf0, 0xff, 0xff, 0x01, 0x10, 0x00, 0x00, 0x01,
@@ -88,7 +94,7 @@ static char updir_bits[] = {
    0xf0, 0xff, 0xff, 0x01};
 EOF
     }
-    $upBtn->configure(-image => $updirImage);
+    $upBtn->configure(-image => $updirImage->{$w->MainWindow});
     $dirMenu->configure(-takefocus => 1, -highlightthickness => 2);
     $upBtn->pack(-side => 'right', -padx => 4, -fill => 'both');
     $lab->pack(-side => 'left', -padx => 4, -fill => 'both');
@@ -198,21 +204,23 @@ EOF
     $w->SetPath(_cwd());
 
     $w->ConfigSpecs(-defaultextension => ['PASSIVE', undef, undef, undef],
-		    -filetypes        => ['PASSIVE', undef, undef, undef],
-		    -initialdir       => ['PASSIVE', undef, undef, undef],
-		    -initialfile      => ['PASSIVE', undef, undef, undef],
-		    -title            => ['PASSIVE', undef, undef, undef],
-		    -type             => ['PASSIVE', undef, undef, 'open'],
-		    -filter           => ['PASSIVE', undef, undef, '*'],
-		    -force            => ['PASSIVE', undef, undef, 0],
-		    'DEFAULT'         => [$icons],
-		   );
+                    -filetypes        => ['PASSIVE', undef, undef, undef],
+                    -initialdir       => ['PASSIVE', undef, undef, undef],
+                    -initialfile      => ['PASSIVE', undef, undef, undef],
+#		    -sortcmd          => ['PASSIVE', undef, undef, sub { lc($a) cmp lc($b) }],
+		    -sortcmd          => ['PASSIVE', undef, undef, sub { lc($_[0]) cmp lc($_[1]) }],
+                    -title            => ['PASSIVE', undef, undef, undef],
+                    -type             => ['PASSIVE', undef, undef, 'open'],
+                    -filter           => ['PASSIVE', undef, undef, '*'],
+                    -force            => ['PASSIVE', undef, undef, 0],
+                    'DEFAULT'         => [$icons],
+                   );
     # So-far-failed attempt to break reference loops ...
     $w->_OnDestroy(qw(dirMenu icons typeMenuLab typeMenuBtn okBtn ent updateId));
     $w;
 }
 
-
+# -initialdir fix with ResolveFile
 sub Show {
     my $w = shift;
 
@@ -225,8 +233,9 @@ sub Show {
     {
 	my $initialdir = $w->cget(-initialdir);
 	if (defined $initialdir) {
-	    if (-d $initialdir) {
-		$w->{'selectPath'} = $initialdir;
+	    my ($flag, $path, $file) = ResolveFile($initialdir, 'junk');
+	    if ($flag eq 'OK' or $flag eq 'FILE') {
+		$w->{'selectPath'} = $path;
 	    } else {
 		$w->Error("\"$initialdir\" is not a valid directory");
 	    }
@@ -304,7 +313,7 @@ sub Show {
 	$w->grabRelease;
 	$w->withdraw;
     }
-    if ($oldGrab) {
+    if (Tk::Exists($oldGrab) && $oldGrab->viewable) {
 	if ($grabStatus eq 'global') {
 	    $oldGrab->grabGlobal;
 	} else {
@@ -330,6 +339,33 @@ sub UpdateWhenIdle {
     }
 }
 
+# This proc gets called whenever data(selectPath) is set
+#
+sub SetPath
+{
+ my $w = shift;
+ if (@_)
+  {
+   my $newdir = shift;
+   # Update the Directory: option menu
+   my @list;
+   my $dir = '';
+   foreach my $subdir (TclFileSplit($newdir))
+    {
+     $dir = TclFileJoin($dir, $subdir);
+     push @list, $dir;
+    }
+    my $dirMenu = $w->{'dirMenu'};
+    $dirMenu->configure(-options => \@list);
+    $w->{'selectPath'} = $newdir;
+    # my $vvar = $dirMenu->cget('-variable');
+    # my $tvar = $dirMenu->cget('-textvariable');
+    # my $mvar = \$w->{'selectPath'};
+    # print "now m=$mvar ($$mvar) t=$tvar ($$tvar) v=$vvar ($$vvar)\n";
+  }
+ $w->UpdateWhenIdle;
+}
+
 # tkFDialog_Update --
 #
 #	Loads the files and directories into the IconList widget. Also
@@ -342,18 +378,18 @@ sub Update {
 
     # This proc may be called within an idle handler. Make sure that the
     # window has not been destroyed before this proc is called
-    if (!Tk::Exists($w) || $w->class ne 'FBox') {
+    if (!Tk::Exists($w) || !$w->isa('Tk::FBox')) {
 	return;
     } else {
 	delete $w->{'updateId'};
     }
-    unless (defined $folderImage) {
+    unless (defined $folderImage->{$w->MainWindow}) {
 	require Tk::Pixmap;
-	$folderImage = $w->Pixmap(-file => Tk->findINC('folder.xpm'));
-	$fileImage   = $w->Pixmap(-file => Tk->findINC('file.xpm'));
+	$folderImage->{$w->MainWindow} = $w->Pixmap(-file => Tk->findINC('folder.xpm'));
+	$fileImage->{$w->MainWindow}   = $w->Pixmap(-file => Tk->findINC('file.xpm'));
     }
-    my $folder = $folderImage;
-    my $file   = $fileImage;
+    my $folder = $folderImage->{$w->MainWindow};
+    my $file   = $fileImage->{$w->MainWindow};
     my $appPWD = _cwd();
     if (!ext_chdir($w->{'selectPath'})) {
 	# We cannot change directory to $data(selectPath). $data(selectPath)
@@ -371,11 +407,7 @@ sub Update {
 
     # Turn on the busy cursor. BUG?? We haven't disabled X events, though,
     # so the user may still click and cause havoc ...
-    my $ent = $w->{'ent'};
-    my $entCursor = $ent->cget(-cursor);
-    my $dlgCursor = $w->cget(-cursor);
-    $ent->configure(-cursor => 'watch');
-    $w->configure(-cursor => 'watch');
+    $w->Busy(-cursor => 'watch', -recurse => 1);
     $w->idletasks;
     my $icons = $w->{'icons'};
     $icons->DeleteAll;
@@ -386,11 +418,13 @@ sub Update {
     $flt =~ s!\*!.*!g;
     local *FDIR;
     if( opendir( FDIR,  _cwd() )) {
-      my @files;
-        foreach my $f (sort { lc($a) cmp lc($b) } readdir FDIR) {
-          next if $f eq '.' or $f eq '..';
-          if (-d $f) { $icons->Add($folder, $f); }
-          elsif( $f =~ m!$flt$! ) { push( @files, $f ); }
+        my @files;
+#	my $sortcmd = $w->cget(-sortcmd);
+	my $sortcmd = sub { $w->cget(-sortcmd)->($a,$b) };
+        foreach my $f (sort $sortcmd readdir(FDIR)) {
+            next if $f eq '.' or $f eq '..';
+            if (-d $f) { $icons->Add($folder, $f); }
+            elsif( $f =~ m!$flt$! ) { push( @files, $f ); }
 	}
       closedir( FDIR );
       foreach my $f ( @files ) { $icons->Add($file, $f); }
@@ -398,15 +432,6 @@ sub Update {
 
     $icons->Arrange;
 
-    # Update the Directory: option menu
-    my @list;
-    my $dir = '';
-    foreach my $subdir (TclFileSplit($w->{'selectPath'})) {
-	$dir = TclFileJoin($dir, $subdir);
-	push @list, $dir;
-    }
-    my $dirMenu = $w->{'dirMenu'};
-    $dirMenu->configure(-options => \@list);
 
     # Restore the PWD to the application's PWD
     ext_chdir($appPWD);
@@ -417,8 +442,7 @@ sub Update {
     }
 
     # turn off the busy cursor.
-    $ent->configure(-cursor => $entCursor);
-    $w->configure(-cursor =>  $dlgCursor);
+    $w->Unbusy;
 }
 
 # tkFDialog_SetPathSilently --
@@ -429,14 +453,6 @@ sub SetPathSilently {
     my($w, $path) = @_;
 
     $w->{'selectPath'} = $path;
-}
-
-# This proc gets called whenever data(selectPath) is set
-#
-sub SetPath {
-    my $w = shift;
-    $w->{'selectPath'} = $_[0] if @_;
-    $w->UpdateWhenIdle;
 }
 
 # This proc gets called whenever data(filter) is set
@@ -752,8 +768,15 @@ sub ListInvoke {
 	    $w->SetPath($file);
 	}
     } else {
-	$w->{'selectFile'} = $file;
-	$w->Done;
+        my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text);
+        if ($flag ne 'OK') {
+            $w->messageBox(-type => 'OK',
+                           -message => "Cannot resolve $w->{'selectPath'}/$text.",
+                           -icon => 'error');
+        } else {
+            $path = JoinFile($path, $file);
+            $w->Done($path);
+        }
     }
 }
 
@@ -888,4 +911,5 @@ sub _untaint {
 }
 
 1;
+
 

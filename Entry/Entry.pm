@@ -8,15 +8,19 @@ package Tk::Entry;
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.037'; # $Id: //depot/Tk8/Entry/Entry.pm#37 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Entry/Entry.pm#8 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
+
+
+use vars qw($VERSION);
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Entry/Entry.pm#8 $
 
 use Tk::Widget ();
 use Tk::Clipboard ();
@@ -31,7 +35,7 @@ bootstrap Tk::Entry;
 sub Tk_cmd { \&Tk::entry }
 
 Tk::Methods('bbox','delete','get','icursor','index','insert','scan',
-            'selection','xview');
+            'selection','validate','xview');
 
 use Tk::Submethods ( 'selection' => [qw(clear range adjust present to from)],
 		     'xview'     => [qw(moveto scroll)],

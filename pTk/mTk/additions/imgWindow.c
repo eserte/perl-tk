@@ -8,6 +8,9 @@
 /* Author : Jan Nijtmans */
 /* Date   : 11/16/97     */
 
+#include "tkPort.h"
+#include "Lang.h"
+
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -29,10 +32,10 @@
  * The format record for the Win data format:
  */
 
-static int ChanMatchWin _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Tcl_Obj *filename,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr));
-static int ObjMatchWin _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ChanMatchWin _ANSI_ARGS_((Tcl_Channel chan, Tcl_Obj *filename,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
+static int ObjMatchWin _ANSI_ARGS_((Tcl_Obj *dataObj,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
 static int ObjReadWin _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 	Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
@@ -110,12 +113,12 @@ xerrorhandler(clientData, e)
  *----------------------------------------------------------------------
  */
 
-static int ChanMatchWin(interp, chan, filename, format, widthPtr, heightPtr)
-    Tcl_Interp *interp;
+static int ChanMatchWin(chan, filename, format, widthPtr, heightPtr, interp)
     Tcl_Channel chan;
     Tcl_Obj *filename;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
+    Tcl_Interp *interp;
 {
     return 0;
 }
@@ -137,11 +140,11 @@ static int ChanMatchWin(interp, chan, filename, format, widthPtr, heightPtr)
  *----------------------------------------------------------------------
  */
 
-static int ObjMatchWin(interp, data, format, widthPtr, heightPtr)
-    Tcl_Interp *interp;
+static int ObjMatchWin(data, format, widthPtr, heightPtr, interp)
     Tcl_Obj *data;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
+    Tcl_Interp *interp;
 {
     Tk_Window tkwin;
     char *name;
@@ -378,7 +381,7 @@ static int ObjReadWin(interp, data, format, imageHandle,
 	}
     }
 
-    Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, height);
+    Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, height, TK_PHOTO_COMPOSITE_SET);
 
 #ifndef	__WIN32__
     XDestroyImage(ximage);
@@ -390,3 +393,4 @@ static int ObjReadWin(interp, data, format, imageHandle,
     ckfree((char *) block.pixelPtr);
     return TCL_OK;
 }
+

@@ -15,7 +15,7 @@ EXTERN void		Tk_CanvasEventuallyRedraw _ANSI_ARGS_((
 			    Tk_Canvas canvas, int x1, int y1, int x2,
 			    int y2));
 EXTERN int		Tk_CanvasGetCoord _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Canvas canvas, char *string,
+			    Tk_Canvas canvas, CONST char *string,
 			    double *doublePtr));
 EXTERN Tk_CanvasTextInfo *Tk_CanvasGetTextInfo _ANSI_ARGS_((Tk_Canvas canvas));
 EXTERN int		Tk_CanvasPsBitmap _ANSI_ARGS_((Tcl_Interp *interp,
@@ -54,7 +54,7 @@ extern int		TkMakeBezierCurve _ANSI_ARGS_((Tk_Canvas canvas,
 			    XPoint xPoints[], double dblPoints[]));
 extern void		TkMakeBezierPostscript _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, double *pointPtr,
-			    int numPoints, int numSteps));
+			    int numPoints));
 extern void		TkIncludePoint _ANSI_ARGS_((Tk_Item *itemPtr,
 			    double *pointPtr));
 extern void		TkGetButtPoints _ANSI_ARGS_((double p1[], double p2[],
@@ -78,3 +78,4 @@ extern double		TkPolygonToPoint _ANSI_ARGS_((double *polyPtr,
 
 #include "tkVMacro.h"
 #endif
+

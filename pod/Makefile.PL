@@ -7,7 +7,7 @@ WriteMakefile(
 
 sub MY::postamble {
     '
-html :: 
+html ::
 	@echo "Sorry no HTML building yet"
 '
 }

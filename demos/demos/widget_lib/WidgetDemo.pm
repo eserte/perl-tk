@@ -4,7 +4,7 @@ use 5.004;
 use Carp;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.021'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#21 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/WidgetDemo.pm#4 $
 
 use Tk;
 use Tk::Toplevel;
@@ -58,9 +58,9 @@ sub Populate {
         -wraplength => '4i',
         -justify    => 'left',
         -text       => $text,
-        @label_attributes,			 
+        @label_attributes,
     );
-    
+
     my $demo_frame = $cw->Frame;
     $cw->Advertise('WidgetDemo' => $demo_frame); # deprecated
 

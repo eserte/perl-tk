@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MMutil;
@@ -9,7 +9,9 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.052'; # $Id: //depot/Tk8/Tk/MMutil.pm#52 $
+$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/MMutil.pm#12 $
+
+# warn __FILE__." $VERSION\n";
 
 use Tk::MakeDepend;
 
@@ -72,6 +74,7 @@ sub mTk_CHO
 {
  my $self = shift;
  my $mTk  = shift;
+ my $exc  = shift;
  my %c;
  my %h;
  foreach (@{$self->{H}}) { $h{$_} = 1 }
@@ -87,10 +90,21 @@ sub mTk_CHO
      $h{$_} = 1;
     }
   }
+ foreach (keys %$exc)
+  {
+   if (/\.c$/)
+    {
+     delete $c{$_};
+    }
+   elsif (/\.h$/)
+    {
+     delete $h{$_};
+    }
+  }
  while (@_)
   {
    my $name = shift;
-   carp("No $name") unless (exists $c{$name});
+   cluck("No $name") unless (exists $c{$name});
    delete $c{$name}
   }
  arch_prune(\%h);
@@ -110,7 +124,7 @@ sub mTk_CHO
   }
  foreach my $file (sort keys %$mTk)
   {
-   unless (-f $file)
+   unless (-f $file && -M $file < -M $mTk->{$file})
     {
      warn "Extracting $file\n";
      system($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
