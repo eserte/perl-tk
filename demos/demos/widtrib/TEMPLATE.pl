@@ -1,8 +1,6 @@
 # Learn how to write your own widget demonstration!
 
-use English;
-use vars qw($TOP);
-use strict;
+use vars qw/$TOP/;
 
 sub TEMPLATE {
     my($demo) = @ARG;
@@ -10,8 +8,10 @@ sub TEMPLATE {
         -name             => $demo,
         -text             => 'Learn how to write a widget demonstration!',
 	-geometry_manager => 'grid',
+        -title            => 'WidgetDemo Example',
+        -iconname         => 'WidgetDemo',
     );
-    $TOP = $demo_widget->top;	# get grid master
+    $TOP = $demo_widget->Top;	# get geometry master
     $TOP->Label(-text => 'Click "See Code".')->grid;
 }
 __END__
@@ -43,7 +43,7 @@ When widget calls your subroutine it's passed one argument, the demonstration
 name.  Since your subroutine can "see" all of widget's global variables, you
 use $MW (the main window reference) to create the WidgetDemo toplevel; be
 sure to pass at least the -name and -text parameters.  -geometry_manager
-defaults to "pack".  Invoke the top() method to fetch the containing frame
+defaults to "pack".  Invoke the Top() method to fetch the containing frame
 for your demonstration, and treat it as if it were the MainWindow - the
 top-most window of your widget hierarchy.
 

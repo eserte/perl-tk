@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -191,7 +191,8 @@ InputStream	f
 SV *		callback
 CODE:
  {
-  Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), 
+  int fd = PerlIO_fileno(f);
+  Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), 
                         TCL_READABLE, NULL, callback);
  }
 
@@ -201,7 +202,8 @@ OutputStream	f
 SV *		callback
 CODE:
  {
-  Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), 
+  int fd = PerlIO_fileno(f);
+  Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), 
                         TCL_WRITABLE, NULL, callback);
  }
 
@@ -210,7 +212,8 @@ Tcl_DeleteReadHandler(f)
 InputStream	f
 CODE:
  {
-  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD));
+  int fd = PerlIO_fileno(f);
+  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD));
  }
 
 void
@@ -218,7 +221,8 @@ Tcl_DeleteWriteHandler(f)
 OutputStream	f
 CODE:
  {
-  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD));
+  int fd = PerlIO_fileno(f);
+  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD));
  }
 
 MODULE = Tk::IO	PACKAGE = Tk::IO
@@ -254,6 +258,7 @@ int	offset
    ST(0) = &sv_undef;
    if (count == 0)
     {
+     int fd = PerlIO_fileno(f);
      nIO_read info;   
      info.f   = f;    
      info.buf = buf;  
@@ -268,12 +273,12 @@ int	offset
        return;
       }
      SvPOK_only(buf);		/* validate pointer */
-     Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
+     Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
      do                                        
       {                                        
        Tcl_DoOneEvent(0);                       
       } while (!info.eof && !info.error && info.count == 0);
-     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD)); 
+     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD)); 
      if (mode != newmode)
       {
        count = restore_mode(f,mode);
@@ -302,6 +307,7 @@ InputStream	f
    if (count == 0)
     {
      SV *buf =  newSVpv("",0);
+     int fd = PerlIO_fileno(f);
      nIO_read info;   
      info.f   = f;    
      info.buf = buf;  
@@ -310,7 +316,7 @@ InputStream	f
      info.count  = 0; 
      info.error  = 0; 
      info.eof    = 0; 
-     Tcl_CreateFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
+     Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd, TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
      while (!info.eof && !info.error && !has_nl(buf))
       {                                        
        info.len = 1;
@@ -318,7 +324,7 @@ InputStream	f
        while (!info.eof && !info.error && !info.count)
         Tcl_DoOneEvent(0);                       
       } 
-     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData)PerlIO_fileno(f),TCL_UNIX_FD)); 
+     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd, TCL_UNIX_FD)); 
      if (mode != newmode)
       {
        count = restore_mode(f,mode);

@@ -735,6 +735,12 @@ TkWmSetClass(winPtr)
  *----------------------------------------------------------------------
  */
 
+static int ErrorHandler(ClientData clientData, XErrorEvent *errEventPtr)
+{
+ abort();
+}
+
+
 	/* ARGSUSED */
 int
 Tk_WmCmd(clientData, interp, argc, argv)
@@ -919,6 +925,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	     */
 	    while (done2 == 0) {
 		XUnmapWindow(winPtr->display, winPtr->window);
+		Tk_MakeWindowExist((Tk_Window) winPtr->parentPtr);
 		XReparentWindow(winPtr->display, winPtr->window,
 		    winPtr->parentPtr->window, 0, 0);
 		if (wmDontReparent >= 2) {

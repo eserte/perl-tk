@@ -1,4 +1,14 @@
 '\"
+'\" Copyright (c) 1996, Expert Interface Technologies
+'\"
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" The file man.macros and some of the macros used by this file are
+'\" copyrighted: (c) 1990 The Regents of the University of California.
+'\"              (c) 1994-1995 Sun Microsystems, Inc.
+'\" The license terms of the Tcl/Tk distrobution are in the file
+'\" license.tcl.
 .so man.macros
 .TH HList n 4.0 Tk "Tk Generic Methods"
 .BS
@@ -103,12 +113,24 @@ text in list entries.
 '----------BEGIN
 .LP
 .nf
+Name:		\fBheader\fR
+Class:		\fBHeader\fR
+Switch:		\fB\-header\fR
+.fi
+.IP
+A Boolean value specifying whether headers should be displayed for
+this HList widget (see the \fBheader\fR widget command below).
+'----------END
+'
+'----------BEGIN
+.LP
+.nf
 Name:		\fBheight\fR
 Class:		\fBHeight\fR
 Switch:		\fB\-height\fR
 .fi
 .IP
-Specifies the desired height for the window in characters.
+Specifies the desired height for the window in number of characters.
 '----------END
 '
 '----------BEGIN
@@ -121,6 +143,37 @@ Switch:		\fB\-indent\fR
 .IP
 Specifies the amount of horizontal indentation between a list entry
 and its children. Must be a valid screen distance value.
+'----------END
+'
+'----------BEGIN
+.LP
+.nf
+Name:		\fBindicator\fR
+Class:		\fBIndicator\fR
+Switch:		\fB\-indicator\fR
+.fi
+.IP
+Specifies whether the indicators should be displayed inside the HList
+widget. See the \fBindicator\fR widget command below.
+'----------END
+'
+'
+'----------BEGIN
+.LP
+.nf
+Name:		\fBindicatorCmd\fR
+Class:		\fBIndicatorCmd\fR
+Switch:		\fB\-indicatorcmd\fR
+.fi
+.IP
+Specifies a TCL command to be executed when the user manipulates the
+indicator of an HList entry. The \fB\-indicatorcmd\fR is triggered
+when the user press or releases the mouse button over the indicator in
+an HList entry. By default the TCL command specified by
+\fB\-indicatorcmd\fR is executed with one additional argument, the
+entryPath of the entry whose indicator has been triggered. Additional
+information about the event can be obtained by the \fBtixEvent\fR
+command.
 '----------END
 '
 '
@@ -215,7 +268,7 @@ Class:		\fBSizeCmd\fR
 Switch:		\fB\-sizecmd\fR
 .fi
 .IP
-Specifies a TCL script to be called whenever the tixHList widget
+Specifies a TCL script to be called whenever the HList widget
 changes its size. This command can be useful to implement "user scroll
 bars when needed" features.
 '----------END
@@ -262,7 +315,7 @@ hierarchical structure, for example, file system directory trees. The
 list entries are indented and connected by branch lines according to
 their places in the hierachy.
 .PP
-Each list entry is identified by a \fBentryPath\fR. The entryPath is a
+Each list entry is identified by an \fBentryPath\fR. The entryPath is a
 sequence of \fBentry names\fR separated by the separator charactor
 (specified by the \fB\-separator\fR option). An \fBentry name\fR can be
 any string that does not contain the separator charactor, or it can be
@@ -286,8 +339,8 @@ page for a list of all display items.
 When a list entry is created by the \fBadd\fR or \fBaddchild\fR widget
 commands, the type of its display item is determined by the
 \fB\-itemtype\fR option passed to these commands. If the
-\fB\-itemtype\fR is omitted, then by default the display item type
-\fBtext\fR is used.
+\fB\-itemtype\fR is omitted, then by default the type specified by
+this HList widget's \fB\-itemtype\fR option is used.
 '----------------------------------------------------------------------
 .SH "WIDGET METHODS"
 .PP
@@ -354,9 +407,8 @@ with the data it represents.
 Specifies the type of display item to be display for the new list
 entry. \fBtype\fR must be a valid display item type. Currently the
 available display item types are \fBimagetext\fR, \fBtext\fR, and
-\bwindow\fR. If this option is not specified, then by default the
-display item type specified by the \fB\-itemtype\fR widget option is
-created.
+\fBwindow\fR. If this option is not specified, then by default the
+type specified by this HList widget's \fB\-itemtype\fR option is used.
 '
 .TP
 \fB\-state\fR
@@ -388,14 +440,14 @@ This command returns the entryPath of the newly created list entry.
 .TP
 \fI$hlist->\fBanchorSet\fR(\fIentryPath\fR)
 '
-Sets the anchor to the list entry identified by
-\fIentryPath\fR.  The anchor is the end of the selection
-that is fixed while dragging out a selection with the mouse.
+Sets the anchor to the list entry identified by \fIentryPath\fR.  The
+anchor is the end of the selection that is fixed while the user is
+dragging out a selection with the mouse.
 '
 .TP
 \fI$hlist->\fBanchorClear\fR
 '
-Remove the anchor, if any, from the this tixHList widget. This only
+Removes the anchor, if any, from this HList widget. This only
 removes the surrounding highlights of the anchor entry and does not
 affect its selection status.
 '
@@ -408,7 +460,7 @@ Returns the current value of the configuration option given by
 '
 .TP
 '
-\fI$hlist->\fBcolumn\fR(\fIcol, \fR?\fR)\fI\-char\fR? ?\fIwidth\fR? 
+\fI$hlist->\fBcolumnWidth(\fIcol\fR ?\fI\-char\fR? ?\fIwidth\fR?) 
 '
 Querys or sets the width of a the column \fIcol\fR in the HList
 widget. The value of \fIcol\fR is zero-based: 0 stands for the first
@@ -419,7 +471,7 @@ column:
 .PP
 .RS
 .TP
-\fI$hlist->\fBcolumn\fR(\fIcol\fR)\fB{}\fR
+\fI$hlist->\fBcolumnWidth\fR(\fIcol\fR \fB''\fR)
 '
 An empty string indicates that the width of the column should be just
 wide enough to display the widest element in this column. In this
@@ -427,12 +479,12 @@ case, the width of this column may change as a result of the elements
 in this column changing their sizes.
 '
 .TP
-\fI$hlist->\fBcolumn\fR(\fIcol, \fR\fIwidth\fR)
+\fI$hlist->\fBcolumnWidth\fR(\fIcol, \fR\fIwidth\fR)
 '
 \fIwidth\fR must be in a form accepted by \fBTk_GetPixels(3)\fR.
 '
 .TP
-\fI$hlist->\fBcolumn\fR(\fIcol, \fR\fB-char, \fR\fInChars\fR)
+\fI$hlist->\fBcolumnWidth\fR(\fIcol, \fR\fB-char, \fR\fInChars\fR)
 '
 The width is set to be the average width occupied by \fInChars\fR
 number of characters of the font specified by the \fB\-font\fR option
@@ -457,17 +509,18 @@ any of the values accepted by the \fBtixHList\fR command.
 '
 .TP
 \fI$hlist->\fBdelete\fR(\fIoption, \fR\fIentryPath\fR)
+
 Delete one or more list entries. \fIoption\fR may be one of the
 following:
 .RS
 .TP
 \fBall\fR
-Delete all entries in the tixHList. In this case the \fIentryPath\fR
+Delete all entries in the HList. In this case the \fIentryPath\fR
 does not need to be specified.
 '
 .TP
 \fBentry\fR
-Delete the entry specified by \fIentryPath\fR. and all its offsprings,
+Delete the entry specified by \fIentryPath\fR and all its offsprings,
 if any.
 '
 .TP
@@ -488,12 +541,12 @@ deleted.
 '
 Sets the dragsite to the list entry identified by
 \fIentryPath\fR. The dragsite is used to indicate the source of a
-grag-and-drop action. Currently drag-and-drop functionality has not
+drag-and-drop action. Currently drag-and-drop functionality has not
 been implemented in Tix yet.
 '
 .TP
 \fI$hlist->\fBdragsiteClear\fR
-Remove the dragsite, if any, from the this tixHList widget. This only
+Remove the dragsite, if any, from the this HList widget. This only
 removes the surrounding highlights of the dragsite entry and does not
 affect its selection status.
 '
@@ -501,15 +554,15 @@ affect its selection status.
 .TP
 \fI$hlist->\fBdropsiteSet\fR(\fIentryPath\fR)
 '
-Sets the dropsite to the list entry identified by
-\fIentryPath\fR. The dropsite is used to indicate the target of a
-grag-and-drop action. Currently drag-and-drop functionality has not
-been implemented in Tix yet.
+Sets the dropsite to the list entry identified by \fIentryPath\fR. The
+dropsite is used to indicate the target of a grag-and-drop
+action. Currently drag-and-drop functionality has not been implemented
+in Tix yet.
 '
 .TP
 \fI$hlist->\fBdropsiteClear\fR
 '
-Remove the dropsite, if any, from the this tixHList widget. This only
+Remove the dropsite, if any, from the this HList widget. This only
 removes the surrounding highlights of the dropsite entry and does not
 affect its selection status.
 '
@@ -518,8 +571,7 @@ affect its selection status.
 '
 Returns the current value of the configuration option given by
 \fIoption\fR for the entry indentfied by \fIentryPath\fR. \fIOption\fR
-may have any of the values accepted by the \fBtixHList add\fR
-command.
+may have any of the values accepted by the \fBadd\fR widget command.
 '
 .TP
 \fI$hlist->\fBentryconfigure\fR(\fIentryPath, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
@@ -527,7 +579,7 @@ command.
 Query or modify the configuration options of the list entry indentfied
 by \fIentryPath\fR. If no \fIoption\fR is specified, returns a list
 describing all of the available options for \fIentryPath\fR (see
-\fBTk_ConfigureInfo\fR for information on the format of this list). If
+\fBTk_ConfigureInfo\fR for information on the format of this list.) If
 \fIoption\fR is specified with no \fIvalue\fR, then the command
 returns a list describing the one named option (this list will be
 identical to the corresponding sublist of the value returned if no
@@ -537,13 +589,103 @@ the given value(s); in this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBadd\fR or
 \fBaddchild\fR method. The exact set of options depends on the
 value of the \fB\-itemtype\fR option passed to the the \fBadd\fR or
-\fBaddchild\fR method when this list entry is created.
+\fBaddchild\fR widget command when this list entry is created.
+'
 '
 .TP
-\fI$hlist->\fBhide\fR(\fIoption, ?entryPath?\fR)
+\fIpathName \fBheader \fIoption\fR \fIcol\fR ?\fIargs ...\fR?
+'
+Manipulates the header items of this HList widget. If the
+\fB\-header\fR option of this HList widget is set to true, then a
+header item is displayed at the top of each column. The \fIcol\fR
+argument for this command must be a valid integer. 0 indicates the
+first column, 1 the second column, ... and so on. This command
+supports the following options:
+'
+.RS
+.TP
+\fIpathName \fBheader \fBcget\fR \fIcol\fR \fIoption\fR
+'
+If the \fIcol\fR-th column has a header display item, returns the
+value of the specified \fIoption\fR of the header item. If the header
+doesn't exist, returns an error.
+'
+.TP
+\fIpathName \fBheader \fBconfigure\fR \fIcol\fR ?\fIoption\fR? \fI?value option value ...\fR?
+'
+Query or modify the configuration options of the header display item
+of the \fIcol\fR-th column. The header item must exist, or an error
+will result.  If no \fIoption\fR is specified, returns a list
+describing all of the available options for the header display item
+(see \fBTk_ConfigureInfo(3)\fR for information on the format of this
+list.) If \fIoption\fR is specified with no \fIvalue\fR, then the
+command returns a list describing the one named option (this list will
+be identical to the corresponding sublist of the value returned if no
+\fIoption\fR is specified). If one or more \fIoption\-value\fR pairs
+are specified, then the command modifies the given option(s) to have
+the given value(s); in this case the command returns an empty
+string. \fIOption\fR may have any of the values accepted by the
+\fBheader create\fR widget command. The exact set of options depends
+on the value of the \fB\-itemtype\fR option passed to the the \fBheader
+create\fR widget command when this display item was created.
+'
+.TP
+\fIpathName \fBheader \fBcreate\fR \fIcol\fR ?\fI\-itemtype type\fR? ?\fIoption value ...\fR?
+'
+Creates a new display item as the header for the \fIcol\fR-th
+column. If an header display item already exists for this column, it
+will be replaced by the new item.  An optional parameter
+\fI\-itemtype\fR can be used to specify what type of display item
+should be created. If the \fI\-itemtype\fR is not given, then by
+default the type specified by this HList widget's \fB\-itemtype\fR
+option is used. Additional parameters, in \fIoption-value\fR pairs,
+can be passed to configure the appearance of the display item. Each
+\fIoption-value\fR pair must be a valid option for this type of
+display item or one of the following:
+.RS
+'
+.TP
+\fB\-borderwidth\fR
+'
+Specifies the border width of this header item.
+'
+.TP
+\fB\-headerbackground\fR
+'
+Specifies the background color of this header item.
+'
+.TP
+\fB\-relief\fR
+'
+Specifies the relief type of the border of this header item.
+'
+.RE
+'
+.TP
+\fIpathName \fBheader \fBdelete \fIcol\fR
+'
+Deletes the header display item for the \fIcol\fR-th column.
+'
+.TP
+\fIpathName \fBheader \fBexists \fIcol\fR
+'
+Return true if an header display item exists for the \fIcol\fR-th
+column; return false otherwise.
+'
+.TP
+\fIpathName \fBheader \fBsize \fIentryPath\fR
+'
+If an header display item exists for the \fIcol\fR-th column , returns
+its size in a two element list of the form {\fIwidth height\fR};
+returns an error if the header display item does not exist.
+'
+.RE
+'
+.TP
+\fIpathName \fBhide \fIoption ?entryPath?\fR
 '
 Makes some of entries invisible invisible without deleting them.
-\fIoption\fR can be one of the following:
+\fIOption\fR can be one of the following:
 .RS
 .TP
 \fBentry\fR
@@ -554,35 +696,125 @@ be added in the next release.
 .RE
 '
 .TP
-\fI$hlist->\fBinfo\fR(\fIoption, \fR\fIarg, ...\fR)
-Query information about the tixHList widget. \fIoption\fR can be one
+\fIpathName \fBindicator \fIoption\fR entryPath ?\fIargs ...\fR?
+'
+Manipulates the indicator on the list entries. An indicator is usually
+a small display item (such as an image) that is displayed to the left
+to an entry to indicate the status of the entry. For example, it may
+be used to indicator whether a directory is opened or
+closed. \fIoption\fR can be one of the following:
+'
+.RS
+.TP
+\fIpathName \fBindicator \fBcget\fR \fIentryPath\fR \fIoption\fR
+'
+If the list entry given by \fIentryPath\fR has an indicator, returns
+the value of the specified \fIoption\fR of the indicator. If the
+indicator doesn't exist, returns an error.
+'
+.TP
+\fIpathName \fBindicator \fBconfigure\fR \fIentryPath\fR ?\fIoption\fR? \fI?value option value ...\fR?
+'
+Query or modify the configuration options of the indicator display
+item of the entry specified by \fIentryPath\fR. The indicator item
+must exist, or an error will result.  If no \fIoption\fR is specified,
+returns a list describing all of the available options for the
+indicator display item (see \fBTk_ConfigureInfo(3)\fR for information
+on the format of this list). If \fIoption\fR is specified with no
+\fIvalue\fR, then the command returns a list describing the one named
+option (this list will be identical to the corresponding sublist of
+the value returned if no \fIoption\fR is specified). If one or more
+\fIoption\-value\fR pairs are specified, then the command modifies the
+given option(s) to have the given value(s); in this case the command
+returns an empty string.  \fIOption\fR may have any of the values
+accepted by the \fBindicator create\fR widget command. The exact set
+of options depends on the value of the \fB\-itemtype\fR option passed
+to the the \fBindicator create\fR widget command when this display item
+was created.
+'
+.TP
+\fIpathName \fBindicator \fBcreate\fR \fIentryPath\fR ?\fI\-itemtype type\fR? ?\fIoption value ...\fR?
+'
+Creates a new display item as the indicator for the entry specified by
+\fIentryPath\fR. If an indicator display item already exists for this
+entry, it will be replaced by the new item.  An optional parameter
+\fI\-itemtype\fR can be used to specify what type of display item
+should be created. If the \fI\-itemtype\fR is not given, then by
+default the type specified by this HList widget's \fB\-itemtype\fR
+option is used. Additional parameters, in \fIoption-value\fR pairs,
+can be passed to configure the appearance of the display item. Each
+\fIoption-value\fR pair must be a valid option for this type of
+display item.
+'
+.TP
+\fIpathName \fBindicator \fBdelete \fIentryPath\fR
+'
+Deletes the indicator display item for the entry given by \fIentryPath\fR.
+'
+.TP
+\fIpathName \fBindicator \fBexists \fIentryPath\fR
+'
+Return true if an indicator display item exists for the entry given by
+\fIentryPath\fR; return false otherwise.
+'
+.TP
+\fIpathName \fBindicator \fBsize \fIentryPath\fR
+'
+If an indicator display item exists for the entry given by
+\fIentryPath\fR, returns its size in a two element list of the form
+{\fIwidth height\fR}; returns an error if the indicator display item
+does not exist.
+'
+.RE
+'
+.TP
+\fIpathName \fBinfo \fIoption\fR \fIarg ...\fR
+'
+Query information about the HList widget. \fIoption\fR can be one
 of the following:
 .RS
 .TP
-\fI$hlist->\fBinfo\fR(\fBanchor, \fR\fIentryPath\fR)
+\fIpathName \fBinfo \fBanchor\fR
+'
 Returns the entryPath of the current anchor, if any, of the HList
 widget. If the anchor is not set, returns the empty string.
 '
 .TP
-\fI$hlist->\fBinfo\fR(\fBchildren, \fR?\fIentryPath\fR?\fR)
+\fIpathName \fBinfo bbox\fR \fIentryPath\fR
+'
+Returns a list of four numbers describing the visible bounding box of
+the entry given \fIentryPath\fR. The first two elements of the list
+give the x and y coordinates of the upper-left corner of the screen
+area covered by the entry (specified in pixels relative to the widget)
+and the last two elements give the lower-right corner of the area, in
+pixels. If no part of the entry given by index is visible on the
+screen then the result is an empty string; if the entry is partially
+visible, the result gives the only the visible area of the entry.
+'
+.TP
+\fIpathName \fBinfo \fBchildren\fR ?\fIentryPath\fR?
+'
 If \fIentrpyPath\fR is given, returns a list of the entryPath's of its
 children entries. Otherwise returns a list of the toplevel
 entryPath's.
 '
 .TP
-\fI$hlist->\fBinfo\fR(\fBdragsite, \fR\fIentryPath\fR)
-Returns the entryPath of the current dragsite, if any, of the HList
-widget. If the dragsite is not set, returns the empty string.
+\fIpathName \fBinfo \fBdata\fR ?\fIentryPath\fR?
+'
+Returns the data associated with \fIentryPath\fR.
 '
 .TP
-\fI$hlist->\fBinfo\fR(\fBdropsite, \fR\fIentryPath\fR)
+\fIpathName \fBinfo \fBdragsite\fR
+'
+\fIpathName \fBinfo \fBdropsite\fR
+'
 Returns the entryPath of the current dropsite, if any, of the HList
 widget. If the dropsite is not set, returns the empty string.
 '
 .TP
 \fI$hlist->\fBinfo\fR(\fBexists, \fR\fIentryPath\fR)
 Returns a boolean value indicating whether the list entry
-\fBentrpyPath\fR exists.
+\fIentrpyPath\fR exists.
 '
 .TP
 \fI$hlist->\fBinfo\fR(\fBhidden, \fR\fIentryPath\fR)
@@ -598,8 +830,8 @@ widget, returns an empty string.
 '
 .TP
 \fI$hlist->\fBinfo\fR(\fBparent, \fR\fIentryPath\fR)
-Returns the name of the parent of the list entry indified by
-\fBentrpyPath\fR. If \fBentrpyPath\fR is a toplevel list entry,
+Returns the name of the parent of the list entry identified by
+\fIentrpyPath\fR. If \fIentrpyPath\fR is a toplevel list entry,
 returns the empty string.
 '
 .TP
@@ -612,10 +844,9 @@ widget, returns an empty string.
 .TP
 \fI$hlist->\fBinfo\fR(\fBselection\fR)
 '
-Returns a list of selected elements in the HList widget. If no entries
+Returns a list of selected entries in the HList widget. If no entries
 are selectd, returns an empty string.
 .RE
-'
 '
 .TP
 \fI$hlist->\fBitem\fR(\fIoption, \fR?\fIargs, ...\fR?\fR)
@@ -627,7 +858,7 @@ entries. The form of additional of arguments depends on the choice of
 .RS
 '
 .TP
-\fI$hlist->\fBitem\fR(\fIcget, entryPath, col, option\fR)
+\fI$hlist->\fBitemCget\fR(entryPath, col, option\fR)
 '
 '
 Returns the current value of the configure \fIoption\fR of the display
@@ -635,7 +866,7 @@ item at the column designated by \fIcol\fR of the entry specified by
 \fIentryPath\fR.
 '
 .TP
-\fI$hlist->\fBitem\fR(\fIconfigure, entryPath, col, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
+\fI$hlist->\fBitemConfigure\fR( entryPath, col, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
 '
 Query or modify the configuration options of the display item at the
 column designated by \fIcol\fR of the entry specified by
@@ -651,67 +882,88 @@ the given value(s); in this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBitem
 create\fR method. The exact set of options depends on the
 value of the \fB\-itemtype\fR option passed to the the \fBitem
-create\fR method when this display item entry was created.
+create\fR widget command when this display item was created.
 '
 .TP
-\fI$hlist->\fBitem\fR(\fIcreate, entryPath, col, \fR?\fR)\fI\-itemtype type\fR? ?\fIoption value ...\fR?
+\fI$hlist->\fBitemCreate\fR(entryPath, col, \fR?\fI\-itemtype type\fR? ?\fIoption value ...\fR?\fR)
 '
 '
 Creates a new display item at the column designated by \fIcol\fR of
 the entry specified by \fIentryPath\fR. An optional parameter
 \fI\-itemtype\fR can be used to specify what type of display items
-should be created. By default a \fBimagetext\fR display item is
-created. Additional parameters, in \fIoption-value\fR pairs, can be
-passed to configure the appearance of the display item. Each \fIoption-
-value\fR pair must be a valid option for this type of display item.
+should be created. If the \fI\-itemtype\fR is not specified, then by
+default the type specified by this HList widget's \fB\-itemtype\fR
+option is used.  Additional parameters, in \fIoption-value\fR pairs,
+can be passed to configure the appearance of the display item. Each
+\fIoption- value\fR pair must be a valid option for this type of
+display item.
 '
 .TP
-\fI$hlist->\fBitem\fR(\fIdelete, entryPath, col\fR)
+\fI$hlist->\fBitemDelete\fR(entryPath, col\fR)
 '
 Deletes the display item at the column designated by \fIcol\fR of
 the entry specified by \fIentryPath\fR.
+'
+.TP
+\fIpathName \fBitem exists \fIentryPath col\fR
+'
+Returns true if there is a display item at the column designated by
+\fIcol\fR of the entry specified by \fIentryPath\fR; returns false
+otherwise.
 '
 .RE
 '
 .TP
 \fI$hlist->\fBnearest\fR(\fIy\fR)
-Given a y-coordinate within the tixHList window, this command returns
-the entryPath of the (visible) tixHList element nearest to that
+\fIpathName \fBnearest \fIy\fR
+'
+Given a y-coordinate within the HList window, this command returns
+the entryPath of the (visible) HList element nearest to that
 y-coordinate.
 '
 '
 .TP
 \fI$hlist->\fBsee\fR(\fIentryPath\fR)
-Adjust the view in the tixHList so that the element given by index is
-visible. If the element is already visible then the command has no
-effect; if the element is near one edge of the window then the tixHList
+'
+Adjust the view in the HList so that the entry given by \fIentryPath\fR is
+visible. If the entry is already visible then the command has no
+effect; if the entry is near one edge of the window then the HList
 scrolls to bring the element into view at the edge; otherwise the
-tixHList scrolls to center the element.
+HList widget scrolls to center the entry.
 '
 .TP
 \fI$hlist->\fBselection\fR(\fIoption, \fR\fIarg, ...\fR)
-This command is used to adjust the selection within a tixHList widget. It
+'
+This command is used to adjust the selection within a HList widget. It
 has several forms, depending on \fIoption\fR:
 .RS
 '
 .TP
 \fI$hlist->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?\fR)
+'
 When no extra arguments are given, deselects all of the list entrie(s)
-in this tixHList widget. When only \fIfrom\fR is given, only the list
+in this HList widget. When only \fIfrom\fR is given, only the list
 entry identified by \fIfrom\fR is deselected. When both \fIfrom\fR and
 \fIto\fR are given, deselects all of the list entrie(s) between
 between \fIfrom\fR and \fIto\fR, inclusive, without affecting the
 selection state of elements outside that range.
 '
 .TP
+\fIpathName \fBselectionGet\fR
+'
+This is an alias for the \fBinfoSelection\fR widget command.
+,
+.TP
 \fI$hlist->\fBselectionIncludes\fR(\fIentryPath\fR)
+'
 Returns 1 if the list entry indicated by \fIentryPath\fR is currently
-selected, 0 if it isn't.
+selected; returns 0 otherwise.
 '
 .TP
 \fI$hlist->\fBselectionSet\fR(\fIfrom, \fR?\fIto\fR?\fR)
+'
 Selects all of the list entrie(s) between between \fIfrom\fR and
-\fIto\fR, inclusive, without affecting the selection state of elements
+\fIto\fR, inclusive, without affecting the selection state of entries
 outside that range. When only \fIfrom\fR is given, only the list entry
 identified by \fIfrom\fR is selected.
 .RE
@@ -727,7 +979,7 @@ Show the entries that are hidden by the \fBhide\fR command,
 Shows the list entry identified by \fIentryPath\fR.
 .PP
 Currently only the \fBentry\fR option is supported. Other options will
-be added in the next release.
+be added in future releases.
 .RE
 '
 .TP
@@ -741,10 +993,10 @@ forms:
 '
 Returns a list containing two elements.  Each element is a real
 fraction between 0 and 1; together they describe the horizontal span
-that is visible in the window.  For example, if the first element
-is .2 and the second element is .6, 20% of the HList text is
+that is visible in the window.  For example, if the first element is
+ .2 and the second element is .6, 20% of the HList entry is
 off-screen to the left, the middle 40% is visible in the window, and
-40% of the text is off-screen to the right.  These are the same values
+40% of the entry is off-screen to the right. These are the same values
 passed to scrollbars via the \fB\-xscrollcommand\fR option.
 .TP
 \fI$hlist->\fBxview\fR(\fIentryPath\fR)
@@ -777,32 +1029,34 @@ then characters farther to the right become visible.
 \fI$hlist->\fByview\fR(\fI?args\fR?\fR)
 '
 This command is used to query and change the vertical position of the
-text in the widget's window.
-It can take any of the following forms:
+entries in the widget's window. It can take any of the following forms:
+'
 .RS
 .TP
 \fI$hlist->\fByview\fR
 '
 Returns a list containing two elements, both of which are real
 fractions between 0 and 1.  The first element gives the position of
-the list element at the top of the window, relative to the HList
-as a whole (0.5 means it is halfway through the HList, for example).
-The second element gives the position of the list entry just
-after the last one in the window, relative to the HList as a whole.
-These are the same values passed to scrollbars via the
-\fB\-yscrollcommand\fR option.
+the list element at the top of the window, relative to the HList as a
+whole (0.5 means it is halfway through the HList, for example).  The
+second element gives the position of the list entry just after the
+last one in the window, relative to the HList as a whole.  These are
+the same values passed to scrollbars via the \fB\-yscrollcommand\fR
+option.
+'
 .TP
 \fI$hlist->\fByview\fR(\fIentryPath\fR)
 '
 Adjusts the view in the window so that the list entry given by
 \fIentryPath\fR is displayed at the top of the window.
+'
 .TP
 \fI$hlist->\fByview\fR(\fBmoveto\fR => \fIfraction\fR)
 '
 Adjusts the view in the window so that the list entry given by
 \fIfraction\fR appears at the top of the window. \fIFraction\fR is a
-fraction between 0 and 1; 0 indicates the first element in the
-HList, 0.33 indicates the element one-third the way through the
+fraction between 0 and 1; 0 indicates the first entry in the
+HList, 0.33 indicates the entry one-third the way through the
 HList, and so on.
 .TP
 \fI$hlist->\fByview\fR(\fBscroll\fR => \fInumber, what\fR)
@@ -812,8 +1066,8 @@ This command adjust the view in the window up or down according to
 \fIWhat\fR must be either \fBunits\fR or \fBpages\fR.  If \fIwhat\fR
 is \fBunits\fR, the view adjusts up or down by \fInumber\fR lines; if
 it is \fBpages\fR then the view adjusts by \fInumber\fR screenfuls.
-If \fInumber\fR is negative then earlier elements become visible; if
-it is positive then later elements become visible.
+If \fInumber\fR is negative then earlier entries become visible; if
+it is positive then later entries become visible.
 .RE
 '
 '----------------------------------------------------------------------
@@ -824,7 +1078,7 @@ If the \fB\-selectmode\fR is "browse", when the user drags the mouse
 pointer over the list entries, the entry under the pointer will be
 highlighted and the \fB\-browsecmd\fR procedure will be called with
 one parameter, the entryPath of the highlighted entry. Only one entry
-can be highlighted at a time.  The \fB\-command\fR procedure will be
+can be highlighted at a time. The \fB\-command\fR procedure will be
 called when the user double-clicks on a list entry.
 '
 .IP [2]
@@ -843,7 +1097,9 @@ be highlighted. However, only a contiguous region of list entries can
 be selected. When the highlighted area is changed, the
 \fB\-browsecmd\fR procedure will be called with an undefined
 parameter. It is the responsibility of the \fB\-browsecmd\fR procedure
-to find out the exact highlighted selection in the HList.
+to find out the exact highlighted selection in the HList. The
+\fB\-command\fR procedure will be called when the user double-clicks
+on a list entry.
 '
 .IP [4]
 '
@@ -853,7 +1109,9 @@ be highlighted. The user can also make disjointed selections using
 <Control-ButtonPress-1>. When the highlighted area is changed, the
 \fB\-browsecmd\fR procedure will be called with an undefined
 parameter. It is the responsibility of the \fB\-browsecmd\fR procedure
-to find out the exact highlighted selection in the HList.
+to find out the exact highlighted selection in the HList. The
+\fB\-command\fR procedure will be called when the user double-clicks
+on a list entry.
 '
 .IP [5]
 \fBArrow key bindings:\fR <Up> arrow key moves the anchor point to the
@@ -870,8 +1128,10 @@ item.
 This example demonstrates how to use an HList to store a file
 directory structure and respond to the user's browse events:
 .PP
+\fC
 .nf
- tixHList .h -separator "/" \-browsecmd browse \-selectmode single
+ tixHList .h -separator "/" \-browsecmd browse \-selectmode single \\
+    -itemtype text
  .h add /         \-text /
  .h add /home     \-text /home
  .h add /home/ioi \-text /home/ioi
@@ -884,6 +1144,7 @@ directory structure and respond to the user's browse events:
      puts "$file browsed"
  }
 .fi
+\fR
 '
 '
 .SH BUGS
@@ -901,4 +1162,4 @@ entries.
 '
 '----------------------------------------------------------------------
 .SH KEYWORDS
-Tix(n), hierarchical listbox
+Tix(n), Hierarchical Listbox

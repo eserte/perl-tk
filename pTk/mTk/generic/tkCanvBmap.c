@@ -12,7 +12,6 @@
  * SCCS: @(#) tkCanvBmap.c 1.29 96/02/17 16:59:10
  */
 
-#include <stdio.h>
 #include "tkInt.h"
 #include "tkPort.h"
 #include "tkCanvas.h"

@@ -1175,6 +1175,7 @@ Tk_DestroyWindow(tkwin)
 
 #if 1 /* Do a Lang dependant cleanup */
             Lang_DeadMainWindow(winPtr->mainPtr->interp, (Tk_Window) winPtr); 
+            Tcl_UnlinkVar(winPtr->mainPtr->interp, "tk_strictMotif");
 #else /* This is what Tcl does */
             if ((winPtr->mainPtr->interp != NULL) &&
                     (!Tcl_InterpDeleted(winPtr->mainPtr->interp))) {

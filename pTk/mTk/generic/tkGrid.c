@@ -485,8 +485,8 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	Tcl_IntResults(interp, 1, 1, slavePtr->padX/2); 
 	Tcl_AppendElement(interp, "-pady");
 	Tcl_IntResults(interp, 1, 1, slavePtr->padY/2); 
-	Tcl_AppendElement(interp, " -sticky");
-	StickyToString(slavePtr->flags,buffer);
+	Tcl_AppendElement(interp, "-sticky");
+	StickyToString(slavePtr->sticky,buffer);
 	Tcl_AppendElement(interp, buffer);
     } else if((c == 'l') && (strncmp(argv[1], "location", length) == 0)) {
 	Tk_Window master;
@@ -2533,11 +2533,15 @@ StickyToString(flags, result)
     if (flags&STICK_WEST) {
     	result[count++] = 'w';
     }
+#ifdef LANG
+    result[count] = '\0';
+#else
     if (count) {
 	result[count] = '\0';
     } else {
 	sprintf(result,"{}");
     }
+#endif
 }
 
 /*

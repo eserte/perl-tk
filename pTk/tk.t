@@ -27,11 +27,6 @@ VFUNC(Tcl_Command,Lang_CreateWidget,V_Lang_CreateWidget,_ANSI_ARGS_((Tcl_Interp 
 #ifndef Lang_DeleteWidget
 VFUNC(void,Lang_DeleteWidget,V_Lang_DeleteWidget,_ANSI_ARGS_((Tcl_Interp *interp, Tcl_Command cmd)))
 #endif
-#ifndef Tix_ArgcError
-VFUNC(int,Tix_ArgcError,V_Tix_ArgcError,_ANSI_ARGS_((Tcl_Interp *interp, 
-			    int argc, Arg *args, int prefixCount,
-			    char *message)))
-#endif
 #ifndef Tk_3DBorderColor
 VFUNC(XColor *,Tk_3DBorderColor,V_Tk_3DBorderColor,_ANSI_ARGS_((Tk_3DBorder border)))
 #endif

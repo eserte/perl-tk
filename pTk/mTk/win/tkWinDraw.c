@@ -1000,6 +1000,30 @@ XDrawLines(display, d, gc, points, npoints, mode)
     
     TkWinReleaseDrawableDC(d, dc, &state);
 }
+
+
+
+#if 1
+void XDrawPoints(display, d, gc, points, npoints, mode)
+    Display*		display;
+    Drawable		d;
+    GC			gc;
+    XPoint*		points;
+    int			npoints;
+    int			mode;
+{
+    int i;
+
+    for (i=0; i<npoints; i++) {
+	XDrawLine(display, d, gc, points[i].x, points[i].y,
+	    points[i].x, points[i].y);
+    }
+}
+
+#endif
+
+
+
 
 /*
  *----------------------------------------------------------------------

@@ -66,6 +66,11 @@ sub bind
  $cw->Delegate('bind',@args);
 }
 
+sub focus
+{my ($cw,@args) = @_;
+ $cw->Delegate('focus',@args);
+}
+
 #sub bindtags
 #{my ($cw,@args) = @_;
 # $cw->Delegate('bindtags',@args);
@@ -210,8 +215,10 @@ sub AddScrollbars
     {
      my $slice  = Tk::Frame->new($cw,Name => 'ysbslice');                                       
      my $ysb    = Tk::Scrollbar->new($slice,-orient => 'vertical', -command => [ 'yview', $w ]);
-     my $corner = Tk::Frame->new($slice,Name=>'corner','-relief' => 'raised', '-width' => 20, '-height' => 20);
-     $ysb->pack(-side => 'left', -fill => 'both');
+     my $size   = $ysb->cget('-width');
+     my $corner = Tk::Frame->new($slice,Name=>'corner','-relief' => 'raised', 
+                  '-width' => $size, '-height' => $size);
+     $ysb->pack(-side => 'left', -fill => 'y');
      $cw->Advertise("yscrollbar" => $ysb); 
      $cw->Advertise("corner" => $corner);
      $cw->Advertise("ysbslice" => $slice);
@@ -306,7 +313,9 @@ sub packscrollbars
     {
      my $anchor = $opt;
      $anchor =~ s/o//g;
-     $corner->pack(-before => $corner->{'before'}, -side => $xside, -anchor => $anchor,  -pady => 2, -fill => 'x');
+     $corner->configure(-height => $xsb->ReqHeight);
+     $corner->pack(-before => $corner->{'before'}, -side => $xside, 
+                   -anchor => $anchor, -fill => 'x');
     }
    else
     {

@@ -12,7 +12,6 @@
  * SCCS: @(#) tkCanvWind.c 1.26 96/09/06 08:41:52
  */
 
-#include <stdio.h>
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkCanvas.h"

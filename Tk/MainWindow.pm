@@ -1,31 +1,55 @@
 # Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
-package MainWindow;
-require AutoLoader;
+package Tk::MainWindow;
+@Tk::MainWindow::ISA = qw(Tk::Toplevel);
+@MainWindow::ISA = 'Tk::MainWindow';
+
+use AutoLoader;  
+
+use strict;
+use Tk::CmdLine;
 require Tk;
 require Tk::Toplevel;
 
-use Getopt::Long qw(GetOptions);
 use Carp;
 
 $| = 1;
 
-@ISA = qw(Tk::Toplevel);
 
 my $pid = $$;
 
 my @Windows = ();
 
+sub CreateArgs
+{
+ my ($class,$args) = @_;
+ my $cmd = Tk::CmdLine::CreateArgs();
+ my $key;
+ foreach $key (keys %$cmd)
+  {
+   $args->{$key} = $cmd->{$key} unless exists $args->{$key};
+  }
+ my %result = $class->SUPER::CreateArgs(undef,$args);
+ my $name = delete($args->{'-name'});
+ $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
+ $result{'-screen'} = $ENV{'DISPLAY'} unless exists $result{'-screen'};
+ return ("\l$name",%result);
+}
+
 sub new
 {
  my $package = shift;
- my $name = $0;
- $name = 'ptk' if ($name eq '-e'); 
- $name    =~ s#^.*/##; 
- $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
- my $top = eval { bless Create("\l$name", -class => "\u$name", @_), $package };
- croak($@ . "$package" ."::new(" . join(',',@_) .")") if ($@);
+ if (@_ > 0 && $_[0] =~ /:\d+(\.\d+)?$/)
+  {
+   carp "Usage $package->new(-screen => '$_[0]' ...)" if $^W;
+   unshift(@_,'-screen');
+  }
+ croak("Odd number of args"."$package->new(" . join(',',@_) .")") if @_ % 2;
+ my %args = @_;
+ my $top = eval { bless Create($package->CreateArgs(\%args)), $package };
+ croak($@ . "$package->new(" . join(',',@_) .")") if ($@);
+ $top->apply_command_line;
  $top->InitBindings;
  $top->InitObject(\%args);
  eval { $top->configure(%args) };
@@ -41,7 +65,7 @@ sub InitBindings
  $mw->bind('all',"<Tab>","focusNext");
  $mw->bind('all',"<Shift-Tab>","focusPrev");
                                     
- $mw->bind('all',"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev(A)]);
+ $mw->bind('all',"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev('A')]);
  $mw->bind('all',"<F10>",'FirstMenu');
 }
 
@@ -71,91 +95,46 @@ END
   }
 }
 
+sub CmdLine { return shift }
+
+sub WMSaveYourself
+{
+ my $mw  = shift;
+ my @args = @{$mw->command};
+ warn "preWMSaveYourself:".join(' ',@args)."\n";
+ @args = ($0) unless (@args);
+ my $i = 1;
+ while ($i < @args)
+  {
+   if ($args[$i] eq '-iconic')
+    {
+     splice(@args,$i,1); 
+    }
+   elsif ($args[$i] =~ /^-(geometry|iconposition)$/)
+    {
+     splice(@args,$i,2); 
+    }
+  }
+
+ my @ip = $mw->wm('iconposition');
+ print "ip ",join(',',@ip),"\n";
+ my $icon = $mw->iconwindow;
+ if (defined($icon))
+  {
+   @ip = $icon->geometry =~ /\d+x\d+([+-]\d+)([+-]\d+)/;
+  }
+ splice(@args,1,0,'-iconposition' => join(',',@ip)) if (@ip == 2);
+
+ splice(@args,1,0,'-iconic') if ($mw->state() eq 'iconic');
+
+ splice(@args,1,0,'-geometry' => $mw->geometry);
+ warn "postWMSaveYourself:".join(' ',@args)."\n";
+ $mw->command([@args]);
+}
+
+
 1;
 
 __END__
-
-sub CmdLine
-{
- my $top = shift;
- my $state = $top->state;
-
- *opt_fg = \$opt_foreground; 
- *opt_bg = \$opt_background; 
- *opt_fn = \$opt_font; 
- *opt_motif = \$Tk::strictMotif;
-
- my $result = GetOptions('iconposition=s',
-                         'geometry=s',
-                         'title=s',
-                         'fg=s','foreground=s',
-                         'bg=s','background=s',
-                         'fn=s','font=s',
-                         'iconic!','motif!');
-
- $top->title($opt_title) if (defined $opt_title);
- my (@colours) = ();
- push(@colours,foreground => $opt_foreground)if (defined $opt_foreground);
- $opt_background = '#d9d9d9' if (@colours && !defined($opt_background));
- push(@colours,background => $opt_background)if (defined $opt_background);
- $top->setPalette(@colours) if (@colours);
-
- $top->optionAdd('*font' => $opt_font)  if (defined $opt_font);
-
- if (defined $opt_iconposition)
-  {
-   my $icon = $top->iconwindow;
-   my ($x,$y) = split(',',$opt_iconposition); 
-   $top->iconposition($x,$y);
-  }
-
- if (defined $opt_geometry)
-  {
-   $top->geometry($opt_geometry);
-   $top->positionfrom('user');
-   $top->sizefrom('user'); 
-  }
-
- $top->protocol(WM_SAVE_YOURSELF => ['SaveYourself',$top]);
- $top->command([$0,@ARGV]);
- if (defined $opt_iconic && $opt_iconic)
-  {
-   $top->iconify unless ($state eq 'iconic');
-  }
- else
-  {
-   $top->deiconify unless ($state eq 'normal');
-  }
- return $top;
-}
-
-sub SaveYourself
-{
- my $top  = shift;
- my $icon = $top->iconwindow;
- my @args = @{$top->command};
- @args = ($0) unless (@args);
- my @iconpos;
- if (defined($icon))
-  {
-   my $geom = $icon->geometry;
-   @iconpos = $geom =~ /\d+x\d+([+-]\d+)([+-]\d+)/;
-  }
- else
-  {
-   @iconpos = $top->iconposition;
-  }
-
- push(@args,'-iconposition' => "$iconpos[0],$iconpos[1]") if (@iconpos == 2);
-
- if ($top->state() eq 'iconic')
-  {
-   @args = grep(!/^-(no)?iconic/,@args);
-   push(@args,'-iconic');
-  }
-
- push(@args,'-geometry' => $top->geometry);
- $top->command([@args]);
-}
 
 

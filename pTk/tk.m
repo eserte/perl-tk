@@ -23,9 +23,6 @@
 #ifndef Lang_DeleteWidget
 #define Lang_DeleteWidget (*TkVptr->V_Lang_DeleteWidget)
 #endif
-#ifndef Tix_ArgcError
-#define Tix_ArgcError (*TkVptr->V_Tix_ArgcError)
-#endif
 #ifndef Tk_3DBorderColor
 #define Tk_3DBorderColor (*TkVptr->V_Tk_3DBorderColor)
 #endif

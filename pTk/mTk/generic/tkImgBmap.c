@@ -11,7 +11,7 @@
  *
  * SCCS: @(#) tkImgBmap.c 1.28 96/07/31 16:45:26
  */
-
+#define NEED_REAL_STDIO
 #include "tkInt.h"
 #include "tkPort.h"
 #include "tkVMacro.h"

@@ -1,13 +1,12 @@
-# $Id: NoteBook.pm,v 1.2 1996/12/02 00:35:21 rsi Exp $
+# $Id: NoteBook.pm,v 1.3 1997/02/08 19:11:39 rsi Exp $
 #
 # Implementation of NoteBook widget.
 # Derived from NoteBook.tcl in Tix 4.0
 
-# Contributed by Rajappa Iyer <rsi@ziplink.net>
+# Contributed by Rajappa Iyer <rsi@earthling.net>
 # Hack by Nick for 'menu' traversal.
 
 package Tk::NoteBook;
-use strict;
 
 use Tk qw(Ev);
 
@@ -103,6 +102,7 @@ sub delete {
     if (defined $w->{"top"}->{$child}) {
 	$w->{"top"}->delete($child);
     }
+	$w->Subwidget ( 'nbframe' )->delete ( $child );
 }
 
 #---------------------------------------
@@ -168,10 +168,10 @@ sub SetFocusByKey {
 
 sub NoteBookFind {
     my ($w, $char) = @_;
-    my $page;
+
     foreach $page (@{$w->{"windows"}}) {
-	my $i = $w->{"top"}->pagecget($page, -underline);
-	my $c = substr($page, $i, 1);
+	$i = $w->{"top"}->pagecget($page, -underline);
+	$c = substr($page, $i, 1);
 	if ($char =~ /$c/) {
 	    if ($w->{"top"}->pagecget($page, -state) ne "disabled") {
 		return $page;
@@ -185,11 +185,13 @@ sub NoteBookFind {
 # See the code in Tk.pm
 sub FindMenu {
     my ($w, $char) = @_;
-    my $page;
+
     foreach $page (@{$w->{"windows"}}) {
-	my $i = $w->{"top"}->pagecget($page, -underline);
-	my $c = substr($page, $i, 1);
-	if ($char =~ /$c/) {
+	$i = $w->{"top"}->pagecget($page, -underline);
+	my $l = $w->{"top"}->pagecget($page, -label);
+	next if (not defined $l);
+	$c = substr($l, $i, 1);
+	if ($char =~ /$c/i) {
 	    if ($w->{"top"}->pagecget($page, -state) ne "disabled") {
                 $w->{"keypage"} = $page;
 		return $w;
@@ -366,7 +368,7 @@ Returns the name of the currently raised page.
 
 =head1 AUTHOR
 
-B<Rajappa Iyer> rsi@ziplink.net
+B<Rajappa Iyer> rsi@earthling.net
 
 This code and documentation was derived from NoteBook.tcl in
 Tix4.0 written by Ioi Lam. It may be distributed under the same

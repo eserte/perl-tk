@@ -50,5 +50,8 @@ EXTERN Tk_Window mainWindow;
 EXTERN void Dump_vec _ANSI_ARGS_((char *who,int count,SV **data));
 EXTERN void DumpStack _ANSI_ARGS_((void));
 EXTERN void  Boot_Glue _ANSI_ARGS_((void));
+EXTERN void  Boot_Tix  _ANSI_ARGS_((void));
+EXTERN void install_vtab _((char *name, void *table, size_t size));
+
 
 #endif

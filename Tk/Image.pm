@@ -13,9 +13,23 @@ sub new
 {
  my $package = shift;
  my $widget  = shift;
+ $package->InitClass($widget);
  my $leaf = $package->Tk_image;
  my $obj = $widget->image('create',$leaf,@_);
  return bless $obj,$package;
+}
+
+sub Install
+{
+ # Dynamically loaded image types can install standard images here
+ my ($class,$mw) = @_;
+}
+
+sub ClassInit
+{
+ # Carry out class bindings (or whatever)
+ my ($package,$mw) = @_;
+ return $package;
 }
 
 require Tk::Submethods;

@@ -1,1 +1,2 @@
-tclHash.o: tclHash.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h
+tclHash.o: tclHash.c tkPort.h Lang.h tkConfig.h LangIO.h tk.h \
+ tkUnixPort.h

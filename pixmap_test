@@ -1,9 +1,7 @@
 #!/usr/local/bin/perl -w
 use strict;
 use Tk;
-print "Loading Tk::Pixmap\n";
 require Tk::Pixmap;
-print "Loaded Tk::Pixmap\n";
 
 my $mw = MainWindow->new;
 
@@ -18,6 +16,8 @@ my $QuitPB  = $mw->Pixmap('-file' => $file);
 print "Pixmap is $QuitPB\n";
 
 my $QuitPBa = $mw->Pixmap('-file' => Tk->findINC("demos/images/QuitPBa.xpm"));
+
+$mw->Label(-background => 'yellow', -image => $QuitPB)->pack;
 
 
 $mw->Button(-image => $QuitPB, -activeimage => $QuitPBa, 

@@ -4,6 +4,7 @@
 package Tk::MMutil;
 use ExtUtils::MakeMaker;
 use Cwd;
+use Config;
 use Carp;
 use Tk::Config;
 @MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
@@ -36,7 +37,7 @@ sub arch_prune
 sub mTk_postamble
 {
  my ($self) = @_;
- my $dep = "config :: \$(C_FILES) \$(H_FILES)\n\n";
+ my $dep = "config :: \$(C_FILES) \$(H_FILES)\n\t$self->{NOECHO}\$(NOOP)\n";
  my $mTk = $self->{'MTK'};
  $dep .= "# Begin Munging dependancies\n";
  my $file;
@@ -179,10 +180,15 @@ sub constants
  s/(\.SUFFIXES)/$1:\n$1/;
  if ($^O eq 'MSWin32')
   {
-   $_ .= "!include <win32.mak>\n";
-   $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
-   $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
-   $_ .= "\nGCCOPT = -WX\n";
+   if ($Config::Config{cc} =~ /^bcc/i) {
+     $_ .= "LDDLFLAGS = -v -Tpd\n";
+   }
+   else {
+     $_ .= "!include <win32.mak>\n";
+     $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
+     $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
+     $_ .= "\nGCCOPT = -WX\n";
+   }
   } 
  else
   {
@@ -197,8 +203,13 @@ sub cflags
  local $_ = $self->MM::cflags;
  if ($^O eq 'MSWin32')
   {
-   s/(CCFLAGS\s*=)/$1 \$(cflags) \$(cvarsdll)/; 
-   s/(OPTIMIZE\s*=).*/$1 \$(cdebug)/;
+   if ($Config::Config{cc} =~ /^bcc/i) {
+     s/(CCFLAGS\s*=)/$1 -v -w- -I. -I.\\pTk -I.. -I..\\pTk/; 
+   }
+   else {
+     s/(CCFLAGS\s*=)/$1 \$(cflags) \$(cvarsdll)/; 
+     s/(OPTIMIZE\s*=).*/$1 \$(cdebug)/;
+   }
   }
  $_;
 }
@@ -335,7 +346,7 @@ sub TkExtMakefile
  my @opt = ('VERSION'     => $Tk::Config::VERSION);
  push(@opt,'clean' => {} ) unless (exists $att{'clean'});
  $att{'clean'}->{FILES} = '' unless (exists $att{'clean'}->{FILES});
- $att{'clean'}->{FILES} .= " *% *.bak";
+ $att{'clean'}->{FILES} .= " *.bak";
  unless (exists($att{'linkext'}) && $att{linkext}{LINKTYPE} eq '')
   {
    my @tm = (findINC('Tk/typemap'));
@@ -347,7 +358,8 @@ sub TkExtMakefile
     {
      my $ptk = findpTk();
      push(@opt, 
-          'dynamic_lib' => { OTHERLDFLAGS => "$ptk/libpTk\$(LIB_EXT)",
+          'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
+          'dynamic_lib' => {
                              INST_DYNAMIC_DEP => "$ptk/libpTk\$(LIB_EXT)"
                             }
          ); 

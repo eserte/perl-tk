@@ -12,7 +12,6 @@
  * SCCS: @(#) tkCanvText.c 1.56 96/02/17 17:45:17
  */
 
-#include <stdio.h>
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkCanvas.h"

@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <win32io.h>
 
-__declspec(dllimport) WIN32_IOSUBSYSTEM	win32stdio;
+extern __declspec(dllimport) WIN32_IOSUBSYSTEM	win32stdio;
 extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 
 

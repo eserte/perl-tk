@@ -15,8 +15,12 @@
 
 #ifndef _LANG
 #define _LANG
-/* #define NO_VTABLES */
+
 #include "tkConfig.h"
+#include <sys/types.h>
+#ifndef NO_STDLIB_H
+#include <stdlib.h>
+#endif
 
 /*
  * When version numbers change here, must also go into the following files
@@ -66,9 +70,6 @@
 #   ifndef HAS_STDARG
 #	define HAS_STDARG 1
 #   endif
-#   ifndef USE_PROTOTYPE
-#	define USE_PROTOTYPE 1
-#   endif
 #   ifndef USE_TCLALLOC
 #	define USE_TCLALLOC 0
 #   endif
@@ -104,10 +105,6 @@
 
 #ifndef RESOURCE_INCLUDED
 
-#ifndef BUFSIZ
-#include <stdio.h>
-#endif
-
 /*
  * Definitions that allow Tcl functions with variable numbers of
  * arguments to be used with either varargs.h or stdarg.h.  TCL_VARARGS
@@ -130,8 +127,7 @@
 #	define TCL_VARARGS(type, name) ()
 #	define TCL_VARARGS_DEF(type, name) (va_alist)
 #   endif
-#   define TCL_VARARGS_START(type, name, list) \
-	(va_start(list), va_arg(list, type))
+#   define TCL_VARARGS_START(type, name, list) (va_start(list), va_arg(list, type))
 #endif
 
 /*
@@ -142,7 +138,7 @@
 #undef _ANSI_ARGS_
 #undef CONST
 
-#if ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus) || defined(USE_PROTOTYPE)
+#if defined(USE_PROTOTYPE) || ((defined(__STDC__) || defined(SABER)) && !defined(NO_PROTOTYPE)) || defined(__cplusplus)
 #   define _USING_PROTOTYPES_ 1
 #   define _ANSI_ARGS_(x)	x
 #   define CONST const
@@ -187,6 +183,8 @@ typedef long LONG;
 /*
  * Miscellaneous declarations.
  */
+
+#include "LangIO.h"
 
 #ifndef NULL
 #define NULL 0
@@ -1198,7 +1196,6 @@ EXTERN int		Tcl_Write _ANSI_ARGS_((Tcl_Channel chan,
  */
 
 typedef void (LangFreeProc) _ANSI_ARGS_((int count,Arg *blockPtr));
-typedef void Lang_FileCloseProc _ANSI_ARGS_((FILE *f));
 
 EXTERN void		Tcl_AppendArg _ANSI_ARGS_((Tcl_Interp *interp, Arg));
 EXTERN void		Tcl_ArgResult _ANSI_ARGS_((Tcl_Interp *interp, Arg));
@@ -1290,8 +1287,6 @@ EXTERN void Lang_SetErrorCode _ANSI_ARGS_((Tcl_Interp *interp,char *code));
 EXTERN char *Lang_GetErrorCode _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN char *Lang_GetErrorInfo _ANSI_ARGS_((Tcl_Interp *interp));
 
-EXTERN void LangCloseHandler _ANSI_ARGS_((Tcl_Interp *interp,Arg arg,FILE *f,Lang_FileCloseProc *proc));
-
 EXTERN int LangSaveVar _ANSI_ARGS_((Tcl_Interp *,Arg,Var *,int type));
 EXTERN void LangFreeVar _ANSI_ARGS_((Var));
 EXTERN Arg LangVarArg _ANSI_ARGS_((Var));
@@ -1305,7 +1300,6 @@ EXTERN int LangEventHook _ANSI_ARGS_((int flags));
 EXTERN void LangBadFile  _ANSI_ARGS_((int fd));
 EXTERN void Lang_BuildInImages _ANSI_ARGS_((void));
 EXTERN void Lang_FreeRegExp _ANSI_ARGS_((Tcl_RegExp regexp));
-EXTERN int TkReadDataPending _ANSI_ARGS_((FILE *f));
 EXTERN void *	TclCalloc _ANSI_ARGS_((size_t n,size_t s));
 
 EXTERN void Lang_DeleteObject _ANSI_ARGS_((Tcl_Interp *,Tcl_Command));

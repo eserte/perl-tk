@@ -14,6 +14,26 @@
 
 #include "tkPort.h"
 #include "Lang.h"
+
+#ifdef TIMEOFDAY_NO_TZ
+#define Tk_timeofday(x) gettimeofday(x)
+ extern int gettimeofday _ANSI_ARGS_((struct timeval *tp));
+#else
+#ifdef TIMEOFDAY_TZ
+#define Tk_timeofday(x) gettimeofday(x, (struct timezone *) 0)
+extern int gettimeofday _ANSI_ARGS_((struct timeval *tp ,struct timezone *tzp));
+#else
+#define Tk_timeofday(x) gettimeofday(x, (void *) 0)
+#ifdef TIMEOFDAY_DOTS
+extern int gettimeofday _ANSI_ARGS_((struct timeval *tp, ...));
+#else
+extern int gettimeofday _ANSI_ARGS_((struct timeval *tp, void *));
+#endif
+#endif
+#endif
+
+
+
 
 /*
  *-----------------------------------------------------------------------------
@@ -63,15 +83,10 @@ TclpGetClicks()
     unsigned long now;
 #ifdef NO_GETTOD
     struct tms dummy;
-#else
-    struct timeval date;
-    struct timezone tz;
-#endif
-
-#ifdef NO_GETTOD
     now = (unsigned long) times(&dummy);
 #else
-    gettimeofday(&date, &tz);
+    struct timeval date;
+    Tk_timeofday(&date);
     now = date.tv_sec*1000000 + date.tv_usec;
 #endif
 
@@ -163,7 +178,7 @@ TclpGetTimeZone (currentTime)
     return timeZone;
 #endif
 
-#if defined(HAVE_GETTIMEOFDAY) && !defined (TCL_GOT_TIMEZONE)
+#if defined(HAVE_GETTIMEOFDAY) && !defined (TCL_GOT_TIMEZONE) && !defined (TIMEOFDAY_NO_TZ)
 #   define TCL_GOT_TIMEZONE
     struct timeval  tv;
     struct timezone tz;
@@ -209,10 +224,14 @@ void
 TclpGetTime(timePtr)
     Tcl_Time *timePtr;		/* Location to store time information. */
 {
+#ifdef NO_GETTOD
+    /* Do something with times() and epoch adjustment ? */
+    timePtr->sec = time((time_t *) NULL)
+    timePtr->usec = 0;
+#else
     struct timeval tv;
-    struct timezone tz;
-    
-    (void) gettimeofday(&tv, &tz);
+    Tk_timeofday(&tv);
     timePtr->sec = tv.tv_sec;
     timePtr->usec = tv.tv_usec;
+#endif
 }

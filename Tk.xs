@@ -67,6 +67,39 @@ SV *sv;
 
 static XFontStruct * TkwinFont _((Tk_Window tkwin, Tk_Uid name));
 
+static void pTk_DefineBitmap _((Tk_Window tkwin, char *name,  
+                               int width, int height, SV *source));
+
+static void
+pTk_DefineBitmap (tkwin, name, width, height, source)
+Tk_Window tkwin;
+char *name;
+int width;
+int height;
+SV *source;
+{
+ Tcl_Interp *interp;
+ if (TkToWidget(tkwin,&interp) && interp)
+  {STRLEN len;
+   unsigned char *data = (unsigned char *) SvPV(source, len);
+   STRLEN byte_line = (width + 7) / 8;
+   if (len == height * byte_line)
+    {
+     Tcl_ResetResult(interp);
+     if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
+      croak(Tcl_GetResult(interp));
+    }
+   else
+    {
+     croak("Data wrong size for %dx%d bitmap",width,height);
+    }
+  }
+ else
+  {
+   croak("Invalid widget");
+  }
+}
+
 static XFontStruct *
 TkwinFont(tkwin,name)
 Tk_Window tkwin;
@@ -80,6 +113,9 @@ Tk_Uid name;
   croak("Cannot get font");
  return font;
 }
+
+#define pTk_Synchronize(win,flag) \
+   XSynchronize(Tk_Display(win), flag)
 
 #define Tk_FontAscent(tkwin,name)  (TkwinFont(tkwin,name)->ascent)
 #define Tk_FontDescent(tkwin,name) (TkwinFont(tkwin,name)->descent)
@@ -142,10 +178,14 @@ Xrm_import(class,...)
 char *	class
 
 
-
-MODULE = Tk	PACKAGE = MainWindow
+MODULE = Tk	PACKAGE = Tk::MainWindow	PREFIX = pTk_
 
 PROTOTYPES: DISABLE
+
+void
+pTk_Synchronize(win,flag = True)
+Tk_Window	win
+int		flag
 
 int
 Count(self)
@@ -286,6 +326,16 @@ Tk_MainLoop(class = "Tk")
 char *	class
 CODE:
  Tk_MainLoop(); 
+
+MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = pTk_
+
+void
+pTk_DefineBitmap (win, name, width, height, source)
+Tk_Window	win;
+char *	name;
+int	width;
+int	height;
+SV *	source;
 
 MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = Tk_
 

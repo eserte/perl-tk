@@ -16,7 +16,7 @@ use Tk::Submethods ( 'wm' => [qw(grid)] );
 
 Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command 
                        deiconify focusmodel frame geometry group
-                       iconbitmap iconify iconmask iconname iconposition
+                       iconbitmap iconify iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
                        protocol resizable saveunder sizefrom state title transient
                        withdraw)]);
@@ -95,4 +95,9 @@ sub Popup
  $w->Post($X,$Y);
 }
 
-
+sub iconposition
+{
+ my $w = shift;
+ return $w->wm('iconposition',$1,$2) if (@_ == 1 && $_[0] =~ /^(\d+),(\d+)$/); 
+ $w->wm('iconposition',@_);
+}

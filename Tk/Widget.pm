@@ -59,6 +59,7 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'focus' => [qw(-force -lastfor)],
                     'pack'  => [qw(configure forget info propagate slaves)],
                     'grid'  => [qw(bbox columnconfigure configure forget info location propagate rowconfigure size slaves)],
+                    'form'  => [qw(check configure forget grid info slaves)],
                     'after' => [qw(cancel idle)],
                     'place' => [qw(configure forget info slaves)],
                     'wm'    => [qw(capture release)]
@@ -95,19 +96,6 @@ sub ClassInit
  return $package;
 }
 
-sub InitClass
-{
- my ($package,$parent) = @_;
- croak "Unexpected type of parent $parent" unless(ref $parent);
- croak "$parent is not a widget" unless($parent->IsWidget);
- my $mw = $parent->MainWindow;
- unless (exists $mw->{'_ClassInit_'}{$package})
-  {
-   $package->Install($mw);
-   $mw->{'_ClassInit_'}{$package} = $package->ClassInit($mw);
-  }
-}
-
 sub CreateArgs
 {
  my ($package,$parent,$args) = @_;
@@ -121,7 +109,7 @@ sub CreateArgs
  # allow -class to be passed to any widget.                         
  my @result = ();
  my $class = delete $args->{'-class'};                     
- ($class) = $package =~ /([A-Za-z]+)$/ unless (defined $class);
+ ($class) = $package =~ /([A-Z][A-Z0-9_]*)$/i unless (defined $class);
  push(@result, '-class' => "\u$class") if (defined $class);
  return @result;
 }
@@ -161,8 +149,7 @@ sub new
   }
  else
   {
-   $leaf   = "\L$package";
-   $leaf   =~ s/^tk:://;
+   ($leaf) = "\L$package" =~ /([a-z][a-z0-9_]*)$/;
    $lname  = $pname . "." . $leaf;
    # create a hash indexed by leaf name to speed up 
    # creation of a lot of sub-widgets of the same type
@@ -539,6 +526,7 @@ sub setPalette
 {
  my $w = shift->MainWindow;
  my %new = (@_ == 1) ? (background => $_[0]) : @_;
+ my $priority = delete($new{'priority'}) || 'widgetDefault';
  my $i;
 
  # Create an array that has the complete new palette. If some colors
@@ -602,7 +590,7 @@ sub setPalette
  my $option;
  foreach $option (keys %new)
   {
-   $w->option("add","*$option",$new{$option},'widgetDefault');
+   $w->option("add","*$option",$new{$option},$priority);
    # Save the options in the global variable Tk::Palette, for use the
    # next time we change the options.
    $Palette->{$option} = $new{$option};
@@ -927,13 +915,32 @@ sub grid
  my $w = shift;
  if (@_ && $_[0] =~ /^(?:bbox|columnconfigure|configure|forget|info|location|propagate|rowconfigure|size|slaves)$/x)
   {
-   $w->Tk::grid(@_);
+   my $opt = shift;
+   Tk::grid($opt,$w,@_);
   }
  else
   {
    # Two things going on here:
    # 1. Add configure on the front so that we can drop leading '-' 
-   $w->Tk::grid('configure',@_);
+   Tk::grid('configure',$w,@_);
+   # 2. Return the widget rather than nothing
+   return $w;
+  }
+}
+
+sub form
+{
+ local $SIG{'__DIE__'} = \&Carp::croak;
+ my $w = shift;
+ if (@_ && $_[0] =~ /^(?:configure|check|forget|grid|info|slaves)$/x)
+  {
+   $w->Tk::form(@_);
+  }
+ else
+  {
+   # Two things going on here:
+   # 1. Add configure on the front so that we can drop leading '-' 
+   $w->Tk::form('configure',@_);
    # 2. Return the widget rather than nothing
    return $w;
   }

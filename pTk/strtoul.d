@@ -1,1 +1,0 @@
-strtoul.o: strtoul.c

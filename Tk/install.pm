@@ -22,7 +22,7 @@ sub installbin
    do 
     {
      print DST $line;
-    } while ($line = <SRC>);
+    } while (defined($line = <SRC>));
    close(SRC);
    close(DST);
    chmod(0555,$dst);

@@ -1,62 +1,34 @@
 # vscale.pl
 
-sub vscale_height;
+use subs qw/vscale_height/;
+use vars qw/$TOP/;
 
 sub vscale {
 
     # Create a top-level window that displays a vertical scale.
 
     my($demo) = @ARG;
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'An arrow and a vertical scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
+        -title    => 'Vertical Scale Demonstration',
+        -iconname => 'vscale',
+    );
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    $VSCALE->destroy if Exists($VSCALE);
-    $VSCALE = $MW->Toplevel;
-    my $w = $VSCALE;
-    dpos $w;
-    $w->title('Vertical Scale Demonstration');
-    $w->iconname('vscale');
+    my $frame = $TOP->Frame(-borderwidth => 10)->pack;
 
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '3.5i',
-        -justify    => 'left',
-        -text       => 'An arrow and a vertical scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
-    );
-    $w_msg->pack(-padx => '.5c');
+    my $canvas = $frame->Canvas(
+        qw/-width 50 -height 50 -borderwidth 0 -highlightthickness 0/);
+    $canvas->create(qw/polygon 0 0 1 1 2 2 -fill SeaGreen3 -tags poly/);
+    $canvas->create(qw/line 0 0 1 1 2 2 0 0 -fill black -tags line/);
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    my $scale = $frame->Scale(qw/-orient vertical -length 284 -from 0 
+        -to 250 -tickinterval 50 -command/ => [\&vscale_height, $canvas]);
+    $scale->set(75);
 
-    my $w_frame = $w->Frame(-borderwidth => 10);
-    $w_frame->pack;
-
-    my $w_frame_canvas = $w_frame->Canvas(
-        qw(-width 50 -height 50 -bd 0 -highlightthickness 0),
-    );
-    $w_frame_canvas->create(
-        qw(polygon 0 0 1 1 2 2 -fill SeaGreen3 -tags poly),
-    );
-    $w_frame_canvas->create(qw(line 0 0 1 1 2 2 0 0 -fill black -tags line));
-    my $w_frame_scale = $w_frame->Scale(
-        -orient       => 'vertical',
-        '-length'     => 284,
-        -from         => 0, 
-        -to           => 250,
-        -tickinterval => 50,
-        -command      => [\&vscale_height, $w_frame_canvas],
-    );
-    $w_frame_scale->pack(-side => 'left', -anchor => 'ne');
-    $w_frame_canvas->pack(-side => 'left', -anchor => 'nw', -fill => 'y');
-    $w_frame_scale->set(75);
+    $scale->pack(qw/-side left -anchor ne/);
+    $canvas->pack(qw/-side left -anchor nw -fill y/)
 
 } # end vscale
 

@@ -21,8 +21,18 @@ sub CreateArgs
 
 EnterMethods Tk::HList __FILE__,qw(add addchild anchor column
                                    delete dragsite dropsite entrycget
-                                   entryconfigure geometryinfo hide item info
+                                   entryconfigure geometryinfo indicator hide item info
                                    nearest see select selection show xview yview);
+
+use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
+                     'header' => [qw(configure cget create delete exists size)],
+                     'indicator' => [qw(configure cget create delete exists size)],
+                     'info' => [qw(anchor bbox children data dragsite
+                                   dropsite exists hidden item next parent prev)],
+                     'item' => [qw(configure cget create delete exists)],
+                     'selection' => [qw(clear get includes set)],
+                     'anchor' => [qw(clear set)],
+                   );
 
 
 sub ClassInit
@@ -73,6 +83,7 @@ sub ClassInit
 
  $mw->bind($class,'<Return>', ['KeyboardActivate']);
  $mw->bind($class,'<space>',  ['KeyboardBrowse']);
+ $mw->bind($class,'<Home>',   ['KeyboardHome']);
 
  return $class;
 }
@@ -85,7 +96,7 @@ sub Button1
  delete $w->{'shiftanchor'}; 
 
  $w->focus()
-   if($w->cget("-takefocus"));
+    if($w->cget("-takefocus"));
 
  my $mode = $w->cget("-selectmode");
 
@@ -99,39 +110,47 @@ sub Button1
 
  return unless( $ent );
 
- my $browse = 0;
+ my @info = $w->info('item',$Ev->x, $Ev->y);
 
- if($mode eq "single")
+ if ($info[1] eq 'indicator')
   {
-   $w->anchor('set', $ent);
+   $w->Callback(-indicatorcmd => $ent);
   }
- elsif($mode eq "browse")
+ else
   {
-   $w->anchor('set', $ent);
-   $w->select('clear' );
-   $w->select('set', $ent);
-   $browse = 1;
+   my $browse = 0;
+     
+   if($mode eq "single")
+    {
+     $w->anchor('set', $ent);
+    }
+   elsif($mode eq "browse")
+    {
+     $w->anchor('set', $ent);
+     $w->select('clear' );
+     $w->select('set', $ent);
+     $browse = 1;
+    }
+   elsif($mode eq "multiple")
+    {
+     $w->select('clear');
+     $w->anchor('set', $ent);
+     $w->select('set', $ent);
+     $browse = 1;
+    }
+   elsif($mode eq "extended")
+    {
+     $w->anchor('set', $ent);
+     $w->select('clear');
+     $w->select('set', $ent);
+     $browse = 1;
+    }
+     
+   if ($browse)
+    {
+     $w->Callback(-browsecmd => $ent);
+    }
   }
- elsif($mode eq "multiple")
-  {
-   $w->select('clear');
-   $w->anchor('set', $ent);
-   $w->select('set', $ent);
-   $browse = 1;
-  }
- elsif($mode eq "extended")
-  {
-   $w->anchor('set', $ent);
-   $w->select('clear');
-   $w->select('set', $ent);
-   $browse = 1;
-  }
- 
- if ($browse)
-  {
-   $w->Callback(-browsecmd => $ent);
-  }
- 
 }
 
 sub ShiftButton1
@@ -167,13 +186,13 @@ sub ShiftButton1
 sub GetNearest
 {
  my ($w,$y) = @_;
-
  my $ent = $w->nearest($y);
-          
- undef $ent
-   if($ent && $w->entrycget($ent, "-state") eq "disabled");
-
- $ent;
+ if (defined $ent)
+  {
+   my $state = $w->entrycget($ent, '-state');
+   return $ent if (!defined($state) || $state ne 'disabled');
+  }
+ return undef;
 }
 
 sub ButtonRelease1
@@ -500,6 +519,11 @@ sub KeyboardBrowse
 
  return unless( $anchor );
 
+ if ($w->indicatorExists($anchor))
+  {
+   $w->Callback(-indicatorcmd => $anchor);
+  }
+
  if($w->cget('-selectmode'))
   {
    $w->select('clear');
@@ -538,9 +562,17 @@ sub AutoScan
   {
    return;
   }
-
  $w->RepeatId($w->after(50,"AutoScan",$w));
  $w->Button1Motion;
+}
+
+sub children
+{
+ # Tix has core-tk window(s) which are not a widget(s)
+ # the generic code returns these as an "undef"
+ my $w = shift;
+ my @info = grep(defined($_),$w->winfo('children'));
+ @info;
 }
 
 1;

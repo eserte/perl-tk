@@ -1,61 +1,32 @@
 # colors.pl
 
+use vars qw/$TOP/;
+
 sub colors {
 
     # Create a top-level window containing a listbox showing a bunch of 
     # colors from the X color database.
 
     my($demo) = @ARG;
-
-    $COLORS->destroy if Exists($COLORS);
-    $COLORS = $MW->Toplevel;
-    my $w = $COLORS;
-    dpos $w;
-    $w->title('Listbox Demonstration (colors)');
-    $w->iconname('colors');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -justify    => 'left',
-	-wraplength => '4i',
-        -text       => 'A listbox containing several color names is displayed below, along with a scrollbar.  You can scan the list either using the scrollbar or by dragging in the listbox window with button 2 pressed.  If you double-click button 1 on a color, then the application\'s color palette will be set to match that color.',
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => 'A listbox containing several color names is displayed below, along with a scrollbar.  You can scan the list either using the scrollbar or by dragging in the listbox window with button 2 pressed.  If you double-click button 1 on a color, then the application\'s color palette will be set to match that color.',
+        -title    => 'Listbox Demonstration (colors)',
+        -iconname => 'colors',
     );
-    $w_msg->pack;
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    my $list = $TOP->Scrolled(qw/Listbox -width 20 -height 16 -setgrid 1
+			      -scrollbars e/);
+    $list->pack(qw/-side left -fill y/);
 
-    my $w_frame = $w->Frame(-borderwidth => 10);
-    $w_frame->pack(-side => 'top', -expand => 'yes', -fill => 'y');
-
-    my $w_frame_scroll = $w_frame->Scrollbar;
-    $w_frame_scroll->pack(-side => 'left', -fill => 'y');
-    my $w_frame_list = $w_frame->Listbox(
-        -yscrollcommand => [$w_frame_scroll => 'set'],
-        -width          => 20,
-        -height         => 16,
-	-setgrid        => 1,
-    );
-    $w_frame_list->pack(-side => 'left', -fill => 'y');
-    $w_frame_scroll->configure(-command => [$w_frame_list => 'yview']);
-
-    $w_frame_list->bind('<Double-1>' => 
+    $list->bind('<Double-1>' => 
         sub  {
-	    $_[0]->setPalette($_[0]->get('active'));
+	    $ARG[0]->setPalette($ARG[0]->get('active'));
 	},
     );
 
-    $w_frame_list->insert(0, qw(gray60 gray70 gray80 gray85 gray90
+    $list->insert(0, qw/gray60 gray70 gray80 gray85 gray90
 gray95 snow1 snow2 snow3 snow4 seashell1 seashell2 seashell3 seashell4
 AntiqueWhite1 AntiqueWhite2 AntiqueWhite3 AntiqueWhite4 bisque1
 bisque2 bisque3 bisque4 PeachPuff1 PeachPuff2 PeachPuff3 PeachPuff4
@@ -105,7 +76,7 @@ magenta4 orchid1 orchid2 orchid3 orchid4 plum1 plum2 plum3 plum4
 MediumOrchid1 MediumOrchid2 MediumOrchid3 MediumOrchid4 DarkOrchid1
 DarkOrchid2 DarkOrchid3 DarkOrchid4 purple1 purple2 purple3 purple4
 MediumPurple1 MediumPurple2 MediumPurple3 MediumPurple4 thistle1
-thistle2 thistle3 thistle4));
+thistle2 thistle3 thistle4/);
 
 } # end colors
 

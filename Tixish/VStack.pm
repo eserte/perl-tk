@@ -1,4 +1,4 @@
-# $Id: VStack.pm,v 1.3 1996/12/02 00:36:16 rsi Exp $
+# $Id: VStack.pm,v 1.4 1997/02/08 19:12:36 rsi Exp $
 #
 # Virtual base class needed to implement the NoteBook widget. This should
 # not be used directly by the application programmer.
@@ -30,13 +30,13 @@ sub Populate {
     $w->{"counter"} = 0;
     $w->{"resize"} = 0;
 
-    $w->ConfigSpecs(-ipadx => ["SELF", "ipadX", "Pad", 0],
-		    -ipady => ["SELF", "ipadY", "Pad", 0],
-		    -dynamicgeometry => ["SELF", "dynamicGeometry", "DynamicGeometry", 0]);
+    $w->ConfigSpecs(-ipadx => ["PASSIVE", "ipadX", "Pad", 0],
+		    -ipady => ["PASSIVE", "ipadY", "Pad", 0],
+		    -dynamicgeometry => ["PASSIVE", "dynamicGeometry", "DynamicGeometry", 0]);
 
     # SetBindings
-    $w->bind("<Configure>", 'MasterGeomProc');
-    $w->bind("<Destroy>", 'DestroyTop');
+    $w->bind("<Configure>", sub {$w->MasterGeomProc;});
+    $w->{"top"}->bind("<Destroy>", sub {$w->DestroyTop;});
 
     $w->QueueResize;
 }
@@ -52,8 +52,8 @@ sub add {
     # manage our geometry
     $w->ManageGeometry($f);
     # create default bindings
-    $f->bind("<Configure>", [$w,'ClientGeomProc','-configure', $f]);
-    $f->bind("<Destroy>",   [$w,'delete',$child]); # XXX
+    $f->bind("<Configure>", sub {$w->ClientGeomProc('-configure', $f)});
+    $f->bind("<Destroy>", sub {$w->delete($child);}); # XXX
     $w->{$child} = $f;
     $w->{"nWindows"}++;
     push(@{$w->{"windows"}}, $child);
@@ -69,7 +69,7 @@ sub delete {
 	if ($w->{"topchild"} eq $child) {
 	    foreach (@{$w->{"windows"}}) {
 		if ($_ !~ /$child/) {
-		    $w->{$_}->raise;
+		    $w->raise ( $_  );
 		    $w->{"topchild"} = $_;
 		    next;
 		}
@@ -79,6 +79,10 @@ sub delete {
 	$w->{$child}->destroy;
 	
 	@{$w->{"windows"}} = grep($_ !~ /$child/, @{$w->{"windows"}});
+	# if $w->{'windows'} is empty then set topchild to null
+	if ( $#{$w->{'windows'}} == -1 ) {
+		$w->{'topchild'} = undef;
+	}
 	$w->{"nWindows"}--;
 	delete $w->{$child};
     } else {
@@ -107,7 +111,7 @@ sub pageconfigure {
 	$w->{-createcmd} = $ccmd if (defined $ccmd);
 	$w->{-raisecmd} = $rcmd if (defined $rcmd);
 	if (keys %args) {
-	    $w->{"top"}->pageconfig($child, %args);
+	    $w->{"top"}->pageconfigure($child, %args);
 	}
     }
 }
@@ -123,7 +127,7 @@ sub raise {
 
     if (defined $w->{$child}) {
 	if (defined $w->{$child}->{-createcmd}) {
-	    &{$w->{$child}->{-createcmd}};
+	    &{$w->{$child}->{-createcmd}}($w->{$child});
 	    delete $w->{$child}->{-createcmd};
 	}
 	# hide the original visible window
@@ -147,7 +151,7 @@ sub raise {
 	}
 	if ((not defined $oldtop) || ($oldtop ne $child)) {
 	    if (defined $w->{$child}->{-raisecmd}) {
-		&{$w->{$child}->{-raisecmd}};
+		&{$w->{$child}->{-raisecmd}}($w->{$child});
 	    }
 	}
     }
@@ -249,7 +253,7 @@ sub Resize {
 	if ($w->{"counter"} < 50) {
 	    $w->{"counter"}++;
 	    $w->GeometryRequest($reqW, $reqH);
-	    $w->DoWhenIdle([$w,'Resize']);
+	    $w->DoWhenIdle(sub {$w->Resize;});
 	    $w->{"resize"} = 1;
 	    return;
 	}

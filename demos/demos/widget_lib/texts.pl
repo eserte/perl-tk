@@ -1,39 +1,25 @@
 # texts.pl
 
+use vars qw/$TOP/;
+
 sub texts {
 
     # Create a top-level window that displays a basic text widget.
 
     my ($demo) = @ARG;
-
-    $TEXTS->destroy if Exists($TEXTS);
-    $TEXTS = $MW->Toplevel;
-    my $w = $TEXTS;
-    dpos $w;
-    $w->title('Text Demonstration - Basic Facilities');
-    $w->iconname('texts');
-
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => '',
+        -title    => 'Text Demonstration - Basic Facilities',
+        -iconname => 'texts',
     );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    my $w_t = $w->Text(-relief => 'sunken', -bd => '2', -setgrid => 'true',
-		      -height => 30);
-    my $w_s = $w->Scrollbar(-command => [$w_t => 'yview']);
-    $w_t->configure(-yscrollcommand => [$w_s => 'set']);
-    $w_s->pack(-side => 'right', -fill => 'y');
-    $w_t->pack(-expand => 'yes', -fill => 'both');
+    my $t = $TOP->Scrolled(qw/Text -relief sunken -borderwidth 2 -setgrid true
+			   -height 30 -scrollbars e/);
+    $t->pack(qw/-expand yes -fill both/);
 
-    $w_t->insert('0.0', 'This window is a text widget.  It displays one or more lines of text
+    $t->insert('0.0', 'This window is a text widget.  It displays one or more lines of text
 and allows you to edit the text.  Here is a summary of the things you
 can do to a text widget:
 
@@ -79,7 +65,7 @@ even number of characters high and wide.  Also, if you make the window
 narrow you can see that long lines automatically wrap around onto
 additional lines so that all the information is always visible.');
 
-    $w_t->mark('set', 'insert', '0.0');
+    $t->mark(qw/set insert 0.0/);
 
 } # end texts
 

@@ -12,7 +12,6 @@
  * SCCS: @(#) tkCanvArc.c 1.32 96/02/17 16:59:09
  */
 
-#include <stdio.h>
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkCanvases.h"

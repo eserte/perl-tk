@@ -1,0 +1,19 @@
+#!/usr/local/bin/perl -w
+use strict;
+use Tk;
+
+my $mw = MainWindow->new;
+
+my $a = Label $mw -text => 'AAAAA', -relief => 'ridge', -borderwidth => 2;
+my $b = Label $mw -text => 'BBBBB', -relief => 'ridge', -borderwidth => 2;
+my $c = Label $mw -text => 'CCCCC', -relief => 'ridge', -borderwidth => 2;
+my $q = Button $mw -text => 'Quit', -command => [destroy => $mw];
+
+print join(' ',$a,$b,$c,$q),"\n";
+
+Tk::grid( $a , 'x', $b , -sticky => 'nsew');
+Tk::grid( '^', $c, 'x', -sticky => 'nsew');
+Tk::grid( $q, '-', '-', -sticky => 'nsew');
+
+MainLoop;
+

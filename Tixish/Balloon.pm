@@ -1,4 +1,4 @@
-# $Id: Balloon.pm,v 1.2 1996/12/02 00:33:41 rsi Exp $
+# $Id: Balloon.pm,v 1.3 1997/02/08 19:20:49 rsi Exp $
 #
 # The help widget that provides both "balloon" and "status bar"
 # types of help messages.
@@ -11,6 +11,8 @@ require Tk::Toplevel;
 
 Tk::Widget->Construct("Balloon");
 @Tk::Balloon::ISA = qw(Tk::Toplevel);
+
+use strict;
 
 my @balloons;
 
@@ -57,6 +59,7 @@ sub Populate {
     # append to global list of balloons
     push(@balloons, $w);
     $w->{"popped"} = 0;
+    $w->{"buttonDown"} = 0;
     $w->ConfigSpecs(-installcolormap => ["PASSIVE", "installColormap", "InstallColormap", 0],
 		    -initwait => ["PASSIVE", "initWait", "InitWait", 350],
 		    -state => ["PASSIVE", "state", "State", "both"],
@@ -158,16 +161,13 @@ sub Deactivate {
     my ($w) = @_;
     my $delay = delete $w->{"delay"};
     $delay->cancel if defined $delay;
-    if ($w->{"popped"})
-     {
-      $w->withdraw;
-      $w->ClearStatus;
-      $w->{"popped"} = 0;
-     }
-    else
-     {
-      $w->{"client"} = undef;
-     }
+    if ($w->{"popped"}) {
+	$w->withdraw;
+	$w->ClearStatus;
+	$w->{"popped"} = 0;
+    } else {
+	$w->{"client"} = undef;
+    }
 }
 
 sub Popup {
@@ -176,8 +176,8 @@ sub Popup {
 	$w->colormapwindows($w->winfo("toplevel"))
     }
     my $client = $w->{"client"};
-    return if (not defined $client);
-    return if (not exists $w->{"clients"}->{$client});
+    return if ((not defined $client) ||
+	       (not exists $w->{"clients"}->{$client}));
     my $msg = $w->{"clients"}->{$client}->{-balloonmsg};
     $w->Subwidget("message")->configure(-text => $msg);
     $w->idletasks;
@@ -199,11 +199,11 @@ sub SetStatus {
     if ((defined $s) && $s->winfo("exists")) {
 	my $vref = $s->cget(-textvariable);
 	my $client = $w->{"client"};
-	return if (not defined $client);
-	return if (not exists $w->{"clients"}->{$client});
+	return if ((not defined $client) ||
+		   (not exists $w->{"clients"}->{$client}));
 	my $msg = $w->{"clients"}->{$client}->{-statusmsg} || '';
 	if (not defined $vref) {
-	    eval { $s->configure(-text => $msg) };
+	    eval { $s->configure(-text => $msg); };
 	} else {
 	    $$vref = $msg;
 	}
@@ -221,6 +221,12 @@ sub ClearStatus {
 	    eval { $s->configure(-text => ""); }
 	}
     }
+}
+
+sub destroy {
+    my ($w) = @_;
+    @balloons = grep($w != $_, @balloons);
+    $w->SUPER::destroy;
 }
 
 1;
@@ -256,7 +262,8 @@ accepts. In addition, the following options are also recognized.
 
 Specifies the amount of time to wait without activity before
 popping up a help balloon. Specified in milliseconds. Defaults to
-350 milliseconds.
+350 milliseconds. This applies only to the popped up balloon.
+The status bar message is shown instantly.
 
 =item B<-state>
 
@@ -279,7 +286,6 @@ The B<Balloon> widget supports only two non-standard methods:
 =over 4
 
 =item B<attach(>I<widget>, I<options>B<)>
-
 Attaches the widget indicated by I<widget> to the help system. The
 options can be:
 
@@ -288,7 +294,7 @@ options can be:
 =item B<-statusmsg>
 
 The argument is the message to be shown on the status bar when the
-mouse pauses over this client. If this is not specified, but
+mouse passes over this client. If this is not specified, but
 B<-msg> is specified then the message displayed on the status bar
 is the same as the argument for B<-msg>.
 
@@ -317,11 +323,10 @@ Detaches the specified widget I<widget> from the help system.
 
 =head1 AUTHOR
 
-B<Rajappa Iyer> rsi@ziplink.net
+B<Rajappa Iyer> rsi@earthling.net
 
 This code and documentation is derived from Balloon.tcl from the
 Tix4.0 distribution by Ioi Lam. This code may be redistributed
 under the same terms as Perl.
 
 =cut
-

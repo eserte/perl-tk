@@ -30,6 +30,8 @@
  * SCCS: @(#) tkImgGIF.c 1.9 96/07/19 09:57:18
  */
 
+#define NEED_REAL_STDIO
+#define TK_PHOTO_FILE FILE
 #include "tkPort.h"
 #include "tkInt.h"
 #include "tkImgPhoto.h"

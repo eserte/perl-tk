@@ -17,11 +17,10 @@ package Ball;
 # Gurusamy Sarathy (gsar@engin.umich.edu)
 # Tidied up by SOL.
 
-require 5.002;
 use English;
 use Tk::Canvas;
 use Tk::Widget;
-use Tk qw(DoOneEvent DONT_WAIT);
+use Tk qw/DoOneEvent DONT_WAIT/;
 Construct Tk::Canvas 'Ball';
 use strict;
 

@@ -23,10 +23,11 @@ sub wanted
 
 find(\&wanted,'.');
 
+chmod(0666,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";
 print SKIP <<'EOF'
 \.[oai]$
-\.(bso?|old|bak|out|hide|q4)$
+\.(bso?|old|bak|out|hide|q4|orig)$
 ^\.
 /\.
 C\+\+/Main$
@@ -36,14 +37,13 @@ C\+\+/Main$
 \bpTk/need$
 \bpm_to_blib$
 %$
-\b(blib|merge)/
+\b(blib|merge|Ilya|Pixmap)/
 \bTix/
 tcl\.pm$
 \bcore\b
 \bToDo/
 \bObsolete/
-Makefile$
-Makefile\.aperl$
+\b(GNU)?[Mm]akefile(\.aperl)?$
 \btkperl\b
 \bHTML/doc\b
 extralibs\.ld
@@ -51,6 +51,8 @@ doc/index\.html$
 doc/MANFILES$
 doc/.*\.htm$
 myConfig\.out
+\bswapm$
+bin/patchls$
 EOF
 ;
 foreach (sort keys %skip)

@@ -48,7 +48,9 @@ sub yview
 
 sub FocusChildren
 {
- return (wantarray) ? () : 0;
+ my $t = shift;
+ return () if ($t->cget('-takefocus'));
+ return $t->SUPER::FocusChildren;
 }
                                         
 sub Populate

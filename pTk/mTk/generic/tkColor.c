@@ -598,7 +598,7 @@ FindClosestColor(tkwin, desiredColorPtr, actualColorPtr)
 	if (stressPtr->numColors == 0) {
 	    panic("FindClosestColor ran out of colors");
 	}
-	closestDistance = 1e30;
+	closestDistance = (float) 1e30;
 	closest = 0;
 	for (colorPtr = stressPtr->colorPtr, i = 0; i < stressPtr->numColors;
 		colorPtr++, i++) {

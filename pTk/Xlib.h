@@ -75,6 +75,7 @@ extern int XGrabKeyboard  _ANSI_ARGS_((Display *, Window, int, int, int, Time));
 extern int XGrabPointer  _ANSI_ARGS_((Display *, Window, int, unsigned int, int, int, Window, Cursor, Time));
 extern int XGrabServer  _ANSI_ARGS_((Display *));
 extern int XLookupColor  _ANSI_ARGS_((Display *, Colormap, const char *, XColor *, XColor *));
+extern int XLowerWindow  _ANSI_ARGS_((Display *, Window));
 extern int XMapWindow  _ANSI_ARGS_((Display *, Window));
 extern int XMoveResizeWindow  _ANSI_ARGS_((Display *, Window, int, int, unsigned int, unsigned int));
 extern int XMoveWindow  _ANSI_ARGS_((Display *, Window, int, int));

@@ -37,7 +37,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.2";
 $Tk::patchLevel  = "4.2";
-$Tk::VERSION     = '402.000';
+$Tk::VERSION     = '402.001';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -49,6 +49,7 @@ $Tk::event   = undef;
 # Supress used once warnings on function table pointers 
 # How can we do this in the C code?
 use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab $TkoptionVtab);  
+use vars qw($TixVtab $TixintVtab $TiximgxpmVtab);
 
 bootstrap Tk $Tk::VERSION;
 
@@ -98,6 +99,19 @@ sub Ev
    $obj = \@args;
   }
  return bless $obj,"Tk::Ev";
+}
+
+sub InitClass
+{
+ my ($package,$parent) = @_;
+ croak "Unexpected type of parent $parent" unless(ref $parent);
+ croak "$parent is not a widget" unless($parent->IsWidget);
+ my $mw = $parent->MainWindow;
+ unless (exists $mw->{'_ClassInit_'}{$package})
+  {
+   $package->Install($mw);
+   $mw->{'_ClassInit_'}{$package} = $package->ClassInit($mw);
+  }
 }
 
 require Tk::Widget;

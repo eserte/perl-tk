@@ -13,6 +13,8 @@
  * SCCS: @(#) tclWinNotify.c 1.11 96/10/03 14:57:16
  */
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <winsock.h>
 #include "tkPort.h"
 #include "Lang.h"

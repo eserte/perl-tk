@@ -671,7 +671,7 @@ sub doline
    $_ .= <>;
   }
  # Do the font changes first
- if (/^\.de\s+(\w+)/)
+ if (/^\.de\s+([\w^]+)/)
   {
    my $name = $1;
    my @lines = ();

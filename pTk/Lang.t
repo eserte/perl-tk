@@ -9,9 +9,6 @@ VFUNC(void,LangBadFile,V_LangBadFile,_ANSI_ARGS_((int fd)))
 #ifndef LangCallbackArg
 VFUNC(Arg,LangCallbackArg,V_LangCallbackArg,_ANSI_ARGS_((LangCallback *)))
 #endif
-#ifndef LangCloseHandler
-VFUNC(void,LangCloseHandler,V_LangCloseHandler,_ANSI_ARGS_((Tcl_Interp *interp,Arg arg,FILE *f,Lang_FileCloseProc *proc)))
-#endif
 #ifndef LangCmpArg
 VFUNC(int,LangCmpArg,V_LangCmpArg,_ANSI_ARGS_((Arg,Arg)))
 #endif
@@ -516,8 +513,5 @@ VFUNC(int,Tcl_Write,V_Tcl_Write,_ANSI_ARGS_((Tcl_Channel chan,
 #endif
 #ifndef TclpGetTime
 VFUNC(void,TclpGetTime,V_TclpGetTime,_ANSI_ARGS_((Tcl_Time *time)))
-#endif
-#ifndef TkReadDataPending
-VFUNC(int,TkReadDataPending,V_TkReadDataPending,_ANSI_ARGS_((FILE *f)))
 #endif
 #endif /* _LANG */

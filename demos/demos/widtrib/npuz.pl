@@ -5,16 +5,19 @@
 # distribution with permission.  It has been modified slightly to conform
 # to the widget demo standard.
 
-use English;
-use vars qw($TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
-	    @ORDER $PF @PUZ $SIDE $SPACE $SPACE_IMAGE $WIDTRIB);
+use vars qw/$TOP @LEVELS $PIECES $OLD_PIECES $CAMEL $CAMEL_HEIGHT $CAMEL_WIDTH
+	    @ORDER $PF @PUZ $SIDE $SPACE $SPACE_IMAGE $WIDTRIB/;
 
 sub npuz {
     my($demo) = @ARG;
-    my $demo_widget = $MW->WidgetDemo(-name => $demo,
-				      -text => 'An N-puzzle appears below as a collection of button images.  Use "File/New Puzzle" to start a new game, then click on any of the images NSEW of the red space, and that piece will slide over the space.  Continue until the puzzle is solved.',
-				      -geometry_manager => 'grid');
-    $TOP = $demo_widget->top;
+    my $demo_widget = $MW->WidgetDemo(
+        -name             => $demo,    
+        -text             => 'An N-puzzle appears below as a collection of button images.  Use "File/New Puzzle" to start a new game, then click on any of the images NSEW of the red space, and that piece will slide over the space.  Continue until the puzzle is solved.',
+        -geometry_manager => 'grid',
+        -title            => 'N-puzzle Demonstration',
+        -iconname         => 'N-Puz',
+	);
+    $TOP = $demo_widget->Top;
 
 #!/usr/local/bin/perl -w
 #

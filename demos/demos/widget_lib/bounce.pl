@@ -1,11 +1,9 @@
 # bounce.pl
 
-require 5.002;
 use Ball;
-
-use Tk qw(:eventtypes);
-
-use subs qw(ClearMsg DoSingleStep NotDone ShowMsg SimStart SimStop mkmb);
+use Tk qw/:eventtypes/;
+use subs qw/ClearMsg DoSingleStep NotDone ShowMsg SimStart SimStop mkmb/;
+use vars qw/$TOP/;
 
 my(@menu_button_list, $quit_flag, $quit_code,
    $bounce_status, $bounce_speed, $bounce_running, $bounce_counter);
@@ -20,25 +18,23 @@ sub bounce {
     #
     # Gurusamy Sarathy (gsar@engin.umich.edu)
     # Tidied up by SOL.
+    # 
+    # 97/06/10 This demo is sufficiently bizarre enough that we don't use
+    #          WidgetDemo! (-:  Plus, you get to see Exists() in action.
 
     my($demo) = @ARG;
 
-    $BOUNCE->destroy if Exists($BOUNCE);
-    $BOUNCE = $MW->Toplevel;
-    dpos $BOUNCE;
-    $BOUNCE->title('Bouncing Ball Simulator');
-    $BOUNCE->iconname('bounce');
+    $TOP->destroy if Exists($TOP);
+    $TOP = $MW->Toplevel;
+    $TOP->title('Bouncing Ball Simulator');
+    $TOP->iconname('bounce');
 
     @menu_button_list = ();
     $quit_flag = 0;
     $quit_code = sub {$quit_flag = 1};
-    $BOUNCE->protocol('WM_DELETE_WINDOW' => $quit_code);
+    $TOP->protocol('WM_DELETE_WINDOW' => $quit_code);
 
-    my $menubar = $BOUNCE->Frame(
-        -relief      => 'raised', 
-	-background  => 'DarkGreen',
-	-borderwidth => 2,
-    );
+    my $menubar = $TOP->Frame(qw/-relief raised -background DarkGreen -bd 2/);
     $menubar->pack(-side => 'top', -fill => 'x');
 
     mkmb($menubar, 'File', 0, 'File related stuff',
@@ -76,7 +72,7 @@ sub bounce {
 	  ]);
     $menu_button_list[$#menu_button_list]->pack(-side => 'right');
 
-    my $feedback = $BOUNCE->Frame();
+    my $feedback = $TOP->Frame();
     $feedback->pack(-side => 'bottom', -fill => 'x');
     $bounce_status = $feedback->Text(
         -relief      => 'sunken',
@@ -86,7 +82,7 @@ sub bounce {
     );
     $bounce_status->pack(-side => 'left', -fill => 'x', -expand => 1);
 
-    my $drawarea = $BOUNCE->Frame();
+    my $drawarea = $TOP->Frame();
     $drawarea->pack(-side => 'top', -fill => 'both', -expand => 1);
 
     my $canvas = $drawarea->Canvas(
@@ -112,7 +108,7 @@ sub bounce {
     $bounce_speed->bind('<Leave>' => \&ClearMsg);
     $bounce_speed->set(50);
 
-    my $w_buttons = $BOUNCE->Frame;
+    my $w_buttons = $TOP->Frame;
     $w_buttons->pack(qw(-side bottom -expand y -fill x -pady 2m));
     my $w_dismiss = $w_buttons->Button(
         -text    => 'Dismiss',
@@ -126,7 +122,8 @@ sub bounce {
     $w_see->pack(qw(-side left -expand 1));
     my $w_ball = $w_buttons->Button(
         -text    => 'View Ball Class Module',
-        -command => [\&view_widget_code, "$WIDGET_LIB/Ball.pm"],
+        -command => [\&view_widget_code, 
+		     Tk->findINC('demos/widget_lib') . '/Ball.pm'],
     );
     $w_ball->pack(qw(-side left -expand 1));
 
@@ -162,7 +159,7 @@ sub bounce {
 
     while (1) {
 	if ($quit_flag) {
-	    $BOUNCE->destroy;
+	    $TOP->destroy;
 	    return;
 	}
 	DoOneEvent($bounce_running ? DONT_WAIT : ALL_EVENTS);   
@@ -200,8 +197,8 @@ sub mkmb {
         );
     }
     $mb->pack(-side => 'left');
-    $BOUNCE->bind($mb, '<Enter>' => sub {ClearMsg; ShowMsg($mb_msg)});
-    $BOUNCE->bind($mb, '<Leave>' => \&ClearMsg);
+    $TOP->bind($mb, '<Enter>' => sub {ClearMsg; ShowMsg($mb_msg)});
+    $TOP->bind($mb, '<Leave>' => \&ClearMsg);
     
     push @menu_button_list, $mb;
     return $mb;

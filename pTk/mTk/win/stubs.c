@@ -469,6 +469,7 @@ void XChangeGC(
 }
 #endif
 
+#if 0 /* copied from Tix to tkWinDraw.c */
 void XDrawPoints(
     Display*		display,
     Drawable		d,
@@ -479,6 +480,7 @@ void XDrawPoints(
     ) {
     panic("Not implemented: XDrawPoints");
 }
+#endif
 
 extern Window XCreateWindow(
     Display*		display,

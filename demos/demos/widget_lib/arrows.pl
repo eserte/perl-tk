@@ -1,6 +1,7 @@
 # arrows.pl
 
-use subs qw(arrow_err arrow_move1 arrow_move2 arrow_move3 arrow_setup);
+use subs qw/arrow_err arrow_move1 arrow_move2 arrow_move3 arrow_setup/;
+use vars qw/$TOP/;
 
 sub arrows {
 
@@ -8,70 +9,50 @@ sub arrows {
     # allows the user to experiment with arrow shapes.
 
     my($demo) = @ARG;
-
-    $ARROWS->destroy if Exists($ARROWS);
-    $ARROWS = $MW->Toplevel;
-    my $w = $ARROWS;
-    dpos $w;
-    $w->title('Arrowhead Editor Demonstration');
-    $w->iconname('arrows');
-
-    my $w_msg = $w->Label(
-        -font       => $FONT,
-        -wraplength => '5i', 
-	-justify    => 'left',
-        -text       => 'This widget allows you to experiment with different widths and arrowhead shapes for lines in canvases.  To change the line width or the shape of the arrowhead, drag any of the three boxes attached to the oversized arrow.  The arrows on the right give examples at normal scale.  The text at the bottom shows the configuration options as you\'d enter them for a canvas line item.',
+    my $demo_widget = $MW->WidgetDemo(
+        -name     => $demo,
+        -text     => ['This widget allows you to experiment with different widths and arrowhead shapes for lines in canvases.  To change the line width or the shape of the arrowhead, drag any of the three boxes attached to the oversized arrow.  The arrows on the right give examples at normal scale.  The text at the bottom shows the configuration options as you\'d enter them for a canvas line item.', qw/-wraplength 5i/],
+        -title    => 'Arrowhead Editor Demonstration',
+        -iconname => 'arrows',
     );
-    $w_msg->pack;
+    $TOP = $demo_widget->Top;	# get geometry master
 
-    my $w_buttons = $w->Frame;
-    $w_buttons->pack(qw(-side bottom -fill x -pady 2m));
-    my $w_dismiss = $w_buttons->Button(
-        -text    => 'Dismiss',
-        -command => [$w => 'destroy'],
-    );
-    $w_dismiss->pack(qw(-side left -expand 1));
-    my $w_see = $w_buttons->Button(
-        -text    => 'See Code',
-        -command => [\&see_code, $demo],
-    );
-    $w_see->pack(qw(-side left -expand 1));
-
-    my $c = $w->Canvas(
+    my $c = $TOP->Canvas(
         -width       => '500', 
         -height      => '350',
         -relief      => 'sunken',
-	-borderwidth => 2);
-    $c->pack(-expand => 'yes', -fill => 'both');
+	-borderwidth => 2,
+    )->pack(qw/-expand yes -fill both/);
 
     my %ainfo;			# arrow information hash
-    $ainfo{'a'} = 8;
-    $ainfo{'b'} = 10;
-    $ainfo{'c'} = 3;
-    $ainfo{'width'} = 2;
-    $ainfo{'move_sub'} = undef;
-    $ainfo{'x1'} = 40;
-    $ainfo{'x2'} = 350;
+    $ainfo{a} = 8;
+    $ainfo{b} = 10;
+    $ainfo{c} = 3;
+    $ainfo{width} = 2;
+    $ainfo{move_sub} = undef;
+    $ainfo{x1} = 40;
+    $ainfo{x2} = 350;
     $ainfo{'y'} = 150;
-    $ainfo{'smallTips'} = [5, 5, 2];
-    $ainfo{'count'} = 0;
-    if ($w->depth > 1) {
-	$ainfo{'bigLineStyle'} = [qw(-fill SkyBlue1)];
-	$ainfo{'boxStyle'}     = [-fill => undef, qw(-outline black -width 1)];
-	$ainfo{'activeStyle'}  = [qw(-fill red -outline black -width 1)];
+    $ainfo{smallTips} = [5, 5, 2];
+    $ainfo{count} = 0;
+
+    if ($TOP->depth > 1) {
+	$ainfo{bigLineStyle} = [qw/-fill SkyBlue1/];
+	$ainfo{boxStyle}     = [-fill => undef, qw/-outline black -width 1/];
+	$ainfo{activeStyle}  = [qw/-fill red -outline black -width 1/];
     } else {
-	$ainfo{'bigLineStyle'} = [
+	$ainfo{bigLineStyle} = [
             -fill    => 'black',
             -stipple => '@'.Tk->findINC('demos/images/grey.25'),
         ];
-	$ainfo{'boxStyle'}     = [-fill => undef, qw(-outline black -width 1)];
-	$ainfo{'activeStyle'}  = [qw(-fill black -outline black -width 1)];
+	$ainfo{boxStyle}     = [-fill => undef, qw/-outline black -width 1/];
+	$ainfo{activeStyle}  = [qw/-fill black -outline black -width 1/];
     }
     arrow_setup $c, \%ainfo;
 
     # Bindings to highlight the 3 tiny resize boxes.
 
-    foreach ([qw(<Enter> activeStyle)], [qw(<Leave> boxStyle)]) {
+    foreach ([qw/<Enter> activeStyle/], [qw/<Leave> boxStyle/]) {
         $c->bind('box', $ARG->[0] =>[
             sub {
 		my($c, $style) = @ARG;
@@ -79,22 +60,22 @@ sub arrows {
 	    }, $ARG->[1]],
         );
     }
-    $c->bind('box', '<B1-Enter>' => undef);
-    $c->bind('box', '<B1-Leave>' => undef);
+    $c->bind(qw/box <B1-Enter>/ => undef);
+    $c->bind(qw/box <B1-Leave>/ => undef);
 
     # Bindings that select one of the 3 tiny resize boxes' "move code".
 
     my $n;
     for $n (1..3) {
 	$c->bind("box${n}", '<1>' =>
-            sub {$ainfo{'move_sub'} = \&{"arrow_move${n}"}}
+            sub {$ainfo{move_sub} = \&{"arrow_move${n}"}}
         );
     }
     
     # Bindings to move a resize box and redraw the arrow.
 
     $c->bind('box', '<B1-Motion>' =>
-        sub {&{$ainfo{'move_sub'}}($c, \%ainfo)}
+        sub {&{$ainfo{move_sub}}($c, \%ainfo)}
     );
     $c->Tk::bind('<Any-ButtonRelease-1>' => [\&arrow_setup, \%ainfo]);
 
@@ -104,7 +85,7 @@ sub arrow_err {
 
     my($c) = @ARG;
 
-    my $i = $c->create(qw(text .6i .1i -anchor n), -text => "Range error!");
+    my $i = $c->create(qw/text .6i .1i -anchor n -text/ => "Range error!");
     $c->after(4000, sub { $c->delete($i) });
 
 } # end errow_err
@@ -115,12 +96,12 @@ sub arrow_move1 {
     my $e = $c->XEvent;
 
     my($x, $y, $err) = ($e->x, $e->y, 0);
-    my $newA = int(($v->{'x2'} + 5 - int($c->canvasx($x))) / 10);
+    my $newA = int(($v->{x2} + 5 - int($c->canvasx($x))) / 10);
     $newA = 0, $err = 1 if $newA < 0;
     $newA = 25, $err = 1 if $newA > 25;
-    if ($newA != $v->{'a'}) {
-	$c->move('box1', 10 * ($v->{'a'} - $newA), 0);
-	$v->{'a'} = $newA;
+    if ($newA != $v->{a}) {
+	$c->move('box1', 10 * ($v->{a} - $newA), 0);
+	$v->{a} = $newA;
     }
     arrow_err($c) if $err;
 
@@ -132,17 +113,17 @@ sub arrow_move2 {
     my $e = $c->XEvent;
 
     my($x, $y, $errx, $erry) = ($e->x, $e->y, 0, 0);
-    my $newB = int(($v->{'x2'} + 5 - int($c->canvasx($x))) / 10);
+    my $newB = int(($v->{x2} + 5 - int($c->canvasx($x))) / 10);
     $newB = 0, $errx = 1 if $newB < 0;
     $newB = 25, $errx = 1 if $newB > 25;
-    my $newC = int(($v->{'y'} + 5 - int($c->canvasy($y)) - 5 * $v->{'width'})
+    my $newC = int(($v->{'y'} + 5 - int($c->canvasy($y)) - 5 * $v->{width})
 		   / 10);
     $newC = 0, $erry = 1 if $newC < 0;
     $newC = 12, $erry = 1 if $newC > 12;
-    if (($newB != $v->{'b'}) or ($newC != $v->{'c'})) {
-	$c->move('box2', 10*($v->{'b'}-$newB), 10*($v->{'c'}-$newC));
-	$v->{'b'} = $newB;
-	$v->{'c'} = $newC;
+    if (($newB != $v->{b}) or ($newC != $v->{c})) {
+	$c->move('box2', 10*($v->{b}-$newB), 10*($v->{c}-$newC));
+	$v->{b} = $newB;
+	$v->{c} = $newC;
     }
     arrow_err($c) if $errx or $erry;
 
@@ -157,9 +138,9 @@ sub arrow_move3 {
     my $newWidth = int(($v->{'y'} + 2 - int($c->canvasy($y))) / 5);
     $newWidth = 0, $err = 1 if $newWidth < 0;
     $newWidth = 20, $err = 1 if $newWidth > 20;
-    if ($newWidth != $v->{'width'}) {
-	$c->move('box3', 0, 5*($v->{'width'}-$newWidth));
-	$v->{'width'} = $newWidth;
+    if ($newWidth != $v->{width}) {
+	$c->move('box3', 0, 5*($v->{width}-$newWidth));
+	$v->{width} = $newWidth;
     }
     arrow_err($c) if $err;
 
@@ -184,78 +165,78 @@ sub arrow_setup {
     # Create the arrow and outline.
 
     $c->delete('all');
-    $c->create('line', $v->{'x1'}, $v->{'y'}, $v->{'x2'}, $v->{'y'}, 
-	       -width => 10*$v->{'width'},
-	       -arrowshape => [10*$v->{'a'}, 10*$v->{'b'}, 10*$v->{'c'}],
-	       -arrow => 'last', @{$v->{'bigLineStyle'}});
-    my $xtip = $v->{'x2'}-10*$v->{'b'};
-    my $deltaY =  10*$v->{'c'}+5*$v->{'width'};
-    $c->create('line', $v->{'x2'}, $v->{'y'}, $xtip, $v->{'y'}+$deltaY,
-	       $v->{'x2'}-10*$v->{'a'}, $v->{'y'}, $xtip, $v->{'y'}-$deltaY,
-	       $v->{'x2'}, $v->{'y'}, -width => 2, -capstyle => 'round',
+    $c->create('line', $v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'}, 
+	       -width => 10*$v->{width},
+	       -arrowshape => [10*$v->{a}, 10*$v->{b}, 10*$v->{c}],
+	       -arrow => 'last', @{$v->{bigLineStyle}});
+    my $xtip = $v->{x2}-10*$v->{b};
+    my $deltaY =  10*$v->{c}+5*$v->{width};
+    $c->create('line', $v->{x2}, $v->{'y'}, $xtip, $v->{'y'}+$deltaY,
+	       $v->{x2}-10*$v->{a}, $v->{'y'}, $xtip, $v->{'y'}-$deltaY,
+	       $v->{x2}, $v->{'y'}, -width => 2, -capstyle => 'round',
 	       -joinstyle => 'round');
 
     # Create the boxes for reshaping the line and arrowhead.
 
-    $c->create('rectangle', $v->{'x2'}-10*$v->{'a'}-5, $v->{'y'}-5,
-	       $v->{'x2'}-10*$v->{'a'}+5, $v->{'y'}+5, @{$v->{'boxStyle'}},
+    $c->create('rectangle', $v->{x2}-10*$v->{a}-5, $v->{'y'}-5,
+	       $v->{x2}-10*$v->{a}+5, $v->{'y'}+5, @{$v->{boxStyle}},
 	       -tags => ['box1', 'box']);
     $c->create('rectangle', $xtip-5, $v->{'y'}-$deltaY-5, $xtip+5,
-	       $v->{'y'}-$deltaY+5, @{$v->{'boxStyle'}},
+	       $v->{'y'}-$deltaY+5, @{$v->{boxStyle}},
 	       -tags => ['box2', 'box']);
-    $c->create('rectangle', $v->{'x1'}-5, $v->{'y'}-5*$v->{'width'}-5,
-	       $v->{'x1'}+5, $v->{'y'}-5*$v->{'width'}+5, @{$v->{'boxStyle'}},
+    $c->create('rectangle', $v->{x1}-5, $v->{'y'}-5*$v->{width}-5,
+	       $v->{x1}+5, $v->{'y'}-5*$v->{width}+5, @{$v->{boxStyle}},
 	       -tags => ['box3', 'box']);
 
     # Create three arrows in actual size with the same parameters
 
-    $c->create('line', $v->{'x2'}+50, 0, $v->{'x2'}+50, 1000, -width => 2);
-    my $tmp = $v->{'x2'}+100;
+    $c->create('line', $v->{x2}+50, 0, $v->{x2}+50, 1000, -width => 2);
+    my $tmp = $v->{x2}+100;
     $c->create('line', $tmp, $v->{'y'}-125, $tmp, $v->{'y'}-75,
-	       -width => $v->{'width'}, -arrow => 'both',
-	       -arrowshape => [$v->{'a'}, $v->{'b'}, $v->{'c'}]);
+	       -width => $v->{width}, -arrow => 'both',
+	       -arrowshape => [$v->{a}, $v->{b}, $v->{c}]);
     $c->create('line', $tmp-25, $v->{'y'}, $tmp+25, $v->{'y'},
-	       -width => $v->{'width'}, -arrow => 'both',
-	       -arrowshape =>[$v->{'a'}, $v->{'b'}, $v->{'c'}]);
+	       -width => $v->{width}, -arrow => 'both',
+	       -arrowshape =>[$v->{a}, $v->{b}, $v->{c}]);
     $c->create('line', $tmp-25, $v->{'y'}+75, $tmp+25, $v->{'y'}+125,
-	       -width => $v->{'width'}, -arrow => 'both',
-	       -arrowshape => [$v->{'a'}, $v->{'b'}, $v->{'c'}]);
-    $c->itemconfigure($cur, @{$v->{'activeStyle'}}) if $cur =~ /box?/;
+	       -width => $v->{width}, -arrow => 'both',
+	       -arrowshape => [$v->{a}, $v->{b}, $v->{c}]);
+    $c->itemconfigure($cur, @{$v->{activeStyle}}) if $cur =~ /box?/;
 
     # Create a bunch of other arrows and text items showing the current
     # dimensions.
 
-    $tmp = $v->{'x2'}+10;
-    $c->create('line', $tmp, $v->{'y'}-5*$v->{'width'}, $tmp, $v->{'y'}-$deltaY,
-	       -arrow => 'both', -arrowshape => $v->{'smallTips'});
-    $c->create('text', $v->{'x2'}+15, $v->{'y'}-$deltaY+5*$v->{'c'},
-	       -text => $v->{'c'}, -anchor => 'w');
-    $tmp =  $v->{'x1'}-10;
-    $c->create('line', $tmp, $v->{'y'}-5*$v->{'width'}, $tmp,
-	       $v->{'y'}+5*$v->{'width'}, -arrow => 'both',
-	       -arrowshape => $v->{'smallTips'});
-    $c->create('text', $v->{'x1'}-15, $v->{'y'}, -text => $v->{'width'},
+    $tmp = $v->{x2}+10;
+    $c->create('line', $tmp, $v->{'y'}-5*$v->{width}, $tmp, $v->{'y'}-$deltaY,
+	       -arrow => 'both', -arrowshape => $v->{smallTips});
+    $c->create('text', $v->{x2}+15, $v->{'y'}-$deltaY+5*$v->{c},
+	       -text => $v->{c}, -anchor => 'w');
+    $tmp =  $v->{x1}-10;
+    $c->create('line', $tmp, $v->{'y'}-5*$v->{width}, $tmp,
+	       $v->{'y'}+5*$v->{width}, -arrow => 'both',
+	       -arrowshape => $v->{smallTips});
+    $c->create('text', $v->{x1}-15, $v->{'y'}, -text => $v->{width},
 	       -anchor => 'e');
-    $tmp = $v->{'y'}+5*$v->{'width'}+10*$v->{'c'}+10;
-    $c->create('line', $v->{'x2'}-10*$v->{'a'}, $tmp, $v->{'x2'}, $tmp,
-	       -arrow => 'both', -arrowshape => $v->{'smallTips'});
-    $c->create('text', $v->{'x2'}-5*$v->{'a'}, $tmp+5, -text => $v->{'a'},
+    $tmp = $v->{'y'}+5*$v->{width}+10*$v->{c}+10;
+    $c->create('line', $v->{x2}-10*$v->{a}, $tmp, $v->{x2}, $tmp,
+	       -arrow => 'both', -arrowshape => $v->{smallTips});
+    $c->create('text', $v->{x2}-5*$v->{a}, $tmp+5, -text => $v->{a},
 	       -anchor => 'n');
     $tmp = $tmp+25;
-    $c->create('line', $v->{'x2'}-10*$v->{'b'}, $tmp, $v->{'x2'}, $tmp, 
-	       -arrow => 'both', -arrowshape => $v->{'smallTips'});
-    $c->create('text', $v->{'x2'}-5*$v->{'b'}, $tmp+5, -text => $v->{'b'},
+    $c->create('line', $v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp, 
+	       -arrow => 'both', -arrowshape => $v->{smallTips});
+    $c->create('text', $v->{x2}-5*$v->{b}, $tmp+5, -text => $v->{b},
 	       -anchor => 'n');
 
-    $c->create('text', $v->{'x1'}, 310, -text => "-width =>  $v->{'width'}",
+    $c->create('text', $v->{x1}, 310, -text => "-width =>  $v->{width}",
 	       -anchor => 'w',
 	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
-    $c->create('text', $v->{'x1'}, 330,
-	       -text => "-arrowshape =>  [$v->{'a'}, $v->{'b'}, $v->{'c'}]",
+    $c->create('text', $v->{x1}, 330,
+	       -text => "-arrowshape =>  [$v->{a}, $v->{b}, $v->{c}]",
 	       -anchor => 'w',
 	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
 
-    $v->{'count'}++;
+    $v->{count}++;
 
 } # end arrow_setup
     
