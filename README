@@ -114,3 +114,4 @@ CHANGES
 ~~~~~~~
 01:	Fileevents should work.
 	Added a module Tk::OS2bin to make installation simpler (works?).
+02:	The main name-creating file Tk/OS2bin.pm was not included!
