@@ -2,14 +2,17 @@
 use Tk;
 use strict;
 use Tk::DropSite;
-use vars qw($kind $STRING $FILE_NAME);           
-BEGIN
-{
- $kind = ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))?
-          ['Win32'] : ['Sun','XDND','KDE']
-}
-use Tk::DropSite @$kind;
-use Tk::DragDrop @$kind;
+my $kind;
+if ($^O eq 'MSWin32')
+ {
+  use Tk::DropSite qw(Win32);
+  $kind = 'Win32';
+ }
+else
+ {
+  use Tk::DropSite qw(Sun);
+  $kind = 'Sun';
+ }
 use Tk::Menubar;  
 
 sub enter_leave
@@ -19,73 +22,33 @@ sub enter_leave
  return 1;
 }
 
+
+
 my $top = MainWindow->new();
 my $mb  = $top->Menubar;
 $mb->Menubutton(-text => '~File', -menuitems => [
                 [ Button => 'E~xit', -command => [ destroy => $top]],
                 ]);
 
-my $but = $top->Frame->pack;
+my $lb = $top->Scrolled('Listbox',-width => 40);
 
-my $lb = $top->Scrolled('Listbox',-width => 40)->pack(-side => 'bottom');
+my $sun = $top->Message('-text' => "$kind Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
+$sun->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => $kind);
 
-$but->Button('-text' => "Primary Targets", '-command' => [\&ShowTargets,$lb,'PRIMARY'])->pack('-side'=>'left');
-$but->Button('-text' => "Quit", '-command' => ['destroy',$top])->pack('-side'=>'right');
+my $loc = $top->Message('-text' => "Local Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
+$loc->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => ['Local']);
 
-my $filename = "/tmp/SomethingSilly";
+my $eth = $top->Message('-text' => "Either Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
+$eth->DropSite(-dropcommand => [\&ShowTargets,$lb], 
+               -entercommand => [\&enter_leave,$eth]
+);
 
-open(FOO,">$filename");
-print FOO "Hi There\n";
-close(FOO);
+$lb->pack(-side => 'bottom');
 
-my $src = $top->Frame->pack;
-foreach my $k ('Local',@$kind,'Any')
- {
-  # next if $k eq 'KDE';
-  my $thing = $src->Message('-text' => "$k Source")->pack(-side => 'left');
-  my @list;
-  @list = (-sitetypes => $k) unless $k eq 'Any';
-  $thing->DragDrop(-event => '<B1-Motion>', @list,
-                 -handlers => [
-                   [-type => 'text/plain',[\&string_handler,"This is text/plain"]],
-                   [-type => 'FILE_NAME',[\&string_handler,$filename]],
-                   [[\&string_handler,"This is STRING"]]
-                 ]);
- }
-
-
-my $dst = $top->Frame->pack;
-foreach my $k ('Local',@$kind,'Any')
- {
-  my @list;
-  @list = (-droptypes => $k) unless $k eq 'Any';
-  my $sun = $dst->Message('-text' => "$k Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
-  $sun->DropSite(-dropcommand => [\&ShowTargets,$lb],
-                 -entercommand => [\&enter_leave,$sun], 
-                 @list);
- }
-
-my $str = $top->Frame->pack(-fill => 'x');
-foreach my $targ (qw(STRING FILE_NAME))
- {
-  no strict 'refs';
-  my $l = $str->Label(-anchor => 'e', -justify => 'right', -text => $targ);
-  my $v = $str->Label(-anchor => 'w', -justify => 'left', -relief => 'groove',
-              -textvariable => \${$targ});
-  Tk::grid($l,$v,-sticky => 'ew');	
- } 
-$str->gridColumnconfigure(0,-weight => 0); 
-$str->gridColumnconfigure(1,-weight => 1); 
- 
-sub string_handler
-{
- my ($text,$offset,$max) = @_;
- return substr($text,$offset,$max);
-}
+$top->Button('-text' => "Primary Targets", '-command' => [\&ShowTargets,$lb,'PRIMARY'])->pack('-side'=>'left');
+$top->Button('-text' => "Quit", '-command' => ['destroy',$top])->pack('-side'=>'right');
 
 MainLoop;
-
-use Data::Dumper;
 
 sub ShowTargets
 {
@@ -96,31 +59,15 @@ sub ShowTargets
  my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
  $lb->delete(0,'end');
  $lb->insert('end',@targ);
- $STRING = $FILE_NAME = '';
  foreach (@targ)
   {
    if (/FILE_NAME/)
     {
-     $FILE_NAME = $lb->SelectionGet('-selection'=>$seln,'FILE_NAME');
+     print $lb->SelectionGet('-selection'=>$seln,'FILE_NAME'),"\n";
     }
-   if (/_SUN/ && !/(END|ACK|DONE|YIELD)/)
-    {       
-     my @info;
-     Tk::catch { @info  = $lb->SelectionGet('-selection'=>$seln,$_) };
-     if ($@)
-      {
-       print "Cannot get $_\n";
-      }
-     else
-      {
-       print "$_:",Dumper(\@info);
-      }
-    }
-   if (m#^(STRING|text/plain)$#)
+   if ($^O eq 'MSWin32' && /STRING/)
     {
-     my $string = $lb->SelectionGet('-selection'=>$seln,$_);
-     $string = substr($string,0,37)."..." if length($string) > 40;
-     $STRING = $string;
+     print $lb->SelectionGet('-selection'=>$seln,$_),"\n";
     } 
   }
 }

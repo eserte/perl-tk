@@ -1,0 +1,13 @@
+# Index created by AutoSplit for ../blib/lib/Tk/Scale.pm
+#    (file acts as timestamp)
+package Tk::Scale;
+sub Activate ;
+sub Leave ;
+sub Enter ;
+sub ButtonUp ;
+sub ButtonDown ;
+sub Drag ;
+sub EndDrag ;
+sub Increment ;
+sub ControlPress ;
+1;

@@ -14,13 +14,16 @@ ok($@, "", "loading Tk::FileSelect module");
 my $top = new MainWindow;
 eval { $top->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 my $f = $top->FileSelect;
-ok($f->cget('-filter'), "*", "filter not equal *");
+$f->directory;
+ok($f->{Configure}{-filter}, "*", "filter not equal *");
 
 $f = $top->FileSelect(-defaultextension => 'c');
-ok($f->cget('-filter'), "*.c", "filter/defaultextension mismatch");
+$f->directory;
+ok($f->{Configure}{-filter}, "*.c", "filter/defaultextension mismatch");
 
-$f = $top->FileSelect(-filter => '*.h');
-ok($f->cget('-filter'), "*.h", "filter not equal *.h");
+$f = $top->FileSelect(-filter => '*.c');
+$f->directory;
+ok($f->{Configure}{-filter}, "*.c", "filter not equal *.c");
 
 1;
 __END__

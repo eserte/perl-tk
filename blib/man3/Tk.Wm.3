@@ -1,0 +1,722 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH WM 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::Wm \- Communicate with window manager
+.SH "SYNOPSIS"
+\ \ \ \ \fI$toplevel\fR\->\fImethod\fR(?\fIargs\fR?)
+.SH "DESCRIPTION"
+The \fBwm\fR methods are used to interact with window managers in
+order to control such things as the title for a window, its geometry,
+or the increments in terms of which it may be resized.
+The \fBwm\fR methods can take any of a number of different forms, depending on
+the particular \fImethod\fR argument.
+All of the forms expect \fI$toplevel\fR, which must be a
+top-level window object.
+.PP
+The legal forms for the \fBwm\fR methods are:
+.Ip "\fI$toplevel\fR\->\fBaspect\fR(?\fIminNumer minDenom maxNumer maxDenom\fR?)" 4
+If \fIminNumer\fR, \fIminDenom\fR, \fImaxNumer\fR, and \fImaxDenom\fR
+are all specified, then they will be passed to the window manager
+and the window manager should use them to enforce a range of
+acceptable aspect ratios for \fI$toplevel\fR.  The aspect ratio of
+\fI$toplevel\fR (width/length) will be constrained to lie
+between \fIminNumer\fR/\fIminDenom\fR and \fImaxNumer\fR/\fImaxDenom\fR.
+If \fIminNumer\fR etc. are all specified as empty strings, then
+any existing aspect ratio restrictions are removed.
+If \fIminNumer\fR etc. are specified, then the method returns an
+empty string.  Otherwise, it returns
+a array containing four elements, which are the current values
+of \fIminNumer\fR, \fIminDenom\fR, \fImaxNumer\fR, and \fImaxDenom\fR
+(if no aspect restrictions are in effect, then an empty string is
+returned).
+.Ip "\fI$toplevel\fR\->\fBclient\fR(?\fIname\fR?)" 4
+If \fIname\fR is specified, this method stores \fIname\fR (which
+should be the name of
+the host on which the application is executing) in \fI$toplevel\fR's
+\fB\s-1WM_CLIENT_MACHINE\s0\fR property for use by the window manager or
+session manager.
+The method returns an empty string in this case.
+If \fIname\fR isn't specified, the method returns the last name
+set in a \fBclient\fR method for \fI$toplevel\fR.
+If \fIname\fR is specified as an empty string, the method deletes the
+\fB\s-1WM_CLIENT_MACHINE\s0\fR property from \fI$toplevel\fR.
+.Ip "\fI$toplevel\fR\->\fBcolormapwindows\fR(?\fIwindowList\fR?)" 4
+This method is used to manipulate the \fB\s-1WM_COLORMAP_WINDOWS\s0\fR
+property, which provides information to the window managers about
+windows that have private colormaps.
+If \fIwindowList\fR isn't specified, the method returns a list
+whose elements are the names of the windows in the \fB\s-1WM_COLORMAP_WINDOWS\s0\fR
+property.
+If \fIwindowList\fR is specified, it consists of a list of widgets;
+the method overwrites the \fB\s-1WM_COLORMAP_WINDOWS\s0\fR
+property with the given windows and returns an empty string.
+The \fB\s-1WM_COLORMAP_WINDOWS\s0\fR property should normally contain a
+list of the internal windows within \fI$toplevel\fR whose colormaps differ
+from their parents.
+The order of the windows in the property indicates a priority order:
+the window manager will attempt to install as many colormaps as possible
+from the head of this list when \fI$widget\fR gets the colormap focus.
+If \fI$widget\fR is not included among the windows in \fIwindowList\fR,
+Tk implicitly adds it at the end of the \fB\s-1WM_COLORMAP_WINDOWS\s0\fR
+property, so that its colormap is lowest in priority.
+If \fI$widget\fR\->colormapwindows is not invoked, Tk will automatically set
+the property for each top-level window to all the internal windows
+whose colormaps differ from their parents, followed by the top-level
+itself;  the order of the internal windows is undefined.
+See the \s-1ICCCM\s0 documentation for more information on the
+\fB\s-1WM_COLORMAP_WINDOWS\s0\fR property.
+.Ip "\fI$toplevel\fR\->\fBcommand\fR(?\fIvalue\fR?)" 4
+If \fIvalue\fR is specified, this method stores \fIvalue\fR in \fI$toplevel\fR's
+\fB\s-1WM_COMMAND\s0\fR property for use by the window manager or
+session manager and returns an empty string.
+\fIValue\fR must have proper list structure;  the elements should
+contain the words of the command used to invoke the application.
+If \fIvalue\fR isn't specified then the method returns the last value
+set in a \fBcommand\fR method for \fI$toplevel\fR.
+If \fIvalue\fR is specified as an empty string, the method
+deletes the \fB\s-1WM_COMMAND\s0\fR property from \fI$toplevel\fR.
+.Ip "\fI$toplevel\fR\->\fBdeiconify\fR" 4
+Arrange for \fI$toplevel\fR to be displayed in normal (non-iconified) form.
+This is done by mapping the window.  If the window has never been
+mapped then this method will not map the window, but it will ensure
+that when the window is first mapped it will be displayed
+in de-iconified form.  Returns an empty string.
+.Ip "\fI$toplevel\fR\->\fBfocusmodel\fR(?\fBactive\fR|\fBpassive\fR?)" 4
+If \fBactive\fR or \fBpassive\fR is supplied as an optional argument
+to the method, then it specifies the focus model for \fI$toplevel\fR.
+In this case the method returns an empty string.  If no additional
+argument is supplied, then the method returns the current focus
+model for \fI$toplevel\fR.
+An \fBactive\fR focus model means that \fI$toplevel\fR will claim the
+input focus for itself or its descendants, even at times when
+the focus is currently in some other application.  \fBPassive\fR means that
+\fI$toplevel\fR will never claim the focus for itself:  the window manager
+should give the focus to \fI$toplevel\fR at appropriate times.  However,
+once the focus has been given to \fI$toplevel\fR or one of its descendants,
+the application may re-assign the focus among \fI$toplevel\fR's descendants.
+The focus model defaults to \fBpassive\fR, and Tk's \fBfocus\fR method
+assumes a passive model of focusing.
+.Ip "\fI$toplevel\fR\->\fBframe\fR" 4
+If \fI$widget\fR has been reparented by the window manager into a
+decorative frame, the method returns the platform specific window
+identifier for the outermost frame that contains \fI$toplevel\fR (the
+window whose parent is the root or virtual root).  If \fI$toplevel\fR
+hasn't been reparented by the window manager then the method returns
+the platform specific window identifier for \fI$toplevel\fR.
+.Ip "\fI$toplevel\fR\->\fBgeometry\fR(?\fInewGeometry\fR?)" 4
+If \fInewGeometry\fR is specified, then the geometry of \fI$toplevel\fR
+is changed and an empty string is returned.  Otherwise the current
+geometry for \fI$toplevel\fR is returned (this is the most recent
+geometry specified either by manual resizing or
+in a \fBgeometry\fR method).  \fINewGeometry\fR has
+the form \fB=\fR\fIwidth\fR\fBx\fR\fIheight\fR\fB+\-\fR\fIx\fR\fB+\-\fR\fIy\fR, where
+any of \fB=\fR, \fIwidth\fR\fBx\fR\fIheight\fR, or \fB+\-\fR\fIx\fR\fB+\-\fR\fIy\fR
+may be omitted.  \fIWidth\fR and \fIheight\fR are positive integers
+specifying the desired dimensions of \fI$toplevel\fR.  If \fI$toplevel\fR
+is gridded (see the section on \fI\s-1GRIDDED\s0 \s-1GEOMETRY\s0 \s-1MANAGEMENT\s0\fR below) then the dimensions
+are specified in grid units;  otherwise they are specified in pixel
+units.  \fIX\fR and \fIy\fR specify the desired location of
+\fI$toplevel\fR on the screen, in pixels.
+If \fIx\fR is preceded by \fB+\fR, it specifies
+the number of pixels between the left edge of the screen and the left
+edge of \fI$toplevel\fR's border;  if preceded by \fB\-\fR then
+\fIx\fR specifies the number of pixels
+between the right edge of the screen and the right edge of \fI$toplevel\fR's
+border.  If \fIy\fR is preceded by \fB+\fR then it specifies the
+number of pixels between the top of the screen and the top
+of \fI$toplevel\fR's border;  if \fIy\fR is preceded by \fB\-\fR then
+it specifies the number of pixels between the bottom of \fI$toplevel\fR's
+border and the bottom of the screen.
+If \fInewGeometry\fR is specified as an empty string then any
+existing user-specified geometry for \fI$toplevel\fR is cancelled, and
+the window will revert to the size requested internally by its
+widgets.
+.Ip "\fI$toplevel\fR\->\fBwmGrid\fR(?\fIbaseWidth,baseHeight,widthInc,heightInc\fR?)" 4
+This method indicates that \fI$toplevel\fR is to be managed as a
+gridded window.
+It also specifies the relationship between grid units and pixel units.
+\fIBaseWidth\fR and \fIbaseHeight\fR specify the number of grid
+units corresponding to the pixel dimensions requested internally
+by \fI$toplevel\fR using \fBTk_GeometryRequest\fR.  \fIWidthInc\fR
+and \fIheightInc\fR specify the number of pixels in each horizontal
+and vertical grid unit.
+These four values determine a range of acceptable sizes for
+\fI$toplevel\fR, corresponding to grid-based widths and heights
+that are non-negative integers.
+Tk will pass this information to the window manager;  during
+manual resizing, the window manager will restrict the window's size
+to one of these acceptable sizes.
+Furthermore, during manual resizing the window manager will display
+the window's current size in terms of grid units rather than pixels.
+If \fIbaseWidth\fR etc. are all specified as empty strings, then
+\fI$toplevel\fR will no longer be managed as a gridded window.  If
+\fIbaseWidth\fR etc. are specified then the return value is an
+empty string.
+Otherwise the return value is a array containing
+four elements corresponding to the current \fIbaseWidth\fR,
+\fIbaseHeight\fR, \fIwidthInc\fR, and \fIheightInc\fR;  if
+\fI$toplevel\fR is not currently gridded, then an empty string
+is returned.
+Note: this command should not be needed very often, since the
+\fBTk_SetGrid\fR library procedure and the \fB\-setgrid\fR option
+provide easier access to the same functionality.
+.Ip "\fI$toplevel\fR\->\fBgroup\fR(?\fI$widget\fR?)" 4
+If \fI$widget\fR is specified, it is the the leader of
+a group of related windows.  The window manager may use this information,
+for example, to unmap all of the windows in a group when the group's
+leader is iconified.  \fI$widget\fR may be specified as an empty string to
+remove \fI$toplevel\fR from any group association.  If \fI$widget\fR is
+specified then the method returns an empty string;  otherwise it
+returns the \fI$toplevel\fR's current group leader, or an empty
+string if \fI$toplevel\fR isn't part of any group.
+.Ip "\fI$toplevel\fR\->\fBiconbitmap\fR(?\fIbitmap\fR?)" 4
+If \fIbitmap\fR is specified, then it names a bitmap in the standard
+forms accepted by Tk (see the \fBTk_GetBitmap\fR documentation for details).
+This bitmap is passed to the window manager to be displayed in
+\fI$toplevel\fR's icon, and the method returns an empty string.  If
+an empty string is specified for \fIbitmap\fR, then any current icon
+bitmap is cancelled for \fI$toplevel\fR.
+If \fIbitmap\fR is specified then the method returns an empty string.
+Otherwise it returns the name of
+the current icon bitmap associated with \fI$toplevel\fR, or an empty
+string if \fI$toplevel\fR has no icon bitmap.
+.Ip "\fI$toplevel\fR\->\fBiconify\fR" 4
+Arrange for \fI$toplevel\fR to be iconified.  It \fI$toplevel\fR hasn't
+yet been mapped for the first time, this method will arrange for
+it to appear in the iconified state when it is eventually mapped.
+.Ip "\fI$toplevel\fR\->\fBiconmask\fR(?\fIbitmap\fR?)" 4
+If \fIbitmap\fR is specified, then it names a bitmap in the standard
+forms accepted by Tk (see the \fBTk_GetBitmap\fR documentation for details).
+This bitmap is passed to the window manager to be used as a mask
+in conjunction with the \fBiconbitmap\fR option:  where the mask
+has zeroes no icon will be displayed;  where it has ones, the bits
+from the icon bitmap will be displayed.  If
+an empty string is specified for \fIbitmap\fR then any current icon
+mask is cancelled for \fI$toplevel\fR (this is equivalent to specifying
+a bitmap of all ones).  If \fIbitmap\fR is specified
+then the method returns an empty string.  Otherwise it
+returns the name of the current icon mask associated with
+\fI$toplevel\fR, or an empty string if no mask is in effect.
+.Ip "\fI$toplevel\fR\->\fBiconname\fR(?\fInewName\fR?)" 4
+If \fInewName\fR is specified, then it is passed to the window
+manager;  the window manager should display \fInewName\fR inside
+the icon associated with \fI$toplevel\fR.  In this case an empty
+string is returned as result.  If \fInewName\fR isn't specified
+then the method returns the current icon name for \fI$toplevel\fR,
+or an empty string if no icon name has been specified (in this
+case the window manager will normally display the window's title,
+as specified with the \fBtitle\fR method).
+.Ip "\fI$toplevel\fR\->\fBiconposition\fR(?\fIx y\fR?)" 4
+If \fIx\fR and \fIy\fR are specified, they are passed to the window
+manager as a hint about where to position the icon for \fI$toplevel\fR.
+In this case an empty string is returned.  If \fIx\fR and \fIy\fR are
+specified as empty strings then any existing icon position hint is cancelled.
+If neither \fIx\fR nor \fIy\fR is specified, then the method returns
+a array containing two values, which are the current icon position
+hints (if no hints are in effect then an empty string is returned).
+.Ip "\fI$toplevel\fR\->\fBiconwindow\fR(?\fI$widget\fR?)" 4
+If \fI$widget\fR is specified, it is a window to
+use as icon for \fI$toplevel\fR: when \fI$toplevel\fR is iconified then
+\fI$widget\fR will be mapped to serve as icon, and when \fI$toplevel\fR
+is de-iconified then \fI$widget\fR will be unmapped again.  If
+\fI$widget\fR is specified as an empty string then any existing
+icon window association for \fI$toplevel\fR will be cancelled.  If
+the \fI$widget\fR argument is specified then an empty string is
+returned.  Otherwise the method returns the
+current icon window for \fI$toplevel\fR, or an empty string if there
+is no icon window currently specified for \fI$toplevel\fR.
+Button press events are disabled for \fI$toplevel\fR as long as it is
+an icon window;  this is needed in order to allow window managers
+to ``own'\*(R' those events.
+Note: not all window managers support the notion of an icon window.
+.Ip "\fI$toplevel\fR\->\fBmaxsize\fR(?\fIwidth,height\fR?)" 4
+If \fIwidth\fR and \fIheight\fR are specified, they give
+the maximum permissible dimensions for \fI$toplevel\fR.
+For gridded windows the dimensions are specified in
+grid units;  otherwise they are specified in pixel units.
+The window manager will restrict the window's dimensions to be
+less than or equal to \fIwidth\fR and \fIheight\fR.
+If \fIwidth\fR and \fIheight\fR are
+specified, then the method returns an empty string.  Otherwise
+it returns a array with two elements, which are the
+maximum width and height currently in effect.
+The maximum size defaults to the size of the screen.
+If resizing has been disabled with the \fBresizable\fR method,
+then this method has no effect.
+See the sections on geometry management below for more information.
+.Ip "\fI$toplevel\fR\->\fBminsize\fR(?\fIwidth,height\fR?)" 4
+If \fIwidth\fR and \fIheight\fR are specified, they give the
+minimum permissible dimensions for \fI$toplevel\fR.
+For gridded windows the dimensions are specified in
+grid units;  otherwise they are specified in pixel units.
+The window manager will restrict the window's dimensions to be
+greater than or equal to \fIwidth\fR and \fIheight\fR.
+If \fIwidth\fR and \fIheight\fR are
+specified, then the method returns an empty string.  Otherwise
+it returns a array with two elements, which are the
+minimum width and height currently in effect.
+The minimum size defaults to one pixel in each dimension.
+If resizing has been disabled with the \fBresizable\fR method,
+then this method has no effect.
+See the sections on geometry management below for more information.
+.Ip "\fI$toplevel\fR\->\fBoverrideredirect(?\fR\fIboolean\fR?)" 4
+If \fIboolean\fR is specified, it must have a proper boolean form and
+the override-redirect flag for \fI$toplevel\fR is set to that value.
+If \fIboolean\fR is not specified then \fB1\fR or \fB0\fR is
+returned to indicate whether or not the override-redirect flag
+is currently set for \fI$toplevel\fR.
+Setting the override-redirect flag for a window causes
+it to be ignored by the window manager;  among other things, this means
+that the window will not be reparented from the root window into a
+decorative frame and the user will not be able to manipulate the
+window using the normal window manager mechanisms.
+.Ip "\fI$toplevel\fR\->\fBpositionfrom\fR(?\fIwho\fR?)" 4
+If \fIwho\fR is specified, it must be either \fBprogram\fR or
+\fBuser\fR, or an abbreviation of one of these two.  It indicates
+whether \fI$toplevel\fR's current position was requested by the
+program or by the user.  Many window managers ignore program-requested
+initial positions and ask the user to manually position the window;  if
+\fBuser\fR is specified then the window manager should position the
+window at the given place without asking the user for assistance.
+If \fIwho\fR is specified as an empty string, then the current position
+source is cancelled.
+If \fIwho\fR is specified, then the method returns an empty string.
+Otherwise it returns \fBuser\fR or \f(CW$widget\fR to indicate the
+source of the window's current position, or an empty string if
+no source has been specified yet.  Most window managers interpret
+``no source'\*(R' as equivalent to \fBprogram\fR.
+Tk will automatically set the position source to \fBuser\fR
+when a \fBgeometry\fR method is invoked, unless the source has
+been set explicitly to \fBprogram\fR.
+.Ip "\fI$toplevel\fR\->\fBprotocol\fR(?\fIname\fR?,?\fIcallback\fR?)" 4
+This method is used to manage window manager protocols such as
+\fB\s-1WM_DELETE_WINDOW\s0\fR.
+\fIName\fR is the name of an atom corresponding to a window manager
+protocol, such as \fB\s-1WM_DELETE_WINDOW\s0\fR or \fB\s-1WM_SAVE_YOURSELF\s0\fR
+or \fB\s-1WM_TAKE_FOCUS\s0\fR.
+If both \fIname\fR and \fIcallback\fR are specified, then \fIcallback\fR
+is associated with the protocol specified by \fIname\fR.
+\fIName\fR will be added to \fI$toplevel\fR's \fB\s-1WM_PROTOCOLS\s0\fR
+property to tell the window manager that the application has a
+protocol handler for \fIname\fR, and \fIcallback\fR will
+be invoked in the future whenever the window manager sends a
+message to the client for that protocol.
+In this case the method returns an empty string.
+If \fIname\fR is specified but \fIcallback\fR isn't, then the current
+callback for \fIname\fR is returned, or an empty string if there
+is no handler defined for \fIname\fR.
+If \fIcallback\fR is specified as an empty string then the current
+handler for \fIname\fR is deleted and it is removed from the
+\fB\s-1WM_PROTOCOLS\s0\fR property on \fI$toplevel\fR;  an empty string is
+returned.
+Lastly, if neither \fIname\fR nor \fIcallback\fR is specified, the
+method returns a list of all the protocols for which handlers
+are currently defined for \fI$toplevel\fR.
+Tk always defines a protocol handler for \fB\s-1WM_DELETE_WINDOW\s0\fR, even if
+you haven't asked for one with \fBprotocol\fR.
+If a \fB\s-1WM_DELETE_WINDOW\s0\fR message arrives when you haven't defined
+a handler, then Tk handles the message by destroying the window for
+which it was received.
+.Ip "\fI$toplevel\fR\->\fBresizable\fR(?\fIwidth,height\fR?)" 4
+This method controls whether or not the user may interactively
+resize a top-level window.  If \fIwidth\fR and \fIheight\fR are
+specified, they are boolean values that determine whether the
+width and height of \fI$toplevel\fR may be modified by the user.
+In this case the method returns an empty string.
+If \fIwidth\fR and \fIheight\fR are omitted then the method
+returns a list with two 0/1 elements that indicate whether the
+width and height of \fI$toplevel\fR are currently resizable.
+By default, windows are resizable in both dimensions.
+If resizing is disabled, then the window's size will be the size
+from the most recent interactive resize or \fBgeometry\fR
+method.  If there has been no such operation then
+the window's natural size will be used.
+.Ip "\fI$toplevel\fR\->\fBsizefrom\fR(?\fIwho\fR?)" 4
+If \fIwho\fR is specified, it must be either \fBprogram\fR or
+\fBuser\fR, or an abbreviation of one of these two.  It indicates
+whether \fI$toplevel\fR's current size was requested by the
+program or by the user.  Some window managers ignore program-requested
+sizes and ask the user to manually size the window;  if
+\fBuser\fR is specified then the window manager should give the
+window its specified size without asking the user for assistance.
+If \fIwho\fR is specified as an empty string, then the current size
+source is cancelled.
+If \fIwho\fR is specified, then the method returns an empty string.
+Otherwise it returns \fBuser\fR or \f(CW$widget\fR to indicate the
+source of the window's current size, or an empty string if
+no source has been specified yet.  Most window managers interpret
+``no source'\*(R' as equivalent to \fBprogram\fR.
+.Ip "\fI$toplevel\fR\->\fBstate\fR" 4
+Returns the current state of \f(CW$widget:\fR  either \fBnormal\fR,
+\fBiconic\fR, \fBwithdrawn\fR, or \fBicon\fR.  The difference
+between \fBiconic\fR and \fBicon\fR is that \fBiconic\fR refers
+to a window that has been iconified (e.g., with the \fBiconify\fR
+method) while \fBicon\fR refers to a window whose only purpose is
+to serve as the icon for some other window (via the \fBiconwindow\fR
+method).
+.Ip "\fI$toplevel\fR\->\fBtitle\fR(?\fIstring\fR?)" 4
+If \fIstring\fR is specified, then it will be passed to the window
+manager for use as the title for \fI$toplevel\fR (the window manager
+should display this string in \fI$toplevel\fR's title bar).  In this
+case the method returns an empty string.  If \fIstring\fR isn't
+specified then the method returns the current title for the
+\fI$toplevel\fR.  The title for a window defaults to its name.
+.Ip "\fI$toplevel\fR\->\fBtransient\fR(?\fImaster\fR?)" 4
+If \fImaster\fR is specified, then the window manager is informed
+that \fI$toplevel\fR is a transient window (e.g. pull-down menu) working
+on behalf of \fImaster\fR (where \fImaster\fR is
+a top-level window).  Some window managers will use
+this information to manage \fI$toplevel\fR specially.  If \fImaster\fR
+is specified as an empty string then \fI$toplevel\fR is marked as not
+being a transient window any more.  If \fImaster\fR is specified,
+then the method returns an empty string.  Otherwise the method
+returns the path name of \fI$toplevel\fR's current master, or an
+empty string if \fI$toplevel\fR isn't currently a transient window.
+.Ip "\fI$toplevel\fR\->\fBwithdraw\fR" 4
+Arranges for \fI$toplevel\fR to be withdrawn from the screen.  This
+causes the window to be unmapped and forgotten about by the window
+manager.  If the window
+has never been mapped, then this method
+causes the window to be mapped in the withdrawn state.  Not all
+window managers appear to know how to handle windows that are
+mapped in the withdrawn state.
+Note: it sometimes seems to be necessary to withdraw a
+window and then re-map it (e.g. with \fBdeiconify\fR) to get some
+window managers to pay attention to changes in window attributes
+such as group.
+.Ip "\fI$toplevel\fR\->\fBwrapper\fR" 4
+Returns the window id of the wrapper window in which Tk has placed
+\fI$toplevel\fR. This is the id by which window manager will know
+\fI$toplevel\fR, and so is appropriate place to add X properties.
+.SH "GEOMETRY MANAGEMENT"
+By default a top-level window appears on the screen in its
+\fInatural size\fR, which is the one determined internally by its
+widgets and geometry managers.
+If the natural size of a top-level window changes, then the window's size
+changes to match.
+A top-level window can be given a size other than its natural size in two ways.
+First, the user can resize the window manually using the facilities
+of the window manager, such as resize handles.
+Second, the application can request a particular size for a
+top-level window using the \fBgeometry\fR method.
+These two cases are handled identically by Tk;  in either case,
+the requested size overrides the natural size.
+You can return the window to its natural by invoking \fBgeometry\fR
+with an empty \fIgeometry\fR string.
+.PP
+Normally a top-level window can have any size from one pixel in each
+dimension up to the size of its screen.
+However, you can use the \fBminsize\fR and \fBmaxsize\fR methods
+to limit the range of allowable sizes.
+The range set by \fBminsize\fR and \fBmaxsize\fR applies to
+all forms of resizing, including the window's natural size as
+well as manual resizes and the \fBgeometry\fR method.
+You can also use the method \fBresizable\fR to completely
+disable interactive resizing in one or both dimensions.
+.SH "GRIDDED GEOMETRY MANAGEMENT"
+Gridded geometry management occurs when one of the widgets of an
+application supports a range of useful sizes.
+This occurs, for example, in a text editor where the scrollbars,
+menus, and other adornments are fixed in size but the edit widget
+can support any number of lines of text or characters per line.
+In this case, it is usually desirable to let the user specify the
+number of lines or characters-per-line, either with the
+\fBgeometry\fR method or by interactively resizing the window.
+In the case of text, and in other interesting cases also, only
+discrete sizes of the window make sense, such as integral numbers
+of lines and characters-per-line;  arbitrary pixel sizes are not useful.
+.PP
+Gridded geometry management provides support for this kind of
+application.
+Tk (and the window manager) assume that there is a grid of some
+sort within the application and that the application should be
+resized in terms of \fIgrid units\fR rather than pixels.
+Gridded geometry management is typically invoked by turning on
+the \fBsetGrid\fR option for a widget;  it can also be invoked
+with the \fBwmGrid\fR method or by calling \fBTk_SetGrid\fR.
+In each of these approaches the particular widget (or sometimes
+code in the application as a whole) specifies the relationship between
+integral grid sizes for the window and pixel sizes.
+To return to non-gridded geometry management, invoke
+\fBgrid\fR with empty argument strings.
+.PP
+When gridded geometry management is enabled then all the dimensions specified
+in \fBminsize\fR, \fBmaxsize\fR, and \fBgeometry\fR methods
+are treated as grid units rather than pixel units.
+Interactive resizing is also carried out in even numbers of grid units
+rather than pixels.
+.SH "BUGS"
+Most existing window managers appear to have bugs that affect the
+operation of the \fBwm\fR methods.  For example, some changes won't
+take effect if the window is already active:  the window will have
+to be withdrawn and de-iconified in order to make the change happen.
+.SH "SEE ALSO"
+Tk::Widget
+Tk::tixWm
+Tk::Mwm
+.SH "KEYWORDS"
+aspect ratio, deiconify, focus model, geometry, grid, group, icon, iconify, increments, position, size, title, top-level window, units, window manager
+
+.rn }` ''
+.IX Title "WM 1"
+.IX Name "Tk::Wm - Communicate with window manager"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fI$toplevel\fR\->\fBaspect\fR(?\fIminNumer minDenom maxNumer maxDenom\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBclient\fR(?\fIname\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBcolormapwindows\fR(?\fIwindowList\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBcommand\fR(?\fIvalue\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBdeiconify\fR"
+
+.IX Item "\fI$toplevel\fR\->\fBfocusmodel\fR(?\fBactive\fR|\fBpassive\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBframe\fR"
+
+.IX Item "\fI$toplevel\fR\->\fBgeometry\fR(?\fInewGeometry\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBwmGrid\fR(?\fIbaseWidth,baseHeight,widthInc,heightInc\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBgroup\fR(?\fI$widget\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBiconbitmap\fR(?\fIbitmap\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBiconify\fR"
+
+.IX Item "\fI$toplevel\fR\->\fBiconmask\fR(?\fIbitmap\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBiconname\fR(?\fInewName\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBiconposition\fR(?\fIx y\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBiconwindow\fR(?\fI$widget\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBmaxsize\fR(?\fIwidth,height\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBminsize\fR(?\fIwidth,height\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBoverrideredirect(?\fR\fIboolean\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBpositionfrom\fR(?\fIwho\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBprotocol\fR(?\fIname\fR?,?\fIcallback\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBresizable\fR(?\fIwidth,height\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBsizefrom\fR(?\fIwho\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBstate\fR"
+
+.IX Item "\fI$toplevel\fR\->\fBtitle\fR(?\fIstring\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBtransient\fR(?\fImaster\fR?)"
+
+.IX Item "\fI$toplevel\fR\->\fBwithdraw\fR"
+
+.IX Item "\fI$toplevel\fR\->\fBwrapper\fR"
+
+.IX Header "GEOMETRY MANAGEMENT"
+
+.IX Header "GRIDDED GEOMETRY MANAGEMENT"
+
+.IX Header "BUGS"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

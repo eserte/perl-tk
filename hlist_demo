@@ -29,14 +29,13 @@ $hl->pack(-expand => 1, -fill => 'both');
 
 @list = qw(one two three);
 
-my $i = 0;
-foreach my $item (@list)
+foreach $item (@list)
  {
-  $hl->add($item, -itemtype => 'text', -text => $item, -data => {});
+  $hl->add($item,-itemtype => 'text', -text => $item, -data => {});
   my $subitem;
   foreach $subitem (@list)
    {
-    $hl->addchild($item, -itemtype => 'text', -text => $subitem, -data => []);
+    $hl->addchild($item,-itemtype => 'text', -text => $subitem, -data => []);
    }
  }
 

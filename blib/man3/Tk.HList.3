@@ -1,0 +1,1214 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH HLIST 1 "perl 5.005, patch 53" "13/Oct/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::HList \- Create and manipulate Tix Hierarchial List widgets
+.SH "SYNOPSIS"
+\fI$hlist\fR = \fI$parent\fR\->\fBHList\fR(?\fIoptions\fR?);
+.SH "STANDARD OPTIONS"
+\fB\-background\fR	\fB\-borderwidth\fR	\fB\-cursor\fR	\fB\-foreground\fR
+\fB\-font\fR	\fB\-height\fR	\fB\-highlightcolor\fR	\fB\-highlightthickness\fR
+\fB\-relief\fR	\fB\-selectbackground\fR	\fB\-selectforeground\fR
+\fB\-xscrollcommand\fR	\fB\-yscrollcommand\fR	\fB\-width\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "WIDGET\-SPECIFIC OPTIONS"
+.Ip "Name:	\fBbrowsecmd\fR" 4
+.Ip "Class:	\fBBrowseCmd\fR" 4
+.Ip "Switch:	\fB\-browsecmd\fR" 4
+Specifies a perl/Tk callback to be executed when the user browses through the
+entries in the HList widget.
+.Ip "Name:	\fBcolumns\fR" 4
+.Ip "Class:	\fBColumns\fR" 4
+.Ip "Switch:	\fB\-columns\fR" 4
+Specifies the number of columns in this HList widget. This option can
+only be set during the creation of the HList widget and cannot be
+changed subsequently.
+.Ip "Name:	\fBcommand\fR" 4
+.Ip "Class:	\fBCommand\fR" 4
+.Ip "Switch:	\fB\-command\fR" 4
+Specifies the perl/Tk callback to be executed when the user invokes a list
+entry in the HList widget. Normally the user invokes a list
+entry by double-clicking it or pressing the Return key.
+.Ip "Name:	\fBdrawBranch\fR" 4
+.Ip "Class:	\fBDrawBranch\fR" 4
+.Ip "Switch:	\fB\-drawbranch\fR" 4
+A Boolean value to specify whether branch line should be drawn to
+connect list entries to their parents.
+.Ip "Name:	\fBforeground\fR" 4
+.Ip "Class:	\fBForeground\fR" 4
+.Ip "Switch:	\fB\-foreground\fR" 4
+.Ip "Alias:	\fB\-fg\fR" 4
+\fB[\s-1OBSOLETE\s0]\fR Specifies the default foreground color for the list entries.
+.Ip "Name:	\fBgap\fR" 4
+.Ip "Class:	\fBGap\fR" 4
+.Ip "Switch:	\fB\-gap\fR" 4
+\fB[\s-1OBSOLETE\s0]\fR The default distance between the bitmap/image and the
+text in list entries.
+.Ip "Name:	\fBheader\fR" 4
+.Ip "Class:	\fBHeader\fR" 4
+.Ip "Switch:	\fB\-header\fR" 4
+A Boolean value specifying whether headers should be displayed for
+this HList widget (see the \fBheader\fR method below).
+.Ip "Name:	\fBheight\fR" 4
+.Ip "Class:	\fBHeight\fR" 4
+.Ip "Switch:	\fB\-height\fR" 4
+Specifies the desired height for the window in number of characters.
+.Ip "Name:	\fBindent\fR" 4
+.Ip "Class:	\fBIndent\fR" 4
+.Ip "Switch:	\fB\-indent\fR" 4
+Specifies the amount of horizontal indentation between a list entry
+and its children. Must be a valid screen distance value.
+.Ip "Name:	\fBindicator\fR" 4
+.Ip "Class:	\fBIndicator\fR" 4
+.Ip "Switch:	\fB\-indicator\fR" 4
+Specifies whether the indicators should be displayed inside the HList
+widget. See the \fBindicator\fR method below.
+.Ip "Name:	\fBindicatorCmd\fR" 4
+.Ip "Class:	\fBIndicatorCmd\fR" 4
+.Ip "Switch:	\fB\-indicatorcmd\fR" 4
+Specifies a perl/Tk callback to be executed when the user manipulates the
+indicator of an HList entry. The \fB\-indicatorcmd\fR is triggered
+when the user press or releases the mouse button over the indicator in
+an HList entry. By default the perl/Tk \fBcallback\fR specified by
+\fB\-indicatorcmd\fR is executed with two additional arguments, the
+entryPath of the entry whose indicator has been triggered and additional
+information about the event.  The additional information is one of the
+following strings:  \fB<Arm>\fR, \fB<Disarm>\fR,
+and \fB<Activate>\fR.
+.Ip "Name:	\fBitemType\fR" 4
+.Ip "Class:	\fBItemType\fR" 4
+.Ip "Switch:	\fB\-itemtype\fR" 4
+Specifies the default type of display item for this HList widget. When
+you call the \fBitemCreate\fR, \fBadd\fR and \fBaddchild\fR methods, display
+items of this
+type will be created if the \fB\-itemtype\fR option is not specified .
+.Ip "Name:	\fBpadX\fR" 4
+.Ip "Class:	\fBPad\fR" 4
+.Ip "Switch:	\fB\-padx\fR" 4
+\fB[\s-1OBSOLETE\s0]\fR The default horizontal padding for list entries.
+.Ip "Name:	\fBpadY\fR" 4
+.Ip "Class:	\fBPad\fR" 4
+.Ip "Switch:	\fB\-padx\fR" 4
+\fB[\s-1OBSOLETE\s0]\fR The default vertical padding for list entries.
+.Ip "Name:	\fBselectBackground\fR" 4
+.Ip "Class:	\fBSelectBackground\fR" 4
+.Ip "Switch:	\fB\-selectbackground\fR" 4
+Specifies the background color for the selected list entries.
+.Ip "Name:	\fBselectBorderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-selectborderwidth\fR" 4
+Specifies a non-negative value indicating the width of the 3-D border
+to draw around selected items.  The value may have any of the forms
+acceptable to \fBTk_GetPixels\fR.
+.Ip "Name:	\fBselectForeground\fR" 4
+.Ip "Class:	\fBSelectForeground\fR" 4
+.Ip "Switch:	\fB\-selectforeground\fR" 4
+Specifies the foreground color for the selected list entries.
+.Ip "Name:	\fBselectMode\fR" 4
+.Ip "Class:	\fBSelectMode\fR" 4
+.Ip "Switch:	\fB\-selectmode\fR" 4
+Specifies one of several styles for manipulating the selection.  The
+value of the option may be arbitrary, but the default bindings expect
+it to be either \fBsingle\fR, \fBbrowse\fR, \fBmultiple\fR, or
+\fBextended\fR; the default value is \fBsingle\fR.
+.Ip "Name:	\fBsizeCmd\fR" 4
+.Ip "Class:	\fBSizeCmd\fR" 4
+.Ip "Switch:	\fB\-sizecmd\fR" 4
+Specifies a perl/Tk callback to be called whenever the HList widget
+changes its size.  This method can be useful to implement ``\fIuser scroll
+bars when needed\fR'\*(R' features.
+.Ip "Name:	\fBseparator\fR" 4
+.Ip "Class:	\fBSeparator\fR" 4
+.Ip "Switch:	\fB\-separator\fR" 4
+Specifies the character to used as the separator character when
+intepreting the path-names of list entries. By default the character
+\*(L".\*(R" is used.
+.Ip "Name:	\fBwidth\fR" 4
+.Ip "Class:	\fBWidth\fR" 4
+.Ip "Switch:	\fB\-width\fR" 4
+Specifies the desired width for the window in characters.
+.SH "DESCRIPTION"
+The \fBHList\fR method creates a new window (given by the
+\f(CW$widget\fR argument) and makes it into a HList widget.
+Additional options, described above, may be specified on the command
+line or in the option database to configure aspects of the
+HList widget such as its cursor and relief.
+.PP
+The HList widget can be used to display any data that have a
+hierarchical structure, for example, file system directory trees. The
+list entries are indented and connected by branch lines according to
+their places in the hierachy.
+.PP
+Each list entry is identified by an \fBentryPath\fR. The entryPath is a
+sequence of \fBentry names\fR separated by the separator charactor
+(specified by the \fB\-separator\fR option). An \fBentry name\fR can be
+any string that does not contain the separator charactor, or it can be
+the a string that contains only one separator charactor.
+.PP
+For example, when \*(L".\*(R" is used as the separator charactor,
+\*(L"one.two.three\*(R" is the entryPath for a list entry whose parent is
+\*(L"one.two\*(R", whose parent is \*(L"one\*(R", which is a toplevel entry (has no
+parents).
+.PP
+Another examples: \*(L".two.three\*(R" is the entryPath for a list entry whose
+parent is \*(L".two\*(R", whose parent is \*(L".\*(R", which is a toplevel entry.
+.SH "DISPLAY ITEMS"
+Each list entry in an HList widget is associated with a \fBdisplay\fR
+item.  The display item determines what visual information should
+be displayed for this list entry. Please see the \fITk::DItem\fR manpage
+for a list of all display items.
+When a list entry is created by the \fBitemCreate\fR, \fBadd\fR or
+\fBaddchild\fR widget
+methods, the type of its display item is determined by the
+\fB\-itemtype\fR option passed to these methods. If the
+\fB\-itemtype\fR is omitted, then by default the type specified by
+this HList widget's \fB\-itemtype\fR option is used.
+.SH "WIDGET METHODS"
+The \fBHList\fR method creates a widget object.
+This object supports the \fBconfigure\fR and \fBcget\fR methods
+described in the \fITk::options\fR manpage which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+Tk::Widget class.
+.PP
+The following additional methods are available HList widgets:
+.Ip "\fI$hlist\fR\->\fBadd\fR(\fI$entryPath\fR ?,\fIoption\fR=>\fIvalue\fR, ...?)" 4
+Creates a new list entry with the pathname \fI$entryPath\fR. A list
+entry must be created after its parent is created (unless this entry
+is a top-level entry, which has no parent).  See also the section on \fI\s-1BUGS\s0\fR below.
+This method returns the
+entryPath of the newly created list entry. The following
+configuration options can be given to configure the list entry:
+.Ip "\fB\-at\fR => \fIposition\fR" 12
+Insert the new list at the position given by \fIposition\fR.
+\fIposition\fR must be a valid integer. The position \fB0\fR indicates
+the first position, \fB1\fR indicates the second position, and so on.
+.Ip "\fB\-after\fR => \fIafterWhich\fR" 12
+Insert the new list entry after the entry identified by
+\fIafterWhich\fR. \fIafterWhich\fR must be a valid list entry and it
+mush have the same parent as the new list entry
+.Ip "\fB\-before\fR => \fIbeforeWhich\fR" 12
+Insert the new list entry before the entry identified by
+\fIbeforeWhich\fR. \fIbeforeWhich\fR must be a valid list entry and it
+mush have the same parent as the new list entry
+.Ip "\fB\-data\fR => \fIstring\fR" 12
+Specifies a string to associate with this list entry. This string can
+be queried by the \fBinfo\fR method. The application
+programmer can use the \fB\-data\fR option to associate the list entry
+with the data it represents.
+.Ip "\fB\-itemtype\fR => \fItype\fR" 12
+Specifies the type of display item to be display for the new list
+entry. \fBtype\fR must be a valid display item type. Currently the
+available display item types are \fBimagetext\fR, \fBtext\fR, and
+\f(CW$widget\fR. If this option is not specified, then by default the
+type specified by this HList widget's \fB\-itemtype\fR option is used.
+.Ip "\fB\-state\fR => \fIstate\fR" 12
+Specifies whether this entry can be selected or invoked by the user.
+Must be either \fBnormal\fR or \fBdisabled\fR.
+.Sp
+The \fBadd\fR method accepts additional configuration options
+to configure the display item associated with this list entry. The set
+of additional configuration options depends on the type of the display
+item given by the \fB\-itemtype\fR option. Please see
+the \fITk::DItem\fR manpage for a list of the configuration options for
+each of the display item types.
+.Ip "\fI$hlist\fR\->\fBaddchild\fR(\fI$parentPath, \fR?\fIoption, value, ..., \fR?)" 4
+Adds a new child entry to the children list of the list entry
+identified by \fI$parentPath\fR. Or, if \fI$parentPath\fR is set to be
+the empty string, then creates a new toplevel entry. The name of the
+new list entry will be a unique name automatically generated by the
+HList widget. Usually if \fI$parentPath\fR is \fBfoo\fR, then the
+entryPath of the new entry will be \fBfoo.0\fR, \fBfoo.1\fR, ... etc.
+This method returns the entryPath of the newly created list entry.
+\fIoption\fR can be any option for the \fBadd\fR method.
+See also the section on \fI\s-1BUGS\s0\fR below.
+.Ip "\fI$hlist\fR\->\fBanchorSet\fR(\fI$entryPath\fR)" 4
+Sets the anchor to the list entry identified by \fI$entryPath\fR.  The
+anchor is the end of the selection that is fixed while the user is
+dragging out a selection with the mouse.
+.Ip "\fI$hlist\fR\->\fBanchorClear\fR" 4
+Removes the anchor, if any, from this HList widget. This only
+removes the surrounding highlights of the anchor entry and does not
+affect its selection status.
+.Ip "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col\fR?, \fI\-char\fR?, ?\fIwidth\fR?)" 4
+Querys or sets the width of a the column \fI$col\fR in the HList
+widget. The value of \fI$col\fR is zero-based: 0 stands for the first
+column, 1 stands for the second, and so on. If no further parameters
+are given, returns the current width of this column (in number of
+pixels). Additional parameters can be given to set the width of this
+column:
+.Ip "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col\fR, \fB'\*(T'\fR)" 12
+An empty string indicates that the width of the column should be just
+wide enough to display the widest element in this column. In this
+case, the width of this column may change as a result of the elements
+in this column changing their sizes.
+.Ip "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col, \fR\fIwidth\fR)" 12
+\fIwidth\fR must be in a form accepted by \fBTk_GetPixels\fR.
+.Ip "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col, \fR\fB\-char, \fR\fInChars\fR)" 12
+The width is set to be the average width occupied by \fInChars\fR
+number of characters of the font specified by the \fB\-font\fR option
+of this HList widget.
+.Ip "\fI$hlist\fR\->\fBdelete\fR(\fIoption\fR, \fI$entryPath\fR)" 4
+Delete one or more list entries. \fIoption\fR may be one of the
+following:
+.Ip "\fBall\fR" 12
+Delete all entries in the HList. In this case the \fI$entryPath\fR
+does not need to be specified.
+.Ip "\fBentry\fR" 12
+Delete the entry specified by \fI$entryPath\fR and all its offsprings,
+if any.
+.Ip "\fBoffsprings\fR" 12
+Delete all the offsprings, if any, of the entry specified by
+\fI$entryPath\fR. However, \fI$entryPath\fR itself is not deleted.
+.Ip "\fBsiblings\fR" 12
+Delete all the list entries that share the same parent with the entry
+specified by \fI$entryPath\fR. However, \fI$entryPath\fR itself is not
+deleted.
+.Ip "\fI$hlist\fR\->\fBdragsiteSet\fR(\fI$entryPath\fR)" 4
+Sets the dragsite to the list entry identified by
+\fI$entryPath\fR. The dragsite is used to indicate the source of a
+drag-and-drop action. Currently drag-and-drop functionality has not
+been implemented in Tix yet.
+.Ip "\fI$hlist\fR\->\fBdragsiteClear\fR" 4
+Remove the dragsite, if any, from the this HList widget. This only
+removes the surrounding highlights of the dragsite entry and does not
+affect its selection status.
+.Ip "\fI$hlist\fR\->\fBdropsiteSet\fR(\fI$entryPath\fR)" 4
+Sets the dropsite to the list entry identified by \fI$entryPath\fR. The
+dropsite is used to indicate the target of a drag-and-drop
+action. Currently drag-and-drop functionality has not been implemented
+in Tix yet.
+.Ip "\fI$hlist\fR\->\fBdropsiteClear\fR" 4
+Remove the dropsite, if any, from the this HList widget. This only
+removes the surrounding highlights of the dropsite entry and does not
+affect its selection status.
+.Ip "\fI$hlist\fR\->\fBentrycget\fR(\fI$entryPath\fR, \fIoption\fR)" 4
+Returns the current value of the configuration option given by
+\fIoption\fR for the entry indentfied by \fI$entryPath\fR. \fIOption\fR
+may have any of the values accepted by the \fBadd\fR method.
+.Ip "\fI$hlist\fR\->\fBentryconfigure\fR(\fI$entryPath\fR ?,\fIoption\fR?, ?\fIvalue\fR=>\fIoption\fR, ...?)" 4
+Query or modify the configuration options of the list entry indentfied
+by \fI$entryPath\fR. If no \fIoption\fR is specified, returns a list
+describing all of the available options for \fI$entryPath\fR (see
+the \fITk::options\fR manpage for information on the format of this list.) If
+\fIoption\fR is specified with no \fIvalue\fR, then the method
+returns a list describing the one named option (this list will be
+identical to the corresponding sublist of the value returned if no
+\fIoption\fR is specified). If one or more \fIoption-value\fR pairs
+are specified, then the method modifies the given \fIoption\fR\|(s) to have
+the given \fIvalue\fR\|(s); in this case the method returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBadd\fR or
+\fBaddchild\fR method. The exact set of options depends on the
+value of the \fB\-itemtype\fR option passed to the the \fBadd\fR or
+\fBaddchild\fR method when this list entry is created.
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fIoption\fR, \fI$col\fR ?,\fIargs\fR, ...?)" 4
+Manipulates the header items of this HList widget. If the
+\fB\-header\fR option of this HList widget is set to true, then a
+header item is displayed at the top of each column. The \fI$col\fR
+argument for this method must be a valid integer. 0 indicates the
+first column, 1 the second column, ... and so on. This method
+supports the following options:
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fBcget\fR, \fI$col\fR, \fIoption\fR)" 12
+If the \fI$col\fR\-th column has a header display item, returns the
+value of the specified \fIoption\fR of the header item. If the header
+doesn't exist, returns an error.
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fBconfigure, \fR\fI$col, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?)" 12
+Query or modify the configuration options of the header display item
+of the \fI$col\fR\-th column. The header item must exist, or an error
+will result.  If no \fIoption\fR is specified, returns a list
+describing all of the available options for the header display item
+(see the \fITk::options\fR manpage for information on the format of this
+list.) If \fIoption\fR is specified with no \fIvalue\fR, then the
+method returns a list describing the one named option (this list will
+be identical to the corresponding sublist of the value returned if no
+\fIoption\fR is specified). If one or more \fIoption-value\fR pairs
+are specified, then the method modifies the given \fIoption\fR\|(s) to have
+the given \fIvalue\fR\|(s); in this case the method returns an empty
+string. \fIOption\fR may have any of the values accepted by the
+\fBheader create\fR method. The exact set of options depends
+on the value of the \fB\-itemtype\fR option passed to the the \fBheader\fR
+create method when this display item was created.
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fBcreate, \fR\fI$col, \fR?\fI\-itemtype type\fR? ?\fIoption value ...\fR?" 12
+Creates a new display item as the header for the \fI$col\fR\-th
+column. See also the section on \fI\s-1BUGS\s0\fR below.
+If an header display item already exists for this column, it
+will be replaced by the new item.  An optional parameter
+\fI\-itemtype\fR can be used to specify what type of display item
+should be created. If the \fI\-itemtype\fR is not given, then by
+default the type specified by this HList widget's \fB\-itemtype\fR
+option is used. Additional parameters, in \fIoption-value\fR pairs,
+can be passed to configure the appearance of the display item. Each
+\fIoption-value\fR pair must be a valid option for this type of
+display item or one of the following:
+.Ip "\fB\-borderwidth\fR => \fIcolor\fR" 24
+Specifies the border width of this header item.
+.Ip "\fB\-headerbackground\fR => \fIcolor\fR" 24
+Specifies the background color of this header item.
+.Ip "\fB\-relief\fR => \fItype\fR" 24
+Specifies the relief type of the border of this header item.
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fBdelete, \fR\fI$col\fR)" 12
+Deletes the header display item for the \fI$col\fR\-th column.
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fBexists, \fR\fI$col\fR)" 12
+Return true if an header display item exists for the \fI$col\fR\-th
+column; return false otherwise.
+.Ip "\fI$hlist\fR\->\fBheader\fR(\fBsize\fR, \fI$entryPath\fR)" 12
+If an header display item exists for the \fI$col\fR\-th column , returns
+its size in pixels in a two element list \fI(width, height)\fR;
+returns an error if the header display item does not exist.
+.Ip "\fI$hlist\fR\->\fBhide\fR(\fIoption\fR ?,\fI$entryPath\fR?)" 4
+Makes some of entries invisible without deleting them.
+\fIOption\fR can be one of the following:
+.Ip "\fBentry\fR" 12
+Hides the list entry identified by \fI$entryPath\fR.
+.Sp
+Currently only the \fBentry\fR option is supported. Other options will
+be added in the next release.
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fIoption\fR, \fI$entryPath\fR, ?\fIargs, ...\fR?)" 4
+Manipulates the indicator on the list entries. An indicator is usually
+a small display item (such as an image) that is displayed to the left
+to an entry to indicate the status of the entry.  For example, it may
+be used to indicate whether a directory is opened or
+closed.  \fIOption\fR can be one of the following:
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fBcget\fR, \fI$entryPath\fR, \fIoption\fR)" 12
+If the list entry given by \fI$entryPath\fR has an indicator, returns
+the value of the specified \fIoption\fR of the indicator. If the
+indicator doesn't exist, returns an error.
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fBconfigure\fR, \fI$entryPath\fR, ?\fIoption\fR?, \fI?value, option, value, ...\fR?)" 12
+Query or modify the configuration options of the indicator display
+item of the entry specified by \fI$entryPath\fR. The indicator item
+must exist, or an error will result.  If no \fIoption\fR is specified,
+returns a list describing all of the available options for the
+indicator display item (see the \fITk::options\fR manpage for information
+on the format of this list). If \fIoption\fR is specified with no
+\fIvalue\fR, then the method returns a list describing the one named
+option (this list will be identical to the corresponding sublist of
+the value returned if no \fIoption\fR is specified). If one or more
+\fIoption-value\fR pairs are specified, then the method modifies the
+given \fIoption\fR\|(s) to have the given \fIvalue\fR\|(s); in this case the method
+returns an empty string.  \fIOption\fR may have any of the values
+accepted by the \fBindicator create\fR method. The exact set
+of options depends on the value of the \fB\-itemtype\fR option passed
+to the the \fBindicator create\fR method when this display item
+was created.
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fBcreate, \fR\fI$entryPath, \fR?, \fI\-itemtype type\fR? ?\fIoption value ...\fR?)" 12
+Creates a new display item as the indicator for the entry specified by
+\fI$entryPath\fR. If an indicator display item already exists for this
+entry, it will be replaced by the new item.  An optional parameter
+\fI\-itemtype\fR can be used to specify what type of display item
+should be created. If the \fI\-itemtype\fR is not given, then by
+default the type specified by this HList widget's \fB\-itemtype\fR
+option is used. Additional parameters, in \fIoption-value\fR pairs,
+can be passed to configure the appearance of the display item. Each
+\fIoption-value\fR pair must be a valid option for this type of
+display item.
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fBdelete\fR, \fI$entryPath\fR)" 12
+Deletes the indicator display item for the entry given by \fI$entryPath\fR.
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fBexists\fR, \fI$entryPath\fR)" 12
+Return true if an indicator display item exists for the entry given by
+\fI$entryPath\fR; return false otherwise.
+.Ip "\fI$hlist\fR\->\fBindicator\fR(\fBsize\fR, \fI$entryPath\fR)" 12
+If an indicator display item exists for the entry given by
+\fI$entryPath\fR, returns its size in a two element list of the form
+{\fIwidth height\fR}; returns an error if the indicator display item
+does not exist.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fIoption\fR, \fIarg, ...\fR)" 4
+Query information about the HList widget. \fIoption\fR can be one
+of the following:
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBanchor\fR)" 12
+Returns the entryPath of the current anchor, if any, of the HList
+widget. If the anchor is not set, returns the empty string.
+.Ip "\fI$hlist\fR\->\fBinfoBbox\fR(\fI$entryPath\fR)" 12
+Returns a list of four numbers describing the visible bounding box of
+the entry given \fI$entryPath\fR. The first two elements of the list
+give the x and y coordinates of the upper-left corner of the screen
+area covered by the entry (specified in pixels relative to the widget)
+and the last two elements give the lower-right corner of the area, in
+pixels. If no part of the entry given by index is visible on the
+screen then the result is an empty string; if the entry is partially
+visible, the result gives the only the visible area of the entry.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBchildren\fR ?,\fI$entryPath\fR?)" 12
+If \fI$entryPath\fR is given, returns a list of the entryPath's of its
+children entries. Otherwise returns a list of the toplevel
+entryPath's.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBdata\fR ?,\fI$entryPath\fR?)" 12
+Returns the data associated with \fI$entryPath\fR.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBdragsite\fR)" 12
+Returns the entryPath of the current dragsite, if any, of the HList
+widget. If the dragsite is not set, returns the empty string.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBdropsite\fR)" 12
+Returns the entryPath of the current dropsite, if any, of the HList
+widget. If the dropsite is not set, returns the empty string.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBexists\fR, \fI$entryPath\fR)" 12
+Returns a boolean value indicating whether the list entry
+\fI$entryPath\fR exists.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBhidden\fR, \fI$entryPath\fR)" 12
+Returns a boolean value indicating whether the list entry
+\fB$entryPath\fR is hidden or not.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBnext\fR, \fI$entryPath\fR)" 12
+Returns the entryPath of the list entry, if any, immediately below
+this list entry. If this entry is already at the bottom of the HList
+widget, returns an empty string.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBparent\fR, \fI$entryPath\fR)" 12
+Returns the name of the parent of the list entry identified by
+\fI$entryPath\fR. If \fIentryPath\fR is a toplevel list entry,
+returns the empty string.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBprev\fR, \fI$entryPath\fR)" 12
+Returns the entryPath of the list entry, if any, immediately above
+this list entry. If this entry is already at the top of the HList
+widget, returns an empty string.
+.Ip "\fI$hlist\fR\->\fBinfo\fR(\fBselection\fR)" 12
+Returns a list of selected entries in the HList widget. If no entries
+are selected, returns an empty string.
+.Ip "\fI$hlist\fR\->\fBitem\fR(\fIoption, \fR?\fIargs, ...\fR?)" 4
+Creates and configures the display items at individual columns the
+entries. The form of additional of arguments depends on the choice of
+\fIoption\fR:
+.Ip "\fI$hlist\fR\->\fBitemCget\fR(\fI$entryPath\fR, \fI$col\fR, \fIoption\fR)" 12
+Returns the current value of the configure \fIoption\fR of the display
+item at the column designated by \fI$col\fR of the entry specified by
+\fI$entryPath\fR.
+.Ip "\fI$hlist\fR\->\fBitemConfigure\fR(\fI$entryPath\fR, \fI$col\fR ?,\fIoption\fR?, \fI?value, option, value, ...\fR?)" 12
+Query or modify the configuration options of the display item at the
+column designated by \fI$col\fR of the entry specified by
+\fI$entryPath\fR. If no \fIoption\fR is specified, returns a list
+describing all of the available options for \fI$entryPath\fR (see
+the \fITk::options\fR manpage for information on the format of this
+list). If \fIoption\fR is specified with no \fIvalue\fR, then the
+method returns a list describing the one named option (this list will
+be identical to the corresponding sublist of the value returned if no
+\fIoption\fR is specified). If one or more \fIoption-value\fR pairs
+are specified, then the method modifies the given \fIoption\fR\|(s) to have
+the given \fIvalue\fR\|(s); in this case the method returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBitem\fR
+create method. The exact set of options depends on the
+value of the \fB\-itemtype\fR option passed to the the \fBitem\fR
+create method when this display item was created.
+.Ip "\fI$hlist\fR\->\fBitemCreate\fR(\fI$entryPath\fR, \fI$col\fR ?,\fI\-itemtype\fR=>\fItype\fR? ?,\fIoption value ...\fR?)" 12
+Creates a new display item at the column designated by \fI$col\fR of
+the entry specified by \fI$entryPath\fR. An optional parameter
+\fI\-itemtype\fR can be used to specify what type of display items
+should be created. If the \fI\-itemtype\fR is not specified, then by
+default the type specified by this HList widget's \fB\-itemtype\fR
+option is used.  Additional parameters, in \fIoption-value\fR pairs,
+can be passed to configure the appearance of the display item. Each
+\fIoption- value\fR pair must be a valid option for this type of
+display item.
+.Ip "\fI$hlist\fR\->\fBitemDelete\fR(\fI$entryPath\fR, \fI$col\fR)" 12
+Deletes the display item at the column designated by \fI$col\fR of
+the entry specified by \fI$entryPath\fR.
+.Ip "\fI$hlist\fR\->\fBitemExists\fR(\fI$entryPath\fR, \fI$col\fR)" 12
+Returns true if there is a display item at the column designated by
+\fI$col\fR of the entry specified by \fI$entryPath\fR; returns false
+otherwise.
+.Ip "\fI$hlist\fR\->\fBnearest\fR(\fIy\fR)" 4
+\fI$hlist\fR\->\fBnearest\fR(\fIy\fR)
+Given a y-coordinate within the HList window, this method returns
+the entryPath of the (visible) HList element nearest to that
+y-coordinate.
+.Ip "\fI$hlist\fR\->\fBsee\fR(\fI$entryPath\fR)" 4
+Adjust the view in the HList so that the entry given by \fI$entryPath\fR is
+visible. If the entry is already visible then the method has no
+effect; if the entry is near one edge of the window then the HList
+scrolls to bring the element into view at the edge; otherwise the
+HList widget scrolls to center the entry.
+.Ip "\fI$hlist\fR\->\fBselection\fR(\fIoption\fR, \fIarg\fR, ...)" 4
+.Ip "\fI$hlist\fR\->\fBselection\fR\fIOption\fR(\fIarg\fR, ...)" 4
+This method is used to adjust the selection within a HList widget. It
+has several forms, depending on \fIoption\fR:
+.Ip "\fI$hlist\fR\->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?)" 12
+When no extra arguments are given, deselects all of the list \fIentrie\fR\|(s)
+in this HList widget. When only \fIfrom\fR is given, only the list
+entry identified by \fIfrom\fR is deselected. When both \fIfrom\fR and
+\fIto\fR are given, deselects all of the list \fIentrie\fR\|(s) between
+between \fIfrom\fR and \fIto\fR, inclusive, without affecting the
+selection state of elements outside that range.
+.Ip "\fI$hlist\fR\->\fBselectionGet\fR" 12
+This is an alias for the \fBinfoSelection\fR method.
+.Ip "\fI$hlist\fR\->\fBselectionIncludes\fR(\fI$entryPath\fR)" 12
+Returns 1 if the list entry indicated by \fI$entryPath\fR is currently
+selected; returns 0 otherwise.
+.Ip "\fI$hlist\fR\->\fBselectionSet\fR(\fIfrom\fR?, \fIto\fR?)" 12
+Selects all of the list \fIentrie\fR\|(s) between between \fIfrom\fR and
+\fIto\fR, inclusive, without affecting the selection state of entries
+outside that range. When only \fIfrom\fR is given, only the list entry
+identified by \fIfrom\fR is selected.
+.Ip "\fI$hlist\fR\->\fBshow\fR(\fIoption\fR ?,\fI$entryPath\fR?)" 4
+Show the entries that are hidden by the \fBhide\fR method,
+\fIoption\fR can be one of the following:
+.Ip "\fBentry\fR" 12
+Shows the list entry identified by \fI$entryPath\fR.
+.Sp
+Currently only the \fBentry\fR option is supported. Other options will
+be added in future releases.
+.Ip "\fI$hlist\fR\->\fBxview\fR(\fIargs\fR)" 4
+This method is used to query and change the horizontal position of the
+information in the widget's window. It can take any of the following
+forms:
+.Ip "\fI$hlist\fR\->\fBxview\fR" 12
+Returns a list containing two elements.  Each element is a real
+fraction between 0 and 1; together they describe the horizontal span
+that is visible in the window.  For example, if the first element is
+\&.2 and the second element is .6, 20% of the HList entry is
+off-screen to the left, the middle 40% is visible in the window, and
+40% of the entry is off-screen to the right. These are the same values
+passed to scrollbars via the \fB\-xscrollcommand\fR option.
+.Ip "\fI$hlist\fR\->\fBxview\fR(\fI$entryPath\fR)" 12
+Adjusts the view in the window so that the list entry identified by
+\fI$entryPath\fR is aligned to the left edge of the window.
+.Ip "\fI$hlist\fR\->\fBxview\fR(\fBmoveto\fR => \fIfraction\fR)" 12
+Adjusts the view in the window so that \fIfraction\fR of the total
+width of the HList is off-screen to the left. \fIfraction\fR must be
+a fraction between 0 and 1.
+.Ip "\fI$hlist\fR\->\fBxview\fR(\fBscroll\fR => \fInumber, what\fR)" 12
+This method shifts the view in the window left or right according to
+\fInumber\fR and \fIwhat\fR. \fINumber\fR must be an integer.
+\fIWhat\fR must be either \fBunits\fR or \fBpages\fR or an
+abbreviation of one of these. If \fIwhat\fR is \fBunits\fR, the view
+adjusts left or right by \fInumber\fR character units (the width of
+the \fB0\fR character) on the display; if it is \fBpages\fR then the
+view adjusts by \fInumber\fR screenfuls. If \fInumber\fR is negative
+then characters farther to the left become visible; if it is positive
+then characters farther to the right become visible.
+.Ip "\fI$hlist\fR\->\fByview\fR(\fI?args\fR?)" 4
+This method is used to query and change the vertical position of the
+entries in the widget's window. It can take any of the following forms:
+.Ip "\fI$hlist\fR\->\fByview\fR" 12
+Returns a list containing two elements, both of which are real
+fractions between 0 and 1.  The first element gives the position of
+the list element at the top of the window, relative to the HList as a
+whole (0.5 means it is halfway through the HList, for example).  The
+second element gives the position of the list entry just after the
+last one in the window, relative to the HList as a whole.  These are
+the same values passed to scrollbars via the \fB\-yscrollcommand\fR
+option.
+.Ip "\fI$hlist\fR\->\fByview\fR(\fI$entryPath\fR)" 12
+Adjusts the view in the window so that the list entry given by
+\fI$entryPath\fR is displayed at the top of the window.
+.Ip "\fI$hlist\fR\->\fByview\fR(\fBmoveto\fR => \fIfraction\fR)" 12
+Adjusts the view in the window so that the list entry given by
+\fIfraction\fR appears at the top of the window. \fIFraction\fR is a
+fraction between 0 and 1; 0 indicates the first entry in the
+HList, 0.33 indicates the entry one-third the way through the
+HList, and so on.
+.Ip "\fI$hlist\fR\->\fByview\fR(\fBscroll\fR => \fInumber, what\fR)" 12
+This method adjust the view in the window up or down according to
+\fInumber\fR and \fIwhat\fR.  \fINumber\fR must be an integer.
+\fIWhat\fR must be either \fBunits\fR or \fBpages\fR.  If \fIwhat\fR
+is \fBunits\fR, the view adjusts up or down by \fInumber\fR lines; if
+it is \fBpages\fR then the view adjusts by \fInumber\fR screenfuls.
+If \fInumber\fR is negative then earlier entries become visible; if
+it is positive then later entries become visible.
+.SH "BINDINGS"
+.Ip "[1]" 4
+If the \fB\-selectmode\fR is \*(L"browse\*(R", when the user drags the mouse
+pointer over the list entries, the entry under the pointer will be
+highlighted and the \fB\-browsecmd\fR callback will be called with
+one parameter, the entryPath of the highlighted entry. Only one entry
+can be highlighted at a time. The \fB\-command\fR callback will be
+called when the user double-clicks on a list entry.
+.Ip "[2]" 4
+If the \fB\-selectmode\fR is \*(L"single\*(R", the entries will only be
+highlighted by mouse <ButtonRelease-1> events. When a new list entry
+is highlighted, the \fB\-browsecmd\fR callback will be called with
+one parameter indicating the highlighted list entry. The
+\fB\-command\fR callback will be called when the user double-clicks
+on a list entry.
+.Ip "[3]" 4
+If the \fB\-selectmode\fR is \*(L"multiple\*(R", when the user drags the mouse
+pointer over the list entries, all the entries under the pointer will
+be highlighted. However, only a contiguous region of list entries can
+be selected. When the highlighted area is changed, the
+\fB\-browsecmd\fR callback will be called with an undefined
+parameter. It is the responsibility of the \fB\-browsecmd\fR callback
+to find out the exact highlighted selection in the HList. The
+\fB\-command\fR callback will be called when the user double-clicks
+on a list entry.
+.Ip "[4]" 4
+If the \fB\-selectmode\fR is \*(L"extended\*(R", when the user drags the mouse
+pointer over the list entries, all the entries under the pointer will
+be highlighted. The user can also make disjointed selections using
+<Control-ButtonPress-1>. When the highlighted area is changed, the
+\fB\-browsecmd\fR callback will be called with an undefined
+parameter. It is the responsibility of the \fB\-browsecmd\fR callback
+to find out the exact highlighted selection in the HList. The
+\fB\-command\fR callback will be called when the user double-clicks
+on a list entry.
+.Ip "[5]" 4
+\fBArrow key bindings:\fR <Up> arrow key moves the anchor point to the
+item right on top of the current anchor item. <Down> arrow key moves
+the anchor point to the item right below the current anchor item.
+<Left> arrow key moves the anchor to the parent item of the current
+anchor item. <Right> moves the anchor to the first child of the
+current anchor item. If the current anchor item does not have any
+children, moves the anchor to the item right below the current anchor
+item.
+.SH "EXAMPLE"
+This example demonstrates how to use an HList to store a file
+directory structure and respond to the user's browse events:
+.PP
+.Vb 4
+\&   use strict;
+\&   use Tk;
+\&   use Tk::Label;
+\&   use Tk::HList;
+.Ve
+.Vb 11
+\&   my $mw = MainWindow->new();
+\&   my $label = $mw->Label(-width=>15);
+\&   my $hlist = $mw->HList(
+\&                       -itemtype   => 'text',
+\&                       -separator  => '/',
+\&                       -selectmode => 'single',
+\&                       -browsecmd  => sub {
+\&                                 my $file = shift;
+\&                                 $label->configure(-text=>$file);
+\&                              }
+\&                       );
+.Ve
+.Vb 3
+\&   foreach ( qw(/ /home /home/ioi /home/foo /usr /usr/lib) ) {
+\&       $hlist->add($_, -text=>$_);
+\&   }
+.Ve
+.Vb 2
+\&   $hlist->pack;
+\&   $label->pack;
+.Ve
+.Vb 1
+\&   MainLoop;
+.Ve
+.SH "BUGS"
+The fact that the display item at column 0 is implicitly associated
+with the whole entry is probably a design bug. This was done for
+backward compatibility purposes. The result is that there is a large
+overlap between the \fBitem\fR method and the \fBadd\fR,
+\fBaddchild\fR, \fBentrycget\fR and \fBentryconfigure\fR
+methods.  Whenever multiple columns exist, the programmer should use
+ONLY the \fBitem\fR method to create and configure the display items
+in each column; the \fBadd\fR, \fBaddchild\fR, \fBentrycget\fR and
+\fBentryconfigure\fR should be used ONLY to create and configure
+entries.
+.SH "KEYWORDS"
+Hierarchical Listbox
+.SH "SEE ALSO"
+Tk::DItem
+
+.rn }` ''
+.IX Title "HLIST 1"
+.IX Name "Tk::HList - Create and manipulate Tix Hierarchial List widgets"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "STANDARD OPTIONS"
+
+.IX Header "WIDGET\-SPECIFIC OPTIONS"
+
+.IX Item "Name:	\fBbrowsecmd\fR"
+
+.IX Item "Class:	\fBBrowseCmd\fR"
+
+.IX Item "Switch:	\fB\-browsecmd\fR"
+
+.IX Item "Name:	\fBcolumns\fR"
+
+.IX Item "Class:	\fBColumns\fR"
+
+.IX Item "Switch:	\fB\-columns\fR"
+
+.IX Item "Name:	\fBcommand\fR"
+
+.IX Item "Class:	\fBCommand\fR"
+
+.IX Item "Switch:	\fB\-command\fR"
+
+.IX Item "Name:	\fBdrawBranch\fR"
+
+.IX Item "Class:	\fBDrawBranch\fR"
+
+.IX Item "Switch:	\fB\-drawbranch\fR"
+
+.IX Item "Name:	\fBforeground\fR"
+
+.IX Item "Class:	\fBForeground\fR"
+
+.IX Item "Switch:	\fB\-foreground\fR"
+
+.IX Item "Alias:	\fB\-fg\fR"
+
+.IX Item "Name:	\fBgap\fR"
+
+.IX Item "Class:	\fBGap\fR"
+
+.IX Item "Switch:	\fB\-gap\fR"
+
+.IX Item "Name:	\fBheader\fR"
+
+.IX Item "Class:	\fBHeader\fR"
+
+.IX Item "Switch:	\fB\-header\fR"
+
+.IX Item "Name:	\fBheight\fR"
+
+.IX Item "Class:	\fBHeight\fR"
+
+.IX Item "Switch:	\fB\-height\fR"
+
+.IX Item "Name:	\fBindent\fR"
+
+.IX Item "Class:	\fBIndent\fR"
+
+.IX Item "Switch:	\fB\-indent\fR"
+
+.IX Item "Name:	\fBindicator\fR"
+
+.IX Item "Class:	\fBIndicator\fR"
+
+.IX Item "Switch:	\fB\-indicator\fR"
+
+.IX Item "Name:	\fBindicatorCmd\fR"
+
+.IX Item "Class:	\fBIndicatorCmd\fR"
+
+.IX Item "Switch:	\fB\-indicatorcmd\fR"
+
+.IX Item "Name:	\fBitemType\fR"
+
+.IX Item "Class:	\fBItemType\fR"
+
+.IX Item "Switch:	\fB\-itemtype\fR"
+
+.IX Item "Name:	\fBpadX\fR"
+
+.IX Item "Class:	\fBPad\fR"
+
+.IX Item "Switch:	\fB\-padx\fR"
+
+.IX Item "Name:	\fBpadY\fR"
+
+.IX Item "Class:	\fBPad\fR"
+
+.IX Item "Switch:	\fB\-padx\fR"
+
+.IX Item "Name:	\fBselectBackground\fR"
+
+.IX Item "Class:	\fBSelectBackground\fR"
+
+.IX Item "Switch:	\fB\-selectbackground\fR"
+
+.IX Item "Name:	\fBselectBorderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-selectborderwidth\fR"
+
+.IX Item "Name:	\fBselectForeground\fR"
+
+.IX Item "Class:	\fBSelectForeground\fR"
+
+.IX Item "Switch:	\fB\-selectforeground\fR"
+
+.IX Item "Name:	\fBselectMode\fR"
+
+.IX Item "Class:	\fBSelectMode\fR"
+
+.IX Item "Switch:	\fB\-selectmode\fR"
+
+.IX Item "Name:	\fBsizeCmd\fR"
+
+.IX Item "Class:	\fBSizeCmd\fR"
+
+.IX Item "Switch:	\fB\-sizecmd\fR"
+
+.IX Item "Name:	\fBseparator\fR"
+
+.IX Item "Class:	\fBSeparator\fR"
+
+.IX Item "Switch:	\fB\-separator\fR"
+
+.IX Item "Name:	\fBwidth\fR"
+
+.IX Item "Class:	\fBWidth\fR"
+
+.IX Item "Switch:	\fB\-width\fR"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "DISPLAY ITEMS"
+
+.IX Header "WIDGET METHODS"
+
+.IX Item "\fI$hlist\fR\->\fBadd\fR(\fI$entryPath\fR ?,\fIoption\fR=>\fIvalue\fR, ...?)"
+
+.IX Item "\fB\-at\fR => \fIposition\fR"
+
+.IX Item "\fB\-after\fR => \fIafterWhich\fR"
+
+.IX Item "\fB\-before\fR => \fIbeforeWhich\fR"
+
+.IX Item "\fB\-data\fR => \fIstring\fR"
+
+.IX Item "\fB\-itemtype\fR => \fItype\fR"
+
+.IX Item "\fB\-state\fR => \fIstate\fR"
+
+.IX Item "\fI$hlist\fR\->\fBaddchild\fR(\fI$parentPath, \fR?\fIoption, value, ..., \fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBanchorSet\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBanchorClear\fR"
+
+.IX Item "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col\fR?, \fI\-char\fR?, ?\fIwidth\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col\fR, \fB'\*(T'\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col, \fR\fIwidth\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBcolumnWidth\fR(\fI$col, \fR\fB\-char, \fR\fInChars\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBdelete\fR(\fIoption\fR, \fI$entryPath\fR)"
+
+.IX Item "\fBall\fR"
+
+.IX Item "\fBentry\fR"
+
+.IX Item "\fBoffsprings\fR"
+
+.IX Item "\fBsiblings\fR"
+
+.IX Item "\fI$hlist\fR\->\fBdragsiteSet\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBdragsiteClear\fR"
+
+.IX Item "\fI$hlist\fR\->\fBdropsiteSet\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBdropsiteClear\fR"
+
+.IX Item "\fI$hlist\fR\->\fBentrycget\fR(\fI$entryPath\fR, \fIoption\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBentryconfigure\fR(\fI$entryPath\fR ?,\fIoption\fR?, ?\fIvalue\fR=>\fIoption\fR, ...?)"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fIoption\fR, \fI$col\fR ?,\fIargs\fR, ...?)"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fBcget\fR, \fI$col\fR, \fIoption\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fBconfigure, \fR\fI$col, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fBcreate, \fR\fI$col, \fR?\fI\-itemtype type\fR? ?\fIoption value ...\fR?"
+
+.IX Item "\fB\-borderwidth\fR => \fIcolor\fR"
+
+.IX Item "\fB\-headerbackground\fR => \fIcolor\fR"
+
+.IX Item "\fB\-relief\fR => \fItype\fR"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fBdelete, \fR\fI$col\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fBexists, \fR\fI$col\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBheader\fR(\fBsize\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBhide\fR(\fIoption\fR ?,\fI$entryPath\fR?)"
+
+.IX Item "\fBentry\fR"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fIoption\fR, \fI$entryPath\fR, ?\fIargs, ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fBcget\fR, \fI$entryPath\fR, \fIoption\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fBconfigure\fR, \fI$entryPath\fR, ?\fIoption\fR?, \fI?value, option, value, ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fBcreate, \fR\fI$entryPath, \fR?, \fI\-itemtype type\fR? ?\fIoption value ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fBdelete\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fBexists\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBindicator\fR(\fBsize\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fIoption\fR, \fIarg, ...\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBanchor\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfoBbox\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBchildren\fR ?,\fI$entryPath\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBdata\fR ?,\fI$entryPath\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBdragsite\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBdropsite\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBexists\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBhidden\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBnext\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBparent\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBprev\fR, \fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBinfo\fR(\fBselection\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBitem\fR(\fIoption, \fR?\fIargs, ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBitemCget\fR(\fI$entryPath\fR, \fI$col\fR, \fIoption\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBitemConfigure\fR(\fI$entryPath\fR, \fI$col\fR ?,\fIoption\fR?, \fI?value, option, value, ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBitemCreate\fR(\fI$entryPath\fR, \fI$col\fR ?,\fI\-itemtype\fR=>\fItype\fR? ?,\fIoption value ...\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBitemDelete\fR(\fI$entryPath\fR, \fI$col\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBitemExists\fR(\fI$entryPath\fR, \fI$col\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBnearest\fR(\fIy\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBsee\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBselection\fR(\fIoption\fR, \fIarg\fR, ...)"
+
+.IX Item "\fI$hlist\fR\->\fBselection\fR\fIOption\fR(\fIarg\fR, ...)"
+
+.IX Item "\fI$hlist\fR\->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBselectionGet\fR"
+
+.IX Item "\fI$hlist\fR\->\fBselectionIncludes\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBselectionSet\fR(\fIfrom\fR?, \fIto\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fBshow\fR(\fIoption\fR ?,\fI$entryPath\fR?)"
+
+.IX Item "\fBentry\fR"
+
+.IX Item "\fI$hlist\fR\->\fBxview\fR(\fIargs\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBxview\fR"
+
+.IX Item "\fI$hlist\fR\->\fBxview\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBxview\fR(\fBmoveto\fR => \fIfraction\fR)"
+
+.IX Item "\fI$hlist\fR\->\fBxview\fR(\fBscroll\fR => \fInumber, what\fR)"
+
+.IX Item "\fI$hlist\fR\->\fByview\fR(\fI?args\fR?)"
+
+.IX Item "\fI$hlist\fR\->\fByview\fR"
+
+.IX Item "\fI$hlist\fR\->\fByview\fR(\fI$entryPath\fR)"
+
+.IX Item "\fI$hlist\fR\->\fByview\fR(\fBmoveto\fR => \fIfraction\fR)"
+
+.IX Item "\fI$hlist\fR\->\fByview\fR(\fBscroll\fR => \fInumber, what\fR)"
+
+.IX Header "BINDINGS"
+
+.IX Item "[1]"
+
+.IX Item "[2]"
+
+.IX Item "[3]"
+
+.IX Item "[4]"
+
+.IX Item "[5]"
+
+.IX Header "EXAMPLE"
+
+.IX Header "BUGS"
+
+.IX Header "KEYWORDS"
+
+.IX Header "SEE ALSO"
+

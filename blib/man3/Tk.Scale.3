@@ -1,0 +1,558 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH SCALE 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::Scale \- Create and manipulate Scale widgets
+.SH "SYNOPSIS"
+\fI$scale\fR = \fI$parent\fR\->\fBScale\fR(?\fIoptions\fR?);
+.SH "STANDARD OPTIONS"
+\fB\-activebackground\fR	\fB\-font\fR	\fB\-highlightthickness\fR	\fB\-repeatinterval\fR
+\fB\-background\fR	\fB\-foreground\fR	\fB\-orient\fR	\fB\-takefocus\fR
+\fB\-borderwidth\fR	\fB\-highlightbackground\fR	\fB\-relief\fR	\fB\-troughcolor\fR
+\fB\-cursor\fR	\fB\-highlightcolor\fR	\fB\-repeatdelay\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "WIDGET\-SPECIFIC OPTIONS"
+.Ip "Name:	\fBbigIncrement\fR" 4
+.Ip "Class:	\fBBigIncrement\fR" 4
+.Ip "Switch:	\fB\-bigincrement\fR" 4
+Some interactions with the scale cause its value to change by
+``large'\*(R' increments;  this option specifies the size of the
+large increments.  If specified as 0, the large increments default
+to 1/10 the range of the scale.
+.Ip "Name:	\fBcommand\fR" 4
+.Ip "Class:	\fBCommand\fR" 4
+.Ip "Switch:	\fB\-command\fR" 4
+Specifies the prefix of a perl/Tk callback to invoke whenever the scale's
+value is changed via a method.
+The actual command consists
+of this option followed by a space and a real number indicating the
+new value of the scale.
+.Ip "Name:	\fBdigits\fR" 4
+.Ip "Class:	\fBDigits\fR" 4
+.Ip "Switch:	\fB\-digits\fR" 4
+An integer specifying how many significant digits should be retained
+when converting the value of the scale to a string.
+If the number is less than or equal to zero, then the scale picks
+the smallest value that guarantees that every possible slider
+position prints as a different string.
+.Ip "Name:	\fBfrom\fR" 4
+.Ip "Class:	\fBFrom\fR" 4
+.Ip "Switch:	\fB\-from\fR" 4
+A real value corresponding to the left or top end of the scale.
+.Ip "Name:	\fBlabel\fR" 4
+.Ip "Class:	\fBLabel\fR" 4
+.Ip "Switch:	\fB\-label\fR" 4
+A string to display as a label for the scale.  For
+vertical scales the label is displayed just to the right of the
+top end of the scale.  For horizontal scales the label is displayed
+just above the left end of the scale.  If the option is specified
+as an empty string, no label is displayed.
+.Ip "Name:	\fBlength\fR" 4
+.Ip "Class:	\fBLength\fR" 4
+.Ip "Switch:	\fB\-length\fR" 4
+Specifies the desired long dimension of the scale in screen units
+(i.e. any of the forms acceptable to \fBTk_GetPixels\fR).
+For vertical scales this is the scale's height;  for horizontal scales
+it is the scale's width.
+.Ip "Name:	\fBresolution\fR" 4
+.Ip "Class:	\fBResolution\fR" 4
+.Ip "Switch:	\fB\-resolution\fR" 4
+A real value specifying the resolution for the scale.
+If this value is greater than zero then the scale's value will always be
+rounded to an even multiple of this value, as will tick marks and
+the endpoints of the scale.  If the value is less than zero then no
+rounding occurs.  Defaults to 1 (i.e., the value will be integral).
+.Ip "Name:	\fBshowValue\fR" 4
+.Ip "Class:	\fBShowValue\fR" 4
+.Ip "Switch:	\fB\-showvalue\fR" 4
+Specifies a boolean value indicating whether or not the current
+value of the scale is to be displayed.
+.Ip "Name:	\fBsliderLength\fR" 4
+.Ip "Class:	\fBSliderLength\fR" 4
+.Ip "Switch:	\fB\-sliderlength\fR" 4
+Specfies the size of the slider, measured in screen units along the slider's
+long dimension.  The value may be specified in any of the forms acceptable
+to \fBTk_GetPixels\fR.
+.Ip "Name:	\fBsliderRelief\fR" 4
+.Ip "Class:	\fBSliderRelief\fR" 4
+.Ip "Switch:	\fB\-sliderrelief\fR" 4
+Specifies the relief to use when drawing the slider, such as \fBraised\fR
+or \fBsunken\fR.
+.Ip "Name:	\fBstate\fR" 4
+.Ip "Class:	\fBState\fR" 4
+.Ip "Switch:	\fB\-state\fR" 4
+Specifies one of three states for the scale:  \fBnormal\fR,
+\fBactive\fR, or \fBdisabled\fR.
+If the scale is disabled then the value may not be changed and the scale
+won't activate.
+If the scale is active, the slider is displayed using the color
+specified by the \fBactiveBackground\fR option.
+.Ip "Name:	\fBtickInterval\fR" 4
+.Ip "Class:	\fBTickInterval\fR" 4
+.Ip "Switch:	\fB\-tickinterval\fR" 4
+Must be a real value.
+Determines the spacing between numerical
+tick marks displayed below or to the left of the slider.
+If 0, no tick marks will be displayed.
+.Ip "Name:	\fBto\fR" 4
+.Ip "Class:	\fBTo\fR" 4
+.Ip "Switch:	\fB\-to\fR" 4
+Specifies a real value corresponding
+to the right or bottom end of the scale.
+This value may be either less than or greater than the \fBfrom\fR option.
+.Ip "Name:	\fBvariable\fR" 4
+.Ip "Class:	\fBVariable\fR" 4
+.Ip "Switch:	\fB\-variable\fR" 4
+Specifies the name of a global variable to link to the scale.  Whenever the
+value of the variable changes, the scale will update to reflect this
+value.
+Whenever the scale is manipulated interactively, the variable
+will be modified to reflect the scale's new value.
+.Ip "Name:	\fBwidth\fR" 4
+.Ip "Class:	\fBWidth\fR" 4
+.Ip "Switch:	\fB\-width\fR" 4
+Specifies the desired narrow dimension of the trough in screen units
+(i.e. any of the forms acceptable to \fBTk_GetPixels\fR).
+For vertical scales this is the trough's width;  for horizontal scales
+this is the trough's height.
+.SH "DESCRIPTION"
+The \fBScale\fR method creates a new window (given by the
+\f(CW$widget\fR argument) and makes it into a scale widget.
+Additional
+options, described above, may be specified on the command line
+or in the option database
+to configure aspects of the scale such as its colors, orientation,
+and relief.  The \fBscale\fR command returns its
+\f(CW$widget\fR argument.  At the time this command is invoked,
+there must not exist a window named \f(CW$widget\fR, but
+\f(CW$widget\fR's parent must exist.
+.PP
+A scale is a widget that displays a rectangular \fItrough\fR and a
+small \fIslider\fR.  The trough corresponds to a range
+of real values (determined by the \fBfrom\fR, \fBto\fR, and
+\fBresolution\fR options),
+and the position of the slider selects a particular real value.
+The slider's position (and hence the scale's value) may be adjusted
+with the mouse or keyboard as described in
+the the section on \fIBINDINGS\fR section below.  Whenever the scale's value is changed, a Tcl
+command is invoked (using the \fBcommand\fR option) to notify
+other interested widgets of the change.
+In addition, the value
+of the scale can be linked to a Tcl variable (using the \fBvariable\fR
+option), so that changes in either are reflected in the other.
+.PP
+Three annotations may be displayed in a scale widget:  a label
+appearing at the top right of the widget (top left for horizontal
+scales), a number displayed just to the left of the slider
+(just above the slider for horizontal scales), and a collection
+of numerical tick marks just to the left of the current value
+(just below the trough for horizontal scales).  Each of these three
+annotations may be enabled or disabled using the
+configuration options.
+.SH "WIDGET METHODS"
+The \fBScale\fR method creates a widget object.
+This object supports the \fBconfigure\fR and \fBcget\fR methods
+described in the \fITk::options\fR manpage which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+Tk::Widget class.
+.PP
+The following additional methods are available for scale widgets:
+.Ip "\fI$scale\fR\->\fBcoords\fR(?\fIvalue\fR?)" 4
+Returns a list whose elements are the x and y coordinates of
+the point along the centerline of the trough that corresponds
+to \fIvalue\fR.
+If \fIvalue\fR is omitted then the scale's current value is used.
+.Ip "\fI$scale\fR\->\fBget\fR(?\fIx, y\fR?)" 4
+If \fIx\fR and \fIy\fR are omitted, returns the current value
+of the scale.  If \fIx\fR and \fIy\fR are specified, they give
+pixel coordinates within the widget;  the command returns
+the scale value corresponding to the given pixel.
+Only one of \fIx\fR or \fIy\fR is used:  for horizontal scales
+\fIy\fR is ignored, and for vertical scales \fIx\fR is ignored.
+.Ip "\fI$scale\fR\->\fBidentify\fR(\fIx, y\fR)" 4
+Returns a string indicating what part of the scale lies under
+the coordinates given by \fIx\fR and \fIy\fR.
+A return value of \fBslider\fR means that the point is over
+the slider;  \fBtrough1\fR means that the point is over the
+portion of the slider above  or to the left of the slider;
+and \fBtrough2\fR means that the point is over the portion
+of the slider below or to the right of the slider.
+If the point isn't over one of these elements, an empty string
+is returned.
+.Ip "\fI$scale\fR\->\fBset\fR(\fIvalue\fR)" 4
+This command is invoked to change the current value of the scale,
+and hence the position at which the slider is displayed.  \fIValue\fR
+gives the new value for the scale.
+The command has no effect if the scale is disabled.
+.SH "BINDINGS"
+Tk automatically creates class bindings for scales that give them
+the following default behavior.
+Where the behavior is different for vertical and horizontal scales,
+the horizontal behavior is described in parentheses.
+.Ip "[1]" 4
+If button 1 is pressed in the trough, the scale's value will
+be incremented or decremented by the value of the \fBresolution\fR
+option so that the slider moves in the direction of the cursor.
+If the button is held down, the action auto-repeats.
+.Ip "[2]" 4
+If button 1 is pressed over the slider, the slider can be dragged
+with the mouse.
+.Ip "[3]" 4
+If button 1 is pressed in the trough with the Control key down,
+the slider moves all the way to the end of its range, in the
+direction towards the mouse cursor.
+.Ip "[4]" 4
+If button 2 is pressed, the scale's value is set to the mouse
+position.  If the mouse is dragged with button 2 down, the scale's
+value changes with the drag.
+.Ip "[5]" 4
+The Up and Left keys move the slider up (left) by the value
+of the \fBresolution\fR option.
+.Ip "[6]" 4
+The Down and Right keys move the slider down (right) by the value
+of the \fBresolution\fR option.
+.Ip "[7]" 4
+Control-Up and Control-Left move the slider up (left) by the
+value of the \fBbigIncrement\fR option.
+.Ip "[8]" 4
+Control-Down and Control-Right move the slider down (right) by the
+value of the \fBbigIncrement\fR option.
+.Ip "[9]" 4
+Home moves the slider to the top (left) end of its range.
+.Ip "[10]" 4
+End moves the slider to the bottom (right) end of its range.
+.Sp
+If the scale is disabled using the \fBstate\fR option then
+none of the above bindings have any effect.
+.Sp
+The behavior of scales can be changed by defining new bindings for
+individual widgets or by redefining the class bindings.
+.SH "KEYWORDS"
+scale, slider, trough, widget
+
+.rn }` ''
+.IX Title "SCALE 1"
+.IX Name "Tk::Scale - Create and manipulate Scale widgets"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "STANDARD OPTIONS"
+
+.IX Header "WIDGET\-SPECIFIC OPTIONS"
+
+.IX Item "Name:	\fBbigIncrement\fR"
+
+.IX Item "Class:	\fBBigIncrement\fR"
+
+.IX Item "Switch:	\fB\-bigincrement\fR"
+
+.IX Item "Name:	\fBcommand\fR"
+
+.IX Item "Class:	\fBCommand\fR"
+
+.IX Item "Switch:	\fB\-command\fR"
+
+.IX Item "Name:	\fBdigits\fR"
+
+.IX Item "Class:	\fBDigits\fR"
+
+.IX Item "Switch:	\fB\-digits\fR"
+
+.IX Item "Name:	\fBfrom\fR"
+
+.IX Item "Class:	\fBFrom\fR"
+
+.IX Item "Switch:	\fB\-from\fR"
+
+.IX Item "Name:	\fBlabel\fR"
+
+.IX Item "Class:	\fBLabel\fR"
+
+.IX Item "Switch:	\fB\-label\fR"
+
+.IX Item "Name:	\fBlength\fR"
+
+.IX Item "Class:	\fBLength\fR"
+
+.IX Item "Switch:	\fB\-length\fR"
+
+.IX Item "Name:	\fBresolution\fR"
+
+.IX Item "Class:	\fBResolution\fR"
+
+.IX Item "Switch:	\fB\-resolution\fR"
+
+.IX Item "Name:	\fBshowValue\fR"
+
+.IX Item "Class:	\fBShowValue\fR"
+
+.IX Item "Switch:	\fB\-showvalue\fR"
+
+.IX Item "Name:	\fBsliderLength\fR"
+
+.IX Item "Class:	\fBSliderLength\fR"
+
+.IX Item "Switch:	\fB\-sliderlength\fR"
+
+.IX Item "Name:	\fBsliderRelief\fR"
+
+.IX Item "Class:	\fBSliderRelief\fR"
+
+.IX Item "Switch:	\fB\-sliderrelief\fR"
+
+.IX Item "Name:	\fBstate\fR"
+
+.IX Item "Class:	\fBState\fR"
+
+.IX Item "Switch:	\fB\-state\fR"
+
+.IX Item "Name:	\fBtickInterval\fR"
+
+.IX Item "Class:	\fBTickInterval\fR"
+
+.IX Item "Switch:	\fB\-tickinterval\fR"
+
+.IX Item "Name:	\fBto\fR"
+
+.IX Item "Class:	\fBTo\fR"
+
+.IX Item "Switch:	\fB\-to\fR"
+
+.IX Item "Name:	\fBvariable\fR"
+
+.IX Item "Class:	\fBVariable\fR"
+
+.IX Item "Switch:	\fB\-variable\fR"
+
+.IX Item "Name:	\fBwidth\fR"
+
+.IX Item "Class:	\fBWidth\fR"
+
+.IX Item "Switch:	\fB\-width\fR"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "WIDGET METHODS"
+
+.IX Item "\fI$scale\fR\->\fBcoords\fR(?\fIvalue\fR?)"
+
+.IX Item "\fI$scale\fR\->\fBget\fR(?\fIx, y\fR?)"
+
+.IX Item "\fI$scale\fR\->\fBidentify\fR(\fIx, y\fR)"
+
+.IX Item "\fI$scale\fR\->\fBset\fR(\fIvalue\fR)"
+
+.IX Header "BINDINGS"
+
+.IX Item "[1]"
+
+.IX Item "[2]"
+
+.IX Item "[3]"
+
+.IX Item "[4]"
+
+.IX Item "[5]"
+
+.IX Item "[6]"
+
+.IX Item "[7]"
+
+.IX Item "[8]"
+
+.IX Item "[9]"
+
+.IX Item "[10]"
+
+.IX Header "KEYWORDS"
+

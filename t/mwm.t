@@ -1,8 +1,7 @@
 BEGIN 
 { 
  $^W = 1; $| = 1; 
- require Tk if ($^O eq 'cygwin');
- if ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))
+ if ($^O eq 'MSWin32')
   {
    print "1..0\n";
    exit;

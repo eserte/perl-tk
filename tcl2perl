@@ -136,7 +136,7 @@ sub callback
     {
      return ['[]',@items] ;
     }
-   warn "Weird callback:".Pretty($op,@items);
+   warn "Weird callback:".pretty($op,@items);
   }
  return ['bindsub',\@stat];
 }
@@ -568,7 +568,7 @@ sub tix_callmethod
 
 sub tix_idle
 {
- my @args = ('->',find_widget(),'afterIdle');
+ my @args = ('->',find_widget(),'DoWhenIdle');
  push(@args,callback(join(' ',@_)));
  return \@args;
 }
@@ -607,7 +607,7 @@ sub tcl_widget
  my ($parent,$name) = ($path =~ /^(.*)\.([^.]+)$/);
  if (defined($parent) && defined($name))
   {
-   unshift(@_,Name => $2);
+   unshift(@_,Name => $2);                                       
    return ['=',expr($path),['->',expr($parent),$kind,&tcl_args]];
   }
  else
@@ -620,7 +620,6 @@ sub tcl_widget
 sub tcl_case
 {
  my @items = ();
- while($_[0] =~ /^-/) { shift } # XXX -glob and -regexp not used
  my $what  = expr(shift(@_));
  my $case  = shift(@_);
  $case = shift(@_) if ($case eq 'in');
@@ -639,7 +638,7 @@ sub tcl_case
    $stat = [block($stat)];
    push(@items,$exp,$stat);
   }
- die Pretty(@case) if (@case);
+ die pretty(@case) if (@case);
  return \@items;
 }
 
@@ -960,7 +959,7 @@ sub subname
 {
  local ($_) = shift;
  croak $_ if (/^&/);
- carp "Weird name ".Pretty($_) if (ref $_);
+ carp "Weird name ".pretty($_) if (ref $_);
  s/^${class}:+// if (defined $class);
  s/^${prefix}:+// if (defined $prefix);
  s/^config-//;
@@ -1008,7 +1007,7 @@ sub output_if
  if (@_ <= 3)
   {
    my $cond = $_[0];
-   croak Pretty($name,@_) unless defined $cond;
+   croak pretty($name,@_) unless defined $cond;
    if (ref($cond) && @$cond == 2 && $cond->[0] eq '!')
     {
      $name = 'unless' if ($name eq 'if');

@@ -1,0 +1,434 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH BALLOON 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::Balloon \- pop up help balloons.
+.SH "SYNOPSIS"
+.PP
+.Vb 3
+\&    use Tk::Balloon;
+\&    ...
+\&    $b = $top->Balloon(-statusbar => $status_bar_widget);
+.Ve
+.Vb 4
+\&    # Normal Balloon:
+\&    $b->attach($widget,
+\&               -balloonmsg => "Balloon help message",
+\&               -statusmsg => "Status bar message");
+.Ve
+.Vb 7
+\&    # Balloon attached to entries in a menu widget:
+\&    $b->attach($menu, -state => 'status',
+\&                      -msg => ['first menu entry',
+\&                               'second menu entry',
+\&                               ...
+\&                              ],
+\&              );
+.Ve
+.Vb 7
+\&    # Balloon attached to individual items in a canvas widget:
+\&    $b->attach($canvas, -balloonposition => 'mouse',
+\&                        -msg => {'item1' => 'msg1',
+\&                                 'tag2'  => 'msg2',
+\&                                  ...
+\&                                },
+\&              );
+.Ve
+.SH "DESCRIPTION"
+\fBBalloon\fR provides the framework to create and attach help
+balloons to various widgets so that when the mouse pauses over the
+widget for more than a specified amount of time, a help balloon is
+popped up.
+.Sh "Balloons and Menus"
+If the balloon is attached to a \fBMenu\fR widget and the message arguments
+are array references, then each element in the array will be the
+message corresponding to a menu entry. The balloon message will then
+be shown for the entry which the mouse pauses over. Otherwise it is
+assumed that the balloon is to be attached to the \fBMenu\fR as a whole.
+You can have separate status and balloon messages just like normal
+balloons.
+.Sh "Balloons and Canvases"
+If the balloon is attached to a \fBCanvas\fR widget and the message
+arguments are hash references, then each hash key should correspond to
+a canvas item \s-1ID\s0 or tag and the associated value will correspond to the
+message for that canvas item. The balloon message will then be shown for
+the current item (the one at the position of the mouse). Otherwise it is
+assumed that the balloon is to be attached to the \fBCanvas\fR as a whole.
+You can have separate status and balloon messages just like normal
+balloons.
+.SH "OPTIONS"
+\fBBalloon\fR accepts all of the options that the \fBFrame\fR widget
+accepts. In addition, the following options are also recognized.
+.Ip "\fB\-initwait\fR" 4
+Specifies the amount of time to wait without activity before
+popping up a help balloon. Specified in milliseconds. Defaults to
+350 milliseconds. This applies to both the popped up balloon and
+the status bar message.
+.Ip "\fB\-state\fR" 4
+Can be one of \fB'balloon\*(R'\fR, \fB'status\*(R'\fR, \fB'both\*(R'\fR or \fB'none\*(R'\fR
+indicating that the help balloon, status bar help, both or none
+respectively should be activated when the mouse pauses over the
+client widget. Default is \fB'both\*(R'\fR.
+.Ip "\fB\-statusbar\fR" 4
+Specifies the widget used to display the status message. This
+widget should accept the \fB\-text\fR option and is typically a
+\fBLabel\fR. If the widget accepts the \fB\-textvariable\fR option and
+that option is defined then it is used instead of the \fB\-text\fR
+option.
+.Ip "\fB\-balloonposition\fR" 4
+Can be one of \fB'widget\*(R'\fR or \fB'mouse\*(R'\fR. It controls where the balloon
+will popup. \fB'widget\*(R'\fR makes the balloon appear at the lower right
+corner of the widget it is attached to (default), and \fB'mouse\*(R'\fR makes
+the balloon appear below and to the right of the current mouse position.
+.Ip "\fB\-postcommand\fR" 4
+This option takes a \fB\s-1CODE\s0\fR reference which will be executed before the
+balloon and statusbar messages are displayed and should return a true
+or false value to indicate whether you want the balloon to be displayed
+or not. This also lets you control where the balloon is positioned by
+returning a true value that looks like \fIX,Y\fR (matches this regular
+expression: \f(CW/^(\ed+),(\ed+)$/\fR). If the postcommand returns a value that
+matches that re then those coordinates will be used as the position to
+post the balloon. \fIWarning:\fR this subroutine should return quickly or
+the balloon response will appear slow.
+.Ip "\fB\-cancelcommand\fR" 4
+This option takes a \fB\s-1CODE\s0\fR reference which will be executed before the
+balloon and statusbar messages are canceled and should return a true
+or false value to indicate whether you want the balloon to be canceled
+or not. \fIWarning:\fR this subroutine should return quickly or the balloon
+response will appear slow.
+.Ip "\fB\-motioncommand\fR" 4
+This option takes a \fB\s-1CODE\s0\fR reference which will be executed for any
+motion event and should return a true or false value to indicate
+whether the currently displayed balloon should be canceled (deactivated).
+If it returns true then the balloon will definitely be canceled, if it
+returns false then it may still be canceled depending the internal rules.
+\fINote:\fR a new balloon may be posted after the \fB\-initwait\fR time
+interval, use the \fB\-postcommand\fR option to control that behavior.
+\fIWarning:\fR the subroutine should be extremely fast or the balloon
+response will appear slow and consume a lot of \s-1CPU\s0 time (it is executed
+every time the mouse moves over the widgets the balloon is attached to).
+.SH "METHODS"
+The \fBBalloon\fR widget supports only three non-standard methods:
+.Sh "\fBattach(\fR\fIwidget\fR, \fIoptions\fR\fB)\fR"
+Attaches the widget indicated by \fIwidget\fR to the help system. The
+allowed options are:
+.Ip "\fB\-statusmsg\fR" 4
+The argument is the message to be shown on the status bar when the
+mouse pauses over this client. If this is not specified, but
+\fB\-msg\fR is specified then the message displayed on the status bar
+is the same as the argument for \fB\-msg\fR. If you give it a scalar
+reference then it is dereferenced before being displayed. Useful
+if the postcommand is used to change the message.
+.Ip "\fB\-balloonmsg\fR" 4
+The argument is the message to be displayed in the balloon that
+will be popped up when the mouse pauses over this client. As with
+\fB\-statusmsg\fR if this is not specified, then it takes its value
+from the \fB\-msg\fR specification if any. If neither \fB\-balloonmsg\fR
+nor \fB\-msg\fR are specified, or they are the empty string then
+no balloon is popped up instead of an empty balloon. If you
+give it a scalar reference then it is dereferenced before being
+displayed. Useful if the postcommand is used to change the message.
+.Ip "\fB\-msg\fR" 4
+The catch-all for \fB\-statusmsg\fR and \fB\-balloonmsg\fR. This is a
+convenient way of specifying the same message to be displayed in
+both the balloon and the status bar for the client.
+.Ip "\fB\-initwait\fR" 4
+.Ip "\fB\-state\fR" 4
+.Ip "\fB\-statusbar\fR" 4
+.Ip "\fB\-balloonposition\fR" 4
+.Ip "\fB\-postcommand\fR" 4
+.Ip "\fB\-cancelcommand\fR" 4
+.Ip "\fB\-motioncommand\fR" 4
+These options allow you to override the balloon's default value for
+those option for some of the widgets it is attached to. It accepts the
+same values as above and will default to the \fBBalloon\fR's value.
+.Sh "\fBdetach(\fR\fIwidget\fR\fB)\fR"
+Detaches the specified \fIwidget\fR from the help system.
+.Sh "\fBdestroy\fR"
+Destroys the specified balloon.
+.SH "EXAMPLES"
+See the balloon demo included with the widget demo script that came with
+the distribution for examples on various ways to use balloons.
+.SH "NOTES"
+Because of the overhead associated with each balloon you create (from
+tracking the mouse movement to know when to activate and deactivate
+them) you will see the best performance (low CPU consumption) if you
+create as few balloons as possible and attach them to as many widgets
+as you can.  In other words, don't create a balloon for each widget
+you want to attach one to.
+.SH "CAVEATS"
+Pressing any button will deactivate (cancel) the current balloon,
+if one exists. You can usually make the balloon reappear by moving
+the mouse a little. Creative use of the 3 command options can help
+you out also. If the mouse is over the balloon when a menu is unposted
+then the balloon will remain until you move off of it.
+.SH "BUGS"
+Hopefully none, probably some.
+.SH "AUTHORS"
+\fBRajappa Iyer\fR rsi@earthling.net did the original coding.
+.PP
+\fBJason A. Smith\fR <smithj4@rpi.edu> added support for menus and made some
+other enhancements.
+.PP
+\fBSlaven Rezic\fR <eserte@cs.tu-berlin.de> added support for canvas items.
+.SH "HISTORY"
+The code and documentation was derived from Balloon.tcl from the
+Tix4.0 distribution by Ioi Lam and modified by the above mentioned
+authors. This code may be redistributed under the same terms as Perl.
+
+.rn }` ''
+.IX Title "BALLOON 1"
+.IX Name "Tk::Balloon - pop up help balloons."
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Subsection "Balloons and Menus"
+
+.IX Subsection "Balloons and Canvases"
+
+.IX Header "OPTIONS"
+
+.IX Item "\fB\-initwait\fR"
+
+.IX Item "\fB\-state\fR"
+
+.IX Item "\fB\-statusbar\fR"
+
+.IX Item "\fB\-balloonposition\fR"
+
+.IX Item "\fB\-postcommand\fR"
+
+.IX Item "\fB\-cancelcommand\fR"
+
+.IX Item "\fB\-motioncommand\fR"
+
+.IX Header "METHODS"
+
+.IX Subsection "\fBattach(\fR\fIwidget\fR, \fIoptions\fR\fB)\fR"
+
+.IX Item "\fB\-statusmsg\fR"
+
+.IX Item "\fB\-balloonmsg\fR"
+
+.IX Item "\fB\-msg\fR"
+
+.IX Item "\fB\-initwait\fR"
+
+.IX Item "\fB\-state\fR"
+
+.IX Item "\fB\-statusbar\fR"
+
+.IX Item "\fB\-balloonposition\fR"
+
+.IX Item "\fB\-postcommand\fR"
+
+.IX Item "\fB\-cancelcommand\fR"
+
+.IX Item "\fB\-motioncommand\fR"
+
+.IX Subsection "\fBdetach(\fR\fIwidget\fR\fB)\fR"
+
+.IX Subsection "\fBdestroy\fR"
+
+.IX Header "EXAMPLES"
+
+.IX Header "NOTES"
+
+.IX Header "CAVEATS"
+
+.IX Header "BUGS"
+
+.IX Header "AUTHORS"
+
+.IX Header "HISTORY"
+

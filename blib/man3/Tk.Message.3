@@ -1,0 +1,337 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH MESSAGE 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::Message \- Create and manipulate Message widgets
+.SH "SYNOPSIS"
+\fI$message\fR = \fI$parent\fR\->\fBMessage\fR(?\fIoptions\fR?);
+.SH "STANDARD OPTIONS"
+\fB\-anchor\fR	\fB\-font\fR	\fB\-highlightthickness\fR	\fB\-takefocus\fR
+\fB\-background\fR	\fB\-foreground\fR	\fB\-padx\fR	\fB\-text\fR
+\fB\-borderwidth\fR	\fB\-highlightbackground\fR	\fB\-pady\fR	\fB\-textvariable\fR
+\fB\-cursor\fR	\fB\-highlightcolor\fR	\fB\-relief\fR	\fB\-width\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "WIDGET\-SPECIFIC OPTIONS"
+.Ip "Name:	\fBaspect\fR" 4
+.Ip "Class:	\fBAspect\fR" 4
+.Ip "Switch:	\fB\-aspect\fR" 4
+Specifies a non-negative integer value indicating desired
+aspect ratio for the text.  The aspect ratio is specified as
+100*width/height.  100 means the text should
+be as wide as it is tall, 200 means the text should
+be twice as wide as it is tall, 50 means the text should
+be twice as tall as it is wide, and so on.
+Used to choose line length for text if \fBwidth\fR option
+isn't specified.
+Defaults to 150.
+.Ip "Name:	\fBjustify\fR" 4
+.Ip "Class:	\fBJustify\fR" 4
+.Ip "Switch:	\fB\-justify\fR" 4
+Specifies how to justify lines of text.
+Must be one of \fBleft\fR, \fBcenter\fR, or \fBright\fR.  Defaults
+to \fBleft\fR.
+This option works together with the \fBanchor\fR, \fBaspect\fR,
+\fBpadX\fR, \fBpadY\fR, and \fBwidth\fR options to provide a variety
+of arrangements of the text within the window.
+The \fBaspect\fR and \fBwidth\fR options determine the amount of
+screen space needed to display the text.
+The \fBanchor\fR, \fBpadX\fR, and \fBpadY\fR options determine where this
+rectangular area is displayed within the widget's window, and the
+\fBjustify\fR option determines how each line is displayed within that
+rectangular region.
+For example, suppose \fBanchor\fR is \fBe\fR and \fBjustify\fR is
+\fBleft\fR, and that the message window is much larger than needed
+for the text.
+The the text will displayed so that the left edges of all the lines
+line up and the right edge of the longest line is \fBpadX\fR from
+the right side of the window;  the entire text block will be centered
+in the vertical span of the window.
+.Ip "Name:	\fBwidth\fR" 4
+.Ip "Class:	\fBWidth\fR" 4
+.Ip "Switch:	\fB\-width\fR" 4
+Specifies the length of lines in the window.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+If this option has a value greater than zero then the \fBaspect\fR
+option is ignored and the \fBwidth\fR option determines the line
+length.
+If this option has a value less than or equal to zero, then
+the \fBaspect\fR option determines the line length.
+.SH "DESCRIPTION"
+The \fBMessage\fR method creates a new window (given by the
+\f(CW$widget\fR argument) and makes it into a message widget.
+Additional
+options, described above, may be specified on the command line
+or in the option database
+to configure aspects of the message such as its colors, font,
+text, and initial relief.  The \fBmessage\fR command returns its
+\f(CW$widget\fR argument.  At the time this command is invoked,
+there must not exist a window named \f(CW$widget\fR, but
+\f(CW$widget\fR's parent must exist.
+.PP
+A message is a widget that displays a textual string.  A message
+widget has three special features.  First, it breaks up
+its string into lines in order to produce a given aspect ratio
+for the window.  The line breaks are chosen at word boundaries
+wherever possible (if not even a single word would fit on a
+line, then the word will be split across lines).  Newline characters
+in the string will force line breaks;  they can be used, for example,
+to leave blank lines in the display.
+.PP
+The second feature of a message widget is justification.  The text
+may be displayed left-justified (each line starts at the left side of
+the window), centered on a line-by-line basis, or right-justified
+(each line ends at the right side of the window).
+.PP
+The third feature of a message widget is that it handles control
+characters and non-printing characters specially.  Tab characters
+are replaced with enough blank space to line up on the next
+8-character boundary.  Newlines cause line breaks.  Other control
+characters (ASCII code less than 0x20) and characters not defined
+in the font are displayed as a four-character sequence \fB\ex\fR\fIhh\fR where
+\fIhh\fR is the two-digit hexadecimal number corresponding to
+the character.  In the unusual case where the font doesn't contain
+all of the characters in ``0123456789abcdef\ex'\*(R' then control
+characters and undefined characters are not displayed at all.
+.SH "WIDGET METHODS"
+The \fBMessage\fR method creates a widget object.
+This object supports the \fBconfigure\fR and \fBcget\fR methods
+described in the \fITk::options\fR manpage which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+Tk::Widget class.
+.SH "DEFAULT BINDINGS"
+When a new message is created, it has no default event bindings:
+messages are intended for output purposes only.
+.SH "BUGS"
+Tabs don't work very well with text that is centered or right-justified.
+The most common result is that the line is justified wrong.
+.SH "KEYWORDS"
+message, widget
+
+.rn }` ''
+.IX Title "MESSAGE 1"
+.IX Name "Tk::Message - Create and manipulate Message widgets"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "STANDARD OPTIONS"
+
+.IX Header "WIDGET\-SPECIFIC OPTIONS"
+
+.IX Item "Name:	\fBaspect\fR"
+
+.IX Item "Class:	\fBAspect\fR"
+
+.IX Item "Switch:	\fB\-aspect\fR"
+
+.IX Item "Name:	\fBjustify\fR"
+
+.IX Item "Class:	\fBJustify\fR"
+
+.IX Item "Switch:	\fB\-justify\fR"
+
+.IX Item "Name:	\fBwidth\fR"
+
+.IX Item "Class:	\fBWidth\fR"
+
+.IX Item "Switch:	\fB\-width\fR"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "WIDGET METHODS"
+
+.IX Header "DEFAULT BINDINGS"
+
+.IX Header "BUGS"
+
+.IX Header "KEYWORDS"
+

@@ -1,0 +1,773 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH TLIST 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::TList \- Create and manipulate Tix Tabular List widgets
+.SH "SYNOPSIS"
+\ \ \ \ \fI$tlist\fR = \fI$parent\fR\->\fBTList\fR(?\fIoptions\fR?);
+.SH "SUPER\-CLASS"
+None.
+.SH "STANDARD OPTIONS"
+\fB\-background\fR	\fB\-borderwidth\fR	\fB\-class\fR	\fB\-cursor\fR	\fB\-foreground\fR
+\fB\-font\fR	\fB\-height\fR	\fB\-highlightcolor\fR	\fB\-highlightthickness\fR
+\fB\-relief\fR	\fB\-selectbackground\fR	\fB\-selectforeground\fR
+\fB\-xscrollcommand\fR	\fB\-yscrollcommand\fR	\fB\-width\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "WIDGET\-SPECIFIC OPTIONS"
+.Ip "Name:	\fBbrowsecmd\fR" 4
+.Ip "Class:	\fBBrowseCmd\fR" 4
+.Ip "Switch:	\fB\-browsecmd\fR" 4
+Specifies a perl/Tk \fBcallback\fR to be executed when the user browses through the
+entries in the TList widget.
+.Ip "Name:	\fBcommand\fR" 4
+.Ip "Class:	\fBCommand\fR" 4
+.Ip "Switch:	\fB\-command\fR" 4
+Specifies the perl/Tk \fBcallback\fR to be executed when the user invokes a list
+entry in the TList widget. Normally the user invokes a list
+entry by double-clicking it or pressing the Return key.
+.Ip "Name:	\fBforeground\fR" 4
+.Ip "Class:	\fBForeground\fR" 4
+.Ip "Switch:	\fB\-foreground\fR" 4
+.Ip "Alias:	\fB\-fg\fR" 4
+Specifies the default foreground color for the list entries.
+.Ip "Name:	\fBheight\fR" 4
+.Ip "Class:	\fBHeight\fR" 4
+.Ip "Switch:	\fB\-height\fR" 4
+Specifies the desired height for the window in number of characters.
+.Ip "Name:	\fBitemType\fR" 4
+.Ip "Class:	\fBItemType\fR" 4
+.Ip "Switch:	\fB\-itemtype\fR" 4
+Specifies the default type of display item for this TList widget. When
+you call the \fBinsert\fR methods, display items of this
+type will be created if the \fB\-itemtype\fR option is not specified.
+.Ip "Name:	\fBorient\fR" 4
+.Ip "Class:	\fBOrient\fR" 4
+.Ip "Switch:	\fB\-orient\fR" 4
+Specifies the order of tabularizing the list entries. When set to
+\*(L"\fBvertical\fR\*(R", the entries are arranged in a column, from top to
+bottom. If the entries cannot be contained in one column, the
+remaining entries will go to the next column, and so on. When set to
+\*(L"\fBhorizontal\fR\*(R", the entries are arranged in a row, from left to
+right. If the entries cannot be contained in one row, the remaining
+entries will go to the next row, and so on.
+.Ip "Name:	\fBpadX\fR" 4
+.Ip "Class:	\fBPad\fR" 4
+.Ip "Switch:	\fB\-padx\fR" 4
+The default horizontal padding for list entries.
+.Ip "Name:	\fBpadY\fR" 4
+.Ip "Class:	\fBPad\fR" 4
+.Ip "Switch:	\fB\-padx\fR" 4
+The default vertical padding for list entries.
+.Ip "Name:	\fBselectBackground\fR" 4
+.Ip "Class:	\fBSelectBackground\fR" 4
+.Ip "Switch:	\fB\-selectbackground\fR" 4
+Specifies the background color for the selected list entries.
+.Ip "Name:	\fBselectBorderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-selectborderwidth\fR" 4
+Specifies a non-negative value indicating the width of the 3-D border
+to draw around selected items.  The value may have any of the forms
+acceptable to \fBTk_GetPixels\fR.
+.Ip "Name:	\fBselectForeground\fR" 4
+.Ip "Class:	\fBSelectForeground\fR" 4
+.Ip "Switch:	\fB\-selectforeground\fR" 4
+Specifies the foreground color for the selected list entries.
+.Ip "Name:	\fBselectMode\fR" 4
+.Ip "Class:	\fBSelectMode\fR" 4
+.Ip "Switch:	\fB\-selectmode\fR" 4
+Specifies one of several styles for manipulating the selection.  The
+value of the option may be arbitrary, but the default bindings expect
+it to be either \fBsingle\fR, \fBbrowse\fR, \fBmultiple\fR, or
+\fBextended\fR; the default value is \fBsingle\fR.
+.Ip "Name:	\fBsizeCmd\fR" 4
+.Ip "Class:	\fBSizeCmd\fR" 4
+.Ip "Switch:	\fB\-sizecmd\fR" 4
+Specifies a perl/Tk \fBcallback\fR to be called whenever the TList widget
+changes its size. This command can be useful to implement \*(L"user scroll
+bars when needed\*(R" features.
+.Ip "Name:	\fBstate\fR" 4
+.Ip "Class:	\fBState\fR" 4
+.Ip "Switch:	\fB\-state\fR" 4
+Specifies whether the TList command should react to user actions. When
+set to \*(L"\fBnormal\fR\*(R", the TList reacts to user actions in the normal
+way. When set to \*(L"\fBdisabled\fR\*(R", the TList can only be scrolled, but
+its entries cannot be selected or activated.
+.Ip "Name:	\fBwidth\fR" 4
+.Ip "Class:	\fBWidth\fR" 4
+.Ip "Switch:	\fB\-width\fR" 4
+Specifies the desired width for the window in characters.
+.SH "DESCRIPTION"
+The \fBTList\fR method creates a new window (given by the
+\f(CW$widget\fR argument) and makes it into a TList widget.
+Additional options, described above, may be specified on the command
+line or in the option database to configure aspects of the
+TList widget such as its cursor and relief.
+.PP
+The TList widget can be used to display data in a tabular format. The
+list entries of a TList widget are similar to the entries in the Tk
+listbox widget. The main differences are (1) the TList widget can
+display the list entries in a two dimensional format and (2) you can
+use graphical images as well as multiple colors and fonts for
+the list entries.
+.PP
+Each list entry is identified by an \fBindex\fR, which can be in the
+following forms:
+.Ip "\fInumber\fR" 4
+An integer that indicates the position of the entry in the list. 0
+means the first position, 1 means the second position, and so on.
+.Ip "\fBend\fR" 4
+Indicates the end of the listbox. For some commands this means just
+after the last entry; for other commands it means the last entry.
+.Ip "\fB@\fR\fIx\fR,\fIy\fR" 4
+Indicates the element that covers the point in the listbox window
+specified by x and y (in pixel coordinates). If no element covers that
+point, then the closest element to that point is used.
+.SH "DISPLAY ITEMS"
+Each list entry in an TList widget is associated with a \fBdisplay\fR
+item.  The display item determines what visual information should
+be displayed for this list entry. Please see the \fITk::DItem\fR manpage
+for a list of all display items.
+.PP
+When a list entry is created by the \fBinsert\fR command, the type of
+its display item is determined by the \fB\-itemtype\fR option passed
+to these commands. If the \fB\-itemtype\fR is omitted, then by default
+the type specified by this TList widget's \fB\-itemtype\fR option is
+used.
+.SH "WIDGET METHODS"
+The \fBTList\fR method creates a widget object.
+.PP
+This object supports the \fBconfigure\fR and \fBcget\fR methods
+described in the \fITk::options\fR manpage which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+Tk::Widget class.
+.PP
+The following additional methods are available for TList widgets:
+.Ip "\fI$tlist\fR\->\fBanchorSet\fR(\fIindex\fR)" 4
+Sets the anchor to the list entry identified by \fIindex\fR. The
+anchor is the end of the selection that is fixed while dragging out a
+selection with the mouse.
+.Ip "\fI$tlist\fR\->\fBanchorClear\fR" 4
+Removes the anchor, if any, from this TList widget. This only removes
+the surrounding highlights of the anchor entry and does not affect its
+selection status.
+.Ip "\fI$tlist\fR\->\fBdelete\fR(\fIfrom, \fR?\fIto\fR?)" 4
+Deletes one or more list entries between the two entries specified by
+the indices \fIfrom\fR and \fIto\fR. If \fIto\fR is not specified, deletes
+the single entry specified by \fIfrom\fR.
+.Ip "\fI$tlist\fR\->\fBdragsiteSet\fR(\fIindex\fR)" 4
+Sets the dragsite to the list entry identified by
+\fIindex\fR. The dragsite is used to indicate the source of a
+drag-and-drop action. Currently drag-and-drop functionality has not
+been implemented in Tix yet.
+.Ip "\fI$tlist\fR\->\fBdragsiteClear\fR" 4
+Remove the dragsite, if any, from the this TList widget. This only
+removes the surrounding highlights of the dragsite entry and does not
+affect its selection status.
+.Ip "\fI$tlist\fR\->\fBdropsiteSet\fR(\fIindex\fR)" 4
+Sets the dropsite to the list entry identified by \fIindex\fR. The
+dropsite is used to indicate the target of a drag-and-drop
+action. Currently drag-and-drop functionality has not been implemented
+in Tix yet.
+.Ip "\fI$tlist\fR\->\fBdropsiteClear\fR" 4
+Remove the dropsite, if any, from the this TList widget. This only
+removes the surrounding highlights of the dropsite entry and does not
+affect its selection status.
+.Ip "\fI$tlist\fR\->\fBentrycget\fR(\fIindex, option\fR)" 4
+Returns the current value of the configuration option given by
+\fIoption\fR for the entry indentfied by \fIindex\fR. \fIOption\fR may
+have any of the values accepted by the \fBinsert\fR method.
+.Ip "\fI$tlist\fR\->\fBentryconfigure\fR(\fIindex, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?)" 4
+Query or modify the configuration options of the list entry identified
+by \fIindex\fR. If no \fIoption\fR is specified, returns a list
+describing all of the available options for \fIindex\fR (see
+\fBTk_ConfigureInfo\fR for information on the format of this list). If
+\fIoption\fR is specified with no \fIvalue\fR, then the method
+returns a list describing the one named option (this list will be
+identical to the corresponding sublist of the value returned if no
+\fIoption\fR is specified). If one or more \fIoption-value\fR pairs
+are specified, then the command modifies the given \fIoption\fR\|(s) to have
+the given \fIvalue\fR\|(s); in this case the method returns an empty string.
+\fIOption\fR may have any of the values accepted by the \fBinsert\fR
+method. The exact set of options depends on the
+value of the \fB\-itemtype\fR option passed to the the \fBinsert\fR
+method when this list entry is created.
+.Ip "\fI$tlist\fR\->\fBinsert\fR(\fIindex, \fR?\fIoption, value, ...\fR?)" 4
+Creates a new list entry at the position indicated by \fIindex\fR. The
+following configuration options can be given to configure the list
+entry:
+.Ip "\fB\-itemtype\fR => \fItype\fR" 12
+Specifies the type of display item to be display for the new list
+entry. \fItype\fR must be a valid display item type. Currently the
+available display item types are \fBimage\fR, \fBimagetext\fR,
+\fBtext\fR, and \fI$widget\fR. If this option is not specified, then by
+default the type specified by this TList widget's \fB\-itemtype\fR
+option is used.
+.Ip "\fB\-state\fR => \fIstate\fR" 12
+Specifies whether this entry can be selected or invoked by the user.
+Must be either \fBnormal\fR or \fBdisabled\fR.
+.Ip "\fB\-data\fR => \fIdata\fR" 12
+Arbitrary data to be associated with the entry (a perl scalar value).
+.Sp
+The \fBinsert\fR method accepts additional configuration options
+to configure the display item associated with this list entry. The set
+of additional configuration options depends on the type of the display
+item given by the \fB\-itemtype\fR option. Please see
+the \fITk::DItem\fR manpage for a list of the configuration options for
+each of the display item types.
+.Ip "\fI$tlist\fR\->\fBinfo\fR(\fIoption, \fR\fIarg, ...\fR)" 4
+Query information about the TList widget. \fIoption\fR can be one
+of the following:
+.Ip "\fI$tlist\fR\->\fBinfo\fR(\fBanchor, \fR\fIindex\fR)" 12
+Returns the index of the current anchor, if any, of the TList
+widget. If the anchor is not set, returns the empty string.
+.Ip "\fI$tlist\fR\->\fBinfo\fR(\fBdragsite, \fR\fIindex\fR)" 12
+Returns the index of the current dragsite, if any, of the TList
+widget. If the dragsite is not set, returns the empty string.
+.Ip "\fI$tlist\fR\->\fBinfo\fR(\fBdropsite, \fR\fIindex\fR)" 12
+Returns the index of the current dropsite, if any, of the TList
+widget. If the dropsite is not set, returns the empty string.
+.Ip "\fI$tlist\fR\->\fBinfo\fR(\fBselection\fR)" 12
+Returns a list of selected elements in the TList widget. If no entries
+are selected, returns an empty string.
+.Ip "\fI$tlist\fR\->\fBnearest\fR(\fIx, y\fR)" 4
+Given an \fI(x,y)\fR coordinate within the TList window, this command
+returns the index of the TList element nearest to that coordinate.
+.Ip "\fI$tlist\fR\->\fBsee\fR(\fIindex\fR)" 4
+Adjust the view in the TList so that the entry given by \fIindex\fR is
+visible. If the entry is already visible then the command has no
+effect; otherwise TList scrolls to bring the element into view at the edge
+to which it is nearest.
+.Ip "\fI$tlist\fR\->\fBselection\fR(\fIoption, \fR\fIarg, ...\fR)" 4
+This command is used to adjust the selection within a TList widget. It
+has several forms, depending on \fIoption\fR:
+.Ip "\fI$tlist\fR\->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?)" 12
+When no extra arguments are given, deselects all of the list \fIentrie\fR\|(s)
+in this TList widget. When only \fIfrom\fR is given, only the list
+entry identified by \fIfrom\fR is deselected. When both \fIfrom\fR and
+\fIto\fR are given, deselects all of the list \fIentrie\fR\|(s) between
+between \fIfrom\fR and \fIto\fR, inclusive, without affecting the
+selection state of entries outside that range.
+.Ip "\fI$tlist\fR\->\fBselectionIncludes\fR(\fIindex\fR)" 12
+Returns 1 if the list entry indicated by \fIindex\fR is currently
+selected; returns 0 otherwise.
+.Ip "\fI$tlist\fR\->\fBselectionSet\fR(\fIfrom, \fR?\fIto\fR?)" 12
+Selects all of the list \fIentrie\fR\|(s) between between \fIfrom\fR and
+\fIto\fR, inclusive, without affecting the selection state of entries
+outside that range. When only \fIfrom\fR is given, only the list entry
+identified by \fIfrom\fR is selected.
+.Ip "\fI$tlist\fR\->\fBxview\fR(\fIargs\fR)" 4
+This command is used to query and change the horizontal position of the
+information in the widget's window. It can take any of the following
+forms:
+.Ip "\fI$tlist\fR\->\fBxview\fR" 12
+Returns a list containing two elements.  Each element is a real
+fraction between 0 and 1; together they describe the horizontal span
+that is visible in the window.  For example, if the first element is
+0.2 and the second element is 0.6, 20% of the TList entry is
+off-screen to the left, the middle 40% is visible in the window, and
+40% of the entry is off-screen to the right. These are the same values
+passed to scrollbars via the \fB\-xscrollcommand\fR option.
+.Ip "\fI$tlist\fR\->\fBxview\fR(\fIindex\fR)" 12
+Adjusts the view in the window so that the list entry identified by
+\fIindex\fR is aligned to the left edge of the window.
+.Ip "\fI$tlist\fR\->\fBxviewMoveto\fR(\fIfraction\fR)" 12
+Adjusts the view in the window so that \fIfraction\fR of the total
+width of the TList is off-screen to the left. \fIfraction\fR must be
+a fraction between 0 and 1.
+.Ip "\fI$tlist\fR\->\fBxviewScroll\fR(\fInumber, what\fR)" 12
+This command shifts the view in the window left or right according to
+\fInumber\fR and \fIwhat\fR. \fINumber\fR must be an integer.
+\fIWhat\fR must be either \fBunits\fR or \fBpages\fR or an
+abbreviation of one of these. If \fIwhat\fR is \fBunits\fR, the view
+adjusts left or right by \fInumber\fR character units (the width of
+the \fB0\fR character) on the display; if it is \fBpages\fR then the
+view adjusts by \fInumber\fR screenfuls. If \fInumber\fR is negative
+then characters farther to the left become visible; if it is positive
+then characters farther to the right become visible.
+.Ip "\fI$tlist\fR\->\fByview\fR(\fI?args\fR?)" 4
+This command is used to query and change the vertical position of the
+entries in the widget's window. It can take any of the following forms:
+.Ip "\fI$tlist\fR\->\fByview\fR" 12
+Returns a list containing two elements, both of which are real
+fractions between 0 and 1.  The first element gives the position of
+the list element at the top of the window, relative to the TList as a
+whole (0.5 means it is halfway through the TList, for example).  The
+second element gives the position of the list entry just after the
+last one in the window, relative to the TList as a whole.  These are
+the same values passed to scrollbars via the \fB\-yscrollcommand\fR
+option.
+.Ip "\fI$tlist\fR\->\fByview\fR(\fIindex\fR)" 12
+Adjusts the view in the window so that the list entry given by
+\fIindex\fR is displayed at the top of the window.
+.Ip "\fI$tlist\fR\->\fByviewMoveto\fR(\fIfraction\fR)" 12
+Adjusts the view in the window so that the list entry given by
+\fIfraction\fR appears at the top of the window. \fIFraction\fR is a
+fraction between 0 and 1; 0 indicates the first entry in the TList,
+0.33 indicates the entry one-third the way through the TList, and so
+on.
+.Ip "\fI$tlist\fR\->\fByviewScroll\fR(\fInumber, what\fR)" 12
+This command adjust the view in the window up or down according to
+\fInumber\fR and \fIwhat\fR.  \fINumber\fR must be an integer.
+\fIWhat\fR must be either \fBunits\fR or \fBpages\fR.  If \fIwhat\fR
+is \fBunits\fR, the view adjusts up or down by \fInumber\fR lines; if
+it is \fBpages\fR then the view adjusts by \fInumber\fR screenfuls.
+If \fInumber\fR is negative then earlier entries become visible; if
+it is positive then later entries become visible.
+.SH "BINDINGS"
+.Ip "[1]" 4
+If the \fB\-selectmode\fR is \*(L"browse\*(R", when the user drags the mouse
+pointer over the list entries, the entry under the pointer will be
+highlighted and the \fB\-browsecmd\fR procedure will be called with
+one parameter, the index of the highlighted entry. Only one entry
+can be highlighted at a time. The \fB\-command\fR procedure will be
+called when the user double-clicks on a list entry.
+.Ip "[2]" 4
+If the \fB\-selectmode\fR is \*(L"single\*(R", the entries will only be
+highlighted by mouse <ButtonRelease-1> events. When a new list entry
+is highlighted, the \fB\-browsecmd\fR procedure will be called with
+one parameter indicating the highlighted list entry. The
+\fB\-command\fR procedure will be called when the user double-clicks
+on a list entry.
+.Ip "[3]" 4
+If the \fB\-selectmode\fR is \*(L"multiple\*(R", when the user drags the mouse
+pointer over the list entries, all the entries under the pointer will
+be highlighted. However, only a contiguous region of list entries can
+be selected. When the highlighted area is changed, the
+\fB\-browsecmd\fR procedure will be called with an undefined
+parameter. It is the responsibility of the \fB\-browsecmd\fR procedure
+to find out the exact highlighted selection in the TList. The
+\fB\-command\fR procedure will be called when the user double-clicks
+on a list entry.
+.Ip "[4]" 4
+If the \fB\-selectmode\fR is \*(L"extended\*(R", when the user drags the mouse
+pointer over the list entries, all the entries under the pointer will
+be highlighted. The user can also make disjointed selections using
+<Control-ButtonPress-1>. When the highlighted area is changed, the
+\fB\-browsecmd\fR procedure will be called with an undefined
+parameter. It is the responsibility of the \fB\-browsecmd\fR procedure
+to find out the exact highlighted selection in the TList. The
+\fB\-command\fR procedure will be called when the user double-clicks
+on a list entry.
+.SH "EXAMPLE"
+This example demonstrates how to use an TList to store a list of
+numbers:
+.PP
+.Vb 3
+\&    use strict;
+\&    use Tk ();
+\&    use Tk::TList;
+.Ve
+.Vb 7
+\&    my $mw = Tk::MainWindow->new();
+\&    my $image = $mw->Getimage('folder');
+\&    my $tlist = $mw->TList(-orient => 'vertical');
+\&    for my $text ( qw/one two three four five six seven eight nine/ ) {
+\&        $tlist->insert('end',
+\&                 -itemtype=>'imagetext', -image=>$image, -text=>$text);
+\&    }
+.Ve
+.Vb 1
+\&    $tlist->pack(-expand=>'yes', -fill=>'both');
+.Ve
+.Vb 1
+\&    Tk::MainLoop;
+.Ve
+.SH "SEE ALSO"
+Tk::options
+Tk::Widget
+Tk::DItem
+Tk::HList
+Tk::TixGrid
+.SH "KEYWORDS"
+\fITix\fR\|(n), Tabular Listbox, Display Items
+
+.rn }` ''
+.IX Title "TLIST 1"
+.IX Name "Tk::TList - Create and manipulate Tix Tabular List widgets"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "SUPER\-CLASS"
+
+.IX Header "STANDARD OPTIONS"
+
+.IX Header "WIDGET\-SPECIFIC OPTIONS"
+
+.IX Item "Name:	\fBbrowsecmd\fR"
+
+.IX Item "Class:	\fBBrowseCmd\fR"
+
+.IX Item "Switch:	\fB\-browsecmd\fR"
+
+.IX Item "Name:	\fBcommand\fR"
+
+.IX Item "Class:	\fBCommand\fR"
+
+.IX Item "Switch:	\fB\-command\fR"
+
+.IX Item "Name:	\fBforeground\fR"
+
+.IX Item "Class:	\fBForeground\fR"
+
+.IX Item "Switch:	\fB\-foreground\fR"
+
+.IX Item "Alias:	\fB\-fg\fR"
+
+.IX Item "Name:	\fBheight\fR"
+
+.IX Item "Class:	\fBHeight\fR"
+
+.IX Item "Switch:	\fB\-height\fR"
+
+.IX Item "Name:	\fBitemType\fR"
+
+.IX Item "Class:	\fBItemType\fR"
+
+.IX Item "Switch:	\fB\-itemtype\fR"
+
+.IX Item "Name:	\fBorient\fR"
+
+.IX Item "Class:	\fBOrient\fR"
+
+.IX Item "Switch:	\fB\-orient\fR"
+
+.IX Item "Name:	\fBpadX\fR"
+
+.IX Item "Class:	\fBPad\fR"
+
+.IX Item "Switch:	\fB\-padx\fR"
+
+.IX Item "Name:	\fBpadY\fR"
+
+.IX Item "Class:	\fBPad\fR"
+
+.IX Item "Switch:	\fB\-padx\fR"
+
+.IX Item "Name:	\fBselectBackground\fR"
+
+.IX Item "Class:	\fBSelectBackground\fR"
+
+.IX Item "Switch:	\fB\-selectbackground\fR"
+
+.IX Item "Name:	\fBselectBorderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-selectborderwidth\fR"
+
+.IX Item "Name:	\fBselectForeground\fR"
+
+.IX Item "Class:	\fBSelectForeground\fR"
+
+.IX Item "Switch:	\fB\-selectforeground\fR"
+
+.IX Item "Name:	\fBselectMode\fR"
+
+.IX Item "Class:	\fBSelectMode\fR"
+
+.IX Item "Switch:	\fB\-selectmode\fR"
+
+.IX Item "Name:	\fBsizeCmd\fR"
+
+.IX Item "Class:	\fBSizeCmd\fR"
+
+.IX Item "Switch:	\fB\-sizecmd\fR"
+
+.IX Item "Name:	\fBstate\fR"
+
+.IX Item "Class:	\fBState\fR"
+
+.IX Item "Switch:	\fB\-state\fR"
+
+.IX Item "Name:	\fBwidth\fR"
+
+.IX Item "Class:	\fBWidth\fR"
+
+.IX Item "Switch:	\fB\-width\fR"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fInumber\fR"
+
+.IX Item "\fBend\fR"
+
+.IX Item "\fB@\fR\fIx\fR,\fIy\fR"
+
+.IX Header "DISPLAY ITEMS"
+
+.IX Header "WIDGET METHODS"
+
+.IX Item "\fI$tlist\fR\->\fBanchorSet\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBanchorClear\fR"
+
+.IX Item "\fI$tlist\fR\->\fBdelete\fR(\fIfrom, \fR?\fIto\fR?)"
+
+.IX Item "\fI$tlist\fR\->\fBdragsiteSet\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBdragsiteClear\fR"
+
+.IX Item "\fI$tlist\fR\->\fBdropsiteSet\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBdropsiteClear\fR"
+
+.IX Item "\fI$tlist\fR\->\fBentrycget\fR(\fIindex, option\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBentryconfigure\fR(\fIindex, \fR?\fIoption\fR?, \fI?value, option, value, ...\fR?)"
+
+.IX Item "\fI$tlist\fR\->\fBinsert\fR(\fIindex, \fR?\fIoption, value, ...\fR?)"
+
+.IX Item "\fB\-itemtype\fR => \fItype\fR"
+
+.IX Item "\fB\-state\fR => \fIstate\fR"
+
+.IX Item "\fB\-data\fR => \fIdata\fR"
+
+.IX Item "\fI$tlist\fR\->\fBinfo\fR(\fIoption, \fR\fIarg, ...\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBinfo\fR(\fBanchor, \fR\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBinfo\fR(\fBdragsite, \fR\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBinfo\fR(\fBdropsite, \fR\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBinfo\fR(\fBselection\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBnearest\fR(\fIx, y\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBsee\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBselection\fR(\fIoption, \fR\fIarg, ...\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBselectionClear\fR(?\fIfrom\fR?, ?\fIto\fR?)"
+
+.IX Item "\fI$tlist\fR\->\fBselectionIncludes\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBselectionSet\fR(\fIfrom, \fR?\fIto\fR?)"
+
+.IX Item "\fI$tlist\fR\->\fBxview\fR(\fIargs\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBxview\fR"
+
+.IX Item "\fI$tlist\fR\->\fBxview\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBxviewMoveto\fR(\fIfraction\fR)"
+
+.IX Item "\fI$tlist\fR\->\fBxviewScroll\fR(\fInumber, what\fR)"
+
+.IX Item "\fI$tlist\fR\->\fByview\fR(\fI?args\fR?)"
+
+.IX Item "\fI$tlist\fR\->\fByview\fR"
+
+.IX Item "\fI$tlist\fR\->\fByview\fR(\fIindex\fR)"
+
+.IX Item "\fI$tlist\fR\->\fByviewMoveto\fR(\fIfraction\fR)"
+
+.IX Item "\fI$tlist\fR\->\fByviewScroll\fR(\fInumber, what\fR)"
+
+.IX Header "BINDINGS"
+
+.IX Item "[1]"
+
+.IX Item "[2]"
+
+.IX Item "[3]"
+
+.IX Item "[4]"
+
+.IX Header "EXAMPLE"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

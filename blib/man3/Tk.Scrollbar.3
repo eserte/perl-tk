@@ -1,0 +1,593 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH SCROLLBAR 1 "perl 5.005, patch 53" "18/Apr/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::Scrollbar \- Create and manipulate Scrollbar widgets
+.SH "SYNOPSIS"
+\fI$scrollbar\fR = \fI$parent\fR\->\fBScrollbar\fR(?\fIoptions\fR?);
+.SH "STANDARD OPTIONS"
+\fB\-activebackground\fR	\fB\-highlightbackground\fR	\fB\-orient\fR	\fB\-takefocus\fR
+\fB\-background\fR	\fB\-highlightcolor\fR	\fB\-relief\fR	\fB\-troughcolor\fR
+\fB\-borderwidth\fR	\fB\-highlightthickness\fR	\fB\-repeatdelay\fR
+\fB\-cursor\fR	\fB\-jump\fR	\fB\-repeatinterval\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "WIDGET\-SPECIFIC OPTIONS"
+.Ip "Name:	\fBactiveRelief\fR" 4
+.Ip "Class:	\fBActiveRelief\fR" 4
+.Ip "Switch:	\fB\-activerelief\fR" 4
+Specifies the relief to use when displaying the element that is
+active, if any.
+Elements other than the active element are always displayed with
+a raised relief.
+.Ip "Name:	\fBcommand\fR" 4
+.Ip "Class:	\fBCommand\fR" 4
+.Ip "Switch:	\fB\-command\fR" 4
+Specifies a callback to invoke to change the view
+in the widget associated with the scrollbar.  When a user requests
+a view change by manipulating the scrollbar, the callback is
+invoked.  The callback is passed
+additional arguments as described later. This option almost always has
+a value such as \fB[xview => $widget]\fR or \fB[yview => $widget]\fR, consisting of the
+a widget object and either \fBxview\fR (if the scrollbar is for
+horizontal scrolling) or \fByview\fR (for vertical scrolling).
+All scrollable widgets have \fBxview\fR and \fByview\fR methods
+that take exactly the additional arguments appended by the scrollbar
+as described in the section on \fI\s-1SCROLLING\s0 \s-1COMMANDS\s0\fR below.
+.Ip "Name:	\fBelementBorderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-elementborderwidth\fR" 4
+Specifies the width of borders drawn around the internal elements
+of the scrollbar (the two arrows and the slider).  The value may
+have any of the forms acceptable to \fBTk_GetPixels\fR.
+If this value is less than zero, the value of the \fBborderWidth\fR
+option is used in its place.
+.Ip "Name:	\fBwidth\fR" 4
+.Ip "Class:	\fBWidth\fR" 4
+.Ip "Switch:	\fB\-width\fR" 4
+Specifies the desired narrow dimension of the scrollbar window,
+not including 3-D border, if any.  For vertical
+scrollbars this will be the width and for horizontal scrollbars
+this will be the height.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.SH "DESCRIPTION"
+The \fBScrollbar\fR method creates a new window (given by the
+\f(CW$widget\fR argument) and makes it into a scrollbar widget.
+Additional options, described above, may be specified on the command
+line or in the option database to configure aspects of the scrollbar
+such as its colors, orientation, and relief.
+The \fBscrollbar\fR command returns its \f(CW$widget\fR argument.
+At the time this command is invoked, there must not exist a window
+named \f(CW$widget\fR, but \f(CW$widget\fR's parent must exist.
+.PP
+A scrollbar is a widget that displays two arrows, one at each end of
+the scrollbar, and a \fIslider\fR in the middle portion of the
+scrollbar.
+It provides information about what is visible in an \fIassociated window\fR
+that displays an document of some sort (such as a file being edited or
+a drawing).
+The position and size of the slider indicate which portion of the
+document is visible in the associated window.  For example, if the
+slider in a vertical scrollbar covers the top third of the area
+between the two arrows, it means that the associated window displays
+the top third of its document.
+.PP
+Scrollbars can be used to adjust the view in the associated window
+by clicking or dragging with the mouse.
+See the section on \fIBINDINGS\fR below for details.
+.SH "ELEMENTS"
+A scrollbar displays five elements, which are referred to in the
+methods for the scrollbar:
+.Ip "\fBarrow1\fR" 4
+The top or left arrow in the scrollbar.
+.Ip "\fBtrough1\fR" 4
+The region between the slider and \fBarrow1\fR.
+.Ip "\fBslider\fR" 4
+The rectangle that indicates what is visible in the associated widget.
+.Ip "\fBtrough2\fR" 4
+The region between the slider and \fBarrow2\fR.
+.Ip "\fBarrow2\fR" 4
+The bottom or right arrow in the scrollbar.
+.SH "WIDGET METHODS"
+The \fBScrollbar\fR method creates a widget object.
+This object supports the \fBconfigure\fR and \fBcget\fR methods
+described in the \fITk::options\fR manpage which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+Tk::Widget class.
+.PP
+The following additional methods are available for scrollbar widgets:
+.Ip "\fI$scrollbar\fR\->\fBactivate\fR(?\fIelement\fR?)" 4
+Marks the element indicated by \fIelement\fR as active, which
+causes it to be displayed as specified by the \fBactiveBackground\fR
+and \fBactiveRelief\fR options.
+The only element values understood by this command are \fBarrow1\fR,
+\fBslider\fR, or \fBarrow2\fR.
+If any other value is specified then no element of the scrollbar
+will be active.
+If \fIelement\fR is not specified, the command returns
+the name of the element that is currently active, or an empty string
+if no element is active.
+.Ip "\fI$scrollbar\fR\->\fBdelta\fR(\fIdeltaX, deltaY\fR)" 4
+Returns a real number indicating the fractional change in
+the scrollbar setting that corresponds to a given change
+in slider position.  For example, if the scrollbar is horizontal,
+the result indicates how much the scrollbar setting must change
+to move the slider \fIdeltaX\fR pixels to the right (\fIdeltaY\fR is
+ignored in this case).
+If the scrollbar is vertical, the result indicates how much the
+scrollbar setting must change to move the slider \fIdeltaY\fR pixels
+down.  The arguments and the result may be zero or negative.
+.Ip "\fI$scrollbar\fR\->\fBfraction\fR(\fIx, y\fR)" 4
+Returns a real number between 0 and 1 indicating where the point
+given by \fIx\fR and \fIy\fR lies in the trough area of the scrollbar.
+The value 0 corresponds to the top or left of the trough, the
+value 1 corresponds to the bottom or right, 0.5 corresponds to
+the middle, and so on.
+\fIX\fR and \fIy\fR must be pixel coordinates relative to the scrollbar
+widget.
+If \fIx\fR and \fIy\fR refer to a point outside the trough, the closest
+point in the trough is used.
+.Ip "\fI$scrollbar\fR\->\fBget\fR" 4
+Returns the scrollbar settings in the form of a list whose
+elements are the arguments to the most recent \fBset\fR method.
+.Ip "\fI$scrollbar\fR\->\fBidentify\fR(\fIx, y\fR)" 4
+Returns the name of the element under the point given by \fIx\fR and
+\fIy\fR (such as \fBarrow1\fR), or an empty string if the point does
+not lie in any element of the scrollbar.
+\fIX\fR and \fIy\fR must be pixel coordinates relative to the scrollbar
+widget.
+.Ip "\fI$scrollbar\fR\->\fBset\fR(\fIfirst, last\fR)" 4
+This command is invoked by the scrollbar's associated widget to
+tell the scrollbar about the current view in the widget.
+The command takes two arguments, each of which is a real fraction
+between 0 and 1.
+The fractions describe the range of the document that is visible in
+the associated widget.
+For example, if \fIfirst\fR is 0.2 and \fIlast\fR is 0.4, it means
+that the first part of the document visible in the window is 20%
+of the way through the document, and the last visible part is 40%
+of the way through.
+.SH "SCROLLING COMMANDS"
+When the user interacts with the scrollbar, for example by dragging
+the slider, the scrollbar notifies the associated widget that it
+must change its view.
+The scrollbar makes the notification by evaluating a callback
+specified as the scrollbar's \fB\-command\fR option.
+The callback may take several forms.
+In each case, the intial arguments passed are those
+specified in the \fB\-command\fR callback itself,
+which usually has a form like [\fByview\fR => \fI$widget\fR].
+(Which will invoke \fI$widget\fR\->\fByview\fR(...) where
+the ... part is as below. See the \fITk::callbacks\fR manpage for details.)
+The callback is passed additional arguments as follows:
+.Ip "\fBmoveto\fR,\fIfraction\fR" 4
+\fIFraction\fR is a real number between 0 and 1.
+The widget should adjust its view so that the point given
+by \fIfraction\fR appears at the beginning of the widget.
+If \fIfraction\fR is 0 it refers to the beginning of the
+document.  1.0 refers to the end of the document, 0.333
+refers to a point one-third of the way through the document,
+and so on.
+.Ip "\fBscroll,\fR\fInumber,\fR\fBunits\fR" 4
+The widget should adjust its view by \fInumber\fR units.
+The units are defined in whatever way makes sense for the widget,
+such as characters or lines in a text widget.
+\fINumber\fR is either 1, which means one unit should scroll off
+the top or left of the window, or \-1, which means that one unit
+should scroll off the bottom or right of the window.
+.Ip "\fBscroll\fR,\fInumber\fR,\fBpage\fR" 4
+The widget should adjust its view by \fInumber\fR pages.
+It is up to the widget to define the meaning of a page;  typically
+it is slightly less than what fits in the window, so that there
+is a slight overlap between the old and new views.
+\fINumber\fR is either 1, which means the next page should
+become visible, or \-1, which means that the previous page should
+become visible.
+.SH "OLD COMMAND SYNTAX"
+In versions of Tk before 4.0, the \fBset\fR and \fBget\fR widget
+commands used a different form.
+This form is still supported for backward compatibility, but it
+is deprecated.
+In the old command syntax, the \fBset\fR method has the
+following form:
+.Ip "\fI$scrollbar\fR\->\fBset\fR(\fItotalUnits, windowUnits, firstUnit, lastUnit\fR)" 4
+In this form the arguments are all integers.
+\fITotalUnits\fR gives the total size of the object being displayed in the
+associated widget.  The meaning of one unit depends on the associated
+widget;  for example, in a text editor widget units might
+correspond to lines of
+text.  \fIWindowUnits\fR indicates the total number of units that
+can fit in the associated window at one time.  \fIFirstUnit\fR
+and \fIlastUnit\fR give the indices of the first and last units
+currently visible in the associated window (zero corresponds to the
+first unit of the object).
+.PP
+Under the old syntax the \fBget\fR method returns a list
+of four integers, consisting of the \fItotalUnits\fR, \fIwindowUnits\fR,
+\fIfirstUnit\fR, and \fIlastUnit\fR values from the last \fBset\fR
+method.
+.PP
+The callbacks generated by scrollbars also have a different form
+when the old syntax is being used, the callback is passed a single argument:
+.Ip "\fIunit\fR" 4
+\fIUnit\fR is an integer that indicates what should appear at
+the top or left of the associated widget's window.
+It has the same meaning as the \fIfirstUnit\fR and \fIlastUnit\fR
+arguments to the \fBset\fR method.
+.PP
+The most recent \fBset\fR method determines whether or not
+to use the old syntax.
+If it is given two real arguments then the new syntax will be
+used in the future, and if it is given four integer arguments then
+the old syntax will be used.
+.SH "BINDINGS"
+Tk automatically creates class bindings for scrollbars that give them
+the following default behavior.
+If the behavior is different for vertical and horizontal scrollbars,
+the horizontal behavior is described in parentheses.
+.Ip "[1]" 4
+Pressing button 1 over \fBarrow1\fR causes the view in the
+associated widget to shift up (left) by one unit so that the
+document appears to move down (right) one unit.
+If the button is held down, the action auto-repeats.
+.Ip "[2]" 4
+Pressing button 1 over \fBtrough1\fR causes the view in the
+associated widget to shift up (left) by one screenful so that the
+document appears to move down (right) one screenful.
+If the button is held down, the action auto-repeats.
+.Ip "[3]" 4
+Pressing button 1 over the slider and dragging causes the view
+to drag with the slider.
+If the \fBjump\fR option is true, then the view doesn't drag along
+with the slider;  it changes only when the mouse button is released.
+.Ip "[4]" 4
+Pressing button 1 over \fBtrough2\fR causes the view in the
+associated widget to shift down (right) by one screenful so that the
+document appears to move up (left) one screenful.
+If the button is held down, the action auto-repeats.
+.Ip "[5]" 4
+Pressing button 1 over \fBarrow2\fR causes the view in the
+associated widget to shift down (right) by one unit so that the
+document appears to move up (left) one unit.
+If the button is held down, the action auto-repeats.
+.Ip "[6]" 4
+If button 2 is pressed over the trough or the slider, it sets
+the view to correspond to the mouse position;  dragging the
+mouse with button 2 down causes the view to drag with the mouse.
+If button 2 is pressed over one of the arrows, it causes the
+same behavior as pressing button 1.
+.Ip "[7]" 4
+If button 1 is pressed with the Control key down, then if the
+mouse is over \fBarrow1\fR or \fBtrough1\fR the view changes
+to the very top (left) of the document;  if the mouse is over
+\fBarrow2\fR or \fBtrough2\fR the view changes
+to the very bottom (right) of the document;  if the mouse is
+anywhere else then the button press has no effect.
+.Ip "[8]" 4
+In vertical scrollbars the Up and Down keys have the same behavior
+as mouse clicks over \fBarrow1\fR and \fBarrow2\fR, respectively.
+In horizontal scrollbars these keys have no effect.
+.Ip "[9]" 4
+In vertical scrollbars Control-Up and Control-Down have the same
+behavior as mouse clicks over \fBtrough1\fR and \fBtrough2\fR, respectively.
+In horizontal scrollbars these keys have no effect.
+.Ip "[10]" 4
+In horizontal scrollbars the Up and Down keys have the same behavior
+as mouse clicks over \fBarrow1\fR and \fBarrow2\fR, respectively.
+In vertical scrollbars these keys have no effect.
+.Ip "[11]" 4
+In horizontal scrollbars Control-Up and Control-Down have the same
+behavior as mouse clicks over \fBtrough1\fR and \fBtrough2\fR, respectively.
+In vertical scrollbars these keys have no effect.
+.Ip "[12]" 4
+The Prior and Next keys have the same behavior
+as mouse clicks over \fBtrough1\fR and \fBtrough2\fR, respectively.
+.Ip "[13]" 4
+The Home key adjusts the view to the top (left edge) of the document.
+.Ip "[14]" 4
+The End key adjusts the view to the bottom (right edge) of the document.
+.SH "SEE ALSO"
+Tk::callbacks
+Tk::Scrolled
+.SH "KEYWORDS"
+scrollbar, widget
+
+.rn }` ''
+.IX Title "SCROLLBAR 1"
+.IX Name "Tk::Scrollbar - Create and manipulate Scrollbar widgets"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "STANDARD OPTIONS"
+
+.IX Header "WIDGET\-SPECIFIC OPTIONS"
+
+.IX Item "Name:	\fBactiveRelief\fR"
+
+.IX Item "Class:	\fBActiveRelief\fR"
+
+.IX Item "Switch:	\fB\-activerelief\fR"
+
+.IX Item "Name:	\fBcommand\fR"
+
+.IX Item "Class:	\fBCommand\fR"
+
+.IX Item "Switch:	\fB\-command\fR"
+
+.IX Item "Name:	\fBelementBorderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-elementborderwidth\fR"
+
+.IX Item "Name:	\fBwidth\fR"
+
+.IX Item "Class:	\fBWidth\fR"
+
+.IX Item "Switch:	\fB\-width\fR"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "ELEMENTS"
+
+.IX Item "\fBarrow1\fR"
+
+.IX Item "\fBtrough1\fR"
+
+.IX Item "\fBslider\fR"
+
+.IX Item "\fBtrough2\fR"
+
+.IX Item "\fBarrow2\fR"
+
+.IX Header "WIDGET METHODS"
+
+.IX Item "\fI$scrollbar\fR\->\fBactivate\fR(?\fIelement\fR?)"
+
+.IX Item "\fI$scrollbar\fR\->\fBdelta\fR(\fIdeltaX, deltaY\fR)"
+
+.IX Item "\fI$scrollbar\fR\->\fBfraction\fR(\fIx, y\fR)"
+
+.IX Item "\fI$scrollbar\fR\->\fBget\fR"
+
+.IX Item "\fI$scrollbar\fR\->\fBidentify\fR(\fIx, y\fR)"
+
+.IX Item "\fI$scrollbar\fR\->\fBset\fR(\fIfirst, last\fR)"
+
+.IX Header "SCROLLING COMMANDS"
+
+.IX Item "\fBmoveto\fR,\fIfraction\fR"
+
+.IX Item "\fBscroll,\fR\fInumber,\fR\fBunits\fR"
+
+.IX Item "\fBscroll\fR,\fInumber\fR,\fBpage\fR"
+
+.IX Header "OLD COMMAND SYNTAX"
+
+.IX Item "\fI$scrollbar\fR\->\fBset\fR(\fItotalUnits, windowUnits, firstUnit, lastUnit\fR)"
+
+.IX Item "\fIunit\fR"
+
+.IX Header "BINDINGS"
+
+.IX Item "[1]"
+
+.IX Item "[2]"
+
+.IX Item "[3]"
+
+.IX Item "[4]"
+
+.IX Item "[5]"
+
+.IX Item "[6]"
+
+.IX Item "[7]"
+
+.IX Item "[8]"
+
+.IX Item "[9]"
+
+.IX Item "[10]"
+
+.IX Item "[11]"
+
+.IX Item "[12]"
+
+.IX Item "[13]"
+
+.IX Item "[14]"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

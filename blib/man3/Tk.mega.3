@@ -1,0 +1,590 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH MEGA 1 "perl 5.005, patch 53" "15/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::mega \- perl/Tk support to write widgets in perl
+.SH "SYNOPSIS"
+\ \ \ \ \fBpackage Tk::\fR\fIWhatever\fR;
+.PP
+\ \ \ \ \fBConstruct Tk::\fR\fIValidFor\fR \fI'Whatever\*(R'\fR;
+.PP
+\ \ \ \ \fBsub ClassInit\fR { \fImy ($mega, $args) = @_; ...\fR }
+.PP
+For composite widget classes:
+.PP
+\ \ \ \ \fBsub Populate\fR { \fImy ($composite, $args) = @_; ...\fR }
+.PP
+For derived widget classes:
+.PP
+\ \ \ \ \fBsub InitObject\fR { \fImy ($derived, $args) = @_; ...\fR }
+.SH "DESCRIPTION"
+The goal of the mega widget support of perl/Tk is to make it
+easy to write mega widgets that obey the same protocol and
+interface that the Tk core widgets support.  There are two
+kinds of mega widgets:
+.Ip "\(bu Composite Widgets" 4
+A composite widget is composed with one or more existing widgets.
+The composite widget looks to the user like a simple single widget.
+A well known example is the file selection box.
+.Ip "\(bu Derived Widgets" 4
+A derived widget adds/modifies/removes properties and methods
+from a single widget (this widget may itself be a mega widget).
+.SH "MEGA WIDGET SUPPORT"
+.Sh "Advertise"
+Give a subwidget a symbolic name.
+.PP
+Usage:
+.PP
+\ \ \ \ \fI$cw\fR\->\fBAdvertise\fR(\fBname\fR=>\fI$widget\fR);
+.PP
+Gives a subwidget \fI$widget\fR of the composite widget \fI$cw\fR the
+name \fBname\fR.  One can retrieve the reference of an advertised subwidget
+with the Subwidget method.
+.PP
+\fBComment:\fR Mega Widget Writers: Please make sure to document the
+advertised widgets that are intended for \fIpublic\fR use.
+If there are none, document this fact, e.g.:
+.PP
+.Vb 1
+\&        =head1 ADVERTISED WIDGETS
+.Ve
+.Vb 1
+\&        None.
+.Ve
+.Sh "Callback"
+Invoke a callback specified with an option.
+.PP
+Usage:
+.PP
+\ \ \ \ \fI$mega\fR\->\fBCallback\fR(\fI\-option\fR ?,\fIargs\fR ...?);
+.PP
+\fBCallback\fR executes the callback defined with
+\fI$mega\fR\->\fBConfigSpecs\fR(\fI\-option\fR, [\fB\s-1CALLBACK\s0\fR, ...]);
+If \fIargs\fR are given they are passed to the callback. If
+\fI\-option\fR is not defined it does nothing.
+.Sh "ClassInit"
+Initialization of the mega widget class.
+.PP
+Usage:
+.PP
+\ \ \ \ \fBsub ClassInit\fR { \fImy ($class, $mw) = @_;\fR ...  }
+.PP
+\fBClassInit\fR is called once for \fIeach\fR MainWindow
+just before the first widget instance of a class is created in
+the widget tree of \fBMainWindow\fR.
+.PP
+\fBClassInit\fR is often used to define bindings and/or other
+resources shared by all instances, e.g., images.
+.PP
+Examples:
+.PP
+.Vb 3
+\& $mw->bind($class,"<Tab>", sub { my $w = shift; $w->Insert("\et"); $w->focus; $w->break});
+\& $mw->bind($class,"<Return>", ['Insert',"\en"]);
+\& $mw->bind($class,"<Delete>",'Delete');
+.Ve
+Notice that \fI$class\fR is the class name (e.g. \fBTk::MyText\fR) and \fI$mw\fR is the mainwindow.
+.PP
+Don't forget to call \fI$class\fR\->\fB\s-1SUPER::\s0ClassInit($mw)\fR in
+\fBClassInit\fR.
+.Sh "Component"
+Convenience function to create subwidgets.
+.PP
+Usage:
+.PP
+.Vb 4
+\&    $cw->Component('Whatever', 'AdvertisedName',
+\&                   -delegate => ['method1', 'method2', ...],
+\&                   ... Whatever widget options ...,
+\&                  );
+.Ve
+\fBComponent\fR does several things for you with one call:
+o Creates the widget
+.Sp
+o Advertises it with a given name (overridden by \*(L'Name\*(R' option)
+.Sp
+o Delegates a set of methods to this widget (optional)
+.PP
+Example:
+.PP
+.Vb 1
+\&    $cw->Component('Button', 'quitButton', -command => sub{$mw->'destroy'});
+.Ve
+.Sh "ConfigSpecs"
+Defines options and their treatment
+.PP
+Usage:
+.PP
+.Vb 5
+\&    $cw->ConfigSpecs(
+\&            -option => [ where, dbname, dbclass, default],
+\&            ...,
+\&            DEFAULT => [where],
+\&            );
+.Ve
+Defines the options of a mega widget and what actions
+are triggered by configure/cget of an option
+(see the \fITk::ConfigSpecs\fR manpage and the \fITk::Derived\fR manpage for details).
+.Sh "Construct"
+Make the new mega widget known to \fBTk\fR.
+.PP
+Usage:
+.PP
+\ \ \ \ \fBConstruct\fR \fIbaseclass\fR \fB'Name\*(R'\fR;
+.PP
+\fBConstruct\fR declares the new widget class so that your mega widget
+works like normal Perl/Tk widgets.
+.PP
+Examples:
+.PP
+\ \ \ \ \fBConstruct Tk::Widget\fR \fI'Whatever\*(R'\fR;
+\ \ \ \ \fBConstruct Tk::Menu\fR   \fI'MyItem\*(R'\fR;
+.PP
+First example lets one use \fI$widget\fR\->\fBWhatever\fR to create
+new \fBWhatever\fR widget.
+.PP
+The second example restricts the usage of the \fBMyItem\fR constructor
+method to widgets that are derived from \fBMenu\fR:
+\fI$isamenu\fR\->\fIMyItem\fR.
+.Sh "CreateArgs"
+Mess with options before any widget is created
+.PP
+\ \ \ \ \fBsub CreateArgs\fR { \fImy ($package, $parent, $args) = @_; ...; return @newargs;\fR }
+.PP
+\fI$package\fR is the package of the mega widget (e.g., \fBTk::MyText\fR,
+\fI$parent\fR the parent of the widget to be created and \f(CW$args\fR the hash
+reference to the options specified in the widget constructor call.
+.PP
+Don't forget to call \fI$package\fR\->\fB\s-1SUPER::\s0CreateArgs\fR(\fI$parent\fR, \fI$args\fR) in
+\fBCreateArgs\fR.
+.Sh "Delegates"
+Redirect a method of the mega widget to a subwidget of
+the composite widget
+.PP
+Usage:
+.PP
+.Vb 7
+\&    $cw->Delegates(
+\&                'method1' => $subwidget1,
+\&                'method2' => 'advertived_name',
+\&                ...,
+\&                'Construct' => $subwidget2,
+\&                'DEFAULT'   => $subwidget3,
+\&                );
+.Ve
+The \fB'Construct\*(R'\fR delegation has a special meaning.  After
+\&'Construct\*(R' is delegated all Widget constructors are redirected.
+E.g. after
+.PP
+\ \ \ \ \fI$mega\fR\->\fBDelegates\fR(\fB'Construct\*(R'\fR=>\fI$subframe\fR);
+.PP
+a \fI$mega\fR\->\fBButton\fR does really a \fI$subframe\fR\->\fBButton\fR
+so the created button is a child of \fI$subframe\fR and not \fI$mega\fR.
+.PP
+\fBComment:\fR Delegates works only with methods that \fI$cw\fR does
+not have itself.
+.Sh "InitObject"
+Defines construction and interface of derived widgets.
+.PP
+Usage:
+.PP
+.Vb 4
+\&    sub InitObject {
+\&        my ($derived, $args) = @_;
+\&        ...
+\&    }
+.Ve
+where \fI$derived\fR is the widget reference of the already created
+baseclass widget and \fI$args\fR is the reference to a hash of
+\fI\-option-value\fR pairs.
+.PP
+\fBInitObject\fR is almost identical to Populate method.
+\fBPopulate\fR does some more \*(L'magic\*(R' things useful for mega widgets
+with several widgets.
+.PP
+Don't forget to call \fI$derived\fR\->\fB\s-1SUPER::\s0InitObject\fR(\fI$args\fR) in
+\fBInitObject\fR.
+.Sh "OnDestroy"
+Define callback invoked when widget is destroyed.
+.PP
+Usage:
+.PP
+\ \ \ \ \fI$widget\fR\->\fBOnDestroy\fR(\fIcallback\fR);
+.PP
+\fBOnDestroy\fR installs a callback that's called
+when a widget is going to to be destroyed.  Useful
+for special cleanup actions.  It differs from a normal \fBdestroy\fR
+in that all the widget's data structures are still intact.
+.PP
+\fBComment:\fR This method could be used with any widgets not just
+for mega widgets.  It's listed here because of it's usefulness.
+.Sh "Populate"
+Defines construction and interface of the composite
+widget.
+.PP
+Usage:
+.PP
+.Vb 4
+\&    sub Populate {
+\&        my ($mega, $args) = @_;
+\&        ...
+\&    }
+.Ve
+where \fI$mega\fR is the widget reference of the already created baseclass
+widget and \fI$args\fR is the
+reference to a hash of \fI\-option-value\fR pairs.
+.PP
+Most the other support function are normally used inside the \fBPopulate\fR
+subroutine.
+.PP
+Don't forget to call \fI$cw\fR\->\fB\s-1SUPER::\s0Populate\fR(\fI$args\fR) in
+\fBPopulate\fR.
+.Sh "privateData"
+Set/get a private hash of a widget to storage
+composite internal data
+.PP
+Usage:
+.PP
+\ \ \ \ \fI$hashref\fR = \fI$mega\fR\->\fBprivateData\fR();
+.PP
+\ \ \ \ \fI$another\fR = \fI$mega\fR\->\fBprivateData\fR(\fIunique_key\fR|\fIpackage\fR);
+.Sh "Subwidget"
+Get the widget reference of an advertised subwidget.
+.PP
+\ \ \ \ \fI$subwidget\fR = \fI$cw\fR\->\fBSubwidget\fR(\fIname\fR);
+.PP
+\ \ \ \ \fI@subwidget\fR = \fI$cw\fR\->\fBSubwidget\fR(\fIname\fR ?,...?);
+.PP
+Returns the widget \fIreference\fR\|(s) of the subwidget known under the
+name \fIname\fR.  See Advertise method how to define
+\fIname\fR for a subwidget.
+.PP
+\fBComment:\fR Mega Widget Users: Use \fBSubwidget\fR to get \fIonly\fR
+documented subwidgets.
+.SH "PITFALLS"
+.Ip "\(bu Resource \s-1DB\s0 class name" 4
+Some of the standard options use a resource date base class
+that is not equal to the resource database name.  E.g.,
+.Sp
+.Vb 1
+\&  Switch:            Name:             Class:
+.Ve
+.Vb 4
+\&  -padx              padX              Pad
+\&  -activerelief      activeRelief      Relief
+\&  -activebackground  activeBackground  Foreground
+\&  -status            undef             undef
+.Ve
+One should do the same when one defines one of these
+options via \fBConfigSpecs\fR.
+.Ip "\(bu Method delegation" 4
+Redirecting methods to a subwidget with \fBDelegate\fR
+can only work if the base widget itself does have a
+method with this name.  Therefore one can't ``\fIdelegate\fR'\*(R'
+any of the methods listed in Tk::Widget.
+A common problematic method is \fBbind\fR.  In this case
+one as to explicitely redirect the method.
+.Sp
+.Vb 6
+\&  sub bind
+\&    {
+\&      my $mega = shift;
+\&      my $to = $mega->privateData->{'my_bind_target'};
+\&      $to->bind(@_);
+\&    }
+.Ve
+.Ip "\(bu privateData" 4
+Graham Barr wrote: ... It is probably
+more private than most people think. Not all calls to privateData will
+return that same \s-1HASH\s0 reference. The \s-1HASH\s0 reference that is returned
+depends on the package it was called from, a different \s-1HASH\s0 is returned
+for each package. This allows a widget to hold private data, but then
+if it is sub-classed the sub-class will get a different \s-1HASH\s0 and so not
+cause duplicate name clashes.
+.Sp
+But privateData does take an optional argument if you want to
+force which \s-1HASH\s0 is returned.
+.Ip "\(bu Scrolled and Composite" 4
+\fBScrolled\fR(\fIKind\fR,...) constructor can not be used with \fBComposite\fR.
+One has to use \f(CW$cw\fR\->\fBComposite\fR(\fBScrl\fR\fIKind\fR => \fB'name\*(R'\fR, ...);
+.SH "MISSING"
+Of course perl/Tk does not define support function for
+all necessities.  Here's a short list of things you have to
+handle yourself:
+.Ip "\(bu" 4
+no support to define construction-time only options.
+.Ip "\(bu" 4
+no support to remove an option that is known to the
+base widget.
+.Ip "\(bu" 4
+it's hard to define \fBundef\fR as fallback for an widget
+option that is not already \fBundef\fR.
+.Ip "\(bu" 4
+Frame in perl/Tk carries magic and overhead not needed
+for composite widget class definition.
+.Ip "\(bu" 4
+No support methods for bindings that are shared between all
+widgets of a composite widget (makes sense at all?)
+.SH "KEYWORDS"
+mega, composite, derived, widget
+.SH "SEE ALSO"
+Tk::composite
+Tk::ConfigSpecs
+Tk::option
+Tk::callbacks
+Tk::bind
+
+.rn }` ''
+.IX Title "MEGA 1"
+.IX Name "Tk::mega - perl/Tk support to write widgets in perl"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\(bu Composite Widgets"
+
+.IX Item "\(bu Derived Widgets"
+
+.IX Header "MEGA WIDGET SUPPORT"
+
+.IX Subsection "Advertise"
+
+.IX Subsection "Callback"
+
+.IX Subsection "ClassInit"
+
+.IX Subsection "Component"
+
+.IX Subsection "ConfigSpecs"
+
+.IX Subsection "Construct"
+
+.IX Subsection "CreateArgs"
+
+.IX Subsection "Delegates"
+
+.IX Subsection "InitObject"
+
+.IX Subsection "OnDestroy"
+
+.IX Subsection "Populate"
+
+.IX Subsection "privateData"
+
+.IX Subsection "Subwidget"
+
+.IX Header "PITFALLS"
+
+.IX Item "\(bu Resource \s-1DB\s0 class name"
+
+.IX Item "\(bu Method delegation"
+
+.IX Item "\(bu privateData"
+
+.IX Item "\(bu Scrolled and Composite"
+
+.IX Header "MISSING"
+
+.IX Item "\(bu"
+
+.IX Item "\(bu"
+
+.IX Item "\(bu"
+
+.IX Item "\(bu"
+
+.IX Item "\(bu"
+
+.IX Header "KEYWORDS"
+
+.IX Header "SEE ALSO"
+

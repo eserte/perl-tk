@@ -1,0 +1,298 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH SEND 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+send \- Execute a command in a different application
+.SH "SYNOPSIS"
+\ \ \ \ \fI$result\fR = \fI$widget\fR\->\fBsend\fR(?\fIoptions\fR,?\fIapp\fR=>\fIcmd\fR?\fIarg arg ...\fR?)
+.SH "DESCRIPTION"
+This method arranges for \fIcmd\fR (and \fIarg\fRs) to be \*(L'sent\*(R' to the
+application named by \fIapp\fR.  It returns the result or
+an error (hence above should probably be \*(L'wrapped\*(R' in \fBeval{}\fR and $@ tested).
+\fIApp\fR may be the name of any application whose main window is
+on the display containing the sender's main window;  it need not
+be within the same process.
+If no \fIarg\fR arguments are present, then the string to be sent
+is contained entirely within the \fIcmd\fR argument.  If one or
+more \fIarg\fRs are present, they are concatenated separated by white space to
+form the string to be sent.
+.PP
+If the initial arguments of the call begin with ``\-'\*(R'
+they are treated as options.  The following options are
+currently defined:
+.Ip "\fB\-async\fR" 4
+Requests asynchronous invocation.  In this case the \fBsend\fR
+command will complete immediately without waiting for \fIcmd\fR
+to complete in the target application;  no result will be available
+and errors in the sent command will be ignored.
+If the target application is in the same process as the sending
+application then the \fB\-async\fR option is ignored.
+.Ip "\fB--\fR" 4
+Serves no purpose except to terminate the list of options.  This
+option is needed only if \fIapp\fR could contain a leading ``\-'\*(R'
+character.
+.SH "APPLICATION NAMES"
+The name of an application is set initially from the name of the
+program or script that created the application.
+You can query and change the name of an application with the
+\fBappname\fR method.
+.SH "WHAT IS A SEND"
+The \fBsend\fR mechanism was designed to allow Tcl/Tk applications
+to send Tcl Scripts to each other. This does not map very well onto perl/Tk.
+Perl/Tk \*(L"sends\*(R" a string to \fIapp\fR, what happens as a result of this
+depends on the receiving application. If the other application is a Tcl/Tk4.*
+application it will be treated as a Tcl Script. If the \*(L"other\*(R" application is
+perl/Tk application (including sends to self) then the string is
+passed as an argument to a method call of the following form:
+.PP
+\fI$mainwindow\fR\->\fBReceive(\fR\fIstring\fR);
+.PP
+There is a default (AutoLoaded) \fBTk::Receive\fR which returns an error to the
+sending application. A particular application may define its own
+\fBReceive\fR method in any class in \fBMainWindow\fR's inheritance tree
+to do whatever it sees fit. For example it could \fBeval\fR the string,
+possibly in a \fBSafe\fR \*(L"compartment\*(R".
+.PP
+If a Tcl/Tk application \*(L"sends\*(R" anything to a perl/Tk application
+then the perl/Tk application would have to attempt to interpret the
+incoming string as a Tcl Script. Simple cases are should not be too hard to
+emulate (split on white space and treat first element as \*(L"command\*(R" and other
+elements as arguments).
+.SH "SECURITY"
+The \fBsend\fR command is potentially a serious security loophole,
+since any application that can connect to your X server can send
+scripts to your applications. Hence the default behaviour outlined above.
+(With the availability of \fBSafe\fR it may make sense to relax default behaviour
+a little.)
+.PP
+Unmonitored \fBeval\fR'ing of these incoming \*(L"scripts\*(R" can cause perl to
+read and write files and invoke subprocesses under your name.
+Host-based access control such as that provided by \fBxhost\fR
+is particularly insecure, since it allows anyone with an account
+on particular hosts to connect to your server, and if disabled it
+allows anyone anywhere to connect to your server.
+In order to provide at least a small amount of
+security, core Tk checks the access control being used by the server
+and rejects incoming sends unless (a) \fBxhost\fR\-style access control
+is enabled (i.e. only certain hosts can establish connections) and (b) the
+list of enabled hosts is empty.
+This means that applications cannot connect to your server unless
+they use some other form of authorization
+such as that provide by \fBxauth\fR.
+.SH "SEE ALSO"
+Perl's \fBeval\fR
+perl's \fBSafe\fR Module
+system's administrator/corporate security guidelines etc.
+.SH "KEYWORDS"
+application, name, remote execution, security, send
+
+.rn }` ''
+.IX Title "SEND 1"
+.IX Name "send - Execute a command in a different application"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fB\-async\fR"
+
+.IX Item "\fB--\fR"
+
+.IX Header "APPLICATION NAMES"
+
+.IX Header "WHAT IS A SEND"
+
+.IX Header "SECURITY"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

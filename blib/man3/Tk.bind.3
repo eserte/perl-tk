@@ -1,0 +1,694 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH BIND 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::bind \- Arrange for X events to invoke callbacks
+.SH "SYNOPSIS"
+Retrieve bindings:
+.PP
+\ \ \ \ \fI$widget\fR\->\fBbind\fR
+.PP
+\ \ \ \ \fI$widget\fR\->\fBbind\fR(\fItag\fR)
+.PP
+\ \ \ \ \fI$widget\fR\->\fBbind\fR(\fIsequence\fR)
+.PP
+\ \ \ \ \fI$widget\fR\->\fBbind\fR(\fItag\fR,\fIsequence\fR)
+.PP
+Associate and destroy bindings:
+.PP
+\ \ \ \ \fI$widget\fR\->\fBbind\fR(\fIsequence\fR,\fIcallback\fR)
+.PP
+\ \ \ \ \fI$widget\fR\->\fBbind\fR(\fItag\fR,\fIsequence\fR,\fIcallback\fR)
+.SH "DESCRIPTION"
+The \fBbind\fR method associates callbacks with X events.
+If \fIcallback\fR is specified, \fBbind\fR will
+arrange for \fIcallback\fR to be evaluated whenever
+the \fIevent\fR\|(s) given by \fIsequence\fR occur in the \fIwindow\fR\|(s)
+identified by \fI$widget\fR or \fItag\fR.
+If \fIcallback\fR is an empty string then the current binding for
+\fIsequence\fR is destroyed, leaving \fIsequence\fR unbound.
+In all of the cases where a \fIcallback\fR argument is provided,
+\fBbind\fR returns an empty string.
+.PP
+If \fIsequence\fR is specified without a \fIcallback\fR, then the
+callback currently bound to \fIsequence\fR is returned, or
+\fBundef\fR is returned if there is no binding for \fIsequence\fR.
+If neither \fIsequence\fR nor \fIcallback\fR is specified, then the
+return value is a list whose elements are all the sequences
+for which there exist bindings for \fItag\fR.
+.PP
+If no \fItag\fR is specified then the \fBbind\fR refers to \fI$widget\fR.
+If \fItag\fR is specified then it is typically a class name and the \fBbind\fR
+refers to all instances of the class on the \fBMainWindow\fR associated
+with \fI$widget\fR. (It is possible for \fItag\fR to be another \*(L"widget object\*(R"
+but this practice is deprecated.) Perl's \fBref\fR(\fI$object\fR) can be used
+to get the class name of any object.
+Each window has an associated list of tags, and a binding applies
+to a particular window if its tag is among those specified for
+the window.
+Although the \fBbindtags\fR method may be used to assign an
+arbitrary set of binding tags to a window, the default binding
+tags provide the following behavior:
+.PP
+If a tag is the name of an internal window the binding applies
+to that window.
+.PP
+If the tag is the name of a toplevel window the binding applies
+to the toplevel window and all its internal windows.
+.PP
+If the tag is the name of a class of widgets, such as \fBTk::Button\fR,
+the binding applies to all widgets in that class;
+.PP
+If \fItag\fR has the value \fBall\fR,
+the binding applies to all windows descended from the MainWindow
+of the application.
+.SH "EVENT PATTERNS"
+The \fIsequence\fR argument specifies a sequence of one or more
+event patterns, with optional white space between the patterns.  Each
+event pattern has the following syntax:
+.PP
+\ \ \ \ \*(L'<modifier-modifier-type-detail>\*(R'
+.PP
+The entire event pattern is surrounded by angle brackets, and normally
+needs to be quoted, as angle brackets are special to perl.
+Inside the angle brackets are zero or more modifiers, an event
+type, and an extra piece of information (\fIdetail\fR) identifying
+a particular button or keysym.  Any of the fields may be omitted,
+as long as at least one of \fItype\fR and \fIdetail\fR is present.
+The fields must be separated by white space or dashes.
+.PP
+A second form of pattern is used to specify a user-defined, named virtual
+event; see the \fITk::event\fR manpage for details.  It has the following syntax:
+.PP
+\ \ \ \ <<name>>
+.PP
+The entire virtual event pattern is surrounded by double angle brackets.
+Inside the angle brackets is the user-defined name of the virtual event.
+Modifiers, such as \fBShift\fR or \fBControl\fR, may not be combined with a
+virtual event to modify it.  Bindings on a virtual event may be created
+before the virtual event is defined, and if the definition of a virtual
+event changes dynamically, all windows bound to that virtual event will
+respond immediately to the new definition.
+.SH "MODIFIERS"
+Modifiers consist of any of the following values:
+.PP
+.Vb 9
+\& Control        Mod2, M2
+\& Shift          Mod3, M3
+\& Lock           Mod4, M4
+\& Button1, B1    Mod5, M5
+\& Button2, B2    Meta, M
+\& Button3, B3    Alt
+\& Button4, B4    Double
+\& Button5, B5    Triple
+\& Mod1,    M1
+.Ve
+Where more than one value is listed, separated by commas, the values
+are equivalent.
+Most of the modifiers have the obvious X meanings.
+For example, \fBButton1\fR requires that
+button 1 be depressed when the event occurs.
+For a binding to match a given event, the modifiers in the event
+must include all of those specified in the event pattern.
+An event may also contain additional modifiers not specified in
+the binding.
+For example, if button 1 is pressed while the shift and control keys
+are down, the pattern \fB<Control-Button-1>\fR will match
+the event, but \fB<Mod1-Button-1>\fR will not.
+If no modifiers are specified, then any combination of modifiers may
+be present in the event.
+.PP
+\fBMeta\fR and \fBM\fR refer to whichever of the
+\fBM1\fR through \fBM5\fR modifiers is associated with the meta
+\fIkey\fR\|(s) on the keyboard (keysyms \fBMeta_R\fR and \fBMeta_L\fR).
+If there are no meta keys, or if they are not associated with any
+modifiers, then \fBMeta\fR and \fBM\fR will not match any events.
+Similarly, the \fBAlt\fR modifier refers to whichever modifier
+is associated with the alt \fIkey\fR\|(s) on the keyboard (keysyms
+\fBAlt_L\fR and \fBAlt_R\fR).
+.PP
+The \fBDouble\fR and \fBTriple\fR modifiers are a convenience
+for specifying double mouse clicks and other repeated
+events. They cause a particular event pattern to be
+repeated 2 or 3 times, and also place a time and space requirement
+on the sequence:  for a sequence of events to match a \fBDouble\fR
+or \fBTriple\fR pattern, all of the events must occur close together
+in time and without substantial mouse motion in between.
+For example, \fB<Double-Button-1>\fR
+is equivalent to \fB<Button-1><Button-1>\fR with the extra
+time and space requirement.
+.SH "EVENT TYPES"
+The \fItype\fR field may be any of the standard X event types, with a
+few extra abbreviations.  Below is a list of all the valid types;
+where two names appear together, they are synonyms.
+.PP
+.Vb 8
+\& ButtonPress, Button    Expose  Map
+\& ButtonRelease  FocusIn Motion
+\& Circulate      FocusOut        Property
+\& Colormap       Gravity Reparent
+\& Configure      KeyPress, Key   Unmap
+\& Destroy        KeyRelease      Visibility
+\& Enter  Leave   Activate
+\& Deactivate
+.Ve
+The last part of a long event specification is \fIdetail\fR.  In the
+case of a \fBButtonPress\fR or \fBButtonRelease\fR event, it is the
+number of a button (1-5).  If a button number is given, then only an
+event on that particular button will match;  if no button number is
+given, then an event on any button will match.  Note:  giving a
+specific button number is different than specifying a button modifier;
+in the first case, it refers to a button being pressed or released,
+while in the second it refers to some other button that is already
+depressed when the matching event occurs.  If a button
+number is given then \fItype\fR may be omitted:  if will default
+to \fBButtonPress\fR.  For example, the specifier \fB<1>\fR
+is equivalent to \fB<ButtonPress-1>\fR.
+.PP
+If the event type is \fBKeyPress\fR or \fBKeyRelease\fR, then
+\fIdetail\fR may be specified in the form of an X keysym.  Keysyms
+are textual specifications for particular keys on the keyboard;
+they include all the alphanumeric ASCII characters (e.g. ``a'\*(R' is
+the keysym for the ASCII character ``a''), plus descriptions for
+non-alphanumeric characters (``comma'\*(R' is the keysym for the comma
+character), plus descriptions for all the non-ASCII keys on the
+keyboard (``Shift_L'\*(R' is the keysm for the left shift key, and
+``F1'\*(R' is the keysym for the F1 function key, if it exists).  The
+complete list of keysyms is not presented here;  it is
+available in other X documentation and may vary from system to
+system.
+If necessary, you can use the \fB'K\*(R'\fR notation described below
+to print out the keysym name for a particular key.
+If a keysym \fIdetail\fR is given, then the
+\fItype\fR field may be omitted;  it will default to \fBKeyPress\fR.
+For example, \fB<Control-comma>\fR is equivalent to
+\fB<Control-KeyPress-comma>\fR.
+.SH "BINDING CALLBACKS AND SUBSTITUTIONS"
+The \fIcallback\fR argument to \fBbind\fR is a perl/Tk callback.
+which will be executed whenever the given event sequence occurs.
+(See the \fITk::callbacks\fR manpage for description of the possible forms.)
+\fICallback\fR will be associated with the same \fBMainWindow\fR
+that is associated with the \fI$widget\fR that was used to invoke
+the \fBbind\fR method, and it will run as though called from \fBMainLoop\fR.
+If \fIcallback\fR contains
+any \fBEv\fR(\fI%\fR) calls, then each \*(L"nested\*(R" \fBEv\fR(\fI%\fR)
+\*(L"callback\*(R" will be evaluated when the event occurs to form arguments
+to be passed to the main \fIcallback\fR.
+The replacement
+depends on the character \fI%\fR, as defined in the
+list below.  Unless otherwise indicated, the
+replacement string is the numeric (decimal) value of the given field from
+the current event. Perl/Tk has enhanced this mechanism slightly compared
+to the comparable Tcl/Tk mechanism. The enhancements are not yet all
+reflected in the list below.
+Some of the substitutions are only valid for
+certain types of events;  if they are used for other types of events
+the value substituted is undefined (not the same as \fBundef\fR!).
+.Ip "\fB'#\*(T'\fR" 4
+The number of the last client request processed by the server
+(the \fIserial\fR field from the event).  Valid for all event
+types.
+.Ip "\fB'a\*(T'\fR" 4
+The \fIabove\fR field from the event,
+formatted as a hexadecimal number.
+Valid only for \fBConfigure\fR events.
+.Ip "\fB'b\*(T'\fR" 4
+The number of the button that was pressed or released.  Valid only
+for \fBButtonPress\fR and \fBButtonRelease\fR events.
+.Ip "\fB'c\*(T'\fR" 4
+The \fIcount\fR field from the event.  Valid only for \fBExpose\fR events.
+.Ip "\fB'd\*(T'\fR" 4
+The \fIdetail\fR field from the event.  The \fB'd\*(R'\fR is replaced by
+a string identifying the detail.  For \fBEnter\fR,
+\fBLeave\fR, \fBFocusIn\fR, and \fBFocusOut\fR events,
+the string will be one of the following:
+.Sp
+.Vb 4
+\& NotifyAncestor NotifyNonlinearVirtual
+\& NotifyDetailNone       NotifyPointer
+\& NotifyInferior NotifyPointerRoot
+\& NotifyNonlinear        NotifyVirtual
+.Ve
+For events other than these, the substituted string is undefined.
+(Note that this is \fInot\fR the same as Detail part of sequence
+use to specify the event.)
+.Ip "\fB'f\*(T'\fR" 4
+The \fIfocus\fR field from the event (\fB0\fR or \fB1\fR).  Valid only
+for \fBEnter\fR and \fBLeave\fR events.
+.Ip "\fB'h\*(T'\fR" 4
+The \fIheight\fR field from the event.  Valid only for \fBConfigure\fR,
+\fBExpose\fR, and \fBGraphicsExpose\fR events.
+.Ip "\fB'k\*(T'\fR" 4
+The \fIkeycode\fR field from the event.  Valid only for \fBKeyPress\fR
+and \fBKeyRelease\fR events.
+.Ip "\fB'm\*(T'\fR" 4
+The \fImode\fR field from the event.  The substituted string is one of
+\fBNotifyNormal\fR, \fBNotifyGrab\fR, \fBNotifyUngrab\fR, or
+\fBNotifyWhileGrabbed\fR.  Valid only for \fBEnterWindow\fR,
+\fBFocusIn\fR, \fBFocusOut\fR, and \fBLeaveWindow\fR events.
+.Ip "\fB'o\*(T'\fR" 4
+The \fIoverride_redirect\fR field from the event.  Valid only for
+\fBMap\fR, \fBReparent\fR, and \fBConfigure\fR events.
+.Ip "\fB'p\*(T'\fR" 4
+The \fIplace\fR field from the event, substituted as one of the
+strings \fBPlaceOnTop\fR or \fBPlaceOnBottom\fR.  Valid only
+for \fBCirculate\fR events.
+.Ip "\fB's\*(T'\fR" 4
+The \fIstate\fR field from the event.  For \fBButtonPress\fR,
+\fBButtonRelease\fR, \fBEnter\fR, \fBKeyPress\fR, \fBKeyRelease\fR,
+\fBLeave\fR, and \fBMotion\fR events, a decimal string
+is substituted.  For \fBVisibility\fR, one of the strings
+\fBVisibilityUnobscured\fR, \fBVisibilityPartiallyObscured\fR,
+and \fBVisibilityFullyObscured\fR is substituted.
+.Ip "\fB't\*(T'\fR" 4
+The \fItime\fR field from the event.  Valid only for events that
+contain a \fItime\fR field.
+.Ip "\fB'w\*(T'\fR" 4
+The \fIwidth\fR field from the event.  Valid only for
+\fBConfigure\fR, \fBExpose\fR, and \fBGraphicsExpose\fR events.
+.Ip "\fB'x\*(T'\fR" 4
+The \fIx\fR field from the event.  Valid only for events containing
+an \fIx\fR field.
+.Ip "\fB'y\*(T'\fR" 4
+The \fIy\fR field from the event.  Valid only for events containing
+a \fIy\fR field.
+.Ip "\fB'@\*(T'\fR" 4
+The string \*(L"@\fIx,y\fR\*(R" where \fIx\fR and \fIy\fR are as above.
+Valid only for events containing \fIx\fR and \fIy\fR fields.
+This format is used my methods of \fBTk::Text\fR and similar widgets.
+.Ip "\fB'A\*(T'\fR" 4
+Substitutes the \s-1ASCII\s0 character corresponding to the event, or
+the empty string if the event doesn't correspond to an \s-1ASCII\s0 character
+(e.g. the shift key was pressed).  \fBXLookupString\fR does all the
+work of translating from the event to an \s-1ASCII\s0 character.
+Valid only for \fBKeyPress\fR and \fBKeyRelease\fR events.
+.Ip "\fB'B\*(T'\fR" 4
+The \fIborder_width\fR field from the event.  Valid only for
+\fBConfigure\fR events.
+.Ip "\fB'E\*(T'\fR" 4
+The \fIsend_event\fR field from the event.  Valid for all event types.
+.Ip "\fB'K\*(T'\fR" 4
+The keysym corresponding to the event, substituted as a textual
+string.  Valid only for \fBKeyPress\fR and \fBKeyRelease\fR events.
+.Ip "\fB'N\*(T'\fR" 4
+The keysym corresponding to the event, substituted as
+a decimal
+number.  Valid only for \fBKeyPress\fR and \fBKeyRelease\fR events.
+.Ip "\fB'R\*(T'\fR" 4
+The \fIroot\fR window identifier from the event.  Valid only for
+events containing a \fIroot\fR field.
+.Ip "\fB'S\*(T'\fR" 4
+The \fIsubwindow\fR window identifier from the event,
+as an object if it is one otherwise as a hexadecimal number.
+Valid only for events containing a \fIsubwindow\fR field.
+.Ip "\fB'T\*(T'\fR" 4
+The \fItype\fR field from the event.  Valid for all event types.
+.Ip "\fB'W\*(T'\fR" 4
+The window to which the event was reported (the
+\f(CW$widget\fR field from the event) \- as an perl/Tk object.
+Valid for all event types.
+.Ip "\fB'X\*(T'\fR" 4
+The \fIx_root\fR field from the event.
+If a virtual-root window manager is being used then the substituted
+value is the corresponding x-coordinate in the virtual root.
+Valid only for
+\fBButtonPress\fR, \fBButtonRelease\fR, \fBKeyPress\fR, \fBKeyRelease\fR,
+and \fBMotion\fR events.
+.Ip "\fB'Y\*(T'\fR" 4
+The \fIy_root\fR field from the event.
+If a virtual-root window manager is being used then the substituted
+value is the corresponding y-coordinate in the virtual root.
+Valid only for
+\fBButtonPress\fR, \fBButtonRelease\fR, \fBKeyPress\fR, \fBKeyRelease\fR,
+and \fBMotion\fR events.
+.SH "MULTIPLE MATCHES"
+It is possible for several bindings to match a given X event.
+If the bindings are associated with different \fItag\fR's,
+then each of the bindings will be executed, in order.
+By default, a class binding will be executed first, followed
+by a binding for the widget, a binding for its toplevel, and
+an \fBall\fR binding.
+The \fBbindtags\fR method may be used to change this order for
+a particular window or to associate additional binding tags with
+the window.
+.PP
+\fBreturn\fR and \fBTk->break\fR may be used inside a
+callback to control the processing of matching callbacks.
+If \fBreturn\fR is invoked, then the current callback
+is terminated but Tk will continue processing callbacks
+associated with other \fItag\fR's.
+If \fBTk->break\fR is invoked within a callback,
+then that callback terminates and no other callbacks will be invoked
+for the event.
+(\fBTk->break\fR is implemented via perl's \fBdie\fR with a special value
+which is \*(L"caught\*(R" by the perl/Tk \*(L"glue\*(R" code.)
+.PP
+If more than one binding matches a particular event and they
+have the same \fItag\fR, then the most specific binding
+is chosen and its callback is evaluated.
+The following tests are applied, in order, to determine which of
+several matching sequences is more specific:
+(a) an event pattern that specifies a specific button or key is more specific
+than one that doesn't;
+(b) a longer sequence (in terms of number
+of events matched) is more specific than a shorter sequence;
+(c) if the modifiers specified in one pattern are a subset of the
+modifiers in another pattern, then the pattern with more modifiers
+is more specific.
+(d) a virtual event whose physical pattern matches the sequence is less
+specific than the same physical pattern that is not associated with a
+virtual event.
+(e) given a sequence that matches two or more virtual events, one
+of the virtual events will be chosen, but the order is undefined.
+.PP
+If the matching sequences contain more than one event, then tests
+(c)\-(e) are applied in order from the most recent event to the least recent
+event in the sequences.  If these tests fail to determine a winner, then the
+most recently registered sequence is the winner.
+.PP
+If there are two (or more) virtual events that are both triggered by the
+same sequence, and both of those virtual events are bound to the same window
+tag, then only one of the virtual events will be triggered, and it will
+be picked at random:
+.PP
+.Vb 5
+\& $widget->eventAdd('<<Paste>>' => '<Control-y>');
+\& $widget->eventAdd('<<Paste>>' => '<Button-2>');
+\& $widget->eventAdd <<Scroll>>' => '<Button-2>');
+\& $widget->bind('Tk::Entry','<<Paste>>',sub { print 'Paste'});
+\& $widget->bind('Tk::Entry','<<Scroll>>', sub {print 'Scroll'});
+.Ve
+If the user types Control-y, the \fB<<Paste>>\fR binding
+will be invoked, but if the user presses button 2 then one of
+either the \fB<<Paste>>\fR or the \fB<<Scroll>>\fR bindings will
+be invoked, but exactly which one gets invoked is undefined.
+.PP
+If an X event does not match any of the existing bindings, then the
+event is ignored.
+An unbound event is not considered to be an error.
+.SH "MULTI\-EVENT SEQUENCES AND IGNORED EVENTS"
+When a \fIsequence\fR specified in a \fBbind\fR method contains
+more than one event pattern, then its callback is executed whenever
+the recent events (leading up to and including the current event)
+match the given sequence.  This means, for example, that if button 1 is
+clicked repeatedly the sequence \fB<Double-ButtonPress-1>\fR will match
+each button press but the first.
+If extraneous events that would prevent a match occur in the middle
+of an event sequence then the extraneous events are
+ignored unless they are \fBKeyPress\fR or \fBButtonPress\fR events.
+For example, \fB<Double-ButtonPress-1>\fR will match a sequence of
+presses of button 1, even though there will be \fBButtonRelease\fR
+events (and possibly \fBMotion\fR events) between the
+\fBButtonPress\fR events.
+Furthermore, a \fBKeyPress\fR event may be preceded by any number
+of other \fBKeyPress\fR events for modifier keys without the
+modifier keys preventing a match.
+For example, the event sequence \fBaB\fR will match a press of the
+\fBa\fR key, a release of the \fBa\fR key, a press of the \fBShift\fR
+key, and a press of the \fBb\fR key:  the press of \fBShift\fR is
+ignored because it is a modifier key.
+Finally, if several \fBMotion\fR events occur in a row, only
+the last one is used for purposes of matching binding sequences.
+.SH "ERRORS"
+If an error occurs in executing the callback for a binding then the
+\fBTk::Error\fR mechanism is used to report the error.
+The \fBTk::Error\fR mechanism will be executed at same call level,
+and associated with the same \fBMainWindow\fR as
+as the callback was invoked.
+.SH "SEE ALSO"
+Tk::Error
+Tk::callbacks
+Tk::bindtags
+.SH "KEYWORDS"
+Event, binding
+
+.rn }` ''
+.IX Title "BIND 1"
+.IX Name "Tk::bind - Arrange for X events to invoke callbacks"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "EVENT PATTERNS"
+
+.IX Header "MODIFIERS"
+
+.IX Header "EVENT TYPES"
+
+.IX Header "BINDING CALLBACKS AND SUBSTITUTIONS"
+
+.IX Item "\fB'#\*(T'\fR"
+
+.IX Item "\fB'a\*(T'\fR"
+
+.IX Item "\fB'b\*(T'\fR"
+
+.IX Item "\fB'c\*(T'\fR"
+
+.IX Item "\fB'd\*(T'\fR"
+
+.IX Item "\fB'f\*(T'\fR"
+
+.IX Item "\fB'h\*(T'\fR"
+
+.IX Item "\fB'k\*(T'\fR"
+
+.IX Item "\fB'm\*(T'\fR"
+
+.IX Item "\fB'o\*(T'\fR"
+
+.IX Item "\fB'p\*(T'\fR"
+
+.IX Item "\fB's\*(T'\fR"
+
+.IX Item "\fB't\*(T'\fR"
+
+.IX Item "\fB'w\*(T'\fR"
+
+.IX Item "\fB'x\*(T'\fR"
+
+.IX Item "\fB'y\*(T'\fR"
+
+.IX Item "\fB'@\*(T'\fR"
+
+.IX Item "\fB'A\*(T'\fR"
+
+.IX Item "\fB'B\*(T'\fR"
+
+.IX Item "\fB'E\*(T'\fR"
+
+.IX Item "\fB'K\*(T'\fR"
+
+.IX Item "\fB'N\*(T'\fR"
+
+.IX Item "\fB'R\*(T'\fR"
+
+.IX Item "\fB'S\*(T'\fR"
+
+.IX Item "\fB'T\*(T'\fR"
+
+.IX Item "\fB'W\*(T'\fR"
+
+.IX Item "\fB'X\*(T'\fR"
+
+.IX Item "\fB'Y\*(T'\fR"
+
+.IX Header "MULTIPLE MATCHES"
+
+.IX Header "MULTI\-EVENT SEQUENCES AND IGNORED EVENTS"
+
+.IX Header "ERRORS"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

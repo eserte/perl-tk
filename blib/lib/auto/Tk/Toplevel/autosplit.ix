@@ -1,0 +1,10 @@
+# Index created by AutoSplit for blib/lib/Tk/Toplevel.pm
+#    (file acts as timestamp)
+package Tk::Toplevel;
+sub FG_Create ;
+sub FG_BindIn ;
+sub FG_BindOut ;
+sub FG_Destroy ;
+sub FG_In ;
+sub FG_Out ;
+1;

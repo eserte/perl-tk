@@ -1,2 +1,0 @@
-tclWinNotify.c
-tclWinTime.c

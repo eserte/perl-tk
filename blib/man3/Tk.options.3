@@ -1,0 +1,954 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH OPTIONS 1 "perl 5.005, patch 53" "21/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+options \- Standard options supported by widgets and their manipulation
+.SH "SYNOPSIS"
+\ \ \ \ \fI$value\fR = \fI$widget\fR\->\fBcget\fR(\*(R'\fI\-option\fR');
+.PP
+\ \ \ \ \fI$widget\fR\->\fBconfigure\fR(\fI\-option\fR=>\fIvalue\fR ?,\fI\-option\fR=>\fIvalue\fR ...?);
+.PP
+\ \ \ \ \fI@list\fR = \fI$widget\fR\->\fBconfigure\fR(\*(R'\fI\-option\fR');
+.PP
+\ \ \ \ \fI@lol\fR = \fI$widget\fR\->\fBconfigure\fR;
+.SH "DESCRIPTION"
+All widgets, and images have a standard mechanism for setting and querying
+attibutes or options. The mechanism is based on two methods \fBconfigure\fR
+and \fBcget\fR. The behaviour of these methods is as follows:
+.Ip "\fI$widget\fR\->\fBconfigure\fR(\fI\-option\fR=>\fIvalue\fR ?,\fI\-option\fR=>\fIvalue\fR ...?);" 4
+Sets the values of \fI\-option\fR to \fIvalue\fR for each \fI\-option\fR=>\fIvalue\fR
+pair. The internal \fBnew\fR method does an implicit \fBconfigure\fR in this
+form with options passed in at widget create time.
+.Ip "\fI$widget\fR\->\fBconfigure\fR(\*(T'\fI\-option\fR')" 4
+In array context returns a list of five or two elements.  If \fI\-option\fR
+is an alias for another options it return a list consisting of the
+alias option and the name for the option is is an alias for, e.g.,
+\f(CW('-bg', 'background')\fR.  If \fI\-option\fR is not an alias the returned
+list has the following five elements:
+.Ip "\fIOption Name\fR" 12
+The value of \fI\-option\fR, e.g., \fB\-background\fR.
+.Ip "\fIName\fR" 12
+The option's name in the option database, e.g., \f(CWbackground\fR.
+.Ip "\fIClass\fR" 12
+The option's class value in the option database, e.g., \f(CWBackground\fR.
+.Ip "\fIDefault\fR" 12
+The default value for the option if not specified or in the option database,
+e.g., \f(CWgrey\fR.
+.Ip "\fIValue\fR" 12
+The current value (as returned by \fBcget\fR), e.g., \f(CWwhite\fR.
+.Ip "\fI$widget\fR\->\fBconfigure\fR" 4
+Returns a list of lists for all the options supported by \fI$widget\fR.
+Each sub-list is in the form returned by \fBconfigure\fR(\*(R'\fI\-option\fR').
+(This mechanism is used by the \fBTk::Derived\fR class to determine
+the options available from base class.)
+.Ip "\fI$widget\fR\->\fBcget\fR(\*(T'\fI\-option\fR')" 4
+Returns the current value of \fI\-option\fR for \fI$widget\fR.
+.Sp
+\fBcget\fR(\*(R'\fI\-option\fR') is clumsy with the need for \fB'\*(R'\fR due to perl's
+parsing rules. Something more subtle using tie might look better.
+.PP
+The following paragraphs describe the common configuration options supported by
+widgets in the Tk toolkit.  Every widget does not necessarily support every option
+(see the the documentation entries for individual widgets for a list of the
+standard options supported by that widget), but if a widget does support an option
+with one of the names listed below, then the option has exactly the effect
+described below.
+.PP
+In the descriptions below, ``Name'\*(R' refers to the option's name in the option
+database.  ``Class'\*(R' refers to the option's class value
+in the option database.  ``Switch'\*(R' refers to the switch used in widget-creation
+and \fBconfigure\fR widget methods to set this value. For example, if an option's
+configure option is \fB\-foreground\fR and there exists a widget \fI$widget\fR, then the
+call:
+.PP
+\ \ \ \ \fI$widget\fR\->\fBconfigure\fR(\fB\-foreground\fR=>\fB'black\*(R'\fR)
+.PP
+may be used to specify the value \fBblack\fR for the option in the widget \fI$widget\fR.
+Configure options may be abbreviated, as long as the abbreviation is unambiguous
+(abbreviation is deprecated in perl/Tk).
+.Sh "Creation options: Widget Name and Class"
+The \fBName\fR and \fB\-class\fR options can only be specified when a widget is 
+created, and cannot be changed with \fBconfigure\fR.  These options determine
+the widget's identity and how Tk applies resource values from the
+option database (see the \fITk::option\fR manpage) and so they 
+cannot be assigned by the options database.
+.Ip "Name:	\fIname\fR" 4
+.Ip "Switch:	\fBName\fR" 4
+Specifies the path element for the widget.  Names generally begin with a
+lowercase letter.
+.Sp
+Each widget has a unique \fIpathname\fR that follows the hierarchy from the
+\fBMainWindow\fR to the widget itself.  Since the widget's \fBPathName\fR is
+used to assign options from the options database, it is important to
+specify a distinctive \fBName\fR for any widget that will have non-default
+options.  See the \fITk::option\fR manpage for details.
+.Ip "Name:	\fIclass\fR" 4
+.Ip "Switch:	\fB\-class\fR" 4
+Specifies a class for the window.  Classes generally begin with an
+uppercase letter.
+.Sp
+This class will be used when querying the option database for
+the window's other options (see Tk::options), and it will also be used 
+later for other purposes such as bindings.  One typically assigns a class
+to a \fBTopLevel\fR or \fBFrame\fR so that the class will apply to all of
+that widget's children.
+.Sh "Reconfigurable options"
+These options can be set at widget creation or changed later via \fBconfigure\fR.
+.Ip "Name:	\fBactiveBackground\fR" 4
+.Ip "Class:	\fBForeground\fR" 4
+.Ip "Switch:	\fB\-activebackground\fR" 4
+Specifies background color to use when drawing active elements.
+An element (a widget or portion of a widget) is active if the
+mouse cursor is positioned over the element and pressing a mouse button
+will cause some action to occur.
+If strict Motif compliance has been requested by setting the
+\fB$Tk::strictMotif\fR variable, this option will normally be
+ignored;  the normal background color will be used instead.
+For some elements on Windows and Macintosh systems, the active color
+will only be used while mouse button 1 is pressed over the element.
+.Ip "Name:	\fBactiveBorderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-activeborderwidth\fR" 4
+Specifies a non-negative value indicating
+the width of the 3-D border drawn around active elements.
+See above for definition of active elements.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+This option is typically only available in widgets displaying more
+than one element at a time (e.g. menus but not buttons).
+.Ip "Name:	\fBactiveForeground\fR" 4
+.Ip "Class:	\fBBackground\fR" 4
+.Ip "Switch:	\fB\-activeforeground\fR" 4
+Specifies foreground color to use when drawing active elements.
+See above for definition of active elements.
+.Ip "Name:	\fBanchor\fR" 4
+.Ip "Class:	\fBAnchor\fR" 4
+.Ip "Switch:	\fB\-anchor\fR" 4
+Specifies how the information in a widget (e.g. text or a bitmap)
+is to be displayed in the widget.
+Must be one of the values \fBn\fR, \fBne\fR, \fBe\fR, \fBse\fR,
+\fBs\fR, \fBsw\fR, \fBw\fR, \fBnw\fR, or \fBcenter\fR.
+For example, \fBnw\fR means display the information such that its
+top-left corner is at the top-left corner of the widget.
+.Ip "Name:	\fBbackground\fR" 4
+.Ip "Class:	\fBBackground\fR" 4
+.Ip "Switch:	\fB\-background\fR" 4
+.Ip "Alias:	\fB\-bg\fR" 4
+Specifies the normal background color to use when displaying the
+widget.
+.Ip "Name:	\fBbitmap\fR" 4
+.Ip "Class:	\fBBitmap\fR" 4
+.Ip "Switch:	\fB\-bitmap\fR" 4
+Specifies a bitmap to display in the widget, in any of the forms
+acceptable to \fBTk_GetBitmap\fR.
+The exact way in which the bitmap is displayed may be affected by
+other options such as \fB\-anchor\fR or \fB\-justify\fR.
+Typically, if this option is specified then it overrides other
+options that specify a textual value to display in the widget;
+the \fB\-bitmap\fR option may be reset to an empty string to re-enable
+a text display.
+In widgets that support both \fB\-bitmap\fR and \fB\-image\fR options,
+\fB\-image\fR will usually override \fB\-bitmap\fR.
+.Ip "Name:	\fBborderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-borderwidth\fR" 4
+.Ip "Alias:	\fB\-bd\fR" 4
+Specifies a non-negative value indicating the width
+of the 3-D border to draw around the outside of the widget (if such a
+border is being drawn;  the \fBrelief\fR option typically determines
+this).  The value may also be used when drawing 3-D effects in the
+interior of the widget.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.Ip "Name:	\fBcursor\fR" 4
+.Ip "Class:	\fBCursor\fR" 4
+.Ip "Switch:	\fB\-cursor\fR" 4
+Specifies the mouse cursor to be used for the widget.
+The value may have any of the forms acceptable to \fBTk_GetCursor\fR.
+.Ip "Name:	\fBdisabledForeground\fR" 4
+.Ip "Class:	\fBDisabledForeground\fR" 4
+.Ip "Switch:	\fB\-disabledforeground\fR" 4
+Specifies foreground color to use when drawing a disabled element.
+If the option is specified as an empty string (which is typically the
+case on monochrome displays), disabled elements are drawn with the
+normal foreground color but they are dimmed by drawing them
+with a stippled fill pattern.
+.Ip "Name:	\fBexportSelection\fR" 4
+.Ip "Class:	\fBExportSelection\fR" 4
+.Ip "Switch:	\fB\-exportselection\fR" 4
+Specifies whether or not a selection in the widget should also be
+the X selection.
+The value may have any of the forms accepted by \fBTcl_GetBoolean\fR,
+such as \fBtrue\fR, \fBfalse\fR, \fB0\fR, \fB1\fR, \fByes\fR, or \fBno\fR.
+If the selection is exported, then selecting in the widget deselects
+the current X selection, selecting outside the widget deselects any
+widget selection, and the widget will respond to selection retrieval
+requests when it has a selection.  The default is usually for widgets
+to export selections.
+.Ip "Name:	\fBfont\fR" 4
+.Ip "Class:	\fBFont\fR" 4
+.Ip "Switch:	\fB\-font\fR" 4
+Specifies the font to use when drawing text inside the widget.
+.Ip "Name:	\fBforeground\fR" 4
+.Ip "Class:	\fBForeground\fR" 4
+.Ip "Switch:	\fB\-foreground\fR" 4
+.Ip "Alias:	\fB\-fg\fR" 4
+Specifies the normal foreground color to use when displaying the widget.
+.Ip "Name:	\fBhighlightBackground\fR" 4
+.Ip "Class:	\fBHighlightBackground\fR" 4
+.Ip "Switch:	\fB\-highlightbackground\fR" 4
+Specifies the color to display in the traversal highlight region when
+the widget does not have the input focus.
+.Ip "Name:	\fBhighlightColor\fR" 4
+.Ip "Class:	\fBHighlightColor\fR" 4
+.Ip "Switch:	\fB\-highlightcolor\fR" 4
+Specifies the color to use for the traversal highlight rectangle that is
+drawn around the widget when it has the input focus.
+.Ip "Name:	\fBhighlightThickness\fR" 4
+.Ip "Class:	\fBHighlightThickness\fR" 4
+.Ip "Switch:	\fB\-highlightthickness\fR" 4
+Specifies a non-negative value indicating the width of the highlight
+rectangle to draw around the outside of the widget when it has the
+input focus.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+If the value is zero, no focus highlight is drawn around the widget.
+.Ip "Name:	\fBimage\fR" 4
+.Ip "Class:	\fBImage\fR" 4
+.Ip "Switch:	\fB\-image\fR" 4
+Specifies an image to display in the widget, which must have been
+created with an image create. (See the \fITk::Image\fR manpage for details of image creation.)
+Typically, if the \fB\-image\fR option is specified then it overrides other
+options that specify a bitmap or textual value to display in the widget;
+the \fB\-image\fR option may be reset to an empty string to re-enable
+a bitmap or text display.
+.Ip "Name:	\fBinsertBackground\fR" 4
+.Ip "Class:	\fBForeground\fR" 4
+.Ip "Switch:	\fB\-insertbackground\fR" 4
+Specifies the color to use as background in the area covered by the
+insertion cursor.  This color will normally override either the normal
+background for the widget (or the selection background if the insertion
+cursor happens to fall in the selection).
+.Ip "Name:	\fBinsertBorderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-insertborderwidth\fR" 4
+Specifies a non-negative value indicating the width
+of the 3-D border to draw around the insertion cursor.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.Ip "Name:	\fBinsertOffTime\fR" 4
+.Ip "Class:	\fBOffTime\fR" 4
+.Ip "Switch:	\fB\-insertofftime\fR" 4
+Specifies a non-negative integer value indicating the number of
+milliseconds the insertion cursor should remain ``off'\*(R' in each blink cycle.
+If this option is zero then the cursor doesn't blink:  it is on
+all the time.
+.Ip "Name:	\fBinsertOnTime\fR" 4
+.Ip "Class:	\fBOnTime\fR" 4
+.Ip "Switch:	\fB\-insertontime\fR" 4
+Specifies a non-negative integer value indicating the number of
+milliseconds the insertion cursor should remain ``on'\*(R' in each blink cycle.
+.Ip "Name:	\fBinsertWidth\fR" 4
+.Ip "Class:	\fBInsertWidth\fR" 4
+.Ip "Switch:	\fB\-insertwidth\fR" 4
+Specifies a  value indicating the total width of the insertion cursor.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+If a border has been specified for the insertion
+cursor (using the \fBinsertBorderWidth\fR option), the border
+will be drawn inside the width specified by the \fBinsertWidth\fR
+option.
+.Ip "Name:	\fBjump\fR" 4
+.Ip "Class:	\fBJump\fR" 4
+.Ip "Switch:	\fB\-jump\fR" 4
+For widgets with a slider that can be dragged to adjust a value,
+such as scrollbars, this option determines when
+notifications are made about changes in the value.
+The option's value must be a boolean of the form accepted by
+\fBTcl_GetBoolean\fR.
+If the value is false, updates are made continuously as the
+slider is dragged.
+If the value is true, updates are delayed until the mouse button
+is released to end the drag;  at that point a single notification
+is made (the value ``jumps'\*(R' rather than changing smoothly).
+.Ip "Name:	\fBjustify\fR" 4
+.Ip "Class:	\fBJustify\fR" 4
+.Ip "Switch:	\fB\-justify\fR" 4
+When there are multiple lines of text displayed in a widget, this
+option determines how the lines line up with each other.
+Must be one of \fBleft\fR, \fBcenter\fR, or \fBright\fR.
+\fBLeft\fR means that the lines\*(R' left edges all line up, \fBcenter\fR
+means that the lines\*(R' centers are aligned, and \fBright\fR means
+that the lines\*(R' right edges line up.
+.Ip "Name:	\fBorient\fR" 4
+.Ip "Class:	\fBOrient\fR" 4
+.Ip "Switch:	\fB\-orient\fR" 4
+For widgets that can lay themselves out with either a horizontal
+or vertical orientation, such as scrollbars, this option specifies
+which orientation should be used.  Must be either \fBhorizontal\fR
+or \fBvertical\fR or an abbreviation of one of these.
+.Ip "Name:	\fBpadX\fR" 4
+.Ip "Class:	\fBPad\fR" 4
+.Ip "Switch:	\fB\-padx\fR" 4
+Specifies a non-negative value indicating how much extra space
+to request for the widget in the X\-direction.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+When computing how large a window it needs, the widget will
+add this amount to the width it would normally need (as determined
+by the width of the things displayed in the widget);  if the geometry
+manager can satisfy this request, the widget will end up with extra
+internal space to the left and/or right of what it displays inside.
+Most widgets only use this option for padding text:  if they are
+displaying a bitmap or image, then they usually ignore padding
+options.
+.Ip "Name:	\fBpadY\fR" 4
+.Ip "Class:	\fBPad\fR" 4
+.Ip "Switch:	\fB\-pady\fR" 4
+Specifies a non-negative value indicating how much extra space
+to request for the widget in the Y\-direction.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+When computing how large a window it needs, the widget will add
+this amount to the height it would normally need (as determined by
+the height of the things displayed in the widget);  if the geometry
+manager can satisfy this request, the widget will end up with extra
+internal space above and/or below what it displays inside.
+Most widgets only use this option for padding text:  if they are
+displaying a bitmap or image, then they usually ignore padding
+options.
+.Ip "Name:	\fBrelief\fR" 4
+.Ip "Class:	\fBRelief\fR" 4
+.Ip "Switch:	\fB\-relief\fR" 4
+Specifies the 3-D effect desired for the widget.  Acceptable
+values are \fBraised\fR, \fBsunken\fR, \fBflat\fR, \fBridge\fR,
+\fBsolid\fR, and \fBgroove\fR.
+The value
+indicates how the interior of the widget should appear relative
+to its exterior;  for example, \fBraised\fR means the interior of
+the widget should appear to protrude from the screen, relative to
+the exterior of the widget.
+.Ip "Name:	\fBrepeatDelay\fR" 4
+.Ip "Class:	\fBRepeatDelay\fR" 4
+.Ip "Switch:	\fB\-repeatdelay\fR" 4
+Specifies the number of milliseconds a button or key must be held
+down before it begins to auto-repeat.  Used, for example, on the
+up- and down-arrows in scrollbars.
+.Ip "Name:	\fBrepeatInterval\fR" 4
+.Ip "Class:	\fBRepeatInterval\fR" 4
+.Ip "Switch:	\fB\-repeatinterval\fR" 4
+Used in conjunction with \fBrepeatDelay\fR:  once auto-repeat
+begins, this option determines the number of milliseconds between
+auto-repeats.
+.Ip "Name:	\fBselectBackground\fR" 4
+.Ip "Class:	\fBForeground\fR" 4
+.Ip "Switch:	\fB\-selectbackground\fR" 4
+Specifies the background color to use when displaying selected
+items.
+.Ip "Name:	\fBselectBorderWidth\fR" 4
+.Ip "Class:	\fBBorderWidth\fR" 4
+.Ip "Switch:	\fB\-selectborderwidth\fR" 4
+Specifies a non-negative value indicating the width
+of the 3-D border to draw around selected items.
+The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.Ip "Name:	\fBselectForeground\fR" 4
+.Ip "Class:	\fBBackground\fR" 4
+.Ip "Switch:	\fB\-selectforeground\fR" 4
+Specifies the foreground color to use when displaying selected
+items.
+.Ip "Name:	\fBsetGrid\fR" 4
+.Ip "Class:	\fBSetGrid\fR" 4
+.Ip "Switch:	\fB\-setgrid\fR" 4
+Specifies a boolean value that determines whether this widget controls the
+resizing grid for its top-level window.
+This option is typically used in text widgets, where the information
+in the widget has a natural size (the size of a character) and it makes
+sense for the window's dimensions to be integral numbers of these units.
+These natural window sizes form a grid.
+If the \fBsetGrid\fR option is set to true then the widget will
+communicate with the window manager so that when the user interactively
+resizes the top-level window that contains the widget, the dimensions of
+the window will be displayed to the user in grid units and the window
+size will be constrained to integral numbers of grid units.
+See the section on \fI\s-1GRIDDED\s0 \s-1GEOMETRY\s0 \s-1MANAGEMENT\s0\fR in the \fITk::Wm\fR manpage
+for more details.
+.Ip "Name:	\fBtakeFocus\fR" 4
+.Ip "Class:	\fBTakeFocus\fR" 4
+.Ip "Switch:	\fB\-takefocus\fR" 4
+Determines whether the window accepts the focus during keyboard
+traversal (e.g., Tab and Shift-Tab).
+Before setting the focus to a window, the traversal scripts
+consult the value of the \fBtakeFocus\fR option.
+A value of \fB0\fR means that the window should be skipped entirely
+during keyboard traversal.
+\fB1\fR means that the window should receive the input
+focus as long as it is viewable (it and all of its ancestors are mapped).
+An empty value for the option means that the traversal scripts make
+the decision about whether or not to focus on the window:  the current
+algorithm is to skip the window if it is
+disabled, if it has no key bindings, or if it is not viewable.
+If the value has any other form, then the traversal scripts take
+the value, append the name of the window to it (with a separator space),
+and evaluate the resulting string as a Callback.
+The script must return \fB0\fR, \fB1\fR, or an empty string:  a
+\fB0\fR or \fB1\fR value specifies whether the window will receive
+the input focus, and an empty string results in the default decision
+described above.
+Note: this interpretation of the option is defined entirely by
+the Callbacks that implement traversal:  the widget implementations
+ignore the option entirely, so you can change its meaning if you
+redefine the keyboard traversal scripts.
+.Ip "Name:	\fBtext\fR" 4
+.Ip "Class:	\fBText\fR" 4
+.Ip "Switch:	\fB\-text\fR" 4
+Specifies a string to be displayed inside the widget.  The way in which
+the string is displayed depends on the particular widget and may be
+determined by other options, such as \fBanchor\fR or \fBjustify\fR.
+.Ip "Name:	\fBtextVariable\fR" 4
+.Ip "Class:	\fBVariable\fR" 4
+.Ip "Switch:	\fB\-textvariable\fR" 4
+Specifies the name of a variable.  The value of the variable is a text
+string to be displayed inside the widget;  if the variable value changes
+then the widget will automatically update itself to reflect the new value.
+The way in which the string is displayed in the widget depends on the
+particular widget and may be determined by other options, such as
+\fBanchor\fR or \fBjustify\fR.
+.Ip "Name:	\fBtroughColor\fR" 4
+.Ip "Class:	\fBBackground\fR" 4
+.Ip "Switch:	\fB\-troughcolor\fR" 4
+Specifies the color to use for the rectangular trough areas
+in widgets such as scrollbars and scales.
+.Ip "Name:	\fBunderline\fR" 4
+.Ip "Class:	\fBUnderline\fR" 4
+.Ip "Switch:	\fB\-underline\fR" 4
+Specifies the integer index of a character to underline in the widget.
+This option is used by the default bindings to implement keyboard
+traversal for menu buttons and menu entries.
+0 corresponds to the first character of the text displayed in the
+widget, 1 to the next character, and so on.
+.Ip "Name:	\fBwrapLength\fR" 4
+.Ip "Class:	\fBWrapLength\fR" 4
+.Ip "Switch:	\fB\-wraplength\fR" 4
+For widgets that can perform word-wrapping, this option specifies
+the maximum line length.
+Lines that would exceed this length are wrapped onto the next line,
+so that no line is longer than the specified length.
+The value may be specified in any of the standard forms for
+screen distances.
+If this value is less than or equal to 0 then no wrapping is done:  lines
+will break only at newline characters in the text.
+.Ip "Name:	\fBxScrollCommand\fR" 4
+.Ip "Class:	\fBScrollCommand\fR" 4
+.Ip "Switch:	\fB\-xscrollcommand\fR" 4
+Specifies a callback used to communicate with horizontal
+scrollbars.
+When the view in the widget's window changes (or
+whenever anything else occurs that could change the display in a
+scrollbar, such as a change in the total size of the widget's
+contents), the widget will
+make a callback passing two numeric arguments in addition to
+any specified in the callback.
+Each of the numbers is a fraction between 0 and 1, which indicates
+a position in the document.  0 indicates the beginning of the document,
+1 indicates the end, .333 indicates a position one third the way through
+the document, and so on.
+The first fraction indicates the first information in the document
+that is visible in the window, and the second fraction indicates
+the information just after the last portion that is visible.
+Typically the
+\fBxScrollCommand\fR option consists of the scrollbar widget object
+and the method ``set'\*(R' i.e. [\fBset\fR => \fI$sb\fR]:
+this will cause the scrollbar to be updated whenever the view in the window changes.
+If this option is not specified, then no command will be executed.
+.Ip "Name:	\fByScrollCommand\fR" 4
+.Ip "Class:	\fBScrollCommand\fR" 4
+.Ip "Switch:	\fB\-yscrollcommand\fR" 4
+Specifies a calback used to communicate with vertical
+scrollbars.  This option is treated in the same way as the
+\fBxScrollCommand\fR option, except that it is used for vertical
+scrollbars and is provided by widgets that support vertical scrolling.
+See the description of \fBxScrollCommand\fR for details
+on how this option is used.
+.SH "SEE ALSO"
+Tk::option
+Tk::callbacks
+Tk::configspec
+Tk_GetPixels
+.SH "KEYWORDS"
+class, name, standard option, switch
+
+.rn }` ''
+.IX Title "OPTIONS 1"
+.IX Name "options - Standard options supported by widgets and their manipulation"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fI$widget\fR\->\fBconfigure\fR(\fI\-option\fR=>\fIvalue\fR ?,\fI\-option\fR=>\fIvalue\fR ...?);"
+
+.IX Item "\fI$widget\fR\->\fBconfigure\fR(\*(T'\fI\-option\fR')"
+
+.IX Item "\fIOption Name\fR"
+
+.IX Item "\fIName\fR"
+
+.IX Item "\fIClass\fR"
+
+.IX Item "\fIDefault\fR"
+
+.IX Item "\fIValue\fR"
+
+.IX Item "\fI$widget\fR\->\fBconfigure\fR"
+
+.IX Item "\fI$widget\fR\->\fBcget\fR(\*(T'\fI\-option\fR')"
+
+.IX Subsection "Creation options: Widget Name and Class"
+
+.IX Item "Name:	\fIname\fR"
+
+.IX Item "Switch:	\fBName\fR"
+
+.IX Item "Name:	\fIclass\fR"
+
+.IX Item "Switch:	\fB\-class\fR"
+
+.IX Subsection "Reconfigurable options"
+
+.IX Item "Name:	\fBactiveBackground\fR"
+
+.IX Item "Class:	\fBForeground\fR"
+
+.IX Item "Switch:	\fB\-activebackground\fR"
+
+.IX Item "Name:	\fBactiveBorderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-activeborderwidth\fR"
+
+.IX Item "Name:	\fBactiveForeground\fR"
+
+.IX Item "Class:	\fBBackground\fR"
+
+.IX Item "Switch:	\fB\-activeforeground\fR"
+
+.IX Item "Name:	\fBanchor\fR"
+
+.IX Item "Class:	\fBAnchor\fR"
+
+.IX Item "Switch:	\fB\-anchor\fR"
+
+.IX Item "Name:	\fBbackground\fR"
+
+.IX Item "Class:	\fBBackground\fR"
+
+.IX Item "Switch:	\fB\-background\fR"
+
+.IX Item "Alias:	\fB\-bg\fR"
+
+.IX Item "Name:	\fBbitmap\fR"
+
+.IX Item "Class:	\fBBitmap\fR"
+
+.IX Item "Switch:	\fB\-bitmap\fR"
+
+.IX Item "Name:	\fBborderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-borderwidth\fR"
+
+.IX Item "Alias:	\fB\-bd\fR"
+
+.IX Item "Name:	\fBcursor\fR"
+
+.IX Item "Class:	\fBCursor\fR"
+
+.IX Item "Switch:	\fB\-cursor\fR"
+
+.IX Item "Name:	\fBdisabledForeground\fR"
+
+.IX Item "Class:	\fBDisabledForeground\fR"
+
+.IX Item "Switch:	\fB\-disabledforeground\fR"
+
+.IX Item "Name:	\fBexportSelection\fR"
+
+.IX Item "Class:	\fBExportSelection\fR"
+
+.IX Item "Switch:	\fB\-exportselection\fR"
+
+.IX Item "Name:	\fBfont\fR"
+
+.IX Item "Class:	\fBFont\fR"
+
+.IX Item "Switch:	\fB\-font\fR"
+
+.IX Item "Name:	\fBforeground\fR"
+
+.IX Item "Class:	\fBForeground\fR"
+
+.IX Item "Switch:	\fB\-foreground\fR"
+
+.IX Item "Alias:	\fB\-fg\fR"
+
+.IX Item "Name:	\fBhighlightBackground\fR"
+
+.IX Item "Class:	\fBHighlightBackground\fR"
+
+.IX Item "Switch:	\fB\-highlightbackground\fR"
+
+.IX Item "Name:	\fBhighlightColor\fR"
+
+.IX Item "Class:	\fBHighlightColor\fR"
+
+.IX Item "Switch:	\fB\-highlightcolor\fR"
+
+.IX Item "Name:	\fBhighlightThickness\fR"
+
+.IX Item "Class:	\fBHighlightThickness\fR"
+
+.IX Item "Switch:	\fB\-highlightthickness\fR"
+
+.IX Item "Name:	\fBimage\fR"
+
+.IX Item "Class:	\fBImage\fR"
+
+.IX Item "Switch:	\fB\-image\fR"
+
+.IX Item "Name:	\fBinsertBackground\fR"
+
+.IX Item "Class:	\fBForeground\fR"
+
+.IX Item "Switch:	\fB\-insertbackground\fR"
+
+.IX Item "Name:	\fBinsertBorderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-insertborderwidth\fR"
+
+.IX Item "Name:	\fBinsertOffTime\fR"
+
+.IX Item "Class:	\fBOffTime\fR"
+
+.IX Item "Switch:	\fB\-insertofftime\fR"
+
+.IX Item "Name:	\fBinsertOnTime\fR"
+
+.IX Item "Class:	\fBOnTime\fR"
+
+.IX Item "Switch:	\fB\-insertontime\fR"
+
+.IX Item "Name:	\fBinsertWidth\fR"
+
+.IX Item "Class:	\fBInsertWidth\fR"
+
+.IX Item "Switch:	\fB\-insertwidth\fR"
+
+.IX Item "Name:	\fBjump\fR"
+
+.IX Item "Class:	\fBJump\fR"
+
+.IX Item "Switch:	\fB\-jump\fR"
+
+.IX Item "Name:	\fBjustify\fR"
+
+.IX Item "Class:	\fBJustify\fR"
+
+.IX Item "Switch:	\fB\-justify\fR"
+
+.IX Item "Name:	\fBorient\fR"
+
+.IX Item "Class:	\fBOrient\fR"
+
+.IX Item "Switch:	\fB\-orient\fR"
+
+.IX Item "Name:	\fBpadX\fR"
+
+.IX Item "Class:	\fBPad\fR"
+
+.IX Item "Switch:	\fB\-padx\fR"
+
+.IX Item "Name:	\fBpadY\fR"
+
+.IX Item "Class:	\fBPad\fR"
+
+.IX Item "Switch:	\fB\-pady\fR"
+
+.IX Item "Name:	\fBrelief\fR"
+
+.IX Item "Class:	\fBRelief\fR"
+
+.IX Item "Switch:	\fB\-relief\fR"
+
+.IX Item "Name:	\fBrepeatDelay\fR"
+
+.IX Item "Class:	\fBRepeatDelay\fR"
+
+.IX Item "Switch:	\fB\-repeatdelay\fR"
+
+.IX Item "Name:	\fBrepeatInterval\fR"
+
+.IX Item "Class:	\fBRepeatInterval\fR"
+
+.IX Item "Switch:	\fB\-repeatinterval\fR"
+
+.IX Item "Name:	\fBselectBackground\fR"
+
+.IX Item "Class:	\fBForeground\fR"
+
+.IX Item "Switch:	\fB\-selectbackground\fR"
+
+.IX Item "Name:	\fBselectBorderWidth\fR"
+
+.IX Item "Class:	\fBBorderWidth\fR"
+
+.IX Item "Switch:	\fB\-selectborderwidth\fR"
+
+.IX Item "Name:	\fBselectForeground\fR"
+
+.IX Item "Class:	\fBBackground\fR"
+
+.IX Item "Switch:	\fB\-selectforeground\fR"
+
+.IX Item "Name:	\fBsetGrid\fR"
+
+.IX Item "Class:	\fBSetGrid\fR"
+
+.IX Item "Switch:	\fB\-setgrid\fR"
+
+.IX Item "Name:	\fBtakeFocus\fR"
+
+.IX Item "Class:	\fBTakeFocus\fR"
+
+.IX Item "Switch:	\fB\-takefocus\fR"
+
+.IX Item "Name:	\fBtext\fR"
+
+.IX Item "Class:	\fBText\fR"
+
+.IX Item "Switch:	\fB\-text\fR"
+
+.IX Item "Name:	\fBtextVariable\fR"
+
+.IX Item "Class:	\fBVariable\fR"
+
+.IX Item "Switch:	\fB\-textvariable\fR"
+
+.IX Item "Name:	\fBtroughColor\fR"
+
+.IX Item "Class:	\fBBackground\fR"
+
+.IX Item "Switch:	\fB\-troughcolor\fR"
+
+.IX Item "Name:	\fBunderline\fR"
+
+.IX Item "Class:	\fBUnderline\fR"
+
+.IX Item "Switch:	\fB\-underline\fR"
+
+.IX Item "Name:	\fBwrapLength\fR"
+
+.IX Item "Class:	\fBWrapLength\fR"
+
+.IX Item "Switch:	\fB\-wraplength\fR"
+
+.IX Item "Name:	\fBxScrollCommand\fR"
+
+.IX Item "Class:	\fBScrollCommand\fR"
+
+.IX Item "Switch:	\fB\-xscrollcommand\fR"
+
+.IX Item "Name:	\fByScrollCommand\fR"
+
+.IX Item "Class:	\fBScrollCommand\fR"
+
+.IX Item "Switch:	\fB\-yscrollcommand\fR"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

@@ -1,0 +1,14 @@
+# Index created by AutoSplit for blib/lib/Tk/Frame.pm
+#    (file acts as timestamp)
+package Tk::Frame;
+sub labelPack ;
+sub labelVariable ;
+sub label ;
+sub queuePack ;
+sub sbset ;
+sub freeze_on_map ;
+sub AddScrollbars ;
+sub packscrollbars ;
+sub scrollbars ;
+sub FindMenu ;
+1;

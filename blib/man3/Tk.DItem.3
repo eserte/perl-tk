@@ -1,0 +1,643 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH DITEM 1 "perl 5.005, patch 53" "13/Oct/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+Tk::DItem \- Tix Display Items
+.SH "SYNOPSIS"
+.SH "DESCRIPTION"
+The Tix \fBDisplay Items\fR and \fBDisplay Types\fR are devised to
+solve a general problem: many Tix widgets (both existing and planned
+ones) display many items of many types simultaneously.
+.PP
+For example, a hierarchical listbox widget (see the \fITk::HList\fR manpage) can display
+items
+of images, plain text and subwindows in the form of a
+hierarchy. Another widget, the tabular listbox widget (see the \fITk::TList\fR manpage)
+also displays items of the
+same types, although it arranges the items in a tabular form. Yet
+another widget, the spreadsheet widget (see the \fITk::TixGrid\fR manpage),
+also displays similar types
+items, but in yet another format.
+.PP
+In these examples, the display items in different widgets are only
+different in how they are arranged by the \fBhost widget\fR. In Tix,
+display items are clearly separated from the host widgets. The
+advantage is two-fold: first, the creation and configuration of
+display items become uniform across different host widgets. Second,
+new display item types can be added without the need to modify the
+existing host widgets.
+.PP
+In a way, Tix display items are similar to the items inside Tk
+the canvas widget. However, unlike the Tix display items, the canvas
+items are not independent of the canvas widget; this makes it
+impossible to use the canvas items inside other types of TK widgets.
+.PP
+The appearance of a display item is controlled by a set of
+\fIattributes\fR. It is observed that each the attributes usually fall
+into one of two categroies: ``\fIindividual\fR'\*(R' or
+``\fIcollective\fR'\*(R'. For example, the text items inside a HList widget
+may all display a different text string; however, in most cases, the
+text items share the same color, font and spacing. Instead of keeping
+a duplicated version of the same attributes inside each display item,
+it will be advantageous to put the collective attributes in a
+special object called a \fBdisplay style\fR. First, there is the space
+concern: a host widget may have many thousands of items; keeping
+dupilcated attributes will be very wasteful. Second, when it becomes
+necessary to change a collective attribute, such as changing all the
+text items\*(R' foreground color to red, it will be more efficient to
+change only the display style object than to modify all the text
+items one by one.
+.PP
+The attributes of the a display item are thus stored in two places: it
+has a set of \fBitem options\fR to store its individual attributes. Each
+display item is also associated with a \fIdisplay style\fR, which specifies
+the collective attributes of all items associated with itself.
+.PP
+The division between the individual and collective attributes are
+fixed and cannot be changed. Thus, when it becomes necessary for some
+items to differ in their collective attributes, two or more \fBdisplay styles\fR
+can be used. For example, suppose you want to display two
+columns of text items inside an HList widget, one column in red and
+the other in blue. You can create a TextStyle object called ``$red'\*(R'
+which defines a red foreground, and another called ``$blue'\*(R', which
+defines a blue foreground. You can then associate all text items of
+the first column to ``$red'\*(R' and the second column to ``$blue'\*(R'
+.SH "DISPLAY ITEM TYPES AND OPTIONS"
+Currently there are three types of display items: \fBtext\fR,
+\fBimagetext\fR and \fIwindow\fR.
+.SH "IMAGETEXT ITEMS"
+Display items of the type \fBimagetext\fR are used to display an image
+together with a text string. Imagetext items support the following options:
+.Sh "Imagetext Item Options"
+.Ip "Name:	\fBbitmap\fR" 4
+.Ip "Class:	\fBBitmap\fR" 4
+.Ip "Switch:	\fB\-bitmap\fR" 4
+Specifies the bitmap to display in the item.
+.Ip "Name:	\fBimage\fR" 4
+.Ip "Class:	\fBImage\fR" 4
+.Ip "Switch:	\fB\-image\fR" 4
+Specifies the image to display in the item. When both the
+\fB\-bitmap\fR and \fB\-image\fR options are specified, only the image
+will be displayed.
+.Ip "Name:	\fBimageTextStyle\fR" 4
+.Ip "Class:	\fBImageTextStyle\fR" 4
+.Ip "Switch:	\fB\-style\fR" 4
+Specifies the display style to use for this item. Must be the
+name of a \fBimagetext\fR display style that has already be created with
+\fBItemStyle\fR.
+.Ip "Name:	\fBshowImage\fR" 4
+.Ip "Class:	\fBShowImage\fR" 4
+.Ip "Switch:	\fB\-showimage\fR" 4
+A Boolean value that specifies whether the image/bitmap should be
+displayed.
+.Ip "Name:	\fBshowText\fR" 4
+.Ip "Class:	\fBShowText\fR" 4
+.Ip "Switch:	\fB\-showtext\fR" 4
+A Boolean value that specifies whether the text string should be
+displayed.
+.Ip "Name:	\fBtext\fR" 4
+.Ip "Class:	\fBText\fR" 4
+.Ip "Switch:	\fB\-text\fR" 4
+Specifies the text string to display in the item.
+.Ip "Name:	\fBunderline\fR" 4
+.Ip "Class:	\fBUnderline\fR" 4
+.Ip "Switch:	\fB\-underline\fR" 4
+Specifies the integer index of a character to underline in the text
+string in the item.  0 corresponds to the first character of the text
+displayed in the widget, 1 to the next character, and so on.
+.Sh "Imagetext Style Options"
+The style information of \fBimagetext\fR items are stored in the
+\fBimagetext\fR display style. The following options are supported:
+.PP
+\fB\s-1STANDARD\s0 \s-1OPTIONS\s0\fR
+.PP
+\fB\-activebackground\fR	\fB\-activeforeground\fR
+\fB\-anchor\fR	\fB\-background\fR
+\fB\-disabledbackground\fR	\fB\-disabledforeground\fR
+\fB\-foreground\fR	\fB\-font\fR
+\fB\-justify\fR	\fB\-padx\fR
+\fB\-pady\fR	\fB\-selectbackground\fR
+\fB\-selectforeground\fR	\fB\-wraplength\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.PP
+\fB\s-1STYLE\s0\-\s-1SPECIFIC\s0 \s-1OPTIONS\s0\fR
+.Ip "Name:	\fBgap\fR" 4
+.Ip "Class:	\fBGap\fR" 4
+.Ip "Switch:	\fB\-gap\fR" 4
+Specifies the distance between the bitmap/image and the text string,
+in number of pixels.
+.Ip "Name:	\fBtextAnchor\fR" 4
+.Ip "Class:	\fBTextAnchor\fR" 4
+.Ip "Switch:	\fB\-textanchor\fR" 4
+The anchor position on the image to which text part is attached.
+This is a perl/Tk addition. Defaults to \fBe\fR for compatibility with standard
+Tix. The interesting cases are
+.Ip "\fBn\fR" 12
+Text is centred above the image.
+.Ip "\fBs\fR" 12
+Text is centred below the image
+.Ip "\fBe\fR" 12
+Text is centred to right of the image.
+.Ip "\fBw\fR" 12
+Text is centred to left of the image.
+.Ip "\fBc\fR" 12
+Text is centred over the image.
+.Sp
+The \fBsw\fR, \fBse\fR, \fBne\fR, and b<nw> cases look rather odd.
+.Sp
+To get items to line up correctly it will usually be necessary
+to specify \fB\-anchor\fR as well. e.g. with default \fBe\fR then anchoring
+item as a whole \fBw\fR lines images up down left with text stuck to right side.
+.SH "TEXT ITEMS"
+Display items of the type \fBtext\fR are used to display a text string
+in a widget. Text items support the following options:
+.Sh "Text Item Options"
+.Ip "Name:	\fBtextStyle\fR" 4
+.Ip "Class:	\fBTextStyle\fR" 4
+.Ip "Switch:	\fB\-style\fR" 4
+Specifies the display style to use for this text item. Must be the
+name of a \fBtext\fR display style that has already be created with
+\fBItemStyle\fR.
+.Ip "Name:	\fBtext\fR" 4
+.Ip "Class:	\fBText\fR" 4
+.Ip "Switch:	\fB\-text\fR" 4
+Specifies the text string to display in the item.
+.Ip "Name:	\fBunderline\fR" 4
+.Ip "Class:	\fBUnderline\fR" 4
+.Ip "Switch:	\fB\-underline\fR" 4
+Specifies the integer index of a character to underline in the item.
+0 corresponds to the first character of the text displayed in the
+widget, 1 to the next character, and so on.
+.Sh "Text Style Options"
+\fB\s-1STANDARD\s0 \s-1OPTIONS\s0\fR
+.PP
+\fB\-activebackground\fR	\fB\-activeforeground\fR
+\fB\-anchor\fR	\fB\-background\fR
+\fB\-disabledbackground\fR	\fB\-disabledforeground\fR
+\fB\-foreground\fR	\fB\-font\fR
+\fB\-justify\fR	\fB\-padx\fR
+\fB\-pady\fR	\fB\-selectbackground\fR
+\fB\-selectforeground\fR	\fB\-wraplength\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "WINDOW ITEMS"
+Display items of the type \fIwindow\fR are used to display a
+sub-window in a widget. \fBWindow\fR items support the following
+options:
+.Sh "Window Item Options"
+.Ip "Name:	\fBwindowStyle\fR" 4
+.Ip "Class:	\fBWindowStyle\fR" 4
+.Ip "Switch:	\fB\-style\fR" 4
+Specifies the display style to use for this window item. Must be the
+name of a \fIwindow\fR display style that has already be created with
+the \fBItemStyle\fR method.
+.Ip "Name:	\fBwindow\fR" 4
+.Ip "Class:	\fBWindow\fR" 4
+.Ip "Switch:	\fB\-window\fR" 4
+.Ip "Alias:	\fB\-widget\fR" 4
+Specifies the sub-window to display in the item.
+.Sh "Window Style Options"
+\fB\s-1STYLE\s0 \s-1STANDARD\s0 \s-1OPTIONS\s0\fR
+.PP
+\fB\-anchor\fR	\fB\-padx\fR	\fB\-pady\fR
+.PP
+See the \fITk::options\fR manpage for details of the standard options.
+.SH "CREATING DISPLAY ITEMS"
+Display items do not exist on their and thus they cannot be created
+independently of the widgets they reside in. As a rule, display items
+are created by special methods of their ``host'\*(R' widgets. For
+example, the HList widgets has a method \fBitem\fR which can be used
+to create new display items. The following code creates a new text
+item at the third column of the entry foo inside an HList widget:
+.PP
+.Vb 3
+\& my $hlist = $parent->HList(-columns=>3);
+\& $hlist->add('foo');
+\& $hlist->itemCreate('foo', 2, -itemtype=>'text', -text=>'Hello');
+.Ve
+The \fBitemCreate\fR method of the HList widget accepts a variable
+number of arguments. The special argument \fB\-itemtype\fR specifies
+which type of display item to create. Options that are valid for this
+type of display items can then be specified by one or more
+\fIoption-value\fR pairs.
+.PP
+After the display item is created, they can then be configured or
+destroyed using the methods provided by the host widget. For example,
+the HList widget has the methods \fBitemConfigure\fR, \fBitemCget\fR
+and \fBitemDelete\fR for accessing the display items.
+.SH "CREATING AND MANIPULATING ITEM STYLES"
+Item styles are created with \fBItemStyle\fR:
+.SH "SYNOPSIS"
+\ \ \ \fI$widget\fR\->\fBItemStyle\fR(\fIitemType\fR ?,\fB\-stylename\fR=>\fIname\fR? ?,\fB\-refwindow\fR=>\fIpathName\fR? ?,\fIoption\fR=>\fIvalue\fR, ...>?);
+.PP
+\fIitemType\fR must be one of the existing display items types such as
+\fBtext\fR, \fBimagetext\fR, \fBwindow\fR or any new types added by
+the user. Additional arguments can be given in one or more
+\fIoption-value\fR pairs. \fIoption\fR can be any of the valid option
+for this display style or any of the following:
+.Ip "\fB\-stylename\fR => \fIname\fR" 4
+Specifies a name for this style. If unspecified, then a default name
+will be chosen for this style.
+.Ip "\fB\-refwindow\fR => \fI$otherwidget\fR" 4
+Specifies a window to use for determine the default values of the
+display type. If unspecified, the \fI$widget\fR will be used. Default
+values for the display types can be set via the options database. The
+following example sets the \fB\-disablebackground\fR and
+\fB\-disabledforeground\fR options of a \fBtext\fR display style via
+the option database:
+.Sp
+.Vb 3
+\&  $widget->optionAdd('*table.list*disabledForeground' => 'blue');
+\&  $widget->optionAdd('*table.list*disabledBackground' => 'darkgray');
+\&  $widget->ItemStyle('text', -refwindow => $table_list, -fg => 'red');
+.Ve
+By using the option database to set the options of the display styles,
+we can advoid hard-coding the option values and give the user more
+flexibility in customization. See the \fITk::option\fR manpage for a detailed description
+of the option database.
+.SH "STYLE METHODS"
+The \fBItemStyle\fR method creates an object.
+This object supports the \fBconfigure\fR and \fBcget\fR methods
+described in the \fITk::options\fR manpage which can be used to enquire and
+modify the options described above.
+.PP
+The following additional methods are available for item styles:
+.Ip "\fI$style\fR\->\fBdelete\fR" 4
+Destroy this display style object.
+.SH "EXAMPLE"
+The following example creates two columns of data in a HList
+widget. The first column is in red and the second column in blue. The
+colors of the columns are controlled by two different \fBtext\fR
+styles. Also, the anchor and font of the second column is chosen so
+that the income data is aligned properly.
+.PP
+.Vb 4
+\&   use strict;
+\&   use Tk;
+\&   use Tk::HList;
+\&   use Tk::ItemStyle;
+.Ve
+.Vb 1
+\&   my $mw = MainWindow->new();
+.Ve
+.Vb 1
+\&   my $hlist = $mw->HList(-columns=>2)->pack;
+.Ve
+.Vb 2
+\&   my $red  = $hlist->ItemStyle('text', -foreground=>'#800000');
+\&   my $blue = $hlist->ItemStyle('text', -foreground=>'#000080', -anchor=>'e');
+.Ve
+.Vb 9
+\&   my $e;
+\&   foreach ([Joe => '$10,000'], [Peter => '$20,000'],
+\&            [Raj => '$90,000'],  [Zinh => '$0']) {
+\&       $e = $hlist->addchild("");
+\&       $hlist->itemCreate($e, 0, -itemtype=>'text',
+\&                -text=>$_->[0], -style=>$red );
+\&       $hlist->itemCreate($e, 1, -itemtype=>'text',
+\&                -text=>$_->[1], -style=>$blue);
+\&   }
+.Ve
+.Vb 1
+\&   Tk::MainLoop;
+.Ve
+.SH "SEE ALSO"
+Tk::HList
+Tk::TixGrid
+Tk::TList
+.SH "KEYWORDS"
+display item, display style, item style
+
+.rn }` ''
+.IX Title "DITEM 1"
+.IX Name "Tk::DItem - Tix Display Items"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Header "DISPLAY ITEM TYPES AND OPTIONS"
+
+.IX Header "IMAGETEXT ITEMS"
+
+.IX Subsection "Imagetext Item Options"
+
+.IX Item "Name:	\fBbitmap\fR"
+
+.IX Item "Class:	\fBBitmap\fR"
+
+.IX Item "Switch:	\fB\-bitmap\fR"
+
+.IX Item "Name:	\fBimage\fR"
+
+.IX Item "Class:	\fBImage\fR"
+
+.IX Item "Switch:	\fB\-image\fR"
+
+.IX Item "Name:	\fBimageTextStyle\fR"
+
+.IX Item "Class:	\fBImageTextStyle\fR"
+
+.IX Item "Switch:	\fB\-style\fR"
+
+.IX Item "Name:	\fBshowImage\fR"
+
+.IX Item "Class:	\fBShowImage\fR"
+
+.IX Item "Switch:	\fB\-showimage\fR"
+
+.IX Item "Name:	\fBshowText\fR"
+
+.IX Item "Class:	\fBShowText\fR"
+
+.IX Item "Switch:	\fB\-showtext\fR"
+
+.IX Item "Name:	\fBtext\fR"
+
+.IX Item "Class:	\fBText\fR"
+
+.IX Item "Switch:	\fB\-text\fR"
+
+.IX Item "Name:	\fBunderline\fR"
+
+.IX Item "Class:	\fBUnderline\fR"
+
+.IX Item "Switch:	\fB\-underline\fR"
+
+.IX Subsection "Imagetext Style Options"
+
+.IX Item "Name:	\fBgap\fR"
+
+.IX Item "Class:	\fBGap\fR"
+
+.IX Item "Switch:	\fB\-gap\fR"
+
+.IX Item "Name:	\fBtextAnchor\fR"
+
+.IX Item "Class:	\fBTextAnchor\fR"
+
+.IX Item "Switch:	\fB\-textanchor\fR"
+
+.IX Item "\fBn\fR"
+
+.IX Item "\fBs\fR"
+
+.IX Item "\fBe\fR"
+
+.IX Item "\fBw\fR"
+
+.IX Item "\fBc\fR"
+
+.IX Header "TEXT ITEMS"
+
+.IX Subsection "Text Item Options"
+
+.IX Item "Name:	\fBtextStyle\fR"
+
+.IX Item "Class:	\fBTextStyle\fR"
+
+.IX Item "Switch:	\fB\-style\fR"
+
+.IX Item "Name:	\fBtext\fR"
+
+.IX Item "Class:	\fBText\fR"
+
+.IX Item "Switch:	\fB\-text\fR"
+
+.IX Item "Name:	\fBunderline\fR"
+
+.IX Item "Class:	\fBUnderline\fR"
+
+.IX Item "Switch:	\fB\-underline\fR"
+
+.IX Subsection "Text Style Options"
+
+.IX Header "WINDOW ITEMS"
+
+.IX Subsection "Window Item Options"
+
+.IX Item "Name:	\fBwindowStyle\fR"
+
+.IX Item "Class:	\fBWindowStyle\fR"
+
+.IX Item "Switch:	\fB\-style\fR"
+
+.IX Item "Name:	\fBwindow\fR"
+
+.IX Item "Class:	\fBWindow\fR"
+
+.IX Item "Switch:	\fB\-window\fR"
+
+.IX Item "Alias:	\fB\-widget\fR"
+
+.IX Subsection "Window Style Options"
+
+.IX Header "CREATING DISPLAY ITEMS"
+
+.IX Header "CREATING AND MANIPULATING ITEM STYLES"
+
+.IX Header "SYNOPSIS"
+
+.IX Item "\fB\-stylename\fR => \fIname\fR"
+
+.IX Item "\fB\-refwindow\fR => \fI$otherwidget\fR"
+
+.IX Header "STYLE METHODS"
+
+.IX Item "\fI$style\fR\->\fBdelete\fR"
+
+.IX Header "EXAMPLE"
+
+.IX Header "SEE ALSO"
+
+.IX Header "KEYWORDS"
+

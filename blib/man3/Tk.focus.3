@@ -1,0 +1,337 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+'''   \*(M", \*(S", \*(N" and \*(T" are the equivalent of
+'''   \*(L" and \*(R", except that they are used on ".xx" lines,
+'''   such as .IP and .SH, which do another additional levels of
+'''   double-quote interpretation
+.ds M" """
+.ds S" """
+.ds N" """""
+.ds T" """""
+.ds L' '
+.ds R' '
+.ds M' '
+.ds S' '
+.ds N' '
+.ds T' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds M" ``
+.ds S" ''
+.ds N" ``
+.ds T" ''
+.ds L' `
+.ds R' '
+.ds M' `
+.ds S' '
+.ds N' `
+.ds T' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH FOCUS 1 "perl 5.005, patch 53" "31/Jul/98" "User Contributed Perl Documentation"
+.UC
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+focus \- Manage the input focus
+.SH "SYNOPSIS"
+\ \ \ \fI$widget\fR\->\fBfocus\fR
+.PP
+\ \ \ \fI$widget\fR\->\fBfocus\fR\fIOption\fR
+.PP
+\ \ \ \fI$widget\fR\->\fBfocusNext\fR
+.PP
+\ \ \ \fI$widget\fR\->\fBfocusPrev\fR
+.PP
+\ \ \ \fI$widget\fR\->\fBfocusFollowsMouse\fR
+.SH "DESCRIPTION"
+The \fBfocus\fR methods are used to manage the Tk input focus.
+At any given time, one window on each display is designated as
+the \fIfocus window\fR;  any key press or key release events for the
+display are sent to that window.
+It is normally up to the window manager to redirect the focus among the
+top-level windows of a display.  For example, some window managers
+automatically set the input focus to a top-level window whenever
+the mouse enters it;  others redirect the input focus only when
+the user clicks on a window.
+Usually the window manager will set the focus
+only to top-level windows, leaving it up to the application to
+redirect the focus among the children of the top-level.
+.PP
+Tk remembers one focus window for each top-level (the most recent
+descendant of that top-level to receive the focus);  when the window
+manager gives the focus
+to a top-level, Tk automatically redirects it to the remembered
+window.  Within a top-level Tk uses an \fIexplicit\fR focus model
+by default.  Moving the mouse within a top-level does not normally
+change the focus;  the focus changes only when a widget
+decides explicitly to claim the focus (e.g., because of a button
+click), or when the user types a key such as Tab that moves the
+focus.
+.PP
+The method \fBfocusFollowsMouse\fR may be invoked to
+create an \fIimplicit\fR focus model:  it reconfigures Tk so that
+the focus is set to a window whenever the mouse enters it.
+The methods \fBfocusNext\fR and \fBfocusPrev\fR
+implement a focus order among the windows of a top-level;  they
+are used in the default bindings for Tab and Shift-Tab, among other
+things.
+.PP
+The \fBfocus\fR methods can take any of the following forms:
+.Ip "\fI$widget\fR\->\fBfocusCurrent\fR" 4
+Returns the focus window on the display containing
+the \fI$widget\fR,  or an empty string if no window in
+this application has the focus on that display.
+.Ip "\fI$widget\fR\->\fBfocus\fR" 4
+If the application currently has the input focus on \fI$widget\fR's
+display, this command resets the input focus for \fI$widget\fR's display
+to \fI$widget\fR and returns an empty string.
+If the application doesn't currently have the  input focus on
+\fI$widget\fR's display, \fI$widget\fR will be remembered as the focus
+for its top-level;  the next time the focus arrives at the top-level,
+Tk will redirect it to \fI$widget\fR.
+.Ip "\fI$widget\fR\->\fBfocusForce\fR" 4
+Sets the focus of \fI$widget\fR's display to \fI$widget\fR, even if
+the application doesn't currently have the input focus for the display.
+This command should be used sparingly, if at all.
+In normal usage, an application should not claim the focus for
+itself;  instead, it should wait for the window manager to give it
+the focus.
+.Ip "\fI$widget\fR\->\fBfocusLast\fR" 4
+Returns the name of the most recent window to have the input focus
+among all the windows in the same top-level as \fI$widget\fR.
+If no window in that top-level has ever had the input focus, or
+if the most recent focus window has been deleted, then
+the top-level is returned.  The return value is the window that
+will receive the input focus the next time the window manager gives
+the focus to the top-level.
+.Ip "\fI$widget\fR\->\fBfocusNext\fR" 4
+.Ip "\fI$widget\fR\->\fBfocusPrev\fR" 4
+\fBfocusNext\fR is a utility method used for keyboard traversal, but can be
+useful in other contexts.
+It returns the ``next'\*(R' window after \fI$widget\fR in focus order.
+The focus order is determined by
+the stacking order of windows and the structure of the window hierarchy.
+Among siblings, the focus order is the same as the stacking order, with the
+lowest window being first.
+If a window has children, the window is visited first, followed by
+its children (recursively), followed by its next sibling.
+Top-level windows other than \fI$widget\fR are skipped, so that
+\fBfocusNext\fR never returns a window in a different top-level
+from \fI$widget\fR.
+.Sp
+After computing the next window, \fBfocusNext\fR examines the
+window's \fB\-takefocus\fR option to see whether it should be skipped.
+If so, \fBfocusNext\fR continues on to the next window in the focus
+order, until it eventually finds a window that will accept the focus
+or returns back to \fI$widget\fR.
+.Sp
+\fBfocusPrev\fR is similar to \fBfocusNext\fR except that it
+returns the window just before \fI$widget\fR in the focus order.
+.Ip "\fI$widget\fR\->\fBfocusFollowsMouse\fR" 4
+\fBfocusFollowsMouse\fR changes the focus model for the application
+to an implicit one where the window under the mouse gets the focus.
+After this procedure is called, whenever the mouse enters a window
+Tk will automatically give it the input focus.
+The \fBfocus\fR command may be used to move the focus to a window
+other than the one under the mouse, but as soon as the mouse moves
+into a new window the focus will jump to that window.
+Note: at present there is no built-in support for returning the
+application to an explicit focus model;  to do this you'll have
+to write a script that deletes the bindings created by
+\fBfocusFollowsMouse\fR.
+.SH "QUIRKS"
+When an internal window receives the input focus, Tk doesn't actually
+set the X focus to that window;  as far as X is concerned, the focus
+will stay on the top-level window containing the window with the focus.
+However, Tk generates FocusIn and FocusOut events just as if the X
+focus were on the internal window.   This approach gets around a
+number of problems that would occur if the X focus were actually moved;
+the fact that the X focus is on the top-level is invisible unless
+you use C code to query the X server directly.
+.SH "KEYWORDS"
+events, focus, keyboard, top-level, window manager
+
+.rn }` ''
+.IX Title "FOCUS 1"
+.IX Name "focus - Manage the input focus"
+
+.IX Header "NAME"
+
+.IX Header "SYNOPSIS"
+
+.IX Header "DESCRIPTION"
+
+.IX Item "\fI$widget\fR\->\fBfocusCurrent\fR"
+
+.IX Item "\fI$widget\fR\->\fBfocus\fR"
+
+.IX Item "\fI$widget\fR\->\fBfocusForce\fR"
+
+.IX Item "\fI$widget\fR\->\fBfocusLast\fR"
+
+.IX Item "\fI$widget\fR\->\fBfocusNext\fR"
+
+.IX Item "\fI$widget\fR\->\fBfocusPrev\fR"
+
+.IX Item "\fI$widget\fR\->\fBfocusFollowsMouse\fR"
+
+.IX Header "QUIRKS"
+
+.IX Header "KEYWORDS"
+

@@ -1,0 +1,9 @@
+# Index created by AutoSplit for blib/lib/Tk/Table.pm
+#    (file acts as timestamp)
+package Tk::Table;
+sub Create ;
+sub totalColumns ;
+sub totalRows ;
+sub Posn ;
+sub see ;
+1;

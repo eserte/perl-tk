@@ -11,7 +11,7 @@ use Test;
 
 use vars '@class';
 
-BEGIN
+BEGIN 
   {
     @class = (
 	# Tk core widgets
@@ -61,12 +61,9 @@ BEGIN
 	)
    );
 
-   require Tk if ($^O eq 'cygwin');
-   @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32' or
-			    ($^O eq 'cygwin' and defined($Tk::platform)
-					     and $Tk::platform eq 'MSWin32'));
+   @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32');
 
-   plan test => (13*@class+3);
+   plan test => (10*@class+3);
 
   };
 
@@ -87,12 +84,10 @@ foreach my $class (@class)
 
     eval "require Tk::$class;";
     ok($@, "", "Error loading Tk::$class");
-    ok("Tk::$class"->isa('Tk::Widget'),1,"Tk::$class is not a widget");
 
     eval { $w = $mw->$class(); };
     ok($@, "", "can't create $class widget");
     skip($@, Tk::Exists($w), 1, "$class instance does not exist");
-
 
     if (Tk::Exists($w))
       {
@@ -119,14 +114,8 @@ foreach my $class (@class)
         eval { $mw->update; };
         ok ($@, "", "Error during 'update' for $class widget");
 
-        my @dummy;
-        eval { @dummy = $w->configure; };
+        eval { my @dummy = $w->configure; };
         ok ($@, "", "Error: configure list for $class");
-        my $dummy;
-        eval { $dummy = $w->configure; };
-        ok ($@, "", "Error: configure scalar for $class");
-        ok (scalar(@dummy),scalar(@$dummy), "Error: scalar config != list config");
-
         eval { $mw->update; };
         ok ($@, "", "Error: 'update' after configure for $class widget");
 
@@ -136,13 +125,13 @@ foreach my $class (@class)
 
         # XXX: destroy-destroy test disabled because nobody vote for this feature
 	# Nick Ing-Simmmons wrote:
-	# The only way to make test pass, is when Tk800 would fail, to specifcally look
+	# The only way to make test pass, is when Tk800 would fail, to specifcally look 
 	# and see if method is 'destroy', and ignore it. Can be done but is it worth it?
-	# Note I cannot call tk's internal destroy as I have no way of relating
+	# Note I cannot call tk's internal destroy as I have no way of relating 
 	# (now destroy has happened) the object back to interp/MainWindow that it used
 	# to be associated with, and hence cannot create the args I need to pass
 	# to the core.
-
+        
         # since Tk8.0 a destroy on an already destroyed widget should
         # not complain
         #eval { $w->destroy; };
@@ -150,7 +139,7 @@ foreach my $class (@class)
 
       }
     else
-      {
+      { 
         # Widget $class couldn't be created:
 	#	Popup/pack, update, destroy skipped
 	for (1..5) { skip (1,1,1, "skipped because widget could not be created"); }
