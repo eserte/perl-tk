@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = '3.035'; # $Id: //depot/Tk8/HList/HList.pm#35 $
+$VERSION = '3.037'; # $Id: //depot/Tk8/HList/HList.pm#37 $
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -264,13 +264,17 @@ sub ButtonRelease1
   }
  return unless (defined($ent) and length($ent));
 
- if(exists $w->{tixindicator})
+ if (exists $w->{tixindicator})
   {
    return unless delete($w->{tixindicator}) eq $ent;
    my @info = $w->info('item',$Ev->x, $Ev->y);
    if(defined($info[1]) && $info[1] eq 'indicator')
     {
      $w->Callback(-indicatorcmd => $ent, '<Activate>');
+    }
+   else
+    {
+     $w->Callback(-indicatorcmd => $ent, '<Disarm>');
     }
    return;
   }

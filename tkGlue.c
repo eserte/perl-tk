@@ -346,7 +346,7 @@ Tcl_Interp *interp;
 char *why;
 {
  SvREFCNT_inc((SV *) interp);
- fprintf(stdout,"%s %p %ld\n",why,interp,SvREFCNT((SV *) interp));
+ PerlIO_printf(PerlIO_stdout(),"%s %p %ld\n",why,interp,SvREFCNT((SV *) interp));
  return interp;
 }
 
@@ -356,7 +356,7 @@ Tcl_Interp *interp;
 char *why;
 {
  SvREFCNT_dec((SV *) interp);
- fprintf(stdout,"%s %p %ld\n",why,interp,SvREFCNT((SV *) interp));
+ PerlIO_printf(PerlIO_stdout(),"%s %p %ld\n",why,interp,SvREFCNT((SV *) interp));
  return interp;
 }
 
@@ -482,7 +482,10 @@ FindXv(Tcl_Interp *interp, char *who, int create,
          if (!SvROK(sv) || SvTYPE(SvRV(sv)) != type)
           {
            STRLEN na;
-           fprintf(stderr,__FUNCTION__ " "); sv_dump(sv);
+#if 0	   
+           PerlIO_printf(PerlIO_stderr(),__FUNCTION__ " "); 
+	   sv_dump(sv);
+#endif
            Tcl_Panic("%s not a %u reference %s", key, type, SvPV(sv, na));
           }
          else
@@ -2586,7 +2589,7 @@ SV **args;
             {
              if (info->Tk.clientData)
               {
-               fprintf(stderr,"cmd %p/%p using %p/%p\n",
+               PerlIO_printf(PerlIO_stderr(),"cmd %p/%p using %p/%p\n",
                        info->Tk.clientData,info->interp,
                        mw, winfo->interp);
               }
@@ -4913,11 +4916,17 @@ Tcl_RegExp re;
 char *string;
 char *start;
 {
-#ifdef REXEC_COPY
- return pregexec(re,string,string+strlen(string),start,0,
-                 Nullsv,NULL,REXEC_COPY);
+ SV *tmp = sv_newmortal();
+ sv_upgrade(tmp,SVt_PV);
+ SvCUR_set(tmp,strlen(string));
+ SvPVX(tmp) = string;
+ SvLEN(tmp) = 0;
+#ifdef REXEC_COPY_STR
+ return pregexec(re,SvPVX(tmp),SvEND(tmp),start,0,
+                 tmp,REXEC_COPY_STR);
 #else
- return pregexec(re,string,string+strlen(string),start,0,NULL,1);
+ return pregexec(re,string,string+strlen(string),start,0,
+                 tmp,NULL,REXEC_COPY);
 #endif
 }
 
@@ -5090,6 +5099,7 @@ _((void))
  PL_curcop->cop_warnings = old_warn;
 #endif
 
+ initialized = 0;
  InitVtabs();
 
 #ifdef VERSION

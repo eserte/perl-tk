@@ -190,14 +190,17 @@ typedef long fd_mask;
 #   endif
 #endif
 #else /* __WIN32__ */
+#ifndef VOID
+#include <windows.h>
+#if 0
 /*
  * The following code is copied from winnt.h
  */
-#ifndef VOID
 #define VOID void
 typedef char CHAR;
 typedef short SHORT;
 typedef long LONG;
+#endif
 #endif
 #endif /* __WIN32__ */
 

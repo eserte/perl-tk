@@ -116,7 +116,7 @@ typedef struct ColorTable {
  * Bit definitions for the flags field of a ColorTable.
  * BLACK_AND_WHITE:		1 means only black and white colors are
  *				available.
- * COLOR_WINDOW:		1 means a full 3-D color cube has been
+ * TK_COLOR_WINDOW:		1 means a full 3-D color cube has been
  *				allocated.
  * DISPOSE_PENDING:		1 means a call to DisposeColorTable has
  *				been scheduled as an idle handler, but it
@@ -126,7 +126,7 @@ typedef struct ColorTable {
  */
 
 #define BLACK_AND_WHITE		1
-#define COLOR_WINDOW		2
+#define TK_COLOR_WINDOW		2
 #define DISPOSE_PENDING		4
 #define MAP_COLORS		8
 
@@ -3029,7 +3029,7 @@ AllocateColors(colorPtr)
      */
 
     if (!mono) {
-	colorPtr->flags |= COLOR_WINDOW;
+	colorPtr->flags |= TK_COLOR_WINDOW;
 
 	/*
 	 * The following is a hairy hack.  We only want to index into
@@ -4144,7 +4144,7 @@ DitherInstance(instancePtr, xStart, yStart, width, height)
 	    errPtr = errLinePtr;
 	    destBytePtr = dstLinePtr;
 	    destLongPtr = (pixel *) dstLinePtr;
-	    if (colorPtr->flags & COLOR_WINDOW) {
+	    if (colorPtr->flags & TK_COLOR_WINDOW) {
 		/*
 		 * Color window.  We dither the three components
 		 * independently, using Floyd-Steinberg dithering,

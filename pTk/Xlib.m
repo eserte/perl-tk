@@ -443,9 +443,11 @@
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XRectInRegion
 #  define XRectInRegion (*XlibVptr->V_XRectInRegion)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XRefreshKeyboardMapping
 #  define XRefreshKeyboardMapping (*XlibVptr->V_XRefreshKeyboardMapping)

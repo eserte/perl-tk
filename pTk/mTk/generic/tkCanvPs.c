@@ -13,6 +13,7 @@
  *
  * RCS: @(#) $Id: tkCanvPs.c,v 1.4 1998/09/22 18:57:16 stanton Exp $
  */
+#include <time.h>
 #include "tkInt.h"
 #include "tkCanvas.h"
 

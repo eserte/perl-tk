@@ -567,9 +567,133 @@ individual widgets or by redefining the class bindings.
 
 =back
 
+=head1 TIED INTERFACE
+
+The Tk::Listbox widget can also be tied to a scalar or array variable, with
+different behaviour depending on the variable type, with the following
+tie commands:
+
+   use Tk;
+
+   my ( @array, $scalar, $other );
+   my %options = ( ReturnType => "index" );
+
+   my $MW = MainWindow->new();
+   my $lbox = $MW->Listbox()->pack();
+
+   my @list = ( "a", "b", "c", "d", "e", "f" );
+   $lbox->insert('end', @list );
+
+   tie @array, "Tk::Listbox", $lbox
+   tie $scalar, "Tk::Listbox", $lbox;
+   tie $other, "Tk::Listbox", $lbox, %options;
+
+currently only one modifier is implemented, a 3 way flag for tied scalars
+"ReturnType" which can have values "element", "index" or "both". The default
+is "element".
+
+=over 4
+
+=item Tied Arrays
+
+If you tie an array to the Listbox you can manipulate the items currently
+contained by the box in the same manner as a normal array, e.g.
+
+    print @array;
+    push(@array, @list);
+    my $popped = pop(@array);
+    my $shifted = shift(@array);
+    unshift(@array, @list);
+    delete $array[$index];
+    print $string if exists $array[$i];
+    @array = ();
+    splice @array, $offset, $length, @list
+
+The delete function is implemented slightly differently from the standard
+array implementation. Instead of setting the element at that index to undef
+it instead physically removes it from the Listbox. This has the effect of
+changing the array indices, so for instance if you had a list on non-continuous
+indices you wish to remove from the Listbox you should reverse sort the list
+and then apply the delete function, e.g.
+
+     my @list = ( 1, 2, 4, 12, 20 );
+     my @remove = reverse sort { $a <=> $b } @list;
+     delete @array[@remove];
+
+would safely remove indices 20, 12, 4, 2 and 1 from the Listbox without
+problems. It should also be noted that a similar warning applies to the
+splice function (which would normally be used in this context to perform
+the same job).
+
+
+=item Tied Scalars
+
+Unlike tied arrays, if you tie a scalar to the Listbox you can retrieve the
+currently selected elements in the box as an array referenced by the scalar,
+for instance
+
+    my @list = ( "a", "b", "c", "d", "e", "f" );
+    $lbox->insert('end', sort @list );
+    $lbox->selectionSet(1);
+
+inserts @list as elements in an already existing listbox and selects the
+element at index 1, which is "b". If we then
+
+     print @$selected;
+
+this will return the currently selected elements, in this case "b".
+
+However, if the "ReturnType" arguement is passed when tying the Listbox to the
+scalar with value "index" then the indices of the selected elements will be
+returned instead of the elements themselves, ie in this case "1". This can be
+useful when manipulating both contents and selected elements in the Listbox at
+the same time.
+
+Importantly, if a value "both" is given the scalar will not be tied to an
+array, but instead to a hash, with keys being the indices and values being
+the elements at those indices
+
+You can also manipulate the selected items using the scalar. Equating the
+scalar to an array reference will select any elements that match elements
+in the Listbox, non-matching array items are ignored, e.g.
+
+    my @list = ( "a", "b", "c", "d", "e", "f" );
+    $lbox->insert('end', sort @list );
+    $lbox->selectionSet(1);
+
+would insert the array @list into an already existing Listbox and select
+element at index 1, i.e. "b"
+
+    @array = ( "a", "b", "f" );
+    $selected = \@array;
+
+would select elements "a", "b" and "f" in the Listbox.
+
+Again, if the "index" we indicate we want to use indices in the options hash
+then the indices are use instead of elements, e.g.
+
+    @array = ( 0, 1, 5 );
+    $selected = \@array;
+
+would have the same effect, selecting elements "a", "b" and "f" if the
+$selected variable was tied with %options = ( ReturnType => "index" ).
+
+If we are returning "both", i.e. the tied scalar points to a hash, both key and
+value must match, e.g.
+
+    %hash = ( 0 => "a", 1 => "b", 5 => "f" );
+    $selected = \%hash;
+
+would have the same effect as the previous examples.
+
+It should be noted that, despite being a reference to an array (or possibly a has), you still can not copy the tied variable without it being untied, instead
+you must pass a reference to the tied scalar between subroutines.
+
+=cut
+
 =head1 KEYWORDS
 
-listbox, widget
+listbox, widget, tied
 
 =cut
 

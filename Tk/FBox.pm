@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/FBox.pm#19 $
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/FBox.pm#20 $
 
 use base qw(Tk::Toplevel);
 
@@ -72,6 +72,7 @@ sub Populate {
     my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
     $w->{'dirMenu'} = my $dirMenu =
       $f1->Optionmenu(-variable => \$w->{'selectPath'},
+		      -textvariable => \$w->{'selectPath'},
 		      -command => ['SetPath', $w]);
     my $upBtn = $f1->Button;
     if (!defined $updirImage) {

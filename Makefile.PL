@@ -6,7 +6,7 @@ BEGIN
  {
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.023';
+  $VERSION = '800.024';
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
@@ -31,7 +31,7 @@ if ($IsWin32)
 else
  {
   my $plibs = $Config{'libs'};
-  my $libs  = "$xlib -lX11 -lpt";
+  my $libs  = "$xlib -lX11";   # Used to have -lpt in here as well.
   my @try   = qw(-lsocket -lnsl -lm);
   push(@try,'-lc') if $^O =~ /svr4/i;
   my $lib;

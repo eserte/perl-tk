@@ -16,11 +16,6 @@
 #include "tkMenu.h"
 #include "tkWinInt.h"
 
-/* Mingw32 has not caught up yet with MT_* yet ... */
-#ifndef MT_RIGHTJUSTIFY
-#define MF_RIGHTJUSTIFY MF_HELP
-#endif
-
 /*
  * The class of the window for popup menus.
  */

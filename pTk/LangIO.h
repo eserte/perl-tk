@@ -8,6 +8,7 @@
     !defined(_included_stdio) && \
     !defined(_H_STDIO_) && \
     !defined(_STDIO_H) && \
+    !defined(_FILEDEFED) && \
     !defined(_INCLUDED_STDIO) && \
     !defined(_STDIO_H_) && \
     !defined(__STDIO_H) && \
@@ -29,6 +30,7 @@
 #define _included_stdio
 #define _H_STDIO_
 #define _STDIO_H
+#define _FILEDEFED
 #define _INCLUDED_STDIO
 #define _STDIO_H_
 #define __STDIO_H

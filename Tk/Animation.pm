@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Animation.pm#18 $
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Animation.pm#20 $
 
 use Tk::Photo;
 use base  qw(Tk::Photo);
@@ -53,6 +53,7 @@ sub set_image
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
  $index = 0 unless $index < @$frames;
+ $obj->blank if 0;  # helps some make others worse
  $obj->copy($frames->[$index]);
  $obj->{'_frame_index_'} = $index;
 }

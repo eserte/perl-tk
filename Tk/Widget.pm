@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.078'; # $Id: //depot/Tk8/Tk/Widget.pm#78 $
+$VERSION = '3.080'; # $Id: //depot/Tk8/Tk/Widget.pm#80 $
 
 require Tk;
 use AutoLoader;
@@ -798,12 +798,12 @@ sub BusyRecurse
  my @tags = $w->bindtags;
  if ($top || defined($c))
   {
-   push(@$restore, sub { $w->configure(-cursor => $c); $w->bindtags(\@tags) });
+   push(@$restore, sub { return unless Tk::Exists($w); $w->configure(-cursor => $c); $w->bindtags(\@tags) });
    $w->configure(-cursor => $cursor);
   }
  else
   {
-   push(@$restore, sub { $w->bindtags(\@tags) });
+   push(@$restore, sub { return unless Tk::Exists($w); $w->bindtags(\@tags) });
   }
  $w->bindtags(['Busy',@tags]);
  if ($recurse)

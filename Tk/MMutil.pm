@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.050'; # $Id: //depot/Tk8/Tk/MMutil.pm#50 $
+$VERSION = '3.052'; # $Id: //depot/Tk8/Tk/MMutil.pm#52 $
 
 use Tk::MakeDepend;
 
@@ -20,7 +20,7 @@ use vars qw($IsWin32);
 $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/)
            unless defined $IsWin32;
 
-@MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
+@MYEXPORT = qw(pasthru perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
 
 sub arch_prune
 {
@@ -198,6 +198,17 @@ sub upgrade_pic
  my $flags = '';
  die 'upgrade_pic is obsolete';
  return $flags;
+}
+
+sub pasthru
+{
+ my $self = shift;
+ my $str = $self->MM::pasthru;
+ if ($str =~ s/^\s+INC=.*\n//m)
+  {
+   return "\n#Do NOT pasthru INC for Tk - it is computed by subdir\n".$str;
+  }
+ return $str;
 }
 
 sub perldepend

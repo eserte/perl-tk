@@ -277,8 +277,13 @@ static int EventProc  _ANSI_ARGS_((Tcl_Event *evPtr, int flags));
 typedef struct PerlIOHandler
  {
   struct PerlIOHandler *nextPtr;  /* Next in list of all files we care about. */
-  SV *handle;
-  IO *io;
+  SV *handle;                     /* Handle we are tied to */
+  IO *io;                         /* Current IO within handle */
+  GV *untied;                     /* Another handle to pass to methods
+                                   * it is untied to avoid recusion and
+                                   * has IoIFP/IoOFP of its IO dynamically set to those
+                                   * of io.
+                                   */
   LangCallback *readHandler;
   LangCallback *writeHandler;
   LangCallback *exceptionHandler;
@@ -333,7 +338,15 @@ PerlIO_handle(filePtr)
 PerlIOHandler *filePtr;
 {
  filePtr->io = sv_2io(filePtr->handle);
- return (filePtr->io) ? newRV((SV *) filePtr->io) : &PL_sv_undef;
+ if (filePtr->io)
+  {
+   /* io exists - copy current PerlIO * from io to our un-tied IO */
+   IO *tmpio = GvIOp(filePtr->untied);
+   IoIFP(tmpio) = IoIFP(filePtr->io);
+   IoOFP(tmpio) = IoOFP(filePtr->io);
+   return newRV((SV *) filePtr->untied);
+  }
+ return &PL_sv_undef;
 }
 
 void
@@ -685,14 +698,18 @@ SV *fh;
 int mask;                         /* OR'ed TCL_READABLE, TCL_WRITABLE, and TCL_EXCEPTION */
 {
  HV *stash = gv_stashpv(class, TRUE);
+ GV *tmpgv = newGVgen(class);
+ IO *tmpio = newIO();
  IO *io = sv_2io(fh);
  SV *obj = newSV(sizeof(PerlIOHandler));
  PerlIOHandler *filePtr = (PerlIOHandler *)SvPVX(obj);
+ GvIOp(tmpgv) = tmpio;
  if (!initialized)
   PerlIOEventInit();
  Zero(filePtr,1,PerlIOHandler);
  filePtr->io          = io;
  filePtr->handle      = SvREFCNT_inc(fh);
+ filePtr->untied      = tmpgv;
  filePtr->readyMask   = 0;
  filePtr->handlerMask = 0;
  filePtr->mask        = 0;
@@ -817,6 +834,7 @@ PerlIOHandler *thisPtr;
     {
      if (!thisPtr || filePtr == thisPtr)
       {
+       IO *tmpio;
        *link = filePtr->nextPtr;
        PerlIO_unwatch(filePtr);
        if (filePtr->readHandler)
@@ -834,6 +852,10 @@ PerlIOHandler *thisPtr;
          LangFreeCallback(filePtr->exceptionHandler);
          filePtr->exceptionHandler = NULL;
         }
+       tmpio = GvIOp(filePtr->untied);
+       IoIFP(tmpio) = NULL;
+       IoOFP(tmpio) = NULL;
+       SvREFCNT_dec(filePtr->untied);
        SvREFCNT_dec(filePtr->handle);
       }
      else

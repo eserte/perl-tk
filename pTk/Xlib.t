@@ -440,9 +440,11 @@ VFUNC(int,XReadBitmapFile,V_XReadBitmapFile,_ANSI_ARGS_((Display *, Drawable, co
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XRectInRegion
 VFUNC(int,XRectInRegion,V_XRectInRegion,_ANSI_ARGS_(( Region,int,int,unsigned,unsigned)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XRefreshKeyboardMapping
 VFUNC(int,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((XMappingEvent *)))

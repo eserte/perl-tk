@@ -14,7 +14,7 @@
 #include "tkPort.h"
 #include "Lang.h"
 #ifdef TCL_EVENT_IMPLEMENT
-
+#include <time.h>
 
 #ifdef __EMX__
 #   include <sys/time.h>

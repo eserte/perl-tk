@@ -101,7 +101,7 @@ static void		FocusMapProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
 static void		GenerateFocusEvents _ANSI_ARGS_((TkWindow *sourcePtr,
 			    TkWindow *destPtr));
-static void		SetFocus _ANSI_ARGS_((TkWindow *winPtr, int force));
+static void		TkSetFocus _ANSI_ARGS_((TkWindow *winPtr, int force));
 
 /*
  *--------------------------------------------------------------
@@ -165,7 +165,7 @@ Tk_FocusObjCmd(clientData, interp, argc, objv)
 		return TCL_ERROR;
 	    }
 	    if (!(newPtr->flags & TK_ALREADY_DEAD)) {
-		SetFocus(newPtr, 0);
+		TkSetFocus(newPtr, 0);
 	    }
 	    return TCL_OK;
 	}
@@ -201,7 +201,7 @@ Tk_FocusObjCmd(clientData, interp, argc, objv)
 	if (newPtr == NULL) {
 	    return TCL_ERROR;
 	}
-	SetFocus(newPtr, 1);
+	TkSetFocus(newPtr, 1);
 	break;
       }
       case 2: {        /* -lastfor */
@@ -303,7 +303,7 @@ TkFocusFilterEvent(winPtr, eventPtr)
 
     if ((eventPtr->xfocus.mode == EMBEDDED_APP_WANTS_FOCUS)
 	    && (eventPtr->type == FocusIn)) {
-	SetFocus(winPtr, eventPtr->xfocus.detail);
+	TkSetFocus(winPtr, eventPtr->xfocus.detail);
 	return 0;
     }
 
@@ -524,7 +524,7 @@ TkFocusFilterEvent(winPtr, eventPtr)
 /*
  *----------------------------------------------------------------------
  *
- * SetFocus --
+ * TkSetFocus --
  *
  *	This procedure is invoked to change the focus window for a
  *	given display in a given application.
@@ -540,7 +540,7 @@ TkFocusFilterEvent(winPtr, eventPtr)
  */
 
 static void
-SetFocus(winPtr, force)
+TkSetFocus(winPtr, force)
     TkWindow *winPtr;		/* Window that is to be the new focus for
 				 * its display and application. */
     int force;			/* If non-zero, set the X focus to this
@@ -953,7 +953,7 @@ FocusMapProc(clientData, eventPtr)
 	Tk_DeleteEventHandler((Tk_Window) winPtr, VisibilityChangeMask,
 		FocusMapProc, clientData);
 	displayFocusPtr->focusOnMapPtr = NULL;
-	SetFocus(winPtr, displayFocusPtr->forceFocus);
+	TkSetFocus(winPtr, displayFocusPtr->forceFocus);
     }
 }
 

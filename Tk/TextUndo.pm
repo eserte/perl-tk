@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '3.048'; # $Id: //depot/Tk8/Tk/TextUndo.pm#48 $
+$VERSION = '3.050'; # $Id: //depot/Tk8/Tk/TextUndo.pm#50 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -851,6 +851,12 @@ sub CreateFileSelect
    require File::Basename;
    my $sfx;
    ($name,$dir,$sfx) = File::Basename::fileparse($name,'\..*');
+   #
+   # it should never happen where we have a file suffix and
+   # no file name... but fileparse() screws this up with dotfiles.
+   #
+   if (length($sfx) && !length($name)) { ($name, $sfx) = ($sfx, $name) }
+
    if (defined($sfx) && length($sfx))
     {
      unshift(@types,['Similar Files',[$sfx]]);
