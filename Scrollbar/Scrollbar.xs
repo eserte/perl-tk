@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -23,14 +23,19 @@
 DECLARE_WIN32_VTABLES
 DECLARE_VTABLES;
 
-MODULE = Tk::Scrollbar	PACKAGE = Tk::Scrollbar
+MODULE = Tk::Scrollbar	PACKAGE = Tk
 
-PROTOTYPES: DISABLE
-
+PROTOTYPES: DISABLE                  
+     
+void
+scrollbar(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_ScrollbarCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_WIN32_VTABLES
   IMPORT_VTABLES;
-  Lang_TkCommand("scrollbar",Tk_ScrollbarCmd);
  }

@@ -1,162 +1,490 @@
-package Tk::CmdLine;
-require Tk;
-use strict;
+package Tk::CmdLine; # -*-Perl-*-
 
-*motif = \$Tk::strictMotif;
+#/----------------------------------------------------------------------------//
+#/ Module: Tk/CmdLine.pm
+#/
+#/ Purpose:
+#/
+#/   Process standard X11 command line options and set initial resources.
+#/
+#/ Author: ????                      Date: ????
+#/
+#/ History: SEE POD
+#/----------------------------------------------------------------------------//
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/CmdLine.pm#11$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/CmdLine.pm#17$
 
-use vars qw($synchronous %switch $iconic %options %methods $Name @command %config);
+use 5.004;
 
-$synchronous = 0;
-$iconic      = 0;
+use strict;
 
-BEGIN 
+use AutoLoader qw(AUTOLOAD);
+use base qw(AutoLoader);
+
+sub import {  } # else we inherit AutoLoader's import
+
+use vars qw($ThisModule);
+
+$ThisModule = ref bless []; # the name of this package
+
+use vars qw($OBJECT); # define the current object
+$OBJECT = undef; # global so that it will be accessible in AutoLoader methods
+
+#/----------------------------------------------------------------------------//
+#/ Constructor
+#/   Returns the object reference.
+#/----------------------------------------------------------------------------//
+
+sub new # Tk::CmdLine::new()
 {
- $Name = 'pTk';
- $Name = $1 if ($0 =~ m#(?:^|[/\\])([\w-]+)(?:\.\w+)?$#); # untainted now
- $Name = 'pTk' if $Name eq '-e';
- $config{'-name'} = $Name;
+    my $this  = shift(@_);
+    my $class = ref($this) || $this;
+
+    my $name = 'pTk';
+    $name = $1 if (($0 =~ m/(?:^|[\/\\])([\w-]+)(?:\.\w+)?$/) && ($1 ne '-e'));
+
+    my $self = {
+        name        => $name,
+        config      => { -name => $name },
+        options     => {},
+        methods     => {},
+        command     => [],
+        synchronous => 0,
+        iconic      => 0,
+        motif       => $Tk::strictMotif,
+        resources   => {} };
+
+    bless($self, $class);
+
+    return $self;
 }
 
-@command = ();
-%options = ();
+#/----------------------------------------------------------------------------//
+#/ Process the arguments in a given array or in @ARGV.
+#/   Returns the object reference.
+#/----------------------------------------------------------------------------//
 
-sub arg
+sub Argument_ # Tk::CmdLine::Argument_($flag) # private method
 {
- my $flag = shift;
- die("Usage: $Name ... $flag <argument> ...\n") unless (@ARGV);
- return shift(@ARGV);
+    my $self = shift(@_);
+    my $flag = shift(@_);
+    unless ($self->{offset} < @{$self->{argv}})
+    {
+        die 'Usage: ', $self->{name}, ' ... ', $flag, " <argument> ...\n";
+    }
+    return splice(@{$self->{argv}}, $self->{offset}, 1);
 }
 
-sub variable
+sub Config_ # Tk::CmdLine::Config_($flag, $name) # private method
 {
- no strict 'refs';
- my ($flag, $name) = @_;
- my $val = arg($flag);
- push(@command, $flag => $val );
- ${$name} = $val;
+    my $self = shift(@_);
+    my ($flag, $name) = @_;
+    my $val = $self->Argument_($flag);
+    push(@{$self->{command}}, $flag, $val);
+    $self->{config}->{"-$name"} = $val;
 }
 
-sub config
+sub Flag_ # Tk::CmdLine::Flag_($flag, $name) # private method
 {
- my ($flag, $name) = @_;
- my $val = arg($flag);
- push(@command, $flag => $val );
- $config{"-$name"} = $val;
+    my $self = shift(@_);
+    my ($flag, $name) = @_;
+    push(@{$self->{command}}, $flag);
+    $self->{$name} = 1;
 }
 
-sub flag
+sub Option_ # Tk::CmdLine::Option_($flag, $name) # private method
 {
- no strict 'refs';
- my ($flag, $name) = @_;
- push(@command, $flag );
- ${$name} = 1;
+    my $self = shift(@_);
+    my ($flag, $name) = @_;
+    my $val = $self->Argument_($flag);
+    push(@{$self->{command}}, $flag, $val);
+    $self->{options}->{"*$name"} = $val;
 }
 
-sub option
+sub Method_ # Tk::CmdLine::Method_($flag, $name) # private method
 {
- my ($flag,$name) = @_;
- my $val = arg($flag);
- push(@command, $flag => $val );
- $options{"*$name"} = $val;
+    my $self = shift(@_);
+    my ($flag, $name) = @_;
+    my $val = $self->Argument_($flag);
+    push(@{$self->{command}}, $flag, $val);
+    $self->{methods}->{$name} = $val;
 }
 
-sub method
+sub Resource_ # Tk::CmdLine::Resource_($flag, $name) # private method
 {
- my ($flag,$name) = @_;
- my $val = arg($flag);
- push(@command, $flag => $val );
- $methods{$name} = $val;
+    my $self = shift(@_);
+    my ($flag, $name) = @_;
+    my $val = $self->Argument_($flag);
+    if ($val =~ /^([^!:\s]+)*\s*:\s*(.*)$/)
+    {
+        push(@{$self->{command}}, $flag, $val);
+        $self->{options}->{$1} = $2;
+    }
 }
 
-sub resource
+my %Method = (
+    background   => 'Option_',
+    bg           => 'background', # alias
+    class        => 'Config_',
+    display      => 'screen',     # alias
+    fg           => 'foreground', # alias
+    fn           => 'font',       # alias
+    font         => 'Option_',
+    foreground   => 'Option_',
+    geometry     => 'Method_',
+    iconic       => 'Flag_',
+    iconposition => 'Method_',
+    motif        => 'Flag_',
+    name         => 'Config_',
+    screen       => 'Config_',
+    synchronous  => 'Flag_',
+    title        => 'Config_',
+    xrm          => 'Resource_'
+);
+
+sub process { SetArguments(); } # for compatibility with old code
+
+sub SetArguments # Tk::CmdLine::SetArguments([@argument])
 {
- my ($flag,$name) = @_;
- my $val = arg($flag);
- push(@command, $flag => $val );
- ($name,$val) = $val =~ /^([^:\s]+)*\s*:\s*(.*)$/;
- $options{$name} = $val;
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq $ThisModule)
+            ? shift(@_)
+            : (($_[0] eq $ThisModule) ? shift(@_) : 1) && ($OBJECT ||= $ThisModule->new()))
+        : ($OBJECT ||= $ThisModule->new()));
+    $OBJECT = $self; # update the current object
+    $self->{argv}   = (@_ ? [ @_ ] : \@ARGV);
+    $self->{offset} = 0; # its existence will denote that this method has been called
+
+    my @option = ();
+
+    while ($self->{offset} < @{$self->{argv}})
+    {
+        last if ($self->{argv}->[$self->{offset}] eq '--');
+        unless (
+            (($self->{argv}->[$self->{offset}] =~ /^-{1,2}(\w+)$/)  && (@option = $1)) ||
+            (($self->{argv}->[$self->{offset}] =~ /^--(\w+)=(.*)$/) && (@option = ($1, $2))))
+        {
+            ++$self->{offset};
+            next;
+        }
+
+        next if (!exists($Method{$option[0]}) && ++$self->{offset});
+
+        $option[0] = $Method{$option[0]} if exists($Method{$Method{$option[0]}});
+
+        my $method = $Method{$option[0]};
+
+        if (@option > 1) # replace --<option>=<value> with <value>
+        {
+            $self->{argv}->[$self->{offset}] = $option[1];
+        }
+        else # remove the argument
+        {
+            splice(@{$self->{argv}}, $self->{offset}, 1);
+        }
+
+        $self->$method(('-' . $option[0]), $option[0]);
+    }
+
+    $self->{config}->{-class} ||= ucfirst($self->{config}->{-name});
+
+    delete($self->{argv}); # no longer needed
+
+    return $self;
 }
 
-%switch = ( synchronous  => \&flag,
-            screen       => \&config,
-            borderwidth  => \&config,
-            class        => \&config,
-            geometry     => \&method,
-            iconposition => \&method,
-            name         => \&config,
-            motif        => \&flag,
-            background   => \&option,
-            foreground   => \&option,
-            font         => \&option,
-            title        => \&config,
-            iconic       => \&flag,
-            'reverse'    => \&flag,
-            xrm          => \&resource,
-            bg           => 'background',
-            bw           => 'borderwidth',
-            fg           => 'foreground',
-            fn           => 'font',
-            rv           => 'reverse',
-            display      => 'screen',
-         );
+#/----------------------------------------------------------------------------//
+#/ Get the value of a configuration option (default: -class).
+#/   Returns the option value.
+#/----------------------------------------------------------------------------//
 
-#   -bd color, -bordercolor color
-#    -selectionTimeout
-#    -xnllanguage language[_territory][.codeset]
-
-sub process
+sub cget # Tk::CmdLine::cget([$option])
 {
- my ($class) = @_;
- while (@ARGV && $ARGV[0] =~ /^-(\w+)$/)
-  {
-   my $sw = $1;
-   my $kind = $switch{$sw};
-   last unless defined $kind;
-   $kind = $switch{$sw = $kind} unless ref $kind;
-   &$kind(shift(@ARGV),$sw); 
-  }
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq $ThisModule)
+            ? shift(@_)
+            : (($_[0] eq $ThisModule) ? shift(@_) : 1) && ($OBJECT ||= $ThisModule->new()))
+        : ($OBJECT ||= $ThisModule->new()));
+    $OBJECT = $self; # update the current object
+    my $option = shift(@_) || '-class';
+
+    $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
+
+    return (exists($self->{config}->{$option}) ? $self->{config}->{$option} : undef);
 }
 
-sub CreateArgs
+#/----------------------------------------------------------------------------//
+
+sub CreateArgs # Tk::CmdLine::CreateArgs()
 {
- process();
- $config{'-class'} = "\u$config{'-name'}" unless exists $config{'-class'};
- return \%config;
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq $ThisModule)
+            ? shift(@_)
+            : (($_[0] eq $ThisModule) ? shift(@_) : 1) && ($OBJECT ||= $ThisModule->new()))
+        : ($OBJECT ||= $ThisModule->new()));
+    $OBJECT = $self; # update the current object
+
+    $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
+
+    return $self->{config};
 }
+
+#/----------------------------------------------------------------------------//
 
 sub Tk::MainWindow::apply_command_line
 {
- my $mw = shift;
- my $key;
- foreach $key (keys %options)
-  {
-   $mw->optionAdd($key => $options{$key},'interactive');
-  }
- foreach $key (keys %methods)
-  {
-   $mw->$key($methods{$key});
-  }
- if (delete $methods{'geometry'})
-  {
-   $mw->positionfrom('user');
-   $mw->sizefrom('user'); 
-  }
- $mw->Synchronize if $synchronous;
- if ($iconic)
-  {
-   $mw->iconify; 
-   undef $iconic;
-  }
- # 
- # Both these are needed to reliably save state
- # but 'hostname' is tricky to do portably.
- # $mw->client(hostname());
- # $mw->protocol('WM_SAVE_YOURSELF' => ['WMSaveYourself',$mw]);
- $mw->command([$Name,@command]);
+    my $mw = shift(@_);
+
+    my $self = ($OBJECT ||= $ThisModule->new());
+
+    $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
+
+    foreach my $priority (keys(%{$self->{resources}}))
+    {
+        foreach my $resource (@{$self->{resources}->{$priority}})
+        {
+            $mw->optionAdd(@{$resource}, $priority);
+        }
+    }
+
+    foreach my $key (keys(%{$self->{options}}))
+    {
+        $mw->optionAdd($key => $self->{options}->{$key}, 'interactive');
+    }
+
+    foreach my $key (keys(%{$self->{methods}}))
+    {
+        $mw->$key($self->{methods}->{$key});
+    }
+
+    if ($self->{methods}->{geometry})
+    {
+	if ($self->{methods}->{geometry} =~ /[+-]\d+[+-]\d+/)
+	{
+	    $mw->positionfrom('user');
+	}
+	if ($self->{methods}->{geometry} =~ /\d+x\d+/)
+	{	    
+	    $mw->sizefrom('user');
+	}
+	delete $self->{methods}->{geometry}; # XXX needed?
+    }
+
+    $mw->Synchronize() if $self->{synchronous};
+
+    if ($self->{iconic})
+    {
+        $mw->iconify();
+        $self->{iconic} = 0;
+    }
+
+	$Tk::strictMotif = $self->{motif};
+
+    # Both these are needed to reliably save state
+    # but 'hostname' is tricky to do portably.
+    # $mw->client(hostname());
+    # $mw->protocol('WM_SAVE_YOURSELF' => ['WMSaveYourself',$mw]);
+
+    $mw->command([ $self->{name}, @{$self->{command}} ]);
 }
+
+#/----------------------------------------------------------------------------//
+
+1;
+
+__END__
+
+#/----------------------------------------------------------------------------//
+#/ Set the initial resources.
+#/   Returns the object reference.
+#/----------------------------------------------------------------------------//
+
+sub SetResources # Tk::CmdLine::SetResources((\@resource | $resource) [, $priority])
+{
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq $ThisModule)
+            ? shift(@_)
+            : (($_[0] eq $ThisModule) ? shift(@_) : 1) && ($OBJECT ||= $ThisModule->new()))
+        : ($OBJECT ||= $ThisModule->new()));
+    $OBJECT = $self; # update the current object
+
+    $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
+    return $self unless @_;
+
+    my $data      = shift(@_);
+    my $priority  = shift(@_) || 'userDefault';
+
+    $self->{resources}->{$priority} = [] unless exists($self->{resources}->{$priority});
+
+    foreach my $resource ((ref($data) eq 'ARRAY') ? @{$data} : $data)
+    {
+        if (ref($resource) eq 'ARRAY') # resources in [ <pattern>, <value> ] format
+        {
+            push(@{$self->{resources}->{$priority}}, [ @{$resource} ])
+                if (@{$resource} == 2);
+        }
+        else # resources in resource file format
+        {
+            push(@{$self->{resources}->{$priority}}, [ $1, $2 ])
+                if ($resource =~ /^([^!:\s]+)*\s*:\s*(.*)$/);
+        }
+    }
+
+    return $self;
+}
+
+#/----------------------------------------------------------------------------//
+#/ Load initial resources from one or more files (default: $XFILESEARCHPATH with
+#/ priority 'startupFile' and $XUSERFILESEARCHPATH with priority 'userDefault').
+#/   Returns the object reference.
+#/----------------------------------------------------------------------------//
+
+sub LoadResources # Tk::CmdLine::LoadResources([%options])
+{
+
+    my $self = (@_ # define the object as necessary
+        ? ((ref($_[0]) eq $ThisModule)
+            ? shift(@_)
+            : (($_[0] eq $ThisModule) ? shift(@_) : 1) && ($OBJECT ||= $ThisModule->new()))
+        : ($OBJECT ||= $ThisModule->new()));
+    $OBJECT = $self; # update the current object
+
+    $self->SetArguments() unless exists($self->{offset}); # set arguments if not yet done
+
+    my %options = @_;
+
+    my @file = ();
+    my $echo = (exists($options{-echo})
+        ? (defined($options{-echo}) ? $options{-echo} : \*STDOUT) : undef);
+
+    unless (%options && (exists($options{-file}) || exists($options{-symbol})))
+    {
+        @file = (
+            { -symbol => 'XFILESEARCHPATH',     -priority => 'startupFile' },
+            { -symbol => 'XUSERFILESEARCHPATH', -priority => 'userDefault' } );
+    }
+    else
+    {
+        @file = { %options };
+    }
+
+    foreach my $file (@file)
+    {
+        my $fileSpec = $file->{-spec} = undef;
+        if (exists($file->{-symbol}))
+        {
+            my $xpath = undef;
+            if ($file->{-symbol} eq 'XUSERFILESEARCHPATH')
+            {
+                $file->{-priority} ||= 'userDefault';
+                foreach my $symbol (qw(XUSERFILESEARCHPATH XAPPLRESDIR HOME))
+                {
+                    last if (exists($ENV{$symbol}) && ($xpath = $ENV{$symbol}));
+                }
+                next unless defined($xpath);
+            }
+            else
+            {
+                $file->{-priority} ||= (($file->{-symbol} eq 'XFILESEARCHPATH')
+                    ? 'startupFile' : 'userDefault');
+                next unless (
+                    exists($ENV{$file->{-symbol}}) && ($xpath = $ENV{$file->{-symbol}}));
+            }
+
+            unless (exists($self->{translation}))
+            {
+                $self->{translation} = { # %l %C %S currently ignored
+                    '%L' => ($ENV{LANG} || 'C'),      # language
+                    '%T' => 'app-defaults',           # type
+                    '%N' => $self->{config}->{-class} # filename
+                };
+            }
+
+            my @postfix = map({ $_ . '/' . $self->{config}->{-class} }
+                ('/' . $self->{translation}->{'%L'}), '');
+
+            ITEM: foreach $fileSpec (split(':', $xpath))
+            {
+                if ($fileSpec =~ s/(%[A-Za-z])/$self->{translation}->{$1}/g) # File Pattern
+                {
+                    if (defined($echo) && ($file->{-symbol} ne 'XFILESEARCHPATH'))
+                    {
+                        print $echo 'Checking ', $fileSpec, "\n";
+                    }
+                    next unless ((-f $fileSpec) && (-r _) && (-s _));
+                    $file->{-spec} = $fileSpec;
+                    last;
+                }
+                else # Directory - Check for <Directory>/$LANG/<Class>, <Directory>/<CLASS>
+                {
+                    foreach my $postfix (@postfix)
+                    {
+                        my $fileSpec2 = $fileSpec . $postfix;
+                        if (defined($echo) && ($file->{-symbol} ne 'XFILESEARCHPATH'))
+                        {
+                            print $echo 'Checking ', $fileSpec2, "\n";
+                        }
+                        next unless ((-f $fileSpec2) && (-r _) && (-s _));
+                        $file->{-spec} = $fileSpec2;
+                        last ITEM;
+                    }
+                }
+            }
+        }
+        elsif (exists($file->{-file}) && ($fileSpec = $file->{-file}))
+        {
+            print $echo 'Checking ', $fileSpec, "\n" if defined($echo);
+            next unless ((-f $fileSpec) && (-r _) && (-s _));
+            $file->{-spec} = $fileSpec;
+        }
+    }
+
+    foreach my $file (@file)
+    {
+        next unless defined($file->{-spec});
+        local *SPEC;
+        next unless open(SPEC,$file->{-spec});
+        print $echo ' Loading ', $file->{-spec}, "\n" if defined($echo);
+
+        my $resource     = undef;
+        my @resource     = ();
+        my $continuation = 0;
+
+        while (defined(my $line = <SPEC>))
+        {
+            chomp($line);
+            next if ($line =~ /^\s*$/); # skip blank lines
+            next if ($line =~ /^\s*!/); # skip comments
+            $continuation = ($line =~ s/\s*\\$/ /); # search for trailing backslash
+            unless (defined($resource)) # it is the first line
+            {
+                $resource = $line;
+            }
+            else # it is a continuation line
+            {
+                $line =~ s/^\s*//; # remove leading whitespace
+                $resource .= $line;
+            }
+            next if $continuation;
+            push(@resource, [ $1, $2 ]) if ($resource =~ /^([^:\s]+)*\s*:\s*(.*)$/);
+            $resource = undef;
+        }
+
+        close(SPEC);
+
+        if (defined($resource)) # special case - EOF after line with trailing backslash
+        {
+            push(@resource, [ $1, $2 ]) if ($resource =~ /^([^:\s]+)*\s*:\s*(.*)$/);
+        }
+
+        $self->SetResources(\@resource, $file->{-priority}) if @resource;
+    }
+
+    return $self;
+}
+
+#/----------------------------------------------------------------------------//
 
 1;
 

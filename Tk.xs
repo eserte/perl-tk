@@ -7,7 +7,7 @@
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-#include <patchlevel.h> 
+#include <patchlevel.h>
 
 #include "tkGlue.def"
 
@@ -32,10 +32,10 @@ static STRLEN na; /* Quick and dirty fix */
 #include <link.h>
 #endif
 #define NeedPreload() 1
-#else                                
+#else
 
 #define NeedPreload() 0
-#endif     
+#endif
 
 #define Tk_tainting() (PL_tainting)
 #define Tk_tainted(sv) ((sv) ? SvTAINTED(sv) : PL_tainted)
@@ -46,7 +46,7 @@ DebugHook(SV *sv)
 
 }
 
-#define XEvent_DESTROY(obj) 
+#define XEvent_DESTROY(obj)
 
 #define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
@@ -74,7 +74,7 @@ DebugHook(SV *sv)
 
 static XFontStruct * TkwinFont _((Tk_Window tkwin, Tk_Uid name));
 
-static void pTk_DefineBitmap _((Tk_Window tkwin, char *name,  
+static void pTk_DefineBitmap _((Tk_Window tkwin, char *name,
                                int width, int height, SV *source));
 
 static void
@@ -143,22 +143,22 @@ Const_DISABLED()
 
 
 IV
-Const_DONT_WAIT()     
+Const_DONT_WAIT()
 
 IV
-Const_WINDOW_EVENTS() 
+Const_WINDOW_EVENTS()
 
 IV
 Const_FILE_EVENTS()
 
 IV
-Const_TIMER_EVENTS()  
+Const_TIMER_EVENTS()
 
 IV
-Const_IDLE_EVENTS()   
+Const_IDLE_EVENTS()
 
 IV
-Const_ALL_EVENTS()    
+Const_ALL_EVENTS()
 
 MODULE = Tk	PACKAGE = Tk::Xrm	PREFIX = Xrm_
 PROTOTYPES: DISABLE
@@ -182,9 +182,7 @@ void
 XEvent_DESTROY(obj)
 SV *	obj
 
-
 MODULE = Tk	PACKAGE = Tk::MainWindow	PREFIX = pTk_
-
 
 PROTOTYPES: DISABLE
 
@@ -203,7 +201,7 @@ CODE:
 
 
 MODULE = Tk	PACKAGE = Tk::Callback
- 
+
 void
 new(package,what)
 char *	package
@@ -222,18 +220,18 @@ CODE:
 {
  if (!SvROK(cb))
   croak("callback is not a reference");
- cb = SvRV(cb);                          
+ cb = SvRV(cb);
  if (!SvROK(src))
   croak("src is not a reference");
- src = SvRV(src);                          
+ src = SvRV(src);
  if (!SvROK(dst))
   croak("dst is not a reference");
- 
+
  if (SvTYPE(cb) == SVt_PVAV)
   {
-   AV *av = newAV();                        
+   AV *av = newAV();
    int n = av_len((AV *) cb);
-   int i;           
+   int i;
    int match = 0;
    for (i=0; i <= n; i++)
     {
@@ -243,7 +241,7 @@ CODE:
        if (SvROK(*svp) && SvRV(*svp) == src)
         {
          av_store(av, i, SvREFCNT_inc(dst));
-         match++; 
+         match++;
         }
        else
         {
@@ -254,7 +252,7 @@ CODE:
    if (match)
     {
      ST(0) = sv_2mortal(sv_bless(MakeReference((SV *) av),SvSTASH(cb)));
-    }           
+    }
    else
     {
      SvREFCNT_dec(av);
@@ -262,7 +260,7 @@ CODE:
   }
 }
 
-void 
+void
 DESTROY(object)
 SV *	object
 CODE:
@@ -311,20 +309,30 @@ PPCODE:
   PUSHs(sv_2mortal(newSViv(y)));
  }
 
-MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_ 
+MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 
 void
-EnterMethods(package,file,...)
+WidgetMethod(widget,name,...)
+SV *	widget;
+SV *	name;
+CODE:
+ {
+  Lang_CmdInfo *info = WindowCommand(widget, NULL, 1);
+  XSRETURN(Call_Tk(info, items, &ST(0)));
+ }
+
+void
+OldEnterMethods(package,file,...)
 char *	package
-char *	file       
+char *	file
 CODE:
  {int i;
   char buf[80];  /* FIXME Size of buffer */
   for (i=2; i < items; i++)
-   {                               
+   {
     STRLEN len;
     SV *method = newSVsv(ST(i));
-    CV *cv;                        
+    CV *cv;
     sprintf(buf, "%s::%s", package, SvPV(method,len));
     cv = newXS(buf, XStoWidget, file);
     CvXSUBANY(cv).any_ptr = method;
@@ -342,10 +350,10 @@ CODE:
   if (io)
    {
     PerlIO *f = (w) ? IoOFP(io) : IoIFP(io);
-    if (f)          
-     {              
+    if (f)
+     {
       RETVAL = PerlIO_fileno(f);
-     }              
+     }
    }
  }
 OUTPUT:
@@ -449,7 +457,7 @@ PPCODE:
   PUSHs(sv_2mortal(newSViv(y)));
   PUSHs(sv_2mortal(newSViv(width)));
   PUSHs(sv_2mortal(newSViv(height)));
- } 
+ }
 
 Colormap
 Tk_Colormap(win)
@@ -654,7 +662,7 @@ SV *	win
 CODE:
  {
   if (!SvROK(win) || SvTYPE(SvRV(win)) != SVt_PVHV)
-   RETVAL = 0; 
+   RETVAL = 0;
   else
    {
     Lang_CmdInfo *info = WindowCommand(win,NULL,0);
@@ -705,7 +713,7 @@ MainWindow(interp)
 Tcl_Interp *	interp
 CODE:
  {
-  RETVAL = SvREFCNT_inc(WidgetRef(interp,".")); 
+  RETVAL = SvREFCNT_inc(WidgetRef(interp,"."));
  }
 OUTPUT:
  RETVAL
@@ -770,7 +778,7 @@ Font_DESTROY(sv)
 SV *	sv
 
 MODULE = Tk	PACKAGE = Tk::Font	PREFIX = Tk_
-          
+
 int
 Tk_PostscriptFontName(tkfont,name)
 Tk_Font	tkfont
@@ -802,9 +810,9 @@ SV *	win
 BOOT:
  {
 #ifdef WIN32
-  /* Force inclusion of DllMain() */ 
-  TkWin32DllPresent(); 
+  /* Force inclusion of DllMain() */
+  TkWin32DllPresent();
 #endif
   Boot_Glue();
- } 
+ }
 

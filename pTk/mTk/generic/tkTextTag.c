@@ -63,6 +63,9 @@ static Tk_ConfigSpec tagConfigSpecs[] = {
     {TK_CONFIG_LANGARG, "-underline", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(TkTextTag, underlineString),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_LANGARG, "-elide", (char *) NULL, (char *) NULL,
+	(char *) NULL, Tk_Offset(TkTextTag, elideString),
+	TK_CONFIG_NULL_OK},
     {TK_CONFIG_UID, "-wrap", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(TkTextTag, wrapMode),
 	TK_CONFIG_NULL_OK},
@@ -382,6 +385,12 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		    return TCL_ERROR;
 		}
 	    }
+	    if (tagPtr->elideString != NULL) {
+		if (Tcl_GetBoolean(interp, tagPtr->elideString,
+			&tagPtr->elide) != TCL_OK) {
+		    return TCL_ERROR;
+		}
+	    }
 	    if ((tagPtr->wrapMode != NULL)
 		    && (tagPtr->wrapMode != tkTextCharUid)
 		    && (tagPtr->wrapMode != tkTextNoneUid)
@@ -423,6 +432,7 @@ TkTextTagCmd(textPtr, interp, argc, argv)
 		    || (tagPtr->spacing3String != NULL)
 		    || (tagPtr->tabString != NULL)
 		    || (tagPtr->underlineString != NULL)
+		    || (tagPtr->elideString != NULL)
 		    || (tagPtr->wrapMode != NULL)) {
 		tagPtr->affectsDisplay = 1;
 	    }
@@ -816,6 +826,8 @@ TkTextCreateTag(textPtr, tagName)
     tagPtr->tabArrayPtr = NULL;
     tagPtr->underlineString = NULL;
     tagPtr->underline = 0;
+    tagPtr->elideString = NULL;
+    tagPtr->elide = 0;
     tagPtr->wrapMode = NULL;
     tagPtr->userData = NULL;
     tagPtr->affectsDisplay = 0;
@@ -909,6 +921,9 @@ TkTextFreeTag(textPtr, tagPtr)
     }
     if (tagPtr->underlineString != NULL) {
 	LangFreeArg(tagPtr->underlineString,TCL_DYNAMIC);
+    }
+    if (tagPtr->elideString != NULL) {
+	LangFreeArg(tagPtr->elideString,TCL_DYNAMIC);
     }
     if (tagPtr->justifyString != NULL) {
 	ckfree(tagPtr->justifyString);

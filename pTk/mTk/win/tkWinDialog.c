@@ -75,15 +75,15 @@ typedef struct _ChooseColorData {
 } ChooseColorData;
 
 
-static int 		GetFileName _ANSI_ARGS_((ClientData clientData,
-    			    Tcl_Interp *interp, int argc, char **argv,
+static int 		TkGetFileName _ANSI_ARGS_((ClientData clientData,
+    			    Tcl_Interp *interp, int argc, Arg *args,
     			    int isOpen));
 static UINT CALLBACK	ColorDlgHookProc _ANSI_ARGS_((HWND hDlg, UINT uMsg,
 			    WPARAM wParam, LPARAM lParam));
 static int 		MakeFilter _ANSI_ARGS_((Tcl_Interp *interp,
     			    OPENFILENAME *ofnPtr, Arg string));
 static int		ParseFileDlgArgs _ANSI_ARGS_((Tcl_Interp * interp,
-    			    OPENFILENAME *ofnPtr, int argc, char ** argv,
+    			    OPENFILENAME *ofnPtr, int argc, Arg *args,
 			    int isOpen));
 static int 		ProcessCDError _ANSI_ARGS_((Tcl_Interp * interp,
 			    DWORD dwErrorCode, HWND hWnd));
@@ -118,6 +118,7 @@ EvalArgv(interp, cmdName, argc, argv)
     Tcl_CmdInfo cmdInfo;
 
     if (!Tcl_GetCommandInfo(interp, cmdName, &cmdInfo)) {
+#ifndef _LANG
 	char * cmdArgv[2];
 
 	/*
@@ -144,8 +145,13 @@ EvalArgv(interp, cmdName, argc, argv)
 		cmdName, "\"",NULL);
 	    return TCL_ERROR;
 	}
+#else
+	    Tcl_ResetResult(interp);
+	    Tcl_AppendResult(interp, "cannot find command \"",
+		cmdName, "\"",NULL);
+	    return TCL_ERROR;
+#endif
     }
-
     return (*cmdInfo.proc)(cmdInfo.clientData, interp, argc, argv);
 }
 
@@ -385,9 +391,9 @@ Tk_GetOpenFileCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Arg *args;			/* Argument strings. */
 {
-    return GetFileName(clientData, interp, argc, argv, OPEN_FILE);
+    return TkGetFileName(clientData, interp, argc, args, OPEN_FILE);
 }
 
 /*
@@ -412,15 +418,15 @@ Tk_GetSaveFileCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Arg *args;			/* Argument strings. */
 {
-    return GetFileName(clientData, interp, argc, argv, SAVE_FILE);
+    return TkGetFileName(clientData, interp, argc, args, SAVE_FILE);
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * GetFileName --
+ * TkGetFileName --
  *
  *	Calls GetOpenFileName() or GetSaveFileName().
  *
@@ -434,11 +440,11 @@ Tk_GetSaveFileCmd(clientData, interp, argc, argv)
  */
 
 static int 
-GetFileName(clientData, interp, argc, argv, isOpen)
+TkGetFileName(clientData, interp, argc, args, isOpen)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Arg *args;			/* Argument strings. */
     int isOpen;			/* true if we should call GetOpenFileName(),
 				 * false if we should call GetSaveFileName() */
 {
@@ -452,7 +458,7 @@ GetFileName(clientData, interp, argc, argv, isOpen)
     /*
      * 1. Parse the arguments.
      */
-    if (ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen) != TCL_OK) {
+    if (ParseFileDlgArgs(interp, ofnPtr, argc, args, isOpen) != TCL_OK) {
 	return TCL_ERROR;
     }
     custData = (OpenFileData*) ofnPtr->lCustData;
@@ -536,7 +542,7 @@ ParseFileDlgArgs(interp, ofnPtr, argc, argv, isOpen)
     Tcl_Interp * interp;	/* Current interpreter. */
     OPENFILENAME *ofnPtr;	/* Info about the file dialog */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings. */
+    Arg *args;			/* Argument strings. */
     int isOpen;			/* true if we should call GetOpenFileName(),
 				 * false if we should call GetSaveFileName() */
 {
@@ -691,7 +697,7 @@ static int MakeFilter(interp, ofnPtr, string)
     OPENFILENAME *ofnPtr;	/* Info about the file dialog */
     Arg string;		/* String value of the -filetypes option */
 {
-    char *filterStr;
+    char *filterStr = NULL;
     char *p;
     int pass;
     FileFilterList flist;
@@ -722,6 +728,7 @@ static int MakeFilter(interp, ofnPtr, string)
 	*p = '\0';
 
     } else {
+	unsigned need = 0;
 	/* We format the filetype into a string understood by Windows:
 	 * {"Text Documents" {.doc .txt} {TEXT}} becomes
 	 * "Text Documents (*.doc,*.txt)\0*.doc;*.txt\0"
@@ -730,11 +737,28 @@ static int MakeFilter(interp, ofnPtr, string)
 	 * string format.
 	 */
 
-	/*
-	 * Since we may only add asterisks (*) to the filter, we need at most
-	 * twice the size of the string to format the filter
-	 */
-	filterStr = ckalloc(strlen(string) * 3);
+	for (filterPtr = flist.filters; filterPtr;
+	        filterPtr = filterPtr->next) {
+	    FileFilterClause *clausePtr;
+
+	    /*
+	     *  First, put in the name of the file type
+	     */
+	    need += strlen(filterPtr->name);
+            need += 2;
+
+	    for (clausePtr=filterPtr->clauses;clausePtr;
+		     clausePtr=clausePtr->next) {
+		GlobPattern *globPtr;
+		for (globPtr=clausePtr->patterns; globPtr; globPtr=globPtr->next) {
+		    need += 2;
+		    need += 2*strlen(globPtr->pattern);
+		}
+	    }
+	    need += 8;
+	}
+
+	filterStr = ckalloc(need);
 
 	for (filterPtr = flist.filters, p = filterStr; filterPtr;
 	        filterPtr = filterPtr->next) {
@@ -1049,3 +1073,4 @@ static int ProcessCDError(interp, dwErrorCode, hWnd)
     Tcl_AppendResult(interp, "Win32 internal error: ", string, NULL); 
     return TCL_ERROR;
 }
+

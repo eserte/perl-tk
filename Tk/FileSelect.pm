@@ -1,12 +1,13 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION);
-$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/FileSelect.pm#23$
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/FileSelect.pm#26$
 
 use Tk qw(Ev);
 use strict;
 use Carp;
 use base qw(Tk::Toplevel);
+use Tk::widgets qw(LabEntry Button Frame Listbox Scrollbar);
 
 Construct Tk::Widget 'FileSelect';
 
@@ -316,7 +317,7 @@ sub reread
   {
    $w->configure('-filter', '*');
   }
- unless ($^T)
+ unless (Tk::tainting())
   {
    if (chdir($dir))
     {

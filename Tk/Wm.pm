@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Wm;
@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Wm.pm#11$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/Wm.pm#17$
 
 use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 
@@ -136,6 +136,15 @@ sub FullScreen
 sub iconposition
 {
  my $w = shift;
- return $w->wm('iconposition',$1,$2) if (@_ == 1 && $_[0] =~ /^(\d+),(\d+)$/); 
+ if (@_ == 1)
+  {
+   return $w->wm('iconposition',$1,$2) if $_[0] =~ /^(\d+),(\d+)$/; 
+   if ($_[0] =~ /^([+-])(\d+)([+-])(\d+)$/)
+    {
+     my $x = ($1 eq '-') ? $w->screenwidth-$2 : $2;
+     my $y = ($3 eq '-') ? $w->screenheight-$4 : $4;
+     return $w->wm('iconposition',$x,$y);
+    }
+  }
  $w->wm('iconposition',@_);
 }

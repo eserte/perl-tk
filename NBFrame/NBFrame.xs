@@ -24,9 +24,16 @@ DECLARE_VTABLES;
 TixVtab     *TixVptr     ; 
 TixintVtab  *TixintVptr  ; 
 
-MODULE = Tk::NBFrame	PACKAGE = Tk::NBFrame
+MODULE = Tk::NBFrame	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
+
+void
+nbframe(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tix_NoteBookFrameCmd,items,&ST(0)));
+ }
 
 
 BOOT:
@@ -34,6 +41,4 @@ BOOT:
   IMPORT_VTABLES;
   TixVptr     =     (TixVtab *) SvIV(perl_get_sv("Tk::TixVtab",5));      
   TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5));   
-  /* Initialize the display item types */
-  Lang_TkCommand("nbframe",Tix_NoteBookFrameCmd);
  }

@@ -19,12 +19,19 @@
 DECLARE_VTABLES;
 
 
-MODULE = Tk::Canvas	PACKAGE = Tk::Canvas
+MODULE = Tk::Canvas	PACKAGE = Tk
+
+void
+canvas(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_CanvasCmd,items,&ST(0)));
+ }
+
 
 PROTOTYPES: DISABLE
 
 BOOT:
  {
   IMPORT_VTABLES;
-  Lang_TkCommand("canvas", Tk_CanvasCmd);
  }

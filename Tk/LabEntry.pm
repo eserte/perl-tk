@@ -1,15 +1,14 @@
 # Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
-# Class LabeledEntry
 
 package Tk::LabEntry;
-require Tk::Frame;
 
-use vars qw($VERSION @ISA);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/LabEntry.pm#6$
+use vars qw($VERSION);
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/LabEntry.pm#7$
 
 use base  qw(Tk::Frame);
+use Tk::widgets qw(Frame Label Entry);
 
 Construct Tk::Widget 'LabEntry';
 

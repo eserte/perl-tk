@@ -8,11 +8,11 @@ package Tk::Entry;
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Entry/Entry.pm#16$
+$VERSION = '3.019'; # $Id: //depot/Tk8/Entry/Entry.pm#19$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -461,7 +461,7 @@ sub AutoScan
    return;
   }
  $w->MouseSelect($x);
- $w->RepeatId($w->after(50,"AutoScan",$w,$x))
+ $w->RepeatId($w->after(50,["AutoScan",$w,$x]))
 }
 # KeySelect
 # This procedure is invoked when stroking out selections using the

@@ -20,7 +20,7 @@ BEGIN
       
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#14$
 
 use Tk 'Ev';
 use Tk::Widget;
@@ -38,34 +38,10 @@ sub Tk_cmd { \&Tk::tixGrid }
 
 sub Tk::Widget::SrclTixGrid { shift->Scrolled('TixGrid' => @_) }
 
-EnterMethods Tk::TixGrid __FILE__,qw(
-			anchor
-			bdtype
-			cget
-			configure
-			delete
-			entrycget
-			entryconfigure
-			format
-			index
-			move
-			set
-			size
-			unset
-			xview
-			yview
-			),
-# TODO:  $tixgrid->to_list_commands lists (not documented in tix manpage):
-#
-	'to_list_commands',	# just to get the list :-)
-	'dragsite',
-	'dropsite',
-	'geometryinfo',
-	'info',
-	'nearest',
-	'selection',
-	'sort',
-	;
+Tk::Methods qw(anchor bdtype delete entrycget entryconfigure format index
+               move set size unset xview yview 
+               to_list_commands dragsite dropsite geometryinfo info
+               nearest selection sort );
 
 # edit subcommand is special. It justs invokes tcl code:
 #

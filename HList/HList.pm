@@ -1,7 +1,7 @@
 package Tk::HList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.018'; # $Id: //depot/Tk8/HList/HList.pm#18$
+$VERSION = '3.020'; # $Id: //depot/Tk8/HList/HList.pm#20$
 
 use Tk qw(Ev);
 
@@ -23,10 +23,10 @@ sub CreateArgs
  return @result;
 }
 
-EnterMethods Tk::HList __FILE__,qw(add addchild anchor column
-                                   delete dragsite dropsite entrycget
-                                   entryconfigure geometryinfo indicator header hide item info
-                                   nearest see select selection show xview yview);
+Tk::Methods qw(add addchild anchor column
+               delete dragsite dropsite entrycget
+               entryconfigure geometryinfo indicator header hide item info
+               nearest see select selection show xview yview);
 
 use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
                      'header' => [qw(configure cget create delete exists size)],

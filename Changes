@@ -2,7 +2,18 @@ Within each 'release' time advances down the file, but most recent
 release is at the top.
 
 Change.log is generated from perforce database, it is therefore
-complete, but short on detail.      
+complete, but short on detail.
+
+Changes in Tk800.013
+	Various tweaks to work better with -MO::* 'compile' 
+	Stephen Kun's Adjuster re-write.    
+	Many tweaks and fixes from mailing list, Slaven Rezic in particular
+	contributed several.        
+	Added -elide option to text tags.          
+	New Tk::CmdLine from Ben Pavon 
+	Workround for callbacks loosing implied widget arg.
+	Remove -DBASEEXT from Makefiles (VMS has issues with it)
+	Fixed long standing bug in Win32 native getOpenFile/getSaveFile.
 
 Changes in Tk800.012             
 	Various patches from the list       

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MainWindow;
@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.033'; # $Id: //depot/Tk8/Tk/MainWindow.pm#33$
+$VERSION = '3.037'; # $Id: //depot/Tk8/Tk/MainWindow.pm#37$
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -60,6 +60,12 @@ sub new
  $top->InitObject(\%args);
  eval { $top->configure(%args) };
  croak "$@" if ($@);
+ if (($top->positionfrom||'') ne 'user' and ($top->sizefrom||'') ne 'user') {
+     my $geometry = $top->optionGet(qw(geometry Geometry));
+     if ($geometry) {
+	 $top->geometry($geometry);
+     }
+ }
  push(@Windows,$top);
  return $top;
 }

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 # modify it under the same terms as Perl itself, subject
@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.012';
+$Tk::VERSION     = '800.013';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -221,8 +221,13 @@ sub SplitString
 
 sub Methods
 {
- my ($package,$file) = caller;
- $package->EnterMethods($file,@_);
+ my ($package) = caller;
+ no strict 'refs';
+ foreach my $meth (@_)
+  {
+   my $name = $meth;
+   *{$package."::$meth"} = sub { shift->WidgetMethod($name,@_) };
+  }
 }
 
 sub fileevent
@@ -368,9 +373,6 @@ sub TranslateFileName
 1;
 
 __END__
-# provide an exit() to be exported if exit occurs
-# before a MainWindow->new()
-sub exit { CORE::exit(@_);}
 
 sub Error
 {my $w = shift;
@@ -690,4 +692,5 @@ sub lsearch
 }
 
  
+
 

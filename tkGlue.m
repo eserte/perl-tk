@@ -58,5 +58,9 @@
 #  define WindowCommand (*TkglueVptr->V_WindowCommand)
 #endif
 
+#ifndef XSTkCommand
+#  define XSTkCommand (*TkglueVptr->V_XSTkCommand)
+#endif
+
 #endif /* NO_VTABLES */
 #endif /* _TKGLUE_VM */

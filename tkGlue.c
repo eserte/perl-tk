@@ -63,6 +63,9 @@ typedef struct Assoc_s
  ClientData clientData;
 } Assoc_t;
 
+static int initialized = 0;
+
+
 static I32 ec = 0;
 static SV *my_watch;
 
@@ -77,19 +80,20 @@ static char CMD_KEY[]      = "_CmdInfo_";
 #define BASEEXT "Tk"
 #endif
 
-static XSdec(SelectionGet);
-static XSdec(ManageGeometry);
-static XSdec(MainWindowCreate);
-static XSdec(InterpDestroy);
 static XSdec(XStoSubCmd);
 static XSdec(XStoDisplayof);
 static XSdec(XStoTk);
 static XSdec(XStoBind);
 static XSdec(XStoEvent);
-static XSdec(BindClientMessage);
-static XSdec(CallbackCall);
-static XSdec(PassEvent);
-static XSdec(XS_Tk_INIT);
+
+extern XSdec(XS_Tk__Widget_SelectionGet);
+extern XSdec(XS_Tk__Widget_ManageGeometry);
+extern XSdec(XS_Tk__MainWindow_Create);
+extern XSdec(XS_Tk__Interp_DESTROY);
+extern XSdec(XS_Tk__Widget_BindClientMessage);
+extern XSdec(XS_Tk__Callback_Call);
+extern XSdec(XS_Tk__Widget_PassEvent);
+extern XSdec(XS_Tk_INIT);
 extern XSdec(XS_Tk_DoWhenIdle);
 extern XSdec(XS_Tk_CreateGenericHandler);
 
@@ -594,8 +598,7 @@ ClientData clientData;
  av_push(av, newSViv((IV) clientData));
 }
 
-static
-XS(InterpDestroy)
+XS(XS_Tk__Interp_DESTROY)
 {
  dXSARGS;
  Tcl_Interp *interp = (Tcl_Interp *) SvRV(ST(0));
@@ -1970,10 +1973,36 @@ SV **args;
   }
  do_watch();
  return count;
+} 
+
+static void
+InitVtabs(void)
+{
+ /* Called by Boot_Glue below, re-called in 5.004_50+ at start of run phase.
+  * If we have been "Compiled" then module this code is defined in
+  * will have been re-linked, so the 'static' above will be 0 again
+  * which will cause us to re-set vtables with addresses where
+  * we happen to be loaded now, as opposed to where we were loaded
+  * at compile time.
+  */
+ if (!initialized)
+  {
+   install_vtab("TkVtab",TkVGet(),sizeof(TkVtab));
+   install_vtab("TkintVtab",TkintVGet(),sizeof(TkintVtab));
+   install_vtab("LangVtab",LangVGet(),sizeof(LangVtab));
+   install_vtab("TkglueVtab",TkglueVGet(),sizeof(TkglueVtab));
+   install_vtab("XlibVtab",XlibVGet(),sizeof(XlibVtab));
+   install_vtab("TkoptionVtab",TkoptionVGet(),sizeof(TkoptionVtab));
+#ifdef WIN32
+   install_vtab("TkwinVtab",TkwinVGet(),sizeof(TkwinVtab));
+   install_vtab("TkwinintVtab",TkwinintVGet(),sizeof(TkwinintVtab));
+#endif
+   Boot_Tix();
+  }
+ initialized++;
 }
 
-static
-XS(MainWindowCreate)
+XS(XS_Tk__MainWindow_Create)
 {
  dXSARGS;
  STRLEN na;
@@ -1982,6 +2011,8 @@ XS(MainWindowCreate)
  char *appName = SvPV(ST(1),na);
  int offset = args - sp;
  int code;
+ if (!initialized)
+  InitVtabs();
  code = TkCreateFrame(NULL, interp, items, &ST(0), 1, appName);
  if (code != TCL_OK)
   {
@@ -2100,8 +2131,7 @@ char *s;
  return 1;
 }
 
-static
-XS(SelectionGet)
+XS(XS_Tk__Widget_SelectionGet)
 {
  dXSARGS;
  STRLEN na;
@@ -2549,25 +2579,31 @@ XS(XStoFont)
  LangDumpVec("Font Post",items,&ST(0));
 #endif
  XSRETURN(Call_Tk(&info, items, &ST(0)));
+}      
+
+int
+XSTkCommand (CV *cv, Tcl_CmdProc *proc, int items, SV **args)
+{
+ STRLEN na;
+ Lang_CmdInfo info;
+ SV *name = NameFromCv(cv);
+ if (InfoFromArgs(&info,proc,1,items,args) != 0)
+  {
+   croak("Usage $widget->%s(...)\n%s is not a Tk object",
+         SvPV(name,na),SvPV(args[0],na));
+  }
+ /* Having established a widget was passed in ST(0) overwrite
+    with name of command Tk is expecting
+  */
+ args[0] = name;          /* Fill in command name */
+ return Call_Tk(&info, items, args);
 }
 
 static
 XS(XStoTclCmd)
 {
  dXSARGS;
- STRLEN na;
- Lang_CmdInfo info;
- SV *name = NameFromCv(cv);
- if (InfoFromArgs(&info,(Tcl_CmdProc *) XSANY.any_ptr,1,items,&ST(0)) != 0)
-  {
-   croak("Usage $widget->%s(...)\n%s is not a Tk object",
-         SvPV(name,na),SvPV(ST(0),na));
-  }
- /* Having established a widget was passed in ST(0) overwrite
-    with name of command Tk is expecting
-  */
- ST(0) = name;          /* Fill in command name */
- XSRETURN(Call_Tk(&info, items, &ST(0)));
+ XSRETURN(XSTkCommand(cv,(Tcl_CmdProc *) XSANY.any_ptr, items, &ST(0)));
 }
 
 static
@@ -2636,7 +2672,7 @@ Lang_TkSubCommand(name,proc)
 char *name;
 Tcl_CmdProc *proc;
 {
- TkXSUB(name,XStoSubCmd,proc);
+ TkXSUB(name,XStoAfterSub,proc);
 }
 
 
@@ -3645,6 +3681,15 @@ SV *sv;
     {
      sv = MakeReference(sv);
     }
+   else
+    {
+     if (SvTYPE(SvRV(sv)) == SVt_PVCV)
+      {
+       AV *av = newAV();
+       av_push(av,sv);
+       sv = MakeReference((SV *) av);
+      }
+    }
    if (SvTYPE(SvRV(sv)) == SVt_PVAV)
     {
      if (av_len((AV *) SvRV(sv)) < 0)
@@ -3896,8 +3941,7 @@ int flags;
  return count;
 }
 
-static
-XS(CallbackCall)
+XS(XS_Tk__Callback_Call)
 {
  dXSARGS;
  STRLEN na;
@@ -4240,8 +4284,7 @@ int global;
   }
 }
 
-static
-XS(BindClientMessage)
+XS(XS_Tk__Widget_BindClientMessage)
 {
  dXSARGS;
  if (items >= 1)
@@ -4675,8 +4718,7 @@ Tk_Window tkwin;
  LEAVE;
 }
 
-static
-XS(ManageGeometry)
+XS(XS_Tk__Widget_ManageGeometry)
 {
  dXSARGS;
  STRLEN na;
@@ -4881,8 +4923,7 @@ SV *arg;
  return NULL;
 }
 
-static
-XS(PassEvent)
+XS(XS_Tk__Widget_PassEvent)
 {
  dXSARGS;
  Tk_Window tkwin = NULL;
@@ -4901,21 +4942,6 @@ XS(PassEvent)
  ST(0) = &PL_sv_undef;
  XSRETURN(1);
 }
-
-
-#if 0
-XS(XEventInfo)
-{
- dXSARGS;
- dXSI32;
- EventAndKeySym *obj;
- if (items != 1)
-  croak("Usage: $event->key");
- ST(0) = XEvent_Info(SVtoEventAndKeySym(ST(0)),ix);
- XSRETURN(1);
-}
-
-#endif
 
 
 void
@@ -5250,7 +5276,6 @@ Tcl_CmdInfo *infoPtr;
  return TCL_OK;
 }
 
-static int initialized = 0;
 
 #define MkXSUB(str,name,xs,proc)                  \
 extern XSdec(name);                               \
@@ -5275,7 +5300,7 @@ size_t size;
    typedef int (*fptr)_((void));
    fptr *q = table;
    unsigned i;
-   sv_setiv(FindTkVarName(name,GV_ADDMULTI),(IV) table);
+   sv_setiv(FindTkVarName(name,GV_ADD|GV_ADDMULTI),(IV) table);
    if (size % sizeof(fptr))
     {
      warn("%s is strange size %d",name,size);
@@ -5291,35 +5316,14 @@ size_t size;
   {
    croak("%s pointer is NULL",name);
   }
-}
+}     
 
 
-static
+
 XS(XS_Tk_INIT)
 {
- /* Called by Boot_Glue below, re-called in 5.004_50+ at start of run phase.
-  * If we have been "Compiled" then module this code is defined in
-  * will have been re-linked, so the 'static' above will be 0 again
-  * which will cause us to re-set vtables with addresses where
-  * we happen to be loaded now, as opposed to where we were loaded
-  * at compile time.
-  */
  dXSARGS;
- if (!initialized)
-  {
-   install_vtab("TkVtab",TkVGet(),sizeof(TkVtab));
-   install_vtab("TkintVtab",TkintVGet(),sizeof(TkintVtab));
-   install_vtab("LangVtab",LangVGet(),sizeof(LangVtab));
-   install_vtab("TkglueVtab",TkglueVGet(),sizeof(TkglueVtab));
-   install_vtab("XlibVtab",XlibVGet(),sizeof(XlibVtab));
-   install_vtab("TkoptionVtab",TkoptionVGet(),sizeof(TkoptionVtab));
-#ifdef WIN32
-   install_vtab("TkwinVtab",TkwinVGet(),sizeof(TkwinVtab));
-   install_vtab("TkwinintVtab",TkwinintVGet(),sizeof(TkwinintVtab));
-#endif
-   Boot_Tix();
-  }
- initialized++;
+ InitVtabs();
  XSRETURN_EMPTY;
 }
 
@@ -5335,26 +5339,7 @@ _((void))
 
  /* Arrange to call initialization code - an XSUB called INIT */
  cv = newXS("Tk::INIT", XS_Tk_INIT, __FILE__);
- PUSHMARK(sp);
- PUTBACK;
- XS_Tk_INIT(cv);
- SPAGAIN;
-
-#if 0
-
- while (*XEventMethods)
-  {
-   strcpy(buf, "XEvent::@");
-              /*0123456789 */
-   buf[8] = *XEventMethods++;
-   cv = newXS(buf, XEventInfo, __FILE__);
-   CvXSUBANY(cv).any_i32 = (I32) buf[8];
-  }
- strcpy(buf + 8, "xy");
- cv = newXS(buf, XS_XEvent_Info, __FILE__);
- CvXSUBANY(cv).any_i32 = (I32) '@';
-
-#endif
+ InitVtabs();
 
 #ifdef VERSION
  sprintf(buf, "%s::VERSION", BASEEXT);
@@ -5362,27 +5347,27 @@ _((void))
 #endif
 
  sprintf(buf, "%s::Widget::%s", BASEEXT, "BindClientMessage");
- cv = newXS(buf, BindClientMessage, __FILE__);
+ cv = newXS(buf, XS_Tk__Widget_BindClientMessage, __FILE__);
 
  sprintf(buf, "%s::Widget::%s", BASEEXT, "PassEvent");
- cv = newXS(buf, PassEvent, __FILE__);
+ cv = newXS(buf, XS_Tk__Widget_PassEvent, __FILE__);
 
  sprintf(buf, "%s::Widget::%s", BASEEXT, "SelectionGet");
- cv = newXS(buf, SelectionGet, __FILE__);
+ cv = newXS(buf, XS_Tk__Widget_SelectionGet, __FILE__);
 
- cv = newXS("Tk::MainWindow::Create", MainWindowCreate, __FILE__);
+ cv = newXS("Tk::MainWindow::Create", XS_Tk__MainWindow_Create, __FILE__);
 
  sprintf(buf, "%s::Callback::%s", BASEEXT, "Call");
- cv = newXS(buf, CallbackCall, __FILE__);
+ cv = newXS(buf, XS_Tk__Callback_Call, __FILE__);
 
  newXS("Tk::DoWhenIdle", XS_Tk_DoWhenIdle, __FILE__);
  newXS("Tk::CreateGenericHandler", XS_Tk_CreateGenericHandler, __FILE__);
 
 
  sprintf(buf, "%s::Widget::%s", BASEEXT, "ManageGeometry");
- cv = newXS(buf, ManageGeometry, __FILE__);
+ cv = newXS(buf, XS_Tk__Widget_ManageGeometry, __FILE__);
 
- cv = newXS("Tk::Interp::DESTROY", InterpDestroy, __FILE__);
+ cv = newXS("Tk::Interp::DESTROY", XS_Tk__Interp_DESTROY, __FILE__);
 
 #define MkXSUB(str,name,xs,proc) \
  newXS(str, name, __FILE__);

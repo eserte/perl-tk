@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::TextUndo;
@@ -6,7 +6,7 @@ require Tk::Text;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/TextUndo.pm#16$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/TextUndo.pm#17$
 
 use base qw(Tk::Text);
 

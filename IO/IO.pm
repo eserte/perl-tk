@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.021'; # $Id: //depot/Tk8/IO/IO.pm#21$
+$VERSION = '3.023'; # $Id: //depot/Tk8/IO/IO.pm#23$
 
 require 5.002;
 require Tk;
@@ -13,6 +13,9 @@ use Carp;
 use base  qw(DynaLoader IO::Handle Exporter);
 
 bootstrap Tk::IO $Tk::VERSION;
+
+my %fh2obj;
+my %obj2fh;
 
 sub new
 {
@@ -189,12 +192,15 @@ sub TIEHANDLE
  *{$fh} = *{*$src}{IO};
  ${*$fh}{Handlers} = {};
  ${*$fh}{imode} = 0;
+$fh2obj{$src} = $fh;
+$obj2fh{$fh} = $src;
  return bless $fh,$class;
 }
 
 sub DESTROY
 {
  my $obj = shift;
+delete $fh2obj{$obj2fh{$obj}};
  $obj->CLOSE;
 }
 
@@ -307,7 +313,7 @@ sub fileevent
    $file = Symbol::qualify($file,(caller)[0]);
    $file = \*{$file};
   }
- my $obj = tie *$file,'Tk::IO', $file;
+ my $obj = (exists $fh2obj{$file} ? $fh2obj{$file} : tie *$file,'Tk::IO', $file);
  $obj->deleteHandler($mode);
  $obj->addHandler($mode,$cb) if ($cb);
 }

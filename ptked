@@ -3,9 +3,7 @@
 use Tk;
 use Tk::DropSite qw(Sun);
 use Tk::DragDrop qw(Sun);
-require Tk::TextUndo;
-require Tk::FileSelect;
-require Tk::Menubar;
+use Tk::widgets qw(TextUndo Menubar FileSelect Listbox Entry Scrollbar);
 use Tk::ErrorDialog;
 
 my $top = MainWindow->new();
@@ -17,13 +15,6 @@ my $mb = $top->Menubar;
 
 $top->optionAdd('*TextUndo.Background' => '#fff5e1');
 
-my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
-                       '-accept'   => sub 
-                                     { my $file = shift ; 
-                                       return 1 unless -e $file;
-                                       return (-r $file) && (-T $file);  
-                                     },
-                       Name => 'fs', -filter => '*');
 
 my $t = $top->Scrolled(TextUndo, -wrap => 'none', -scrollbars => 'osre');
 
@@ -50,17 +41,11 @@ $t->DropSite(-motioncommand =>
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                   [[Button => '~Open',
-                   -command => sub { my $file = $fs->Show(-popover => $top, -create => 0, -verify => ['-r']);
-                                      $t->Load($file) if (defined $file);
-                                   }]]);
+                   -command => \&DoOpen]]);
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                  [['Button' => '~Save', -command => [ $t , 'Save' ]],
-                  ['Button' => 'Save ~As', -command =>
-                      sub { 
-                           my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
-                           $t->Save($file) if (defined $file);
-                          }],
+                  ['Button' => 'Save ~As', -command => \&DoSave],
                   ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']],
                   '',['Button' => 'E~xit', -command => [ \&CheckSave, $t ]],
                  ]);
@@ -106,7 +91,38 @@ $t->bind('<F3>',\&DoFind);
 $t->update;
 $t->focus;
 
-MainLoop;
+MainLoop;   
+
+my $fs;
+sub CreateFileSelect
+{
+ unless (defined $fs)
+  {
+   $fs  = $top->FileSelect(-width => 25, -height => 8,
+                       '-accept'   => sub 
+                                     { my $file = shift ; 
+                                       return 1 unless -e $file;
+                                       return (-r $file) && (-T $file);  
+                                     },
+                       Name => 'fs', -filter => '*');
+  }
+ return $fs;
+}
+
+sub DoSave 
+{
+ my $fs   = CreateFileSelect(); 
+ my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
+ $t->Save($file) if (defined $file);
+}
+
+sub DoOpen 
+{ 
+ my $fs   = CreateFileSelect(); 
+ my $file = $fs->Show(-popover => $top, -create => 0, -verify => ['-r']);
+ $t->Load($file) if (defined $file);
+};
+
 
 sub CheckSave
 {

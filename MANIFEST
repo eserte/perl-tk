@@ -176,6 +176,7 @@ Tk/Message.pm
 Tk/MsgBox.pm
 Tk/Optionmenu.pm
 Tk/Pretty.pm
+Tk/README.Adjust
 Tk/ROText.pm
 Tk/Radiobutton.pm
 Tk/Stats.pm
@@ -264,6 +265,10 @@ chnGlue.c
 classtree
 cleanup				Remove authour's junk files
 clip_bug			Demonstrates some "features" of clipping.
+compile/Compile.pod
+compile/PreLoad.pm
+compile/findloader
+compile/splitfunc
 config/Ksprintf.c
 config/signedchar.c		Test to see of 'signed char' is legal 
 config/tod.c			Test for gettimeofday()

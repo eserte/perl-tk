@@ -690,19 +690,19 @@ options are supported:
 
 =over 8
 
-=item B<-colormap> =E<gt> I<varName>
+=item B<-colormap> =E<gt> I<hashRef>
 
-I<VarName> must be the name of an array variable
+I<HashRef> must be a reference to a hash variable or an anonymous hash
 that specifies a color mapping to use in the Postscript.
-Each element of I<varName> must consist of Postscript
+Each value of the hash must consist of Postscript
 code to set a particular color value (e.g. ``B<1.0 1.0 0.0 setrgbcolor>'').
 When outputting color information in the Postscript, Tk checks
-to see if there is an element of I<varName> with the same
+to see if there is a key in the hash with the same
 name as the color.
 If so, Tk uses the value of the element as the Postscript method
 to set the color.
-If this option hasn't been specified, or if there isn't an entry
-in I<varName> for a given color, then Tk uses the red, green,
+If this option hasn't been specified, or if there isn't a key
+in I<hashRef> for a given color, then Tk uses the red, green,
 and blue intensities from the X color.
 
 =item B<-colormode> =E<gt> I<mode>
@@ -718,14 +718,14 @@ Specifies the name of the file in which to write the Postscript.
 If this option isn't specified then the Postscript is returned as the
 result of the method instead of being written to a file.
 
-=item B<-fontmap> =E<gt> I<varName>
+=item B<-fontmap> =E<gt> I<hashRef>
 
-I<VarName> must be the name of an array variable
+I<HashRef> must be a reference to a hash variable or an anonymous hash
 that specifies a font mapping to use in the Postscript.
-Each element of I<varName> must consist of a array with
+Each value of the hash must consist of an array reference with
 two elements, which are the name and point size of a Postscript font.
 When outputting Postscript commands for a particular font, Tk
-checks to see if I<varName> contains an element with the same
+checks to see if I<hashRef> contains a value with the same
 name as the font.
 If there is such an element, then the font information contained in
 that element is used in the Postscript.

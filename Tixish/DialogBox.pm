@@ -12,7 +12,7 @@ require Tk::Toplevel;
 require Tk::Frame;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#13$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#15$
 
 use base  qw(Tk::Toplevel Tk::Frame);
 
@@ -72,8 +72,8 @@ sub Populate {
 }
 
 sub add {
-    my ($cw, $wnam, %args) = @_;
-    my $w = $cw->Subwidget("top")->$wnam(%args);
+    my ($cw, $wnam, @args) = @_;
+    my $w = $cw->Subwidget("top")->$wnam(@args);
     $cw->Advertise("\L$wnam" => $w);
     return $w;
 }

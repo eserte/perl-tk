@@ -366,6 +366,10 @@ typedef struct TkTextTag {
 				 * Must be tkTextCharUid, tkTextNoneUid,
 				 * tkTextWordUid, or NULL to use wrapMode
 				 * for whole widget. */
+    Arg elideString;		/* -elide option string (malloc-ed).
+				 * NULL means option not specified. */
+    int elide;		/* Non-zero means text is elided.
+				 * Only valid if elideString is non-NULL. */
     int affectsDisplay;		/* Non-zero means that this tag affects the
 				 * way information is displayed on the screen
 				 * (so need to redisplay if tag changes). */
@@ -797,6 +801,8 @@ extern void		TkTextLostSelection _ANSI_ARGS_((
 			    ClientData clientData));
 extern TkTextIndex *	TkTextMakeIndex _ANSI_ARGS_((TkTextBTree tree,
 			    int lineIndex, int charIndex,
+			    TkTextIndex *indexPtr));
+extern int		TkTextIsElided _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr));
 extern int		TkTextMarkCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
