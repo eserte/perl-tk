@@ -1,3 +1,203 @@
+Change 1240 on 1999/03/16 by nick@gobstopper2
+
+	Update README
+
+Change 1239 on 1999/03/16 by nick@gobstopper
+
+	#if to avoid warnings
+
+Change 1238 on 1999/03/16 by nick@gobstopper2
+
+	Remove debug now it works
+
+Change 1237 on 1999/03/16 by nick@ni-s
+
+	Calc size of open dialog string
+
+Change 1236 on 1999/03/16 by nick@gobstopper
+
+	Debugging for Win32 FileSelect
+
+Change 1235 on 1999/03/13 by nick@ni-s
+
+	VERSIONs after patches from list
+
+Change 1234 on 1999/03/13 by nick@ni-s
+
+	Slaven Rezic's Canvas.pod patch.
+
+Change 1233 on 1999/03/13 by nick@ni-s
+
+	My tweaks for new CmdLIne stuff 
+	 1. avoid undefined warnings in geometry hack
+	 2. More iconposition parsing to accept /[+-]\d+[+-]\d+/
+	    more like "geometry".
+
+Change 1232 on 1999/03/13 by nick@ni-s
+
+	Slaven Rezic's tweak to new CmdLine.
+
+Change 1231 on 1999/03/13 by nick@ni-s
+
+	Updated CmdLine from Ben Pavon <ben.pavon@hsc.hac.com>
+
+Change 1230 on 1999/03/13 by nick@ni-s
+
+	Slaven Rezic's patch for IO/IO.pm 
+
+Change 1229 on 1999/03/13 by nick@linux
+
+	Linux fixup for compile stuff	
+
+Change 1228 on 1999/03/13 by nick@ni-s
+
+	VERSION tweaks, compile support
+
+Change 1227 on 1999/03/13 by nick@ni-s
+
+	Add compile directory
+
+Change 1225 on 1999/03/11 by nick@ni-s
+
+	Remove INIT from loadables, no point as are instanced after
+	perl_run is has called PL_initav.
+	Revisit after trials
+
+Change 1223 on 1999/03/10 by nick@pluto
+
+	Fix 'after' problem in Entry 
+
+Change 1222 on 1999/03/06 by nick@ni-s
+
+	Loose OldCmdLine
+
+Change 1220 on 1999/03/04 by nick@ni-s
+
+	Versions
+
+Change 1219 on 1999/03/04 by nick@ni-s
+
+	Avoid -DBASEEXT junk in Makefiles
+	Slaven's "widget #2" fix to tests
+	Backward compatible tkGlue.h 
+
+Change 1218 on 1999/03/04 by nick@ni-s
+
+	Don't bless sub itself into Tk::Callback.
+
+Change 1217 on 1999/03/02 by nick@ni-s
+
+	Ben Pavon's <ben.pavon@hsc.hac.com> new Tk::CmdLine and associated 
+	docs.
+
+Change 1212 on 1999/02/01 by nick@ni-s
+
+	Quote -x and -y to avoid warnings.
+
+Change 1211 on 1999/01/31 by nick@ni-s
+
+	tkman's -elide patch for Text tags
+
+Change 1210 on 1999/01/31 by nick@ni-s
+
+	$VERSION as ever...
+
+Change 1209 on 1999/01/31 by nick@ni-s
+
+	Fix slave_expand_off when gridded to only mess with -weight, which
+	is equivalent of pack's -expand, and not -sticky, which is equivalent
+	to packs -fill. 
+	With this change Adjuster + grid is no worse than it ever was.
+
+Change 1208 on 1999/01/30 by nick@ni-s
+
+	Slaven's Listbox tweak.
+
+Change 1207 on 1999/01/23 by nick@ni-s
+
+	Non-interactive tests fix.
+
+Change 1206 on 1999/01/23 by nick@ni-s
+
+	Stephen Kun's <stephen.kun@is.gaertner.de> Adjuster changes.
+
+Change 1202 on 1999/01/09 by nick@camel
+
+	Use perl's configured make
+
+Change 1197 on 1998/12/23 by nick@ni-s
+
+	Pre-holiday tidy up
+
+Change 1196 on 1998/12/19 by nick@ni-s
+
+	Document idletasks and update
+
+Change 1195 on 1998/12/17 by nick@ni-s
+
+	Stephen Kun's <stephen.kun@is.gaertner.de> Adjuster tweaks
+
+Change 1194 on 1998/12/14 by nick@ni-s
+
+	Change Lang_TkSubCmd() to use XStoAfterSub() as that _seems_
+	to be the correct wrapper for Tk::Mwm - which is as far 
+	as I can tell its only caller.
+
+Change 1193 on 1998/12/10 by nick@ni-s
+
+	$VERSION #$%$
+
+Change 1192 on 1998/12/10 by nick@ni-s
+
+	Tweaks for compiler
+
+Change 1190 on 1998/12/10 by nick@ni-s
+
+	Don't use a hash so that ->add('Scrolled',...) works
+	(Patch from Ben Pavon <ben.pavon@hsc.hac.com>).
+
+Change 1188 on 1998/11/26 by nick@pluto
+
+	Pseudo taint stupidity
+
+Change 1187 on 1998/11/24 by nick@ni-s
+
+	Bump $VERSIONs - updated .pm-s for compiler tweaks
+
+Change 1186 on 1998/11/24 by nick@ni-s
+
+	Use compiler-compatible way of defining methods in loadables.
+
+Change 1185 on 1998/11/21 by nick@ni-s
+
+	Perl-side work-rounds for perl compiler - "tiny" runs!
+
+Change 1184 on 1998/11/21 by nick@ni-s
+
+	Work round lack of working INIT in -MO=C
+
+Change 1183 on 1998/11/21 by nick@ni-s
+
+	Changes to allow 'tiny' to build (but not work yet) with (tweaked) 
+	-MO=C backed to perl compiler.
+	Make XS names conform to to what B::C compiler back-end expects.
+	Avoid EnterMethods at C level as XSUBs by right names don't exist.
+	Achieve equivalent with closures in Tk::Methods and new XSUB 
+	Tk::WidgetMethod
+
+Change 1182 on 1998/11/18 by nick@ni-s
+
+	Comment out left-over debug.
+	Collapse afterIdle and afterCancel to avoid one level of wrapper.
+
+Change 1181 on 1998/11/16 by nick@ni-s
+
+	Patch for perl5.00404 
+
+Change 1180 on 1998/11/15 by nick@ni-s
+
+	Pre-Tk800.012 release tweaks.
+
 Change 1179 on 1998/11/15 by nick@ni-s
 
 	Make last separator entry right justify remaining items on a UNIX

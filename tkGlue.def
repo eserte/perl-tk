@@ -4,11 +4,16 @@
 #define XSdec(x) void x()
 #endif
 
+#ifndef PATCHLEVEL
+#include <patchlevel.h>
+#endif
+
 #if defined(PATCHLEVEL) && (PATCHLEVEL < 5)
 #define PL_sv_undef	sv_undef
 #define PL_tainting	tainting
 #define PL_tainted	tainted
 #define PL_stack_base	stack_base
+#define PL_stack_sp	stack_sp
 #define PL_curcop	curcop
 #endif
 
@@ -28,7 +33,9 @@
 #endif
 
 #ifdef na
-#undef na
+#if PATCHLEVEL >= 5
+#undef na          
+#endif
 #endif
 
 

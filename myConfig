@@ -11,7 +11,7 @@ my %define = ();
 
 $inc    = "";        
 $xlib   = "";        
-$define = '-DBASEEXT=\\"$(BASEEXT)\\"';
+$define = '';
 $gccopt = "";
 @macro  = ();
 

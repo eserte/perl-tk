@@ -18,12 +18,18 @@
 
 DECLARE_VTABLES;
 
-MODULE = Tk::Scale	PACKAGE = Tk::Scale
+MODULE = Tk::Scale	PACKAGE = Tk
 
-PROTOTYPES: DISABLE
+PROTOTYPES: DISABLE                 
+
+void
+scale(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_ScaleCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_VTABLES;
-  Lang_TkCommand("scale",Tk_ScaleCmd);
  }

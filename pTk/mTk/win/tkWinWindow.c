@@ -815,9 +815,7 @@ TkWinSetWindowPos(hwnd, siblingHwnd, pos)
 	}
     } else {       
 	if (pos == Above) {
-	    SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0,
-		    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-	     siblingHwnd = HWND_NOTOPMOST;	
+	     siblingHwnd = HWND_TOP;	
         } else {
 	     siblingHwnd = HWND_BOTTOM;
         }

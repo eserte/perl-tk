@@ -199,7 +199,27 @@ instead of its actual height.
 Returns a hexadecimal string giving a low-level platform-specific
 identifier for $widget.  On Unix platforms, this is the X
 window identifier.  Under Windows, this is the Windows
-HWND.  On the Macintosh the value has no meaning outside Tk.
+HWND.  On the Macintosh the value has no meaning outside Tk. 
+
+=item I<$widget>-E<gt>B<idletasks>        
+
+One of two methods which are used to bring the application ``up to date''
+by entering the event loop repeated until all pending events
+(including idle callbacks) have been processed.
+
+If the B<idletasks> method is specified, then no new events or errors
+are processed; only idle callbacks are invoked. This causes operations
+that are normally deferred, such as display updates and window layout
+calculations, to be performed immediately.
+
+The B<idletasks> command is useful in scripts where changes have been
+made to the application's state and you want those changes to appear
+on the display immediately, rather than waiting for the script to
+complete. Most display updates are performed as idle callbacks, so
+B<idletasks> will cause them to run. However, there are some kinds of
+updates that only happen in response to events, such as those
+triggered by window size changes; these updates will not occur in
+B<idletasks>.
 
 =item I<$widget>-E<gt>B<interps>
 
@@ -438,6 +458,18 @@ is an integer release number provided by the server.
 =item I<$widget>-E<gt>B<toplevel>
 
 Returns the reference of the top-level window containing I<$widget>.
+
+=item I<$widget>-E<gt>B<update> 
+
+One of two methods which are used to bring the application ``up to date''
+by entering the event loop repeated until all pending events
+(including idle callbacks) have been processed.
+
+The B<update> method is useful in scripts where you are performing a
+long-running computation but you still want the application to respond
+to events such as user interactions; if you occasionally call
+B<update> then user input will be processed during the next call to
+B<update>.
 
 =item I<$widget>-E<gt>B<Unbusy>
 

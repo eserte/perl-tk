@@ -4,9 +4,9 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#14$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#15$
 
-use Tk;
+use Tk ();
 use Carp;
 use strict;
 

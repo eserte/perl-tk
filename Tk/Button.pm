@@ -3,18 +3,17 @@ package Tk::Button;
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Button.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Button.pm#9$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
 
 use strict;
-use AutoLoader;
 
 require Tk::Widget;
 use base  qw(Tk::Widget);

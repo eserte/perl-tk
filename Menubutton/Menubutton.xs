@@ -18,13 +18,18 @@
 
 DECLARE_VTABLES;
 
-MODULE = Tk::Menubutton	PACKAGE = Tk::Menubutton
+MODULE = Tk::Menubutton	PACKAGE = Tk
 
-PROTOTYPES: DISABLE
+PROTOTYPES: DISABLE     
 
+void
+menubutton(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_MenubuttonCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_VTABLES;
-  Lang_TkCommand("menubutton",Tk_MenubuttonCmd);
  }

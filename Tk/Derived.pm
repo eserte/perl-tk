@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Derived;
@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Derived.pm#20$
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/Derived.pm#24$
 
 $Tk::Derived::Debug = 0;
 
@@ -131,7 +131,7 @@ sub Subconfigure
     }
    elsif ($widget eq 'SELF')
     {
-     push(@subwidget,Tk::Configure->new('configure_self', 'cget_self', $cw,@arg))
+     push(@subwidget,Tk::Configure->new('Tk::configure', 'Tk::cget', $cw,@arg))
     }
    elsif ($widget eq 'PASSIVE') 
     {
@@ -301,7 +301,7 @@ sub configure
       }
      $cw->BackTrace($error) unless ($accepted);
      $val = $$var;
-     $changed{$opt} = $val if (!defined $old || !defined $val || $old ne $val);
+     $changed{$opt} = $val if (!defined $old || !defined $val || "$old" ne "$val");
     }
    $cw->Configured(\%args,\%changed);
   }

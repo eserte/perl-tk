@@ -18,13 +18,18 @@
 
 DECLARE_VTABLES;
 
-MODULE = Tk::Listbox	PACKAGE = Tk::Listbox
+MODULE = Tk::Listbox	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
-
+                     
+void
+listbox(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_ListboxCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_VTABLES;
-  Lang_TkCommand("listbox",Tk_ListboxCmd);
  }

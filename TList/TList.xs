@@ -24,14 +24,20 @@ DECLARE_VTABLES;
 TixVtab     *TixVptr     ; 
 TixintVtab  *TixintVptr  ; 
 
-MODULE = Tk::TList	PACKAGE = Tk::TList
+MODULE = Tk::TList	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
+
+void
+tlist(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tix_TListCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_VTABLES;
   TixVptr     =     (TixVtab *) SvIV(perl_get_sv("Tk::TixVtab",5));    
   TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5)); 
-  Lang_TkCommand("tlist",Tix_TListCmd);
  }

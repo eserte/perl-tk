@@ -18,7 +18,14 @@
 
 DECLARE_VTABLES;
 
-MODULE = Tk::Entry	PACKAGE = Tk::Entry
+MODULE = Tk::Entry	PACKAGE = Tk
+
+void
+entry(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_EntryCmd,items,&ST(0)));
+ }
 
 PROTOTYPES: DISABLE
 
@@ -26,5 +33,5 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   IMPORT_VTABLES;
-  Lang_TkCommand("entry", Tk_EntryCmd);
+  /* Lang_TkCommand("entry", Tk_EntryCmd); */
  }

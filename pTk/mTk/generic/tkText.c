@@ -876,6 +876,7 @@ ConfigureText(interp, textPtr, argc, argv, flags)
 	    || (textPtr->selTagPtr->spacing2String != NULL)
 	    || (textPtr->selTagPtr->spacing3String != NULL)
 	    || (textPtr->selTagPtr->tabString != NULL)
+	    || (textPtr->selTagPtr->elideString != NULL)
 	    || (textPtr->selTagPtr->underlineString != NULL)
 	    || (textPtr->selTagPtr->wrapMode != NULL)) {
 	textPtr->selTagPtr->affectsDisplay = 1;
@@ -1423,7 +1424,7 @@ TextFetchSelection(clientData, offset, buffer, maxBytes)
 		    }
 		}
 	    }
-	    if (segPtr->typePtr == &tkTextCharType) {
+	    if (segPtr->typePtr == &tkTextCharType && !TkTextIsElided(textPtr, &textPtr->selIndex)) {
 		memcpy((VOID *) buffer, (VOID *) (segPtr->body.chars
 			+ offsetInSeg), (size_t) chunkSize);
 		buffer += chunkSize;
@@ -1564,7 +1565,7 @@ TextSearchCmd(textPtr, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-    int backwards, exact, c, i, argsLeft, noCase, leftToScan;
+    int backwards, exact, searchElide, c, i, argsLeft, noCase, leftToScan;
     size_t length;
     int numLines, startingLine, startingChar, lineNum, firstChar, lastChar;
     int code, matchLength, matchChar, passes, stopLine, searchWholeText;
@@ -1577,6 +1578,7 @@ TextSearchCmd(textPtr, interp, argc, argv)
     Tcl_DString patDString;
     TkTextSegment *segPtr;
     TkTextLine *linePtr;
+    TkTextIndex curIndex;
     Tcl_RegExp regexp = NULL;		/* Initialization needed only to
 					 * prevent compiler warning. */
 
@@ -1585,6 +1587,8 @@ TextSearchCmd(textPtr, interp, argc, argv)
      */
 
     exact = 1;
+    searchElide = 0;
+    curIndex.tree = textPtr->tree;
     backwards = 0;
     noCase = 0;
     varName = NULL;
@@ -1598,7 +1602,7 @@ TextSearchCmd(textPtr, interp, argc, argv)
 	    badSwitch:
 	    Tcl_AppendResult(interp, "bad switch \"", arg,
 		    "\": must be -forward, -backward, -exact, -regexp, ",
-		    "-nocase, -count, or --", (char *) NULL);
+		    "-nocase, -count, -elide, or --", (char *) NULL);
 	    return TCL_ERROR;
 	}
 	c = arg[1];
@@ -1619,6 +1623,8 @@ TextSearchCmd(textPtr, interp, argc, argv)
 	    noCase = 1;
 	} else if ((c == 'r') && (strncmp(argv[i], "-regexp", length) == 0)) {
 	    exact = 0;
+	} else if ((c == 'e') && (strncmp(argv[i], "-elide", length) == 0)) {
+	    searchElide = 1;
 	} else if ((c == '-') && (strncmp(argv[i], "--", length) == 0)) {
 	    i++;
 	    break;
@@ -1714,9 +1720,10 @@ TextSearchCmd(textPtr, interp, argc, argv)
 	 */
 
 	linePtr = TkBTreeFindLine(textPtr->tree, lineNum);
+	curIndex.linePtr = linePtr; curIndex.charIndex = 0;
 	for (segPtr = linePtr->segPtr; segPtr != NULL;
-		segPtr = segPtr->nextPtr) {
-	    if (segPtr->typePtr != &tkTextCharType) {
+		curIndex.charIndex += segPtr->size, segPtr = segPtr->nextPtr) {
+	    if (segPtr->typePtr != &tkTextCharType || (!searchElide && TkTextIsElided(textPtr, &curIndex))) {
 		continue;
 	    }
 	    Tcl_DStringAppend(&line, segPtr->body.chars, segPtr->size);

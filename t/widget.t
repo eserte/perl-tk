@@ -15,7 +15,7 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
     my $name;
     eval { $name = $w->appname; };
     ok($@, "", "Problem \$w->appname.");
-    ok( $name, 'widget', "Appname does not match filename" );
+    ok( $name =~ /^widget/, 1, "Appname does not match filename" );
     ok( $mw->name, $name, "\$mw->name is not equal to appname");
 }
 ##

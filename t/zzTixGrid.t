@@ -1,3 +1,4 @@
+# -*- perl -*-
 BEGIN { $^W=1; $|=1; }
 
 use strict;
@@ -7,6 +8,7 @@ use Tk;
 BEGIN { plan tests => 36, todo => [18,26,32] };
 
 my $mw = Tk::MainWindow->new;
+eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 my $tixgrid;
 {

@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/Widget.pm#42$
+$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/Widget.pm#45$
 
 require Tk;
 use AutoLoader;
@@ -61,15 +61,21 @@ use Tk::Submethods( 'grab' =>  [qw(current status release -global)],
                     'pack'  => [qw(configure forget info propagate slaves)],
                     'grid'  => [qw(bbox columnconfigure configure forget info location propagate rowconfigure size slaves)],
                     'form'  => [qw(check configure forget grid info slaves)],
-                    'after' => [qw(cancel idle)],
                     'event' => [qw(add delete generate info)],
                     'place' => [qw(configure forget info slaves)],
                     'wm'    => [qw(capture release)],
                     'font'  => [qw(actual configure create delete families measure metrics names)]
                   );
 
-*IsMenu       = \&False;
-*IsMenubutton = \&False;
+BEGIN  {
+ # FIXME - these don't work in the compiler
+ *IsMenu         = \&False;
+ *IsMenubutton   = \&False;
+ *configure_self = \&Tk::configure;
+ *cget_self      = \&Tk::cget;
+}
+
+
 
 Direct Tk::Submethods (
   'winfo' => [qw(cells class colormapfull depth exists
@@ -318,11 +324,6 @@ sub AUTOLOAD
  goto &$what;
 }
 
-*isa = \&True if ($] <= 5.003);
-
-*configure_self = \&Tk::configure;
-*cget_self = \&Tk::cget;
-
 sub _Destroyed
 {
  my $w = shift;
@@ -425,6 +426,22 @@ sub OnDestroy
 
 # This is supposed to replicate Tk::after behaviour,
 # but does auto-cancel when widget is deleted.
+
+sub afterIdle
+{
+ require Tk::After;
+ my $w = shift;
+ return Tk::After->new($w,'idle','once',@_);
+}
+
+sub afterCancel
+{
+ my $w = shift;
+ my $what = shift;
+ $what->cancel if ref $what;
+ carp "dubious cancel of $what";
+ $w->Tk::after('cancel' => $what);
+}
 
 sub after
 {
@@ -812,7 +829,7 @@ sub Busy
  my $g = $w->grabCurrent;
  if (defined $g)
   {
-   warn "$g has the grab";
+   # warn "$g has the grab";
    $g->grabRelease;
   }
  $w->update;

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -18,13 +18,18 @@
 
 DECLARE_VTABLES;
 
-MODULE = Tk::Text	PACKAGE = Tk::Text
+MODULE = Tk::Text	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
+
+void
+text(...)
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tk_TextCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_VTABLES;
-  Lang_TkCommand("text",Tk_TextCmd);
- 
  }

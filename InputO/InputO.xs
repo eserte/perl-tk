@@ -24,16 +24,20 @@ DECLARE_VTABLES;
 TixVtab     *TixVptr     ; 
 TixintVtab  *TixintVptr  ; 
 
-MODULE = Tk::InputO	PACKAGE = Tk::InputO
+MODULE = Tk::InputO	PACKAGE = Tk
 
 PROTOTYPES: DISABLE
 
+void
+inputo(...)              
+CODE:
+ {
+  XSRETURN(XSTkCommand(cv,Tix_InputOnlyCmd,items,&ST(0)));
+ }
 
 BOOT:
  {
   IMPORT_VTABLES;
   TixVptr     =     (TixVtab *) SvIV(perl_get_sv("Tk::TixVtab",5));      
   TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5));   
-  /* Initialize the display item types */
-  Lang_TkCommand("inputo",Tix_InputOnlyCmd);
  }

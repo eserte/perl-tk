@@ -13,7 +13,7 @@
 package Tk::Listbox; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Listbox/Listbox.pm#17$
+$VERSION = '3.019'; # $Id: //depot/Tk8/Listbox/Listbox.pm#19$
 
 use Tk qw(Ev);
 require Tk::Clipboard;
@@ -419,7 +419,7 @@ sub DataExtend
 sub Cancel
 {
  my $w = shift;
- if ($w->cget("-selectmode") ne "extended")
+ if ($w->cget("-selectmode") ne "extended" || !defined $Prev)
   {
    return;
   }

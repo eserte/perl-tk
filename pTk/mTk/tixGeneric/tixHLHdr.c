@@ -341,7 +341,7 @@ Tix_HLHeader(clientData, interp, argc, argv)
 	   "column ?option value ...?"},
 	{TIX_DEFAULT_LEN, "delete", 1, 1, Tix_HLHdrDelete,
 	   "column"},
-	{TIX_DEFAULT_LEN, "exist", 1, 1, Tix_HLHdrExist,
+	{TIX_DEFAULT_LEN, "exists", 1, 1, Tix_HLHdrExist,
 	   "column"},
 	{TIX_DEFAULT_LEN, "size", 1, 1, Tix_HLHdrSize,
 	   "column"},

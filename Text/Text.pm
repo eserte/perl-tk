@@ -10,17 +10,15 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-require Tk;
 package Tk::Text; 
 use AutoLoader;
 use Carp;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Text/Text.pm#10$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Text/Text.pm#13$
 
-require Tk::Clipboard;
-
+use Tk qw(Ev);
 use base  qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Text';
@@ -28,8 +26,6 @@ Construct Tk::Widget 'Text';
 bootstrap Tk::Text $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::text }
-
-import Tk qw(Ev);
 
 sub Tk::Widget::ScrlText { shift->Scrolled('Text' => @_) }
 
