@@ -1,4 +1,4 @@
-Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
@@ -14,18 +14,26 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk402.003) requires perl5.004 or later.
+This version (Tk402.004) requires perl5.004 or later.
 (Actually 5.003 will probably work on UNIX platforms if requires are 
  downgraded, but not on Win32.)
-I strongly recommend using 5.004_01.
+I strongly recommend using 5.004_04.
 
-THIS VERSION IS A NEARLY BETA - I.E. FOR THOSE ASSISTING IN DEBUGGING PERL/TK,
+In addition this version has had some testing under perl5.004_5X, and 
+various 'use English' constucts of form $ARG and @ARG have been removed
+to allow co-existance with threads. 
+
+_One_ Tk app. ran under threaded perl without crashing, but this is not in 
+any way to be taken as saying that Tk is thread safe. I am fairly sure it
+is NOT thread safe. (Due to core tk4.2.)
+
+THIS VERSION IS BETA - I.E. FOR THOSE ASSISTING IN DEBUGGING PERL/TK,
 NOT FOR PRODUCTION USE.  INTERFACES AND CONTENT SUBJECT TO CHANGE AND
 PARTS MAY BE NON-FUNCTIONAL.
 
 Tk400.202 is the current "production" release - see VERSIONS
 
-Tk402.003 should build and run on Windows NT using Visual C++ and perl5.004_01.
+Tk402.004 should build and run on Windows NT using Visual C++ and perl5.004_04.
 I also believe I have incorporated contributed fixes to allow build with Borland
 compiler on NT.
 

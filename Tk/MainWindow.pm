@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MainWindow;
@@ -10,7 +10,7 @@ use AutoLoader;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '2.011'; # $Id: //depot/Tk/Tk/MainWindow.pm#11$
+$VERSION = '2.016'; # $Id: //depot/Tk/Tk/MainWindow.pm#16$
 
 use Tk::CmdLine;
 require Tk;
@@ -38,7 +38,7 @@ sub CreateArgs
  my $name = delete($args->{'-name'});
  $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
  $result{'-screen'} = $ENV{'DISPLAY'} unless exists $result{'-screen'};
- return ("\l$name",%result);
+ return (-name => "\l$name",%result);
 }
 
 sub new
@@ -141,4 +141,75 @@ sub WMSaveYourself
 
 __END__
 
+=head1 NAME
 
+Tk::MainWindow - Root widget of a widget tree
+
+=head1 SYNOPSIS
+
+    use Tk;
+
+    my $mw = MainWindow->new( ... options ... );
+
+    my $this = $mw->ThisWidget -> pack ;
+    my $that = $mw->ThatWidget;
+    ...
+
+    MainLoop;
+
+
+=head1 DESCRIPTION
+
+B<Tk::MainWindow> is a special kind of B<Toplevel> widget. It's
+the root of a widget tree. Therefore C<$mw-E<gt>Parent> returns
+C<undef>.
+
+Unlike the standard Tcl/Tk's wish, perl/Tk allows you to create
+several MainWindows.  When the I<last> B<MainWindow> is destroyed
+the Tk eventloop exits (the eventloop is entered with the call of
+C<MainLoop>).
+
+The default title of a MainWindow is the basename of the script
+(actually the Class name used for options lookup, i.e. with basename
+with inital caps) or 'Ptk' as the fallback value.  If more than one MainWindow is created
+or several instances of the script are running at the same time the
+string C<" #n"> is appended where the number C<n> is unset to get
+a unique value.
+
+
+=head1 METHODS
+
+You can apply all methods that a L<Tk::Toplevel> accepts.
+
+To access the B<MainWindow> one can use for all widget the method
+C<$w->Mainwindow()> that returns a reference to the B<MainWindow>.
+the widget belongs to (the MainWindow belongs to itself).
+
+
+=head1 MISSING
+
+Documentation is incomplete. Category: better than nothing.
+Here are I<some> of missing items that should be explained is
+more details:
+
+=over 4
+
+=item *
+
+There no explanation about what resources are bound
+to a MainWindow (e.g., ClassInit done per MainWindow)
+
+=item *
+
+Passing of command line options to override or augment
+arguments of the C<new> method (see L<Tk::CmdLine>).
+
+=back
+
+
+=head1 SEE ALSO
+
+Tk::Toplevel, Tk::CmdLine
+
+
+=cut

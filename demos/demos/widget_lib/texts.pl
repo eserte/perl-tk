@@ -6,7 +6,7 @@ sub texts {
 
     # Create a top-level window that displays a basic text widget.
 
-    my ($demo) = @ARG;
+    my ($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => '',

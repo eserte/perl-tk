@@ -2,7 +2,21 @@ Within each 'release' time advances down the file, but most recent
 release is at the top.
 
 Change.log is generated from perforce database, it is therefore
-complete, but short on detail.
+complete, but short on detail.      
+
+Changes in 402.004    
+
+ Un-bundle Tk::Pod
+ Un-bundle Tk::Contrib
+ Un-bundle Tk::HTML
+
+ Fix "Class" of Mainwindow
+
+ Various mailed patches
+
+ Fix FileSelect with -create to validate non-existant files correctly
+
+ Use output of xmkmf rather than file itself.
 
 Changes in 402.003
 

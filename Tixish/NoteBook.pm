@@ -1,4 +1,4 @@
-# $Id: //depot/Tk/Tixish/NoteBook.pm#6$
+# $Id: //depot/Tk/Tixish/NoteBook.pm#9$
 #
 # Implementation of NoteBook widget.
 # Derived from NoteBook.tcl in Tix 4.0
@@ -10,7 +10,7 @@ package Tk::NoteBook;
 
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Tixish/NoteBook.pm#6$
+$VERSION = '2.009'; # $Id: //depot/Tk/Tixish/NoteBook.pm#9$
 
 use Tk qw(Ev);
 
@@ -106,7 +106,6 @@ sub delete {
     if (defined $w->{"top"}->{$child}) {
 	$w->{"top"}->delete($child);
     }
-	$w->Subwidget ( 'nbframe' )->delete ( $child );
 }
 
 #---------------------------------------

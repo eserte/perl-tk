@@ -13,15 +13,8 @@ Canvas/Canvas.xs
 Canvas/Makefile.PL
 Change.log
 Changes				What has changed
-Contrib/Axis.pm
-Contrib/Dial.pm
-Contrib/FileDialog.pm
-Contrib/Makefile.PL
-Contrib/OlWm.pm
 Contrib/README			Notes on Contrib directory
 Contrib/TickerTape
-Contrib/TiedListbox.pm
-Contrib/WaitBox.pm
 Contrib/book-examples/README	Notes on book-examples
 Contrib/book-examples/f-15.5.pl
 Contrib/book-examples/f-16.1.pl
@@ -74,30 +67,6 @@ HList/HList.tcl
 HList/HList.xs
 HList/Makefile.PL
 HList/Tix2perl
-HTML/HTML.aswas
-HTML/HTML.pm
-HTML/HTML/Form.pm
-HTML/HTML/Handler.pm
-HTML/HTML/IO.pm
-HTML/HTMLText.aswas
-HTML/MANIFEST
-HTML/MANIFEST.SKIP
-HTML/Makefile.PL
-HTML/README
-HTML/Web.pm
-HTML/Xcamel.gif
-HTML/example.htm
-HTML/form.htm
-HTML/icon.gif
-HTML/places.htm
-HTML/prof
-HTML/speed
-HTML/t
-HTML/t.htm
-HTML/tkweb
-HTML/tryit
-HTML/up
-HTML/webget
 INSTALL
 IO/IO.d
 IO/IO.pm
@@ -136,13 +105,6 @@ Photo/Makefile.PL
 Photo/Photo.d
 Photo/Photo.pm
 Photo/Photo.xs
-Pod/MANIFEST
-Pod/MANIFEST.SKIP
-Pod/Makefile.PL
-Pod/Parse.pm
-Pod/Pod.pm
-Pod/README
-Pod/tkpod
 README				General Information
 README.AIX
 README.HPUX

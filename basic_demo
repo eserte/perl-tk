@@ -180,6 +180,7 @@ sub menubar
  $file->command("-label","Close","-command" => sub { close Gibberish },"-underline" => 0);
  $file->command("-label","Moan","-command"  => [ \&test_back_trace, $file, 3 ],"-underline" => 0);
  $file->command("-label","Trace","-command" => \&back_trace,"-underline" => 0);
+ $file->command("-label","Wrong","-command" => sub { $top->configure(-gibberish => 'junk') });
  $file->command("-label","Send","-command"  => [\&send_test,$top] );
 
  $file->pack("-side" => "left");

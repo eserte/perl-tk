@@ -7,7 +7,7 @@ sub arrowSetup {
     # is the name of the canvas widget to be regenerated, and also the name of a global variable containing the parameters
     # for the display.
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     # Remember the current box, if there is one.
 
@@ -80,7 +80,7 @@ sub arrowSetup {
 
 sub arrowMove1 {
 
-    my($c) = @ARG;
+    my($c) = @_;
     my $e = $c->XEvent;
 
     *v = *demoArrowInfo;
@@ -99,7 +99,7 @@ sub arrowMove1 {
 
 sub arrowMove2 {
 
-    my($c) = @ARG;
+    my($c) = @_;
     my $e = $c->XEvent;
 
     *v = *demoArrowInfo;
@@ -122,7 +122,7 @@ sub arrowMove2 {
 
 sub arrowMove3 {
 
-    my($c) = @ARG;
+    my($c) = @_;
     my $e = $c->XEvent;
 
     *v = *demoArrowInfo;
@@ -141,7 +141,7 @@ sub arrowMove3 {
 
 sub arrow_err {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $i = $c->create(qw(text .6i .1i -anchor n), -text => "Range error!");
     $c->after(4000, sub { $c->delete($i) });
@@ -192,11 +192,11 @@ sub mkArrow {
     }
     arrowSetup $c;
     $c->bind('box', '<Enter>' => [sub {
-	my($c, @args) = @ARG;
+	my($c, @args) = @_;
 	$c->itemconfigure(@args);
     }, 'current', @{$demoArrowInfo{'activeStyle'}}]);
     $c->bind('box', '<Leave>' => [sub {
-	my($c, @args) = @ARG;
+	my($c, @args) = @_;
 	$c->itemconfigure(@args);
     }, 'current', @{$demoArrowInfo{'boxStyle'}}]);
     $c->bind('box', '<B1-Enter>' => undef);
@@ -211,9 +211,9 @@ sub mkArrow {
 	$demo_arrowInfo{'motionProc'} = \&arrowMove3;
     });
     $c->bind('box', '<B1-Motion>' => sub {
-	&{$demo_arrowInfo{'motionProc'}}(@ARG);
+	&{$demo_arrowInfo{'motionProc'}}(@_);
     });
-    $c->Tk::bind('<Any-ButtonRelease-1>', sub {arrowSetup(@ARG)});
+    $c->Tk::bind('<Any-ButtonRelease-1>', sub {arrowSetup(@_)});
 
 } # end mkArrow
     

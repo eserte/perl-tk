@@ -9,7 +9,7 @@ sub twind {
     # Create a top-level window with a text widget that demonstrates the
     # use of embedded windows in Text widgets.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => '',				      
@@ -141,7 +141,7 @@ sub twind_create_plot {
     # We are required to create a new Plot object everytime since embedded
     # widgets are destroyed when their tag is deleted. (Too bad.)
 
-    my($text) = @ARG;
+    my($text) = @_;
 
     if (not Exists($twind::plot)) {
         $twind::plot = $text->Plot(
@@ -163,7 +163,7 @@ sub twind_create_plot {
 
 sub twind_delete_plot {
 
-    my($text) = @ARG;
+    my($text) = @_;
 
     if (Exists($twind::plot)) {
 	$text->delete($twind::plot);
@@ -177,7 +177,7 @@ sub twind_delete_plot {
 
 sub twind_restore_bg {
 
-    my($text) = @ARG;
+    my($text) = @_;
 
     $text->configure(-background => ($text->configure(-background))[3]);
 

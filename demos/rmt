@@ -180,7 +180,7 @@ sub fillAppsMenu {
     foreach $i (sort $MW->interps) {
 	$menu_file_m_apps->add("command", 
             -label   => $i, 
-            -command => [sub { &newApp($ARG[0]);},$i],
+            -command => [sub { &newApp($_[0]);},$i],
         );
     }
     $menu_file_m_apps->add("command", 
@@ -206,7 +206,7 @@ sub Tk::Receive {
     # For security you must roll you own `receive' command, run with
     # taint checks on and untaint the received data.
 
-    my($window, $cmd) = @ARG;
+    my($window, $cmd) = @_;
 
     chop $cmd;
     $cmd =~ /(.*)/;

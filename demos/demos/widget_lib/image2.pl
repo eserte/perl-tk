@@ -9,7 +9,7 @@ sub image2 {
     # This demonstration script creates a simple collection of widgets
     # that allow you to select and view images in a Tk label.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'This demonstration allows you to view images using a Tk "photo" image.  First type a directory name in the listbox, then type Return to load the directory into the listbox.  Then double-click on a file name in the listbox to see that image.',
@@ -68,7 +68,7 @@ sub image2_load_dir {
     # l       -                 Reference to listbox widget.
     # dir_name -                 Directory name reference.
 
-    my($e, $l, $dir_name) = @ARG;
+    my($e, $l, $dir_name) = @_;
 
     $l->delete(0, 'end');
     my $i;
@@ -92,7 +92,7 @@ sub image2_load_image {
     # i       -         Reference to image object.
     # dir_name -         Directory name reference.
 
-    my($l, $i, $dir_name) = @ARG;
+    my($l, $i, $dir_name) = @_;
 
     my $e = $l->XEvent;
     my($x, $y) = ($e->x, $e->y);

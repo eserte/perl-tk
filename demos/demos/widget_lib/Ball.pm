@@ -20,7 +20,7 @@ package Ball;
 use English;
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/demos/demos/widget_lib/Ball.pm#7$
+$VERSION = '2.009'; # $Id: //depot/Tk/demos/demos/widget_lib/Ball.pm#9$
 
 use Tk::Canvas;
 use Tk::Widget;
@@ -49,9 +49,9 @@ sub new {			# Ball object constructor
     # removes a canvas from the %BALLS hash when the canvas is destroyed, thus
     # keeping %BALLS trimmed and preventing a very slow memory leak.
 
-    my($class, $canvas, %args) = @ARG;
+    my($class, $canvas, %args) = @_;
 
-    my @missing_args = grep ! defined $args{$ARG}, keys %DEFAULTS;
+    my @missing_args = grep ! defined $args{$_}, keys %DEFAULTS;
     @args{@missing_args} = @DEFAULTS{@missing_args};
     my($color, $size, $pos, $vel) = @args{-color, -size, -position, -velocity};
 
@@ -84,7 +84,7 @@ sub get_canvas_hash {
     # were ever to fail in the future then only this code needs to be fixed
     # and the Ball class would be up and running in short oder.
 
-    my($class, $canvas) = @ARG;
+    my($class, $canvas) = @_;
 
     return $canvas
 
@@ -94,7 +94,7 @@ sub move_one_ball {
 
     # Move one ball, belonging to one simulation, one clock tick.
 
-    my ($ball_obj, $speed_ratio) = @ARG;
+    my ($ball_obj, $speed_ratio) = @_;
 
     my($ball, $canv, $minx, $miny, $maxx, $maxy);
     my($ballx, $bally, $deltax, $deltay);
@@ -133,10 +133,10 @@ sub move_all_balls {
 
     # Move all the balls belong to one simulation instance one clock tick.
 
-    my($class, $canvas, $speed_ratio) = @ARG;
+    my($class, $canvas, $speed_ratio) = @_;
 
     foreach (@{$BALLS{Ball->get_canvas_hash($canvas)}->{'BALLS'}}) {
-        $ARG->move_one_ball($speed_ratio);
+        $_->move_one_ball($speed_ratio);
         DoOneEvent(DONT_WAIT);		# be kind and process XEvents if they arise
     }
 

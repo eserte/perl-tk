@@ -3,7 +3,7 @@
 use vars qw/$TOP/;
 
 sub TEMPLATE {
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name             => $demo,
         -text             => 'Learn how to write a widget demonstration!',

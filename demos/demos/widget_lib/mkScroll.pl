@@ -2,7 +2,7 @@
 
 sub scroll_enter {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $id = $c->find('withtag', 'current');
     $id-- if ($c->gettags('current'))[0] eq 'text';
@@ -19,7 +19,7 @@ sub scroll_enter {
 
 sub scroll_leave {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $id = $c->find('withtag', 'current');
     $id-- if ($c->gettags('current'))[0] eq 'text';
@@ -31,7 +31,7 @@ sub scroll_leave {
 
 sub scroll_button {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $id = $c->find('withtag', 'current');
     $id++ if ($c->gettags('current'))[0] ne 'text';
@@ -84,16 +84,16 @@ sub mkScroll {
 	} # whilend
     } # forend
 
-    $c->bind('all', '<Any-Enter>' => sub {scroll_enter(@ARG)});
-    $c->bind('all', '<Any-Leave>' => sub {scroll_leave(@ARG)});
-    $c->bind('all', '<1>' => sub {scroll_button(@ARG)});
+    $c->bind('all', '<Any-Enter>' => sub {scroll_enter(@_)});
+    $c->bind('all', '<Any-Leave>' => sub {scroll_leave(@_)});
+    $c->bind('all', '<1>' => sub {scroll_button(@_)});
     $c->Tk::bind('<2>' => sub {
-	my ($c) = @ARG;
+	my ($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('mark', $e->x, $e->y);
     });
     $c->Tk::bind('<B2-Motion>' => sub {
-	my ($c) = @ARG;
+	my ($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
     });

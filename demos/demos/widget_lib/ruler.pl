@@ -9,7 +9,7 @@ sub ruler {
     # Create a canvas demonstration consisting of a ruler displays a ruler
     # with tab stops that can be set individually.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => ['This canvas widget shows a mock-up of a ruler.  You can create tab stops by dragging them out of the well to the right of the ruler.  You can also drag existing tab stops.  If you drag a tab stop far enough up or down so that it turns dim, it will be deleted when you release the mouse button.', qw/-wraplength 5i/],
@@ -67,7 +67,7 @@ sub ruler {
 
 sub ruler_make_tab {
 
-    my($c, $x, $y, $rinfo) = @ARG;
+    my($c, $x, $y, $rinfo) = @_;
 
     return $c->create('polygon', $x, $y, $x+$rinfo->{size}, $y+$rinfo->{size},
 	                                 $x-$rinfo->{size}, $y+$rinfo->{size});
@@ -76,7 +76,7 @@ sub ruler_make_tab {
 
 sub ruler_move_tab {
 
-    my($c, $rinfo) = @ARG;
+    my($c, $rinfo) = @_;
 
     return if not defined $c->find('withtag', 'active');
     my $e = $c->XEvent;
@@ -104,7 +104,7 @@ sub ruler_move_tab {
 
 sub ruler_new_tab {
     
-    my($c, $rinfo) = @ARG;
+    my($c, $rinfo) = @_;
 
     my $e = $c->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -118,7 +118,7 @@ sub ruler_new_tab {
 
 sub ruler_release_tab {
 
-    my($c, $rinfo) = @ARG;
+    my($c, $rinfo) = @_;
 
     return if not defined $c->find('withtag', 'active');
     if ($rinfo->{'y'} != $rinfo->{top} + 2) {
@@ -132,7 +132,7 @@ sub ruler_release_tab {
 
 sub ruler_select_tab {
 
-    my($c, $rinfo) = @ARG;
+    my($c, $rinfo) = @_;
 
     my $e = $c->XEvent;
     my($x, $y) = ($e->x, $e->y);

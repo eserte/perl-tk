@@ -70,7 +70,7 @@ sub mkListbox2 {
 
     $w_frame_list->bind('<Double-1>', [
 				       sub {
-					   my ($w, $w2, $w3, $w4) = @ARG;
+					   my ($w, $w2, $w3, $w4) = @_;
 					   my @c = split(' ',$w->get('active'));
 					   my $c = $c[0];
 					   $w2->configure(-background => $c);

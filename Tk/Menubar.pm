@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Menubar;
@@ -6,7 +6,7 @@ require Tk::Frame;
 require Tk::Menubutton;
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Menubar.pm#8$
+$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Menubar.pm#10$
 
 @ISA = qw(Tk::Frame);
 use strict;

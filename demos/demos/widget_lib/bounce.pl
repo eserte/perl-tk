@@ -22,7 +22,7 @@ sub bounce {
     # 97/06/10 This demo is sufficiently bizarre enough that we don't use
     #          WidgetDemo! (-:  Plus, you get to see Exists() in action.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
 
     $TOP->destroy if Exists($TOP);
     $TOP = $MW->Toplevel;
@@ -176,7 +176,7 @@ sub mkmb {
     # need to refer to the Menubutton, as well as to suppress stray name 
     # warnings with Perl -w.
 
-    my($mb0, $mb_label, $mb_label_underline, $mb_msg, $mb_list_ref) = @ARG;
+    my($mb0, $mb_label, $mb_label_underline, $mb_msg, $mb_list_ref) = @_;
     my $mb = $mb0->Menubutton(
         -text       => $mb_label, 
 	-underline  => $mb_label_underline,
@@ -259,7 +259,7 @@ sub DoSingleStep {
     # Note that this handler must be cooperative and return after a short
     # period, so that other X events may be  processed by the mainloop below.
 
-    my($canvas) = @ARG;
+    my($canvas) = @_;
 
     ClearMsg;
     ShowMsg(++$bounce_counter);  

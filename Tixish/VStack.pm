@@ -1,4 +1,4 @@
-# $Id: //depot/Tk/Tixish/VStack.pm#6$
+# $Id: //depot/Tk/Tixish/VStack.pm#7$
 #
 # Virtual base class needed to implement the NoteBook widget. This should
 # not be used directly by the application programmer.
@@ -15,7 +15,7 @@ use Carp;
 
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/Tixish/VStack.pm#6$
+$VERSION = '2.007'; # $Id: //depot/Tk/Tixish/VStack.pm#7$
 
 sub Populate {
     my ($w, $args) = @_;
@@ -70,7 +70,7 @@ sub delete {
 
     if (defined $w->{$child}) {
 	# see if the child to be deleted was the top child
-	if ($w->{"topchild"} eq $child) {
+	if ((defined $w->{"topchild"}) && ($w->{"topchild"} eq $child)) {
 	    foreach (@{$w->{"windows"}}) {
 		if ($_ !~ /$child/) {
 		    $w->raise ( $_  );

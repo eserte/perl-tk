@@ -7,7 +7,7 @@ sub hscale {
 
     # Create a top-level window that displays a horizontal scale.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => 'An arrow and a horizontal scale are displayed below.  If you click or drag mouse button 1 in the scale, you can change the size of the arrow.',
@@ -34,7 +34,7 @@ sub hscale {
 
 sub hscale_width {
 
-    my($w, $width) = @ARG;
+    my($w, $width) = @_;
 
     $width += 21;
     my $x2 = $width - 30;

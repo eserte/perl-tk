@@ -17,7 +17,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '2.010'; # $Id: //depot/Tk/Text/Text.pm#10$
+$VERSION = '2.013'; # $Id: //depot/Tk/Text/Text.pm#13$
 
 @ISA = qw(Tk::Widget);
 
@@ -31,11 +31,11 @@ import Tk qw(Ev);
 
 sub Tk::Widget::ScrlText { shift->Scrolled('Text' => @_) }
 
-use Tk::Submethods ( 'mark' => [qw(gravity names set unset)],
+use Tk::Submethods ( 'mark' => [qw(gravity names next previous set unset)],
                      'scan' => [qw(mark dragto)],
                      'tag'  => [qw(add bind cget configure delete lower 
-                               names  nextrange raise ranges remove)],
-                     'window' => [qw(cget configure create)]
+                               names nextrange prevrange raise ranges remove)],
+                     'window' => [qw(cget configure create names)]
                    );
 
 sub Tag;
@@ -56,6 +56,8 @@ sub bindRdOnly
  $mw->bind($class,"<1>",['Button1',Ev('x'),Ev('y')]);
  $mw->bind($class,"<Meta-B1-Motion>",'NoOp');
  $mw->bind($class,"<Meta-1>",'NoOp');
+ $mw->bind($class,'<Alt-KeyPress>','NoOp');
+ $mw->bind($class,'<Escape>',['tag','remove','sel','1.0','end']);
 
  $mw->bind($class,"<B1-Motion>",
             sub
@@ -183,6 +185,8 @@ sub bindRdOnly
    $mw->bind($class,"<2>",['Button2',Ev('x'),Ev('y')]);
    $mw->bind($class,"<B2-Motion>",['Motion2',Ev('x'),Ev('y')]);
 
+   $class->clipboardKeysyms($mw,"F16");
+   $class->clipboardKeysyms($mw,'Control-c');
   }
  $mw->bind($class,"<Destroy>",'Destroy');
  return $class;
@@ -220,6 +224,7 @@ sub ClassInit
  $mw->bind($class,"<BackSpace>",'Backspace');
 
  $class->clipboardKeysyms($mw,"F16","F20","F18");
+ $class->clipboardKeysyms($mw,'Control-c','Control-x','Control-v');
 
  $mw->bind($class,"<Insert>",
             sub
@@ -278,26 +283,6 @@ sub ClassInit
               }
              )
    ;
-   $mw->bind($class,"<Control-v>",
-              sub
-              {
-               my $w = shift;
-               Tk::catch
-                {
-                 $w->insert('insert',$w->SelectionGet);
-                 $w->see('insert')
-                }
-              }
-             )
-   ;
-   $mw->bind($class,"<Control-x>",
-              sub
-              {
-               my $w = shift;
-               Tk::catch { $w->delete("sel.first","sel.last") }
-              }
-             )
-   ;
    $mw->bind($class,"<ButtonRelease-2>",
               sub
               {
@@ -325,7 +310,7 @@ sub Backspace
  my $sel = Tk::catch { $w->tag('nextrange','sel','1.0','end') };
  if (defined $sel)
   {
-   $w->delete("sel.first","sel.last")
+   $w->delete('sel.first','sel.last')
   }
  elsif ($w->compare('insert',"!=",'1.0'))
   {
@@ -791,11 +776,6 @@ sub Transpose
  $w->see('insert');
 }
 
-sub deleteSelected
-{
- shift->delete("sel.first","sel.last")
-}
-
 sub Tag
 {
  my $w = shift;
@@ -846,3 +826,4 @@ sub PRINTF
 
 1;
 __END__
+

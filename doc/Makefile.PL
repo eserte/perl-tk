@@ -3,7 +3,8 @@ use Tk::MMutil;
 
 Tk::MMutil::TkExtMakefile(
       'linkext' => { LINKTYPE => ''},
-      'clean'   => { FILES => '*.htm index.html' }
+      'clean'   => { FILES => '*.htm index.html podify subpodify *.pod */*.pod' },
+      'MAN3PODS'=> {},
       );
 
 sub MY::post_initialize
@@ -38,7 +39,7 @@ sub MY::postamble
 
 html : config index.html
 
-index.html : man2html $(MANFILES) $(INST_MAN1DIR) $(INST_MAN3DIR) MANFILES
+index.html : man2html $(MANFILES) $(INST_MAN3DIR) MANFILES $(INST_MAN1DIR) 
 	@echo "Making HTML"
 	@$(PERL) man2html -tk -man1 $(INST_MAN1DIR) \
 	         -man3 $(INST_MAN3DIR) -q -files MANFILES

@@ -188,8 +188,8 @@ Tk_Window	win
 int		flag
 
 int
-Count(self)
-SV *	self
+Count(slf)
+SV *	slf
 CODE:
  {
   ST(0) = sv_2mortal(newSViv(Tk_GetNumMainWindows()));
@@ -636,6 +636,19 @@ CODE:
     Lang_CmdInfo *info = WindowCommand(win,NULL,0);
     RETVAL = (info && info->tkwin);
    }
+ }
+OUTPUT:
+ RETVAL           
+
+int
+Tk_GetPixels(win,string)
+SV *	win
+char *	string
+CODE:
+ {
+  Lang_CmdInfo *info = WindowCommand(win,NULL,3);
+  if(Tk_GetPixels(info->interp,info->tkwin,string,&RETVAL))
+    croak(Tcl_GetResult(info->interp));
  }
 OUTPUT:
  RETVAL

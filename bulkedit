@@ -5,6 +5,7 @@ use Tk::LabEntry;
 use Tk::ErrorDialog;
 use File::Find;
 use ExtUtils::Manifest "/mani/";
+use Cwd;
 
 my $containing = '/perl\b';
 my $matching   = '\.p[ml]$';
@@ -34,15 +35,20 @@ sub findfiles
  my @files = ();
  die "Not a directory $dir\n", unless (-d $dir);
  find(sub {
- $File::Find::prune = 0;
- if (-T $_ && !/%$/)
+ # $File::Find::prune = 0;
+ if (-T $_ and !/%$/)
   {
-   push(@files,"$File::Find::dir/$_") if (accept_file($_));
+   push(@files,$File::Find::name) if (accept_file($_));
   }
  elsif (-d $_)
   {
    $File::Find::prune = 1 if ($_ eq 'blib');
-  }},$dir); 
+  }
+ else
+  {
+   print "Not text $File::Find::name\n";
+  }
+ },$dir); 
  return @files;
 }
 
@@ -137,17 +143,14 @@ sub populate
  my ($lb,$dir) = @_;
  $lb->delete(0,'end');
  $lb->Busy;
- Leak::check_arenas();
  $lb->insert('end',sort &{$filefunc{$mode}}($dir));
- Leak::check_arenas();
  $lb->Unbusy;
 }
 
 my $mw   = MainWindow->new;
 my $ft   = $mw->Frame->pack(-fill => 'x');
 my $expr = "";
-my $dir  = `pwd`;
-chomp($dir);
+my $dir  = getcwd();
 my $ed   = $mw->LabEntry(-label => 'Directory: ', -textvariable => \$dir,  -width => 60)->pack(-fill => 'x');
 $ed->bind('<Return>', sub { populate(shift,$dir)});
 $mw->LabEntry(-label => 'Matching: ', -textvariable => \$matching,  -width => 20)->pack(-fill => 'x');

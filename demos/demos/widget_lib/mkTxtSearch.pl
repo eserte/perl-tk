@@ -8,7 +8,7 @@ sub text_load_file {
     # w -	The window into which to load the file.  Must be a text widget.
     # file -	The name of the file to load.  Must be readable.
 
-    my ($w, $file) = @ARG;
+    my ($w, $file) = @_;
 
     my ($buf, $bytes) = ('', 0);
 
@@ -37,7 +37,7 @@ sub text_search {
     # string -	The string to search for.  The search is done using exact matching only;  no special characters.
     # tag -	Tag to apply to each instance of a matching string.
 
-    my($w, $string, $tag) = @ARG;
+    my($w, $string, $tag) = @_;
 
     $w->tag('remove',  $tag, '0.0', 'end');
     (my $num_lines) = $w->index('end') =~ /(\d*)\.\d*/;
@@ -72,11 +72,11 @@ sub text_toggle {
     # cmd2 -	Reference to a list of tag options.
     # sleep2 -	Ms to sleep after executing cmd2 before executing cmd1 again.
 
-    my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @ARG;
+    my($w, $cmd1, $sleep1, $cmd2, $sleep2) = @_;
 
     # return if not Exists $w;
     $w->tag(@{$cmd1});
-    $w->after($sleep1, [sub {text_toggle(@ARG)}, $w, $cmd2, $sleep2, $cmd1, $sleep1]);
+    $w->after($sleep1, [sub {text_toggle(@_)}, $w, $cmd2, $sleep2, $cmd1, $sleep1]);
 
 } # end text_toggle
 
@@ -119,11 +119,11 @@ sub mkTxtSearch {
     $w_s->pack(-side => 'right', -fill => 'y');
     $w_t->pack(-expand => 'yes', -fill => 'both');
 
-    $w_file_button->configure(-command => [sub {text_load_file($ARG[0], $file_name)}, $w_t]);
+    $w_file_button->configure(-command => [sub {text_load_file($_[0], $file_name)}, $w_t]);
     $w_file_entry->bind('<Return>' =>
-			[sub {shift; text_load_file($ARG[0], $file_name); $ARG[1]->focus}, $w_t, $w_string_entry]);
-    $w_string_button->configure(-command => [sub {text_search($ARG[0], $search_string, 'search')}, $w_t]);
-    $w_string_entry->bind('<Return>' => [sub {shift; text_search($ARG[0], $search_string, 'search')}, $w_t]);
+			[sub {shift; text_load_file($_[0], $file_name); $_[1]->focus}, $w_t, $w_string_entry]);
+    $w_string_button->configure(-command => [sub {text_search($_[0], $search_string, 'search')}, $w_t]);
+    $w_string_entry->bind('<Return>' => [sub {shift; text_search($_[0], $search_string, 'search')}, $w_t]);
 
     # Set up display styles for text highlighting.
 

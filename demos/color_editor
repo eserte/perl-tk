@@ -44,7 +44,7 @@ sub my_special_configurator {
     # default code `configure_application_colors' in ColorEditor.pm as a
     # guide to the internals of the ColorEditor object.
     
-    my($objref, $type, $color) = @ARG;
+    my($objref, $type, $color) = @_;
 
     print "\nColorEditor object reference : $objref\n";
     print "Color attribute              : $type\n";

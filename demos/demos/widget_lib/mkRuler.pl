@@ -2,7 +2,7 @@
 
 sub rulerMkTab {
 
-    my($c, $x, $y) = @ARG;
+    my($c, $x, $y) = @_;
 
     return $c->create('polygon', $x, $y, $x+$ruler_info{'size'}, $y+$ruler_info{'size'}, $x-$ruler_info{'size'},
 		      $y+$ruler_info{'size'});
@@ -12,7 +12,7 @@ sub rulerMkTab {
 
 sub rulerMoveTab {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     return if not defined $c->find('withtag', 'active');
     my $e = $c->XEvent;
@@ -41,7 +41,7 @@ sub rulerMoveTab {
 
 sub rulerNewTab {
     
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $e = $c->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -56,7 +56,7 @@ sub rulerNewTab {
 
 sub rulerReleaseTab {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     return if not defined $c->find('withtag', 'active');
     if ($ruler_info{'y'} != $ruler_info{'top'} + 2) {
@@ -71,7 +71,7 @@ sub rulerReleaseTab {
 
 sub rulerSelectTab {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $e = $c->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -132,10 +132,10 @@ sub mkRuler {
     $c->addtag('well', 'withtag', $c->create(qw(rect 13.2c 1c 13.8c 0.5c -outline black -fill), ($c->configure(-bg))[4]));
     $c->addtag('well', 'withtag', rulerMkTab($c, $c->pixels('13.5c'), $c->pixels('.65c')));
 
-    $c->bind('well', '<1>' => sub{rulerNewTab(@ARG)});
-    $c->bind('tab', '<1>' => sub {rulerSelectTab(@ARG)});
-    $c->Tk::bind('<B1-Motion>' => sub {rulerMoveTab(@ARG)});
-    $c->Tk::bind('<Any-ButtonRelease-1>', sub {rulerReleaseTab(@ARG)});
+    $c->bind('well', '<1>' => sub{rulerNewTab(@_)});
+    $c->bind('tab', '<1>' => sub {rulerSelectTab(@_)});
+    $c->Tk::bind('<B1-Motion>' => sub {rulerMoveTab(@_)});
+    $c->Tk::bind('<Any-ButtonRelease-1>', sub {rulerReleaseTab(@_)});
 
 } # end mkRuler
 

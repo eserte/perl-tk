@@ -5,7 +5,7 @@
 
 sub itemEnter {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     $mkItems::restoreCmd = '';
 
@@ -44,7 +44,7 @@ sub itemEnter {
 
 sub itemLeave {
 
-    local ($c) = @ARG;
+    local ($c) = @_;
 
     eval $mkItems::restoreCmd;
 
@@ -56,7 +56,7 @@ sub itemLeave {
 
 sub itemStartDrag {
 
-    my($c, $x, $y) = @ARG;
+    my($c, $x, $y) = @_;
 
     $mkItems::lastX = $c->canvasx($x);
     $mkItems::lastY = $c->canvasy($y);
@@ -66,7 +66,7 @@ sub itemStartDrag {
 
 sub itemDrag {
 
-    my($c, $x, $y) = @ARG;
+    my($c, $x, $y) = @_;
 
     $x = $c->canvasx($x);
     $y = $c->canvasy($y);
@@ -88,7 +88,7 @@ $mkItems::areaY2 = 0;
 
 sub itemMark {
 
-    my($c, $x, $y) = @ARG;
+    my($c, $x, $y) = @_;
 
     $mkItems::areaX1 = $c->canvasx($x);
     $mkItems::areaY1 = $c->canvasy($y);
@@ -99,7 +99,7 @@ sub itemMark {
 
 sub itemStroke {
 
-    my($c, $x, $y) = @ARG;
+    my($c, $x, $y) = @_;
 
     $x = $c->canvasx($x);
     $y = $c->canvasy($y);
@@ -115,14 +115,14 @@ sub itemStroke {
 
 sub itemsUnderArea {
 
-    my($c) = @ARG;
+    my($c) = @_;
 
     my $area = $c->find('withtag', 'area');
     my @items  = ();
     my $i;
     foreach $i ($c->find('enclosed', $mkItems::areaX1, $mkItems::areaY1, $mkItems::areaX2, $mkItems::areaY2)) {
 	my @tags = $c->gettags($i); 
-	if (defined($tags[0]) and grep $ARG eq 'item', @tags) {
+	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
     }
@@ -131,7 +131,7 @@ sub itemsUnderArea {
     @items = ();
     foreach $i ($c->find('overlapping', $mkItems::areaX1, $mkItems::areaY1, $mkItems::areaX2, $mkItems::areaY2)) {
 	my @tags = $c->gettags($i); 
-	if (defined($tags[0]) and grep $ARG eq 'item', @tags) {
+	if (defined($tags[0]) and grep $_ eq 'item', @tags) {
 	    push @items, $i;
 	}
     }
@@ -145,7 +145,7 @@ sub butPress {
 
     # Procedure that's invoked when the button embedded in the canvas is invoked.
 
-    my($w, $color) = @ARG;
+    my($w, $color) = @_;
 
     my $i = $w->create(qw(text 25c 18.1c -anchor n), -text => 'Ouch!!', -fill => $color);
     $w->after(500, sub { $w->delete($i) });
@@ -275,7 +275,7 @@ sub mkItems {
     $c->create(qw(bitmap 17c 21.5c), -bitmap => '@'.Tk->findINC('demos/images/letters'), qw(-tags item));
 
     $c->create(qw(text 25c 16.2c -text Windows -anchor n));
-    my $c_button = $c->Button(-text => 'Press Me', -command => [sub {butPress(@ARG)}, $c, $red]);
+    my $c_button = $c->Button(-text => 'Press Me', -command => [sub {butPress(@_)}, $c, $red]);
     $c->create(qw(window 21c 18c), -window => $c_button, qw(-anchor nw -tags item));
     my $c_entry = $c->Entry(-width => '20', -relief => 'sunken');
     $c_entry->insert('end' => 'Edit this text');
@@ -289,45 +289,45 @@ sub mkItems {
 
     # Set up event bindings for canvas.
 
-    $c->bind('item', '<Any-Enter>' => sub {itemEnter(@ARG)});
-    $c->bind('item', '<Any-Leave>' => sub {itemLeave(@ARG)});
+    $c->bind('item', '<Any-Enter>' => sub {itemEnter(@_)});
+    $c->bind('item', '<Any-Leave>' => sub {itemLeave(@_)});
     $c->Tk::bind('<1>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	itemStartDrag $c, $e->x, $e->y;
     });
     $c->Tk::bind('<B1-Motion>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	itemDrag $c, $e->x, $e->y;
     });
     $c->Tk::bind('<2>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('mark', $e->x, $e->y);
     });
     $c->Tk::bind('<B2-Motion>' => sub {
-	my ($c) = @ARG;
+	my ($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
     });
     $c->Tk::bind('<3>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	itemMark $c, $e->x, $e->y;
     });
     $c->Tk::bind('<B3-Motion>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	itemStroke $c, $e->x, $e->y;
     });
     $c->Tk::bind('<Control-f>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	itemsUnderArea $c;
     });
     $w->bind('<Any-Enter>' => [sub {
-	my($w, $c) = @ARG;
+	my($w, $c) = @_;
         my $e = $c->XEvent;
 	$c->Tk::focus;
     }, $c]);

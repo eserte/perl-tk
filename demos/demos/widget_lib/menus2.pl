@@ -8,7 +8,7 @@ sub menus2 {
     # This demonstration script creates a window with a bunch of menus
     # and cascaded menus, but uses -menuitems rather than the Tcl/Tk way.
 
-    my ($demo) = @ARG;
+    my ($demo) = @_;
     my $demo_widget = $MW->WidgetDemo(
         -name     => $demo,
         -text     => '',				      
@@ -36,9 +36,9 @@ sub menus2 {
         [
 	 [Button => 'Long entry that does nothing'],
 	  map (
-	       [Button       => "Print letter \"~$ARG\"",
-	        -command     => [sub {print "$ARG[0]\n"}, $ARG],
-	        -accelerator => "Meta+$ARG" ],
+	       [Button       => "Print letter \"~$_\"",
+	        -command     => [sub {print "$_[0]\n"}, $_],
+	        -accelerator => "Meta+$_" ],
 	       ('a' .. 'g')
 	  ), 
 	])->grid(qw/-row 0 -column 1 -sticky w/);
@@ -72,15 +72,15 @@ sub menus2 {
 	 [Cascade => $menu_rb, -menuitems =>
 	  [
 	   map (
-		[Radiobutton => "$ARG point", -variable => \$POINT_SIZE,
-		 -value => $ARG,
+		[Radiobutton => "$_ point", -variable => \$POINT_SIZE,
+		 -value => $_,
 		 ],
 		(qw/10 14 18 24 32/),
 		),
 	   [Separator => ''],
 	   map (
-		[Radiobutton => "$ARG", -variable => \$FONT_STYLE,
-		 -value => $ARG,
+		[Radiobutton => "$_", -variable => \$FONT_STYLE,
+		 -value => $_,
 		 ],
 		(qw/Roman Bold Italic/),
 		),
@@ -117,9 +117,9 @@ sub menus2 {
 	 [Button   => '', -bitmap => '@'.Tk->findINC('demos/images/pattern'),
 	  -command => [$DIALOG_ICON => 'Show']],
 	 map (
-	      [Button  => '', -bitmap => $ARG,
+	      [Button  => '', -bitmap => $_,
 	      -command => 
-	       [sub {print "You invoked the \"$ARG[0]\" bitmap\n"}, $ARG]],
+	       [sub {print "You invoked the \"$_[0]\" bitmap\n"}, $_]],
 	      (qw/info questhead error/),
 	      ),
 	 ])->grid(qw/-row 0 -column 3 -sticky w/);
@@ -127,9 +127,9 @@ sub menus2 {
     my $m = $menubar->Menubutton(qw/-text More -underline 0 -menuitems/ =>
         [
 	 map (
-	      [Button   => $ARG,
+	      [Button   => $_,
 	       -command => 
-	       [sub {print "You invoked \"$ARG[0]\"\n"}, $ARG]],
+	       [sub {print "You invoked \"$_[0]\"\n"}, $_]],
 	      ('An entry', 'Another entry', 'Does nothing',
 	       'Does almost nothing', 'Make life meaningful'),
 	      ),
@@ -138,10 +138,10 @@ sub menus2 {
     my $k = $menubar->Menubutton(qw/-text Colors -underline 1 -menuitems/ =>
         [
 	 map (
-	      [Button      => $ARG,
-	       -background => $ARG,
+	      [Button      => $_,
+	       -background => $_,
 	       -command    => 
-	       [sub {print "You invoked \"$ARG[0]\"\n"}, $ARG]],
+	       [sub {print "You invoked \"$_[0]\"\n"}, $_]],
 	      (qw/red orange yellow green blue/),
 	      ),
 	 ])->grid(qw/-row 0 -column 5 -sticky w/);
@@ -156,7 +156,7 @@ sub menus_error {
     # Generate a background error, which may even be displayed in a window if
     # using ErrorDialog. 
 
-    my($msg) = @ARG;
+    my($msg) = @_;
 
     $msg = "This is just a demo: no action has been defined for \"$msg\".";
     $TOP->BackTrace($msg);

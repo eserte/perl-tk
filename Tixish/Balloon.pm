@@ -1,4 +1,4 @@
-# $Id: //depot/Tk/Tixish/Balloon.pm#8$
+# $Id: //depot/Tk/Tixish/Balloon.pm#10$
 #
 # The help widget that provides both "balloon" and "status bar"
 # types of help messages.
@@ -7,7 +7,7 @@ package Tk::Balloon;
 
 
 use vars qw($VERSION);
-$VERSION = '2.008'; # $Id: //depot/Tk/Tixish/Balloon.pm#8$
+$VERSION = '2.010'; # $Id: //depot/Tk/Tixish/Balloon.pm#10$
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -92,7 +92,7 @@ sub detach
 {
     my ($w, $client) = @_;
     return unless Exists($w);
-    $w->Deactivate if ($w->{"client"} == $client);
+    $w->Deactivate if ($w->{"clients"} == $client);
     delete $w->{"clients"}->{$client};
 }
 

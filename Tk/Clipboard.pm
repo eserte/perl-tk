@@ -1,11 +1,10 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 
-
 use vars qw($VERSION);
-$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Clipboard.pm#10$
+$VERSION = '2.014'; # $Id: //depot/Tk/Tk/Clipboard.pm#14$
 
 sub clipboardSet
 {
@@ -17,20 +16,23 @@ sub clipboardSet
 sub clipboardCopy
 {
  my $w = shift;
- if ($w->IS($w->SelectionOwner))
+ my $val = $w->getSelected;
+ if (defined $val)
   {
-   eval {local $SIG{'__DIE__'}; $w->clipboardSet('--',$w->SelectionGet) };
+   $w->clipboardSet('--',$val);
   }
+ return $val; 
 }
 
 sub clipboardCut
 {
  my $w = shift;
- if ($w->IS($w->SelectionOwner))
+ my $val = $w->clipboardCopy;
+ if (defined $val)
   {
-   eval {local $SIG{'__DIE__'}; $w->clipboardSet('--',$w->SelectionGet) };
    $w->deleteSelected;
   }
+ return $val;
 }
 
 sub clipboardGet
@@ -87,4 +89,22 @@ sub clipboardKeysyms
   }
 }
 
+# These methods work for Entry and Text
+# and can be overridden where they don't work
+
+sub deleteSelected
+{
+ my $w = shift;
+ Tk::catch { $w->delete('sel.first','sel.last') };
+}
+
+sub getSelected
+{
+ my $w   = shift;
+ my $val = Tk::catch { $w->get('sel.first','sel.last') };
+ return $val; 
+}
+
+
 1;
+__END__

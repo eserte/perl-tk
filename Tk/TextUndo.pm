@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::TextUndo;
@@ -7,7 +7,7 @@ use AutoLoader;
 
 
 use vars qw($VERSION);
-$VERSION = '2.007'; # $Id: //depot/Tk/Tk/TextUndo.pm#8$
+$VERSION = '2.012'; # $Id: //depot/Tk/Tk/TextUndo.pm#12$
 
 @ISA = qw(Tk::Text);
 
@@ -17,6 +17,7 @@ sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,'<L4>','undo');
+ $mw->bind($class,'<Control-z>','undo');
  return $class->SUPER::ClassInit($mw);
 }
 
@@ -82,10 +83,28 @@ sub delete
 1;
 __END__
 
+sub numberChanges
+{
+ my $w = shift;
+ return 0 unless exists $w->{'UNDO'};
+ return scalar(@{$w->{'UNDO'}});
+}
+
+
+sub FileName
+{
+ my $text = shift;
+ if (@_)
+  {
+   $text->{'FILE'} = shift; 
+  }
+ return $text->{'FILE'};
+}
+
 sub Save
 {
  my $text = shift;
- my $file = (@_) ? shift : $text->{FILE};
+ my $file = (@_) ? shift : $text->FileName;
  $text->BackTrace("No filename defined") unless (defined $file);
  if (open(FILE,">$file"))
   {
@@ -99,7 +118,7 @@ sub Save
    if (close(FILE))
     {
      delete $text->{UNDO}; 
-     $text->{FILE} = $file;
+     $text->FileName($file);
     }
   }
  else
@@ -109,26 +128,6 @@ sub Save
 }
 
 
-
-sub OldSave
-{
- my $text = shift;
- my $file = (@_) ? shift : $text->{FILE};
- $text->BackTrace("No filename defined") unless (defined $file);
- if (open(FILE,">$file"))
-  {
-   print FILE $text->get('1.0','end');
-   if (close(FILE))
-    {
-     delete $text->{UNDO}; 
-     $text->{FILE} = $file;
-    }
-  }
- else
-  {
-   $text->BackTrace("Cannot open $file:$!");
-  }
-}
 
 sub Load
 {
@@ -143,7 +142,8 @@ sub Load
      $text->SUPER::insert('end',$_);
     }
    close(FILE);
-   $text->{FILE} = $file;
+   $text->markSet('insert' => '1.0');
+   $text->FileName($file);
    $text->MainWindow->Unbusy;
   }
  else
@@ -152,9 +152,6 @@ sub Load
   }
 }
 
-#   Should one add/document a Filename(?$newfilename?) method, or
-#   document the $text->{FILE} instance variable, or
-#   leave the housekeeping to the programmer?
 
 #   We have here no <L4> on our keyboard :-(  So TextUndo needs
 
@@ -216,6 +213,12 @@ call.  If no file was previously Load()'ed an error message
 pops up.  The default filename of the last Load() call
 is not overwriten by $otherfilename.
 
+=item $text->FileName(?$otherfilename?)
+
+If passed an argument sets the file name associated with the loaded
+document. Returns the current file name associated with the document.
+
+
 =back
 
 =head1 KEYS
@@ -227,4 +230,5 @@ widget, text, undo
 Tk::Text(3), Tk::ROText(3)
 
 =cut
+
 

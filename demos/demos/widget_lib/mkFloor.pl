@@ -74,23 +74,23 @@ sub mkFloor {
 
     # Set up event bindings for canvas.
 
-    $c->bind('floor1', '<1>' => [sub {floorDisplay(@ARG)}, 1]);
-    $c->bind('floor2', '<1>' => [sub {floorDisplay(@ARG)}, 2]);
-    $c->bind('floor3', '<1>' => [sub {floorDisplay(@ARG)}, 3]);
+    $c->bind('floor1', '<1>' => [sub {floorDisplay(@_)}, 1]);
+    $c->bind('floor2', '<1>' => [sub {floorDisplay(@_)}, 2]);
+    $c->bind('floor3', '<1>' => [sub {floorDisplay(@_)}, 3]);
     $c->bind('room', '<Enter>' => [sub {
-	my($c, @args) = @ARG;
+	my($c, @args) = @_;
 	my $id = $c->find('withtag' => 'current');
 	$mkFloor::currentRoom  = $mkFloor::floorLabels{$c->find('withtag', 'current')} if defined $id;
 	$c->idletasks;
     }]);
     $c->bind('room', '<Leave>' => sub {$mkFloor::currentRoom = ''});
     $c->Tk::bind('<2>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('mark', $e->x, $e->y);
     });
     $c->Tk::bind('<B2-Motion>' => sub {
-	my($c) = @ARG;
+	my($c) = @_;
         my $e = $c->XEvent;
 	$c->scan('dragto', $e->x, $e->y);
     });
@@ -106,7 +106,7 @@ sub floorDisplay {
     # The following procedure recreates the floorplan display in the canvas given by "w".  The floor given by "active"
     # (1, 2, or 3) is displayed on top, with office structure visible.  (Used as a callback and a normal function.)
 
-    my($w, $active, $e) = @ARG;
+    my($w, $active, $e) = @_;
     my $e = $w->XEvent;
 
     return if $mkFloor::activeFloor eq $active;
@@ -154,7 +154,7 @@ sub roomChanged {
 
     # Whenever the currentRoom variable changes, this procedure highlights the current room and unhighlights any previous room.
 
-    my($w) = @ARG;
+    my($w) = @_;
 
     $w->delete('highlight');
     return if not defined $mkFloor::floorItems{$mkFloor::currentRoom};
@@ -170,7 +170,7 @@ sub roomChanged {
 
 sub bg1 {
 
-    my ($w, $fill, $outline) = @ARG;
+    my ($w, $fill, $outline) = @_;
 
     $w->create('poly', qw(347 80 349 82 351 84 353 85 363 92 375 99 386 104 386 129 398 129 398 162 484 162 484 129 559 129 559
 	133 725 133 725 129 802 129 802 389 644 389 644 391 559 391 559 327 508 327 508 311 484 311 484 278 395 278 395 288 400
@@ -284,7 +284,7 @@ sub bg1 {
 
 sub bg2 {
 
-    my ($w, $fill, $outline) = @ARG;
+    my ($w, $fill, $outline) = @_;
 
     $w->create('poly', qw(559 129 484 129 484 162 398 162 398 129 315 129 315 133 176 133 176 129 96 129 96 133 3 133 3 339 0
 	339 0 391 60 391 60 387 258 387 258 329 350 329 350 311 395 311 395 280 484 280 484 311 508 311 508 327 558 327 558 391
@@ -331,7 +331,7 @@ sub bg2 {
 
 sub bg3 {
 
-    my ($w, $fill, $outline) = @ARG;
+    my ($w, $fill, $outline) = @_;
 
     $w->create('poly', qw(159 300 107 300 107 248 159 248 159 129 96 129 96 133 21 133 21 331 0 331 0 391 60 391 60 370 159 370
 	159 300), -tags => ['floor3', 'bg'], -fill => $fill);
@@ -362,7 +362,7 @@ sub bg3 {
 
 sub fg1 {
 
-    my($w, $color) = @ARG;
+    my($w, $color) = @_;
 
     my($i);
     $i = $w->create('polygon', qw(375 246 375 172 341 172 341 246), -fill => undef, -tags => ['floor1', 'room']);
@@ -721,7 +721,7 @@ sub fg1 {
 
 sub fg2 {;
 
-    my($w, $color) = @ARG;
+    my($w, $color) = @_;
 
     my($i);
     $i = $w->create('polygon', qw(748 188 755 188 755 205 758 205 758 222 800 222 800 168 748 168), -fill => undef, -tags => ['floor2', 'room']);
@@ -1087,7 +1087,7 @@ sub fg2 {;
 
 sub fg3 {;
 
-    my($w, $color) = @ARG;
+    my($w, $color) = @_;
 
     my($i);
     $i = $w->create('polygon', qw(89 228 89 180 70 180 70 228), -fill => undef, -tags => ['floor3', 'room']);

@@ -13,7 +13,7 @@ require 5.002;
 use English;
 
 use vars qw($VERSION);
-$VERSION = '2.006'; # $Id: //depot/Tk/demos/demos/widget_lib/Plot.pm#6$
+$VERSION = '2.008'; # $Id: //depot/Tk/demos/demos/widget_lib/Plot.pm#8$
 
 @ISA = qw(Tk::Frame);
 Construct Tk::Widget 'Plot';
@@ -31,7 +31,7 @@ sub Populate {
 
     # Plot composite widget constructor.
 
-    my($cw, $args) = @ARG;
+    my($cw, $args) = @_;
 
     $cw->SUPER::Populate($args);
     my($tc, $ih, $ah) = (
@@ -85,15 +85,15 @@ sub Populate {
         $c->addtag('point', 'withtag', $item);
     }
 
-    $c->bind('point', '<Any-Enter>' => [sub{shift->itemconfigure(@ARG)},
+    $c->bind('point', '<Any-Enter>' => [sub{shift->itemconfigure(@_)},
 					'current', -fill => $ah]);
-    $c->bind('point', '<Any-Leave>' => [sub{shift->itemconfigure(@ARG)},
+    $c->bind('point', '<Any-Leave>' => [sub{shift->itemconfigure(@_)},
 					'current', -fill => $ih]);
-    $c->bind('point', '<1>' => [sub {plot_down(@ARG)}, \%pinfo]);
+    $c->bind('point', '<1>' => [sub {plot_down(@_)}, \%pinfo]);
     $c->bind('point', '<ButtonRelease-1>' => sub {shift->dtag('selected')});
-    $c->Tk::bind('<B1-Motion>' => [sub {plot_move(@ARG)}, \%pinfo]);
-    $c->Tk::bind('<2>' => [sub {area_down(@ARG)}, \%pinfo]);
-    $c->Tk::bind('<B2-Motion>' => [sub {area_move(@ARG)}, \%pinfo]);
+    $c->Tk::bind('<B1-Motion>' => [sub {plot_move(@_)}, \%pinfo]);
+    $c->Tk::bind('<2>' => [sub {area_down(@_)}, \%pinfo]);
+    $c->Tk::bind('<B2-Motion>' => [sub {area_move(@_)}, \%pinfo]);
 
     my $w_prcmd = $cw->Entry(
         -textvariable => \$pinfo{'prcmd'},
@@ -126,7 +126,7 @@ sub Populate {
 
 sub area_down {
 
-    my($w, $pinfo) = @ARG;
+    my($w, $pinfo) = @_;
 
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -140,7 +140,7 @@ sub area_down {
 
 sub area_move {
 
-    my($w, $pinfo) = @ARG;
+    my($w, $pinfo) = @_;
 
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -155,7 +155,7 @@ sub area_move {
 
 sub area_save {
     
-    my($w, $pinfo) = @ARG;
+    my($w, $pinfo) = @_;
     
     my($x1, $x2, $y1, $y2, $a);
     
@@ -179,7 +179,7 @@ sub area_save {
 
 sub plot_down {
 
-    my($w, $pinfo) = @ARG;
+    my($w, $pinfo) = @_;
 
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
@@ -193,7 +193,7 @@ sub plot_down {
 
 sub plot_move {
 
-    my($w, $pinfo) = @ARG;
+    my($w, $pinfo) = @_;
 
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);

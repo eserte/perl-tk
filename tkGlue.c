@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -37,6 +37,7 @@
 #include "leak_util.h"
 
 /* #define DEBUG_REFCNT /* */
+
 
 typedef struct EventAndKeySym
  {XEvent event;
@@ -711,7 +712,8 @@ SV **data;
 
 void
 DumpStack _((void))
-{
+{                                      
+ dTHR;
  do_watch();
  Dump_vec("stack", stack_sp - stack_base, stack_base + 1);
 }
@@ -1528,7 +1530,7 @@ static int
 Check_Eval(interp)
 Tcl_Interp *interp;
 {
- SV *sv = GvSV(gv_fetchpv("@", TRUE, SVt_PV));
+ SV *sv = perl_get_sv("@", TRUE);
  if (SvTRUE(sv))  
   {
    char *s = SvPV(sv, na);
@@ -1582,6 +1584,7 @@ void HandleBgErrors(clientData)
 ClientData clientData;
 {Tcl_Interp *interp = (Tcl_Interp *) clientData;
  AV *pend   = FindAv(interp, "HandleBgErrors", 0, "_PendingErrors_");
+ dTHR;
  ENTER;
  SAVETMPS;
  if (pend)
@@ -1725,13 +1728,13 @@ SV **args;
  if (info)
   {Tcl_Interp *interp = info->interp;
    SV *what = SvREFCNT_inc(args[0]);
+   dSP;
    int old_taint = tainted;
    tainted = 0; 
    IncInterp(interp, "Call_Tk");
    Tcl_ResetResult(interp);
    if (info->Tk.proc)
     {
-     dSP;
      /* Must find offset of 0'th arg now in case 
         stack moves as a result of the call 
       */
@@ -1800,7 +1803,7 @@ XS(MainWindowCreate)
  SV **args = &ST(0);
  char *appName = SvPV(ST(0),na);
  int offset = args - sp;
- if (TkCreateFrame(NULL, interp, items-1, &ST(1), 1, appName) != TCL_OK)
+ if (TkCreateFrame(NULL, interp, items, &ST(0), 1, appName) != TCL_OK)
   {
    Tcl_AddErrorInfo(interp, "Tk::MainWindow::Create");
    croak("%s",Tcl_GetResult(interp));
@@ -2839,7 +2842,7 @@ ClientData clientData;
 
  if (SvTHINKFIRST(sv))
   {
-   if (SvREADONLY(sv) && curcop != &compiling)
+   if (SvREADONLY(sv))
     {
      return EXPIRE((interp, "Cannot trace readonly variable"));
     }
@@ -3186,7 +3189,8 @@ int type;
    return TCL_OK;
   }
  else if (SvPOK(sv))
-  {
+  {            
+   dTHR;
    HV *old_stash = curcop->cop_stash;
    char *name = SvPV(sv,na);
    SV *x = NULL;
@@ -3266,6 +3270,7 @@ SV *sv;
 {
  if (sv)
   {
+   dTHR;
    AV *av;
    int old_taint = tainted;
    tainted = 0;
@@ -3653,7 +3658,8 @@ va_dcl
    static int flags[3] = { G_DISCARD, G_SCALAR, G_ARRAY };
    int count = 0;
    int code;    
-   SV *cb    = sv;
+   SV *cb    = sv;            
+   dTHR;
    ENTER;       
    SAVETMPS;    
    if (interp)
@@ -4886,5 +4892,6 @@ _((void))
 #undef  COMMAND
 
 }
+
 
 

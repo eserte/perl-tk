@@ -5,7 +5,7 @@ use vars qw/$DIALOG2/;
 
 sub dialog2 {
 
-    my($demo) = @ARG;
+    my($demo) = @_;
 
     my($ok, $can, $see) = ('OK', 'Cancel', 'See Code');
     if (not Exists($DIALOG2)) {
