@@ -1,0 +1,3 @@
+#!/bin/sh 
+PERL5DB="use Devel::DProf;" perl -d "$@"
+dprofpp

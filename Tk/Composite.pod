@@ -1,0 +1,69 @@
+
+=head1 NAME 
+
+Defining a new composite widget class
+
+=head1 SYNOPSIS
+
+  package Whatever;
+  @ISA = qw(Tk::Frame);  # or Tk::Toplevel
+         
+  Tk::Widget->Construct('Whatever'); 
+         
+  sub Poplulate 
+  {      
+   my ($cw,$args) = @_;
+         
+   my $flag = delete $args->{-flag};
+   if (defined $flag)
+    {    
+     # handle -flag => xxx which can only be done at create time
+     # the delete above ensures that new() does not try and
+     # do $cw->configure(-flag => xxx)
+    }    
+         
+   $w = $cw->Component(...);
+         
+   $cw->Delegates(...);
+   $cw->ConfigSpecs('-cursor' =>     [SELF,cursor,Cursor,undef],
+                    '-something'  => [METHOD,dbName,dbClass,'default'],
+                    '-text'       => [$label,dbName,dbClass,'default'],
+                    '-heading'    => [Tk::Config->new($head,-text),heading,Heading,'My Heading']
+                   ); 
+  }      
+         
+  sub something
+  {      
+   my ($cw,$value) = @_;
+   if (@_ > 1)
+    {    
+     # set it 
+    }    
+   return # current value
+  }      
+         
+  1;     
+  __END__
+
+=head1 DESCRIPTION
+
+A composite should normaly inherit C<new()> from C<Tk::Widget>. 
+C<Tk::Widget::new()> will call C<$cw->InitObject(\%args)> which
+a compoiste will normally inherit from C<Tk::Frame>. 
+
+C<Tk::Frame::InitObject()> will call C<Populate()>, which should 
+be defined to create the characteristic subwidgets of the class.
+
+C<Populate> may call C<Delegates> to direct calls to methods 
+to subwidgets. Typically most of not all methods are directed to a single
+subwidget - e.g. ScrolledListbox directs all methods to the core
+Listbox so that $composite->get(...) calls $listbox->get(...). 
+
+C<Populate> should also call C<ConfigSpecs()> 
+once C<Populate> returns C<Tk::Frame::ConfigDefault>
+walks through the ConfigSpecs entries and populates
+%$args hash with defaults for options from .Xdefaults etc.
+When  C<InitObject()> returns to C<Tk::Widget::new()>, 
+a call to $cw->configure(%$args) and sets *all* the options.
+
+

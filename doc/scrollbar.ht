@@ -1,0 +1,386 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) scrollbar.n 1.23 95/06/29 14:25:20-->
+<! -->
+<H1>scrollbar</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>scrollbar - Create and manipulate scrollbar widgets
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>scrollbar</B><I> pathName </I>?<I>options</I>?
+<A NAME=Section0><H2>STANDARD OPTIONS</H2>
+</A><P>
+<BR>
+<B>activeBackground</B>	<B>highlightBackground</B>	<B>orient</B>	<B>takeFocus</B><BR>
+<B>background</B>	<B>highlightColor</B>	<B>relief</B>	<B>troughColor</B><BR>
+<B>borderWidth</B>	<B>highlightThickness</B>	<B>repeatDelay</B><BR>
+<B>cursor</B>	<B>jump</B>	<B>repeatInterval</B><BR>
+<BR>
+<P>
+See the <A HREF="options.ht"> ``options''</A> manual entry for details on the standard options.
+<A NAME=Section1><H2>WIDGET-SPECIFIC OPTIONS</H2>
+</A><P>
+<BR>
+<DL>
+<DT>Name:	<B>activeRelief</B>
+
+<DD><DT>Class:	<B>ActiveRelief</B>
+
+<DD><DT>Command-Line Switch:	<B>-activerelief</B>
+
+<DD><BR>
+Specifies the relief to use when displaying the element that is
+active, if any.
+Elements other than the active element are always displayed with
+a raised relief.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>command</B>
+
+<DD><DT>Class:	<B>Command</B>
+
+<DD><DT>Command-Line Switch:	<B>-command</B>
+
+<DD><BR>
+Specifies the prefix of a Tcl command to invoke to change the view
+in the widget associated with the scrollbar.  When a user requests
+a view change by manipulating the scrollbar, a Tcl command is
+invoked.  The actual command consists of this option followed by
+additional information as described later.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>elementBorderWidth</B>
+
+<DD><DT>Class:	<B>BorderWidth</B>
+
+<DD><DT>Command-Line Switch:	<B>-elementborderwidth</B>
+
+<DD><BR>
+Specifies the width of borders drawn around the internal elements
+of the scrollbar (the two arrows and the slider).  The value may
+have any of the forms acceptable to <B>Tk_GetPixels</B>.
+If this value is less than zero, the value of the <B>borderWidth</B>
+option is used in its place.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>width</B>
+
+<DD><DT>Class:	<B>Width</B>
+
+<DD><DT>Command-Line Switch:	<B>-width</B>
+
+<DD><BR>
+Specifies the desired narrow dimension of the scrollbar window,
+not including 3-D border, if any.  For vertical
+scrollbars this will be the width and for horizontal scrollbars
+this will be the height.
+The value may have any of the forms acceptable to <B>Tk_GetPixels</B>.
+</DL>
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The <B>scrollbar</B> command creates a new window (given by the
+<I>pathName</I> argument) and makes it into a scrollbar widget.
+Additional options, described above, may be specified on the command
+line or in the option database to configure aspects of the scrollbar
+such as its colors, orientation, and relief.
+The <B>scrollbar</B> command returns its <I>pathName</I> argument.
+At the time this command is invoked, there must not exist a window
+named <I>pathName</I>, but <I>pathName</I>'s parent must exist.
+<P>
+A scrollbar is a widget that displays two arrows, one at each end of
+the scrollbar, and a <I>slider</I> in the middle portion of the
+scrollbar.
+It provides information about what is visible in an <I>associated window</I>
+that displays an document of some sort (such as a file being edited or
+a drawing).
+The position and size of the slider indicate which portion of the
+document is visible in the associated window.  For example, if the
+slider in a vertical scrollbar covers the top third of the area
+between the two arrows, it means that the associated window displays
+the top third of its document.
+<P>
+Scrollbars can be used to adjust the view in the associated window
+by clicking or dragging with the mouse.  
+See <A HREF="#BINDINGS"> BINDINGS</A> below for details.
+
+<A NAME=ELEMENTS><H2>ELEMENTS</H2>
+</A><P>
+A scrollbar displays five elements, which are referred to in the
+widget commands for the scrollbar:
+<DL>
+<DT><B>arrow1</B>
+
+<DD>The top or left arrow in the scrollbar.
+<DT><B>trough1</B>
+
+<DD>The region between the slider and <B>arrow1</B>.
+<DT><B>slider</B>
+
+<DD>The rectangle that indicates what is visible in the associated widget.
+<DT><B>trough2</B>
+
+<DD>The region between the slider and <B>arrow2</B>.
+<DT><B>arrow2</B>
+
+<DD>The bottom or right arrow in the scrollbar.
+
+</DL>
+<A NAME=Section2><H2>WIDGET COMMAND</H2>
+</A><P>
+The <B>scrollbar</B> command creates a new Tcl command whose
+name is <I>pathName</I>.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+<BR>
+<PRE>
+<I>pathName option </I>?<I>arg arg ...</I>?<BR>
+<BR>
+</PRE>
+<I>Option</I> and the <I>arg</I>s
+determine the exact behavior of the command.  The following
+commands are possible for scrollbar widgets:
+<DL>
+<DT><I>pathName </I><B>activate </B>?<I>element</I>?
+
+<DD>Marks the element indicated by <I>element</I> as active, which
+causes it to be displayed as specified by the <B>activeBackground</B>
+and <B>activeRelief</B> options.
+The only element values understood by this command are <B>arrow1</B>,
+<B>slider</B>, or <B>arrow2</B>.
+If any other value is specified then no element of the scrollbar
+will be active.
+If <I>element</I> is not specified, the command returns
+the name of the element that is currently active, or an empty string
+if no element is active.
+<DT><I>pathName </I><B>cget</B> <I>option</I>
+
+<DD>Returns the current value of the configuration option given
+by <I>option</I>.
+<I>Option</I> may have any of the values accepted by the <B>scrollbar</B>
+command.
+<DT><I>pathName </I><B>configure</B> ?<I>option</I>? ?<I>value option value ...</I>?
+
+<DD>Query or modify the configuration options of the widget.
+If no <I>option</I> is specified, returns a list describing all of
+the available options for <I>pathName</I> (see <A HREF="ConfigWidg.ht"> <B>Tk_ConfigureInfo</B></A> for
+information on the format of this list).  If <I>option</I> is specified
+with no <I>value</I>, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no <I>option</I> is specified).  If
+one or more <I>option-value</I> pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+<I>Option</I> may have any of the values accepted by the <B>scrollbar</B>
+command.
+<DT><I>pathName </I><B>delta </B><I>deltaX deltaY</I>
+
+<DD>Returns a real number indicating the fractional change in
+the scrollbar setting that corresponds to a given change
+in slider position.  For example, if the scrollbar is horizontal,
+the result indicates how much the scrollbar setting must change
+to move the slider <I>deltaX</I> pixels to the right (<I>deltaY</I> is
+ignored in this case).
+If the scrollbar is vertical, the result indicates how much the
+scrollbar setting must change to move the slider <I>deltaY</I> pixels
+down.  The arguments and the result may be zero or negative.
+<DT><I>pathName </I><B>fraction </B><I>x y</I>
+
+<DD>Returns a real number between 0 and 1 indicating where the point
+given by <I>x</I> and <I>y</I> lies in the trough area of the scrollbar.
+The value 0 corresponds to the top or left of the trough, the
+value 1 corresponds to the bottom or right, 0.5 corresponds to
+the middle, and so on.
+<I>X</I> and <I>y</I> must be pixel coordinates relative to the scrollbar
+widget.
+If <I>x</I> and <I>y</I> refer to a point outside the trough, the closest
+point in the trough is used.
+<DT><I>pathName </I><B>get</B>
+
+<DD>Returns the scrollbar settings in the form of a list whose
+elements are the arguments to the most recent <B>set</B> widget command.
+<DT><I>pathName </I><B>identify</B> <I>x y</I>
+
+<DD>Returns the name of the element under the point given by <I>x</I> and
+<I>y</I> (such as <B>arrow1</B>), or an empty string if the point does
+not lie in any element of the scrollbar.
+<I>X</I> and <I>y</I> must be pixel coordinates relative to the scrollbar
+widget.
+<DT><I>pathName </I><B>set</B> <I>first last</I>
+
+<DD>This command is invoked by the scrollbar's associated widget to
+tell the scrollbar about the current view in the widget.
+The command takes two arguments, each of which is a real fraction
+between 0 and 1.
+The fractions describe the range of the document that is visible in
+the associated widget.
+For example, if <I>first</I> is 0.2 and <I>last</I> is 0.4, it means
+that the first part of the document visible in the window is 20%
+of the way through the document, and the last visible part is 40%
+of the way through.
+
+</DL>
+<A NAME=Section3><H2>SCROLLING COMMANDS</H2>
+</A><P>
+When the user interacts with the scrollbar, for example by dragging
+the slider, the scrollbar notifies the associated widget that it
+must change its view.
+The scrollbar makes the notification by evaluating a Tcl command
+generated from the scrollbar's <B>-command</B> option.
+The command may take any of the following forms.
+In each case, <I>prefix</I> is the contents of the
+<B>-command</B> option, which usually has a form like <B>.t yview</B>
+<DL>
+<DT><I>prefix </I><B>moveto </B><I>fraction</I>
+
+<DD><I>Fraction</I> is a real number between 0 and 1.
+The widget should adjust its view so that the point given
+by <I>fraction</I> appears at the beginning of the widget.
+If <I>fraction</I> is 0 it refers to the beginning of the
+document.  1.0 refers to the end of the document, 0.333
+refers to a point one-third of the way through the document,
+and so on.
+<DT><I>prefix </I><B>scroll </B><I>number </I><B>unit</B>
+
+<DD>The widget should adjust its view by <I>number</I> units.
+The units are defined in whatever way makes sense for the widget,
+such as characters or lines in a text widget.
+<I>Number</I> is either 1, which means one unit should scroll off
+the top or left of the window, or -1, which means that one unit
+should scroll off the bottom or right of the window.
+<DT><I>prefix </I><B>scroll </B><I>number </I><B>page</B>
+
+<DD>The widget should adjust its view by <I>number</I> pages.
+It is up to the widget to define the meaning of a page;  typically
+it is slightly less than what fits in the window, so that there
+is a slight overlap between the old and new views.
+<I>Number</I> is either 1, which means the next page should
+become visible, or -1, which means that the previous page should
+become visible.
+
+</DL>
+<A NAME=Section4><H2>OLD COMMAND SYNTAX</H2>
+</A><P>
+In versions of Tk before 4.0, the <B>set</B> and <B>get</B> widget
+commands used a different form.
+This form is still supported for backward compatibility, but it
+is deprecated.
+In the old command syntax, the <B>set</B> widget command has the
+following form:
+<DL>
+<DT><I>pathName </I><B>set</B> <I>totalUnits windowUnits firstUnit lastUnit</I>
+
+<DD>In this form the arguments are all integers.
+<I>TotalUnits</I> gives the total size of the object being displayed in the
+associated widget.  The meaning of one unit depends on the associated
+widget;  for example, in a text editor widget units might
+correspond to lines of
+text.  <I>WindowUnits</I> indicates the total number of units that
+can fit in the associated window at one time.  <I>FirstUnit</I>
+and <I>lastUnit</I> give the indices of the first and last units
+currently visible in the associated window (zero corresponds to the
+first unit of the object).
+</DL>
+<P>
+Under the old syntax the <B>get</B> widget command returns a list
+of four integers, consisting of the <I>totalUnits</I>, <I>windowUnits</I>,
+<I>firstUnit</I>, and <I>lastUnit</I> values from the last <B>set</B>
+widget command.
+<P>
+The commands generated by scrollbars also have a different form
+when the old syntax is being used:
+<DL>
+<DT><I>prefix </I><I>unit</I>
+
+<DD><I>Unit</I> is an integer that indicates what should appear at
+the top or left of the associated widget's window.
+It has the same meaning as the <I>firstUnit</I> and <I>lastUnit</I>
+arguments to the <B>set</B> widget command.
+</DL>
+<P>
+The most recent <B>set</B> widget command determines whether or not
+to use the old syntax.
+If it is given two real arguments then the new syntax will be
+used in the future, and if it is given four integer arguments then
+the old syntax will be used.
+
+<A NAME=BINDINGS><H2>BINDINGS</H2>
+</A>Tk automatically creates class bindings for scrollbars that give them
+the following default behavior.
+If the behavior is different for vertical and horizontal scrollbars,
+the horizontal behavior is described in parentheses.
+
+<DL>
+<DT>[1]
+<DD>Pressing button 1 over <B>arrow1</B> causes the view in the
+associated widget to shift up (left) by one unit so that the
+document appears to move down (right) one unit.
+If the button is held down, the action auto-repeats.
+<DT>[2]
+<DD>Pressing button 1 over <B>trough1</B> causes the view in the
+associated widget to shift up (left) by one screenful so that the
+document appears to move down (right) one screenful.
+If the button is held down, the action auto-repeats.
+<DT>[3]
+<DD>Pressing button 1 over the slider and dragging causes the view
+to drag with the slider.
+If the <B>jump</B> option is true, then the view doesn't drag along
+with the slider;  it changes only when the mouse button is released.
+<DT>[4]
+<DD>Pressing button 1 over <B>trough2</B> causes the view in the
+associated widget to shift down (right) by one screenful so that the
+document appears to move up (left) one screenful.
+If the button is held down, the action auto-repeats.
+<DT>[5]
+<DD>Pressing button 1 over <B>arrow2</B> causes the view in the
+associated widget to shift down (right) by one unit so that the
+document appears to move up (left) one unit.
+If the button is held down, the action auto-repeats.
+<DT>[6]
+<DD>All of the above actions may be invoked with button 2 as well
+as with button 1.
+<DT>[7]
+<DD>If button 1 is pressed with the Control key down, then if the
+mouse is over <B>arrow1</B> or <B>trough1</B> the view changes
+to the very top (left) of the document;  if the mouse is over
+<B>arrow2</B> or <B>trough2</B> the view changes
+to the very bottom (right) of the document;  if the mouse is
+anywhere else then the button press has no effect.
+<DT>[8]
+<DD>In vertical scrollbars the Up and Down keys have the same behavior
+as mouse clicks over <B>arrow1</B> and <B>arrow2</B>, respectively.
+In horizontal scrollbars these keys have no effect.
+<DT>[9]
+<DD>In vertical scrollbars Control-Up and Control-Down have the same
+behavior as mouse clicks over <B>trough1</B> and <B>trough2</B>, respectively.
+In horizontal scrollbars these keys have no effect.
+<DT>[10]
+<DD>In horizontal scrollbars the Up and Down keys have the same behavior
+as mouse clicks over <B>arrow1</B> and <B>arrow2</B>, respectively.
+In vertical scrollbars these keys have no effect.
+<DT>[11]
+<DD>In horizontal scrollbars Control-Up and Control-Down have the same
+behavior as mouse clicks over <B>trough1</B> and <B>trough2</B>, respectively.
+In vertical scrollbars these keys have no effect.
+<DT>[12]
+<DD>The Prior and Next keys have the same behavior
+as mouse clicks over <B>trough1</B> and <B>trough2</B>, respectively.
+<DT>[13]
+<DD>The Home key adjusts the view to the top (left edge) of the document.
+<DT>[14]
+<DD>The End key adjusts the view to the bottom (right edge) of the document.
+
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>scrollbar, widget

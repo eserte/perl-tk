@@ -1,0 +1,95 @@
+<! Copyright (c) 1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetVisual.3 1.6 95/05/09 13:47:28-->
+<! -->
+<H1>Tk_GetVisual</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetVisual - translate from string to visual<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+Visual *<BR>
+<B>Tk_GetVisual(</B><I>interp, tkwin, string, depthPtr, colormapPtr</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window in which the visual will be used.<BR>
+<DT><CODE>char *string</CODE>
+(in) <DD>String that identifies the desired visual.  See below for<BR>
+valid formats.<BR>
+<DT><CODE>int *depthPtr</CODE>
+(out) <DD>Depth of returned visual gets stored here.<BR>
+<DT><CODE>Colormap *colormapPtr</CODE>
+(out) <DD>If non-NULL then a suitable colormap for visual is found and its<BR>
+identifier is stored here.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_GetVisual</B> takes a string description of a visual and<BR>
+finds a suitable X Visual for use in <I>tkwin</I>, if there is one.<BR>
+It returns a pointer to the X Visual structure for the visual<BR>
+and stores the number of bits per pixel for it at <I>*depthPtr</I>.<BR>
+If <I>string</I> is unrecognizable or if no suitable visual could<BR>
+be found, then NULL is returned and <B>Tk_GetVisual</B> leaves<BR>
+an error message in <I>interp-&gt;result</I>.<BR>
+If <I>colormap</I> is non-NULL then <B>Tk_GetVisual</B><BR>
+also locates an appropriate colormap for use with the result visual<BR>
+and stores its X identifier at <I>*colormapPtr</I>.<BR>
+<P>
+The <I>string</I> argument specifies the desired visual in one<BR>
+of the following ways:<BR>
+<DL>
+<DT><I>class depth</I>
+
+<DD>The string consists of a class name followed by an integer depth,<BR>
+with any amount of white space (including none) in between.<BR>
+<I>class</I> selects what sort of visual is desired and must be one of<BR>
+<B>directcolor</B>, <B>grayscale</B>, <B>greyscale</B>, <B>pseudocolor</B>,<BR>
+<B>staticcolor</B>, <B>staticgray</B>, <B>staticgrey</B>, or<BR>
+<B>truecolor</B>, or a unique abbreviation.<BR>
+<I>depth</I> specifies how many bits per pixel are needed for the<BR>
+visual.<BR>
+If possible, <B>Tk_GetVisual</B> will return a visual with this depth;<BR>
+if there is no visual of the desired depth then <B>Tk_GetVisual</B><BR>
+looks first for a visual with greater depth, then one with less<BR>
+depth.<BR>
+<DT><B>default</B>
+
+<DD>Use the default visual for <I>tkwin</I>'s screen.<BR>
+<DT><I>pathName</I>
+
+<DD>Use the visual for the window given by <I>pathName</I>.<BR>
+<I>pathName</I> must be the name of a window on the same screen<BR>
+as <I>tkwin</I>.<BR>
+<DT><B>best</B> ?<I>depth</I>?
+
+<DD>Choose the ``best possible'' visual, using the following rules, in<BR>
+decreasing order of priority:<BR>
+(a) a visual that has exactly the desired depth is best, followed<BR>
+by a visual with greater depth than requested (but as little extra<BR>
+as possible), followed by a visual with less depth than requested<BR>
+(but as great a depth as possible);<BR>
+(b) if no <I>depth</I> is specified, then the deepest available visual<BR>
+is chosen;<BR>
+(c) <B>pseudocolor</B> is better than <B>truecolor</B> or <B>directcolor</B>,<BR>
+which are better than <B>staticcolor</B>, which is better than<BR>
+<B>staticgray</B> or <B>grayscale</B>;<BR>
+(d) the default visual for the screen is better than any other visual.<BR>
+<BR>
+</DL>
+<A NAME=CREDITS><H2>CREDITS</H2>
+</A><P>
+The idea for <B>Tk_GetVisual</B>, and the first implementation, came<BR>
+from Paul Mackerras.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>colormap, screen, visual<BR>

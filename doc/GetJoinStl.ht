@@ -1,0 +1,60 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetJoinStl.3 1.6 95/05/06 15:29:37-->
+<! -->
+<H1>Tk_GetJoinStyle</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetJoinStyle, Tk_NameOfJoinStyle - translate between strings and join styles<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+int<BR>
+<B>Tk_GetJoinStyle(</B><I>interp, string, joinPtr</I><B>)</B><BR>
+<P>
+char *<BR>
+<B>Tk_NameOfJoinStyle(</B><I>join</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>char *string</CODE>
+(in) <DD>String containing name of join style: one of ``bevel'', ``miter'',<BR>
+or ``round''.<BR>
+<DT><CODE>int *joinPtr</CODE>
+(out) <DD>Pointer to location in which to store X join style corresponding to<BR>
+<I>string</I>.<BR>
+<DT><CODE>int join</CODE>
+(in) <DD>Join style: one of <B>JoinBevel</B>, <B>JoinMiter</B>, <B>JoinRound</B>.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_GetJoinStyle</B> places in <I>*joinPtr</I> the X join style<BR>
+corresponding to <I>string</I>, which will be one of<BR>
+<B>JoinBevel</B>, <B>JoinMiter</B>, or <B>JoinRound</B>.<BR>
+Join styles are typically used in X graphics contexts to indicate<BR>
+how adjacent line segments should be joined together.<BR>
+See the X documentation for information on what each style<BR>
+implies.<BR>
+<P>
+Under normal circumstances the return value is <B>TCL_OK</B> and<BR>
+<I>interp</I> is unused.<BR>
+If <I>string</I> doesn't contain a valid join style<BR>
+or an abbreviation of one of these names, then an error message is<BR>
+stored in <I>interp-&gt;result</I>, <B>TCL_ERROR</B> is returned, and<BR>
+<I>*joinPtr</I> is unmodified.<BR>
+<P>
+<B>Tk_NameOfJoinStyle</B> is the logical inverse of <B>Tk_GetJoinStyle</B>.<BR>
+Given a join style such as <B>JoinBevel</B> it returns a<BR>
+statically-allocated string corresponding to <I>join</I>.<BR>
+If <I>join</I> isn't a legal join style, then<BR>
+``unknown join style'' is returned.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>bevel, join style, miter, round<BR>

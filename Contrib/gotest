@@ -1,0 +1,90 @@
+#!./perl
+
+###############################################################################
+##
+## Getopts_Test - Test the Tk::Getopts routine.
+##
+## Original code by Pat Martin.  pat@advance.com
+##
+#
+# TODO:
+#
+# 1. Support FileDialog, EntryArray, RadioBox, ListBox
+# 2. Do a bit more geometry management when lots of options are present.
+# 3. Support pattern matching/argument screening.
+# 4. Read in @ARGV and set options appropriately.
+# 5. Match longest first so -option doesnt break down into -o -p -t -i -o -n
+# 6. Add a Tk::Getopts::Import(%subenv) to import our options in an
+#    $opt_${var_name} type format.
+# 7. Address focus issues.
+# 8. Handle empty help.
+# 9. Add required option option which errors out if certain things are not
+#    entered.
+#
+###############################################################################
+
+package main;
+use AddINC qw(./blib .);
+
+
+
+use Tk;
+use Tk::Getopts;
+
+# Create a new window.
+my($top) = MainWindow->new;
+
+# Define help.
+$help = "
+
+-------------------------------------------------------------------------------
+                           Test Getopts Options
+-------------------------------------------------------------------------------
+
+Any of these options may be configured via the call to Getopts.
+
+-A1 = This is an example of a variable.  You should be able to configure the
+      widget from the Getopts call.
+-A2 = This is an example of a variable.  You should be able to configure the
+      widget from the Getopts call.
+-A3 = This is an example of a variable.  You should be able to configure the
+      widget from the Getopts call.
+
+-S1 = This is an example of a Scale entry variable.
+-S2 = This is an example of a Scale entry variable.
+-S3 = This is an example of a Scale entry variable.
+
+-B1  = This is an example of a Boolean Checkbox variable.
+-B2  = This is an example of a Boolean Checkbox variable.
+-B3  = This is an example of a Boolean Checkbox variable.
+-B4  = This is an example of a Boolean Checkbox variable.
+-B5  = This is an example of a Boolean Checkbox variable.
+-B6  = This is an example of a Boolean Checkbox variable.
+-B7  = This is an example of a Boolean Checkbox variable.
+-B8  = This is an example of a Boolean Checkbox variable.
+-B9  = This is an example of a Boolean Checkbox variable.
+-B10 = This is an example of a Boolean Checkbox variable.
+-B11 = This is an example of a Boolean Checkbox variable.
+
+Send suggestions/bug reports to pat\@advance.com.  This is a really rough
+version.  I merely wanted to get input from the perl 5.x with Tk extension
+community before I proceeded any further, though this version seems usable
+enough at the present.
+
+- Pat
+";
+
+my(%subenv) = ();
+
+$top->Getopts(\%subenv, "Getopts Test",
+	      ["A1=Entry", "A2=Entry:RELIEF=>raised:WIDTH=>60", "A3=Entry",
+	       "S1=Scale:FROM=>0:TO=>255", "S2=Scale:FROM=>1:TO=>100",
+	       "S3=Scale:FROM=>1:TO=>1000",
+	       "B1=Checkbox", "B2=Checkbox", "B3=Checkbox", "B4=Checkbox",
+	       "B5=Checkbox", "B6=Checkbox", "B7=Checkbox", "B8=Checkbox",
+	       "B9=Checkbox","B10=Checkbox", "B11=Checkbox"], $help);
+
+foreach $key (keys %subenv)
+{
+   print "$key = $subenv{$key}\n";
+}

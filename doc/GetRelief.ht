@@ -1,0 +1,57 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetRelief.3 1.8 95/05/06 15:29:46-->
+<! -->
+<H1>Tk_GetRelief</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetRelief, Tk_NameOfRelief - translate between strings and relief values<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+int<BR>
+<B>Tk_GetRelief(</B><I>interp, name, reliefPtr</I><B>)</B><BR>
+<P>
+char *<BR>
+<B>Tk_NameOfRelief(</B><I>relief</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>char *name</CODE>
+(in) <DD>String containing relief name (one of ``flat'', ``groove'',<BR>
+``raised'', ``ridge'', or ``sunken'').<BR>
+<DT><CODE>int *reliefPtr</CODE>
+(out) <DD>Pointer to location in which to store relief value corresponding to<BR>
+<I>name</I>.<BR>
+<DT><CODE>int relief</CODE>
+(in) <DD>Relief value (one of TK_RELIEF_FLAT, TK_RELIEF_RAISED, TK_RELIEF_SUNKEN,<BR>
+TK_RELIEF_GROOVE, or TK_RELIEF_RIDGE).<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_GetRelief</B> places in <I>*reliefPtr</I> the relief value<BR>
+corresponding to <I>name</I>.  This value will be one of<BR>
+TK_RELIEF_FLAT, TK_RELIEF_RAISED, TK_RELIEF_SUNKEN,<BR>
+TK_RELIEF_GROOVE, or TK_RELIEF_RIDGE.<BR>
+Under normal circumstances the return value is TCL_OK and<BR>
+<I>interp</I> is unused.<BR>
+If <I>name</I> doesn't contain one of the valid relief names<BR>
+or an abbreviation of one of them, then an error message<BR>
+is stored in <I>interp-&gt;result</I>,<BR>
+TCL_ERROR is returned, and <I>*reliefPtr</I> is unmodified.<BR>
+<P>
+<B>Tk_NameOfRelief</B> is the logical inverse of <B>Tk_GetRelief</B>.<BR>
+Given a relief value it returns the corresponding string (``flat'',<BR>
+``raised'', ``sunken'', ``groove'', or ``ridge'').<BR>
+If <I>relief</I> isn't a legal relief value, then ``unknown relief''<BR>
+is returned.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>name, relief, string<BR>

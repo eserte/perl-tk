@@ -1,0 +1,52 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) OwnSelect.3 1.10 95/05/06 15:30:15-->
+<! -->
+<H1>Tk_OwnSelection</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_OwnSelection - make a window the owner of the primary selection
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_OwnSelection</B>(<I>tkwin, selection, proc, clientData</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Window that is to become new selection owner.<BR>
+<DT><CODE>Atom selection</CODE>
+(in) <DD>The name of the selection to be owned, such as XA_PRIMARY.<BR>
+<DT><CODE>Tk_LostSelProc *proc</CODE>
+(in) <DD>Procedure to invoke when <I>tkwin</I> loses selection ownership later.<BR>
+<DT><CODE>ClientData clientData</CODE>
+(in) <DD>Arbitrary one-word value to pass to <I>proc</I>.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_OwnSelection</B> arranges for <I>tkwin</I> to become the<BR>
+new owner of the selection specified by the atom<BR>
+<I>selection</I>.  After this call completes, future requests<BR>
+for the selection will be directed to handlers created for<BR>
+<I>tkwin</I> using <B>Tk_CreateSelHandler</B>.  When <I>tkwin</I><BR>
+eventually loses the selection ownership, <I>proc</I> will be<BR>
+invoked so that the window can clean itself up (e.g. by<BR>
+unhighlighting the selection).  <I>Proc</I> should have arguments and<BR>
+result that match the type <B>Tk_LostSelProc</B>:<BR>
+<BR>
+<DL>
+typedef void Tk_LostSelProc(ClientData <I>clientData</I>);<BR>
+</DL>
+<BR>
+The <I>clientData</I> parameter to <I>proc</I> is a copy of the
+<I>clientData</I> argument given to <B>Tk_OwnSelection</B>, and is
+usually a pointer to a data structure containing application-specific
+information about <I>tkwin</I>.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>own, selection owner

@@ -1,0 +1,14 @@
+#!/usr/local/bin/perl -w
+
+BEGIN { unshift (@INC,qw(./blib .)) }
+
+use Tk;
+use Tk::Pretty;
+#require Tk::Label;
+
+{
+ my $top = MainWindow->new();
+ my $w = $top->Label(-text => 'hello')->pack;
+ MainLoop;
+}
+print "Done\n";

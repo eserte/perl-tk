@@ -1,0 +1,190 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) CrtMainWin.3 1.20 95/05/06 15:29:16-->
+<! -->
+<H1>Tk_CreateMainWindow</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_CreateMainWindow, Tk_CreateWindow, Tk_CreateWindowFromPath, Tk_DestroyWindow, Tk_MakeWindowExist - create or delete window<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+Tk_Window<BR>
+<B>Tk_CreateMainWindow</B>(<I>interp, screenName, baseName, className</I>)<BR>
+<P>
+Tk_Window<BR>
+<B>Tk_CreateWindow</B>(<I>interp, parent, name, topLevScreen</I>)<BR>
+<P>
+Tk_Window<BR>
+<B>Tk_CreateWindowFromPath</B>(<I>interp, tkwin, pathName, topLevScreen</I>)<BR>
+<P>
+<B>Tk_DestroyWindow</B>(<I>tkwin</I>)<BR>
+<P>
+<B>Tk_MakeWindowExist</B>(<I>tkwin</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(out) <DD>Tcl interpreter to use for error reporting.  If no error occurs,<BR>
+then <I>*interp</I> isn't modified.  For <B>Tk_CreateMainWindow</B>,<BR>
+this interpreter is associated permanently with the created window,<BR>
+and Tk-related commands are bound into the interpreter.<BR>
+<DT><CODE>char *screenName</CODE>
+(in) <DD>String name of screen on which to create window.  Has the form<BR>
+<I>displayName</I><B>.</B><I>screenNum</I>, where <I>displayName</I> is the<BR>
+name of a display and <I>screenNum</I> is a screen number.  If<BR>
+the dot and <I>screenNum</I> are omitted, the screen number defaults<BR>
+to 0.  If <I>screenName</I> is NULL or empty string, defaults to<BR>
+contents of DISPLAY environment variable.<BR>
+<DT><CODE>char *baseName</CODE>
+(in) <DD>Name to use for this main window.  See below for details.<BR>
+<DT><CODE>char *className</CODE>
+(in) <DD>Class to use for application and for main window.<BR>
+<DT><CODE>Tk_Window parent</CODE>
+(in) <DD>Token for the window that is to serve as the logical parent of<BR>
+the new window.<BR>
+<DT><CODE>char *name</CODE>
+(in) <DD>Name to use for this window.  Must be unique among all children of<BR>
+the same <I>parent</I>.<BR>
+<DT><CODE>char *topLevScreen</CODE>
+(in) <DD>Has same format as <I>screenName</I>.  If NULL, then new window is<BR>
+created as an internal window.  If non-NULL, new window is created as<BR>
+a top-level window on screen <I>topLevScreen</I>.  If <I>topLevScreen</I><BR>
+is an empty string (``'') then new<BR>
+window is created as top-level window of <I>parent</I>'s screen.<BR>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window.<BR>
+<DT><CODE>char *pathName</CODE>
+(in) <DD>Name of new window, specified as path name within application<BR>
+(e.g. <B>.a.b.c</B>).<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The three procedures <B>Tk_CreateMainWindow</B>, <B>Tk_CreateWindow</B>,<BR>
+and <B>Tk_CreateWindowFromPath</B> are used to create new windows for<BR>
+use in Tk-based applications.  Each of the procedures returns a token<BR>
+that can be used to manipulate the window in other calls to the Tk<BR>
+library.  If the window couldn't be created successfully, then NULL<BR>
+is returned and <I>interp-&gt;result</I> is modified to hold an error<BR>
+message.<BR>
+<P>
+Tk supports three different kinds of windows:  main windows, internal<BR>
+windows, and top-level windows.<BR>
+A main window is the outermost window corresponding to an application.<BR>
+Main windows correspond to the independent units of an application,<BR>
+such as a view on a file that is part of an editor, or a clock, or<BR>
+a terminal emulator.  A main window is created as a child of the root<BR>
+window of the screen indicated by the <I>screenName</I>.  Each main<BR>
+window, and all its descendants, are typically associated with a<BR>
+single Tcl command interpreter.<BR>
+An internal window is an interior window of a Tk application, such as a<BR>
+scrollbar or menu bar or button.  A top-level window is one that is<BR>
+created as a child of a screen's root window, rather than as an<BR>
+interior window, but which is logically part of some existing main<BR>
+window.  Examples of top-level windows are pop-up menus and dialog boxes.<BR>
+<P>
+<B>Tk_CreateMainWindow</B> creates a new main window and associates<BR>
+its <I>interp</I> argument with that window and all its eventual<BR>
+descendants.<BR>
+<B>Tk_CreateMainWindow</B> also carries out several other actions to<BR>
+set up the new application.<BR>
+First, it adds all the Tk commands to those already defined<BR>
+for <I>interp</I>.<BR>
+Second, it turns the new window into a <B>toplevel</B> widget, which<BR>
+will cause the X window to be created and mapped as soon as the<BR>
+application goes idle.<BR>
+Third, <B>Tk_CreateMainWindow</B> registers <I>interp</I> so that it<BR>
+can be accessed remotely by other Tk applications using the <B>send</B><BR>
+command and the name <I>baseName</I>.  Normally, <I>baseName</I> consists<BR>
+of the name of the application followed by a space and an identifier for this<BR>
+particular main window (if such an identifier is relevant).  For example,<BR>
+an editor named <B>mx</B> displaying the file <B>foo.c</B> would use<BR>
+``mx foo.c'' as the basename.  An application that doesn't usually<BR>
+have multiple instances, such as a clock program, would just use the<BR>
+name of the application, e.g. ``xclock''.  If <I>baseName</I> is already<BR>
+in use by some other registered interpreter, then <B>Tk_CreateMainWindow</B><BR>
+extends <I>baseName</I> with a number to produce a unique name like<BR>
+``mx foo.c #2'' or ``xclock #12''.  This name is used both as the name<BR>
+of the window (returned by <B>Tk_Name</B>) and as the registered name<BR>
+of the interpreter.<BR>
+Fourth, <B>Tk_CreateMainWindow</B> sets <I>className</I> as the class of<BR>
+the application (among other things, this is used for lookups in<BR>
+the option database), and also as the class of the main widget.<BR>
+<P>
+Either internal or top-level windows may be created by calling<BR>
+<B>Tk_CreateWindow</B>.  If the <I>topLevScreen</I> argument is<BR>
+NULL, then the new window will be an internal window.  If<BR>
+<I>topLevScreen</I> is non-NULL, then the new window will be a<BR>
+top-level window: <I>topLevScreen</I> indicates the name of<BR>
+a screen and the new window will be created as a child of the<BR>
+root window of <I>topLevScreen</I>.  In either case Tk will<BR>
+consider the new window to be the logical child of <I>parent</I>:<BR>
+the new window's path name will reflect this fact, options may<BR>
+be specified for the new window under this assumption, and so on.<BR>
+The only difference is that new X window for a top-level window<BR>
+will not be a child of <I>parent</I>'s X window.  For example, a pull-down<BR>
+menu's <I>parent</I> would be the button-like window used to invoke it,<BR>
+which would in turn be a child of the menu bar window.  A dialog box might<BR>
+have the application's main window as its parent.  This approach<BR>
+means that all the windows of an application fall into a hierarchical<BR>
+arrangement with a single logical root:  the application's main window.<BR>
+<P>
+<B>Tk_CreateWindowFromPath</B> offers an alternate way of specifying<BR>
+new windows.  In <B>Tk_CreateWindowFromPath</B> the new<BR>
+window is specified with a token for any window in the target<BR>
+application (<I>tkwin</I>), plus a path name for the new window.<BR>
+It produces the same effect as <B>Tk_CreateWindow</B> and allows<BR>
+both top-level and internal windows to be created, depending on<BR>
+the value of <I>topLevScreen</I>.  In calls to <B>Tk_CreateWindowFromPath</B>,<BR>
+as in calls to <B>Tk_CreateWindow</B>, the parent of the new window<BR>
+must exist at the time of the call, but the new window must not<BR>
+already exist.<BR>
+<P>
+In truth, the window-creation procedures don't<BR>
+actually issue the command to X to create a window.<BR>
+Instead, they create a local data structure associated with<BR>
+the window and defer the creation of the X window.<BR>
+The window will actually be created by the first call to<BR>
+<B>Tk_MapWindow</B>.  Deferred window creation allows various<BR>
+aspects of the window (such as its size, background color,<BR>
+etc.) to be modified after its creation without incurring<BR>
+any overhead in the X server.  When the window is finally<BR>
+mapped all of the window attributes can be set while creating<BR>
+the window.<BR>
+<P>
+The value returned by a window-creation procedure is not the<BR>
+X token for the window (it can't be, since X hasn't been<BR>
+asked to create the window yet).  Instead, it is a token<BR>
+for Tk's local data structure for the window.  Most<BR>
+of the Tk library procedures take Tk_Window tokens, rather<BR>
+than X identifiers.  The actual<BR>
+X window identifier can be retrieved from the local<BR>
+data structure using the <B>Tk_WindowId</B> macro;  <BR>
+See the <A HREF="WindowId.ht"> <B>Tk_WindowId</B></A> manual entry for details.<BR>
+<P>
+<B>Tk_DestroyWindow</B> deletes a window and all the data<BR>
+structures associated with it, including any event handlers<BR>
+created with <B>Tk_CreateEventHandler</B>.  In addition,<BR>
+<B>Tk_DestroyWindow</B> will delete any children of <I>tkwin</I><BR>
+recursively (where children are defined in the Tk sense, consisting<BR>
+of all windows that were created with the given window as <I>parent</I>).<BR>
+If <I>tkwin</I> was created by <B>Tk_CreateInternalWindow</B> then event<BR>
+handlers interested in destroy events<BR>
+are invoked immediately.  If <I>tkwin</I> is a top-level or main window,<BR>
+then the event handlers will be invoked later, after X has seen<BR>
+the request and returned an event for it.<BR>
+<P>
+If a window has been created<BR>
+but hasn't been mapped, so no X window exists, it is<BR>
+possible to force the creation of the X window by<BR>
+calling <B>Tk_MakeWindowExist</B>.  This procedure issues<BR>
+the X commands to instantiate the window given by <I>tkwin</I>.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>create, deferred creation, destroy, display, internal window, main window,<BR>
+register, screen, top-level window, window<BR>

@@ -1,0 +1,654 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) menu.n 1.37 95/06/07 21:15:20-->
+<! -->
+<H1>menu</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>menu - Create and manipulate menu widgets
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>menu</B><I> </I><I>pathName </I>?<I>options</I>?
+<A NAME=Section0><H2>STANDARD OPTIONS</H2>
+</A><P>
+<BR>
+<B>activeBackground</B>	<B>background</B>	<B>disabledForeground</B>	<B>relief</B><BR>
+<B>activeBorderWidth</B>	<B>borderWidth</B>	<B>font</B>	<B>takeFocus</B><BR>
+<B>activeForeground</B>	<B>cursor</B>	<B>foreground</B><BR>
+<BR>
+<P>
+See the <A HREF="options.ht"> ``options''</A> manual entry for details on the standard options.
+<A NAME=Section1><H2>WIDGET-SPECIFIC OPTIONS</H2>
+</A><P>
+<BR>
+<DL>
+<DT>Name:	<B>postCommand</B>
+
+<DD><DT>Class:	<B>Command</B>
+
+<DD><DT>Command-Line Switch:	<B>-postcommand</B>
+
+<DD><BR>
+If this option is specified then it provides a Tcl command to execute
+each time the menu is posted.  The command is invoked by the <B>post</B>
+widget command before posting the menu.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>selectColor</B>
+
+<DD><DT>Class:	<B>Background</B>
+
+<DD><DT>Command-Line Switch:	<B>-selectcolor</B>
+
+<DD><BR>
+For menu entries that are check buttons or radio buttons, this option
+specifies the color to display in the indicator when the check button
+or radio button is selected.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>tearOff</B>
+
+<DD><DT>Class:	<B>TearOff</B>
+
+<DD><DT>Command-Line Switch:	<B>-tearoff</B>
+
+<DD><BR>
+This option must have a proper boolean value, which specifies
+whether or not the menu should include a tear-off entry at the
+top.  If so, it will exist as entry 0 of the menu and the other
+entries will number starting at 1.  The default
+menu bindings arrange for the menu to be torn off when the tear-off
+entry is invoked.
+</DL>
+<HR>
+
+<A NAME=INTRODUCTION><H2>INTRODUCTION</H2>
+</A><P>
+The <B>menu</B> command creates a new top-level window (given
+by the <I>pathName</I> argument) and makes it into a menu widget.
+Additional
+options, described above, may be specified on the command line
+or in the option database
+to configure aspects of the menu such as its colors and font.
+The <B>menu</B> command returns its
+<I>pathName</I> argument.  At the time this command is invoked,
+there must not exist a window named <I>pathName</I>, but
+<I>pathName</I>'s parent must exist.
+<P>
+A menu is a widget that displays a collection of one-line entries arranged
+in a column.  There exist several different types of entries,
+each with different properties.  Entries of different types may be
+combined in a single menu.  Menu entries are not the same as
+entry widgets.  In fact, menu entries are not even distinct widgets;
+the entire menu is one widget.
+<P>
+Menu entries are displayed with up to three separate fields.
+The main field is a label in the form of a text string,
+a bitmap, or an image, controlled by the <B>-label</B>,
+<B>-bitmap</B>, and <B>-image</B> options for the entry.
+If the  <B>-accelerator</B> option is specified for an entry then a second
+textual field is displayed to the right of the label.  The accelerator
+typically describes a keystroke sequence that may be typed in the
+application to cause the same result as invoking the menu entry.
+The third field is an <I>indicator</I>.  The indicator is present only for
+checkbutton or radiobutton entries.  It indicates whether the entry
+is selected or not, and is displayed to the left of the entry's
+string.
+<P>
+In normal use, an entry becomes active (displays itself differently)
+whenever the mouse pointer is over the entry.  If a mouse
+button is released over the entry then the entry is <I>invoked</I>.
+The effect of invocation is different for each type of entry;
+these effects are described below in the sections on individual
+entries.
+<P>
+Entries may be <I>disabled</I>, which causes their labels
+and accelerators to be displayed
+with dimmer colors.
+The default menu bindings will not allow
+a disabled entry to be activated or invoked.
+Disabled entries may be re-enabled, at which point it becomes
+possible to activate and invoke them again.
+
+<A NAME=Section2><H2>COMMAND ENTRIES</H2>
+</A><P>
+The most common kind of menu entry is a command entry, which
+behaves much like a button widget.  When a command entry is
+invoked, a Tcl command is executed.  The Tcl
+command is specified with the <B>-command</B> option.
+
+<A NAME=Section3><H2>SEPARATOR ENTRIES</H2>
+</A><P>
+A separator is an entry that is displayed as a horizontal dividing
+line.  A separator may not be activated or invoked, and it has
+no behavior other than its display appearance.
+
+<A NAME=Section4><H2>CHECKBUTTON ENTRIES</H2>
+</A><P>
+A checkbutton menu entry behaves much like a checkbutton widget.
+When it is invoked it toggles back and forth between the selected
+and deselected states.  When the entry is selected, a particular
+value is stored in a particular global variable (as determined by
+the <B>-onvalue</B> and <B>-variable</B> options for the entry);  when
+the entry is deselected another value (determined by the
+<B>-offvalue</B> option) is stored in the global variable.
+An indicator box is displayed to the left of the label in a checkbutton
+entry.  If the entry is selected then the indicator's center is displayed
+in the color given by the <B>-selectcolor</B> option for the entry;
+otherwise the indicator's center is displayed in the background color for
+the menu.  If a <B>-command</B> option is specified for a checkbutton
+entry, then its value is evaluated as a Tcl command each time the entry
+is invoked;  this happens after toggling the entry's
+selected state.
+
+<A NAME=Section5><H2>RADIOBUTTON ENTRIES</H2>
+</A><P>
+A radiobutton menu entry behaves much like a radiobutton widget.
+Radiobutton entries are organized in groups of which only one
+entry may be selected at a time.  Whenever a particular entry
+becomes selected it stores a particular value into a particular
+global variable (as determined by the <B>-value</B> and
+<B>-variable</B> options for the entry).  This action
+causes any previously-selected entry in the same group
+to deselect itself.
+Once an entry has become selected, any change to the entry's
+associated variable will cause the entry to deselect itself.
+Grouping of radiobutton entries is determined by their
+associated variables:  if two entries have the same associated
+variable then they are in the same group.
+An indicator diamond is displayed to the left of the label in each
+radiobutton entry.  If the entry is selected then the indicator's
+center is displayed in the color given by the <B>-selectcolor</B> option
+for the entry;
+otherwise the indicator's center is displayed in the background color for
+the menu.  If a <B>-command</B> option is specified for a radiobutton
+entry, then its value is evaluated as a Tcl command each time the entry
+is invoked;  this happens after selecting the entry.
+
+<A NAME=Section6><H2>CASCADE ENTRIES</H2>
+</A><P>
+A cascade entry is one with an associated menu (determined
+by the <B>-menu</B> option).  Cascade entries allow the construction
+of cascading menus.
+The <B>postcascade</B> widget command can be used to post and unpost
+the associated menu just to the right of the cascade entry.
+The associated menu must be a child of the menu containing
+the cascade entry (this is needed in order for menu traversal to
+work correctly).
+<P>
+A cascade entry posts its associated menu by invoking a
+Tcl command of the form
+<DL>
+<P>
+<I>menu</I><B> post </B><I>x y</I>
+</DL>
+<P>
+where <I>menu</I> is the path name of the associated menu, and <I>x</I>
+and <I>y</I> are the root-window coordinates of the upper-right
+corner of the cascade entry.
+The lower-level menu is unposted by executing a Tcl command with
+the form
+<DL>
+<P>
+<I>menu</I><B> unpost</B>
+</DL>
+<P>
+where <I>menu</I> is the name of the associated menu.
+<P>
+If a <B>-command</B> option is specified for a cascade entry then it is
+evaluated as a Tcl command
+whenever the entry is invoked.
+
+<A NAME=Section7><H2>TEAR-OFF ENTRIES</H2>
+</A><P>
+A tear-off entry appears at the top of the menu if enabled with the
+<B>tearOff</B> option.  It is not like other menu entries in that
+it cannot be created with the <B>add</B> widget command and
+cannot be deleted with the <B>delete</B> widget command.
+When a tear-off entry is created it appears as a dashed line at
+the top of the menu.  Under the default bindings, invoking the
+tear-off entry causes a torn-off copy to be made of the menu and
+all of its submenus.
+
+<A NAME=Section8><H2>WIDGET COMMAND</H2>
+</A><P>
+The <B>menu</B> command creates a new Tcl command whose
+name is <I>pathName</I>.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+<BR>
+<PRE>
+<I>pathName option </I>?<I>arg arg ...</I>?<BR>
+<BR>
+</PRE>
+<I>Option</I> and the <I>arg</I>s
+determine the exact behavior of the command.
+<P>
+Many of the widget commands for a menu take as one argument an
+indicator of which entry of the menu to operate on.  These
+indicators are called <I>index</I>es and may be specified in
+any of the following forms:
+<DL>
+<DT><I>number</I>
+
+<DD>Specifies the entry numerically, where 0 corresponds
+to the top-most entry of the menu, 1 to the entry below it, and
+so on.
+<DT><B>active</B>
+
+<DD>Indicates the entry that is currently active.  If no entry is
+active then this form is equivalent to <B>none</B>.  This form may
+not be abbreviated.
+<DT><B>end</B>
+
+<DD>Indicates the bottommost entry in the menu.  If there are no
+entries in the menu then this form is equivalent to <B>none</B>.
+This form may not be abbreviated.
+<DT><B>last</B>
+
+<DD>Same as <B>end</B>.
+<DT><B>none</B>
+
+<DD>Indicates ``no entry at all'';  this is used most commonly with
+the <B>activate</B> option to deactivate all the entries in the
+menu.  In most cases the specification of <B>none</B> causes
+nothing to happen in the widget command.
+This form may not be abbreviated.
+<DT><B>@</B><I>number</I>
+
+<DD>In this form, <I>number</I> is treated as a y-coordinate in the
+menu's window;  the entry closest to that y-coordinate is used.
+For example, ``<B>@0</B>'' indicates the top-most entry in the
+window.
+<DT><I>pattern</I>
+
+<DD>If the index doesn't satisfy one of the above forms then this
+form is used.  <I>Pattern</I> is pattern-matched against the label of
+each entry in the menu, in order from the top down, until a
+matching entry is found.  The rules of <B>Tcl_StringMatch</B>
+are used.
+<P>
+The following widget commands are possible for menu widgets:
+<DT><I>pathName </I><B>activate </B><I>index</I>
+
+<DD>Change the state of the entry indicated by <I>index</I> to <B>active</B>
+and redisplay it using its active colors.
+Any previously-active entry is deactivated.  If <I>index</I>
+is specified as <B>none</B>, or if the specified entry is
+disabled, then the menu ends up with no active entry.
+Returns an empty string.
+<DT><I>pathName </I><B>add </B><I>type </I>?<I>option value option value ...</I>?
+
+<DD>Add a new entry to the bottom of the menu.  The new entry's type
+is given by <I>type</I> and must be one of <B>cascade</B>,
+<B>checkbutton</B>, <B>command</B>, <B>radiobutton</B>, or <B>separator</B>,
+or a unique abbreviation of one of the above.  If additional arguments
+are present, they specify any of the following options:
+<DL>
+<DT><B>-activebackground </B><I>value</I>
+
+<DD>Specifies a background color to use for displaying this entry when it
+is active.
+If this option is specified as an empty string (the default), then the
+<B>activeBackground</B> option for the overall menu is used.
+If the <B>tk_strictMotif</B> variable has been set to request strict
+Motif compliance, then this option is ignored and the <B>-background</B>
+option is used in its place.
+This option is not available for separator or tear-off entries.
+<DT><B>-activeforeground </B><I>value</I>
+
+<DD>Specifies a foreground color to use for displaying this entry when it
+is active.
+If this option is specified as an empty string (the default), then the
+<B>activeForeground</B> option for the overall menu is used.
+This option is not available for separator or tear-off entries.
+<DT><B>-accelerator </B><I>value</I>
+
+<DD>Specifies a string to display at the right side of the menu entry.
+Normally describes an accelerator keystroke sequence that may be
+typed to invoke the same function as the menu entry.  This option
+is not available for separator or tear-off entries.
+<DT><B>-background </B><I>value</I>
+
+<DD>Specifies a background color to use for displaying this entry when it
+is in the normal state (neither active nor disabled).
+If this option is specified as an empty string (the default), then the
+<B>background</B> option for the overall menu is used.
+This option is not available for separator or tear-off entries.
+<DT><B>-bitmap </B><I>value</I>
+
+<DD>Specifies a bitmap to display in the menu instead of a textual
+label, in any of the forms accepted by <B>Tk_GetBitmap</B>.
+This option overrides the <B>-label</B> option but may be reset
+to an empty string to enable a textual label to be displayed.
+If a <B>-image</B> option has been specified, it overrides
+<B>-bitmap</B>.
+This option is not available for separator or tear-off entries.
+<DT><B>-command </B><I>value</I>
+
+<DD>For command, checkbutton, and radiobutton entries, specifies a
+Tcl command to execute when the menu entry is invoked.
+For cascade entries, specifies a Tcl command to execute
+when the entry is activated (i.e. just before its submenu is
+posted).
+Not available for separator or tear-off entries.
+<DT><B>-font </B><I>value</I>
+
+<DD>Specifies the font to use when drawing the label or accelerator
+string in this entry.
+If this option is specified as an empty string (the default) then
+the <B>font</B> option for the overall menu is used.
+This option is not available for separator or tear-off entries.
+<DT><B>-foreground </B><I>value</I>
+
+<DD>Specifies a foreground color to use for displaying this entry when it
+is in the normal state (neither active nor disabled).
+If this option is specified as an empty string (the default), then the
+<B>foreground</B> option for the overall menu is used.
+This option is not available for separator or tear-off entries.
+<DT><B>-image </B><I>value</I>
+
+<DD>Specifies an image to display in the menu instead of a text string
+or bitmap
+The image must have been created by some previous invocation of
+<B>image create</B>.
+This option overrides the <B>-label</B> and <B>-bitmap</B> options
+but may be reset to an empty string to enable a textual or
+bitmap label to be displayed.
+This option is not available for separator or tear-off entries.
+<DT><B>-indicatoron </B><I>value</I>
+
+<DD>Available only for checkbutton and radiobutton entries.
+<I>Value</I> is a boolean that determines whether or not the
+indicator should be displayed.
+<DT><B>-label </B><I>value</I>
+
+<DD>Specifies a string to display as an identifying label in the menu
+entry.  Not available for separator or tear-off entries.
+<DT><B>-menu </B><I>value</I>
+
+<DD>Available only for cascade entries.  Specifies the path name of
+the submenu associated with this entry.
+The submenu must be a child of the menu.
+<DT><B>-offvalue </B><I>value</I>
+
+<DD>Available only for checkbutton entries.  Specifies the value to
+store in the entry's associated variable when the entry is
+deselected.
+<DT><B>-onvalue </B><I>value</I>
+
+<DD>Available only for checkbutton entries.  Specifies the value to
+store in the entry's associated variable when the entry is selected.
+<DT><B>-selectcolor </B><I>value</I>
+
+<DD>Available only for checkbutton and radiobutton entries.
+Specifies the color to display in the indicator when the entry is
+selected.
+If the value is an empty string (the default) then the <B>selectColor</B>
+option for the menu determines the indicator color.
+<DT><B>-selectimage </B><I>value</I>
+
+<DD>Available only for checkbutton and radiobutton entries.
+Specifies an image to display in the entry (in place of
+the <B>-image</B> option) when it is selected.
+<I>Value</I> is the name of an image, which must have been created
+by some previous invocation of <B>image create</B>.
+This option is ignored unless the <B>-image</B> option has
+been specified.
+<DT><B>-state </B><I>value</I>
+
+<DD>Specifies one of three states for the entry:  <B>normal</B>, <B>active</B>,
+or <B>disabled</B>.  In normal state the entry is displayed using the
+<B>foreground</B> option for the menu and the <B>background</B>
+option from the entry or the menu.
+The active state is typically used when the pointer is over the entry.
+In active state the entry is displayed using the <B>activeForeground</B>
+option for the menu along with the <B>activebackground</B> option from
+the entry.  Disabled state means that the entry
+should be insensitive:  the default bindings will refuse to activate
+or invoke the entry.
+In this state the entry is displayed according to the 
+<B>disabledForeground</B> option for the menu and the
+<B>background</B> option from the entry.
+This option is not available for separator entries.
+<DT><B>-underline </B><I>value</I>
+
+<DD>Specifies the integer index of a character to underline in the entry.
+This option is also queried by the default bindings and used to
+implement keyboard traversal.
+0 corresponds to the first character of the text displayed in the entry,
+1 to the next character, and so on.
+If a bitmap or image is displayed in the entry then this option is ignored.
+This option is not available for separator or tear-off entries.
+<DT><B>-value </B><I>value</I>
+
+<DD>Available only for radiobutton entries.  Specifies the value to
+store in the entry's associated variable when the entry is selected.
+<DT><B>-variable </B><I>value</I>
+
+<DD>Available only for checkbutton and radiobutton entries.  Specifies
+the name of a global value to set when the entry is selected.
+For checkbutton entries the variable is also set when the entry
+is deselected.  For radiobutton entries, changing the variable
+causes the currently-selected entry to deselect itself.
+</DL>
+</DL>
+<P>
+The <B>add</B> widget command returns an empty string.
+<DL>
+<DT><I>pathName </I><B>cget</B> <I>option</I>
+
+<DD>Returns the current value of the configuration option given
+by <I>option</I>.
+<I>Option</I> may have any of the values accepted by the <B>menu</B>
+command.
+<DT><I>pathName </I><B>configure</B> ?<I>option</I>? ?<I>value option value ...</I>?
+
+<DD>Query or modify the configuration options of the widget.
+If no <I>option</I> is specified, returns a list describing all of
+the available options for <I>pathName</I> (see <A HREF="ConfigWidg.ht"> <B>Tk_ConfigureInfo</B></A> for
+information on the format of this list).  If <I>option</I> is specified
+with no <I>value</I>, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no <I>option</I> is specified).  If
+one or more <I>option-value</I> pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+<I>Option</I> may have any of the values accepted by the <B>menu</B>
+command.
+<DT><I>pathName </I><B>delete </B><I>index1</I> ?<I>index2</I>?
+
+<DD>Delete all of the menu entries between <I>index1</I> and
+<I>index2</I> inclusive.
+If <I>index2</I> is omitted then it defaults to <I>index1</I>.
+Attempts to delete a tear-off menu entry are ignored (instead, you
+should change the <B>tearOff</B> option to remove the tear-off entry).
+<DT><I>pathName </I><B>entrycget</B> <I>index option</I>
+
+<DD>Returns the current value of a configuration option for
+the entry given by <I>index</I>.
+<I>Option</I> may have any of the values accepted by the <B>add</B>
+widget command.
+<DT><I>pathName </I><B>entryconfigure </B><I>index </I>?<I>options</I>?
+
+<DD>This command is similar to the <B>configure</B> command, except that
+it applies to the options for an individual entry, whereas <B>configure</B>
+applies to the options for the menu as a whole.
+<I>Options</I> may have any of the values accepted by the <B>add</B>
+widget command.  If <I>options</I> are specified, options are modified
+as indicated
+in the command and the command returns an empty string.
+If no <I>options</I> are specified, returns a list describing
+the current options for entry <I>index</I> (see <A HREF="ConfigWidg.ht"> <B>Tk_ConfigureInfo</B></A> for
+information on the format of this list).
+<DT><I>pathName </I><B>index </B><I>index</I>
+
+<DD>Returns the numerical index corresponding to <I>index</I>, or
+<B>none</B> if <I>index</I> was specified as <B>none</B>.
+<DT><I>pathName </I><B>insert </B><I>index</I> <I>type </I>?<I>option value option value ...</I>?
+
+<DD>Same as the <B>add</B> widget command except that it inserts the new
+entry just before the entry given by <I>index</I>, instead of appending
+to the end of the menu.  The <I>type</I>, <I>option</I>, and <I>value</I>
+arguments have the same interpretation as for the <B>add</B> widget
+command.  It is not possible to insert new menu entries before the
+tear-off entry, if the menu has one.
+<DT><I>pathName </I><B>invoke </B><I>index</I>
+
+<DD>Invoke the action of the menu entry.  See the sections on the
+individual entries above for details on what happens.  If the
+menu entry is disabled then nothing happens.  If the
+entry has a command associated with it then the result of that
+command is returned as the result of the <B>invoke</B> widget
+command.  Otherwise the result is an empty string.  Note:  invoking
+a menu entry does not automatically unpost the menu;  the default
+bindings normally take care of this before invoking the <B>invoke</B>
+widget command.
+<DT><I>pathName </I><B>post </B><I>x y</I>
+
+<DD>Arrange for the menu to be displayed on the screen at the root-window
+coordinates given by <I>x</I> and <I>y</I>.  These coordinates are
+adjusted if necessary to guarantee that the entire menu is visible on
+the screen.  This command normally returns an empty string.
+If the <B>postCommand</B> option has been specified, then its value is
+executed as a Tcl script before posting the menu and the result of
+that script is returned as the result of the <B>post</B> widget
+command.
+If an error returns while executing the command, then the error is
+returned without posting the menu.
+<DT><I>pathName </I><B>postcascade </B><I>index</I>
+
+<DD>Posts the submenu associated with the cascade entry given by
+<I>index</I>, and unposts any previously posted submenu.
+If <I>index</I> doesn't correspond to a cascade entry,
+or if <I>pathName</I> isn't posted,
+the command has no effect except to unpost any currently posted
+submenu.
+<DT><I>pathName </I><B>type </B><I>index</I>
+
+<DD>Returns the type of the menu entry given by <I>index</I>.
+This is the <I>type</I> argument passed to the <B>add</B> widget
+command when the entry was created, such as <B>command</B>
+or <B>separator</B>, or <B>tearoff</B> for a tear-off entry.
+<DT><I>pathName </I><B>unpost</B>
+
+<DD>Unmap the window so that it is no longer displayed.  If a
+lower-level cascaded menu is posted, unpost that menu.  Returns an
+empty string.
+<DT><I>pathName </I><B>yposition </B><I>index</I>
+
+<DD>Returns a decimal string giving the y-coordinate within the menu
+window of the topmost pixel in the entry specified by <I>index</I>.
+
+</DL>
+<A NAME=Section9><H2>MENU CONFIGURATIONS</H2>
+</A><P>
+The default bindings support four different ways of using menus:
+<DL>
+<DT><B>Pulldown Menus</B>
+
+<DD>This is the most common case.  You create one menubutton widget for
+each top-level menu, and typically you arrange a series of menubuttons
+in a row in a menubar window.  You also create the top-level menus
+and any cascaded submenus, and tie them together with <B>-menu</B>
+options in menubuttons and cascade menu entries.  The top-level menu must
+be a child of the menubutton, and each submenu must be a child of the
+menu that refers to it.  Once you have done this, the default bindings
+will allow users to traverse and invoke the tree of menus via its
+menubutton;  See the <A HREF="menubutton.ht"> <B>menubutton</B></A> manual entry for details.
+<DT><B>Popup Menus</B>
+
+<DD>Popup menus typically post in response to a mouse button press or
+keystroke.  You create the popup menus and any cascaded submenus,
+then you call the <B>tk_popup</B> procedure at the appropriate time
+to post the top-level menu.
+<DT><B>Option Menus</B>
+
+<DD>An option menu consists of a menubutton with an associated menu
+that allows you to select one of several values.  The current value
+is displayed in the menubutton and is also stored in a global
+variable.  Use the <B>tk_optionMenu</B> procedure to create option
+menubuttons and their menus.
+<DT><B>Torn-off Menus</B>
+
+<DD>You create a torn-off menu by invoking the tear-off entry at
+the top of an existing menu.  The default bindings will create a new menu
+that is a copy of the original menu and leave it permanently
+posted as a top-level window.  The torn-off menu behaves just
+the same as the original menu.
+
+</DL>
+<A NAME=Section10><H2>DEFAULT BINDINGS</H2>
+</A><P>
+Tk automatically creates class bindings for menus that give them
+the following default behavior:
+<DL>
+<DT>[1]
+<DD>When the mouse enters a menu, the entry underneath the mouse
+cursor activates;  as the mouse moves around the menu, the active
+entry changes to track the mouse.
+<DT>[2]
+<DD>When the mouse leaves a menu all of the entries in the menu
+deactivate, except in the special case where the mouse moves from
+a menu to a cascaded submenu.
+<DT>[3]
+<DD>When a button is released over a menu, the active entry (if any) is invoked.
+The menu also unposts unless it is a torn-off menu.
+<DT>[4]
+<DD>The Space and Return keys invoke the active entry and
+unpost the menu.
+<DT>[5]
+<DD>If any of the entries in a menu have letters underlined with
+with <B>-underline</B> option, then pressing one of the underlined
+letters (or its upper-case or lower-case equivalent) invokes that
+entry and unposts the menu.
+<DT>[6]
+<DD>The Escape key aborts a menu selection in progress without invoking any
+entry.  It also unposts the menu unless it is a torn-off menu.
+<DT>[7]
+<DD>The Up and Down keys activate the next higher or lower entry
+in the menu.  When one end of the menu is reached, the active
+entry wraps around to the other end.
+<DT>[8]
+<DD>The Left key moves to the next menu to the left.
+If the current menu is a cascaded submenu, then the submenu is
+unposted and the current menu entry becomes the cascade entry
+in the parent.
+If the current menu is a top-level menu posted from a
+menubutton, then the current menubutton is unposted and the
+next menubutton to the left is posted.
+Otherwise the key has no effect.
+The left-right order of menubuttons is determined by their stacking
+order:  Tk assumes that the lowest menubutton (which by default
+is the first one created) is on the left.
+<DT>[9]
+<DD>The Right key moves to the next menu to the right.
+If the current entry is a cascade entry, then the submenu is
+posted and the  current menu entry becomes the first entry
+in the submenu.
+Otherwise, if the current menu was posted from a
+menubutton, then the current menubutton is unposted and the
+next menubutton to the right is posted.
+<P>
+Disabled menu entries are non-responsive:  they don't activate and
+they ignore mouse button presses and releases.
+<P>
+The behavior of menus can be changed by defining new bindings for
+individual widgets or by redefining the class bindings.
+
+</DL>
+<A NAME=BUGS><H2>BUGS</H2>
+</A><P>
+At present it isn't possible to use the
+option database to specify values for the options to individual
+entries.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>menu, widget

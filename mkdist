@@ -1,0 +1,25 @@
+#!/usr/local/bin/perl 
+
+use ExtUtils::Manifest "/mani/";
+use POSIX qw(getcwd);
+
+sub System
+{
+ print STDERR join(' ',@_),"\n" if (@_ < 8);
+ die "Cannot " . join(' ',@_) if (system(@_));
+}
+
+System("perl","Makefile.PL") unless (-r "Makefile");
+
+System("make","manifest");
+
+$dir   = getcwd();
+$files = maniread();
+$dir   =~ s#^.*/([^/]+)$#$1#;
+
+@files = map("$dir/$_",sort(keys %$files));
+chdir("..");
+system("mv","$dir.tar.gz","$dir.tar.gz%") if (-e "$dir.tar.gz");
+System("tar","-cf","$dir.tar",@files);
+System("gzip","$dir.tar");
+

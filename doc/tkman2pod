@@ -1,0 +1,587 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'../blib') }
+
+$POD::Verbose = 0;
+
+use strict qw(subs vars);
+use Carp; 
+
+{
+ package POD;
+ use Carp; 
+ use Tk::Pretty;
+ use strict qw(subs);
+
+ $POD::enabled = 1;
+
+ sub new
+ {
+  my $package = shift;
+  my $file = shift;
+  my $obj;
+  print STDERR "$file\n";
+  if (exists $POD::file{$file})
+   {
+    $obj = $POD::file{$file};
+   }
+  else
+   {
+    $obj = bless { 'FH'   => \*{$file}, 
+                      'FNAME' => $file,
+                      'LIST' => [],  
+                      'PARA' => 1,
+                      'FILL' => 1,
+                      'SECTIONS' => {},
+                      'SECTION'  => "",
+                      'Number'   => 0
+                    },$package;
+    $POD::file{$file} = $obj;
+   }
+  if ($POD::enabled)
+   {
+    open($file,">$file") || die "Cannot open $file:$!";
+   }
+  return $obj;
+ }
+
+ sub inlist
+ {
+  my $obj = shift;
+  return @{$obj->{'LIST'}} != 0;
+ }
+
+ sub listtype
+ {
+  my $obj = shift;
+  return $obj->{'LIST'}[0];
+ }
+
+ sub print
+ {my $obj = shift;
+  if ($POD::enabled)
+   {
+    my $fh  = $obj->{'FH'};
+    print $fh @_;
+   }
+ } 
+
+ sub para
+ {
+  my $obj = shift;
+  unless ($obj->{'PARA'})
+   {
+    $obj->print("\n");
+    $obj->{'PARA'}++;
+   }
+ }
+
+ sub tagged
+ {
+  my $obj = shift;
+  my $tag = shift;
+  croak "bad tagged" if (!defined $obj || !defined $tag || !@_);
+  foreach (@_)
+   {
+    croak "bad tagged" if (!defined $_);
+   }
+  my $text = join(' ',@_);
+  $obj->para;
+  $obj->print("=$tag $text\n\n");
+ }
+
+ sub force_list
+ {
+  my $obj = shift;
+  my $type = shift;
+  unshift(@{$obj->{'LIST'}},$type);
+  $obj->tagged('over',4);
+ }
+
+ sub start_list
+ {
+  my $obj = shift;
+  my $type = shift;
+  $obj->force_list($type) if (!$obj->inlist || $obj->listtype ne $type);
+ }
+
+ sub end_list
+ {
+  my $obj = shift;
+  if ($obj->inlist)
+   {
+    my $type = shift(@{$obj->{'LIST'}});
+    $obj->tagged('back','');
+   }
+ }
+
+ sub end_lists
+ {
+  my $obj = shift;
+  $obj->end_list() while ($obj->inlist);
+ }
+
+ sub Href
+  {
+   return 'L<' . shift->{'FNAME'} . '>';
+  }
+
+ sub Link
+ {
+  my $obj = shift;
+  my $key = shift;
+  my $sec = shift;
+  my $text = $key;
+  my $doc;
+  my $href;
+  $sec =~ s/^[\s'`]+//;
+  $sec =~ s/[\s'`]+$//;
+  if ($key eq "")
+   {
+    $text = $sec;
+    if (exists $obj->{'SECTIONS'}{$sec})
+     {
+      $href = 'HREF="#' . $obj->{'SECTIONS'}{$sec} . '"';
+     }
+    else
+     {
+      warn "$ARGV:$.:No '$sec'" if ($POD::enabled && $sec !~ /[a-z]/);
+     }
+   }
+  else
+   {
+    my $doc;
+    if (ref($key) && ref($key) eq 'POD')
+     {
+      $doc  = $key;
+      $text = $doc->{'DOC'};
+     }
+    else
+     {
+      $key =~ s,<([BI])>(.*)</\1>,$2,; 
+      $key =~ s,``(.*)'',$1,; 
+      $doc = $POD::Document{$key} if (exists $POD::Document{$key});
+     }
+    if (defined $doc)
+     {
+      $href = $doc->Href;
+      if ($sec ne "")
+       {
+        if (exists $doc->{'SECTIONS'}{$sec})
+         {
+          $href =~ s/"$/$doc->{'SECTIONS'}{$sec}"/;
+         }
+        else
+         {
+          warn "No $sec " . pretty($doc->{'SECTIONS'}) if ($POD::enabled);
+         }
+        $text .= " $sec";
+       }
+     }
+   }
+  if (defined $href)
+   {
+    return "<A $href> $text</A>";
+   }
+  else
+   {
+    if ($POD::enabled)
+     {
+#     warn "$ARGV:$.: No $key/$sec\n";
+     }
+   }
+  return $text;
+ }
+
+sub Xref
+{
+ my $obj = shift;
+ my ($start,$key,$sec,$end) = @_;
+ return $start . $obj->Link($key,$sec) . $end;
+}
+
+ sub text
+ {
+  my $obj = shift;
+  my $line = shift;
+  chomp($line);
+  if ($obj->{'SECTION'} =~ /SEE\s+ALSO/i)
+   {
+    my @key = split(/\s*,\s*/,$line);
+    my $key;
+    foreach $key (@key)
+     {
+      $key = POD->Link($key,"");
+     }
+    $line = join(', ',@key);
+   }
+  elsif ($obj->{'SECTION'} =~ /KEYWORDS/i)
+   {
+    my $key;
+    foreach $key (split(/\s*,\s*/,$line))
+     {
+      $POD::keyword{$key} = [] unless (exists $POD::keyword{$key});
+      push(@{$POD::keyword{$key}},$obj);
+     }
+   }
+  elsif ($obj->{'SECTION'} =~ /NAME/i)
+   {
+    my $head = $line; 
+    $head =~ s/\s*-.*$//;
+    my $key;
+    foreach $key (split(/\s*,\s*/,$head))
+     {
+      last if $key =~ /-/;
+      $POD::Document{$key} = $obj;
+     }
+   }
+  $line =~ s/^\s*// if ($obj->{'FILL'});
+  if (!$obj->{'FILL'} || $line !~ /^\s*$/)
+   {
+    $obj->print(" ") unless ($obj->{'FILL'});
+    $obj->print($line);
+    $obj->print("\n"); 
+    $obj->{'PARA'} = 0;
+   }
+ }
+
+ sub comment
+ {
+  my $obj = shift;
+  my $line = shift;
+  chomp($line);
+  $obj->print("# $line\n") if (length $line);
+ }
+
+ sub close
+ {
+  my $obj = shift;
+  if ($POD::enabled)
+   {
+    my $fh  = $obj->{'FH'};
+    close($fh);
+   }
+ }
+
+ sub DESTROY
+  {
+   my $obj = shift;
+   $obj->close;
+   delete $obj->{'FH'};
+  }
+
+ sub Keywords
+  {
+   return sort(keys %POD::keyword);
+  }
+
+ sub Document
+  {my $obj = shift;
+   my $doc = shift;
+   $POD::Document{$doc} = $obj;
+   $obj->{'DOC'} = $doc;
+#  $obj->tagged('H1',$doc);
+  }
+
+ sub Section
+  {my $obj = shift;
+   my $arg = shift;
+   $obj->{'SECTION'} = $arg;
+   my $sec  = $arg; 
+   $sec =~ s/^\s+//;
+   $sec =~ s/\s+$//;
+   if (!exists $obj->{'SECTIONS'}{$sec})
+    {
+     my $name = ($sec =~ /^[A-Za-z][A-Za-z0-9_]*$/) 
+                ? $sec  : "Section" . $obj->{'Number'}++;
+     $obj->{'SECTIONS'}{$sec} = $name;
+    }
+   if (exists $obj->{'SECTIONS'}{$sec})
+    {
+     my $name = $obj->{'SECTIONS'}{$sec};
+     $obj->tagged('head1',$arg);
+    }
+   else
+    {
+     $obj->tagged('head1',$arg);
+    }
+  }
+
+}
+
+sub so 
+{ 
+}
+
+sub TH
+{
+ my $obj = shift;
+ my ($doc,$sec,$ver,$tk,@pkg) = @_;
+ my $pkg = join(' ',@pkg);
+ $pkg =~ s/^"(.*)"$/$1/;
+ $obj->Document($doc);
+ unless(exists $POD::Cat{$pkg})
+  {
+   $POD::Cat{$pkg} = {}; 
+   print STDERR "$pkg\n";
+  }
+ $POD::Cat{$pkg}{$doc} = $obj;
+}
+
+sub HS
+{ 
+ my $obj = shift;
+ my ($doc,$pkg,$ver) = @_;
+ $obj->Document($doc);
+ $POD::Cat{$pkg} = {} unless exists $POD::Cat{$pkg};
+ $POD::Cat{$pkg}{$doc} = $obj;
+}
+
+sub BS
+{ 
+ my $obj = shift;
+ $obj->end_lists;
+#$obj->print("<HR>\n");
+}
+
+sub BE
+{ 
+ my $obj = shift;
+ $obj->end_lists;
+#$obj->print("<HR>\n");
+}
+
+sub SH
+{ 
+ my $obj = shift;
+ my $arg = join(' ',@_);
+ $arg =~ s/^\s*"(.*)"\s*$/$1/;
+ $obj->end_lists;
+ $obj->Section($arg);
+}
+
+sub AS
+{ 
+ my $obj = shift;
+ # just sets max length - ignore it.
+}
+
+sub AP
+{ 
+ my $obj = shift;
+ my $dir = pop(@_);
+ my $arg = join(' ',@_);
+ $obj->start_list('DL');
+ 
+ if (defined $dir)
+  {
+   $obj->tagged('item',$arg,"($dir)");
+  }
+ else
+  {
+   $obj->tagged('item',$arg);
+  }
+}
+
+sub PP
+{ 
+ my $obj = shift;
+ $obj->para;
+}
+
+sub LP
+{ 
+ my $obj = shift;
+ $obj->end_lists;
+ $obj->para;
+}
+
+# low level flow
+sub nf 
+{ 
+ my $obj = shift;
+ br($obj);
+}
+
+sub fi 
+{
+ my $obj = shift;
+ br($obj);
+}
+
+# low level adjust
+sub na {  }
+sub ad {  }
+
+sub sp
+{ 
+ my $obj = shift;
+ $obj->para();
+}
+
+sub br
+{ 
+ my $obj = shift;
+ $obj->para;
+}
+
+sub VS
+{
+ my $obj = shift;
+
+}
+
+sub VE
+{
+ my $obj = shift;
+
+}
+
+sub ta
+{
+ my $obj = shift;
+}
+
+sub DS
+{
+ my $obj = shift;
+ $obj->{'FILL'} = 0; 
+ br($obj);
+}
+
+sub DE 
+{
+ my $obj = shift;
+ $obj->{'FILL'} = 1; 
+ br($obj);
+}
+
+sub IP
+{ 
+ my $obj = shift;
+ if (@_)
+  {
+   my $term = shift;
+   $obj->start_list('DL');
+   $obj->tagged('item',$term);
+  }
+ else
+  {
+   $obj->para;
+  }
+}
+
+sub TP
+{
+ my $obj = shift;
+ my $heading = <MAN>;
+ IP($obj,fontstuff($heading));
+}
+
+sub RS
+{
+ my $obj = shift;
+ $obj->force_list('DL');
+}
+
+sub RE
+{
+ my $obj = shift;
+ $obj->end_list();
+}
+
+%POD::special = ('&' => 'amp', '<' => 'lt', '>' => 'gt');
+                            
+sub fontstuff
+{
+ local ($_) = shift;
+ s/\\0/ /g;
+ s/\\ / /g; # Make &xx; ??
+ s/\\&//g;
+ s/([<&>])/'E<'.$POD::special{$1}.'>'/eg; 
+ if (/\\f/)
+  {        
+   s/\\fC(.*?)(?=\\f)/C<$1>/g;
+   s/\\f([IB])(.*?)(?=\\f)/$1<$2>/g;
+   s/\\f([IB])(.*?)$/$1<$2>/;
+   s/\\fC(.*?)$/C<$1>/;
+   s/\\f[RP]//g;
+  }        
+ s/\\-/-/g;
+ s/\\\^//g;
+ s/\\\(\+-/&#177;/g;
+ s/\\e/\\/g;
+ return $_;
+}
+
+sub process
+{
+  my ($file) = @_;
+  my $podname = $file;
+  $podname =~ s/\.[^.]*$/.pod/;
+  $podname =~ s#^.*/##;
+  open(MAN,"<$file") || die "Cannot open $file:$!";
+  my $pod = POD->new($podname);
+  while (<MAN>)
+   {
+    if (m#^'[\\/]"(.*$)#)
+     {
+      $pod->comment($1);
+      next;
+     }
+    # Do the font changes first
+    $_ = fontstuff($_);
+    if (/^\.(\w+)\s*(.*)$/)
+     {
+      my $cmd = $1;
+      my @arg = split(/\s+/,$2);
+      if (defined &$cmd)
+       {
+        &{$cmd}($pod,@arg);
+       }
+      else
+       {
+        chomp;
+        die "No $_ ($ARGV:$.)";
+       }
+     }
+    else
+     {
+      s/See\s+the\s+(.*?)\s+manual\s+entry/$pod->Xref("See the ",$1,""," manual entry")/ieg;
+      s#(See\s+)(<B>.*?</B>)(\s+for)#$pod->Xref($1,$2,"",$3)#ieg;
+      s/(\s+)([`'A-Z ]+)\s+(above|below)/$pod->Xref($1,"",$2," ".$3)/eg;
+      if (/-\s*Create.*\s(\w+)\s*widgets\s*$/)
+       {
+        $POD::Widgets{$1} = $pod;
+       }
+      if ($POD::Verbose && $POD::enabled && /\bsee\b/i && !/HREF=/)
+       {
+        print "$ARGV:$.: $_";
+        chmod(0644,$ARGV);
+       }
+      if (/^\S.*?:\t.*\S.*$/)
+       {
+        IP($pod,$_);
+       }
+      else
+       {
+        $pod->text($_);
+       }
+     }
+    $. = 0 if eof;
+   }
+  $pod->close;
+  close(MAN);
+}
+
+@ARGV = <man/*.[3n]> unless (@ARGV);
+
+die "No files !" unless (@ARGV);
+
+my $file;
+foreach $file (@ARGV)
+ {
+  process($file);
+ }
+
+
+

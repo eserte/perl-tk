@@ -1,0 +1,19 @@
+#!/usr/local/bin/perl -w
+
+BEGIN { unshift(@INC,'blib') }
+
+use Tk;
+
+{ 
+ my $top = MainWindow->new();
+ $top->Button(-text=>"Hello World",-command => sub { exit } )->pack;
+
+ $top->update;
+
+ $top->cget('-gibberish');
+
+}
+
+Tk::MainLoop();
+
+print "Normal Exit\n";

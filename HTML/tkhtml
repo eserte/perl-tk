@@ -1,0 +1,17 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'../blib') }
+use Tk;
+require Tk::HTMLText;
+
+my $mw = MainWindow->new();
+my $w  = Tk::HTMLText->new($mw);
+$w->pack(-expand => 1, -fill => 'both');
+$mw->AddScrollbars($w);
+my %args = (-scrollbars => 'w');
+$mw->ConfigDefault(\%args);
+$mw->configure(%args);
+
+$mw->update;
+$w->focus;
+$w->file( $ARGV[0] );
+MainLoop;

@@ -1,0 +1,107 @@
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) CanvTxtInfo.3 1.3 95/05/06 15:31:43-->
+<! -->
+<H1>Tk_CanvasTextInfo</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_CanvasTextInfo - additional information for managing text items in canvases
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+Tk_CanvasTextInfo *<BR>
+<B>Tk_CanvasGetTextInfo</B>(<I>canvas</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Canvas canvas</CODE>
+(in) <DD>A token that identifies a particular canvas widget.<BR>
+<DT><CODE></CODE>
+<DD></DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+Textual canvas items are somewhat more complicated to manage than<BR>
+other items, due to things like the selection and the input focus.<BR>
+<B>Tk_CanvasGetTextInfo</B> may be invoked by a type manager<BR>
+to obtain additional information needed for items that display text.<BR>
+The return value from <B>Tk_CanvasGetTextInfo</B> is a pointer to<BR>
+a structure that is shared between Tk and all the items that display<BR>
+text.<BR>
+The structure has the following form:<BR>
+<BR>
+<DL>
+typedef struct Tk_CanvasTextInfo {<BR>
+<DL>
+Tk_3DBorder <I>selBorder</I>;<BR>
+int <I>selBorderWidth</I>;<BR>
+XColor *<I>selFgColorPtr</I>;<BR>
+Tk_Item *<I>selItemPtr</I>;<BR>
+int <I>selectFirst</I>;<BR>
+int <I>selectLast</I>;<BR>
+Tk_Item *<I>anchorItemPtr</I>;<BR>
+int <I>selectAnchor</I>;<BR>
+Tk_3DBorder <I>insertBorder</I>;<BR>
+int <I>insertWidth</I>;<BR>
+int <I>insertBorderWidth</I>;<BR>
+Tk_Item *<I>focusItemPtr</I>;<BR>
+int <I>gotFocus</I>;<BR>
+int <I>cursorOn</I>;<BR>
+</DL>
+} Tk_CanvasTextInfo;<BR>
+</DL>
+<BR>
+The <B>selBorder</B> field identifies a Tk_3DBorder that should be
+used for drawing the background under selected text.
+<I>selBorderWidth</I> gives the width of the raised border around
+selected text, in pixels.
+<I>selFgColorPtr</I> points to an XColor that describes the foreground
+color to be used when drawing selected text.
+<I>selItemPtr</I> points to the item that is currently selected, or
+NULL if there is no item selected or if the canvas doesn't have the
+selection.
+<I>selectFirst</I> and <I>selectLast</I> give the indices of the first
+and last selected characters in <I>selItemPtr</I>, as returned by the
+<I>indexProc</I> for that item.
+<I>anchorItemPtr</I> points to the item that currently has the selection
+anchor;  this is not necessarily the same as <I>selItemPtr</I>.
+<I>selectAnchor</I> is an index that identifies the anchor position
+within <I>anchorItemPtr</I>.
+<I>insertBorder</I> contains a Tk_3DBorder to use when drawing the
+insertion cursor;  <I>insertWidth</I> gives the total width of the
+insertion cursor in pixels, and <I>insertBorderWidth</I> gives the
+width of the raised  border around the insertion cursor.
+<I>focusItemPtr</I> identifes the item that currently has the input
+focus, or NULL if there is no such item.
+<I>gotFocus</I> is 1 if the canvas widget has the input focus and
+0 otherwise.
+<I>cursorOn</I> is 1 if the insertion cursor should be drawn in
+<I>focusItemPtr</I> and 0 if it should not be drawn;  this field
+is toggled on and off by Tk to make the cursor blink.
+<P>
+The structure returned by <B>Tk_CanvasGetTextInfo</B>
+is shared between Tk and the type managers;  typically the type manager
+calls <B>Tk_CanvasGetTextInfo</B> once when an item is created and
+then saves the pointer in the item's record.
+Tk will update information in the Tk_CanvasTextInfo;  for example,
+a <B>configure</B> widget command might change the <I>selBorder</I>
+field, or a <B>select</B> widget command might change the <I>selectFirst</I>
+field, or Tk might change <I>cursorOn</I> in order to make the insertion
+cursor flash on and off during successive redisplays.
+<P>
+Type managers should treat all of the fields of the Tk_CanvasTextInfo
+structure as read-only, except for <I>selItemPtr</I>, <I>selectFirst</I>,
+<I>selectLast</I>, and <I>selectAnchor</I>.
+Type managers may change <I>selectFirst</I>, <I>selectLast</I>, and
+<I>selectAnchor</I> to adjust for insertions and deletions in the
+item (but only if the item is the current owner of the selection or
+anchor, as determined by <I>selItemPtr</I> or <I>anchorItemPtr</I>).
+If all of the selected text in the item is deleted, the item should
+set <I>selItemPtr</I> to NULL to indicate that there is no longer a
+selection.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>canvas, focus, insertion cursor, selection, selection anchor, text

@@ -1,0 +1,20 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+use Tk;
+
+
+$path = "./Tk/demos/images";
+
+$top = MainWindow->new();
+
+$bitmap = $top->Bitmap( '-file' => "$path/dir.icon", 
+                        '-maskfile' => "$path/dir.mask");
+
+#$photo  = $top->Photo( 'teapot' ,  '-file' => "$path/teapot.ppm");
+
+$top->Button('-image'=> $bitmap, '-command'=>['destroy',$top] )->pack;
+$top->Label('-image'=> $bitmap)->pack;
+#$top->Label('-image'=> $photo  )->pack;
+#$top->Button('-text' => 'Blank', '-command' => ['blank',$photo] )->pack;
+
+MainLoop;

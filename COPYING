@@ -1,0 +1,7 @@
+Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+This package is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself, with the exception
+of all the files in the pTk sub-directory which have separate terms
+derived from those of the orignal Tk4.0 sources. See pTk/license.terms 
+for details of this license.
+

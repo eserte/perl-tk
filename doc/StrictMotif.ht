@@ -1,0 +1,39 @@
+<! Copyright (c) 1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) StrictMotif.3 1.2 95/05/06 15:31:49-->
+<! -->
+<H1>Tk_StrictMotif</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_StrictMotif - Return value of tk_strictMotif variable<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+int<BR>
+<B>Tk_StrictMotif</B>(<I>tkwin</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This procedure returns the current value of the <B>tk_strictMotif</B><BR>
+variable in the interpreter associated with <I>tkwin</I>'s application.<BR>
+The value is returned as an integer that is either 0 or 1.<BR>
+1 means that strict Motif compliance has been requested, so anything<BR>
+that is not part of the Motif specification should be avoided.<BR>
+0 means that ``Motif-like'' is good enough, and extra features<BR>
+are welcome.<BR>
+<P>
+This procedure uses a link to the Tcl variable to provide much<BR>
+faster access to the variable's value than could be had by calling<BR>
+<B>Tcl_GetVar</B>.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>Motif compliance, tk_strictMotif variable<BR>

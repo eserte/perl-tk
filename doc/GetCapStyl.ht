@@ -1,0 +1,61 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetCapStyl.3 1.7 95/05/06 15:29:30-->
+<! -->
+<H1>Tk_GetCapStyle</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetCapStyle, Tk_NameOfCapStyle - translate between strings and cap styles<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+int<BR>
+<B>Tk_GetCapStyle(</B><I>interp, string, capPtr</I><B>)</B><BR>
+<P>
+char *<BR>
+<B>Tk_NameOfCapStyle(</B><I>cap</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>char *string</CODE>
+(in) <DD>String containing name of cap style: one of ```butt'', ``projecting'',<BR>
+or ``round''.<BR>
+<DT><CODE>int *capPtr</CODE>
+(out) <DD>Pointer to location in which to store X cap style corresponding to<BR>
+<I>string</I>.<BR>
+<DT><CODE>int cap</CODE>
+(in) <DD>Cap style: one of <B>CapButt</B>, <B>CapProjecting</B>, or <B>CapRound</B>.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_GetCapStyle</B> places in <I>*capPtr</I> the X cap style<BR>
+corresponding to <I>string</I>.<BR>
+This will be one of the values<BR>
+<B>CapButt</B>, <B>CapProjecting</B>, or <B>CapRound</B>.<BR>
+Cap styles are typically used in X graphics contexts to indicate<BR>
+how the end-points of lines should be capped.<BR>
+See the X documentation for information on what each style<BR>
+implies.<BR>
+<P>
+Under normal circumstances the return value is <B>TCL_OK</B> and<BR>
+<I>interp</I> is unused.<BR>
+If <I>string</I> doesn't contain a valid cap style<BR>
+or an abbreviation of one of these names, then an error message is<BR>
+stored in <I>interp-&gt;result</I>, <B>TCL_ERROR</B> is returned, and<BR>
+<I>*capPtr</I> is unmodified.<BR>
+<P>
+<B>Tk_NameOfCapStyle</B> is the logical inverse of <B>Tk_GetCapStyle</B>.<BR>
+Given a cap style such as <B>CapButt</B> it returns a<BR>
+statically-allocated string corresponding to <I>cap</I>.<BR>
+If <I>cap</I> isn't a legal cap style, then<BR>
+``unknown cap style'' is returned.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>butt, cap style, projecting, round<BR>

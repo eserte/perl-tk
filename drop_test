@@ -1,0 +1,99 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+use Tk;
+
+use strict qw(subs);
+
+use Tk::Pretty;
+# use Tk::Xlib;
+require Tk::SunDragDrop;
+
+$top = MainWindow->new();
+
+$lb = $top->ScrlListbox('-width'=>40);
+
+$drop = $top->Message('-text' => "Drop things here", '-relief' => 'ridge' );
+$drop->AcceptDrop([\&ShowTargets,$lb]);
+$drop->pack();
+
+$thing = $top->Message('-text' => "Drag This with B1");
+$thing->bind('<B1-Motion>','DragDrop');
+
+$seln = $thing->DragDropSource;
+$thing->SelectionHandle('-selection'=>$seln,\&handler);
+
+$thing->pack();
+
+
+$lb->pack;
+
+$top->Button('-text' => "Sites", '-command' => [\&ShowSites,$lb])->pack('-side'=>'left');
+$top->Button('-text' => "Primary Targets", '-command' => [\&ShowTargets,$lb,'PRIMARY'])->pack('-side'=>'left');
+$top->Button('-text' => "Quit", '-command' => ['destroy',$top])->pack('-side'=>'right');
+
+MainLoop;
+
+sub handler
+{
+ my ($offset,$max) = @_;
+ return "These are dropped Data";
+}
+
+sub ShowTargets
+{
+ my $lb = shift;
+ my $seln = shift;
+ my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
+ $lb->delete(0,'end');
+ $lb->insert('end',@targ);
+}
+
+#sub DrawIt
+#{
+# my $w = shift;
+# my ($x,$y,$width,$height) = @_;
+# my $dpy = $w->Display;
+# my $root = $dpy->RootWindow($w->ScreenNumber);
+# unless (defined $w->{'GC'})
+#  {
+#   $w->{'GC'} = GC->new($dpy,$root,
+#                     'Foreground' => 0, 
+#                     'Font' => $dpy->XLoadFont("-*-courier-bold-r-*--24-*"));
+#  }
+# my $gc  = $w->{'GC'};
+# $dpy->XDrawRectangle($root,$gc,$x,$y,$width,$height);
+#}
+
+sub ShowIt
+{
+ my $w = shift;
+ my ($id,$x,$y,$width,$height) = @_;
+ my $t = $w->Toplevel();
+ $t->Button('-text'=>$id,'-command'=>['destroy',$t])->pack('-anchor'=>'c','-fill'=>'both');
+ $t->overrideredirect(1);
+ $t->update('idletasks');
+ $t->MoveResizeWindow($x,$y,$width,$height);
+}
+
+sub ShowSites
+{
+ my $lb = shift;
+ my @dnd = $lb->SelectionGet('-selection'=>"_SUN_DRAGDROP_DSDM", 
+                            "_SUN_DRAGDROP_SITE_RECTS");
+ $lb->delete(0,'end');
+ while (@dnd)
+  {
+   my $version = shift(@dnd);
+   my $site    = shift(@dnd);
+   my $win     = shift(@dnd);
+   my $x       = shift(@dnd);
+   my $y       = shift(@dnd);
+   my $width   = shift(@dnd);
+   my $height  = shift(@dnd);
+   my $flags   = shift(@dnd);
+   $lb->insert('end',sprintf ("%x:%d=%x (%d,%d) [%d,%d]\n",$win,$site,$flags,$x,$y,$width,$height));
+#  DrawIt($lb,$x-30,$y-30,$width+60,$height+60);
+   ShowIt($lb,sprintf("%x:%d",$win,$site),$x,$y,$width,$height);
+  }
+
+}

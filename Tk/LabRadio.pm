@@ -1,0 +1,61 @@
+# Class LabeledRadiobutton
+
+package Tk::LabRadiobutton;
+use Carp;
+use Tk::Pretty;
+require Tk::Frame;
+@ISA = qw(Tk::Frame);
+
+Tk::Widget->Construct('LabRadiobutton');
+
+
+# Although there is no fundamental reason why -radiobuttons
+# should be fixed at create time converting to METHOD form 
+# is extra work an this can serve as an example of CreateArgs
+# checking.
+
+sub CreateArgs
+{
+ my ($package,$parent,$args) = @_;
+ croak("Must specify -radiobuttons for $package") 
+    unless (defined $args->{'-radiobuttons'});
+ return $package->InheritThis($parent,$args);
+}
+
+sub Populate
+{
+    require Tk::Radiobutton;
+
+    my ($cw,$args) = @_;
+
+    # LabeledRadiobutton(s) constructor.
+    #
+    # Advertised subwidgets:  the name(s) of your radiobutton(s).
+
+
+    $cw->InheritThis($args);
+
+    my (@widgets) = ();
+
+    my $rl;
+    foreach $rl (@{$args->{'-radiobuttons'}}) 
+     {
+       my $r = $cw->Component( Radiobutton => $rl,
+                               -text     => $rl,
+                               -value    => $rl );
+       $r->pack(-side => 'left', -expand => 1, -fill => 'both');
+       push(@widgets,$r);
+       $cw->{Configure}{-value} = $rl;
+     }
+
+    croak("No buttons") unless (@widgets);
+
+    $cw->ConfigSpecs('-variable'     => [ \@widgets, undef, undef, \$cw->{Configure}{-value} ],
+                     '-radiobuttons' => [ 'PASSIVE', undef, undef, undef ],
+                     '-value'        => [ 'PASSIVE', undef, undef, $cw->{Configure}{-value} ],
+                     'DEFAULT'       => [ \@widgets ]
+                    );
+} 
+
+
+1;

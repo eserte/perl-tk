@@ -1,0 +1,30 @@
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) popup.n 1.3 95/06/07 21:15:43-->
+<! -->
+<H1>tk_popup</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>tk_popup - Post a popup menu
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>tk_popup </B><I>menu x y </I>?<I>entry</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This procedure posts a menu at a given position on the screen and
+configures Tk so that the menu and its cascaded children can be
+traversed with the mouse or the keyboard.
+<I>Menu</I> is the name of a menu widget and <I>x</I> and <I>y</I>
+are the root coordinates at which to display the menu.
+If <I>entry</I> is omitted or an empty string, the
+menu's upper left corner is positioned at the given point.
+Otherwise <I>entry</I> gives the index of an entry in <I>menu</I> and
+the menu will be positioned so that the entry is positioned over
+the given point.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>menu, popup

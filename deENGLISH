@@ -1,0 +1,45 @@
+#!/usr/local/bin/perl -w
+
+use strict qw(subs);
+
+@dir = grep(-r "$_/Tk/English.pm",@INC);
+
+open(ENG,"$dir[0]/Tk/English.pm") || die "Cannot open $dir/Tk/English.pm:$!";
+
+while (<ENG>)
+ {
+  if (/^\s*sub\s*(\w+)\s*{\s*"([^"]+)"\s*}\s*$/)
+   {
+    $eng{$1} = $2;
+   }
+ }
+close(ENG);
+
+$eng{'ORIENTATION'} = "-orient";
+
+$pat = join('|',keys %eng);
+
+$^I = ".eng";
+
+$changes = 0;
+$seen    = 0;
+
+while (<>)
+ {
+  if (/^\s*use\s*Tk::English\s*;\s*$/)
+   {
+    $seen = 1;
+    next;
+   }
+  if ($seen)
+   {
+    $changes += s/\b($pat)\b/$eng{$1}/goe;
+   }
+  print;
+  if (eof)
+   {
+    print STDERR "$changes changes in $ARGV\n";
+    $changes = 0;
+    $seen = 0;
+   }
+ }

@@ -1,0 +1,32 @@
+<! Copyright (c) 1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) NameOfImg.3 1.2 95/05/06 15:31:47-->
+<! -->
+<H1>Tk_NameOfImage</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_NameOfImage - Return name of image.<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+char *<BR>
+<B>Tk_NameOfImage</B>(<I>typePtr</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_ImageMaster *masterPtr</CODE>
+(in) <DD>Token for image, which was passed to image manager's <I>createProc</I> when<BR>
+the image was created.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This procedure is invoked by image managers to find out the name<BR>
+of an image.  Given the token for the image, it returns the<BR>
+string name for the image.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>image manager, image name<BR>

@@ -1,0 +1,386 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) scale.n 1.23 95/06/07 21:15:31-->
+<! -->
+<H1>scale</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>scale - Create and manipulate scale widgets
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>scale</B><I> </I><I>pathName </I>?<I>options</I>?
+<A NAME=Section0><H2>STANDARD OPTIONS</H2>
+</A><P>
+<BR>
+<B>activeBackground</B>	<B>font</B>	<B>highlightThickness</B>	<B>repeatInterval</B><BR>
+<B>background</B>	<B>foreground</B>	<B>orient</B>	<B>takeFocus</B><BR>
+<B>borderWidth</B>	<B>highlightBackground</B>	<B>relief</B>	<B>troughColor</B><BR>
+<B>cursor</B>	<B>highlightColor</B>	<B>repeatDelay</B><BR>
+<BR>
+<P>
+See the <A HREF="options.ht"> ``options''</A> manual entry for details on the standard options.
+<A NAME=Section1><H2>WIDGET-SPECIFIC OPTIONS</H2>
+</A><P>
+<BR>
+<DL>
+<DT>Name:	<B>bigIncrement</B>
+
+<DD><DT>Class:	<B>BigIncrement</B>
+
+<DD><DT>Command-Line Switch:	<B>-bigincrement</B>
+
+<DD><BR>
+Some interactions with the scale cause its value to change by
+``large'' increments;  this option specifies the size of the
+large increments.  If specified as 0, the large increments default
+to 1/10 the range of the scale.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>command</B>
+
+<DD><DT>Class:	<B>Command</B>
+
+<DD><DT>Command-Line Switch:	<B>-command</B>
+
+<DD><BR>
+Specifies the prefix of a Tcl command to invoke whenever the scale's
+value is changed via a widget command.
+The actual command consists
+of this option followed by a space and a real number indicating the
+new value of the scale.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>digits</B>
+
+<DD><DT>Class:	<B>Digits</B>
+
+<DD><DT>Command-Line Switch:	<B>-digits</B>
+
+<DD><BR>
+An integer specifying how many significant digits should be retained
+when converting the value of the scale to a string.
+If the number is less than or equal to zero, then the scale picks
+the smallest value that guarantees that every possible slider
+position prints as a different string.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>from</B>
+
+<DD><DT>Class:	<B>From</B>
+
+<DD><DT>Command-Line Switch:	<B>-from</B>
+
+<DD><BR>
+A real value corresponding to the left or top end of the scale.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>label</B>
+
+<DD><DT>Class:	<B>Label</B>
+
+<DD><DT>Command-Line Switch:	<B>-label</B>
+
+<DD><BR>
+A string to display as a label for the scale.  For
+vertical scales the label is displayed just to the right of the
+top end of the scale.  For horizontal scales the label is displayed
+just above the left end of the scale.  If the option is specified
+as an empty string, no label is displayed.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>length</B>
+
+<DD><DT>Class:	<B>Length</B>
+
+<DD><DT>Command-Line Switch:	<B>-length</B>
+
+<DD><BR>
+Specifies the desired long dimension of the scale in screen units
+(i.e. any of the forms acceptable to <B>Tk_GetPixels</B>).
+For vertical scales this is the scale's height;  for horizontal scales
+it is the scale's width.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>resolution</B>
+
+<DD><DT>Class:	<B>Resolution</B>
+
+<DD><DT>Command-Line Switch:	<B>-resolution</B>
+
+<DD><BR>
+A real value specifying the resolution for the scale.
+If this value is greater than zero then the scale's value will always be
+rounded to an even multiple of this value, as will tick marks and
+the endpoints of the scale.  If the value is less than zero then no
+rounding occurs.  Defaults to 1 (i.e., the value will be integral).
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>showValue</B>
+
+<DD><DT>Class:	<B>ShowValue</B>
+
+<DD><DT>Command-Line Switch:	<B>-showvalue</B>
+
+<DD><BR>
+Specifies a boolean value indicating whether or not the current
+value of the scale is to be displayed.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>sliderLength</B>
+
+<DD><DT>Class:	<B>SliderLength</B>
+
+<DD><DT>Command-Line Switch:	<B>-sliderlength</B>
+
+<DD><BR>
+Specfies the size of the slider, measured in screen units along the slider's
+long dimension.  The value may be specified in any of the forms acceptable
+to <B>Tk_GetPixels</B>.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>state</B>
+
+<DD><DT>Class:	<B>State</B>
+
+<DD><DT>Command-Line Switch:	<B>-state</B>
+
+<DD><BR>
+Specifies one of three states for the scale:  <B>normal</B>,
+<B>active</B>, or <B>disabled</B>.
+If the scale is disabled then the value may not be changed and the scale
+won't activate.
+If the scale is active, the slider is displayed using the color
+specified by the <B>activeBackground</B> option.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>tickInterval</B>
+
+<DD><DT>Class:	<B>TickInterval</B>
+
+<DD><DT>Command-Line Switch:	<B>-tickinterval</B>
+
+<DD><BR>
+Must be a real value.
+Determines the spacing between numerical
+tick marks displayed below or to the left of the slider.
+If 0, no tick marks will be displayed.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>to</B>
+
+<DD><DT>Class:	<B>To</B>
+
+<DD><DT>Command-Line Switch:	<B>-to</B>
+
+<DD><BR>
+Specifies a real value corresponding
+to the right or bottom end of the scale.
+This value may be either less than or greater than the <B>from</B> option.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>variable</B>
+
+<DD><DT>Class:	<B>Variable</B>
+
+<DD><DT>Command-Line Switch:	<B>-variable</B>
+
+<DD><BR>
+Specifies the name of a global variable to link to the scale.  Whenever the
+value of the variable changes, the scale will upate to reflect this
+value.
+Whenever the scale is manipulated interactively, the variable
+will be modified to reflect the scale's new value.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>width</B>
+
+<DD><DT>Class:	<B>Width</B>
+
+<DD><DT>Command-Line Switch:	<B>-width</B>
+
+<DD><BR>
+Specifies the desired narrow dimension of the trough in screen units
+(i.e. any of the forms acceptable to <B>Tk_GetPixels</B>).
+For vertical scales this is the trough's width;  for horizontal scales
+this is the trough's height.
+</DL>
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The <B>scale</B> command creates a new window (given by the
+<I>pathName</I> argument) and makes it into a scale widget.
+Additional
+options, described above, may be specified on the command line
+or in the option database
+to configure aspects of the scale such as its colors, orientation,
+and relief.  The <B>scale</B> command returns its
+<I>pathName</I> argument.  At the time this command is invoked,
+there must not exist a window named <I>pathName</I>, but
+<I>pathName</I>'s parent must exist.
+<P>
+A scale is a widget that displays a rectangular <I>trough</I> and a
+small <I>slider</I>.  The trough corresponds to a range
+of real values (determined by the <B>from</B>, <B>to</B>, and
+<B>resolution</B> options),
+and the position of the slider selects a particular real value.
+The slider's position (and hence the scale's value) may be adjusted
+with the mouse or keyboard as described in the BINDINGS
+section below.  Whenever the scale's value is changed, a Tcl
+command is invoked (using the <B>command</B> option) to notify
+other interested widgets of the change.
+In addition, the value
+of the scale can be linked to a Tcl variable (using the <B>variable</B>
+option), so that changes in either are reflected in the other.
+<P>
+Three annotations may be displayed in a scale widget:  a label
+appearing at the top right of the widget (top left for horizontal
+scales), a number displayed just to the left of the slider
+(just above the slider for horizontal scales), and a collection
+of numerical tick marks just to the left of the current value
+(just below the trough for horizontal scales).  Each of these three
+annotations may be enabled or disabled using the
+configuration options.
+
+<A NAME=Section2><H2>WIDGET COMMAND</H2>
+</A><P>
+The <B>scale</B> command creates a new Tcl command whose
+name is <I>pathName</I>.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+<BR>
+<PRE>
+<I>pathName option </I>?<I>arg arg ...</I>?<BR>
+<BR>
+</PRE>
+<I>Option</I> and the <I>arg</I>s
+determine the exact behavior of the command.  The following
+commands are possible for scale widgets:
+<DL>
+<DT><I>pathName </I><B>cget</B> <I>option</I>
+
+<DD>Returns the current value of the configuration option given
+by <I>option</I>.
+<I>Option</I> may have any of the values accepted by the <B>scale</B>
+command.
+<DT><I>pathName </I><B>configure</B> ?<I>option</I>? ?<I>value option value ...</I>?
+
+<DD>Query or modify the configuration options of the widget.
+If no <I>option</I> is specified, returns a list describing all of
+the available options for <I>pathName</I> (see <A HREF="ConfigWidg.ht"> <B>Tk_ConfigureInfo</B></A> for
+information on the format of this list).  If <I>option</I> is specified
+with no <I>value</I>, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no <I>option</I> is specified).  If
+one or more <I>option-value</I> pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+<I>Option</I> may have any of the values accepted by the <B>scale</B>
+command.
+<DT><I>pathName </I><B>coords </B>?<I>value</I>?
+
+<DD>Returns a list whose elements are the x and y coordinates of
+the point along the centerline of the trough that corresponds
+to <I>value</I>.
+If <I>value</I> is omitted then the scale's current value is used.
+<DT><I>pathName </I><B>get</B> ?<I>x y</I>?
+
+<DD>If <I>x</I> and <I>y</I> are omitted, returns the current value
+of the scale.  If <I>x</I> and <I>y</I> are specified, they give
+pixel coordinates within the widget;  the command returns
+the scale value corresponding to the given pixel.
+Only one of <I>x</I> or <I>y</I> is used:  for horizontal scales
+<I>y</I> is ignored, and for vertical scales <I>x</I> is ignored.
+<DT><I>pathName </I><B>identify</B> <I>x y</I>
+
+<DD>Returns a string indicating what part of the scale lies under
+the coordinates given by <I>x</I> and <I>y</I>.
+A return value of <B>slider</B> means that the point is over
+the slider;  <B>trough1</B> means that the point is over the
+portion of the slider above  or to the left of the slider;
+and <B>trough2</B> means that the point is over the portion
+of the slider below or to the right of the slider.
+If the point isn't over one of these elements, an empty string
+is returned.
+<DT><I>pathName </I><B>set</B> <I>value</I>
+
+<DD>This command is invoked to change the current value of the scale,
+and hence the position at which the slider is displayed.  <I>Value</I>
+gives the new value for the scale.
+The command has no effect if the scale is disabled.
+
+</DL>
+<A NAME=BINDINGS><H2>BINDINGS</H2>
+</A><P>
+Tk automatically creates class bindings for scales that give them
+the following default behavior.
+Where the behavior is different for vertical and horizontal scales,
+the horizontal behavior is described in parentheses.
+<DL>
+<DT>[1]
+<DD>If button 1 is pressed in the trough, the scale's value will
+be incremented or decremented by the value of the <B>resolution</B>
+option so that the slider moves in the direction of the cursor. 
+If the button is held down, the action auto-repeats.
+<DT>[2]
+<DD>If button 1 is pressed over the slider, the slider can be dragged
+with the mouse.
+<DT>[3]
+<DD>If button 1 is pressed in the trough with the Control key down,
+the slider moves all the way to the end of its range, in the
+direction towards the mouse cursor.
+<DT>[4]
+<DD>The Up and Left keys move the slider up (left) by the value
+of the <B>resolution</B> option.
+<DT>[5]
+<DD>The Down and Right keys move the slider down (right) by the value
+of the <B>resolution</B> option.
+<DT>[6]
+<DD>Control-Up and Control-Left move the slider up (left) by the
+value of the <B>bigIncrement</B> option.
+<DT>[7]
+<DD>Control-Down and Control-Right move the slider down (right) by the
+value of the <B>bigIncrement</B> option.
+<DT>[8]
+<DD>Home moves the slider to the top (left) end of its range.
+<DT>[9]
+<DD>End moves the slider to the bottom (right) end of its range.
+<P>
+If the scale is disabled using the <B>state</B> option then
+none of the above bindings have any effect.
+<P>
+The behavior of scales can be changed by defining new bindings for
+individual widgets or by redefining the class bindings.
+
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>scale, slider, trough, widget

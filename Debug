@@ -1,0 +1,8 @@
+#!/bin/sh
+cat <<! > .gdbinit
+break croak 
+break warn
+break die
+run "$@"
+!
+gdb tkperl

@@ -1,0 +1,47 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetVRoot.3 1.7 95/05/28 13:52:10-->
+<! -->
+<H1>Tk_GetVRootGeometry</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetVRootGeometry - Get location and size of virtual root for window<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_GetVRootGeometry(</B><I>tkwin, xPtr, yPtr, widthPtr, heightPtr</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window whose virtual root is to be queried.<BR>
+<DT><CODE>int xPtr</CODE>
+(out) <DD>Points to word in which to store x-offset of virtual root.<BR>
+<DT><CODE>int yPtr</CODE>
+(out) <DD>Points to word in which to store y-offset of virtual root.<BR>
+<DT><CODE>"int" widthPtr</CODE>
+(out) <DD>Points to word in which to store width of virtual root.<BR>
+<DT><CODE>"int" heightPtr</CODE>
+(out) <DD>Points to word in which to store height of virtual root.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>TkGetVRootGeometry</B> returns geometry information about the virtual<BR>
+root window associated with <I>tkwin</I>.  The ``associated'' virtual<BR>
+root is the one in which <I>tkwin</I>'s nearest top-level ancestor (or<BR>
+<I>tkwin</I> itself if it is a top-level window) has<BR>
+been reparented by the window manager.  This window is identified by<BR>
+a <B>__SWM_ROOT</B> or <B>__WM_ROOT</B> property placed on the top-level<BR>
+window by the window manager.<BR>
+If <I>tkwin</I> is not associated with a virtual root (e.g.<BR>
+because the window manager doesn't use virtual roots) then *<I>xPtr</I> and<BR>
+*<I>yPtr</I> will be set to 0 and *<I>widthPtr</I> and *<I>heightPtr</I><BR>
+will be set to the dimensions of the screen containing <I>tkwin</I>.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>geometry, height, location, virtual root, width, window manager<BR>

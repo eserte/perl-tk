@@ -1,0 +1,39 @@
+Copyright (c) 1995 Nick Ing-Simmons. All rights reserved.
+This package is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself, with the exception
+of all the files in the pTk sub-directory which have separate terms
+derived from those of the orignal Tk4.0 sources. See pTk/license.terms 
+for details of this license.
+
+This a re-port of a perl interface to Tk4.0 
+(John Ousterhout's production release).
+
+See INSTALL for how to build it.
+
+See Changes for what is different.
+
+You may wish to subscribe to the mailing list for discussing problems,
+both new ports and simple how do I do ... questions.
+
+To do so send mail to majordomo@wpi.edu with 'subscribe ptk'
+in the body of the message.
+
+e.g. on normal UNIX machine:
+
+echo 'subscribe ptk' | mail majordomo@wpi.edu
+
+Please don't send subscribe requests to the list itself.
+
+Sending problems to ptk@wpi.edu is the best way 
+to get answers.
+
+---------------------------------------------------------------------------
+pTk sub-directory is a modified version of Tk4.0p1
+
+It has been modified to call "glue" functions rather than use libtcl.a - so it
+is completely independant of TCL.
+
+A goal is to have pTk directory and its library usable from 
+perl/Tcl/LISP/c++/python etc.  - perl is 1st.
+
+There are still serious snags with the others.

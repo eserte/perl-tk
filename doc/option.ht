@@ -1,0 +1,90 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) option.n 1.8 95/06/07 21:15:24-->
+<! -->
+<H1>option</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>option - Add/retrieve window options to/from the option database
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>option add </B><I>pattern value </I>?<I>priority</I>?
+<P>
+<B>option clear</B>
+<P>
+<B>option get </B><I>window name class</I>
+<P>
+<B>option readfile </B><I>fileName </I>?<I>priority</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The <B>option</B> command allows you to add entries to the Tk option
+database or to retrieve options from the database.  The <B>add</B>
+form of the command adds a new option to the database.
+<I>Pattern</I> contains
+the option being specified, and consists of names and/or classes
+separated by asterisks or dots, in the usual X format.  <I>Value</I>
+contains a text string to associate with <I>pattern</I>;  this is the
+value that will be returned in calls to <B>Tk_GetOption</B> or by
+invocations of the <B>option get</B> command.  If <I>priority</I>
+is specified, it indicates the priority level for this option 
+(see below for legal values);  it defaults to <B>interactive</B>.
+This command always returns an empty string.
+<P>
+The <B>option clear</B> command clears the option database.  Default
+options (from the
+<B>RESOURCE_MANAGER</B> property or the <B>.Xdefaults</B>
+file) will be reloaded automatically the next time an
+option is added to the database or removed from it.  This command
+always returns an empty string.
+<P>
+The <B>option get</B> command returns the value of the option
+specified for <I>window</I>
+under <I>name</I> and <I>class</I>.  If several entries in the option
+database match <I>window</I>, <I>name</I>, and <I>class</I>, then
+the command returns whichever was created with highest
+<I>priority</I> level.  If there are several matching
+entries at the same priority level, then it returns whichever entry
+was most recently entered into the option database.  If there are
+no matching entries, then the empty string is returned.
+<P>
+The <B>readfile</B> form of the command reads <I>fileName</I>,
+which should have the standard format for an
+X resource database such as <B>.Xdefaults</B>, and adds all the
+options specified in that file to the option database.  If <I>priority</I>
+is specified, it indicates the priority level at which to enter the
+options;  <I>priority</I> defaults to <B>interactive</B>.
+<P>
+The <I>priority</I> arguments to the <B>option</B> command are
+normally specified symbolically using one of the following values:
+<DL>
+<DT><B>widgetDefault</B>
+
+<DD>Level 20.  Used for default values hard-coded into widgets.
+<DT><B>startupFile</B>
+
+<DD>Level 40.  Used for options specified in application-specific
+startup files.
+<DT><B>userDefault</B>
+
+<DD>Level 60.  Used for options specified in user-specific defaults
+files, such as <B>.Xdefaults</B>, resource databases loaded into
+the X server, or user-specific startup files.
+<DT><B>interactive</B>
+
+<DD>Level 80.  Used for options specified interactively after the application
+starts running.  If <I>priority</I> isn't specified, it defaults to
+this level.
+</DL>
+<P>
+Any of the above keywords may be abbreviated.  In addition, priorities
+may be specified numerically using integers between 0 and 100,
+inclusive.  The numeric form is probably a bad idea except for new priority
+levels other than the ones given above.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>database, option, priority, retrieve

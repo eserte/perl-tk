@@ -1,0 +1,104 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) ManageGeom.3 1.11 95/05/28 13:52:11-->
+<! -->
+<H1>Tk_ManageGeometry</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_ManageGeometry - arrange to handle geometry requests for a window
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_ManageGeometry</B>(<I>tkwin, mgrPtr, clientData</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window to be managed.<BR>
+<DT><CODE>Tk_GeomMgr *mgrPtr</CODE>
+(in) <DD>Pointer to data structure containing information about the<BR>
+geometry manager, or NULL to indicate that <I>tkwin</I>'s geometry<BR>
+shouldn't be managed anymore.<BR>
+The data structure pointed to by <I>mgrPtr</I> must be static:<BR>
+Tk keeps a reference to it as long as the window is managed.<BR>
+<DT><CODE>ClientData clientData</CODE>
+(in) <DD>Arbitrary one-word value to pass to geometry manager callbacks.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_ManageGeometry</B> arranges for a particular geometry manager,<BR>
+described by the <I>mgrPtr</I> argument, to control the geometry<BR>
+of a particular slave window, given by <I>tkwin</I>.<BR>
+If <I>tkwin</I> was previously managed by some other geometry manager,<BR>
+the previous manager loses control in favor of the new one.<BR>
+If <I>mgrPtr</I> is NULL, geometry management is cancelled for<BR>
+<I>tkwin</I>.<BR>
+<P>
+The structure pointed to by <I>mgrPtr</I> contains information about<BR>
+the geometry manager:<BR>
+<BR>
+<DL>
+<B>typedef struct {</B><BR>
+<DL>
+<B>char *</B><I>name</I><B>;</B><BR>
+<B>Tk_GeomRequestProc *</B><I>requestProc</I><B>;</B><BR>
+<B>Tk_GeomLostSlaveProc *</B><I>lostSlaveProc</I><B>;</B><BR>
+</DL>
+<B>} Tk_GeomMgr;</B><BR>
+</DL>
+<BR>
+The <I>name</I> field is the textual name for the geometry manager,
+such as <B>pack</B> or <B>place</B>;  this value will be returned
+by the command <B>winfo manager</B>.
+<P>
+<I>requestProc</I> is a procedure in the geometry manager that
+will be invoked whenever <B>Tk_GeometryRequest</B> is called by the
+slave to change its desired geometry.
+<I>requestProc</I> should have arguments and results that match the
+type <B>Tk_GeomRequestProc</B>:
+<BR>
+<DL>
+<B>typedef void Tk_GeomRequestProc(</B><BR>
+<DL>
+<B>ClientData </B><I>clientData</I><B>,</B><BR>
+<B>Tk_Window </B><I>tkwin</I><B>);</B><BR>
+</DL>
+</DL>
+<BR>
+The parameters to <I>requestProc</I> will be identical to the
+corresponding parameters passed to <B>Tk_ManageGeometry</B>.
+<I>clientData</I> usually points to a data
+structure containing application-specific information about
+how to manage <I>tkwin</I>'s geometry.
+<P>
+The <I>lostSlaveProc</I> field of <I>mgrPtr</I> points to another
+procedure in the geometry manager.
+Tk will invoke <I>lostSlaveProc</I> if some other manager
+calls <B>Tk_ManageGeometry</B> to claim
+<I>tkwin</I> away from the current geometry manager.
+<I>lostSlaveProc</I> is not invoked if <B>Tk_ManageGeometry</B> is
+called with a NULL value for <I>mgrPtr</I> (presumably the current
+geometry manager has made this call, so it already knows that the
+window is no longer managed), nor is it called if <I>mgrPtr</I>
+is the same as the window's current geometry manager.
+<I>lostSlaveProc</I> should have
+arguments and results that match the following prototype:
+<BR>
+<DL>
+<B>typedef void Tk_GeomLostSlaveProc(</B><BR>
+<DL>
+<B>ClientData </B><I>clientData</I><B>,</B><BR>
+<B>Tk_Window </B><I>tkwin</I><B>);</B><BR>
+</DL>
+</DL>
+<BR>
+The parameters to <I>lostSlaveProc</I> will be identical to the
+corresponding parameters passed to <B>Tk_ManageGeometry</B>.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>callback, geometry, managed, request, unmanaged

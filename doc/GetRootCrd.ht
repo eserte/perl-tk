@@ -1,0 +1,41 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetRootCrd.3 1.7 95/05/06 15:29:48-->
+<! -->
+<H1>Tk_GetRootCoords</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetRootCoords - Compute root-window coordinates of window<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_GetRootCoords</B>(<I>tkwin, xPtr, yPtr</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window.<BR>
+<DT><CODE>int *xPtr</CODE>
+(out) <DD>Pointer to location in which to store root-window x-coordinate<BR>
+corresponding to left edge of <I>tkwin</I>'s border.<BR>
+<DT><CODE>int *yPtr</CODE>
+(out) <DD>Pointer to location in which to store root-window y-coordinate<BR>
+corresponding to top edge of <I>tkwin</I>'s border.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This procedure scans through the structural information maintained<BR>
+by Tk to compute the root-window coordinates corresponding to<BR>
+the upper-left corner of <I>tkwin</I>'s border.  If <I>tkwin</I> has<BR>
+no border, then <B>Tk_GetRootCoords</B> returns the root-window<BR>
+coordinates corresponding to location (0,0) in <I>tkwin</I>.<BR>
+<B>Tk_GetRootCoords</B> is relatively efficient, since it doesn't have to<BR>
+communicate with the X server.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>coordinates, root window<BR>

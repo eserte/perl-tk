@@ -1,0 +1,30 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'../blib') }
+use Tk;
+require Tk::Web;
+require URI::URL;
+
+my $pwd = `pwd`;
+chomp($pwd);
+
+my $url = URI::URL->new($ARGV[0],URI::URL->newlocal);
+
+my $mw = MainWindow->new();
+my $w  = Tk::Web->new($mw);
+$w->UserAgent->envProxy;
+$w->{'-header'} = {'Accept' => join(',','text/html', 'text/plain', 'image/gif', 
+		      'image/x-xbitmap', 'image/x-pixmap', '*/*'),
+		   'User-Agent' => 'tkweb/.xx'};
+$w->url('GET',$url);
+
+$w->pack(-expand => 1, -fill => 'both');
+
+$mw->AddScrollbars($w);
+my %args = (-scrollbars => 'w');
+$mw->ConfigDefault(\%args);
+$mw->configure(%args);
+
+$mw->update;
+$w->focus;
+
+MainLoop;

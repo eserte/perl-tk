@@ -1,0 +1,56 @@
+<! Copyright (c) 1992-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) BackgdErr.3 1.6 95/05/06 15:29:07-->
+<! -->
+<H1>Tk_BackgroundError</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_BackgroundError - report Tcl error that occurred in background processing<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_BackgroundError</B>(<I>interp</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter in which the error occurred.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This procedure is typically invoked when a Tcl error occurs during<BR>
+``background processing'' such as executing a Tcl command in response<BR>
+to a button press or menu entry invocation.<BR>
+When such an error occurs, the error condition is reported to Tk<BR>
+or to a widget or some other C code, and there is not usually any<BR>
+obvious way for that code to report the error to the user.<BR>
+In these cases the code calls <B>Tk_BackgroundError</B> with an<BR>
+<I>interp</I> argument identifying the interpreter in which the<BR>
+error occurred.<BR>
+<B>Tk_BackgroundError</B> attempts to invoke the <B>tkerror</B><BR>
+Tcl command to report the error in an application-specific fashion.<BR>
+If no <B>tkerror</B> command exists, or if it returns with an error condition,<BR>
+then <B>Tk_BackgroundError</B> reports the error itself by printing<BR>
+a message on the standard error file.<BR>
+<P>
+<B>Tk_BackgroundError</B> does not invoke <B>tkerror</B> immediately<BR>
+(in some cases this could interfere with scripts that are in process<BR>
+at the time the error occurred).<BR>
+Instead, it invokes <B>tkerror</B> later as an idle callback.<BR>
+<B>Tk_BackgroundError</B> saves the values of the <B>errorInfo</B> and<BR>
+<B>errorCode</B> variables and restores these values just before<BR>
+invoking <B>tkerror</B>.<BR>
+<P>
+It is possible for many background errors to accumulate before<BR>
+<B>tkerror</B> is invoked.  When this happens, each of the errors<BR>
+is processed in order.  However, if <B>tkerror</B> returns a<BR>
+break exception, then all remaining error reports for the<BR>
+interpreter are skipped.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>background, error, tkerror<BR>

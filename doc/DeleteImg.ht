@@ -1,0 +1,33 @@
+<! Copyright (c) 1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) DeleteImg.3 1.2 95/05/06 15:31:48-->
+<! -->
+<H1>Tk_DeleteImage</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_DeleteImage - Destroy an image.<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_DeleteImage</B>(<I>interp, name</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter for which the image was created.<BR>
+<DT><CODE>char *name</CODE>
+(in) <DD>Name of the image.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_DeleteImage</B> deletes the image given by <I>interp</I><BR>
+and <I>name</I>, if there is one.  All instances of that image<BR>
+will redisplay as empty regions.  If the given image does not<BR>
+exist then the procedure has no effect.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>delete image, image manager<BR>

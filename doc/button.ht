@@ -1,0 +1,206 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) button.n 1.30 95/06/07 21:15:08-->
+<! -->
+<H1>button</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>button - Create and manipulate button widgets
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>button</B><I> </I><I>pathName </I>?<I>options</I>?
+<A NAME=Section0><H2>STANDARD OPTIONS</H2>
+</A><P>
+<BR>
+<B>activeBackground</B>	<B>cursor</B>	<B>highlightThickness</B>	<B>takeFocus</B><BR>
+<B>activeForeground</B>	<B>disabledForeground</B>	<B>image</B>	<B>text</B><BR>
+<B>anchor</B>	<B>font</B>	<B>justify</B>	<B>textVariable</B><BR>
+<B>background</B>	<B>foreground</B>	<B>padX</B>	<B>underline</B><BR>
+<B>bitmap</B>	<B>highlightColor</B>	<B>padY</B>	<B>wrapLength</B><BR>
+<B>borderWidth</B>	<B>highlightBackground</B>	<B>relief</B><BR>
+<BR>
+<P>
+See the <A HREF="options.ht"> ``options''</A> manual entry for details on the standard options.
+<A NAME=Section1><H2>WIDGET-SPECIFIC OPTIONS</H2>
+</A><P>
+<BR>
+<DL>
+<DT>Name:	<B>command</B>
+
+<DD><DT>Class:	<B>Command</B>
+
+<DD><DT>Command-Line Switch:	<B>-command</B>
+
+<DD><BR>
+Specifies a Tcl command to associate with the button.  This command
+is typically invoked when mouse button 1 is released over the button
+window.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>height</B>
+
+<DD><DT>Class:	<B>Height</B>
+
+<DD><DT>Command-Line Switch:	<B>-height</B>
+
+<DD><BR>
+Specifies a desired height for the button.
+If an image or bitmap is being displayed in the button then the value is in
+screen units (i.e. any of the forms acceptable to <B>Tk_GetPixels</B>);
+for text it is in lines of text.
+If this option isn't specified, the button's desired height is computed
+from the size of the image or bitmap or text being displayed in it.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>state</B>
+
+<DD><DT>Class:	<B>State</B>
+
+<DD><DT>Command-Line Switch:	<B>-state</B>
+
+<DD><BR>
+Specifies one of three states for the button:  <B>normal</B>, <B>active</B>,
+or <B>disabled</B>.  In normal state the button is displayed using the
+<B>foreground</B> and <B>background</B> options.  The active state is
+typically used when the pointer is over the button.  In active state
+the button is displayed using the <B>activeForeground</B> and
+<B>activeBackground</B> options.  Disabled state means that the button
+should be insensitive:  the default bindings will refuse to activate
+the widget and will ignore mouse button presses.
+In this state the <B>disabledForeground</B> and
+<B>background</B> options determine how the button is displayed.
+</DL>
+<P>
+<BR>
+<DL>
+<DT>Name:	<B>width</B>
+
+<DD><DT>Class:	<B>Width</B>
+
+<DD><DT>Command-Line Switch:	<B>-width</B>
+
+<DD><BR>
+Specifies a desired width for the button.
+If an image or bitmap is being displayed in the button then the value is in
+screen units (i.e. any of the forms acceptable to <B>Tk_GetPixels</B>);
+for text it is in characters.
+If this option isn't specified, the button's desired width is computed
+from the size of the image or bitmap or text being displayed in it.
+</DL>
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The <B>button</B> command creates a new window (given by the
+<I>pathName</I> argument) and makes it into a button widget.
+Additional
+options, described above, may be specified on the command line
+or in the option database
+to configure aspects of the button such as its colors, font,
+text, and initial relief.  The <B>button</B> command returns its
+<I>pathName</I> argument.  At the time this command is invoked,
+there must not exist a window named <I>pathName</I>, but
+<I>pathName</I>'s parent must exist.
+<P>
+A button is a widget
+that displays a textual string, bitmap or image.
+If text is displayed, it must all be in a single font, but it
+can occupy multiple lines on the screen (if it contains newlines
+or if wrapping occurs because of the <B>wrapLength</B> option) and
+one of the characters may optionally be underlined using the
+<B>underline</B> option.
+It can display itself in either of three different ways, according
+to
+the <B>state</B> option; 
+it can be made to appear raised, sunken, or flat;
+and it can be made to flash.  When a user invokes the
+button (by pressing mouse button 1 with the cursor over the
+button), then the Tcl command specified in the <B>-command</B>
+option is invoked.
+
+<A NAME=Section2><H2>WIDGET COMMAND</H2>
+</A><P>
+The <B>button</B> command creates a new Tcl command whose
+name is <I>pathName</I>.  This
+command may be used to invoke various
+operations on the widget.  It has the following general form:
+<BR>
+<PRE>
+<I>pathName option </I>?<I>arg arg ...</I>?<BR>
+<BR>
+</PRE>
+<I>Option</I> and the <I>arg</I>s
+determine the exact behavior of the command.  The following
+commands are possible for button widgets:
+<DL>
+<DT><I>pathName </I><B>cget</B> <I>option</I>
+
+<DD>Returns the current value of the configuration option given
+by <I>option</I>.
+<I>Option</I> may have any of the values accepted by the <B>button</B>
+command.
+<DT><I>pathName </I><B>configure</B> ?<I>option</I>? ?<I>value option value ...</I>?
+
+<DD>Query or modify the configuration options of the widget.
+If no <I>option</I> is specified, returns a list describing all of
+the available options for <I>pathName</I> (see <A HREF="ConfigWidg.ht"> <B>Tk_ConfigureInfo</B></A> for
+information on the format of this list).  If <I>option</I> is specified
+with no <I>value</I>, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no <I>option</I> is specified).  If
+one or more <I>option-value</I> pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+<I>Option</I> may have any of the values accepted by the <B>button</B>
+command.
+<DT><I>pathName </I><B>flash</B>
+
+<DD>Flash the button.  This is accomplished by redisplaying the button
+several times, alternating between active and normal colors.  At
+the end of the flash the button is left in the same normal/active
+state as when the command was invoked.
+This command is ignored if the button's state is <B>disabled</B>.
+<DT><I>pathName </I><B>invoke</B>
+
+<DD>Invoke the Tcl command associated with the button, if there is one.
+The return value is the return value from the Tcl command, or an
+empty string if there is no command associated with the button.
+This command is ignored if the button's state is <B>disabled</B>.
+
+</DL>
+<A NAME=Section3><H2>DEFAULT BINDINGS</H2>
+</A><P>
+Tk automatically creates class bindings for buttons that give them
+the following default behavior:
+<DL>
+<DT>[1]
+<DD>A button activates whenever the mouse passes over it and deactivates
+whenever the mouse leaves the button.
+<DT>[2]
+<DD>A button's relief is changed to sunken whenever mouse button 1 is
+pressed over the button, and the relief is restored to its original
+value when button 1 is later released.
+<DT>[3]
+<DD>If mouse button 1 is pressed over a button and later released over
+the button, the button is invoked.  However, if the mouse is not
+over the button when button 1 is released, then no invocation occurs.
+<DT>[4]
+<DD>When a button has the input focus, the space key causes the button
+to be invoked.
+<P>
+If the button's state is <B>disabled</B> then none of the above
+actions occur:  the button is completely non-responsive.
+<P>
+The behavior of buttons can be changed by defining new bindings for
+individual widgets or by redefining the class bindings.
+
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>button, widget

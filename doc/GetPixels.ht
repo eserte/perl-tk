@@ -1,0 +1,76 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetPixels.3 1.6 95/05/06 15:29:42-->
+<! -->
+<H1>Tk_GetPixels</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetPixels, Tk_GetScreenMM - translate between strings and screen units<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+int<BR>
+<B>Tk_GetPixels(</B><I>interp, tkwin, string, intPtr</I><B>)</B><BR>
+<P>
+int<BR>
+<B>Tk_GetScreenMM(</B><I>interp, tkwin, string, doublePtr</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Window whose screen geometry determines the conversion between absolute<BR>
+units and pixels. <BR>
+<DT><CODE>char *string</CODE>
+(in) <DD>String that specifies a distance on the screen.<BR>
+<DT><CODE>int *intPtr</CODE>
+(out) <DD>Pointer to location in which to store converted distance in pixels.<BR>
+<DT><CODE>double *doublePtr</CODE>
+(out) <DD>Pointer to location in which to store converted distance in millimeters.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+These two procedures take as argument a specification of distance on<BR>
+the screen (<I>string</I>) and compute the corresponding distance<BR>
+either in integer pixels or floating-point millimeters.<BR>
+In either case, <I>string</I> specifies a screen distance as a<BR>
+floating-point number followed by one of the following characters<BR>
+that indicates units:<BR>
+<DL>
+<DT>&lt;none&gt;
+
+<DD>The number specifies a distance in pixels.<BR>
+<DT><B>c</B>
+
+<DD>The number specifies a distance in centimeters on the screen.<BR>
+<DT><B>i</B>
+
+<DD>The number specifies a distance in inches on the screen.<BR>
+<DT><B>m</B>
+
+<DD>The number specifies a distance in millimeters on the screen.<BR>
+<DT><B>p</B>
+
+<DD>The number specifies a distance in printer's points (1/72 inch)<BR>
+on the screen.<BR>
+<P>
+<B>Tk_GetPixels</B> converts <I>string</I> to the nearest even<BR>
+number of pixels and stores that value at <I>*intPtr</I>.<BR>
+<B>Tk_GetScreenMM</B> converts <I>string</I> to millimeters and<BR>
+stores the double-precision floating-point result at <I>*doublePtr</I>.<BR>
+<P>
+Both procedures return <B>TCL_OK</B> under normal circumstances.<BR>
+If an error occurs (e.g. <I>string</I> contains a number followed<BR>
+by a character that isn't one of the ones above) then<BR>
+<B>TCL_ERROR</B> is returned and an error message is left<BR>
+in <I>interp-&gt;result</I>.<BR>
+<BR>
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>centimeters, convert, inches, millimeters, pixels, points, screen units<BR>

@@ -1,0 +1,5 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+require Tk;
+
+Tk::exit(0);

@@ -1,0 +1,37 @@
+sub try_compile
+{
+ my $file  = shift;
+ my $msgs  = `$Config{'cc'} $file 2>&1`;
+ my $ok = ($? == 0);
+ unlink('a.out') if (-f 'a.out');
+ return $ok;
+}
+
+sub upgrade_pic
+{
+ my $flags = "";
+ if (defined $Config{'cccdlflags'})
+  {
+   $flags = $Config{'cccdlflags'};
+   $flags =~ s/(-[fK]? ?)pic\b/${1}PIC/; 
+   $flags = "CCCDLFLAGS = $flags\n";
+  }
+ return $flags;
+}
+
+sub MY::constants
+{
+ $_ = MM->constants;
+ s/\n.PRECIOUS:.*\n//;
+ $_ .= "\nGCCOPT = $gccopt\n";
+ $_;
+}
+
+sub MY::c_o
+{
+ $_ = MM->c_o;
+ s/\$\(DEFINE\)/\$(DEFINE) \$(GCCOPT)/;
+ $_;
+}
+
+1;
