@@ -10,7 +10,7 @@ Construct Tk::Widget 'WidgetDemo';
 
 =head1 NAME
 
-WidgetDemo() - create a standard widget demo window.
+WidgetDemo() - create a standard widget demonstration window.
 
 =head1 SYNOPSIS
 
@@ -35,7 +35,8 @@ geometry manager.
 
 =head2 $demo_widget->top;
 
-Returns the frame container reference for the demonstration.
+Returns the frame container reference for the demonstration.  Treat this as
+the top of your window hierarchy, a "main window".
 
 =head1 AUTHOR
 
@@ -43,7 +44,7 @@ Stephen O. Lidie <lusol@Lehigh.EDU>
 
 =head1 HISTORY
 
-lusol@Lehigh.EDU, LUCC, 97/01/01
+lusol@Lehigh.EDU, LUCC, 97/02/11
 
 =head1 COPYRIGHT
 
@@ -53,6 +54,11 @@ This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =cut
+
+# %WIDGDEMO is a class global that tracks all WidgetDemo composite widgets,
+# providing a means of destroying a previous instance of a demonstration.
+
+my %WIDGDEMO;			# class hash of active widget demonstrations
 
 sub Populate {
     my($cw, $args) = @ARG;
@@ -74,6 +80,9 @@ sub Populate {
     delete $args->{-font};
     delete $args->{-text};
     delete $args->{-geometry_manager};
+
+    $WIDGDEMO{$demo}->destroy if Exists($WIDGDEMO{$demo});
+    $WIDGDEMO{$demo} = $cw;
 
     $cw->SUPER::Populate($args);
     $cw->title("$demo Demonstration");

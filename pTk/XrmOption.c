@@ -1,10 +1,6 @@
 /* 
  * XrmOption.c --
  *
- *                                                                                                                              This module contains procedures to manage the option
- *                                                                                                                              database, which allows various strings to be associated
- *                                                                                                                              with windows either by name or by class or both.
- *
  * Copyright (c) 1990-1994 The Regents of the University of California.
  * Copyright (c) 1994-1995 Sun Microsystems, Inc.
  *
@@ -12,10 +8,14 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
+#if !defined(__WIN32__) && !defined(_WIN32)
+
 static char sccsid[] = "@(#) tkOption.c 1.41 95/06/25 15:30:42";
 
 #include "tkPort.h"
 #include "tkInt.h"
+#include "tkOption.h"
+#include "tkOption_f.h"
 #include "tkVMacro.h"
 #include <X11/Xresource.h>
 #include "tkXrm.h"
@@ -92,12 +92,14 @@ static int Qindex = 0;          /* index just beyond cacheWindow in Quark list *
 static void
 Qshow(FILE *f,char *lab,XrmQuarkList l)
 {
- fprintf(f," %s",lab);
+ int prefix = '"';
+ fprintf(f," %s:",lab);
  while (*l != NULLQUARK)
   {
-   fprintf(f,"%s.",XrmQuarkToString(*l++));
+   fprintf(f,"%c%s",prefix,XrmQuarkToString(*l++));
+   prefix = '.';
   }
- fprintf(f,"\n");
+ fprintf(f,"\"\n");
 }
 #endif
 
@@ -209,6 +211,8 @@ char *className;                  /* Class of option.  NULL means there
 #endif
 
  database = (XrmDatabase) winPtr->mainPtr->optionRootPtr;
+
+ memset(&value,0,sizeof(value));
 
  if (database && XrmQGetResource(database, Qname, Qclass, &type, &value))
   {
@@ -582,7 +586,7 @@ int priority;                     /* Priority level to use for options in
 {
  int result = TCL_OK;
  Tcl_DString newName;
- char *realName = Tcl_TildeSubst(interp, fileName, &newName);
+ char *realName = Tcl_TranslateFileName(interp, fileName, &newName);
 
  if (realName != NULL)
   {
@@ -739,16 +743,20 @@ TkMainInfo *mainPtr;
   }
 }
 
+#endif
+
 void
 Xrm_import(class)
 char *class;
 {
+#if !defined(__WIN32__) && !defined(_WIN32)
  /* This is sneaky - we patch up the function tables so 
      that calls to Tk*Option*() map to Xrm versions.
  */
  LangOptionCommand = Xrm_OptionCmd;
- TkVptr->V_Tk_AddOption = Xrm_AddOption;
- TkVptr->V_Tk_GetOption = Xrm_GetOption;
- TkintVptr->V_TkOptionClassChanged = XrmOptionClassChanged;
- TkintVptr->V_TkOptionDeadWindow = XrmOptionDeadWindow;
+ TkoptionVptr->V_Tk_AddOption = Xrm_AddOption;
+ TkoptionVptr->V_Tk_GetOption = Xrm_GetOption;
+ TkoptionVptr->V_TkOptionClassChanged = XrmOptionClassChanged;
+ TkoptionVptr->V_TkOptionDeadWindow = XrmOptionDeadWindow;
+#endif
 }

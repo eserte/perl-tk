@@ -6,9 +6,9 @@ my %opt;
 
 use File::Find;
 
-getopts("lc",\%opt);
+getopts("Flc",\%opt);
 
-$expr = shift;
+$expr = shift unless ($opt{'F'});
 
 sub match
 {
@@ -17,7 +17,23 @@ sub match
    return 1 unless (/#!.*perl/);
    $unsure = 0;
   }
- if (/$expr/o)
+ if ($opt{'F'})
+  {
+   if (/\bfont\b.*(["'])(-[^-]*){2,13}\1/i)
+    {
+     if ($opt{'l'})
+      {
+       print "$File::Find::dir/$file\n";
+       return 1;
+      }
+     $count++;
+     unless ($opt{'c'})
+      {
+       print "$File::Find::dir/$file:$.: $_" 
+      }
+    }
+  }
+ elsif (/$expr/o)
   {
    if ($opt{'l'})
     {

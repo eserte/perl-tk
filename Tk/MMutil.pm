@@ -1,11 +1,87 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MMutil;
 use ExtUtils::MakeMaker;
 use Cwd;
+use Carp;
 use Tk::Config;
-@MYEXPORT = qw(perldepend const_config constants installbin c_o xs_o makefile manifypods);
+@MYEXPORT = qw(perldepend cflags const_config constants installbin c_o xs_o makefile manifypods);
+
+*win_arch = \$main::win_arch;
+
+sub arch_prune
+{
+ my $hash = shift;
+ foreach (keys %$hash)
+  {
+   if ($win_arch eq 'x') 
+    {
+     delete $hash->{$_} if /Win[A-Z0-9]/ or /OS2/ or /ImgUtil/ or /^x/;
+    } 
+   elsif ($win_arch eq 'open32') 
+    {
+     delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
+     delete $hash->{$_} if /winMain|dllMain/;
+    }
+   elsif ($win_arch eq 'MSWin32') 
+    {
+     delete $hash->{$_} if /Unix|Mwm/ and not /tclUnix/;
+     delete $hash->{$_} if /winMain|dllMain/;
+     # delete $hash->{$_} if /^Xrm/;
+    }
+  } 
+}
+
+sub mTk_postamble
+{
+ my ($self) = @_;
+ my $dep = "config :: \$(C_FILES) \$(H_FILES)\n\n";
+ my $mTk = $self->{'MTK'};
+ $dep .= "# Begin Munging dependancies\n";
+ my $file;
+ foreach $file (sort keys %$mTk)
+  {
+   $dep .= "$file : ".$mTk->{$file}." \$(TKDIR)/pTk/Tcl-pTk\n";
+   $dep .= "\t\$(PERL) \$(TKDIR)/pTk/Tcl-pTk ".$mTk->{$file}." $file\n";
+  }
+ $dep .= "# End Munging dependancies\n\n";
+ return $dep;
+}
+
+sub mTk_CHO
+{
+ my $self = shift;
+ my $mTk  = shift;
+ my %c;
+ my %h;
+ foreach (@{$self->{H}}) { $h{$_} = 1 }
+ foreach (@{$self->{C}}) { $c{$_} = 1 }
+ foreach (keys %$mTk)
+  {
+   if (/\.c$/)
+    {
+     $c{$_} = 1;
+    }
+   elsif (/\.h$/)
+    {
+     $h{$_} = 1;
+    }
+  }
+ while (@_)
+  {
+   my $name = shift;
+   carp("No $name") unless (exists $c{$name});
+   delete $c{$name}
+  }
+ arch_prune(\%h);
+ arch_prune(\%c);
+ $self->{'H'}     = [sort keys %h];
+ $self->{'C'}     = [sort keys %c];
+ my(@o_files)     = @{$self->{C}};
+ $self->{O_FILES} = [grep s/\.c(pp|xx|c)?$/$self->{OBJ_EXT}/i, @o_files] ;
+ $self->{'MTK'}   = $mTk;
+}
 
 sub relpath
 {
@@ -21,14 +97,14 @@ sub relpath
        my $depth = reverse($1);
        if ($depth)
         {
-         $depth =~ s,[^/]+,..,g;
+         $depth =~ s,[^/\\]+,..,g;
         }
        else
         {
          $depth = '.' ;
         }
-       $depth =~ s,/+$,,;
-       $base =~ s,^/+,,;
+       $depth =~ s,[/\\]+$,,;
+       $base =~ s,^[/\\]+,,;
        $depth .= "/$base" if ($base);
        if (-e $depth)
         {
@@ -60,6 +136,7 @@ sub perldepend
  my $str = $self->MM::perldepend;
  my $name;
  my @files;
+ $str .= "# Auto generated from GCC's .d files\n";
  foreach $name ($self->lsdir("."))
   {
    if ($name =~ /\.d$/)
@@ -68,7 +145,11 @@ sub perldepend
      open(DEP,"<$name") || die "Cannot open $name:$!";
      while (<DEP>)
       {
-       s/^([^:]*)\.o\s*:/$1\$(OBJ_EXT):/;
+       if ($^O eq 'MSWin32')
+        {
+         s/Unix/Win/g;
+        }
+       s/^([^:]*)\.o\s*:/$1$self->{OBJ_EXT}:/;
        $str .= $_;
       }
      close(DEP);
@@ -96,7 +177,29 @@ sub constants
  my $self = shift;
  local $_ = $self->MM::constants;
  s/(\.SUFFIXES)/$1:\n$1/;
- $_ .= "\nGCCOPT = $Tk::Config::gccopt\n";
+ if ($^O eq 'MSWin32')
+  {
+   $_ .= "!include <win32.mak>\n";
+   $_ .= "LDLOADLIBS=\$(guilibsdll)\n";
+   $_ .= "LDDLFLAGS=\$(linkdebug) \$(dlllflags)\n";
+   $_ .= "\nGCCOPT = -WX\n";
+  } 
+ else
+  {
+   $_ .= "\nGCCOPT = $Tk::Config::gccopt\n";
+  }
+ $_;
+}
+
+sub cflags
+{
+ my $self = shift;
+ local $_ = $self->MM::cflags;
+ if ($^O eq 'MSWin32')
+  {
+   s/(CCFLAGS\s*=)/$1 \$(cflags) \$(cvarsdll)/; 
+   s/(OPTIMIZE\s*=).*/$1 \$(cdebug)/;
+  }
  $_;
 }
 
@@ -104,7 +207,7 @@ sub c_o
 {
  my $self = shift;
  local $_ = $self->MM::c_o;
- s/\$\(DEFINE\)/\$(DEFINE) \$(GCCOPT)/;
+ s/\$\(DEFINE\)/\$(DEFINE) \$(GCCOPT)/g;
  $_;
 }
 
@@ -112,13 +215,14 @@ sub xs_o
 {
  my $self = shift;
  local $_ = $self->MM::xs_o;
- s/\$\(DEFINE\)/\$(DEFINE) \$(GCCOPT)/;
+ s/\$\(DEFINE\)/\$(DEFINE) \$(GCCOPT)/g;
  $_;
 }
 
 sub manifypods
 {
  my $self = shift;
+ # Maybe always call UNIX version - we HTMLize them later
  local $_ = $self->MM::manifypods;
  if ($] >= 5.003)
   {
@@ -151,6 +255,7 @@ sub makefile
  my $mm = findINC('Tk/MMutil.pm');
  my $cf = findINC('Tk/Config.pm');
  $str =~ s/(\$\(CONFIGDEP\))/$1 $cf $mm/;
+ $str =~ s/\$\(OBJECT\)\s*:.*\n//;
  return $str;
 }
 
@@ -196,7 +301,7 @@ sub findpTk
  foreach $dir (@INC)
   {
    my $try = "$dir/pTk";
-   if (-d $try && (-f "$try/tkWindow.c" || -f "$try/libpTk\$(LIB_EXT)"))
+   if (-d $try && (-f "$try/Lang.h" || -f "$try/libpTk\$(LIB_EXT)"))
     {
      $ptk = $try;
      last;
@@ -222,6 +327,9 @@ sub TkExtMakefile
      warn "No Name and cannot deduce from '$dir'";
     }
   }
+ my $tk = installed_tk();
+ $att{'macro'} = {} unless (exists $att{'macro'});
+ $att{'macro'}{'TKDIR'} = $tk;
  # 'INST_LIB' => '../blib',
  # 'INST_ARCHLIB' => '../blib',
  my @opt = ('VERSION'     => $Tk::Config::VERSION);
@@ -251,7 +359,6 @@ sub TkExtMakefile
     }
    else
     {
-     my $tk = installed_tk();
      $i = "-I$tk $i" unless ($tk eq '.');
     }
    push(@opt,'DEFINE' => $define, 'INC' => $i);

@@ -35,20 +35,25 @@ sub wanted
    $^I = '.bak';
    while (<>)
     {
+     if (/Copyright/i && /Nick/ && s/--$year/-$year/)
+      {
+       warn "$File::Find::name:$.:$_"; 
+       $changed++;
+      }
      if (/Copyright/i && /Nick/ && /199[0-9]/ && !/$year/)
       {
        $changed++;
-       unless (s/(199[0-9]-)199[0-9]/$1-$year/)
+       unless (s/(199[0-9]-)199[0-9]/$1$year/)
         {
          unless (s/$last/$last-$year/)
           {
            unless (s/(199[0-9])/$1-$year/)
             {
-             die "$ARGV::Find::dir/$file:$.:$_" 
+             die "$File::Find::name:$.:$_" 
             }
           }
         }
-       warn "$ARGV::Find::dir/$file:$.:$_" 
+       warn "$File::Find::name:$.:$_" 
       }
      print;
     }         

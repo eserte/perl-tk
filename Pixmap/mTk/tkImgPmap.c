@@ -37,11 +37,12 @@ typedef struct PixmapMaster {
 				 * the image command has already been
 				 * deleted. */
     int width, height;		/* Dimensions of image. */
-    char *data;			/* Data comprising xpm pixmap.  May
-				 * be NULL if no data.  Malloc'ed. */
     Tk_Uid bgUid;		/* Value of -background option (malloc'ed). */
     char *fileString;		/* Value of -file option (malloc'ed). */
     char *dataString;		/* Value of -data option (malloc'ed). */
+    int  has_image;
+    XpmImage    image;
+    XpmInfo     info;
     struct PixmapInstance *instancePtr;
 				/* First in list of all instances associated
 				 * with this master. */
@@ -120,9 +121,7 @@ static Tk_ConfigSpec configSpecs[] = {
  * Prototypes for procedures used only locally in this file:
  */
 
-static char *		GetPixmapData _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *string, char *fileName,
-			    int *widthPtr, int *heightPtr));
+static int		GetPixmapData _ANSI_ARGS_((PixmapMaster *master));
 static int		ImgPmapCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 static void		ImgPmapCmdDeletedProc _ANSI_ARGS_((
@@ -173,10 +172,10 @@ ImgPmapCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
     masterPtr->imageCmd = Lang_CreateImage(interp, name, ImgPmapCmd,
 	    (ClientData) masterPtr, ImgPmapCmdDeletedProc, typePtr);
     masterPtr->width = masterPtr->height = 0;
-    masterPtr->data = NULL;
     masterPtr->bgUid = NULL;
     masterPtr->fileString = NULL;
     masterPtr->dataString = NULL;
+    masterPtr->has_image   = 0;
     masterPtr->instancePtr = NULL;
     if (ImgPmapConfigureMaster(masterPtr, argc, argv, 0) != TCL_OK) {
 	ImgPmapDelete((ClientData) masterPtr);
@@ -227,15 +226,13 @@ ImgPmapConfigureMaster(masterPtr, argc, argv, flags)
      * the bitmap and mask have the same dimensions.
      */
 
-    if (masterPtr->data != NULL) {
-	ckfree(masterPtr->data);
-	masterPtr->data = NULL;
+    if (masterPtr->has_image) {
+	XpmFreeXpmImage(&masterPtr->image);
+	XpmFreeXpmInfo(&masterPtr->info);
+	masterPtr->has_image = 0;
     }
     if ((masterPtr->fileString != NULL) || (masterPtr->dataString != NULL)) {
-	masterPtr->data = GetPixmapData(masterPtr->interp,
-		masterPtr->dataString, masterPtr->fileString,
-		&masterPtr->width, &masterPtr->height);
-	if (masterPtr->data == NULL) {
+	if (!GetPixmapData(masterPtr)) {
 	    return TCL_ERROR;
 	}
     }
@@ -275,6 +272,11 @@ ImgPmapConfigureMaster(masterPtr, argc, argv, flags)
  *----------------------------------------------------------------------
  */
 
+#define xpmFreeImageData(image) ((image) && (image)->data 	\
+				 ? (free((void*)(image)->data),	\
+				   (image)->data = NULL)	\
+				 : NULL)
+
 static void
 ImgPmapConfigureInstance(instancePtr)
     PixmapInstance *instancePtr;	/* Instance to reconfigure. */
@@ -287,6 +289,9 @@ ImgPmapConfigureInstance(instancePtr)
     int xpmError;
     XpmAttributes xpmAttr;
     static XpmColorSymbol xpmTransparentColor[1] = {{ NULL, "none", 0 }};
+    XImage *image;
+    XImage *shape;
+    Display *display;
 
     /*
      * For each of the options in masterPtr, translate the string
@@ -306,18 +311,27 @@ ImgPmapConfigureInstance(instancePtr)
     } else {
         instancePtr->bg = NULL;
     }
+    display = Tk_Display(instancePtr->tkwin);
 
     if (instancePtr->bitmap != None) {
-	XFreePixmap(Tk_Display(instancePtr->tkwin), instancePtr->bitmap);
+	Tk_FreePixmap(display, instancePtr->bitmap);
 	instancePtr->bitmap = None;
     }
     if (instancePtr->mask != None) {
-    	XFreePixmap(Tk_Display(instancePtr->tkwin), instancePtr->mask);
+    	Tk_FreePixmap(display, instancePtr->mask);
     	instancePtr->mask = None;
     }
     
-    if (masterPtr->data != NULL) {
-	xpmAttr.valuemask    = XpmCloseness | XpmDepth;
+    if (masterPtr->has_image) {
+	if (Tk_WindowId(instancePtr->tkwin) == None) {
+	    Tk_MakeWindowExist(instancePtr->tkwin);
+	}
+
+	memset(&xpmAttr, 0, sizeof(xpmAttr));
+
+	xpmAttr.valuemask    = XpmCloseness | XpmDepth | XpmVisual |XpmColormap |
+			       XpmReturnAllocPixels;
+
 	if ( instancePtr->bg != NULL ) {
 	    xpmAttr.valuemask            |= XpmColorSymbols;
             xpmTransparentColor[0].pixel  = instancePtr->bg->pixel;
@@ -325,24 +339,49 @@ ImgPmapConfigureInstance(instancePtr)
 	    xpmAttr.numsymbols            = 1;
 	}
 	xpmAttr.closeness    = 65535;
-	xpmAttr.depth        = DisplayPlanes(Tk_Display(instancePtr->tkwin),
-	                           Tk_ScreenNumber(instancePtr->tkwin));
-	xpmError = XpmCreatePixmapFromBuffer(
-		Tk_Display(instancePtr->tkwin),
-		RootWindowOfScreen(Tk_Screen(instancePtr->tkwin)),
-		masterPtr->data,
-		&(instancePtr->bitmap),
-		instancePtr->bg == NULL ? &(instancePtr->mask) : NULL,
-		&xpmAttr);
+	xpmAttr.depth        = Tk_Depth(instancePtr->tkwin);
+	xpmAttr.colormap     = Tk_Colormap(instancePtr->tkwin);
+	xpmAttr.visual       = Tk_Visual(instancePtr->tkwin);
+	
+	xpmError = XpmCreateImageFromXpmImage(
+		display,
+		&masterPtr->image,
+		&image, &shape, &xpmAttr);
 	if ( xpmError != XpmSuccess ) {
 	    XpmFreeAttributes(&xpmAttr);
 	    instancePtr->bitmap = None;
+
+            fprintf(stderr,"%s\n",XpmGetErrorString(xpmError));
+
 	    goto error;
 	}
+
+	gcValues.foreground = 1;
+	gcValues.background = 0;
+
+        instancePtr->bitmap = Tk_GetPixmap(display, Tk_WindowId(instancePtr->tkwin), image->width,
+				   image->height, image->depth);
+
+	gc = XCreateGC(display, instancePtr->bitmap , GCForeground | GCBackground, &gcValues);
+	TkPutImage(xpmAttr.alloc_pixels, xpmAttr.nalloc_pixels, display, instancePtr->bitmap, gc, image, 0, 0, 0, 0,
+	      image->width, image->height);
+	xpmFreeImageData(image);
+        XDestroyImage(image);
+	XFreeGC(display, gc);
+
+        instancePtr->mask = Tk_GetPixmap(display, Tk_WindowId(instancePtr->tkwin), shape->width,
+				   shape->height, shape->depth);
+	gc = XCreateGC(display, instancePtr->mask, GCForeground | GCBackground, &gcValues);
+	TkPutImage(NULL, 0, display, instancePtr->mask, gc, shape, 0, 0, 0, 0,
+	      shape->width, shape->height);
+	XFreeGC(display, gc);
+	xpmFreeImageData(shape);
+        XDestroyImage(shape);
+
 	XpmFreeAttributes(&xpmAttr);
     }
 
-    if (masterPtr->data != NULL) {
+    if (masterPtr->has_image) {
 	mask = GCGraphicsExposures;
 	gcValues.graphics_exposures = False;
         if ( instancePtr->bg != NULL ) {
@@ -377,7 +416,7 @@ ImgPmapConfigureInstance(instancePtr)
     Tcl_AddErrorInfo(masterPtr->interp, "\n    (while configuring image \"");
     Tcl_AddErrorInfo(masterPtr->interp, Tk_NameOfImage(masterPtr->tkMaster));
     Tcl_AddErrorInfo(masterPtr->interp, "\")");
-    Tk_BackgroundError(masterPtr->interp);
+    Tcl_BackgroundError(masterPtr->interp);
 }
 
 /*
@@ -401,69 +440,55 @@ ImgPmapConfigureInstance(instancePtr)
  *----------------------------------------------------------------------
  */
 
-static char *
-GetPixmapData(interp, string, fileName, widthPtr, heightPtr)
-    Tcl_Interp *interp;			/* For reporting errors. */
-    char *string;			/* String describing bitmap.  May
-					 * be NULL. */
-    char *fileName;			/* Name of file containing bitmap
-					 * description.  Used only if string
-					 * is NULL.  Must not be NULL if
-					 * string is NULL. */
-    int *widthPtr, *heightPtr;		/* Dimensions of pixmap get returned
-					 * here. */
+static int
+GetPixmapData(masterPtr)
+PixmapMaster *masterPtr;
 {
     FILE        *f;
     int         numBytes;
-    XpmImage    image;
     char        *data = NULL;
     Tcl_DString fName;
-    char        *ExpandedFileName;
+    Tcl_Interp *interp = masterPtr->interp;
 
-    if ( string == NULL ) {
-        ExpandedFileName = Tcl_TildeSubst(interp, fileName, &fName);
+    if ( masterPtr->dataString == NULL && masterPtr->fileString != NULL) {
+        char *ExpandedFileName = Tcl_TranslateFileName(interp, masterPtr->fileString, &fName);
 	f = fopen(ExpandedFileName, "r");
 	Tcl_DStringFree(&fName);
 	if ( f == NULL ) {
 	    Tcl_AppendResult(interp, "couldn't read pixmap file \"",
-		    fileName, "\": ", Tcl_PosixError(interp), (char *) NULL);
-	    return NULL;
+		    ExpandedFileName, "\": ", Tcl_PosixError(interp),          NULL);
+	    return 0;
 	}
 	fseek(f, 0, SEEK_END);
 	numBytes = ftell(f) + 1;
 	fseek(f, 0, SEEK_SET);
-	data = (char *) ckalloc((unsigned) numBytes);
-	if ( data != NULL ) {
-	    fread(data, 1, numBytes, f);
+	masterPtr->dataString = (char *) ckalloc((unsigned) numBytes);
+	if ( masterPtr->dataString != NULL ) {
+	    fread(masterPtr->dataString, 1, numBytes, f);
 	}
 	fclose(f);
-    } else {
-	data = ckalloc((unsigned) strlen(string) + 1);
-	if ( data != NULL ) {
-	    strcpy(data, string);
+	if ( masterPtr->dataString == NULL ) {
+	    Tcl_AppendResult(interp, "out of memory while reading XPM pixmap", NULL);
+	    return 0;
 	}
-    }
+    } 
 
-    if ( data == NULL ) {
-        Tcl_AppendResult(interp, "out of memory while reading XPM pixmap",
-                                 (char *) NULL);
-        goto errorCleanup;
-    }
+    if (masterPtr->dataString != NULL) {
 
-    if ( XpmCreateXpmImageFromBuffer(data, &image, NULL) != XpmSuccess ) {
-        Tcl_AppendResult(interp, "error reading XPM pixmap",
-                                 (char *) NULL);
-        goto errorCleanup;
-    }
-    *widthPtr = image.width; *heightPtr = image.height;
-    XpmFreeXpmImage(&image);
-    return data;
+	numBytes = XpmCreateXpmImageFromBuffer(masterPtr->dataString, 
+                                       &masterPtr->image, 
+                                       &masterPtr->info);
 
-    errorCleanup:
-    if (data != NULL) {
-	ckfree(data);
-    }
-    return NULL;
+	if ( numBytes != XpmSuccess ) {
+	    Tcl_AppendResult(interp,XpmGetErrorString(numBytes),
+	                      "error reading XPM pixmap", NULL);
+	    return 0;
+	}
+	masterPtr->width  = masterPtr->image.width; 
+	masterPtr->height = masterPtr->image.height;
+	masterPtr->has_image = 1;
+     }
+    return 1;
 }
 
 /*
@@ -705,10 +730,10 @@ ImgPmapFree(clientData, display)
 	Tk_FreeColor(instancePtr->bg);
     }
     if (instancePtr->bitmap != None) {
-	XFreePixmap(display, instancePtr->bitmap);
+	Tk_FreePixmap(display, instancePtr->bitmap);
     }
     if (instancePtr->mask != None) {
-	XFreePixmap(display, instancePtr->mask);
+	Tk_FreePixmap(display, instancePtr->mask);
     }
     if (instancePtr->gc != None) {
 	Tk_FreeGC(display, instancePtr->gc);
@@ -757,8 +782,10 @@ ImgPmapDelete(masterData)
  	Tcl_DeleteCommand(masterPtr->interp,
  		Tcl_GetCommandName(masterPtr->interp, masterPtr->imageCmd));
     }
-    if (masterPtr->data != NULL) {
-	ckfree(masterPtr->data);
+    if (masterPtr->has_image) {
+	XpmFreeXpmImage(&masterPtr->image);
+	XpmFreeXpmInfo(&masterPtr->info);
+	masterPtr->has_image = 0;
     }
     Tk_FreeOptions(configSpecs, (char *) masterPtr, (Display *) NULL, 0);
     ckfree((char *) masterPtr);

@@ -1,5 +1,50 @@
 #!/usr/local/bin/perl -w
 
+my $win_arch = shift;
+die "Unknown \$win_arch" unless $win_arch eq 'open32'
+                                or $win_arch eq 'x'
+                                or $win_arch eq 'MSWin32';
+
+sub Ignore
+{
+ my $cfile = shift;
+ if (open(C,"<$cfile"))
+  {
+   while (<C>)
+    {       
+     if (/^([A-Za-z][A-Za-z0-9_]*)/)
+      {     
+       $Ignore{$1} = $cfile;
+      }     
+    }       
+   close(C);
+  }
+ else
+  {
+   warn "Cannot open $cfile:$!";
+  }
+}
+
+sub WinIgnore
+{
+ my $cfile = shift;
+ if (open(C,"<$cfile"))
+  {
+   while (<C>)
+    {       
+     if (/^([A-Za-z][A-Za-z0-9_]*)/)
+      {     
+       $WinIgnore{$1} = $cfile;
+      }     
+    }       
+   close(C);
+  }
+ else
+  {
+   warn "Cannot open $cfile:$!";
+  }
+}
+
 sub Exclude
 {
  my $cfile = shift;
@@ -7,7 +52,7 @@ sub Exclude
   {
    while (<C>)
     {       
-     if (/{\s*"[^"]+"\s*,\s*(\w+)\s*}/)
+     if (/{\s*\"[^\"]+\"\s*,\s*(\w+)\s*}/)
       {     
        $Exclude{$1} = $cfile;
       }     
@@ -30,10 +75,11 @@ sub Vfunc
 
  while (<H>)
   {
-   if (/^\s*(EXTERN|extern)\s*(.*?)\s*(\w+)\s+_ANSI_ARGS_\s*\(\(/)
+   if (/^\s*(EXTERN|extern)\s*(.*?)\s*(\w+)\s+_ANSI_ARGS_\s*\((TCL_VARARGS)?\(/)
     {
-     my ($type,$name) = ($2,$3);
-     my $defn =  "VFUNC($type,$name,V_$name,_ANSI_ARGS_((";
+     my ($type,$name,$op) = ($2,$3,$4);
+     $op = "" unless (defined $op);
+     my $defn =  "VFUNC($type,$name,V_$name,_ANSI_ARGS_($op(";
      $_ = $';
      until (/\)\);\s*$/)
       {
@@ -45,7 +91,7 @@ sub Vfunc
          die $_;
         }
       }
-     s/\)\);\s*$/)))\n/;
+     s/\)\);\s*$/\)\)\)\n/;
      $defn .= $_;
      $VFunc{$name} = $defn;
     }
@@ -54,13 +100,17 @@ sub Vfunc
      my ($type,$name) = ($2,$3);
      $VVar{$name} = "VVAR($type,$name,V_$name)\n";
     }
-   elsif (/\b(EXTERN|extern)\s*"C"/)
+   elsif (/\b(EXTERN|extern)\s+[\w_]+\s+[\w_]+\[\];$/)
+    {
+
+    }
+   elsif (/\b(EXTERN|extern)\s*"C"\s*\{\s*$/)
     {
 
     }
    elsif (/\b(EXTERN|extern)\b/)
     {
-     die "$hfile:$.: $_" unless (/^\s*#\s*define/);
+     warn "$hfile:$.: $_" unless (/^\s*\#\s*define/);
     }
   }
  close(H); 
@@ -123,22 +173,34 @@ sub Vfunc
    print VMACRO "#ifndef _${gard}_VM\n";
    print VMACRO "#define _${gard}_VM\n";
    print VMACRO "#include \"$htfile\"\n"; 
+   print VMACRO "#ifndef NO_VTABLES\n";
    foreach $func (sort keys %VVar)                     
     {                                                   
-     if (!exists $Exclude{$func})                       
+     if (!exists($Exclude{$func}) && !exists($Ignore{$func}))                       
       {                                                 
        print VFUNC $VVar{$func};                     
-       print VMACRO "#define $func (*${name}ptr->V_$func)\n"  
+       print VMACRO "#define $func (*${name}ptr->V_$func)\n";
       }                                                 
+     delete $Ignore{$func};
     }                                                   
    foreach $func (sort keys %VFunc)                     
     {                                                   
-     if (!exists $Exclude{$func})                       
+     if (!exists($Exclude{$func}) && !exists($Ignore{$func}))                       
       {                                                 
+       print VFUNC "#ifndef __WIN32__\n" if exists($WinIgnore{$func});  
+       print VFUNC "#ifndef $func\n";  
        print VFUNC $VFunc{$func};                     
-       print VMACRO "#define $func (*${name}ptr->V_$func)\n"  
+       print VFUNC "#endif\n";
+       print VFUNC "#endif /* !__WIN32__ */\n" if exists($WinIgnore{$func});  
+       print VMACRO "#ifndef __WIN32__\n" if exists($WinIgnore{$func});  
+       print VMACRO "#ifndef $func\n";  
+       print VMACRO "#define $func (*${name}ptr->V_$func)\n";
+       print VMACRO "#endif\n";
+       print VMACRO "#endif /* !__WIN32__ */\n" if exists($WinIgnore{$func});  
       }                                                 
+     delete $Ignore{$func};
     }                                                   
+   print VMACRO "#endif /* NO_VTABLES */\n";
    print VMACRO "#endif /* _${gard}_VM */\n";
    close(VMACRO);                                       
    print VFUNC  "#endif /* _$gard */\n";                 
@@ -146,16 +208,25 @@ sub Vfunc
   }
 }
 
-opendir(DIR,'.') || die "Cannot opendir .:$!";
-foreach (readdir(DIR))
+foreach (<tk*Tab.c>)
  {
-  Exclude($_) if (/^tk.*Tab\.c$/);
+  Exclude($_);
  }
-closedir(DIR);
 
-foreach (@ARGV)
+my $h;
+foreach $h (@ARGV)
  {
-  Vfunc($_);
+  local %Ignore = ();
+  my $x = $h;
+  $x =~ s/\.h/.exc/;
+  Ignore($x) if (-f $x);
+  $x =~ s/\.exc/.excwin/;
+  WinIgnore($x) if (-f $x);
+  Vfunc($h);
+  foreach $x (sort keys %Ignore)
+   {
+    warn "$x is not in $h\n";
+   }
  }
 
 __END__

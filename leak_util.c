@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995,1996 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995,1996-1997 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -111,9 +111,8 @@ long
 note_used(x)
 hash_ptr **x;
 {
- size_t need = MAX_HASH*sizeof(hash_ptr);
- hash_ptr *ht = (hash_ptr *) safemalloc(need);
- memzero(ht,need);
+ hash_ptr *ht;
+ Newz(603, ht, MAX_HASH, hash_ptr);
  *x = ht;
  return sv_apply_to_used(ht, note_sv, 0);
 }

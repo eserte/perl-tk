@@ -1,4 +1,4 @@
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package MainWindow;
@@ -8,6 +8,8 @@ require Tk::Toplevel;
 
 use Getopt::Long qw(GetOptions);
 use Carp;
+
+$| = 1;
 
 @ISA = qw(Tk::Toplevel);
 
@@ -22,10 +24,12 @@ sub new
  $name = 'ptk' if ($name eq '-e'); 
  $name    =~ s#^.*/##; 
  $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
- my $top = bless CreateMainWindow("\l$name", "\u$name", @_), $package;
+ my $top = eval { bless Create("\l$name", -class => "\u$name", @_), $package };
+ croak($@ . "$package" ."::new(" . join(',',@_) .")") if ($@);
  $top->InitBindings;
  $top->InitObject(\%args);
- $top->configure(%args);
+ eval { $top->configure(%args) };
+ croak "$@" if ($@);
  $top->SetBindtags;
  push(@Windows,$top);
  return $top;

@@ -16,7 +16,7 @@ sub mkCanvText {
     $w->title('Canvas Text Demonstration');
     $w->iconname('Text');
  
-    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal-*-180-*-*-*-*-*-*', -wraplength => '5i',
+    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '5i',
 			   -justify => 'left', -text => 'This window displays a string of text to demonstrate the text ' .
 			   'facilities of canvas widgets.  You can point, click, and type.  You can also select and then ' .
 			   'delete with Control-d.  You can copy the selection with Control-v.  You can click in the boxes ' .
@@ -27,7 +27,7 @@ sub mkCanvText {
     $c->pack(-side => 'top', -expand => 'yes', -fill => 'both');
     $w_ok->pack(-side => 'bottom', -pady => '5', -anchor => 'center');
 
-    $font = '-Adobe-helvetica-medium-r-*-240-*-*-*-*-*-*';
+    $font = '-Adobe-helvetica-medium-r-normal--*-240-*-*-*-*-*-*';
 
     $c->create(qw(rectangle 245 195 255 205 -outline black -fill red));
 

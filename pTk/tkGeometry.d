@@ -1,1 +1,2 @@
-tkGeometry.o: tkGeometry.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h
+tkGeometry.o: tkGeometry.c tkPort.h Lang.h tkConfig.h tk.h \
+ tkUnixPort.h tkInt.h

@@ -2,21 +2,36 @@ use Cwd;
 no  lib '.';
 BEGIN 
  {
-  $VERSION = '400.202';
+  $IsWin32   = $^O eq 'MSWin32';
+  $VERSION = '402.000';
+
+  $win_arch = ($IsWin32) ? $^O : 'x';		# Currently 'x' and 'open32' supported
+
   require "./myConfig";
   use lib ($Tk::MMutil::dir=getcwd);
  }
 
 use Tk::MMutil;
 
+if ($IsWin32)
+ {
+  *MY::makeaperl = \&makeWin32perl;
+ }
+else
+ {
+  @libs = ("$xlib -lX11 -lpt -lsocket -lnsl -lm") unless $IsWin32;
+ }
+
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
     'NAME'     => 'Tk',
     'DISTNAME' => "Tk",
-    'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)',
-    'LIBS'    => ["$xlib -lX11 -lpt -lsocket -lnsl -lm"],
+    'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)' . ($win_arch eq 'open32'
+					    ? ' pTk/dllInit$(LIB_EXT)'
+					    : ''),
+    'LIBS'    => \@libs,
     'OBJECT'  => '$(O_FILES)',
-    'MAP_TARGET' => 'tkperl',
+    'MAP_TARGET' => 'tkperl$(EXE_EXT)',
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
@@ -71,6 +86,10 @@ sub MY::post_initialize
   {
    $self->{PM}->{$name} = $self->catfile($dir,$name);
   }
+ if ($^O eq 'MSWin32')
+  {
+   push(@{$self->{'O_FILES'}},'pTk\tk.res');
+  }
  '';
 }
 
@@ -87,16 +106,121 @@ tkGlue$(OBJ_EXT)     : tkGlue.c tkGlue.h pTk/Methods.def tkGlue.t
 Makefile     : myConfig
 
 tkGlue.t     : tkGlue.h pTk/mkVFunc
-	$(PERL) pTk/mkVFunc tkGlue.h
+	$(PERL) pTk/mkVFunc $(WINARCH) tkGlue.h
 
 $(MYEXTLIB)  : config FORCE
-	cd pTk; $(MAKE) 
+	cd pTk && $(MAKE) 
 
 perlmain.c : config Makefile
 
 pTk/Methods.def : $(MYEXTLIB)
+pTk/tk.res      : $(MYEXTLIB)
+
+MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
+	$(MAKE) manifest 
 
 ';
 }
 
+sub makeWin32perl
+{
+    my($self, %attribs) = @_;
+    my($makefilename, $searchdirs, $static, $extra, $perlinc, $target, $tmp, $libperl) =
+	@attribs{qw(MAKE DIRS STAT EXTRA INCL TARGET TMP LIBPERL)};
+    my(@m);
+    push @m, "# Tk Win32 makeaperl
+MAP_TARGET    = $target
+FULLPERL      = $self->{FULLPERL}
+";
+    return join '', @m if $self->{PARENT};
+    $tmp = "." unless $tmp;
 
+    my($dir) = join ":", @{$self->{DIR}};
+
+    my($cccmd, $linkcmd, $lperl);
+
+    # We trust that what has been handed in as argument, will be buildable
+    $static = [] unless $static;
+    @static{@{$static}} = (1) x @{$static};
+
+    grep(s/^/-I/, @{$perlinc || []});
+
+    $target = "perl" unless $target;
+
+# MAP_STATIC doesn't look into subdirs yet. Once "all" is made and we
+# regenerate the Makefiles, MAP_STATIC and the dependencies for
+# extralibs.all are computed correctly
+    push @m, "
+MAP_LINKCMD   = link 
+MAP_PERLINC   = @{$perlinc || []}
+MAP_STATIC    = ",
+join(" \\\n\t", reverse sort keys %static), " \$(MYEXTLIB) 
+
+MAP_PRELIBS   = \$(guilibsdll)
+";
+
+    if (defined $libperl) {
+	($lperl = $libperl) =~ s/\$\(A\)/$self->{LIB_EXT}/;
+    }
+    unless ($libperl && -f $lperl) { # Ilya's code...
+	my $dir = $self->{PERL_SRC} || "$self->{PERL_ARCHLIB}/CORE";
+	$libperl ||= "perl$self->{LIB_EXT}";
+	$libperl   = "$dir/$libperl";
+	$lperl   ||= "perl$self->{LIB_EXT}";
+	$lperl     = "$dir/$lperl";
+
+        if (! -f $libperl and ! -f $lperl) {
+          # We did not find a static libperl. Maybe there is a shared one?
+          if ($^O eq 'solaris' or $^O eq 'sunos') {
+            $lperl  = $libperl = "$dir/$Config::Config{libperl}";
+            # SUNOS ld does not take the full path to a shared library
+            $libperl = '' if $^O eq 'sunos';
+          }
+        }
+
+	print STDOUT "Warning: $libperl not found
+    If you're going to build a static perl binary, make sure perl is installed
+    otherwise ignore this warning\n"
+		unless (-f $lperl || defined($self->{PERL_SRC}));
+    }
+
+    $libperl =~ s/libperl/perl/;
+
+    push @m, "
+MAP_LIBPERL = $libperl
+MAP_LDFLAGS = \$(guilflags)
+";
+
+push (@m, "
+$tmp/perlmain\$(OBJ_EXT): $tmp/perlmain.c
+	cd $tmp && \$(CCCMD) -I\$(PERL_INC) perlmain.c\n");
+
+    push @m, qq{
+$tmp/perlmain.c: $makefilename}, q{
+	}.$self->{NOECHO}.q{echo Writing $@
+	}.$self->{NOECHO}.q{$(PERL) $(MAP_PERLINC) -MExtUtils::Miniperl \\
+		-e "writemain(grep s#.*/auto/##, qw|$(MAP_STATIC)|)" > $@t && $(MV) $@t $@
+
+};
+
+    push (@m,"
+\$(MAP_TARGET) :: $tmp/perlmain\$(OBJ_EXT) \$(MAP_LIBPERL) \$(MAP_STATIC) 
+	link -out:\$\@ \$(MAP_LDFLAGS) $tmp/perlmain\$(OBJ_EXT) \$(MAP_STATIC) \$(MAP_LIBPERL) \$(MAP_PRELIBS)
+");
+
+
+    push @m, q{
+inst_perl: pure_inst_perl doc_inst_perl
+
+pure_inst_perl: $(MAP_TARGET)
+	}.$self->{CP}.q{ $(MAP_TARGET) }.$self->catfile('$(INSTALLBIN)','$(MAP_TARGET)').q{
+
+clean :: map_clean
+
+map_clean :
+	}.$self->{RM_F}.qq{ $tmp/perlmain\$(OBJ_EXT) $tmp/perlmain.c \$(MAP_TARGET) 
+};
+
+    join '', @m;
+
+}

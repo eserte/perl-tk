@@ -15,7 +15,6 @@ extern Cursor XCreateGlyphCursor  _ANSI_ARGS_((Display *, Font, Font, unsigned i
 extern Font XLoadFont  _ANSI_ARGS_((Display *, const char *));
 extern GC XCreateGC  _ANSI_ARGS_((Display *, Drawable, long unsigned int, XGCValues *));
 extern GContext XGContextFromGC  _ANSI_ARGS_((GC));
-extern Pixmap XCreatePixmap  _ANSI_ARGS_((Display *, Drawable, unsigned int, unsigned int, unsigned int));
 extern Pixmap XCreateBitmapFromData  _ANSI_ARGS_((Display *, Drawable, const char *, unsigned int, unsigned int));
 extern Window XCreateWindow  _ANSI_ARGS_((Display *, Window, int, int, unsigned int, unsigned int, unsigned int, int, unsigned int, Visual *, long unsigned int, XSetWindowAttributes *));
 extern Atom *XListProperties  _ANSI_ARGS_((Display *, Window, int *));
@@ -67,7 +66,6 @@ extern int XFreeCursor  _ANSI_ARGS_((Display *, Cursor));
 extern int XFreeFont  _ANSI_ARGS_((Display *, XFontStruct *));
 extern int XFreeGC  _ANSI_ARGS_((Display *, GC));
 extern int XFreeModifiermap  _ANSI_ARGS_((XModifierKeymap *));
-extern int XFreePixmap  _ANSI_ARGS_((Display *, Pixmap));
 extern int XGetFontProperty  _ANSI_ARGS_((XFontStruct *, Atom, long unsigned int *));
 extern int XGetGeometry  _ANSI_ARGS_((Display *, Drawable, Window *, int *, int *, unsigned int *, unsigned int *, unsigned int *, unsigned int *));
 extern int XGetInputFocus  _ANSI_ARGS_((Display *, Window *, int *));

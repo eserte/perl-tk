@@ -44,7 +44,7 @@ xpmCreatePixmapFromImage(display, d, ximage, pixmap_return)
     GC gc;
     XGCValues values;
 
-    *pixmap_return = XCreatePixmap(display, d, ximage->width,
+    *pixmap_return = Tk_GetPixmap(display, d, ximage->width,
 				   ximage->height, ximage->depth);
     /* set fg and bg in case we have an XYBitmap */
     values.foreground = 1;
@@ -52,7 +52,7 @@ xpmCreatePixmapFromImage(display, d, ximage, pixmap_return)
     gc = XCreateGC(display, *pixmap_return,
 		   GCForeground | GCBackground, &values);
 
-    XPutImage(display, *pixmap_return, gc, ximage, 0, 0, 0, 0,
+    TkPutImage(NULL, 0, display, *pixmap_return, gc, ximage, 0, 0, 0, 0,
 	      ximage->width, ximage->height);
 
     XFreeGC(display, gc);

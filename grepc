@@ -1,14 +1,29 @@
 #!/usr/local/bin/perl 
 
 use File::Find;
+use Getopt::Std;
+
+my %opt;
+getopts("mlc",\%opt);
 
 $expr = shift;
+print "Matching '$expr'\n";
+
 
 sub match
 {
  if (/$expr/o)
   {
-   print "$File::Find::dir/$file:$.: $_" 
+   if ($opt{'l'})
+    {
+     print "$File::Find::name\n";
+     return 1;
+    }
+   $count++;
+   unless ($opt{'c'})
+    {
+     print "$File::Find::name:$.: $_" 
+    }
   }
  return 0;
 }
@@ -26,10 +41,14 @@ sub wanted
      last if &match;
     }
    close($file);
+   if ($opt{'c'} && $count)
+    {
+     print "$File::Find::name: $count\n" 
+    }
   }
  elsif (-d $_)
   {
-   $File::Find::prune = 1 if ($_ eq 'mTk');
+   $File::Find::prune = 1 if ($_ eq 'mTk' && $opt{'m'});
   }
 }
 

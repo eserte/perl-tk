@@ -1,1 +1,2 @@
-tkSend.o: tkSend.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h
+tkSend.o: tkSend.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h \
+ tkInt.h

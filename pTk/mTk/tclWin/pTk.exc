@@ -1,0 +1,17 @@
+cat.c
+stub16.c
+tclAppInit.c
+tclWin16.c
+tclWin32Dll.c
+tclWinChan.c
+tclWinError.c
+tclWinFCmd.c
+tclWinFile.c
+tclWinInit.c
+tclWinInt.h
+tclWinMtherr.c
+tclWinPipe.c
+tclWinTest.c
+tclWinLoad.c
+tclWinSock.c
+winDumpExts.c

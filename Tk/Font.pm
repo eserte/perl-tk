@@ -94,7 +94,7 @@ my @field = qw(foundry family weight slant swidth adstyle pixel
 
 map { eval "sub \u$_ { shift->elem('$_', \@_) }" } @field;
 
-use overload '""' => \&_string;
+use overload '""' => 'as_string';
 
 sub new
 {
@@ -175,7 +175,7 @@ sub Name
  $me->{Display}->XListFonts($name,$max);
 }
 
-sub _string
+sub as_string
 {
  return shift->Name;
 }
@@ -213,6 +213,20 @@ sub Clone
   }
 
  $me;
+}
+
+sub ascent
+{
+ my $me = shift;
+ my $name = $me->Name;
+ $me->{MainWin}->FontAscent($name);
+}
+
+sub descent
+{
+ my $me = shift;
+ my $name = $me->Name;
+ $me->{MainWin}->FontDescent($name);
 }
 
 1;

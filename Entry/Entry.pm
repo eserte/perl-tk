@@ -6,7 +6,7 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-1996 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -72,7 +72,7 @@ sub ClassInit
              {
               my $w = shift;
               my $Ev = $w->XEvent;
-              Button1($w,$Ev->x);
+              $w->Button1($Ev->x);
               $w->SelectionClear;
              });
 
@@ -84,7 +84,7 @@ sub ClassInit
               my $w = shift;
               my $Ev = $w->XEvent;
               $Tk::selectMode = "word";
-              MouseSelect($w,$Ev->x);
+              $w->MouseSelect($Ev->x);
               eval {local $SIG{__DIE__}; $w->icursor("sel.first") }
              } ) ;
  $mw->bind($class,"<Triple-1>",
@@ -93,7 +93,7 @@ sub ClassInit
               my $w = shift;
               my $Ev = $w->XEvent;
               $Tk::selectMode = "line";
-              MouseSelect($w,$Ev->x);
+              $w->MouseSelect($Ev->x);
               $w->icursor(0)
              } ) ;
  $mw->bind($class,"<Shift-1>",
@@ -110,7 +110,7 @@ sub ClassInit
               my $w = shift;
               my $Ev = $w->XEvent;
               $Tk::selectMode = "word";
-              MouseSelect($w,$Ev->x)
+              $w->MouseSelect($Ev->x)
              } ) ;
  $mw->bind($class,"<Triple-Shift-1>",
              sub
@@ -118,7 +118,7 @@ sub ClassInit
               my $w = shift;
               my $Ev = $w->XEvent;
               $Tk::selectMode = "line";
-              MouseSelect($w,$Ev->x)
+              $w->MouseSelect($Ev->x)
              } ) ;
  $mw->bind($class,"<B1-Leave>",['AutoScan',Ev("x")]);
  $mw->bind($class,"<B1-Enter>",'CancelRepeat');
@@ -261,7 +261,7 @@ sub ClassInit
              sub
              {
               my $w = shift;
-              eval {local $SIG{__DIE__}; Insert($w,$w->SelectionGet)}
+              eval {local $SIG{__DIE__}; $w->Insert($w->SelectionGet)}
              } ) ;
  # Additional emacs-like bindings:
  if (!$Tk::strictMotif)
@@ -463,7 +463,7 @@ sub AutoScan
   {
    return;
   }
- MouseSelect($w,$x);
+ $w->MouseSelect($x);
  $w->RepeatId($w->after(50,"AutoScan",$w,$x))
 }
 # KeySelect

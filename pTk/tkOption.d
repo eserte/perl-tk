@@ -1,1 +1,2 @@
-tkOption.o: tkOption.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h
+tkOption.o: tkOption.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h \
+ tkInt.h

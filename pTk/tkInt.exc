@@ -1,0 +1,13 @@
+TkAlignImageData
+TkConsoleCreate
+TkConsoleInit
+TkConsolePrint
+TkCopyAndGlobalEval
+TkFillPolygon
+TkGetNativeProlog
+TkIDToWindow
+TkUnsupported1Cmd
+TkXFileProc
+tkHandleEventProc
+TkOptionClassChanged
+TkOptionDeadWindow

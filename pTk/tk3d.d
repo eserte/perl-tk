@@ -1,1 +1,1 @@
-tk3d.o: tk3d.c tkPort.h tkConfig.h tkInt.h tk.h Lang.h
+tk3d.o: tk3d.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h tkInt.h

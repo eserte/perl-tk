@@ -195,9 +195,12 @@ typedef struct {
     long closeness;
 }      CloseColor;
 
+static int closeness_cmp _ANSI_ARGS_((const void *a, const void *b));
+
 static int
 closeness_cmp(a, b)
-    Const void *a, *b;
+    CONST void *a;
+    CONST void *b;
 {
     CloseColor *x = (CloseColor *) a, *y = (CloseColor *) b;
 

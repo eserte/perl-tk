@@ -94,7 +94,7 @@ sub mkRuler {
     $w->title('Ruler Demonstration');
     $w->iconname('Ruler');
 
-    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal-*-180-*-*-*-*-*-*', -wraplength => '13c',
+    my $w_msg = $w->Label(-font => '-Adobe-Times-Medium-R-Normal--*-180-*-*-*-*-*-*', -wraplength => '13c',
 			     -justify => 'left', -text => 'This canvas widget shows a mock-up of a ruler.  You can create tab ' .
 			     'stops by dragging them out of the well to the right of the ruler.  You can also drag ' .
 			     'existing tab stops.  If you drag a tab stop far enough up or down so that it turns dim, it ' .

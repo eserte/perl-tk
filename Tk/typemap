@@ -28,19 +28,19 @@ T_PVOBJ
 	    croak(\"$var is not an object\")
 
 T_TK_WINDOW
-	$var = GetWindow($arg)
+	$var = SVtoWindow($arg)
 
 T_TK_IMAGE
-	$var = GetImage($arg)
+	$var = SVtoImage($arg)
 
 T_TKWINDOW
-	$var = (TkWindow *) GetWindow($arg)
+	$var = (TkWindow *) SVtoWindow($arg)
 
 T_TK_INTERP
 	$var = WindowCommand($arg,NULL,1)->interp
 
 T_TK_UID
-	$var = Tk_GetUid(SvPV($arg),na)
+	$var = Tk_GetUid(SvPV($arg,na))
 
 T_IVOBJ
 	if (sv_isa($arg, \"${ntype}\")) {

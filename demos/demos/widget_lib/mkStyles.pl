@@ -21,9 +21,9 @@ sub mkStyles {
 
     # Set up display styles.
 
-    $w_t->tag('configure', 'bold', -font => '-Adobe-Courier-Bold-O-Normal-*-120-*-*-*-*-*-*');
-    $w_t->tag('configure', 'big', -font => '-Adobe-Courier-Bold-R-Normal-*-140-*-*-*-*-*-*');
-    $w_t->tag('configure', 'verybig', -font => '-Adobe-Helvetica-Bold-R-Normal-*-240-*-*-*-*-*-*');
+    $w_t->tag('configure', 'bold', -font => '-Adobe-Courier-Bold-O-Normal--*-120-*-*-*-*-*-*');
+    $w_t->tag('configure', 'big', -font => '-Adobe-Courier-Bold-R-Normal--*-140-*-*-*-*-*-*');
+    $w_t->tag('configure', 'verybig', -font => '-Adobe-Helvetica-Bold-R-Normal--*-240-*-*-*-*-*-*');
     if ($mkStyles->depth > 1) {
 	$w_t->tag('configure', 'color1', -background => '#eed5b7');
 	$w_t->tag('configure', 'color2', -foreground => 'red');

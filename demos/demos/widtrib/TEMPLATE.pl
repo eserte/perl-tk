@@ -1,7 +1,6 @@
 # Learn how to write your own widget demonstration!
 
 use English;
-use WidgetDemo;
 use vars qw($TOP);
 use strict;
 
@@ -30,11 +29,11 @@ invoked and the environment variable WIDTRIB is defined then demonstrations
 are loaded from the WIDTRIB directory. If WIDTRIB is undefined then widget
 defaults to the released user contributed directory.
 
-The first line of the file is the DDD (Demonstration Description Data), that
+The first line of the file is the DDD (Demonstration Description Data), which
 briefly describes the purpose of the demonstration.  The widget program reads
 this line and uses it when building its interface.
 
-For consistency your demonstration should use the WidgetDemo widget.  This is
+For consistency your demonstration should use the WidgetDemo widget.  This is  
 a toplevel widget with three frames. The top frame contains descriptive
 demonstration text.  The bottom frame contains the "Dismiss" and "See Code"
 buttons.  The middle frame is the demonstration container, which can be
@@ -50,8 +49,8 @@ top-most window of your widget hierarchy.
 
 Other consideration:
 
-    . widget global variables are all uppercase - be careful not to stomp
-      on them!
+    . widget global variables are all uppercase, like $MW - be careful not
+      to stomp on them!
 
     . If your demonstration has a Quit button change it to ring the bell
       and use the builtin Dismiss instead.
@@ -67,3 +66,4 @@ Other consideration:
       subsequent invokations of the demonstration.  The npuz and plop
       demonstrations show how to work around this.  Essentially, remove
       all "global" my() variables and place them within a "use vars".
+      This practice is prone to subtle bugs and is not recommended!

@@ -168,6 +168,8 @@ sub search_text {
 
     my($w, $string, $tag) = @ARG;
 
+    return unless ref($string) && length($$string);
+
     $w->tag('remove',  $tag, '0.0', 'end');
     my($current, $length) = ('1.0', 0);
     

@@ -1,1 +1,2 @@
-tkColor.o: tkColor.c tkPort.h tkConfig.h tk.h Lang.h tkInt.h
+tkColor.o: tkColor.c tkPort.h Lang.h tkConfig.h tk.h tkUnixPort.h \
+ tkInt.h

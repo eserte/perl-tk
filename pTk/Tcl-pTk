@@ -5,6 +5,7 @@ $dst = shift;
 
 die "Usage: $0 <src> <dst> \n" unless (defined $src and defined $dst);
 
+chmod(0666, $dst);
 unlink($dst);
 open(DST,">$dst") || die "Cannot open $dst;$!";
 select(DST);
@@ -186,7 +187,7 @@ while ($_ = &getline)
    {
     if (/^\s\*\s*Copyright/)
      {
-      print " *\n * Modifications Copyright (c) 1994-1996 Nick Ing-Simmons\n";
+      print " *\n * Modifications Copyright (c) 1994-1997 Nick Ing-Simmons\n";
      }
       
     if (/^\s\*\s*all copies of this software./)

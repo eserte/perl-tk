@@ -6,10 +6,9 @@
 # to the widget demo standard.
 
 use English;
-use WidgetDemo;
 use vars qw($TOP @FUNCTIONS @COLORS $NUM_COLORS $X_MIN $X_MAX $Y_MIN $Y_MAX
 	    $DX $DY $MIN_PXL $MAX_PXL $MARGIN $ALEN $ORIGINAL_CURSOR $CANV
-	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS);
+	    $DIALOG_ABOUT $DIALOG_USAGE $MBF $TEXT %ERRORS $VERSION);
 
 sub plop {
     my($demo) = @ARG;
@@ -50,7 +49,7 @@ sub make_menubutton;
 sub plot_functions;
 sub update_functions;
 
-my $VERSION = '1.0';
+$VERSION = '1.0';
 
 # The default sample functions and limits, each in a different color.
 
@@ -66,7 +65,7 @@ $NUM_COLORS = scalar @COLORS;
 # available for graphs.
 
 $MIN_PXL = 0;		        # minimum Canvas pixel coordinate
-$MAX_PXL = 400;		        # maximum Canvas pixel coordinate
+$MAX_PXL = 300;		        # maximum Canvas pixel coordinate
 $MARGIN = 80;		        # margin size, in pixels
 $ALEN = $MAX_PXL - 2 * $MARGIN;	# X/Y axes length, in pixels
 
@@ -137,7 +136,7 @@ sub initialize_canvas {
     $CANV->Tk::bind('<Button-1>' => \&display_coordinates);
 
     $CANV->create('text', 
-		  325, 25, 
+		  225, 25, 
 		  -text => 'Plot Continuous Functions Of The Form y=f($x)',
 		  -fill => 'blue',
 		  );
@@ -156,6 +155,7 @@ sub initialize_canvas {
 		  -window => $TOP->LabEntry(
 					   -textvariable => \$X_MIN,
 					   -label => 'X Minimum',
+					   -width => 5,
 					   ),
 		  );
     $CANV->create('line', 
@@ -168,6 +168,7 @@ sub initialize_canvas {
 		  -window => $TOP->LabEntry(
 					   -textvariable => \$X_MAX,
 					   -label => 'X Maximum',
+					   -width => 5,
 					   ),
 		  );
     $CANV->create('line', 
@@ -189,6 +190,7 @@ sub initialize_canvas {
 		  -window => $TOP->LabEntry(
 					   -textvariable => \$Y_MAX,
 					   -label => 'Y Maximum',
+					   -width => 5,
 					   ),
 		  );
     $CANV->create('line', 
@@ -201,6 +203,7 @@ sub initialize_canvas {
 		  -window => $TOP->LabEntry(
 					   -textvariable => \$Y_MIN,
 					   -label => 'Y Minimum',
+					   -width => 5,
 					   ),
 		  );
     $CANV->create('line', 
@@ -237,7 +240,7 @@ sub initialize_functions {
 
     # Pack a spacer Frame and then display instructions in a Label widget.
 
-    $TOP->Frame(-height => 20)->pack;
+#    $TOP->Frame(-height => 10)->pack;
     $TOP->Label(
 	       -text       => 'Enter your functions here',
 	       -foreground => 'blue',
@@ -248,7 +251,7 @@ sub initialize_functions {
 
     my $functions_frame = $TOP->Frame;
     $functions_frame->pack;
-    $TEXT = $functions_frame->Text(-height => 6);
+    $TEXT = $functions_frame->Text(-height => 3);
     $TEXT->pack;
     $functions_frame->AddScrollbars($TEXT);
     $functions_frame->configure(-scrollbars => 'e');
@@ -333,7 +336,7 @@ sub plot_functions {
     $TOP->idletasks;
 
     %ERRORS = ();
-    $SIG{'__WARN__'} = sub {collect_errors($ARG[0])};
+    local $SIG{'__WARN__'} = sub {collect_errors($ARG[0])};
 
 ALL_X_VALUES:
     for ($x = $X_MIN; $x <= $X_MAX; $x += ($X_MAX - $X_MIN) / $ALEN) {
@@ -390,3 +393,4 @@ sub update_functions {
 } # end update_function_list
 
 } # end subroutine plop
+

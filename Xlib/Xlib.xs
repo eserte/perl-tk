@@ -169,6 +169,10 @@ Screen *	s
 
 MODULE = Tk::Xlib	PACKAGE = DisplayPtr
 
+int
+ConnectionNumber(dpy)
+Display *	dpy
+
 Font
 XLoadFont(dpy,name)
 Display *	dpy
@@ -182,6 +186,7 @@ int		max
 PPCODE:
  {
   int  count = 0;
+#ifndef __WIN32__
   char **list = XListFonts(dpy, pattern, max, &count);
   int i;
   EXTEND(sp, count);
@@ -190,6 +195,7 @@ PPCODE:
     PUSHs(sv_2mortal(newSVpv(list[i],0)));
    }
   XFreeFontNames(list);
+#endif
   XSRETURN(count);
  }
 

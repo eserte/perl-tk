@@ -8,7 +8,7 @@ use Getopt::Long;
 $opt_suffix = "htm";
 $opt_tk     = "";
 
-GetOptions('suffix=s','tk','q','man1=s','man3=s');
+GetOptions('suffix=s','tk','q','man1=s','man3=s','files=s');
 
 $SIG{INT} = sub { confess("Interrupt") };
 
@@ -34,6 +34,7 @@ use lib qw(. ..);
   my $package = shift;
   my $file = shift;
   my $obj;
+  $file =~ s/::/-/g;
   print STDERR "$file\n" unless ($main::opt_q);
   if (exists $file{$file})
    {
@@ -796,6 +797,15 @@ sub mandir
 
 mandir($opt_man1,'.1') if (defined $opt_man1);
 mandir($opt_man3,'.3') if (defined $opt_man3);
+if (defined $opt_files)
+ {
+  open(FILE,"<$opt_files") || die "Cannot open $opt_files:$!";
+  while (<FILE>)
+   {
+    chomp;
+    push(@ARGV,split(/\s+/,$_));
+   }
+ }
 
 unless (@ARGV)
  {
@@ -815,6 +825,10 @@ HTML->Enable;
 print STDERR "Pass 2\n";
 process(@files);
 
+my $counter = 0;
+my @headings = grep {not /Tk Library Procedures/} sort(keys %Cat);
+push @headings,'Tk Library Procedures';
+
 if (@files > 1)
  {
   my $toc = HTML->new("index.html",Description => "perl/Tk Documentation");
@@ -822,7 +836,19 @@ if (@files > 1)
   $toc->tagged('H1',"Tk Documentation Table of Contents");
   if ($opt_tk)
    {
-    $toc->print('<A HREF="license.html"> License terms</A>');
+    $toc->print('<A HREF="license.html"> License terms</A>'."\n");
+   
+    $toc->print("<H2>Index</H2>\n<UL>\n");
+    $toc->print("<LI><A HREF=\"#Section$counter\"><CODE>Tk Widget Classes</CODE></A>\n");
+    $counter++;
+    foreach (@headings)
+     {
+      $toc->print("<LI><A HREF=\"#Section$counter\"><CODE>$_</CODE></A>\n");
+      $counter++;
+      print "idx: $_\n";
+     }
+    $toc->print("</UL>\n");
+
     SH($toc,"Tk Widget Classes");
     $toc->force_list('DIR');
     foreach (sort keys %Widgets)
@@ -833,8 +859,8 @@ if (@files > 1)
     $toc->end_list;
    }
 
-  foreach $cat (sort keys %Cat)
-   {
+   foreach $cat (@headings)
+    {
     print "$cat\n";
     SH($toc,$cat);
     $toc->force_list('DIR');

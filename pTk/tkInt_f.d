@@ -1,2 +1,2 @@
-tkInt_f.o: tkInt_f.c tkInt.h tk.h Lang.h tkPort.h tkConfig.h tkInt_f.h \
- tkInt.t
+tkInt_f.o: tkInt_f.c tkInt.h tk.h Lang.h tkConfig.h tkPort.h \
+ tkUnixPort.h tkInt_f.h tkInt.t
