@@ -1,18 +1,19 @@
 package Tk::IO;
+use strict;
+use vars qw($VERSION @ISA);
+$VERSION = '3.005'; # $Id: //depot/Tk8/IO/IO.pm#6$
+
 require 5.002;
 require Tk;
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/IO/IO.pm#3$
-
-use Tk::Pretty;
 require DynaLoader;
 require Exporter;
 require IO::Handle;
 use Carp;
-@Tk::IO::ISA = qw(DynaLoader IO::Handle Exporter);
+@ISA = qw(DynaLoader IO::Handle Exporter);
 
 bootstrap Tk::IO $Tk::VERSION;
+
 
 sub new
 {
@@ -172,11 +173,134 @@ sub close
      ${*$fh}{-childcommand}->Call($?,$fh);
     }
   }
+}  
+
+
+sub PrintArgs
+{
+ my $func = (caller(1))[3];
+ print "$func(",join(',',@_),")\n";
+}
+
+sub TIEHANDLE
+{
+ my ($class,$src) = @_;
+ my $fh = new IO::Handle;
+ *{$fh} = *{*$src}{IO};
+ ${*$fh}{Handlers} = {};
+ ${*$fh}{imode} = 0;
+ return bless $fh,$class;
 }
 
 sub DESTROY
-{  
- shift->close;
+{
+ my $obj = shift;
+ $obj->CLOSE;
+}
+
+sub PRINT
+{
+ &PrintArgs;
+ my $h = shift;
+ return print $h @_;
+}
+
+sub PRINTF
+{       
+ &PrintArgs;
+ my $h = shift;
+ return printf $h @_;
+}
+
+sub WRITE
+{
+ &PrintArgs;
+}
+
+sub READLINE
+{
+ my $h = shift;
+ return <$h>;
+}
+
+sub CLOSE
+{
+ my $h = shift;  
+ my $fd  = fileno($h);
+ foreach my $mode (keys %{${*$h}{'Handlers'}})
+  {
+   $h->deleteHandler($mode);
+  }
+ DeleteFileHandler($fd) if (defined $fd);
+ close($h);
+}
+
+sub imode
+{
+ my $mode = shift;
+ my $imode = ${{readable => READABLE(), writable => WRITABLE()}}{$mode};
+ croak("Invalid handler type '$mode'") unless (defined $imode);
+ return $imode;
+}
+
+sub IOready
+{
+ my ($h,$rmode) = @_;
+ foreach my $mode (keys %{${*$h}{'Handlers'}})
+  {
+   my $imode = imode($mode);
+   if ($rmode & $imode)
+    {
+     ${*$h}{'Handlers'}{$mode}->Call;
+    }
+  }
+}
+
+sub addHandler
+{
+ my ($h,$mode,$cb) = @_;
+ my $fd = fileno($h);                                             
+ croak("Cannot add fileevent to unopened handle") unless defined $fd;
+ $cb = Tk::Callback->new($cb);
+ my $imode = imode($mode);
+ ${*$h}{'Handlers'}{$mode} = $cb;
+ unless (${*$h}{'imode'} & $imode)
+  {
+   DeleteFileHandler($fd);
+   CreateFileHandler($fd, ${*$h}{'imode'} |= $imode, $h);
+  }
+}
+
+sub deleteHandler
+{
+ my ($h,$mode) = @_;
+ my $imode = imode($mode);
+ my $fd  = fileno($h);
+ if (${*$h}{'imode'} & $imode)
+  {
+   ${*$h}{'imode'} &= ~$imode;
+   if (defined $fd)
+    {
+     DeleteFileHandler($fd);                                  
+     CreateFileHandler($fd, ${*$h}{'imode'}, $h) if (${*$h}{'imode'});
+    }
+  }
+ delete ${*$h}{'Handlers'}{$mode};
+}
+
+sub fileevent
+{
+ my ($obj,$file,$mode,$cb) = @_;
+ croak "Unknown mode '$mode'" unless $mode =~ /^(readable|writable)$/;
+ unless (ref $file)
+  {
+   no strict 'refs';
+   $file = Symbol::qualify($file,(caller)[0]);
+   $file = \*{$file};
+  }
+ my $obj = tie *$file,'Tk::IO', $file;
+ $obj->deleteHandler($mode);
+ $obj->addHandler($mode,$cb) if ($cb);
 }
 
 1;

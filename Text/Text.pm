@@ -17,9 +17,11 @@ use Carp;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Text/Text.pm#5$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Text/Text.pm#7$
 
-@ISA = qw(Tk::Widget);
+require Tk::Clipboard;
+
+@ISA = qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Text';
 
@@ -52,7 +54,6 @@ __END__
 
 sub bindRdOnly
 {
- require Tk::Clipboard;
 
  my ($class,$mw) = @_;
 
@@ -189,8 +190,6 @@ sub bindRdOnly
    $mw->bind($class,"<2>",['Button2',Ev('x'),Ev('y')]);
    $mw->bind($class,"<B2-Motion>",['Motion2',Ev('x'),Ev('y')]);
 
-   $class->clipboardKeysyms($mw,"F16");
-   $class->clipboardKeysyms($mw,'Control-c');
   }
  $mw->bind($class,"<Destroy>",'Destroy');
  return $class;
@@ -217,6 +216,7 @@ sub Button2
 sub ClassInit
 {
  my ($class,$mw) = @_;
+ $class->SUPER::ClassInit($mw);
 
  $class->bindRdOnly($mw);
 
@@ -227,8 +227,6 @@ sub ClassInit
  $mw->bind($class,"<Delete>",'Delete');
  $mw->bind($class,"<BackSpace>",'Backspace');
 
- $class->clipboardKeysyms($mw,"F16","F20","F18");
- $class->clipboardKeysyms($mw,'Control-c','Control-x','Control-v');
 
  $mw->bind($class,"<Insert>",
             sub
@@ -273,7 +271,6 @@ sub ClassInit
    $mw->bind($class,"<Meta-d>",['delete','insert','insert wordend']);
    $mw->bind($class,"<Meta-BackSpace>",['delete','insert-1c wordstart','insert']);
 
-   $class->clipboardKeysyms($mw,"Meta-w","Control-w","Control-y");
    # A few additional bindings of my own.
    $mw->bind($class,"<Control-h>",
               sub

@@ -7,7 +7,7 @@ require Tk::Wm;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Toplevel.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Toplevel.pm#6$
 
 @ISA = qw(Tk::Wm Tk::Frame);
 
@@ -19,8 +19,11 @@ sub CreateArgs
 {
  my ($package,$parent,$args) = @_;
  my @result = $package->SUPER::CreateArgs($parent,$args);
- my $screen = delete $args->{-screen};                     
- push(@result, '-screen' => $screen) if (defined $screen);
+ foreach my $opt ('-screen','-use')
+  {
+   my $val = delete $args->{$opt};
+   push(@result, $opt => $val) if (defined $val);
+  }
  return @result;
 }
 

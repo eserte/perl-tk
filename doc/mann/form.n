@@ -49,8 +49,7 @@ Abbreviation for the \fB\-bottom\fR option.
 \fB\-bottom\fR => \fIattachment\fR
 '
 Specifies an attachment for the bottom edge of the slave window. The
-attachment must specied according to the section \fBSPECIFYING
-ATTACHMENTS\fR below.
+attachment must specied according to the section \fBSPECIFYING ATTACHMENTS\fR below.
 '
 .TP
 \fB\-bottomspring\fR => \fIweight\fR
@@ -95,8 +94,7 @@ Abbreviation for the \fB\-left\fR option.
 \fB\-left\fR => \fIattachment\fR
 '
 Specifies an attachment for the left edge of the slave window. The
-attachment must specied according to the section \fBSPECIFYING
-ATTACHMENTS\fR below.
+attachment must specied according to the section \fBSPECIFYING ATTACHMENTS\fR below.
 '
 .TP
 \fB\-leftspring\fR => \fIweight\fR
@@ -163,8 +161,7 @@ Abbreviation for the \fB\-right\fR option.
 \fB\-right\fR => \fIattachment\fR
 '
 Specifies an attachment for the right edge of the slave window. The
-attachment must specied according to the section \fBSPECIFYING
-ATTACHMENTS\fR below.
+attachment must specied according to the section \fBSPECIFYING ATTACHMENTS\fR below.
 '
 .TP
 \fB\-rightspring\fR => \fIweight\fR
@@ -193,8 +190,7 @@ Abbreviation for the \fB\-top\fR option.
 \fB\-top\fR => \fIattachment\fR
 '
 Specifies an attachment for the top edge of the slave window. The
-attachment must specied according to the section \fBSPECIFYING
-ATTACHMENTS\fR below.
+attachment must specied according to the section \fBSPECIFYING ATTACHMENTS\fR below.
 '
 '
 .TP
@@ -219,8 +215,8 @@ Abbreviation for the \fB\-topspring\fR option.
 \fI$master\fR->\fBformCheck
 '
 This command checks whether there is circular dependency in the
-attachments of the master's slaves (see the section \fBCIRCULAR
-DEPENDENCY\fR below). It returns the Boolean value \fBTRUE\fR if it
+attachments of the master's slaves (see the section \fBCIRCULAR DEPENDENCY\fR below).
+It returns the Boolean value \fBTRUE\fR if it
 discover circular dependency and \fBFALSE\fR otherwise.
 '
 .TP
@@ -254,7 +250,7 @@ elements in this list list are "\fB\-in\fI master\fR" where
 \fImaster\fR is the slave's master window.
 '
 .TP
-\fI$master\fR->\fBformSlavesfR
+\fI$master\fR->\fBformSlaves\fR
 '
 Returns a list of all of the slaves for the master window. The order
 of the slaves in the list is the same as their order in the packing

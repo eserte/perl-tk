@@ -143,7 +143,7 @@ hash_ptr **x;
      p = t->link;
      if (t->tag != new)
       {
-       Dump_vec(t->tag ? t->tag : "NUL",1,&t->sv);
+       LangDumpVec(t->tag ? t->tag : "NUL",1,&t->sv);
       }
      t->link = pile;
      pile = t;

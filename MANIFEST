@@ -26,7 +26,6 @@ Contrib/book-examples/f-16.9.pl
 Contrib/book-examples/lusol-f16.3
 Contrib/fd_demo			Demo of FileDialog
 Contrib/testlistbox
-Debug				Another gdb wrapper
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
 DragDrop/DragDrop/Rect.pm
@@ -389,13 +388,20 @@ destroy_test			Test of <Destroy> binding
 dfpy				Author's utility for putting Tk on a floppy
 dialog_test
 disbutton
+doc/CHANGES
 doc/Makefile.PL
+doc/Makefile.save
 doc/Perlize.pm
+doc/README
+doc/TODO
 doc/Tixlic.html
 doc/docmerge
+doc/doit
+doc/fix4man2pod
 doc/html_lic.html
 doc/htmlfile
 doc/license.html
+doc/list-of-pods
 doc/longnm
 doc/man.macros
 doc/man2html
@@ -523,6 +529,7 @@ doc/mann/HandleEvent.3
 doc/mann/IdToWindow.3
 doc/mann/ImgChanged.3
 doc/mann/InpOnly.n
+doc/mann/InputOnly.n
 doc/mann/InternAtom.3
 doc/mann/MainLoop.3
 doc/mann/MainWin.3
@@ -621,9 +628,16 @@ doc/perlize
 doc/tk4.0.ps
 doc/tkman2pod
 doc/tkuserguide.ps
+doc/transname
 doc/update-location
+doc/utils/fixsynop
+doc/utils/names2tkname
+doc/utils/widget2kind
+doc/widgets.list
 doc/xpm.ps
+embed
 error_prop
+evtGlue.c
 ewidth_demo
 findbase
 floppy
@@ -716,6 +730,7 @@ pTk/license.html_lib
 pTk/license.terms
 pTk/mTk/MANIFEST.SKIP
 pTk/mTk/README
+pTk/mTk/additions/exWinHandle.c
 pTk/mTk/additions/imgBMP.c
 pTk/mTk/additions/imgDllEntry.c
 pTk/mTk/additions/imgGIF.c

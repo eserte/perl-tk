@@ -8,19 +8,21 @@
 '\" SCCS: @(#) scale.n 1.32 97/10/31 12:58:51
 '\" 
 .so man.macros
-.TH scale n 4.1 Tk "Tk Generic Methods"
+.TH Tk::Scale n 4.1 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-scale \- Create and manipulate scale widgets
+Tk::Scale \- Create and manipulate Scale widgets
 .SH SYNOPSIS
-\fBscale\fR $widget \fR?\fIoptions\fR?
+\fI$scale\fR = \fI$parent\fR->\fBScale\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-activebackground	\-font	\-highlightthickness	\-repeatinterval
 \-background	\-foreground	\-orient	\-takefocus
 \-borderwidth	\-highlightbackground	\-relief	\-troughcolor
 \-cursor	\-highlightcolor	\-repeatdelay
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-bigincrement bigIncrement BigIncrement
 Some interactions with the scale cause its value to change by
@@ -99,7 +101,7 @@ this is the trough's height.
 
 .SH DESCRIPTION
 .PP
-The \fBscale\fR command creates a new window (given by the
+The \fBScale\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a scale widget.
 Additional
 options, described above, may be specified on the command line
@@ -116,8 +118,8 @@ of real values (determined by the \fBfrom\fR, \fBto\fR, and
 \fBresolution\fR options),
 and the position of the slider selects a particular real value.
 The slider's position (and hence the scale's value) may be adjusted
-with the mouse or keyboard as described in the BINDINGS
-section below.  Whenever the scale's value is changed, a Tcl
+with the mouse or keyboard as described in
+the BINDINGS section below.  Whenever the scale's value is changed, a Tcl
 command is invoked (using the \fBcommand\fR option) to notify
 other interested widgets of the change.
 In addition, the value
@@ -135,24 +137,24 @@ configuration options.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBscale\fR command creates a widget object whose
+The \fBScale\fR method creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$scale\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for scale widgets:
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$scale->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBscale\fR
 command.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$scale->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for
@@ -166,13 +168,13 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBscale\fR
 command.
 .TP
-\fI$widget->\fBcoords\fR(?\fIvalue\fR?\fR)
+\fI$scale->\fBcoords\fR(?\fIvalue\fR?\fR)
 Returns a list whose elements are the x and y coordinates of
 the point along the centerline of the trough that corresponds
 to \fIvalue\fR.
 If \fIvalue\fR is omitted then the scale's current value is used.
 .TP
-\fI$widget->\fBget\fR(?\fIx, y\fR?\fR)
+\fI$scale->\fBget\fR(?\fIx, y\fR?\fR)
 If \fIx\fR and \fIy\fR are omitted, returns the current value
 of the scale.  If \fIx\fR and \fIy\fR are specified, they give
 pixel coordinates within the widget;  the command returns
@@ -180,7 +182,7 @@ the scale value corresponding to the given pixel.
 Only one of \fIx\fR or \fIy\fR is used:  for horizontal scales
 \fIy\fR is ignored, and for vertical scales \fIx\fR is ignored.
 .TP
-\fI$widget->\fBidentify\fR(\fIx, y\fR)
+\fI$scale->\fBidentify\fR(\fIx, y\fR)
 Returns a string indicating what part of the scale lies under
 the coordinates given by \fIx\fR and \fIy\fR.
 A return value of \fBslider\fR means that the point is over
@@ -191,7 +193,7 @@ of the slider below or to the right of the slider.
 If the point isn't over one of these elements, an empty string
 is returned.
 .TP
-\fI$widget->\fBset\fR(\fIvalue\fR)
+\fI$scale->\fBset\fR(\fIvalue\fR)
 This command is invoked to change the current value of the scale,
 and hence the position at which the slider is displayed.  \fIValue\fR
 gives the new value for the scale.

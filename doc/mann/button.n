@@ -8,13 +8,14 @@
 '\" SCCS: @(#) button.n 1.40 97/10/31 12:58:48
 '\" 
 .so man.macros
-.TH button n 4.4 Tk "Tk Generic Methods"
+.TH Tk::Button n 4.4 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-button \- Create and manipulate button widgets
+Tk::Button \- Create and manipulate Button widgets
 .SH SYNOPSIS
-\fBbutton\fR $widget \fR?\fIoptions\fR?
+\fI$button\fR = \fI$parent\fR->\fBButton\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-activebackground	\-cursor	\-highlightthickness	\-takefocus
 \-activeforeground	\-disabledforeground	\-image	\-text
@@ -23,6 +24,7 @@ button \- Create and manipulate button widgets
 \-bitmap	\-highlightbackground	\-pady	\-wraplength
 \-borderwidth	\-highlightcolor	\-relief
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-command command Command
 Specifies a Tcl command to associate with the button.  This command
@@ -71,7 +73,7 @@ from the size of the image or bitmap or text being displayed in it.
 
 .SH DESCRIPTION
 .PP
-The \fBbutton\fR command creates a new window (given by the
+The \fBButton\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a button widget.
 Additional
 options, described above, may be specified on the command line
@@ -99,24 +101,24 @@ option is invoked.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBbutton\fR command creates a widget object whose
+The \fBButton\fR method creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$button\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for button widgets:
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$button->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBbutton\fR
 command.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$button->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for
@@ -130,14 +132,14 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBbutton\fR
 command.
 .TP
-\fI$widget->\fBflash\fR
+\fI$button->\fBflash\fR
 Flash the button.  This is accomplished by redisplaying the button
 several times, alternating between active and normal colors.  At
 the end of the flash the button is left in the same normal/active
 state as when the command was invoked.
 This command is ignored if the button's state is \fBdisabled\fR.
 .TP
-\fI$widget->\fBinvoke\fR
+\fI$button->\fBinvoke\fR
 Invoke the Tcl command associated with the button, if there is one.
 The return value is the return value from the Tcl command, or an
 empty string if there is no command associated with the button.

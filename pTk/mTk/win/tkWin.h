@@ -33,6 +33,8 @@
 #define TK_ATTACHWINDOW	(WM_USER+2)
 #define TK_DETACHWINDOW	(WM_USER+3)
 
+typedef void Tcl_HandleProc (ClientData, HANDLE);
+
 
 /*
  *--------------------------------------------------------------
@@ -41,6 +43,7 @@
  *
  *--------------------------------------------------------------
  */
+
 
 EXTERN Window		Tk_AttachHWND _ANSI_ARGS_((Tk_Window tkwin,
 			    HWND hwnd));
@@ -52,5 +55,7 @@ EXTERN void		Tk_PointerEvent _ANSI_ARGS_((HWND hwnd,
 EXTERN int		Tk_TranslateWinEvent _ANSI_ARGS_((HWND hwnd,
 			    UINT message, WPARAM wParam, LPARAM lParam,
 			    LRESULT *result));
+
+EXTERN void		Tcl_WatchHandle _ANSI_ARGS_((HANDLE h, Tcl_HandleProc *proc, ClientData clientData));
 
 #endif /* _TKWIN */

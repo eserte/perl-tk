@@ -21,7 +21,7 @@ use AutoLoader;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Menu.pm#10$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Menu.pm#16$
 
 use strict;
 
@@ -309,7 +309,7 @@ sub Unpost
      $Tk::menubar->configure(-cursor => $Tk::cursor);
      undef $Tk::menubar;
     }
-   if ($Tk::platform eq 'unix')
+   if ($Tk::platform ne 'unix')
     {
      undef $Tk::tearoff;
     }
@@ -359,11 +359,13 @@ sub Motion
  my $x = shift;
  my $y = shift;
  my $state = shift;
+ my $t     = $menu->cget('-type');
+
  if ($menu->IS($Tk::window))
   {                     
    if ($menu->cget('-type') eq 'menubar')
     {
-     if (defined($Tk::focus) && $Tk::focus != $menu)
+#    if (defined($Tk::focus) && $Tk::focus != $menu)
       {
        $menu->activate("\@$x,$y");
        $menu->GenerateMenuSelect;
@@ -404,7 +406,7 @@ sub ButtonDown
   }
  else
   {
-   while ($menu->cget('-type' eq 'normal')
+   while ($menu->cget('-type') eq 'normal'
           && $menu->parent->IsMenu
           && $menu->parent->ismapped 
          )
@@ -424,7 +426,7 @@ sub ButtonDown
    # restore the grab, since the old grab window will not be viewable
    # anymore.              
 
-   $menu->SaveGrabInfo if ($menu != $menu->grabCurrent);
+   $menu->SaveGrabInfo unless ($menu->IS($menu->grabCurrent));
 
    # Must re-grab even if the grab window hasn't changed, in order
    # to release the implicit grab from the button press.
@@ -546,7 +548,7 @@ sub Escape
   }
  else
   {
-   $menu->LeftRight(-1)
+   $menu->NextEntry(-1)
   }
 }
 # LeftRight --
@@ -579,7 +581,7 @@ sub NextMenu
      my $parent = $menu->parent;
      while ($parent->PathName ne '.')
       {
-       if ($parent->IsMenu && $parent->cget('-type' eq 'menubar'))
+       if ($parent->IsMenu && $parent->cget('-type') eq 'menubar')
         {
          $parent->SetFocus;
          $parent->NextEntry(1);
@@ -976,8 +978,11 @@ sub MenuDup
    next if (@$option == 2);
    $args{$$option[0]} = $$option[4] unless exists $args{$$option[0]};
   }
- print 'MenuDup(',join(',',$parent,%args),")\n";
  my $dst = $parent->Menu(%args);
+ if ($type eq 'tearoff')
+  {
+   $dst->transient($parent->MainWindow);
+  }
  my $last = $src->index("last");
  if ($last ne 'none')
   {
@@ -997,9 +1002,10 @@ sub MenuDup
      
      # Duplicate the binding tags and bindings from the source menu.
      my @bindtags = $src->bindtags;
+     my $path = $src->PathName;
      foreach (@bindtags)
       {
-       $_ = $dst if (ref($_) && $_ == $src);
+       $_ = $dst if ($_ eq $path);
       }                            
      $dst->bindtags([@bindtags]);
      foreach my $event ($src->bind)
@@ -1009,7 +1015,6 @@ sub MenuDup
       }
     }
   }
- print "Return $dst\n";
  return $dst;
 } 
 

@@ -33,23 +33,13 @@ typedef struct
   int eof; 
  } nIO_read;
 
-#ifdef USE2
-static int read_handler _((ClientData clientData, int mask, int flags));
-static int 
-#else
+static void CallbackHandler _((ClientData clientData, int mask));
+
 static void read_handler _((ClientData clientData, int mask));
 static void
-#endif
-read_handler(clientData, mask
-#ifdef USE2
-,flags
-#endif
-)
+read_handler(clientData, mask)
 ClientData clientData;
 int mask;
-#ifdef USE2
-int flags;
-#endif
 {
  if (mask & TCL_READABLE)
   {
@@ -81,6 +71,20 @@ int flags;
     }
    SvPVX(buf)[SvCUR(buf)] = '\0';
   }
+}
+
+static void
+CallbackHandler(clientData, mask)
+ClientData clientData;
+int mask;
+{
+ dSP;
+ SV *handle = (SV *) clientData;
+ PUSHMARK(sp);
+ XPUSHs(sv_2mortal(newRV(handle)));
+ XPUSHs(sv_2mortal(newSViv(mask)));   
+ PUTBACK;
+ perl_call_method("IOready", G_DISCARD);
 }
 
 static int restore_mode _((PerlIO *f,int mode));
@@ -176,65 +180,41 @@ SV *sv;
  return 0;
 }
 
-#define TCL_UNIX_FD 0
-#define Tcl_GetFile(x,y) x
+#define Const_READABLE() TCL_READABLE
+#define Const_WRITABLE() TCL_WRITABLE
+#define Const_EXCEPTION() TCL_EXCEPTION
 
-/* Avoid Tcl's hacks here - we have enough of our own */
-#undef write
-#undef read
-#undef open
+MODULE = Tk::IO	PACKAGE = Tk::IO PREFIX = Const_
+
+PROTOTYPES: DISABLE
+
+int
+Const_READABLE()
+
+int
+Const_WRITABLE()
+
+int
+Const_EXCEPTION()
 
 MODULE = Tk::IO	PACKAGE = Tk::IO PREFIX = Tcl_
 
 PROTOTYPES: DISABLE
 
+
 void
-Tcl_CreateReadHandler(f,callback)
-InputStream	f
-SV *		callback
+Tcl_CreateFileHandler(fd,mode,obj)
+int	fd
+int	mode
+SV *	obj
 CODE:
  {
-#ifdef NOT_BROKEN
-  int fd = PerlIO_fileno(f);
-  Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), 
-                        TCL_READABLE, NULL, callback);
-#endif
+  Tcl_CreateFileHandler(fd, mode, CallbackHandler , (ClientData) SvRV(obj));
  }
 
 void
-Tcl_CreateWriteHandler(f,callback)
-OutputStream	f
-SV *		callback
-CODE:
- {
-#ifdef NOT_BROKEN
-  int fd = PerlIO_fileno(f);
-  Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), 
-                        TCL_WRITABLE, NULL, callback);
-#endif
- }
-
-void
-Tcl_DeleteReadHandler(f)
-InputStream	f
-CODE:
- {
-#ifdef NOT_BROKEN
-  int fd = PerlIO_fileno(f);
-  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD));
-#endif
- }
-
-void
-Tcl_DeleteWriteHandler(f)
-OutputStream	f
-CODE:
- {
-#ifdef NOT_BROKEN
-  int fd = PerlIO_fileno(f);
-  Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD));
-#endif
- }
+Tcl_DeleteFileHandler(fd)
+int	fd
 
 MODULE = Tk::IO	PACKAGE = Tk::IO
 
@@ -284,14 +264,12 @@ int	offset
        return;
       }
      SvPOK_only(buf);		/* validate pointer */
-#ifdef NOT_BROKEN
-     Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
+     Tcl_CreateFileHandler(fd, TCL_READABLE, read_handler, (ClientData) &info);
      do                                        
       {                                        
        Tcl_DoOneEvent(0);                       
       } while (!info.eof && !info.error && info.count == 0);
-     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd,TCL_UNIX_FD)); 
-#endif
+     Tcl_DeleteFileHandler(fd);
      if (mode != newmode)
       {
        count = restore_mode(f,mode);
@@ -329,8 +307,7 @@ InputStream	f
      info.count  = 0; 
      info.error  = 0; 
      info.eof    = 0; 
-#ifdef NOT_BROKEN
-     Tcl_CreateFileHandler(Tcl_GetFile((ClientData) fd, TCL_UNIX_FD), TCL_READABLE, read_handler, (ClientData) &info);
+     Tcl_CreateFileHandler(fd, TCL_READABLE, read_handler, (ClientData) &info);
      while (!info.eof && !info.error && !has_nl(buf))
       {                                        
        info.len = 1;
@@ -338,8 +315,7 @@ InputStream	f
        while (!info.eof && !info.error && !info.count)
         Tcl_DoOneEvent(0);                       
       } 
-     Tcl_DeleteFileHandler(Tcl_GetFile((ClientData) fd, TCL_UNIX_FD)); 
-#endif
+     Tcl_DeleteFileHandler(fd);
      if (mode != newmode)
       {
        count = restore_mode(f,mode);

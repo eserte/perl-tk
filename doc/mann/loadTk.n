@@ -7,7 +7,7 @@
 '\" SCCS: @(#) loadTk.n 1.5 97/08/18 17:44:43
 '\" 
 .so man.macros
-.TH "Safe Tk" n 8.0 Tk "Tk Built-In Commands"
+.TH Safe n 8.0 Tk "Tk Built-In Commands"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME

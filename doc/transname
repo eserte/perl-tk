@@ -1,0 +1,35 @@
+#!/usr/local/bin/perl -w
+
+use strict;
+use blib;
+
+@ARGV = <pod[3n]/*.pod> unless @ARGV;
+die "No POD documents *.pod given" unless @ARGV;
+
+my $pmlib =  $INC[1];
+
+my $kind;
+my $name;
+my $pod;
+my $to;
+foreach $pod (@ARGV)
+  {
+     $name = $pod;
+     $name =~ s/.pod$//;
+     $name =~ s/^.*\///;
+
+     $to = $name;
+     foreach ( ucfirst($name), $name, lc($name), ucfirst(lc($name)) )
+       {
+         if ( -f "$pmlib/Tk/$_.pm")
+           {
+             $to = $_;
+	     last;
+           }
+       }
+
+     printf "%-15s -> %s %s\n", $name,
+		 ( ($name =~ /^pod3/) ? "ptk$to" : $to), # ptk prefix for man3
+		 ( ($name eq $to)     ? '' : '*');	# show what autoconverted
+  }
+

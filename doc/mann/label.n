@@ -8,13 +8,14 @@
 '\" SCCS: @(#) label.n 1.30 97/10/31 12:58:49
 '\" 
 .so man.macros
-.TH label n 4.0 Tk "Tk Generic Methods"
+.TH Tk::Label n 4.0 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-label \- Create and manipulate label widgets
+Tk::Label \- Create and manipulate Label widgets
 .SH SYNOPSIS
-\fBlabel\fR $widget \fR?\fIoptions\fR?
+\fI$label\fR = \fI$parent\fR->\fBLabel\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-anchor	\-font	\-image	\-takefocus
 \-background	\-foreground	\-justify	\-text
@@ -22,6 +23,7 @@ label \- Create and manipulate label widgets
 \-borderwidth	\-highlightcolor	\-pady	\-underline
 \-cursor	\-highlightthickness	\-relief	\-wraplength
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-height height Height
 Specifies a desired height for the label.
@@ -41,7 +43,7 @@ from the size of the image or bitmap or text being displayed in it.
 
 .SH DESCRIPTION
 .PP
-The \fBlabel\fR command creates a new window (given by the
+The \fBLabel\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a label widget.
 Additional
 options, described above, may be specified on the command line
@@ -63,24 +65,24 @@ changing its relief or text, using the commands described below.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBlabel\fR command creates a widget object whose
+The \fBLabel\fR method creates a widget object whose
 name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$label\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for label widgets:
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$label->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBlabel\fR
 command.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
+\fI$label->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for

@@ -1,12 +1,5 @@
 #!/usr/local/bin/perl -w
 
-BEGIN 
- {
-  require lib;
-  chomp($dir = `pwd`);
-  import lib "$dir/blib";
- }
-
 use Tk;
 use Tk::DropSite qw(Sun);
 use Tk::DragDrop qw(Sun);
@@ -24,20 +17,22 @@ $top->optionAdd('*TextUndo.Background' => '#fff5e1');
 my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                        '-accept'   => sub 
                                      { my $file = shift ; 
-                                       return 0 if (-s $file && !(stat(_))[12]);
                                        return (-r $file) && (-T $file);  
                                      },
                        Name => 'fs', -filter => '*');
 
 my $t = $top->Scrolled(TextUndo, -wrap => 'none', -scrollbars => 'osre');
 
-my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
-$dd->configure(-startcommand => 
+unless ($^O eq 'MSWin32')
+ {
+  my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
+  $dd->configure(-startcommand => 
                sub
                 {
                  return 1 unless (eval { $t->tagNextrange(sel => '1.0','end')});
                  $dd->configure(-text => $t->get('sel.first','sel.last')); 
                 });
+ }
                 
 $t->DropSite(-motioncommand => 
               sub 

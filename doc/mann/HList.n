@@ -10,10 +10,10 @@
 '\" The license terms of the Tcl/Tk distrobution are in the file
 '\" license.tcl.
 .so man.macros
-.TH HList n 4.0 Tk "Tk Generic Methods"
+.TH Tk::HList n 4.0 Tk "Tk Widget Classes"
 .BS
 .SH NAME
-HList \- Create and manipulate Tix Hierarchial List widgets
+Tk::HList \- Create and manipulate Tix Hierarchial List widgets
 .SH SYNOPSIS
 \fI$hlist\fR = \fI$parent\fR->\fBHList\fR(\fR?\fIoptions\fR?\fR);
 .SH "STANDARD OPTIONS"
@@ -28,7 +28,7 @@ HList \- Create and manipulate Tix Hierarchial List widgets
 .ta 4c 
 .fi
 .LP
-See the ``options'' manual entry for details on the standard options.
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 '
 '
 '----------------------------------------------------------------------
@@ -42,7 +42,7 @@ Class:		\fBBrowseCmd\fR
 Switch:		\fB\-browsecmd\fR
 .fi
 .IP
-Specifies a TCL command to be executed when the user browses through the
+Specifies a perl/Tk \fBcallback\fR to be executed when the user browses through the
 entries in the HList widget.
 '----------END
 '
@@ -67,7 +67,7 @@ Class:		\fBCommand\fR
 Switch:		\fB\-command\fR
 .fi
 .IP
-Specifies the TCL command to be executed when the user invokes a list
+Specifies the perl/Tk \fBcallback\fR to be executed when the user invokes a list
 entry in the HList widget. Normally the user invokes a list
 entry by double-clicking it or pressing the Return key.
 '----------END
@@ -166,10 +166,10 @@ Class:		\fBIndicatorCmd\fR
 Switch:		\fB\-indicatorcmd\fR
 .fi
 .IP
-Specifies a TCL command to be executed when the user manipulates the
+Specifies a perl/Tk \fBcallback\fR to be executed when the user manipulates the
 indicator of an HList entry. The \fB\-indicatorcmd\fR is triggered
 when the user press or releases the mouse button over the indicator in
-an HList entry. By default the TCL command specified by
+an HList entry. By default the perl/Tk \fBcallback\fR specified by
 \fB\-indicatorcmd\fR is executed with one additional argument, the
 entryPath of the entry whose indicator has been triggered. Additional
 information about the event can be obtained by the \fBtixEvent\fR
@@ -268,7 +268,7 @@ Class:		\fBSizeCmd\fR
 Switch:		\fB\-sizecmd\fR
 .fi
 .IP
-Specifies a TCL script to be called whenever the HList widget
+Specifies a perl/Tk \fBcallback\fB to be called whenever the HList widget
 changes its size. This command can be useful to implement "user scroll
 bars when needed" features.
 '----------END
@@ -304,7 +304,7 @@ Specifies the desired width for the window in characters.
 '
 .PP
 '
-The \fBtixHList\fR command creates a new window (given by the
+The \fBHList\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a HList widget.
 Additional options, described above, may be specified on the command
 line or in the option database to configure aspects of the
@@ -345,7 +345,7 @@ this HList widget's \fB\-itemtype\fR option is used.
 .SH "WIDGET METHODS"
 .PP
 '
-The \fBtixHList\fR command creates a widget object whose name is the
+The \fBHList\fR method creates a widget object whose name is the
 same as the path name of the HList widget's window.  This command
 may be used to invoke various operations on the widget.  It has the
 following general form:
@@ -459,7 +459,6 @@ Returns the current value of the configuration option given by
 \fBtixHList\fR command.
 '
 .TP
-'
 \fI$hlist->\fBcolumnWidth(\fIcol\fR ?\fI\-char\fR? ?\fIwidth\fR?) 
 '
 Querys or sets the width of a the column \fIcol\fR in the HList
@@ -492,7 +491,6 @@ of this HList widget.
 '
 .RE
 .TP
-'
 \fI$hlist->\fBconfigure\fR(?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
 '
 Query or modify the configuration options of the widget.  If no
@@ -1128,34 +1126,43 @@ item.
 This example demonstrates how to use an HList to store a file
 directory structure and respond to the user's browse events:
 .PP
-\fC
-.nf
- tixHList .h -separator "/" \-browsecmd browse \-selectmode single \\
-    -itemtype text
- .h add /         \-text /
- .h add /home     \-text /home
- .h add /home/ioi \-text /home/ioi
- .h add /home/foo \-text /home/foo
- .h add /usr      \-text /usr
- .h add /usr/lib  \-text /usr/lib
- pack .h
-
- proc browse {file} {
-     puts "$file browsed"
- }
-.fi
-\fR
-'
+.DS
+\&  use strict;
+\&  use Tk;
+\&  use Tk::Label;
+\&  use Tk::HList;
+\&
+\&  my $mw = MainWindow->new();
+\&  my $label = $mw->Label(-width=>15);
+\&  my $hlist = $mw->HList(
+\&                      -itemtype   => 'text',
+\&                      -separator  => '/',
+\&                      -selectmode => 'single',
+\&                      -browsecmd  => sub {
+\&                                my $file = shift;
+\&                                $label->configure(-text=>$file);
+\&                             }
+\&                      );
+\&
+\&  foreach ( qw(/ /home /home/ioi /home/foo /usr /usr/lib) ) {
+\&      $hlist->add($_, -text=>$_);
+\&  }
+\&
+\&  $hlist->pack;
+\&  $label->pack;
+\&
+\&  MainLoop;
+.DE
 '
 .SH BUGS
 '
 The fact that the display item at column 0 is implicitly associated
 with the whole entry is probably a design bug. This was done for
 backward compatibility purposes. The result is that there is a large
-overlap between the \fBitem\fR command and the \fBadd\fR,
+overlap between the \fBitem\fR method and the \fBadd\fR,
 \fBaddchild\fR, \fBentrycget\fR and \fBentryconfigure\fR
-commands. Whenever multiple columns exist, the programmer should use
-ONLY the \fBitem\fR command to create and configure the display items
+methods.  Whenever multiple columns exist, the programmer should use
+ONLY the \fBitem\fR method to create and configure the display items
 in each column; the \fBadd\fR, \fBaddchild\fR, \fBentrycget\fR and
 \fBentryconfigure\fR should be used ONLY to create and configure
 entries.

@@ -60,8 +60,8 @@ the event, such as \fB<Shift-Button-2>\fR or \fB<<Paste>>\fR.
 argument of the \fBbind\fR command except that it must consist
 of a single event pattern, not a sequence.
 \fIOption-value\fR pairs may be used to specify additional
-attributes of the event, such as the x and y mouse position;  see
-EVENT FIELDS below.  If the \fB\-when\fR option is not specified, the
+attributes of the event, such as the x and y mouse position;
+see EVENT FIELDS below.  If the \fB\-when\fR option is not specified, the
 event is processed immediately:  all of the handlers for the event
 will complete before the \fBevent generate\fR command returns.
 If the \fB\-when\fR option is specified then it determines when the

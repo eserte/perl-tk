@@ -834,9 +834,10 @@ if (defined $opt_files)
 
 unless (@ARGV)
  {
-  mandir('man3','.3');
-  mandir('man2','.2');
-  mandir('mann','.n');
+#  mandir('man3','.3');
+#  mandir('man2','.2');
+  mandir('man','.n');
+  mandir('man','.3');
  }
 
 die "No files !" unless (@ARGV);

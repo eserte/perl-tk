@@ -8,13 +8,14 @@
 '\" SCCS: @(#) checkbutton.n 1.40 96/11/20 12:51:21
 '\" 
 .so man.macros
-.TH checkbutton n 4.4 Tk "Tk Built-In Commands"
+.TH Tk::Checkbutton n 4.4 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-checkbutton \- Create and manipulate checkbutton widgets
+Tk::Checkbutton \- Create and manipulate Checkbutton widgets
 .SH SYNOPSIS
-\fBcheckbutton\fI pathName \fR?\fIoptions\fR?
+\fI$checkbutton\fR = \fI$parent\fR->\fBCheckbutton\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-activebackground	\-cursor	\-highlightthickness	\-takefocus
 \-activeforeground	\-disabledforeground	\-image	\-text
@@ -23,6 +24,7 @@ checkbutton \- Create and manipulate checkbutton widgets
 \-bitmap	\-highlightbackground	\-pady	\-wraplength
 \-borderwidth	\-highlightcolor	\-relief
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-command command Command
 Specifies a Tcl command to associate with the button.  This command
@@ -89,16 +91,16 @@ from the size of the image or bitmap or text being displayed in it.
 
 .SH DESCRIPTION
 .PP
-The \fBcheckbutton\fR command creates a new window (given by the
-\fIpathName\fR argument) and makes it into a checkbutton widget.
+The \fBCheckbutton\fR method creates a new window (given by the
+$widget\fR argument) and makes it into a checkbutton widget.
 Additional
 options, described above, may be specified on the command line
 or in the option database
 to configure aspects of the checkbutton such as its colors, font,
 text, and initial relief.  The \fBcheckbutton\fR command returns its
-\fIpathName\fR argument.  At the time this command is invoked,
-there must not exist a window named \fIpathName\fR, but
-\fIpathName\fR's parent must exist.
+$widget\fR argument.  At the time this command is invoked,
+there must not exist a window named $widget\fR, but
+$widget\fR's parent must exist.
 .PP
 A checkbutton is a widget
 that displays a textual string, bitmap or image
@@ -144,29 +146,29 @@ In addition, each checkbutton monitors its associated variable and
 automatically selects and deselects itself when the variables value
 changes to and from the button's ``on'' value.
 
-.SH "WIDGET COMMAND"
+.SH "WIDGET METHODS"
 .PP
-The \fBcheckbutton\fR command creates a new Tcl command whose
-name is \fIpathName\fR.  This
+The \fBCheckbutton\fR method creates a widget object whose
+name is $widget\fR.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fIpathName option \fR?\fIarg arg ...\fR?
+\fI$checkbutton\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for checkbutton widgets:
 .TP
-\fIpathName \fBcget\fR \fIoption\fR
+\fI$checkbutton->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBcheckbutton\fR
 command.
 .TP
-\fIpathName \fBconfigure\fR ?\fIoption\fR? ?\fIvalue option value ...\fR?
+\fI$checkbutton->\fBconfigure\fR(?\fIoption\fR?, ?\fIvalue, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
-the available options for \fIpathName\fR (see \fBTk_ConfigureInfo\fR for
+the available options for $widget\fR (see \fBconfigure\fR for
 information on the format of this list).  If \fIoption\fR is specified
 with no \fIvalue\fR, then the command returns a list describing the
 one named option (this list will be identical to the corresponding
@@ -177,18 +179,18 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBcheckbutton\fR
 command.
 .TP
-\fIpathName \fBdeselect\fR
+\fI$checkbutton->\fBdeselect\fR
 Deselects the checkbutton and sets the associated variable to its ``off''
 value.
 .TP
-\fIpathName \fBflash\fR
+\fI$checkbutton->\fBflash\fR
 Flashes the checkbutton.  This is accomplished by redisplaying the checkbutton
 several times, alternating between active and normal colors.  At
 the end of the flash the checkbutton is left in the same normal/active
 state as when the command was invoked.
 This command is ignored if the checkbutton's state is \fBdisabled\fR.
 .TP
-\fIpathName \fBinvoke\fR
+\fI$checkbutton->\fBinvoke\fR
 Does just what would have happened if the user invoked the checkbutton
 with the mouse: toggle the selection state of the button and invoke
 the Tcl command associated with the checkbutton, if there is one.
@@ -196,11 +198,11 @@ The return value is the return value from the Tcl command, or an
 empty string if there is no command associated with the checkbutton.
 This command is ignored if the checkbutton's state is \fBdisabled\fR.
 .TP
-\fIpathName \fBselect\fR
+\fI$checkbutton->\fBselect\fR
 Selects the checkbutton and sets the associated variable to its ``on''
 value.
 .TP
-\fIpathName \fBtoggle\fR
+\fI$checkbutton->\fBtoggle\fR
 Toggles the selection state of the button, redisplaying it and
 modifying its associated variable to reflect the new state.
 

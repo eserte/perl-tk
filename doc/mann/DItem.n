@@ -1,13 +1,11 @@
 .so man.macros
-'----------------------------------------------------------------------
-.HS tixItemType tix 4.0
+.TH Tk::DItem n 4.0 tix "Tk Widget Classes"
 .BS
-'
-'
-'----------------------------------------------------------------------
 .SH NAME
-Tix Display Items
-'
+Tk::DItem - Tix Display Items
+.SH SYNOPSIS
+
+
 .BE
 '
 .SH DESCRIPTION
@@ -20,8 +18,8 @@ ones) display many items of many types simutaneously.
 '
 For example, a hierarchical listbox widget (HList) can display items
 of images, plain text and subwindows in the form of a
-hierarchy. Another widget, the tabular listbox, (TList, currently
-planned and will be released in Tix 4.1) also display items of the
+hierarchy. Another widget, the tabular listbox, TList
+also display items of the
 same types, although it arranges the items in a tabular form. Yet
 another widget, the spreadsheet widget, also displays similar types
 items, but in yet another format.
@@ -384,17 +382,12 @@ are created by special widget commands of their "host" widgets. For
 example, the HList widgets has a command \fBitem\fR which can be used
 to create new display items. The following code creates a new imagetext
 item at the third column of the entry foo inside an HList widget:
-'
-.PP
-\fC
-.nf
- tixHList .h -columns 3
+.CS
+\fI$hlist\fR = \fI$parent\fR->\fBHList\fR(-columns=>3);
+ # xxx to translate:
  .h add foo
  .h item create foo 2 \-itemtype imagetext \-text Hello \-image image1
-.fi
-.PP
-\fR
-'
+.CE
 The \fBitem create\fR command of the HList widget accepts a variable
 number of arguments. The special argument \fB\-itemtype\fR specifies
 which type of display item to create. Options that are valid for this
@@ -462,13 +455,8 @@ The \fBtixDisplayStyle\fR command creates a new Tcl command whose name is the
 same as the name of the newly created display style.  This command
 may be used to invoke various operations on the display style.  It has the
 following general form:
-'
-'
-.DS C
-'
+.TP
 \fIstyleName option \fR?\fIarg arg ...\fR?
-.PP
-.DE
 '
 \fIstyleName\fR is the name of the command. \fIOption\fR and the
 \fIarg\fRs determine the exact behavior of the command. The following
@@ -482,7 +470,6 @@ Returns the current value of the configuration option given by
 display style.
 '
 .TP
-'
 \fIstyleName \fBconfigure\fR ?\fIoption\fR? \fI?value option value ...\fR?
 '
 Query or modify the configuration options of the display style.  If no
@@ -510,22 +497,32 @@ colors of the columns are controlled by two different \fBtext\fR
 styles. Also, the anchor and font of the second column is chosen so
 that the income data is aligned properly.
 '
-.PP
-\fC
-.nf
-set courier -*-courier-medium-r-*-*-14-*-*-*-*-*-*-*
-tixHList .h -columns 2; pack .h
-set red  [tixDisplayStyle text -fg #800000]
-set blue [tixDisplayStyle text -fg #000080 -anchor e -font $courier]
-
-foreach n {{Joe $10,000} {Peter $20,000} {Raj $90,000} {Zinh $0}} {
-    set entry [.h addchild {}]
-    .h item create $entry 0 -itemtype text \\
-	-text [lindex $n 0] -style $red
-    .h item create $entry 1 -itemtype text \\
-	-text [lindex $n 1] -style $blue
-}
-.fi
-.PP
-\fR
+.CS
+  use strict;
+  use Tk;
+  use Tk::HList;
+  
+  my $mw = MainWindow->new();
+  
+  
+  my $hlist = $mw->HList(-columns=>2)->pack;
+  
+  #Tried: tixDisplay[Ss]tyle, Display[Ss]tyle, DItem all fail :-(
+  #my $red  = $hlist->DStyle('text', -foreground=>'#800000');
+  #my $blue = $hlist->DStyle('text', -foreground=>'#000080');
+  
+  my $e;
+  foreach ([Joe => '$10,000'], [Peter => '$20,000'],
+           [Raj => '$90,000'],  [Zinh => '$0']) {
+      $e = $hlist->addchild("");
+      $hlist->itemCreate($e, 0, -itemtype=>'text',
+  		-text=>$_->[0]);#, -style=>$red );
+      $hlist->itemCreate($e, 1, -itemtype=>'text',
+  		-text=>$_->[1]);#, -style=>$blue);
+  }
+  
+  Tk::MainLoop;
+.CE
+.SH SEE ALSO
+HList, TList
 

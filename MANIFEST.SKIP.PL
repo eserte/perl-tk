@@ -27,7 +27,7 @@ chmod(0666,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";
 print SKIP <<'EOF'
 \.[oaid]$
-\.(bso?|old|bak|out|hide|q4|gz|tcl|orig)$
+\.(bso?|old|bak|out|hide|q4|gz|tcl|rtf|orig)$
 ^\.
 /\.
 C\+\+/Main$
@@ -35,12 +35,14 @@ C\+\+/Main$
 \bConfig.pm$
 \bpTk/tkConfig\.h$
 \bpTk/need$
-\bpm_to_blib$
+\b(pm_to_blib|perl)$
 [%~]$
-\b(blib|merge|Ilya|Pixmap)/
+\b(blib|merge|Ilya|Pixmap|patches)/
 \bTix/
 tcl\.pm$
 \bcore\b
+\bdoc/old\b
+\bdoc/.*\.log\d*
 \bToDo/
 \bObsolete/
 \b(GNU)?[Mm]akefile(\.aperl)?$

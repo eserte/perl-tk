@@ -26,7 +26,7 @@ has exactly the effect described below.
 In the descriptions below,
 ``Name'' refers to the option's name in the option database (e.g.
 in .Xdefaults files).  ``Class'' refers to the option's class value
-in the option database.  ``Configure Option'' refers to the
+in the option database.  ``Option'' refers to the
 switch used in widget-creation and \fBconfigure\fR widget methods to
 set this value.  For example, if an option's configure option is
 \fB\-foreground\fR and there exists a widget $widget\fR, then the
@@ -38,14 +38,7 @@ may be used to specify the value \fBblack\fR for the option in
 the widget $widget\fR.  Configure options may be abbreviated,
 as long as the abbreviation is unambiguous (abbreviation is deprecated
 in perl/Tk).
-.ta 4c
-.LP
-.nf
-Name:	\fBactiveBackground\fR
-Class:	\fBForeground\fR
-Configure Option:	\fB\-activebackground\fR
-.fi
-.IP
+.OP \-activebackground activeBackground Foreground
 Specifies background color to use when drawing active elements.
 An element (a widget or portion of a widget) is active if the
 mouse cursor is positioned over the element and pressing a mouse button
@@ -95,6 +88,13 @@ border is being drawn;  the \fBrelief\fR option typically determines
 this).  The value may also be used when drawing 3-D effects in the
 interior of the widget.
 The value may have any of the forms acceptable to \fBTk_GetPixels\fR.
+.OP \-class class Class
+Specifies a class for the window.
+This class will be used when querying the option database for
+the window's other options, and it will also be used later for
+other purposes such as bindings.
+The \fBclass\fR option may not be changed with the \fBconfigure\fR
+method.
 .OP \-cursor cursor Cursor
 Specifies the mouse cursor to be used for the widget.
 The value may have any of the forms acceptable to \fBTk_GetCursor\fR.
@@ -247,8 +247,8 @@ communicate with the window manager so that when the user interactively
 resizes the top-level window that contains the widget, the dimensions of
 the window will be displayed to the user in grid units and the window
 size will be constrained to integral numbers of grid units.
-See the section GRIDDED GEOMETRY MANAGEMENT in the \fBwm\fR manual
-entry for more details.
+See the section GRIDDED GEOMETRY MANAGEMENT in the \fBwm\fR manual entry
+for more details.
 .OP \-takefocus takeFocus TakeFocus
 Determines whether the window accepts the focus during keyboard
 traversal (e.g., Tab and Shift-Tab).
@@ -303,13 +303,7 @@ screen distances.
 If this value is less than or equal to 0 then no wrapping is done:  lines
 will break only at newline characters in the text.
 .VE
-.LP
-.nf
-Name:	\fBxScrollCommand\fR
-Class:	\fBScrollCommand\fR
-Configure Option:	\fB\-xscrollcommand\fR
-.fi
-.IP
+.OP \-xscrollcommand xScrollCommand ScrollCommand
 Specifies a callback used to communicate with horizontal
 scrollbars.
 When the view in the widget's window changes (or
@@ -330,13 +324,7 @@ Typically the
 and the method ``set'' i.e. \fR[\fBset\fR => \fI$sb\fR]:
 this will cause the scrollbar to be updated whenever the view in the window changes.
 If this option is not specified, then no command will be executed.
-.LP
-.nf
-Name:	\fByScrollCommand\fR
-Class:	\fBScrollCommand\fR
-Configure Option:	\fB\-yscrollcommand\fR
-.fi
-.IP
+.OP \-yscrollcommand yScrollCommand ScrollCommand
 Specifies a calback used to communicate with vertical
 scrollbars.  This option is treated in the same way as the
 \fBxScrollCommand\fR option, except that it is used for vertical

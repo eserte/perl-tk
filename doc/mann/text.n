@@ -8,13 +8,14 @@
 '\" SCCS: @(#) text.n 1.68 97/10/31 12:58:41
 '\" 
 .so man.macros
-.TH text n 4.0 Tk "Tk Generic Methods"
+.TH Tk::Text n 4.0 Tk "Tk Widget Classes"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
-text \- Create and manipulate text widgets
+Tk::Text \- Create and manipulate Text widgets
 .SH SYNOPSIS
-\fBtext\fR $widget \fR?\fIoptions\fR?
+\fI$text\fR = \fI$parent\fR->\fBText\fR(\fR?\fIoptions\fR?\fR);
+.SH "STANDARD OPTIONS"
 .SO
 \-background	\-highlightbackground	\-insertontime	\-selectborderwidth
 \-borderwidth	\-highlightcolor	\-insertwidth	\-selectforeground
@@ -23,6 +24,7 @@ text \- Create and manipulate text widgets
 \-font	\-insertborderwidth	\-relief	\-xscrollcommand
 \-foreground	\-insertofftime	\-selectbackground	\-yscrollcommand
 .SE
+See the \fBoptions(n)\fR manual entry for details on the standard options.
 .SH "WIDGET-SPECIFIC OPTIONS"
 .OP \-height height Height
 Specifies the desired height for the window, in units of characters
@@ -102,7 +104,7 @@ in \fBword\fR mode a line break will only be made at word boundaries.
 
 .SH DESCRIPTION
 .PP
-The \fBtext\fR command creates a new window (given by the
+The \fBText\fR method creates a new window (given by the
 $widget\fR argument) and makes it into a text widget.
 Additional
 options, described above, may be specified on the command line
@@ -697,19 +699,19 @@ this point whenever the text widget has the input focus.
 
 .SH "WIDGET METHODS"
 .PP
-The \fBtext\fR command creates a widget object whose
+The \fBText\fR method creates a widget object whose
 name is the same as the path name of the text's window.  This
 command may be used to invoke various
 operations on the widget.  It has the following general form:
 .CS
-\fI$widget\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
+\fI$text\fR->\fBmethod\fR(?\fIarg arg ...\fR?)
 .CE
 \fIPathName\fR is the name of the command, which is the same as
 the text widget's path name.  \fIOption\fR and the \fIarg\fRs
 determine the exact behavior of the command.  The following
 commands are possible for text widgets:
 .TP
-\fI$widget->\fBbbox\fR(\fIindex\fR)
+\fI$text->\fBbbox\fR(\fIindex\fR)
 Returns a list of four elements describing the screen area
 of the character given by \fIindex\fR.
 The first two elements of the list give the x and y coordinates
@@ -721,13 +723,13 @@ the return value reflects just the visible part.
 If the character is not visible on the screen then the return
 value is an empty list.
 .TP
-\fI$widget->\fBcget\fR(\fIoption\fR)
+\fI$text->\fBcget\fR(\fIoption\fR)
 Returns the current value of the configuration option given
 by \fIoption\fR.
 \fIOption\fR may have any of the values accepted by the \fBtext\fR
 command.
 .TP
-\fI$widget->\fBcompare\fR(\fIindex1, op, index2\fR)
+\fI$text->\fBcompare\fR(\fIindex1, op, index2\fR)
 Compares the indices given by \fIindex1\fR and \fIindex2\fR according
 to the relational operator given by \fIop\fR, and returns 1 if
 the relationship is satisfied and 0 if it isn't.
@@ -737,7 +739,7 @@ the same character, if \fIop\fR is < then 1 is returned if \fIindex1\fR
 refers to an earlier character in the text than \fIindex2\fR, and
 so on.
 .TP
-\fI$widget->\fBconfigure\fR(?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
+\fI$text->\fBconfigure\fR(?\fIoption\fR?, \fI?value, option, value, ...\fR?\fR)
 Query or modify the configuration options of the widget.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for $widget\fR (see \fBconfigure\fR for
@@ -751,7 +753,7 @@ this case the command returns an empty string.
 \fIOption\fR may have any of the values accepted by the \fBtext\fR
 command.
 .TP
-\fI$widget->\fBdebug\fR(?\fIboolean\fR?\fR)
+\fI$text->\fBdebug\fR(?\fIboolean\fR?\fR)
 If \fIboolean\fR is specified, then it must have one of the true or
 false values accepted by Tcl_GetBoolean.
 If the value is a true one then internal consistency checks will be
@@ -766,7 +768,7 @@ debugging on or off in any widget turns it on or off for all widgets.
 For widgets with large amounts of text, the consistency checks may
 cause a noticeable slow-down.
 .TP
-\fI$widget->\fBdelete\fR(\fIindex1, \fR?\fIindex2\fR?\fR)
+\fI$text->\fBdelete\fR(\fIindex1, \fR?\fIindex2\fR?\fR)
 Delete a range of characters from the text.
 If both \fIindex1\fR and \fIindex2\fR are specified, then delete
 all the characters starting with the one given by \fIindex1\fR
@@ -780,7 +782,7 @@ It is not allowable to delete characters in a way that would leave
 the text without a newline as the last character.
 The command returns an empty string.
 .TP
-\fI$widget->\fBdlineinfo\fR(\fIindex\fR)
+\fI$text->\fBdlineinfo\fR(\fIindex\fR)
 Returns a list with five elements describing the area occupied
 by the display line containing \fIindex\fR.
 The first two elements of the list give the x and y coordinates
@@ -799,7 +801,7 @@ by characters and embedded windows.
 If the display line containing \fIindex\fR is not visible on
 the screen then the return value is an empty list.
 .TP
-\fI$widget->\fBdump\fR(?\fIswitches\fR?, \fIindex1, \fR?\fIindex2\fR?\fR)
+\fI$text->\fBdump\fR(?\fIswitches\fR?, \fIindex1, \fR?\fIindex2\fR?\fR)
 Return the contents of the text widget from \fIindex1\fR up to,
 but not including \fIindex2\fR,
 including the text and
@@ -853,7 +855,7 @@ In this case an empty string is returned, and you must query the
 window by its index position to get more information.
 .RE
 .TP
-\fI$widget->\fBget\fR(\fIindex1, \fR?\fIindex2\fR?\fR)
+\fI$text->\fBget\fR(\fIindex1, \fR?\fIindex2\fR?\fR)
 Return a range of characters from the text.
 The return value will be all the characters in the text starting
 with the one whose index is \fIindex1\fR and ending just before
@@ -867,20 +869,20 @@ to \fIindex1\fR) then an empty string is returned.
 If the specified range contains embedded windows, no information
 about them is included in the returned string.
 .TP
-\fI$widget->\fBimage\fR(\fIoption, \fR?\fIarg, arg, ...\fR?\fR)
+\fI$text->\fBimage\fR(\fIoption, \fR?\fIarg, arg, ...\fR?\fR)
 This command is used to manipulate embedded images.
 The behavior of the command depends on the \fIoption\fR argument
 that follows the \fBtag\fR argument.
 The following forms of the command are currently supported:
 .RS
 .TP
-\fI$widget->\fBimageCget\fR(\fIindex, option\fR)
+\fI$text->\fBimageCget\fR(\fIindex, option\fR)
 Returns the value of a configuration option for an embedded image.
 \fIIndex\fR identifies the embedded image, and \fIoption\fR
 specifies a particular configuration option, which must be one of
 the ones listed in the section EMBEDDED IMAGES.
 .TP
-\fI$widget->\fBimageConfigure\fR(\fIindex, \fR?\fIoption, value, ...\fR?\fR)
+\fI$text->\fBimageConfigure\fR(\fIindex, \fR?\fIoption, value, ...\fR?\fR)
 Query or modify the configuration options for an embedded image.
 If no \fIoption\fR is specified, returns a list describing all of
 the available options for the embedded image at \fIindex\fR
@@ -895,7 +897,7 @@ this case the command returns an empty string.
 See EMBEDDED IMAGES for information on the options that
 are supported.
 .TP
-\fI$widget->\fBimageCreate\fR(\fIindex, \fR?\fIoption, value, ...\fR?\fR)
+\fI$text->\fBimageCreate\fR(\fIindex, \fR?\fIoption, value, ...\fR?\fR)
 This command creates a new image annotation, which will appear
 in the text at the position given by \fIindex\fR.
 Any number of \fIoption\-value\fR pairs may be specified to
@@ -905,18 +907,18 @@ this image.
 See EMBEDDED IMAGES for information on the options that
 are supported, and a description of the identifier returned.
 .TP
-\fI$widget->\fBimageNames\fR
+\fI$text->\fBimageNames\fR
 Returns a list whose elements are the names of all image instances currently
 embedded in $widget\fR.
 .RE
 .TP
-\fI$widget->\fBindex\fR(\fIindex\fR)
+\fI$text->\fBindex\fR(\fIindex\fR)
 Returns the position corresponding to \fIindex\fR in the form
 \fIline.char\fR where \fIline\fR is the line number and \fIchar\fR
 is the character number.
 \fIIndex\fR may have any of the forms described under INDICES above.
 .TP
-\fI$widget->\fBinsert\fR(\fIindex, chars, \fR?\fItagList, chars, tagList, ...\fR?\fR)
+\fI$text->\fBinsert\fR(\fIindex, chars, \fR?\fItagList, chars, tagList, ...\fR?\fR)
 Inserts all of the \fIchars\fR arguments just before the character at
 \fIindex\fR.
 If \fIindex\fR refers to the end of the text (the character after
@@ -936,25 +938,25 @@ they produce the same effect as if a separate \fBinsert\fR widget
 command had been issued for each pair, in order.
 The last \fItagList\fR argument may be omitted.
 .TP
-\fI$widget->\fBmark\fR(\fIoption, \fR?\fIarg, arg, ...\fR?\fR)
+\fI$text->\fBmark\fR(\fIoption, \fR?\fIarg, arg, ...\fR?\fR)
 This command is used to manipulate marks.  The exact behavior of
 the command depends on the \fIoption\fR argument that follows
 the \fBmark\fR argument.  The following forms of the command
 are currently supported:
 .RS
 .TP
-\fI$widget->\fBmarkGravity\fR(\fImarkName, \fR?\fIdirection\fR?\fR)
+\fI$text->\fBmarkGravity\fR(\fImarkName, \fR?\fIdirection\fR?\fR)
 If \fIdirection\fR is not specified, returns \fBleft\fR or \fBright\fR
 to indicate which of its adjacent characters \fImarkName\fR is attached
 to.
 If \fIdirection\fR is specified, it must be \fBleft\fR or \fBright\fR;
 the gravity of \fImarkName\fR is set to the given value.
 .TP
-\fI$widget->\fBmarkNames\fR
+\fI$text->\fBmarkNames\fR
 Returns a list whose elements are the names of all the marks that
 are currently set.
 .TP
-\fI$widget->\fBmarkNext\fR(\fIindex\fR)
+\fI$text->\fBmarkNext\fR(\fIindex\fR)
 Returns the name of the next mark at or after \fIindex\fR.
 If \fIindex\fR is specified in numerical form, then the search for
 the next mark begins at that index.
@@ -969,7 +971,7 @@ If a mark has been set to the special \fBend\fP index,
 then it appears to be \fIafter\fP \fBend\fP with respect to the \fBmark next\fP operation.
 An empty string is returned if there are no marks after \fIindex\fR.
 .TP
-\fI$widget->\fBmarkPrevious\fR(\fIindex\fR)
+\fI$text->\fBmarkPrevious\fR(\fIindex\fR)
 Returns the name of the mark at or before \fIindex\fR.
 If \fIindex\fR is specified in numerical form, then the search for
 the previous mark begins with the character just before that index.
@@ -982,32 +984,32 @@ step through all the marks in a text widget in the reverse order
 as the mark information returned by the \fBdump\fP operation.
 An empty string is returned if there are no marks before \fIindex\fR.
 .TP
-\fI$widget->\fBmarkSet\fR(\fImarkName, index\fR)
+\fI$text->\fBmarkSet\fR(\fImarkName, index\fR)
 Sets the mark named \fImarkName\fR to a position just before the
 character at \fIindex\fR.
 If \fImarkName\fR already exists, it is moved from its old position;
 if it doesn't exist, a new mark is created.
 This command returns an empty string.
 .TP
-\fI$widget->\fBmarkUnset\fR(\fImarkName, \fR?\fImarkName, markName, ...\fR?\fR)
+\fI$text->\fBmarkUnset\fR(\fImarkName, \fR?\fImarkName, markName, ...\fR?\fR)
 Remove the mark corresponding to each of the \fImarkName\fR arguments.
 The removed marks will not be usable in indices and will not be
 returned by future calls to ``\fI$widget->\fBmarkNames\fR\fR''.
 This command returns an empty string.
 .RE
 .TP
-\fI$widget->\fBscan\fR(\fIoption, args\fR)
+\fI$text->\fBscan\fR(\fIoption, args\fR)
 This command is used to implement scanning on texts.  It has
 two forms, depending on \fIoption\fR:
 .RS
 .TP
-\fI$widget->\fBscanMark\fR(\fIx, y\fR)
+\fI$text->\fBscanMark\fR(\fIx, y\fR)
 Records \fIx\fR and \fIy\fR and the current view in the text window,
 for use in conjunction with later \fBscan dragto\fR commands.
 Typically this command is associated with a mouse button press in
 the widget.  It returns an empty string.
 .TP
-\fI$widget->\fBscanDragto\fR(\fIx, y\fR)
+\fI$text->\fBscanDragto\fR(\fIx, y\fR)
 This command computes the difference between its \fIx\fR and \fIy\fR
 arguments and the \fIx\fR and \fIy\fR arguments to the last
 \fBscan mark\fR command for the widget.
@@ -1018,7 +1020,7 @@ dragging the text at high speed through the window.  The return
 value is an empty string.
 .RE
 .TP
-\fI$widget->\fBsearch\fR(?\fIswitches\fR?, \fIpattern, index, \fR?\fIstopIndex\fR?\fR)
+\fI$text->\fBsearch\fR(?\fIswitches\fR?, \fIpattern, index, \fR?\fIstopIndex\fR?\fR)
 Searches the text in $widget\fR starting at \fIindex\fR for a range
 of characters that matches \fIpattern\fR.
 If a match is found, the index of the first character in the match is
@@ -1075,7 +1077,7 @@ continues at the other end until the starting location is reached
 again;  if \fIstopIndex\fR is specified, no wrap-around will occur.
 .RE
 .TP
-\fI$widget->\fBsee\fR(\fIindex\fR)
+\fI$text->\fBsee\fR(\fIindex\fR)
 Adjusts the view in the window so that the character given by \fIindex\fR
 is completely visible.
 If \fIindex\fR is already visible then the command does nothing.
@@ -1085,14 +1087,14 @@ edge of the window.
 If \fIindex\fR is far out of view, then the command centers
 \fIindex\fR in the window.
 .TP
-\fI$widget->\fBtag\fR(\fIoption, \fR?\fIarg, arg, ...\fR?\fR)
+\fI$text->\fBtag\fR(\fIoption, \fR?\fIarg, arg, ...\fR?\fR)
 This command is used to manipulate tags.  The exact behavior of the
 command depends on the \fIoption\fR argument that follows the
 \fBtag\fR argument.  The following forms of the command are currently
 supported:
 .RS
 .TP
-\fI$widget->\fBtagAdd\fR(\fItagName, index1, \fR?\fIindex2, index1, index2, ...\fR?\fR)
+\fI$text->\fBtagAdd\fR(\fItagName, index1, \fR?\fIindex2, index1, index2, ...\fR?\fR)
 Associate the tag \fItagName\fR with all of the characters starting
 with \fIindex1\fR and ending just before
 \fIindex2\fR (the character at \fIindex2\fR isn't tagged).
@@ -1104,7 +1106,7 @@ If there are no characters in the specified range (e.g. \fIindex1\fR
 is past the end of the file or \fIindex2\fR is less than or equal
 to \fIindex1\fR) then the command has no effect.
 .TP
-\fI$widget->\fBtagBind\fR(\fItagName, \fR?\fIsequence\fR?, ?\fIscript\fR?\fR)
+\fI$text->\fBtagBind\fR(\fItagName, \fR?\fIsequence\fR?, ?\fIscript\fR?\fR)
 This command associates \fIscript\fR with the tag given by
 \fItagName\fR.
 Whenever the event sequence given by \fIsequence\fR occurs for a
@@ -1164,13 +1166,13 @@ The tag bindings will be invoked first, followed by bindings
 for the window as a whole.
 .RE
 .TP
-\fI$widget->\fBtagCget\fR(\fItagName, option\fR)
+\fI$text->\fBtagCget\fR(\fItagName, option\fR)
 This command returns the current value of the option named \fIoption\fR
 associated with the tag given by \fItagName\fR.
 \fIOption\fR may have any of the values accepted by the \fBtag configure\fR
 method.
 .TP
-\fI$widget->\fBtagConfigure\fR(\fItagName, \fR?\fIoption\fR?, ?\fIvalue\fR?, ?\fIoption, value, ...\fR?\fR)
+\fI$text->\fBtagConfigure\fR(\fItagName, \fR?\fIoption\fR?, ?\fIvalue\fR?, ?\fIoption, value, ...\fR?\fR)
 This command is similar to the \fBconfigure\fR method except
 that it modifies options associated with the tag given by \fItagName\fR
 instead of modifying options for the overall text widget.
@@ -1186,7 +1188,7 @@ modifies the given option(s) to have the given value(s) in \fItagName\fR;
 in this case the command returns an empty string.
 See TAGS above for details on the options available for tags.
 .TP
-\fI$widget->\fBtagDelete\fR(\fItagName, \fR?\fItagName, ...\fR?\fR)
+\fI$text->\fBtagDelete\fR(\fItagName, \fR?\fItagName, ...\fR?\fR)
 Deletes all tag information for each of the \fItagName\fR
 arguments.
 The command removes the tags from all characters in the file
@@ -1194,13 +1196,13 @@ and also deletes any other information associated with the tags,
 such as bindings and display information.
 The command returns an empty string.
 .TP
-\fI$widget->\fBtagLower\fR(\fItagName, \fR?\fIbelowThis\fR?\fR)
+\fI$text->\fBtagLower\fR(\fItagName, \fR?\fIbelowThis\fR?\fR)
 Changes the priority of tag \fItagName\fR so that it is just lower
 in priority than the tag whose name is \fIbelowThis\fR.
 If \fIbelowThis\fR is omitted, then \fItagName\fR's priority
 is changed to make it lowest priority of all tags.
 .TP
-\fI$widget->\fBtagNames\fR(?\fIindex\fR?\fR)
+\fI$text->\fBtagNames\fR(?\fIindex\fR?\fR)
 Returns a list whose elements are the names of all the tags that
 are active at the character position given by \fIindex\fR.
 If \fIindex\fR is omitted, then the return value will describe
@@ -1212,7 +1214,7 @@ the tag).
 The list will be sorted in order from lowest priority to highest
 priority.
 .TP
-\fI$widget->\fBtagNextrange\fR(\fItagName, index1, \fR?\fIindex2\fR?\fR)
+\fI$text->\fBtagNextrange\fR(\fItagName, index1, \fR?\fIindex2\fR?\fR)
 This command searches the text for a range of characters tagged
 with \fItagName\fR where the first character of the range is
 no earlier than the character at \fIindex1\fR and no later than
@@ -1227,7 +1229,7 @@ If no matching range is found then the return value is an
 empty string.
 If \fIindex2\fR is not given then it defaults to the end of the text.
 .TP
-\fI$widget->\fBtagPrevrange\fR(\fItagName, index1, \fR?\fIindex2\fR?\fR)
+\fI$text->\fBtagPrevrange\fR(\fItagName, index1, \fR?\fIindex2\fR?\fR)
 This command searches the text for a range of characters tagged
 with \fItagName\fR where the first character of the range is
 before the character at \fIindex1\fR and no earlier than
@@ -1242,13 +1244,13 @@ If no matching range is found then the return value is an
 empty string.
 If \fIindex2\fR is not given then it defaults to the beginning of the text.
 .TP
-\fI$widget->\fBtagRaise\fR(\fItagName, \fR?\fIaboveThis\fR?\fR)
+\fI$text->\fBtagRaise\fR(\fItagName, \fR?\fIaboveThis\fR?\fR)
 Changes the priority of tag \fItagName\fR so that it is just higher
 in priority than the tag whose name is \fIaboveThis\fR.
 If \fIaboveThis\fR is omitted, then \fItagName\fR's priority
 is changed to make it highest priority of all tags.
 .TP
-\fI$widget->\fBtagRanges\fR(\fItagName\fR)
+\fI$text->\fBtagRanges\fR(\fItagName\fR)
 Returns a list describing all of the ranges of text that have been
 tagged with \fItagName\fR.
 The first two elements of the list describe the first tagged range
@@ -1261,7 +1263,7 @@ range.
 If there are no characters tagged with \fItag\fR then an
 empty string is returned.
 .TP
-\fI$widget->\fBtagRemove\fR(\fItagName, index1, \fR?\fIindex2, index1, index2, ...\fR?\fR)
+\fI$text->\fBtagRemove\fR(\fItagName, index1, \fR?\fIindex2, index1, index2, ...\fR?\fR)
 Remove the tag \fItagName\fR from all of the characters starting
 at \fIindex1\fR and ending just before
 \fIindex2\fR (the character at \fIindex2\fR isn't affected).
@@ -1317,13 +1319,13 @@ Returns a list whose elements are the names of all windows currently
 embedded in $widget\fR.
 .RE
 .TP
-\fI$widget->\fBxview\fR(\fIoption, args\fR)
+\fI$text->\fBxview\fR(\fIoption, args\fR)
 This command is used to query and change the horizontal position of the
 text in the widget's window.  It can take any of the following
 forms:
 .RS
 .TP
-\fI$widget->\fBxview\fR
+\fI$text->\fBxview\fR
 Returns a list containing two elements.
 Each element is a real fraction between 0 and 1;  together they describe
 the portion of the document's horizontal span that is visible in
@@ -1358,13 +1360,13 @@ become visible;  if it is positive then characters farther to the right
 become visible.
 .RE
 .TP
-\fI$widget->\fByview\fR(\fI?args\fR?\fR)
+\fI$text->\fByview\fR(\fI?args\fR?\fR)
 This command is used to query and change the vertical position of the
 text in the widget's window.
 It can take any of the following forms:
 .RS
 .TP
-\fI$widget->\fByview\fR
+\fI$text->\fByview\fR
 Returns a list containing two elements, both of which are real fractions
 between 0 and 1.
 The first element gives the position of the first character in the
@@ -1395,7 +1397,7 @@ If \fInumber\fR is negative then earlier positions in the text
 become visible;  if it is positive then later positions in the text
 become visible.
 .TP
-\fI$widget->\fByview\fR(?\fR)\fB\-pickplace\fR? \fIindex\fR
+\fI$text->\fByview\fR(?\fR)\fB\-pickplace\fR? \fIindex\fR
 Changes the view in the widget's window to make \fIindex\fR visible.
 If the \fB\-pickplace\fR option isn't specified then \fIindex\fR will
 appear at the top of the window.
@@ -1419,7 +1421,7 @@ command (\fBsee\fR handles both x- and y-motion to make a location
 visible, whereas \fB\-pickplace\fR only handles motion in y).
 .RE
 .TP
-\fI$widget->\fByview\fR(\fInumber\fR)
+\fI$text->\fByview\fR(\fInumber\fR)
 This command makes the first character on the line after
 the one given by \fInumber\fR visible at the top of the window.
 \fINumber\fR must be an integer.
@@ -1617,5 +1619,8 @@ especially if they have many marks and tags within them.
 The display line with the insert cursor is redrawn each time the
 cursor blinks, which causes a steady stream of graphics traffic.
 Set the \fBinsertOffTime\fP attribute to 0 avoid this.
+.SH "SEE ALSO"
+ROText,
+TextUndo
 .SH KEYWORDS
 text, widget

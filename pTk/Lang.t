@@ -40,6 +40,10 @@ VFUNC(void,LangDebug,V_LangDebug,_ANSI_ARGS_((char *fmt,...)))
 VFUNC(int,LangDoCallback,V_LangDoCallback,_ANSI_ARGS_((Tcl_Interp *,LangCallback *,int result,int argc,...)))
 #endif
 
+#ifndef LangDumpVec
+VFUNC(void,LangDumpVec,V_LangDumpVec,_ANSI_ARGS_((char *tag, int argc, Tcl_Obj **vec)))
+#endif
+
 #ifndef LangEval
 VFUNC(int,LangEval,V_LangEval,_ANSI_ARGS_((Tcl_Interp *interp, char *cmd, int global)))
 #endif
@@ -170,6 +174,10 @@ VFUNC(char *,Lang_GetErrorInfo,V_Lang_GetErrorInfo,_ANSI_ARGS_((Tcl_Interp *inte
 #ifndef Lang_GetStrInt
 VFUNC(int,Lang_GetStrInt,V_Lang_GetStrInt,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int *intPtr)))
+#endif
+
+#ifndef Lang_OSHandle
+VFUNC(long,Lang_OSHandle,V_Lang_OSHandle,_ANSI_ARGS_((int fd)))
 #endif
 
 #ifndef Lang_RegExpCompile
@@ -311,6 +319,12 @@ VFUNC(void,Tcl_CreateExitHandler,V_Tcl_CreateExitHandler,_ANSI_ARGS_((Tcl_ExitPr
 			    ClientData clientData)))
 #endif
 
+#ifndef Tcl_CreateFileHandler
+VFUNC(void,Tcl_CreateFileHandler,V_Tcl_CreateFileHandler,_ANSI_ARGS_((
+    			    int fd, int mask, Tcl_FileProc *proc,
+			    ClientData clientData)))
+#endif
+
 #ifndef Tcl_CreateInterp
 VFUNC(Tcl_Interp *,Tcl_CreateInterp,V_Tcl_CreateInterp,_ANSI_ARGS_((void)))
 #endif
@@ -392,6 +406,10 @@ VFUNC(void,Tcl_DeleteEvents,V_Tcl_DeleteEvents,_ANSI_ARGS_((
 #ifndef Tcl_DeleteExitHandler
 VFUNC(void,Tcl_DeleteExitHandler,V_Tcl_DeleteExitHandler,_ANSI_ARGS_((Tcl_ExitProc *proc,
 			    ClientData clientData)))
+#endif
+
+#ifndef Tcl_DeleteFileHandler
+VFUNC(void,Tcl_DeleteFileHandler,V_Tcl_DeleteFileHandler,_ANSI_ARGS_((int fd)))
 #endif
 
 #ifndef Tcl_DeleteHashEntry

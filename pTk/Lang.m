@@ -43,6 +43,10 @@
 #  define LangDoCallback (*LangVptr->V_LangDoCallback)
 #endif
 
+#ifndef LangDumpVec
+#  define LangDumpVec (*LangVptr->V_LangDumpVec)
+#endif
+
 #ifndef LangEval
 #  define LangEval (*LangVptr->V_LangEval)
 #endif
@@ -171,6 +175,10 @@
 #  define Lang_GetStrInt (*LangVptr->V_Lang_GetStrInt)
 #endif
 
+#ifndef Lang_OSHandle
+#  define Lang_OSHandle (*LangVptr->V_Lang_OSHandle)
+#endif
+
 #ifndef Lang_RegExpCompile
 #  define Lang_RegExpCompile (*LangVptr->V_Lang_RegExpCompile)
 #endif
@@ -287,6 +295,10 @@
 #  define Tcl_CreateExitHandler (*LangVptr->V_Tcl_CreateExitHandler)
 #endif
 
+#ifndef Tcl_CreateFileHandler
+#  define Tcl_CreateFileHandler (*LangVptr->V_Tcl_CreateFileHandler)
+#endif
+
 #ifndef Tcl_CreateInterp
 #  define Tcl_CreateInterp (*LangVptr->V_Tcl_CreateInterp)
 #endif
@@ -353,6 +365,10 @@
 
 #ifndef Tcl_DeleteExitHandler
 #  define Tcl_DeleteExitHandler (*LangVptr->V_Tcl_DeleteExitHandler)
+#endif
+
+#ifndef Tcl_DeleteFileHandler
+#  define Tcl_DeleteFileHandler (*LangVptr->V_Tcl_DeleteFileHandler)
 #endif
 
 #ifndef Tcl_DeleteHashEntry

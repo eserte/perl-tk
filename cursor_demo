@@ -24,7 +24,7 @@ my @names = (
 my $lb = $mw->Scrolled('Listbox')->pack;
 $lb->insert('end',@names);
 
-$lb->bind('<Double-ButtonRelease-1>',['configure',-cursor,Ev(['Getselected'])]);
+$lb->bind('<Double-ButtonRelease-1>',['configure',-cursor,Ev(['getSelected'])]);
 
 MainLoop;
 

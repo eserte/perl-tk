@@ -17,7 +17,6 @@ Wm - Tix's addition to the standard TK wm command.
 .PP
 .SH DESCRIPTION
 .PP
-
 The \fBcapture\fR and the \fBrelease\fR methods change the
 toplevel attribute of Tk widgets.
 .SH COMMAND OPTIONS

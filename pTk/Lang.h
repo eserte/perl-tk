@@ -1654,6 +1654,7 @@ EXTERN void Lang_BuildInImages _ANSI_ARGS_((void));
 EXTERN void Lang_FreeRegExp _ANSI_ARGS_((Tcl_RegExp regexp));
 EXTERN void *	TclCalloc _ANSI_ARGS_((size_t n,size_t s));
 EXTERN void LangDebug _ANSI_ARGS_((char *fmt,...));
+EXTERN void LangDumpVec _ANSI_ARGS_((char *tag, int argc, Tcl_Obj **vec));
 
 EXTERN void Lang_DeleteObject _ANSI_ARGS_((Tcl_Interp *,Tcl_Command));
 EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,
@@ -1665,10 +1666,10 @@ EXTERN char *LangLibraryDir _ANSI_ARGS_((void));
 EXTERN void Lang_SetBinaryResult _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int len, Tcl_FreeProc *freeProc));
 EXTERN Tcl_CmdProc *LangOptionCommand;
+
+EXTERN long Lang_OSHandle _ANSI_ARGS_((int fd));
 #define TK_LIBRARY LangLibraryDir()
 #define TclPlatformExit(status) LangExit(status)
-
-#define Tcl_DStringInit(foo) Tcl_DbDStringInit(foo,__FILE__ ":" __FUNCTION__, __LINE__)
 
 #ifdef WIN32                     
 #ifdef __BORLANDC__

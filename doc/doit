@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -ev
+
+# cleanup
+
+rm -rf man/*                    #fixed man macros
+rm -rf pod3/*.pod podn/*.pod    #tkman2pod output
+rm -rf *.htm index.html         #man2pod output
+
+# Fix man markup for tkpod2man
+
+test -d man || mkdir man
+#exit
+./fix4man2pod mann/*.[3n]
+
+# Convert to pod
+
+test -d pod3 || mkdir pod3
+test -d podn || mkdir podn
+(cd pod3 && perl -wI.. ../tkman2pod ../man/*.3)
+(cd podn && perl -wI.. ../tkman2pod ../man/*.n)
+
+# add/override with handish tuned manual pages
+
+cp pod/*.pod podn/
+
+# Try to guess corresponding module name
+
+perl -w ./transname
+

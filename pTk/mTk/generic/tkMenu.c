@@ -94,10 +94,13 @@ Tk_ConfigSpec tkMenuEntryConfigSpecs[] = {
 	DEF_MENU_ENTRY_ACCELERATOR, Tk_Offset(TkMenuEntry, accel),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
 	|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_BORDER, "-background", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_BORDER, "-background", "background", "Background",
 	DEF_MENU_ENTRY_BG, Tk_Offset(TkMenuEntry, border),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
 	|SEPARATOR_MASK|TEAROFF_MASK|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_SYNONYM, "-bg", "background", (char *) NULL,
+	(char *) NULL, 0,  
+	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK},
     {TK_CONFIG_BITMAP, "-bitmap", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_BITMAP, Tk_Offset(TkMenuEntry, bitmap),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
@@ -2266,6 +2269,7 @@ TkPostCommand(menuPtr)
  *--------------------------------------------------------------
  */
 
+
 static int
 CloneMenu(menuPtr, widget, newMenuTypeString)
     TkMenu *menuPtr;		/* The menu we are going to clone */
@@ -2307,7 +2311,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     	    Tcl_NewStringObj("MenuDup", -1));
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
     	    LangCopyArg(LangWidgetArg(menuPtr->interp, menuPtr->tkwin)));
-    Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr, *widget);
+    Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr, LangCopyArg(*widget));
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
     		Tcl_NewStringObj(newMenuTypeString, -1));
     Tcl_IncrRefCount(commandObjPtr);
@@ -2326,6 +2330,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     	TkMenu *newMenuPtr = menuRefPtr->menuPtr;
 	Arg newArgv[3];
 	int i, numElements;
+
 	*widget = newMenuName;
 
 	/*
@@ -2357,19 +2362,18 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
    	if (Tk_BindtagsCmd((ClientData)newMenuPtr->tkwin, 
    		newMenuPtr->interp, 2, newArgv) == TCL_OK) {
    	    char *windowName;
-   	    Tcl_Obj *bindingsPtr = Tcl_GetObjResult(newMenuPtr->interp);
+   	    Tcl_Obj *bindingsPtr = LangScalarResult(newMenuPtr->interp);
    	    Tcl_Obj *elementPtr;
 
-            Tcl_IncrRefCount(bindingsPtr);
-
    	    Tcl_ListObjLength(newMenuPtr->interp, bindingsPtr, &numElements);
+
    	    for (i = 0; i < numElements; i++) {
    	    	Tcl_ListObjIndex(newMenuPtr->interp, bindingsPtr, i,
 			&elementPtr);
    	    	windowName = Tcl_GetStringFromObj(elementPtr, NULL);
    	    	if (strcmp(windowName, Tk_PathName(newMenuPtr->tkwin))
    	    		== 0) {
-   	    	    Tcl_Obj *newElementPtr = LangWidgetArg(menuPtr->interp, newMenuPtr->masterMenuPtr->tkwin); 
+   	    	    Tcl_Obj *newElementPtr = Tcl_NewStringObj(Tk_PathName(newMenuPtr->masterMenuPtr->tkwin),-1); 
    	    	    Tcl_ListObjReplace(menuPtr->interp, bindingsPtr,
    	    	    	    i + 1, 0, 1, &newElementPtr);
    	    	    newArgv[2] = bindingsPtr;
@@ -2379,7 +2383,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
    	    	}
    	    }
    	    Tcl_DecrRefCount(bindingsPtr);   	    
-   	}
+   	}  
 	Tcl_DecrRefCount(newArgv[0]);
    	Tcl_ResetResult(menuPtr->interp);
       	
@@ -2409,7 +2413,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 		    newArgv[1] = newCascadeName;
 		    ConfigureMenuEntry(newMenuPtr->entries[i], 2, newArgv, 
 		    	    TK_CONFIG_ARGV_ONLY);
-		    Tcl_DecrRefCount(newArgv[0]);
+		    Tcl_DecrRefCount(newArgv[0]);   
    	    	}
    	    }
    	}

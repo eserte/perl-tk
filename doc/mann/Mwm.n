@@ -11,11 +11,8 @@ Mwm - Communicate with the Motif(tm) window manager.
 '
 '
 .SH SYNOPSIS
-.PP
 \fI$toplevel\fR->\fBMwm\fIOption\fR?(\fIargs\fR)?
-.PP
 .SH COMMAND OPTIONS
-.PP
 .TP
 \fI$toplevel\fR->\fBMwmDecoration\fR?(?option?\fR=>?value? ?...?\fR)? 
 

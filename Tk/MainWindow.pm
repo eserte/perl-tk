@@ -10,7 +10,7 @@ use AutoLoader;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/MainWindow.pm#6$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/MainWindow.pm#8$
 
 use Tk::CmdLine;
 require Tk;
@@ -51,6 +51,7 @@ sub new
   }
  croak("Odd number of args"."$package->new(" . join(',',@_) .")") if @_ % 2;
  my %args = @_;
+
  my $top = eval { bless Create($package->CreateArgs(\%args)), $package };
  croak($@ . "$package->new(" . join(',',@_) .")") if ($@);
  $top->apply_command_line;
@@ -68,6 +69,18 @@ sub InitBindings
  my $mw = shift;
  $mw->bind('all',"<Tab>","focusNext");
  $mw->bind('all',"<Shift-Tab>","focusPrev");  
+ if ($Tk::platform eq 'unix')
+  {
+   $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F20> <Meta-Key-w>]);
+   $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F16> <Control-Key-w>]);
+   $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F18> <Control-Key-y>]);
+  }
+ else
+  {
+   $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Shift-Key-Delete>]);
+   $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Control-Key-Insert>]);
+   $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Shift-Key-Insert>]);
+  }
 
  # FIXME - Should these move to Menubutton ? 
  my $c = ($Tk::platform eq 'unix') ? 'all' : 'Tk::Menubutton';

@@ -1,7 +1,7 @@
 package Tk::FileSelect; 
                
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/FileSelect.pm#4$
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/FileSelect.pm#5$
 
 use Tk qw(Ev);
 use strict;
@@ -59,10 +59,10 @@ sub Accept {
 
     if (defined $so and
           $so == $cw->Subwidget('dir_list')->Subwidget('listbox')) {
-        $leaves = [$cw->Subwidget('dir_list')->Getselected];
+        $leaves = [$cw->Subwidget('dir_list')->getSelected];
         $leaves = [$cw->Subwidget('dir_entry')->get] if !scalar(@$leaves);
     } else {
-        $leaves = [$cw->Subwidget('file_list')->Getselected];
+        $leaves = [$cw->Subwidget('file_list')->getSelected];
         $leaves = [$cw->Subwidget('file_entry')->get] if !scalar(@$leaves);
     }
 
@@ -171,7 +171,7 @@ sub Populate {
         -scrollbars    => 'se',
     );
     $b->pack(-side => 'left', -expand => 1, -fill => 'both');
-    $b->bind('<Double-Button-1>' => [$w => 'Accept_dir', Ev(['Getselected'])]);
+    $b->bind('<Double-Button-1>' => [$w => 'Accept_dir', Ev(['getSelected'])]);
     
     # Add a label.
     

@@ -28,7 +28,7 @@ Returns information about the the actual attributes that are obtained when
 \fIfont\fR is used on \fIwindow\fR's display; the actual attributes obtained
 may differ from the attributes requested due to platform-dependant
 limitations, such as the availability of font families and pointsizes.
-\fIfont\fR is a font description; see FONT DESCRIPTIONS below.  If the
+\fIfont\fR is a font description; see FONT DESCRIPTION below.  If the
 \fIwindow\fR argument is omitted, it defaults to the main window.  If
 \fIoption\fR is specified, returns the value of that attribute; if it is
 omitted, the return value is a list of all the attributes and their values.
@@ -74,7 +74,7 @@ omitted, it defaults to the main window.
 .
 Measures the amount of space the string \fItext\fR would use in the given
 \fIfont\fR when displayed in \fIwindow\fR.  \fIfont\fR is a font description;
-see FONT DESCRIPTIONS below.  If the \fIwindow\fR argument is omitted, it
+see FONT DESCRIPTION below.  If the \fIwindow\fR argument is omitted, it
 defaults to the main window.  The return value is the total width in pixels
 of \fItext\fR, not including the extra pixels used by highly exagerrated
 characters such as cursive ``f''.  If the string contains newlines or tabs,
@@ -85,7 +85,7 @@ string.
 .
 Returns information about the metrics (the font-specific data), for
 \fIfont\fR when it is used on \fIwindow\fR's display.  \fIfont\fR is a font
-description; see FONT DESCRIPTIONS below.  If the \fIwindow\fR argument is
+description; see FONT DESCRIPTION below.  If the \fIwindow\fR argument is
 omitted, it defaults to the main window.  If \fIoption\fR is specified,
 returns the value of that metric; if it is omitted, the return value is a 
 list of all the metrics and their values.  See FONT METRICS below for a list
