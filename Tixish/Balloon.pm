@@ -5,7 +5,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/Balloon.pm#14$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tixish/Balloon.pm#16$
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -102,7 +102,8 @@ sub Motion {
     my ($ewin, $x, $y, $s) = @_;
 
     # Don't do anything if a button is down or a grab is active
-    return if ($s || $ewin->grabCurrent()) and $ewin->name ne 'menu';
+    # 0x1f00 is (Button1Mask | .. | Button5Mask)
+    return if !defined $ewin || ((($s & 0x1f00) || $ewin->grabCurrent()) and $ewin->name ne 'menu');
 
     # Find which window we are over
     my $over = $ewin->Containing($x, $y);

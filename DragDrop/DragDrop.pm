@@ -4,15 +4,17 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.008'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#8$
+$VERSION = '3.010'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#10$
 
 @ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
+
+*MoveWindow = \&Tk::Widget::MoveToplevelWindow;
 
 # This is a little tricky, ISA says 'Toplevel' but we 
 # define a Tk_cmd to actually build a 'Label', then 
 # use Tix's wmRelease in Populate to make it a toplevel. 
 
-my $useWmRelease = ($^O ne 'MSWin32');
+my $useWmRelease = 0 ; # ($^O ne 'MSWin32');
 
 sub Tk_cmd { ($useWmRelease) ? \&Tk::label : \&Tk::toplevel }
 
@@ -46,7 +48,9 @@ sub Populate
   }
  else
   {
-   my $lab = $token->Label;
+   my $lab = $token->Label->pack(-expand => 1, -fill => 'both');
+   bless $lab,ref($token);
+   $lab->bindtags([ref($token), $lab, $token, 'all']);
    $token->ConfigSpecs(DEFAULT => [$lab]);
   }
  $token->withdraw;
@@ -120,6 +124,7 @@ sub Mapped
 {
  my ($token) = @_;
  my $e = $token->parent->XEvent;
+ $token = $token->toplevel;
  $token->grabGlobal;
  $token->focus;
  if (defined $e)

@@ -14,10 +14,25 @@ use subs qw/inswt invoke lsearch see_code see_vars show_stat view_widget_code/;
 use vars qw/$MW $FONT $WIDTRIB/;
 use vars qw/$CODE $CODE_RERUN $CODE_TEXT $VARS $VIEW $VIEW_TEXT/;
 use vars qw/$BRAKES $LIGHTS $OIL $SOBER $TRANS $WIPERS/;
-use vars qw/$COLOR $FONT_STYLE $POINT_SIZE/;
-use strict;
+use vars qw/$COLOR $FONT_STYLE $POINT_SIZE $demo_file %DemoDescription/;
+use strict;                      
+
  
-$MW = MainWindow->new;
+$MW = Tk::MainWindow->new;
+
+{ package WidgetWrap;
+  @WidgetWrap::ISA = qw(Tk::MainWindow);
+
+  sub new 
+  {
+   my ($name) = $::demo_file =~ m#([^/]+).pl$#;
+   warn "$::demo_file => $name\n";
+   return $::MW->WidgetDemo(-name => $name, -text => $::DemoDescription{$name} );
+  }
+}
+
+@MainWindow::ISA = 'WidgetWrap';
+
 $MW->title('Widget Demonstration');
 $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $widget_lib = Tk->findINC('demos/widget_lib');
@@ -203,6 +218,7 @@ while ($_ = shift @dirent) {
     my($name) = /^(.*)\.pl$/;
     $_ = <C>;
     my($title) = /^#\s*(.*)$/;
+    $DemoDescription{$name} = $title;
     close C;
     $T->insert('end', ++$i . ". $title\n", ['demo', "demo-$name"]);
 }
@@ -240,16 +256,17 @@ sub AUTOLOAD {
     $T->Busy;
     {
 	local $INPUT_RECORD_SEPARATOR = undef;
-	my $file;
-	$file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
-	$file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
-	open(DEMO, $file) or warn "Cannot open demo file $file: $OS_ERROR!";
+	local @Tk::EXPORT;
+	local $demo_file;
+	$demo_file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
+	$demo_file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
+	open(DEMO, $demo_file) or warn "Cannot open demo file $demo_file: $OS_ERROR!";
 	eval <DEMO>;
 	warn $EVAL_ERROR if $EVAL_ERROR;
 	close DEMO;
     }
     $T->Unbusy;
-    goto &$::AUTOLOAD;
+    goto &$::AUTOLOAD if defined &$::AUTOLOAD;
 
 } # end AUTOLOAD
 

@@ -1,8 +1,4 @@
-# $Id$
-
-package main;
-
-unshift(@INC, "../..");
+#browseentry, entry with listbox of to select list of values
 
 use Tk;
 use English;
@@ -10,14 +6,13 @@ use Carp;
 
 require Tk::BrowseEntry;
 
-print "1..1";
-$month = "January";
+my $month = "January";
 
 outer:
 {
-    $top = MainWindow->new;
-    $f = $top->Frame;
-    $c = $f->BrowseEntry(-label => "Month:", -variable => \$month);
+    my $top = MainWindow->new;
+    my $f = $top->Frame;
+    my $c = $f->BrowseEntry(-label => "Month:", -variable => \$month);
     $c->pack;
     $c->insert("end", "January");
     $c->insert("end", "February");
@@ -31,12 +26,12 @@ outer:
     $c->insert("end", "October");
     $c->insert("end", "November");
     $c->insert("end", "December");
-    $bf = $f->Frame;
+    my $bf = $f->Frame;
     $bf->Button(-text => "Quit",
 		-command => sub {
 		    print "The month is $month\n";
 		    print "ok 1\n";
-		    exit;
+		    $top->destroy;
 		}, -relief => "raised")->pack;
     
     $bf->pack;

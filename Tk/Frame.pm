@@ -14,22 +14,15 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Frame.pm#7$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Frame.pm#11$
 
 sub Menubar;
 
 sub Tk_cmd { \&Tk::frame }
 
-sub CreateArgs
+sub CreateOptions
 {
- my ($package,$parent,$args) = @_;
- my @result = $package->SUPER::CreateArgs($parent,$args);
- foreach my $opt ('-colormap','-visual','-container')
-  {
-   my $val = delete $args->{$opt};
-   push(@result, $opt => $val) if (defined $val);
-  }
- return @result;
+ return (shift->SUPER::CreateOptions,'-colormap','-visual','-container')
 }
 
 sub Default
@@ -231,7 +224,7 @@ sub AddScrollbars
      $cw->Advertise("ysbslice" => $slice);
      $corner->{'before'} = $ysb;
      $slice->{'before'} = $w;
-     $y = 's';
+     $y = 'w';
      $s = 1;
     }
    elsif ($opt eq '-xscrollcommand')
@@ -239,14 +232,14 @@ sub AddScrollbars
      my $xsb = Tk::Scrollbar->new($cw,-orient => 'horizontal', -command => [ 'xview', $w ]);
      $cw->Advertise("xscrollbar" => $xsb); 
      $xsb->{'before'} = $w;
-     $x = 'w';
+     $x = 's';
      $s = 1;
     }
   }
  if ($s)
   {
    $cw->Advertise('scrolled' => $w);
-   $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars',$y.$x]);
+   $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars',$x.$y]);
   }
 }
 

@@ -13,15 +13,15 @@ focus - Manage the input focus
 
 =head1 SYNOPSIS
 
-I<$widget>-E<gt>B<focus >
+S<   >I<$widget>-E<gt>B<focus>
 
-I<$widget>-E<gt>B<focus>I<Option>
+S<   >I<$widget>-E<gt>B<focus>I<Option>
 
-I<$widget>-E<gt>B<focusNext>
+S<   >I<$widget>-E<gt>B<focusNext>
 
-I<$widget>-E<gt>B<focusPrev>
+S<   >I<$widget>-E<gt>B<focusPrev>
 
-I<$widget>-E<gt>B<focusFollowsMouse>
+S<   >I<$widget>-E<gt>B<focusFollowsMouse>
 
 =head1 DESCRIPTION
 

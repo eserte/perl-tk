@@ -7,7 +7,7 @@
 package Tk::Radiobutton; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#5$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Radiobutton.pm#7$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -21,6 +21,10 @@ Construct Tk::Widget 'Radiobutton';
 
 sub Tk_cmd { \&Tk::radiobutton }
 
+sub CreateOptions
+{
+ return (shift->SUPER::CreateOptions,'-variable');
+}
 
 sub ClassInit
 {

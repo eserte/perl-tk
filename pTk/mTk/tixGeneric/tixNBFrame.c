@@ -334,7 +334,7 @@ Tix_NoteBookFrameCmd(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-    Tk_Window main = (Tk_Window) clientData;
+    Tk_Window mainw = (Tk_Window) clientData;
     WidgetPtr wPtr;
     Tk_Window tkwin;
 
@@ -344,7 +344,7 @@ Tix_NoteBookFrameCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 
-    tkwin = Tk_CreateWindowFromPath(interp, main, argv[1], (char *) NULL);
+    tkwin = Tk_CreateWindowFromPath(interp, mainw, argv[1], (char *) NULL);
     if (tkwin == NULL) {
 	return TCL_ERROR;
     }

@@ -171,7 +171,7 @@ Text widgets support four different kinds of annotations on the
 text, called tags, marks, embedded windows or embedded images.
 Tags allow different portions of the text
 to be displayed with different fonts and colors.
-In addition, Tcl commands can be associated with tags so
+In addition, L<perl/Tk callbacks|Tk::callbacks> can be associated with tags so
 that scripts are invoked when particular actions such as keystrokes
 and mouse button presses occur in particular ranges of the text.
 See L<"TAGS"> below for more details.
@@ -352,7 +352,7 @@ An individual character may have any number of tags associated with it.
 A priority order is defined among tags, and this order is used in
 implementing some of the tag-related functions described below.
 When a tag is defined (by associating it with characters or setting
-its display options or binding commands to it), it is given
+its display options or binding callbacks to it), it is given
 a priority higher than any existing tag.
 The priority order of tags may be redefined using the
 ``I<$text>-E<gt>B<tagRaise>'' and ``I<$text>-E<gt>B<tagLower>''
@@ -552,12 +552,12 @@ The second purpose for tags is event bindings.
 You can associate bindings with a tag in much the same way you can
 associate bindings with a widget class:  whenever particular X
 events occur on characters with the given tag, a given
-Tcl command will be executed.
+<perl/Tk callback|Tk::callbacks> will be executed.
 Tag bindings can be used to give behaviors to ranges of characters;
 among other things, this allows hypertext-like
 features to be implemented.
-For details, see the description of the B<tag bind> widget
-command below.
+For details, see the description of the B<tagBind> widget
+method below.
 
 The third use for tags is in managing the selection.
 See L<"THE SELECTION"> below.
@@ -704,7 +704,7 @@ text is modified or scrolled.
 Each embedded image occupies one character's worth of index space
 in the text widget, and it may be referred to either by
 its position in the widget's index space, or the name it is assigned
-when the image is inserted into the text widget widh B<image create>.
+when the image is inserted into the text widget with B<imageCreate>.
 If the range of text containing the embedded image is deleted then
 that copy of the image is removed from the screen.
 
@@ -722,7 +722,7 @@ change, even though the B<-image> or B<-name> values can be changed
 with B<image configure>.
 
 When an embedded image is added to a text widget with the
-B<image create> method, several configuration
+B<imageCreate> method, several configuration
 options may be associated with it.
 These options may be modified later with the B<image configure>
 method.
@@ -931,11 +931,11 @@ may be specified to control the dump:
 Return information about all elements: text, marks, tags, and windows.
 This is the default.
 
-=item B<-command> =E<gt> I<command>
+=item B<-command> =E<gt> I<callback>
 
 Instead of returning the information as the result of the dump operation,
-invoke the I<command> on each element of the text widget within the range.
-The command has three arguments appended to it before it is evaluated:
+invoke the I<callback> on each element of the text widget within the range.
+The callback has three arguments appended to it before it is evaluated:
 the I<key>, I<value>, and I<index>.
 
 =item B<-mark>
@@ -980,12 +980,14 @@ to I<index1>) then an empty string is returned.
 If the specified range contains embedded windows, no information
 about them is included in the returned string.
 
-=item I<$text>-E<gt>B<image>(I<option, >?I<arg, arg, ...>?)
+=item I<$text>-E<gt>B<image>(I<option>, ?I<arg, arg, ...>?)
 
-This command is used to manipulate embedded images.
-The behavior of the command depends on the I<option> argument
-that follows the B<tag> argument.
-The following forms of the command are currently supported:
+=item I<$text>-E<gt>B<image>I<Option>(?I<arg, arg, ...>?)
+
+This method is used to manipulate embedded images.
+The behavior of the method depends on the I<option> argument
+that follows the B<image> prefix.
+The following forms of the methods are currently supported:
 
 =over 8
 
@@ -994,7 +996,7 @@ The following forms of the command are currently supported:
 Returns the value of a configuration option for an embedded image.
 I<Index> identifies the embedded image, and I<option>
 specifies a particular configuration option, which must be one of
-the ones listed in L<EMBEDDED IMAGES>.
+the ones listed in L<"EMBEDDED IMAGES">.
 
 =item I<$text>-E<gt>B<imageConfigure>(I<index, >?I<option, value, ...>?)
 
@@ -1009,7 +1011,7 @@ I<option> is specified).
 If one or more I<option-value> pairs are specified, then the command
 modifies the given option(s) to have the given value(s);  in
 this case the command returns an empty string.
-See EMBEDDED IMAGES for information on the options that
+See L<"EMBEDDED IMAGES"> for information on the options that
 are supported.
 
 =item I<$text>-E<gt>B<imageCreate>(I<index, >?I<option, value, ...>?)
@@ -1020,7 +1022,7 @@ Any number of I<option-value> pairs may be specified to
 configure the annotation.
 Returns a unique identifier that may be used as an index to refer to
 this image.
-See EMBEDDED IMAGES for information on the options that
+See L<"EMBEDDED IMAGES"> for information on the options that
 are supported, and a description of the identifier returned.
 
 =item I<$text>-E<gt>B<imageNames>

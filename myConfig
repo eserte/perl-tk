@@ -24,16 +24,16 @@ $gccopt = "";
 if (defined $Config{'gccversion'})
  {
   $ver = $Config{'gccversion'};
-  if ($ver ge "2.6")
+  if ($ver ge "2.8")
    { 
     # retain author's favourite warnings if using gcc
-    $gccopt .= " -Wall -Wno-comment -Wno-unused -D__USE_FIXED_PROTOTYPES__";
+    $gccopt .= " -Wall -Wno-implicit-int -Wno-comment -Wno-unused -D__USE_FIXED_PROTOTYPES__";
     eval 
      {
       if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
        {
         # This is the author - catch as many bugs as possible
-        $gccopt .= " -MMD -Werror";
+        $gccopt .= "  -MMD -Werror";
         # $gccopt .= " -ansi -D__EXTENSIONS__" if ($^O eq 'solaris');
         # $gccopt .= " -Wmissing-prototypes" if (-f "/etc/shadow");
         @macro = ( macro => { INSTALLDIRS => 'perl' ,

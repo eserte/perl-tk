@@ -133,7 +133,7 @@ Deletes the page identified by I<page>.
 
 =item B<pagecget(>I<page>, I<option>B<)>
 
-Returns the current value of the configuration otion given by
+Returns the current value of the configuration option given by
 I<option> in the page given by I<page>. I<Option> may have any of
 the values accepted in the B<add> method.
 

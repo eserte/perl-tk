@@ -22,6 +22,9 @@ Boot_Tix _((void))
  install_vtab("TiximgxpmVtab",TiximgxpmVGet(),sizeof(TiximgxpmVtab));
  tixNormalUid = Tk_GetUid("normal");
  tixDisabledUid = Tk_GetUid("disabled");
+ tixCellUid     = Tk_GetUid("cell");
+ tixRowUid      = Tk_GetUid("row");
+ tixColumnUid   = Tk_GetUid("column");
  Tix_AddDItemType(&tix_TextItemType); 
  Tix_AddDItemType(&tix_ImageItemType); 
  Tix_AddDItemType(&tix_ImageTextItemType); 

@@ -1,10 +1,6 @@
 Bitmap/Bitmap.pm
 Bitmap/Bitmap.xs
 Bitmap/Makefile.PL
-Bundle/MANIFEST
-Bundle/Makefile.PL
-Bundle/README
-Bundle/Tk.pm
 COPYING				CopyRight and License info.
 Canvas/Canvas.pm
 Canvas/Canvas.xs
@@ -152,17 +148,12 @@ Tixish/Makefile.PL
 Tixish/NoteBook.pm
 Tixish/README			Notes on Tixish directory
 Tixish/Tree.pm
+Tixish/examples/adjuster
+Tixish/examples/perl-tix-dirtree
+Tixish/examples/perl-tix-dyntree
+Tixish/examples/perl-tix-tree
 Tixish/lib/Tk/balArrow.xbm
 Tixish/lib/Tk/cbxarrow.xbm
-Tixish/t/adjuster
-Tixish/t/balloon.t
-Tixish/t/browseentry2.t
-Tixish/t/browsentry.t
-Tixish/t/labframe.t
-Tixish/t/notebook.t
-Tixish/t/perl-tix-dirtree
-Tixish/t/perl-tix-dyntree
-Tixish/t/perl-tix-tree
 Tk.pm				"Base" class/package 
 Tk.xs
 Tk/Adjuster.pm
@@ -186,6 +177,7 @@ Tk/FileSelect.pm
 Tk/Font.pm
 Tk/Frame.pm
 Tk/Image.pm
+Tk/ItemStyle.pm
 Tk/LabEntry.pm
 Tk/LabRadio.pm
 Tk/Label.pm
@@ -379,7 +371,14 @@ demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/vscale.pl
 demos/demos/widtrib/HList.pl
 demos/demos/widtrib/TEMPLATE.pl
+demos/demos/widtrib/Tiler.pl
+demos/demos/widtrib/balloon.pl
+demos/demos/widtrib/browseentry.pl
+demos/demos/widtrib/browseentry2.pl
+demos/demos/widtrib/dirtree.pl
+demos/demos/widtrib/labframe.pl
 demos/demos/widtrib/lib/npuz/Xcamel.npuz
+demos/demos/widtrib/notebook.pl
 demos/demos/widtrib/npuz.pl
 demos/demos/widtrib/plop.pl
 demos/dialog
@@ -396,6 +395,8 @@ destroy_test			Test of <Destroy> binding
 dfpy				Author's utility for putting Tk on a floppy
 dialog_test
 disbutton
+dnd_demo
+dump_test
 embed
 error_prop
 evtGlue.c
@@ -489,6 +490,11 @@ pTk/findstrings
 pTk/foo
 pTk/from
 pTk/genexc
+pTk/imgInt.exc
+pTk/imgInt.m
+pTk/imgInt.t
+pTk/imgInt_f.c
+pTk/imgInt_f.h
 pTk/license.html_lib
 pTk/license.terms
 pTk/mTk/MANIFEST.SKIP
@@ -846,15 +852,11 @@ pTk/mTk/tixWin/DLLDemo/Demo.c
 pTk/mTk/tixWin/DLLDemo/Makefile.bc
 pTk/mTk/tixWin/DLLDemo/README
 pTk/mTk/tixWin/README
-pTk/mTk/tixWin/itcl2.2/dummy.dir
 pTk/mTk/tixWin/makefile.bc
 pTk/mTk/tixWin/makefile.vc
 pTk/mTk/tixWin/pTk.exc
 pTk/mTk/tixWin/rc/tixwish.ico
 pTk/mTk/tixWin/rc/tixwish.rc
-pTk/mTk/tixWin/tcl7.5/dummy.dir
-pTk/mTk/tixWin/tcl7.6/dummy.dir
-pTk/mTk/tixWin/tcl8.0/dummy.dir
 pTk/mTk/tixWin/tixWCmpt.c
 pTk/mTk/tixWin/tixWinDraw.c
 pTk/mTk/tixWin/tixWinInt.h
@@ -1083,7 +1085,11 @@ pTk/tkOption_f.h
 pTk/tkPatch.h
 pTk/tkProperty.c
 pTk/tkVMacro.h
+pTk/tkWin.m
+pTk/tkWin.t
 pTk/tkWinInt.exc
+pTk/tkWinInt.m
+pTk/tkWinInt.t
 pTk/tkWinInt_f.c
 pTk/tkWinInt_f.h
 pTk/tkWin_f.c
@@ -1155,6 +1161,7 @@ pod/Table.pod
 pod/Tcl-perl.pod
 pod/Text.pod
 pod/TextUndo.pod
+pod/Tiler.pod
 pod/TixGrid.pod
 pod/Tk.cmd
 pod/Toplevel.pod
@@ -1182,6 +1189,7 @@ pod/getOpenFile.pod
 pod/grab.pod
 pod/grid.pod
 pod/messageBox.pod
+pod/mvfor
 pod/option.pod
 pod/options.pod
 pod/overview.pod
@@ -1287,6 +1295,7 @@ scale_test
 scrolled_demo
 sm
 sockets
+style_test
 submethods
 symbols
 t/README
@@ -1300,6 +1309,8 @@ t/zzScrolled.t
 t/zzText.t
 t/zzTixGrid.t
 table_demo
+taint_test
+taint_test2
 tainted
 tcl2perl
 tcolour

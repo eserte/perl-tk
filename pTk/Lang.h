@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #endif
 
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(_AIX)
 #define __FUNCTION__ __FILE__ ":" STRINGIFY(__LINE__)
 #endif
 

@@ -1,6 +1,4 @@
-package main;
-
-unshift(@INC, "../..");
+#balloon, Descriptive "Balloon" that pops up when mouse lingers over widget
 
 use Tk;
 use English;
@@ -9,27 +7,34 @@ use Carp;
 require Tk::Frame;
 require Tk::Balloon;
 
-print "1..1 ";
-$lmsg = "";
+my $lmsg = "";
 
-$top = MainWindow->new;
-$f = $top->Frame;
+my $top = MainWindow->new;
+my $f = $top->Frame;
 
 # status bar widget
-$status = $top->Label(-width => 40, -relief => "sunken", -bd => 1);
+my $status = $top->Label(-width => 40, -relief => "sunken", -bd => 1);
 $status->pack(-side => "bottom", -fill => "y", -padx => 2, -pady => 1);
 
 # create the widgets to be explained
-$b1 = $top->Button(-text => "Something Unexpected",
+my $b1 = $top->Button(-text => "Something Unexpected",
 		   -command => sub { $top->destroy;});
-$b2 = $top->Button(-text => "Something Else Unexpected");
+my $b2 = $top->Button(-text => "Something Else Unexpected");
 $b2->configure(-command => sub {$b2->destroy;});
 
 $b1->pack(-side => "top", -expand => 1);
 $b2->pack(-side => "top", -expand => 1);
 
+$top->Text(-height => 5)->pack->insert('end',<<END);
+
+Move the mouse cursor over the buttons above and let it "linger".
+A message will be displayed in status box below and a descriptive
+balloon will appear.
+
+END
+
 # create the balloon widget
-$b = $top->Balloon(-statusbar => $status);
+my $b = $top->Balloon(-statusbar => $status);
 
 $b->attach($b1,
 	   -balloonmsg => "Close Window",
@@ -40,4 +45,4 @@ $b->attach($b2,
 
 MainLoop;
 
-print "ok 1\n";
+

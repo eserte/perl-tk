@@ -34,7 +34,7 @@ Tix_GetChars(interp, string, doublePtr)
     if (end == string) {
 	goto error;
     }
-    while ((*end != '\0') && isspace(*end)) {
+    while ((*end != '\0') && isspace(UCHAR(*end))) {
 	end++;
     }
     if (strncmp(end, "char", 4) != 0) {

@@ -16,11 +16,7 @@ sub TEMPLATE {
 __END__
 
 The template code above specifies how user contributed widget demonstrations
-must be written.  
-
-All demonstrations must be a unique subroutine, in a directory of your
-choosing, stored in a file with the same name as the subroutine suffixed with
-".pl".  So file TEMPLATE.pl contains subroutine TEMPLATE().
+can be written.  
 
 widget looks in the directory specified on the command line to load user
 contributed demonstrations.  If no directory name is specified when widget is
@@ -32,29 +28,53 @@ The first line of the file is the DDD (Demonstration Description Data), which
 briefly describes the purpose of the demonstration.  The widget program reads
 this line and uses it when building its interface.
 
+Demonstrations may have a unique subroutine which is the same
+as the filename with .pl stripped off.
+When widget calls your subroutine it's passed one argument, the demonstration
+name. So file TEMPLATE.pl contains subroutine TEMPLATE().
+
 For consistency your demonstration should use the WidgetDemo widget.  This is  
 a toplevel widget with three frames. The top frame contains descriptive
 demonstration text.  The bottom frame contains the "Dismiss" and "See Code"
 buttons.  The middle frame is the demonstration container, which can be
 managed by either the pack or grid geometry manager.
 
-When widget calls your subroutine it's passed one argument, the demonstration
-name.  Since your subroutine can "see" all of widget's global variables, you 
+Since your subroutine can "see" all of widget's global variables, you 
 use $MW (the main window reference) to create the WidgetDemo toplevel; be sure
 to pass at least the -name and -text parameters.  -geometry_manager defaults
 to "pack".  The call to WidgetDemo() returns a reference to the containing
 frame for your demonstration, so treat it as if it were the MainWindow, the
 top-most window of your widget hierarchy.
 
+Alternatively the .pl file make contain typical perl/Tk code of the form:
+       
+  # Demo decription comment 
+  use Tk;
+  my $top = MainWindow->new;
+  $top->Label(-text => 'Whatever');
+         
+  MainLoop;
+  __END__
+
+widget has re-defined normal MainWindow to actually create a WidgetDemo
+on your code's behalf. MainLoop is optional in a demo (it will immediately
+return as MainLoop is already active - running the demo).
+
 Other consideration:
 
+
     . widget global variables are all uppercase, like $MW - be careful not
-      to stomp on them!
+      to stomp on them! 
+
+    . Demo files should really be run in private packages to avoid those 
+      problems.
+
+    . The description should really be extracted from POD documentation
+      in the .pl file rather than a magic comment.
 
     . If your demonstration has a Quit button change it to ring the bell
-      and use the builtin Dismiss instead.
-
-    . Remove a MainLoop() call, if present.
+      and use the builtin Dismiss instead. In particular destroying a 
+      MainWindow is acceptable, but exit will shut down widget itself!
 
     . Be sure $TOP is declared in a "use vars" statement and not as a
       lexical my() in the subroutine (see below).
@@ -66,3 +86,5 @@ Other consideration:
       demonstrations show how to work around this.  Essentially, remove
       all "global" my() variables and place them within a "use vars".
       This practice is prone to subtle bugs and is not recommended!
+
+      

@@ -40,3 +40,7 @@
 #ifdef _TKWININT
 #include "tkWinInt.m"
 #endif
+#ifdef _IMGINT
+#include "imgInt.m"
+#endif
+

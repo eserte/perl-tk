@@ -281,12 +281,6 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
    int argc= 0;
    LangFreeProc *freeProc = NULL;
    SV **argv;
-   if (SvREADONLY(sv))
-    {
-     STRLEN len;
-     croak("Attempt to treat readonly '%s' as a list",
-            SvPV(sv,len));
-    } 
    if (Lang_SplitString(interp,LangString(sv),&argc,&argv,&freeProc) == TCL_OK)
     {
      int n = argc;
@@ -294,11 +288,19 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
      while (n-- > 0)
       {
        av_store(av,n,SvREFCNT_inc(argv[n]));
-      }
-     sv_setsv(sv,MakeReference((SV *) av));
+      }       
      if (freeProc)
       (*freeProc)(argc,argv);
-     SvREFCNT_dec((SV *) av);
+     if (SvREADONLY(sv))
+      {
+       sv_2mortal((SV *) av);
+       return av;
+      }
+     else
+      {
+       sv_setsv(sv,MakeReference((SV *) av));
+       SvREFCNT_dec((SV *) av);
+      }
     }
    else
     return NULL;

@@ -10,6 +10,8 @@
 #define NEED_REAL_STDIO 
 
 
+#include "tk.h"
+#include "tkVMacro.h"
 #include "imgInt.h"
 #include <string.h>
 

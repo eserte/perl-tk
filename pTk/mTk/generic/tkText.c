@@ -183,7 +183,7 @@ static void		DumpLine _ANSI_ARGS_((Tcl_Interp *interp,
 			    TkText *textPtr, int what, TkTextLine *linePtr,
 			    int start, int end, int lineno, LangCallback *command));
 static int		DumpSegment _ANSI_ARGS_((Tcl_Interp *interp, char *key,
-			    char *value, LangCallback *command, int lineno, int offset,
+			    char *value, Arg arg, LangCallback *command, int lineno, int offset,
 			    int what));
 
 /*
@@ -2211,42 +2211,45 @@ DumpLine(interp, textPtr, what, linePtr, start, end, lineno, command)
 	    }
 	    savedChar = segPtr->body.chars[last];
 	    segPtr->body.chars[last] = '\0';
-	    DumpSegment(interp, "text", segPtr->body.chars + first,
+	    DumpSegment(interp, "text", segPtr->body.chars + first, NULL, 
 		    command, lineno, offset + first, what);
 	    segPtr->body.chars[last] = savedChar;
 	} else if ((offset >= start)) {
 	    if ((what & TK_DUMP_MARK) && (segPtr->typePtr->name[0] == 'm')) {
 		TkTextMark *markPtr = (TkTextMark *)&segPtr->body;
 		char *name = Tcl_GetHashKey(&textPtr->markTable, markPtr->hPtr);
-		DumpSegment(interp, "mark", name,
+		DumpSegment(interp, "mark", name, NULL, 
 			command, lineno, offset, what);
 	    } else if ((what & TK_DUMP_TAG) &&
 			(segPtr->typePtr == &tkTextToggleOnType)) {
 		DumpSegment(interp, "tagon",
-			segPtr->body.toggle.tagPtr->name,
+			segPtr->body.toggle.tagPtr->name, NULL, 
 			command, lineno, offset, what);
 	    } else if ((what & TK_DUMP_TAG) && 
 			(segPtr->typePtr == &tkTextToggleOffType)) {
 		DumpSegment(interp, "tagoff",
-			segPtr->body.toggle.tagPtr->name,
+			segPtr->body.toggle.tagPtr->name, NULL, 
 			command, lineno, offset, what);
 	    } else if ((what & TK_DUMP_IMG) && 
 			(segPtr->typePtr->name[0] == 'i')) {
 		TkTextEmbImage *eiPtr = (TkTextEmbImage *)&segPtr->body;
-		char *name = (eiPtr->name ==  NULL) ? "" : eiPtr->name;
-		DumpSegment(interp, "image", name,
+		if (eiPtr->name ==  NULL) {
+		  DumpSegment(interp, "image", eiPtr->name, NULL,
 			command, lineno, offset, what);
+		} else {
+		  DumpSegment(interp, "image", NULL, LangObjectArg( interp, eiPtr->name),
+			command, lineno, offset, what);
+		}
 	    } else if ((what & TK_DUMP_WIN) && 
 			(segPtr->typePtr->name[0] == 'w')) {
 		TkTextEmbWindow *ewPtr = (TkTextEmbWindow *)&segPtr->body;
-		char *pathname;
 		if (ewPtr->tkwin == (Tk_Window) NULL) {
-		    pathname = "";
-		} else {
-		    pathname = Tk_PathName(ewPtr->tkwin);
-		}
-		DumpSegment(interp, "window", pathname,
+		    DumpSegment(interp, "window", NULL,  NULL,
 			command, lineno, offset, what);
+		} else {
+		    DumpSegment(interp, "window", NULL,  LangWidgetArg(interp, ewPtr->tkwin),
+			command, lineno, offset, what);
+		}
 	    }
 	}
     }
@@ -2264,10 +2267,11 @@ DumpLine(interp, textPtr, what, linePtr, start, end, lineno, command)
  *	Either evals the callback or appends elements to the result string.
  */
 static int
-DumpSegment(interp, key, value, command, lineno, offset, what)
+DumpSegment(interp, key, value, arg, command, lineno, offset, what)
     Tcl_Interp *interp;
     char *key;			/* Segment type key */
     char *value;		/* Segment value */
+    Arg  arg;			/* Segment as an Arg */
     LangCallback *command;	/* Script callback */
     int lineno;			/* Line number for indices dump */
     int offset;			/* Character position */
@@ -2277,7 +2281,11 @@ DumpSegment(interp, key, value, command, lineno, offset, what)
     sprintf(buffer, "%d.%d", lineno, offset);
     if (command == (LangCallback *) NULL) {
 	Tcl_AppendElement(interp, key);
-	Tcl_AppendElement(interp, value);
+	if (arg || !value) {
+	    Tcl_AppendArg(interp, arg);
+	} else {
+	    Tcl_AppendElement(interp, value);
+	}
 	Tcl_AppendElement(interp, buffer);
 	return TCL_OK;
     } else {
@@ -2293,8 +2301,12 @@ DumpSegment(interp, key, value, command, lineno, offset, what)
 	list = Tcl_Merge(3, argv);
 	result = Tcl_VarEval(interp, command, " ", list, (char *) NULL);
 	ckfree(list);
-#else
-	result = LangDoCallback(interp, command, 1, 3, "%s %s %s", key, value, buffer);    
+#else                                                
+	if (arg) {
+	    result = LangDoCallback(interp, command, 1, 3, "%s %_ %s", key, arg, buffer);    
+	} else {       
+	    result = LangDoCallback(interp, command, 1, 3, "%s %s %s", key, value, buffer);    
+	}
 #endif
 	return result;
     }

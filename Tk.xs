@@ -373,12 +373,6 @@ CODE:
 OUTPUT:
  RETVAL
 
-void
-Tk_MainLoop(class = "Tk")
-char *	class
-CODE:
- Tk_MainLoop(); 
-
 MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = pTk_
 
 void

@@ -1088,6 +1088,7 @@ Tcl_Interp *interp;
   {
    av_clear(av);
   }
+ if (0) TAINT_NOT;
 }
 
 void
@@ -1600,6 +1601,7 @@ Tcl_Interp *interp;
   {
    SvREFCNT_dec((SV *) av);
   }
+ if (0) TAINT_NOT;
 }
 
 void
@@ -1611,7 +1613,7 @@ char *message;
   {
    AV *av = FindAv(interp, "Tcl_AddErrorInfo", 1, "_ErrorInfo_");
    SV *sv;
-   while (isspace(*message))
+   while (isspace(UCHAR(*message)))
     message++;
    if (*message)
     av_push(av,newSVpv(message,0));
@@ -1997,9 +1999,9 @@ char *s;
 {int ch;
  if (*s++ != '-')
   return 0;
- if (!isalpha(*s))
+ if (!isalpha(UCHAR(*s)))
   return 0;
- while ((ch = *++s))
+ while ((ch = UCHAR(*++s)))
   {
    if (!isalnum(ch) && ch != '_')
     return 0;
@@ -3313,7 +3315,11 @@ Arg sv;
 Var *vp;
 int type;
 {
+ int old_taint = tainted;
+ TAINT_NOT;
  *vp = NULL;
+ if (SvGMAGICAL(sv))
+  mg_get(sv);
  if (SvROK(sv))
   {
    sv = SvRV(sv);
@@ -3334,15 +3340,17 @@ int type;
       break;
     }
    *vp = SvREFCNT_inc(sv);
+   tainted = old_taint; 
    return TCL_OK;
   }
  else if (SvPOK(sv))
   {
    dTHR;
    HV *old_stash = curcop->cop_stash;
-   char *name = SvPV(sv,na);
+   char *name;
    SV *x = NULL;
    int prefix = '?';
+   name = SvPV(sv,na);
    curcop->cop_stash = NULL;
    switch (type)
     {
@@ -3355,7 +3363,7 @@ int type;
        }
       else
        {
-        x = perl_get_sv(name,TRUE);
+        x = perl_get_sv(name,1);
        }
       break;
      case TK_CONFIG_ARRAYVAR:
@@ -3371,6 +3379,7 @@ int type;
    if (x)
     {
      *vp = SvREFCNT_inc(x);
+     tainted = old_taint; 
      return TCL_OK;
     }
    else
@@ -3380,6 +3389,7 @@ int type;
   {
    Tcl_SprintfResult(interp,"Not a reference %s",SvPV(sv,na));
   }
+ tainted = old_taint; 
  return TCL_ERROR;
 }
 
@@ -3640,9 +3650,6 @@ int flags;
     }
    else if (SvPOK(obj) && SvROK(sv) && SvOBJECT(SvRV(sv)))
     {
-     /* We have obj method ...
-        Used to be used instead of LangMethodCall()
-      */
      *top = sv;
      count = perl_call_method(SvPV(obj, na), flags);
     }
@@ -3745,7 +3752,7 @@ int argc;
    s = strchr(s, '%');
    if (s)
     {
-     char ch = *++s;
+     unsigned char ch = UCHAR(*++s);
      int lng = 0;
      while (isdigit(ch) || ch == '.' || ch == '-' || ch == '+')
       ch = *++s;
@@ -3777,8 +3784,17 @@ int argc;
           XPUSHs(&sv_undef);
         }
         break;
+       case '_':
+        {
+         SV *x = va_arg(ap, SV *);
+         if (x)
+          XPUSHs(sv_mortalcopy(x));
+         else
+          XPUSHs(&sv_undef);
+        }
+        break;
        default:
-        Tcl_Panic("Unimplemeted format char '%c' in '%s'", ch, fmt);
+        Tcl_Panic("Unimplemented format char '%c' in '%s'", ch, fmt);
         break;
       }
     }
@@ -4909,7 +4925,7 @@ size_t size;
    typedef int (*fptr)_((void));
    fptr *q = table;
    unsigned i;
-   sv_setiv(FindTkVarName(name,5),(IV) table);
+   sv_setiv(FindTkVarName(name,GV_ADDMULTI),(IV) table);
    if (size % sizeof(fptr))
     {
      warn("%s is strange size %d",name,size);

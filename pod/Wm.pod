@@ -13,7 +13,7 @@ wm - Communicate with window manager
 
 =head1 SYNOPSIS
 
-I<$toplevel>-E<gt>I<method>(?I<args>?)
+S<    >I<$toplevel>-E<gt>I<method>(?I<args>?)
 
 =head1 DESCRIPTION
 
@@ -39,7 +39,7 @@ I<$toplevel> (width/length) will be constrained to lie
 between I<minNumer>/I<minDenom> and I<maxNumer>/I<maxDenom>.
 If I<minNumer> etc. are all specified as empty strings, then
 any existing aspect ratio restrictions are removed.
-If I<minNumer> etc. are specified, then the command returns an
+If I<minNumer> etc. are specified, then the method returns an
 empty string.  Otherwise, it returns
 a array containing four elements, which are the current values
 of I<minNumer>, I<minDenom>, I<maxNumer>, and I<maxDenom>
@@ -48,27 +48,27 @@ returned).
 
 =item I<$toplevel>-E<gt>B<client>(?I<name>?)
 
-If I<name> is specified, this command stores I<name> (which
+If I<name> is specified, this method stores I<name> (which
 should be the name of
 the host on which the application is executing) in I<$toplevel>'s
 B<WM_CLIENT_MACHINE> property for use by the window manager or
 session manager.
-The command returns an empty string in this case.
-If I<name> isn't specified, the command returns the last name
-set in a B<client> command for I<$toplevel>.
-If I<name> is specified as an empty string, the command deletes the
+The method returns an empty string in this case.
+If I<name> isn't specified, the method returns the last name
+set in a B<client> method for I<$toplevel>.
+If I<name> is specified as an empty string, the method deletes the
 B<WM_CLIENT_MACHINE> property from I<$toplevel>.
 
 =item I<$toplevel>-E<gt>B<colormapwindows>(?I<windowList>?)
 
-This command is used to manipulate the B<WM_COLORMAP_WINDOWS>
+This method is used to manipulate the B<WM_COLORMAP_WINDOWS>
 property, which provides information to the window managers about
 windows that have private colormaps.
-If I<windowList> isn't specified, the command returns a list
+If I<windowList> isn't specified, the method returns a list
 whose elements are the names of the windows in the B<WM_COLORMAP_WINDOWS>
 property.
 If I<windowList> is specified, it consists of a list of widgets;
-the command overwrites the B<WM_COLORMAP_WINDOWS>
+the method overwrites the B<WM_COLORMAP_WINDOWS>
 property with the given windows and returns an empty string.
 The B<WM_COLORMAP_WINDOWS> property should normally contain a
 list of the internal windows within I<$toplevel> whose colormaps differ
@@ -88,30 +88,30 @@ B<WM_COLORMAP_WINDOWS> property.
 
 =item I<$toplevel>-E<gt>B<command>(?I<value>?)
 
-If I<value> is specified, this command stores I<value> in I<$toplevel>'s
+If I<value> is specified, this method stores I<value> in I<$toplevel>'s
 B<WM_COMMAND> property for use by the window manager or
 session manager and returns an empty string.
 I<Value> must have proper list structure;  the elements should
 contain the words of the command used to invoke the application.
-If I<value> isn't specified then the command returns the last value
-set in a B<command> command for I<$toplevel>.
-If I<value> is specified as an empty string, the command
+If I<value> isn't specified then the method returns the last value
+set in a B<command> method for I<$toplevel>.
+If I<value> is specified as an empty string, the method
 deletes the B<WM_COMMAND> property from I<$toplevel>.
 
 =item I<$toplevel>-E<gt>B<deiconify>
 
 Arrange for I<$toplevel> to be displayed in normal (non-iconified) form.
 This is done by mapping the window.  If the window has never been
-mapped then this command will not map the window, but it will ensure
+mapped then this method will not map the window, but it will ensure
 that when the window is first mapped it will be displayed
 in de-iconified form.  Returns an empty string.
 
 =item I<$toplevel>-E<gt>B<focusmodel>(?B<active>|B<passive>?)
 
 If B<active> or B<passive> is supplied as an optional argument
-to the command, then it specifies the focus model for I<$toplevel>.
-In this case the command returns an empty string.  If no additional
-argument is supplied, then the command returns the current focus
+to the method, then it specifies the focus model for I<$toplevel>.
+In this case the method returns an empty string.  If no additional
+argument is supplied, then the method returns the current focus
 model for I<$toplevel>.
 An B<active> focus model means that I<$toplevel> will claim the
 input focus for itself or its descendants, even at times when
@@ -120,16 +120,16 @@ I<$toplevel> will never claim the focus for itself:  the window manager
 should give the focus to I<$toplevel> at appropriate times.  However,
 once the focus has been given to I<$toplevel> or one of its descendants,
 the application may re-assign the focus among I<$toplevel>'s descendants.
-The focus model defaults to B<passive>, and Tk's B<focus> command
+The focus model defaults to B<passive>, and Tk's B<focus> method
 assumes a passive model of focusing.
 
 =item I<$toplevel>-E<gt>B<frame>
 
 If I<$widget> has been reparented by the window manager into a
-decorative frame, the command returns the platform specific window
+decorative frame, the method returns the platform specific window
 identifier for the outermost frame that contains I<$toplevel> (the
 window whose parent is the root or virtual root).  If I<$toplevel>
-hasn't been reparented by the window manager then the command returns
+hasn't been reparented by the window manager then the method returns
 the platform specific window identifier for I<$toplevel>.
 
 =item I<$toplevel>-E<gt>B<geometry>(?I<newGeometry>?)
@@ -138,7 +138,7 @@ If I<newGeometry> is specified, then the geometry of I<$toplevel>
 is changed and an empty string is returned.  Otherwise the current
 geometry for I<$toplevel> is returned (this is the most recent
 geometry specified either by manual resizing or
-in a B<geometry> command).  I<NewGeometry> has
+in a B<geometry> method).  I<NewGeometry> has
 the form B<=>I<width>B<x>I<height>B<+->I<x>B<+->I<y>, where
 any of B<=>, I<width>B<x>I<height>, or B<+->I<x>B<+->I<y>
 may be omitted.  I<Width> and I<height> are positive integers
@@ -162,9 +162,9 @@ existing user-specified geometry for I<$toplevel> is cancelled, and
 the window will revert to the size requested internally by its
 widgets.
 
-=item I<$toplevel>-E<gt>B<grid>(?I<baseWidth,baseHeight,widthInc,heightInc>?)
+=item I<$toplevel>-E<gt>B<wmGrid>(?I<baseWidth,baseHeight,widthInc,heightInc>?)
 
-This command indicates that I<$toplevel> is to be managed as a
+This method indicates that I<$toplevel> is to be managed as a
 gridded window.
 It also specifies the relationship between grid units and pixel units.
 I<BaseWidth> and I<baseHeight> specify the number of grid
@@ -190,7 +190,7 @@ I<baseHeight>, I<widthInc>, and I<heightInc>;  if
 I<$toplevel> is not currently gridded, then an empty string
 is returned.
 Note: this command should not be needed very often, since the
-B<Tk_SetGrid> library procedure and the B<setGrid> option
+B<Tk_SetGrid> library procedure and the B<-setgrid> option
 provide easier access to the same functionality.
 
 =item I<$toplevel>-E<gt>B<group>(?I<$widget>?)
@@ -209,10 +209,10 @@ string if I<$toplevel> isn't part of any group.
 If I<bitmap> is specified, then it names a bitmap in the standard
 forms accepted by Tk (see the B<Tk_GetBitmap> documentation for details).
 This bitmap is passed to the window manager to be displayed in
-I<$toplevel>'s icon, and the command returns an empty string.  If
+I<$toplevel>'s icon, and the method returns an empty string.  If
 an empty string is specified for I<bitmap>, then any current icon
 bitmap is cancelled for I<$toplevel>.
-If I<bitmap> is specified then the command returns an empty string.
+If I<bitmap> is specified then the method returns an empty string.
 Otherwise it returns the name of
 the current icon bitmap associated with I<$toplevel>, or an empty
 string if I<$toplevel> has no icon bitmap.
@@ -220,7 +220,7 @@ string if I<$toplevel> has no icon bitmap.
 =item I<$toplevel>-E<gt>B<iconify>
 
 Arrange for I<$toplevel> to be iconified.  It I<$toplevel> hasn't
-yet been mapped for the first time, this command will arrange for
+yet been mapped for the first time, this method will arrange for
 it to appear in the iconified state when it is eventually mapped.
 
 =item I<$toplevel>-E<gt>B<iconmask>(?I<bitmap>?)
@@ -234,7 +234,7 @@ from the icon bitmap will be displayed.  If
 an empty string is specified for I<bitmap> then any current icon
 mask is cancelled for I<$toplevel> (this is equivalent to specifying
 a bitmap of all ones).  If I<bitmap> is specified
-then the command returns an empty string.  Otherwise it
+then the method returns an empty string.  Otherwise it
 returns the name of the current icon mask associated with
 I<$toplevel>, or an empty string if no mask is in effect.
 
@@ -244,10 +244,10 @@ If I<newName> is specified, then it is passed to the window
 manager;  the window manager should display I<newName> inside
 the icon associated with I<$toplevel>.  In this case an empty
 string is returned as result.  If I<newName> isn't specified
-then the command returns the current icon name for I<$toplevel>,
+then the method returns the current icon name for I<$toplevel>,
 or an empty string if no icon name has been specified (in this
 case the window manager will normally display the window's title,
-as specified with the B<title> command).
+as specified with the B<title> method).
 
 =item I<$toplevel>-E<gt>B<iconposition>(?I<x y>?)
 
@@ -255,7 +255,7 @@ If I<x> and I<y> are specified, they are passed to the window
 manager as a hint about where to position the icon for I<$toplevel>.
 In this case an empty string is returned.  If I<x> and I<y> are
 specified as empty strings then any existing icon position hint is cancelled.
-If neither I<x> nor I<y> is specified, then the command returns
+If neither I<x> nor I<y> is specified, then the method returns
 a array containing two values, which are the current icon position
 hints (if no hints are in effect then an empty string is returned).
 
@@ -285,12 +285,12 @@ grid units;  otherwise they are specified in pixel units.
 The window manager will restrict the window's dimensions to be
 less than or equal to I<width> and I<height>.
 If I<width> and I<height> are
-specified, then the command returns an empty string.  Otherwise
+specified, then the method returns an empty string.  Otherwise
 it returns a array with two elements, which are the
 maximum width and height currently in effect.
 The maximum size defaults to the size of the screen.
-If resizing has been disabled with the B<resizable> command,
-then this command has no effect.
+If resizing has been disabled with the B<resizable> method,
+then this method has no effect.
 See the sections on geometry management below for more information.
 
 =item I<$toplevel>-E<gt>B<minsize>(?I<width,height>?)
@@ -302,12 +302,12 @@ grid units;  otherwise they are specified in pixel units.
 The window manager will restrict the window's dimensions to be
 greater than or equal to I<width> and I<height>.
 If I<width> and I<height> are
-specified, then the command returns an empty string.  Otherwise
+specified, then the method returns an empty string.  Otherwise
 it returns a array with two elements, which are the
 minimum width and height currently in effect.
 The minimum size defaults to one pixel in each dimension.
-If resizing has been disabled with the B<resizable> command,
-then this command has no effect.
+If resizing has been disabled with the B<resizable> method,
+then this method has no effect.
 See the sections on geometry management below for more information.
 
 =item I<$toplevel>-E<gt>B<overrideredirect(?>I<boolean>?)
@@ -334,13 +334,13 @@ B<user> is specified then the window manager should position the
 window at the given place without asking the user for assistance.
 If I<who> is specified as an empty string, then the current position
 source is cancelled.
-If I<who> is specified, then the command returns an empty string.
+If I<who> is specified, then the method returns an empty string.
 Otherwise it returns B<user> or $widget to indicate the
 source of the window's current position, or an empty string if
 no source has been specified yet.  Most window managers interpret
 ``no source'' as equivalent to B<program>.
 Tk will automatically set the position source to B<user>
-when a B<geometry> command is invoked, unless the source has
+when a B<geometry> method is invoked, unless the source has
 been set explicitly to B<program>.
 
 =item I<$toplevel>-E<gt>B<protocol>(?I<name>?,?I<callback>?)
@@ -381,18 +381,18 @@ which it was received.
 
 =item I<$toplevel>-E<gt>B<resizable>(?I<width,height>?)
 
-This command controls whether or not the user may interactively
+This method controls whether or not the user may interactively
 resize a top-level window.  If I<width> and I<height> are
 specified, they are boolean values that determine whether the
 width and height of I<$toplevel> may be modified by the user.
-In this case the command returns an empty string.
-If I<width> and I<height> are omitted then the command
+In this case the method returns an empty string.
+If I<width> and I<height> are omitted then the method
 returns a list with two 0/1 elements that indicate whether the
 width and height of I<$toplevel> are currently resizable.
 By default, windows are resizable in both dimensions.
 If resizing is disabled, then the window's size will be the size
 from the most recent interactive resize or B<geometry>
-command.  If there has been no such operation then
+method.  If there has been no such operation then
 the window's natural size will be used.
 
 =item I<$toplevel>-E<gt>B<sizefrom>(?I<who>?)
@@ -406,7 +406,7 @@ B<user> is specified then the window manager should give the
 window its specified size without asking the user for assistance.
 If I<who> is specified as an empty string, then the current size
 source is cancelled.
-If I<who> is specified, then the command returns an empty string.
+If I<who> is specified, then the method returns an empty string.
 Otherwise it returns B<user> or $widget to indicate the
 source of the window's current size, or an empty string if
 no source has been specified yet.  Most window managers interpret
@@ -417,18 +417,18 @@ no source has been specified yet.  Most window managers interpret
 Returns the current state of $widget:  either B<normal>,
 B<iconic>, B<withdrawn>, or B<icon>.  The difference
 between B<iconic> and B<icon> is that B<iconic> refers
-to a window that has been iconified (e.g., with the B<wm iconify>
-command) while B<icon> refers to a window whose only purpose is
-to serve as the icon for some other window (via the B<wm iconwindow>
-command).
+to a window that has been iconified (e.g., with the B<iconify>
+method) while B<icon> refers to a window whose only purpose is
+to serve as the icon for some other window (via the B<iconwindow>
+method).
 
 =item I<$toplevel>-E<gt>B<title>(?I<string>?)
 
 If I<string> is specified, then it will be passed to the window
 manager for use as the title for I<$toplevel> (the window manager
 should display this string in I<$toplevel>'s title bar).  In this
-case the command returns an empty string.  If I<string> isn't
-specified then the command returns the current title for the
+case the method returns an empty string.  If I<string> isn't
+specified then the method returns the current title for the
 I<$toplevel>.  The title for a window defaults to its name.
 
 =item I<$toplevel>-E<gt>B<transient>(?I<master>?)
@@ -440,7 +440,7 @@ a top-level window).  Some window managers will use
 this information to manage I<$toplevel> specially.  If I<master>
 is specified as an empty string then I<$toplevel> is marked as not
 being a transient window any more.  If I<master> is specified,
-then the command returns an empty string.  Otherwise the command
+then the method returns an empty string.  Otherwise the method
 returns the path name of I<$toplevel>'s current master, or an
 empty string if I<$toplevel> isn't currently a transient window.
 
@@ -449,7 +449,7 @@ empty string if I<$toplevel> isn't currently a transient window.
 Arranges for I<$toplevel> to be withdrawn from the screen.  This
 causes the window to be unmapped and forgotten about by the window
 manager.  If the window
-has never been mapped, then this command
+has never been mapped, then this method
 causes the window to be mapped in the withdrawn state.  Not all
 window managers appear to know how to handle windows that are
 mapped in the withdrawn state.
@@ -471,7 +471,7 @@ A top-level window can be given a size other than its natural size in two ways.
 First, the user can resize the window manually using the facilities
 of the window manager, such as resize handles.
 Second, the application can request a particular size for a
-top-level window using the B<geometry> command.
+top-level window using the B<geometry> method.
 These two cases are handled identically by Tk;  in either case,
 the requested size overrides the natural size.
 You can return the window to its natural by invoking B<geometry>
@@ -479,12 +479,12 @@ with an empty I<geometry> string.
 
 Normally a top-level window can have any size from one pixel in each
 dimension up to the size of its screen.
-However, you can use the B<minsize> and B<maxsize> commands
+However, you can use the B<minsize> and B<maxsize> methods
 to limit the range of allowable sizes.
 The range set by B<minsize> and B<maxsize> applies to
 all forms of resizing, including the window's natural size as
-well as manual resizes and the B<geometry> command.
-You can also use the command B<resizable> to completely
+well as manual resizes and the B<geometry> method.
+You can also use the method B<resizable> to completely
 disable interactive resizing in one or both dimensions.
 
 =head1 GRIDDED GEOMETRY MANAGEMENT
@@ -496,7 +496,7 @@ menus, and other adornments are fixed in size but the edit widget
 can support any number of lines of text or characters per line.
 In this case, it is usually desirable to let the user specify the
 number of lines or characters-per-line, either with the
-B<geometry> command or by interactively resizing the window.
+B<geometry> method or by interactively resizing the window.
 In the case of text, and in other interesting cases also, only
 discrete sizes of the window make sense, such as integral numbers
 of lines and characters-per-line;  arbitrary pixel sizes are not useful.
@@ -508,7 +508,7 @@ sort within the application and that the application should be
 resized in terms of I<grid units> rather than pixels.
 Gridded geometry management is typically invoked by turning on
 the B<setGrid> option for a widget;  it can also be invoked
-with the B<grid> command or by calling B<Tk_SetGrid>.
+with the B<wmGrid> method or by calling B<Tk_SetGrid>.
 In each of these approaches the particular widget (or sometimes
 code in the application as a whole) specifies the relationship between
 integral grid sizes for the window and pixel sizes.
@@ -516,7 +516,7 @@ To return to non-gridded geometry management, invoke
 B<grid> with empty argument strings.
 
 When gridded geometry management is enabled then all the dimensions specified
-in B<minsize>, B<maxsize>, and B<geometry> commands
+in B<minsize>, B<maxsize>, and B<geometry> methods
 are treated as grid units rather than pixel units.
 Interactive resizing is also carried out in even numbers of grid units
 rather than pixels.

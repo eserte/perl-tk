@@ -12,6 +12,8 @@
  *
  */
 #define NEED_REAL_STDIO 
+#include "tk.h"
+#include "tkVMacro.h"
 #include "imgInt.h"
 
 /* constants used only in this file */

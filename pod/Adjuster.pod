@@ -9,15 +9,16 @@ Tk::Adjuster, packAdjust - Allow size of packed widgets to be adjusted by user
 
 =head1 SYNOPSIS
 
-  use Tk;
-  use Tk::Adjuster;
+S<    >B<use Tk;>
 
-  $widget->packAdjust([pack options]);
+S<    >B<use Tk::Adjuster;>
+
+S<    >I<$widget>-E<gt>B<packAdjust>(?I<pack options>?);
 
 =head1 DESCRIPTION
 
-C<packAdjust> calls pack on the widget and then creates an instance of
-Tk::Adjuster and packs that "after" the widget. Tk::Adjust is a Frame
+B<packAdjust> calls pack on the widget and then creates an instance of
+B<Tk::Adjuster> and packs that "after" the widget. B<Tk::Adjuster> is a Frame
 containing a "line" and a blob.
 
 Dragging either with Mouse Button-1 results in a line being dragged
@@ -31,21 +32,21 @@ work is done behaviour may be sluggish.
 If widget is packed with -side => left or -side => right then width is
 adjusted. If packed -side => top or -side => bottom then height is adjusted.
 
-C<packPropagate> is turned off for the master window to prevent adjustment
-changing overall window size. Similarly C<packPropagate> is turned off
+B<packPropagate> is turned off for the master window to prevent adjustment
+changing overall window size. Similarly B<packPropagate> is turned off
 for the managed widget if it has things packed inside it. This is so that
-the GeometryRequests that Tk::Adjuster are not overriden by pack.
+the GeometryRequests that B<Tk::Adjuster> are not overridden by pack.
 
 =head1 NOTES
 
-The 'line' which is used to feedback position is in fact a 'Menu' widget
+The 'line' which is used to feedback position is in fact a L<Menu|Tk::Menu> widget
 set to an unorthodox shape, and with a black background.
 
 =head1 BUGS
 
 If the size of adjustable widget is increased to the limit there is no longer
-room for the Tk::Ajuster widget. As a work-round it forcibly makes room for
-itself if it is unmapped. However the "grab" it held will have been lost
+room for the B<Tk::Adjuster> widget. As a work-round it forcibly makes room for
+itself if it is unmapped. However the ``I<grab>'' it held will have been lost
 and button-motion events may be sent to other widgets which are not expecting
 them, which can result in error messages.
 

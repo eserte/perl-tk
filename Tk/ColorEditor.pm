@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;       
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#13$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#16$
 
 use Tk qw(Ev);
 
@@ -51,7 +51,17 @@ sub Populate
             next if /^!/;
             my @a = split;
             my $color = join(' ', @a[3 .. $#a]);
-            my $hex = $middle->Hex($color);
+            my $hex;
+	    eval { $hex = $middle->Hex($color); };
+            if ($@) {
+		#print STDERR "unknown color: '$color'\n";
+	        if ($@ =~ /unknown color name "/) {
+		    next;
+		} else {
+		    chomp $@;
+		    die $@;
+		}
+            }
             if (!exists($Tk::ColorEditor::names{$hex}) || 
                 length($Tk::ColorEditor::names{$hex}) > length($color)) {
                   $Tk::ColorEditor::names{$hex} = $color;
@@ -70,9 +80,9 @@ sub Populate
     my $mcm1 = $middle_middle->Optionmenu(-variable => \$middle->{'color_space'},
                                   -command => [ $middle, 'color_space'], 
                                   -relief  => 'raised',
-                                  -options => [ ['RGB color space' => 'rgb'],
-                                                ['CMY color space' => 'cmy'],
-                                                ["HSB color space" => 'hsb']]);
+                                  -options => [ ['HSB color space' => 'hsb'],
+                                                ['RGB color space' => 'rgb'],
+                                                ["CMY color space" => 'cmy']]);
     $mcm1->pack(-side => 'top', -fill => 'x');
 
     my(@middle_middle, @label, @scale);
@@ -399,7 +409,7 @@ sub Populate
 {
  my ($cw,$args) = @_;       
  $cw->SUPER::Populate($args);
- $cw->protocol('WM_DELETE_WINDOW' => [ Cancel => $cw ]);
+ $cw->protocol('WM_DELETE_WINDOW' => [ 'Cancel' => $cw ]);
  $cw->transient($cw->Parent->toplevel);
  $cw->withdraw;
  my $sel = $cw->ColorSelect;
@@ -424,7 +434,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE @ISA);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#13$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#16$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

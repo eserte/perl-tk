@@ -27,6 +27,7 @@ BEGIN
 		Scrollbar
 		Text
 		Toplevel
+		Optionmenu
 	),
 	# Tix core widgets
 	qw(
@@ -35,7 +36,6 @@ BEGIN
 		NoteBook
 		TList
 		TixGrid
-		Optionmenu
 	),
 	# Tixish composites
 	qw(

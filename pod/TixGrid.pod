@@ -4,7 +4,7 @@
 #  The file man.macros and some of the macros used by this file are
 #  copyrighted: (c) 1990 The Regents of the University of California.
 #               (c) 1994-1995 Sun Microsystems, Inc.
-#  The license terms of the Tcl/Tk distrobution are in the file
+#  The license terms of the Tcl/Tk distribution are in the file
 #  license.tcl.
 
 ## TO CHECK:
@@ -16,7 +16,6 @@
 ##		   method documented
 ##
 ## methods:
-##	anchor:    what is required 'option' arg?
 ## 	bdtype:    what is it? no description given
 ##	see:	   not documented? Not implemented??
 ##
@@ -31,6 +30,9 @@ Tk::TixGrid - Create and manipulate Tix Grid widgets
 =head1 SYNOPSIS
 
 S<    >I<$tixgrid> = I<$parent>->B<TixGrid>?(I<options>)?;
+
+    The port of C code and bindings is done but needs
+    debugging.  THERE ARE KNOWN BUGS. Work in progress ...
 
 =head1 STANDARD OPTIONS
 
@@ -59,13 +61,31 @@ See L<Tk::options> for details of the standard options.
 
 =head1 WIDGET-SPECIFIC OPTIONS
 
-B<Undocumented (also in Tix manpage):>
--floatingcols (=0),
--floatingrows (=0),
--itemtype (=text),
--sizecmd (=undef),
-
 =over 4
+
+=item Name:	B<browseCmd>
+
+=item Class:	B<BrowseCmd>
+
+=item Switch:	B<-browsecmd>
+
+?docu here?  Not in configure output but used in bindings ??!!
+
+If defined, gives a perl/Tk L<callback|Tk::callbacks>
+to be executed when the
+user browses a grid cell (This is normally the case when
+the user clicks on an entry).  When this callback is called, it is
+passed with two additional parameters: I<x> I<y>, where (I<x>,I<y>)
+is the location of the cell that has just been clicked.
+
+=item Name:	B<Command>
+
+=item Class:	B<Command>
+
+=item Switch:	B<-command>
+
+?docu here?  Not in configure output but used in bindings ??!!
+
 
 =item Name:	B<editDoneCmd>
 
@@ -91,6 +111,30 @@ When this callback is called, it is passed with two additional
 parameters: I<x> I<y>, where (I<x>,I<y>,) is the location
 of the cell. This callback should return a boolean value: B<true>
 indicates that the cell is editable and B<false> otherwise.
+
+=item Name:	B<FloatingCols>
+
+=item Class:	B<floatingCols>
+
+=item Switch:	B<-floatingcols>
+
+Defines the number of columns that fixed when the widget
+is horizontally scrolled.  These column(s)
+can be used as label(s) for the column(s).  The floating column(s)
+can be configured in the B<-formatcmd> callback with the
+B<formatBorder> method.  The default value is 0.
+
+=item Name:	B<FloatingRows>
+
+=item Class:	B<floatingRows>
+
+=item Switch:	B<-floatingrows>
+
+Defines the number of rows that are fixed when the widget
+is vertically scrolled.  These row(s)
+can be used as label(s) for the row(s).  The floating row(s)
+can be configured in the B<-formatcmd> callback with the
+B<formatBorder> method.  The default value is 0.
 
 =item Name:	B<formatCmd>
 
@@ -118,7 +162,7 @@ the vertical margin
 
 =item B<s-region>
 
-the area where the the horizontal and vertical margins are joined
+the area where the horizontal and vertical margins are joined
 
 =item B<main>
 
@@ -138,6 +182,14 @@ formatting.
 In the number of cells, gives the width of vertical margin.
 A zero indicates that no vertical should be drawn.
 
+=item Name:	B<itemType>
+
+=item Class:	B<ItemType>
+
+=item Switch:	B<-itemtype>
+
+?docu here?
+
 =item Name:	B<selectMode>
 
 =item Class:	B<SelectMode>
@@ -156,6 +208,14 @@ the default value is B<single>.
 =item Switch:	B<-selectunit>
 
 Specifies the selection unit. Valid values are B<cell>, B<column> or B<row>.
+
+=item Name:	B<sizeCmd>
+
+=item Class:	B<SizeCmd>
+
+=item Switch:	B<-sizecmd>
+
+?docu here?
 
 =item Name:	B<topMargin>
 
@@ -198,13 +258,17 @@ methods are possible for B<TixGrid> widgets:
 
 =over 4
 
-=item I<$tixgrid>->B<anchor>(I<option>?, I<args>, I<...>?)
+=item I<$tixgrid>->B<anchor>(I<action>, I<x>, I<y>)
+
+=item I<$tixgrid>->B<anchor>I<Action>(I<x>, I<y>)
 
 Manipulates the B<anchor cell> of the B<TixGrid> widget.
 The anchor cell is the end of the selection that is fixed
 while the user is dragging out a selection with the mouse.
+I<Action> can be B<clear>, B<get> or B<set>.  If I<action>
+is B<clear>, I<x> and I<y> args are not accepted.
 
-=item I<$tixgrid>->B<bdtype>
+=item I<$tixgrid>->B<bdtype>(I<x>, I<y> ?,I<xbdWidth>, I<ybdWidth>?)
 
 ????
 
@@ -239,6 +303,14 @@ deletes a single row (or column) at the position I<from>.
 If I<to> is given, deletes the range of rows (or columns)
 from position I<from> through I<to>.
 
+=item I<$tixgrid>->B<dragsite>(I<option>, I<x>, I<y>)
+
+?docu here? not implemented :-(
+
+=item I<$tixgrid>->B<dropsite>(I<option>, I<x>, I<y>)
+
+?docu here? not implemented :-(
+
 =item I<$tixgrid>->B<editApply>
 
 If any cell is being edited, de-highlight the cell and
@@ -269,18 +341,32 @@ the given widget option(s) to have the given value(s); in this case
 the method returns an empty string.  I<Option> may have any of the
 values accepted by the B<set> method.
 
-=item I<$tixgrid>->B<format>
-=item I<$tixgrid>->B<formatBorder>(I<x1,y1>, I<x2,y2>, I<options>);
-=item I<$tixgrid>->B<formatGrid>(I<x1,y1>, I<x2,y2>, I<options>);
+=item I<$tixgrid>->B<format>(I<option>, ?I<args>, ...?)
 
-???
+
+=item I<$tixgrid>->B<formatBorder>(I<x1,y1>, I<x2,y2>, I<options>);
+
+=item I<$tixgrid>->B<formatGrid>(I<x1,y1>, I<x2,y2>, I<options>);
 
 the B<format> method can only be called by the B<-formatcmd> callback
 of the tixGrid widget.
 
-=item I<$tixgrid>->B<index>
+?docu complete?
 
-???
+=item I<$tixgrid>->B<geometryinfo>(?I<width>, ?I<height>, ...?)
+
+?docu here?  Return a list of 4 floats! Currently "{first1 last1} {first2,last2}" :-(
+
+=item I<$tixgrid>->B<index>(I<$coordx>, I<$coordy>)
+
+?docu here?
+
+retuns I<(nx, ny)> of entry at position (I<$coordx>, I<$coordy>).
+(??widget or screen offset??)
+
+=item I<$tixgrid>->B<info>(I<option>, ?I<args>, ...?)
+
+?docu here?
 
 =item I<$tixgrid>->B<move>(I<dim>, I<from>, I<to>, I<offset>)
 
@@ -288,11 +374,53 @@ of the tixGrid widget.
 
 =item I<$tixgrid>->B<moveRow>(I<from>, I<to>, I<offset>)
 
-I<Dim> may be B<row> or B<column>. Moves the the range of rows
+I<Dim> may be B<row> or B<column>. Moves the range of rows
 (or columns) from position I<from> through I<to> by the distance
 indicated by I<offset>. For example,
 I<$tixgrid>->B<moveRow>(B<2>, B<4>, B<1>) moves the rows 2,3,4
 to rows 3,4,5.
+
+=item I<$tixgrid>->B<nearest>(I<x>, I<y>)
+
+?docu here?  screen pos (pixels) to entry (nx,ny) translation.
+
+=item I<$tixgrid>->B<selection>(I<option>, I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+=item I<$tixgrid>->B<selection>I<Option>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+Option one of: B<adjust>, B<clear>, B<includes>, B<set>, and B<toggle>.
+
+x1 (y1) has not to be greater than x2 (y2), but only x2 and y2 can be 'max'.
+
+BUG: I<selection includes>: has no visible effect (as in Tix). Eh???
+
+BUG: I<selection clear>: only works for 0, 0, max, max (as in Tix). Eh???
+
+When I<x2, y2> are not given they default to I<x1, y1>, respectively.
+
+=over 8
+
+=item I<$tixgrid>->B<selectionAdjust>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+?docu here?
+
+=item I<$tixgrid>->B<selectionClear>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+?docu here?
+
+=item I<$tixgrid>->B<selectionIncludes>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+?docu here?
+
+=item I<$tixgrid>->B<selectionSet>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+?docu here?
+
+=item I<$tixgrid>->B<selectionToggle>(I<x1>, I<y1> ?,I<x2>, I<y2>?)
+
+?docu here?
+
+=back
 
 =item I<$tixgrid>->B<set>(I<x>, I<y>?, B<-itemtype>=>I<type>??, I<-option>=>I<value>, I<...>?)
 
@@ -323,22 +451,26 @@ one of the following:
 
 =item B<-pad0> => I<pixels>
 
-Specifies the paddings to the left or a column or the top of a row.
+Specifies the paddings to the left of a column or the top of a row.
 
 =item B<-pad1> => I<pixels>
 
-Specifies the paddings to the right or a column or the bottom of a row.
+Specifies the paddings to the right of a column or the bottom of a row.
 
 =item B<-size> => I<val>
 
 Specifies the width of a column or the height of a row.
 I<Val> may be: B<auto> -- the width of the column is set
-the the widest cell in the column; a valid Tk screen distance
+the widest cell in the column; a valid Tk screen distance
 unit (see B<Tk_GetPixels>); or a real number following by the
 word B<chars> (e.g. B<3.4chars>) that sets the width of the
 column to the given number of characters.
 
 =back
+
+=item I<$tixgrid>->B<sort>(I<dimension>, I<start>, I<end>, ?I<args ...>?)
+
+?docu here? (not supported on Win* OSs up to now)
 
 =item I<$tixgrid>->B<unset>(I<x>, I<y>)
 
@@ -346,11 +478,11 @@ Clears the cell at (I<x>,I<y>) by removing its display item.
 
 =item I<$tixgrid>->B<xview>
 
-????
+?docu here?
 
 =item I<$tixgrid>->B<yview>
 
-????
+?docu here?
 
 =back
 
@@ -365,7 +497,7 @@ L<Tk::callbacks|Tk::callbacks>
 
 =head1 BUGS
 
-I<Default bindings not implemented.>
+C code and bindings of TixGrid have some bugs.
 
 =head1 KEYWORDS
 

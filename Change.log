@@ -1,3 +1,128 @@
+Change 826 on 1998/05/17 by nick@ni-s
+
+	Unbundle Bundle ;-)
+
+Change 825 on 1998/05/17 by nick@camel
+
+	Fixup tests for Win32
+
+Change 824 on 1998/05/17 by nick@ni-s
+
+	Tidy MANIFEST and VERSIONs
+
+Change 823 on 1998/05/17 by nick@ni-s
+
+	Non-standard "tests" moved to demos
+
+Change 822 on 1998/05/17 by nick@ni-s
+
+	Make Tk::Widget::CreateArgs more generic, so that widgets can provide
+	a list (via CreateOptions) rather than replicating arglist manipulation.
+
+Change 821 on 1998/05/17 by nick@ni-s
+
+	Move MainLoop from C to perl, and make it smart enough to
+	not need overriding from demos/widget or tkpsh
+	Move VTable declare from perl to C where it belongs.
+
+Change 820 on 1998/05/16 by nick@ni-s
+
+	Fix Text ->dump code to return objects for windows and images
+
+Change 818 on 1998/05/16 by nick@ni-s
+
+	Integrate Achim's pod changes 
+
+Change 816 on 1998/05/16 by nick@ni-s
+
+	Manifest fixup
+
+Change 815 on 1998/05/15 by nick@ni-s
+
+	Tolerate 5.00465-tobe's error message from failed require
+
+Change 814 on 1998/05/15 by nick@ni-s
+
+	Avoid warnings with gcc-2.8.1
+
+Change 813 on 1998/05/15 by nick@ni-s
+
+	Steves tweak to ColorEditor
+
+Change 810 on 1998/05/14 by nick@pluto
+
+	DragDrop fix and add demo 
+
+Change 804 on 1998/05/09 by nick@ni-s
+
+	Add Tiler demo
+
+Change 803 on 1998/05/09 by nick@ni-s
+
+	Adopt most of Achim's Tk::Demo concept into widget and tkpsh
+
+Change 802 on 1998/05/09 by nick@ni-s
+
+	perl-ify cleanup
+
+Change 801 on 1998/05/09 by nick@ni-s
+
+	"Lost edits"
+
+Change 800 on 1998/05/09 by nick@ni-s
+
+	Avoid divide by zero with empty Tiler,
+	Allow AddScrollbars with only yscroll (e.g. Tiler)
+
+Change 799 on 1998/05/09 by nick@ni-s
+
+	Initial ItemStyle
+
+Change 796 on 1998/05/08 by nick@camel
+
+	Add Win32 *.t and *.m to depot
+
+Change 795 on 1998/05/08 by nick@ni-s
+
+	Modify Photo to export VTable for imgInt.h so that PNG and JPEG modules
+	can use the functions defined there.
+
+Change 793 on 1998/05/05 by nick@pluto
+
+	Set up Uids used by tixGrid
+
+Change 792 on 1998/04/25 by nick@ni-s
+
+	Handle read-only args to ForceList() e.g. -format => 'gif' to Photo.
+
+Change 791 on 1998/04/25 by nick@ni-s
+
+	Integrate tkpoddiff
+
+Change 787 on 1998/04/20 by nick@ni-s
+
+	Add test to repository
+
+Change 786 on 1998/04/20 by nick@pluto
+
+	Patches to make tests follow standard pattern
+
+Change 785 on 1998/04/19 by nick@ni-s
+
+	Remove attempt to make in doc
+
+Change 783 on 1998/04/19 by nick@ni-s
+
+	Move '=for pm' after '=head1 NAME' to keep pod2man happy
+
+Change 782 on 1998/04/19 by nick@ni-s
+
+	Hide Makefile.PL in obsolete doc directory
+
+Change 780 on 1998/04/19 by nick@ni-s
+
+	Pre-release tidyup
+
 Change 779 on 1998/04/19 by nick@ni-s
 
 	Fix mis-remembered Tcl_IntResults() use in tixGrid

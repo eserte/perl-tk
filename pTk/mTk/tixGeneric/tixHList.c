@@ -349,7 +349,7 @@ Tix_HListCmd(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-    Tk_Window main = (Tk_Window) clientData;
+    Tk_Window mainw = (Tk_Window) clientData;
     WidgetPtr wPtr;
     Tk_Window tkwin, subwin;
 
@@ -364,7 +364,7 @@ Tix_HListCmd(clientData, interp, argc, argv)
      * to act as the header. The subwidget will always be raised to the top
      * so that it won't be obscured by any window items
      */
-    tkwin = Tk_CreateWindowFromPath(interp, main, argv[1], (char *) NULL);
+    tkwin = Tk_CreateWindowFromPath(interp, mainw, argv[1], (char *) NULL);
     if (tkwin == NULL) {
 	return TCL_ERROR;
     }

@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION @ISA);
 
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#11$
 require Tk::NBFrame;
 
 @ISA = qw(Tk::Derived Tk::NBFrame);
@@ -147,7 +147,7 @@ sub raise
     {
      if (defined $childw->{-createcmd}) 
       {
-       &{$$childw->{-createcmd}}($childw);
+       &{$childw->{-createcmd}}($childw);
        delete $childw->{-createcmd};
       }
      # hide the original visible window

@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Tiler.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Tiler.pm#6$
 
 @ISA = qw(Tk::Frame);
 
@@ -59,8 +59,8 @@ sub Layout
  $m->{LayoutPending} = 0;
  my $W = $m->Width;
  my $H = $m->Height;
- my $w = $m->{Sw};  # max width of slave
- my $h = $m->{Sh};  # max height of slave
+ my $w = $m->{Sw} || 1;  # max width of slave
+ my $h = $m->{Sh} || 1;  # max height of slave
  my $x = $bw; 
  my $y = $bw; 
  my $start = 0;

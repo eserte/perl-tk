@@ -12,7 +12,7 @@ chooseColor - pops up a dialog box for the user to select a color.
 
 =head1 SYNOPSIS
 
-I<$color> = I<$widget>-E<gt>B<chooseColor>?(I<option =E<gt> value ...>)?;
+S<    >I<$color> = I<$widget>-E<gt>B<chooseColor>?(I<option>=E<gt>I<value>, ...)?;
 
 =head1 DESCRIPTION
 
@@ -21,7 +21,7 @@ on the core tk "command" B<tk_chooseColor>. The I<$widget>
 is passed as the argument to B<-parent> described below.
 The implementation of internal B<tk_chooseColor> is platform
 specific, on Win32 it is a native dialog, and on UNIX/X it is implemented
-in terms of B<Tk::ColorEdit>.
+in terms of L<Tk::ColorEditor|Tk::ColorEditor>.
 
 The core tk command B<tk_chooseColor> pops up a dialog box for the
 user to select a color. The following I<option-value> pairs are

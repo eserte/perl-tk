@@ -15,6 +15,8 @@
 #include "pTk/tkVMacro.h"
 #include "pTk/tkImgPhoto.h"
 #include "pTk/tkImgPhoto.m"
+#include "pTk/imgInt.h"
+#include "pTk/imgInt.m"
 #include "tkGlue.h"
 #include "tkGlue.m"
 
@@ -35,6 +37,7 @@ BOOT:
  {
   IMPORT_VTABLES;
   sv_setiv(FindTkVarName("TkimgphotoVtab",1),(IV) TkimgphotoVGet());   
+  sv_setiv(FindTkVarName("ImgintVtab",1),(IV) ImgintVGet());   
   Tk_CreateImageType(&tkPhotoImageType);
   Tk_CreatePhotoImageFormat(&tkImgFmtPPM);
   Tk_CreatePhotoImageFormat(&imgFmtGIF);

@@ -7,7 +7,7 @@ require Tk::Wm;
 use AutoLoader;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Toplevel.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Toplevel.pm#11$
 
 @ISA = qw(Tk::Wm Tk::Frame);
 
@@ -15,16 +15,9 @@ Construct Tk::Widget 'Toplevel';
 
 sub Tk_cmd { \&Tk::toplevel }
 
-sub CreateArgs
+sub CreateOptions
 {
- my ($package,$parent,$args) = @_;
- my @result = $package->SUPER::CreateArgs($parent,$args);
- foreach my $opt ('-screen','-use')
-  {
-   my $val = delete $args->{$opt};
-   push(@result, $opt => $val) if (defined $val);
-  }
- return @result;
+ return (shift->SUPER::CreateOptions,'-screen','-use')
 }
 
 sub Populate

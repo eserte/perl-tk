@@ -1,6 +1,4 @@
-package main;
-
-unshift(@INC, "../..");
+#labframe, frame with embedded label
 
 use Tk;
 use English;
@@ -13,7 +11,7 @@ my $test = 'Test this';
 
 outer:
 {
-    $top = MainWindow->new;
+    my $top = MainWindow->new;
     my $f = $top->LabFrame(-label => "This is a label", -labelside => "acrosstop");
     $f->LabEntry(-label => "Testing", -textvariable => \$test)->pack;
     $f->pack;

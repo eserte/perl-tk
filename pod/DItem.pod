@@ -8,6 +8,9 @@ Tk::DItem - Tix Display Items
 
 =head1 DESCRIPTION
 
+	Note: Display styles are currently
+	not accessible from perl.
+
 The Tix B<Display Items> and B<Display Types> are devised to
 solve a general problem: many Tix widgets (both existing and planned
 ones) display many items of many types simultaneously.
@@ -105,8 +108,8 @@ will be displayed.
 =item Switch:	B<-style>
 
 Specifies the display style to use for this item. Must be the
-name of a B<imagetext> display style that has already be created by
-the B<tixDisplayStyle(n)> command.
+name of a B<imagetext> display style that has already be created with
+B<ItemStyle>.
 
 =item Name:	B<showImage>
 
@@ -195,8 +198,8 @@ B<ITEM OPTIONS>
 =item Switch:	B<-style>
 
 Specifies the display style to use for this text item. Must be the
-name of a B<text> display style that has already be created by the
-B<tixDisplayStyle(n)> command.
+name of a B<text> display style that has already be created with
+B<ItemStyle>.
 
 =item Name:	B<text>
 
@@ -254,8 +257,8 @@ B<ITEM OPTIONS>
 =item Switch:	B<-style>
 
 Specifies the display style to use for this window item. Must be the
-name of a I<$widget> display style that has already be created by
-the B<tixDisplayStyle(n)> command.
+name of a I<$widget> display style that has already be created with 
+the B<ItemStyle)>.
 
 =item Name:	B<window>
 
@@ -308,13 +311,13 @@ destroyed using the commands provided by the host widget. For example,
 the HList widget has the command B<item configure>, B<item cget>
 and B<item delete> for accessing the display items.
 
-=head1 CREATING AND MANIPULATING DISPLAY STYLES
+=head1 CREATING AND MANIPULATING ITEM STYLES
 
-Display styles are created by the command B<tixDisplayStyle>:
+Item styles are created with B<ItemStyle>:
 
 =head1 SYNOPSIS
 
-B<tixDisplayStyle>I< >I<itemType> ?I<-stylename name>? ?I<-refwindow pathName>? ?I<options value ...>?
+S<   >I<$widget>-E<gt>B<ItemStyle>(<itemType>,?I<-stylename name>?,?I<-refwindow pathName>? ?I<options value ...>?);
 
 I<itemType> must be one of the existing display items types such as
 B<text>, B<imagetext>, $widget or any new types added by
@@ -329,19 +332,18 @@ for this display style or any of the following:
 Specifies a name for this style. If unspecified, then a default name
 will be chosen for this style.
 
-=item B<-refwindow> =E<gt> I<$widget>
+=item B<-refwindow> =E<gt> I<$otherwidget>
 
 Specifies a window to use for determine the default values of the
-display type. If unspecified, the main window will be used. Default
+display type. If unspecified, the I<$widget> will be used. Default
 values for the display types can be set via the options database. The
 following example sets the B<-disablebackground> and
 B<-disabledforeground> options of a B<text> display style via
 the option database:
-C<>
 
-option add *table.list*disabledForeground blue
-option add *table.list*disabledBackground darkgray
-tixDisplayStyle text -refwindow .table.list -fg red
+  $widget->optionAdd('*table.list*disabledForeground' => 'blue');
+  $widget->optionAdd('*table.list*disabledBackground' => 'darkgray'); 
+  $widget->ItemStyle('text', -refwindow => $table_list, -fg => 'red');
 
 By using the option database to set the options of the display styles,
 we can advoid hard-coding the option values and give the user more
@@ -350,42 +352,18 @@ of the option database.
 
 =back
 
-=head1 STYLE COMMAND
+=head1 STYLE METHODS
 
-The B<tixDisplayStyle> command creates a widget object whose name is the
-same as the name of the newly created display style.  This command
-may be used to invoke various operations on the display style.  It has the
-following general form:
+The B<ItemStyle> method creates an object.
+This object supports the B<configure> and B<cget> methods
+described in L<Tk::options> which can be used to enquire and
+modify the options described above.
+
+The following additional methods are available for item styles:
 
 =over 4
 
-=item I<styleName option >?I<arg arg ...>?
-
-I<styleName> is the name of the command. I<Option> and the
-I<arg>s determine the exact behavior of the command. The following
-commands are possible:
-
-=item I<styleName >B<cget> I<option>
-
-Returns the current value of the configuration option given by
-I<option>. I<Option> may have any of the valid options of this
-display style.
-
-=item I<styleName >B<configure> ?I<option>? I<?value option value ...>?
-
-Query or modify the configuration options of the display style.  If no
-I<option> is specified, returns a list describing all of the
-available options for I<styleName> (see L<Tk::configure> for
-information on the format of this list). If I<option> is specified
-with no I<value>, then the command returns a list describing the
-one named option (this list will be identical to the corresponding
-sublist of the value returned if no I<option> is specified).  If
-one or more I<option-value> pairs are specified, then the command
-modifies the given option(s) to have the given value(s); in this case
-the command returns an empty string. I<Option> may have any of the
-valid options of this display style.
-
-=item I<styleName >B<delete>
+=item I<$style-E<gt>B<delete>
 
 Destroy this display style object.
 
@@ -407,9 +385,8 @@ that the income data is aligned properly.
 
    my $hlist = $mw->HList(-columns=>2)->pack;
 
-   #Tried: tixDisplay[Ss]tyle, Display[Ss]tyle, DItem all fail :-(
-   #my $red  = $hlist->DStyle('text', -foreground=>'#800000');
-   #my $blue = $hlist->DStyle('text', -foreground=>'#000080');
+   my $red  = $hlist->ItemStyle('text', -foreground=>'#800000');
+   my $blue = $hlist->ItemStyle('text', -foreground=>'#000080');
 
    my $e;
    foreach ([Joe => '$10,000'], [Peter => '$20,000'],

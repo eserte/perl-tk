@@ -1,6 +1,5 @@
-THIS VERSION IS AN ALPHA TRACK - I.E. FOR THOSE ASSISTING IN DEBUGGING PERL/TK,
-NOT FOR PRODUCTION USE.  INTERFACES AND CONTENT SUBJECT TO CHANGE AND
-MAY PARTS ARE **KNOWN** TO BE NON-FUNCTIONAL.
+This version is a (late) beta. I some respects code is in better shape
+than Tk40? series. But I still expect to tweak it some more.
 
 Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
@@ -18,19 +17,17 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk800.004) requires perl5.004_02 or later.
+This version (Tk800.005) requires perl5.004_02 or later.
 Some of Tk::IO and 'fileevent' programly won't work without 
 Graham Barr's TIEHANDLE patches e.g. perl5.004_62
 
-Tk800.004 should build and run on Windows NT using Visual C++, or 
+Tk800.005 should build and run on Windows NT using Visual C++, or 
 Borland with and perl5.004_6X.
 
 Goal of 800.* is to incorporate native look-and-feel to Win32 port introduced
 in tk8.0 while retaining as much of the perl-level API as it exists in Tk40?.*
 as possible.
 
-However as internals have changed I am uncertain that everything "works"
-correctly.  
 
 
  
