@@ -75,6 +75,13 @@ va_dcl
  PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
  PerlIO_putc(PerlIO_stderr(),'\n');
  va_end(ap);
+#if defined(WIN32) && defined(DEBUGGING)
+ {
+  int *p = 0;
+  if (*p)
+   abort();
+ }
+#endif
  abort();
  croak("Tcl_Panic");
 }

@@ -2,7 +2,7 @@
 use Cwd;
 use Config;
 use File::Copy;
-warn __FILE__." in ".getcwd()."\n";
+#warn __FILE__." in ".getcwd()."\n";
 if ($^O eq 'MSWin32')
  {
   my $file;

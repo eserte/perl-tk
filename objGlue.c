@@ -1372,7 +1372,7 @@ TclObj_set(pTHX_ SV *sv, MAGIC *mg)
  TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
  LangDebug("%s %p %s\n",__FUNCTION__,sv,info->type->name);
 #endif
- sv_unmagic(sv,'~');  /* sv_unmagic calls free proc */
+ sv_unmagic(sv,PERL_MAGIC_ext);  /* sv_unmagic calls free proc */
  return 0;
 }
 
@@ -1393,7 +1393,7 @@ TclObj_clear(pTHX_ SV *sv, MAGIC *mg)
  TclObjMagic_t *info = (TclObjMagic_t *)SvPVX(mg->mg_obj);
  LangDebug("%s %p %s\n",__FUNCTION__,sv,info->type->name);
 #endif
- sv_unmagic(sv,'~');  /* sv_unmagic calls free proc */
+ sv_unmagic(sv,PERL_MAGIC_ext);  /* sv_unmagic calls free proc */
  return 0;
 }
 
@@ -1410,7 +1410,7 @@ static TclObjMagic_t *
 Tcl_ObjMagic(Tcl_Obj *obj,int add)
 {
  dTHX;
- MAGIC *mg = (SvTYPE(obj) >= SVt_PVMG) ? mg_find(obj,'~') : NULL;
+ MAGIC *mg = (SvTYPE(obj) >= SVt_PVMG) ? mg_find(obj,PERL_MAGIC_ext) : NULL;
  SV *data = NULL;
  TclObjMagic_t *iv;
  if (mg)
@@ -1438,10 +1438,10 @@ Tcl_ObjMagic(Tcl_Obj *obj,int add)
    if (rdonly)
     SvREADONLY_off(obj);
    sv_upgrade(obj,SVt_PVMG);
-   sv_magic(obj,data,'~',NULL,0);
+   sv_magic(obj,data,PERL_MAGIC_ext,NULL,0);
    SvREFCNT_dec(data);
    SvRMAGICAL_off(obj);
-   mg = mg_find(obj,'~');
+   mg = mg_find(obj,PERL_MAGIC_ext);
    if (mg->mg_obj != data)
     abort();
    mg->mg_virtual = &TclObj_vtab;
@@ -1480,7 +1480,7 @@ Tcl_DuplicateObj(Tcl_Obj *src)
   {
    abort();
   }
- if (!object && SvROK(src) && SvTYPE(SvRV(src)) == SVt_PVAV)
+ else if (!object && SvROK(src) && SvTYPE(SvRV(src)) == SVt_PVAV)
   {
    AV *av  = (AV *) SvRV(src);
    IV max  = av_len(av);
@@ -1618,7 +1618,7 @@ SV *sv;
  if (sv)
   {
    dTHX;
-   MAGIC *mg = (SvTYPE(sv) >= SVt_PVMG) ? mg_find(sv,'~') : NULL;
+   MAGIC *mg = (SvTYPE(sv) >= SVt_PVMG) ? mg_find(sv,PERL_MAGIC_ext) : NULL;
    if (mg && mg->mg_virtual == &TclObj_vtab)
     {
      return Tcl_DuplicateObj(sv);

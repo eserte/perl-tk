@@ -2306,12 +2306,6 @@ TkWmDeadWindow(winPtr)
     if (wmPtr->iconName != NULL) {
 	ckfree(wmPtr->iconName);
     }
-    if (wmPtr->hints.flags & IconPixmapHint) {
-	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
-    }
-    if (wmPtr->hints.flags & IconMaskHint) {
-	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_mask);
-    }
     /* Now pixmap and possibly its associated image */
     if (wmPtr->hints.flags & IconPixmapHint) {
 	if (wmPtr->iconImage) {
@@ -2320,6 +2314,9 @@ TkWmDeadWindow(winPtr)
 	} else {
 	    Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_pixmap);
 	}
+    }
+    if (wmPtr->hints.flags & IconMaskHint) {
+	Tk_FreeBitmap(winPtr->display, wmPtr->hints.icon_mask);
     }
     if (wmPtr->leaderName != NULL) {
 	ckfree(wmPtr->leaderName);
@@ -5674,7 +5671,7 @@ TkWmProtocolEventProc(winPtr, eventPtr)
 	    Tcl_Preserve((ClientData) protPtr);
             interp = protPtr->interp;
             Tcl_Preserve((ClientData) interp);
-	    result = LangDoCallback(protPtr->interp, protPtr->command, 0, 1, "%ld", eventPtr->xclient.data.l[1]);
+	    result = LangDoCallback(protPtr->interp, protPtr->command, 0, 0);
 	    if (result != TCL_OK) {
 		Tcl_AddErrorInfo(interp, "\n    (command for \"");
 		Tcl_AddErrorInfo(interp, name);

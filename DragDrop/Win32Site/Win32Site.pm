@@ -1,7 +1,7 @@
 package Tk::DragDrop::Win32Site;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #6 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw($XS_VERSION);
 require DynaLoader;
@@ -32,6 +32,7 @@ sub Win32Drop
  my ($w,$site,$msg,$wParam,$lParam) = @_;
  my ($x,$y,@files) = DropInfo($wParam);
  my $cb = $site->{'-dropcommand'};
+ $site->Apply(-entercommand => $x, $y, 0);
  if ($cb)
   {
    foreach my $file (@files)
@@ -42,6 +43,7 @@ sub Win32Drop
      $cb->Call('CLIPBOARD',$x,$y);
     }
   }
+ $site->Apply(-entercommand => $x, $y, 1);
  return 0;
 }
 

@@ -40,8 +40,14 @@ sub menus2 {
     
     my $f = $menubar->Cascade(qw/-label ~File -tearoff 0 -menuitems/ =>
         [
-         [Button => 'Open ...',    -command => [\&menus_error2, 'Open']],
-	 [Button => 'New',         -command => [\&menus_error2, 'New']],
+         [Button => 'Open ...',    -command => [\&menus_error2, 'Open'],
+	  			   -image   => $toplevel->Getimage("openfile"),
+	  			   -compound=> "left",
+	 ],
+	 [Button => 'New',         -command => [\&menus_error2, 'New'],
+	  			   -image   => $toplevel->Getimage("file"),
+	  			   -compound=> "left",
+	 ],
 	 [Button => 'Save',        -command => [\&menus_error2, 'Save']],
 	 [Button => 'Save As ...', -command => [\&menus_error2, 'Save As']],
 	 [Separator => ''],

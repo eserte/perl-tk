@@ -1,7 +1,7 @@
 #!perl
+use strict;
 use Config;
 use File::Copy;
-my $file;
 chmod(0666,'Makefile');
 my $file;
 
@@ -23,15 +23,23 @@ if ($^O eq 'MSWin32')
  }
 else
  {
-  if ($Config{'cc'} =~ /gcc/)
+  if ($Config{'gccversion'})
    {
     $file = 'scripts/makefile.gcc';
    }
   else
    {
-    warn "If make fails read libpng/INSTALL\n";
     $file = 'scripts/makefile.std';
+    my %makefiles = map { /makefile\.(.*)/ && ($1 => $_) } glob('scripts/makefile.*');
+    foreach my $arch (sort keys %makefiles)
+     {
+      if ($^O =~ /$arch/i)
+       {
+        $file = $makefiles{$arch};
+       }
+     }
    }
+  warn "Using $file for $^O\nIf make fails read PNG/libpng/INSTALL\n";
  }
 
 copy($file,"Makefile")

@@ -1,5 +1,6 @@
 #  Copyright (c) 1992 The Regents of the University of California.
 #  Copyright (c) 1994-1996 Sun Microsystems, Inc.
+#  Copyright (c) 2002 O'Reilly & Associates Inc.
 #  See the file "license.terms" for information on usage and redistribution
 #  of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
@@ -167,7 +168,7 @@ Text widgets support four different kinds of annotations on the
 text, called tags, marks, embedded windows or embedded images.
 Tags allow different portions of the text
 to be displayed with different fonts and colors.
-In addition, L<perl/Tk callbacks|Tk::callbacks> can be associated with tags so
+In addition, L<perl\/Tk callbacks|Tk::callbacks> can be associated with tags so
 that scripts are invoked when particular actions such as keystrokes
 and mouse button presses occur in particular ranges of the text.
 See L<"TAGS"> below for more details.
@@ -829,9 +830,17 @@ modify the options described above.
 The widget also inherits all the methods provided by the generic
 L<Tk::Widget|Tk::Widget> class.
 
-The following additional methods are available for text widgets:
+The following additional methods are available for text widgets.
+In addition, the extended text widget methods as documented
+in I<"Mastering Perl/Tk"> are included in this pod (with
+permission from the publisher, B<O'Reilly and Associates Inc.>).
 
 =over 4
+
+=item I<$text>-E<gt>B<adjustSelect>
+
+Moves the end point of the selection and anchor point to the
+mouse pointer location.
 
 =item I<$text>-E<gt>B<bbox>(I<index>)
 
@@ -846,6 +855,22 @@ the return value reflects just the visible part.
 If the character is not visible on the screen then the return
 value is an empty list.
 
+=item I<$text>-E<gt>B<clipboardColumnCopy>
+
+Performs a rectangular copy of the currently selected text with
+basic compensation for tab characters.
+
+=item I<$text>-E<gt>B<clipboardColumnCut>
+
+Performs a rectangular cut of the currently selected text with
+basic compensation for tab characters.
+
+=item I<$text>-E<gt>B<clipboardColumnPaste>
+
+Performs a rectangular paste of the text in the clipboard. The
+upper-left corner is specified by the current position of the
+insert mark with basic compensation for tab characters.
+
 =item I<$text>-E<gt>B<compare>(I<index1, op, index2>)
 
 Compares the indices given by I<index1> and I<index2> according
@@ -856,6 +881,13 @@ If I<op> is == then 1 is returned if the two indices refer to
 the same character, if I<op> is E<lt> then 1 is returned if I<index1>
 refers to an earlier character in the text than I<index2>, and
 so on.
+
+=item I<$text>-E<gt>B<Contents>(I<?args>?)
+
+Query or change the entire contents of the text widget. If no
+arguments are given, the entire contents of the text widget are
+returned. If any arguments are given, the entire contents of the
+text widget are deleted and replaced by the argument list.
 
 =item I<$text>-E<gt>B<debug>(?I<boolean>?)
 
@@ -887,6 +919,18 @@ I<index1> is deleted.
 It is not allowable to delete characters in a way that would leave
 the text without a newline as the last character.
 The command returns an empty string.
+
+=item I<$text>-E<gt>B<deleteSelected>
+
+Delete the currently selected text.
+
+=item I<$text>-E<gt>B<deleteTextTaggedWith>(I<tag>)
+
+Delete the text tagged with the I<tag> parameter.
+
+=item I<$text>-E<gt>B<deleteToEndofLine>
+
+Delete from the insert mark location to the end of line.
 
 =item I<$text>-E<gt>B<dlineinfo>(I<index>)
 
@@ -971,6 +1015,57 @@ has not been created yet.  (It must have a create script.)
 In this case an empty string is returned, and you must query the
 window by its index position to get more information.
 
+=item I<$text>-E<gt>B<FindAll>(I<mode, case, pattern>)
+
+Removes any current selections and then performs a global text
+search. All matches are tagged with the B<sel> tag.
+
+I<mode> can be be B<-exact> or B<-regexp>. See the B<search> command
+for more information
+
+I<case> can be B<-nocase> or B<-case>. See the B<search> command
+for more information
+
+I<pattern> is an exact string to match if I<mode> is B<-exact> or a
+regular expression if the match I<mode> is B<-regexp>.
+
+
+=item I<$text>-E<gt>B<FindAndReplaceAll>(I<mode, case, find, replace>)
+
+Same as the B<FindAll> method, however additionally substitutes the
+matched text with the characters I<replace>.
+
+=item I<$text>-E<gt>B<FindAndReplacePopUp>
+
+Creates a find-and-replace popup window if one does not already exist.
+If there is currently selected text, then the 'find' field will be
+'pre-filled' with the selection.
+
+=item I<$text>-E<gt>B<FindNext>(I<direction, mode, case, pattern>)
+
+Removes any current selections and then performs a forward or reverse
+text search. All matches are tagged with the B<sel> tag. I<direction>
+can be B<-forward> or B<-reverse>. I<mode, case> and I<pattern> are
+as for the B<FindAll> method.
+
+=item I<$text>-E<gt>B<FindPopUp>
+
+Creates a find popup, if one does not yet exist. If there is currently
+selected text, then the 'find' field will be 'pre-filled' with the
+selection.
+
+=item I<$text>-E<gt>B<FindSelectionNext>
+
+Gets the currently selected text and removes all selections. It then
+finds the next exact, case-sensitive string that matches in a forward
+direction and selects the text and makes the new selection visible.
+
+=item I<$text>-E<gt>B<FindSelectionPrevious>
+
+Gets the currently selected text and removes all selections. It then
+finds the next exact, case-sensitive string that matches in a reverse
+direction and selects the text and makes the new selection visible.
+
 =item I<$text>-E<gt>B<get>(I<index1, >?I<index2>?)
 
 Return a range of characters from the text.
@@ -985,6 +1080,24 @@ is past the end of the file or I<index2> is less than or equal
 to I<index1>) then an empty string is returned.
 If the specified range contains embedded windows, no information
 about them is included in the returned string.
+
+=item I<$text>-E<gt>B<getSelected>
+
+Return the currently selected text.
+
+=item I<$text>-E<gt>B<GetTextTaggedWith>(I<tag>)
+
+Return the text tagged with the I<tag> parameter.
+
+=item I<$text>-E<gt>B<GotoLineNumber>(I<line_number>)
+
+Set the insert mark to I<line_number> and ensures the line is
+visible.
+
+=item I<$text>-E<gt>B<GotoLineNumberPopUp>(I<line_number>)
+
+Displays a popup, pre-filling it with selected numeric text
+(if any), or the line number from B<GotoLineNumber> (if any).
 
 =item I<$text>-E<gt>B<image>(I<option>, ?I<arg, arg, ...>?)
 
@@ -1066,6 +1179,26 @@ they produce the same effect as if a separate B<insert> widget
 command had been issued for each pair, in order.
 The last I<tagList> argument may be omitted.
 
+=item I<$text>-E<gt>B<Insert>(I<string>)
+
+Do NOT confuse this with the lower-case B<insert> method.
+Insert I<string> at the point of the insertion cursor. If there is
+a selection in the text, and it covers the point of the insertion
+cursor, then it deletes the selection before inserting.
+
+=item I<$text>-E<gt>B<InsertKeypress>(I<character>)
+
+Inserts I<character> at the B<insert> mark. If in overstrike mode,
+it firsts deletes the character at the B<insert> mark.
+
+=item I<$text>-E<gt>B<InsertSelection>
+
+Inserts the current selection at the B<insert> mark.
+
+=item I<$text>-E<gt>B<insertTab>
+
+Inserts a tab (\t) character at the B<insert> mark.
+
 =item I<$text>-E<gt>B<mark>(I<option, >?I<arg, arg, ...>?)
 
 This command is used to manipulate marks.  The exact behavior of
@@ -1134,6 +1267,39 @@ returned by future calls to ``I<$text>-E<gt>B<markNames>''.
 This command returns an empty string.
 
 =back
+
+=item I<$text>-E<gt>B<markExists>(I<markname>)
+
+Returns true if I<markname> exists - false otherwise.
+
+=item I<$text>-E<gt>B<menu>(I<?menu?>)
+
+If I<menu> reference is given as an argument, then the text widget
+menu is adjusted to use this new I<menu>. If the I<menu> argument
+is B<undef>, then this command disables the current text widget menu.
+If the I<menu> argument is omitted altogether, then the current text
+widget menu reference is returned.
+
+=item I<$text>-E<gt>B<openLine>
+
+Inserts a newline (\n) at the insert mark.
+
+=item I<$text>-E<gt>B<OverstrikeMode>(I<?boolean?>)
+
+Returns the overstrike mode if I<boolean> is omitted or sets the
+overstrike mode to I<boolean>. True means overstrike mode is enabled.
+
+=item I<$text>-E<gt>B<PostPopupMenu>(I<x,y>)
+
+Creates a popup menu at the specified (I<x,y>) pixel coordinates. The
+default menu has File, Edit, Search and View menu items which cascade
+to sub-menus for further commands. There is an implicit E<lt>Button-3E<gt>
+binding to this method that posts the menu over the cursor.
+
+=item I<$text>-E<gt>B<ResetAnchor>
+
+Sets the selection anchor to whichever end is farthest from the index
+argument.
 
 =item I<$text>-E<gt>B<scan>(I<option>, I<args>) or
 
@@ -1249,6 +1415,22 @@ adjusts the view just enough to make I<index> visible at the
 edge of the window.
 If I<index> is far out of view, then the command centers
 I<index> in the window.
+
+=item I<$text>-E<gt>B<selectAll>
+
+Selects all the text in the widget.
+
+=item I<$text>-E<gt>B<selectLine>
+
+Selects the line with the insert mark.
+
+=item I<$text>-E<gt>B<selectWord>
+
+Selects the word with the insert mark.
+
+=item I<$text>-E<gt>B<SetCursor>(I<position>)
+
+Moves the insert mark to I<position>.
 
 =item I<$text>-E<gt>B<tag>(I<option, >?I<arg, arg, ...>?)
 
@@ -1450,6 +1632,19 @@ to I<index1>) then the command has no effect.
 This command returns an empty string.
 
 =back
+
+=item I<$text>-E<gt>B<ToggleInsertMode>
+
+Toggles the current overstrike mode.
+
+=item I<$text>-E<gt>B<unselectAll>
+
+Unselects all the text in the widget.
+
+=item I<$text>-E<gt>B<WhatLineNumberPopup>
+
+Creates a popup that displays the current line number of the
+insert mark.
 
 =item I<$text>->B<widget>(I<option?, arg, arg, ...>?)
 
@@ -1909,4 +2104,5 @@ L<Tk::TextUndo|Tk::TextUndo>
 text, widget
 
 =cut
+
 

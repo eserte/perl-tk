@@ -1,4 +1,10 @@
 #ifdef _TK
+#ifndef LangCheckDC
+#ifndef RC_INVOKED
+VFUNC(void,LangCheckDC,V_LangCheckDC,_ANSI_ARGS_((const char *file, int line)))
+#endif /* #ifndef RC_INVOKED */
+#endif /* #ifndef LangCheckDC */
+
 #ifndef LangEventCallback
 #ifndef RC_INVOKED
 VFUNC(int,LangEventCallback,V_LangEventCallback,_ANSI_ARGS_((ClientData, Tcl_Interp *,XEvent *,Tk_Window,KeySym)))

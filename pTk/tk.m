@@ -2,6 +2,10 @@
 #define _TK_VM
 #include "tk_f.h"
 #ifndef NO_VTABLES
+#ifndef LangCheckDC
+#  define LangCheckDC (*TkVptr->V_LangCheckDC)
+#endif
+
 #ifndef LangEventCallback
 #  define LangEventCallback (*TkVptr->V_LangEventCallback)
 #endif

@@ -174,6 +174,7 @@ TkWinGetDrawableDC(display, d, state)
     }
     state->palette = TkWinSelectPalette(dc, cmap);
     state->bkmode  = GetBkMode(dc);
+    LangNoteDC(dc,1);
     return dc;
 }
 
@@ -208,6 +209,7 @@ TkWinReleaseDrawableDC(d, dc, state)
     } else if (twdPtr->type == TWD_BITMAP) {
 	DeleteDC(dc);
     }
+    LangNoteDC(dc,-1);
 }
 
 /*

@@ -130,6 +130,7 @@ demos/demos/widget_lib/icon.pl
 demos/demos/widget_lib/image1.pl
 demos/demos/widget_lib/image2.pl
 demos/demos/widget_lib/items.pl
+demos/demos/widget_lib/keysyms.pl
 demos/demos/widget_lib/labframe.pl
 demos/demos/widget_lib/labelframe.pl
 demos/demos/widget_lib/labels.pl
@@ -162,6 +163,7 @@ demos/demos/widget_lib/trace2.pl
 demos/demos/widget_lib/transtile.pl
 demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/unicodeout.pl
+demos/demos/widget_lib/virtevents1.pl
 demos/demos/widget_lib/vscale.pl
 demos/demos/widget_lib/WidgetDemo.pm
 demos/demos/widtrib/Gedi.pl
@@ -796,6 +798,7 @@ PNG/zlib/zlib.h
 PNG/zlib/zlib.html
 PNG/zlib/zutil.c
 PNG/zlib/zutil.h
+pod/804delta.pod
 pod/Adjuster.pod
 pod/after.pod
 pod/Animation.pod
@@ -1853,6 +1856,7 @@ t/KR.t
 t/leak.t
 t/list.t
 t/listbox.t
+t/listvar.t
 t/magic.t
 t/mega.t
 t/mwm.t

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkUnixFocus.c --
  *
  *	This file contains platform specific procedures that manage
@@ -48,8 +48,8 @@ TkpChangeFocus(winPtr, force)
 {
     TkDisplay *dispPtr = winPtr->dispPtr;
     Tk_ErrorHandler errHandler;
-    Window window, root, parent, *children; 
-    unsigned int numChildren, serial; 
+    Window window, root, parent, *children;
+    unsigned int numChildren, serial;
     TkWindow *winPtr2;
     int dummy;
 
@@ -117,8 +117,13 @@ TkpChangeFocus(winPtr, force)
     if (winPtr->window == None) {
 	panic("ChangeXFocus got null X window");
     }
+    /* Use TkCurrentTime so we can get timestamp from WM_PROTOCOL
+       client messages etc. If doing a force focus fallback
+       to CurrentTime
+     */
+
     XSetInputFocus(dispPtr->display, winPtr->window, RevertToParent,
-	    CurrentTime);
+	    TkCurrentTime(dispPtr,force));
     Tk_DeleteErrorHandler(errHandler);
 
     /*

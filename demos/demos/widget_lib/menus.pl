@@ -39,8 +39,10 @@ sub menus {
     }
  
     my $f = $menubar->cascade(-label => '~File', -tearoff => 0);
-    $f->command(-label => 'Open ...',    -command => [\&menus_error, 'Open']);
-    $f->command(-label => 'New',         -command => [\&menus_error, 'New']);
+    $f->command(-label => 'Open ...',    -command => [\&menus_error, 'Open'],
+	        -image => $toplevel->Getimage("openfile"), -compound => "left");
+    $f->command(-label => 'New',         -command => [\&menus_error, 'New'],
+	        -image => $toplevel->Getimage("file"), -compound => "left");
     $f->command(-label => 'Save',        -command => [\&menus_error, 'Save']);
     $f->command(-label => 'Save As ...', -command => [\&menus_error, 'Save As']);
     $f->separator;

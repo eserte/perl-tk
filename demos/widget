@@ -1,6 +1,7 @@
 #!/usr/local/bin/perl -w
 
 use 5.008;
+use Config;
 use Tk 804.000;
 use lib Tk->findINC( 'demos/widget_lib' );
 use Tk::widgets qw/ DialogBox ErrorDialog LabEntry ROText /;
@@ -250,6 +251,8 @@ demos 'Miscellaneous', (
     'dialog2'      => 'A dialog box with a global grab',
     'trace1'       => 'Trace a variable\'s value',
     'progress'     => 'Various ProgressBar widgets',
+    'keysyms'      => 'Show keyboard symbols',
+    'virtevents1'  => 'Synthesizing events',
 );
 
 $T->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
@@ -307,13 +310,13 @@ sub build_about_dialog {
     my $df = $dialog->add( 'Labelframe', -text => '  2004 - Jan - 02  ' );
     $df->pack( qw/ -fill both -expand 1 / );
     my( $change ) = $Tk::CHANGE =~ /Change:\s+(.*)/;
-    my( $tk ) = "$Tk::VERSION, change $change";
+    my( $tk ) = "$Tk::VERSION, change $change (based on Tcl/Tk ${Tk::version}.x)";
 
     foreach my $item (
-         [ 'Perl',     $]            ],
-         [ 'Tk',       $tk           ],
-         [ 'Platform', $Tk::platform ],
-         [ 'Library',  $Tk::library  ],
+         [ 'Perl',    "$], $Config{cf_time}" ],
+         [ 'Tk',                         $tk ],
+         [ 'Platform',         $Tk::platform ],
+         [ 'Library',           $Tk::library ],
         ) {
         my $l = $item->[0] . ':';
         my $le = $df->LabEntry(

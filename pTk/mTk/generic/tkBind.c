@@ -3875,6 +3875,8 @@ HandleEventGenerate(interp, mainWin, objc, objv)
     synch = 1;
     warp = 0;
     pos = TCL_QUEUE_TAIL;
+    event.xkey.x_root = -1;
+    event.xkey.y_root = -1;
     for (i = 2; i < objc; i += 2) {
 	Tcl_Obj *optionPtr, *valuePtr;
 	int index;
@@ -4242,7 +4244,10 @@ HandleEventGenerate(interp, mainWin, objc, objv)
 		rootX += number;
 		if (flags & (KEY_BUTTON_MOTION_VIRTUAL|CROSSING)) {
 		    event.xkey.x = number;
-		    event.xkey.x_root = rootX;
+		    if ( event.xkey.x_root == -1 ) {
+			event.xkey.x_root = rootX;
+		    }
+
 		} else if (flags & EXPOSE) {
 		    event.xexpose.x = number;
 		} else if (flags & (CREATE|CONFIG|GRAVITY)) {
@@ -4265,7 +4270,9 @@ HandleEventGenerate(interp, mainWin, objc, objv)
 		rootY += number;
 		if (flags & (KEY_BUTTON_MOTION_VIRTUAL|CROSSING)) {
 		    event.xkey.y = number;
-		    event.xkey.y_root = rootY;
+		    if ( event.xkey.y_root == -1 ) {
+			event.xkey.y_root = rootY;
+		    }
 		} else if (flags & EXPOSE) {
 		    event.xexpose.y = number;
 		} else if (flags & (CREATE|CONFIG|GRAVITY)) {

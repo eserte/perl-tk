@@ -55,6 +55,31 @@ TkeventVtab *TkeventVptr;
 
 /* #define DEBUG_REFCNT /* */
 
+#ifdef WIN32
+long DCcount = 0;
+void
+LangNoteDC(HDC dc,int inc)
+{
+#ifdef DEBUGGING
+ DCcount += inc;
+#endif
+}
+
+void
+LangCheckDC(const char *file,int line)
+{
+#ifdef DEBUGGING
+ if (DCcount)
+    LangDebug("%s:%d DCcount %ld\n",file,line,DCcount);
+#endif
+}
+#else
+void
+LangCheckDC(const char *file,int line)
+{
+}
+#endif
+
 
 extern Tk_PhotoImageFormat	imgFmtBMP;
 extern Tk_PhotoImageFormat	imgFmtGIF;
@@ -812,7 +837,7 @@ Tk_Window tkwin;
    /* Tk_CheckHash((SV *)fonts,NULL); */
    hv_undef(fonts);
   }
- sv_unmagic((SV *) hv, '~');
+ sv_unmagic((SV *) hv, PERL_MAGIC_ext);
  Tcl_DeleteInterp(interp);
 }
 
@@ -858,9 +883,9 @@ SV *sv;
 {
  dTHX;
  MAGIC *mg;
- sv_magic(hv, sv, '~', NULL, 0);
+ sv_magic(hv, sv, PERL_MAGIC_ext, NULL, 0);
  SvRMAGICAL_off(hv);
- mg = mg_find(hv,'~');
+ mg = mg_find(hv, PERL_MAGIC_ext);
  if (mg->mg_obj != sv)
   abort();
  mg->mg_virtual = &TkGlue_vtab;
@@ -1076,7 +1101,7 @@ int need;
  if (SvROK(sv))
   {
    HV *hash = (HV *) SvRV(sv);
-   MAGIC *mg = mg_find((SV *) hash,'~');
+   MAGIC *mg = mg_find((SV *) hash,PERL_MAGIC_ext);
    if (hv_ptr)
     *hv_ptr = hash;
    if (mg)
@@ -1433,7 +1458,7 @@ Font_DESTROY(SV *arg)
   {
    if (info->interp)
     DecInterp(info->interp,SvPV(sv,na));
-   sv_unmagic(sv,'~');
+   sv_unmagic(sv,PERL_MAGIC_ext);
   }
 }
 
@@ -2234,6 +2259,14 @@ SV **args;
      code = (*proc) (cd, interp, items, args);
      Tcl_Release(interp);
      /* info stucture may have been free'ed now ... */
+#ifdef WIN32
+     if (DCcount)
+       {
+        warn("DCcount %ld for %s",DCcount, Tcl_GetString(what));
+        // LangDumpVec("DCcount",items,args);
+        DCcount = 0;
+       }
+#endif
      if ((exiting = FindSv(aTHX_ interp, "Check_Eval", 0, "_TK_EXIT_")))
       {
        PL_tainted = old_taint;
@@ -2624,7 +2657,7 @@ Tcl_Interp *interp;
  HV *hv = InterpHv(interp,0);
  if (hv)
   {
-   MAGIC *mg = mg_find((SV *) hv, '~');
+   MAGIC *mg = mg_find((SV *) hv, PERL_MAGIC_ext);
    if (mg)
     {
      return (Tk_Window) SvIV(mg->mg_obj);
@@ -3138,7 +3171,7 @@ Tk_Window tkwin;
    if (obj && SvROK(obj) && SvTYPE(SvRV(obj)) == SVt_PVHV)
     {
      HV *hash = (HV *) SvRV(obj);
-     MAGIC *mg   = mg_find((SV *) hash,'~');
+     MAGIC *mg   = mg_find((SV *) hash,PERL_MAGIC_ext);
 
      /* Tk_CheckHash((SV *) hash, NULL); */
      if (SvREFCNT(hash) < 1)
@@ -3157,7 +3190,7 @@ Tk_Window tkwin;
           we have now finished with it
         */
        SvREFCNT_dec(mg->mg_obj);
-       sv_unmagic((SV *) hash,'~');
+       sv_unmagic((SV *) hash,PERL_MAGIC_ext);
       }
     }
   }
@@ -3527,22 +3560,29 @@ SV *part2;
 int flags;
 {
  dTHX;
- if (SvPOK(sv))
+ if (sv)
   {
-   STRLEN len;
-   char *s = SvPV(sv,len);
-   if (len > 6 && !strncmp(s,"::tk::",6))
+   if (SvPOK(sv))
     {
-     sv = FindTkVarName(s+6,0);
+     STRLEN len;
+     char *s = SvPV(sv,len);
+     if (len > 6 && !strncmp(s,"::tk::",6))
+      {
+       sv = FindTkVarName(s+6,0);
+      }
+    }
+   if (SvROK(sv) && SvTYPE(SvRV(sv)) != SVt_PVAV)
+    {
+     sv = SvRV(sv);
+    }
+   if (part2)
+    {
+     sv = LangVar2(interp, sv, Tcl_GetString(part2), 0);
     }
   }
- if (SvROK(sv))
+ else
   {
-   sv = SvRV(sv);
-  }
- if (part2)
-  {
-   sv = LangVar2(interp, sv, Tcl_GetString(part2), 0);
+   sv = newSV(0);
   }
  return sv;
 }
@@ -3731,6 +3771,7 @@ ClientData clientData;
  MAGIC *mg;
  MAGIC *mg_list;
  SV *exiting;
+ int mgType = PERL_MAGIC_uvar;
 
  if (SvROK(sv))
   sv = SvRV(sv);
@@ -3747,6 +3788,10 @@ ClientData clientData;
    return EXPIRE((interp, "Trace SvUPGRADE failed"));
   }
 
+ if (SvTYPE(sv) == SVt_PVAV)
+  {
+   mgType = PERL_MAGIC_ext;
+  }
 
  /*
   * We can't use sv_magic() because it won't add in another magical struct
@@ -3766,7 +3811,6 @@ ClientData clientData;
 
  Tcl_CreateExitHandler(TraceExitHandler, (ClientData) p);
 
-
  /* We want to be last in the chain so that any
     other magic has been called first
     save the list so that this magic can be moved to the end
@@ -3775,7 +3819,7 @@ ClientData clientData;
  SvMAGIC(sv) = NULL;
 
  /* Add 'U' magic to sv with all NULL args */
- sv_magic(sv, 0, 'U', 0, 0);
+ sv_magic(sv, 0, mgType, 0, 0);
 
  Newz(666, ufp, 1, struct ufuncs);
  ufp->uf_val = Perl_Value;
@@ -3786,6 +3830,7 @@ ClientData clientData;
  mg->mg_ptr = (char *) ufp;
  mg->mg_len = sizeof(struct ufuncs);
 
+
  /* put list back and add mg to end */
 
  SvMAGIC(sv) = mg_list;
@@ -3795,6 +3840,15 @@ ClientData clientData;
    mgp = &mg_list->mg_moremagic;
   }
  *mgp = mg;
+
+ if (mgType == PERL_MAGIC_ext)
+  {
+   /* We are not doing a real tie to an AV so
+      we need to set the vtable and re-calc magic flags
+    */
+   mg->mg_virtual = &PL_vtbl_uvar;
+   mg_magical(sv);
+  }
 
  if (!SvMAGICAL(sv))
   abort();
@@ -3904,7 +3958,7 @@ int type;
     {
      uf.uf_set   = LinkCannotSet;
     }
-   sv_magic(sv,NULL,'U',(char *) (&uf), sizeof(uf));
+   sv_magic(sv,NULL, PERL_MAGIC_uvar, (char *) (&uf), sizeof(uf));
    return TCL_OK;
   }
  else
@@ -3922,7 +3976,7 @@ CONST char *varName;
  SV *sv = FindTkVarName(varName,0);
  if (sv)
   {
-   sv_unmagic(sv,'U');
+   sv_unmagic(sv,PERL_MAGIC_uvar);
   }
 }
 
@@ -3934,6 +3988,7 @@ int flags;
 Lang_VarTraceProc *tkproc;
 ClientData clientData;
 {
+ int mgType = PERL_MAGIC_uvar;
  MAGIC **mgp;
  /* it may not be magical i.e. it may never have been traced
     This occurs for example when cascade Menu gets untraced
@@ -3944,6 +3999,11 @@ ClientData clientData;
  if (SvROK(sv))
   sv = SvRV(sv);
 
+ if (SvTYPE(sv) == SVt_PVAV)
+  {
+   mgType = PERL_MAGIC_ext;
+  }
+
  if (SvMAGICAL(sv) && (mgp = &SvMAGIC(sv)))
   {
    MAGIC *mg;
@@ -3953,7 +4013,7 @@ ClientData clientData;
       * Trawl through the linked list of magic looking
       * for the 'U' one which is our proc and ix.
       */
-     if (mg->mg_type == 'U' && mg->mg_ptr &&
+     if (mg->mg_type == mgType && mg->mg_ptr &&
          mg->mg_len  == sizeof(struct ufuncs) &&
          ((struct ufuncs *) (mg->mg_ptr))->uf_set == Perl_Trace)
       {
@@ -5480,7 +5540,7 @@ Tcl_FSGetCwd(interp)
  SAVETMPS;
  PUSHMARK(sp);
  PUTBACK;
- if (perl_call_pv("Tk::GetCwd",G_SCALAR) == 1)
+ if (call_pv("Cwd::getcwd",G_SCALAR) == 1)
   {
    SPAGAIN;
    ret = POPs;

@@ -1,3 +1,103 @@
+Change 3124 on 2004/01/12 by nick@camel
+
+	Auto generated files for device context debug
+
+Change 3123 on 2004/01/12 by nick@camel
+
+	Fix tix Pixmap image type leaking device contexts
+	and color maps on Win32. (the t/pixmap.t issue)
+	Leave debugging hooks in place.
+
+Change 3122 on 2004/01/11 by nick@camel
+
+	On Win32 Pixmap/Bitmap are distinct so 
+	we need to see what kind of thing we are using as 
+	an icon to free it. (Botched merge of imageicon stuff.)
+	Note on XP still not getting the icon...
+
+Change 3121 on 2004/01/11 by nick@camel
+
+	Win32's abort() doesn't do backtrace,
+	so have Tcl_Panic de-ref NULL to get one.
+
+Change 3120 on 2004/01/10 by nick@llama
+
+	Slaven's fix for BUG: dlineinfo returns a scalar
+
+Change 3119 on 2004/01/10 by nick@llama
+
+	Move use 5.007 above use open IO => ':bytes' to get
+	better error messages on perl5.6 (as suggested by Slaven)
+
+Change 3118 on 2004/01/10 by nick@llama
+
+	Win32Drop fix as requested by
+	John Cavanaugh <john_p_cavanaugh@yahoo.com>
+
+Change 3117 on 2004/01/10 by nick@llama
+
+	eventGenerate batch from newsgroup via Steve.
+
+Change 3099 on 2004/01/02 by nick@llama
+
+	Tk-804.025_beta14 Release Preparation
+
+Change 3098 on 2004/01/02 by nick@llama
+
+	Steve's patch for new demos
+	extra t/button.t
+
+Change 3089 on 2003/12/30 by nick@llama
+
+	Copy in Jack <goodcall@telusplanet.net> version of Text.pod
+	with some text from "Mastering Perl/Tk" used with permission.
+
+Change 3088 on 2003/12/30 by nick@llama
+
+	Alternate way to honour iccm timestamp for WM_TAKE_FOCUS
+	ClientMessage-s - reverts change 3013. tkUnixWm.c takes timestamp
+	from message as lastEventTime. (No point for tkWinWm as timestamps
+	are faked anyway.) Then tkUnixFocus.c uses TkCurrentTime() to
+	set focus.
+
+Change 3087 on 2003/12/30 by nick@llama
+
+	More PNG configure stuff:
+	  try and match $^O to scripts/makefile.*
+
+Change 3084 on 2003/12/29 by nick@llama
+
+	Slaven's fix for text in canvas postscript
+
+Change 3083 on 2003/12/29 by nick@llama
+
+	Slaven's compound addition to menu demo
+
+Change 3082 on 2003/12/29 by nick@llama
+
+	More tests which now seem to work.
+
+Change 3081 on 2003/12/29 by nick@llama
+
+	Tk::GetCwd muddle - C now calls Cwd::getcwd and Tk.pm
+	makes sure it is loaded.
+
+Change 3080 on 2003/12/29 by nick@llama
+
+	Spinbox fast-click fix from Slaven
+
+Change 3079 on 2003/12/29 by nick@llama
+
+	Start of -listvar fix
+
+Change 3078 on 2003/12/24 by nick@llama
+
+	Add Slaven's 804delta.pod
+
+Change 3077 on 2003/12/23 by nick@llama
+
+	Tk-804.025_beta13 Release Preparation
+
 Change 3076 on 2003/12/23 by nick@llama
 
 	Generated file out of date

@@ -1834,6 +1834,9 @@ EXTERN char *           Tk_EventInfo _ANSI_ARGS_((int letter, Tk_Window tkwin, X
 			    KeySym keySym, int *numPtr, int *isNum, int *type,
 			    int num_size, char *numStorage));
 
+extern void LangCheckDC _ANSI_ARGS_((const char *file, int line));
+
+
 #undef TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLIMPORT
 

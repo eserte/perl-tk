@@ -74,7 +74,7 @@ or
         my($self, $args) = @_;
         $self->SUPER::Populate($args);
         $self->Advertise();      # advertise subwidgets
-        $self->Callback();       # create -command callbacks
+        $self->Callback();       # invoke -command callbacks
         $self->Component();      # define a subwidget component
         $self->ConfigSpecs();    # define cget() / configure() options
         $self->Delegates();      # how methods are delegated to subwidgets

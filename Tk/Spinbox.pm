@@ -2,7 +2,7 @@ package Tk::Spinbox;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d',q$Revision: #4 $ =~ /#(\d+)/;
+$VERSION = sprintf '4.%03d',q$Revision: #6 $ =~ /#(\d+)/;
 
 use base 'Tk::Entry';
 
@@ -100,7 +100,7 @@ sub Button1Release
  my $elem = $w->{_element};
  if (defined($elem) && $elem ne 'entry')
   {
-   my $repeated = delete $w->{_repeated};
+   my $repeated = $w->{_repeated};
    if (defined($repeated) && !$repeated)
     {
      $w->invoke($elem);

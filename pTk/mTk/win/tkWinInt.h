@@ -202,5 +202,7 @@ EXTERN TkWinProcs *tkWinProcs;
 extern Tcl_Encoding TkWinGetKeyInputEncoding _ANSI_ARGS_((void));
 extern Tcl_Encoding TkWinGetUnicodeEncoding _ANSI_ARGS_((void));
 
+extern void LangNoteDC _ANSI_ARGS_((HDC dc,int inc));
+
 #endif /* _TKWININT */
 

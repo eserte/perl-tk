@@ -740,9 +740,18 @@ TextWidgetCmd(clientData, interp, argc, argv)
 	if (TkTextDLineInfo(textPtr, &index1, &x, &y, &width, &height, &base)
 		== 0) {
 	    char buf[TCL_INTEGER_SPACE * 5];
+	    Tcl_Obj *el;
+	    el = Tcl_GetObjResult(interp);
 
+	    Tcl_ListObjAppendElement(interp,el,Tcl_NewIntObj(x));
+	    Tcl_ListObjAppendElement(interp,el,Tcl_NewIntObj(y));
+	    Tcl_ListObjAppendElement(interp,el,Tcl_NewIntObj(width));
+	    Tcl_ListObjAppendElement(interp,el,Tcl_NewIntObj(height));
+	    Tcl_ListObjAppendElement(interp,el,Tcl_NewIntObj(base));
+	    /*
 	    sprintf(buf, "%d %d %d %d %d", x, y, width, height, base);
 	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    */
 	}
     } else if ((c == 'e') && (strncmp(argv[1], "edit", length) == 0)) {
         result = TextEditCmd(textPtr, interp, argc, argv);

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 # modify it under the same terms as Perl itself, subject
@@ -13,6 +13,7 @@ require 5.007;
 use     Tk::Event ();
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
+use     Cwd();
 use base qw(Exporter DynaLoader);
 
 *fileevent = \&Tk::Event::IO::fileevent;
@@ -61,7 +62,7 @@ use strict;
 use Carp;
 
 # Record author's perforce depot record
-$Tk::CHANGE      = q$Change: 3077 $;
+$Tk::CHANGE      = q$Change: 3125 $;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
