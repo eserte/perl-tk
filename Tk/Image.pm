@@ -9,6 +9,10 @@ require DynaLoader;
 
 @Tk::Image::ISA = qw(DynaLoader Tk); # but are they ?
 
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/Image.pm#7$
+
 sub new
 {
  my $package = shift;

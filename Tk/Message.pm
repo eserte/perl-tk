@@ -4,6 +4,10 @@
 package Tk::Message;
 use AutoLoader;
 
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/Message.pm#6$
+
 @ISA = qw(Tk::Widget);
 
 Construct Tk::Widget 'Message';

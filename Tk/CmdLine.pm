@@ -4,6 +4,10 @@ use strict;
 
 *motif = \$Tk::strictMotif;
 
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Tk/CmdLine.pm#5$
+
 use vars qw($synchronous %switch $iconic %options %methods @command %config);
 
 $synchronous = 0;

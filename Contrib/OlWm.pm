@@ -1,4 +1,8 @@
 package Tk::OlWm;
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Contrib/OlWm.pm#4$
+
 use Tk;
 use 5.004;
 

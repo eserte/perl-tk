@@ -360,7 +360,7 @@ require AutoLoader;
 	YXSorted
 	ZPixmap
 );
-$VERSION = '0.01';
+$VERSION = '2.004'; # $Id: //depot/Tk/Xlib/X/X.pm#4$
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()

@@ -1,9 +1,13 @@
-# $Id: LabFrame.pm,v 1.2 1997/02/03 17:26:03 rsi Exp rsi $
+# $Id: //depot/Tk/Tixish/LabFrame.pm#4$
 #
 # Labeled frame. Derives from Tk::Frame, but intercepts the labeling
 # part.
 
 package Tk::LabFrame;
+
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Tixish/LabFrame.pm#4$
 
 use Tk;
 require Tk::Frame;

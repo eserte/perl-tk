@@ -1,0 +1,77 @@
+#!/usr/local/bin/perl -w
+use File::Find;
+
+my @opened = `p4 opened .`; 
+if (@opened)
+ {
+  print @opened;
+  die "Cannot proceeed with opened files\n";
+ }
+
+find(sub 
+     { 
+      $File::Find::prune = 1 if (/^blib$/);
+      push(@ARGV,$File::Find::name) if (/\.pm$/) 
+     },'.');
+
+my @undo = ();
+
+foreach (@ARGV)
+ {
+  system('p4','edit','-t','ktext',$_) unless (-w $_);
+ }
+
+$^I = ".old";
+my $done = 0;
+while (<>)
+ {
+  if (/^(\$VERSION\s*=\s*'\d+\.)(\d+)('\s*;.*\$Id:.*#(\d+)\$.*)$/)
+   {
+    if ($2 != $4)
+     {
+      warn "$ARGV:$_";
+      $_ = sprintf("$1%03d$3\n",$4+1);
+      warn $_;
+     }        
+    else      
+     {        
+      push(@undo,$ARGV);
+     }        
+    $done = 2;
+   }
+  elsif (/\$[\w:]*VERSION\s*=/)
+   {
+    if ($done == 1)
+     {
+      warn "$ARGV already had $_";
+      push(@undo,$ARGV);
+     }
+   }
+  elsif (/\$Id:/ || m#//depot#)
+   {
+    warn "Did not match:$_";
+   }
+  elsif (!$done && /^\s*(\@ISA|bootstrap|use\s(Tk))|sub/)
+   {
+    # warn "$ARGV:$.:$_";
+    $done = 1;
+    print "\nuse vars qw(\$VERSION);\n";
+    print "\$VERSION = '2.000'; # \$Id:\$\n\n";
+   }
+  print;
+  if (!$done && (eof || /__END__/))
+   {
+    warn "No point found in $ARGV\n";
+    $done = 1;
+   }
+  if (eof)
+   {
+    $done = 0;
+    $.    = 0;
+   }
+ }
+
+foreach (@undo)
+ {
+  system('p4','revert',$_);
+ }

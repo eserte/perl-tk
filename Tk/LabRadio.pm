@@ -1,6 +1,10 @@
 # Class LabeledRadiobutton
 
 package Tk::LabRadiobutton;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Tk/LabRadio.pm#5$
+
 use Tk::Pretty;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);

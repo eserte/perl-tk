@@ -13,6 +13,10 @@
 package Tk::Scale; 
 require Tk;
 use AutoLoader;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Scale/Scale.pm#7$
+
 @ISA = qw(Tk::Widget);
 
 Construct Tk::Widget 'Scale';

@@ -1,3 +1,149 @@
+Change 401 on 1997/09/11 by nick@ni-s
+
+	Update VERSION numbers
+
+Change 400 on 1997/09/11 by nick@pluto
+
+	Retro-fit HTML parse tweaks used in conference foil viewer
+	Try various approached to <table>
+	Add <space> and <BackSpace> bindings to ROText
+
+Change 397 on 1997/09/10 by nick@pluto
+
+	Fix selection by keyboard <Shift-Down> etc.
+
+Change 391 on 1997/09/09 by nick@camel
+
+	On-the-road changes to tkmail stuff
+
+Change 385 on 1997/08/17 by nick@ni-s
+
+	Fudge size of demo windows
+
+Change 372 on 1997/08/15 by nick@ni-s
+
+	Add FullScreen support
+
+Change 370 on 1997/08/15 by nick@pluto
+
+	Tweaks for tkmail
+
+Change 369 on 1997/08/14 by nick@ni-s
+
+	Move VERSION
+
+Change 368 on 1997/08/14 by nick@ni-s
+
+	VERSION munging
+
+Change 366 on 1997/08/14 by nick@pluto
+
+	Backlog of tkmail changes
+
+Change 365 on 1997/08/13 by nick@ni-s
+
+	Avoid AppendElement - not implemeted
+
+Change 364 on 1997/08/13 by nick@ni-s
+
+	Don't extern system funcs. on Win32
+
+Change 363 on 1997/08/13 by nick@ni-s
+
+	Remove redundant <> includes - upsets Win32
+
+Change 362 on 1997/08/12 by nick@pluto
+
+	tkmail - now with custom widgets, and almost working "Get Mail"
+
+Change 361 on 1997/08/11 by nick@pluto
+
+	Cleanup for animated GIFs
+
+Change 360 on 1997/08/11 by nick@ni-s
+
+	New image code
+
+Change 358 on 1997/08/09 by nick@ni-s
+
+	Outside Tk build in NT needs \ in pathname quoting.
+
+Change 346 on 1997/08/06 by nick@pluto
+
+	tkmail updates
+
+Change 344 on 1997/08/04 by nick@pluto
+
+	Build and tkmail fixes
+
+Change 343 on 1997/08/03 by nick@ni-s
+
+	Cleanup error message
+
+Change 341 on 1997/08/03 by nick@camel
+
+	Win32 tweaks
+
+Change 340 on 1997/08/03 by nick@ni-s
+
+	Attempt to auto-generate LangIO.h
+
+Change 336 on 1997/08/02 by nick@ni-s
+
+	Sloppy numbering
+
+Change 335 on 1997/08/02 by nick@ni-s
+
+	More VERSION cleanup
+
+Change 334 on 1997/08/02 by nick@ni-s
+
+	Further VERSION muddles
+
+Change 333 on 1997/08/02 by nick@ni-s
+
+	Ignore $VERSION during build - check against $Tk::VERSION
+
+Change 332 on 1997/08/02 by nick@ni-s
+
+	Put add_version in the depot
+
+Change 331 on 1997/08/02 by nick@ni-s
+
+	Auto VERSION - set version to depot-version-to-be
+
+Change 330 on 1997/08/02 by nick@ni-s
+
+	Auto VERSION - part 2
+
+Change 329 on 1997/08/02 by nick@ni-s
+
+	Auto VERSION - part 1
+
+Change 328 on 1997/08/02 by nick@ni-s
+
+	Tweak versions
+
+Change 326 on 1997/08/01 by nick@pluto
+
+	Tweaks for tkmail
+
+Change 325 on 1997/07/31 by nick@pluto
+
+	Attempt at AIX build
+
+Change 323 on 1997/07/28 by nick@pluto
+
+	Fix -pack problem in Menbar, and Tcl_DeleteCommand issue in ImgCmp
+
+Change 318 on 1997/07/18 by nick@ni-s
+
+	Fix missing newline
+
+Change 317 on 1997/07/18 by nick@ni-s
+
+	Prepate for Tk402.002
+
 Change 315 on 1997/07/18 by nick@pluto
 
 	Tk fix for K&R 

@@ -5,6 +5,10 @@ package Tk::Toplevel;
 require Tk::Frame;
 require Tk::Wm;
 use AutoLoader;
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/Toplevel.pm#6$
+
 @ISA = qw(Tk::Wm Tk::Frame);
 
 Construct Tk::Widget 'Toplevel';

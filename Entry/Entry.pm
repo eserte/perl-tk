@@ -8,6 +8,11 @@
 # Copyright (c) 1994 Sun Microsystems, Inc.
 # Copyright (c) 1995-1997 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
+
+
+use vars qw($VERSION);
+$VERSION = '2.000'; # $Id: //depot/Tk/Entry/Entry.pm#9$
+
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
@@ -18,6 +23,10 @@ require Tk::Clipboard;
 use AutoLoader;
 
 @ISA = qw(Tk::Widget); 
+
+use vars qw($VERSION);
+$VERSION = '2.009'; # $Id: //depot/Tk/Entry/Entry.pm#9$
+
 
 import Tk qw(Ev);
 

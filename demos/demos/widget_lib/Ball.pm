@@ -18,6 +18,10 @@ package Ball;
 # Tidied up by SOL.
 
 use English;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/demos/demos/widget_lib/Ball.pm#7$
+
 use Tk::Canvas;
 use Tk::Widget;
 use Tk qw/DoOneEvent DONT_WAIT/;

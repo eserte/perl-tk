@@ -3,6 +3,10 @@ package WidgetDemo;
 use 5.004;
 use Carp;
 use English;
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/demos/demos/widget_lib/WidgetDemo.pm#6$
+
 use Tk;
 use strict;
 @WidgetDemo::ISA = 'Tk::Toplevel';

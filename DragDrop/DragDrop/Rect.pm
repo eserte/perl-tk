@@ -1,5 +1,9 @@
 package Tk::DragDrop::Rect;
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/DragDrop/DragDrop/Rect.pm#4$
+
 sub NewDrag
 {
  my ($class,$widget) = @_;

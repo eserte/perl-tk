@@ -5,6 +5,11 @@ require Tk::LabEntry;
 #use Tk::HTML::IO();
 #use LWP::TkIO();
 use LWP();
+
+
+use vars qw($VERSION);
+$VERSION = '2.000'; # $Id: //depot/Tk/HTML/Web.pm#7$
+
 @ISA = qw(LWP::UserAgent);
 use strict;
 use Tk::Pretty;
@@ -52,6 +57,9 @@ sub get_basic_credentials
 }
 
 package Tk::Web;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/HTML/Web.pm#7$
 
 require Tk::HTML;
 

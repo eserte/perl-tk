@@ -1,0 +1,91 @@
+#!/usr/local/bin/new/perl -w
+use strict;
+use File::Find;
+use vars qw(%refs %defs %done);
+
+%done = ();
+%refs = ();
+%defs = ();
+
+doldd($^X,1);
+unres($^X);
+
+my @objects;
+find(sub { push(@objects,$File::Find::name) if /\.so$/ },'blib');
+
+#my ($Tk) = grep(/Tk.so$/,@objects);
+#doldd($Tk);
+#unres($Tk);
+
+my %cdefs = %defs;
+my %crefs = %refs;
+my %cdone = %done;
+
+foreach my $file (sort @objects)
+ {
+  local %refs = ();
+  local %defs = %cdefs;
+  local %done = %cdone;;
+  doldd($file,0);
+  unres($file);
+ }
+
+sub unres
+{
+ my $file = shift;
+ foreach (sort keys %refs)
+  {
+   print "$file:$_ unresolved\n" unless exists $defs{$_} and @{$defs{$_}};
+  }
+}                  
+
+sub doldd
+{
+ my ($file,$force) = @_;
+ my @files = ($file);
+ if ($force || $^O =~ /solaris/)
+  {
+   open(NM,"ldd $file |") || die "Cannot invoke ldd on $file:$!";
+   while (<NM>)
+    {        
+     if (/=>\s*(\S+)\s*$/)
+      {      
+       push(@files,$1);
+      }      
+    }        
+   close(NM);
+  }
+ foreach (@files)
+  {
+   donm($_);
+  }
+}
+
+sub donm
+{
+ my $file = shift;
+ if (exists $done{$file})
+  {
+   return; 
+  }
+ $done{$file} = 1;
+ warn "Scanning $file\n";
+ open(NM,"nm -p $file |") || die "Cannot invoke nm on $file:$!";
+ while (<NM>)
+  {
+   if (/^[a-f\d]+\s+([A-Z])\s+(\S+)\s*$/i)
+    {
+     if ($1 eq 'U')
+      {
+       $refs{$2} = [] unless exists $refs{$2};
+       push(@{$refs{$2}},$file);
+      }
+     else
+      {
+       $defs{$2} = [] unless exists $defs{$2};
+       push(@{$defs{$2}},$file);
+      }
+    }
+  }
+ close(NM);
+}

@@ -19,6 +19,10 @@ require Tk::Wm;
 require Tk::Derived;
 use AutoLoader;
 
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Menu/Menu.pm#6$
+
 @ISA = qw(Tk::Wm Tk::Derived Tk::Widget);
 
 Construct Tk::Widget 'Menu';

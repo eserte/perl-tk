@@ -1,4 +1,4 @@
-# $Id: TiedListbox.pm,v 0.1 1997/04/09 10:56:10 ada Exp $
+# $Id: //depot/Tk/Contrib/TiedListbox.pm#4$
 #
 # TiedListbox: tie together the scrolling and/or selection of Listboxes
 
@@ -10,6 +10,10 @@ use Carp;
 @Tk::TiedListbox::ISA=qw(Tk::Derived Tk::Listbox);
 
 Tk::Widget->Construct('TiedListbox');
+
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Contrib/TiedListbox.pm#4$
 
 use Tk::Submethods ( 'tie' => [qw(scroll selection all)],
                      'selection' => [qw(anchor clear includes set)],

@@ -4,13 +4,22 @@
 require Tk;
 package Tk::ROText;
 require Tk::Text;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/ROText.pm#7$
+
 @ISA = qw(Tk::Text);
 Construct Tk::Widget 'ROText';
 
 sub ClassInit
 {
  my ($class,$mw) = @_;
- return $class->bindRdOnly($mw);
+ my $val = $class->bindRdOnly($mw);
+ my $cb  = $mw->bind($class,'<Next>');
+ $mw->bind($class,'<space>',$cb) if (defined $cb);
+ $cb  = $mw->bind($class,'<Prior>');
+ $mw->bind($class,'<BackSpace>',$cb) if (defined $cb);
+ return $val;
 }
 
 sub Tk::Widget::ScrlROText { shift->Scrolled('ROText' => @_) }

@@ -5,6 +5,10 @@ require Tk::Menu;
 use Carp;
 use strict;
 
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Menu/Menu/Item.pm#5$
+
 sub PreInit
 {
  # Dummy (virtual) method

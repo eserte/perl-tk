@@ -5,6 +5,10 @@
 
 package Tk::LabEntry;
 require Tk::Frame;
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/LabEntry.pm#6$
+
 @ISA = qw(Tk::Frame);
 
 Construct Tk::Widget 'LabEntry';

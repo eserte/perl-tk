@@ -4,6 +4,10 @@
 package Tk::After;
 use Carp;
 
+
+use vars qw($VERSION);
+$VERSION = '2.006'; # $Id: //depot/Tk/Tk/After.pm#6$
+
 sub _cancelAll
 {
  my $h = shift;

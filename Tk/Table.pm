@@ -3,6 +3,10 @@
 # modify it under the same terms as Perl itself.
 package Tk::Table;
 use strict;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/Table.pm#7$
+
 use Tk::Pretty;
 use AutoLoader;
 require Tk::Frame;

@@ -1,6 +1,10 @@
 package Tk::HTML::Form;
 use AutoLoader;
 use Carp;
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/HTML/HTML/Form.pm#4$
+
 @ISA = qw(AutoLoader HTML::Element);
 
 *SUBMIT = \&Button;

@@ -1,4 +1,8 @@
 package DSC;
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Ghostview/DSC.pm#4$
+
 use Tk::Pretty;
 
 sub new

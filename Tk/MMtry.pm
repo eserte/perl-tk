@@ -4,6 +4,10 @@
 package Tk::MMtry;
 use Config;
 require Exporter;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/Tk/MMtry.pm#7$
+
 @ISA = qw(Exporter);
 @EXPORT = qw(try_compile try_run);
 use strict;

@@ -23,6 +23,10 @@ which present same interface to higher level document viewers.
 package Tk::Ghostscript;
 use AutoLoader;
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Ghostview/Ghostscript.pm#4$
+
 use strict qw(subs);
 use POSIX qw(F_GETFL F_SETFL O_NONBLOCK fcntl);
 

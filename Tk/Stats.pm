@@ -2,6 +2,10 @@ package Tk::Stats;
 
 ($lu,$ls) = times; 
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Tk/Stats.pm#4$
+
 sub stats
  {
   my ($u,$s) = times; 

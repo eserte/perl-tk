@@ -12,6 +12,10 @@ use Carp;
 @Tk::Widget::ISA = qw(DynaLoader Tk);
 
 # stubs for 'autoloaded' widget classes
+
+use vars qw($VERSION);
+$VERSION = '2.017'; # $Id: //depot/Tk/Tk/Widget.pm#17$
+
 sub Button;
 sub Canvas;
 sub Checkbutton;

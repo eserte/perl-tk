@@ -41,8 +41,7 @@ C\+\+/Main$
 \bTix/
 tcl\.pm$
 \bcore\b
-\bToDo/
-\bObsolete/
+\b(Obsolete|ToDo|PowerPoint)/
 \b(GNU)?[Mm]akefile(\.aperl)?$
 \btkperl\b
 \bHTML/doc\b

@@ -213,23 +213,27 @@ if ($win_arch eq 'x') {
 	  }
 	}
       }
-      $uiline = undef;
+      $uidir = undef;
       if (defined $xmkmf) {
-	open(XMKMF,$xmkmf) || die("Can't open $xmkmf: $!\n");
+	open(XMKMF,"$xmkmf 2>&1 |") || die("Can't open $xmkmf: $!\n");
 	while(<XMKMF>) {
 	  next unless /UseInstalled/o;
-	  warn ("Odd, two lines in the $xmkmf file that have UseInstalled on them:\n$uidir$_") if defined $uiline;
+	  warn ("Odd, two lines in the $xmkmf file that have UseInstalled on them:\n$uidir$_") if defined $uidir;
 	  $uidir = $_;
 	}
 	close(XMKMF);
 	while (defined $uidir) {
 	  last unless ($uidir =~ s!^.*-I(\S+)/lib/X11/config!!o);
 	  $try = $1;
-	  $try =~ s/'x11root'/$ENV{X11ROOT}/;
+	  $try =~ s/'x11root'/$ENV{X11ROOT}/ if (defined $ENV{X11ROOT});
 	  push(@xdirs,$try);
 	}
+        print "$xmkmf suggests ",join(' ',@xdirs),"\n" if (@xdirs);
       }
-      print "$xmkmf suggests ",join(' ',@xdirs),"\n" if (@xdirs);
+     else
+      {
+       print "Cannot find xmkmf\n";
+      }
     }
   
   undef $xlib;			# Make sure

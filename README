@@ -11,7 +11,10 @@ release).
 It also includes all the C code parts of Ioi Kim Lam's Tix4.1.0.005 release.
 The perl code corresponding to Tix's Tcl code is not fully implemented.
 
-This version (Tk402.002) requires perl5.004 or later.
+This version also contains re-worked Image code based on tcl/tk Img extension 
+by Jan Nijtmans <nijtmans@worldaccess.nl>
+
+This version (Tk402.003) requires perl5.004 or later.
 (Actually 5.003 will probably work on UNIX platforms if requires are 
  downgraded, but not on Win32.)
 I strongly recommend using 5.004_01.
@@ -22,7 +25,7 @@ PARTS MAY BE NON-FUNCTIONAL.
 
 Tk400.202 is the current "production" release - see VERSIONS
 
-Tk402.002 should build and run on Windows NT using Visual C++ and perl5.004_01.
+Tk402.003 should build and run on Windows NT using Visual C++ and perl5.004_01.
 I also believe I have incorporated contributed fixes to allow build with Borland
 compiler on NT.
 

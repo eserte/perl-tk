@@ -2,6 +2,10 @@ package Tk::DragDrop;
 require Tk::DragDrop::Common;
 require Tk::Toplevel;
 require Tk::Label;
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/DragDrop/DragDrop.pm#4$
+
 @ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
 
 # This is a little tricky, ISA says 'Toplevel' but we 

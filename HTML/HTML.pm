@@ -3,6 +3,10 @@ require Tk::ROText;
 require Tk::HTML::Handler;
 
 use Carp;
+
+use vars qw($VERSION);
+$VERSION = '2.007'; # $Id: //depot/Tk/HTML/HTML.pm#7$
+
 @ISA = qw(Tk::Derived Tk::ROText);
 use strict;
 
@@ -119,6 +123,32 @@ sub parse
  return $html;
 }
 
+#
+# This is a clone of 'traverse' which calls callback 
+# for end _all_ tags even 'empty' ones.
+# 
+sub HTML::Element::traverse_all
+{
+ my ($self, $callback, $depth) = @_;
+ $depth ||= 0;
+ if (&$callback($self, 1, $depth)) 
+  {
+   for (@{$self->{'_content'}}) 
+    {
+     if (ref $_) 
+      {
+       $_->traverse_all($callback, $depth+1);
+      } 
+     else 
+      {
+       &$callback($_, 1, $depth+1);
+      }
+    }
+   &$callback($self, 0, $depth);
+  }
+ $self;
+}
+
 sub html
 {
  my ($w,$html,$frag) = @_; 
@@ -129,7 +159,7 @@ sub html
    my $s = Tk::timeofday();
    print STDERR "Rendering ...";
    my $h = new Tk::HTML::Handler widget => $w;
-   $$var->traverse(sub { $h->traverse(@_) });
+   $$var->traverse_all(sub { $h->traverse(@_)}, 0);
    printf STDERR " %.3g seconds\n",Tk::timeofday()-$s;
    $w->fragment($frag) if (defined $frag);
   }
@@ -154,14 +184,7 @@ sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,'<b>','Back');
- $mw->bind($class,'<space>',['yview','scroll',1,'pages']);
- $mw->bind($class,'<BackSpace>',['yview','scroll',-1,'pages']);
  return $class->SUPER::ClassInit($mw);
-}
-
-sub base
-{
-
 }
 
 sub InitObject
@@ -170,8 +193,6 @@ sub InitObject
  $w->SUPER::InitObject($args);
  
  $args->{-wrap} = 'word';
- $args->{-width} = 80;
- $args->{-height} = 40;
  $args->{-font} = $w->Font(family => 'courier');
 
  $w->tagConfigure('symbol', -font => $w->Font(family => 'symbol', size => 180,  encoding => '*', registry => '*'));
@@ -189,7 +210,9 @@ sub InitObject
  $w->tagConfigure('HREF',-underline => 1, -font => $w->Font(family => 'times',slant => 'i', weight => 'bold' ));
  $w->tagConfigure('CENTER',-justify => 'center');
  $w->{Configure} = {};
- $w->ConfigSpecs('-showlink' => ['CALLBACK',undef,undef,undef]);
+ $w->ConfigSpecs('-showlink' => ['CALLBACK',undef,undef,undef],
+                 '-base'     => ['PASSIVE',,undef,undef,undef],
+                );
 }
 
 1;

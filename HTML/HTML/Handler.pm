@@ -1,11 +1,14 @@
 package Tk::HTML::Handler;
 require HTML::Parse;
 require Tk::HTML::Form;
-require Tk::Table;
 
+use strict;
 use Carp;
 
 delete $HTML::Element::OVERLOAD{'""'};
+
+use vars qw($VERSION $AUTOLOAD);
+$VERSION = '2.007'; # $Id: //depot/Tk/HTML/HTML/Handler.pm#7$
 
 sub HTML::Element::enclosing
 {
@@ -28,32 +31,36 @@ sub HTML::Element::enclosing
 my %FontTag = ('CITE' => 'I', 'STRONG' => 'B', 'EM' => 'B', 
                       'TT' => 'KBD', 'SAMP' => 'CODE');
 
-my $tag; 
-foreach $tag (qw(b i samp code kbd strong em var cite dfn tt))
- {
-  *{"$tag"} = \&FontTag;
- }
+BEGIN 
+{
+ no strict 'refs';
+ my $tag; 
+ foreach $tag (qw(b i samp code kbd strong em var cite dfn tt))
+  {
+   *{"$tag"} = \&FontTag;
+  }
 
-foreach $tag (qw(address html blink))
- {
-  *{"$tag"} = \&DoesNothing;
- }
+ foreach $tag (qw(address html blink))
+  {
+   *{"$tag"} = \&DoesNothing;
+  }
 
-foreach $tag (qw(dl ul menu dir ol))
- {
-  *{"$tag"} = \&List;
- }
+ foreach $tag (qw(dl ul menu dir ol))
+  {
+   *{"$tag"} = \&List;
+  }
 
-foreach $tag (1..6)
- {
-  *{"h$tag"} = \&Heading;
- }
+ foreach $tag (1..6)
+  {
+   *{"h$tag"} = \&Heading;
+  }
 
-foreach $tag (qw(tagAdd insert))
- {
-  *{"$tag"} = sub { shift->{widget}->$tag(@_) };
- }
-
+ foreach $tag (qw(tagAdd insert))
+  {
+   *{"$tag"} = sub { shift->{widget}->$tag(@_) };
+  }
+}
+ 
 
 *th   = \&td;
 *link = \&a;
@@ -64,7 +71,14 @@ sub AUTOLOAD
  # print "AUTOLOAD:$what\n";
  my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
  warn "Don't know how to $method";
- print STDERR "Don't know how to $method\n";
+ if (@_ > 2 && ref($_[2]))
+  {
+   print $_[2]->as_HTML,"\n";
+  }
+ else
+  {
+   print "$what(",join(',',@_),")\n";
+  }
  *{"$what"} = sub { return 1 };
  goto &$what;
 }
@@ -73,10 +87,7 @@ use strict;
 
 sub Widget { shift->{widget} }
 
-sub DESTROY
-{
-
-}
+sub DESTROY { }
 
 sub new
 {
@@ -153,6 +164,26 @@ sub FontTag
    $tag = $FontTag{$tag} if (exists $FontTag{$tag});
    $w->tagAdd($tag,$elem->{'_Start_'},$elem->{'_End_'});
   }
+ return $f;
+}
+
+sub meta
+{
+ my ($w,$f,$elem) = @_;
+ return 0;
+}
+
+sub font
+{
+ my ($w,$f,$elem) = @_;
+ # print format_attr($elem),"\n" if ($f);
+ return $f;
+}
+
+sub nobr
+{
+ my ($w,$f,$elem) = @_;
+ print format_attr($elem),"\n" if ($f);
  return $f;
 }
 
@@ -242,17 +273,17 @@ sub dd
 }
 
 
-sub tr
+sub tr_grid
 {
  my ($w,$f,$elem) = @_;
  my $table = $elem->enclosing(1,'table');
  if ($f)
   {
-   $elem->{Col} = 0;
+   $table->{Col} = 0;
   }
  else
   {
-   $table->{widget}->configure(-columns => $elem->{Col});
+   # print format_attr($elem),"\n";
    $table->{Row}++;
   }
  return $w;
@@ -269,6 +300,7 @@ sub p
 sub br
 {
  my ($w,$f,$elem) = @_;
+ return 0 unless $f;
  $w->{'BODY'} = 1;
  if (@{$w->{'Text'}})
   {
@@ -284,6 +316,7 @@ sub br
 sub hr
 {
  my ($h,$f,$elem) = @_;
+ return 0 unless $f;
  my $w = $h->{widget};
  my $r = $w->Frame(-height => 2, 
                    -width => $w->cget('-width')*140,
@@ -303,47 +336,154 @@ sub DeEscape
  $$var .= HTML::Entities::decode($text);
 }
 
-sub td
+sub td_grid
 {
- my ($w,$f,$elem) = @_;
- my $row   = $elem->enclosing(1,'tr');
- my $table = $row->enclosing(1,'table');
+ my ($h,$f,$elem) = @_;
+ my $table = $elem->enclosing(1,'table');
  if ($f)
   {
    $elem->{Text} = "";
-   $w->TextHandler([\&DeEscape,\$elem->{Text}]);
+   $h->TextHandler([\&DeEscape,\$elem->{Text}]);
   }
  else
   {
-   my $w = $table->{widget};
+   my $tw = $table->{widget};
    my @elem = ();
    my $al = $elem->{ALIGN};
    if (defined $al)
     {
      push(@elem,-justify => 'right',-anchor => 'e') if ($al =~ /RIGHT/i);
     }
-   $w->Create($table->{Row},$row->{Col},'Message',-aspect => 300, 
-           -relief => 'ridge', -text => $elem->{Text},@elem);
-   pop(@{$w->{'Text'}});
-   $row->{Col}++;
+   my $widget = $elem->{'widget'};
+   unless (defined $widget)
+    {
+     $widget = $tw->Label(-relief => 'ridge',@elem, -text => $elem->{Text},
+                                config($elem,              
+                                -background => 'bgcolor'));
+    }
+   $widget->grid(-in => $tw, -row => $table->{Row}, -column => $table->{Col},
+                 config($elem,
+                        -rowspan => 'rowspan',
+                        -columnspan => 'colspan'), -sticky => 'nsew');
+   pop(@{$h->{'Text'}});
+   $table->{Col}++;
   }
- return $w;
+ return $f;
 } 
 
+
+
+sub broken_td
+{
+ my ($h,$f,$elem) = @_;
+ my $row   = $elem->enclosing(1,'tr');
+ my $table = $row->enclosing(1,'table');
+ my $tw = $table->{widget};
+ if ($f)
+  {
+   my $w = $h->{'widget'};
+   $elem->{'widget'} = $w;
+#  my $class = ref($w);
+#  my @args = ();
+#  foreach my $opt ($w->configure)
+#   {
+#    if (@$opt != 2)
+#     {
+#      my $val = $opt->[-1];
+#      my $def = $opt->[-2];
+#      push(@args,$opt->[0],$val) if defined($val) && (!defined($def) || $val ne $def);
+#     }
+#   }
+#  print join(' ','New:',@args),"\n";
+#  print format_attr($elem),"\n";
+   my @elem = ();
+   my $al = $elem->attr('align');
+   if (defined $al)
+    {
+     push(@elem,-justify => 'right',-anchor => 'e') if ($al =~ /RIGHT/i);
+    }
+   my $widget = Tk::HTML->new($tw, -relief => 'ridge',@elem, 
+                              config($elem,
+                              -background => 'bgcolor'), 
+                              -width => 0, -height => 0);
+   $widget->grid(-in => $tw, -row => $table->{Row}, -column => $table->{Col},
+                 config($elem,
+                        -rowspan => 'rowspan',
+                        -columnspan => 'colspan'), -sticky => 'nsew');
+   $h->{'widget'} = $widget;
+  }
+ else
+  {
+   my $widget = $h->{'widget'};
+   # $widget->GeometryRequest(0,0);
+   $h->{'widget'} = $elem->{widget};
+   $table->{Col}++;
+  }
+ return $f;
+} 
+
+sub format_attr
+{
+ my $elm = shift;
+ my $str = '<'.$elm->tag.' ';
+ my $sep = '';
+ my @list = %$elm;
+ while (@list)
+  {
+   my ($key,$val) = splice(@list,0,2);
+   next if $key =~ /^_/;
+   $str .= "$sep$key=\"$val\"";
+   $sep = ', ';
+  }
+ return $str . '>';
+}
+
+sub config
+{
+ my $elem = shift;
+ my @args;
+ while (@_)
+  {
+   my ($opt,$attr) = splice(@_,0,2);
+   my $val = $elem->attr($attr);
+   push(@args,$opt => $val) if defined $val;
+  }
+ return @args;
+}
+
 sub table
+{
+ my ($h,$f,$elem) = @_;
+ return $f;
+}
+
+sub td
+{
+ my ($h,$f,$elem) = @_;
+ return $f;
+}
+
+sub tr
+{
+ my ($h,$f,$elem) = @_;
+ return $h->br($f,$elem)
+}
+
+sub table_grid
 {
  my ($h,$f,$elem) = @_;
  if ($f)
   {
    my $w = $h->Widget;
-   $elem->{widget} = $w->Scrolled('Table');
-   $elem->{Row}    = 0;
+   $elem->{widget} = $w->Frame(config($elem,-width => 'width',
+                                      -height => 'height'));
+   $elem->{Row} = 0;
+   $elem->{Col} = 0;
    $w->window('create','insert',-window => $elem->{widget});
-   print "Table:",join(',',%$elem),"\n";
+   # print format_attr($elem),"\n";
   }
  else
   {
-#   $elem->{widget}->configure(-rows => $elem->{Row});
   }
  return $h;
 }
@@ -384,6 +524,7 @@ sub form
 sub input 
 {
  my($w,$f,$elem) = @_;
+ return 0 unless $f;
  my $form = $w->CurrentForm;
  my $type = $elem->attr('type');
  $elem->attr(type => ($type = 'TEXT')) unless (defined $type);
@@ -535,7 +676,7 @@ sub base
  $h->{'BODY'} = 0;
  print STDERR "base elem=$elem\n";
  my $w = $h->Widget;
- $w->base($elem->attr('href'));
+ $w->configure(-base => $elem->attr('href'));
  return 1
 }
 
@@ -560,9 +701,9 @@ sub isindex
 sub img
 {
  my ($h,$f,$elem) = @_;
+ return 0 unless $f;
  my $w = $h->{widget};
  my $alt = $elem->attr('alt') || ">>Missing IMG<<";
- my $l = $w->Label(-text => $alt);
  my $al = $elem->attr('align');
  my @al = (-align => 'baseline');
  if (defined $al)
@@ -585,8 +726,17 @@ sub img
      print "Align '$al'?\n";
     }
   }
- $w->window('create','insert','-window' => $l, @al);
- $h->{NL} = 0;                
+ my $l = $w->Label(-text => $alt);
+ my $td = $elem->enclosing(0,qw(td th));
+ if ($td && 0)
+  {
+   $td->{'widget'} = $l;
+  }
+ else
+  {
+   $w->window('create','insert','-window' => $l, @al);
+   $h->{NL} = 0;                
+  }
  my $src = $elem->attr('src');
  $w->FindImage($src,$l) if ($src);
  my $a = $elem->enclosing(0,'a');
@@ -687,6 +837,8 @@ sub pre
  return $f;
 }
 
+
+
 sub List
 {
  my ($w,$f,$elem) = @_;
@@ -726,7 +878,8 @@ sub List
 sub traverse
 {
  my ($h,$elem,$start,$depth) = @_;
- # print ' 'x$depth,$start," ",(ref $elem) ? $elem->tag : $elem,"\n";
+ my $e = ($start) ? '' : '/';
+ # print ' 'x$depth," ",(ref $elem) ? "<$e".$elem->tag.'>' : $elem,"\n";
  if (ref $elem)
   {
    my $tag = $elem->tag;
@@ -752,7 +905,7 @@ sub traverse
       }
      else
       {
-       return unless ($h->{'BODY'});
+       return 0 unless ($h->{'BODY'});
        unless ($h->{'PRE'})
         {
          $text =~ s/\n/ /mg;

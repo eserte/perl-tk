@@ -3,6 +3,10 @@
 # modify it under the same terms as Perl itself.
 package Tk::Pretty;
 require Exporter;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Tk/Pretty.pm#5$
+
 @ISA = qw(Exporter);
 
 @EXPORT = qw(Pretty PrintArgs);

@@ -14,6 +14,10 @@ require Tk;
 package Tk::Text; 
 use AutoLoader;
 use Carp;
+use strict;
+
+use vars qw($VERSION @ISA);
+$VERSION = '2.010'; # $Id: //depot/Tk/Text/Text.pm#10$
 
 @ISA = qw(Tk::Widget);
 
@@ -69,8 +73,8 @@ sub bindRdOnly
             {
              my $w = shift;
              my $Ev = $w->XEvent;
-             $w->SelectTo($Ev->xy,"word");
-             Tk::catch { $w->mark("set","insert","sel.first") }
+             $w->SelectTo($Ev->xy,'word');
+             Tk::catch { $w->markSet('insert',"sel.first") }
             }
            )
  ;
@@ -79,8 +83,8 @@ sub bindRdOnly
             {
              my $w = shift;
              my $Ev = $w->XEvent;
-             $w->SelectTo($Ev->xy,"line");
-             Tk::catch { $w->mark("set","insert","sel.first") };
+             $w->SelectTo($Ev->xy,'line');
+             Tk::catch { $w->markSet('insert',"sel.first") };
             }
            )
  ;
@@ -90,12 +94,12 @@ sub bindRdOnly
              my $w = shift;
              my $Ev = $w->XEvent;
              $w->ResetAnchor($Ev->xy);
-             $w->SelectTo($Ev->xy,"char")
+             $w->SelectTo($Ev->xy,'char')
             }
            )
  ;
- $mw->bind($class,"<Double-Shift-1>",['SelectTo',Ev('@'),"word"]);
- $mw->bind($class,"<Triple-Shift-1>",['SelectTo',Ev('@'),"line"]);
+ $mw->bind($class,"<Double-Shift-1>",['SelectTo',Ev('@'),'word']);
+ $mw->bind($class,"<Triple-Shift-1>",['SelectTo',Ev('@'),'line']);
 
  $mw->bind($class,"<B1-Leave>",
             sub
@@ -111,48 +115,56 @@ sub bindRdOnly
 
  $mw->bind($class,"<B1-Enter>",'CancelRepeat');
  $mw->bind($class,"<ButtonRelease-1>",'CancelRepeat');
- $mw->bind($class,"<Control-1>",["mark","set","insert",Ev('@')]);
- $mw->bind($class,"<Left>",['SetCursor',Ev("index","insert-1c")]);
- $mw->bind($class,"<Shift-Left>",['KeySelect',Ev("index","insert-1c")]);
- $mw->bind($class,"<Right>",['SetCursor',Ev("index","insert+1c")]);
- $mw->bind($class,"<Shift-Right>",['KeySelect',Ev("index","insert+1c")]);
+ $mw->bind($class,"<Control-1>",["markSet",'insert',Ev('@')]);
+
+ $mw->bind($class,"<Left>",['SetCursor',Ev('index',"insert-1c")]);
+ $mw->bind($class,"<Shift-Left>",['KeySelect',Ev('index',"insert-1c")]);
+ $mw->bind($class,"<Control-Left>",['SetCursor',Ev('index',"insert-1c wordstart")]);
+ $mw->bind($class,"<Shift-Control-Left>",['KeySelect',Ev('index',"insert-1c wordstart")]);
+
+ $mw->bind($class,"<Right>",['SetCursor',Ev('index',"insert+1c")]);
+ $mw->bind($class,"<Shift-Right>",['KeySelect',Ev('index',"insert+1c")]);
+ $mw->bind($class,"<Control-Right>",['SetCursor',Ev('index',"insert+1c wordend")]);
+ $mw->bind($class,"<Shift-Control-Right>",['KeySelect',Ev('index',"insert wordend")]);
+
  $mw->bind($class,"<Up>",['SetCursor',Ev('UpDownLine',-1)]);
  $mw->bind($class,"<Shift-Up>",['KeySelect',Ev('UpDownLine',-1)]);
+ $mw->bind($class,"<Control-Up>",['SetCursor',Ev('PrevPara','insert')]);
+ $mw->bind($class,"<Shift-Control-Up>",['KeySelect',Ev('PrevPara','insert')]);
+
  $mw->bind($class,"<Down>",['SetCursor',Ev('UpDownLine',1)]);
  $mw->bind($class,"<Shift-Down>",['KeySelect',Ev('UpDownLine',1)]);
- $mw->bind($class,"<Control-Left>",['SetCursor',Ev("index","insert-1c wordstart")]);
- $mw->bind($class,"<Control-Right>",['SetCursor',Ev("index","insert+1c wordend")]);
- $mw->bind($class,"<Control-Up>",['SetCursor',Ev('PrevPara',"insert")]);
- $mw->bind($class,"<Control-Down>",['SetCursor',Ev('NextPara',"insert")]);
- $mw->bind($class,"<Shift-Control-Left>",['KeySelect',Ev("index","insert-1c wordstart")]);
- $mw->bind($class,"<Shift-Control-Right>",['KeySelect',Ev("index","insert wordend")]);
- $mw->bind($class,"<Shift-Control-Up>",['KeySelect',Ev('PrevPara',"insert")]);
- $mw->bind($class,"<Shift-Control-Down>",['KeySelect',Ev('NextPara',"insert")]);
- $mw->bind($class,"<Prior>",['SetCursor',Ev('ScrollPages',-1)]);
- $mw->bind($class,"<Shift-Prior>",['KeySelect',Ev('ScrollPages',-1)]);
- $mw->bind($class,"<Next>",['SetCursor',Ev('ScrollPages',1)]);
- $mw->bind($class,"<Shift-Next>",['KeySelect',Ev('ScrollPages',1)]);
- $mw->bind($class,"<Control-Prior>",["xview","scroll",-1,"page"]);
- $mw->bind($class,"<Control-Next>",["xview","scroll",1,"page"]);
+ $mw->bind($class,"<Control-Down>",['SetCursor',Ev('NextPara','insert')]);
+ $mw->bind($class,"<Shift-Control-Down>",['KeySelect',Ev('NextPara','insert')]);
+
  $mw->bind($class,"<Home>",['SetCursor',"insert linestart"]);
- $mw->bind($class,"<Shift-Home>",['KeySelect',"insert","linestart"]);
+ $mw->bind($class,"<Shift-Home>",['KeySelect',"insert linestart"]);
+ $mw->bind($class,"<Control-Home>",['SetCursor','1.0']);
+ $mw->bind($class,"<Control-Shift-Home>",['KeySelect','1.0']);
+
  $mw->bind($class,"<End>",['SetCursor',"insert lineend"]);
- $mw->bind($class,"<Shift-End>",['KeySelect',"insert","lineend"]);
- $mw->bind($class,"<Control-Home>",['SetCursor',"1.0"]);
- $mw->bind($class,"<Control-Shift-Home>",['KeySelect',"1.0"]);
+ $mw->bind($class,"<Shift-End>",['KeySelect',"insert lineend"]);
  $mw->bind($class,"<Control-End>",['SetCursor',"end-1char"]);
  $mw->bind($class,"<Control-Shift-End>",['KeySelect',"end-1char"]);
+
+ $mw->bind($class,"<Prior>",['SetCursor',Ev('ScrollPages',-1)]);
+ $mw->bind($class,"<Shift-Prior>",['KeySelect',Ev('ScrollPages',-1)]);
+ $mw->bind($class,"<Control-Prior>",['xview','scroll',-1,'page']);
+
+ $mw->bind($class,"<Next>",['SetCursor',Ev('ScrollPages',1)]);
+ $mw->bind($class,"<Shift-Next>",['KeySelect',Ev('ScrollPages',1)]);
+ $mw->bind($class,"<Control-Next>",['xview','scroll',1,'page']);
 
  $mw->bind($class,"<Shift-Tab>", 'NoOp'); # Needed only to keep <Tab> binding from triggering; does not have to actually do anything.
  $mw->bind($class,"<Control-Tab>",'focusNext');
  $mw->bind($class,"<Control-Shift-Tab>",'focusPrev');
 
- $mw->bind($class,"<Control-space>",["mark","set","anchor","insert"]);
- $mw->bind($class,"<Select>",["mark","set","anchor","insert"]);
- $mw->bind($class,"<Control-Shift-space>",['SelectTo',"insert","char"]);
- $mw->bind($class,"<Shift-Select>",['SelectTo',"insert","char"]);
- $mw->bind($class,"<Control-slash>",["tag","add","sel","1.0","end"]);
- $mw->bind($class,"<Control-backslash>",["tag","remove","sel","1.0","end"]);
+ $mw->bind($class,"<Control-space>",["markSet",'anchor','insert']);
+ $mw->bind($class,"<Select>",["markSet",'anchor','insert']);
+ $mw->bind($class,"<Control-Shift-space>",['SelectTo','insert','char']);
+ $mw->bind($class,"<Shift-Select>",['SelectTo','insert','char']);
+ $mw->bind($class,"<Control-slash>",['tag','add','sel','1.0','end']);
+ $mw->bind($class,"<Control-backslash>",['tag','remove','sel','1.0','end']);
 
  if (!$Tk::strictMotif)
   {
@@ -162,7 +174,7 @@ sub bindRdOnly
    $mw->bind($class,"<Control-f>",    ['SetCursor',"insert+1c"]);
    $mw->bind($class,"<Meta-b>",       ['SetCursor',"insert-1c wordstart"]);
    $mw->bind($class,"<Meta-f>",       ['SetCursor',"insert wordend"]);
-   $mw->bind($class,"<Meta-less>",    ['SetCursor',"1.0"]);
+   $mw->bind($class,"<Meta-less>",    ['SetCursor','1.0']);
    $mw->bind($class,"<Meta-greater>", ['SetCursor',"end-1c"]);
 
    $mw->bind($class,"<Control-n>",    ['SetCursor',Ev('UpDownLine',1)]);
@@ -181,13 +193,13 @@ sub Motion2
 {
  my ($w,$x,$y) = @_;
  $Tk::mouseMoved = 1 if ($x != $Tk::x || $y != $Tk::y);
- $w->scan("dragto",$x,$y) if ($Tk::mouseMoved);
+ $w->scan('dragto',$x,$y) if ($Tk::mouseMoved);
 }
 
 sub Button2
 {
  my ($w,$x,$y) = @_;
- $w->scan("mark",$x,$y);
+ $w->scan('mark',$x,$y);
  $Tk::x = $x;
  $Tk::y = $y;
  $Tk::mouseMoved = 0;
@@ -228,13 +240,13 @@ sub ClassInit
               sub
               {
                my $w = shift;
-               if ($w->compare("insert","==","insert lineend"))
+               if ($w->compare('insert',"==","insert lineend"))
                 {
-                 $w->delete("insert")
+                 $w->delete('insert')
                 }
                else
                 {
-                 $w->delete("insert","insert lineend")
+                 $w->delete('insert',"insert lineend")
                 }
               }
              )
@@ -243,8 +255,8 @@ sub ClassInit
               sub
               {
                my $w = shift;
-               $w->insert("insert","\n");
-               $w->mark("set","insert","insert-1c")
+               $w->insert('insert',"\n");
+               $w->markSet('insert',"insert-1c")
               }
              )
    ;
@@ -258,10 +270,10 @@ sub ClassInit
               sub
               {
                my $w = shift;
-               if ($w->compare("insert","!=","1.0"))
+               if ($w->compare('insert',"!=",'1.0'))
                 {
                  $w->delete("insert-1c");
-                 $w->see("insert")
+                 $w->see('insert')
                 }
               }
              )
@@ -272,8 +284,8 @@ sub ClassInit
                my $w = shift;
                Tk::catch
                 {
-                 $w->insert("insert",$w->SelectionGet);
-                 $w->see("insert")
+                 $w->insert('insert',$w->SelectionGet);
+                 $w->see('insert')
                 }
               }
              )
@@ -310,30 +322,30 @@ sub ClassInit
 sub Backspace
 {
  my $w = shift;
- my $sel = Tk::catch { $w->tag("nextrange","sel","1.0","end") };
+ my $sel = Tk::catch { $w->tag('nextrange','sel','1.0','end') };
  if (defined $sel)
   {
    $w->delete("sel.first","sel.last")
   }
- elsif ($w->compare("insert","!=","1.0"))
+ elsif ($w->compare('insert',"!=",'1.0'))
   {
    $w->delete("insert-1c");
-   $w->see("insert")
+   $w->see('insert')
   }
 }
 
 sub Delete
 {
  my $w = shift;
- my $sel = Tk::catch { $w->tag("nextrange","sel","1.0","end") };
+ my $sel = Tk::catch { $w->tag('nextrange','sel','1.0','end') };
  if (defined $sel)
   {
    $w->delete("sel.first","sel.last")
   }
  else
   {
-   $w->delete("insert");
-   $w->see("insert")
+   $w->delete('insert');
+   $w->see('insert')
   }
 }
 
@@ -351,15 +363,12 @@ sub Button1
  my $w = shift;
  my $x = shift;
  my $y = shift;
- $Tk::selectMode = "char";
+ $Tk::selectMode = 'char';
  $Tk::mouseMoved = 0;
- $w->mark("set","insert","@".$x.",".$y);
- $w->mark("set","anchor","insert");
- if ($w->cget("-state") eq "normal")
-  {
-   $w->focus()
-  }
- $w->tag("remove","sel","0.0","end");
+ $w->markSet('insert',"@".$x.",".$y);
+ $w->markSet('anchor','insert');
+ $w->focus() if ($w->cget("-state") eq 'normal');
+ $w->tag('remove','sel','1.0','end');
 }
 # SelectTo --
 # This procedure is invoked to extend the selection, typically when
@@ -377,10 +386,10 @@ sub SelectTo
  my $index = shift;
  $Tk::selectMode = shift if (@_);
  my $cur = $w->index($index);
- my $anchor = Tk::catch { $w->index("anchor") };
+ my $anchor = Tk::catch { $w->index('anchor') };
  if (!defined $anchor)
   {
-   $w->mark("set","anchor",$anchor = $cur);
+   $w->markSet('anchor',$anchor = $cur);
    $Tk::mouseMoved = 0;
   }
  elsif ($w->compare($cur,"!=",$anchor))
@@ -390,22 +399,22 @@ sub SelectTo
  $Tk::selectMode = 'char' unless (defined $Tk::selectMode);
  my $mode = $Tk::selectMode;
  my ($first,$last);
- if ($mode eq "char")
+ if ($mode eq 'char')
   {
-   if ($w->compare($cur,"<","anchor"))
+   if ($w->compare($cur,"<",'anchor'))
     {
      $first = $cur;
-     $last = "anchor";
+     $last = 'anchor';
     }
    else
     {
-     $first = "anchor";
+     $first = 'anchor';
      $last = $cur
     }
   }
- elsif ($mode eq "word")
+ elsif ($mode eq 'word')
   {
-   if ($w->compare($cur,"<","anchor"))
+   if ($w->compare($cur,"<",'anchor'))
     {
      $first = $w->index("$cur wordstart");
      $last = $w->index("anchor - 1c wordend")
@@ -416,9 +425,9 @@ sub SelectTo
      $last = $w->index("$cur wordend")
     }
   }
- elsif ($mode eq "line")
+ elsif ($mode eq 'line')
   {
-   if ($w->compare($cur,"<","anchor"))
+   if ($w->compare($cur,"<",'anchor'))
     {
      $first = $w->index("$cur linestart");
      $last = $w->index("anchor - 1c lineend + 1c")
@@ -429,11 +438,11 @@ sub SelectTo
      $last = $w->index("$cur lineend + 1c")
     }
   }
- if ($Tk::mouseMoved || $Tk::selectMode ne "char")
+ if ($Tk::mouseMoved || $Tk::selectMode ne 'char')
   {
-   $w->tag("remove","sel","0.0",$first);
-   $w->tag("add","sel",$first,$last);
-   $w->tag("remove","sel",$last,"end");
+   $w->tag('remove','sel','1.0',$first);
+   $w->tag('add','sel',$first,$last);
+   $w->tag('remove','sel',$last,'end');
    $w->idletasks;
   }
 }
@@ -441,7 +450,7 @@ sub SelectTo
 # This procedure is invoked when the mouse leaves a text window
 # with button 1 down. It scrolls the window up, down, left, or right,
 # depending on where the mouse is (this information was saved in
-# tkPriv(x) and tkPriv(y)), and reschedules itself as an "after"
+# tkPriv(x) and tkPriv(y)), and reschedules itself as an 'after'
 # command so that the window continues to scroll until the mouse
 # moves back into the window or the mouse button is released.
 #
@@ -452,19 +461,19 @@ sub AutoScan
  my $w = shift;
  if ($Tk::y >= $w->height)
   {
-   $w->yview("scroll",2,"units")
+   $w->yview('scroll',2,'units')
   }
  elsif ($Tk::y < 0)
   {
-   $w->yview("scroll",-2,"units")
+   $w->yview('scroll',-2,'units')
   }
  elsif ($Tk::x >= $w->width)
   {
-   $w->xview("scroll",2,"units")
+   $w->xview('scroll',2,'units')
   }
  elsif ($Tk::x < 0)
   {
-   $w->xview("scroll",-2,"units")
+   $w->xview('scroll',-2,'units')
   }
  else
   {
@@ -485,10 +494,10 @@ sub SetCursor
 {
  my $w = shift;
  my $pos = shift;
- $pos = "end - 1 chars" if $w->compare($pos,"==","end");
- $w->mark("set","insert",$pos);
- $w->tag("remove","sel","1.0","end");
- $w->see("insert")
+ $pos = "end - 1 chars" if $w->compare($pos,"==",'end');
+ $w->markSet('insert',$pos);
+ $w->tag('remove','sel','1.0','end');
+ $w->see('insert')
 }
 # KeySelect
 # This procedure is invoked when stroking out selections using the
@@ -504,35 +513,38 @@ sub KeySelect
  my $w = shift;
  my $new = shift;
  my ($first,$last);
- if (!defined $w->tag("nextrange","sel","1.0","end"))
+ if (!defined $w->tag('ranges','sel'))
   {
-   if ($w->compare($new,"<","insert"))
+   # No selection yet
+   $w->markSet('anchor','insert');
+   if ($w->compare($new,"<",'insert'))
     {
-     $w->tag("add","sel",$new,"insert")
+     $w->tag('add','sel',$new,'insert')
     }
    else
     {
-     $w->tag("add","sel","insert",$new)
+     $w->tag('add','sel','insert',$new)
     }
   }
  else
   {
-   if ($w->compare($new,"<","anchor"))
+   # Selection exists
+   if ($w->compare($new,"<",'anchor'))
     {
      $first = $new;
-     $last = "anchor"
+     $last = 'anchor'
     }
    else
     {
-     $first = "anchor";
+     $first = 'anchor';
      $last = $new
     }
-   $w->tag("remove","sel","1.0",$first);
-   $w->tag("add","sel",$first,$last);
-   $w->tag("remove","sel",$last,"end")
+   $w->tag('remove','sel','1.0',$first);
+   $w->tag('add','sel',$first,$last);
+   $w->tag('remove','sel',$last,'end')
   }
- $w->mark("set","insert",$new);
- $w->see("insert");
+ $w->markSet('insert',$new);
+ $w->see('insert');
  $w->idletasks;
 }
 # ResetAnchor --
@@ -552,9 +564,9 @@ sub ResetAnchor
 {
  my $w = shift;
  my $index = shift;
- if (!defined $w->tag("ranges","sel"))
+ if (!defined $w->tag('ranges','sel'))
   {
-   $w->mark("set","anchor",$index);
+   $w->markSet('anchor',$index);
    return;
   }
  my $a = $w->index($index);
@@ -562,12 +574,12 @@ sub ResetAnchor
  my $c = $w->index("sel.last");
  if ($w->compare($a,"<",$b))
   {
-   $w->mark("set","anchor","sel.last");
+   $w->markSet('anchor',"sel.last");
    return;
   }
  if ($w->compare($a,">",$c))
   {
-   $w->mark("set","anchor","sel.first");
+   $w->markSet('anchor',"sel.first");
    return;
   }
  my ($lineA,$chA) = split(/\./,$a);
@@ -575,28 +587,28 @@ sub ResetAnchor
  my ($lineC,$chC) = split(/\./,$c);
  if ($lineB < $lineC+2)
   {
-   $total = length($w->get($b,$c));
+   my $total = length($w->get($b,$c)); 
    if ($total <= 2)
     {
      return;
     }
    if (length($w->get($b,$a)) < $total/2)
     {
-     $w->mark("set","anchor","sel.last")
+     $w->markSet('anchor',"sel.last")
     }
    else
     {
-     $w->mark("set","anchor","sel.first")
+     $w->markSet('anchor',"sel.first")
     }
    return;
   }
  if ($lineA-$lineB < $lineC-$lineA)
   {
-   $w->mark("set","anchor","sel.last")
+   $w->markSet('anchor',"sel.last")
   }
  else
   {
-   $w->mark("set","anchor","sel.first")
+   $w->markSet('anchor',"sel.first")
   }
 }
 # Insert --
@@ -611,17 +623,17 @@ sub Insert
 {
  my $w = shift;
  my $s = shift;
- return unless (defined $s && $s ne "");
+ return unless (defined $s && $s ne '');
  Tk::catch
   {
-   if ($w->compare("sel.first","<=","insert") && 
-       $w->compare("sel.last",">=","insert"))
+   if ($w->compare("sel.first","<=",'insert') && 
+       $w->compare("sel.last",">=",'insert'))
      {
       $w->delete("sel.first","sel.last")
      }
   };
- $w->insert("insert",$s);
- $w->see("insert")
+ $w->insert('insert',$s);
+ $w->see('insert')
 }
 # UpDownLine --
 # Returns the index of the character one line above or below the
@@ -639,14 +651,14 @@ sub UpDownLine
 {
  my $w = shift;
  my $n = shift;
- my $i = $w->index("insert");
+ my $i = $w->index('insert');
  my ($line,$char) = split(/\./,$i);
- if (!defined $Tk::prevPos || ($Tk::prevPos cmp $i) != 0)
+ if (!defined($Tk::prevPos) || $Tk::prevPos ne $i)
   {
    $Tk::char = $char
   }
  my $new = $w->index($line+$n . "." . $Tk::char);
- if ($w->compare($new,"==","end") || $w->compare($new,"==","insert linestart"))
+ if ($w->compare($new,"==",'end') || $w->compare($new,"==","insert linestart"))
   {
    $new = $i
   }
@@ -668,7 +680,7 @@ sub PrevPara
  $pos = $w->index("$pos linestart");
  while (1)
   {
-   if ($w->get("$pos - 1 line") eq "\n" && $w->get($pos) ne "\n" || $pos eq "1.0" )
+   if ($w->get("$pos - 1 line") eq "\n" && $w->get($pos) ne "\n" || $pos eq '1.0' )
     {
      my $string = $w->get($pos,"$pos lineend");
      if ($string =~ /^(\s)+/)
@@ -676,7 +688,7 @@ sub PrevPara
        my $off = length($1);
        $pos = $w->index("$pos + $off chars")
       }
-     if ($w->compare($pos,"!=","insert") || $pos eq "1.0")
+     if ($w->compare($pos,"!=",'insert') || $pos eq '1.0')
       {
        return $pos;
       }
@@ -696,10 +708,10 @@ sub NextPara
 {
  my $w = shift;
  my $start = shift;
- $pos = $w->index("$start linestart + 1 line");
+ my $pos = $w->index("$start linestart + 1 line");
  while ($w->get($pos) ne "\n")
   {
-   if ($w->compare($pos,"==","end"))
+   if ($w->compare($pos,"==",'end'))
     {
      return $w->index("end - 1c");
     }
@@ -708,7 +720,7 @@ sub NextPara
  while ($w->get($pos) eq "\n" )
   {
    $pos = $w->index("$pos + 1 line");
-   if ($w->compare($pos,"==","end"))
+   if ($w->compare($pos,"==",'end'))
     {
      return $w->index("end - 1c");
     }
@@ -736,14 +748,14 @@ sub ScrollPages
 {
  my $w = shift;
  my $count = shift;
- my @bbox = $w->bbox("insert");
- $w->yview("scroll",$count,"pages");
+ my @bbox = $w->bbox('insert');
+ $w->yview('scroll',$count,'pages');
  if (!@bbox)
   {
    return $w->index("@" . int($w->height/2) . "," . 0);
   }
- $x = int($bbox[0]+$bbox[2]/2);
- $y = int($bbox[1]+$bbox[3]/2);
+ my $x = int($bbox[0]+$bbox[2]/2);
+ my $y = int($bbox[1]+$bbox[3]/2);
  return $w->index("@" . $x . "," . $y);
 }
 
@@ -832,4 +844,5 @@ sub PRINTF
  $w->PRINT(sprintf(shift,@_));
 }
 
-
+1;
+__END__

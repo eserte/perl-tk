@@ -1,6 +1,6 @@
-#
-
 package Tk::Font;
+use vars qw($VERSION);
+$VERSION = '2.010'; # $Id: //depot/Tk/Tk/Font.pm#10$
 
 =head1 NAME
 
@@ -164,6 +164,12 @@ sub new
  bless \%me, $pkg;
 }
 
+sub Pattern
+{
+ my $me  = shift;
+ return join("-", "",@{$me}{@field});
+}
+
 sub Name
 {
  my $me  = shift;
@@ -171,6 +177,8 @@ sub Name
 
  my $name = $me->{Name} ||
             join("-", "",@{$me}{@field});
+
+ return $name if ($^O eq 'MSWin32');
 
  $me->{Display}->XListFonts($name,$max);
 }

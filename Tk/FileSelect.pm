@@ -1,5 +1,9 @@
 package Tk::FileSelect; 
 
+
+use vars qw($VERSION);
+$VERSION = '2.008'; # $Id: //depot/Tk/Tk/FileSelect.pm#9$
+
 use Tk qw(Ev);
 use English;
 use strict;
@@ -69,7 +73,7 @@ adapted by  Frederick L. Wagner, derf@ti.com, Texas Instruments Incorporated, Da
    3: Caller is now able to control these aspects of widget, in both
         FileSelect (new) and configure :
 
-        (Please see subroutine Populate	for details, as these options 
+        (Please see subroutine Populate for details, as these options 
          change rapidly!)
 
    4: I changed from Double-Button-1 to Button-1 in the Files listbox,
@@ -163,42 +167,57 @@ sub Accept {
     );
 
     if (defined $so and
-	  $so == $cw->Subwidget('dir_list')->Subwidget('listbox')) {
-	$leaves = [$cw->Subwidget('dir_list')->Getselected];
-	$leaves = [$cw->Subwidget('dir_entry')->get] if !scalar(@$leaves);
+          $so == $cw->Subwidget('dir_list')->Subwidget('listbox')) {
+        $leaves = [$cw->Subwidget('dir_list')->Getselected];
+        $leaves = [$cw->Subwidget('dir_entry')->get] if !scalar(@$leaves);
     } else {
-	$leaves = [$cw->Subwidget('file_list')->Getselected];
-	$leaves = [$cw->Subwidget('file_entry')->get] if !scalar(@$leaves);
+        $leaves = [$cw->Subwidget('file_list')->Getselected];
+        $leaves = [$cw->Subwidget('file_entry')->get] if !scalar(@$leaves);
     }
 
     foreach $leaf (@$leaves)
     {
       if (defined $leaf and $leaf ne '') {
-	foreach (@{$cw->cget('-verify')}) {
-	    my $r = ref $_;
-	    if (defined $r and $r eq 'ARRAY') {
-		#local $_ = $leaf; # use strict var problem here
-		return if not &{$_->[0]}($cw, $path, $leaf, @{$_}[1..$#{$_}]);
-	    } elsif ($_ eq '!-d') {
-		if (-d "$path/$leaf") {
-		    $cw->Error("Selecting a directory is not permitted.");
-		    return;
-		}
-	    } else {
-		my $s = eval "$_ '$path/$leaf'";
-		print $@ if $@;
-		if (not $s) {
-		    my $err;
-		    $err = $error_text{$_} ?  $error_text{$_} : 
-		        "failed '$_' test";
-		    $cw->Error("Name '$leaf' $err.");
-		    return;
-		}
-	    }
-	} # forend
-	$leaf = $path . '/' . $leaf;
+        if (!$cw->cget('-create') || -e "$path/$leaf")
+         {
+          foreach (@{$cw->cget('-verify')}) {
+              my $r = ref $_;
+              if (defined $r and $r eq 'ARRAY') {
+                  #local $_ = $leaf; # use strict var problem here
+                  return if not &{$_->[0]}($cw, $path, $leaf, @{$_}[1..$#{$_}]);
+              } else {
+                  my $s = eval "$_ '$path/$leaf'";
+                  print $@ if $@;
+                  if (not $s) {
+                      my $err;
+                      if (substr($_,0,1) eq '!')
+                       {
+                        my $t = substr($_,1);
+                        if (exists $error_text{$t})
+                         {
+                          $err = $error_text{$t};
+                          $err =~ s/\b(?:no|not) //;
+                         }
+                       }
+                      $err = $error_text{$_} unless defined $err;
+                      $err = "failed '$_' test" unless defined $err;
+                      $cw->Error("'$leaf' $err.");
+                      return;
+                  } 
+              }     
+          } # forend
+         }
+        else
+         {
+          unless (-w $path)
+           {
+            $cw->Error("Cannot write to $path");
+            return;
+           }
+         }
+        $leaf = $path . '/' . $leaf;
       } else {
-	$leaf =  undef;
+        $leaf =  undef;
       }
     }
     if (scalar(@$leaves))
@@ -231,8 +250,8 @@ sub Populate {
     
     my $e = $w->Component(
         LabEntry       => 'dir_entry', 
-	-textvariable  => \$w->{Directory},
-	-labelVariable => \$w->{Configure}{-dirlabel},
+        -textvariable  => \$w->{Directory},
+        -labelVariable => \$w->{Configure}{-dirlabel},
     );
     $e->pack(-side => 'top', -expand => 0, -fill => 'x');
     $e->bind('<Return>' => [$w => 'validateDir', Ev(['get'])]);
@@ -241,7 +260,7 @@ sub Populate {
 
     $e = $w->Component(
         LabEntry       => 'file_entry', 
-	-labelVariable => \$w->{Configure}{-filelabel},
+        -labelVariable => \$w->{Configure}{-filelabel},
     );
     $e->pack(-side => 'bottom', -expand => 0, -fill => 'x');
     $e->bind('<Return>' => [$w => 'validateFile', Ev(['get'])]); 
@@ -250,7 +269,7 @@ sub Populate {
     
     my $b = $w->Component(
         ScrlListbox    => 'dir_list', 
-	-labelVariable => \$w->{Configure}{-dirlistlabel},
+        -labelVariable => \$w->{Configure}{-dirlistlabel},
         -scrollbars    => 'se',
     );
     $b->pack(-side => 'left', -expand => 1, -fill => 'both');
@@ -277,7 +296,7 @@ sub Populate {
     
     $b = $w->Component(
         ScrlListbox    => 'file_list',
-	-labelVariable => \$w->{Configure}{-filelistlabel},
+        -labelVariable => \$w->{Configure}{-filelistlabel},
         -scrollbars    => 'se',
     );
     $b->pack(-side => 'right', -expand => 1, -fill => 'both');
@@ -294,19 +313,19 @@ sub Populate {
     
     $w->ConfigSpecs(
         -width           => [ ['file_list','dir_list'], undef, undef, 14 ], 
-	-height          => [ ['file_list','dir_list'], undef, undef, 14 ], 
-	-directory       => [ 'METHOD', undef, undef, '.' ],
-	-filelabel       => [ 'PASSIVE', undef, undef, 'File' ],
-	-filelistlabel   => [ 'PASSIVE', undef, undef, 'Files' ],
-	-filter          => [ 'METHOD', undef, undef, '*' ],
-	-filterlabel     => [ 'PASSIVE', undef, undef, 'Files Matching' ],
-	-regexp          => [ 'PASSIVE', undef, undef, undef ],
-	-dirlistlabel    => [ 'PASSIVE', undef, undef, 'Directories'],
-	-dirlabel        => [ 'PASSIVE', undef, undef, 'Directory'],
-	'-accept'        => [ 'CALLBACK',undef,undef, undef ],
+        -height          => [ ['file_list','dir_list'], undef, undef, 14 ], 
+        -directory       => [ 'METHOD', undef, undef, '.' ],
+        -filelabel       => [ 'PASSIVE', undef, undef, 'File' ],
+        -filelistlabel   => [ 'PASSIVE', undef, undef, 'Files' ],
+        -filter          => [ 'METHOD', undef, undef, '*' ],
+        -filterlabel     => [ 'PASSIVE', undef, undef, 'Files Matching' ],
+        -regexp          => [ 'PASSIVE', undef, undef, undef ],
+        -dirlistlabel    => [ 'PASSIVE', undef, undef, 'Directories'],
+        -dirlabel        => [ 'PASSIVE', undef, undef, 'Directory'],
+        '-accept'        => [ 'CALLBACK',undef,undef, undef ],
         -verify          => [ 'PASSIVE', undef, undef, ['!-d'] ],
         -create          => [ 'PASSIVE', undef, undef, 0 ],
-	DEFAULT          => [ 'file_list' ],
+        DEFAULT          => [ 'file_list' ],
     );
     $w->Delegates(DEFAULT => 'file_list');
 

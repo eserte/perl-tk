@@ -3,6 +3,10 @@ package Tk::DragDrop::Common;
 use strict;
 use Carp;
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/DragDrop/DragDrop/Common.pm#4$
+
 sub Type
 {
  my ($base,$name,$class) = @_;

@@ -1338,9 +1338,8 @@ ImgCmpDelete(masterData)
     }
     masterPtr->tkMaster = NULL;
     if (masterPtr->imageCmd != NULL) {
-	char * cmd = Tcl_GetCommandName(masterPtr->interp,masterPtr->imageCmd);
+	Lang_DeleteObject(masterPtr->interp, masterPtr->imageCmd);
 	masterPtr->imageCmd = NULL;
-	Tcl_DeleteCommand(masterPtr->interp, cmd);
     }
     if (masterPtr->gc != None) {
 	Tk_FreeGC(masterPtr->display, masterPtr->gc);
@@ -1451,9 +1450,8 @@ CmpEventProc(clientData, eventPtr)
 
     if (eventPtr->type == DestroyNotify) {
 	if (masterPtr->imageCmd != NULL) {
-	    cmd = Tcl_GetCommandName(masterPtr->interp,masterPtr->imageCmd);
+	    Lang_DeleteObject(masterPtr->interp, masterPtr->imageCmd);
 	    masterPtr->imageCmd = NULL;
-	    Tcl_DeleteCommand(masterPtr->interp, cmd);
 	}
     }
 }

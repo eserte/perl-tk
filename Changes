@@ -4,6 +4,22 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
+Changes in 402.003
+
+	Update VERSION numbers in all .pm files - semi-automatic
+        from perforce depot.
+
+	Tweaks for tkmail (Perl conference demo app.)
+
+	Retro-fit HTML parse tweaks used in conference foil viewer
+
+	Fix Tk::Text selection by keyboard <Shift-Down> etc.
+
+	New image code - including  animated GIFs
+
+	Fix -pack problem in Menbar, and Tcl_DeleteCommand issue in ImgCmp
+
+
 Changes in 402.002
 
 * More <stdio.h> detection in pTk/LangIO.h

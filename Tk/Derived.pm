@@ -7,6 +7,11 @@ require Tk::Configure;
 use strict;
 use Carp;
 
+use vars qw($VERSION);
+$VERSION = '2.015'; # $Id: //depot/Tk/Tk/Derived.pm#15$
+
+
+
 =head1 NAME
 
 Tk::Derived - Base class for widgets derived from others
@@ -16,6 +21,7 @@ Tk::Derived - Base class for widgets derived from others
   package Tk::Whatever;
   require Tk::Something; 
   require Tk::Derived;
+
   @ISA = qw(Tk::Derived Tk::Something);
 
   sub Populate

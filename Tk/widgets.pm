@@ -1,13 +1,17 @@
 package Tk::widgets;
 use Carp;
 
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Tk/widgets.pm#5$
+
 sub import
 {
  my $class = shift;
  foreach (@_)
   {
    local $SIG{__DIE__} = \&Carp::croak;
-   carp "$_ already loaded" if (exists $INC{"Tk/$_.pm"});
+   # carp "$_ already loaded" if (exists $INC{"Tk/$_.pm"});
    require "Tk/$_.pm";
   }
 }

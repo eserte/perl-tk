@@ -4,6 +4,10 @@
 package Tk::Menubar;
 require Tk::Frame;
 require Tk::Menubutton;
+
+use vars qw($VERSION);
+$VERSION = '2.008'; # $Id: //depot/Tk/Tk/Menubar.pm#8$
+
 @ISA = qw(Tk::Frame);
 use strict;
 
@@ -31,8 +35,10 @@ sub Menubutton
  my $name = $args{'-text'};
  my $items = delete $args{'-menuitems'};
  my %pack = ();
+ my $pack = delete $args{'-pack'};
+ %pack = @{ $pack } if defined $pack;
  my $opt;
- foreach $opt (qw(-after -before -side -padx -ipadx -pady -ipady))
+ foreach $opt (qw(-after -before -side -padx -ipadx -pady -ipady -fill))
   {
    my $val = delete $args{$opt};
    $pack{$opt} = $val if (defined $val);

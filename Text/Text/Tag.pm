@@ -3,6 +3,10 @@ require Tk::Text;
 
 use overload '""' => \&name;
 
+
+use vars qw($VERSION);
+$VERSION = '2.004'; # $Id: //depot/Tk/Text/Text/Tag.pm#4$
+
 sub _apply
 {
  my $self = shift;

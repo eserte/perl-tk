@@ -1,5 +1,9 @@
 package Tk::install;
 require Exporter;
+
+use vars qw($VERSION);
+$VERSION = '2.005'; # $Id: //depot/Tk/Tk/install.pm#5$
+
 @ISA = qw(Exporter);
 @EXPORT = qw(installbin);
 

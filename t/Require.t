@@ -24,3 +24,13 @@ foreach $file (@files)
    }
  }
 
+foreach my $path (sort grep /^Tk.*\.pm$/,keys %INC)
+ {
+  my $mod = $path;
+  $mod =~ s#/#::#g;
+  $mod =~ s#\.pm$##;
+  next unless defined %{$mod.'::'};
+  die "No VERSION in $mod\n" unless defined ${$mod.'::VERSION'};
+  print "$mod = ",${$mod.'::VERSION'},"\n";
+ }
+

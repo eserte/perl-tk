@@ -1,3 +1,5 @@
 tkAppInit.c
 tkUnixDialog.c
 tkUnixXId.c
+imgWinPmap.c
+
