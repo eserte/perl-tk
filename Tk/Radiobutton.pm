@@ -12,7 +12,7 @@ use AutoLoader;
 require Tk::Button;
 
 @ISA = qw(Tk::Button);
-Tk::Widget->Construct('Radiobutton');
+Construct Tk::Widget 'Radiobutton';
 
 sub Tk_cmd { \&Tk::radiobutton }
 

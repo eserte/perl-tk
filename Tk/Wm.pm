@@ -2,31 +2,43 @@
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Wm;
-require Tk;
+use AutoLoader;
+
+require Tk::Widget;
+*AUTOLOAD = \&Tk::Widget::AUTOLOAD;
 
 use strict qw(vars);
 
 # There are issues with this stuff now we have Tix's wm release/capture
 # as toplevel-ness is now dynamic.
 
-BEGIN 
-{
- my $fn; 
- foreach $fn (qw(aspect client colormapwindows command deiconify focusmodel
-		frame geometry grid group iconbitmap iconify iconmask
-		iconname iconposition iconwindow maxsize minsize
-		overrideredirect positionfrom protocol resizable saveunder
-		sizefrom state title transient withdraw))
- {
-  *{"$fn"} = sub { shift->wm("$fn",@_) };
- }
-}
+require Tk::Submethods;
+
+Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command 
+                       deiconify focusmodel frame geometry grid group
+                       iconbitmap iconify iconmask iconname iconposition
+                       iconwindow maxsize minsize overrideredirect positionfrom
+                       protocol resizable saveunder sizefrom state title transient
+                       withdraw)]);
 
 sub SetBindtags
 {
  my ($obj) = @_;
  $obj->bindtags([ref($obj),$obj,'all']);
 }
+
+sub Populate
+{
+ my ($cw,$args) = @_;
+ $cw->ConfigSpecs('-overanchor' => ['PASSIVE',undef,undef,undef],
+                  '-popanchor'  => ['PASSIVE',undef,undef,undef],
+                  '-popover'    => ['PASSIVE',undef,undef,undef] 
+                 );
+}
+
+1;
+
+__END__
 
 sub Post
 {
@@ -45,15 +57,6 @@ sub AnchorAdjust
  $Y += ($anchor =~ /s/) ? $h : ($anchor =~ /n/) ? 0 : $h/2;
  $X += ($anchor =~ /e/) ? $w : ($anchor =~ /w/) ? 0 : $w/2;
  return ($X,$Y);
-}
-
-sub Populate
-{
- my ($cw,$args) = @_;
- $cw->ConfigSpecs('-overanchor' => ['PASSIVE',undef,undef,undef],
-                  '-popanchor'  => ['PASSIVE',undef,undef,undef],
-                  '-popover'    => ['PASSIVE',undef,undef,undef] 
-                 );
 }
 
 sub Popup
@@ -91,8 +94,5 @@ sub Popup
  ($X,$Y)    = AnchorAdjust($w->cget('-popanchor'),$X,$Y,-$mw,-$mh);
  $w->Post($X,$Y);
 }
-
-1;
-__END__
 
 

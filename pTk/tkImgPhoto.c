@@ -3263,11 +3263,15 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
 	for (hLeft = height; hLeft > 0;) {
 	    srcLinePtr = blockPtr->pixelPtr + blockPtr->offset[0];
 	    hCopy = MIN(hLeft, blockPtr->height);
+	    if (hCopy <= 0)
+		break;
 	    hLeft -= hCopy;
 	    for (; hCopy > 0; --hCopy) {
 		destPtr = destLinePtr;
 		for (wLeft = width; wLeft > 0;) {
 		    wCopy = MIN(wLeft, blockPtr->width);
+		    if (wCopy <= 0)
+			break;
 		    wLeft -= wCopy;
 		    srcPtr = srcLinePtr;
 		    for (; wCopy > 0; --wCopy) {

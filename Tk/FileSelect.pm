@@ -4,13 +4,15 @@ use Tk qw(Ev);
 use English;
 use strict;
 use Carp;
+require Tk::Listbox;
+require Tk::Button;
 require Tk::Dialog;
 require Tk::Toplevel;
 require Tk::LabEntry;       
 require Cwd;
 @Tk::FileSelect::ISA = qw(Tk::Toplevel);           
 
-Tk::Widget->Construct('FileSelect');
+Construct Tk::Widget 'FileSelect';
 
 =head1 NAME
 
@@ -108,6 +110,11 @@ adapted by  Frederick L. Wagner, derf@ti.com, Texas Instruments Incorporated, Da
     $P1 .. $Pn are your optional parameters.  The subroutine should return TRUE
     if success or FALSE if failure.
 
+ 961008 -- derf@ti.com :
+   By request of Jim Stern <js@world.northgrum.com> and Brad Vance
+   <bvance@ti.com>, I updated the Accept and Show functions to support 
+   selection of multiple files.  I also corrected a typo in the -verify code.
+
 =cut 
 
 sub Cancel
@@ -124,6 +131,7 @@ sub Accept {
 
     my($path, $so) = ($cw->cget('-directory'), $cw->SelectionOwner);
     my $leaf = undef;
+    my $leaves;
     my %error_text = (
         '-r' => 'is not readable by effective uid/gid',
         '-w' => 'is not writeable by effective uid/gid',
@@ -156,19 +164,21 @@ sub Accept {
 
     if (defined $so and
 	  $so == $cw->Subwidget('dir_list')->Subwidget('listbox')) {
-	$leaf = $cw->Subwidget('dir_list')->Getselected;
-	$leaf = $cw->Subwidget('dir_entry')->get if not defined $leaf;
+	$leaves = [$cw->Subwidget('dir_list')->Getselected];
+	$leaves = [$cw->Subwidget('dir_entry')->get] if !scalar(@$leaves);
     } else {
-	$leaf = $cw->Subwidget('file_list')->Getselected;
-	$leaf = $cw->Subwidget('file_entry')->get if not defined $leaf;
+	$leaves = [$cw->Subwidget('file_list')->Getselected];
+	$leaves = [$cw->Subwidget('file_entry')->get] if !scalar(@$leaves);
     }
 
-    if (defined $leaf and $leaf ne '') {
+    foreach $leaf (@$leaves)
+    {
+      if (defined $leaf and $leaf ne '') {
 	foreach (@{$cw->cget('-verify')}) {
 	    my $r = ref $_;
 	    if (defined $r and $r eq 'ARRAY') {
 		#local $_ = $leaf; # use strict var problem here
-		return if not &{$_->[0]}($path, $leaf, $_->[1]..$_->[$#{$_}]);
+		return if not &{$_->[0]}($cw, $path, $leaf, @{$_}[1..$#{$_}]);
 	    } elsif ($_ eq '!-d') {
 		if (-d "$path/$leaf") {
 		    $cw->Subwidget('dialog')->configure(
@@ -183,7 +193,7 @@ sub Accept {
 		if (not $s) {
 		    my $err;
 		    $err = $error_text{$_} ?  $error_text{$_} : 
-		        "failed an UNKOWN test '$_'!";
+		        "failed an UNKNOWN test '$_'!";
 		    $cw->Subwidget('dialog')->configure(
                         -text => "Name '$leaf' $err.",
 		    );
@@ -192,11 +202,16 @@ sub Accept {
 		}
 	    }
 	} # forend
-	$leaf = [map( $path . '/' . $_, $leaf)];
-    } else {
+	$leaf = $path . '/' . $leaf;
+      } else {
 	$leaf =  undef;
+      }
     }
-    $cw->{Selected} = $leaf if defined $leaf;
+    if (scalar(@$leaves))
+    {
+      my $sm = $cw->Subwidget('file_list')->cget(-selectmode);
+      $cw->{Selected} = $leaves;
+    }
 
 } # end Accept
 
@@ -468,7 +483,10 @@ sub Show
  $cw->focus;
  $cw->waitVariable(\$cw->{Selected});
  $cw->withdraw;
- return (wantarray) ? @{$cw->{Selected}} : $cw->{Selected}[0];
+ return defined($cw->{Selected}) 
+      ? (wantarray) ? @{$cw->{Selected}} : $cw->{Selected}[0]
+      : undef;
+
 }
 
 1;  

@@ -7,7 +7,7 @@ require Tk::Menu;
 
 @ISA = qw(Tk::Derived Tk::Menubutton);
 
-Tk::Widget->Construct('Optionmenu');
+Construct Tk::Widget 'Optionmenu';
 
 sub Populate
 {
@@ -44,28 +44,35 @@ sub setOption
  $w->Callback(-command => $val);
 }
 
+sub addOptions
+{
+ my $w = shift;
+ my $menu = $w->menu;
+ my $var = $w->cget(-textvariable);
+ my $width = $w->cget('-width');
+ while (@_)
+  {
+   my $val = shift;
+   my $label = $val;
+   if (ref $val) 
+    {
+     ($label, $val) = @$val;
+    } 
+   my $len = length($label);                          
+   $width = $len if (!defined($width) || $len > $width);
+   $menu->command(-label => $label, -command => [ $w , 'setOption', $label, $val ]);
+   $w->setOption($label, $val) unless (defined $$var);
+  }
+ $w->configure('-width' => $width);
+}
+
 sub options
 {
  my ($w,$opts) = @_;
  if (@_ > 1)
   {
-   my $menu = $w->menu;
-   my $var = $w->cget(-textvariable);
-   my $width = $w->cget('-width');
-   my($val, $label);
-   foreach $val (@$opts) 
-    {
-     if (ref $val) {
-	($label, $val) = @$val;
-     } else {
-	$label = $val;
-     }
-     my $len = length($label);
-     $width = $len if (!defined($width) || $len > $width);
-     $menu->command(-label => $label, -command => [ $w , 'setOption', $label, $val ]);
-     $w->setOption($label, $val) unless (defined $$var);
-    }
-   $w->configure('-width' => $width);
+   $w->menu->delete(0,'end');
+   $w->addOptions(@$opts);
   }
  else
   {

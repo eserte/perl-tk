@@ -3,6 +3,9 @@
 use ExtUtils::Manifest "/mani/";
 use Cwd;
 
+print "$^O\n";
+system("volcheck") if ($^O eq 'solaris');
+
 sub System
 {
  my $pid = fork;
@@ -57,15 +60,12 @@ foreach (grep(!-r $_,@files))
 
 @files = grep(-r $_,@files);
 
-print "$^O\n";
-
-system("volcheck") if ($^O eq 'solaris');
-
 foreach ("/vol/dev/aliases/floppy0","/dev/rdiskette","/dev/rfd0")
  {
   if (-c $_)
    {
     $floppy = $_;
+    warn "using $floppy\n";
     last;
    }
  }

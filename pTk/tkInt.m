@@ -24,6 +24,7 @@
 #define TkInOutEvents (*TkintVptr->V_TkInOutEvents)
 #define TkMeasureChars (*TkintVptr->V_TkMeasureChars)
 #define TkOptionClassChanged (*TkintVptr->V_TkOptionClassChanged)
+#define TkOptionDeadWindow (*TkintVptr->V_TkOptionDeadWindow)
 #define TkPointerEvent (*TkintVptr->V_TkPointerEvent)
 #define TkQueueEvent (*TkintVptr->V_TkQueueEvent)
 #define TkSelEventProc (*TkintVptr->V_TkSelEventProc)

@@ -259,8 +259,6 @@ COREXT void bcopy _ANSI_ARGS_((const void *src,void *dst,int count));
  * in any other header file.
  */
 
-COREXT void		panic();
-
 #ifndef NULL
 #define NULL 0
 #endif

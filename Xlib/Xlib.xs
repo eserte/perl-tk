@@ -61,6 +61,79 @@ SV *value;
  return valuemask;
 }
 
+static void
+tmpLine(tkwin,x1,y1,x2,y2,flags)
+Tk_Window tkwin;
+int x1,y1,x2,y2;
+int flags;
+{
+ GC gc = None;
+ XGCValues values;
+ Window root = Tk_WindowId(tkwin);
+ unsigned long valuemask = GCForeground | GCBackground 
+                           | GCSubwindowMode | GCFunction 
+#if 0
+                           | GCLineStyle
+#endif
+                           ;
+ values.line_style     = LineDoubleDash;
+
+ if (flags & 4)
+  {
+   Window child;
+   root = XRootWindow(Tk_Display(tkwin), Tk_ScreenNumber(tkwin));
+   XTranslateCoordinates(Tk_Display(tkwin),Tk_WindowId(tkwin),root,
+                         x1, y1, &x1, &y1, &child);
+   XTranslateCoordinates(Tk_Display(tkwin),Tk_WindowId(tkwin),root,
+                         x2, y2, &x2, &y2, &child);
+   values.subwindow_mode = IncludeInferiors;
+  }
+ else
+  {
+   values.subwindow_mode = ClipByChildren;
+  }
+
+ if (flags & 2)
+  {
+   values.background     = 0x0a;
+   values.foreground     = 0x05;
+   values.function       = GXxor;
+  }
+ else
+  {
+   values.function       = GXcopy;
+   if (flags & 1)
+    {
+     values.foreground     = BlackPixelOfScreen(Tk_Screen(tkwin));
+     values.background     = WhitePixelOfScreen(Tk_Screen(tkwin));
+    }
+   else
+    {
+     values.background     = BlackPixelOfScreen(Tk_Screen(tkwin));
+     values.foreground     = WhitePixelOfScreen(Tk_Screen(tkwin));
+    }
+  }
+ gc = Tk_GetGC(tkwin, valuemask, &values);
+ if (gc != None)
+  {
+   XDrawLine(Tk_Display(tkwin), root, gc, x1, y1, x2, y2);
+   Tk_FreeGC(Tk_Display(tkwin),gc);
+  }
+ else
+  croak("Cannot get graphic context");
+}
+
+MODULE = Tk::Xlib	PACKAGE = Tk::Widget
+
+void
+tmpLine(win,x1,y1,x2,y2,onroot = 0)
+Tk_Window	win
+int	x1 
+int	y1 
+int	x2 
+int	y2 
+int	onroot 
+
 
 MODULE = Tk::Xlib	PACKAGE = ScreenPtr
 
@@ -119,6 +192,16 @@ PPCODE:
   XFreeFontNames(list);
   XSRETURN(count);
  }
+
+void
+XDrawLine(dpy,win,gc,x1,y1,x2,y2)
+Display *	dpy
+Window		win
+GC		gc
+int		x1
+int		y1
+int		x2
+int		y2
 
 void
 XDrawRectangle(dpy,win,gc,x,y,width,height)

@@ -3,7 +3,7 @@ package Tk::ColorEditor;
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
 @Tk::ColorEditor::ISA = qw(Tk::Toplevel);
-Tk::Widget->Construct('ColorEditor');
+Construct Tk::Widget 'ColorEditor';
 
 %Tk::ColorEditor::names = ();
 
@@ -130,7 +130,6 @@ use Tk::Pretty;
 BEGIN {
     $SET_PALETTE = 'Set Palette';
 }
-
 
 use subs qw(color_space hsvToRgb rgbToHsv);
 
@@ -450,7 +449,6 @@ sub Populate
     $middle_middle[1]->pack(-side => 'top', -expand => 1);
     $middle_middle[2]->pack(-side => 'top', -expand => 1);
     $middle_middle[3]->pack(-side => 'top', -expand => 1, -fill => 'x');
-    my (@label, @scale);
     $cw->{'Labels'} = ["zero","one","two"];
     foreach $i (0..2) {
         $label[$i] = $cw->Label(-textvariable => \$cw->{'Labels'}[$i]);
@@ -600,8 +598,8 @@ sub set_colors {
             );
             $objref->update;
         } 
-        eval {$color = ($widget->configure("-\L${type}"))[3]} if $reset;
-        eval {$widget->configure("-\L${type}" => $color)};
+        eval {local $SIG{'__DIE__'}; $color = ($widget->configure("-\L${type}"))[3]} if $reset;
+        eval {local $SIG{'__DIE__'}; $widget->configure("-\L${type}" => $color)};
     }
 
     $objref->{'Status'}->withdraw if $display;
@@ -691,10 +689,11 @@ sub color
 	 return;
        }
        ($red,$green,$blue) = $name =~ /$format/;
+       # Looks like a call for 'pack' or similar rather than eval
        eval "\$red = 0x$red; \$green = 0x$green; \$blue = 0x$blue;";
-       $red = $red << 										$shift;
+       $red   = $red   << $shift;
        $green = $green << $shift;
-       $blue = $blue << $shift;
+       $blue  = $blue  << $shift;
     }
    $objref->{'red'} = $red;
    $objref->{'blue'} = $blue;

@@ -165,7 +165,7 @@ require Tk::Toplevel;
 
 @Tk::WaitBox::ISA = qw (Tk::Toplevel);
 
-Tk::Widget->Construct('WaitBox');
+Construct Tk::Widget 'WaitBox';
 
 ### A couple of convenience variables
 my(@wd_fullpack) = (-expand => 1, -fill => 'both');
@@ -204,7 +204,7 @@ sub Populate {
     $bitmap->pack(@wd_packleft, -ipadx => 36, @wd_fullpack);
 
     ## Text Frame
-    my($fm) = $wdtop->Frame(-borderwidth => 2, -relief => 'raised');
+    $fm = $wdtop->Frame(-borderwidth => 2, -relief => 'raised');
     $fm->pack(@wd_packleft, -ipadx => 20, @wd_fullpack);
 
     my($txt1) = $fm->Label(-wraplength => '3i', -justify => 'center',

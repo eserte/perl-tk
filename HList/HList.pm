@@ -1,15 +1,23 @@
 package Tk::HList; 
 use Tk qw(Ev);
-require DynaLoader;
 
-@ISA = qw(DynaLoader Tk::Widget);
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('HList');
+Construct Tk::Widget 'HList';
 sub Tk::Widget::ScrlHList { shift->Scrolled('HList'=>@_) }
 
 bootstrap Tk::HList $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::hlist }
+
+sub CreateArgs
+{
+ my ($package,$parent,$args) = @_;
+ my @result = $package->SUPER::CreateArgs($parent,$args);
+ my $columns = delete $args->{-columns};                     
+ push(@result, '-columns' => $columns) if (defined $columns);
+ return @result;
+}
 
 EnterMethods Tk::HList __FILE__,qw(add addchild anchor column
                                    delete dragsite dropsite entrycget

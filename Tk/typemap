@@ -1,5 +1,4 @@
 TYPEMAP
-EventAndKeySymPtr	T_XEVENT
 Tk_Window		T_TK_WINDOW
 Tk_Image		T_TK_IMAGE
 TkWindow *		T_TKWINDOW
@@ -18,13 +17,15 @@ Tk_Uid			T_TK_UID
 Tcl_Interp *		T_TK_INTERP
 
 INPUT 
-T_XEVENT
-	if (sv_isa($arg, \"XEvent\")) {
-	    IV tmp = SvIV((SV*)SvRV($arg));
-	    $var = ($type) tmp;
+T_PVOBJ
+	if (sv_object($arg)) {
+	    STRLEN sz;
+	    $var = ($type) SvPV((SV*)SvRV($arg),sz);
+	    if (sz != sizeof(*$var))
+	     croak(\"$var too small for $type\");
 	}
 	else
-	    croak(\"$var is not of type XEvent\")
+	    croak(\"$var is not an object\")
 
 T_TK_WINDOW
 	$var = GetWindow($arg)

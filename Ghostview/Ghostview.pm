@@ -8,7 +8,7 @@ use Tk::Pretty;
 
 @ISA = qw(Tk::Ghostscript);
 
-Tk::Widget->Construct('Ghostview');
+Construct Tk::Widget 'Ghostview';
 
 $scale  = 72;
 $width  = 11*$scale;

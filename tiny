@@ -1,8 +1,8 @@
 #!/usr/local/bin/perl -w
 
+use Tk;
+use Tk::Xrm;
 
-
-require Tk;
 {
  my $top = MainWindow->new();
  my $w = $top->Button(-text => 'Quit',-command => ['destroy',$top])->pack;

@@ -142,10 +142,12 @@ sub Vfunc
   }
 }
 
-foreach (<tk*Tab.c>)
+opendir(DIR,'.') || die "Cannot opendir .:$!";
+foreach (readdir(DIR))
  {
-  Exclude($_);
+  Exclude($_) if (/^tk.*Tab\.c$/);
  }
+closedir(DIR);
 
 foreach (@ARGV)
  {

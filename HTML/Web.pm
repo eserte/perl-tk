@@ -44,7 +44,7 @@ sub get_basic_credentials
    $mw->update;    
    $mw->raise;     
    $mw->Popup(-overanchor => 'n', -popanchor => 'n');
-   eval { $mw->grab } ;
+   eval {local $SIG{__DIE__}; $mw->grab } ;
    $mw->waitWindow;
    $ua->credentials($netloc,$realm,$user,$passwd);
   }
@@ -61,7 +61,7 @@ use strict qw(vars subs);
 use AutoLoader;
 
 @Tk::Web::ISA = qw(Tk::HTML);
-Tk::Widget->Construct('Web');
+Construct Tk::Widget 'Web';
 
 my %Loading = ();
 my %Image   = ();
@@ -107,7 +107,7 @@ sub LoadImage
        eval "require Tk::JPEG;" if ($format eq 'jpeg');
        unshift(@args,'-format' => $format);
       }
-     eval { $image = $w->$type(@args)};
+     eval {local $SIG{__DIE__}; $image = $w->$type(@args)};
      last unless ($@);
     }
    warn "$@" if ($@);

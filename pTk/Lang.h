@@ -593,6 +593,9 @@ EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_CmdDeleteProc *deleteProc));
 
 EXTERN char *LangLibraryDir _ANSI_ARGS_((void));
+EXTERN void Lang_SetBinaryResult _ANSI_ARGS_((Tcl_Interp *interp,
+			    char *string, int len, Tcl_FreeProc *freeProc));
+EXTERN Tcl_CmdProc *LangOptionCommand;
 #define TK_LIBRARY LangLibraryDir()
 
 #endif /* _LANG */

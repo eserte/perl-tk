@@ -62,7 +62,6 @@ extern FILE *popen();
 #include "pTk/Lang.h"
 #include "pTk/tkVMacro.h"
 
-/* the following is defined in X11R6 but not in previous versions */
 #ifdef __alpha
 #ifndef LONG64
 #define LONG64
@@ -74,7 +73,15 @@ extern FILE *popen();
 #include <file.h>
 #endif
 
-/* the following should help people wanting to use their own functions */
+/* The following should help people wanting to use their own memory allocation
+ * functions. To avoid the overhead of a function call when the standard
+ * functions are used these are all macros, even the XpmFree function which
+ * needs to be a real function for the outside world though.
+ * So if change these be sure to change the XpmFree function in misc.c
+ * accordingly.
+ */
+#define XpmFree(ptr) free(ptr)
+
 #ifndef FOR_MSW
 #define XpmMalloc(size) malloc((size))
 #define XpmRealloc(ptr, size) realloc((ptr), (size))
@@ -86,6 +93,11 @@ extern FILE *popen();
 #define XpmCalloc(nelem, elsize) \
 		boundCheckingCalloc((long)(nelem),(long) (elsize))
 #endif
+
+#define xpmFreeImageData(image) ((image) && (image)->data 	\
+				 ? (free((void*)(image)->data),	\
+				   (image)->data = NULL)	\
+				 : NULL)
 
 #define XPMMAXCMTLEN BUFSIZ
 typedef struct {
@@ -293,12 +305,14 @@ FUNC(xpm_znormalizeimagebits, void, (register unsigned char *bp,
 #ifdef NEED_STRDUP
 FUNC(xpmstrdup, char *, (char *s1));
 #else
+#undef xpmstrdup
 #define xpmstrdup strdup
 #endif
 
 #ifdef NEED_STRCASECMP                   
 FUNC(xpmstrcasecmp, int, (char *s1, char *s2));
 #else
+#undef xpmstrcasecmp
 #define xpmstrcasecmp strcasecmp
 #endif
 

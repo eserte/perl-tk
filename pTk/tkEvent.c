@@ -19,7 +19,10 @@ static char sccsid[] = "@(#) tkEvent.c 1.98 95/08/28 09:33:14";
 #include "tkPort.h"
 #include "tkInt.h"
 #include <errno.h>
-
+#ifdef OS2
+#  include <sys/ioctl.h>
+#  include <sys/termio.h>
+#endif 
 /*
  * For each timer callback that's pending, there is one record
  * of the following type, chained together in a list sorted by
@@ -1484,6 +1487,17 @@ Tk_FileeventCmd(clientData, interp, argc, args)
     /*
      * This is a new handler being created.  Save its script.
      */
+
+#ifdef OS2
+    if (isatty(fd)) {
+	struct termio tio;
+
+	ioctl(fd, TCGETA, &tio);
+	tio.c_lflag &= ~(IDEFAULT | ICANON);
+	
+	ioctl(fd, TCSETA, &tio);
+    }
+#endif 
 
     fevPtr->interps[index] = interp;
     if (fevPtr->scripts[index] != NULL) {

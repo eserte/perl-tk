@@ -541,7 +541,7 @@ Tk_MenuCmd(clientData, interp, argc, args)
     }
     new = Tk_CreateWindowFromPath(interp, tkwin, LangString(args[1]), screenName);
     if (new == NULL) {
-	goto error;
+	return TCL_ERROR;
     }
     Tk_SetClass(new, "Menu");
 

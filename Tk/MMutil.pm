@@ -5,7 +5,7 @@ package Tk::MMutil;
 use ExtUtils::MakeMaker;
 use Cwd;
 use Tk::Config;
-@MYEXPORT = qw(perldepend const_config constants c_o xs_o makefile manifypods);
+@MYEXPORT = qw(perldepend const_config constants installbin c_o xs_o makefile manifypods);
 
 sub relpath
 {
@@ -47,7 +47,6 @@ sub relpath
 
 use strict;
 
-
 sub upgrade_pic
 {
  my $flags = "";
@@ -81,6 +80,11 @@ sub perldepend
 sub const_config
 {
  my $self = shift;
+ my $name;
+ foreach $name (grep /%$/,keys %{$self->{PM}})
+  {
+   delete $self->{PM}->{$name};
+  }
  my $flags = $self->{'CCCDLFLAGS'};
  $flags =~ s/(-[fK]?\s*)pic\b/${1}PIC/; 
  $self->{'CCCDLFLAGS'} = $flags;
@@ -116,7 +120,14 @@ sub manifypods
 {
  my $self = shift;
  local $_ = $self->MM::manifypods;
- s/(POD2MAN_EXE.*pod2man)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
+ if ($] >= 5.003)
+  {
+   s/(POD2MAN_EXE.*pod2man)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
+  }
+ else
+  {
+   s/(POD2MAN_EXE.*pod2man)/$1 -center \\"perl\/Tk Documentation\\" -release \\"Tk\$(VERSION)\\"/;
+  }
  $_;
 }
 
@@ -164,6 +175,18 @@ sub installed_tk
  die "Cannot find perl/Tk include files\n" unless (defined $tk);
  $tk =~ s,^(\./)+,,;
  return relpath($tk);
+}
+
+sub installbin
+{
+ my ($self) = @_;
+ my $str  = $self->MM::installbin;
+ my $prog = 'perl'; # $self->{'MAP_TARGET'} || 'perl';
+ my $inc  = findINC("Tk/MMutil.pm");
+ $inc =~ s,/Tk/MMutil.pm$,,;
+ $inc = relpath($inc);
+ $str =~ s/^\tcp\s/\t\$(PERL) -I$inc -MTk::install -e installbin $prog /mg;
+ return $str;
 }
 
 sub findpTk

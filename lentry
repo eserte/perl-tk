@@ -7,7 +7,7 @@ use Tk;
  package Tk::LEntry;
  require Tk::Entry;
  @ISA = qw(Tk::Derived Tk::Entry);
- Tk::Widget->Construct('LEntry');
+ Construct Tk::Widget 'LEntry';
 
  sub Populate
  {

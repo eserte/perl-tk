@@ -13,8 +13,9 @@ require 5.002;
 
 use English;
 use Tk;
-use Tk::Dialog;
-use Tk::ErrorDialog;
+use Tk::widgets qw(Menubutton ErrorDialog Text Scrollbar);
+#use Tk::Dialog;
+#use Tk::ErrorDialog;
 use lib Tk->findINC('demos/widget_lib');
 use strict;
 

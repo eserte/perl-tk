@@ -42,6 +42,7 @@ VFUNC(int,TkMeasureChars,V_TkMeasureChars,_ANSI_ARGS_((XFontStruct *fontStructPt
 			    char *source, int maxChars, int startX, int maxX,
 			    int tabOrigin, int flags, int *nextXPtr)))
 VFUNC(void,TkOptionClassChanged,V_TkOptionClassChanged,_ANSI_ARGS_((TkWindow *winPtr)))
+VFUNC(void,TkOptionDeadWindow,V_TkOptionDeadWindow,_ANSI_ARGS_((TkWindow *winPtr)))
 VFUNC(int,TkPointerEvent,V_TkPointerEvent,_ANSI_ARGS_((XEvent *eventPtr,
 			    TkWindow *winPtr)))
 VFUNC(void,TkQueueEvent,V_TkQueueEvent,_ANSI_ARGS_((TkDisplay *dispPtr,

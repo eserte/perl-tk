@@ -5,27 +5,22 @@ package Tk::Image;
 
 # This module does for images what Tk::Widget does for widgets:
 # provides a base class for them to inherit from.
+require DynaLoader;
 
-@Tk::Image::ISA = qw(Tk); # but are they ?
+@Tk::Image::ISA = qw(DynaLoader Tk); # but are they ?
 
 sub new
 {
  my $package = shift;
  my $widget  = shift;
  my $leaf = $package->Tk_image;
- my $obj = eval { $widget->image('create',$leaf,@_) };
- $widget->BackTrace($@) if ($@);
+ my $obj = $widget->image('create',$leaf,@_);
  return bless $obj,$package;
 }
 
-BEGIN 
-{
- my $fn;
- foreach $fn (qw(delete width height type))
-  {
-   *{"$fn"} = sub { shift->image($fn,@_) }; 
-  }
-}
+require Tk::Submethods;
+
+Direct Tk::Submethods ('image' => [qw(delete width height type)]);
 
 sub Tk::Widget::imageNames
 {

@@ -1,10 +1,9 @@
 package Tk::NBFrame; 
 require Tk;
-require DynaLoader;
 
-@ISA = qw(DynaLoader Tk::Widget);
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('NBFrame');
+Construct Tk::Widget 'NBFrame';
 
 bootstrap Tk::NBFrame $Tk::VERSION; 
 

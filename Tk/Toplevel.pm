@@ -4,11 +4,10 @@
 package Tk::Toplevel; 
 require Tk::Frame;
 require Tk::Wm;
-require Tk::Pretty;
 use AutoLoader;
 @ISA = qw(Tk::Wm Tk::Frame);
 
-Tk::Widget->Construct('Toplevel');
+Construct Tk::Widget 'Toplevel';
 
 sub Tk_cmd { \&Tk::toplevel }
 

@@ -13,20 +13,19 @@
 package Tk::Listbox; 
 use Tk qw(Ev);
 require Tk::Clipboard;
-require DynaLoader;
 use AutoLoader;
 
-@ISA = qw(DynaLoader Tk::Widget);
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('Listbox');
+Construct Tk::Widget 'Listbox';
 
 bootstrap Tk::Listbox $Tk::VERSION; 
 
 sub Tk_cmd { \&Tk::listbox }
 
-Tk::SubMethods ( 'selection' => [qw(anchor clear includes set)],
-                 'scan' => [qw(mark dragto)]
-               );
+use Tk::Submethods ( 'selection' => [qw(anchor clear includes set)],
+                     'scan' => [qw(mark dragto)]
+                   );
 
 1;
 __END__

@@ -1,7 +1,7 @@
 #!/bin/sh
 cat <<! > .gdbinit
 break XS_DynaLoader_dl_find_symbol
-run -Mblib $1
+run -Mblib $*
 shared
 break Perl_croak 
 break Perl_warn

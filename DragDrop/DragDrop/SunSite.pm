@@ -16,12 +16,12 @@ sub SunDrop
  my $seln = $w->GetAtomName($atom);
  if ($flags & &ACK_FLAG)
   {
-   eval { $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_ACK");};
+   eval {local $SIG{__DIE__}; $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_ACK");};
   }
  $site->Callback(-dropcommand => $seln, $x, $y);
  if ($flags & &TRANSIENT_FLAG)
   {
-   eval { $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_DONE");};
+   eval {local $SIG{__DIE__};  $w->SelectionGet('-selection'=>$seln,"_SUN_DRAGDROP_DONE");};
   }
  $w->configure('-relief' => $w->{'_DND_RELIEF_'}) if (defined $w->{'_DND_RELIEF_'})
 }

@@ -89,7 +89,7 @@ sub undo
     }
    else
     {
-     die "No $file.bak\n";
+     warn "No $file.bak\n";
     }
   }
 }

@@ -5,7 +5,7 @@ require Tk::Text;
 {
  package Tk::Dwidget;
  @ISA = qw(Tk::Frame);
- Tk::Widget->Construct('Dwidget');
+ Construct Tk::Widget 'Dwidget';
 
  sub Populate
  {

@@ -5,7 +5,7 @@ require Tk::Frame;
 require Tk::LabEntry;
 require Tk::LabRadio;
 
-Tk::Widget->Construct('LabeledEntryLabeledRadiobutton');
+Construct Tk::Widget 'LabeledEntryLabeledRadiobutton';
 
 sub Populate
 {

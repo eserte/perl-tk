@@ -54,26 +54,36 @@
  */
 #define XpmFormat 3
 #define XpmVersion 4
-#define XpmRevision 8
+#define XpmRevision 9
 #define XpmIncludeVersion ((XpmFormat * 100 + XpmVersion) * 100 + XpmRevision)
 
 #ifndef XPM_NUMBERS
 
 #ifdef FOR_MSW
-#define SYSV			/* uses memcpy string.h etc. */
-#include <malloc.h>
-#include "simx.h"		/* defines some X stuff using MSW types */
+# define SYSV			/* uses memcpy string.h etc. */
+# include <malloc.h>
+# include "simx.h"		/* defines some X stuff using MSW types */
 #define NEED_STRCASECMP		/* at least for MSVC++ */
 #else /* FOR_MSW */
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+# include <X11/Xlib.h>
+# include <X11/Xutil.h>
 #endif /* FOR_MSW */
 
 /* let's define Pixel if it is not done yet */
 #if ! defined(_XtIntrinsic_h) && ! defined(PIXEL_ALREADY_TYPEDEFED)
 typedef unsigned long Pixel;	/* Index into colormap */
-#define PIXEL_ALREADY_TYPEDEFED
+# define PIXEL_ALREADY_TYPEDEFED
 #endif
+
+/* make sure we know whether function prototypes are needed or not */
+#ifndef NeedFunctionPrototypes
+# if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
+#  define NeedFunctionPrototypes 1
+# else
+#  define NeedFunctionPrototypes 0
+# endif
+#endif
+
 
 /* Return ErrorStatus codes:
  * null     if full success
@@ -87,9 +97,6 @@ typedef unsigned long Pixel;	/* Index into colormap */
 #define XpmFileInvalid  -2
 #define XpmNoMemory     -3
 #define XpmColorFailed  -4
-
-/* the following should help people wanting to use their own functions */
-#define XpmFree(ptr) free(ptr)
 
 typedef struct {
     char *name;			/* Symbolic color name */
@@ -132,41 +139,60 @@ typedef struct {
     XpmExtension *extensions;	/* pointer to array of extensions */
 }      XpmInfo;
 
+typedef int (*XpmAllocColorFunc)(
+#if NeedFunctionPrototypes
+    Display*			/* display */,
+    Colormap			/* colormap */,
+    char*			/* colorname */,
+    XColor*			/* xcolor */,
+    void*			/* closure */
+#endif
+);
+
+typedef int (*XpmFreeColorsFunc)(
+#if NeedFunctionPrototypes
+    Display*			/* display */,
+    Colormap			/* colormap */,
+    Pixel*			/* pixels */,
+    int				/* npixels */,
+    void*			/* closure */
+#endif
+);
+
 typedef struct {
     unsigned long valuemask;		/* Specifies which attributes are
-					 * defined */
+					   defined */
 
     Visual *visual;			/* Specifies the visual to use */
     Colormap colormap;			/* Specifies the colormap to use */
     unsigned int depth;			/* Specifies the depth */
     unsigned int width;			/* Returns the width of the created
-					 * pixmap */
+					   pixmap */
     unsigned int height;		/* Returns the height of the created
-					 * pixmap */
+					   pixmap */
     unsigned int x_hotspot;		/* Returns the x hotspot's
-					 * coordinate */
+					   coordinate */
     unsigned int y_hotspot;		/* Returns the y hotspot's
-					 * coordinate */
+					   coordinate */
     unsigned int cpp;			/* Specifies the number of char per
-					 * pixel */
+					   pixel */
     Pixel *pixels;			/* List of used color pixels */
     unsigned int npixels;		/* Number of used pixels */
-    XpmColorSymbol *colorsymbols;	/* Array of color symbols to
-					 * override */
+    XpmColorSymbol *colorsymbols;	/* List of color symbols to override */
     unsigned int numsymbols;		/* Number of symbols */
     char *rgb_fname;			/* RGB text file name */
-    unsigned int nextensions;		/* number of extensions */
-    XpmExtension *extensions;		/* pointer to array of extensions */
+    unsigned int nextensions;		/* Number of extensions */
+    XpmExtension *extensions;		/* List of extensions */
 
     unsigned int ncolors;               /* Number of colors */
-    XpmColor *colorTable;               /* Color table pointer */
+    XpmColor *colorTable;               /* List of colors */
 /* 3.2 backward compatibility code */
     char *hints_cmt;                    /* Comment of the hints section */
     char *colors_cmt;                   /* Comment of the colors section */
     char *pixels_cmt;                   /* Comment of the pixels section */
 /* end 3.2 bc */
-    unsigned int mask_pixel;            /* Transparent pixel's color table
-                                         * index */
+    unsigned int mask_pixel;            /* Color table index of transparent
+                                           color */
 
     /* Color Allocation Directives */
     Bool exactColors;			/* Only use exact colors for visual */
@@ -186,6 +212,12 @@ typedef struct {
 					   or not */
     int bitmap_format;			/* Specify the format of 1bit depth
 					   images: ZPixmap or XYBitmap */
+
+    /* Color functions */
+    XpmAllocColorFunc alloc_color;	/* Application color allocator */
+    XpmFreeColorsFunc free_colors;	/* Application color de-allocator */
+    void *color_closure;		/* Application private data to pass to
+					   alloc_color and free_colors */
 
 }      XpmAttributes;
 
@@ -218,6 +250,11 @@ typedef struct {
 #define XpmAllocCloseColors (1L<<17)
 #define XpmBitmapFormat    (1L<<18)
 
+#define XpmAllocColor      (1L<<19)
+#define XpmFreeColors      (1L<<20)
+#define XpmColorClosure    (1L<<21)
+
+
 /* XpmInfo value masks bits */
 #define XpmComments        XpmInfos
 #define XpmReturnComments  XpmComments
@@ -242,20 +279,14 @@ typedef struct {
 #define XPM_COLOR	5
 
 
-/*
- * minimal portability layer between ansi and KR C
- */
-
-/* forward declaration of functions with prototypes */
-
-#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
- /* ANSI || C++ */
+/* macros for forward declarations of functions with prototypes */
+#if NeedFunctionPrototypes
 #define FUNC(f, t, p) extern t f p
 #define LFUNC(f, t, p) static t f p
-#else  /* K&R */
+#else
 #define FUNC(f, t, p) extern t f()
 #define LFUNC(f, t, p) static t f()
-#endif /* end of K&R */
+#endif
 
 
 /*
@@ -410,6 +441,8 @@ extern "C" {
     FUNC(XpmCreateBufferFromXpmImage, int, (char **buffer_return,
 					    XpmImage *image,
 					    XpmInfo *info));
+
+    FUNC(XpmFree, void, (void *ptr));
 
 #ifdef __cplusplus
 } /* for C++ V2.0 */

@@ -5,7 +5,7 @@ use Tk::Pretty;
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
 
-Tk::Widget->Construct('LabRadiobutton');
+Construct Tk::Widget 'LabRadiobutton';
 
 
 # Although there is no fundamental reason why -radiobuttons

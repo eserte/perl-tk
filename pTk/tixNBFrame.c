@@ -382,6 +382,7 @@ Tix_NoteBookFrameCmd(clientData, interp, argc, args)
     wPtr->takeFocus	 	= 0;
     wPtr->redrawing	 	= 0;
     wPtr->gotFocus	 	= 0;
+    wPtr->command	 	= NULL;
 
     Tk_CreateEventHandler(wPtr->tkwin, 
 	ExposureMask|StructureNotifyMask|FocusChangeMask,

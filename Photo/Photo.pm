@@ -1,10 +1,8 @@
 package Tk::Photo;
-require DynaLoader;
-require AutoLoader;
 require Tk;
-@ISA = qw(DynaLoader Tk::Image);
+@ISA = qw(Tk::Image);
 
-Tk::Image->Construct('Photo');
+Construct Tk::Image 'Photo';
 
 bootstrap Tk::Photo $Tk::VERSION;
 

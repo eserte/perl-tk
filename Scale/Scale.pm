@@ -12,11 +12,10 @@
 
 package Tk::Scale; 
 require Tk;
-require DynaLoader;
 use AutoLoader;
-@ISA = qw(DynaLoader Tk::Widget);
+@ISA = qw(Tk::Widget);
 
-Tk::Widget->Construct('Scale');
+Construct Tk::Widget 'Scale';
 
 bootstrap Tk::Scale $Tk::VERSION;
 

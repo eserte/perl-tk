@@ -33,10 +33,10 @@
 \*****************************************************************************/
 
 /* Official version number */
-static char *RCS_Version = "$XpmVersion: 3.4h $";
+static char *RCS_Version = "$XpmVersion: 3.4i $";
 
 /* Internal version number */
-static char *RCS_Id = "$Id: xpm.shar,v 3.58 96/02/01 23:48:51 lehors Exp $";
+static char *RCS_Id = "$Id: xpm.shar,v 3.62 96/09/14 02:33:07 lehors Exp $";
 
 #include "XpmI.h"
 #include <ctype.h>

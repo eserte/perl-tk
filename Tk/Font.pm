@@ -87,7 +87,7 @@ require Tk::Widget;
 require Tk::Xlib;
 use strict;
 
-Tk::Widget->Construct('Font');
+Construct Tk::Widget 'Font';
 
 my @field = qw(foundry family weight slant swidth adstyle pixel
                point xres yres space avgwidth registry encoding);

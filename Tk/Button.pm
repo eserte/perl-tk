@@ -17,7 +17,7 @@ use vars qw($buttonWindow $relief);
 
 sub Tk_cmd { \&Tk::button }
 
-Tk::Widget->Construct('Button');
+Construct Tk::Widget 'Button';
 
 sub ClassInit
 {

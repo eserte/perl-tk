@@ -6,7 +6,7 @@ use Carp;
 @ISA = qw(Tk::Derived Tk::ROText);
 use strict;
 
-Tk::Widget->Construct('HTMLText');
+Construct Tk::Widget 'HTMLText';
 
 sub Font
 {
@@ -38,9 +38,9 @@ sub FindImage
  my ($w,$src,$l) = @_;
  $src = $w->HREF($src,'GET');
  my $img;
- eval { require Tk::Pixmap; $img = $w->Pixmap(-data => $src) };
- eval { require Tk::Bitmap; $img = $w->Bitmap(-data => $src) } if ($@);
- eval { require Tk::Photo;  $img = $w->Photo(-data => $src)  } if ($@);
+ eval {local $SIG{__DIE__}; require Tk::Pixmap; $img = $w->Pixmap(-data => $src) };
+ eval {local $SIG{__DIE__}; require Tk::Bitmap; $img = $w->Bitmap(-data => $src) } if ($@);
+ eval {local $SIG{__DIE__}; require Tk::Photo;  $img = $w->Photo(-data => $src)  } if ($@);
  if ($@)
   {
    warn "$@";

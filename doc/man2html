@@ -168,6 +168,7 @@ use lib qw(. ..);
    $text .= $obj->{'FNAME'};
    $text .= '#'.shift if (@_);
    $text .= '"';
+   $text =~ s/:/%3A/g;
    return $text;
   }
 
@@ -187,6 +188,7 @@ use lib qw(. ..);
     if (exists $obj->{'SECTIONS'}{$sec})
      {
       $href = 'HREF="#' . $obj->{'SECTIONS'}{$sec} . '"';
+      $href =~ s/:/%3A/g;
      }
     else
      {

@@ -71,12 +71,7 @@ long unsigned int count;
 {
  if (format == 8)
   {
-   unsigned char *e = p + count;
-   while (p < e)
-    {
-     Tcl_AppendElement(interp, (char *) p);
-     p += strlen((char *) p)+1;
-    }
+   Lang_SetBinaryResult(interp,(char *) p, count, TCL_VOLATILE);
   }
  else
   {

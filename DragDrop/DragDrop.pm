@@ -9,7 +9,7 @@ require Tk::Label;
 # use Tix's wmRelease in Populate to make it a toplevel. 
 sub Tk_cmd { \&Tk::label }
 
-Tk::Widget->Construct('DragDrop');
+Construct Tk::Widget 'DragDrop';
 
 use strict;
 use vars qw(%type @types);
@@ -198,7 +198,7 @@ sub Done
  my $over  = $token->{'Over'};
  $over->Leave($token,$e) if (defined $over);
  my $w     = $token->parent;
- eval { $token->grabRelease };
+ eval {local $SIG{__DIE__}; $token->grabRelease };
  $token->withdraw;
  delete $w->{'Dragging'};
  $w->update;
