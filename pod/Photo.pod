@@ -391,3 +391,4 @@ L<Tk::Pixmap|Tk::Pixmap>
 photo, image, color
 
 =cut
+

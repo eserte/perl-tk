@@ -900,6 +900,7 @@ LINKAGE int DItemStyleParseProc(clientData, interp, tkwin, value, widRec,offset)
     Tix_DItemStyle  * oldPtr = *ptr;
     Tix_DItemStyle  * newPtr;
 
+
     if (tableInited  == 0) {
 	InitHashTables();
     }
@@ -960,10 +961,10 @@ DItemStylePrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
     Tcl_FreeProc **freeProcPtr;
 {
     Tix_DItemStyle *stylePtr = *((Tix_DItemStyle**)(widRec+offset));
-
+    Arg result = NULL;
     if (stylePtr != NULL) {
-	return LangObjectArg(stylePtr->base.interp, stylePtr->base.name);
-    } else {
-	return 0;
-    }
+        LangSetArg(&result,LangObjectArg(stylePtr->base.interp, 
+                                         stylePtr->base.name));
+    } 
+    return result;
 }

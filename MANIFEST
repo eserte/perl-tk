@@ -243,6 +243,7 @@ bin/unres
 bin/uselib
 bindtest			Test of key bindings with qualifiers
 bugs
+build
 bulkedit			Utility to make changes in many files - with Tk GUI
 canvas_ps			Writes PostScript for Canvas to a file.
 canvas_scroll			Basic test of scrolling a Canvas
@@ -250,6 +251,7 @@ cbtest				Test of callback returns.
 check_source
 checklen			Check names not > 14 chars long for old UNIXes.
 chnGlue.c
+classtree
 cleanup				Remove authour's junk files
 clip_bug			Demonstrates some "features" of clipping.
 config/Ksprintf.c
@@ -418,8 +420,6 @@ keyWords
 labelpack
 lbformat_demo
 leak_test
-leak_util.c
-leak_util.h
 lentry
 local_demo
 ls_table
@@ -1292,12 +1292,16 @@ style_test
 submethods
 symbols
 t/Require.t
+t/Trace.t
 t/X.t
 t/create.t
 t/fileselect.t
 t/font.t
+t/geomgr.t
 t/mega.t
+t/mwm.t
 t/widget.t
+t/zzHList.t
 t/zzPhoto.t
 t/zzScrolled.t
 t/zzText.t

@@ -83,7 +83,7 @@ sub entry
 sub listbox
 {
  my $top = shift;
- my $l = $top->ScrlListbox("-selectmode"=>"extended",-label => 'Listbox');
+ my $l = $top->ScrlListbox("-selectmode"=>"extended",-label => 'Listbox',-takefocus => 1);
  foreach (@_) 
   {
    $l->insert("end", "item" . $_);

@@ -1,4 +1,4 @@
-# form, window management by Tix->form.
+# Form, window management by Tix->form.
 
 use Tk;
 

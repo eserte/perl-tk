@@ -44,11 +44,7 @@ L<Tk::Widget|Tk::Widget> class.
 
 =head1 BINDINGS
 
-=over 4
+B<InputO> widgets have no default bindings.
 
-=item B<InputO> widgets have no default bindings.
-
-=back
-
-=head1 KEYWORDS
+=cut
 

@@ -27,7 +27,7 @@ chmod(0666,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";
 print SKIP <<'EOF'
 \.[oaid]$
-\.(bso?|old|bak|out|hide|q4|gz|tcl|rtf|orig)$
+\.(bso?|old|bak|broke|out|hide|q4|gz|tcl|rtf|orig)$
 ^\.
 /\.
 C\+\+/Main$

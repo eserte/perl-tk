@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;       
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#17$
+$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#19$
 
 use Tk qw(Ev);
 
@@ -246,7 +246,10 @@ sub color
  my ($objref,$name) = @_;
  if (@_ > 1 && defined($name) && length($name))
   {
-   # $objref->{'color'} = $name;
+      if ($name eq 'cancel') {
+	  $objref->{color} = undef;
+	  return;
+      }
    my ($format, $shift);
    my ($red, $green, $blue);
 
@@ -401,7 +404,8 @@ sub Accept
 sub Cancel
 {
  my $cw  = shift;
- $cw->configure(-color => undef);
+# $cw->configure(-color => undef);
+ $cw->configure(-color => 'cancel');
  $cw->Accept;
 }
 
@@ -434,7 +438,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE @ISA);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#17$
+$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#19$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

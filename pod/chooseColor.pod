@@ -12,7 +12,7 @@ chooseColor - pops up a dialog box for the user to select a color.
 
 =head1 SYNOPSIS
 
-S<    >I<$color> = I<$widget>-E<gt>B<chooseColor>?(I<option>=E<gt>I<value>, ...)?;
+S<    >I<$color> = I<$widget>-E<gt>B<chooseColor>?(I<-option>=E<gt>I<value>, ...)?;
 
 =head1 DESCRIPTION
 
@@ -59,3 +59,6 @@ user cancels the operation, the command will return B<undef>.
 =head1 KEYWORDS
 
 color selection dialog
+
+=cut
+

@@ -121,10 +121,10 @@ sub items {
 	       -text => 'Stippled characters', qw/-tags item/);
 
     $c->create(qw/text 5c 16.2c -text Arcs -anchor n/);
-    $c->create(qw/arc 0.5c 17c 7c 20c/, -fill => $green, qw/-outline black
-	       -start 45 -extent 270 -style pieslice -tags item/);
-    $c->create(qw/arc 6.5c 17c 9.5c 20c -width 4m -style arc/, -fill => $blue,
+    $c->create(qw/arc 0.5c 17c 7c 20c/, -fill => $green, qw/-outline black/,
 	       -stipple => '@'.Tk->findINC('demos/images/grey.25'),
+	       qw/-start 45 -extent 270 -style pieslice -tags item/);
+    $c->create(qw/arc 6.5c 17c 9.5c 20c -width 4m -style arc/, -fill => $blue,
 	       qw/-start -135 -extent 270 -tags item/);
     $c->create(qw/arc 0.5c 20c 9.5c 24c -width 4m -style pieslice/,
 	       -fill => undef, -outline => $red,
@@ -171,6 +171,8 @@ sub items {
     # reference the X event structure, either use the XEvent() method or
     # read the specially localized variable $Tk::event.  We'll use XEvent
     # first, and the variable from then on.
+
+    $c->CanvasBind('<<Copy>>',sub { print "Do Copy\n" });
 
     $c->CanvasBind('<1>' => sub {
 	my($c) = @_;
@@ -252,7 +254,12 @@ sub items_enter {
 	return;
     }
     my $fill = ($c->itemconfigure(qw/current -fill/))[4];
-    if (($type eq 'rectangle' or $type eq 'oval' or $type eq 'arc')
+    my $stipple = ($c->itemconfigure(qw/current -stipple/))[4];
+    if (defined $stipple) {
+	$iinfo->{restore_cmd} = "\$c->itemconfigure('current',
+            -stipple => '$stipple')";
+	$c->itemconfigure(qw/current -stipple /,'');
+    } elsif (($type eq 'rectangle' or $type eq 'oval' or $type eq 'arc')
 	    and not defined $fill) {
 	my $outline = ($c->itemconfigure(qw/current -outline/))[4];
 	$iinfo->{restore_cmd} = "\$c->itemconfigure('current',

@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#11$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#13$
 
 use Tk;
 use Carp;
@@ -71,6 +71,10 @@ sub SetBindings {
     # bindings for the button and entry
     $b->bind("<1>", sub {$w->BtnDown;});
     $b->toplevel->bind("<ButtonRelease-1>", sub {$w->ButtonHack;});
+    $b->bind("<space>", sub {$w->BtnDown;
+			     $w->{'savefocus'} = $w->focusCurrent;
+			     $w->Subwidget("slistbox")->focus;
+			    });
 
     # bindings for listbox
     my $sl = $w->Subwidget("slistbox");
@@ -79,6 +83,9 @@ sub SetBindings {
 	$w->ButtonHack;
 	LbChoose($w, $l->XEvent->x, $l->XEvent->y);
     });
+    $l->bind('<Escape>' => sub { $w->LbClose });
+    $l->bind('<Return>' => sub { my($x, $y) = $l->bbox($l->curselection);
+				 $w->LbChoose($x, $y) });
 
     # allow click outside the popped up listbox to pop it down.
     $w->bind("<1>", sub {$w->BtnDown;});
@@ -222,6 +229,10 @@ sub LbIndex {
 # pop down the listbox
 sub Popdown {
     my ($w) = @_;
+    if ($w->{'savefocus'} && Tk::Exists($w->{'savefocus'})) {
+	$w->{'savefocus'}->focus;
+	delete $w->{'savefocus'};
+    }
     if ($w->{"popped"}) {
 	my $c = $w->Subwidget("choices");
 	$c->withdraw;

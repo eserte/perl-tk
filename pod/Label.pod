@@ -96,3 +96,6 @@ labels are not intended to be interactive.
 =head1 KEYWORDS
 
 label, widget
+
+=cut
+

@@ -506,7 +506,9 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 	    case TK_CONFIG_BITMAP: {
 		Pixmap new, old;
 
-		if (nullValue) {
+		if (nullValue || 
+		   (( specPtr->specFlags & TK_CONFIG_NULL_OK) && 
+                      !*LangString(value)))  {
 		    new = None;
 	        } else {
 		    uid = Tk_GetUid(LangString(value));

@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/MMutil.pm#25$
+$VERSION = '3.032'; # $Id: //depot/Tk8/Tk/MMutil.pm#32$
 
 use Tk::MakeDepend;
 
@@ -243,6 +243,11 @@ sub const_config
  my $flags = $self->{'CCCDLFLAGS'};
  $flags =~ s/(-[fK]?\s*)pic\b/${1}PIC/; 
  $self->{'CCCDLFLAGS'} = $flags;
+ if ($^O eq 'MSWin32' && $Config{'ccflags'} =~ /-DPERL_OBJECT/)
+  {
+   $self->{'LDFLAGS'} =~ s/-(debug|pdb:\w+)\s+//g;
+   $self->{'LDDLFLAGS'} =~ s/-(debug|pdb:\w+)\s+//g;
+  }
  return $self->MM::const_config;
 }
 
@@ -262,7 +267,7 @@ sub cflags
 {
  my $self = shift;
  local $_ = $self->MM::cflags;
- if ($IsWin32)
+ if (0 && $IsWin32)
   {
    if ($Config::Config{cc} =~ /^bcc/i) {
      # s/(CCFLAGS\s*=)/$1/; 
@@ -388,6 +393,10 @@ sub findpTk
 sub TkExtMakefile
 {
  my (%att) = @_;
+ if ($Config{'ccflags'} =~ /-DPERL_OBJECT/)
+  {
+   $att{'CAPI'} = 'TRUE' unless exists $att{'CAPI'};
+  }
  unless (exists $att{'NAME'})
   {
    my $dir = getcwd;

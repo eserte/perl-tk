@@ -505,3 +505,4 @@ C code and bindings of TixGrid have some bugs.
 tix, tixgrid, table, display item, spreadsheet
 
 =cut
+

@@ -19,6 +19,10 @@ VFUNC(HV *,InterpHv,V_InterpHv,_ANSI_ARGS_((Tcl_Interp *interp,int fatal)))
 VFUNC(void,Lang_TkCommand,V_Lang_TkCommand,_ANSI_ARGS_((char *name, Tcl_CmdProc *proc)))
 #endif
 
+#ifndef Lang_TkSubCommand
+VFUNC(void,Lang_TkSubCommand,V_Lang_TkSubCommand,_ANSI_ARGS_((char *name, Tcl_CmdProc *proc)))
+#endif
+
 #ifndef MakeReference
 VFUNC(SV *,MakeReference,V_MakeReference,_ANSI_ARGS_((SV * sv)))
 #endif

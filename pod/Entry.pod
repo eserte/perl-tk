@@ -513,3 +513,6 @@ individual widgets or by redefining the class bindings.
 =head1 KEYWORDS
 
 entry, widget
+
+=cut
+

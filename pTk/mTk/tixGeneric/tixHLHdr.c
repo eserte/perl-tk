@@ -127,7 +127,7 @@ Tix_HLGetHeader(interp, wPtr, string, requireIPtr)
 	return NULL;
     }
     if (column >= wPtr->numColumns || column < 0) {
-	Tcl_AppendResult(interp, "Column \"", string,
+	Tcl_AppendResult(interp, "Column \"", LangString(string),
 	    "\" does not exist", (char*)NULL);
 	return NULL;
     }
@@ -559,7 +559,6 @@ Tix_HLHdrSize(clientData, interp, argc, argv)
 {
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListHeader * hPtr;
-    char buff[128];
 
     if ((hPtr=Tix_HLGetHeader(interp, wPtr, args[0], 1)) == NULL) {
 	return TCL_ERROR;
@@ -570,9 +569,8 @@ Tix_HLHdrSize(clientData, interp, argc, argv)
 	    "\" does not have a header", (char*)NULL); 
 	return TCL_ERROR;
     }
-    sprintf(buff, "%d %d",
-	Tix_DItemWidth(hPtr->iPtr),
-	Tix_DItemHeight(hPtr->iPtr));
-    Tcl_AppendResult(interp, buff, NULL);
+    Tcl_IntResults(interp,2, 0, 
+		   Tix_DItemWidth(hPtr->iPtr), 
+		   Tix_DItemHeight(hPtr->iPtr)); 
     return TCL_OK;
 }

@@ -430,7 +430,7 @@ item when it becomes the current item or ceases to be the current item;
 note that these events are different than B<Enter> and B<Leave>
 events for windows.  Mouse-related events are directed to the current
 item, if any.  Keyboard-related events are directed to the focus item, if
-any (see the B<focus> method below for more on this).  If a
+any (see the L<focus|/focus> method below for more on this).  If a
 virtual event is used in a binding, that binding can trigger only if the
 virtual event is defined by an underlying mouse-related or
 keyboard-related event.
@@ -528,6 +528,8 @@ I<arg>'s.
 I<SearchCommand> and I<args> have any of the forms
 accepted by the B<addtag> method.
 The items are returned in stacking order, with the lowest item first.
+                        
+=item focus 
 
 =item I<$canvas>-E<gt>B<focus>(?I<tagOrId>?)
 
@@ -1783,3 +1785,6 @@ functions of canvases.
 =head1 KEYWORDS
 
 canvas, widget
+
+=cut
+

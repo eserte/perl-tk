@@ -20,7 +20,6 @@
 #endif
 
 #include "tkGlue.h"
-#include "leak_util.h"
 
 #ifdef NEED_PRELOAD
 #ifdef I_DLFCN
@@ -219,32 +218,6 @@ CODE:
   ST(0) = sv_2mortal(newSViv(Tk_GetNumMainWindows()));
  }
 
-
-MODULE = Tk	PACKAGE = Leak
-
-IV
-NoteSV(obj)
-hash_ptr *	obj = NO_INIT
-CODE:
- {
-  RETVAL = note_used(&obj);
- }
-OUTPUT:
- obj
- RETVAL
-
-IV
-CheckSV(obj)
-hash_ptr *	obj
-CODE:
- {
-  RETVAL = check_used(&obj);
- }
-OUTPUT:
- RETVAL
-
-void
-check_arenas()
 
 MODULE = Tk	PACKAGE = Tk::Callback
  

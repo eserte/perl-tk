@@ -1,0 +1,9 @@
+#!/usr/local/bin/perl -w
+my $make = $^O eq 'MSWin32' ? 'dmake' : 'make';
+my @para;
+{local $ENV{'TKNOMAKEDEPEND'} = "1"; system("$^X","Makefile.PL")};
+system($make,"clean");
+system("$^X","Makefile.PL");
+system($make,@ARGV);
+system($make,'test');
+

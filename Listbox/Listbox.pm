@@ -13,7 +13,7 @@
 package Tk::Listbox; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Listbox/Listbox.pm#13$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Listbox/Listbox.pm#17$
 
 use Tk qw(Ev);
 require Tk::Clipboard;
@@ -120,7 +120,7 @@ sub ClassInit
 	      )
  ;
  $mw->bind($class,"<Shift-Control-End>",['DataExtend','end']);
- $class->clipboardOperations($mw,'Copy');
+ # $class->clipboardOperations($mw,'Copy');
  $mw->bind($class,"<space>",['BeginSelect',Ev('index','active')]);
  $mw->bind($class,"<Select>",['BeginSelect',Ev('index','active')]);
  $mw->bind($class,"<Control-Shift-space>",['BeginExtend',Ev('index','active')]);
@@ -177,7 +177,8 @@ sub BeginSelect
    $w->selectionAnchor($el);
    @Selection = ();
    $Prev = $el
-  }
+  }     
+ $w->focus if ($w->cget('-takefocus'));
 }
 # Motion --
 #
@@ -494,7 +495,7 @@ sub clipboardPaste
 }      
 
 sub getSelected
-{
+{   
  my ($w) = @_;
  my $i;
  my (@result) = ();

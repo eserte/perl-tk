@@ -1,8 +1,104 @@
 Everything only IMO of course.
 
-Achim.
+Achim Bohnet <ach@mpe.mpg.de>
 
 ################## TO DO  ##########################
+
+-----------------------------------------------------------------
+
+
+---- removed by accident ------------
+>
+>	I still have my Tk402.004 html documents here and they include
+>the update.htm file, but I do not see an update document in the latest
+>Tk800.008 distribution.  Are there some documents missing from the
+>latest distribution? 
+
+Oh dear what has happened here?
+The update and idletask fragments were merged into Widget.pod (I thought),
+and then the update.pod disposed of. But looks like something has lost 
+the stuff from Widget.pod :-(
+--------------------------------------
+
+contrib.pod (idea/skeleton)
+
+=head1 NAME
+
+Tk::contrib - how to find/contribute perl/Tk code
+
+=for category  Introduction
+
+=head1 DESCRIPTION
+
+Here are some guidelines you can use to find a peace
+of code is already available and how to contribute your
+code.
+
+I<If you have perl/Tk code that can be reused or used as an
+example or starting point please check if one could find it
+using the method in the next section.  If it's not findable
+think about to contribute your work (described later).>
+
+=head2 What's already avaiable?
+
+If you are B<seriously> planning to write the beast you are
+looking for when it does not exists you can take the short
+route and ask the ptk list <ptk@lists.stanford.edu>.  Make
+sure to mention Tk::contrib to prevent RTFM replies.
+Otherwise try the checklist below first:
+
+	o http://www.perl.com/ptk/ or Grahams perl/Tk home page ??
+	o tk-modules-list
+	o tcl/tk faq 4&5
+	o http://www.perl.com/CPAN/modules/by-modules/Tk
+		                        /scripts/??????
+	o Archive http://www.xray.mpe.mpg.de/mailing-lists/ptk/
+
+=head2 How to contribute code?
+
+Have spend a lot time of on a specific topic and it was
+not at the end and RFTM?  Yes? Please least take
+the time to post your solution to the perl/Tk mailing
+list ptk@lists.stanford.edu.  So other can find it later
+in the list archive http://www.xray.mpe.mpg.de/mailing-lists/ptk/
+If it's a common problem this may be even enough to enhance/extend
+the perl/Tk FAQ 
+
+But wait there is more you can do without much afford:
+
+	?? scripts. What's the status of CPAN/scripts ??
+
+=over 4
+
+=item Perl/Tk Module List
+
+is a central reference of modules B<and> scripts
+
+    http://www.connect.net/gbarr/PerlTk/tk-modlist.html
+
+Send a mail to <ptk@lists.standford.edu> and
+Graham Barr <gbarr@pobox.com> that describes your contribution.
+
+It's enough if would send your contribution on an e-mail request.
+But there more ...
+
+=item CPAN account
+
+Simply send mail to ptk
+	o handling of modules (widget) and scripts (applications)
+	o send code to ptk for comments (widget name!, etc.)
+	o Tk-modules list: register early (even if alpha)
+	o CPAN account. Refer to docs how to do it
+	o Tk-Contrib ask for addition on ptk (also happy users of
+	  an widget for).  Use convenience method
+	  before stuff gets lost.
+	o Still to complicated? :-(  Then post at least your code
+	  to ptk@lists.stanford.edu.  So other could find it later
+	  in the list archive http://www.xray.mpe.mpg.de/mailing-lists/ptk/
+
+=cut
+
+-----------------------------------------------------------------
 
 UserGuild.pod
 =============
@@ -258,6 +354,25 @@ Image stuff:
 
 	o DefineBitmap shares names between mainwindows and croak on dubl. names
 	  (See e.g., Tk::Numentry)
+
+Dunnigan,Jack [Edm] wrote:
+> 
+> How does one ingest a bitmap into an icon for a perl/Tk application?
+> 
+> The reference guide has:
+> 
+>         $main->iconbitmap(?bitmap?);
+> 
+> but I'm unsure as to what form (?bitmap?) should be written?
+> My full path name to the file is: /users/im/perlscripts/image/pirep.bmp
+> 
+> Can someone show me the proper format?
+
+You need an X11 bitmap (typical "externsion" is .xbm):
+
+        $icbm = $w->iconbitmap('@path_to_bitmap');
+
+The '@' differentiates a pathname from an builtin bitmap name.
 
 Photo.pod
 =========

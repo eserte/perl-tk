@@ -55,6 +55,38 @@ Tix_GrSelection(clientData, interp, argc, argv)
 
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
+} 
+
+static int 
+Selected(WidgetPtr wPtr, int row, int col)
+{   
+    int value = 0;
+    Tix_ListIterator li;
+
+    Tix_SimpleListIteratorInit(&li);
+
+    for (Tix_SimpleListStart(&wPtr->selList, &li);
+		 !Tix_SimpleListDone(&li);
+		 Tix_SimpleListNext (&wPtr->selList, &li)) {
+	SelectBlock *ptr = (SelectBlock *)li.curr;
+        if (ptr->range[TIX_X][0] <= col && ptr->range[TIX_X][1] >= col &&
+            ptr->range[TIX_Y][0] <= row && ptr->range[TIX_Y][1] >= row)
+         {
+          switch(ptr->type)
+           {
+            case TIX_GR_CLEAR:
+             value = 0;
+             break;
+            case TIX_GR_SET:
+             value = 1;
+             break;
+            case TIX_GR_TOGGLE:
+             value = !value;
+             break;
+           }
+	}
+    }
+ return value;
 }
 
 static int
@@ -64,9 +96,59 @@ Tix_GrSelIncludes(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
-#if 0
+    int row;
+    int col;
+    int value = 1;
     WidgetPtr wPtr = (WidgetPtr) clientData;
-#endif
+    if (argc != 2 && argc != 4) {
+	return Tix_ArgcError(interp, argc+2, argv-2, 2, "x1 y1 ?x2 y2?");
+    }
+    if (Tcl_GetInt(interp, argv[0], &col) != TCL_OK) {
+	return TCL_ERROR;
+    }
+    if (Tcl_GetInt(interp, argv[1], &row) != TCL_OK) {
+	return TCL_ERROR;
+    }                           
+    if (argc == 2)
+     {                       
+      value = Selected(wPtr,row,col);
+     }
+    else
+     {
+      int row2;
+      int col2; 
+      if (Tcl_GetInt(interp, argv[0], &col2) != TCL_OK)
+       return TCL_ERROR;
+      if (Tcl_GetInt(interp, argv[1], &row2) != TCL_OK)
+       return TCL_ERROR;
+      if (row2 < row)
+       {
+        int t = row;
+        row = row2;
+        row2 = t;
+       }
+      if (col2 < col)
+       {
+        int t = col;
+        col = col2;
+        col2 = t;
+       }
+      while (row <= row2)
+       {
+        while (col <= col2)
+         {
+          if (!Selected(wPtr,row,col))
+           {
+            value = 0;
+            goto done; 
+           }
+          col++;
+         }        
+        row++; 
+       }
+     }
+   done:
+    Tcl_IntResults(interp,1,0,value);
     return TCL_OK;
 }
 
@@ -261,7 +343,7 @@ Tix_GrSelModify(clientData, interp, argc, argv)
     } else {
 	sbPtr->range[0][1] = sbPtr->range[0][0];
 	sbPtr->range[1][1] = sbPtr->range[1][0];
-    }
+    }               
 
     if (wPtr->selectUnit != tixRowUid) {
 	if (sbPtr->range[0][0] > sbPtr->range[0][1]) {

@@ -351,3 +351,6 @@ individual widgets or by redefining the class bindings.
 =head1 KEYWORDS
 
 scale, slider, trough, widget
+
+=cut
+

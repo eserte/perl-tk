@@ -1,7 +1,7 @@
 package Tk::HList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.013'; # $Id: //depot/Tk8/HList/HList.pm#13$
+$VERSION = '3.016'; # $Id: //depot/Tk8/HList/HList.pm#16$
 
 use Tk qw(Ev);
 
@@ -32,11 +32,13 @@ use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
                      'header' => [qw(configure cget create delete exists size)],
                      'indicator' => [qw(configure cget create delete exists size)],
                      'info' => [qw(anchor bbox children data dragsite
-                                   dropsite exists hidden item next parent prev)],
+                                   dropsite exists hidden item next parent prev
+                                   selection)],
                      'item' => [qw(configure cget create delete exists)],
                      'selection' => [qw(clear get includes set)],
                      'anchor' => [qw(clear set)],
                      'column' => [qw(width)],
+                     'hide' => [qw(entry)],
                    );
 
 

@@ -38,6 +38,6 @@ BOOT:
   TixintVptr  =  (TixintVtab *) SvIV(perl_get_sv("Tk::TixintVtab",5)); 
   /* Initialize the display item types */
 #if !defined(__WIN32__) && !defined(__PM__)
-  Lang_TkCommand("mwm",Tix_MwmCmd);
+  Lang_TkSubCommand("mwm",Tix_MwmCmd);
 #endif
  }

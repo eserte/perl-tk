@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION @ISA);
 
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#14$
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -321,7 +321,7 @@ sub FindMenu {
         my $c = substr($l, $i, 1);
         if ($char =~ /$c/i) {
             if ($w->pagecget($page, -state) ne "disabled") {
-                $w->{"keypage"} = $page;
+                $w->raise($page);
                 return $w;
             }
         }
@@ -329,18 +329,6 @@ sub FindMenu {
     return undef;
 }
 
-#
-# This is called to post the supposed 'menu'
-# when we have returned ourselves as a 'menu' matching
-# and <Alt-KeyPress>,  See the code in Tk.pm
-#
-sub PostFirst {
-    my ($w) = @_;
-    my $page = delete $w->{"keypage"};
-    if (defined $page) {
-        $w->raise($page);
-    }
-}   
 
 sub MasterGeomProc 
 {

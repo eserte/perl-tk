@@ -1903,3 +1903,4 @@ L<Tk::TextUndo|Tk::TextUndo>
 text, widget
 
 =cut
+

@@ -2,19 +2,36 @@
 use Tk;
 use strict;
 use Tk::DropSite qw(Sun);
+use Tk::Menubar;  
+
+sub enter_leave
+{          
+ my ($ds,$flag) = @_;
+ $ds->configure(-relief => ($flag) ? 'sunken' : 'ridge');
+ return 1;
+}
+
+
 
 my $top = MainWindow->new();
+my $mb  = $top->Menubar;
+$mb->Menubutton(-text => '~File', -menuitems => [
+                [ Button => 'E~xit', -command => [ destroy => $top]],
+                ]);
 
 my $lb = $top->Scrolled('Listbox',-width => 40);
 
 my $sun = $top->Message('-text' => "Sun Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
-$sun->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => 'Sun');
+$sun->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => 'Sun'
+              );
 
 my $loc = $top->Message('-text' => "Local Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
 $loc->DropSite(-dropcommand => [\&ShowTargets,$lb], -droptypes => ['Local']);
 
-my $loc = $top->Message('-text' => "Either Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
-$loc->DropSite(-dropcommand => [\&ShowTargets,$lb]);
+my $eth = $top->Message('-text' => "Either Drops here", '-relief' => 'ridge' )->pack(-side => 'right');
+$eth->DropSite(-dropcommand => [\&ShowTargets,$lb], 
+               -entercommand => [\&enter_leave,$eth]
+);
 
 $lb->pack(-side => 'bottom');
 

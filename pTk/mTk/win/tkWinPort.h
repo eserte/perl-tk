@@ -22,7 +22,6 @@
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 
-#include <malloc.h>
 #include <errno.h>
 #include <ctype.h>
 #include <math.h>

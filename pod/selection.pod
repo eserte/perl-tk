@@ -158,3 +158,6 @@ I<$widget>.  I<Selection> defaults to PRIMARY.
 =head1 KEYWORDS
 
 clear, format, handler, ICCCM, own, selection, target, type
+
+=cut
+

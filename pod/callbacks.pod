@@ -115,3 +115,4 @@ callback, closure, anonymous subroutine, bind
 #$mw-E<gt>bind($class,"E<lt>DownE<gt>",['SetCursor', Ev('UpDownLine',1)] );
 
 =cut
+

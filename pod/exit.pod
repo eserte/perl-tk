@@ -13,9 +13,9 @@ Tk::exit - End the application
 
 =head1 SYNOPSIS
 
-use Tk qw(exit);
-...
-B<exit>?(I<returnCode>)?;
+    use Tk qw(exit);
+    ...
+    B<exit>?(I<returnCode>)?;
 
 =head1 DESCRIPTION
 
@@ -31,3 +31,6 @@ the perl C<exit>.
 =head1 KEYWORDS
 
 exit, process
+
+=cut
+

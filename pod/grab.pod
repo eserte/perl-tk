@@ -135,3 +135,6 @@ processes, this restriction doesn't exist.
 =head1 KEYWORDS
 
 grab, keyboard events, pointer events, window
+
+=cut
+

@@ -9,7 +9,7 @@
 # derivation from Tk8.0 sources.
 #
 package Tk;
-require 5.004;
+require 5.00404;
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 require Exporter;
@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.008';
+$Tk::VERSION     = '800.010';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -318,12 +318,6 @@ sub ColorDialog
  DialogWrapper('ColorDialog',@_);
 }
 
-sub MessageBox {
-    print "in Tk::MessageBox, args=@_!\n";
-    require Tk::msgBox;
-    DialogWrapper('msgBox', @_);
-}
-
 sub FDialog
 {
  require Tk::FileSelect;
@@ -349,6 +343,13 @@ sub MainLoop
 } 
 
 sub tkinit { return MainWindow->new(@_) }
+
+# a wrapper on eval which turns off user $SIG{__DIE__}
+sub catch (&)
+{
+ my $sub = shift;
+ eval {local $SIG{'__DIE__'}; &$sub };
+}
 
 1;
 
@@ -578,7 +579,6 @@ sub TraverseToMenu
  my $char = shift;
  return unless(defined $char && $char ne "");
  $w = $w->toplevel->FindMenu($char);
- $w->PostFirst() if (defined $w);
 }
 # tkFirstMenu --
 # This procedure traverses to the first menubutton in the toplevel
@@ -591,7 +591,6 @@ sub FirstMenu
 {
  my $w = shift;
  $w = $w->toplevel->FindMenu("");
- $w->PostFirst() if (defined $w);
 }
 
 # These wrappers don't use method syntax so need to live
@@ -676,10 +675,4 @@ sub lsearch
  return -1;
 }
 
-# a wrapper on eval which turns off user $SIG{__DIE__}
-sub catch (&)
-{
- my $sub = shift;
- eval {local $SIG{'__DIE__'}; &$sub };
-}
 

@@ -22,6 +22,10 @@
 #  define Lang_TkCommand (*TkglueVptr->V_Lang_TkCommand)
 #endif
 
+#ifndef Lang_TkSubCommand
+#  define Lang_TkSubCommand (*TkglueVptr->V_Lang_TkSubCommand)
+#endif
+
 #ifndef MakeReference
 #  define MakeReference (*TkglueVptr->V_MakeReference)
 #endif

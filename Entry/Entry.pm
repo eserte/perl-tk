@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Entry/Entry.pm#10$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Entry/Entry.pm#14$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -251,7 +251,7 @@ sub ClassInit
              } ) ;
  $mw->bind($class,"<Control-backslash>",'selectionClear');
 
- $class->clipboardOperations($mw,qw[Copy Cut Paste]);
+ # $class->clipboardOperations($mw,qw[Copy Cut Paste]);
 
  $mw->bind($class,"<KeyPress>", ['Insert',Ev('A')]);
 

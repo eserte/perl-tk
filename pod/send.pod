@@ -13,7 +13,7 @@ send - Execute a command in a different application
 
 =head1 SYNOPSIS
 
-$result = I<$widget>-E<gt>B<send>(?I<options>,?I<app>=E<gt>I<cmd>?I<arg arg ...>?)
+S<    >I<$result> = I<$widget>-E<gt>B<send>(?I<options>,?I<app>=E<gt>I<cmd>?I<arg arg ...>?)
 
 =head1 DESCRIPTION
 

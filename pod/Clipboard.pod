@@ -72,3 +72,6 @@ with a B<->.
 =head1 KEYWORDS
 
 clear, format, clipboard, append, selection, type
+
+=cut
+
