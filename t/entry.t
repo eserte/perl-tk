@@ -31,7 +31,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 336, todo => [181] }
+BEGIN { plan tests => 336 }
 
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
@@ -82,6 +82,11 @@ if (!$Xft) { # XXX Is this condition necessary?
 	    last;
 	}
     }
+}
+my $skip_wm_test;
+unless (defined($ENV{WINDOWMANAGER}) &&
+        $ENV{WINDOWMANAGER} eq '/usr/X11R6/bin/kde') {
+    $skip_wm_test = "window manager dependent tests";
 }
 
 my $i;
@@ -634,16 +639,12 @@ ok(join(",", map { substr($_, 0, 8) } @scrollInfo), "0,0.363636");
 
 eval { $e->destroy };
 
-if (1)
- {
-  $e = $mw->Entry(-width => 0)->pack;
-  $e->insert(end => "0123");
-  $e->update;
-  $e->configure(-font => $big);
-  $e->update;
-  ok($e->geometry, qr/62x3\d\+0\+0/);
- }
-
+$e = $mw->Entry(-width => 0)->pack;
+$e->insert(end => "0123");
+$e->update;
+$e->configure(-font => $big);
+$e->update;
+skip($skip_wm_test, $e->geometry, qr/62x3\d\+0\+0/);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "raised")->pack;
@@ -1242,7 +1243,7 @@ $e->update;
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 .............................));
-skip($skip_font_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
+skip($skip_font_test || $skip_wm_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
@@ -1256,7 +1257,7 @@ ok(join(" ", map { substr($_, 0, 8) } $e->xview), $Xw);
 $e->configure(-show => '.');
 $e->delete(qw(0 end));
 $e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
-skip($skip_font_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
+skip($skip_font_test || $skip_wm_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
 
 $e->configure(-show => "");
 $e->delete(qw(0 end));
@@ -1275,13 +1276,13 @@ $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcdef));
 $e->xview(3);
 $e->update;
-ok(join(" ",@scrollInfo),"0.1875 0.8125");
+skip($skip_font_test || $skip_wm_test, join(" ",@scrollInfo),"0.1875 0.8125");
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 abcdefghijklmnopqrs));
 $e->xview(6);
 $e->update;
-ok(join(" ",map { sprintf "%8f", $_ } @scrollInfo),"0.315789 0.842105");
+skip($skip_font_test || $skip_wm_test, join(" ",map { sprintf "%8f", $_ } @scrollInfo),"0.315789 0.842105");
 
 Tk::catch {$e->destroy};
 my $err;

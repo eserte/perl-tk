@@ -119,7 +119,7 @@ static int	ChnWriteJPEG _ANSI_ARGS_((Tcl_Interp *interp,
 		    char *fileName, Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 static int	StringWriteJPEG _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tcl_DString *dataPtr, Tcl_Obj *format,
+		    Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtJPEG = {
@@ -1189,9 +1189,8 @@ ChnWriteJPEG(interp, fileName, format, blockPtr)
  */
 
 static int
-StringWriteJPEG(interp, dataPtr, format, blockPtr)
+StringWriteJPEG(interp, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
@@ -1199,6 +1198,7 @@ StringWriteJPEG(interp, dataPtr, format, blockPtr)
     struct my_error_mgr jerror;	/* for controlling libjpeg error handling */
     int result;
     Tcl_DString data;
+    Tcl_DString *dataPtr;
 
     if (load_jpeg_library(interp) != TCL_OK) {
 	return TCL_ERROR;

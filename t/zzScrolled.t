@@ -91,15 +91,15 @@ my $text;
 	    ## ReSet
             eval { $scrl->configure($opt=>$oldsize); };
             ok($@, "", "Reset size: configure $opt => $oldsize");
+            eval { $mw->update; };
             eval { $newsize = $text->cget($opt); };
             ok($@, "", "Reset size: text cget $opt");
             ok($newsize, $oldsize, "Reset size: scrolled $opt ");
-            eval { $mw->update; };
             ok($@, "", "Sizechg: Error reset update configure $opt");
             eval { $newgeo  = $scrl->geometry; };
             ok($@, "", "Sizechk: reset geometry $opt");
             ok($newgeo, $oldgeo, "Sizechk: geometry has not changed not reset" .
-		"for $opt => $oldsize+($chg)"
+		" for $opt => $oldsize+($chg)"
 		);
           }
       }

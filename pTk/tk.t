@@ -7,7 +7,7 @@ VFUNC(int,LangEventCallback,V_LangEventCallback,_ANSI_ARGS_((ClientData, Tcl_Int
 
 #ifndef LangFindVar
 #ifndef RC_INVOKED
-VFUNC(Var,LangFindVar,V_LangFindVar,_ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name)))
+VFUNC(Var,LangFindVar,V_LangFindVar,_ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, CONST char *name)))
 #endif /* #ifndef RC_INVOKED */
 #endif /* #ifndef LangFindVar */
 

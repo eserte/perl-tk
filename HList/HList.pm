@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #14 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -238,7 +238,7 @@ sub GetNearest
       }
      if ($y > $bottomy)
       {
-       print "$y > $bottomy\n";
+       #print "$y > $bottomy\n";
        return undef;
       }
     }

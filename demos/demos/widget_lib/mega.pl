@@ -15,6 +15,7 @@ sub mega {
     );
 
     my $t = $TOP->Scrolled( qw/ ROText -wrap word -scrollbars oe/ );
+    $t->focus;
     $t->pack( qw/ -fill both -expand 1 / );
     $t->insert( 'end', <<'end-of-instructions' );
 

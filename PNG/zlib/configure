@@ -102,13 +102,13 @@ else
   SCO_SV\ 3.2*) SFLAGS=${CFLAGS-"-O3 -dy -KPIC "}
 	     CFLAGS=${CFLAGS-"-O3"}
 	     LDSHARED=${LDSHARED-"cc -dy -KPIC -G"};;
-  SunOS\ 5*) SFLAGS=${CFLAGS-"-fast -xcg89 -KPIC -R."}
-             CFLAGS=${CFLAGS-"-fast -xcg89"}
+  SunOS\ 5*) SFLAGS=${CFLAGS-"-KPIC -R."}
+             CFLAGS=${CFLAGS-""}
 	     LDSHARED=${LDSHARED-"cc -G"};;
   SunOS\ 4*) SFLAGS=${CFLAGS-"-O2 -PIC"}
 	     CFLAGS=${CFLAGS-"-O2"}
 	     LDSHARED=${LDSHARED-"ld"};;
-  UNIX_System_V\ 4.2.0) 
+  UNIX_System_V\ 4.2.0)
 	     SFLAGS=${CFLAGS-"-KPIC -O"}
 	     CFLAGS=${CFLAGS-"-O"}
 	     LDSHARED=${LDSHARED-"cc -G"};;
@@ -171,7 +171,7 @@ cat > $test.c <<EOF
 #include <sys/mman.h>
 #include <sys/stat.h>
 caddr_t hello() {
-  return mmap((caddr_t)0, (off_t)0, PROT_READ, MAP_SHARED, 0, (off_t)0); 
+  return mmap((caddr_t)0, (off_t)0, PROT_READ, MAP_SHARED, 0, (off_t)0);
 }
 EOF
 if test "`($CC -c $CFLAGS $test.c) 2>&1`" = ""; then

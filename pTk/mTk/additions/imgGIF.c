@@ -74,8 +74,7 @@ static int 	ChanWriteGIF _ANSI_ARGS_(( Tcl_Interp *interp,
 		    char *filename, Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 static int	StringWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tcl_DString *dataPtr, Tcl_Obj *format,
-		    Tk_PhotoImageBlock *blockPtr));
+		    Tcl_Obj *format,  Tk_PhotoImageBlock *blockPtr));
 static int      CommonReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
 		    MFile *handle, CONST char *fileName, Tcl_Obj *format,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
@@ -1148,15 +1147,15 @@ ChanWriteGIF (interp, filename, format, blockPtr)
 }
 
 static int
-StringWriteGIF(interp, dataPtr, format, blockPtr)
+StringWriteGIF(interp, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     int result;
     MFile handle;
     Tcl_DString data;
+    Tcl_DString *dataPtr;
 
     ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
 

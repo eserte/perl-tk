@@ -1,3 +1,77 @@
+Change 3076 on 2003/12/23 by nick@llama
+
+	Generated file out of date
+
+Change 3075 on 2003/12/23 by nick@llama
+
+	Remove problematic flags for zlib on Solaris
+
+Change 3074 on 2003/12/23 by nick@llama
+
+	HList.pod and debug removal patch from
+	 Ala Qumsieh <qumsieh@cim.mcgill.ca>
+
+Change 3073 on 2003/12/23 by nick@llama
+
+	Slaven's ->{Value} fix, + tweaks to make it compile.
+
+Change 3072 on 2003/12/23 by nick@llama
+
+	New tests that work on UNIX - but allegedly don't on Win32
+
+Change 3071 on 2003/12/23 by nick@llama
+
+	Sort out the Photo StringWrite mess - works now.
+	I had completely mis-understood the oh-so-clever Img extension
+	code - what we have now isn't as clever and is probably pTk
+	specific but it works.
+
+Change 3070 on 2003/12/23 by nick@llama
+
+	Fix gross segfault issue with $phoo->data (still does not work).
+	Tidy new photo.t so we can see what isn't working
+
+Change 3069 on 2003/12/23 by nick@llama
+
+	Slaven's $photo->data() tests (fail horribly)
+
+Change 3068 on 2003/12/23 by nick@llama
+
+	More CFLAGS and ./configure convergence
+
+Change 3067 on 2003/12/23 by nick@llama
+
+	Slaven's skip-window-manager-test patch for entry.t
+	tweaked to not-skip under KDE/XFree86 (where they work)
+
+Change 3066 on 2003/12/23 by nick@llama
+
+	SaveYourself debug removal patch from Steve
+
+Change 3065 on 2003/12/23 by nick@llama
+
+	Tinker with zzScrolled test
+
+Change 3064 on 2003/12/23 by nick@llama
+
+	Correct Epsilon in TkTest
+	Slaven's mark font-dependant patch for entry.t
+
+Change 3063 on 2003/12/22 by nick@llama
+
+	Steve's beta12 patch for demos & UserGuide.
+
+Change 3062 on 2003/12/22 by nick@llama
+
+	Force IO to bytes (RedHat perl tolerence) in Makefile.PL
+	With this it builds in a UTF-8 locale on RedHat9.
+	RedHat perl gives some fails (weird coredump after exit),
+	but stock perl5.8.0 is fine.
+
+Change 3061 on 2003/12/21 by nick@llama
+
+	Tk-804.025_beta12 Release Preparation
+
 Change 3060 on 2003/12/21 by nick@llama
 
 	Fix $hlist->infoChildren for children with spaces

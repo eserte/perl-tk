@@ -59,8 +59,7 @@ static int              ChnWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
                             char *fileName, Tcl_Obj *format,
                             Tk_PhotoImageBlock *blockPtr));
 static int	        StringWriteXBM _ANSI_ARGS_((Tcl_Interp *interp,
-               		    Tcl_DString *dataPtr, Tcl_Obj *format,
-		            Tk_PhotoImageBlock *blockPtr));
+		            Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 
 static int		CommonReadXBM _ANSI_ARGS_((Tcl_Interp *interp,
 			    ParseInfo *parseInfo,
@@ -567,14 +566,14 @@ ChnWriteXBM(interp, fileName, format, blockPtr)
  *----------------------------------------------------------------------
  */
 static int
-StringWriteXBM(interp, dataPtr, format, blockPtr)
+StringWriteXBM(interp, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     int result;
     Tcl_DString data;
+    Tcl_DString *dataPtr;
 
     ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
 

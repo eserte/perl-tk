@@ -104,8 +104,7 @@ this will delete and un-draw the widget and all its children.
 
 =head1 Standard Tk widgets
 
-Here is an itemize of the standard Tk widget set.  Perl/Tk provides an equal 
-number of new widgets, above and beyond this core set.
+Here is an itemize of the standard Tk widget set.
 
 =over 4
 
@@ -144,6 +143,53 @@ number of new widgets, above and beyond this core set.
 =item Text
 
 =item Toplevel
+
+=back
+
+Perl/Tk provides an equal number of new widgets, above and beyond this
+core set.
+
+=over 4
+
+=item Adjuster
+
+=item Ballon
+
+=item BrowseEntry
+
+=item ColorEditor
+
+=item DirTree
+
+=item ErrorDialog
+
+=item FileSelect
+
+=item HList
+
+=item LabEntry
+
+=item LabFrame
+
+=item NoteBook
+
+=item Optionmenu
+
+=item Pane
+
+=item ProgressBar
+
+=item ROText
+
+=item Table
+
+=item TextUndo
+
+=item Tiler
+
+=item TList
+
+=item Tree
 
 =back
 

@@ -32,6 +32,6 @@ else
  {
   $ENV{CC} = $Config{cc};
   local $ENV{CFLAGS} = "$Config{ccflags} $Config{cccdlflags}";
-  system("./configure");
+  system(sh => "./configure");
  }
 1;

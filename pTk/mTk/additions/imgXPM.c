@@ -69,8 +69,7 @@ static int		CommonReadXPM _ANSI_ARGS_((Tcl_Interp *interp, MFile *handle,
 			    int destX, int destY, int width, int height,
 			    int srcX, int srcY));
 static int	        StringWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
-               		    Tcl_DString *dataPtr, Tcl_Obj *format,
-		            Tk_PhotoImageBlock *blockPtr));
+			    Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 static int              FileWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
                             char *fileName, Tcl_Obj *format,
                             Tk_PhotoImageBlock *blockPtr));
@@ -834,14 +833,14 @@ FileWriteXPM(interp, fileName, format, blockPtr)
  *----------------------------------------------------------------------
  */
 static int
-StringWriteXPM(interp, dataPtr, format, blockPtr)
+StringWriteXPM(interp, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     int result;
     Tcl_DString data;
+    Tcl_DString *dataPtr;
     ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
     result = CommonWriteXPM(interp, "unknown", dataPtr, format, blockPtr);
     if ((result == TCL_OK) && (dataPtr == &data)) {

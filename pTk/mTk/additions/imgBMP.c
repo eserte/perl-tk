@@ -31,8 +31,7 @@ static int ObjReadBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 static int ChnWriteBMP _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
 	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 static int StringWriteBMP _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_DString *data, Tcl_Obj *format,
-	Tk_PhotoImageBlock *blockPtr));
+	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtBMP = {
     "bmp",					/* name */
@@ -362,15 +361,15 @@ static int ChnWriteBMP(interp, filename, format, blockPtr)
     return result;
 }
 
-static int StringWriteBMP(interp, dataPtr, format, blockPtr)
+static int StringWriteBMP(interp, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     MFile handle;
     int result;
     Tcl_DString data;
+    Tcl_DString *dataPtr;
 
     ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
 

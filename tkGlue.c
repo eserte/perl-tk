@@ -3999,7 +3999,7 @@ Tcl_Obj *
 LangFindVar(interp, tkwin, name)
 Tcl_Interp *interp;
 Tk_Window tkwin;
-char *name;
+CONST char *name;
 {
  dTHX;
  if (tkwin)

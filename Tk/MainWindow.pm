@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -175,7 +175,7 @@ sub WMSaveYourself
 {
  my $mw  = shift;
  my @args = @{$mw->command};
- warn 'preWMSaveYourself:'.join(' ',@args)."\n";
+# warn 'preWMSaveYourself:'.join(' ',@args)."\n";
  @args = ($0) unless (@args);
  my $i = 1;
  while ($i < @args)
@@ -191,7 +191,7 @@ sub WMSaveYourself
   }
 
  my @ip = $mw->wm('iconposition');
- print 'ip ',join(',',@ip),"\n";
+# print 'ip ',join(',',@ip),"\n";
  my $icon = $mw->iconwindow;
  if (defined($icon))
   {
@@ -202,7 +202,7 @@ sub WMSaveYourself
  splice(@args,1,0,'-iconic') if ($mw->state() eq 'iconic');
 
  splice(@args,1,0,'-geometry' => $mw->geometry);
- warn 'postWMSaveYourself:'.join(' ',@args)."\n";
+# warn 'postWMSaveYourself:'.join(' ',@args)."\n";
  $mw->command([@args]);
 }
 

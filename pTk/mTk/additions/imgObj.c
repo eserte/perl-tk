@@ -355,10 +355,6 @@ ImgFixStringWriteProc(data, interp, dataPtr, format, blockPtr)
     Tcl_Obj **format;
     Tk_PhotoImageBlock **blockPtr;
 {
-    if (!*blockPtr) {
-	*blockPtr = (Tk_PhotoImageBlock *) *format;
-	*format   = (Tcl_Obj *) *dataPtr;
-	*dataPtr  = data;
-	Tcl_DStringInit(data);
-    }
+    *dataPtr  = data;
+    Tcl_DStringInit(data);
 }

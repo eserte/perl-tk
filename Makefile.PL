@@ -1,3 +1,4 @@
+use open IO => ':bytes';
 use 5.007;
 use Cwd;
 use Config;

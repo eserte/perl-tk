@@ -14,7 +14,7 @@ $numFormats++ unless $@;
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
 
-plan tests => (2*(5 * $numFormats) + 2);
+plan tests => (2*(7 * $numFormats) + 2);
 
 my @files = ();
 
@@ -32,6 +32,7 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
 
   foreach $kind ($src->formats)
    {
+    print "# Testing $kind\n";
     my $f = lc("t/test.$kind");
     my $p = $f;
     push(@files,$f);
@@ -44,14 +45,44 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
     eval { $new = $mw->Photo(-file => $f, -format => "$kind") };
     ok($@,''," load $@");
     ok(defined($new),1,"Could not load $f");
+
+    my $skip_unsupported_data_format = $kind =~ /^(PPM)$/ ? "$kind is not supported" : "";
+
+    my $data;
+    my $new2;
+    if ($skip_unsupported_data_format)
+     {
+      Tk::catch { $data = $src->data(-format => $kind) };
+      ok($@,qr/image string format "$kind" is not supported/,"Error messaage");
+      skip("No data for $kind",1,1);
+     }
+    else
+     {
+      $data = $src->data(-format => $kind);
+      ok(defined($data) && $data ne "", 1, "$kind returns data");
+      if (defined $data)
+       {
+        $new2 = $mw->Photo(-data => $data, -format => $kind) if defined $data;
+        ok(defined $new2, 1,"Data back to image");
+       }
+      else
+       {
+        skip("No data was returned",1);
+       }
+     }
+
     $mw->Label(-text  => $kind)->grid(-row => $row, -column => $col);
-    $mw->Label(-background => 'white', -image => $new)->grid(-row => $row+1, -column => $col++);
+    $mw->Label(-background => 'white', -image => $new)->grid(-row => $row+1, -column => $col);
+    if (defined $new2) {
+	$mw->Label(-background => 'white', -image => $new2)->grid(-row => $row+2, -column => $col);
+    }
     $mw->update;
+    $col++;
    }
- $row += 2;
+ $row += 3;
 }
 
-$mw->after(1000,[destroy => $mw]);
+$mw->after(2500,[destroy => $mw]);
 MainLoop;
 
 foreach (@files)

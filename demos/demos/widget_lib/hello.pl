@@ -27,6 +27,7 @@ http://www.lehigh.edu/sol0/ptk
     my $t = $TOP->Scrolled(
         qw/ ROText -width 80 -height 25 -wrap none -scrollbars osoe/,
     );
+    $t->focus;
     my $cmd = $Config{installbin} . '/perldoc -t Tk::UserGuide';
     $t->pack( qw/ -expand 1 -fill both / );
 

@@ -1834,6 +1834,7 @@ t/browseentry-grabtest.t
 t/browseentry-subclassing.t
 t/browseentry.t
 t/browseentry2.t
+t/button.t
 t/create.t
 t/cursor.t
 t/dash.t
@@ -1857,6 +1858,7 @@ t/mega.t
 t/mwm.t
 t/optmenu.t
 t/photo.t
+t/pixmap.t
 t/progbar.t
 t/regexp.t
 t/Require.t
@@ -1865,6 +1867,7 @@ t/TkTest.pm
 t/trace1.t
 t/slaves.t
 t/widget.t
+t/wm.t
 t/wm-time.t
 t/X.t
 t/zzHList.t

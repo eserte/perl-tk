@@ -1517,8 +1517,7 @@ typedef int (Tk_ImageStringReadProc) _ANSI_ARGS_((Tcl_Interp *interp,
 typedef int (Tk_ImageFileWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
 	char *fileName, Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 typedef int (Tk_ImageStringWriteProc) _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_DString *dataPtr, Tcl_Obj *format,
-	Tk_PhotoImageBlock *blockPtr));
+	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 #endif
 
 /*
@@ -1806,7 +1805,7 @@ EXTERN void             Lang_DeleteWidget _ANSI_ARGS_((Tcl_Interp *interp, Tcl_C
 EXTERN void             Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *dispName, int screenIndex));
 
-EXTERN Var              LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
+EXTERN Var              LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, CONST char *name));
 
 EXTERN Tcl_Obj *        LangWidgetObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
 EXTERN Tcl_Obj *        LangFontObj _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name));

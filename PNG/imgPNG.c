@@ -90,8 +90,7 @@ static int ObjReadPNG _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 static int ChnWritePNG _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
 	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 static int StringWritePNG _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_DString *dataPtr, Tcl_Obj *format,
-	Tk_PhotoImageBlock *blockPtr));
+	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 
 
 Tk_PhotoImageFormat imgFmtPNG = {
@@ -590,9 +589,8 @@ static int ChnWritePNG(interp, filename, format, blockPtr)
     return result;
 }
 
-static int StringWritePNG(interp, dataPtr, format, blockPtr)
+static int StringWritePNG(interp, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
@@ -602,6 +600,7 @@ static int StringWritePNG(interp, dataPtr, format, blockPtr)
     int result;
     cleanup_info cleanup;
     Tcl_DString data;
+    Tcl_DString *dataPtr;
 
     ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
 

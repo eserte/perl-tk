@@ -1118,9 +1118,7 @@ ConfigureButton(interp, butPtr, objc, objv)
 	    Tcl_Obj *valuePtr, *namePtr;
 
 	    if (butPtr->selVarNamePtr == NULL) {
-		butPtr->selVarNamePtr = Tcl_NewStringObj(
-			Tk_Name(butPtr->tkwin), -1);
-		Tcl_IncrRefCount(butPtr->selVarNamePtr);
+		butPtr->selVarNamePtr = LangFindVar(interp, butPtr->tkwin, Tk_Name(butPtr->tkwin));
 	    }
 	    namePtr = butPtr->selVarNamePtr;
 

@@ -231,7 +231,7 @@ demos 'Tix Widgets', (
     'form_mgr'     => 'The form geometry manager',
     'HList'        => 'A hierarchical listbox widget',
     'HList2'       => 'Multicolumn listbox with individual cell styles',
-    'labframe'     => 'A Frame with embedded label (deprecated)',
+    'labframe'     => 'A Frame with embedded label',
 );
 
 demos 'Simulations', (

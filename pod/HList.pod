@@ -715,8 +715,10 @@ widget, returns an empty string.
 
 =item I<$hlist>-E<gt>B<info>(B<selection>)
 
-Returns a list of selected entries in the HList widget. If no entries
-are selected, returns an empty string.
+Returns a list of selected entries in the HList widget. In scalar
+context, returns an anonymous list of the selected entries.
+If no entries are selected, undef is returned in scalar context, and
+an empty list otherwise.
 
 =back
 

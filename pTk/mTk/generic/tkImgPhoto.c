@@ -412,7 +412,6 @@ static int		ImgPhotoSetSize _ANSI_ARGS_((PhotoMaster *masterPtr,
 static void             ImgPhotoInstanceSetSize _ANSI_ARGS_((
 			    PhotoInstance *instancePtr));
 static int              ImgStringWrite _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_DString *dataPtr,
 			    Tcl_Obj *formatString,
 			    Tk_PhotoImageBlock *blockPtr));
 static char *           ImgGetPhoto _ANSI_ARGS_((PhotoMaster *masterPtr,
@@ -907,7 +906,6 @@ ImgPhotoCmd(clientData, interp, objc, objv)
 	 * photo data command - first parse and check any options given.
 	 */
 	Tk_ImageStringWriteProc *stringWriteProc = NULL;
-	Tcl_DString buffer;
 
 	index = 2;
 	memset((VOID *) &options, 0, sizeof(options));
@@ -973,8 +971,7 @@ ImgPhotoCmd(clientData, interp, objc, objv)
 	 */
 
 	data = ImgGetPhoto(masterPtr, &block, &options);
-
-	result = stringWriteProc(interp, &buffer, options.format, &block);
+	result = stringWriteProc(interp, options.format, &block);
 	if (options.background) {
 	    Tk_FreeColor(options.background);
 	}
@@ -5637,9 +5634,8 @@ ImgGetPhoto(masterPtr, blockPtr, optPtr)
  */
 
 static int
-ImgStringWrite(interp, dataPtr, formatString, blockPtr)
+ImgStringWrite(interp, formatString, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *dataPtr;
     Tcl_Obj *formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
