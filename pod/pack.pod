@@ -307,9 +307,9 @@ the stacking order of either the master or the slave.
 
 =head1 SEE ALSO
 
-L<form|Tk::form>
-L<grid|Tk::grid>
-L<place|Tk::place>
+L<Tk::form|Tk::form>
+L<Tk::grid|Tk::grid>
+L<Tk::place|Tk::place>
 
 =head1 KEYWORDS
 

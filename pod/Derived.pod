@@ -46,5 +46,10 @@ The public methods provided by Tk::Derived are as follows:
 
 =back
 
+=head1 SEE ALSO
+
+L<Tk::configspec|Tk::configspec>
+L<Tk::mega|Tk::mega>
+
 =cut
 

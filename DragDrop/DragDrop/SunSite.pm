@@ -2,7 +2,7 @@ package Tk::DragDrop::SunSite;
 require Tk::DropSite;
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#3$
+$VERSION = '3.005'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#5$
 
 use Tk::DragDrop::SunConst;
 @ISA = qw(Tk::DropSite);
@@ -63,31 +63,42 @@ sub NoteSites
 {
  my ($class,$t,$sites) = @_;
  my $count = @$sites;
- if ($count)
+ my @data  = (0,0);
+ if ($t->viewable)
   {
-   my @data  = (0,$count);
-   my $s;             
-   my $i = 0;         
+   my $s;              
+   my $i = 0;          
+   my @win;            
+   my $bx = $t->rootx; 
+   my $by = $t->rooty; 
+   $t->MakeWindowExist;
    foreach $s (@$sites)
-    {                 
-     my $w = $s->widget;
-     $w->MakeWindowExist;
-     push(@data,${$w->WindowId});                   # XID
-     push(@data,$i++);                              # Our "tag"
-     push(@data,&ENTERLEAVE|&MOTION);               # Flags
-     push(@data,0);                                 # Kind is "rect"
-     push(@data,1);                                 # Number of rects
-     push(@data,$s->x,$s->y,$s->width,$s->height);  # The rect
-    }                 
+    {                  
+     my $w = $s->widget; 
+     if ($w->viewable) 
+      {                
+       $w->MakeWindowExist;                                     
+       $data[1]++;     
+       push(@data,${$w->WindowId});                   # XID     
+       push(@data,$i++);                              # Our "tag"
+       push(@data,ENTERLEAVE|MOTION);                 # Flags   
+       push(@data,0);                                 # Kind is "rect"
+       push(@data,1);                                 # Number of rects
+       push(@data,$s->X-$bx,$s->Y-$by,$s->width,$s->height);  # The rect
+      }                
+    }                  
+  }
+ if ($data[1])
+  {
    $t->property('set',
                 "_SUN_DRAGDROP_INTEREST",           # name
                 "_SUN_DRAGDROP_INTEREST",           # type
                 32,                                 # format 
-                \@data);                            # the data 
+                \@data,$t->wrapper);                # the data 
   }
  else
   {
-   $t->property('delete',"_SUN_DRAGDROP_INTEREST");
+   $t->property('delete',"_SUN_DRAGDROP_INTEREST",$t->wrapper);
   }
 }
 

@@ -4,17 +4,15 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.010'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#10$
+$VERSION = '3.016'; # $Id: //depot/Tk8/DragDrop/DragDrop.pm#16$
 
 @ISA = qw(Tk::DragDrop::Common Tk::Toplevel);
 
-*MoveWindow = \&Tk::Widget::MoveToplevelWindow;
-
 # This is a little tricky, ISA says 'Toplevel' but we 
 # define a Tk_cmd to actually build a 'Label', then 
-# use Tix's wmRelease in Populate to make it a toplevel. 
+# use wmRelease in Populate to make it a toplevel. 
 
-my $useWmRelease = 0 ; # ($^O ne 'MSWin32');
+my $useWmRelease = 1; # ($^O ne 'MSWin32');
 
 sub Tk_cmd { ($useWmRelease) ? \&Tk::label : \&Tk::toplevel }
 
@@ -51,7 +49,8 @@ sub Populate
    my $lab = $token->Label->pack(-expand => 1, -fill => 'both');
    bless $lab,ref($token);
    $lab->bindtags([ref($token), $lab, $token, 'all']);
-   $token->ConfigSpecs(DEFAULT => [$lab]);
+   $token->ConfigSpecs(-text => [$lab,'text','Text',$parent->class],
+                       DEFAULT => [$lab]);
   }
  $token->withdraw;
  $token->overrideredirect(1);
@@ -131,7 +130,7 @@ sub Mapped
   {
    my $X = $e->X;
    my $Y = $e->Y;
-   $token->MoveWindow($X,$Y); 
+   $token->MoveToplevelWindow($X,$Y); 
    $token->NewDrag;
    $token->FindSite($X,$Y);
   }
@@ -186,9 +185,9 @@ sub Drag
 {
  my $token = shift;
  my $e = $token->XEvent;
- $token = $token->toplevel;
  my $X  = $e->X;
  my $Y  = $e->Y;
+ $token = $token->toplevel;
  my $site = $token->FindSite($X,$Y);
  my $over = $token->{'Over'};
  if ($over)
@@ -207,7 +206,7 @@ sub Drag
   {
    $site->Enter($token,$e);
   }
- $token->MoveWindow($X,$Y);
+ $token->MoveToplevelWindow($X,$Y);
 }
 
 sub Done
@@ -280,7 +279,7 @@ sub StartDrag
         {
          delete $token->{'XY'};  
          $w->{'Dragging'} = $token;
-         $token->MoveWindow($X,$Y);
+         $token->MoveToplevelWindow($X,$Y);
          $token->raise;          
          $token->deiconify;      
          $token->FindSite($X,$Y);

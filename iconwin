@@ -3,6 +3,8 @@
 use Tk;
 
 my $top = MainWindow->new();
+$top->wmTracing(1);
+
 my $img = $top->Pixmap('-file' => Tk->findINC("demos/images/QuitPB.xpm"));
 
 # $top->iconify;

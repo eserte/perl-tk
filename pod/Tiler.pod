@@ -10,9 +10,9 @@ Tk::Tiler - Scrollable frame with sub-widgets arranged into rows
 =head1 SYNOPSIS
 
   use Tk::Tiler;
-  
+
   my $tl = $parent->Scrolled('Tiler', -columns => n, -rows => n);
-  
+
   my $a  = $tl->Xxxxx(...);
   my $b  = $tl->Xxxxx(...);
   my $c  = $tl->Xxxxx(...);
@@ -21,12 +21,12 @@ Tk::Tiler - Scrollable frame with sub-widgets arranged into rows
 
 =head1 DESCRIPTION
 
-Tiler is derived form Tk::Frame. It is a geometry managing widget which 
+Tiler is derived form Tk::Frame. It is a geometry managing widget which
 accepts widgets to manage. It places the widgets in a grid with as many
 widgets as possible in a row. All the "slots" in the grid are the same size,
 which is determined by the largest managed widget.
 
-The grid may be scrolled vertically.   
+The grid may be scrolled vertically.
 
 =cut
 

@@ -8,32 +8,52 @@ Tk::Scrolled - Create a widget with attached scrollbar(s)
 
 =head1 SYNOPSIS
 
-    $whatever = $parent->Scrolled('Whatever',
-				-scrollbars = 'nw',
-				... widget options of Whatever here...
-				);
+S<    >I<$whatever> = I<$parent>-E<gt>B<Scrolled>(I<Whatever> ?,B<-scrollbars>=E<gt>I<where>? ?,...?);
 
 =head1 DESCRIPTION
 
-To stop a flood of B<ScrlWhatever> Perl/Tk introcuded the special constructor
-B<Scrolled>.  B<Scrolled> creates a widget of the given Class 'Whatever' with
-attached L<scrollbar>(s).
+To stop a flood of B<ScrlWhatever> widgets Perl/Tk introcuded the special
+constructor B<Scrolled>.  B<Scrolled> creates a widget of the given Class
+I<Whatever> with attached L<scrollbar(s)|Tk::Scrollbar>.
 
 =head1 OPTIONS
+
+All options beside B<-scrollbars> explained below are passed to
+the I<Whatever> widget constructor.
 
 =over 4
 
 =item -scrollbars
 
 Expects as argument the position where the scrollbars should be
-created.  C<'w'>, C<'e'> or C<'n'>, C<'s'> or a combination of
-them.  If the one or both positions are prefixed with C<'o'> the
+created:  B<w>, B<e> or B<n>, B<s> or a combination of
+them.  If the one or both positions are prefixed with B<o> the
 scrollbar will only show up if there is a 'real' need to scroll.
 
-=item all other option
+=back
 
-All options beside B<-scrollbars> are passed to the 'Whatever' widget
-constructor.
+=head1 ADVERTISED SUBWIDGETS
+
+See L<Tk::mega/"Subwidget"> how to use advertised widgets.
+
+=over 4
+
+=item scrolled
+
+the scrolled widget
+
+=item I<widget>
+
+same as B<scrolled> above.  I<widget> is the kind of widget passed
+to scrolled as first argument in all lowercase.
+
+=item xscrollbar
+
+the B<Scrollbar> widget used for horizontal scrolling (if it exists)
+
+=item yscrollbar
+
+the B<Scrollbar> widget used for vertical scrolling (if it exists)
 
 =back
 
@@ -48,15 +68,13 @@ S<    >I<$parent>->B<Scrolled>(B<'Button'>, ...)
 One does not get an error message or warning when one tries to
 configure scrollbars after the widget construction:
 
-S<    >I<$ascrolled>->B<configure>(B<-scrollbars> => 'e');
+S<    >I<$ascrolled>->B<configure>(B<-scrollbars> => B<'e'>);
 
 =head1 SEE ALSO
 
 L<Tk::Scrollbar|Tk::Scrollbar>
-L<Tk::Widget/Scrollbars|Tk::Widget/Scrollbars>
-L<Tk::Frame/AddScrollbars|Tk::Frame/AddScrollbars>
 
-head1 KEYWORDS
+=head1 KEYWORDS
 
 scrolled, scrollbar
 

@@ -6,14 +6,15 @@
 
 use Carp;
 
-$SIG{__DIE__} = sub { print "die ",shift,"\n" };
+$SIG{__DIE__} = \&Carp::confess;
 
 
 use Tk qw(exit);
 # use Tk::Xrm;
 
-use Tk::widgets qw(Button Label Menu Photo Optionmenu Pixmap);
-use Tk::widgets qw(ErrorDialog Checkbutton Radiobutton Entry Message Listbox);
+use Tk::widgets qw(Button Label Menu Photo Optionmenu Pixmap Balloon);
+#use Tk::widgets qw(ErrorDialog Checkbutton Radiobutton Entry Message Listbox);
+use Tk::widgets qw(Checkbutton Radiobutton Entry Message Listbox);
 
 
 use Config;
@@ -221,7 +222,9 @@ sub popdown
 
 sub dialogue
 {my $top = shift;
- my $t = $top->Toplevel("-class","Dialogue",-screen => $ENV{'DISPLAY'});
+ my $t = $top->Toplevel("-class","Dialogue",
+               # -screen => $ENV{'DISPLAY'}
+               );
  my $l = &label($t,@_);
  my $b = &button($t,"-text","OK","-command"=>[ \&popdown ,$t]);
  $t->wm("group",$top);
@@ -244,7 +247,7 @@ $top->bind('MainWindow','<Map>',
             sub { 
                  printf "Mapped %.3g Sec. after bootstrap (u=%.3g s=%.3g)\n",Tk::Time_So_Far,times;
                  printf("%gK\n",Memory->used/1024) if (defined &Memory::used);
-                 system("/bin/ps","-o",'vsz,osz,rss,pmem,time','-p',$$) if ($^O eq 'solaris'); 
+                 system("/bin/ps","-o",'vsz,osz,rss,pmem,time','-p',$$) if (!$^T && $^O eq 'solaris'); 
                 }
           );
 

@@ -3476,7 +3476,7 @@ TkTextYviewCmd(textPtr, interp, argc, argv)
     double fraction;
     TkTextIndex index, new;
     TkTextLine *lastLinePtr;
-    DLine *dlPtr;
+    DLine *dlPtr;            
 
     if (dInfoPtr->flags & DINFO_OUT_OF_DATE) {
 	UpdateDisplayInfo(textPtr);
@@ -3505,8 +3505,10 @@ TkTextYviewCmd(textPtr, interp, argc, argv)
 	    }
 	}
     }
-    if ((argc == 3) || pickPlace) {
-	if (Tcl_GetInt(interp, argv[2+pickPlace], &lineNum) == TCL_OK) {
+    if ((argc == 3) || pickPlace) {  
+	/* FIXME: Disable integer form altogether ??? */
+	if (!strchr(LangString(args[2+pickPlace]),'.') &&
+	    Tcl_GetInt(interp, argv[2+pickPlace], &lineNum) == TCL_OK) {
 	    TkTextMakeIndex(textPtr->tree, lineNum, 0, &index);
 	    TkTextSetYView(textPtr, &index, 0);
 	    return TCL_OK;

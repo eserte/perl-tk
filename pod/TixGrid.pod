@@ -86,7 +86,6 @@ is the location of the cell that has just been clicked.
 
 ?docu here?  Not in configure output but used in bindings ??!!
 
-
 =item Name:	B<editDoneCmd>
 
 =item Class:	B<EditDoneCmd>
@@ -342,7 +341,6 @@ the method returns an empty string.  I<Option> may have any of the
 values accepted by the B<set> method.
 
 =item I<$tixgrid>->B<format>(I<option>, ?I<args>, ...?)
-
 
 =item I<$tixgrid>->B<formatBorder>(I<x1,y1>, I<x2,y2>, I<options>);
 

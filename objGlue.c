@@ -58,6 +58,8 @@ Tcl_DecrRefCount(Tcl_Obj *objPtr)
  SvREFCNT_dec(objPtr);
 }
 
+static SV * ForceScalar(SV *sv);
+
 static void
 Scalarize(SV *sv, AV *av)
 {
@@ -79,13 +81,22 @@ Scalarize(SV *sv, AV *av)
      for (i=0; i < n; i++)
       {
        if ((svp = av_fetch(av, i, 0)))
-        {
-         Tcl_DStringAppendElement(&ds,LangString(*svp));
+        {  
+         SV *el = *svp;                                       
+         int temp = 0;
+         if (SvROK(el) && SvTYPE(SvRV(el)) == SVt_PVAV)
+          {
+           el = newSVpv("",0);
+           temp = 1;
+           Scalarize(el,(AV *) SvRV(*svp));
+          }
+         Tcl_DStringAppendElement(&ds,LangString(el));
+         if (temp)
+          SvREFCNT_dec(el);
         }
       }
      sv_setpvn(sv,Tcl_DStringValue(&ds), Tcl_DStringLength(&ds));
      Tcl_DStringFree(&ds);
-     fprintf(stderr,__FUNCTION__ " '%s'\n",SvPV(sv,na));
     }
   }
 }
@@ -253,7 +264,8 @@ char *
 Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
 {
  char *s;
- if (SvTYPE(objPtr) == SVt_PVAV)
+ if ((SvROK(objPtr) && SvTYPE(SvRV(objPtr)) == SVt_PVAV) ||
+      (SvTYPE(objPtr) == SVt_PVAV))
   objPtr = ForceScalar(objPtr);
  if (SvPOK(objPtr))
   {
@@ -267,7 +279,7 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
    s = LangString(objPtr);
    if (lengthPtr)
     *lengthPtr = strlen(s);
-  }
+  } 
  return s;
 }
 
@@ -431,10 +443,11 @@ Tcl_DStringAppendElement(dsPtr, string)
 {
     char *s = string;
     int ch;
-    while ((ch = *s++))
+    while ((ch = *s))
      {
       if (isspace(ch))
        break;
+      s++;
      }
     if (Tcl_DStringLength(dsPtr)) {
 	Tcl_DStringAppend(dsPtr, " ", 1);

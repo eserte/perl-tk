@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Frame.pm#11$
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Frame.pm#13$
 
 sub Menubar;
 
@@ -87,8 +87,7 @@ sub Populate
  $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
-}
-
+}                  
 
 1;
 
@@ -242,9 +241,6 @@ sub AddScrollbars
    $cw->ConfigSpecs('-scrollbars' => ['METHOD','scrollbars','Scrollbars',$x.$y]);
   }
 }
-
-
-
 
 sub packscrollbars
 {

@@ -9,20 +9,20 @@ Tk::Tree - Create and manipulate Tree widgets
 
 =head1 SYNOPSIS
 
-    use Tk::Tree;
+S<    >B<use Tk::Tree;>
 
-    $tree = $parent->Tree(?options?);
+S<    >I<$tree> = I<$parent>-E<gt>B<Tree>(?I<options>?);
 
 =head1 SUPER-CLASS
 
-The B<Tree> class is derived from the B<HList> class and inherits all
-the commands, options and subwidgets of its super-class.  A B<Tree> is
+The B<Tree> class is derived from the L<HList|Tk::HList> class and inherits all
+the methods, options and subwidgets of its super-class.  A B<Tree> widget is
 not scrolled by default.
 
 =head1 STANDARD OPTIONS
 
 B<Tree> supports all the standard options of an HList widget.
-See L<options> for details on the standard options.
+See L<Tk::options> for details on the standard options.
 
 =head1 WIDGET-SPECIFIC OPTIONS
 
@@ -34,8 +34,8 @@ See L<options> for details on the standard options.
 
 =item Switch:		B<-browsecmd>
 
-Specifies a command to call whenever the user browses on an entry
-(usually by single-clicking on the entry). The command is called with
+Specifies a L<callback/Tk::callbacks> to call whenever the user browses on an entry
+(usually by single-clicking on the entry). The callback is called with
 one argument, the pathname of the entry.
 
 =item Name:		B<closeCmd>
@@ -44,9 +44,9 @@ one argument, the pathname of the entry.
 
 =item Switch:		B<-closecmd>
 
-Specifies a command to call whenever an entry needs to be closed (See
-L<"BINDINGS"> below). This command is called with one argument,
-the pathname of the entry. This command should perform appropriate
+Specifies a L<callback/Tk::callbacks> to call whenever an entry needs to be closed (See
+L<"BINDINGS"> below). This method is called with one argument,
+the pathname of the entry. This method should perform appropriate
 actions to close the specified entry. If the B<-closecmd> option
 is not specified, the default closing action is to hide all child
 entries of the specified entry.
@@ -57,8 +57,8 @@ entries of the specified entry.
 
 =item Switch:		B<-command>
 
-Specifies a command to call whenever the user activates an entry
-(usually by double-clicking on the entry). The command
+Specifies a L<callback/Tk::callbacks> to call whenever the user activates an entry
+(usually by double-clicking on the entry). The callback
 is called with one argument, the pathname of the entry.
 
 =item Name:		B<ignoreInvoke>
@@ -80,9 +80,9 @@ setting).
 
 =item Switch:		B<-opencmd>
 
-Specifies a command to call whenever an entry needs to be opened (See
-L<"BINDINGS"> below). This command is called with one argument,
-the pathname of the entry. This command should perform appropriate
+Specifies a L<callback/Tk::callbacks> to call whenever an entry needs to be opened (See
+L<"BINDINGS"> below). This method is called with one argument,
+the pathname of the entry. This method should perform appropriate
 actions to open the specified entry. If the B<-opencmd> option
 is not specified, the default opening action is to show all the child
 entries of the specified entry.
@@ -96,89 +96,69 @@ and return a reference to it.  Additional options, described above, may
 be specified on the command line or in the option database to configure
 aspects of the Tree widget such as its cursor and relief.
 
-The Tree widget can be used to display hierachical data in a tree
+The Tree widget can be used to display hierarchical data in a tree
 form. The user can adjust the view of the tree by opening or closing
 parts of the tree.
 
 To display a static tree structure, you can add the entries into the
-B<hlist> subwidget and hide any entries as desired. Then you can call
+Tree widget and hide any entries as desired. Then you can call
 the B<autosetmode> method. This will set up the Tree widget so that it
-handles all the I<open> and I<close> events automatically. (Please see
-the demonstration program F<examples/perl-tix-tree>).
+handles all the I<open> and I<close> events automatically.
+the demonstration program F<Tixish/examples/perl-tix-tree>).
 
 The above method is not applicable if you want to maintain a dynamic tree
 structure, i.e, you do not know all the entries in the tree and you need
 to add or delete entries subsequently. To do this, you should first create
-the entries in the B<hlist> subwidget. Then, use the setmode method to
+the entries in the Tree widget. Then, use the B<setmode> method to
 indicate the entries that can be opened or closed, and use the B<-opencmd>
 and B<-closecmd> options to handle the opening and closing events. (Please
-see the demonstration program F<examples/perl-tix-dyntree>).
+see the demonstration program F<Tixish/examples/perl-tix-dyntree>).
 
 Use either
 
-    $w->Scrolled( "Tree", ... )
-or
-    $w->ScrlTree(  ... )
+S<    >I<$parent>-E<gt>B<Scrolled>(B<'Tree'>, ... );
 
-to create a scrolled B<Tree>.
+or
+
+S<    >I<$parent>-E<gt>B<ScrlTree>( ... );
+
+to create a scrolled B<Tree>. See L<Tk::Scrolled> for details.
 
 =head1 WIDGET METHODS
 
-The B<Tree> method creates a widget object.  This command may be used
-to invoke various operations on the widget. It has the following
-general form:
+The B<Tree> method creates a widget object.
+This object supports the B<configure> and B<cget> methods
+described in L<Tk::options> which can be used to enquire and
+modify the options described above.
+The widget also inherits all the methods provided by the generic
+L<Tk::Widget|Tk::Widget> class.
 
-I<$widget>-E<gt>B<method>(?I<arg arg ...>?)
-
-I<$widget> is a reference to the B<Tree> widget as returned by the
-C<Tree> constructor method.  I<Option> and the I<arg>s
-determine the exact behavior of the method.  The following commands
-are possible for Tree widgets:
+The following additional methods are available for Tree widgets:
 
 =over 4
 
-=item I<$widget>-E<gt>B<autosetmode>
+=item I<$tree>-E<gt>B<autosetmode>
 
-This command calls the B<setmode> method for all the entries in
+This method calls the B<setmode> method for all the entries in
 this Tree widget: if an entry has no child entries, its mode is set to
 B<none>. Otherwise, if the entry has any hidden child entries, its
 mode is set to B<open>; otherwise its mode is set to B<close>.
 
-=item I<$widget>-E<gt>B<cget>(I<option>)
-
-Returns the current value of the configuration option given by
-I<option>. I<Option> may have any of the values accepted by the
-B<Tree> constructor method.
-
-=item I<$widget>-E<gt>B<close>(I<entryPath>)
+=item I<$tree>-E<gt>B<close>(I<entryPath>)
 
 Close the entry given by I<entryPath> if its I<mode> is B<close>.
 
-=item I<$widget>-E<gt>B<configure>(?I<option>?, I<?value, option, value, ...>?)
-
-Query or modify the configuration options of the widget.  If no
-I<option> is specified, returns a list describing all of the
-available options for $widget (see L<configure> for
-information on the format of this list). If I<option> is specified
-with no I<value>, then the command returns a list describing the
-one named option (this list will be identical to the corresponding
-sublist of the value returned if no I<option> is specified).  If
-one or more I<option-value> pairs are specified, then the command
-modifies the given widget option(s) to have the given value(s); in
-this case the command returns an empty string.  I<Option> may have
-any of the values accepted by the B<Tree> constructor method.
-
-=item I<$widget>-E<gt>B<getmode>(I<entryPath>)
+=item I<$tree>-E<gt>B<getmode>(I<entryPath>)
 
 Returns the current I<mode> of the entry given by I<entryPath>.
 
-=item I<$widget>-E<gt>B<open>(I<entryPath>)
+=item I<$tree>-E<gt>B<open>(I<entryPath>)
 
 Open the entry given by I<entryPath> if its I<mode> is B<open>.
 
-=item I<$widget>-E<gt>B<setmode>(I<entryPath, mode>)
+=item I<$tree>-E<gt>B<setmode>(I<entryPath, mode>)
 
-This command is used to indicate whether the entry given by
+This method is used to indicate whether the entry given by
 I<entryPath> has children entries and whether the children are
 visible. I<mode> must be one of B<open>,
 B<close> or B<none>. If I<mode> is set to B<open>, a (+)
@@ -195,7 +175,7 @@ are now visible and the entry can be closed by the user.
 =head1 BINDINGS
 
 The basic mouse and keyboard bindings of the Tree widget are the same
-as the bindings of the HList widget.
+as the L<bindings of the HList|Tk::HList/"BINDINGS"> widget.
 In addition, the entries can be opened or closed under the following
 conditions:
 
@@ -215,7 +195,7 @@ on its (-) indicator.
 
 =head1 SEE ALSO
 
-Tk::HList, Tix(n)
+L<Tk::HList|Tk::HList>
 
 =head1 AUTHOR
 

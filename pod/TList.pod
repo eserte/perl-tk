@@ -16,7 +16,7 @@ Tk::TList - Create and manipulate Tix Tabular List widgets
 
 =head1 SYNOPSIS
 
-I<$tlist> = I<$parent>-E<gt>B<TList>(?I<options>?);
+S<    >I<$tlist> = I<$parent>-E<gt>B<TList>(?I<options>?);
 
 =head1 SUPER-CLASS
 
@@ -334,6 +334,10 @@ option is used.
 Specifies whether this entry can be selected or invoked by the user.
 Must be either B<normal> or B<disabled>.
 
+=item B<-data> => I<data>
+
+Arbitrary data to be associated with the entry (a perl scalar value).
+
 =back
 
 The B<insert> method accepts additional configuration options
@@ -381,9 +385,8 @@ returns the index of the TList element nearest to that coordinate.
 
 Adjust the view in the TList so that the entry given by I<index> is
 visible. If the entry is already visible then the command has no
-effect; if the entry is near one edge of the window then the TList
-scrolls to bring the element into view at the edge; otherwise the
-TList widget scrolls to center the entry.
+effect; otherwise TList scrolls to bring the element into view at the edge
+to which it is nearest.
 
 =item I<$tlist>-E<gt>B<selection>(I<option, >I<arg, ...>)
 
@@ -569,7 +572,7 @@ numbers:
     my $mw = Tk::MainWindow->new();
     my $image = $mw->Getimage('folder');
     my $tlist = $mw->TList(-orient => 'vertical');
-    for my $text ( qw/one two three four five six/ ) {
+    for my $text ( qw/one two three four five six seven eight nine/ ) {
         $tlist->insert('end',
 		 -itemtype=>'imagetext', -image=>$image, -text=>$text);
     }

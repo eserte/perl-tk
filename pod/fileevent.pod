@@ -57,12 +57,6 @@ its filehandle is closed or its interpreter is deleted.
 
 A filehandle is considered to be readable if there is unread data
 available on the underlying device.
-A filehandle is also considered to be readable if there is unread
-data in an input buffer, except in the special case where the
-most recent attempt to read from the filehandle was a B<gets>
-call that could not find a complete line in the input buffer.
-This feature allows a file to be read a line at a time in nonblocking mode
-using events.
 A filehandle is also considered to be readable if an end of file or
 error condition is present on the underlying file or device.
 It is important for I<callback> to check for these conditions

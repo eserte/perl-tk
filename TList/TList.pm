@@ -1,7 +1,7 @@
 package Tk::TList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/TList/TList.pm#4$
+$VERSION = '3.006'; # $Id: //depot/Tk8/TList/TList.pm#6$
 
 use Tk qw(Ev);
 
@@ -15,11 +15,8 @@ bootstrap Tk::TList $Tk::VERSION;
 
 sub Tk_cmd { \&Tk::tlist }
 
-
-EnterMethods Tk::TList __FILE__,qw(insert anchor 
-                                   delete dragsite dropsite entrycget
-                                   entryconfigure info
-                                   nearest see selection xview yview);
+Tk::Methods qw(insert anchor delete dragsite dropsite entrycget
+               entryconfigure info nearest see selection xview yview);
 
 use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
                      'info' => [qw(anchor dragsite dropsite selection)],
@@ -28,7 +25,6 @@ use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
                      'dragsite' => [qw(clear set)],
                      'dropsite' => [qw(clear set)],
                    );
-
 
 sub ClassInit
 {
@@ -99,7 +95,7 @@ sub Button1
 
  my $ent = $w->GetNearest($Ev->x, $Ev->y);
 
- return unless( $ent );
+ return unless defined $ent;
 
  my $browse = 0;
    
@@ -141,11 +137,11 @@ sub ShiftButton1
 
  delete $w->{'shiftanchor'}; 
 
- return unless($to);
+ return unless defined $to;
 
  my $mode = $w->cget('-selectmode');
 
- if($mode eq "extended")
+ if ($mode eq "extended")
   {
    my $from = $w->info('anchor');
    if($from)
@@ -191,7 +187,7 @@ sub ButtonRelease1
  my ($x, $y) = ($Ev->x, $Ev->y);
  my $ent = $w->GetNearest($x,$y);
 
- return unless($ent);
+ return unless defined $ent;
 
  if($x < 0 || $y < 0 || $x > $w->width || $y > $w->height)
   {
@@ -239,7 +235,7 @@ sub Button1Motion
 
  my $ent = $w->GetNearest($Ev->x,$Ev->y);
 
- return unless($ent);
+ return unless defined $ent;
 
  if($mode eq "single")
   {
@@ -276,10 +272,9 @@ sub Double1
 
  my $ent = $w->GetNearest($Ev->x,$Ev->y);
 
- return unless($ent);
+ return unless defined $ent;
 
- $w->anchor('set', $ent)
-	unless($w->info('anchor'));
+ $w->anchor('set', $ent) unless defined($w->info('anchor'));
 
  $w->selection('set', $ent);
  $w->Callback(-command => $ent);
@@ -294,13 +289,13 @@ sub CtrlButton1
 
  my $ent = $w->GetNearest($Ev->x,$Ev->y);
 
- return unless( $ent );
+ return unless defined $ent;
 
  my $mode = $w->cget('-selectmode');
 
  if($mode eq "extended")
   {
-   $w->anchor('set', $ent) unless( $w->info('anchor') );
+   $w->anchor('set', $ent) unless defined( $w->info('anchor') );
 
    if($w->selection('includes', $ent))
     {
@@ -331,7 +326,7 @@ sub KeyboardActivate
 
  my $anchor = $w->info('anchor');
 
- return unless( $anchor );
+ return unless defined $anchor;
 
  if($w->cget('-selectmode'))
   {
@@ -347,7 +342,7 @@ sub KeyboardBrowse
 
  my $anchor = $w->info('anchor');
 
- return unless( $anchor );
+ return unless defined $anchor;
 
  if($w->cget('-selectmode'))
   {

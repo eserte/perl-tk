@@ -4,6 +4,26 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.006                         
+	New hook in new for "managing parents" 
+
+	Sorted out Drag&Drop
+	Added wmRelease to Win32 port
+
+	More Pod tweaks from Achim     
+
+	form geometry manager restored and improved
+	-initialfile in FileSelect fixed.
+
+	Seems to work tainted again. 
+
+	Some cleanup to TList    
+
+	Build cleanup
+
+	Patches from the list.
+
+   
 Changes in Tk800.005   
  
 	Reworked MainLoop and did "sneaky" things to demo and tkpsh

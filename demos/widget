@@ -38,8 +38,11 @@ $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $widget_lib = Tk->findINC('demos/widget_lib');
 my $wd = "$widget_lib/WidgetDemo.pm";
 my $WIDTRIB = Tk->findINC('demos/widtrib');
-$WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
-$WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
+unless ($^T)
+ {
+  $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
+  $WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
+ }
 
 # The code below creates the main window, consisting of a menu bar
 # and a text widget that explains how to use the program, plus lists
@@ -255,15 +258,12 @@ sub AUTOLOAD {
 
     $T->Busy;
     {
-	local $INPUT_RECORD_SEPARATOR = undef;
 	local @Tk::EXPORT;
 	local $demo_file;
 	$demo_file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
 	$demo_file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
-	open(DEMO, $demo_file) or warn "Cannot open demo file $demo_file: $OS_ERROR!";
-	eval <DEMO>;
+	do $demo_file;
 	warn $EVAL_ERROR if $EVAL_ERROR;
-	close DEMO;
     }
     $T->Unbusy;
     goto &$::AUTOLOAD if defined &$::AUTOLOAD;

@@ -6,7 +6,7 @@ require Tk::Menubutton;
 require Tk::Menu;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#14$
 
 @ISA = qw(Tk::Derived Tk::Menubutton);
 
@@ -34,6 +34,11 @@ sub Populate
                  -options => ['METHOD', undef, undef, undef],
 		 -variable=> ['PASSIVE', undef, undef, undef],
 		 -font    => [['SELF',$menu], undef, undef, undef],
+
+   -takefocus          => [ qw/SELF takefocus          Takefocus          1/ ],
+   -highlightthickness => [ qw/SELF highlightThickness HighlightThickness 1/ ],
+   -relief             => [ qw/SELF relief             Relief        raised/ ],
+
                 );
 
  $w->configure(-variable => delete $args->{-variable});

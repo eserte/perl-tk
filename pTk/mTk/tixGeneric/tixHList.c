@@ -3061,6 +3061,11 @@ static HListElement * FindElementAtPosition(wPtr, y)
 		}
 	    }
 	}
+	/* FIXME: If we fall out of for loop chPtr is NULL, so we
+	 * cannot do chPtr->childHead as while loop implies
+	 * this is a quick-fix.
+	 */  
+	return NULL;
     }
 }
 

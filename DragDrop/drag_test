@@ -34,6 +34,7 @@ sub ShowIt
 sub ShowSites
 {
  my $w = shift;
+ print "Getting via $w ",$w->PathName,"\n";
  my @dnd = $w->SelectionGet('-selection'=>"_SUN_DRAGDROP_DSDM", 
                             "_SUN_DRAGDROP_SITE_RECTS");
  while (@dnd)

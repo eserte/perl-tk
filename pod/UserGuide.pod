@@ -48,7 +48,7 @@ A trivial one-window example is show below:
         use strict;
         use Tk;
 
-        my $main = new MainWindow;
+        my $main = MainWindow->new;
         $main->Label(-text => 'Hello, world!')->pack;
         $main->Button(-text => 'Quit',
                       -command => sub{exit}
@@ -62,7 +62,7 @@ Finally, note the typical Tk style using C<-option> =E<gt> C<value> pairs.
 =head1 Item creation
 
 Tk windows and widgets are hierarchical, S<i.e. one> includes one or more
-others.  You create the first Tk window using C<new MainWindow>.
+others.  You create the first Tk window using C<MainWindow-E<gt>new>.
 This returns a window handle, assigned to C<$main> in the example above.
 Keep track of the main handle.
 
@@ -81,11 +81,10 @@ is not entirely true; more info later).  If you do not need to refer to
 the widget after construction and packing, call C<pack> off the constructor
 results, as shown for the label and button in the example above.
 Note that the result of the compound call is the result of C<pack>,
-which is not a valid Tk handle.
+which is a valid Tk handle.
 
 Windows and widgets are deleted by calling C<destroy> on them;
-this will delete and un-draw the widget and all its children,
-with the exception of Toplevel windows.
+this will delete and un-draw the widget and all its children.
 
 =head1 Standard Tk types
 
@@ -136,15 +135,15 @@ So, where a traditional text-based system would look like this:
         use strict;
 
         print "Please type a font name\n";
-        my $font = <>; chop $font;
+        my $font = <>; chomp $font;
         # Validate font
 
         print "Please type a file name\n";
-        my $filename = <>; chop $filename;
+        my $filename = <>; chomp $filename;
         # Validate filename
 
         print "Type <1> to fax, <2> to print\n";
-        my $option = <>; chop $option;
+        my $option = <>; chomp $option;
         if ($option eq 1) {
             print "Faxing $filename in font $font\n";
         } elsif ($option eq 2) {
@@ -162,7 +161,7 @@ the application never notices; it's all handled by Tk.
         use strict;
         use Tk;
 
-        my $main = new MainWindow;
+        my $main = MainWindow->new;
         $main->Label(-text => 'Print file')->pack;
         my $font = $main->Entry(-width => 10);
         $font->pack;
@@ -185,17 +184,17 @@ the application never notices; it's all handled by Tk.
 
         sub do_print {
             my ($file, $font) = @_;
-            $file = get $file;
-            $font = get $font;
-            print "Sending file $file to printer in $font\n";
+            my $file_val = $file->get;
+            my $font_val = $font->get;
+            print "Sending file $file_val to printer in $font_val\n";
         }
 
 =head1 The packer.  Grouping and frames.
 
-In the examples above, you must have noticed the C<pack> calls.
+In the examples above, you must have noticed the L<pack|Tk::pack> calls.
 This is one of the more complicated parts of Tk.  The basic idea
 is that any window or widget should be subject to a Tk widget placement manager;
-the I<packer> is the most useful placement manager.
+the I<packer> is one of the placement managers.
 
 The actions of the packer are rather simple: when applied
 to a widget, the packer positions that widget on the indicated position
@@ -209,7 +208,7 @@ there is some space left in the frame or when the window size is
 increased.  If widgets should maintain a fixed size, specify nothing;
 this is the default.  For widgets that you want to fill up the current
 horizontal space, specify B<-fill =E<gt> 'x'>, B<y>, or B<both>; for
-widgets that should grow, specify B<-expand =E<gt> 'yes'>.  These
+widgets that should grow, specify B<-expand =E<gt> 1>.  These
 parameters are not shown in the example below; see the widget demo.
 
 If you want to group some items within a window that have a different
@@ -225,7 +224,7 @@ The example below shows the use of pack and frames:
         use Tk;
 
         # Take top, the bottom -> now implicit top is in the middle
-        my $main = new MainWindow;
+        my $main = MainWindow->new;
         $main->Label(-text => 'At the top (default)')->pack;
         $main->Label(-text => 'At the bottom')->pack(-side => 'bottom');
         $main->Label(-text => 'The middle remains')->pack;
@@ -250,7 +249,8 @@ The example below shows the use of pack and frames:
 
 Most real applications require more than one window.  As you read before,
 you can create more outermost windows by using Toplevel.  Each window
-is independent; exiting a toplevel window does not affect the others.
+is independent; exiting a toplevel window does not affect the others as
+long as they are not a child of the closed toplevel.
 Exiting the main window will end the application.
 The example below shows a trivial three-window application:
 
@@ -259,7 +259,7 @@ The example below shows a trivial three-window application:
         use strict;
         use Tk;
 
-        my $main = new MainWindow;
+        my $main = MainWindow->new;
         fill_window($main, 'Main');
         my $top1 = $main->Toplevel;
         fill_window($top1, 'First top-level');
@@ -298,11 +298,11 @@ an item with the left mouse button) moves the scrollbar.
         use strict;
         use Tk;
 
-        my $main = new MainWindow;
+        my $main = MainWindow->new;
         my $box = $main->Listbox(-relief => 'sunken',
                                  -width => -1, # Shrink to fit
                                  -height => 5,
-                                 -setgrid => 'yes');
+                                 -setgrid => 1);
         my @items = qw(One Two Three Four Five Six Seven
                        Eight Nine Ten Eleven Twelve);
         foreach (@items) {
@@ -310,7 +310,7 @@ an item with the left mouse button) moves the scrollbar.
         }
         my $scroll = $main->Scrollbar(-command => ['yview', $box]);
         $box->configure(-yscrollcommand => ['set', $scroll]);
-        $box->pack(-side => 'left', -fill => 'both', -expand => 'yes');
+        $box->pack(-side => 'left', -fill => 'both', -expand => 1);
         $scroll->pack(-side => 'right', -fill => 'y');
 
         MainLoop;
@@ -337,9 +337,9 @@ tag or group of tags.
         use Tk;
 
         # Create main window and canvas
-        my $main = new MainWindow;
+        my $main = MainWindow->new;
         my $canvas = $main->Canvas;
-        $canvas->pack(-expand => 'yes', -fill => 'both');
+        $canvas->pack(-expand => 1, -fill => 'both');
 
         # Create various items
         create_item($canvas, 1, 1, 'circle', 'blue', 'Jane');

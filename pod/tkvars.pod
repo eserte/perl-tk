@@ -67,9 +67,9 @@ perl/Tk tended  to be ``I<ahead>'' of them on some fixes and behind on
 others.  The first digest of the major version number increases in
 any Tk release that includes changes that are not backward compatible
 (i.e. whenever existing perl/Tk applications and scripts may have to change to
-work with the new release). 
+work with the new release).
 
-The I<minor> version depends on perl/Tk only. It uses the 
+The I<minor> version depends on perl/Tk only. It uses the
 'even'='stable', 'odd'='experimental' scheme that linux uses:
 
  .0xx  - inherently 'alpha'

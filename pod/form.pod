@@ -243,7 +243,7 @@ The master window is divided into a number of horizontal and vertical
 grids. By default the master window is divided into 100x100 grids; the
 number of grids can be adjusted by the B<formGrid> method. A
 grid attachment anchor point is given by a B<%> sign followed by an
-integer value. For example, B<'%0'> spceifies the first grid
+integer value. For example, B<'%0'> specifies the first grid
 line (the top or left edge of the master window). B<'%100'> specifies
 the last grid line (the bottom or right edge of the master window).
 
@@ -262,7 +262,7 @@ Opposite attachment specifies an anchor point located on the
 B<same> side of another slave widget, which must be managed by
 form in the same master window. An parallel attachment anchor point
 is given by the sign B<E<amp>> follwed by the name of another widget.
-For example, "I<$b>->B<form>(B<-top>=>['&I<$a>',0])" attaches the top side of
+For example, "I<$b>->B<form>(B<-top>=>['&',I<$a>,0])" attaches the top side of
 the widget I<$b> to the top of the widget I<$a>, making
 the top sides of these two widgets at the same vertical position
 in their parent window.
@@ -271,7 +271,7 @@ in their parent window.
 
 Specifies a side of the slave to be attached to nothing, indicated by
 the keyword B<none>. When the B<none> anchor point is given, the
-offser must be zero.
+offset must be zero (or not present).
 When a side of a slave is attached to B<['none', 0]>, the position
 of this side is calculated by the position of the other side and the
 natural size of the slave. For example, if a the left side of a
@@ -297,13 +297,15 @@ shifted 10 pixels to the right of I<\$a>'s left edge:
 
 S<    >I<$b>->B<form>(B<-left>=>[I<$a>,10], B<-top>=>[I<$a>,0]);
 
-B<ABBREVIATIONS:> Certain abbreviations can be made on the
+=head2 ABBREVIATIONS:
+
+Certain abbreviations can be made on the
 attachment specifications: First an offset of zero can be omitted.
 Thus, the following two lines are equivalent:
 
 S<    >I<$b>->B<form>(B<-top>=>[I<$a>,0], B<-right>=>['%100',0]);
 
-S<    >I<$b>->B<form>(B<-top>=>[I<$a>], B<-right>=>['%100']);
+S<    >I<$b>->B<form>(B<-top>=>[I<$a>], B<-right>=>'%100');
 
 In the second case, when the anchor point is omitted, the offset must
 be given. A default anchor point is chosen according to the value of
@@ -382,9 +384,9 @@ Springs have not been fully implemented yet.
 
 =head1 SEE ALSO
 
-L<grid|Tk::grid>
-L<pack|Tk::pack>
-L<place|Tk::place>
+L<Tk::grid|Tk::grid>
+L<Tk::pack|Tk::pack>
+L<Tk::place|Tk::place>
 
 =head1 KEYWORDS
 

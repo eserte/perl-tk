@@ -39,7 +39,6 @@ If the user selects a file, both B<getOpenFile> and
 B<getSaveFile> return the full pathname of this file. If the
 user cancels the operation, both commands return the empty string.
 
-
 The following I<option-value> pairs are possible as command line
 arguments to these two commands:
 

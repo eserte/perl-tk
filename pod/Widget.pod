@@ -249,11 +249,14 @@ C interface.)
 
 =item I<$widget>-E<gt>B<pathname>(I<id>)
 
-Returns the path name of the window whose X identifier is I<id>.
+Returns an object whose X identifier is I<id>.
+The identifier is looked up on the display of I<$widget>.
 I<Id> must be a decimal, hexadecimal, or octal integer and must
-correspond to a window in the invoking application.
-The identifier is looked
-up on the display of I<$widget>.
+correspond to a window in the invoking application, or an error
+occurs which can be trapped with C<eval { }> or C<Tk::catch { }>.
+If the window belongs to the application, but is not an object
+(for example wrapper windows, HList header, etc.) then C<undef>
+is returned.
 
 =item I<$widget>-E<gt>B<pixels>(I<number>)
 

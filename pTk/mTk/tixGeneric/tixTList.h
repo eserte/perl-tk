@@ -27,6 +27,7 @@ typedef struct ListEntry {
     struct ListEntry * next;
     Tix_DItem * iPtr;
     Tk_Uid state;
+    Arg data;			/* user data field */
     int size[2];
     unsigned int selected : 1;
 } ListEntry;

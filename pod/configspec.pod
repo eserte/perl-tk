@@ -36,8 +36,8 @@ Typically a widget will have one or more calls like the following
 
 in its B<Populate> method. When B<ConfigSpecs> is called this way
 (with arguments) the arguments are used to construct or augment/replace
-a hash table for the widget. (More than one key =>
-value pair can be specified to a single call.)
+a hash table for the widget. (More than one I<-option>=E<gt>I<value>
+pair can be specified to a single call.)
 
 B<dbName>, B<dbClass> and default are only used by B<ConfigDefault> described
 below, or to respond to 'inquiry' configure commands.
@@ -51,7 +51,7 @@ The currently permitted values of B<where> are:
 
 =item B<'ADVERTISED'>
 
-apply B<configure> to I<advertised> subwidgets (see L<ptkAdvertised>).
+apply B<configure> to I<advertised> subwidgets.
 
 =item B<'DESCENDANTS'>
 

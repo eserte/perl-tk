@@ -970,7 +970,7 @@ TkWinHandleMenuEvent(phwnd, pMessage, pwParam, plParam, plResult)
 	}
 
 	case WM_MEASUREITEM: {
-	    LPMEASUREITEMSTRUCT itemPtr = (LPMEASUREITEMSTRUCT) *plParam;
+	    MEASUREITEMSTRUCT *itemPtr = (MEASUREITEMSTRUCT *) *plParam;
     
 	    if (itemPtr != NULL) {
 		mePtr = (TkMenuEntry *) itemPtr->itemData;

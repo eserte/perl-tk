@@ -3,6 +3,7 @@ TixInitSam
 TixLoadLibrary
 TixRestoreInterpState
 TixSaveInterpState
+TixpSetWindowParent
 Tix_CallConfigMethod
 Tix_CallMethod
 Tix_ChangeOneOption

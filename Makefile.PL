@@ -5,7 +5,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.005';
+  $VERSION = '800.006';
 
   $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
@@ -244,9 +244,18 @@ $tmp/perlmain.c: $makefilename}, q{
 
 };
 
-    push (@m,"
+    push @m,"
 \$(MAP_TARGET) :: $tmp/perlmain\$(OBJ_EXT) \$(MAP_LIBPERL) \$(MAP_STATIC) 
-	link -out:\$\@ \$(MAP_LDFLAGS) $tmp/perlmain\$(OBJ_EXT) \$(MAP_STATIC) \$(MAP_LIBPERL) \$(MAP_PRELIBS)
+".( $Config{cc} =~ /^bcc/i ?	# Borland
+"	\$(LD) -Tpe -aa \$(LDFLAGS) c0w32\$(OBJ_EXT) \\
+	    $tmp\\perlmain\$(OBJ_EXT) \$(MAP_STATIC:s,/,\\,),\$\@,, \\
+	    \$(MAP_LIBPERL:s,/,\\,) \$(MAP_PRELIBS:s,/,\\,)
+" : $Config{cc} =~ /^gcc/i ?	# GCC
+"	\$(LD) -mwindows -o \$\@ \$(LDFLAGS) $tmp/perlmain\$(OBJ_EXT) \\
+	    \$(MAP_STATIC) \$(MAP_LIBPERL) \$(MAP_PRELIBS)
+" :				# VC
+"	\$(LD) -subsystem:windows -out:\$\@ \$(LDFLAGS) $tmp/perlmain\$(OBJ_EXT) \\
+	    \$(MAP_STATIC) \$(MAP_LIBPERL) \$(MAP_PRELIBS)
 ");
 
 

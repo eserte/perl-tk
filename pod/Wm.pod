@@ -458,6 +458,12 @@ window and then re-map it (e.g. with B<deiconify>) to get some
 window managers to pay attention to changes in window attributes
 such as group.
 
+=item I<$toplevel>-E<gt>B<wrapper>
+
+Returns the window id of the wrapper window in which Tk has placed
+I<$toplevel>. This is the id by which window manager will know
+I<$toplevel>, and so is appropriate place to add X properties.
+
 =back
 
 =head1 GEOMETRY MANAGEMENT

@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/MMutil.pm#17$
+$VERSION = '3.019'; # $Id: //depot/Tk8/Tk/MMutil.pm#19$
 
 use Tk::MakeDepend;
 
@@ -216,40 +216,16 @@ sub perldepend
  my @files = grep(-f $_,sort(keys %c));
  if (@files)
   {
+   my $tk = installed_tk();
    my @inc   = split(/\s+/,$self->{'INC'});   
    my @def   = split(/\s+/,$self->{'DEFINE'});
    push(@def,qw(-DWIN32 -D__WIN32__)) if ($IsWin32);
-   $str .= Tk::MakeDepend::command_line(@inc,@def,@files);
-  }
- if (0) 
-  {
-   $str .= "# Auto generated from GCC's .d files\n";
-   foreach $name ($self->lsdir("."))
+   foreach (@inc)
     {
-     if ($name =~ /\.d$/)
-      {
-       local $_;
-       open(DEP,"<$name") || die "Cannot open $name:$!";
-       while (<DEP>)
-        {
-         if ($IsWin32)
-          {
-           s/Unix/Win/g;
-          }
-         elsif ($win_arch eq 'open32') {
-           s/tixUnix/tixWin/g;
-           s/\btkWinInt\.h\b/tkWinInt.h windows.h/g;
-         }
-         elsif ($win_arch eq 'pm') {
-           s/tixUnix/tixWin/g;
-           s/tkUnix/tkOS2/g;
-         }
-         s/^([^:]*)\.o\s*:/$1$self->{OBJ_EXT}:/;
-         $str .= $_;
-        }
-       close(DEP);
-      }
-    }
+     s/\$\(TKDIR\)/$tk/g;
+     warn "Odd:$_" if /\$\(/; 
+    } 
+   $str .= Tk::MakeDepend::command_line(@inc,@def,@files);
   }
  return $str;
 }

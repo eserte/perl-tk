@@ -160,8 +160,12 @@ static Tk_ConfigSpec configSpecs[] = {
 };	
 
 #define DEF_TLISTENTRY_STATE	 "normal"
+#define DEF_TLISTENTRY_DATA	 NULL
 
 static Tk_ConfigSpec entryConfigSpecs[] = {
+
+    {TK_CONFIG_LANGARG, "-data", (char *) NULL, (char *) NULL,
+       DEF_TLISTENTRY_DATA, Tk_Offset(ListEntry, data), TK_CONFIG_NULL_OK},
 
     {TK_CONFIG_UID, "-state", (char*)NULL, (char*)NULL,
        DEF_TLISTENTRY_STATE, Tk_Offset(ListEntry, state), 0},
@@ -2347,21 +2351,21 @@ RedrawRows(wPtr, pixmap)
 
 	for (r=0, n=0, chPtr=(ListEntry*)wPtr->entList.head; chPtr;
 		chPtr=chPtr->next, n++) {
-	    if (chPtr == wPtr->seeElemPtr) {
-		size = wPtr->rows[r].size[i];
-		break;
-	    }
 	    if (n == wPtr->rows[r].numEnt) {
 		n=0;
 		r++;
 		start += wPtr->rows[r].size[i];
 	    }
-	}
+	    if (chPtr == wPtr->seeElemPtr) {
+		size = wPtr->rows[r].size[i];
+		break;
+	    }
+	} 
 
-	if (wPtr->scrollInfo[i].offset + windowSize > start + size) {
+	if ((wPtr->scrollInfo[i].offset + windowSize) < (start + size)) {
 	    wPtr->scrollInfo[i].offset = start + size - windowSize;
 	}
-	if (wPtr->scrollInfo[i].offset < start) {
+	if (wPtr->scrollInfo[i].offset > start) {
 	    wPtr->scrollInfo[i].offset = start;
 	}
 	if (wPtr->scrollInfo[i].offset != old) {
@@ -2424,6 +2428,7 @@ RedrawRows(wPtr, pixmap)
 		flags |= TIX_DITEM_SELECTED_BG;
 	    }
 
+#if 0
 	    if (wPtr->isVertical) {
 		W = wPtr->rows[r].size[0];
 		H = chPtr->iPtr->base.size[1];
@@ -2431,6 +2436,10 @@ RedrawRows(wPtr, pixmap)
 		H = wPtr->rows[r].size[1];
 		W = chPtr->iPtr->base.size[0];
 	    }
+#else
+	    W = wPtr->maxSize[0];
+	    H = wPtr->maxSize[1];
+#endif
 
 	    Tix_DItemDisplay(pixmap, None, chPtr->iPtr, p[0], p[1], W, H,
 		flags);

@@ -1,4 +1,5 @@
 tixWinMain.c
+tixWinWm.c
 tixWCmpt.c
 tkConsole42.c
 tkConsole41.c

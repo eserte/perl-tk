@@ -195,19 +195,8 @@ Expire(int code)
 #define EXPIRE(args) \
   ( Tcl_SprintfResult args, Expire(TCL_ERROR) )
 
-#ifdef DEBUG_GLUE
-static void
-do_watch(void)
-{
- if (my_watch)
-  {
-   if (strcmp(SvPV(my_watch, na), "view") != 0)
-    {
-     LangPrint(my_watch);
-     Tcl_Panic("Corrupted");
-    }
-  }
-}
+#ifndef DEBUG_TAINT
+#define do_watch() do { if (tainting) taint_proper("tainted", __FUNCTION__); } while (0)
 #else
 extern void do_watch _((void));
 void
@@ -734,7 +723,6 @@ int count;
 SV **data;
 {
  int i;
- do_watch();
  PerlIO_printf(PerlIO_stderr(), "%s (%d):\n", who, count);
  for (i = 0; i < count; i++)
   {
@@ -946,7 +934,6 @@ char *
 LangString(sv)
 SV *sv;
 {
- do_watch();
  if (!sv)
   return "";
  if (SvGMAGICAL(sv)) mg_get(sv);
@@ -1088,7 +1075,6 @@ Tcl_Interp *interp;
   {
    av_clear(av);
   }
- if (0) TAINT_NOT;
 }
 
 void
@@ -1601,7 +1587,6 @@ Tcl_Interp *interp;
   {
    SvREFCNT_dec((SV *) av);
   }
- if (0) TAINT_NOT;
 }
 
 void
@@ -1680,7 +1665,8 @@ ClientData clientData;
  AV *pend   = FindAv(interp, "HandleBgErrors", 0, "_PendingErrors_");
  dTHR;
  ENTER;
- SAVETMPS;
+ SAVETMPS;   
+ TAINT_NOT;
  if (pend)
   {
    Set_widget( WidgetRef(interp,"."));
@@ -1714,6 +1700,9 @@ void
 Tcl_BackgroundError(interp)
 Tcl_Interp *interp;
 {
+ dTHR;     
+ int old_taint = tainted;
+ TAINT_NOT;
  if (InterpHv(interp,0))
   {
    AV *pend = FindAv(interp, "Tcl_BackgroundError", 1, "_PendingErrors_");
@@ -1737,6 +1726,7 @@ Tcl_Interp *interp;
     Tcl_DoWhenIdle(HandleBgErrors, (ClientData) interp);
    Tcl_ResetResult(interp);
   }
+ TAINT_IF(old_taint);
 }
 
 static void
@@ -1801,6 +1791,20 @@ int offset;
  /* Copy stack pointer back to global */
  PUTBACK;
  return count;
+}     
+
+static void
+Lang_TaintCheck(char *s, int items, SV **args)
+{
+ if (tainting)
+  {
+   int i;
+   for (i=0; i < items; i++)
+    {
+     if (SvTAINTED(args[i]))
+      croak("Arg %d to `%s' (%_) is tainted",i,s,args[i]);
+    }
+  }
 }
 
 int
@@ -1816,9 +1820,10 @@ SV **args;
    SV *what = SvREFCNT_inc(args[0]);
    dSP;
    int old_taint = tainted;
-   tainted = 0;
    IncInterp(interp, "Call_Tk");
    Tcl_ResetResult(interp);
+   tainted = 0;
+   do_watch();
    if (info->Tk.proc || info->Tk.objProc)
     {
      /* Must find offset of 0'th arg now in case
@@ -1834,7 +1839,12 @@ SV **args;
         Possible alternate fix is for (all the) Lang_*Callback() to be passed &args,
         and fix it if stack moves.
       */
-     int code = (info->Tk.objProc)
+     int code;
+     if (tainting)
+      {
+       Lang_TaintCheck(LangString(args[0]),items, args);
+      }
+     code = (info->Tk.objProc)
                   ? (*info->Tk.objProc) (info->Tk.objClientData, interp, items, args)
                   : (*info->Tk.proc) (info->Tk.clientData, interp, items, args);
      /* info stucture may have been free'ed now ... */
@@ -1891,7 +1901,8 @@ XS(MainWindowCreate)
  SV **args = &ST(0);
  char *appName = SvPV(ST(1),na);
  int offset = args - sp;
- int code = TkCreateFrame(NULL, interp, items, &ST(0), 1, appName);
+ int code;
+ code = TkCreateFrame(NULL, interp, items, &ST(0), 1, appName);
  if (code != TCL_OK)
   {
    Tcl_AddErrorInfo(interp, "Tk::MainWindow::Create");
@@ -3315,6 +3326,7 @@ Arg sv;
 Var *vp;
 int type;
 {
+ dTHR;
  int old_taint = tainted;
  TAINT_NOT;
  *vp = NULL;
@@ -3422,6 +3434,7 @@ Var sv;
 
  */
 
+
 LangCallback *
 LangMakeCallback(sv)
 SV *sv;
@@ -3431,6 +3444,8 @@ SV *sv;
    dTHR;
    AV *av;
    int old_taint = tainted;
+   if (SvTAINTED(sv))
+    croak("Attempt to make callback from tainted %_", sv);
    tainted = 0;
    /* Case of a Tcl_Merge which returns an AV * */
    if (SvTYPE(sv) == SVt_PVAV)
@@ -3457,6 +3472,8 @@ SV *sv;
     sv = Blessed("Tk::Callback",sv);
    tainted = old_taint;
   }
+ if (sv && SvTAINTED(sv))
+  croak("Making callback tainted %_", sv);
  return sv;
 }
 
@@ -3494,6 +3511,10 @@ EventAndKeySym *obj;
 {
  SV *sv = *svp;
  dSP;
+ if (SvTAINTED(sv))
+  {
+   croak("Tainted callback %_",sv);
+  }
  if (interp && !sv_isa(sv,"Tk::Callback") && !sv_isa(sv,"Tk::Ev"))
   {
    return EXPIRE((interp,"Not a Callback '%s'",SvPV(sv,na)));
@@ -3512,7 +3533,11 @@ EventAndKeySym *obj;
    if (x)
     {
      int i = 1;
-     sv = *x;
+     sv = *x;         
+     if (SvTAINTED(sv))
+      {
+       croak("Callback slot 0 tainted %_",sv);
+      }
      if (!sv_isobject(sv) && obj && obj->window)
       {
        XPUSHs(sv_mortalcopy(obj->window));
@@ -3522,6 +3547,10 @@ EventAndKeySym *obj;
        x = av_fetch(av, i, 0);
        if (x)
         {SV *arg = *x;
+         if (SvTAINTED(arg))
+          {
+           croak("Callback slot %d tainted %_",i,arg);
+          }
          if (obj && sv_isa(arg,"Tk::Ev"))
           {
            SV *what = SvRV(arg);
@@ -3620,7 +3649,13 @@ int flags;
  dSP;
  I32 myframe = TOPMARK;
  I32 count;
- ENTER;
+ ENTER;    
+ if (SvTAINTED(sv))
+  {
+   croak("Call of tainted value %_",sv);
+  }
+ if (SvGMAGICAL(sv))
+  mg_get(sv);
  if (flags & G_EVAL)
   {
    CV *cv  = perl_get_cv("Tk::__DIE__", FALSE);
@@ -3644,6 +3679,8 @@ int flags;
   {
    SV **top = stack_base + myframe + 1;
    SV *obj = *top;
+   if (SvGMAGICAL(obj))
+    mg_get(obj);
    if (SvPOK(sv) && SvROK(obj) && SvOBJECT(SvRV(obj)))
     {
      count = perl_call_method(SvPV(sv, na), flags);
@@ -3659,7 +3696,9 @@ int flags;
      int pok = SvPOK(sv);
      int rok = SvROK(obj);
      int ook = SvOBJECT(SvRV(obj));
-     PerlIO_printf(PerlIO_stderr(), "Dubious call '%s'(%d) obj=%s(%d/%d)\n", SvPV(sv, na), pok, SvPV(obj, na), rok, ook);
+     PerlIO_printf(PerlIO_stderr(), "Dubious call '%s'(%d) obj=%s(%d/%d)\n", 
+                   SvPV(sv, na), pok, 
+                   SvPV(obj, na), rok, ook);
      LangDumpVec("sv",1,&sv);
      LangDumpVec("obj",1,&obj);
      abort();
@@ -3686,8 +3725,13 @@ XS(CallbackCall)
   }
  PushCallbackArgs(NULL,&ST(0),NULL);
  SPAGAIN;
+ Lang_TaintCheck("Callback", items, &ST(0));
  for (i=1; i < items; i++)
   {
+   if (SvTAINTED(ST(i)))
+    {
+     croak("Arg %d to callback %_ is tainted",i,ST(i));
+    }
    XPUSHs(ST(i));
   }
  PUTBACK;

@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/Widget.pm#31$
+$VERSION = '3.035'; # $Id: //depot/Tk8/Tk/Widget.pm#35$
 
 require Tk;
 use AutoLoader;
@@ -181,9 +181,11 @@ sub new
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
  bless $obj,$package;
+ $obj->SetBindtags;
+ my $notice = $parent->can('NoticeChild');
+ $parent->$notice($obj,\%args) if $notice;
  $obj->InitObject(\%args);
  $obj->configure(%args) if (%args);
- $obj->SetBindtags;
  return $obj;
 }
 
@@ -270,7 +272,7 @@ sub AUTOLOAD
  eval {local $SIG{'__DIE__'}; require $name};
  if ($@)
   {
-   croak $@ unless ($@ =~ /Can't locate\s+(?:file\s+')?\Q$name\E`?/);
+   croak $@ unless ($@ =~ /Can't locate\s+(?:file\s+)?'?\Q$name\E'?/);
    my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
    if ($package eq 'Tk::Widget' && $method ne '__ANON__')
     {

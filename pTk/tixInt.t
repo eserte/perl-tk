@@ -203,12 +203,6 @@ VFUNC(void,TixpEndSubRegionDraw,V_TixpEndSubRegionDraw,_ANSI_ARGS_((Display *dis
 			     TixpSubRegion * subRegPtr)))
 #endif
 
-#ifndef TixpSetWindowParent
-VFUNC(int,TixpSetWindowParent,V_TixpSetWindowParent,_ANSI_ARGS_((Tcl_Interp * interp,
-			    Tk_Window tkwin, Tk_Window newParent,
-			    int parentId)))
-#endif
-
 #ifndef TixpStartSubRegionDraw
 VFUNC(void,TixpStartSubRegionDraw,V_TixpStartSubRegionDraw,_ANSI_ARGS_((Display *display,
 			     Drawable drawable, GC gc,
