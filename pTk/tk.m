@@ -34,6 +34,46 @@
 #  define Lang_DeleteWidget (*TkVptr->V_Lang_DeleteWidget)
 #endif
 
+#ifndef TkOffsetParseProc
+#  define TkOffsetParseProc (*TkVptr->V_TkOffsetParseProc)
+#endif
+
+#ifndef TkOffsetPrintProc
+#  define TkOffsetPrintProc (*TkVptr->V_TkOffsetPrintProc)
+#endif
+
+#ifndef TkOrientParseProc
+#  define TkOrientParseProc (*TkVptr->V_TkOrientParseProc)
+#endif
+
+#ifndef TkOrientPrintProc
+#  define TkOrientPrintProc (*TkVptr->V_TkOrientPrintProc)
+#endif
+
+#ifndef TkPixelParseProc
+#  define TkPixelParseProc (*TkVptr->V_TkPixelParseProc)
+#endif
+
+#ifndef TkPixelPrintProc
+#  define TkPixelPrintProc (*TkVptr->V_TkPixelPrintProc)
+#endif
+
+#ifndef TkStateParseProc
+#  define TkStateParseProc (*TkVptr->V_TkStateParseProc)
+#endif
+
+#ifndef TkStatePrintProc
+#  define TkStatePrintProc (*TkVptr->V_TkStatePrintProc)
+#endif
+
+#ifndef TkTileParseProc
+#  define TkTileParseProc (*TkVptr->V_TkTileParseProc)
+#endif
+
+#ifndef TkTilePrintProc
+#  define TkTilePrintProc (*TkVptr->V_TkTilePrintProc)
+#endif
+
 #ifndef Tk_3DBorderColor
 #  define Tk_3DBorderColor (*TkVptr->V_Tk_3DBorderColor)
 #endif
@@ -48,10 +88,6 @@
 
 #ifndef Tk_3DVerticalBevel
 #  define Tk_3DVerticalBevel (*TkVptr->V_Tk_3DVerticalBevel)
-#endif
-
-#ifndef Tk_BellObjCmd
-#  define Tk_BellObjCmd (*TkVptr->V_Tk_BellObjCmd)
 #endif
 
 #ifndef Tk_BindEvent
@@ -218,10 +254,6 @@
 #  define Tk_DrawTextLayout (*TkVptr->V_Tk_DrawTextLayout)
 #endif
 
-#ifndef Tk_EventCmd
-#  define Tk_EventCmd (*TkVptr->V_Tk_EventCmd)
-#endif
-
 #ifndef Tk_EventInfo
 #  define Tk_EventInfo (*TkVptr->V_Tk_EventInfo)
 #endif
@@ -240,10 +272,6 @@
 
 #ifndef Tk_FontId
 #  define Tk_FontId (*TkVptr->V_Tk_FontId)
-#endif
-
-#ifndef Tk_FontObjCmd
-#  define Tk_FontObjCmd (*TkVptr->V_Tk_FontObjCmd)
 #endif
 
 #ifndef Tk_Free3DBorder
@@ -288,6 +316,10 @@
 
 #ifndef Tk_FreeTextLayout
 #  define Tk_FreeTextLayout (*TkVptr->V_Tk_FreeTextLayout)
+#endif
+
+#ifndef Tk_FreeTile
+#  define Tk_FreeTile (*TkVptr->V_Tk_FreeTile)
 #endif
 
 #ifndef Tk_FreeXId
@@ -354,6 +386,10 @@
 #  define Tk_GetCursorFromData (*TkVptr->V_Tk_GetCursorFromData)
 #endif
 
+#ifndef Tk_GetDoublePixels
+#  define Tk_GetDoublePixels (*TkVptr->V_Tk_GetDoublePixels)
+#endif
+
 #ifndef Tk_GetFont
 #  define Tk_GetFont (*TkVptr->V_Tk_GetFont)
 #endif
@@ -418,6 +454,10 @@
 #  define Tk_GetSelection (*TkVptr->V_Tk_GetSelection)
 #endif
 
+#ifndef Tk_GetTile
+#  define Tk_GetTile (*TkVptr->V_Tk_GetTile)
+#endif
+
 #ifndef Tk_GetUid
 #  define Tk_GetUid (*TkVptr->V_Tk_GetUid)
 #endif
@@ -448,10 +488,6 @@
 
 #ifndef Tk_ImageChanged
 #  define Tk_ImageChanged (*TkVptr->V_Tk_ImageChanged)
-#endif
-
-#ifndef Tk_ImageObjCmd
-#  define Tk_ImageObjCmd (*TkVptr->V_Tk_ImageObjCmd)
 #endif
 
 #ifndef Tk_InternAtom
@@ -546,6 +582,10 @@
 #  define Tk_NameOfRelief (*TkVptr->V_Tk_NameOfRelief)
 #endif
 
+#ifndef Tk_NameOfTile
+#  define Tk_NameOfTile (*TkVptr->V_Tk_NameOfTile)
+#endif
+
 #ifndef Tk_NameToWindow
 #  define Tk_NameToWindow (*TkVptr->V_Tk_NameToWindow)
 #endif
@@ -554,12 +594,44 @@
 #  define Tk_OwnSelection (*TkVptr->V_Tk_OwnSelection)
 #endif
 
+#ifndef Tk_PixmapOfTile
+#  define Tk_PixmapOfTile (*TkVptr->V_Tk_PixmapOfTile)
+#endif
+
 #ifndef Tk_PointToChar
 #  define Tk_PointToChar (*TkVptr->V_Tk_PointToChar)
 #endif
 
+#ifndef Tk_PostscriptBitmap
+#  define Tk_PostscriptBitmap (*TkVptr->V_Tk_PostscriptBitmap)
+#endif
+
+#ifndef Tk_PostscriptColor
+#  define Tk_PostscriptColor (*TkVptr->V_Tk_PostscriptColor)
+#endif
+
+#ifndef Tk_PostscriptFont
+#  define Tk_PostscriptFont (*TkVptr->V_Tk_PostscriptFont)
+#endif
+
 #ifndef Tk_PostscriptFontName
 #  define Tk_PostscriptFontName (*TkVptr->V_Tk_PostscriptFontName)
+#endif
+
+#ifndef Tk_PostscriptImage
+#  define Tk_PostscriptImage (*TkVptr->V_Tk_PostscriptImage)
+#endif
+
+#ifndef Tk_PostscriptPath
+#  define Tk_PostscriptPath (*TkVptr->V_Tk_PostscriptPath)
+#endif
+
+#ifndef Tk_PostscriptStipple
+#  define Tk_PostscriptStipple (*TkVptr->V_Tk_PostscriptStipple)
+#endif
+
+#ifndef Tk_PostscriptY
+#  define Tk_PostscriptY (*TkVptr->V_Tk_PostscriptY)
 #endif
 
 #ifndef Tk_PreserveColormap
@@ -606,6 +678,14 @@
 #  define Tk_SetInternalBorder (*TkVptr->V_Tk_SetInternalBorder)
 #endif
 
+#ifndef Tk_SetTileChangedProc
+#  define Tk_SetTileChangedProc (*TkVptr->V_Tk_SetTileChangedProc)
+#endif
+
+#ifndef Tk_SetTileOrigin
+#  define Tk_SetTileOrigin (*TkVptr->V_Tk_SetTileOrigin)
+#endif
+
 #ifndef Tk_SetWindowBackground
 #  define Tk_SetWindowBackground (*TkVptr->V_Tk_SetWindowBackground)
 #endif
@@ -642,6 +722,10 @@
 #  define Tk_SizeOfImage (*TkVptr->V_Tk_SizeOfImage)
 #endif
 
+#ifndef Tk_SizeOfTile
+#  define Tk_SizeOfTile (*TkVptr->V_Tk_SizeOfTile)
+#endif
+
 #ifndef Tk_StrictMotif
 #  define Tk_StrictMotif (*TkVptr->V_Tk_StrictMotif)
 #endif
@@ -652,14 +736,6 @@
 
 #ifndef Tk_TextWidth
 #  define Tk_TextWidth (*TkVptr->V_Tk_TextWidth)
-#endif
-
-#ifndef Tk_TkObjCmd
-#  define Tk_TkObjCmd (*TkVptr->V_Tk_TkObjCmd)
-#endif
-
-#ifndef Tk_ToplevelCmd
-#  define Tk_ToplevelCmd (*TkVptr->V_Tk_ToplevelCmd)
 #endif
 
 #ifndef Tk_UndefineCursor
@@ -688,10 +764,6 @@
 
 #ifndef Tk_UnsetGrid
 #  define Tk_UnsetGrid (*TkVptr->V_Tk_UnsetGrid)
-#endif
-
-#ifndef Tk_WinfoObjCmd
-#  define Tk_WinfoObjCmd (*TkVptr->V_Tk_WinfoObjCmd)
 #endif
 
 #endif /* NO_VTABLES */

@@ -109,6 +109,8 @@ DisplayVerticalScale(scalePtr, drawable, drawnAreaPtr)
     int x, y, width, height, shadowWidth;
     double tickValue;
     Tk_3DBorder sliderBorder;
+    Tk_Tile tile;
+    GC gc;
 
     /*
      * Display the information from left to right across the window.
@@ -121,9 +123,45 @@ DisplayVerticalScale(scalePtr, drawable, drawnAreaPtr)
 		+ 2*scalePtr->borderWidth - scalePtr->vertTickRightX;
 	drawnAreaPtr->height -= 2*scalePtr->inset;
     }
-    Tk_Fill3DRectangle(tkwin, drawable, scalePtr->bgBorder,
-	    drawnAreaPtr->x, drawnAreaPtr->y, drawnAreaPtr->width,
-	    drawnAreaPtr->height, 0, TK_RELIEF_FLAT);
+    if (scalePtr->state == TK_STATE_DISABLED) {
+	tile = scalePtr->disabledTile;
+    } else {
+	tile = scalePtr->tile;
+    }
+    if (Tk_PixmapOfTile(tile) != None) {
+	if (scalePtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (scalePtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scalePtr->display, scalePtr->copyGC, w, h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, scalePtr->copyGC, scalePtr->tsoffset.xoffset,
+		    scalePtr->tsoffset.yoffset);
+	}
+	XFillRectangle(scalePtr->display, drawable, scalePtr->copyGC,
+		drawnAreaPtr->x, drawnAreaPtr->y,
+		drawnAreaPtr->width, drawnAreaPtr->height);
+	XSetTSOrigin(scalePtr->display, scalePtr->copyGC, 0, 0);
+    } else {
+	Tk_Fill3DRectangle(tkwin, drawable, scalePtr->bgBorder,
+		drawnAreaPtr->x, drawnAreaPtr->y, drawnAreaPtr->width,
+		drawnAreaPtr->height, 0, TK_RELIEF_FLAT);
+    }
     if (scalePtr->flags & REDRAW_OTHER) {
 	/*
 	 * Display the tick marks.
@@ -171,16 +209,50 @@ DisplayVerticalScale(scalePtr, drawable, drawnAreaPtr)
 	    scalePtr->width + 2*scalePtr->borderWidth,
 	    Tk_Height(tkwin) - 2*scalePtr->inset, scalePtr->borderWidth,
 	    TK_RELIEF_SUNKEN);
+    if (Tk_PixmapOfTile(scalePtr->troughTile) != None) {
+	if (scalePtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (scalePtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scalePtr->display, scalePtr->troughGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, scalePtr->troughGC, scalePtr->tsoffset.xoffset,
+		    scalePtr->tsoffset.yoffset);
+	}
+    }
+
     XFillRectangle(scalePtr->display, drawable, scalePtr->troughGC,
 	    scalePtr->vertTroughX + scalePtr->borderWidth,
 	    scalePtr->inset + scalePtr->borderWidth,
 	    (unsigned) scalePtr->width,
 	    (unsigned) (Tk_Height(tkwin) - 2*scalePtr->inset
 		- 2*scalePtr->borderWidth));
-    if (scalePtr->state == tkActiveUid) {
+    if (Tk_PixmapOfTile(scalePtr->troughTile) != None) {
+	XSetTSOrigin(scalePtr->display, scalePtr->troughGC, 0 , 0);
+    }
+    if (scalePtr->state == TK_STATE_ACTIVE) {
 	sliderBorder = scalePtr->activeBorder;
+	tile = scalePtr->activeTile;
+	gc = scalePtr->activeTileGC;
     } else {
 	sliderBorder = scalePtr->bgBorder;
+	tile = scalePtr->tile;
+	gc = scalePtr->copyGC;
     }
     width = scalePtr->width;
     height = scalePtr->sliderLength/2;
@@ -196,10 +268,45 @@ DisplayVerticalScale(scalePtr, drawable, drawnAreaPtr)
     y += shadowWidth;
     width -= 2*shadowWidth;
     height -= shadowWidth;
-    Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x, y, width,
-	    height, shadowWidth, scalePtr->sliderRelief);
-    Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x, y+height,
-	    width, height, shadowWidth, scalePtr->sliderRelief);
+
+    if (Tk_PixmapOfTile(tile) != None) {
+	if (scalePtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (scalePtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scalePtr->display, gc, w, h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, gc, scalePtr->tsoffset.xoffset,
+		    scalePtr->tsoffset.yoffset);
+	}
+	XFillRectangle(scalePtr->display, drawable, gc,
+		x, y, width, 2*height);
+	XSetTSOrigin(scalePtr->display, gc, 0, 0);
+	Tk_Draw3DRectangle(tkwin, drawable, sliderBorder, x, y, width,
+		height, shadowWidth, scalePtr->sliderRelief);
+	Tk_Draw3DRectangle(tkwin, drawable, sliderBorder, x, y+height,
+		width, height, shadowWidth, scalePtr->sliderRelief);
+    } else {
+	Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x, y, width,
+		height, shadowWidth, scalePtr->sliderRelief);
+	Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x, y+height,
+		width, height, shadowWidth, scalePtr->sliderRelief);
+    }
 
     /*
      * Draw the label to the right of the scale.
@@ -307,6 +414,8 @@ DisplayHorizontalScale(scalePtr, drawable, drawnAreaPtr)
     int x, y, width, height, shadowWidth;
     double tickValue;
     Tk_3DBorder sliderBorder;
+    Tk_Tile tile;
+    GC gc;
 
     /*
      * Display the information from bottom to top across the window.
@@ -370,16 +479,49 @@ DisplayHorizontalScale(scalePtr, drawable, drawnAreaPtr)
 	    Tk_Width(tkwin) - 2*scalePtr->inset,
 	    scalePtr->width + 2*scalePtr->borderWidth,
 	    scalePtr->borderWidth, TK_RELIEF_SUNKEN);
+    if (Tk_PixmapOfTile(scalePtr->troughTile) != None) {
+	if (scalePtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (scalePtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(scalePtr->troughTile, &w, &h);
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scalePtr->display, scalePtr->troughGC, w, h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, scalePtr->troughGC, scalePtr->tsoffset.xoffset,
+		    scalePtr->tsoffset.yoffset);
+	}
+    }
     XFillRectangle(scalePtr->display, drawable, scalePtr->troughGC,
 	    scalePtr->inset + scalePtr->borderWidth,
 	    y + scalePtr->borderWidth,
 	    (unsigned) (Tk_Width(tkwin) - 2*scalePtr->inset
 		- 2*scalePtr->borderWidth),
 	    (unsigned) scalePtr->width);
-    if (scalePtr->state == tkActiveUid) {
+    if (Tk_PixmapOfTile(scalePtr->troughTile) != None) {
+	XSetTSOrigin(scalePtr->display, scalePtr->troughGC, 0, 0);
+    }
+    if (scalePtr->state == TK_STATE_ACTIVE) {
 	sliderBorder = scalePtr->activeBorder;
+	tile = scalePtr->activeTile;
+	gc = scalePtr->activeTileGC;
     } else {
 	sliderBorder = scalePtr->bgBorder;
+	tile = scalePtr->tile;
+	gc = scalePtr->copyGC;
     }
     width = scalePtr->sliderLength/2;
     height = scalePtr->width;
@@ -395,10 +537,44 @@ DisplayHorizontalScale(scalePtr, drawable, drawnAreaPtr)
     y += shadowWidth;
     width -= shadowWidth;
     height -= 2*shadowWidth;
-    Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x, y, width, height,
-	    shadowWidth, scalePtr->sliderRelief);
-    Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x+width, y,
-	    width, height, shadowWidth, scalePtr->sliderRelief);
+    if (Tk_PixmapOfTile(tile) != None) {
+	if (scalePtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (scalePtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (scalePtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (scalePtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scalePtr->display, gc, w, h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, gc, scalePtr->tsoffset.xoffset,
+		    scalePtr->tsoffset.yoffset);
+	}
+	XFillRectangle(scalePtr->display, drawable, gc,
+		x, y, 2*width, height);
+	XSetTSOrigin(scalePtr->display, gc, 0, 0);
+	Tk_Draw3DRectangle(tkwin, drawable, sliderBorder, x, y, width,
+		height, shadowWidth, scalePtr->sliderRelief);
+	Tk_Draw3DRectangle(tkwin, drawable, sliderBorder, x+width, y,
+		width, height, shadowWidth, scalePtr->sliderRelief);
+    } else {
+	Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x, y, width, height,
+		shadowWidth, scalePtr->sliderRelief);
+	Tk_Fill3DRectangle(tkwin, drawable, sliderBorder, x+width, y,
+		width, height, shadowWidth, scalePtr->sliderRelief);
+    }
 
     /*
      * Draw the label at the top of the scale.

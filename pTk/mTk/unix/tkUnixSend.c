@@ -600,8 +600,7 @@ ValidateName(dispPtr, name, commWindow, oldOK)
     Atom actualType;
     char *property;
     Tk_ErrorHandler handler;
-    char **argv;
-    LangFreeProc *freeProc = NULL;
+    Tcl_Obj **objv;
 
     property = NULL;
 
@@ -643,18 +642,18 @@ ValidateName(dispPtr, name, commWindow, oldOK)
 	}
     } else if ((result == Success) && (actualFormat == 8)
 	   && (actualType == XA_STRING)) {
+	Tcl_Obj *temp = Tcl_NewStringObj(property,strlen(property));
 	result = 0;
-	if (Lang_SplitString((Tcl_Interp *) NULL, property, &argc, &argv, &freeProc)
+	if (Tcl_ListObjGetElements((Tcl_Interp *) NULL, temp, &argc, &objv)
 		== TCL_OK) {
 	    for (i = 0; i < argc; i++) {
-		if (strcmp(argv[i], name) == 0) {
+		if (strcmp(Tcl_GetStringFromObj(objv[i],NULL), name) == 0) {
 		    result = 1;
 		    break;
 		}
 	    }
-	    if (freeProc)
-		(*freeProc)(argc,argv);
 	}
+	Tcl_DecrRefCount(temp);
     } else {
        result = 0;
     }
@@ -1834,9 +1833,7 @@ UpdateCommWindow(dispPtr)
 
     Tcl_DStringInit(&names);
     for (riPtr = registry; riPtr != NULL; riPtr = riPtr->nextPtr) {
-	Tcl_DStringAppend(&names, riPtr->name, strlen(riPtr->name));
-	if (riPtr->nextPtr != NULL)
-	    Tcl_DStringAppend(&names, " ", 1);
+	Tcl_DStringAppendElement(&names, riPtr->name);
     }
     XChangeProperty(dispPtr->display, Tk_WindowId(dispPtr->commTkwin),
 	    dispPtr->appNameProperty, XA_STRING, 8, PropModeReplace,

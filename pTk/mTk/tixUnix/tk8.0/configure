@@ -824,60 +824,6 @@ else
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
-
-#--------------------------------------------------------------------
-#	strdup() is not a POSIX call and many machines don't have it
-#--------------------------------------------------------------------
-
-echo $ac_n "checking for strdup""... $ac_c" 1>&6
-if eval "test \"`echo '$''{'ac_cv_func_strdup'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 838 "configure"
-#include "confdefs.h"
-/* System header to define __stub macros and hopefully few prototypes,
-    which can conflict with char strdup(); below.  */
-#include <assert.h>
-/* Override any gcc2 internal prototype to avoid an error.  */
-char strdup(); 
-
-int main() { return 0; }
-int t() {
-
-/* The GNU C library defines this for functions which it implements
-    to always fail with ENOSYS.  Some functions are actually named
-    something starting with __ and the normal name is an alias.  */
-#if defined (__stub_strdup) || defined (__stub___strdup)
-choke me
-#else
-strdup();
-#endif
-
-; return 0; }
-EOF
-if eval $ac_link; then
-  rm -rf conftest*
-  eval "ac_cv_func_strdup=yes"
-else
-  rm -rf conftest*
-  eval "ac_cv_func_strdup=no"
-fi
-rm -f conftest*
-
-fi
-if eval "test \"`echo '$ac_cv_func_'strdup`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-  :
-else
-  echo "$ac_t""no" 1>&6
-cat >> confdefs.h <<\EOF
-#define NO_STRDUP 1
-EOF
-
-fi
-
-
 #--------------------------------------------------------------------
 #	unsigned char is not supported by some non-ANSI compilers.
 #--------------------------------------------------------------------
@@ -899,13 +845,13 @@ if eval $ac_compile; then
   tcl_ok=supported
 else
   rm -rf conftest*
-  tcl_ok=not supported
+  tcl_ok="not supported"
 fi
 rm -f conftest*
 
 
 echo "$ac_t""$tcl_ok" 1>&6
-if test $tcl_ok = supported; then
+if test "$tcl_ok" = supported; then
     cat >> confdefs.h <<\EOF
 #define UCHAR_SUPPORTED 1
 EOF
@@ -1066,7 +1012,7 @@ if test "$val" != ""; then
         exit 1
     fi
 else
-    dirs="../../../tcl8.0*"
+    dirs="../../../tcl8.0"
     TCL_SRC_DIR="no-no"
     for i in $dirs; do
         if test -d $i; then
@@ -1108,7 +1054,7 @@ if test "$val" != ""; then
         exit 1
     fi
 else
-    dirs="../../../tk8.0*"
+    dirs="../../../tk8.0"
     TK_SRC_DIR="no-no"
     for i in $dirs; do
         if test -d $i; then

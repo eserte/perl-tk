@@ -6,7 +6,7 @@ package Tk::ROText;
 require Tk::Text;
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tk/ROText.pm#21$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/ROText.pm#23 $
 
 use base  qw(Tk::Text);
 Construct Tk::Widget 'ROText';

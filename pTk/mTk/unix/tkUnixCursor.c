@@ -158,9 +158,8 @@ TkGetCursorByName(interp, tkwin, arg)
     Pixmap source = None;
     Pixmap mask = None;
     Display *display = Tk_Display(tkwin);
-    LangFreeProc *freeProc = NULL;
 
-    if (Lang_SplitList(interp, arg, &argc, &args, &freeProc) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, arg, &argc, &args) != TCL_OK) {
 	return NULL;
     }
     if (argc == 0) {
@@ -311,9 +310,6 @@ TkGetCursorByName(interp, tkwin, arg)
     }
 
     cleanup:
-    if (argv != NULL && freeProc) {
-	(*freeProc)(argc,argv);
-    }
     if (source != None) {
 	Tk_FreePixmap(display, source);
     }

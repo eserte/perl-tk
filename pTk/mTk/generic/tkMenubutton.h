@@ -66,7 +66,7 @@ typedef struct {
      * Information used when displaying widget:
      */
 
-    Tk_Uid state;		/* State of button for display purposes:
+    Tk_State state;		/* State of button for display purposes:
 				 * normal, active, or disabled. */
     Tk_3DBorder normalBorder;	/* Structure used to draw 3-D
 				 * border and background when window
@@ -161,6 +161,9 @@ typedef struct {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, activeTile, disabledTile;
+    Tk_TSOffset tsoffset;
+    GC tileGC;
 } TkMenuButton;
 
 /*

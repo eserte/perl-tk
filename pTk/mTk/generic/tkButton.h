@@ -68,7 +68,7 @@ typedef struct {
      * Information used when displaying widget:
      */
 
-    Tk_Uid state;		/* State of button for display purposes:
+    Tk_State state;		/* State of button for display purposes:
 				 * normal, active, or disabled. */
     Tk_3DBorder normalBorder;	/* Structure used to draw 3-D
 				 * border and background when window
@@ -144,8 +144,8 @@ typedef struct {
     int indicatorSpace;		/* Horizontal space (in pixels) allocated for
 				 * display of indicator. */
     int indicatorDiameter;	/* Diameter of indicator, in pixels. */
-    Tk_Uid defaultState;	/* State of default ring: normal, active, or
-				 * disabled. */
+    Tk_State defaultState;	/* State of default ring: TK_STATE_NORMAL,
+				 * TK_STATE_ACTIVE, or TK_STATE_DISABLED. */
         
     /*
      * For check and radio buttons, the fields below are used
@@ -176,6 +176,8 @@ typedef struct {
 				 * If not NULL, it's malloc-ed. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, activeTile, disabledTile;
+    Tk_TSOffset tsoffset;	/* offset for tiling */
 } TkButton;
 
 /*

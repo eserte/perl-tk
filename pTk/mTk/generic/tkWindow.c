@@ -109,8 +109,8 @@ static TkCmd commands[] = {
     {"bindtags",	Tk_BindtagsCmd,		NULL,			1},
     {"clipboard",	Tk_ClipboardCmd,	NULL,			0},
     {"destroy",		Tk_DestroyCmd,		NULL,			1},
-    {"event",		Tk_EventCmd,		NULL,			1},
-    {"focus",		Tk_FocusCmd,		NULL,			1},
+    {"event",		NULL,			Tk_EventObjCmd,		1},
+    {"focus",		NULL,			Tk_FocusObjCmd,		1},
     {"font",		NULL,			Tk_FontObjCmd,		1},
     {"grab",		Tk_GrabCmd,		NULL,			0},
     {"grid",		Tk_GridCmd,		NULL,			1},
@@ -137,7 +137,7 @@ static TkCmd commands[] = {
      * Widget class commands.
      */
     {"button",		Tk_ButtonCmd,		NULL,			1},
-    {"canvas",		Tk_CanvasCmd,		NULL,			1},
+    {"canvas",		NULL,			Tk_CanvasObjCmd,	1},
     {"checkbutton",	Tk_CheckbuttonCmd,	NULL,			1},
     {"entry",		Tk_EntryCmd,		NULL,			1},
     {"frame",		Tk_FrameCmd,		NULL,			1},
@@ -426,6 +426,11 @@ GetScreen(interp, screenName, screenPtr)
 	    dispPtr->firstGrabEventPtr = NULL;
 	    dispPtr->lastGrabEventPtr = NULL;
 	    dispPtr->grabFlags = 0;
+	    dispPtr->mouseButtonState = 0;
+	    dispPtr->warpInProgress = 0;
+	    dispPtr->warpWindow = None;
+	    dispPtr->warpX = 0;
+	    dispPtr->warpY = 0;
 	    TkInitXId(dispPtr);
 	    dispPtr->destroyCount = 0;
 	    dispPtr->lastDestroyRequest = 0;
@@ -1249,8 +1254,9 @@ Tk_DestroyWindow(tkwin)
 #endif
 	    Tcl_DeleteHashTable(&winPtr->mainPtr->nameTable);
 	    TkBindFree(winPtr->mainPtr);
-	    TkFontPkgFree(winPtr->mainPtr);
+	    /* Do images before fonts - they may use fonts ... */
 	    TkDeleteAllImages(winPtr->mainPtr);
+	    TkFontPkgFree(winPtr->mainPtr);
 
             /*
              * When embedding Tk into other applications, make sure 
@@ -1978,6 +1984,30 @@ Tk_SetClass(tkwin, className)
     TkOptionClassChanged(winPtr);
 }
 
+
+void TkClassOption(tkwin, name, argcp, argvp)
+    Tk_Window tkwin;
+    char *name;
+    int *argcp;
+    Arg **argvp;
+{    
+    TkClassOptionObj(tkwin, name, argcp, (Tcl_Obj *CONST **)argvp);
+}
+
+void TkClassOptionObj(tkwin, name, argcp, argvp)
+    Tk_Window tkwin;
+    char *name;
+    int *argcp;
+    Tcl_Obj * CONST **argvp;
+{
+    if (((*argcp)>3) && !strcmp(Tcl_GetStringFromObj((*argvp)[2], NULL), "-class")) {
+	(*argcp) -= 2;
+	(*argvp) += 2;
+	name = Tcl_GetStringFromObj((*argvp)[1], NULL);
+    }
+    Tk_SetClass(tkwin, name);
+}
+
 /*
  *----------------------------------------------------------------------
  *

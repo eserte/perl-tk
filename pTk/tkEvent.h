@@ -64,4 +64,4 @@ EXTERN int		Tcl_SetServiceMode _ANSI_ARGS_((int mode));
 
 EXTERN int		Tcl_ServiceAll _ANSI_ARGS_((void));
 
-#endif _TKEVENT
+#endif /* _TKEVENT */

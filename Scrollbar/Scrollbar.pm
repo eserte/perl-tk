@@ -1,17 +1,17 @@
 # Conversion from Tk4.0 scrollbar.tcl competed.
 package Tk::Scrollbar;
 require Tk;
+import Tk qw($XS_VERSION);
 use AutoLoader;
 
-
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#8$
+$VERSION = '3.012'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#12 $
 
 use base  qw(Tk::Widget);
 
 Construct Tk::Widget 'Scrollbar';
 
-bootstrap Tk::Scrollbar $Tk::VERSION;
+bootstrap Tk::Scrollbar;
 
 sub Tk_cmd { \&Tk::scrollbar }
 

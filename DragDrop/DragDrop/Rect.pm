@@ -4,7 +4,7 @@ use Carp;
 # Proxy class which represents sites to the dropping side 
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/Rect.pm#9 $
 
 sub Over
 {

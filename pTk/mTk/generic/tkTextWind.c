@@ -79,7 +79,7 @@ static void		EmbWinDisplayProc _ANSI_ARGS_((
 static int		EmbWinLayoutProc _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, TkTextSegment *segPtr,
 			    int offset, int maxX, int maxChars,
-			    int noCharsYet, Tk_Uid wrapMode,
+			    int noCharsYet, TkWrapMode wrapMode,
 			    TkTextDispChunk *chunkPtr));
 static void		EmbWinStructureProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
@@ -753,8 +753,8 @@ EmbWinLayoutProc(textPtr, indexPtr, ewPtr, offset, maxX, maxChars,
 				 * many characters. */
     int noCharsYet;		/* Non-zero means no characters have been
 				 * assigned to this line yet. */
-    Tk_Uid wrapMode;		/* Wrap mode to use for line: tkTextCharUid,
-				 * tkTextNoneUid, or tkTextWordUid. */
+    TkWrapMode wrapMode;	/* Wrap mode to use for line: TEXT_WRAPMODE_CHAR,
+				 * TEXT_WRAPMODE_NONE, or TEXT_WRAPMODE_WORD. */
     register TkTextDispChunk *chunkPtr;
 				/* Structure to fill in with information
 				 * about this chunk.  The x field has already
@@ -845,7 +845,7 @@ EmbWinLayoutProc(textPtr, indexPtr, ewPtr, offset, maxX, maxChars,
 	height = Tk_ReqHeight(ewPtr->body.ew.tkwin) + 2*ewPtr->body.ew.padY;
     }
     if ((width > (maxX - chunkPtr->x))
-	    && !noCharsYet && (textPtr->wrapMode != tkTextNoneUid)) {
+	    && !noCharsYet && (textPtr->wrapMode != TEXT_WRAPMODE_NONE)) {
 	return 0;
     }
 

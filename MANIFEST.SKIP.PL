@@ -27,17 +27,17 @@ chmod(0666,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";
 print SKIP <<'EOF'
 \.[oaid]$
-\.(bso?|old|bak|base|exp|broke|out|hide|q4|gz|tcl|rtf|orig)$
+\.(bso?|old|bak|bck|base|exp|broke|out|hide|q4|gz|tcl|rtf|orig)$
 ^\.
 /\.
 C\+\+/Main$
 \bcore$
 \bConfig.pm$
 \bpTk/tkConfig\.h$
-\bpTk/need$
+\bpTk/(need|canvas_sources)$
 \b(pm_to_blib|perl)$
 [%~]$
-\b(blib|merge|Ilya|Pixmap|patches)/
+\b(blib|merge|Ilya|Pixmap|patches|pod2)/
 \bTix/
 tcl\.pm$
 \bcore\b
@@ -51,6 +51,7 @@ Tk.ppd$
 \btkperl\b
 \bHTML/doc\b
 \bEvent/Play\b
+\bEvent/fe
 pod/tkman.ps$
 extralibs\.ld
 doc/index\.html$

@@ -170,6 +170,9 @@ typedef struct {
 				 * to issue.  Malloc'ed. */
     int flags;			/* Various flag bits:  see below for
 				 * definitions. */
+    Tk_Tile tile;
+    GC tileGC;
+    Tk_TSOffset tsoffset;
 } Listbox;
 
 /*
@@ -190,6 +193,22 @@ typedef struct {
 #define UPDATE_V_SCROLLBAR	2
 #define UPDATE_H_SCROLLBAR	4
 #define GOT_FOCUS		8
+
+/*
+ * Custom option for handling "-tile" and "-offset"
+ */
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
 
 /*
  * Information used for argv parsing:
@@ -229,6 +248,8 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_PIXELS, "-highlightthickness", "highlightThickness",
 	"HighlightThickness",
 	DEF_LISTBOX_HIGHLIGHT_WIDTH, Tk_Offset(Listbox, highlightWidth), 0},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", (char *) NULL,
+	Tk_Offset(Listbox, tsoffset), TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_LISTBOX_RELIEF, Tk_Offset(Listbox, relief), 0},
     {TK_CONFIG_BORDER, "-selectbackground", "selectBackground", "Foreground",
@@ -252,6 +273,8 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_LISTBOX_TAKE_FOCUS, Tk_Offset(Listbox, takeFocus),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(Listbox, tile), TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
     {TK_CONFIG_INT, "-width", "width", "Width",
 	DEF_LISTBOX_WIDTH, Tk_Offset(Listbox, width), 0},
     {TK_CONFIG_CALLBACK, "-xscrollcommand", "xScrollCommand", "ScrollCommand",
@@ -298,7 +321,7 @@ static void		ListboxLostSelection _ANSI_ARGS_((
 static void		ListboxRedrawRange _ANSI_ARGS_((Listbox *listPtr,
 			    int first, int last));
 static void		ListboxScanTo _ANSI_ARGS_((Listbox *listPtr,
-			    int x, int y));
+			    int x, int y, int gain));
 static void		ListboxSelect _ANSI_ARGS_((Listbox *listPtr,
 			    int first, int last, int select));
 static void		ListboxUpdateHScrollbar _ANSI_ARGS_((Listbox *listPtr));
@@ -309,6 +332,8 @@ static void		ListboxWorldChanged _ANSI_ARGS_((
 			    ClientData instanceData));
 static int		NearestListboxElement _ANSI_ARGS_((Listbox *listPtr,
 			    int y));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  * The structure below defines button class behavior by means of procedures
@@ -417,8 +442,13 @@ Tk_ListboxCmd(clientData, interp, argc, argv)
     listPtr->xScrollCmd = NULL;
     listPtr->yScrollCmd = NULL;
     listPtr->flags = 0;
+    listPtr->tile = NULL;
+    listPtr->tileGC = None;
+    listPtr->tsoffset.flags = 0;
+    listPtr->tsoffset.xoffset = 0;
+    listPtr->tsoffset.yoffset = 0;
 
-    Tk_SetClass(listPtr->tkwin, "Listbox");
+    TkClassOption(listPtr->tkwin, "Listbox",&argc,&argv);
     TkSetClassProcs(listPtr->tkwin, &listboxClass, (ClientData) listPtr);
     Tk_CreateEventHandler(listPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -681,17 +711,20 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	sprintf(interp->result, "%d", index);
     } else if ((c == 's') && (length >= 2)
 	    && (strncmp(argv[1], "scan", length) == 0)) {
-	int x, y;
+	int x, y, gain=10;
 
-	if (argc != 5) {
+	if ((argc != 5) && (argc != 6)) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"",
-		    argv[0], " scan mark|dragto x y\"", (char *) NULL);
+		    argv[0], " scan mark x y\" or \"",
+		    argv[0], " scan dragto x y ?gain?\"", (char *) NULL);
 	    goto error;
 	}
 	if ((Tcl_GetInt(interp, argv[3], &x) != TCL_OK)
 		|| (Tcl_GetInt(interp, argv[4], &y) != TCL_OK)) {
 	    goto error;
 	}
+	if ((argc == 6) && (Tcl_GetInt(interp, argv[5], &gain) != TCL_OK))
+            goto error;
 	if ((argv[2][0] == 'm')
 		&& (strncmp(argv[2], "mark", strlen(argv[2])) == 0)) {
 	    listPtr->scanMarkX = x;
@@ -700,7 +733,7 @@ ListboxWidgetCmd(clientData, interp, argc, argv)
 	    listPtr->scanMarkYIndex = listPtr->topIndex;
 	} else if ((argv[2][0] == 'd')
 		&& (strncmp(argv[2], "dragto", strlen(argv[2])) == 0)) {
-	    ListboxScanTo(listPtr, x, y);
+	    ListboxScanTo(listPtr, x, y, gain);
 	} else {
 	    Tcl_AppendResult(interp, "bad scan option \"", argv[2],
 		    "\": must be mark or dragto", (char *) NULL);
@@ -974,8 +1007,36 @@ DestroyListbox(memPtr)
     if (listPtr->selTextGC != None) {
 	Tk_FreeGC(listPtr->display, listPtr->selTextGC);
     }
+    if (listPtr->tile != NULL) {
+	Tk_FreeTile(listPtr->tile);
+    }
+    if (listPtr->tileGC != None) {
+	Tk_FreeGC(listPtr->display, listPtr->tileGC);
+    }
     Tk_FreeOptions(configSpecs, (char *) listPtr, listPtr->display, 0);
     ckfree((char *) listPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;			/* Not used */
+{
+    register Listbox *listPtr = (Listbox *) clientData;
+
+    ConfigureListbox(listPtr->interp, listPtr, 0, NULL, 0);
 }
 
 /*
@@ -1021,8 +1082,6 @@ ConfigureListbox(interp, listPtr, argc, argv, flags)
      * background from a 3-D border.
      */
 
-    Tk_SetBackgroundFromBorder(listPtr->tkwin, listPtr->normalBorder);
-
     if (listPtr->highlightWidth < 0) {
 	listPtr->highlightWidth = 0;
     }
@@ -1066,11 +1125,30 @@ ListboxWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
 {
     XGCValues gcValues;
-    GC gc;
+    GC gc = None;
     unsigned long mask;
     Listbox *listPtr;
+    Tk_Tile tile;
+    Pixmap pixmap;
 
     listPtr = (Listbox *) instanceData;
+
+    tile = listPtr->tile;
+
+    Tk_SetTileChangedProc(listPtr->tile, TileChangedProc,
+		(ClientData) listPtr, (Tk_Item *) NULL);
+
+    if((pixmap = Tk_PixmapOfTile(listPtr->tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	gc = Tk_GetGC(listPtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else {
+	Tk_SetBackgroundFromBorder(listPtr->tkwin, listPtr->normalBorder);
+    }
+    if (listPtr->tileGC != None) {
+	Tk_FreeGC(listPtr->display, listPtr->tileGC);
+    }
+    listPtr->tileGC = gc;
 
     gcValues.foreground = listPtr->fgColorPtr->pixel;
     gcValues.font = Tk_FontId(listPtr->tkfont);
@@ -1154,8 +1232,38 @@ DisplayListbox(clientData)
 
     pixmap = Tk_GetPixmap(listPtr->display, Tk_WindowId(tkwin),
 	    Tk_Width(tkwin), Tk_Height(tkwin), Tk_Depth(tkwin));
-    Tk_Fill3DRectangle(tkwin, pixmap, listPtr->normalBorder, 0, 0,
-	    Tk_Width(tkwin), Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    if (listPtr->tileGC != NULL) {
+	if (listPtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (listPtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(listPtr->tile, &w, &h);
+	    }
+	    if (listPtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (listPtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (listPtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (listPtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(listPtr->display, listPtr->tileGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, listPtr->tileGC, listPtr->tsoffset.xoffset,
+		    listPtr->tsoffset.yoffset);
+	}
+	XFillRectangle(listPtr->display, pixmap, listPtr->tileGC,
+		0, 0, Tk_Width(tkwin), Tk_Height(tkwin));
+	XSetTSOrigin(listPtr->display, listPtr->tileGC, 0, 0);
+    } else {
+	Tk_Fill3DRectangle(tkwin, pixmap, listPtr->normalBorder, 0, 0,
+		Tk_Width(tkwin), Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    }
 
     /*
      * Iterate through all of the elements of the listbox, displaying each
@@ -1896,12 +2004,13 @@ ChangeListboxOffset(listPtr, offset)
  */
 
 static void
-ListboxScanTo(listPtr, x, y)
+ListboxScanTo(listPtr, x, y, gain)
     register Listbox *listPtr;		/* Information about widget. */
     int x;				/* X-coordinate to use for scan
 					 * operation. */
     int y;				/* Y-coordinate to use for scan
 					 * operation. */
+    int gain;				/* gain to use for scan operation */
 {
     int newTopIndex, newOffset, maxIndex, maxOffset;
 
@@ -1938,7 +2047,7 @@ ListboxScanTo(listPtr, x, y)
      * scan started.
      */
 
-    newOffset = listPtr->scanMarkXOffset - (10*(x - listPtr->scanMarkX));
+    newOffset = listPtr->scanMarkXOffset - (gain*(x - listPtr->scanMarkX));
     if (newOffset > maxOffset) {
 	newOffset = listPtr->scanMarkXOffset = maxOffset;
 	listPtr->scanMarkX = x;

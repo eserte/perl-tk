@@ -21,7 +21,7 @@
  */
 
 static int		ImgXpmCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, char **argv,
+			    char *name, int argc, Tcl_Obj **objv,
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgXpmGet _ANSI_ARGS_((Tk_Window tkwin,
@@ -40,7 +40,7 @@ static void		ImgXpmCmdDeletedProc _ANSI_ARGS_((
 static void		ImgXpmConfigureInstance _ANSI_ARGS_((
 			    PixmapInstance *instancePtr));
 static int		ImgXpmConfigureMaster _ANSI_ARGS_((
-			    PixmapMaster *masterPtr, int argc, char **argv,
+			    PixmapMaster *masterPtr, int argc, Tcl_Obj **objv,
 			    int flags));
 static int		ImgXpmGetData _ANSI_ARGS_((Tcl_Interp *interp,
 			    PixmapMaster *masterPtr));
@@ -81,6 +81,7 @@ Tk_ImageType tixPixmapImageType = {
     ImgXpmDisplay,		/* displayProc */
     ImgXpmFree,			/* freeProc */
     ImgXpmDelete,		/* deleteProc */
+    NULL,			/* postscriptProc */ 
     (Tk_ImageType *) NULL	/* nextPtr */
 };
 
@@ -109,12 +110,12 @@ static int xpmTableInited = 0;
  *----------------------------------------------------------------------
  */
 static int
-ImgXpmCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
+ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     Tcl_Interp *interp;		/* Interpreter for application containing
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    char **argv;		/* Argument strings for options (doesn't
+    Tcl_Obj **objv;		/* Argument strings for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -123,6 +124,22 @@ ImgXpmCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
 				 * it will be returned in later callbacks. */
 {
     PixmapMaster *masterPtr;
+    int i;      
+
+#ifndef _LANG
+    char *argvbuf[10];
+    char **argv = argvbuf;
+
+    /*
+     * Convert the objv arguments into string equivalent.
+     */
+    if (argc > 10) {
+	argv = (char **) ckalloc(argc * sizeof(char *));
+    }
+    for (i = 0; i < argc; i++) {
+	argv[i] = TixGetStringFromObj(objv[i], NULL);
+    }        
+#endif /* _LANG */
 
     masterPtr = (PixmapMaster *) ckalloc(sizeof(PixmapMaster));
     masterPtr->tkMaster = master;
@@ -137,7 +154,7 @@ ImgXpmCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
     masterPtr->isDataAlloced = 0;
     masterPtr->instancePtr = NULL;
 
-    if (ImgXpmConfigureMaster(masterPtr, argc, argv, 0) != TCL_OK) {
+    if (ImgXpmConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgXpmDelete((ClientData) masterPtr);
 	return TCL_ERROR;
     }
@@ -168,11 +185,11 @@ ImgXpmCreate(interp, name, argc, argv, typePtr, master, clientDataPtr)
  *----------------------------------------------------------------------
  */
 static int
-ImgXpmConfigureMaster(masterPtr, argc, argv, flags)
+ImgXpmConfigureMaster(masterPtr, argc, objv, flags)
     PixmapMaster *masterPtr;	/* Pointer to data structure describing
 				 * overall pixmap image to (reconfigure). */
     int argc;			/* Number of entries in argv. */
-    char **argv;		/* Pairs of configuration options for image. */
+    Tcl_Obj **objv;		/* Pairs of configuration options for image. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget,
 				 * such as TK_CONFIG_ARGV_ONLY. */
 {
@@ -185,7 +202,7 @@ ImgXpmConfigureMaster(masterPtr, argc, argv, flags)
     oldId   = masterPtr->id;
 
     if (Tk_ConfigureWidget(masterPtr->interp, Tk_MainWindow(masterPtr->interp),
-	    configSpecs, argc, argv, (char *) masterPtr, flags)
+	    configSpecs, argc, objv, (char *) masterPtr, flags)
 	    != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -955,14 +972,12 @@ ImgXpmCmd(clientData, interp, argc, argv)
 	 */
 	PixmapInstance *instancePtr;
 	int count = 0;
-	char buff[30];
 
 	for (instancePtr=masterPtr->instancePtr; instancePtr;
 	     instancePtr = instancePtr->nextPtr) {
 	    count += instancePtr->refCount;
 	}
-	sprintf(buff, "%d", count);
-	Tcl_SetResult(interp, buff, TCL_VOLATILE);
+	Tcl_IntResults(interp, 1, 0, count);
 	return TCL_OK;
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],

@@ -9,6 +9,10 @@ Canvas/canvtxt
 Canvas/demo.txt
 Change.log
 Changes				What has changed
+Compound/Compound.pm
+Compound/Compound.xs
+Compound/Makefile.PL
+Compound/compound_demo
 Contrib/README			Notes on Contrib directory
 Contrib/TickerTape
 Contrib/book-examples/README	Notes on book-examples
@@ -52,13 +56,13 @@ DragDrop/site_test
 Entry/Entry.pm
 Entry/Entry.xs
 Entry/Makefile.PL
-Event/EvenTk.pod
 Event/Event.pm
 Event/Event.xs
+Event/Event/IO.pm
 Event/Makefile.PL
+Event/event_demo
 Event/findEvent
 Event/pTkCallback.c
-Event/tclAsync.c
 Event/tclEvent.c
 Event/tclNotify.c
 Event/tclPlatEvent.c
@@ -206,6 +210,7 @@ Tk/ProgressBar.pm
 Tk/README.Adjust
 Tk/ROText.pm
 Tk/Radiobutton.pm
+Tk/Region.pm
 Tk/Stats.pm
 Tk/Submethods.pm
 Tk/Table.pm
@@ -213,6 +218,7 @@ Tk/TextEdit.pm
 Tk/TextUndo.pm
 Tk/Tiler.pm
 Tk/Tk.xbm
+Tk/Tk.xpm
 Tk/Toplevel.pm
 Tk/Widget.pm
 Tk/Wm.pm
@@ -256,7 +262,6 @@ WinPhoto/try
 Xlib/GC.def
 Xlib/Makefile.PL
 Xlib/README
-Xlib/X/Changes
 Xlib/X/Makefile.PL
 Xlib/X/X.pm
 Xlib/X/X.xs
@@ -405,6 +410,7 @@ demos/demos/widget_lib/style.pl
 demos/demos/widget_lib/texts.pl
 demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/vscale.pl
+demos/demos/widtrib/Gedi.pl
 demos/demos/widtrib/HList.pl
 demos/demos/widtrib/HList2.pl
 demos/demos/widtrib/TEMPLATE.pl
@@ -441,6 +447,7 @@ error_prop
 evtGlue.c
 ewidth_demo
 fedemo
+fetail
 findbase
 fix_4_os2.pl
 floppy
@@ -528,6 +535,7 @@ pTk/config/Hstrtoul.c
 pTk/config/Xdummy.c
 pTk/counts
 pTk/defs
+pTk/fakeld
 pTk/findX
 pTk/findcore
 pTk/findstrings
@@ -911,6 +919,7 @@ pTk/mTk/tixWin/DLLDemo/README
 pTk/mTk/tixWin/README
 pTk/mTk/tixWin/makefile.bc
 pTk/mTk/tixWin/makefile.vc
+pTk/mTk/tixWin/nmakefile
 pTk/mTk/tixWin/pTk.exc
 pTk/mTk/tixWin/rc/tixwish.ico
 pTk/mTk/tixWin/rc/tixwish.rc
@@ -923,8 +932,10 @@ pTk/mTk/tixWin/tixWinWm.c
 pTk/mTk/tixWin/tixWinXpm.c
 pTk/mTk/tixWin/tkConsole41.c
 pTk/mTk/tixWin/tkConsole42.c
+pTk/mTk/tixWin/tkConsole80.c
 pTk/mTk/tixWin/tkConsole80a1.c
 pTk/mTk/tixWin/tkConsole80b1.c
+pTk/mTk/tixWin/tkConsole80b2.c
 pTk/mTk/tixmerge
 pTk/mTk/unix/Makefile.in
 pTk/mTk/unix/README
@@ -1101,9 +1112,13 @@ pTk/mkXinfo
 pTk/mkexc
 pTk/mkmethods
 pTk/mkneed
+pTk/p4e
 pTk/patchlevel.h
 pTk/process_object
+pTk/ptkCanvGrid.c
+pTk/ptkCanvGroup.c
 pTk/refs
+pTk/stbDashCustom.c
 pTk/strcasecmp.c
 pTk/strdup.c
 pTk/strtoul.c
@@ -1185,6 +1200,7 @@ pod/Clipboard.pod
 pod/CmdLine.pod
 pod/ColorEditor.pod
 pod/Common.pod
+pod/Compound.pod
 pod/DItem.pod
 pod/Derived.pod
 pod/Dialog.pod
@@ -1193,6 +1209,7 @@ pod/DirTree.pod
 pod/DupName/Dialog.pod
 pod/Entry.pod
 pod/Error.pod
+pod/Eventloop.pod
 pod/FileSelect.pod
 pod/Font.pod
 pod/Frame.pod
@@ -1383,7 +1400,9 @@ t/font.t
 t/geomgr.t
 t/mega.t
 t/mwm.t
+t/optmenu.t
 t/photo.t
+t/progbar.t
 t/widget.t
 t/zzHList.t
 t/zzPhoto.t
@@ -1419,5 +1438,6 @@ tktail
 tlist_demo
 two_main
 uninstall
+ventry_demo
 wal
 xlib_demo

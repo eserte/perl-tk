@@ -65,21 +65,21 @@ TixSaveInterpState(interp, statePtr)
 {
     char * p;
     if (interp->result) {
-	statePtr->result = (char*)strdup(interp->result);
+	statePtr->result = tixStrDup(interp->result);
     } else {
 	statePtr->result = NULL;
     }
 
     p = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
     if (p) {
-	statePtr->errorInfo = (char*)strdup(p);
+	statePtr->errorInfo = tixStrDup(p);
     } else {
 	statePtr->errorInfo = NULL;
     }
 
     p = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
     if (p) {
-	statePtr->errorCode = (char*)strdup(p);
+	statePtr->errorCode = tixStrDup(p);
     } else {
 	statePtr->errorCode = NULL;
     }
@@ -353,6 +353,8 @@ Tix_LoadTclLibrary(interp, envName, tclName, initFile, defDir, appName)
  *----------------------------------------------------------------------
  */
 
+static int initialized = 0;
+
 void Tix_CreateCommands(interp, commands, clientData, deleteProc)
     Tcl_Interp *interp;
     Tix_TclCmd *commands;
@@ -361,6 +363,24 @@ void Tix_CreateCommands(interp, commands, clientData, deleteProc)
 {
     Tix_TclCmd * cmdPtr;
 
+    if (!initialized) {
+	char *version = Tcl_PkgRequire(interp, "Tcl", NULL, 0);
+	initialized = 1;
+	if (version[0] == '8') {
+	    struct CmdInfo {
+		int isNativeObjectProc;
+		Tcl_ObjCmdProc *objProc;
+		ClientData objClientData;
+		VOID *dummy[10]; /* worst case space that could be written
+				  * by Tcl_GetCommandInfo() */
+	    } cmdInfo;
+	    if (!Tcl_GetCommandInfo(interp,"image", (Tcl_CmdInfo *) &cmdInfo)) {
+		panic("cannot find the \"image\" command");
+	    } else if (cmdInfo.isNativeObjectProc == 1) {
+		initialized = 2; /* we use objects */
+	    }
+	}
+    }
     for (cmdPtr = commands; cmdPtr->name != NULL; cmdPtr++) {
 	Tcl_CreateCommand(interp, cmdPtr->name,
 	     cmdPtr->cmdProc, clientData, deleteProc);
@@ -882,3 +902,168 @@ TixDisplayText(display, drawable, font, string, numChars, x, y,
     Tk_FreeTextLayout(textLayout);
 }
 #endif
+
+#if TK_MAJOR_VERSION < 8
+
+/*
+ * Procedure types defined by Tcl:
+ */
+
+typedef void (Tcl_FreeInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
+typedef void (Tcl_DupInternalRepProc) _ANSI_ARGS_((struct Tcl_Obj *srcPtr, 
+        struct Tcl_Obj *dupPtr));
+typedef void (Tcl_UpdateStringProc) _ANSI_ARGS_((struct Tcl_Obj *objPtr));
+typedef int (Tcl_SetFromAnyProc) _ANSI_ARGS_((Tcl_Interp *interp,
+	struct Tcl_Obj *objPtr));
+typedef int (Tcl_ObjCmdProc) _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, struct Tcl_Obj *CONST objv[]));
+
+/*
+ * The following structure represents a type of object, which is a
+ * particular internal representation for an object plus a set of
+ * procedures that provide standard operations on objects of that type.
+ */
+
+typedef struct Tcl_ObjType {
+    char *name;			/* Name of the type, e.g. "int". */
+    Tcl_FreeInternalRepProc *freeIntRepProc;
+				/* Called to free any storage for the type's
+				 * internal rep. NULL if the internal rep
+				 * does not need freeing. */
+    Tcl_DupInternalRepProc *dupIntRepProc;
+    				/* Called to create a new object as a copy
+				 * of an existing object. */
+    Tcl_UpdateStringProc *updateStringProc;
+    				/* Called to update the string rep from the
+				 * type's internal representation. */
+    Tcl_SetFromAnyProc *setFromAnyProc;
+    				/* Called to convert the object's internal
+				 * rep to this type. Frees the internal rep
+				 * of the old type. Returns TCL_ERROR on
+				 * failure. */
+} Tcl_ObjType;
+
+/*
+ * One of the following structures exists for each object in the Tcl
+ * system.  An object stores a value as either a string, some internal
+ * representation, or both.
+ */
+
+typedef struct Tcl_Obj {
+    int refCount;		/* When 0 the object will be freed. */
+    char *bytes;		/* This points to the first byte of the
+				 * object's string representation. The
+				 * array must be followed by a null byte
+				 * (i.e., at offset length) but may also
+				 * contain embedded null characters. The
+				 * array's storage is allocated by
+				 * ckalloc. NULL indicates the string
+				 * rep is empty or invalid and must be
+				 * regenerated from the internal rep.
+				 * Clients should use Tcl_GetStringFromObj
+				 * to get a pointer to the byte array
+				 * as a readonly value.  */
+    int length;			/* The number of bytes at *bytes, not
+				 * including the terminating null. */
+    Tcl_ObjType *typePtr;	/* Denotes the object's type. Always
+				 * corresponds to the type of the object's
+				 * internal rep. NULL indicates the object
+				 * has no internal rep (has no type). */
+    union {			/* The internal representation: */
+	long longValue;		/*   - an long integer value */
+	double doubleValue;	/*   - a double-precision floating value */
+	VOID *otherValuePtr;	/*   - another, type-specific value */
+	struct {		/*   - internal rep as two pointers */
+	    VOID *ptr1;
+	    VOID *ptr2;
+	} twoPtrValue;
+    } internalRep;
+} Tcl_Obj;
+
+#endif
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TixGetStringFromObj --
+ *
+ *	Returns the string representation's byte array pointer and length
+ *	for an object.
+ *
+ * Results:
+ *	Returns a pointer to the string representation of objPtr.  If
+ *	lengthPtr isn't NULL, the length of the string representation is
+ *	stored at *lengthPtr. The byte array referenced by the returned
+ *	pointer must not be modified by the caller. Furthermore, the
+ *	caller must copy the bytes if they need to retain them since the
+ *	object's string rep can change as a result of other operations.
+ *      REMARK: This function reacts a little bit different than
+ *	Tcl_GetStringFromObj():
+ *	- objPtr is allowed to be NULL. In that case the NULL pointer
+ *	  will be returned, and the length will be reported to be 0;
+ *	In the Img code there is never a distinction between en empty
+ *	string and a NULL pointer, while the latter is easier to check
+ *	for. That's the reason for this difference.
+ *
+ * Side effects:
+ *	May call the object's updateStringProc to update the string
+ *	representation from the internal representation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+
+char *
+TixGetStringFromObj(objPtr, lengthPtr)
+    char *objPtr;		/* Object whose string rep byte pointer
+				 * should be returned, or NULL */
+    register int *lengthPtr;	/* If non-NULL, the location where the
+				 * string rep's byte array length should be
+				 * stored. If NULL, no length is stored. */
+{
+    Tcl_Obj *obj = (Tcl_Obj *) objPtr;
+    int length;
+    if (!lengthPtr)
+      lengthPtr = &length;
+    if (!obj) {
+	if (lengthPtr != NULL) {
+	    *lengthPtr = 0;
+	}
+	return (char *) NULL;
+    }
+#ifdef _LANG
+    objPtr = Tcl_GetStringFromObj(obj,lengthPtr); 
+    if (*lengthPtr)
+     return NULL;
+    return objPtr;
+#else
+    if (initialized & 2) {
+	if (obj->bytes != NULL) {
+	    if (lengthPtr != NULL) {
+		*lengthPtr = obj->length;
+	    }
+	    return (obj->length) ? obj->bytes : (char *) NULL;
+	}
+
+	if (obj->typePtr == NULL) {
+	    if (lengthPtr != NULL) {
+		*lengthPtr = 0;
+	    }
+	    return "";
+	}
+
+	obj->typePtr->updateStringProc(obj);
+	if (lengthPtr != NULL) {
+	    *lengthPtr = obj->length;
+	}
+	return (obj->length) ? obj->bytes : (char *) NULL;
+    } else {
+	if (lengthPtr != NULL) {
+	    *lengthPtr = objPtr ? strlen(objPtr) : 0;
+	}
+	return objPtr;
+    }
+#endif /* _LANG */
+}
+
+

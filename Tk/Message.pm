@@ -5,7 +5,7 @@ package Tk::Message;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Message.pm#8$
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/Message.pm#10 $
 
 require Tk::Widget;
 

@@ -2474,7 +2474,7 @@ TkTextIsElided(textPtr, indexPtr)
 	if ((segPtr->typePtr == &tkTextToggleOnType)
 	    || (segPtr->typePtr == &tkTextToggleOffType)) {
 	    tagPtr = segPtr->body.toggle.tagPtr;
-	    if (tagPtr->elideString != NULL) {
+	    if (tagPtr->state != TK_STATE_NULL) {
 		   tagPtrs[tagPtr->priority] = tagPtr;
 		   tagCnts[tagPtr->priority]++;
 	    }
@@ -2494,7 +2494,7 @@ TkTextIsElided(textPtr, indexPtr)
 	    if ((segPtr->typePtr == &tkTextToggleOnType)
 		   || (segPtr->typePtr == &tkTextToggleOffType)) {
 		   tagPtr = segPtr->body.toggle.tagPtr;
-		   if (tagPtr->elideString != NULL) {
+		   if (tagPtr->state != TK_STATE_NULL) {
 			  tagPtrs[tagPtr->priority] = tagPtr;
 			  tagCnts[tagPtr->priority]++;
 		   }
@@ -2518,7 +2518,7 @@ TkTextIsElided(textPtr, indexPtr)
 		    summaryPtr = summaryPtr->nextPtr) {
 		if (summaryPtr->toggleCount & 1) {
 		    tagPtr = summaryPtr->tagPtr;
-		    if (tagPtr->elideString != NULL) {
+		    if (tagPtr->state != TK_STATE_NULL) {
 			   tagPtrs[tagPtr->priority] = tagPtr;
 			   tagCnts[tagPtr->priority] += summaryPtr->toggleCount;
 		    }
@@ -2541,7 +2541,7 @@ TkTextIsElided(textPtr, indexPtr)
 			 continue;
 		  }
 #endif
-		  elide = tagPtrs[i]->elide;
+		  elide = (tagPtrs[i]->state == TK_STATE_HIDDEN);
 		  break;
 	   }
     }

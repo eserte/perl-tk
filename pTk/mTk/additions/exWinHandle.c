@@ -21,6 +21,7 @@ typedef struct FileHandler {
 				 * last time file handlers were invoked for
 				 * this file. */
     int pending;
+	HANDLE auxEvent;
     Tcl_FileProc *proc;		/* Procedure to call, in the style of
 				 * Tcl_CreateFileHandler. */
     ClientData clientData;	/* Argument to pass to proc. */
@@ -65,7 +66,25 @@ FileHandleSetupProc(ClientData data, int flags)
     for (filePtr = firstFileHandlerPtr; filePtr != NULL; filePtr = filePtr->nextPtr) {
 	if (!filePtr->readyMask && filePtr->mask & TCL_READABLE) {
 	    HANDLE fh = (HANDLE) Lang_OSHandle(filePtr->fd);
-	    Tcl_WatchHandle(fh, FileReadyProc, (ClientData) filePtr);
+#if 0 
+		/* Now see if the handle is a socket */
+        char sockbuf[256];
+        int optlen = sizeof(sockbuf);
+    	int retval = getsockopt((SOCKET)fh, SOL_SOCKET, SO_TYPE, sockbuf, &optlen);
+        if(retval == SOCKET_ERROR && WSAGetLastError() == WSAENOTSOCK) {
+			/* Not a socket - use the raw handle */
+#endif
+		    Tcl_WatchHandle(fh, FileReadyProc, (ClientData) filePtr);
+#if 0
+		} else {
+			/* Socket handle */
+			if (!filePtr->auxEvent) {
+ 			  filePtr->auxEvent =  WSACreateEvent();
+            } 
+			WSAEventSelect((SOCKET) fh, filePtr->auxEvent, FD_READ|FD_ACCEPT);
+			Tcl_WatchHandle(filePtr->auxEvent, FileReadyProc, (ClientData) filePtr);
+		}
+#endif
 	    break;
 	}
     }
@@ -139,10 +158,10 @@ FileHandleCheckProc(data, flags)
      {
       if (filePtr->readyMask && !filePtr->pending) 
        {
-	fileEvPtr = (FileHandlerEvent *) ckalloc(sizeof(FileHandlerEvent));
-	fileEvPtr->fd = filePtr->fd;
-	Tcl_QueueProcEvent(FileHandlerEventProc, (Tcl_Event *) fileEvPtr, TCL_QUEUE_TAIL);
-	filePtr->pending = 1;
+    	fileEvPtr = (FileHandlerEvent *) ckalloc(sizeof(FileHandlerEvent));
+	    fileEvPtr->fd = filePtr->fd;
+	    Tcl_QueueProcEvent(FileHandlerEventProc, (Tcl_Event *) fileEvPtr, TCL_QUEUE_TAIL);
+    	filePtr->pending = 1;
        }
       filePtr = filePtr->nextPtr;
      }
@@ -195,6 +214,7 @@ Tcl_CreateFileHandler(fd, mask, proc, clientData)
 	filePtr->fd = fd;
 	filePtr->readyMask = 0;
 	filePtr->pending   = 0;
+	filePtr->auxEvent  = 0;
 	filePtr->nextPtr = firstFileHandlerPtr;
 	firstFileHandlerPtr = filePtr;
     }
@@ -237,6 +257,9 @@ Tcl_DeleteFileHandler(fd)
 	firstFileHandlerPtr = filePtr->nextPtr;
     } else {
 	prevPtr->nextPtr = filePtr->nextPtr;
+    }
+	if (filePtr->auxEvent) {
+		CloseHandle(filePtr->auxEvent);
     }
     ckfree((char *) filePtr);
 }

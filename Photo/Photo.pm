@@ -1,14 +1,18 @@
 package Tk::Photo;
-require Tk;
 
 use vars qw($VERSION);
-$VERSION = '3.010'; # $Id: //depot/Tk8/Photo/Photo.pm#10$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Photo/Photo.pm#14 $
+
+use Tk qw($XS_VERSION);
+
+use vars qw($VERSION);
+$VERSION = '3.014'; # $Id: //depot/Tk8/Photo/Photo.pm#14 $
 
 use base  qw(Tk::Image);
 
 Construct Tk::Image 'Photo';
 
-bootstrap Tk::Photo $Tk::VERSION;
+bootstrap Tk::Photo;
 
 sub Tk_image { 'photo' }
 

@@ -1,7 +1,7 @@
 package Tk::DragDrop::KDEDrop;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/DragDrop/DragDrop/KDEDrop.pm#5$
+$VERSION = '3.007'; # $Id: //depot/Tk8/DragDrop/DragDrop/KDEDrop.pm#7 $
 use base qw(Tk::DragDrop::Rect);
 
 Tk::DragDrop->Type('KDE');

@@ -1,6 +1,6 @@
 package Tk::Configure;
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Configure.pm#6$
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Configure.pm#8 $
 
 use Carp;
 use Tk::Pretty;

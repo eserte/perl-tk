@@ -18,6 +18,10 @@
 #  define TixDItemStylePrintProc (*TixVptr->V_TixDItemStylePrintProc)
 #endif
 
+#ifndef TixGetStringFromObj
+#  define TixGetStringFromObj (*TixVptr->V_TixGetStringFromObj)
+#endif
+
 #ifndef Tix_ArgcError
 #  define Tix_ArgcError (*TixVptr->V_Tix_ArgcError)
 #endif

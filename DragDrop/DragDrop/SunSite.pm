@@ -2,7 +2,7 @@ package Tk::DragDrop::SunSite;
 require Tk::DropSite;
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunSite.pm#11 $
 
 use Tk::DragDrop::SunConst;
 use base  qw(Tk::DropSite);

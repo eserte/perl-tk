@@ -14,9 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Frame.pm#18$
-
-sub Menubar;
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/Frame.pm#26 $
 
 sub Tk_cmd { \&Tk::frame }
 
@@ -66,6 +64,11 @@ sub bind
  $cw->Delegate('bind',@args);
 }
 
+sub menu
+{my ($cw,@args) = @_;
+ $cw->Delegate('menu',@args);
+}
+
 sub focus
 {my ($cw,@args) = @_;
  $cw->Delegate('focus',@args);
@@ -87,6 +90,23 @@ sub Populate
  $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
+}
+
+sub Menubar
+{
+ my $frame = shift;         
+ my $menu = $frame->cget('-menu');
+ if (defined $menu)
+  {
+   $menu->configure(@_) if @_;
+  }
+ else
+  {
+   $menu = $frame->Menu(-type => 'menubar',@_);
+   $frame->configure(-menu => $menu);    
+  }
+ $frame->Advertise('menubar' => $menu);
+ return $menu;
 }
 
 1;
@@ -220,8 +240,8 @@ sub AddScrollbars
      $cw->Advertise('yscrollbar' => $ysb);
      $cw->Advertise('corner' => $corner);
      $cw->Advertise('ysbslice' => $slice);
-     $corner->{'before'} = $ysb;
-     $slice->{'before'} = $w;
+     $corner->{'before'} = $ysb->PathName;
+     $slice->{'before'} = $w->PathName;
      $y = 'w';
      $s = 1;
     }
@@ -229,7 +249,7 @@ sub AddScrollbars
     {
      my $xsb = Tk::Scrollbar->new($cw,-orient => 'horizontal', -command => [ 'xview', $w ]);
      $cw->Advertise('xscrollbar' => $xsb);
-     $xsb->{'before'} = $w;
+     $xsb->{'before'} = $w->PathName;
      $x = 's';
      $s = 1;
     }

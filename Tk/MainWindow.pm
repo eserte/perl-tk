@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.039'; # $Id: //depot/Tk8/Tk/MainWindow.pm#39$
+$VERSION = '3.046'; # $Id: //depot/Tk8/Tk/MainWindow.pm#46 $
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -20,12 +20,12 @@ $| = 1;
 
 my $pid = $$;
 
-my @Windows = ();
+my %Windows = ();
 
 sub CreateArgs
 {
  my ($class,$args) = @_;
- my $cmd = Tk::CmdLine::CreateArgs();
+ my $cmd = Tk::CmdLine->CreateArgs();
  my $key;
  foreach $key (keys %$cmd)
   {
@@ -66,8 +66,15 @@ sub new
 	 $top->geometry($geometry);
      }
  }
- push(@Windows,$top);
+ $Windows{$top} = $top;
  return $top;
+}               
+
+sub _Destroyed
+{
+ my $top = shift;
+ $top->SUPER::_Destroyed;
+ delete $Windows{$top};
 }
 
 sub InitBindings
@@ -101,16 +108,28 @@ sub InitBindings
 }
 
 sub Existing
-{
- grep( Tk::Exists($_), @Windows);
+{  
+ my @Windows;   
+ foreach my $name (keys %Windows)
+  {           
+   my $obj = $Windows{$name};
+   if (Tk::Exists($obj))
+    {
+     push(@Windows,$obj);
+    }
+   else
+    {   
+     delete $Windows{$name};
+    }
+  }
+ return @Windows;
 }
 
 END
 {
  if ($pid == $$)
-  {
-   my $top;
-   while ($top = pop(@Windows))
+  {         
+   foreach my $top (values %Windows)
     {
      if ($top->IsWidget)
       {
@@ -124,7 +143,7 @@ END
   }
 }
 
-sub CmdLine { return shift }
+sub CmdLine { return shift->command }
 
 sub WMSaveYourself
 {

@@ -3,6 +3,8 @@
 
 Tk/compile - making executables from perl/Tk scripts
 
+=for category Other Modules and Languages
+
 =head1 SYNOPSIS
 
   cd .../Tk800.013/compile

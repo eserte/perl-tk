@@ -1086,7 +1086,7 @@ AddTab(wPtr, name, argv, argc)
 
     tPtr->next = NULL;
     tPtr->wPtr = wPtr;
-    tPtr->name = (char*)strdup(name);
+    tPtr->name = tixStrDup(name);
     tPtr->state = tixNormalUid;
     tPtr->text = NULL;
     tPtr->width = 0;

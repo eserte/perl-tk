@@ -646,7 +646,7 @@ GetDItemStyle(ddPtr, diTypePtr, styleName, isNew_ret)
 	stylePtr->base.interp 	 = ddPtr->interp;
 	stylePtr->base.tkwin  	 = ddPtr->tkwin;
 	stylePtr->base.diTypePtr = diTypePtr;
-	stylePtr->base.name      = (char*)strdup(styleName);
+	stylePtr->base.name      = tixStrDup(styleName);
 	stylePtr->base.pad[0] 	 = 0;
 	stylePtr->base.pad[1] 	 = 0;
 	stylePtr->base.anchor 	 = TK_ANCHOR_CENTER;
@@ -962,9 +962,9 @@ DItemStylePrintProc(clientData, tkwin, widRec,offset, freeProcPtr)
 {
     Tix_DItemStyle *stylePtr = *((Tix_DItemStyle**)(widRec+offset));
     Arg result = NULL;
-    if (stylePtr != NULL) {
+    if (stylePtr != NULL && !(stylePtr->base.flags & TIX_STYLE_DEFAULT)) {
         LangSetArg(&result,LangObjectArg(stylePtr->base.interp, 
                                          stylePtr->base.name));
-    } 
+    }         
     return result;
 }

@@ -74,7 +74,8 @@ TkpDisplayMenuButton(clientData)
     register TkMenuButton *mbPtr = (TkMenuButton *) clientData;
     GC gc;
     Tk_3DBorder border;
-    Pixmap pixmap;
+    Pixmap pixmap, tilepixmap;
+    Tk_Tile tile;
     int x = 0;			/* Initialization needed only to stop
 				 * compiler warning. */
     int y;
@@ -86,10 +87,10 @@ TkpDisplayMenuButton(clientData)
 	return;
     }
 
-    if ((mbPtr->state == tkDisabledUid) && (mbPtr->disabledFg != NULL)) {
+    if ((mbPtr->state == TK_STATE_DISABLED) && (mbPtr->disabledFg != NULL)) {
 	gc = mbPtr->disabledGC;
 	border = mbPtr->normalBorder;
-    } else if ((mbPtr->state == tkActiveUid) && !Tk_StrictMotif(mbPtr->tkwin)) {
+    } else if ((mbPtr->state == TK_STATE_ACTIVE) && !Tk_StrictMotif(mbPtr->tkwin)) {
 	gc = mbPtr->activeTextGC;
 	border = mbPtr->activeBorder;
     } else {
@@ -104,10 +105,49 @@ TkpDisplayMenuButton(clientData)
      * point in time where the on-sreen image has been cleared.
      */
 
+    if ((mbPtr->state == TK_STATE_ACTIVE) && (mbPtr->activeTile != NULL)) {
+	tile = mbPtr->activeTile;
+    } else if ((mbPtr->state == TK_STATE_DISABLED) &&
+	    (mbPtr->disabledTile != NULL)) {
+	tile = mbPtr->disabledTile;
+    } else {
+	tile = mbPtr->tile;
+    }
+
     pixmap = Tk_GetPixmap(mbPtr->display, Tk_WindowId(tkwin),
 	    Tk_Width(tkwin), Tk_Height(tkwin), Tk_Depth(tkwin));
-    Tk_Fill3DRectangle(tkwin, pixmap, border, 0, 0, Tk_Width(tkwin),
-	    Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    if ((tilepixmap = Tk_PixmapOfTile(tile)) != None) {
+	if (mbPtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (mbPtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (mbPtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (mbPtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (mbPtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (mbPtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(mbPtr->display, mbPtr->tileGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, mbPtr->tileGC, mbPtr->tsoffset.xoffset,
+		    mbPtr->tsoffset.yoffset);
+	}
+	XFillRectangle(mbPtr->display, pixmap, mbPtr->tileGC, 0, 0,
+		Tk_Width(tkwin), Tk_Height(tkwin));
+	XSetTSOrigin(mbPtr->display, mbPtr->tileGC, 0, 0);
+    } else {
+	Tk_Fill3DRectangle(tkwin, pixmap, border, 0, 0, Tk_Width(tkwin),
+		Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    }
 
     /*
      * Display image or bitmap or text for button.
@@ -144,7 +184,7 @@ TkpDisplayMenuButton(clientData)
      * foreground color, generate the stippled effect.
      */
 
-    if ((mbPtr->state == tkDisabledUid)
+    if ((mbPtr->state == TK_STATE_DISABLED)
 	    && ((mbPtr->disabledFg == NULL) || (mbPtr->image != NULL))) {
 	XFillRectangle(mbPtr->display, pixmap, mbPtr->disabledGC,
 		mbPtr->inset, mbPtr->inset,

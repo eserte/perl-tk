@@ -13,9 +13,9 @@
 package Tk::Listbox;
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Listbox/Listbox.pm#21$
+$VERSION = '3.027'; # $Id: //depot/Tk8/Listbox/Listbox.pm#27 $
 
-use Tk qw(Ev);
+use Tk qw(Ev $XS_VERSION);
 require Tk::Clipboard;
 use AutoLoader;
 
@@ -23,7 +23,7 @@ use base  qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Listbox';
 
-bootstrap Tk::Listbox $Tk::VERSION;
+bootstrap Tk::Listbox;
 
 sub Tk_cmd { \&Tk::listbox }
 
@@ -32,8 +32,10 @@ Tk::Methods('activate','bbox','curselection','delete','get','index',
             'xview','yview');
 
 use Tk::Submethods ( 'selection' => [qw(anchor clear includes set)],
-                     'scan' => [qw(mark dragto)]
-                   );
+		     'scan'      => [qw(mark dragto)],
+		     'xview'     => [qw(moveto scroll)],
+		     'yview'     => [qw(moveto scroll)],
+		     );
 
 *Getselected = \&getSelected;
 

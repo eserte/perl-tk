@@ -55,10 +55,10 @@ typedef struct StyleValues {
 				 * be NULL). */
     int underline;		/* Non-zero means draw underline underneath
 				 * text. */
-    int elide;		/* Non-zero means draw text */
-    Tk_Uid wrapMode;		/* How to handle wrap-around for this tag.
-				 * One of tkTextCharUid, tkTextNoneUid,
-				 * or tkTextWordUid. */
+    int elide;			/* Non-zero means draw text */
+    TkWrapMode wrapMode;	/* How to handle wrap-around for this tag.
+				 * One of TEXT_WRAPMODE_CHAR,
+				 * TEXT_WRAPMODE_NONE or TEXT_WRAPMODE_WORD.*/
 } StyleValues;
 
 /*
@@ -157,12 +157,14 @@ typedef struct DLine {
  * BOTTOM_LINE -		Non-zero means that this was the bottom line
  *				in the window the last time that the window
  *				was laid out.
+ * IS_DISABLED -		This Dline cannot be edited.
  */
 
 #define HAS_3D_BORDER	1
 #define NEW_LAYOUT	2
 #define TOP_LINE	4
 #define BOTTOM_LINE	8
+#define IS_DISABLED    16
 
 /*
  * Overall display information for a text widget:
@@ -362,6 +364,7 @@ static int		SizeOfTab _ANSI_ARGS_((TkText *textPtr,
 			    int maxX));
 static void		TextInvalidateRegion _ANSI_ARGS_((TkText *textPtr,
 			    TkRegion region));
+static void		SetTileOrigin _ANSI_ARGS_((TkText *textPtr, int y));
 
 
 /*
@@ -495,7 +498,7 @@ GetStyle(textPtr, indexPtr)
 
     int borderPrio, borderWidthPrio, reliefPrio, bgStipplePrio;
     int fgPrio, fontPrio, fgStipplePrio;
-    int underlinePrio, elidePrio, justifyPrio, offsetPrio;
+    int underlinePrio, statePrio, justifyPrio, offsetPrio;
     int lMargin1Prio, lMargin2Prio, rMarginPrio;
     int spacing1Prio, spacing2Prio, spacing3Prio;
     int overstrikePrio, tabPrio, wrapPrio;
@@ -510,7 +513,7 @@ GetStyle(textPtr, indexPtr)
     tagPtrs = TkBTreeGetTags(indexPtr, &numTags);
     borderPrio = borderWidthPrio = reliefPrio = bgStipplePrio = -1;
     fgPrio = fontPrio = fgStipplePrio = -1;
-    underlinePrio = elidePrio = justifyPrio = offsetPrio = -1;
+    underlinePrio = statePrio = justifyPrio = offsetPrio = -1;
     lMargin1Prio = lMargin2Prio = rMarginPrio = -1;
     spacing1Prio = spacing2Prio = spacing3Prio = -1;
     overstrikePrio = tabPrio = wrapPrio = -1;
@@ -524,6 +527,7 @@ GetStyle(textPtr, indexPtr)
     styleValues.spacing3 = textPtr->spacing3;
     styleValues.tabArrayPtr = textPtr->tabArrayPtr;
     styleValues.wrapMode = textPtr->wrapMode;
+    styleValues.elide = (textPtr->state == TK_STATE_HIDDEN);
     for (i = 0 ; i < numTags; i++) {
 	tagPtr = tagPtrs[i];
 
@@ -628,12 +632,12 @@ GetStyle(textPtr, indexPtr)
 	    styleValues.underline = tagPtr->underline;
 	    underlinePrio = tagPtr->priority;
 	}
-	if ((tagPtr->elideString != NULL)
-		&& (tagPtr->priority > elidePrio)) {
-	    styleValues.elide = tagPtr->elide;
-	    elidePrio = tagPtr->priority;
+	if ((tagPtr->state != TK_STATE_NULL)
+		&& (tagPtr->priority > statePrio)) {
+	    styleValues.elide = (tagPtr->state == TK_STATE_HIDDEN);
+	    statePrio = tagPtr->priority;
 	}
-	if ((tagPtr->wrapMode != NULL)
+	if ((tagPtr->wrapMode != TEXT_WRAPMODE_NULL)
 		&& (tagPtr->priority > wrapPrio)) {
 	    styleValues.wrapMode = tagPtr->wrapMode;
 	    wrapPrio = tagPtr->priority;
@@ -673,9 +677,10 @@ GetStyle(textPtr, indexPtr)
     } else {
 	stylePtr->bgGC = None;
     }
-    mask = GCForeground|GCFont;
-    gcValues.foreground = styleValues.fgColor->pixel;
+    mask = GCFont;
     gcValues.font = Tk_FontId(styleValues.tkfont);
+    mask |= GCForeground;
+    gcValues.foreground = styleValues.fgColor->pixel;
     if (styleValues.fgStipple != None) {
 	gcValues.stipple = styleValues.fgStipple;
 	gcValues.fill_style = FillStippled;
@@ -719,7 +724,9 @@ FreeStyle(textPtr, stylePtr)
 	if (stylePtr->bgGC != None) {
 	    Tk_FreeGC(textPtr->display, stylePtr->bgGC);
 	}
-	Tk_FreeGC(textPtr->display, stylePtr->fgGC);
+	if (stylePtr->fgGC != None) {
+	    Tk_FreeGC(textPtr->display, stylePtr->fgGC);
+	}
 	Tcl_DeleteHashEntry(stylePtr->hPtr);
 	ckfree((char *) stylePtr);
     }
@@ -769,7 +776,7 @@ LayoutDLine(textPtr, indexPtr)
     int jIndent;			/* Additional indentation (beyond
 					 * margins) due to justification. */
     int rMargin;			/* Right margin width for line. */
-    Tk_Uid wrapMode;			/* Wrap mode to use for this line. */
+    TkWrapMode wrapMode;		/* Wrap mode to use for this line. */
     int x = 0, maxX = 0;		/* Initializations needed only to
 					 * stop compiler warnings. */
     int wholeLine;			/* Non-zero means this display line
@@ -820,8 +827,8 @@ LayoutDLine(textPtr, indexPtr)
 
 			/* if have tag toggle, chance that invisibility state changed, so bail out */
 			} else if (segPtr->typePtr == &tkTextToggleOffType || segPtr->typePtr == &tkTextToggleOnType) {
-				if (segPtr->body.toggle.tagPtr->elideString!=NULL) {
-					elide = (segPtr->typePtr == &tkTextToggleOffType) ^ (segPtr->body.toggle.tagPtr->elide==1);
+				if (segPtr->body.toggle.tagPtr->state!=TK_STATE_NULL) {
+					elide = (segPtr->typePtr == &tkTextToggleOffType) ^ (segPtr->body.toggle.tagPtr->state==TK_STATE_HIDDEN);
 				}
 			}
 		}
@@ -854,7 +861,7 @@ LayoutDLine(textPtr, indexPtr)
     tabChunkPtr = NULL;
     tabArrayPtr = NULL;
     rMargin = 0;
-    wrapMode = tkTextCharUid;
+    wrapMode = TEXT_WRAPMODE_CHAR;
     tabSize = 0;
     lastCharChunkPtr = NULL;
 
@@ -883,8 +890,9 @@ LayoutDLine(textPtr, indexPtr)
 
 	    /* if have tag toggle, chance that invisibility state changed */
 	    } else if (segPtr->typePtr == &tkTextToggleOffType || segPtr->typePtr == &tkTextToggleOnType) {
-		   if (segPtr->body.toggle.tagPtr->elideString!=NULL) {
-			  elide = (segPtr->typePtr == &tkTextToggleOffType) ^ (segPtr->body.toggle.tagPtr->elide==1);
+		   if (segPtr->body.toggle.tagPtr->state!=TK_STATE_NULL) {
+			  elide = (segPtr->typePtr == &tkTextToggleOffType) ^
+ (segPtr->body.toggle.tagPtr->state==TK_STATE_HIDDEN);
 		   }
 	    }
 
@@ -922,7 +930,7 @@ LayoutDLine(textPtr, indexPtr)
 	    x = ((curIndex.charIndex == 0)
 		    ? chunkPtr->stylePtr->sValuePtr->lMargin1
 		    : chunkPtr->stylePtr->sValuePtr->lMargin2);
-	    if (wrapMode == tkTextNoneUid) {
+	    if (wrapMode == TEXT_WRAPMODE_NONE) {
 		maxX = INT_MAX;
 	    } else {
 		maxX = textPtr->dInfoPtr->maxX - textPtr->dInfoPtr->x
@@ -1110,7 +1118,7 @@ LayoutDLine(textPtr, indexPtr)
      * what is implemented below.
      */
 
-    if (wrapMode == tkTextNoneUid) {
+    if (wrapMode == TEXT_WRAPMODE_NONE) {
 	maxX = textPtr->dInfoPtr->maxX - textPtr->dInfoPtr->x - rMargin;
     }
     dlPtr->length = lastChunkPtr->x + lastChunkPtr->width;
@@ -1652,14 +1660,23 @@ DisplayDLine(textPtr, dlPtr, prevPtr, pixmap)
 
     if (dlPtr->chunkPtr == NULL) return;
 
+    if (dlPtr->chunkPtr == NULL) return;
+
     /*
      * First, clear the area of the line to the background color for the
      * text widget.
      */
 
     display = Tk_Display(textPtr->tkwin);
-    Tk_Fill3DRectangle(textPtr->tkwin, pixmap, textPtr->border, 0, 0,
-	    Tk_Width(textPtr->tkwin), dlPtr->height, 0, TK_RELIEF_FLAT);
+    if (textPtr->tileGC == NULL) {
+	Tk_Fill3DRectangle(textPtr->tkwin, pixmap, textPtr->border, 0, 0,
+		Tk_Width(textPtr->tkwin), dlPtr->height, 0, TK_RELIEF_FLAT);
+    } else {
+	SetTileOrigin(textPtr, dlPtr->y);
+	XFillRectangle(display, pixmap, textPtr->tileGC,
+		0, 0, Tk_Width(textPtr->tkwin), dlPtr->height);
+	XSetTSOrigin(display, textPtr->tileGC, 0, 0);
+    }
 
     /*
      * Next, draw background information for the whole line.
@@ -1675,7 +1692,7 @@ DisplayDLine(textPtr, dlPtr, prevPtr, pixmap)
      * to its left.
      */
 
-    if (textPtr->state == tkNormalUid) {
+    if (textPtr->state == TK_STATE_NORMAL) {
 	for (chunkPtr = dlPtr->chunkPtr; (chunkPtr != NULL);
 		chunkPtr = chunkPtr->nextPtr) {
 	    x = chunkPtr->x + dInfoPtr->x - dInfoPtr->curPixelOffset;
@@ -1815,7 +1832,6 @@ DisplayLineBackground(textPtr, dlPtr, prevPtr, pixmap)
     int minX, maxX, xOffset;
     StyleValues *sValuePtr;
     Display *display;
-
 
     /*
      * Pass 1: scan through dlPtr from left to right.  For each range of
@@ -2011,7 +2027,6 @@ DisplayLineBackground(textPtr, dlPtr, prevPtr, pixmap)
 	rightX = maxX;
     }
     chunkPtr2 = NULL;
-/*    for (dlPtr2 = dlPtr; dlPtr2->nextPtr != NULL && dlPtr2->nextPtr->chunkPtr == NULL; dlPtr2 = dlPtr2->nextPtr) {}*/
     if (dlPtr->nextPtr != NULL && dlPtr->nextPtr->chunkPtr != NULL) {
 	/*
 	 * Find the chunk in the previous line that covers leftX.
@@ -2217,9 +2232,11 @@ DisplayText(clientData)
 
     /*
      * See if it's possible to bring some parts of the screen up-to-date
-     * by scrolling (copying from other parts of the screen).
+     * by scrolling (copying from other parts of the screen). If there
+     * is a tile, this is not allowed.
      */
 
+    if (textPtr->tileGC == None) {
     for (dlPtr = dInfoPtr->dLinePtr; dlPtr != NULL; dlPtr = dlPtr->nextPtr) {
 	register DLine *dlPtr2;
 	int offset, height, y, oldY;
@@ -2301,6 +2318,7 @@ DisplayText(clientData)
 	}
 	numCopies++;
 	TkDestroyRegion(damageRgn);
+    }
     }
 
     /*
@@ -2461,10 +2479,20 @@ DisplayText(clientData)
             goto end;
         }
 
-	Tk_Fill3DRectangle(textPtr->tkwin, Tk_WindowId(textPtr->tkwin),
-		textPtr->border, dInfoPtr->x - textPtr->padX, bottomY,
-		dInfoPtr->maxX - (dInfoPtr->x - textPtr->padX),
-		dInfoPtr->topOfEof-bottomY, 0, TK_RELIEF_FLAT);
+	if (textPtr->tileGC == None) {
+	    Tk_Fill3DRectangle(textPtr->tkwin, Tk_WindowId(textPtr->tkwin),
+		    textPtr->border, dInfoPtr->x - textPtr->padX, bottomY,
+		    dInfoPtr->maxX - (dInfoPtr->x - textPtr->padX),
+		    dInfoPtr->topOfEof-bottomY, 0, TK_RELIEF_FLAT);
+	} else {
+	    SetTileOrigin(textPtr, 0);
+	    XFillRectangle(Tk_Display(textPtr->tkwin),
+		    Tk_WindowId(textPtr->tkwin),
+		    textPtr->tileGC, dInfoPtr->x - textPtr->padX, bottomY,
+		    dInfoPtr->maxX - (dInfoPtr->x - textPtr->padX),
+		    dInfoPtr->topOfEof-bottomY);
+	    XSetTSOrigin(Tk_Display(textPtr->tkwin), textPtr->tileGC, 0, 0);
+	}
     }
     dInfoPtr->topOfEof = bottomY;
 
@@ -3310,7 +3338,7 @@ TkTextSeeCmd(textPtr, interp, argc, argv)
 
     dlPtr = FindDLine(dInfoPtr->dLinePtr, &index);
     charCount = index.charIndex - dlPtr->index.charIndex;
-    for (chunkPtr = dlPtr->chunkPtr; ; chunkPtr = chunkPtr->nextPtr) {
+    for (chunkPtr = dlPtr->chunkPtr; chunkPtr!=NULL ; chunkPtr = chunkPtr->nextPtr) {
 	if (charCount < chunkPtr->numChars) {
 	    break;
 	}
@@ -3322,6 +3350,7 @@ TkTextSeeCmd(textPtr, interp, argc, argv)
      * the character within the chunk.
      */
 
+    if (chunkPtr!=NULL) {       /* chunkPtr==NULL iff trying to see in elided region */
     (*chunkPtr->bboxProc)(chunkPtr, charCount, dlPtr->y + dlPtr->spaceAbove,
 	    dlPtr->height - dlPtr->spaceAbove - dlPtr->spaceBelow,
 	    dlPtr->baseline - dlPtr->spaceAbove, &x, &y, &width,
@@ -3347,7 +3376,7 @@ TkTextSeeCmd(textPtr, interp, argc, argv)
 	} else {
 	    return TCL_OK;
 	}
-    }
+    }}
     dInfoPtr->flags |= DINFO_OUT_OF_DATE;
     if (!(dInfoPtr->flags & REDRAW_PENDING)) {
 	dInfoPtr->flags |= REDRAW_PENDING;
@@ -3743,13 +3772,14 @@ TkTextScanCmd(textPtr, interp, argc, argv)
 {
     TextDInfo *dInfoPtr = textPtr->dInfoPtr;
     TkTextIndex index;
-    int c, x, y, totalScroll, newChar, maxChar;
+    int c, x, y, totalScroll, newChar, maxChar, gain=10;
     Tk_FontMetrics fm;
     size_t length;
 
-    if (argc != 5) {
+    if ((argc != 5) && (argc != 6)) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
-		argv[0], " scan mark|dragto x y\"", (char *) NULL);
+		argv[0], " scan mark x y\" or \"",
+		argv[0], " scan dragto x y ?gain?\"", (char *) NULL);
 	return TCL_ERROR;
     }
     if (Tcl_GetInt(interp, argv[3], &x) != TCL_OK) {
@@ -3758,6 +3788,8 @@ TkTextScanCmd(textPtr, interp, argc, argv)
     if (Tcl_GetInt(interp, argv[4], &y) != TCL_OK) {
 	return TCL_ERROR;
     }
+    if ((argc == 6) && (Tcl_GetInt(interp, argv[5], &gain) != TCL_OK))
+	return TCL_ERROR;
     c = argv[2][0];
     length = strlen(argv[2]);
     if ((c == 'd') && (strncmp(argv[2], "dragto", length) == 0)) {
@@ -3773,7 +3805,7 @@ TkTextScanCmd(textPtr, interp, argc, argv)
 	 * moving again).
 	 */
 
-	newChar = dInfoPtr->scanMarkChar + (10*(dInfoPtr->scanMarkX - x))
+	newChar = dInfoPtr->scanMarkChar + (gain*(dInfoPtr->scanMarkX - x))
 		/ (textPtr->charWidth);
 	maxChar = 1 + (dInfoPtr->maxLength - (dInfoPtr->maxX - dInfoPtr->x)
 		+ textPtr->charWidth - 1)/textPtr->charWidth;
@@ -3787,7 +3819,7 @@ TkTextScanCmd(textPtr, interp, argc, argv)
 	dInfoPtr->newCharOffset = newChar;
 
 	Tk_GetFontMetrics(textPtr->tkfont, &fm);
-	totalScroll = (10*(dInfoPtr->scanMarkY - y)) / fm.linespace;
+	totalScroll = (gain*(dInfoPtr->scanMarkY - y)) / fm.linespace;
 	if (totalScroll != dInfoPtr->scanTotalScroll) {
 	    index = textPtr->topIndex;
 	    ScrollByLines(textPtr, totalScroll-dInfoPtr->scanTotalScroll);
@@ -4393,8 +4425,8 @@ TkTextCharLayoutProc(textPtr, indexPtr, segPtr, offset, maxX, maxChars,
 				 * many characters. */
     int noCharsYet;		/* Non-zero means no characters have been
 				 * assigned to this display line yet. */
-    Tk_Uid wrapMode;		/* How to handle line wrapping: tkTextCharUid,
-				 * tkTextNoneUid, or tkTextWordUid. */
+    TkWrapMode wrapMode;	/* How to handle line wrapping: TEXT_WRAPMODE_CHAR,
+				 * TEXT_WRAPMODE_NONE, or TEXT_WRAPMODE_WORD. */
     register TkTextDispChunk *chunkPtr;
 				/* Structure to fill in with information
 				 * about this chunk.  The x field has already
@@ -4486,7 +4518,7 @@ TkTextCharLayoutProc(textPtr, indexPtr, segPtr, offset, maxX, maxChars,
      * is not a character segment.
      */
 
-    if (wrapMode != tkTextWordUid) {
+    if (wrapMode != TEXT_WRAPMODE_WORD) {
 	chunkPtr->breakIndex = chunkPtr->numChars;
     } else {
 	for (count = charsThatFit, p += charsThatFit-1; count > 0;
@@ -4580,7 +4612,7 @@ CharDisplayProc(chunkPtr, x, y, height, baseline, display, dst, screenY)
      * Draw the text, underline, and overstrike for this chunk.
      */
 
-    if (!sValuePtr->elide && ciPtr->numChars > offsetChars) {
+    if (!sValuePtr->elide && (ciPtr->numChars > offsetChars) && (stylePtr->fgGC != None)) {
 	int numChars = ciPtr->numChars - offsetChars;
 	char *string = ciPtr->chars + offsetChars;
 
@@ -5028,6 +5060,58 @@ SizeOfTab(textPtr, tabArrayPtr, index, x, maxX)
 	result = spaceWidth;
     }
     return result;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SetTileOrigin --
+ *
+ *	Set tile origin for text widget.
+ *
+ * Results:
+ *	The GC that is used for the tile will be modified.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+SetTileOrigin(textPtr, y)
+    TkText *textPtr;
+    int y;
+{
+    Tk_Tile tile = textPtr->tile;
+
+    if ((textPtr->state == TK_STATE_DISABLED) && (textPtr->disabledTile)) {
+	tile = textPtr->disabledTile;
+    }
+    if (textPtr->tsoffset.flags) {
+	int w=0; int h=0;
+	if (textPtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+	    Tk_SizeOfTile(tile, &w, &h);
+	}
+	if (textPtr->tsoffset.flags & TK_OFFSET_LEFT) {
+	    w = 0;
+	} else if (textPtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+	    w = Tk_Width(textPtr->tkwin);
+	} else {
+	    w = (Tk_Width(textPtr->tkwin) - w) / 2;
+	}
+	if (textPtr->tsoffset.flags & TK_OFFSET_TOP) {
+	    h = 0;
+	} else if (textPtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+	    h = Tk_Height(textPtr->tkwin);
+	} else {
+	    h = (Tk_Height(textPtr->tkwin) - h) / 2;
+	}
+	XSetTSOrigin(textPtr->display, textPtr->tileGC, w , h-y);
+    } else {
+	Tk_SetTileOrigin(textPtr->tkwin, textPtr->tileGC, textPtr->tsoffset.xoffset,
+		textPtr->tsoffset.yoffset-y);
+    }
 }
 
 /*

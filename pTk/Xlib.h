@@ -96,6 +96,7 @@ extern int XSendEvent  _ANSI_ARGS_((Display *, Window, int, long int, XEvent *))
 extern int XSetClipMask  _ANSI_ARGS_((Display *, GC, Pixmap));
 extern int XSetClipOrigin  _ANSI_ARGS_((Display *, GC, int, int));
 extern int XSetCommand  _ANSI_ARGS_((Display *, Window, char **, int));
+extern int XSetDashes _ANSI_ARGS_((Display *, GC, int, const char *, int));
 extern int XSetForeground  _ANSI_ARGS_((Display *, GC, long unsigned int));
 extern int XSetIconName  _ANSI_ARGS_((Display *, Window, const char *));
 extern int XSetInputFocus  _ANSI_ARGS_((Display *, Window, int, Time));

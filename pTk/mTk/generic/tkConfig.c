@@ -125,7 +125,14 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
      */
 
     for ( ; argc > 0; argc -= 2, argv += 2) {
-	specPtr = FindConfigSpec(interp, specs, *argv, needFlags, hateFlags);
+	char *arg;
+
+	if (flags & TK_CONFIG_OBJS) {
+	    arg = Tcl_GetStringFromObj(*args, NULL);
+	} else {
+	    arg = *argv;
+	}
+	specPtr = FindConfigSpec(interp, specs, arg, needFlags, hateFlags);
 	if (specPtr == NULL) {
 	    if (!(flags & TK_CONFIG_ARGV_ONLY)) {
 		/*
@@ -148,10 +155,18 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 	 */
 
 	if (argc < 2) {
-	    Tcl_AppendResult(interp, "value for \"", *argv,
+	    Tcl_AppendResult(interp, "value for \"", arg,
 		    "\" missing", (char *) NULL);
 	    return TCL_ERROR;
 	}
+#if 0 /* DASH PATCH */
+	if (flags & TK_CONFIG_OBJS) {
+	    arg = Tcl_GetStringFromObj(args[1], NULL);
+	} else {
+	    arg = argv[1];
+	}
+	if (DoConfig(interp, tkwin, specPtr, arg, 0, widgRec) != TCL_OK) { }
+#endif /* DASH PATCH */
 	if (DoConfig(interp, tkwin, specPtr, args[1], widgRec) != TCL_OK) {
 	    char msg[100];
 
@@ -553,7 +568,9 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 	    case TK_CONFIG_ACTIVE_CURSOR: {
 		Tk_Cursor new, old;
 
-		if (nullValue) {
+		if (nullValue || 
+		   (( specPtr->specFlags & TK_CONFIG_NULL_OK) && 
+                      !*LangString(value)))  {
 		    new = None;
 		} else {
 		    new = Tk_GetCursor(interp, tkwin, value);
@@ -685,7 +702,7 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
 {
     register Tk_ConfigSpec *specPtr;
     int needFlags, hateFlags;
-    Arg val;
+    Tcl_Obj *result;
 
     needFlags = flags & ~(TK_CONFIG_USER_BIT - 1);
     if (Tk_Depth(tkwin) <= 1) {
@@ -706,9 +723,9 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
 	if (specPtr == NULL) {
 	    return TCL_ERROR;
 	}
-        val = FormatConfigInfo(interp, tkwin, specPtr, widgRec);
-        Tcl_ArgResult(interp,val);
-        LangFreeArg(val,TCL_DYNAMIC);
+        result = FormatConfigInfo(interp, tkwin, specPtr, widgRec);
+        Tcl_ArgResult(interp,result);
+        LangFreeArg(result,TCL_DYNAMIC);
 	return TCL_OK;
     }
 
@@ -716,8 +733,12 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
      * Loop through all the specs, creating a big list with all
      * their information.
      */
+                                              
+    result = Tcl_NewListObj(0,NULL);    
 
     for (specPtr = specs; specPtr->type != TK_CONFIG_END; specPtr++) {
+	Arg val;
+
 	if ((argvName != NULL) && (specPtr->argvName != argvName)) {
 	    continue;
 	}
@@ -729,9 +750,11 @@ Tk_ConfigureInfo(interp, tkwin, specs, widgRec, argvName, flags)
 	    continue;
 	}
 	val = FormatConfigInfo(interp, tkwin, specPtr, widgRec);
-	Tcl_AppendArg(interp, val);
-        LangFreeArg(val,TCL_DYNAMIC);
+	Tcl_ListObjAppendElement(interp,result,val); 
     }
+
+    Tcl_ArgResult(interp,result);
+    LangFreeArg(result,TCL_DYNAMIC);
     return TCL_OK;
 }
 
@@ -763,17 +786,16 @@ FormatConfigInfo(interp, tkwin, specPtr, widgRec)
     char *widgRec;			/* Pointer to record holding current
 					 * values of info for widget. */
 {
-    Arg *args = LangAllocVec(5);
-    Arg result = NULL;
+    Tcl_Obj *args[5];
     Tcl_FreeProc *freeProc = NULL;
 
-    LangSetDefault(args+0,specPtr->argvName);
-    LangSetDefault(args+1,specPtr->dbName);
+    args[0] = Tcl_NewStringObj(specPtr->argvName,-1);
+    args[1] = Tcl_NewStringObj(specPtr->dbName,-1);
     if (specPtr->type == TK_CONFIG_SYNONYM) {
-	result = Tcl_Merge(2, args);
+	return Tcl_NewListObj(2, args);
     } else {
-        LangSetDefault(args+2,specPtr->dbClass);
-        LangSetDefault(args+3,specPtr->defValue);
+        args[2] = Tcl_NewStringObj(specPtr->dbClass,-1);
+        args[3] = Tcl_NewStringObj(specPtr->defValue,-1);
 
         args[4] = FormatConfigValue(interp, tkwin, specPtr, widgRec, 
 		&freeProc);
@@ -790,10 +812,8 @@ FormatConfigInfo(interp, tkwin, specPtr, widgRec)
         if (args[4] == NULL) {    
 	    LangSetDefault(&args[4],"");
         }
-        result = Tcl_Merge(5, args);
+        return Tcl_NewListObj(5, args);
     } 
-    LangFreeVec(5, args);
-    return result;
 }
 
 /*
@@ -942,8 +962,8 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	default: 
 	    LangSetString(&result,"?? unknown type ??");
     }
-    if (!result)
-     LangSetDefault(&result,"");
+    if (!result)    
+	LangSetDefault(&result,"");
     return result;
 }
 

@@ -22,6 +22,28 @@
 #include "tkVMacro.h"
 
 /*
+ * Custom option for handling "-tile", "-offset" and "-orient"
+ */
+
+static Tk_CustomOption orientOption = {
+    Tk_OrientParseProc,
+    Tk_OrientPrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
+
+/*
  * Information used for argv parsing.
  */
 
@@ -34,6 +56,9 @@ Tk_ConfigSpec tkpScrollbarConfigSpecs[] = {
 	TK_CONFIG_MONO_ONLY},
     {TK_CONFIG_RELIEF, "-activerelief", "activeRelief", "Relief",
 	DEF_SCROLLBAR_ACTIVE_RELIEF, Tk_Offset(TkScrollbar, activeRelief), 0},
+    {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
+	Tk_Offset(TkScrollbar, activeTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
 	DEF_SCROLLBAR_BG_COLOR, Tk_Offset(TkScrollbar, bgBorder),
 	TK_CONFIG_COLOR_ONLY},
@@ -65,8 +90,9 @@ Tk_ConfigSpec tkpScrollbarConfigSpecs[] = {
 	DEF_SCROLLBAR_HIGHLIGHT_WIDTH, Tk_Offset(TkScrollbar, highlightWidth), 0},
     {TK_CONFIG_BOOLEAN, "-jump", "jump", "Jump",
 	DEF_SCROLLBAR_JUMP, Tk_Offset(TkScrollbar, jump), 0},
-    {TK_CONFIG_UID, "-orient", "orient", "Orient",
-	DEF_SCROLLBAR_ORIENT, Tk_Offset(TkScrollbar, orientUid), 0},
+    {TK_CONFIG_CUSTOM, "-orient", "orient", "Orient",
+	DEF_SCROLLBAR_ORIENT, Tk_Offset(TkScrollbar, vertical), 0,
+	&orientOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_SCROLLBAR_RELIEF, Tk_Offset(TkScrollbar, relief), 0},
     {TK_CONFIG_INT, "-repeatdelay", "repeatDelay", "RepeatDelay",
@@ -76,12 +102,21 @@ Tk_ConfigSpec tkpScrollbarConfigSpecs[] = {
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_SCROLLBAR_TAKE_FOCUS, Tk_Offset(TkScrollbar, takeFocus),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(TkScrollbar, tile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(TkScrollbar, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
     {TK_CONFIG_COLOR, "-troughcolor", "troughColor", "Background",
 	DEF_SCROLLBAR_TROUGH_COLOR, Tk_Offset(TkScrollbar, troughColorPtr),
 	TK_CONFIG_COLOR_ONLY},
     {TK_CONFIG_COLOR, "-troughcolor", "troughColor", "Background",
 	DEF_SCROLLBAR_TROUGH_MONO, Tk_Offset(TkScrollbar, troughColorPtr),
 	TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_CUSTOM, "-troughtile", "troughTile", "Tile", (char *) NULL,
+	Tk_Offset(TkScrollbar, troughTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_PIXELS, "-width", "width", "Width",
 	DEF_SCROLLBAR_WIDTH, Tk_Offset(TkScrollbar, width), 0},
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
@@ -141,7 +176,7 @@ Tk_ScrollbarCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 
-    Tk_SetClass(new, "Scrollbar");
+    TkClassOption(new, "Scrollbar",&argc,&argv);
     scrollPtr = TkpCreateScrollbar(new);
 
     TkSetClassProcs(new, &tkpScrollbarProcs, (ClientData) scrollPtr);
@@ -158,7 +193,6 @@ Tk_ScrollbarCmd(clientData, interp, argc, argv)
     scrollPtr->widgetCmd = Tcl_CreateCommand(interp,
 	    Tk_PathName(scrollPtr->tkwin), ScrollbarWidgetCmd,
 	    (ClientData) scrollPtr, ScrollbarCmdDeletedProc);
-    scrollPtr->orientUid = NULL;
     scrollPtr->vertical = 0;
     scrollPtr->width = 0;
     scrollPtr->command = NULL;
@@ -188,6 +222,12 @@ Tk_ScrollbarCmd(clientData, interp, argc, argv)
     scrollPtr->cursor = None;
     scrollPtr->takeFocus = NULL;
     scrollPtr->flags = 0;
+    scrollPtr->tile = NULL;
+    scrollPtr->tile = scrollPtr->activeTile = scrollPtr->troughTile = NULL;
+    scrollPtr->activeTileGC = None;
+    scrollPtr->tsoffset.flags = 0;
+    scrollPtr->tsoffset.xoffset = 0;
+    scrollPtr->tsoffset.yoffset = 0;
 
     if (ConfigureScrollbar(interp, scrollPtr, argc-2, argv+2, 0) != TCL_OK) {
 	Tk_DestroyWindow(scrollPtr->tkwin);
@@ -510,28 +550,15 @@ ConfigureScrollbar(interp, scrollPtr, argc, argv, flags)
     int flags;				/* Flags to pass to
 					 * Tk_ConfigureWidget. */
 {
-    size_t length;
-
     if (Tk_ConfigureWidget(interp, scrollPtr->tkwin, tkpScrollbarConfigSpecs,
 	    argc, argv, (char *) scrollPtr, flags) != TCL_OK) {
 	return TCL_ERROR;
     }
 
     /*
-     * A few options need special processing, such as parsing the
-     * orientation or setting the background from a 3-D border.
+     * A few options need special processing, such as setting the
+     * background from a 3-D border.
      */
-
-    length = strlen(scrollPtr->orientUid);
-    if (strncmp(scrollPtr->orientUid, "vertical", length) == 0) {
-	scrollPtr->vertical = 1;
-    } else if (strncmp(scrollPtr->orientUid, "horizontal", length) == 0) {
-	scrollPtr->vertical = 0;
-    } else {
-	Tcl_AppendResult(interp, "bad orientation \"", scrollPtr->orientUid,
-		"\": must be vertical or horizontal", (char *) NULL);
-	return TCL_ERROR;
-    }
 
     /* Force width to be odd, so point of arrow has a place to be ... */
     scrollPtr->width |= 1;
@@ -597,6 +624,18 @@ TkScrollbarEventProc(clientData, eventPtr)
 	 * stuff.
 	 */
 	
+	if (scrollPtr->tile != NULL) {
+	    Tk_FreeTile(scrollPtr->tile);
+	}
+	if (scrollPtr->activeTile != NULL) {
+	    Tk_FreeTile(scrollPtr->activeTile);
+	}
+	if (scrollPtr->troughTile != NULL) {
+	    Tk_FreeTile(scrollPtr->troughTile);
+	}
+	if (scrollPtr->activeTileGC != None) {
+	    Tk_FreeGC(scrollPtr->display, scrollPtr->activeTileGC);
+	}
 	Tk_FreeOptions(tkpScrollbarConfigSpecs, (char *) scrollPtr,
 		scrollPtr->display, 0);
 	Tcl_EventuallyFree((ClientData) scrollPtr, TCL_DYNAMIC);

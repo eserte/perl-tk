@@ -23,6 +23,11 @@ VFUNC(Arg,TixDItemStylePrintProc,V_TixDItemStylePrintProc,_ANSI_ARGS_((
 		int offset, Tcl_FreeProc **freeProcPtr)))
 #endif
 
+#ifndef TixGetStringFromObj
+VFUNC(char *,TixGetStringFromObj,V_TixGetStringFromObj,_ANSI_ARGS_((
+			    char *objPtr,int *lengthPtr)))
+#endif
+
 #ifndef Tix_ArgcError
 VFUNC(int,Tix_ArgcError,V_Tix_ArgcError,_ANSI_ARGS_((Tcl_Interp *interp, 
 			    int argc, Arg *args, int prefixCount,

@@ -1,16 +1,21 @@
 #!/usr/local/bin/perl -w
 use strict;
+use IO;
+use Socket;
 use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#10$
+$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#20 $
 
-BEGIN 
+my %opt;
+INIT 
  {
   my $home = $ENV{'HOME'};
   $portfile = "$home/.ptkedsn";
   my $port = $ENV{'PTKEDPORT'};
+  return if $^C;
+  getopts("s",\%opt);
   unless (defined $port)
    {
     if (open(SN,"$portfile"))
@@ -46,48 +51,55 @@ BEGIN
  }
 
 use Tk;
-use Tk::DropSite qw(Sun);
-use Tk::DragDrop qw(Sun);
+use Tk::DropSite qw(XDND KDE Sun);
+use Tk::DragDrop qw(XDND KDE Sun);
 use Tk::widgets qw(TextUndo Scrollbar);
+use Getopt::Std;
 # use Tk::ErrorDialog;
 
-my $sock = IO::Socket::INET->new(Listen => 5, Proto => 'tcp');
-die "Cannot open listen socket:$!" unless defined $sock;
-binmode($sock);
 
-my $port = $sock->sockport;
-$ENV{'PTKEDPORT'} = $port;
-open(SN,">$portfile") || die "Cannot open $portfile:$!";
-print SN $port;
-close(SN);
-print "Accepting connections on $port\n";
+my $top = MainWindow->new();  
 
-my $top = MainWindow->new();                    
+if ($opt{'s'})
+ {
+  my $sock = IO::Socket::INET->new(Listen => 5, Proto => 'tcp');
+  die "Cannot open listen socket:$!" unless defined $sock;
+  binmode($sock);
 
-Event::HandleSignals();
+  my $port = $sock->sockport;
+  $ENV{'PTKEDPORT'} = $port;
+  open(SN,">$portfile") || die "Cannot open $portfile:$!";
+  print SN $port; 
+  close(SN);
+  print "Accepting connections on $port\n";
+  $top->fileevent($sock,'readable', 
+  sub 
+  {
+   print "accepting $sock\n"; 
+   my $client = $sock->accept;
+   if (defined $client)
+    {     
+     binmode($client);
+     print "Connection $client\n";
+     $top->fileevent($client,'readable',[\&EditRequest,$client]);
+    }
+   });
+ }          
 
-$SIG{'INT'} = sub { $top->destroy };
+Tk::Event::HandleSignals();
+$SIG{'INT'} = sub { $top->WmDeleteWindow };
 
-$top->withdraw;
-$top->fileevent($sock,'readable',\&ConnectRequest);
+$top->iconify;
 $top->optionAdd('*TextUndo.Background' => '#fff5e1');
+$top->fontCreate('ptked',-family => 'courier', -size => -12, 
+                 -weight => 'normal', -slant => 'roman');
+$top->optionAdd('*TextUndo.Font' => 'ptked');
 
 foreach my $file (@ARGV)
  {
   Create_Edit($file);
  }
 
-sub ConnectRequest
-{       
- print "accepting $sock\n"; 
- my $client = $sock->accept;
- if (defined $client)
-  {     
-   binmode($client);
-   print "Connection $client\n";
-   $top->fileevent($client,'readable',[\&EditRequest,$client]);
-  }
-}
 
 sub EditRequest
 {
@@ -114,21 +126,20 @@ sub Create_Edit
  my $path = shift;
  my $ed   = $top->Toplevel(-title => $path);
  $ed->withdraw;
+ $top->{'Edits'}++; 
+ $ed->OnDestroy([\&RemoveEdit,$top]);
  my $t = $ed->Scrolled('TextUndo', -wrap => 'none', -scrollbars => 'osre');
- if (-e $path)
-  {
-   $t->Load($path);
-  }
- else
-  {
-   $t->FileName($path);
-  }
- my $menu = $t->GetMenu;
+ $t->pack(-expand => 1, -fill => 'both');
+ $t = $t->Subwidget('textundo');
+ my $menu = $t->menu;
  $menu->cascade(-label => '~Help', -menuitems => [
                 [Button => '~About...', -command => [\&About,$ed]],  
                ]);
  $ed->configure(-menu => $menu);
  my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
+ $t->bind(ref($t),'<Meta-B1-Motion>',\&Ouch);
+ $t->bind(ref($t),'<Meta-ButtonPress>',\&Ouch);
+ $t->bind(ref($t),'<Meta-ButtonRelease>',\&Ouch);
  $dd->configure(-startcommand => 
                 sub
                  {
@@ -141,23 +152,65 @@ sub Create_Edit
                 { my ($x,$y) = @_;
                   $t->markSet(insert => "\@$x,$y");
                 },
-               -dropcommand => 
-               sub 
-                { my ($seln,$x,$y) = @_;
-                  $t->markSet(insert => "\@$x,$y");
-                  $t->insert(insert => $t->SelectionGet(-selection => $seln));
-                }
+               -dropcommand => [\&HandleDrop,$t],
               );
  
- $t->pack(-expand => 1, -fill => 'both');
+
  
  $ed->protocol('WM_DELETE_WINDOW',[ConfirmExit => $t]);
  $t->bind('<F3>',\&DoFind);
 
  $ed->idletasks;
+ if (-e $path)
+  {
+   $t->Load($path);
+  }
+ else
+  {
+   $t->FileName($path);
+  }
  $ed->deiconify;
  $t->update;
  $t->focus;
+}
+
+sub Ouch
+{
+ warn join(',','Ouch',@_);
+}
+
+sub RemoveEdit
+{
+ my $top = shift;
+ if (--$top->{'Edits'} == 0)
+  {
+   $top->destroy unless $opt{'s'};
+  }
+}
+
+sub HandleDrop
+{my ($t,$seln,$x,$y) = @_;
+ # warn join(',',Drop => @_);
+ my $string;
+ Tk::catch { $string = $t->SelectionGet(-selection => $seln,'FILE_NAME') };
+ if ($@)
+  {  
+   Tk::catch { $string = $t->SelectionGet(-selection => $seln) };
+   if ($@)
+    {
+     my @targets = $t->SelectionGet(-selection => $seln, 'TARGETS');
+     $t->messageBox(-text => "Targets : ".join(' ',@targets));
+    }
+   else
+    { 
+     $t->markSet(insert => "\@$x,$y");
+     $t->insert(insert => $string);
+    } 
+  }
+ else
+  {
+   Create_Edit($string);
+  }   
 }
 
 
@@ -213,7 +266,7 @@ sub About
 $0 version $VERSION
 perl$]/Tk$Tk::VERSION
 
-Copyright © 1995-1999 Nick Ing-Simmons. All rights reserved.
+Copyright © 1995-2000 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 END

@@ -21,7 +21,7 @@ if (defined $tar)
   $tar =~ s/\.gz$//; 
   if (system("tar","cvf",$tar,'blib') == 0)
    {
-    if (system("gzip","-9",$tar) == 0)
+    if (system("gzip","-9f",$tar) == 0)
      {
      }
    } 

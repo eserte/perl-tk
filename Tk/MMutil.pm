@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/MMutil.pm#42$
+$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/MMutil.pm#45 $
 
 use Tk::MakeDepend;
 
@@ -236,7 +236,7 @@ sub const_config
 {
  my $self = shift;
  my $name;
- foreach $name (grep /(%|\.(old|bak))$/,keys %{$self->{PM}})
+ foreach $name (grep /(%|\.(old|bak|q4|orig|rej))$/,keys %{$self->{PM}})
   {
    delete $self->{PM}->{$name};
   }

@@ -293,6 +293,7 @@ Tk_ImageType tkPhotoImageType = {
     ImgPhotoDisplay,		/* displayProc */
     ImgPhotoFree,		/* freeProc */
     ImgPhotoDelete,		/* deleteProc */
+    (Tk_ImagePostscriptProc *) NULL,	/* postscriptProc */
     (Tk_ImageType *) NULL	/* nextPtr */
 };
 
@@ -388,8 +389,8 @@ static int		MatchStringFormat _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *data, Tcl_Obj *formatString,
 			    Tk_PhotoImageFormat **imageFormatPtr,
 			    int *widthPtr, int *heightPtr));
-static void		Dither _ANSI_ARGS_((PhotoMaster *masterPtr,
-			    int x, int y, int width, int height));
+static Tcl_CmdProc *	PhotoOptionFind _ANSI_ARGS_((Tcl_Interp * interp,
+			    char *name));
 static void		DitherInstance _ANSI_ARGS_((PhotoInstance *instancePtr,
 			    int x, int y, int width, int height));
 
@@ -1121,11 +1122,11 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	    x = masterPtr->ditherX;
 	    y = masterPtr->ditherY;
 	    if (masterPtr->ditherX != 0) {
-		Dither(masterPtr, x, y, masterPtr->width - x, 1);
+		Tk_DitherPhoto((Tk_PhotoHandle) masterPtr, x, y, masterPtr->width - x, 1);
 	    }
 	    if (masterPtr->ditherY < masterPtr->height) {
 		x = 0;
-		Dither(masterPtr, 0, masterPtr->ditherY, masterPtr->width,
+		Tk_DitherPhoto((Tk_PhotoHandle) masterPtr, 0, masterPtr->ditherY, masterPtr->width,
 			masterPtr->height - masterPtr->ditherY);
 	    }
 
@@ -1241,10 +1242,12 @@ ImgPhotoCmd(clientData, interp, argc, objv)
 	}
 	return result;
     } else {
-	Tcl_AppendResult(interp, "bad option \"", strv[1],
-		"\": must be blank, cget, configure, copy, get, put,",
-		" read, redither, or write", (char *) NULL);
-	return TCL_ERROR;
+	Tcl_CmdProc *proc;
+	proc = PhotoOptionFind(interp, LangString(objv[1]));
+	if (proc == (Tcl_CmdProc *) NULL) {
+	    return TCL_ERROR;
+	}
+	return proc(clientData, interp, argc, objv);
     }
 
     return TCL_OK;
@@ -3697,7 +3700,7 @@ Tk_PhotoPutBlock(handle, blockPtr, x, y, width, height)
      * Update each instance.
      */
 
-    Dither(masterPtr, x, y, width, height);
+    Tk_DitherPhoto((Tk_PhotoHandle) masterPtr, x, y, width, height);
 
     /*
      * Tell the core image code that this image has changed.
@@ -3939,7 +3942,7 @@ Tk_PhotoPutZoomedBlock(handle, blockPtr, x, y, width, height, zoomX, zoomY,
      * Update each instance.
      */
 
-    Dither(masterPtr, x, y, width, height);
+    Tk_DitherPhoto((Tk_PhotoHandle) masterPtr, x, y, width, height);
 
     /*
      * Tell the core image code that this image has changed.
@@ -3952,7 +3955,7 @@ Tk_PhotoPutZoomedBlock(handle, blockPtr, x, y, width, height, zoomX, zoomY,
 /*
  *----------------------------------------------------------------------
  *
- * Dither --
+ * Tk_DitherPhoto --
  *
  *	This procedure is called to update an area of each instance's
  *	pixmap by dithering the corresponding area of the image master.
@@ -3968,14 +3971,15 @@ Tk_PhotoPutZoomedBlock(handle, blockPtr, x, y, width, height, zoomX, zoomY,
  *----------------------------------------------------------------------
  */
 
-static void
-Dither(masterPtr, x, y, width, height)
-    PhotoMaster *masterPtr;	/* Image master whose instances are
+void
+Tk_DitherPhoto(photo, x, y, width, height)
+    Tk_PhotoHandle photo;	/* Image master whose instances are
 				 * to be updated. */
     int x, y;			/* Coordinates of the top-left pixel
 				 * in the area to be dithered. */
     int width, height;		/* Dimensions of the area to be dithered. */
 {
+    PhotoMaster *masterPtr = (PhotoMaster *) photo;
     PhotoInstance *instancePtr;
 
     if ((width <= 0) || (height <= 0)) {
@@ -4808,4 +4812,153 @@ Tk_PhotoGetImage(handle, blockPtr)
     blockPtr->offset[1] = 1;
     blockPtr->offset[2] = 2;
     return 1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * PhotoOptionFind --
+ *
+ *	Finds a specific Photo option.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	After commands are removed.
+ *
+ *----------------------------------------------------------------------
+ */
+
+typedef struct OptionAssocData {
+    struct OptionAssocData *nextPtr;	/* pointer to next OptionAssocData */
+    Tcl_CmdProc *command;		/* command associated with this
+					 * option */
+    char name[1];			/* name of option (remaining chars) */
+} OptionAssocData;
+
+static Tcl_CmdProc *
+PhotoOptionFind(interp, name)
+    Tcl_Interp *interp;		/* Interpreter that is being deleted. */
+    char *name;			/* Name of option to be found. */
+{
+    OptionAssocData *list;
+    char *prevname = NULL;
+    int length;
+    Tcl_CmdProc *proc = (Tcl_CmdProc *) NULL;
+    length = strlen(name);
+    list = (OptionAssocData *) Tcl_GetAssocData(interp, "photoOption",
+	    (Tcl_InterpDeleteProc **) NULL);
+    while (list != (OptionAssocData *) NULL) {
+	if (strncmp(name, list->name, length) == 0) {
+	    if (proc != (Tcl_CmdProc *) NULL) {
+		Tcl_AppendResult(interp, "ambigeous option \"", name,
+			"\": must be ", prevname, (char *) NULL);
+		while (list->nextPtr != (OptionAssocData *) NULL) {
+		    Tcl_AppendResult(interp, prevname, ", ",(char *) NULL);
+		    list = list->nextPtr;
+		    prevname = list->name;
+		}
+		Tcl_AppendResult(interp, ", or", prevname, (char *) NULL);
+		return NULL;
+	    }
+	    proc = list->command;
+	    prevname = list->name;
+	}
+	list = list->nextPtr;
+    }
+    if (proc == (Tcl_CmdProc *) NULL) {
+	Tcl_AppendResult(interp, "bad option \"", name,
+		"\": must be blank, cget, configure, copy, get, put,",
+		" read, redither, or write", (char *) NULL);
+    }
+    return proc;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * PhotoOptionCleanupProc --
+ *
+ *	This procedure is invoked whenever an interpreter is deleted
+ *	to cleanup the AssocData for "photoVisitor".
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Photo Visitor options are removed.
+ *
+ *----------------------------------------------------------------------
+ */
+static void PhotoOptionCleanupProc _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp));
+
+static void
+PhotoOptionCleanupProc(clientData, interp)
+    ClientData clientData;	/* Points to "photoVisitor" AssocData
+				 * for the interpreter. */
+    Tcl_Interp *interp;		/* Interpreter that is being deleted. */
+{
+    OptionAssocData *list = (OptionAssocData *) clientData;
+    OptionAssocData *ptr;
+
+    while (list != NULL) {
+	list = (ptr = list)->nextPtr;
+	ckfree((char *) ptr);
+    }
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Tk_CreatePhotoOption --
+ *
+ *	This procedure may be invoked to add a new kind of photo
+ *	option to the core photo command supported by Tk.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	From now on, the new option will be useable by the
+ *	photo command.
+ *
+ *--------------------------------------------------------------
+ */
+
+void
+Tk_CreatePhotoOption(interp, name, proc)
+    Tcl_Interp *interp;			/* interpreter */
+    CONST char *name;			/* option name */
+    Tcl_CmdProc *proc;			/* proc to execute command */
+{
+    OptionAssocData *typePtr2, *prevPtr, *ptr;
+    OptionAssocData *list;
+
+    list = (OptionAssocData *) Tcl_GetAssocData(interp, "photoOption",
+	    (Tcl_InterpDeleteProc **) NULL);
+
+    /*
+     * If there's already a photo option with the given name, remove it.
+     */
+
+    for (typePtr2 = list, prevPtr = NULL; typePtr2 != NULL;
+	    prevPtr = typePtr2, typePtr2 = typePtr2->nextPtr) {
+	if (strcmp(typePtr2->name, name) == 0) {
+	    if (prevPtr == NULL) {
+		list = typePtr2->nextPtr;
+	    } else {
+		prevPtr->nextPtr = typePtr2->nextPtr;
+	    }
+	    ckfree((char *) typePtr2);
+	    break;
+	}
+    }
+    ptr = (OptionAssocData *) ckalloc(sizeof(OptionAssocData) + strlen(name));
+    strcpy(&(ptr->name[0]), name);
+    ptr->command = proc;
+    ptr->nextPtr = list;
+    Tcl_SetAssocData(interp, "photoOption", PhotoOptionCleanupProc,
+		(ClientData) ptr);
 }

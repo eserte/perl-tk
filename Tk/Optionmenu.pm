@@ -6,7 +6,7 @@ require Tk::Menubutton;
 require Tk::Menu;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#18$
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#20 $
 
 use base  qw(Tk::Derived Tk::Menubutton);
 
@@ -20,6 +20,10 @@ sub Populate
  $w->SUPER::Populate($args);
  $args->{-indicatoron} = 1;
  my $var = delete $args->{-textvariable};
+ unless (defined $var && exists $args->{-variable})
+  {
+   $var = $args->{-variable};
+  }
  unless (defined $var)
   {
    my $gen = undef;

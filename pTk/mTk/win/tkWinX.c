@@ -476,6 +476,36 @@ XBell(display, percent)
 /*
  *----------------------------------------------------------------------
  *
+ * XLowerWindow --
+ *
+ *	Change the stacking order of a window.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Changes the stacking order of the specified window.
+ *
+ *----------------------------------------------------------------------
+ */
+
+#if 0 /* Better one in tkWinWindow.c */
+void
+XLowerWindow(display, w)
+    Display* display;
+    Window w;
+{
+    HWND window = TkWinGetHWND(w);
+
+    display->request++;
+    SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0,
+	    SWP_NOMOVE | SWP_NOSIZE);
+}
+#endif
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TkWinChildProc --
  *
  *	Callback from Windows whenever an event occurs on a child

@@ -1,6 +1,9 @@
 #ifndef _TKCANVASES
 #define _TKCANVASES
 
+#ifndef _TKCANVAS
+#include "tkCanvas.h"
+#endif
 
 EXTERN Tk_CustomOption tk_CanvasTagsOption;
 
@@ -51,7 +54,7 @@ extern int		TkMakeBezierCurve _ANSI_ARGS_((Tk_Canvas canvas,
 			    XPoint xPoints[], double dblPoints[]));
 extern void		TkMakeBezierPostscript _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, double *pointPtr,
-			    int numPoints));
+			    int numPoints, int numSteps));
 extern void		TkIncludePoint _ANSI_ARGS_((Tk_Item *itemPtr,
 			    double *pointPtr));
 extern void		TkGetButtPoints _ANSI_ARGS_((double p1[], double p2[],

@@ -81,6 +81,7 @@ static Tk_ImageType imageType = {
     ImageDisplay,		/* displayProc */
     ImageFree,			/* freeProc */
     ImageDelete,		/* deleteProc */
+    (Tk_ImagePostscriptProc *) NULL,/* postscriptPtr */
     (Tk_ImageType *) NULL	/* nextPtr */
 };
 

@@ -464,6 +464,10 @@ if test -r GetCursor.3; then
     rm -f Tk_FreeCursor.3
     ln GetCursor.3 Tk_FreeCursor.3
 fi
+if test -r GetDash.3; then
+    rm -f Tk_GetDash.3
+    ln GetDash.3 Tk_GetDash.3
+fi
 if test -r GetFont.3; then
     rm -f Tk_GetFont.3
     ln GetFont.3 Tk_GetFont.3

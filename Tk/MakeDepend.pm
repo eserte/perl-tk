@@ -11,7 +11,7 @@ use Carp;
 
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#15$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tk/MakeDepend.pm#17 $
 
 sub scan_file;
 

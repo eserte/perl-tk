@@ -193,6 +193,26 @@ XPutBackEvent(display, event)
 {
 }
 
+void
+XQueryColor(display, colormap, def_in_out)
+    Display* display;
+    Colormap colormap;
+    XColor* def_in_out;
+{
+    XQueryColors(display, colormap, def_in_out, 1);
+}
+
+#if 0 
+void
+XQueryColors(display, colormap, defs_in_out, ncolors)
+    Display* display;
+    Colormap colormap;
+    XColor* defs_in_out;
+    int ncolors;
+{
+}
+#endif
+
 int
 XQueryTree(display, w, root_return, parent_return, children_return,
 	nchildren_return)

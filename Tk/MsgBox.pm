@@ -9,7 +9,7 @@ package Tk::MsgBox;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/MsgBox.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/MsgBox.pm#9 $
 
 use Tk::Dialog;
 use base  'Tk::Dialog';

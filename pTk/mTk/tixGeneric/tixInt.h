@@ -45,17 +45,6 @@
 #define TIX_DITEM_PADX			(0x1 <<	 9)
 #define TIX_DITEM_PADY			(0x1 << 10)
 
-#if  0
-    /*
-     * %bordercolor not used
-     */
-#define TIX_DITEM_BORDER_COLOR		(0x1 << 11)
-#define TIX_DITEM_BORDER_WIDTH		(0x1 << 12)
-#define TIX_DITEM_RELIEF		(0x1 << 13)
-#define TIX_DITEM_BOTTOM		(0x1 << 14)
-#define TIX_DITEM_RIGHT			(0x1 << 15)
-#endif
-
 #define TIX_DONT_CALL_CONFIG		TK_CONFIG_USER_BIT
 
 /*
@@ -799,45 +788,45 @@ typedef struct _TixpSubRegion TixpSubRegion;
  * platform.
  */
 
-EXTERN int		TixInitSam _ANSI_ARGS_((Tcl_Interp * interp));
-EXTERN int		TixLoadLibrary _ANSI_ARGS_((Tcl_Interp * interp));
-EXTERN void		TixRestoreInterpState _ANSI_ARGS_((
+extern int		TixInitSam _ANSI_ARGS_((Tcl_Interp * interp));
+extern int		TixLoadLibrary _ANSI_ARGS_((Tcl_Interp * interp));
+extern void		TixRestoreInterpState _ANSI_ARGS_((
 			    Tcl_Interp * interp, TixInterpState * statePtr));
-EXTERN void		TixSaveInterpState _ANSI_ARGS_((Tcl_Interp * interp,
+extern void		TixSaveInterpState _ANSI_ARGS_((Tcl_Interp * interp,
 			    TixInterpState * statePtr));
 
-EXTERN void		TixpDrawAnchorLines _ANSI_ARGS_((Display *display,
+extern void		TixpDrawAnchorLines _ANSI_ARGS_((Display *display,
 			    Drawable drawable, GC gc, int x, int y,
 			    int w, int h));
-EXTERN void		TixpDrawTmpLine _ANSI_ARGS_((int x1, int y1,
+extern void		TixpDrawTmpLine _ANSI_ARGS_((int x1, int y1,
 			    int x2, int y2, Tk_Window tkwin));
-EXTERN void		TixpEndSubRegionDraw _ANSI_ARGS_((Display *display,
+extern void		TixpEndSubRegionDraw _ANSI_ARGS_((Display *display,
 			     Drawable drawable, GC gc,
 			     TixpSubRegion * subRegPtr));
-EXTERN int		TixpSetWindowParent _ANSI_ARGS_((Tcl_Interp * interp,
+extern int		TixpSetWindowParent _ANSI_ARGS_((Tcl_Interp * interp,
 			    Tk_Window tkwin, Tk_Window newParent,
 			    int parentId));
-EXTERN void		TixpStartSubRegionDraw _ANSI_ARGS_((Display *display,
+extern void		TixpStartSubRegionDraw _ANSI_ARGS_((Display *display,
 			     Drawable drawable, GC gc,
 			     TixpSubRegion * subRegPtr, int origX,
 			     int origY, int x, int y, int width, int height,
 			     int needWidth, int needHeight));
-EXTERN void		TixpSubRegDisplayText _ANSI_ARGS_((Display *display,
+extern void		TixpSubRegDisplayText _ANSI_ARGS_((Display *display,
 			    Drawable drawable, GC gc,
 			    TixpSubRegion * subRegPtr,
 			    TixFont font, char *string,
 			    int numChars, int x, int y, int length,
 			    Tk_Justify justify, int underline));
-EXTERN void		TixpSubRegDrawBitmap _ANSI_ARGS_((Display *display,
+extern void		TixpSubRegDrawBitmap _ANSI_ARGS_((Display *display,
 			    Drawable drawable, GC gc,
 			    TixpSubRegion * subRegPtr, Pixmap bitmap,
 			    int src_x, int src_y, int width, int height,
 			    int dest_x, int dest_y, unsigned long plane));
-EXTERN void 		TixpSubRegDrawImage _ANSI_ARGS_((
+extern void 		TixpSubRegDrawImage _ANSI_ARGS_((
 			    TixpSubRegion * subRegPtr, Tk_Image image,
 			    int imageX, int imageY, int width, int height,
 			    Drawable drawable, int drawableX, int drawableY));
-EXTERN void		TixpSubRegFillRectangle _ANSI_ARGS_((Display *display,
+extern void		TixpSubRegFillRectangle _ANSI_ARGS_((Display *display,
 			    Drawable drawable, GC gc,
 			    TixpSubRegion * subRegPtr, int x, int y,
 			    int width, int height));
@@ -859,27 +848,22 @@ EXTERN Tcl_HashTable *	TixGetHashTable _ANSI_ARGS_((Tcl_Interp * interp,
 			    char * name, Tcl_InterpDeleteProc *deleteProc));
 
 /*
- * Console Stuff
+ * built-in strdup is not compatible with the tcl memory allocator. We
+ * replace all strdup calls with tixStrDup.
  */
-
-#if ((TCL_MAJOR_VERSION == 7) && (TCL_MINOR_VERSION == 5))
+#define NO_STRDUP 1
+extern char *tixStrDup _ANSI_ARGS_(( CONST char * s));
 
 /*
- * The TixConsole stuff was implemented for Tcl 7.5 only
+ * Console Stuff
+ * (these are declared with the EXTERN in win/winMain.c but without it
+ * in generic/tkConsole.c)
  */
-
-extern void		TixConsoleCreate _ANSI_ARGS_((Tcl_Interp *interp));
-extern int		TixConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
-
-#else
-
-extern void		TkConsoleCreate _ANSI_ARGS_((void));
-extern int		TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN void		TkConsoleCreate _ANSI_ARGS_((void));
+EXTERN int		TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
 
 #define TixConsoleCreate(x)	TkConsoleCreate()
 #define TixConsoleInit(x)	TkConsoleInit(x)
-
-#endif
 
 #endif /* _TIXINT */
 

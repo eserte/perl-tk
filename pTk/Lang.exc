@@ -3,7 +3,6 @@ TclFinalizeCompExecEnv
 TclFinalizeEnvironment
 TclFreeObj
 TclIdlePending
-TclInExit
 TclServiceIdle
 Tcl_AddObjErrorInfo
 Tcl_AfterObjCmd
@@ -36,7 +35,6 @@ Tcl_CreateSlave
 Tcl_CreateTimerHandler
 Tcl_CreateTrace
 Tcl_DStringEndSublist
-Tcl_DStringGetResult
 Tcl_DStringStartSublist
 Tcl_DbCkalloc
 Tcl_DbCkfree
@@ -121,10 +119,7 @@ Tcl_Main
 Tcl_MakeFileChannel
 Tcl_MakeSafe
 Tcl_MakeTcpClientChannel
-Tcl_NewBooleanObj
-Tcl_NewDoubleObj
-Tcl_NewLongObj
-Tcl_NewObj
+Tcl_Merge
 Tcl_NotifyChannel
 Tcl_ObjGetVar2
 Tcl_ObjSetVar2
@@ -177,15 +172,11 @@ Tcl_UnsetVar
 Tcl_UnsetVar2
 Tcl_UpVar
 Tcl_UpVar2
-Tcl_UpdateCmd
 Tcl_UpdateLinkedVar
 Tcl_ValidateAllMemory
 Tcl_VarEval
 Tcl_VarTraceInfo
 Tcl_VarTraceInfo2
-Tcl_VwaitCmd
 Tcl_WaitForEvent
 Tcl_WaitPid
-TclpGetClicks
-TclpGetSeconds
 TclpGetTime

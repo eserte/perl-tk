@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 
 ###############################################################################
-# Copyright (c) 1999  Greg Bartels
+# Copyright (c) 1999  Greg London
 # All rights reserved.
 # This program is free software.
 # You can redistribute it and/or modify it under the same terms as Perl itself.
@@ -16,11 +16,10 @@
 require 5;
 use locale;
 use strict;  
+
 use Tk;
 use Tk::widgets qw(TextEdit);
 use File::Basename;
-
-
 
 ###########################################
 # check command line parameter.
@@ -188,7 +187,7 @@ sub about_pop_up
 		$pop->Label(text=>"Gedi (Gregs EDItor)")->pack();
 		$pop->Label(text=>"Ver. 1.0")->pack();
 		$pop->Label(text=>"Copyright 1999")->pack();
-		$pop->Label(text=>"Greg Bartels")->pack();
+		$pop->Label(text=>"Greg London")->pack();
 		$pop->Label(text=>"All Rights Reserved.")->pack();
 		$pop->Label(text=>"This program is free software.")->pack();
 		$pop->Label(text=>"You can redistribute it and/or")->pack();
@@ -213,7 +212,7 @@ sub about_pop_up
 ##############################################
 ##############################################
 
-my $menu = $textwindow->GetMenu;
+my $menu = $textwindow->menu;
 $top->configure(-menu => $menu);
 
 ##############################################
@@ -227,7 +226,7 @@ my $help_menu = $menu->cascade(-label=>'~Help', -tearoff => 0, -menuitems => [
 # debug menu
 ##############################################
 
-if (1)
+if (0)
 	{
 	my $debug_menu = $menu->cascade(-label=>'debug', -underline=>0);
 

@@ -11,13 +11,15 @@
  *
  */
 
-#ifdef ITCL_2
-
-#include <tclInt.h>
+/*
+ * With Tcl 8.0, namespaces moved from Itcl to Tcl, and so
+ * the Tix hacks have to be used in any verison of 8.0,
+ * regardless of the presence of Itcl...
+ */
+#include "Lang.h"
 #include "tixInt.h"
 #include "tixItcl.h"
 
-
 /*----------------------------------------------------------------------
  * TixItclSetGlobalNameSp --
  *
@@ -27,24 +29,21 @@
  *
  *----------------------------------------------------------------------
  */
-
 int
 TixItclSetGlobalNameSp(nameSpPtr, interp)
     TixItclNameSp * nameSpPtr;
     Tcl_Interp * interp;
 {
-    nameSpPtr->savedVarFramePtr = nameSpPtr->iPtr->varFramePtr;
-    nameSpPtr->iPtr->varFramePtr = NULL;
-
-    nameSpPtr->nsToken = Itcl_ActivateNamesp(interp, 
-	    (Itcl_Namespace)(nameSpPtr->iPtr->globalNs));
-    if (nameSpPtr->nsToken == NULL) {
-	return 0;
-    } else {
-	return 1;
+    Interp *p = nameSpPtr->iPtr;
+    nameSpPtr->savedVarFramePtr = p->varFramePtr;
+    if ( NULL == p->varFramePtr
+            || p->varFramePtr->nsPtr == p->globalNsPtr ) {
+        return 1;
     }
+    p->varFramePtr = NULL;
+    return 1;
 }
-
+
 /*----------------------------------------------------------------------
  * TixItclRestoreGlobalNameSp --
  *
@@ -52,35 +51,10 @@ TixItclSetGlobalNameSp(nameSpPtr, interp)
  *
  *----------------------------------------------------------------------
  */
-
 void
 TixItclRestoreGlobalNameSp(nameSpPtr, interp)
     TixItclNameSp * nameSpPtr;
     Tcl_Interp * interp;
 {
-    if (nameSpPtr->nsToken != NULL) {
-	Itcl_DeactivateNamesp(interp, nameSpPtr->nsToken);
-    }
     nameSpPtr->iPtr->varFramePtr = nameSpPtr->savedVarFramePtr;
 }
-
-#endif /* #ifdef  ITCL_2 */
-
-
-#ifndef ITCL_2
-
-#include <tcl.h>
-/*
- * Put a dummy symbol here -- some linkers do not like a .o file
- * with no code and symbols.
- */
-
-EXTERN void TixItclDummy _ANSI_ARGS_((void));
-
-
-void
-TixItclDummy()
-{
-}
-
-#endif  /* #ifndef  ITCL_2 */

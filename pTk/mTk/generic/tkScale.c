@@ -27,6 +27,34 @@
 #include "tkVMacro.h"
 #include "tkScale.h"
 
+/*
+ * Custom options for handling "-state", "-tile", "-orient" and "-offset"
+ */
+
+static Tk_CustomOption stateOption = {
+    Tk_StateParseProc,
+    Tk_StatePrintProc,
+    (ClientData) 1	/* allow "normal", "active" and "disabled" */
+};
+
+static Tk_CustomOption orientOption = {
+    Tk_OrientParseProc,
+    Tk_OrientPrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
+
 static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_BORDER, "-activebackground", "activeBackground", "Foreground",
 	DEF_SCALE_ACTIVE_BG_COLOR, Tk_Offset(TkScale, activeBorder),
@@ -34,6 +62,9 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_BORDER, "-activebackground", "activeBackground", "Foreground",
 	DEF_SCALE_ACTIVE_BG_MONO, Tk_Offset(TkScale, activeBorder),
 	TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
+	Tk_Offset(TkScale, activeTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
 	DEF_SCALE_BG_COLOR, Tk_Offset(TkScale, bgBorder),
 	TK_CONFIG_COLOR_ONLY},
@@ -56,6 +87,9 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_SCALE_DIGITS, Tk_Offset(TkScale, digits), 0},
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, 0},
+    {TK_CONFIG_CUSTOM, "-disabledtile", "disabledTile", "Tile", (char *) NULL,
+	Tk_Offset(TkScale, disabledTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_FONT, "-font", "font", "Font",
 	DEF_SCALE_FONT, Tk_Offset(TkScale, tkfont),
 	0},
@@ -79,8 +113,11 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_SCALE_LABEL, Tk_Offset(TkScale, label), TK_CONFIG_NULL_OK},
     {TK_CONFIG_PIXELS, "-length", "length", "Length",
 	DEF_SCALE_LENGTH, Tk_Offset(TkScale, length), 0},
-    {TK_CONFIG_UID, "-orient", "orient", "Orient",
-	DEF_SCALE_ORIENT, Tk_Offset(TkScale, orientUid), 0},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(TkScale, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
+    {TK_CONFIG_CUSTOM, "-orient", "orient", "Orient",
+	DEF_SCALE_ORIENT, Tk_Offset(TkScale, vertical), 0, &orientOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_SCALE_RELIEF, Tk_Offset(TkScale, relief), 0},
     {TK_CONFIG_INT, "-repeatdelay", "repeatDelay", "RepeatDelay",
@@ -96,13 +133,16 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_RELIEF, "-sliderrelief", "sliderRelief", "SliderRelief",
 	DEF_SCALE_SLIDER_RELIEF, Tk_Offset(TkScale, sliderRelief),
 	TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_UID, "-state", "state", "State",
-	DEF_SCALE_STATE, Tk_Offset(TkScale, state), 0},
+    {TK_CONFIG_CUSTOM, "-state", "state", "State",
+	DEF_SCALE_STATE, Tk_Offset(TkScale, state), 0, &stateOption},
     {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	DEF_SCALE_TAKE_FOCUS, Tk_Offset(TkScale, takeFocus),
 	TK_CONFIG_NULL_OK},
     {TK_CONFIG_DOUBLE, "-tickinterval", "tickInterval", "TickInterval",
 	DEF_SCALE_TICK_INTERVAL, Tk_Offset(TkScale, tickInterval), 0},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(TkScale, tile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_DOUBLE, "-to", "to", "To",
 	DEF_SCALE_TO, Tk_Offset(TkScale, toValue), 0},
     {TK_CONFIG_COLOR, "-troughcolor", "troughColor", "Background",
@@ -111,6 +151,9 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_COLOR, "-troughcolor", "troughColor", "Background",
 	DEF_SCALE_TROUGH_MONO, Tk_Offset(TkScale, troughColorPtr),
 	TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_CUSTOM, "-troughtile", "troughTile", "Tile", (char *) NULL,
+	Tk_Offset(TkScale, troughTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_SCALARVAR, "-variable", "variable", "Variable",
 	DEF_SCALE_VARIABLE, Tk_Offset(TkScale, varName), TK_CONFIG_NULL_OK},
     {TK_CONFIG_PIXELS, "-width", "width", "Width",
@@ -140,6 +183,8 @@ static int		ScaleWidgetCmd _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, int argc, char **argv));
 static void		ScaleWorldChanged _ANSI_ARGS_((
 			    ClientData instanceData));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  * The structure below defines scale class behavior by means of procedures
@@ -207,7 +252,6 @@ Tk_ScaleCmd(clientData, interp, argc, argv)
     scalePtr->widgetCmd = Tcl_CreateCommand(interp,
 	    Tk_PathName(scalePtr->tkwin), ScaleWidgetCmd,
 	    (ClientData) scalePtr, ScaleCmdDeletedProc);
-    scalePtr->orientUid = NULL;
     scalePtr->vertical = 0;
     scalePtr->width = 0;
     scalePtr->length = 0;
@@ -223,7 +267,7 @@ Tk_ScaleCmd(clientData, interp, argc, argv)
     scalePtr->repeatInterval = 0;
     scalePtr->label = NULL;
     scalePtr->labelLength = 0;
-    scalePtr->state = tkNormalUid;
+    scalePtr->state = TK_STATE_NORMAL;
     scalePtr->borderWidth = 0;
     scalePtr->bgBorder = NULL;
     scalePtr->activeBorder = NULL;
@@ -252,8 +296,11 @@ Tk_ScaleCmd(clientData, interp, argc, argv)
     scalePtr->cursor = None;
     scalePtr->takeFocus = NULL;
     scalePtr->flags = NEVER_SET;
+    scalePtr->tile = scalePtr->activeTile = NULL;
+    scalePtr->disabledTile = scalePtr->troughTile = NULL;
+    scalePtr->activeTileGC = None;
 
-    Tk_SetClass(scalePtr->tkwin, "Scale");
+    TkClassOption(scalePtr->tkwin, "Scale",&argc,&argv);
     TkSetClassProcs(scalePtr->tkwin, &scaleClass, (ClientData) scalePtr);
     Tk_CreateEventHandler(scalePtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -406,7 +453,7 @@ ScaleWidgetCmd(clientData, interp, argc, argv)
 	if (Tcl_GetDouble(interp, argv[2], &value) != TCL_OK) {
 	    goto error;
 	}
-	if (scalePtr->state != tkDisabledUid) {
+	if (scalePtr->state != TK_STATE_DISABLED) {
 	    TkpSetScaleValue(scalePtr, value, 1, 1);
 	}
     } else {
@@ -467,8 +514,45 @@ DestroyScale(memPtr)
     if (scalePtr->textGC != None) {
 	Tk_FreeGC(scalePtr->display, scalePtr->textGC);
     }
+    if (scalePtr->tile != NULL) {
+	Tk_FreeTile(scalePtr->tile);
+    }
+    if (scalePtr->activeTile != NULL) {
+	Tk_FreeTile(scalePtr->activeTile);
+    }
+    if (scalePtr->disabledTile != NULL) {
+	Tk_FreeTile(scalePtr->disabledTile);
+    }
+    if (scalePtr->troughTile != NULL) {
+	Tk_FreeTile(scalePtr->troughTile);
+    }
+    if (scalePtr->activeTileGC != None) {
+	Tk_FreeGC(scalePtr->display, scalePtr->activeTileGC);
+    }
     Tk_FreeOptions(configSpecs, (char *) scalePtr, scalePtr->display, 0);
     TkpDestroyScale(scalePtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;           /* Not used */
+{
+    register TkScale *scalePtr = (TkScale *) clientData;
+
+    ConfigureScale(scalePtr->interp, scalePtr, 0, NULL, 0);
 }
 
 /*
@@ -501,7 +585,6 @@ ConfigureScale(interp, scalePtr, argc, argv, flags)
     char **argv;		/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
-    size_t length;
 
     /*
      * Eliminate any existing trace on a variable monitored by the scale.
@@ -544,17 +627,6 @@ ConfigureScale(interp, scalePtr, argc, argv, flags)
      * orientation and creating GCs.
      */
 
-    length = strlen(scalePtr->orientUid);
-    if (strncmp(scalePtr->orientUid, "vertical", length) == 0) {
-	scalePtr->vertical = 1;
-    } else if (strncmp(scalePtr->orientUid, "horizontal", length) == 0) {
-	scalePtr->vertical = 0;
-    } else {
-	Tcl_AppendResult(interp, "bad orientation \"", scalePtr->orientUid,
-		"\": must be vertical or horizontal", (char *) NULL);
-	return TCL_ERROR;
-    }
-
     scalePtr->fromValue = TkRoundToResolution(scalePtr, scalePtr->fromValue);
     scalePtr->toValue = TkRoundToResolution(scalePtr, scalePtr->toValue);
     scalePtr->tickInterval = TkRoundToResolution(scalePtr,
@@ -584,15 +656,6 @@ ConfigureScale(interp, scalePtr, argc, argv, flags)
 	scalePtr->labelLength = strlen(scalePtr->label);
     } else {
 	scalePtr->labelLength = 0;
-    }
-
-    if ((scalePtr->state != tkNormalUid)
-	    && (scalePtr->state != tkDisabledUid)
-	    && (scalePtr->state != tkActiveUid)) {
-	Tcl_AppendResult(interp, "bad state value \"", scalePtr->state,
-		"\": must be normal, active, or disabled", (char *) NULL);
-	scalePtr->state = tkNormalUid;
-	return TCL_ERROR;
     }
 
     Tk_SetBackgroundFromBorder(scalePtr->tkwin, scalePtr->bgBorder);
@@ -631,11 +694,49 @@ ScaleWorldChanged(instanceData)
     XGCValues gcValues;
     GC gc;
     TkScale *scalePtr;
+    Pixmap pixmap;
+    Tk_Tile tile;
+    int flags;
 
     scalePtr = (TkScale *) instanceData;
 
-    gcValues.foreground = scalePtr->troughColorPtr->pixel;
-    gc = Tk_GetGC(scalePtr->tkwin, GCForeground, &gcValues);
+    if (scalePtr->state == TK_STATE_DISABLED) {
+	tile = scalePtr->disabledTile;
+    } else {
+	tile = scalePtr->tile;
+    }
+    Tk_SetTileChangedProc(scalePtr->tile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(scalePtr->disabledTile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(scalePtr->activeTile, (Tk_TileChangedProc *) NULL,
+	    (ClientData) NULL, (Tk_Item *) NULL);
+    Tk_SetTileChangedProc(tile, TileChangedProc,
+	    (ClientData) scalePtr, (Tk_Item *) NULL);
+    gcValues.graphics_exposures = False;
+    flags = GCGraphicsExposures;
+    if ((pixmap = Tk_PixmapOfTile(tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	flags |= GCTile|GCFillStyle;
+    }
+    gc = Tk_GetGC(scalePtr->tkwin, flags, &gcValues);
+    if (scalePtr->copyGC != None) {
+	Tk_FreeGC(scalePtr->display, scalePtr->copyGC);
+    }
+    scalePtr->copyGC = gc;
+
+    Tk_SetTileChangedProc(scalePtr->troughTile, TileChangedProc,
+	    (ClientData) scalePtr, (Tk_Item *) NULL);
+    if ((pixmap = Tk_PixmapOfTile(scalePtr->troughTile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	flags = GCTile|GCFillStyle;
+    } else {
+	gcValues.foreground = scalePtr->troughColorPtr->pixel;
+	flags = GCForeground;
+    }
+    gc = Tk_GetGC(scalePtr->tkwin, flags, &gcValues);
     if (scalePtr->troughGC != None) {
 	Tk_FreeGC(scalePtr->display, scalePtr->troughGC);
     }
@@ -649,11 +750,21 @@ ScaleWorldChanged(instanceData)
     }
     scalePtr->textGC = gc;
 
-    if (scalePtr->copyGC == None) {
-	gcValues.graphics_exposures = False;
-	scalePtr->copyGC = Tk_GetGC(scalePtr->tkwin, GCGraphicsExposures,
-	    &gcValues);
+    if (scalePtr->activeTile != NULL) {
+	tile = scalePtr->activeTile;
     }
+    if ((pixmap = Tk_PixmapOfTile(tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	gc = Tk_GetGC(scalePtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else {
+	gc = None;
+    }
+    if (scalePtr->activeTileGC != None) {
+	Tk_FreeGC(scalePtr->display, scalePtr->activeTileGC);
+    }
+    scalePtr->activeTileGC = gc;
+
     scalePtr->inset = scalePtr->highlightWidth + scalePtr->borderWidth;
 
     /*

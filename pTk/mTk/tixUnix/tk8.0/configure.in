@@ -73,22 +73,16 @@ AC_HAVE_HEADERS(unistd.h limits.h)
 AC_PROG_MAKE_SET
 
 #--------------------------------------------------------------------
-#	strdup() is not a POSIX call and many machines don't have it
-#--------------------------------------------------------------------
-
-AC_CHECK_FUNC(strdup, , AC_DEFINE(NO_STRDUP))
-
-#--------------------------------------------------------------------
 #	unsigned char is not supported by some non-ANSI compilers.
 #--------------------------------------------------------------------
 
 AC_MSG_CHECKING([unsigned char])
 AC_TRY_COMPILE([#include <stdio.h>],[
      unsigned char c = 'c';
-], tcl_ok=supported, tcl_ok=not supported)
+], tcl_ok=supported, tcl_ok="not supported")
 
 AC_MSG_RESULT($tcl_ok)
-if test $tcl_ok = supported; then
+if test "$tcl_ok" = supported; then
     AC_DEFINE(UCHAR_SUPPORTED)
 fi
 
@@ -127,7 +121,7 @@ if test "$val" != ""; then
         exit 1
     fi
 else
-    dirs="../../../tcl8.0*"
+    dirs="../../../tcl8.0"
     TCL_SRC_DIR="no-no"
     for i in $dirs; do
         if test -d $i; then
@@ -163,7 +157,7 @@ if test "$val" != ""; then
         exit 1
     fi
 else
-    dirs="../../../tk8.0*"
+    dirs="../../../tk8.0"
     TK_SRC_DIR="no-no"
     for i in $dirs; do
         if test -d $i; then

@@ -316,6 +316,11 @@ if ($win_arch eq 'x') {
     }
   
   die "Cannot find X include files anywhere" unless (defined $xinc);
+
+  if ($xinc =~ /^-I(.*openwin.*)$/)
+   {
+    $gccopt .= " -isystem $1";
+   }
   
   $inc = ($xinc eq "-I/usr/include") ? "" : $xinc;
 } elsif ($win_arch eq 'open32') {

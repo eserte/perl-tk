@@ -14,7 +14,7 @@ use Tk qw(exit);
 
 use Tk::widgets qw(Button Label Menu Photo Optionmenu Pixmap Balloon);
 #use Tk::widgets qw(ErrorDialog Checkbutton Radiobutton Entry Message Listbox);
-use Tk::widgets qw(Checkbutton Radiobutton Entry Message Listbox);
+use Tk::widgets qw(Scrollbar Checkbutton Radiobutton Entry Message Listbox);
 
 
 use Config;

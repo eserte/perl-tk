@@ -1547,11 +1547,7 @@ EXTERN Tcl_Pid		Tcl_WaitPid _ANSI_ARGS_((Tcl_Pid pid, int *statPtr,
 			    int options));
 EXTERN int		Tcl_Write _ANSI_ARGS_((Tcl_Channel chan,
         		    char *s, int slen));
-
-typedef void (LangFreeProc) _ANSI_ARGS_((int count,Arg *blockPtr));
-
 EXTERN void		Tcl_AppendArg _ANSI_ARGS_((Tcl_Interp *interp, Arg));
-EXTERN void		Tcl_ArgResult _ANSI_ARGS_((Tcl_Interp *interp, Arg));
 EXTERN void		Tcl_IntResults _ANSI_ARGS_((Tcl_Interp *interp,int,int,...));
 EXTERN void		Tcl_DoubleResults _ANSI_ARGS_((Tcl_Interp *interp,int,int,...));
 
@@ -1565,12 +1561,6 @@ EXTERN int		Tcl_AfterObjCmd _ANSI_ARGS_((ClientData clientData,
 
 #define Tcl_GlobalEval(interp,cmd) LangEval(interp,cmd,1)
 EXTERN char *		LangMergeString _ANSI_ARGS_((int argc, Arg *args));
-EXTERN int		Lang_SplitList _ANSI_ARGS_((Tcl_Interp *interp,
-			    Arg list, int *argcPtr, Arg **argsPtr, 
-			    LangFreeProc **));
-EXTERN int		Lang_SplitString _ANSI_ARGS_((Tcl_Interp *interp,
-			    const char *list, int *argcPtr, Arg **argsPtr, 
-			    LangFreeProc **));
 
 EXTERN int LangEval _ANSI_ARGS_((Tcl_Interp *interp, char *cmd, int global));
 
@@ -1580,9 +1570,11 @@ EXTERN void LangSetDefault _ANSI_ARGS_((Arg *,char *));
 EXTERN void LangSetInt _ANSI_ARGS_((Arg *,int));
 EXTERN void LangSetDouble _ANSI_ARGS_((Arg *,double));
 EXTERN void LangSetArg _ANSI_ARGS_((Arg *,Arg));
-EXTERN Arg  LangStringArg _ANSI_ARGS_((char *));
 EXTERN int  LangCmpArg  _ANSI_ARGS_((Arg,Arg));
 EXTERN int  LangCmpOpt  _ANSI_ARGS_((char *opt,char *arg,size_t length));
+
+#define LangStringArg(s) Tcl_NewStringObj(s,-1)
+#define Tcl_ArgResult(interp,obj) Tcl_SetObjResult(interp,obj)
 
 /* FIXME:
    Tk will set freeProc as for Tcl e.g. NULL for statics & UIDs
@@ -1599,9 +1591,6 @@ EXTERN Arg  LangCopyArg _ANSI_ARGS_((Arg));
 
 EXTERN void LangRestoreResult _ANSI_ARGS_((Tcl_Interp **,LangResultSave *));
 EXTERN LangResultSave *LangSaveResult _ANSI_ARGS_((Tcl_Interp **));
-
-EXTERN Arg *LangAllocVec _ANSI_ARGS_((int count));
-EXTERN void LangFreeVec _ANSI_ARGS_((int,Arg *));
 
 EXTERN void Tcl_SprintfResult _ANSI_ARGS_((Tcl_Interp *,char *,...));
 EXTERN char *Tcl_GetResult _ANSI_ARGS_((Tcl_Interp *));

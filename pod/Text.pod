@@ -13,9 +13,7 @@ Tk::Text - Create and manipulate Text widgets
 
 =head1 SYNOPSIS
 
-I<$text> = I<$parent>-E<gt>B<Text>(?I<options>?);
-
-=head1 STANDARD OPTIONS
+B<text> $text ?I<options>?
 
 B<-background>	B<-highlightbackground>	B<-insertontime>	B<-selectborderwidth>
 B<-borderwidth>	B<-highlightcolor>	B<-insertwidth>	B<-selectforeground>
@@ -23,8 +21,6 @@ B<-cursor>	B<-highlightthickness>	B<-padx>	B<-setgrid>
 B<-exportselection>	B<-insertbackground>	B<-pady>	B<-takefocus>
 B<-font>	B<-insertborderwidth>	B<-relief>	B<-xscrollcommand>
 B<-foreground>	B<-insertofftime>	B<-selectbackground>	B<-yscrollcommand>
-
-See L<Tk::options> for details of the standard options.
 
 =head1 WIDGET-SPECIFIC OPTIONS
 
@@ -157,7 +153,7 @@ in B<word> mode a line break will only be made at word boundaries.
 =head1 DESCRIPTION
 
 The B<Text> method creates a new window (given by the
-$widget argument) and makes it into a text widget.
+$text argument) and makes it into a text widget.
 Additional
 options, described above, may be specified on the command line
 or in the option database
@@ -510,6 +506,12 @@ screen distances.
 If a line wraps, this option only applies to the last
 line on the display.
 
+=item B<-state> =E<gt> I<state>
+
+I<State> specifies if the text is I<hidden> or I<normal>.
+Hidden text is not displayed and takes no space on screen, but further
+on behaves just as normal text.
+
 =item B<-tabs> =E<gt> I<tabList>
 
 I<TabList> specifies a set of tab stops in the same form
@@ -538,9 +540,13 @@ for the text widget:  B<none>, B<char>, or B<word>.
 If this tag option is specified, it overrides the B<-wrap> option
 for the text widget.
 
+=item B<-elide> =E<gt> I<value>
+
+If value is true then text covered by the tag is not displayed.
+
 =item B<-data> =E<gt> I<value>
 
-?intentionally undocumented?
+Allows an arbitrary perl scalar I<value> to be associated with the tag.
 
 =back
 
@@ -921,7 +927,7 @@ I<key1 value1 index1 key2 value2 index2> ...
 =back
 
 The possible I<key> values are B<text>, B<mark>,
-B<tagon>, B<tagoff>, and I<$widget>.  The corresponding
+B<tagon>, B<tagoff>, and I<$text>.  The corresponding
 I<value> is the text, mark name, tag name, or window name.
 The I<index> information is the index of the
 start of the text, the mark, the tag transition, or the window.
@@ -1032,7 +1038,7 @@ are supported, and a description of the identifier returned.
 =item I<$text>-E<gt>B<imageNames>
 
 Returns a list whose elements are the names of all image instances currently
-embedded in $widget.
+embedded in $text.
 
 =back
 
@@ -1194,8 +1200,8 @@ This is the default.
 =item B<-regexp>
 
 Treat I<pattern> as a regular expression and match it against
-the text using the rules for regular expressions
-(see the B<regexp> command for details).
+the text using the rules for regular expressions (see the B<regexp>
+command for details).
 
 =item B<-nocase>
 
@@ -1206,6 +1212,10 @@ Ignore case differences between the pattern and the text.
 The argument following B<-count> gives the name of a variable;
 if a match is found, the number of characters in the matching
 range will be stored in the variable.
+
+=item B<-hidden>
+
+Find hidden text as well. By default only displayed text is found.
 
 =item B<-->
 
@@ -1311,8 +1321,8 @@ sequence.
 When this occurs, one binding is invoked for each tag, in order
 from lowest-priority to highest priority.
 If there are multiple matching bindings for a single tag, then
-the most specific binding is chosen
-(see the L<Tk::bind> documentation for details).
+the most specific binding is chosen (see the the documentation for
+the B<bind> command for details).
 B<continue> and B<break> commands within binding scripts
 are processed in the same way as for bindings created with
 the B<bind> command.
@@ -1521,13 +1531,13 @@ much wider than the window.
 These are the same values passed to scrollbars via the B<-xscrollcommand>
 option.
 
-=item I<$text>-E<gt>B<xview>(B<moveto> =E<gt> I<fraction>)
+=item I<$text>-E<gt>B<xviewMoveto>(I<fraction>)
 
 Adjusts the view in the window so that I<fraction> of the horizontal
 span of the text is off-screen to the left.
 I<Fraction> is a fraction between 0 and 1.
 
-=item I<$text>-E<gt>B<xview>(B<scroll> =E<gt> I<number, what>)
+=item I<$text>-E<gt>B<xviewScroll>(I<number, what>)
 
 This command shifts the view in the window left or right according to
 I<number> and I<what>.
@@ -1564,7 +1574,7 @@ relative to the text as a whole.
 These are the same values passed to scrollbars via the B<-yscrollcommand>
 option.
 
-=item I<$text>-E<gt>B<yview>(B<moveto> =E<gt> I<fraction>)
+=item I<$text>-E<gt>B<yviewMoveto>(I<fraction>)
 
 Adjusts the view in the window so that the character given by I<fraction>
 appears on the top line of the window.
@@ -1572,7 +1582,7 @@ I<Fraction> is a fraction between 0 and 1;  0 indicates the first
 character in the text, 0.33 indicates the character one-third the
 way through the text, and so on.
 
-=item I<$text>-E<gt>B<yview>(B<scroll> =E<gt> I<number, what>)
+=item I<$text>-E<gt>B<yviewScroll>(I<number, what>)
 
 This command adjust the view in the window up or down according to
 I<number> and I<what>.

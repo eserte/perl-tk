@@ -20,7 +20,15 @@ $c->configure("-xscrollcommand" => ["set",$s2]);
 $id = $c->create("line",0,0, 0,200, 200,0, 200,200, 0,0, 200,0, 200,200, 0,200,
                  "-width" => 4);
 
-print "id=$id\n";
+print "Line id=$id\n";
+
+$id = $c->create("grid",0,0, 10,10,"-width" => 1);
+
+print "Grid id=$id\n";
+
+$c->create("grid",0,0, 50,50,"-width" => 1, -lines => 1, -dash => '.');
+$c->create("grid",0,0, 100,100,"-width" => 1, -lines => 1);
+
 
 $c->configure("-scrollregion" => [0,0,204,204]);
 

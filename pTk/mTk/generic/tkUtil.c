@@ -16,6 +16,574 @@
 
 #include "tkInt.h"
 #include "tkPort.h"
+
+#ifndef _LANG
+/*
+ * The structure below defines the implementation of the "statekey"
+ * Tcl object, used for quickly finding a mapping in a TkStateMap.
+ */
+
+static Tcl_ObjType stateKeyType = {
+    "statekey",				/* name */
+    (Tcl_FreeInternalRepProc *) NULL,	/* freeIntRepProc */
+    (Tcl_DupInternalRepProc *) NULL,	/* dupIntRepProc */
+    (Tcl_UpdateStringProc *) NULL,	/* updateStringProc */
+    (Tcl_SetFromAnyProc *) NULL		/* setFromAnyProc */
+};           
+#endif
+
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Tk_StateParseProc --
+ *
+ *	This procedure is invoked during option processing to handle
+ *	the "-state" and "-default" options.
+ *
+ * Results:
+ *	A standard Tcl return value.
+ *
+ * Side effects:
+ *	The state for a given item gets replaced by the state
+ *	indicated in the value argument.
+ *
+ *--------------------------------------------------------------
+ */
+
+int
+TkStateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+    ClientData clientData;		/* some flags.*/
+    Tcl_Interp *interp;			/* Used for reporting errors. */
+    Tk_Window tkwin;			/* Window containing canvas widget. */
+    Arg ovalue;				/* Value of option. */
+    char *widgRec;			/* Pointer to record for item. */
+    int offset;				/* Offset into item. */
+{
+    int c;
+    int flags = (int)clientData;
+    size_t length;
+    char *value = LangString(ovalue);
+
+    register Tk_State *statePtr = (Tk_State *) (widgRec + offset);
+
+    if(value == NULL || *value == 0) {
+	*statePtr = TK_STATE_NULL;
+	return TCL_OK;
+    }
+
+    c = value[0];
+    length = strlen(value);
+
+    if ((c == 'n') && (strncmp(value, "normal", length) == 0)) {
+	*statePtr = TK_STATE_NORMAL;
+	return TCL_OK;
+    }
+    if ((c == 'd') && (strncmp(value, "disabled", length) == 0)) {
+	*statePtr = TK_STATE_DISABLED;
+	return TCL_OK;
+    }
+    if ((c == 'a') && (flags&1) && (strncmp(value, "active", length) == 0)) {
+	*statePtr = TK_STATE_ACTIVE;
+	return TCL_OK;
+    }
+    if ((c == 'h') && (flags&2) && (strncmp(value, "hidden", length) == 0)) {
+	*statePtr = TK_STATE_HIDDEN;
+	return TCL_OK;
+    }
+
+    Tcl_AppendResult(interp, "bad ", (flags&4)?"-default" : "state",
+	    " value \"", value, "\": must be normal",
+	    (char *) NULL);
+    if (flags&1) {
+	Tcl_AppendResult(interp, ", active",(char *) NULL);
+    }
+    if (flags&2) {
+	Tcl_AppendResult(interp, ", hidden",(char *) NULL);
+    }
+    if (flags&3) {
+	Tcl_AppendResult(interp, ",",(char *) NULL);
+    }
+    Tcl_AppendResult(interp, " or disabled",(char *) NULL);
+    *statePtr = TK_STATE_NORMAL;
+    return TCL_ERROR;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Tk_StatePrintProc --
+ *
+ *	This procedure is invoked by the Tk configuration code
+ *	to produce a printable string for the "-state"
+ *	configuration option.
+ *
+ * Results:
+ *	The return value is a string describing the state for
+ *	the item referred to by "widgRec".  In addition, *freeProcPtr
+ *	is filled in with the address of a procedure to call to free
+ *	the result string when it's no longer needed (or NULL to
+ *	indicate that the string doesn't need to be freed).
+ *
+ * Side effects:
+ *	None.
+ *
+ *--------------------------------------------------------------
+ */
+
+Arg 
+TkStatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+    ClientData clientData;		/* Ignored. */
+    Tk_Window tkwin;			/* Window containing canvas widget. */
+    char *widgRec;			/* Pointer to record for item. */
+    int offset;				/* Offset into item. */
+    Tcl_FreeProc **freeProcPtr;		/* Pointer to variable to fill in with
+					 * information about how to reclaim
+					 * storage for return string. */
+{
+    register Tk_State *statePtr = (Tk_State *) (widgRec + offset);
+
+    if (*statePtr==TK_STATE_NORMAL) {
+	return LangStringArg("normal");
+    } else if (*statePtr==TK_STATE_DISABLED) {
+	return LangStringArg("disabled");
+    } else if (*statePtr==TK_STATE_HIDDEN) {
+	return LangStringArg("hidden");
+    } else if (*statePtr==TK_STATE_ACTIVE) {
+	return LangStringArg("active");
+    } else {
+	return LangStringArg("");
+    }
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Tk_OrientParseProc --
+ *
+ *	This procedure is invoked during option processing to handle
+ *	the "-orient" option.
+ *
+ * Results:
+ *	A standard Tcl return value.
+ *
+ * Side effects:
+ *	The orientation for a given item gets replaced by the orientation
+ *	indicated in the value argument.
+ *
+ *--------------------------------------------------------------
+ */
+
+int
+TkOrientParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+    ClientData clientData;		/* some flags.*/
+    Tcl_Interp *interp;			/* Used for reporting errors. */
+    Tk_Window tkwin;			/* Window containing canvas widget. */
+    Arg ovalue;				/* Value of option. */
+    char *widgRec;			/* Pointer to record for item. */
+    int offset;				/* Offset into item. */
+{
+    int c;
+    size_t length;
+    char *value = LangString(ovalue);
+
+    register int *orientPtr = (int *) (widgRec + offset);
+
+    if(value == NULL || *value == 0) {
+	*orientPtr = 0;
+	return TCL_OK;
+    }
+
+    c = value[0];
+    length = strlen(value);
+
+    if ((c == 'h') && (strncmp(value, "horizontal", length) == 0)) {
+	*orientPtr = 0;
+	return TCL_OK;
+    }
+    if ((c == 'v') && (strncmp(value, "vertical", length) == 0)) {
+	*orientPtr = 1;
+	return TCL_OK;
+    }
+    Tcl_AppendResult(interp, "bad orientation \"", value,
+	    "\": must be vertical or horizontal",
+	    (char *) NULL);
+    *orientPtr = 0;
+    return TCL_ERROR;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * Tk_OrientPrintProc --
+ *
+ *	This procedure is invoked by the Tk configuration code
+ *	to produce a printable string for the "-orient"
+ *	configuration option.
+ *
+ * Results:
+ *	The return value is a string describing the orientation for
+ *	the item referred to by "widgRec".  In addition, *freeProcPtr
+ *	is filled in with the address of a procedure to call to free
+ *	the result string when it's no longer needed (or NULL to
+ *	indicate that the string doesn't need to be freed).
+ *
+ * Side effects:
+ *	None.
+ *
+ *--------------------------------------------------------------
+ */
+
+Arg
+TkOrientPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+    ClientData clientData;		/* Ignored. */
+    Tk_Window tkwin;			/* Window containing canvas widget. */
+    char *widgRec;			/* Pointer to record for item. */
+    int offset;				/* Offset into item. */
+    Tcl_FreeProc **freeProcPtr;		/* Pointer to variable to fill in with
+					 * information about how to reclaim
+					 * storage for return string. */
+{
+    register int *statePtr = (int *) (widgRec + offset);
+
+    if (*statePtr) {
+	return LangStringArg("vertical");
+    } else {
+	return LangStringArg("horizontal");
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_TileParseProc --
+ *
+ *	Converts the name of an image into a tile.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkTileParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+    ClientData clientData;	/* not used */
+    Tcl_Interp *interp;		/* Interpreter to send results back to */
+    Tk_Window tkwin;		/* Window on same display as tile */
+    Arg ovalue;			/* Name of image */
+    char *widgRec;		/* Widget structure record */
+    int offset;			/* Offset of tile in record */
+{
+    Tk_Tile *tilePtr = (Tk_Tile *)(widgRec + offset);
+    Tk_Tile tile, lastTile;
+    char *value = LangString(ovalue);
+
+    lastTile = *tilePtr;
+    tile = NULL;
+    if ((value != NULL) && (*value != '\0')) {
+	tile = Tk_GetTile(interp, tkwin, value);
+	if (tile == NULL) {
+	    return TCL_ERROR;
+	}
+    }
+    if (lastTile != NULL) {
+	Tk_FreeTile(lastTile);
+    }
+    *tilePtr = tile;
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_TilePrintProc --
+ *
+ *	Returns the name of the tile.
+ *
+ * Results:
+ *	The name of the tile is returned.
+ *
+ *----------------------------------------------------------------------
+ */
+
+Arg
+TkTilePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+    ClientData clientData;	/* not used */
+    Tk_Window tkwin;		/* not used */
+    char *widgRec;		/* Widget structure record */
+    int offset;			/* Offset of tile in record */
+    Tcl_FreeProc **freeProcPtr;	/* not used */
+{
+    Tk_Tile tile = *(Tk_Tile *)(widgRec + offset);
+
+    return LangStringArg(Tk_NameOfTile(tile));
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_OffsetParseProc --
+ *
+ *	Converts the offset of a stipple or tile into the Tk_TSOffset structure.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkOffsetParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+    ClientData clientData;	/* not used */
+    Tcl_Interp *interp;		/* Interpreter to send results back to */
+    Tk_Window tkwin;		/* Window on same display as tile */
+    Arg ovalue;			/* Name of image */
+    char *widgRec;		/* Widget structure record */
+    int offset;			/* Offset of tile in record */
+{
+    Tk_TSOffset *offsetPtr = (Tk_TSOffset *)(widgRec + offset);
+    Tk_TSOffset tsoffset;
+    CONST char *q, *p;
+    int result;
+    Tcl_Obj **args;
+    int argc;  
+    char *value = NULL;
+    if (Tcl_ListObjGetElements(NULL,ovalue,&argc,&args) != TCL_OK) {
+	goto badTSOffset;        
+    }
+    if (argc == 1) { 
+	char *value = LangString(args[1]);
+    }
+    if ((value == NULL) || (*value == 0)) {
+	tsoffset.flags = TK_OFFSET_CENTER|TK_OFFSET_MIDDLE;
+	goto goodTSOffset;
+    }
+    tsoffset.flags = 0;
+    p = value;
+
+    switch(value[0]) {
+	case '#':
+	    if (((int)clientData) & TK_OFFSET_RELATIVE) {
+		tsoffset.flags = TK_OFFSET_RELATIVE;
+		argc--; 
+		args++;
+		break;
+	    }
+	    goto badTSOffset;
+	case 'e':
+	    switch(value[1]) {
+		case '\0':
+		    tsoffset.flags = TK_OFFSET_RIGHT|TK_OFFSET_MIDDLE;
+		    goto goodTSOffset;
+		case 'n':
+		    if (value[2]!='d' || value[3]!='\0') {goto badTSOffset;}
+		    tsoffset.flags = INT_MAX;
+		    goto goodTSOffset;
+	    }
+	case 'w':
+	    if (value[1] != '\0') {goto badTSOffset;}
+	    tsoffset.flags = TK_OFFSET_LEFT|TK_OFFSET_MIDDLE;
+	    goto goodTSOffset;
+	case 'n':
+	    if ((value[1] != '\0') && (value[2] != '\0')) {
+		goto badTSOffset;
+	    }
+	    switch(value[1]) {
+		case '\0': tsoffset.flags = TK_OFFSET_CENTER|TK_OFFSET_TOP;
+			   goto goodTSOffset;
+		case 'w': tsoffset.flags = TK_OFFSET_LEFT|TK_OFFSET_TOP;
+			   goto goodTSOffset;
+		case 'e': tsoffset.flags = TK_OFFSET_RIGHT|TK_OFFSET_TOP;
+			   goto goodTSOffset;
+	    }
+	    goto badTSOffset;
+	case 's':
+	    if ((value[1] != '\0') && (value[2] != '\0')) {
+		goto badTSOffset;
+	    }
+	    switch(value[1]) {
+		case '\0': tsoffset.flags = TK_OFFSET_CENTER|TK_OFFSET_BOTTOM;
+			   goto goodTSOffset;
+		case 'w': tsoffset.flags = TK_OFFSET_LEFT|TK_OFFSET_BOTTOM;
+			   goto goodTSOffset;
+		case 'e': tsoffset.flags = TK_OFFSET_RIGHT|TK_OFFSET_BOTTOM;
+			   goto goodTSOffset;
+	    }
+	    goto badTSOffset;
+	case 'c':
+	    if (strncmp(value, "center", strlen(value)) != 0) {
+		goto badTSOffset;
+	    }
+	    tsoffset.flags = TK_OFFSET_CENTER|TK_OFFSET_MIDDLE;
+	    goto goodTSOffset;
+    }
+    if (argc == 1) {
+	if (((int)clientData) & TK_OFFSET_INDEX) {
+	    if (Tcl_GetInt(interp, args[0], &tsoffset.flags) != TCL_OK) {
+		Tcl_ResetResult(interp);
+		goto badTSOffset;
+	    }
+	    tsoffset.flags |= TK_OFFSET_INDEX;
+	    goto goodTSOffset;
+	}
+	goto badTSOffset;
+    } else if (argc == 2) {
+	result = Tk_GetPixels(interp, tkwin, LangString(args[0]), &tsoffset.xoffset);
+	if (result != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	result = Tk_GetPixels(interp, tkwin, LangString(args[1]), &tsoffset.yoffset);
+	if (result != TCL_OK) {
+	    return TCL_ERROR;
+	}
+    } else {
+	goto badTSOffset;
+    }
+
+goodTSOffset:
+    /* below is a hack to allow the stipple/tile offset to be stored
+     * in the internal tile structure. Most of the times, offsetPtr
+     * is a pointer to an already existing tile structure. However
+     * if this structure is not already created, we must do it
+     * with Tk_GetTile()!!!!;
+     */
+
+    memcpy(offsetPtr,&tsoffset, sizeof(Tk_TSOffset));
+    return TCL_OK;
+
+badTSOffset:
+    Tcl_AppendResult(interp, "bad offset \"", value,
+	    "\": expected \"x,y\"", (char *) NULL);
+    if (((int) clientData) & TK_OFFSET_RELATIVE) {
+	Tcl_AppendResult(interp, ", \"#x,y\"", (char *) NULL);
+    }
+    if (((int) clientData) & TK_OFFSET_INDEX) {
+	Tcl_AppendResult(interp, ", <index>", (char *) NULL);
+    }
+    Tcl_AppendResult(interp, ", n, ne, e, se, s, sw, w, nw, or center",
+	    (char *) NULL);
+    return TCL_ERROR;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_OffsetPrintProc --
+ *
+ *	Returns the offset of the tile.
+ *
+ * Results:
+ *	The offset of the tile is returned.
+ *
+ *----------------------------------------------------------------------
+ */
+
+Arg
+TkOffsetPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+    ClientData clientData;	/* not used */
+    Tk_Window tkwin;		/* not used */
+    char *widgRec;		/* Widget structure record */
+    int offset;			/* Offset of tile in record */
+    Tcl_FreeProc **freeProcPtr;	/* not used */
+{
+    Tk_TSOffset *offsetPtr = (Tk_TSOffset *)(widgRec + offset);
+    char *p, *q;
+
+    if ((offsetPtr->flags) & TK_OFFSET_INDEX) {
+	if ((offsetPtr->flags) >= INT_MAX) {
+	    return LangStringArg("end");
+	}
+	return Tcl_NewIntObj(offsetPtr->flags & (~TK_OFFSET_INDEX));
+    }
+    if ((offsetPtr->flags) & TK_OFFSET_TOP) {
+	if ((offsetPtr->flags) & TK_OFFSET_LEFT) {
+	    return LangStringArg("nw");
+	} else if ((offsetPtr->flags) & TK_OFFSET_CENTER) {
+	    return LangStringArg("n");
+	} else if ((offsetPtr->flags) & TK_OFFSET_RIGHT) {
+	    return LangStringArg("ne");
+	}
+    } else if ((offsetPtr->flags) & TK_OFFSET_MIDDLE) {
+	if ((offsetPtr->flags) & TK_OFFSET_LEFT) {
+	    return LangStringArg("w");
+	} else if ((offsetPtr->flags) & TK_OFFSET_CENTER) {
+	    return LangStringArg("center");
+	} else if ((offsetPtr->flags) & TK_OFFSET_RIGHT) {
+	    return LangStringArg("e");
+	}
+    } else if ((offsetPtr->flags) & TK_OFFSET_BOTTOM) {
+	if ((offsetPtr->flags) & TK_OFFSET_LEFT) {
+	    return LangStringArg("sw");
+	} else if ((offsetPtr->flags) & TK_OFFSET_CENTER) {
+	    return LangStringArg("s");
+	} else if ((offsetPtr->flags) & TK_OFFSET_RIGHT) {
+	    return LangStringArg("se");
+	}                                
+    }
+    {         
+        Tcl_Obj *result = Tcl_NewListObj(0,NULL);   
+        if ((offsetPtr->flags) & TK_OFFSET_RELATIVE) {
+	    Tcl_ListObjAppendElement(NULL,result,LangStringArg("#"));
+	}                                                       
+	Tcl_ListObjAppendElement(NULL,result,Tcl_NewIntObj(offsetPtr->xoffset));
+	Tcl_ListObjAppendElement(NULL,result,Tcl_NewIntObj(offsetPtr->yoffset));
+	return result;
+    }
+}
+
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_PixelParseProc --
+ *
+ *	Converts the name of an image into a tile.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkPixelParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+    ClientData clientData;	/* if non-NULL, negative values are
+				 * allowed as well */
+    Tcl_Interp *interp;		/* Interpreter to send results back to */
+    Tk_Window tkwin;		/* Window on same display as tile */
+    Arg ovalue;			/* Name of image */
+    char *widgRec;		/* Widget structure record */
+    int offset;			/* Offset of tile in record */
+{
+    double *doublePtr = (double *)(widgRec + offset);
+    int result;
+
+    result = Tk_GetDoublePixels(interp, tkwin, LangString(ovalue), doublePtr);
+
+    if ((result == TCL_OK) && (clientData == NULL) && (*doublePtr < 0.0)) {
+	Tcl_AppendResult(interp, "bad screen distance \"", LangString(ovalue),
+		"\"", (char *) NULL);
+	return TCL_ERROR;
+    }
+    return result;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Tk_PixelPrintProc --
+ *
+ *	Returns the name of the tile.
+ *
+ * Results:
+ *	The name of the tile is returned.
+ *
+ *----------------------------------------------------------------------
+ */
+
+Arg
+TkPixelPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+    ClientData clientData;	/* not used */
+    Tk_Window tkwin;		/* not used */
+    char *widgRec;		/* Widget structure record */
+    int offset;			/* Offset of tile in record */
+    Tcl_FreeProc **freeProcPtr;	/* not used */
+{
+    double *doublePtr = (double *)(widgRec + offset);
+    return Tcl_NewDoubleObj(*doublePtr);
+}
 
 /*
  *----------------------------------------------------------------------
@@ -345,4 +913,52 @@ TkFindStateNum(interp, field, mapPtr, strKey)
 	}
     }
     return mPtr->numKey;
+}                                       
+
+
+int
+TkFindStateNumObj(interp, optionPtr, mapPtr, keyPtr)
+    Tcl_Interp *interp;		/* Interp for error reporting. */
+    Tcl_Obj *optionPtr;		/* String to use when constructing error. */
+    CONST TkStateMap *mapPtr;	/* Lookup table. */
+    Tcl_Obj *keyPtr;		/* String key to find in lookup table. */
+{
+#ifdef _LANG
+    return TkFindStateNum(interp, LangString(optionPtr), mapPtr, LangString(keyPtr));
+#else
+    CONST TkStateMap *mPtr;
+    CONST char *key;
+    CONST Tcl_ObjType *typePtr;
+
+    if ((keyPtr->typePtr == &stateKeyType)
+	    && (keyPtr->internalRep.twoPtrValue.ptr1 == (VOID *) mapPtr)) {
+	return (int) keyPtr->internalRep.twoPtrValue.ptr2;
+    }
+
+    key = Tcl_GetStringFromObj(keyPtr, NULL);
+    for (mPtr = mapPtr; mPtr->strKey != NULL; mPtr++) {
+	if (strcmp(key, mPtr->strKey) == 0) {
+	    typePtr = keyPtr->typePtr;
+	    if ((typePtr != NULL) && (typePtr->freeIntRepProc != NULL)) {
+		(*typePtr->freeIntRepProc)(keyPtr);
+	    }
+	    keyPtr->internalRep.twoPtrValue.ptr1 = (VOID *) mapPtr;
+	    keyPtr->internalRep.twoPtrValue.ptr2 = (VOID *) mPtr->numKey;
+	    keyPtr->typePtr = &stateKeyType;	    
+	    return mPtr->numKey;
+	}
+    }
+    if (interp != NULL) {
+	mPtr = mapPtr;
+	Tcl_AppendResult(interp, "bad ",
+		Tcl_GetStringFromObj(optionPtr, NULL), " value \"", key,
+		"\": must be ", mPtr->strKey, (char *) NULL);
+	for (mPtr++; mPtr->strKey != NULL; mPtr++) {
+	    Tcl_AppendResult(interp, ", ", mPtr->strKey, (char *) NULL);
+	}
+    }
+    return mPtr->numKey;
+#endif
 }
+             
+

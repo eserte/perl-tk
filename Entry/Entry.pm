@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '3.026'; # $Id: //depot/Tk8/Entry/Entry.pm#26$
+$VERSION = '3.032'; # $Id: //depot/Tk8/Entry/Entry.pm#32 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
@@ -23,18 +23,19 @@ require Tk::Clipboard;
 
 use base  qw(Tk::Clipboard Tk::Widget);
 
-import Tk qw(Ev);
+import Tk qw(Ev $XS_VERSION);
 
 Construct Tk::Widget 'Entry';
 
-bootstrap Tk::Entry $Tk::VERSION;
+bootstrap Tk::Entry;
 
 sub Tk_cmd { \&Tk::entry }
 
 Tk::Methods('bbox','delete','get','icursor','index','insert','scan',
             'selection','xview');
 
-use Tk::Submethods ( 'selection' => [qw(clear range adjust present to from)]
+use Tk::Submethods ( 'selection' => [qw(clear range adjust present to from)],
+		     'xview'     => [qw(moveto scroll)],
                    );
 
 sub wordstart

@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#15$
+$VERSION = '3.017'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#17 $
 
 use Tk;
 require Tk::Frame;

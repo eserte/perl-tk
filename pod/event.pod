@@ -59,6 +59,8 @@ I<$window> is a reference to the window for which the event
 will be generated.
 I<Event> provides a basic description of
 the event, such as B<E<lt>Shift-Button-2E<gt>> or B<E<lt>E<lt>PasteE<gt>E<gt>>.
+If I<Window> is empty the whole screen is meant, and coordinates
+are relative to the screen.
 I<Event> may have any of the forms allowed for the I<sequence>
 argument of the L<bind|Tk::bind> method except that it must consist
 of a single event pattern, not a sequence.
@@ -254,6 +256,14 @@ B<ButtonRelease>, B<Enter>, B<Leave>, B<Motion>,
 and B<Property> events.
 Corresponds to the L<%t|Tk::bind/'t'> substitution for binding scripts.
 
+
+=item B<-warp>I< boolean>
+
+I<boolean> must be a boolean value;  it specifies whether
+the screen pointer should be warped as well.
+Valid for B<KeyPress>, B<KeyRelease>, B<ButtonPress>,
+B<ButtonRelease>, and B<Motion> events.
+
 =item B<-width>I< size>
 
 I<Size> must be a screen distance;  it specifies the I<width> field
@@ -301,6 +311,9 @@ B<ButtonRelease>, B<Motion>, B<Enter>, B<Leave>,
 B<Expose>, B<Configure>, B<Gravity>, and B<Reparent>
 events.
 Corresponds to the the L<%x|Tk::bind/'x'> substitution for binding scripts.
+If I<Window> is empty the coordinate is relative to the
+screen, and this option corresponds to the L<%X|Tk::bind/'X'> substitution
+for binding scripts.
 
 =item B<-y>I< coord>
 
@@ -311,6 +324,9 @@ B<ButtonRelease>, B<Motion>, B<Enter>, B<Leave>,
 B<Expose>, B<Configure>, B<Gravity>, and B<Reparent>
 events.
 Corresponds to the the L<%y|Tk::bind/'y'> substitution for binding scripts.
+If I<Window> is empty the coordinate is relative to the
+screen, and this option corresponds to the L<%Y|Tk::bind/'Y'> substitution
+for binding scripts.
 
 Any options that are not specified when generating an event are filled
 with the value 0, except for I<serial>, which is filled with the

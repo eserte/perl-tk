@@ -6,10 +6,12 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
+# perl/Tk version:
+# Copyright (c) 1995-1999 Nick Ing-Simmons
+# Copyright (c) 1999 Greg London
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-
 package Tk::Text;
 use AutoLoader;
 use Carp;
@@ -18,14 +20,14 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Text/Text.pm#27$
+$VERSION = '3.038'; # $Id: //depot/Tk8/Text/Text.pm#38 $
 
-use Tk qw(Ev);
+use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
 
 Construct Tk::Widget 'Text';
 
-bootstrap Tk::Text $Tk::VERSION;
+bootstrap Tk::Text;
 
 sub Tk_cmd { \&Tk::text }
 
@@ -35,13 +37,15 @@ Tk::Methods('bbox','compare','debug','delete','dlineinfo','dump',
             'get','image','index','insert','mark','scan','search',
             'see','tag','window','xview','yview');
 
-use Tk::Submethods ( 'mark' => [qw(gravity names next previous set unset)],
-                     'scan' => [qw(mark dragto)],
-                     'tag'  => [qw(add bind cget configure delete lower
-                               names nextrange prevrange raise ranges remove)],
-                     'window' => [qw(cget configure create names)],
-                     'image' => [qw(cget configure create names)]
-                   );
+use Tk::Submethods ( 'mark'   => [qw(gravity names next previous set unset)],
+		     'scan'   => [qw(mark dragto)],
+		     'tag'    => [qw(add bind cget configure delete lower
+				     names nextrange prevrange raise ranges remove)],
+		     'window' => [qw(cget configure create names)],
+		     'image'  => [qw(cget configure create names)],
+		     'xview'  => [qw(moveto scroll)],
+		     'yview'  => [qw(moveto scroll)],
+		     );
 
 sub Tag;
 sub Tags;
@@ -1322,7 +1326,8 @@ sub Transpose
 
 sub Tag
 {
- my ($w,$name) = @_;
+ my $w = shift;
+ my $name = shift;
  Carp::confess('No args') unless (ref $w and defined $name);
  $w->{_Tags_} = {} unless (exists $w->{_Tags_});
  unless (exists $w->{_Tags_}{$name})
@@ -1374,32 +1379,9 @@ sub WhatLineNumberPopUp
                 -message => "The cursor is on line $line (column is $col)");
 }
 
-sub PostPopupMenu
+sub MenuLabels
 {
- my ($w, $x, $y) = @_;
- my $menu = $w->GetMenu;
- $menu->Post($x,$y) if defined $menu;
-}
-
-sub GetMenu
-{
- my ($w) = @_;
- my $menu = $w->{'POPUP_MENU_REFERENCE'};
- unless (defined $menu)
-  {
-   $w->{'POPUP_MENU_REFERENCE'} = $menu = $w->Menu (-tearoff => 0);                            
-   $menu->cascade(-label => '~File', -tearoff => 0, -menuitems => $w->FileMenuItems);          
-   $menu->cascade(-label => '~Edit', -tearoff => 0, -menuitems => $w->EditMenuItems );         
-   $menu->cascade(-label => '~Search', -tearoff => 0, -menuitems => $w->SearchMenuItems );         
-   $menu->cascade(-label => '~View', -tearoff => 0, -menuitems => $w->ViewMenuItems);
-  }
- return $menu;
-}
-
-sub FileMenuItems
-{
- my ($w) = @_;
- return [ ["command"=>'E~xit', -command => sub{$w->toplevel->WmDeleteWindow}]];
+ return qw[~File ~Edit ~Search ~View];
 }
 
 sub SearchMenuItems
@@ -1467,7 +1449,6 @@ sub Column_Copy_or_Cut
  # this only makes sense if there is one selected block
  unless ($range_total==2) 
   {
-  print " there is supposed to be one selection pair: \n";
   $w->bell; 
   return;
   }
@@ -1498,10 +1479,11 @@ sub Column_Copy_or_Cut
  # clear the clipboard
  $w->clipboardClear;
  my ($clipstring, $startstring, $endstring);
+ my $padded_string = ' 'x$tab_end_column;
  for(my $line = $start_line; $line <= $end_line; $line++)
   {
   $string = $w->get($line.'.0', $line.'.0 lineend');
-  $string = expand($string);
+  $string = expand($string) . $padded_string;
   $clipstring = substr($string, $tab_start_column, $length);
   #$clipstring = unexpand($clipstring);
   $w->clipboardAppend($clipstring."\n");
@@ -1592,7 +1574,13 @@ sub clipboardColumnPaste
   }
  
 }
-
+ 
+# Backward compatibility 
+sub GetMenu 
+{    
+ carp((caller(0))[3]." is deprecated") if $^W; 
+ shift->menu 
+}
 
 1;
 __END__

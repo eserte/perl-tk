@@ -4,7 +4,7 @@ use 5.004;
 use Carp;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.019'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#19$
+$VERSION = '3.021'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#21 $
 
 use Tk;
 use Tk::Toplevel;

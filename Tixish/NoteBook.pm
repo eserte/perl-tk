@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#19$
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#23 $
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -369,7 +369,7 @@ sub ClientGeomProc
 sub QueueResize
 {
  my $w = shift;
- $w->DoWhenIdle(['Resize', $w]) unless ($w->{'resize'}++);
+ $w->afterIdle(['Resize', $w]) unless ($w->{'resize'}++);
 }
 
 sub Resize {
@@ -426,7 +426,7 @@ sub Resize {
         if ($w->{'counter'} < 50) {
             $w->{'counter'}++;
             $w->GeometryRequest($reqW, $reqH);
-            $w->DoWhenIdle(sub {$w->Resize;});
+            $w->afterIdle([$w,'Resize']);
             $w->{'resize'} = 1;
             return;
         }

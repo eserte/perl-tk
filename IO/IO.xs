@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-1999 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -14,14 +14,18 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
-#include "pTk/tkVMacro.h"
+#include "pTk/tkEvent.h"
+#include "pTk/tkEvent_f.h"
+#include "pTk/tkEvent.m"
 #include "tkGlue.h"
 #include "tkGlue.m"
+
+TkeventVtab *TkeventVptr;   
+
 
 #define InputStream PerlIO *
 #define OutputStream PerlIO *
 
-DECLARE_VTABLES;
 
 typedef struct
  {
@@ -290,5 +294,5 @@ InputStream	f
 
 BOOT:
  {
-  IMPORT_VTABLES;
+  TkeventVptr  = (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));
  }

@@ -361,16 +361,16 @@ TkpDisplayButton(clientData)
     }
 
     border = butPtr->normalBorder;
-    if ((butPtr->state == tkDisabledUid) && (butPtr->disabledFg != NULL)) {
+    if ((butPtr->state == TK_STATE_DISABLED) && (butPtr->disabledFg != NULL)) {
 	gc = butPtr->disabledGC;
-    } else if ((butPtr->state == tkActiveUid)
+    } else if ((butPtr->state == TK_STATE_ACTIVE)
 	    && !Tk_StrictMotif(butPtr->tkwin)) {
 	gc = butPtr->activeTextGC;
 	border = butPtr->activeBorder;
     } else {
 	gc = butPtr->normalTextGC;
     }
-    if ((butPtr->flags & SELECTED) && (butPtr->state != tkActiveUid)
+    if ((butPtr->flags & SELECTED) && (butPtr->state != TK_STATE_ACTIVE)
 	    && (butPtr->selectBorder != NULL) && !butPtr->indicatorOn) {
 	border = butPtr->selectBorder;
     }
@@ -391,7 +391,7 @@ TkpDisplayButton(clientData)
      */
 
     if (butPtr->type == TYPE_BUTTON) {
-	defaultWidth = ((butPtr->defaultState == tkActiveUid)
+	defaultWidth = ((butPtr->defaultState == TK_STATE_ACTIVE)
 		? butPtr->highlightWidth : 0);
 	offset = 1;
     } else {
@@ -507,7 +507,7 @@ TkpDisplayButton(clientData)
 	y -= butPtr->indicatorDiameter / 2;
 
 	xSrc = (butPtr->flags & SELECTED) ? boxWidth : 0;
-	if (butPtr->state == tkActiveUid) {
+	if (butPtr->state == TK_STATE_ACTIVE) {
 	    xSrc += boxWidth*2;
 	}
 	ySrc = (butPtr->type == TYPE_RADIO_BUTTON) ? 0 : boxHeight;
@@ -530,7 +530,7 @@ TkpDisplayButton(clientData)
 		border, TK_3D_LIGHT2));
 	boxesPalette[PAL_BOTTOM_OUTER] = FlipColor(TkWinGetBorderPixels(tkwin,
 		border, TK_3D_LIGHT_GC));
-	if (butPtr->state == tkDisabledUid) {
+	if (butPtr->state == TK_STATE_DISABLED) {
 	    boxesPalette[PAL_INTERIOR] = FlipColor(TkWinGetBorderPixels(tkwin,
 		border, TK_3D_LIGHT2));
 	} else if (butPtr->selectBorder != NULL) {
@@ -556,7 +556,7 @@ TkpDisplayButton(clientData)
      * must temporarily modify the GC.
      */
 
-    if ((butPtr->state == tkDisabledUid)
+    if ((butPtr->state == TK_STATE_DISABLED)
 	    && ((butPtr->disabledFg == NULL) || (butPtr->image != NULL))) {
 	if ((butPtr->flags & SELECTED) && !butPtr->indicatorOn
 		&& (butPtr->selectBorder != NULL)) {
@@ -788,7 +788,7 @@ ButtonProc(hwnd, message, wParam, lParam)
 	case BN_CLICKED: {
 	    int code;
 	    Tcl_Interp *interp = butPtr->info.interp;
-	    if (butPtr->info.state != tkDisabledUid) {
+	    if (butPtr->info.state != TK_STATE_DISABLED) {
 		Tcl_Preserve((ClientData)interp);
 		code = TkInvokeButton((TkButton*)butPtr);
 		if (code != TCL_OK && code != TCL_CONTINUE

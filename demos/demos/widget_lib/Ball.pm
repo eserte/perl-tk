@@ -18,7 +18,7 @@ package Ball;
 # Tidied up by SOL.
 
 use vars qw/$VERSION/;
-$VERSION = '3.007'; # $Id: //depot/Tk8/demos/demos/widget_lib/Ball.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/demos/demos/widget_lib/Ball.pm#9 $
 
 use Tk::Canvas;
 use Tk::Widget;

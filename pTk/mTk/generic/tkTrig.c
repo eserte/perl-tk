@@ -17,7 +17,7 @@
 
 #include "tkInt.h"
 #include "tkPort.h"
-#include "tkCanvas.h"
+#include "tkCanvases.h"
 
 #undef MIN
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
@@ -1065,6 +1065,14 @@ TkMakeBezierCurve(canvas, pointPtr, numPoints, numSteps, xPoints, dblPoints)
      * just put the first point into the output.
      */
 
+    if (!pointPtr) {
+	/* Of pointPtr == NULL, this function returns an upper limit.
+	 * of the array size to store the coordinates. This can be
+	 * used to allocate storage, before the actual coordinates
+	 * are calculated. */
+	return 1 + numPoints * numSteps;
+    }
+
     outputPoints = 0;
     if ((pointPtr[0] == pointPtr[numCoords-2])
 	    && (pointPtr[1] == pointPtr[numCoords-1])) {
@@ -1203,7 +1211,7 @@ TkMakeBezierCurve(canvas, pointPtr, numPoints, numSteps, xPoints, dblPoints)
  */
 
 void
-TkMakeBezierPostscript(interp, canvas, pointPtr, numPoints)
+TkMakeBezierPostscript(interp, canvas, pointPtr, numPoints, numSteps)
     Tcl_Interp *interp;			/* Interpreter in whose result the
 					 * Postscript is to be stored. */
     Tk_Canvas canvas;			/* Canvas widget for which the
@@ -1211,6 +1219,7 @@ TkMakeBezierPostscript(interp, canvas, pointPtr, numPoints)
     double *pointPtr;			/* Array of input coordinates:  x0,
 					 * y0, x1, y1, etc.. */
     int numPoints;			/* Number of points at pointPtr. */
+    int numSteps;			/* Not used */
 {
     int closed, i;
     int numCoords = numPoints*2;

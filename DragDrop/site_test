@@ -2,7 +2,7 @@
 use Tk;
 use strict;
 use Tk::DropSite;
-use vars qw($kind);           
+use vars qw($kind $STRING $FILE_NAME);           
 BEGIN  { $kind = ($^O eq 'MSWin32') ? ['Win32'] : ['Sun','XDND','KDE'] }
 use Tk::DropSite @$kind;
 use Tk::DragDrop @$kind;
@@ -61,7 +61,18 @@ foreach my $k ('Local',@$kind,'Any')
                  @list);
  }
 
-
+my $str = $top->Frame->pack(-fill => 'x');
+foreach my $targ (qw(STRING FILE_NAME))
+ {
+  no strict 'refs';
+  my $l = $str->Label(-anchor => 'e', -justify => 'right', -text => $targ);
+  my $v = $str->Label(-anchor => 'w', -justify => 'left', -relief => 'groove',
+              -textvariable => \${$targ});
+  Tk::grid($l,$v,-sticky => 'ew');	
+ } 
+$str->gridColumnconfigure(0,-weight => 0); 
+$str->gridColumnconfigure(1,-weight => 1); 
+ 
 sub string_handler
 {
  my ($text,$offset,$max) = @_;
@@ -81,11 +92,12 @@ sub ShowTargets
  my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
  $lb->delete(0,'end');
  $lb->insert('end',@targ);
+ $STRING = $FILE_NAME = '';
  foreach (@targ)
   {
    if (/FILE_NAME/)
     {
-     print "$_:",$lb->SelectionGet('-selection'=>$seln,'FILE_NAME'),"\n";
+     $FILE_NAME = $lb->SelectionGet('-selection'=>$seln,'FILE_NAME');
     }
    if (/_SUN/ && !/(END|ACK|DONE|YIELD)/)
     {       
@@ -100,9 +112,11 @@ sub ShowTargets
        print "$_:",Dumper(\@info);
       }
     }
-   if ($^O eq 'MSWin32' && /STRING/)
+   if (m#^(STRING|text/plain)$#)
     {
-     print "$_:",$lb->SelectionGet('-selection'=>$seln,$_),"\n";
+     my $string = $lb->SelectionGet('-selection'=>$seln,$_);
+     $string = substr($string,0,37)."..." if length($string) > 40;
+     $STRING = $string;
     } 
   }
 }

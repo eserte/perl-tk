@@ -2,7 +2,7 @@ package Tk::DragDrop::SunConst;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#13$
+$VERSION = '3.015'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunConst.pm#15 $
 
 use base  qw(Exporter);
 

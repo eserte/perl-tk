@@ -40,8 +40,6 @@ typedef struct TkScale {
 				 * freed even after tkwin has gone away. */
     Tcl_Interp *interp;		/* Interpreter associated with scale. */
     Tcl_Command widgetCmd;	/* Token for scale's widget command. */
-    Tk_Uid orientUid;		/* Orientation for window ("vertical" or
-				 * "horizontal"). */
     int vertical;		/* Non-zero means vertical orientation,
 				 * zero means horizontal. */
     int width;			/* Desired narrow dimension of scale,
@@ -80,7 +78,7 @@ typedef struct TkScale {
 				 * scale;  NULL means don't display a
 				 * label.  Malloc'ed. */
     int labelLength;		/* Number of non-NULL chars. in label. */
-    Tk_Uid state;		/* Normal or disabled.  Value cannot be
+    Tk_State state;		/* Normal or disabled.  Value cannot be
 				 * changed when scale is disabled. */
 
     /*
@@ -147,6 +145,9 @@ typedef struct TkScale {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, activeTile, disabledTile, troughTile;
+    GC activeTileGC;
+    Tk_TSOffset tsoffset;
 } TkScale;
 
 /*

@@ -203,7 +203,7 @@ TIX_DEFINE_CMD(Tix_DoWhenMappedCmd)
      * Add this into a link list
      */
     cmd = (MapCmdLink*) ckalloc(sizeof(MapCmdLink));
-    cmd->command = (char*)strdup(argv[2]);
+    cmd->command = tixStrDup(argv[2]);
 
     cmd->next = mPtr->cmds;
     mPtr->cmds = cmd;
@@ -262,7 +262,7 @@ TIX_DEFINE_CMD(Tix_FileCmd)
 	char *src, *dst, *p;
 	int isSlash = 0;
 
-	p = (char*)strdup(argv[2]);
+	p = tixStrDup(argv[2]);
 
 	for (src=dst=p; *src; src++) {
 	    if (*src == '/') {

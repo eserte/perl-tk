@@ -85,10 +85,10 @@ AC_CHECK_FUNC(strdup, , AC_DEFINE(NO_STRDUP))
 AC_MSG_CHECKING([unsigned char])
 AC_TRY_COMPILE([#include <stdio.h>],[
      unsigned char c = 'c';
-], tcl_ok=supported, tcl_ok=not supported)
+], tcl_ok=supported, tcl_ok="not supported")
 
 AC_MSG_RESULT($tcl_ok)
-if test $tcl_ok = supported; then
+if test "$tcl_ok" = supported; then
     AC_DEFINE(UCHAR_SUPPORTED)
 fi
 
@@ -127,7 +127,7 @@ if test "$val" != ""; then
         exit 1
     fi
 else
-    dirs="../../../itcl2.1*"
+    dirs="../../../itcl2.1"
     ITCL_SRC_DIR="no-no"
     for i in $dirs; do
         if test -d $i; then

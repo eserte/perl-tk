@@ -1,18 +1,15 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/IO/IO.pm#32$
+$VERSION = '3.038'; # $Id: //depot/Tk8/IO/IO.pm#38 $
 
 require 5.002;
-require Tk;
+use Tk::Event qw($XS_VERSION);
 
-require DynaLoader;
-require Exporter;
-require IO::Handle;
 use Carp;
-use base  qw(DynaLoader IO::Handle Exporter);
+use base  qw(DynaLoader IO::Handle);
 
-bootstrap Tk::IO $Tk::VERSION;
+bootstrap Tk::IO;
 
 my %fh2obj;
 my %obj2fh;
@@ -153,7 +150,7 @@ sub wait
  my $code;
  my $ch = delete ${*$fh}{-childcommand};
  ${*$fh}{-childcommand} = Tk::Callback->new(sub { $code = shift });
- Tk->DoOneEvent until (defined $code);
+ Tk::Event::DoOneEvent(0) until (defined $code);
  if (defined $ch)
   {
    ${*$fh}{-childcommand} = $ch;
@@ -177,122 +174,6 @@ sub close
     }
   }
  return $code;
-}
-
-{package Tk::Event::IO;
-
-sub PrintArgs
-{
- my $func = (caller(1))[3];
- print "$func(",join(',',@_),")\n";
-}
-
-sub PRINT
-{
- my $obj = shift;
- unless ($obj->handler(WRITABLE))
-  {
-   Tk::DoOneEvent(0) until $obj->writable;
-  }
- my $h = $obj->handle;
- return print $h @_;
-}   
-
-sub PRINTF
-{
- my $obj = shift;
- unless ($obj->handler(WRITABLE))
-  {
-   Tk::DoOneEvent(0) until $obj->writable;
-  }
- my $h = $obj->handle;
- return printf $h @_;
-}
-
-sub WRITE
-{
- my $obj = $_[0];
- unless ($obj->handler(WRITABLE))
-  {
-   Tk::DoOneEvent(0) until $obj->writable;
-  }
- return syswrite($obj->handle,$_[1],$_[2]);
-}
-            
-my $depth = 0;
-sub READLINE
-{         
- my $obj = shift;
- my $h = $obj->handle;
- unless ($obj->handler(READABLE))
-  {
-   Tk::DoOneEvent(0) until $obj->readable;
-  }
- my $w = <$h>;
- return $w;
-}
-
-sub READ
-{
- my $obj = $_[0];
- unless ($obj->handler(READABLE))
-  {
-   Tk::DoOneEvent(0) until $obj->readable;
-  }
- my $h = $obj->handle;
- return read($h,$_[1],$_[2],defined $_[3] ? $_[3] : 0);
-}
-
-sub GETC
-{
- my $obj = $_[0];
- unless ($obj->handler(READABLE))
-  {
-   Tk::DoOneEvent(0) until $obj->readable;
-  }
- my $h = $obj->handle;
- return getc($h);
-}
-
-sub CLOSE
-{
- my $obj = shift;
- $obj->watch(0);
- my $h = $obj->handle;
- return close($h);
-}   
-
-}
-
-sub imode
-{
- my $mode = shift;
- my $imode = ${{'readable' => Tk::Event::IO::READABLE(), 
-                'writable' => Tk::Event::IO::WRITABLE()}}{$mode};
- croak("Invalid handler type '$mode'") unless (defined $imode);
- return $imode;
-}
-
-sub fileevent
-{
- my ($widget,$file,$mode,$cb) = @_;
- my $imode = imode($mode);
- unless (ref $file)
-  {
-   no strict 'refs';
-   $file = Symbol::qualify($file,(caller)[0]);
-   $file = \*{$file};
-  }
- my $obj = tied(*$file);
- $obj = tie *$file,'Tk::Event::IO', $file unless $obj && $obj->isa('Tk::Event::IO');
- if (@_ == 3)
-  {
-   return $obj->handler($imode);
-  }
- else
-  {
-   $obj->handler($imode,$cb);
-  }
 }
 
 1;

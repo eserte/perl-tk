@@ -77,6 +77,28 @@ static int menusInitialized;	/* Whether or not the hash tables, etc., have
 				 * been setup */
 
 /*
+ * Custom option for handling "-state" and "-tile"
+ */
+
+static Tk_CustomOption stateOption = {
+    Tk_StateParseProc,
+    Tk_StatePrintProc,
+    (ClientData) 1	/* allow "normal", "active" and "disabled" */
+};
+
+static Tk_CustomOption tileOption = {
+    Tk_TileParseProc,
+    Tk_TilePrintProc,
+    (ClientData) NULL
+};
+
+static Tk_CustomOption offsetOption = {
+    Tk_OffsetParseProc,
+    Tk_OffsetPrintProc,
+    (ClientData) NULL
+};
+
+/*
  * Configuration specs for individual menu entries. If this changes, be sure
  * to update code in TkpMenuInit that changes the font string entry.
  */
@@ -90,6 +112,10 @@ Tk_ConfigSpec tkMenuEntryConfigSpecs[] = {
 	DEF_MENU_ENTRY_ACTIVE_FG, Tk_Offset(TkMenuEntry, activeFg),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
 	|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenuEntry, activeTile), COMMAND_MASK|CHECK_BUTTON_MASK|
+	RADIO_BUTTON_MASK|CASCADE_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_STRING, "-accelerator", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_ACCELERATOR, Tk_Offset(TkMenuEntry, accel),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
@@ -112,6 +138,10 @@ Tk_ConfigSpec tkMenuEntryConfigSpecs[] = {
 	DEF_MENU_ENTRY_COMMAND, Tk_Offset(TkMenuEntry, command),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
 	|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-disabledtile", "disabledTile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenuEntry, disabledTile), COMMAND_MASK|CHECK_BUTTON_MASK|
+	RADIO_BUTTON_MASK|CASCADE_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_FONT, "-font", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_FONT, Tk_Offset(TkMenuEntry, tkfont),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
@@ -137,6 +167,10 @@ Tk_ConfigSpec tkMenuEntryConfigSpecs[] = {
     {TK_CONFIG_LANGARG, "-menu", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_MENU, Tk_Offset(TkMenuEntry, name),
 	CASCADE_MASK|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(TkMenuEntry, tsoffset), COMMAND_MASK|CHECK_BUTTON_MASK|
+	RADIO_BUTTON_MASK|CASCADE_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
     {TK_CONFIG_LANGARG, "-offvalue", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_OFF_VALUE, Tk_Offset(TkMenuEntry, offValue),
 	CHECK_BUTTON_MASK},
@@ -149,10 +183,14 @@ Tk_ConfigSpec tkMenuEntryConfigSpecs[] = {
     {TK_CONFIG_OBJECT, "-selectimage", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_SELECT_IMAGE, Tk_Offset(TkMenuEntry, selectImageString),
 	CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_UID, "-state", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_CUSTOM, "-state", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_STATE, Tk_Offset(TkMenuEntry, state),
 	COMMAND_MASK|CHECK_BUTTON_MASK|RADIO_BUTTON_MASK|CASCADE_MASK
-	|TEAROFF_MASK|TK_CONFIG_DONT_SET_DEFAULT},
+	|TEAROFF_MASK|TK_CONFIG_DONT_SET_DEFAULT, &stateOption},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenuEntry, tile), COMMAND_MASK|CHECK_BUTTON_MASK|
+	RADIO_BUTTON_MASK|CASCADE_MASK|TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_LANGARG, "-value", (char *) NULL, (char *) NULL,
 	DEF_MENU_ENTRY_VALUE, Tk_Offset(TkMenuEntry, onValue),
 	RADIO_BUTTON_MASK|TK_CONFIG_NULL_OK},
@@ -191,6 +229,9 @@ Tk_ConfigSpec tkMenuConfigSpecs[] = {
     {TK_CONFIG_COLOR, "-activeforeground", "activeForeground", "Background",
 	DEF_MENU_ACTIVE_FG_MONO, Tk_Offset(TkMenu, activeFg),
 	TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_CUSTOM, "-activetile", "activeTile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenu, activeTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
 	DEF_MENU_BG_COLOR, Tk_Offset(TkMenu, border), TK_CONFIG_COLOR_ONLY},
     {TK_CONFIG_BORDER, "-background", "background", "Background",
@@ -209,12 +250,18 @@ Tk_ConfigSpec tkMenuConfigSpecs[] = {
     {TK_CONFIG_COLOR, "-disabledforeground", "disabledForeground",
 	"DisabledForeground", DEF_MENU_DISABLED_FG_MONO,
 	Tk_Offset(TkMenu, disabledFg), TK_CONFIG_MONO_ONLY|TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-disabledtile", "disabledTile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenu, disabledTile), TK_CONFIG_DONT_SET_DEFAULT,
+	&tileOption},
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
 	(char *) NULL, 0, 0},
     {TK_CONFIG_FONT, "-font", "font", "Font",
 	DEF_MENU_FONT, Tk_Offset(TkMenu, tkfont), 0},
     {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
 	DEF_MENU_FG, Tk_Offset(TkMenu, fg), 0},
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+	Tk_Offset(TkMenu, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
+	&offsetOption},
     {TK_CONFIG_CALLBACK, "-postcommand", "postCommand", "Command",
 	DEF_MENU_POST_COMMAND, Tk_Offset(TkMenu, postCommand), 
         TK_CONFIG_NULL_OK},
@@ -233,6 +280,8 @@ Tk_ConfigSpec tkMenuConfigSpecs[] = {
     {TK_CONFIG_CALLBACK, "-tearoffcommand", "tearOffCommand", "TearOffCommand",
 	DEF_MENU_TEAROFF_CMD, Tk_Offset(TkMenu, tearOffCommand),
 	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(TkMenu, tile), TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
     {TK_CONFIG_STRING, "-title", "title", "Title",
     	DEF_MENU_TITLE, Tk_Offset(TkMenu, title), TK_CONFIG_NULL_OK},
     {TK_CONFIG_STRING, "-type", "type", "Type",
@@ -400,6 +449,11 @@ Tk_MenuCmd(clientData, interp, argc, argv)
     menuPtr->parentTopLevelPtr = NULL;
     menuPtr->menuTypeName = NULL;
     menuPtr->title = NULL;
+    menuPtr->tile = menuPtr->activeTile = menuPtr->disabledTile = NULL;
+    menuPtr->tileGC = menuPtr->activeTileGC = menuPtr->disabledTileGC = None;
+    menuPtr->tsoffset.flags =  0;
+    menuPtr->tsoffset.xoffset =  0;
+    menuPtr->tsoffset.yoffset =  0;
     TkMenuInitializeDrawingFields(menuPtr);
 
     menuRefPtr = TkCreateMenuReferences(menuPtr->interp,
@@ -410,7 +464,7 @@ Tk_MenuCmd(clientData, interp, argc, argv)
     	goto error;
     }
 
-    Tk_SetClass(menuPtr->tkwin, "Menu");
+    TkClassOption(menuPtr->tkwin, "Menu",&argc,&argv);
     TkSetClassProcs(menuPtr->tkwin, &menuClass, (ClientData) menuPtr);
     Tk_CreateEventHandler(new, ExposureMask|StructureNotifyMask|ActivateMask,
 	    TkMenuEventProc, (ClientData) menuPtr);
@@ -477,6 +531,7 @@ Tk_MenuCmd(clientData, interp, argc, argv)
                 ConfigureMenuEntry(cascadeListPtr, 2, newArgv, 
                 	TK_CONFIG_ARGV_ONLY);
 		Tcl_DecrRefCount(newArgv[0]);
+		Tcl_DecrRefCount(newArgv[1]);
            }
             cascadeListPtr = nextCascadePtr;
         }
@@ -576,7 +631,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
 	}
 	if (index >= 0) {
 	    if ((menuPtr->entries[index]->type == SEPARATOR_ENTRY)
-		    || (menuPtr->entries[index]->state == tkDisabledUid)) {
+		    || (menuPtr->entries[index]->state == TK_STATE_DISABLED)) {
 		index = -1;
 	    }
 	}
@@ -613,6 +668,7 @@ MenuWidgetCmd(clientData, interp, argc, argv)
     	result = CloneMenu(menuPtr, &args[2], (argc == 3) ? NULL : argv[3]);
 	if (result == TCL_OK) {
 		Tcl_ArgResult(interp, args[2]);
+		LangFreeArg(args[2], TCL_DYNAMIC);
 	}
     } else if ((c == 'c') && (strncmp(argv[1], "configure", length) == 0)
 	    && (length >= 2)) {
@@ -896,7 +952,7 @@ TkInvokeMenu(interp, menuPtr, index)
     	goto done;
     }
     mePtr = menuPtr->entries[index];
-    if (mePtr->state == tkDisabledUid) {
+    if (mePtr->state == TK_STATE_DISABLED) {
 	goto done;
     }
     Tcl_Preserve((ClientData) mePtr);
@@ -1023,6 +1079,15 @@ DestroyMenuInstance(menuPtr)
     }
     if (menuPtr->entries != NULL) {
 	ckfree((char *) menuPtr->entries);
+    }
+    if (menuPtr->tileGC != None) {
+	Tk_FreeGC(menuPtr->display, menuPtr->tileGC);
+    }
+    if (menuPtr->activeTileGC != None) {
+	Tk_FreeGC(menuPtr->display, menuPtr->activeTileGC);
+    }
+    if (menuPtr->disabledTileGC != None) {
+	Tk_FreeGC(menuPtr->display, menuPtr->disabledTileGC);
     }
     TkMenuFreeDrawOptions(menuPtr);
     Tk_FreeOptions(tkMenuConfigSpecs, (char *) menuPtr, menuPtr->display, 0);
@@ -1218,6 +1283,12 @@ DestroyMenuEntry(memPtr)
     }
     if (mePtr->selectImage != NULL) {
 	Tk_FreeImage(mePtr->selectImage);
+    }
+    if (mePtr->tileGC != None) {
+	Tk_FreeGC(menuPtr->display, mePtr->tileGC);
+    }
+    if (mePtr->activeTileGC != None) {
+	Tk_FreeGC(menuPtr->display, mePtr->activeTileGC);
     }
     if (mePtr->variable != NULL) {
 	Tcl_UntraceVar(menuPtr->interp, mePtr->variable,
@@ -1710,6 +1781,7 @@ ConfigureMenuCloneEntries(interp, menuPtr, index, argc, argv, flags)
 		newArgV[1] = newCloneName;
 		ConfigureMenuEntry(mePtr, 2, newArgV, flags);
 		Tcl_DecrRefCount(newArgV[0]);
+		Tcl_DecrRefCount(newArgV[1]);
 	    }
 	}
     }
@@ -1907,7 +1979,7 @@ MenuNewEntry(menuPtr, index, type)
     mePtr->selectImage = NULL;
     mePtr->accel = NULL;
     mePtr->accelLength = 0;
-    mePtr->state = tkNormalUid;
+    mePtr->state = TK_STATE_NORMAL;
     mePtr->border = NULL;
     mePtr->fg = NULL;
     mePtr->activeBorder = NULL;
@@ -1926,6 +1998,11 @@ MenuNewEntry(menuPtr, index, type)
     mePtr->entryFlags = 0;
     mePtr->index = index;
     mePtr->nextCascadePtr = NULL;
+    mePtr->tile = mePtr->activeTile = mePtr->disabledTile = NULL;
+    mePtr->tileGC = mePtr->activeTileGC = None;
+    mePtr->tsoffset.flags =  0;
+    mePtr->tsoffset.xoffset =  0;
+    mePtr->tsoffset.yoffset =  0;
     TkMenuInitializeEntryDrawingFields(mePtr);
     if (TkpMenuNewEntry(mePtr) != TCL_OK) {
     	ckfree((char *) mePtr);
@@ -2081,6 +2158,7 @@ MenuAddOrInsert(interp, menuPtr, indexString, argc, argv)
 		newArgv[1] = newCascadeName;
     	        ConfigureMenuEntry(mePtr, 2, newArgv, 0);
 		Tcl_DecrRefCount(newArgv[0]);
+		Tcl_DecrRefCount(newArgv[1]);
     	    }
     	}
     }
@@ -2195,15 +2273,15 @@ TkActivateMenuEntry(menuPtr, index)
 	 * might already have been changed to disabled).
 	 */
 
-	if (mePtr->state == tkActiveUid) {
-	    mePtr->state = tkNormalUid;
+	if (mePtr->state == TK_STATE_ACTIVE) {
+	    mePtr->state = TK_STATE_NORMAL;
 	}
 	TkEventuallyRedrawMenu(menuPtr, menuPtr->entries[menuPtr->active]);
     }
     menuPtr->active = index;
     if (index >= 0) {
 	mePtr = menuPtr->entries[index];
-	mePtr->state = tkActiveUid;
+	mePtr->state = TK_STATE_ACTIVE;
 	TkEventuallyRedrawMenu(menuPtr, mePtr);
     }
     return result;
@@ -2305,7 +2383,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     if ((newMenuTypeString == NULL) || (newMenuTypeString[0] == '\0')) {
 	newMenuTypeString = "normal";
     }
-
+        
     commandObjPtr = Tcl_NewListObj(0, (Tcl_Obj **) NULL);
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
     	    Tcl_NewStringObj("MenuDup", -1));
@@ -2314,10 +2392,10 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr, LangCopyArg(*widget));
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
     		Tcl_NewStringObj(newMenuTypeString, -1));
-    Tcl_IncrRefCount(commandObjPtr);
     Tcl_Preserve((ClientData) menuPtr);
     returnResult = Tcl_EvalObj(menuPtr->interp, commandObjPtr);
-    Tcl_DecrRefCount(commandObjPtr);
+    Tcl_DecrRefCount(commandObjPtr); 
+
 
     /*
      * Make sure the tcl command actually created the clone.
@@ -2329,9 +2407,9 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 	    && (menuPtr->numEntries == menuRefPtr->menuPtr->numEntries)) {
     	TkMenu *newMenuPtr = menuRefPtr->menuPtr;
 	Arg newArgv[3];
-	int i, numElements;
+	int i, numElements;          
 
-	*widget = newMenuName;
+	*widget = newMenuName; 
 
 	/*
 	 * Now put this newly created menu into the parent menu's instance
@@ -2414,6 +2492,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 		    ConfigureMenuEntry(newMenuPtr->entries[i], 2, newArgv, 
 		    	    TK_CONFIG_ARGV_ONLY);
 		    Tcl_DecrRefCount(newArgv[0]);   
+		    Tcl_DecrRefCount(newArgv[1]);   
    	    	}
    	    }
    	}
@@ -2766,7 +2845,6 @@ TkSetWindowMenuBar(interp, tkwin, oldMenuName, menuName)
 
     	    cloneMenuName = LangWidgetArg(interp, tkwin);
             CloneMenu(menuPtr, &cloneMenuName, "menubar");
-	    
             cloneMenuRefPtr = TkFindMenuReferences(interp, LangString(cloneMenuName));
             if ((cloneMenuRefPtr != NULL)
 		    && (cloneMenuRefPtr->menuPtr != NULL)) {
@@ -2778,8 +2856,8 @@ TkSetWindowMenuBar(interp, tkwin, oldMenuName, menuName)
 			2, newArgv, TK_CONFIG_ARGV_ONLY);
 		Tcl_DecrRefCount(newArgv[0]);
 		Tcl_DecrRefCount(newArgv[1]);
-            }
-
+            }                       
+            Tcl_DecrRefCount(cloneMenuName);
 	    TkpSetWindowMenuBar(tkwin, menuBarPtr);
 		        
         } else {

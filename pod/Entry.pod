@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-Tk::Entry - Create and manipulate Entry widgets
+Tk::Entry - Create and manipulate Entry widgets 
 
 =for category  Tk Widget Classes
 
@@ -24,11 +24,22 @@ B<-exportselection>	B<-insertbackground>	B<-relief>	B<-xscrollcommand>
 B<-font>	B<-insertborderwidth>	B<-selectbackground>
 B<-foreground>	B<-insertofftime>	B<-selectborderwidth>
 
-See L<Tk::options> for details of the standard options.
-
 =head1 WIDGET-SPECIFIC OPTIONS
 
 =over 4
+
+=item Name:	B<invalidCommand>
+
+=item Class:	B<InvalidCommand>
+
+=item Switch:	B<-invalidcommand>
+
+=item Alias:	B<-invcmd>
+
+Specifies a script to eval when B<validateCommand> returns 0.
+Setting it to <undef> disables this feature (the default).  The best use
+of this option is to set it to I<bell>.  See B<Validation>
+below for more information.
 
 =item Name:	B<show>
 
@@ -57,6 +68,33 @@ If the entry is disabled then the value may not be changed using widget
 methods and no insertion cursor will be displayed, even if the input focus is
 in the widget.
 
+=item Name:	B<validate>
+
+=item Class:	B<Validate>
+
+=item Switch:	B<-validate>
+
+Specifies the mode in which validation should operate: B<none>,
+B<focus>, B<focusin>, B<focusout>, B<key>, or B<all>.
+It defaults to B<none>.  When you want validation, you must explicitly
+state which mode you wish to use.  See B<Validation> below for more.
+
+=item Name:	B<validateCommand>
+
+=item Class:	B<ValidateCommand>
+
+=item Switch:	B<-validatecommand>
+
+=item Alias:	B<-vcmd>
+
+Specifies a script to eval when you want to validate the input into
+the entry widget.  Setting it to C<undef> disables this feature (the default).
+This command must return a valid boolean value.  If it returns 0 (or
+the valid boolean equivalent) then it means you reject the new edition
+and it will not occur and the B<invalidCommand> will be evaluated if it
+is set. If it returns 1, then the new edition occurs.
+See B<Validation> below for more information.
+
 =item Name:	B<width>
 
 =item Class:	B<Width>
@@ -73,24 +111,24 @@ size just large enough to hold its current text.
 =head1 DESCRIPTION
 
 The B<Entry> method creates a new window (given by the
-$widget argument) and makes it into an entry widget.
+$entry argument) and makes it into an entry widget.
 Additional options, described above, may be specified on the
 command line or in the option database
 to configure aspects of the entry such as its colors, font,
 and relief.  The B<entry> command returns its
-$widget argument.  At the time this command is invoked,
-there must not exist a window named $widget, but
-$widget's parent must exist.
+$entry argument.  At the time this command is invoked,
+there must not exist a window named $entry, but
+$entry's parent must exist.
 
 An entry is a widget that displays a one-line text string and
 allows that string to be edited using methods described below, which
 are typically bound to keystrokes and mouse actions.
 When first created, an entry's string is empty.
 A portion of the entry may be selected as described below.
-If an entry is exporting its selection
-(see the B<exportSelection> option), then it will observe the standard X11
-protocols for handling the selection;  entry selections are available as type
-B<STRING>. Entries also observe the standard Tk rules for dealing with the
+If an entry is exporting its selection (see the B<exportSelection>
+option), then it will observe the standard X11 protocols for handling the
+selection;  entry selections are available as type B<STRING>.
+Entries also observe the standard Tk rules for dealing with the
 input focus.  When an entry has the input focus it displays an
 I<insertion cursor> to indicate where new characters will be
 inserted.
@@ -102,6 +140,83 @@ may be used to change the view in the window.  Entries use
 the standard B<xScrollCommand> mechanism for interacting with
 scrollbars (see the description of the B<-xscrollcommand> option
 for details).  They also support scanning, as described below.
+
+=head1 VALIDATION
+
+Validation of entry widgets is derived from part of the patch written by
+jhobbs@cs.uoregon.edu.  This works by setting the B<validateCommand>
+option to a callback which will be evaluated according to the B<validate>
+option as follows:
+
+=over 4
+
+=item B<none>
+
+Default.  This means no validation will occur.
+
+=item B<focus>
+
+B<validateCommand> will be called when the entry receives or
+loses focus.
+
+=item B<focusin>
+
+B<validateCommand> will be called when the entry receives focus.
+
+=item B<focusout>
+
+B<validateCommand> will be called when the entry loses focus.
+
+=item B<key>
+
+B<validateCommand> will be called when the entry is edited.
+
+=item B<all>
+
+B<validateCommand> will be called for all above conditions.
+
+=back 
+
+The B<validateCommand> and B<invalidCommand> are called with the following 
+arguments:
+
+=over 4
+
+=item * The proposed value of the entry.  If you are configuring the
+entry widget to have a new textvariable, this will be the value of that
+textvariable.
+
+=item * The characters to be added (or deleted). This will be C<undef>
+if validation is due to focus, explcit call to validate or if change
+is due to C<-textvariable> changing.
+
+=item * The current value of entry i.e. before the proposed change.
+
+=item * index of char string to be added/deleted, if any. -1 otherwise
+
+=item * type of action. 1 == INSERT, 0 == DELETE,
+-1 if it's a forced validation or textvariable validation
+
+=back 
+
+In general, the B<textVariable> and B<validateCommand> can be
+dangerous to mix. If you try set the B<textVariable>
+to something that the B<validateCommand> will not accept it will 
+be set back to the value of the entry widget.  
+Using the B<textVariable> for read-only purposes will never cause problems.
+
+The B<validateCommand> will turn itself off by setting
+B<validate> to B<none> when an error occurs, for example
+when the B<validateCommand> or B<invalidCommand> encounters 
+an error in its script while evaluating, or
+B<validateCommand> does not return a valid boolean value.  
+
+With the perl/Tk version B<validate> option is supposed to be 
+"suspended" while executing the B<validateCommand> or the B<invalidCommand>. 
+This is experimental but in theory either callback can "correct" the 
+value of the widget, and override the proposed change. (B<validateCommand>
+should still return false to inhibit the change from happening when 
+it returns.)
 
 =head1 WIDGET METHODS
 
@@ -177,6 +292,28 @@ the upper-left corner of the screen area covered by the character
 the width and height of the character, in pixels.
 The bounding box may refer to a region outside the visible area
 of the window.
+
+=item I<$entry>-E<gt>B<delete>(I<first, >?I<last>?)
+
+Returns the current value of the configuration option given
+by I<option>.
+I<Option> may have any of the values accepted by the B<entry>
+command.
+
+=item I<$entry>-E<gt>B<configure>(?I<option>?, ?I<value, option, value, ...>?)
+
+Query or modify the configuration options of the widget.
+If no I<option> is specified, returns a list describing all of
+the available options for $entry (see L<Tk::configure> for
+information on the format of this list).  If I<option> is specified
+with no I<value>, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no I<option> is specified).  If
+one or more I<option-value> pairs are specified, then the command
+modifies the given widget option(s) to have the given value(s);  in
+this case the command returns an empty string.
+I<Option> may have any of the values accepted by the B<entry>
+command.
 
 =item I<$entry>-E<gt>B<delete>(I<first, >?I<last>?)
 
@@ -297,6 +434,12 @@ Returns an empty string.
 
 =back
 
+=item I<$entry>-E<gt>B<validate>
+
+This command is used to force an evaluation of the B<validateCommand>
+independent of the conditions specified by the B<validate> option.  It
+returns 0 or 1.
+
 =item I<$entry>-E<gt>B<xview>(I<args>)
 
 This command is used to query and change the horizontal position of the
@@ -321,13 +464,13 @@ option.
 Adjusts the view in the window so that the character given by I<index>
 is displayed at the left edge of the window.
 
-=item I<$entry>-E<gt>B<xview>(B<moveto> =E<gt> I<fraction>)
+=item I<$entry>-E<gt>B<xviewMoveto>(I<fraction>)
 
 Adjusts the view in the window so that the character I<fraction> of the
 way through the text appears at the left edge of the window.
 I<Fraction> must be a fraction between 0 and 1.
 
-=item I<$entry>-E<gt>B<xview>(B<scroll> =E<gt> I<number, what>)
+=item I<$entry>-E<gt>B<xviewScroll>(I<number, what>)
 
 This method shifts the view in the window left or right according to
 I<number> and I<what>.
@@ -340,8 +483,6 @@ B<pages> then the view adjusts by I<number> screenfuls.
 If I<number> is negative then characters farther to the left
 become visible;  if it is positive then characters farther to the right
 become visible.
-
-=back
 
 =back
 

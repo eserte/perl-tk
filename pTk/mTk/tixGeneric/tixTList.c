@@ -708,11 +708,13 @@ WidgetDestroy(clientData)
 
     if (wPtr->entList.numItems > 0) {
 	ListEntry * fromPtr=NULL, *toPtr=NULL;
-	char * argv[2];
-	argv[0] = "0";
-	argv[1] = "end";
+	Tcl_Obj *objv[2];
+	objv[0] = Tcl_NewIntObj(0);
+	objv[1] = Tcl_NewStringObj("end",3);
 
-	Tix_TLGetFromTo(wPtr->dispData.interp, wPtr, 2, argv, &fromPtr,&toPtr);
+	Tix_TLGetFromTo(wPtr->dispData.interp, wPtr, 2, objv, &fromPtr,&toPtr);
+	Tcl_DecrRefCount(objv[0]);
+	Tcl_DecrRefCount(objv[1]);
 	Tcl_ResetResult(wPtr->dispData.interp);
 
 	if (fromPtr && toPtr) {
@@ -2159,7 +2161,8 @@ Realloc(wPtr, new_size)
     if (new_size == wPtr->numRowAllocd) {
 	return;
     }
-    wPtr->rows = (ListRow*)ckrealloc((char *)(wPtr->rows), sizeof(ListRow)*new_size);
+    wPtr->rows = (ListRow*)ckrealloc( (char *)wPtr->rows,
+                                      sizeof(ListRow)*new_size);
     wPtr->numRowAllocd = new_size;
 }
 

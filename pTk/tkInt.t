@@ -1,5 +1,6 @@
 #ifdef _TKINT
 VVAR(Tk_Uid,tkActiveUid,V_tkActiveUid)
+VVAR(Tk_ImageType,tkBitmapImageType,V_tkBitmapImageType)
 VVAR(Tk_Uid,tkDisabledUid,V_tkDisabledUid)
 VVAR(TkDisplay *,tkDisplayList,V_tkDisplayList)
 VVAR(TkMainInfo		*,tkMainWindowList,V_tkMainWindowList)
@@ -27,9 +28,24 @@ VFUNC(void,TkBindFree,V_TkBindFree,_ANSI_ARGS_((TkMainInfo *mainPtr)))
 VFUNC(void,TkBindInit,V_TkBindInit,_ANSI_ARGS_((TkMainInfo *mainPtr)))
 #endif
 
+#ifndef TkCanvPostscriptCmd
+VFUNC(int,TkCanvPostscriptCmd,V_TkCanvPostscriptCmd,_ANSI_ARGS_((struct TkCanvas *canvasPtr,
+			    Tcl_Interp *interp, int argc, Arg *args)))
+#endif
+
 #ifndef TkChangeEventWindow
 VFUNC(void,TkChangeEventWindow,V_TkChangeEventWindow,_ANSI_ARGS_((XEvent *eventPtr,
 			    TkWindow *winPtr)))
+#endif
+
+#ifndef TkClassOption
+VFUNC(void,TkClassOption,V_TkClassOption,_ANSI_ARGS_((Tk_Window tkwin,
+			    char *defaultname, int *argcp, Arg **argvp)))
+#endif
+
+#ifndef TkClassOptionObj
+VFUNC(void,TkClassOptionObj,V_TkClassOptionObj,_ANSI_ARGS_((Tk_Window tkwin,
+			    char *defaultname, int *objcp, Tcl_Obj * CONST **objvp)))
 #endif
 
 #ifndef TkClipBox
@@ -115,6 +131,12 @@ VFUNC(int,TkFindStateNum,V_TkFindStateNum,_ANSI_ARGS_((Tcl_Interp *interp,
 			    CONST char *strKey)))
 #endif
 
+#ifndef TkFindStateNumObj
+VFUNC(int,TkFindStateNumObj,V_TkFindStateNumObj,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tcl_Obj *optionPtr, CONST TkStateMap *mapPtr,
+			    Tcl_Obj *keyPtr)))
+#endif
+
 #ifndef TkFindStateString
 VFUNC(char *,TkFindStateString,V_TkFindStateString,_ANSI_ARGS_((
 			    CONST TkStateMap *mapPtr, int numKey)))
@@ -155,6 +177,12 @@ VFUNC(void,TkFreeWindowId,V_TkFreeWindowId,_ANSI_ARGS_((TkDisplay *dispPtr,
 			    Window w)))
 #endif
 
+#ifndef TkGetBitmapData
+VFUNC(char *,TkGetBitmapData,V_TkGetBitmapData,_ANSI_ARGS_((Tcl_Interp *interp,
+			    char *string, char *fileName, int *widthPtr,
+			    int *heightPtr, int *hotXPtr, int *hotYPtr)))
+#endif
+
 #ifndef TkGetCursorByName
 VFUNC(TkCursor *,TkGetCursorByName,V_TkGetCursorByName,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, Arg string)))
@@ -184,9 +212,19 @@ VFUNC(int,TkGetInterpNames,V_TkGetInterpNames,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin)))
 #endif
 
+#ifndef TkGetPixelsFromObj
+VFUNC(int,TkGetPixelsFromObj,V_TkGetPixelsFromObj,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tcl_Obj *obj, int *intPtr)))
+#endif
+
 #ifndef TkGetPointerCoords
 VFUNC(void,TkGetPointerCoords,V_TkGetPointerCoords,_ANSI_ARGS_((Tk_Window tkwin,
 			    int *xPtr, int *yPtr)))
+#endif
+
+#ifndef TkGetScreenMMFromObj
+VFUNC(int,TkGetScreenMMFromObj,V_TkGetScreenMMFromObj,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tcl_Obj *obj, double *doublePtr)))
 #endif
 
 #ifndef TkGetServerInfo
@@ -234,6 +272,13 @@ VFUNC(int,TkPointerEvent,V_TkPointerEvent,_ANSI_ARGS_((XEvent *eventPtr,
 #ifndef TkPositionInTree
 VFUNC(int,TkPositionInTree,V_TkPositionInTree,_ANSI_ARGS_((TkWindow *winPtr,
 			    TkWindow *treePtr)))
+#endif
+
+#ifndef TkPostscriptImage
+VFUNC(int,TkPostscriptImage,V_TkPostscriptImage,_ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Tk_PostscriptInfo psInfo,
+			    XImage *ximage, int x, int y, int width,
+			    int height)))
 #endif
 
 #ifndef TkPutImage

@@ -1,7 +1,7 @@
 package Tk::Submethods;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Submethods.pm#11$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Submethods.pm#14 $
 
 sub import
 {
@@ -12,11 +12,11 @@ sub import
   {
    my $fn = shift;
    my $sm = shift;
-   my $sub;
-   foreach $sub (@{$sm})
+   foreach my $sub (@{$sm})
     {
      my ($suffix) = $sub =~ /(\w+)$/;
-     *{$package.'::'."$fn\u$suffix"} = sub { shift->$fn($sub,@_) };
+     my $pfn = $package.'::'.$fn;
+     *{$pfn."\u$suffix"} = sub { shift->$pfn($sub,@_) };
     }
   }
 }
