@@ -118,6 +118,7 @@ while ($_ = &getline)
 
   s/tclStubs\.t(\w+)/TkeventVptr->V_T$1/;
 
+  s/\bpanic\b/Tcl_Panic/g;
 
   s/\b(\w+Ptr)->internalRep\./TclObjInternal($1)->/g;
 

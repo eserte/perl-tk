@@ -1,4 +1,4 @@
-/* 
+/*
  * tkImgUtil.c --
  *
  *	This file contains image related utility functions.
@@ -46,7 +46,7 @@ TkAlignImageData(image, alignment, bitOrder)
     int i, j;
 
     if (image->bits_per_pixel != 1) {
-	panic("TkAlignImageData: Can't handle image depths greater than 1.");
+	Tcl_Panic("TkAlignImageData: Can't handle image depths greater than 1.");
     }
 
     /*

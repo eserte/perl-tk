@@ -89,9 +89,6 @@ EXTERN int  LangCmpOpt  _ANSI_ARGS_((CONST char *opt,CONST char *arg,size_t leng
 EXTERN void LangFreeArg _ANSI_ARGS_((Tcl_Obj *,Tcl_FreeProc *freeProc));
 EXTERN Tcl_Obj *LangCopyArg _ANSI_ARGS_((Tcl_Obj *));
 
-#define panic Tcl_Panic
-
-
 EXTERN int  LangNull _ANSI_ARGS_((Tcl_Obj *));
 
 EXTERN void		TclpGetTime  _ANSI_ARGS_((Tcl_Time *time));

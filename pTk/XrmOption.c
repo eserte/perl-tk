@@ -440,8 +440,8 @@ register TkWindow *winPtr;        /* Window to be cleaned up. */
 
  XrmOptionClassChanged(winPtr);
 
- if ((winPtr->mainPtr->winPtr == winPtr)
-     && (winPtr->mainPtr->optionRootPtr != NULL))
+ if ((winPtr->mainPtr != NULL) && (winPtr->mainPtr->winPtr == winPtr)
+	    && (winPtr->mainPtr->optionRootPtr != NULL))
   {
    if (winPtr->dispPtr->refCount <= 0)
     {

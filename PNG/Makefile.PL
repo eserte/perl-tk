@@ -80,7 +80,7 @@ else
 package MY;
 
 sub pasthru {
-  qq[PASTHRU="CC=$Config::Config{cc} $Config::Config{cccdlflags}" RANLIB=$Config::Config{ranlib}];
+  qq[PASTHRU="CC=$Config::Config{cc} $Config::Config{cccdlflags}" RANLIB=\"$Config::Config{ranlib}\"];
 }
 
 sub postamble {

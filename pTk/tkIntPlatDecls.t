@@ -44,10 +44,6 @@ VFUNC(void,TkGenWMDestroyEvent,V_TkGenWMDestroyEvent,_ANSI_ARGS_((Tk_Window tkwi
 #endif /* #ifndef TkGenWMDestroyEvent */
 
 #ifndef TkGenerateActivateEvents
-#ifdef __WIN32__
-VFUNC(void,TkGenerateActivateEvents,V_TkGenerateActivateEvents,_ANSI_ARGS_((
-				TkWindow * winPtr, int active)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkGenerateActivateEvents,V_TkGenerateActivateEvents,_ANSI_ARGS_((
 				TkWindow * winPtr, int active)))
@@ -56,6 +52,10 @@ VFUNC(void,TkGenerateActivateEvents,V_TkGenerateActivateEvents,_ANSI_ARGS_((
 VFUNC(void,TkGenerateActivateEvents,V_TkGenerateActivateEvents,_ANSI_ARGS_((
 				TkWindow * winPtr, int active)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkGenerateActivateEvents,V_TkGenerateActivateEvents,_ANSI_ARGS_((
+				TkWindow * winPtr, int active)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkGenerateActivateEvents */
 
 #ifndef TkGenerateButtonEvent
@@ -497,15 +497,15 @@ VFUNC(int,TkMacZoomToplevel,V_TkMacZoomToplevel,_ANSI_ARGS_((WindowPtr whichWind
 #endif /* #ifndef TkMacZoomToplevel */
 
 #ifndef TkPointerDeadWindow
-#ifdef __WIN32__
-VFUNC(void,TkPointerDeadWindow,V_TkPointerDeadWindow,_ANSI_ARGS_((TkWindow * winPtr)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkPointerDeadWindow,V_TkPointerDeadWindow,_ANSI_ARGS_((TkWindow * winPtr)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,TkPointerDeadWindow,V_TkPointerDeadWindow,_ANSI_ARGS_((TkWindow * winPtr)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkPointerDeadWindow,V_TkPointerDeadWindow,_ANSI_ARGS_((TkWindow * winPtr)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkPointerDeadWindow */
 
 #ifndef TkSendCleanup
@@ -755,15 +755,15 @@ VFUNC(int,TkpCmapStressed,V_TkpCmapStressed,_ANSI_ARGS_((Tk_Window tkwin,
 #endif /* #ifndef TkpCmapStressed */
 
 #ifndef TkpGetMS
-#ifdef __WIN32__
-VFUNC(unsigned long,TkpGetMS,V_TkpGetMS,_ANSI_ARGS_((void)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(unsigned long,TkpGetMS,V_TkpGetMS,_ANSI_ARGS_((void)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(unsigned long,TkpGetMS,V_TkpGetMS,_ANSI_ARGS_((void)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(unsigned long,TkpGetMS,V_TkpGetMS,_ANSI_ARGS_((void)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkpGetMS */
 
 #ifndef TkpIsWindowFloating
@@ -783,38 +783,38 @@ VFUNC(void,TkpPrintWindowId,V_TkpPrintWindowId,_ANSI_ARGS_((char * buf,
 #endif /* #ifndef TkpPrintWindowId */
 
 #ifndef TkpScanWindowId
-#ifdef __WIN32__
-VFUNC(int,TkpScanWindowId,V_TkpScanWindowId,_ANSI_ARGS_((Tcl_Interp * interp,
-				Tcl_Obj * string, Window * idPtr)))
-#endif /* #ifdef __WIN32__ */
 #if !(defined(__WIN32__) || defined(MAC_TCL) || defined(MAC_OSX_TK))
 VFUNC(int,TkpScanWindowId,V_TkpScanWindowId,_ANSI_ARGS_((Tcl_Interp * interp,
 				Tcl_Obj *string, Window * idPtr)))
 #endif /* #if !(defined(__WIN32__) || defined(MAC_TCL) || defined(MAC_OSX_TK)) */
+#ifdef __WIN32__
+VFUNC(int,TkpScanWindowId,V_TkpScanWindowId,_ANSI_ARGS_((Tcl_Interp * interp,
+				Tcl_Obj * string, Window * idPtr)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkpScanWindowId */
 
 #ifndef TkpSetCapture
-#ifdef __WIN32__
-VFUNC(void,TkpSetCapture,V_TkpSetCapture,_ANSI_ARGS_((TkWindow * winPtr)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkpSetCapture,V_TkpSetCapture,_ANSI_ARGS_((TkWindow * winPtr)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,TkpSetCapture,V_TkpSetCapture,_ANSI_ARGS_((TkWindow * winPtr)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkpSetCapture,V_TkpSetCapture,_ANSI_ARGS_((TkWindow * winPtr)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkpSetCapture */
 
 #ifndef TkpSetCursor
-#ifdef __WIN32__
-VFUNC(void,TkpSetCursor,V_TkpSetCursor,_ANSI_ARGS_((TkpCursor cursor)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkpSetCursor,V_TkpSetCursor,_ANSI_ARGS_((TkpCursor cursor)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,TkpSetCursor,V_TkpSetCursor,_ANSI_ARGS_((TkpCursor cursor)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkpSetCursor,V_TkpSetCursor,_ANSI_ARGS_((TkpCursor cursor)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkpSetCursor */
 
 #ifndef TkpSync
@@ -824,10 +824,10 @@ VFUNC(void,TkpSync,V_TkpSync,_ANSI_ARGS_((Display * display)))
 #endif /* #ifndef TkpSync */
 
 #ifndef TkpWmSetState
-#ifdef __WIN32__
-VFUNC(void,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
+#if !(defined(__WIN32__) || defined(MAC_TCL) || defined(MAC_OSX_TK))
+VFUNC(int,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
 				int state)))
-#endif /* #ifdef __WIN32__ */
+#endif /* #if !(defined(__WIN32__) || defined(MAC_TCL) || defined(MAC_OSX_TK)) */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
 				int state)))
@@ -836,10 +836,10 @@ VFUNC(void,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
 VFUNC(void,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
 				int state)))
 #endif /* #ifdef MAC_TCL */
-#if !(defined(__WIN32__) || defined(MAC_TCL) || defined(MAC_OSX_TK))
-VFUNC(int,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
+#ifdef __WIN32__
+VFUNC(void,TkpWmSetState,V_TkpWmSetState,_ANSI_ARGS_((TkWindow * winPtr,
 				int state)))
-#endif /* #if !(defined(__WIN32__) || defined(MAC_TCL) || defined(MAC_OSX_TK)) */
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkpWmSetState */
 
 #endif /* _TKINTPLATDECLS */

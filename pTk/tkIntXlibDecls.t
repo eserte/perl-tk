@@ -1,12 +1,5 @@
 #ifdef _TKINTXLIBDECLS
 #ifndef TkPutImage
-#ifdef __WIN32__
-VFUNC(void,TkPutImage,V_TkPutImage,_ANSI_ARGS_((unsigned long * colors,
-				int ncolors, Display* display, Drawable d,
-				GC gc, XImage* image, int src_x, int src_y,
-				int dest_x, int dest_y, unsigned int width,
-				unsigned int height)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkPutImage,V_TkPutImage,_ANSI_ARGS_((unsigned long * colors,
 				int ncolors, Display* display, Drawable d,
@@ -21,13 +14,16 @@ VFUNC(void,TkPutImage,V_TkPutImage,_ANSI_ARGS_((unsigned long * colors,
 				int dest_x, int dest_y, unsigned int width,
 				unsigned int height)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkPutImage,V_TkPutImage,_ANSI_ARGS_((unsigned long * colors,
+				int ncolors, Display* display, Drawable d,
+				GC gc, XImage* image, int src_x, int src_y,
+				int dest_x, int dest_y, unsigned int width,
+				unsigned int height)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkPutImage */
 
 #ifndef XAllocColor
-#ifdef __WIN32__
-VFUNC(Status,XAllocColor,V_XAllocColor,_ANSI_ARGS_((Display* d, Colormap c,
-				XColor* xp)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Status,XAllocColor,V_XAllocColor,_ANSI_ARGS_((Display* d, Colormap c,
 				XColor* xp)))
@@ -36,25 +32,25 @@ VFUNC(Status,XAllocColor,V_XAllocColor,_ANSI_ARGS_((Display* d, Colormap c,
 VFUNC(Status,XAllocColor,V_XAllocColor,_ANSI_ARGS_((Display* d, Colormap c,
 				XColor* xp)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Status,XAllocColor,V_XAllocColor,_ANSI_ARGS_((Display* d, Colormap c,
+				XColor* xp)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XAllocColor */
 
 #ifndef XBell
-#ifdef __WIN32__
-VFUNC(void,XBell,V_XBell,_ANSI_ARGS_((Display* d, int i)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XBell,V_XBell,_ANSI_ARGS_((Display* d, int i)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XBell,V_XBell,_ANSI_ARGS_((Display* d, int i)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XBell,V_XBell,_ANSI_ARGS_((Display* d, int i)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XBell */
 
 #ifndef XChangeGC
-#ifdef __WIN32__
-VFUNC(void,XChangeGC,V_XChangeGC,_ANSI_ARGS_((Display * d, GC gc,
-				unsigned long mask, XGCValues * values)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XChangeGC,V_XChangeGC,_ANSI_ARGS_((Display * d, GC gc,
 				unsigned long mask, XGCValues * values)))
@@ -63,14 +59,13 @@ VFUNC(void,XChangeGC,V_XChangeGC,_ANSI_ARGS_((Display * d, GC gc,
 VFUNC(void,XChangeGC,V_XChangeGC,_ANSI_ARGS_((Display * d, GC gc,
 				unsigned long mask, XGCValues * values)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XChangeGC,V_XChangeGC,_ANSI_ARGS_((Display * d, GC gc,
+				unsigned long mask, XGCValues * values)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XChangeGC */
 
 #ifndef XChangeProperty
-#ifdef __WIN32__
-VFUNC(void,XChangeProperty,V_XChangeProperty,_ANSI_ARGS_((Display* d, Window w,
-				Atom a1, Atom a2, int i1, int i2,
-				_Xconst unsigned char* c, int i3)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XChangeProperty,V_XChangeProperty,_ANSI_ARGS_((Display* d, Window w,
 				Atom a1, Atom a2, int i1, int i2,
@@ -81,14 +76,14 @@ VFUNC(void,XChangeProperty,V_XChangeProperty,_ANSI_ARGS_((Display* d, Window w,
 				Atom a1, Atom a2, int i1, int i2,
 				_Xconst unsigned char* c, int i3)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XChangeProperty,V_XChangeProperty,_ANSI_ARGS_((Display* d, Window w,
+				Atom a1, Atom a2, int i1, int i2,
+				_Xconst unsigned char* c, int i3)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XChangeProperty */
 
 #ifndef XChangeWindowAttributes
-#ifdef __WIN32__
-VFUNC(void,XChangeWindowAttributes,V_XChangeWindowAttributes,_ANSI_ARGS_((Display* d,
-				Window w, unsigned long ul,
-				XSetWindowAttributes* x)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XChangeWindowAttributes,V_XChangeWindowAttributes,_ANSI_ARGS_((Display* d,
 				Window w, unsigned long ul,
@@ -99,25 +94,26 @@ VFUNC(void,XChangeWindowAttributes,V_XChangeWindowAttributes,_ANSI_ARGS_((Displa
 				Window w, unsigned long ul,
 				XSetWindowAttributes* x)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XChangeWindowAttributes,V_XChangeWindowAttributes,_ANSI_ARGS_((Display* d,
+				Window w, unsigned long ul,
+				XSetWindowAttributes* x)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XChangeWindowAttributes */
 
 #ifndef XClearWindow
-#ifdef __WIN32__
-VFUNC(void,XClearWindow,V_XClearWindow,_ANSI_ARGS_((Display* d, Window w)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XClearWindow,V_XClearWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XClearWindow,V_XClearWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XClearWindow,V_XClearWindow,_ANSI_ARGS_((Display* d, Window w)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XClearWindow */
 
 #ifndef XConfigureWindow
-#ifdef __WIN32__
-VFUNC(void,XConfigureWindow,V_XConfigureWindow,_ANSI_ARGS_((Display* d, Window w,
-				unsigned int i, XWindowChanges* x)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XConfigureWindow,V_XConfigureWindow,_ANSI_ARGS_((Display* d, Window w,
 				unsigned int i, XWindowChanges* x)))
@@ -126,15 +122,13 @@ VFUNC(void,XConfigureWindow,V_XConfigureWindow,_ANSI_ARGS_((Display* d, Window w
 VFUNC(void,XConfigureWindow,V_XConfigureWindow,_ANSI_ARGS_((Display* d, Window w,
 				unsigned int i, XWindowChanges* x)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XConfigureWindow,V_XConfigureWindow,_ANSI_ARGS_((Display* d, Window w,
+				unsigned int i, XWindowChanges* x)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XConfigureWindow */
 
 #ifndef XCopyArea
-#ifdef __WIN32__
-VFUNC(void,XCopyArea,V_XCopyArea,_ANSI_ARGS_((Display* d, Drawable dr1,
-				Drawable dr2, GC g, int i1, int i2,
-				unsigned int ui1, unsigned int ui2, int i3,
-				int i4)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XCopyArea,V_XCopyArea,_ANSI_ARGS_((Display* d, Drawable dr1,
 				Drawable dr2, GC g, int i1, int i2,
@@ -147,15 +141,15 @@ VFUNC(void,XCopyArea,V_XCopyArea,_ANSI_ARGS_((Display* d, Drawable dr1,
 				unsigned int ui1, unsigned int ui2, int i3,
 				int i4)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XCopyArea,V_XCopyArea,_ANSI_ARGS_((Display* d, Drawable dr1,
+				Drawable dr2, GC g, int i1, int i2,
+				unsigned int ui1, unsigned int ui2, int i3,
+				int i4)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCopyArea */
 
 #ifndef XCopyPlane
-#ifdef __WIN32__
-VFUNC(void,XCopyPlane,V_XCopyPlane,_ANSI_ARGS_((Display* d, Drawable dr1,
-				Drawable dr2, GC g, int i1, int i2,
-				unsigned int ui1, unsigned int ui2, int i3,
-				int i4, unsigned long ul)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XCopyPlane,V_XCopyPlane,_ANSI_ARGS_((Display* d, Drawable dr1,
 				Drawable dr2, GC g, int i1, int i2,
@@ -168,14 +162,15 @@ VFUNC(void,XCopyPlane,V_XCopyPlane,_ANSI_ARGS_((Display* d, Drawable dr1,
 				unsigned int ui1, unsigned int ui2, int i3,
 				int i4, unsigned long ul)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XCopyPlane,V_XCopyPlane,_ANSI_ARGS_((Display* d, Drawable dr1,
+				Drawable dr2, GC g, int i1, int i2,
+				unsigned int ui1, unsigned int ui2, int i3,
+				int i4, unsigned long ul)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCopyPlane */
 
 #ifndef XCreateBitmapFromData
-#ifdef __WIN32__
-VFUNC(Pixmap,XCreateBitmapFromData,V_XCreateBitmapFromData,_ANSI_ARGS_((Display* display,
-				Drawable d, _Xconst char* data,
-				unsigned int width, unsigned int height)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Pixmap,XCreateBitmapFromData,V_XCreateBitmapFromData,_ANSI_ARGS_((Display* display,
 				Drawable d, _Xconst char* data,
@@ -186,13 +181,14 @@ VFUNC(Pixmap,XCreateBitmapFromData,V_XCreateBitmapFromData,_ANSI_ARGS_((Display*
 				Drawable d, _Xconst char* data,
 				unsigned int width, unsigned int height)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Pixmap,XCreateBitmapFromData,V_XCreateBitmapFromData,_ANSI_ARGS_((Display* display,
+				Drawable d, _Xconst char* data,
+				unsigned int width, unsigned int height)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCreateBitmapFromData */
 
 #ifndef XCreateColormap
-#ifdef __WIN32__
-VFUNC(Colormap,XCreateColormap,V_XCreateColormap,_ANSI_ARGS_((Display* d, Window w,
-				Visual* v, int i)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Colormap,XCreateColormap,V_XCreateColormap,_ANSI_ARGS_((Display* d, Window w,
 				Visual* v, int i)))
@@ -201,13 +197,13 @@ VFUNC(Colormap,XCreateColormap,V_XCreateColormap,_ANSI_ARGS_((Display* d, Window
 VFUNC(Colormap,XCreateColormap,V_XCreateColormap,_ANSI_ARGS_((Display* d, Window w,
 				Visual* v, int i)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Colormap,XCreateColormap,V_XCreateColormap,_ANSI_ARGS_((Display* d, Window w,
+				Visual* v, int i)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCreateColormap */
 
 #ifndef XCreateGC
-#ifdef __WIN32__
-VFUNC(GC,XCreateGC,V_XCreateGC,_ANSI_ARGS_((Display* display, Drawable d,
-				unsigned long valuemask, XGCValues* values)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(GC,XCreateGC,V_XCreateGC,_ANSI_ARGS_((Display* display, Drawable d,
 				unsigned long valuemask, XGCValues* values)))
@@ -216,6 +212,10 @@ VFUNC(GC,XCreateGC,V_XCreateGC,_ANSI_ARGS_((Display* display, Drawable d,
 VFUNC(GC,XCreateGC,V_XCreateGC,_ANSI_ARGS_((Display* display, Drawable d,
 				unsigned long valuemask, XGCValues* values)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(GC,XCreateGC,V_XCreateGC,_ANSI_ARGS_((Display* display, Drawable d,
+				unsigned long valuemask, XGCValues* values)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCreateGC */
 
 #ifndef XCreateGlyphCursor
@@ -227,24 +227,18 @@ VFUNC(Cursor,XCreateGlyphCursor,V_XCreateGlyphCursor,_ANSI_ARGS_((Display* d, Fo
 #endif /* #ifndef XCreateGlyphCursor */
 
 #ifndef XCreateIC
-#ifdef __WIN32__
-VFUNC(XIC,XCreateIC,V_XCreateIC,_ANSI_ARGS_((void)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(XIC,XCreateIC,V_XCreateIC,_ANSI_ARGS_((void)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(XIC,XCreateIC,V_XCreateIC,_ANSI_ARGS_((void)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(XIC,XCreateIC,V_XCreateIC,_ANSI_ARGS_((void)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCreateIC */
 
 #ifndef XCreateImage
-#ifdef __WIN32__
-VFUNC(XImage *,XCreateImage,V_XCreateImage,_ANSI_ARGS_((Display* d, Visual* v,
-				unsigned int ui1, int i1, int i2, char* cp,
-				unsigned int ui2, unsigned int ui3, int i3,
-				int i4)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(XImage *,XCreateImage,V_XCreateImage,_ANSI_ARGS_((Display* d, Visual* v,
 				unsigned int ui1, int i1, int i2, char* cp,
@@ -257,6 +251,12 @@ VFUNC(XImage *,XCreateImage,V_XCreateImage,_ANSI_ARGS_((Display* d, Visual* v,
 				unsigned int ui2, unsigned int ui3, int i3,
 				int i4)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(XImage *,XCreateImage,V_XCreateImage,_ANSI_ARGS_((Display* d, Visual* v,
+				unsigned int ui1, int i1, int i2, char* cp,
+				unsigned int ui2, unsigned int ui3, int i3,
+				int i4)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XCreateImage */
 
 #ifndef XCreatePixmapCursor
@@ -268,10 +268,6 @@ VFUNC(Cursor,XCreatePixmapCursor,V_XCreatePixmapCursor,_ANSI_ARGS_((Display* d,
 #endif /* #ifndef XCreatePixmapCursor */
 
 #ifndef XDefineCursor
-#ifdef __WIN32__
-VFUNC(void,XDefineCursor,V_XDefineCursor,_ANSI_ARGS_((Display* d, Window w,
-				Cursor c)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XDefineCursor,V_XDefineCursor,_ANSI_ARGS_((Display* d, Window w,
 				Cursor c)))
@@ -280,6 +276,10 @@ VFUNC(void,XDefineCursor,V_XDefineCursor,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(void,XDefineCursor,V_XDefineCursor,_ANSI_ARGS_((Display* d, Window w,
 				Cursor c)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XDefineCursor,V_XDefineCursor,_ANSI_ARGS_((Display* d, Window w,
+				Cursor c)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XDefineCursor */
 
 #ifndef XDeleteProperty
@@ -296,23 +296,18 @@ VFUNC(void,XDestroyIC,V_XDestroyIC,_ANSI_ARGS_((XIC x)))
 #endif /* #ifndef XDestroyIC */
 
 #ifndef XDestroyWindow
-#ifdef __WIN32__
-VFUNC(void,XDestroyWindow,V_XDestroyWindow,_ANSI_ARGS_((Display* d, Window w)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XDestroyWindow,V_XDestroyWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XDestroyWindow,V_XDestroyWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XDestroyWindow,V_XDestroyWindow,_ANSI_ARGS_((Display* d, Window w)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XDestroyWindow */
 
 #ifndef XDrawArc
-#ifdef __WIN32__
-VFUNC(void,XDrawArc,V_XDrawArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
-				int i1, int i2, unsigned int ui1,
-				unsigned int ui2, int i3, int i4)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XDrawArc,V_XDrawArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 				int i1, int i2, unsigned int ui1,
@@ -323,13 +318,14 @@ VFUNC(void,XDrawArc,V_XDrawArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 				int i1, int i2, unsigned int ui1,
 				unsigned int ui2, int i3, int i4)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XDrawArc,V_XDrawArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
+				int i1, int i2, unsigned int ui1,
+				unsigned int ui2, int i3, int i4)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XDrawArc */
 
 #ifndef XDrawLine
-#ifdef __WIN32__
-VFUNC(void,XDrawLine,V_XDrawLine,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
-				int x1, int y1, int x2, int y2)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XDrawLine,V_XDrawLine,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 				int x1, int y1, int x2, int y2)))
@@ -338,13 +334,13 @@ VFUNC(void,XDrawLine,V_XDrawLine,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 VFUNC(void,XDrawLine,V_XDrawLine,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 				int x1, int y1, int x2, int y2)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XDrawLine,V_XDrawLine,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
+				int x1, int y1, int x2, int y2)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XDrawLine */
 
 #ifndef XDrawLines
-#ifdef __WIN32__
-VFUNC(void,XDrawLines,V_XDrawLines,_ANSI_ARGS_((Display* d, Drawable dr,
-				GC g, XPoint* x, int i1, int i2)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XDrawLines,V_XDrawLines,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, XPoint* x, int i1, int i2)))
@@ -353,6 +349,10 @@ VFUNC(void,XDrawLines,V_XDrawLines,_ANSI_ARGS_((Display* d, Drawable dr,
 VFUNC(void,XDrawLines,V_XDrawLines,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, XPoint* x, int i1, int i2)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XDrawLines,V_XDrawLines,_ANSI_ARGS_((Display* d, Drawable dr,
+				GC g, XPoint* x, int i1, int i2)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XDrawLines */
 
 #ifndef XDrawPoint
@@ -380,11 +380,6 @@ VFUNC(void,XDrawPoints,V_XDrawPoints,_ANSI_ARGS_((Display* display,
 #endif /* #ifndef XDrawPoints */
 
 #ifndef XDrawRectangle
-#ifdef __WIN32__
-VFUNC(void,XDrawRectangle,V_XDrawRectangle,_ANSI_ARGS_((Display* d, Drawable dr,
-				GC g, int i1, int i2, unsigned int ui1,
-				unsigned int ui2)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XDrawRectangle,V_XDrawRectangle,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, int i1, int i2, unsigned int ui1,
@@ -395,6 +390,11 @@ VFUNC(void,XDrawRectangle,V_XDrawRectangle,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, int i1, int i2, unsigned int ui1,
 				unsigned int ui2)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XDrawRectangle,V_XDrawRectangle,_ANSI_ARGS_((Display* d, Drawable dr,
+				GC g, int i1, int i2, unsigned int ui1,
+				unsigned int ui2)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XDrawRectangle */
 
 #ifndef XDrawSegments
@@ -411,11 +411,6 @@ VFUNC(void,XDrawSegments,V_XDrawSegments,_ANSI_ARGS_((Display * display,
 #endif /* #ifndef XDrawSegments */
 
 #ifndef XFillArc
-#ifdef __WIN32__
-VFUNC(void,XFillArc,V_XFillArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
-				int i1, int i2, unsigned int ui1,
-				unsigned int ui2, int i3, int i4)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFillArc,V_XFillArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 				int i1, int i2, unsigned int ui1,
@@ -426,13 +421,14 @@ VFUNC(void,XFillArc,V_XFillArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
 				int i1, int i2, unsigned int ui1,
 				unsigned int ui2, int i3, int i4)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFillArc,V_XFillArc,_ANSI_ARGS_((Display* d, Drawable dr, GC g,
+				int i1, int i2, unsigned int ui1,
+				unsigned int ui2, int i3, int i4)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFillArc */
 
 #ifndef XFillPolygon
-#ifdef __WIN32__
-VFUNC(void,XFillPolygon,V_XFillPolygon,_ANSI_ARGS_((Display* d, Drawable dr,
-				GC g, XPoint* x, int i1, int i2, int i3)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFillPolygon,V_XFillPolygon,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, XPoint* x, int i1, int i2, int i3)))
@@ -441,14 +437,13 @@ VFUNC(void,XFillPolygon,V_XFillPolygon,_ANSI_ARGS_((Display* d, Drawable dr,
 VFUNC(void,XFillPolygon,V_XFillPolygon,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, XPoint* x, int i1, int i2, int i3)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFillPolygon,V_XFillPolygon,_ANSI_ARGS_((Display* d, Drawable dr,
+				GC g, XPoint* x, int i1, int i2, int i3)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFillPolygon */
 
 #ifndef XFillRectangle
-#ifdef __WIN32__
-VFUNC(void,XFillRectangle,V_XFillRectangle,_ANSI_ARGS_((Display* display,
-				Drawable d, GC gc, int x, int y,
-				unsigned int width, unsigned int height)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFillRectangle,V_XFillRectangle,_ANSI_ARGS_((Display* display,
 				Drawable d, GC gc, int x, int y,
@@ -459,13 +454,14 @@ VFUNC(void,XFillRectangle,V_XFillRectangle,_ANSI_ARGS_((Display* display,
 				Drawable d, GC gc, int x, int y,
 				unsigned int width, unsigned int height)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFillRectangle,V_XFillRectangle,_ANSI_ARGS_((Display* display,
+				Drawable d, GC gc, int x, int y,
+				unsigned int width, unsigned int height)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFillRectangle */
 
 #ifndef XFillRectangles
-#ifdef __WIN32__
-VFUNC(void,XFillRectangles,V_XFillRectangles,_ANSI_ARGS_((Display* d, Drawable dr,
-				GC g, XRectangle* x, int i)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFillRectangles,V_XFillRectangles,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, XRectangle* x, int i)))
@@ -474,6 +470,10 @@ VFUNC(void,XFillRectangles,V_XFillRectangles,_ANSI_ARGS_((Display* d, Drawable d
 VFUNC(void,XFillRectangles,V_XFillRectangles,_ANSI_ARGS_((Display* d, Drawable dr,
 				GC g, XRectangle* x, int i)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFillRectangles,V_XFillRectangles,_ANSI_ARGS_((Display* d, Drawable dr,
+				GC g, XRectangle* x, int i)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFillRectangles */
 
 #ifndef XFilterEvent
@@ -483,36 +483,32 @@ VFUNC(Bool,XFilterEvent,V_XFilterEvent,_ANSI_ARGS_((XEvent* x, Window w)))
 #endif /* #ifndef XFilterEvent */
 
 #ifndef XForceScreenSaver
+#ifdef MAC_OSX_TK
+VFUNC(void,XForceScreenSaver,V_XForceScreenSaver,_ANSI_ARGS_((Display* display,
+				int mode)))
+#endif /* #ifdef MAC_OSX_TK */
+#ifdef MAC_TCL
+VFUNC(void,XForceScreenSaver,V_XForceScreenSaver,_ANSI_ARGS_((Display* display,
+				int mode)))
+#endif /* #ifdef MAC_TCL */
 #ifdef __WIN32__
 VFUNC(void,XForceScreenSaver,V_XForceScreenSaver,_ANSI_ARGS_((Display* d, int i)))
 #endif /* #ifdef __WIN32__ */
-#ifdef MAC_OSX_TK
-VFUNC(void,XForceScreenSaver,V_XForceScreenSaver,_ANSI_ARGS_((Display* display,
-				int mode)))
-#endif /* #ifdef MAC_OSX_TK */
-#ifdef MAC_TCL
-VFUNC(void,XForceScreenSaver,V_XForceScreenSaver,_ANSI_ARGS_((Display* display,
-				int mode)))
-#endif /* #ifdef MAC_TCL */
 #endif /* #ifndef XForceScreenSaver */
 
 #ifndef XFreeColormap
-#ifdef __WIN32__
-VFUNC(void,XFreeColormap,V_XFreeColormap,_ANSI_ARGS_((Display* d, Colormap c)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFreeColormap,V_XFreeColormap,_ANSI_ARGS_((Display* d, Colormap c)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XFreeColormap,V_XFreeColormap,_ANSI_ARGS_((Display* d, Colormap c)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFreeColormap,V_XFreeColormap,_ANSI_ARGS_((Display* d, Colormap c)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFreeColormap */
 
 #ifndef XFreeColors
-#ifdef __WIN32__
-VFUNC(void,XFreeColors,V_XFreeColors,_ANSI_ARGS_((Display* d, Colormap c,
-				unsigned long* ulp, int i, unsigned long ul)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFreeColors,V_XFreeColors,_ANSI_ARGS_((Display* d, Colormap c,
 				unsigned long* ulp, int i, unsigned long ul)))
@@ -521,6 +517,10 @@ VFUNC(void,XFreeColors,V_XFreeColors,_ANSI_ARGS_((Display* d, Colormap c,
 VFUNC(void,XFreeColors,V_XFreeColors,_ANSI_ARGS_((Display* d, Colormap c,
 				unsigned long* ulp, int i, unsigned long ul)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFreeColors,V_XFreeColors,_ANSI_ARGS_((Display* d, Colormap c,
+				unsigned long* ulp, int i, unsigned long ul)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFreeColors */
 
 #ifndef XFreeCursor
@@ -530,60 +530,54 @@ VFUNC(void,XFreeCursor,V_XFreeCursor,_ANSI_ARGS_((Display* d, Cursor c)))
 #endif /* #ifndef XFreeCursor */
 
 #ifndef XFreeGC
-#ifdef __WIN32__
-VFUNC(void,XFreeGC,V_XFreeGC,_ANSI_ARGS_((Display* display, GC gc)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFreeGC,V_XFreeGC,_ANSI_ARGS_((Display* display, GC gc)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XFreeGC,V_XFreeGC,_ANSI_ARGS_((Display* display, GC gc)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFreeGC,V_XFreeGC,_ANSI_ARGS_((Display* display, GC gc)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFreeGC */
 
 #ifndef XFreeModifiermap
-#ifdef __WIN32__
-VFUNC(void,XFreeModifiermap,V_XFreeModifiermap,_ANSI_ARGS_((XModifierKeymap* x)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XFreeModifiermap,V_XFreeModifiermap,_ANSI_ARGS_((XModifierKeymap* x)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XFreeModifiermap,V_XFreeModifiermap,_ANSI_ARGS_((XModifierKeymap* x)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XFreeModifiermap,V_XFreeModifiermap,_ANSI_ARGS_((XModifierKeymap* x)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XFreeModifiermap */
 
 #ifndef XGContextFromGC
-#ifdef __WIN32__
-VFUNC(GContext,XGContextFromGC,V_XGContextFromGC,_ANSI_ARGS_((GC g)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(GContext,XGContextFromGC,V_XGContextFromGC,_ANSI_ARGS_((GC g)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(GContext,XGContextFromGC,V_XGContextFromGC,_ANSI_ARGS_((GC g)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(GContext,XGContextFromGC,V_XGContextFromGC,_ANSI_ARGS_((GC g)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGContextFromGC */
 
 #ifndef XGetAtomName
-#ifdef __WIN32__
-VFUNC(char *,XGetAtomName,V_XGetAtomName,_ANSI_ARGS_((Display* d, Atom a)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(char *,XGetAtomName,V_XGetAtomName,_ANSI_ARGS_((Display* d, Atom a)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(char *,XGetAtomName,V_XGetAtomName,_ANSI_ARGS_((Display* d, Atom a)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(char *,XGetAtomName,V_XGetAtomName,_ANSI_ARGS_((Display* d, Atom a)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGetAtomName */
 
 #ifndef XGetGeometry
-#ifdef __WIN32__
-VFUNC(Status,XGetGeometry,V_XGetGeometry,_ANSI_ARGS_((Display* d, Drawable dr,
-				Window* w, int* i1, int* i2,
-				unsigned int* ui1, unsigned int* ui2,
-				unsigned int* ui3, unsigned int* ui4)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Status,XGetGeometry,V_XGetGeometry,_ANSI_ARGS_((Display* d, Drawable dr,
 				Window* w, int* i1, int* i2,
@@ -596,14 +590,15 @@ VFUNC(Status,XGetGeometry,V_XGetGeometry,_ANSI_ARGS_((Display* d, Drawable dr,
 				unsigned int* ui1, unsigned int* ui2,
 				unsigned int* ui3, unsigned int* ui4)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Status,XGetGeometry,V_XGetGeometry,_ANSI_ARGS_((Display* d, Drawable dr,
+				Window* w, int* i1, int* i2,
+				unsigned int* ui1, unsigned int* ui2,
+				unsigned int* ui3, unsigned int* ui4)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGetGeometry */
 
 #ifndef XGetImage
-#ifdef __WIN32__
-VFUNC(XImage *,XGetImage,V_XGetImage,_ANSI_ARGS_((Display* d, Drawable dr,
-				int i1, int i2, unsigned int ui1,
-				unsigned int ui2, unsigned long ul, int i3)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(XImage *,XGetImage,V_XGetImage,_ANSI_ARGS_((Display* d, Drawable dr,
 				int i1, int i2, unsigned int ui1,
@@ -614,6 +609,11 @@ VFUNC(XImage *,XGetImage,V_XGetImage,_ANSI_ARGS_((Display* d, Drawable dr,
 				int i1, int i2, unsigned int ui1,
 				unsigned int ui2, unsigned long ul, int i3)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(XImage *,XGetImage,V_XGetImage,_ANSI_ARGS_((Display* d, Drawable dr,
+				int i1, int i2, unsigned int ui1,
+				unsigned int ui2, unsigned long ul, int i3)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGetImage */
 
 #ifndef XGetInputFocus
@@ -624,23 +624,18 @@ VFUNC(void,XGetInputFocus,V_XGetInputFocus,_ANSI_ARGS_((Display* d, Window* w,
 #endif /* #ifndef XGetInputFocus */
 
 #ifndef XGetModifierMapping
-#ifdef __WIN32__
-VFUNC(XModifierKeymap*,XGetModifierMapping,V_XGetModifierMapping,_ANSI_ARGS_((Display* d)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(XModifierKeymap*,XGetModifierMapping,V_XGetModifierMapping,_ANSI_ARGS_((Display* d)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(XModifierKeymap*,XGetModifierMapping,V_XGetModifierMapping,_ANSI_ARGS_((Display* d)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(XModifierKeymap*,XGetModifierMapping,V_XGetModifierMapping,_ANSI_ARGS_((Display* d)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGetModifierMapping */
 
 #ifndef XGetVisualInfo
-#ifdef __WIN32__
-VFUNC(XVisualInfo *,XGetVisualInfo,V_XGetVisualInfo,_ANSI_ARGS_((Display* display,
-				long vinfo_mask, XVisualInfo* vinfo_template,
-				int* nitems_return)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(XVisualInfo *,XGetVisualInfo,V_XGetVisualInfo,_ANSI_ARGS_((Display* display,
 				long vinfo_mask, XVisualInfo* vinfo_template,
@@ -651,6 +646,11 @@ VFUNC(XVisualInfo *,XGetVisualInfo,V_XGetVisualInfo,_ANSI_ARGS_((Display* displa
 				long vinfo_mask, XVisualInfo* vinfo_template,
 				int* nitems_return)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(XVisualInfo *,XGetVisualInfo,V_XGetVisualInfo,_ANSI_ARGS_((Display* display,
+				long vinfo_mask, XVisualInfo* vinfo_template,
+				int* nitems_return)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGetVisualInfo */
 
 #ifndef XGetWMColormapWindows
@@ -668,12 +668,6 @@ VFUNC(Status,XGetWindowAttributes,V_XGetWindowAttributes,_ANSI_ARGS_((Display* d
 #endif /* #ifndef XGetWindowAttributes */
 
 #ifndef XGetWindowProperty
-#ifdef __WIN32__
-VFUNC(int,XGetWindowProperty,V_XGetWindowProperty,_ANSI_ARGS_((Display* d, Window w,
-				Atom a1, long l1, long l2, Bool b, Atom a2,
-				Atom* ap, int* ip, unsigned long* ulp1,
-				unsigned long* ulp2, unsigned char** cpp)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(int,XGetWindowProperty,V_XGetWindowProperty,_ANSI_ARGS_((Display* d, Window w,
 				Atom a1, long l1, long l2, Bool b, Atom a2,
@@ -686,13 +680,15 @@ VFUNC(int,XGetWindowProperty,V_XGetWindowProperty,_ANSI_ARGS_((Display* d, Windo
 				Atom* ap, int* ip, unsigned long* ulp1,
 				unsigned long* ulp2, unsigned char** cpp)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(int,XGetWindowProperty,V_XGetWindowProperty,_ANSI_ARGS_((Display* d, Window w,
+				Atom a1, long l1, long l2, Bool b, Atom a2,
+				Atom* ap, int* ip, unsigned long* ulp1,
+				unsigned long* ulp2, unsigned char** cpp)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGetWindowProperty */
 
 #ifndef XGrabKeyboard
-#ifdef __WIN32__
-VFUNC(int,XGrabKeyboard,V_XGrabKeyboard,_ANSI_ARGS_((Display* d, Window w,
-				Bool b, int i1, int i2, Time t)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(int,XGrabKeyboard,V_XGrabKeyboard,_ANSI_ARGS_((Display* d, Window w,
 				Bool b, int i1, int i2, Time t)))
@@ -701,14 +697,13 @@ VFUNC(int,XGrabKeyboard,V_XGrabKeyboard,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(int,XGrabKeyboard,V_XGrabKeyboard,_ANSI_ARGS_((Display* d, Window w,
 				Bool b, int i1, int i2, Time t)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(int,XGrabKeyboard,V_XGrabKeyboard,_ANSI_ARGS_((Display* d, Window w,
+				Bool b, int i1, int i2, Time t)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGrabKeyboard */
 
 #ifndef XGrabPointer
-#ifdef __WIN32__
-VFUNC(int,XGrabPointer,V_XGrabPointer,_ANSI_ARGS_((Display* d, Window w1,
-				Bool b, unsigned int ui, int i1, int i2,
-				Window w2, Cursor c, Time t)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(int,XGrabPointer,V_XGrabPointer,_ANSI_ARGS_((Display* d, Window w1,
 				Bool b, unsigned int ui, int i1, int i2,
@@ -719,6 +714,11 @@ VFUNC(int,XGrabPointer,V_XGrabPointer,_ANSI_ARGS_((Display* d, Window w1,
 				Bool b, unsigned int ui, int i1, int i2,
 				Window w2, Cursor c, Time t)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(int,XGrabPointer,V_XGrabPointer,_ANSI_ARGS_((Display* d, Window w1,
+				Bool b, unsigned int ui, int i1, int i2,
+				Window w2, Cursor c, Time t)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XGrabPointer */
 
 #ifndef XIconifyWindow
@@ -729,10 +729,6 @@ VFUNC(Status,XIconifyWindow,V_XIconifyWindow,_ANSI_ARGS_((Display* d, Window w,
 #endif /* #ifndef XIconifyWindow */
 
 #ifndef XInternAtom
-#ifdef __WIN32__
-VFUNC(Atom,XInternAtom,V_XInternAtom,_ANSI_ARGS_((Display* display,
-				_Xconst char* atom_name, Bool only_if_exists)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Atom,XInternAtom,V_XInternAtom,_ANSI_ARGS_((Display* display,
 				_Xconst char* atom_name, Bool only_if_exists)))
@@ -741,45 +737,49 @@ VFUNC(Atom,XInternAtom,V_XInternAtom,_ANSI_ARGS_((Display* display,
 VFUNC(Atom,XInternAtom,V_XInternAtom,_ANSI_ARGS_((Display* display,
 				_Xconst char* atom_name, Bool only_if_exists)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Atom,XInternAtom,V_XInternAtom,_ANSI_ARGS_((Display* display,
+				_Xconst char* atom_name, Bool only_if_exists)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XInternAtom */
 
 #ifndef XKeycodeToKeysym
+#ifdef MAC_OSX_TK
+VFUNC(KeySym,XKeycodeToKeysym,V_XKeycodeToKeysym,_ANSI_ARGS_((Display* d, KeyCode k,
+				int i)))
+#endif /* #ifdef MAC_OSX_TK */
+#ifdef MAC_TCL
+VFUNC(KeySym,XKeycodeToKeysym,V_XKeycodeToKeysym,_ANSI_ARGS_((Display* d, KeyCode k,
+				int i)))
+#endif /* #ifdef MAC_TCL */
 #ifdef __WIN32__
 VFUNC(KeySym,XKeycodeToKeysym,V_XKeycodeToKeysym,_ANSI_ARGS_((Display* d,
 				unsigned int k, int i)))
 #endif /* #ifdef __WIN32__ */
-#ifdef MAC_OSX_TK
-VFUNC(KeySym,XKeycodeToKeysym,V_XKeycodeToKeysym,_ANSI_ARGS_((Display* d, KeyCode k,
-				int i)))
-#endif /* #ifdef MAC_OSX_TK */
-#ifdef MAC_TCL
-VFUNC(KeySym,XKeycodeToKeysym,V_XKeycodeToKeysym,_ANSI_ARGS_((Display* d, KeyCode k,
-				int i)))
-#endif /* #ifdef MAC_TCL */
 #endif /* #ifndef XKeycodeToKeysym */
 
 #ifndef XKeysymToKeycode
-#ifdef __WIN32__
-VFUNC(KeyCode,XKeysymToKeycode,V_XKeysymToKeycode,_ANSI_ARGS_((Display* d, KeySym k)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(KeyCode,XKeysymToKeycode,V_XKeysymToKeycode,_ANSI_ARGS_((Display* d, KeySym k)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(KeyCode,XKeysymToKeycode,V_XKeysymToKeycode,_ANSI_ARGS_((Display* d, KeySym k)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(KeyCode,XKeysymToKeycode,V_XKeysymToKeycode,_ANSI_ARGS_((Display* d, KeySym k)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XKeysymToKeycode */
 
 #ifndef XKeysymToString
-#ifdef __WIN32__
-VFUNC(char *,XKeysymToString,V_XKeysymToString,_ANSI_ARGS_((KeySym k)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(char *,XKeysymToString,V_XKeysymToString,_ANSI_ARGS_((KeySym k)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(char *,XKeysymToString,V_XKeysymToString,_ANSI_ARGS_((KeySym k)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(char *,XKeysymToString,V_XKeysymToString,_ANSI_ARGS_((KeySym k)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XKeysymToString */
 
 #ifndef XListHosts
@@ -796,23 +796,18 @@ VFUNC(Status,XLookupColor,V_XLookupColor,_ANSI_ARGS_((Display* d, Colormap c1,
 #endif /* #ifndef XLookupColor */
 
 #ifndef XMapWindow
-#ifdef __WIN32__
-VFUNC(void,XMapWindow,V_XMapWindow,_ANSI_ARGS_((Display* d, Window w)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XMapWindow,V_XMapWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XMapWindow,V_XMapWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XMapWindow,V_XMapWindow,_ANSI_ARGS_((Display* d, Window w)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XMapWindow */
 
 #ifndef XMoveResizeWindow
-#ifdef __WIN32__
-VFUNC(void,XMoveResizeWindow,V_XMoveResizeWindow,_ANSI_ARGS_((Display* d, Window w,
-				int i1, int i2, unsigned int ui1,
-				unsigned int ui2)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XMoveResizeWindow,V_XMoveResizeWindow,_ANSI_ARGS_((Display* d, Window w,
 				int i1, int i2, unsigned int ui1,
@@ -823,13 +818,14 @@ VFUNC(void,XMoveResizeWindow,V_XMoveResizeWindow,_ANSI_ARGS_((Display* d, Window
 				int i1, int i2, unsigned int ui1,
 				unsigned int ui2)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XMoveResizeWindow,V_XMoveResizeWindow,_ANSI_ARGS_((Display* d, Window w,
+				int i1, int i2, unsigned int ui1,
+				unsigned int ui2)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XMoveResizeWindow */
 
 #ifndef XMoveWindow
-#ifdef __WIN32__
-VFUNC(void,XMoveWindow,V_XMoveWindow,_ANSI_ARGS_((Display* d, Window w,
-				int i1, int i2)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XMoveWindow,V_XMoveWindow,_ANSI_ARGS_((Display* d, Window w,
 				int i1, int i2)))
@@ -838,6 +834,10 @@ VFUNC(void,XMoveWindow,V_XMoveWindow,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(void,XMoveWindow,V_XMoveWindow,_ANSI_ARGS_((Display* d, Window w,
 				int i1, int i2)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XMoveWindow,V_XMoveWindow,_ANSI_ARGS_((Display* d, Window w,
+				int i1, int i2)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XMoveWindow */
 
 #ifndef XNextEvent
@@ -847,11 +847,6 @@ VFUNC(void,XNextEvent,V_XNextEvent,_ANSI_ARGS_((Display* d, XEvent* x)))
 #endif /* #ifndef XNextEvent */
 
 #ifndef XParseColor
-#ifdef __WIN32__
-VFUNC(Status,XParseColor,V_XParseColor,_ANSI_ARGS_((Display * display,
-				Colormap map, _Xconst char* spec,
-				XColor * colorPtr)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Status,XParseColor,V_XParseColor,_ANSI_ARGS_((Display * display,
 				Colormap map, _Xconst char* spec,
@@ -862,6 +857,11 @@ VFUNC(Status,XParseColor,V_XParseColor,_ANSI_ARGS_((Display * display,
 				Colormap map, _Xconst char* spec,
 				XColor * colorPtr)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Status,XParseColor,V_XParseColor,_ANSI_ARGS_((Display * display,
+				Colormap map, _Xconst char* spec,
+				XColor * colorPtr)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XParseColor */
 
 #ifndef XPutBackEvent
@@ -882,28 +882,23 @@ VFUNC(void,XQueryColor,V_XQueryColor,_ANSI_ARGS_((Display * display,
 #endif /* #ifndef XQueryColor */
 
 #ifndef XQueryColors
+#ifdef MAC_OSX_TK
+VFUNC(void,XQueryColors,V_XQueryColors,_ANSI_ARGS_((Display * display,
+				Colormap colormap, XColor * defs_in_out,
+				int ncolors)))
+#endif /* #ifdef MAC_OSX_TK */
+#ifdef MAC_TCL
+VFUNC(void,XQueryColors,V_XQueryColors,_ANSI_ARGS_((Display * display,
+				Colormap colormap, XColor * defs_in_out,
+				int ncolors)))
+#endif /* #ifdef MAC_TCL */
 #ifdef __WIN32__
 VFUNC(void,XQueryColors,V_XQueryColors,_ANSI_ARGS_((Display* d, Colormap c,
 				XColor* x, int i)))
 #endif /* #ifdef __WIN32__ */
-#ifdef MAC_OSX_TK
-VFUNC(void,XQueryColors,V_XQueryColors,_ANSI_ARGS_((Display * display,
-				Colormap colormap, XColor * defs_in_out,
-				int ncolors)))
-#endif /* #ifdef MAC_OSX_TK */
-#ifdef MAC_TCL
-VFUNC(void,XQueryColors,V_XQueryColors,_ANSI_ARGS_((Display * display,
-				Colormap colormap, XColor * defs_in_out,
-				int ncolors)))
-#endif /* #ifdef MAC_TCL */
 #endif /* #ifndef XQueryColors */
 
 #ifndef XQueryPointer
-#ifdef __WIN32__
-VFUNC(Bool,XQueryPointer,V_XQueryPointer,_ANSI_ARGS_((Display* d, Window w1,
-				Window* w2, Window* w3, int* i1, int* i2,
-				int* i3, int* i4, unsigned int* ui)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Bool,XQueryPointer,V_XQueryPointer,_ANSI_ARGS_((Display* d, Window w1,
 				Window* w2, Window* w3, int* i1, int* i2,
@@ -914,14 +909,14 @@ VFUNC(Bool,XQueryPointer,V_XQueryPointer,_ANSI_ARGS_((Display* d, Window w1,
 				Window* w2, Window* w3, int* i1, int* i2,
 				int* i3, int* i4, unsigned int* ui)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Bool,XQueryPointer,V_XQueryPointer,_ANSI_ARGS_((Display* d, Window w1,
+				Window* w2, Window* w3, int* i1, int* i2,
+				int* i3, int* i4, unsigned int* ui)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XQueryPointer */
 
 #ifndef XQueryTree
-#ifdef __WIN32__
-VFUNC(Status,XQueryTree,V_XQueryTree,_ANSI_ARGS_((Display* d, Window w1,
-				Window* w2, Window* w3, Window** w4,
-				unsigned int* ui)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Status,XQueryTree,V_XQueryTree,_ANSI_ARGS_((Display* d, Window w1,
 				Window* w2, Window* w3, Window** w4,
@@ -932,25 +927,26 @@ VFUNC(Status,XQueryTree,V_XQueryTree,_ANSI_ARGS_((Display* d, Window w1,
 				Window* w2, Window* w3, Window** w4,
 				unsigned int* ui)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Status,XQueryTree,V_XQueryTree,_ANSI_ARGS_((Display* d, Window w1,
+				Window* w2, Window* w3, Window** w4,
+				unsigned int* ui)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XQueryTree */
 
 #ifndef XRaiseWindow
-#ifdef __WIN32__
-VFUNC(void,XRaiseWindow,V_XRaiseWindow,_ANSI_ARGS_((Display* d, Window w)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XRaiseWindow,V_XRaiseWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XRaiseWindow,V_XRaiseWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XRaiseWindow,V_XRaiseWindow,_ANSI_ARGS_((Display* d, Window w)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XRaiseWindow */
 
 #ifndef XRefreshKeyboardMapping
-#ifdef __WIN32__
-VFUNC(void,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((
-				XMappingEvent* x)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((
 				XMappingEvent* x)))
@@ -959,13 +955,13 @@ VFUNC(void,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((
 VFUNC(void,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((
 				XMappingEvent* x)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((
+				XMappingEvent* x)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XRefreshKeyboardMapping */
 
 #ifndef XResizeWindow
-#ifdef __WIN32__
-VFUNC(void,XResizeWindow,V_XResizeWindow,_ANSI_ARGS_((Display* d, Window w,
-				unsigned int ui1, unsigned int ui2)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XResizeWindow,V_XResizeWindow,_ANSI_ARGS_((Display* d, Window w,
 				unsigned int ui1, unsigned int ui2)))
@@ -974,25 +970,25 @@ VFUNC(void,XResizeWindow,V_XResizeWindow,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(void,XResizeWindow,V_XResizeWindow,_ANSI_ARGS_((Display* d, Window w,
 				unsigned int ui1, unsigned int ui2)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XResizeWindow,V_XResizeWindow,_ANSI_ARGS_((Display* d, Window w,
+				unsigned int ui1, unsigned int ui2)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XResizeWindow */
 
 #ifndef XRootWindow
-#ifdef __WIN32__
-VFUNC(Window,XRootWindow,V_XRootWindow,_ANSI_ARGS_((Display* d, int i)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Window,XRootWindow,V_XRootWindow,_ANSI_ARGS_((Display* d, int i)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(Window,XRootWindow,V_XRootWindow,_ANSI_ARGS_((Display* d, int i)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Window,XRootWindow,V_XRootWindow,_ANSI_ARGS_((Display* d, int i)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XRootWindow */
 
 #ifndef XSelectInput
-#ifdef __WIN32__
-VFUNC(void,XSelectInput,V_XSelectInput,_ANSI_ARGS_((Display* d, Window w,
-				long l)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSelectInput,V_XSelectInput,_ANSI_ARGS_((Display* d, Window w,
 				long l)))
@@ -1001,13 +997,13 @@ VFUNC(void,XSelectInput,V_XSelectInput,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(void,XSelectInput,V_XSelectInput,_ANSI_ARGS_((Display* d, Window w,
 				long l)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSelectInput,V_XSelectInput,_ANSI_ARGS_((Display* d, Window w,
+				long l)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSelectInput */
 
 #ifndef XSendEvent
-#ifdef __WIN32__
-VFUNC(Status,XSendEvent,V_XSendEvent,_ANSI_ARGS_((Display* d, Window w, Bool b,
-				long l, XEvent* x)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Status,XSendEvent,V_XSendEvent,_ANSI_ARGS_((Display* d, Window w, Bool b,
 				long l, XEvent* x)))
@@ -1016,13 +1012,13 @@ VFUNC(Status,XSendEvent,V_XSendEvent,_ANSI_ARGS_((Display* d, Window w, Bool b,
 VFUNC(Status,XSendEvent,V_XSendEvent,_ANSI_ARGS_((Display* d, Window w, Bool b,
 				long l, XEvent* x)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Status,XSendEvent,V_XSendEvent,_ANSI_ARGS_((Display* d, Window w, Bool b,
+				long l, XEvent* x)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSendEvent */
 
 #ifndef XSetArcMode
-#ifdef __WIN32__
-VFUNC(void,XSetArcMode,V_XSetArcMode,_ANSI_ARGS_((Display * display, GC gc,
-				int arc_mode)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetArcMode,V_XSetArcMode,_ANSI_ARGS_((Display * display, GC gc,
 				int arc_mode)))
@@ -1031,13 +1027,13 @@ VFUNC(void,XSetArcMode,V_XSetArcMode,_ANSI_ARGS_((Display * display, GC gc,
 VFUNC(void,XSetArcMode,V_XSetArcMode,_ANSI_ARGS_((Display * display, GC gc,
 				int arc_mode)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetArcMode,V_XSetArcMode,_ANSI_ARGS_((Display * display, GC gc,
+				int arc_mode)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetArcMode */
 
 #ifndef XSetBackground
-#ifdef __WIN32__
-VFUNC(void,XSetBackground,V_XSetBackground,_ANSI_ARGS_((Display* display, GC gc,
-				unsigned long foreground)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetBackground,V_XSetBackground,_ANSI_ARGS_((Display* display, GC gc,
 				unsigned long foreground)))
@@ -1046,13 +1042,13 @@ VFUNC(void,XSetBackground,V_XSetBackground,_ANSI_ARGS_((Display* display, GC gc,
 VFUNC(void,XSetBackground,V_XSetBackground,_ANSI_ARGS_((Display* display, GC gc,
 				unsigned long foreground)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetBackground,V_XSetBackground,_ANSI_ARGS_((Display* display, GC gc,
+				unsigned long foreground)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetBackground */
 
 #ifndef XSetClipMask
-#ifdef __WIN32__
-VFUNC(void,XSetClipMask,V_XSetClipMask,_ANSI_ARGS_((Display* display, GC gc,
-				Pixmap pixmap)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetClipMask,V_XSetClipMask,_ANSI_ARGS_((Display* display, GC gc,
 				Pixmap pixmap)))
@@ -1061,13 +1057,13 @@ VFUNC(void,XSetClipMask,V_XSetClipMask,_ANSI_ARGS_((Display* display, GC gc,
 VFUNC(void,XSetClipMask,V_XSetClipMask,_ANSI_ARGS_((Display* display, GC gc,
 				Pixmap pixmap)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetClipMask,V_XSetClipMask,_ANSI_ARGS_((Display* display, GC gc,
+				Pixmap pixmap)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetClipMask */
 
 #ifndef XSetClipOrigin
-#ifdef __WIN32__
-VFUNC(void,XSetClipOrigin,V_XSetClipOrigin,_ANSI_ARGS_((Display* display, GC gc,
-				int clip_x_origin, int clip_y_origin)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetClipOrigin,V_XSetClipOrigin,_ANSI_ARGS_((Display* display, GC gc,
 				int clip_x_origin, int clip_y_origin)))
@@ -1076,6 +1072,10 @@ VFUNC(void,XSetClipOrigin,V_XSetClipOrigin,_ANSI_ARGS_((Display* display, GC gc,
 VFUNC(void,XSetClipOrigin,V_XSetClipOrigin,_ANSI_ARGS_((Display* display, GC gc,
 				int clip_x_origin, int clip_y_origin)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetClipOrigin,V_XSetClipOrigin,_ANSI_ARGS_((Display* display, GC gc,
+				int clip_x_origin, int clip_y_origin)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetClipOrigin */
 
 #ifndef XSetCommand
@@ -1086,11 +1086,6 @@ VFUNC(void,XSetCommand,V_XSetCommand,_ANSI_ARGS_((Display* d, Window w,
 #endif /* #ifndef XSetCommand */
 
 #ifndef XSetDashes
-#ifdef __WIN32__
-VFUNC(void,XSetDashes,V_XSetDashes,_ANSI_ARGS_((Display* display, GC gc,
-				int dash_offset, _Xconst char* dash_list,
-				int n)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetDashes,V_XSetDashes,_ANSI_ARGS_((Display* display, GC gc,
 				int dash_offset, _Xconst char* dash_list,
@@ -1101,25 +1096,26 @@ VFUNC(void,XSetDashes,V_XSetDashes,_ANSI_ARGS_((Display* display, GC gc,
 				int dash_offset, _Xconst char* dash_list,
 				int n)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetDashes,V_XSetDashes,_ANSI_ARGS_((Display* display, GC gc,
+				int dash_offset, _Xconst char* dash_list,
+				int n)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetDashes */
 
 #ifndef XSetErrorHandler
-#ifdef __WIN32__
-VFUNC(XErrorHandler,XSetErrorHandler,V_XSetErrorHandler,_ANSI_ARGS_((XErrorHandler x)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(XErrorHandler,XSetErrorHandler,V_XSetErrorHandler,_ANSI_ARGS_((XErrorHandler x)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(XErrorHandler,XSetErrorHandler,V_XSetErrorHandler,_ANSI_ARGS_((XErrorHandler x)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(XErrorHandler,XSetErrorHandler,V_XSetErrorHandler,_ANSI_ARGS_((XErrorHandler x)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetErrorHandler */
 
 #ifndef XSetFillRule
-#ifdef __WIN32__
-VFUNC(void,XSetFillRule,V_XSetFillRule,_ANSI_ARGS_((Display * display, GC gc,
-				int fill_rule)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetFillRule,V_XSetFillRule,_ANSI_ARGS_((Display * display, GC gc,
 				int fill_rule)))
@@ -1128,13 +1124,13 @@ VFUNC(void,XSetFillRule,V_XSetFillRule,_ANSI_ARGS_((Display * display, GC gc,
 VFUNC(void,XSetFillRule,V_XSetFillRule,_ANSI_ARGS_((Display * display, GC gc,
 				int fill_rule)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetFillRule,V_XSetFillRule,_ANSI_ARGS_((Display * display, GC gc,
+				int fill_rule)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetFillRule */
 
 #ifndef XSetFillStyle
-#ifdef __WIN32__
-VFUNC(void,XSetFillStyle,V_XSetFillStyle,_ANSI_ARGS_((Display * display, GC gc,
-				int fill_style)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetFillStyle,V_XSetFillStyle,_ANSI_ARGS_((Display * display, GC gc,
 				int fill_style)))
@@ -1143,13 +1139,13 @@ VFUNC(void,XSetFillStyle,V_XSetFillStyle,_ANSI_ARGS_((Display * display, GC gc,
 VFUNC(void,XSetFillStyle,V_XSetFillStyle,_ANSI_ARGS_((Display * display, GC gc,
 				int fill_style)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetFillStyle,V_XSetFillStyle,_ANSI_ARGS_((Display * display, GC gc,
+				int fill_style)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetFillStyle */
 
 #ifndef XSetFont
-#ifdef __WIN32__
-VFUNC(void,XSetFont,V_XSetFont,_ANSI_ARGS_((Display * display, GC gc,
-				Font font)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetFont,V_XSetFont,_ANSI_ARGS_((Display * display, GC gc,
 				Font font)))
@@ -1158,13 +1154,13 @@ VFUNC(void,XSetFont,V_XSetFont,_ANSI_ARGS_((Display * display, GC gc,
 VFUNC(void,XSetFont,V_XSetFont,_ANSI_ARGS_((Display * display, GC gc,
 				Font font)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetFont,V_XSetFont,_ANSI_ARGS_((Display * display, GC gc,
+				Font font)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetFont */
 
 #ifndef XSetForeground
-#ifdef __WIN32__
-VFUNC(void,XSetForeground,V_XSetForeground,_ANSI_ARGS_((Display* display, GC gc,
-				unsigned long foreground)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetForeground,V_XSetForeground,_ANSI_ARGS_((Display* display, GC gc,
 				unsigned long foreground)))
@@ -1173,13 +1169,13 @@ VFUNC(void,XSetForeground,V_XSetForeground,_ANSI_ARGS_((Display* display, GC gc,
 VFUNC(void,XSetForeground,V_XSetForeground,_ANSI_ARGS_((Display* display, GC gc,
 				unsigned long foreground)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetForeground,V_XSetForeground,_ANSI_ARGS_((Display* display, GC gc,
+				unsigned long foreground)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetForeground */
 
 #ifndef XSetFunction
-#ifdef __WIN32__
-VFUNC(void,XSetFunction,V_XSetFunction,_ANSI_ARGS_((Display * display, GC gc,
-				int function)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetFunction,V_XSetFunction,_ANSI_ARGS_((Display * display, GC gc,
 				int function)))
@@ -1188,13 +1184,13 @@ VFUNC(void,XSetFunction,V_XSetFunction,_ANSI_ARGS_((Display * display, GC gc,
 VFUNC(void,XSetFunction,V_XSetFunction,_ANSI_ARGS_((Display * display, GC gc,
 				int function)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetFunction,V_XSetFunction,_ANSI_ARGS_((Display * display, GC gc,
+				int function)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetFunction */
 
 #ifndef XSetIconName
-#ifdef __WIN32__
-VFUNC(void,XSetIconName,V_XSetIconName,_ANSI_ARGS_((Display* d, Window w,
-				_Xconst char* c)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetIconName,V_XSetIconName,_ANSI_ARGS_((Display* d, Window w,
 				_Xconst char* c)))
@@ -1203,13 +1199,13 @@ VFUNC(void,XSetIconName,V_XSetIconName,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(void,XSetIconName,V_XSetIconName,_ANSI_ARGS_((Display* d, Window w,
 				_Xconst char* c)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetIconName,V_XSetIconName,_ANSI_ARGS_((Display* d, Window w,
+				_Xconst char* c)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetIconName */
 
 #ifndef XSetInputFocus
-#ifdef __WIN32__
-VFUNC(void,XSetInputFocus,V_XSetInputFocus,_ANSI_ARGS_((Display* d, Window w,
-				int i, Time t)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetInputFocus,V_XSetInputFocus,_ANSI_ARGS_((Display* d, Window w,
 				int i, Time t)))
@@ -1218,15 +1214,13 @@ VFUNC(void,XSetInputFocus,V_XSetInputFocus,_ANSI_ARGS_((Display* d, Window w,
 VFUNC(void,XSetInputFocus,V_XSetInputFocus,_ANSI_ARGS_((Display* d, Window w,
 				int i, Time t)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetInputFocus,V_XSetInputFocus,_ANSI_ARGS_((Display* d, Window w,
+				int i, Time t)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetInputFocus */
 
 #ifndef XSetLineAttributes
-#ifdef __WIN32__
-VFUNC(void,XSetLineAttributes,V_XSetLineAttributes,_ANSI_ARGS_((Display * display,
-				GC gc, unsigned int line_width,
-				int line_style, int cap_style,
-				int join_style)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetLineAttributes,V_XSetLineAttributes,_ANSI_ARGS_((Display * display,
 				GC gc, unsigned int line_width,
@@ -1239,13 +1233,15 @@ VFUNC(void,XSetLineAttributes,V_XSetLineAttributes,_ANSI_ARGS_((Display * displa
 				int line_style, int cap_style,
 				int join_style)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetLineAttributes,V_XSetLineAttributes,_ANSI_ARGS_((Display * display,
+				GC gc, unsigned int line_width,
+				int line_style, int cap_style,
+				int join_style)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetLineAttributes */
 
 #ifndef XSetSelectionOwner
-#ifdef __WIN32__
-VFUNC(void,XSetSelectionOwner,V_XSetSelectionOwner,_ANSI_ARGS_((Display* d, Atom a,
-				Window w, Time t)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetSelectionOwner,V_XSetSelectionOwner,_ANSI_ARGS_((Display* d, Atom a,
 				Window w, Time t)))
@@ -1254,13 +1250,13 @@ VFUNC(void,XSetSelectionOwner,V_XSetSelectionOwner,_ANSI_ARGS_((Display* d, Atom
 VFUNC(void,XSetSelectionOwner,V_XSetSelectionOwner,_ANSI_ARGS_((Display* d, Atom a,
 				Window w, Time t)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetSelectionOwner,V_XSetSelectionOwner,_ANSI_ARGS_((Display* d, Atom a,
+				Window w, Time t)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetSelectionOwner */
 
 #ifndef XSetStipple
-#ifdef __WIN32__
-VFUNC(void,XSetStipple,V_XSetStipple,_ANSI_ARGS_((Display * display, GC gc,
-				Pixmap stipple)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetStipple,V_XSetStipple,_ANSI_ARGS_((Display * display, GC gc,
 				Pixmap stipple)))
@@ -1269,13 +1265,13 @@ VFUNC(void,XSetStipple,V_XSetStipple,_ANSI_ARGS_((Display * display, GC gc,
 VFUNC(void,XSetStipple,V_XSetStipple,_ANSI_ARGS_((Display * display, GC gc,
 				Pixmap stipple)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetStipple,V_XSetStipple,_ANSI_ARGS_((Display * display, GC gc,
+				Pixmap stipple)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetStipple */
 
 #ifndef XSetTSOrigin
-#ifdef __WIN32__
-VFUNC(void,XSetTSOrigin,V_XSetTSOrigin,_ANSI_ARGS_((Display* display, GC gc,
-				int ts_x_origin, int ts_y_origin)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetTSOrigin,V_XSetTSOrigin,_ANSI_ARGS_((Display* display, GC gc,
 				int ts_x_origin, int ts_y_origin)))
@@ -1284,13 +1280,13 @@ VFUNC(void,XSetTSOrigin,V_XSetTSOrigin,_ANSI_ARGS_((Display* display, GC gc,
 VFUNC(void,XSetTSOrigin,V_XSetTSOrigin,_ANSI_ARGS_((Display* display, GC gc,
 				int ts_x_origin, int ts_y_origin)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetTSOrigin,V_XSetTSOrigin,_ANSI_ARGS_((Display* display, GC gc,
+				int ts_x_origin, int ts_y_origin)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetTSOrigin */
 
 #ifndef XSetWMClientMachine
-#ifdef __WIN32__
-VFUNC(void,XSetWMClientMachine,V_XSetWMClientMachine,_ANSI_ARGS_((Display* display,
-				Window w, XTextProperty* text_prop)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWMClientMachine,V_XSetWMClientMachine,_ANSI_ARGS_((Display* display,
 				Window w, XTextProperty* text_prop)))
@@ -1299,13 +1295,13 @@ VFUNC(void,XSetWMClientMachine,V_XSetWMClientMachine,_ANSI_ARGS_((Display* displ
 VFUNC(void,XSetWMClientMachine,V_XSetWMClientMachine,_ANSI_ARGS_((Display* display,
 				Window w, XTextProperty* text_prop)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWMClientMachine,V_XSetWMClientMachine,_ANSI_ARGS_((Display* display,
+				Window w, XTextProperty* text_prop)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWMClientMachine */
 
 #ifndef XSetWindowBackground
-#ifdef __WIN32__
-VFUNC(void,XSetWindowBackground,V_XSetWindowBackground,_ANSI_ARGS_((Display* d,
-				Window w, unsigned long ul)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWindowBackground,V_XSetWindowBackground,_ANSI_ARGS_((Display* d,
 				Window w, unsigned long ul)))
@@ -1314,13 +1310,13 @@ VFUNC(void,XSetWindowBackground,V_XSetWindowBackground,_ANSI_ARGS_((Display* d,
 VFUNC(void,XSetWindowBackground,V_XSetWindowBackground,_ANSI_ARGS_((Display* d,
 				Window w, unsigned long ul)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWindowBackground,V_XSetWindowBackground,_ANSI_ARGS_((Display* d,
+				Window w, unsigned long ul)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWindowBackground */
 
 #ifndef XSetWindowBackgroundPixmap
-#ifdef __WIN32__
-VFUNC(void,XSetWindowBackgroundPixmap,V_XSetWindowBackgroundPixmap,_ANSI_ARGS_((Display* d,
-				Window w, Pixmap p)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWindowBackgroundPixmap,V_XSetWindowBackgroundPixmap,_ANSI_ARGS_((Display* d,
 				Window w, Pixmap p)))
@@ -1329,13 +1325,13 @@ VFUNC(void,XSetWindowBackgroundPixmap,V_XSetWindowBackgroundPixmap,_ANSI_ARGS_((
 VFUNC(void,XSetWindowBackgroundPixmap,V_XSetWindowBackgroundPixmap,_ANSI_ARGS_((Display* d,
 				Window w, Pixmap p)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWindowBackgroundPixmap,V_XSetWindowBackgroundPixmap,_ANSI_ARGS_((Display* d,
+				Window w, Pixmap p)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWindowBackgroundPixmap */
 
 #ifndef XSetWindowBorder
-#ifdef __WIN32__
-VFUNC(void,XSetWindowBorder,V_XSetWindowBorder,_ANSI_ARGS_((Display* d, Window w,
-				unsigned long ul)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWindowBorder,V_XSetWindowBorder,_ANSI_ARGS_((Display* d, Window w,
 				unsigned long ul)))
@@ -1344,13 +1340,13 @@ VFUNC(void,XSetWindowBorder,V_XSetWindowBorder,_ANSI_ARGS_((Display* d, Window w
 VFUNC(void,XSetWindowBorder,V_XSetWindowBorder,_ANSI_ARGS_((Display* d, Window w,
 				unsigned long ul)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWindowBorder,V_XSetWindowBorder,_ANSI_ARGS_((Display* d, Window w,
+				unsigned long ul)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWindowBorder */
 
 #ifndef XSetWindowBorderPixmap
-#ifdef __WIN32__
-VFUNC(void,XSetWindowBorderPixmap,V_XSetWindowBorderPixmap,_ANSI_ARGS_((Display* d,
-				Window w, Pixmap p)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWindowBorderPixmap,V_XSetWindowBorderPixmap,_ANSI_ARGS_((Display* d,
 				Window w, Pixmap p)))
@@ -1359,13 +1355,13 @@ VFUNC(void,XSetWindowBorderPixmap,V_XSetWindowBorderPixmap,_ANSI_ARGS_((Display*
 VFUNC(void,XSetWindowBorderPixmap,V_XSetWindowBorderPixmap,_ANSI_ARGS_((Display* d,
 				Window w, Pixmap p)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWindowBorderPixmap,V_XSetWindowBorderPixmap,_ANSI_ARGS_((Display* d,
+				Window w, Pixmap p)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWindowBorderPixmap */
 
 #ifndef XSetWindowBorderWidth
-#ifdef __WIN32__
-VFUNC(void,XSetWindowBorderWidth,V_XSetWindowBorderWidth,_ANSI_ARGS_((Display* d,
-				Window w, unsigned int ui)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWindowBorderWidth,V_XSetWindowBorderWidth,_ANSI_ARGS_((Display* d,
 				Window w, unsigned int ui)))
@@ -1374,13 +1370,13 @@ VFUNC(void,XSetWindowBorderWidth,V_XSetWindowBorderWidth,_ANSI_ARGS_((Display* d
 VFUNC(void,XSetWindowBorderWidth,V_XSetWindowBorderWidth,_ANSI_ARGS_((Display* d,
 				Window w, unsigned int ui)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWindowBorderWidth,V_XSetWindowBorderWidth,_ANSI_ARGS_((Display* d,
+				Window w, unsigned int ui)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWindowBorderWidth */
 
 #ifndef XSetWindowColormap
-#ifdef __WIN32__
-VFUNC(void,XSetWindowColormap,V_XSetWindowColormap,_ANSI_ARGS_((Display* d, Window w,
-				Colormap c)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XSetWindowColormap,V_XSetWindowColormap,_ANSI_ARGS_((Display* d, Window w,
 				Colormap c)))
@@ -1389,13 +1385,13 @@ VFUNC(void,XSetWindowColormap,V_XSetWindowColormap,_ANSI_ARGS_((Display* d, Wind
 VFUNC(void,XSetWindowColormap,V_XSetWindowColormap,_ANSI_ARGS_((Display* d, Window w,
 				Colormap c)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XSetWindowColormap,V_XSetWindowColormap,_ANSI_ARGS_((Display* d, Window w,
+				Colormap c)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XSetWindowColormap */
 
 #ifndef XStringListToTextProperty
-#ifdef __WIN32__
-VFUNC(Status,XStringListToTextProperty,V_XStringListToTextProperty,_ANSI_ARGS_((char** list,
-				int count, XTextProperty* text_prop_return)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(Status,XStringListToTextProperty,V_XStringListToTextProperty,_ANSI_ARGS_((char** list,
 				int count, XTextProperty* text_prop_return)))
@@ -1404,18 +1400,22 @@ VFUNC(Status,XStringListToTextProperty,V_XStringListToTextProperty,_ANSI_ARGS_((
 VFUNC(Status,XStringListToTextProperty,V_XStringListToTextProperty,_ANSI_ARGS_((char** list,
 				int count, XTextProperty* text_prop_return)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(Status,XStringListToTextProperty,V_XStringListToTextProperty,_ANSI_ARGS_((char** list,
+				int count, XTextProperty* text_prop_return)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XStringListToTextProperty */
 
 #ifndef XStringToKeysym
-#ifdef __WIN32__
-VFUNC(KeySym,XStringToKeysym,V_XStringToKeysym,_ANSI_ARGS_((_Xconst char* c)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(KeySym,XStringToKeysym,V_XStringToKeysym,_ANSI_ARGS_((_Xconst char* c)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(KeySym,XStringToKeysym,V_XStringToKeysym,_ANSI_ARGS_((_Xconst char* c)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(KeySym,XStringToKeysym,V_XStringToKeysym,_ANSI_ARGS_((_Xconst char* c)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XStringToKeysym */
 
 #ifndef XTranslateCoordinates
@@ -1427,61 +1427,61 @@ VFUNC(Bool,XTranslateCoordinates,V_XTranslateCoordinates,_ANSI_ARGS_((Display* d
 #endif /* #ifndef XTranslateCoordinates */
 
 #ifndef XUngrabKeyboard
-#ifdef __WIN32__
-VFUNC(void,XUngrabKeyboard,V_XUngrabKeyboard,_ANSI_ARGS_((Display* d, Time t)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XUngrabKeyboard,V_XUngrabKeyboard,_ANSI_ARGS_((Display* d, Time t)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XUngrabKeyboard,V_XUngrabKeyboard,_ANSI_ARGS_((Display* d, Time t)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XUngrabKeyboard,V_XUngrabKeyboard,_ANSI_ARGS_((Display* d, Time t)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XUngrabKeyboard */
 
 #ifndef XUngrabPointer
-#ifdef __WIN32__
-VFUNC(void,XUngrabPointer,V_XUngrabPointer,_ANSI_ARGS_((Display* d, Time t)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XUngrabPointer,V_XUngrabPointer,_ANSI_ARGS_((Display* d, Time t)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XUngrabPointer,V_XUngrabPointer,_ANSI_ARGS_((Display* d, Time t)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XUngrabPointer,V_XUngrabPointer,_ANSI_ARGS_((Display* d, Time t)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XUngrabPointer */
 
 #ifndef XUnmapWindow
-#ifdef __WIN32__
-VFUNC(void,XUnmapWindow,V_XUnmapWindow,_ANSI_ARGS_((Display* d, Window w)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,XUnmapWindow,V_XUnmapWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,XUnmapWindow,V_XUnmapWindow,_ANSI_ARGS_((Display* d, Window w)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,XUnmapWindow,V_XUnmapWindow,_ANSI_ARGS_((Display* d, Window w)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef XUnmapWindow */
 
 #ifndef XWarpPointer
+#ifdef MAC_OSX_TK
+VFUNC(void,XWarpPointer,V_XWarpPointer,_ANSI_ARGS_((Display* display,
+				Window src_w, Window dest_w, int src_x,
+				int src_y, unsigned int src_width,
+				unsigned int src_height, int dest_x,
+				int dest_y)))
+#endif /* #ifdef MAC_OSX_TK */
+#ifdef MAC_TCL
+VFUNC(void,XWarpPointer,V_XWarpPointer,_ANSI_ARGS_((Display* display,
+				Window src_w, Window dest_w, int src_x,
+				int src_y, unsigned int src_width,
+				unsigned int src_height, int dest_x,
+				int dest_y)))
+#endif /* #ifdef MAC_TCL */
 #ifdef __WIN32__
 VFUNC(void,XWarpPointer,V_XWarpPointer,_ANSI_ARGS_((Display* d, Window s,
 				Window dw, int sx, int sy, unsigned int sw,
 				unsigned int sh, int dx, int dy)))
 #endif /* #ifdef __WIN32__ */
-#ifdef MAC_OSX_TK
-VFUNC(void,XWarpPointer,V_XWarpPointer,_ANSI_ARGS_((Display* display,
-				Window src_w, Window dest_w, int src_x,
-				int src_y, unsigned int src_width,
-				unsigned int src_height, int dest_x,
-				int dest_y)))
-#endif /* #ifdef MAC_OSX_TK */
-#ifdef MAC_TCL
-VFUNC(void,XWarpPointer,V_XWarpPointer,_ANSI_ARGS_((Display* display,
-				Window src_w, Window dest_w, int src_x,
-				int src_y, unsigned int src_width,
-				unsigned int src_height, int dest_x,
-				int dest_y)))
-#endif /* #ifdef MAC_TCL */
 #endif /* #ifndef XWarpPointer */
 
 #ifndef XWindowEvent
@@ -1507,15 +1507,15 @@ VFUNC(int,XmbLookupString,V_XmbLookupString,_ANSI_ARGS_((XIC xi,
 #endif /* #ifndef XmbLookupString */
 
 #ifndef _XInitImageFuncPtrs
-#ifdef __WIN32__
-VFUNC(int,_XInitImageFuncPtrs,V__XInitImageFuncPtrs,_ANSI_ARGS_((XImage * image)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(int,_XInitImageFuncPtrs,V__XInitImageFuncPtrs,_ANSI_ARGS_((XImage * image)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(int,_XInitImageFuncPtrs,V__XInitImageFuncPtrs,_ANSI_ARGS_((XImage * image)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(int,_XInitImageFuncPtrs,V__XInitImageFuncPtrs,_ANSI_ARGS_((XImage * image)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef _XInitImageFuncPtrs */
 
 #endif /* _TKINTXLIBDECLS */

@@ -1837,7 +1837,7 @@ int argc;
         {
          char *x = va_arg(ap, char *);
          if (x)
-          XPUSHs(sv_2mortal(newSVpv(x, 0)));
+          XPUSHs(sv_2mortal(Tcl_NewStringObj(x, -1)));  /* for UTF-8-ness */
          else
           XPUSHs(&PL_sv_undef);
         }

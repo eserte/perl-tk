@@ -283,7 +283,7 @@ sub Vfunc
     {
      if (!exists($Exclude{$func}) && !exists($Ignore{$func}))
       {
-       foreach my $ifdef (keys %{$VVar{$func}})
+       foreach my $ifdef (sort keys %{$VVar{$func}})
         {
 	 print VFUNC "$ifdef\n" if ($ifdef);
          print VFUNC $VVar{$func}{$ifdef};
@@ -299,7 +299,7 @@ sub Vfunc
       {
        print VFUNC "#ifndef DO_X_EXCLUDE\n" if exists($WinIgnore{$func});
        print VFUNC "#ifndef $func\n";
-       foreach my $ifdef (keys %{$VFunc{$func}})
+       foreach my $ifdef (sort keys %{$VFunc{$func}})
         {
 	 print VFUNC "$ifdef\n" if ($ifdef);
          print VFUNC $VFunc{$func}{$ifdef};

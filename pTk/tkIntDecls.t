@@ -27,10 +27,6 @@ VFUNC(void,TkChangeEventWindow,V_TkChangeEventWindow,_ANSI_ARGS_((XEvent * event
 #endif /* #ifndef TkChangeEventWindow */
 
 #ifndef TkClipBox
-#ifdef __WIN32__
-VFUNC(void,TkClipBox,V_TkClipBox,_ANSI_ARGS_((TkRegion rgn,
-				XRectangle* rect_return)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkClipBox,V_TkClipBox,_ANSI_ARGS_((TkRegion rgn,
 				XRectangle* rect_return)))
@@ -39,6 +35,10 @@ VFUNC(void,TkClipBox,V_TkClipBox,_ANSI_ARGS_((TkRegion rgn,
 VFUNC(void,TkClipBox,V_TkClipBox,_ANSI_ARGS_((TkRegion rgn,
 				XRectangle* rect_return)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkClipBox,V_TkClipBox,_ANSI_ARGS_((TkRegion rgn,
+				XRectangle* rect_return)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkClipBox */
 
 #ifndef TkClipCleanup
@@ -91,15 +91,15 @@ VFUNC(Tk_Window,TkCreateMainWindow,V_TkCreateMainWindow,_ANSI_ARGS_((Tcl_Interp 
 #endif /* #ifndef TkCreateMainWindow */
 
 #ifndef TkCreateRegion
-#ifdef __WIN32__
-VFUNC(TkRegion,TkCreateRegion,V_TkCreateRegion,_ANSI_ARGS_((void)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(TkRegion,TkCreateRegion,V_TkCreateRegion,_ANSI_ARGS_((void)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(TkRegion,TkCreateRegion,V_TkCreateRegion,_ANSI_ARGS_((void)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(TkRegion,TkCreateRegion,V_TkCreateRegion,_ANSI_ARGS_((void)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkCreateRegion */
 
 #ifndef TkCurrentTime
@@ -142,15 +142,15 @@ VFUNC(void,TkDeleteAllImages,V_TkDeleteAllImages,_ANSI_ARGS_((TkMainInfo * mainP
 #endif /* #ifndef TkDeleteAllImages */
 
 #ifndef TkDestroyRegion
-#ifdef __WIN32__
-VFUNC(void,TkDestroyRegion,V_TkDestroyRegion,_ANSI_ARGS_((TkRegion rgn)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkDestroyRegion,V_TkDestroyRegion,_ANSI_ARGS_((TkRegion rgn)))
 #endif /* #ifdef MAC_OSX_TK */
 #ifdef MAC_TCL
 VFUNC(void,TkDestroyRegion,V_TkDestroyRegion,_ANSI_ARGS_((TkRegion rgn)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkDestroyRegion,V_TkDestroyRegion,_ANSI_ARGS_((TkRegion rgn)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkDestroyRegion */
 
 #ifndef TkDoConfigureNotify
@@ -303,10 +303,6 @@ VFUNC(void,TkInstallFrameMenu,V_TkInstallFrameMenu,_ANSI_ARGS_((Tk_Window tkwin)
 #endif /* #ifndef TkInstallFrameMenu */
 
 #ifndef TkIntersectRegion
-#ifdef __WIN32__
-VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
-				TkRegion srcb, TkRegion dr_return)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
 				TkRegion srcb, TkRegion dr_return)))
@@ -315,6 +311,10 @@ VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
 VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
 				TkRegion srcb, TkRegion dr_return)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkIntersectRegion,V_TkIntersectRegion,_ANSI_ARGS_((TkRegion sra,
+				TkRegion srcb, TkRegion dr_return)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkIntersectRegion */
 
 #ifndef TkKeysymToString
@@ -352,11 +352,6 @@ VFUNC(int,TkReadBitmapFile,V_TkReadBitmapFile,_ANSI_ARGS_((Tcl_Interp * interp,
 #endif /* #ifndef TkReadBitmapFile */
 
 #ifndef TkRectInRegion
-#ifdef __WIN32__
-VFUNC(int,TkRectInRegion,V_TkRectInRegion,_ANSI_ARGS_((TkRegion rgn, int x,
-				int y, unsigned int width,
-				unsigned int height)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(int,TkRectInRegion,V_TkRectInRegion,_ANSI_ARGS_((TkRegion rgn, int x,
 				int y, unsigned int width,
@@ -367,6 +362,11 @@ VFUNC(int,TkRectInRegion,V_TkRectInRegion,_ANSI_ARGS_((TkRegion rgn, int x,
 				int y, unsigned int width,
 				unsigned int height)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(int,TkRectInRegion,V_TkRectInRegion,_ANSI_ARGS_((TkRegion rgn, int x,
+				int y, unsigned int width,
+				unsigned int height)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkRectInRegion */
 
 #ifndef TkScrollWindow
@@ -398,10 +398,6 @@ VFUNC(void,TkSetFocusWin,V_TkSetFocusWin,_ANSI_ARGS_((TkWindow * winPtr,
 #endif /* #ifndef TkSetFocusWin */
 
 #ifndef TkSetRegion
-#ifdef __WIN32__
-VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
-				TkRegion rgn)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
 				TkRegion rgn)))
@@ -410,6 +406,10 @@ VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
 VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
 				TkRegion rgn)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkSetRegion,V_TkSetRegion,_ANSI_ARGS_((Display* display, GC gc,
+				TkRegion rgn)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkSetRegion */
 
 #ifndef TkSetWindowMenuBar
@@ -431,10 +431,6 @@ VFUNC(void,TkStylePkgInit,V_TkStylePkgInit,_ANSI_ARGS_((TkMainInfo * mainPtr)))
 #endif /* #ifndef TkStylePkgInit */
 
 #ifndef TkSubtractRegion
-#ifdef __WIN32__
-VFUNC(void,TkSubtractRegion,V_TkSubtractRegion,_ANSI_ARGS_((TkRegion sra,
-				TkRegion srcb, TkRegion dr_return)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkSubtractRegion,V_TkSubtractRegion,_ANSI_ARGS_((TkRegion sra,
 				TkRegion srcb, TkRegion dr_return)))
@@ -443,6 +439,10 @@ VFUNC(void,TkSubtractRegion,V_TkSubtractRegion,_ANSI_ARGS_((TkRegion sra,
 VFUNC(void,TkSubtractRegion,V_TkSubtractRegion,_ANSI_ARGS_((TkRegion sra,
 				TkRegion srcb, TkRegion dr_return)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkSubtractRegion,V_TkSubtractRegion,_ANSI_ARGS_((TkRegion sra,
+				TkRegion srcb, TkRegion dr_return)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkSubtractRegion */
 
 #ifndef TkToplevelWindowForCommand
@@ -451,10 +451,6 @@ VFUNC(Tk_Window,TkToplevelWindowForCommand,V_TkToplevelWindowForCommand,_ANSI_AR
 #endif /* #ifndef TkToplevelWindowForCommand */
 
 #ifndef TkUnionRectWithRegion
-#ifdef __WIN32__
-VFUNC(void,TkUnionRectWithRegion,V_TkUnionRectWithRegion,_ANSI_ARGS_((XRectangle* rect,
-				TkRegion src, TkRegion dr_return)))
-#endif /* #ifdef __WIN32__ */
 #ifdef MAC_OSX_TK
 VFUNC(void,TkUnionRectWithRegion,V_TkUnionRectWithRegion,_ANSI_ARGS_((XRectangle* rect,
 				TkRegion src, TkRegion dr_return)))
@@ -463,6 +459,10 @@ VFUNC(void,TkUnionRectWithRegion,V_TkUnionRectWithRegion,_ANSI_ARGS_((XRectangle
 VFUNC(void,TkUnionRectWithRegion,V_TkUnionRectWithRegion,_ANSI_ARGS_((XRectangle* rect,
 				TkRegion src, TkRegion dr_return)))
 #endif /* #ifdef MAC_TCL */
+#ifdef __WIN32__
+VFUNC(void,TkUnionRectWithRegion,V_TkUnionRectWithRegion,_ANSI_ARGS_((XRectangle* rect,
+				TkRegion src, TkRegion dr_return)))
+#endif /* #ifdef __WIN32__ */
 #endif /* #ifndef TkUnionRectWithRegion */
 
 #ifndef TkWmAddToColormapWindows

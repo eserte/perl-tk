@@ -2309,7 +2309,9 @@ typedef unsigned short Tcl_UniChar;
 #define Tcl_Ckrealloc Tcl_Realloc
 #define Tcl_Return Tcl_SetResult
 #define Tcl_TildeSubst Tcl_TranslateFileName
+#ifndef _LANG
 #define panic Tcl_Panic
+#endif
 #define panicVA Tcl_PanicVA
 
 

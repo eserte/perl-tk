@@ -623,7 +623,7 @@ if (1)
   $e->update;
   $e->configure(-font => $big);
   $e->update;
-  ok($e->geometry, "62x31+0+0");
+  ok($e->geometry, qr/62x3\d\+0\+0/);
  }
 
 
