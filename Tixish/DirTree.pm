@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/DirTree.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/DirTree.pm#14$
 
 use Tk;
 use Tk::Derived;
@@ -29,6 +29,7 @@ sub Populate {
         -dircmd         => [qw/CALLBACK dirCmd DirCmd/, 
                             sub { $cw->dircmd( @_ ) } ], 
         -showhidden     => [qw/PASSIVE showHidden ShowHidden 0/], 
+        -image          => [qw/PASSIVE image Image folder/], 
         -directory      => [qw/SETMETHOD directory Directory ./],
         -value          => "-directory" );
 
@@ -114,7 +115,7 @@ sub opencmd {
 sub add_to_tree {
     my( $w, $dir, $name, $parent ) = @_;
 
-    my $image = $w->Getimage( "folder" );
+    my $image = $w->Getimage( $w->cget('-image') );
     my $mode = "none";
     $mode = "open" if $w->has_subdir( $dir );
 

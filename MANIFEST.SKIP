@@ -53,6 +53,7 @@ TixPixmap/Pixmap\.c$
 Tk\.c$
 Xlib/X/X\.c$
 Xlib/Xlib\.c$
+pTk/ClientWin\.c$
 pTk/Demo\.c$
 pTk/X\.h$
 pTk/Xatom\.h$

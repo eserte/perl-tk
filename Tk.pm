@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.010';
+$Tk::VERSION     = '800.011';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -231,10 +231,11 @@ sub fileevent
  goto &Tk::IO::fileevent;
 }
 
-sub messageBox {
+sub MessageBox {
+    my ($kind,%args) = @_;
     require Tk::Dialog;
-    my $parent = shift;
-    my $args = {@_};		# list to hash ref
+    my $parent = delete $args{'-parent'};
+    my $args = \%args;
 
     $args->{-bitmap} = delete $args->{-icon} if defined $args->{-icon};
     $args->{-text} = delete $args->{-message} if defined $args->{-message};
@@ -243,29 +244,25 @@ sub messageBox {
     my $type;
     if (defined($type = delete $args->{-type})) {
 	delete $args->{-type};
-	my @buttons;
-	if ($type eq 'AbortRetryIgnore') {
-	    @buttons = qw/Abort Retry Ignore/;
-	} elsif ($type eq 'OK') {
-	    @buttons = qw/OK/;
-	} elsif ($type eq 'OKCancel') {
-	    @buttons = qw/OK Cancel/;
-	} elsif ($type eq 'RetryCancel') {
-	    @buttons = qw/Retry Cancel/;
-	} elsif ($type eq 'YesNo') {
-	    @buttons = qw/Yes No/;
-	} elsif ($type eq 'YesNoCancel') {
-	    @buttons = qw/Yes No cancel/;
-	}
+	my @buttons = grep($_,map(ucfirst($_),
+                      split(/(abort|retry|ignore|yes|no|cancel|ok)/,
+                            lc($type))));
 	$args->{-buttons} = [@buttons];
 	$args->{-default_button} = delete $args->{-default} if
 	    defined $args->{-default};
 	if (not defined $args->{-default_button} and scalar(@buttons) == 1) {
 	   $args->{-default_button} = $buttons[0]; 
 	}
-	$parent->Dialog(%$args)->Show;
+	return $parent->Dialog(%$args)->Show;
     }
 } # end messageBox
+
+sub messageBox
+{
+ my ($widget,%args) = @_;
+ $args{'-type'} = (exists $args{'-type'}) ? lc($args{'-type'}) : 'ok';
+ tk_messageBox(-parent => $widget, %args);
+}
 
 sub getOpenFile
 {

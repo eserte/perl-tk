@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.013'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#13$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#14$
 
 use Tk;
 use Carp;
@@ -26,8 +26,8 @@ sub Populate {
     if (not defined $lpack) {
 	$lpack = [-side => "left", -anchor => "e"];
     }
-    my $e = $w->LabEntry(-labelPack => $lpack);
-    delete $args->{-label};
+    my $e = $w->LabEntry(-labelPack => $lpack,
+			 -label => delete $args->{-label});
     my $b = $w->Button(-bitmap => '@' . Tk->findINC("cbxarrow.xbm"));
     $w->Advertise("entry" => $e);
     $w->Advertise("arrow" => $b);
@@ -55,6 +55,7 @@ sub Populate {
         -state       => [qw/METHOD   state       State         normal/],
         -arrowimage  => [ {-image => $b}, qw/arrowImage ArrowImage/, undef],
         -variable    => "-textvariable",
+	-colorstate  => [qw/PASSIVE  colorState  ColorState/,  undef],
         DEFAULT      => [$e] );
 }
 
@@ -271,13 +272,15 @@ sub _set_edit_state {
     my $entry  = $w->Subwidget( "entry" );
     my $button = $w->Subwidget( "arrow" );
 
-    my $color;
-    if( $state eq "normal" ) {                  # Editable
-        $color = "gray95";
-    } else {                                    # Not Editable
-        $color = $w->cget( -background ) || "lightgray";
+    if ($w->cget( "-colorstate" )) {
+	my $color;
+	if( $state eq "normal" ) {                  # Editable
+	    $color = "gray95";
+	} else {                                    # Not Editable
+	    $color = $w->cget( -background ) || "lightgray";
+	}
+	$entry->Subwidget( "entry" )->configure( -background => $color );
     }
-    $entry->Subwidget( "entry" )->configure( -background => $color );
 
     if( $state eq "readonly" ) {
         $entry->configure( -state => "disabled" );

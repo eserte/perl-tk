@@ -142,7 +142,7 @@ TkWinXInit(hInstance)
     info.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     GetVersionEx(&info);
     tkpIsWin32s = (info.dwPlatformId == VER_PLATFORM_WIN32s);
-    EnumWindows(FindMyConsole, &mypid);
+    EnumWindows(FindMyConsole, (LPARAM) &mypid);
 
     if (childClassInitialized != 0) {
 	return;

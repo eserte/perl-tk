@@ -2965,6 +2965,39 @@ int flags;
 }
 
 static I32
+Perl_Value(IV ix, SV *sv)
+{
+ Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
+ char *result;
+ assert(sv == p->sv);
+
+ /* We are a "magic" set processor, whether we like it or not
+    because this is the hook we use to get called.
+    So we are (I think) supposed to look at "private" flags
+    and set the public ones if appropriate.
+    e.g. "chop" sets SvPOKp as a hint but not SvPOK
+
+    presumably other operators set other private bits.
+
+    Question are successive "magics" called in correct order?
+
+    i.e. if we are tracing a tied variable should we call
+    some magic list or be careful how we insert ourselves in the list?
+
+  */         
+
+ if (!SvPOK(sv) && SvPOKp(sv))
+  SvPOK_on(sv);
+
+ if (!SvNOK(sv) && SvNOKp(sv))
+  SvNOK_on(sv);
+
+ if (!SvIOK(sv) && SvIOKp(sv))
+  SvIOK_on(sv);
+ return 0;
+}
+
+static I32
 Perl_Trace(ix, sv)
 IV ix;
 SV *sv;
@@ -3060,7 +3093,7 @@ ClientData clientData;
  sv_magic(sv, 0, 'U', 0, 0);
 
  New(666, ufp, 1, struct ufuncs);
- ufp->uf_val = 0;
+ ufp->uf_val = Perl_Value;
  ufp->uf_set = Perl_Trace;
  ufp->uf_index = (IV) p;
 
@@ -4121,9 +4154,17 @@ Tcl_Interp *interp;
 Tk_Window tkwin;
 XEvent *event;
 {
- SV *w  = TkToWidget(tkwin,NULL);
- char *key = Tk_GetAtomName(tkwin, event->xclient.message_type);
- HV *cm = FindHv((HV *) SvRV(w),"LangClientMessage",0,CM_KEY);
+ SV *w = TkToWidget(tkwin,NULL);
+ char *key;
+ HV *cm = NULL;
+ if (!SvROK(w))
+  {
+   Tk_Window mainwin = (Tk_Window)((((TkWindow*)tkwin)->mainPtr)->winPtr);
+   w = TkToWidget(mainwin,NULL);
+  }
+ key = Tk_GetAtomName(tkwin, event->xclient.message_type);
+ if (SvROK(w))
+  cm = FindHv((HV *) SvRV(w),"LangClientMessage",0,CM_KEY);
  if (cm)
   {
    SV **x = hv_fetch(cm,key,strlen(key),0);

@@ -20,10 +20,13 @@ BEGIN
       
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.011'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#12$
 
 use Tk 'Ev';
 use Tk::Widget;
+use Carp;
+
+carp __PACKAGE__ . " is deprecated";
 
 use base  'Tk::Widget';
 

@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION @ISA);
 
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#14$
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#15$
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -119,8 +119,8 @@ sub add
  
  my $ccmd = delete $args{-createcmd};
  my $rcmd = delete $args{-raisecmd};
- $f->{-createcmd} = $ccmd if (defined $ccmd);
- $f->{-raisecmd} = $rcmd if (defined $rcmd);
+ $f->{-createcmd} = Tk::Callback->new($ccmd) if (defined $ccmd);
+ $f->{-raisecmd} = Tk::Callback->new($rcmd) if (defined $rcmd);
  
  # manage our geometry
  $w->ManageGeometry($f);
@@ -147,7 +147,7 @@ sub raise
     {
      if (defined $childw->{-createcmd}) 
       {
-       &{$childw->{-createcmd}}($childw);
+       $childw->{-createcmd}->Call($childw);
        delete $childw->{-createcmd};
       }
      # hide the original visible window
@@ -164,7 +164,7 @@ sub raise
      my $cH = $myH - $w->{"pad-y1"} - $w->{"pad-y2"} - 2 * (defined $w->{-ipady} ? $w->{-ipady} : 0);
      my $cX = $w->{"pad-x1"} + (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
      my $cY = $w->{"pad-y1"} + (defined $w->{-ipady} ? $w->{-ipady} : 0);
-   
+
      if ($cW > 0 && $cH > 0) 
       {    
        $childw->MoveResizeWindow($cX, $cY, $cW, $cH);
@@ -175,7 +175,7 @@ sub raise
       {
        if (defined $childw->{-raisecmd}) 
         {
-         &{$childw->{-raisecmd}}($childw);
+         $childw->{-raisecmd}->Call($childw);
         }
       }
     }
@@ -190,8 +190,8 @@ sub pageconfigure
   {
    my $ccmd = delete $args{-createcmd};
    my $rcmd = delete $args{-raisecmd};
-   $childw->{-createcmd} = $ccmd if (defined $ccmd);
-   $childw->{-raisecmd} = $rcmd if (defined $rcmd);
+   $childw->{-createcmd} = Tk::Callback->new($ccmd) if (defined $ccmd);
+   $childw->{-raisecmd} = Tk::Callback->new($rcmd) if (defined $rcmd);
    $w->SUPER::pageconfigure($child, %args) if (keys %args);
   }
 }

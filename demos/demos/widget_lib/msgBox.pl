@@ -23,7 +23,7 @@ sub msgBox {
     $lsep->pack(qw/-side top -fill x -expand no/);
 
     my $iconvar = 'info';
-    foreach my $i (qw/error hourglass info question questhead warning/) {
+    foreach my $i (qw/error info question warning/) {
 	$left->Radiobutton(-text => $i, -variable => \$iconvar, -value => $i,
 			   qw/-width 16 -anchor w -relief flat/)->pack(
 			   qw/-side top -pady 2 -anchor w -fill x/);
