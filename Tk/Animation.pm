@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Animation.pm#16 $
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Animation.pm#18 $
 
 use Tk::Photo;
 use base  qw(Tk::Photo);
@@ -71,13 +71,15 @@ sub start_animation
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
  my $w = $obj->MainWindow;
- $obj->RepeatId($w->repeat($period,[$obj,'next_image']));
+ $obj->stop_animation;
+ $obj->{'_NextId_'} = $w->repeat($period,[$obj,'next_image']);
 }
 
 sub stop_animation
 {
  my ($obj) = @_;
- $obj->CancelRepeat;
+ my $id = delete $obj->{'_NextId_'};
+ Tk::catch { $id->cancel } if $id;
  $obj->set_image(0);
 }
 

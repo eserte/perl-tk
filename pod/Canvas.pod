@@ -1214,7 +1214,7 @@ This option specifies the color that should be used to draw the
 outline of the arc in its normal, active and disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
 This option defaults to B<black>.  If I<color> is specified
-as an empty string then no outline is drawn for the arc.
+as undef then no outline is drawn for the arc.
 
 =item B<-outlinestipple> =E<gt> I<bitmap>
 
@@ -1242,7 +1242,7 @@ from the 3-o'clock position;  it may be either positive or negative.
 =item B<-state> =E<gt> I<state>
 
 Modifies the state of the arc item where I<state> may be set to one of:
-normal, disabled, hidden or {}. If set to empty, the state of the canvas
+normal, disabled, hidden or "". If set to empty, the state of the canvas
 itself is used. An arc item may also be in the "active"
 state if the mouse is currently over it.  Many options can take
 separate specifications in normal, active and disabled states such that the
@@ -1298,7 +1298,7 @@ Specifies the width of the outline to be drawn around
 the arc's region, in its normal, active and disabled states.
 I<outlineWidth> may be in any of the forms described in 
 the L<"COORDINATES"> section above.
-If the B<-outline> option has been specified as an empty string
+If the B<-outline> option has been specified as undef
 then this option has no effect.
 Wide outlines will be drawn centered on the edges of the arc's region.
 This option defaults to 1.0.
@@ -1344,8 +1344,8 @@ This option defaults to B<center>.
 Specifies the color to use for each of the bitmap's '0' valued pixels
 in its normal, active and disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
-If this option isn't specified, or if it is specified as an empty
-string, then nothing is displayed where the bitmap pixels are 0;  this
+If this option isn't specified, or if it is specified as undef,
+then nothing is displayed where the bitmap pixels are 0;  this
 produces a transparent effect.
 
 =item B<-bitmap> =E<gt> I<bitmap>
@@ -1451,7 +1451,7 @@ This option specifies the color that should be used to draw the
 outline of the grid in its normal and disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
 This option defaults to B<black>.
-If I<color> is an empty string then no grid will be drawn.
+If I<color> is undef then no grid will be drawn.
 
 =item B<-stipple> =E<gt> I<bitmap>
 
@@ -1636,8 +1636,8 @@ B<-dashoffset> is ignored if there is no B<-dash> pattern.
 Specifies the color to be used to fill the line in its normal, active, and
 disabled states.
 I<Color> may have
-any of the forms acceptable to B<Tk_GetColor>.  It may also be an
-empty string, in which case the line will be transparent.
+any of the forms acceptable to B<Tk_GetColor>.  It may also be undef,
+in which case the line will be transparent.
 This option defaults to B<black>.
 
 =item B<-joinstyle> =E<gt> I<style>
@@ -1766,7 +1766,7 @@ B<-dashoffset> is ignored if there is no B<-dash> pattern.
 Specifies the color to be used to fill the oval in its normal, active, and
 disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
-If I<color> is an empty string (the default), then
+If I<color> is undef (the default), then
 then the oval will not be filled.
 
 =item B<-outline> =E<gt> I<color>
@@ -1779,7 +1779,7 @@ This option specifies the color that should be used to draw the
 outline of the oval in its normal, active and disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
 This option defaults to B<black>.
-If I<color> is an empty string then no outline will be
+If I<color> is undef then no outline will be
 drawn for the oval.
 
 =item B<-outlinestipple> =E<gt> I<bitmap>
@@ -1901,7 +1901,7 @@ Specifies the color to be used to fill the polygon in its normal, active, and
 disabled states.
 I<Color>
 may have any of the forms acceptable to B<Tk_GetColor>.
-If I<color> is an empty string then the polygon will be
+If I<color> is undef then the polygon will be
 transparent.
 This option defaults to B<black>.
 
@@ -1922,9 +1922,9 @@ If this option isn't specified then it defaults to B<miter>.
 This option specifies the color that should be used to draw the
 outline of the polygon in its normal, active and disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
-If I<color> is an empty string then no outline will be
+If I<color> is undef then no outline will be
 drawn for the polygon.
-This option defaults to empty (no outline).
+This option defaults to undef (no outline).
 
 =item B<-outlinestipple> =E<gt> I<bitmap>
 
@@ -2067,7 +2067,7 @@ Specifies the color to be used to fill the rectangle in its normal, active, and
 disabled states.
 I<Color>
 may be specified in any of the forms accepted by B<Tk_GetColor>.
-If I<color> is an empty string (the default),
+If I<color> is undef (the default),
 then the rectangle will not be filled.
 
 =item B<-outline> =E<gt> I<color>
@@ -2080,7 +2080,7 @@ This option specifies the color that should be used to draw the
 outline of the rectangle in its normal, active and disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
 This option defaults to B<black>.
-If I<color> is an empty string then no outline will be
+If I<color> is undef then no outline will be
 drawn for the rectangle.
 
 =item B<-outlinestipple> =E<gt> I<bitmap>
@@ -2197,7 +2197,7 @@ This option defaults to B<center>.
 Specifies the color to be used to fill the text in its normal, active, and
 disabled states.
 I<Color> may have any of the forms accepted by B<Tk_GetColor>.
-If I<color> is an empty string then the text will be transparent.
+If I<color> is undef then the text will be transparent.
 If this option isn't specified then it defaults to B<black>.
 
 =item B<-font> =E<gt> I<fontName>

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkBitmap.c --
  *
  *	This file maintains a database of read-only bitmaps for the Tk
@@ -32,6 +32,7 @@
 
 #include "error.bmp"
 #include "gray12.bmp"
+#include "transpnt.bmp"
 #include "gray25.bmp"
 #include "gray50.bmp"
 #include "gray75.bmp"
@@ -189,7 +190,7 @@ Tk_GetBitmap(interp, tkwin, string)
                     " safe interpreter", (char *) NULL);
             goto error;
         }
-        
+
 	string = Tcl_TranslateFileName(interp, string + 1, &buffer);
 	if (string == NULL) {
 	    goto error;
@@ -217,7 +218,7 @@ Tk_GetBitmap(interp, tkwin, string)
 	     */
 	    bitmap = TkpGetNativeAppBitmap(Tk_Display(tkwin), string,
 		    &width, &height);
-	    
+	
 	    if (bitmap == None) {
 		if (interp != NULL) {
 		    Tcl_AppendResult(interp, "bitmap \"", string,
@@ -581,6 +582,8 @@ BitmapInit()
 	    question_width, question_height);
     Tk_DefineBitmap(dummy, Tk_GetUid("warning"), (char *) warning_bits,
 	    warning_width, warning_height);
+    Tk_DefineBitmap(dummy, Tk_GetUid("transparent"), (char *) transparent_bits,
+	    transparent_width, transparent_height);
 
     TkpDefineNativeBitmaps();
 
@@ -606,7 +609,7 @@ BitmapInit()
 
 int
 TkReadBitmapFile(display, d, filename, width_return, height_return,
-	bitmap_return, x_hot_return, y_hot_return) 
+	bitmap_return, x_hot_return, y_hot_return)
     Display* display;
     Drawable d;
     CONST char* filename;

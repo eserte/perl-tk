@@ -16,10 +16,6 @@ VFUNC(int,LangCmpOpt,V_LangCmpOpt,_ANSI_ARGS_((char *opt,char *arg,size_t length
 VFUNC(Arg,LangCopyArg,V_LangCopyArg,_ANSI_ARGS_((Arg)))
 #endif
 
-#ifndef LangDebug
-VFUNC(void,LangDebug,V_LangDebug,_ANSI_ARGS_((char *fmt,...)))
-#endif
-
 #ifndef LangDoCallback
 VFUNC(int,LangDoCallback,V_LangDoCallback,_ANSI_ARGS_((Tcl_Interp *,LangCallback *,int result,int argc,...)))
 #endif
@@ -34,10 +30,6 @@ VFUNC(int,LangEval,V_LangEval,_ANSI_ARGS_((Tcl_Interp *interp, char *cmd, int gl
 
 #ifndef LangEventHook
 VFUNC(int,LangEventHook,V_LangEventHook,_ANSI_ARGS_((int flags)))
-#endif
-
-#ifndef LangExit
-VFUNC(void,LangExit,V_LangExit,_ANSI_ARGS_((int)))
 #endif
 
 #ifndef LangFreeArg
@@ -100,6 +92,10 @@ VFUNC(void,LangSetInt,V_LangSetInt,_ANSI_ARGS_((Arg *,int)))
 VFUNC(void,LangSetString,V_LangSetString,_ANSI_ARGS_((Arg *,char *)))
 #endif
 
+#ifndef LangSetVar
+VFUNC(void,LangSetVar,V_LangSetVar,_ANSI_ARGS_((Arg *,Var)))
+#endif
+
 #ifndef LangString
 VFUNC(char *,LangString,V_LangString,_ANSI_ARGS_((Arg)))
 #endif
@@ -108,16 +104,12 @@ VFUNC(char *,LangString,V_LangString,_ANSI_ARGS_((Arg)))
 VFUNC(int,LangStringMatch,V_LangStringMatch,_ANSI_ARGS_((char *string, Arg match)))
 #endif
 
-#ifndef LangVarArg
-VFUNC(Arg,LangVarArg,V_LangVarArg,_ANSI_ARGS_((Var)))
-#endif
-
 #ifndef Lang_BuildInImages
 VFUNC(void,Lang_BuildInImages,V_Lang_BuildInImages,_ANSI_ARGS_((void)))
 #endif
 
 #ifndef Lang_CallWithArgs
-VFUNC(int,Lang_CallWithArgs,V_Lang_CallWithArgs,_ANSI_ARGS_((Tcl_Interp *interp, 
+VFUNC(int,Lang_CallWithArgs,V_Lang_CallWithArgs,_ANSI_ARGS_((Tcl_Interp *interp,
 					char *sub, int argc, Arg *argv)))
 #endif
 
@@ -149,10 +141,6 @@ VFUNC(int,Lang_GetStrInt,V_Lang_GetStrInt,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int *intPtr)))
 #endif
 
-#ifndef Lang_OSHandle
-VFUNC(long,Lang_OSHandle,V_Lang_OSHandle,_ANSI_ARGS_((int fd)))
-#endif
-
 #ifndef Lang_RegExpCompile
 VFUNC(Tcl_RegExp,Lang_RegExpCompile,V_Lang_RegExpCompile,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int fold)))
@@ -175,10 +163,6 @@ VFUNC(void,Lang_SetErrorCode,V_Lang_SetErrorCode,_ANSI_ARGS_((Tcl_Interp *interp
 #ifndef Tcl_AddErrorInfo
 VFUNC(void,Tcl_AddErrorInfo,V_Tcl_AddErrorInfo,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *message)))
-#endif
-
-#ifndef Tcl_Alloc
-VFUNC(char *,Tcl_Alloc,V_Tcl_Alloc,_ANSI_ARGS_((unsigned int size)))
 #endif
 
 #ifndef Tcl_AllowExceptions
@@ -280,6 +264,11 @@ VFUNC(void,Tcl_DStringSetLength,V_Tcl_DStringSetLength,_ANSI_ARGS_((Tcl_DString 
 VFUNC(char *,Tcl_DStringValue,V_Tcl_DStringValue,_ANSI_ARGS_((Tcl_DString *dsPtr)))
 #endif
 
+#ifndef Tcl_DbCkfree
+VFUNC(void,Tcl_DbCkfree,V_Tcl_DbCkfree,_ANSI_ARGS_((char *ptr,
+			    char *file, int line)))
+#endif
+
 #ifndef Tcl_DbDStringInit
 VFUNC(void,Tcl_DbDStringInit,V_Tcl_DbDStringInit,_ANSI_ARGS_((Tcl_DString *dsPtr,char *file,int line)))
 #endif
@@ -329,10 +318,6 @@ VFUNC(void,Tcl_EventuallyFree,V_Tcl_EventuallyFree,_ANSI_ARGS_((ClientData clien
 VFUNC(Tcl_HashEntry *,Tcl_FirstHashEntry,V_Tcl_FirstHashEntry,_ANSI_ARGS_((
 			    Tcl_HashTable *tablePtr,
 			    Tcl_HashSearch *searchPtr)))
-#endif
-
-#ifndef Tcl_Free
-VFUNC(void,Tcl_Free,V_Tcl_Free,_ANSI_ARGS_((char *ptr)))
 #endif
 
 #ifndef Tcl_GetAssocData
@@ -463,7 +448,7 @@ VFUNC(int,Tcl_ListObjGetElements,V_Tcl_ListObjGetElements,_ANSI_ARGS_((
 
 #ifndef Tcl_ListObjIndex
 VFUNC(int,Tcl_ListObjIndex,V_Tcl_ListObjIndex,_ANSI_ARGS_((Tcl_Interp *interp,
-			    Tcl_Obj *listPtr, int index, 
+			    Tcl_Obj *listPtr, int index,
 			    Tcl_Obj **objPtrPtr)))
 #endif
 
@@ -519,10 +504,6 @@ VFUNC(Tcl_Channel,Tcl_OpenFileChannel,V_Tcl_OpenFileChannel,_ANSI_ARGS_((Tcl_Int
                             int permissions)))
 #endif
 
-#ifndef Tcl_Panic
-VFUNC(void,Tcl_Panic,V_Tcl_Panic,_ANSI_ARGS_((char *,...)))
-#endif
-
 #ifndef Tcl_PosixError
 VFUNC(char *,Tcl_PosixError,V_Tcl_PosixError,_ANSI_ARGS_((Tcl_Interp *interp)))
 #endif
@@ -534,11 +515,6 @@ VFUNC(void,Tcl_Preserve,V_Tcl_Preserve,_ANSI_ARGS_((ClientData data)))
 #ifndef Tcl_Read
 VFUNC(int,Tcl_Read,V_Tcl_Read,_ANSI_ARGS_((Tcl_Channel chan,
 	        	    char *bufPtr, int toRead)))
-#endif
-
-#ifndef Tcl_Realloc
-VFUNC(char *,Tcl_Realloc,V_Tcl_Realloc,_ANSI_ARGS_((char *ptr,
-			    unsigned int size)))
 #endif
 
 #ifndef Tcl_RegExpRange
@@ -570,7 +546,7 @@ VFUNC(void,Tcl_SetAssocData,V_Tcl_SetAssocData,_ANSI_ARGS_((Tcl_Interp *interp,
 #endif
 
 #ifndef Tcl_SetBooleanObj
-VFUNC(void,Tcl_SetBooleanObj,V_Tcl_SetBooleanObj,_ANSI_ARGS_((Tcl_Obj *objPtr, 
+VFUNC(void,Tcl_SetBooleanObj,V_Tcl_SetBooleanObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 			    int boolValue)))
 #endif
 
@@ -586,17 +562,17 @@ VFUNC(int,Tcl_SetCommandInfo,V_Tcl_SetCommandInfo,_ANSI_ARGS_((Tcl_Interp *inter
 #endif
 
 #ifndef Tcl_SetDoubleObj
-VFUNC(void,Tcl_SetDoubleObj,V_Tcl_SetDoubleObj,_ANSI_ARGS_((Tcl_Obj *objPtr, 
+VFUNC(void,Tcl_SetDoubleObj,V_Tcl_SetDoubleObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 			    double doubleValue)))
 #endif
 
 #ifndef Tcl_SetIntObj
-VFUNC(void,Tcl_SetIntObj,V_Tcl_SetIntObj,_ANSI_ARGS_((Tcl_Obj *objPtr, 
+VFUNC(void,Tcl_SetIntObj,V_Tcl_SetIntObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 			    int intValue)))
 #endif
 
 #ifndef Tcl_SetLongObj
-VFUNC(void,Tcl_SetLongObj,V_Tcl_SetLongObj,_ANSI_ARGS_((Tcl_Obj *objPtr, 
+VFUNC(void,Tcl_SetLongObj,V_Tcl_SetLongObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 			    long longValue)))
 #endif
 
@@ -611,7 +587,7 @@ VFUNC(void,Tcl_SetResult,V_Tcl_SetResult,_ANSI_ARGS_((Tcl_Interp *interp,
 #endif
 
 #ifndef Tcl_SetStringObj
-VFUNC(void,Tcl_SetStringObj,V_Tcl_SetStringObj,_ANSI_ARGS_((Tcl_Obj *objPtr, 
+VFUNC(void,Tcl_SetStringObj,V_Tcl_SetStringObj,_ANSI_ARGS_((Tcl_Obj *objPtr,
 			    char *bytes, int length)))
 #endif
 

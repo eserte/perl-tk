@@ -15,6 +15,10 @@ VFUNC(int,LangCmpCallback,V_LangCmpCallback,_ANSI_ARGS_((LangCallback *a,Arg b))
 VFUNC(LangCallback *,LangCopyCallback,V_LangCopyCallback,_ANSI_ARGS_((LangCallback *)))
 #endif
 
+#ifndef LangDebug
+VFUNC(void,LangDebug,V_LangDebug,_ANSI_ARGS_((char *fmt,...)))
+#endif
+
 #ifndef LangFreeCallback
 VFUNC(void,LangFreeCallback,V_LangFreeCallback,_ANSI_ARGS_((LangCallback *)))
 #endif
@@ -25,6 +29,10 @@ VFUNC(LangCallback *,LangMakeCallback,V_LangMakeCallback,_ANSI_ARGS_((Arg)))
 
 #ifndef LangPushCallbackArgs
 VFUNC(void,LangPushCallbackArgs,V_LangPushCallbackArgs,_ANSI_ARGS_((LangCallback **svp)))
+#endif
+
+#ifndef Tcl_Alloc
+VFUNC(char *,Tcl_Alloc,V_Tcl_Alloc,_ANSI_ARGS_((unsigned int size)))
 #endif
 
 #ifndef Tcl_CancelIdleCall
@@ -53,6 +61,19 @@ VFUNC(void,Tcl_CreateFileHandler,V_Tcl_CreateFileHandler,_ANSI_ARGS_((
 #ifndef Tcl_CreateTimerHandler
 VFUNC(Tcl_TimerToken,Tcl_CreateTimerHandler,V_Tcl_CreateTimerHandler,_ANSI_ARGS_((int milliseconds,
 			    Tcl_TimerProc *proc, ClientData clientData)))
+#endif
+
+#ifndef Tcl_DbCkalloc
+VFUNC(char *,Tcl_DbCkalloc,V_Tcl_DbCkalloc,_ANSI_ARGS_((unsigned int size,char *file,int line)))
+#endif
+
+#ifndef Tcl_DbCkfree
+VFUNC(void,Tcl_DbCkfree,V_Tcl_DbCkfree,_ANSI_ARGS_((char *ptr,char *file ,int line)))
+#endif
+
+#ifndef Tcl_DbCkrealloc
+VFUNC(char *,Tcl_DbCkrealloc,V_Tcl_DbCkrealloc,_ANSI_ARGS_((char *ptr,
+			    unsigned int size,char *file,int line)))
 #endif
 
 #ifndef Tcl_DeleteEventSource
@@ -84,8 +105,16 @@ VFUNC(void,Tcl_DoWhenIdle,V_Tcl_DoWhenIdle,_ANSI_ARGS_((Tcl_IdleProc *proc,
 VFUNC(void,Tcl_Exit,V_Tcl_Exit,_ANSI_ARGS_((int status)))
 #endif
 
+#ifndef Tcl_Free
+VFUNC(void,Tcl_Free,V_Tcl_Free,_ANSI_ARGS_((char *ptr)))
+#endif
+
 #ifndef Tcl_GetServiceMode
 VFUNC(int,Tcl_GetServiceMode,V_Tcl_GetServiceMode,_ANSI_ARGS_((void)))
+#endif
+
+#ifndef Tcl_Panic
+VFUNC(void,Tcl_Panic,V_Tcl_Panic,_ANSI_ARGS_((char *,...)))
 #endif
 
 #ifndef Tcl_QueueEvent
@@ -97,6 +126,11 @@ VFUNC(void,Tcl_QueueEvent,V_Tcl_QueueEvent,_ANSI_ARGS_((Tcl_Event *evPtr,
 VFUNC(void,Tcl_QueueProcEvent,V_Tcl_QueueProcEvent,_ANSI_ARGS_((Tcl_EventProc *proc,
 			    Tcl_Event *evPtr,
 			    Tcl_QueuePosition position)))
+#endif
+
+#ifndef Tcl_Realloc
+VFUNC(char *,Tcl_Realloc,V_Tcl_Realloc,_ANSI_ARGS_((char *ptr,
+			    unsigned int size)))
 #endif
 
 #ifndef Tcl_ServiceAll

@@ -1,4 +1,4 @@
-/* 
+/*
  * tk3d.c --
  *
  *	This module provides procedures to draw borders in
@@ -13,7 +13,7 @@
  * RCS: @(#) $Id: tk3d.c,v 1.2 1998/09/14 18:23:02 stanton Exp $
  */
 
-#include <tk3d.h>
+#include "tk3d.h"
 
 /*
  * Hash table to map from a border's values (color, etc.) to a
@@ -101,7 +101,7 @@ Tk_Get3DBorder(interp, tkwin, colorName)
 	/*
 	 * No satisfactory border exists yet.  Initialize a new one.
 	 */
-    
+
 	bgColorPtr = Tk_GetColor(interp, tkwin, colorName);
 	if (bgColorPtr == NULL) {
 	    Tcl_DeleteHashEntry(hashPtr);
@@ -123,13 +123,13 @@ Tk_Get3DBorder(interp, tkwin, colorName)
 	borderPtr->lightGC = None;
 	borderPtr->hashPtr = hashPtr;
 	Tcl_SetHashValue(hashPtr, borderPtr);
-    
+
 	/*
 	 * Create the information for displaying the background color,
 	 * but delay the allocation of shadows until they are actually
 	 * needed for drawing.
 	 */
-    
+
 	gcValues.foreground = borderPtr->bgColorPtr->pixel;
 	borderPtr->bgGC = Tk_GetGC(tkwin, GCForeground, &gcValues);
     }
@@ -703,7 +703,7 @@ Tk_Fill3DRectangle(tkwin, drawable, border, x, y, width,
      * in areas not covered by the 3D border. This avoids flashing
      * effects on the screen for the border region.
      */
-  
+
     if (relief == TK_RELIEF_FLAT) {
 	borderWidth = 0;
     }

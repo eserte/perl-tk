@@ -5,7 +5,7 @@ package Tk::Toplevel;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Tk/Toplevel.pm#27 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Toplevel.pm#28 $
 
 use base  qw(Tk::Wm Tk::Frame);
 
@@ -58,16 +58,16 @@ sub Icon
  $icon->update;    # Let attributes propogate
  $top->deiconify if ($state eq 'normal');
  $top->iconify   if ($state eq 'iconic');
-}       
+}
 
 sub menu
 {
  my $w = shift;
  my $menu;
- $menu = $w->cget('-menu');                                      
+ $menu = $w->cget('-menu');
  unless (defined $menu)
   {
-   $w->configure(-menu => ($menu = $w->SUPER::menu)) 
+   $w->configure(-menu => ($menu = $w->SUPER::menu))
   }
  $menu->configure(@_) if @_;
  return $menu;
@@ -120,6 +120,8 @@ sub FG_Create {
 		     $t->FG_Destroy($w);
 		 }
 		);
+	# <Destroy> is not sufficient to break loops if never mapped.
+	$t->OnDestroy([$t,'FG_Destroy']);
     }
 }
 
@@ -153,18 +155,14 @@ sub FG_BindOut {
 #
 sub FG_Destroy {
     my($t, $w) = @_;
-    if ($t eq $w) {
+    if (!defined($w) || $t == $w) {
 	delete $t->{'_fg'};
 	delete $t->{'_focus'};
-	foreach (keys %{ $t->{'_FocusIn'} }) {
-	    delete $t->{'_FocusIn'}{$_};
-	}
-	foreach (keys %{ $t->{'_FocusOut'} }) {
-	    delete $t->{'_FocusOut'}{$_};
-	}
+	delete $t->{'_FocusOut'};
+	delete $t->{'_FocusIn'};
     } else {
 	if (exists $t->{'_focus'}) {
-	    delete $t->{'_focus'} if ($t->{'_focus'} eq $w);
+	    delete $t->{'_focus'} if ($t->{'_focus'} == $w);
 	}
 	delete $t->{'_FocusIn'}{$w};
 	delete $t->{'_FocusOut'}{$w};
@@ -210,4 +208,4 @@ sub FG_Out {
 
 1;
 
-__END__ 
+__END__

@@ -883,8 +883,8 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	    break;
         case TK_CONFIG_SCALARVAR: 
         case TK_CONFIG_HASHVAR: 
-        case TK_CONFIG_ARRAYVAR: 
-	    if (*(Var *)ptr) LangSetArg(&result,LangVarArg(*(Var *) ptr));
+        case TK_CONFIG_ARRAYVAR:
+	    LangSetVar(&result,*(Var *) ptr);
 	    break;
 	case TK_CONFIG_UID: {
 	    Tk_Uid uid = *((Tk_Uid *) ptr);

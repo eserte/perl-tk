@@ -20,7 +20,7 @@ require Tk::Derived;
 
 
 use vars qw($VERSION);
-$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/Menu.pm#42 $
+$VERSION = '3.043'; # $Id: //depot/Tk8/Tk/Menu.pm#43 $
 
 use strict;
 
@@ -991,7 +991,6 @@ sub tearOffMenu
 # menu descendants will be duplicated at dst.
 # dst - Name to use for topmost menu in duplicate
 # hierarchy.
-use Data::Dumper;
 sub MenuDup
 {
  my $src    = shift;
@@ -1000,14 +999,14 @@ sub MenuDup
  my %args  = (-type => $type) ;
  foreach my $option ($src->configure())
   {
-   next if (@$option == 2);  
+   next if (@$option == 2);
    $args{$$option[0]} = $$option[4] unless exists $args{$$option[0]};
   }
- my $dst = ref($src)->new($parent,%args); 
+ my $dst = ref($src)->new($parent,%args);
  if ($type eq 'tearoff')
   {
    $dst->transient($parent->MainWindow);
-  }    
+  }
  my $last = $src->index('last');
  if ($last ne 'none')
   {
@@ -1025,12 +1024,12 @@ sub MenuDup
        $dst->add($type,@args);
       }
     }
-  } 
+  }
  # Duplicate the binding tags and bindings from the source menu.
  my @bindtags = $src->bindtags;
  my $path = $src->PathName;
  foreach (@bindtags)
-  {       
+  {
    $_ = $dst if ($_ eq $path);
   }
  $dst->bindtags([@bindtags]);
@@ -1054,17 +1053,17 @@ sub radiobutton { require Tk::Menu::Item; shift->Radiobutton(@_); }
 sub command
 {
  my ($menu,%args) = @_;
- require Tk::Menu::Item; 
+ require Tk::Menu::Item;
  if (exists $args{-button})
   {
    # Backward compatible stuff from 'Menubar'
-   my $button = delete $args{-button};       
+   my $button = delete $args{-button};
    $button = ['Misc', -underline => 0 ] unless (defined $button);
-   my @bargs = ();                           
+   my @bargs = ();
    ($button,@bargs) = @$button if (ref($button) && ref $button eq 'ARRAY');
-   $menu = $menu->Menubutton(-label => $button, @bargs);                                 
+   $menu = $menu->Menubutton(-label => $button, @bargs);
   }
- $menu->Command(%args);  
+ $menu->Command(%args);
 }
 
 sub Menubutton
@@ -1089,8 +1088,8 @@ sub Menubutton
  my $hash = $menu->TkHash('MenuButtons');
  my $mb = $hash->{$name};
  if (defined $mb)
-  {   
-   delete $args{'-tearoff'}; # too late!  
+  {
+   delete $args{'-tearoff'}; # too late!
    $mb->configure(%args) if %args;
   }
  else
@@ -1106,23 +1105,23 @@ sub BalloonInfo
 {
  my ($menu,$balloon,$X,$Y,@opt) = @_;
  my $i = $menu->index('active');
- if ($i eq 'none') 
+ if ($i eq 'none')
   {
    my $y = $Y - $menu->rooty;
    $i = $menu->index("\@$y");
-  }                             
+  }
  foreach my $opt (@opt)
   {
    my $info = $balloon->GetOption($opt,$menu);
    if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'ARRAY'))
-    {           
+    {
      $balloon->Subclient($i);
      return '' if $i eq 'none';
      return ${$info}[$i] || '';
-    }           
+    }
    return $info;
   }
-}       
+}
 
 1;
 

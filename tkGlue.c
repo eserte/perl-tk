@@ -83,7 +83,7 @@ static char CMD_KEY[]      = "_CmdInfo_";
 #ifndef BASEEXT
 #define BASEEXT "Tk"
 #endif
-        
+
 typedef XSdec((*XSptr));
 
 static XSdec(XStoSubCmd);
@@ -150,34 +150,6 @@ Tcl_CmdProc *LangOptionCommand = Tk_OptionCmd;
 
 static GV *current_widget;
 static GV *current_event;
-
-void
-#ifdef STANDARD_C
-Tcl_Panic(char *fmt,...)
-#else
-/*VARARGS0 */
-Tcl_Panic(fmt, va_alist)
-char *fmt;
-va_dcl
-#endif
-{
- va_list ap;
-#ifdef I_STDARG
- va_start(ap, fmt);
-#else
- va_start(ap);
-#endif
- PerlIO_flush(PerlIO_stderr());
- PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
- PerlIO_putc(PerlIO_stderr(),'\n');
- va_end(ap);
-#ifdef HAS_FORK
- if (!fork())
-  abort();
- else
-#endif
-  croak("Tcl_Panic");
-}
 
 static int
 Expire(int code)
@@ -257,7 +229,7 @@ int refs;
           if (SvTYPE(SvRV(sv)) == SVt_PVAV)
            LangCatAv(out, (AV *) SvRV(sv), refs,"[]");
           else if (SvTYPE(SvRV(sv)) == SVt_PVHV)
-           {                
+           {
             SV *hv = SvRV(sv);
             sv_catpv(out,"{}");
             if (refs)
@@ -475,8 +447,7 @@ Tcl_Interp *interp;
 int fatal;
 {
  if (interp && SvTYPE((SV *) interp) == SVt_PVHV)
-  {     
-   Tk_CheckHash((SV *) interp);
+  {
    return interp;
   }
  else if (fatal)
@@ -636,6 +607,7 @@ XS(XS_Tk__Interp_DESTROY)
   }
  if (hv)
   {HE *he;
+   /* Tk_CheckHash((SV *)hv,NULL); */
    hv_iterinit(hv);
    while ((he = hv_iternext(hv)))
     {
@@ -649,6 +621,7 @@ XS(XS_Tk__Interp_DESTROY)
     }
    hv_undef(hv);
   }
+ /* Tk_CheckHash((SV *)interp,NULL); */
  hv_undef(interp);
 }
 
@@ -692,9 +665,11 @@ Tk_Window tkwin;
        info->tkfont = NULL;
       }
     }
+   /* Tk_CheckHash((SV *)fonts,NULL); */
    hv_undef(fonts);
   }
  sv_unmagic((SV *) hv, '~');
+ /* Tk_CheckHash((SV *)hv,NULL); */
  Tcl_DeleteInterp(interp);
 }
 
@@ -837,6 +812,22 @@ SV *arg;
     SvREFCNT_dec(*sp);
    *sp = SvREFCNT_inc(arg);
   }
+}
+
+/* This replaces LangSetArg(sp,LangVarArg(var)) which leaked RVs */
+void
+LangSetVar(sp,sv)
+SV **sp;
+Var sv;
+{
+ if (sv)
+  {
+   SV *rv = newRV(sv);
+   LangSetArg(sp,rv);
+   SvREFCNT_dec(rv);
+  }
+ else
+  LangSetArg(sp,NULL);
 }
 
 void
@@ -1049,6 +1040,7 @@ Tcl_Interp *interp;
    if (av_len(av) == 0)
     {
      SV *sv = av_pop(av);
+     SvREFCNT_dec((SV *) av);
      return sv;
     }
    return MakeReference((SV *) av);
@@ -1205,7 +1197,7 @@ SV **args;
  return result;
 }
 
-#if 0 
+#if 0
 
 /* Now defunct - Tcl_ListObj* used instead */
 
@@ -1233,7 +1225,7 @@ SV **args;
    av_store(av,i,sv);
   }
  return (SV *) av;
-}    
+}
 #endif
 
 #ifdef STANDARD_C
@@ -1276,34 +1268,9 @@ SV *sv;
   * is a temporary, we increment refcount here as common case is
   * LangWidgetArg() which just returns a raw un-incremented value
   * from the hash.
-  */ 
-#if 1
+  */
  Increment(sv, "Tcl_ArgResult");
  Tcl_ListObjAppendElement(interp, result, sv);
-#else
- if (SvROK(sv) && !sv_isobject(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
-  {
-   AV *xv = (AV *) SvRV(sv);
-   int l = av_len(xv) + 1;
-   int i;
-   for (i = 0; i < l; i++)
-    {
-     SV **x = av_fetch(xv, i, 0);
-     if (x)
-      {
-       Increment(*x, "Tcl_ArgResult");
-       Tcl_ListObjAppendElement(interp, result, *x);
-      }
-     else
-      Tcl_ListObjAppendElement(interp, result, &PL_sv_undef);
-    }
-  }
- else
-  {
-   Increment(sv, "Tcl_ArgResult");
-   Tcl_ListObjAppendElement(interp, result, sv);
-  }  
-#endif
 }
 
 static SV *
@@ -1437,7 +1404,7 @@ char *name;
  HV *fonts = FindHv(interp, "LangFontArg", 1, FONTS_KEY);
  STRLEN na;
  SV *sv;
- SV **x; 
+ SV **x;
  if (!name)
   name = Tk_NameOfFont(tkfont);
  x = hv_fetch(fonts, name, strlen(name), 0);
@@ -1449,12 +1416,12 @@ char *name;
   {
    Lang_CmdInfo info;
    SV *isv;
-   sv = newSVpv(name,0);                         
-   memset(&info,0,sizeof(info));                 
-   info.interp = interp;                         
-   IncInterp(interp,name);                       
-   isv = struct_sv(&info,sizeof(info));          
-   tilde_magic(sv, isv);                         
+   sv = newSVpv(name,0);
+   memset(&info,0,sizeof(info));
+   info.interp = interp;
+   IncInterp(interp,name);
+   isv = struct_sv(&info,sizeof(info));
+   tilde_magic(sv, isv);
    sv = Blessed("Tk::Font", MakeReference(sv));
    hv_store(fonts, name, strlen(name), sv, 0);
   }
@@ -1630,7 +1597,7 @@ Set_event(SV *event)
    save_item(sv);
    sv_setsv(sv,event);
   }
-}                   
+}
 
 static int
 PushObjCallbackArgs(interp, svp ,obj)
@@ -1660,7 +1627,7 @@ EventAndKeySym *obj;
    AV *av = (AV *) sv;
    int n = av_len(av) + 1;
    SV **x = av_fetch(av, 0, 0);
-   if (x)
+   if (n && x)
     {
      int i = 1;
      sv = *x;
@@ -1769,8 +1736,8 @@ EventAndKeySym *obj;
  *svp = sv;
  PUTBACK;
  return TCL_OK;
-} 
-         
+}
+
 static int
 PushCallbackArgs(interp, svp)
 Tcl_Interp *interp;
@@ -1789,7 +1756,7 @@ SV **svp;
    return EXPIRE((interp,"No 0th element of %s", SvPV(sv, na)));
   }
  return TCL_OK;
-} 
+}
 
 static void SetTclResult(interp,count)
 Tcl_Interp *interp;
@@ -1798,14 +1765,14 @@ int count;
  dSP;
  int offset = count;
  SV **p = sp - count;
- Tcl_ResetResult(interp); 
+ Tcl_ResetResult(interp);
  while (count-- > 0)
   {
    Tcl_AppendArg(interp, *++p);
   }
  sp -= offset;
  PUTBACK;
-}  
+}
 
 static void
 PushVarArgs(ap,argc)
@@ -1878,9 +1845,9 @@ int argc;
   }
  PUTBACK;
 }
-                
 
-         
+
+
 #ifdef STANDARD_C
 int
 LangDoCallback
@@ -1898,21 +1865,21 @@ va_dcl
  STRLEN na;
  static int flags[3] = { G_DISCARD, G_SCALAR, G_ARRAY };
  int count = 0;
- int code;    
+ int code;
  SV *cb    = sv;
- dTHR;        
- ENTER;       
- SAVETMPS;    
- if (interp)  
-  {           
+ dTHR;
+ ENTER;
+ SAVETMPS;
+ if (interp)
+  {
    Tcl_ResetResult(interp);
    Lang_ClearErrorInfo(interp);
-  }           
+  }
  code = PushCallbackArgs(interp,&sv);
  if (code != TCL_OK)
   return code;
- if (argc)    
-  {           
+ if (argc)
+  {
    va_list ap;
 #ifdef I_STDARG
    va_start(ap, argc);
@@ -1921,20 +1888,20 @@ va_dcl
 #endif
    PushVarArgs(ap,argc);
    va_end(ap);
-  }           
+  }
  count = LangCallCallback(sv, flags[result] | G_EVAL);
  if (interp && result)
   SetTclResult(interp,count);
- FREETMPS;    
- LEAVE;       
+ FREETMPS;
+ LEAVE;
  count = Check_Eval(interp);
  if (count == TCL_ERROR && interp)
-  {           
+  {
    SV *tmp = newSVpv("", 0);
    LangCatArg(tmp,cb,0);
    Tcl_AddErrorInfo(interp,SvPV(tmp,na));
    SvREFCNT_dec(tmp);
-  }           
+  }
  return count;
 }
 
@@ -2003,7 +1970,10 @@ Tcl_Interp *interp;
    av_store(av, 2, newSVpv(Tcl_GetResult(interp),0));
    av_push( pend, LangMakeCallback((SV *) av));
    if (av_len(pend) <= 0)
-    Tcl_DoWhenIdle(HandleBgErrors, (ClientData) interp);
+    {
+     /* 1st one - setup callback */
+     Tcl_DoWhenIdle(HandleBgErrors, (ClientData) interp);
+    }
    Tcl_ResetResult(interp);
   }
  TAINT_IF(old_taint);
@@ -2030,59 +2000,57 @@ SV *win;
 {Lang_CmdInfo *info = WindowCommand(win,NULL,1);
  Lang_ClearErrorInfo(info->interp);
 }
-             
+
 
 static int
 Return_AV(int items, int offset, AV *av)
 {
  dSP;
  int count = (av) ? (av_len(av) + 1) : 0;
- int need  = count;
  int gimme = GIMME_V;
  SV **args;
  /* Get stack as it is now */
- SPAGAIN;                                    
+ SPAGAIN;
  if (count == 1 && gimme == G_ARRAY)
   {
    SV **svp = av_fetch(av,0,0);
    SV *sv;
    if (svp && (sv = *svp) && SvROK(sv) && !sv_isobject(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
-    {                                            
+    {
      STRLEN na;
      av = (AV *) SvRV(sv);
-     need = count = av_len(av)+1;
+     count = av_len(av)+1;
     }
   }
  switch(gimme)
   {
-   case G_VOID : 
-    need = 0;
+   case G_VOID :
+    count = 0;
     break;
-  }  
- 
- if (need > items)
+  }
+
+ if (count > items)
   {
-   EXTEND(sp, need - items);
+   EXTEND(sp, (count - items));
   }
  /* Now move 'args' to 0'th arg position in current stack */
  args = sp + offset;
  if (count)
-  {   
-   if (gimme == G_VOID)   
-    count = 0;            
-   else                   
-    {                     
-     int i = count;       
-     while (i-- > 0)      
-      {                   
-       SV *x = av_pop(av);
-#if 1
-       args[i] = sv_mortalcopy(x);  
+  {
+   int i = count;
+   while (i-- > 0)
+    {
+     SV *x = av_pop(av);
+     if (x)
+      {
+       args[i] = sv_mortalcopy(x);
        Decrement(x,"Move to stack");
-#else                                 
-       args[i] = sv_2mortal(x)
-#endif
-      }                                 
+      }
+     else
+      {
+       LangDebug("NULL popped from result @ %d\n",i);
+       args[i] = &PL_sv_undef;
+      }
     }
   }
  else
@@ -2104,7 +2072,9 @@ Return_Results(Tcl_Interp *interp,int items, int offset)
  AV *av = ResultAv(interp, "Return_Results", -1);
  int count  = Return_AV(items,offset,av);
  if (av)
-  SvREFCNT_dec((SV *) av);
+  {
+   SvREFCNT_dec((SV *) av);
+  }
  return count;
 }
 
@@ -2122,29 +2092,62 @@ Lang_TaintCheck(char *s, int items, SV **args)
   }
 }
 
+struct pTkCheckChain
+{
+ struct pTkCheckChain *link;
+ SV *sv;
+};
+
 void
-Tk_CheckHash(SV *sv)
-{ 
- HE *he;         
- HV *hv;                            
+Tk_CheckHash(SV *sv,struct pTkCheckChain *tail)
+{
+ struct pTkCheckChain chain;
+ HE *he;
+ HV *hv;
  SV **svp;
  if (SvROK(sv))
-  hv = (HV *) SvRV(sv);
- else
-  hv = (HV *) sv;
- if (SvTYPE((SV *) hv) != SVt_PVHV)
-  return;                        
- svp = hv_fetch(hv,"SubWidget",9,0);
- if (svp)
-  Tk_CheckHash(*svp);
+  sv = SvRV(sv);
+ chain.link = tail;
+ chain.sv   = sv;
+ if (SvTYPE(sv) != SVt_PVHV)
+  return;
+ hv = (HV *) sv;
  hv_iterinit(hv);
  while ((he = hv_iternext(hv)))
   {
    SV *val = hv_iterval(hv,he);
-   if (val && SvREFCNT(val) == 0)
-    {I32 len;
-     char *key = hv_iterkey(he,&len);
-     croak("%.*s has 0 REFCNT",(int) len, key);
+   if (val)
+    {
+     if (SvREFCNT(val) <= 0)
+      {I32 len;
+       char *key = hv_iterkey(he,&len);
+       LangDebug("%.*s has 0 REFCNT\n",(int) len, key);
+       sv_dump((SV *)hv);
+       abort();
+      }
+     else
+      {
+       if (SvROK(val))
+        val = SvRV(val);
+       if (SvTYPE((SV *) val) == SVt_PVHV /*  && SvOBJECT(val) */)
+        {
+         struct pTkCheckChain *p = &chain;
+         I32 len;
+         while (p)
+          {
+           if (p->sv == val)
+            {I32 len;
+             char *key = hv_iterkey(he,&len);
+             LangDebug("Check Loop %.*s %p - %p\n",(int) len, key, hv, val);
+             goto skip;
+            }
+           p = p->link;
+          }
+         /* LangDebug("Check %p{%s}\n",hv,hv_iterkey(he,&len)); */
+         Tk_CheckHash(val,&chain);
+         skip:
+        }
+      }
     }
   }
 }
@@ -2222,7 +2225,6 @@ SV **args;
      if (info->tkwin)
       croak("%s has been deleted",Tk_PathName(info->tkwin));
     }
-   Tk_CheckHash(what);
    SvREFCNT_dec(what);
 #if 0
    if (current_widget)
@@ -2233,9 +2235,9 @@ SV **args;
   {
    /* Could be an "after" when mainwindow has been destroyed */
   }
- do_watch();  
+ do_watch();
  return count;
-} 
+}
 
 static void
 InitVtabs(void)
@@ -2435,7 +2437,7 @@ XS(XS_Tk__Widget_SelectionGet)
    croak(Tcl_GetResult(info->interp));
   }
  else
-  {        
+  {
    int offset = &ST(0) - sp;
    int count  = Return_AV(items,offset,av);
    SvREFCNT_dec((SV *) av);
@@ -2806,9 +2808,9 @@ XS(XStoFont)
    char *opt = SvPV(ST(1),na);
    if (strcmp(opt,"create") && strcmp(opt,"names") && strcmp(opt,"families"))
     {
-     /* FIXME: would be better to use hint from info rather than fact that 
+     /* FIXME: would be better to use hint from info rather than fact that
         object is not hash-based */
-     if (SvROK(ST(0)) && SvTYPE(SvRV(ST(0))) != SVt_PVHV) 
+     if (SvROK(ST(0)) && SvTYPE(SvRV(ST(0))) != SVt_PVHV)
       items = InsertArg(mark,2,ST(0));
     }
   }
@@ -2817,7 +2819,7 @@ XS(XStoFont)
  LangDumpVec("Font Post",items,&ST(0));
 #endif
  XSRETURN(Call_Tk(&info, items, &ST(0)));
-}      
+}
 
 int
 XSTkCommand (CV *cv, Tcl_CmdProc *proc, int items, SV **args)
@@ -2901,7 +2903,7 @@ void
 Lang_TkCommand(name,proc)
 char *name;
 Tcl_CmdProc *proc;
-{              
+{
  TkXSUB(name,XStoTclCmd,proc);
 }
 
@@ -2997,7 +2999,7 @@ Tk_Window tkwin;
      HV *hash = (HV *) SvRV(obj);
      MAGIC *mg   = mg_find((SV *) hash,'~');
 
-     Tk_CheckHash((SV *) hash);
+     /* Tk_CheckHash((SV *) hash, NULL); */
      if (SvREFCNT(hash) < 1)
       {
        LangDebug(__FUNCTION__ " %s has REFCNT=%d",cmdName,(int) SvREFCNT(hash));
@@ -3058,7 +3060,7 @@ Tcl_Command info;
     Tcl_Panic("%s->interp=%p expected %p", cmdName, info->interp, interp);
    if (hash)
     hv_delete(hash, XEVENT_KEY, strlen(XEVENT_KEY), G_DISCARD);
-   Tk_CheckHash((SV *) hash);
+   /* Tk_CheckHash((SV *) hash, NULL); */
    if (SvREFCNT(hash) < 2)
     {
      LangDebug(__FUNCTION__ " %s has REFCNT=%d",cmdName,(int) SvREFCNT(hash));
@@ -3830,12 +3832,16 @@ int type;
  else if (SvPOK(sv))
   {
    dTHR;
-   HV *old_stash = PL_curcop->cop_stash;
+   HV *old_stash = CopSTASH(PL_curcop);
    char *name;
    SV *x = NULL;
    int prefix = '?';
    name = SvPV(sv,na);
-   PL_curcop->cop_stash = NULL;
+#ifdef USE_ITHREADS
+   CopSTASHPV(PL_curcop) = NULL;
+#else
+   CopSTASH(PL_curcop) = NULL;
+#endif
    switch (type)
     {
      case TK_CONFIG_SCALARVAR:
@@ -3859,7 +3865,7 @@ int type;
       prefix = '%';
       break;
     }
-   PL_curcop->cop_stash = old_stash;
+   CopSTASH_set(PL_curcop, old_stash);
    if (x)
     {
      *vp = SvREFCNT_inc(x);
@@ -3883,14 +3889,6 @@ Var sv;
 {
  SvREFCNT_dec(sv);
 }
-
-Arg
-LangVarArg(sv)
-Var sv;
-{
- return newRV(sv);
-}
-
 
 int
 Lang_CallWithArgs(interp, sub, argc, argv)
@@ -4554,8 +4552,8 @@ XS(XS_Tk_DoWhenIdle)
   {
    Lang_CmdInfo *info = WindowCommand(ST(0), NULL, 0);
    if (info && info->interp && (info->tkwin || info->image))
-    {     
-     /* Try to get result to prove things are "still alive" */        
+    {
+     /* Try to get result to prove things are "still alive" */
      if (ResultAv(info->interp, "DoWhenIdle", 1))
       {
        GenericInfo *p = (GenericInfo *) ckalloc(sizeof(GenericInfo));
@@ -4583,7 +4581,7 @@ XS(XS_Tk_CreateGenericHandler)
     {
      if (ResultAv(info->interp, "CreateGenericHandler", 0))
       {
-       GenericInfo *p = (GenericInfo *) malloc(sizeof(GenericInfo));
+       GenericInfo *p = (GenericInfo *) ckalloc(sizeof(GenericInfo));
        p->interp = (Tcl_Interp *)(IncInterp(info->interp,"Tk_CreateGenericHandler"));
        p->cb = LangMakeCallback(ST(1));
        Tk_CreateGenericHandler(handle_generic, (ClientData) p);
@@ -5027,7 +5025,7 @@ size_t size;
   {
    croak("%s pointer is NULL",name);
   }
-}     
+}
 
 
 
@@ -5091,50 +5089,15 @@ Tcl_AllowExceptions (Tcl_Interp *interp)
  /* FIXME: What should this do ? */
 }
 
-char *
-Tcl_Realloc(char *p, unsigned int size)
-{
- if ((int) size < 0)
-  abort();
- Renew(p,size,char);
- return p;
-}
-
-char *
-Tcl_Alloc(unsigned int size)
-{
- char *p;
- if ((int) size < 0)
-  abort();
- Newz(603, p, size, char);
- return p;
-}
-
-void
-Tcl_Free(char *p)
-{
- Safefree(p);
-}
-
-void
-LangDebug(char *fmt,...)
-{
- va_list ap;
- va_start(ap,fmt);
- vfprintf(stderr,fmt,ap);
- va_end(ap);
-}
-
 Tk_Uid
 Tk_GetUid(key)
     CONST char *key;		/* String to convert. */
-{                   
+{
     STRLEN klen = strlen(key);
     U32 hash = 0;
     PERL_HASH(hash, (char *) key, klen);
     return (Tk_Uid) sharepvn( (char *) key, klen, hash);
 }
-
 
 long
 Lang_OSHandle(fd)

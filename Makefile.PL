@@ -2,11 +2,11 @@ use 5.00404;
 use Cwd;
 use Config;
 no  lib '.';
-BEGIN 
- {        
+BEGIN
+ {
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.018';      
+  $VERSION = '800.019';
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
@@ -35,14 +35,14 @@ else
   my @try   = qw(-lsocket -lnsl -lm);
   push(@try,'-lc') if $^O =~ /svr4/i;
   my $lib;
-  # perl needs sockets and math library too 
+  # perl needs sockets and math library too
   # so only include these if they made it through perl's Configure
   foreach $lib (@try)
    {
     $libs .= " $lib" if ($plibs =~ /$lib\b/);
    }
   @libs = ("$libs");
- }   
+ }
 
 my $dir = Tk::MMutil::find_subdir();
 delete $dir->{'pTk'};
@@ -62,7 +62,7 @@ Tk::MMutil::TkExtMakefile(
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
-                           
+
 sub MY::top_targets
 {
  my ($self) = @_;
@@ -108,12 +108,12 @@ sub MY::post_initialize
    }
   }
  $ret;
-} 
+}
 
 sub needs_Test
-{            
- my $file = shift;           
- local $_;        
+{
+ my $file = shift;
+ local $_;
  unless (open(TFILE,"$file"))
   {
    warn "Cannot open $file:$!";
@@ -123,13 +123,13 @@ sub needs_Test
  while (<TFILE>)
   {
    last if ($code = /^\s*(use|require)\s+Test\b/);
-  }     
+  }
  close(TFILE);
  warn "Skipping test $file needs 'Test.pm':$_" if $code;
  return $code;
 }
 
-sub MY::test 
+sub MY::test
 {
  my ($self,%attrib) = @_;
  my @tests = sort glob($self->catfile('t','*'));
@@ -141,7 +141,7 @@ sub MY::test
  $attrib{'TESTS'} = join(' ',@tests);
 
  # Temporarily remove sub-dirs from $self as we 'know'
- # there are no tests down there 
+ # there are no tests down there
  my $dir  = delete $self->{'DIR'};
  my $str  = $self->MM::test(%attrib);
  # Put sub-dirs back
@@ -155,7 +155,7 @@ sub MY::postamble {
 html : subdirs manifypods
 	@cd pod && $(MAKE) html $(PASTHRU)
 
-config       :: tkGlue.t tkGlue.m 
+config       :: tkGlue.t tkGlue.m
 	@$(NOOP)
 
 $(BASEEXT)$(OBJ_EXT) : tkGlue.h
@@ -168,16 +168,16 @@ tkGlue.m     : tkGlue.h pTk/mkVFunc
 	$(PERL) pTk/mkVFunc -m $(WINARCH) tkGlue.h
 
 $(MYEXTLIB)  : config FORCE
-	cd pTk && $(MAKE) 
+	cd pTk && $(MAKE)
 
 perlmain.c : config Makefile
 
-pTk/tk.res : $(MYEXTLIB) 
+pTk/tk.res : $(MYEXTLIB)
 
-basic      : $(INST_DYNAMIC) pm_to_blib 
+basic      : $(INST_DYNAMIC) pm_to_blib
 
 MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
-	$(MAKE) manifest 
+	$(MAKE) manifest
 
 ';
 }

@@ -15,7 +15,7 @@
 #ifndef _TKCOLOR
 #define _TKCOLOR
 
-#include <tkInt.h>
+#include "tkInt.h"
 
 #ifdef BUILD_tk
 # undef TCL_STORAGE_CLASS

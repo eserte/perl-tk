@@ -1,7 +1,7 @@
 #!/usr/local/bin/nperl -w
 use File::Find;
 use File::Basename;
- 
+
 my %skip;
 my %files;
 
@@ -35,7 +35,7 @@ C\+\+/Main$
 \bConfig.pm$
 \bpTk/tkConfig\.h$
 \bpTk/(need|canvas_sources)$
-\b(pm_to_blib|perl)$
+\b(pm_to_blib|perl|wedge|efdebug)$
 [%~]$
 \b(blib|merge|Ilya|Pixmap|patches|pod2)/
 \bTix/
@@ -47,6 +47,7 @@ pod/html$
 Tk.ppd$
 \b(ToDo|learn|Pending|Obsolete)/
 \b(GNU)?[Mm]akefile(\.aperl)?$
+-bug$
 \bperlmain\.c$
 \btkperl\b
 \bHTML/doc\b

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkColor.c --
  *
  *	This file maintains a database of color values for the Tk
@@ -14,7 +14,7 @@
  * RCS: @(#) $Id: tkColor.c,v 1.2 1998/09/14 18:23:08 stanton Exp $
  */
 
-#include <tkColor.h>
+#include "tkColor.h"
 
 /*
  * A two-level data structure is used to manage the color database.

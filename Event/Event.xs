@@ -13,7 +13,7 @@
 #define TCL_EVENT_IMPLEMENT
 #include "pTk/Lang.h"
 #include "pTk/tkEvent.h"
-#include "pTk/tkEvent.m"
+#include "pTk/tkEvent_f.h"
 
 void
 LangDebug(char *fmt,...)
@@ -48,6 +48,124 @@ va_dcl
  croak("Tcl_Panic");
 }
 
+#undef Tcl_Realloc
+#undef Tcl_Alloc
+#undef Tcl_Free
+
+int
+Tcl_DumpActiveMemory (char *fileName)
+{
+ return 0;
+}
+
+void
+Tcl_ValidateAllMemory (char *file, int line)
+{
+}
+
+
+#ifdef DO_CHECK_TCL_ALLOC
+
+long Tcl_AllocCount = 0;
+
+static int
+is_perl_arena(void *ptr)
+{
+    SV *sv = ptr;
+    SV* sva;
+    register SV* svend;
+
+    for (sva = PL_sv_arenaroot; sva; sva = (SV*)SvANY(sva)) {
+	svend = &sva[SvREFCNT(sva)];
+	if (sva <= sv && sv < svend)
+	    return 1;
+    }
+    return 0;
+}
+
+static void
+check_lp(long *lp,char *s)
+{
+ if (is_perl_arena(lp))
+  {
+   warn("Attempt to '%s(%p)' perl data",s,lp+2);
+   abort();
+  }
+ if (lp[0] != (long)lp || lp[lp[1]-1] != (long)lp)
+  {
+   warn("Invalid '%s(%p)' %lx,%lx,%lx",
+         s,lp+2,lp[0],lp[1],lp[lp[1]-1]);
+   abort();
+  }
+}
+
+char *
+Tcl_Realloc(char *p, unsigned int size)
+{
+ long *lp = ((long *)p)-2;
+ check_lp(lp,__FUNCTION__);
+ if ((int) size < 0)
+  abort();
+ size = (size+sizeof(long)-1)/sizeof(long)+3;
+ Renew(lp,size,long);
+ lp[0] = (long)lp;
+ lp[1] = size;
+ lp[size-1] = (long)lp;
+ return (char *)(lp+2);
+}
+
+
+char *
+Tcl_Alloc(unsigned int size)
+{
+ long *lp;
+ if ((int) size < 0)
+  abort();
+ size = (size+sizeof(long)-1)/sizeof(long)+3;
+ Newz(603, lp, size, long);
+ lp[0] = (long)lp;
+ lp[1] = size;
+ lp[size-1] = (long)lp;
+ Tcl_AllocCount++;
+ return (char *)(lp+2);
+}
+
+void
+Tcl_Free(char *p)
+{
+ if (p)
+  {
+   long *lp = ((long *)p)-2;
+   check_lp(lp,__FUNCTION__);
+   memset(lp,-1,lp[1]*sizeof(long));
+   Tcl_AllocCount--;
+   Safefree(lp);
+  }
+ else
+  {
+   warn("Attempt to 'free(%p)' NULL",p);
+  }
+}
+
+void
+Event_CleanupGlue(void)
+{
+#if 0
+ warn("%ld Tcl_Alloc packets un-freed",Tcl_AllocCount);
+#endif
+}
+
+#else
+
+char *
+Tcl_Realloc(char *p, unsigned int size)
+{
+ if ((int) size < 0)
+  abort();
+ Renew(p,size,char);
+ return p;
+}
+
 char *
 Tcl_Alloc(unsigned int size)
 {
@@ -62,6 +180,32 @@ void
 Tcl_Free(char *p)
 {
  Safefree(p);
+}
+
+void
+Event_CleanupGlue(void)
+{
+
+}
+
+#endif
+
+char *
+Tcl_DbCkalloc (unsigned int size,char *file,int line)
+{
+ return Tcl_Alloc(size);
+}
+
+void
+Tcl_DbCkfree (char *ptr,char *file ,int line)
+{
+ Tcl_Free(ptr);
+}
+
+char *
+Tcl_DbCkrealloc (char *ptr,unsigned int size,char *file,int line)
+{
+ return Tcl_Realloc(ptr,size);
 }
 
 void
@@ -164,14 +308,14 @@ static void PerlIOEventInit(void);
 static void PerlIO_watch(PerlIOHandler *filePtr);
 
 static volatile int stuck;
- 
+
 void
 PerlIO_MaskCheck(PerlIOHandler *filePtr)
 {
  if (filePtr->mask & ~(filePtr->waitMask|filePtr->handlerMask))
-  {    
+  {
    warn("Mask=%d wait=%d handler=%d",
-         filePtr->mask, filePtr->waitMask, filePtr->handlerMask); 
+         filePtr->mask, filePtr->waitMask, filePtr->handlerMask);
    PerlIO_watch(filePtr);
   }
 }
@@ -190,7 +334,7 @@ PerlIOHandler *filePtr;
 {
  filePtr->io = sv_2io(filePtr->handle);
  return (filePtr->io) ? newRV((SV *) filePtr->io) : &PL_sv_undef;
-}                                  
+}
 
 void
 PerlIO_unwatch(PerlIOHandler *filePtr)
@@ -223,7 +367,7 @@ PerlIO_watch(PerlIOHandler *filePtr)
   {
    if (!op)
     croak("Handle not opened for output");
-  }           
+  }
 
  if ((mask & TCL_READABLE) && (mask & TCL_WRITABLE))
   {
@@ -257,7 +401,7 @@ PerlIO_watch(PerlIOHandler *filePtr)
 int
 PerlIO_writable(filePtr)
 PerlIOHandler *filePtr;
-{           
+{
  if (!(filePtr->readyMask & TCL_WRITABLE))
   {
    PerlIO *op = IoOFP(filePtr->io);
@@ -306,43 +450,43 @@ int		mask;
  /* Return at once if we are in the callback */
  if (!(filePtr->callingMask & mask))
   {
-   int oldMask = filePtr->mask & mask;  
+   int oldMask = filePtr->mask & mask;
    int oldWait = filePtr->waitMask & mask;
    int (*check)(PerlIOHandler *) = NULL;
-   /* Prepare to poll */       
-   switch (mask)               
-    {                          
-     case TCL_EXCEPTION:       
+   /* Prepare to poll */
+   switch (mask)
+    {
+     case TCL_EXCEPTION:
       check = PerlIO_exception;
-      break;                   
-     case TCL_WRITABLE:        
-      check = PerlIO_writable; 
-      break;                   
-     case TCL_READABLE:        
-      check = PerlIO_readable; 
-      break;                   
-     default:                  
+      break;
+     case TCL_WRITABLE:
+      check = PerlIO_writable;
+      break;
+     case TCL_READABLE:
+      check = PerlIO_readable;
+      break;
+     default:
       croak("Invalid wait type %d",mask);
-    }                          
-                               
-   /* Inhibit callbacks */     
-   filePtr->waitMask |= mask;  
-                               
+    }
+
+   /* Inhibit callbacks */
+   filePtr->waitMask |= mask;
+
    /* Watch handle if we are not already */
    if (!oldMask)
     PerlIO_watch(filePtr);
 
-   while (!(*check)(filePtr))  
-    {  
-     Tcl_DoOneEvent(0);        
-    }                          
-                               
-   /* Restore watch state */   
+   while (!(*check)(filePtr))
+    {
+     Tcl_DoOneEvent(0);
+    }
+
+   /* Restore watch state */
    filePtr->waitMask = (filePtr->waitMask&~mask)|oldWait;
    PerlIO_watch(filePtr);
-                               
-   /* Re-enable callbacks */   
-   /* Consume the readiness */ 
+
+   /* Re-enable callbacks */
+   /* Consume the readiness */
    filePtr->readyMask &= ~mask;
   }
 }
@@ -418,7 +562,7 @@ int flags;                        /* Flags that indicate what events to
         *    ready mask is stored in the file handler rather than
         *    the queued event:  it will be zeroed when a new
         *    file handler is created for the newly opened file.
-        */      
+        */
        PerlIO_MaskCheck(filePtr);
 
        /* clear bits nobody cares about */
@@ -429,7 +573,7 @@ int flags;                        /* Flags that indicate what events to
 
        /* clear bits we are going to callback */
        filePtr->readyMask &= ~doMask;
-       filePtr->pending = 0;                      
+       filePtr->pending = 0;
 
        if ((doMask & TCL_READABLE) && filePtr->readHandler)
         {
@@ -489,7 +633,7 @@ int flags;                        /* Event flags as passed to Tcl_DoOneEvent. */
     {
      PerlIO_MaskCheck(filePtr);
      if ((filePtr->readyMask & ~filePtr->waitMask & filePtr->handlerMask)
-         && !filePtr->pending) 
+         && !filePtr->pending)
       {
        fileEvPtr = (PerlIOEvent *) ckalloc(sizeof(PerlIOEvent));
        fileEvPtr->io = filePtr->io;
@@ -856,6 +1000,8 @@ XS(XS_Tk__Callback_Call)
  XSRETURN(count);
 }
 
+#define Callback_DESTROY(sv)
+
 #define Tcl_setup(obj,flags)
 #define Tcl_check(obj,flags)
 
@@ -870,6 +1016,12 @@ XS(XS_Tk__Callback_Call)
 #define Const_IDLE_EVENTS()   (TCL_IDLE_EVENTS)
 #define Const_ALL_EVENTS()    (TCL_ALL_EVENTS)
 
+MODULE = Tk::Event	PACKAGE = Tk::Callback	PREFIX = Callback_
+PROTOTYPES: DISABLE
+
+void
+Callback_DESTROY(object)
+SV *	object
 
 MODULE = Tk::Event	PACKAGE = Tk::Event::IO PREFIX = Const_
 
@@ -1098,6 +1250,11 @@ Tcl_ServiceAll()
 void
 HandleSignals()
 
+MODULE = Tk::Event	PACKAGE = Tk::Event	PREFIX = Event_
+
+void
+Event_CleanupGlue()
+
 MODULE = Tk::Event	PACKAGE = Tk::Event
 
 PROTOTYPES: DISABLE
@@ -1105,6 +1262,5 @@ PROTOTYPES: DISABLE
 BOOT:
  {
   newXS("Tk::Callback::Call", XS_Tk__Callback_Call, __FILE__);
-
   install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
  }

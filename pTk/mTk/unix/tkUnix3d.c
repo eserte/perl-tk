@@ -12,7 +12,7 @@
  * RCS: @(#) $Id: tkUnix3d.c,v 1.2 1998/09/14 18:23:55 stanton Exp $
  */
 
-#include <tk3d.h>
+#include "tk3d.h"
 
 /*
  * This structure is used to keep track of the extra colors used

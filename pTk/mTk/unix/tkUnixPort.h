@@ -194,7 +194,9 @@ extern int errno;
  * in any other header file.
  */
 
+#ifndef _LANG
 extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
+#endif
 
 /*
  * These functions do nothing under Unix, so we just eliminate calls to them.
@@ -219,14 +221,14 @@ extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
 
 #define TkpPrintWindowId(buf,w) \
 	sprintf((buf), "0x%x", (unsigned int) (w))
-	    
+	
 /*
  * TkpScanWindowId is just an alias for Tcl_GetInt on Unix.
  */
 
 #define TkpScanWindowId(i,s,wp) \
 	Tcl_GetInt((i),(s),(wp))
-	    
+	
 /*
  * This macro indicates that entry and text widgets should display
  * the selection highlight regardless of which window has the focus.
@@ -238,7 +240,7 @@ extern void		panic _ANSI_ARGS_(TCL_VARARGS(char *, string));
  * The following declaration is used to get access to a private Tcl interface
  * that is needed for portability reasons.
  */
-        
+
 #ifndef TclpGetTime
 EXTERN void		TclpGetTime _ANSI_ARGS_((Tcl_Time *time));
 #endif

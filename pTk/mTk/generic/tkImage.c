@@ -1,4 +1,4 @@
-/* 
+/*
  * tkImage.c --
  *
  *	This module implements the image protocol, which allows lots
@@ -221,7 +221,7 @@ Tk_ImageObjCmd(clientData, interp, argc, objv)
     }
     if (strv) {
 	ckfree((char *) strv);
-    } 
+    }
     strv = (char **) ckalloc((argc+1) * sizeof(char *));
     strv[argc] = NULL;
     for (i = 0; i < argc; i++) {
@@ -600,7 +600,7 @@ Tk_FreeImage(image)
     }
     ckfree((char *) imagePtr);
 
-    /* 
+    /*
      * If there are no more instances left for the master, and if the
      * master image has been deleted, then delete the master too.
      */
@@ -662,7 +662,7 @@ Tk_PostscriptImage(image, interp, tkwin, psinfo, x, y, width, height, prepass)
 
     /*
      * Create a Pixmap, tell the image to redraw itself there, and then
-     * generate an XImage from the Pixmap.  We can then read pixel 
+     * generate an XImage from the Pixmap.  We can then read pixel
      * values out of the XImage.
      */
 
@@ -683,7 +683,7 @@ Tk_PostscriptImage(image, interp, tkwin, psinfo, x, y, width, height, prepass)
                        AllPlanes, ZPixmap);
 
     Tk_FreePixmap(Tk_Display(tkwin), pmap);
-    
+
     if (ximage == NULL) {
 	/* The XGetImage() function is apparently not
 	 * implemented on this system. Just ignore it.
@@ -874,6 +874,7 @@ DeleteImage(masterPtr)
     if (masterPtr->instancePtr == NULL) {
         if (masterPtr->hPtr != NULL) {
 	    Tcl_DeleteHashEntry(masterPtr->hPtr);
+	    masterPtr->hPtr = NULL;
         }
 	ckfree((char *) masterPtr);
     }
@@ -911,7 +912,6 @@ TkDeleteAllImages(mainPtr)
 	    hPtr != NULL; hPtr = Tcl_NextHashEntry(&search)) {
 	masterPtr = (ImageMaster *) Tcl_GetHashValue(hPtr);
 	DeleteImage(masterPtr);
-        masterPtr->hPtr = NULL; 
     }
     Tcl_DeleteHashTable(&mainPtr->imageTable);
 }
@@ -971,7 +971,7 @@ typedef struct {
 
 typedef struct {
     unsigned int magic;
-    Tk_TileChangedProc *changeProc; 
+    Tk_TileChangedProc *changeProc;
 				/* If non-NULL, routine to
 				 * call to when tile image changes. */
     ClientData clientData;	/* Data to pass to when calling the above
@@ -1010,23 +1010,23 @@ TileChangedProc(clientData, x, y, width, height, imageWidth, imageHeight)
 	    Tk_FreePixmap(masterPtr->display, masterPtr->pixmap);
 	}
 	masterPtr->pixmap = None;
-    } else { 
+    } else {
 /*	GC newGC;
 	XGCValues gcValues;*/
 	/*
 	 * If the size of the current image differs from the current pixmap,
 	 * destroy the pixmap and create a new one of the proper size
 	 */
-	if ((masterPtr->width != imageWidth) || 
+	if ((masterPtr->width != imageWidth) ||
 	    (masterPtr->height != imageHeight)) {
 	    Pixmap pixmap;
 	    Window root;
-	    
+	
 	    if (masterPtr->pixmap != None) {
 		Tk_FreePixmap(masterPtr->display, masterPtr->pixmap);
 	    }
 	    root = RootWindow(masterPtr->display, masterPtr->screenNum);
-	    pixmap = Tk_GetPixmap(masterPtr->display, root, imageWidth, 
+	    pixmap = Tk_GetPixmap(masterPtr->display, root, imageWidth,
 		imageHeight, masterPtr->depth);
 	    masterPtr->width = imageWidth;
 	    masterPtr->height = imageHeight;
@@ -1046,7 +1046,7 @@ TileChangedProc(clientData, x, y, width, height, imageWidth, imageHeight)
      * Now call back each of the tile clients to notify them that the
      * pixmap has changed.
      */
-    for (itemPtr = Blt_FirstListItem(&(masterPtr->clients)); itemPtr != NULL; 
+    for (itemPtr = Blt_FirstListItem(&(masterPtr->clients)); itemPtr != NULL;
 	itemPtr = Blt_NextItem(itemPtr)) {
 	tilePtr = (Tile *)Blt_GetItemValue(itemPtr);
 	if (tilePtr->changeProc != NULL) {
@@ -1082,7 +1082,7 @@ InitTables()
  *
  *----------------------------------------------------------------------
  */
-Tk_Tile 
+Tk_Tile
 Tk_GetTile(interp, tkwin, imageName)
     Tcl_Interp *interp;		/* Interpreter to report results back to */
     Tk_Window tkwin;		/* Window on the same display as tile */

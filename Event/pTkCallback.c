@@ -63,7 +63,7 @@ SV *sv;
      if (SvTYPE(SvRV(sv)) == SVt_PVCV)
       {
        AV *av = newAV();
-       av_push(av,sv);
+       av_push(av,SvREFCNT_inc(sv));  /* Increment REFCNT ! */
        sv = newRV_noinc((SV *) av);
       }
     }
@@ -75,7 +75,7 @@ SV *sv;
       }
     }
    if (!sv_isa(sv,"Tk::Callback"))
-    {    
+    {
      HV *stash = gv_stashpv("Tk::Callback", TRUE);
      sv = sv_bless(sv, stash);
     }
@@ -106,10 +106,9 @@ Arg
 LangCallbackArg(sv)
 SV *sv;
 {
- if (sv)
-  SvREFCNT_inc(sv);
+ /* Do _NOT_ increment REFCNT - like Widgets, Fonts, etc. */
  return sv;
-}                              
+}
 
 int
 LangCallCallback(sv, flags)
@@ -138,6 +137,15 @@ int flags;
      hv_store(sig,"__DIE__",7,newRV((SV *) cv),0);
     }
   }
+
+#if 0
+ /* Belt-and-braces fix to callback destruction issues */
+ /* Increment refcount of thing while we call it */
+ SvREFCNT_inc(sv);
+ /* Arrange to have it decremented on scope exit */
+ save_freesv(sv);
+#endif
+
  if (SvTYPE(sv) == SVt_PVCV)
   {
    count = perl_call_sv(sv, flags);
@@ -218,7 +226,7 @@ LangPushCallbackArgs(SV **svp)
   }
  *svp = sv;
  PUTBACK;
-} 
+}
 
 int
 LangCmpCallback(a, b)

@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.025'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#25 $
+$VERSION = '3.027'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#27 $
 
 sub PreInit
 {
@@ -58,6 +58,8 @@ sub configure
 {
  my $obj = shift;
  my ($menu,$name) = @$obj;
+ my %args = @_;
+ $obj->[1] = $args{'-label'} if exists $args{'-label'};
  $menu->entryconfigure($name,@_);
 }
 
@@ -155,8 +157,8 @@ sub pack
  if ($^W)
   {
    require Carp;
-   Carp::carp("Cannot 'pack' $w - done automatically") 
-  } 
+   Carp::carp("Cannot 'pack' $w - done automatically")
+  }
 }
 
 package Tk::Menu::Checkbutton;

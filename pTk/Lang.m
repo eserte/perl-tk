@@ -19,10 +19,6 @@
 #  define LangCopyArg (*LangVptr->V_LangCopyArg)
 #endif
 
-#ifndef LangDebug
-#  define LangDebug (*LangVptr->V_LangDebug)
-#endif
-
 #ifndef LangDoCallback
 #  define LangDoCallback (*LangVptr->V_LangDoCallback)
 #endif
@@ -37,10 +33,6 @@
 
 #ifndef LangEventHook
 #  define LangEventHook (*LangVptr->V_LangEventHook)
-#endif
-
-#ifndef LangExit
-#  define LangExit (*LangVptr->V_LangExit)
 #endif
 
 #ifndef LangFreeArg
@@ -103,16 +95,16 @@
 #  define LangSetString (*LangVptr->V_LangSetString)
 #endif
 
+#ifndef LangSetVar
+#  define LangSetVar (*LangVptr->V_LangSetVar)
+#endif
+
 #ifndef LangString
 #  define LangString (*LangVptr->V_LangString)
 #endif
 
 #ifndef LangStringMatch
 #  define LangStringMatch (*LangVptr->V_LangStringMatch)
-#endif
-
-#ifndef LangVarArg
-#  define LangVarArg (*LangVptr->V_LangVarArg)
 #endif
 
 #ifndef Lang_BuildInImages
@@ -147,10 +139,6 @@
 #  define Lang_GetStrInt (*LangVptr->V_Lang_GetStrInt)
 #endif
 
-#ifndef Lang_OSHandle
-#  define Lang_OSHandle (*LangVptr->V_Lang_OSHandle)
-#endif
-
 #ifndef Lang_RegExpCompile
 #  define Lang_RegExpCompile (*LangVptr->V_Lang_RegExpCompile)
 #endif
@@ -169,10 +157,6 @@
 
 #ifndef Tcl_AddErrorInfo
 #  define Tcl_AddErrorInfo (*LangVptr->V_Tcl_AddErrorInfo)
-#endif
-
-#ifndef Tcl_Alloc
-#  define Tcl_Alloc (*LangVptr->V_Tcl_Alloc)
 #endif
 
 #ifndef Tcl_AllowExceptions
@@ -259,6 +243,10 @@
 #  define Tcl_DStringValue (*LangVptr->V_Tcl_DStringValue)
 #endif
 
+#ifndef Tcl_DbCkfree
+#  define Tcl_DbCkfree (*LangVptr->V_Tcl_DbCkfree)
+#endif
+
 #ifndef Tcl_DbDStringInit
 #  define Tcl_DbDStringInit (*LangVptr->V_Tcl_DbDStringInit)
 #endif
@@ -301,10 +289,6 @@
 
 #ifndef Tcl_FirstHashEntry
 #  define Tcl_FirstHashEntry (*LangVptr->V_Tcl_FirstHashEntry)
-#endif
-
-#ifndef Tcl_Free
-#  define Tcl_Free (*LangVptr->V_Tcl_Free)
 #endif
 
 #ifndef Tcl_GetAssocData
@@ -455,10 +439,6 @@
 #  define Tcl_OpenFileChannel (*LangVptr->V_Tcl_OpenFileChannel)
 #endif
 
-#ifndef Tcl_Panic
-#  define Tcl_Panic (*LangVptr->V_Tcl_Panic)
-#endif
-
 #ifndef Tcl_PosixError
 #  define Tcl_PosixError (*LangVptr->V_Tcl_PosixError)
 #endif
@@ -469,10 +449,6 @@
 
 #ifndef Tcl_Read
 #  define Tcl_Read (*LangVptr->V_Tcl_Read)
-#endif
-
-#ifndef Tcl_Realloc
-#  define Tcl_Realloc (*LangVptr->V_Tcl_Realloc)
 #endif
 
 #ifndef Tcl_RegExpRange

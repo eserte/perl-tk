@@ -13,7 +13,7 @@
 package Tk::Listbox;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Listbox/Listbox.pm#27 $
+$VERSION = '3.029'; # $Id: //depot/Tk8/Listbox/Listbox.pm#29 $
 
 use Tk qw(Ev $XS_VERSION);
 require Tk::Clipboard;
@@ -43,6 +43,29 @@ sub clipEvents
 {
  return qw[Copy];
 }
+
+sub BalloonInfo
+{
+ my ($listbox,$balloon,$X,$Y,@opt) = @_;
+ my $e = $listbox->XEvent;
+ my $index = $listbox->index('@' . $e->x . ',' . $e->y);
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$listbox);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'ARRAY'))
+    {
+     $balloon->Subclient($index);
+     if (defined $info->[$index])
+      {
+       return $info->[$index];
+      }
+     return '';
+    }
+   return $info;
+  }
+}
+
+
 
 1;
 __END__

@@ -2,7 +2,7 @@ package Tk::DragDrop::SunDrop;
 require  Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#14 $
+$VERSION = '3.015'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#15 $
 
 use base  qw(Tk::DragDrop::Rect);
 use strict;
@@ -90,11 +90,10 @@ sub Drop
  $w->SendClientMessage('_SUN_DRAGDROP_TRIGGER',$site->win,32,$data);
 }
 
-use Data::Dumper;
 
 sub FindSite
 {
- my ($class,$token,$X,$Y) = @_;        
+ my ($class,$token,$X,$Y) = @_;
  $token->{'SunDD'} = [] unless exists $token->{'SunDD'};
  my $site = $class->SUPER::FindSite($token,$X,$Y);
  if (!defined $site)
@@ -105,7 +104,7 @@ sub FindSite
      my @prop;
      Tk::catch { @prop = $token->property('get','_SUN_DRAGDROP_INTEREST', $id) };
      if (!$@ && shift(@prop) eq '_SUN_DRAGDROP_INTEREST' && shift(@prop) == 0)
-      {                         
+      {
        my ($bx,$by) = $token->WindowXY($id);
        $token->{'SunDDSeen'} = {} unless exists $token->{'SunDDSeen'};
        return $site if $token->{'SunDDSeen'}{$id};
@@ -118,7 +117,7 @@ sub FindSite
          if ($kind != 0)
           {
            warn "Don't understand site type $kind";
-           last; 
+           last;
           }
          while (@prop >= 4 && $n-- > 0)
           {
@@ -127,12 +126,12 @@ sub FindSite
           }
         }
        return $class->SUPER::FindSite($token,$X,$Y);
-      } 
+      }
      $id = $token->PointToWindow($X,$Y,$id)
     }
   }
  return $site;
-}          
+}
 
 my $busy = 0;
 
@@ -149,7 +148,7 @@ sub SiteList
  # this code is obsolete now that we look at properties ourselves
  # which means we don't need dropsite manager running
  unless (1 || $busy || exists $token->{'SunDD'})
-  { 
+  {
    Carp::confess('Already doing it!') if ($busy++);
    my @data  = ();
    my @sites = ();

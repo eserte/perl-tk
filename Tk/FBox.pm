@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/FBox.pm#11 $
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/FBox.pm#13 $
 
 use base qw(Tk::Toplevel);
 
@@ -71,13 +71,13 @@ sub Populate {
     my $f1 = $w->Frame;
     my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
     $w->{'dirMenu'} = my $dirMenu =
-      $f1->Optionmenu(-textvariable => \$w->{'selectPath'},
+      $f1->Optionmenu(-variable => \$w->{'selectPath'},
 		      -command => ['SetPath', $w]);
     my $upBtn = $f1->Button;
     if (!defined $updirImage) {
-	$updirImage = $w->Bitmap(-data => <<EOF);
-#define updir_width 28
-#define updir_height 16
+	$updirImage = $w->Bitmap(-data => "#define updir_width 28\n" .
+	                                  "#define updir_height 16\n" .
+				          <<EOF);
 static char updir_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x80, 0x1f, 0x00, 0x00, 0x40, 0x20, 0x00, 0x00,
    0x20, 0x40, 0x00, 0x00, 0xf0, 0xff, 0xff, 0x01, 0x10, 0x00, 0x00, 0x01,
@@ -95,7 +95,8 @@ EOF
 
     $w->{'icons'} = my $icons =
       $w->IconList(-browsecmd => ['ListBrowse', $w],
-		   -command   => ['ListInvoke', $w]);
+		   -command   => ['ListInvoke', $w],
+		  );
 
     # f2: the frame with the OK button and the "file name" field
     my $f2 = $w->Frame(-bd => 0);
@@ -105,7 +106,8 @@ EOF
 
     # The font to use for the icons. The default Canvas font on Unix
     # is just deviant.
-    $w->{'icons'}{'font'} = $ent->cget(-font);
+#    $w->{'icons'}{'font'} = $ent->cget(-font);
+    $w->{'icons'}->configure(-font => $ent->cget(-font));
 
     # f3: the frame with the cancel button and the file types field
     my $f3 = $w->Frame(-bd => 0);
@@ -185,13 +187,14 @@ EOF
     $w->bind('<Alt-o>',['InvokeBtn','Open']);
     $w->bind('<Alt-s>',['InvokeBtn','Save']);
     $w->protocol('WM_DELETE_WINDOW', ['CancelCmd', $w]);
+    $w->OnDestroy(['CancelCmd', $w]);
 
     # Build the focus group for all the entries
     $w->FG_Create;
     $w->FG_BindIn($ent, ['EntFocusIn', $w]);
     $w->FG_BindOut($ent, ['EntFocusOut', $w]);
 
-    $w->SetPath(Cwd::cwd());
+    $w->SetPath(_cwd());
 
     $w->ConfigSpecs(-defaultextension => ['PASSIVE', undef, undef, undef],
 		    -filetypes        => ['PASSIVE', undef, undef, undef],
@@ -201,8 +204,10 @@ EOF
 		    -type             => ['PASSIVE', undef, undef, 'open'],
 		    -filter           => ['PASSIVE', undef, undef, '*'],
 		    -force            => ['PASSIVE', undef, undef, 0],
+		    'DEFAULT'         => [$icons],
 		   );
-
+    # So-far-failed attempt to break reference loops ...
+    $w->_OnDestroy(qw(dirMenu icons typeMenuLab typeMenuBtn okBtn ent updateId));
     $w;
 }
 
@@ -259,9 +264,9 @@ sub Show {
     # display and de-iconify it.
     $w->withdraw;
     $w->idletasks;
-    my $x = $w->screenwidth / 2 - $w->reqwidth / 2 - $w->parent->vrootx;
-    my $y = $w->screenheight / 2 - $w->reqheight / 2 - $w->parent->vrooty;
-    $w->geometry($w->reqwidth .'x'. $w->reqheight);
+    my $x = int($w->screenwidth / 2 - $w->reqwidth / 2 - $w->parent->vrootx);
+    my $y = int($w->screenheight / 2 - $w->reqheight / 2 - $w->parent->vrooty);
+    $w->geometry("+$x+$y");
 
     {
 	my $title = $w->cget(-title);
@@ -294,8 +299,10 @@ sub Show {
     eval {
 	$oldFocus->focus if $oldFocus;
     };
-    $w->grabRelease;
-    $w->withdraw;
+    if (Tk::Exists($w)) { # widget still exists
+	$w->grabRelease;
+	$w->withdraw;
+    }
     if ($oldGrab) {
 	if ($grabStatus eq 'global') {
 	    $oldGrab->grabGlobal;
@@ -346,8 +353,8 @@ sub Update {
     }
     my $folder = $folderImage;
     my $file   = $fileImage;
-    my $appPWD = Cwd::cwd();
-    if (!chdir $w->{'selectPath'}) {
+    my $appPWD = _cwd();
+    if (!ext_chdir($w->{'selectPath'})) {
 	# We cannot change directory to $data(selectPath). $data(selectPath)
 	# should have been checked before tkFDialog_Update is called, so
 	# we normally won't come to here. Anyways, give an error and abort
@@ -357,7 +364,7 @@ sub Update {
 		       $w->{'selectPath'} . "\".\nPermission denied.",
 		       -icon => 'warning',
 		      );
-	chdir $appPWD;
+	ext_chdir($appPWD);
 	return;
     }
 
@@ -376,12 +383,12 @@ sub Update {
     my $flt = join('|', split(' ', $w->cget(-filter)) );
     $flt =~ s!([\.\+])!\\$1!g;
     $flt =~ s!\*!.*!g;
-    if( opendir( FDIR,  Cwd::cwd() )) {
+    if( opendir( FDIR,  _cwd() )) {
       my @files;
         foreach my $f (sort { lc($a) cmp lc($b) } readdir FDIR) {
           next if $f eq '.' or $f eq '..';
           if (-d $f) { $icons->Add($folder, $f); }
-          elsif( $f =~ m!$flt$! ) { push( @files, $f ); } 
+          elsif( $f =~ m!$flt$! ) { push( @files, $f ); }
 	}
       closedir( FDIR );
       foreach my $f ( @files ) { $icons->Add($file, $f); }
@@ -403,7 +410,12 @@ sub Update {
     $w->{'selectPath'} = $var; # workaround
 
     # Restore the PWD to the application's PWD
-    chdir $appPWD;
+    ext_chdir($appPWD);
+
+    # Restore the Save label
+    if ($w->cget(-type) eq 'save') {
+	$w->{'okBtn'}->configure(-text => 'Save');
+    }
 
     # turn off the busy cursor.
     $ent->configure(-cursor => $entCursor);
@@ -473,7 +485,7 @@ sub SetFilter {
 #
 sub ResolveFile {
     my($context, $text, $defaultext) = @_;
-    my $appPWD = Cwd::cwd();
+    my $appPWD = _cwd();
     my $path = JoinFile($context, $text);
     $path = "$path$defaultext" if ($path !~ /\..+$/) and defined $defaultext;
     # Cannot just test for existance here as non-existing files are
@@ -482,37 +494,37 @@ sub ResolveFile {
     my($directory, $file, $flag);
     if (-e $path) {
 	if (-d $path) {
-	    if (!chdir $path) {
+	    if (!ext_chdir($path)) {
 		return ('CHDIR', $path, '');
 	    }
-	    $directory = Cwd::cwd();
+	    $directory = _cwd();
 	    $file = '';
 	    $flag = 'OK';
-	    chdir $appPWD;
+	    ext_chdir($appPWD);
 	} else {
 	    my $dirname = File::Basename::dirname($path);
-	    if (!chdir $dirname) {
+	    if (!ext_chdir($dirname)) {
 		return ('CHDIR', $dirname, '');
 	    }
-	    $directory = Cwd::cwd();
+	    $directory = _cwd();
 	    $file = File::Basename::basename($path);
 	    $flag = 'OK';
-	    chdir $appPWD;
+	    ext_chdir($appPWD);
 	}
     } else {
 	my $dirname = File::Basename::dirname($path);
 	if (-e $dirname) {
-	    if (!chdir $dirname) {
+	    if (!ext_chdir($dirname)) {
 		return ('CHDIR', $dirname, '');
 	    }
-	    $directory = Cwd::cwd();
+	    $directory = _cwd();
 	    $file = File::Basename::basename($path);
 	    if ($file =~ /[*?]/) {
 		$flag = 'PATTERN';
 	    } else {
 		$flag = 'FILE';
 	    }
-	    chdir $appPWD;
+	    ext_chdir($appPWD);
 	} else {
 	    $directory = $dirname;
 	    $file = File::Basename::basename($path);
@@ -577,7 +589,7 @@ sub ActivateEnt {
 	if ($w->cget(-type) eq 'open') {
 	    $w->messageBox(-icon => 'warning',
 			   -type => 'OK',
-			   -message => 'File \"' . TclFileJoin($path, $file)
+			   -message => 'File "' . TclFileJoin($path, $file)
 			   . '" does not exist.');
 	    $ent->selection('from', 0);
 	    $ent->selection('to', 'end');
@@ -631,7 +643,7 @@ sub UpDirCmd {
 # if the filename begins with ~
 sub JoinFile {
     my($path, $file) = @_;
-    if ($file =~ /^~/) {
+    if ($file =~ /^~/ && -e "$path/$file") {
 	TclFileJoin($path, "./$file");
     } else {
 	TclFileJoin($path, $file);
@@ -644,8 +656,18 @@ sub TclFileJoin {
     foreach (@_) {
 	if (m|^/|) {
 	    $path = $_;
+	} elsif ($_ eq '~') {
+	    $path = _get_homedir();
+	} elsif (m|^~/(.*)|) {
+	    $path = _get_homedir() . "/" . $1;
 	} elsif (m|^~([^/]+)(.*)|) {
-	    $path = (eval { (getpwnam($1))[7] } || $ENV{'HOME'} || '') . $2;
+	    my($user, $p) = ($1, $2);
+	    my $dir = _get_homedir($user);
+	    if (!defined $dir) {
+		$path = "~$user$p";
+	    } else {
+		$path = $dir . $p;
+	    }
 	} elsif ($path eq '/' or $path eq '') {
 	    $path .= $_;
 	} else {
@@ -685,7 +707,6 @@ sub OkCmd {
 # Gets called when user presses the "Cancel" button
 #
 sub CancelCmd {
-    my $w = shift;
     undef $selectFilePath;
 }
 
@@ -719,13 +740,13 @@ sub ListInvoke {
     return if ($text eq '');
     my $file = JoinFile($w->{'selectPath'}, $text);
     if (-d $file) {
-	my $appPWD = Cwd::cwd();
-	if (!chdir $file) {
+	my $appPWD = _cwd();
+	if (!ext_chdir($file)) {
 	    $w->messageBox(-type => 'OK',
 			   -message => "Cannot change to the directory \"$file\".\nPermission denied.",
 			   -icon => 'warning');
 	} else {
-	    chdir $appPWD;
+	    ext_chdir($appPWD);
 	    $w->SetPath($file);
 	}
     } else {
@@ -815,6 +836,53 @@ sub GetFileTypes {
     }
 
     return @types;
+}
+
+# ext_chdir --
+#
+#       Change directory with tilde substitution
+#
+sub ext_chdir {
+    my $dir = shift;
+    if ($dir eq '~') {
+	chdir _get_homedir();
+    } elsif ($dir =~ m|^~/(.*)|) {
+	chdir _get_homedir() . "/" . $1;
+    } elsif ($dir =~ m|^~([^/]+(.*))|) {
+	chdir _get_homedir($1) . $2;
+    } else {
+	chdir $dir;
+    }
+}
+
+# _get_homedir --
+#
+#       Get home directory of the current user
+#
+sub _get_homedir {
+    my($user) = @_;
+    if (!defined $user) {
+	eval {
+	    local $SIG{__DIE__};
+	    (getpwuid($<))[7];
+	} || $ENV{HOME} || undef; # chdir undef changes to home directory, too
+    } else {
+	eval {
+	    local $SIG{__DIE__};
+	    (getpwnam($user))[7];
+	};
+    }
+}
+
+sub _cwd {
+    #Cwd::cwd();
+    Cwd::fastcwd(); # this is taint-safe
+}
+
+sub _untaint {
+    my $s = shift;
+    $s =~ /^(.*)$/;
+    $1;
 }
 
 1;

@@ -1,3 +1,134 @@
+Change 1747 on 2000/03/13 by nick@bactrian
+
+	VERSION updates
+
+Change 1746 on 2000/03/13 by nick@bactrian
+
+	Real fix for sporadic core dump problem.
+	Remove or comment out all the debug used to track it.
+
+Change 1745 on 2000/03/13 by nick@bactrian
+
+	Add built in transparent bitmap for use with Canvas's -fill
+
+Change 1744 on 2000/03/13 by nick@bactrian
+
+	Avoid using global RepeatId for animations
+
+Change 1743 on 2000/03/13 by nick@bactrian
+
+	Notice ->configure(-label => ...) on Tk::Menu::Item-s and update object's key.
+
+Change 1742 on 2000/03/13 by nick@bactrian
+
+	Major memory mis-use issue fix - if a callback got destroyed
+	while being executed (e.g. did $button->destroy) then closure's
+	pad would get freed and perl's scope exit code would do nasty
+	things. So increment REFCNT and use save_freesv() to decrement.
+
+Change 1741 on 2000/03/11 by nick@bactrian
+
+	Avoid writing to free'd memory
+
+Change 1740 on 2000/03/11 by nick@bactrian
+
+	Debugging malloc hooks
+
+Change 1728 on 2000/03/06 by nick@bactrian
+
+	Slaven's Canvas -fill => undef doc patch
+
+Change 1723 on 2000/03/04 by nick@ni-s
+
+	Some checking on HList and TList
+
+Change 1698 on 2000/02/28 by nick@pluto
+
+	Record compiler version issues in AIX readme
+
+Change 1679 on 2000/02/20 by nick@bactrian
+
+	Tidy up objGlue.c during bug hunt.
+
+Change 1678 on 2000/02/19 by nick@bactrian
+
+	Various oddities noticed while bug hunting.
+
+Change 1677 on 2000/02/19 by nick@bactrian
+
+	New file to demo progress bar on linux
+
+Change 1676 on 2000/02/19 by nick@bactrian
+
+	Finish off Event/Tk non-share
+	Fix reference loops shown by new debug
+	Bump version to Tk800.019 as VTables are different
+
+Change 1675 on 2000/02/19 by nick@ni-s
+
+	Cleanup duplicate code between Tk and Event, so that
+	one debugging copy of Tcl_Alloc et. al. can be installed.
+	Tweak some #include <> to #include "" so that dependancies
+	get built right.
+
+Change 1674 on 2000/02/19 by nick@ni-s
+
+	Rename After.pod to after.pod
+
+Change 1673 on 2000/02/17 by nick@bactrian
+
+	Slaven's tcl2perl patch
+
+Change 1672 on 2000/02/13 by nick@ni-s
+
+	Add some checking for the case that seems to occur during
+	global destruction - have not caught it yet...
+
+Change 1671 on 2000/02/13 by nick@ni-s
+
+	More destroy-time REFCNT issues:                                 
+	configure inquiries were causing incorrect REFCNT_inc-s of Callbacks
+	and Vars.
+	1. Make all LangXxxxArg functions which return SVs for tkConfig.c etc.
+	   return SV _without_ incrementing REFCNT.
+	2. Tweak odd uses of above where that was not correct assumption.
+	3. Remove LangVarArg(), and replace with LangSetVar, only use was
+	   in configure code and it could not be made to obey (1) above.  
+	4. Tcl_ConcatObj and Tcl_NewListObj differ only in incomming REFCNT 
+	   expectation.
+
+Change 1670 on 2000/02/12 by nick@bactrian
+
+	PERL_ITHREADS fix from Sarathy.
+
+Change 1667 on 2000/02/06 by nick@bactrian
+
+	Slaven's pod patches
+
+Change 1666 on 2000/02/01 by nick@bactrian
+
+	Loose merge garbage in pod
+
+Change 1661 on 2000/01/29 by nick@bactrian
+
+	Slaven's BalloonInfo for Listbox
+
+Change 1660 on 2000/01/29 by nick@bactrian
+
+	Slaven's FBox patch and test
+
+Change 1659 on 2000/01/29 by nick@bactrian
+
+	Slaven's FileSelect patch
+
+Change 1658 on 2000/01/29 by nick@bactrian
+
+	Treat XK_Meta_* as Alt- if there is no XK_Alt_*
+
+Change 1654 on 2000/01/22 by nick@bactrian
+
+	Prepare for Tk800.018
+
 Change 1653 on 2000/01/22 by nick@bactrian
 
 	Make Tk::Photo->get return perl list rather than string of three numbers

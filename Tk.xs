@@ -49,7 +49,6 @@ DebugHook(SV *sv)
 #define pTk_exit(status) Tcl_Exit(status)
 
 #define XEvent_DESTROY(obj)
-#define Callback_DESTROY(obj)
 
 #define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
@@ -115,7 +114,7 @@ SV *source;
 
 static IV
 PointToWindow(Tk_Window tkwin, int x, int y, Window dest)
-{    
+{
  Display *dpy = Tk_Display(tkwin);
  Window root = RootWindowOfScreen(Tk_Screen(tkwin));
  Window win;
@@ -124,7 +123,7 @@ PointToWindow(Tk_Window tkwin, int x, int y, Window dest)
  if (!XTranslateCoordinates(dpy, root, dest, x, y, &x, &y, &win))
   {
    win = None;
-  }           
+  }
  return (IV) win;
 }
 
@@ -278,10 +277,6 @@ CODE:
   }
 }
 
-void
-Callback_DESTROY(object)
-SV *	object
-
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk
 
 int
@@ -334,6 +329,10 @@ MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 void
 Tk_CheckHash(widget)
 SV *	widget
+CODE:
+ {
+  Tk_CheckHash(widget,NULL);
+ }
 
 void
 Debug(widget,string)
@@ -397,7 +396,7 @@ MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = pTk_
 IV
 PointToWindow(tkwin,x,y,parent = None)
 Tk_Window	tkwin
-int		x                    
+int		x
 int		y
 IV		parent
 
@@ -407,7 +406,7 @@ Tk_Window	tkwin
 IV		src
 IV		dst
 PPCODE:
-{    
+{
  Display *dpy = Tk_Display(tkwin);
  Window root = RootWindowOfScreen(Tk_Screen(tkwin));
  int x = 0;
@@ -419,7 +418,7 @@ PPCODE:
  XTranslateCoordinates(dpy, src, dst, 0, 0, &x, &y, &root);
  XPUSHs(sv_2mortal(newSViv(x)));
  XPUSHs(sv_2mortal(newSViv(y)));
-} 
+}
 
 void
 pTk_DefineBitmap (win, name, width, height, source)

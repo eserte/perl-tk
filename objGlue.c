@@ -14,6 +14,17 @@
 #include "pTk/tkInt.h"
 #include "tkGlue.h"
 
+#ifndef newSVpvn
+static SV *
+newSVpvn(char *s,STRLEN len)
+{
+ SV *sv = newSVpv("",0);
+ sv_setpvn(sv,s,len);
+ return sv;
+}
+#endif
+
+
 static int
 Expire(int code)
 {
@@ -83,8 +94,8 @@ Scalarize(SV *sv, AV *av)
      for (i=0; i < n; i++)
       {
        if ((svp = av_fetch(av, i, 0)))
-        {  
-         SV *el = *svp;                                       
+        {
+         SV *el = *svp;
          int temp = 0;
          if (SvROK(el) && SvTYPE(SvRV(el)) == SVt_PVAV)
           {
@@ -120,8 +131,8 @@ ForceScalar(SV *sv)
  else
   {
    if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
-    {                       
-     /* Callbacks and lists often get stringified by mistake due to 
+    {
+     /* Callbacks and lists often get stringified by mistake due to
         Tcl/Tk's string fixation - don't change the real value
       */
      SV *nsv = newSVpv("",0);
@@ -129,7 +140,7 @@ ForceScalar(SV *sv)
      return sv_2mortal(nsv);
     }
    else if (!SvOK(sv))
-    {   
+    {
      /* Map undef to null string */
      sv_setpvn(sv,"",0);
     }
@@ -296,8 +307,8 @@ Tcl_NewStringObj (char *bytes, int length)
 {
  if (bytes)
   {
-   if (length < 0)              
-    length = strlen(bytes);     
+   if (length < 0)
+    length = strlen(bytes);
    return newSVpvn(bytes,length);
   }
  else
@@ -309,12 +320,21 @@ Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
 {
  AV *av = newAV();
  if (objc)
-  {  
+  {
    while (objc-- > 0)
-    {            
-     if (objv[objc]) 
+    {
+     SV *sv = objv[objc];
+     if (sv)
       {
-       av_store(av,objc,objv[objc]); /* Should we bump ref ?? */
+       /* tkConfig.c passes Tcl_NewStringObj() or LangSetDefault()
+          so REFCNT should be ok as-is
+        */
+       if (SvREFCNT(sv) <= 0 || SvTEMP(sv))
+        {
+         LangDebug(__FUNCTION__ " %d:\n",objc);
+         sv_dump(sv);
+        }
+       av_store(av,objc,sv);
       }
     }
   }
@@ -340,18 +360,18 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
    s = LangString(objPtr);
    if (lengthPtr)
     *lengthPtr = strlen(s);
-  } 
+  }
  return s;
 }
 
 AV *
 ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
-{    
+{
  if (SvTYPE(sv) == SVt_PVAV)
   {
    return (AV *) sv;
   }
- else 
+ else
   {
    int object = sv_isobject(sv);
    if (!object && SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVAV)
@@ -362,17 +382,17 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
     {
      AV *av = newAV();
      if (!object && (SvIOK(sv) || SvNOK(sv)))
-      {                     
+      {
        /* Simple case of single number */
        av_store(av,0,SvREFCNT_inc(sv));
-      }                     
+      }
      else
-      {                     
-       /* Parse TCL like strings 
+      {
+       /* Parse TCL like strings
           {} are quotes - and can be nested
-          \ quotes \ itself and whitespace 
+          \ quotes \ itself and whitespace
 
-          Older Tk used this perl code ... 
+          Older Tk used this perl code ...
           local $_ = shift;
           my (@arr, $tmp);
           while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
@@ -383,8 +403,8 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
        unsigned char *s = (unsigned char *) LangString(sv);
        int i = 0;
        while (*s)
-        {       
-         unsigned char *base; 
+        {
+         unsigned char *base;
          /* Skip leading whitespace */
          while (isspace(*s))
           s++;
@@ -392,10 +412,10 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
           break;
          base = s;
          if (*s == '{')
-          {     
+          {
            /* Slurp chars till we find matching '}' */
            int count = 1;  /* number of open '{' */
-           base = ++s; 
+           base = ++s;
            while (*s)
             {
              if (*s == '{')
@@ -406,13 +426,13 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
             }
            if (*s != '}')
             {
-             /* Found end of string before closing '}' 
+             /* Found end of string before closing '}'
                 TCL would set an error, we will just include the
                 un-matched opening '{' in the string.
               */
              base--;
             }
-          } 
+          }
          else if (*s)
           {
            /* Find a "word" */
@@ -425,19 +445,19 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
           }
          av_store(av,i++,newSVpvn(base,(s-base)));
          if (*s == '}')
-          s++; 
+          s++;
         }
       }
-     /* Now have an AV populated decide how to return */                     
-     if (SvREADONLY(sv))    
-      {                     
+     /* Now have an AV populated decide how to return */
+     if (SvREADONLY(sv))
+      {
        sv_2mortal((SV *) av);
-       return av;           
-      }                     
-     else                   
-      {                     
+       return av;
+      }
+     else
+      {
        sv_setsv(sv,MakeReference((SV *) av));
-      }                     
+      }
      return (AV *) SvRV(sv);
     }
   }
@@ -466,19 +486,19 @@ MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
    av_store(av,0,SvREFCNT_inc(sv));
    sv_2mortal((SV *) av);
    return av;
-  }            
- else if (SvREADONLY(sv))   
+  }
+ else if (SvREADONLY(sv))
   {
    /* returns mortal list anyway */
    return ForceList(interp,sv);
   }
- else 
-  {       
+ else
+  {
    SvREADONLY_on(sv);
-   av = ForceList(interp,sv);  
+   av = ForceList(interp,sv);
    SvREADONLY_off(sv);
    /* If there was more than one element set the SV */
-   if (av && av_len(av) > 2)
+   if (av && av_len(av) > 0)
     {
      sv_setsv(sv,MakeReference((SV *) av));
     }
@@ -489,9 +509,9 @@ MaybeForceList(Tcl_Interp *interp, Tcl_Obj *sv)
 int
 Tcl_ListObjGetElements (Tcl_Interp *interp, Tcl_Obj *listPtr,
 			    int *objcPtr, Tcl_Obj ***objvPtr)
-{          
+{
  if (listPtr)
-  {        
+  {
    AV *av = MaybeForceList(interp,listPtr);
    if (av)
     {
@@ -541,12 +561,12 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
 {
  AV *av = ForceList(interp,listPtr);
  if (av)
-  {                
+  {
    int len = av_len(av)+1;
    int newlen = len-count+objc;
-   int i;                      
+   int i;
    if (newlen > len)
-    {         
+    {
      /* Move entries beyond old range up to make room for new */
      av_extend(av,newlen-1);
      for (i=len-1; i >= (first+count); i--)
@@ -554,9 +574,9 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
        SV **svp = av_fetch(av,i,0);
        av_store(av,i+newlen-len,SvREFCNT_inc(*svp));
       }
-    }    
+    }
    else if (newlen < len)
-    {  
+    {
      /* Move entries beyond old range down to new location */
      for (i=first+count; i < len; i++)
       {
@@ -573,7 +593,7 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
    for (i=0; i < objc; i++)
     {
      av_store(av,first+i,objv[i]);
-    }         
+    }
    return TCL_OK;
   }
  return TCL_ERROR;
@@ -581,7 +601,21 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
 
 Tcl_Obj *
 Tcl_ConcatObj (int objc, Tcl_Obj *CONST objv[])
-{                                              
+{
+ /* This is very like Tcl_NewListObj() - but is typically
+    called on a command's objv - which will not have REFCNT
+    set way Tcl_NewListObj() is expecting. So correct that
+    then call Tcl_NewListObj().
+  */
+ int i;
+ for (i=0; i < objc; i++)
+  {
+   SV *sv = (SV *)objv[i];
+   if (sv)
+    {
+     SvREFCNT_inc(sv);
+    }
+  }
  return Tcl_NewListObj (objc, objv);
 }
 
@@ -617,7 +651,7 @@ void
 Tcl_AppendStringsToObj (Tcl_Obj *obj,...)
 {
  va_list ap;
- char *s; 
+ char *s;
  SV *sv = ForceScalar(obj);
  va_start(ap,obj);
  while ((s = va_arg(ap,char *)))

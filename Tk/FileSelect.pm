@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.039'; # $Id: //depot/Tk8/Tk/FileSelect.pm#39 $
+$VERSION = '3.041'; # $Id: //depot/Tk8/Tk/FileSelect.pm#41 $
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
@@ -11,6 +11,37 @@ use base qw(Tk::Toplevel);
 use Tk::widgets qw(LabEntry Button Frame Listbox Scrollbar);
 
 Construct Tk::Widget 'FileSelect';
+
+use vars qw(%error_text);
+%error_text = (
+	'-r' => 'is not readable by effective uid/gid',
+	'-w' => 'is not writeable by effective uid/gid',
+	'-x' => 'is not executable by effective uid/gid',
+	'-R' => 'is not readable by real uid/gid',
+	'-W' => 'is not writeable by real uid/gid',
+	'-X' => 'is not executable by real uid/gid',
+	'-o' => 'is not owned by effective uid/gid',
+	'-O' => 'is not owned by real uid/gid',
+	'-e' => 'does not exist',
+	'-z' => 'is not of size zero',
+	'-s' => 'does not exists or is of size zero',
+	'-f' => 'is not a file',
+	'-d' => 'is not a directory',
+	'-l' => 'is not a link',
+	'-S' => 'is not a socket',
+	'-p' => 'is not a named pipe',
+	'-b' => 'is not a block special file',
+	'-c' => 'is not a character special file',
+	'-u' => 'is not setuid',
+	'-g' => 'is not setgid',
+	'-k' => 'is not sticky',
+	'-t' => 'is not a terminal file',
+	'-T' => 'is not a text file',
+	'-B' => 'is not a binary file',
+	'-M' => 'has no modification date/time',
+	'-A' => 'has no access date/time',
+	'-C' => 'has no inode change date/time',
+    );
 
 # Documentation after __END__
 
@@ -39,35 +70,6 @@ sub Accept {
     my($path, $so) = ($cw->cget('-directory'), $cw->SelectionOwner);
     my $leaf = undef;
     my $leaves;
-    my %error_text = (
-        '-r' => 'is not readable by effective uid/gid',
-        '-w' => 'is not writeable by effective uid/gid',
-        '-x' => 'is not executable by effective uid/gid',
-        '-R' => 'is not readable by real uid/gid',
-        '-W' => 'is not writeable by real uid/gid',
-        '-X' => 'is not executable by real uid/gid',
-        '-o' => 'is not owned by effective uid/gid',
-        '-O' => 'is not owned by real uid/gid',
-        '-e' => 'does not exist',
-        '-z' => 'is not of size zero',
-        '-s' => 'does not exists or is of size zero',
-        '-f' => 'is not a file',
-        '-d' => 'is not a directory',
-        '-l' => 'is not a link',
-        '-S' => 'is not a socket',
-        '-p' => 'is not a named pipe',
-        '-b' => 'is not a block special file',
-        '-c' => 'is not a character special file',
-        '-u' => 'is not setuid',
-        '-g' => 'is not setgid',
-        '-k' => 'is not sticky',
-        '-t' => 'is not a terminal file',
-        '-T' => 'is not a text files',
-        '-B' => 'is not a binary file',
-        '-M' => 'has no modification date/time',
-        '-A' => 'has no access date/time',
-        '-C' => 'has no inode change date/time',
-    );
 
     if (defined $so and
           $so == $cw->Subwidget('dir_list')->Subwidget('listbox')) {
@@ -191,15 +193,19 @@ sub Populate {
 
     my $f = $w->Frame();
     $f->pack(-side => 'right', -fill => 'y', -expand => 0);
-    $b = $f->Button('-text' => 'Accept', -command => [ 'Accept', $w ]);
-    $b->pack(-side => 'top', -fill => 'x', -expand => 1);
-    $b = $f->Button('-text' => 'Cancel', -command => [ 'Cancel', $w ]);
-    $b->pack(-side => 'top', -fill => 'x', -expand => 1);
-    $b = $f->Button( '-text'  => 'Reset',
-                     -command => [$w => 'configure','-directory','.'],
+    $b = $f->Button('-textvariable' => \$w->{'Configure'}{'-acceptlabel'},
+		     -command => [ 'Accept', $w ],
     );
     $b->pack(-side => 'top', -fill => 'x', -expand => 1);
-    $b = $f->Button( '-text'  => 'Home',
+    $b = $f->Button('-textvariable' => \$w->{'Configure'}{'-cancellabel'},
+		     -command => [ 'Cancel', $w ],
+    );
+    $b->pack(-side => 'top', -fill => 'x', -expand => 1);
+    $b = $f->Button('-textvariable'  => \$w->{'Configure'}{'-resetlabel'},
+		     -command => [$w => 'configure','-directory','.'],
+    );
+    $b->pack(-side => 'top', -fill => 'x', -expand => 1);
+    $b = $f->Button('-textvariable'  => \$w->{'Configure'}{'-homelabel'},
                      -command => [$w => 'configure','-directory',$ENV{'HOME'}],
     );
     $b->pack(-side => 'top', -fill => 'x', -expand => 1);
@@ -241,6 +247,10 @@ sub Populate {
         -transient        => [ 'PASSIVE', undef, undef, 1 ],
         -verify           => [ 'PASSIVE', undef, undef, ['!-d'] ],
         -create           => [ 'PASSIVE', undef, undef, 0 ],
+        -acceptlabel      => [ 'PASSIVE', undef, undef, 'Accept'],
+        -cancellabel      => [ 'PASSIVE', undef, undef, 'Cancel'],
+        -resetlabel       => [ 'PASSIVE', undef, undef, 'Reset'],
+        -homelabel        => [ 'PASSIVE', undef, undef, 'Home'],
         DEFAULT           => [ 'file_list' ],
     );
     $w->Delegates(DEFAULT => 'file_list');
@@ -259,7 +269,7 @@ sub translate
  return "\\/" if ($ch eq '/');
  return "\\\\" if ($ch eq '\\');
  return $ch;
-}   
+}
 
 sub glob_to_re
 {
@@ -484,7 +494,6 @@ sub Show
  my ($cw,@args) = @_;
  if ($cw->cget('-transient')) {
    $cw->Popup(@args);
-   $cw->waitVisibility;
    $cw->focus;
    $cw->waitVariable(\$cw->{Selected});
    $cw->withdraw;
