@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: $Id: tkInt.h,v 1.8 1998/09/30 19:01:20 rjohnson Exp $ 
+ * RCS: $Id: tkInt.h,v 1.8 1998/09/30 19:01:20 rjohnson Exp $
  */
 
 #ifndef _TKINT
@@ -941,7 +941,8 @@ EXTERN void		TkpWmSetState _ANSI_ARGS_((TkWindow *winPtr,
 			    int state));
 EXTERN void		TkQueueEventForAllChildren _ANSI_ARGS_((
 			    TkWindow *winPtr, XEvent *eventPtr));
-EXTERN int		TkReadBitmapFile _ANSI_ARGS_((Display* display,
+EXTERN int		TkReadBitmapFile _ANSI_ARGS_((Tcl_Interp *interp,
+			    Display* display,
 			    Drawable d, CONST char* filename,
 			    unsigned int* width_return,
 			    unsigned int* height_return,
@@ -971,7 +972,7 @@ EXTERN void		TkSetRegion _ANSI_ARGS_((Display* display, GC gc,
 			    TkRegion rgn));
 #endif
 EXTERN void		TkSetWindowMenuBar _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Arg oldMenuName, 
+			    Tk_Window tkwin, Arg oldMenuName,
 			    Arg menuName));
 EXTERN int		TkSmoothParseProc _ANSI_ARGS_((ClientData clientData,
 			    Tcl_Interp *interp, Tk_Window tkwin,
@@ -1002,7 +1003,7 @@ EXTERN void		TkWmRestackToplevel _ANSI_ARGS_((TkWindow *winPtr,
 EXTERN void		TkWmSetClass _ANSI_ARGS_((TkWindow *winPtr));
 EXTERN void		TkWmUnmapWindow _ANSI_ARGS_((TkWindow *winPtr));
 
-/* 
+/*
  * Unsupported commands.
  */
 EXTERN int		TkUnsupported1Cmd _ANSI_ARGS_((ClientData clientData,
@@ -1012,7 +1013,7 @@ EXTERN int		TkUnsupported1Cmd _ANSI_ARGS_((ClientData clientData,
  * Canvas-related procedures that are shared among Tk modules but not
  * exported to the outside world:
  */
-                                                        
+
 struct TkCanvas;
 extern int		TkCanvPostscriptCmd _ANSI_ARGS_((struct TkCanvas *canvasPtr,
 			    Tcl_Interp *interp, int argc, char **argv));

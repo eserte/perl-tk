@@ -1,7 +1,7 @@
-/* 
+/*
  * tkWinX.c --
  *
- *	This file contains Windows emulation procedures for X routines. 
+ *	This file contains Windows emulation procedures for X routines.
  *
  * Copyright (c) 1995-1996 Sun Microsystems, Inc.
  * Copyright (c) 1994 Software Research Associates, Inc.
@@ -21,11 +21,13 @@
  */
 
 #ifndef __GNUC__       // not in Minw32 yet
+#ifndef __BORLANDC__
 #include <zmouse.h>
+#endif
 #endif
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL (WM_MOUSELAST+1)  // message that will be supported
-                                        // by the OS 
+                                        // by the OS
 #endif
 
 
@@ -110,7 +112,7 @@ TkGetServerInfo(interp, tkwin)
  *----------------------------------------------------------------------
  */
 
-static BOOL CALLBACK 
+static BOOL CALLBACK
 FindMyConsole( HWND win, LPARAM arg )
 {
  DWORD mypid = *((DWORD *) arg);
@@ -209,7 +211,7 @@ TkWinXCleanup(hInstance)
     /*
      * Clean up our own class.
      */
-    
+
     if (childClassInitialized) {
         childClassInitialized = 0;
         UnregisterClass(TK_WIN_CHILD_CLASS_NAME, hInstance);
@@ -218,7 +220,7 @@ TkWinXCleanup(hInstance)
     /*
      * And let the window manager clean up its own class(es).
      */
-    
+
     TkWinWmCleanup(hInstance);
 }
 
@@ -303,7 +305,7 @@ TkpOpenDisplay(display_name)
 	    GetDeviceCaps(dc, LOGPIXELSX) * 10);
     screen->mheight = MulDiv(screen->height, 254,
 	    GetDeviceCaps(dc, LOGPIXELSY) * 10);
-    
+
     /*
      * Set up the root window.
      */
@@ -316,10 +318,10 @@ TkpOpenDisplay(display_name)
     twdPtr->window.winPtr = NULL;
     twdPtr->window.handle = NULL;
     screen->root = (Window)twdPtr;
- 
+
     /*
-     * On windows, when creating a color bitmap, need two pieces of 
-     * information: the number of color planes and the number of 
+     * On windows, when creating a color bitmap, need two pieces of
+     * information: the number of color planes and the number of
      * pixels per plane.  Need to remember both quantities so that
      * when constructing an HBITMAP for offscreen rendering, we can
      * specify the correct value for the number of planes.  Otherwise
@@ -417,7 +419,7 @@ TkpCloseDisplay(dispPtr)
     /*
      * Force the clipboard to be rendered if we are the clipboard owner.
      */
-    
+
     if (dispPtr->clipWindow) {
 	hwnd = Tk_GetHWND(Tk_WindowId(dispPtr->clipWindow));
 	if (GetClipboardOwner() == hwnd) {
@@ -495,11 +497,6 @@ XLowerWindow(display, w)
     Display* display;
     Window w;
 {
-    HWND window = TkWinGetHWND(w);
-
-    display->request++;
-    SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0,
-	    SWP_NOMOVE | SWP_NOSIZE);
 }
 #endif
 
@@ -739,7 +736,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 	case WM_SETFOCUS:
 	case WM_KILLFOCUS: {
 	    TkWindow *otherWinPtr = (TkWindow *)Tk_HWNDToWindow((HWND) wParam);
-	    
+	
 	    /*
 	     * Compare toplevel windows to avoid reporting focus
 	     * changes within the same toplevel.
@@ -771,14 +768,14 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 		Tk_InternAtom((Tk_Window)winPtr, "CLIPBOARD");
 	    event.xselectionclear.time = TkpGetMS();
 	    break;
-	    
+	
 	case WM_MOUSEWHEEL:
 	    /*
 	     * The mouse wheel event is closer to a key event than a
 	     * mouse event in that the message is sent to the window
 	     * that has focus.
 	     */
-	    
+	
 	case WM_CHAR:
 	case WM_SYSKEYDOWN:
 	case WM_SYSKEYUP:
@@ -793,7 +790,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 	    /*
 	     * Compute the screen and window coordinates of the event.
 	     */
-	    
+	
 	    msgPos = GetMessagePos();
 	    rootPoint = MAKEPOINTS(msgPos);
 	    clientPoint.x = rootPoint.x;
@@ -827,7 +824,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
 		     * However, the keycode field has been overloaded
 		     * to hold the zDelta of the wheel.
 		     */
-		    
+		
 		    event.type = MouseWheelEvent;
 		    event.xany.send_event = -1;
 		    event.xkey.keycode = (short) HIWORD(wParam);
@@ -901,7 +898,7 @@ GenerateXEvent(hwnd, message, wParam, lParam)
  *
  * GetState --
  *
- *	This function constructs a state mask for the mouse buttons 
+ *	This function constructs a state mask for the mouse buttons
  *	and modifier keys as they were before the event occured.
  *
  * Results:
@@ -995,7 +992,7 @@ GetTranslatedKey(xkey)
     XKeyEvent *xkey;
 {
     MSG msg;
-    
+
     xkey->nchars = 0;
 
     while (xkey->nchars < XMaxTransChars

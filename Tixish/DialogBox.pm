@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.029'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#29 $
+$VERSION = '3.031'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#31 $
 
 use base  qw(Tk::Toplevel);
 
@@ -39,11 +39,11 @@ sub Populate {
 
     # create a row of buttons in the bottom.
     my $bl;  # foreach my $var: perl > 5.003_08
-    foreach $bl (@$buttons) 
+    foreach $bl (@$buttons)
      {
 	my $b = $bot->Button(-text => $bl, -command => sub { $cw->{'selected_button'} = "$bl" } );
 	$cw->Advertise("B_$bl" => $b);
-        if ($Tk::platform eq 'MSWin32') 
+        if ($Tk::platform eq 'MSWin32')
          {
           $b->configure(-width => 10, -pady => 0);
          }
@@ -61,8 +61,11 @@ sub Populate {
 	} else {
 	    $b->pack(-side => 'left', -expand => 1,  -padx => 1, -pady => 1);
 	}
-    }                
-    $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ]);
+    }
+    $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ],
+                     -foreground => ['ADVERTISED', undef, undef, undef],
+                     -background => ['ADVERTISED', undef, undef, undef],
+                    );
     $cw->Delegates('Construct',$top);
 }
 
@@ -72,7 +75,7 @@ sub add {
     $cw->Advertise("\L$wnam" => $w);
     return $w;
 }
-          
+
 sub Wait
 {
  my $cw = shift;
@@ -102,7 +105,7 @@ sub Show {
 	$cw->{'default_button'}->focus;
     } else {
 	$cw->focus;
-    }   
+    }
     $cw->Wait;
     &$old_focus;
     &$old_grab;

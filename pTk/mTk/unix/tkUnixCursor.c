@@ -1,4 +1,4 @@
-/* 
+/*
  * tkUnixCursor.c --
  *
  *	This file contains X specific cursor manipulation routines.
@@ -136,7 +136,7 @@ static struct CursorName {
  *	from bitmap files.
  *
  * Results:
- *	Returns a new cursor, or NULL on errors.  
+ *	Returns a new cursor, or NULL on errors.
  *
  * Side effects:
  *	Allocates a new cursor.
@@ -240,7 +240,7 @@ TkGetCursorByName(interp, tkwin, arg)
             cursorPtr = NULL;
             goto cleanup;
         }
-        
+
 	/*
 	 * The cursor is to be created by reading bitmap files.  There
 	 * should be either two elements in the list (source, color) or
@@ -250,7 +250,7 @@ TkGetCursorByName(interp, tkwin, arg)
 	if ((argc != 2) && (argc != 4)) {
 	    goto badString;
 	}
-	if (TkReadBitmapFile(display,
+	if (TkReadBitmapFile(interp, display,
 		RootWindowOfScreen(Tk_Screen(tkwin)), &argv[0][1],
 		(unsigned int *) &width, (unsigned int *) &height,
 		&source, &xHot, &yHot) != BitmapSuccess) {
@@ -273,7 +273,7 @@ TkGetCursorByName(interp, tkwin, arg)
 	    cursor = XCreatePixmapCursor(display, source, source,
 		    &fg, &fg, (unsigned) xHot, (unsigned) yHot);
 	} else {
-	    if (TkReadBitmapFile(display,
+	    if (TkReadBitmapFile(interp, display,
 		    RootWindowOfScreen(Tk_Screen(tkwin)), argv[1],
 		    (unsigned int *) &maskWidth, (unsigned int *) &maskHeight,
 		    &mask, &dummy1, &dummy2) != BitmapSuccess) {
@@ -360,7 +360,7 @@ TkCreateCursorFromData(tkwin, source, mask, width, height, xHot, yHot,
     sourcePixmap = XCreateBitmapFromData(display,
 	    RootWindowOfScreen(Tk_Screen(tkwin)), source, (unsigned) width,
 	    (unsigned) height);
-    maskPixmap = XCreateBitmapFromData(display, 
+    maskPixmap = XCreateBitmapFromData(display,
 	    RootWindowOfScreen(Tk_Screen(tkwin)), mask, (unsigned) width,
 	    (unsigned) height);
     cursor = XCreatePixmapCursor(display, sourcePixmap,

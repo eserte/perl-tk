@@ -195,7 +195,7 @@ Tk_GetBitmap(interp, tkwin, string)
 	if (string == NULL) {
 	    goto error;
 	}
-	result = TkReadBitmapFile(Tk_Display(tkwin),
+	result = TkReadBitmapFile(interp, Tk_Display(tkwin),
 		RootWindowOfScreen(nameKey.screen), string,
 		(unsigned int *) &width, (unsigned int *) &height,
 		&bitmap, &dummy2, &dummy2);
@@ -608,8 +608,9 @@ BitmapInit()
  */
 
 int
-TkReadBitmapFile(display, d, filename, width_return, height_return,
+TkReadBitmapFile(interp, display, d, filename, width_return, height_return,
 	bitmap_return, x_hot_return, y_hot_return)
+    Tcl_Interp *interp;
     Display* display;
     Drawable d;
     CONST char* filename;
@@ -621,7 +622,7 @@ TkReadBitmapFile(display, d, filename, width_return, height_return,
 {
     char *data;
 
-    data = TkGetBitmapData(NULL, NULL, (char *) filename,
+    data = TkGetBitmapData(interp, NULL, (char *) filename,
 	    (int *) width_return, (int *) height_return, x_hot_return,
 	    y_hot_return);
     if (data == NULL) {

@@ -17,8 +17,8 @@ sub bitmaps {
 
     my $frame = $TOP->Frame;
     $frame->pack(qw/-side top -expand yes -fill both/);
-    bitmaps_row $frame, qw/error gray25 gray50 hourglass/;
-    bitmaps_row $frame, qw/info question questhead warning/;
+    bitmaps_row $frame, qw/error gray12 gray25 gray50 gray75 hourglass/;
+    bitmaps_row $frame, qw/info questhead question Tk transparent warning/;
 
 } # end bitmaps
 

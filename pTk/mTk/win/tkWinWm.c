@@ -814,7 +814,7 @@ UpdateWrapper(winPtr)
      * we should activate the initial window.
      */
 
-    if (firstWindow) {
+    if (firstWindow || !GetActiveWindow()) {
 	firstWindow = 0;
 	SetActiveWindow(wmPtr->wrapper);
     }
@@ -1451,6 +1451,18 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    hwnd = Tk_GetHWND(Tk_WindowId((Tk_Window) winPtr));
 	}
 	sprintf(interp->result, "0x%x", (unsigned int) hwnd);
+    } else if ((c == 'a') && (strncmp(argv[1], "activate", length) == 0)
+	    && (length >= 2)) {
+
+	if (argc != 3) {
+	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+		    argv[0], " activate window\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (Tk_WindowId((Tk_Window) winPtr) == None) {
+	    Tk_MakeWindowExist((Tk_Window) winPtr);
+	}
+        SetActiveWindow(wmPtr->wrapper);
     } else if ((c == 'g') && (strncmp(argv[1], "geometry", length) == 0)
 	    && (length >= 2)) {
 	char xSign, ySign;
@@ -4494,3 +4506,49 @@ TkWindow *winPtr;
       SendMessage(wmPtr->wrapper, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) 0);
      }
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * XSetInputFocus --
+ *
+ *	Set the current focus window.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Changes the keyboard focus and causes the selected window to
+ *	be activated.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+XSetInputFocus(display, focus, revert_to, time)
+    Display* display;
+    Window focus;
+    int revert_to;
+    Time time;
+{
+    display->request++;
+    if (focus != None) {
+        TkWindow *winPtr = TkWinGetWinPtr(focus);
+	HWND hwnd = Tk_GetHWND(winPtr->window);
+        while (winPtr && !(winPtr->flags & TK_TOP_LEVEL)) {
+            winPtr = winPtr->parentPtr; 
+        }
+        if (winPtr) {
+            if (winPtr->wmInfoPtr && winPtr->wmInfoPtr->wrapper != NULL) {
+		hwnd = winPtr->wmInfoPtr->wrapper;
+            } else { 
+		hwnd = Tk_GetHWND(winPtr->window);
+            }
+            if (GetActiveWindow() != hwnd) {
+		SetActiveWindow(hwnd);
+            }
+        } 
+	SetFocus(Tk_GetHWND(focus));
+    }
+}
+

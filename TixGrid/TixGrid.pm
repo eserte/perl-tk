@@ -20,13 +20,13 @@ BEGIN
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '3.022'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#22 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/TixGrid/TixGrid.pm#23 $
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Widget;
 use Carp;
 
-carp __PACKAGE__ . ' is deprecated';
+carp "\n".__PACKAGE__.' is deprecated' unless defined($Test::ntest);
 
 use base  'Tk::Widget';
 

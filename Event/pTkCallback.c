@@ -45,7 +45,10 @@ SV *sv;
    PL_tainted = 0;
    /* Case of a Tcl_Merge which returns an AV * */
    if (SvTYPE(sv) == SVt_PVAV)
-    sv = newRV(sv);
+    {
+     sv = newRV(sv);
+     warn("Making callback from array not reference");
+    }
    else if (!SvOK(sv) || (SvPOK(sv) && SvCUR(sv) == 0))
     return sv;
    else if (SvREADONLY(sv) || SvROK(sv) || SvPOK(sv))
@@ -99,6 +102,11 @@ void
 LangFreeCallback(sv)
 SV *sv;
 {
+ if (!sv_isa(sv,"Tk::Callback"))
+  {
+   warn("Free non-Callback %p RV=%p",sv,SvRV(sv));
+   abort();
+  }
  SvREFCNT_dec(sv);
 }
 
@@ -106,6 +114,11 @@ Arg
 LangCallbackArg(sv)
 SV *sv;
 {
+ if (sv && !sv_isa(sv,"Tk::Callback"))
+  {
+   warn("non-Callback arg");
+   sv_dump(sv);
+  }
  /* Do _NOT_ increment REFCNT - like Widgets, Fonts, etc. */
  return sv;
 }
@@ -138,13 +151,11 @@ int flags;
     }
   }
 
-#if 0
  /* Belt-and-braces fix to callback destruction issues */
  /* Increment refcount of thing while we call it */
  SvREFCNT_inc(sv);
  /* Arrange to have it decremented on scope exit */
  save_freesv(sv);
-#endif
 
  if (SvTYPE(sv) == SVt_PVCV)
   {

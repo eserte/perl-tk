@@ -4,6 +4,12 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
+Changes in Tk800.020
+	Various tweaks for perl5.6.0
+	Fix ->itemconfigure of grouped canvas items.
+	Another attempt at Win32 raise/lower and ActiveWindow/focus problems.
+	Some other of e-mail backlog issues.
+
 Changes in Tk800.019
 	Fix the sporadic core dump problem, lots of other minor malloc irregularities
 	fixed during search.

@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/MMutil.pm#45 $
+$VERSION = '3.047'; # $Id: //depot/Tk8/Tk/MMutil.pm#47 $
 
 use Tk::MakeDepend;
 
@@ -301,7 +301,11 @@ sub manifypods
  my $self = shift;
  # Maybe always call UNIX version - we HTMLize them later
  local $_ = $self->MM::manifypods;
- if ($] >= 5.003)
+ if ($] >= 5.00565)
+  {
+   s/(POD2MAN_EXE.*pod2man)/$1 --center "perl\/Tk Documentation" --release "Tk\$(VERSION)"/;
+  }
+ elsif ($] >= 5.003)
   {
    s/(POD2MAN_EXE.*pod2man)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
   }
