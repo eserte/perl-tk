@@ -15,7 +15,11 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#ifdef __GNUC__
+#include <Windows32/Sockets.h>
+#else
 #include <winsock.h>
+#endif
 
 /*
  * The follwing static indicates whether this module has been initialized.

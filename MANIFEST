@@ -376,6 +376,7 @@ demos/demos/widtrib/balloon.pl
 demos/demos/widtrib/browseentry.pl
 demos/demos/widtrib/browseentry2.pl
 demos/demos/widtrib/dirtree.pl
+demos/demos/widtrib/form_mgr.pl
 demos/demos/widtrib/labframe.pl
 demos/demos/widtrib/lib/npuz/Xcamel.npuz
 demos/demos/widtrib/notebook.pl
@@ -1188,6 +1189,7 @@ pod/gencmd
 pod/getOpenFile.pod
 pod/grab.pod
 pod/grid.pod
+pod/mega.pod
 pod/messageBox.pod
 pod/mvfor
 pod/option.pod
@@ -1301,6 +1303,7 @@ symbols
 t/README
 t/Require.t
 t/create.t
+t/fileselect.t
 t/font.t
 t/todo.embed-scrolled
 t/widget.t

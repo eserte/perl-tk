@@ -1,3 +1,59 @@
+tk8pod 800_005.10
+
+  o pod/Entry
+	more perlization
+	make values in xview example less ambiguous
+
+tk8pod 800_005.9
+
+  o pod/place.pod pod/pack.pod pod/grid.pod pod/form.pod
+	now use L<Tk::this|Tk::this> is SEE ALSO
+  o pod/grid.pod
+	some rephrasing due to tcl pack $w1 $w2 ... to
+	perl $w1->grid($w2,...) translation
+
+tk8pod 800_005.8
+
+  o pod/mega.pod
+	L<> corrections
+	documented Subwidgets in array context
+
+tk8pod 800_005.7
+
+  o pod/mega.pod:
+	applied Slavens typos fix patch
+
+tk8pod 800_005.6
+
+  o pod/mega.pod
+	new document. first snapshot send to ptk list
+
+tk8pod 800_005.5
+
+  o pod/LabFrame.pod
+	perlized and minor additions
+  o pod/Scrolled.pod
+	documented Advertised widgets
+  o pod/configspec.pod
+	some fixes
+
+tk8pod 800_005.4
+
+  o options, Tlist, Scrolled, DItem, Tree, DirTree:
+	o various fixed found while checkin pTkref tar11
+
+tk8pod 800_005.3
+
+  o pod/UserGuide.pod: minimal fixes send to O'Reilly
+
+tk8pod 800_005.2
+
+  o DItem: perlized & markup fixes/addition
+
+tk8pod 800_005.1
+
+  o sync. with pod/ in Tk800.005
+
 tk8pod 800_004.7
 
   o TixGrid:

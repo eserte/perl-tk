@@ -10,13 +10,6 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
  */
-#include "Lang.h"
-#ifndef _LANG
-/*
- * tclInt.h is needed for the va_list declaration.
- */
-#include "tclInt.h"
-#endif
 #include "tixPort.h"
 #include "tixInt.h"
 

@@ -77,12 +77,12 @@ my $text;
             ok($@, "", "Sizechg: Error update configure $opt");
             eval { $newsize = $text->cget($opt); };
             ok($@, "", "Sizechg: cget $opt");
-            ok($newsize, $oldsize+$chg, 1, "No size change.");
+            ok($newsize, $oldsize+$chg, "No size change.");
 
 	    # check if geometry has changed
             eval { $newgeo  = $scrl->geometry; };
             ok($@, "", "Sizechk: new geometry $opt");
-            ok($newgeo eq $oldgeo, 1, "Sizechk: Ooops, geometry has changed " .
+            ok($newgeo, $oldgeo, "Sizechk: Ooops, geometry has changed " .
 		"($newgeo) for $opt => $oldsize+($chg)"
 		);
 
@@ -96,7 +96,7 @@ my $text;
             ok($@, "", "Sizechg: Error reset update configure $opt");
             eval { $newgeo  = $scrl->geometry; };
             ok($@, "", "Sizechk: reset geometry $opt");
-            ok($newgeo, $oldgeo, 1, "Sizechk: geometry has not changed not reset" .
+            ok($newgeo, $oldgeo, "Sizechk: geometry has not changed not reset" .
 		"for $opt => $oldsize+($chg)"
 		);
           }

@@ -3,7 +3,7 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.004'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#4$
+$VERSION = '3.006'; # $Id: //depot/Tk8/DragDrop/DropSite.pm#6$
 
 @ISA = qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 
@@ -109,8 +109,8 @@ sub NoteSites
 sub UpdateDropSites
 {
  my ($t) = @_;
- my $type;
- foreach $type (@types)
+ $t->{'DropUpdate'} = 0;
+ foreach my $type (@types)
   {
    my $sites = $t->{'DropSites'}->{$type};
    if ($sites && @$sites)
@@ -127,7 +127,8 @@ sub QueueDropSiteUpdate
  my $class = ref($obj);
  my $t   = $obj->widget->toplevel;
  unless ($t->{'DropUpdate'})
-  {
+  {                  
+   $t->{'DropUpdate'} = 1;
    $t->afterIdle(sub { UpdateDropSites($t) });
   }
 }
@@ -234,7 +235,8 @@ sub new
  $w->OnDestroy([$obj,'delete']);
  $obj->DropSiteUpdate;
  $w->bindtags([$w->bindtags,$obj]);
- $w->Tk::bind($obj,'<Configure>',[$obj,'DropSiteUpdate']);
+ $w->Tk::bind($obj,'<Map>',[$obj,'DropSiteUpdate']);
+ $w->Tk::bind($obj,'<Unmap>',[$obj,'DropSiteUpdate']);
  $t->Tk::bind($class,'<Configure>',[\&TopSiteUpdate,$t]);
  unless (grep($_ eq $class,$t->bindtags))
   {

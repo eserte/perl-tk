@@ -11,6 +11,12 @@
 #ifdef dirty
 #undef dirty
 #endif
+#ifdef bufptr
+#undef bufptr
+#endif
+#ifdef colors
+#undef colors
+#endif
 
 #define Tcl_Interp     HV
 #define LangCallback   SV

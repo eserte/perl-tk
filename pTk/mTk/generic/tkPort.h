@@ -16,6 +16,10 @@
 #ifndef _TKPORT
 #define _TKPORT
 
+#if defined(__WIN32__) || defined(_WIN32)
+#define NEED_REAL_STDIO
+#endif
+
 #ifndef _Lang
 #include "Lang.h"
 #endif

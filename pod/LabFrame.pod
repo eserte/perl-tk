@@ -9,41 +9,56 @@ Tk::LabFrame - labeled frame.
 
 =head1 SYNOPSIS
 
-    use Tk::LabFrame;
-    $f = $top->LabFrame(-label => "Something",
-			-labelside => 'acrosstop');
+S<    >B<use Tk::LabFrame;>
+
+S<    >I<$f> = I<$parent>-E<gt>B<LabFrame>(?B<-label>=E<gt>I<text>,
+B<-labelside>=E<gt>I<where>, ...?);
 
 =head1 DESCRIPTION
 
-B<LabFrame> is exactly like B<Frame> except that it takes two
-additional options:
+B<LabFrame> is exactly like B<Frame> and additionaly allows to
+add a label to the frame.
+
+=head1 WIDGET-OPTIONS
+
+B<LabFrame> supports the same options as the
+L<Frame|Tk::Frame/"STANDARD OPTIONS"> widget.
+
+Additional options of B<LabFrame> are:
 
 =over 4
 
-=item B<-label>
+=item B<-label> =E<gt> I<text>
+
 The text of the label to be placed with the Frame.
 
-=item B<-labelside>
-Can be one of B<left>, B<right>, B<top>, B<bottom> or B<acrosstop>.
+=item B<-labelside> =E<gt> I<where>
+
+I<Where> can be one of B<left>, B<right>, B<top>, B<bottom> or B<acrosstop>.
 The first four work as might be expected and place the label to the
-left, right, above or below the frame respectively. The last one
+left, right, above or below the frame respectively. The B<acrosstop>
 creates a grooved frame around the central frame and puts the label
 near the northwest corner such that it appears to "overwrite" the
-groove. Run the following test program to see this in action:
+groove.
 
+=back
+
+=head1 EXAMPLE
+
+Run the following test program to see this in action:
+
+    use strict;
     use Tk;
     require Tk::LabFrame;
     require Tk::LabEntry;
 
     my $test = 'Test this';
-    $top = MainWindow->new;
-    my $f = $top->LabFrame(-label => "This is a label",
+    my $mw = Tk::MainWindow->new;
+    my $f = $mw->LabFrame(-label => "This is a label",
 			   -labelside => "acrosstop");
     $f->LabEntry(-label => "Testing", -textvariable => \$test)->pack;
     $f->pack;
-    MainLoop;
-
-=back
+    Tk::MainLoop;
 
 =head1 BUGS
 

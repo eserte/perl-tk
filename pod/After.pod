@@ -28,7 +28,7 @@ S<  >I<$widget>-E<gt>B<afterInfo>?(I<$id>)?
 =head1 DESCRIPTION
 
 This method is used to delay execution of the program or to execute
-a callback in background sometime in the future.  
+a callback in background sometime in the future.
 
 In perl/Tk I<$widget>-E<gt>B<after> is implemented via the class C<Tk::After>,
 and callbacks are associated with I<$widget>, and are automatically cancelled
@@ -61,7 +61,7 @@ The callback will be executed exactly once, at the given time.
 The command will be executed in context of I<$widget>.
 If an error occurs while executing the delayed command then the
 L<Tk::Error|Tk::Error> mechanism is used to report the error.
-The B<after> command returns an identifier (an object in the perl/Tk 
+The B<after> command returns an identifier (an object in the perl/Tk
 case) that can be used to cancel the delayed command using B<afterCancel>.
 
 =item I<$widget>-E<gt>B<repeat>(I<ms>,I<callback>)
@@ -79,8 +79,8 @@ Cancels the execution of a delayed command that
 was previously scheduled.
 I<$id> indicates which command should be canceled;  it must have
 been the return value from a previous B<after> command.
-If the command given by I<$id> has already been executed (and 
-is not scheduled to be executed again) then B<afterCancel> 
+If the command given by I<$id> has already been executed (and
+is not scheduled to be executed again) then B<afterCancel>
 has no effect.
 
 =item I<$widget>-E<gt>B<afterCancel>(I<callback>)

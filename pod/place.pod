@@ -259,9 +259,9 @@ frames and canvases that provide configuration options for this purpose.
 
 =head1 SEE ALSO
 
-L<form|Tk::form>
-L<grid|Tk::grid>
-L<pack|Tk::pack>
+L<Tk::form|Tk::form>
+L<Tk::grid|Tk::grid>
+L<Tk::pack|Tk::pack>
 
 =head1 KEYWORDS
 

@@ -407,8 +407,8 @@ and B<Motion> events.
 It is possible for several bindings to match a given X event.
 If the bindings are associated with different I<tag>'s,
 then each of the bindings will be executed, in order.
-By default, a binding for the widget will be executed first, followed
-by a class binding, a binding for its toplevel, and
+By default, a class binding will be executed first, followed
+by a binding for the widget, a binding for its toplevel, and
 an B<all> binding.
 The B<bindtags> method may be used to change this order for
 a particular window or to associate additional binding tags with

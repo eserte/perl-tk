@@ -98,6 +98,7 @@ static Tk_ConfigSpec imageTextItemConfigSpecs[] = {
 #define DEF_IMAGETEXTSTYLE_JUSTIFY	"left"
 #define DEF_IMAGETEXTSTYLE_WLENGTH	"0"
 #define DEF_IMAGETEXTSTYLE_ANCHOR	"w"
+#define DEF_IMAGETEXTSTYLE_TEXTANCHOR	"e"
 
 
 static Tk_ConfigSpec imageTextStyleConfigSpecs[] = {
@@ -124,6 +125,9 @@ static Tk_ConfigSpec imageTextStyleConfigSpecs[] = {
 
     {TK_CONFIG_PIXELS, "-pady", "padY", "Pad",
        DEF_IMAGETEXTSTYLE_PADY, Tk_Offset(TixImageTextStyle, pad[1]), 0},
+
+    {TK_CONFIG_ANCHOR, "-textanchor", "textAnchor", "TextAnchor",
+       DEF_IMAGETEXTSTYLE_TEXTANCHOR, Tk_Offset(TixImageTextStyle, textanchor), 0},
 
     {TK_CONFIG_PIXELS, "-wraplength", "wrapLength", "WrapLength",
        DEF_IMAGETEXTSTYLE_WLENGTH, Tk_Offset(TixImageTextStyle, wrapLength),
@@ -377,6 +381,12 @@ static void Tix_ImageTextItemDisplay(pixmap, gc, iPtr, x, y,
     TixImageTextItem *itPtr = (TixImageTextItem *)iPtr;
     GC foreGC, backGC;
     TixpSubRegion subReg;
+    int bitY;
+    int bitX;
+    int textY;
+    int textX;
+    int imageH = 0;
+    int imageW = 0;
 
     if ((width <= 0) || (height <= 0)) {
 	return;
@@ -386,67 +396,109 @@ static void Tix_ImageTextItemDisplay(pixmap, gc, iPtr, x, y,
     TixpStartSubRegionDraw(itPtr->ddPtr->display, pixmap, foreGC,
 	    &subReg, 0, 0, x, y, width, height,
 	    itPtr->size[0], itPtr->size[1]);
-    TixDItemGetAnchor(itPtr->stylePtr->anchor, x, y, width, height,
-	itPtr->size[0], itPtr->size[1], &x, &y);
 
     if (backGC != None) {
 	TixpSubRegFillRectangle(itPtr->ddPtr->display, pixmap,
 		backGC, &subReg, x, y, width, height);
+    }                       
+
+    TixDItemGetAnchor(itPtr->stylePtr->anchor, x, y, width, height,
+	itPtr->size[0], itPtr->size[1], &x, &y);
+
+
+    if (itPtr->image != NULL)
+     {
+      imageH = itPtr->imageH;
+      imageW = itPtr->imageW;
+     }
+    else if (itPtr->bitmap != None)
+     {
+      imageH = itPtr->bitmapH;
+      imageW = itPtr->bitmapW;
+     }
+ 
+    bitX = textX = x + itPtr->stylePtr->pad[0];
+    bitY = textY = y + itPtr->stylePtr->pad[1];
+    /* Adjust X position according to textanchor */
+    switch(itPtr->stylePtr->textanchor) {
+      case TK_ANCHOR_NW:
+      case TK_ANCHOR_SW:
+      case TK_ANCHOR_W:
+	bitX += itPtr->textW + itPtr->stylePtr->gap;
+        break;
+      case TK_ANCHOR_NE:
+      case TK_ANCHOR_SE:
+      case TK_ANCHOR_E:
+	textX += imageW + itPtr->stylePtr->gap;
+        break;
+      default:
+	bitX = itPtr->size[0] - imageW - 2*itPtr->stylePtr->pad[0];
+
+	if (bitX > 0) {
+	    bitX = bitX / 2 + (bitX %2);
+	} else {
+	    bitX = 0;
+	}
+	bitX += x;
+	textX = itPtr->size[0] - itPtr->textW - 2*itPtr->stylePtr->pad[0];
+	if (textX > 0) {
+	    textX = textX / 2 + (textX %2);
+	} else {
+	    textX = 0;
+	}
+	textX += x;
+        break;
     }
-
-    if (itPtr->image != NULL) {
-	int bitY;
-
-	bitY = itPtr->size[1] - itPtr->imageH - 2*itPtr->stylePtr->pad[1];
+    /* Adjust Y position according to textanchor */
+    switch(itPtr->stylePtr->textanchor) {
+      case TK_ANCHOR_NW:
+      case TK_ANCHOR_NE:
+      case TK_ANCHOR_N:
+	bitY += itPtr->textH + itPtr->stylePtr->gap;
+        break;
+      case TK_ANCHOR_SE:
+      case TK_ANCHOR_SW:
+      case TK_ANCHOR_S:
+	textY += imageH + itPtr->stylePtr->gap;
+        break;
+      default:
+	bitY = itPtr->size[1] - imageH - 2*itPtr->stylePtr->pad[1];
 
 	if (bitY > 0) {
 	    bitY = bitY / 2 + (bitY %2);
 	} else {
 	    bitY = 0;
 	}
-	if (itPtr->showImage) {
-	    TixpSubRegDrawImage(&subReg, itPtr->image, 0, 0,
-		    itPtr->imageW, itPtr->imageH, pixmap,
-		    x + itPtr->stylePtr->pad[0],
-		    y + itPtr->stylePtr->pad[1] + bitY);
-	}
-	x += itPtr->imageW + itPtr->stylePtr->gap;
-    }
-    else if (itPtr->bitmap != None && foreGC != None) {
-	int bitY;
-
-	bitY = itPtr->size[1] - itPtr->bitmapH - 2*itPtr->stylePtr->pad[1];
-	if (bitY > 0) {
-	    bitY = bitY / 2 + (bitY %2);
-	} else {
-	    bitY = 0;
-	}
-
-	if (itPtr->showImage) {
-	    TixpSubRegDrawBitmap(itPtr->ddPtr->display, pixmap, foreGC,
-		    &subReg, itPtr->bitmap, 0, 0,
-		    itPtr->bitmapW, itPtr->bitmapH,
-		    x + itPtr->stylePtr->pad[0],
-		    y + itPtr->stylePtr->pad[1] + bitY,
-		    1);
-	}
-	x += itPtr->bitmapW + itPtr->stylePtr->gap;
-    }
-
-    if (itPtr->text && itPtr->showText && foreGC != None) {
-	int textY;
-	
+	bitY += y;
 	textY = itPtr->size[1] - itPtr->textH - 2*itPtr->stylePtr->pad[1];
 	if (textY > 0) {
 	    textY = textY / 2 + (textY %2);
 	} else {
 	    textY = 0;
 	}
+	textY += y;
+        break;
+    }
 
+    if (itPtr->image != NULL) {
+	if (itPtr->showImage) {
+	    TixpSubRegDrawImage(&subReg, itPtr->image, 0, 0,
+		    itPtr->imageW, itPtr->imageH, pixmap, bitX, bitY);
+	}
+    }
+    else if (itPtr->bitmap != None && foreGC != None) {
+	if (itPtr->showImage) {
+	    TixpSubRegDrawBitmap(itPtr->ddPtr->display, pixmap, foreGC,
+		    &subReg, itPtr->bitmap, 0, 0,
+		    itPtr->bitmapW, itPtr->bitmapH,
+		    bitX, bitY, 1);
+	}
+    }
+
+    if (itPtr->text && itPtr->showText && foreGC != None) {
 	TixpSubRegDisplayText(itPtr->ddPtr->display, pixmap,  foreGC, &subReg,
 		itPtr->stylePtr->font, LangString(itPtr->text), itPtr->numChars,
-		x + itPtr->stylePtr->pad[0],
-		y + itPtr->stylePtr->pad[1] + textY,
+		textX, textY,
 		itPtr->textW,
 		itPtr->stylePtr->justify,
 		itPtr->underline);
@@ -476,14 +528,14 @@ static void Tix_ImageTextItemCalculateSize(iPtr)
     if (itPtr->image != NULL) {
 	Tk_SizeOfImage(itPtr->image, &itPtr->imageW, &itPtr->imageH);
 
-	itPtr->size[0] = itPtr->imageW + itPtr->stylePtr->gap;
+	itPtr->size[0] = itPtr->imageW;
 	itPtr->size[1] = itPtr->imageH;
     }
     else if (itPtr->bitmap != None) {
 	Tk_SizeOfBitmap(itPtr->ddPtr->display, itPtr->bitmap, &itPtr->bitmapW,
 		&itPtr->bitmapH);
 
-	itPtr->size[0] = itPtr->bitmapW + itPtr->stylePtr->gap;
+	itPtr->size[0] = itPtr->bitmapW;
 	itPtr->size[1] = itPtr->bitmapH;
     }
 
@@ -492,11 +544,35 @@ static void Tix_ImageTextItemCalculateSize(iPtr)
 	TixComputeTextGeometry(itPtr->stylePtr->font, LangString(itPtr->text),
 		itPtr->numChars, itPtr->stylePtr->wrapLength,
 		&itPtr->textW, &itPtr->textH);
-
-	itPtr->size[0] += itPtr->textW;
-	
-	if (itPtr->textH > itPtr->size[1]) {
-	    itPtr->size[1] = itPtr->textH;
+	/* Adjust size[0] i.e. X for EW-ness */
+	switch(itPtr->stylePtr->textanchor) {
+	  case TK_ANCHOR_SE: case TK_ANCHOR_SW: 
+	  case TK_ANCHOR_NE: case TK_ANCHOR_NW: 
+	  case TK_ANCHOR_E: case TK_ANCHOR_W: 
+	    itPtr->size[0] += itPtr->stylePtr->gap;
+	    itPtr->size[0] += itPtr->textW;
+	    break;
+	  case TK_ANCHOR_CENTER: 
+	  case TK_ANCHOR_N: case TK_ANCHOR_S: 
+	    if (itPtr->textW > itPtr->size[0]) {
+		itPtr->size[0] = itPtr->textW;
+	    }
+	    break;
+	}
+	/* Adjust size[1] i.e. Y for NS-ness */
+	switch(itPtr->stylePtr->textanchor) {
+	  case TK_ANCHOR_NW: case TK_ANCHOR_NE: 
+	  case TK_ANCHOR_SW: case TK_ANCHOR_SE: 
+	  case TK_ANCHOR_N: case TK_ANCHOR_S: 
+	    itPtr->size[1] += itPtr->stylePtr->gap;
+	    itPtr->size[1] += itPtr->textH;
+	    break;
+	  case TK_ANCHOR_CENTER: 
+	  case TK_ANCHOR_E: case TK_ANCHOR_W: 
+	    if (itPtr->textH > itPtr->size[1]) {
+		itPtr->size[1] = itPtr->textH;
+	    }
+	    break;
 	}
     }
 
@@ -600,6 +676,7 @@ Tix_ImageTextStyleCreate(interp, tkwin, diTypePtr, name)
 
     stylePtr->font	 = NULL;
     stylePtr->gap	 = 0;
+    stylePtr->textanchor = TK_ANCHOR_E;
     stylePtr->justify	 = TK_JUSTIFY_LEFT;
     stylePtr->wrapLength = 0;
     stylePtr->pad[0]	 = 0;

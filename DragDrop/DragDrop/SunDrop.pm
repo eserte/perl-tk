@@ -2,7 +2,7 @@ package Tk::DragDrop::SunDrop;
 require  Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#3$
+$VERSION = '3.005'; # $Id: //depot/Tk8/DragDrop/DragDrop/SunDrop.pm#5$
 
 @ISA = qw(Tk::DragDrop::Rect);
 use strict;
@@ -27,8 +27,8 @@ sub Preview
  my ($site,$token,$e,$kind,$flags) = (@_);
  $token->BackTrace("No flags") unless defined $flags;
  my $sflags = $site->flags;
- return if ($kind == _motion && !($sflags & &MOTION));
- return if ($kind != _motion && !($sflags & &ENTERLEAVE));
+ return if ($kind == _motion && !($sflags & MOTION));
+ return if ($kind != _motion && !($sflags & ENTERLEAVE));
  my $data = pack('LLSSLL',$kind,$e->t,$e->X,$e->Y,$site->name,$flags);
  $token->SendClientMessage('_SUN_DRAGDROP_PREVIEW',$site->win,32,$data);
 }
@@ -74,25 +74,32 @@ sub Drop
  $w->SelectionHandle('-selection'=>$seln,'-type'=>'_SUN_DRAGDROP_ACK',[\&HandleAck,$w,$seln]);
  $w->SelectionHandle('-selection'=>$seln,'-type'=>'_SUN_DRAGDROP_DONE',[\&HandleDone,$w,$seln]);
  my $atom  = $w->InternAtom($seln);                                 
- my $flags = &ACK_FLAG | &TRANSIENT_FLAG;                           
+ my $flags = ACK_FLAG | TRANSIENT_FLAG;                           
  my $data  = pack('LLSSLL',$atom,$e->t,$e->X,$e->Y,$site->name,$flags);
  $w->SendClientMessage('_SUN_DRAGDROP_TRIGGER',$site->win,32,$data);
 }
 
+
+my $busy = 0;
+
 sub CheckSites
 {
  my ($class,$token) = @_;
- delete $token->{'SunDD'};
-}
+ delete $token->{'SunDD'} unless $busy;
+}       
 
 sub SiteList
 {
  my ($class,$token) = @_;
- unless (exists $token->{'SunDD'})
+ unless ($busy || exists $token->{'SunDD'})
   {
+   Carp::confess("Already doing it!") if ($busy++);
    my @data  = ();
-   my @sites = ();
-   eval {local $SIG{__DIE__}; @data = $token->SelectionGet( '-selection'=>"_SUN_DRAGDROP_DSDM",  "_SUN_DRAGDROP_SITE_RECTS") } ;
+   my @sites = ();      
+   my $mw = $token->MainWindow;       
+   $token->{'SunDD'} = \@sites; 
+   eval {local $SIG{__DIE__}; };
+   @data = $mw->SelectionGet( '-selection'=>"_SUN_DRAGDROP_DSDM",  "_SUN_DRAGDROP_SITE_RECTS");
    if ($@)
     {
      $token->configure('-cursor'=>'hand2');
@@ -111,7 +118,7 @@ sub SiteList
        push(@sites,bless [splice(@data,0,7)],$class);
       }
     }
-   $token->{'SunDD'} = \@sites; 
+   $busy--;
   }
  return @{$token->{'SunDD'}};
 }

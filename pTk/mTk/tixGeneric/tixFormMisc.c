@@ -150,13 +150,14 @@ static void AttachInfo(interp, clientPtr, axis, which)
  *
  *----------------------------------------------------------------------
  */
-static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
+static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     FormInfo *clientPtr;
     Tk_Window topLevel;
     Tcl_Interp* interp;
     int axis, which;
-    Arg value;
-{
+    Arg avalue;
+{             
+    char *value = LangString(avalue);
     Tk_Window tkwin;
     FormInfo * attWidget;
     int code = TCL_OK;
@@ -167,18 +168,22 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, value)
     int delta = 0;
     LangFreeProc *freeProc = NULL;
 
-    if (Lang_SplitList(interp, value, &argc, &argv, &freeProc) != TCL_OK) {
+    if (Lang_SplitList(interp, avalue, &argc, &argv, &freeProc) != TCL_OK) {
 	return TCL_ERROR;
     }
 
     switch (argv[0][0]) {
       case '#':		/* Attached to grid */
       case '%': 	/* Attached to percent (aka grid) */
-	if (argc < 2 || Tcl_GetInt(interp, args[++delta], &grid) == TCL_ERROR) {
-	    goto malformed;
-	}
+	{Tcl_Obj *temp = Tcl_NewStringObj(LangString(args[0])+1,-1);
+	 if (Tcl_GetIntFromObj(interp,temp,&grid) != TCL_OK) {
+	    Tcl_DecrRefCount(temp);
+	    goto error;
+	 }
 	clientPtr->attType[axis][which]   = ATT_GRID;
 	clientPtr->att[axis][which].grid  = grid;
+	Tcl_DecrRefCount(temp);
+	}
 	break;
 
       case '&': 		/* Attached to parallel widget */

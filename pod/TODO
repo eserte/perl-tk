@@ -1,8 +1,80 @@
-Everything IMO of course.
+Everything only IMO of course.
 
 Achim.
 
 ################## TO DO  ##########################
+
+added ptk special featues:
+
+----
+Achim Bohnet <ach@mpe.mpg.de> writes:
+>tagConfigurere returns a -data option for Tk402.003 and Tk800.003
+>tcls Tk8.0 does not have it and therefore it's not in the POD docs.
+>
+>Are there other places where pTk has more options than tcltk that
+>are waiting to be documented?
+
+Not many, but I would not be surprised. 
+
+HList and TList elements have -data too.
+
+And of course we have property "command" (at least on X).
+----
+
+fileevent:
+
+o remove tcl remnants like gets.
+o use 'fileevent' thread of Nick and Andreas Borchert
+  to clarify the perl/Tk situation.
+o Add an save EXAMPLE for cut and paste so people don't
+  have to worry how to implenent the described details.
+
+Widget.pod
+
+o misses Busy/Unbusy.  Check how it's implemtented to
+  understand why it works as it does
+
+=item I<$widget>-E<gt>B<Busy>
+
+Turn the pointer into a 'watch' for I<$widget> and all
+decendants.  Beeps on key events for all these widgets.
+(Eh? Beeps on mouse clicks for all widgets in the Toplevel Eh?)
+
+Note: Does only with I<descendants> that have a undefined B<-cursor>
+value.  E.g., B<Entry> and B<Text> widgets don't work with B<Busy>
+by default.  A simple work around it to set B<-cursor>=E<gt>B<undef>.
+
+=item I<$widget>-E<gt>B<Unbusy>
+
+Undo last L<Busy|/Busy>.
+
+Balloon.pod
+===========
+
+	-statusbar: Label + -text has the disadvantage
+		Label may resize for messages that are too
+		long.   Entry + -textvariable has not the problem
+		but it's editable. -> ROEntry ???
+
+configspec.pod
+==============
+	o IMO use 'fallback' instead of 'default' because the default a widget
+	  uses is taken from the resource database and if there's nothing it
+	  fallbacks to the value specified in ConfigSpecs.
+
+        o one should now be able to use $self instead of 'SELF' but I've not
+          verified it so this is more a reminder for my pod/TODO file :-)
+
+STANDARD OPTIONS
+================
+
+o -width  listed in Listbox but not in options.pod
+
+There a need for a check what options are listed
+in STD OPTIONS section and what's really in options.pod
+(maybe same what in options but also listed in widget
+specific WIDGET OPTIONS
+
 
 getOpenFile:
 ============

@@ -978,12 +978,20 @@ WindowEventProc(evPtr, flags)
 	result = (*restrictProc)(restrictArg, &wevPtr->event);
 	if (result != TK_PROCESS_EVENT) {
 	    if (result == TK_DEFER_EVENT) {
+		/* TK_DEFER_EVENT */
+		/* WARNING - Beware this happening to SelectionNotify events 
+		 * DragDrop is broken if they don't happen...
+		 */
 		return 0;
 	    } else {
 		/*
-		 * TK_DELETE_EVENT: return and say we processed the event,
+		 * TK_DISCARD_EVENT: return and say we processed the event,
 		 * even though we didn't do anything at all.
 		 */
+		if (result != TK_DISCARD_EVENT) {
+		    LangDebug("Bad restrict proc code %d\n", result);
+		    return 0; /* DEFER instead */
+		}
 		return 1;
 	    }
 	}

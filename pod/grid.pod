@@ -12,9 +12,9 @@ grid - Geometry manager that arranges widgets in a grid
 
 =head1 SYNOPSIS
 
-S<    >I<$widget>-E<gt>B<grid>?(I<arg> ?,I<arg ...>?)?
+S<    >I<$widget>-E<gt>B<grid>?(?I<widget> ...,? ?I<arg> ?...>?)?
 
-S<    >I<$widget>-E<gt>B<grid>I<Option>?(I<arg >?, I<arg ...>?)?
+S<    >I<$widget>-E<gt>B<grid>I<Option>?(I<arg> ?,I<arg> ...?)?
 
 =head1 DESCRIPTION
 
@@ -28,12 +28,11 @@ on the I<option> argument:
 
 =item I<$slave>-E<gt>B<grid>(?I<$slave, ...>??, I<options>?)
 
-The arguments consist of the references of one or more slave windows
+The arguments consist of the optional references to more slave windows
 followed by pairs of arguments that specify how to manage the slaves.
 The characters B<->,  B<x> and B<^>,
 can be specified instead of a window reference to alter the default
-location of a I<$slave>, as described in the L<""RELATIVE PLACEMENT"">
-section, below.
+location of a I<$slave>, as described in L<"RELATIVE PLACEMENT">, below.
 
 If any of the slaves are already managed by the geometry manager
 then any unspecified options for them retain their previous values rather
@@ -116,7 +115,7 @@ If a slave's cell is larger than its requested dimensions, this
 option may be used to position (or stretch) the slave within its cell.
 I<Style>  is a string that contains zero or more of the characters
 B<n>, B<s>, B<e> or B<w>.
-The string can optionally contains spaces or
+The string can optionally contain spaces or
 commas, but they are ignored.  Each letter refers to a side (north, south,
 east, or west) that the slave will "stick" to.  If both B<n> and B<s> (or
 B<e> and B<w>) are specified, the slave will be stretched to fill the entire
@@ -299,7 +298,7 @@ In the first step, the minimum size needed to fit all of the slaves
 is computed, then (if propagation is turned on), a request is made
 of the master window to become that size.
 In the second step, the requested size is compared against the actual size
-of the master.  If the sizes are different, then spaces is added to or taken
+of the master.  If the sizes are different, then space is added to or taken
 away from the layout as needed.
 For the final step, each slave is positioned in its row(s) and column(s)
 based on the setting of its I<sticky> flag.
@@ -368,9 +367,9 @@ manager, written by George Howlett.
 
 =head1 SEE ALSO
 
-L<form|Tk::form>
-L<pack|Tk::pack>
-L<place|Tk::place>
+L<Tk::form|Tk::form>
+L<Tk::pack|Tk::pack>
+L<Tk::place|Tk::place>
 
 =head1 KEYWORDS
 

@@ -13,7 +13,6 @@
  *
  * SCCS: @(#) tkCanvPs.c 1.57 97/10/28 18:08:39
  */
-#include "Lang.h"
 #include "tkInt.h"
 #include "tkCanvas.h"
 

@@ -44,7 +44,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.005';
+$Tk::VERSION     = '800.006';
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -468,7 +468,7 @@ sub FocusOK
  if (!$@ && defined($value))
   {
    return 0 if ($value eq '0');
-   return 1 if ($value eq '1');
+   return $w->viewable if ($value eq '1');
    $value = $w->$value();
    return $value if (defined $value);
   }

@@ -343,6 +343,7 @@ struct TixImageTextStyle {
     Tk_Justify justify;		/* Justification to use for multi-line text. */
     TixFont font;
     int gap;			/* Gap between text and image */
+    Tk_Anchor textanchor;	/* Text anchor information */ 
 };
 
 /*----------------------------------------------------------------------

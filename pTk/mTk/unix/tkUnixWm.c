@@ -291,11 +291,14 @@ static int wmTracing = 0;
 
 static void		TopLevelReqProc _ANSI_ARGS_((ClientData dummy,
 			    Tk_Window tkwin));
+static  void		TopLevelLostSlaveProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Window tkwin));
+
 
 static Tk_GeomMgr wmMgrType = {
     "wm",				/* name */
     TopLevelReqProc,			/* requestProc */
-    (Tk_GeomLostSlaveProc *) NULL,	/* lostSlaveProc */
+    TopLevelLostSlaveProc,		/* lostSlaveProc */
 };
 
 /*
@@ -360,7 +363,6 @@ static int		WaitForEvent _ANSI_ARGS_((Display *display,
 static void		WaitForMapNotify _ANSI_ARGS_((TkWindow *winPtr,
 			    int mapped));
 
-static void		IdleMapToplevel _ANSI_ARGS_((ClientData clientData));
 static void		UnmanageGeometry _ANSI_ARGS_((Tk_Window tkwin));
 
 static Tk_RestrictAction
@@ -786,6 +788,33 @@ TkWmSetClass(winPtr)
 /*
  *----------------------------------------------------------------------
  *
+ * TopLevelLostSlaveProc --
+ *
+ *	This procedure is invoked when a toplevel window becomes 
+ *	managed by another geometry manager.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Should be equivalent to Tix's "wm capture" ??
+ *
+ *----------------------------------------------------------------------
+ */
+
+static  
+void
+TopLevelLostSlaveProc(clientData, tkwin)
+ClientData clientData;
+Tk_Window tkwin;
+{                  
+    LangDebug(__FUNCTION__ " %s\n", Tk_PathName(tkwin));
+    /* Don't do anything yet */
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * Tk_WmCmd --
  *
  *	This procedure is invoked to process the "wm" Tcl command.
@@ -816,63 +845,48 @@ Tk_WmCmd(clientData, interp, argc, argv)
     size_t length;
     int i; 
 
-    if (argc < 2) {
-	wrongNumArgs:
+    if (argc < 3) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
 		argv[0], " option window ?arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
     c = argv[1][0];
     length = strlen(argv[1]);
-    if ((c == 't') && (strncmp(argv[1], "tracing", length) == 0)
-	    && (length >= 3)) {
-	if ((argc != 2) && (argc != 3)) {
-	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
-		    argv[0], " tracing ?boolean?\"", (char *) NULL);
-	    return TCL_ERROR;
-	}
-	if (argc == 2) {
-	    interp->result = (wmTracing) ? "on" : "off";
-	    return TCL_OK;
-	}
-	return Tcl_GetBoolean(interp, argv[2], &wmTracing);
-    }
-
-    if (argc < 3) {
-	goto wrongNumArgs;
-    }
     winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[2], tkwin);
     if (winPtr == NULL) {
 	return TCL_ERROR;
     }
-    if (!(winPtr->flags & TK_TOP_LEVEL)) {
-	if ((c == 'r') && (strncmp(argv[1], "release", length) == 0)) {
-	    if (winPtr->parentPtr == NULL) {
-		Tcl_AppendResult(interp, "Cannot release main window", NULL);
+
+    if ((c == 't') && (strncmp(argv[1], "tracing", length) == 0)
+	    && (length >= 3)) {
+	if ((argc != 3) && (argc != 4)) {
+	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+		    argv[0], " tracing ?boolean?\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (argc == 3) {                      
+	    Tcl_IntResults(interp,1,0, wmTracing); 
+	    return TCL_OK;
+	}
+	return Tcl_GetBoolean(interp, argv[3], &wmTracing);
+    }
+
+    if ((c == 'r') && (strncmp(argv[1], "release", length) == 0)) {
+	    if (winPtr->flags & TK_TOP_LEVEL) {
+		Tcl_AppendResult(interp, "Already a toplevel window", NULL);
 		return TCL_ERROR;
 	    }
 
 	    /* detach the window from its gemoetry manager, if any */
-	    UnmanageGeometry(tkwin);
+	    UnmanageGeometry((Tk_Window) winPtr);
+
 	    if (winPtr->window == None) {
 		/* Good, the window is not created yet, we still have time
 		 * to make it an legitimate toplevel window
 		 */
 		winPtr->dirtyAtts |= CWBorderPixel;
-		winPtr->atts.event_mask |= StructureNotifyMask;
-
-		winPtr->flags |= TK_TOP_LEVEL;
-		TkWmNewWindow(winPtr);
-		Tcl_DoWhenIdle(IdleMapToplevel, (ClientData) winPtr);
 	    } else {
 		Window parent;
-		XSetWindowAttributes atts;
-
-		atts.event_mask = winPtr->atts.event_mask;
-		atts.event_mask |= StructureNotifyMask;
-
-		Tk_ChangeWindowAttributes((Tk_Window)winPtr, CWEventMask,
-		    &atts);
 
 		if (winPtr->flags & TK_MAPPED) {
 		    Tk_UnmapWindow((Tk_Window)winPtr);
@@ -882,18 +896,26 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		    parent, 0, 0);
 
 		/* Should flush the events here */
-		winPtr->flags |= TK_TOP_LEVEL;
-		TkWmNewWindow(winPtr);
-
-		Tcl_DoWhenIdle(IdleMapToplevel, (ClientData) winPtr);
 	    }
+
+	    winPtr->flags |= TK_TOP_LEVEL;
+	    TkWmNewWindow(winPtr);
+	
+	    wmPtr = winPtr->wmInfoPtr;
+	    wmPtr->hints.initial_state = WithdrawnState;
+	    wmPtr->withdrawn = 1;
+                                                   
+	    /* Size was set - force a call to Geometry Manager */
+	    winPtr->reqWidth++;
+	    winPtr->reqHeight++;
+	    Tk_GeometryRequest((Tk_Window)winPtr, winPtr->reqWidth-1, winPtr->reqHeight-1);
+             
 	    return TCL_OK;
-	}
-	else {
+
+    } else if (!(winPtr->flags & TK_TOP_LEVEL)) {
 	    Tcl_AppendResult(interp, "window \"", winPtr->pathName,
 		"\" isn't a top-level window", (char *) NULL);
 	    return TCL_ERROR;
-	}
     }
     wmPtr = winPtr->wmInfoPtr;
     if ((c == 'a') && (strncmp(argv[1], "aspect", length) == 0)) {
@@ -941,10 +963,30 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 
+
 	if ((winPtr->flags & TK_TOP_LEVEL)==0) {
 	    /* Window is already captured */
 	    return TCL_OK;
 	}
+	/* Withdraw the window */
+	wmPtr->hints.initial_state = WithdrawnState;
+	wmPtr->withdrawn = 1;
+	if (wmPtr->flags & WM_NEVER_MAPPED) {
+	    /* Now handle all idletasks so that the initial 
+	     * idle map is certain to have happened 
+	     */
+	    while (Tcl_DoOneEvent(TCL_IDLE_EVENTS)) {
+		/* Empty loop body */
+	    }
+	} else {
+	    if (XWithdrawWindow(winPtr->display, wmPtr->wrapperPtr->window,
+		    winPtr->screenNum) != 0) {
+		WaitForMapNotify(winPtr, 0);
+	    }
+	}             
+
+	/* Dis-associate from wm - do this later ?*/
+	TkWmDeadWindow(winPtr);
 
 	if (winPtr->window == None) {
 	    /* cause this and parent window to exist*/
@@ -966,7 +1008,6 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	     * need to perform the hack
 	     */
 	    static int wmDontReparent = 0;
-
 
 	    /* Hack begins here --
 	     *
@@ -1035,8 +1076,6 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    Tk_ChangeWindowAttributes((Tk_Window)winPtr, CWEventMask,
 		&atts);
 
-	    Tk_DeleteEventHandler((Tk_Window)winPtr, StructureNotifyMask,
-	        TopLevelEventProc, (ClientData) winPtr);
 	    UnmanageGeometry((Tk_Window) winPtr);
 	}
 	return TCL_OK;
@@ -2048,6 +2087,12 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	WaitForMapNotify(winPtr, 0);
+    } else if ((c == 'w') && (strncmp(argv[1], "wrapper", length) == 0)
+	    && (length >= 2)) {          
+	if (wmPtr->wrapperPtr == NULL) {
+	    CreateWrapper(wmPtr);
+	}
+	Tcl_IntResults(interp,1,0,wmPtr->wrapperPtr->window);
     } else {
 	Tcl_AppendResult(interp, "unknown or ambiguous option \"", argv[1],
 		"\": must be aspect, client, command, deiconify, ",
@@ -2055,7 +2100,7 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		"iconify, iconmask, iconname, iconposition, ",
 		"iconwindow, maxsize, minsize, overrideredirect, ",
 		"positionfrom, protocol, resizable, sizefrom, state, title, ",
-		"transient, or withdraw",
+		"transient, withdraw or wrapper",
 		(char *) NULL);
 	return TCL_ERROR;
     }
@@ -3293,6 +3338,9 @@ WaitRestrictProc(clientData, eventPtr)
     WaitRestrictInfo *infoPtr = (WaitRestrictInfo *) clientData;
 
     if (eventPtr->type == ReparentNotify) {
+	return TK_PROCESS_EVENT;
+    }
+    if (eventPtr->type == SelectionNotify) {
 	return TK_PROCESS_EVENT;
     }
     if ((eventPtr->xany.window != infoPtr->window)
@@ -5059,32 +5107,6 @@ TkpGetWrapperWindow(winPtr)
 }
    
 /* Support Procedures for release and capture */
-/*
- *----------------------------------------------------------------------
- *
- * IdleMapToplevel --
- *
- *	This procedure is invoked as a when-idle handler to map a
- *	newly-released toplevel window
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	The window given by the clientData argument is mapped.
- *
- *----------------------------------------------------------------------
- */
-static void
-IdleMapToplevel(clientData)
-    ClientData clientData;
-{
-    TkWindow * winPtr = (TkWindow *) clientData;
-
-    if (winPtr->flags & TK_TOP_LEVEL) {
-	Tk_MapWindow((Tk_Window)winPtr);
-    }
-}  
 /*
  *----------------------------------------------------------------------
  *

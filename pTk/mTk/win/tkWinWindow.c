@@ -90,6 +90,7 @@ Tk_AttachHWND(tkwin, hwnd)
     entryPtr = Tcl_CreateHashEntry(&windowTable, (char *)hwnd, &new);
     Tcl_SetHashValue(entryPtr, (ClientData)tkwin);
 
+
     return (Window)twdPtr;
 }
 
@@ -141,8 +142,13 @@ HWND
 Tk_GetHWND(window)
     Window window;
 {
-    TkWinDrawable *twdPtr = (TkWinDrawable *) window;
-    return twdPtr->window.handle;
+    if (window != None) {
+	TkWinDrawable *twdPtr = (TkWinDrawable *) window;
+	return twdPtr->window.handle;
+    } else {
+        /* None is returned for Root Window */
+	return GetDesktopWindow();   
+    }
 }
 
 /*

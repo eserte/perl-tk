@@ -8,7 +8,7 @@ package Tk::MainWindow;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/MainWindow.pm#16$
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/MainWindow.pm#20$
 
 use Tk::CmdLine;
 require Tk;
@@ -33,8 +33,11 @@ sub CreateArgs
   }
  my %result = $class->SUPER::CreateArgs(undef,$args);
  my $name = delete($args->{'-name'});
- $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});
- $result{'-screen'} = $ENV{'DISPLAY'} unless exists $result{'-screen'};
+ unless ($^T)
+  {
+   $ENV{'DISPLAY'} = ':0' unless (exists $ENV{'DISPLAY'});               
+   $result{'-screen'} = $ENV{'DISPLAY'} unless exists $result{'-screen'};
+  }
  return (-name => "\l$name",%result);
 }
 
@@ -53,10 +56,10 @@ sub new
  croak($@ . "$package->new(" . join(',',@_) .")") if ($@);
  $top->apply_command_line;
  $top->InitBindings;
+ $top->SetBindtags;
  $top->InitObject(\%args);
  eval { $top->configure(%args) };
  croak "$@" if ($@);
- $top->SetBindtags;
  push(@Windows,$top);
  return $top;
 }

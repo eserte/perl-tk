@@ -26,6 +26,9 @@ extern __declspec(dllimport) WIN32_IOSUBSYSTEM	win32stdio;
 #endif
 extern int RunPerl(int argc, char **argv, char **env, void *iosubsystem);
 
+#ifdef __GNUC__
+char *_environ[] = { NULL };
+#endif
 
 /*
  * The following declarations refer to internal Tk routines.  These

@@ -143,10 +143,6 @@
 #  define TixpEndSubRegionDraw (*TixintVptr->V_TixpEndSubRegionDraw)
 #endif
 
-#ifndef TixpSetWindowParent
-#  define TixpSetWindowParent (*TixintVptr->V_TixpSetWindowParent)
-#endif
-
 #ifndef TixpStartSubRegionDraw
 #  define TixpStartSubRegionDraw (*TixintVptr->V_TixpStartSubRegionDraw)
 #endif

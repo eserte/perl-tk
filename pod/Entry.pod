@@ -13,7 +13,7 @@ Tk::Entry - Create and manipulate Entry widgets
 
 =head1 SYNOPSIS
 
-I<$entry> = I<$parent>-E<gt>B<Entry>(?I<options>?);
+S<    >I<$entry> = I<$parent>-E<gt>B<Entry>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
@@ -54,7 +54,7 @@ of the entry.
 
 Specifies one of two states for the entry:  B<normal> or B<disabled>.
 If the entry is disabled then the value may not be changed using widget
-commands and no insertion cursor will be displayed, even if the input focus is
+methods and no insertion cursor will be displayed, even if the input focus is
 in the widget.
 
 =item Name:	B<width>
@@ -97,10 +97,10 @@ inserted.
 
 Entries are capable of displaying strings that are too long to
 fit entirely within the widget's window.  In this case, only a
-portion of the string will be displayed;  commands described below
+portion of the string will be displayed;  methods described below
 may be used to change the view in the window.  Entries use
 the standard B<xScrollCommand> mechanism for interacting with
-scrollbars (see the description of the B<xScrollCommand> option
+scrollbars (see the description of the B<-xscrollcommand> option
 for details).  They also support scanning, as described below.
 
 =head1 WIDGET METHODS
@@ -126,7 +126,7 @@ to the first character in the string.
 =item B<anchor>
 
 Indicates the anchor point for the selection, which is set with the
-B<select from> and B<select adjust> methods.
+B<selectionFrom> and B<selectionAdjust> methods.
 
 =item B<end>
 
@@ -186,7 +186,7 @@ I<last> is the index of the character just after the last
 one to delete.
 If I<last> isn't specified it defaults to I<first>+1,
 i.e. a single character is deleted.
-This command returns an empty string.
+This method returns an empty string.
 
 =item I<$entry>-E<gt>B<get>
 
@@ -238,8 +238,8 @@ value is an empty string.
 
 =item I<$entry>->B<selection>I<Option>(I<arg>)
 
-This command is used to adjust the selection within an entry.  It
-has several forms, depending on I<option>:
+This method is used to adjust the selection within an entry.  It
+has several forms, depending on I<Option>:
 
 =over 8
 
@@ -249,7 +249,7 @@ Locate the end of the selection nearest to the character given by
 I<index>, and adjust that end of the selection to be at I<index>
 (i.e including but not going beyond I<index>).  The other
 end of the selection is made the anchor point for future
-B<select to> commands.  If the selection
+B<selectionTo> methods.  If the selection
 isn't currently in the entry, then a new selection is created to
 include the characters between I<index> and the most recent
 selection anchor point, inclusive.
@@ -258,7 +258,7 @@ Returns an empty string.
 =item I<$entry>-E<gt>B<selectionClear>
 
 Clear the selection if it is currently in this widget.  If the
-selection isn't in this widget then the command has no effect.
+selection isn't in this widget then the method has no effect.
 Returns an empty string.
 
 =item I<$entry>-E<gt>B<selectionFrom>(I<index>)
@@ -289,8 +289,8 @@ If I<index> is the same as the anchor point, do nothing.
 If I<index> is after the anchor point, set the selection
 to the characters from the anchor point up to but not including
 I<index>.
-The anchor point is determined by the most recent B<select from>
-or B<select adjust> command in this widget.
+The anchor point is determined by the most recent B<selectionFrom>
+or B<selectionAdjust> method in this widget.
 If the selection isn't in this widget then a new selection is
 created using the most recent anchor point specified for the widget.
 Returns an empty string.
@@ -310,9 +310,9 @@ forms:
 Returns a list containing two elements.
 Each element is a real fraction between 0 and 1;  together they describe
 the horizontal span that is visible in the window.
-For example, if the first element is .2 and the second element is .6,
-20% of the entry's text is off-screen to the left, the middle 40% is visible
-in the window, and 40% of the text is off-screen to the right.
+For example, if the first element is .2 and the second element is .7,
+20% of the entry's text is off-screen to the left, the middle 50% is visible
+in the window, and 30% of the text is off-screen to the right.
 These are the same values passed to scrollbars via the B<-xscrollcommand>
 option.
 
@@ -329,7 +329,7 @@ I<Fraction> must be a fraction between 0 and 1.
 
 =item I<$entry>-E<gt>B<xview>(B<scroll> =E<gt> I<number, what>)
 
-This command shifts the view in the window left or right according to
+This method shifts the view in the window left or right according to
 I<number> and I<what>.
 I<Number> must be an integer.
 I<What> must be either B<units> or B<pages> or an abbreviation

@@ -1,11 +1,23 @@
+BEGIN
+  {
+    $| = 1;
+    $^W = 1;
+
+    eval { require Test; };
+    if ($@)
+      {
+	print "1..0\n";
+	print STDERR "Test.pm module not installed. ";
+	exit;
+      }
+    Test->import;
+  }
 use strict;
-BEGIN { $^W = 1 };
-use Test;
 ##
-## Almost all 'normal' all widget loaded:  load module, create, pack, and
+## Almost all widget classes:  load module, create, pack, and
 ## destory an instance.
 ##
-## Dialog and Menu stuff not tested here
+## Menu stuff not tested up to now
 ##
 
 use vars '@class';
@@ -27,7 +39,6 @@ BEGIN
 		Scrollbar
 		Text
 		Toplevel
-		Optionmenu
 	),
 	# Tix core widgets
 	qw(
@@ -36,6 +47,7 @@ BEGIN
 		NoteBook
 		TList
 		TixGrid
+		Optionmenu
 	),
 	# Tixish composites
 	qw(
@@ -51,6 +63,7 @@ BEGIN
 		Optionmenu
 		ROText
 		Table
+		Tiler
 		TextUndo
 
 		Dialog
@@ -60,7 +73,9 @@ BEGIN
 	)
    );
 
-   plan test => (7*@class+3);
+   @class = grep(!/InputO/,@class) if ($^O eq 'MSWin32');
+
+   plan test => (8*@class+3);
 
   };
 
@@ -88,11 +103,21 @@ foreach my $class (@class)
       {
         if ($w->isa('Tk::Wm'))
           {
+	    # KDE-beta4 wm with policies:
+	    #     'interactive placement'
+	    #		 okay with geometry and positionfrom
+	    #     'manual placement'
+	    #		geometry and positionfrom do not help
+	    eval { $w->positionfrom('user'); };
+            #eval { $w->geometry('+10+10'); };
+	    ok ($@, "", 'Problem set postitionform to user');
+
             eval { $w->Popup; };
 	    ok ($@, "", "Can't Popup a $class widget")
           }
         else
           {
+	    ok(1); # dummy for above positionfrom test
             eval { $w->pack; };
 	    ok ($@, "", "Can't pack a $class widget")
           }
@@ -107,10 +132,7 @@ foreach my $class (@class)
       { 
         # Widget $class couldn't be created:
 	#	Popup/pack, update, destroy skipped
-	skip (1);
-	skip (1);
-	skip (1);
-	skip (1);
+	for (1..5) { skip (1,1,1, "skipped because widget could not be created"); }
       }
   }
 

@@ -13,7 +13,7 @@ Tk::MMutil::TkExtMakefile(
     macro	=> { WINARCH     => $win_arch },
     'DEFINE'	=> $define,
     'INC'	=> "$inc -I. -Ibitmaps",
-    'SKIP'	=> [qw( distclean test dist makeaperl xs_o)],
+    'SKIP'	=> [qw( distclean dist makeaperl xs_o)],
     'clean'	=> {'FILES' => 'libpTk$(LIB_EXT)'}
 );
 
@@ -162,6 +162,14 @@ sub MY::post_initialize
    $self->{PM}->{$src} = $self->catfile($dir,$name);
   }
  '';
+}
+
+sub MY::test 
+{
+ q[
+test :: 
+	@echo 'No tests defined for $(NAME)'
+ ];
 }
 
 sub MY::post_constants 

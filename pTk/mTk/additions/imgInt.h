@@ -2,7 +2,6 @@
 #define _IMGINT
 /* imgInt.h */
 
-#include "Lang.h"
 #include "tkInt.h"
 
 typedef struct {

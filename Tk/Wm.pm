@@ -14,16 +14,16 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Wm.pm#5$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Wm.pm#9$
 
-use Tk::Submethods ( 'wm' => [qw(grid)] );
+use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 
 Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command 
                        deiconify focusmodel frame geometry group
                        iconbitmap iconify iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
                        protocol resizable saveunder sizefrom state title transient
-                       withdraw)]);
+                       withdraw wrapper)]);
 
 sub SetBindtags
 {
@@ -40,9 +40,20 @@ sub Populate
                  );
 }
 
+sub MoveResizeWindow
+{
+ my ($w,$x,$y,$width,$height) = @_;
+ $w->withdraw;
+ $w->geometry($width.'x'.$height);
+ $w->MoveToplevelWindow($x,$y);
+ $w->deiconify;
+}
+
+
 1;
 
 __END__
+
 
 sub Post
 {

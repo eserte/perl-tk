@@ -1,3 +1,132 @@
+Change 920 on 1998/06/14 by nick@camel
+
+	More Mingw32 tweaks
+
+Change 919 on 1998/06/14 by nick@ni-s
+
+	Update versions from Win32
+
+Change 918 on 1998/06/14 by nick@camel
+
+	Win32 / Mingw32 fixes and workrounds
+
+Change 917 on 1998/06/14 by nick@ni-s
+
+	Thread tolerance
+
+Change 916 on 1998/06/13 by nick@ni-s
+
+	$VERSION stuff
+
+Change 915 on 1998/06/13 by nick@ni-s
+
+	Correct one SUPER:: snag in mega.pod, run tidypod
+
+Change 914 on 1998/06/13 by nick@ni-s
+
+	Integrate Achim's pod changes to mainline
+
+Change 913 on 1998/06/13 by nick@ni-s
+
+	Achim's tkpoddiff Sat 13th June
+
+Change 912 on 1998/06/12 by nick@ni-s
+
+	Sarathy's build with borland patch (Mk II)
+
+Change 911 on 1998/06/12 by nick@pluto
+
+	Allow -initialfile to not be found if -create
+
+Change 910 on 1998/06/11 by nick@ni-s
+
+	Add modified version of Alan's ->form bug report as a "demo"
+
+Change 909 on 1998/06/11 by nick@ni-s
+
+	Fix ->yview('13.0') problem (but should we...)
+
+Change 908 on 1998/06/11 by nick@ni-s
+
+	Update VERSIONs in .pm files
+	Restore ->form to accept '%100', update form.pod
+	to give perl/Tk syntax of ['&',$widget,$offset] for the '&' case.
+
+Change 907 on 1998/06/10 by nick@ni-s
+
+	Backlog of at-work edits mainly tainting stuff
+
+Change 906 on 1998/06/06 by nick@camel
+
+	Make wmRelease work on Win32, it more-or-less did, but 
+	as Label is handled as "native" then needed to pass "a"
+	window handle to its CreateProc or create failed.
+	RootWindow is returned as "NULL", translate that to 
+	GetDesktopWindow().
+
+Change 905 on 1998/06/06 by nick@camel
+
+	Avoid wmRelease on Win32 till we add a parent Tk_Window
+
+Change 903 on 1998/06/03 by nick@camel
+
+	Wm + hacks compiles, gets mem fault when wmRelease used...
+
+Change 902 on 1998/06/03 by nick@ni-s
+
+	Copypaste saveunder and wrapper command to Win32
+
+Change 901 on 1998/06/03 by nick@pluto
+
+	Re-work wmRelease and use for Drag&Drop
+
+Change 900 on 1998/06/03 by nick@pluto
+
+	Patches from the list
+
+Change 897 on 1998/06/02 by nick@ni-s
+
+	Update VERSION for TList and DragDrop changes
+
+Change 896 on 1998/06/02 by nick@pluto
+
+	Fix Sun Drag&Drop for tk8.8's wrapper windows and 
+	wm's tendancy to 'eat' selection events.
+	Track map/unmap of drop sites (e.g. on NoteBook pages).
+
+Change 894 on 1998/06/01 by nick@pluto
+
+	Fix various snags with TList
+	Add -textanchor to imagetext style options
+
+Change 862 on 1998/05/23 by nick@ni-s
+
+	Suppy dummy 'make test' target
+
+Change 859 on 1998/05/23 by nick@ni-s
+
+	Tolerate yet another error message format
+
+Change 849 on 1998/05/22 by nick@ni-s
+
+	Bump version, 
+	attempt to build under threads,
+	->after snag in an HList
+	Missed Mwm patch
+	Test updates
+
+Change 848 on 1998/05/22 by nick@pluto
+
+	Avoid coredump when last entry is hidden
+
+Change 828 on 1998/05/17 by nick@ni-s
+
+	Handle html target
+
+Change 827 on 1998/05/17 by nick@ni-s
+
+	Release preparation
+
 Change 826 on 1998/05/17 by nick@ni-s
 
 	Unbundle Bundle ;-)

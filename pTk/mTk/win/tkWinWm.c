@@ -1,4 +1,4 @@
- /* 
+/* 
  * tkWinWm.c --
  *
  *	This module takes care of the interactions between a Tk-based
@@ -316,7 +316,9 @@ static void		TopLevelReqProc _ANSI_ARGS_((ClientData dummy,
 			    Tk_Window tkwin));
 static void		UpdateGeometryInfo _ANSI_ARGS_((
 			    ClientData clientData));
-static void		UpdateWrapper _ANSI_ARGS_((TkWindow *winPtr));
+static void		UpdateWrapper _ANSI_ARGS_((TkWindow *winPtr));  
+static void		UnmanageGeometry _ANSI_ARGS_((Tk_Window tkwin));
+
 static LRESULT CALLBACK	WmProc _ANSI_ARGS_((HWND hwnd, UINT message,
 			    WPARAM wParam, LPARAM lParam));
 
@@ -1086,40 +1088,79 @@ Tk_WmCmd(clientData, interp, argc, argv)
     int c;
     size_t length;
 
-    if (argc < 2) {
-	wrongNumArgs:
+    if (argc < 3) {
 	Tcl_AppendResult(interp, "wrong # args: should be \"",
 		argv[0], " option window ?arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
     c = argv[1][0];
     length = strlen(argv[1]);
+    winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[2], tkwin);
+    if (winPtr == NULL) {
+	return TCL_ERROR;
+    }                        
+
     if ((c == 't') && (strncmp(argv[1], "tracing", length) == 0)
 	    && (length >= 3)) {
-	if ((argc != 2) && (argc != 3)) {
+	if ((argc != 3) && (argc != 4)) {
 	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
 		    argv[0], " tracing ?boolean?\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	if (argc == 2) {
-	    interp->result = (wmTracing) ? "on" : "off";
+	if (argc == 3) {
+	    Tcl_IntResults(interp,1,0, wmTracing); 
 	    return TCL_OK;
 	}
 	return Tcl_GetBoolean(interp, argv[2], &wmTracing);
     }
 
-    if (argc < 3) {
-	goto wrongNumArgs;
-    }
-    winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[2], tkwin);
-    if (winPtr == NULL) {
-	return TCL_ERROR;
-    }
-    if (!(winPtr->flags & TK_TOP_LEVEL)) {
-	Tcl_AppendResult(interp, "window \"", winPtr->pathName,
+
+    if ((c == 'r') && (strncmp(argv[1], "release", length) == 0)) {
+	    if (winPtr->flags & TK_TOP_LEVEL) {
+		Tcl_AppendResult(interp, "Already a toplevel window", NULL);
+		return TCL_ERROR;
+	    }
+
+	    /* detach the window from its gemoetry manager, if any */
+	    UnmanageGeometry((Tk_Window) winPtr);
+
+	    if (winPtr->window == None) {
+		/* Good, the window is not created yet, we still have time
+		 * to make it an legitimate toplevel window
+		 */
+		winPtr->dirtyAtts |= CWBorderPixel;
+	    } else {
+		Window parent;
+
+		if (winPtr->flags & TK_MAPPED) {
+		    Tk_UnmapWindow((Tk_Window)winPtr);
+		}
+#if 0
+		parent = XRootWindow(winPtr->display, winPtr->screenNum);
+		XReparentWindow(winPtr->display, winPtr->window,
+		    parent, 0, 0);
+#endif
+		/* Should flush the events here */
+	    }
+
+	    winPtr->flags |= TK_TOP_LEVEL;
+	    TkWmNewWindow(winPtr);
+
+	    TkpWmSetState(winPtr, WithdrawnState);
+
+	    /* Size was set - force a call to Geometry Manager */
+	    winPtr->reqWidth++;
+	    winPtr->reqHeight++;
+	    Tk_GeometryRequest((Tk_Window)winPtr, winPtr->reqWidth-1, winPtr->reqHeight-1);
+             
+	    return TCL_OK;
+
+    } else if (!(winPtr->flags & TK_TOP_LEVEL)) {
+	    Tcl_AppendResult(interp, "window \"", winPtr->pathName,
 		"\" isn't a top-level window", (char *) NULL);
-	return TCL_ERROR;
+	    return TCL_ERROR;
     }
+
     wmPtr = winPtr->wmInfoPtr;
     if ((c == 'a') && (strncmp(argv[1], "aspect", length) == 0)) {
 	int numer1, denom1, numer2, denom2;
@@ -1786,6 +1827,31 @@ Tk_WmCmd(clientData, interp, argc, argv)
 		&& !(winPtr->flags & TK_EMBEDDED))) {
 	    UpdateWrapper(winPtr);
 	}
+    } else if ((c == 's')
+	    && (strncmp(argv[1], "saveunder", length) == 0)) {
+	int boolean;
+	XSetWindowAttributes atts;
+
+	if ((argc != 3) && (argc != 4)) {
+	    Tcl_AppendResult(interp, "wrong # arguments: must be \"",
+		    argv[0], " saveunder window ?boolean?\"",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (argc == 3) {
+	    if (Tk_Attributes((Tk_Window) winPtr)->save_under) {
+		interp->result = "1";
+	    } else {
+		interp->result = "0";
+	    }
+	    return TCL_OK;
+	}
+	if (Tcl_GetBoolean(interp, argv[3], &boolean) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	atts.save_under = (boolean) ? True : False;
+	Tk_ChangeWindowAttributes((Tk_Window) winPtr, CWSaveUnder,
+		&atts);
     } else if ((c == 'p') && (strncmp(argv[1], "positionfrom", length) == 0)
 	    && (length >= 2)) {
 	if ((argc != 3) && (argc != 4)) {
@@ -2055,14 +2121,17 @@ Tk_WmCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	TkpWmSetState(winPtr, WithdrawnState);
+    } else if ((c == 'w') && (strncmp(argv[1], "wrapper", length) == 0)
+	    && (length >= 2)) {          
+	Tcl_IntResults(interp,1,0,0);
     } else {
 	Tcl_AppendResult(interp, "unknown or ambiguous option \"", argv[1],
 		"\": must be aspect, client, command, deiconify, ",
 		"focusmodel, frame, geometry, grid, group, iconbitmap, ",
 		"iconify, iconmask, iconname, iconposition, ",
 		"iconwindow, maxsize, minsize, overrideredirect, ",
-		"positionfrom, protocol, resizable, sizefrom, state, title, ",
-		"transient, or withdraw",
+		"positionfrom, protocol, release, resizable, sizefrom, state, title, ",
+		"transient, withdraw or wrapper",
 		(char *) NULL);
 	return TCL_ERROR;
     }
@@ -4133,3 +4202,37 @@ TkpGetWrapperWindow(
     }
     return winPtr;
 }
+
+/* Support Procedures for release and capture */
+/*
+ *----------------------------------------------------------------------
+ *
+ * UnmanageGeometry --
+ *
+ *	Since there is a bug in tkGeometry.c, we need this routine to
+ *	replace Tk_ManageGeometry(tkwin, NULL, NULL);
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The window given by the clientData argument is mapped.
+ *
+ *----------------------------------------------------------------------
+ */
+static void UnmanageGeometry(tkwin)
+    Tk_Window tkwin;		/* Window whose geometry is to
+				 * be unmanaged.*/
+{
+    register TkWindow *winPtr = (TkWindow *) tkwin;
+
+    if ((winPtr->geomMgrPtr != NULL) &&
+	(winPtr->geomMgrPtr->lostSlaveProc != NULL)) {
+	(*winPtr->geomMgrPtr->lostSlaveProc)(winPtr->geomData, tkwin);
+    }
+
+    winPtr->geomMgrPtr = NULL;
+    winPtr->geomData = NULL;
+}
+
+

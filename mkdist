@@ -4,11 +4,11 @@ use strict;
 use ExtUtils::Manifest "/mani/";
 use POSIX qw(getcwd);
 
-use vars qw($opt_dev $opt_man $version);
+use vars qw($opt_dev $opt_man $opt_lax $version);
 
 use Getopt::Long;
 
-GetOptions('dev=s','man');
+GetOptions('dev=s','man','lax');
 
 sub System
 {
@@ -54,7 +54,7 @@ foreach my $file (keys %$files)
    }
  }
 
-exit(1) if $snag;
+exit(1) if $snag && !$opt_lax;
 
 my @files = map("$dir$version/$_",sort(keys %$files));
 chdir("..");
