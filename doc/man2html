@@ -522,6 +522,20 @@ sub VE
 sub ta
 {
  my $obj = shift;
+}  
+
+sub SO 
+{
+ my $obj = shift;
+ nf($obj);
+ $obj->tag('STRONG');
+}
+
+sub SE 
+{
+ my $obj = shift;
+ nf($obj);
+ $obj->tag('/STRONG');
 }
 
 sub DS
@@ -531,12 +545,17 @@ sub DS
  $obj->tag('PRE');
 }
 
+
 sub DE 
 {
  my $obj = shift;
  fi($obj);
  $obj->tag('/PRE');
 }
+
+*CS = \&DS;
+*CE = \&DE;
+
 
 sub BR
 {
@@ -583,6 +602,12 @@ sub IP
   {
    $obj->para;
   }
+}
+
+sub OP
+{
+ my $obj = shift;
+ IP($obj,fontstuff("\\fB".join(' ',@_)."\\fR"));
 }
 
 sub TP
@@ -809,8 +834,10 @@ if (defined $opt_files)
 
 unless (@ARGV)
  {
-  mandir('man2','.2');
-  mandir('mann','.n');
+#  mandir('man3','.3');
+#  mandir('man2','.2');
+  mandir('man','.n');
+  mandir('man','.3');
  }
 
 die "No files !" unless (@ARGV);

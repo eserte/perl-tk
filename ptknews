@@ -358,7 +358,7 @@ $text->pack(-fill => 'both', -expand => 'y');
 eval { $text->tag('configure','Subject',-foreground => 'blue') };
 $text->tag('configure','From',-underline => 1);
 
-$list->bind('<Double-ButtonRelease-1>',[\&GetArticle,$text,Ev(['Getselected'])]);
+$list->bind('<Double-ButtonRelease-1>',[\&GetArticle,$text,Ev(['getSelected'])]);
 $list->bind('<Return>',[\&GetArticle,$text,Ev(['get','active'])]);
 $list->bind('<c>',[\&Catchup,Ev(['get','active']),1]);
 $list->bind('<u>',[\&Catchup,Ev(['get','active']),0]);

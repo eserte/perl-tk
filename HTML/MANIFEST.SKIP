@@ -1,0 +1,8 @@
+^Ts
+\bdoc\b
+^.$
+tmon\.out
+Makefile$
+%$
+\.(bak|old)$
+\.gif$

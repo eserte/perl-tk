@@ -1,24 +1,7 @@
 #!/usr/local/bin/perl -w
 
-# This script demonstrates the various widgets provided by Tk, along with
-# many of the features of the Tk toolkit.  This file only contains code to
-# generate the main window for the application, which invokes individual
-# demonstrations.  The code for the actual demonstrations is contained in
-# separate ".pl" files in the "widget_lib" directory, which are autoloaded 
-# by this script as needed.
-#
-# widget looks in the directory specified on the command line to load user
-# contributed demonstrations.  If no directory name is specified when widget is
-# invoked and the environment variable WIDTRIB is defined then demonstrations
-# are loaded from the WIDTRIB directory. If WIDTRIB is undefined then widget
-# defaults to the released user contributed directory.
-#
-# Stephen O. Lidie, LUCC, 96/03/11.  lusol@Lehigh.EDU
-# Stephen O. Lidie, LUCC, 97/01/01.  lusol@Lehigh.EDU
-# Stephen O. Lidie, LUCC, 97/02/11.  lusol@Lehigh.EDU
-# Stephen O. Lidie, LUCC, 97/06/07.  lusol@Lehigh.EDU
-#     Update for Tk402.00x.  Total revamp:  WidgetDemo, Scrolled, released
-#     composites, -menuitems, qw//, etcetera.  Perl 5.004 required.
+eval 'exec /usr/local/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 require 5.004;
 
@@ -29,7 +12,7 @@ use Tk::widgets qw/Dialog ErrorDialog/;
 use WidgetDemo;
 use subs qw/inswt invoke lsearch see_code see_vars show_stat view_widget_code/;
 use vars qw/$MW $FONT $WIDTRIB/;
-use vars qw/$CODE $CODE_TEXT $VARS $VIEW $VIEW_TEXT/;
+use vars qw/$CODE $CODE_RERUN $CODE_TEXT $VARS $VIEW $VIEW_TEXT/;
 use vars qw/$BRAKES $LIGHTS $OIL $SOBER $TRANS $WIPERS/;
 use vars qw/$COLOR $FONT_STYLE $POINT_SIZE/;
 use strict;
@@ -38,6 +21,7 @@ $MW = MainWindow->new;
 $MW->title('Widget Demonstration');
 $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $widget_lib = Tk->findINC('demos/widget_lib');
+my $wd = "$widget_lib/WidgetDemo.pm";
 my $WIDTRIB = Tk->findINC('demos/widtrib');
 $WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
 $WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
@@ -52,7 +36,12 @@ $menubar->gridColumnconfigure(qw/0 -weight 1/);
 
 my $file = $menubar->Menubutton(qw/-text File -underline 0 -menuitems/ =>
     [
-     [Button    => '~View', -command => [\&view_widget_code, __FILE__]],
+     [Cascade   => '~View', -menuitems =>
+      [
+       [Button  => '~widget', -command => [\&view_widget_code, __FILE__]],
+       [Button  => '~WidgetDemo', -command => [\&view_widget_code, $wd]],
+      ], # end cascade menuitems
+     ], # end view cascade
      [Separator => ''],
      [Button    => '~Quit', -command => [\&exit]],
     ])->grid(qw/-sticky w/); 
@@ -94,7 +83,7 @@ if ($MW->depth  == 1) {
 $T->tag(qw/bind demo <ButtonRelease-1>/ => sub {invoke $T->index('current')});
 my $last_line = '';
 $T->tag(qw/bind demo <Enter>/ => [sub {
-	my($text, $sv) = @ARG;
+	my($text, $sv) = @_;
 	my $e = $text->XEvent;
 	my($x, $y) = ($e->x, $e->y);
 	$last_line = $text->index("\@$x,$y linestart");
@@ -104,14 +93,14 @@ $T->tag(qw/bind demo <Enter>/ => [sub {
     }, \$STATUS_VAR]
 );
 $T->tag(qw/bind demo <Leave>/ => [sub {
-	my($text, $sv) = @ARG;
+	my($text, $sv) = @_;
 	$text->tag(qw/remove hot 1.0 end/);
 	$text->configure(qw/-cursor xterm/);
 	$$sv = '';
     }, \$STATUS_VAR]
 );
 $T->tag(qw/bind demo <Motion>/ => [sub {
-	my($text, $sv) = @ARG;
+	my($text, $sv) = @_;
 	my $e = $text->XEvent;
 	my($x, $y) = ($e->x, $e->y);
 	my $new_line = $text->index("\@$x,$y linestart");
@@ -206,11 +195,13 @@ $T->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
 opendir(C, $WIDTRIB) or warn "Cannot open $WIDTRIB: $OS_ERROR!";
 my(@dirent) = grep /^.+\.pl$/, sort(readdir C);
 closedir C;
-my $i;
-while ($ARG = shift @dirent) {
-    open(C, "$WIDTRIB/$ARG") or warn "Cannot open $ARG: $OS_ERROR!";
+unshift @dirent, 'TEMPLATE.pl';	# I want it first
+my $i = 0;
+while ($_ = shift @dirent) {
+    next if /TEMPLATE\.pl/ and $i != 0;
+    open(C, "$WIDTRIB/$_") or warn "Cannot open $_: $OS_ERROR!";
     my($name) = /^(.*)\.pl$/;
-    $ARG = <C>;
+    $_ = <C>;
     my($title) = /^#\s*(.*)$/;
     close C;
     $T->insert('end', ++$i . ". $title\n", ['demo', "demo-$name"]);
@@ -221,10 +212,11 @@ $T->configure(-state => 'disabled');
 
 my $DIALOG_ABOUT = $MW->Dialog(
     -title          => 'About widget',
-    -bitmap         => undef,
+    -bitmap         => 'info',
     -default_button => 'OK',
     -buttons        => ['OK'],
-    -text           => "       widget\nVersion $Tk::VERSION\n     97/06/07",
+    -text           => "         widget\n\nPerl Version $]" .
+		       "\nTk Version $Tk::VERSION\n\n        98/03/10",
 );
 $about->entryconfigure('Widget', -command => [$DIALOG_ABOUT => 'Show']);
 
@@ -243,7 +235,7 @@ sub AUTOLOAD {
 
     # This routine handles the loading of most demo methods.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
 
     $T->Busy;
     {
@@ -273,7 +265,7 @@ sub inswt {
     # args	One or more tags to apply to text.  If this is empty then all
     #           tags are removed from the text.
 
-    my($w, $text, @args) = @ARG;
+    my($w, $text, @args) = @_;
 
     my $start = $w->index('insert');
     $w->insert('insert', $text);
@@ -290,7 +282,7 @@ sub invoke {
 
     # This procedure is called when the user clicks on a demo description.
 
-    my($index) = @ARG;
+    my($index) = @_;
 
     my @tags = $T->tag('names', $index);
     my $i = lsearch('demo\-.*', @tags);
@@ -307,7 +299,7 @@ sub lsearch {
     # Search the list using the supplied regular expression and return it's
     # ordinal, or -1 if not found.
 
-    my($regexp, @list) = @ARG;
+    my($regexp, @list) = @_;
     my($i);
 
     for ($i=0; $i<=$#list; $i++) {
@@ -322,7 +314,7 @@ sub see_code {
     # This procedure creates a toplevel window that displays the code for
     # a demonstration and allows it to be edited and reinvoked.
 
-    my($demo) = @ARG;
+    my($demo) = @_;
 
     my $file = "${demo}.pl";
     if (not Exists $CODE) {
@@ -333,22 +325,20 @@ sub see_code {
             -text    => 'Dismiss',
             -command => [$CODE => 'withdraw'],
 	);
-	my $code_buttons_rerun = $code_buttons->Button(
-            -text => 'Rerun Demo',
-            -command => [sub {
-		    eval $CODE_TEXT->get(qw/1.0 end/);
-		    {no strict 'refs'; &$demo($demo);}
-		}],
-        );
-	$code_buttons_dismiss->pack(qw/-side left -expand 1/);
-	$code_buttons_rerun->pack(qw/-side left -expand 1/);
+	$CODE_RERUN = $code_buttons->Button(-text => 'Rerun Demo');
 	$CODE_TEXT = $CODE->Scrolled('Text', 
 				     qw/-scrollbars e -height 40 -setgrid 1/);
+	$code_buttons_dismiss->pack(qw/-side left -expand 1/);
+	$CODE_RERUN->pack(qw/-side left -expand 1/);
 	$CODE_TEXT->pack(qw/-side left -expand 1 -fill both/);
     } else {
 	$CODE->deiconify;
 	$CODE->raise;
     }
+    $CODE_RERUN->configure(-command => sub {
+	eval $CODE_TEXT->get(qw/1.0 end/);
+	{no strict 'refs'; &$demo($demo);}
+    });
     $CODE->iconname($file);
     $file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
     $file = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
@@ -375,7 +365,7 @@ sub see_vars {
     # The old trick of passing a string to serve as the description and a soft
     # reference to the variable no longer works with lexicals and use strict.
 
-    my($parent, $args) = @ARG;
+    my($parent, $args) = @_;
 
     $VARS->destroy if Exists($VARS);
     $VARS = $parent->Toplevel;
@@ -408,7 +398,7 @@ sub show_stat {
     # status Label -textvariable, $text is the Text widget reference and
     # $index is the demonstration index in the Text widget.
 
-    my($sv, $text, $index) = @ARG;
+    my($sv, $text, $index) = @_;
 
     my @tags = $text->tag('names', $index);
     my $i = lsearch('demo\-.*', @tags);
@@ -422,7 +412,7 @@ sub view_widget_code {
 
     # Expose a file's innards to the world too, but only for viewing.
 
-    my($widget) = @ARG;
+    my($widget) = @_;
 
     if (not Exists $VIEW) {
 	$VIEW = $MW->Toplevel;
@@ -454,3 +444,48 @@ sub view_widget_code {
     $VIEW_TEXT->configure(qw/-state disabled/);
 
 } # end view_widget_code
+
+__END__
+
+=head1 NAME
+
+widget - Demonstration of Perl/Tk widgets
+
+=head1 SYNOPSYS
+  
+  widget [ directory ] 
+
+=head1 DESCRIPTION 
+
+This script demonstrates the various widgets provided by Tk, along with
+many of the features of the Tk toolkit.  This file only contains code to
+generate the main window for the application, which invokes individual
+demonstrations.  The code for the actual demonstrations is contained in
+separate ".pl" files in the "widget_lib" directory, which are autoloaded 
+by this script as needed.
+
+widget looks in the directory specified on the command line to load user
+contributed demonstrations.  If no directory name is specified when widget is
+invoked and the environment variable WIDTRIB is defined then demonstrations
+are loaded from the WIDTRIB directory. If WIDTRIB is undefined then widget
+defaults to the released user contributed directory.
+
+=head2 History
+
+ #
+ # Stephen O. Lidie, LUCC, 96/03/11.  lusol@Lehigh.EDU
+ # Stephen O. Lidie, LUCC, 97/01/01.  lusol@Lehigh.EDU
+ # Stephen O. Lidie, LUCC, 97/02/11.  lusol@Lehigh.EDU
+ # Stephen O. Lidie, LUCC, 97/06/07.  lusol@Lehigh.EDU
+ #     Update for Tk402.00x.  Total revamp:  WidgetDemo, Scrolled, released
+ #     composites, -menuitems, qw//, etcetera.  Perl 5.004 required.
+ # Stephen O. Lidie, LUCC, 98/03/10.  lusol@Lehigh.EDU
+ #     Update for Tk8.
+
+=head1 AUTHOR
+
+Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
+
+=cut 
+
+

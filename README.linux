@@ -1,0 +1,70 @@
+This is written by Nick - who never tried linux...
+
+There are several ways to build Tk-b* for linux.
+
+1. Build it static - should work on *any* platform, but will be 
+   larger than dynamic load version.
+   Hassle here is all the demos etc. really need the #! line
+   changing to point at 'tkperl' rather than 'perl'.
+
+2. Use a.out and dld 
+     - you need dld-3.2.6 
+     - You also need the "right" 'bash'.
+     - " Fall 1994 Yggdrasil Linux" + above dld has been known to work
+     - you may need to run ranlib on libX11.* 
+
+On Wed, 30 Aug 95 12:04:19 EDT
+Adam Wasserman <awasser@hermes.sgc.com> writes:
+>
+>Let me state for the record that I'm using Linux 1.2.1 (Infomagic Mar '95
+>Slackware), with gcc 2.6.3, dld 3.2.6, Tk-b6 and perl5.001m, and it
+>all compiled and worked with dynamic loading with little effort or 
+>problem under /usr/local (besides the Pretty.pm stuff).  I DID have to
+>do "ranlib libX11.a" and get the updated dld.  I don't believe my system
+>is configured for ELF.
+
+
+3. Use ELF, either distributed that way, or by building yourself. 
+     - I believe ELF versions are 'new enough' to have 'right' bash
+     - Make sure *perl* is configured to use dl_dlopen rather than dld
+       as the load method. Or you get this symptom:
+
+> Can't load './blib/auto/Tk/Tk.so' for module Tk: File not found at 
+> /usr/lib/perl5/DynaLoader.pm line 450.
+> 
+> at blib/Tk.pm line 31
+> BEGIN failed--compilation aborted at ./basic_demo line 5.
+
+
+Chris. (stoner@cs.buffalo.edu)  http://www.cs.buffalo.edu/~stoner
+Says:
+
+I had the same problem, I had to reconfigure perl to get it to work. Here is a
+summary of my perl configuration that works:
+
+Summary of my perl5 (patchlevel 1) configuration:
+  Platform:
+    osname=linux, osver=1, archname=i486-linux
+    uname='linux valhalla 1.2.8 #6 sun aug 20 16:49:00 edt 1995 i486 '
+    hint=recommended
+  Compiler:
+    cc='cc', optimize='-O2', ld='cc'
+    cppflags='-D__USE_BSD_SIGNAL -Dbool=char -DHAS_BOOL'
+    ccflags ='-D__USE_BSD_SIGNAL -Dbool=char -DHAS_BOOL'
+    ldflags =''
+    stdchar='char', d_stdstdio=define, usevfork=false
+    voidflags=15, castflags=0, d_casti32=undef, d_castneg=define
+    intsize=4, alignbytes=4, usemymalloc=n, randbits=31
+  Libraries:
+    so=so
+    libpth=/lib /usr/lib /usr/local/lib
+    libs=-lgdbm -ldbm -ldb -ldl -lm -lc -lbsd
+    libc=/usr/lib/libc.a
+  Dynamic Linking:
+    dlsrc=dl_dlopen.xs, dlext=so, d_dlsymun=undef
+    cccdlflags='-fpic', ccdlflags='-rdynamic', lddlflags='-shared'
+
+You can get this output with the myconfig script that comes with the perl5
+distribution. I think it was using dl_dlopen that fixed the problem for me.
+
+

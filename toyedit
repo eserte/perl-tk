@@ -1,17 +1,10 @@
 #!/usr/local/bin/perl -w
 
-BEGIN 
- {
-  require lib;
-  chomp($dir = `pwd`);
-  import lib "$dir/blib";
- }
-
 use Tk;
 use Tk::DropSite qw(Sun);
 use Tk::DragDrop qw(Sun);
+use File::Basename qw(fileparse);
 require Tk::TextUndo;
-require Tk::FileSelect;
 require Tk::Menubar;
 use Tk::ErrorDialog;
 
@@ -21,24 +14,18 @@ my $mb = $top->Menubar;
 
 $top->optionAdd('*TextUndo.Background' => '#fff5e1');
 
-my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
-                       '-accept'   => sub 
-                                     { my $file = shift ; 
-                                       return 0 if (-s $file && !(stat(_))[12]);
-                                       return 1 unless -e $file;
-                                       return (-r $file) && (-T $file);  
-                                     },
-                       Name => 'fs', -filter => '*');
-
 my $t = $top->Scrolled(TextUndo, -wrap => 'none', -scrollbars => 'osre');
 
-my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
-$dd->configure(-startcommand => 
+unless ($^O eq 'MSWin32')
+ {
+  my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
+  $dd->configure(-startcommand => 
                sub
                 {
                  return 1 unless (eval { $t->tagNextrange(sel => '1.0','end')});
                  $dd->configure(-text => $t->get('sel.first','sel.last')); 
                 });
+ }
                 
 $t->DropSite(-motioncommand => 
               sub 
@@ -55,19 +42,25 @@ $t->DropSite(-motioncommand =>
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                   [[Button => '~Open',
-                   -command => sub { my $file = $fs->Show(-popover => $top, -create => 0, -verify => ['-r']);
-                                      $t->Load($file) if (defined $file);
-                                   }]]);
+                   -command => sub { my $file = $t->getOpenFile;
+                               $t->Load($file) if (defined $file);
+                             }],
+                   [Button => 'Save ~As ...', -command => [\&SaveAs, $t ]],
+                  ]);
 
 $mb->Menubutton(-text => '~File', -menuitems => 
                  [['Button' => '~Save', -command => [ $t , 'Save' ]],
-                  ['Button' => 'Save ~As', -command =>
-                      sub { 
-                           my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
-                           $t->Save($file) if (defined $file);
-                          }],
                   ['Button' => '~Quit', -command => [ 'destroy',$top ]],
                   ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']]
+                 ]);
+
+$mb->Menubutton(-text => '~Options', -menuitems => 
+                 [['Button' => '~Colour', 
+                    -command => sub { 
+                                      my $c = $t->cget('-background');
+                                      $c = $t->chooseColor(-initialcolor => $c);
+                                      $t->configure(-background => $c) if defined $c;
+                                     }],
                  ]);
 
 $mb->Menubutton(-text => '~Help', -side => 'right');
@@ -75,12 +68,15 @@ $mb->Menubutton(-text => '~Help', -side => 'right');
 
 $t->pack(-expand => 1, -fill => 'both');
 
-if (@ARGV) {
-    if (! -e $ARGV[0]) {
-        open(FILE,">$ARGV[0]") or die "Could not open $ARGV[0]: $!";
-        close(FILE) or die "There was trouble with $ARGV[0]: $!";
-    }
-    $t->Load($ARGV[0]);
-}
+$t->Load($ARGV[0]) if (@ARGV);
 
-MainLoop;
+MainLoop;                     
+
+sub SaveAs
+{ 
+ my $t = shift;
+ my $path = $t->FileName || "./NewFile.txt";                   
+ my ($file,$dir,$suffix) = fileparse($path);
+ $path = $t->getSaveFile(-initialdir => $dir, -initialfile => $file);
+ $t->Save($file) if (defined $path);
+}

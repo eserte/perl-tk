@@ -1,0 +1,7 @@
+tixClass.c
+tixCmds.c
+tixGeometry.c
+tixInit.c
+tixMethod.c
+tixOption.c
+tixWidget.c

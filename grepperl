@@ -1,0 +1,81 @@
+#!/usr/local/bin/perl 
+
+use Getopt::Std;
+
+my %opt;
+
+use File::Find;
+
+getopts("Flc",\%opt);
+
+$expr = shift unless ($opt{'F'});
+
+sub match
+{
+ if ($unsure)
+  {
+   return 1 unless (/#!.*perl/);
+   $unsure = 0;
+  }
+ if ($opt{'F'})
+  {
+   if (/\bfont\b.*(["'])(-[^-]*){2,13}\1/i)
+    {
+     if ($opt{'l'})
+      {
+       print "$File::Find::dir/$file\n";
+       return 1;
+      }
+     $count++;
+     unless ($opt{'c'})
+      {
+       print "$File::Find::dir/$file:$.: $_" 
+      }
+    }
+  }
+ elsif (/\Q$expr\E/o)
+  {
+   if ($opt{'l'})
+    {
+     print "$File::Find::dir/$file\n";
+     return 1;
+    }
+   $count++;
+   unless ($opt{'c'})
+    {
+     print "$File::Find::dir/$file:$.: $_" 
+    }
+  }
+ return 0;
+}
+
+sub wanted
+{
+ $File::Find::prune = 0;
+ if (-T $_ && !/%$/)
+  {
+   local $unsure = !/\.p[ml]$/;
+   local $file   = ($_);
+   local ($_);
+   local $count = 0;
+   open($file,"<$file") || die "Cannot open $file:$!";
+   while (<$file>)
+    {
+     last if &match;
+    }
+   close($file);
+   if ($opt{'c'} && $count)
+    {
+     print "$File::Find::dir/$file: $count\n" 
+    }
+  }
+ elsif (-d $_)
+  {
+   $File::Find::prune = 1 if ($_ eq 'blib');
+  }
+}
+
+
+@ARGV = '.' unless (@ARGV);
+
+find(\&wanted,@ARGV);

@@ -1,0 +1,128 @@
+Everything IMO of course, Achim.
+
+################## TO DO in documentation ##########################
+
+STILL TCLISH:
+	getOpenFile
+	...
+
+Geometry manager:
+
+	o use save style SYNOPSIS and KEYWORDS' section
+
+	o gridSize  $master not managed by grid return (0,0) not
+		documented (intentional)?
+	o Form:
+		o check/verify/understand I<anchor_point> syntax:
+		  	'%$a'  could only work with dyn. var. not lex.
+			\$a  man->pod error?
+		o make undocumented/partial impl. 'spring' invisible
+		  and a add TODO ???
+		o add a intro I<-side>, I<-side>B<spring>, -pad<side> so one
+		  faster sees what's going on 
+		o check TRUE FALSE return of formCheck
+		o try formGrid.  the description seem wrong. Missing 'not'?
+		o check form(-top... -left...) != form(-left...-top...)
+		o ABREVIATIONS "-0", versus -0  wasn't there something about
+		  that on p5p?
+
+	o grid mention raise lower to change stacking order.  Works for non
+	  toplevel too.   Try it.  (add links for raise lower)
+
+	o Add a ptkmgr.pod  explaining common stuff (e.g., possible
+	  $master's, command 'submethods' mgr, mgrForget, mgrInfo)
+	  mention manager (wm for toplevels: are there similar wmForget
+	  etc. methods, seams useful).   *Propagate,
+	  Raise Lower explanations.   $master <=> widgettree correlation
+
+composite:
+
+	o note that ..$opt=delete $args->{-opt}.. handles const.
+	  only options is confusing. a) There would not be a
+	  'readonly' option as for -class, visual, ... 
+	  Using CreateArgs does not work for composites, cries
+	  for a support method  (where=READONLY in configspec?)
+	o Add skeleton of a Frame based composite?
+
+callbacks:
+
+	o IMO remove BUGs section closure are not 'the' solution
+	  especially they are not (?) useable in ClassInit
+	o add some more 'normal' callback examples.
+	o 'pronouce' that the actual arguments list passed to a
+	   callback may differ. 
+	o Then concentate 'special' handling of a bind callback in
+	  it's own section.
+	o Describe how emulate bind in your callback handling
+	o Ev() example/explanations better moved to Tk::bind ?
+	o BUGS entry?: Missing is a -callback switch that treats
+	  callbacks as bind does automaticly
+
+configspec:
+
+	o SETMETHOD, GETMETHOD undocumented (check Derived.pm
+          for more)
+
+Configure:
+
+	o detail about composite widgets are distributed in the
+	  docs. Bundle them into a separate section. First discribe
+	  general interface then go into details about composite:
+
+	o Add section with details about Tk::Configure->new
+
+DItem:
+	o pod markup of ITEM OPTIONS and STYLE OPTIONS is
+	  wrong but fix would conflict with pending
+	  Config:,Name:,Class  change
+
+	o all STANARD OPTIONS still use res. name not option name
+
+	o remove C<>
+
+Text:
+
+    * Intentional(?):
+	o Tag and Tags not documented (doc for Text::Tag?)
+	o TIE interface undocumented 
+
+    * Go through EMB IMAGE and image method stuff
+
+
+############# BUGS/MISSING FEATURE ###################
+
+Text: 
+=====
+
+o windowCreate -create requires pathname as
+  return value (as documented) but should also
+   accepts
+
+ptksh> $t=$mw->Text->pack
+ptksh> $t->windowCreate('1.0', -create=>sub{$t->Button(-text,'xxx')}) 
+ptksh> Tk::Error: bad window path name "Tk::Button=HASH(0x1404b4d28)"
+  at /home/ach/perl/5.004_63/site/auto/Tk/Error.al line 13.
+
+  Fix Text.pod when $w is also okay.
+
+o windowNames return path of emb. widgets.  So IMO there's a
+  windowObjects|Refs missing returning the ref to the widgets
+
+o Missing (intentional?) Tk::submethods
+
+	x|yview => [ qw(moveto scroll) ]
+
+  a specialcase for  x|yviewPickplace ??????????
+
+o sub Tag; and sub Tags; predeclared.  Isn't this be done
+  by autosplit.ix and AutoLoader ?
+
+TList:
+======
+
+o Click on 'one' in example at the end does not make it 'one'
+  the 'active item
+
+####################################################
+
+__END__

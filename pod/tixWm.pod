@@ -1,0 +1,63 @@
+
+
+=head1 NAME
+
+Wm - Tix's addition to the standard TK wm command.
+
+=for category  Tix Extensions
+
+=head1 SYNOPSIS
+
+I<$widget>-E<gt>B<wmCapture>
+
+I<$widget>-E<gt>B<wmRelease>
+
+=head1 DESCRIPTION
+
+The B<wmCapture> and the B<wmRelease> methods change the
+toplevel attribute of Tk widgets.
+
+=head1 COMMAND OPTIONS
+
+=over 4
+
+=item I<$widget>-E<gt>B<wmCapture>
+
+Converts the toplevel window specified by $widget into a non-toplevel
+widget. Normally this command is called to convert a B<toplevel> widget
+into a B<frame> widget. The newly-converted frame widget is
+un-mapped from the screen. To make it appear inside its parent, you
+must call a geometry manager (e.g. pack) explictly.
+
+=item I<$widget>-E<gt>B<wmRelease>
+
+Makes the non-toplevel window specified by $widget into a toplevel
+widget. Normally this command is called to convert a B<frame> widget
+into a B<toplevel> widget, but it can also be used on any
+non-toplevel widget (e.g, label). The newly-converted toplevel window
+is automatically mapped to the screen. To prevent it from appearing in
+the screen, you must call B<withdraw> immediately after calling
+B<release>.
+
+=back
+
+=head1 BUGS
+
+Methods do not exist in the Win32 window manager code.
+
+How these methods interact with perl/Tk's class hierarchy is not yet clear.
+In particular a B<wmRelease>d window will not automatically "inherit"
+the Tk::Wm methods, however a B<wmCapture>d window still will.
+(A B<release>d B<Label> might make a good candidate for an B<Icon>.)
+
+=head1 AUTHOR
+
+Ioi Kim Lam - ioi@graphics.cis.upenn.edu
+
+=head1 SEE ALSO
+
+L<Tk::wm>
+
+=head1 KEYWORDS
+
+TIX

@@ -1,8 +1,7 @@
 #!/usr/local/bin/perl -w
 
-
 $POD::Verbose = 0;
-$POD::enabled = 1;
+$POD::enabled = 0;
 $POD::subdirs = 0;
 %POD::Widgets = ();  # ???
 
@@ -147,16 +146,22 @@ use Perlize;
   my $href;
   $sec =~ s/^[\s\'\`]+//;
   $sec =~ s/[\s\'\`]+$//;
+#  $key =~ s/^B<//;
+#  $key =~ s/(\([n3]\))?>$//;
   if ($key eq "")
    {
     $text = $sec;
     if (exists $obj->{'SECTIONS'}{$sec})
      {
-      $href = 'HREF="#' . $obj->{'SECTIONS'}{$sec} . '"';
+      $href = 'L</' . $sec . '>';
      }
     else
      {
-      warn "$.:No '$sec'" if ($POD::enabled && $sec !~ /[a-z]/);
+      # xxx does not handle forward refs. So ignore warning
+      # and let pod converter complain later 
+      $href = 'L</' . $sec . '>';
+      warn "$.:No '$sec'. Maybe a forward reference!\n"
+		if ($POD::enabled ); #&& $sec !~ /[a-z]/);
      }
    }
   else
@@ -169,8 +174,9 @@ use Perlize;
      }
     else
      {
-      $key =~ s,<([BI])>(.*)</\1>,$2,; 
+      $key =~ s,([BI]<)(.*?)>,$2,; 
       $key =~ s,``(.*)'',$1,; 
+      $key =~ s,\([n3]\)?$,,; 
       $doc = $POD::Document{$key} if (exists $POD::Document{$key});
      }
     if (defined $doc)
@@ -190,6 +196,7 @@ use Perlize;
        }
      }
    }
+
   if (defined $href)
    {
     return $href;
@@ -198,7 +205,8 @@ use Perlize;
    {
     if ($POD::enabled)
      {
-#     warn "$ARGV:$.: No $key/$sec\n";
+      local $^W=0;
+      warn "$ARGV:$.: No $key/$sec (Was: $text)\n";
      }
    }
   return $text;
@@ -307,6 +315,14 @@ sub Xref
                 ? $sec  : "Section" . $obj->{'Number'}++;
      $obj->{'SECTIONS'}{$sec} = $name;
     }
+   # delay =for category after NAME section is writen so pod2man is happy
+   if (exists($obj->{after_name_section}) && $obj->{after_name_section} == 1 )
+     {
+      $obj->tagged('for category ',
+	 (exists $obj->{doc_category}) ? $obj->{doc_category} : "???\n"
+	);
+      $obj->{after_name_section} = 0;
+     }
    if (exists $obj->{'SECTIONS'}{$sec})
     {
      my $name = $obj->{'SECTIONS'}{$sec};
@@ -316,8 +332,11 @@ sub Xref
     {
      $obj->tagged('head1',$arg);
     }
-  }
-
+   if ($arg eq 'NAME')
+     {
+      $obj->{after_name_section} = 1;
+     }
+   }
 }
 
 sub so 
@@ -330,7 +349,9 @@ sub TH
  my ($doc,$sec,$ver,$tk,@pkg) = @_;
  my $pkg = join(' ',@pkg);
  $pkg =~ s/^"(.*)"$/$1/;
+ $doc =~ s/^^Tk:://;
  $obj->Document($doc);
+ $obj->{doc_category} = $pkg;
  unless(exists $POD::Cat{$pkg})
   {
    $POD::Cat{$pkg} = {}; 
@@ -591,7 +612,11 @@ sub process
    {
     if (/^\'/)
      {
-      $pod->comment($1) if m#^\'[\\/]\"(.*$)#;
+      if (m#^\'[\\/]\"(.*$)#)
+       {
+         $pod->comment($1) unless m/the \.SH NAME line immediately/ or
+				  m/SCCS: \@\(#\) /;
+       }
       next;
      }
     # Do the font changes first
@@ -613,16 +638,16 @@ sub process
      }
     else
      {
-      s/See\s+the\s+(.*?)\s+manual\s+entry/$pod->Xref("See the ",$1,""," manual entry")/ieg;
-      s#(See\s+)(<B>.*?</B>)(\s+for)#$pod->Xref($1,$2,"",$3)#ieg;
-      s/(\s+)([\`\'A-Z ]+)\s+(above|below)/$pod->Xref($1,"",$2," ".$3)/eg;
+      s/(see)\s+(the\s+)?(.*?)\s+manual(\s+entry)?/$pod->Xref("$1 the ",$3,""," documentation")/ieg;
+      s#(see\s+)(B<.*?>)(\s+for)#$pod->Xref($1,$2,"",$3)#ieg;
+      s/(\s+)([\`\'A-Z ]+)\s+((section\s+)?(above|below))/$pod->Xref($1,"",$2," ".$3)/eg;
       if (/-\s*Create.*\s(\w+)\s*widgets\s*$/)
        {
         $POD::Widgets{$1} = $pod;
        }
       if ($POD::Verbose && $POD::enabled && /\bsee\b/i && !/HREF=/)
        {
-        print "$ARGV:$.: $_";
+        print STDERR "$ARGV:$.: $_";
         chmod(0644,$ARGV);
        }
       if (/^\S.*?:\t.*\S.*$/)
@@ -640,12 +665,19 @@ sub process
   close(MAN);
 }
 
-@ARGV = <man/*.[3n]> unless (@ARGV);
-
+$POD::subdirs = 1, shift @ARGV if (@ARGV and $ARGV[0] eq '-s');
+@ARGV = <man/*.[n3]> unless (@ARGV);
 die "No files !" unless (@ARGV);
-$POD::subdirs = 1, shift @ARGV if $ARGV[0] eq '-s';
 
 my $file;
+$POD::enabled = 0;
+print "\n\n************************ scanning *****************************\n\n";
+foreach $file (@ARGV)
+ {
+  process($file);
+ }
+$POD::enabled = 1;
+print "\n\n************************ printing *****************************\n\n";
 foreach $file (@ARGV)
  {
   process($file);

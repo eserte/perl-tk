@@ -18,7 +18,7 @@ sub labelentry {
 
     # Create all windows, and pack them.
 
-    my ($parent, $path, $text, $length) = @ARG;
+    my ($parent, $path, $text, $length) = @_;
 
     ${$path} = $parent->Frame();
     $w = "${path}_label";

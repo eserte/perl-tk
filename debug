@@ -1,0 +1,11 @@
+#!/bin/sh
+cat <<! > .gdbinit
+handle SIGWINCH pass nostop noprint
+break XS_DynaLoader_dl_find_symbol
+run -Mblib $*
+shared
+break Perl_croak 
+break Perl_warn
+break Perl_die
+!
+gdb perl 

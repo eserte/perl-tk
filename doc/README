@@ -1,0 +1,17 @@
+
+Directories:
+
+	utils:	tools used to change manpages
+	mann:	updated manpages
+	pod:	hand tuned pods
+	old:	manpages no longer needed
+
+	man	populated by fix4man2pod
+	pod3|n	populated by tkman2pod
+
+Scripts:
+
+	doit		primitive build script
+	fix4man2pod	makes man macros worser but
+			man2pod is then happy
+	transnames	My suggestion for final names of PODs

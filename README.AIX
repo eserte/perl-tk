@@ -1,0 +1,8 @@
+
+As of perl5.002b1f the MakeMaker shipped with perl moans a lot 
+building dynamic loaded extension on AIX. They have been reported to work.
+
+There may be 'make install' problems too.
+
+Getting latest MakeMaker from CPAN may help.
+

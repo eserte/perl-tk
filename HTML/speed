@@ -1,0 +1,17 @@
+#!/usr/local/bin/perl
+
+
+
+require Tk::HTMLtest;
+
+my $html = `cat ../doc/canvas.ht`;
+
+my $obj = Tk::HTMLtest->new();
+
+my $t = time();
+
+$obj->html($html);
+
+print time()-$t," seconds\n";
+
+
