@@ -36,6 +36,8 @@
  *----------------------------------------------------------------------
  */
 
+#if 0
+
 static int EvalArgv(interp, cmdName, argc, argv)
     Tcl_Interp *interp;		/* Current interpreter. */
     char * cmdName;		/* Name of the TCL command to call */
@@ -74,7 +76,14 @@ static int EvalArgv(interp, cmdName, argc, argv)
     }
 
     return (*cmdInfo.proc)(cmdInfo.clientData, interp, argc, argv);
-}
+}    
+
+#else 
+
+#define EvalArgv(interp,sub,argc,args) Lang_CallWithArgs(interp,sub, argc, args)
+
+#endif
+
 
 /*
  *----------------------------------------------------------------------

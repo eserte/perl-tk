@@ -781,6 +781,15 @@ CODE:
 OUTPUT:
   RETVAL
 
+MODULE = Tk	PACKAGE = Tk::font	PREFIX = Tk_
+
+int
+Tk_PostscriptFontName(tkfont,name)
+Tk_Font	tkfont
+SV *	&name
+OUTPUT:
+	name
+
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
 

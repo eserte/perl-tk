@@ -1,396 +1,20 @@
-package Tk::ColorEditor;
-
+package Tk::ColorSelect;
+use strict;       
 
 use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#4$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#7$
 
-use Tk qw(lsearch Ev);
-use Tk::Toplevel;
-@Tk::ColorEditor::ISA = qw(Tk::Toplevel);
-Construct Tk::Widget 'ColorEditor';
+use Tk qw(Ev);
 
-%Tk::ColorEditor::names = ();
+require Tk::Frame;
 
-=head1 NAME 
-
-ColorEditor - a general purpose Tk widget Color Editor (based on tcolor.tcl
-from the Tcl/Tk distribution).
-
-=head1 SYNOPSIS
-
-   use Tk::ColorEditor;
-
-   $cref = $mw->ColorEditor(-title => $title, -cursor => @cursor);
-
-   $cref->Show;
-
-=head1 DESCRIPTION
-
-ColorEditor is implemented as an object with various methods, described 
-below.  First, create your ColorEditor object during program initialization 
-(one should be sufficient), and then configure it by specifying a list of Tk
-widgets to colorize. When it's time to use the editor, invoke the Show()
-method.
-
-ColorEditor allows some customization: you may alter the color attribute
-menu by adding and/or deleting menu items and/or separators, turn the status
-window on or off, alter the configurator's list of color widgets, or even 
-supply your own custom color configurator callback.
-
-=over 4
-
-=item 1.
-
-Call the constructor to create the editor object, which in turn returns a
-blessed reference to the new object:
-
-   use Tk::ColorEditor;
-
-   $cref = $mw->ColorEditor(
-       -title  => $title,
-       -cursor => @cursor,
-   );
-
-      mw     - a window reference, usually the result of a MainWindow->new
-               call.  As the default root of a widget tree, $mw and all
-               descendant widgets at object-creation-time are configured
-               by the default color configurator procedure.  (You probably
-               want to change this though or you might end up colorizing
-               ColorEditor!)
-      title  - Toplevel title, default = ' '.
-      cursor - a valid Tk '-cursor' specification (default is 
-               'top_left_arrow').  This cursor is used over all ColorEditor
-               "hot spots".
-
-=item 2.
-
-Invoke the configure() method to change editor characteristics:
-
-   $cref->configure(-option => value, ..., -option-n => value-n);
-   
-      options:
-        -command             : a callback to a  `set_colors' replacement.
-        -widgets             : a reference to a list of widget references
-                               for the color configurator.
-        -display_status      : TRUE IFF display the ColorEditor status
-                               window when applying colors.
-        -add_menu_item       : 'SEP', or a color attribute menu item.
-        -delete_menu_item    : 'SEP', a color attribute menu item, or color
-                               attribute menu ordinal.
-
-   For example:
-
-      $cref->configure(-delete_menu_item   => 3,
-          -delete_menu_item   => 'disabledforeground',
-          -add_menu_item      => 'SEP',
-          -add_menu_item      => 'New color attribute',
-          -widgets            => [$ce, $qu, $f2b2],
-          -widgets            => [$f2->Descendants],
-          -command            => [\&my_special_configurator, some, args ]
-      );
-
-=item 3.
-
-Invoke the Show() method on the editor object, say, by a button or menu press:
-
-   $cref->Show;
-
-=item 4.
-
-The cget(-widgets) method returns a reference to a list of widgets that
-are colorized by the configurator.  Typically, you add new widgets to
-this list and then use it in a subsequent configure() call to expand your
-color list.
-
-   $cref->configure(
-       -widgets => [
-           @{$Filesystem_ref->cget(-widgets)}, @{$cref->cget(-widgets)},
-       ]
-   );
-
-=item 5.
-
-The delete_widgets() method expects a reference to a list of widgets which are
-then removed from the current color list.
-
-   $cref->delete_widgets($OBJTABLE{$objname}->{'-widgets'})
-
-=back 
-
-=head1 AUTHORS
-
-Stephen O. Lidie, Lehigh University Computing Center.  95/03/05
-lusol@Lehigh.EDU
-
-Many thanks to Guy Decoux (decoux@moulon.inra.fr) for doing the initial 
-translation of tcolor.tcl to TkPerl, from which this code has been derived.
-
-=cut 
-
- 
-use Tk::Dialog;
-use Tk::Pretty;
-
-BEGIN {
-    $SET_PALETTE = 'Set Palette';
-}
-
-use subs qw(color_space hsvToRgb rgbToHsv);
-
-# ColorEditor public methods.
-
-sub add_menu_item
-{
- my $objref = shift;
- my $value;
- foreach $value (@_)
-  {
-   if ($value eq 'SEP') 
-    {
-     $objref->{'mcm2'}->separator;
-    } 
-   else 
-    {
-     $objref->{'mcm2'}->command( -label => $value,
-           -command => [ 'configure', $objref, '-highlight' => $value ] );
-     push @{$objref->{'highlight_list'}}, $value;
-    }
-  }
-}
-
-sub set_title
-{
- my ($w) = @_;
- my $t = $w->{Configure}{'-title'} || '' ;
- my $h = $w->{Configure}{'-highlight'} || '';
- $w->SUPER::title("$t $h Color Editor");
-}
-
-sub highlight
-{
- my ($w,$h) = @_;
- if (@_ > 1)
-  {
-   $w->{'update'}->configure( -text => "Apply $h Color" );
-   my $state = ($h eq 'background') ? 'normal' : 'disabled';
-   $w->{'palette'}->entryconfigure( $SET_PALETTE, -state => $state);
-   $w->{'highlight'} = $h;
-   $w->color($w->Palette->{$h});
-   $w->set_title;
-  }
- return $w->{'highlight'};
-}
-
-sub title
-{
- my ($w,$val) = @_;
- $w->set_title if (@_ > 1);
- return $w->{Configure}{'-title'};
-}
-
-
-sub delete_menu_item
-{
- my $objref = shift;
- my $value;
- foreach $value (@_)
-  {
-   $objref->{'mcm2'}->delete($value);                                      
-   my $list_ord = $value =~ /\d+/ ? $value : lsearch($objref->{'highlight_list'}, $value);
-   splice(@{$objref->{'highlight_list'}}, $list_ord, 1) if $list_ord != -1;
-  }
-}
-
-sub configure {
-
-    # Process ColorEditor configuration options now.
-
-    my($objref, @hook_list) = @_;
-
-    my($option, $value);
-    while (($option, $value) = splice(@hook_list, 0, 2)) {
-	$objref->SUPER::configure($option => $value);
-    } # whilend all options/values          
-
-} # end configure
-
-sub delete_widgets {
-
-    # Remove widgets from consideration by the color configurator.
-    # $widgets_ref points to widgets previously added via `configure'.
-
-    my($objref, $widgets_ref) = @_;
-
-    my($i, $found, $r1, $r2, @wl) = (0, 0, 0, 0, @{$objref->cget(-widgets)});
-    foreach $r1 (@{$widgets_ref}) {
-        $i = -1;
-        $found = 0;
-        foreach $r2 (@wl) {
-            $i++;
-            next if $r1 != $r2;
-            $found = 1;
-            last;
-        }
-        splice(@wl, $i, 1) if $found;
-    }
-    $objref->configure(-widgets => [@wl]);
-
-} # end delete_widgets
-
-sub ApplyDefault 
-{
- my($objref) = @_;
- my $cb = $objref->cget('-command');
- my $h;
- foreach $h (@{$objref->{'highlight_list'}}) 
-  {
-   next if $h =~ /TEAR_SEP|SEP/;
-   $cb->Call($h);
-   die unless (defined $cb);
-  }
-}
-
-sub Hex
-{
- my $w = shift;
- my @rgb = (@_ == 3) ? @_ : $w->rgb(@_);
- sprintf("#%04x%04x%04x",@rgb)
-}
+use vars qw(@ISA); 
+@ISA = qw(Tk::Frame);
+Construct Tk::Widget 'ColorSelect';
 
 sub Populate
 {
-
-    # ColorEditor constructor.
-
-    my($cw, $args) = @_;
-
-    $cw->SUPER::Populate($args);
-    $cw->withdraw;
-
-    my $color_space = 'hsb';    # rgb, cmy, hsb
-    my(@highlight_list) = qw(
-        TEAR_SEP
-        foreground background SEP
-        activeForeground activeBackground SEP
-        highlightColor highlightBackground SEP
-        selectForeground selectBackground SEP 
-        disabledForeground insertBackground selectColor troughColor
-    );
-
-    # Create the Usage Dialog;
-
-    my $usage = $cw->Dialog( '-title' => 'ColorEditor Usage',
-        -justify    => 'left',
-        -wraplength => '6i',				   
-        -text       => "The Colors menu allows you to:\n\nSelect a color attribute such as \"background\" that you wish to colorize.  Click on \"Apply\" to update that single color attribute.\n\nSelect one of three color spaces.  All color spaces display a color value as a hexadecimal number under the oval color swatch that can be directly supplied on widget commands.\n\nApply Tk's default color scheme to the application.  Useful if you've made a mess of things and want to start over!\n\nChange the application's color palette.  Make sure \"background\" is selected as the color attribute, find a pleasing background color to apply to all current and future application widgets, then select \"Set Palette\".",
-    );
-
-    # Create the menu bar at the top of the window for the File, Colors 
-    # and Help menubuttons.
-
-    my $m0 = $cw->Frame(-relief => 'raised', -borderwidth => 2);
-    $m0->pack(-side => 'top', -fill => 'x');
-    my $mf = $m0->Menubutton(
-        -text      => 'File',
-        -underline => 0,
-        -bd        => 1,
-        -relief    => 'raised',
-    );
-    $mf->pack(-side => 'left');
-    my $close_command = [sub {shift->withdraw}, $cw];
-    $mf->command(
-        -label       => 'Close', 
-        -underline   => 0, 
-        -command     => $close_command,
-        -accelerator => 'Ctrl-w',
-    );
-    $cw->bind('<Control-Key-w>' => $close_command);
-    $cw->protocol(WM_DELETE_WINDOW => $close_command);
-
-    my $mc = $m0->Menubutton(
-        -text      => 'Colors',
-        -underline => 0,
-        -bd        => 1,
-        -relief    => 'raised',
-    );
-    $mc->pack(-side => 'left');
-    my $color_attributes = 'Color Attributes';
-    $mc->cascade(-label => $color_attributes, -underline => 6);
-    $mc->separator;
-    my $color_spaces = 'Color Spaces';
-    $mc->cascade(-label => $color_spaces, -underline => 6);
-    $mc->separator;
-    $mc->command(
-        -label     => 'Apply Default Colors', 
-        -underline => 6,
-        -command   => ['ApplyDefault',$cw]
-    );
-    $mc->separator;
-    $mc->command(
-        -label     => $SET_PALETTE, 
-        -underline => 0,
-        -command   => sub { $cw->setPalette($cw->cget('-color'))} 
-    );
-
-    my $m1 = $mc->cget(-menu);
-    my $mcm1 = $m1->Menu;
-    $m1->entryconfigure($color_spaces, -menu => $mcm1);
-    $mcm1->radiobutton(
-        -label     => 'RGB color space', 
-        -variable  => \$cw->{'color_space'},
-        -value     => 'rgb', 
-        -underline => 0, 
-        -command   => ['color_space', $cw, 'rgb'],
-    );
-    $mcm1->radiobutton(
-        -label     => 'CMY color space',
-        -variable  => \$cw->{'color_space'},
-        -value     => 'cmy',
-        -underline => 0, 
-        -command   => ['color_space', $cw, 'cmy'],
-    );
-    $mcm1->radiobutton(
-        -label     => "HSB color space",
-        -variable  => \$cw->{'color_space'},
-        -value     => 'hsb',
-        -underline => 0, 
-        -command   => ['color_space', $cw, 'hsb'],
-    );
-
-    my $mcm2 = $m1->Menu;
-    $m1->entryconfigure($color_attributes, -menu => $mcm2);
-    my $mh = $m0->Menubutton(
-        -text      => 'Help',
-        -underline => 0,
-        -bd        => 1,
-        -relief    => 'raised',
-    );
-    $mh->pack(-side => 'right');
-    $mh->command(
-        -label       => 'Usage', 
-        -underline   => 0, 
-        -command     => [sub {shift->Show}, $usage],
-    );
-
-    # Create the Apply button.
-
-    my $bot = $cw->Frame(-relief => 'raised', -bd => 2);
-    $bot->pack(-side => 'bottom', -fill =>'x');
-    my $update = $bot->Button(
-        -command => [
-            sub {
-                my ($objref) = @_;
-                $objref->Callback(-command => ($objref->{'highlight'}, $objref->cget('-color')));
-            }, $cw,
-        ],
-    );
-    $update->pack(-pady => 1, -padx => '0.25c');
-
-    # Create the listbox that holds all of the color names in rgb.txt, if an 
-    # rgb.txt file can be found.
-
-    my $middle = $cw->Frame(-relief => 'raised', -borderwidth => 2);
-    $middle->pack(-side => 'top', -fill => 'both');
+    my ($middle,$args) = @_; 
     my($i, @a);
     foreach $i ('/usr/local/lib/X11/rgb.txt', '/usr/lib/X11/rgb.txt', 
                 '/usr/local/X11R5/lib/X11/rgb.txt', '/X11/R5/lib/X11/rgb.txt',
@@ -402,7 +26,7 @@ sub Populate
             -padx => '0.25c',
             -pady => '0.25c',
         );
-        my $names = $cw->Listbox(
+        my $names = $middle->Listbox(
             -width           => 20,
             -height          => 12,
             -relief          => 'sunken',
@@ -410,9 +34,9 @@ sub Populate
             -exportselection => 0,
         );
 
-        $names->bind('<Double-1>' => [$cw,'color',Ev(['getSelected'])]);
+        $names->bind('<Double-1>' => [$middle,'color',Ev(['getSelected'])]);
 
-        my $scroll = $cw->Scrollbar(
+        my $scroll = $middle->Scrollbar(
             -orient      => 'vertical',
             -command     => ["yview", $names],
             -relief      => 'sunken',
@@ -421,12 +45,14 @@ sub Populate
         $names->configure(-yscrollcommand => ["set",$scroll]);
         $names->pack(-in => $middle_left, -side => 'left');
         $scroll->pack(-in => $middle_left, -side => 'right', -fill => 'y');
+
+
         while(<FOO>) {
             chomp;
             my @a = split /\s+/;
             if (@a == 4)
              {
-              my $hex = $cw->Hex($a[3]);
+              my $hex = $middle->Hex($a[3]);
               if (!exists($Tk::ColorEditor::names{$hex}) || 
                   length($Tk::ColorEditor::names{$hex}) > length($a[3]))
                {
@@ -444,6 +70,14 @@ sub Populate
 
     my $middle_middle = $middle->Frame;
     $middle_middle->pack(-side => 'left', -expand => 1, -fill => 'y');
+    my $mcm1 = $middle_middle->Optionmenu(-variable => \$middle->{'color_space'},
+                                  -command => [ $middle, 'color_space'], 
+                                  -relief  => 'raised',
+                                  -options => [ ['RGB color space' => 'rgb'],
+                                                ['CMY color space' => 'cmy'],
+                                                ["HSB color space" => 'hsb']]);
+    $mcm1->pack(-side => 'top', -fill => 'x');
+
     my(@middle_middle, @label, @scale);
     $middle_middle[0] = $middle_middle->Frame;
     $middle_middle[1] = $middle_middle->Frame;
@@ -453,15 +87,15 @@ sub Populate
     $middle_middle[1]->pack(-side => 'top', -expand => 1);
     $middle_middle[2]->pack(-side => 'top', -expand => 1);
     $middle_middle[3]->pack(-side => 'top', -expand => 1, -fill => 'x');
-    $cw->{'Labels'} = ["zero","one","two"];
+    $middle->{'Labels'} = ["zero","one","two"];
     foreach $i (0..2) {
-        $label[$i] = $cw->Label(-textvariable => \$cw->{'Labels'}[$i]);
-        $scale[$i] = $cw->Scale(
+        $label[$i] = $middle->Label(-textvariable => \$middle->{'Labels'}[$i]);
+        $scale[$i] = $middle->Scale(
             -from     => 0,
             -to       => 1000,
             '-length' => '6c',
             -orient   => 'horizontal',
-            -command  => [\&scale_changed, $cw],
+            -command  => [\&scale_changed, $middle],
         );
         $scale[$i]->pack(
             -in     => $middle_middle[$i],
@@ -474,11 +108,11 @@ sub Populate
             -anchor => 'w',
         );
     }
-    my $nameLabel = $cw->Label(-text => "Name:");
-    my $name = $cw->Entry(
+    my $nameLabel = $middle->Label(-text => "Name:");
+    my $name = $middle->Entry(
         -relief       => 'sunken',
         -borderwidth  => 2,
-        -textvariable => \$cw->{'Entry'},
+        -textvariable => \$middle->{'Entry'},
         -width        => 10,
         -font         => "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*"
     );                   
@@ -490,7 +124,7 @@ sub Populate
         -expand => 1, 
         -fill   => 'x',
     );
-    $name->bind('<Return>' => [ $cw, 'color', Ev(['get'])]);
+    $name->bind('<Return>' => [ $middle, 'color', Ev(['get'])]);
 
     # Create the color display swatch on the right side of the window.
 
@@ -501,14 +135,14 @@ sub Populate
         -padx   => '.25c',
         -anchor => 's',
     );
-    my $swatch = $cw->Canvas(
+    my $swatch = $middle->Canvas(
         -width  => '2.5c',
         -height => '5c',
     );
     my $swatch_item = $swatch->create('oval', '.5c', '.3c', '2.26c', '4.76c');
 
-    my $value = $cw->Label(
-        -textvariable => \$cw->{'color'}, 
+    my $value = $middle->Label(
+        -textvariable => \$middle->{'color'}, 
         -width        => 13,
         -font         => "-*-Courier-Medium-R-Normal--*-120-*-*-*-*-*-*"
     );                   
@@ -519,100 +153,31 @@ sub Populate
         -expand => 1, 
         -fill   => 'both',
     );
-    $value->pack(-in => $middle_right, -side => 'bottom', -pady => '.25c');
+    $value->pack(-in => $middle_right, -side => 'bottom', -pady => '.25c');   
 
-    # Create the status window.
-
-    my $status = $cw->Toplevel;
-    $status->withdraw;
-    $status->geometry('+0+0');
-    my $status_l = $status->Label(-width => 50,  -anchor => 'w');
-    $status_l->pack(-side => 'top');
-
-    $cw->{'highlight_list'} = [@highlight_list];
-    $cw->{'mcm2'} = $mcm2;
-
-    foreach (@highlight_list) 
-     {
-      next if /^TEAR_SEP$/;
-      $cw->add_menu_item($_);
-     }
-
-    $cw->{'updating'} = 0;
-    $cw->{'pending'} = 0;
-    $cw->{'color_space'} = $color_space;
-    $cw->{'swatch'} = $swatch;
-    $cw->{'swatch_item'} = $swatch_item;
-    $cw->{'Entry'} = '';
-    $cw->{'scale'} = [@scale];
-    $cw->{'red'} = 0;
-    $cw->{'blue'} = 0;
-    $cw->{'green'} = 0;
-    $cw->{'Status'} = $status;
-    $cw->{'Status_l'} = $status_l;
-    $cw->{'update'} = $update;
-    $cw->{'gwt_depth'} = 0;
-    $cw->{'palette'} = $mc;
-
-    my $pixmap = $cw->Pixmap('-file' => Tk->findINC("ColorEdit.xpm"));
-    $cw->Icon(-image => $pixmap);
-
-    $cw->ConfigSpecs(
+    $middle->ConfigSpecs(
         '-color_space'  => ['METHOD', undef, undef, 'hsb'],
-        -widgets        => ['PASSIVE', undef, undef, 
-                               [$cw->parent->Descendants]],
-        -display_status => ['PASSIVE', undef, undef, 0],
-        '-title'        => ['METHOD', undef, undef, ''],
+        '-initialcolor' => '-color',
         '-color'        => ['METHOD', 'background', 'Background', 
-                               $middle->cget('-background')],
-        -command        => ['CALLBACK', undef, undef, ['set_colors',$cw]],
-        '-highlight'    => ['METHOD', undef, undef, 'background'],
-        -cursor         => ['DESCENDANTS', 'cursor', 'Cursor', 'left_ptr'],
+                               $middle->cget('-background')]
     );
 
-} # end Populate, ColorEditor constructor
+    $middle->{'swatch'} = $swatch;
+    $middle->{'swatch_item'} = $swatch_item;
+    $middle->{'Entry'} = '';
+    $middle->{'scale'} = [@scale];
+    $middle->{'red'} = 0;
+    $middle->{'blue'} = 0;
+    $middle->{'green'} = 0;
 
-sub Show {
+}
 
-    my($objref) = @_;
-
-    $objref->deiconify;
-
-} # end show
-
-# ColorEditor default configurator procedure - can be redefined by the
-# application.
-
-sub set_colors {
-
-    # Configure all the widgets in $widgets for attribute $type and color
-    # $color.  If $color is undef then reset all colors
-    # to the Tk defaults.
-
-    my($objref, $type, $color) = @_;
-    my $display = $objref->cget('-display_status');
-
-    $objref->{'Status'}->title("Configure $type");
-    $objref->{'Status'}->deiconify if $display;
-    my $widget;
-    my $reset = !defined($color);
-
-    foreach $widget (@{$objref->cget('-widgets')}) {
-        if ($display) {
-            $objref->{'Status_l'}->configure(
-                -text => "WIDGET:  " . $widget->PathName
-            );
-            $objref->update;
-        } 
-        eval {local $SIG{'__DIE__'}; $color = ($widget->configure("-\L${type}"))[3]} if $reset;
-        eval {local $SIG{'__DIE__'}; $widget->configure("-\L${type}" => $color)};
-    }
-
-    $objref->{'Status'}->withdraw if $display;
-
-} # end set_colors
-
-# ColorEditor private methods.
+sub Hex
+{
+ my $w = shift;
+ my @rgb = (@_ == 3) ? @_ : $w->rgb(@_);
+ sprintf("#%04x%04x%04x",@rgb)
+}
 
 sub color_space {
 
@@ -815,4 +380,498 @@ sub set_scales {
 
 } # end set_scales
 
+
+package Tk::ColorDialog;
+require Tk::Toplevel;
+use vars qw(@ISA);
+@ISA = qw(Tk::Toplevel); 
+
+Construct Tk::Widget 'ColorDialog';
+
+sub Accept
+{
+ my $cw  = shift;
+ $cw->withdraw;
+ $cw->{'done'} = 1;
+}
+
+sub Cancel
+{
+ my $cw  = shift;
+ $cw->configure(-color => undef);
+ $cw->Accept;
+}
+
+sub Populate
+{
+ my ($cw,$args) = @_;       
+ $cw->SUPER::Populate($args);
+ $cw->protocol('WM_DELETE_WINDOW' => [ Cancel => $cw ]);
+ $cw->transient($cw->Parent->toplevel);
+ $cw->withdraw;
+ my $sel = $cw->ColorSelect;
+ my $accept = $cw->Button(-text => 'Accept', -command => ['Accept', $cw]);
+ my $cancel = $cw->Button(-text => 'Cancel', -command => ['Cancel', $cw]);
+ Tk::grid($sel);
+ Tk::grid($accept,$cancel);
+ $cw->ConfigSpecs(DEFAULT => [$sel]);
+}
+
+sub Show
+{           
+ my $cw = shift;
+ $cw->configure(@_) if @_;
+ $cw->Popup(); 
+ $cw->waitVisibility;
+ $cw->waitVariable(\$cw->{'done'});
+ $cw->withdraw;
+ return $cw->cget('-color');
+}
+
+package Tk::ColorEditor;
+
+
+use vars qw($VERSION $SET_PALETTE @ISA);
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#7$
+
+use Tk qw(lsearch Ev);
+use Tk::Toplevel;
+@ISA = qw(Tk::Toplevel);
+Construct Tk::Widget 'ColorEditor';
+
+%Tk::ColorEditor::names = ();
+
+ 
+use Tk::Dialog;
+use Tk::Pretty;
+
+BEGIN { $SET_PALETTE = 'Set Palette' };
+
+use subs qw(color_space hsvToRgb rgbToHsv);
+
+# ColorEditor public methods.
+
+sub add_menu_item
+{
+ my $objref = shift;
+ my $value;
+ foreach $value (@_)
+  {
+   if ($value eq 'SEP') 
+    {
+     $objref->{'mcm2'}->separator;
+    } 
+   else 
+    {
+     $objref->{'mcm2'}->command( -label => $value,
+           -command => [ 'configure', $objref, '-highlight' => $value ] );
+     push @{$objref->{'highlight_list'}}, $value;
+    }
+  }
+}
+
+sub set_title
+{
+ my ($w) = @_;
+ my $t = $w->{Configure}{'-title'} || '' ;
+ my $h = $w->{Configure}{'-highlight'} || '';
+ $w->SUPER::title("$t $h Color Editor");
+}
+
+sub highlight
+{
+ my ($w,$h) = @_;
+ if (@_ > 1)
+  {
+   $w->{'update'}->configure( -text => "Apply $h Color" );
+   my $state = ($h eq 'background') ? 'normal' : 'disabled';
+   $w->{'palette'}->entryconfigure( $SET_PALETTE, -state => $state);
+   $w->{'highlight'} = $h;
+   $w->configure(-color => $w->Palette->{$h});
+   $w->set_title;
+  }
+ return $w->{'highlight'};
+}
+
+sub title
+{
+ my ($w,$val) = @_;
+ $w->set_title if (@_ > 1);
+ return $w->{Configure}{'-title'};
+}
+
+
+sub delete_menu_item
+{
+ my $objref = shift;
+ my $value;
+ foreach $value (@_)
+  {
+   $objref->{'mcm2'}->delete($value);                                      
+   my $list_ord = $value =~ /\d+/ ? $value : lsearch($objref->{'highlight_list'}, $value);
+   splice(@{$objref->{'highlight_list'}}, $list_ord, 1) if $list_ord != -1;
+  }
+}
+
+sub configure {
+
+    # Process ColorEditor configuration options now.
+
+    my($objref, @hook_list) = @_;
+
+    my($option, $value);
+    while (($option, $value) = splice(@hook_list, 0, 2)) {
+	$objref->SUPER::configure($option => $value);
+    } # whilend all options/values          
+
+} # end configure
+
+sub delete_widgets {
+
+    # Remove widgets from consideration by the color configurator.
+    # $widgets_ref points to widgets previously added via `configure'.
+
+    my($objref, $widgets_ref) = @_;
+
+    my($i, $found, $r1, $r2, @wl) = (0, 0, 0, 0, @{$objref->cget(-widgets)});
+    foreach $r1 (@{$widgets_ref}) {
+        $i = -1;
+        $found = 0;
+        foreach $r2 (@wl) {
+            $i++;
+            next if $r1 != $r2;
+            $found = 1;
+            last;
+        }
+        splice(@wl, $i, 1) if $found;
+    }
+    $objref->configure(-widgets => [@wl]);
+
+} # end delete_widgets
+
+sub ApplyDefault 
+{
+ my($objref) = @_;
+ my $cb = $objref->cget('-command');
+ my $h;
+ foreach $h (@{$objref->{'highlight_list'}}) 
+  {
+   next if $h =~ /TEAR_SEP|SEP/;
+   $cb->Call($h);
+   die unless (defined $cb);
+  }
+}
+
+sub Populate
+{
+
+    # ColorEditor constructor.
+
+    my($cw, $args) = @_;
+
+    $cw->SUPER::Populate($args);
+    $cw->withdraw;
+
+    my $color_space = 'hsb';    # rgb, cmy, hsb
+    my(@highlight_list) = qw(
+        TEAR_SEP
+        foreground background SEP
+        activeForeground activeBackground SEP
+        highlightColor highlightBackground SEP
+        selectForeground selectBackground SEP 
+        disabledForeground insertBackground selectColor troughColor
+    );
+
+    # Create the Usage Dialog;
+
+    my $usage = $cw->Dialog( '-title' => 'ColorEditor Usage',
+        -justify    => 'left',
+        -wraplength => '6i',				   
+        -text       => "The Colors menu allows you to:\n\nSelect a color attribute such as \"background\" that you wish to colorize.  Click on \"Apply\" to update that single color attribute.\n\nSelect one of three color spaces.  All color spaces display a color value as a hexadecimal number under the oval color swatch that can be directly supplied on widget commands.\n\nApply Tk's default color scheme to the application.  Useful if you've made a mess of things and want to start over!\n\nChange the application's color palette.  Make sure \"background\" is selected as the color attribute, find a pleasing background color to apply to all current and future application widgets, then select \"Set Palette\".",
+    );
+
+    # Create the menu bar at the top of the window for the File, Colors 
+    # and Help menubuttons.
+
+    my $m0 = $cw->Frame(-relief => 'raised', -borderwidth => 2);
+    $m0->pack(-side => 'top', -fill => 'x');
+    my $mf = $m0->Menubutton(
+        -text      => 'File',
+        -underline => 0,
+        -bd        => 1,
+        -relief    => 'raised',
+    );
+    $mf->pack(-side => 'left');
+    my $close_command = [sub {shift->withdraw}, $cw];
+    $mf->command(
+        -label       => 'Close', 
+        -underline   => 0, 
+        -command     => $close_command,
+        -accelerator => 'Ctrl-w',
+    );
+    $cw->bind('<Control-Key-w>' => $close_command);
+    $cw->protocol(WM_DELETE_WINDOW => $close_command);
+
+    my $mc = $m0->Menubutton(
+        -text      => 'Colors',
+        -underline => 0,
+        -bd        => 1,
+        -relief    => 'raised',
+    );
+    $mc->pack(-side => 'left');
+    my $color_attributes = 'Color Attributes';
+    $mc->cascade(-label => $color_attributes, -underline => 6);
+    $mc->separator;
+
+    $mc->command(
+        -label     => 'Apply Default Colors', 
+        -underline => 6,
+        -command   => ['ApplyDefault',$cw]
+    );
+    $mc->separator;
+    $mc->command(
+        -label     => $SET_PALETTE, 
+        -underline => 0,
+        -command   => sub { $cw->setPalette($cw->cget('-color'))} 
+    );
+
+    my $m1 = $mc->cget(-menu);
+
+    my $mcm2 = $m1->Menu;
+    $m1->entryconfigure($color_attributes, -menu => $mcm2);
+    my $mh = $m0->Menubutton(
+        -text      => 'Help',
+        -underline => 0,
+        -bd        => 1,
+        -relief    => 'raised',
+    );
+    $mh->pack(-side => 'right');
+    $mh->command(
+        -label       => 'Usage', 
+        -underline   => 0, 
+        -command     => [sub {shift->Show}, $usage],
+    );
+
+    # Create the Apply button.
+
+    my $bot = $cw->Frame(-relief => 'raised', -bd => 2);
+    $bot->pack(-side => 'bottom', -fill =>'x');
+    my $update = $bot->Button(
+        -command => [
+            sub {
+                my ($objref) = @_;
+                $objref->Callback(-command => ($objref->{'highlight'}, $objref->cget('-color')));
+            }, $cw,
+        ],
+    );
+    $update->pack(-pady => 1, -padx => '0.25c');
+
+    # Create the listbox that holds all of the color names in rgb.txt, if an 
+    # rgb.txt file can be found.
+
+    my $middle = $cw->ColorSelect(-relief => 'raised', -borderwidth => 2);
+    $middle->pack(-side => 'top', -fill => 'both');
+    # Create the status window.
+
+    my $status = $cw->Toplevel;
+    $status->withdraw;
+    $status->geometry('+0+0');
+    my $status_l = $status->Label(-width => 50,  -anchor => 'w');
+    $status_l->pack(-side => 'top');
+
+    $cw->{'highlight_list'} = [@highlight_list];
+    $cw->{'mcm2'} = $mcm2;
+
+    foreach (@highlight_list) 
+     {
+      next if /^TEAR_SEP$/;
+      $cw->add_menu_item($_);
+     }
+
+    $cw->{'updating'} = 0;
+    $cw->{'pending'} = 0;
+    $cw->{'Status'} = $status;
+    $cw->{'Status_l'} = $status_l;
+    $cw->{'update'} = $update;
+    $cw->{'gwt_depth'} = 0;
+    $cw->{'palette'} = $mc;
+
+    my $pixmap = $cw->Pixmap('-file' => Tk->findINC("ColorEdit.xpm"));
+    $cw->Icon(-image => $pixmap);
+
+    $cw->ConfigSpecs(   
+        DEFAULT         => [$middle],
+        -widgets        => ['PASSIVE', undef, undef, 
+                               [$cw->parent->Descendants]],
+        -display_status => ['PASSIVE', undef, undef, 0],
+        '-title'        => ['METHOD', undef, undef, ''],
+        -command        => ['CALLBACK', undef, undef, ['set_colors',$cw]],
+        '-highlight'    => ['METHOD', undef, undef, 'background'],
+        -cursor         => ['DESCENDANTS', 'cursor', 'Cursor', 'left_ptr'],
+    );
+
+} # end Populate, ColorEditor constructor
+
+sub Show {
+
+    my($objref) = @_;
+
+    $objref->deiconify;
+
+} # end show
+
+# ColorEditor default configurator procedure - can be redefined by the
+# application.
+
+sub set_colors {
+
+    # Configure all the widgets in $widgets for attribute $type and color
+    # $color.  If $color is undef then reset all colors
+    # to the Tk defaults.
+
+    my($objref, $type, $color) = @_;
+    my $display = $objref->cget('-display_status');
+
+    $objref->{'Status'}->title("Configure $type");
+    $objref->{'Status'}->deiconify if $display;
+    my $widget;
+    my $reset = !defined($color);
+
+    foreach $widget (@{$objref->cget('-widgets')}) {
+        if ($display) {
+            $objref->{'Status_l'}->configure(
+                -text => "WIDGET:  " . $widget->PathName
+            );
+            $objref->update;
+        } 
+        eval {local $SIG{'__DIE__'}; $color = ($widget->configure("-\L${type}"))[3]} if $reset;
+        eval {local $SIG{'__DIE__'}; $widget->configure("-\L${type}" => $color)};
+    }
+
+    $objref->{'Status'}->withdraw if $display;
+
+} # end set_colors
+
+# ColorEditor private methods.
+
 1;
+
+__END__ 
+
+=head1 NAME 
+
+ColorEditor - a general purpose Tk widget Color Editor (based on tcolor.tcl
+from the Tcl/Tk distribution).
+
+=head1 SYNOPSIS
+
+   use Tk::ColorEditor;
+
+   $cref = $mw->ColorEditor(-title => $title, -cursor => @cursor);
+
+   $cref->Show;
+
+=head1 DESCRIPTION
+
+ColorEditor is implemented as an object with various methods, described 
+below.  First, create your ColorEditor object during program initialization 
+(one should be sufficient), and then configure it by specifying a list of Tk
+widgets to colorize. When it's time to use the editor, invoke the Show()
+method.
+
+ColorEditor allows some customization: you may alter the color attribute
+menu by adding and/or deleting menu items and/or separators, turn the status
+window on or off, alter the configurator's list of color widgets, or even 
+supply your own custom color configurator callback.
+
+=over 4
+
+=item 1.
+
+Call the constructor to create the editor object, which in turn returns a
+blessed reference to the new object:
+
+   use Tk::ColorEditor;
+
+   $cref = $mw->ColorEditor(
+       -title  => $title,
+       -cursor => @cursor,
+   );
+
+      mw     - a window reference, usually the result of a MainWindow->new
+               call.  As the default root of a widget tree, $mw and all
+               descendant widgets at object-creation-time are configured
+               by the default color configurator procedure.  (You probably
+               want to change this though or you might end up colorizing
+               ColorEditor!)
+      title  - Toplevel title, default = ' '.
+      cursor - a valid Tk '-cursor' specification (default is 
+               'top_left_arrow').  This cursor is used over all ColorEditor
+               "hot spots".
+
+=item 2.
+
+Invoke the configure() method to change editor characteristics:
+
+   $cref->configure(-option => value, ..., -option-n => value-n);
+   
+      options:
+        -command             : a callback to a  `set_colors' replacement.
+        -widgets             : a reference to a list of widget references
+                               for the color configurator.
+        -display_status      : TRUE IFF display the ColorEditor status
+                               window when applying colors.
+        -add_menu_item       : 'SEP', or a color attribute menu item.
+        -delete_menu_item    : 'SEP', a color attribute menu item, or color
+                               attribute menu ordinal.
+
+   For example:
+
+      $cref->configure(-delete_menu_item   => 3,
+          -delete_menu_item   => 'disabledforeground',
+          -add_menu_item      => 'SEP',
+          -add_menu_item      => 'New color attribute',
+          -widgets            => [$ce, $qu, $f2b2],
+          -widgets            => [$f2->Descendants],
+          -command            => [\&my_special_configurator, some, args ]
+      );
+
+=item 3.
+
+Invoke the Show() method on the editor object, say, by a button or menu press:
+
+   $cref->Show;
+
+=item 4.
+
+The cget(-widgets) method returns a reference to a list of widgets that
+are colorized by the configurator.  Typically, you add new widgets to
+this list and then use it in a subsequent configure() call to expand your
+color list.
+
+   $cref->configure(
+       -widgets => [
+           @{$Filesystem_ref->cget(-widgets)}, @{$cref->cget(-widgets)},
+       ]
+   );
+
+=item 5.
+
+The delete_widgets() method expects a reference to a list of widgets which are
+then removed from the current color list.
+
+   $cref->delete_widgets($OBJTABLE{$objname}->{'-widgets'})
+
+=back 
+
+=head1 AUTHORS
+
+Stephen O. Lidie, Lehigh University Computing Center.  95/03/05
+lusol@Lehigh.EDU
+
+Many thanks to Guy Decoux (decoux@moulon.inra.fr) for doing the initial 
+translation of tcolor.tcl to TkPerl, from which this code has been derived.
+
+=cut 
+
+

@@ -491,8 +491,10 @@ DoConfig(interp, tkwin, specPtr, value, widgRec)
 
 		if (nullValue) {
 		    new = NULL;
-		} else {
-		    new = Tk_GetFontFromObj(interp, tkwin, value);
+		} else {   
+		    Arg tmp = LangCopyArg(value);
+		    new = Tk_GetFontFromObj(interp, tkwin, tmp);
+		    LangFreeArg(tmp, TCL_DYNAMIC);
 		    if (new == NULL) {
 			return TCL_ERROR;
 		    }
@@ -879,7 +881,7 @@ FormatConfigValue(interp, tkwin, specPtr, widgRec, freeProcPtr)
 	case TK_CONFIG_FONT: {
 	    Tk_Font tkfont = *((Tk_Font *) ptr);
 	    if (tkfont != NULL) {
-		LangSetString(&result,Tk_NameOfFont(tkfont));
+		LangSetArg(&result, LangFontArg(interp, tkfont));
 	    }
 	    break;
 	}

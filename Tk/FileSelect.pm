@@ -1,7 +1,7 @@
 package Tk::FileSelect; 
                
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/FileSelect.pm#5$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/FileSelect.pm#9$
 
 use Tk qw(Ev);
 use strict;
@@ -136,7 +136,7 @@ sub Populate {
     require Tk::Dialog;
     require Tk::Toplevel;
     require Tk::LabEntry;       
-    require Cwd;
+    require Cwd;         
 
     $w->SUPER::Populate($args);
     $w->protocol('WM_DELETE_WINDOW' => ['Cancel', $w ]);
@@ -158,6 +158,7 @@ sub Populate {
 
     $e = $w->Component(
         LabEntry       => 'file_entry', 
+        -textvariable => \$w->{Configure}{-initialfile},
         -labelVariable => \$w->{Configure}{-filelabel},
     );
     $e->pack(-side => 'bottom', -expand => 0, -fill => 'x');
@@ -213,7 +214,9 @@ sub Populate {
         -width           => [ ['file_list','dir_list'], undef, undef, 14 ], 
         -height          => [ ['file_list','dir_list'], undef, undef, 14 ], 
         -directory       => [ 'METHOD', undef, undef, '.' ],
+        -initialdir      => '-directory', 
         -filelabel       => [ 'PASSIVE', undef, undef, 'File' ],
+        -initialfile     => [ 'PASSIVE', undef, undef, '' ],
         -filelistlabel   => [ 'PASSIVE', undef, undef, 'Files' ],
         -filter          => [ 'METHOD', undef, undef, '*' ],
         -filterlabel     => [ 'PASSIVE', undef, undef, 'Files Matching' ],
@@ -318,7 +321,9 @@ sub reread
     }
   }
  if (opendir(DIR, $dir))                            
-  {                                                 
+  {               
+   my $file = $w->cget('-initialfile');
+   my $seen = 0;
    $w->Subwidget('dir_list')->delete(0, "end");       
    $w->Subwidget('file_list')->delete(0, "end");      
    my $accept = $w->cget('-accept');                  
@@ -336,13 +341,22 @@ sub reread
        if (&{$w->{match}}($f))                       
         {                                            
          if (!defined($accept) || $accept->Call($path))
-          {                                          
+          {  
+           $seen = $w->Subwidget('file_list')->index('end') if ($file && $f eq $file);                                            
            $w->Subwidget('file_list')->insert('end', $f) 
           }                                          
         }                                            
       }                                             
     }                                               
    closedir(DIR);                                   
+   if ($seen)
+    {
+     $w->Subwidget('file_list')->selectionSet($seen);
+    }
+   else
+    {
+     $w->configure(-initialfile => undef);
+    }
    $w->{Configure}{'-directory'} = $dir;                                        
    $w->Unbusy;                                        
    $w->{'reread'} = 0;                                

@@ -17,11 +17,10 @@ require Tk;
 require Tk::Widget;
 require Tk::Wm;
 require Tk::Derived;
-use AutoLoader;
 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/Menu.pm#16$
+$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Menu.pm#18$
 
 use strict;
 

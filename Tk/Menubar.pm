@@ -7,8 +7,8 @@ require Tk::Derived;
 require Tk::Menu;
 require Tk::Menu::Item;
 
-use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Menubar.pm#6$
+use vars qw($VERSION @ISA);
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Menubar.pm#7$
 
 @ISA = qw(Tk::Derived Tk::Menu);
 use strict;

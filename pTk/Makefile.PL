@@ -27,9 +27,11 @@ sub MY::top_targets {
 sub MY::xs_c {
 '
 # Rules for building .t table files from .h files
-.SUFFIXES: .t .h 
+.SUFFIXES: .t .h .m 
 .h.t :
-	$(PERL) mkVFunc $(WINARCH) $< 
+	$(PERL) mkVFunc -t $(WINARCH) $< 
+.h.m :
+	$(PERL) mkVFunc -m $(WINARCH) $< 
 '
 }
 
@@ -224,13 +226,13 @@ libpTk$(LIB_EXT) : tk.res
 ';
  } 
 $dep . '
-Lang.t  : Lang.h  Lang.exc  mkVFunc
-tk.t    : tk.h    tk.exc    mkVFunc
-tkInt.t : tkInt.h tkInt.exc mkVFunc
-tkImgPhoto.t  : tkImgPhoto.h tkImgPhoto.exc mkVFunc
-Xlib.t : Xlib.h  Xlib.excwin mkVFunc
-tix.t    : tix.h tix.exc mkVFunc
-tixInt.t : tixInt.h tixInt.exc mkVFunc
+Lang.t  Lang.m : Lang.h  Lang.exc  mkVFunc
+tk.t tk.m : tk.h    tk.exc    mkVFunc
+tkInt.t tkInt.m : tkInt.h tkInt.exc mkVFunc
+tkImgPhoto.t tkImgPhoto.m : tkImgPhoto.h tkImgPhoto.exc mkVFunc
+Xlib.t Xlib.m : Xlib.h  Xlib.excwin mkVFunc
+tix.t tix.m   : tix.h tix.exc mkVFunc
+tixInt.t tixInt.m : tixInt.h tixInt.exc mkVFunc
 
 config :: LangIO.h Xlib.t Lang.t tk.t tkInt.t tkImgPhoto.t tix.t tixInt.t 
 	'.$self->{NOECHO}.'$(NOOP)

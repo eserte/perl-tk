@@ -1662,6 +1662,9 @@ EXTERN Tcl_Command	Lang_CreateObject _ANSI_ARGS_((Tcl_Interp *interp,
 			    ClientData clientData,
 			    Tcl_CmdDeleteProc *deleteProc));
 
+EXTERN int Lang_CallWithArgs _ANSI_ARGS_ ((Tcl_Interp *interp, 
+					char *sub, int argc, Arg *argv));
+
 EXTERN char *LangLibraryDir _ANSI_ARGS_((void));
 EXTERN void Lang_SetBinaryResult _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string, int len, Tcl_FreeProc *freeProc));

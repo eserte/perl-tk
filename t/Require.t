@@ -1,4 +1,5 @@
 #!perl -w
+use strict;
 BEGIN { $ENV{'PERL_DL_NONLAZY'} = 1 }
 require Tk;
 # $SIG{__WARN__} = sub { die shift };

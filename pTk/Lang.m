@@ -151,6 +151,10 @@
 #  define Lang_BuildInImages (*LangVptr->V_Lang_BuildInImages)
 #endif
 
+#ifndef Lang_CallWithArgs
+#  define Lang_CallWithArgs (*LangVptr->V_Lang_CallWithArgs)
+#endif
+
 #ifndef Lang_CreateObject
 #  define Lang_CreateObject (*LangVptr->V_Lang_CreateObject)
 #endif

@@ -277,6 +277,12 @@ ForceList(Tcl_Interp *interp, Tcl_Obj *sv)
    int argc= 0;
    LangFreeProc *freeProc = NULL;
    SV **argv;
+   if (SvREADONLY(sv))
+    {
+     STRLEN len;
+     croak("Attempt to treat readonly '%s' as a list",
+            SvPV(sv,len));
+    } 
    if (Lang_SplitString(interp,LangString(sv),&argc,&argv,&freeProc) == TCL_OK)
     {
      int n = argc;
@@ -381,7 +387,11 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
        SV **svp = av_fetch(av,i,0);
        av_store(av,i+newlen-len,SvREFCNT_inc(*svp));
       }
+#ifdef AvFILLp
      AvFILLp(av) = newlen-1;
+#else
+     AvFILL(av) = newlen-1;
+#endif
     }
    /* Store new values */
    for (i=0; i < objc; i++)
@@ -585,7 +595,7 @@ Tcl_WrongNumArgs(interp, objc, objv, message)
 }
 
 
-#define DStringSV(svp) ((*svp) ? *svp : (*svp = newSVpv("",0), *svp))
+#define DStringSV(svp) ((*svp) ? ForceScalar(*svp) : (*svp = newSVpv("",0), *svp))
 
 #undef Tcl_DStringInit
 void

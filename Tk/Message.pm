@@ -2,11 +2,12 @@
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Message;
-use AutoLoader;
+use strict;
 
+use vars qw($VERSION @ISA);
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Message.pm#5$
 
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Message.pm#4$
+require Tk::Widget;
 
 @ISA = qw(Tk::Widget);
 
@@ -16,5 +17,4 @@ sub Tk_cmd { \&Tk::message }
 
 1;
 __END__
-
 

@@ -263,6 +263,7 @@ bulkedit			Utility to make changes in many files - with Tk GUI
 canvas_ps			Writes PostScript for Canvas to a file.
 canvas_scroll			Basic test of scrolling a Canvas
 cbtest				Test of callback returns.
+check_source
 checklen			Check names not > 14 chars long for old UNIXes.
 chnGlue.c
 cleanup				Remove authour's junk files
@@ -643,6 +644,7 @@ findbase
 floppy
 font_demo
 font_test
+fonts
 forward_test
 generate
 geo_mgr
@@ -685,6 +687,7 @@ pTk/Lang.h
 pTk/Lang.m
 pTk/Lang.t
 pTk/LangIO.h
+pTk/LangIO.h.PL
 pTk/Lang_f.c
 pTk/Lang_f.h
 pTk/Makefile.PL

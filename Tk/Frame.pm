@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Frame.pm#6$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Tk/Frame.pm#7$
 
 sub Menubar;
 
@@ -91,9 +91,9 @@ sub selection
 sub Populate
 {
  my ($cw,$args) = @_;
- $cw->ConfigSpecs('-labelPack'     => [ METHOD, undef, undef, undef]);
- $cw->ConfigSpecs('-labelVariable' => [ METHOD, undef, undef, undef]);
- $cw->ConfigSpecs('-label'         => [ METHOD, undef, undef, undef]);
+ $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
+ $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
+ $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
 }
 
 

@@ -23,6 +23,10 @@ VFUNC(void,Lang_TkCommand,V_Lang_TkCommand,_ANSI_ARGS_((char *name, Tcl_CmdProc 
 VFUNC(SV *,MakeReference,V_MakeReference,_ANSI_ARGS_((SV * sv)))
 #endif
 
+#ifndef SVtoFont
+VFUNC(Tk_Font,SVtoFont,V_SVtoFont,_ANSI_ARGS_((SV *win)))
+#endif
+
 #ifndef SVtoWindow
 VFUNC(Tk_Window,SVtoWindow,V_SVtoWindow,_ANSI_ARGS_((SV *win)))
 #endif

@@ -7,14 +7,15 @@
 # Documentation after __END__
 
 package Tk::Dialog;
-use Carp;
-use strict;
-require Tk::Toplevel;
-@Tk::Dialog::ISA = qw(Tk::Toplevel);
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Dialog.pm#5$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Dialog.pm#6$
 
+use Carp;
+use strict;
+
+require Tk::Toplevel;
+@Tk::Dialog::ISA = qw(Tk::Toplevel);
 
 Construct Tk::Widget 'Dialog';
 

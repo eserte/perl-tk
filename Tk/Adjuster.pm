@@ -1,7 +1,7 @@
 package Tk::Adjuster::Item;
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Adjuster.pm#3$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Adjuster.pm#4$
 
 @ISA = qw(Tk::Frame);
 
@@ -78,11 +78,12 @@ sub Motion
 
 package Tk::Adjuster;
 use AutoLoader;
+
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Adjuster.pm#4$
+
 require Tk::Frame;
 @ISA = qw(Tk::Frame);
-
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Adjuster.pm#3$
 
 Construct Tk::Widget qw(Adjuster);
 
@@ -167,7 +168,7 @@ sub Populate
  my $cs = $w->ConfigSpecs(-widget => ['PASSIVE','widget','Widget',$w->Parent],
                  -side       => ['METHOD','side','Side','top'],
                  -delay      => ['PASSIVE','delay','Delay', 1],
-                 -background => [[SELF,$w->{'sep'},$w->{'but'}],'background','Background',undef], 
+                 -background => [['SELF',$w->{'sep'},$w->{'but'}],'background','Background',undef], 
                  -foreground => [Tk::Configure->new($w->{'lin'},'-background'),'foreground','Foreground','black'] 
                 );
 }

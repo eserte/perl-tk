@@ -5,7 +5,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.0_01';
+  $VERSION = '800.0_02';
 
   $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
@@ -135,14 +135,17 @@ sub MY::postamble {
 html : subdirs manifypods
 	@cd doc && $(MAKE) html $(PASTHRU)
 
-config       :: tkGlue.t
+config       :: tkGlue.t tkGlue.m 
 	@$(NOOP)
 
 $(BASEEXT)$(OBJ_EXT) : tkGlue.h
 Makefile     : myConfig
 
 tkGlue.t     : tkGlue.h pTk/mkVFunc
-	$(PERL) pTk/mkVFunc $(WINARCH) tkGlue.h
+	$(PERL) pTk/mkVFunc -t $(WINARCH) tkGlue.h
+
+tkGlue.m     : tkGlue.h pTk/mkVFunc
+	$(PERL) pTk/mkVFunc -m $(WINARCH) tkGlue.h
 
 $(MYEXTLIB)  : config FORCE
 	cd pTk && $(MAKE) 

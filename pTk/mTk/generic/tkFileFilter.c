@@ -18,7 +18,7 @@
 
 static int		AddClause _ANSI_ARGS_((
 			    Tcl_Interp * interp, FileFilter * filterPtr,
-			    char * patternsStr, char * ostypesStr,
+			    Arg patternsStr, Arg ostypesStr,
 			    int isWindows));
 static void		FreeClauses _ANSI_ARGS_((FileFilter * filterPtr));
 static void		FreeGlobPatterns _ANSI_ARGS_((
@@ -137,10 +137,10 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
 	filterPtr = GetFilter(flistPtr, LangString(typeInfo[0]));
 
 	if (typeCount == 2) {
-	    code = AddClause(interp, filterPtr, LangString(typeInfo[1]), NULL,
+	    code = AddClause(interp, filterPtr, typeInfo[1], NULL,
 		isWindows);
 	} else {
-	    code = AddClause(interp, filterPtr, LangString(typeInfo[1]), LangString(typeInfo[2]),
+	    code = AddClause(interp, filterPtr, typeInfo[1], typeInfo[2],
 		isWindows);
 	}
 	if (code != TCL_OK) {
@@ -212,33 +212,33 @@ TkFreeFileFilters(flistPtr)
 static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
     Tcl_Interp * interp;	/* Interpreter to use for error reporting. */
     FileFilter * filterPtr;	/* Stores the new filter clause */
-    char * patternsStr;		/* A TCL list of glob patterns. */
-    char * ostypesStr;		/* A TCL list of Mac OSType strings. */
+    Arg patternsStr;		/* A TCL list of glob patterns. */
+    Arg ostypesStr;		/* A TCL list of Mac OSType strings. */
     int isWindows;		/* True if we are running on Windows; False
 				 * if we are running on the Mac; Glob
 				 * patterns need to be processed differently
 				 * on these two platforms */
 {
-    char ** globList = NULL;
+    Tcl_Obj **globList = NULL;
     int globCount;
-    char ** ostypeList = NULL;
+    Tcl_Obj **ostypeList = NULL;
     int ostypeCount;
     FileFilterClause * clausePtr;
     int i;
     int code = TCL_OK;
 
-    if (Tcl_SplitList(interp, patternsStr, &globCount, &globList)!= TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, patternsStr, &globCount, &globList)!= TCL_OK) {
 	code = TCL_ERROR;
 	goto done;
     }
     if (ostypesStr != NULL) {
-	if (Tcl_SplitList(interp, ostypesStr, &ostypeCount, &ostypeList)
+	if (Tcl_ListObjGetElements(interp, ostypesStr, &ostypeCount, &ostypeList)
 		!= TCL_OK) {
 	    code = TCL_ERROR;
 	    goto done;
 	}
 	for (i=0; i<ostypeCount; i++) {
-	    if (strlen(ostypeList[i]) != 4) {
+	    if (strlen(Tcl_GetStringFromObj(ostypeList[i],NULL)) != 4) {
 		Tcl_AppendResult(interp, "bad Macintosh file type \"",
 		    ostypeList[i], "\"", NULL);
 		code = TCL_ERROR;
@@ -269,23 +269,24 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
 	for (i=0; i<globCount; i++) {
 	    GlobPattern * globPtr = (GlobPattern*)ckalloc(sizeof(GlobPattern));
 	    int len;
+	    char *globi = Tcl_GetStringFromObj(globList[i],NULL);
 	    
-	    len = (strlen(globList[i]) + 1) * sizeof(char);
+	    len = (strlen(globi) + 1) * sizeof(char);
 
-	    if (globList[i][0] && globList[i][0] != '*') {
+	    if (globi[0] && globi[0] != '*') {
 		/*
 		 * Prepend a "*" to patterns that do not have a leading "*"
 		 */
 		globPtr->pattern = (char*)ckalloc(len+1);
 		globPtr->pattern[0] = '*';
-		strcpy(globPtr->pattern+1, globList[i]);
+		strcpy(globPtr->pattern+1, globi);
 	    }
 	    else if (isWindows) {
-		if (strcmp(globList[i], "*") == 0) {
+		if (strcmp(globi, "*") == 0) {
 		    globPtr->pattern = (char*)ckalloc(4*sizeof(char));
 		    strcpy(globPtr->pattern, "*.*");
 		}
-		else if (strcmp(globList[i], "") == 0) {
+		else if (strcmp(globi, "") == 0) {
 		    /*
 		     * An empty string means "match all files with no
 		     * extensions"
@@ -296,11 +297,11 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
 		}
 		else {
 		    globPtr->pattern = (char*)ckalloc(len);
-		    strcpy(globPtr->pattern, globList[i]);
+		    strcpy(globPtr->pattern, globi);
 		}
 	    } else {
 		globPtr->pattern = (char*)ckalloc(len);
-		strcpy(globPtr->pattern, globList[i]);
+		strcpy(globPtr->pattern, globi);
 	    }
 
 	    /*
@@ -320,7 +321,7 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
 	for (i=0; i<ostypeCount; i++) {
 	    MacFileType * mfPtr = (MacFileType*)ckalloc(sizeof(MacFileType));
 
-	    memcpy(&mfPtr->type, ostypeList[i], sizeof(OSType));
+	    memcpy(&mfPtr->type, Tcl_GetStringFromObj(ostypeList[i],NULL), sizeof(OSType));
 
 	    /*
 	     * Add the Mac type pattern into the list of Mac types
@@ -336,12 +337,6 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
     }
 
   done:
-    if (globList) {
-	ckfree((char*)globList);
-    }
-    if (ostypeList) {
-	ckfree((char*)ostypeList);
-    }
 
     return code;
 }	

@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.005'; # $Id: //depot/Tk8/IO/IO.pm#6$
+$VERSION = '3.008'; # $Id: //depot/Tk8/IO/IO.pm#8$
 
 require 5.002;
 require Tk;
@@ -238,7 +238,7 @@ sub CLOSE
 sub imode
 {
  my $mode = shift;
- my $imode = ${{readable => READABLE(), writable => WRITABLE()}}{$mode};
+ my $imode = ${{'readable' => READABLE(), 'writable' => WRITABLE()}}{$mode};
  croak("Invalid handler type '$mode'") unless (defined $imode);
  return $imode;
 }
@@ -290,7 +290,7 @@ sub deleteHandler
 
 sub fileevent
 {
- my ($obj,$file,$mode,$cb) = @_;
+ my ($widget,$file,$mode,$cb) = @_;
  croak "Unknown mode '$mode'" unless $mode =~ /^(readable|writable)$/;
  unless (ref $file)
   {

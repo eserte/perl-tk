@@ -6,8 +6,8 @@ require Tk::Text;
 use AutoLoader;
 
 
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/TextUndo.pm#4$
+use vars qw($VERSION @ISA);
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/TextUndo.pm#5$
 
 @ISA = qw(Tk::Text);
 

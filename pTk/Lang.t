@@ -148,6 +148,11 @@ VFUNC(Arg,LangVarArg,V_LangVarArg,_ANSI_ARGS_((Var)))
 VFUNC(void,Lang_BuildInImages,V_Lang_BuildInImages,_ANSI_ARGS_((void)))
 #endif
 
+#ifndef Lang_CallWithArgs
+VFUNC(int,Lang_CallWithArgs,V_Lang_CallWithArgs,_ANSI_ARGS_((Tcl_Interp *interp, 
+					char *sub, int argc, Arg *argv)))
+#endif
+
 #ifndef Lang_CreateObject
 VFUNC(Tcl_Command,Lang_CreateObject,V_Lang_CreateObject,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *cmdName, Tcl_CmdProc *proc,

@@ -6,8 +6,8 @@ require Tk::Frame;
 require Tk::Wm;
 use AutoLoader;
 
-use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Toplevel.pm#6$
+use vars qw($VERSION @ISA);
+$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Toplevel.pm#9$
 
 @ISA = qw(Tk::Wm Tk::Frame);
 
@@ -31,15 +31,11 @@ sub Populate
 {
  my ($cw,$arg) = @_;
  $cw->SUPER::Populate($arg);
- $cw->ConfigSpecs('-title',[METHOD,undef,undef,$cw->class]);
+ $cw->ConfigSpecs('-title',['METHOD',undef,undef,$cw->class]);
 }
-
-1;
-__END__
 
 sub Icon
 {
- require Tk::Toplevel;
  my ($top,%args) = @_;
  my $icon  = $top->iconwindow;
  my $state = $top->state;                 
@@ -55,13 +51,14 @@ sub Icon
    # Fake Populate 
    my $lab  = $icon->Component('Label' => 'icon');
    $lab->pack('-expand'=>1,'-fill' => 'both');
-   $lab->DisableButtonEvents;              
-   $icon->DisableButtonEvents;             
    $icon->ConfigSpecs(DEFAULT => ['DESCENDANTS']);
    # Now do tail of InitObject
    $icon->ConfigDefault(\%args);
    # And configure that new would have done
    $top->iconwindow($icon);                
+   $top->update;
+   $lab->DisableButtonEvents;              
+   $lab->update;
   }
  $icon->configure(%args);
  $icon->idletasks; # Let size request propogate
@@ -70,6 +67,9 @@ sub Icon
  $top->deiconify if ($state eq 'normal');
  $top->iconify   if ($state eq 'iconic');
 }
+
+1;
+__END__
 
 
 

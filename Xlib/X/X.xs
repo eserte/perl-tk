@@ -2159,6 +2159,7 @@ not_there:
 
 MODULE = Tk::X		PACKAGE = Tk::X		
 
+PROTOTYPES: ENABLE
 
 double
 constant(name,arg)

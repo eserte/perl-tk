@@ -4,8 +4,8 @@
 package Tk::Pretty;
 require Exporter;
 
-use vars qw($VERSION);
-$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Pretty.pm#4$
+use vars qw($VERSION @ISA @EXPORT);
+$VERSION = '3.005'; # $Id: //depot/Tk8/Tk/Pretty.pm#5$
 
 @ISA = qw(Exporter);
 
@@ -44,6 +44,7 @@ sub Pretty
      $result .= "{";
      if (%$obj)
       {
+       my ($key, $value);
        while (($key,$value) = each %$obj)
         {            
          $result .= $key . "=>" . Pretty($value) . ",";

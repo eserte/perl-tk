@@ -1,3 +1,113 @@
+Change 655 on 1998/03/07 by nick@ni-s
+
+	$VERSION updates
+
+Change 654 on 1998/03/07 by nick@ni-s
+
+	Massage Tk::ColorEditor so that middle portion of Steve's 
+	widget is re-usable as a generic colour chooser.
+	Tweak FileSelect to handle generic SaveFile case too.
+	Make dialogs 'persist' so we retain values (even if Win32 ones don't)
+
+Change 653 on 1998/03/07 by nick@ni-s
+
+	Apply olvwm Icon tweaks to wrapper on icon windows
+
+Change 651 on 1998/03/06 by nick@ni-s
+
+	More dialog wrapper stuff
+
+Change 650 on 1998/03/06 by nick@camel
+
+	Add more common dialogs to toyedit
+
+Change 649 on 1998/03/06 by nick@ni-s
+
+	Wrappers for getOpenFile etc. - trial use in toyedit.
+
+Change 648 on 1998/03/06 by nick@ni-s
+
+	Make .m files independantly of .t files
+
+Change 647 on 1998/03/06 by nick@camel
+
+	Add diagnostic to treating READONLY as a list
+
+Change 646 on 1998/03/06 by nick@ni-s
+
+	Work-round Win32 Font code trying to 'split' a read-only string
+
+Change 645 on 1998/03/06 by nick@ni-s
+
+	If a Tk::Derived widget does not have default value, and
+	configure is used to inquire the default, then ask delegate
+	widget(s) for the default. e.g. restoring default background
+	in Scrolled Text widget in the demos.
+
+Change 644 on 1998/03/06 by nick@ni-s
+
+	Cleanup fonts a bit, pTk-ize tkFileFilter.c
+
+Change 643 on 1998/03/06 by nick@ni-s
+
+	Add generic dialogs and Fonts as objects
+
+Change 642 on 1998/03/06 by nick@camel
+
+	Derived file should not be in repository
+
+Change 641 on 1998/03/06 by nick@ni-s
+
+	Honour Name => in incoming cascade args
+	Grab copy of generated LangIO.h
+
+Change 640 on 1998/03/06 by nick@ni-s
+
+	Achim Bohnet <ach@mpe.mpg.de>
+	Patch below has IMO 'useful cosmetic' changes for -w and strict checks
+	so it's easier to spot possible errors
+	
+	o remove use AutoLoader when there's almost/ nothing to
+	  autoload
+	  Here I was not sure:
+		X.pm: uses AutoLoader as fallback in it's own
+			autoload routine but there's nothing to
+			autoload.  Remove ???
+		Toplevel.pm:  Only Autoloads Icon (and sub Icon
+			has require Tk::Toplevel.  Why ???
+	o ClassInit not autoloaded.
+		Text, Scrollbar, Listbox still have ClassInit
+		autoloaded.  I guess it's also no win here.
+	o @ISA @EXPORT(_OK)? into use vars
+	o Fixed one wrong $VERSION/package order in Radiobutton
+	o added require Whatever before @ISA = Whatever
+
+Change 639 on 1998/03/06 by nick@ni-s
+
+	Make Name => handling in Tk::Widget::new more generic so that 
+	menu -label values can be passed. Do so in Tk::Menu::Cascade
+	so that a Help entry gets a menu called "help" and is 
+	hence shown on the right.
+
+Change 638 on 1998/03/05 by nick@pluto
+
+	Add LangIO.h generator from mainline (AIX IO.xs at least 
+	needs this.)
+
+Change 637 on 1998/03/04 by nick@pluto
+
+	Add <Home> method to HList
+	Correct -w warnings in IO.pm
+
+Change 635 on 1998/03/03 by nick@pluto
+
+	Allow for 5.004 series by using AvFILL - vs AvFILLp
+	re-aply Steve's AIX #ifdef on memcpy
+
+Change 634 on 1998/03/01 by nick@ni-s
+
+	Pre Tk800.0_01 cleanup
+
 Change 633 on 1998/03/01 by nick@camel
 
 	Some tidy up

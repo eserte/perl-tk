@@ -3,8 +3,8 @@ require Tk;
 require DynaLoader;
 
 
-use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Mwm/Mwm.pm#3$
+use vars qw($VERSION @ISA);
+$VERSION = '3.004'; # $Id: //depot/Tk8/Mwm/Mwm.pm#4$
 
 @ISA = qw(DynaLoader);
 

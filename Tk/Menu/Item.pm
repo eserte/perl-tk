@@ -5,9 +5,8 @@ require Tk::Menu;
 use Carp;
 use strict;
 
-
 use vars qw($VERSION);
-$VERSION = '3.003'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#4$
+$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Menu/Item.pm#6$
 
 sub PreInit
 {
@@ -105,10 +104,12 @@ sub PreInit
  my $tearoff   = delete $minfo->{-tearoff};
  my $items     = delete $minfo->{-menuitems};
  my $widgetvar = delete $minfo->{-menuvar};
+ my $name = delete $minfo->{'Name'};
+ $name = $minfo->{'-label'} unless defined $name;
  my @args = ();
  push(@args, '-tearoff' => $tearoff) if (defined $tearoff);
  push(@args, '-menuitems' => $items) if (defined $items);
- my $submenu = $menu->Menu(@args);
+ my $submenu = $menu->Menu(Name => $name, @args);
  $minfo->{'-menu'} = $submenu;
  $$widgetvar = $submenu if (defined($widgetvar) && ref($widgetvar));
 }
@@ -122,7 +123,9 @@ sub menu
   {
    require Tk::Menu;
    $w->ColorOptions(\%args); 
-   $menu = $w->Menu(%args);
+   my $name = $self->cget('-label');
+   warn "Had to (re-)reate menu for $name";
+   $menu = $w->Menu(Name => $name, %args);
    $self->configure('-menu'=>$menu);
   }
  else
