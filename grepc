@@ -1,14 +1,18 @@
-#!/usr/local/bin/perl 
+#!/usr/local/bin/new/perl -w
+use strict;
+use vars qw($file);
+use Data::Dumper;
 
 use File::Find;
 use Getopt::Std;
 
 my %opt;
-getopts("mlc",\%opt);
+getopts("mlce:",\%opt);
 
-$expr = shift;
+my $expr = (defined $opt{'e'}) ? $opt{'e'} : shift;
 print "Matching '$expr'\n";
-
+        
+my $count = 0;
 
 sub match
 {
@@ -31,10 +35,11 @@ sub match
 sub wanted
 {
  $File::Find::prune = 0;
- if (-T $_ && !/%$/ && /\.[ch]$/)
+ if (-T $_ && !/%$/ && /\.([chC]|cpp)$/)
   {
    local $file   = ($_);
    local ($_);
+   no strict 'refs'; 
    open($file,"<$file") || die "Cannot open $file:$!";
    while (<$file>)
     {

@@ -102,7 +102,7 @@ the focus to the top-level.
 
 B<focusNext> is a utility method used for keyboard traversal, but can be
 useful in other contexts.
-It returns the ``next'' window after I<$widget> in focus order.
+It sets the focus to the ``next'' window after I<$widget> in focus order.
 The focus order is determined by
 the stacking order of windows and the structure of the window hierarchy.
 Among siblings, the focus order is the same as the stacking order, with the
@@ -120,7 +120,7 @@ order, until it eventually finds a window that will accept the focus
 or returns back to I<$widget>.
 
 B<focusPrev> is similar to B<focusNext> except that it
-returns the window just before I<$widget> in the focus order.
+sets the focus to the window just before I<$widget> in the focus order.
 
 =item I<$widget>-E<gt>B<focusFollowsMouse>
 
@@ -148,6 +148,15 @@ focus were on the internal window.   This approach gets around a
 number of problems that would occur if the X focus were actually moved;
 the fact that the X focus is on the top-level is invisible unless
 you use C code to query the X server directly.
+
+=head1 CAVEATS
+
+Note that for the B<Canvas> widget, the call to B<focus> has to be
+fully qualified. This is because there is already a focus method for
+the B<Canvas> widget, which sets the focus on individual canvas tags.
+
+S<    >I<$canvas>-E<gt>B<Tk::focus>
+
 
 =head1 KEYWORDS
 

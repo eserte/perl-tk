@@ -3,21 +3,15 @@
   This program is free software; you can redistribute it and/or
   modify it under the same terms as FileHandle itself.
 */   
+#ifdef TCL_EVENT_IMPLEMENT
 
 #include "tkPort.h"
 #include "Lang.h"
 
-#ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winsock.h>
 #include "tkWinInt.h"
-#else                           
-typedef long HANDLE;
-extern void Tcl_WatchHandle(long,...);
-#define Tcl_CreateFileHandler Hidden_CreateFileHandler
-#define Tcl_DeleteFileHandler Hidden_DeleteFileHandler
-#endif
 
 typedef struct FileHandler {
     int fd;
@@ -120,7 +114,6 @@ FileHandlerEventProc(evPtr, flags)
 	mask = filePtr->readyMask & filePtr->mask;
 	filePtr->readyMask = 0;
 	filePtr->pending = 0;
-        LangDebug("FileHandle %p mask=%d\n",filePtr,mask);
 	if (mask != 0) {
 	    (*filePtr->proc)(filePtr->clientData, mask);
 	}
@@ -147,11 +140,9 @@ FileHandleCheckProc(data, flags)
       if (filePtr->readyMask && !filePtr->pending) 
        {
 	fileEvPtr = (FileHandlerEvent *) ckalloc(sizeof(FileHandlerEvent));
-	fileEvPtr->header.proc = FileHandlerEventProc;
 	fileEvPtr->fd = filePtr->fd;
-	Tcl_QueueEvent((Tcl_Event *) fileEvPtr, TCL_QUEUE_TAIL);
+	Tcl_QueueProcEvent(FileHandlerEventProc, (Tcl_Event *) fileEvPtr, TCL_QUEUE_TAIL);
 	filePtr->pending = 1;
-        LangDebug("Queue event\n");
        }
       filePtr = filePtr->nextPtr;
      }
@@ -210,8 +201,6 @@ Tcl_CreateFileHandler(fd, mask, proc, clientData)
     filePtr->proc = proc;
     filePtr->clientData = clientData;
     filePtr->mask = mask;
-
-    LangDebug("add %d as %p\n",fd,filePtr);
 }
 
 void
@@ -240,9 +229,6 @@ Tcl_DeleteFileHandler(fd)
 	    break;
 	}
     }
-
-    LangDebug("found %d as %p\n",fd,filePtr);
-
     /*
      * Clean up information in the callback record.
      */
@@ -255,4 +241,4 @@ Tcl_DeleteFileHandler(fd)
     ckfree((char *) filePtr);
 }
 
-
+#endif

@@ -1,4 +1,4 @@
-# Ballon, pop up help window when mouse lingers over widget.
+# Balloon, pop up help window when mouse lingers over widget.
 
 use Tk;
 use English;
@@ -73,7 +73,7 @@ $c2->create('text', 10, 10,
 my $b = $top->Balloon(-statusbar => $status);
 
 $b->attach($mb,
-	   -msg => 'Pres and hold this button to see the menu.');
+	   -msg => 'Press and hold this button to see the menu.');
 $b->attach($menu,
 	   #-state => 'status',
 	   -balloonposition => 'mouse',

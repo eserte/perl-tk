@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#24$
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#26$
 
 use Tk qw(Ev);
 
@@ -429,7 +429,6 @@ sub Show
  my $cw = shift;
  $cw->configure(@_) if @_;
  $cw->Popup();
- $cw->waitVisibility;
  $cw->waitVariable(\$cw->{'done'});
  $cw->withdraw;
  return $cw->cget('-color');
@@ -438,7 +437,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#24$
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#26$
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;

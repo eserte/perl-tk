@@ -12,7 +12,7 @@
 
 #ifndef dTHR
 #define dTHR int maybeTHR
-#endif          
+#endif
 
 typedef struct EventAndKeySym
  {XEvent event;
@@ -22,11 +22,11 @@ typedef struct EventAndKeySym
   SV    *window;
  } EventAndKeySym;
 
-typedef struct Lang_CmdInfo 
+typedef struct Lang_CmdInfo
  {Tcl_CmdInfo Tk;
   Tcl_Interp  *interp;
   Tk_Window   tkwin;
-  SV          *image; 
+  SV          *image;
   Tk_Font     tkfont;
  } Lang_CmdInfo;
 
@@ -35,7 +35,7 @@ typedef struct Lang_CmdInfo
 TkwinVtab *TkwinVptr;		\
 TkwinintVtab * TkwinintVptr;
 #else
-#define DECLARE_WIN32_VTABLES 
+#define DECLARE_WIN32_VTABLES
 #endif
 
 #define DECLARE_VTABLES		\
@@ -44,8 +44,9 @@ XlibVtab   *XlibVptr   ;	\
 TkVtab     *TkVptr     ;	\
 TkintVtab  *TkintVptr  ;	\
 LangVtab   *LangVptr   ;	\
-TkglueVtab *TkglueVptr 
-              
+TkeventVtab *TkeventVptr   ;	\
+TkglueVtab *TkglueVptr
+
 #ifdef WIN32
 #define IMPORT_WIN32_VTABLES                                                   \
 do {                                                                           \
@@ -58,12 +59,13 @@ do {                                                                           \
 
 #define IMPORT_VTABLES                                                         \
 do {                                                                           \
-  TkoptionVptr   =   (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",GV_ADDWARN|GV_ADD)); \
-  LangVptr   =   (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",GV_ADDWARN|GV_ADD));             \
-  TkVptr     =     (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",GV_ADDWARN|GV_ADD));               \
-  TkintVptr  =  (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",GV_ADDWARN|GV_ADD));            \
-  TkglueVptr = (TkglueVtab *) SvIV(perl_get_sv("Tk::TkglueVtab",GV_ADDWARN|GV_ADD));           \
-  XlibVptr   =   (XlibVtab *) SvIV(perl_get_sv("Tk::XlibVtab",GV_ADDWARN|GV_ADD));             \
+  TkoptionVptr = (TkoptionVtab *) SvIV(perl_get_sv("Tk::TkoptionVtab",GV_ADDWARN|GV_ADD)); \
+  LangVptr     = (LangVtab *) SvIV(perl_get_sv("Tk::LangVtab",GV_ADDWARN|GV_ADD));         \
+  TkeventVptr  = (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));   \
+  TkVptr       = (TkVtab *) SvIV(perl_get_sv("Tk::TkVtab",GV_ADDWARN|GV_ADD));             \
+  TkintVptr    = (TkintVtab *) SvIV(perl_get_sv("Tk::TkintVtab",GV_ADDWARN|GV_ADD));       \
+  TkglueVptr   = (TkglueVtab *) SvIV(perl_get_sv("Tk::TkglueVtab",GV_ADDWARN|GV_ADD));     \
+  XlibVptr     = (XlibVtab *) SvIV(perl_get_sv("Tk::XlibVtab",GV_ADDWARN|GV_ADD));         \
  } while (0)
 
 #define VTABLE_INIT() IMPORT_VTABLES

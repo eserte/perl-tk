@@ -8,6 +8,10 @@ VFUNC(HINSTANCE,TclWinGetTclInstance,V_TclWinGetTclInstance,_ANSI_ARGS_((void)))
 VFUNC(int,TkWin32DllPresent,V_TkWin32DllPresent,_ANSI_ARGS_((void)))
 #endif
 
+#ifndef TkWinCancelMouseTimer
+VFUNC(void,TkWinCancelMouseTimer,V_TkWinCancelMouseTimer,_ANSI_ARGS_((void)))
+#endif
+
 #ifndef TkWinClipboardRender
 VFUNC(void,TkWinClipboardRender,V_TkWinClipboardRender,_ANSI_ARGS_((TkDisplay *dispPtr,
 			    UINT format)))

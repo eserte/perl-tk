@@ -208,10 +208,10 @@ string if I<$toplevel> isn't part of any group.
 
 If I<bitmap> is specified, then it names a bitmap in the standard
 forms accepted by Tk (see the B<Tk_GetBitmap> documentation for details).
-This bitmap is passed to the window manager to be displayed in
-I<$toplevel>'s icon, and the method returns an empty string.  If
+This I<black and white> bitmap is passed to the window manager to be displayed
+in I<$toplevel>'s icon, and the method returns an empty string.  If
 an empty string is specified for I<bitmap>, then any current icon
-bitmap is cancelled for I<$toplevel>.
+bitmap or image is cancelled for I<$toplevel>.
 If I<bitmap> is specified then the method returns an empty string.
 Otherwise it returns the name of
 the current icon bitmap associated with I<$toplevel>, or an empty
@@ -222,6 +222,24 @@ string if I<$toplevel> has no icon bitmap.
 Arrange for I<$toplevel> to be iconified.  It I<$toplevel> hasn't
 yet been mapped for the first time, this method will arrange for
 it to appear in the iconified state when it is eventually mapped.
+
+=item I<$toplevel>-E<gt>B<iconimage>(?I<image>?)
+
+If I<image> is specified, then it names a normal Tk image.
+This image is rendered into a private I<coloured> bitmap which is passed to
+the window manager to be displayed in I<$toplevel>'s icon, and the method returns
+an empty string. If an empty string is specified for I<image>, then any current
+icon bitmap or image is cancelled for I<$toplevel>.
+If I<image> is specified then the method returns an empty string.
+Otherwise it returns the name of
+the current icon image associated with I<$toplevel>, or an empty
+string if I<$toplevel> has no icon image.
+The private pixmap is not pre-cleared so images which are partly "transparent"
+display rubbish in their transparent parts.
+
+The sizes of images that can be used as icons in this manner are platform
+dependant. On Win32 this sets the "large" icon, which should be 32x32, it
+will automatically be scaled down to 16x16 for use as a small icon.
 
 =item I<$toplevel>-E<gt>B<iconmask>(?I<bitmap>?)
 
@@ -465,6 +483,37 @@ I<$toplevel>. This is the id by which window manager will know
 I<$toplevel>, and so is appropriate place to add X properties.
 
 =back
+
+=head1 ICON SIZES
+
+The sizes of bitmaps/images that can be used as icons in this manner are platform
+and window manager dependant. Unix window managers are typically more tolerant
+than Win32. It is possible that coloured C<iconimage> icons may cause problems
+on some X window managers.
+
+=over 4
+
+=item * Win32
+
+C<iconimage> and C<iconbitmap> set the "large" icon, which should be
+32x32, it will automatically be scaled down to 16x16 for use as a small icon.
+Win32 ignores C<iconwin> requests.
+
+=item * KDE's "kwm" 
+                
+Accepts coloured C<iconimage> and black and white C<iconbitmap> but 
+will scale either to a small (14x14?) icon. Kwm ignores C<iconwin>. 
+
+=item * Sun's "olwm" or "olvwm"
+
+Honours C<iconwin> which will override C<iconimage> or C<iconbitmap>.
+Coloured images work. 
+
+=item * Sun's CDE window manager
+
+Coloured images work. ...
+
+=back 
 
 =head1 GEOMETRY MANAGEMENT
 

@@ -41,6 +41,7 @@ C\+\+/Main$
 \bTix/
 tcl\.pm$
 \bcore\b
+Canvas/diag\.txt$
 pod/html$
 \bdoc/
 Tk.ppd$
@@ -49,6 +50,7 @@ Tk.ppd$
 \bperlmain\.c$
 \btkperl\b
 \bHTML/doc\b
+\bEvent/Play\b
 pod/tkman.ps$
 extralibs\.ld
 doc/index\.html$

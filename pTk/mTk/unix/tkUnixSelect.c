@@ -590,7 +590,9 @@ ConvertSelection(winPtr, eventPtr)
      * Figure out which kind(s) of conversion to perform.  If handling
      * a MULTIPLE conversion, then read the property describing which
      * conversions to perform.
-     */
+     */                       
+
+
 
     incr.winPtr = winPtr;
     incr.selection = eventPtr->selection;
@@ -615,6 +617,14 @@ ConvertSelection(winPtr, eventPtr)
 		0, MAX_PROP_WORDS, False, XA_ATOM,
 		&type, &format, &incr.numConversions, &bytesAfter,
 		(unsigned char **) &incr.multAtoms);
+	if (result == Success && incr.numConversions == 0 && format == 32 &&
+            type != XA_ATOM && type != None) {
+	    result = XGetWindowProperty(eventPtr->display,
+		eventPtr->requestor, eventPtr->property,
+		0, MAX_PROP_WORDS, False, type,
+		&type, &format, &incr.numConversions, &bytesAfter,
+		(unsigned char **) &incr.multAtoms);
+	}
 	if ((result != Success) || (bytesAfter != 0) || (format != 32)
 		|| (type == None)) {
 	    if (incr.multAtoms != NULL) {

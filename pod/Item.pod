@@ -44,7 +44,14 @@ to derive a C<-underline> value. Thus
 
     $menu->Button(-label => 'Goto Home', -underline => 6, ...)
 
-C<Cascade> accepts C<-menuitems> which is a list of items for the sub-menu.
+The C<Cascade> menu item creates a sub-menu and accepts
+these options:
+
+=over 4
+
+=item B<-menuitems>
+
+A list of items for the sub-menu.
 Within this list (which is also accepted by Menu and Menubutton) the first
 two elements of each item should be the "constructor" name and the label:
 
@@ -53,8 +60,19 @@ two elements of each item should be the "constructor" name and the label:
                    [Checkbutton => '~Oil',  -variable => \$oil],
                   ]
 
-Also C<-tearoff> is propagated to the submenu, and C<-menuvar> (if present)
-is set to the created sub-menu.
+=item B<-postcommand>
+
+A callback to be invoked before posting the menu.
+
+=item B<-tearoff>
+
+Specifies whether sub-menu can be torn-off or not.
+
+=item B<-menuvar>
+
+Scalar reference that will be set to the newly-created sub-menu.
+
+=back
 
 The returned object is currently a blessed reference to an array of two items:
 the containing Menu and the 'label'.

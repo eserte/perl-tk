@@ -1,7 +1,7 @@
 package Tk::TList;
 
 use vars qw($VERSION);
-$VERSION = '3.011'; # $Id: //depot/Tk8/TList/TList.pm#11$
+$VERSION = '3.012'; # $Id: //depot/Tk8/TList/TList.pm#12$
 
 use Tk qw(Ev);
 
@@ -170,7 +170,7 @@ sub ShiftButton1
  if ($mode eq 'extended')
   {
    my $from = $w->info('anchor');
-   if($from)
+   if (defined $from)
     {
      $w->selection('clear');
      $w->selection('set', $from, $to);
@@ -270,7 +270,7 @@ sub Button1Motion
  elsif($mode eq 'multiple' || $mode eq 'extended')
   {
    my $from = $w->info('anchor');
-   if($from)
+   if (defined $from)
     {
      $w->selection('clear');
      $w->selection('set', $from, $ent);

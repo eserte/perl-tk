@@ -6,10 +6,6 @@
 #  define Lang_WinEvent (*TkwinVptr->V_Lang_WinEvent)
 #endif
 
-#ifndef Tcl_WatchHandle
-#  define Tcl_WatchHandle (*TkwinVptr->V_Tcl_WatchHandle)
-#endif
-
 #ifndef Tk_AttachHWND
 #  define Tk_AttachHWND (*TkwinVptr->V_Tk_AttachHWND)
 #endif

@@ -47,8 +47,9 @@ sub ShowTargets
  if ($own)
   {
    printf "owner of $seln is %x\n",$own;
-   my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
    $lb->delete(0,'end');
+   eval { 
+   my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
    $lb->insert('end',@targ);
    foreach (@targ)
     {
@@ -57,6 +58,7 @@ sub ShowTargets
        print $lb->SelectionGet('-selection'=>$seln,'FILE_NAME'),"\n";
       }
     }
+   };
   }
 }
 

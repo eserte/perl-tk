@@ -1,145 +1,165 @@
 #!/usr/local/bin/perl -w
+use strict;
+use IO::Socket;
+use Cwd;
+
+use vars qw($VERSION $portfile);
+$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#10$
+
+BEGIN 
+ {
+  my $home = $ENV{'HOME'};
+  $portfile = "$home/.ptkedsn";
+  my $port = $ENV{'PTKEDPORT'};
+  unless (defined $port)
+   {
+    if (open(SN,"$portfile"))
+     {          
+      $port = <SN>;
+      close(SN);
+     }
+   }
+  if (defined $port)
+   {
+    my $sock = IO::Socket::INET->new(PeerAddr => 'localhost', 
+               PeerPort => $port, Proto    => 'tcp');
+    if ($sock)
+     {
+      binmode($sock);
+      $sock->autoflush;
+      foreach my $file (@ARGV)
+       {
+        unless  (print $sock "$file\n")
+         {
+          die "Cannot print $file to socket:$!";
+         }
+        print "Requested '$file'\n";
+       }
+      $sock->close || die "Cannot close socket:$!";
+      exit(0);
+     }
+    else
+     {
+      warn "Cannot connect to server on $port:$!";
+     }
+   }
+ }
 
 use Tk;
 use Tk::DropSite qw(Sun);
 use Tk::DragDrop qw(Sun);
-use Tk::widgets qw(TextUndo Menubar FileSelect Listbox Entry Scrollbar);
-use Tk::ErrorDialog;
+use Tk::widgets qw(TextUndo Scrollbar);
+# use Tk::ErrorDialog;
 
-my $top = MainWindow->new();
+my $sock = IO::Socket::INET->new(Listen => 5, Proto => 'tcp');
+die "Cannot open listen socket:$!" unless defined $sock;
+binmode($sock);
 
-$top->bind('Tk::TextUndo','<Alt-KeyPress>','NoOp');
-$top->bind('Tk::TextUndo','<Escape>',['tag','remove','sel','1.0','end']);
+my $port = $sock->sockport;
+$ENV{'PTKEDPORT'} = $port;
+open(SN,">$portfile") || die "Cannot open $portfile:$!";
+print SN $port;
+close(SN);
+print "Accepting connections on $port\n";
 
-my $mb = $top->Menubar;
+my $top = MainWindow->new();                    
 
+Event::HandleSignals();
+
+$SIG{'INT'} = sub { $top->destroy };
+
+$top->withdraw;
+$top->fileevent($sock,'readable',\&ConnectRequest);
 $top->optionAdd('*TextUndo.Background' => '#fff5e1');
 
+foreach my $file (@ARGV)
+ {
+  Create_Edit($file);
+ }
 
-my $t = $top->Scrolled(TextUndo, -wrap => 'none', -scrollbars => 'osre');
+sub ConnectRequest
+{       
+ print "accepting $sock\n"; 
+ my $client = $sock->accept;
+ if (defined $client)
+  {     
+   binmode($client);
+   print "Connection $client\n";
+   $top->fileevent($client,'readable',[\&EditRequest,$client]);
+  }
+}
 
-my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
-$dd->configure(-startcommand => 
-               sub
-                {
-                 return 1 unless (eval { $t->tagNextrange(sel => '1.0','end')});
-                 $dd->configure(-text => $t->get('sel.first','sel.last')); 
-                });
+sub EditRequest
+{
+ my ($client) = @_;
+ local $_;
+ while (<$client>)
+  {            
+   chomp($_);
+   print "'$_'\n", 
+   Create_Edit($_);
+  }
+ warn "Odd $!" unless eof($client);
+ $top->fileevent($client,'readable','');
+ print "Close $client\n";
+ $client->close;
+}
+
+MainLoop;
+unlink("$portfile");
+exit(0);
+
+sub Create_Edit
+{
+ my $path = shift;
+ my $ed   = $top->Toplevel(-title => $path);
+ $ed->withdraw;
+ my $t = $ed->Scrolled('TextUndo', -wrap => 'none', -scrollbars => 'osre');
+ if (-e $path)
+  {
+   $t->Load($path);
+  }
+ else
+  {
+   $t->FileName($path);
+  }
+ my $menu = $t->GetMenu;
+ $menu->cascade(-label => '~Help', -menuitems => [
+                [Button => '~About...', -command => [\&About,$ed]],  
+               ]);
+ $ed->configure(-menu => $menu);
+ my $dd = $t->DragDrop(-event => '<Meta-B1-Motion>');
+ $dd->configure(-startcommand => 
+                sub
+                 {
+                  return 1 unless (eval { $t->tagNextrange(sel => '1.0','end')});
+                  $dd->configure(-text => $t->get('sel.first','sel.last')); 
+                 });
                 
-$t->DropSite(-motioncommand => 
-              sub 
-               { my ($x,$y) = @_;
-                 $t->markSet(insert => "\@$x,$y");
-               },
-              -dropcommand => 
-              sub 
-               { my ($seln,$x,$y) = @_;
-                 $t->markSet(insert => "\@$x,$y");
-                 $t->insert(insert => $t->SelectionGet(-selection => $seln));
-               }
-             );
+ $t->DropSite(-motioncommand => 
+               sub 
+                { my ($x,$y) = @_;
+                  $t->markSet(insert => "\@$x,$y");
+                },
+               -dropcommand => 
+               sub 
+                { my ($seln,$x,$y) = @_;
+                  $t->markSet(insert => "\@$x,$y");
+                  $t->insert(insert => $t->SelectionGet(-selection => $seln));
+                }
+              );
+ 
+ $t->pack(-expand => 1, -fill => 'both');
+ 
+ $ed->protocol('WM_DELETE_WINDOW',[ConfirmExit => $t]);
+ $t->bind('<F3>',\&DoFind);
 
-$mb->Menubutton(-text => '~File', -menuitems => 
-                  [[Button => '~Open',
-                   -command => \&DoOpen]]);
-
-$mb->Menubutton(-text => '~File', -menuitems => 
-                 [['Button' => '~Save', -command => [ $t , 'Save' ]],
-                  ['Button' => 'Save ~As', -command => \&DoSave],
-                  ['Button' => '~Empty', -command => [ $t,'delete','1.0','end']],
-                  '',['Button' => 'E~xit', -command => [ \&CheckSave, $t ]],
-                 ]);
-
-$mb->Menubutton(-text => '~Edit', -menuitems =>
-                [
-                 ['Button' => '~Undo',  -command => [$t, 'undo']],'',
-                 ['Button' => '~Copy',  -command => [$t, 'clipboardCopy']],
-                 ['Button' => 'Cu~t',   -command => [$t, 'clipboardCut']],
-                 ['Button' => '~Paste', -command => [$t, 'clipboardPaste']],
-                 '',['Button' => 'Select All', -command => [$t, 'selectAll']],
-                ]);
-
-$mb->Menubutton(-text => '~Search', -menuitems =>
-                [
-                 ['Button' => '~Find', -command => [\&AskFind, $t]],
-                 ['Button' => '~Replace', -command => [\&AskReplace, $t]],
-                ]);
-
-$mb->Menubutton(-text => '~View', -menuitems =>
-                [
-                 ['Button' => '~Line...', -command => [\&AskLine,$t]],
-                ]);
-
-$mb->Menubutton(-text => '~Help', -side => 'right');
-
-
-$t->pack(-expand => 1, -fill => 'both');
-
-$top->protocol('WM_DELETE_WINDOW',[\&CheckSave,$t]);
-
-if (@ARGV) {
-    if (! -e $ARGV[0]) {
-        open(FILE,">$ARGV[0]") or die "Could not open $ARGV[0]: $!";
-        close(FILE) or die "There was trouble with $ARGV[0]: $!";
-    }
-    $t->Load($ARGV[0]);
-    $t->toplevel->title($t->FileName);
+ $ed->idletasks;
+ $ed->deiconify;
+ $t->update;
+ $t->focus;
 }
 
-$t->bind('<F3>',\&DoFind);
-
-$t->update;
-$t->focus;
-
-MainLoop;   
-
-my $fs;
-sub CreateFileSelect
-{
- unless (defined $fs)
-  {
-   $fs  = $top->FileSelect(-width => 25, -height => 8,
-                       '-accept'   => sub 
-                                     { my $file = shift ; 
-                                       return 1 unless -e $file;
-                                       return (-r $file) && (-T $file);  
-                                     },
-                       Name => 'fs', -filter => '*');
-  }
- return $fs;
-}
-
-sub DoSave 
-{
- my $fs   = CreateFileSelect(); 
- my $file = $fs->Show(-popover => $top, -create => 1, -verify => ['-w']);
- $t->Save($file) if (defined $file);
-}
-
-sub DoOpen 
-{ 
- my $fs   = CreateFileSelect(); 
- my $file = $fs->Show(-popover => $top, -create => 0, -verify => ['-r']);
- $t->Load($file) if (defined $file);
-};
-
-
-sub CheckSave
-{
- my $t = shift;
- if ($t->numberChanges)
-  {
-   my $d = $t->toplevel->Dialog(-text => $t->FileName."\nFile has Changed\nSave Edits ?",
-                                -buttons => ['Yes','No','Cancel'], -popover => $t);
-   my $rep = $d->Show;
-   return if $rep eq 'Cancel';
-   if ($rep eq 'Yes')
-    {
-     $t->Save or return;  
-    }
-  }
- $t->toplevel->destroy;
-}
 
 my $str;
 
@@ -184,34 +204,21 @@ sub AskFind
  $t->{'AskFind'}->Popup;
  $t->update;
  $t->{'AskFind'}->focusNext;
-}
+}           
 
-sub AskLine
+sub About
 {
- my ($t) = @_;
- unless (exists $t->{'AskLine'})
-  {
-   my $d = $t->{'AskLine'} = $t->Toplevel(-popover => 'cursor', -popanchor => 'nw');
-   $d->title('Goto Line ...');
-   $d->withdraw;
-   $d->transient($t->toplevel);
-   my $e = $d->Entry->pack;
-   $e->bind('<Return>', 
-     sub 
-      {
-       my $e = shift;
-       $d->withdraw;
-       my $posn = $e->get.'.0';
-       $t->SetCursor($posn);
-       $t->focus;
-      });
-   $d->protocol(WM_DELETE_WINDOW =>[withdraw => $d]);
-  }
- $t->{'AskLine'}->Popup;
- $t->update;
- $t->{'AskLine'}->focusNext;
+ my $mw = shift;
+ $mw->Dialog(-text => <<"END",-popover => $mw)->Show;
+$0 version $VERSION
+perl$]/Tk$Tk::VERSION
 
+Copyright © 1995-1999 Nick Ing-Simmons. All rights reserved.
+This package is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+END
 }
+
 __END__
 
 =head1 NAME 

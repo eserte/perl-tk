@@ -13,6 +13,7 @@ C\+\+/Main$
 \bTix/
 tcl\.pm$
 \bcore\b
+Canvas/diag\.txt$
 pod/html$
 \bdoc/
 Tk.ppd$
@@ -21,6 +22,7 @@ Tk.ppd$
 \bperlmain\.c$
 \btkperl\b
 \bHTML/doc\b
+\bEvent/Play\b
 pod/tkman.ps$
 extralibs\.ld
 doc/index\.html$
@@ -35,6 +37,7 @@ Bitmap/Bitmap\.c$
 Canvas/Canvas\.c$
 DragDrop/Win32Site/Win32Site\.c$
 Entry/Entry\.c$
+Event/Event\.c$
 Extensions/ImageBack/ImageBack\.c$
 HList/HList\.c$
 IO/IO\.c$

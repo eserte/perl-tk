@@ -1,7 +1,8 @@
 package Tk::FileSelect;
 
-use vars qw($VERSION);
-$VERSION = '3.029'; # $Id: //depot/Tk8/Tk/FileSelect.pm#29$
+use vars qw($VERSION @EXPORT_OK);
+$VERSION = '3.033'; # $Id: //depot/Tk8/Tk/FileSelect.pm#33$
+@EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
 use strict;
@@ -253,6 +254,13 @@ sub translate
  return "\\/" if ($ch eq '/');
  return "\\\\" if ($ch eq '\\');
  return $ch;
+}   
+
+sub glob_to_re
+{
+ my $regex = shift;
+ $regex =~ s/(\\?)(.)/&translate($1,$2)/ge;
+ return sub { shift =~ /^${regex}$/ };
 }
 
 sub filter
@@ -261,10 +269,8 @@ sub filter
  my $var = \$cw->{Configure}{'-filter'};
  if (@_ > 1)
   {
-   my $regex = $val;
    $$var = $val;
-   $regex =~ s/(\\?)(.)/&translate($1,$2)/ge;
-   $cw->{'match'} = sub { shift =~ /^${regex}$/ };
+   $cw->{'match'} = glob_to_re($val);
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
@@ -470,7 +476,6 @@ sub Show
 {
  my ($cw,@args) = @_;
  $cw->Popup(@args);
- $cw->waitVisibility;
  $cw->focus;
  $cw->waitVariable(\$cw->{Selected});
  $cw->withdraw;

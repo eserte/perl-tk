@@ -10,9 +10,10 @@
  *
  * RCS: @(#) $Id: tclUnixEvent.c,v 1.2 1998/09/14 18:40:17 stanton Exp $
  */
-
 #include "tkPort.h"
 #include "Lang.h"
+#ifdef TCL_EVENT_IMPLEMENT
+
 
 /*
  *----------------------------------------------------------------------
@@ -74,3 +75,5 @@ Tcl_Sleep(ms)
 	TclpGetTime(&before);
     }
 }
+
+#endif

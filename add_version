@@ -24,20 +24,19 @@ else
 
 if ($opt{'o'})
  {
-  foreach (`p4 opened`)
+  foreach (`p4 opened $path/...`)
    {
-    unless (s#^\Q$dep\E#$path#)
-     {
-      warn "Not under $path : $_";
-      next;
-     }
     unless (/\(kx?text\)/)
      {
       warn "Not ktext : $_";
       next;
      }
-    chomp;
+    chomp;               
     s/#\d+\s+-.*$//;
+    $_ = `p4 have $_`;
+    s/^.*#\d+\s+-\s+//;
+    chomp;
+    print "'$_'\n";
     push(@ARGV,$_);
    }
  }

@@ -5,10 +5,6 @@ VFUNC(int,Lang_WinEvent,V_Lang_WinEvent,_ANSI_ARGS_((Tk_Window tkwin,
 			    LRESULT *result)))
 #endif
 
-#ifndef Tcl_WatchHandle
-VFUNC(void,Tcl_WatchHandle,V_Tcl_WatchHandle,_ANSI_ARGS_((HANDLE h, Tcl_HandleProc *proc, ClientData clientData)))
-#endif
-
 #ifndef Tk_AttachHWND
 VFUNC(Window,Tk_AttachHWND,V_Tk_AttachHWND,_ANSI_ARGS_((Tk_Window tkwin,
 			    HWND hwnd)))

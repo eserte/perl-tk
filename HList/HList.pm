@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = '3.024'; # $Id: //depot/Tk8/HList/HList.pm#24$
+$VERSION = '3.026'; # $Id: //depot/Tk8/HList/HList.pm#26$
 
 use Tk qw(Ev);
 
@@ -75,6 +75,7 @@ sub ClassInit
  $mw->bind($class,'<Return>', ['KeyboardActivate']);
  $mw->bind($class,'<space>',  ['KeyboardBrowse']);
  $mw->bind($class,'<Home>',   ['KeyboardHome']);
+ $mw->bind($class,'<End>',    ['KeyboardEnd']);
 
  return $class;
 }
@@ -207,7 +208,7 @@ sub ShiftButton1
  if($mode eq 'extended' or $mode eq 'multiple')
   {
    my $from = $w->info('anchor');
-   if($from)
+   if(defined $from)
     {
      $w->select('clear');
      $w->select('set', $from, $to);
@@ -225,17 +226,17 @@ sub GetNearest
 {
  my ($w,$y,$undefafterend) = @_;
  my $ent = $w->nearest($y);
- if ($undefafterend)
-  {
-   my $borderwidth = $w->cget('-borderwidth');
-   my $highlightthickness = $w->cget('-highlightthickness');
-   my $bottomy = (split(' ', $w->infoBbox($ent)))[3];
-   $bottomy += $borderwidth + $highlightthickness;
-   if ($w->header('exist', 0)){ $bottomy += ($w->header('size', 0))[1]; };
-   if ($y > $bottomy){ return undef; }
-  }
  if (defined $ent)
   {
+   if ($undefafterend)
+    {
+     my $borderwidth = $w->cget('-borderwidth');
+     my $highlightthickness = $w->cget('-highlightthickness');
+     my $bottomy = (split(' ', $w->infoBbox($ent)))[3];
+     $bottomy += $borderwidth + $highlightthickness;
+     if ($w->header('exist', 0)){ $bottomy += ($w->header('size', 0))[1]; };
+     if ($y > $bottomy){ return undef; }
+    }
    my $state = $w->entrycget($ent, '-state');
    return $ent if (!defined($state) || $state ne 'disabled');
   }
@@ -262,7 +263,7 @@ sub ButtonRelease1
  if (!defined($ent) and $mode eq 'single')
   {
      my $ent = $w->info('selection');
-     if ($ent)
+     if (defined $ent)
       {
         $w->anchor('set', $ent);
       }
@@ -315,7 +316,7 @@ sub Button1Motion
   }
 
  my $ent;
- if ($w->info('anchor'))
+ if (defined $w->info('anchor'))
   {
    $ent = $w->GetNearest($Ev->y);
   }
@@ -339,7 +340,7 @@ sub Button1Motion
  elsif ($mode eq 'multiple' || $mode eq 'extended')
   {
    my $from = $w->info('anchor');
-   if($from)
+   if(defined $from)
     {
      $w->select('clear');
      $w->select('set', $from, $ent);
@@ -370,7 +371,7 @@ sub Double1
  return unless (defined($ent) and length($ent));
 
  $w->anchor('set', $ent)
-	unless($w->info('anchor'));
+	unless(defined $w->info('anchor'));
 
  $w->select('set', $ent);
  $w->Callback(-command => $ent);
@@ -391,7 +392,7 @@ sub CtrlButton1
 
  if($mode eq 'extended')
   {
-   $w->anchor('set', $ent) unless( $w->info('anchor') );
+   $w->anchor('set', $ent) unless( defined $w->info('anchor') );
 
    if($w->select('includes', $ent))
     {
@@ -415,7 +416,7 @@ sub UpDown
 
  delete $w->{'shiftanchor'};
 
- unless( $anchor )
+ unless( defined $anchor )
   {
    $anchor = ($w->info('children'))[0] || '';
 
@@ -440,13 +441,13 @@ sub UpDown
  while(!$done)
   {
    $ent = $w->info($spec, $ent);
-   last unless( $ent );
+   last unless( defined $ent );
    next if( $w->entrycget($ent, '-state') eq 'disabled' );
    next if( $w->info('hidden', $ent) );
    last;
   }
 
- unless( $ent )
+ unless( defined $ent )
   {
    $w->yview('scroll', $spec eq 'prev' ? -1 : 1, 'unit');
    return;
@@ -486,7 +487,7 @@ sub ShiftUpDown
  while( !$done )
   {
    $ent = $w->info($spec, $ent);
-   last unless( $ent );
+   last unless( defined $ent );
    next if( $w->entrycget($ent, '-state') eq 'disabled' );
    next if( $w->info('hidden', $ent) );
    last;
@@ -516,7 +517,7 @@ sub LeftRight
 
  my $anchor = $w->info('anchor');
 
- unless($anchor)
+ unless(defined $anchor)
   {
    $anchor = ($w->info('children'))[0] || '';
   }
@@ -533,21 +534,21 @@ sub LeftRight
      $ent = $w->info('parent', $e);
 
      $ent = $w->info('prev', $e)
-       unless($ent && $w->entrycget($ent, '-state') ne 'disabled')
+       unless(defined $ent && $w->entrycget($ent, '-state') ne 'disabled')
     }
    else
     {
      $ent = ($w->info('children', $e))[0];
 
      $ent = $w->info('next', $e)
-       unless($ent && $w->entrycget($ent, '-state') ne 'disabled')
+       unless(defined $ent && $w->entrycget($ent, '-state') ne 'disabled')
     }
 
-   last unless( $ent );
+   last unless( defined $ent );
    last if($w->entrycget($ent, '-state') ne 'disabled');
   }
 
- unless( $ent )
+ unless( defined $ent )
   {
    $w->xview('scroll', $spec eq 'left' ? -1 : 1, 'unit');
    return;
@@ -569,6 +570,13 @@ sub KeyboardHome
 {
  my $w = shift;
  $w->yview('moveto' => 0);
+ $w->xview('moveto' => 0);
+}
+
+sub KeyboardEnd
+{
+ my $w = shift;
+ $w->yview('moveto' => 1);
  $w->xview('moveto' => 0);
 }
 

@@ -5,7 +5,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.024'; # $Id: //depot/Tk8/Tixish/Balloon.pm#24$
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tixish/Balloon.pm#26$
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -345,7 +345,17 @@ sub Popup {
     } else {
 	croak "'$pos' is not a valid position for the balloon - it must be one of: 'widget', 'mouse'.";
     }
-    $w->geometry("+$x+$y");
+
+    $w->idletasks;
+    my($width, $height) = ($w->reqwidth, $w->reqheight);
+    my $xx = ($x + $width > $w->screenwidth
+	      ? $w->screenwidth - $width
+	      : $x);
+    my $yy = ($y + $height > $w->screenheight
+	      ? $w->screenheight - $height
+	      : $y);
+
+    $w->geometry("+$xx+$yy");
     #$w->MoveToplevelWindow($x,$y);
     $w->deiconify();
     $w->raise;

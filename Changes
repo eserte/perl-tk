@@ -4,6 +4,20 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
+Changes in Tk800.015
+	Event Loop is now usable as separate loadable 
+	Major work on Text, TextUndo by  
+	Lots of work on Drag&Drop
+	  - XDND protocol 
+	  - KDE/kfm protocol 
+	  - Sun version window manager independant.
+	Support for images as icons (Win32 and Unix)
+	Tk::Pane and Tk::ProgressBar bundled.
+	Fixes to Photo's ->put 
+	UNIX filevent overhaul
+	Patches from the list as ever. 
+	Support for perl5.005_57+
+
 Changes in Tk800.014
 	A few patches from Steve.
 	Merged tk8.0.5 and associated bits of tcl8.0.5

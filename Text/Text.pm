@@ -15,8 +15,10 @@ use AutoLoader;
 use Carp;
 use strict;
 
+use Text::Tabs;
+
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Text/Text.pm#19$
+$VERSION = '3.027'; # $Id: //depot/Tk8/Text/Text.pm#27$
 
 use Tk qw(Ev);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -44,11 +46,6 @@ use Tk::Submethods ( 'mark' => [qw(gravity names next previous set unset)],
 sub Tag;
 sub Tags;
 
-1;
-
-# __END__
-
-
 sub bindRdOnly
 {
 
@@ -58,7 +55,7 @@ sub bindRdOnly
  $mw->bind($class,'<Meta-B1-Motion>','NoOp');
  $mw->bind($class,'<Meta-1>','NoOp');
  $mw->bind($class,'<Alt-KeyPress>','NoOp');
- $mw->bind($class,'<Escape>',['tagRemove','sel','1.0','end']);
+ $mw->bind($class,'<Escape>','unselectAll');
 
  $mw->bind($class,'<1>',['Button1',Ev('x'),Ev('y')]);
  $mw->bind($class,'<B1-Motion>','B1_Motion' ) ;
@@ -120,7 +117,7 @@ sub bindRdOnly
  $mw->bind($class,'<Control-Shift-space>',['SelectTo','insert','char']);
  $mw->bind($class,'<Shift-Select>',['SelectTo','insert','char']);
  $mw->bind($class,'<Control-slash>','selectAll');
- $mw->bind($class,'<Control-backslash>',['tagRemove','sel','1.0','end']);
+ $mw->bind($class,'<Control-backslash>','unselectAll');
 
  if (!$Tk::strictMotif)
   {
@@ -140,18 +137,26 @@ sub bindRdOnly
    $mw->bind($class,'<B2-Motion>',['Motion2',Ev('x'),Ev('y')]);
   }
  $mw->bind($class,'<Destroy>','Destroy');
+ $mw->bind($class, '<3>', ['PostPopupMenu', Ev('X'), Ev('Y')]  );
+
  return $class;
 }
 
 sub selectAll
 {
- my $w = shift;
+ my ($w) = @_;
  $w->tagAdd('sel','1.0','end');
+}
+
+sub unselectAll
+{
+ my ($w) = @_;
+ $w->tagRemove('sel','1.0','end');
 }
 
 sub adjustSelect
 {
- my $w = shift;
+ my ($w) = @_;
  my $Ev = $w->XEvent;
  $w->ResetAnchor($Ev->xy);
  $w->SelectTo($Ev->xy,'char')
@@ -159,7 +164,7 @@ sub adjustSelect
 
 sub selectLine
 {
- my $w = shift;
+ my ($w) = @_;
  my $Ev = $w->XEvent;
  $w->SelectTo($Ev->xy,'line');
  Tk::catch { $w->markSet('insert','sel.first') };
@@ -167,7 +172,7 @@ sub selectLine
 
 sub selectWord
 {
- my $w = shift;
+ my ($w) = @_;
  my $Ev = $w->XEvent;
  $w->SelectTo($Ev->xy,'word');
  Tk::catch { $w->markSet('insert','sel.first') }
@@ -185,8 +190,13 @@ sub ClassInit
  $mw->bind($class,'<Return>', ['Insert',"\n"]);
  $mw->bind($class,'<Delete>','Delete');
  $mw->bind($class,'<BackSpace>','Backspace');
- $mw->bind($class,'<Insert>','InsertSelection' ) ;
- $mw->bind($class,'<KeyPress>',['Insert',Ev('A')]);
+ $mw->bind($class,'<Insert>', \&ToggleInsertMode ) ;
+ $mw->bind($class,'<KeyPress>',['InsertKeypress',Ev('A')]);
+
+ $mw->bind($class,'<F1>', 'clipboardColumnCopy'); 
+ $mw->bind($class,'<F2>', 'clipboardColumnCut'); 
+ $mw->bind($class,'<F3>', 'clipboardColumnPaste'); 
+
  # Additional emacs-like bindings:
 
  if (!$Tk::strictMotif)
@@ -207,7 +217,8 @@ sub ClassInit
 }
 
 sub insertTab
-{my $w = shift;
+{
+ my ($w) = @_;
  $w->Insert("\t");
  $w->focus;
  $w->break
@@ -215,7 +226,7 @@ sub insertTab
 
 sub deleteToEndofLine
 {
- my $w = shift;
+ my ($w) = @_;
  if ($w->compare('insert','==','insert lineend'))
   {
    $w->delete('insert')
@@ -228,7 +239,7 @@ sub deleteToEndofLine
 
 sub openLine
 {
- my $w = shift;
+ my ($w) = @_;
  $w->insert('insert',"\n");
  $w->markSet('insert','insert-1c')
 }
@@ -251,7 +262,7 @@ sub Motion2
 
 sub ButtonRelease2
 {
- my $w = shift;
+ my ($w) = @_;
  my $Ev = $w->XEvent;
  if (!$Tk::mouseMoved)
   {
@@ -261,13 +272,13 @@ sub ButtonRelease2
 
 sub InsertSelection
 {
- my $w = shift;
+ my ($w) = @_;
  Tk::catch { $w->Insert($w->SelectionGet) }
 }
 
 sub Backspace
 {
- my $w = shift;
+ my ($w) = @_;
  my $sel = Tk::catch { $w->tag('nextrange','sel','1.0','end') };
  if (defined $sel)
   {
@@ -279,7 +290,7 @@ sub Backspace
 
 sub deleteBefore
 {
- my $w = shift;
+ my ($w) = @_;
  if ($w->compare('insert','!=','1.0'))
   {
    $w->delete('insert-1c');
@@ -289,7 +300,7 @@ sub deleteBefore
 
 sub Delete
 {
- my $w = shift;
+ my ($w) = @_;
  my $sel = Tk::catch { $w->tag('nextrange','sel','1.0','end') };
  if (defined $sel)
   {
@@ -313,20 +324,17 @@ sub Delete
 # y - The x-coordinate of the button press.
 sub Button1
 {
- my $w = shift;
- my $x = shift;
- my $y = shift;
+ my ($w,$x,$y) = @_;
  $Tk::selectMode = 'char';
  $Tk::mouseMoved = 0;
- $w->markSet('insert','@'.$x.','.$y);
+ $w->SetCursor('@'.$x.','.$y);
  $w->markSet('anchor','insert');
  $w->focus() if ($w->cget('-state') eq 'normal');
- $w->tagRemove('sel','1.0','end');
 }
 
 sub B1_Motion
 {
- my $w = shift;
+ my ($w) = @_;
  my $Ev = $w->XEvent;
  $Tk::x = $Ev->x;
  $Tk::y = $Ev->y;
@@ -335,7 +343,7 @@ sub B1_Motion
 
 sub B1_Leave
 {
- my $w = shift;
+ my ($w) = @_;
  my $Ev = $w->XEvent;
  $Tk::x = $Ev->x;
  $Tk::y = $Ev->y;
@@ -354,9 +362,8 @@ sub B1_Leave
 # index - Index of character at which the mouse button was pressed.
 sub SelectTo
 {
- my $w = shift;
- my $index = shift;
- $Tk::selectMode = shift if (@_);
+ my ($w, $index, $mode)= @_;
+ $Tk::selectMode = $mode if defined ($mode);
  my $cur = $w->index($index);
  my $anchor = Tk::catch { $w->index('anchor') };
  if (!defined $anchor)
@@ -369,7 +376,7 @@ sub SelectTo
    $Tk::mouseMoved = 1;
   }
  $Tk::selectMode = 'char' unless (defined $Tk::selectMode);
- my $mode = $Tk::selectMode;
+ $mode = $Tk::selectMode;
  my ($first,$last);
  if ($mode eq 'char')
   {
@@ -430,7 +437,7 @@ sub SelectTo
 # w - The text window.
 sub AutoScan
 {
- my $w = shift;
+ my ($w) = @_;
  if ($Tk::y >= $w->height)
   {
    $w->yview('scroll',2,'units')
@@ -452,7 +459,7 @@ sub AutoScan
    return;
   }
  $w->SelectTo('@' . $Tk::x . ','. $Tk::y);
- $w->RepeatId($w->after(50,'AutoScan',$w));
+ $w->RepeatId($w->after(50,['AutoScan',$w]));
 }
 # SetCursor
 # Move the insertion cursor to a given position in a text. Also
@@ -464,11 +471,10 @@ sub AutoScan
 # pos - The desired new position for the cursor in the window.
 sub SetCursor
 {
- my $w = shift;
- my $pos = shift;
+ my ($w,$pos) = @_;
  $pos = 'end - 1 chars' if $w->compare($pos,'==','end');
  $w->markSet('insert',$pos);
- $w->tagRemove('sel','1.0','end');
+ $w->unselectAll;
  $w->see('insert')
 }
 # KeySelect
@@ -482,8 +488,7 @@ sub SetCursor
 # actually been moved to this position yet).
 sub KeySelect
 {
- my $w = shift;
- my $new = shift;
+ my ($w,$new) = @_;
  my ($first,$last);
  if (!defined $w->tag('ranges','sel'))
   {
@@ -534,8 +539,7 @@ sub KeySelect
 # which end of selection should be used as anchor point.
 sub ResetAnchor
 {
- my $w = shift;
- my $index = shift;
+ my ($w,$index) = @_;
  if (!defined $w->tag('ranges','sel'))
   {
    $w->markSet('anchor',$index);
@@ -583,6 +587,526 @@ sub ResetAnchor
    $w->markSet('anchor','sel.first')
   }
 }
+
+########################################################################
+sub markExists
+{
+ my ($w, $markname)=@_;
+ my $mark_exists=0;
+ my @markNames_list = $w->markNames;
+ foreach my $mark (@markNames_list)
+  { if ($markname eq $mark) {$mark_exists=1;last;} }
+ return $mark_exists;
+}
+
+########################################################################
+sub OverstrikeMode
+{
+ my ($w,$mode) = @_;
+
+ $w->{'OVERSTRIKE_MODE'} =0 unless exists($w->{'OVERSTRIKE_MODE'});
+
+ $w->{'OVERSTRIKE_MODE'}=$mode if (@_ > 1);
+
+ return $w->{'OVERSTRIKE_MODE'};
+}
+
+########################################################################
+# pressed the <Insert> key, just above 'Del' key.
+# this toggles between insert mode and overstrike mode.
+sub ToggleInsertMode
+{
+ my ($w)=@_;        
+ $w->OverstrikeMode(!$w->OverstrikeMode);
+}
+
+########################################################################
+sub InsertKeypress
+{
+ my ($w,$char)=@_;
+ if ($w->OverstrikeMode)
+  {
+   my $current=$w->get('insert');
+   $w->delete('insert') unless($current eq "\n");
+  }
+ $w->Insert($char);
+}
+
+########################################################################
+sub GotoLineNumber
+{
+ my ($w,$line_number) = @_;
+ $line_number=~ s/^\s+|\s+$//g;
+ return if $line_number =~ m/\D/;
+ my ($last_line,$junk)  = split(/\./, $w->index('end'));
+ if ($line_number > $last_line) {$line_number = $last_line; }
+ $w->{'LAST_GOTO_LINE'} = $line_number;
+ $w->markSet('insert', $line_number.'.0');
+ $w->see('insert');
+}
+
+########################################################################
+sub GotoLineNumberPopUp
+{
+ my ($w)=@_;
+ my $popup = $w->{'GOTO_LINE_NUMBER_POPUP'};
+
+ unless (defined($w->{'LAST_GOTO_LINE'}))
+  {
+   my ($line,$col) =  split(/\./, $w->index('insert'));
+   $w->{'LAST_GOTO_LINE'} = $line; 
+  }
+
+ ## if anything is selected when bring up the pop-up, put it in entry window.	
+ my $selected;
+ eval { $selected = $w->SelectionGet(-selection => "PRIMARY"); };
+ unless ($@)
+  {
+   if (defined($selected) and length($selected))
+    {
+     unless ($selected =~ /\D/)
+      {
+       $w->{'LAST_GOTO_LINE'} = $selected;
+      }
+    }
+  }
+ unless (defined($popup))
+  {                      
+   require Tk::DialogBox;
+   $popup = $w->DialogBox(-buttons => [qw[Ok Cancel]],-title => "Goto Line Number", -popover => $w,
+                          -command => sub { $w->GotoLineNumber($w->{'LAST_GOTO_LINE'}) if $_[0] eq 'Ok'});
+   $w->{'GOTO_LINE_NUMBER_POPUP'}=$popup;
+   $popup->resizable('no','no');
+   my $frame = $popup->Frame->pack(-fill => 'x');
+   $frame->Label(text=>'Enter line number: ')->pack(-side => 'left');
+   my $entry = $frame->Entry(-background=>'white',width=>25,
+                             -textvariable => \$w->{'LAST_GOTO_LINE'})->pack(-side =>'left',-fill => 'x');
+   $popup->Advertise(entry => $entry);
+  }
+ $popup->Popup;
+ $popup->Subwidget('entry')->focus;
+ $popup->Wait;
+}
+
+########################################################################
+
+sub getSelected
+{
+ shift->GetTextTaggedWith('sel');
+}       
+
+sub deleteSelected
+{
+ shift->DeleteTextTaggedWith('sel');
+}
+
+sub GetTextTaggedWith
+{
+ my ($w,$tag) = @_;
+
+ my @ranges = $w->tagRanges($tag);
+ my $range_total = @ranges;
+ my $return_text='';
+
+ # if nothing selected, then ignore
+ if ($range_total == 0) {return $return_text;}	
+
+ # for every range-pair, get selected text
+ while(@ranges)
+  {
+  my $first = shift(@ranges);
+  my $last = shift(@ranges); 
+  my $text = $w->get($first , $last);
+  if(defined($text))
+   {$return_text = $return_text . $text;}
+  # if there is more tagged text, separate with an end of line  character
+  if(@ranges)
+   {$return_text = $return_text . "\n";}
+  }
+ return $return_text;
+}
+
+########################################################################
+sub DeleteTextTaggedWith
+{
+ my ($w,$tag) = @_;
+ my @ranges = $w->tagRanges($tag);
+ my $range_total = @ranges;
+	
+ # if nothing tagged with that tag, then ignore
+ if ($range_total == 0) {return;}
+	
+ # insert marks where selections are located
+ # marks will move with text even as text is inserted and deleted
+ # in a previous selection.
+ for (my $i=0; $i<$range_total; $i++)
+  { $w->markSet('mark_tag_'.$i => $ranges[$i]); }
+
+ # for every selected mark pair, insert new text and delete old text
+ for (my $i=0; $i<$range_total; $i=$i+2)
+  {
+  my $first = $w->index('mark_tag_'.$i);
+  my $last = $w->index('mark_tag_'.($i+1));
+
+  my $text = $w->delete($first , $last);  
+  }
+
+ # delete the marks
+ for (my $i=0; $i<$range_total; $i++)
+  { $w->markUnset('mark_tag_'.$i); }
+}
+	
+
+########################################################################
+sub FindAll
+{
+ my ($w,$mode, $case, $pattern ) = @_;
+ ### 'sel' tags accumulate, need to remove any previous existing 
+ $w->unselectAll;
+	
+ my $match_length=0;
+ my $start_index;
+ my $end_index = '1.0';	
+	
+ while(defined($end_index))
+  {
+  if ($case eq '-nocase')
+   {
+   $start_index = $w->search( 
+    $mode,
+    $case,
+    -count => \$match_length, 
+    "--",
+    $pattern , 
+    $end_index,
+    'end');
+   }
+  else
+   {
+   $start_index = $w->search( 
+    $mode,
+    -count => \$match_length, 
+    "--",
+    $pattern , 
+    $end_index,
+    'end');
+   }
+
+  unless(defined($start_index) && $start_index) {last;}
+
+  my ($line,$col) = split(/\./, $start_index);
+  $col = $col + $match_length;
+  $end_index = $line.'.'.$col;
+  $w->tagAdd('sel', $start_index, $end_index);
+  }
+}
+
+########################################################################
+# get current selected text and search for the next occurrence
+sub FindSelectionNext
+{
+ my ($w) = @_;
+ my $selected;
+ eval {$selected = $w->SelectionGet(-selection => "PRIMARY"); };
+ return if($@);
+ return unless (defined($selected) and length($selected));
+
+ $w->FindNext('-forward', '-exact', '-case', $selected);
+}
+
+########################################################################
+# get current selected text and search for the previous occurrence
+sub FindSelectionPrevious
+{
+ my ($w) = @_;
+ my $selected;
+ eval {$selected = $w->SelectionGet(-selection => "PRIMARY"); };
+ return if($@);
+ return unless (defined($selected) and length($selected));
+
+ $w->FindNext('-backward', '-exact', '-case', $selected);
+}
+
+
+
+########################################################################
+sub FindNext
+{
+ my ($w,$direction, $mode, $case, $pattern ) = @_;
+	
+ ## if searching forward, start search at end of selected block
+ ## if backward, start search from start of selected block.
+ ## dont want search to find currently selected text.
+ ## tag 'sel' may not be defined, use eval loop to trap error
+ eval {	
+  if ($direction eq '-forward')
+   {
+   $w->markSet('insert', 'sel.last');  
+   $w->markSet('current', 'sel.last');  
+   }
+  else
+   {
+   $w->markSet('insert', 'sel.first');  
+   $w->markSet('current', 'sel.first');  
+   } 
+ };
+
+ my $saved_index=$w->index('insert');
+	
+ # remove any previous existing tags
+ $w->unselectAll;
+	
+ my $match_length=0;
+ my $start_index;
+	
+ if ($case eq '-nocase')
+  {
+  $start_index = $w->search( 
+   $direction,
+   $mode,
+   $case,
+   -count => \$match_length, 
+   "--",
+   $pattern , 
+   'insert');
+  }
+ else
+  {
+  $start_index = $w->search( 
+   $direction,
+   $mode,
+   -count => \$match_length, 
+   "--",
+   $pattern , 
+   'insert');
+  }
+	
+ unless(defined($start_index)) { return 0; }
+ if(length($start_index) == 0) { return 0; }
+	
+ my ($line,$col) = split(/\./, $start_index);
+ $col = $col + $match_length; 
+ my $end_index = $line.'.'.$col;
+ $w->tagAdd('sel', $start_index, $end_index);
+	
+ $w->see($start_index);
+	
+ if ($direction eq '-forward')
+  {
+  $w->markSet('insert', $end_index);  
+  $w->markSet('current', $end_index);  
+  }
+ else
+  {
+  $w->markSet('insert', $start_index);  
+  $w->markSet('current', $start_index);  
+  }
+	
+ my $compared_index = $w->index('insert');
+
+ my $ret_val;
+ if ($compared_index eq $saved_index)
+  {$ret_val=0;}
+ else
+  {$ret_val=1;}
+ return $ret_val;
+}
+
+########################################################################
+sub FindAndReplaceAll
+{
+ my ($w,$mode, $case, $find, $replace ) = @_;
+ $w->markSet('insert', '1.0');
+ $w->unselectAll;
+ while($w->FindNext('-forward', $mode, $case, $find))
+  {
+  $w->ReplaceSelectionsWith($replace);
+  }
+}
+
+########################################################################
+sub ReplaceSelectionsWith
+{
+ my ($w,$new_text ) = @_;
+
+ my @ranges = $w->tagRanges('sel');
+ my $range_total = @ranges;
+	
+ # if nothing selected, then ignore
+ if ($range_total == 0) {return};
+
+ # insert marks where selections are located
+ # marks will move with text even as text is inserted and deleted
+ # in a previous selection.
+ for (my $i=0; $i<$range_total; $i++)
+  {$w->markSet('mark_sel_'.$i => $ranges[$i]); }
+
+ # for every selected mark pair, insert new text and delete old text
+ my ($first, $last);
+ for (my $i=0; $i<$range_total; $i=$i+2)
+  {
+  $first = $w->index('mark_sel_'.$i);
+  $last = $w->index('mark_sel_'.($i+1));
+
+  ##########################################################################
+  # eventually, want to be able to get selected text,
+  # support regular expression matching, determine replace_text
+  # $replace_text = $selected_text=~m/$new_text/  (or whatever would work)
+  # will have to pass in mode and case flags.
+  # this would allow a regular expression search and replace to be performed
+  # example, look for "line (\d+):" and replace with "$1 >" or similar
+  ##########################################################################
+
+  $w->insert($last, $new_text);
+  $w->delete($first, $last);
+	
+  }
+ ############################################################
+ # set the insert cursor to the end of the last insertion mark
+ $w->markSet('insert',$w->index('mark_sel_'.($range_total-1)));
+
+ # delete the marks
+ for (my $i=0; $i<$range_total; $i++)
+  { $w->markUnset('mark_sel_'.$i); }
+}
+########################################################################
+sub FindAndReplacePopUp
+{
+ my ($w)=@_;
+ $w->findandreplacepopup(0);
+}
+
+########################################################################
+sub FindPopUp
+{
+ my ($w)=@_;
+ $w->findandreplacepopup(1);
+}
+
+########################################################################
+
+sub findandreplacepopup
+{
+ my ($w,$find_only)=@_;
+
+ my $pop = $w->Toplevel;
+ if ($find_only)
+  { $pop->title("Find"); }
+ else
+  { $pop->title("Find and/or Replace"); }
+ my $frame =  $pop->Frame->pack(-anchor=>'nw');
+
+ $frame->Label(text=>"Direction:")
+  ->grid(-row=> 1, -column=>1, -padx=> 20, -sticky => 'nw');
+ my $direction = '-forward';
+ $frame->Radiobutton(
+  variable => \$direction, 
+  text => '-forward',value => '-forward' ) 
+  ->grid(-row=> 2, -column=>1, -padx=> 20, -sticky => 'nw');
+ $frame->Radiobutton(
+  variable => \$direction, 
+  text => '-backward',value => '-backward' )
+  ->grid(-row=> 3, -column=>1, -padx=> 20, -sticky => 'nw');
+
+ $frame->Label(text=>"Mode:")
+  ->grid(-row=> 1, -column=>2, -padx=> 20, -sticky => 'nw');
+ my $mode = '-exact';
+ $frame->Radiobutton(
+  variable => \$mode, text => '-exact',value => '-exact' ) 
+  ->grid(-row=> 2, -column=>2, -padx=> 20, -sticky => 'nw'); 
+ $frame->Radiobutton(
+  variable => \$mode, text => '-regexp',value => '-regexp' )
+  ->grid(-row=> 3, -column=>2, -padx=> 20, -sticky => 'nw');
+
+ $frame->Label(text=>"Case:")
+  ->grid(-row=> 1, -column=>3, -padx=> 20, -sticky => 'nw');
+ my $case = '-case';
+ $frame->Radiobutton(
+  variable => \$case, text => '-case',value => '-case' ) 
+  ->grid(-row=> 2, -column=>3, -padx=> 20, -sticky => 'nw');
+ $frame->Radiobutton(
+  variable => \$case, text => '-nocase',value => '-nocase' )
+  ->grid(-row=> 3, -column=>3, -padx=> 20, -sticky => 'nw');
+
+ ######################################################
+ my $find_entry = $pop->Entry(width=>25);
+
+ my $button_find = $pop->Button(text=>'Find',
+  command => sub {$w->FindNext ($direction,$mode,$case,$find_entry->get()),} )
+  -> pack(-anchor=>'nw');
+
+ $find_entry -> pack(-anchor=>'nw', -expand => 'yes' , -fill => 'x'); # autosizing
+
+ ######  if any $w text is selected, put it in the find entry
+ ######  could be more than one text block selected, get first selection
+ my @ranges = $w->tagRanges('sel');
+ if (@ranges)
+  {
+  my $first = shift(@ranges);
+  my $last = shift(@ranges);
+
+  # limit to one line
+  my ($first_line, $first_col) = split(/\./,$first);
+  my ($last_line, $last_col) = split(/\./,$last);
+  unless($first_line == $last_line)
+   {$last = $first. ' lineend';}
+
+  $find_entry->insert('insert', $w->get($first , $last));  
+  }
+ else
+  {
+  my $selected;
+  eval {$selected=$w->SelectionGet(-selection => "PRIMARY"); };
+  if($@) {}
+  elsif (defined($selected))
+   {$find_entry->insert('insert', $selected);}
+  }
+
+ my ($replace_entry,$button_replace,$button_replace_all);
+ unless ($find_only)
+  {
+  ######################################################
+  $replace_entry = $pop->Entry(width=>25);
+  ######################################################
+  $button_replace = $pop->Button(text=>'Replace',
+   command => sub {$w->ReplaceSelectionsWith($replace_entry->get());} )
+   -> pack(-anchor=>'nw');
+ 
+  $replace_entry -> pack(-anchor=>'nw', -expand => 'yes' , -fill => 'x');
+  }
+ 
+ ######################################################
+ $pop->Label(text=>" ")->pack();
+ ######################################################
+ unless ($find_only)
+  {
+  $button_replace_all = $pop->Button(text=>'Replace All',
+   command => sub {$w->FindAndReplaceAll
+    ($mode,$case,$find_entry->get(),$replace_entry->get());} )
+   ->pack(-side => 'left');
+  }
+
+ my $button_find_all = $pop->Button(text=>'Find All',
+  command => sub {$w->FindAll($mode,$case,$find_entry->get());} )
+  ->pack(-side => 'left');
+
+  my $button_cancel = $pop->Button(text=>'Cancel',
+  command => sub {$pop->destroy()} )
+  ->pack(-side => 'left');
+ 
+ $pop->resizable('yes','no');
+ return $pop;
+}
+
+# paste clipboard into current location 
+sub clipboardPaste
+{
+ my ($w) = @_;   
+ local $@;
+ Tk::catch { $w->Insert($w->clipboardGet) };
+}
+
+########################################################################
 # Insert --
 # Insert a string into a text at the point of the insertion cursor.
 # If there is a selection in the text, and it covers the point of the
@@ -590,23 +1114,30 @@ sub ResetAnchor
 #
 # Arguments:
 # w - The text window in which to insert the string
-# s - The string to insert (usually just a single character)
+# string - The string to insert (usually just a single character)
 sub Insert
 {
- my $w = shift;
- my $s = shift;
- return unless (defined $s && $s ne '');
- Tk::catch
+ my ($w,$string) = @_;
+ return unless (defined $string && $string ne '');
+ #figure out if cursor is inside a selection
+ my @ranges = $w->tagRanges('sel');
+ if (@ranges) 
   {
-   if ($w->compare('sel.first','<=','insert') &&
-       $w->compare('sel.last','>=','insert'))
-     {
-      $w->delete('sel.first','sel.last')
-     }
-  };
- $w->insert('insert',$s);
- $w->see('insert')
+   while (@ranges)
+    {
+     my ($first,$last) = splice(@ranges,0,2);
+     if ($w->compare($first,'<=','insert') && $w->compare($last,'>=','insert'))
+      {
+       $w->ReplaceSelectionsWith($string);
+       return;
+      }
+    }
+  }
+ # paste it at the current cursor location
+ $w->insert('insert',$string);
+ $w->see('insert');
 }
+
 # UpDownLine --
 # Returns the index of the character one line above or below the
 # insertion cursor. There are two tricky things here. First,
@@ -619,10 +1150,9 @@ sub Insert
 # w - The text window in which the cursor is to move.
 # n - The number of lines to move: -1 for up one line,
 # +1 for down one line.
-sub UpDownLine
+sub UpDownLine_old
 {
- my $w = shift;
- my $n = shift;
+ my ($w,$n) = @_;
  my $i = $w->index('insert');
  my ($line,$char) = split(/\./,$i);
  if (!defined($Tk::prevPos) || $Tk::prevPos ne $i)
@@ -637,6 +1167,36 @@ sub UpDownLine
  $Tk::prevPos = $new;
  return $new;
 }
+
+sub UpDownLine
+{
+ my ($w,$n) = @_;
+ my $i = $w->index('insert');
+ my ($line,$char) = split(/\./,$i);
+ my $string = $w->get($line.'.0', $i);
+
+ $string = expand($string);
+ $char=length($string);
+ $line += $n;
+
+ $string = $w->get($line.'.0', $line.'.0 lineend');
+ $string = expand($string);
+ $string = substr($string, 0, $char);
+
+ $string = unexpand($string);
+ $char = length($string);
+
+ my $new = $w->index($line . '.' . $char);
+ if ($w->compare($new,'==','end') || $w->compare($new,'==','insert linestart'))
+  {
+   $new = $i
+  }
+ $Tk::prevPos = $new;
+ $Tk::char = $char;
+ return $new;
+}
+
+
 # PrevPara --
 # Returns the index of the beginning of the paragraph just before a given
 # position in the text (the beginning of a paragraph is the first non-blank
@@ -647,8 +1207,7 @@ sub UpDownLine
 # pos - Position at which to start search.
 sub PrevPara
 {
- my $w = shift;
- my $pos = shift;
+ my ($w,$pos) = @_;
  $pos = $w->index("$pos linestart");
  while (1)
   {
@@ -678,8 +1237,7 @@ sub PrevPara
 # start - Position at which to start search.
 sub NextPara
 {
- my $w = shift;
- my $start = shift;
+ my ($w,$start) = @_;
  my $pos = $w->index("$start linestart + 1 line");
  while ($w->get($pos) ne "\n")
   {
@@ -718,8 +1276,7 @@ sub NextPara
 # to scroll backwards.
 sub ScrollPages
 {
- my $w = shift;
- my $count = shift;
+ my ($w,$count) = @_;
  my @bbox = $w->bbox('insert');
  $w->yview('scroll',$count,'pages');
  if (!@bbox)
@@ -747,7 +1304,7 @@ sub Contents
 
 sub Destroy
 {
- my $w = shift;
+ my ($w) = @_;
  delete $w->{_Tags_};
 }
 
@@ -765,8 +1322,7 @@ sub Transpose
 
 sub Tag
 {
- my $w = shift;
- my $name = shift;
+ my ($w,$name) = @_;
  Carp::confess('No args') unless (ref $w and defined $name);
  $w->{_Tags_} = {} unless (exists $w->{_Tags_});
  unless (exists $w->{_Tags_}{$name})
@@ -780,8 +1336,7 @@ sub Tag
 
 sub Tags
 {
- my $w = shift;
- my $name;
+ my ($w,$name) = @_;
  my @result = ();
  foreach $name ($w->tagNames(@_))
   {
@@ -810,6 +1365,234 @@ sub PRINTF
  my $w = shift;
  $w->PRINT(sprintf(shift,@_));
 }
+
+sub WhatLineNumberPopUp
+{
+ my ($w)=@_;    
+ my ($line,$col) = split(/\./,$w->index('insert'));
+ $w->messageBox(-type => 'Ok', -title => "What Line Number",
+                -message => "The cursor is on line $line (column is $col)");
+}
+
+sub PostPopupMenu
+{
+ my ($w, $x, $y) = @_;
+ my $menu = $w->GetMenu;
+ $menu->Post($x,$y) if defined $menu;
+}
+
+sub GetMenu
+{
+ my ($w) = @_;
+ my $menu = $w->{'POPUP_MENU_REFERENCE'};
+ unless (defined $menu)
+  {
+   $w->{'POPUP_MENU_REFERENCE'} = $menu = $w->Menu (-tearoff => 0);                            
+   $menu->cascade(-label => '~File', -tearoff => 0, -menuitems => $w->FileMenuItems);          
+   $menu->cascade(-label => '~Edit', -tearoff => 0, -menuitems => $w->EditMenuItems );         
+   $menu->cascade(-label => '~Search', -tearoff => 0, -menuitems => $w->SearchMenuItems );         
+   $menu->cascade(-label => '~View', -tearoff => 0, -menuitems => $w->ViewMenuItems);
+  }
+ return $menu;
+}
+
+sub FileMenuItems
+{
+ my ($w) = @_;
+ return [ ["command"=>'E~xit', -command => sub{$w->toplevel->WmDeleteWindow}]];
+}
+
+sub SearchMenuItems
+{
+ my ($w) = @_;
+ return [
+    ["command"=>'~Find', -command => sub{$w->FindPopUp;}],
+    ["command"=>'Find ~Next', -command => sub{$w->FindSelectionNext;}],
+    ["command"=>'Find ~Previous', -command => sub{$w->FindSelectionPrevious;}],
+    ["command"=>'~Replace', -command => sub{$w->FindAndReplacePopUp;}]
+   ];
+}
+
+sub EditMenuItems
+{
+ my ($w) = @_;  
+ my @items = ();
+ foreach my $op ($w->clipEvents)
+  {
+   push(@items,["command" => "~$op", -command => [ $w, "clipboard$op"]]);
+  }
+ push(@items,
+    "-",
+    ["command"=>'Select All', -command   => [$w,'selectAll']],
+    ["command"=>'Unselect All', -command => [$w,'unselectAll']],
+  );         
+ return \@items;
+}
+
+sub ViewMenuItems
+{
+ my ($w) = @_;
+ my $v;
+ tie $v,'Tk::Configure',$w,'-wrap';
+ return  [
+    ["command"=>'Goto ~Line...', -command => sub{$w->GotoLineNumberPopUp;}],
+    ["command"=>'~What Line?',  -command => sub{$w->WhatLineNumberPopUp;}],
+    ["cascade"=> 'Wrap', -tearoff => 0, -menuitems => [
+      [radiobutton => 'Word', -variable => \$v, -value => 'word'],
+      [radiobutton => 'Character', -variable => \$v, -value => 'char'],
+      [radiobutton => 'None', -variable => \$v, -value => 'none'],
+    ]],
+  ];
+}
+
+########################################################################
+sub clipboardColumnCopy
+{
+ my ($w) = @_;
+ $w->Column_Copy_or_Cut(0);
+}
+
+sub clipboardColumnCut
+{
+ my ($w) = @_;
+ $w->Column_Copy_or_Cut(1);
+}
+
+########################################################################
+sub Column_Copy_or_Cut
+{
+ my ($w, $cut) = @_;
+ my @ranges = $w->tagRanges('sel');
+ my $range_total = @ranges;
+ # this only makes sense if there is one selected block
+ unless ($range_total==2) 
+  {
+  print " there is supposed to be one selection pair: \n";
+  $w->bell; 
+  return;
+  }
+
+ my $selection_start_index = shift(@ranges);
+ my $selection_end_index = shift(@ranges);
+
+ my ($start_line, $start_column) = split(/\./, $selection_start_index);
+ my ($end_line,   $end_column)   = split(/\./, $selection_end_index);
+
+ # correct indices for tabs
+ my $string;
+ $string = $w->get($start_line.'.0', $start_line.'.0 lineend');
+ $string = substr($string, 0, $start_column);
+ $string = expand($string);
+ my $tab_start_column = length($string);
+
+ $string = $w->get($end_line.'.0', $end_line.'.0 lineend');
+ $string = substr($string, 0, $end_column);
+ $string = expand($string);
+ my $tab_end_column = length($string);
+
+ my $length = $tab_end_column - $tab_start_column;
+
+ $selection_start_index = $start_line . '.' . $tab_start_column;
+ $selection_end_index   = $end_line   . '.' . $tab_end_column;
+
+ # clear the clipboard
+ $w->clipboardClear;
+ my ($clipstring, $startstring, $endstring);
+ for(my $line = $start_line; $line <= $end_line; $line++)
+  {
+  $string = $w->get($line.'.0', $line.'.0 lineend');
+  $string = expand($string);
+  $clipstring = substr($string, $tab_start_column, $length);
+  #$clipstring = unexpand($clipstring);
+  $w->clipboardAppend($clipstring."\n");
+
+  if ($cut)
+   {
+   $startstring = substr($string, 0, $tab_start_column);
+   $startstring = unexpand($startstring);
+   $start_column = length($startstring);
+
+   $endstring = substr($string, 0, $tab_end_column );
+   $endstring = unexpand($endstring);
+   $end_column = length($endstring);
+
+   $w->delete($line.'.'.$start_column,  $line.'.'.$end_column);   
+   }
+  }
+}
+
+########################################################################
+
+sub clipboardColumnPaste
+{
+ my ($w) = @_;
+ my @ranges = $w->tagRanges('sel');
+ my $range_total = @ranges;
+ if ($range_total) 
+  {
+  warn " there cannot be any selections during clipboardColumnPaste. \n";
+  $w->bell; 
+  return;
+  }
+
+ my $clipboard_text;
+ eval 
+  { 
+  $clipboard_text = $w->SelectionGet(-selection => "CLIPBOARD");
+  };
+
+ return unless (defined($clipboard_text));
+ return unless (length($clipboard_text));
+ my $string;
+
+ my $current_index = $w->index('insert');
+ my ($current_line, $current_column) = split(/\./,$current_index);
+ $string = $w->get($current_line.'.0', $current_line.'.'.$current_column);
+ $string = expand($string);
+ $current_column = length($string);
+
+ my @clipboard_lines = split(/\n/,$clipboard_text);
+ my $length;
+ my $end_index;
+ my ($delete_start_column, $delete_end_column, $insert_column_index);
+ foreach my $line (@clipboard_lines)
+  {
+  if ($w->OverstrikeMode)
+   {
+   #figure out start and end indexes to delete, compensating for tabs.
+   $string = $w->get($current_line.'.0', $current_line.'.0 lineend');
+   $string = expand($string);
+   $string = substr($string, 0, $current_column);
+   $string = unexpand($string);
+   $delete_start_column = length($string);
+
+   $string = $w->get($current_line.'.0', $current_line.'.0 lineend');
+   $string = expand($string);
+   $string = substr($string, 0, $current_column + length($line));
+   chomp($string);  # dont delete a "\n" on end of line.
+   $string = unexpand($string);
+   $delete_end_column = length($string);
+
+
+
+   $w->delete(
+              $current_line.'.'.$delete_start_column , 
+              $current_line.'.'.$delete_end_column 
+             );
+   }
+
+  $string = $w->get($current_line.'.0', $current_line.'.0 lineend');
+  $string = expand($string);
+  $string = substr($string, 0, $current_column);
+  $string = unexpand($string);
+  $insert_column_index = length($string);
+
+  $w->insert($current_line.'.'.$insert_column_index, unexpand($line));
+  $current_line++;
+  }
+ 
+}
+
 
 1;
 __END__

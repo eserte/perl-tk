@@ -13,9 +13,10 @@
  *
  * RCS: @(#) $Id: tclUnixNotfy.c,v 1.2 1998/09/14 18:40:17 stanton Exp $
  */
-
 #include "tkPort.h"
-#include "Lang.h"
+#include "Lang.h" 
+#ifdef TCL_EVENT_IMPLEMENT
+
 #include <signal.h> 
 
 /*
@@ -531,3 +532,5 @@ Tcl_WaitForEvent(timePtr)
     }
     return 0;
 }
+
+#endif 

@@ -24,6 +24,8 @@
 #include "pTk/tk_f.h"
 #include "pTk/tkInt_f.h"
 #include "pTk/Xlib_f.h"
+#include "pTk/tkEvent.h"
+#include "pTk/tkEvent.m"
 #ifdef WIN32
 #include "pTk/tkWin.h"
 #include "pTk/tkWinInt.h"
@@ -38,6 +40,8 @@
 #endif
 #include "tkGlue.h"
 #include "tkGlue_f.h"
+
+TkeventVtab *TkeventVptr;
 
 /* #define DEBUG_REFCNT /* */
 
@@ -103,13 +107,12 @@ extern void  LangPrint _((SV *sv));
 static void handle_idle _((ClientData clientData));
 static AV *CopyAv _((AV * dst, AV * src));
 static void LangCatArg _((SV * out, SV * sv, int refs));
-static int CallCallback _((SV * sv, int flags));
 static SV *NameFromCv _((CV * cv));
 static AV *FindAv _((Tcl_Interp *interp, char *who, int create, char *key));
 static HV *FindHv _((HV *interp, char *who, int create, char *key));
 static AV *ResultAv _((Tcl_Interp *interp, char *who, int create));
 static SV *Blessed _((char *package, SV * sv));
-static int PushCallbackArgs _((Tcl_Interp *interp, SV **svp,EventAndKeySym *obj));
+static int PushObjCallbackArgs _((Tcl_Interp *interp, SV **svp,EventAndKeySym *obj));
 static int Check_Eval _((Tcl_Interp *interp));
 static I32 Perl_Trace _((IV ix, SV * sv));
 static I32 LinkIntSet _((IV ix, SV * sv));
@@ -120,7 +123,6 @@ static I32 LinkCannotSet _((IV ix, SV * sv));
 static int handle_generic _((ClientData clientData, XEvent * eventPtr));
 static void HandleBgErrors _((ClientData clientData));
 static void SetTclResult _((Tcl_Interp *interp,int count));
-static void PushVarArgs _((va_list ap,int argc));
 static int InfoFromArgs _((Lang_CmdInfo *info,Tcl_CmdProc *proc,int mwcd, int items, SV **args));
 static I32 InsertArg _((SV **mark,I32 posn,SV *sv));
 extern Tk_Window TkToMainWindow _((Tk_Window tkwin));
@@ -1737,7 +1739,316 @@ Set_event(SV *event)
    save_item(sv);
    sv_setsv(sv,event);
   }
+}                   
+
+static int
+PushObjCallbackArgs(interp, svp ,obj)
+Tcl_Interp *interp;
+SV **svp;
+EventAndKeySym *obj;
+{
+ SV *sv = *svp;
+ dSP;
+ STRLEN na;
+ if (SvTAINTED(sv))
+  {
+   croak("Tainted callback %_",sv);
+  }
+ if (interp && !sv_isa(sv,"Tk::Callback") && !sv_isa(sv,"Tk::Ev"))
+  {
+   return EXPIRE((interp,"Not a Callback '%s'",SvPV(sv,na)));
+  }
+ else
+  {
+   if (SvTYPE(SvRV(sv)) != SVt_PVCV)
+    sv = SvRV(sv);
+  }
+ PUSHMARK(sp);
+ if (SvTYPE(sv) == SVt_PVAV)
+  {
+   AV *av = (AV *) sv;
+   int n = av_len(av) + 1;
+   SV **x = av_fetch(av, 0, 0);
+   if (x)
+    {
+     int i = 1;
+     sv = *x;
+     if (SvTAINTED(sv))
+      {
+       croak("Callback slot 0 tainted %_",sv);
+      }
+     if (!sv_isobject(sv) && obj && obj->window)
+      {
+       XPUSHs(sv_mortalcopy(obj->window));
+      }
+     for (i = 1; i < n; i++)
+      {
+       x = av_fetch(av, i, 0);
+       if (x)
+        {SV *arg = *x;
+         if (SvTAINTED(arg))
+          {
+           croak("Callback slot %d tainted %_",i,arg);
+          }
+         if (obj && sv_isa(arg,"Tk::Ev"))
+          {
+           SV *what = SvRV(arg);
+           if (SvPOK(what))
+            {STRLEN len;
+             char *s = SvPV(what,len);
+             if (len == 1)
+              {
+               arg = XEvent_Info(obj, s);
+              }
+             else
+              {char *x;
+               arg = sv_newmortal();
+               sv_setpv(arg,"");
+               while ((x = strchr(s,'%')))
+                {
+                 if (x > s)
+                  sv_catpvn(arg,s,(unsigned) (x-s));
+                 if (*++x)
+                  {SV *f = XEvent_Info(obj, x++);
+                   STRLEN len;
+                   char *p = SvPV(f,len);
+                   sv_catpvn(arg,p,len);
+                  }
+                 s = x;
+                }
+               sv_catpv(arg,s);
+              }
+            }
+           else
+            {
+             switch(SvTYPE(what))
+              {
+               case SVt_NULL:
+                arg = &PL_sv_undef;
+                break;
+               case SVt_PVAV:
+                {
+                 int code;
+                 PUTBACK;
+                 if ((code = PushObjCallbackArgs(interp,&arg,obj)) == TCL_OK)
+                  {
+                   int count = LangCallCallback(arg,G_ARRAY|G_EVAL);
+                   if ((code = Check_Eval(interp)) != TCL_OK)
+                    return code;
+                   SPAGAIN;
+                   arg = NULL;
+                   break;
+                  }
+                 else
+                  return code;
+                }
+               default:
+                LangDumpVec("Ev",1,&arg);
+                LangDumpVec("  ",1,&what);
+                warn("Unexpected type %ld %s",SvTYPE(what),SvPV(arg,na));
+                arg = sv_mortalcopy(arg);
+                break;
+              }
+            }
+           if (arg)
+            XPUSHs(arg);
+          }
+         else
+          XPUSHs(sv_mortalcopy(arg));
+        }
+       else
+        XPUSHs(&PL_sv_undef);
+      }
+    }
+   else
+    {
+     if (interp)
+      {
+       return EXPIRE((interp,"No 0th element of %s", SvPV(sv, na)));
+      }
+     else
+      sv = &PL_sv_undef;
+    }
+  }
+ else
+  {
+   if (obj && obj->window)
+    XPUSHs(sv_mortalcopy(obj->window));
+  }
+ *svp = sv;
+ PUTBACK;
+ return TCL_OK;
+} 
+         
+static int
+PushCallbackArgs(interp, svp)
+Tcl_Interp *interp;
+SV **svp;
+{
+ SV *sv = *svp;
+ dSP;
+ STRLEN na;
+ if (interp && !sv_isa(sv,"Tk::Callback") && !sv_isa(sv,"Tk::Ev"))
+  {
+   return EXPIRE((interp,"Not a Callback '%s'",SvPV(sv,na)));
+  }
+ LangPushCallbackArgs(svp);
+ if (interp && (sv = *svp) == &PL_sv_undef)
+  {
+   return EXPIRE((interp,"No 0th element of %s", SvPV(sv, na)));
+  }
+ return TCL_OK;
+} 
+
+static void SetTclResult(interp,count)
+Tcl_Interp *interp;
+int count;
+{
+ dSP;
+ int offset = count;
+ SV **p = sp - count;
+ Tcl_ResetResult(interp);
+ while (count-- > 0)
+  {
+   Tcl_AppendArg(interp, *++p);
+  }
+ sp -= offset;
+ PUTBACK;
+}  
+
+static void
+PushVarArgs(ap,argc)
+va_list ap;
+int argc;
+{
+ dSP;
+ int i;
+ char *fmt = va_arg(ap, char *);
+ char *s = fmt;
+ unsigned char ch = '\0';
+ int lng = 0;
+ for (i = 0; i < argc; i++)
+  {
+   s = strchr(s, '%');
+   if (s)
+    {
+     ch  = UCHAR(*++s);
+     lng = 0;
+     while (isdigit(ch) || ch == '.' || ch == '-' || ch == '+')
+      ch = *++s;
+     if (ch == 'l')
+      {
+       lng = 1;
+       ch = *++s;
+      }
+     switch (ch)
+      {
+       case 'u':
+       case 'i':
+       case 'd':
+        {IV val = (lng) ? va_arg(ap, long) : va_arg(ap, int);
+         XPUSHs(sv_2mortal(newSViv(val)));
+        }
+        break;
+       case 'g':
+       case 'e':
+       case 'f':
+        XPUSHs(sv_2mortal(newSVnv(va_arg(ap, double))));
+        break;
+       case 's':
+        {
+         char *x = va_arg(ap, char *);
+         if (x)
+          XPUSHs(sv_2mortal(newSVpv(x, 0)));
+         else
+          XPUSHs(&PL_sv_undef);
+        }
+        break;
+       case '_':
+        {
+         SV *x = va_arg(ap, SV *);
+         if (x)
+          XPUSHs(sv_mortalcopy(x));
+         else
+          XPUSHs(&PL_sv_undef);
+        }
+        break;
+       default:
+        croak("Unimplemented format char '%c' in '%s'", ch, fmt);
+        break;
+      }
+    }
+   else
+    croak("Not enough %%s (need %d) in '%s'", argc, fmt);
+  }
+ if (strchr(s,'%'))
+  {
+   croak("Too many %%s (need %d) in '%s'", argc, fmt);
+  }
+ PUTBACK;
 }
+                
+
+         
+#ifdef STANDARD_C
+int
+LangDoCallback
+_ANSI_ARGS_((Tcl_Interp * interp, LangCallback * sv, int result, int argc,...))
+#else
+int
+LangDoCallback(interp, sv, result, argc, va_alist)
+Tcl_Interp *interp;
+SV *sv;
+int result;
+int argc;
+va_dcl
+#endif
+{
+ STRLEN na;
+ static int flags[3] = { G_DISCARD, G_SCALAR, G_ARRAY };
+ int count = 0;
+ int code;    
+ SV *cb    = sv;
+ dTHR;        
+ ENTER;       
+ SAVETMPS;    
+ if (interp)  
+  {           
+   Tcl_ResetResult(interp);
+   Lang_ClearErrorInfo(interp);
+  }           
+ code = PushCallbackArgs(interp,&sv);
+ if (code != TCL_OK)
+  return code;
+ if (argc)    
+  {           
+   va_list ap;
+#ifdef I_STDARG
+   va_start(ap, argc);
+#else
+   va_start(ap);
+#endif
+   PushVarArgs(ap,argc);
+   va_end(ap);
+  }           
+ count = LangCallCallback(sv, flags[result] | G_EVAL);
+ if (interp && result)
+  SetTclResult(interp,count);
+ FREETMPS;    
+ LEAVE;       
+ count = Check_Eval(interp);
+ if (count == TCL_ERROR && interp)
+  {           
+   SV *tmp = newSVpv("", 0);
+   LangCatArg(tmp,cb,0);
+   Tcl_AddErrorInfo(interp,SvPV(tmp,na));
+   SvREFCNT_dec(tmp);
+  }           
+ return count;
+}
+
+
+
 
 static
 void HandleBgErrors(clientData)
@@ -1756,10 +2067,10 @@ ClientData clientData;
      SV *sv = av_shift(pend);
      if (sv && SvOK(sv))
       {
-       int result = PushCallbackArgs(interp,&sv,NULL);
+       int result = PushCallbackArgs(interp,&sv);
        if (result == TCL_OK)
         {
-         CallCallback(sv, G_DISCARD | G_EVAL);
+         LangCallCallback(sv, G_DISCARD | G_EVAL);
          result = Check_Eval(interp);
         }
        if (result == TCL_BREAK)
@@ -1997,6 +2308,7 @@ InitVtabs(void)
    install_vtab("TkwinVtab",TkwinVGet(),sizeof(TkwinVtab));
    install_vtab("TkwinintVtab",TkwinintVGet(),sizeof(TkwinintVtab));
 #endif
+   TkeventVptr  = (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));   \
    Boot_Tix();
   }
  initialized++;
@@ -3640,510 +3952,6 @@ Var sv;
 }
 
 
-
-/*
-   For perl a "callback" is an SV
-   - Simple case of ref to CV
-   - A ref to an AV, 1st element is "method" rest are
-   args to be passed on EACH call (before/after any Tk args ?)
-   Akin to fact that TCL/TK evals an arbitary string
-   (Perl code could pre-scan args and convert Malcolm's
-   -method/-slave into this form.)
-   - Special case of a "window" reference, treat 1st arg
-   as a method. (e.g. for TCL/TK's .menu post x y )
-
- */
-
-
-LangCallback *
-LangMakeCallback(sv)
-SV *sv;
-{
- if (sv)
-  {
-   dTHR;
-   AV *av;
-   int old_taint = PL_tainted;
-   if (SvTAINTED(sv))
-    croak("Attempt to make callback from tainted %_", sv);
-   PL_tainted = 0;
-   /* Case of a Tcl_Merge which returns an AV * */
-   if (SvTYPE(sv) == SVt_PVAV)
-    sv = newRV(sv);
-   else if (SvREADONLY(sv) || SvROK(sv) || SvPOK(sv))
-    sv = newSVsv(sv);  /* FIXME: Always do this ??? */
-   else
-    {
-     LangDumpVec("LangMakeCallback",1,&sv);
-     Increment(sv, "LangMakeCallback");
-    }
-   if (!SvROK(sv))
-    {
-     sv = MakeReference(sv);
-    }
-   else
-    {
-     if (SvTYPE(SvRV(sv)) == SVt_PVCV)
-      {
-       AV *av = newAV();
-       av_push(av,sv);
-       sv = MakeReference((SV *) av);
-      }
-    }
-   if (SvTYPE(SvRV(sv)) == SVt_PVAV)
-    {
-     if (av_len((AV *) SvRV(sv)) < 0)
-      {
-       croak("Empty list is not a valid callback");
-      }
-    }
-   if (!sv_isa(sv,"Tk::Callback"))
-    sv = Blessed("Tk::Callback",sv);
-   PL_tainted = old_taint;
-  }
- if (sv && SvTAINTED(sv))
-  croak("Making callback tainted %_", sv);
- return sv;
-}
-
-LangCallback *
-LangCopyCallback(sv)
-SV *sv;
-{
- if (sv)
-  Increment(sv, "LangCopyCallback");
- return sv;
-}
-
-void
-LangFreeCallback(sv)
-SV *sv;
-{
- Decrement(sv, "LangFreeCallback");
-}
-
-Arg
-LangCallbackArg(sv)
-SV *sv;
-{
- do_watch();
- if (sv)
-  Increment(sv, "LangCallbackArg");
- return sv;
-}
-
-static int
-PushCallbackArgs(interp, svp ,obj)
-Tcl_Interp *interp;
-SV **svp;
-EventAndKeySym *obj;
-{
- SV *sv = *svp;
- dSP;
- STRLEN na;
- if (SvTAINTED(sv))
-  {
-   croak("Tainted callback %_",sv);
-  }
- if (interp && !sv_isa(sv,"Tk::Callback") && !sv_isa(sv,"Tk::Ev"))
-  {
-   return EXPIRE((interp,"Not a Callback '%s'",SvPV(sv,na)));
-  }
- else
-  {
-   if (SvTYPE(SvRV(sv)) != SVt_PVCV)
-    sv = SvRV(sv);
-  }
- PUSHMARK(sp);
- if (SvTYPE(sv) == SVt_PVAV)
-  {
-   AV *av = (AV *) sv;
-   int n = av_len(av) + 1;
-   SV **x = av_fetch(av, 0, 0);
-   if (x)
-    {
-     int i = 1;
-     sv = *x;
-     if (SvTAINTED(sv))
-      {
-       croak("Callback slot 0 tainted %_",sv);
-      }
-     if (!sv_isobject(sv) && obj && obj->window)
-      {
-       XPUSHs(sv_mortalcopy(obj->window));
-      }
-     for (i = 1; i < n; i++)
-      {
-       x = av_fetch(av, i, 0);
-       if (x)
-        {SV *arg = *x;
-         if (SvTAINTED(arg))
-          {
-           croak("Callback slot %d tainted %_",i,arg);
-          }
-         if (obj && sv_isa(arg,"Tk::Ev"))
-          {
-           SV *what = SvRV(arg);
-           if (SvPOK(what))
-            {STRLEN len;
-             char *s = SvPV(what,len);
-             if (len == 1)
-              {
-               arg = XEvent_Info(obj, s);
-              }
-             else
-              {char *x;
-               arg = sv_newmortal();
-               sv_setpv(arg,"");
-               while ((x = strchr(s,'%')))
-                {
-                 if (x > s)
-                  sv_catpvn(arg,s,(unsigned) (x-s));
-                 if (*++x)
-                  {SV *f = XEvent_Info(obj, x++);
-                   STRLEN len;
-                   char *p = SvPV(f,len);
-                   sv_catpvn(arg,p,len);
-                  }
-                 s = x;
-                }
-               sv_catpv(arg,s);
-              }
-            }
-           else
-            {
-             switch(SvTYPE(what))
-              {
-               case SVt_NULL:
-                arg = &PL_sv_undef;
-                break;
-               case SVt_PVAV:
-                {
-                 int code;
-                 PUTBACK;
-                 if ((code = PushCallbackArgs(interp,&arg,obj)) == TCL_OK)
-                  {
-                   int count = CallCallback(arg,G_ARRAY|G_EVAL);
-                   if ((code = Check_Eval(interp)) != TCL_OK)
-                    return code;
-                   SPAGAIN;
-                   arg = NULL;
-                   break;
-                  }
-                 else
-                  return code;
-                }
-               default:
-                LangDumpVec("Ev",1,&arg);
-                LangDumpVec("  ",1,&what);
-                warn("Unexpected type %ld %s",SvTYPE(what),SvPV(arg,na));
-                arg = sv_mortalcopy(arg);
-                break;
-              }
-            }
-           if (arg)
-            XPUSHs(arg);
-          }
-         else
-          XPUSHs(sv_mortalcopy(arg));
-        }
-       else
-        XPUSHs(&PL_sv_undef);
-      }
-    }
-   else
-    {
-     if (interp)
-      {
-       return EXPIRE((interp,"No 0th element of %s", SvPV(sv, na)));
-      }
-     else
-      sv = &PL_sv_undef;
-    }
-  }
- else
-  {
-   if (obj && obj->window)
-    XPUSHs(sv_mortalcopy(obj->window));
-  }
- *svp = sv;
- PUTBACK;
- return TCL_OK;
-}
-
-static int
-CallCallback(sv, flags)
-SV *sv;
-int flags;
-{
- dSP;
- STRLEN na;
- I32 myframe = TOPMARK;
- I32 count;
- ENTER;
- if (SvTAINTED(sv))
-  {
-   croak("Call of tainted value %_",sv);
-  }
- if (SvGMAGICAL(sv))
-  mg_get(sv);
- if (flags & G_EVAL)
-  {
-   CV *cv  = perl_get_cv("Tk::__DIE__", FALSE);
-   if (cv)
-    {
-     HV *sig  = perl_get_hv("SIG",TRUE);
-     SV **old = hv_fetch(sig, "__DIE__", 7, TRUE);
-     save_svref(old);
-     hv_store(sig,"__DIE__",7,newRV((SV *) cv),0);
-    }
-  }
- if (SvTYPE(sv) == SVt_PVCV)
-  {
-   count = perl_call_sv(sv, flags);
-  }
- else if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVCV)
-  {
-   count = perl_call_sv(SvRV(sv), flags);
-  }
- else
-  {
-   SV **top = PL_stack_base + myframe + 1;
-   SV *obj = *top;
-   if (SvGMAGICAL(obj))
-    mg_get(obj);
-   if (SvPOK(sv) && SvROK(obj) && SvOBJECT(SvRV(obj)))
-    {
-     count = perl_call_method(SvPV(sv, na), flags);
-    }
-   else if (SvPOK(obj) && SvROK(sv) && SvOBJECT(SvRV(sv)))
-    {
-     *top = sv;
-     count = perl_call_method(SvPV(obj, na), flags);
-    }
-   else
-    {
-#if 0
-     int pok = SvPOK(sv);
-     int rok = SvROK(obj);
-     int ook = SvOBJECT(SvRV(obj));
-     PerlIO_printf(PerlIO_stderr(), "Dubious call '%s'(%d) obj=%s(%d/%d)\n",
-                   SvPV(sv, na), pok,
-                   SvPV(obj, na), rok, ook);
-     LangDumpVec("sv",1,&sv);
-     LangDumpVec("obj",1,&obj);
-     abort();
-#endif
-     count = perl_call_sv(sv, flags);
-    }
-  }
- LEAVE;
- return count;
-}
-
-XS(XS_Tk__Callback_Call)
-{
- dXSARGS;
- STRLEN na;
- int i;
- int count;
- SV *cb = ST(0);
- SV *err;
- int wantarray = GIMME;
- if (!items)
-  {
-   croak("No arguments");
-  }
- PushCallbackArgs(NULL,&ST(0),NULL);
- SPAGAIN;
- Lang_TaintCheck("Callback", items, &ST(0));
- for (i=1; i < items; i++)
-  {
-   if (SvTAINTED(ST(i)))
-    {
-     croak("Arg %d to callback %_ is tainted",i,ST(i));
-    }
-   XPUSHs(ST(i));
-  }
- PUTBACK;
-
- count = CallCallback(ST(0),GIMME|G_EVAL);
- SPAGAIN;
-
- err = ERRSV;
- if (SvTRUE(err))
-  {
-   croak("%s",SvPV(err,na));
-  }
-
- if (count)
-  {
-   for (i=1; i <= count; i++)
-    {
-     ST(i-1) = sp[i-count];
-    }
-  }
- else
-  {
-   if (!(wantarray & G_ARRAY))
-    {
-     ST(0) = &PL_sv_undef;
-     count++;
-    }
-  }
- PUTBACK;
- XSRETURN(count);
-}
-
-static void SetTclResult(interp,count)
-Tcl_Interp *interp;
-int count;
-{
- dSP;
- int offset = count;
- SV **p = sp - count;
- Tcl_ResetResult(interp);
- while (count-- > 0)
-  {
-   Tcl_AppendArg(interp, *++p);
-  }
- sp -= offset;
- PUTBACK;
-}
-
-
-
-static void
-PushVarArgs(ap,argc)
-va_list ap;
-int argc;
-{
- dSP;
- int i;
- char *fmt = va_arg(ap, char *);
- char *s = fmt;
- for (i = 0; i < argc; i++)
-  {
-   s = strchr(s, '%');
-   if (s)
-    {
-     unsigned char ch = UCHAR(*++s);
-     int lng = 0;
-     while (isdigit(ch) || ch == '.' || ch == '-' || ch == '+')
-      ch = *++s;
-     if (ch == 'l')
-      {
-       lng = 1;
-       ch = *++s;
-      }
-     switch (ch)
-      {
-       case 'u':
-       case 'i':
-       case 'd':
-        {IV val = (lng) ? va_arg(ap, long) : va_arg(ap, int);
-         XPUSHs(sv_2mortal(newSViv(val)));
-        }
-        break;
-       case 'g':
-       case 'e':
-       case 'f':
-        XPUSHs(sv_2mortal(newSVnv(va_arg(ap, double))));
-        break;
-       case 's':
-        {
-         char *x = va_arg(ap, char *);
-         if (x)
-          XPUSHs(sv_2mortal(newSVpv(x, 0)));
-         else
-          XPUSHs(&PL_sv_undef);
-        }
-        break;
-       case '_':
-        {
-         SV *x = va_arg(ap, SV *);
-         if (x)
-          XPUSHs(sv_mortalcopy(x));
-         else
-          XPUSHs(&PL_sv_undef);
-        }
-        break;
-       default:
-        Tcl_Panic("Unimplemented format char '%c' in '%s'", ch, fmt);
-        break;
-      }
-    }
-   else
-    Tcl_Panic("Not enough %%s (need %d) in '%s'", argc, fmt);
-  }
- if (strchr(s,'%'))
-  {
-   Tcl_Panic("Too many %%s (need %d) in '%s'", argc, fmt);
-  }
- PUTBACK;
-}
-
-#ifdef STANDARD_C
-int
-LangDoCallback
-_ANSI_ARGS_((Tcl_Interp * interp, LangCallback * sv, int result, int argc,...))
-#else
-int
-LangDoCallback(interp, sv, result, argc, va_alist)
-Tcl_Interp *interp;
-SV *sv;
-int result;
-int argc;
-va_dcl
-#endif
-{
- STRLEN na;
- if (!interp || InterpHv(interp,0))
-  {
-   static int flags[3] = { G_DISCARD, G_SCALAR, G_ARRAY };
-   int count = 0;
-   int code;
-   SV *cb    = sv;
-   dTHR;
-   ENTER;
-   SAVETMPS;
-   if (interp)
-    {
-     Tcl_ResetResult(interp);
-     Lang_ClearErrorInfo(interp);
-    }
-   code = PushCallbackArgs(interp,&sv,NULL);
-   if (code != TCL_OK)
-    return code;
-   if (argc)
-    {
-     va_list ap;
-#ifdef I_STDARG
-     va_start(ap, argc);
-#else
-     va_start(ap);
-#endif
-     PushVarArgs(ap,argc);
-     va_end(ap);
-    }
-   count = CallCallback(sv, flags[result] | G_EVAL);
-   if (interp && result)
-    SetTclResult(interp,count);
-   FREETMPS;
-   LEAVE;
-   count = Check_Eval(interp);
-   if (count == TCL_ERROR && interp)
-    {
-     SV *tmp = newSVpv("", 0);
-     LangCatArg(tmp,cb,0);
-     Tcl_AddErrorInfo(interp,SvPV(tmp,na));
-     SvREFCNT_dec(tmp);
-    }
-   return count;
-  }
- return TCL_ERROR;
-}
-
 int
 Lang_CallWithArgs(interp, sub, argc, argv)
 Tcl_Interp *interp;
@@ -4217,7 +4025,7 @@ va_dcl
  sv = sv_newmortal();
  sv_setpv(sv,method);
  PL_tainted = old_taint;
- count = CallCallback(sv, flags | G_EVAL);
+ count = LangCallCallback(sv, flags | G_EVAL);
  if (result)
   SetTclResult(interp,count);
  FREETMPS;
@@ -4232,9 +4040,9 @@ Tcl_EvalObj (Tcl_Interp *interp,Tcl_Obj *objPtr)
  dSP;
  ENTER;
  SAVETMPS;
- if (PushCallbackArgs(interp,&sv,NULL) == TCL_OK)
+ if (PushCallbackArgs(interp,&sv) == TCL_OK)
   {
-   int count = CallCallback(sv, G_SCALAR | G_EVAL);
+   int count = LangCallCallback(sv, G_SCALAR | G_EVAL);
    SetTclResult(interp,count);
   }
  FREETMPS;
@@ -4276,7 +4084,7 @@ int global;
    Lang_ClearErrorInfo(interp);
    sv = sv_2mortal(newSVpv("Receive",0));
    PL_tainted = old_taint;
-   count = CallCallback(sv, G_ARRAY | G_EVAL);
+   count = LangCallCallback(sv, G_ARRAY | G_EVAL);
    SetTclResult(interp,count);
    FREETMPS;
    LEAVE;
@@ -4369,7 +4177,7 @@ Lang_WinEvent(tkwin, message, wParam, lParam, resultPtr)
      Tcl_ResetResult(interp);
      Lang_ClearErrorInfo(interp);
      Set_widget(w);
-     result = PushCallbackArgs(interp,&sv,info);
+     result = PushObjCallbackArgs(interp,&sv,info);
      SPAGAIN;
      if (result == TCL_OK)
       {
@@ -4377,7 +4185,7 @@ Lang_WinEvent(tkwin, message, wParam, lParam, resultPtr)
        XPUSHs(sv_2mortal(newSViv(wParam)));
        XPUSHs(sv_2mortal(newSViv(lParam)));
        PUTBACK;
-       result = CallCallback(sv, G_DISCARD | G_EVAL);
+       result = LangCallCallback(sv, G_DISCARD | G_EVAL);
        if (result)
         {
          SPAGAIN;
@@ -4447,9 +4255,9 @@ XEvent *event;
       }
      else
       Decrement(e,"Unused Event");
-     result = PushCallbackArgs(interp,&sv,info);
+     result = PushObjCallbackArgs(interp,&sv,info);
      if (result == TCL_OK)
-      CallCallback(sv, G_DISCARD | G_EVAL);
+      LangCallCallback(sv, G_DISCARD | G_EVAL);
      Lang_MaybeError(interp,Check_Eval(interp),"ClientMessage handler");
      FREETMPS;
      LEAVE;
@@ -4510,7 +4318,7 @@ KeySym keySym;
    Lang_ClearErrorInfo(interp);
    Set_widget(w);
    Set_event(e);
-   result = PushCallbackArgs(interp,&sv,info);
+   result = PushObjCallbackArgs(interp,&sv,info);
    if (SvROK(w))
     {
      HV *hash = (HV *) SvRV(w);
@@ -4520,7 +4328,7 @@ KeySym keySym;
     Decrement(e,"Unused Event");
    if (result == TCL_OK)
     {
-     CallCallback(sv, G_DISCARD | G_EVAL);
+     LangCallCallback(sv, G_DISCARD | G_EVAL);
      FREETMPS;
      result = Check_Eval(interp);
     }
@@ -4572,7 +4380,7 @@ ClientData *filePtr;
  XPUSHs(sv_mortalcopy(string));
  XPUSHs(sv_2mortal(newSViv(doWrite)));
  PUTBACK;
- count = CallCallback(call,G_SCALAR|G_EVAL);
+ count = LangCallCallback(call,G_SCALAR|G_EVAL);
  SPAGAIN;
  result = Check_Eval(interp);
  if (result == TCL_OK && count)
@@ -4648,7 +4456,7 @@ XEvent *eventPtr;
     w = Blessed("Window", MakeReference(newSViv((IV) (eventPtr->xany.window))));
    else
     Set_widget(w);
-   result = PushCallbackArgs(interp, &sv,info);
+   result = PushObjCallbackArgs(interp, &sv,info);
    if (result == TCL_OK)
     {
      SPAGAIN;
@@ -4656,7 +4464,7 @@ XEvent *eventPtr;
      XPUSHs(sv_mortalcopy(e));
      XPUSHs(sv_mortalcopy(w));
      PUTBACK;
-     count = CallCallback(sv, G_EVAL);
+     count = LangCallCallback(sv, G_EVAL);
      result = Check_Eval(interp);
     }
    if (count)
@@ -4692,7 +4500,7 @@ Tk_Window tkwin;
  XPUSHs(sv_mortalcopy(master));
  XPUSHs(sv_mortalcopy(slave));
  PUTBACK;
- CallCallback(sv_2mortal(newSVpv("SlaveGeometryRequest",0)),G_DISCARD);
+ LangCallCallback(sv_2mortal(newSVpv("SlaveGeometryRequest",0)),G_DISCARD);
  FREETMPS;
  LEAVE;
 }
@@ -4713,7 +4521,7 @@ Tk_Window tkwin;
  XPUSHs(sv_mortalcopy(master));
  XPUSHs(sv_mortalcopy(slave));
  PUTBACK;
- CallCallback(sv_2mortal(newSVpv("LostSlave",0)),G_DISCARD);
+ LangCallCallback(sv_2mortal(newSVpv("LostSlave",0)),G_DISCARD);
  FREETMPS;
  LEAVE;
 }
@@ -4771,10 +4579,10 @@ ClientData clientData;
  Tcl_ResetResult(p->interp);
  Lang_ClearErrorInfo(p->interp);
  Set_widget(WidgetRef(p->interp,"."));
- code = PushCallbackArgs(p->interp,&sv,NULL);
+ code = PushCallbackArgs(p->interp,&sv);
  if (code == TCL_OK)
   {
-   CallCallback(sv, G_DISCARD | G_EVAL);
+   LangCallCallback(sv, G_DISCARD | G_EVAL);
    code = Check_Eval(p->interp);
   }
  Lang_MaybeError(p->interp,code,"Idle Callback");
@@ -5047,68 +4855,6 @@ int value;
  my_exit((unsigned) value);
 }
 
-int
-LangCmpCallback(a, b)
-SV *a;
-SV *b;
-{
- if (a == b)
-  return 1;
- if (!a || !b)
-  return 0;
- if (SvTYPE(a) != SvTYPE(b))
-  return 0;
- switch(SvTYPE(a))
-  {
-   case SVt_PVAV:
-    {
-     AV *aa = (AV *) a;
-     AV *ba = (AV *) a;
-     if (av_len(aa) != av_len(ba))
-      return 0;
-     else
-      {
-       IV i;
-       for (i=0; i <= av_len(aa); i++)
-        {
-         SV **ap = av_fetch(aa,i,0);
-         SV **bp = av_fetch(ba,i,0);
-         if (ap && !bp)
-          return 0;
-         if (bp && !ap)
-          return 0;
-         if (ap && bp && !LangCmpCallback(*ap,*bp))
-          return 0;
-        }
-       return 0;
-      }
-    }
-   default:
-   case SVt_PVGV:
-   case SVt_PVCV:
-    return 0;
-   case SVt_RV:
-   case SVt_IV:
-   case SVt_NV:
-   case SVt_PV:
-   case SVt_PVIV:
-   case SVt_PVNV:
-    if (SvROK(a) && SvROK(b))
-     {
-      return LangCmpCallback(SvRV(a),SvRV(b));
-     }
-    else
-     {STRLEN asz;
-      char *as = SvPV(a,asz);
-      STRLEN bsz;
-      char *bs = SvPV(b,bsz);
-      if (bsz != asz)
-       return 0;
-      return !memcmp(as,bs,asz);
-     }
-  }
-}
-
 void
 Lang_SetErrorCode(interp, code)
 Tcl_Interp *interp;
@@ -5206,8 +4952,21 @@ int index;
 char **startPtr;
 char **endPtr;
 {
+#if defined(PERL_VERSION) && (PERL_VERSION > 5 || (PERL_VERSION == 5 && PERL_SUBVERSION >= 57))
+ if (re->startp[index] != -1 && re->endp[index] != -1)
+  {
+   *startPtr = re->subbeg+re->startp[index];
+   *endPtr   = re->subbeg+re->endp[index];
+  }
+ else
+  {
+   *startPtr = NULL;
+   *endPtr   = NULL;
+  }
+#else
  *startPtr = re->startp[index];
  *endPtr   = re->endp[index];
+#endif
 }
 
 void
@@ -5357,8 +5116,6 @@ _((void))
 
  cv = newXS("Tk::MainWindow::Create", XS_Tk__MainWindow_Create, __FILE__);
 
- sprintf(buf, "%s::Callback::%s", BASEEXT, "Call");
- cv = newXS(buf, XS_Tk__Callback_Call, __FILE__);
 
  newXS("Tk::DoWhenIdle", XS_Tk_DoWhenIdle, __FILE__);
  newXS("Tk::CreateGenericHandler", XS_Tk_CreateGenericHandler, __FILE__);

@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/Table.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/Table.pm#14$
 
 use Tk::Pretty;
 use AutoLoader;
@@ -124,7 +124,7 @@ sub constrain
  $n = $fixed if ($n < $fixed);
  for ($i= 0; $i < $fixed; $i++)
   {
-   $total += $a->[$i];
+    (defined($a->[$i])) && ($total += $a->[$i]);
   }
  for ($i=$n; $total < $pixels && $i < @$a; $i++)
   {

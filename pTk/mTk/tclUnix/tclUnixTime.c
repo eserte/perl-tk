@@ -11,9 +11,10 @@
  *
  * RCS: @(#) $Id: tclUnixTime.c,v 1.2 1998/09/14 18:40:18 stanton Exp $
  */
-
 #include "tkPort.h"
 #include "Lang.h"
+#ifdef TCL_EVENT_IMPLEMENT
+
 
 #ifdef __EMX__
 #   include <sys/time.h>
@@ -258,3 +259,5 @@ TclpGetTime(timePtr)
     timePtr->usec = tv.tv_usec;
 #endif
 }
+
+#endif 

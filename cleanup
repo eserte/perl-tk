@@ -5,7 +5,7 @@ find(\&wanted,'.');
 sub wanted
 {              
  return unless -f $_;
- if ($_ eq 'core' || /(%|\.(bak|old|undone|orig))$/)
+ if ($_ eq 'core' || /(%|\.(bak|bck|old|undone|orig))$/)
   {
    warn "$File::Find::name\n";
    chmod(0666,$_) unless -w _;

@@ -3,7 +3,7 @@
  *
  *                                                                                                  This file manages properties for the Tk toolkit,
  *
- * Copyright (c) 1994-1998 Nick-Ing-Simmons
+ * Copyright (c) 1994-1999 Nick-Ing-Simmons
  *
  * All rights reserved.
  *
@@ -149,14 +149,15 @@ long unsigned int *count;
      for (i = 0; i < valc; i++)
       {
        int value = 0;
-       if (type == XA_ATOM)
+       result = Tcl_GetInt(interp, valv[i], &value);
+       if (result != TCL_OK)
         {
-         value = Tk_InternAtom(tkwin, LangString(valv[i]));
-        }
-       else
-        {
-         result = Tcl_GetInt(interp, valv[i], &value);
-         if (result != TCL_OK)
+         if (type == XA_ATOM)
+          {
+           value = Tk_InternAtom(tkwin, LangString(valv[i]));
+           result = TCL_OK;
+          }
+         else
           break;
         }
        if (8 * sizeof(unsigned char) == format)
@@ -196,6 +197,19 @@ long unsigned int *count;
  return result;
 }
 
+static int ErrorProc _ANSI_ARGS_((ClientData clientData, 
+				  XErrorEvent *errEventPtr));
+
+static int
+ErrorProc(clientData,errEventPtr)
+ClientData clientData; 
+XErrorEvent *errEventPtr;
+{                   
+ int *resultPtr = (int *) clientData;
+ *resultPtr = TCL_ERROR;
+ return 0;
+}
+
 int
 Tk_PropertyCmd(clientData, interp, argc, args)
 ClientData clientData;            /* Main window associated with
@@ -210,7 +224,9 @@ Arg *args;                        /* Argument strings. */
  Atom atom;
  Window xid;
  int length;
- char c;
+ char c;      
+ int result = TCL_OK;
+ Tk_ErrorHandler errorHandler = NULL;
 
  if (argc < 3)
   {
@@ -233,12 +249,13 @@ Arg *args;                        /* Argument strings. */
  if (!c)
   goto error;
 
+ errorHandler = Tk_CreateErrorHandler(Tk_Display(tkwin), -1, -1, -1, ErrorProc, (ClientData) &result);
+
  if (((c == 'g') && (strncmp(LangString(args[1]), "get", length) == 0)) ||
      ((c == 'e') && (strncmp(LangString(args[1]), "exists", length) == 0)) ||
      ((c == 'd') && (strncmp(LangString(args[1]), "delete", length) == 0))
   )
   {
-   int result = TCL_OK;
    if (argc == 5)
     {
      if (!strcmp(LangString(args[4]), "root"))
@@ -250,7 +267,8 @@ Arg *args;                        /* Argument strings. */
        if (*end)
         {
          Tcl_SprintfResult(interp, "Bad number '%s'", LangString(args[4]));
-         return TCL_ERROR;
+         result = TCL_ERROR;
+         goto done;
         }
       }
      argc--;
@@ -259,20 +277,25 @@ Arg *args;                        /* Argument strings. */
     {
      Tcl_SprintfResult(interp, "wrong # args: should be \"%.50s %s window Atom ?xid?\"",
                        LangString(args[0]), LangString(args[1]));
-     return TCL_ERROR;
+     result = TCL_ERROR;
+     goto done;
     }
    else
     {
      Atom atom = Tk_InternAtom(tkwin, LangString(args[3]));
      if (c == 'd')
-      {
+      {       
        XDeleteProperty(Tk_Display(tkwin), xid, atom);
+       if (result != TCL_OK)
+        goto xError;
       }
      else
       {
        long unsigned int size = 0;
        int format = PropertyExists(tkwin, xid, atom, &size);
-       if (c == 'e')
+       if (result != TCL_OK)
+        Tcl_SprintfResult(interp, "XError occured");
+       else if (c == 'e')
         {
          Tcl_IntResults(interp, 1, 0, format);
         }
@@ -283,7 +306,9 @@ Arg *args;                        /* Argument strings. */
          unsigned long count = 0;
          XGetWindowProperty(Tk_Display(tkwin), xid, atom, 0L, size, False,
                          AnyPropertyType, &type, &format, &count, &size, &prop);
-         if (format == 0 || type == None)
+         if (result != TCL_OK)                        
+          Tcl_SprintfResult(interp, "XError occured");
+         else if (format == 0 || type == None)
           {
            Tcl_SprintfResult(interp, "Property %s does not exist on 0x%lx",
                              LangString(args[3]), (unsigned long) xid);
@@ -299,7 +324,7 @@ Arg *args;                        /* Argument strings. */
         }
       }
     }
-   return result;
+   goto done;
   }
  else if ((c == 'l') && (strncmp(LangString(args[1]), "list", length) == 0))
   {
@@ -314,7 +339,8 @@ Arg *args;                        /* Argument strings. */
        if (*end)
         {
          Tcl_SprintfResult(interp, "Bad number '%s'", LangString(args[3]));
-         return TCL_ERROR;
+         result = TCL_ERROR;
+         goto done;
         }
       }
      argc--;
@@ -334,7 +360,6 @@ Arg *args;                        /* Argument strings. */
       XFree((char *) list);
 #endif
     }
-   return TCL_OK;
   }
  else if ((c == 's') && (strncmp(LangString(args[1]), "set", length) == 0))
   {
@@ -350,7 +375,8 @@ Arg *args;                        /* Argument strings. */
        if (*end)
         {
          Tcl_SprintfResult(interp, "Bad number '%s'", LangString(args[7]));
-         return TCL_ERROR;
+         result = TCL_ERROR;
+         goto done;
         }
       }
      argc--;
@@ -359,7 +385,8 @@ Arg *args;                        /* Argument strings. */
     {
      Tcl_SprintfResult(interp, "wrong # args: should be \"%.50s %s window Atom type format value ?xid?\"",
                        LangString(args[0]), LangString(args[1]));
-     return TCL_ERROR;
+     result = TCL_ERROR;
+     goto done;
     }
    else
     {
@@ -381,13 +408,19 @@ Arg *args;                        /* Argument strings. */
         }
       }
     }
-   return result;
   }
  else
   {
    Tcl_SprintfResult(interp,
               "bad option \"%.50s\":  must be get, exists, list, delete or set",
                      LangString(args[1]));
-   return TCL_ERROR;
+   result = TCL_ERROR;
   }
+ done:
+  if (errorHandler)
+   Tk_DeleteErrorHandler(errorHandler);
+  return result;
+ xError:
+  Tcl_SprintfResult(interp, "XError occured");
+  goto done;
 }

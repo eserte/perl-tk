@@ -1296,14 +1296,13 @@ QueueGrabWindowChange(dispPtr, grabWinPtr)
     NewGrabWinEvent *grabEvPtr;
 
     grabEvPtr = (NewGrabWinEvent *) ckalloc(sizeof(NewGrabWinEvent));
-    grabEvPtr->header.proc = GrabWinEventProc;
     grabEvPtr->dispPtr = dispPtr;
     if (grabWinPtr == NULL) {
 	grabEvPtr->grabWindow = None;
     } else {
 	grabEvPtr->grabWindow = grabWinPtr->window;
     }
-    Tcl_QueueEvent(&grabEvPtr->header, TCL_QUEUE_MARK);
+    Tcl_QueueProcEvent(GrabWinEventProc, &grabEvPtr->header, TCL_QUEUE_MARK);
     dispPtr->eventualGrabWinPtr = grabWinPtr;
 }
 

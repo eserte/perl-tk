@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.038'; # $Id: //depot/Tk8/Tk/MainWindow.pm#38$
+$VERSION = '3.039'; # $Id: //depot/Tk8/Tk/MainWindow.pm#39$
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -83,6 +83,7 @@ sub InitBindings
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F16> <Control-Key-w>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F18> <Control-Key-y>]);
    $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-Undo> <Key-F14>]);
+   $mw->eventAdd(qw[<<Redo>> <Control-Key-y> <Shift-Key-Undo> <Key-F12> <Shift-Key-F14>]);
   }
  else
   {
@@ -90,6 +91,7 @@ sub InitBindings
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Control-Key-Insert>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Shift-Key-Insert>]);
    $mw->eventAdd(qw[<<Undo>> <Control-Key-z>]);
+   $mw->eventAdd(qw[<<Redo>> <Control-Key-y>]);
   }
 
  # FIXME - Should these move to Menubutton ?

@@ -228,7 +228,13 @@ Tk_DeleteErrorHandler(handler)
  *	invokes any handlers that want to deal with the error.
  *
  *--------------------------------------------------------------
- */
+ */             
+
+static void
+UnhandledXError()
+{
+
+}
 
 static int
 ErrorProc(display, errEventPtr)
@@ -303,5 +309,6 @@ ErrorProc(display, errEventPtr)
      */
 
     couldntHandle:
+    UnhandledXError();
     return (*defaultHandler)(display, errEventPtr);
 }

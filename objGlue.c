@@ -429,10 +429,8 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
 
 Tcl_Obj *
 Tcl_ConcatObj (int objc, Tcl_Obj *CONST objv[])
-{
- LangDebug(__FUNCTION__ " Not Implemented");
- abort();
- return NULL;
+{                                              
+ return Tcl_NewListObj (objc, objv);
 }
 
 

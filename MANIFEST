@@ -5,6 +5,8 @@ COPYING				CopyRight and License info.
 Canvas/Canvas.pm
 Canvas/Canvas.xs
 Canvas/Makefile.PL
+Canvas/canvtxt
+Canvas/demo.txt
 Change.log
 Changes				What has changed
 Contrib/README			Notes on Contrib directory
@@ -24,14 +26,21 @@ Contrib/fd_demo			Demo of FileDialog
 Contrib/testlistbox
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
+DragDrop/DragDrop/KDEDrop.pm
+DragDrop/DragDrop/KDESite.pm
+DragDrop/DragDrop/LocalDrop.pm
 DragDrop/DragDrop/Rect.pm
 DragDrop/DragDrop/SunConst.pm
 DragDrop/DragDrop/SunDrop.pm
 DragDrop/DragDrop/SunSite.pm
+DragDrop/DragDrop/XDNDDrop.pm
+DragDrop/DragDrop/XDNDSite.pm
 DragDrop/DropSite.pm
+DragDrop/DropSite.pod
 DragDrop/Makefile.PL
 DragDrop/Win32Site/Makefile.PL
 DragDrop/Win32Site/NotUnix.exc
+DragDrop/Win32Site/Win32Drop.pm
 DragDrop/Win32Site/Win32Site.pm
 DragDrop/Win32Site/Win32Site.xs
 DragDrop/drag_test
@@ -43,6 +52,21 @@ DragDrop/site_test
 Entry/Entry.pm
 Entry/Entry.xs
 Entry/Makefile.PL
+Event/EvenTk.pod
+Event/Event.pm
+Event/Event.xs
+Event/Makefile.PL
+Event/findEvent
+Event/pTkCallback.c
+Event/tclAsync.c
+Event/tclEvent.c
+Event/tclNotify.c
+Event/tclPlatEvent.c
+Event/tclPlatNotfy.c
+Event/tclPlatTime.c
+Event/tclTimer.c
+Event/tkWin32Dll.c
+Event/typemap
 Extensions/ImageBack/ImageBack.pm
 Extensions/ImageBack/ImageBack.xs
 Extensions/ImageBack/MANIFEST
@@ -176,13 +200,16 @@ Tk/Menubar.pm
 Tk/Message.pm
 Tk/MsgBox.pm
 Tk/Optionmenu.pm
+Tk/Pane.pm
 Tk/Pretty.pm
+Tk/ProgressBar.pm
 Tk/README.Adjust
 Tk/ROText.pm
 Tk/Radiobutton.pm
 Tk/Stats.pm
 Tk/Submethods.pm
 Tk/Table.pm
+Tk/TextEdit.pm
 Tk/TextUndo.pm
 Tk/Tiler.pm
 Tk/Tk.xbm
@@ -392,6 +419,7 @@ demos/demos/widtrib/lib/npuz/Xcamel.npuz
 demos/demos/widtrib/notebook.pl
 demos/demos/widtrib/npuz.pl
 demos/demos/widtrib/plop.pl
+demos/demos/widtrib/progress.pl
 demos/dialog
 demos/hello
 demos/ixset
@@ -412,6 +440,7 @@ embed
 error_prop
 evtGlue.c
 ewidth_demo
+fedemo
 findbase
 fix_4_os2.pl
 floppy
@@ -420,6 +449,7 @@ font_test
 fonts
 forward_test
 gdb.plx
+gedi
 generate
 geo_mgr
 geom
@@ -433,6 +463,7 @@ hackMM
 hlfm
 hlist_bg
 hlist_demo
+iconimg
 iconwin
 image_test
 inline_bitmap
@@ -485,6 +516,7 @@ pTk/bitmaps/hourglass.bmp
 pTk/bitmaps/info.bmp
 pTk/bitmaps/questhead.bmp
 pTk/bitmaps/question.bmp
+pTk/bitmaps/tk.bmp
 pTk/bitmaps/warning.bmp
 pTk/chext
 pTk/compat/limits.h
@@ -1096,6 +1128,11 @@ pTk/tk.exc
 pTk/tk.m
 pTk/tk.t
 pTk/tkCanvases.h
+pTk/tkEvent.h
+pTk/tkEvent.m
+pTk/tkEvent.t
+pTk/tkEvent_f.c
+pTk/tkEvent_f.h
 pTk/tkImgPhoto.exc
 pTk/tkImgPhoto.h
 pTk/tkImgPhoto.m
@@ -1114,6 +1151,7 @@ pTk/tkOption_f.c
 pTk/tkOption_f.h
 pTk/tkProperty.c
 pTk/tkVMacro.h
+pTk/tkWin.exc
 pTk/tkWin.m
 pTk/tkWin.t
 pTk/tkWinInt.exc
@@ -1318,6 +1356,7 @@ pod/tixWm.pod
 pod/tkpod2ipf
 pod/tkvars.pod
 pod/widgets.pod
+point_test
 popup
 popup_menu
 prop_demo
@@ -1337,6 +1376,7 @@ symbols
 t/Require.t
 t/Trace.t
 t/X.t
+t/browseentry.t
 t/create.t
 t/fileselect.t
 t/font.t
