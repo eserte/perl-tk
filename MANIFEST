@@ -403,6 +403,7 @@ demos/demos/images/pattern
 demos/demos/images/teapot.ppm
 demos/demos/widget_lib/Ball.pm
 demos/demos/widget_lib/Plot.pm
+demos/demos/widget_lib/WidgetDemo.pm
 demos/demos/widget_lib/arrows.pl
 demos/demos/widget_lib/bind.pl
 demos/demos/widget_lib/bitmaps.pl
@@ -464,6 +465,10 @@ demos/demos/widget_lib/style.pl
 demos/demos/widget_lib/texts.pl
 demos/demos/widget_lib/twind.pl
 demos/demos/widget_lib/vscale.pl
+demos/demos/widtrib/TEMPLATE.pl
+demos/demos/widtrib/lib/npuz/Xcamel.npuz
+demos/demos/widtrib/npuz.pl
+demos/demos/widtrib/plop.pl
 demos/dialog
 demos/hello
 demos/ixset
@@ -472,6 +477,7 @@ demos/rolodex
 demos/timer
 demos/tom
 demos/widget
+demos/widget.201
 demos/widget_old
 derived_test			Test of Tk::Derived 
 destroy_test			Test of <Destroy> binding

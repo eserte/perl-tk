@@ -2,7 +2,7 @@ use Cwd;
 no  lib '.';
 BEGIN 
  {
-  $VERSION = '400.201';
+  $VERSION = '400.202';
   require "./myConfig";
   use lib ($Tk::MMutil::dir=getcwd);
  }

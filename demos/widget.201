@@ -7,20 +7,15 @@
 # separate ".pl" files in the "widget_lib" directory, which are autoloaded 
 # by this script as needed.
 #
-# widget looks in the directory specified on the command line to load user
-# contributed demonstrations.  If no directory name is specified when widget is
-# invoked and the environment variable WIDTRIB is defined then demonstrations
-# are loaded from the WIDTRIB directory. If WIDTRIB is undefined then widget
-# defaults to the released user contributed directory.
-#
 # Stephen O. Lidie, LUCC, 96/03/11.  lusol@Lehigh.EDU
-# Stephen O. Lidie, LUCC, 97/01/01.  lusol@Lehigh.EDU
 
 require 5.002;
 
 use English;
 use Tk;
-use Tk::widgets qw(Dialog ErrorDialog Menubutton Text Scrollbar);
+use Tk::widgets qw(Menubutton ErrorDialog Text Scrollbar);
+#use Tk::Dialog;
+#use Tk::ErrorDialog;
 use lib Tk->findINC('demos/widget_lib');
 use strict;
 
@@ -36,9 +31,6 @@ my $MW = MainWindow->new;
 $MW->title('Widget Demonstration');
 my $FONT = '-*-Helvetica-Medium-R-Normal--*-140-*-*-*-*-*-*';
 my $WIDGET_LIB = Tk->findINC('demos/widget_lib');
-my $WIDTRIB = Tk->findINC('demos/widtrib');
-$WIDTRIB = $ENV{WIDTRIB} if defined $ENV{WIDTRIB}; 
-$WIDTRIB = $ARGV[0] if defined $ARGV[0]; 
 
 # The code below creates the main window, consisting of a menu bar
 # and a text widget that explains how to use the program, plus lists
@@ -215,19 +207,6 @@ $t->insert('end', "2. A dialog box with a local grab.\n",
 $t->insert('end', "3. A dialog box with a global grab.\n",
     [qw(demo demo-dialog2)]);
 
-$t->insert('end', "\n", '', "User Contributed Demonstrations\n", 'title');
-opendir C, $WIDTRIB;
-my(@dirent) = grep /^.+\.pl$/, sort(readdir C);
-closedir C;
-my $i;
-while ($ARG = shift @dirent) {
-    open(C, "$WIDTRIB/$ARG") || die "Cannot open $ARG: $!";
-    my($name) = /^(.*)\.pl$/;
-    $ARG = <C>;
-    my($title) = /^#\s*(.*)$/;
-    close C;
-    $t->insert('end', ++$i . ". $title\n", ['demo', "demo-$name"]);
-}
 $t->configure(-state => 'disabled');
 
 # Create all the dialogs required by this demonstration.
@@ -248,20 +227,18 @@ sub AUTOLOAD {
     # This routine handles the loading of most demo methods.
 
     my($demo) = @ARG;
-
-    $t->Busy;
+    $t->configure(-cursor => 'watch');
+    $t->update;
     {
 	local $INPUT_RECORD_SEPARATOR = undef;
-	my $file;
-	$file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
-	$file = "$WIDGET_LIB/${demo}.pl" if -f "$WIDGET_LIB/${demo}.pl";
-	open(DEMO, $file) or
-	    die("cannot open demo file $file!");
+	open(DEMO, "<$WIDGET_LIB/${demo}.pl") or
+	    die("cannot open demo file $WIDGET_LIB/${demo}.pl!");
 	eval <DEMO>;
 	die $EVAL_ERROR if $EVAL_ERROR;
 	close DEMO;
     }
-    $t->Unbusy;
+    $t->configure(-cursor => 'xterm');
+    $t->update;
     goto &$::AUTOLOAD;
 
 } # end AUTOLOAD
@@ -366,12 +343,10 @@ sub see_code {
 	$CODE->deiconify;
 	$CODE->raise;
     }
+    $CODE->title("Demo code: $WIDGET_LIB/$file");
     $CODE->iconname($file);
-    $file = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
-    $file = "$WIDGET_LIB/${demo}.pl" if -f "$WIDGET_LIB/${demo}.pl";
-    $CODE->title("Demo code: $file");
     $CODE_TEXT->delete('1.0', 'end');
-    open(CODE, "<$file") or
+    open(CODE, "<$WIDGET_LIB/$file") or
 	die("cannot open widget demo file $WIDGET_LIB/$file!");
     {
 	local $INPUT_RECORD_SEPARATOR = undef;

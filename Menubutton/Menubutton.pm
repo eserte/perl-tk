@@ -31,17 +31,15 @@ sub InitObject
 {
  my ($mb,$args) = @_;
  my $menuitems = delete $args->{-menuitems};
+ my $tearoff   = delete $args->{-tearoff};
  $mb->SUPER::InitObject($args);
- if (defined $menuitems)
+ if ((defined($menuitems) || defined($tearoff)) && %$args)
   {
-   # If any other args do configure now
-   if (%$args)
-    {
-     $mb->configure(%$args);
-     %$args = ();
-    }
-   $mb->AddItems(@$menuitems) 
+   $mb->configure(%$args);
+   %$args = ();
   }
+ $mb->menu(-tearoff => $tearoff) if (defined $tearoff);
+ $mb->AddItems(@$menuitems) if (defined $menuitems)
 }
 
 1;

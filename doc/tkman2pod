@@ -4,7 +4,7 @@
 $POD::Verbose = 0;
 $POD::enables = 1;
 
-
+use blib;
 use strict qw(subs vars);
 use Carp; 
 
@@ -21,7 +21,8 @@ use Perlize;
  sub new
  {
   my $package = shift;
-  my $file = shift;
+  my $shortfile = shift;
+  my $file = shift || $shortfile;
   my $obj;
   print STDERR "$file\n";
   if (exists $POD::file{$file})
@@ -31,7 +32,7 @@ use Perlize;
   else
    {
     $obj = bless { 'FH'   => \*{$file}, 
-                      'FNAME' => $file,
+                      'FNAME' => $shortfile, # for links
                       'LIST' => [],  
                       'PARA' => 1,
                       'FILL' => 1,
@@ -137,8 +138,8 @@ use Perlize;
   my $text = $key;
   my $doc;
   my $href;
-  $sec =~ s/^[\s'`]+//;
-  $sec =~ s/[\s'`]+$//;
+  $sec =~ s/^[\s\'\`]+//;
+  $sec =~ s/[\s\'\`]+$//;
   if ($key eq "")
    {
     $text = $sec;
@@ -184,7 +185,7 @@ use Perlize;
    }
   if (defined $href)
    {
-    return "<A $href> $text</A>";
+    return $href;
    }
   else
    {
@@ -506,9 +507,11 @@ sub fontstuff
  if (/\\f/)
   {        
    s/\\fC(.*?)(?=\\f)/C<$1>/g;
+   s/\\f\(CW(.*?)(?=\\f)/C<$1>/g;
    s/\\f([IB])(.*?)(?=\\f)/$1<$2>/g;
    s/\\f([IB])(.*?)$/$1<$2>/;
    s/\\fC(.*?)$/C<$1>/;
+   s/\\f\(CW(.*?)$/C<$1>/;
    s/\\f[RP]//g;
   }        
  s/\\-/-/g;
@@ -518,19 +521,44 @@ sub fontstuff
  return $_;
 }
 
+my %categories = (
+		  "Partially Converted Methods"	       => 'unfinished',
+		  "Perl/Tk Constructs"		       => 'constructs',
+		  "Tix Extensions"		       => 'tix',
+		  "Tk Generic Methods"		       => 'generic',
+		  "Tk Geometry Management"	       => 'geometry',
+		  "Tk Image Classes"		       => 'image_classes',
+		  "Tk Library Procedures"	       => 'library',
+		  "Tk Selection Handling"	       => 'selection',
+		  "Tk User Interaction"		       => 'interaction',
+		 );
+my $subdirs;
+
 sub process
 {
   my ($file) = @_;
   my $podname = $file;
+  my $longpod = $podname;
   $podname =~ s/\.[^.]*$/.pod/;
   $podname =~ s#^.*/##;
   open(MAN,"<$file") || die "Cannot open $file:$!";
-  my $pod = POD->new($podname);
+  if ($subdirs) {
+    my $category = 'misc';
+    while (<MAN>) {
+      $category = $1, last if /^\.TH.*"(.*)"\s*$/;
+    }
+    close MAN or die "Cannot close $file: $!";
+    open(MAN,"<$file") || die "Cannot open $file:$!";
+    $category = $categories{$category} if exists $categories{$category};
+    $longpod = "$category/$podname";
+    mkdir $category, 0777 unless -d $category;
+  }
+  my $pod = POD->new($podname, $longpod);
   while (<MAN>)
    {
-    if (/^'/)
+    if (/^\'/)
      {
-      $pod->comment($1) if (m#^'[\\/]"(.*$)#);
+      $pod->comment($1) if m#^\'[\\/]\"(.*$)#;
       next;
      }
     # Do the font changes first
@@ -554,7 +582,7 @@ sub process
      {
       s/See\s+the\s+(.*?)\s+manual\s+entry/$pod->Xref("See the ",$1,""," manual entry")/ieg;
       s#(See\s+)(<B>.*?</B>)(\s+for)#$pod->Xref($1,$2,"",$3)#ieg;
-      s/(\s+)([`'A-Z ]+)\s+(above|below)/$pod->Xref($1,"",$2," ".$3)/eg;
+      s/(\s+)([\`\'A-Z ]+)\s+(above|below)/$pod->Xref($1,"",$2," ".$3)/eg;
       if (/-\s*Create.*\s(\w+)\s*widgets\s*$/)
        {
         $POD::Widgets{$1} = $pod;
@@ -582,6 +610,7 @@ sub process
 @ARGV = <man/*.[3n]> unless (@ARGV);
 
 die "No files !" unless (@ARGV);
+$subdirs = 1, shift @ARGV if $ARGV[0] eq '-s';
 
 my $file;
 foreach $file (@ARGV)

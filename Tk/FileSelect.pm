@@ -372,7 +372,7 @@ sub directory
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
-     $cw->DoWhenIdle(['reread',$cw,$val]) 
+     $cw->afterIdle(['reread',$cw,$val]) 
     }
   }
  return $$var;
@@ -381,66 +381,69 @@ sub directory
 sub reread
 { 
  my ($w,$dir) = @_;
- my $pwd    = Cwd::getcwd();
- if (chdir($dir))
+ my $pwd = Cwd::getcwd();
+ unless ($^T)
   {
-   my $new = Cwd::getcwd();
-   if ($new)
+   if (chdir($dir))
     {
-     $dir = $new;
+     my $new = Cwd::getcwd();
+     if ($new)
+      {
+       $dir = $new;
+      }
+     else
+      {
+       carp "Cannot getcwd in '$dir'" unless ($new);
+      }
+     chdir($pwd) || carp "Cannot chdir($pwd) : $!"; 
     }
    else
     {
-     carp "Cannot getcwd in '$dir'" unless ($new);
-    }
-   chdir($pwd) || carp "Cannot chdir($pwd) : $!"; 
-   if (opendir(DIR, $dir))                            
-    {                                                 
-     $w->Subwidget('dir_list')->delete(0, "end");       
-     $w->Subwidget('file_list')->delete(0, "end");      
-     my $accept = $w->cget('-accept');                  
-     my $f;                                           
-     foreach $f (sort(readdir(DIR)))                  
-      {                                               
-       next if ($f eq '.');                           
-       my $path = "$dir/$f";                          
-       if (-d $path)                                  
-        {                                             
-         $w->Subwidget('dir_list')->insert('end', $f);
-        }                                             
-       else                                           
-        {                                             
-         if (&{$w->{match}}($f))                       
-          {                                            
-           if (!defined($accept) || $accept->Call($path))
-            {                                          
-             $w->Subwidget('file_list')->insert('end', $f) 
-            }                                          
-          }                                            
-        }                                             
-      }                                               
-     closedir(DIR);                                   
-     $w->{Configure}{'-directory'} = $dir;                                        
      $w->Unbusy;                                        
      $w->{'reread'} = 0;                                
      $w->{Directory} = $dir . "/" . $w->cget('-filter');
-    }                                                 
-   else
-    {
-     my $panic = $w->{Configure}{'-directory'};
-     $w->Unbusy;                                        
-     $w->{'reread'} = 0;                                
-     chdir($panic) || $w->BackTrace("Cannot chdir($panic) : $!");
-     $w->{Directory} = $dir . "/" . $w->cget('-filter');
-     $w->BackTrace("Cannot opendir('$dir') :$!");
+     $w->BackTrace("Cannot chdir($dir) :$!");
     }
   }
- else
-  {
+ if (opendir(DIR, $dir))                            
+  {                                                 
+   $w->Subwidget('dir_list')->delete(0, "end");       
+   $w->Subwidget('file_list')->delete(0, "end");      
+   my $accept = $w->cget('-accept');                  
+   my $f;                                           
+   foreach $f (sort(readdir(DIR)))                  
+    {                                               
+     next if ($f eq '.');                           
+     my $path = "$dir/$f";                          
+     if (-d $path)                                  
+      {                                             
+       $w->Subwidget('dir_list')->insert('end', $f);
+      }                                             
+     else                                           
+      {                                             
+       if (&{$w->{match}}($f))                       
+        {                                            
+         if (!defined($accept) || $accept->Call($path))
+          {                                          
+           $w->Subwidget('file_list')->insert('end', $f) 
+          }                                          
+        }                                            
+      }                                             
+    }                                               
+   closedir(DIR);                                   
+   $w->{Configure}{'-directory'} = $dir;                                        
    $w->Unbusy;                                        
    $w->{'reread'} = 0;                                
    $w->{Directory} = $dir . "/" . $w->cget('-filter');
-   $w->BackTrace("Cannot chdir($dir) :$!");
+  }                                                 
+ else
+  {
+   my $panic = $w->{Configure}{'-directory'};
+   $w->Unbusy;                                        
+   $w->{'reread'} = 0;                                
+   chdir($panic) || $w->BackTrace("Cannot chdir($panic) : $!");
+   $w->{Directory} = $dir . "/" . $w->cget('-filter');
+   $w->BackTrace("Cannot opendir('$dir') :$!");
   }
 } 
 

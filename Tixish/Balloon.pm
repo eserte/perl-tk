@@ -96,7 +96,7 @@ sub Motion {
 }
 
 sub ButtonDown {
-    my ($w, $y, $b) = @_;
+    my ($w, $x, $y, $b) = @_;
     my $bal;
 
     foreach $bal (@balloons) {
@@ -121,7 +121,8 @@ sub _Motion {
 	       (defined $w->grabCurrent()));	# somebody else has screen
 
     my $cw = $w->Containing($x, $y);
-    return if ($cw eq $w);	# cursor moved over the balloon -- ignore
+    # if cursor hash moved over the balloon -- ignore
+    return if ((defined $cw) && $cw->toplevel eq $w);
 
     # find the client window that matches
     while (defined $cw) {
@@ -137,7 +138,7 @@ sub _Motion {
 	$w->{"client"} = undef;
 	return;
     }
-    if ($w->{"client"} ne $cw) {   # Fix undef here
+    unless ($cw->IS($w->{"client"})) {  
 	if ($w->{"popped"}) {
 	    $w->Deactivate;
 	}
@@ -232,6 +233,7 @@ sub Popup {
 	$w->colormapwindows($w->winfo("toplevel"))
     }
     my $client = $w->{"client"};
+    return if (not defined $client);
     return if (not exists $w->{"clients"}->{$client});
     my $msg = $w->{"clients"}->{$client}->{-balloonmsg};
     $w->Subwidget("message")->configure(-text => $msg);
@@ -258,10 +260,12 @@ sub SetStatus {
     my $s = $w->cget(-statusbar);
     if ((defined $s) && $s->winfo("exists")) {
 	my $vref = $s->cget(-textvariable);
-	return if (not exists $w->{"clients"}->{$w->{"client"}});
-	my $msg = $w->{"clients"}->{$w->{"client"}}->{-statusmsg} || '';
+	my $client = $w->{"client"};
+	return if (not defined $client);
+	return if (not exists $w->{"clients"}->{$client});
+	my $msg = $w->{"clients"}->{$client}->{-statusmsg} || '';
 	if (not defined $vref) {
-	    eval $s->configure(-text => $msg);  # fix undef here
+	    eval { $s->configure(-text => $msg) };
 	} else {
 	    $$vref = $msg;
 	}

@@ -40,7 +40,9 @@
 #include "XpmI.h"
 #include <sys/stat.h>
 #if !defined(FOR_MSW) && !defined(WIN32)
+#if !defined(_UNISTD)
 #include <unistd.h>
+#endif
 #endif
 #ifndef VAX11C
 #include <fcntl.h>

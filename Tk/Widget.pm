@@ -310,7 +310,7 @@ sub AUTOLOAD
  goto &$what;
 }
 
-*isa = \&True if ($] < 5.003);
+*isa = \&True if ($] <= 5.003);
 
 1;                     
 

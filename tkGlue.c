@@ -61,10 +61,6 @@ typedef struct
 static I32 ec = 0;
 static SV *my_watch;
 
-#ifdef NO_MAGIC
-static char TOP_KEY[]      = "_TK_MAINWIN_";
-static char CMD_KEY[]      = "_Tcl_CmdInfo_";
-#endif
 static char XEVENT_KEY[]   = "_XEvent_";
 static char GEOMETRY_KEY[] = "_ManageGeometry_";
 static char CM_KEY[]       = "_ClientMessage_";
@@ -605,11 +601,7 @@ Tk_Window tkwin;
  if (dpy)
   XSync(dpy,FALSE);
 
-#ifdef NO_MAGIC
- hv_delete(hv, TOP_KEY, strlen(TOP_KEY), G_DISCARD);
-#else
  sv_unmagic((SV *) hv, '~');
-#endif
 
  Tcl_DeleteInterp(interp);
 }
@@ -649,12 +641,7 @@ Lang_NewMainWindow(interp,tkwin)
 Tcl_Interp *interp;
 Tk_Window tkwin;
 {
-#ifdef NO_MAGIC 
- SV *sv = newSViv((IV) tkwin);            
- hv_store(interp, TOP_KEY, strlen(TOP_KEY), sv, 0);
-#else
  tilde_magic(InterpHv(interp,1),newSViv((IV) tkwin));
-#endif
 }
 
 #define mSVPV(sv,na) (SvOK(sv) ? SvPV(sv,na) : "undef")
@@ -839,26 +826,6 @@ int need;
  if (SvROK(sv) && SvTYPE(SvRV(sv)) == SVt_PVHV)
   {
    HV *hash = (HV *) SvRV(sv);
-#ifdef NO_MAGIC
-   SV **x = hv_fetch(hash, CMD_KEY, strlen(CMD_KEY), 0);
-   if (x)
-    {
-     Lang_CmdInfo *info;
-     if (hv_ptr)
-      *hv_ptr = hash;
-     info = (Lang_CmdInfo *) SvIV(*x);
-     if (info)
-      {
-       if ((need & 1) && !info->interp)
-        croak("%s is not a Tk object",SvPV(sv,na));
-       if ((need & 2) && !info->tkwin)
-        croak("%s is not a Tk Window",SvPV(sv,na));
-       if ((need & 4) && !info->image)
-        croak("%s is not a Tk Image",SvPV(sv,na));
-       return info;
-      }
-    }
-#else
    MAGIC *mg = mg_find((SV *) hash,'~');
    if (mg)
     {
@@ -877,7 +844,6 @@ int need;
        return info;
       }
     }
-#endif
   }
  /* FIXME - TOO STRONG - after() does this a lot ! */
  if (need)
@@ -1953,19 +1919,11 @@ Tcl_Interp *interp;
  HV *hv = InterpHv(interp,0);
  if (hv)
   {
-#ifdef NO_MAGIC
-   SV **x = hv_fetch(hv, TOP_KEY, strlen(TOP_KEY), 0);
-   if (x)
-    {
-     return (Tk_Window) SvIV(*x);
-    }
-#else
    MAGIC *mg = mg_find((SV *) hv, '~');
    if (mg)
     {
      return (Tk_Window) SvIV(mg->mg_obj);
     }
-#endif
   }
  return NULL;
 }
@@ -2297,17 +2255,6 @@ Tk_Window tkwin;
    if (obj && SvROK(obj) && SvTYPE(SvRV(obj)) == SVt_PVHV)
     {
      HV *hash = (HV *) SvRV(obj);
-#ifdef NO_MAGIC
-     SV *cmd = hv_delete(hash, CMD_KEY, strlen(CMD_KEY), G_SCALAR);
-     if (cmd)
-      {
-       Lang_CmdInfo *info = (Lang_CmdInfo *) SvIV(cmd);
-       if (info->interp != interp)
-        Tcl_Panic("%s->interp=%p expected %p", cmdName, info->interp, interp);
-       DecInterp(info->interp, cmdName);
-       free(info);
-      }
-#else
      MAGIC *mg   = mg_find((SV *) hash,'~');
      if (mg)
       {
@@ -2317,7 +2264,6 @@ Tk_Window tkwin;
        DecInterp(info->interp, cmdName);
        sv_unmagic((SV *) hash,'~');
       }
-#endif
     }
   }
 }
@@ -2390,16 +2336,6 @@ Tcl_CmdDeleteProc *deleteProc;
  STRLEN cmdLen = strlen(cmdName);
  HV *hash = newHV();
  SV *tmp;
-#ifdef NO_MAGIC
- Lang_CmdInfo *info = (Lang_CmdInfo *) malloc(sizeof(Lang_CmdInfo));
- do_watch();
- info->Tk.proc = proc;
- info->Tk.deleteProc = deleteProc;
- info->Tk.clientData = info->Tk.deleteData = clientData;
- info->interp = interp;
- info->tkwin = tkwin;
- info->image = NULL; 
-#else
  Lang_CmdInfo info;
  SV *sv;
  do_watch();
@@ -2410,7 +2346,6 @@ Tcl_CmdDeleteProc *deleteProc;
  info.tkwin = tkwin;
  info.image = NULL; 
  sv = struct_sv(&info,sizeof(info));
-#endif
 
  /* Record the object in the main hash */
  IncInterp(interp, cmdName);
@@ -2419,14 +2354,8 @@ Tcl_CmdDeleteProc *deleteProc;
  /* At this point hash REFCNT should be 2, one for what is stored
     in interp and one representing Tk's use
   */
-#ifdef NO_MAGIC
- /* Record the command info in the window's hash */
- hv_store(hash, CMD_KEY, strlen(CMD_KEY), newSViv((IV) info), 0);
- return info;
-#else
  tilde_magic(hash, sv);
  return (Lang_CmdInfo *) SvPV(sv,na);
-#endif
 }
 
 Tcl_Command
@@ -2440,16 +2369,6 @@ Tcl_CmdDeleteProc *deleteProc;
  HV *hv = InterpHv(interp,1);
  STRLEN cmdLen = strlen(cmdName);
  HV *hash = newHV();
-#ifdef NO_MAGIC
- Lang_CmdInfo *info = (Lang_CmdInfo *) malloc(sizeof(Lang_CmdInfo));
- do_watch();
- info->Tk.proc = proc;
- info->Tk.deleteProc = deleteProc;
- info->Tk.clientData = info->Tk.deleteData = clientData;
- info->interp = interp;
- info->tkwin = NULL;
- info->image = newSVpv(cmdName,cmdLen); 
-#else
  SV *sv;
  Lang_CmdInfo info;
  do_watch();
@@ -2460,18 +2379,11 @@ Tcl_CmdDeleteProc *deleteProc;
  info.tkwin = NULL;
  info.image = newSVpv(cmdName,cmdLen); 
  sv =  struct_sv(&info,sizeof(info));
-#endif 
  /* Record the object in the main hash */
  IncInterp(interp, cmdName);
  hv_store(hv, cmdName, cmdLen, MakeReference((SV *) hash), 0);
-#ifdef NO_MAGIC
- /* Record the command info in the window's hash */
- hv_store(hash, CMD_KEY, strlen(CMD_KEY), newSViv((IV) info), 0);
- return info;
-#else
  tilde_magic(hash, sv);
  return (Lang_CmdInfo *) SvPV(sv,na);
-#endif
 }
 
 Tcl_Command

@@ -130,7 +130,7 @@ sub area_down {
     $pinfo->{'areaY1'} = $y;
     $pinfo->{'areaX2'} = -1;
     $pinfo->{'areaY2'} = -1;
-    eval {local $SIG{__DIE__}; $w->delete('area');};
+    eval {local $SIG{'__DIE__'}; $w->delete('area');};
 
 } # end area_down
 
@@ -141,7 +141,7 @@ sub area_move {
     my $e = $w->XEvent;
     my($x, $y) = ($e->x, $e->y);
     if($x != $pinfo->{'areaX1'} && $y != $pinfo->{'areaY1'}) {
-      eval {local $SIG{__DIE__}; $w->delete('area');};
+      eval {local $SIG{'__DIE__'}; $w->delete('area');};
       $w->addtag('area','withtag',$w->create('rect',$pinfo->{'areaX1'},
                                            $pinfo->{'areaY1'},$x,$y));
       $pinfo->{'areaX2'} = $x;
