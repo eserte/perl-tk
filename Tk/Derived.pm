@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 $Tk::Derived::Debug = 0;
 
@@ -336,7 +336,7 @@ sub ConfigDefault
 
  unless (exists($specs->{'-background'}))
   {
-   Tk::catch { $cw->Tk::cget('-foreground') };
+   Tk::catch { $cw->Tk::cget('-background') };
    my (@bg) = $@ ? ('PASSIVE') : ('SELF');
    push(@bg,'CHILDREN') if $child;
    $specs->{'-background'} = [\@bg,'background','Background',NORMAL_BG];

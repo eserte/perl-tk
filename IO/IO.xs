@@ -3,7 +3,7 @@
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
-
+#define PERL_NO_GET_CONTEXT
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -44,6 +44,7 @@ read_handler(clientData, mask)
 ClientData clientData;
 int mask;
 {
+ dTHX; /* FIXME */
  if (mask & TCL_READABLE)
   {
    nIO_read *info = (nIO_read *) clientData;
@@ -76,12 +77,10 @@ int mask;
   }
 }
 
-static int restore_mode _((PerlIO *f,int mode));
-static int make_nonblock _((PerlIO *f,int *mode,int *newmode));
 
 #if defined(__WIN32__) && !defined(__CYGWIN__)
 static int
-make_nonblock(f,mode,newmode)
+make_nonblock (pTHX_ PerlIO *f,int *mode,int *newmode)
 PerlIO *f;
 int *mode;
 int *newmode;
@@ -91,19 +90,14 @@ int *newmode;
 }
 
 static int
-restore_mode(f,mode)
-PerlIO *f;
-int mode;
+restore_mode (pTHX_ PerlIO *f,int mode)
 {
  croak("Cannot make nonblocking on Win32 yet");
  return -1;
 }
 #else
 static int
-make_nonblock(f,mode,newmode)
-PerlIO *f;
-int *mode;
-int *newmode;
+make_nonblock (pTHX_ PerlIO *f,int *mode,int *newmode)
 {
  int RETVAL = fcntl(PerlIO_fileno(f), F_GETFL, 0);
  if (RETVAL >= 0)
@@ -145,9 +139,7 @@ int *newmode;
 }
 
 static int
-restore_mode(f,mode)
-PerlIO *f;
-int mode;
+restore_mode (pTHX_ PerlIO *f,int mode)
 {
  return fcntl(PerlIO_fileno(f), F_SETFL, mode);
 }
@@ -178,6 +170,10 @@ make_nonblock(f,mode,newmode)
 InputStream	f
 int	&mode = NO_INIT
 int	&newmode  = NO_INIT
+CODE:
+ {
+  make_nonblock(aTHX_ f,&mode,&newmode);
+ }
 OUTPUT:
   mode
   newmode
@@ -186,6 +182,10 @@ int
 restore_mode(f,mode)
 InputStream	f
 int	mode
+CODE:
+ {
+  restore_mode(aTHX_ f,mode);
+ }
 
 SV *
 read(f,buf,len,offset = 0)
@@ -197,7 +197,7 @@ int	offset
   {
    int mode;
    int newmode;
-   int count = make_nonblock(f,&mode,&newmode);
+   int count = make_nonblock(aTHX_ f,&mode,&newmode);
    /* Copy stuff out of PerlIO *  */
    ST(0) = &PL_sv_undef;
    if (count == 0)
@@ -225,7 +225,7 @@ int	offset
      Tcl_DeleteFileHandler(fd);
      if (mode != newmode)
       {
-       count = restore_mode(f,mode);
+       count = restore_mode(aTHX_ f,mode);
        if (count != 0)
         croak("Cannot make blocking");
       }
@@ -245,7 +245,7 @@ InputStream	f
   {
    int mode;
    int newmode;
-   int count = make_nonblock(f,&mode,&newmode);
+   int count = make_nonblock(aTHX_ f,&mode,&newmode);
    /* Copy stuff out of PerlIO *  */
    ST(0) = &PL_sv_undef;
    if (count == 0)
@@ -271,7 +271,7 @@ InputStream	f
      Tcl_DeleteFileHandler(fd);
      if (mode != newmode)
       {
-       count = restore_mode(f,mode);
+       count = restore_mode(aTHX_ f,mode);
        if (count != 0)
         croak("Cannot make blocking");
       }

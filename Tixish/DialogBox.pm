@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::Toplevel);
 
@@ -70,6 +70,8 @@ sub Populate {
     $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ],
                      -foreground => ['DESCENDANTS', 'foreground','Foreground', 'black'],
                      -background => ['DESCENDANTS', 'background','Background',  undef],
+		     -focus	 => ['PASSIVE', undef, undef, undef],
+		     -showcommand => ['CALLBACK', undef, undef, undef],
                     );
     $cw->Delegates('Construct',$top);
 }
@@ -84,6 +86,7 @@ sub add {
 sub Wait
 {
  my $cw = shift;
+ $cw->Callback(-showcommand => $cw);
  $cw->waitVariable(\$cw->{'selected_button'});
  $cw->grabRelease;
  $cw->withdraw;
@@ -109,7 +112,9 @@ sub Show {
 	$cw->grab;
     }
     };
-    if (defined $cw->{'default_button'}) {
+    if (my $focusw = $cw->cget(-focus)) {
+	$focusw->focus;
+    } elsif (defined $cw->{'default_button'}) {
 	$cw->{'default_button'}->focus;
     } else {
 	$cw->focus;

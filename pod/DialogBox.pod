@@ -51,6 +51,24 @@ no default Button is specified, then the first element of the
 array whose reference is passed to the B<-buttons> option is used
 as the default.
 
+=item B<-command>
+
+A callback which is executed after invoking an action to close the
+DialogBox, but before restoring focus and grab information. The
+selected button is passed as the first argument.
+
+=item B<-focus>
+
+Specify the widget to receive the initial focus after popping up the
+DialogBox. By default the B<-default_button> widget receives the
+initial focus.
+
+=item B<-showcommand>
+
+A callback which is executed before displaying the DialogBox and
+waiting for user input. The DialogBox itself is passed as the first
+argument.
+
 =back
 
 =head1 METHODS
@@ -121,6 +139,8 @@ containing the Button widgets.
 Individual subwidget references to the Buttons in the DialogBox widget. The
 subwidget name is the string I<B_> concatenated with the Button's -text
 value.
+
+=back
 
 =head1 BUGS
 

@@ -30,6 +30,7 @@ if ($^O eq 'MSWin32')
  }
 else
  {
+  $ENV{CC} = $Config{cc};
   system("./configure");
  }
 1;

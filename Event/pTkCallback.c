@@ -3,7 +3,7 @@
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
-
+#define PERL_NO_GET_CONTEXT
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -35,6 +35,7 @@ LangCallback *
 LangMakeCallback(sv)
 SV *sv;
 {
+ dTHX; /* FIXME */
  if (sv)
   {
    dTHX;
@@ -107,6 +108,7 @@ void
 LangFreeCallback(sv)
 SV *sv;
 {
+ dTHX; /* FIXME */
  if (!sv_isa(sv,"Tk::Callback"))
   {
    warn("Free non-Callback %p RV=%p",sv,SvRV(sv));
@@ -119,6 +121,7 @@ Tcl_Obj *
 LangCallbackObj(sv)
 SV *sv;
 {
+ dTHX; /* FIXME */
  if (sv && !sv_isa(sv,"Tk::Callback"))
   {
    warn("non-Callback arg");
@@ -133,6 +136,7 @@ SV *sv;
 char *file;
 int line;
 {
+ dTHX; /* FIXME */
  LangDebug("%s:%d: LangCallbackArg is deprecated\n",file,line);
  sv = LangCallbackObj(sv);
  SvREFCNT_dec(sv);
@@ -144,6 +148,7 @@ LangCallCallback(sv, flags)
 SV *sv;
 int flags;
 {
+ dTHX; /* FIXME */
  dSP;
  STRLEN na;
  I32 myframe = TOPMARK;
@@ -215,6 +220,7 @@ int flags;
 void
 LangPushCallbackArgs(SV **svp)
 {
+ dTHX; /* FIXME */
  SV *sv = *svp;
  dSP;
  STRLEN na;
@@ -267,6 +273,7 @@ LangCmpCallback(a, b)
 SV *a;
 SV *b;
 {
+ dTHX; /* FIXME */
  if (a == b)
   return 1;
  if (!a || !b)
@@ -394,6 +401,7 @@ TclpExit(int status)
  * which have stored stack addresses in Tk structures.
  * The die scheme works round this but imposes cost on normal execution.
  */
+ dTHX; /* FIXME */
  if (PL_in_eval)
   croak("_TK_EXIT_(%d)\n",status);
  else

@@ -157,11 +157,11 @@ ForceScalar(pTHX_ SV *sv)
  if (SvTYPE(sv) == SVt_PVAV)
   {
    AV *av = (AV *) sv;
-   SV *nsv = newSVpv("",0);
-   Scalarize(aTHX_ nsv, (AV *) av);
+   SV *newsv = newSVpv("",0);
+   Scalarize(aTHX_ newsv, (AV *) av);
    av_clear(av);
-   av_store(av,0,nsv);
-   return nsv;
+   av_store(av,0,newsv);
+   return newsv;
   }
  else
   {
@@ -170,17 +170,17 @@ ForceScalar(pTHX_ SV *sv)
      /* Callbacks and lists often get stringified by mistake due to
         Tcl/Tk's string fixation - don't change the real value
       */
-     SV *nsv = newSVpv("",0);
-     Scalarize(aTHX_ nsv, (AV *) SvRV(sv));
-     return sv_2mortal(nsv);
+     SV *newsv = newSVpv("",0);
+     Scalarize(aTHX_ newsv, (AV *) SvRV(sv));
+     return sv_2mortal(newsv);
     }
    else if (!SvOK(sv))
     {
      /* Map undef to null string */
      if (SvREADONLY(sv))
       {
-       SV *nsv = newSVpv("",0);
-       return sv_2mortal(nsv);
+       SV *newsv = newSVpv("",0);
+       return sv_2mortal(newsv);
       }
      else
       sv_setpvn(sv,"",0);
@@ -195,10 +195,10 @@ ForceScalarLvalue(pTHX_ SV *sv)
  if (SvTYPE(sv) == SVt_PVAV)
   {
    AV *av = (AV *) sv;
-   SV *nsv = newSVpv("",0);
+   SV *newsv = newSVpv("",0);
    av_clear(av);
-   av_store(av,0,nsv);
-   return nsv;
+   av_store(av,0,newsv);
+   return newsv;
   }
  else
   {

@@ -3,7 +3,7 @@
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
-
+#define PERL_NO_GET_CONTEXT
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -74,39 +74,6 @@ DebugHook(SV *sv)
 #define Const_WHITE()         (WHITE)
 
 static XFontStruct * TkwinFont _((Tk_Window tkwin, Tk_Uid name));
-
-static void pTk_DefineBitmap _((Tk_Window tkwin, char *name,
-                               int width, int height, SV *source));
-
-static void
-pTk_DefineBitmap (tkwin, name, width, height, source)
-Tk_Window tkwin;
-char *name;
-int width;
-int height;
-SV *source;
-{
- Tcl_Interp *interp;
- if (TkToWidget(tkwin,&interp) && interp)
-  {STRLEN len;
-   unsigned char *data = (unsigned char *) SvPV(source, len);
-   STRLEN byte_line = (width + 7) / 8;
-   if (len == height * byte_line)
-    {
-     Tcl_ResetResult(interp);
-     if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
-      croak(Tcl_GetStringResult(interp));
-    }
-   else
-    {
-     croak("Data wrong size for %dx%d bitmap",width,height);
-    }
-  }
- else
-  {
-   croak("Invalid widget");
-  }
-}
 
 #define pTk_Synchronize(win,flag) \
    XSynchronize(Tk_Display(win), flag)
@@ -565,12 +532,35 @@ PPCODE:
 }
 
 void
-pTk_DefineBitmap (win, name, width, height, source)
-Tk_Window	win;
+pTk_DefineBitmap (tkwin, name, width, height, source)
+Tk_Window	tkwin;
 char *	name;
 int	width;
 int	height;
 SV *	source;
+CODE:
+{
+ Tcl_Interp *interp;
+ if (TkToWidget(tkwin,&interp) && interp)
+  {STRLEN len;
+   unsigned char *data = (unsigned char *) SvPV(source, len);
+   STRLEN byte_line = (width + 7) / 8;
+   if (len == height * byte_line)
+    {
+     Tcl_ResetResult(interp);
+     if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
+      croak(Tcl_GetStringResult(interp));
+    }
+   else
+    {
+     croak("Data wrong size for %dx%d bitmap",width,height);
+    }
+  }
+ else
+  {
+   croak("Invalid widget");
+  }
+}
 
 void
 pTk_GetBitmap(tkwin, name)

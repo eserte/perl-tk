@@ -1,7 +1,7 @@
+#define PERL_NO_GET_CONTEXT
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-
 #include "tkGlue.def"
 
 #include "pTk/tkPort.h"
@@ -38,9 +38,7 @@ DECLARE_VTABLES;
 #endif
 
 static IV
-SvGCIVOBJ(class,sv)
-char *class;
-SV *sv;
+SvGCIVOBJ(pTHX_ char *class,SV *sv)
 {
  if (sv_isa(sv, class))
   return SvIV((SV*)SvRV(sv));
@@ -52,8 +50,8 @@ SV *sv;
 #define SvGCint(x)           SvIV(x)
 #define SvGCBool(x)          SvIV(x)
 #define SvGCunsigned_long(x) SvIV(x)
-#define SvGCPixmap(x)        (Pixmap) SvGCIVOBJ("Pixmap",x)
-#define SvGCFont(x)          (Font)   SvGCIVOBJ("Font",x)
+#define SvGCPixmap(x)        (Pixmap) SvGCIVOBJ(aTHX_ "Pixmap",x)
+#define SvGCFont(x)          (Font)   SvGCIVOBJ(aTHX_ "Font",x)
 
 #define GCField(name,bit,field,func) \
  if (!strcmp(key,name)) {            \
@@ -62,11 +60,8 @@ SV *sv;
  } else
 
 unsigned long
-GCSetValue(valuemask,values,key,value)
-unsigned long valuemask;
-XGCValues *values;
-char *key;
-SV *value;
+GCSetValue(pTHX_ unsigned long valuemask,
+           XGCValues *values,char *key,SV *value)
 {
 #include "GC.def"
  croak("Setting GC %s not implemented",key);
@@ -363,7 +358,7 @@ CODE:
    for (i=3; i < items; i += 2)
     {char *key = SvPV(ST(i),na);
      if (i+1 < items)
-      valuemask = GCSetValue(valuemask,&values,key,ST(i+1));
+      valuemask = GCSetValue(aTHX_ valuemask,&values,key,ST(i+1));
      else
       croak("No value for %s",key);
     }

@@ -1,3 +1,33 @@
+Change 3008 on 2003/12/02 by nick@llama
+
+	Avoid 'nsv' as a variable after scare with encGlue.c in perl5.9
+
+Change 3007 on 2003/12/01 by nick@llama
+
+	Avoid PERL_HASH stuff for perl5.9 compatibility.
+
+Change 3004 on 2003/11/29 by nick@llama
+
+	Propagate CC= to libjpeg's 'configure'
+
+Change 3003 on 2003/11/29 by nick@llama
+
+	Slaven's (revised) DialogBox patch
+
+Change 2999 on 2003/11/21 by nick@llama
+
+	Slaven's patch for Copy/Paste mess in Derived's -background
+	code.
+
+Change 2998 on 2003/11/20 by nick@llama
+
+	PERL_NO_GET_CONTEXT in all .xs files
+
+Change 2997 on 2003/11/16 by nick@llama
+
+	Change.log update.
+	Also add blibdirs to MANIFEST.SKIP (via .PL file)
+
 Change 2996 on 2003/11/16 by nick@llama
 
 	Steve's ->clear method for Table. (Add to POD as well).

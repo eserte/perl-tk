@@ -550,14 +550,12 @@ Tcl_GetEncoding (Tcl_Interp * interp, CONST char * name)
  HE *he;
  STRLEN len = strlen(name);
  SV *sv   = NULL;
- SV *nsv  = newSVpv((char *)name,len);
- I32 hash;
- PERL_HASH(hash, (char *)name, len);
+ SV *nmsv  = newSVpv((char *)name,len);
  if (!encodings)
   {
    encodings = newHV();
   }
- he = hv_fetch_ent(encodings,nsv,0,hash);
+ he = hv_fetch_ent(encodings,nmsv,0,0);
  if (!he || !HeVAL(he))
   {
    dSP;
@@ -565,19 +563,19 @@ Tcl_GetEncoding (Tcl_Interp * interp, CONST char * name)
    SAVETMPS;
    PUSHMARK(sp);
    XPUSHs(sv_2mortal(newSVpv("Tk",0)));
-   XPUSHs(nsv);
+   XPUSHs(nmsv);
    PUTBACK;
    perl_call_method("getEncoding",G_SCALAR);
    SPAGAIN;
    sv = POPs;
    PUTBACK;
-   he = hv_store_ent(encodings,nsv,newSVsv(sv),hash);
+   he = hv_store_ent(encodings,nmsv,newSVsv(sv),0);
    if (0 && !SvOK(sv))
     warn("Cannot find '%s'",name);
    FREETMPS;
    LEAVE;
   }
- SvREFCNT_dec(nsv);
+ SvREFCNT_dec(nmsv);
  sv = HeVAL(he);
  if (sv_isobject(sv))
   {

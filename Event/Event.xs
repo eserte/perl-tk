@@ -3,7 +3,7 @@
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
-
+#define PERL_NO_GET_CONTEXT
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
@@ -21,9 +21,7 @@
 extern void TclInitSubsystems(CONST char *argv0);
 
 static SV *
-FindVarName(varName,flags)
-char *varName;
-int flags;
+FindVarName(pTHX_ char *varName,int flags)
 {
  STRLEN len;
  SV *name = newSVpv("Tk",2);
@@ -45,9 +43,10 @@ int flags;
 void
 LangDebug(CONST char *fmt,...)
 {
+ dTHX; /* FIXME? */
  va_list ap;
  va_start(ap,fmt);
- if (SvIV(FindVarName("LangDebug",GV_ADD|GV_ADDWARN)))
+ if (SvIV(FindVarName(aTHX_ "LangDebug",GV_ADD|GV_ADDWARN)))
   {
    PerlIO_vprintf(PerlIO_stderr(), fmt, ap);
    PerlIO_flush(PerlIO_stderr());
@@ -65,6 +64,7 @@ CONST char *fmt;
 va_dcl
 #endif
 {
+ dTHX;
  va_list ap;
 #ifdef I_STDARG
  va_start(ap, fmt);
@@ -360,17 +360,14 @@ int fd;
 }
 
 static void
-install_vtab(name, table, size)
-char *name;
-void *table;
-size_t size;
+install_vtab(pTHX_ char *name, void *table, size_t size)
 {
  if (table)
   {
    typedef int (*fptr)_((void));
    fptr *q = table;
    unsigned i;
-   sv_setiv(FindVarName(name,GV_ADD|GV_ADDMULTI),PTR2IV(table));
+   sv_setiv(FindVarName(aTHX_ name,GV_ADD|GV_ADDMULTI),PTR2IV(table));
    if (size % sizeof(fptr))
     {
      warn("%s is strange size %d",name,size);
@@ -457,6 +454,7 @@ SV *
 PerlIO_handle(filePtr)
 PerlIOHandler *filePtr;
 {
+ dTHX; /* FIXME */
  filePtr->io = sv_2io(filePtr->handle);
  if (filePtr->io)
   {
@@ -479,6 +477,7 @@ PerlIO_unwatch(PerlIOHandler *filePtr)
 void
 PerlIO_watch(PerlIOHandler *filePtr)
 {
+ dTHX; /* FIXME */
  PerlIO *ip = IoIFP(filePtr->io);
  PerlIO *op = IoOFP(filePtr->io);
  int fd     = (ip) ? PerlIO_fileno(ip) : ((op) ? PerlIO_fileno(op) : -1);
@@ -536,6 +535,7 @@ PerlIO_is_writable(PerlIOHandler *filePtr)
 {
  if (!(filePtr->readyMask & TCL_WRITABLE))
   {
+   dTHX; /* FIXME */
    PerlIO *op = IoOFP(filePtr->io);
    if (op)
     {
@@ -551,6 +551,7 @@ PerlIO_is_writable(PerlIOHandler *filePtr)
 int
 PerlIO_is_readable(PerlIOHandler *filePtr)
 {
+ dTHX; /* FIXME */
  if (!(filePtr->readyMask & TCL_READABLE))
   {
    PerlIO *io = IoIFP(filePtr->io);
@@ -633,6 +634,7 @@ TkPerlIO_debug(filePtr,s)
 PerlIOHandler *filePtr;
 char *s;
 {
+ dTHX; /* FIXME */
  PerlIO *ip = IoIFP(filePtr->io);
  PerlIO *op = IoOFP(filePtr->io);
  int ifd    = (ip) ? PerlIO_fileno(ip) : -1;
@@ -809,6 +811,7 @@ PerlIOHandler *
 SVtoPerlIOHandler(sv)
 SV *sv;
 {
+ dTHX; /* FIXME */
  if (sv_isa(sv,"Tk::Event::IO"))
   return (PerlIOHandler *) SvPVX(SvRV(sv));
  croak("Not an Tk::Event::IO");
@@ -822,6 +825,7 @@ char *class;
 SV *fh;
 int mask;                         /* OR'ed TCL_READABLE, TCL_WRITABLE, and TCL_EXCEPTION */
 {
+ dTHX; /* FIXME */
  HV *stash = gv_stashpv(class, TRUE);
  GV *tmpgv = (GV *) newSV(0);
  IO *tmpio = newIO();
@@ -855,6 +859,7 @@ void
 PerlIO_DESTROY(thisPtr)
 PerlIOHandler *thisPtr;
 {
+ dTHX; /* FIXME */
  if (initialized)
   {
    PerlIOHandler **link = &firstPerlIOHandler;
@@ -904,6 +909,7 @@ PerlIOHandler *filePtr;
 int mask;
 LangCallback *cb;
 {
+ dTHX; /* FIXME */
  STRLEN len;
  if (cb)
   {
@@ -1024,6 +1030,7 @@ SetupProc(clientData,flags)
 ClientData clientData;
 int flags;
 {
+ dTHX; /* FIXME */
  dSP;
  ENTER;
  SAVETMPS;
@@ -1041,6 +1048,7 @@ CheckProc(clientData,flags)
 ClientData clientData;
 int flags;
 {
+ dTHX; /* FIXME */
  dSP;
  ENTER;
  SAVETMPS;
@@ -1066,6 +1074,7 @@ int flags;
 {PerlEvent *pe = (PerlEvent *) evPtr;
  int code = 1;
  int count;
+ dTHX; /* FIXME */
  dSP;
  ENTER;
  SAVETMPS;
@@ -1108,7 +1117,7 @@ int sig;
 }
 
 void
-HandleSignals()
+HandleSignals(pTHX)
 {
 #if defined(PATCHLEVEL) && (PATCHLEVEL < 5)
  croak("Cannot HandleSignals with before perl5.005");
@@ -1211,7 +1220,7 @@ extern XSdec(XS_Tk__Event_INIT);
 XS(XS_Tk__Event_INIT)
 {
  dXSARGS;
- install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
+ install_vtab(aTHX_ "TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
  XSRETURN_EMPTY;
 }
 
@@ -1476,6 +1485,10 @@ Tcl_ServiceAll()
 
 void
 HandleSignals()
+CODE:
+ {
+  HandleSignals(aTHX);
+ }
 
 MODULE = Tk::Event	PACKAGE = Tk::Event	PREFIX = Event_
 
@@ -1497,8 +1510,8 @@ BOOT:
  PL_curcop->cop_warnings = old_warn;
 #endif
   newXS("Tk::Callback::Call", XS_Tk__Callback_Call, __FILE__);
-  install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
-  sv_setiv(FindVarName("LangDebug",GV_ADD|GV_ADDMULTI),1);
+  install_vtab(aTHX_ "TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
+  sv_setiv(FindVarName(aTHX_ "LangDebug",GV_ADD|GV_ADDMULTI),1);
   TclInitSubsystems(SvPV_nolen(get_sv("0",FALSE)));
  }
 
