@@ -1,0 +1,13 @@
+#!/bin/sh 
+f=$1
+if [ -f tk4.0b3/$f ]
+ then 
+  cp ../pTk/mTk/$f .
+  if merge $f tk4.0b3/$f tk4.0b4/$f 
+   then echo "    $f is okay"
+   else 
+    echo ">>> $f needs fixing"
+    echo $f >> Fixup 
+  fi 
+fi 
+

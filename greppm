@@ -1,0 +1,5 @@
+#!/bin/sh
+grep "$@" `find . \
+       \( -name 'blib' -prune \) -o \
+       \( -name 'ToDo' -prune \) -o \
+       \( -name '*.pm' -print \)`

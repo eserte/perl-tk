@@ -1,0 +1,69 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetJustify.3 1.7 95/05/06 15:29:39-->
+<! -->
+<H1>Tk_GetJustify</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetJustify, Tk_NameOfJustify - translate between strings and justification styles<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+Tk_Justify<BR>
+<B>Tk_GetJustify(</B><I>interp, string, justifyPtr</I><B>)</B><BR>
+<P>
+char *<BR>
+<B>Tk_NameOfJustify(</B><I>justify</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>char *string</CODE>
+(in) <DD>String containing name of justification style (``left'', ``right'', or<BR>
+``center'').<BR>
+<DT><CODE>int *justifyPtr</CODE>
+(out) <DD>Pointer to location in which to store justify value corresponding to<BR>
+<I>string</I>.<BR>
+<DT><CODE>Tk_Justify justify</CODE>
+(in) <DD>Justification style (one of the values listed below).<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_GetJustify</B> places in <I>*justifyPtr</I> the justify value<BR>
+corresponding to <I>string</I>.  This value will be one of the following:<BR>
+<DL>
+<DT><B>TK_JUSTIFY_LEFT</B>
+
+<DD>Means that the text on each line should start at the left edge of<BR>
+the line;  as a result, the right edges of lines may be ragged.<BR>
+<DT><B>TK_JUSTIFY_RIGHT</B>
+
+<DD>Means that the text on each line should end at the right edge of<BR>
+the line;  as a result, the left edges of lines may be ragged.<BR>
+<DT><B>TK_JUSTIFY_CENTER</B>
+
+<DD>Means that the text on each line should be centered;  as a result,<BR>
+both the left and right edges of lines may be ragged.<BR>
+<P>
+Under normal circumstances the return value is <B>TCL_OK</B> and<BR>
+<I>interp</I> is unused.<BR>
+If <I>string</I> doesn't contain a valid justification style<BR>
+or an abbreviation of one of these names, then an error message is<BR>
+stored in <I>interp-&gt;result</I>, <B>TCL_ERROR</B> is returned, and<BR>
+<I>*justifyPtr</I> is unmodified.<BR>
+<P>
+<B>Tk_NameOfJustify</B> is the logical inverse of <B>Tk_GetJustify</B>.<BR>
+Given a justify value it returns a statically-allocated string<BR>
+corresponding to <I>justify</I>.<BR>
+If <I>justify</I> isn't a legal justify value, then<BR>
+``unknown justification style'' is returned.<BR>
+<BR>
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>center, fill, justification, string<BR>

@@ -1,0 +1,54 @@
+#!/usr/local/bin/perl -w
+
+BEGIN { unshift(@INC,"./blib")}
+
+use Tk;
+use Tk::IO;
+
+$top = MainWindow->new;
+
+$t = $top->Text("-relief" => "raised", "-bd" => "2", "-setgrid" => "true");
+$s = $top->Scrollbar("-command" => ["yview",$t]);
+$t->configure("-yscrollcommand" => ["set",$s] );
+
+$cmd = 'ls *.c';
+
+$e = $top->Entry("-width" => 40,"-textvariable" => \$cmd);
+$e->pack("-side" => "bottom");
+
+$b = $top->Button("-text" => "Do It", "-command" => [\&DoIt,$e,$t]);
+$b->pack("-side" => "bottom");
+
+$b = $top->Button("-text" => "Quit", "-command" => ['destroy',$top]);
+$b->pack("-side" => "bottom");
+
+$s->pack("-side"=>"left","-fill" => "y");
+$t->pack("-side"=>"left","-expand" => "y", "-fill"   => "both");
+
+$t->bind("<Any-Enter>", sub { $t->focus });
+
+foreach (1,2,3)
+ {
+  $t->insert("end","line ". $_ . "\n");
+ }
+
+$e->update;
+
+$e->focus;
+
+Tk::MainLoop;
+
+
+sub DoIt
+{my $e = shift;
+ my $t = shift;
+ my $cmd = $e->get;
+ my $fh = Tk::IO->open("$cmd|");
+ my $line;
+ while ($line = $fh->readline)
+  {
+   $t->insert("end",$line);
+   $t->idletasks;
+  }
+ $fh->close || warn "Close:$!";
+}

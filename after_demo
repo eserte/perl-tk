@@ -1,0 +1,29 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+use Tk;
+require Tk::Label;
+
+sub toggle
+{
+ my $w = shift;
+ my $r = $w->configure("-relief");
+ $w->configure("-relief" => ($r eq "raised") ? "sunken" : "raised");
+ $callback = [\&toggle,$w] unless defined $callback;
+ $w->after(1000,$callback);
+}
+
+
+$top = MainWindow->new();
+
+$fred = Something;
+
+$l   = $top->Label('-textvariable'=> \$fred);
+
+$l->pack();
+
+&toggle($l);
+
+$top->update();
+
+Tk::MainLoop();
+

@@ -1,0 +1,191 @@
+=head1 NAME
+
+Defining behaviour of 'configure' for composite widgets.
+
+=head1 SYNOPSYS
+
+  sub Populate
+  {
+   my ($composite,$args) = @_;
+   ....
+   $composite->ConfigSpecs(-attribute => [ where, dbName, dbClass, default ]);
+   $composite->ConfigSpecs(  DEFAULT  => [ where ]);
+   ....
+  }
+
+  $composite->configure( -attribute => value );
+
+=head1 DESCRIPTION 
+
+The aim is to make composite widget configure method look as much like
+a regular Tk widget's configure as possible.
+To enable this the attributes that the composite as a whole accepts
+needs to be defined.
+
+=head2 Defining the ConfigSpecs for a class.
+
+Typically a widget will have one or more calls like the following
+
+   $composite->ConfigSpecs(-attribute => [ where, dbName, dbClass, default ]);
+
+in its C<Populate> method. When C<ConfigSpecs> is called this way 
+(with arguments) the arguments are used to construct or augment/replace
+a hash table for the widget. 
+(More than one key => value pair can be specified to a single call.)
+
+dbName, dbClass and default are only used by C<ConfigDefault> described
+below, or to respond to 'inquiry' configure commands.
+
+'where' describes the object(s) to which the attribute applies.
+It may be either one of the values below, or a list of such values
+enclosed in C<[ ]>.
+
+The currently permited values of where are:
+
+=over 4
+
+=item C<'DESCENDANTS'>  
+
+apply 'configure' recusively to all descendants
+
+=item C<'ADVERTISED'>
+
+apply 'configure' to 'advertised' subwidgets.
+
+=item C<'SELF'>
+
+apply 'configure' to the core widget (e.g. Frame) that is the
+basis of the composite. (This is the default behaviour for most 
+attributes which makes a simple Frame behave the way you would expect.)
+Note that once you have specified ConfigSpecs for an attribute 
+you must explcitly include C<SELF> in the list if you want the 
+attribute to apply to the composite itself (this avoids nasty
+infinite recursion problems). 
+
+=item C<'CHILDREN'>
+
+apply 'configure' to all children. 
+
+=item C<'PASSIVE'>
+
+simply store value in $composite->{Configure}{-attribute}.
+
+This form is also a useful placeholder for attributes which
+you currently only handle at create time.
+
+=item C<'CALLBACK'>
+
+Setting the attribute does Tk::Callback->new($value) before storing
+in $composite->{Configure}{-attribute}. This is appropriate for 
+-command => ... attributes that are handled by the composite and
+not forwarded to a subwidget. (e.g. C<Tk::Tiler> has -yscrollcommand 
+to allow it to have scrollbar attached.)
+
+This maybe the first of several 'validating' keywords.
+e.g. font, cursor, anchor etc. that core Tk makes special for C code,
+may also be added.
+
+=item C<'METHOD'>
+
+Call $cw->attribute(value)
+
+This is the most general case. Simply have a method of the 
+composite class with the same name as the attribute.
+The method may do any validation and have whatever side-effects you like.
+(It is probably worth 'queueing' using C<DoWhenIdle> for more complex 
+ side-effects.) 
+
+
+=item C<$reference>
+
+Call $reference->configure(-attribute => value)
+
+A common case is where $reference is a subwidget.
+
+$reference may also be result of 
+
+ Tk::Config->new(setmethod,getmethod,args,...)
+
+C<Tk::Config> class is used to implement all the above keyword types.
+The class has 'configure' and 'cget' methods so alows higher level
+code to I<always> just call one of those methods on an 'object' of some
+kind.
+
+=item C<'otherstring'>
+
+Call $cw->subwidget('otherstring')->configure(-attribute => value)
+
+This is here for backward compatibility with Tk-b5, it is probably 
+better just to use the subwidget reference directly. Only case for
+retaining this form is to allow additional lay of abstraction - perhaps
+having a 'current' subwidget - this is unproven.
+
+=back 
+
+=head2 Default Values
+
+When the C<Populate> method returns C<ConfigDefault> is called.
+This calls
+
+ $composite->ConfigSpecs;
+
+(with no arguments) to return a reference to a hash. Entries in the 
+hash take the form:
+
+ '-attribute' => [ where, dbName, dbClass, default ]
+
+C<ConfigDefault> ignores 'where' completely (and also the DEFAULT entry)
+and looks up the 'options' database on the widget's behalf,
+and if an entry is present matching dbName/dbClass 
+
+ -attribute => value 
+
+is added to the list of options that C<new> will eventually apply
+to the widget. Likewise if there is not a match and default is defined
+this default value will be added.
+
+
+=head2 C<new>-time configure
+
+Once control returns to C<new>, the list of user-supplied options
+augmented by those from C<ConfigDefault> are applied to the widget
+using the C<configure> method below.
+
+Widgets are most flexible and most Tk-like if they handle the majority 
+of their attributes this way.
+
+=head2 Configuring composites
+
+Once the above have occured calls of the form:
+
+   $composite->configure( -attribute => value );
+
+are handled by C<Tk::Frame::configure> as follows:
+
+ $composite->ConfigSpecs;
+
+is called (with no arguments) to return a reference to a hash
+C<-attribute> is looked up in this hash, if C<-attribute> is not
+present in the hash then 'DEFAULT' is looked for instead.
+The result should be a reference to a list like : 
+
+  [ where, dbName, dbClass, default ]
+
+at this stage only 'where' is of interest, it maps to a list of
+object references (maybe only one) foreach one 
+
+   $object->configure( -attribute => value ); 
+
+is C<eval>ed.
+
+=head2 Inquiring attributes of composites
+
+   $composite->cget( '-attribute' );
+
+This is handled by  C<Tk::Frame::cget> in a similar manner
+to configure. At present if I<where> is a list of more than one object
+it is ignored completely and the "cached" value in 
+    
+   $composite->{Configure}{-attribute}.
+
+is returned.

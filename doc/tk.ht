@@ -1,0 +1,47 @@
+<! Copyright (c) 1992 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) tk.n 1.9 95/06/07 21:15:03-->
+<! -->
+<H1>tk</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>tk - Manipulate Tk internal state
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>tk</B> <I>option </I>?<I>arg arg ...</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The <B>tk</B> command provides access to miscellaneous
+elements of Tk's internal state.
+Most of the information manipulated by this command pertains to the
+application as a whole, or to a screen or display, rather than to a
+particular window.
+The command can take any of a number of different forms
+depending on the <I>option</I> argument.  The legal forms are:
+<DL>
+<DT><B>tk appname ?</B><I>newName</I>?
+
+<DD>If <I>newName</I> isn't specified, this command returns the name
+of the application (the name that may be used in <B>send</B>
+commands to communicate with the application).
+If <I>newName</I> is specified, then the name of the application
+is changed to <I>newName</I>.
+If the given name is already in use, then a suffix of the form
+``<B> #2</B>'' or ``<B> #3</B>'' is appended in order to make the name unique.
+The command's result is the name actually chosen.
+<I>newName</I> should not start with a capital letter.
+This will interfere with option processing, since names starting with
+capitals are assumed to be classes;  as a result, Tk may not
+be able to find some options for the application.
+If sends have been disabled by deleting the <B>send</B> command,
+this command will reenable them and recreate the <B>send</B>
+command.
+
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>application name, send

@@ -1,0 +1,16 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+use Tk;
+
+$top = MainWindow->new();
+
+$top->iconify;
+
+$top->Icon('-image' => $top->Pixmap('-file' => "Tk/demos/images/ned.xpm"));
+
+$top->after(3000, [ 'Icon', $top, '-background' => 'green' ]);
+
+
+$top->iconify;
+
+MainLoop();

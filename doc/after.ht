@@ -1,0 +1,83 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) after.n 1.17 95/06/21 15:16:21-->
+<! -->
+<H1>after</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>after - Execute a command after a time delay
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>after </B><I>ms</I>
+<BR>
+<B>after </B><I>ms </I>?<I>script script script ...</I>?
+<BR>
+<B>after cancel </B><I>id</I>
+<BR>
+<B>after cancel </B><I>script script script ...</I>
+<BR>
+<B>after idle </B>?<I>script script script ...</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This command is used to delay execution of the program or to execute
+a command in background after a delay.  It has several forms,
+depending on the first argument to the command:
+<DL>
+<DT><B>after </B><I>ms</I>
+
+<DD><I>Ms</I> must be an integer giving a time in milliseconds.
+The command sleeps for <I>ms</I> milliseconds and then returns.
+While the command is sleeping the application does not respond to
+X events or any other events.
+<DT><B>after </B><I>ms </I>?<I>script script script ...</I>?
+
+<DD>In this form the command returns immediately, but it arranges
+for a Tcl command to be executed <I>ms</I> milliseconds later as a
+background event handler.
+The delayed command is formed by concatenating all the <I>script</I>
+arguments in the same fashion as the <B>concat</B> command.
+The command will be executed at global level (outside the context
+of any Tcl procedure).
+If an error occurs while executing the delayed command then the
+<B>tkerror</B> mechanism is used to report the error.
+The <B>after</B> command returns an identifier that can be used
+to cancel the delayed command using <B>after cancel</B>.
+<DT><B>after cancel </B><I>id</I>
+
+<DD>Cancels the execution of a delayed command that
+was previously scheduled.
+<I>Id</I> indicates which command should be canceled;  it must have
+been the return value from a previous <B>after</B> command.
+If the command given by <I>id</I> has already been executed then
+the <B>after cancel</B> command has no effect.
+<DT><B>after cancel </B><I>script script ...</I>
+
+<DD>This command also cancels the execution of a delayed command.
+The <I>script</I> arguments are concatenated together with space
+separators (just as in the <B>concat</B> command).
+If there is a pending command that matches the string, it is
+cancelled and will never be executed;  if no such command is
+currently pending then the <B>after cancel</B> command has no effect.
+<DT><B>after idle </B><I>script </I>?<I>script script ...</I>?
+
+<DD>Concatenates the <I>script</I> arguments together with space
+separators (just as in the <B>concat</B> command), and arranges
+for the resulting script to be evaluated later as an idle handler
+(the script runs the next time the Tk event loop is entered
+and there are no events to process).
+The command returns an identifier that can be used
+to cancel the delayed command using <B>after cancel</B>.
+If an error occurs while executing the script then the
+<B>tkerror</B> mechanism is used to report the error.
+
+</DL>
+<A NAME=Section0><H2>SEE ALSO</H2>
+</A><A HREF="tkerror.ht"> tkerror</A>
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>cancel, delay, sleep, time

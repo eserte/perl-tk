@@ -1,0 +1,44 @@
+#!/usr/local/bin/perl -w
+
+BEGIN { unshift(@INC, "./blib") };
+
+require 5.001;
+use FileHandle;
+use Tk;
+use Tk::IO;
+
+$mw = $top = MainWindow->new;
+$mw->title('tkpsh');
+$top->iconname('tkpsh');
+
+my $fh = Tk::IO->new('STDIN');
+
+autoflush STDOUT 1;
+
+$mw->fileevent(STDIN,'readable',\&doline);
+
+sub doline
+{
+ my $line = <STDIN>;
+ if (!defined $line)
+  {
+   $mw->fileevent(STDIN,'readable','');
+   $mw->destroy;
+  }
+ else
+  {
+   if ($line =~ /^p\s(.*)$/) 
+    {              
+     $line = "print $1, \"!\\n\";";
+    }              
+   eval $line;     
+   print "$@\n" if $@;
+   print "tkpsh> ";
+  }
+}
+
+print "tkpsh> ";
+MainLoop;
+print "\n";
+
+

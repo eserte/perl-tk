@@ -1,0 +1,38 @@
+#!/usr/local/bin/perl -w
+#
+# This script generates a counter with start and stop buttons.  Exit with Ctrl/c or Ctrl/q.
+#
+# Tcl/Tk -> Perl translation by Stephen O. Lidie.  lusol@Lehigh.EDU  95/01/16
+
+require 5.001;
+use Tk;
+
+$top = MainWindow->new;
+
+$counter = $top->Label(-text => '0.00', -relief => 'raised', -width => '10');
+$start = $top->Button(-text => 'Start', -command => sub {if($stopped) {$stopped = 0;	&tick;}});
+$stop = $top->Button(-text => 'Stop', -command => sub {$stopped =1});
+$counter->pack(-side => 'bottom', -fill => 'both');
+$start->pack(-side => 'left', -fill => 'both', -expand => 'yes');
+$stop->pack(-side => 'right', -fill => 'both', -expand => 'yes');
+
+$seconds = 0;
+$hundredths = 0;
+$stopped = 1;
+
+sub tick {
+
+    return if $stopped;
+    after(50, sub {&tick});
+    $hundredths += 5;
+    if ($hundredths >= 100) {
+	$hundredths = 0;
+	$seconds++;
+    }
+    $counter->configure(-text => sprintf("%d.%02d", $seconds, $hundredths));
+} # end tick
+
+$top->bind('<Control-c>', sub {exit});
+$top->bind('<Control-q>', sub {exit});
+
+MainLoop;

@@ -1,0 +1,73 @@
+#!/usr/local/bin/perl
+
+
+sub System
+{
+ print STDERR join(' ',@_),"\n";
+ die "Cannot " . join(' ',@_) if (system(@_));
+}
+
+System("perl","Makefile.PL") unless (-r "Makefile");
+
+System('make manifest');
+
+chomp($dir = `pwd`);
+$dir =~ s#^.*/##;
+
+sub grab
+{
+ my $dir;
+ foreach $dir (@_)
+  {
+   next unless (-d $dir);
+   if (open(MANIFEST,"<$dir/MANIFEST"))
+    {
+     while (<MANIFEST>)
+      {
+       my ($file) = /^(\S+)/;
+       if (-f "$dir/$file")
+        {
+         push(@files,"$dir/$file"); 
+        }
+       else
+        {
+         warn "Not a file $dir/$file";
+        }
+      }
+     close(MANIFEST);
+    }
+   else
+    {
+     warn "Cannot open $dir/MANIFEST:$!";
+    }
+  }
+}
+
+grab(".","Ned");
+@files = grep(-w $_,@files);
+push(@files,grep(-M $_ < 7,<../../useful/*>));
+push(@files,grep(-M $_ < 7,<ToDo/*>));
+grab(grep(-M $_ < 7,<../../Packages/*>));
+@files = grep(!/\.(ps|ppm|n|3|html)$/,@files);
+@files = grep(!m#/(mTk\.b\d|merge)/#,@files);
+# @files = grep(!m/patches\.001/,@files);
+
+foreach ("/dev/rdiskette","/dev/rfd0")
+ {
+  if (-c $_)
+   {
+    $floppy = $_;
+    last;
+   }
+ }
+
+($sec,$min,$hour,$mday,$mon,$year) = localtime;
+
+$mon++;
+$name = "Tk-$year.$mon.$mday.tar.gz";
+
+chdir("..");
+system("gtar","-czvf",$name,'--block-compress',map("$dir/". $_,@files));
+System("tar","-cvfb",$floppy,36,$name);
+
+

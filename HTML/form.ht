@@ -1,0 +1,33 @@
+<HEAD><TITLE>Columns CARTE_BIBLIO</TITLE>
+<ISINDEX>
+</HEAD><BODY><H2>Columns for CARTE_BIBLIO</H2>
+<a href="/external_ref/image"><img src="saturn.gif" ismap></a>
+<FORM METHOD="POST" ACTION="~a904209/cgi-bin/form-test">
+<INPUT type=submit VALUE=Table><INPUT type=reset value=reset><p>
+<HR>Maximum number of rows : <input name="maxs" size=10 maxlength=10 value="1000"><p>Select 
+<br><input type=radio name=unique value=unique> only distinct rows
+<br><input type=radio name=unique value=all checked> all rows
+<br><input type=checkbox name=autre value=unique> only distinct rows
+<br><input type=checkbox name=autre value=all checked> all rows
+<br>select from CARTE_BIBLIO where : <INPUT name="selection" size=56><hr><pre>
+       Position     Length      Order
+<B>CARTE </B><INPUT type=password NAME="source_CARTE" size=6 maxlength=3 VALUE="1">       <INPUT NAME="longueur_CARTE" size=6 maxlength=4 VALUE="10">       <INPUT NAME="ordre_CARTE" size=6 maxlength=5>
+<B>REF   </B><INPUT NAME="source_REF" size=6 maxlength=3 VALUE="2">       <INPUT NAME="longueur_REF" size=6 maxlength=4 VALUE="5">       <INPUT NAME="ordre_REF" size=6 maxlength=5>
+</pre>
+<input type=image name=aa src="saturn.gif">
+<SELECT NAME="flavor" multiple>
+<OPTION>Vanilla
+<OPTION selected>Strawberry
+<OPTION value="RumRasin">Rum and Raisin
+<OPTION selected>Peach and Orange
+</SELECT>
+<SELECT NAME="brown">
+<OPTION>Vanilla
+<OPTION selected>Strawberry
+<OPTION value="RumRasin">Rum and Raisin
+<OPTION>Peach and Orange
+</SELECT>
+<TEXTAREA cols=14 rows=5 name=bb>bonjour
+au revoir
+</textarea>
+</FORM><HR></BODY>

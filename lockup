@@ -1,0 +1,22 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+use Tk;
+
+$top = MainWindow->new();
+
+$q = $top->Button( "-text" => "Quit",
+                 "-command" => ['destroy',$top]
+                 );
+
+$q->pack("-fill" => "x");
+
+$top->wm('protocol',WM_DELETE_WINDOW,sub { die "BYE BYE\n";});
+
+do
+{
+ eval{ Tk::MainLoop; undef $@;};
+ print "XXXXXXXX\n";
+ print "ERRM\n$@\n" if(defined $@ && $@);
+}
+while($@);
+

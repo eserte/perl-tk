@@ -1,0 +1,50 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) FreeXId.3 1.3 95/05/06 15:29:25-->
+<! -->
+<H1>Tk_FreeXId</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_FreeXId - make X resource identifier available for reuse<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_FreeXId(</B><I>display, id</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Display *display</CODE>
+(in) <DD>Display for which <I>id</I> was allocated.<BR>
+<DT><CODE>XID id</CODE>
+(in) <DD>Identifier of X resource (window, font, pixmap, cursor, graphics<BR>
+context, or colormap) that is no longer in use.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+The default allocator for resource identifiers provided by Xlib is very<BR>
+simple-minded and does not allow resource identifiers to be re-used.<BR>
+If a long-running application reaches the end of the resource id<BR>
+space, it will generate an X protocol error and crash.<BR>
+Tk replaces the default id allocator with its own allocator, which<BR>
+allows identifiers to be reused.<BR>
+In order for this to work, <B>Tk_FreeXId</B> must be called to<BR>
+tell the allocator about resources that have been freed.<BR>
+Tk automatically calls <B>Tk_FreeXId</B> whenever it frees a<BR>
+resource, so if you use procedures like <B>Tk_GetFontStruct</B>,<BR>
+<B>Tk_GetGC</B>, and <B>Tk_GetPixmap</B> then you need not call<BR>
+<B>Tk_FreeXId</B>.<BR>
+However, if you allocate resources directly from Xlib, for example<BR>
+by calling <B>XCreatePixmap</B>, then you should call <B>Tk_FreeXId</B><BR>
+when you call the corresponding Xlib free procedure, such as<BR>
+<B>XFreePixmap</B>.<BR>
+If you don't call <B>Tk_FreeXId</B> then the resource identifier will<BR>
+be lost, which could cause problems if the application runs long enough<BR>
+to lose all of the available identifiers.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>resource identifier<BR>

@@ -1,0 +1,61 @@
+<! Copyright (c) 1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) Tk_Main.3 1.4 95/06/08 11:43:30-->
+<! -->
+<H1>Tk_Main</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_Main - main program for Tk-based applications
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_Main</B>(<I>argc, argv, appInitProc</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>int argc</CODE>
+(in) <DD>Number of elements in <I>argv</I>.<BR>
+<DT><CODE>char *argv[]</CODE>
+(in) <DD>Array of strings containing command-line arguments.<BR>
+<DT><CODE>Tcl_AppInitProc *appInitProc</CODE>
+(in) <DD>Address of an application-specific initialization procedure.<BR>
+The value for this argument is usually <B>Tcl_AppInit</B>.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_Main</B> acts as the main program for most Tk-based applications.<BR>
+Starting with Tk 4.0 it is not called <B>main</B> anymore because it <BR>
+is part of the Tk library and having a function <B>main</B><BR>
+in a library (particularly a shared library) causes problems on many<BR>
+systems.<BR>
+Having <B>main</B> in the Tk library would also make it hard to use<BR>
+Tk in C++ programs, since C++ programs must have special C++<BR>
+<B>main</B> functions.<BR>
+<P>
+Normally each application contains a small <B>main</B> function that does<BR>
+nothing but invoke <B>Tk_Main</B>.<BR>
+<B>Tk_Main</B> then does all the work of creating and running a<BR>
+<B>wish</B>-like application.<BR>
+<P>
+When it is has finished its own initialization, but before<BR>
+it processes commands, <B>Tk_Main</B> calls the procedure given by<BR>
+the <I>appInitProc</I> argument.  This procedure provides a ``hook''<BR>
+for the application to perform its own initialization, such as defining<BR>
+application-specific commands.  The procedure must have an interface<BR>
+that matches the type <B>Tcl_AppInitProc</B>:<BR>
+<BR>
+<DL>
+typedef int Tcl_AppInitProc(Tcl_Interp *<I>interp</I>);<BR>
+</DL>
+<BR>
+<I>AppInitProc</I> is almost always a pointer to <B>Tcl_AppInit</B>;
+for more details on this procedure, see the documentation
+for <B>Tcl_AppInit</B>.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>application-specific initialization, command-line arguments, main program

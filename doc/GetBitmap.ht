@@ -1,0 +1,213 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) GetBitmap.3 1.18 95/06/22 13:13:32-->
+<! -->
+<H1>Tk_GetBitmap</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_GetBitmap, Tk_DefineBitmap, Tk_NameOfBitmap, Tk_SizeOfBitmap, Tk_FreeBitmap, Tk_GetBitmapFromData - maintain database of single-plane pixmaps
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+Pixmap<BR>
+<B>Tk_GetBitmap(</B><I>interp, tkwin, id</I><B>)</B><BR>
+<P>
+int<BR>
+<B>Tk_DefineBitmap(</B><I>interp, nameId, source, width, height</I><B>)</B><BR>
+<P>
+Tk_Uid<BR>
+<B>Tk_NameOfBitmap(</B><I>display, bitmap</I><B>)</B><BR>
+<P>
+<B>Tk_SizeOfBitmap(</B><I>display, bitmap, widthPtr, heightPtr</I><B>)</B><BR>
+<P>
+<B>Tk_FreeBitmap(</B><I>display, bitmap</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for error reporting.<BR>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window in which the bitmap will be used.<BR>
+<DT><CODE>Tk_Uid id</CODE>
+(in) <DD>Description of bitmap;  see below for possible values.<BR>
+<DT><CODE>Tk_Uid *nameId</CODE>
+(in) <DD>Name for new bitmap to be defined.<BR>
+<DT><CODE>char *source</CODE>
+(in) <DD>Data for bitmap, in standard bitmap format.<BR>
+Must be stored in static memory whose value will never change.<BR>
+<DT><CODE>"int" width</CODE>
+(in) <DD>Width of bitmap.<BR>
+<DT><CODE>"int" height</CODE>
+(in) <DD>Height of bitmap.<BR>
+<DT><CODE>"int" *widthPtr</CODE>
+(out) <DD>Pointer to word to fill in with <I>bitmap</I>'s width.<BR>
+<DT><CODE>"int" *heightPtr</CODE>
+(out) <DD>Pointer to word to fill in with <I>bitmap</I>'s height.<BR>
+<DT><CODE>Display *display</CODE>
+(in) <DD>Display for which <I>bitmap</I> was allocated.<BR>
+<DT><CODE>Pixmap bitmap</CODE>
+(in) <DD>Identifier for a bitmap allocated by <B>Tk_GetBitmap</B>.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+These procedures manage a collection of bitmaps (one-plane pixmaps)<BR>
+being used by an application.  The procedures allow bitmaps to be<BR>
+re-used efficiently, thereby avoiding server overhead, and also<BR>
+allow bitmaps to be named with character strings.<BR>
+<P>
+<B>Tk_GetBitmap</B> takes as argument a Tk_Uid describing a bitmap.<BR>
+It returns a Pixmap identifier for a bitmap corresponding to the<BR>
+description.  It re-uses an existing bitmap, if possible, and<BR>
+creates a new one otherwise.  At present, <I>id</I> must have<BR>
+one of the following forms:<BR>
+<DL>
+<DT><B>@</B><I>fileName</I>
+
+<DD><I>FileName</I> must be the name of a file containing a bitmap<BR>
+description in the standard X11 or X10 format.<BR>
+<DT><I>name</I>
+
+<DD><I>Name</I> must be the name of a bitmap defined previously with<BR>
+a call to <B>Tk_DefineBitmap</B>.  The following names are pre-defined<BR>
+by Tk:<BR>
+<DL>
+<DT><B>error</B>
+
+<DD>The international "don't" symbol:  a circle with a diagonal line<BR>
+across it.<BR>
+<DT><B>gray50</B>
+
+<DD>50% gray: a checkerboard pattern where every other bit is on.<BR>
+<DT><B>gray25</B>
+
+<DD>25% gray: a pattern where 25% of the bits are on, consisting of all the<BR>
+bit positions that can be reached by a chess knight starting at (0,0).<BR>
+<DT><B>hourglass</B>
+
+<DD>An hourglass symbol.<BR>
+<DT><B>info</B>
+
+<DD>A large letter ``i''.<BR>
+<DT><B>questhead</B>
+
+<DD>The silhouette of a human head, with a question mark in it.<BR>
+<DT><B>question</B>
+
+<DD>A large question-mark.<BR>
+<DT><B>warning</B>
+
+<DD>A large exclamation point.<BR>
+</DL>
+</DL>
+<P>
+Under normal conditions, <B>Tk_GetBitmap</B><BR>
+returns an identifier for the requested bitmap.  If an error<BR>
+occurs in creating the bitmap, such as when <I>id</I> refers<BR>
+to a non-existent file, then <B>None</B> is returned and an error<BR>
+message is left in <I>interp-&gt;result</I>.<BR>
+<P>
+<B>Tk_DefineBitmap</B> associates a name with<BR>
+in-memory bitmap data so that the name can be used in later<BR>
+calls to <B>Tk_GetBitmap</B>.  The <I>nameId</I><BR>
+argument gives a name for the bitmap;  it must not previously<BR>
+have been used in a call to <B>Tk_DefineBitmap</B>.<BR>
+The arguments <I>source</I>, <I>width</I>, and <I>height</I><BR>
+describe the bitmap.<BR>
+<B>Tk_DefineBitmap</B> normally returns TCL_OK;  if an error occurs<BR>
+(e.g. a bitmap named <I>nameId</I> has already been defined) then<BR>
+TCL_ERROR is returned and an error message is left in<BR>
+<I>interp-&gt;result</I>.<BR>
+Note:  <B>Tk_DefineBitmap</B> expects the memory pointed to by<BR>
+<I>source</I> to be static:  <B>Tk_DefineBitmap</B> doesn't make<BR>
+a private copy of this memory, but uses the bytes pointed to<BR>
+by <I>source</I> later in calls to <B>Tk_GetBitmap</B>.<BR>
+<P>
+Typically <B>Tk_DefineBitmap</B> is used by <B>#include</B>-ing a<BR>
+bitmap file directly into a C program and then referencing<BR>
+the variables defined by the file.<BR>
+For example, suppose there exists a file <B>stip.bitmap</B>,<BR>
+which was created by the <B>bitmap</B> program and contains<BR>
+a stipple pattern.<BR>
+The following code uses <B>Tk_DefineBitmap</B> to define a<BR>
+new bitmap named <B>foo</B>:<BR>
+<BR>
+<BR>
+<PRE>
+Pixmap bitmap;<BR>
+#include "stip.bitmap"<BR>
+Tk_DefineBitmap(interp, Tk_GetUid("foo"), stip_bits,<BR>
+	stip_width, stip_height);<BR>
+...<BR>
+bitmap = Tk_GetBitmap(interp, tkwin, Tk_GetUid("foo"));<BR>
+<BR>
+</PRE>
+<BR>
+This code causes the bitmap file to be read
+at compile-time and incorporates the bitmap information into
+the program's executable image.  The same bitmap file could be
+read at run-time using <B>Tk_GetBitmap</B>:
+<BR>
+<BR>
+<PRE>
+Pixmap bitmap;<BR>
+bitmap = Tk_GetBitmap(interp, tkwin, Tk_GetUid("@stip.bitmap"));<BR>
+<BR>
+</PRE>
+<BR>
+The second form is a bit more flexible (the file could be modified
+after the program has been compiled, or a different string could be
+provided to read a different file), but it is a little slower and
+requires the bitmap file to exist separately from the program.
+<P>
+<B>Tk_GetBitmap</B> maintains a
+database of all the bitmaps that are currently in use.
+Whenever possible, it will return an existing bitmap rather
+than creating a new one.
+This approach can substantially reduce server overhead, so
+<B>Tk_GetBitmap</B> should generally be used in preference to Xlib
+procedures like <B>XReadBitmapFile</B>.
+<P>
+The bitmaps returned by <B>Tk_GetBitmap</B>
+are shared, so callers should never modify them.
+If a bitmap must be modified dynamically, then it should be
+created by calling Xlib procedures such as <B>XReadBitmapFile</B>
+or <B>XCreatePixmap</B> directly.
+<P>
+The procedure <B>Tk_NameOfBitmap</B> is roughly the inverse of
+<B>Tk_GetBitmap</B>.
+Given an X Pixmap argument, it returns the <I>id</I> that was
+passed to <B>Tk_GetBitmap</B> when the bitmap was created.
+<I>Bitmap</I> must have been the return value from a previous
+call to <B>Tk_GetBitmap</B>.
+<P>
+<B>Tk_SizeOfBitmap</B> returns the dimensions of its <I>bitmap</I>
+argument in the words pointed to by the <I>widthPtr</I> and
+<I>heightPtr</I> arguments.  As with <B>Tk_NameOfBitmap</B>,
+<I>bitmap</I> must have been created by <B>Tk_GetBitmap</B>.
+<P>
+When a bitmap returned by <B>Tk_GetBitmap</B>
+is no longer needed, <B>Tk_FreeBitmap</B> should be called to release it.
+There should be exactly one call to <B>Tk_FreeBitmap</B> for
+each call to <B>Tk_GetBitmap</B>.
+When a bitmap is no longer in use anywhere (i.e. it has been freed as
+many times as it has been gotten) <B>Tk_FreeBitmap</B> will release
+it to the X server and delete it from the database.
+
+<A NAME=BUGS><H2>BUGS</H2>
+</A>In determining whether an existing bitmap can be used to satisfy
+a new request, <B>Tk_GetBitmap</B>
+considers only the immediate value of its <I>id</I> argument.  For
+example, when a file name is passed to <B>Tk_GetBitmap</B>,
+<B>Tk_GetBitmap</B> will assume it is safe to re-use an existing
+bitmap created from the same file name:  it will not check to
+see whether the file itself has changed, or whether the current
+directory has changed, thereby causing the name to refer to
+a different file.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>bitmap, pixmap

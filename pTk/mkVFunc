@@ -1,0 +1,152 @@
+#!/usr/local/bin/perl -w
+
+sub Exclude
+{
+ my $cfile = shift;
+ if (open(C,"<$cfile"))
+  {
+   while (<C>)
+    {       
+     if (/{\s*"[^"]+"\s*,\s*(\w+)\s*}/)
+      {     
+       $Exclude{$1} = $cfile;
+      }     
+    }       
+   close(C);
+  }
+ else
+  {
+   warn "Cannot open $cfile:$!";
+  }
+}
+
+sub Vfunc
+{
+ my $hfile = shift;
+ my %VFunc = ();
+ my %VVar  = ();
+ my %VError= ();
+ open(H,"<$hfile") || die "Cannot open $hfile:$!";
+
+ while (<H>)
+  {
+   if (/^\s*(EXTERN|extern)\s*(.*?)\s*(\w+)\s+_ANSI_ARGS_\s*\(\(/)
+    {
+     my ($type,$name) = ($2,$3);
+     my $defn =  "VFUNC($type,$name,V_$name,_ANSI_ARGS_((";
+     $_ = $';
+     until (/\)\);\s*$/)
+      {
+       $defn .= $_;
+       $_ = <H>;
+       if (/^\S/)
+        {
+         chomp($_);
+         die $_;
+        }
+      }
+     s/\)\);\s*$/)))\n/;
+     $defn .= $_;
+     $VFunc{$name} = $defn;
+    }
+   elsif (/^\s*(EXTERN|extern)\s*(.*?)\s*(\w+)\s*;/)
+    {
+     my ($type,$name) = ($2,$3);
+     $VVar{$name} = "VVAR($type,$name,V_$name)\n";
+    }
+   elsif (/\b(EXTERN|extern)\b/)
+    {
+     die "$hfile:$.: $_" unless (/^\s*#\s*define/);
+    }
+  }
+ close(H); 
+
+
+ if (keys %VFunc || keys %VVar)
+  {
+   my $cfile = $hfile;
+   my $gard = "\U$hfile";             
+   $gard =~ s/\..*$//;                 
+   $gard =~ s#/#_#g;
+   my $name = "\u\L${gard}\UV";
+   $fdef = $hfile;
+   $fdef =~ s/\..*$/.t/;
+   $mdef = $hfile;
+   $mdef =~ s/\..*$/.m/;
+     
+   my $htfile = $hfile;
+   $htfile =~ s/\..*$/_f.h/;
+   unless (-r $htfile)
+    {
+     open(C,">$htfile") || die "Cannot open $htfile:$!";
+     print C "#ifndef ${gard}_VT\n";
+     print C "#define ${gard}_VT\n";
+     print C "typedef struct ${name}tab\n{\n";
+     print C "#define VFUNC(type,name,mem,args) type (*mem) args;\n";
+     print C "#define VVAR(type,name,mem)       type (*mem);\n";
+     print C "#include \"$fdef\"\n";
+     print C "#undef VFUNC\n";
+     print C "#undef VVAR\n";
+     print C "} ${name}tab;\n";
+     print C "extern ${name}tab *${name}ptr;\n";
+     print C "extern ${name}tab *${name}Get _ANSI_ARGS_((void));\n";
+     print C "#endif /* ${gard}_VT */\n";
+     close(C);
+    }
+     
+   my $cfile = $hfile;
+   $cfile =~ s/\..*$/_f.c/;
+   unless (-r $cfile)
+    {
+     open(C,">$cfile") || die "Cannot open $cfile:$!";
+     print C "#include \"$hfile\"\n";
+     print C "#include \"$htfile\"\n";
+     print C "static ${name}tab ${name}table =\n{\n";
+     print C "#define VFUNC(type,name,mem,args) name,\n";
+     print C "#define VVAR(type,name,mem)      &name,\n";
+     print C "#include \"$fdef\"\n";
+     print C "#undef VFUNC\n";
+     print C "#undef VVAR\n";
+     print C "};\n";
+     print C "${name}tab *${name}ptr;\n";
+     print C "${name}tab *${name}Get() { return ${name}ptr = &${name}table;}\n";
+     close(C);
+    }
+
+   print STDERR "$gard\n";                              
+   open(VFUNC,">$fdef")   || die "Cannot open $fdef:$!";
+   open(VMACRO,">$mdef")  || die "Cannot open $mdef:$!";
+   print VFUNC  "#ifdef _$gard\n";                       
+   print VMACRO "#include \"$htfile\"\n"; 
+   foreach $func (sort keys %VVar)                     
+    {                                                   
+     if (!exists $Exclude{$func})                       
+      {                                                 
+       print VFUNC $VVar{$func};                     
+       print VMACRO "#define $func (*${name}ptr->V_$func)\n"  
+      }                                                 
+    }                                                   
+   foreach $func (sort keys %VFunc)                     
+    {                                                   
+     if (!exists $Exclude{$func})                       
+      {                                                 
+       print VFUNC $VFunc{$func};                     
+       print VMACRO "#define $func (*${name}ptr->V_$func)\n"  
+      }                                                 
+    }                                                   
+   close(VMACRO);                                       
+   print VFUNC  "#endif /* _$gard */\n";                 
+   close(VFUNC); # Close this last - Makefile dependancy
+  }
+}
+
+foreach (<tk*Tab.c>)
+ {
+  Exclude($_);
+ }
+
+foreach (@ARGV)
+ {
+  Vfunc($_);
+ }
+

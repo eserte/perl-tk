@@ -1,0 +1,867 @@
+=head1 NAME
+
+options - Standard options supported by widgets
+
+=head1 DESCRIPTION
+
+This manual entry describes the common configuration options supported
+by widgets in the Tk toolkit.  Every widget does not necessarily support
+every option (see the manual entries for individual widgets for a list
+of the standard options supported by that widget), but if a widget does
+support an option with one of the names listed below, then the option
+has exactly the effect described below.
+
+In the descriptions below,
+``Name'' refers to the option's name in the option database (e.g.
+in .Xdefaults files).  ``Class'' refers to the option's class value
+in the option database.  ``Command-Line Switch'' refers to the
+switch used in widget-creation and B<configure> widget commands to
+set this value.  For example, if an option's command-line switch is
+B<-foreground> and there exists a widget B<.a.b.c>, then the
+command
+
+    B<.a.b.c  configure  -foreground black>
+
+may be used to specify the value B<black> for the option in the
+the widget B<.a.b.c>.  Command-line switches may be abbreviated,
+as long as the abbreviation is unambiguous.
+
+=over 4
+
+=item Name:	B<activeBackground>
+
+
+=item Class:	B<Foreground>
+
+
+=item Command-Line Switch:	B<-activebackground>
+
+
+Specifies background color to use when drawing active elements.
+An element (a widget or portion of a widget) is active if the
+mouse cursor is positioned over the element and pressing a mouse button
+will cause some action to occur.
+If strict Motif compliance has been requested by setting the
+B<tk_strictMotif> variable, this option will normally be
+ignored;  the normal background color will be used instead.
+
+=back 
+
+=over 4
+
+=item Name:	B<activeBorderWidth>
+
+
+=item Class:	B<BorderWidth>
+
+
+=item Command-Line Switch:	B<-activeborderwidth>
+
+
+Specifies a non-negative value indicating
+the width of the 3-D border drawn around active elements.  
+See above for definition of active elements.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+This option is typically only available in widgets displaying more
+than one element at a time (e.g. menus but not buttons).
+
+=back 
+
+=over 4
+
+=item Name:	B<activeForeground>
+
+
+=item Class:	B<Background>
+
+
+=item Command-Line Switch:	B<-activeforeground>
+
+
+Specifies foreground color to use when drawing active elements.
+See above for definition of active elements.
+
+=back 
+
+=over 4
+
+=item Name:	B<anchor>
+
+
+=item Class:	B<Anchor>
+
+
+=item Command-Line Switch:	B<-anchor>
+
+
+Specifies how the information in a widget (e.g. text or a bitmap)
+is to be displayed in the widget.
+Must be one of the values B<n>, B<ne>, B<e>, B<se>,
+B<s>, B<sw>, B<w>, B<nw>, or B<center>.
+For example, B<nw> means display the information such that its
+top-left corner is at the top-left corner of the widget.
+
+=back 
+
+=over 4
+
+=item Name:	B<background>
+
+
+=item Class:	B<Background>
+
+
+=item Command-Line Switch:	B<-background or -bg>
+
+
+Specifies the normal background color to use when displaying the
+widget.
+
+=back 
+
+=over 4
+
+=item Name:	B<bitmap>
+
+
+=item Class:	B<Bitmap>
+
+
+=item Command-Line Switch:	B<-bitmap>
+
+
+Specifies a bitmap to display in the widget, in any of the forms
+acceptable to B<Tk_GetBitmap>.
+The exact way in which the bitmap is displayed may be affected by
+other options such as B<anchor> or B<justify>.
+Typically, if this option is specified then it overrides other
+options that specify a textual value to display in the widget;
+the B<bitmap> option may be reset to an empty string to re-enable
+a text display.
+In widgets that support both B<bitmap> and B<image> options,
+B<image> will usually override B<bitmap>.
+
+=back 
+
+=over 4
+
+=item Name:	B<borderWidth>
+
+
+=item Class:	B<BorderWidth>
+
+
+=item Command-Line Switch:	B<-borderwidth or -bd>
+
+
+Specifies a non-negative value indicating the width
+of the 3-D border to draw around the outside of the widget (if such a
+border is being drawn;  the B<relief> option typically determines
+this).  The value may also be used when drawing 3-D effects in the
+interior of the widget.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+
+=back 
+
+=over 4
+
+=item Name:	B<cursor>
+
+
+=item Class:	B<Cursor>
+
+
+=item Command-Line Switch:	B<-cursor>
+
+
+Specifies the mouse cursor to be used for the widget.
+The value may have any of the forms acceptable to B<Tk_GetCursor>.
+
+=back 
+
+=over 4
+
+=item Name:	B<disabledForeground>
+
+
+=item Class:	B<DisabledForeground>
+
+
+=item Command-Line Switch:	B<-disabledforeground>
+
+
+Specifies foreground color to use when drawing a disabled element.
+If the option is specified as an empty string (which is typically the
+case on monochrome displays), disabled elements are drawn with the
+normal fooreground color but they are dimmed by drawing them
+with a stippled fill pattern.
+
+=back 
+
+=over 4
+
+=item Name:	B<exportSelection>
+
+
+=item Class:	B<ExportSelection>
+
+
+=item Command-Line Switch:	B<-exportselection>
+
+
+Specifies whether or not a selection in the widget should also be
+the X selection.
+The value may have any of the forms accepted by B<Tcl_GetBoolean>,
+such as B<true>, B<false>, B<0>, B<1>, B<yes>, or B<no>.
+If the selection is exported, then selecting in the widget deselects
+the current X selection, selecting outside the widget deselects any
+widget selection, and the widget will respond to selection retrieval
+requests when it has a selection.  The default is usually for widgets
+to export selections.
+
+=back 
+
+=over 4
+
+=item Name:	B<font>
+
+
+=item Class:	B<Font>
+
+
+=item Command-Line Switch:	B<-font>
+
+
+Specifies the font to use when drawing text inside the widget.
+
+=back 
+
+=over 4
+
+=item Name:	B<foreground>
+
+
+=item Class:	B<Foreground>
+
+
+=item Command-Line Switch:	B<-foreground or -fg>
+
+
+Specifies the normal foreground color to use when displaying the widget.
+
+=back 
+
+=over 4
+
+=item Name:	B<geometry>
+
+
+=item Class:	B<Geometry>
+
+
+=item Command-Line Switch:	B<-geometry>
+
+
+Specifies the desired geometry for the widget's window, in the
+form I<width>B<x>I<height>, where I<width> is the desired
+width of the window and I<height> is the desired height.  The
+units for I<width> and I<height> depend on the particular
+widget.  For widgets displaying text the units are usually the
+size of the characters in the font being displayed;  for other
+widgets the units are usually pixels.
+
+=back 
+
+=over 4
+
+=item Name:	B<highlightBackground>
+
+
+=item Class:	B<HighlightBackground>
+
+
+=item Command-Line Switch:	B<-highlightbackground>
+
+
+Specifies the color to display in the traversal highlight region when
+the widget does not have the input focus.
+
+=back 
+
+=over 4
+
+=item Name:	B<highlightColor>
+
+
+=item Class:	B<HighlightColor>
+
+
+=item Command-Line Switch:	B<-highlightcolor>
+
+
+Specifies the color to use for the traversal highlight rectangle that is
+drawn around the widget when it has the input focus.
+
+=back 
+
+=over 4
+
+=item Name:	B<highlightThickness>
+
+
+=item Class:	B<HighlightThickness>
+
+
+=item Command-Line Switch:	B<-highlightthickness>
+
+
+Specifies a non-negative value indicating the width of the highlight
+rectangle to draw around the outside of the widget when it has the
+input focus.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+If the value is zero, no focus highlight is drawn around the widget.
+
+=back 
+
+=over 4
+
+=item Name:	B<image>
+
+
+=item Class:	B<Image>
+
+
+=item Command-Line Switch:	B<-image>
+
+
+Specifies an image to display in the widget, which must have been
+created with the B<image create> command.
+Typically, if the B<image> option is specified then it overrides other
+options that specify a bitmap or textual value to display in the widget;
+the B<image> option may be reset to an empty string to re-enable
+a bitmap or text display.
+
+=back 
+
+=over 4
+
+=item Name:	B<insertBackground>
+
+
+=item Class:	B<Foreground>
+
+
+=item Command-Line Switch:	B<-insertbackground>
+
+
+Specifies the color to use as background in the area covered by the
+insertion cursor.  This color will normally override either the normal
+background for the widget (or the selection background if the insertion
+cursor happens to fall in the selection).
+
+=back 
+
+=over 4
+
+=item Name:	B<insertBorderWidth>
+
+
+=item Class:	B<BorderWidth>
+
+
+=item Command-Line Switch:	B<-insertborderwidth>
+
+
+Specifies a non-negative value indicating the width
+of the 3-D border to draw around the insertion cursor.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+
+=back 
+
+=over 4
+
+=item Name:	B<insertOffTime>
+
+
+=item Class:	B<OffTime>
+
+
+=item Command-Line Switch:	B<-insertofftime>
+
+
+Specifies a non-negative integer value indicating the number of
+milliseconds the insertion cursor should remain ``off'' in each blink cycle.
+If this option is zero then the cursor doesn't blink:  it is on
+all the time.
+
+=back 
+
+=over 4
+
+=item Name:	B<insertOnTime>
+
+
+=item Class:	B<OnTime>
+
+
+=item Command-Line Switch:	B<-insertontime>
+
+
+Specifies a non-negative integer value indicating the number of
+milliseconds the insertion cursor should remain ``on'' in each blink cycle.
+
+=back 
+
+=over 4
+
+=item Name:	B<insertWidth>
+
+
+=item Class:	B<InsertWidth>
+
+
+=item Command-Line Switch:	B<-insertwidth>
+
+
+Specifies a  value indicating the total width of the insertion cursor.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+If a border has been specified for the insertion
+cursor (using the B<insertBorderWidth> option), the border
+will be drawn inside the width specified by the B<insertWidth>
+option.
+
+=back 
+
+=over 4
+
+=item Name:	B<jump>
+
+
+=item Class:	B<Jump>
+
+
+=item Command-Line Switch:	B<-jump>
+
+
+For widgets with a slider that can be dragged to adjust a value,
+such as scrollbars and scales, this option determines when
+notifications are made about changes in the value.
+The option's value must be a boolean of the form accepted by
+B<Tcl_GetBoolean>.
+If the value is false, updates are made continuously as the
+slider is dragged.
+If the value is true, updates are delayed until the mouse button
+is released to end the drag;  at that point a single notification
+is made (the value ``jumps'' rather than changing smoothly).
+
+=back 
+
+=over 4
+
+=item Name:	B<justify>
+
+
+=item Class:	B<Justify>
+
+
+=item Command-Line Switch:	B<-justify>
+
+
+When there are multiple lines of text displayed in a widget, this
+option determines how the lines line up with each other.
+Must be one of B<left>, B<center>, or B<right>.
+B<Left> means that the lines' left edges all line up, B<center>
+means that the lines' centers are aligned, and B<right> means
+that the lines' right edges line up.
+
+=back 
+
+=over 4
+
+=item Name:	B<orient>
+
+
+=item Class:	B<Orient>
+
+
+=item Command-Line Switch:	B<-orient>
+
+
+For widgets that can lay themselves out with either a horizontal
+or vertical orientation, such as scrollbars, this option specifies
+which orientation should be used.  Must be either B<horizontal>
+or B<vertical> or an abbreviation of one of these.
+
+=back 
+
+=over 4
+
+=item Name:	B<padX>
+
+
+=item Class:	B<Pad>
+
+
+=item Command-Line Switch:	B<-padx>
+
+
+Specifies a non-negative value indicating how much extra space
+to request for the widget in the X-direction.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+When computing how large a window it needs, the widget will
+add this amount to the width it would normally need (as determined
+by the width of the things displayed in the widget);  if the geometry
+manager can satisfy this request, the widget will end up with extra
+internal space to the left and/or right of what it displays inside.
+Most widgets only use this option for padding text:  if they are
+displaying a bitmap or image, then they usually ignore padding
+options.
+
+=back 
+
+=over 4
+
+=item Name:	B<padY>
+
+
+=item Class:	B<Pad>
+
+
+=item Command-Line Switch:	B<-pady>
+
+
+Specifies a non-negative value indicating how much extra space
+to request for the widget in the Y-direction.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+When computing how large a window it needs, the widget will add
+this amount to the height it would normally need (as determined by
+the height of the things displayed in the widget);  if the geometry
+manager can satisfy this request, the widget will end up with extra
+internal space above and/or below what it displays inside.
+Most widgets only use this option for padding text:  if they are
+displaying a bitmap or image, then they usually ignore padding
+options.
+
+=back 
+
+=over 4
+
+=item Name:	B<relief>
+
+
+=item Class:	B<Relief>
+
+
+=item Command-Line Switch:	B<-relief>
+
+
+Specifies the 3-D effect desired for the widget.  Acceptable
+values are B<raised>, B<sunken>, B<flat>, B<ridge>,
+and B<groove>.
+The value
+indicates how the interior of the widget should appear relative
+to its exterior;  for example, B<raised> means the interior of
+the widget should appear to protrude from the screen, relative to
+the exterior of the widget.
+
+=back 
+
+=over 4
+
+=item Name:	B<repeatDelay>
+
+
+=item Class:	B<RepeatDelay>
+
+
+=item Command-Line Switch:	B<-repeatdelay>
+
+
+Specifies the number of milliseconds a button or key must be held
+down before it begins to auto-repeat.  Used, for example, on the
+up- and down-arrows in scrollbars.
+
+=back 
+
+=over 4
+
+=item Name:	B<repeatInterval>
+
+
+=item Class:	B<RepeatInterval>
+
+
+=item Command-Line Switch:	B<-repeatinterval>
+
+
+Used in conjunction with B<repeatDelay>:  once auto-repeat
+begins, this option determines the number of milliseconds between
+auto-repeats.
+
+=back 
+
+=over 4
+
+=item Name:	B<selectBackground>
+
+
+=item Class:	B<Foreground>
+
+
+=item Command-Line Switch:	B<-selectbackground>
+
+
+Specifies the background color to use when displaying selected
+items.
+
+=back 
+
+=over 4
+
+=item Name:	B<selectBorderWidth>
+
+
+=item Class:	B<BorderWidth>
+
+
+=item Command-Line Switch:	B<-selectborderwidth>
+
+
+Specifies a non-negative value indicating the width
+of the 3-D border to draw around selected items.
+The value may have any of the forms acceptable to B<Tk_GetPixels>.
+
+=back 
+
+=over 4
+
+=item Name:	B<selectForeground>
+
+
+=item Class:	B<Background>
+
+
+=item Command-Line Switch:	B<-selectforeground>
+
+
+Specifies the foreground color to use when displaying selected
+items.
+
+=back 
+
+=over 4
+
+=item Name:	B<setGrid>
+
+
+=item Class:	B<SetGrid>
+
+
+=item Command-Line Switch:	B<-setgrid>
+
+
+Specifies a boolean value that determines whether this widget controls the
+resizing grid for its top-level window.
+This option is typically used in text widgets, where the information
+in the widget has a natural size (the size of a character) and it makes
+sense for the window's dimensions to be integral numbers of these units.
+These natural window sizes form a grid.
+If the B<setGrid> option is set to true then the widget will
+communicate with the window manager so that when the user interactively
+resizes the top-level window that contains the widget, the dimensions of
+the window will be displayed to the user in grid units and the window
+size will be constrained to integral numbers of grid units.
+See the section GRIDDED GEOMETRY MANAGEMENT in the B<wm> manual
+entry for more details.
+
+=back 
+
+=over 4
+
+=item Name:	B<takeFocus>
+
+
+=item Class:	B<TakeFocus>
+
+
+=item Command-Line Switch:	B<-takefocus>
+
+
+Provides information used when moving the focus from window to window
+via keyboard traversal (e.g., Tab and Shift-Tab).
+Before setting the focus to a window, the traversal scripts first
+check whether the window is viewable (it and all its ancestors are mapped);
+if not, the window is skipped.
+Next, the scripts consult the value of the B<takeFocus> option.
+A value of B<0> means that this window should be skipped entirely
+during keyboard traversal. 
+B<1> means that the this window should always receive the input
+focus.
+An empty value means that the traversal scripts make the decision
+about whether or not to focus on the window:  the current
+algorithm is to skip the window if it is
+disabled or if it has no key bindings.
+If the value has any other form, then the traversal scripts take
+the value, append the name of the window to it (with a separator space),
+and evaluate the resulting string as a Tcl script.
+The script must return 0, 1, or an empty string;  this value is used
+just as if the option had that value in the first place.
+Note: this interpretation of the option is defined entirely by
+the Tcl scripts that implement traversal:  the widget implementations
+ignore the option entirely, so you can change its meaning if you
+redefine the keyboard traversal scripts.
+
+=back 
+
+=over 4
+
+=item Name:	B<text>
+
+
+=item Class:	B<Text>
+
+
+=item Command-Line Switch:	B<-text>
+
+
+Specifies a string to be displayed inside the widget.  The way in which
+the string is displayed depends on the particular widget and may be
+determined by other options, such as B<anchor> or B<justify>.
+
+=back 
+
+=over 4
+
+=item Name:	B<textVariable>
+
+
+=item Class:	B<Variable>
+
+
+=item Command-Line Switch:	B<-textvariable>
+
+
+Specifies the name of a variable.  The value of the variable is a text
+string to be displayed inside the widget;  if the variable value changes
+then the widget will automatically update itself to reflect the new value.
+The way in which the string is displayed in the widget depends on the
+particular widget and may be determined by other options, such as
+B<anchor> or B<justify>.
+
+=back 
+
+=over 4
+
+=item Name:	B<troughColor>
+
+
+=item Class:	B<Background>
+
+
+=item Command-Line Switch:	B<-troughcolor>
+
+
+Specifies the color to use for the rectangular trough areas
+in widgets such as scrollbars and scales.
+
+=back 
+
+=over 4
+
+=item Name:	B<underline>
+
+
+=item Class:	B<Underline>
+
+
+=item Command-Line Switch:	B<-underline>
+
+
+Specifies the integer index of a character to underline in the widget.
+This option is used by the default bindings to implement keyboard
+traversal for menu buttons and menu entries.
+0 corresponds to the first character of the text displayed in the
+widget, 1 to the next character, and so on.
+
+=back 
+
+=over 4
+
+=item Name:	B<wrapLength>
+
+
+=item Class:	B<WrapLength>
+
+
+=item Command-Line Switch:	B<-wraplength>
+
+
+For widgets that can perform word-wrapping, this option specifies
+the maximum line length.
+Lines that would exceed this length are wrapped onto the next line,
+so that no line is longer than the specified length.
+The value may be specified in any of the standard forms for
+screen distances.
+If this value is less than or equal to 0 then no wrapping is done:  lines
+will break only at newline characters in the text.
+
+=back 
+
+=over 4
+
+=item Name:	B<xScrollCommand>
+
+
+=item Class:	B<ScrollCommand>
+
+
+=item Command-Line Switch:	B<-xscrollcommand>
+
+
+Specifies the prefix for a command used to communicate with horizontal
+scrollbars.
+When the view in the widget's window changes (or
+whenever anything else occurs that could change the display in a
+scrollbar, such as a change in the total size of the widget's
+contents), the widget will
+generate a Tcl command by concatenating the scroll command and
+two numbers.
+Each of the numbers is a fraction between 0 and 1, which indicates
+a position in the document.  0 indicates the beginning of the document,
+1 indicates the end, .333 indicates a position one third the way through
+the document, and so on.
+The first fraction indicates the first information in the document
+that is visible in the window, and the second fraction indicates
+the information just after the last portion that is visible.
+The command is
+then passed to the Tcl interpreter for execution.  Typically the
+B<xScrollCommand> option consists of the path name of a scrollbar
+widget followed by ``set'', e.g. ``.x.scrollbar set'':  this will cause
+the scrollbar to be updated whenever the view in the window changes.
+If this option is not specified, then no command will be executed.
+
+=back 
+
+=over 4
+
+=item Name:	B<yScrollCommand>
+
+
+=item Class:	B<ScrollCommand>
+
+
+=item Command-Line Switch:	B<-yscrollcommand>
+
+
+Specifies the prefix for a command used to communicate with vertical
+scrollbars.  This option is treated in the same way as the
+B<xScrollCommand> option, except that it is used for vertical
+scrollbars and is provided by widgets that support vertical scrolling.
+See the description of B<xScrollCommand> for details
+on how this option is used.
+
+=back 
+
+=head1 KEYWORDS
+
+class, name, standard option, switch

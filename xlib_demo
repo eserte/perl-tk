@@ -1,0 +1,36 @@
+#!/usr/local/bin/perl -w
+BEGIN { unshift(@INC,'blib') }
+use Tk;
+
+use Tk::Xlib;
+
+$top = MainWindow->new();
+
+# Check out some of Xlib stuff
+$screen = $top->Screen;
+$sw     = $screen->WidthOfScreen;
+$sh     = $screen->HeightOfScreen;
+$name   = $top->Display->DisplayString;
+print "$name is [$sw,$sh] pixels\n";
+
+sub DoKey
+{my $w = shift;
+ my $e = $w->XEvent;
+ my $msg = "key : " . $e->A;
+ my $dpy = $w->Display;
+ my $id  = $w->WindowId;
+ unless (defined $w->{GC})
+  {
+   $w->{GC} = GC->new($dpy,$id,
+                     Foreground => 5, 
+                     Font => $dpy->XLoadFont("-*-courier-bold-r-*--24-*"));
+  }
+ my $gc  = $w->{GC};
+ $dpy->XDrawString($id,$gc,$e->x,$e->y,$msg);
+}
+
+$top->bind("<Any-KeyPress>",\&DoKey);
+
+Tk::MainLoop();
+
+

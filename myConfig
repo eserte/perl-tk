@@ -1,0 +1,222 @@
+use Config;
+#
+# Convert perls Config info into -DXXXX for Tk
+#
+$define = "" unless (defined $define);
+
+$gccopt = "";
+
+if (defined $Config{'gccversion'})
+ {
+  $ver = $Config{'gccversion'};
+  if ($ver ge "2.6")
+   { 
+    # retain author's favourite warnings if using gcc
+    $gccopt .= " -Wall -Wno-comment -Wno-unused -MMD -D__USE_FIXED_PROTOTYPES__";
+    eval 
+     {
+      if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
+       {
+        # This is the author - catch as many bugs as possible
+        $gccopt .= " -pedantic -Werror";
+       }
+     }
+   }
+ }
+
+$define .= " -DUSE_PROTO" if ($Config{'prototype'});
+$define .= " -DHAVE_UNISTD_H" if ($Config{'i_unistd'});
+$define .= " -DHAVE_SYS_SELECT_H" if ($Config{'i_sysselct'});
+$define .= " -DNO_STDLIB_H" unless ($Config{'i_stdlib'});
+$define .= " -DHAVE_SYS_TIME_H" if ($Config{'i_systime'});
+$define .= " -DHAVE_LIMITS_H" if ($Config{'i_limits'});
+$define .= " -DUSE_BCOPY" if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
+
+if (defined $Config{'selecttype'})
+ {
+   my $type = $Config{'selecttype'};
+   $type =~ s/\s*\*\s*$//;
+   $define .= " \"-DSELECT_MASK=$type\"";
+ }
+
+if (!$Config{'i_unistd'} && defined $Config{'lseektype'})
+ {
+   my $type = $Config{'lseektype'};
+   $type =~ s/\s*\*\s*$//;
+   $define .= " \"-DLSEEK_TYPE=$type\"";
+ }
+
+
+my $voidflags = $Config{'voidflags'};
+my $voidused  = $Config{'defvoidused'}+0;
+
+$define .= " -DNOVOID" if (($voidflags & $voidused) != $voidused);
+$define .= " -DNOCONST" unless ($Config{'d_const'});
+
+#
+# Hunt down X Library - first a function
+#
+sub lX11
+{
+ my $user = shift;
+ foreach (@_)
+  {
+   # allow any of libX11.a libX11.so.* etc.
+   if (-d $_)
+    {
+     local ($lib);
+     foreach $lib (reverse(<$_/libX11.*>))
+      {
+       if (-r $lib && ($user || !-l $lib))
+        {
+         print "Using -L$_ to find $lib\n"; 
+         return "-L$_" 
+        }
+      }
+    }
+  }
+ print "No -lX11 in ",join(' ',@_),"\n" if (@_ && $user);
+ return undef;
+}
+
+sub IX11
+{
+ foreach (@_)
+  {
+   if (-d $_ && -d "$_/X11" && -r "$_/X11/Xlib.h")
+    {
+     print "Using -I$_ to find $_/X11/Xlib.h\n";
+     return "-I$_";
+    }
+  }
+ return undef;
+}
+
+my @args = ();
+my $arg;
+foreach $arg (@ARGV)
+ {
+  if ($arg =~ /^(X11\w*)=(.*)$/)
+   {
+    ${"$1"} = $2;
+   }
+  else
+   {
+    push(@args,$arg);
+   }
+ }
+@ARGV = @args;
+
+@xdirs = ();
+
+if (defined $X11)
+ {
+  my $dir = $X11;
+  if (-d $dir)
+   {
+    print "Looking for X in $dir\n";
+    push(@xdirs,$dir);
+   }
+  else
+   {
+    die "X11=$dir is not a directory";
+   }
+ }
+else
+ {
+  # Find the X Library through xmkmf!
+  $xmkmf = undef;
+  foreach $dir (split(/:/,$ENV{'PATH'})) {
+    if (-x "$dir/xmkmf" && -r "$dir/xmkmf") {
+      $xmkmf = "$dir/xmkmf";
+      last;
+    }
+  }
+  $uiline = undef;
+  if (defined $xmkmf) {
+    open(XMKMF,$xmkmf) || die("Can't open $xmkmf: $!\n");
+    while(<XMKMF>) {
+      next unless /UseInstalled/o;
+      warn ("Odd, two lines in the $xmkmf file that have UseInstalled on them:\n$uidir$_") if defined $uiline;
+      $uidir = $_;
+    }
+    close(XMKMF);
+    while (defined $uidir) {
+      last unless ($uidir =~ s!^.*-I(\S+)/lib/X11/config!!o);
+      $try = $1;
+      push(@xdirs,$try);
+    }
+  }
+  print "$xmkmf suggests ",join(' ',@xdirs),"\n" if (@xdirs);
+ }
+
+undef $xlib;  # Make sure
+
+if (defined $X11LIB)
+ {
+  $xlib = &lX11(1,$X11LIB) 
+ }
+if (!defined($xlib) && defined($X11))
+ {
+  $xlib = &lX11(1,"$X11/lib") 
+ }
+$xlib = &lX11(0,map("$_/lib",@xdirs)) unless (defined $xlib);
+#
+# Try places perl looks for libraries
+#
+
+$xlib = &lX11(0,split(/\s+/,$Config{'libpth'})) unless defined $xlib;
+
+sub chooseX11
+{
+ # Aim to prefer X11R5 over X11R4 over X11
+ (reverse(sort(@_)));
+}
+
+#
+# If no luck there try "common" places 
+#
+unless (defined $xlib)
+ {
+  $xlib = &lX11(0,'/usr/openwin/lib',chooseX11(</usr/X11*/lib>),chooseX11(</usr/lib/X11*>),</usr/Xfree*/lib>,'/usr/X386/lib')
+ }
+
+die "Cannot find -lX11 anywhere" unless(defined $xlib);
+
+($base) = $xlib =~ m#-L(.*)(?:/lib)$#x;
+if (defined $X11INC)
+ {
+  $xinc = &IX11("$X11INC");
+ }
+
+$xinc = &IX11("$base/include") unless (defined $xinc);
+
+unless (defined $xinc)
+ {
+  warn "Cannot find X include files via $base/include\n";
+  $xinc = &IX11(map("$_/include",@xdirs),
+                '/usr/openwin/include',
+                chooseX11(</usr/X11*/include>),
+                chooseX11(</usr/include/X11*>),
+                </usr/Xfree*/include>,
+                '/usr/X386/include',
+                $Config{'usrinc'});
+ }
+
+die "Cannot find X include files anywhere" unless (defined $xinc);
+
+$inc = ($xinc eq "/usr/include") ? "" : $xinc;
+
+$file = __FILE__.".out";
+open(OUT,">$file") || die "Cannot open $file:$!";
+print OUT "use Config;\n";
+foreach $sym (qw(inc define xlib xinc gccopt))
+ {
+  my $val = ${$sym};
+  $val =~ s/([\\'])/\\$1/g;
+  print OUT "\$$sym = '$val';\n";
+ }
+print OUT "1;\n";
+close(OUT);
+
+1;

@@ -1,0 +1,132 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) selection.n 1.13 95/06/07 21:15:33-->
+<! -->
+<H1>selection</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>selection - Manipulate the X selection
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>selection </B><I>option</I> ?<I>arg arg ...</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This command provides a Tcl interface to the X selection mechanism and
+implements the full selection functionality described in the
+X Inter-Client Communication Conventions Manual (ICCCM).
+<P>
+The first argument to <B>selection</B> determines the format of the
+rest of the arguments and the behavior of the command.  The following
+forms are currently supported:
+<P>
+<DL>
+<DT><B>selection clear</B> ?<B>-displayof</B> <I>window</I>? ?<B>-selection</B> <I>selection</I>?
+
+<DD>If <I>selection</I> exists anywhere on <I>window</I>'s display, clear it
+so that no window owns the selection anymore.  <I>Selection</I>
+specifies the X selection that should be cleared, and should be an
+atom name such as PRIMARY or CLIPBOARD; see the Inter-Client
+Communication Conventions Manual for complete details.
+<I>Selection</I> defaults to PRIMARY and <I>window</I> defaults to ``.''.
+Returns an empty string. 
+<DT><B>selection get</B> ?<B>-displayof</B> <I>window</I>? ?<B>-selection</B> <I>selection</I>? ?<B>-type</B> <I>type</I>?
+
+<DD>Retrieves the value of <I>selection</I> from <I>window</I>'s display and
+returns it as a result.  <I>Selection</I> defaults to PRIMARY and
+<I>window</I> defaults to ``.''. 
+<I>Type</I> specifies the form in which the selection is to be returned
+(the desired ``target'' for conversion, in ICCCM terminology), and
+should be an atom name such as STRING or FILE_NAME; see the
+Inter-Client Communication Conventions Manual for complete details.
+<I>Type</I> defaults to STRING.  The selection owner may choose to
+return the selection in any of several different representation
+formats, such as STRING, ATOM, INTEGER, etc. (this format is different
+than the selection type; see the ICCCM for all the confusing details).
+If the selection is returned in a non-string format, such as INTEGER
+or ATOM, the <B>selection</B> command converts it to string format as a
+collection of fields separated by spaces: atoms are converted to their
+textual names, and anything else is converted to hexadecimal integers.
+<P>
+<DT><B>selection handle</B> ?<B>-selection</B> <I>selection</I>? ?<B>-type</B> <I>type</I>? ?<B>-format</B> <I>format</I>? <I>window command</I>
+
+<DD>Creates a handler for selection requests, such that <I>command</I> will
+be executed whenever <I>selection</I> is owned by <I>window</I> and
+someone attempts to retrieve it in the form given by <I>type</I>
+(e.g. <I>type</I> is specified in the <B>selection get</B> command).
+<I>Selection</I> defaults to PRIMARY, <I>type</I> defaults to STRING, and
+<I>format</I> defaults to STRING.  If <I>command</I> is an empty string
+then any existing handler for <I>window</I>, <I>type</I>, and
+<I>selection</I> is removed.
+<DL>
+<P>
+When <I>selection</I> is requested, <I>window</I> is the selection owner,
+and <I>type</I> is the requested type, <I>command</I> will be executed
+as a Tcl command with two additional numbers appended to it
+(with space separators).  
+The two additional numbers
+are <I>offset</I> and <I>maxBytes</I>:  <I>offset</I> specifies a starting
+character position in the selection and <I>maxBytes</I> gives the maximum
+number of bytes to retrieve.  The command should return a value consisting
+of at most <I>maxBytes</I> of the selection, starting at position
+<I>offset</I>.  For very large selections (larger than <I>maxBytes</I>)
+the selection will be retrieved using several invocations of <I>command</I>
+with increasing <I>offset</I> values.  If <I>command</I> returns a string
+whose length is less than <I>maxBytes</I>, the return value is assumed to
+include all of the remainder of the selection;  if the length of
+<I>command</I>'s result is equal to <I>maxBytes</I> then
+<I>command</I> will be invoked again, until it eventually
+returns a result shorter than <I>maxBytes</I>.  The value of <I>maxBytes</I>
+will always be relatively large (thousands of bytes).
+<P>
+If <I>command</I> returns an error then the selection retrieval is rejected
+just as if the selection didn't exist at all.
+<P>
+The <I>format</I> argument specifies the representation that should be
+used to transmit the selection to the requester (the second column of
+Table 2 of the ICCCM), and defaults to STRING.  If <I>format</I> is
+STRING, the selection is transmitted as 8-bit ASCII characters (i.e.
+just in the form returned by <I>command</I>).  If <I>format</I> is
+ATOM, then the return value from <I>command</I> is divided into fields
+separated by white space;  each field is converted to its atom value,
+and the 32-bit atom value is transmitted instead of the atom name.
+For any other <I>format</I>, the return value from <I>command</I> is
+divided into fields separated by white space and each field is
+converted to a 32-bit integer;  an array of integers is transmitted
+to the selection requester.
+<P>
+The <I>format</I> argument is needed only for compatibility with
+selection requesters that don't use Tk.  If Tk is being
+used to retrieve the selection then the value is converted back to
+a string at the requesting end, so <I>format</I> is
+irrelevant.
+</DL>
+<P>
+<DT><B>selection own</B> ?<B>-displayof</B> <I>window</I>? ?<B>-selection</B> <I>selection</I>?
+
+<DD></DL>
+<B>selection own</B> ?<B>-command</B> <I>command</I>? ?<B>-selection</B> <I>selection</I>? <I>window</I>
+<DL>
+<DL>
+The first form of <B>selection own</B> returns the path name of the
+window in this application that owns <I>selection</I> on the display
+containing <I>window</I>, or an empty string if no window in this
+application owns the selection.  <I>Selection</I> defaults to PRIMARY and
+<I>window</I> defaults to ``.''.
+<P>
+The second form of <B>selection own</B> causes <I>window</I> to become
+the new owner of <I>selection</I> on <I>window</I>'s display, returning
+an empty string as result. The existing owner, if any, is notified
+that it has lost the selection.
+If <I>command</I> is specified, it is a Tcl script to execute when
+some other window claims ownership of the selection away from
+<I>window</I>.  <I>Selection</I> defaults to PRIMARY.
+
+</DL>
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>clear, format, handler, ICCCM, own, selection, target, type

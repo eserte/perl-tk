@@ -1,0 +1,198 @@
+Changes in b8
+
+* Adjusted handling of 'const' in pTk C code.
+
+* Changed delegation to really define AUTOLOADed delegate 
+  function avoids horrible overhead on each call.
+
+* Corrected Steve's long standing issue with inserting selection
+  with <2>. 
+
+* Fixed all the 'use Pretty' problems.
+
+* Merged tk4.0p1 patches
+
+* Added explicit Tk::focus in places to allow tab traversal etc.
+  of canvases which have their own focus method.
+
+* Added Optionmenu.pm
+
+* Divided Text bindings into two parts - one appropriate
+  for read-only Texts - to make it easier to derived HTML
+  stuff from Text.
+
+* Added ability to specify X11 location as
+  perl Makefile.PL X11=/path/to/X
+
+* Other things I have forgotten.
+
+Changes in b7
+
+* Added workround for perl bug in new C version Callback::Call called from 
+  perl in a loop (e.g. showed up in color_editor apply defaults).
+
+* Changed Makefile.PL's to allow build on OSF again
+
+* Changed enabling of -Werror for GCC to only occur where my home
+  directory exists.
+
+* Adjusted Frame.pm to comprehend that -colormap is create-time only 
+  option.
+
+* Applied John Outerhout patch to tkImgPhoto.c 
+
+* Enforced 14 character filename length limit on all files in MANIFEST.
+  Renamed 
+    ScrolledListbox -> ScrlListbox
+    FileSelector    -> FileSelect
+    LabledEntry     -> LabEntry
+    LabledRadio     -> LabRadio
+  >> INCOMPATIBLE <<
+
+* Fixed memory leak due to -textvariable 
+
+* Implemented Tcl_GetVar2 so that -fontmap and -colormap work
+  for canvas postscript option.
+  Added trivial postscript demo canvas_ps, and postscript print
+  option to widget demo 'plot' (Thanks Guy/Steve).
+
+Changes in b6
+
+* Merged production tk4.0 C code and doc files, and added
+  new winfo commands to Widget.pm
+
+* Demos updated from Steve as usual - thanks as always.
+
+* Changed Tk::Widget::new code so that Name => name pair can 
+  occur in any position.
+
+* Added a DoWhenIdle to ConfigChanged when a composite's configure
+  changes. Derived class can override this method to (for example)
+  repaint when all of a group of configures have occurred.
+  (Still experimental).
+
+* Fixed Canvas tags inquiry.
+
+* Changed 'WidgetClass' declaration scheme to something more readable (IMHO).
+  >>> INCOMPATIBLE <<<  (But WidgetClass is still there for now...)
+
+* Eliminated the string evals for constructor and convenience methods,
+  in favour of assigning to globs. 
+  >>> Requires perl5.001m for fixes to closures <<<
+
+* Automatically create @Tk::Xxxxx::Inherit::ISA (as per perlbot)
+  when a widget Construct occurs.
+  Provide Inherit method to use above.
+
+* Implemented Tk/perl hooks to allow Text regular expression matching
+  to work (using perl style regexps!)
+
+* Added Busy/Unbusy to inhibit events and display a cursor while
+  doing something that takes a while.
+
+* Continued evolution of Composite stuff, making ConfigSpecs
+  an array to allow defaults to be specified.
+  More types of configure now allowed.
+  Tk::Composite has gone, Tk::Frame is now the base class,
+  with Tk::Toplevel @ISA'ing Tk::Frame
+
+  Hacked all existing Composites to use new scheme,
+  partially functional FileSelector converted too.
+
+  >>> INCOMPATIBLE <<<
+
+* Eliminated dubious practice of pattern matching the package name
+  to decide on core Tk widget (an one or two other things).
+  Such things are now found via inheritcance.
+
+* Major overhaul of internals of tkGlue.c, fixed leaks and core dumps.
+  Added END block to Mainwindow.pm to cleanup after 'die'.
+
+* Permitted multiple MainWindow->new calls
+  this requires Tk->update style calls to change to $widget->update
+  >>> INCOMPATIBLE <<<
+
+* Started tkpod pod viewer
+
+Changes in b5
+
+* Fixed Photo dynamic loading problems highlighted by AIX.
+
+* Fixed warnings/errors on XFree() building Xlib.ft (SGI and others)
+
+* Fixed tear-off menus with Radio/Check button items.
+
+* Adopted Stephen's latest ColorEditor stuff.
+
+* Adapted Stephen's Composite.pm stuff, adding delegation of 
+  methods and configure stuff, and allowing Toplevel composites
+  without dummy Frames. Propogated style to ScrolledListbox, Dialog
+  and ErrorDialog. Tweaked (some of ) demos as well.
+
+* Merged tk4.0b4 C code and converted its 'man' pages to doc/*.html
+  Minor tweak to Tk.pm/Widget.pm for change of 'winfo allmapped' to
+  'winfo visible'.
+  More consequences of tk4.0b4 expected when further testing occurs.
+  (*.tcl -> *.pm audit *NOT* yet done.)
+
+* Moved 'xpm' library out of pTk and into Pixmap which is what uses it.
+
+* Changed whole approach to stdio 'cnt' that latest Configure
+  'broke' for linux.
+  Now simply define a function in tkGlue.c using perl's FILE_cnt() macro.
+
+* Removed perl patches from the distribution now that perl5.001l
+  is widely available, and patches were getting bulky.
+
+* Edited pTk/mTk/tkPack.c and  pTk/mTk/tkPlace.c so that their info
+  sub commands return usable perl lists.
+  Added convience methods $widget->packslaves and $widget->packinfo.
+
+* Fixed problem in Text 'search' which either rendered it non-functional,
+  or caused a segfault.
+
+* Changed way 'vtables' are declared to avoid problems with one 
+  Linix dld variant.
+
+* Incorporated Stephens conversion of tk4.04 style demos.
+
+* Converted palette.tcl and merged into Widget.pm 
+
+* Adopted code for myConfig that tries to locate X includes and 
+  library by looking for an xmkmf in $PATH.
+
+* Hacked Makefile.PL's to correctly build full-static tkperl
+  Added code to Tk.pm to supress used-once warnings on internal
+  variables.
+
+* Moved all the major widgets to be separately loadable
+
+* Tweak Composite stuff some more - it should still be considered
+  subject to change, but basic structure should be okay.
+   - Not all composites are in same style yet
+   - I may have missed some $cw->{-opt} changes to $cw->{Configure}{-opt}
+   - ConfigSpecs 'delagation' needs work to make the fact that 
+     a widget is a composite transparent to the user.
+     * In place are ways to direct -xxx to a subwidget->configure(-xxx)
+     * Need way to direct -xxx to a subwidget->configure(-yyy)
+     * Need way to direct -xxx to  somewidget->handler(-yyy)
+     * Need cget 
+     * Need to be able to use options 
+
+Changes in b4
+
+* An 'experimental' release which attempts to minimize startup time
+  and memory use by AutoLoading and Dynamicaly loading as much as possible.
+  As such it may be seriously damaged on machines which don't support dynamic
+  loading - such machines should probably stick to Tk-b3.
+  Needs a patch (supplied) to perl5.001e to make auto-loaded methods work.
+
+* A few fixes from Stephen Lidie to demos (Thanks again Stephen).
+
+* Removed most of the $w->IsXxxx tests following recent discussion 
+  by perl5-porters.
+
+* Other minor cleanups.
+
+
+

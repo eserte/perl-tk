@@ -1,0 +1,49 @@
+#!/usr/local/bin/perl -w
+use Tk;
+
+# Set up listbox 
+@messages = ('First Message','Second Message','Third Message');
+
+# Dummy function to be called
+sub DoIt
+{
+ print "DoIt(",join(',',@_),")\n";
+}
+
+
+# Initialze Tk 
+$top = MainWindow->new();
+
+# Create a frame with a label and an entry to input user 
+
+$user = (@ARGV) ? $ARGV[0] : $ENV{USER};
+$frame   = $top->Frame();
+$label   = $frame->Label(-text => 'User : ');
+$entry   = $frame->Entry(-textvariable => \$user);
+$label->pack(-side => 'left');
+$entry->pack(-side => 'right');
+$frame->pack;
+
+# Create the list box
+
+$listbox = $top->Listbox();
+
+# Fill in the list 
+$listbox->insert('end',@messages); 
+$listbox->pack; 
+
+# Create 'execute' button 
+$execute = $top->Button(-text => 'Execute', 
+                        -command => sub 
+                          {
+                           DoIt($user,$listbox->get('active'));
+                           $top->destroy;
+                          });
+$execute->pack;
+
+# Set 1st entry as default
+$listbox->activate(0);
+
+# Interact...
+MainLoop();
+

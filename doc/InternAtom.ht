@@ -1,0 +1,56 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) InternAtom.3 1.6 95/05/06 15:30:02-->
+<! -->
+<H1>Tk_InternAtom</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_InternAtom, Tk_GetAtomName - manage cache of X atoms<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+Atom<BR>
+<B>Tk_InternAtom(</B><I>tkwin, name</I>)<BR>
+<P>
+char *<BR>
+<B>Tk_GetAtomName(</B><I>tkwin, atom</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Token for window.  Used to map atom or name relative to a particular display.<BR>
+<DT><CODE>char *name</CODE>
+(in) <DD>String name for which atom is desired.<BR>
+<DT><CODE>Atom atom</CODE>
+(in) <DD>Atom for which corresponding string name is desired.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+These procedures are similar to the Xlib procedures<BR>
+<B>XInternAtom</B> and <B>XGetAtomName</B>.  <B>Tk_InternAtom</B><BR>
+returns the atom identifier associated with string given by<BR>
+<I>name</I>;  the atom identifier is only valid for the display<BR>
+associated with <I>tkwin</I>.<BR>
+<B>Tk_GetAtomName</B> returns the string associated<BR>
+with <I>atom</I> on <I>tkwin</I>'s display.  The string returned<BR>
+by <B>Tk_GetAtomName</B> is in Tk's storage:  the caller need<BR>
+not free this space when finished with the string, and the caller<BR>
+should not modify the contents of the returned string.<BR>
+If there is no atom <I>atom</I> on <I>tkwin</I>'s display,<BR>
+then <B>Tk_GetAtomName</B> returns the string ``?bad atom?''.<BR>
+<P>
+Tk caches<BR>
+the information returned by <B>Tk_InternAtom</B> and <B>Tk_GetAtomName</B><BR>
+so that future calls<BR>
+for the same information can be serviced from the cache without<BR>
+contacting the server.  Thus <B>Tk_InternAtom</B> and <B>Tk_GetAtomName</B><BR>
+are generally much faster than their Xlib counterparts, and they<BR>
+should be used in place of the Xlib procedures.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>atom, cache, display<BR>

@@ -1,0 +1,78 @@
+<! Copyright (c) 1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) Clipboard.3 1.3 95/05/06 15:31:36-->
+<! -->
+<H1>Tk_ClipboardClear</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_ClipboardClear, Tk_ClipboardAppend - Manage the clipboard<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+int<BR>
+<B>Tk_ClipboardClear</B>(<I>interp, tkwin</I>)<BR>
+<P>
+int<BR>
+<B>Tk_ClipboardAppend</B>(<I>interp, tkwin, target, format, buffer</I>)<BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tcl_Interp *interp</CODE>
+(in) <DD>Interpreter to use for reporting errors.<BR>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Window that determines which display's clipboard to manipulate.<BR>
+<DT><CODE>Atom target</CODE>
+(in) <DD>Conversion type for this clipboard item;  has same meaning as<BR>
+<I>target</I> argument to <B>Tk_CreateSelHandler</B>.<BR>
+<DT><CODE>Atom format</CODE>
+(in) <DD>Representation to use when data is retrieved;  has same meaning as<BR>
+<I>format</I> argument to <B>Tk_CreateSelHandler</B>.<BR>
+<DT><CODE>char *buffer</CODE>
+(in) <DD>Null terminated string containing the data to be appended to the clipboard.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+These two procedures manage the clipboard for Tk.<BR>
+The clipboard is typically managed by calling <B>Tk_ClipboardClear</B><BR>
+once, then calling <B>Tk_ClipboardAppend</B> to add data for any<BR>
+number of targets.<BR>
+<P>
+<B>Tk_ClipboardClear</B> claims the CLIPBOARD selection and frees any<BR>
+data items previously stored on the clipboard in this application.  <BR>
+It normally returns TCL_OK, but if an error occurs it returns<BR>
+TCL_ERROR and leaves an error message in <I>interp-&gt;result</I>.<BR>
+<B>Tk_ClipboardClear</B> must be called before a sequence of<BR>
+<B>Tk_ClipboardAppend</B> calls can be issued.<BR>
+<P>
+<B>Tk_ClipboardAppend</B> appends a buffer of data to the clipboard.<BR>
+The first buffer for a given <I>target</I> determines the <I>format</I><BR>
+for that <I>target</I>.<BR>
+Any successive appends for that <I>target</I> must have<BR>
+the same format or an error will be returned.<BR>
+<B>Tk_ClipboardAppend</B> returns TCL_OK if the buffer is<BR>
+successfully copied onto the clipboard.  If the clipboard is not<BR>
+currently owned by the application, either<BR>
+because <B>Tk_ClipboardClear</B> has not been called or because<BR>
+ownership of the clipboard has changed since the last call to<BR>
+<B>Tk_ClipboardClear</B>,<BR>
+<B>Tk_ClipboardAppend</B> returns TCL_ERROR and leaves an error message in<BR>
+<I>interp-&gt;result</I>.<BR>
+<P>
+In order to guarantee atomicity, no event handling should occur<BR>
+between <B>Tk_ClipboardClear</B> and the following<BR>
+<B>Tk_ClipboardAppend</B> calls (otherwise someone could retrieve<BR>
+a partially completed clipboard or claim ownership away from<BR>
+this application).<BR>
+<P>
+<B>Tk_ClipboardClear</B> may invoke callbacks, including arbitrary<BR>
+Tcl scripts, as a result of losing the CLIPBOARD selection, so<BR>
+any calling function should take care to be reentrant at the point<BR>
+<B>Tk_ClipboardClear</B> is invoked.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>append, clipboard, clear, format, type<BR>

@@ -1,0 +1,9 @@
+#!/usr/local/bin/perl
+$expr = shift;
+
+@ARGV = grep(-T $_,@ARGV);
+
+while (<>)
+ {
+  print "$ARGV:$_" if (/$expr/o);
+ }

@@ -1,0 +1,32 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) raise.n 1.5 95/06/05 13:21:38-->
+<! -->
+<H1>raise</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>raise - Change a window's position in the stacking order
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>raise </B><I>window </I>?<I>aboveThis</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+If the <I>aboveThis</I> argument is omitted then the command raises
+<I>window</I> so that it is above all of its siblings in the stacking
+order (it will not be obscured by any siblings and will obscure
+any siblings that overlap it).
+If <I>aboveThis</I> is specified then it must be the path name of
+a window that is either a sibling of <I>window</I> or the descendant
+of a sibling of <I>window</I>.
+In this case the <B>raise</B> command will insert
+<I>window</I> into the stacking order just above <I>aboveThis</I>
+(or the ancestor of <I>aboveThis</I> that is a sibling of <I>window</I>);
+this could end up either raising or lowering <I>window</I>.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>obscure, raise, stacking order

@@ -1,0 +1,67 @@
+
+Unpack the tar file *outside* the perl source tree for preference.
+
+To install this package you need perl5.001 and unoffical patches to 'm'.
+
+See README.osname for further hints/warnings
+
+If you have perl5.001m installed in the normal way you proceed to build Tk.
+
+It is much simpler to install perl than to try and use an uninstalled
+private copy. If you have a private copy you should 'Configure' it to 
+'install' somewhere you have write access to, and install it there,
+then use that perl to build Tk.
+If using such a private perl, latest MakeMaker e.g. 4.18 is beneficial.
+
+
+When you have an up-to-date perl5.001 installed:
+
+cd to the directory distribution unpacks to.
+
+Then if you have dynamic linking :
+
+perl Makefile.PL
+make 
+# Now built locally - if you have dynamic loading you can now say
+perl ./basic_demo 
+
+make install
+
+You can now run the converted Tk4.0 demos:
+
+./Tk/demos/widget
+
+
+---------------------------------------------------------
+
+For static linking the following is how it is supposed to work 
+(I think, but I don't use static linking normally, this scheme 
+ worked as far as this on one trial under SunOS4.)
+
+perl Makefile.PL
+make 
+make tkperl 
+
+This builds a perl with Tk statically linked in the Tk directory
+thus:
+
+./tkperl ./basic_demo 
+
+should now work.
+
+It is unclear to me whether 'make install' works and I don't want 
+to try it on my system incase is breaks the dynamic version.
+
+
+If Makefile.PL reports that it cannot find X, or chooses a version
+you don't like you can specify a version on the command line:
+
+perl Makefile.PL X11=/usr/local/X11R5  
+
+If X's include and lib are not under a common parent they can be specified
+separately:
+
+perl Makefile.PL X11INC=/usr/local/share/X11R5/include X11LIB=/usr/local/arch/X11R5/lib  
+
+
+

@@ -1,0 +1,87 @@
+=head1 NAME
+
+perl/Tk callbacks 
+
+=head1 SYNOPSIS
+
+   $widget->bind('<somesequence>' => callback);
+   $widget->bind('tag','<somesequence>' => callback);
+   $widget = $parent->Class(...,-command => callback,...);
+   $widget->configure(...,-command => callback,...);
+
+=head1 DESCRIPTION
+
+Where Tcl/Tk has a command string (i.e. a fragment of Tcl to be executed),
+perl/Tk has a callback. A callback can take one of the following basic forms:
+
+=over 4
+
+=item Reference to a sub C<\&name>
+
+=item Anonymous subroutine (closure) C<sub { ... }>
+
+=item A method name C<'name'> 
+
+=back 
+
+Any of these can be provided with arguments by enclosing them and the
+arguments in C<[]>. Here are some examples:
+
+  $mw->bind($class,"<Delete>",'Delete');
+
+Will call $widget->Delete, the $widget being provided (by bind) as 
+the one where the Delete key was pressed.
+
+While having bind provide a widget object for you is ideal in many cases
+it can be irritating in others. Using the list form this behaviour 
+can be modified:
+
+  $a->bind("<Delete>",[$b,'Delete']);
+
+because the first element C<$b> is an object bind 
+will call $b->Delete.
+
+Note that method/object ordering only matters for C<bind> callbacks,
+the auto-quoting in perl5.001 makes the first of these a little more readable:
+
+  $w->configure(-yscrollcommand => [ set => $ysb]);
+  $w->configure(-yscrollcommand => [ $ysb, 'set' ]);
+
+but both will call $ysb->set(args provided by Tk) 
+
+Another use of arguments allows you to write generalized methods which are
+easier to re-use:
+
+  $a->bind("<Next>",['Next','Page']);
+  $a->bind("<Down>",['Next','Line']);
+
+Will call $a->Next('Page') or $a->Next('Line') respectively.
+
+Note that the contents of the C<[]> are evaluated by perl when the 
+callback is created. It is often desirable for the arguments provided
+to the callback to depend on the details of the event which caused 
+it to be executed. To allow for this callbacks can be nested using the 
+C<Ev(...)> "constructor". C<Ev(...)> inserts callback objects into the
+argument list. When perl/Tk glue code is preparing the argument list for 
+the callback it is about to call it spots these special objects and
+recursively applies the callback process to them.
+
+=over 8
+
+=item * 
+
+I<This mechanism was implemented before perl5.001 introduced anonymous>
+C<sub {}> I<closures. Such closures may be a more appropriate way of 
+achieving the same effect.>
+
+=back 
+
+
+  $e->bind('<Return>' => [ $w , 'validate', Ev(['get']) ] ); 
+
+  $topLevelWin->bind('all',"<Visibility>", [\&unobscure, Ev('s')]);
+
+  $mw->bind($class,"<Down>",['SetCursor',Ev('UpDownLine',1)]);
+
+
+

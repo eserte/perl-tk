@@ -1,0 +1,80 @@
+<! Copyright (c) 1990 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) bindtags.n 1.5 95/05/06 15:30:44-->
+<! -->
+<H1>bindtags</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>bindtags - Determine which bindings apply to a window, and order of evaluation
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>bindtags </B><I>window </I>?<I>tagList</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+When a binding is created with the <B>bind</B> command, it is
+associated either with a particular window such as <B>.a.b.c</B>,
+a class name such as <B>Button</B>, the keyword <B>all</B>, or any
+other string.
+All of these forms are called <I>binding tags</I>.
+Each window contains a list of binding tags that determine how
+events are processed for the window.
+When an event occurs in a window, it is applied to each of the
+window's tags in order:  for each tag, the most specific binding
+that matches the given tag and event is executed.
+See the <A HREF="bind.ht"> <B>bind</B></A> manual entry for more information on the matching
+process.
+<P>
+By default, each window has four binding tags consisting of the
+name of the window, the window's class name, the name of the window's
+nearest toplevel ancestor, and <B>all</B>, in that order.
+Toplevel windows have only three tags by default, since the toplevel
+name is the same as that of the window.
+The <B>bindtags</B> command allows the binding tags for a window to be
+read and modified.
+<P>
+If <B>bindtags</B> is invoked with only one argument, then the
+current set of binding tags for <I>window</I> is returned as a list.
+If the <I>tagList</I> argument is specified to <B>bindtags</B>,
+then it must be a proper list; the tags for <I>window</I> are changed
+to the elements of the list.
+The elements of <I>tagList</I> may be arbitrary strings;  however,
+any tag starting with a dot is treated as the name of a window;  if
+no window by that name exists at the time an event is processed,
+then the tag is ignored for that event.
+The order of the elements in <I>tagList</I> determines the order in
+which binding scripts are executed in response to events.
+For example, the command
+<BR>
+<PRE>
+<B>bindtags .b {all . Button .b}</B><BR>
+<BR>
+</PRE>
+reverses the order in which binding scripts will be evaluated for
+a button named <B>.b</B> so that <B>all</B> bindings are invoked
+first, following by bindings for <B>.b</B>'s toplevel (``.''), followed by
+class bindings, followed by bindings for <B>.b</B>.
+<P>
+The <B>bindtags</B> command may be used to introduce arbitrary
+additional binding tags for a window, or to remove standard tags.
+For example, the command
+<BR>
+<PRE>
+<B>bindtags .b {.b TrickyButton . all}</B><BR>
+<BR>
+</PRE>
+replaces the <B>Button</B> tag for <B>.b</B> with <B>TrickyButton</B>.
+This means that the default widget bindings for buttons, which are
+associated with the <B>Button</B> tag, will no longer apply to <B>.b</B>,
+but any bindings associated with <B>TrickyButton</B> (perhaps some
+new button behavior) will apply.
+
+<A NAME=Section0><H2>SEE ALSO</H2>
+</A><A HREF="bind.ht"> bind</A>
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>binding, event, tag

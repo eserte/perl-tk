@@ -1,0 +1,15 @@
+HTML.pm
+HTMLText.pm
+HTMLtest.pm
+MANIFEST
+MANIFEST.SKIP
+Makefile.PL
+Web.pm
+form.ht
+html-spec_8.ht
+places.ht
+prof
+speed
+tkhtml
+tkweb
+webget

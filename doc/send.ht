@@ -1,0 +1,90 @@
+<! Copyright (c) 1990-1994 The Regents of the University of California.-->
+<! Copyright (c) 1994 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) send.n 1.12 95/06/07 21:15:34-->
+<! -->
+<H1>send</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>send - Execute a command in a different application
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>send ?</B><I>options</I>? <I>app cmd </I>?<I>arg arg ...</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+This command arranges for <I>cmd</I> (and <I>arg</I>s) to be executed in the
+application named by <I>app</I>.  It returns the result or
+error from that command execution.
+<I>App</I> may be the name of any application whose main window is
+on the display containing the sender's main window;  it need not
+be within the same process.
+If no <I>arg</I> arguments are present, then the command to be executed is
+contained entirely within the <I>cmd</I> argument.  If one or
+more <I>arg</I>s are present, they are concatenated to form the
+command to be executed, just as for the <B>eval</B> command.
+<P>
+If the initial arguments of the command begin with ``-''
+they are treated as options.  The following options are
+currently defined:
+<DL>
+<DT><B>-async</B>
+
+<DD>Requests asynchronous invocation.  In this case the <B>send</B>
+command will complete immediately without waiting for <I>cmd</I>
+to complete in the target application.
+If the target application is in the same process as the sending
+application then the <B>-async</B> option is ignored.
+<DT><B>-displayof</B> <I>pathName</I>
+
+<DD>Specifies that the target application's main window is on the display
+of the window given by <I>pathName</I>, instead of the display containing
+the application's main window.
+<DT><B>--</B>
+
+<DD>Serves no purpose except to terminate the list of options.  This
+option is needed only if <I>app</I> could contain a leading ``-''
+character.
+
+</DL>
+<A NAME=Section0><H2>APPLICATION NAMES</H2>
+</A><P>
+The name of an application is set initially from the name of the
+program or script that created the application.
+You can query and change the name of an application with the
+<B>tk appname</B> command.
+
+<A NAME=Section1><H2>DISABLING SENDS</H2>
+</A><P>
+If the <B>send</B> command is removed from an application (e.g.
+with the command <B>rename send {}</B>) then the application
+will not respond to incoming send requests anymore,  nor will it
+be able to issue outgoing requests.
+Communication can be reenabled by invoking the <B>tk appname</B>
+command.
+
+<A NAME=SECURITY><H2>SECURITY</H2>
+</A><P>
+The <B>send</B> command is potentially a serious security loophole,
+since any application that can connect to your X server can send
+scripts to your applications.
+These incoming scripts can use Tcl to read and
+write your files and invoke subprocesses under your name.
+Host-based access control such as that provided by <B>xhost</B>
+is particularly insecure, since it allows anyone with an account
+on particular hosts to connect to your server, and if disabled it
+allows anyone anywhere to connect to your server.
+In order to provide at least a small amount of
+security, Tk checks the access control being used by the server
+and rejects incoming sends unless (a) <B>xhost</B>-style access control
+is enabled (i.e. only certain hosts can establish connections) and (b) the
+list of enabled hosts is empty.
+This means that applications cannot connect to your server unless
+they use some other form of authorization
+such as that provide by <B>xauth</B>.
+
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>application, name, remote execution, security, send

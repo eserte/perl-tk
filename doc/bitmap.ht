@@ -1,0 +1,117 @@
+<! Copyright (c) 1994 The Regents of the University of California.-->
+<! Copyright (c) 1994-1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) bitmap.n 1.6 95/06/07 21:15:07-->
+<! -->
+<H1>bitmap</H1>
+<HR>
+<! Note:  do not modify the .SH NAME line immediately below!-->
+<A NAME=NAME><H2>NAME</H2>
+</A>bitmap - Images that display two colors
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><B>image create bitmap </B>?<I>name</I>? ?<I>options</I>?
+<HR>
+
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+A bitmap is an image whose pixels can display either of two colors
+or be transparent.
+A bitmap image is defined by four things:  a background color,
+a foreground color, and two bitmaps, called the <I>source</I>
+and the <I>mask</I>.
+Each of the bitmaps specifies 0/1 values for a rectangular
+array of pixels, and the two bitmaps must have the same
+dimensions.
+For pixels where the mask is zero, the image displays nothing,
+producing a transparent effect.
+For other pixels, the image displays the foreground color if
+the source data is one and the background color if the source
+data is zero.
+
+<A NAME=Section0><H2>CREATING BITMAPS</H2>
+</A><P>
+Like all images, bitmaps are created using the <B>image create</B>
+command.
+Bitmaps support the following <I>options</I>:
+<DL>
+<DT><B>-background </B><I>color</I>
+
+<DD>Specifies a background color for the image in any of the standard
+ways accepted by Tk.  If this option is set to an empty string
+then the background pixels will be transparent.  This affect
+is achieved by using the source bitmap as the mask bitmap, ignoring
+any <B>-maskdata</B> or <B>-maskfile</B> options.
+<DT><B>-data </B><I>string</I>
+
+<DD>Specifies the contents of the source bitmap as a string.
+The string must adhere to X11 bitmap format (e.g., as generated
+by the <B>bitmap</B> program).
+If both the <B>-data</B> and <B>-file</B> options are specified,
+the <B>-data</B> option takes precedence.
+<DT><B>-file </B><I>name</I>
+
+<DD><I>name</I> gives the name of a file whose contents define the
+source bitmap.
+The file must adhere to X11 bitmap format (e.g., as generated
+by the <B>bitmap</B> program).
+<DT><B>-foreground </B><I>color</I>
+
+<DD>Specifies a foreground color for the image in any of the standard
+ways accepted by Tk.
+<DT><B>-maskdata </B><I>string</I>
+
+<DD>Specifies the contents of the mask as a string.
+The string must adhere to X11 bitmap format (e.g., as generated
+by the <B>bitmap</B> program).
+If both the <B>-maskdata</B> and <B>-maskfile</B> options are specified,
+the <B>-maskdata</B> option takes precedence.
+<DT><B>-maskfile </B><I>name</I>
+
+<DD><I>name</I> gives the name of a file whose contents define the
+mask.
+The file must adhere to X11 bitmap format (e.g., as generated
+by the <B>bitmap</B> program).
+
+</DL>
+<A NAME=Section1><H2>IMAGE COMMAND</H2>
+</A><P>
+When a bitmap image is created, Tk also creates a new command
+whose name is the same as the image.
+This command may be used to invoke various operations
+on the image.
+It has the following general form:
+<BR>
+<PRE>
+<I>imageName option </I>?<I>arg arg ...</I>?<BR>
+<BR>
+</PRE>
+<I>Option</I> and the <I>arg</I>s
+determine the exact behavior of the command.  The following
+commands are possible for bitmap images:
+<DL>
+<DT><I>imageName </I><B>cget</B> <I>option</I>
+
+<DD>Returns the current value of the configuration option given
+by <I>option</I>.
+<I>Option</I> may have any of the values accepted by the
+<B>image create bitmap</B> command.
+<DT><I>imageName </I><B>configure</B> ?<I>option</I>? ?<I>value option value ...</I>?
+
+<DD>Query or modify the configuration options for the image.
+If no <I>option</I> is specified, returns a list describing all of
+the available options for <I>imageName</I> (see <A HREF="ConfigWidg.ht"> <B>Tk_ConfigureInfo</B></A> for
+information on the format of this list).  If <I>option</I> is specified
+with no <I>value</I>, then the command returns a list describing the
+one named option (this list will be identical to the corresponding
+sublist of the value returned if no <I>option</I> is specified).  If
+one or more <I>option-value</I> pairs are specified, then the command
+modifies the given option(s) to have the given value(s);  in
+this case the command returns an empty string.
+<I>Option</I> may have any of the values accepted by the
+<B>image create bitmap</B> command.
+
+</DL>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>bitmap, image

@@ -1,0 +1,38 @@
+<! Copyright (c) 1995 Sun Microsystems, Inc.-->
+<! See the file "license.terms" for information on usage and redistribution-->
+<! of this file, and for a DISCLAIMER OF ALL WARRANTIES.-->
+<! -->
+<! @(#) DrawFocHlt.3 1.2 95/05/06 15:31:45-->
+<! -->
+<H1>Tk_DrawFocusHighlight</H1>
+<HR>
+<A NAME=NAME><H2>NAME</H2>
+</A>Tk_DrawFocusHighlight - draw the traversal highlight ring for a widget<BR>
+<A NAME=SYNOPSIS><H2>SYNOPSIS</H2>
+</A><BR>
+<B>#include &lt;tk.h&gt;</B><BR>
+<P>
+<B>Tk_GetPixels(</B><I>tkwin, gc, width, drawable</I><B>)</B><BR>
+<A NAME=ARGUMENTS><H2>ARGUMENTS</H2>
+</A><DL>
+<DT><CODE>Tk_Window tkwin</CODE>
+(in) <DD>Window for which the highlight is being drawn.  Used to retrieve<BR>
+the window's dimensions, among other things.<BR>
+<DT><CODE>GC gc</CODE>
+(in) <DD>Graphics context to use for drawing the highlight.<BR>
+<DT><CODE>int width</CODE>
+(in) <DD>Width of the highlight ring, in pixels.<BR>
+<DT><CODE>Drawable drawable</CODE>
+(in) <DD>Drawable in which to draw the highlight;  usually an offscreen<BR>
+pixmap for double buffering.<BR>
+</DL>
+<HR>
+<BR>
+<A NAME=DESCRIPTION><H2>DESCRIPTION</H2>
+</A><P>
+<B>Tk_DrawFocusHighlight</B> is a utility procedure that draws the<BR>
+traversal highlight ring for a widget.<BR>
+It is typically invoked by widgets during redisplay.<BR>
+<BR>
+<A NAME=KEYWORDS><H2>KEYWORDS</H2>
+</A>focus, traversal highlight<BR>
