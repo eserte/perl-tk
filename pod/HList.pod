@@ -5,7 +5,7 @@
 #  The file man.macros and some of the macros used by this file are
 #  copyrighted: (c) 1990 The Regents of the University of California.
 #               (c) 1994-1995 Sun Microsystems, Inc.
-#  The license terms of the Tcl/Tk distrobution are in the file
+#  The license terms of the Tcl/Tk distribution are in the file
 #  license.tcl.
 
 =head1 NAME
@@ -37,7 +37,7 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-browsecmd>
 
-Specifies a perl/Tk B<callback> to be executed when the user browses through the
+Specifies a perl/Tk L<callback|Tk::callbacks> to be executed when the user browses through the
 entries in the HList widget.
 
 =item Name:	B<columns>
@@ -56,7 +56,7 @@ changed subsequently.
 
 =item Switch:	B<-command>
 
-Specifies the perl/Tk B<callback> to be executed when the user invokes a list
+Specifies the perl/Tk L<callback|Tk::callbacks> to be executed when the user invokes a list
 entry in the HList widget. Normally the user invokes a list
 entry by double-clicking it or pressing the Return key.
 
@@ -129,7 +129,7 @@ widget. See the B<indicator> method below.
 
 =item Switch:	B<-indicatorcmd>
 
-Specifies a perl/Tk B<callback> to be executed when the user manipulates the
+Specifies a perl/Tk L<callback|Tk::callbacks> to be executed when the user manipulates the
 indicator of an HList entry. The B<-indicatorcmd> is triggered
 when the user press or releases the mouse button over the indicator in
 an HList entry. By default the perl/Tk B<callback> specified by
@@ -146,7 +146,8 @@ and B<E<lt>ActivateE<gt>>.
 =item Switch:	B<-itemtype>
 
 Specifies the default type of display item for this HList widget. When
-you call the add and addchild methods, display items of this
+you call the B<itemCreate>, B<add> and B<addchild> methods, display
+items of this
 type will be created if the B<-itemtype> option is not specified .
 
 =item Name:	B<padX>
@@ -208,9 +209,9 @@ B<extended>; the default value is B<single>.
 
 =item Switch:	B<-sizecmd>
 
-Specifies a perl/Tk B<callback>B< to be called whenever the HList widget>
-changes its size. This command can be useful to implement "user scroll
-bars when needed" features.
+Specifies a perl/Tk L<callback|Tk::callbacks> to be called whenever the HList widget
+changes its size.  This method can be useful to implement ``I<user scroll
+bars when needed>'' features.
 
 =item Name:	B<separator>
 
@@ -263,11 +264,12 @@ parent is ".two", whose parent is ".", which is a toplevel entry.
 
 Each list entry in an HList widget is associated with a B<display>
 item.  The display item determines what visual information should
-be displayed for this list entry. Please see the L<Tk::DItem> documentation
-page for a list of all display items.
-When a list entry is created by the B<add> or B<addchild> widget
-commands, the type of its display item is determined by the
-B<-itemtype> option passed to these commands. If the
+be displayed for this list entry. Please see L<Tk::DItem>
+for a list of all display items.
+When a list entry is created by the B<itemCreate>, B<add> or
+B<addchild> widget
+methods, the type of its display item is determined by the
+B<-itemtype> option passed to these methods. If the
 B<-itemtype> is omitted, then by default the type specified by
 this HList widget's B<-itemtype> option is used.
 
@@ -284,42 +286,43 @@ The following additional methods are available HList widgets:
 
 =over 4
 
-=item I<$hlist>-E<gt>B<add>(I<entryPath, >?I<option, value, ...>?)
+=item I<$hlist>-E<gt>B<add>(I<$entryPath> ?,I<option>=E<gt>I<value>, ...?)
 
-Creates a new list entry with the pathname I<entryPath>. A list
+Creates a new list entry with the pathname I<$entryPath>. A list
 entry must be created after its parent is created (unless this entry
-is a top-level entry, which has no parent). This command returns the
+is a top-level entry, which has no parent).  See also L<"BUGS> below.
+This method returns the
 entryPath of the newly created list entry. The following
 configuration options can be given to configure the list entry:
 
 =over 8
 
-=item B<-at>I< position>
+=item B<-at> =E<gt> I<position>
 
 Insert the new list at the position given by I<position>.
 I<position> must be a valid integer. the Position B<0> indicates
 the first position, B<1> indicates the second position, and so on.
 
-=item B<-after>I< afterWhich>
+=item B<-after> =E<gt> I<afterWhich>
 
 Insert the new list entry after the entry identified by
 I<afterWhich>. I<afterWhich> must be a valid list entry and it
 mush have the same parent as the new list entry
 
-=item B<-before>I< beforeWhich>
+=item B<-before> =E<gt> I<beforeWhich>
 
 Insert the new list entry before the entry identified by
 I<beforeWhich>. I<beforeWhich> must be a valid list entry and it
 mush have the same parent as the new list entry
 
-=item B<-data>I< string>
+=item B<-data> =E<gt> I<string>
 
 Specifies a string to associate with this list entry. This string can
 be queried by the B<info> method. The application
 programmer can use the B<-data> option to associate the list entry
 with the data it represents.
 
-=item B<-itemtype>I< type>
+=item B<-itemtype> =E<gt> I<type>
 
 Specifies the type of display item to be display for the new list
 entry. B<type> must be a valid display item type. Currently the
@@ -327,7 +330,7 @@ available display item types are B<imagetext>, B<text>, and
 $widget. If this option is not specified, then by default the
 type specified by this HList widget's B<-itemtype> option is used.
 
-=item B<-state>
+=item B<-state> =E<gt> I<state>
 
 Specifies whether this entry can be selected or invoked by the user.
 Must be either B<normal> or B<disabled>.
@@ -337,24 +340,25 @@ Must be either B<normal> or B<disabled>.
 The B<add> method accepts additional configuration options
 to configure the display item associated with this list entry. The set
 of additional configuration options depends on the type of the display
-item given by the B<-itemtype> option. Please see the
-B<DItem(n)> manual page for a list of the configuration options for
+item given by the B<-itemtype> option. Please see
+L<Tk::DItem> for a list of the configuration options for
 each of the display item types.
 
-=item I<$hlist>-E<gt>B<addchild>(I<parentPath, >?I<option, value, ..., >?)
+=item I<$hlist>-E<gt>B<addchild>(I<$parentPath, >?I<option, value, ..., >?)
 
 Adds a new child entry to the children list of the list entry
-identified by I<parentPath>. Or, if I<parentPath> is set to be
+identified by I<$parentPath>. Or, if I<$parentPath> is set to be
 the empty string, then creates a new toplevel entry. The name of the
 new list entry will be a unique name automatically generated by the
-HList widget. Usually if I<parentPath> is B<foo>, then the
+HList widget. Usually if I<$parentPath> is B<foo>, then the
 entryPath of the new entry will be B<foo.1>, B<foo.2>, ... etc.
-This command returns the entryPath of the newly created list entry.
+This method returns the entryPath of the newly created list entry.
 I<option> can be any option for the B<add> method.
+See also L<"BUGS> below.
 
-=item I<$hlist>-E<gt>B<anchorSet>(I<entryPath>)
+=item I<$hlist>-E<gt>B<anchorSet>(I<$entryPath>)
 
-Sets the anchor to the list entry identified by I<entryPath>.  The
+Sets the anchor to the list entry identified by I<$entryPath>.  The
 anchor is the end of the selection that is fixed while the user is
 dragging out a selection with the mouse.
 
@@ -364,10 +368,10 @@ Removes the anchor, if any, from this HList widget. This only
 removes the surrounding highlights of the anchor entry and does not
 affect its selection status.
 
-=item I<$hlist>-E<gt>B<columnWidth(>I<col>?, I<-char>?, ?I<width>?)
+=item I<$hlist>-E<gt>B<columnWidth>(I<$col>?, I<-char>?, ?I<width>?)
 
-Querys or sets the width of a the column I<col> in the HList
-widget. The value of I<col> is zero-based: 0 stands for the first
+Querys or sets the width of a the column I<$col> in the HList
+widget. The value of I<$col> is zero-based: 0 stands for the first
 column, 1 stands for the second, and so on. If no further parameters
 are given, returns the current width of this column (in number of
 pixels). Additional parameters can be given to set the width of this
@@ -375,18 +379,18 @@ column:
 
 =over 8
 
-=item I<$hlist>-E<gt>B<columnWidth>(I<col>, B<''>)
+=item I<$hlist>-E<gt>B<columnWidth>(I<$col>, B<''>)
 
 An empty string indicates that the width of the column should be just
 wide enough to display the widest element in this column. In this
 case, the width of this column may change as a result of the elements
 in this column changing their sizes.
 
-=item I<$hlist>-E<gt>B<columnWidth>(I<col, >I<width>)
+=item I<$hlist>-E<gt>B<columnWidth>(I<$col, >I<width>)
 
-I<width> must be in a form accepted by B<Tk_GetPixels(3)>.
+I<width> must be in a form accepted by B<Tk_GetPixels>.
 
-=item I<$hlist>-E<gt>B<columnWidth>(I<col, >B<-char, >I<nChars>)
+=item I<$hlist>-E<gt>B<columnWidth>(I<$col, >B<-char, >I<nChars>)
 
 The width is set to be the average width occupied by I<nChars>
 number of characters of the font specified by the B<-font> option
@@ -394,7 +398,7 @@ of this HList widget.
 
 =back
 
-=item I<$hlist>-E<gt>B<delete>(I<option, >I<entryPath>)
+=item I<$hlist>-E<gt>B<delete>(I<option>, I<$entryPath>)
 
 Delete one or more list entries. I<option> may be one of the
 following:
@@ -403,31 +407,31 @@ following:
 
 =item B<all>
 
-Delete all entries in the HList. In this case the I<entryPath>
+Delete all entries in the HList. In this case the I<$entryPath>
 does not need to be specified.
 
 =item B<entry>
 
-Delete the entry specified by I<entryPath> and all its offsprings,
+Delete the entry specified by I<$entryPath> and all its offsprings,
 if any.
 
 =item B<offsprings>
 
 Delete all the offsprings, if any, of the entry specified by
-I<entryPath>. However, I<entryPath> itself is not deleted.
+I<$entryPath>. However, I<$entryPath> itself is not deleted.
 
 =item B<siblings>
 
 Delete all the list entries that share the same parent with the entry
-specified by I<entryPath>. However, I<entryPath> itself is not
+specified by I<$entryPath>. However, I<$entryPath> itself is not
 deleted.
 
 =back
 
-=item I<$hlist>-E<gt>B<dragsiteSet>(I<entryPath>)
+=item I<$hlist>-E<gt>B<dragsiteSet>(I<$entryPath>)
 
 Sets the dragsite to the list entry identified by
-I<entryPath>. The dragsite is used to indicate the source of a
+I<$entryPath>. The dragsite is used to indicate the source of a
 drag-and-drop action. Currently drag-and-drop functionality has not
 been implemented in Tix yet.
 
@@ -437,10 +441,10 @@ Remove the dragsite, if any, from the this HList widget. This only
 removes the surrounding highlights of the dragsite entry and does not
 affect its selection status.
 
-=item I<$hlist>-E<gt>B<dropsiteSet>(I<entryPath>)
+=item I<$hlist>-E<gt>B<dropsiteSet>(I<$entryPath>)
 
-Sets the dropsite to the list entry identified by I<entryPath>. The
-dropsite is used to indicate the target of a grag-and-drop
+Sets the dropsite to the list entry identified by I<$entryPath>. The
+dropsite is used to indicate the target of a drag-and-drop
 action. Currently drag-and-drop functionality has not been implemented
 in Tix yet.
 
@@ -450,68 +454,69 @@ Remove the dropsite, if any, from the this HList widget. This only
 removes the surrounding highlights of the dropsite entry and does not
 affect its selection status.
 
-=item I<$hlist>-E<gt>B<entrycget>(I<entryPath, option>)
+=item I<$hlist>-E<gt>B<entrycget>(I<$entryPath>, I<option>)
 
 Returns the current value of the configuration option given by
-I<option> for the entry indentfied by I<entryPath>. I<Option>
+I<option> for the entry indentfied by I<$entryPath>. I<Option>
 may have any of the values accepted by the B<add> method.
 
-=item I<$hlist>-E<gt>B<entryconfigure>(I<entryPath, >?I<option>?, I<?value, option, value, ...>?)
+=item I<$hlist>-E<gt>B<entryconfigure>(I<$entryPath> ?,I<option>?, ?I<value>=E<gt>I<option>, ...?)
 
 Query or modify the configuration options of the list entry indentfied
-by I<entryPath>. If no I<option> is specified, returns a list
-describing all of the available options for I<entryPath> (see
+by I<$entryPath>. If no I<option> is specified, returns a list
+describing all of the available options for I<$entryPath> (see
 L<Tk::options> for information on the format of this list.) If
-I<option> is specified with no I<value>, then the command
+I<option> is specified with no I<value>, then the method
 returns a list describing the one named option (this list will be
 identical to the corresponding sublist of the value returned if no
 I<option> is specified). If one or more I<option-value> pairs
-are specified, then the command modifies the given option(s) to have
-the given value(s); in this case the command returns an empty string.
+are specified, then the method modifies the given option(s) to have
+the given value(s); in this case the method returns an empty string.
 I<Option> may have any of the values accepted by the B<add> or
 B<addchild> method. The exact set of options depends on the
 value of the B<-itemtype> option passed to the the B<add> or
 B<addchild> method when this list entry is created.
 
-=item I<$widget>-E<gt>B<header>(I<option, >I<col, >?I<args, ...>?)
+=item I<$hlist>-E<gt>B<header>(I<option>, I<$col> ?,I<args>, ...?)
 
 Manipulates the header items of this HList widget. If the
 B<-header> option of this HList widget is set to true, then a
-header item is displayed at the top of each column. The I<col>
-argument for this command must be a valid integer. 0 indicates the
-first column, 1 the second column, ... and so on. This command
+header item is displayed at the top of each column. The I<$col>
+argument for this method must be a valid integer. 0 indicates the
+first column, 1 the second column, ... and so on. This method
 supports the following options:
 
 =over 8
 
-=item I<$widget>-E<gt>B<header>(B<cget, >I<col, >I<option>)
+=item I<$hlist>-E<gt>B<header>(B<cget>, I<$col>, I<option>)
 
-If the I<col>-th column has a header display item, returns the
+If the I<$col>-th column has a header display item, returns the
 value of the specified I<option> of the header item. If the header
 doesn't exist, returns an error.
 
-=item I<$widget>-E<gt>B<header>(B<configure, >I<col, >?I<option>?, I<?value, option, value, ...>?)
+=item I<$hlist>-E<gt>B<header>(B<configure, >I<$col, >?I<option>?, I<?value, option, value, ...>?)
 
 Query or modify the configuration options of the header display item
-of the I<col>-th column. The header item must exist, or an error
+of the I<$col>-th column. The header item must exist, or an error
 will result.  If no I<option> is specified, returns a list
 describing all of the available options for the header display item
 (see L<Tk::options> for information on the format of this
 list.) If I<option> is specified with no I<value>, then the
-command returns a list describing the one named option (this list will
+method returns a list describing the one named option (this list will
 be identical to the corresponding sublist of the value returned if no
 I<option> is specified). If one or more I<option-value> pairs
-are specified, then the command modifies the given option(s) to have
-the given value(s); in this case the command returns an empty
+are specified, then the method modifies the given option(s) to have
+the given value(s); in this case the method returns an empty
 string. I<Option> may have any of the values accepted by the
 B<header create> method. The exact set of options depends
 on the value of the B<-itemtype> option passed to the the B<header>
 create method when this display item was created.
 
-=item I<$widget>-E<gt>B<header>(B<create, >I<col, >?)I<-itemtype type>? ?I<option value ...>?
+=item I<$hlist>-E<gt>B<header>(B<create, >I<$col, >?I<-itemtype type>? ?I<option value ...>?
 
-Creates a new display item as the header for the I<col>-th
-column. If an header display item already exists for this column, it
+Creates a new display item as the header for the I<$col>-th
+column. See also L<"BUGS"> below.
+If an header display item already exists for this column, it
 will be replaced by the new item.  An optional parameter
 I<-itemtype> can be used to specify what type of display item
 should be created. If the I<-itemtype> is not given, then by
@@ -523,38 +528,38 @@ display item or one of the following:
 
 =over 12
 
-=item B<-borderwidth>
+=item B<-borderwidth> =E<gt> I<color>
 
 Specifies the border width of this header item.
 
-=item B<-headerbackground>
+=item B<-headerbackground> =E<gt> I<color>
 
 Specifies the background color of this header item.
 
-=item B<-relief>
+=item B<-relief> =E<gt> I<type>
 
 Specifies the relief type of the border of this header item.
 
 =back
 
-=item I<$widget>-E<gt>B<header>(B<delete, >I<col>)
+=item I<$hlist>-E<gt>B<header>(B<delete, >I<$col>)
 
-Deletes the header display item for the I<col>-th column.
+Deletes the header display item for the I<$col>-th column.
 
-=item I<$widget>-E<gt>B<header>(B<exists, >I<col>)
+=item I<$hlist>-E<gt>B<header>(B<exists, >I<$col>)
 
-Return true if an header display item exists for the I<col>-th
+Return true if an header display item exists for the I<$col>-th
 column; return false otherwise.
 
-=item I<$widget>-E<gt>B<header>(B<size, >I<entryPath>)
+=item I<$hlist>-E<gt>B<header>(B<size>, I<$entryPath>)
 
-If an header display item exists for the I<col>-th column , returns
-its size in a two element list of the form {I<width height>};
+If an header display item exists for the I<$col>-th column , returns
+its size in pixels in a two element list I<(width, height)>;
 returns an error if the header display item does not exist.
 
 =back
 
-=item I<$widget>-E<gt>B<hide>(I<option, ?entryPath?>)
+=item I<$hlist>-E<gt>B<hide>(I<option> ?,I<$entryPath>?)
 
 Makes some of entries invisible without deleting them.
 I<Option> can be one of the following:
@@ -563,14 +568,14 @@ I<Option> can be one of the following:
 
 =item B<entry>
 
-Hides the list entry identified by I<entryPath>.
+Hides the list entry identified by I<$entryPath>.
+
+=back
 
 Currently only the B<entry> option is supported. Other options will
 be added in the next release.
 
-=back
-
-=item I<$widget>-E<gt>B<indicator>(I<option, >entryPath, ?I<args, ...>?)
+=item I<$hlist>-E<gt>B<indicator>(I<option>, I<$entryPath>, ?I<args, ...>?)
 
 Manipulates the indicator on the list entries. An indicator is usually
 a small display item (such as an image) that is displayed to the left
@@ -580,35 +585,35 @@ closed.  I<Option> can be one of the following:
 
 =over 8
 
-=item I<$widget>-E<gt>B<indicator>(B<cget, >I<entryPath, >I<option>)
+=item I<$hlist>-E<gt>B<indicator>(B<cget>, I<$entryPath>, I<option>)
 
-If the list entry given by I<entryPath> has an indicator, returns
+If the list entry given by I<$entryPath> has an indicator, returns
 the value of the specified I<option> of the indicator. If the
 indicator doesn't exist, returns an error.
 
-=item I<$widget>-E<gt>B<indicator>(B<configure, >I<entryPath, >?I<option>?, I<?value, option, value, ...>?)
+=item I<$hlist>-E<gt>B<indicator>(B<configure>, I<$entryPath>, ?I<option>?, I<?value, option, value, ...>?)
 
 Query or modify the configuration options of the indicator display
-item of the entry specified by I<entryPath>. The indicator item
+item of the entry specified by I<$entryPath>. The indicator item
 must exist, or an error will result.  If no I<option> is specified,
 returns a list describing all of the available options for the
 indicator display item (see L<Tk::options> for information
 on the format of this list). If I<option> is specified with no
-I<value>, then the command returns a list describing the one named
+I<value>, then the method returns a list describing the one named
 option (this list will be identical to the corresponding sublist of
 the value returned if no I<option> is specified). If one or more
-I<option-value> pairs are specified, then the command modifies the
-given option(s) to have the given value(s); in this case the command
+I<option-value> pairs are specified, then the method modifies the
+given option(s) to have the given value(s); in this case the method
 returns an empty string.  I<Option> may have any of the values
 accepted by the B<indicator create> method. The exact set
 of options depends on the value of the B<-itemtype> option passed
 to the the B<indicator create> method when this display item
 was created.
 
-=item I<$widget>-E<gt>B<indicator>(B<create, >I<entryPath, >?)I<-itemtype type>? ?I<option value ...>?
+=item I<$hlist>-E<gt>B<indicator>(B<create, >I<$entryPath, >?, I<-itemtype type>? ?I<option value ...>?)
 
 Creates a new display item as the indicator for the entry specified by
-I<entryPath>. If an indicator display item already exists for this
+I<$entryPath>. If an indicator display item already exists for this
 entry, it will be replaced by the new item.  An optional parameter
 I<-itemtype> can be used to specify what type of display item
 should be created. If the I<-itemtype> is not given, then by
@@ -618,40 +623,40 @@ can be passed to configure the appearance of the display item. Each
 I<option-value> pair must be a valid option for this type of
 display item.
 
-=item I<$widget>-E<gt>B<indicator>(B<delete, >I<entryPath>)
+=item I<$hlist>-E<gt>B<indicator>(B<delete>, I<$entryPath>)
 
-Deletes the indicator display item for the entry given by I<entryPath>.
+Deletes the indicator display item for the entry given by I<$entryPath>.
 
-=item I<$widget>-E<gt>B<indicator>(B<exists, >I<entryPath>)
+=item I<$hlist>-E<gt>B<indicator>(B<exists>, I<$entryPath>)
 
 Return true if an indicator display item exists for the entry given by
-I<entryPath>; return false otherwise.
+I<$entryPath>; return false otherwise.
 
-=item I<$widget>-E<gt>B<indicator>(B<size, >I<entryPath>)
+=item I<$hlist>-E<gt>B<indicator>(B<size>, I<$entryPath>)
 
 If an indicator display item exists for the entry given by
-I<entryPath>, returns its size in a two element list of the form
+I<$entryPath>, returns its size in a two element list of the form
 {I<width height>}; returns an error if the indicator display item
 does not exist.
 
 =back
 
-=item I<$widget>-E<gt>B<info>(I<option, >I<arg, ...>)
+=item I<$hlist>-E<gt>B<info>(I<option>, I<arg, ...>)
 
 Query information about the HList widget. I<option> can be one
 of the following:
 
 =over 8
 
-=item I<$widget>-E<gt>B<info>(B<anchor>)
+=item I<$hlist>-E<gt>B<info>(B<anchor>)
 
 Returns the entryPath of the current anchor, if any, of the HList
 widget. If the anchor is not set, returns the empty string.
 
-=item I<$widget>-E<gt>B<infoBbox>(I<entryPath>)
+=item I<$hlist>-E<gt>B<infoBbox>(I<$entryPath>)
 
 Returns a list of four numbers describing the visible bounding box of
-the entry given I<entryPath>. The first two elements of the list
+the entry given I<$entryPath>. The first two elements of the list
 give the x and y coordinates of the upper-left corner of the screen
 area covered by the entry (specified in pixels relative to the widget)
 and the last two elements give the lower-right corner of the area, in
@@ -659,45 +664,49 @@ pixels. If no part of the entry given by index is visible on the
 screen then the result is an empty string; if the entry is partially
 visible, the result gives the only the visible area of the entry.
 
-=item I<$widget>-E<gt>B<info>(B<children, >?I<entryPath>?)
+=item I<$hlist>-E<gt>B<info>(B<children> ?,I<$entryPath>?)
 
-If I<entrpyPath> is given, returns a list of the entryPath's of its
+If I<$entryPath> is given, returns a list of the entryPath's of its
 children entries. Otherwise returns a list of the toplevel
 entryPath's.
 
-=item I<$widget>-E<gt>B<info>(B<data, >?I<entryPath>?)
+=item I<$hlist>-E<gt>B<info>(B<data> ?,I<$entryPath>?)
 
-Returns the data associated with I<entryPath>.
+Returns the data associated with I<$entryPath>.
 
-=item I<$widget>-E<gt>B<info>(B<dragsite>)
+=item I<$hlist>-E<gt>B<info>(B<dragsite>)
 
-I<$widget>-E<gt>B<info>(B<dropsite>)
+Returns the entryPath of the current dragsite, if any, of the HList
+widget. If the dragsite is not set, returns the empty string.
+
+=item I<$hlist>-E<gt>B<info>(B<dropsite>)
+
 Returns the entryPath of the current dropsite, if any, of the HList
 widget. If the dropsite is not set, returns the empty string.
 
-=item I<$hlist>-E<gt>B<info>(B<exists, >I<entryPath>)
+=item I<$hlist>-E<gt>B<info>(B<exists>, I<$entryPath>)
 
 Returns a boolean value indicating whether the list entry
-I<entrpyPath> exists.
+I<$entryPath> exists.
 
-=item I<$hlist>-E<gt>B<info>(B<hidden, >I<entryPath>)
+=item I<$hlist>-E<gt>B<info>(B<hidden>, I<$entryPath>)
 
 Returns a boolean value indicating whether the list entry
-B<entrpyPath> is hidden or not.
+B<$entryPath> is hidden or not.
 
-=item I<$hlist>-E<gt>B<info>(B<next, >I<entryPath>)
+=item I<$hlist>-E<gt>B<info>(B<next>, I<$entryPath>)
 
 Returns the entryPath of the list entry, if any, immediately below
 this list entry. If this entry is already at the bottom of the HList
 widget, returns an empty string.
 
-=item I<$hlist>-E<gt>B<info>(B<parent, >I<entryPath>)
+=item I<$hlist>-E<gt>B<info>(B<parent>, I<$entryPath>)
 
 Returns the name of the parent of the list entry identified by
-I<entrpyPath>. If I<entrpyPath> is a toplevel list entry,
+I<$entryPath>. If I<entryPath> is a toplevel list entry,
 returns the empty string.
 
-=item I<$hlist>-E<gt>B<info>(B<prev, >I<entryPath>)
+=item I<$hlist>-E<gt>B<info>(B<prev>, I<$entryPath>)
 
 Returns the entryPath of the list entry, if any, immediately above
 this list entry. If this entry is already at the top of the HList
@@ -706,7 +715,7 @@ widget, returns an empty string.
 =item I<$hlist>-E<gt>B<info>(B<selection>)
 
 Returns a list of selected entries in the HList widget. If no entries
-are selectd, returns an empty string.
+are selected, returns an empty string.
 
 =back
 
@@ -718,34 +727,34 @@ I<option>:
 
 =over 8
 
-=item I<$hlist>-E<gt>B<itemCget>(entryPath, col, option)
+=item I<$hlist>-E<gt>B<itemCget>(I<$entryPath>, I<$col>, I<option>)
 
 Returns the current value of the configure I<option> of the display
-item at the column designated by I<col> of the entry specified by
-I<entryPath>.
+item at the column designated by I<$col> of the entry specified by
+I<$entryPath>.
 
-=item I<$hlist>-E<gt>B<itemConfigure>( entryPath, col, ?I<option>?, I<?value, option, value, ...>?)
+=item I<$hlist>-E<gt>B<itemConfigure>(I<$entryPath>, I<$col> ?,I<option>?, I<?value, option, value, ...>?)
 
 Query or modify the configuration options of the display item at the
-column designated by I<col> of the entry specified by
-I<entryPath>. If no I<option> is specified, returns a list
-describing all of the available options for I<entryPath> (see
+column designated by I<$col> of the entry specified by
+I<$entryPath>. If no I<option> is specified, returns a list
+describing all of the available options for I<$entryPath> (see
 L<Tk::options> for information on the format of this
 list). If I<option> is specified with no I<value>, then the
-command returns a list describing the one named option (this list will
+method returns a list describing the one named option (this list will
 be identical to the corresponding sublist of the value returned if no
 I<option> is specified). If one or more I<option-value> pairs
-are specified, then the command modifies the given option(s) to have
-the given value(s); in this case the command returns an empty string.
+are specified, then the method modifies the given option(s) to have
+the given value(s); in this case the method returns an empty string.
 I<Option> may have any of the values accepted by the B<item>
 create method. The exact set of options depends on the
 value of the B<-itemtype> option passed to the the B<item>
 create method when this display item was created.
 
-=item I<$hlist>-E<gt>B<itemCreate>(entryPath, col, ?I<-itemtype type>? ?I<option value ...>?)
+=item I<$hlist>-E<gt>B<itemCreate>(I<$entryPath>, I<$col> ?,I<-itemtype>=E<gt>I<type>? ?,I<option value ...>?)
 
-Creates a new display item at the column designated by I<col> of
-the entry specified by I<entryPath>. An optional parameter
+Creates a new display item at the column designated by I<$col> of
+the entry specified by I<$entryPath>. An optional parameter
 I<-itemtype> can be used to specify what type of display items
 should be created. If the I<-itemtype> is not specified, then by
 default the type specified by this HList widget's B<-itemtype>
@@ -754,37 +763,39 @@ can be passed to configure the appearance of the display item. Each
 I<option- value> pair must be a valid option for this type of
 display item.
 
-=item I<$hlist>-E<gt>B<itemDelete>(entryPath, col)
+=item I<$hlist>-E<gt>B<itemDelete>(I<$entryPath>, I<$col>)
 
-Deletes the display item at the column designated by I<col> of
-the entry specified by I<entryPath>.
+Deletes the display item at the column designated by I<$col> of
+the entry specified by I<$entryPath>.
 
-=item I<$widget>-E<gt>B<itemExists>(I<entryPath, col>)
+=item I<$hlist>-E<gt>B<itemExists>(I<$entryPath>, I<$col>)
 
 Returns true if there is a display item at the column designated by
-I<col> of the entry specified by I<entryPath>; returns false
+I<$col> of the entry specified by I<$entryPath>; returns false
 otherwise.
 
 =back
 
 =item I<$hlist>-E<gt>B<nearest>(I<y>)
 
-I<$widget>-E<gt>B<nearest>(I<y>)
-Given a y-coordinate within the HList window, this command returns
+I<$hlist>-E<gt>B<nearest>(I<y>)
+Given a y-coordinate within the HList window, this method returns
 the entryPath of the (visible) HList element nearest to that
 y-coordinate.
 
-=item I<$hlist>-E<gt>B<see>(I<entryPath>)
+=item I<$hlist>-E<gt>B<see>(I<$entryPath>)
 
-Adjust the view in the HList so that the entry given by I<entryPath> is
-visible. If the entry is already visible then the command has no
+Adjust the view in the HList so that the entry given by I<$entryPath> is
+visible. If the entry is already visible then the method has no
 effect; if the entry is near one edge of the window then the HList
 scrolls to bring the element into view at the edge; otherwise the
 HList widget scrolls to center the entry.
 
-=item I<$hlist>-E<gt>B<selection>(I<option, >I<arg, ...>)
+=item I<$hlist>-E<gt>B<selection>(I<option>, I<arg>, ...)
 
-This command is used to adjust the selection within a HList widget. It
+=item I<$hlist>-E<gt>B<selection>I<Option>(I<arg>, ...)
+
+This method is used to adjust the selection within a HList widget. It
 has several forms, depending on I<option>:
 
 =over 8
@@ -798,13 +809,13 @@ I<to> are given, deselects all of the list entrie(s) between
 between I<from> and I<to>, inclusive, without affecting the
 selection state of elements outside that range.
 
-=item I<$widget>-E<gt>B<selectionGet>
+=item I<$hlist>-E<gt>B<selectionGet>
 
 This is an alias for the B<infoSelection> method.
 
-=item I<$hlist>-E<gt>B<selectionIncludes>(I<entryPath>)
+=item I<$hlist>-E<gt>B<selectionIncludes>(I<$entryPath>)
 
-Returns 1 if the list entry indicated by I<entryPath> is currently
+Returns 1 if the list entry indicated by I<$entryPath> is currently
 selected; returns 0 otherwise.
 
 =item I<$hlist>-E<gt>B<selectionSet>(I<from>?, I<to>?)
@@ -816,25 +827,25 @@ identified by I<from> is selected.
 
 =back
 
-=item I<$hlist>-E<gt>B<show>(I<option>?, I<entryPath>?)
+=item I<$hlist>-E<gt>B<show>(I<option> ?,I<$entryPath>?)
 
-Show the entries that are hidden by the B<hide> command,
+Show the entries that are hidden by the B<hide> method,
 I<option> can be one of the following:
 
 =over 8
 
 =item B<entry>
 
-Shows the list entry identified by I<entryPath>.
+Shows the list entry identified by I<$entryPath>.
+
+=back
 
 Currently only the B<entry> option is supported. Other options will
 be added in future releases.
 
-=back
-
 =item I<$hlist>-E<gt>B<xview>(I<args>)
 
-This command is used to query and change the horizontal position of the
+This method is used to query and change the horizontal position of the
 information in the widget's window. It can take any of the following
 forms:
 
@@ -850,10 +861,10 @@ off-screen to the left, the middle 40% is visible in the window, and
 40% of the entry is off-screen to the right. These are the same values
 passed to scrollbars via the B<-xscrollcommand> option.
 
-=item I<$hlist>-E<gt>B<xview>(I<entryPath>)
+=item I<$hlist>-E<gt>B<xview>(I<$entryPath>)
 
 Adjusts the view in the window so that the list entry identified by
-I<entryPath> is aligned to the left edge of the window.
+I<$entryPath> is aligned to the left edge of the window.
 
 =item I<$hlist>-E<gt>B<xview>(B<moveto> =E<gt> I<fraction>)
 
@@ -863,7 +874,7 @@ a fraction between 0 and 1.
 
 =item I<$hlist>-E<gt>B<xview>(B<scroll> =E<gt> I<number, what>)
 
-This command shifts the view in the window left or right according to
+This method shifts the view in the window left or right according to
 I<number> and I<what>. I<Number> must be an integer.
 I<What> must be either B<units> or B<pages> or an
 abbreviation of one of these. If I<what> is B<units>, the view
@@ -877,7 +888,7 @@ then characters farther to the right become visible.
 
 =item I<$hlist>-E<gt>B<yview>(I<?args>?)
 
-This command is used to query and change the vertical position of the
+This method is used to query and change the vertical position of the
 entries in the widget's window. It can take any of the following forms:
 
 =over 8
@@ -893,10 +904,10 @@ last one in the window, relative to the HList as a whole.  These are
 the same values passed to scrollbars via the B<-yscrollcommand>
 option.
 
-=item I<$hlist>-E<gt>B<yview>(I<entryPath>)
+=item I<$hlist>-E<gt>B<yview>(I<$entryPath>)
 
 Adjusts the view in the window so that the list entry given by
-I<entryPath> is displayed at the top of the window.
+I<$entryPath> is displayed at the top of the window.
 
 =item I<$hlist>-E<gt>B<yview>(B<moveto> =E<gt> I<fraction>)
 
@@ -908,7 +919,7 @@ HList, and so on.
 
 =item I<$hlist>-E<gt>B<yview>(B<scroll> =E<gt> I<number, what>)
 
-This command adjust the view in the window up or down according to
+This method adjust the view in the window up or down according to
 I<number> and I<what>.  I<Number> must be an integer.
 I<What> must be either B<units> or B<pages>.  If I<what>
 is B<units>, the view adjusts up or down by I<number> lines; if
@@ -928,18 +939,18 @@ it is positive then later entries become visible.
 
 If the B<-selectmode> is "browse", when the user drags the mouse
 pointer over the list entries, the entry under the pointer will be
-highlighted and the B<-browsecmd> procedure will be called with
+highlighted and the B<-browsecmd> callback will be called with
 one parameter, the entryPath of the highlighted entry. Only one entry
-can be highlighted at a time. The B<-command> procedure will be
+can be highlighted at a time. The B<-command> callback will be
 called when the user double-clicks on a list entry.
 
 =item [2]
 
 If the B<-selectmode> is "single", the entries will only be
 highlighted by mouse E<lt>ButtonRelease-1E<gt> events. When a new list entry
-is highlighted, the B<-browsecmd> procedure will be called with
+is highlighted, the B<-browsecmd> callback will be called with
 one parameter indicating the highlighted list entry. The
-B<-command> procedure will be called when the user double-clicks
+B<-command> callback will be called when the user double-clicks
 on a list entry.
 
 =item [3]
@@ -948,10 +959,10 @@ If the B<-selectmode> is "multiple", when the user drags the mouse
 pointer over the list entries, all the entries under the pointer will
 be highlighted. However, only a contiguous region of list entries can
 be selected. When the highlighted area is changed, the
-B<-browsecmd> procedure will be called with an undefined
-parameter. It is the responsibility of the B<-browsecmd> procedure
+B<-browsecmd> callback will be called with an undefined
+parameter. It is the responsibility of the B<-browsecmd> callback
 to find out the exact highlighted selection in the HList. The
-B<-command> procedure will be called when the user double-clicks
+B<-command> callback will be called when the user double-clicks
 on a list entry.
 
 =item [4]
@@ -960,10 +971,10 @@ If the B<-selectmode> is "extended", when the user drags the mouse
 pointer over the list entries, all the entries under the pointer will
 be highlighted. The user can also make disjointed selections using
 E<lt>Control-ButtonPress-1E<gt>. When the highlighted area is changed, the
-B<-browsecmd> procedure will be called with an undefined
-parameter. It is the responsibility of the B<-browsecmd> procedure
+B<-browsecmd> callback will be called with an undefined
+parameter. It is the responsibility of the B<-browsecmd> callback
 to find out the exact highlighted selection in the HList. The
-B<-command> procedure will be called when the user double-clicks
+B<-command> callback will be called when the user double-clicks
 on a list entry.
 
 =item [5]

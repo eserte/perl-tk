@@ -1,9 +1,9 @@
-
+#ifndef _IMGINT
+#define _IMGINT
 /* imgInt.h */
 
 #include "Lang.h"
 #include "tkInt.h"
-#include "tkVMacro.h"
 
 typedef struct {
     Tcl_DString *buffer;/* pointer to dynamical string */
@@ -42,7 +42,8 @@ EXTERN int ImgRead _ANSI_ARGS_((MFile *handle, VOID *dst, int count));
 EXTERN int ImgPutc _ANSI_ARGS_((int c, MFile *handle));
 EXTERN int ImgWrite _ANSI_ARGS_((MFile *handle, CONST char *src, int count));
 EXTERN void ImgWriteInit _ANSI_ARGS_((Tcl_DString *buffer, MFile *handle));
-EXTERN int ImgReadInit _ANSI_ARGS_((struct Tcl_Obj *objPtr, int c, MFile *handle));
+EXTERN int ImgReadInit _ANSI_ARGS_((Tcl_Obj *objPtr, int c, MFile *handle));
 EXTERN int ImgInitTIFFzip _ANSI_ARGS_((VOID *, int));
 EXTERN int ImgInitTIFFjpeg _ANSI_ARGS_((VOID *, int));
 EXTERN int ImgLoadJpegLibrary _ANSI_ARGS_((void));
+#endif /* _IMGINT */

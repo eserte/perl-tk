@@ -5,7 +5,7 @@
 #  The file man.macros and some of the macros used by this file are
 #  copyrighted: (c) 1990 The Regents of the University of California.
 #               (c) 1994-1995 Sun Microsystems, Inc.
-#  The license terms of the Tcl/Tk distrobution are in the file
+#  The license terms of the Tcl/Tk distribution are in the file
 #  license.tcl.
 
 =head1 NAME
@@ -279,7 +279,7 @@ affect its selection status.
 =item I<$tlist>-E<gt>B<dropsiteSet>(I<index>)
 
 Sets the dropsite to the list entry identified by I<index>. The
-dropsite is used to indicate the target of a grag-and-drop
+dropsite is used to indicate the target of a drag-and-drop
 action. Currently drag-and-drop functionality has not been implemented
 in Tix yet.
 
@@ -297,7 +297,7 @@ have any of the values accepted by the B<insert> method.
 
 =item I<$tlist>-E<gt>B<entryconfigure>(I<index, >?I<option>?, I<?value, option, value, ...>?)
 
-Query or modify the configuration options of the list entry indentfied
+Query or modify the configuration options of the list entry identified
 by I<index>. If no I<option> is specified, returns a list
 describing all of the available options for I<index> (see
 B<Tk_ConfigureInfo> for information on the format of this list). If
@@ -339,8 +339,8 @@ Must be either B<normal> or B<disabled>.
 The B<insert> method accepts additional configuration options
 to configure the display item associated with this list entry. The set
 of additional configuration options depends on the type of the display
-item given by the B<-itemtype> option. Please see the
-B<DItem(n)> manual page for a list of the configuration options for
+item given by the B<-itemtype> option. Please see
+L<Tk::DItem> for a list of the configuration options for
 each of the display item types.
 
 =item I<$tlist>-E<gt>B<info>(I<option, >I<arg, ...>)
@@ -374,7 +374,7 @@ are selected, returns an empty string.
 
 =item I<$tlist>-E<gt>B<nearest>(I<x, y>)
 
-Given an (x,y) coordinate within the TList window, this command
+Given an I<(x,y)> coordinate within the TList window, this command
 returns the index of the TList element nearest to that coordinate.
 
 =item I<$tlist>-E<gt>B<see>(I<index>)

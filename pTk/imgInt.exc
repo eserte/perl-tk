@@ -1,0 +1,6 @@
+ImgGetStringFromObj
+ImgLoadJpegLibrary
+ImgInitTIFFzip
+ImgInitTIFFjpeg
+ImgLoadFailed
+ImgLoadLib

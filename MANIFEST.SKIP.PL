@@ -41,6 +41,7 @@ C\+\+/Main$
 \bTix/
 tcl\.pm$
 \bcore\b
+pod/html$
 \bdoc/
 \bToDo/
 \bObsolete/

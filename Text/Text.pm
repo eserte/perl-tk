@@ -17,7 +17,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/Text/Text.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/Text/Text.pm#9$
 
 require Tk::Clipboard;
 
@@ -41,7 +41,8 @@ use Tk::Submethods ( 'mark' => [qw(gravity names next previous set unset)],
                      'scan' => [qw(mark dragto)],
                      'tag'  => [qw(add bind cget configure delete lower 
                                names nextrange prevrange raise ranges remove)],
-                     'window' => [qw(cget configure create names)]
+                     'window' => [qw(cget configure create names)],
+                     'image' => [qw(cget configure create names)]
                    );
 
 sub Tag;

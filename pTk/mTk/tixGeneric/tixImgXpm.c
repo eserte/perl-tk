@@ -10,6 +10,7 @@
  *
  */
 
+#include "tkInt.h"
 #include "tixPort.h"
 #include "tixInt.h"
 #include "tixImgXpm.h"
@@ -368,7 +369,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
      * to skip the leading blanks is good for using in-line XPM data in TCL
      * scripts
      */
-    while (isspace(*string)) {
+    while (isspace(UCHAR(*string))) {
 	++ string;
     }
 
@@ -444,7 +445,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
 		continue;
 	    }
 
-	    if (isspace(*p) || *p == ',') {
+	    if (isspace(UCHAR(*p)) || *p == ',') {
 	    }
 	    else if (*p == '}') {
 		break;
@@ -553,34 +554,34 @@ GetType(colorDefn, type_ret)
     char * p = colorDefn;
 
     /* skip white spaces */
-    while (*p && isspace(*p)) {
+    while (*p && isspace(UCHAR(*p))) {
 	p ++;
     }
 
     /* parse the type */
     if (p[0] != '\0' && p[0] == 'm' &&
-	p[1] != '\0' && isspace(p[1])) {
+	p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_MONO;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 'g' &&
 	     p[1] != '\0' && p[1] == '4' &&
-	     p[2] != '\0' && isspace(p[2])) {
+	     p[2] != '\0' && isspace(UCHAR(p[2]))) {
 	*type_ret = XPM_GRAY_4;
 	p += 3;
     }
     else if (p[0] != '\0' && p[0] == 'g' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_GRAY;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 'c' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_COLOR;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 's' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_SYMBOLIC;
 	p += 2;
     }
@@ -617,7 +618,7 @@ GetColor(colorDefn, colorName, type_ret)
     }
 
     /* skip white spaces */
-    while (*colorDefn && isspace(*colorDefn)) {
+    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 	colorDefn ++;
     }
 
@@ -626,7 +627,7 @@ GetColor(colorDefn, colorName, type_ret)
     while (1) {
 	int dummy;
 
-	while (*colorDefn && !isspace(*colorDefn)) {
+	while (*colorDefn && !isspace(UCHAR(*colorDefn))) {
 	    *p++ = *colorDefn++;
 	}
 
@@ -638,7 +639,7 @@ GetColor(colorDefn, colorName, type_ret)
 	    /* the next string should also be considered as a part of a color
 	     * name */
 	    
-	    while (*colorDefn && isspace(*colorDefn)) {
+	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
 	} else {

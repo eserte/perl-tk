@@ -689,7 +689,7 @@ static int		GetVirtualEvent _ANSI_ARGS_((Tcl_Interp *interp,
 static Tk_Uid		GetVirtualEventUid _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *virtString));
 static int		HandleEventGenerate _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window main, int argc, char **argv));
+			    Tk_Window mainw, int argc, char **argv));
 static void		InitKeymapInfo _ANSI_ARGS_((TkDisplay *dispPtr));
 static void		InitVirtualEventTable _ANSI_ARGS_((
 			    VirtualEventTable *vetPtr));
@@ -3524,9 +3524,9 @@ GetAllVirtualEvents(interp, vetPtr)
  *---------------------------------------------------------------------------
  */
 static int
-HandleEventGenerate(interp, main, argc, argv)
+HandleEventGenerate(interp, mainw, argc, argv)
     Tcl_Interp *interp;	    /* Interp for error messages and name lookup. */
-    Tk_Window main;	    /* Main window associated with interp. */
+    Tk_Window mainw;	    /* Main window associated with interp. */
     int argc;		    /* Number of arguments. */
     char **argv;	    /* Argument strings. */
 {
@@ -3539,7 +3539,7 @@ HandleEventGenerate(interp, main, argc, argv)
     XEvent event;    
 
     if (argv[0][0] == '.') {
-	tkwin = Tk_NameToWindow(interp, argv[0], main);
+	tkwin = Tk_NameToWindow(interp, argv[0], mainw);
 	if (tkwin == NULL) {
 	    return TCL_ERROR;
 	}
@@ -3549,8 +3549,8 @@ HandleEventGenerate(interp, main, argc, argv)
 		    argv[0], "\"", (char *) NULL);
 	    return TCL_ERROR;
 	}
-	tkwin = Tk_IdToWindow(Tk_Display(main), (Window) i);
-	if ((tkwin == NULL) || (((TkWindow *) main)->mainPtr
+	tkwin = Tk_IdToWindow(Tk_Display(mainw), (Window) i);
+	if ((tkwin == NULL) || (((TkWindow *) mainw)->mainPtr
 		!= ((TkWindow *) tkwin)->mainPtr)) {
 	    Tcl_AppendResult(interp, "window id \"", argv[0],
 		    "\" doesn't exist in this application", (char *) NULL);
@@ -3661,7 +3661,7 @@ HandleEventGenerate(interp, main, argc, argv)
 	    }
 	} else if (strcmp(field, "-above") == 0) {
 	    if (value[0] == '.') {
-		tkwin2 = Tk_NameToWindow(interp, value, main);
+		tkwin2 = Tk_NameToWindow(interp, value, mainw);
 		if (tkwin2 == NULL) {
 		    return TCL_ERROR;
 		}
@@ -3820,7 +3820,7 @@ HandleEventGenerate(interp, main, argc, argv)
 	    }
 	} else if (strcmp(field, "-root") == 0) {
 	    if (value[0] == '.') {
-		tkwin2 = Tk_NameToWindow(interp, value, main);
+		tkwin2 = Tk_NameToWindow(interp, value, mainw);
 		if (tkwin2 == NULL) {
 		    return TCL_ERROR;
 		}
@@ -3894,7 +3894,7 @@ HandleEventGenerate(interp, main, argc, argv)
 	    }	    
 	} else if (strcmp(field, "-subwindow") == 0) {
 	    if (value[0] == '.') {
-		tkwin2 = Tk_NameToWindow(interp, value, main);
+		tkwin2 = Tk_NameToWindow(interp, value, mainw);
 		if (tkwin2 == NULL) {
 		    return TCL_ERROR;
 		}
@@ -3932,7 +3932,7 @@ HandleEventGenerate(interp, main, argc, argv)
 	    }
 	} else if (strcmp(field, "-window") == 0) {
 	    if (value[0] == '.') {
-		tkwin2 = Tk_NameToWindow(interp, value, main);
+		tkwin2 = Tk_NameToWindow(interp, value, mainw);
 		if (tkwin2 == NULL) {
 		    return TCL_ERROR;
 		}

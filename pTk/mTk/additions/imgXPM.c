@@ -25,6 +25,8 @@
  */
 
 #define NEED_REAL_STDIO 
+#include "tk.h"
+#include "tkVMacro.h"
 #include "imgInt.h"
 #include <stdio.h>
 #include <ctype.h>
@@ -817,34 +819,34 @@ static char * GetType(colorDefn, type_ret)
     char * p = colorDefn;
 
     /* skip white spaces */
-    while (*p && isspace(*p)) {
+    while (*p && isspace(UCHAR(*p))) {
 	p ++;
     }
 
     /* parse the type */
     if (p[0] != '\0' && p[0] == 'm' &&
-	p[1] != '\0' && isspace(p[1])) {
+	p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_MONO;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 'g' &&
 	     p[1] != '\0' && p[1] == '4' &&
-	     p[2] != '\0' && isspace(p[2])) {
+	     p[2] != '\0' && isspace(UCHAR(p[2]))) {
 	*type_ret = XPM_GRAY_4;
 	p += 3;
     }
     else if (p[0] != '\0' && p[0] == 'g' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_GRAY;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 'c' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_COLOR;
 	p += 2;
     }
     else if (p[0] != '\0' && p[0] == 's' &&
-	     p[1] != '\0' && isspace(p[1])) {
+	     p[1] != '\0' && isspace(UCHAR(p[1]))) {
 	*type_ret = XPM_SYMBOLIC;
 	p += 2;
     }
@@ -878,7 +880,7 @@ static char * GetColor(colorDefn, colorName, type_ret)
     }
 
     /* skip white spaces */
-    while (*colorDefn && isspace(*colorDefn)) {
+    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 	colorDefn ++;
     }
 
@@ -887,7 +889,7 @@ static char * GetColor(colorDefn, colorName, type_ret)
     while (1) {
 	int dummy;
 
-	while (*colorDefn && !isspace(*colorDefn)) {
+	while (*colorDefn && !isspace(UCHAR(*colorDefn))) {
 	    *p++ = *colorDefn++;
 	}
 
@@ -899,7 +901,7 @@ static char * GetColor(colorDefn, colorName, type_ret)
 	    /* the next string should also be considered as a part of a color
 	     * name */
 	    
-	    while (*colorDefn && isspace(*colorDefn)) {
+	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
 	} else {

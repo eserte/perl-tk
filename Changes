@@ -4,6 +4,26 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
 
+Changes in Tk800.005   
+ 
+	Reworked MainLoop and did "sneaky" things to demo and tkpsh
+	to make embedding demos easier.
+	Cleaned up the tests, making interactive tests into demos.
+
+	Text 'dump' now returns object for widgets and images.
+
+	More documentaion changes - mainly by Achim - thanks as ever.   
+
+	ItemStyle is supported for HList & co.
+
+	Drag & Drop code now works as well as it ever did, even on Win32
+	still needs integrating with mainstream widgets like HList that expect
+	it and more "native" support.
+
+	Photo image type is now more modular - unbundled JPEG and PNG 
+	modules will be released to match.
+
+
 Changes in Tk800.004
                                        
 	Revert ConfigSpecs to Tk402 style
@@ -87,7 +107,7 @@ I need to re-implement enough of Tcl_Channel API on top of perl's file handles
 to re-introduce it. This will be main focus of Tk800.001 ...
 
 
-Changes in 402.004    
+Changes in 402.005    
 
  Un-bundle Tk::Pod
  Un-bundle Tk::Contrib

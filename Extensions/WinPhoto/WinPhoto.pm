@@ -5,7 +5,7 @@ require Tk::Image;
 require Tk::Photo;
 
 use vars qw($VERSION);
-$VERSION = '3.005'; # $Id: //depot/Tk8/Extensions/WinPhoto/WinPhoto.pm#5$
+$VERSION = '3.007'; # $Id: //depot/Tk8/Extensions/WinPhoto/WinPhoto.pm#7$
 
 @ISA = qw(DynaLoader);
 

@@ -4,7 +4,7 @@
 # Copyright (c) 1995-1998 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
-# modify it under the same terms as Perl itself, subject 
+# modify it under the same terms as Perl itself, subject
 # to additional disclaimer in Tk/license.terms due to partial
 # derivation from Tk8.0 sources.
 #
@@ -23,15 +23,15 @@ if ($Tk::platform eq 'unix') {
 }
 
 @EXPORT    = qw(Exists Ev after exit MainLoop DoOneEvent tkinit);
-@EXPORT_OK = qw(NoOp *widget *event lsearch catch 
-                DONT_WAIT WINDOW_EVENTS  FILE_EVENTS TIMER_EVENTS 
-                IDLE_EVENTS ALL_EVENTS 
-                NORMAL_BG ACTIVE_BG SELECT_BG 
+@EXPORT_OK = qw(NoOp *widget *event lsearch catch
+                DONT_WAIT WINDOW_EVENTS  FILE_EVENTS TIMER_EVENTS
+                IDLE_EVENTS ALL_EVENTS
+                NORMAL_BG ACTIVE_BG SELECT_BG
                 SELECT_FG TROUGH INDICATOR DISABLED BLACK WHITE);
-%EXPORT_TAGS = (eventtypes => [qw(DONT_WAIT WINDOW_EVENTS  FILE_EVENTS 
-                                  TIMER_EVENTS IDLE_EVENTS ALL_EVENTS)], 
+%EXPORT_TAGS = (eventtypes => [qw(DONT_WAIT WINDOW_EVENTS  FILE_EVENTS
+                                  TIMER_EVENTS IDLE_EVENTS ALL_EVENTS)],
                 variables  => [qw(*widget *event)],
-                colors     => [qw(NORMAL_BG ACTIVE_BG SELECT_BG SELECT_FG 
+                colors     => [qw(NORMAL_BG ACTIVE_BG SELECT_BG SELECT_FG
                                   TROUGH INDICATOR DISABLED BLACK WHITE)],
                );
 
@@ -44,21 +44,17 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "8.0";
 $Tk::patchLevel  = "8.0";
-$Tk::VERSION     = '800.004';
+$Tk::VERSION     = '800.005';
 $Tk::strictMotif = 0;
-                                   
+
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
 $Tk::library = Tk->findINC('.') unless (-d $Tk::library);
 
 $Tk::widget  = undef;
 $Tk::event   = undef;
 
-# Supress used once warnings on function table pointers 
-# How can we do this in the C code?
-use vars qw($TkVtab $TkintVtab $LangVtab $TkglueVtab $XlibVtab $TkoptionVtab);  
-use vars qw($TixVtab $TixintVtab $TiximgxpmVtab);
-use vars qw($TkwinVtab $TkwinintVtab);
- 
+use vars qw($inMainLoop);
+
 bootstrap Tk $Tk::VERSION;
 
 {
@@ -67,27 +63,27 @@ bootstrap Tk $Tk::VERSION;
 }
 my $boot_time = timeofday();
 
-# This is a workround for Solaris X11 locale handling 
-Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11')) if (&NeedPreload && -d '/usr/openwin/lib');
+# This is a workround for Solaris X11 locale handling
+Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11'))
+  if (&NeedPreload && -d '/usr/openwin/lib');
 
 use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
                     'clipboard' =>  [qw(clear append)]
                    );
 
-
 sub _backTrace
 {
  my $w = shift;
- my $i = 1;  
+ my $i = 1;
  my ($pack,$file,$line,$sub) = caller($i++);
- while (1)   
-  {          
+ while (1)
+  {
    my $loc = "at $file line $line";
    ($pack,$file,$line,$sub) = caller($i++);
    last unless defined($sub);
    return 1 if $sub eq '(eval)';
    $w->AddErrorInfo("$sub $loc");
-  }        
+  }
  return 0;
 }
 
@@ -101,15 +97,15 @@ sub BackTrace
  $w->Fail($mess);
  $w->idletasks;
  die "$mess\n";
-}   
+}
 
 #
 # This is a $SIG{__DIE__} handler which does not change the $@
 # string in the way 'croak' does, but rather add to Tk's ErrorInfo.
 # It stops at 1st enclosing eval on assumption that the eval
 # is part of Tk call process and will add its own context to ErrorInfo
-# and then pass on the error.                
-# 
+# and then pass on the error.
+#
 sub __DIE__
 {
  my $mess = shift;
@@ -119,8 +115,6 @@ sub __DIE__
  return if $w->_backTrace;
  # Not in an eval - should not happen
 }
-
-
 
 sub NoOp  { }
 
@@ -133,7 +127,7 @@ sub Ev
    my $arg = pop(@args);
    $obj = (ref $arg) ? $arg : \$arg;
   }
- else 
+ else
   {
    $obj = \@args;
   }
@@ -165,7 +159,7 @@ sub Exists
 sub Time_So_Far
 {
  return timeofday() - $boot_time;
-} 
+}
 
 # Selection* are not autoloaded as names are too long.
 
@@ -203,14 +197,14 @@ sub SplitString
  while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
    if (defined $1) { push @arr, $1 }
    else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
- }  
+ }
  # carp '('.join(',',@arr).")";
  return @arr;
 }
 
 sub Methods
 {
- my ($package,$file) = caller;   
+ my ($package,$file) = caller;
  $package->EnterMethods($file,@_);
 }
 
@@ -218,13 +212,12 @@ sub fileevent
 {
  require Tk::IO;
  goto &Tk::IO::fileevent;
-} 
+}
 
 sub messageBox
 {
  tk_messageBox(-parent => shift,@_);
 }
-   
 
 sub getOpenFile
 {
@@ -239,11 +232,11 @@ sub getSaveFile
 sub chooseColor
 {
  tk_chooseColor(-parent => shift,@_);
-}               
+}
 
 sub DialogWrapper
 {
- my ($method,$kind,%args) = @_;      
+ my ($method,$kind,%args) = @_;
  my $created = 0;
  my $w = delete $args{'-parent'};
  if (defined $w)
@@ -252,10 +245,10 @@ sub DialogWrapper
   }
  else
   {
-   $w = MainWindow->new;                    
+   $w = MainWindow->new;
    $w->withdraw;
    $created = 1;
-  }                  
+  }
  my $mw = $w->MainWindow;
  my $fs = $mw->{$kind};
  unless (defined $fs)
@@ -278,8 +271,8 @@ sub ColorDialog
 }
 
 sub FDialog
-{           
- require Tk::FileSelect;  
+{
+ require Tk::FileSelect;
  if ($_[0] =~ /Save/)
   {
    push(@_,-create => 1, -verify => [qw(!-d -w)]);
@@ -287,10 +280,24 @@ sub FDialog
  DialogWrapper('FileSelect',@_);
 }
 
+*MotifFDialog = \&FDialog;
+
+sub MainLoop
+{
+ unless ($inMainLoop)
+  {
+   local $inMainLoop = 1;
+   while (Tk::MainWindow->Count)
+    {
+     DoOneEvent(0);
+    }
+  }
+}
+
 1;
 
 __END__
-# provide an exit() to be exported if exit occurs 
+# provide an exit() to be exported if exit occurs
 # before a MainWindow->new()
 sub exit { CORE::exit(@_);}
 
@@ -304,7 +311,7 @@ sub Error
  my $error = shift;
  if (Exists($w))
   {
-   my $grab = $w->grab('current');  
+   my $grab = $w->grab('current');
    $grab->Unbusy if (defined $grab);
   }
  chomp($error);

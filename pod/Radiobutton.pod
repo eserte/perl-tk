@@ -36,7 +36,7 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-command>
 
-Specifies a Tcl command to associate with the button.  This command
+Specifies a L<perl/Tk callback|Tk::callbacks> to associate with the button.  This command
 is typically invoked when mouse button 1 is released over the button
 window.  The button's global variable (B<-variable> option) will
 be updated before the command is invoked.
@@ -168,7 +168,7 @@ all of the behavior of a simple button: it can display itself in either
 of three different ways, according to the B<state> option;
 it can be made to appear
 raised, sunken, or flat; it can be made to flash; and it invokes
-a Tcl command whenever mouse button 1 is clicked over the
+a L<perl/Tk callback|Tk::callbacks> whenever mouse button 1 is clicked over the
 check button.
 
 In addition, radiobuttons can be I<selected>.

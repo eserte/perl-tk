@@ -222,7 +222,7 @@ Tix_ItemStyleCmd(clientData, interp, argc, argv)
 	    RefWindowStructureProc, (ClientData)stylePtr);
 
     Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, styleName, NULL);
+    Tcl_ArgResult(interp, LangObjectArg( interp, styleName));
     return TCL_OK;
 }
 

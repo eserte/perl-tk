@@ -1,6 +1,4 @@
-package main;
-
-unshift(@INC, "../..");
+#Notebook, selectable pages
 
 use Tk;
 use English;
@@ -10,20 +8,23 @@ require Tk::DialogBox;
 require Tk::NoteBook;
 require Tk::LabEntry;
 
-print "1..1";
-$name = "Rajappa Iyer";
-$email = "rsi\@netcom.com";
-$os = "Linux";
+my $name = "Rajappa Iyer";
+my $email = "rsi\@netcom.com";
+my $os = "Linux";
+
+use vars qw($top);
 
 outer:
 {
     $top = MainWindow->new;
-    $pb = $top->Button(-text => "Notebook", -command => \&donotebook);
-    $eb = $top->Button(-text => "Exit", -command => sub {print "ok 1\n"; exit;});
+    my $pb = $top->Button(-text => "Notebook", -command => \&donotebook);
+    my $eb = $top->Button(-text => "Exit", -command => [ destroy => $top ]);
     $pb->pack;
     $eb->pack;
     MainLoop;
-}
+}       
+
+my $f;
 
 sub donotebook {
     if (not defined $f) {
@@ -34,10 +35,10 @@ sub donotebook {
 	# buttons yourself. :-)
 	$f = $top->DialogBox(-title => "Personal Profile",
 			     -buttons => ["OK", "Cancel"]);
-	$n = $f->add(NoteBook, -ipadx => 6, -ipady => 6);
+	my $n = $f->add('NoteBook', -ipadx => 6, -ipady => 6);
 
-	$address_p = $n->add("address", -label => "Address", -underline => 0);
-	$pref_p = $n->add("pref", -label => "Preferences", -underline => 0);
+	my $address_p = $n->add("address", -label => "Address", -underline => 0);
+	my $pref_p = $n->add("pref", -label => "Preferences", -underline => 0);
 	
 	$address_p->LabEntry(-label => "Name:             ",
 	     -labelPack => [-side => "left", -anchor => "w"],
@@ -57,7 +58,7 @@ sub donotebook {
 		 -side => "top");
 	
     }
-    $result = $f->Show;
+    my $result = $f->Show;
     if ($result =~ /OK/) {
 	print "name = $name, email = $email, os = $os\n";
     }

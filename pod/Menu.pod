@@ -69,7 +69,7 @@ entry is invoked.
 
 =item Switch:	B<-tearoffcommand>
 
-If this option has a non-empty value, then it specifies a Tcl command
+If this option has a non-empty value, then it specifies a L<perl/Tk callback|Tk::callbacks>
 to invoke whenever the menu is torn off.  The actual command will
 consist of the value of this option, followed by a space, followed
 by the name of the menu window, followed by a space, followed by

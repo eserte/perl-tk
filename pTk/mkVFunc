@@ -3,6 +3,31 @@
 use Getopt::Std;
 my %opt;
 getopts('mt',\%opt);
+my @Files;
+
+sub openRO
+{
+ my ($fh,$file) = @_;
+ if (-f $file && !-w $file)
+  {
+   chmod(0666,$file) || warn "Cannot change permissions on $file:$!";
+  }
+ open($fh,">$file") || return 0;
+ push(@Files,$file);
+ return 1;
+}
+
+END 
+ {
+  while (@Files)
+   {
+    my $file = pop(@Files);
+    if (-f $file)
+     {
+      chmod(0444,$file) || warn "Cannot change permissions on $file:$!";
+     }
+   }
+ }
 
 my $win_arch = shift;
 die "Unknown \$win_arch" unless $win_arch eq 'open32'
@@ -144,7 +169,7 @@ sub Vfunc
    $htfile =~ s/\..*$/_f.h/;
    unless (-r $htfile)
     {
-     open(C,">$htfile") || die "Cannot open $htfile:$!";
+     openRO(\*C,$htfile) || die "Cannot open $htfile:$!";
      print C "#ifndef ${gard}_VT\n";
      print C "#define ${gard}_VT\n";
      print C "typedef struct ${name}tab\n{\n";
@@ -164,7 +189,7 @@ sub Vfunc
    $cfile =~ s/\..*$/_f.c/;
    unless (-r $cfile)
     {
-     open(C,">$cfile") || die "Cannot open $cfile:$!";
+     openRO(\*C,$cfile) || die "Cannot open $cfile:$!";
      print C "#include \"$hfile\"\n";
      print C "#include \"$htfile\"\n";
      print C "static ${name}tab ${name}table =\n{\n";
@@ -180,8 +205,8 @@ sub Vfunc
     }
 
    print STDERR "$gard\n";                              
-   open(VFUNC,">$fdef")   || die "Cannot open $fdef:$!";
-   open(VMACRO,">$mdef")  || die "Cannot open $mdef:$!";
+   openRO(\*VFUNC,$fdef)   || die "Cannot open $fdef:$!";
+   openRO(\*VMACRO,$mdef)  || die "Cannot open $mdef:$!";
    print VFUNC  "#ifdef _$gard\n";                       
    print VMACRO "#ifndef _${gard}_VM\n";
    print VMACRO "#define _${gard}_VM\n";

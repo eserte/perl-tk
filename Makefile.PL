@@ -5,7 +5,7 @@ BEGIN
  {        
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '800.004';
+  $VERSION = '800.005';
 
   $win_arch = ($IsWin32) ? 'MSWin32' : 'x';		# Currently 'x' and 'open32' supported
 
@@ -135,7 +135,7 @@ sub MY::postamble {
     '
 
 html : subdirs manifypods
-	@cd doc && $(MAKE) html $(PASTHRU)
+	@cd pod && $(MAKE) html $(PASTHRU)
 
 config       :: tkGlue.t tkGlue.m 
 	@$(NOOP)

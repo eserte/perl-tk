@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION);
-$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Widget.pm#28$
+$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/Widget.pm#31$
 
 require Tk;
 use AutoLoader;
@@ -101,13 +101,19 @@ sub ClassInit
  # Carry out class bindings (or whatever)
  my ($package,$mw) = @_;
  return $package;
+}    
+
+sub CreateOptions
+{
+ return ();
 }
 
 sub CreateArgs
 {
  my ($package,$parent,$args) = @_;
  # Remove from hash %$args any configure-like
- # options which only apply at create time (e.g. -colormap for Frame)
+ # options which only apply at create time (e.g. -colormap for Frame),
+ # or which may as well be applied right away
  # return these as a list of -key => value pairs
  # Augment same hash with default values for missing mandatory options,
  # allthough this can be done later in InitObject.
@@ -118,6 +124,10 @@ sub CreateArgs
  my $class = delete $args->{'-class'};
  ($class) = $package =~ /([A-Z][A-Z0-9_]*)$/i unless (defined $class);
  push(@result, '-class' => "\u$class") if (defined $class);
+ foreach my $opt ($package->CreateOptions)
+  {
+   push(@result, $opt => delete $args->{$opt}) if exists $args->{$opt};
+  }
  return @result;
 }
 
@@ -237,13 +247,13 @@ sub IS
 sub AUTOLOAD
 {
  # Take a copy into a 'my' variable so we can recurse
- my $what = $Tk::Widget::AUTOLOAD;
+ my $what = $Tk::Widget::AUTOLOAD; 
  my $save = $@;
  my $name;
  # Braces used to preserve $1 et al.
  {
   my ($pkg,$func) = $what =~ /(.*)::([^:]+)$/;
-  confess("Attempt to load '$what'") unless defined $pkg;
+  confess("Attempt to load '$what'") unless defined($pkg) && $func =~ /^[\w:]+$/;
   $pkg =~ s#::#/#g;
   if (defined($name=$INC{"$pkg.pm"}))
    {
@@ -260,7 +270,7 @@ sub AUTOLOAD
  eval {local $SIG{'__DIE__'}; require $name};
  if ($@)
   {
-   croak $@ unless ($@ =~ /Can't locate \Q$name\E/);
+   croak $@ unless ($@ =~ /Can't locate\s+(?:file\s+')?\Q$name\E`?/);
    my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
    if ($package eq 'Tk::Widget' && $method ne '__ANON__')
     {
@@ -299,8 +309,8 @@ sub AUTOLOAD
         }
       }
     }
-  }
- $@ = $save;
+  }     
+ $@ = $save;                                          
  $DB::sub = $what; # Tell debugger what is going on...
  goto &$what;
 }

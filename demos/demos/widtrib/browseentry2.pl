@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#browseentry2, another example
 #
 # Another BrowseEntry test.
 #
@@ -14,7 +14,6 @@ use Tk::BrowseEntry;
 my $top = new MainWindow( -title => "BrowseEntry 2" );
 main( $top );
 MainLoop();
-exit;
 
 sub main {
     my( $top ) = @_;

@@ -1,6 +1,8 @@
 #!/usr/local/bin/perl -w
 use strict;
 use Tk;
+require Tk::Button;
+$SIG{'__DIE__'} = \&Carp::confess;
 
 my $mw = MainWindow->new();
 $mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;

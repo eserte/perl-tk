@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tixish/DirTree.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tixish/DirTree.pm#11$
 
 use Tk;
 use Tk::Derived;
@@ -18,6 +18,7 @@ use DirHandle;
 use strict;
 
 Construct Tk::Widget 'DirTree';
+
 
 sub Populate {
     my( $cw, $args ) = @_;
@@ -47,11 +48,11 @@ sub dircmd {
 sub fullpath
 {
  my ($path) = @_;
- my $cwd = getcwd;
+ my $cwd = getcwd();
  if (chdir($path))
   {
-   $path = getcwd;
-   chdir($cwd);
+   $path = getcwd();
+   chdir($cwd) || die "Cannot cd back to $cwd:$!";
   }
  else
   {
@@ -68,12 +69,19 @@ sub directory {
 sub chdir {
     my( $w, $val ) = @_;
     my $fulldir = fullpath( $val );
+
+    my $parent = '/';
+    if ($^O eq 'MSWin32')
+     {
+      if ($fulldir =~ s/^([a-z]:)//i)
+       {
+        $parent = $1;
+       }
+     }
+    $w->add_to_tree( $parent, $parent)  unless $w->infoExists($parent);
     
-    $w->add_to_tree( "/", "/" )  unless $w->infoExists( "/" );
-    
-    my $parent = "/";
-    my @dirs = ("");
-    foreach my $name (split( "/", $fulldir )) {
+    my @dirs = ($parent);
+    foreach my $name (split( /[\/\\]/, $fulldir )) {
         next unless length $name;
         push @dirs, $name;
         my $dir = join( "/", @dirs );
@@ -82,8 +90,8 @@ sub chdir {
         $parent = $dir;
     }
 
-    $w->opencmd( $fulldir );
-    $w->setmode( $fulldir, "close" );
+    $w->opencmd( $parent );
+    $w->setmode( $parent, "close" );
 }
 
 sub opencmd {
@@ -105,6 +113,7 @@ sub opencmd {
 
 sub add_to_tree {
     my( $w, $dir, $name, $parent ) = @_;
+
     my $image = $w->Getimage( "folder" );
     my $mode = "none";
     $mode = "open" if $w->has_subdir( $dir );

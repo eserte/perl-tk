@@ -1,4 +1,17 @@
-#!/bin/sh
-find . \( -name '*%' -o -name '*.bak' -o -name '*.orig' -o \
-          -name '*.old' -o -name '*.undone' -o \
-          -name 'core' -o -name 'malloc*.out' \) -ls -exec rm -f {} \;
+#!/usr/local/bin/perl -w
+use File::Find;
+find(\&wanted,'.');
+
+sub wanted
+{              
+ return unless -f $_;
+ if ($_ eq 'core' || /(%|\.(bak|old|undone|orig))$/)
+  {
+   warn "$File::Find::name\n";
+   chmod(0666,$_) unless -w _;
+   unlink($_) || warn "Cannot delete $File::Find::name\n";
+  }
+} 
+
+__END__
+

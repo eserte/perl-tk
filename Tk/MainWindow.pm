@@ -8,7 +8,7 @@ package Tk::MainWindow;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.015'; # $Id: //depot/Tk8/Tk/MainWindow.pm#15$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/MainWindow.pm#16$
 
 use Tk::CmdLine;
 require Tk;
@@ -144,7 +144,7 @@ sub WMSaveYourself
  splice(@args,1,0,'-geometry' => $mw->geometry);
  warn "postWMSaveYourself:".join(' ',@args)."\n";
  $mw->command([@args]);
-}
+}    
 
 1;
 

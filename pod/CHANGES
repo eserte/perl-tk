@@ -1,3 +1,50 @@
+tk8pod 800_004.7
+
+  o TixGrid:
+	mention that TixGrid is alpha and buggy
+
+
+tk8pod 800_004.6
+
+  o tkpoddiff now relative to Nicks last downloaded
+    version (25-Apr)
+  o TixGrid:
+	added POD skelton for missing option/methods
+  o HList:
+        fix in header() return value
+  o focus:
+	some Markup changes
+
+tk8pod 800_004.5
+
+  o pod/HList.pod
+
+	o more perlized
+	o fixed some typos
+	o added missing info('dropsite') doc
+
+tk8pod 800_004.4
+
+  o pod/*Wm.pod
+		o better perlized
+		o fixed grid -> wmGrid
+		o Mwm seem not to work
+
+tk8pod 800_004.3
+
+  o pod/HList.pod:	o more perlized
+			o added L<BUGS> to add and item create
+			  method desc.
+
+tk8pod 800_004.2
+
+  o pod/After.pod:	L<> and I<$id> fixes
+
+tk8pod 800_004.1
+
+  o included Nick's pod19980419 snapshot
+    (same as Tk800.004)
+
 tk8pod 800_003.13
 
   o Perlized Photo.pod (unfinished see TODO)
