@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.074'; # $Id: //depot/Tk8/Tk/Widget.pm#74 $
+$VERSION = '3.078'; # $Id: //depot/Tk8/Tk/Widget.pm#78 $
 
 require Tk;
 use AutoLoader;
@@ -39,7 +39,7 @@ sub Optionmenu;
 sub import
 {
  my $package = shift;
- carp 'use Tk::Widget () to pre-load widgets is deprecated' if (@_ && $^W);
+ carp 'use Tk::Widget () to pre-load widgets is deprecated' if (@_);
  my $need;
  foreach $need (@_)
   {
@@ -263,6 +263,8 @@ sub _AutoloadTkWidget
  return $what;
 }
 
+require UNIVERSAL;
+
 sub AUTOLOAD
 {
  # Take a copy into a 'my' variable so we can recurse
@@ -320,7 +322,6 @@ sub AUTOLOAD
    if (!defined(&$what) && $method =~ /^[A-Z]\w+$/)
     {
      # Use ->can as ->isa is broken in perl5.6.0
-     require UNIVERSAL;
      my $sub = UNIVERSAL::can($_[0],'_AutoloadTkWidget');
      if ($sub)
       {
@@ -472,10 +473,10 @@ sub focusSave
 
 # This is supposed to replicate Tk::after behaviour,
 # but does auto-cancel when widget is deleted.
+require Tk::After;
 
 sub afterIdle
 {
- require Tk::After;
  my $w = shift;
  return Tk::After->new($w,'idle','once',@_);
 }

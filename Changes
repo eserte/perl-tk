@@ -4,6 +4,13 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
+Changes in Tk800.022
+	Fixes for NoteBook and LabFrame
+	Various tweaks for "compile" to flat script (tool not released yet)
+	Doc patches
+	Slaven's -offset fixes and associated need to change compiled-in defaults.
+	Feature suggestions from the list.
+
 Changes in Tk800.021
 	Steve's patches for fileevent and -labelXxxxx
 	Fixed the 'Delagate' bug introduced trying to make AUTOLOAD clean.

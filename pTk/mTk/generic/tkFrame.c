@@ -1,4 +1,4 @@
-/* 
+/*
  * tkFrame.c --
  *
  *	This module implements "frame"  and "toplevel" widgets for
@@ -164,7 +164,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_LANGARG, "-menu", "menu", "Menu",
 	DEF_TOPLEVEL_MENU, Tk_Offset(Frame, menuName),
 	TOPLEVEL|TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(Frame, tsoffset),BOTH|TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
@@ -687,17 +687,17 @@ ConfigureFrame(interp, framePtr, argc, argv, flags)
     GC new = None;
     XGCValues gcValues;
     Pixmap pixmap;
-    
+
     /*
      * Need the old menubar name for the menu code to delete it.
      */
-    
+
     if (framePtr->menuName == NULL) {
     	oldMenuName = NULL;
     } else {
     	oldMenuName = LangCopyArg(framePtr->menuName);
     }
-    
+
     if (Tk_ConfigureWidget(interp, framePtr->tkwin, configSpecs,
 	    argc, argv, (char *) framePtr, flags | framePtr->mask) != TCL_OK) {
 	return TCL_ERROR;
@@ -706,12 +706,12 @@ ConfigureFrame(interp, framePtr, argc, argv, flags)
     if (((oldMenuName == NULL) && (framePtr->menuName != NULL))
 	    || ((oldMenuName != NULL) && (framePtr->menuName == NULL))
 	    || ((oldMenuName != NULL) && (framePtr->menuName != NULL)
-	    && oldMenuName != framePtr->menuName 
+	    && oldMenuName != framePtr->menuName
 	    && strcmp(LangString(oldMenuName), LangString(framePtr->menuName)) != 0)) {
 	TkSetWindowMenuBar(interp, framePtr->tkwin, oldMenuName,
 		framePtr->menuName);
     }
-    
+
     Tk_SetTileChangedProc(framePtr->tile, TileChangedProc,
 	(ClientData)framePtr, (Tk_Item *) NULL);
     if ((pixmap = Tk_PixmapOfTile(framePtr->tile)) != None) {
@@ -897,7 +897,7 @@ FrameEventProc(clientData, eventPtr)
 	     * could be gone by then.  To do so, delete the event handler
 	     * explicitly (normally it's done implicitly by Tk_DestroyWindow).
 	     */
-    
+
 	    Tk_DeleteEventHandler(framePtr->tkwin,
 		    ExposureMask|StructureNotifyMask|FocusChangeMask,
 		    FrameEventProc, (ClientData) framePtr);
@@ -1060,7 +1060,7 @@ TkInstallFrameMenu(tkwin)
     if (winPtr->mainPtr != NULL) {
 	Frame *framePtr;
 	framePtr = (Frame*) winPtr->instanceData;
-	TkpMenuNotifyToplevelCreate(winPtr->mainPtr->interp, 
+	TkpMenuNotifyToplevelCreate(winPtr->mainPtr->interp,
 		LangString(framePtr->menuName));
     }
 }

@@ -13,10 +13,10 @@
 package Tk::Listbox;
 
 use vars qw($VERSION);
-$VERSION = '3.029'; # $Id: //depot/Tk8/Listbox/Listbox.pm#29 $
+$VERSION = '3.031'; # $Id: //depot/Tk8/Listbox/Listbox.pm#31 $
 
 use Tk qw(Ev $XS_VERSION);
-require Tk::Clipboard;
+use Tk::Clipboard ();
 use AutoLoader;
 
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -65,30 +65,6 @@ sub BalloonInfo
   }
 }
 
-
-
-1;
-__END__
-
-#
-# Bind --
-# This procedure is invoked the first time the mouse enters a listbox
-# widget or a listbox widget receives the input focus. It creates
-# all of the class bindings for listboxes.
-#
-# Arguments:
-# event - Indicates which event caused the procedure to be invoked
-# (Enter or FocusIn). It is used so that we can carry out
-# the functions of that event in addition to setting up
-# bindings.
-
-sub xyIndex
-{
- my $w = shift;
- my $Ev = $w->XEvent;
- return $w->index($Ev->xy);
-}
-
 sub ClassInit
 {
  my ($class,$mw) = @_;
@@ -130,6 +106,28 @@ sub ClassInit
  $mw->bind($class,'<2>',['scan','mark',Ev('x'),Ev('y')]);
  $mw->bind($class,'<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
  return $class;
+}
+
+1;
+__END__
+
+#
+# Bind --
+# This procedure is invoked the first time the mouse enters a listbox
+# widget or a listbox widget receives the input focus. It creates
+# all of the class bindings for listboxes.
+#
+# Arguments:
+# event - Indicates which event caused the procedure to be invoked
+# (Enter or FocusIn). It is used so that we can carry out
+# the functions of that event in addition to setting up
+# bindings.
+
+sub xyIndex
+{
+ my $w = shift;
+ my $Ev = $w->XEvent;
+ return $w->index($Ev->xy);
 }
 
 sub ButtonRelease_1

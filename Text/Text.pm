@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.042'; # $Id: //depot/Tk8/Text/Text.pm#42 $
+$VERSION = '3.043'; # $Id: //depot/Tk8/Text/Text.pm#43 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -1359,10 +1359,22 @@ sub TIEHANDLE
 sub PRINT
 {
  my $w = shift;
+ # Find out whether 'end' is displayed at the moment
+ # Retrieve the position of the bottom of the window as
+ # a fraction of the entire contents of the Text widget
+ my $yview = ($w->yview)[1];
+
+ # If $yview is 1.0 this means that 'end' is visible in the window
+ my $update = 0;
+ $update = 1 if $yview == 1.0;
+
+ # Loop over all input strings
  while (@_)
   {
    $w->insert('end',shift);
   }
+  # Move the window to see the end of the text if required
+  $w->see('end') if $update;
 }
 
 sub PRINTF

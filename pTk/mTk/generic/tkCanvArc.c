@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvArc.c --
  *
  *	This file implements arc items for canvas widgets.
@@ -179,12 +179,12 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_COLOR, "-fill", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(ArcItem, fillColor), TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(ArcItem, tsoffset),
+	"0 0", Tk_Offset(ArcItem, tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_COLOR, "-outline", (char *) NULL, (char *) NULL,
 	"black", Tk_Offset(ArcItem, outline.color), TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-outlineoffset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(ArcItem, outline.tsoffset),
+	"0 0", Tk_Offset(ArcItem, outline.tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_BITMAP, "-outlinestipple", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(ArcItem, outline.stipple),
@@ -1066,7 +1066,7 @@ ArcToPoint(canvas, itemPtr, pointPtr)
     ArcItem *arcPtr = (ArcItem *) itemPtr;
     double vertex[2], pointAngle, diff, dist, newDist;
     double poly[8], polyDist, width, t1, t2;
-    int filled, angleInRange;                         
+    int filled, angleInRange;
 
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
@@ -1758,7 +1758,7 @@ ComputeArcOutline(canvas,arcPtr)
 
 static int
 HorizLineToArc(x1, x2, y, rx, ry, start, extent)
-    double x1, x2;		/* X-coords of endpoints of line segment. 
+    double x1, x2;		/* X-coords of endpoints of line segment.
 				 * X1 must be <= x2. */
     double y;			/* Y-coordinate of line segment. */
     double rx, ry;		/* These x- and y-radii define an oval
@@ -1823,7 +1823,7 @@ HorizLineToArc(x1, x2, y, rx, ry, start, extent)
 static int
 VertLineToArc(x, y1, y2, rx, ry, start, extent)
     double x;			/* X-coordinate of line segment. */
-    double y1, y2;		/* Y-coords of endpoints of line segment. 
+    double y1, y2;		/* Y-coords of endpoints of line segment.
 				 * Y1 must be <= y2. */
     double rx, ry;		/* These x- and y-radii define an oval
 				 * centered at the origin. */
@@ -2199,7 +2199,7 @@ StylePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     Tcl_FreeProc **freeProcPtr;		/* Pointer to variable to fill in with
 					 * information about how to reclaim
 					 * storage for return string. */
-{         
+{
     Arg result = NULL;
     register Style *stylePtr = (Style *) (widgRec + offset);
 
@@ -2209,5 +2209,5 @@ StylePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	return LangStringArg("chord");
     } else {
 	return LangStringArg("pieslice");
-    }                                     
+    }
 }

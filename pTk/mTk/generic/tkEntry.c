@@ -1,4 +1,4 @@
-/* 
+/*
  * tkEntry.c --
  *
  *	This module implements entry widgets for the Tk
@@ -39,7 +39,7 @@ typedef struct {
     /*
      * Fields that are set by widget commands other than "configure".
      */
-     
+
     char *string;		/* Pointer to storage for string;
 				 * NULL-terminated;  malloc-ed. */
     int insertPos;		/* Index of character before which next
@@ -312,7 +312,7 @@ static Tk_ConfigSpec configSpecs[] = {
 #endif /* ENTRY_VALIDATE */
     {TK_CONFIG_JUSTIFY, "-justify", "justify", "Justify",
 	DEF_ENTRY_JUSTIFY, Tk_Offset(Entry, justify), 0},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(Entry, tsoffset),TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
 	DEF_ENTRY_RELIEF, Tk_Offset(Entry, relief), 0},
@@ -838,7 +838,7 @@ EntryWidgetCmd(clientData, interp, argc, argv)
 	    }
 	    if (!(entryPtr->flags & GOT_SELECTION)
 		    && (entryPtr->exportSelection)) {
-		Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY, 
+		Tk_OwnSelection(entryPtr->tkwin, XA_PRIMARY,
 			EntryLostSelection, (ClientData) entryPtr);
 		entryPtr->flags |= GOT_SELECTION;
 	    }
@@ -1060,7 +1060,7 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
      */
 
     if (entryPtr->textVarName != NULL) {
-	Tcl_UntraceVar(interp, entryPtr->textVarName, 
+	Tcl_UntraceVar(interp, entryPtr->textVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		EntryTextVarProc, (ClientData) entryPtr);
     }
@@ -1157,7 +1157,7 @@ ConfigureEntry(interp, entryPtr, argc, argv, flags)
  *
  *---------------------------------------------------------------------------
  */
- 
+
 static void
 EntryWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
@@ -1337,7 +1337,7 @@ DisplayEntry(clientData)
 		    (selEndX - selStartX) + 2*entryPtr->selBorderWidth,
 		    (fm.ascent + fm.descent) + 2*entryPtr->selBorderWidth,
 		    entryPtr->selBorderWidth, TK_RELIEF_RAISED);
-	} 
+	}
     }
 
     /*
@@ -1369,7 +1369,7 @@ DisplayEntry(clientData)
 	    if (entryPtr->flags & CURSOR_ON) {
 		Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->insertBorder,
 			cursorX, baseY - fm.ascent,
-			entryPtr->insertWidth, fm.ascent + fm.descent, 
+			entryPtr->insertWidth, fm.ascent + fm.descent,
 			entryPtr->insertBorderWidth, TK_RELIEF_RAISED);
 	    } else if (entryPtr->insertBorder == entryPtr->selBorder) {
 		Tk_Fill3DRectangle(tkwin, pixmap, entryPtr->normalBorder,
@@ -1820,7 +1820,7 @@ EntrySetValue(entryPtr, value)
 
     if (entryPtr->flags & VALIDATE_VAR) {
 	/* Recursing : assume we are in fixup code and it knows
-	   what it is doing 
+	   what it is doing
 	*/
     } else {
 	entryPtr->flags |= VALIDATE_VAR;
@@ -2124,7 +2124,7 @@ EntryScanTo(entryPtr, x)
     if (newLeftIndex < 0) {
 	newLeftIndex = entryPtr->scanMarkIndex = 0;
 	entryPtr->scanMarkX = x;
-    } 
+    }
     if (newLeftIndex != entryPtr->leftIndex) {
 	entryPtr->leftIndex = newLeftIndex;
 	entryPtr->flags |= UPDATE_SCROLLBAR;
@@ -2373,7 +2373,7 @@ EntryVisibleRange(entryPtr, firstPtr, lastPtr)
 	     * If all chars were visible, then charsInWindow will be
 	     * the index just after the last char that was visible.
 	     */
-	     
+	
 	    charsInWindow = entryPtr->numChars;
 	}
 	charsInWindow -= entryPtr->leftIndex;
@@ -2621,7 +2621,7 @@ EntryValidate(entryPtr, cmd, string)
 				 * string). */
      char *string;
 {
-    int code;                   
+    int code;
     Arg result;
 
     code = LangDoCallback(entryPtr->interp, cmd, 1, 1, "%s", string);
@@ -2631,7 +2631,7 @@ EntryValidate(entryPtr, cmd, string)
 		 "\n\t(in validation command executed by entry)");
 	Tcl_BackgroundError(entryPtr->interp);
 	return TCL_ERROR;
-    }          
+    }
 
     result = Tcl_ResultArg(entryPtr->interp);
 
@@ -2696,7 +2696,7 @@ EntryValidateChange(entryPtr, string, new, index, type)
 	if (entryPtr->flags & VALIDATE_VAR) {
 	    return TCL_OK;
 	}
-	else {     
+	else {
 	    Tcl_SetResult(entryPtr->interp,"Validate recursed",TCL_STATIC);
 	    return TCL_ERROR;
 	}
@@ -2707,7 +2707,7 @@ EntryValidateChange(entryPtr, string, new, index, type)
     /*
      * Now form command string and run through the -validatecommand
      */
-                                                             
+
 #ifndef _LANG
     Tcl_DStringInit(&script);
     ExpandPercents(entryPtr, entryPtr->validateCmd,
@@ -2719,14 +2719,14 @@ EntryValidateChange(entryPtr, string, new, index, type)
     Tcl_DStringFree(&script);
 #else
 
-    code = LangDoCallback(entryPtr->interp, entryPtr->validateCmd, 1, 5, "%s %s %s %d %d", 
+    code = LangDoCallback(entryPtr->interp, entryPtr->validateCmd, 1, 5, "%s %s %s %d %d",
                           new, string,  entryPtr->string, index, type);
     if (code != TCL_OK && code != TCL_RETURN) {
 	Tcl_AddErrorInfo(entryPtr->interp,
 		 "\n\t(in validation command executed by entry)");
 	Tcl_BackgroundError(entryPtr->interp);
 	goto done;
-    }          
+    }
 
     result = Tcl_ResultArg(entryPtr->interp);
 
@@ -2775,8 +2775,8 @@ EntryValidateChange(entryPtr, string, new, index, type)
 		entryPtr->validate = VALIDATE_NONE;
 	    }
 	    Tcl_DStringFree(&script);
-#else           
-	    if (LangDoCallback(entryPtr->interp, entryPtr->invalidCmd, 1, 5, "%s %s %s %d %d",  
+#else
+	    if (LangDoCallback(entryPtr->interp, entryPtr->invalidCmd, 1, 5, "%s %s %s %d %d",
 			       new, string, entryPtr->string, index, type) != TCL_OK) {
 		Tcl_AddErrorInfo(entryPtr->interp,
 				 "\n\t(in invalidcommand executed by entry)");
@@ -2871,7 +2871,7 @@ ExpandPercents(entryPtr, before, add, new, index, type, dsPtr)
 	    goto doString;
 	  case 'S': /* string to be inserted/delete, if any */
 	    string = add;
-	    goto doString;                                             
+	    goto doString;
 	  case 'v': /* type of validation */
 	    string = ValidatePrintProc((ClientData) NULL, entryPtr->tkwin,
 				       (char *) entryPtr, 0, 0);
@@ -2932,7 +2932,7 @@ ValidateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     int offset;				/* Offset into item (ignored). */
 {
     int c;
-    size_t length;                            
+    size_t length;
     char *value = LangString(ovalue);
 
     register int *validatePtr = (int *) (widgRec + offset);
@@ -3015,6 +3015,6 @@ ValidatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	    break;
 	default:
 	    return NULL;
-    }                                  
+    }
 }
 #endif /* ENTRY_VALIDATE */

@@ -6,7 +6,7 @@ use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#22 $
+$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#23 $
 
 my %opt;
 INIT
@@ -53,7 +53,7 @@ INIT
 use Tk;
 use Tk::DropSite qw(XDND KDE Sun);
 use Tk::DragDrop qw(XDND KDE Sun);
-use Tk::widgets qw(TextUndo Scrollbar);
+use Tk::widgets qw(TextUndo Scrollbar Menu);
 use Getopt::Std;
 # use Tk::ErrorDialog;
 

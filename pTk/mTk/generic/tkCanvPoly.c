@@ -1,4 +1,4 @@
-/* 
+/*
  * tkCanvPoly.c --
  *
  *	This file implements polygon items for canvas widgets.
@@ -145,13 +145,13 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_JOIN_STYLE, "-joinstyle", (char *) NULL, (char *) NULL,
 	"round", Tk_Offset(PolygonItem, joinStyle), TK_CONFIG_DONT_SET_DEFAULT},
     {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(PolygonItem, tsoffset),
+	"0 0", Tk_Offset(PolygonItem, tsoffset),
 	TK_CONFIG_NULL_OK, &offsetOption},
     {TK_CONFIG_COLOR, "-outline", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(PolygonItem, outline.color),
 	TK_CONFIG_NULL_OK},
     {TK_CONFIG_CUSTOM, "-outlineoffset", (char *) NULL, (char *) NULL,
-	"0,0", Tk_Offset(PolygonItem, outline.tsoffset),
+	"0 0", Tk_Offset(PolygonItem, outline.tsoffset),
 	TK_CONFIG_NULL_OK, &offsetOption},
     {TK_CONFIG_BITMAP, "-outlinestipple", (char *) NULL, (char *) NULL,
 	(char *) NULL, Tk_Offset(PolygonItem, outline.stipple),
@@ -432,7 +432,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
 	/*
 	 * Close the polygon if it isn't already closed.
 	 */
-    
+
 	if (argc>2 && ((polyPtr->coordPtr[argc-2] != polyPtr->coordPtr[0])
 		|| (polyPtr->coordPtr[argc-1] != polyPtr->coordPtr[1]))) {
 	    polyPtr->autoClosed = 1;
@@ -812,7 +812,7 @@ ComputePolygonBbox(canvas, polyPtr)
 	     }
 	    for (i = polyPtr->numPoints ; i >= 3;
 		    i--, coordPtr += 2) {
-    
+
 		if (TkGetMiterPoints(coordPtr, coordPtr+2, coordPtr+4,
 			width, miter, miter+2)) {
 		    for (j = 0; j < 4; j += 2) {
@@ -1483,7 +1483,7 @@ PolygonToArea(canvas, itemPtr, rectPtr)
 				 * means everything seen so far was
 				 * inside the area;  -1 means everything
 				 * was outside the area.  0 means overlap
-				 * has been found. */ 
+				 * has been found. */
     double width;
     Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
@@ -1559,7 +1559,7 @@ PolygonToArea(canvas, itemPtr, rectPtr)
     changedMiterToBevel = 0;
     for (count = numPoints, coordPtr = polyPoints; count >= 2;
 	    count--, coordPtr += 2) {
- 
+
 	/*
 	 * If rounding is done around the first point of the edge
 	 * then test a circular region around the point with the
@@ -1716,7 +1716,7 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
     char *string;
     int i;
     double x ,y, bestDist, dist, *coordPtr;
-    char *end, *p;                                      
+    char *end, *p;
 
     Tcl_Obj **objv;
 
@@ -1724,7 +1724,7 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
 	&& Tcl_GetDoubleFromObj(interp, objv[0], &x) == TCL_OK
 	&& Tcl_GetDoubleFromObj(interp, objv[1], &y) == TCL_OK) {
 	goto doxy;
-    } 
+    }
 
     string = Tcl_GetStringFromObj(obj, &length);
 
@@ -1755,7 +1755,7 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
 	y = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
-	}                       
+	}
       doxy:
 	bestDist = 1.0e36;
 	coordPtr = polyPtr->coordPtr;

@@ -1,3 +1,115 @@
+Change 1860 on 2000/05/13 by nick@bactrian
+
+	Avoid goto xError which upsets one compiler.
+
+Change 1859 on 2000/05/13 by nick@bactrian
+
+	Doc patch for progress bar
+
+Change 1857 on 2000/05/02 by nick@bactrian
+
+	FileSelect -regexp enhancement from Helmut Jarausch
+
+Change 1856 on 2000/05/02 by nick@pluto
+
+	See end on tied Text if yview is appropriate.
+
+Change 1855 on 2000/05/02 by nick@pluto
+
+	Allow createGroup in Canvas
+
+Change 1853 on 2000/05/01 by nick@bactrian
+
+	Tidy MANIFEST for patch posting
+
+Change 1851 on 2000/04/30 by nick@bactrian
+
+	More -offset default fallout.
+
+Change 1849 on 2000/04/30 by nick@bactrian
+
+	Checkin -MO=Script (B::Script) based version of script-to-exec tool
+
+Change 1848 on 2000/04/29 by nick@bactrian
+
+	Do not rely on 'use base' to load XS modules - it is booled by static linked
+	XS code.
+
+Change 1847 on 2000/04/29 by nick@bactrian
+
+	Fix -offset defaults to match new parse code.
+
+Change 1846 on 2000/04/29 by nick@bactrian
+
+	Slaven's patches and suggestions.
+	 HList Double binding
+	 BrowseEntry hash tolerance
+	 -dash bug fix
+
+Change 1845 on 2000/04/29 by nick@bactrian
+
+	Increment to 800.022
+
+Change 1844 on 2000/04/29 by nick@bactrian
+
+	More pseudo-compile tweaks
+
+Change 1843 on 2000/04/29 by nick@bactrian
+
+	Correct octal escape, allow perl command line flags
+
+Change 1842 on 2000/04/28 by nick@bactrian
+
+	Use writemain() and avoid using B::* to try and get load file name.
+	(Works with 5.005_03, 5.6.0 and ithreaded 5.6.0.)
+
+Change 1841 on 2000/04/28 by nick@pluto
+
+	More tweaks for pseudo-compile
+
+Change 1840 on 2000/04/28 by nick@pluto
+
+	Preload and bootstrap support
+
+Change 1839 on 2000/04/28 by nick@bactrian
+
+	Add 1st pass script2c
+
+Change 1838 on 2000/04/27 by nick@pluto
+
+	Add Serial.pm to depot.
+
+Change 1837 on 2000/04/27 by nick@bactrian
+
+	VERSION edits (p4 client on work machine will not run add_version script).
+
+Change 1836 on 2000/04/27 by nick@pluto
+
+	Tweaks for "compile" to flat script:
+	 Avoid "use base qw(Tk::Clipboard ...)" calling Tk::Clipboard() !
+	 Don't AUTOLOAD ClassInit subs
+	 require a few modules a compile time.
+
+Change 1835 on 2000/04/23 by nick@bactrian
+
+	LabFrame tinkering
+
+Change 1834 on 2000/04/23 by nick@bactrian
+
+	Make NoteBook.pm match the tidied up C code.
+
+Change 1829 on 2000/04/21 by nick@bactrian
+
+	Final(?) VERSION update for 800.021
+
+Change 1828 on 2000/04/21 by nick@linux
+
+	Perl5.00404 noise abatement due to non-autoquote.
+
+Change 1827 on 2000/04/21 by nick@bactrian
+
+	Release prep for 800.021
+
 Change 1826 on 2000/04/21 by nick@bactrian
 
 	A few more sprintf's converted to return int SVs directly

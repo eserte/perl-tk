@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.044'; # $Id: //depot/Tk8/Tk/Derived.pm#44 $
+$VERSION = '3.046'; # $Id: //depot/Tk8/Tk/Derived.pm#46 $
 
 $Tk::Derived::Debug = 0;
 
@@ -280,8 +280,6 @@ sub configure
    my %changed = ();
    my ($opt,$val);
    my $config = $cw->TkHash('Configure');
-
-   $cw->labelPack([]) if grep /^-label\w+/, keys %args;
 
    while (($opt,$val) = each %args)
     {

@@ -1,4 +1,4 @@
-/* 
+/*
  * tkMenubutton.c --
  *
  *	This module implements button-like widgets that are used
@@ -92,7 +92,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_MENUBUTTON_CURSOR, Tk_Offset(TkMenuButton, cursor),
 	TK_CONFIG_NULL_OK},
     {TK_CONFIG_UID, "-direction", "direction", "Direction",
-    	DEF_MENUBUTTON_DIRECTION, Tk_Offset(TkMenuButton, direction), 
+    	DEF_MENUBUTTON_DIRECTION, Tk_Offset(TkMenuButton, direction),
 	0},
     {TK_CONFIG_COLOR, "-disabledforeground", "disabledForeground",
 	"DisabledForeground", DEF_MENUBUTTON_DISABLED_FG_COLOR,
@@ -136,7 +136,7 @@ static Tk_ConfigSpec configSpecs[] = {
 	DEF_MENUBUTTON_PADX, Tk_Offset(TkMenuButton, padX), 0},
     {TK_CONFIG_PIXELS, "-pady", "padY", "Pad",
 	DEF_MENUBUTTON_PADY, Tk_Offset(TkMenuButton, padY), 0},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkMenuButton, tile),TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
@@ -544,7 +544,7 @@ ConfigureMenuButton(interp, mbPtr, argc, argv, flags)
 	mbPtr->direction = belowUid;
 	return TCL_ERROR;
     }
-    
+
     if (mbPtr->highlightWidth < 0) {
 	mbPtr->highlightWidth = 0;
     }
@@ -649,7 +649,7 @@ ConfigureMenuButton(interp, mbPtr, argc, argv, flags)
  *
  *---------------------------------------------------------------------------
  */
- 
+
 void
 TkMenuButtonWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
@@ -674,7 +674,7 @@ TkMenuButtonWorldChanged(instanceData)
 	    (ClientData) NULL, (Tk_Item *) NULL);
     Tk_SetTileChangedProc(mbPtr->activeTile, (Tk_TileChangedProc *) NULL,
 	    (ClientData) NULL, (Tk_Item *) NULL);
-    Tk_SetTileChangedProc(mbPtr->tile, (Tk_TileChangedProc *) NULL, 
+    Tk_SetTileChangedProc(mbPtr->tile, (Tk_TileChangedProc *) NULL,
 	    (ClientData)NULL, (Tk_Item *)NULL);
     Tk_SetTileChangedProc(tile, TileChangedProc,
 	    (ClientData) mbPtr, (Tk_Item *) NULL);

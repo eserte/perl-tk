@@ -1,4 +1,4 @@
-/* 
+/*
  * tkProperty.c --
  *
  *                                                                                                  This file manages properties for the Tk toolkit,
@@ -12,7 +12,7 @@
  * software and its documentation for any purpose, provided that the
  * above copyright notice and the following two paragraphs appear in
  * all copies of this software.
- * 
+ *
  * IN NO EVENT SHALL THE AUTHOR BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
  * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE AUTHOR
@@ -194,14 +194,14 @@ long unsigned int *count;
  return result;
 }
 
-static int ErrorProc _ANSI_ARGS_((ClientData clientData, 
+static int ErrorProc _ANSI_ARGS_((ClientData clientData,
 				  XErrorEvent *errEventPtr));
 
 static int
 ErrorProc(clientData,errEventPtr)
-ClientData clientData; 
+ClientData clientData;
 XErrorEvent *errEventPtr;
-{                   
+{
  int *resultPtr = (int *) clientData;
  *resultPtr = TCL_ERROR;
  return 0;
@@ -221,7 +221,7 @@ Arg *args;                        /* Argument strings. */
  Atom atom;
  Window xid;
  int length;
- char c;      
+ char c;
  int result = TCL_OK;
  Tk_ErrorHandler errorHandler = NULL;
 
@@ -281,17 +281,20 @@ Arg *args;                        /* Argument strings. */
     {
      Atom atom = Tk_InternAtom(tkwin, LangString(args[3]));
      if (c == 'd')
-      {       
+      {
        XDeleteProperty(Tk_Display(tkwin), xid, atom);
        if (result != TCL_OK)
-        goto xError;
+        {
+         Tcl_SprintfResult(interp, "XError in XDeleteProperty()");
+         goto done;
+        }
       }
      else
       {
        long unsigned int size = 0;
        int format = PropertyExists(tkwin, xid, atom, &size);
        if (result != TCL_OK)
-        Tcl_SprintfResult(interp, "XError occured");
+        Tcl_SprintfResult(interp, "XError in occured");
        else if (c == 'e')
         {
          Tcl_IntResults(interp, 1, 0, format);
@@ -303,7 +306,7 @@ Arg *args;                        /* Argument strings. */
          unsigned long count = 0;
          XGetWindowProperty(Tk_Display(tkwin), xid, atom, 0L, size, False,
                          AnyPropertyType, &type, &format, &count, &size, &prop);
-         if (result != TCL_OK)                        
+         if (result != TCL_OK)
           Tcl_SprintfResult(interp, "XError occured");
          else if (format == 0 || type == None)
           {
@@ -417,7 +420,4 @@ Arg *args;                        /* Argument strings. */
   if (errorHandler)
    Tk_DeleteErrorHandler(errorHandler);
   return result;
- xError:
-  Tcl_SprintfResult(interp, "XError occured");
-  goto done;
 }

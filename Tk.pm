@@ -42,12 +42,12 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.0';
 $Tk::patchLevel  = '8.0';
-$Tk::VERSION     = '800.021';
+$Tk::VERSION     = '800.022';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
-$Tk::library = Tk->findINC('.') unless (-d $Tk::library);
+$Tk::library = Tk->findINC('.') unless (defined($Tk::library) && -d $Tk::library);
 
 $Tk::widget  = undef;
 $Tk::event   = undef;
@@ -356,6 +356,25 @@ sub TranslateFileName
  return $_;
 }
 
+sub findINC
+{
+ my $file = join('/',@_);
+ my $dir;
+ $file  =~ s,::,/,g;
+ foreach $dir (@INC)
+  {
+   my $path;
+   return $path if (-e ($path = "$dir/$file"));
+  }
+ return undef;
+}
+
+sub idletasks
+{
+ shift->update('idletasks');
+}
+
+
 1;
 
 __END__
@@ -605,11 +624,13 @@ sub Selection
  croak "Use Selection\u$cmd()";
 }
 
-sub Clipboard
-{my $w = shift;
- my $cmd    = shift;
- croak "Use clipboard\u$cmd()";
-}
+# If we have sub Clipboard in Tk then use base qw(Tk::Clipboard ....)
+# calls it when it does its eval "require $base"
+#sub Clipboard
+#{my $w = shift;
+# my $cmd    = shift;
+# croak "Use clipboard\u$cmd()";
+#}
 
 sub Receive
 {
@@ -621,11 +642,6 @@ sub Receive
 sub break
 {
  die "_TK_BREAK_\n";
-}
-
-sub idletasks
-{
- shift->update('idletasks');
 }
 
 sub updateWidgets
@@ -651,19 +667,6 @@ sub interps
 {
  my $w = shift;
  return $w->winfo('interps','-displayof');
-}
-
-sub findINC
-{
- my $file = join('/',@_);
- my $dir;
- $file  =~ s,::,/,g;
- foreach $dir (@INC)
-  {
-   my $path;
-   return $path if (-e ($path = "$dir/$file"));
-  }
- return undef;
 }
 
 sub lsearch

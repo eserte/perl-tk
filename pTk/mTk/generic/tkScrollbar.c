@@ -1,4 +1,4 @@
-/* 
+/*
  * tkScrollbar.c --
  *
  *	This module implements a scrollbar widgets for the Tk
@@ -105,7 +105,7 @@ Tk_ConfigSpec tkpScrollbarConfigSpecs[] = {
     {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
 	Tk_Offset(TkScrollbar, tile), TK_CONFIG_DONT_SET_DEFAULT,
 	&tileOption},
-    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0,0",
+    {TK_CONFIG_CUSTOM, "-offset", "offset", "Offset", "0 0",
 	Tk_Offset(TkScrollbar, tsoffset), TK_CONFIG_DONT_SET_DEFAULT,
 	&offsetOption},
     {TK_CONFIG_COLOR, "-troughcolor", "troughColor", "Background",

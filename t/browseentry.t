@@ -5,7 +5,7 @@ use Test;
 
 BEGIN 
   {
-   plan test => 13;
+   plan test => 15;
   };
 
 eval { require Tk };
@@ -35,7 +35,7 @@ ok(Tk::Exists($be), 1, "BrowseEntry creation failed");
 $be->insert('end', 1, 2, 3);
 ok($be->get(0), 1, "wrong element in listbox");
 
-$be->idletasks;           
+$be->idletasks;
 # this can "fail" if KDE screen save is up, or user is doing something
 # else - such snags are what we should expect when calling binding
 # methods directly ...
@@ -55,6 +55,13 @@ ok(@browsecmd, 2, "-browsecmd failed");
 ok($browsecmd[0]->isa('Tk::BrowseEntry'), 1,
    "wrong 1st argument in -browsecmd");
 ok($browsecmd[1], 1, "wrong 2nd argument in -browsecmd");
+
+my $be2 = $mw->BrowseEntry(-choices => [qw/a b c d e/],
+			   -textvariable => \$bla,
+			   -state => "normal",
+			  )->pack;
+ok($@, "", "can't create BrowseEntry");
+ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
 
 #&Tk::MainLoop;
 

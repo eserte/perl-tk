@@ -14,7 +14,7 @@ Construct Tk::Widget 'Frame';
 
 
 use vars qw($VERSION);
-$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Frame.pm#28 $
+$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/Frame.pm#30 $
 
 sub Tk_cmd { \&Tk::frame }
 
@@ -90,6 +90,7 @@ sub Populate
  $cw->ConfigSpecs('-labelPack'     => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-labelVariable' => [ 'METHOD', undef, undef, undef]);
  $cw->ConfigSpecs('-label'         => [ 'METHOD', undef, undef, undef]);
+ $cw->labelPack([]) if grep /^-label\w+/, keys %$args;
 }
 
 sub Menubar

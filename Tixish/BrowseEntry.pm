@@ -4,7 +4,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = '3.027'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#27 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tixish/BrowseEntry.pm#28 $
 
 use Tk qw(Ev);
 use Carp;
@@ -26,8 +26,10 @@ sub Populate {
     if (not defined $lpack) {
 	$lpack = [-side => 'left', -anchor => 'e'];
     }
+    my $var = "";
     my $e = $w->LabEntry(-labelPack => $lpack,
-			 -label => delete $args->{-label});
+			 -label => delete $args->{-label},
+			 -textvariable => \$var,);
     my $b = $w->Button(-bitmap => '@' . Tk->findINC('cbxarrow.xbm'));
     $w->Advertise('entry' => $e);
     $w->Advertise('arrow' => $b);
