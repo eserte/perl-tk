@@ -8,7 +8,7 @@ VFUNC(Var,LangFindVar,V_LangFindVar,_ANSI_ARGS_((Tcl_Interp * interp, Tk_Window,
 #endif
 
 #ifndef LangFontArg
-VFUNC(Arg,LangFontArg,V_LangFontArg,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Font)))
+VFUNC(Arg,LangFontArg,V_LangFontArg,_ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name)))
 #endif
 
 #ifndef LangObjectArg

@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION @ISA);
-$VERSION = '3.019'; # $Id: //depot/Tk8/IO/IO.pm#19$
+$VERSION = '3.021'; # $Id: //depot/Tk8/IO/IO.pm#21$
 
 require 5.002;
 require Tk;
@@ -224,7 +224,7 @@ sub READLINE
 
 sub READ
 {   
- return sysread($_[0],$_[1],$_[2],$_[3]);
+ return sysread($_[0],$_[1],$_[2],defined $_[3] ? $_[3] : 0);
 }
 
 sub GETC

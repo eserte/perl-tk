@@ -1,4 +1,4 @@
-/* 
+/*
  * tkUnixMenu.c --
  *
  *	This module implements the UNIX platform-specific features of menus.
@@ -36,7 +36,7 @@
 
 static void		SetHelpMenu _ANSI_ARGS_((TkMenu *menuPtr));
 static void		DrawMenuEntryAccelerator _ANSI_ARGS_((
-			    TkMenu *menuPtr, TkMenuEntry *mePtr, 
+			    TkMenu *menuPtr, TkMenuEntry *mePtr,
 			    Drawable d, GC gc, Tk_Font tkfont,
 			    CONST Tk_FontMetrics *fmPtr,
 			    Tk_3DBorder activeBorder, int x, int y,
@@ -48,7 +48,7 @@ static void		DrawMenuEntryBackground _ANSI_ARGS_((
 			    int width, int heigth));
 static void		DrawMenuEntryIndicator _ANSI_ARGS_((
 			    TkMenu *menuPtr, TkMenuEntry *mePtr,
-			    Drawable d, GC gc, GC indicatorGC, 
+			    Drawable d, GC gc, GC indicatorGC,
 			    Tk_Font tkfont,
 			    CONST Tk_FontMetrics *fmPtr, int x, int y,
 			    int width, int height));
@@ -58,12 +58,12 @@ static void		DrawMenuEntryLabel _ANSI_ARGS_((
 			    CONST Tk_FontMetrics *fmPtr, int x, int y,
 			    int width, int height));
 static void		DrawMenuSeparator _ANSI_ARGS_((TkMenu *menuPtr,
-			    TkMenuEntry *mePtr, Drawable d, GC gc, 
-			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr, 
+			    TkMenuEntry *mePtr, Drawable d, GC gc,
+			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr,
 			    int x, int y, int width, int height));
 static void		DrawTearoffEntry _ANSI_ARGS_((TkMenu *menuPtr,
-			    TkMenuEntry *mePtr, Drawable d, GC gc, 
-			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr, 
+			    TkMenuEntry *mePtr, Drawable d, GC gc,
+			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr,
 			    int x, int y, int width, int height));
 static void		DrawMenuUnderline _ANSI_ARGS_((TkMenu *menuPtr,
 			    TkMenuEntry *mePtr, Drawable d, GC gc,
@@ -77,8 +77,8 @@ static void		GetMenuLabelGeometry _ANSI_ARGS_((TkMenuEntry *mePtr,
 			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr,
 			    int *widthPtr, int *heightPtr));
 static void		GetMenuIndicatorGeometry _ANSI_ARGS_((
-			    TkMenu *menuPtr, TkMenuEntry *mePtr, 
-			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr, 
+			    TkMenu *menuPtr, TkMenuEntry *mePtr,
+			    Tk_Font tkfont, CONST Tk_FontMetrics *fmPtr,
 			    int *widthPtr, int *heightPtr));
 static void		GetMenuSeparatorGeometry _ANSI_ARGS_((
 			    TkMenu *menuPtr, TkMenuEntry *mePtr,
@@ -328,12 +328,12 @@ GetMenuIndicatorGeometry(menuPtr, mePtr, tkfont, fmPtr, widthPtr, heightPtr)
             *widthPtr = (14 * mePtr->height) / 10;
             *heightPtr = mePtr->height;
             if (mePtr->type == CHECK_BUTTON_ENTRY) {
-    		mePtr->platformEntryData = 
+    		mePtr->platformEntryData =
 			(TkMenuPlatformEntryData) ((65 * mePtr->height) / 100);
 	    } else {
-    	    	mePtr->platformEntryData = 
+    	    	mePtr->platformEntryData =
 			(TkMenuPlatformEntryData) ((75 * mePtr->height) / 100);
-    	    }	            
+    	    }	
         } else {
             *widthPtr = *heightPtr = mePtr->height;
 	    if (mePtr->type == CHECK_BUTTON_ENTRY) {
@@ -470,7 +470,7 @@ DrawMenuEntryAccelerator(menuPtr, mePtr, d, gc, tkfont, fmPtr, activeBorder,
     int drawArrow;			/* Whether or not to draw arrow. */
 {
     XPoint points[3];
-    
+
     /*
      * Draw accelerator or cascade arrow.
      */
@@ -630,7 +630,7 @@ DrawMenuSeparator(menuPtr, mePtr, d, gc, tkfont, fmPtr, x, y, width, height)
     if (menuPtr->menuType == MENUBAR) {
 	return;
     }
-    
+
     margin = (fmPtr->ascent + fmPtr->descent)/2;
     points[0].x = x;
     points[0].y = y + height/2;
@@ -685,7 +685,7 @@ DrawMenuEntryLabel(
     if (menuPtr->menuType == MENUBAR) {
 	leftEdge += 5;
     }
-    
+
     /*
      * Draw label or bitmap or image for entry.
      */
@@ -726,7 +726,7 @@ DrawMenuEntryLabel(
 	if (menuPtr->disabledFg == NULL) {
 	    XFillRectangle(menuPtr->display, d, menuPtr->disabledGC, x, y,
 		    (unsigned) width, (unsigned) height);
-	} else if ((mePtr->image != NULL) 
+	} else if ((mePtr->image != NULL)
 		&& (menuPtr->disabledImageGC != None)) {
 	    XFillRectangle(menuPtr->display, d, menuPtr->disabledImageGC,
 		    leftEdge,
@@ -824,7 +824,7 @@ TkpPostMenu(interp, menuPtr, x, y)
 
 static void
 GetMenuSeparatorGeometry(menuPtr, mePtr, tkfont, fmPtr, widthPtr,
-	heightPtr) 
+	heightPtr)
     TkMenu *menuPtr;			/* The menu we are measuring */
     TkMenuEntry *mePtr;			/* The entry we are measuring */
     Tk_Font tkfont;			/* The precalculated font */
@@ -903,7 +903,12 @@ TkpComputeMenubarGeometry(menuPtr)
     int helpMenuIndex = -1;
     TkMenuEntry *mePtr;
     int lastEntry;
-    
+    int lastSeparator = menuPtr->numEntries;
+    int rightWidth = 0;
+    int maxEntryWidth = 0;
+    int maxEntryHeight = 0;
+    int totalWidth = 0;
+
     if (menuPtr->tkwin == NULL) {
 	return;
     }
@@ -913,7 +918,7 @@ TkpComputeMenubarGeometry(menuPtr)
 	height = 0;
     } else {
 	maxWindowWidth = Tk_Width(menuPtr->tkwin);
-	if (maxWindowWidth == 1) {
+	if (maxWindowWidth <= 1) {
 	    maxWindowWidth = 0x7ffffff;
 	}
 	currentRowHeight = 0;
@@ -943,18 +948,14 @@ TkpComputeMenubarGeometry(menuPtr)
 		Tk_GetFontMetrics(tkfont, &entryMetrics);
 		fmPtr = &entryMetrics;
 	    }
-	    
-	    /*
-	     * For every entry, we need to check to see whether or not we
-	     * wrap. If we do wrap, then we have to adjust all of the previous
-	     * entries' height and y position, because when we see them
-	     * the first time, we don't know how big its neighbor might
-	     * be.
-	     */
-	    
+	
 	    if ((mePtr->type == SEPARATOR_ENTRY)
 		    || (mePtr->type == TEAROFF_ENTRY)) {
 		mePtr->height = mePtr->width = 0;
+		if (mePtr->type == SEPARATOR_ENTRY) {
+		    lastSeparator = i;
+		    rightWidth = 0;
+		}
 	    } else {
 		
 		GetMenuLabelGeometry(mePtr, tkfont, fmPtr,
@@ -969,12 +970,54 @@ TkpComputeMenubarGeometry(menuPtr)
 		    mePtr->width += width;
 		}
 		mePtr->width += 2 * menuPtr->activeBorderWidth + 10;
-	    }
-	    if (mePtr->entryFlags & ENTRY_HELP_MENU) {
-		helpMenuIndex = i;
-	    } else if (x + mePtr->width + menuPtr->borderWidth
-		    > maxWindowWidth) {
+		if (mePtr->width > maxEntryWidth)
+		    maxEntryWidth = mePtr->width;
+		if (mePtr->height > maxEntryHeight)
+		    maxEntryHeight = mePtr->height;
+		if (lastSeparator < menuPtr->numEntries) {
+		    rightWidth += mePtr->width;
+		}
+		totalWidth += mePtr->width;
 
+		if (mePtr->entryFlags & ENTRY_HELP_MENU) {
+		    helpMenuIndex = i;
+		}
+	    }
+	}      
+
+	/* If width of "right" items is more than window forget it
+	 * and just layout in multicolumns
+	 */
+	if (rightWidth >= maxWindowWidth) {
+	    rightWidth = 0;
+	    lastSeparator = menuPtr->numEntries;
+	}
+
+	/* If there is a help entry in the left portion we will not display 
+	 * it there so allow room for it in the right portion
+	 */
+	if (helpMenuIndex >= 0 && helpMenuIndex < lastSeparator) {
+	    rightWidth += menuPtr->entries[helpMenuIndex]->width;
+	}
+
+	maxWindowWidth -= rightWidth;
+	
+	for (i = 0; i < lastSeparator; i++) {
+	    mePtr = menuPtr->entries[i];
+	    mePtr->entryFlags &= ~ENTRY_LAST_COLUMN;
+	    /*
+	     * For every entry, we need to check to see whether or not we
+	     * wrap. If we do wrap, then we have to adjust all of the previous
+	     * entries' height and y position, because when we see them
+	     * the first time, we don't know how big its neighbor might
+	     * be.
+	     */
+	    if (i == helpMenuIndex) 
+		continue;
+	    /* We retain this contorted logic for now to simplify merges 
+	     * with Tcl/Tk 
+	     */
+	    if (x + mePtr->width + menuPtr->borderWidth  > maxWindowWidth) {
 		if (i == lastRowBreak) {
 		    mePtr->y = y;
 		    mePtr->x = x;
@@ -1002,10 +1045,10 @@ TkpComputeMenubarGeometry(menuPtr)
 		if (mePtr->height > currentRowHeight) {
 		    currentRowHeight = mePtr->height;
 		}
-	    } 
+	    }
 	}
 
-	lastEntry = menuPtr->numEntries - 1;
+	lastEntry = lastSeparator - 1;
 	if (helpMenuIndex == lastEntry) {
 	    lastEntry--;
 	}
@@ -1014,6 +1057,7 @@ TkpComputeMenubarGeometry(menuPtr)
 	    maxWidth = x + menuPtr->entries[lastEntry]->width
 		    + menuPtr->borderWidth;
 	}
+
 	x = menuPtr->borderWidth;
 	for (j = lastRowBreak; j < menuPtr->numEntries; j++) {
 	    if (j == helpMenuIndex) {
@@ -1024,23 +1068,49 @@ TkpComputeMenubarGeometry(menuPtr)
 	    menuPtr->entries[j]->x = x;
 	    x += menuPtr->entries[j]->width;
 	}
-	
 
-	if (helpMenuIndex != -1) {
-	    mePtr = menuPtr->entries[helpMenuIndex];
-	    if (x + mePtr->width + menuPtr->borderWidth > maxWindowWidth) {
-		y += currentRowHeight;
-		currentRowHeight = mePtr->height;
-		x = menuPtr->borderWidth;
-	    } else if (mePtr->height > currentRowHeight) {
+	/* Set height as height of left portion */
+	height = y + currentRowHeight + menuPtr->borderWidth;
+
+	/* Now do the "right" entries (if any) - these only exist
+	 * if they are known not to wrap
+	 */
+	maxWindowWidth += rightWidth;
+
+	x = maxWindowWidth - menuPtr->borderWidth - rightWidth;
+	y = menuPtr->borderWidth;
+	currentRowHeight = 0;
+
+	for (i = lastSeparator; i < menuPtr->numEntries; i++) {
+	    if (i == helpMenuIndex) 
+		continue;
+	    mePtr = menuPtr->entries[i];
+	    mePtr->entryFlags &= ~ENTRY_LAST_COLUMN;
+	    mePtr->y = y;
+	    mePtr->x = x;
+	    x += mePtr->width;
+	    if (mePtr->height > currentRowHeight) {
 		currentRowHeight = mePtr->height;
 	    }
-	    mePtr->x = maxWindowWidth - menuPtr->borderWidth - mePtr->width;
-	    mePtr->y = y + currentRowHeight - mePtr->height;
+	}    
+
+	/* Finally if there is a help entry anywere draw that */
+
+	if (helpMenuIndex >= 0) {
+	    mePtr = menuPtr->entries[helpMenuIndex];
+	    mePtr->entryFlags &= ~ENTRY_LAST_COLUMN;
+	    mePtr->x = x;
+	    mePtr->y = y;
+	    if (mePtr->height > currentRowHeight) {
+		currentRowHeight = mePtr->height;
+	    }
 	}
-	height = y + currentRowHeight + menuPtr->borderWidth;
+
+	if (y + currentRowHeight + menuPtr->borderWidth > height) {
+	   height = y + currentRowHeight + menuPtr->borderWidth;
+	}
     }
-    width = Tk_Width(menuPtr->tkwin);    
+    width = Tk_Width(menuPtr->tkwin);
 
     /*
      * The X server doesn't like zero dimensions, so round up to at least
@@ -1053,7 +1123,7 @@ TkpComputeMenubarGeometry(menuPtr)
     if (height <= 0) {
 	height = 1;
     }
-    menuPtr->totalWidth = maxWidth;
+    menuPtr->totalWidth = maxWidth + rightWidth;
     menuPtr->totalHeight = height;
 }
 
@@ -1093,7 +1163,7 @@ DrawTearoffEntry(menuPtr, mePtr, d, gc, tkfont, fmPtr, x, y, width, height)
     if (menuPtr->menuType != MASTER_MENU) {
 	return;
     }
-    
+
     margin = (fmPtr->ascent + fmPtr->descent)/2;
     points[0].x = x;
     points[0].y = y + height/2;
@@ -1206,7 +1276,7 @@ SetHelpMenu(menuPtr)
  */
 
 void
-TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height, 
+TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
 	strictMotif, drawArrow)
     TkMenuEntry *mePtr;		    /* The entry to draw */
     Drawable d;			    /* What to draw into */
@@ -1248,7 +1318,7 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
     	for (cascadeEntryPtr = menuPtr->menuRefPtr->parentEntryPtr;
     		cascadeEntryPtr != NULL;
     		cascadeEntryPtr = cascadeEntryPtr->nextCascadePtr) {
-    	    if (strcmp(LangString(cascadeEntryPtr->name), 
+    	    if (strcmp(LangString(cascadeEntryPtr->name),
     	    	    Tk_PathName(menuPtr->tkwin)) == 0) {
     	    	if (cascadeEntryPtr->state == tkDisabledUid) {
     	    	    parentDisabled = 1;
@@ -1274,7 +1344,7 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
     if (indicatorGC == NULL) {
 	indicatorGC = menuPtr->indicatorGC;
     }
-	    
+	
     bgBorder = mePtr->border;
     if (bgBorder == NULL) {
 	bgBorder = menuPtr->border;
@@ -1301,12 +1371,12 @@ TkpDrawMenuEntry(mePtr, d, tkfont, menuMetricsPtr, x, y, width, height,
      * for menubars, we have to draw the rest of the entry taking
      * into account the padding.
      */
-    
-    DrawMenuEntryBackground(menuPtr, mePtr, d, activeBorder, 
+
+    DrawMenuEntryBackground(menuPtr, mePtr, d, activeBorder,
 	    bgBorder, x, y, width, height);
-    
+
     if (mePtr->type == SEPARATOR_ENTRY) {
-	DrawMenuSeparator(menuPtr, mePtr, d, gc, tkfont, 
+	DrawMenuSeparator(menuPtr, mePtr, d, gc, tkfont,
 		fmPtr, x, adjustedY, width, adjustedHeight);
     } else if (mePtr->type == TEAROFF_ENTRY) {
 	DrawTearoffEntry(menuPtr, mePtr, d, gc, tkfont, fmPtr, x, adjustedY,
@@ -1351,7 +1421,7 @@ GetMenuLabelGeometry(mePtr, tkfont, fmPtr, widthPtr, heightPtr)
 					 * portion */
 {
     TkMenu *menuPtr = mePtr->menuPtr;
- 
+
     if (mePtr->image != NULL) {
     	Tk_SizeOfImage(mePtr->image, widthPtr, heightPtr);
     } else if (mePtr->bitmap != (Pixmap) NULL) {
@@ -1398,7 +1468,7 @@ TkpComputeStandardMenuGeometry(
     int windowWidth, windowHeight, accelSpace;
     int i, j, lastColumnBreak = 0;
     TkMenuEntry *mePtr;
-    
+
     if (menuPtr->tkwin == NULL) {
 	return;
     }
@@ -1457,12 +1527,12 @@ TkpComputeStandardMenuGeometry(
 	    	    fmPtr, &width, &height);
 	    mePtr->height = height;
 	} else if (mePtr->type == TEAROFF_ENTRY) {
-	    GetTearoffEntryGeometry(menuPtr, mePtr, tkfont, 
+	    GetTearoffEntryGeometry(menuPtr, mePtr, tkfont,
 	    	    fmPtr, &width, &height);
 	    mePtr->height = height;
 	    labelWidth = width;
 	} else {
-	    
+	
 	    /*
 	     * For each entry, compute the height required by that
 	     * particular entry, plus three widths:  the width of the
@@ -1472,7 +1542,7 @@ TkpComputeStandardMenuGeometry(
 	     * (if any).  These sizes depend, of course, on the type
 	     * of the entry.
 	     */
-	    
+	
 	    GetMenuLabelGeometry(mePtr, tkfont, fmPtr, &width,
 	    	    &height);
 	    mePtr->height = height;
@@ -1495,7 +1565,7 @@ TkpComputeStandardMenuGeometry(
 	    	accelWidth = width;
 	    }
 
-	    GetMenuIndicatorGeometry(menuPtr, mePtr, tkfont, 
+	    GetMenuIndicatorGeometry(menuPtr, mePtr, tkfont,
 	    	    fmPtr, &width, &height);
 	    if (height > mePtr->height) {
 	    	mePtr->height = height;
@@ -1507,7 +1577,7 @@ TkpComputeStandardMenuGeometry(
 	    	indicatorSpace = width;
 	    }
 
-	    mePtr->height += 2 * menuPtr->activeBorderWidth + 
+	    mePtr->height += 2 * menuPtr->activeBorderWidth +
 	    	    MENU_DIVIDER_HEIGHT;
     	}
         mePtr->y = y;
@@ -1533,7 +1603,7 @@ TkpComputeStandardMenuGeometry(
 
 
     windowHeight += menuPtr->borderWidth;
-    
+
     /*
      * The X server doesn't like zero dimensions, so round up to at least
      * 1 (a zero-sized menu should never really occur, anyway).
@@ -1570,7 +1640,7 @@ TkpComputeStandardMenuGeometry(
 void
 TkpMenuNotifyToplevelCreate(interp, menuName)
     Tcl_Interp *interp;			/* The interp the menu lives in. */
-    char *menuName;			/* The name of the menu to 
+    char *menuName;			/* The name of the menu to
 					 * reconfigure. */
 {
     /*

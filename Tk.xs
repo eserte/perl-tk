@@ -7,8 +7,11 @@
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
+#include <patchlevel.h> 
 
 #include "tkGlue.def"
+
+static STRLEN na; /* Quick and dirty fix */
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
@@ -34,8 +37,8 @@
 #define NeedPreload() 0
 #endif     
 
-#define Tk_tainting() (tainting)
-#define Tk_tainted(sv) ((sv) ? SvTAINTED(sv) : tainted)
+#define Tk_tainting() (PL_tainting)
+#define Tk_tainted(sv) ((sv) ? SvTAINTED(sv) : PL_tainted)
 
 static void
 DebugHook(SV *sv)
@@ -104,28 +107,8 @@ SV *source;
   }
 }
 
-static XFontStruct *
-TkwinFont(tkwin,name)
-Tk_Window tkwin;
-Tk_Uid name;
-{
- XFontStruct *font = NULL;
- Tcl_Interp *interp;
-#if 0
- /* FIXME */
- if (TkToWidget(tkwin,&interp) && interp)
-  font = Tk_GetFontStruct(interp, tkwin, name);
-#endif
- if (!font)
-  croak("Cannot get font");
- return font;
-}
-
 #define pTk_Synchronize(win,flag) \
    XSynchronize(Tk_Display(win), flag)
-
-#define Tk_FontAscent(tkwin,name)  (TkwinFont(tkwin,name)->ascent)
-#define Tk_FontDescent(tkwin,name) (TkwinFont(tkwin,name)->descent)
 
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Const_
@@ -284,7 +267,7 @@ DESTROY(object)
 SV *	object
 CODE:
  {
-  ST(0) = &sv_undef;
+  ST(0) = &PL_sv_undef;
  }
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk
@@ -780,8 +763,14 @@ CODE:
 OUTPUT:
   RETVAL
 
-MODULE = Tk	PACKAGE = Tk::font	PREFIX = Tk_
+MODULE = Tk	PACKAGE = Tk::Font	PREFIX = Font_
 
+void
+Font_DESTROY(sv)
+SV *	sv
+
+MODULE = Tk	PACKAGE = Tk::Font	PREFIX = Tk_
+          
 int
 Tk_PostscriptFontName(tkfont,name)
 Tk_Font	tkfont
@@ -791,16 +780,6 @@ OUTPUT:
 
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
-
-IV
-Tk_FontAscent(win,name)
-Tk_Window	win
-Tk_Uid		name
-
-IV
-Tk_FontDescent(win,name)
-Tk_Window	win
-Tk_Uid		name
 
 void
 abort()

@@ -34,6 +34,10 @@
 #  define SVtoFont (*TkglueVptr->V_SVtoFont)
 #endif
 
+#ifndef SVtoHWND
+#  define SVtoHWND (*TkglueVptr->V_SVtoHWND)
+#endif
+
 #ifndef SVtoWindow
 #  define SVtoWindow (*TkglueVptr->V_SVtoWindow)
 #endif

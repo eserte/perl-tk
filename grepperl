@@ -6,9 +6,16 @@ my %opt;
 
 use File::Find;
 
-getopts("Flc",\%opt);
+getopts("Flce",\%opt);
 
-$expr = shift unless ($opt{'F'});
+my $expr;
+unless ($opt{'F'})
+ {
+  $expr = (defined $opt{'e'}) ? $opt{'e'} : shift;
+  $expr =~ s/#/\\#/g;
+  $expr = qr#$expr#;
+  warn "Matching '".$expr."'\n";
+ }
 
 sub match
 {
@@ -33,7 +40,7 @@ sub match
       }
     }
   }
- elsif (/\Q$expr\E/o)
+ elsif ($_ =~ $expr)
   {
    if ($opt{'l'})
     {

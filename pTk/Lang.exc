@@ -1,4 +1,5 @@
 TclCalloc
+Tcl_HashStats
 TclFinalizeCompExecEnv
 TclFinalizeEnvironment
 TclFreeObj

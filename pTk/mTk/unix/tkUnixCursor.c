@@ -251,7 +251,7 @@ TkGetCursorByName(interp, tkwin, arg)
 	if ((argc != 2) && (argc != 4)) {
 	    goto badString;
 	}
-	if (XReadBitmapFile(display,
+	if (TkReadBitmapFile(display,
 		RootWindowOfScreen(Tk_Screen(tkwin)), &argv[0][1],
 		(unsigned int *) &width, (unsigned int *) &height,
 		&source, &xHot, &yHot) != BitmapSuccess) {
@@ -274,7 +274,7 @@ TkGetCursorByName(interp, tkwin, arg)
 	    cursor = XCreatePixmapCursor(display, source, source,
 		    &fg, &fg, (unsigned) xHot, (unsigned) yHot);
 	} else {
-	    if (XReadBitmapFile(display,
+	    if (TkReadBitmapFile(display,
 		    RootWindowOfScreen(Tk_Screen(tkwin)), argv[1],
 		    (unsigned int *) &maskWidth, (unsigned int *) &maskHeight,
 		    &mask, &dummy1, &dummy2) != BitmapSuccess) {

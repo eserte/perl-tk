@@ -140,15 +140,6 @@ XGetAtomName(display, atom)
 }
 
 int
-XGetWindowAttributes(display, w, window_attributes_return)
-    Display* display;
-    Window w;
-    XWindowAttributes* window_attributes_return;
-{
-    return 0;
-}
-
-int
 XGetWMColormapWindows(display, w, windows_return, count_return)
     Display* display;
     Window w;
@@ -199,15 +190,6 @@ void
 XPutBackEvent(display, event)
     Display* display;
     XEvent* event;
-{
-}
-
-void
-XQueryColors(display, colormap, defs_in_out, ncolors)
-    Display* display;
-    Colormap colormap;
-    XColor* defs_in_out;
-    int ncolors;
 {
 }
 

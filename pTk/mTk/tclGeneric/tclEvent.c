@@ -544,6 +544,7 @@ Tcl_Finalize()
 #if 0    
     TclFinalizeCompExecEnv();
     TclFinalizeEnvironment();
+    TclpFinalize();
 #endif
     firstExitPtr = NULL;
     tclInExit = 0;

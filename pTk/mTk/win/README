@@ -1,8 +1,8 @@
-Tk 8.0p2 for Windows
+Tk 8.0.3 for Windows
 
 by Scott Stanton
-Sun Microsystems Laboratories
-scott.stanton@eng.sun.com
+Scriptics Corporation
+scott.stanton@scriptics.com
 
 SCCS: @(#) README 1.20 97/11/21 15:17:54
 
@@ -22,7 +22,7 @@ common source release.  The binary distribution is a self-extracting
 archive with a built-in installation script.
 
 Look for the binary release in the same location as the source release
-(ftp.smli.com:/pub/tcl or any of the mirror sites).  For most users,
+(ftp.scriptics.com:/pub/tcl/tcl8_0 or any of the mirror sites).  For most users,
 the binary release will be much easier to install and use.  You only
 need the source release if you plan to modify the core of Tcl, or if
 you need to compile with a different compiler.  With the addition of
@@ -42,7 +42,8 @@ In order to compile Tk for Windows, you need the following items:
 	Borland C++ 4.5 or later (32-bit compiler)
 	  or
 	Visual C++ 2.x or later
-	
+
+In practice, 8.0.3 was built with Visual C++ 5.0
 
 In the "win" subdirectory of the source release, you will find two
 files called "makefile.bc" and "makefile.vc".  These are the makefiles
@@ -62,11 +63,11 @@ find them.  Tk looks in one of two places for the library files:
 	   as specified in the registry:
 
 		For Windows NT & 95:
-		    HKEY_LOCAL_MACHINE\SOFTWARE\Sun\Tcl\8.0
+		    HKEY_LOCAL_MACHINE\SOFTWARE\Scriptics\Tcl\8.0
 			Value Name is "Root"
 
 		For Win32s:
-		    HKEY_CLASSES_ROOT\SOFTWARE\Sun\Tcl\8.0\
+		    HKEY_CLASSES_ROOT\SOFTWARE\Scriptics\Tcl\8.0\
 
 	2) Relative to the directory containing the current .exe.
 	    Tk will look for a directory "..\lib\tk8.0" relative to the
@@ -103,13 +104,11 @@ Windows beta version of Tk:
 - Color management on some displays doesn't work properly resulting in
   Tk switching to monochrome mode.
 - Tk seems to fail to draw anything on some Matrox Millenium cards.
-- Send and winfo interps are not currently supported
 - Printing does not work for images (e.g. GIF) on a canvas.
 - Tk_dialog appears in the upper left corner.  This is a symptom of a
   larger problem with "wm geometry" when applied to unmapped or
   iconified windows.
 - Some keys don't work on international keyboards.
-- Grabs do not affect native menus or the title bar.
 - PPM images are using the wrong translation mode for writing to
   files, resulting in CR/LF terminated PPM files.
 - Tk crashes if the display depth changes while it is running.  Tk
@@ -118,7 +117,6 @@ Windows beta version of Tk:
 If you have comments or bug reports for the Windows version of Tk,
 please direct them to:
 
-Scott Stanton
-scott.stanton@eng.sun.com
+<bugs@scriptics.com>
 
 or post them to the newsgroup comp.lang.tcl.

@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tclCompile.c 1.80 97/09/18 18:23:30
+ * SCCS: @(#) tclCompile.c 1.10 98/08/07 11:46:30
  */
 
 #include "tclInt.h"
@@ -352,6 +352,14 @@ unsigned char tclTypeTable[] = {
 };
 
 /*
+ * Table of all AuxData types.
+ */
+
+static Tcl_HashTable auxDataTypeTable;
+static int auxDataTypeTableInitialized = 0;    /* 0 means not yet
+                                                * initialized. */
+
+/*
  * Prototypes for procedures defined later in this file:
  */
 
@@ -398,6 +406,7 @@ static void		FreeArgInfo _ANSI_ARGS_((ArgInfo *argInfoPtr));
 static int		GetCmdLocEncodingSize _ANSI_ARGS_((
 			    CompileEnv *envPtr));
 static void		InitArgInfo _ANSI_ARGS_((ArgInfo *argInfoPtr));
+static int		IsLocalScalar  _ANSI_ARGS_((char *name, int len));
 static int		LookupCompiledLocal _ANSI_ARGS_((
         		    char *name, int nameChars, int createIfNew,
 			    int flagsIfCreated, Proc *procPtr));
@@ -416,6 +425,16 @@ Tcl_ObjType tclByteCodeType = {
     DupByteCodeInternalRep,	/* dupIntRepProc */
     UpdateStringOfByteCode,	/* updateStringProc */
     SetByteCodeFromAny		/* setFromAnyProc */
+};
+
+/*
+ * The structures below define the AuxData types defined in this file.
+ */
+
+AuxDataType tclForeachInfoType = {
+    "ForeachInfo",				/* name */
+    DupForeachInfo,				/* dupProc */
+    FreeForeachInfo				/* freeProc */
 };
 
 /*
@@ -502,14 +521,15 @@ TclPrintByteCodeObj(interp, objPtr)
 	if (numCompiledLocals > 0) {
 	    CompiledLocal *localPtr = procPtr->firstLocalPtr;
 	    for (i = 0;  i < numCompiledLocals;  i++) {
-		fprintf(stdout, "      %d: slot %d%s%s%s%s%s",
+		fprintf(stdout, "      %d: slot %d%s%s%s%s%s%s",
 			i, localPtr->frameIndex,
 			((localPtr->flags & VAR_SCALAR)?  ", scalar"  : ""),
 			((localPtr->flags & VAR_ARRAY)?  ", array"  : ""),
 			((localPtr->flags & VAR_LINK)?  ", link"  : ""),
-			(localPtr->isArg?  ", arg"  : ""),
-			(localPtr->isTemp? ", temp" : ""));
-		if (localPtr->isTemp) {
+			((localPtr->flags & VAR_ARGUMENT)?  ", arg"  : ""),
+			((localPtr->flags & VAR_TEMPORARY)? ", temp" : ""),
+			((localPtr->flags & VAR_RESOLVED)? ", resolved" : ""));
+		if (TclIsVarTemporary(localPtr)) {
 		    fprintf(stdout,	"\n");
 		} else {
 		    fprintf(stdout,	", name=\"%s\"\n", localPtr->name);
@@ -763,7 +783,7 @@ TclPrintInstruction(codePtr, pc)
 		for (j = 0;  j < opnd;  j++) {
 		    localPtr = localPtr->nextPtr;
 		}
-		if (localPtr->isTemp) {
+		if (TclIsVarTemporary(localPtr)) {
 		    fprintf(stdout, "%u	# temp var %u",
 			    (unsigned int) opnd, (unsigned int) opnd);
 		} else {
@@ -795,7 +815,7 @@ TclPrintInstruction(codePtr, pc)
 		for (j = 0;  j < opnd;  j++) {
 		    localPtr = localPtr->nextPtr;
 		}
-		if (localPtr->isTemp) {
+		if (TclIsVarTemporary(localPtr)) {
 		    fprintf(stdout, "%u	# temp var %u",
 			    (unsigned int) opnd, (unsigned int) opnd);
 		} else {
@@ -916,7 +936,7 @@ FreeByteCodeInternalRep(objPtr)
 /*
  *----------------------------------------------------------------------
  *
- * CleanupByteCode --
+ * TclCleanupByteCode --
  *
  *	This procedure does all the real work of freeing up a bytecode
  *	object's ByteCode structure. It's called only when the structure's
@@ -965,8 +985,8 @@ TclCleanupByteCode(codePtr)
 
     auxDataPtr = codePtr->auxDataArrayPtr;
     for (i = 0;  i < numAuxDataItems;  i++) {
-	if (auxDataPtr->freeProc != NULL) {
-	    auxDataPtr->freeProc(auxDataPtr->clientData);
+	if (auxDataPtr->type->freeProc != NULL) {
+	    auxDataPtr->type->freeProc(auxDataPtr->clientData);
 	}
 	auxDataPtr++;
     }
@@ -1076,8 +1096,8 @@ SetByteCodeFromAny(interp, objPtr)
 
 	auxDataPtr = compEnv.auxDataArrayPtr;
 	for (i = 0;  i < compEnv.auxDataArrayNext;  i++) {
-	    if (auxDataPtr->freeProc != NULL) {
-		auxDataPtr->freeProc(auxDataPtr->clientData);
+	    if (auxDataPtr->type->freeProc != NULL) {
+            auxDataPtr->type->freeProc(auxDataPtr->clientData);
 	    }
 	    auxDataPtr++;
 	}
@@ -1277,6 +1297,7 @@ TclInitByteCodeObj(objPtr, envPtr)
     unsigned char *nextPtr;
     int srcLen = envPtr->termOffset;
     int numObjects, i;
+    Namespace *namespacePtr;
 #ifdef TCL_COMPILE_STATS
     int srcLenLog2, sizeLog2;
 #endif /*TCL_COMPILE_STATS*/
@@ -1331,12 +1352,21 @@ TclInitByteCodeObj(objPtr, envPtr)
     tclSourceCount[srcLenLog2]++;
     tclByteCodeCount[sizeLog2]++;
 #endif /* TCL_COMPILE_STATS */    
+
+    if (envPtr->iPtr->varFramePtr != NULL) {
+        namespacePtr = envPtr->iPtr->varFramePtr->nsPtr;
+    } else {
+        namespacePtr = envPtr->iPtr->globalNsPtr;
+    }
     
     p = (unsigned char *) ckalloc(size);
     codePtr = (ByteCode *) p;
     codePtr->iPtr = envPtr->iPtr;
     codePtr->compileEpoch = envPtr->iPtr->compileEpoch;
+    codePtr->nsPtr = namespacePtr;
+    codePtr->nsEpoch = namespacePtr->resolverEpoch;
     codePtr->refCount = 1;
+    codePtr->flags = 0;
     codePtr->source = envPtr->source;
     codePtr->procPtr = envPtr->procPtr;
     codePtr->totalSize = totalSize;
@@ -3246,6 +3276,55 @@ TclCompileDollarVar(interp, string, lastChar, flags, envPtr)
 /*
  *----------------------------------------------------------------------
  *
+ * IsLocalScalar --
+ *
+ *	Checks to see if a variable name refers to a local scalar.
+ *
+ * Results:
+ *	Returns 1 if the variable is a local scalar.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+IsLocalScalar(varName, length)
+    char *varName;		/* The name to check. */
+    int length;		/* The number of characters in the string.  */
+{
+    char *p;
+    char *lastChar = varName + (length - 1);
+
+    for (p = varName; p <= lastChar; p++) {
+	if ((CHAR_TYPE(p, lastChar) != TCL_NORMAL) &&
+	    (CHAR_TYPE(p, lastChar) != TCL_COMMAND_END)) {
+	    /*
+	     * TCL_COMMAND_END is returned for the last character
+	     * of the string.  By this point we know it isn't
+	     * an array or namespace reference.
+	     */
+
+	    return 0;
+	}
+	if  (*p == '(') {
+	    if (*lastChar == ')') { /* we have an array element */
+		return 0;
+	    }
+	} else if (*p == ':') {
+	    if ((p != lastChar) && *(p+1) == ':') { /* qualified name */
+		return 0;
+	    }
+	}
+    }
+	
+    return 1;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * TclCompileBreakCmd --
  *
  *	Procedure called to compile the "break" command.
@@ -3432,21 +3511,9 @@ TclCompileCatchCmd(interp, string, lastChar, flags, envPtr)
 	}
 
 	nameChars = (lastChar - firstChar + 1);
-	if (nameChars > 0) {
-	    char *p = firstChar;
-	    while (p != lastChar) {
-		if (CHAR_TYPE(p, lastChar) != TCL_NORMAL) {
-		    result = TCL_OUT_LINE_COMPILE;
-		    goto done;
-		}
-		if (*p == '(') {
-		    if (*lastChar == ')') { /* we have an array element */
-			result = TCL_OUT_LINE_COMPILE;
-			goto done; 
-		    }
-		}
-		p++;
-	    }
+	if (!IsLocalScalar(firstChar, nameChars)) {
+	    result = TCL_OUT_LINE_COMPILE;
+	    goto done;
 	}
 
 	name = firstChar;
@@ -4008,7 +4075,7 @@ TclCompileForCmd(interp, string, lastChar, flags, envPtr)
 				 * to execute cmd. */
     ArgInfo argInfo;		/* Structure holding information about the
 				 * start and end of each argument word. */
-    int range1, range2;		/* Indexes in the ExceptionRange array of
+    int range1 = -1, range2;	/* Indexes in the ExceptionRange array of
 				 * the loop ranges for this loop: one for
 				 * its body and one for its "next" cmd. */
     JumpFixup jumpFalseFixup;	/* Used to update or replace the ifFalse
@@ -4039,17 +4106,20 @@ TclCompileForCmd(interp, string, lastChar, flags, envPtr)
     }
 
     /*
-     * If the test expression is enclosed in quotes (""s), don't compile
+     * If the test expression is not enclosed in braces, don't compile
      * the for inline. As a result of Tcl's two level substitution
      * semantics for expressions, the expression might have a constant
      * value that results in the loop never executing, or executing forever.
      * Consider "set x 0; for {} "$x > 5" {incr x} {}": the loop body 
      * should never be executed.
+     * NOTE: This is an overly aggressive test, since there are legitimate
+     * literals that could be compiled but aren't in braces.  However, until
+     * the parser is integrated in 8.1, this is the simplest implementation.
      */
 
-    if (*(argInfo.startArray[1]) == '"') {
+    if (*(argInfo.startArray[1]) != '{') {
 	result = TCL_OUT_LINE_COMPILE;
-        goto done;
+	goto done;
     }
 
     /*
@@ -4241,7 +4311,9 @@ TclCompileForCmd(interp, string, lastChar, flags, envPtr)
     }
     envPtr->pushSimpleWords = savePushSimpleWords;
     envPtr->maxStackDepth = maxDepth;
-    envPtr->excRangeDepth--;
+    if (range1 != -1) {
+	envPtr->excRangeDepth--;
+    }
     FreeArgInfo(&argInfo);
     return result;
 }
@@ -4293,7 +4365,7 @@ TclCompileForeachCmd(interp, string, lastChar, flags, envPtr)
     ArgInfo argInfo;		/* Structure holding information about the
 				 * start and end of each argument word. */
     int numLists = 0;		/* Count of variable (and value) lists. */
-    int range;			/* Index in the ExceptionRange array of the
+    int range = -1;		/* Index in the ExceptionRange array of the
 				 * ExceptionRange record for this loop. */
     ForeachInfo *infoPtr;	/* Points to the structure describing this
 				 * foreach command. Stored in a AuxData
@@ -4417,30 +4489,15 @@ TclCompileForeachCmd(interp, string, lastChar, flags, envPtr)
 
 	/*
 	 * Check that each variable name has no substitutions and that
-	 * it is a scalar name.
+	 * it is a local scalar name.
 	 */
 
 	numVars = varcList[i];
 	for (j = 0;  j < numVars;  j++) {
 	    char *varName = varvList[i][j];
-	    char *p = varName;
-	    while (*p != '\0') {
-		if (CHAR_TYPE(p, p+1) != TCL_NORMAL) {
-		    result = TCL_OUT_LINE_COMPILE;
-		    goto done;
-		}
-		if (*p == '(') {
-		    char *q = p;
-		    do {
-			q++;
-		    } while (*q != '\0');
-		    q--;
-		    if (*q == ')') { /* we have an array element */
-			result = TCL_OUT_LINE_COMPILE;
-			goto done; 
-		    }
-		}
-		p++;
+	    if (!IsLocalScalar(varName, (int) strlen(varName))) {
+		result = TCL_OUT_LINE_COMPILE;
+		goto done;
 	    }
 	}
     }
@@ -4504,7 +4561,7 @@ TclCompileForeachCmd(interp, string, lastChar, flags, envPtr)
 	infoPtr->varLists[i] = varListPtr;
     }
     infoIndex = TclCreateAuxData((ClientData) infoPtr,
-            DupForeachInfo, FreeForeachInfo, envPtr);
+            &tclForeachInfoType, envPtr);
 
     /*
      * Emit code to store each value list into the associated temporary.
@@ -4665,7 +4722,9 @@ TclCompileForeachCmd(interp, string, lastChar, flags, envPtr)
     envPtr->termOffset = (argInfo.endArray[numWords-1] + 1 - string);
     envPtr->pushSimpleWords = savePushSimpleWords;
     envPtr->maxStackDepth = maxDepth;
-    envPtr->excRangeDepth--;
+    if (range != -1) {
+	envPtr->excRangeDepth--;
+    }
     FreeArgInfo(&argInfo);
     return result;
 }
@@ -5846,7 +5905,7 @@ TclCompileWhileCmd(interp, string, lastChar, flags, envPtr)
     register int type;		/* Current char's CHAR_TYPE type. */
     int maxDepth = 0;		/* Maximum number of stack elements needed
 				 * to execute cmd. */
-    int range;			/* Index in the ExceptionRange array of the
+    int range = -1;		/* Index in the ExceptionRange array of the
 				 * ExceptionRange record for this loop. */
     JumpFixup jumpFalseFixup;	/* Used to update or replace the ifFalse
 				 * jump after test when its target PC is
@@ -5854,18 +5913,6 @@ TclCompileWhileCmd(interp, string, lastChar, flags, envPtr)
     unsigned char *jumpPc;
     int jumpDist, jumpBackDist, jumpBackOffset, objIndex, result;
     int savePushSimpleWords = envPtr->pushSimpleWords;
-
-    envPtr->excRangeDepth++;
-    envPtr->maxExcRangeDepth =
-	TclMax(envPtr->excRangeDepth, envPtr->maxExcRangeDepth);
-
-    /*
-     * Create and initialize a ExceptionRange record to hold information
-     * about this loop. This is used to implement break and continue.
-     */
-
-    range = CreateExceptionRange(LOOP_EXCEPTION_RANGE, envPtr);
-    envPtr->excRangeArrayPtr[range].continueOffset = TclCurrCodeOffset();
 
     AdvanceToNextWord(src, envPtr);
     src += envPtr->termOffset;
@@ -5880,18 +5927,33 @@ TclCompileWhileCmd(interp, string, lastChar, flags, envPtr)
     }
 
     /*
-     * If the test expression is enclosed in quotes (""s), don't compile
+     * If the test expression is not enclosed in braces, don't compile
      * the while inline. As a result of Tcl's two level substitution
      * semantics for expressions, the expression might have a constant
      * value that results in the loop never executing, or executing forever.
-     * Consider "set x 0; while "$x < 5" {incr x}": the loop body should
-     * never be executed.
+     * Consider "set x 0; whie "$x > 5" {incr x}": the loop body 
+     * should never be executed.
+     * NOTE: This is an overly aggressive test, since there are legitimate
+     * literals that could be compiled but aren't in braces.  However, until
+     * the parser is integrated in 8.1, this is the simplest implementation.
      */
 
-    if (*src == '"') {
+    if (*src != '{') {
 	result = TCL_OUT_LINE_COMPILE;
-        goto done;
+	goto done;
     }
+
+    /*
+     * Create and initialize a ExceptionRange record to hold information
+     * about this loop. This is used to implement break and continue.
+     */
+
+    envPtr->excRangeDepth++;
+    envPtr->maxExcRangeDepth =
+	TclMax(envPtr->excRangeDepth, envPtr->maxExcRangeDepth);
+
+    range = CreateExceptionRange(LOOP_EXCEPTION_RANGE, envPtr);
+    envPtr->excRangeArrayPtr[range].continueOffset = TclCurrCodeOffset();
 
     /*
      * Compile the next word: the test expression.
@@ -5901,7 +5963,8 @@ TclCompileWhileCmd(interp, string, lastChar, flags, envPtr)
     result = CompileExprWord(interp, src, lastChar, flags, envPtr);
     if (result != TCL_OK) {
 	if (result == TCL_ERROR) {
-            Tcl_AddObjErrorInfo(interp, "\n    (\"while\" test expression)", -1);
+            Tcl_AddObjErrorInfo(interp,
+		    "\n    (\"while\" test expression)", -1);
         }
 	goto done;
     }
@@ -6037,7 +6100,9 @@ TclCompileWhileCmd(interp, string, lastChar, flags, envPtr)
     envPtr->termOffset = (src - string);
     envPtr->pushSimpleWords = savePushSimpleWords;
     envPtr->maxStackDepth = maxDepth;
-    envPtr->excRangeDepth--;
+    if (range != -1) {
+	envPtr->excRangeDepth--;
+    }
     return result;
 }
 
@@ -6094,7 +6159,7 @@ CompileExprWord(interp, string, lastChar, flags, envPtr)
     int range = -1;		/* If we inline compile an un-{}'d
 				 * expression, the index for its catch range
 				 * record in the ExceptionRange array.
-				 * Initialized to avoid compile warning. */
+				 * Initialized to enable proper cleanup. */
     JumpFixup jumpFixup;	/* Used to emit the "success" jump after
 				 * the inline expression code. */
     char *p;
@@ -6294,6 +6359,9 @@ CompileExprWord(interp, string, lastChar, flags, envPtr)
     } /* if expression isn't in {}s */
     
     done:
+    if (range != -1) {
+	envPtr->excRangeDepth--;
+    }
     envPtr->termOffset = (src - string);
     envPtr->maxStackDepth = maxDepth;
     envPtr->pushSimpleWords = savePushSimpleWords;
@@ -6548,6 +6616,7 @@ LookupCompiledLocal(name, nameChars, createIfNew, flagsIfCreated, procPtr)
     register CompiledLocal *localPtr;
     int localIndex = -1;
     register int i;
+    int localCt;
 
     /*
      * If not creating a temporary, does a local variable of the specified
@@ -6555,10 +6624,10 @@ LookupCompiledLocal(name, nameChars, createIfNew, flagsIfCreated, procPtr)
      */
 
     if (name != NULL) {	
-	int localCt = procPtr->numCompiledLocals;
+	localCt = procPtr->numCompiledLocals;
 	localPtr = procPtr->firstLocalPtr;
 	for (i = 0;  i < localCt;  i++) {
-	    if (!localPtr->isTemp) {
+	    if (!TclIsVarTemporary(localPtr)) {
 		char *localName = localPtr->name;
 		if ((name[0] == localName[0])
 	                && (nameChars == localPtr->nameLength)
@@ -6588,10 +6657,13 @@ LookupCompiledLocal(name, nameChars, createIfNew, flagsIfCreated, procPtr)
 	localPtr->nextPtr = NULL;
 	localPtr->nameLength = nameChars;
 	localPtr->frameIndex = localIndex;
-	localPtr->isArg  = 0;
-	localPtr->isTemp = (name == NULL);
 	localPtr->flags = flagsIfCreated;
+	if (name == NULL) {
+	    localPtr->flags |= VAR_TEMPORARY;
+	}
 	localPtr->defValuePtr = NULL;
+ 	localPtr->resolveInfo = NULL;
+ 	
 	if (name != NULL) {
 	    memcpy((VOID *) localPtr->name, (VOID *) name, (size_t) nameChars);
 	}
@@ -6599,6 +6671,119 @@ LookupCompiledLocal(name, nameChars, createIfNew, flagsIfCreated, procPtr)
 	procPtr->numCompiledLocals++;
     }
     return localIndex;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclInitCompiledLocals --
+ *
+ *	This routine is invoked in order to initialize the compiled
+ *	locals table for a new call frame.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	May invoke various name resolvers in order to determine which
+ *	variables are being referenced at runtime.
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TclInitCompiledLocals(interp, framePtr, nsPtr)
+    Tcl_Interp *interp;		/* Current interpreter. */
+    CallFrame *framePtr;	/* Call frame to initialize. */
+    Namespace *nsPtr;		/* Pointer to current namespace. */
+{
+    register CompiledLocal *localPtr;
+    Interp *iPtr = (Interp*) interp;
+    Tcl_ResolvedVarInfo *vinfo, *resVarInfo;
+    Var *varPtr = framePtr->compiledLocals;
+    Var *resolvedVarPtr;
+    ResolverScheme *resPtr;
+    int result;
+
+    /*
+     * Initialize the array of local variables stored in the call frame.
+     * Some variables may have special resolution rules.  In that case,
+     * we call their "resolver" procs to get our hands on the variable,
+     * and we make the compiled local a link to the real variable.
+     */
+
+    for (localPtr = framePtr->procPtr->firstLocalPtr;
+	 localPtr != NULL;
+	 localPtr = localPtr->nextPtr) {
+
+	/*
+	 * Check to see if this local is affected by namespace or
+	 * interp resolvers.  The resolver to use is cached for the
+	 * next invocation of the procedure.
+	 */
+
+	if (!(localPtr->flags & (VAR_ARGUMENT|VAR_TEMPORARY|VAR_RESOLVED))
+		&& (nsPtr->compiledVarResProc || iPtr->resolverPtr)) {
+	    resPtr = iPtr->resolverPtr;
+
+	    if (nsPtr->compiledVarResProc) {
+		result = (*nsPtr->compiledVarResProc)(nsPtr->interp,
+			localPtr->name, localPtr->nameLength,
+			(Tcl_Namespace *) nsPtr, &vinfo);
+	    } else {
+		result = TCL_CONTINUE;
+	    }
+
+	    while ((result == TCL_CONTINUE) && resPtr) {
+		if (resPtr->compiledVarResProc) {
+		    result = (*resPtr->compiledVarResProc)(nsPtr->interp,
+			    localPtr->name, localPtr->nameLength,
+			    (Tcl_Namespace *) nsPtr, &vinfo);
+		}
+		resPtr = resPtr->nextPtr;
+	    }
+	    if (result == TCL_OK) {
+		localPtr->resolveInfo = vinfo;
+		localPtr->flags |= VAR_RESOLVED;
+	    }
+	}
+
+	/*
+	 * Now invoke the resolvers to determine the exact variables that
+	 * should be used.
+	 */
+
+        resVarInfo = localPtr->resolveInfo;
+        resolvedVarPtr = NULL;
+
+        if (resVarInfo && resVarInfo->fetchProc) {
+            resolvedVarPtr = (Var*) (*resVarInfo->fetchProc)(interp,
+                resVarInfo);
+        }
+
+        if (resolvedVarPtr) {
+	    varPtr->name = localPtr->name; /* will be just '\0' if temp var */
+	    varPtr->nsPtr = NULL;
+	    varPtr->hPtr = NULL;
+	    varPtr->refCount = 0;
+	    varPtr->tracePtr = NULL;
+	    varPtr->searchPtr = NULL;
+	    varPtr->flags = 0;
+            TclSetVarLink(varPtr);
+            varPtr->value.linkPtr = resolvedVarPtr;
+            resolvedVarPtr->refCount++;
+        } else {
+	    varPtr->value.objPtr = NULL;
+	    varPtr->name = localPtr->name; /* will be just '\0' if temp var */
+	    varPtr->nsPtr = NULL;
+	    varPtr->hPtr = NULL;
+	    varPtr->refCount = 0;
+	    varPtr->tracePtr = NULL;
+	    varPtr->searchPtr = NULL;
+	    varPtr->flags = (localPtr->flags | VAR_UNDEFINED);
+        }
+	varPtr++;
+    }
 }
 
 /*
@@ -7308,7 +7493,7 @@ FreeArgInfo(argInfoPtr)
 /*
  *----------------------------------------------------------------------
  *
- * CreateLoopExceptionRange --
+ * CreateExceptionRange --
  *
  *	Procedure that allocates and initializes a new ExceptionRange
  *	structure of the specified kind in a CompileEnv's ExceptionRange
@@ -7407,17 +7592,12 @@ CreateExceptionRange(type, envPtr)
  */
 
 int
-TclCreateAuxData(clientData, dupProc, freeProc, envPtr)
+TclCreateAuxData(clientData, typePtr, envPtr)
     ClientData clientData;	/* The compilation auxiliary data to store
-				 * in the new aux data record. */
-    AuxDataDupProc *dupProc;	/* Procedure to call to duplicate the
-				 * compilation aux data when the containing
-				 * ByteCode structure is duplicated. */
-    AuxDataFreeProc *freeProc;	/* Procedure to call to free the
-				 * compilation aux data when the containing
-				 * ByteCode structure is freed.  */
+                             * in the new aux data record. */
+    AuxDataType *typePtr;	/* Pointer to the type to attach to this AuxData */
     register CompileEnv *envPtr;/* Points to the CompileEnv for which a new
-				 * aux data structure is to be allocated. */
+                                 * aux data structure is to be allocated. */
 {
     int index;			/* Index for the new AuxData structure. */
     register AuxData *auxDataPtr;
@@ -7453,9 +7633,8 @@ TclCreateAuxData(clientData, dupProc, freeProc, envPtr)
     envPtr->auxDataArrayNext++;
     
     auxDataPtr = &(envPtr->auxDataArrayPtr[index]);
+    auxDataPtr->type = typePtr;
     auxDataPtr->clientData = clientData;
-    auxDataPtr->dupProc  = dupProc;
-    auxDataPtr->freeProc = freeProc;
     return index;
 }
 
@@ -7741,5 +7920,170 @@ TclFixupForwardJump(envPtr, jumpFixupPtr, jumpDist, distThreshold)
     }
     return 1;			/* the jump was grown */
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclGetInstructionTable --
+ *
+ *  Returns a pointer to the table describing Tcl bytecode instructions.
+ *  This procedure is defined so that clients can access the pointer from
+ *  outside the TCL DLLs.
+ *
+ * Results:
+ *	Returns a pointer to the global instruction table, same as the expression
+ *  (&instructionTable[0]).
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
 
+InstructionDesc *
+TclGetInstructionTable()
+{
+    return &instructionTable[0];
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * TclRegisterAuxDataType --
+ *
+ *	This procedure is called to register a new AuxData type
+ *	in the table of all AuxData types supported by Tcl.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	The type is registered in the AuxData type table. If there was already
+ *	a type with the same name as in typePtr, it is replaced with the
+ *	new type.
+ *
+ *--------------------------------------------------------------
+ */
 
+void
+TclRegisterAuxDataType(typePtr)
+    AuxDataType *typePtr;	/* Information about object type;
+                             * storage must be statically
+                             * allocated (must live forever). */
+{
+    register Tcl_HashEntry *hPtr;
+    int new;
+
+    if (!auxDataTypeTableInitialized) {
+        TclInitAuxDataTypeTable();
+    }
+
+    /*
+     * If there's already a type with the given name, remove it.
+     */
+
+    hPtr = Tcl_FindHashEntry(&auxDataTypeTable, typePtr->name);
+    if (hPtr != (Tcl_HashEntry *) NULL) {
+        Tcl_DeleteHashEntry(hPtr);
+    }
+
+    /*
+     * Now insert the new object type.
+     */
+
+    hPtr = Tcl_CreateHashEntry(&auxDataTypeTable, typePtr->name, &new);
+    if (new) {
+        Tcl_SetHashValue(hPtr, typePtr);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclGetAuxDataType --
+ *
+ *	This procedure looks up an Auxdata type by name.
+ *
+ * Results:
+ *	If an AuxData type with name matching "typeName" is found, a pointer
+ *	to its AuxDataType structure is returned; otherwise, NULL is returned.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+AuxDataType *
+TclGetAuxDataType(typeName)
+    char *typeName;		/* Name of AuxData type to look up. */
+{
+    register Tcl_HashEntry *hPtr;
+    AuxDataType *typePtr = NULL;
+
+    if (!auxDataTypeTableInitialized) {
+        TclInitAuxDataTypeTable();
+    }
+
+    hPtr = Tcl_FindHashEntry(&auxDataTypeTable, typeName);
+    if (hPtr != (Tcl_HashEntry *) NULL) {
+        typePtr = (AuxDataType *) Tcl_GetHashValue(hPtr);
+    }
+
+    return typePtr;
+}
+
+/*
+ *--------------------------------------------------------------
+ *
+ * TclInitAuxDataTypeTable --
+ *
+ *	This procedure is invoked to perform once-only initialization of
+ *	the AuxData type table. It also registers the AuxData types defined in 
+ *	this file.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Initializes the table of defined AuxData types "auxDataTypeTable" with
+ *	builtin AuxData types defined in this file.
+ *
+ *--------------------------------------------------------------
+ */
+
+void
+TclInitAuxDataTypeTable()
+{
+    auxDataTypeTableInitialized = 1;
+
+    Tcl_InitHashTable(&auxDataTypeTable, TCL_STRING_KEYS);
+    TclRegisterAuxDataType(&tclForeachInfoType);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TclFinalizeAuxDataTypeTable --
+ *
+ *	This procedure is called by Tcl_Finalize after all exit handlers
+ *	have been run to free up storage associated with the table of AuxData
+ *	types.
+ *
+ * Results:
+ *	None.
+ *
+ * Side effects:
+ *	Deletes all entries in the hash table of AuxData types, "auxDataTypeTable".
+ *
+ *----------------------------------------------------------------------
+ */
+
+void
+TclFinalizeAuxDataTypeTable()
+{
+    if (auxDataTypeTableInitialized) {
+        Tcl_DeleteHashTable(&auxDataTypeTable);
+        auxDataTypeTableInitialized = 0;
+    }
+}

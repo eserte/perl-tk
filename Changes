@@ -3,6 +3,21 @@ release is at the top.
 
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
+
+Changes in Tk800.012             
+	Various patches from the list       
+	Support "Explorer" Drops on Win32 (preliminary)    
+	Use KeySyms in Alt- Menu bindings
+	Build WinPhoto by default on UNIX. (Does not work on Win32 yet.)
+	Tolerate perl5.005_53 names of perl's variables.
+	Made Tk::Font be objects based on fontCreate's 'named' fonts.
+	Expand ~/.Xdefaults so Win32 actually has such a thing.
+	Re-worked Busy to (optionaly) recursively change cursor.                       
+	Arrow keys in Entry clear selection in Win32 too.
+	Changes for ->raise on Win32 
+	Integrated Scriptic's tk8.0.3 and needed bits of associated tcl8.0.3
+	Make last 'separator' on a menubar move following items to right
+
 Changes in Tk800.011     
 	Various tweaks to make Conference demo cleaner,
 	in particular :

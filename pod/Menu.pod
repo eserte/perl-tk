@@ -153,7 +153,7 @@ Disabled entries may be re-enabled, at which point it becomes
 possible to activate and invoke them again.
 
 Whenever a menu's active entry is changed, a E<lt>E<lt>MenuSelectE<gt>E<gt> virtual
-event is send to the menu. The active item can then be queried from
+event is sent to the menu. The active item can then be queried from
 the menu, and an action can be taken, such as setting
 context-sensitive help text for the entry.
 
@@ -315,6 +315,12 @@ system menu.
 
 When Tk see a Help menu on X Windows, the menu is moved to be last in
 the menubar and is right justified.
+
+=head2 SEPARATORS IN MENUBARS
+
+Separator entries are not displayed in menubars. 
+The I<last> separator entry causes remaining entries to be
+right justified.
 
 =head2 CLONES
 

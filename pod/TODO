@@ -260,52 +260,9 @@ getOpenFile:
 o perlize filePattern when it's clear what it should be
   (It's not clear if Tcl/Tk scheme will be adopted
 
-discrepancies with docs (on Unix):
+o the file box should be probably pop up in the middle of the screen
 
-o  One does not get a dialog when the file does not exists
-   and path is not absolute as stated in the docs
-
-ptksh> p $mw->getOpenFile
-./bla|
-
-o Centers itself always over the parent widget. Even if parent is small
-  and e.g. in the upper left corner  So a lot of the Dialog is outside
-  the of the screen.  E.g. create a main window and
-
-ptksh> $mw->geometry('+0+0')
-ptksh> $mw->getOpenFile
-
-
-o  -filetypes option not supported (could be PASSIVE for now).
-
-ptksh> p $mw->getOpenFile(-filetypes=>'*.pod')
-Can't set -filetypes to `*.pod' for Tk::FileSelect=HASH(0x1402bbb08): Can't set -filetypes to `*.pod' for Tk::Frame=HASH(0x14061cc78): Bad option `-filetypes' at /home/ach/perl/5.004_64/site+standard/Tk/Derived.pm line 290.
-
-o defaultextention docs not work:
-
-ptksh> p $mw->getOpenFile(-defaultextension=>'pod')
-./bla|
-ptksh> p $mw->getOpenFile(-defaultextension=>'.pod')
-./bla|
-
-o if one currently gives a filepattern '.pod' the filter displays './*..pod'
-  so one should use 'pod'.  On the other hand SPECIFING FILE PATTERS
-  suggest to use .pod.
-
-
-Misc. comments:
-
-o It would be useful if the 'File' entry would get the focus on startup
-  So one can start typing without selecting the entry (with click to focus
-  policy
-
-o If one clicks on a filename.  This is interpreted as the 'accept' and
-  Dialog disapprear.   While confirm with tcl/tk it makes me nervous.
-  I prefer a double click
- 
-
-
-o Still much functionality not implemented
+o check whether the -filetypes option works the same in unix and windows
 
 HList (and some BUGS)
 ===========

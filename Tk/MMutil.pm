@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '3.032'; # $Id: //depot/Tk8/Tk/MMutil.pm#32$
+$VERSION = '3.036'; # $Id: //depot/Tk8/Tk/MMutil.pm#36$
 
 use Tk::MakeDepend;
 
@@ -390,12 +390,43 @@ sub findpTk
  return $ptk;
 }
 
+sub find_subdir
+{
+ my %dir;
+ opendir(DIR,'.') || die "Cannot opendir:$!";
+ foreach my $dir (readdir(DIR))
+  {
+   next if $dir =~ /^\.\.?$/;
+   next if -l $dir;
+   next unless -d $dir;
+   if (-f "$dir/Makefile.PL")
+    {    
+     my $exc = ($win_arch eq 'x') ? 'Unix' : 'Win';
+     if (-f "$dir/Not${exc}.exc")
+      {
+       warn "Skip $dir on $win_arch\n"
+      }
+     else
+      {
+       $dir{$dir} = 1 
+      }
+    }
+  }
+ closedir(DIR);
+ return \%dir;
+}
+
 sub TkExtMakefile
 {
  my (%att) = @_;
  if ($Config{'ccflags'} =~ /-DPERL_OBJECT/)
   {
    $att{'CAPI'} = 'TRUE' unless exists $att{'CAPI'};
+  }             
+ unless (exists $att{'DIR'})
+  {            
+   my $dir = find_subdir();
+   $att{'DIR'} = [sort(keys %$dir)];
   }
  unless (exists $att{'NAME'})
   {
@@ -413,8 +444,6 @@ sub TkExtMakefile
  my $tk = installed_tk();
  $att{'macro'} = {} unless (exists $att{'macro'});
  $att{'macro'}{'TKDIR'} = $tk;
- # 'INST_LIB' => '../blib',
- # 'INST_ARCHLIB' => '../blib',
  my @opt = ('VERSION'     => $Tk::Config::VERSION, 
             'XS_VERSION'  => $Tk::Config::VERSION);
  push(@opt,'clean' => {} ) unless (exists $att{'clean'});
@@ -432,9 +461,7 @@ sub TkExtMakefile
     {
      push(@opt, 
           'MYEXTLIB' => "$ptk/libpTk\$(LIB_EXT)",
-          'dynamic_lib' => {
-                             INST_DYNAMIC_DEP => "$ptk/libpTk\$(LIB_EXT)"
-                            }
+#         'dynamic_lib' => { INST_DYNAMIC_DEP => "$ptk/libpTk\$(LIB_EXT)" }
          ); 
     }
    if ($IsWin32 && $Config{'cc'} =~ /^bcc/)

@@ -12,7 +12,7 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Entry/Entry.pm#14$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Entry/Entry.pm#16$
 
 # modify it under the same terms as Perl itself, subject 
 # to additional disclaimer in license.terms due to partial
@@ -83,7 +83,7 @@ sub ClassInit
               my $w = shift;
               my $Ev = $w->XEvent;
               $w->Button1($Ev->x);
-              $w->SelectionClear;
+              $w->selectionClear;
              });
 
  $mw->bind($class,"<B1-Motion>",['MouseSelect',Ev("x")]);
@@ -573,7 +573,7 @@ sub SetCursor
  my $w = shift;
  my $pos = shift;
  $w->icursor($pos);
- $w->SelectionClear;
+ $w->selectionClear;
  $w->SeeInsert;
 }
 # Transpose

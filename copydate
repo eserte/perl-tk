@@ -28,7 +28,13 @@ sub wanted
  my $write = -w $_;
  $File::Find::prune = 0;
  if (-T $_ && !/%$/ && !/\.bak/ && (stat($_))[9] >= $yt)
-  {
+  {             
+   if (/\.c$/)
+    {
+     my $xs = $_;
+     $xs =~ s/\.c$/.xs/;
+     return -f $xs; 
+    }
    local $file   = ($_);
    local ($_);
    @ARGV = ($file);

@@ -183,6 +183,7 @@ Tcl_GetBooleanFromObj (Tcl_Interp *interp, Tcl_Obj *obj, int *boolPtr)
  static char *no[] =  {"n", "no", "false", "off", NULL};
  if (SvPOK(sv))
   {
+   STRLEN na;
    char *s = SvPV(sv, na);
    char **p = yes;
    while (*p)

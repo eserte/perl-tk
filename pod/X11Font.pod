@@ -3,20 +3,20 @@
 
 Tk::Font - a class for finding X Fonts
 
-=for pm Tk/Font.pm
+=for pm Tk/X11Font.pm
 
 =for category Tk Generic Methods
 
 =head1 SYNOPSIS
 
- use Tk::Font;
+ use Tk::X11Font;
 
- $font = $widget->Font(foundry => 'adobe',
+ $font = $widget->X11Font(foundry => 'adobe',
                        family  => 'times',
                        point   => 120
                       );
 
- $font = $widget->Font('*-courier-medium-r-normal-*-*');
+ $font = $widget->X11Font('*-courier-medium-r-normal-*-*');
 
 =head1 DESCRIPTION
 
@@ -75,6 +75,8 @@ Graham Barr <Graham.Barr@tiuk.ti.com>
 =head1 HISTORY
 
 11-Jan-96 Initial version
+
+08-Nov-98 Renamed for Tk800.012
 
 =head1 COPYRIGHT
 

@@ -30,6 +30,10 @@ DragDrop/DragDrop/SunDrop.pm
 DragDrop/DragDrop/SunSite.pm
 DragDrop/DropSite.pm
 DragDrop/Makefile.PL
+DragDrop/Win32Site/Makefile.PL
+DragDrop/Win32Site/NotUnix.exc
+DragDrop/Win32Site/Win32Site.pm
+DragDrop/Win32Site/Win32Site.xs
 DragDrop/drag_test
 DragDrop/has_sun
 DragDrop/local_test
@@ -46,10 +50,6 @@ Extensions/ImageBack/MANIFEST.SKIP
 Extensions/ImageBack/Makefile.PL
 Extensions/ImageBack/README
 Extensions/ImageBack/background
-Extensions/WinPhoto/Makefile.PL
-Extensions/WinPhoto/WinPhoto.pm
-Extensions/WinPhoto/WinPhoto.xs
-Extensions/WinPhoto/try
 Funcs.doc			Ancient but better than nothing list of functions
 HList/HList.pm
 HList/HList.xs
@@ -84,6 +84,7 @@ Photo/Makefile.PL
 Photo/Photo.pm
 Photo/Photo.xs
 README				General Information
+README-ActiveState.txt
 README.AIX
 README.HPUX
 README.IRIX
@@ -154,9 +155,11 @@ Tk/Dialog.pm
 Tk/Dirlist.pm
 Tk/English.pm
 Tk/ErrorDialog.pm
+Tk/FBox.pm
 Tk/FileSelect.pm
 Tk/Font.pm
 Tk/Frame.pm
+Tk/IconList.pm
 Tk/Image.pm
 Tk/ItemStyle.pm
 Tk/LabEntry.pm
@@ -184,6 +187,7 @@ Tk/Tk.xbm
 Tk/Toplevel.pm
 Tk/Widget.pm
 Tk/Wm.pm
+Tk/X11Font.pm
 Tk/Xcamel.gif
 Tk/Xrm.pm
 Tk/act_folder.xbm
@@ -215,6 +219,11 @@ Tkperl/NotUnix.exc
 Tkperl/winMain.c
 ToDo
 VERSIONS			Description of version naming scheme
+WinPhoto/Makefile.PL
+WinPhoto/NotWin.exc
+WinPhoto/WinPhoto.pm
+WinPhoto/WinPhoto.xs
+WinPhoto/try
 Xlib/GC.def
 Xlib/Makefile.PL
 Xlib/README
@@ -233,7 +242,7 @@ adj_demo			Example of packAdjust usage.
 after_demo			Simple (= boring) demo of after.
 after_leak			Check for "leaked" values when using after.
 al_bug				Simple Table app.
-animate
+animate				Demo of animated GIFs
 autoraise			Popup which attempts to keep itself "on top"
 basic_demo			Scruffy demo/test of many Tk constucts.
 bin/defs
@@ -244,8 +253,7 @@ bin/tkman
 bin/unres
 bin/uselib
 bindtest			Test of key bindings with qualifiers
-bugs
-build
+build				Perl Script to rebuild "perl build"
 bulkedit			Utility to make changes in many files - with Tk GUI
 canvas_ps			Writes PostScript for Canvas to a file.
 canvas_scroll			Basic test of scrolling a Canvas
@@ -263,6 +271,7 @@ config/unsigned.c		See if 'char' is signed
 copydate			Utility to update copyright notices
 cursor_demo			Lists all built-in (X) cursors.
 debug				Run perl Tk script under GNU gdb 
+debug.bat
 demos/MANIFEST
 demos/MANIFEST.SKIP
 demos/Makefile.PL
@@ -310,6 +319,7 @@ demos/demos/widget_lib/dialog1.pl
 demos/demos/widget_lib/dialog2.pl
 demos/demos/widget_lib/entry1.pl
 demos/demos/widget_lib/entry2.pl
+demos/demos/widget_lib/filebox.pl
 demos/demos/widget_lib/floor.pl
 demos/demos/widget_lib/form.pl
 demos/demos/widget_lib/hscale.pl
@@ -467,7 +477,6 @@ pTk/bitmaps/info.bmp
 pTk/bitmaps/questhead.bmp
 pTk/bitmaps/question.bmp
 pTk/bitmaps/warning.bmp
-pTk/chexclude
 pTk/chext
 pTk/compat/limits.h
 pTk/compat/stdlib.h
@@ -636,6 +645,7 @@ pTk/mTk/tclGeneric/tclIOCmd.c
 pTk/mTk/tclGeneric/tclIOSock.c
 pTk/mTk/tclGeneric/tclIOUtil.c
 pTk/mTk/tclGeneric/tclIndexObj.c
+pTk/mTk/tclGeneric/tclInitScript.h
 pTk/mTk/tclGeneric/tclInt.h
 pTk/mTk/tclGeneric/tclInterp.c
 pTk/mTk/tclGeneric/tclLink.c
@@ -655,6 +665,7 @@ pTk/mTk/tclGeneric/tclPosixStr.c
 pTk/mTk/tclGeneric/tclPreserve.c
 pTk/mTk/tclGeneric/tclProc.c
 pTk/mTk/tclGeneric/tclRegexp.h
+pTk/mTk/tclGeneric/tclResolve.c
 pTk/mTk/tclGeneric/tclStringObj.c
 pTk/mTk/tclGeneric/tclTest.c
 pTk/mTk/tclGeneric/tclTestObj.c
@@ -701,13 +712,19 @@ pTk/mTk/tclUnix/tclUnixPort.h
 pTk/mTk/tclUnix/tclUnixSock.c
 pTk/mTk/tclUnix/tclUnixTest.c
 pTk/mTk/tclUnix/tclUnixTime.c
+pTk/mTk/tclUnix/tclXtNotify.c
 pTk/mTk/tclUnix/tclXtTest.c
 pTk/mTk/tclWin/README
 pTk/mTk/tclWin/cat.c
 pTk/mTk/tclWin/license.terms
 pTk/mTk/tclWin/makefile.bc
+pTk/mTk/tclWin/makefile.dsp
+pTk/mTk/tclWin/makefile.dsw
+pTk/mTk/tclWin/makefile.plg
 pTk/mTk/tclWin/makefile.vc
+pTk/mTk/tclWin/mkd.bat
 pTk/mTk/tclWin/pTk.inc
+pTk/mTk/tclWin/rmd.bat
 pTk/mTk/tclWin/stub16.c
 pTk/mTk/tclWin/tcl.rc
 pTk/mTk/tclWin/tcl16.rc
@@ -897,7 +914,11 @@ pTk/mTk/unix/tkUnixXId.c
 pTk/mTk/win/README
 pTk/mTk/win/license.terms
 pTk/mTk/win/makefile.bc
+pTk/mTk/win/makefile.dsp
+pTk/mTk/win/makefile.dsw
+pTk/mTk/win/makefile.plg
 pTk/mTk/win/makefile.vc
+pTk/mTk/win/mkd.bat
 pTk/mTk/win/pTk.exc
 pTk/mTk/win/rc/buttons.bmp
 pTk/mTk/win/rc/cursor00.cur
@@ -981,6 +1002,7 @@ pTk/mTk/win/rc/tk.ico
 pTk/mTk/win/rc/tk.rc
 pTk/mTk/win/rc/wish.ico
 pTk/mTk/win/rc/wish.rc
+pTk/mTk/win/rmd.bat
 pTk/mTk/win/stubs.c
 pTk/mTk/win/tkWin.h
 pTk/mTk/win/tkWin32Dll.c
@@ -1094,6 +1116,7 @@ perlfiles
 pfm
 pictgrid
 pipe_test
+pixels-points
 pixmap_test
 pod/Adjuster.pod
 pod/After.pod
@@ -1115,7 +1138,6 @@ pod/Dialog.pod
 pod/DialogBox.pod
 pod/DirTree.pod
 pod/DupName/Dialog.pod
-pod/DupName/Font.pod
 pod/Entry.pod
 pod/Error.pod
 pod/FileSelect.pod
@@ -1163,6 +1185,7 @@ pod/Widget.pod
 pod/WidgetDemo.pod
 pod/Wm.pod
 pod/X.pod
+pod/X11Font.pod
 pod/Xrm.pod
 pod/bind.pod
 pod/bindtags.pod
@@ -1288,6 +1311,7 @@ ptksh
 rebuild
 scale_test
 scrolled_demo
+sillymenu
 sm
 sockets
 stripblib

@@ -21,13 +21,6 @@
  */
 #include "tkInitScript.h"
 
-
-/*
- * Default directory in which to look for libraries:
- */
-
-static char defaultLibraryDir[200] = TK_LIBRARY;
-
 
 /*
  *----------------------------------------------------------------------

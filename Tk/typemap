@@ -10,6 +10,9 @@ Colormap		T_IVOBJ
 GC			T_PTROBJ
 Font			T_IVOBJ
 Atom			T_IV
+HANDLE			T_IV
+BOOL			T_IV
+HWND			T_TK_HWND
 FILE *			T_NIO
 hash_ptr *		T_PTR
 Tk_3DBorder		T_PTROBJ
@@ -31,6 +34,9 @@ T_PVOBJ
 
 T_TK_WINDOW
 	$var = SVtoWindow($arg)
+
+T_TK_HWND
+	$var = SVtoHWND($arg)
 
 T_TK_XEVENT
 	$var = SVtoEventAndKeySym($arg)

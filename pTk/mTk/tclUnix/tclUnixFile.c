@@ -254,6 +254,12 @@ Tcl_FindExecutable(argv0)
 	 */
 
 	p = ":/bin:/usr/bin";
+    } else if (*p == '\0') {
+	/*
+	 * An empty path is equivalent to ".".
+	 */
+
+	p = "./";
     }
 
     /*
@@ -278,16 +284,19 @@ Tcl_FindExecutable(argv0)
 	    }
 	}
 	Tcl_DStringAppend(&buffer, argv0, -1);
-	if ((access(Tcl_DStringValue(&buffer), X_OK) == 0)
-		&& (stat(Tcl_DStringValue(&buffer), &statBuf) == 0)
+	if ((TclAccess(Tcl_DStringValue(&buffer), X_OK) == 0)
+		&& (TclStat(Tcl_DStringValue(&buffer), &statBuf) == 0)
 		&& S_ISREG(statBuf.st_mode)) {
 	    name = Tcl_DStringValue(&buffer);
 	    goto gotName;
 	}
 	if (*p == 0) {
 	    break;
+	} else if (*(p+1) == 0) {
+	    p = "./";
+	} else {
+	    p++;
 	}
-	p++;
     }
     goto done;
 
@@ -425,7 +434,7 @@ TclMatchFiles(interp, separators, dirPtr, pattern, tail)
     } else {
 	dirName = dirPtr->string;
     }
-    if ((stat(dirName, &statBuf) != 0) || !S_ISDIR(statBuf.st_mode)) {
+    if ((TclStat(dirName, &statBuf) != 0) || !S_ISDIR(statBuf.st_mode)) {
 	return TCL_OK;
     }
 
@@ -511,7 +520,7 @@ TclMatchFiles(interp, separators, dirPtr, pattern, tail)
 	    Tcl_DStringAppend(dirPtr, entryPtr->d_name, -1);
 	    if (tail == NULL) {
 		Tcl_AppendElement(interp, dirPtr->string);
-	    } else if ((stat(dirPtr->string, &statBuf) == 0)
+	    } else if ((TclStat(dirPtr->string, &statBuf) == 0)
 		    && S_ISDIR(statBuf.st_mode)) {
 		Tcl_DStringAppend(dirPtr, "/", 1);
 		result = TclDoGlob(interp, separators, dirPtr, tail);

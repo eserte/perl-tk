@@ -20,6 +20,11 @@
 #endif
 #include "tkVMacro.h"
 
+#ifdef BUILD_tk
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
+#endif
+
 /*
  * A data structure of the following type is kept for each scale
  * widget managed by this file:
@@ -222,5 +227,8 @@ EXTERN void		TkpSetScaleValue _ANSI_ARGS_((TkScale *scalePtr,
 			    double value, int setVar, int invokeCommand));
 EXTERN int		TkpValueToPixel _ANSI_ARGS_((TkScale *scalePtr,
 			    double value));
+
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLIMPORT
 
 #endif /* _TKSCALE */

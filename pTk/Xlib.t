@@ -434,9 +434,11 @@ VFUNC(int,XQueryTree,V_XQueryTree,_ANSI_ARGS_((Display *, Window, Window *, Wind
 VFUNC(int,XRaiseWindow,V_XRaiseWindow,_ANSI_ARGS_((Display *, Window)))
 #endif
 
+#ifndef DO_X_EXCLUDE
 #ifndef XReadBitmapFile
 VFUNC(int,XReadBitmapFile,V_XReadBitmapFile,_ANSI_ARGS_((Display *, Drawable, const char *, unsigned int *, unsigned int *, Pixmap *, int *, int *)))
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XRefreshKeyboardMapping
 VFUNC(int,XRefreshKeyboardMapping,V_XRefreshKeyboardMapping,_ANSI_ARGS_((XMappingEvent *)))

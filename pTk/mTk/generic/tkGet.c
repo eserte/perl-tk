@@ -411,7 +411,8 @@ Tk_NameOfJustify(justify)
  *
  *----------------------------------------------------------------------
  */
-
+      
+#ifndef _LANG
 Tk_Uid
 Tk_GetUid(string)
     CONST char *string;		/* String to convert. */
@@ -425,6 +426,7 @@ Tk_GetUid(string)
     return (Tk_Uid) Tcl_GetHashKey(&uidTable,
 	    Tcl_CreateHashEntry(&uidTable, string, &dummy));
 }
+#endif
 
 /*
  *--------------------------------------------------------------

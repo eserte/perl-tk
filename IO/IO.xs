@@ -7,6 +7,7 @@
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
+#include <patchlevel.h>
 #include <fcntl.h>
 
 #include "tkGlue.def"
@@ -246,7 +247,7 @@ int	offset
    int newmode;
    int count = make_nonblock(f,&mode,&newmode);
    /* Copy stuff out of PerlIO *  */
-   ST(0) = &sv_undef;
+   ST(0) = &PL_sv_undef;
    if (count == 0)
     {
      int fd = PerlIO_fileno(f);
@@ -260,7 +261,7 @@ int	offset
      info.eof    = 0; 
      if (!SvUPGRADE(buf, SVt_PV))
       {
-       RETVAL = &sv_undef;
+       RETVAL = &PL_sv_undef;
        return;
       }
      SvPOK_only(buf);		/* validate pointer */
@@ -294,7 +295,7 @@ InputStream	f
    int newmode;
    int count = make_nonblock(f,&mode,&newmode);
    /* Copy stuff out of PerlIO *  */
-   ST(0) = &sv_undef;
+   ST(0) = &PL_sv_undef;
    if (count == 0)
     {
      SV *buf =  newSVpv("",0);

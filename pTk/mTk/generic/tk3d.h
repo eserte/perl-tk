@@ -17,6 +17,11 @@
 
 #include <tkInt.h>
 
+#ifdef BUILD_tk
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
+#endif
+
 /*
  * One of the following data structures is allocated for
  * each 3-D border currently in use.  Structures of this
@@ -75,5 +80,8 @@ EXTERN TkBorder *	TkpGetBorder _ANSI_ARGS_((void));
 EXTERN void		TkpGetShadows _ANSI_ARGS_((TkBorder *borderPtr,
 			    Tk_Window tkwin));
 EXTERN void		TkpFreeBorder _ANSI_ARGS_((TkBorder *borderPtr));
+
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLIMPORT
 
 #endif /* _TK3D */

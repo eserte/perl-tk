@@ -1,5 +1,5 @@
 \.[oaid]$
-\.(bso?|old|bak|broke|out|hide|q4|gz|tcl|rtf|orig)$
+\.(bso?|old|bak|base|exp|broke|out|hide|q4|gz|tcl|rtf|orig)$
 ^\.
 /\.
 C\+\+/Main$
@@ -33,9 +33,9 @@ bin/patchls$
 prep_rel$
 Bitmap/Bitmap\.c$
 Canvas/Canvas\.c$
+DragDrop/Win32Site/Win32Site\.c$
 Entry/Entry\.c$
 Extensions/ImageBack/ImageBack\.c$
-Extensions/WinPhoto/WinPhoto\.c$
 HList/HList\.c$
 IO/IO\.c$
 InputO/InputO\.c$
@@ -51,6 +51,7 @@ Text/Text\.c$
 TixGrid/TixGrid\.c$
 TixPixmap/Pixmap\.c$
 Tk\.c$
+WinPhoto/WinPhoto\.c$
 Xlib/X/X\.c$
 Xlib/Xlib\.c$
 pTk/ClientWin\.c$

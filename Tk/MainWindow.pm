@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/MainWindow.pm#31$
+$VERSION = '3.033'; # $Id: //depot/Tk8/Tk/MainWindow.pm#33$
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -88,7 +88,7 @@ sub InitBindings
 
  # FIXME - Should these move to Menubutton ? 
  my $c = ($Tk::platform eq 'unix') ? 'all' : 'Tk::Menubutton';
- $mw->bind($c,"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev('A')]);
+ $mw->bind($c,"<Alt-KeyPress>",['TraverseToMenu',Tk::Ev('K')]);
  $mw->bind($c,"<F10>",'FirstMenu');
 }
 

@@ -404,6 +404,7 @@ that the income data is aligned properly.
    use strict;
    use Tk;
    use Tk::HList;
+   use Tk::ItemStyle;
 
    my $mw = MainWindow->new();
 
@@ -417,9 +418,9 @@ that the income data is aligned properly.
             [Raj => '$90,000'],  [Zinh => '$0']) {
        $e = $hlist->addchild("");
        $hlist->itemCreate($e, 0, -itemtype=>'text',
-   		-text=>$_->[0]);#, -style=>$red );
+   		-text=>$_->[0], -style=>$red );
        $hlist->itemCreate($e, 1, -itemtype=>'text',
-   		-text=>$_->[1]);#, -style=>$blue);
+   		-text=>$_->[1], -style=>$blue);
    }
 
    Tk::MainLoop;

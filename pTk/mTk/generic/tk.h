@@ -21,9 +21,10 @@
  * When version numbers change here, you must also go into the following files
  * and update the version numbers:
  *
+ * README
  * unix/configure.in
- * win/makefile.bc
- * win/makefile.vc
+ * win/makefile.bc	(Not for patch release updates)
+ * win/makefile.vc	(Not for patch release updates)
  * library/tk.tcl
  *
  * The release level should be  0 for alpha, 1 for beta, and 2 for
@@ -40,10 +41,10 @@
 #define TK_MAJOR_VERSION   8
 #define TK_MINOR_VERSION   0
 #define TK_RELEASE_LEVEL   2
-#define TK_RELEASE_SERIAL  2
+#define TK_RELEASE_SERIAL  3
 
 #define TK_VERSION "8.0"
-#define TK_PATCH_LEVEL "8.0p2"
+#define TK_PATCH_LEVEL "8.0.3"
 
 /* 
  * A special definition used to allow this header file to be included 
@@ -83,6 +84,11 @@
 
 #ifdef __STDC__
 #   include <stddef.h>
+#endif
+
+#ifdef BUILD_tk
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
 #endif
 
 /*
@@ -673,6 +679,10 @@ typedef struct Tk_Item  {
 					 * pixel drawn in item.  Item area
 					 * includes x1 and y1 but not x2
 					 * and y2. */
+    int   reserved1;			/* This padding is for compatibility */
+    char *reserved2;			/* with Jan Nijtmans dash patch */
+    int   reserved3;
+    char *reserved4;
 
     /*
      *------------------------------------------------------------------
@@ -775,6 +785,10 @@ typedef struct Tk_ItemType {
 					 * from an item. */
     struct Tk_ItemType *nextPtr;	/* Used to link types together into
 					 * a list. */
+    char *reserved1;			/* Reserved for future extension. */
+    int   reserved2;			/* Carefully compatible with */
+    char *reserved3;			/* Jan Nijtmans dash patch */
+    char *reserved4;
 } Tk_ItemType;
 
 /*
@@ -877,6 +891,7 @@ struct Tk_ImageType {
 				/* Next in list of all image types currently
 				 * known.  Filled in by Tk, not by image
 				 * manager. */
+    char *reserved;		/* reserved for future expansion */
 };
 
 /*
@@ -909,6 +924,7 @@ typedef struct Tk_PhotoImageBlock {
     int		offset[4];	/* Address differences between the red, green
 				 * and blue components of the pixel and the
 				 * pixel as a whole. */
+    int		reserved;	/* Reserved for extensions (dash patch) */
 } Tk_PhotoImageBlock;
 
 /*
@@ -1608,7 +1624,7 @@ EXTERN void		Tk_ChangeScreen _ANSI_ARGS_((Tcl_Interp *interp,
 EXTERN Var		LangFindVar _ANSI_ARGS_((Tcl_Interp * interp, Tk_Window, char *name));
 
 EXTERN Arg		LangWidgetArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Window));
-EXTERN Arg		LangFontArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font));
+EXTERN Arg		LangFontArg _ANSI_ARGS_((Tcl_Interp *interp, Tk_Font font, char *name));
 EXTERN Arg		LangObjectArg _ANSI_ARGS_((Tcl_Interp *interp, char *));
 
 
@@ -1622,4 +1638,8 @@ EXTERN void		LangClientMessage _ANSI_ARGS_((Tcl_Interp *interp,Tk_Window, XEvent
 EXTERN int LangEventCallback _ANSI_ARGS_((ClientData, Tcl_Interp *,XEvent *,Tk_Window,KeySym));
 
 #endif /* RESOURCE_INCLUDED */
+
+#undef TCL_STORAGE_CLASS
+#define TCL_STORAGE_CLASS DLLIMPORT
+
 #endif /* _TK */

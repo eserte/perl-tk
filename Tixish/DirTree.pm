@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/DirTree.pm#14$
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tixish/DirTree.pm#16$
 
 use Tk;
 use Tk::Derived;
@@ -62,9 +62,19 @@ sub fullpath
  return $path;
 }
 
-sub directory {
+sub directory {                    
     my ($w,$key,$val) = @_;
-    return( $w->chdir( $val ) );
+    if (defined $w->cget('-image'))
+     {
+      $w->chdir( $val );
+     }
+    else
+     {
+      # We have a default for -image, so its being undefined
+      # is probably caused by order of handling config defaults
+      # so defer it.
+      $w->afterIdle([$w, chdir => $val]);
+     }
 }
 
 sub chdir {

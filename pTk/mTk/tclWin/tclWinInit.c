@@ -18,6 +18,15 @@
 #include <winbase.h>
 
 /*
+ * The following macro can be defined at compile time to specify
+ * the root of the Tcl registry keys.
+ */
+ 
+#ifndef TCL_REGISTRY_KEY
+#define TCL_REGISTRY_KEY "Software\\Scriptics\\Tcl\\" TCL_VERSION
+#endif
+
+/*
  * The following declaration is a workaround for some Microsoft brain damage.
  * The SYSTEM_INFO structure is different in various releases, even though the
  * layout is the same.  So we overlay our own structure on top of it so we
@@ -66,79 +75,13 @@ static char* processors[NUMPROCESSORS] = {
 };
 
 /*
- * The following string is the startup script executed in new
- * interpreters.  It looks on disk in several different directories
- * for a script "init.tcl" that is compatible with this version
- * of Tcl.  The init.tcl script does all of the real work of
- * initialization.
+ * The Init script, tclPreInitScript variable, and the routine
+ * TclSetPreInitScript (common to Windows and Unix platforms) are defined
+ * in generic/tclInitScript.h
  */
 
-static char *initScript =
-"proc init {} {\n\
-    global tcl_library tcl_platform tcl_version tcl_patchLevel env errorInfo\n\
-    global tcl_pkgPath\n\
-    rename init {}\n\
-    set errors {}\n\
-    proc tcl_envTraceProc {lo n1 n2 op} {\n\
-	global env\n\
-	set x $env($n2)\n\
-	set env($lo) $x\n\
-	set env([string toupper $lo]) $x\n\
-    }\n\
-    foreach p [array names env] {\n\
-	set u [string toupper $p]\n\
-	if {$u != $p} {\n\
-	    switch -- $u {\n\
-		COMSPEC -\n\
-		PATH {\n\
-		    if {![info exists env($u)]} {\n\
-			set env($u) $env($p)\n\
-		    }\n\
-		    trace variable env($p) w [list tcl_envTraceProc $p]\n\
-		    trace variable env($u) w [list tcl_envTraceProc $p]\n\
-		}\n\
-	    }\n\
-	}\n\
-    }\n\
-    if {![info exists env(COMSPEC)]} {\n\
-	if {$tcl_platform(os) == {Windows NT}} {\n\
-	    set env(COMSPEC) cmd.exe\n\
-	} else {\n\
-	    set env(COMSPEC) command.com\n\
-	}\n\
-    }	\n\
-    set dirs {}\n\
-    if {[info exists env(TCL_LIBRARY)]} {\n\
-	lappend dirs $env(TCL_LIBRARY)\n\
-    }\n\
-    lappend dirs $tcl_library\n\
-    lappend dirs [file join [file dirname [file dirname [info nameofexecutable]]] lib/tcl$tcl_version]\n\
-    if [string match {*[ab]*} $tcl_patchLevel] {\n\
-	set lib tcl$tcl_patchLevel\n\
-    } else {\n\
-	set lib tcl$tcl_version\n\
-    }\n\
-    lappend dirs [file join [file dirname [file dirname [pwd]]] $lib/library]\n\
-    lappend dirs [file join [file dirname [pwd]] library]\n\
-    foreach i $dirs {\n\
-	set tcl_library $i\n\
-	set tclfile [file join $i init.tcl]\n\
-	if {[file exists $tclfile]} {\n\
-            lappend tcl_pkgPath [file dirname $i]\n\
-	    if ![catch {uplevel #0 [list source $tclfile]} msg] {\n\
-	        return\n\
-	    } else {\n\
-		append errors \"$tclfile: $msg\n$errorInfo\n\"\n\
-	    }\n\
-	}\n\
-    }\n\
-    set msg \"Can't find a usable init.tcl in the following directories: \n\"\n\
-    append msg \"    $dirs\n\n\"\n\
-    append msg \"$errors\n\n\"\n\
-    append msg \"This probably means that Tcl wasn't installed properly.\n\"\n\
-    error $msg\n\
-}\n\
-init\n";
+#include "tclInitScript.h"
+
 
 /*
  *----------------------------------------------------------------------
@@ -162,7 +105,7 @@ void
 TclPlatformInit(interp)
     Tcl_Interp *interp;
 {
-    char *ptr;
+    char *p;
     char buffer[13];
     Tcl_DString ds;
     OSVERSIONINFO osInfo;
@@ -170,7 +113,7 @@ TclPlatformInit(interp)
     int isWin32s;		/* True if we are running under Win32s. */
     OemId *oemId;
     HKEY key;
-    DWORD size;
+    DWORD size, result, type;
 
     tclPlatform = TCL_PLATFORM_WINDOWS;
 
@@ -200,40 +143,83 @@ TclPlatformInit(interp)
      * Initialize the tcl_library variable from the registry.
      */
 
+    Tcl_SetVar(interp, "tclDefaultLibrary", "", TCL_GLOBAL_ONLY);
     if (!isWin32s) {
-	if ((RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-		"Software\\Sun\\Tcl\\" TCL_VERSION, 0, KEY_READ, &key)
-		== ERROR_SUCCESS)
-		&& (RegQueryValueEx(key, "Root", NULL, NULL, NULL, &size)
-		    == ERROR_SUCCESS)) {
-	    Tcl_DStringSetLength(&ds, size);
-	    RegQueryValueEx(key, "Root", NULL, NULL,
-		    (LPBYTE)Tcl_DStringValue(&ds), &size);
-	}
+	result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TCL_REGISTRY_KEY, 0,
+		KEY_READ, &key);
     } else {
-	if ((RegOpenKeyEx(HKEY_CLASSES_ROOT,
-		"Software\\Sun\\Tcl\\" TCL_VERSION, 0, KEY_READ, &key)
-		== ERROR_SUCCESS)
-		&& (RegQueryValueEx(key, "", NULL, NULL, NULL, &size)
-		    == ERROR_SUCCESS)) {
+	result = RegOpenKeyEx(HKEY_CLASSES_ROOT, TCL_REGISTRY_KEY, 0,
+		KEY_READ, &key);
+    }
+    if (result == ERROR_SUCCESS) {
+	if (RegQueryValueEx(key, "", NULL, NULL, NULL, &size)
+		== ERROR_SUCCESS) {
+	    char *argv[3];
 	    Tcl_DStringSetLength(&ds, size);
 	    RegQueryValueEx(key, "", NULL, NULL,
 		    (LPBYTE) Tcl_DStringValue(&ds), &size);
+	    Tcl_SetVar(interp, "tclDefaultLibrary", Tcl_DStringValue(&ds),
+		    TCL_GLOBAL_ONLY);
+	    argv[0] = Tcl_GetVar(interp, "tclDefaultLibrary", TCL_GLOBAL_ONLY);
+	    argv[1] = "lib/tcl" TCL_VERSION;
+	    argv[2] = NULL;
+	    Tcl_DStringSetLength(&ds, 0);
+	    Tcl_SetVar(interp, "tclDefaultLibrary",
+		    Tcl_JoinPath(2, argv, &ds), TCL_GLOBAL_ONLY);
 	}
-    }
-    Tcl_SetVar(interp, "tcl_library", Tcl_DStringValue(&ds), TCL_GLOBAL_ONLY);
-    if (Tcl_DStringLength(&ds) > 0) {
-	char *argv[3];
-	argv[0] = Tcl_GetVar(interp, "tcl_library", TCL_GLOBAL_ONLY);
-	argv[1] = "lib";
-	argv[2] = NULL;
-	Tcl_DStringSetLength(&ds, 0);
-	Tcl_SetVar(interp, "tcl_pkgPath", Tcl_JoinPath(2, argv, &ds),
-		TCL_GLOBAL_ONLY|TCL_LIST_ELEMENT);
-	argv[1] = "lib/tcl" TCL_VERSION;
-	Tcl_DStringSetLength(&ds, 0);
-	Tcl_SetVar(interp, "tcl_library", Tcl_JoinPath(2, argv, &ds), 
-		TCL_GLOBAL_ONLY);
+	if ((RegQueryValueEx(key, "PkgPath", NULL, &type, NULL, &size)
+		== ERROR_SUCCESS) && (type == REG_MULTI_SZ)) {
+	    char **argv;
+	    int argc;
+
+	    /*
+	     * PkgPath is stored as an array of null terminated strings
+	     * terminated by two null characters.  First count the number
+	     * of strings, then allocate an argv array so we can construct
+	     * a valid list.
+	     */
+
+	    Tcl_DStringSetLength(&ds, size);
+	    RegQueryValueEx(key, "PkgPath", NULL, NULL,
+		    (LPBYTE)Tcl_DStringValue(&ds), &size);
+	    argc = 0;
+	    p = Tcl_DStringValue(&ds);
+	    do {
+		if (*p) {
+		    argc++;
+		}
+		p += strlen(p) + 1;
+	    } while (*p);
+
+	    argv = (char **) ckalloc((sizeof(char *) * argc) + 1);
+	    argc = 0;
+	    p = Tcl_DStringValue(&ds);
+	    do {
+		if (*p) {
+		    argv[argc++] = p;
+		    while (*p) {
+			if (*p == '\\') {
+			    *p = '/';
+			}
+			p++;
+		    }
+		}
+		p++;
+	    } while (*p);
+
+	    p = Tcl_Merge(argc, argv);
+	    Tcl_SetVar(interp, "tcl_pkgPath", p, TCL_GLOBAL_ONLY);
+	    ckfree(p);
+	    ckfree((char*) argv);
+	} else {
+	    char *argv[3];
+	    argv[0] = Tcl_GetVar(interp, "tclDefaultLibrary", TCL_GLOBAL_ONLY);
+	    argv[1] = "..";
+	    argv[2] = NULL;
+	    Tcl_DStringSetLength(&ds, 0);
+	    Tcl_SetVar(interp, "tcl_pkgPath", Tcl_JoinPath(2, argv, &ds),
+		    TCL_GLOBAL_ONLY|TCL_LIST_ELEMENT);
+	}
     }
 
     /*
@@ -259,16 +245,16 @@ TclPlatformInit(interp)
      * environment variables, if necessary.
      */
 
-    ptr = Tcl_GetVar2(interp, "env", "HOME", TCL_GLOBAL_ONLY);
-    if (ptr == NULL) {
+    p = Tcl_GetVar2(interp, "env", "HOME", TCL_GLOBAL_ONLY);
+    if (p == NULL) {
 	Tcl_DStringSetLength(&ds, 0);
-	ptr = Tcl_GetVar2(interp, "env", "HOMEDRIVE", TCL_GLOBAL_ONLY);
-	if (ptr != NULL) {
-	    Tcl_DStringAppend(&ds, ptr, -1);
+	p = Tcl_GetVar2(interp, "env", "HOMEDRIVE", TCL_GLOBAL_ONLY);
+	if (p != NULL) {
+	    Tcl_DStringAppend(&ds, p, -1);
 	}
-	ptr = Tcl_GetVar2(interp, "env", "HOMEPATH", TCL_GLOBAL_ONLY);
-	if (ptr != NULL) {
-	    Tcl_DStringAppend(&ds, ptr, -1);
+	p = Tcl_GetVar2(interp, "env", "HOMEPATH", TCL_GLOBAL_ONLY);
+	if (p != NULL) {
+	    Tcl_DStringAppend(&ds, p, -1);
 	}
 	if (Tcl_DStringLength(&ds) > 0) {
 	    Tcl_SetVar2(interp, "env", "HOME", Tcl_DStringValue(&ds),
@@ -304,8 +290,12 @@ int
 Tcl_Init(interp)
     Tcl_Interp *interp;		/* Interpreter to initialize. */
 {
-    return Tcl_Eval(interp, initScript);
-
+    if (tclPreInitScript != NULL) {
+	if (Tcl_Eval(interp, tclPreInitScript) == TCL_ERROR) {
+	    return (TCL_ERROR);
+	};
+    }
+    return(Tcl_Eval(interp, initScript));
 }
 
 /*

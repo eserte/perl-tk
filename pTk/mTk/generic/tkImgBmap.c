@@ -465,7 +465,7 @@ ImgBmapConfigureInstance(instancePtr)
 char *
 TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
 	hotXPtr, hotYPtr)
-    Tcl_Interp *interp;			/* For reporting errors. */
+    Tcl_Interp *interp;			/* For reporting errors, or NULL. */
     char *string;			/* String describing bitmap.  May
 					 * be NULL. */
     char *fileName;			/* Name of file containing bitmap
@@ -484,7 +484,7 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
 
     pi.string = string;
     if (string == NULL) {
-        if (Tcl_IsSafe(interp)) {
+        if ((interp != NULL) && Tcl_IsSafe(interp)) {
             Tcl_AppendResult(interp, "can't get bitmap data from a file in a",
                     " safe interpreter", (char *) NULL);
             return NULL;
@@ -496,9 +496,12 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
 	pi.chan = Tcl_OpenFileChannel(interp, expandedFileName, "r", 0);
 	Tcl_DStringFree(&buffer);
 	if (pi.chan == NULL) {
-	    Tcl_ResetResult(interp);
-	    Tcl_AppendResult(interp, "couldn't read bitmap file \"",
-		    fileName, "\": ", Tcl_PosixError(interp), (char *) NULL);
+	    if (interp != NULL) {
+		Tcl_ResetResult(interp);
+		Tcl_AppendResult(interp, "couldn't read bitmap file \"",
+			fileName, "\": ", Tcl_PosixError(interp),
+			(char *) NULL);
+	    }
 	    return NULL;
 	}
     } else {
@@ -576,9 +579,11 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
 		}
 	    }
 	} else if ((pi.word[0] == '{') && (pi.word[1] == 0)) {
-	    Tcl_AppendResult(interp, "format error in bitmap data; ",
-		    "looks like it's an obsolete X10 bitmap file",
-		    (char *) NULL);
+	    if (interp != NULL) {
+		Tcl_AppendResult(interp, "format error in bitmap data; ",
+			"looks like it's an obsolete X10 bitmap file",
+			(char *) NULL);
+	    }
 	    goto errorCleanup;
 	}
     }
@@ -618,7 +623,9 @@ TkGetBitmapData(interp, string, fileName, widthPtr, heightPtr,
     return data;
 
     error:
-    interp->result = "format error in bitmap data";
+    if (interp != NULL) {
+	interp->result = "format error in bitmap data";
+    }
     errorCleanup:
     if (data != NULL) {
 	ckfree(data);

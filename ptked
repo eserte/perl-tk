@@ -20,7 +20,6 @@ $top->optionAdd('*TextUndo.Background' => '#fff5e1');
 my $fs  = $top->Component(FileSelect => 'fs',-width => 25, -height => 8,
                        '-accept'   => sub 
                                      { my $file = shift ; 
-                                       return 0 if (-s $file && !(stat(_))[12]);
                                        return 1 unless -e $file;
                                        return (-r $file) && (-T $file);  
                                      },
@@ -99,6 +98,7 @@ if (@ARGV) {
         close(FILE) or die "There was trouble with $ARGV[0]: $!";
     }
     $t->Load($ARGV[0]);
+    $t->toplevel->title($t->FileName);
 }
 
 $t->bind('<F3>',\&DoFind);
@@ -211,6 +211,7 @@ S<  >B<ptked> [I<file-to-edit>]
 B<ptked> is a simple text editor based on perl/Tk's TextUndo widget.
 
 =cut 
+
 
 
 

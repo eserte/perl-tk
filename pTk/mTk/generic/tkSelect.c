@@ -804,7 +804,6 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	    
 	Tk_ClearSelection(tkwin, selection);
 	return TCL_OK;
-#ifndef WIN32
     } else if ((c == 'e') && (strncmp(argv[1], "exists", length) == 0)) {
 	Window win = None;
 	for (count = argc-2, argp = argv+2; count > 0; count -= 2, argp += 2) {
@@ -859,7 +858,6 @@ Tk_SelectionCmd(clientData, interp, argc, argv)
 	    }
         }
 	return TCL_OK;
-#endif /* WIN32 */
     } else if ((c == 'g') && (strncmp(argv[1], "get", length) == 0)) {
 	Atom target;
 	char *targetName = NULL;

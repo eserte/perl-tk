@@ -411,7 +411,28 @@ XAllocColor(display, colormap, color)
 
     ReleaseDC(NULL, dc);
     return 1;
+}       
+
+void
+XQueryColors(display, colormap, color, ncolors)
+    Display* display;
+    Colormap colormap;
+    XColor* color;
+    int ncolors;
+{
+    /* If I understand what happens above and in tkWinImage.c
+       then ->pixel value is always an RGB value regardless of whether
+       system uses a palette -  so just unpack it
+     */
+    while (ncolors-- > 0)
+     {
+	color->red   = (GetRValue(color->pixel) << 8);
+	color->green = (GetGValue(color->pixel) << 8);
+	color->blue  = (GetBValue(color->pixel) << 8);
+	color++; 
+     }
 }
+
 
 /*
  *----------------------------------------------------------------------

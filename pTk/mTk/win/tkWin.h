@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * SCCS: @(#) tkWin.h 1.6 96/08/15 13:19:41
+ * SCCS: @(#) tkWin.h 1.3 98/08/04 12:20:01
  */
 
 #ifndef _TKWIN
@@ -22,6 +22,11 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
+
+#ifdef BUILD_tk
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLEXPORT
+#endif
 
 /*
  * The following messages are use to communicate between a Tk toplevel
@@ -57,5 +62,12 @@ EXTERN int		Tk_TranslateWinEvent _ANSI_ARGS_((HWND hwnd,
 			    LRESULT *result));
 
 EXTERN void		Tcl_WatchHandle _ANSI_ARGS_((HANDLE h, Tcl_HandleProc *proc, ClientData clientData));
+
+EXTERN int		Lang_WinEvent _ANSI_ARGS_((Tk_Window tkwin,
+			    UINT message, WPARAM wParam, LPARAM lParam,
+			    LRESULT *result));
+
+# undef TCL_STORAGE_CLASS
+# define TCL_STORAGE_CLASS DLLIMPORT
 
 #endif /* _TKWIN */

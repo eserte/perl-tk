@@ -193,7 +193,7 @@ Tk_GetBitmap(interp, tkwin, string)
 	if (string == NULL) {
 	    goto error;
 	}
-	result = XReadBitmapFile(Tk_Display(tkwin),
+	result = TkReadBitmapFile(Tk_Display(tkwin),
 		RootWindowOfScreen(nameKey.screen), string,
 		(unsigned int *) &width, (unsigned int *) &height,
 		&bitmap, &dummy2, &dummy2);
@@ -582,4 +582,49 @@ BitmapInit()
     TkpDefineNativeBitmaps();
 
     Tcl_DeleteInterp(dummy);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TkReadBitmapFile --
+ *
+ *	Loads a bitmap image in X bitmap format into the specified
+ *	drawable.  This is equivelent to the XReadBitmapFile in X.
+ *
+ * Results:
+ *	Sets the size, hotspot, and bitmap on success.
+ *
+ * Side effects:
+ *	Creates a new bitmap from the file data.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+TkReadBitmapFile(display, d, filename, width_return, height_return,
+	bitmap_return, x_hot_return, y_hot_return) 
+    Display* display;
+    Drawable d;
+    CONST char* filename;
+    unsigned int* width_return;
+    unsigned int* height_return;
+    Pixmap* bitmap_return;
+    int* x_hot_return;
+    int* y_hot_return;
+{
+    char *data;
+
+    data = TkGetBitmapData(NULL, NULL, (char *) filename,
+	    (int *) width_return, (int *) height_return, x_hot_return,
+	    y_hot_return);
+    if (data == NULL) {
+	return BitmapFileInvalid;
+    }
+
+    *bitmap_return = XCreateBitmapFromData(display, d, data, *width_return,
+	    *height_return);
+
+    ckfree(data);
+    return BitmapSuccess;
 }
