@@ -303,14 +303,15 @@ sub build_about_dialog {
     my $help = shift;
 
     my $dialog = $MW->DialogBox(
-        -title          => 'About widget',
+        -title          => "Perl/Tk, based on Tcl/Tk ${Tk::version}.x",
         -default_button => 'OK',
         -buttons        => ['OK'],
     );
-    my $df = $dialog->add( 'Labelframe', -text => '  2004 - Jan - 02  ' );
+    my $df = $dialog->add( 'Labelframe', -text => '  2004 - Feb - 11  ' );
     $df->pack( qw/ -fill both -expand 1 / );
     my( $change ) = $Tk::CHANGE =~ /Change:\s+(.*)/;
-    my( $tk ) = "$Tk::VERSION, change $change (based on Tcl/Tk ${Tk::version}.x)";
+    my( $tk_date ) = scalar localtime( ( stat $Tk::library )[9] );
+    my( $tk ) = "$Tk::VERSION ($change), $tk_date";
 
     foreach my $item (
          [ 'Perl',    "$], $Config{cf_time}" ],
@@ -327,7 +328,7 @@ sub build_about_dialog {
             -relief       => 'flat',
             -takefocus    => 0,
             -textvariable => $item->[1],
-            -width        => 50,
+            -width        => 45,
         );
         $le->pack(qw/ -fill x -expand 1/);
 	$le->Subwidget( 'entry' )->bindtags( [ ] );

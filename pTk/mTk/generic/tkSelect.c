@@ -1882,7 +1882,6 @@ LostSelection(clientData)
     }
 
     Tcl_SetObjResult(interp, objPtr);
-    Tcl_DecrRefCount(objPtr);
 
     Tcl_Release((ClientData) interp);
 

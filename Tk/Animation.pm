@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Animation.pm#6 $
+$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Animation.pm#8 $
 
 use Tk::Photo;
 use base  qw(Tk::Photo);
@@ -44,7 +44,41 @@ sub new
      $obj->{'_frame_index_'}  = 0;
     }
   }
+ $obj->set_image( 0 );
+ $obj->{_delta_} = 1;
+ $obj->{_blank_} = 0;
  return $obj;
+}
+
+sub fast_forward {
+
+    my( $self, $delta) = @_;
+
+    $self->{_delta_} = $delta;
+    if( not exists $self->{_playing_} ) {
+	my $playing = exists $self->{'_NextId_'};
+	$self->{_playing_} = $playing;
+	$self->resume_animation if not $playing;
+    } else {
+	my $playing = delete $self->{_playing_};
+	$self->pause_animation if not $playing;
+    }
+
+} # end fast_forward
+
+*fast_reverse = \&fast_forward;
+
+sub frame_count {
+    my $frames = shift->{'_frames_'};
+    return -1 unless $frames;
+    return @$frames;
+}
+
+sub blank {
+    my( $self, $blank ) = @_;
+    $blank = 1 if not defined $blank;
+    $self->{_blank_} = $blank;
+    $blank;
 }
 
 sub set_image
@@ -53,26 +87,47 @@ sub set_image
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
  $index = 0 unless $index < @$frames;
- $obj->blank if 0;  # helps some make others worse
+ $obj->blank if $obj->{_blank_};  # helps some make others worse
  $obj->copy($frames->[$index]);
  $obj->{'_frame_index_'} = $index;
 }
 
 sub next_image
 {
- my ($obj)  = @_;
+ my ($obj, $delta)  = @_;
+ $delta = $obj->{_delta_} unless $delta;
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
- $obj->set_image((($obj->{'_frame_index_'} || 0)+1) % @$frames);
+ $obj->set_image((($obj->{'_frame_index_'} || 0) + $delta) % @$frames);
+}
+
+sub prev_image { shift->next_image( -1 ) }
+
+sub pause_animation { 
+    my $self = shift;
+    my $id = delete $self->{'_NextId_'};
+    Tk::catch { $id->cancel } if $id;
+}
+
+sub resume_animation {
+    my( $self, $period ) = @_;
+    if( not defined $self->{'_period_'} ) {
+	$self->{'_period_'} = defined( $period ) ? $period : 100;
+    }
+    $period = $self->{'_period_'};
+    my $w = $self->MainWindow;
+    $self->{'_NextId_'} = $w->repeat( $period => [ $self => 'next_image' ] );
 }
 
 sub start_animation
 {
  my ($obj,$period) = @_;
+ $period ||= 100;
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
  my $w = $obj->MainWindow;
  $obj->stop_animation;
+ $obj->{'_period_'} = $period;
  $obj->{'_NextId_'} = $w->repeat($period,[$obj,'next_image']);
 }
 

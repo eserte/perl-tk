@@ -76,9 +76,13 @@ of the application.
 
 =head1 EVENT PATTERNS
 
-The I<sequence> argument specifies a sequence of one or more
-event patterns, with optional white space between the patterns.  Each
-event pattern has the following syntax:
+The I<sequence> argument specifies a sequence of one or more event
+patterns, with optional white space between the patterns.  Each event
+pat may take one of three forms.  In the simplest case it is a single
+printing ASCII character, such as B<a> or B<[>.  The character may not
+be a space character or the character <.  This form of pattern matches
+a B<KeyPress> event for the particular character.  The second form of
+pattern is longer but more general.  It has the following syntax:
 
 S<    >'<modifier-modifier-type-detail>'
 
@@ -90,10 +94,10 @@ a particular button or keysym.  Any of the fields may be omitted,
 as long as at least one of I<type> and I<detail> is present.
 The fields must be separated by white space or dashes.
 
-A second form of pattern is used to specify a user-defined, named virtual
+The third form of pattern is used to specify a user-defined, named virtual
 event; see L<Tk::event> for details.  It has the following syntax:
 
-S<    ><<name>>
+S<    >'<<name>>'
 
 The entire virtual event pattern is surrounded by double angle brackets.
 Inside the angle brackets is the user-defined name of the virtual event.
@@ -115,7 +119,7 @@ Modifiers consist of any of the following values:
  Button3, B3	Alt
  Button4, B4	Double
  Button5, B5	Triple
- Mod1,    M1
+ Mod1,    M1    Quadruple
 
 Where more than one value is listed, separated by commas, the values
 are equivalent.
@@ -141,16 +145,16 @@ Similarly, the B<Alt> modifier refers to whichever modifier
 is associated with the alt key(s) on the keyboard (keysyms
 B<Alt_L> and B<Alt_R>).
 
-The B<Double> and B<Triple> modifiers are a convenience
-for specifying double mouse clicks and other repeated
-events. They cause a particular event pattern to be
-repeated 2 or 3 times, and also place a time and space requirement
-on the sequence:  for a sequence of events to match a B<Double>
-or B<Triple> pattern, all of the events must occur close together
-in time and without substantial mouse motion in between.
-For example, B<E<lt>Double-Button-1E<gt>>
-is equivalent to B<E<lt>Button-1E<gt>E<lt>Button-1E<gt>> with the extra
-time and space requirement.
+The B<Double>, B<Triple> and B<Quadruple> modifiers are a convenience
+for specifying double mouse clicks and other repeated events. They
+cause a particular event pattern to be repeated 2, 3 or 4 times, and
+also place a time and space requirement on the sequence: for a
+sequence of events to match a B<Double>, B<Triple> or B<Quadruple>
+pattern, all of the events must occur close together in time and
+without substantial mouse motion in between.  For example,
+B<E<lt>Double-Button-1E<gt>> is equivalent to
+B<E<lt>Button-1E<gt>E<lt>Button-1E<gt>> with the extra time and space
+requirement.
 
 =head1 EVENT TYPES
 
@@ -158,15 +162,56 @@ The I<type> field may be any of the standard X event types, with a
 few extra abbreviations.  Below is a list of all the valid types;
 where two names appear together, they are synonyms.
 
- ButtonPress, Button	Expose	Map
- ButtonRelease	FocusIn	Motion
- Circulate	FocusOut	Property
- Colormap	Gravity	Reparent
- Configure	KeyPress, Key	Unmap
- Destroy	KeyRelease	Visibility
- Enter	Leave	Activate
- Deactivate
 
+    Activate            Destroy            Map
+    ButtonPress, Button Enter              MapRequest
+    ButtonRelease       Expose             Motion
+    Circulate           FocusIn            MouseWheel
+    CirculateRequest    FocusOut           Property
+    Colormap            Gravity            Reparent
+    Configure           KeyPress, Key      ResizeRequest
+    ConfigureRequest    KeyRelease         Unmap
+    Create              Leave              Visibility
+    Deactivate
+
+Most of the above events have the same fields and behaviors  as  events
+in  the X Windowing system.  You can find more detailed descriptions of
+these events in any X window programming book.  A couple of the  events
+are  extensions to the X event system to support features unique to the
+Macintosh and Windows platforms.  We provide a little  more  detail  on
+these events here.  These include:                                     
+
+    Activate
+    Deactivate
+
+These two events are sent to every sub-window of a toplevel when they
+change state.  In addition to the focus Window, the Macintosh platform
+and Windows platforms have a notion of an active window (which often
+has but is not required to have the focus).  On the Macintosh, widgets
+in the active window have a different appearance than widgets in
+deactive windows.  The Activate event is sent to all the sub-windows
+in a toplevel when it changes from being deactive to active.
+Likewise, the Deactive event is sent when the window's state changes
+from active to deactive.  There are no use- ful percent substitutions
+you would make when binding to these events.
+
+    MouseWheel
+
+Some mice on the Windows platform support a mouse wheel  which  is
+used  for  scrolling  documents  without using the scrollbars.  By
+rolling the wheel, the system will generate MouseWheel events that
+the  application  can use to scroll.  Like Key events the event is
+always routed to the window that currently  has  focus.  When  the
+event is received you can use the %D substitution to get the delta
+field for the event which is a integer value of  motion  that  the
+mouse  wheel  has  moved.  The smallest value for which the system
+will report is defined by the OS.  On Windows  95  &  98  machines
+this value is at least 120 before it is reported.  However, higher
+resolution devices may be available in the future.   The  sign  of
+the  value  determines  which direction your widget should scroll.
+Positive values should scroll up and negative values should scroll
+down.
+ 
 The last part of a long event specification is I<detail>.  In the
 case of a B<ButtonPress> or B<ButtonRelease> event, it is the
 number of a button (1-5).  If a button number is given, then only an
@@ -252,18 +297,20 @@ a string identifying the detail.  For B<Enter>,
 B<Leave>, B<FocusIn>, and B<FocusOut> events,
 the string will be one of the following:
 
-=over 8
+ NotifyAncestor          NotifyNonlinearVirtual
+ NotifyDetailNone        NotifyPointer
+ NotifyInferior          NotifyPointerRoot
+ NotifyNonlinear         NotifyVirtual
 
- NotifyAncestor	NotifyNonlinearVirtual
- NotifyDetailNone	NotifyPointer
- NotifyInferior	NotifyPointerRoot
- NotifyNonlinear	NotifyVirtual
+For B<ConfigureRequest> events, the string will be one of:
+
+ Above                   Opposite
+ Below                   None
+ BottomIf                TopIf
 
 For events other than these, the substituted string is undefined.
 (Note that this is I<not> the same as Detail part of sequence
 use to specify the event.)
-
-=back
 
 =item B<'f'>
 
@@ -273,7 +320,11 @@ for B<Enter> and B<Leave> events.
 =item B<'h'>
 
 The I<height> field from the event.  Valid only for B<Configure>,
-B<Expose>, and B<GraphicsExpose> events.
+B<ConfigureRequest>, B<Create>, B<Expose>, and B<ResizeRequest> events.
+
+=item B<'i'>
+
+The window field from the  event,  represented  as  a  hexadecimal integer.
 
 =item B<'k'>
 
@@ -284,8 +335,8 @@ and B<KeyRelease> events.
 
 The I<mode> field from the event.  The substituted string is one of
 B<NotifyNormal>, B<NotifyGrab>, B<NotifyUngrab>, or
-B<NotifyWhileGrabbed>.  Valid only for B<EnterWindow>,
-B<FocusIn>, B<FocusOut>, and B<LeaveWindow> events.
+B<NotifyWhileGrabbed>.  Valid only for B<Enter>,
+B<FocusIn>, B<FocusOut>, and B<Leave> events.
 
 =item B<'o'>
 
@@ -296,7 +347,7 @@ B<Map>, B<Reparent>, and B<Configure> events.
 
 The I<place> field from the event, substituted as one of the
 strings B<PlaceOnTop> or B<PlaceOnBottom>.  Valid only
-for B<Circulate> events.
+for B<Circulate> and B<CirculateRequest> events.
 
 =item B<'s'>
 
@@ -314,8 +365,8 @@ contain a I<time> field.
 
 =item B<'w'>
 
-The I<width> field from the event.  Valid only for
-B<Configure>, B<Expose>, and B<GraphicsExpose> events.
+The I<width> field from the event.  Valid only for B<Configure>,
+B<ConfigueRequest>, B<Create>, B<Expose>, and B<ResizeREquest> events.
 
 =item B<'x'>
 
@@ -335,16 +386,25 @@ This format is used my methods of B<Tk::Text> and similar widgets.
 
 =item B<'A'>
 
-Substitutes the ASCII character corresponding to the event, or
-the empty string if the event doesn't correspond to an ASCII character
-(e.g. the shift key was pressed).  B<XLookupString> does all the
-work of translating from the event to an ASCII character.
+Substitutes the UNICODE character corresponding to the event, or
+the empty string if the event doesn't correspond to a UNICODE character
+(e.g. the shift key was pressed).  B<XmbLookupString> does all the
+work of translating from the event to a UNICODE character.
 Valid only for B<KeyPress> and B<KeyRelease> events.
 
 =item B<'B'>
 
 The I<border_width> field from the event.  Valid only for
-B<Configure> events.
+B<Configure>, B<ConfigureRequest> and B<Create> events.
+
+=item B<'D'>
+
+This reports the delta value of a  B<MouseWheel>  event.   The  delta
+value  represents  the  rotation  units  the  mouse wheel has been
+moved.  On Windows 95 & 98 systems  the  smallest  value  for  the
+delta is 120.  Future systems may support higher resolution values
+for the delta.  The sign of the value represents the direction the
+mouse wheel was scrolled.
 
 =item B<'E'>
 

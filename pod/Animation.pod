@@ -14,9 +14,21 @@ Tk::Animation - Display sequence of Tk::Photo images
 
   $img->add_frame(@images);
 
-  $img->start_animation($period);
+  $img->start_animation( $period );
+
+  $img->next_image;
+  $img->prev_image;
+  $img->set_image( 0 .. $#frames );
+
+  $img->pause_animation;
+  $img->resume_animation( $period );
+
+  $img->fast_forward( $multiplier );
+  $img->fast_reverse( $multiplier );
+
   $img->stop_animation;
 
+  $img->blank( $boolean );
 
 =head1 DESCRIPTION
 
@@ -27,12 +39,29 @@ The C<add_frame> method adds images to the sequence. It is provided
 to allow animations to be constructed from separate images.
 All images must be C<Photo>s and should all be the same size.
 
-C<start_animation($period)> then initiates a C<repeat> with specified I<$period>
-to sequence through these images. As for raw C<repeat> I<$period> is in milli-seconds,
-for a 50Hz monitor it should be at least 20mS.
+C<start_animation($period)> then initiates a C<repeat> with specified
+I<$period> to sequence through these images. As for raw C<repeat>
+I<$period> is in milliseconds, for a 50Hz monitor it should be at
+least 20mS. If $period is omitted it defaults to 100 milliseconds.
 
 C<stop_animation> cancels the C<repeat> and resets the image to the first
 image in the sequence.
+
+For fine-grained control C<next_image> and C<prev_image> move one frame forward
+or backward.  C<set_image> randomly positions the animation to a particular frame.
+
+C<pause_animation> pauses the movie and C<resume_animation> continues from the
+pause point.
+
+C<fast_forward> and C<fast_reverse> speed through the movie either
+forwards or backwards.  $multiplier specifies how much faster the
+animation moves.
+
+By default Animation leaves the previous movie frame in the animation
+photo.  Many times overlaying subsequent frames produces a composite
+that looks blurred.  The C<blank> method is used to blank the
+animation photo before displaying new frames.  The default is 0 for
+backward compatibility.
 
 =head1 BUGS
 

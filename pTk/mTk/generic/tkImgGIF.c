@@ -33,6 +33,7 @@
  */
 
 #include "tkPort.h"
+#include "tkVMacro.h"
 
 /*
  * GIF's are represented as data in base64 format.
@@ -103,20 +104,20 @@ static Tcl_ThreadDataKey dataKey;
  * The format record for the GIF file format:
  */
 
-static int      FileMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, char *fileName,
-		    Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int      FileMatchGIF _ANSI_ARGS_((Tcl_Channel chan, Tcl_Obj *fileName,
+		    Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
 static int      FileReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tcl_Channel chan, Tcl_Obj *fileName, Tcl_Obj *format,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
 		    int width, int height, int srcX, int srcY));
-static int	StringMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
-		    Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int	StringMatchGIF _ANSI_ARGS_((Tcl_Obj *dataObj,
+		    Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
 static int	StringReadGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 		    Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 		    int destX, int destY, int width, int height,
 		    int srcX, int srcY));
 static int 	FileWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
-		    CONST char *filename, Tcl_Obj *format,
+		    char *filename, Tcl_Obj *format,
 		    Tk_PhotoImageBlock *blockPtr));
 static int	CommonWriteGIF _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tcl_Channel handle, Tcl_Obj *format,
@@ -199,15 +200,14 @@ static void		mInit _ANSI_ARGS_((unsigned char *string,
  */
 
 static int
-FileMatchGIF(interp, chan, fileName, format, widthPtr, heightPtr)
-    Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
+FileMatchGIF(chan, fileName, format, widthPtr, heightPtr, interp)
     Tcl_Channel chan;		/* The image file, open for reading. */
     Tcl_Obj *fileName;		/* The name of the image file. */
     Tcl_Obj *format;		/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw GIF file. */
-    Tcl_Interp *interp;		/* not used */
+    Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
 {
 	return ReadGIFHeader(chan, widthPtr, heightPtr);
 }
@@ -527,7 +527,7 @@ FileReadGIF(interp, chan, fileName, format, imageHandle, destX, destY,
  */
 
 static int
-StringMatchGIF(inter, pdataObj, format, widthPtr, heightPtr)
+StringMatchGIF(dataObj, format, widthPtr, heightPtr, interp)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
     Tcl_Obj *dataObj;		/* the object containing the image data */
     Tcl_Obj *format;		/* the image format object, or NULL */
@@ -609,6 +609,7 @@ StringReadGIF(interp, dataObj, format, imageHandle,
 	    Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
     Tcl_Channel dataSrc;
     char *data;
+    Tcl_Obj *name;
 
     /*
      * Check whether the data is Base64 encoded
@@ -623,8 +624,10 @@ StringReadGIF(interp, dataObj, format, imageHandle,
 	mInit((unsigned char *)data, &handle);
 	dataSrc = (Tcl_Channel) &handle;
     }
-    result = FileReadGIF(interp, dataSrc, "inline data",
+    name = Tcl_NewStringObj("inline data",0);
+    result = FileReadGIF(interp, dataSrc, name,
 	    format, imageHandle, destX, destY, width, height, srcX, srcY);
+    Tcl_DecrRefCount(name);
     tsdPtr->fromData = 0;
     return result;
 }
@@ -1396,7 +1399,7 @@ static int ReadValue _ANSI_ARGS_((void));
 static int
 FileWriteGIF(interp, filename, format, blockPtr)
     Tcl_Interp *interp;		/* Interpreter to use for reporting errors. */
-    CONST char	*filename;
+    char	*filename;
     Tcl_Obj	*format;
     Tk_PhotoImageBlock *blockPtr;
 {

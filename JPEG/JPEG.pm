@@ -43,7 +43,7 @@ free JPEG software.
 
 =head1 AUTHOR
 
-Nick Ing-Simmons E<lt>nick@ni-s.u-net.comE<gt>
+Nick Ing-Simmons E<lt>nick@ing-simmons.netE<gt>
 
 =cut
 

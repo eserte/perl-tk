@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = sprintf '4.%03d', q$Revision: #28 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #29 $ =~ /\D(\d+)\s*$/;
 
 require Tk;
 use AutoLoader;
@@ -1353,36 +1353,6 @@ sub ConfigSpecs {
 1;
 __END__
 
-=head1 NAME
-
-Tk::bindDump - dump detailed binding information for a widget.
-
-=head1 SYNOPSIS
-
- use Tk::bindDump;
-
- $splash->bindDump;
-
-=head1 DESCRIPTION
-
-This subroutine prints a widget's bindtags.  For each binding tag it
-prints all the bindings, comprised of the event descriptor and the
-callback.  Callback arguments are printed, and Tk::Ev objects are
-expanded.
-
-=head1 COPYRIGHT
-
-Copyright (C) 2000 - 2001 Stephen O. Lidie. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
-
-=cut
-
-
-1;
-__END__
-
 sub bindDump {
 
     # Dump lots of good binding information.  This pretty-print subroutine
@@ -1405,49 +1375,50 @@ sub bindDump {
     my $format2 = ' ' x ($digits + 2);
     my $n = 0;
 
-    print "\n## Binding information for '", $w->PathName, "', $w ##\n";
+    my @out;
+    push @out, sprintf( "\n## Binding information for '%s', %s ##", $w->PathName, $w );
 
     foreach my $tag (@bindtags) {
         my (@bindings) = $w->bind($tag);
         $n++;                   # count this bindtag
 
         if ($#bindings == -1) {
-            printf "\n$format1 Binding tag '$tag' has no bindings.\n", $n;
+            push @out, sprintf( "\n$format1 Binding tag '$tag' has no bindings.\n", $n );
         } else {
-            printf "\n$format1 Binding tag '$tag' has these bindings:\n", $n;
+            push @out, sprintf( "\n$format1 Binding tag '$tag' has these bindings:\n", $n );
 
             foreach my $binding ( @bindings ) {
                 my $callback = $w->bind($tag, $binding);
-                printf "$format2%27s : %-40s\n", $binding, $callback;
+                push @out, sprintf( "$format2%27s : %-40s\n", $binding, $callback );
 
                 if ($callback =~ /SCALAR/) {
                     if (ref $$callback) {
-                        printf "%s %s\n", ' ' x $spc1, $$callback;
+                        push @out, sprintf( "%s %s\n", ' ' x $spc1, $$callback );
                     } else {
-                        printf "%s '%s'\n", ' ' x $spc1, $$callback;
+                        push @out, sprintf( "%s '%s'\n", ' ' x $spc1, $$callback );
                     }
                 } elsif ($callback =~ /ARRAY/) {
                     if (ref $callback->[0]) {
-                        printf "%s %s\n", ' ' x $spc1, $callback->[0], "\n";
+                        push @out, sprintf( "%s %s\n", ' ' x $spc1, $callback->[0], "\n" );
                     } else {
-                        printf "%s '%s'\n", ' ' x $spc1, $callback->[0], "\n";
+                        push @out, sprintf( "%s '%s'\n", ' ' x $spc1, $callback->[0], "\n" );
                     }
                     foreach my $arg (@$callback[1 .. $#{@$callback}]) {
                         if (ref $arg) {
-                            printf "%s %-40s", ' ' x $spc2, $arg;
+                            push @out, sprintf( "%s %-40s", ' ' x $spc2, $arg );
                         } else {
-                            printf "%s '%s'", ' ' x $spc2, $arg;
+                            push @out, sprintf( "%s '%s'", ' ' x $spc2, $arg );
                         }
 			
                         if (ref $arg eq 'Tk::Ev') {
                             if ($arg =~ /SCALAR/) {
-                                print ": '$$arg'";
+                                push @out, sprintf( ": '$$arg'" );
                             } else {
-                                print ": '", join("' '", @$arg), "'";
+                                push @out, sprintf( ": '%s'", join("' '", @$arg) );
                             }
                         }
 
-                        print "\n";
+                        push @out, sprintf( "\n" );
                     } # forend callback arguments
                 } # ifend callback
 
@@ -1456,7 +1427,8 @@ sub bindDump {
         } # ifend have bindings
 
     } # forend all tags
-    print "\n";
+    push @out, sprintf( "\n" );
+    return @out;
 
 } # end bindDump
 
@@ -1534,6 +1506,3 @@ sub pathname
  my $x = $w->winfo('pathname',-displayof  => oct($id));
  return $x->PathName;
 }
-
-
-

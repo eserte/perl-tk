@@ -569,6 +569,15 @@ Tcl_GetString(Tcl_Obj *objPtr)
  return Tcl_GetStringFromObj(objPtr, NULL);
 }
 
+unsigned char *
+Tcl_GetByteArrayFromObj(Tcl_Obj * objPtr, int * lengthPtr)
+{
+ /* FIXME: presumably should downgrade from UTF-8,
+    what frees it ?
+  */
+ return (unsigned char *) Tcl_GetStringFromObj (objPtr, lengthPtr);
+}
+
 
 AV *
 ForceList(pTHX_ Tcl_Interp *interp, Tcl_Obj *sv)

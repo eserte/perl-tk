@@ -6,19 +6,24 @@
 
 =head1 NAME
 
-tk_chooseDirectory - pops up a dialog box for the user to select a directory.
+chooseDirectory - pops up a dialog box for the user to select a directory.
 
 =for category  Tk Generic Methods
 
 =head1 SYNOPSIS
 
-B<tk_chooseDirectory >?I<option value ...>?
+I<$widget>-E<gt>B<chooseDirectory>( ?I<option value ...>? );
 
 =head1 DESCRIPTION
 
-The procedure B<tk_chooseDirectory> pops up a dialog box for the
-user to select a directory. The following I<option-value> pairs are
-possible as command line arguments:
+The method B<chooseDirectory> is implemented as a perl wrapper on the
+core tk "command" B<tk_chooseDirectory>, and I<$widget> is passed as
+the argument to the hidden B<-parent> option.
+
+The B<chooseDirectory>
+method pops up a dialog box for the user to select a directory. The
+following I<option-value> pairs are possible as command line
+arguments:
 
 =over 4
 

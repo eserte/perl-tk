@@ -30,6 +30,19 @@ See L<Tk::options> for details of the standard options.
 
 =over 4
 
+=item Command-Line Name: B<-compound>
+
+=item Database Name:  B<compound>
+
+=item Database Class: B<Compound>
+
+Specifies whether the button should display both an image and text,
+and if so, where the image should be placed relative to the text.
+Valid values for this option are B<bottom>, B<center>, B<left>,
+B<none>, B<right> and B<top>.  The default value is B<none>, meaning
+that the button will display either an image or text, depending on the
+values of the -image and -bitmap options.
+
 =item Name:	B<direction>
 
 =item Class:	B<Height>

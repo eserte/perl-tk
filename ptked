@@ -1,12 +1,11 @@
 #!/usr/local/bin/perl -w
 use strict;
-use IO;
 use Socket;
 use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tkutf8/ptked#6 $
+$VERSION = '3.006'; # $Id: //depot/Tkutf8/ptked#7 $
 
 my %opt;
 INIT

@@ -119,6 +119,17 @@ I<Number> must be an integer;  it specifies the I<count> field
 for the event.  Valid for B<Expose> events.
 Corresponds to the L<%c|Tk::bind/'c'> substitution for binding scripts.
 
+=item B<-delta> =E<gt> I<number>
+
+B<number> must be an integer; it specifies the B<delta> field for the
+B<MouseWheel> event.  The delta refers to the direction and magnitude the
+mouse wheel was rotated.  Note the value is not a screen distance but
+are units of motion in the mouse wheel.  Typically these values are
+multiples of 120.  For example, 120 should scroll the text widget up 4
+lines and -240 would scroll the text widget down 8 lines.  Of course,
+other widgets may define different behaviors for mouse wheel motion.
+This field corresponds to the %D substitution for binding scripts.
+
 =item B<-detail> => I<detail>
 
 I<Detail> specifies the I<detail> field for the event
@@ -126,16 +137,16 @@ and must be one of the following:
 
 =over 8
 
- NotifyAncestor	NotifyNonlinearVirtual
- NotifyDetailNone	NotifyPointer
- NotifyInferior	NotifyPointerRoot
- NotifyNonlinear	NotifyVirtual
+ NotifyAncestor	        NotifyNonlinearVirtual
+ NotifyDetailNone       NotifyPointer
+ NotifyInferior	        NotifyPointerRoot
+ NotifyNonlinear        NotifyVirtual
+
+=back
 
 Valid for B<Enter>, B<Leave>, B<FocusIn> and
 B<FocusOut> events.
 Corresponds to the L<%d|Tk::bind/'d'> substitution for binding scripts.
-
-=back
 
 =item B<-focus>I< boolean>
 

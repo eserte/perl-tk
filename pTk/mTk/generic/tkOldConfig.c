@@ -222,10 +222,14 @@ Tk_ConfigureWidget(interp, tkwin, specs, argc, argv, widgRec, flags)
 		    return TCL_ERROR;
 		}
 	    } else {
-                if (specPtr->specFlags & TK_CONFIG_NULL_OK)
-		    LangSetDefault(&value,specPtr->defValue);
-                else
-		    LangSetString(&value,specPtr->defValue);
+	        if (specPtr->defValue != NULL) {
+                    if (specPtr->specFlags & TK_CONFIG_NULL_OK)
+		    	LangSetDefault(&value,specPtr->defValue);
+                    else
+		    	LangSetString(&value,specPtr->defValue);
+		} else {
+		    value = NULL;
+		}
 		if ((value != NULL) && !(specPtr->specFlags
 			& TK_CONFIG_DONT_SET_DEFAULT)) {
 		    if (DoConfig(interp, tkwin, specPtr, value, 0, widgRec) !=

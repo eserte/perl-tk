@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #14 $ =~ /\D(\d+)\s*$/;
 
 use Tk;
 use Tk::Derived;
@@ -37,7 +37,7 @@ sub Populate {
 
 sub DirCmd {
     my( $w, $dir, $showhidden ) = @_;
-
+    $dir .= "/" if $dir =~ /^[a-z]:$/i and $^O eq 'MSWin32';
     my $h = DirHandle->new( $dir ) or return();
     my @names = grep( $_ ne '.' && $_ ne '..', $h->read );
     @names = grep( ! /^[.]/, @names ) unless $showhidden;
@@ -124,7 +124,10 @@ sub OpenCmd {
 sub add_to_tree {
     my( $w, $dir, $name, $parent ) = @_;
 
-    my $image = $w->Getimage( $w->cget('-image') );
+    my $image = $w->cget('-image');
+    if ( !UNIVERSAL::isa($image, 'Tk::Image') ) {
+	$image = $w->Getimage( $image );
+    }
     my $mode = 'none';
     $mode = 'open' if $w->has_subdir( $dir );
 

@@ -46,7 +46,7 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
     ok($@,''," load $@");
     ok(defined($new),1,"Could not load $f");
 
-    my $skip_unsupported_data_format = $kind =~ /^(PPM)$/ ? "$kind is not supported" : "";
+    my $skip_unsupported_data_format = $kind =~ /^(PPM|gif)$/ ? "$kind is not supported" : "";
 
     my $data;
     my $new2;

@@ -397,8 +397,9 @@ The photo image code is structured to allow handlers for additional
 image file formats to be added easily.  The photo image code maintains
 a list of these handlers.  Handlers are added to the list by
 registering them with a call to B<Tk_CreatePhotoImageFormat>.  The
-standard Tk distribution comes with handlers for PPM/PGM and GIF formats,
-which are automatically registered on initialization.
+standard Tk distribution comes with handlers for XBM, XPM, BMP, JPEG,
+PNG and PPM/PGM formats, which are automatically registered on
+initialization.
 
 When reading an image file or processing
 string data specified with the B<-data> configuration option, the

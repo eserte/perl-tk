@@ -1,9 +1,22 @@
+
 For Tk804.025 to build properly on Mac OS X 10.2 (Jaguar) or 10.3
 (Panther), Perl must be built dynamic, rather that the default of
 static.  Use a Configure incantation similar to this:
 
 sh Configure -des -Duseshrplib [-Dprefix=/path/to/your/private/perl]
 
-S. Lidie, 2003/10/27
+Be sure you install the X11 SDK from the XTools developer CD - this
+installs the X11 C headers files, else the make will fail:
 
+    I installed the latest X11 from Apple, but the latest TK804 beta
+    gives me the following:
 
+    Using -L/usr/X11R6/lib to find /usr/X11R6/lib/libX11.dylib
+    Cannot find X include files via /usr/X11R6/include
+    Cannot find X include files anywhere at ./myConfig line 332.
+    Compilation failed in require at Makefile.PL line 32.
+    BEGIN failed--compilation aborted at Makefile.PL line 34.
+
+On my Panther (10.3.2) system, it can be found in:
+    
+    Applications->Installers->Developer Tools->Packages.

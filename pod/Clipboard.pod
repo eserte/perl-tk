@@ -40,7 +40,7 @@ display in the form given by I<type> with the representation given
 by I<format> and claims ownership of the clipboard on $widget's
 display.
 
-=over 8
+=over 4
 
 I<Type> specifies the form in which the selection is to be returned
 (the desired ``target'' for conversion, in ICCCM terminology), and
@@ -68,6 +68,16 @@ with a B<->.
 =back
 
 =back
+
+=over 4
+
+=item I<$widget>-E<gt>B<clipboardGet>( ?-type? );
+
+Retrieve data from the clipboard on  I<widget>'s  display.
+I<-type> specifies the form in which the data is
+to be returned and should be an atom  name  such  as  STRING  or
+FILE_NAME.  Type defaults to STRING.  This command is equivalent 
+to C<selectionGet( -selection =E<gt> 'CLIPBOARD' )>.
 
 =head1 KEYWORDS
 

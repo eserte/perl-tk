@@ -412,13 +412,13 @@ Adjusts the view in the window so that the character position given by
 I<index> is displayed at the left edge of the window.
 Character positions are defined by the width of the character B<0>.
 
-=item I<$listbox>-E<gt>B<xview>(B<moveto> =E<gt> I<fraction>)
+=item I<$listbox>-E<gt>B<xviewMoveto>( I<fraction> );
 
 Adjusts the view in the window so that I<fraction> of the
 total width of the listbox text is off-screen to the left.
 I<fraction> must be a fraction between 0 and 1.
 
-=item I<$listbox>-E<gt>B<xview>(B<scroll> =E<gt> I<number, what>)
+=item I<$listbox>-E<gt>B<xviewScroll>( I<number, what> );
 
 This command shifts the view in the window left or right according to
 I<number> and I<what>.
@@ -460,7 +460,7 @@ option.
 Adjusts the view in the window so that the element given by
 I<index> is displayed at the top of the window.
 
-=item I<$listbox>-E<gt>B<yview>(B<moveto> =E<gt> I<fraction>)
+=item I<$listbox>-E<gt>B<yviewMoveto>( I<fraction> );
 
 Adjusts the view in the window so that the element given by I<fraction>
 appears at the top of the window.
@@ -468,7 +468,7 @@ I<Fraction> is a fraction between 0 and 1;  0 indicates the first
 element in the listbox, 0.33 indicates the element one-third the
 way through the listbox, and so on.
 
-=item I<$listbox>-E<gt>B<yview>(B<scroll> =E<gt> I<number, what>)
+=item I<$listbox>-E<gt>B<yviewScroll( I<number, what> );
 
 This command adjusts the view in the window up or down according to
 I<number> and I<what>.

@@ -28,6 +28,24 @@ B<-foreground>	B<-insertofftime>	B<-selectborderwidth>
 
 =over 4
 
+=item Command-Line Name: B<-disabledbackground>
+
+=item Database Name:  B<disabledBackground>
+
+=item Database Class: B<DisabledBackground>
+
+Specifies the background color to use when the entry is disabled.  If
+this option is the empty string, the normal background color is used.
+
+=item Command-Line Name: B<-disabledforeground>
+
+=item Database Name:  B<disabledForeground>
+
+=item Database Class: B<DisabledForeground>
+
+Specifies the foreground color to use when the entry is disabled.  If
+this option is the empty string, the normal foreground color is used.
+
 =item Name:	B<invalidCommand>
 
 =item Class:	B<InvalidCommand>
@@ -40,6 +58,15 @@ Specifies a script to eval when B<validateCommand> returns 0.
 Setting it to <undef> disables this feature (the default).  The best use
 of this option is to set it to I<bell>.  See B<Validation>
 below for more information.
+
+=item Command-Line Name: B<-readonlybackground>
+
+=item Database Name:  B<readonlyBackground>
+
+=item Database Class: B<ReadonlyBackground>
+
+Specifies the background color to use when the entry is read-only.  If
+this option is the empty string, the normal background color is used.
 
 =item Name:	B<show>
 
@@ -63,10 +90,15 @@ of the entry.
 
 =item Switch:	B<-state>
 
-Specifies one of two states for the entry:  B<normal> or B<disabled>.
-If the entry is disabled then the value may not be changed using widget
-methods and no insertion cursor will be displayed, even if the input focus is
-in the widget.
+Specifies one of three states for the entry: B<normal>, B<disabled>, or
+B<readonly>.  If the entry is B<readonly>, then the value may not be changed
+using widget commands and no insertion cursor will be displayed, even
+if the input focus is in the widget; the contents of the widget may
+still be selected.  If the entry is B<disabled>, the value may not be
+changed, no insertion cursor will be displayed, the contents will not
+be selectable, and the entry may be displayed in a different color,
+depending on the values of the B<-disabledforeground> and
+B<-disabledbackground> options.
 
 =item Name:	B<validate>
 

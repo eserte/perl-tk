@@ -65,6 +65,11 @@ the existing instances will use the new image.
 Returns a decimal string giving the height of image I<name>
 in pixels.
 
+=item I<$widget>-E<gt>B<imageInuse>( 'name' );
+
+Returns  a  boolean  value  indicating  whether or not the image
+given by I<name> is in use by any widgets.
+
 =item I<$widget>-E<gt>B<imageNames>
 
 Returns a list containing all existing images for I<$widget>'s

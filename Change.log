@@ -1,3 +1,109 @@
+Change 3161 on 2004/02/28 by nick@llama
+
+	Fix my e-mail address in a few spots
+
+Change 3160 on 2004/02/28 by nick@llama
+
+	Really add get_corners() to Canvas (helps if you save the edit!)
+
+Change 3159 on 2004/02/28 by nick@llama
+
+	Duplicate code removal from Gisle Aas <gisle@ActiveState.com>
+
+Change 3158 on 2004/02/28 by nick@llama
+
+	XFT diagnostics in myConfig from Slaven
+
+Change 3157 on 2004/02/28 by nick@llama
+
+	Steve's Animation and widget demo changes that
+	were in BigPODpatch
+
+Change 3156 on 2004/02/28 by nick@llama
+
+	Steve's BitPODpatch pod changes.
+
+Change 3155 on 2004/02/28 by nick@llama
+
+	Spurious 'print' patch from Steve Lidie <sol0@Lehigh.EDU>
+
+Change 3154 on 2004/02/28 by nick@llama
+
+	Remove premature refcount reduction in tkSelect.c
+
+Change 3153 on 2004/02/28 by nick@llama
+
+	Add Slaven's get_corners method to Canvas.
+
+Change 3152 on 2004/02/28 by nick@llama
+
+	Cleanup handling of comments in mTk/pTk.exc files and
+	add some comments.
+	Use core tk's tkImgGIF.c rather than img's imgGIF.c
+	Downgrade GIF testing in photo.t to match core's lack
+	of string write.
+
+Change 3142 on 2004/02/01 by nick@llama
+
+	Steve's arrows.pl patch re-cast to use 'NoOp' rather
+	than an anon-sub.
+
+Change 3141 on 2004/02/01 by nick@llama
+
+	Slaven's fix for Text tagConfigure bug
+
+Change 3140 on 2004/02/01 by nick@llama
+
+	New README.darwin from Steve
+
+Change 3138 on 2004/02/01 by nick@llama
+
+	Jack continues to improve Text Up/Down code.
+
+Change 3135 on 2004/01/25 by nick@llama
+
+	Long pending DirTree workround for Win32
+	from "Tim Harsch" <harsch1@llnl.gov>
+
+Change 3134 on 2004/01/25 by nick@llama
+
+	Slaven's patch for DirTree -image
+
+Change 3133 on 2004/01/25 by nick@llama
+
+	Steve's Derived and composite pod patches
+
+Change 3132 on 2004/01/25 by nick@llama
+
+	Fix tkFont.c enum as suggested by
+	"H.Merijn Brand" <h.m.brand@hccnet.nl>
+
+Change 3131 on 2004/01/25 by nick@llama
+
+	Steve's mega.pod patch
+
+Change 3130 on 2004/01/25 by nick@llama
+
+	"Jack" <goodcall1@hotmail.com> - fix for his improved
+	UpDownLine in Text.pm
+
+Change 3129 on 2004/01/25 by nick@llama
+
+	Steve's pod patches for Widget
+
+Change 3128 on 2004/01/19 by nick@llama
+
+	Text up/down line patch from "Jack" <goodcall1@hotmail.com>
+	Incorporating methods match from Gisle Aas <gisle@ActiveState.com>
+
+Change 3127 on 2004/01/19 by nick@llama
+
+	Steve's Animation patches.
+
+Change 3125 on 2004/01/12 by nick@llama
+
+	Tk-804.025_beta14 Release Preparation
+
 Change 3124 on 2004/01/12 by nick@camel
 
 	Auto generated files for device context debug

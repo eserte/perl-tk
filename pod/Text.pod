@@ -187,6 +187,9 @@ The fourth form of annotation allows Tk images to be embedded in a text
 widget.
 See L<"EMBEDDED IMAGES"> below for more details.
 
+The Perl/Tk B<Text> widget does not support undo/redo, use the B<TextUndo>
+widget instead.
+
 =head1 INDICES
 
 Many of the methods for texts take one or more indices
@@ -393,6 +396,16 @@ option to give a 3-D appearance to the background for characters;
 it is ignored unless the B<-background> option
 has been set for the tag.
 
+=item B<-elide> =E<gt> boolean
+
+Elide  specifies whether the data should be elided.  Elided data
+is not displayed and takes no space on screen,  but  further  on
+behaves just as normal data.
+
+=item B<-data> =E<gt> I<value>
+
+Allows an arbitrary perl scalar I<value> to be associated with the tag.
+
 =item B<-fgstipple> =E<gt> I<bitmap>
 
 I<Bitmap> specifies a bitmap that is used as a stipple pattern
@@ -534,16 +547,6 @@ It has the same legal values as the B<-wrap> option
 for the text widget:  B<none>, B<char>, or B<word>.
 If this tag option is specified, it overrides the B<-wrap> option
 for the text widget.
-
-=item B<-elide> =E<gt> I<value>
-
-If value is true then text covered by the tag is not displayed.
-Elided text is not displayed and takes no space on screen, but otherwise
-behaves just as normal text.
-
-=item B<-data> =E<gt> I<value>
-
-Allows an arbitrary perl scalar I<value> to be associated with the tag.
 
 =back
 
@@ -800,6 +803,11 @@ If the selection is claimed away by another application or by another
 window within this application, then the B<sel> tag will be removed
 from all characters in the text.
 
+=item [4]
+
+Whenever the sel tag range changes a virtual event B<<<Selection>>>
+is generated.
+
 The B<sel> tag is automatically defined when a text widget is
 created, and it may not be deleted with the ``I<$text>-E<gt>B<tagDelete>''
 method.  Furthermore, the B<selectBackground>,
@@ -820,6 +828,16 @@ command.
 The B<insert> mark represents the position of the insertion
 cursor, and the insertion cursor will automatically be drawn at
 this point whenever the text widget has the input focus.
+
+=head1 THE MODIFIED FLAG
+       
+The text widget can keep track of changes to the content of the  widget
+by means of the modified flag. Inserting or deleting text will set this
+flag. The flag can be queried, set and cleared programatically as well.
+Whenever  the flag changes state a B<<<Modified>>> virtual event is gener-
+ated. See the edit modified widget command for more details.
+
+=back
 
 =head1 WIDGET METHODS
 
@@ -919,6 +937,15 @@ I<index1> is deleted.
 It is not allowable to delete characters in a way that would leave
 the text without a newline as the last character.
 The command returns an empty string.
+If more indices are given, multiple ranges of text will
+be deleted.  All indices are first checked for  validity  before
+any deletions are made.  They are sorted and the text is removed
+from the last range to the first range to deleted text does  not
+cause  a  undesired  index  shifting  side-effects.  If multiple
+ranges with the same start index are  given,  then  the  longest
+range  is used.  If overlapping ranges are given, then they will
+be merged into spans that do not cause deletion of text  outside
+the given ranges due to text shifted during deletion.
 
 =item I<$text>-E<gt>B<deleteSelected>
 
@@ -964,8 +991,6 @@ in the following format:
 
 I<key1 value1 index1 key2 value2 index2> ...
 
-=back
-
 The possible I<key> values are B<text>, B<mark>,
 B<tagon>, B<tagoff>, and I<$text>.  The corresponding
 I<value> is the text, mark name, tag name, or window name.
@@ -1009,11 +1034,56 @@ of the value.
 
 =item B<-window>
 
+=back 
+
 Include information about embedded windows in the dump results.
 The value of a window is its Tk pathname, unless the window
 has not been created yet.  (It must have a create script.)
 In this case an empty string is returned, and you must query the
 window by its index position to get more information.
+
+=item I<$text>-E<gt>B<edit>( I< option, ?arg, arg ...?> );
+
+This  command controls the undo mechanism and the modified flag.
+The exact behavior of the command depends on the option argument
+that follows the edit argument.  The following forms of the command
+are currently supported:                                   
+
+=over 4
+
+=item I<$text>-E<gt>B<editModified>( ?boolean? );
+
+If boolean is not specified, returns the modified flag of
+the widget. The insert, delete, edit undo and  edit  redo
+commands  or the user can set or clear the modified flag.
+If boolean is specified, sets the modified  flag  of  the
+widget to boolean.                                       
+
+=item I<$text>-E<gt>B<editRedo>;
+
+(Not implemented, use B<TextUndo>.)  When the B<-undo> option is true,
+reapplies the last undone edits provided no other edits were done
+since then. Generates an error when the redo stack is empty.  Does
+nothing when the B<-undo> option is false.
+
+=item I<$text>-E<gt>B<editReset>;
+
+(Not implemented, use B<TextUndo>.) Clears the undo and redo stacks.
+
+=item I<$text>-E<gt>B<editSeparator>;
+
+(Not implemented, use B<TextUndo>.) Inserts a separator (boundary) on
+the undo stack. Does nothing when the -undo option is false.
+
+=item I<$text>-E<gt>B<editUndo>;
+
+(Not implemented, use B<TextUndo>.) Undoes the last edit action when
+the -undo option is true.  An edit action is defined as all the insert
+and delete commands that are recorded on the undo stack in between two
+separators. Generates an error when the undo stack is empty.  Does
+nothing when the -undo option is false.
+
+=back
 
 =item I<$text>-E<gt>B<FindAll>(I<mode, case, pattern>)
 
@@ -1068,18 +1138,19 @@ direction and selects the text and makes the new selection visible.
 
 =item I<$text>-E<gt>B<get>(I<index1, >?I<index2>?)
 
-Return a range of characters from the text.
-The return value will be all the characters in the text starting
-with the one whose index is I<index1> and ending just before
-the one whose index is I<index2> (the character at I<index2>
-will not be returned).
-If I<index2> is omitted then the single character at I<index1>
-is returned.
-If there are no characters in the specified range (e.g. I<index1>
-is past the end of the file or I<index2> is less than or equal
-to I<index1>) then an empty string is returned.
-If the specified range contains embedded windows, no information
-about them is included in the returned string.
+Return a range of characters from the text.  The return value will be
+all the characters in the text starting with the one whose index is
+I<index1> and ending just before the one whose index is I<index2> (the
+character at I<index2> will not be returned).  If I<index2> is omitted
+then the single character at I<index1> is returned.  If there are no
+characters in the specified range (e.g. I<index1> is past the end of
+the file or I<index2> is less than or equal to I<index1>) then an
+empty string is returned.  If the specified range contains embedded
+windows, no information about them is included in the returned string.
+If multiple index pairs are given, multiple ranges of text will be
+returned in a list.  Invalid ranges will not be represented with empty
+strings in the list.  The ranges are returned in the order passed to
+B<get>.
 
 =item I<$text>-E<gt>B<getSelected>
 
@@ -2049,6 +2120,19 @@ Control-x deletes whatever is selected in the text widget.
 
 Control-t reverses the order of the two characters to the right of
 the insertion cursor.
+
+=item [32]
+
+Control-z (and Control-underscore on UNIX when tk_strictMotif is
+true)  undoes  the last edit action if the -undo option is true.
+Does nothing otherwise.
+
+=item [33]
+     
+Control-Z (or Control-y on Windows) reapplies the last undone edit
+action if the -undo option is true. Does nothing otherwise.
+
+=back
 
 If the widget is disabled using the B<-state> option, then its
 view can still be adjusted and text can still be selected,

@@ -504,7 +504,7 @@ Tk_FontObjCmd(clientData, interp, objc, objv)
     enum options {
 	FONT_ACTUAL,	FONT_CONFIGURE,	FONT_CREATE,	FONT_DELETE,
 	FONT_FAMILIES,	FONT_MEASURE,	FONT_METRICS,	FONT_NAMES,
-	FONT_SUBFONTS,
+	FONT_SUBFONTS
     };
 
     tkwin = (Tk_Window) clientData;

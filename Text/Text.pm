@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #20 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #23 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -33,7 +33,7 @@ sub Tk_cmd { \&Tk::text }
 
 sub Tk::Widget::ScrlText { shift->Scrolled('Text' => @_) }
 
-Tk::Methods('bbox','compare','debug','delete','dlineinfo','dump',
+Tk::Methods('bbox','compare','debug','delete','dlineinfo','dump','edit',
             'get','image','index','insert','mark','scan','search',
             'see','tag','window','xview','yview');
 
@@ -45,6 +45,7 @@ use Tk::Submethods ( 'mark'   => [qw(gravity names next previous set unset)],
 		     'image'  => [qw(cget configure create names)],
 		     'xview'  => [qw(moveto scroll)],
 		     'yview'  => [qw(moveto scroll)],
+                     'edit'   => [qw(modified redo reset separator undo)],
 		     );
 
 sub Tag;
@@ -220,7 +221,7 @@ sub ClassInit
    $mw->bind($class,'<Control-h>','deleteBefore');
    $mw->bind($class,'<ButtonRelease-2>','ButtonRelease2');
   }
- $Tk::prevPos = undef;
+#JD# $Tk::prevPos = undef;
  return $class;
 }
 
@@ -484,7 +485,7 @@ sub SetCursor
  $pos = 'end - 1 chars' if $w->compare($pos,'==','end');
  $w->markSet('insert',$pos);
  $w->unselectAll;
- $w->see('insert')
+ $w->see('insert');
 }
 # KeySelect
 # This procedure is invoked when stroking out selections using the
@@ -1157,63 +1158,101 @@ sub Insert
 }
 
 # UpDownLine --
-# Returns the index of the character one line above or below the
+# Returns the index of the character one *display* line above or below the
 # insertion cursor. There are two tricky things here. First,
 # we want to maintain the original column across repeated operations,
 # even though some lines that will get passed through do not have
 # enough characters to cover the original column. Second, do not
 # try to scroll past the beginning or end of the text.
 #
+# This may have some weirdness associated with a proportional font. Ie.
+# the insertion cursor will zigzag up or down according to the width of
+# the character at destination.
+#
 # Arguments:
 # w - The text window in which the cursor is to move.
 # n - The number of lines to move: -1 for up one line,
 # +1 for down one line.
-sub UpDownLine_old
-{
- my ($w,$n) = @_;
- my $i = $w->index('insert');
- my ($line,$char) = split(/\./,$i);
- if (!defined($Tk::prevPos) || $Tk::prevPos ne $i)
-  {
-   $Tk::char = $char
-  }
- my $new = $w->index($line+$n . '.' . $Tk::char);
- if ($w->compare($new,'==','end') || $w->compare($new,'==','insert linestart'))
-  {
-   $new = $i
-  }
- $Tk::prevPos = $new;
- return $new;
-}
-
 sub UpDownLine
 {
- my ($w,$n) = @_;
- my $i = $w->index('insert');
- my ($line,$char) = split(/\./,$i);
- my $string = $w->get($line.'.0', $i);
+my ($w,$n) = @_;
+$w->see('insert');
+my $i = $w->index('insert');
 
- $string = expand($string);
- $char=length($string);
- $line += $n;
+my ($line,$char) = split(/\./,$i);
 
- $string = $w->get($line.'.0', $line.'.0 lineend');
- $string = expand($string);
- $string = substr($string, 0, $char);
+my $testX; #used to check the "new" position
+my $testY; #used to check the "new" position
 
- $string = unexpand($string);
- $char = length($string);
+(my $bx, my $by, my $bw, my $bh) = $w->bbox($i);
+(my $lx, my $ly, my $lw, my $lh) = $w->dlineinfo($i);
 
- my $new = $w->index($line . '.' . $char);
- if ($w->compare($new,'==','end') || $w->compare($new,'==','insert linestart'))
+if ( ($n == -1) and ($by <= $bh) )
   {
-   $new = $i
+   #On first display line.. so scroll up and recalculate..
+   $w->yview('scroll', -1, 'units');
+   unless (($w->yview)[0]) {
+     #first line of entire text - keep same position.
+     return $i;
+   }
+   ($bx, $by, $bw, $bh) = $w->bbox($i);
+   ($lx, $ly, $lw, $lh) = $w->dlineinfo($i);
   }
- $Tk::prevPos = $new;
- $Tk::char = $char;
- return $new;
-}
+elsif ( ($n == 1) and
+         ($ly + $lh) > ( $w->height - 2*$w->cget(-bd) - 2*$w->cget(-highlightthickness) ) )
+  {
+   #On last display line.. so scroll down and recalculate..
+   $w->yview('scroll', 1, 'units');
+   ($bx, $by, $bw, $bh) = $w->bbox($i);
+   ($lx, $ly, $lw, $lh) = $w->dlineinfo($i);
+  }
 
+# Calculate the vertical position of the next display line
+my $Yoffset = 0;
+$Yoffset = $by - $ly + 1 if ($n== -1);
+$Yoffset = $ly + $lh + 1 - $by if ($n == 1);
+$Yoffset*=$n;
+$testY = $by + $Yoffset;
+
+# Save the original 'x' position of the insert cursor if:
+# 1. This is the first time through -- or --
+# 2. The insert cursor position has changed from the previous
+#    time the up or down key was pressed -- or --
+# 3. The cursor has reached the beginning or end of the widget.
+
+if (not defined $w->{'origx'} or ($w->{'lastindex'} != $i) )
+  {
+   $w->{'origx'} = $bx;
+  }
+
+# Try to keep the same column if possible
+$testX = $w->{'origx'};
+
+# Get the coordinates of the possible new position
+my $testindex = $w->index('@'.$testX.','.$testY );
+$w->see($testindex);
+my ($nx,$ny,$nw,$nh) = $w->bbox($testindex);
+
+# Which side of the character should we position the cursor -
+# mainly for a proportional font
+if ($testX > $nx+$nw/2)
+  {
+   $testX = $nx+$nw+1;
+  }
+
+my $newindex = $w->index('@'.$testX.','.$testY );
+
+if ( $w->compare($newindex,'==','end - 1 char') and ($ny == $ly ) )
+  {
+    # Then we are trying to the 'end' of the text from
+    # the same display line - don't do that
+    return $i;
+  }
+
+$w->{'lastindex'} = $newindex;
+$w->see($newindex);
+return $newindex;
+}
 
 # PrevPara --
 # Returns the index of the beginning of the paragraph just before a given

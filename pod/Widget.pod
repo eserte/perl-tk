@@ -66,16 +66,24 @@ I<id>.
 This command is the inverse of the I<$widget>-E<gt>B<atom> command.
 It generates an error if no such atom exists.
 
-=item I<$widget>-E<gt>B<bell>
+=item I<$widget>-E<gt>B<bell>( ?-nice? );
 
 This command rings the bell on the display for I<$widget> and
 returns an empty string.
 The command uses the current bell-related settings for the display, which
 may be modified with programs such as B<xset>.
 
-This command also resets the screen saver for the screen.  Some
-screen savers will ignore this, but others will reset so that the
-screen becomes visible again.
+If I<-nice>  is  not specified, this command also resets the screen saver
+for the screen.  Some screen savers will ignore this, but  others  will
+reset so that the screen becomes visible again.
+
+=item I<$widget>-E<gt>B<bindDump>
+
+This command returns a list of strings suitable for printing detailing
+binding information for a widget.  It prints a widget's
+bindtags.  For each binding tag it prints all the bindings, comprised
+of the event descriptor and the callback.  Callback arguments are
+printed, and B<Tk::Ev> objects are expanded.
 
 =item I<$widget>-E<gt>B<Busy>?(?-recurse => 1?I<-option => value>?)?
 
@@ -90,6 +98,18 @@ B<bell>). It then acquires a local B<grab> for I<$widget>.
 The state of the widgets and the grab is restored by a call to
 I<$widget>-E<gt>B<Unbusy>.
 
+=item I<$widget>-E<gt>B<caret>( I<?-x x?, ?-y y?, ?-height height? );
+
+Sets and queries the caret location for the display of the specified
+Tk window window.  The caret is the per-display cursor location used
+for indicating global focus (e.g. to comply with Microsoft
+Accessibility guidelines), as well as for location of the
+over-the-spot XIM (X Input Methods) or Windows IME windows. If no
+options are specified, the last values used for setting the caret are
+return in option-value pair format.  -x and -y represent
+window-relative coordinates, and -height is the height of the current
+cursor location, or the height of the specified window if none is
+given.
 
 =item I<$widget>-E<gt>B<cells>
 
@@ -603,6 +623,21 @@ If you need the true width immediately after creating a widget,
 invoke B<update> to force the geometry manager to arrange it,
 or use I<$widget>-E<gt>B<reqwidth> to get the window's requested width
 instead of its actual width.
+
+=item  I<$widget>-E<gt>B<useinputmethods>( ?boolean? );
+
+Sets and queries the state of whether Tk should use XIM (X Input
+Methods) for filtering events.  The resulting state is returned.
+XIM  is  used  in some locales (ie: Japanese, Korean), to handle
+special input devices.  This feature is only significant  on  X.
+If  XIM support is not available, this will always return 0.
+If  the  boolean  argument  is  omitted,  the  current  state is
+returned.  This is turned on by default for the main display.   
+
+=item I<$widget>-E<gt>B<windowingsystem>;
+
+Returns the current Tk windowing system, one of B<x11> (X11-based),
+B<win32> (MS Windows), B<classic> (Mac OS Classic), or B<aqua> (Mac OS  X Aqua).
 
 =item I<$widget>-E<gt>B<x>
 

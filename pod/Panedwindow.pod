@@ -180,7 +180,7 @@ the following forms:
 Return a list containing the x and y coordinates of the most recent
 proxy location.
 
-=item I<pathname >B<proxyForget>;
+=item I<$widget>-E<gt>B<proxyForget>;
 
 Remove the proxy from the display.
 

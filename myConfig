@@ -39,7 +39,7 @@ if ($] >= 5.005)
   # Add PPM support stuff
   push(@macro,
        ABSTRACT => 'Tk - a Graphical User Interface Toolkit',
-       AUTHOR   => 'nick@ni-s.u-net.com (Nick Ing-Simmons)'
+       AUTHOR   => 'nick@ing-simmons.net (Nick Ing-Simmons)'
       );
   my $arch = ($^O eq 'MSWin32') ? $ENV{'PROCESSOR_ARCHITECTURE'} : $Config{'archname'};
   push(@ARGV,"BINARY_LOCATION=$arch/Tk$VERSION-PPM.tar.gz");
@@ -355,6 +355,10 @@ if ($win_arch eq 'x') {
         $define{USE_XFT_FONTS} = 1;
         $xlib .= " -lXft";
         $xtra = ' -lfontconfig';
+       }
+      else
+       {
+	warn "Xft and/or fontconfig libraries and/or includes are missing\n";
        }
      }
     else

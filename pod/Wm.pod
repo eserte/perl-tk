@@ -46,6 +46,37 @@ of I<minNumer>, I<minDenom>, I<maxNumer>, and I<maxDenom>
 (if no aspect restrictions are in effect, then an empty string is
 returned).
 
+=item I<$widget>-E<gt>B<attributes>( I<?args?> );
+
+This subcommand returns or  sets  platform  specific  attributes
+associated with a window.
+
+=over 4
+
+=item I<$widget>-E<gt>B<attributes>;
+
+Returns a list of the  platform specific  flags  and  their  values. 
+
+=item I<$widget>-E<gt>B<attributes>( I<?option?> );
+
+Returns  the  value for the specific option.
+
+=item I<$widget>-E<gt>B<attributes>( I<?option value option value...?> );
+
+Sets one or more of the values. The values are as follows:
+
+On Windows, -disabled gets or sets whether the window  is  in  a 
+disabled state. -toolwindow gets or sets the style of the window 
+to toolwindow (as defined in the MSDN). -topmost  gets  or  sets 
+whether  this is a topmost window (displays above all other win- 
+dows).                                                           
+
+On Macintosh, there are currently no special attribute values.
+
+On Unix, there are currently no special attribute values.        
+
+=back
+
 =item I<$toplevel>-E<gt>B<client>(?I<name>?)
 
 If I<name> is specified, this method stores I<name> (which
@@ -429,6 +460,20 @@ Otherwise it returns B<user> or $widget to indicate the
 source of the window's current size, or an empty string if
 no source has been specified yet.  Most window managers interpret
 ``no source'' as equivalent to B<program>.
+
+=item I<$toplevel>-E<gt>B<stackorder>( I<?isabove|isbelow $toplevel?> );
+
+The stackorder command returns a list  of  toplevel  windows  in
+stacking  order,  from lowest to highest. When a single toplevel
+window is passed, the returned list recursively includes all  of
+the  window's  children that are toplevels. Only those toplevels
+that are currently mapped  to  the  screen  are  returned.   The
+stackorder command can also be used to determine if one toplevel
+is positioned above or below a second toplevel.  When two window
+arguments  separated  by either isabove or isbelow are passed, a
+boolean result indicates whether or not the first window is
+currently above or below the second window in the stacking order.
+
 
 =item I<$toplevel>-E<gt>B<state>(?I<newstate>?)
 

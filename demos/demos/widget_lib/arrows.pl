@@ -59,8 +59,8 @@ sub arrows {
 	    }, $_->[1]],
         );
     }
-    $c->bind(qw/box <B1-Enter>/ => undef);
-    $c->bind(qw/box <B1-Leave>/ => undef);
+    $c->bind(qw/box <B1-Enter>/ => 'NoOp');
+    $c->bind(qw/box <B1-Leave>/ => 'NoOp');
 
     # Bindings that select one of the 3 tiny resize boxes' "move code".
 

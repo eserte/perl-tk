@@ -11,7 +11,7 @@ my ($vis) = grep(!/\b8\b/,grep(/truecolor/,$mw->visualsavailable));
 my @args = ();
 if ($vis)
  {
-  print $vis,"\n";
+  # print $vis,"\n";
   $mw->destroy;
   $mw = MainWindow->new(-visual => $vis);
  }
@@ -51,12 +51,16 @@ tkjpeg - simple JPEG viewer using perl/Tk
 
 =head1 DESCRIPTION
 
-Very simplistic image viewer that loads JPEG image, and puts it into a
+Very simplistic image viewer that loads JPEG image, (well actually
+anything for which Photo has a handler) and puts it into a
 Label for display.
+
+It tries to find a fullcolour visual to use if display is deeper than
+8-bit. (On 8-bit it uses a 4/4/4 palette.)
 
 =head1 AUTHOR
 
-Nick Ing-Simmons <nick@ni-s.u-net.com>
+Nick Ing-Simmons <nick@ing-simmons.net>
 
 =cut
 

@@ -2362,6 +2362,19 @@ parts).  Further <Proir>, <Next>, <Home> and <End>.  These
 bindings allow you to navigate the same way as in other
 widgets that can scroll.
 
+=head1 Perl/Tk Methods
+
+The following methods are added as perl code:
+
+=over 4
+
+=item $canvas->get_corners
+
+Returns the bounding box in Canvas coordinates of the visible portion
+of the Canvas. (Written by Slaven Rezic.)
+
+=back
+
 =head1 CREDITS
 
 Tk's canvas widget is a blatant ripoff of ideas from Joel Bartlett's

@@ -82,7 +82,11 @@ LangCheckDC(const char *file,int line)
 
 
 extern Tk_PhotoImageFormat	imgFmtBMP;
+#if 0
 extern Tk_PhotoImageFormat	imgFmtGIF;
+#else
+extern Tk_PhotoImageFormat	tkImgFmtGIF;
+#endif
 extern Tk_PhotoImageFormat	imgFmtXBM;
 extern Tk_PhotoImageFormat	imgFmtXPM;
 
@@ -5496,7 +5500,11 @@ _((pTHX))
 
  Tk_CreateImageType(&tkPhotoImageType);
  Tk_CreatePhotoImageFormat(&tkImgFmtPPM);
+#if 0
  Tk_CreatePhotoImageFormat(&imgFmtGIF);
+#else
+ Tk_CreatePhotoImageFormat(&tkImgFmtGIF);
+#endif
  Tk_CreatePhotoImageFormat(&imgFmtXBM);
  Tk_CreatePhotoImageFormat(&imgFmtXPM);
  Tk_CreatePhotoImageFormat(&imgFmtBMP);

@@ -65,6 +65,22 @@ proper boolean value.  If false, the B<relief> option is
 ignored and the widget's relief is always sunken if the widget is
 selected and raised otherwise.
 
+=item Command-Line Name: B<-offrelief>
+
+=item Database Name:  B<offRelief>
+
+=item Database Class: B<OffRelief>
+
+Specifies the relief for the checkbutton when the indicator is not
+drawn and the checkbutton is off.  The default value is B<raised>.  By
+setting this option to B<flat> and setting
+B<-indicatoron false -overrelief raised>, the effect is achieved of
+having a flat button
+that raises on mouse-over and which is depressed when activated.  This
+is the behavior typically exhibited by the Bold, Italic, and
+Underline checkbuttons on the toolbar of a word-processor, for
+example.
+
 =item Name:	B<offValue>
 
 =item Class:	B<Value>
@@ -82,6 +98,19 @@ this button is deselected.  Defaults to ``0''.
 
 Specifies value to store in the button's associated variable whenever
 this button is selected.  Defaults to ``1''.
+
+=item Command-Line Name: B<-overrelief>
+
+=item Database Name:  B<overRelief>
+
+=item Database Class: B<OverRelief>
+
+Specifies  an alternative relief for the button, to be used when
+the mouse cursor is over the widget.  This option can be used to
+make  toolbar  buttons,  by configuring B<-relief flat -overrelief
+raised>.  If the value of this option is the empty  string,  then
+no  alternative relief is used when the mouse cursor is over the
+button.  The empty string is the default value.
 
 =item Name:	B<selectColor>
 

@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::Frame);
 
@@ -188,7 +188,7 @@ sub yview { my $w = shift; my $c = shift; $w->$c(@_) }
 sub FocusIn
 {
  my ($w) = @_;
- print 'Focus ',$w->PathName,"\n";
+# print 'Focus ',$w->PathName,"\n";
 }
 
 sub ClassInit

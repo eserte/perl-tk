@@ -21,7 +21,7 @@ require Tk::Menu::Item;
 
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #20 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #21 $ =~ /\D(\d+)\s*$/;
 
 use strict;
 
@@ -1050,7 +1050,7 @@ sub tkMenuDup
  foreach my $event ($src->bind)
   {
    my $cb = $src->bind($event);
-   print "$event => $cb\n";
+#   print "$event => $cb\n";
    $dst->bind($event,$cb->Substitute($src,$dst));
   }
  return $dst;

@@ -5,7 +5,7 @@ require DirHandle;
 use Cwd;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Dirlist.pm#4 $
+$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Dirlist.pm#5 $
 
 use base  qw(Tk::Derived Tk::HList);
 use strict;
@@ -46,7 +46,7 @@ sub fullpath
   {
    warn "Cannot cd to $path:$!"
   }
- print "$path\n";
+# print "$path\n";
  return $path;
 }
 
@@ -74,7 +74,7 @@ sub AddDir
     }
    unless ($w->info('exists' => $path))
     {
-     print "Add $path\n";
+#     print "Add $path\n";
      $w->add($path,-image => $w->getimage('folder'), -text => $name);
     }
   }

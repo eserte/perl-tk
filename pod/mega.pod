@@ -4,35 +4,46 @@
 ## Copyright (c) 1997-1998 Achim Bohnet. All rights reserved.
 ## You can redistribute this document and/or modify it under the
 ## same terms as Perl itself.
+##
+## Update for Tk804.025, Steve Lidie, 2004/01/11.
 
 =head1 NAME
 
-Tk::mega - perl/Tk support to write widgets in perl
+Tk::mega - Perl/Tk support for writing widgets in pure Perl
 
 =for category Derived Widgets
 
 =head1 SYNOPSIS
 
-S<    >B<package Tk::>I<Whatever>;
+Define the widget's new class name:
 
-S<    >B<Construct Tk::>I<ValidFor> I<'Whatever'>;
-
-S<    >B<sub ClassInit> { I<my ($mega, $args) = @_; ...> }
+S<    >B<package Tk::>I<MyNewWidget>;
 
 For composite widget classes:
 
-S<    >B<sub Populate> { I<my ($composite, $args) = @_; ...> }
+S<    >B<use base qw/ Tk::container />; # where B<container> is I<Frame> or I<Toplevel>
 
 For derived widget classes:
 
-S<    >B<sub InitObject> { I<my ($derived, $args) = @_; ...> }
+S<    >B<use base qw/ Tk::Derived Tk::DerivedWidget /;>
+
+Install the new widget in Tk's namespace and establish class and instance
+constructors.
+
+S<    >B<Construct Tk::>I<Widget> I<'MyNewWidget'>;
+
+S<    >B<sub ClassInit> { I<my ($self, $args) = @_; ...> }
+
+S<    >B<sub Populate> { I<my ($self, $args) = @_; ...> }
 
 =head1 DESCRIPTION
 
-The goal of the mega widget support of perl/Tk is to make it
-easy to write mega widgets that obey the same protocol and
-interface that the Tk core widgets support.  There are two
-kinds of mega widgets:
+The goal of the mega-widget support of Perl/Tk is to make it
+easy to write mega-widgets that obey the same protocol and
+interface that the Tk core widgets support.
+I<For mega-widget sample code please run the B<widget> demonstration program and go to the section B<Sample Perl Mega-Widgets>.>
+
+There are two kinds of mega-widgets:
 
 =over 4
 
@@ -45,11 +56,11 @@ A well known example is the file selection box.
 =item * Derived Widgets
 
 A derived widget adds/modifies/removes properties and methods
-from a single widget (this widget may itself be a mega widget).
+from a single widget (this widget may itself be a mega-widget).
 
 =back
 
-=head1 MEGA WIDGET SUPPORT
+=head1 MEGA-WIDGET SUPPORT
 
 =head2 Advertise
 
@@ -57,13 +68,13 @@ Give a subwidget a symbolic name.
 
 Usage:
 
-S<    >I<$cw>-E<gt>B<Advertise>(B<name>=E<gt>I<$widget>);
+S<    >I<$self>-E<gt>B<Advertise>(B<name>=E<gt>I<$widget>);
 
-Gives a subwidget I<$widget> of the composite widget I<$cw> the
+Gives a subwidget I<$widget> of the mega-widget I<$self> the
 name B<name>.  One can retrieve the reference of an advertised subwidget
 with the L<Subwidget|"Subwidget"> method.
 
-B<Comment:> Mega Widget Writers: Please make sure to document the
+B<Comment:> Mega-Widget Writers: Please make sure to document the
 advertised widgets that are intended for I<public> use.
 If there are none, document this fact, e.g.:
 
@@ -77,16 +88,16 @@ Invoke a callback specified with an option.
 
 Usage:
 
-S<    >I<$mega>-E<gt>B<Callback>(I<-option> ?,I<args> ...?);
+S<    >I<$self>-E<gt>B<Callback>(I<-option> ?,I<args> ...?);
 
 B<Callback> executes the L<callback|Tk::callbacks> defined with
-I<$mega>-E<gt>B<ConfigSpecs>(I<-option>, [B<CALLBACK>, ...]);
+I<$self>-E<gt>B<ConfigSpecs>(I<-option>, [B<CALLBACK>, ...]);
 If I<args> are given they are passed to the callback. If
 I<-option> is not defined it does nothing.
 
 =head2 ClassInit
 
-Initialization of the mega widget class.
+Initialization of the mega-widget class.
 
 Usage:
 
@@ -117,9 +128,9 @@ Convenience function to create subwidgets.
 Usage:
 
     $cw->Component('Whatever', 'AdvertisedName',
-		   -delegate => ['method1', 'method2', ...],
-		   ... Whatever widget options ...,
-		  );
+        -delegate => ['method1', 'method2', ...],
+        ... more widget options ...,
+    );
 
 B<Component> does several things for you with one call:
 
@@ -144,24 +155,24 @@ Defines options and their treatment
 Usage:
 
     $cw->ConfigSpecs(
-	    -option => [ where, dbname, dbclass, default],
-	    ...,
-	    DEFAULT => [where],
-	    );
+        -option => [ where, dbname, dbclass, default],
+        ...,
+        DEFAULT => [where],
+    );
 
-Defines the options of a mega widget and what actions
+Defines the options of a mega-widget and what actions
 are triggered by configure/cget of an option
 (see L<Tk::ConfigSpecs> and L<Tk::Derived> for details).
 
 =head2 Construct
 
-Make the new mega widget known to B<Tk>.
+Make the new mega-widget known to B<Tk>.
 
 Usage:
 
 S<    >B<Construct> I<baseclass> B<'Name'>;
 
-B<Construct> declares the new widget class so that your mega widget
+B<Construct> declares the new widget class so that your mega-widget
 works like normal Perl/Tk widgets.
 
 Examples:
@@ -178,11 +189,11 @@ I<$isamenu>-E<gt>I<MyItem>.
 
 =head2 CreateArgs
 
-Mess with options before any widget is created
+Process options before any widget is created:
 
 S<    >B<sub CreateArgs> { I<my ($package, $parent, $args) = @_; ...; return @newargs;> }
 
-I<$package> is the package of the mega widget (e.g., B<Tk::MyText>,
+I<$package> is the package of the mega-widget (e.g., B<Tk::MyText>,
 I<$parent> the parent of the widget to be created and $args the hash
 reference to the options specified in the widget constructor call.
 
@@ -191,32 +202,36 @@ B<CreateArgs>.
 
 =head2 Delegates
 
-Redirect a method of the mega widget to a subwidget of
+Redirect a method of the mega-widget to a subwidget of
 the composite widget
 
 Usage:
 
     $cw->Delegates(
-		'method1' => $subwidget1,
-		'method2' => 'advertived_name',
-		...,
-		'Construct' => $subwidget2,
-		'DEFAULT'   => $subwidget3,
-		);
+        'method1' => $subwidget1,
+        'method2' => 'advertived_name',
+        ...,
+        'Construct' => $subwidget2,
+        'DEFAULT'   => $subwidget3,
+    );
 
 The B<'Construct'> delegation has a special meaning.  After
 'Construct' is delegated all Widget constructors are redirected.
 E.g. after
 
-S<    >I<$mega>-E<gt>B<Delegates>(B<'Construct'>=E<gt>I<$subframe>);
+S<    >I<$self>-E<gt>B<Delegates>(B<'Construct'>=E<gt>I<$subframe>);
 
-a I<$mega>-E<gt>B<Button> does really a I<$subframe>-E<gt>B<Button>
-so the created button is a child of I<$subframe> and not I<$mega>.
+a I<$self>-E<gt>B<Button> does really a I<$subframe>-E<gt>B<Button>
+so the created button is a child of I<$subframe> and not I<$self>.
 
 B<Comment:> Delegates works only with methods that I<$cw> does
 not have itself.
 
 =head2 InitObject
+
+I<Note: this method should not, in general, be used, as it has been
+superceeded by B<Populate> and specifying B<Tk::Derived> as one of the base
+classes.>
 
 Defines construction and interface of derived widgets.
 
@@ -232,7 +247,7 @@ baseclass widget and I<$args> is the reference to a hash of
 I<-option-value> pairs.
 
 B<InitObject> is almost identical to L<Populate|"Populate"> method.
-B<Populate> does some more 'magic' things useful for mega widgets
+B<Populate> does some more 'magic' things useful for mega-widgets
 with several widgets.
 
 Don't forget to call I<$derived>-E<gt>B<SUPER::InitObject>(I<$args>) in
@@ -240,7 +255,7 @@ B<InitObject>.
 
 =head2 OnDestroy
 
-Define callback invoked when widget is destroyed.
+Define a callback invoked when the mega-widget is destroyed.
 
 Usage:
 
@@ -252,7 +267,7 @@ for special cleanup actions.  It differs from a normal B<destroy>
 in that all the widget's data structures are still intact.
 
 B<Comment:> This method could be used with any widgets not just
-for mega widgets.  It's listed here because of it's usefulness.
+for mega-widgets.  It's listed here because of it's usefulness.
 
 =head2 Populate
 
@@ -262,11 +277,11 @@ widget.
 Usage:
 
     sub Populate {
-	my ($mega, $args) = @_;
+	my ($self, $args) = @_;
 	...
     }
 
-where I<$mega> is the widget reference of the already created baseclass
+where I<$self> is the widget reference of the already created baseclass
 widget and I<$args> is the
 reference to a hash of I<-option-value> pairs.
 
@@ -283,9 +298,9 @@ composite internal data
 
 Usage:
 
-S<    >I<$hashref> = I<$mega>-E<gt>B<privateData>();
+S<    >I<$hashref> = I<$self>-E<gt>B<privateData>();
 
-S<    >I<$another> = I<$mega>-E<gt>B<privateData>(I<unique_key>|I<package>);
+S<    >I<$another> = I<$self>-E<gt>B<privateData>(I<unique_key>|I<package>);
 
 =head2 Subwidget
 
@@ -301,7 +316,7 @@ Returns the widget reference(s) of the subwidget known under the given
 name(s). Without arguments, return all known subwidgets of I<$cw>. See
 L<Advertise|"Advertise"> method how to define I<name> for a subwidget.
 
-B<Comment:> Mega Widget Users: Use B<Subwidget> to get I<only>
+B<Comment:> Mega-Widget Users: Use B<Subwidget> to get I<only>
 documented subwidgets.
 
 =head1 PITFALLS
@@ -332,12 +347,11 @@ any of the methods listed in L<Tk::Widget|Tk::Widget>.
 A common problematic method is B<bind>.  In this case
 one as to explicitely redirect the method.
 
-  sub bind
-    {
-      my $mega = shift;
-      my $to = $mega->privateData->{'my_bind_target'};
+  sub bind {
+      my $self = shift;
+      my $to = $self->privateData->{'my_bind_target'};
       $to->bind(@_);
-    }
+  }
 
 =item * privateData
 
@@ -361,7 +375,7 @@ One has to use $cw->B<Composite>(B<Scrl>I<Kind> =E<gt> B<'name'>, ...);
 
 =head1 MISSING
 
-Of course perl/Tk does not define support function for
+Of course Perl/Tk does not define support function for
 all necessities.  Here's a short list of things you have to
 handle yourself:
 
@@ -369,21 +383,21 @@ handle yourself:
 
 =item *
 
-no support to define construction-time only options.
+No support to define construction-time only options.
 
 =item *
 
-no support to remove an option that is known to the
+No support to remove an option that is known to the
 base widget.
 
 =item *
 
-it's hard to define B<undef> as fallback for an widget
+It's hard to define B<undef> as fallback for an widget
 option that is not already B<undef>.
 
 =item *
 
-Frame in perl/Tk carries magic and overhead not needed
+Frame in Perl/Tk carries magic and overhead not needed
 for composite widget class definition.
 
 =item *

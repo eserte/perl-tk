@@ -36,9 +36,22 @@ See L<Tk::options> for details of the standard options.
 
 =item Switch:	B<-command>
 
-Specifies a L<perl/Tk callback|Tk::callbacks> to associate with the button.  This command
-is typically invoked when mouse button 1 is released over the button
-window.
+Specifies a L<Perl/Tk callback|Tk::callbacks> to associate with the
+button.  This command is typically invoked when mouse button 1 is
+released over the button window.
+
+=item Command-Line Name: B<-compound>
+
+=item Database Name:  B<compound>
+
+=item Database Class: B<Compound>
+
+Specifies whether the button should display both an image and text,
+and if so, where the image should be placed relative to the text.
+Valid values for this option are B<bottom>, B<center>, B<left>,
+B<none>, B<right> and B<top>.  The default value is B<none>, meaning
+that the button will display either an image or text, depending on the
+values of the -image and -bitmap options.
 
 =item Name:	B<default>
 
@@ -70,6 +83,19 @@ screen units (i.e. any of the forms acceptable to B<Tk_GetPixels>);
 for text it is in lines of text.
 If this option isn't specified, the button's desired height is computed
 from the size of the image or bitmap or text being displayed in it.
+
+=item Command-Line Name: B<-overrelief>
+
+=item Database Name:  B<overRelief>
+
+=item Database Class: B<OverRelief>
+
+Specifies  an alternative relief for the button, to be used when
+the mouse cursor is over the widget.  This option can be used to
+make  toolbar  buttons,  by configuring B<-relief flat -overrelief
+raised>.  If the value of this option is the empty  string,  then
+no  alternative relief is used when the mouse cursor is over the
+button.  The empty string is the default value.
 
 =item Name:	B<state>
 
