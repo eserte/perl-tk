@@ -105,6 +105,8 @@ ImgDestroy(image)
 XImage *image;
 {
     if (image) {
+	if (image->data)
+	    ckfree(image->data);
 	ckfree(image);
     }
     return 0;

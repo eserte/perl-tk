@@ -235,8 +235,10 @@ pTk/tkCmds\.c$
 pTk/tkColor\.c$
 pTk/tkConfig\.c$
 pTk/tkConsole\.c$
+pTk/tkConsole41\.c$
 pTk/tkConsole42\.c$
 pTk/tkConsole80a1\.c$
+pTk/tkConsole80b1\.c$
 pTk/tkCursor\.c$
 pTk/tkEntry\.c$
 pTk/tkError\.c$

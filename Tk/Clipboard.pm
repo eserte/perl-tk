@@ -15,7 +15,7 @@ sub clipboardCopy
  my $w = shift;
  if ($w->IS($w->SelectionOwner))
   {
-   $w->clipboardSet('--',$w->SelectionGet);
+   eval {local $SIG{'__DIE__'}; $w->clipboardSet('--',$w->SelectionGet) };
   }
 }
 
@@ -24,7 +24,7 @@ sub clipboardCut
  my $w = shift;
  if ($w->IS($w->SelectionOwner))
   {
-   $w->clipboardSet('--',$w->SelectionGet);
+   eval {local $SIG{'__DIE__'}; $w->clipboardSet('--',$w->SelectionGet) };
    $w->deleteSelected;
   }
 }
@@ -55,22 +55,31 @@ sub clipboardPaste
 
 sub clipboardKeysyms
 {
- my $class = shift;
+ my @class = (); 
  my $mw    = shift;
+ if (ref $mw)
+  {
+   $mw = $mw->DelegateFor('bind');
+  }
+ else
+  {
+   push(@class,$mw);
+   $mw = shift;
+  }
  if (@_)
   {
    my $copy  = shift;
-   $mw->Tk::bind($class,"<$copy>",'clipboardCopy')   if (defined $copy);
+   $mw->Tk::bind(@class,"<$copy>",'clipboardCopy')   if (defined $copy);
   }
  if (@_)
   {
    my $cut   = shift;
-   $mw->Tk::bind($class,"<$cut>",'clipboardCut')     if (defined $cut);
+   $mw->Tk::bind(@class,"<$cut>",'clipboardCut')     if (defined $cut);
   }
  if (@_)
   {
    my $paste = shift;                                                
-   $mw->Tk::bind($class,"<$paste>",'clipboardPaste') if (defined $paste);
+   $mw->Tk::bind(@class,"<$paste>",'clipboardPaste') if (defined $paste);
   }
 }
 

@@ -231,7 +231,7 @@ static int		Tix_TLGetNeighbor _ANSI_ARGS_((
 			    int type, int argc, char **argv));
 static int		Tix_TranslateIndex _ANSI_ARGS_((
 			    WidgetPtr wPtr, Tcl_Interp *interp, Arg string,
-			    int * index));
+			    int * index, int isInsert));
 static int		Tix_TLDeleteRange _ANSI_ARGS_((
 			    WidgetPtr wPtr, ListEntry * fromPtr,
 			    ListEntry *toPtr));
@@ -330,12 +330,13 @@ Tix_TListCmd(clientData, interp, argc, argv)
     wPtr->resizing 		= 0;
     wPtr->hasFocus 		= 0;
     wPtr->selectMode		= NULL;
-    wPtr->anchor 		= 0;
-    wPtr->active 		= 0;
-    wPtr->dropSite 		= 0;
-    wPtr->dragSite 		= 0;
-    wPtr->sizeCmd		= 0;
-    wPtr->browseCmd		= 0;
+    wPtr->seeElemPtr 		= NULL;
+    wPtr->anchor 		= NULL;
+    wPtr->active 		= NULL;
+    wPtr->dropSite 		= NULL;
+    wPtr->dragSite 		= NULL;
+    wPtr->sizeCmd		= NULL;
+    wPtr->browseCmd		= NULL;
     wPtr->takeFocus		= NULL;
     wPtr->orientUid		= NULL;
     wPtr->serial		= 0;
@@ -518,8 +519,8 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 
     Tix_SetDefaultStyleTemplate(wPtr->dispData.tkwin, &stTmpl);
 
-
-    /* Probably the -font or -width or -height options have changed. Let's
+    /*
+     * Probably the -font or -width or -height options have changed. Let's
      * make geometry request
      */
     MakeGeomRequest(wPtr);
@@ -795,6 +796,7 @@ WidgetComputeGeometry(clientData)
 
     RedrawWhenIdle(wPtr);
 }
+
 static void
 MakeGeomRequest(wPtr)
     WidgetPtr wPtr;
@@ -837,6 +839,9 @@ static void
 ResizeWhenIdle(wPtr)
     WidgetPtr wPtr;
 {
+    if (wPtr->redrawing) {
+	CancelRedrawWhenIdle(wPtr);
+    }
     if (!wPtr->resizing) {
 	wPtr->resizing = 1;
 	Tcl_DoWhenIdle(WidgetComputeGeometry, (ClientData)wPtr);
@@ -884,6 +889,12 @@ static void
 RedrawWhenIdle(wPtr)
     WidgetPtr wPtr;
 {
+    if (wPtr->resizing) {
+	/*
+	 * Resize will eventually call redraw.
+	 */
+	return;
+    }
     if (!wPtr->redrawing && Tk_IsMapped(wPtr->dispData.tkwin)) {
 	wPtr->redrawing = 1;
 	Tcl_DoWhenIdle(WidgetDisplay, (ClientData)wPtr);
@@ -1045,6 +1056,28 @@ FreeEntry(wPtr, chPtr)
     WidgetPtr wPtr;
     ListEntry * chPtr;
 {
+
+    if (wPtr->seeElemPtr == chPtr) {
+	/*
+	 * This is the element that should be visible the next time
+	 * we draw the window. Adjust the "to see element" to an element
+	 * that is close to it.
+	 */
+	if (chPtr->next != NULL) {
+	    wPtr->seeElemPtr = chPtr->next;
+	} else {
+	    ListEntry *p;
+
+	    wPtr->seeElemPtr = NULL;
+	    for (p=(ListEntry*)wPtr->entList.head; p; p=p->next) {
+		if (p->next == chPtr) {
+		    wPtr->seeElemPtr = p;
+		    break;
+		}
+	    }
+	}
+    }
+
     if (wPtr->anchor == chPtr) {
 	wPtr->anchor = NULL;
     }
@@ -1100,7 +1133,7 @@ Tix_TLInsert(clientData, interp, argc, argv)
      */
 
     /* (1.1) Find out where */
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &at) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, args[0], &at, 1) != TCL_OK) {
 	code = TCL_ERROR; goto done;
     }
 
@@ -1219,7 +1252,7 @@ Tix_TLIndex(clientData, interp, argc, argv)
     int index;
     char buff[100];
 
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &index) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, args[0], &index, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1276,6 +1309,14 @@ Tix_TLInfo(clientData, interp, argc, argv)
 	}
 	return TCL_OK;
     }
+    else if (strncmp(argv[0], "size", len)==0) {
+	char buff[100];
+
+	sprintf(buff, "%d", wPtr->entList.numItems);
+	Tcl_AppendResult(interp, buff, NULL);
+
+	return TCL_OK;
+    }
     else if (strncmp(argv[0], "up", len)==0) {
 	return Tix_TLGetNeighbor(wPtr, interp, TIX_UP,    argc-1, argv+1);
     }
@@ -1288,11 +1329,13 @@ Tix_TLInfo(clientData, interp, argc, argv)
 }
 
 static int
-Tix_TranslateIndex(wPtr, interp, string, index)
+Tix_TranslateIndex(wPtr, interp, string, index, isInsert)
     WidgetPtr wPtr;		/* TList widget record. */
     Tcl_Interp *interp;		/* Current interpreter. */
     Arg string;		/* String representation of the index. */
     int * index;		/* Returns the index value (0 = 1st element).*/
+    int isInsert;		/* Is this function called by an "insert"
+				 * operation? */
 {
     if (strcmp(LangString(string), "end") == 0) {
 	*index = wPtr->entList.numItems;
@@ -1308,12 +1351,31 @@ Tix_TranslateIndex(wPtr, interp, string, index)
 	}
     }
 
-    if (*index > wPtr->entList.numItems) {
-	/* By default add it to the end, just to follow what TK
-	 * does for the Listbox widget
-	 */
-	*index = wPtr->entList.numItems;
+
+    /*
+     * The meaning of "end" means:
+     *     isInsert:wPtr->entList.numItems
+     *    !isInsert:wPtr->entList.numItems-1;
+     */
+
+    if (isInsert) {
+	if (*index > wPtr->entList.numItems) {
+	    /*
+	     * By default add it to the end, just to follow what TK
+	     * does for the Listbox widget
+	     */
+	    *index = wPtr->entList.numItems;
+	}
+    } else {
+	if (*index >= wPtr->entList.numItems) {
+	    /*
+	     * By default add it to the end, just to follow what TK
+	     * does for the Listbox widget
+	     */
+	    *index = wPtr->entList.numItems - 1;
+	}
     }
+
     if (*index < 0) {
 	*index = 0;
     }
@@ -1338,7 +1400,7 @@ static int Tix_TLGetNeighbor(wPtr, interp, type, argc, argv)
 	Tix_ArgcError(interp, argc+3, argv-3, 3, "index");
     }
 
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &index) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, args[0], &index, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -1492,8 +1554,7 @@ Tix_TLDelete(clientData, interp, argc, argv)
 	goto done;
     }
 
-    if (Tix_TLGetFromTo(interp, wPtr, argc, argv, &fromPtr, &toPtr)
-	!= TCL_OK) {
+    if (Tix_TLGetFromTo(interp, wPtr, argc, argv, &fromPtr, &toPtr)!= TCL_OK) {
 	code = TCL_ERROR;
 	goto done;
     }
@@ -1748,11 +1809,11 @@ Tix_TLGetFromTo(interp, wPtr, argc, argv, fromPtr_ret, toPtr_ret)
     ListEntry * toPtr;
     int from, to, tmp;
 
-    if (Tix_TranslateIndex(wPtr, interp, args[0], &from) != TCL_OK) {
+    if (Tix_TranslateIndex(wPtr, interp, args[0], &from, 0) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (argc == 2) {
-	if (Tix_TranslateIndex(wPtr, interp, args[1], &to) != TCL_OK) {
+	if (Tix_TranslateIndex(wPtr, interp, args[1], &to, 0) != TCL_OK) {
 	    return TCL_ERROR;
 	}
     } else {
@@ -1916,11 +1977,28 @@ Tix_TLSee(clientData, interp, argc, argv)
     int argc;			/* Number of arguments. */
     char **argv;		/* Argument strings. */
 {
+    WidgetPtr wPtr = (WidgetPtr) clientData;
+    ListEntry * chPtr, * dummy;
+
+    if (argc == 1) {
+	if (Tix_TLGetFromTo(interp, wPtr, 1, argv, &chPtr, &dummy) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	if (chPtr != NULL) {
+	    wPtr->seeElemPtr = chPtr;
+	    RedrawWhenIdle(wPtr);
+	}
+    } else {
+	Tcl_AppendResult(interp, "wrong # of arguments, must be: ",
+		Tk_PathName(wPtr->dispData.tkwin), " ", argv[-1],
+		" index", NULL);
+    }
+
     return TCL_OK;
 }
 
 /*----------------------------------------------------------------------
- * "anchor", "dragsite" and "dropsire" sub commands --
+ * "anchor", "dragsite" and "dropsite" sub commands --
  *
  *	Set/remove the anchor element
  *----------------------------------------------------------------------
@@ -2225,6 +2303,7 @@ static void ResizeRows(wPtr, winW, winH)
  *	Redraw the rows, according to the "offset: in both directions
  *----------------------------------------------------------------------
  */
+
 static void
 RedrawRows(wPtr, pixmap)
     WidgetPtr wPtr;
@@ -2235,6 +2314,7 @@ RedrawRows(wPtr, pixmap)
     ListEntry * chPtr;
     int i, j;
     int total;
+    int windowSize;
 
     if (wPtr->entList.numItems == 0) {
 	return;
@@ -2243,12 +2323,52 @@ RedrawRows(wPtr, pixmap)
     if (wPtr->isVertical) {
 	i = 0;		/* Column major, 0,0 -> 0,1 -> 0,2 ... -> 1,0 */
 	j = 1;
+	windowSize = Tk_Width(wPtr->dispData.tkwin);
     } else {
 	i = 1;		/* Row major, 0,0 -> 1,0 -> 2,0 ... -> 0,1 */
 	j = 0;
+	windowSize = Tk_Height(wPtr->dispData.tkwin);
     }
 
     p[i] = wPtr->highlightWidth + wPtr->borderWidth;
+    windowSize -= 2*p[i];
+
+    if (windowSize < 1) {
+	windowSize = 1;
+    }
+
+    if (wPtr->seeElemPtr != NULL) {
+	/*
+	 * Adjust the scrolling so that the given entry is visible.
+	 */
+	int start = 0;		/* x1 position of the element to see. */
+	int size = 0;		/* width of the element to see. */
+	int old = wPtr->scrollInfo[i].offset;
+
+	for (r=0, n=0, chPtr=(ListEntry*)wPtr->entList.head; chPtr;
+		chPtr=chPtr->next, n++) {
+	    if (chPtr == wPtr->seeElemPtr) {
+		size = wPtr->rows[r].size[i];
+		break;
+	    }
+	    if (n == wPtr->rows[r].numEnt) {
+		n=0;
+		r++;
+		start += wPtr->rows[r].size[i];
+	    }
+	}
+
+	if (wPtr->scrollInfo[i].offset + windowSize > start + size) {
+	    wPtr->scrollInfo[i].offset = start + size - windowSize;
+	}
+	if (wPtr->scrollInfo[i].offset < start) {
+	    wPtr->scrollInfo[i].offset = start;
+	}
+	if (wPtr->scrollInfo[i].offset != old) {
+	    UpdateScrollBars(wPtr, 0);
+	}
+	wPtr->seeElemPtr = NULL;
+    }
 
     /* Search for a row that is (possibly partially) visible*/
     total=0; r=0;

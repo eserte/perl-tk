@@ -18,7 +18,7 @@
 #include "tkGlue.h"
 #include "tkGlue.m"
 
-#ifndef __WIN32__
+#if !defined(__WIN32__) && !defined(__PM__)
 extern int Tix_MwmCmd _ANSI_ARGS_((ClientData,Tcl_Interp *,int, Arg *));
 #endif
 
@@ -32,7 +32,7 @@ BOOT:
  {
   IMPORT_VTABLES;
   /* Initialize the display item types */
-#ifndef __WIN32__
+#if !defined(__WIN32__) && !defined(__PM__)
   Lang_TkCommand("mwm",Tix_MwmCmd);
 #endif
  }

@@ -31,6 +31,9 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <io.h>
+#ifdef __EMX__
+#   include <sys/types.h>
+#endif
 #include <sys/stat.h>
 #include <sys/timeb.h>
 #include <time.h>
@@ -39,7 +42,11 @@
 #    define strncasecmp strnicmp
 #    define hypot _hypot
 #else /* _MSC_VER */
-#    define strncasecmp strncmpi
+#    ifdef __EMX__
+#        define strncasecmp strnicmp
+#    else
+#        define strncasecmp strncmpi
+#    endif
 #endif /* _MSC_VER */
 
 #define NBBY 8

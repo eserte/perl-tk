@@ -3224,7 +3224,6 @@ int type;
  else
   {
    Tcl_SprintfResult(interp,"Not a reference %s",SvPV(sv,na));
-   abort();
   }
  return TCL_ERROR;
 }
@@ -4625,7 +4624,12 @@ Tcl_RegExp re;
 char *string;
 char *start;
 {
+#ifdef REXEC_COPY
+ return pregexec(re,string,string+strlen(string),start,0,
+                 Nullsv,NULL,REXEC_COPY);
+#else
  return pregexec(re,string,string+strlen(string),start,0,NULL,1);
+#endif
 }
 
 void 

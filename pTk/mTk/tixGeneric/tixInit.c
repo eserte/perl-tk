@@ -54,9 +54,6 @@ static Tix_TclCmd commands[] = {
 #endif
     {"tixNoteBookFrame",        Tix_NoteBookFrameCmd},
     {"tixRaiseWindow",          Tix_RaiseWindowCmd},
-#ifndef TK_8_0_OR_LATER
-    {"tixShellInput",           Tix_ShellInputCmd},
-#endif
     {"tixStringSub",		Tix_StringSubCmd},
     {"tixStrEq",		Tix_StrEqCmd},
     {"tixTmpLine",              Tix_TmpLineCmd},
@@ -64,10 +61,6 @@ static Tix_TclCmd commands[] = {
     {"tixUnmapWindow",          Tix_UnmapWindowCmd},
     {"tixWidgetClass",          Tix_ClassCmd},
     {"tixWidgetDoWhenIdle",     Tix_DoWhenIdleCmd},
-
-#if ((TCL_MAJOR_VERSION == 7) && (TCL_MINOR_VERSION == 5))
-    {"tixConsoleInit",		Tix_ConsoleInitCmd},
-#endif
 
 #ifndef TIX_VERSION_4_0_x
     {"tixTList",     		Tix_TListCmd},

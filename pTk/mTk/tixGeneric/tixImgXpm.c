@@ -859,7 +859,7 @@ ImgXpmConfigureInstance(instancePtr)
     if (instancePtr->pixmap != None) {
 	Tk_FreePixmap(Tk_Display(instancePtr->tkwin), instancePtr->pixmap);
     }
-    TixpXpmFreeInstanceData(instancePtr, 0);
+    TixpXpmFreeInstanceData(instancePtr, 0, Tk_Display(instancePtr->tkwin));
 
     if (instancePtr->colors != NULL) {
 	int i;
@@ -1115,7 +1115,7 @@ ImgXpmFree(clientData, display)
     if (instancePtr->pixmap != None) {
 	Tk_FreePixmap(display, instancePtr->pixmap);
     }
-    TixpXpmFreeInstanceData(instancePtr, 1);
+    TixpXpmFreeInstanceData(instancePtr, 1, display);
 
     if (instancePtr->colors != NULL) {
 	int i;

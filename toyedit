@@ -70,6 +70,12 @@ $mb->Menubutton(-text => '~Help', -side => 'right');
 
 $t->pack(-expand => 1, -fill => 'both');
 
-$t->Load($ARGV[0]) if (@ARGV);
+if (@ARGV) {
+    if (! -e $ARGV[0]) {
+        open(FILE,">$ARGV[0]") or die "Could not open $ARGV[0]: $!";
+        close(FILE) or die "There was trouble with $ARGV[0]: $!";
+    }
+    $t->Load($ARGV[0]);
+}
 
 MainLoop;

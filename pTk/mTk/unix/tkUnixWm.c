@@ -735,10 +735,16 @@ TkWmSetClass(winPtr)
  *----------------------------------------------------------------------
  */
 
-static int ErrorHandler(ClientData clientData, XErrorEvent *errEventPtr)
+#ifdef FOR_SYNC_DEBUGGING 
+static int ErrorHandler _ANSI_ARGS_((ClientData clientData, XErrorEvent *errEventPtr));
+static int 
+ErrorHandler(clientData,errEventPtr)
+ClientData clientData;
+XErrorEvent *errEventPtr;
 {
  abort();
 }
+#endif 
 
 
 	/* ARGSUSED */

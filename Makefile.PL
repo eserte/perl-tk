@@ -1,10 +1,11 @@
 use Cwd;
 use Config;
 no  lib '.';
+require 5.004;
 BEGIN 
  {
   $IsWin32   = $^O eq 'MSWin32';
-  $VERSION = '402.001';
+  $VERSION = '402.002';
 
   $win_arch = ($IsWin32) ? $^O : 'x';		# Currently 'x' and 'open32' supported
 
@@ -22,10 +23,12 @@ else
  {
   my $plibs = $Config{'libs'};
   my $libs  = "$xlib -lX11 -lpt";
+  my @try   = qw(-lsocket -lnsl -lm);
+  push(@try,'-lc') if $^O =~ /svr4/i;
   my $lib;
   # perl needs sockets and math library too 
   # so only include these if they made it through perl's Configure
-  foreach $lib (qw(-lsocket -lnsl -lm))
+  foreach $lib (@try)
    {
     $libs .= " $lib" if ($plibs =~ /$lib\b/);
    }

@@ -152,6 +152,7 @@ README.SCO
 README.SVR4
 README.Solaris
 README.linux
+README.os2
 README.ultrix
 Scale/Makefile.PL
 Scale/Scale.d			Dependancies for Makefile generation
@@ -597,6 +598,7 @@ hlist_bg
 hlist_demo
 iconwin
 image_test
+inline_bitmap
 keyWords
 labelpack
 lbformat_demo
@@ -909,8 +911,10 @@ pTk/mTk/tixWin/tixWinMain.c
 pTk/mTk/tixWin/tixWinPort.h
 pTk/mTk/tixWin/tixWinWm.c
 pTk/mTk/tixWin/tixWinXpm.c
+pTk/mTk/tixWin/tkConsole41.c
 pTk/mTk/tixWin/tkConsole42.c
 pTk/mTk/tixWin/tkConsole80a1.c
+pTk/mTk/tixWin/tkConsole80b1.c
 pTk/mTk/tixmerge
 pTk/mTk/unix/Makefile.in
 pTk/mTk/unix/README

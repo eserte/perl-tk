@@ -1,359 +1,412 @@
-Change 293 on 06/14/1997 by nick@ni-s
+Change 315 on 1997/07/18 by nick@pluto
+
+	Tk fix for K&R 
+
+Change 308 on 1997/07/11 by nick@ni-s
+
+	MANIFEST cleanup
+
+Change 307 on 1997/07/11 by nick@ni-s
+
+	Fix form attachment parsing.
+
+Change 306 on 1997/07/11 by nick@pluto
+
+	Remove debug abort()
+
+Change 305 on 1997/07/10 by nick@pluto
+
+	More stdio include gards
+
+Change 304 on 1997/07/08 by nick@pluto
+
+	nlview inspired bug fixes and enhancements.
+
+Change 303 on 1997/07/07 by nick@pluto
+
+	Tweaks for using server farm for faster compiles at work.
+
+Change 302 on 1997/07/06 by nick@camel
+
+	Exclude tix console stuff
+
+Change 301 on 1997/07/06 by nick@ni-s
+
+	Raw Tix4.1.0.005 merge
+
+Change 300 on 1997/07/05 by nick@camel
+
+	VC++ needs ; after label before }
+
+Change 299 on 1997/07/05 by nick@ni-s
+
+	Undo dubious change in Windows XPM handling.
+
+Change 298 on 1997/07/05 by nick@ni-s
+
+	Raw E-mailed patches and derivatives that accumulated during
+	Dallas visit.
+
+Change 296 on 1997/07/05 by nick@ni-s
+
+	Left-over edits from release
+
+Change 293 on 1997/06/14 by nick@ni-s
 
 	Update README etc. for release
 
-Change 292 on 06/14/1997 by nick@ni-s
+Change 292 on 1997/06/14 by nick@ni-s
 
 	Steve's demo update
 
-Change 291 on 06/14/1997 by nick@pluto
+Change 291 on 1997/06/14 by nick@pluto
 
 	Missing file
 
-Change 288 on 06/13/1997 by nick@CAMEL
+Change 288 on 1997/06/13 by nick@CAMEL
 
 	Win32 tweaks
 
-Change 286 on 06/13/1997 by nick@pluto
+Change 286 on 1997/06/13 by nick@pluto
 
 	Borland Compile fixes.
 
-Change 285 on 06/12/1997 by nick@ni-s
+Change 285 on 1997/06/12 by nick@ni-s
 
 	Workround Tk::bind non-delgatation in Scrolled('Canvas')
 	LIBS fix for IRIX (and others?).
 
-Change 284 on 06/12/1997 by nick@ni-s
+Change 284 on 1997/06/12 by nick@ni-s
 
 	Rest of Tix merge
 
-Change 283 on 06/12/1997 by nick@ni-s
+Change 283 on 1997/06/12 by nick@ni-s
 
 	Add merging utility for Tix.
 
-Change 282 on 06/12/1997 by nick@pluto
+Change 282 on 1997/06/12 by nick@pluto
 
 	Partial Tix update, TList.pm fixup, Canvas Postscript fixes.
 
-Change 281 on 06/11/1997 by nick@ni-s
+Change 281 on 1997/06/11 by nick@ni-s
 
 	Import ../perl5.004_01
 
-Change 280 on 06/11/1997 by nick@pluto
+Change 280 on 1997/06/11 by nick@pluto
 
 	MANIFEST update for stuff at work
 	Manage swapm - to be excluded from MANIFEST
 	CmdLine tweaks
 
-Change 279 on 06/10/1997 by nick@ni-s
+Change 279 on 1997/06/10 by nick@ni-s
 
 	Patches from mail
 
-Change 278 on 06/10/1997 by nick@ni-s
+Change 278 on 1997/06/10 by nick@ni-s
 
 	MANIFEST cleanup
 
-Change 277 on 06/10/1997 by nick@ni-s
+Change 277 on 1997/06/10 by nick@ni-s
 
 	Undo NBFrame C fix which conflicts with Tix4.1.0
 	Add IRIX hit file.
 
-Change 276 on 06/10/1997 by nick@ni-s
+Change 276 on 1997/06/10 by nick@ni-s
 
 	ldavid@slip.net (Lysander David)
 	Bugs in NBFrame and their fixes
 	Tue, 10 Jun 1997 17:53:47 +0300
 
-Change 275 on 06/10/1997 by nick@pluto
+Change 275 on 1997/06/10 by nick@pluto
 
 	Get TList to load
 
-Change 274 on 06/09/1997 by nick@pluto
+Change 274 on 1997/06/09 by nick@pluto
 
 	HList tweaks for work app.
 
-Change 273 on 06/07/1997 by nick@ni-s
+Change 273 on 1997/06/07 by nick@ni-s
 
 	Implement standard command line parsing.
 
-Change 272 on 06/07/1997 by nick@ni-s
+Change 272 on 1997/06/07 by nick@ni-s
 
 	Steve's ColorEditor tweak.
 	Support old-style MainWindow->new($display), but warn
 	Allow 'tiny' to be used as test framework for MainWindo->new
 
-Change 271 on 06/07/1997 by nick@ni-s
+Change 271 on 1997/06/07 by nick@ni-s
 
 	Allow <Tab> to children of Table has -takefocus => 0
 
-Change 270 on 06/06/1997 by nick@CAMEL
+Change 270 on 1997/06/06 by nick@CAMEL
 
 	Win32/stdio tweaks
 
-Change 269 on 06/06/1997 by nick@pluto
+Change 269 on 1997/06/06 by nick@pluto
 
 	MainWindow derived issues
 	Further stdio cleanup
 
-Change 268 on 06/05/1997 by nick@CAMEL
+Change 268 on 1997/06/05 by nick@CAMEL
 
 	Mitigate non-inclusion of stdio.h for Win32
 
-Change 267 on 06/05/1997 by nick@pluto
+Change 267 on 1997/06/05 by nick@pluto
 
 	K&R compiler and sfio fixes.
 
-Change 266 on 06/04/1997 by nick@pluto
+Change 266 on 1997/06/04 by nick@pluto
 
 	Non-pixel sizes for Scrollbar/Scale
 	"corner" of scrolled size adjust 
 	work-round non-default of HList entry's -state 
 
-Change 265 on 06/03/1997 by nick@pluto
+Change 265 on 1997/06/03 by nick@pluto
 
 	Hash for re-named ConfigSpecs
 	Change default 'Name' to match class
 	Add DefineBitmap method
 	Fix un-tie of strict_motif variable
 
-Change 264 on 06/02/1997 by nick@pluto
+Change 264 on 1997/06/02 by nick@pluto
 
 	Fix HList caued core-dump, Listbox special case and docs.
 
-Change 263 on 05/31/1997 by nick@ni-s
+Change 263 on 1997/05/31 by nick@ni-s
 
 	Rajappa Iyer's Tixish patches.
 
-Change 262 on 05/30/1997 by nick@CAMEL
+Change 262 on 1997/05/30 by nick@CAMEL
 
 	Disable warnings on Win32
 
-Change 261 on 05/30/1997 by nick@ni-s
+Change 261 on 1997/05/30 by nick@ni-s
 
 	Support Tix's "builtin" Pixmaps and Bitmaps
 
-Change 260 on 05/30/1997 by nick@ni-s
+Change 260 on 1997/05/30 by nick@ni-s
 
 	Forgot the tables ... 
 
-Change 259 on 05/30/1997 by nick@ni-s
+Change 259 on 1997/05/30 by nick@ni-s
 
 	Change VTable stuff for Tix's Xpm support or it gets messy on Win32
 
-Change 258 on 05/30/1997 by nick@ni-s
+Change 258 on 1997/05/30 by nick@ni-s
 
 	TixPixmap vs Pixmap name muddle.
 
-Change 257 on 05/30/1997 by nick@pluto
+Change 257 on 1997/05/30 by nick@pluto
 
 	Change to Tix's Pixmap 
 	Allow 'grid' to be used procedurally.
 
-Change 256 on 05/29/1997 by nick@CAMEL
+Change 256 on 1997/05/29 by nick@CAMEL
 
 	More exclusions
 
-Change 255 on 05/29/1997 by nick@ni-s
+Change 255 on 1997/05/29 by nick@ni-s
 
 	Move Tix's versions to generic location.
 
-Change 254 on 05/29/1997 by nick@ni-s
+Change 254 on 1997/05/29 by nick@ni-s
 
 	Exclude winMain
 
-Change 253 on 05/29/1997 by nick@CAMEL
+Change 253 on 1997/05/29 by nick@CAMEL
 
 	Xlib include muddle cleanup
 
-Change 252 on 05/29/1997 by nick@CAMEL
+Change 252 on 1997/05/29 by nick@CAMEL
 
 	Win32 inital snaglets for Tix4.1
 
-Change 251 on 05/29/1997 by nick@ni-s
+Change 251 on 1997/05/29 by nick@ni-s
 
 	Callback corrections. (More to come?)
 
-Change 250 on 05/29/1997 by nick@ni-s
+Change 250 on 1997/05/29 by nick@ni-s
 
 	MANIFEST cleanup
 
-Change 249 on 05/29/1997 by nick@pluto
+Change 249 on 1997/05/29 by nick@pluto
 
 	Tix4.1 loads and runs HList demo. Still memory corruption issues ?
 
-Change 248 on 05/28/1997 by nick@ni-s
+Change 248 on 1997/05/28 by nick@ni-s
 
 	Gloab $@#$ variables
 
-Change 247 on 05/28/1997 by nick@ni-s
+Change 247 on 1997/05/28 by nick@ni-s
 
 	Tweaks
 
-Change 246 on 05/28/1997 by nick@ni-s
+Change 246 on 1997/05/28 by nick@ni-s
 
 	Tix4.1 loads (almost)
 
-Change 245 on 05/28/1997 by nick@pluto
+Change 245 on 1997/05/28 by nick@pluto
 
 	Add TixGrid module
 
-Change 244 on 05/28/1997 by nick@pluto
+Change 244 on 1997/05/28 by nick@pluto
 
 	Tix4.1 merge now compiles.
 
-Change 243 on 05/27/1997 by nick@ni-s
+Change 243 on 1997/05/27 by nick@ni-s
 
 	Raw Tix4.1.0 merge
 
-Change 242 on 05/27/1997 by nick@ni-s
+Change 242 on 1997/05/27 by nick@ni-s
 
 	Cleanup Tix build process with new names
 
-Change 241 on 05/27/1997 by nick@ni-s
+Change 241 on 1997/05/27 by nick@ni-s
 
 	Tix4.0 => Tix4.1.0 restructure
 
-Change 240 on 05/24/1997 by nick@ni-s
+Change 240 on 1997/05/24 by nick@ni-s
 
 	Patches from mail
 
-Change 239 on 05/24/1997 by nick@ni-s
+Change 239 on 1997/05/24 by nick@ni-s
 
 	Change USE_PROTO to USE_PROTOTYPE
 
-Change 238 on 05/24/1997 by nick@ni-s
+Change 238 on 1997/05/24 by nick@ni-s
 
 	Stephen O. Lidie's AIX patch
 
-Change 237 on 05/22/1997 by nick@ni-s
+Change 237 on 1997/05/22 by nick@ni-s
 
 	Try explcit width on Scrollbar
 
-Change 230 on 05/04/1997 by nick@CAMEL
+Change 230 on 1997/05/04 by nick@CAMEL
 
 	Fixes for VC5.0
 
-Change 229 on 05/04/1997 by nick@ni-s
+Change 229 on 1997/05/04 by nick@ni-s
 
 	Update docs.
 
-Change 227 on 05/02/1997 by nick@ni-s
+Change 227 on 1997/05/02 by nick@ni-s
 
 	Tweak distribution script
 
-Change 225 on 05/02/1997 by nick@pluto
+Change 225 on 1997/05/02 by nick@pluto
 
 	Changes for K&R /bin/cc compile
 
-Change 215 on 04/25/1997 by nick@pluto
+Change 215 on 1997/04/25 by nick@pluto
 
 	Updates for _97i HList etc.
 
-Change 211 on 04/24/1997 by nick@ni-s
+Change 211 on 1997/04/24 by nick@ni-s
 
 	MANIFEST Fixup, add HList demo
 
-Change 210 on 04/23/1997 by nick@pluto
+Change 210 on 1997/04/23 by nick@pluto
 
 	Fix core dumps on HList's ->info('data',xxx)
 
-Change 209 on 04/22/1997 by nick@pluto
+Change 209 on 1997/04/22 by nick@pluto
 
 	Disassociate Adjuster from pack
 
-Change 205 on 04/19/1997 by nick@ni-s
+Change 205 on 1997/04/19 by nick@ni-s
 
 	Portability fixes.
 
-Change 201 on 04/18/1997 by nick@pluto
+Change 201 on 1997/04/18 by nick@pluto
 
 	Various tweaks to Tk.
 
-Change 189 on 04/14/1997 by nick@pluto
+Change 189 on 1997/04/14 by nick@pluto
 
 	Contributed patches and tkDPS fix for 402.*
 
-Change 170 on 04/11/1997 by nick@pluto
+Change 170 on 1997/04/11 by nick@pluto
 
 	Fix ballon problems.
 
-Change 168 on 04/10/1997 by nick@ni-s
+Change 168 on 1997/04/10 by nick@ni-s
 
 	Import ../perl5.003_97c
 
-Change 166 on 04/09/1997 by nick@pluto
+Change 166 on 1997/04/09 by nick@pluto
 
 	Manifest fixup.
 
-Change 163 on 04/08/1997 by nick@pluto
+Change 163 on 1997/04/08 by nick@pluto
 
 	Various TK tweaks for Graham Barr's widgets.
 
-Change 152 on 04/04/1997 by nick@ni-s
+Change 152 on 1997/04/04 by nick@ni-s
 
 	Steve's rearranged demos for VGA sized screens.
 
-Change 149 on 04/04/1997 by nick@pluto
+Change 149 on 1997/04/04 by nick@pluto
 
 	Graham's Delgate_For
 
-Change 145 on 04/02/1997 by nick@pluto
+Change 145 on 1997/04/02 by nick@pluto
 
 	Method-ize bindings for new AUTOLOAD semantics
 
-Change 143 on 04/02/1997 by nick@ni-s
+Change 143 on 1997/04/02 by nick@ni-s
 
 	Add 5.003_96+'s explcit AUTOLOAD
 
-Change 142 on 04/01/1997 by nick@pluto
+Change 142 on 1997/04/01 by nick@pluto
 
 	Fix use Tk::Xrm for 4.2 branch
 
-Change 141 on 04/01/1997 by nick@ni-s
+Change 141 on 1997/04/01 by nick@ni-s
 
 	Cleanup.
 
-Change 140 on 04/01/1997 by nick@CAMEL
+Change 140 on 1997/04/01 by nick@CAMEL
 
 	Add WinMain() entry point for "tkperl"
 
-Change 139 on 03/31/1997 by nick@CAMEL
+Change 139 on 1997/03/31 by nick@CAMEL
 
 	Use .exe extension (when it is exported!)
 
-Change 137 on 03/31/1997 by nick@CAMEL
+Change 137 on 1997/03/31 by nick@CAMEL
 
 	Add icon
 
-Change 135 on 03/29/1997 by nick@ni-s
+Change 135 on 1997/03/29 by nick@ni-s
 
 	Work with images in attempt to get Pixmap to work on Win32
 
-Change 134 on 03/29/1997 by nick@ni-s
+Change 134 on 1997/03/29 by nick@ni-s
 
 	Hacks to build tkperl on Win32
 
-Change 133 on 03/29/1997 by nick@ni-s
+Change 133 on 1997/03/29 by nick@ni-s
 
 	Proto icon ...
 
-Change 132 on 03/29/1997 by nick@CAMEL
+Change 132 on 1997/03/29 by nick@CAMEL
 
 	Tolerate '\' in autoload pathnames
 
-Change 130 on 03/27/1997 by nick@CAMEL
+Change 130 on 1997/03/27 by nick@CAMEL
 
 	Fix syntax errors
 
-Change 129 on 03/27/1997 by nick@ni-s
+Change 129 on 1997/03/27 by nick@ni-s
 
 	Implement Destroy for Images.
 
-Change 128 on 03/27/1997 by nick@pluto
+Change 128 on 1997/03/27 by nick@pluto
 
 	Pixmap cleanup, debug etc.
 
-Change 119 on 03/26/1997 by nick@pluto
+Change 119 on 1997/03/26 by nick@pluto
 
 	* Added FontAscent/FontDescent methods to Tk::,
 	  and used them for ascent/descent methods of Tk::Font
@@ -363,200 +416,200 @@ Change 119 on 03/26/1997 by nick@pluto
 	
 	* Moved Component and Advertise from Tk::Frame to Tk::Derived
 
-Change 118 on 03/25/1997 by nick@ni-s
+Change 118 on 1997/03/25 by nick@ni-s
 
 	HMODULE vs HINSTANCE work-round to avoid naming issues.
 
-Change 117 on 03/25/1997 by nick@CAMEL
+Change 117 on 1997/03/25 by nick@CAMEL
 
 	Fix Dialog - window cannot be transient for itself
 	This results in it being its own parent on Win32.
 	Correct Dialog.pm and add check in tkWinWm.c 
 
-Change 114 on 03/23/1997 by nick@CAMEL
+Change 114 on 1997/03/23 by nick@CAMEL
 
 	Add basic use of Pixmap
 
-Change 112 on 03/23/1997 by nick@CAMEL
+Change 112 on 1997/03/23 by nick@CAMEL
 
 	Build and link tk.res from mTk/win/rc/tk.rc
 	Not really sure what it does yet but seems to define\
 	cursors etc.
 
-Change 111 on 03/23/1997 by nick@ni-s
+Change 111 on 1997/03/23 by nick@ni-s
 
 	Update rc files to tk4.2p2
 
-Change 107 on 03/23/1997 by nick@CAMEL
+Change 107 on 1997/03/23 by nick@CAMEL
 
 	Fix VC++ warnings
 
-Change 106 on 03/22/1997 by nick@ni-s
+Change 106 on 1997/03/22 by nick@ni-s
 
 	Correct X font strings.
 
-Change 105 on 03/22/1997 by nick@ni-s
+Change 105 on 1997/03/22 by nick@ni-s
 
 	Try font corrections.
 
-Change 104 on 03/22/1997 by nick@CAMEL
+Change 104 on 1997/03/22 by nick@CAMEL
 
 	Test compile cleanup, Proto mismatch in IO.xs stub
 
-Change 103 on 03/22/1997 by nick@ni-s
+Change 103 on 1997/03/22 by nick@ni-s
 
 	Attempt platform independance of test compiles.
 
-Change 102 on 03/22/1997 by nick@ni-s
+Change 102 on 1997/03/22 by nick@ni-s
 
 	Use Tk_*Pixmap rather that X*Pixmap for win portability.
 	Tweaks to Win font stuff to tolerate common 'fixed' case.
 	Always add -WX to Win compiles.
 
-Change 101 on 03/22/1997 by nick@CAMEL
+Change 101 on 1997/03/22 by nick@CAMEL
 
 	Tweak for font SplitString.
 	Runs demos/widget.
 
-Change 100 on 03/22/1997 by nick@ni-s
+Change 100 on 1997/03/22 by nick@ni-s
 
 	Add Lang_SplitString for tkWinFont to call.
 
-Change 99 on 03/22/1997 by nick@CAMEL
+Change 99 on 1997/03/22 by nick@CAMEL
 
 	Cleanup warnings, force DllMain
 
-Change 98 on 03/22/1997 by nick@ni-s
+Change 98 on 1997/03/22 by nick@ni-s
 
 	Add prototype to static function.
 
-Change 97 on 03/22/1997 by nick@ni-s
+Change 97 on 1997/03/22 by nick@ni-s
 
 	Move Methods.def dependancy, fix protos of tixUtils.c
 
-Change 88 on 03/21/1997 by nick@CAMEL
+Change 88 on 1997/03/21 by nick@CAMEL
 
 	General cleanup
 
-Change 86 on 03/21/1997 by nick@ni-s
+Change 86 on 1997/03/21 by nick@ni-s
 
 	Avoid long command line making HTML.
 
-Change 85 on 03/21/1997 by nick@CAMEL
+Change 85 on 1997/03/21 by nick@CAMEL
 
 	Get Pixmap to compile on Win32
 
-Change 84 on 03/21/1997 by nick@ni-s
+Change 84 on 1997/03/21 by nick@ni-s
 
 	Fix IO.xs on UNIX. Alter stiubbing of Pixmap support.
 
-Change 82 on 03/21/1997 by nick@ni-s
+Change 82 on 1997/03/21 by nick@ni-s
 
 	Don't exclude tkInt stuff needed on Win32
 
-Change 81 on 03/20/1997 by nick@CAMEL
+Change 81 on 1997/03/20 by nick@CAMEL
 
 	#ifdef out IO and Mwm - fix pasthru
 	add inst_lib target
 
-Change 78 on 03/20/1997 by nick@CAMEL
+Change 78 on 1997/03/20 by nick@CAMEL
 
 	Add flags etc. to Makefiles
 
-Change 77 on 03/20/1997 by nick@CAMEL
+Change 77 on 1997/03/20 by nick@CAMEL
 
 	Avoid Tcl_Alloc & co.
 	Fix tclWinSock to compile, but ...
 	Stub out WinSock calls for now.
 
-Change 76 on 03/20/1997 by nick@ni-s
+Change 76 on 1997/03/20 by nick@ni-s
 
 	Fix exit to call perl's
 
-Change 75 on 03/20/1997 by nick@ni-s
+Change 75 on 1997/03/20 by nick@ni-s
 
 	Remove Tcl_SplitList() 
 
-Change 74 on 03/19/1997 by nick@ni-s
+Change 74 on 1997/03/19 by nick@ni-s
 
 	Cleanup vtable exclude file generation
 
-Change 72 on 03/18/1997 by nick@ni-s
+Change 72 on 1997/03/18 by nick@ni-s
 
 	More tweaks
 
-Change 71 on 03/18/1997 by nick@ni-s
+Change 71 on 1997/03/18 by nick@ni-s
 
 	Fix gross tcl7.5 -> tcl7.6 mis-merges.
 
-Change 70 on 03/18/1997 by nick@ni-s
+Change 70 on 1997/03/18 by nick@ni-s
 
 	Sort out tcl vs tk sub-dir muddle.
 
-Change 69 on 03/18/1997 by nick@CAMEL
+Change 69 on 1997/03/18 by nick@CAMEL
 
 	Lets get things back in one place!
 
-Change 68 on 03/18/1997 by nick@ni-s
+Change 68 on 1997/03/18 by nick@ni-s
 
 	Avoid XLIB in Lang.h
 
-Change 67 on 03/18/1997 by nick@ni-s
+Change 67 on 1997/03/18 by nick@ni-s
 
 	Attempt to fix unresolved references
 
-Change 66 on 03/18/1997 by nick@ni-s
+Change 66 on 1997/03/18 by nick@ni-s
 
 	Add guess at Windows lib inclusion.
 
-Change 65 on 03/18/1997 by nick@ni-s
+Change 65 on 1997/03/18 by nick@ni-s
 
 	Move rules for Methods.def to mailine Makefile.PL
 
-Change 64 on 03/18/1997 by nick@ni-s
+Change 64 on 1997/03/18 by nick@ni-s
 
 	Fix name conflict on GetWindow()
 
-Change 63 on 03/18/1997 by nick@ni-s
+Change 63 on 1997/03/18 by nick@ni-s
 
 	Change pTk and Pixmap/xpm to use static_lib target so 
 	that Tk does not know how to build it as it is platform specific.
 
-Change 62 on 03/18/1997 by nick@CAMEL
+Change 62 on 1997/03/18 by nick@CAMEL
 
 	NT side cleanup
 
-Change 61 on 03/18/1997 by nick@ni-s
+Change 61 on 1997/03/18 by nick@ni-s
 
 	Un-exclude tkFileFilter.*
 
-Change 60 on 03/18/1997 by nick@ni-s
+Change 60 on 1997/03/18 by nick@ni-s
 
 	First guess and tclWin files
 
-Change 59 on 03/18/1997 by nick@ni-s
+Change 59 on 1997/03/18 by nick@ni-s
 
 	Add exclude files.
 
-Change 58 on 03/18/1997 by nick@ni-s
+Change 58 on 1997/03/18 by nick@ni-s
 
 	Make pTk/mTk stuff more robust for start on non-UNIX port.
 	C_FILES and H_FILES stuff built in post_initialize of Makefile.PL
 	Loose TclGetTime() as TclpGetTime() is superiour.
 
-Change 40 on 03/16/1997 by nick@CAMEL
+Change 40 on 1997/03/16 by nick@CAMEL
 
 	Cleanup .../Config.pm vs ...\Config.pm issues
 
-Change 38 on 03/16/1997 by nick@ni-s
+Change 38 on 1997/03/16 by nick@ni-s
 
 	Change mechanism for determining mTk -> pTk dependancies
 
-Change 37 on 03/16/1997 by nick@CAMEL
+Change 37 on 1997/03/16 by nick@CAMEL
 
 	Initial NT fixes
 
-Change 19 on 03/03/1997 by nick@ni-s
+Change 19 on 1997/03/03 by nick@ni-s
 
 	Misc bug fixes discovered testing demos/widget:
 	Fixed search demo to not loop on zero length search string
@@ -564,51 +617,51 @@ Change 19 on 03/03/1997 by nick@ni-s
 	Made Text::get return '' rather than undef for zero length range 
 	(end == start), still undef if end < start 
 
-Change 18 on 03/03/1997 by nick@ni-s
+Change 18 on 1997/03/03 by nick@ni-s
 
 	Merge tk4.2p2
 
-Change 17 on 03/03/1997 by nick@ni-s
+Change 17 on 1997/03/03 by nick@ni-s
 
 	Import /home/nick/Tk/../Tk400/Bundle
 
-Change 16 on 03/03/1997 by nick@ni-s
+Change 16 on 1997/03/03 by nick@ni-s
 
 	Import .
 
-Change 15 on 03/03/1997 by nick@ni-s
+Change 15 on 1997/03/03 by nick@ni-s
 
 	Update copyright notices
 
-Change 14 on 03/03/1997 by nick@ni-s
+Change 14 on 1997/03/03 by nick@ni-s
 
 	Import ../Tk402.000
 
-Change 13 on 03/03/1997 by nick@ni-s
+Change 13 on 1997/03/03 by nick@ni-s
 
 	Auto-update MANIFEST from re-structured mTk
 
-Change 12 on 03/03/1997 by nick@ni-s
+Change 12 on 1997/03/03 by nick@ni-s
 
 	Restructure pTk/mTk for tk4.1+ hierachy
 
-Change 5 on 03/02/1997 by nick@ni-s
+Change 5 on 1997/03/02 by nick@ni-s
 
 	Copy over bits we missed from working sources.
 
-Change 4 on 03/02/1997 by nick@ni-s
+Change 4 on 1997/03/02 by nick@ni-s
 
 	Import live sources at time of perforce setup.
 
-Change 3 on 03/02/1997 by nick@ni-s
+Change 3 on 1997/03/02 by nick@ni-s
 
 	Import Tk400.202
 
-Change 2 on 03/02/1997 by nick@ni-s
+Change 2 on 1997/03/02 by nick@ni-s
 
 	Import Tk400.201
 
-Change 1 on 03/02/1997 by nick@ni-s
+Change 1 on 1997/03/02 by nick@ni-s
 
 	Import Tk400.200
 

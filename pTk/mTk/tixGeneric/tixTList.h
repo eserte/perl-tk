@@ -32,9 +32,6 @@ typedef struct ListEntry {
 } ListEntry;
 
 typedef struct ListRow {
-#if 0
-    struct ListRow * next;
-#endif
     ListEntry * chPtr;
     int size[2];
     int numEnt;
@@ -98,6 +95,7 @@ typedef struct ListStruct {
     int numRow;
     ListRow * rows;
 
+    ListEntry * seeElemPtr;	/* The current item to "see" */
     ListEntry * anchor;		/* The current anchor item */
     ListEntry * active;		/* The current active item */
     ListEntry * dropSite;	/* The current drop site */

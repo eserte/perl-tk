@@ -12,7 +12,12 @@
  */
 
 #include <tkInt.h>
-#include <tkWinInt.h>
+#ifdef __PM__
+#    define __PM_WIN__
+#    include <tkOS2Int.h>
+#else
+#    include <tkWinInt.h>
+#endif
 #include "tix.h"
 #include "tixImgXpm.h"
 
@@ -169,6 +174,9 @@ TixpXpmSetPixel(instancePtr, image, mask, x, y, colorPtr, isTranspPtr)
     }
 }
 
+#ifndef __PM__				/* These functions for PM are
+					   implemented elsewhere. */
+
 /*----------------------------------------------------------------------
  * TixpXpmRealizePixmap --
  *
@@ -228,12 +236,13 @@ TixpXpmRealizePixmap(masterPtr, instancePtr, image, mask, isTransp)
 }
 
 void
-TixpXpmFreeInstanceData(instancePtr, delete)
+TixpXpmFreeInstanceData(instancePtr, delete, display)
     PixmapInstance *instancePtr;	/* Pixmap instance. */
     int delete;				/* Should the instance data structure
 					 * be deleted as well? */
+    Display * display;			/* Unused on Windows. */
 {
-    PixmapData *dataPtr = (PixmapData*)instancePtr->clientData;
+    PixmapData *dataPtr = (PixmapData*)instancePtr->clientData;    
 
     if (dataPtr->maskDC != NULL) {
 	DeleteObject(SelectObject(dataPtr->maskDC,
@@ -305,4 +314,5 @@ CopyTransparent(display, srcDC, dest, src_x, src_y, width, height, dest_x,
 
     TkWinReleaseDrawableDC(dest, destDC, &destState);
 }
+#endif
 

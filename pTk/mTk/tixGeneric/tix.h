@@ -25,7 +25,11 @@
 #define TIX_PATCHLEVEL	"4.1.0"
 #define TIX_PATCH_LEVEL TIX_PATCHLEVEL
 
-#define TIX_RELEASE     "4.1.0.003"
+#define TIX_RELEASE     "4.1.0.005"
+
+#ifndef _TK
+#include <tk.h>
+#endif
 
 
 #if defined(__WIN32__) || defined(_WIN32) || defined (__BORLAND) || defined(_Windows)
@@ -432,11 +436,6 @@ extern TIX_DECLARE_CMD(Tix_TrueCmd);
 extern TIX_DECLARE_CMD(Tix_UnmapWindowCmd);
 extern TIX_DECLARE_CMD(Tix_MwmCmd);
 extern TIX_DECLARE_CMD(Tix_CreateWidgetCmd);
-
-#ifdef TCL_7_5_OR_LATER
-extern TIX_DECLARE_CMD(Tix_ConsoleInitCmd);
-#endif
-
 
 #define SET_RECORD(interp, record, var, value) \
 	Tcl_SetVar2(interp, record, var, value, TCL_GLOBAL_ONLY)

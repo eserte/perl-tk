@@ -55,7 +55,12 @@ TkSelGetSelection(interp, tkwin, selection, target, proc, clientData)
 
     if ((selection == Tk_InternAtom(tkwin, "CLIPBOARD"))
 	    && (target == XA_STRING)) {
-	if (OpenClipboard(NULL)) {
+#ifdef __OPEN32__
+	if (OpenClipboard(tmpParent))
+#else
+	if (OpenClipboard(NULL))
+#endif
+	{
 	    handle = GetClipboardData(CF_TEXT);
 	    if (handle != NULL) {
 		data = GlobalLock(handle);

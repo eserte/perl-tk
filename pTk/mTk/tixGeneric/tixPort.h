@@ -26,7 +26,7 @@
 #include "tk.h"
 #endif
 
-#if (!defined(__WIN32__)) && (!defined(_WIN32)) && (!defined(MAC_TCL))
+#if (!defined(__WIN32__)) && (!defined(_WIN32)) && (!defined(MAC_TCL)) && (!defined(__PM__))
     /*
      * The Tcl/Tk porting stuff is needed only in Unix.
      */
@@ -40,7 +40,7 @@
 #endif
 
 
-#if defined(WIN32) || defined(_WIN32)
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__PM__)
 #   include "tixWinPort.h"
 #else
 #   if defined(MAC_TCL)

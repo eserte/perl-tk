@@ -8,7 +8,7 @@
 # derivation from Tk4.0 sources.
 #
 package Tk;
-require 5.003_97;
+require 5.004;
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 require Exporter;
@@ -37,7 +37,7 @@ use Carp;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = "4.2";
 $Tk::patchLevel  = "4.2";
-$Tk::VERSION     = '402.001';
+$Tk::VERSION     = '402.002';
 $Tk::strictMotif = 0;
                                    
 {($Tk::library) = __FILE__ =~ /^(.*)\.pm$/;}
@@ -223,7 +223,13 @@ sub SplitString
 {
  local $_ = shift;
  carp "SplitString '$_'";
- return split(/\s+/,$_);
+ my (@arr, $tmp);
+ while (/\{([^{}]*)\}|((?:[^\s\\]|\\.)+)/gs) {
+   if (defined $1) { push @arr, $1 }
+   else { $tmp = $2 ; $tmp =~ s/\\([\s\\])/$1/g; push @arr, $tmp }
+ }
+ return @arr;
+ #return split(/\s+/,$_);
 }
 
 

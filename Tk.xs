@@ -15,8 +15,8 @@
 #include "pTk/tkXrm.h"
 #include "pTk/default.h"
 
-#ifdef __WIN32__
-#include "pTk/tkWinInt.h"
+#if defined(__WIN32__) && !defined(__EMX__)
+#  include "pTk/tkWinInt.h"
 #endif
 
 #include "tkGlue.h"

@@ -181,10 +181,7 @@ sub Accept {
 		return if not &{$_->[0]}($cw, $path, $leaf, @{$_}[1..$#{$_}]);
 	    } elsif ($_ eq '!-d') {
 		if (-d "$path/$leaf") {
-		    $cw->Subwidget('dialog')->configure(
-                        -text => "Selecting a directory is not permitted.",
-		    );
-		    $cw->Subwidget('dialog')->Show;
+		    $cw->Error("Selecting a directory is not permitted.");
 		    return;
 		}
 	    } else {
@@ -193,11 +190,8 @@ sub Accept {
 		if (not $s) {
 		    my $err;
 		    $err = $error_text{$_} ?  $error_text{$_} : 
-		        "failed an UNKNOWN test '$_'!";
-		    $cw->Subwidget('dialog')->configure(
-                        -text => "Name '$leaf' $err.",
-		    );
-		    $cw->Subwidget('dialog')->Show;
+		        "failed '$_' test";
+		    $cw->Error("Name '$leaf' $err.");
 		    return;
 		}
 	    }
@@ -311,6 +305,7 @@ sub Populate {
 	-dirlabel        => [ 'PASSIVE', undef, undef, 'Directory'],
 	'-accept'        => [ 'CALLBACK',undef,undef, undef ],
         -verify          => [ 'PASSIVE', undef, undef, ['!-d'] ],
+        -create          => [ 'PASSIVE', undef, undef, 0 ],
 	DEFAULT          => [ 'file_list' ],
     );
     $w->Delegates(DEFAULT => 'file_list');
@@ -467,16 +462,57 @@ sub validateFile
  my ($cw,$name) = @_;
  my $i = 0;
  my $n = $cw->index('end');
+ # See if it is an existing file
  for ($i= 0; $i < $n; $i++)
   {
    my $f = $cw->get($i);
    if ($f eq $name)
     {
      $cw->selection('set',$i);
+     $cw->Accept;
+    }
+  }
+ # otherwise allow if -create is set, directory is writable
+ # and it passes filter and accept criteria
+ if ($cw->cget('-create'))
+  {
+   my $path = $cw->cget('-directory');
+   if (-w $path)
+    {
+     if (&{$cw->{match}}($name))                       
+      {                                            
+       my $accept = $cw->cget('-accept');                  
+       my $full   = "$path/$name";
+       if (!defined($accept) || $accept->Call($full))
+        {                                          
+         $cw->{Selected} = [$full];
+        }                                          
+       else
+        {
+         $cw->Error("$name is not 'acceptable'");
+        }
+      }                                            
+     else
+      {
+       $cw->Error("$name does not match '".$cw->cget('-filter')."'");
+      }
+    }
+   else
+    {
+     $cw->Error("Directory '$path' is not writable");
      return;
     }
   }
 } 
+
+sub Error
+{
+ my $cw  = shift;
+ my $msg = shift;
+ my $dlg = $cw->Subwidget('dialog');
+ $dlg->configure(-text => $msg);
+ $dlg->Show;
+}
 
 sub Show
 {

@@ -6,8 +6,8 @@ use File::Copy;
 use File::Compare;
 
 my $tdir = $ENV{'HOME'}."/tcl";
-my $otcl = "$tdir/Tix4.1.0.002";
-my $ntcl = "$tdir/Tix4.1.0.003";
+my $otcl = "$tdir/Tix4.1.0.003";
+my $ntcl = "$tdir/Tix4.1.0.005";
 
 open(FIXUP,">Fixup");
 

@@ -42,6 +42,30 @@ index.html : man2html $(MANFILES) $(INST_MAN1DIR) $(INST_MAN3DIR) MANFILES
 	@echo "Making HTML"
 	@$(PERL) man2html -tk -man1 $(INST_MAN1DIR) \
 	         -man3 $(INST_MAN3DIR) -q -files MANFILES
+podify: 
+	$(PERL) tkman2pod $(MANFILES)
+	touch podify
+
+subpodify: tkman2pod $(MANFILES)
+	$(PERL) tkman2pod -s $(MANFILES)
+	touch subpodify
+
+tk.ipf: subpodify
+	pod2ipf --nofaqs --debug --by-dirs "--title=Tk/Perl book" \
+		"--section-name=Perl/Tk Constructs" --dir=constructs \
+		"--section-name=Tk Generic Methods" --dir=generic \
+		"--section-name=Tk User Interaction" --dir=interaction \
+		"--section-name=Partially Converted Methods" --dir=unfinished \
+		"--section-name=Tix Extensions" --dir=tix \
+		"--section-name=Tk Geometry Management" --dir=geometry \
+		"--section-name=Tk Selection Handling" --dir=selection \
+		"--section-name=Tk Image Classes" --dir=image_classes \
+		"--section-name=Tk Library Procedures" --dir=library \
+		"--section-name=Tk Modules" --dir=../blib/lib \
+			--about > tk.ipf
+
+tk.inf: tk.ipf
+	ipfc /inf tk.ipf
 ';
 }
 
