@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '3.009'; # $Id: //depot/Tk8/Tk/Wm.pm#9$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Wm.pm#11$
 
 use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
 
@@ -116,9 +116,21 @@ sub FullScreen
 {
  my $w = shift;
  my $over = (@_) ? shift : 0;
- $w->GeometryRequest($w->screenwidth,$w->screenheight);
- $w->overrideredirect($over);
+ my $width  = $w->screenwidth;
+ my $height = $w->screenheight;
+ $w->GeometryRequest($width,$height);
+ $w->overrideredirect($over & 1);
  $w->Post(0,0);
+ $w->update;
+ if ($over & 2)
+  {
+   my $x = $w->rootx;
+   my $y = $w->rooty;
+   $width -= 2*$x;
+   $height -= $x + $y;
+   $w->GeometryRequest($width,$height);
+   $w->update;
+  }
 }
 
 sub iconposition

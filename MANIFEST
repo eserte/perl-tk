@@ -207,6 +207,8 @@ Tk/tranicon.gif
 Tk/typemap
 Tk/widgets.pm
 Tk/win.xbm
+Tk/winfolder.xpm
+Tk/wintext.xpm
 TkXSUB.def
 Tkperl/Makefile.PL
 Tkperl/NotUnix.exc
@@ -490,6 +492,7 @@ pTk/license.html_lib
 pTk/license.terms
 pTk/mTk/MANIFEST.SKIP
 pTk/mTk/README
+pTk/mTk/additions/ClientWin.c
 pTk/mTk/additions/exWinHandle.c
 pTk/mTk/additions/imgBMP.c
 pTk/mTk/additions/imgDllEntry.c

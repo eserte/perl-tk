@@ -1,3 +1,90 @@
+Change 1073 on 1998/08/30 by nick@linux
+
+	Add file name to title of ptked
+
+Change 1072 on 1998/08/30 by nick@ni-s
+
+	Increment version, deprecate TixGrid
+
+Change 1071 on 1998/08/30 by nick@ni-s
+
+	Unix tweaks
+
+Change 1070 on 1998/08/30 by nick@gobstopper
+
+	Win32 tweaks 
+
+Change 1069 on 1998/08/30 by nick@ni-s
+
+	Various fixes from the list
+	   - $0 tainting 
+	   - DND tweaks
+	   - Two different BrowseEntry fixes
+	   - LabFrame label stuff
+
+Change 1068 on 1998/08/30 by nick@ni-s
+
+	Doc tweak
+
+Change 1066 on 1998/08/26 by nick@ni-s
+
+	1st attempt
+
+Change 1062 on 1998/08/24 by nick@camel
+
+	Tweaks for Conference demo
+
+Change 1060 on 1998/08/15 by nick@ni-s
+
+	Tweak style demo so it does not look silly when 
+	a default font option is in effect (make a bit larger as well).
+
+Change 1058 on 1998/08/15 by nick@ni-s
+
+	Allow Dirlist to have its image configured, 
+	Supply two captured images
+
+Change 1056 on 1998/08/15 by nick@ni-s
+
+	Re-work MessageBox UNIX side to work with Win32 mandated lower-case
+	types.
+
+Change 1055 on 1998/08/15 by nick@camel
+
+	Sort out Win32 native messageBox
+
+Change 1054 on 1998/08/15 by nick@ni-s
+
+	Vector 'messageBox' via tk_messageBox so native dialogs catch on Win32.
+
+Change 1052 on 1998/08/15 by nick@ni-s
+
+	Be more cautious about Traced variables
+
+Change 1046 on 1998/08/14 by nick@ni-s
+
+	$VERSIONs again
+
+Change 1045 on 1998/08/14 by nick@ni-s
+
+	Avoid passing args to be merged to ->after
+
+Change 1044 on 1998/08/14 by nick@ni-s
+
+	Allow normal callbacks for Notebook page commands
+
+Change 1043 on 1998/08/14 by nick@pluto
+
+	Conference prep. at work
+
+Change 1041 on 1998/08/13 by nick@pluto
+
+	Tweaks for demo
+
+Change 1034 on 1998/08/08 by nick@ni-s
+
+	Prepare for Tk800.010
+
 Change 1031 on 1998/08/06 by nick@camel
 
 	Mwm is meaningless on Win32, update ->wrapper to 

@@ -15,23 +15,27 @@ sub style {
         -iconname => 'style',
     );
 
+    my $size = -18;
+    $TOP->fontCreate('C_normal',-family => 'courier', -size => $size);
+    $TOP->fontCreate('C_small',-family => 'courier', -size => int(12*$size/14));
+    $TOP->fontCreate('C_bold',-family => 'courier', -weight => 'bold', -size => $size);
+    $TOP->fontCreate('C_big',-family => 'courier', -weight => 'bold', -size => int($size*18/14));
+    $TOP->fontCreate('C_vbig',-family => 'helvetica', -weight => 'bold', -size => int($size*24/14));
+
     my $t = $TOP->Scrolled(qw/Text -setgrid true -width  70 -height 32
-			   -wrap word -scrollbars e/);
+			   -font normal -wrap word -scrollbars e/);
     $t->pack(qw/-expand yes -fill both/);
 
     # Set up display styles.
 
-    $t->tag(qw/configure bold
-	      -font -*-Courier-Bold-O-Normal--*-120-*-*-*-*-*-*/);
-    $t->tag(qw/configure big
-	      -font -*-Courier-Bold-R-Normal--*-140-*-*-*-*-*-*/);
-    $t->tag(qw/configure verybig
-	      -font -*-Helvetica-Bold-R-Normal--*-240-*-*-*-*-*-*/);
+    $t->tag(qw/configure bold -font C_bold/);
+    $t->tag(qw/configure big  -font C_big/);
+    $t->tag(qw/configure verybig -font C_vbig/);
     if ($TOP->depth > 1) {
 	$t->tag(qw/configure color1 -background/ => '#a0b7ce');
 	$t->tag(qw/configure color2 -foreground red/);
-	$t->tag(qw/configure raised -relief raised -borderwidth 1/);
-	$t->tag(qw/configure sunken -relief sunken -borderwidth 1/);
+	$t->tag(qw/configure raised -relief raised -borderwidth 3 -background/ => '#a0b7ce');
+	$t->tag(qw/configure sunken -relief sunken -borderwidth 3 -background/ => '#a0b7ce');
     } else {
 	$t->tag(qw/configure color1 -background black -foreground white/);
 	$t->tag(qw/configure color2 -background black -foreground white/);
@@ -45,25 +49,17 @@ sub style {
     $t->tag(qw/configure overstrike -overstrike on/);
     $t->tag(qw/configure right -justify right/);
     $t->tag(qw/configure center -justify center/);
-    $t->tag(qw/configure super -offset 4p
-	    -font -*-Courier-Medium-R-Normal--*-100-*-*-*-*-*-*/);
-    $t->tag(qw/configure sub -offset -2p
-	    -font -*-Courier-Medium-R-Normal--*-100-*-*-*-*-*-*/);
+    $t->tag(qw/configure super -offset 4p -font C_small/);
+    $t->tag(qw/configure sub -offset -2p -font C_small/);
     $t->tag(qw/configure margins -lmargin1 12m -lmargin2 6m -rmargin 10m/);
     $t->tag(qw/configure spacing -spacing1 10p -spacing2 2p
 	    -lmargin1 12m -lmargin2 6m -rmargin 10m/);
 
     $t->insert('0.0',
-'Text widgets like this one allow you to display information in a
-variety of styles.  Display styles are controlled using a mechanism
-called ');
+'Text widgets like this one allow you to display information in a variety of styles.  Display styles are controlled using a mechanism called ');
     inswt($t, 'tags', qw(bold));
     inswt($t,
-'. Tags are just textual names that you can apply to one
-or more ranges of characters within a text widget.  You can configure
-tags with various display styles.  If you do this, then the tagged
-characters will be displayed with the styles you chose.  The
-available display styles are:  ');
+'. Tags are just textual names that you can apply to one or more ranges of characters within a text widget.  You can configure tags with various display styles.  If you do this, then the  tagged characters will be displayed with the styles you chose.  The available display styles are:  ');
     inswt($t, "\n\n1. Font.", qw(big));
     inswt($t, '  You can choose any X font, ');
     inswt($t, 'large', qw(verybig));
@@ -91,7 +87,7 @@ available display styles are:  ');
     inswt($t, "draw lines through", 'overstrike');
     inswt($t, " ranges of text.");
     inswt($t, "\n\n6. 3-D effects.", qw( big));
-    inswt($t, "  You can arrange for the background to be drawn\n");
+    inswt($t, "  You can arrange for the background to be drawn ");
     inswt($t, 'with a border that makes characters appear either ');
     inswt($t, 'raised', qw(raised));
     inswt($t, ' or ');
@@ -103,10 +99,10 @@ available display styles are:  ');
     inswt($t, "right-justified, or\n", 'right');
     inswt($t, "centered.", 'center');
     inswt($t, "\n\n8. Superscripts and subscripts." , 'big');
-    inswt($t, " You can control the vertical\n");
+    inswt($t, " You can control the vertical ");
     inswt($t, "position of text to generate superscript effects like 10");
     inswt($t, "n", 'super');
-    inswt($t, " or\nsubscript effects like X");
+    inswt($t, " or subscript effects like X");
     inswt($t, "i", 'sub');
     inswt($t, ".");
     inswt($t, "\n\n9. Margins.", 'big');
@@ -121,8 +117,9 @@ available display styles are:  ');
     inswt($t, "occur because of wrapping.  There is also a ", 'margins');
     inswt($t, "separate specification for the right margin, ", 'margins');
     inswt($t, "which is used to choose wrap points for lines.", 'margins');
+
     inswt($t, "\n\n10. Spacing.", 'big');
-    inswt($t, " You can control the spacing of lines with three\n");
+    inswt($t, " You can control the spacing of lines with three ");
     inswt($t, "separate parameters.  \"Spacing1\" tells how much ");
     inswt($t, "extra space to leave\nabove a line, \"spacing3\" ");
     inswt($t, "tells how much space to leave below a line,\nand ");

@@ -5,6 +5,8 @@ of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
 for details of this license.
 
+This version is essentially that demonstrated at the 2nd Perl Conference.
+
 This a re-port of a perl interface to Tk8.0p2 (John Ousterhout's production
 release).            
 
@@ -14,10 +16,10 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 This version also contains re-worked Image code based on tcl/tk Img extension 
 by Jan Nijtmans <nijtmans@worldaccess.nl>
 
-This version (Tk800.010) requires perl5.005 or later on Win32 
+This version (Tk800.011) requires perl5.005 or later on Win32 
 and 5.004_04 or later on UNIX.
 
-Tk800.010 should build and run on Windows NT using Visual C++, Borland, 
+Tk800.011 should build and run on Windows NT using Visual C++, Borland, 
 or with the EGCS-1.0.2 Mingw32 port of GCC with perl5.005 or later.
 Note that the 2.8.0 Mingw32 port does not work, because the GUI parts of the 
 include files and import libraries supplied with it are not correct enough

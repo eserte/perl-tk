@@ -26,8 +26,8 @@ sub hscale {
         -to 250 -tickinterval 50 -command/ => [\&hscale_width, $canvas]);
     $scale->set(75);
 
-    $canvas->pack(qw/-side top -expand yes -anchor s -fill x/);
-    $scale->pack(qw/-side bottom -expand yes -anchor n/);
+    $canvas->pack(qw/-side top -expand yes -anchor w -fill x/);
+    $scale->pack(qw/-side bottom -expand yes -anchor w/);
 
 } # end hscale
 

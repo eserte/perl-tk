@@ -140,6 +140,11 @@ sub MY::post_initialize
   {
    $self->{PM}->{$name} = $self->catfile($dir,$name);
   }
+ foreach $name (qw(Tcl-pTk mkVFunc))
+  {
+   $self->{PM}->{$name} = $self->catfile($dir,$name);
+  }
+
  if ($Tk::MMutil::IsWin32 or $win_arch eq 'open32' or $win_arch eq 'pm')
   {my $ddir = $self->catdir('$(INST_ARCHLIBDIR)','X11');
    my $sdir = $self->catdir('mTk','xlib','X11');

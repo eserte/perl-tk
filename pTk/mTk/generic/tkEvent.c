@@ -17,6 +17,9 @@
 #include "tkInt.h"
 #include <signal.h>
 
+/* This does not belong here it belong in the platform window manager code! */
+extern Window XmuClientWindow _ANSI_ARGS_((Display *dpy, Window win));
+
 /*
  * There's a potential problem if a handler is deleted while it's
  * current (i.e. its procedure is executing), since Tk_HandleEvent
@@ -491,6 +494,16 @@ Tk_HandleEvent(eventPtr)
 	}
     }
     winPtr = (TkWindow *) Tk_IdToWindow(eventPtr->xany.display, handlerWindow);
+                        
+    /* Some Drag&Drop messages get sent to wrappers for which there is
+     * an X ICCM scheme to locate the "real" window - it is not clear 
+     * if this is "done right" yet but should be harmless.
+     */
+    if (winPtr == NULL && eventPtr->type == ClientMessage) {
+        handlerWindow = XmuClientWindow(eventPtr->xany.display, handlerWindow);
+	winPtr = (TkWindow *) Tk_IdToWindow(eventPtr->xany.display, handlerWindow);
+    }
+
     if (winPtr == NULL) {
 
 	/*
@@ -537,7 +550,7 @@ Tk_HandleEvent(eventPtr)
 	 * and Leave events;  depending on its return value, ignore the
 	 * event.
 	 */
-    
+
 	if ((mask & (FocusChangeMask|EnterWindowMask|LeaveWindowMask))
 		&& !TkFocusFilterEvent(winPtr, eventPtr)) {
             Tcl_Release((ClientData) interp);

@@ -3,6 +3,14 @@ release is at the top.
 
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.      
+Changes in Tk800.011     
+	Various tweaks to make Conference demo cleaner,
+	in particular :
+	  * native-look dialog boxes.
+	  * Normal Callbacks for NoteBook. 
+	Comprehend that $0 is tainted. 
+	Deprecate TixGrid until I/we decide where we are going.
+
 Changes in Tk800.010
 	Fix -variable stuff on PERL_OBJECT
 	Achim's new tests and fixes for most of them.

@@ -5,7 +5,7 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#12$
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#14$
 
 use Tk;
 require Tk::Frame;
@@ -26,6 +26,7 @@ sub Populate {
     
     if ($lside =~ /acrosstop/) {
 	my $border = $cw->Frame(-relief => "groove", -bd => 2);
+        $cw->Advertise('border' => $border);
 	my $pad = $border->Frame;
 	$f = $border->Frame;
 	$label = $cw->Label(-text => $ltext);

@@ -1,7 +1,7 @@
 package Tk::TList; 
 
 use vars qw($VERSION @ISA);
-$VERSION = '3.007'; # $Id: //depot/Tk8/TList/TList.pm#7$
+$VERSION = '3.009'; # $Id: //depot/Tk8/TList/TList.pm#9$
 
 use Tk qw(Ev);
 
@@ -382,7 +382,7 @@ sub AutoScan
   {
    return;
   }
- $w->RepeatId($w->after(50,"AutoScan",$w));
+ $w->RepeatId($w->after(50,[AutoScan => $w]));
  $w->Button1Motion;
 }
 

@@ -5,22 +5,28 @@ use strict;
 *motif = \$Tk::strictMotif;
 
 use vars qw($VERSION);
-$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/CmdLine.pm#8$
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/CmdLine.pm#11$
 
-use vars qw($synchronous %switch $iconic %options %methods @command %config);
+use vars qw($synchronous %switch $iconic %options %methods $Name @command %config);
 
 $synchronous = 0;
 $iconic      = 0;
 
+BEGIN 
+{
+ $Name = 'pTk';
+ $Name = $1 if ($0 =~ m#(?:^|[/\\])([\w-]+)(?:\.\w+)?$#); # untainted now
+ $Name = 'pTk' if $Name eq '-e';
+ $config{'-name'} = $Name;
+}
+
 @command = ();
 %options = ();
-%config  = (-name => ($0 eq '-e' ? 'pTk' : $0));
-$config{'-name'}  =~ s#^.*/##; 
 
 sub arg
 {
  my $flag = shift;
- die("Usage: $0 ... $flag <argument> ...\n") unless (@ARGV);
+ die("Usage: $Name ... $flag <argument> ...\n") unless (@ARGV);
  return shift(@ARGV);
 }
 
@@ -149,7 +155,7 @@ sub Tk::MainWindow::apply_command_line
  # but 'hostname' is tricky to do portably.
  # $mw->client(hostname());
  # $mw->protocol('WM_SAVE_YOURSELF' => ['WMSaveYourself',$mw]);
- $mw->command([$0,@command]);
+ $mw->command([$Name,@command]);
 }
 
 1;
