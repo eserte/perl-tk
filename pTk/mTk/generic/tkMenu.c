@@ -531,7 +531,6 @@ Tk_MenuCmd(clientData, interp, argc, argv)
                 ConfigureMenuEntry(cascadeListPtr, 2, newArgv, 
                 	TK_CONFIG_ARGV_ONLY);
 		Tcl_DecrRefCount(newArgv[0]);
-		Tcl_DecrRefCount(newArgv[1]);
            }
             cascadeListPtr = nextCascadePtr;
         }
@@ -668,7 +667,6 @@ MenuWidgetCmd(clientData, interp, argc, argv)
     	result = CloneMenu(menuPtr, &args[2], (argc == 3) ? NULL : argv[3]);
 	if (result == TCL_OK) {
 		Tcl_ArgResult(interp, args[2]);
-		LangFreeArg(args[2], TCL_DYNAMIC);
 	}
     } else if ((c == 'c') && (strncmp(argv[1], "configure", length) == 0)
 	    && (length >= 2)) {
@@ -1781,7 +1779,6 @@ ConfigureMenuCloneEntries(interp, menuPtr, index, argc, argv, flags)
 		newArgV[1] = newCloneName;
 		ConfigureMenuEntry(mePtr, 2, newArgV, flags);
 		Tcl_DecrRefCount(newArgV[0]);
-		Tcl_DecrRefCount(newArgV[1]);
 	    }
 	}
     }
@@ -2158,7 +2155,6 @@ MenuAddOrInsert(interp, menuPtr, indexString, argc, argv)
 		newArgv[1] = newCascadeName;
     	        ConfigureMenuEntry(mePtr, 2, newArgv, 0);
 		Tcl_DecrRefCount(newArgv[0]);
-		Tcl_DecrRefCount(newArgv[1]);
     	    }
     	}
     }
@@ -2383,7 +2379,7 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     if ((newMenuTypeString == NULL) || (newMenuTypeString[0] == '\0')) {
 	newMenuTypeString = "normal";
     }
-        
+
     commandObjPtr = Tcl_NewListObj(0, (Tcl_Obj **) NULL);
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
     	    Tcl_NewStringObj("MenuDup", -1));
@@ -2392,10 +2388,10 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr, LangCopyArg(*widget));
     Tcl_ListObjAppendElement(menuPtr->interp, commandObjPtr,
     		Tcl_NewStringObj(newMenuTypeString, -1));
+    Tcl_IncrRefCount(commandObjPtr);
     Tcl_Preserve((ClientData) menuPtr);
     returnResult = Tcl_EvalObj(menuPtr->interp, commandObjPtr);
-    Tcl_DecrRefCount(commandObjPtr); 
-
+    Tcl_DecrRefCount(commandObjPtr);
 
     /*
      * Make sure the tcl command actually created the clone.
@@ -2407,9 +2403,9 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 	    && (menuPtr->numEntries == menuRefPtr->menuPtr->numEntries)) {
     	TkMenu *newMenuPtr = menuRefPtr->menuPtr;
 	Arg newArgv[3];
-	int i, numElements;          
+	int i, numElements;
 
-	*widget = newMenuName; 
+	*widget = newMenuName;
 
 	/*
 	 * Now put this newly created menu into the parent menu's instance
@@ -2492,7 +2488,6 @@ CloneMenu(menuPtr, widget, newMenuTypeString)
 		    ConfigureMenuEntry(newMenuPtr->entries[i], 2, newArgv, 
 		    	    TK_CONFIG_ARGV_ONLY);
 		    Tcl_DecrRefCount(newArgv[0]);   
-		    Tcl_DecrRefCount(newArgv[1]);   
    	    	}
    	    }
    	}
@@ -2845,6 +2840,7 @@ TkSetWindowMenuBar(interp, tkwin, oldMenuName, menuName)
 
     	    cloneMenuName = LangWidgetArg(interp, tkwin);
             CloneMenu(menuPtr, &cloneMenuName, "menubar");
+	    
             cloneMenuRefPtr = TkFindMenuReferences(interp, LangString(cloneMenuName));
             if ((cloneMenuRefPtr != NULL)
 		    && (cloneMenuRefPtr->menuPtr != NULL)) {
@@ -2856,8 +2852,8 @@ TkSetWindowMenuBar(interp, tkwin, oldMenuName, menuName)
 			2, newArgv, TK_CONFIG_ARGV_ONLY);
 		Tcl_DecrRefCount(newArgv[0]);
 		Tcl_DecrRefCount(newArgv[1]);
-            }                       
-            Tcl_DecrRefCount(cloneMenuName);
+            }
+
 	    TkpSetWindowMenuBar(tkwin, menuBarPtr);
 		        
         } else {

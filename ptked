@@ -3,10 +3,11 @@ use strict;
 use IO;
 use Socket;
 use IO::Socket;
+use IO::Socket::INET;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#20 $
+$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#17 $
 
 my %opt;
 INIT 
@@ -131,7 +132,8 @@ sub Create_Edit
  my $t = $ed->Scrolled('TextUndo', -wrap => 'none', -scrollbars => 'osre');
  $t->pack(-expand => 1, -fill => 'both');
  $t = $t->Subwidget('textundo');
- my $menu = $t->menu;
+ print $t,"\n";
+ my $menu = $t->GetMenu;
  $menu->cascade(-label => '~Help', -menuitems => [
                 [Button => '~About...', -command => [\&About,$ed]],  
                ]);
@@ -266,7 +268,7 @@ sub About
 $0 version $VERSION
 perl$]/Tk$Tk::VERSION
 
-Copyright © 1995-2000 Nick Ing-Simmons. All rights reserved.
+Copyright © 1995-1999 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 END

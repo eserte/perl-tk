@@ -183,7 +183,7 @@ static int		TextCoords _ANSI_ARGS_((Tcl_Interp *interp,
 static void		TextDeleteChars _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, int first, int last));
 static void		TextInsert _ANSI_ARGS_((Tk_Canvas canvas,
-			    Tk_Item *itemPtr, int beforeThis, Tcl_Obj *string));
+			    Tk_Item *itemPtr, int beforeThis, char *string));
 static int		TextToArea _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, double *rectPtr));
 static double		TextToPoint _ANSI_ARGS_((Tk_Canvas canvas,
@@ -213,7 +213,7 @@ Tk_ItemType tkTextType = {
     TextToPostscript,			/* postscriptProc */
     ScaleText,				/* scaleProc */
     TranslateText,			/* translateProc */
-    GetTextIndex,			/* indexProc */
+    (Tk_ItemIndexProc *) GetTextIndex,	/* indexProc */
     SetTextCursor,			/* icursorProc */
     GetSelText,				/* selectionProc */
     TextInsert,				/* insertProc */
@@ -444,7 +444,7 @@ ConfigureText(interp, canvas, itemPtr, argc, argv, flags)
      * graphics contexts.
      */
 
-    state = Tk_GetItemState(canvas, itemPtr);
+    state = itemPtr->state;
 
     if (textPtr->activeColor != NULL ||
 	    textPtr->activeTile != NULL ||
@@ -452,6 +452,10 @@ ConfigureText(interp, canvas, itemPtr, argc, argv, flags)
 	itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
     } else {
 	itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
+    }
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
     }
 
     tile = textPtr->tile;
@@ -664,7 +668,11 @@ ComputeTextBbox(canvas, textPtr)
 {
     Tk_CanvasTextInfo *textInfoPtr;
     int leftX, topY, width, height, fudge;
-    Tk_State state = Tk_GetItemState(canvas, &textPtr->header);
+    Tk_State state = textPtr->header.state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     Tk_FreeTextLayout(textPtr->textLayout);
     textPtr->textLayout = Tk_ComputeTextLayout(textPtr->tkfont,
@@ -774,11 +782,14 @@ DisplayCanvText(canvas, itemPtr, display, drawable, x, y, width, height)
     short drawableX, drawableY;
     Pixmap stipple;
     Tk_Tile tile;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
     textPtr = (TextItem *) itemPtr;
     textInfoPtr = textPtr->textInfoPtr;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     stipple = textPtr->stipple;
     tile = textPtr->tile;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -944,19 +955,19 @@ DisplayCanvText(canvas, itemPtr, display, drawable, x, y, width, height)
  */
 
 static void
-TextInsert(canvas, itemPtr, beforeThis, ostring)
+TextInsert(canvas, itemPtr, beforeThis, string)
     Tk_Canvas canvas;		/* Canvas containing text item. */
     Tk_Item *itemPtr;		/* Text item to be modified. */
     int beforeThis;		/* Index of character before which text is
 				 * to be inserted. */
-    Tcl_Obj *ostring;		/* New characters to be inserted. */
+    char *string;		/* New characters to be inserted. */
 {
     TextItem *textPtr = (TextItem *) itemPtr;
-    int length = 0;
+    int length = strlen(string);
     char *new;
     Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
 
-    char * string = Tcl_GetStringFromObj(ostring, &length); 
+    /* string = Tcl_GetStringFromObj(string, &length); */
 
     if (length == 0) {
 	return;
@@ -1113,9 +1124,12 @@ TextToPoint(canvas, itemPtr, pointPtr)
     double *pointPtr;		/* Pointer to x and y coordinates. */
 {
     TextItem *textPtr;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
     double value;
 
+    if (state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     textPtr = (TextItem *) itemPtr;
     value =  (double) Tk_DistanceToTextLayout(textPtr->textLayout,
 	    (int) pointPtr[0] - textPtr->leftEdge,
@@ -1157,7 +1171,11 @@ TextToArea(canvas, itemPtr, rectPtr)
 				 * area.  */
 {
     TextItem *textPtr;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if (state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     textPtr = (TextItem *) itemPtr;
     return Tk_IntersectTextLayout(textPtr->textLayout,
@@ -1269,19 +1287,8 @@ GetTextIndex(interp, canvas, itemPtr, obj, indexPtr)
     int c;
     TkCanvas *canvasPtr = (TkCanvas *) canvas;
     Tk_CanvasTextInfo *textInfoPtr = textPtr->textInfoPtr;
-    char *string;
-    int x, y;
-    double dx,dy;
-    char *end, *p;      
-    Tcl_Obj **objv;                                    
+    char *string = Tcl_GetStringFromObj(obj, &length);
 
-    if (Tcl_ListObjGetElements(interp, obj, &c, &objv) == TCL_OK && c == 2
-	&& Tcl_GetDoubleFromObj(interp, objv[0], &dx) == TCL_OK
-	&& Tcl_GetDoubleFromObj(interp, objv[1], &dy) == TCL_OK) {
-	goto doxy;
-    } 
-
-    string = Tcl_GetStringFromObj(obj, &length);
     c = string[0];
 
     if ((c == 'e') && (strncmp(string, "end", length) == 0)) {
@@ -1303,19 +1310,22 @@ GetTextIndex(interp, canvas, itemPtr, obj, indexPtr)
 	}
 	*indexPtr = textInfoPtr->selectLast;
     } else if (c == '@') {
+	int x, y;
+	double tmp;
+	char *end, *p;
+
 	p = string+1;
-	dx = strtod(p, &end);
+	tmp = strtod(p, &end);
 	if ((end == p) || (*end != ',')) {
 	    goto badIndex;
 	}
+	x = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
 	p = end+1;
-	dy = strtod(p, &end);
+	tmp = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
 	}
-     doxy:
-	x = (int) ((dx < 0) ? dx - 0.5 : dx + 0.5);
-	y = (int) ((dy < 0) ? dy - 0.5 : dy + 0.5);
+	y = (int) ((tmp < 0) ? tmp - 0.5 : tmp + 0.5);
 	*indexPtr = Tk_PointToChar(textPtr->textLayout,
 		x + canvasPtr->scrollX1 - textPtr->leftEdge,
 		y + canvasPtr->scrollY1 - textPtr->header.y1);
@@ -1462,8 +1472,11 @@ TextToPostscript(interp, canvas, itemPtr, prepass)
     char buffer[500];
     XColor *color;
     Pixmap stipple;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     color = textPtr->color;
     stipple = textPtr->stipple;
     if (state == TK_STATE_HIDDEN || textPtr->color == NULL ||

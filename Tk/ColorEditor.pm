@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#31 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#28 $
 
 use Tk qw(Ev);
 
@@ -213,7 +213,7 @@ sub color_space {
         $objref->{'Labels'}[$i] = $Labels{$space}->[$i];
        }
       $objref->{'color_space'} = $space;
-      $objref->afterIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
+      $objref->DoWhenIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
      }
  return $objref->{'color_space'};
 } # color_space
@@ -288,7 +288,7 @@ sub color
    my $hex = sprintf('#%04x%04x%04x', $red, $green, $blue);
    $objref->{'color'} = $hex;
    $objref->{'Entry'} = $name;
-   $objref->afterIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
+   $objref->DoWhenIdle(['set_scales',$objref]) unless ($objref->{'pending'}++);
    $objref->{'swatch'}->itemconfigure($objref->{'swatch_item'},
             -fill => $objref->{'color'});
   }
@@ -442,7 +442,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#31 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#28 $
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
@@ -521,6 +521,19 @@ sub delete_menu_item
    splice(@{$objref->{'highlight_list'}}, $list_ord, 1) if $list_ord != -1;
   }
 }
+
+sub configure {
+
+    # Process ColorEditor configuration options now.
+
+    my($objref, @hook_list) = @_;
+
+    my($option, $value);
+    while (($option, $value) = splice(@hook_list, 0, 2)) {
+	$objref->SUPER::configure($option => $value);
+    } # whilend all options/values
+
+} # end configure
 
 sub delete_widgets {
 

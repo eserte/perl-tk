@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.039'; # $Id: //depot/Tk8/Tk/FileSelect.pm#39 $
+$VERSION = '3.037'; # $Id: //depot/Tk8/Tk/FileSelect.pm#37 $
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);
@@ -279,7 +279,7 @@ sub filter
    unless ($cw->{'reread'}++)
     {
      $cw->Busy;
-     $cw->afterIdle(['reread',$cw,$cw->cget('-directory')])
+     $cw->DoWhenIdle(['reread',$cw,$cw->cget('-directory')])
     }
   }
  return $$var;

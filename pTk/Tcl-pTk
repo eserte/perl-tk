@@ -192,8 +192,7 @@ while ($_ = &getline)
      {
       &complete;
       redo PROCESS;   
-     }         
-    s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*"(\d+)",\s*TCL_STATIC\s*\)/Tcl_SetObjResult($1, Tcl_NewIntObj($3))/;
+     }
     s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*Tk_PathName\(([^)]+)\),\s*TCL_STATIC\s*\)/Tcl_ArgResult($1,LangWidgetArg($1,$3))/; 
     s/Tcl_SetResult\s*\(\s*((\w+->)*interp),\s*((\w+->)*\w+)->pathName\s*,\s*TCL_STATIC\s*\)/Tcl_ArgResult($1,LangWidgetArg($1,(Tk_Window)($3)))/; 
     die $_ if /(Tk_PathName|->pathName)/;

@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.021'; # $Id: //depot/Tk8/Tixish/DirTree.pm#21 $
+$VERSION = '3.019'; # $Id: //depot/Tk8/Tixish/DirTree.pm#19 $
 
 use Tk;
 use Tk::Derived;
@@ -26,16 +26,18 @@ sub Populate {
     $cw->SUPER::Populate( $args );
 
     $cw->ConfigSpecs(
-        -dircmd         => [qw/CALLBACK dirCmd DirCmd DirCmd/],
+        -dircmd         => [qw/CALLBACK dirCmd DirCmd/,
+                            sub { $cw->dircmd( @_ ) } ],
         -showhidden     => [qw/PASSIVE showHidden ShowHidden 0/],
         -image          => [qw/PASSIVE image Image folder/],
         -directory      => [qw/SETMETHOD directory Directory ./],
         -value          => '-directory' );
 
     $cw->configure( -separator => '/', -itemtype => 'imagetext' );
+    $args->{-opencmd} = sub { $cw->opencmd( @_ ) };
 }
 
-sub DirCmd {
+sub dircmd {
     my( $w, $dir, $showhidden ) = @_;
 
     my $h = DirHandle->new( $dir ) or return();
@@ -43,8 +45,6 @@ sub DirCmd {
     @names = grep( ! /^[.]/, @names ) unless $showhidden;
     return( @names );
 }
-
-*dircmd = \&DirCmd;
 
 sub fullpath
 {
@@ -101,12 +101,11 @@ sub chdir {
         $parent = $dir;
     }
 
-    $w->OpenCmd( $parent );
+    $w->opencmd( $parent );
     $w->setmode( $parent, 'close' );
-}          
+}
 
-
-sub OpenCmd {
+sub opencmd {
     my( $w, $dir ) = @_;
 
     my $parent = $dir;
@@ -122,8 +121,6 @@ sub OpenCmd {
         }
     }
 }
-
-*opencmd = \&OpenCmd;
 
 sub add_to_tree {
     my( $w, $dir, $name, $parent ) = @_;

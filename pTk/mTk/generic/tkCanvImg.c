@@ -458,8 +458,11 @@ ComputeImageBbox(canvas, imgPtr)
     int width, height;
     int x, y;
     Tk_Image image;
-    Tk_State state = Tk_GetItemState(canvas, &imgPtr->header);
+    Tk_State state = imgPtr->header.state;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     image = imgPtr->image;
     if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)imgPtr) {
 	if (imgPtr->activeImage != NULL) {
@@ -559,7 +562,11 @@ DisplayImage(canvas, itemPtr, display, drawable, x, y, width, height)
     ImageItem *imgPtr = (ImageItem *) itemPtr;
     short drawableX, drawableY;
     Tk_Image image;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     image = imgPtr->image;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -730,7 +737,11 @@ ImageToPostscript(interp, canvas, itemPtr, prepass)
     double x, y;
     int width, height;
     Tk_Image image;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     image = imgPtr->image;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {

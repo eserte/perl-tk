@@ -462,11 +462,14 @@ ComputeWindowBbox(canvas, winItemPtr)
 					 * recomputed. */
 {
     int width, height, x, y;
-    Tk_State state = Tk_GetItemState(canvas, &winItemPtr->header);
+    Tk_State state = winItemPtr->header.state;
 
     x = (int) (winItemPtr->x + ((winItemPtr->x >= 0) ? 0.5 : - 0.5));
     y = (int) (winItemPtr->y + ((winItemPtr->y >= 0) ? 0.5 : - 0.5));
 
+    if (state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     if ((winItemPtr->tkwin == NULL) || (state == TK_STATE_HIDDEN)) {
 	/*
 	 * There is no window for this item yet.  Just give it a 1x1
@@ -588,10 +591,13 @@ DisplayWinItem(canvas, itemPtr, display, drawable, regionX, regionY,
     int width, height;
     short x, y;
     Tk_Window canvasTkwin = Tk_CanvasTkwin(canvas);
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
     if (winItemPtr->tkwin == NULL) {
 	return;
+    }
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
     }
     if (state == TK_STATE_HIDDEN) {
 	Tk_UnmapWindow(winItemPtr->tkwin);

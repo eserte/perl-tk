@@ -467,7 +467,7 @@ ConfigureRectOval(interp, canvas, itemPtr, argc, argv, flags)
 	return TCL_ERROR;
     }
 
-    state = Tk_GetItemState(canvas, itemPtr);
+    state = itemPtr->state;
 
     /*
      * A few of the options require additional processing, such as
@@ -518,6 +518,9 @@ ConfigureRectOval(interp, canvas, itemPtr, argc, argv, flags)
     }
     rectOvalPtr->outline.gc = newGC;
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     if (state==TK_STATE_HIDDEN) {
 	ComputeRectOvalBbox(canvas, rectOvalPtr);
 	return TCL_OK;
@@ -684,7 +687,11 @@ ComputeRectOvalBbox(canvas, rectOvalPtr)
 {
     int bloat, tmp;
     double dtmp, width;
-    Tk_State state = Tk_GetItemState(canvas, &rectOvalPtr->header);
+    Tk_State state = rectOvalPtr->header.state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = rectOvalPtr->outline.width;
     if (state==TK_STATE_HIDDEN) {
@@ -783,7 +790,7 @@ DisplayRectOval(canvas, itemPtr, display, drawable, x, y, width, height)
     short x1, y1, x2, y2;
     Tk_Tile fillTile;
     Pixmap fillStipple;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
     /*
      * Compute the screen coordinates of the bounding box for the item.
@@ -809,6 +816,9 @@ DisplayRectOval(canvas, itemPtr, display, drawable, x, y, width, height)
      * read-only.
      */
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     fillTile = rectOvalPtr->fillTile;
     fillStipple = rectOvalPtr->fillStipple;
     if (((TkCanvas *)canvas)->currentItemPtr == (Tk_Item *)rectOvalPtr) {
@@ -918,7 +928,11 @@ RectToPoint(canvas, itemPtr, pointPtr)
     RectOvalItem *rectPtr = (RectOvalItem *) itemPtr;
     double xDiff, yDiff, x1, y1, x2, y2, inc, tmp;
     double width;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = rectPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1036,7 +1050,11 @@ OvalToPoint(canvas, itemPtr, pointPtr)
     RectOvalItem *ovalPtr = (RectOvalItem *) itemPtr;
     double width;
     int filled;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = (double) ovalPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1090,7 +1108,11 @@ RectToArea(canvas, itemPtr, areaPtr)
     RectOvalItem *rectPtr = (RectOvalItem *) itemPtr;
     double halfWidth;
     double width;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = rectPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1163,7 +1185,11 @@ OvalToArea(canvas, itemPtr, areaPtr)
     double oval[4], halfWidth;
     int result;
     double width;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
+
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
 
     width = ovalPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1337,7 +1363,7 @@ RectOvalToPostscript(interp, canvas, itemPtr, prepass)
     Tk_Tile fillTile;
     XColor *fillColor;
     Pixmap fillStipple;
-    Tk_State state = Tk_GetItemState(canvas, itemPtr);
+    Tk_State state = itemPtr->state;
 
     y1 = Tk_CanvasPsY(canvas, rectOvalPtr->bbox[1]);
     y2 = Tk_CanvasPsY(canvas, rectOvalPtr->bbox[3]);
@@ -1360,6 +1386,9 @@ RectOvalToPostscript(interp, canvas, itemPtr, prepass)
 		(rectOvalPtr->bbox[2] - rectOvalPtr->bbox[0])/2, (y1 - y2)/2);
     }
 
+    if(state == TK_STATE_NULL) {
+	state = ((TkCanvas *)canvas)->canvas_state;
+    }
     tile = rectOvalPtr->outline.tile;
     color = rectOvalPtr->outline.color;
     fillTile = rectOvalPtr->fillTile;

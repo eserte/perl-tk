@@ -92,12 +92,14 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
     Arg * typeInfo = NULL;
     int code = TCL_OK;
     int i;
+    LangFreeProc *freeProc = NULL;
+    LangFreeProc *freeProc2 = NULL;
 
     if (arg == NULL) {
 	goto done;
     }
 
-    if (Tcl_ListObjGetElements(interp, arg, &listArgc, &listArgv) != TCL_OK) {
+    if (Lang_SplitList(interp, arg, &listArgc, &listArgv, &freeProc) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (listArgc == 0) {
@@ -119,7 +121,7 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
 	 */
 	FileFilter * filterPtr;
 
-	if (Tcl_ListObjGetElements(interp, listArgv[i], &typeCount, &typeInfo) != TCL_OK) {
+	if (Lang_SplitList(interp, listArgv[i], &typeCount, &typeInfo, &freeProc2) != TCL_OK) {
 	    code = TCL_ERROR;
 	    goto done;
 	}
@@ -145,10 +147,18 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
 	    goto done;
 	}
 
+        if (freeProc2) {
+	    (*freeProc2) (typeCount, typeInfo);
+	}
 	typeInfo = NULL;
     }
 
   done:
+    if (freeProc2 && typeInfo) {
+	(*freeProc2) (typeCount, typeInfo);
+    }
+    if (freeProc)
+	(*freeProc) (listArgc, listArgv);
     return code;
 }
 

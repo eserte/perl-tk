@@ -19,7 +19,6 @@
 DECLARE_VTABLES;
 
 extern Tk_ItemType ptkCanvGridType;
-extern Tk_ItemType ptkCanvGroupType;
 
 
 MODULE = Tk::Canvas	PACKAGE = Tk
@@ -38,5 +37,4 @@ BOOT:
  {
   IMPORT_VTABLES;
   Tk_CreateItemType(&ptkCanvGridType);
-  Tk_CreateItemType(&ptkCanvGroupType);
  }

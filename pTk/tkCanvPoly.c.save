@@ -86,101 +86,101 @@ static Tk_CustomOption pixelOption = {
 };
 
 static Tk_ConfigSpec configSpecs[] = {
-    {TK_CONFIG_CUSTOM, "-activedash", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.activeDash),
+    {TK_CONFIG_CUSTOM, "-activedash",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.activeDash),
 	TK_CONFIG_NULL_OK, &dashOption},
-    {TK_CONFIG_COLOR, "-activefill", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, activeFillColor),
+    {TK_CONFIG_COLOR, "-activefill",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, activeFillColor),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_COLOR, "-activeoutline", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.activeColor),
+    {TK_CONFIG_COLOR, "-activeoutline",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.activeColor),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_BITMAP, "-activeoutlinestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.activeStipple),
+    {TK_CONFIG_BITMAP, "-activeoutlinestipple",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.activeStipple),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-activeoutlinetile", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.activeTile),
+    {TK_CONFIG_CUSTOM, "-activeoutlinetile",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.activeTile),
 	TK_CONFIG_NULL_OK, &tileOption},
-    {TK_CONFIG_BITMAP, "-activestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, activeFillStipple),
+    {TK_CONFIG_BITMAP, "-activestipple",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, activeFillStipple),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-activetile", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, activeFillTile),
+    {TK_CONFIG_CUSTOM, "-activetile",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, activeFillTile),
 	TK_CONFIG_NULL_OK, &tileOption},
-    {TK_CONFIG_CUSTOM, "-activewidth", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_CUSTOM, "-activewidth",          NULL,          NULL,
 	"0.0", Tk_Offset(PolygonItem, outline.activeWidth),
 	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
-    {TK_CONFIG_CUSTOM, "-dash", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.dash),
+    {TK_CONFIG_CUSTOM, "-dash",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.dash),
 	TK_CONFIG_NULL_OK, &dashOption},
-    {TK_CONFIG_PIXELS, "-dashoffset", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_PIXELS, "-dashoffset",          NULL,          NULL,
 	"0", Tk_Offset(PolygonItem, outline.offset),
 	TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_CUSTOM, "-disableddash", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.disabledDash),
+    {TK_CONFIG_CUSTOM, "-disableddash",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.disabledDash),
 	TK_CONFIG_NULL_OK, &dashOption},
-    {TK_CONFIG_COLOR, "-disabledfill", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, disabledFillColor),
+    {TK_CONFIG_COLOR, "-disabledfill",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, disabledFillColor),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_COLOR, "-disabledoutline", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.disabledColor),
+    {TK_CONFIG_COLOR, "-disabledoutline",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.disabledColor),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_BITMAP, "-disabledoutlinestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.disabledStipple),
+    {TK_CONFIG_BITMAP, "-disabledoutlinestipple",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.disabledStipple),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-disabledoutlinetile", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.disabledTile),
+    {TK_CONFIG_CUSTOM, "-disabledoutlinetile",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.disabledTile),
 	TK_CONFIG_NULL_OK, &tileOption},
-    {TK_CONFIG_BITMAP, "-disabledstipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, disabledFillStipple),
+    {TK_CONFIG_BITMAP, "-disabledstipple",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, disabledFillStipple),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-disabledtile", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, disabledFillTile),
+    {TK_CONFIG_CUSTOM, "-disabledtile",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, disabledFillTile),
 	TK_CONFIG_NULL_OK, &tileOption},
-    {TK_CONFIG_CUSTOM, "-disabledwidth", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_CUSTOM, "-disabledwidth",          NULL,          NULL,
 	"0.0", Tk_Offset(PolygonItem, outline.disabledWidth),
 	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
-    {TK_CONFIG_COLOR, "-fill", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_COLOR, "-fill",          NULL,          NULL,
 	"black", Tk_Offset(PolygonItem, fillColor), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_JOIN_STYLE, "-joinstyle", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_JOIN_STYLE, "-joinstyle",          NULL,          NULL,
 	"round", Tk_Offset(PolygonItem, joinStyle), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_CUSTOM, "-offset", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_CUSTOM, "-offset",          NULL,          NULL,
 	"0,0", Tk_Offset(PolygonItem, tsoffset),
 	TK_CONFIG_NULL_OK, &offsetOption},
-    {TK_CONFIG_COLOR, "-outline", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.color),
+    {TK_CONFIG_COLOR, "-outline",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.color),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-outlineoffset", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_CUSTOM, "-outlineoffset",          NULL,          NULL,
 	"0,0", Tk_Offset(PolygonItem, outline.tsoffset),
 	TK_CONFIG_NULL_OK, &offsetOption},
-    {TK_CONFIG_BITMAP, "-outlinestipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.stipple),
+    {TK_CONFIG_BITMAP, "-outlinestipple",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.stipple),
 	TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-outlinetile", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, outline.tile),
+    {TK_CONFIG_CUSTOM, "-outlinetile",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, outline.tile),
 	TK_CONFIG_NULL_OK, &tileOption},
-    {TK_CONFIG_CUSTOM, "-smooth", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_CUSTOM, "-smooth",          NULL,          NULL,
 	"0", Tk_Offset(PolygonItem, smooth),
 	TK_CONFIG_DONT_SET_DEFAULT, &smoothOption},
-    {TK_CONFIG_INT, "-splinesteps", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_INT, "-splinesteps",          NULL,          NULL,
 	"12", Tk_Offset(PolygonItem, splineSteps), TK_CONFIG_DONT_SET_DEFAULT},
-    {TK_CONFIG_CUSTOM, "-state", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(Tk_Item, state), TK_CONFIG_NULL_OK,
+    {TK_CONFIG_CUSTOM, "-state",          NULL,          NULL,
+	         NULL, Tk_Offset(Tk_Item, state), TK_CONFIG_NULL_OK,
 	&stateOption},
-    {TK_CONFIG_BITMAP, "-stipple", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, fillStipple), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-tags", (char *) NULL, (char *) NULL,
-	(char *) NULL, 0, TK_CONFIG_NULL_OK, &tagsOption},
-    {TK_CONFIG_CUSTOM, "-tile", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(PolygonItem, fillTile),
+    {TK_CONFIG_BITMAP, "-stipple",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, fillStipple), TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tags",          NULL,          NULL,
+	         NULL, 0, TK_CONFIG_NULL_OK, &tagsOption},
+    {TK_CONFIG_CUSTOM, "-tile",          NULL,          NULL,
+	         NULL, Tk_Offset(PolygonItem, fillTile),
 	TK_CONFIG_NULL_OK, &tileOption},
-    {TK_CONFIG_CALLBACK, "-updatecommand", (char *) NULL, (char *) NULL,
-	(char *) NULL, Tk_Offset(Tk_Item, updateCmd), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_CUSTOM, "-width", (char *) NULL, (char *) NULL,
+    {TK_CONFIG_STRING, "-updatecommand",          NULL,          NULL,
+	         NULL, Tk_Offset(Tk_Item, updateCmd), TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-width",          NULL,          NULL,
 	"1.0", Tk_Offset(PolygonItem, outline.width),
 	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
-    {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
-	(char *) NULL, 0, 0}
+    {TK_CONFIG_END,          NULL,          NULL,          NULL,
+	         NULL, 0, 0}
 };
 
 /*
@@ -191,10 +191,10 @@ static void		ComputePolygonBbox _ANSI_ARGS_((Tk_Canvas canvas,
 			    PolygonItem *polyPtr));
 static int		ConfigurePolygon _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr, int argc,
-			    char **argv, int flags));
+			    Arg *args, int flags));
 static int		CreatePolygon _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, struct Tk_Item *itemPtr,
-			    int argc, char **argv));
+			    int argc, Arg *args));
 static void		DeletePolygon _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr,  Display *display));
 static void		DisplayPolygon _ANSI_ARGS_((Tk_Canvas canvas,
@@ -205,7 +205,7 @@ static int		GetPolygonIndex _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *obj, int *indexPtr));
 static int		PolygonCoords _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Canvas canvas, Tk_Item *itemPtr,
-			    int argc, char **argv));
+			    int argc, Arg *args));
 static void		PolygonDeleteCoords _ANSI_ARGS_((Tk_Canvas canvas,
 			    Tk_Item *itemPtr, int first, int last));
 static void		PolygonInsert _ANSI_ARGS_((Tk_Canvas canvas,
@@ -273,7 +273,7 @@ Tk_ItemType tkPolygonType = {
  * Results:
  *	A standard Tcl return value.  If an error occurred in
  *	creating the item, then an error message is left in
- *	interp->result;  in this case itemPtr is
+ *	Tcl_GetResult(interp);  in this case itemPtr is
  *	left uninitialized, so it can be safely freed by the
  *	caller.
  *
@@ -284,13 +284,13 @@ Tk_ItemType tkPolygonType = {
  */
 
 static int
-CreatePolygon(interp, canvas, itemPtr, argc, argv)
+CreatePolygon(interp, canvas, itemPtr, argc, args)
     Tcl_Interp *interp;			/* Interpreter for error reporting. */
     Tk_Canvas canvas;			/* Canvas to hold new item. */
     Tk_Item *itemPtr;			/* Record to hold new item;  header
 					 * has been initialized by caller. */
-    int argc;				/* Number of arguments in argv. */
-    char **argv;			/* Arguments describing polygon. */
+    int argc;				/* Number of arguments in args. */
+    Arg *args;			/* Arguments describing polygon. */
 {
     PolygonItem *polyPtr = (PolygonItem *) itemPtr;
     int i;
@@ -335,11 +335,11 @@ CreatePolygon(interp, canvas, itemPtr, argc, argv)
 	    break;
 	}
     }
-    if (i && PolygonCoords(interp, canvas, itemPtr, i, argv) != TCL_OK) {
+    if (i && PolygonCoords(interp, canvas, itemPtr, i, args) != TCL_OK) {
 	goto error;
     }
 
-    if (ConfigurePolygon(interp, canvas, itemPtr, argc-i, argv+i, 0)
+    if (ConfigurePolygon(interp, canvas, itemPtr, argc-i, args+i, 0)
 	    == TCL_OK) {
 	return TCL_OK;
     }
@@ -359,7 +359,7 @@ CreatePolygon(interp, canvas, itemPtr, argc, argv)
  *	on what it does.
  *
  * Results:
- *	Returns TCL_OK or TCL_ERROR, and sets interp->result.
+ *	Returns TCL_OK or TCL_ERROR, and sets Tcl_GetResult(interp).
  *
  * Side effects:
  *	The coordinates for the given item may be changed.
@@ -368,14 +368,14 @@ CreatePolygon(interp, canvas, itemPtr, argc, argv)
  */
 
 static int
-PolygonCoords(interp, canvas, itemPtr, argc, argv)
+PolygonCoords(interp, canvas, itemPtr, argc, args)
     Tcl_Interp *interp;			/* Used for error reporting. */
     Tk_Canvas canvas;			/* Canvas containing item. */
     Tk_Item *itemPtr;			/* Item whose coordinates are to be
 					 * read or modified. */
     int argc;				/* Number of coordinates supplied in
-					 * argv. */
-    char **argv;			/* Array of coordinates: x1, y1,
+					 * args. */
+    Arg *args;			/* Array of coordinates: x1, y1,
 					 * x2, y2, ... */
 {
     PolygonItem *polyPtr = (PolygonItem *) itemPtr;
@@ -402,7 +402,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
     if (argc & 1) {
 	Tcl_AppendResult(interp,
 		"odd number of coordinates specified for polygon",
-		(char *) NULL);
+		         NULL);
 	return TCL_ERROR;
     } else {
 	numPoints = argc/2;
@@ -455,7 +455,7 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
  *
  * Results:
  *	A standard Tcl result code.  If an error occurs, then
- *	an error message is left in interp->result.
+ *	an error message is left in Tcl_GetResult(interp).
  *
  * Side effects:
  *	Configuration information, such as colors and stipple
@@ -465,12 +465,12 @@ PolygonCoords(interp, canvas, itemPtr, argc, argv)
  */
 
 static int
-ConfigurePolygon(interp, canvas, itemPtr, argc, argv, flags)
+ConfigurePolygon(interp, canvas, itemPtr, argc, args, flags)
     Tcl_Interp *interp;		/* Interpreter for error reporting. */
     Tk_Canvas canvas;		/* Canvas containing itemPtr. */
     Tk_Item *itemPtr;		/* Polygon item to reconfigure. */
-    int argc;			/* Number of elements in argv.  */
-    char **argv;		/* Arguments describing things to configure. */
+    int argc;			/* Number of elements in args.  */
+    Arg *args;		/* Arguments describing things to configure. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
     PolygonItem *polyPtr = (PolygonItem *) itemPtr;
@@ -485,7 +485,7 @@ ConfigurePolygon(interp, canvas, itemPtr, argc, argv, flags)
     Pixmap pixmap;
 
     tkwin = Tk_CanvasTkwin(canvas);
-    if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, argv,
+    if (Tk_ConfigureWidget(interp, tkwin, configSpecs, argc, args,
 	    (char *) polyPtr, flags|TK_CONFIG_OBJS) != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -1713,7 +1713,7 @@ ScalePolygon(canvas, itemPtr, originX, originY, scaleX, scaleY)
  *	A standard Tcl result.  If all went well, then *indexPtr is
  *	filled in with the index (into itemPtr) corresponding to
  *	string.  Otherwise an error message is left in
- *	interp->result.
+ *	Tcl_GetResult(interp).
  *
  * Side effects:
  *	None.
@@ -1742,13 +1742,13 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
 	    badIndex:
 
 	    /*
-	     * Some of the paths here leave messages in interp->result,
+	     * Some of the paths here leave messages in Tcl_GetResult(interp),
 	     * so we have to clear it out before storing our own message.
 	     */
 
-	    Tcl_SetResult(interp, (char *) NULL, TCL_STATIC);
+	    Tcl_SetResult(interp,          NULL, TCL_STATIC);
 	    Tcl_AppendResult(interp, "bad index \"", string, "\"",
-		    (char *) NULL);
+		             NULL);
 	    return TCL_ERROR;
 	}
     } else if (string[0] == '@') {
@@ -1845,7 +1845,7 @@ TranslatePolygon(canvas, itemPtr, deltaX, deltaY)
  * Results:
  *	The return value is a standard Tcl result.  If an error
  *	occurs in generating Postscript then an error message is
- *	left in interp->result, replacing whatever used
+ *	left in Tcl_GetResult(interp), replacing whatever used
  *	to be there.  If no error occurs, then Postscript for the
  *	item is appended to the result.
  *
@@ -1926,18 +1926,18 @@ PolygonToPostscript(interp, canvas, itemPtr, prepass)
 		polyPtr->coordPtr[0], Tk_CanvasPsY(canvas, polyPtr->coordPtr[1]),
 		width/2.0, width/2.0);
 	Tcl_AppendResult(interp, "matrix currentmatrix\n",string,
-		" scale 1 0 moveto 0 0 1 0 360 arc\nsetmatrix\n", (char *) NULL);
+		" scale 1 0 moveto 0 0 1 0 360 arc\nsetmatrix\n",          NULL);
 	if (Tk_CanvasPsColor(interp, canvas, color)
 		!= TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (stipple != None) {
-	    Tcl_AppendResult(interp, "clip ", (char *) NULL);
+	    Tcl_AppendResult(interp, "clip ",          NULL);
 	    if (Tk_CanvasPsStipple(interp, canvas, stipple) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	} else {
-	    Tcl_AppendResult(interp, "fill\n", (char *) NULL);
+	    Tcl_AppendResult(interp, "fill\n",          NULL);
 	}
 	return TCL_OK;
     }
@@ -1957,16 +1957,16 @@ PolygonToPostscript(interp, canvas, itemPtr, prepass)
 	    return TCL_ERROR;
 	}
 	if (fillStipple != None) {
-	    Tcl_AppendResult(interp, "eoclip ", (char *) NULL);
+	    Tcl_AppendResult(interp, "eoclip ",          NULL);
 	    if (Tk_CanvasPsStipple(interp, canvas, fillStipple)
 		    != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	    if (color != NULL) {
-		Tcl_AppendResult(interp, "grestore gsave\n", (char *) NULL);
+		Tcl_AppendResult(interp, "grestore gsave\n",          NULL);
 	    }
 	} else {
-	    Tcl_AppendResult(interp, "eofill\n", (char *) NULL);
+	    Tcl_AppendResult(interp, "eofill\n",          NULL);
 	}
     }
 
@@ -1991,7 +1991,7 @@ PolygonToPostscript(interp, canvas, itemPtr, prepass)
 	    style = "0";
 	}
 	Tcl_AppendResult(interp, style," setlinejoin 1 setlinecap\n",
-		(char *) NULL);
+		         NULL);
 	if (Tk_CanvasPsOutline(canvas, itemPtr,
 		&(polyPtr->outline)) != TCL_OK) {
 	    return TCL_ERROR;

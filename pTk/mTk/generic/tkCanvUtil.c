@@ -380,14 +380,16 @@ Tk_CanvasTagsParseProc(clientData, interp, tkwin, arg, widgRec, offset)
 {
     register Tk_Item *itemPtr = (Tk_Item *) widgRec;
     int argc, i;
-    Tcl_Obj **objv;
+    Arg *args;
     Tk_Uid *newPtr;
+    LangFreeProc *freeProc = NULL;
+    
 
     /*
      * Break the value up into the individual tag names.
      */
 
-    if (Tcl_ListObjGetElements(interp, arg, &argc, &objv) != TCL_OK) {
+    if (Lang_SplitList(interp, arg, &argc, &args, &freeProc) != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -409,8 +411,10 @@ Tk_CanvasTagsParseProc(clientData, interp, tkwin, arg, widgRec, offset)
     }
     itemPtr->numTags = argc;
     for (i = 0; i < argc; i++) {
-	itemPtr->tagPtr[i] = Tk_GetUid(LangString(objv[i]));
+	itemPtr->tagPtr[i] = Tk_GetUid(argv[i]);
     }
+    if (freeProc)
+     (*freeProc)(argc, args);
     return TCL_OK;
 }
 
@@ -447,14 +451,24 @@ Tk_CanvasTagsPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 					 * storage for return string. */
 {
     register Tk_Item *itemPtr = (Tk_Item *) widgRec;
-    Tcl_Obj *result = NULL;
-    int i;
+    Arg result = NULL;
 
-    result = Tcl_NewListObj(0,NULL);
-    for (i=0; i < itemPtr->numTags; i++) {
-	Tcl_ListObjAppendElement(NULL,result,
-				Tcl_NewStringObj((char *)itemPtr->tagPtr[i],-1));
+    if (itemPtr->numTags == 0) {
+	*freeProcPtr = (Tcl_FreeProc *) NULL;
+        LangSetDefault(&result,"");
+    } else if (itemPtr->numTags == 1) {
+	*freeProcPtr = (Tcl_FreeProc *) NULL;
+        LangSetDefault(&result,(char *) itemPtr->tagPtr[0]);
+    } else {
+        Arg *list = LangAllocVec(itemPtr->numTags);
+        int i;
+        for (i=0; i < itemPtr->numTags; i++)
+           LangSetDefault(&list[i],(char *) itemPtr->tagPtr[i]);
+        result = Tcl_Merge(itemPtr->numTags, list);
+        LangFreeVec(itemPtr->numTags, list);
+        *freeProcPtr = (Tcl_FreeProc *) free;
     }
+    *freeProcPtr = TCL_DYNAMIC;
     return result;
 }
 
@@ -740,10 +754,8 @@ TkSmoothPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 					 * storage for return string. */
 {
     register Tk_SmoothMethod **smoothPtr = (Tk_SmoothMethod **) (widgRec + offset);
-    Arg result = NULL;
-    if (*smoothPtr) {
-	LangSetDefault(&result,(*smoothPtr)->name);
-    }
+    Arg result;
+    LangSetDefault(&result,(*smoothPtr) ? (*smoothPtr)->name : "0");
     return result;
 }
 /*

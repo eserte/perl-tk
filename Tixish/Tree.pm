@@ -6,9 +6,9 @@ package Tk::Tree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '3.019'; # $Id: //depot/Tk8/Tixish/Tree.pm#19 $
+$VERSION = '3.015'; # $Id: //depot/Tk8/Tixish/Tree.pm#15 $
 
-use Tk ();
+use Tk;
 use Tk::Derived;
 use Tk::HList;
 use base  qw(Tk::Derived Tk::HList);
@@ -26,9 +26,12 @@ sub Populate
 
  $w->ConfigSpecs(
         -ignoreinvoke => ['PASSIVE',  'ignoreInvoke', 'IgnoreInvoke', 0],
-        -opencmd      => ['CALLBACK', 'openCmd',      'OpenCmd', 'OpenCmd' ],
-        -indicatorcmd => ['CALLBACK', 'indicatorCmd', 'IndicatorCmd', 'IndicatorCmd'],
-        -closecmd     => ['CALLBACK', 'closeCmd',     'CloseCmd', 'CloseCmd'],
+        -opencmd      => ['CALLBACK', 'openCmd',      'OpenCmd',
+                          sub { $w->OpenCmd( @_ ) } ],
+        -indicatorcmd => ['CALLBACK', 'indicatorCmd',      'IndicatorCmd',
+                          sub { $w->IndicatorCmd( @_ ) } ],
+        -closecmd     => ['CALLBACK', 'closeCmd',     'CloseCmd',
+                          sub { $w->CloseCmd( @_ ) } ],
         -indicator    => ['SELF', 'indicator', 'Indicator', 1],
         -indent       => ['SELF', 'indent', 'Indent', 20],
         -width        => ['SELF', 'width', 'Width', 20],

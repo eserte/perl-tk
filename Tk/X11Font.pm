@@ -1,6 +1,6 @@
 package Tk::X11Font;
 use vars qw($VERSION);
-$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/X11Font.pm#12 $
+$VERSION = '3.010'; # $Id: //depot/Tk8/Tk/X11Font.pm#10 $
 
 require Tk::Widget;
 require Tk::Xlib;
@@ -170,14 +170,14 @@ sub ascent
 {
  my $me = shift;
  my $name = $me->Name;
- $me->{MainWin}->fontMetrics($name, '-ascent');
+ $me->{MainWin}->FontAscent($name);
 }
 
 sub descent
 {
  my $me = shift;
  my $name = $me->Name;
- $me->{MainWin}->fontMetrics($name, '-descent');
+ $me->{MainWin}->FontDescent($name);
 }
 
 1;

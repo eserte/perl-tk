@@ -709,7 +709,6 @@ typedef struct Tk_Item  {
     Tk_State state;			/* state of item */
     LangCallback *updateCmd;		/* for "-updatecommand" option */
     int redraw_flags;			/* some flags used in the canvas */
-    struct Tk_Item *group;		/* group item managing this one */
 
     /*
      *------------------------------------------------------------------
@@ -771,10 +770,6 @@ typedef struct Tk_VisitorType {
     Tk_VisitorItemProc *visitStripchart;/* The Stripchart visitor procedure.
 					 * from Scotty */
 
-    /* ptk extensions */
-    Tk_VisitorItemProc *visitGroup;	/* The Group visitor procedure. */
-    Tk_VisitorItemProc *visitGrid;	/* The Grid visitor procedure. */
-
     /*
      *------------------------------------------------------------------
      * Starting here is additional item-extension stuff;
@@ -815,7 +810,7 @@ typedef void	Tk_ItemScaleProc _ANSI_ARGS_((Tk_Canvas canvas,
 typedef void	Tk_ItemTranslateProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, double deltaX, double deltaY));
 typedef int	Tk_ItemIndexProc _ANSI_ARGS_((Tcl_Interp *interp,
-		    Tk_Canvas canvas, Tk_Item *itemPtr, Tcl_Obj *indexString,
+		    Tk_Canvas canvas, Tk_Item *itemPtr, Arg indexString,
 		    int *indexPtr));
 typedef void	Tk_ItemCursorProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int index));
@@ -823,7 +818,7 @@ typedef int	Tk_ItemSelectionProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int offset, char *buffer,
 		    int maxBytes));
 typedef void	Tk_ItemInsertProc _ANSI_ARGS_((Tk_Canvas canvas,
-		    Tk_Item *itemPtr, int beforeThis, Tcl_Obj *string));
+		    Tk_Item *itemPtr, int beforeThis, char *string));
 typedef void	Tk_ItemDCharsProc _ANSI_ARGS_((Tk_Canvas canvas,
 		    Tk_Item *itemPtr, int first, int last));
 typedef void	Tk_ItemBboxProc _ANSI_ARGS_((Tk_Canvas canvas,

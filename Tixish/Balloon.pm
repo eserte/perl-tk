@@ -5,7 +5,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.035'; # $Id: //depot/Tk8/Tixish/Balloon.pm#35 $
+$VERSION = '3.030'; # $Id: //depot/Tk8/Tixish/Balloon.pm#30 $
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -103,22 +103,17 @@ sub attach {
 # detach a client from the balloon.
 sub detach {
     my ($w, $client) = @_;
-    if (Exists($w))
-     {
-      $w->Deactivate if ($client->IS($w->{'client'}));
-     }
+    return unless Exists($w);
+    $w->Deactivate if ($client->IS($w->{'client'}));
     delete $w->{'clients'}{$client};
 }                                    
 
 sub GetOption
 {
  my ($w,$opt,$client) = @_;
- $client = $w->{'client'} unless defined $client;
- if (defined $client)
-  {
-   my $info = $w->{'clients'}{$client};         
-   return $info->{$opt} if exists $info->{$opt};
-  }
+ $client = $w->{'client'} unless $client;
+ my $info = $w->{'clients'}{$client};
+ return $info->{$opt} if exists $info->{$opt};
  return $w->cget($opt);
 } 
 
@@ -265,6 +260,48 @@ sub Deactivate {
     $w->{'subclient'} = undef;
 }
 
+sub Tk::Canvas::BalloonInfo
+{
+ my ($canvas,$balloon,$X,$Y,@opt) = @_;
+ my @tags = ($canvas->find('withtag', 'current'),$canvas->gettags('current'));
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$canvas);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'HASH'))
+    {                     
+     $balloon->Subclient($tags[0]);
+     foreach my $tag (@tags) 
+      {              
+       return $info->{$tag} if exists $info->{$tag};
+      }         
+     return ''; 
+    }           
+   return $info;
+  }
+}                                  
+
+sub Tk::Menu::BalloonInfo
+{
+ my ($menu,$balloon,$X,$Y,@opt) = @_;
+ my $i = $menu->index('active');
+ if ($i eq 'none') 
+  {
+   my $y = $Y - $menu->rooty;
+   $i = $menu->index("\@$y");
+  }                             
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$menu);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'ARRAY'))
+    {           
+     $balloon->Subclient($i);
+     return '' if $i eq 'none';
+     return ${$info}[$i] || '';
+    }           
+   return $info;
+  }
+}       
+
 sub Popup {
     my ($w) = @_;
     if ($w->cget(-installcolormap)) {
@@ -314,6 +351,16 @@ sub Popup {
     $w->raise;
     #$w->update;  # This can cause confusion by processing more Motion events before this one has finished.
 }                                           
+
+sub Tk::Widget::BalloonInfo
+{
+ my ($widget,$balloon,$X,$Y,@opt) = @_;
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$widget);
+   return $info if defined $info;
+  }
+}
 
 sub SetStatus {
     my ($w) = @_;

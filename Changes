@@ -4,15 +4,6 @@ release is at the top.
 Change.log is generated from perforce database, it is therefore
 complete, but short on detail.
 
-Changes in Tk800.017                              
-	Move most of C code to use Tcl/Tk supported Tcl_Obj type calls rather
-	than ad hoc Lang calls - should aid future merges.
-	Added (experimental) group item to Canvas                
-	bbox etc. (e.g. Canvas items) return reference [] or list () depending on perl's context.
-	Major overhaul of internals to assist in cleaner, non-delayed destruction of
-	widget data structures.
-	Move Text's menu handling to Widget and renamed it ->menu
-
 Changes in Tk800.016
 	Steve's merge of :
 	  Andy Duncan's DialogBox fix. 

@@ -244,7 +244,7 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n      1999/11/29",
+		       "\nTk Version $Tk::VERSION\n\n        98/05/24",
 );
 $about->entryconfigure('Widget', -command => [$DIALOG_ABOUT => 'Show']);
 
@@ -513,11 +513,11 @@ defaults to the released user contributed directory.
  #     Update for Tk8.
  # Stephen O. Lidie, LUCC, 98/06/26.  Stephen.O.Lidie@Lehigh.EDU
  #     Add Common Dialogs for Tk800.007.
- # Stephen.O.Lidie@Lehigh.EDU, 1999/11/29, Lehigh University.
- #     Demo some "dash patch" changes.
 
 =head1 AUTHOR
 
 Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
 
 =cut 
+
+
