@@ -499,21 +499,21 @@ C<iconimage> and C<iconbitmap> set the "large" icon, which should be
 32x32, it will automatically be scaled down to 16x16 for use as a small icon.
 Win32 ignores C<iconwin> requests.
 
-=item * KDE's "kwm"
-
-Accepts coloured C<iconimage> and black and white C<iconbitmap> but
-will scale either to a small (14x14?) icon. Kwm ignores C<iconwin>.
+=item * KDE's "kwm" 
+                
+Accepts coloured C<iconimage> and black and white C<iconbitmap> but 
+will scale either to a small (14x14?) icon. Kwm ignores C<iconwin>. 
 
 =item * Sun's "olwm" or "olvwm"
 
 Honours C<iconwin> which will override C<iconimage> or C<iconbitmap>.
-Coloured images work.
+Coloured images work. 
 
 =item * Sun's CDE window manager
 
 Coloured images work. ...
 
-=back
+=back 
 
 =head1 GEOMETRY MANAGEMENT
 

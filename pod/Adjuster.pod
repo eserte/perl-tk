@@ -39,7 +39,7 @@ Specifies the side on which the managed widget lies relative to the
 Adjuster. In conjunction with the pack geometry manager, this relates to
 the side of the master against which the managed widget and the Adjuster
 are packed.
-Must be B<left>, B<right>, B<top>, or B<bottom>. Defaults to B<top>.
+Must be B<left>, B<right>, B<top>, or B<bottom>. Defaults to B<top>. 
 
 =item Name: B<widget>
 
@@ -81,7 +81,7 @@ which allows the managed widget to expand naturally on window creation.
 The Tk::Widget method, B<packAdjust>, calls pack on the widget, then
 creates an instance of B<Tk::Adjuster>,
 and packs that "after" the widget. Its use has two disadvantages however: the
-Adjuster widget is not made available to the caller, and
+Adjuster widget is not made available to the caller, and 
 options cannot be set on the Adjuster. For these reasons, the Tk::Adjuster
 method, B<packAfter> is preferred, but B<packAdjust> is retained
 for backwards compatibility.

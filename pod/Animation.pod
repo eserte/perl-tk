@@ -12,7 +12,7 @@ Tk::Animation - Display sequence of Tk::Photo images
   use Tk::Animation
   my $img = $widget->Animation('-format' => 'gif', -file => 'somefile.gif');
 
-  $img->add_frames(@images);
+  $img->add_frame(@images);
 
   $img->start_animation($period);
   $img->stop_animation;
@@ -23,7 +23,7 @@ Tk::Animation - Display sequence of Tk::Photo images
 In the simple case when C<Animation> is passed a GIF89 style GIF with
 multiple 'frames', it will build an internal array of C<Photo> images.
 
-The C<add_frames> method adds images to the sequence. It is provided
+The C<add_frame> method adds images to the sequence. It is provided
 to allow animations to be constructed from separate images.
 All images must be C<Photo>s and should all be the same size.
 

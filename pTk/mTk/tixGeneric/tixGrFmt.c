@@ -1,7 +1,4 @@
-
-/*	$Id: tixGrFmt.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
-/*
+/* 
  * tixGrFmt.c --
  *
  *	This module handles the formatting of the elements inside a Grid
@@ -96,7 +93,7 @@ static int		GetInfo _ANSI_ARGS_((WidgetPtr wPtr,
 #define DEF_GRID_FILLED			"0"
 #define DEF_GRID_BORDER_COLOR		NORMAL_BG
 #define DEF_GRID_BORDER_MONO		WHITE
-#define DEF_GRID_GRIDLINE_COLOR		BLACK
+#define DEF_GRID_GRIDLINE_COLOR		BLACK 
 #define DEF_GRID_GRIDLINE_MONO		BLACK
 
 static Tk_ConfigSpec borderConfigSpecs[] = {
@@ -133,7 +130,7 @@ static Tk_ConfigSpec borderConfigSpecs[] = {
 
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
        (char *) NULL, 0, 0}
-};
+};	
 
 static Tk_ConfigSpec gridConfigSpecs[] = {
     {TK_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor",
@@ -177,7 +174,7 @@ static Tk_ConfigSpec gridConfigSpecs[] = {
 
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
        (char *) NULL, 0, 0}
-};
+};	
 
 int
 Tix_GrFormat(clientData, interp, argc, argv)
@@ -223,16 +220,16 @@ GetInfo(wPtr, interp, argc, argv, infoPtr, configSpecs)
     if (argc < 4) {
 	return Tix_ArgcError(interp, argc+2, argv-2, 2, "x1 y1 x2 y2 ...");
     }
-    if (Tcl_GetIntFromObj(interp, argv[0], &infoPtr->x1) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[0], &infoPtr->x1) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetIntFromObj(interp, argv[1], &infoPtr->y1) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[1], &infoPtr->y1) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetIntFromObj(interp, argv[2], &infoPtr->x2) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[2], &infoPtr->x2) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetIntFromObj(interp, argv[3], &infoPtr->y2) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[3], &infoPtr->y2) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (Tk_ConfigureWidget(interp, wPtr->dispData.tkwin, configSpecs,
@@ -317,7 +314,7 @@ GetBlockPosn(wPtr, x1, y1, x2, y2, bx1, by1, bx2, by2)
 	*by2 -= wPtr->scrollInfo[1].offset;
 	break;
     }
-}
+} 
 
 static void
 GetRenderPosn(wPtr, bx1, by1, bx2, by2, rx1, ry1, rx2, ry2)
@@ -362,7 +359,7 @@ GetRenderPosn(wPtr, bx1, by1, bx2, by2, rx1, ry1, rx2, ry2)
     *rx2 += wPtr->renderInfo->origin[0];
     *ry1 += wPtr->renderInfo->origin[1];
     *ry2 += wPtr->renderInfo->origin[1];
-}
+} 
 
 static void
 Tix_GrFillCells(wPtr, border, selectBorder, bx1, by1, bx2, by2,
@@ -483,7 +480,7 @@ Tix_GrFormatBorder(clientData, interp, argc, argv)
 	goto done;
     }
 
-    /*
+    /* 
      * If the xon is not specified, then by default the xon is encloses the
      * whole region. Same for yon.
      */
@@ -590,7 +587,7 @@ Tix_GrFormatGrid(clientData, interp, argc, argv)
 	    gridConfigSpecs))!= TCL_OK) {
 	goto done;
     }
-    gc = Tk_3DBorderGC(wPtr->dispData.tkwin, info.border,
+    gc = Tk_3DBorderGC(wPtr->dispData.tkwin, info.border, 
 	TK_3D_FLAT_GC);
 
     GetBlockPosn(wPtr, info.x1, info.y1, info.x2, info.y2,
@@ -762,12 +759,12 @@ static int Tix_GrSaveColor(wPtr, type, ptr)
 	if (cPtr->pixel == pixel) {
 	    cPtr->counter = wPtr->colorInfoCounter;
 	    return 1;
-
+	    
 	}
     }
 
     cPtr = (ColorInfo *)ckalloc(sizeof(ColorInfo));
-
+	
     if (type == TK_CONFIG_COLOR) {
 	cPtr->color  = color;
     } else {

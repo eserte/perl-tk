@@ -44,19 +44,19 @@ sub bind {
     $t->insert('end', '6. A grid that demonstrates how canvases can be scrolled.', 'd6');
 
     foreach $tag (qw(d1 d2 d3 d4 d5 d6)) {
-	$t->tag('bind', $tag, '<Any-Enter>' =>
-            sub {shift->tag('configure', $tag, @bold)}
+	$t->tagBind($tag, '<Any-Enter>' =>
+            sub {shift->tagConfigure($tag, @bold)}
         );
-	$t->tag('bind', $tag, '<Any-Leave>' =>
-            sub {shift->tag('configure', $tag, @normal)}
+	$t->tagBind($tag, '<Any-Leave>' =>
+            sub {shift->tagConfigure($tag, @normal)}
         );
     }
-    $t->tag(qw/bind d1 <1>/ => sub {&items('items')});
-    $t->tag(qw/bind d2 <1>/ => sub {&plot('plot')});
-    $t->tag(qw/bind d3 <1>/ => sub {&ctext('ctext')});
-    $t->tag(qw/bind d4 <1>/ => sub {&arrows('arrows')});
-    $t->tag(qw/bind d5 <1>/ => sub {&ruler('ruler')});
-    $t->tag(qw/bind d6 <1>/ => sub {&cscroll('cscroll')});
+    $t->tagBind(qw/d1 <1>/ => sub {&items('items')});
+    $t->tagBind(qw/d2 <1>/ => sub {&plot('plot')});
+    $t->tagBind(qw/d3 <1>/ => sub {&ctext('ctext')});
+    $t->tagBind(qw/d4 <1>/ => sub {&arrows('arrows')});
+    $t->tagBind(qw/d5 <1>/ => sub {&ruler('ruler')});
+    $t->tagBind(qw/d6 <1>/ => sub {&cscroll('cscroll')});
 
     $t->mark(qw/set insert 0.0/);
 

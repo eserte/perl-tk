@@ -1,7 +1,7 @@
 package Tie::Watch;
 
 use vars qw($VERSION);
-$VERSION = '4.003'; # $Id: //depot/Tkutf8/lib/Tie/Watch.pm#3 $
+$VERSION = '3.004'; # $Id: //depot/Tk8/lib/Tie/Watch.pm#4 $
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ $VERSION = '4.003'; # $Id: //depot/Tkutf8/lib/Tie/Watch.pm#3 $
  $watch = Tie::Watch->new(
      -variable => \$frog,
      -debug    => 1,
-     -shadow   => 0,
+     -shadow   => 0,			
      -fetch    => [\&fetch, 'arg1', 'arg2', ..., 'argn'],
      -store    => \&store,
      -destroy  => sub {print "Final value=$frog.\n"},
@@ -255,7 +255,7 @@ sub new {
     croak "Tie::Watch::new(): -variable is required." if not defined $variable;
 
     my($type, $watch_obj) = (ref $variable, undef);
-    if ($type =~ /SCALAR/) {
+    if ($type =~ /(SCALAR|REF)/) {
 	@arg_defaults{@scalar_callbacks} = (
 	    [\&Tie::Watch::Scalar::Destroy],  [\&Tie::Watch::Scalar::Fetch],
 	    [\&Tie::Watch::Scalar::Store]);
@@ -282,7 +282,7 @@ sub new {
     @ahsh{@margs} = @arg_defaults{@margs}; # fill in missing values
     normalize_callbacks \%ahsh;
 
-    if ($type =~ /SCALAR/) {
+    if ($type =~ /(SCALAR|REF)/) {
         $watch_obj = tie $$variable, 'Tie::Watch::Scalar', %ahsh;
     } elsif ($type =~ /ARRAY/) {
         $watch_obj = tie @$variable, 'Tie::Watch::Array',  %ahsh;
@@ -345,10 +345,10 @@ sub Unwatch {
 
     my $variable = $_[0]->{-variable};
     my $type = ref $variable;
-    my $copy = $_[0]->{-ptr} if $type !~ /SCALAR/;
+    my $copy = $_[0]->{-ptr} if $type !~ /(SCALAR|REF)/;
     my $shadow = $_[0]->{-shadow};
     undef $_[0];
-    if ($type =~ /SCALAR/) {
+    if ($type =~ /(SCALAR|REF)/) {
 	untie $$variable;
     } elsif ($type =~ /ARRAY/) {
 	untie @$variable;

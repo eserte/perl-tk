@@ -1,7 +1,7 @@
 package Tk::Pixmap;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/TixPixmap/Pixmap.pm#2 $
+$VERSION = '3.011'; # $Id: //depot/Tk8/TixPixmap/Pixmap.pm#11 $
 
 use Tk qw($XS_VERSION);
 

@@ -1,6 +1,3 @@
-
-/*	$Id: tixHLInd.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  *  tixHLInd.c ---
  *
@@ -57,7 +54,7 @@ Tix_HLIndicator(clientData, interp, argc, argv)
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
 }
-
+
 /*----------------------------------------------------------------------
  * "indicator cget" sub command
  *----------------------------------------------------------------------
@@ -84,7 +81,7 @@ Tix_HLIndCGet(clientData, interp, argc, argv)
 	chPtr->indicator->base.diTypePtr->itemConfigSpecs,
 	(char *)chPtr->indicator, argv[1], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "indicator configure" sub command
  *----------------------------------------------------------------------
@@ -123,7 +120,7 @@ Tix_HLIndConfig(clientData, interp, argc, argv)
 	    argc-1, argv+1, TK_CONFIG_ARGV_ONLY);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "indicator create" sub command
  *----------------------------------------------------------------------
@@ -249,7 +246,7 @@ Tix_HLIndExists(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "indicator size" sub command
  *----------------------------------------------------------------------

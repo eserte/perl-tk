@@ -1,7 +1,4 @@
-
-/*	$Id: tixImgCmp.c,v 1.3 2000/10/17 16:41:56 idiscovery Exp $	*/
-
-/*
+/* 
  * tkImgCmp.c --
  *
  *	This procedure implements images of type "compound" for Tix.
@@ -18,18 +15,8 @@
 #include "tixDef.h"
 #include "tkVMacro.h"
 
-/* Should use USE_OLD_IMAGE ImgCmpCreate */
-#if (TCL_MAJOR_VERSION <= 7)
-#  define USE_OLD_IMAGE
-#else
-#  if ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION <= 2))
-#  define USE_OLD_IMAGE
-#  endif
-   /* Otherwise use tk.h's definition */
-#endif
-
 /*
- * ToDo:
+ * ToDo: 
  *	- lineconfig and itemconfig command
  */
 
@@ -74,7 +61,7 @@ typedef struct CmpMaster {
     unsigned int isDeleted;
 
     int winCount;               /* Number of windows using image */
-} CmpMaster;
+} CmpMaster;   
 
 /* This is the per-instance data - this is currently minimal
    it should really have all Display/Visual related stuff like
@@ -166,20 +153,20 @@ typedef union CmpItemPtr {
  * The type record for bitmap images:
  */
 static int		ImgCmpCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, Tcl_Obj *CONST *objv,
+			    char *name, int argc, Tcl_Obj **objv,
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgCmpGet _ANSI_ARGS_((Tk_Window tkwin,
 			    ClientData clientData));
 static void		ImgCmpDisplay _ANSI_ARGS_((ClientData clientData,
-			    Display *display, Drawable drawable,
+			    Display *display, Drawable drawable, 
 			    int imageX, int imageY, int width, int height,
 			    int drawableX, int drawableY));
 static void		ImgCmpFree _ANSI_ARGS_((ClientData clientData,
 			    Display *display));
 static void		ImgCmpDelete _ANSI_ARGS_((ClientData clientData));
 static void		ImgCmpFreeResources _ANSI_ARGS_((ClientData clientData));
-static void		CalculateMasterSize _ANSI_ARGS_((ClientData clientData));
+static void		CalculateMasterSize _ANSI_ARGS_((ClientData clientData)); 
 
 Tk_ImageType tixCompoundImageType = {
     "compound",			/* name */
@@ -188,7 +175,7 @@ Tk_ImageType tixCompoundImageType = {
     ImgCmpDisplay,		/* displayProc */
     ImgCmpFree,			/* freeProc */
     ImgCmpDelete,		/* deleteProc */
-    NULL,			/* postscriptProc */
+    NULL,			/* postscriptProc */ 
     (Tk_ImageType *) NULL	/* nextPtr */
 };
 
@@ -377,7 +364,7 @@ static void		ImageProc _ANSI_ARGS_((ClientData clientData,
 			    int imgWidth, int imgHeight));
 static void 		FreeLine _ANSI_ARGS_((CmpLine * lPtr));
 static void 		FreeItem _ANSI_ARGS_((CmpItemPtr p));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -402,7 +389,7 @@ ImgCmpCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    Tcl_Obj *CONST*objv;	/* Argument strings for options (doesn't
+    Tcl_Obj **objv;		/* Argument strings for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -424,7 +411,7 @@ ImgCmpCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     }
     for (i = 0; i < argc; i++) {
 	argv[i] = TixGetStringFromObj(objv[i], NULL);
-    }
+    }        
 #endif
 
     masterPtr = (CmpMaster *) ckalloc(sizeof(CmpMaster));
@@ -450,7 +437,7 @@ ImgCmpCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     masterPtr->changing = 0;
     masterPtr->isDeleted = 0;
     masterPtr->winCount = 0;
-
+	
     if (ImgCmpConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgCmpDelete((ClientData) masterPtr);
 	return TCL_ERROR;
@@ -458,7 +445,7 @@ ImgCmpCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     *clientDataPtr = (ClientData) masterPtr;
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -535,7 +522,7 @@ ImgCmpConfigureMaster(masterPtr, argc, argv, flags)
     ChangeImageWhenIdle(masterPtr);
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -574,7 +561,7 @@ ImgCmpCmd(clientData, interp, argc, argv)
     length = strlen(argv[1]);
     if ((c == 'a') && (strncmp(argv[1], "add", length) == 0)) {
 	if (argc < 3) {
-	    return Tix_ArgcError(interp, argc, argv, 2,
+	    return Tix_ArgcError(interp, argc, argv, 2, 
 		"type ?option value? ...");
 	}
 	c = argv[2][0];
@@ -597,28 +584,28 @@ ImgCmpCmd(clientData, interp, argc, argv)
 		}
 	    }
 	    if ((c == 'b') && (strncmp(argv[2], "bitmap", length) == 0)) {
-		p.bitmap = AddNewBitmap(masterPtr, masterPtr->lineTail,
+		p.bitmap = AddNewBitmap(masterPtr, masterPtr->lineTail, 
 		    argc-3, argv+3);
 		if (p.bitmap == NULL) {
 		    return TCL_ERROR;
 		}
 	    }
 	    else if ((c == 'i') && (strncmp(argv[2], "image", length) == 0)) {
-		p.image = AddNewImage(masterPtr, masterPtr->lineTail,
+		p.image = AddNewImage(masterPtr, masterPtr->lineTail, 
 		    argc-3, argv+3);
 		if (p.image == NULL) {
 		    return TCL_ERROR;
 		}
 	    }
 	    else if ((c == 's') && (strncmp(argv[2], "space", length) == 0)) {
-		p.space = AddNewSpace(masterPtr, masterPtr->lineTail,
+		p.space = AddNewSpace(masterPtr, masterPtr->lineTail, 
 		    argc-3, argv+3);
 		if (p.space == NULL) {
 		    return TCL_ERROR;
 		}
 	    }
 	    else if ((c == 't') && (strncmp(argv[2], "text", length) == 0)) {
-		p.text = AddNewText(masterPtr, masterPtr->lineTail,
+		p.text = AddNewText(masterPtr, masterPtr->lineTail, 
 		    argc-3, argv+3);
 		if (p.text == NULL) {
 		    return TCL_ERROR;
@@ -687,13 +674,13 @@ ImgCmpCmd(clientData, interp, argc, argv)
     }
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
  *----------------------------------------------------------------------
  */
-CmpLine *
+CmpLine * 
 AddNewLine(masterPtr, argc, argv)
     CmpMaster *masterPtr;
     int argc;			/* Number of arguments. */
@@ -713,7 +700,7 @@ AddNewLine(masterPtr, argc, argv)
     lPtr->anchor = TK_ANCHOR_CENTER;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	    lineConfigSpecs, argc, argv, (char *) lPtr,
+	    lineConfigSpecs, argc, argv, (char *) lPtr, 
 	    TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	FreeLine(lPtr);
 	return NULL;
@@ -731,7 +718,7 @@ AddNewLine(masterPtr, argc, argv)
 
     return lPtr;
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -756,14 +743,14 @@ AddNewBitmap(masterPtr, line, argc, argv)
     p.bitmap->padY = 0;
     p.bitmap->width = 0;
     p.bitmap->height = 0;
-
+   
     p.bitmap->bitmap = None;
     p.bitmap->foreground = NULL;
     p.bitmap->background = NULL;
     p.bitmap->gc = None;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	    bitmapConfigSpecs, argc, argv, (char *) p.bitmap,
+	    bitmapConfigSpecs, argc, argv, (char *) p.bitmap, 
 	    TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	goto error;
     }
@@ -791,7 +778,7 @@ AddNewBitmap(masterPtr, line, argc, argv)
     FreeItem(p);
     return NULL;
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -816,12 +803,12 @@ AddNewImage(masterPtr, line, argc, argv)
     p.image->padY = 0;
     p.image->width = 0;
     p.image->height = 0;
-
+   
     p.image->imageString = NULL;
     p.image->image = NULL;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	    imageConfigSpecs, argc, argv, (char *) p.image,
+	    imageConfigSpecs, argc, argv, (char *) p.image, 
 	    TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	goto error;
     }
@@ -842,7 +829,7 @@ AddNewImage(masterPtr, line, argc, argv)
     FreeItem(p);
     return NULL;
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -868,7 +855,7 @@ AddNewSpace(masterPtr, line, argc, argv)
     p.space->height = 0;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	spaceConfigSpecs, argc, argv, (char *)p.space,
+	spaceConfigSpecs, argc, argv, (char *)p.space, 
 	TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 	goto error;
     }
@@ -880,7 +867,7 @@ AddNewSpace(masterPtr, line, argc, argv)
     FreeItem(p);
     return NULL;
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -905,7 +892,7 @@ AddNewText(masterPtr, line, argc, argv)
     p.text->padY = 0;
     p.text->width = 0;
     p.text->height = 0;
-
+   
     p.text->text = NULL;
     p.text->numChars = 0;
     p.text->justify = TK_JUSTIFY_CENTER;
@@ -917,7 +904,7 @@ AddNewText(masterPtr, line, argc, argv)
     p.text->gc = None;
 
     if (Tk_ConfigureWidget(masterPtr->interp, masterPtr->tkwin,
-	textConfigSpecs, argc, argv, (char *) p.text,
+	textConfigSpecs, argc, argv, (char *) p.text, 
 	TK_CONFIG_ARGV_ONLY) != TCL_OK) {
 
 	goto error;
@@ -946,7 +933,7 @@ AddNewText(masterPtr, line, argc, argv)
     FreeItem(p);
     return NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -979,12 +966,12 @@ ImgCmpGet(tkwin, masterData)
 	if (instance) {
 	    instance->master = masterPtr;
 	    instance->tkwin  = tkwin;
-	    masterPtr->winCount++;
+	    masterPtr->winCount++;            
 	}
 	return (ClientData) instance;
     }
 
-    Tcl_AppendResult(masterPtr->interp,
+    Tcl_AppendResult(masterPtr->interp, 
 	"Image \"",
 	Tk_NameOfImage(masterPtr->tkMaster),
 	"\" can only be assigned to display of window \"",
@@ -996,7 +983,7 @@ ImgCmpGet(tkwin, masterData)
 
     return NULL;
 }
-
+
 static void
 CalculateMasterSize(clientData)
     ClientData clientData;
@@ -1015,7 +1002,7 @@ CalculateMasterSize(clientData)
 
 	    switch (p.item->type) {
 	      case TYPE_IMAGE:
-		Tk_SizeOfImage(p.image->image,
+		Tk_SizeOfImage(p.image->image, 
 		    &p.image->width, &p.image->height);
 		break;
 
@@ -1030,21 +1017,21 @@ CalculateMasterSize(clientData)
 		    if (p.text->text == NULL) {
 			break;
 		    }
-
+		  
 		    if (p.text->font) {
 			font = p.text->font;
 		    } else {
 			font = masterPtr->font;
 		    }
-		
-		    p.text->numChars = -1;
+		    
+		    p.text->numChars = strlen(p.text->text);
 		    TixComputeTextGeometry(font, p.text->text,
 			p.text->numChars,
 			p.text->wrapLength,
 			&p.text->width, &p.text->height);
 	        }
 		break;
-
+		
 	      case TYPE_BITMAP:
 		Tk_SizeOfBitmap(Tk_Display(masterPtr->tkwin),
 		    p.bitmap->bitmap, &p.bitmap->width,
@@ -1053,7 +1040,7 @@ CalculateMasterSize(clientData)
 
 	      case TYPE_WIDGET:
 
-
+		
 		break;
 	    }
 	    p.item->width  += 2*p.item->padX;
@@ -1079,7 +1066,7 @@ CalculateMasterSize(clientData)
 	masterPtr->height, masterPtr->width, masterPtr->height);
     masterPtr->changing = 0;
 }
-
+
 static void
 ChangeImageWhenIdle(masterPtr)
     CmpMaster *masterPtr;
@@ -1089,7 +1076,7 @@ ChangeImageWhenIdle(masterPtr)
 	Tcl_DoWhenIdle(CalculateMasterSize, (ClientData)masterPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1139,7 +1126,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
     }
 
     if (masterPtr->showBackground) {
-	Tk_Fill3DRectangle(instance->tkwin, drawable,
+	Tk_Fill3DRectangle(instance->tkwin, drawable, 
 	    masterPtr->background,
 	    drawableX + masterPtr->padX - imageX,
 	    drawableY + masterPtr->padY - imageY,
@@ -1148,7 +1135,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 	    masterPtr->borderWidth, masterPtr->relief);
     }
 
-    /* ToDo: Set the clipping region according to the imageX,Y, and
+    /* ToDo: Set the clipping region according to the imageX,Y, and 
      * width, height */
     dy = drawableY + masterPtr->padY + masterPtr->borderWidth - imageY;
 
@@ -1188,7 +1175,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 
 	    switch (p.item->type) {
 	      case TYPE_IMAGE:
-		Tk_RedrawImage(p.image->image, 0, 0,
+		Tk_RedrawImage(p.image->image, 0, 0, 
 		    p.image->width  - 2*p.item->padX,
 		    p.image->height - 2*p.item->padY,
 		    drawable, dx, dy+extraY);
@@ -1205,7 +1192,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 		    if (p.text->text == NULL) {
 			break;
 		    }
-
+		  
 		    if (p.text->font) {
 			font = p.text->font;
 		    } else {
@@ -1214,14 +1201,14 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 
 		    TixDisplayText(Tk_Display(instance->tkwin), drawable,
 			font, p.text->text, p.text->numChars,
-			dx, dy+extraY,
+			dx, dy+extraY,	    
 			p.text->width - 2*p.item->padX,
 			p.text->justify,
 			p.text->underline,
 			p.text->gc);
 	        }
 		break;
-
+		
 	      case TYPE_BITMAP:
 		XCopyPlane(Tk_Display(instance->tkwin), p.bitmap->bitmap,
 		    drawable, p.bitmap->gc, 0, 0,
@@ -1233,7 +1220,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 
 	      case TYPE_WIDGET:
 
-
+		
 		break;
 	    }
 	    dx += p.item->width - p.item->padX;
@@ -1241,7 +1228,7 @@ ImgCmpDisplay(clientData, display, drawable, imageX, imageY, width,
 	dy += lPtr->height - lPtr->padY;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1267,10 +1254,10 @@ static void
 ImgCmpFree(clientData, display)
     ClientData clientData;
     Display *display;
-{
+{  
     CmpInstance *instance = (CmpInstance *) clientData;
     /* Free per-instance resources and data */
-    instance->master->winCount--;
+    instance->master->winCount--;            
     ckfree((char *) instance);
 }
 
@@ -1318,7 +1305,7 @@ static void FreeItem(p)
     }
     ckfree((char *) p.item);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1362,13 +1349,13 @@ ImgCmpFreeResources(masterData)
 	    for (lPtr=masterPtr->lineHead; lPtr;) {
 		    CmpLine * toDelete = lPtr;
 		    lPtr = lPtr->next;
-
+		    
 		    for (p.item=toDelete->itemHead; p.item;) {
 			    CmpItemPtr toDelete;
-
+			    
 			    toDelete.item = p.item;
 			    p.item=p.item->next;
-
+			    
 			    FreeItem(toDelete);
 		    }
 		    FreeLine(toDelete);
@@ -1387,13 +1374,13 @@ ImgCmpFreeResources(masterData)
 	    if (masterPtr->gc != None) {
 		    Tk_FreeGC(masterPtr->display, masterPtr->gc);
 	    }
-
+	    
 	    Tk_FreeOptions(configSpecs, (char *) masterPtr, masterPtr->display, 0);
     }
 
     Tcl_Release((ClientData) masterPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1419,7 +1406,7 @@ ImgCmpDelete(masterData)
     ImgCmpFreeResources(masterData);
     ckfree((char *) masterPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1446,7 +1433,7 @@ ImgCmpCmdDeletedProc(clientData)
     masterPtr->imageCmd = NULL;
 
     if (masterPtr->tkMaster != NULL) {
-	    Tk_DeleteImage(masterPtr->interp,
+	    Tk_DeleteImage(masterPtr->interp, 
 			   Tk_NameOfImage(masterPtr->tkMaster));
     }
 }

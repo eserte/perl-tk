@@ -1,6 +1,3 @@
-
-/*	$Id: tixDiWin.c,v 1.1.1.1 2000/05/17 11:08:41 idiscovery Exp $	*/
-
 /*
  * tixDiWin.c --
  *
@@ -41,7 +38,7 @@ static Tix_ListInfo mapWinListInfo = {
 #define DEF_WINDOWITEM_TYPE	 "window"
 
 static Tk_ConfigSpec windowItemConfigSpecs[] = {
-    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType",
+    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType", 
        DEF_WINDOWITEM_TYPE, Tk_Offset(TixWindowItem, diTypePtr),
        0, &tixConfigItemType},
 
@@ -209,7 +206,7 @@ static void Tix_WindowItemFree(iPtr)
 
     ckfree((char*)itPtr);
 }
-
+
 /*----------------------------------------------------------------------
  * ManageWindow --
  *
@@ -300,7 +297,7 @@ static int Tix_WindowItemConfigure(iPtr, argc, argv, flags)
 		goto badWindow;
 	    }
 	    if (((Tk_FakeWin *) (itPtr->tkwin))->flags & TK_TOP_LEVEL) {
-		Tcl_AppendResult(itPtr->ddPtr->interp,
+		Tcl_AppendResult(itPtr->ddPtr->interp, 
 		    "can't manage toplevel window",
 	 	    Tk_PathName(itPtr->tkwin),
 		    " as a window item of ", Tk_PathName(itPtr->ddPtr->tkwin),
@@ -398,7 +395,7 @@ static char * Tix_WindowItemComponent(iPtr, x, y)
     return body;
 }
 
-
+
 static void Tix_WindowItemStyleChanged(iPtr)
     Tix_DItem * iPtr;
 {
@@ -423,7 +420,7 @@ static void Tix_WindowItemLostStyle(iPtr)
 
     Tix_WindowItemStyleChanged(iPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -464,7 +461,7 @@ SubWindowStructureProc(clientData, eventPtr)
 	}
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -496,7 +493,7 @@ SubWindowRequestProc(clientData, tkwin)
 	itPtr->ddPtr->sizeChangedProc((Tix_DItem*)itPtr);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -566,7 +563,7 @@ Tix_WindowItemUnmap(itPtr)
     }
     Tk_UnmapWindow(tkwin);
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -591,7 +588,7 @@ Tix_WindowStyleCreate(interp, tkwin, diTypePtr, name)
 
     return (Tix_DItemStyle *)stylePtr;
 }
-
+
 static int
 Tix_WindowStyleConfigure(style, argc, argv, flags)
     Tix_DItemStyle *style;
@@ -620,7 +617,7 @@ Tix_WindowStyleConfigure(style, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 static void Tix_WindowStyleFree(style)
     Tix_DItemStyle *style;
 {
@@ -662,7 +659,7 @@ Tix_WindowStyleSetTemplate(style, tmplPtr)
  *
  *----------------------------------------------------------------------
  */
-
+
 void Tix_SetWindowItemSerial(lPtr, iPtr, serial)
     Tix_LinkList * lPtr;
     Tix_DItem * iPtr;
@@ -688,14 +685,14 @@ void Tix_SetWindowItemSerial(lPtr, iPtr, serial)
     }
     Tix_LinkListAppend(&mapWinListInfo, lPtr, (char*)itPtr, 0);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * UnmapWindows --
  *
  *	We need to unmap all those windows that were displayed last time
  *	but should be now invisible.
- *	Otherwise we will have some unwanted child windows floating
+ *	Otherwise we will have some unwanted child windows floating 
  *	around.
  *----------------------------------------------------------------------
  */

@@ -6,7 +6,7 @@ sub count
  if (open(C,"gcc -E -DHAVE_UNISTD_H $file|"))
   {
    my $match = 0;
-   local(%vars);
+   local(%vars); 
    while (<C>)
    {
     next if (/^\s*$/);
@@ -14,7 +14,7 @@ sub count
     if ($match)
      {
       study;
-      &match;
+      &match;  
      }
    }
    close(C);

@@ -159,7 +159,7 @@ tk8pod 800_003.7
 
 o Pixmap & tkerror
 	o minor POD markup changes
-
+	
   !! tkerror enhancements still pending !!
 
 tk8pod 800_003.6
@@ -179,10 +179,10 @@ o pod/Font.pod
 
 	o perlized it.
 
-        o '-displayof=>window' and 'defaults to mainwindow' removed
+        o '-displayof=>window' and 'defaults to mainwindow' removed 
 
         o remove window defaults to widgets mainwindow  but mention font settings
-          are *per* MainWindow
+          are *per* MainWindow  
 
 	o see TODO for 'unsolved' L<> stuff
 
@@ -208,13 +208,13 @@ tk8pod 19980328.1
 
 o sync with Nick's pod19980328.tar.gz
 
-tk8pod version 0.8
+tk8pod version 0.8 
 
 o removed 'the section' to prevent dublication by pod2man
 	Text.pod
 	getOpenFile.pod
 
-tk8pod version 0.7
+tk8pod version 0.7 
 
 Once through geometry mgr.  (See TODO)
 o grid perlized'ed. move description from gridConfigure to
@@ -224,7 +224,7 @@ o form improved perlization
 o place "       "
 o pack  "       "  and markup more like other geo.mgr
 
-tk8pod version 0.6
+tk8pod version 0.6 
 
 Merged in my POD changes I did motnth ago
 for the following docs:
@@ -258,7 +258,7 @@ o Text:
 
 tk8pod version 0.2
 
-* TList:
+* TList:  
 	o  example to perl/Tk (example uncovers a bug. see comment)
 	o  misc formatting
 

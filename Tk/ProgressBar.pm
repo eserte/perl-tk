@@ -1,7 +1,7 @@
 package Tk::ProgressBar;
 
 use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/ProgressBar.pm#6 $
+$VERSION = '3.014'; # $Id: //depot/Tk8/Tk/ProgressBar.pm#14 $
 
 use Tk;
 use Tk::Canvas;
@@ -246,7 +246,7 @@ sub _arrange {
 	$start += ($offset - ($ioff * $bval)) / $bval * $bwidth;
 
 	my($x0,$x1,$y0,$y1);
-
+	
 	if($horz) {
 	    $y0 = $y;
 	    $y1 = $y + $h;
@@ -272,7 +272,7 @@ sub _arrange {
 	    }
 	}
 
-
+	
 	$c->raise($cover);
 	$c->coords($cover,$x0,$y0,$x1,$y1);
     }

@@ -362,7 +362,7 @@ static char *symbols[] = {
     (char *) NULL
 };
 
-
+
 static int
 load_jpeg_library(interp)
     Tcl_Interp *interp;
@@ -705,9 +705,9 @@ FileMatchJPEG(f, fileName, formatString, widthPtr, heightPtr)
     MFile handle;
     handle.data = (char *) f;
     handle.state = IMG_FILE;
-    return CommonMatchJPEG(&handle, widthPtr, heightPtr);
+    return CommonMatchJPEG(&handle, widthPtr, heightPtr);    
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -741,7 +741,7 @@ ChnMatchJPEG(chan, fileName, formatString, widthPtr, heightPtr)
     handle.state = IMG_CHAN;
     return CommonMatchJPEG(&handle, widthPtr, heightPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -773,7 +773,7 @@ ObjMatchJPEG(dataObj, formatString, widthPtr, heightPtr)
     ImgReadInit(dataObj, '\377', &handle);
     return CommonMatchJPEG(&handle, widthPtr, heightPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -852,7 +852,7 @@ CommonMatchJPEG(handle, widthPtr, heightPtr)
 
     return 1;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -924,7 +924,7 @@ ChnReadJPEG(interp, chan, fileName, formatString, imageHandle, destX, destY,
 
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -998,7 +998,7 @@ FileReadJPEG(interp, f, fileName, formatString, imageHandle, destX, destY,
 
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1069,7 +1069,7 @@ ObjReadJPEG(interp, dataObj, formatString, imageHandle, destX, destY,
 
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1218,7 +1218,7 @@ CommonReadJPEG(interp, cinfo, formatString, imageHandle, destX, destY,
 
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1246,7 +1246,7 @@ FileWriteJPEG(interp, fileName, formatString, blockPtr)
 {
     struct jpeg_compress_struct cinfo; /* libjpeg's parameter structure */
     struct my_error_mgr jerror;	/* for controlling libjpeg error handling */
-    Tcl_DString nameBuffer;
+    Tcl_DString nameBuffer; 
     char *fullName;
     FILE *f;
     int result;
@@ -1296,7 +1296,7 @@ FileWriteJPEG(interp, fileName, formatString, blockPtr)
     fclose(f);
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1357,7 +1357,7 @@ StringWriteJPEG(interp, dataPtr, formatString, blockPtr)
 
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1375,7 +1375,7 @@ StringWriteJPEG(interp, dataPtr, formatString, blockPtr)
 static int
 CommonWriteJPEG(interp, cinfo, formatString, blockPtr)
     Tcl_Interp *interp;
-    j_compress_ptr cinfo;
+    j_compress_ptr cinfo;	
     char *formatString;
     Tk_PhotoImageBlock *blockPtr;
 {
@@ -1452,7 +1452,7 @@ CommonWriteJPEG(interp, cinfo, formatString, blockPtr)
     }
 
     jpeg.start_compress(cinfo, TRUE);
-
+    
     /* note: we assume libjpeg is configured for standard RGB pixel order. */
     if ((greenOffset == 1) && (blueOffset == 2)
 	&& (blockPtr->pixelSize == 3)) {
@@ -1494,7 +1494,7 @@ CommonWriteJPEG(interp, cinfo, formatString, blockPtr)
 
     return TCL_OK;
 }
-
+
 /*
  * libjpeg source manager for reading from base64-encoded strings.
  */
@@ -1653,7 +1653,7 @@ chan_term_source(cinfo)
 {
   /* no work necessary here */
 }
-
+
 /*
  * libjpeg destination manager for writing to base64-encoded strings.
  */
@@ -1725,7 +1725,7 @@ str_term_destination (cinfo)
   ImgPutc(IMG_DONE, &dest->handle);
 }
 
-
+
 /*
  * Error handler to replace (or extend, really) libjpeg's default handler
  */

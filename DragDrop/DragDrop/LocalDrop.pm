@@ -1,7 +1,7 @@
 package Tk::DragDrop::Local;
-use strict;
+use strict;   
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/LocalDrop.pm#2 $
+$VERSION = '3.005'; # $Id: //depot/Tk8/DragDrop/DragDrop/LocalDrop.pm#5 $
 
 use base qw(Tk::DragDrop::Rect);
 require Tk::DragDrop;
@@ -54,8 +54,8 @@ sub Motion
 {
  my ($site,$token,$event) = @_;
  $site->Apply(-motioncommand => $event);
-}
+}      
 
-1;
+1;     
 
 __END__

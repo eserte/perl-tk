@@ -1,7 +1,7 @@
 
 Debug icon redraw issues on Solaris/olvwm
 
-Add "make strip" target ?
+Add "make strip" target ?     
 
 Menubutton Alt-F issues on Win32 - fix or document?
 
@@ -11,11 +11,11 @@ Do HTML build
 
 Make "compiled" Tk scripts work.
 
-Add one of FontSelect variants
+Add one of FontSelect variants 
 
 TixGrid repair/replace.
 
-Release tkmail
+Release tkmail 
 
 Start tkdraw ;-)
 

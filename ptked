@@ -6,7 +6,7 @@ use IO::Socket;
 use Cwd;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tkutf8/ptked#3 $
+$VERSION = '3.006'; # $Id: //depot/Tk8/ptked#27 $
 
 my %opt;
 INIT
@@ -143,7 +143,7 @@ sub Create_Edit
  $ed->withdraw;
  $top->{'Edits'}++;
  $ed->OnDestroy([\&RemoveEdit,$top]);
- my $t = $ed->Scrolled('TextUndoPtked', -wrap => 'none', 
+ my $t = $ed->Scrolled('TextUndoPtked', -wrap => 'none',
            -scrollbars => 'se', # both required till optional fixed!
          );
  $t->pack(-expand => 1, -fill => 'both');
@@ -279,12 +279,12 @@ sub AskFind
 sub About
 {
  my $mw = shift;
- 
+
  $mw->Dialog(-text => <<"END",-popover => $mw)->Show;
 $0 version $VERSION
 perl$]/Tk$Tk::VERSION
 
-Copyright © 1995-2002 Nick Ing-Simmons. All rights reserved.
+Copyright © 1995-2003 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 END

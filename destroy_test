@@ -3,7 +3,7 @@
 
 use Tk;
 
-require Tk::Pretty ;
+require Tk::Pretty ; 
 
 $top = MainWindow->new();
 

@@ -1,7 +1,7 @@
 package Tk::Event::IO;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '4.028'; # $Id: //depot/Tkutf8/Event/Event/IO.pm#4 $ +24
+$VERSION = '3.036'; # $Id: //depot/Tk8/Event/Event/IO.pm#12 $ +24
 
 use base qw(Exporter);
 use Symbol ();

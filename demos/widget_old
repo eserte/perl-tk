@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 #
 # This script demonstrates the various widgets provided by Tk, along with many of the features of the Tk toolkit.  This file
-# only contains code to generate the main window for the application, which invokes individual demonstrations.  The code for
+# only contains code to generate the main window for the application, which invokes individual demonstrations.  The code for 
 # the actual demonstrations is contained in separate ".pl" files in the directory "widget_lib", which are auto-loaded by Perl
 # when they are needed.  To find the code for a particular demo, look below for the procedure that's invoked by its menu entry,
 # then grep for the file that contains the procedure definition.
@@ -77,7 +77,7 @@ sub lsearch {
 
 
 sub mkmb {
-
+	
     # Make a Menubutton widget; note that the menu is automatically created.  We maintain a list of the Menubutton references
     # since some callers need to refer to the Menubutton, as well as to suppress stray name warnings with Perl -w.
 

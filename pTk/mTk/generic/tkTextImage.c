@@ -5,12 +5,12 @@
  *	nested inside text widgets.  It also implements the "image"
  *	widget command for texts.
  *
- * Copyright (c) 1997 Sun Microsystems, Inc.
+ * Copyright (c) 1996 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkTextImage.c,v 1.5 2002/08/05 04:30:40 dgp Exp $
+ * RCS: @(#) $Id: tkTextImage.c,v 1.2 1998/09/14 18:23:19 stanton Exp $
  */
 
 #include "tk.h"
@@ -38,9 +38,9 @@
  */
 
 static int		AlignParseProc _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, Tk_Window tkwin, 
-			    Tcl_Obj *value, char *widgRec, int offset));
-static Tcl_Obj *	AlignPrintProc _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, Tk_Window tkwin, Arg value,
+			    char *widgRec, int offset));
+static Arg		AlignPrintProc _ANSI_ARGS_((ClientData clientData,
 			    Tk_Window tkwin, char *widgRec, int offset,
 			    Tcl_FreeProc **freeProcPtr));
 static TkTextSegment *	EmbImageCleanupProc _ANSI_ARGS_((TkTextSegment *segPtr,
@@ -108,7 +108,7 @@ static Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
 	(char *) NULL, 0, 0}
 };
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -221,7 +221,7 @@ TkTextImageCmd(textPtr, interp, argc, argv)
 	lineIndex = TkBTreeLineIndex(index.linePtr);
 	if (lineIndex == TkBTreeNumLines(textPtr->tree)) {
 	    lineIndex--;
-	    TkTextMakeByteIndex(textPtr->tree, lineIndex, 1000000, &index);
+	    TkTextMakeIndex(textPtr->tree, lineIndex, 1000000, &index);
 	}
 
 	/*
@@ -277,7 +277,7 @@ TkTextImageCmd(textPtr, interp, argc, argv)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -288,7 +288,7 @@ TkTextImageCmd(textPtr, interp, argc, argv)
  *
  * Results:
  *	The return value is a standard Tcl result.  If TCL_ERROR is
- *	returned, then the interp's result contains an error message..
+ *	returned, then interp->result contains an error message..
  *
  * Side effects:
  *	Configuration information for the embedded image changes,
@@ -374,7 +374,7 @@ EmbImageConfigure(textPtr, eiPtr, argc, argv)
 	    if (new > count) {
 		count = new;
 	    }
-	    if (len == (int) strlen(haveName)) {
+	    if (len == strlen(haveName)) {
 	    	conflict = 1;
 	    }
 	}
@@ -384,7 +384,7 @@ EmbImageConfigure(textPtr, eiPtr, argc, argv)
     Tcl_DStringAppend(&newName,name, -1);
 
     if (conflict) {
-    	char buf[4 + TCL_INTEGER_SPACE];
+    	char buf[10];
 	sprintf(buf, "#%d",count+1);
 	Tcl_DStringAppend(&newName,buf, -1);
     }
@@ -398,7 +398,7 @@ EmbImageConfigure(textPtr, eiPtr, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -423,12 +423,12 @@ AlignParseProc(clientData, interp, tkwin, valuearg, widgRec, offset)
     ClientData clientData;		/* Not used.*/
     Tcl_Interp *interp;			/* Used for reporting errors. */
     Tk_Window tkwin;			/* Window for text widget. */
-    Tcl_Obj *valuearg;			/* Value of option. */
+    Arg valuearg;			/* Value of option. */
     char *widgRec;			/* Pointer to TkTextEmbWindow
 					 * structure. */
     int offset;				/* Offset into item (ignored). */
 {
-    char *value = Tcl_GetString(valuearg);
+    char *value = LangString(valuearg);
     register TkTextEmbImage *embPtr = (TkTextEmbImage *) widgRec;
 
     if (strcmp(value, "baseline") == 0) {
@@ -447,7 +447,7 @@ AlignParseProc(clientData, interp, tkwin, valuearg, widgRec, offset)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -499,7 +499,7 @@ AlignPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
             return result;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -551,7 +551,7 @@ EmbImageDeleteProc(eiPtr, linePtr, treeGone)
     ckfree((char *) eiPtr);
     return 0;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -578,7 +578,7 @@ EmbImageCleanupProc(eiPtr, linePtr)
     eiPtr->body.ei.linePtr = linePtr;
     return eiPtr;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -650,7 +650,7 @@ EmbImageLayoutProc(textPtr, indexPtr, eiPtr, offset, maxX, maxChars,
     chunkPtr->undisplayProc = (Tk_ChunkUndisplayProc *) NULL;
     chunkPtr->measureProc = (Tk_ChunkMeasureProc *) NULL;
     chunkPtr->bboxProc = EmbImageBboxProc;
-    chunkPtr->numBytes = 1;
+    chunkPtr->numChars = 1;
     if (eiPtr->body.ei.align == ALIGN_BASELINE) {
 	chunkPtr->minAscent = height - eiPtr->body.ei.padY;
 	chunkPtr->minDescent = eiPtr->body.ei.padY;
@@ -667,7 +667,7 @@ EmbImageLayoutProc(textPtr, indexPtr, eiPtr, offset, maxX, maxChars,
     eiPtr->body.ei.chunkCount += 1;
     return 1;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -698,7 +698,7 @@ EmbImageCheckProc(eiPtr, linePtr)
 	panic("EmbImageCheckProc: embedded image has size %d", eiPtr->size);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -760,7 +760,7 @@ EmbImageDisplayProc(chunkPtr, x, y, lineHeight, baseline, display, dst, screenY)
     Tk_RedrawImage(image, 0, 0, width, height, dst,
 	    imageX, imageY);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -828,7 +828,7 @@ EmbImageBboxProc(chunkPtr, index, y, lineHeight, baseline, xPtr, yPtr,
 	    break;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -852,7 +852,7 @@ EmbImageBboxProc(chunkPtr, index, y, lineHeight, baseline, xPtr, yPtr,
 int
 TkTextImageIndex(textPtr, name, indexPtr)
     TkText *textPtr;		/* Text widget containing image. */
-    CONST char *name;			/* Name of image. */
+    char *name;			/* Name of image. */
     TkTextIndex *indexPtr;	/* Index information gets stored here. */
 {
     Tcl_HashEntry *hPtr;
@@ -865,10 +865,10 @@ TkTextImageIndex(textPtr, name, indexPtr)
     eiPtr = (TkTextSegment *) Tcl_GetHashValue(hPtr);
     indexPtr->tree = textPtr->tree;
     indexPtr->linePtr = eiPtr->body.ei.linePtr;
-    indexPtr->byteIndex = TkTextSegToOffset(eiPtr, indexPtr->linePtr);
+    indexPtr->charIndex = TkTextSegToOffset(eiPtr, indexPtr->linePtr);
     return 1;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -901,8 +901,6 @@ EmbImageProc(clientData, x, y, width, height, imgWidth, imgHeight)
 
     index.tree = eiPtr->body.ei.textPtr->tree;
     index.linePtr = eiPtr->body.ei.linePtr;
-    index.byteIndex = TkTextSegToOffset(eiPtr, eiPtr->body.ei.linePtr);
+    index.charIndex = TkTextSegToOffset(eiPtr, eiPtr->body.ei.linePtr);
     TkTextChanged(eiPtr->body.ei.textPtr, &index, &index);
 }
-
-

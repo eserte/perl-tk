@@ -9,9 +9,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnixScrlbr.c,v 1.3 2000/11/22 01:49:38 ericm Exp $
+ * RCS: @(#) $Id: tkUnixScrlbr.c,v 1.2 1998/09/14 18:23:57 stanton Exp $
  */
 
+#include "tk.h"
 #include "tkScrollbar.h"
 
 /*
@@ -32,15 +33,21 @@ typedef struct UnixScrollbar {
 } UnixScrollbar;
 
 /*
- * The class procedure table for the scrollbar widget.  All fields except
- * size are left initialized to NULL, which should happen automatically
- * since the variable is declared at this scope.
+ * The class procedure table for the scrollbar widget.
  */
 
-Tk_ClassProcs tkpScrollbarProcs = {
-    sizeof(Tk_ClassProcs)	/* size */
+TkClassProcs tkpScrollbarProcs = { 
+    NULL,			/* createProc. */
+    NULL,			/* geometryProc. */
+    NULL			/* modalProc. */
 };
 
+/*
+ * Forward declarations for procedures defined later in this file:
+ */
+
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  *----------------------------------------------------------------------
@@ -63,8 +70,8 @@ TkpCreateScrollbar(tkwin)
     Tk_Window tkwin;
 {
     UnixScrollbar *scrollPtr = (UnixScrollbar *)ckalloc(sizeof(UnixScrollbar));
-    scrollPtr->troughGC = None;
-    scrollPtr->copyGC = None;
+    ((UnixScrollbar*)scrollPtr)->troughGC = None;
+    ((UnixScrollbar*)scrollPtr)->copyGC = None;
 
     Tk_CreateEventHandler(tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
@@ -101,6 +108,7 @@ TkpDisplayScrollbar(clientData)
     Tk_3DBorder border;
     int relief, width, elementBorderWidth;
     Pixmap pixmap;
+    GC fillGC;
 
     if ((scrollPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
 	goto done;
@@ -141,6 +149,90 @@ TkpDisplayScrollbar(clientData)
 	    Tk_Width(tkwin) - 2*scrollPtr->highlightWidth,
 	    Tk_Height(tkwin) - 2*scrollPtr->highlightWidth,
 	    scrollPtr->borderWidth, scrollPtr->relief);
+    if (scrollPtr->tile != NULL) {
+	if (scrollPtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (scrollPtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(scrollPtr->tile, &w, &h);
+	    }
+	    if (scrollPtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (scrollPtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (scrollPtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (scrollPtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scrollPtr->display, ((UnixScrollbar*)scrollPtr)->copyGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, ((UnixScrollbar*)scrollPtr)->copyGC, scrollPtr->tsoffset.xoffset,
+		    scrollPtr->tsoffset.yoffset);
+	}
+    }
+    if (scrollPtr->activeTile != NULL) {
+	Tk_TSOffset *tsoffset = &scrollPtr->tsoffset;
+	if (!tsoffset) {
+	    Tk_SetTileOrigin(tkwin, scrollPtr->activeTileGC, 0, 0);
+	} else if (tsoffset->flags) {
+	    int w=0; int h=0;
+	    if (tsoffset->flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(scrollPtr->activeTile, &w, &h);
+	    }
+	    if (tsoffset->flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (tsoffset->flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (tsoffset->flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (tsoffset->flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scrollPtr->display, scrollPtr->activeTileGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, scrollPtr->activeTileGC, tsoffset->xoffset,
+		    tsoffset->yoffset);
+	}
+    }
+    if (scrollPtr->troughTile != NULL) {
+	Tk_TSOffset *tsoffset = &scrollPtr->tsoffset;
+	if (!tsoffset) {
+	    Tk_SetTileOrigin(tkwin, ((UnixScrollbar*)scrollPtr)->troughGC, 0, 0);
+	} else if (tsoffset->flags) {
+	    int w=0; int h=0;
+	    if (tsoffset->flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(scrollPtr->troughTile, &w, &h);
+	    }
+	    if (tsoffset->flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (tsoffset->flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (tsoffset->flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (tsoffset->flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(scrollPtr->display, ((UnixScrollbar*)scrollPtr)->troughGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, ((UnixScrollbar*)scrollPtr)->troughGC, tsoffset->xoffset,
+		    tsoffset->yoffset);
+	}
+    }
     XFillRectangle(scrollPtr->display, pixmap,
 	    ((UnixScrollbar*)scrollPtr)->troughGC,
 	    scrollPtr->inset, scrollPtr->inset,
@@ -155,10 +247,17 @@ TkpDisplayScrollbar(clientData)
      * scrollbar and be properly centered.
      */
 
+    fillGC = NULL;
+    if (scrollPtr->tile != NULL) {
+	fillGC = ((UnixScrollbar*)scrollPtr)->copyGC;
+    }
     if (scrollPtr->activeField == TOP_ARROW) {
 	border = scrollPtr->activeBorder;
 	relief = scrollPtr->activeField == TOP_ARROW ? scrollPtr->activeRelief
 		: TK_RELIEF_RAISED;
+	if (scrollPtr->activeTile != NULL) {
+	    fillGC = scrollPtr->activeTileGC;
+	}
     } else {
 	border = scrollPtr->bgBorder;
 	relief = TK_RELIEF_RAISED;
@@ -170,8 +269,6 @@ TkpDisplayScrollbar(clientData)
 	points[1].y = points[0].y;
 	points[2].x = width/2 + scrollPtr->inset;
 	points[2].y = scrollPtr->inset - 1;
-	Tk_Fill3DPolygon(tkwin, pixmap, border, points, 3,
-		elementBorderWidth, relief);
     } else {
 	points[0].x = scrollPtr->arrowLength + scrollPtr->inset - 1;
 	points[0].y = scrollPtr->inset - 1;
@@ -179,18 +276,32 @@ TkpDisplayScrollbar(clientData)
 	points[1].y = width/2 + scrollPtr->inset;
 	points[2].x = points[0].x;
 	points[2].y = width + scrollPtr->inset;
-	Tk_Fill3DPolygon(tkwin, pixmap, border, points, 3,
+    }
+    if (fillGC != NULL) {
+	XFillPolygon(scrollPtr->display, pixmap, fillGC, points, 3,
+		     Convex, CoordModeOrigin);
+	Tk_Draw3DPolygon(tkwin, pixmap, border, points, 3,
 		elementBorderWidth, relief);
+    } else {
+	Tk_Fill3DPolygon(tkwin, pixmap, border, points, 3,
+	elementBorderWidth, relief);
     }
 
     /*
      * Display the bottom or right arrow.
      */
 
+    fillGC = NULL;
+    if (scrollPtr->tile != NULL) {
+	fillGC = ((UnixScrollbar*)scrollPtr)->copyGC;
+    }
     if (scrollPtr->activeField == BOTTOM_ARROW) {
 	border = scrollPtr->activeBorder;
 	relief = scrollPtr->activeField == BOTTOM_ARROW
 		? scrollPtr->activeRelief : TK_RELIEF_RAISED;
+	if (scrollPtr->activeTile != NULL) {
+	    fillGC = scrollPtr->activeTileGC;
+	}
     } else {
 	border = scrollPtr->bgBorder;
 	relief = TK_RELIEF_RAISED;
@@ -203,8 +314,6 @@ TkpDisplayScrollbar(clientData)
 	points[1].y = Tk_Height(tkwin) - scrollPtr->inset;
 	points[2].x = width + scrollPtr->inset;
 	points[2].y = points[0].y;
-	Tk_Fill3DPolygon(tkwin, pixmap, border,
-		points, 3, elementBorderWidth, relief);
     } else {
 	points[0].x = Tk_Width(tkwin) - scrollPtr->arrowLength
 		- scrollPtr->inset + 1;
@@ -213,6 +322,13 @@ TkpDisplayScrollbar(clientData)
 	points[1].y = width + scrollPtr->inset;
 	points[2].x = Tk_Width(tkwin) - scrollPtr->inset;
 	points[2].y = width/2 + scrollPtr->inset;
+    }
+    if (fillGC != NULL) {
+	XFillPolygon(scrollPtr->display, pixmap, fillGC, points, 3, Convex, 
+		CoordModeOrigin);
+	Tk_Draw3DPolygon(tkwin, pixmap, border, points, 3,
+		elementBorderWidth, relief);
+    } else {
 	Tk_Fill3DPolygon(tkwin, pixmap, border,
 		points, 3, elementBorderWidth, relief);
     }
@@ -221,24 +337,61 @@ TkpDisplayScrollbar(clientData)
      * Display the slider.
      */
 
+    fillGC = NULL;
+    if (scrollPtr->tile != NULL) {
+	fillGC = ((UnixScrollbar*)scrollPtr)->copyGC;
+    }
     if (scrollPtr->activeField == SLIDER) {
 	border = scrollPtr->activeBorder;
 	relief = scrollPtr->activeField == SLIDER ? scrollPtr->activeRelief
 		: TK_RELIEF_RAISED;
+	if (scrollPtr->activeTile != NULL) {
+	    fillGC = scrollPtr->activeTileGC;
+	}
     } else {
 	border = scrollPtr->bgBorder;
 	relief = TK_RELIEF_RAISED;
     }
     if (scrollPtr->vertical) {
-	Tk_Fill3DRectangle(tkwin, pixmap, border,
-		scrollPtr->inset, scrollPtr->sliderFirst,
-		width, scrollPtr->sliderLast - scrollPtr->sliderFirst,
+	if (fillGC != NULL) {
+	    XFillRectangle(scrollPtr->display, pixmap, fillGC,
+		scrollPtr->inset, scrollPtr->sliderFirst, width - 1, 
+		scrollPtr->sliderLast - scrollPtr->sliderFirst - 1);
+	    Tk_Draw3DRectangle(tkwin, pixmap, border,
+	        scrollPtr->inset, scrollPtr->sliderFirst,
+	        width, scrollPtr->sliderLast - scrollPtr->sliderFirst,
 		elementBorderWidth, relief);
+	} else {
+	    Tk_Fill3DRectangle(tkwin, pixmap, border,
+		    scrollPtr->inset, scrollPtr->sliderFirst,
+		    width, scrollPtr->sliderLast - scrollPtr->sliderFirst,
+		    elementBorderWidth, relief);
+	}
     } else {
-	Tk_Fill3DRectangle(tkwin, pixmap, border,
+	if (fillGC != NULL) {
+	    XFillRectangle(scrollPtr->display, pixmap, fillGC,
+		scrollPtr->sliderFirst, scrollPtr->inset,
+		scrollPtr->sliderLast - scrollPtr->sliderFirst - 1, width - 1);
+	    Tk_Draw3DRectangle(tkwin, pixmap, border,
 		scrollPtr->sliderFirst, scrollPtr->inset,
 		scrollPtr->sliderLast - scrollPtr->sliderFirst, width,
 		elementBorderWidth, relief);
+	} else {
+	    Tk_Fill3DRectangle(tkwin, pixmap, border,
+		    scrollPtr->sliderFirst, scrollPtr->inset,
+		    scrollPtr->sliderLast - scrollPtr->sliderFirst, width,
+		    elementBorderWidth, relief);
+	}
+    }
+
+    if (scrollPtr->tile != NULL) {
+	XSetTSOrigin(scrollPtr->display, ((UnixScrollbar*)scrollPtr)->copyGC, 0, 0);
+    }
+    if (scrollPtr->troughTile != NULL) {
+	XSetTSOrigin(scrollPtr->display, ((UnixScrollbar*)scrollPtr)->troughGC, 0, 0);
+    }
+    if (scrollPtr->activeTileGC != NULL) {
+	XSetTSOrigin(scrollPtr->display, scrollPtr->activeTileGC, 0, 0);
     }
 
     /*
@@ -393,22 +546,85 @@ TkpConfigureScrollbar(scrollPtr)
 					 * some fields. */
 {
     XGCValues gcValues;
-    GC new;
+    GC new = None;
+    Pixmap pixmap;
+    int flags;
     UnixScrollbar *unixScrollPtr = (UnixScrollbar *) scrollPtr;
+
+    if (scrollPtr->activeTile != NULL) {
+	Tk_SetTileChangedProc(scrollPtr->activeTile, TileChangedProc,
+	    (ClientData)scrollPtr, (Tk_Item *) NULL);
+
+	pixmap = Tk_PixmapOfTile(scrollPtr->activeTile);
+	if (pixmap != None) {
+	    unsigned int gcMask;
+
+	    gcMask = (GCTile | GCFillStyle);
+	    gcValues.fill_style = FillTiled;
+	    gcValues.tile = pixmap;
+
+	    new = Tk_GetGC(scrollPtr->tkwin, gcMask, &gcValues);
+	}
+    }
+    if (scrollPtr->activeTileGC != None) {
+	Tk_FreeGC(scrollPtr->display, scrollPtr->activeTileGC);
+    }
+    scrollPtr->activeTileGC = new;
 
     Tk_SetBackgroundFromBorder(scrollPtr->tkwin, scrollPtr->bgBorder);
 
     gcValues.foreground = scrollPtr->troughColorPtr->pixel;
-    new = Tk_GetGC(scrollPtr->tkwin, GCForeground, &gcValues);
+    flags = GCForeground;
+    if (scrollPtr->troughTile != NULL) {
+	Tk_SetTileChangedProc(scrollPtr->troughTile, TileChangedProc,
+	    (ClientData)scrollPtr, (Tk_Item *) NULL);
+	if ((pixmap = Tk_PixmapOfTile(scrollPtr->troughTile)) != None) {
+	    gcValues.fill_style = FillTiled;
+	    gcValues.tile = pixmap;
+	    flags = GCTile|GCFillStyle;
+	}
+    }
+    new = Tk_GetGC(scrollPtr->tkwin, flags, &gcValues);
     if (unixScrollPtr->troughGC != None) {
 	Tk_FreeGC(scrollPtr->display, unixScrollPtr->troughGC);
     }
     unixScrollPtr->troughGC = new;
-    if (unixScrollPtr->copyGC == None) {
-	gcValues.graphics_exposures = False;
-	unixScrollPtr->copyGC = Tk_GetGC(scrollPtr->tkwin, GCGraphicsExposures,
-	    &gcValues);
+    gcValues.graphics_exposures = False;
+    flags = GCGraphicsExposures;
+    if (scrollPtr->tile != NULL) {
+	Tk_SetTileChangedProc(scrollPtr->tile, TileChangedProc,
+	    (ClientData)scrollPtr, (Tk_Item *) NULL);
+	if ((pixmap = Tk_PixmapOfTile(scrollPtr->tile)) != None) {
+	    gcValues.fill_style = FillTiled;
+	    gcValues.tile = pixmap;
+	    flags |= GCTile|GCFillStyle;
+	}
     }
+    new = Tk_GetGC(scrollPtr->tkwin, flags, &gcValues);
+    if (((UnixScrollbar*)scrollPtr)->copyGC != None) {
+	Tk_FreeGC(scrollPtr->display, ((UnixScrollbar*)scrollPtr)->copyGC);
+    }
+    ((UnixScrollbar*)scrollPtr)->copyGC = new;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;           /* Not used */
+{
+    TkpConfigureScrollbar((TkScrollbar *) clientData);
 }
 
 /*

@@ -6,9 +6,9 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
-#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -318,7 +318,7 @@ PPCODE:
   Window rw = None;
   if (XQueryTree(dpy, w, &rw, &pw, &children, &count))
    {
-    int i;
+    unsigned int i;
     for (i=0; i < count; i++)
      {
       SV *sv = sv_newmortal();

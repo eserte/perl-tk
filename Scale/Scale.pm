@@ -13,7 +13,7 @@
 package Tk::Scale;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Scale/Scale.pm#2 $
+$VERSION = '3.012'; # $Id: //depot/Tk8/Scale/Scale.pm#12 $
 
 use Tk qw($XS_VERSION);
 use AutoLoader;

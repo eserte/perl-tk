@@ -117,13 +117,13 @@ sub search_load_file {
     if (not open(F, "<$$file")) {
 	$MW->Dialog(
             -title  => 'File Not Found',
-            -text   => $OS_ERROR,
+            -text   => "$!: '$$file'",
             -bitmap => 'error',
         )->Show;
 	return;
     }
     $w->delete(qw/1.0 end/);
-    $bytes = read F, $buf, 10000;	# after all, it IS just an example
+    $bytes = read F, $buf, 10_000;	# after all, it IS just an example
     $w->insert('end', $buf);
     if ($bytes == 10000) {
 	$w->insert('end', "\n\n**************** File truncated at 10,000 bytes! ****************\n");
@@ -149,13 +149,13 @@ sub search_text {
 
     return unless ref($string) && length($$string);
 
-    $w->tag('remove',  $tag, qw/0.0 end/);
+    $w->tagRemove($tag, qw/0.0 end/);
     my($current, $length) = ('1.0', 0);
 
     while (1) {
 	$current = $w->search(-count => \$length, $$string, $current, 'end');
 	last if not $current;
-	$w->tag('add', $tag, $current, "$current + $length char");
+	$w->tagAdd($tag, $current, "$current + $length char");
 	$current = $w->index("$current + $length char");
     }
 

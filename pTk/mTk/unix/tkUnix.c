@@ -1,4 +1,4 @@
-/*
+/* 
  * tkUnix.c --
  *
  *	This file contains procedures that are UNIX/X-specific, and
@@ -10,11 +10,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnix.c,v 1.5 2002/01/25 21:09:37 dgp Exp $
+ * RCS: @(#) $Id: tkUnix.c,v 1.2 1998/09/14 18:23:55 stanton Exp $
  */
 
 #include <tkInt.h>
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -40,8 +40,7 @@ TkGetServerInfo(interp, tkwin)
     Tk_Window tkwin;		/* Token for window;  this selects a
 				 * particular display and server. */
 {
-    char buffer[8 + TCL_INTEGER_SPACE * 2];
-    char buffer2[TCL_INTEGER_SPACE];
+    char buffer[50], buffer2[50];
 
     sprintf(buffer, "X%dR%d ", ProtocolVersion(Tk_Display(tkwin)),
 	    ProtocolRevision(Tk_Display(tkwin)));
@@ -49,7 +48,7 @@ TkGetServerInfo(interp, tkwin)
     Tcl_AppendResult(interp, buffer, ServerVendor(Tk_Display(tkwin)),
 	    buffer2, (char *) NULL);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -68,10 +67,10 @@ TkGetServerInfo(interp, tkwin)
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 TkGetDefaultScreenName(interp, screenName)
     Tcl_Interp *interp;		/* Interp used to find environment variables. */
-    CONST char *screenName;	/* Screen name from command line, or NULL. */
+    char *screenName;		/* Screen name from command line, or NULL. */
 {
     if ((screenName == NULL) || (screenName[0] == '\0')) {
 #if 0
@@ -81,32 +80,4 @@ TkGetDefaultScreenName(interp, screenName)
 #endif
     }
     return screenName;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * Tk_UpdatePointer --
- *
- *	Unused function in UNIX
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-void
-Tk_UpdatePointer(tkwin, x, y, state)
-    Tk_Window tkwin;		/* Window to which pointer event
-				 * is reported. May be NULL. */
-    int x, y;			/* Pointer location in root coords. */
-    int state;			/* Modifier state mask. */
-{
-  /*
-   * This function intentionally left blank
-   */
 }

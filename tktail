@@ -7,7 +7,7 @@ sub readfile
 {
  my ($t,$fh) = @_;
  my $size = (stat($fh))[7];
- my $len  = $size - $t->{'posn'};
+ my $len  = $size - $t->{'posn'}; 
  if ($len > 0)
   {
    my $buffer = "";

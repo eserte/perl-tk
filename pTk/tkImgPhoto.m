@@ -3,16 +3,8 @@
 #include "tkImgPhoto_f.h"
 #ifndef NO_VTABLES
 #define tkImgFmtPPM (*TkimgphotoVptr->V_tkImgFmtPPM)
-#ifndef Tk_CreateOldPhotoImageFormat
-#  define Tk_CreateOldPhotoImageFormat (*TkimgphotoVptr->V_Tk_CreateOldPhotoImageFormat)
-#endif
-
 #ifndef Tk_CreatePhotoImageFormat
 #  define Tk_CreatePhotoImageFormat (*TkimgphotoVptr->V_Tk_CreatePhotoImageFormat)
-#endif
-
-#ifndef Tk_DitherPhoto
-#  define Tk_DitherPhoto (*TkimgphotoVptr->V_Tk_DitherPhoto)
 #endif
 
 #ifndef Tk_FindPhoto

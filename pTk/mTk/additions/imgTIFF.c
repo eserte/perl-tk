@@ -400,7 +400,7 @@ load_tiff_library(interp)
     }
     return TCL_OK;
 }
-
+
 static void _TIFFerr(module, fmt, ap)
      CONST char *module;
      CONST char *fmt;
@@ -570,7 +570,7 @@ sizeString(fd)
     return ((MFile *) fd)->length;
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -991,7 +991,7 @@ static int ChnWriteTIFF(interp, filename, format, blockPtr)
 {
     TIFF *tif;
     int result, comp;
-    Tcl_DString nameBuffer;
+    Tcl_DString nameBuffer; 
     char *fullname, *mode;
 
     if (!(fullname=Tcl_TranslateFileName(interp, filename, &nameBuffer))) {

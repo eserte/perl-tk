@@ -1139,6 +1139,11 @@ This command returns an empty string.
 
 =back
 
+=item I<$text>-E<gt>B<menu>(I<menu>)
+
+Replace the default right-click menu with I<menu>. Use C<undef> to
+remove the menu completely. Returns a reference to the current menu.
+
 =item I<$text>-E<gt>B<scan>(I<option>, I<args>) or
 
 =item I<$text>-E<gt>B<scan>I<option>(I<args>)

@@ -1,12 +1,13 @@
 # floor.pl
 
+use Tk::Trace;
 use subs qw/floor_bg1 floor_bg2 floor_bg3 floor_display floor_fg1 floor_fg2
 	    floor_fg3 floor_room_changed/;
 use vars qw/$TOP/;
 
 sub floor {
 
-    # Create a top-level window containing a canvas that displays the
+    # Create a top-level window containing a Canvas that displays the
     # floorplan for DEC's Western Research Laboratory.
 
     my($demo) = @_;
@@ -21,8 +22,8 @@ sub floor {
 			   -borderwidth 2 -scrollbars se/);
     $c->pack(qw/-expand yes -fill both/);
 
-    # Create an entry for displaying and typing in current room.
-    untie $floor::current_room;
+    # Create an Entry for displaying and typing in current room.
+
     $floor::current_room = '';
     my $c_entry = $c->Entry(qw/-width 10 -relief sunken -borderwidth 2
 			    -textvariable/ => \$floor::current_room);
@@ -56,43 +57,51 @@ sub floor {
     floor_display $c->Subwidget('canvas'), 3, \%floor_labels, \%floor_items,
         \%cinfo, \$active_floor, $c_entry;
 
-    # Set up event bindings for canvas.
+    # Set up event bindings for the Canvas.
 
     my $floor_number;
     for $floor_number (1..3) {
 	$c->bind("floor${floor_number}", '<1>' =>
-            [\&floor_display, $floor_number, \%floor_labels, \%floor_items,
+            [\&floor_display, $floor_number, \%floor_labels, \%floor_items, 
 	    \%cinfo, \$active_floor, $c_entry],
         );
     }
     $c->bind('room', '<Enter>' => sub {
 	my($c) = @_;
 	my $id = $c->find('withtag' => 'current');
-	$floor::current_room  = $floor_labels{$c->find('withtag','current')}
-	    if defined $id;
+	$id = $id->[0] if ref($id) eq 'ARRAY';
+	$floor::current_room  = $floor_labels{$id} if defined $id;
 	$c->idletasks;
     });
     $c->bind('room', '<Leave>' => sub {$floor::current_room = ''});
-    $c->Tk::bind('<2>' => sub {
+    $c->CanvasBind('<2>' => sub {
 	my($c) = @_;
         my $e = $c->XEvent;
-	$c->scan('mark', $e->x, $e->y);
+	$c->scanMark($e->x, $e->y);
     });
-    $c->Tk::bind('<B2-Motion>' => sub {
+    $c->CanvasBind('<B2-Motion>' => sub {
 	my($c) = @_;
         my $e = $c->XEvent;
-	$c->scan('dragto', $e->x, $e->y);
+	$c->scanDragto($e->x, $e->y);
     });
-    $c->Tk::bind('<Enter>', => [sub {shift; shift->focus}, $c_entry]);
-    tie $floor::current_room, 'floor', $c->Subwidget('canvas'), \%floor_items,
-        \%cinfo;
+    $c->CanvasBind('<Enter>', => [sub {shift; shift->focus}, $c_entry]);
+
+    $c->traceVariable(\$floor::current_room, 'w' =>
+        [sub {
+            my($index, $value, $op, $floor_items, $cinfo) = @_;
+            return if $op eq 'u';
+	    $floor_current_room = $value;
+	    &floor_room_changed($c->Subwidget('canvas'), $floor_items, $cinfo);
+	    $value;		# always return variable's new value
+	}, \%floor_items, \%cinfo],
+    ); 
 
 } # floor
 
 sub floor_display {
 
     # The following procedure recreates the floorplan display in the
-    # canvas given by "w".  The floor given by "active" (1, 2, or 3) is
+    # Canvas given by "w".  The floor given by "active" (1, 2, or 3) is
     # displayed on top, with office structure visible.  (Used as a callback
     # and a normal function.)
 
@@ -124,7 +133,7 @@ sub floor_display {
     # Add the walls and labels for the active floor, along with transparent
     # polygons that define the rooms on the floor.  Make sure that the room
     # polygons are on top.
-
+	
     my $cmd = "floor_fg${active}";
     {
 	no strict qw(refs);
@@ -148,7 +157,7 @@ sub floor_display {
 
 sub floor_room_changed {
 
-    # Whenever the current_room variable changes, this procedure highlights
+    # Whenever the current_room variable changes, this procedure highlights 
     # the current room and unhighlights any previous room.
 
     my($w, $floor_items, $cinfo) = @_;
@@ -169,7 +178,7 @@ sub floor_room_changed {
 } # end floor_room_changed
 
 # The following procedures are invoked to instantiate various portions of
-# the building floorplan.  The bodies of these procedures were generated
+# the building floorplan.  The bodies of these procedures were generated 
 # automatically from database files describing the building.
 
 
@@ -1311,51 +1320,5 @@ sub floor_fg3 {;
     $w->create('line', qw(258 250 243 250), -fill => $color, -tags => ['floor3', 'wall']);
 
 } # end floor_fg3;
-
-package floor;
-
-# $current_room is tied to package "floor" for tracing purposes, thus, when
-# characters are typed in the Entry widget we can call floor_room_changed()
-# at every keystroke, and when a valid room number is found light the room up.
-#
-# All other global variables are also "floor" qualified.
-
-my($class, $current_room, $canvas, $floor_items, $cinfo);
-
-sub TIESCALAR {
-
-    # "new" method for scalars.  Save reference to the floorplan canvas,
-    # item descriptions and canvas info hash in this package's namespace.
-    #
-    # Return a blessed reference, which is what FETCH and STORE will get.
-
-    ($class, $canvas, $floor_items, $cinfo) = @_;
-    my $self;
-    bless \$self, $class;
-
-}
-
-sub FETCH {
-
-    # Method to handle reads of the tied variable:  simply return it's value.
-
-    my($current_room) = @_;
-    return $$current_room;
-
-}
-
-sub STORE {
-
-    # Method to handle writes to the tied variable:  simply store it's value.
-    # Call floor_room_changed() to highlight a room, if possible.
-
-    my($current_room, $value) = @_;
-    $$current_room = $value;
-    &::floor_room_changed($canvas, $floor_items, $cinfo);
-
-}
-
-sub DESTROY {			# class destructor (unused)
-}
 
 1;

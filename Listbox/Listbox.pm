@@ -36,7 +36,7 @@
 package Tk::Listbox;
 
 use vars qw($VERSION);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Listbox/Listbox.pm#9 $
+$VERSION = '3.037'; # $Id: //depot/Tk8/Listbox/Listbox.pm#37 $
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Clipboard ();
@@ -119,7 +119,7 @@ sub ClassInit
 	       $w->yview('scroll',-1,'pages');
 	       $w->activate('@0,0');
 	   });
-
+ $mw->MouseWheelBind($class);
  $mw->bind($class,'<Control-Home>','Cntrl_Home');
  ;
  $mw->bind($class,'<Shift-Control-Home>',['DataExtend',0]);

@@ -1,4 +1,4 @@
-/*
+/* 
  * tclPkg.c --
  *
  *	This file implements package and version control for Tcl via
@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclPkg.c,v 1.9 2002/02/22 22:36:09 dgp Exp $
+ * RCS: @(#) $Id: tclPkg.c,v 1.2 1998/09/14 18:40:01 stanton Exp $
  */
 
 #include "tclInt.h"
@@ -43,7 +43,6 @@ typedef struct Package {
 				 * exist in this interpreter yet. */
     PkgAvail *availPtr;		/* First in list of all available versions
 				 * of this package. */
-    ClientData clientData;	/* Client data. */
 } Package;
 
 /*
@@ -51,17 +50,16 @@ typedef struct Package {
  */
 
 static int		CheckVersion _ANSI_ARGS_((Tcl_Interp *interp,
-			    CONST char *string));
-static int		ComparePkgVersions _ANSI_ARGS_((CONST char *v1,
-                            CONST char *v2,
+			    char *string));
+static int		ComparePkgVersions _ANSI_ARGS_((char *v1, char *v2,
 			    int *satPtr));
 static Package *	FindPackage _ANSI_ARGS_((Tcl_Interp *interp,
-			    CONST char *name));
-
+			    char *name));
+
 /*
  *----------------------------------------------------------------------
  *
- * Tcl_PkgProvide / Tcl_PkgProvideEx --
+ * Tcl_PkgProvide --
  *
  *	This procedure is invoked to declare that a particular version
  *	of a particular package is now present in an interpreter.  There
@@ -71,7 +69,7 @@ static Package *	FindPackage _ANSI_ARGS_((Tcl_Interp *interp,
  * Results:
  *	Normally returns TCL_OK;  if there is already another version
  *	of the package loaded then TCL_ERROR is returned and an error
- *	message is left in the interp's result.
+ *	message is left in interp->result.
  *
  * Side effects:
  *	The interpreter remembers that this package is available,
@@ -85,20 +83,8 @@ int
 Tcl_PkgProvide(interp, name, version)
     Tcl_Interp *interp;		/* Interpreter in which package is now
 				 * available. */
-    CONST char *name;		/* Name of package. */
-    CONST char *version;	/* Version string for package. */
-{
-    return Tcl_PkgProvideEx(interp, name, version, (ClientData) NULL);
-}
-
-int
-Tcl_PkgProvideEx(interp, name, version, clientData)
-    Tcl_Interp *interp;		/* Interpreter in which package is now
-				 * available. */
-    CONST char *name;		/* Name of package. */
-    CONST char *version;	/* Version string for package. */
-    ClientData clientData;      /* clientdata for this package (normally
-                                 * used for C callback function table) */
+    char *name;			/* Name of package. */
+    char *version;		/* Version string for package. */
 {
     Package *pkgPtr;
 
@@ -106,24 +92,20 @@ Tcl_PkgProvideEx(interp, name, version, clientData)
     if (pkgPtr->version == NULL) {
 	pkgPtr->version = ckalloc((unsigned) (strlen(version) + 1));
 	strcpy(pkgPtr->version, version);
-	pkgPtr->clientData = clientData;
 	return TCL_OK;
     }
     if (ComparePkgVersions(pkgPtr->version, version, (int *) NULL) == 0) {
-	if (clientData != NULL) {
-	    pkgPtr->clientData = clientData;
-	}
 	return TCL_OK;
     }
     Tcl_AppendResult(interp, "conflicting versions provided for package \"",
 	    name, "\": ", pkgPtr->version, ", then ", version, (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tcl_PkgRequire / Tcl_PkgRequireEx --
+ * Tcl_PkgRequire --
  *
  *	This procedure is called by code that depends on a particular
  *	version of a particular package.  If the package is not already
@@ -140,7 +122,7 @@ Tcl_PkgProvideEx(interp, name, version, clientData)
  *	a currently provided version, or the required version cannot
  *	be found, or the script to provide the required version
  *	generates an error), NULL is returned and an error
- *	message is left in the interp's result.
+ *	message is left in interp->result.
  *
  * Side effects:
  *	The script from some previous "package ifneeded" command may
@@ -149,118 +131,23 @@ Tcl_PkgProvideEx(interp, name, version, clientData)
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tcl_PkgRequire(interp, name, version, exact)
     Tcl_Interp *interp;		/* Interpreter in which package is now
 				 * available. */
-    CONST char *name;		/* Name of desired package. */
-    CONST char *version;	/* Version string for desired version;
+    char *name;			/* Name of desired package. */
+    char *version;		/* Version string for desired version;
 				 * NULL means use the latest version
 				 * available. */
     int exact;			/* Non-zero means that only the particular
 				 * version given is acceptable. Zero means
 				 * use the latest compatible version. */
-{
-    return Tcl_PkgRequireEx(interp, name, version, exact, (ClientData *) NULL);
-}
-
-CONST char *
-Tcl_PkgRequireEx(interp, name, version, exact, clientDataPtr)
-    Tcl_Interp *interp;		/* Interpreter in which package is now
-				 * available. */
-    CONST char *name;		/* Name of desired package. */
-    CONST char *version;	/* Version string for desired version;
-				 * NULL means use the latest version
-				 * available. */
-    int exact;			/* Non-zero means that only the particular
-				 * version given is acceptable. Zero means
-				 * use the latest compatible version. */
-    ClientData *clientDataPtr;	/* Used to return the client data for this
-				 * package. If it is NULL then the client
-				 * data is not returned. This is unchanged
-				 * if this call fails for any reason. */
 {
     Package *pkgPtr;
     PkgAvail *availPtr, *bestPtr;
     char *script;
     int code, satisfies, result, pass;
     Tcl_DString command;
-
-    /*
-     * If an attempt is being made to load this into a standalone executable
-     * on a platform where backlinking is not supported then this must be
-     * a shared version of Tcl (Otherwise the load would have failed).
-     * Detect this situation by checking that this library has been correctly
-     * initialised. If it has not been then return immediately as nothing will
-     * work.
-     */
-
-    if (tclEmptyStringRep == NULL) {
-
-	/*
-	 * OK, so what's going on here?
-	 *
-	 * First, what are we doing?  We are performing a check on behalf of
-	 * one particular caller, Tcl_InitStubs().  When a package is
-	 * stub-enabled, it is statically linked to libtclstub.a, which
-	 * contains a copy of Tcl_InitStubs().  When a stub-enabled package
-	 * is loaded, its *_Init() function is supposed to call
-	 * Tcl_InitStubs() before calling any other functions in the Tcl
-	 * library.  The first Tcl function called by Tcl_InitStubs() through
-	 * the stub table is Tcl_PkgRequireEx(), so this code right here is
-	 * the first code that is part of the original Tcl library in the
-	 * executable that gets executed on behalf of a newly loaded
-	 * stub-enabled package.
-	 *
-	 * One easy error for the developer/builder of a stub-enabled package
-	 * to make is to forget to define USE_TCL_STUBS when compiling the
-	 * package.  When that happens, the package will contain symbols
-	 * that are references to the Tcl library, rather than function
-	 * pointers referencing the stub table.  On platforms that lack
-	 * backlinking, those unresolved references may cause the loading
-	 * of the package to also load a second copy of the Tcl library,
-	 * leading to all kinds of trouble.  We would like to catch that
-	 * error and report a useful message back to the user.  That's
-	 * what we're doing.
-	 *
-	 * Second, how does this work?  If we reach this point, then the
-	 * global variable tclEmptyStringRep has the value NULL.  Compare
-	 * that with the definition of tclEmptyStringRep near the top of
-	 * the file generic/tclObj.c.  It clearly should not have the value
-	 * NULL; it should point to the char tclEmptyString.  If we see it
-	 * having the value NULL, then somehow we are seeing a Tcl library
-	 * that isn't completely initialized, and that's an indicator for the
-	 * error condition described above.  (Further explanation is welcome.)
-	 *
-	 * Third, so what do we do about it?  This situation indicates
-	 * the package we just loaded wasn't properly compiled to be
-	 * stub-enabled, yet it thinks it is stub-enabled (it called
-	 * Tcl_InitStubs()).  We want to report that the package just
-	 * loaded is broken, so we want to place an error message in
-	 * the interpreter result and return NULL to indicate failure
-	 * to Tcl_InitStubs() so that it will also fail.  (Further
-	 * explanation why we don't want to Tcl_Panic() is welcome.
-	 * After all, two Tcl libraries can't be a good thing!)
-	 *
-	 * Trouble is that's going to be tricky.  We're now using a Tcl
-	 * library that's not fully initialized.  In particular, it
-	 * doesn't have a proper value for tclEmptyStringRep.  The
-	 * Tcl_Obj system heavily depends on the value of tclEmptyStringRep
-	 * and all of Tcl depends (increasingly) on the Tcl_Obj system, we
-	 * need to correct that flaw before making the calls to set the
-	 * interpreter result to the error message.  That's the only flaw
-	 * corrected; other problems with initialization of the Tcl library
-	 * are not remedied, so be very careful about adding any other calls
-	 * here without checking how they behave when initialization is
-	 * incomplete.
-	 */
-
-	tclEmptyStringRep = &tclEmptyString;
-        Tcl_AppendResult(interp, "Cannot load package \"", name,
-                "\" in standalone executable: This package is not ",
-                "compiled with stub support", NULL);
-        return NULL;
-    }
 
     /*
      * It can take up to three passes to find the package:  one pass to
@@ -279,7 +166,7 @@ Tcl_PkgRequireEx(interp, name, version, exact, clientDataPtr)
 	 * The package isn't yet present.  Search the list of available
 	 * versions and invoke the script for the best available version.
 	 */
-
+    
 	bestPtr = NULL;
 	for (availPtr = pkgPtr->availPtr; availPtr != NULL;
 		availPtr = availPtr->nextPtr) {
@@ -306,7 +193,7 @@ Tcl_PkgRequireEx(interp, name, version, exact, clientDataPtr)
 	     * script itself from deletion and (b) don't assume that bestPtr
 	     * will still exist when the script completes.
 	     */
-
+	
 	    script = bestPtr->script;
 	    Tcl_Preserve((ClientData) script);
 	    code = Tcl_GlobalEval(interp, script);
@@ -366,21 +253,15 @@ Tcl_PkgRequireEx(interp, name, version, exact, clientDataPtr)
     }
 
     /*
-     * At this point we know that the package is present.  Make sure that the
+     * At this point we now that the package is present.  Make sure that the
      * provided version meets the current requirement.
      */
 
     if (version == NULL) {
-        if (clientDataPtr) {
-	    *clientDataPtr = pkgPtr->clientData;
-	}
 	return pkgPtr->version;
     }
     result = ComparePkgVersions(pkgPtr->version, version, &satisfies);
     if ((satisfies && !exact) || (result == 0)) {
-	if (clientDataPtr) {
-	    *clientDataPtr = pkgPtr->clientData;
-	}
 	return pkgPtr->version;
     }
     Tcl_AppendResult(interp, "version conflict for package \"",
@@ -388,111 +269,11 @@ Tcl_PkgRequireEx(interp, name, version, exact, clientDataPtr)
 	    (char *) NULL);
     return NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tcl_PkgPresent / Tcl_PkgPresentEx --
- *
- *	Checks to see whether the specified package is present. If it
- *	is not then no additional action is taken.
- *
- * Results:
- *	If successful, returns the version string for the currently
- *	provided version of the package, which may be different from
- *	the "version" argument.  If the caller's requirements
- *	cannot be met (e.g. the version requested conflicts with
- *	a currently provided version), NULL is returned and an error
- *	message is left in interp->result.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-CONST char *
-Tcl_PkgPresent(interp, name, version, exact)
-    Tcl_Interp *interp;		/* Interpreter in which package is now
-				 * available. */
-    CONST char *name;		/* Name of desired package. */
-    CONST char *version;	/* Version string for desired version;
-				 * NULL means use the latest version
-				 * available. */
-    int exact;			/* Non-zero means that only the particular
-				 * version given is acceptable. Zero means
-				 * use the latest compatible version. */
-{
-    return Tcl_PkgPresentEx(interp, name, version, exact, (ClientData *) NULL);
-}
-
-CONST char *
-Tcl_PkgPresentEx(interp, name, version, exact, clientDataPtr)
-    Tcl_Interp *interp;		/* Interpreter in which package is now
-				 * available. */
-    CONST char *name;		/* Name of desired package. */
-    CONST char *version;	/* Version string for desired version;
-				 * NULL means use the latest version
-				 * available. */
-    int exact;			/* Non-zero means that only the particular
-				 * version given is acceptable. Zero means
-				 * use the latest compatible version. */
-    ClientData *clientDataPtr;	/* Used to return the client data for this
-				 * package. If it is NULL then the client
-				 * data is not returned. This is unchanged
-				 * if this call fails for any reason. */
-{
-    Interp *iPtr = (Interp *) interp;
-    Tcl_HashEntry *hPtr;
-    Package *pkgPtr;
-    int satisfies, result;
-
-    hPtr = Tcl_FindHashEntry(&iPtr->packageTable, name);
-    if (hPtr) {
-	pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
-	if (pkgPtr->version != NULL) {
-
-	    /*
-	     * At this point we know that the package is present.  Make sure
-	     * that the provided version meets the current requirement.
-	     */
-
-	    if (version == NULL) {
-		if (clientDataPtr) {
-		    *clientDataPtr = pkgPtr->clientData;
-		}
-
-		return pkgPtr->version;
-	    }
-	    result = ComparePkgVersions(pkgPtr->version, version, &satisfies);
-	    if ((satisfies && !exact) || (result == 0)) {
-		if (clientDataPtr) {
-		    *clientDataPtr = pkgPtr->clientData;
-		}
-
-		return pkgPtr->version;
-	    }
-	    Tcl_AppendResult(interp, "version conflict for package \"",
-			     name, "\": have ", pkgPtr->version,
-			     ", need ", version, (char *) NULL);
-	    return NULL;
-	}
-    }
-
-    if (version != NULL) {
-	Tcl_AppendResult(interp, "package ", name, " ", version,
-			 " is not present", (char *) NULL);
-    } else {
-	Tcl_AppendResult(interp, "package ", name, " is not present",
-			 (char *) NULL);
-    }
-    return NULL;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * Tcl_PackageObjCmd --
+ * Tcl_PackageCmd --
  *
  *	This procedure is invoked to process the "package" Tcl command.
  *	See the user documentation for details on what it does.
@@ -508,298 +289,230 @@ Tcl_PkgPresentEx(interp, name, version, exact, clientDataPtr)
 
 	/* ARGSUSED */
 int
-Tcl_PackageObjCmd(dummy, interp, objc, objv)
+Tcl_PackageCmd(dummy, interp, argc, argv)
     ClientData dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
-    int objc;				/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
 {
-    static CONST char *pkgOptions[] = {
-	"forget", "ifneeded", "names", "present", "provide", "require",
-	"unknown", "vcompare", "versions", "vsatisfies", (char *) NULL
-    };
-    enum pkgOptions {
-	PKG_FORGET, PKG_IFNEEDED, PKG_NAMES, PKG_PRESENT,
-	PKG_PROVIDE, PKG_REQUIRE, PKG_UNKNOWN, PKG_VCOMPARE,
-	PKG_VERSIONS, PKG_VSATISFIES
-    };
     Interp *iPtr = (Interp *) interp;
-    int optionIndex, exact, i, satisfies;
+    size_t length;
+    int c, exact, i, satisfies;
     PkgAvail *availPtr, *prevPtr;
     Package *pkgPtr;
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
     Tcl_HashTable *tablePtr;
-    CONST char *version;
-    char *argv2, *argv3, *argv4;
+    char *version;
+    char buf[30];
 
-    if (objc < 2) {
-        Tcl_WrongNumArgs(interp, 1, objv, "option ?arg arg ...?");
+    if (argc < 2) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" option ?arg arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-
-    if (Tcl_GetIndexFromObj(interp, objv[1], pkgOptions, "option", 0,
-	    &optionIndex) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    switch ((enum pkgOptions) optionIndex) {
-	case PKG_FORGET: {
-	    char *keyString;
-	    for (i = 2; i < objc; i++) {
-		keyString = Tcl_GetString(objv[i]);
-		hPtr = Tcl_FindHashEntry(&iPtr->packageTable, keyString);
-		if (hPtr == NULL) {
-		    continue;
-		}
-		pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
-		Tcl_DeleteHashEntry(hPtr);
-		if (pkgPtr->version != NULL) {
-		    ckfree(pkgPtr->version);
-		}
-		while (pkgPtr->availPtr != NULL) {
-		    availPtr = pkgPtr->availPtr;
-		    pkgPtr->availPtr = availPtr->nextPtr;
-		    ckfree(availPtr->version);
-		    Tcl_EventuallyFree((ClientData)availPtr->script, TCL_DYNAMIC);
-		    ckfree((char *) availPtr);
-		}
-		ckfree((char *) pkgPtr);
+    c = argv[1][0];
+    length = strlen(argv[1]);
+    if ((c == 'f') && (strncmp(argv[1], "forget", length) == 0)) {
+	for (i = 2; i < argc; i++) {
+	    hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv[i]);
+	    if (hPtr == NULL) {
+		return TCL_OK;
 	    }
-	    break;
+	    pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
+	    Tcl_DeleteHashEntry(hPtr);
+	    if (pkgPtr->version != NULL) {
+		ckfree(pkgPtr->version);
+	    }
+	    while (pkgPtr->availPtr != NULL) {
+		availPtr = pkgPtr->availPtr;
+		pkgPtr->availPtr = availPtr->nextPtr;
+		ckfree(availPtr->version);
+		Tcl_EventuallyFree((ClientData)availPtr->script, TCL_DYNAMIC);
+		ckfree((char *) availPtr);
+	    }
+	    ckfree((char *) pkgPtr);
 	}
-	case PKG_IFNEEDED: {
-	    int length;
-	    if ((objc != 4) && (objc != 5)) {
-		Tcl_WrongNumArgs(interp, 2, objv, "package version ?script?");
-		return TCL_ERROR;
+    } else if ((c == 'i') && (strncmp(argv[1], "ifneeded", length) == 0)) {
+	if ((argc != 4) && (argc != 5)) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " ifneeded package version ?script?\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (CheckVersion(interp, argv[3]) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	if (argc == 4) {
+	    hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv[2]);
+	    if (hPtr == NULL) {
+		return TCL_OK;
 	    }
-	    argv3 = Tcl_GetString(objv[3]);
-	    if (CheckVersion(interp, argv3) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    argv2 = Tcl_GetString(objv[2]);
-	    if (objc == 4) {
-		hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv2);
-		if (hPtr == NULL) {
+	    pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
+	} else {
+	    pkgPtr = FindPackage(interp, argv[2]);
+	}
+	for (availPtr = pkgPtr->availPtr, prevPtr = NULL; availPtr != NULL;
+		prevPtr = availPtr, availPtr = availPtr->nextPtr) {
+	    if (ComparePkgVersions(availPtr->version, argv[3], (int *) NULL)
+		    == 0) {
+		if (argc == 4) {
+		    Tcl_SetResult(interp, availPtr->script, TCL_VOLATILE);
 		    return TCL_OK;
 		}
-		pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
+		Tcl_EventuallyFree((ClientData)availPtr->script, TCL_DYNAMIC);
+		break;
+	    }
+	}
+	if (argc == 4) {
+	    return TCL_OK;
+	}
+	if (availPtr == NULL) {
+	    availPtr = (PkgAvail *) ckalloc(sizeof(PkgAvail));
+	    availPtr->version = ckalloc((unsigned) (strlen(argv[3]) + 1));
+	    strcpy(availPtr->version, argv[3]);
+	    if (prevPtr == NULL) {
+		availPtr->nextPtr = pkgPtr->availPtr;
+		pkgPtr->availPtr = availPtr;
 	    } else {
-		pkgPtr = FindPackage(interp, argv2);
+		availPtr->nextPtr = prevPtr->nextPtr;
+		prevPtr->nextPtr = availPtr;
 	    }
-	    argv3 = Tcl_GetStringFromObj(objv[3], &length);
-	    for (availPtr = pkgPtr->availPtr, prevPtr = NULL; availPtr != NULL;
-		 prevPtr = availPtr, availPtr = availPtr->nextPtr) {
-		if (ComparePkgVersions(availPtr->version, argv3, (int *) NULL)
-			== 0) {
-		    if (objc == 4) {
-			Tcl_SetResult(interp, availPtr->script, TCL_VOLATILE);
-			return TCL_OK;
-		    }
-		    Tcl_EventuallyFree((ClientData)availPtr->script, TCL_DYNAMIC);
-		    break;
-		}
-	    }
-	    if (objc == 4) {
-		return TCL_OK;
-	    }
-	    if (availPtr == NULL) {
-		availPtr = (PkgAvail *) ckalloc(sizeof(PkgAvail));
-		availPtr->version = ckalloc((unsigned) (length + 1));
-		strcpy(availPtr->version, argv3);
-		if (prevPtr == NULL) {
-		    availPtr->nextPtr = pkgPtr->availPtr;
-		    pkgPtr->availPtr = availPtr;
-		} else {
-		    availPtr->nextPtr = prevPtr->nextPtr;
-		    prevPtr->nextPtr = availPtr;
-		}
-	    }
-	    argv4 = Tcl_GetStringFromObj(objv[4], &length);
-	    availPtr->script = ckalloc((unsigned) (length + 1));
-	    strcpy(availPtr->script, argv4);
-	    break;
 	}
-	case PKG_NAMES: {
-	    if (objc != 2) {
-		Tcl_WrongNumArgs(interp, 2, objv, NULL);
-		return TCL_ERROR;
-	    }
-	    tablePtr = &iPtr->packageTable;
-	    for (hPtr = Tcl_FirstHashEntry(tablePtr, &search); hPtr != NULL;
-		 hPtr = Tcl_NextHashEntry(&search)) {
-		pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
-		if ((pkgPtr->version != NULL) || (pkgPtr->availPtr != NULL)) {
-		    Tcl_AppendElement(interp, Tcl_GetHashKey(tablePtr, hPtr));
-		}
-	    }
-	    break;
+	availPtr->script = ckalloc((unsigned) (strlen(argv[4]) + 1));
+	strcpy(availPtr->script, argv[4]);
+    } else if ((c == 'n') && (strncmp(argv[1], "names", length) == 0)) {
+	if (argc != 2) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " names\"", (char *) NULL);
+	    return TCL_ERROR;
 	}
-	case PKG_PRESENT: {
-	    if (objc < 3) {
-		presentSyntax:
-		Tcl_WrongNumArgs(interp, 2, objv, "?-exact? package ?version?");
-		return TCL_ERROR;
+	tablePtr = &iPtr->packageTable;
+	for (hPtr = Tcl_FirstHashEntry(tablePtr, &search); hPtr != NULL;
+		hPtr = Tcl_NextHashEntry(&search)) {
+	    pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
+	    if ((pkgPtr->version != NULL) || (pkgPtr->availPtr != NULL)) {
+		Tcl_AppendElement(interp, Tcl_GetHashKey(tablePtr, hPtr));
 	    }
-	    argv2 = Tcl_GetString(objv[2]);
-	    if ((argv2[0] == '-') && (strcmp(argv2, "-exact") == 0)) {
-		exact = 1;
-	    } else {
-		exact = 0;
-	    }
-	    version = NULL;
-	    if (objc == (4 + exact)) {
-		version =  Tcl_GetString(objv[3 + exact]);
-		if (CheckVersion(interp, version) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-	    } else if ((objc != 3) || exact) {
-		goto presentSyntax;
-	    }
-	    if (exact) {
-		argv3 =  Tcl_GetString(objv[3]);
-		version = Tcl_PkgPresent(interp, argv3, version, exact);
-	    } else {
-		version = Tcl_PkgPresent(interp, argv2, version, exact);
-	    }
-	    if (version == NULL) {
-		return TCL_ERROR;
-	    }
-	    Tcl_SetObjResult( interp, Tcl_NewStringObj( version, -1 ) );
-	    break;
 	}
-	case PKG_PROVIDE: {
-	    if ((objc != 3) && (objc != 4)) {
-		Tcl_WrongNumArgs(interp, 2, objv, "package ?version?");
-		return TCL_ERROR;
-	    }
-	    argv2 = Tcl_GetString(objv[2]);
-	    if (objc == 3) {
-		hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv2);
-		if (hPtr != NULL) {
-		    pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
-		    if (pkgPtr->version != NULL) {
-			Tcl_SetResult(interp, pkgPtr->version, TCL_VOLATILE);
-		    }
-		}
-		return TCL_OK;
-	    }
-	    argv3 = Tcl_GetString(objv[3]);
-	    if (CheckVersion(interp, argv3) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    return Tcl_PkgProvide(interp, argv2, argv3);
+    } else if ((c == 'p') && (strncmp(argv[1], "provide", length) == 0)) {
+	if ((argc != 3) && (argc != 4)) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " provide package ?version?\"", (char *) NULL);
+	    return TCL_ERROR;
 	}
-	case PKG_REQUIRE: {
-	    if (objc < 3) {
-		requireSyntax:
-		Tcl_WrongNumArgs(interp, 2, objv, "?-exact? package ?version?");
-		return TCL_ERROR;
-	    }
-	    argv2 = Tcl_GetString(objv[2]);
-	    if ((argv2[0] == '-') && (strcmp(argv2, "-exact") == 0)) {
-		exact = 1;
-	    } else {
-		exact = 0;
-	    }
-	    version = NULL;
-	    if (objc == (4 + exact)) {
-		version =  Tcl_GetString(objv[3 + exact]);
-		if (CheckVersion(interp, version) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-	    } else if ((objc != 3) || exact) {
-		goto requireSyntax;
-	    }
-	    if (exact) {
-		argv3 =  Tcl_GetString(objv[3]);
-		version = Tcl_PkgRequire(interp, argv3, version, exact);
-	    } else {
-		version = Tcl_PkgRequire(interp, argv2, version, exact);
-	    }
-	    if (version == NULL) {
-		return TCL_ERROR;
-	    }
-	    Tcl_SetObjResult( interp, Tcl_NewStringObj( version, -1 ) );
-	    break;
-	}
-	case PKG_UNKNOWN: {
-	    int length;
-	    if (objc == 2) {
-		if (iPtr->packageUnknown != NULL) {
-		    Tcl_SetResult(interp, iPtr->packageUnknown, TCL_VOLATILE);
-		}
-	    } else if (objc == 3) {
-		if (iPtr->packageUnknown != NULL) {
-		    ckfree(iPtr->packageUnknown);
-		}
-		argv2 = Tcl_GetStringFromObj(objv[2], &length);
-		if (argv2[0] == 0) {
-		    iPtr->packageUnknown = NULL;
-		} else {
-		    iPtr->packageUnknown = (char *) ckalloc((unsigned)
-			    (length + 1));
-		    strcpy(iPtr->packageUnknown, argv2);
-		}
-	    } else {
-		Tcl_WrongNumArgs(interp, 2, objv, "?command?");
-		return TCL_ERROR;
-	    }
-	    break;
-	}
-	case PKG_VCOMPARE: {
-	    if (objc != 4) {
-		Tcl_WrongNumArgs(interp, 2, objv, "version1 version2");
-		return TCL_ERROR;
-	    }
-	    argv3 = Tcl_GetString(objv[3]);
-	    argv2 = Tcl_GetString(objv[2]);
-	    if ((CheckVersion(interp, argv2) != TCL_OK)
-		    || (CheckVersion(interp, argv3) != TCL_OK)) {
-		return TCL_ERROR;
-	    }
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
-		    ComparePkgVersions(argv2, argv3, (int *) NULL));
-	    break;
-	}
-	case PKG_VERSIONS: {
-	    if (objc != 3) {
-		Tcl_WrongNumArgs(interp, 2, objv, "package");
-		return TCL_ERROR;
-	    }
-	    argv2 = Tcl_GetString(objv[2]);
-	    hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv2);
+	if (argc == 3) {
+	    hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv[2]);
 	    if (hPtr != NULL) {
 		pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
-		for (availPtr = pkgPtr->availPtr; availPtr != NULL;
-		     availPtr = availPtr->nextPtr) {
-		    Tcl_AppendElement(interp, availPtr->version);
+		if (pkgPtr->version != NULL) {
+		    Tcl_SetResult(interp, pkgPtr->version, TCL_VOLATILE);
 		}
 	    }
-	    break;
+	    return TCL_OK;
 	}
-	case PKG_VSATISFIES: {
-	    if (objc != 4) {
-		Tcl_WrongNumArgs(interp, 2, objv, "version1 version2");
+	if (CheckVersion(interp, argv[3]) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	return Tcl_PkgProvide(interp, argv[2], argv[3]);
+    } else if ((c == 'r') && (strncmp(argv[1], "require", length) == 0)) {
+	if (argc < 3) {
+	    requireSyntax:
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " require ?-exact? package ?version?\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if ((argv[2][0] == '-') && (strcmp(argv[2], "-exact") == 0)) {
+	    exact = 1;
+	} else {
+	    exact = 0;
+	}
+	version = NULL;
+	if (argc == (4+exact)) {
+	    version = argv[3+exact];
+	    if (CheckVersion(interp, version) != TCL_OK) {
 		return TCL_ERROR;
 	    }
-	    argv3 = Tcl_GetString(objv[3]);
-	    argv2 = Tcl_GetString(objv[2]);
-	    if ((CheckVersion(interp, argv2) != TCL_OK)
-		    || (CheckVersion(interp, argv3) != TCL_OK)) {
-		return TCL_ERROR;
+	} else if ((argc != 3) || exact) {
+	    goto requireSyntax;
+	}
+	version = Tcl_PkgRequire(interp, argv[2+exact], version, exact);
+	if (version == NULL) {
+	    return TCL_ERROR;
+	}
+	Tcl_SetResult(interp, version, TCL_VOLATILE);
+    } else if ((c == 'u') && (strncmp(argv[1], "unknown", length) == 0)) {
+	if (argc == 2) {
+	    if (iPtr->packageUnknown != NULL) {
+		Tcl_SetResult(interp, iPtr->packageUnknown, TCL_VOLATILE);
 	    }
-	    ComparePkgVersions(argv2, argv3, &satisfies);
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), satisfies);
-	    break;
+	} else if (argc == 3) {
+	    if (iPtr->packageUnknown != NULL) {
+		ckfree(iPtr->packageUnknown);
+	    }
+	    if (argv[2][0] == 0) {
+		iPtr->packageUnknown = NULL;
+	    } else {
+		iPtr->packageUnknown = (char *) ckalloc((unsigned)
+			(strlen(argv[2]) + 1));
+		strcpy(iPtr->packageUnknown, argv[2]);
+	    }
+	} else {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " unknown ?command?\"", (char *) NULL);
+	    return TCL_ERROR;
 	}
-	default: {
-	    panic("Tcl_PackageObjCmd: bad option index to pkgOptions");
+    } else if ((c == 'v') && (strncmp(argv[1], "vcompare", length) == 0)
+	    && (length >= 2)) {
+	if (argc != 4) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " vcompare version1 version2\"", (char *) NULL);
+	    return TCL_ERROR;
 	}
+	if ((CheckVersion(interp, argv[2]) != TCL_OK)
+		|| (CheckVersion(interp, argv[3]) != TCL_OK)) {
+	    return TCL_ERROR;
+	}
+	TclFormatInt(buf, ComparePkgVersions(argv[2], argv[3], (int *) NULL));
+	Tcl_SetResult(interp, buf, TCL_VOLATILE);
+    } else if ((c == 'v') && (strncmp(argv[1], "versions", length) == 0)
+	    && (length >= 2)) {
+	if (argc != 3) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " versions package\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	hPtr = Tcl_FindHashEntry(&iPtr->packageTable, argv[2]);
+	if (hPtr != NULL) {
+	    pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
+	    for (availPtr = pkgPtr->availPtr; availPtr != NULL;
+		    availPtr = availPtr->nextPtr) {
+		Tcl_AppendElement(interp, availPtr->version);
+	    }
+	}
+    } else if ((c == 'v') && (strncmp(argv[1], "vsatisfies", length) == 0)
+	    && (length >= 2)) {
+	if (argc != 4) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		    " vsatisfies version1 version2\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if ((CheckVersion(interp, argv[2]) != TCL_OK)
+		|| (CheckVersion(interp, argv[3]) != TCL_OK)) {
+	    return TCL_ERROR;
+	}
+	ComparePkgVersions(argv[2], argv[3], &satisfies);
+	TclFormatInt(buf, satisfies);
+	Tcl_SetResult(interp, buf, TCL_VOLATILE);
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": should be forget, ifneeded, names, ",
+		"provide, require, unknown, vcompare, ",
+		"versions, or vsatisfies", (char *) NULL);
+	return TCL_ERROR;
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -822,7 +535,7 @@ Tcl_PackageObjCmd(dummy, interp, objc, objv)
 static Package *
 FindPackage(interp, name)
     Tcl_Interp *interp;		/* Interpreter to use for package lookup. */
-    CONST char *name;		/* Name of package to fine. */
+    char *name;			/* Name of package to fine. */
 {
     Interp *iPtr = (Interp *) interp;
     Tcl_HashEntry *hPtr;
@@ -834,14 +547,13 @@ FindPackage(interp, name)
 	pkgPtr = (Package *) ckalloc(sizeof(Package));
 	pkgPtr->version = NULL;
 	pkgPtr->availPtr = NULL;
-	pkgPtr->clientData = NULL;
 	Tcl_SetHashValue(hPtr, pkgPtr);
     } else {
 	pkgPtr = (Package *) Tcl_GetHashValue(hPtr);
     }
     return pkgPtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -889,7 +601,7 @@ TclFreePackageInfo(iPtr)
 	ckfree(iPtr->packageUnknown);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -901,7 +613,7 @@ TclFreePackageInfo(iPtr)
  * Results:
  *	If string is a properly formed version number the TCL_OK
  *	is returned.  Otherwise TCL_ERROR is returned and an error
- *	message is left in the interp's result.
+ *	message is left in interp->result.
  *
  * Side effects:
  *	None.
@@ -912,24 +624,21 @@ TclFreePackageInfo(iPtr)
 static int
 CheckVersion(interp, string)
     Tcl_Interp *interp;		/* Used for error reporting. */
-    CONST char *string;		/* Supposedly a version number, which is
+    char *string;		/* Supposedly a version number, which is
 				 * groups of decimal digits separated
 				 * by dots. */
 {
-    CONST char *p = string;
-    char prevChar;
+    char *p = string;
 
-    if (!isdigit(UCHAR(*p))) {	/* INTL: digit */
+    if (!isdigit(UCHAR(*p))) {
 	goto error;
     }
-    for (prevChar = *p, p++; *p != 0; p++) {
-	if (!isdigit(UCHAR(*p)) &&
-		((*p != '.') || (prevChar == '.'))) { /* INTL: digit */
+    for (p++; *p != 0; p++) {
+	if (!isdigit(UCHAR(*p)) && (*p != '.')) {
 	    goto error;
 	}
-	prevChar = *p;
     }
-    if (prevChar != '.') {
+    if (p[-1] != '.') {
 	return TCL_OK;
     }
 
@@ -938,7 +647,7 @@ CheckVersion(interp, string)
 	    string, "\"", (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -961,8 +670,7 @@ CheckVersion(interp, string)
 
 static int
 ComparePkgVersions(v1, v2, satPtr)
-    CONST char *v1;
-    CONST char *v2;		/* Versions strings, of form 2.1.3 (any
+    char *v1, *v2;		/* Versions strings, of form 2.1.3 (any
 				 * number of version numbers). */
     int *satPtr;		/* If non-null, the word pointed to is
 				 * filled in with a 0/1 value.  1 means

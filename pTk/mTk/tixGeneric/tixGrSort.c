@@ -1,6 +1,3 @@
-
-/*	$Id: tixGrSort.c,v 1.1.1.1 2000/05/17 11:08:38 idiscovery Exp $	*/
-
 /*
  * tixGrSel.c --
  *
@@ -60,7 +57,7 @@ Tix_GrSortItem *	Tix_GrGetSortItems _ANSI_ARGS_((WidgetPtr wPtr,
 void			Tix_GrFreeSortItems _ANSI_ARGS_((WidgetPtr wPtr,
 			    Tix_GrSortItem * items, int numItems));
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -183,7 +180,7 @@ Tix_GrSort(clientData, interp, argc, argv)
 	    "\", should be row or column",  (char *) NULL);
 	return TCL_ERROR;
     }
-
+			
     /* get the start and end index
      */
     if (axis == 0) {
@@ -341,7 +338,7 @@ Tix_GrSort(clientData, interp, argc, argv)
     sortInterp = NULL;
     return sortCode;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -385,7 +382,7 @@ SortCompareProc(first, second)
     }
     if (secondString == NULL) {
 	/* first larger than second */
-	order = 1;
+	order = 1;	
 	goto done;
     }
     if (firstString == NULL) {
@@ -394,12 +391,12 @@ SortCompareProc(first, second)
     }
 
     if (sortMode == ASCII) {
-	order = strcmp(Tcl_GetString(firstString), Tcl_GetString(secondString));
+	order = strcmp(LangString(firstString), LangString(secondString));
     } else if (sortMode == INTEGER) {
 	int a, b;
 
-	if ((Tcl_GetIntFromObj(sortInterp, firstString, &a) != TCL_OK)
-		|| (Tcl_GetIntFromObj(sortInterp, secondString, &b) != TCL_OK)) {
+	if ((Tcl_GetInt(sortInterp, firstString, &a) != TCL_OK)
+		|| (Tcl_GetInt(sortInterp, secondString, &b) != TCL_OK)) {
 	    Tcl_AddErrorInfo(sortInterp,
 		    "\n    (converting list element from string to integer)");
 	    sortCode = TCL_ERROR;
@@ -413,8 +410,8 @@ SortCompareProc(first, second)
     } else if (sortMode == REAL) {
 	double a, b;
 
-	if ((Tcl_GetDoubleFromObj(sortInterp, firstString, &a) != TCL_OK)
-		|| (Tcl_GetDoubleFromObj(sortInterp, secondString, &b) != TCL_OK)) {
+	if ((Tcl_GetDouble(sortInterp, firstString, &a) != TCL_OK)
+		|| (Tcl_GetDouble(sortInterp, secondString, &b) != TCL_OK)) {
 	    Tcl_AddErrorInfo(sortInterp,
 		    "\n    (converting list element from string to real)");
 	    sortCode = TCL_ERROR;

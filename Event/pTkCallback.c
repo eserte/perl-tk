@@ -66,7 +66,8 @@ SV *sv;
      if (SvTYPE(SvRV(sv)) == SVt_PVCV)
       {
        AV *av = newAV();
-       av_push(av,SvREFCNT_inc(sv));  /* Increment REFCNT ! */
+       /*       av_push(av,SvREFCNT_inc(sv));*/  /* Increment REFCNT ! */
+       av_push(av,sv);  /* changed by SRT: do not increment REFCNT ! */
        sv = newRV_noinc((SV *) av);
       }
     }
@@ -283,7 +284,7 @@ SV *b;
          if (ap && bp && !LangCmpCallback(*ap,*bp))
           return 0;
         }
-       return 1;
+       return 0;
       }
     }
    default:
@@ -311,107 +312,5 @@ SV *b;
      }
   }
 }
-
-VOID *
-Tcl_GetThreadData(keyPtr, size)
-    Tcl_ThreadDataKey *keyPtr;	/* Identifier for the data chunk */
-    int size;			/* Size of storage block */
-{
-    VOID *result;
-    if (*keyPtr == NULL) {
-	result = (VOID *)ckalloc((size_t)size);
-	memset((char *)result, 0, (size_t)size);
-	*keyPtr = (Tcl_ThreadDataKey)result;
-	/* TclRememberDataKey(keyPtr); */
-    }
-    result = *(VOID **)keyPtr;
-    return result;
-}
-
-VOID *
-TclThreadDataKeyGet(keyPtr)
-    Tcl_ThreadDataKey *keyPtr;	/* Identifier for the data chunk,
-				 * really (pthread_key_t **) */
-{
-    char *result = *(char **)keyPtr;
-    return (VOID *)result;
-}
-
-
-Tcl_ThreadId
-Tcl_GetCurrentThread(void)
-{
- croak(__FUNCTION__ " not implemented");
- return 0;
-}
-
-void
-TclpAsyncMark(async)
-Tcl_AsyncHandler async;		/* Token for handler. */
-{
-#ifdef WIN32
- static DWORD mainThreadId;
- if (!mainThreadId)
-   mainThreadId = GetCurrentThreadId();
-
-
-    /*
-     * Need a way to kick the Windows event loop and tell it to go look at
-     * asynchronous events.
-     */
-
-    PostThreadMessage(mainThreadId, WM_USER, 0, 0);
-#endif
-}
-
-void
-TclpInitLock(void)
-{
-}
-
-void
-TclpExit(int status)
-{
- LangExit(status);
-}
-
-void
-TclpInitUnlock(void)
-{
-}
-
-void
-TclpInitPlatform(void)
-{
-}
-
-void
-TclInitIOSubsystem(void)
-{
-}
-
-void
-TclInitObjSubsystem(void)
-{
-}
-
-void
-TclFinalizeIOSubsystem(void)
-{
-}
-
-void
-TclFinalizeThreadData(void)
-{
-}
-
-void
-TclFinalizeObjSubsystem(void)
-{
-}
-
-
-
-
 
 

@@ -39,14 +39,11 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/FBox.pm#9 $
+$VERSION = '3.023'; # $Id: //depot/Tk8/Tk/FBox.pm#23 $
 
 use base qw(Tk::Toplevel);
 
 Construct Tk::Widget 'FBox';
-
-my $selectFilePath;
-my $selectFile;
 
 sub import {
     if (defined $_[1] and $_[1] eq 'as_default') {
@@ -75,7 +72,6 @@ sub Populate {
     # f1: the frame with the directory option menu
     my $f1 = $w->Frame;
     my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
-    $w->{'selectPath'} = '.';
     $w->{'dirMenu'} = my $dirMenu =
       $f1->Optionmenu(-variable => \$w->{'selectPath'},
 		      -textvariable => \$w->{'selectPath'},
@@ -134,6 +130,7 @@ EOF
        -relief => $f2_lab->cget(-relief),
        -padx => $f2_lab->cget(-padx),
        -pady => $f2_lab->cget(-pady),
+       -takefocus => 0,
       );
     $typeMenuLab->bindtags([$typeMenuLab, 'Label',
 			    $typeMenuLab->toplevel, 'all']);
@@ -262,7 +259,7 @@ sub Show {
 	$typeMenuBtn->configure(-state => 'normal');
 	$typeMenuLab->configure(-state => 'normal');
     } else {
-	$w->configure(-filter => '*');
+#XXX	$w->configure(-filter => '*');
 	$typeMenuBtn->configure(-state => 'disabled',
 				-takefocus => 0);
 	$typeMenuLab->configure(-state => 'disabled');
@@ -295,17 +292,19 @@ sub Show {
     my $ent = $w->{'ent'};
     $ent->focus;
     $ent->delete(0, 'end');
-    $ent->insert(0, $w->{'selectFile'});
-    $ent->selectionFrom(0);
-    $ent->selectionTo('end');
-    $ent->icursor('end');
+    if (defined $w->{'selectFile'} && $w->{'selectFile'} ne '') {
+	$ent->insert(0, $w->{'selectFile'});
+	$ent->selectionFrom(0);
+	$ent->selectionTo('end');
+	$ent->icursor('end');
+    }
 
     # 8. Wait for the user to respond, then restore the focus and
     # return the index of the selected button.  Restore the focus
     # before deleting the window, since otherwise the window manager
     # may take the focus away so we can't redirect it.  Finally,
     # restore any grab that was in effect.
-    $w->waitVariable(\$selectFilePath);
+    $w->waitVariable(\$w->{'selectFilePath'});
     eval {
 	$oldFocus->focus if $oldFocus;
     };
@@ -320,7 +319,7 @@ sub Show {
 	    $oldGrab->grab;
 	}
     }
-    return $selectFilePath;
+    return $w->{'selectFilePath'};
 }
 
 # tkFDialog_UpdateWhenIdle --
@@ -339,33 +338,6 @@ sub UpdateWhenIdle {
     }
 }
 
-# This proc gets called whenever data(selectPath) is set
-#
-sub SetPath
-{
- my $w = shift;
- if (@_)
-  {
-   my $newdir = shift;
-   # Update the Directory: option menu
-   my @list;
-   my $dir = '';
-   foreach my $subdir (TclFileSplit($newdir))
-    {
-     $dir = TclFileJoin($dir, $subdir);
-     push @list, $dir;
-    }
-    my $dirMenu = $w->{'dirMenu'};
-    $dirMenu->configure(-options => \@list);
-    $w->{'selectPath'} = $newdir;
-    # my $vvar = $dirMenu->cget('-variable');
-    # my $tvar = $dirMenu->cget('-textvariable');
-    # my $mvar = \$w->{'selectPath'};
-    # print "now m=$mvar ($$mvar) t=$tvar ($$tvar) v=$vvar ($$vvar)\n";
-  }
- $w->UpdateWhenIdle;
-}
-
 # tkFDialog_Update --
 #
 #	Loads the files and directories into the IconList widget. Also
@@ -378,7 +350,7 @@ sub Update {
 
     # This proc may be called within an idle handler. Make sure that the
     # window has not been destroyed before this proc is called
-    if (!Tk::Exists($w) || !$w->isa('Tk::FBox')) {
+    if (!Tk::Exists($w) || $w->class ne 'FBox') {
 	return;
     } else {
 	delete $w->{'updateId'};
@@ -407,31 +379,59 @@ sub Update {
 
     # Turn on the busy cursor. BUG?? We haven't disabled X events, though,
     # so the user may still click and cause havoc ...
-    $w->Busy(-cursor => 'watch', -recurse => 1);
+    my $ent = $w->{'ent'};
+    my $entCursor = $ent->cget(-cursor);
+    my $dlgCursor = $w->cget(-cursor);
+    $ent->configure(-cursor => 'watch');
+    $w->configure(-cursor => 'watch');
     $w->idletasks;
     my $icons = $w->{'icons'};
     $icons->DeleteAll;
 
     # Make the dir & file list
-    my $flt = join('|', split(' ', $w->cget(-filter)) );
-    $flt =~ s!([\.\+])!\\$1!g;
-    $flt =~ s!\*!.*!g;
+    my $cwd = _cwd();
     local *FDIR;
-    if( opendir( FDIR,  _cwd() )) {
+    if (opendir(FDIR, $cwd)) {
         my @files;
 #	my $sortcmd = $w->cget(-sortcmd);
 	my $sortcmd = sub { $w->cget(-sortcmd)->($a,$b) };
+	my $flt = $w->cget(-filter);
+	my $fltcb;
+	if (ref $flt eq 'CODE') {
+	    $fltcb = $flt;
+	} else {
+	    $flt = _rx_to_glob($flt);
+	}
         foreach my $f (sort $sortcmd readdir(FDIR)) {
             next if $f eq '.' or $f eq '..';
-            if (-d $f) { $icons->Add($folder, $f); }
-            elsif( $f =~ m!$flt$! ) { push( @files, $f ); }
+	    if ($fltcb) {
+		next if !$fltcb->($w, $f, $cwd);
+	    } else {
+		next if -f $f && $f !~ m!$flt!;
+	    }
+            if (-d $f) {
+		$icons->Add($folder, $f);
+	    } else {
+		push @files, $f;
+	    }
 	}
-      closedir( FDIR );
-      foreach my $f ( @files ) { $icons->Add($file, $f); }
+	closedir(FDIR);
+	foreach my $f (@files) {
+	    $icons->Add($file, $f);
+	}
     }
 
     $icons->Arrange;
 
+    # Update the Directory: option menu
+    my @list;
+    my $dir = '';
+    foreach my $subdir (TclFileSplit($w->{'selectPath'})) {
+	$dir = TclFileJoin($dir, $subdir);
+	push @list, $dir;
+    }
+    my $dirMenu = $w->{'dirMenu'};
+    $dirMenu->configure(-options => \@list);
 
     # Restore the PWD to the application's PWD
     ext_chdir($appPWD);
@@ -442,7 +442,8 @@ sub Update {
     }
 
     # turn off the busy cursor.
-    $w->Unbusy;
+    $ent->configure(-cursor => $entCursor);
+    $w->configure(-cursor =>  $dlgCursor);
 }
 
 # tkFDialog_SetPathSilently --
@@ -453,6 +454,14 @@ sub SetPathSilently {
     my($w, $path) = @_;
 
     $w->{'selectPath'} = $path;
+}
+
+# This proc gets called whenever data(selectPath) is set
+#
+sub SetPath {
+    my $w = shift;
+    $w->{'selectPath'} = $_[0] if @_;
+    $w->UpdateWhenIdle;
 }
 
 # This proc gets called whenever data(filter) is set
@@ -725,7 +734,8 @@ sub OkCmd {
 # Gets called when user presses the "Cancel" button
 #
 sub CancelCmd {
-    undef $selectFilePath;
+    my $w = shift;
+    undef $w->{'selectFilePath'};
 }
 
 # Gets called when user browses the IconList widget (dragging mouse, arrow
@@ -803,7 +813,7 @@ sub Done {
 	    return unless (lc($reply) eq 'yes');
 	}
     }
-    $selectFilePath = ($_selectFilePath ne '' ? $_selectFilePath : undef);
+    $w->{'selectFilePath'} = ($_selectFilePath ne '' ? $_selectFilePath : undef);
 }
 
 sub FDialog {
@@ -910,6 +920,17 @@ sub _untaint {
     $1;
 }
 
-1;
+sub _rx_to_glob {
+    my $arg = shift;
+    $arg = join('|', split(' ', $arg));
+    $arg =~ s!([\.\+])!\\$1!g;
+    $arg =~ s!\*!.*!g;
+    $arg = "^" . $arg . "\$";
+    if ($] >= 5.005) {
+	$arg = qr($arg);
+    }
+    $arg;
+}
 
+1;
 

@@ -4,12 +4,12 @@
  *	Declarations of public types and interfaces that are only
  *	available under Windows.
  *
- * Copyright (c) 1996-1997 by Sun Microsystems, Inc.
+ * Copyright (c) 1996 by Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWin.h,v 1.6 1999/04/16 01:51:48 stanton Exp $
+ * RCS: @(#) $Id: tkWin.h,v 1.4 1998/09/14 18:23:59 stanton Exp $
  */
 
 #ifndef _TKWIN
@@ -38,10 +38,9 @@
 #define TK_ATTACHWINDOW	(WM_USER+2)
 #define TK_DETACHWINDOW	(WM_USER+3)
 
-
 typedef void Tcl_HandleProc (ClientData, HANDLE);
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -50,9 +49,23 @@ typedef void Tcl_HandleProc (ClientData, HANDLE);
  *--------------------------------------------------------------
  */
 
-#include "tkPlatDecls.h"
 
-extern HINSTANCE TclWinGetTclInstance _ANSI_ARGS_((void));
+EXTERN Window		Tk_AttachHWND _ANSI_ARGS_((Tk_Window tkwin,
+			    HWND hwnd));
+EXTERN HINSTANCE 	Tk_GetHINSTANCE _ANSI_ARGS_((void));
+EXTERN HWND		Tk_GetHWND _ANSI_ARGS_((Window window));
+EXTERN Tk_Window	Tk_HWNDToWindow _ANSI_ARGS_((HWND hwnd));
+EXTERN void		Tk_PointerEvent _ANSI_ARGS_((HWND hwnd,
+			    int x, int y));
+EXTERN int		Tk_TranslateWinEvent _ANSI_ARGS_((HWND hwnd,
+			    UINT message, WPARAM wParam, LPARAM lParam,
+			    LRESULT *result));
+
+EXTERN void		Tcl_WatchHandle _ANSI_ARGS_((HANDLE h, Tcl_HandleProc *proc, ClientData clientData));
+
+EXTERN int		Lang_WinEvent _ANSI_ARGS_((Tk_Window tkwin,
+			    UINT message, WPARAM wParam, LPARAM lParam,
+			    LRESULT *result));
 
 # undef TCL_STORAGE_CLASS
 # define TCL_STORAGE_CLASS DLLIMPORT

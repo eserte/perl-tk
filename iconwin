@@ -22,9 +22,9 @@ $top->after(6000, [ deiconify => $top ]);
 MainLoop();
 
 sub handler
-{
+{      
  my ($e,$w) = @_;
-
+    
  print $e->T,' ',($w->isa('Tk::Widget') ? $w->PathName : $w),"\n";
  return 0;
 }

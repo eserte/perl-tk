@@ -13,10 +13,10 @@ unless (-x $^X)
      {
       $perl = $try;
       $perl =~ tr,\\,/,;
-      last;
+      last; 
      }
    }
- }
+ } 
 print join(' ',$perl,$0,@ARGV),"\n";
 system("gdb $perl");
 __END__

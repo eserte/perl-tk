@@ -1,4 +1,4 @@
-use 5.007;
+use 5.00404;
 use Cwd;
 use Config;
 no  lib '.';
@@ -6,7 +6,21 @@ BEGIN
  {
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
 
-  $VERSION = '804.024';
+  #$VERSION = '800.024010';
+  open(M, "Tk.pm") or die "Can't open Tk.pm for reading VERSION: $!";
+  while(<M>)
+   {
+    if (/\$Tk::VERSION\s+=\s+'([0-9._]+)'/)
+     {
+      $VERSION = $1;
+      last;
+     }
+   }
+  close M;
+  if (!defined $VERSION)
+   {
+    die "Can't find \$Tk::VERSION in Tk.pm";
+   }
 
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
@@ -23,12 +37,15 @@ use Tk::MMutil;
 if ($IsWin32)
  {
   *MY::makeaperl = \&makeWin32perl;
-  @libs = ('-lcomctl32 -limm32');
+  if ($Config{cc} =~ /^gcc/i)
+   {
+    @libs = ('');
+   }
  }
 else
  {
   my $plibs = $Config{'libs'};
-  my $libs  = "$xlib -lX11 -lpt";
+  my $libs  = "$xlib -lX11";   # Used to have -lpt in here as well.
   my @try   = qw(-lsocket -lnsl -lm);
   push(@try,'-lc') if $^O =~ /svr4/i;
   my $lib;
@@ -47,7 +64,7 @@ delete $dir->{'pTk'};
 
 Tk::MMutil::TkExtMakefile(
     'VERSION'  => $VERSION,
-    'EXE_FILES' => [qw(ptksh ptked)],
+    'EXE_FILES' => [qw(ptksh ptked gedi)],
     'NAME'     => 'Tk',
     'DIR'      => ['pTk',reverse(sort(keys %$dir))],
     'DISTNAME' => "Tk",
@@ -59,8 +76,6 @@ Tk::MMutil::TkExtMakefile(
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     @macro
    );
-
-
 
 sub MY::top_targets
 {
@@ -153,7 +168,7 @@ sub MY::test
 }
 
 sub MY::postamble {
-    '
+ my $str = '
 
 html : subdirs manifypods
 	@cd pod && $(MAKE) html $(PASTHRU)
@@ -183,6 +198,8 @@ MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
 	$(MAKE) manifest
 
 ';
+ $str =~ s/DEFINE=.*// if($^O eq 'cygwin');
+ $str;
 }
 
 

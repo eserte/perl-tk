@@ -7,7 +7,7 @@
 =head1 NAME
 
 Tk::Canvas - Create and manipulate Canvas widgets
-
+                    
 =for category  Tk Widget Classes
 
 =head1 SYNOPSIS
@@ -605,8 +605,8 @@ I<arg>'s.
 I<SearchCommand> and I<args> have any of the forms
 accepted by the B<addtag> method.
 The items are returned in stacking order, with the lowest item first.
-
-=item focus
+                        
+=item focus 
 
 =item I<$canvas>-E<gt>B<focus>(?I<tagOrId>?)
 
@@ -1296,7 +1296,7 @@ the arc item is updated on the screen.
 
 Specifies the width of the outline to be drawn around
 the arc's region, in its normal, active and disabled states.
-I<outlineWidth> may be in any of the forms described in
+I<outlineWidth> may be in any of the forms described in 
 the L<"COORDINATES"> section above.
 If the B<-outline> option has been specified as undef
 then this option has no effect.
@@ -1393,17 +1393,17 @@ the bitmap item is updated on the screen.
 
 =head1 GRID ITEMS
 
-Items of type B<grid> are intended for producing a visual reference for
-interpreting other items. They can be drawn as either lines (with dash
+Items of type B<grid> are intended for producing a visual reference for 
+interpreting other items. They can be drawn as either lines (with dash 
 style) or as rectangular "dots" at each grid point.
 
-Items of type B<grid> are unlike other items they always cover the
-whole of the canvas, but are never enclosed by nor overlap any area
+Items of type B<grid> are unlike other items they always cover the 
+whole of the canvas, but are never enclosed by nor overlap any area 
 and are not near any point. That is they are intended to be always visible
 but not "pickable", as such they do support the "active" state.
 They are like other items in that: multiple
-grids are permitted, they can be raised and lowered relative to other
-items, they can be moved and scaled. As yet grids do not apear in
+grids are permitted, they can be raised and lowered relative to other 
+items, they can be moved and scaled. As yet grids do not apear in  
 PostScript output.
 
 Grids have outline like configure options. Grids are created with methods of the
@@ -1424,7 +1424,7 @@ The following options are supported for grids:
 
 =item B<-lines> =E<gt> I<boolean>
 
-If B<-lines> is set to a true value then lines are drawn for both X and Y
+If B<-lines> is set to a true value then lines are drawn for both X and Y 
 grids in the style determined by B<-dash>. Otherwise retangular "dots"
 are drawn at each grid point.
 
@@ -1706,7 +1706,7 @@ the line item is updated on the screen.
 
 Specifies the width of the line
 in its normal, active and disabled states.
-I<lineWidth> may be in any of the forms
+I<lineWidth> may be in any of the forms 
 described in the L<"COORDINATES"> section above.
 
 Wide lines will be drawn centered on the path specified by the

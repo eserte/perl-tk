@@ -30,10 +30,6 @@
 #  define MakeReference (*TkglueVptr->V_MakeReference)
 #endif
 
-#ifndef ObjectRef
-#  define ObjectRef (*TkglueVptr->V_ObjectRef)
-#endif
-
 #ifndef SVtoFont
 #  define SVtoFont (*TkglueVptr->V_SVtoFont)
 #endif

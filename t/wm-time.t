@@ -4,9 +4,7 @@
 use strict;
 use Tk;
 use Test::More;
-# Win32 gets one <visibility> event on toplevel and one on content (as expected)
-# UNIX/X is more complex, as windows overlap (deliberately)
-plan tests => ($^O eq 'MSWin32') ? 6 : 13;
+plan tests => 12;
 
 my $event = '<Visibility>';
 my $why;
@@ -48,9 +46,10 @@ sub mapped
  my ($w) = @_;
  my $now = Tk::timeofday();
  my $delay = $now - $start;
- printf STDERR "# %s $why %.3g\n",$w->PathName,$delay;
+ printf "# %s $why %.3g\n",$w->PathName,$delay;
  ok($delay < 0.5,$why);
 }
+
 
 
 

@@ -53,16 +53,16 @@ sub menus {
     }
     my $c = $menubar->cascade(-label => '~Cascades', -tearoff => 0);
     $c->command(
-        -label       => 'Print hello',
+        -label       => 'Print hello', 
         -command     => sub {print "Hello\n"},
 	-accelerator => "$modifier+H",
         -underline   => 6,
     );
     $TOP->bind("<$modifier-h>" => sub {print "Hello\n"});
     $c->command(
-        -label       => 'Print goodbye',
+        -label       => 'Print goodbye', 
         -command     => sub {print "Goodbye\n"},
-	-accelerator => "$modifier+G",
+	-accelerator => "$modifier+G", 
         -underline   => 6,
     );
     $TOP->bind("<$modifier-g>" => sub {print "Goodbye\n"});
@@ -135,8 +135,8 @@ sub menus {
     my $m = $menubar->cascade(-label => '~More', -tearoff => 0);
     foreach $label ('An entry', 'Another entry', 'Does nothing',
 		    'Does almost nothing', 'Make life meaningful') {
-	$m->command(
-            -label   => $label,
+	$m->command( 
+            -label   => $label, 
 	    -command => sub {print "You invoked \"$label\"\n"},
         );
     }
@@ -159,8 +159,10 @@ sub menus {
     $menubar->bind('<<MenuSelect>>' => sub {
 	my $label = undef;
 	my $w = $Tk::event->W;
-	$label = $w->entrycget('active', -label);
-	$status_bar = $label;
+	eval {local $SIG{__DIE__};
+	      $label = $w->entrycget('active', -label);
+	      $status_bar = $label;
+	};
 	$TOP->idletasks;
     });
 
@@ -169,7 +171,7 @@ sub menus {
 sub menus_error {
 
     # Generate a background error, which may even be displayed in a window if
-    # using ErrorDialog.
+    # using ErrorDialog. 
 
     my($msg) = @_;
 

@@ -1,7 +1,7 @@
 package Tk::Dialog;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/Dialog.pm#2 $
+$VERSION = '3.031'; # $Id: //depot/Tk8/Tk/Dialog.pm#31 $
 
 # Dialog - a translation of `tk_dialog' from Tcl/Tk to TkPerl (based on
 # John Stoffel's idea).
@@ -60,7 +60,7 @@ sub Populate
                       -font       => ['message','font','Font', '-*-Times-Medium-R-Normal--*-180-*-*-*-*-*-*'],
                       DEFAULT     => ['message',undef,undef,undef]
                      );
-}
+} 
 
 1;
 

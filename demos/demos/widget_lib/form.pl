@@ -19,8 +19,8 @@ sub form {
     foreach ('Name:', 'Address:', '', '', 'Phone:') {
 	my $e = $f->Entry(qw/-relief sunken -width 40/);
 	my $l = $f->Label(-text => $_, -anchor => 'e', -justify => 'right');
-        Tk::grid( $l, -row => $row, -column => 0, -sticky => 'e');
-        Tk::grid( $e, -row => $row++, -column => 1,-sticky => 'ew');
+        $l->grid(-row => $row, -column => 0, -sticky => 'e');
+        $e->grid(-row => $row++, -column => 1,-sticky => 'ew');
         $f->gridRowconfigure(1,-weight => 1);
 	$e->focus if $_ eq 'Name:';
     }

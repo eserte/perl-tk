@@ -1,4 +1,4 @@
-/*
+/* 
  * tclHistory.c --
  *
  *	This module and the Tcl library file history.tcl together implement
@@ -12,13 +12,13 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclHistory.c,v 1.4 2002/01/16 06:02:34 dgp Exp $
+ * RCS: @(#) $Id: tclHistory.c,v 1.2 1998/09/14 18:39:59 stanton Exp $
  */
 
 #include "tclInt.h"
 #include "tclPort.h"
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -42,7 +42,7 @@ int
 Tcl_RecordAndEval(interp, cmd, flags)
     Tcl_Interp *interp;		/* Token for interpreter in which command
 				 * will be executed. */
-    CONST char *cmd;		/* Command to record. */
+    char *cmd;			/* Command to record. */
     int flags;			/* Additional flags.  TCL_NO_EVAL means
 				 * only record: don't execute command.
 				 * TCL_EVAL_GLOBAL means use Tcl_GlobalEval
@@ -57,23 +57,27 @@ Tcl_RecordAndEval(interp, cmd, flags)
 	 * Call Tcl_RecordAndEvalObj to do the actual work.
 	 */
 
-	cmdPtr = Tcl_NewStringObj(cmd, length);
+	TclNewObj(cmdPtr);
+	TclInitStringRep(cmdPtr, cmd, length);
 	Tcl_IncrRefCount(cmdPtr);
+
 	result = Tcl_RecordAndEvalObj(interp, cmdPtr, flags);
 
 	/*
-	 * Move the interpreter's object result to the string result,
+	 * Move the interpreter's object result to the string result, 
 	 * then reset the object result.
+	 * FAILS IF OBJECT RESULT'S STRING REPRESENTATION CONTAINS NULLS.
 	 */
 
-	Tcl_SetResult(interp, TclGetString(Tcl_GetObjResult(interp)),
+	Tcl_SetResult(interp,
+	        TclGetStringFromObj(Tcl_GetObjResult(interp), (int *) NULL),
 	        TCL_VOLATILE);
 
 	/*
 	 * Discard the Tcl object created to hold the command.
 	 */
-
-	Tcl_DecrRefCount(cmdPtr);
+	
+	Tcl_DecrRefCount(cmdPtr);	
     } else {
 	/*
 	 * An empty string. Just reset the interpreter's result.
@@ -84,7 +88,7 @@ Tcl_RecordAndEval(interp, cmd, flags)
     }
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -112,10 +116,11 @@ Tcl_RecordAndEvalObj(interp, cmdPtr, flags)
 				 * record and execute. */
     int flags;			/* Additional flags. TCL_NO_EVAL means
 				 * record only: don't execute the command.
-				 * TCL_EVAL_GLOBAL means evaluate the
-				 * script in global variable context instead
-				 * of the current procedure. */
+				 * TCL_EVAL_GLOBAL means use
+				 * Tcl_GlobalEvalObj instead of
+				 * Tcl_EvalObj. */
 {
+    Interp *iPtr = (Interp *) interp;
     int result;
     Tcl_Obj *list[3];
     register Tcl_Obj *objPtr;
@@ -127,10 +132,10 @@ Tcl_RecordAndEvalObj(interp, cmdPtr, flags)
     list[0] = Tcl_NewStringObj("history", -1);
     list[1] = Tcl_NewStringObj("add", -1);
     list[2] = cmdPtr;
-
+    
     objPtr = Tcl_NewListObj(3, list);
     Tcl_IncrRefCount(objPtr);
-    (void) Tcl_EvalObjEx(interp, objPtr, TCL_EVAL_GLOBAL);
+    (void) Tcl_GlobalEvalObj(interp, objPtr);
     Tcl_DecrRefCount(objPtr);
 
     /*
@@ -139,7 +144,12 @@ Tcl_RecordAndEvalObj(interp, cmdPtr, flags)
 
     result = TCL_OK;
     if (!(flags & TCL_NO_EVAL)) {
-	result = Tcl_EvalObjEx(interp, cmdPtr, flags & TCL_EVAL_GLOBAL);
+	iPtr->evalFlags = (flags & ~TCL_EVAL_GLOBAL);
+	if (flags & TCL_EVAL_GLOBAL) {
+	    result = Tcl_GlobalEvalObj(interp, cmdPtr);
+	} else {
+	    result = Tcl_EvalObj(interp, cmdPtr);
+	}
     }
     return result;
 }

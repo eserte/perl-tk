@@ -1,6 +1,3 @@
-
-/*	$Id: tixDef.h,v 1.2 2000/10/17 16:35:37 idiscovery Exp $	*/
-
 /*
  * tixdef.h --
  *
@@ -23,10 +20,6 @@
 #include <default.h>
 #endif
 
-#ifndef CTL_FONT
-#define CTL_FONT "Helvetica -12 bold"
-#endif
-
 #define BORDER_COLOR			"gray"
 
 /*
@@ -36,7 +29,7 @@
 #define DEF_CMPIMAGE_BG_MONO		WHITE
 #define DEF_CMPIMAGE_FG_COLOR		BLACK
 #define DEF_CMPIMAGE_FG_MONO		BLACK
-#define DEF_CMPIMAGE_FONT	      CTL_FONT
+#define DEF_CMPIMAGE_FONT	      "-Adobe-Helvetica-Bold-R-Normal--*-120-*"
 
 /*
  * tixHList widget
@@ -53,7 +46,7 @@
 #define DEF_HLIST_DRAW_BRANCH		"true"
 #define DEF_HLIST_DROP_COMMAND		""
 #define DEF_HLIST_EXPORT_SELECTION	"0"
-#define DEF_HLIST_FONT	      		CTL_FONT
+#define DEF_HLIST_FONT	      	"-Adobe-Helvetica-Bold-R-Normal--*-120-*"
 #define DEF_HLIST_FG_COLOR		BLACK
 #define DEF_HLIST_FG_MONO		BLACK
 #define DEF_HLIST_HEADER		"0"
@@ -126,7 +119,7 @@
 #define DEF_NOTEBOOKFRAME_FOCUS_MONO		BLACK
 #define DEF_NOTEBOOKFRAME_BORDER_WIDTH		"2"
 #define DEF_NOTEBOOKFRAME_CURSOR		""
-#define DEF_NOTEBOOKFRAME_FONT	      		CTL_FONT
+#define DEF_NOTEBOOKFRAME_FONT	      "-Adobe-Helvetica-Bold-R-Normal--*-120-*"
 #define DEF_NOTEBOOKFRAME_FG_COLOR		BLACK
 #define DEF_NOTEBOOKFRAME_FG_MONO		BLACK
 #define DEF_NOTEBOOKFRAME_RELIEF		"sunken"
@@ -145,7 +138,7 @@
 #define DEF_TLIST_BROWSE_COMMAND		""
 #define DEF_TLIST_COMMAND			""
 #define DEF_TLIST_CURSOR			""
-#define DEF_TLIST_FONT	      			CTL_FONT
+#define DEF_TLIST_FONT	      	"-Adobe-Helvetica-Bold-R-Normal--*-120-*"
 #define DEF_TLIST_FG_COLOR			BLACK
 #define DEF_TLIST_FG_MONO			BLACK
 #define DEF_TLIST_HEIGHT			"10"

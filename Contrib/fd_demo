@@ -13,18 +13,18 @@ $fdialog->configure('Path' => "$ENV{'HOME'}",
                     'ShowAllFlag' => 'NO',
                     grabflag => 1);
 
-$mw->Button(-text => 'Choose File',
-            -command =>
+$mw->Button(-text => 'Choose File', 
+            -command => 
             sub
              {
-              my $fname = $fdialog->Show(ChDirFlag => 1,
+              my $fname = $fdialog->Show(ChDirFlag => 1, 
                                          DisableShowAll => 'YES');
               print "Chose $fname\n";
              })->pack(-side => 'left', -fill => 'y');
 
-$mw->Button(-text => 'Quit',
+$mw->Button(-text => 'Quit', 
             -command => [$mw, 'destroy']) ->pack(-side => 'left', -fill => 'y');
 
-MainLoop;
+MainLoop; 
 
 

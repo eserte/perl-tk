@@ -3,11 +3,11 @@ package Tk::Button;
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Button.pm#5 $
+$VERSION = '3.016'; # $Id: //depot/Tk8/Tk/Button.pm#16 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial

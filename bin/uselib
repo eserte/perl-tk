@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/local/bin/perl 
 
 use File::Find;
 
@@ -16,7 +16,7 @@ sub match
  if (/$expr/o)
   {
    my $name = "$File::Find::dir/$file";
-   print "$name:$.: $_";
+   print "$name:$.: $_"; 
    push(@todo,$name);
    return 1;
   }

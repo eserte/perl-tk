@@ -1,4 +1,4 @@
-/*
+/* 
  * tkWinSend.c --
  *
  *	This file provides procedures that implement the "send"
@@ -10,13 +10,13 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinSend.c,v 1.3 2002/08/05 04:30:41 dgp Exp $
+ * RCS: @(#) $Id: tkWinSend.c,v 1.2 1998/09/14 18:24:01 stanton Exp $
  */
 
 #include "tkPort.h"
 #include "tkInt.h"
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -42,19 +42,19 @@
  *--------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tk_SetAppName(tkwin, name)
     Tk_Window tkwin;		/* Token for any window in the application
 				 * to be named:  it is just used to identify
 				 * the application and the display.  */
-    CONST char *name;		/* The name that will be used to
+    char *name;			/* The name that will be used to
 				 * refer to the interpreter in later
 				 * "send" commands.  Must be globally
 				 * unique. */
 {
     return name;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

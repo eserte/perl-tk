@@ -12,10 +12,10 @@ sub init_check {
         my $cmd = "/usr/bin/tail +0f $file";
 
         my $open_pid = open (TAIL, "$cmd|") || die "Can't open $cmd: $!";
-
-        select (TAIL); $| = 1;
+        
+        select (TAIL); $| = 1; 
         select (STDOUT); $| = 1;
-
+        
         $top->fileevent(\*TAIL, 'readable',
                 sub {
                         $_ = <TAIL>;

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::MMutil;
@@ -9,9 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/MMutil.pm#12 $
-
-# warn __FILE__." $VERSION\n";
+$VERSION = '3.056'; # $Id: //depot/Tk8/Tk/MMutil.pm#56 $
 
 use Tk::MakeDepend;
 
@@ -74,7 +72,6 @@ sub mTk_CHO
 {
  my $self = shift;
  my $mTk  = shift;
- my $exc  = shift;
  my %c;
  my %h;
  foreach (@{$self->{H}}) { $h{$_} = 1 }
@@ -90,21 +87,10 @@ sub mTk_CHO
      $h{$_} = 1;
     }
   }
- foreach (keys %$exc)
-  {
-   if (/\.c$/)
-    {
-     delete $c{$_};
-    }
-   elsif (/\.h$/)
-    {
-     delete $h{$_};
-    }
-  }
  while (@_)
   {
    my $name = shift;
-   cluck("No $name") unless (exists $c{$name});
+   carp("No $name") unless (exists $c{$name});
    delete $c{$name}
   }
  arch_prune(\%h);
@@ -124,7 +110,7 @@ sub mTk_CHO
   }
  foreach my $file (sort keys %$mTk)
   {
-   unless (-f $file && -M $file < -M $mTk->{$file})
+   unless (-f $file)
     {
      warn "Extracting $file\n";
      system($perl,"$tk/pTk/Tcl-pTk",$mTk->{$file},$file);
@@ -286,6 +272,22 @@ sub const_config
    $self->{'LDFLAGS'} =~ s/-(debug|pdb:\w+)\s+//g;
    $self->{'LDDLFLAGS'} =~ s/-(debug|pdb:\w+)\s+//g;
   }
+ elsif ($^O eq 'darwin' )
+  {
+   $self->{'LDDLFLAGS'} =~ s/-flat_namespace//;
+   $self->{'LDDLFLAGS'} =~ s/-undefined\s+suppress//;
+   if ( -e "$Config{'archlib'}/CORE/$Config{'libperl'}" ) {
+    $self->{'LDDLFLAGS'} .= " -L\${PERL_ARCHLIB}/CORE -lperl ";
+   }
+   elsif ( -e "/System/Library/Perl/darwin/CORE/libperl.dylib" ) {
+    $self->{'LDDLFLAGS'} .= " -L/System/Library/Perl/darwin/CORE -lperl ";
+   }
+   else {
+    warn "Can't find libperl.dylib";
+   }
+   $self->{'LDFLAGS'} =~ s/-flat_namespace//;
+   $self->{'LDFLAGS'} =~ s/-undefined\s+suppress//;
+  }
  elsif ($^O =~ /(openbsd)/i)
   {
    # -Bforcearchive is bad news for Tk - we don't want all of libpTk.a in all .so-s.
@@ -346,15 +348,15 @@ sub manifypods
  local $_ = $self->MM::manifypods;
  if ($] >= 5.00565)
   {
-   s/(POD2MAN_EXE.*pod2man)/$1 --center "perl\/Tk Documentation" --release "Tk\$(VERSION)"/;
+   s/(POD2MAN_EXE.*pod2man.*)/$1 --center "perl\/Tk Documentation" --release "Tk\$(VERSION)"/;
   }
  elsif ($] >= 5.003)
   {
-   s/(POD2MAN_EXE.*pod2man)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
+   s/(POD2MAN_EXE.*pod2man.*)/$1 -center "perl\/Tk Documentation" -release "Tk\$(VERSION)"/;
   }
  else
   {
-   s/(POD2MAN_EXE.*pod2man)/$1 -center \\"perl\/Tk Documentation\\" -release \\"Tk\$(VERSION)\\"/;
+   s/(POD2MAN_EXE.*pod2man.*)/$1 -center \\"perl\/Tk Documentation\\" -release \\"Tk\$(VERSION)\\"/;
   }
  s/\bpod::/Tk::/mg;
  s/\bpTk:://mg;
@@ -533,10 +535,10 @@ sub TkExtMakefile
      push(@opt,'LD' => 'gcc -shared');
      if ($win_arch eq 'MSWin32')
       {
-       my $extra = "-lcomdlg32 -lgdi32";
+       my $extra = "-L/lib/w32api -lcomdlg32 -lgdi32";
        my $libs = $att{'LIBS'}->[0];
        $att{'LIBS'}->[0] = "$extra $libs";
-       $att{'DEFINE'} .= ' -D__WIN32__';
+       $att{'DEFINE'} .= ' -D__WIN32__ -D_WIN32';
        $att{'DEFINE'} .= ' -DWIN32' if($att{'NAME'} eq 'Tk::pTk');
       }
      elsif ($win_arch eq 'x')

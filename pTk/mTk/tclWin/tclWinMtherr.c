@@ -1,4 +1,4 @@
-/*
+/* 
  * tclWinMtherr.c --
  *
  *	This function provides a default implementation of the
@@ -9,13 +9,22 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclWinMtherr.c,v 1.5 2002/05/31 22:20:22 dgp Exp $
+ * RCS: @(#) $Id: tclWinMtherr.c,v 1.2 1998/09/14 18:40:20 stanton Exp $
  */
 
-#include "tclWinInt.h"
+#include "tclInt.h"
+#include "tclPort.h"
 #include <math.h>
 
+/*
+ * The following variable is secretly shared with Tcl so we can
+ * tell if expression evaluation is in progress.  If not, matherr
+ * just emulates the default behavior, which includes printing
+ * a message.
+ */
 
+extern int tcl_MathInProgress;
+
 /*
  *----------------------------------------------------------------------
  *
@@ -40,11 +49,10 @@ int
 _matherr(xPtr)
     struct exception *xPtr;	/* Describes error that occurred. */
 {
-    if ((xPtr->type == DOMAIN)
-#ifdef __BORLANDC__
-	    || (xPtr->type == TLOSS)
-#endif
-	    || (xPtr->type == SING)) {
+    if (!tcl_MathInProgress) {
+	return 0;
+    }
+    if ((xPtr->type == DOMAIN) || (xPtr->type == SING)) {
 	errno = EDOM;
     } else {
 	errno = ERANGE;

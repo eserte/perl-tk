@@ -8,19 +8,15 @@ package Tk::Entry;
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Entry/Entry.pm#8 $
+$VERSION = '3.042'; # $Id: //depot/Tk8/Entry/Entry.pm#42 $
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
 # derivation from Tk4.0 sources.
-
-
-use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Entry/Entry.pm#8 $
 
 use Tk::Widget ();
 use Tk::Clipboard ();
@@ -287,6 +283,7 @@ sub MouseSelect
  return unless defined $cur;
  my $anchor = $w->index('anchor');
  return unless defined $anchor;
+ $Tk::pressX ||= $x;
  if (($cur != $anchor) || (abs($Tk::pressX - $x) >= 3))
   {
    $Tk::mouseMoved = 1

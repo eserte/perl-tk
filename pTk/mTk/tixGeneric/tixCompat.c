@@ -1,6 +1,3 @@
-
-/*	$Id: tixCompat.c,v 1.1.1.1 2000/05/17 11:08:37 idiscovery Exp $	*/
-
 /*
  * tixCompat.c --
  *

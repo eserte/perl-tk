@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tixish/DialogBox.pm#6 $
+$VERSION = '3.035'; # $Id: //depot/Tk8/Tixish/DialogBox.pm#35 $
 
 use base  qw(Tk::Toplevel);
 
@@ -90,13 +90,16 @@ sub Wait
 }
 
 sub Show {
-    my ($cw, $grab) = @_;
+
     croak 'DialogBox: "Show" method requires at least 1 argument'
 	if scalar @_ < 1;
+    my $cw = shift;
+    my ($grab) = @_;
     my $old_focus = $cw->focusSave;
     my $old_grab = $cw->grabSave;
 
-    $cw->Popup();
+    shift if defined $grab && length $grab && ($grab =~ /global/);
+    $cw->Popup(@_);
 
     Tk::catch {
     if (defined $grab && length $grab && ($grab =~ /global/)) {

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 #
-# This script generates a counter with start and stop buttons.  Exit with
+# This script generates a counter with start and stop buttons.  Exit with 
 # Ctrl/c or Ctrl/q.
 #
 # This a more advanced version of `timer', where we conform to a strict style
@@ -31,14 +31,14 @@ $MW->bind('<Control-q>' => \&exit);
 my(%tinfo) = ('w' => $MW, 's' => 0, 'h' => 0, 'p' => 1, 't' => '0.00');
 
 my $start = $MW->Button(
-    -text         => 'Start',
+    -text         => 'Start', 
     -command      => sub {if($tinfo{'p'}) {$tinfo{'p'} = 0; tick}},
 );
 
 my $stop = $MW->Button(-text => 'Stop', -command => sub {$tinfo{'p'} = 1;});
 
 my $counter = $MW->Label(
-    -relief       => 'raised',
+    -relief       => 'raised', 
     -width        => 10,
     -textvariable => \$tinfo{'t'},
 );

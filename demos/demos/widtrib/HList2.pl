@@ -65,7 +65,6 @@ sub HList2 {
 	}
     };
     my $rnd_window = sub {
-	return undef; # XXX disable for now
 	my $yn = int(rand(10));
 	if ($yn == 3) {
 	    ('Button', 'Entry')[rand(2)];
@@ -82,13 +81,13 @@ sub HList2 {
 	    my $fg = $rnd_color->();
 	    my $bg = $rnd_color->();
 	    if ($bg eq $fg) { $fg = 'white' }
-
-	    my $style_type = ($window ? 'window' :
+	    
+	    my $style_type = ($window ? 'window' : 
 			      ($image ? 'imagetext' : 'text'));
 	    my $btn;
 	    my $style = $h->ItemStyle($style_type);
 	    if ($style_type eq 'window') {
-		$style->configure(-pady => 0, -padx => 0);
+		$style->configure(-pady => 0, -padx => 0, -anchor => "nw");
 		if ($window eq 'Button') {
 		    $btn = $h->Button
 		      (-text => 'Click me!',
@@ -118,7 +117,7 @@ sub HList2 {
 	      );
 	}
     }
-}
+}                
 
 1;
 

@@ -20,6 +20,7 @@ XSetWMNormalHints
 XCheckWindowEvent
 XConvertSelection
 XGetSelectionOwner
+XRectInRegion
 XClipBox
 XPutImage
 XSetRegion
@@ -38,3 +39,4 @@ XReadBitmapFile
 XOpenDisplay
 XLoadQueryFont
 XCreateWindow
+XRectInRegion

@@ -20,7 +20,7 @@ require Tk::Derived;
 require Tk::Entry;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/TixGrid/FloatEntry.pm#2 $
+$VERSION = '3.006'; # $Id: //depot/Tk8/TixGrid/FloatEntry.pm#6 $
 
 use base  qw(Tk::Derived Tk::Entry);
 

@@ -16,10 +16,10 @@ sub System
  die "Cannot " . join(' ',@_) if (system(@_));
 }
 
-open(MF,"<Makefile.PL") || die "Cannot open Makefile.PL:$!";
+open(MF,"<Tk.pm") || die "Cannot open Tk.pm:$!";
 while (<MF>)
  {
-  if (/\$VERSION\s*=\s*'([^']+)'/)
+  if (/\$Tk::VERSION\s*=\s*'([^']+)'/)
    {
     $version = $1;
     last;

@@ -7,7 +7,7 @@
 
 =head1 NAME
 
-Tk::Entry - Create and manipulate Entry widgets
+Tk::Entry - Create and manipulate Entry widgets 
 
 =for category  Tk Widget Classes
 
@@ -175,9 +175,9 @@ B<validateCommand> will be called when the entry is edited.
 
 B<validateCommand> will be called for all above conditions.
 
-=back
+=back 
 
-The B<validateCommand> and B<invalidCommand> are called with the following
+The B<validateCommand> and B<invalidCommand> are called with the following 
 arguments:
 
 =over 4
@@ -197,25 +197,25 @@ is due to C<-textvariable> changing.
 =item * type of action. 1 == INSERT, 0 == DELETE,
 -1 if it's a forced validation or textvariable validation
 
-=back
+=back 
 
 In general, the B<textVariable> and B<validateCommand> can be
 dangerous to mix. If you try set the B<textVariable>
-to something that the B<validateCommand> will not accept it will
-be set back to the value of the entry widget.
+to something that the B<validateCommand> will not accept it will 
+be set back to the value of the entry widget.  
 Using the B<textVariable> for read-only purposes will never cause problems.
 
 The B<validateCommand> will turn itself off by setting
 B<validate> to B<none> when an error occurs, for example
-when the B<validateCommand> or B<invalidCommand> encounters
+when the B<validateCommand> or B<invalidCommand> encounters 
 an error in its script while evaluating, or
-B<validateCommand> does not return a valid boolean value.
+B<validateCommand> does not return a valid boolean value.  
 
-With the perl/Tk version B<validate> option is supposed to be
-"suspended" while executing the B<validateCommand> or the B<invalidCommand>.
-This is experimental but in theory either callback can "correct" the
+With the perl/Tk version B<validate> option is supposed to be 
+"suspended" while executing the B<validateCommand> or the B<invalidCommand>. 
+This is experimental but in theory either callback can "correct" the 
 value of the widget, and override the proposed change. (B<validateCommand>
-should still return false to inhibit the change from happening when
+should still return false to inhibit the change from happening when 
 it returns.)
 
 =head1 WIDGET METHODS

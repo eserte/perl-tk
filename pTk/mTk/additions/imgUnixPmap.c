@@ -26,7 +26,7 @@ typedef struct PixmapData {
 				 * be displayed. */
 } PixmapData;
 
-
+
 /*----------------------------------------------------------------------
  * ImgInitPixmapInstance --
  *
@@ -48,7 +48,7 @@ ImgInitPixmapInstance(masterPtr, instancePtr)
 
     instancePtr->clientData = (ClientData)dataPtr;
 }
-
+
 /*----------------------------------------------------------------------
  * ImgXpmAllocTmpBuffer --
  *
@@ -119,7 +119,7 @@ ImgXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask)
 	XDestroyImage(mask);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * ImgXpmSetPixel --
  *
@@ -145,7 +145,7 @@ ImgXpmSetPixel(instancePtr, image, mask, x, y, colorPtr, isTranspPtr)
 	*isTranspPtr = 1;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * ImgXpmRealizePixmap --
  *
@@ -206,7 +206,7 @@ ImgXpmRealizePixmap(masterPtr, instancePtr, image, mask, isTransp)
     }
     gcValues.graphics_exposures = False;
     gcValues.clip_mask = dataPtr->mask;
-
+    
     gc = Tk_GetGC(instancePtr->tkwin, gcMask, &gcValues);
     dataPtr->gc = gc;
 }

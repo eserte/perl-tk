@@ -59,7 +59,7 @@ sub ShowTargets
 sub ShowSites
 {
  my $w = shift;
- my @dnd = $w->SelectionGet('-selection'=>"_SUN_DRAGDROP_DSDM",
+ my @dnd = $w->SelectionGet('-selection'=>"_SUN_DRAGDROP_DSDM", 
                             "_SUN_DRAGDROP_SITE_RECTS");
  while (@dnd)
   {

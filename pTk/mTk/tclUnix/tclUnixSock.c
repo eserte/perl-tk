@@ -1,4 +1,4 @@
-/*
+/* 
  * tclUnixSock.c --
  *
  *	This file contains Unix-specific socket related code.
@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclUnixSock.c,v 1.6 2002/02/27 01:16:43 hobbs Exp $
+ * RCS: @(#) $Id: tclUnixSock.c,v 1.2 1998/09/14 18:40:17 stanton Exp $
  */
 
 #include "tcl.h"
@@ -41,9 +41,7 @@
 
 static char hostname[TCL_HOSTNAME_LEN + 1];
 static int  hostnameInited = 0;
-TCL_DECLARE_MUTEX(hostMutex)
-
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -53,7 +51,7 @@ TCL_DECLARE_MUTEX(hostMutex)
  *
  * Results:
  *	A string containing the network name for this machine, or
- *	an empty string if we can't figure out the name.  The caller
+ *	an empty string if we can't figure out the name.  The caller 
  *	must not modify or free this string.
  *
  * Side effects:
@@ -62,89 +60,41 @@ TCL_DECLARE_MUTEX(hostMutex)
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tcl_GetHostName()
 {
 #ifndef NO_UNAME
     struct utsname u;
     struct hostent *hp;
-#else
-    char buffer[sizeof(hostname)];
 #endif
-    CONST char *native;
 
-    Tcl_MutexLock(&hostMutex);
     if (hostnameInited) {
-	Tcl_MutexUnlock(&hostMutex);
         return hostname;
     }
 
-    native = NULL;
 #ifndef NO_UNAME
     (VOID *) memset((VOID *) &u, (int) 0, sizeof(struct utsname));
-    if (uname(&u) > -1) {				/* INTL: Native. */
-        hp = gethostbyname(u.nodename);			/* INTL: Native. */
-	if (hp == NULL) {
-	    /*
-	     * Sometimes the nodename is fully qualified, but gets truncated
-	     * as it exceeds SYS_NMLN.  See if we can just get the immediate
-	     * nodename and get a proper answer that way.
-	     */
-	    char *dot = strchr(u.nodename, '.');
-	    if (dot != NULL) {
-		char *node = ckalloc((unsigned) (dot - u.nodename + 1));
-		memcpy(node, u.nodename, (size_t) (dot - u.nodename));
-		node[dot - u.nodename] = '\0';
-		hp = gethostbyname(node);
-		ckfree(node);
-	    }
-	}
+    if (uname(&u) > -1) {
+        hp = gethostbyname(u.nodename);
         if (hp != NULL) {
-	    native = hp->h_name;
+            strcpy(hostname, hp->h_name);
         } else {
-	    native = u.nodename;
+            strcpy(hostname, u.nodename);
         }
+        hostnameInited = 1;
+        return hostname;
     }
 #else
     /*
      * Uname doesn't exist; try gethostname instead.
      */
 
-    if (gethostname(buffer, sizeof(buffer)) > -1) {	/* INTL: Native. */
-	native = buffer;
+    if (gethostname(hostname, sizeof(hostname)) > -1) {
+	hostnameInited = 1;
+        return hostname;
     }
 #endif
 
-    if (native == NULL) {
-	hostname[0] = 0;
-    } else {
-	Tcl_ExternalToUtf(NULL, NULL, native, -1, 0, NULL, hostname,
-		sizeof(hostname), NULL, NULL, NULL);
-    }
-    hostnameInited = 1;
-    Tcl_MutexUnlock(&hostMutex);
+    hostname[0] = 0;
     return hostname;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * TclpHasSockets --
- *
- *	Detect if sockets are available on this platform.
- *
- * Results:
- *	Returns TCL_OK.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-int
-TclpHasSockets(interp)
-    Tcl_Interp *interp;		/* Not used. */
-{
-    return TCL_OK;
 }

@@ -7,12 +7,12 @@
  *	used by canvases.
  *
  * Copyright (c) 1992-1994 The Regents of the University of California.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1994 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkTrig.c,v 1.4 1999/12/14 06:52:33 hobbs Exp $
+ * RCS: @(#) $Id: tkTrig.c,v 1.2 1998/09/14 18:23:20 stanton Exp $
  */
 
 #include "tkInt.h"
@@ -1202,7 +1202,7 @@ TkMakeBezierCurve(canvas, pointPtr, numPoints, numSteps, xPoints, dblPoints)
  *
  * Results:
  *	None.  Postscript commands to generate the path are appended
- *	to the interp's result.
+ *	to interp->result.
  *
  * Side effects:
  *	None.
@@ -1211,7 +1211,7 @@ TkMakeBezierCurve(canvas, pointPtr, numPoints, numSteps, xPoints, dblPoints)
  */
 
 void
-TkMakeBezierPostscript(interp, canvas, pointPtr, numPoints)
+TkMakeBezierPostscript(interp, canvas, pointPtr, numPoints, numSteps)
     Tcl_Interp *interp;			/* Interpreter in whose result the
 					 * Postscript is to be stored. */
     Tk_Canvas canvas;			/* Canvas widget for which the
@@ -1219,6 +1219,7 @@ TkMakeBezierPostscript(interp, canvas, pointPtr, numPoints)
     double *pointPtr;			/* Array of input coordinates:  x0,
 					 * y0, x1, y1, etc.. */
     int numPoints;			/* Number of points at pointPtr. */
+    int numSteps;			/* Not used */
 {
     int closed, i;
     int numCoords = numPoints*2;

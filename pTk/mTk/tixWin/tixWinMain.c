@@ -1,6 +1,4 @@
-/*	$Id: tixWinMain.c,v 1.2.2.1 2001/11/04 05:23:02 idiscovery Exp $	*/
-
-/*
+/* 
  * tixWinMain.c --
  *
  *	Main entry point for wish and other Tk-based applications.
@@ -30,10 +28,9 @@
  * The following declarations refer to internal Tk routines.  These
  * interfaces are available for use, but are not supported.
  */
-void	TkConsoleCreate _ANSI_ARGS_((void));
-int	TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
-void	TkConsolePrint _ANSI_ARGS_((Tcl_Interp *interp,
-			    int devId, char *buffer, long size));
+
+EXTERN void		TkConsoleCreate _ANSI_ARGS_((void));
+EXTERN int		TkConsoleInit _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Forward declarations for procedures defined later in this file:
@@ -41,7 +38,7 @@ void	TkConsolePrint _ANSI_ARGS_((Tcl_Interp *interp,
 
 static void		WishPanic _ANSI_ARGS_(TCL_VARARGS(char *,format));
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -51,7 +48,7 @@ static void		WishPanic _ANSI_ARGS_(TCL_VARARGS(char *,format));
  *
  * Results:
  *	Returns false if initialization fails, otherwise it never
- *	returns.
+ *	returns. 
  *
  * Side effects:
  *	Just about anything, since from here we call arbitrary Tcl code.
@@ -148,7 +145,7 @@ WinMain(hInstance, hPrevInstance, lpszCmdLine, nCmdShow)
     return 1;
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -242,22 +239,6 @@ Tcl_AppInit(interp)
 	return TCL_ERROR;
     }
     Tcl_StaticPackage(interp, "Itk", Itk_Init, (Tcl_PackageInitProc *) NULL);
-
-
-    /*
-     *  This is itclsh, so import all [incr Tcl] commands by
-     *  default into the global namespace.  Fix up the autoloader
-     *  to do the same.
-     */
-    if (Tcl_Import(interp, Tcl_GetGlobalNamespace(interp),
-            "::itcl::*", /* allowOverwrite */ 1) != TCL_OK) {
-        return TCL_ERROR;
-    }
-
-    if (Tcl_Eval(interp, "auto_mkindex_parser::slavehook { _%@namespace import -force ::itcl::* }") != TCL_OK) {
-        return TCL_ERROR;
-    }
-
 #endif
 
     if (Tix_Init(interp) == TCL_ERROR) {
@@ -284,11 +265,10 @@ Tcl_AppInit(interp)
 	}
     }
 
-    /* Now done in Tix.tcl */
-    /* Tcl_SetVar(interp, "tcl_rcFileName", "~/wishrc.tcl", TCL_GLOBAL_ONLY); */
+    Tcl_SetVar(interp, "tcl_rcFileName", "~/wishrc.tcl", TCL_GLOBAL_ONLY);
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -311,7 +291,7 @@ WishPanic TCL_VARARGS_DEF(char *,arg1)
     va_list argList;
     char buf[1024];
     char *format;
-
+    
     format = TCL_VARARGS_START(char *,arg1,argList);
     vsprintf(buf, format, argList);
 

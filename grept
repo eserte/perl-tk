@@ -1,4 +1,4 @@
-#!/tools/local/perl -w
+#!/usr/bin/perl -w
 use strict;
 
 use File::Find;

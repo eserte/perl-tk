@@ -26,14 +26,14 @@ else
   {
     require Tk::ErrorDialog;
     $mw = Tk::MainWindow->new();
-
+   
 
   }
 $demo = $mw->Frame(-background=>'red')->pack(-expand=>'yes', -fill=>'both');
 
 $tg = $demo->Scrolled('TixGrid',
 #$tg = $demo->TixGrid(
-		-leftmargin=>0,
+		-leftmargin=>0,	
 		-topmargin=>1,
 		-width=>2,	# in # of columns
 		) ->pack(-expand=>'yes',-fill=>'both');

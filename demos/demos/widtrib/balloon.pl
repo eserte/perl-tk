@@ -54,8 +54,11 @@ the mouse is over.
 
 END
 
-my $c1 = $top->Canvas(-height => 100, -width => 300, -bg => 'white')->pack(-padx => 8, -pady => 8);
-my $c2 = $top->Canvas(-height => 100, -width => 300, -bg => 'white')->pack(-padx => 8, -pady => 8);
+my $clbf = $top->Frame->pack;
+my $cf   = $clbf->Frame->pack(-side => "left");
+
+my $c1 = $cf->Canvas(-height => 100, -width => 300, -bg => 'white')->pack(-padx => 8, -pady => 8);
+my $c2 = $cf->Canvas(-height => 100, -width => 300, -bg => 'white')->pack(-padx => 8, -pady => 8);
 my $id = $c1->create('text', 10, 10,
 		     -anchor => 'nw',
 		     -text => "This is a canvas.  You can also attach\nballoons to specific items in a canvas");
@@ -68,6 +71,9 @@ $c1->create('oval', 100, 50, 140, 90,
 $c2->create('text', 10, 10,
 	    -anchor => 'nw',
 	    -text => "Or you can attach the balloon\nto the canvas as a whole.");
+
+my $lb = $clbf->Listbox->pack(-side => "left");
+$lb->insert(qw/end one two three four/);
 
 # create the balloon widget
 my $b = $top->Balloon(-statusbar => $status);
@@ -141,6 +147,11 @@ $b->attach($c1,
 		   });
 $b->attach($c2,
 	   -msg => 'This balloon is attached to the canvas itself.',
+	  );
+
+$b->attach($lb,
+	   -balloonposition => 'mouse',
+	   -msg => [qw/1 2 3 4/],
 	  );
 
 # destroy the balloons when I am destroyed:

@@ -8,7 +8,7 @@ package Region;
 sub new
 {
  my ($class,%info) = @_;
-
+ 
  return bless \%info,$class;
 }
 
@@ -16,7 +16,7 @@ sub children
 {
 
 }
-
+ 
 package Hack;
 use Tk::Xlib;
 require Tk::Button;

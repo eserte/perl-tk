@@ -5,13 +5,11 @@
 package Tk::LabFrame;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tixish/LabFrame.pm#7 $
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tixish/LabFrame.pm#24 $
 
 use Tk;
 use base qw(Tk::Frame);
 Tk::Widget->Construct('LabFrame');
-
-sub autoLabel { 0 }
 
 sub Populate {
     my ($cw, $args) = @_;
@@ -134,5 +132,4 @@ sub place {
 }
 
 1;
-
 

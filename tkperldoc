@@ -15,7 +15,7 @@ $t->Tag('underline',-underline => 1);
 
 $t->pack(-expand => 1, -fill => 'both');
 
-# Netscape/Mosaic like paging
+# Netscape/Mosaic like paging 
 $t->bind('<space>',['yview','scroll',1,'page']);
 $t->bind('<BackSpace>',['yview','scroll',-1,'page']);
 
@@ -34,40 +34,40 @@ sub load_doc
   $t->delete('1.0' => 'end');
   $t->insert('end','');
   while (<PIPE>)
-   {
+   {          
     my $line  = "";
     my @bold  = ();
-    my @under = ();
+    my @under = (); 
     while (length($_))
-     {
+     {        
       if (s/^(\n)//)
-       {
+       {      
         $t->insert('end',$1);
         $t->markSet(insert => 'end');
-       }
+       }      
       elsif (s/^_\010(.)//)
-       {
+       {      
         $t->insert('insert',$1,['underline']);
-       }
+       }      
       elsif (s/^([^\010])(\010\1)+//)
-       {
+       {      
         $t->insert('insert',$1,['bold']);
-       }
+       }      
       elsif (s/^\+\010o//)
-       {
+       {      
         $t->insert('insert','o',['bold']);
-       }
+       }      
       elsif (s/^(\010+)//)
-       {
+       {     
 #       my $offset = length($1);
 #       $t->markSet(insert => "insert - $offset c");
-       }
+       }     
       elsif (s/^(.)//)
-       {
+       {      
         $t->insert('insert',$1);
-       }
-     }
-   }
+       }      
+     }        
+   }          
   close(PIPE);
 
 }

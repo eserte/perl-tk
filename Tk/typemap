@@ -22,7 +22,7 @@ Tk_Font			T_TK_FONT
 EventAndKeySym *	T_TK_XEVENT
 LangCallback *		T_TK_CALLBACK
 
-INPUT
+INPUT 
 T_PVOBJ
 	if (sv_object($arg)) {
 	    STRLEN sz;
@@ -63,12 +63,12 @@ T_TK_UID
 
 T_IVOBJ
 	if (sv_isa($arg, \"${ntype}\")) {
-	    $var = ($type)(SvIV(SvRV($arg)));
+	    $var = INT2PTR($type, SvIV(SvRV($arg)));
 	}
 	else {
 	    $var = ($type) NULL;
 	    croak(\"$var is not of type ${ntype}\");
-	}
+	}    
 
 T_NIO
 	if (sv_isa($arg, \"${Package}\")) {
@@ -80,15 +80,15 @@ T_NIO
 
 OUTPUT
 T_IVOBJ
-	sv_setref_iv($arg, \"${ntype}\", (IV) $var);
+	sv_setref_iv($arg, \"${ntype}\", PTR2IV($var));
 
 T_TK_UID
 	sv_setpv($arg,$var);
 
 T_TK_WINDOW
-	SvSetMagicSV($arg,TkToWidget($var,NULL));
+	sv_setsv($arg,TkToWidget($var,NULL));
 
 T_TKWINDOW
-	SvSetMagicSV($arg,TkToWidget((Tk_Window) $var,NULL));
+	sv_setsv($arg,TkToWidget((Tk_Window) $var,NULL));
 
 

@@ -19,32 +19,35 @@ Tk::DialogBox - create and manipulate a dialog screen.
 =head1 DESCRIPTION
 
 B<DialogBox> is very similar to B<Dialog> except that it allows
-any widget in the top frame. B<DialogBox> creates two
-frames---"top" and "bottom". The bottom frame shows all the
-specified buttons, lined up from left to right. The top frame acts
+any widget in the top Frame. B<DialogBox> creates two
+Frames, I<top> and I<bottom>. The bottom Frame shows all the
+specified Buttons, lined up from left to right. The top Frame acts
 as a container for all other widgets that can be added with the
-B<add()> method. The non-standard options recognized by
-B<DialogBox> are as follows:
+B<add()> method.
+
+=head1 OPTIONS
+
+The options recognized by B<DialogBox> are as follows:
 
 =over 4
 
 =item B<-title>
 
-Specify the title of the dialog box. If this is not set, then the
+Specify the title of the DialogBox. If this is not set, then the
 name of the program is used.
 
 =item B<-buttons>
 
-The buttons to display in the bottom frame. This is a reference to
-an array of strings containing the text to put on each
-button. There is no default value for this. If you do not specify
-any buttons, no buttons will be displayed.
+The button names to display in the bottom Frame. This is a reference
+to an array of strings containing the text to put on each
+Button. There is no default value for this. If you do not specify any
+button names, no Buttons are displayed.
 
 =item B<-default_button>
 
-Specifies the default button that is considered invoked when user
-presses <Return> on the dialog box. This button is highlighted. If
-no default button is specified, then the first element of the
+Specifies the default Button that is considered invoked when user
+presses <Return> on the DialogBox. This Button is highlighted. If
+no default Button is specified, then the first element of the
 array whose reference is passed to the B<-buttons> option is used
 as the default.
 
@@ -59,29 +62,54 @@ B<DialogBox> supports only two methods as of now:
 =item B<add(>I<widget>, I<options>B<)>
 
 Add the widget indicated by I<widget>. I<Widget> can be the name
-of any Tk widget (standard or contributed). I<Options> are the
-options that the widget accepts. The widget is advertized as a
-subwidget of B<DialogBox>.
+of any Tk widget (standard or contributed). I<options> are the
+options that the widget accepts. The widget is advertised as a
+subwidget of B<DialogBox>. The first character of I<widget> is
+lower-cased and used as the advertised name.
 
-=item B<Show(>I<grab>B<)>
+=item B<Show(>I<?-global?>B<)>
 
-Display the dialog box, until user invokes one of the buttons in
-the bottom frame. If the grab type is specified in I<grab>, then
-B<Show> uses that grab; otherwise it uses a local grab. Returns
-the name of the button invoked.
+Displays the Dialog until the user invokes one of the Buttons in the
+bottom Frame. If the grab type I<-global> is specified, then B<Show>
+uses that grab; otherwise it defaults to a local grab. Returns the
+name of the Button invoked.
+
+The actual Dialog is shown using the B<Popup> method. Any other
+options supplied to B<Show> are passed to B<Popup>, and can be used to
+position the Dialog on the screen. Please read L<Tk::Popup> for
+details.
 
 =back
+
+=head1 ADVERTISED WIDGETS
+
+=over 4
+
+=item B<top>
+
+The subwidget reference to the top half of the DialogBox widget, the Frame
+containing widgets added by the B<add> method.
+
+=item B<bottom>
+
+The subwidget reference to the bottom half of the DialogBox widget, the Frame
+containing the Button widgets.
+
+=item B<B_"button-text">
+
+Individual subwidget references to the Buttons in the DialogBox widget. The
+subwidget name is the string I<B_> concatenated with the Button's -text
+value.
 
 =head1 BUGS
 
 There is no way of removing a widget once it has been added to the
-top frame.
+top frame, unless you access the I<top> subwidget and go through the
+child widgets.
 
-There is no control over the appearance of the buttons in the
-bottom frame nor is there any way to control the placement of the
-two frames with respect to each other e.g. widgets to the left,
-buttons to the right instead of widgets on the top and buttons on
-the bottom always.
+There is no control over the appearance of the Buttons in the
+bottom Frame nor is there any way to control the placement of the
+two Frames with respect to each other.
 
 =head1 AUTHOR
 

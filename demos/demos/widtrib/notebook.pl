@@ -32,7 +32,7 @@ sub donotebook {
 
 	my $address_p = $n->add("address", -label => "Address", -underline => 0);
 	my $pref_p = $n->add("pref", -label => "Preferences", -underline => 0);
-
+	
 	$address_p->LabEntry(-label => "Name:             ",
 	     -labelPack => [-side => "left", -anchor => "w"],
 	     -width => 20,
@@ -49,7 +49,7 @@ sub donotebook {
 		 -fill => "both",
 		 -padx => 5, -pady => 5,
 		 -side => "top");
-
+	
     }
     my $result = $f->Show;
     if ($result =~ /OK/) {

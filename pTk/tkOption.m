@@ -18,8 +18,8 @@
 #  define Tk_GetOption (*TkoptionVptr->V_Tk_GetOption)
 #endif
 
-#ifndef Tk_OptionObjCmd
-#  define Tk_OptionObjCmd (*TkoptionVptr->V_Tk_OptionObjCmd)
+#ifndef Tk_OptionCmd
+#  define Tk_OptionCmd (*TkoptionVptr->V_Tk_OptionCmd)
 #endif
 
 #endif /* NO_VTABLES */

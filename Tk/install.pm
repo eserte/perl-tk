@@ -2,7 +2,7 @@ package Tk::install;
 require Exporter;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/install.pm#2 $
+$VERSION = '3.012'; # $Id: //depot/Tk8/Tk/install.pm#12 $
 
 use base  qw(Exporter);
 @EXPORT = qw(installbin);

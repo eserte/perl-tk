@@ -1,10 +1,12 @@
 package WidgetDemo;
 
-use 5.004;
-use Carp;
+use 5.005_03;
 
-use vars qw($VERSION @ISA);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/WidgetDemo.pm#4 $
+use vars qw($VERSION);
+$VERSION = '3.024'; # $Id: //depot/Tk8/demos/demos/widget_lib/WidgetDemo.pm#24 $
+
+use Tk 800.000;
+use Carp;
 
 use Tk;
 use Tk::Toplevel;

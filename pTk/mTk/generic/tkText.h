@@ -10,24 +10,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkText.h,v 1.12 2002/08/05 04:30:40 dgp Exp $
+ * RCS: @(#) $Id: tkText.h,v 1.2 1998/09/14 18:23:18 stanton Exp $
  */
 
 #ifndef _TKTEXT
 #define _TKTEXT
-
-#ifndef _TK
-#include "tk.h"
-#endif
-
-#ifndef _TKUNDO
-#include "tkUndo.h"
-#endif
-
-#ifdef BUILD_tk
-# undef TCL_STORAGE_CLASS
-# define TCL_STORAGE_CLASS DLLEXPORT
-#endif
 
 /*
  * Opaque types for structures whose guts are only needed by a single
@@ -185,7 +172,7 @@ typedef struct TkTextIndex {
     TkTextBTree tree;			/* Tree containing desired position. */
     TkTextLine *linePtr;		/* Pointer to line containing position
 					 * of interest. */
-    int byteIndex;			/* Index within line of desired
+    int charIndex;			/* Index within line of desired
 					 * character (0 means first one). */
 } TkTextIndex;
 
@@ -250,7 +237,7 @@ struct TkTextDispChunk {
 					 * a given x-location. */
     Tk_ChunkBboxProc *bboxProc;		/* Procedure to find bounding box
 					 * of character in chunk. */
-    int numBytes;			/* Number of bytes that will be
+    int numChars;			/* Number of characters that will be
 					 * displayed in the chunk. */
     int minAscent;			/* Minimum space above the baseline
 					 * needed by this chunk. */
@@ -265,7 +252,7 @@ struct TkTextDispChunk {
 					 * of line. */
     int breakIndex;			/* Index within chunk of last
 					 * acceptable position for a line
-					 * (break just before this byte index).
+					 * (break just before this character).
 					 * <= 0 means don't break during or
 					 * immediately after this chunk. */
     ClientData clientData;		/* Additional information for use
@@ -282,7 +269,7 @@ typedef enum {	TEXT_WRAPMODE_NULL, TEXT_WRAPMODE_NONE,
 		TEXT_WRAPMODE_CHAR, TEXT_WRAPMODE_WORD
 } TkWrapMode;
 
-EXTERN Tk_CustomOption textWrapModeOption;
+extern Tk_CustomOption textWrapModeOption;
 
 typedef struct TkTextTag {
     char *name;			/* Name of this tag.  This field is actually
@@ -458,14 +445,6 @@ typedef struct TkTextTabArray {
 					 * BE THE LAST IN THE STRUCTURE. */
 } TkTextTabArray;
 
-/* enum definining the edit modes of */
-
-typedef enum {
-    TK_TEXT_EDIT_INSERT,			/* insert mode */
-    TK_TEXT_EDIT_DELETE,			/* delete mode */
-    TK_TEXT_EDIT_OTHER			   /* none of the above */
-} TkTextEditMode;
-
 /*
  * A data structure of the following type is kept for each text widget that
  * currently exists for this process:
@@ -501,8 +480,8 @@ typedef struct TkText {
 				 * image segment doesn't yet have an
 				 * associated image, there is no entry for
 				 * it here. */
-    int state;			/* Either STATE_NORMAL or STATE_DISABLED. A
-				 * text widget is read-only when disabled. */
+    Tk_State state;		/* Normal, hidden or disabled.  Text is
+ 				 * read-only when disabled. */
 
     /*
      * Default information for displaying (may be overridden by tags
@@ -619,7 +598,7 @@ typedef struct TkText {
 				/* Pointer to segment for "current" mark,
 				 * or NULL if none. */
     XEvent pickEvent;		/* The event from which the current character
-				 * was chosen.	Must be saved so that we
+				 * was chosen.  Must be saved so that we
 				 * can repick after modifications to the
 				 * text. */
     int numCurTags;		/* Number of tags associated with character
@@ -631,47 +610,25 @@ typedef struct TkText {
      * Miscellaneous additional information:
      */
 
-    char *takeFocus;		/* Value of -takeFocus option;	not used in
+    char *takeFocus;		/* Value of -takeFocus option;  not used in
 				 * the C code, but used by keyboard traversal
 				 * scripts.  Malloc'ed, but may be NULL. */
     LangCallback *xScrollCmd;	/* Prefix of command to issue to update
 				 * horizontal scrollbar when view changes. */
     LangCallback *yScrollCmd;	/* Prefix of command to issue to update
 				 * vertical scrollbar when view changes. */
-    int flags;			/* Miscellaneous flags;	 see below for
+    int flags;			/* Miscellaneous flags;  see below for
 				 * definitions. */
 
     /*
-     * Information related to the undo/redo functonality
+     * Additional information, added by the 'dash'-patch
      */
 
-    TkUndoRedoStack * undoStack; /* The undo/redo stack */
-
-    int undo;			/* non zero means the undo/redo behaviour is
-				 * enabled */
-
-    int maxUndo;		/* The maximum depth of the undo stack expressed
-             * as the maximum number of compound statements */
-
-    int autoSeparators;		/* non zero means the separatorss will be
-				 * inserted automatically */
-
-    int modifiedSet;		/* Flag indicating that the 'dirtynesss' of
-				 * the text widget has been expplicitly set.
-				 */
-
-    int isDirty;		/* Flag indicating the 'dirtynesss' of the text
-				 * widget. If the flag is not zero, unsaved
-				 * modifications have been applied to the
-				 * text widget */
-
-    int isDirtyIncrement;	/* Amount with which the isDirty flag is
-				 * incremented every edit action
-				 */
-
-    TkTextEditMode lastEditMode;	/* Keeps track of what the last edit mode was
-				 */
-
+    Tk_Tile tile;		/* Tile to display in background. */
+    Tk_Tile disabledTile;	/* Tile to display in background if state
+				 * is disabled. */
+    GC tileGC;			/* GC to store background tile. */
+    Tk_TSOffset tsoffset;	/* tile offset */
 } TkText;
 
 /*
@@ -771,159 +728,142 @@ typedef struct Tk_SegType {
  * Declarations for variables shared among the text-related files:
  */
 
-EXTERN int		tkBTreeDebug;
-EXTERN int		tkTextDebug;
-EXTERN Tk_SegType	tkTextCharType;
-EXTERN Tk_SegType	tkTextLeftMarkType;
-EXTERN Tk_SegType	tkTextRightMarkType;
-EXTERN Tk_SegType	tkTextToggleOnType;
-EXTERN Tk_SegType	tkTextToggleOffType;
+extern int		tkBTreeDebug;
+extern int		tkTextDebug;
+extern Tk_SegType	tkTextCharType;
+extern Tk_SegType	tkTextLeftMarkType;
+extern Tk_SegType	tkTextRightMarkType;
+extern Tk_SegType	tkTextToggleOnType;
+extern Tk_SegType	tkTextToggleOffType;
 
 /*
  * Declarations for procedures that are used by the text-related files
  * but shouldn't be used anywhere else in Tk (or by Tk clients):
  */
 
-EXTERN int		TkBTreeCharTagged _ANSI_ARGS_((TkTextIndex *indexPtr,
+extern int		TkBTreeCharTagged _ANSI_ARGS_((TkTextIndex *indexPtr,
 			    TkTextTag *tagPtr));
-EXTERN void		TkBTreeCheck _ANSI_ARGS_((TkTextBTree tree));
-EXTERN int		TkBTreeCharsInLine _ANSI_ARGS_((TkTextLine *linePtr));
-EXTERN int		TkBTreeBytesInLine _ANSI_ARGS_((TkTextLine *linePtr));
-EXTERN TkTextBTree	TkBTreeCreate _ANSI_ARGS_((TkText *textPtr));
-EXTERN void		TkBTreeDestroy _ANSI_ARGS_((TkTextBTree tree));
-EXTERN void		TkBTreeDeleteChars _ANSI_ARGS_((TkTextIndex *index1Ptr,
+extern void		TkBTreeCheck _ANSI_ARGS_((TkTextBTree tree));
+extern int		TkBTreeCharsInLine _ANSI_ARGS_((TkTextLine *linePtr));
+extern TkTextBTree	TkBTreeCreate _ANSI_ARGS_((TkText *textPtr));
+extern void		TkBTreeDestroy _ANSI_ARGS_((TkTextBTree tree));
+extern void		TkBTreeDeleteChars _ANSI_ARGS_((TkTextIndex *index1Ptr,
 			    TkTextIndex *index2Ptr));
-EXTERN TkTextLine *	TkBTreeFindLine _ANSI_ARGS_((TkTextBTree tree,
+extern TkTextLine *	TkBTreeFindLine _ANSI_ARGS_((TkTextBTree tree,
 			    int line));
-EXTERN TkTextTag **	TkBTreeGetTags _ANSI_ARGS_((TkTextIndex *indexPtr,
+extern TkTextTag **	TkBTreeGetTags _ANSI_ARGS_((TkTextIndex *indexPtr,
 			    int *numTagsPtr));
-EXTERN void		TkBTreeInsertChars _ANSI_ARGS_((TkTextIndex *indexPtr,
-			    CONST char *string));
-EXTERN int		TkBTreeLineIndex _ANSI_ARGS_((TkTextLine *linePtr));
-EXTERN void		TkBTreeLinkSegment _ANSI_ARGS_((TkTextSegment *segPtr,
+extern void		TkBTreeInsertChars _ANSI_ARGS_((TkTextIndex *indexPtr,
+			    char *string));
+extern int		TkBTreeLineIndex _ANSI_ARGS_((TkTextLine *linePtr));
+extern void		TkBTreeLinkSegment _ANSI_ARGS_((TkTextSegment *segPtr,
 			    TkTextIndex *indexPtr));
-EXTERN TkTextLine *	TkBTreeNextLine _ANSI_ARGS_((TkTextLine *linePtr));
-EXTERN int		TkBTreeNextTag _ANSI_ARGS_((TkTextSearch *searchPtr));
-EXTERN int		TkBTreeNumLines _ANSI_ARGS_((TkTextBTree tree));
-EXTERN TkTextLine *	TkBTreePreviousLine _ANSI_ARGS_((TkTextLine *linePtr));
-EXTERN int		TkBTreePrevTag _ANSI_ARGS_((TkTextSearch *searchPtr));
-EXTERN void		TkBTreeStartSearch _ANSI_ARGS_((TkTextIndex *index1Ptr,
+extern TkTextLine *	TkBTreeNextLine _ANSI_ARGS_((TkTextLine *linePtr));
+extern int		TkBTreeNextTag _ANSI_ARGS_((TkTextSearch *searchPtr));
+extern int		TkBTreeNumLines _ANSI_ARGS_((TkTextBTree tree));
+extern TkTextLine *	TkBTreePreviousLine _ANSI_ARGS_((TkTextLine *linePtr));
+extern int		TkBTreePrevTag _ANSI_ARGS_((TkTextSearch *searchPtr));
+extern void		TkBTreeStartSearch _ANSI_ARGS_((TkTextIndex *index1Ptr,
 			    TkTextIndex *index2Ptr, TkTextTag *tagPtr,
 			    TkTextSearch *searchPtr));
-EXTERN void		TkBTreeStartSearchBack _ANSI_ARGS_((TkTextIndex *index1Ptr,
+extern void		TkBTreeStartSearchBack _ANSI_ARGS_((TkTextIndex *index1Ptr,
 			    TkTextIndex *index2Ptr, TkTextTag *tagPtr,
 			    TkTextSearch *searchPtr));
-EXTERN void		TkBTreeTag _ANSI_ARGS_((TkTextIndex *index1Ptr,
+extern void		TkBTreeTag _ANSI_ARGS_((TkTextIndex *index1Ptr,
 			    TkTextIndex *index2Ptr, TkTextTag *tagPtr,
 			    int add));
-EXTERN void		TkBTreeUnlinkSegment _ANSI_ARGS_((TkTextBTree tree,
+extern void		TkBTreeUnlinkSegment _ANSI_ARGS_((TkTextBTree tree,
 			    TkTextSegment *segPtr, TkTextLine *linePtr));
-EXTERN void		TkTextBindProc _ANSI_ARGS_((ClientData clientData,
+extern void		TkTextBindProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
-EXTERN void		TkTextChanged _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextChanged _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *index1Ptr, TkTextIndex *index2Ptr));
-EXTERN int		TkTextCharBbox _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextCharBbox _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, int *xPtr, int *yPtr,
 			    int *widthPtr, int *heightPtr));
-EXTERN int		TkTextCharLayoutProc _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextCharLayoutProc _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, TkTextSegment *segPtr,
 			    int offset, int maxX, int maxChars, int noBreakYet,
 			    TkWrapMode wrapMode, TkTextDispChunk *chunkPtr));
-EXTERN void		TkTextCreateDInfo _ANSI_ARGS_((TkText *textPtr));
-EXTERN int		TkTextDLineInfo _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextCreateDInfo _ANSI_ARGS_((TkText *textPtr));
+extern int		TkTextDLineInfo _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, int *xPtr, int *yPtr,
 			    int *widthPtr, int *heightPtr, int *basePtr));
-EXTERN TkTextTag *	TkTextCreateTag _ANSI_ARGS_((TkText *textPtr,
-			    CONST char *tagName));
-EXTERN void		TkTextFreeDInfo _ANSI_ARGS_((TkText *textPtr));
-EXTERN void		TkTextFreeTag _ANSI_ARGS_((TkText *textPtr,
+extern TkTextTag *	TkTextCreateTag _ANSI_ARGS_((TkText *textPtr,
+			    char *tagName));
+extern void		TkTextFreeDInfo _ANSI_ARGS_((TkText *textPtr));
+extern void		TkTextFreeTag _ANSI_ARGS_((TkText *textPtr,
 			    TkTextTag *tagPtr));
-EXTERN int		TkTextGetIndex _ANSI_ARGS_((Tcl_Interp *interp,
-			    TkText *textPtr, CONST char *string,
+extern int		TkTextGetIndex _ANSI_ARGS_((Tcl_Interp *interp,
+			    TkText *textPtr, char *string,
 			    TkTextIndex *indexPtr));
-EXTERN TkTextTabArray *	TkTextGetTabs _ANSI_ARGS_((Tcl_Interp *interp,
-			    Tk_Window tkwin, Tcl_Obj *string));
-EXTERN void		TkTextIndexBackBytes _ANSI_ARGS_((
-			    CONST TkTextIndex *srcPtr, int count,
-			    TkTextIndex *dstPtr));
-EXTERN void		TkTextIndexBackChars _ANSI_ARGS_((
-			    CONST TkTextIndex *srcPtr, int count,
-			    TkTextIndex *dstPtr));
-EXTERN int		TkTextIndexCmp _ANSI_ARGS_((
-			    CONST TkTextIndex *index1Ptr,
-			    CONST TkTextIndex *index2Ptr));
-EXTERN void		TkTextIndexForwBytes _ANSI_ARGS_((
-			    CONST TkTextIndex *srcPtr, int count,
-			    TkTextIndex *dstPtr));
-EXTERN void		TkTextIndexForwChars _ANSI_ARGS_((
-			    CONST TkTextIndex *srcPtr, int count,
-			    TkTextIndex *dstPtr));
-EXTERN TkTextSegment *	TkTextIndexToSeg _ANSI_ARGS_((
-			    CONST TkTextIndex *indexPtr, int *offsetPtr));
-EXTERN void		TkTextInsertDisplayProc _ANSI_ARGS_((
+extern TkTextTabArray *	TkTextGetTabs _ANSI_ARGS_((Tcl_Interp *interp,
+			    Tk_Window tkwin, Arg arg));
+extern void		TkTextIndexBackChars _ANSI_ARGS_((TkTextIndex *srcPtr,
+			    int count, TkTextIndex *dstPtr));
+extern int		TkTextIndexCmp _ANSI_ARGS_((TkTextIndex *index1Ptr,
+			    TkTextIndex *index2Ptr));
+extern void		TkTextIndexForwChars _ANSI_ARGS_((TkTextIndex *srcPtr,
+			    int count, TkTextIndex *dstPtr));
+extern TkTextSegment *	TkTextIndexToSeg _ANSI_ARGS_((TkTextIndex *indexPtr,
+			    int *offsetPtr));
+extern void		TkTextInsertDisplayProc _ANSI_ARGS_((
 			    TkTextDispChunk *chunkPtr, int x, int y, int height,
 			    int baseline, Display *display, Drawable dst,
 			    int screenY));
-EXTERN void		TkTextLostSelection _ANSI_ARGS_((
+extern void		TkTextLostSelection _ANSI_ARGS_((
 			    ClientData clientData));
-EXTERN TkTextIndex *	TkTextMakeCharIndex _ANSI_ARGS_((TkTextBTree tree,
+extern TkTextIndex *	TkTextMakeIndex _ANSI_ARGS_((TkTextBTree tree,
 			    int lineIndex, int charIndex,
 			    TkTextIndex *indexPtr));
-EXTERN int		TkTextIsElided _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextIsElided _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr));
-EXTERN TkTextIndex *	TkTextMakeByteIndex _ANSI_ARGS_((TkTextBTree tree,
-			    int lineIndex, int byteIndex,
+extern int		TkTextIsElided _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr));
-EXTERN int		TkTextMarkCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextMarkCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextMarkNameToIndex _ANSI_ARGS_((TkText *textPtr,
-			    CONST char *name, TkTextIndex *indexPtr));
-EXTERN void		TkTextMarkSegToIndex _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextMarkNameToIndex _ANSI_ARGS_((TkText *textPtr,
+			    char *name, TkTextIndex *indexPtr));
+extern void		TkTextMarkSegToIndex _ANSI_ARGS_((TkText *textPtr,
 			    TkTextSegment *markPtr, TkTextIndex *indexPtr));
-EXTERN void		TkTextEventuallyRepick _ANSI_ARGS_((TkText *textPtr));
-EXTERN void		TkTextPickCurrent _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextEventuallyRepick _ANSI_ARGS_((TkText *textPtr));
+extern void		TkTextPickCurrent _ANSI_ARGS_((TkText *textPtr,
 			    XEvent *eventPtr));
-EXTERN void		TkTextPixelIndex _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextPixelIndex _ANSI_ARGS_((TkText *textPtr,
 			    int x, int y, TkTextIndex *indexPtr));
-EXTERN void		TkTextPrintIndex _ANSI_ARGS_((
-			    CONST TkTextIndex *indexPtr, char *string));
-EXTERN void		TkTextRedrawRegion _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextPrintIndex _ANSI_ARGS_((TkTextIndex *indexPtr,
+			    char *string));
+extern void		TkTextRedrawRegion _ANSI_ARGS_((TkText *textPtr,
 			    int x, int y, int width, int height));
-EXTERN void		TkTextRedrawTag _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextRedrawTag _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *index1Ptr, TkTextIndex *index2Ptr,
 			    TkTextTag *tagPtr, int withTag));
-EXTERN void		TkTextRelayoutWindow _ANSI_ARGS_((TkText *textPtr));
-EXTERN int		TkTextScanCmd _ANSI_ARGS_((TkText *textPtr,
+extern void		TkTextRelayoutWindow _ANSI_ARGS_((TkText *textPtr));
+extern int		TkTextScanCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextSeeCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextSeeCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextSegToOffset _ANSI_ARGS_((
-			    CONST TkTextSegment *segPtr,
-			    CONST TkTextLine *linePtr));
-EXTERN TkTextSegment *	TkTextSetMark _ANSI_ARGS_((TkText *textPtr,
-			    CONST char *name, TkTextIndex *indexPtr));
-EXTERN void		TkTextSetYView _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextSegToOffset _ANSI_ARGS_((TkTextSegment *segPtr,
+			    TkTextLine *linePtr));
+extern TkTextSegment *	TkTextSetMark _ANSI_ARGS_((TkText *textPtr, char *name,
+			    TkTextIndex *indexPtr));
+extern void		TkTextSetYView _ANSI_ARGS_((TkText *textPtr,
 			    TkTextIndex *indexPtr, int pickPlace));
-EXTERN int		TkTextTagCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextTagCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextImageCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextImageCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextImageIndex _ANSI_ARGS_((TkText *textPtr,
-			    CONST char *name, TkTextIndex *indexPtr));
-EXTERN int		TkTextWindowCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextImageIndex _ANSI_ARGS_((TkText *textPtr,
+			    char *name, TkTextIndex *indexPtr));
+extern int		TkTextWindowCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextWindowIndex _ANSI_ARGS_((TkText *textPtr,
-			    CONST char *name, TkTextIndex *indexPtr));
-EXTERN int		TkTextXviewCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextWindowIndex _ANSI_ARGS_((TkText *textPtr,
+			    char *name, TkTextIndex *indexPtr));
+extern int		TkTextXviewCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
-EXTERN int		TkTextYviewCmd _ANSI_ARGS_((TkText *textPtr,
+extern int		TkTextYviewCmd _ANSI_ARGS_((TkText *textPtr,
 			    Tcl_Interp *interp, int argc, char **argv));
 
 #include "tkPort.h"
 #include "tkVMacro.h"
-
-# undef TCL_STORAGE_CLASS
-# define TCL_STORAGE_CLASS DLLIMPORT
-
 #endif /* _TKTEXT */
-

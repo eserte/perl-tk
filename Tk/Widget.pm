@@ -1,9 +1,9 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '4.017'; # $Id: //depot/Tkutf8/Tk/Widget.pm#17 $
+$VERSION = '3.085'; # $Id: //depot/Tk8/Tk/Widget.pm#85 $
 
 require Tk;
 use AutoLoader;
@@ -168,7 +168,7 @@ sub new
  my $leaf  = delete $args{'Name'};
  if (defined $leaf)
   {
-   $leaf =~ s/[^a-z0-9_#]+/_/ig;
+   $leaf =~ s/[^a-z0-9_]+/_/ig;
    $leaf = lcfirst($leaf);
   }
  else
@@ -187,13 +187,6 @@ sub new
   }
  my $obj = eval { &$cmd($parent, $lname, @args) };
  confess $@ if $@;
- unless (ref $obj)
-  {
-   die "No value from $cmd $lname" unless defined $obj;
-   warn "$cmd '$lname' returned '$obj'" unless $obj eq $lname;
-   $obj = $parent->Widget($lname = $obj);
-   die "$obj from $lname" unless ref $obj;
-  }
  bless $obj,$package;
  $obj->SetBindtags;
  my $notice = $parent->can('NoticeChild');
@@ -326,7 +319,7 @@ sub AUTOLOAD
         }
       }
     }
-   if (!defined(&$what) && ref($_[0]) && $method =~ /^[A-Z]\w+$/)
+   if (!defined(&$what) && $method =~ /^[A-Z]\w+$/)
     {
      # Use ->can as ->isa is broken in perl5.6.0
      my $sub = UNIVERSAL::can($_[0],'_AutoloadTkWidget');
@@ -482,12 +475,6 @@ sub focusSave
 # but does auto-cancel when widget is deleted.
 require Tk::After;
 
-sub afterIdle
-{
- my $w = shift;
- return Tk::After->new($w,'idle','once',@_);
-}
-
 sub afterCancel
 {
  my ($w,$what) = @_;
@@ -497,6 +484,21 @@ sub afterCancel
    carp "dubious cancel of $what" if 0 && $^W;
    $w->Tk::after('cancel' => $what);
   }
+}
+
+sub afterIdle
+{
+ my $w = shift;
+ return Tk::After->new($w,'idle','once',@_);
+}
+
+sub afterInfo {
+    my ($w, $id) = @_;
+    if (defined $id) {
+	return ($id->[4], $id->[2], $id->[3]);
+    } else {
+	return sort( keys %{$w->{_After_}} );
+    }
 }
 
 sub after
@@ -825,8 +827,24 @@ sub BusyRecurse
 
 sub Busy
 {
- my ($w,%args) = @_;
+ my ($w,@args) = @_;
  return unless $w->viewable;
+ my($sub, %args);
+ for(my $i=0; $i<=$#args; $i++)
+  {
+   if (ref $args[$i] eq 'CODE')
+    {
+     if (defined $sub)
+      {
+       croak "Multiple code definitions not allowed in Tk::Widget::Busy";
+      }
+     $sub = $args[$i];
+    }
+   else
+    {
+     $args{$args[$i]} = $args[$i+1]; $i++;
+    }
+  }
  my $cursor  = delete $args{'-cursor'};
  my $recurse = delete $args{'-recurse'};
  $cursor  = 'watch' unless defined $cursor;
@@ -863,6 +881,13 @@ sub Busy
  $w->update;
  eval {local $SIG{'__DIE__'};  $w->grab };
  $w->update;
+ if ($sub)
+  {
+   eval { $sub->() };
+   my $err = $@;
+   $w->Unbusy(-recurse => $recurse);
+   die $err if $err;
+  }
 }
 
 sub _busy
@@ -876,14 +901,14 @@ sub Unbusy
 {
  my ($w) = @_;
  $w->update;
- $w->grabRelease if Tk::Exists($w);
+ $w->grabRelease;
  my $old = delete $w->{'Busy'};
  if (defined $old)
   {
    local $SIG{'__DIE__'};
    eval { &{pop(@$old)} } while (@$old);
   }
- $w->update if Tk::Exists($w);
+ $w->update;
 }
 
 sub waitVisibility
@@ -985,6 +1010,34 @@ sub XYscrollBind
  $mw->YscrollBind($class);
  $mw->XscrollBind($class);
  # <4> and <5> are how mousewheel looks on X
+}
+
+sub MouseWheelBind
+{
+ my($mw,$class) = @_;
+
+ # The MouseWheel will typically only fire on Windows. However, one
+ # could use the "event generate" command to produce MouseWheel
+ # events on other platforms.
+
+ $mw->Tk::bind($class, '<MouseWheel>',
+	       [ sub { $_[0]->yview('scroll',-($_[1]/120)*3,'units') }, Tk::Ev("D")]);
+
+ if ($Tk::platform eq 'unix')
+  {
+   # Support for mousewheels on Linux/Unix commonly comes through mapping
+   # the wheel to the extended buttons.  If you have a mousewheel, find
+   # Linux configuration info at:
+   #   http://www.inria.fr/koala/colas/mouse-wheel-scroll/
+   $mw->Tk::bind($class, '<4>',
+		 sub { $_[0]->yview('scroll', -3, 'units')
+			   unless $Tk::strictMotif;
+		   });
+   $mw->Tk::bind($class, '<5>',
+		 sub { $_[0]->yview('scroll', 3, 'units')
+			   unless $Tk::strictMotif;
+		   });
+  }
 }
 
 sub ScrlListbox
@@ -1123,6 +1176,7 @@ sub form
 sub Scrolled
 {
  my ($parent,$kind,%args) = @_;
+ $kind = 'Pane' if $kind eq 'Frame';
  # Find args that are Frame create time args
  my @args = Tk::Frame->CreateArgs($parent,\%args);
  my $name = delete $args{'Name'};

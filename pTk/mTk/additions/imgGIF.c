@@ -58,10 +58,10 @@
  * The format record for the GIF file format:
  */
 
-static int      ChanMatchGIF _ANSI_ARGS_((Tcl_Channel chan, struct Tcl_Obj *fileName,
-		    struct Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
-static int	ObjMatchGIF _ANSI_ARGS_((struct Tcl_Obj *data,
-		    struct Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
+static int      ChanMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, struct Tcl_Obj *fileName,
+		    struct Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int	ObjMatchGIF _ANSI_ARGS_((Tcl_Interp *interp, struct Tcl_Obj *data,
+		    struct Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int      ChanReadGIF  _ANSI_ARGS_((Tcl_Interp *interp,
 		    Tcl_Channel chan, struct Tcl_Obj *fileName, struct Tcl_Obj *format,
 		    Tk_PhotoHandle imageHandle, int destX, int destY,
@@ -126,7 +126,7 @@ static int		ReadImage _ANSI_ARGS_((Tcl_Interp *interp,
 			    int width, int height, int srcX, int srcY,
 			    int interlace, int transparent));
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -146,14 +146,14 @@ static int		ReadImage _ANSI_ARGS_((Tcl_Interp *interp,
  */
 
 static int
-ChanMatchGIF(chan, fileName, format, widthPtr, heightPtr, interp)
+ChanMatchGIF(interp, chan, fileName, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image channel, open for reading. */
     struct Tcl_Obj *fileName;	/* The name of the image file. */
     struct Tcl_Obj *format;	/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw GIF file. */
-    Tcl_Interp *interp;
 {
     MFile handle;
 
@@ -164,7 +164,7 @@ ChanMatchGIF(chan, fileName, format, widthPtr, heightPtr, interp)
 
     return ReadGIFHeader(&handle, widthPtr, heightPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -484,7 +484,7 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
     }
 
     if (transparent == -1) {
-	Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, height, TK_PHOTO_COMPOSITE_SET);
+	Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, height);
     } else {
 	ImgPhotoPutBlock(imageHandle, &block, destX, destY, width, height);
     }
@@ -502,7 +502,7 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
     return TCL_ERROR;
 
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -522,12 +522,12 @@ CommonReadGIF(interp, handle, fileName, format, imageHandle, destX, destY,
  */
 
 static int
-ObjMatchGIF(data, format, widthPtr, heightPtr, interp)
+ObjMatchGIF(interp, data, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;		/* interpreter */
     Tcl_Obj *data;		/* the object containing the image data */
     Tcl_Obj *format;		/* the image format object */
     int *widthPtr;		/* where to put the image width */
     int *heightPtr;		/* where to put the image height */
-    Tcl_Interp *interp;		/* interpreter */
 {
     MFile handle;
 
@@ -538,7 +538,7 @@ ObjMatchGIF(data, format, widthPtr, heightPtr, interp)
     }
     return ReadGIFHeader(&handle, widthPtr, heightPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -641,7 +641,7 @@ ReadColorMap(handle, number, buffer)
 	    if (! ReadOK(handle, rgb, sizeof(rgb))) {
 		return 0;
 	    }
-
+	
 	    if (buffer) {
 		buffer[i][CM_RED] = rgb[0] ;
 		buffer[i][CM_GREEN] = rgb[1] ;
@@ -666,7 +666,7 @@ DoExtension(handle, label, transparent)
     switch (label) {
 	case 0x01:      /* Plain Text Extension */
 	    break;
-
+	
 	case 0xff:      /* Application Extension */
 	    break;
 
@@ -720,7 +720,7 @@ GetDataBlock(handle, buf)
 }
 
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -844,7 +844,7 @@ ReadImage(interp, imagePtr, handle, len, rows, cmap,
 		    oldCode     = -1;
 		    continue;
 		}
-
+		
 		if (oldCode == -1) {
 		    /*
 		     * Last pass reset the decoder, so the first code we
@@ -859,7 +859,7 @@ ReadImage(interp, imagePtr, handle, len, rows, cmap,
 		    firstCode = code;
 		    continue;
 		}
-
+		
 		inCode = code;
 
 		if (code == maxCode) {
@@ -1055,7 +1055,7 @@ GetCode(handle, code_size, flag)
 
 
 
-
+
 /*
  * ChanWriteGIF - writes a image in GIF format.
  *-------------------------------------------------------------------------
@@ -1087,7 +1087,7 @@ GetCode(handle, code_size, flag)
   *  Types, defines and variables needed to write and compress a GIF.
   */
 
-typedef int (* ifunptr) _ANSI_ARGS_((void));
+typedef int (* ifunptr) _ANSI_ARGS_((void));	
 
 #define LSB(a)                  ((unsigned char) (((short)(a)) & 0x00FF))
 #define MSB(a)                  ((unsigned char) (((short)(a)) >> 8))
@@ -1292,7 +1292,7 @@ CommonWriteGIF(interp, handle, format, blockPtr)
     c = GIF_TERMINATOR;
     ImgPutc(c,handle);
 
-    return TCL_OK;
+    return TCL_OK;	
 }
 
 static int
@@ -1311,7 +1311,7 @@ color(red, green, blue)
     return -1;
 }
 
-
+
 static int
 nuevo(red, green, blue, mapa)
     int red,green,blue;
@@ -1410,7 +1410,7 @@ int colors;
     return (bits-1);
 }
 
-
+
 
 /*-----------------------------------------------------------------------
  *
@@ -1728,7 +1728,7 @@ static void rl_flush_withtable(count)
     repleft = 1 + compute_triangle_count(leftover,max_ocodes);
   }
  if (VERBOSE) printf("rl_flush_withtable repmax=%d leftover=%d repleft=%d\n",repmax,leftover,repleft);
- if (1+compute_triangle_count(count,max_ocodes) < repmax+repleft)
+ if (1+(int) compute_triangle_count(count,max_ocodes) < repmax+repleft)
   { output(code_clear);
     did_clear();
     rl_flush_fromclear(count);
@@ -1826,4 +1826,3 @@ static void compress( init_bits, handle, readValue )
  * End of miGIF section  - See copyright notice at start of section.
  *
  *-----------------------------------------------------------------------*/
-

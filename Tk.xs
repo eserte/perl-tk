@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -96,7 +96,7 @@ SV *source;
     {
      Tcl_ResetResult(interp);
      if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
-      croak(Tcl_GetStringResult(interp));
+      croak(Tcl_GetResult(interp));
     }
    else
     {
@@ -297,7 +297,7 @@ timeofday()
 CODE:
 {
  Tcl_Time t;
- Tcl_GetTime(&t);
+ TclpGetTime(&t);
  RETVAL = t.sec + (double) t.usec/1e6;
 }
 OUTPUT:
@@ -427,6 +427,29 @@ char *	name;
 int	width;
 int	height;
 SV *	source;
+
+void
+pTk_GetBitmap(tkwin, name)
+Tk_Window	tkwin;
+char *	name;
+PPCODE:
+ {
+  Tcl_Interp *interp;
+  Pixmap pixmap;
+  if (TkToWidget(tkwin,&interp) && interp)
+   {
+    pixmap = Tk_GetBitmap(interp, tkwin, name);
+    if (pixmap == None)
+     PUSHs(&PL_sv_undef);
+    else
+     PUSHs(sv_2mortal(newSViv((IV)pixmap)));
+   }
+  else
+   {
+    croak("Invalid widget");
+   }
+ }
+
 
 MODULE = Tk	PACKAGE = Tk::Widget	PREFIX = Tk_
 
@@ -582,7 +605,7 @@ int
 Tk_IsTopLevel(win)
 Tk_Window	win
 
-const char *
+char *
 Tk_Name(win)
 Tk_Window	win
 
@@ -590,7 +613,7 @@ char *
 Tk_PathName(win)
 Tk_Window	win
 
-const char *
+char *
 Tk_Class(win)
 Tk_Window	win
 
@@ -681,7 +704,7 @@ char *	name
 char *	value
 int	priority
 
-const char *
+char *
 Tk_GetAtomName(win,atom)
 Tk_Window	win
 Atom		atom
@@ -691,11 +714,11 @@ Tk_ClearSelection(win,selection)
 Tk_Window	win
 Atom		selection
 
-const char *
+char *
 Tk_DisplayName(win)
 Tk_Window	win
 
-const char *
+char *
 Tk_GetOption(win,name,class)
 Tk_Window	win
 char *	name
@@ -710,7 +733,7 @@ void
 Tk_Ungrab(win)
 Tk_Window	win
 
-const char *
+char *
 Tk_SetAppName(win,name)
 Tk_Window	win
 char *		name
@@ -749,16 +772,6 @@ CODE:
  {
   Lang_CmdInfo *info = WindowCommand(win,NULL,1);
   ST(0) = sv_mortalcopy(WidgetRef(info->interp,path));
- }
-
-SV *
-_object(win,name)
-SV *	win
-char *	name
-CODE:
- {
-  Lang_CmdInfo *info = WindowCommand(win,NULL,1);
-  ST(0) = sv_mortalcopy(ObjectRef(info->interp,name));
  }
 
 Tk_Window
@@ -880,6 +893,4 @@ BOOT:
 #endif
   Boot_Glue();
  }
-
-
 

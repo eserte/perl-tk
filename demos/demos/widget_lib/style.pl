@@ -4,22 +4,24 @@ use vars qw/$TOP/;
 
 sub style {
 
-    # Create a top-level window with a text widget that demonstrates
+    # Create a top-level window with a text widget that demonstrates 
     # the various display styles that are available in texts.
 
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name     => $demo,
-        -text     =>'',
+        -text     =>'',				      
         -title    => 'Text Demonstration - Display Styles',
         -iconname => 'style',
     );
 
-    $TOP->fontCreate(qw/C_small  -family courier   -size 10/);
-    $TOP->fontCreate(qw/C_big    -family courier   -size 14 -weight bold/);
-    $TOP->fontCreate(qw/C_vbig   -family helvetica -size 24 -weight bold/);
-    $TOP->fontCreate(qw/C_bold   -family courier   -size 12 -weight bold
-		     -slant italic/);
+    eval { # eval, in case fonts already exist
+	$TOP->fontCreate(qw/C_small  -family courier   -size 10/);
+	$TOP->fontCreate(qw/C_big    -family courier   -size 14 -weight bold/);
+	$TOP->fontCreate(qw/C_vbig   -family helvetica -size 24 -weight bold/);
+	$TOP->fontCreate(qw/C_bold   -family courier   -size 12 -weight bold
+			 -slant italic/);
+    };
 
     my $t = $TOP->Scrolled(qw/Text -setgrid true -width  70 -height 32
 			   -font normal -wrap word -scrollbars e/);

@@ -16,10 +16,10 @@ Tk::DropSite - Receive side of Drag & Drop abstraction
 =head1 DESCRIPTION
 
 C<DropSite> creates an object which represents a site on which things
-may be "Dropped".
+may be "Dropped". 
 
 A DropSite provides the following methods:
-
+ 
 =over 4
 
 =item $site->Enter($token,$event)
@@ -30,4 +30,4 @@ A DropSite provides the following methods:
 
 =item $site->Drop($token,$event)
 
-=back
+=back 

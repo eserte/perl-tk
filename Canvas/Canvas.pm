@@ -1,6 +1,6 @@
 package Tk::Canvas;
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Canvas/Canvas.pm#4 $
+$VERSION = '3.018'; # $Id: //depot/Tk8/Canvas/Canvas.pm#18 $
 
 use Tk qw($XS_VERSION);
 

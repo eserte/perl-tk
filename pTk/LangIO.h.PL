@@ -1,6 +1,7 @@
 #!/usr/local/bin/perl -w
 use Config;
 my @gard = qw(
+_FILEDEFED
 STDIO_H
 _H_STDIO
 _H_STDIO_

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl -w
-use Tk;
+use Tk;              
 use Tk::Compound;
 my $mw = MainWindow->new;
 my $b  = $mw->Button(-command => [destroy => $mw])->pack;

@@ -1,4 +1,4 @@
-/*
+/* 
  * tclEnv.c --
  *
  *	Tcl support for environment variables, including a setenv
@@ -7,18 +7,34 @@
  *	the "env" arrays in sync with the system environment variables.
  *
  * Copyright (c) 1991-1994 The Regents of the University of California.
- * Copyright (c) 1994-1998 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclEnv.c,v 1.17 2002/08/28 22:48:10 davygrvy Exp $
+ * RCS: @(#) $Id: tclEnv.c,v 1.3 1999/02/02 23:01:59 stanton Exp $
  */
 
 #include "tclInt.h"
 #include "tclPort.h"
 
-TCL_DECLARE_MUTEX(envMutex)	/* To serialize access to environ */
+/*
+ * The structure below is used to keep track of all of the interpereters
+ * for which we're managing the "env" array.  It's needed so that they
+ * can all be updated whenever an environment variable is changed
+ * anywhere.
+ */
+
+typedef struct EnvInterp {
+    Tcl_Interp *interp;		/* Interpreter for which we're managing
+				 * the env array. */
+    struct EnvInterp *nextPtr;	/* Next in list of all such interpreters,
+				 * or zero. */
+} EnvInterp;
+
+static EnvInterp *firstInterpPtr = NULL;
+				/* First in list of all managed interpreters,
+				 * or NULL if none. */
 
 static int cacheSize = 0;	/* Number of env strings in environCache. */
 static char **environCache = NULL;
@@ -34,27 +50,20 @@ static int environSize = 0;	/* Non-zero means that the environ array was
 #endif
 
 /*
- * For MacOS X
- */
-#if defined(__APPLE__) && defined(__DYNAMIC__)
-#include <crt_externs.h>
-char **environ = NULL;
-#endif
-
-/*
  * Declarations for local procedures defined in this file:
  */
 
 static char *		EnvTraceProc _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, CONST char *name1,
-			    CONST char *name2, int flags));
+			    Tcl_Interp *interp, char *name1, char *name2,
+			    int flags));
+static int		FindVariable _ANSI_ARGS_((CONST char *name,
+			    int *lengthPtr));
 static void		ReplaceString _ANSI_ARGS_((CONST char *oldStr,
 			    char *newStr));
 void			TclSetEnv _ANSI_ARGS_((CONST char *name,
 			    CONST char *value));
 void			TclUnsetEnv _ANSI_ARGS_((CONST char *name));
-
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -71,7 +80,7 @@ void			TclUnsetEnv _ANSI_ARGS_((CONST char *name));
  *	The interpreter is added to a list of interpreters managed
  *	by us, so that its view of envariables can be kept consistent
  *	with the view in other interpreters.  If this is the first
- *	call to TclSetupEnv, then additional initialization happens,
+ *	call to Tcl_SetupEnv, then additional initialization happens,
  *	such as copying the environment to dynamically-allocated space
  *	for ease of management.
  *
@@ -83,68 +92,75 @@ TclSetupEnv(interp)
     Tcl_Interp *interp;		/* Interpreter whose "env" array is to be
 				 * managed. */
 {
-    Tcl_DString envString;
-    char *p1, *p2;
-    int i;
+    EnvInterp *eiPtr;
+    char *p, *p2;
+    Tcl_DString ds;
+    int i, sz;
 
-    /*
-     * For MacOS X
-     */
-#if defined(__APPLE__) && defined(__DYNAMIC__)
-    environ = *_NSGetEnviron();
+#ifdef MAC_TCL
+    if (environ == NULL) {
+	environSize = TclMacCreateEnv();
+    }
 #endif
 
     /*
-     * Synchronize the values in the environ array with the contents
-     * of the Tcl "env" variable.  To do this:
-     *    1) Remove the trace that fires when the "env" var is unset.
-     *    2) Unset the "env" variable.
-     *    3) If there are no environ variables, create an empty "env"
-     *       array.  Otherwise populate the array with current values.
-     *    4) Add a trace that synchronizes the "env" array.
+     * Next, initialize the DString we are going to use for copying
+     * the names of the environment variables.
      */
 
-    Tcl_UntraceVar2(interp, "env", (char *) NULL,
-	    TCL_GLOBAL_ONLY | TCL_TRACE_WRITES | TCL_TRACE_UNSETS |
-	    TCL_TRACE_READS | TCL_TRACE_ARRAY,  EnvTraceProc,
-	    (ClientData) NULL);
+    Tcl_DStringInit(&ds);
+    
+    /*
+     * Next, add the interpreter to the list of those that we manage.
+     */
 
-    Tcl_UnsetVar2(interp, "env", (char *) NULL, TCL_GLOBAL_ONLY);
+    eiPtr = (EnvInterp *) ckalloc(sizeof(EnvInterp));
+    eiPtr->interp = interp;
+    eiPtr->nextPtr = firstInterpPtr;
+    firstInterpPtr = eiPtr;
 
-    if (environ[0] == NULL) {
-	Tcl_Obj *varNamePtr;
+    /*
+     * Store the environment variable values into the interpreter's
+     * "env" array, and arrange for us to be notified on future
+     * writes and unsets to that array.
+     */
 
-	varNamePtr = Tcl_NewStringObj("env", -1);
-	Tcl_IncrRefCount(varNamePtr);
-	TclArraySet(interp, varNamePtr, NULL);
-	Tcl_DecrRefCount(varNamePtr);
-    } else {
-	Tcl_MutexLock(&envMutex);
-	for (i = 0; environ[i] != NULL; i++) {
-	    p1 = Tcl_ExternalToUtfDString(NULL, environ[i], -1, &envString);
-	    p2 = strchr(p1, '=');
-	    if (p2 == NULL) {
+    (void) Tcl_UnsetVar2(interp, "env", (char *) NULL, TCL_GLOBAL_ONLY);
+    for (i = 0; ; i++) {
+	p = environ[i];
+	if (p == NULL) {
+	    break;
+	}
+	for (p2 = p; *p2 != '='; p2++) {
+	    if (*p2 == 0) {
 		/*
-		 * This condition seem to happen occasionally under some
+		 * This condition doesn't seem like it should ever happen,
+		 * but it does seem to happen occasionally under some
 		 * versions of Solaris; ignore the entry.
 		 */
 
-		continue;
+		goto nextEntry;
 	    }
-	    p2++;
-	    p2[-1] = '\0';
-	    Tcl_SetVar2(interp, "env", p1, p2, TCL_GLOBAL_ONLY);
-	    Tcl_DStringFree(&envString);
 	}
-	Tcl_MutexUnlock(&envMutex);
+        sz = p2 - p;
+        Tcl_DStringSetLength(&ds, 0);
+        Tcl_DStringAppend(&ds, p, sz);
+	(void) Tcl_SetVar2(interp, "env", Tcl_DStringValue(&ds),
+                p2+1, TCL_GLOBAL_ONLY);
+	nextEntry:
+	continue;
     }
-
     Tcl_TraceVar2(interp, "env", (char *) NULL,
-	    TCL_GLOBAL_ONLY | TCL_TRACE_WRITES | TCL_TRACE_UNSETS |
-	    TCL_TRACE_READS | TCL_TRACE_ARRAY,  EnvTraceProc,
-	    (ClientData) NULL);
-}
+	    TCL_GLOBAL_ONLY | TCL_TRACE_WRITES | TCL_TRACE_UNSETS,
+	    EnvTraceProc, (ClientData) NULL);
 
+    /*
+     * Finally clean up the DString.
+     */
+
+    Tcl_DStringFree(&ds);
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -161,7 +177,8 @@ TclSetupEnv(interp)
  *	None.
  *
  * Side effects:
- *	The environ array gets updated.
+ *	The environ array gets updated, as do all of the interpreters
+ *	that we manage.
  *
  *----------------------------------------------------------------------
  */
@@ -169,52 +186,47 @@ TclSetupEnv(interp)
 void
 TclSetEnv(name, value)
     CONST char *name;		/* Name of variable whose value is to be
-				 * set (UTF-8). */
-    CONST char *value;		/* New value for variable (UTF-8). */
+				 * set. */
+    CONST char *value;		/* New value for variable. */
 {
-    Tcl_DString envString;
     int index, length, nameLength;
     char *p, *oldValue;
-    CONST char *p2;
+    EnvInterp *eiPtr;
+
+#ifdef MAC_TCL
+    if (environ == NULL) {
+	environSize = TclMacCreateEnv();
+    }
+#endif
 
     /*
      * Figure out where the entry is going to go.  If the name doesn't
-     * already exist, enlarge the array if necessary to make room.  If the
-     * name exists, free its old entry.
+     * already exist, enlarge the array if necessary to make room.  If
+     * the name exists, free its old entry.
      */
 
-    Tcl_MutexLock(&envMutex);
-    index = TclpFindVariable(name, &length);
-
+    index = FindVariable(name, &length);
     if (index == -1) {
 #ifndef USE_PUTENV
-	if ((length + 2) > environSize) {
+	if ((length+2) > environSize) {
 	    char **newEnviron;
 
 	    newEnviron = (char **) ckalloc((unsigned)
-		    ((length + 5) * sizeof(char *)));
+		    ((length+5) * sizeof(char *)));
 	    memcpy((VOID *) newEnviron, (VOID *) environ,
 		    length*sizeof(char *));
 	    if (environSize != 0) {
 		ckfree((char *) environ);
 	    }
 	    environ = newEnviron;
-	    environSize = length + 5;
-#if defined(__APPLE__) && defined(__DYNAMIC__)
-	    {
-	    char ***e = _NSGetEnviron();
-	    *e = environ;
-	    }
-#endif
+	    environSize = length+5;
 	}
 	index = length;
-	environ[index + 1] = NULL;
+	environ[index+1] = NULL;
 #endif
 	oldValue = NULL;
 	nameLength = strlen(name);
     } else {
-	CONST char *env;
-
 	/*
 	 * Compare the new value to the existing value.  If they're
 	 * the same then quit immediately (e.g. don't rewrite the
@@ -223,77 +235,49 @@ TclSetEnv(name, value)
 	 * of the same value among the interpreters.
 	 */
 
-	env = Tcl_ExternalToUtfDString(NULL, environ[index], -1, &envString);
-	if (strcmp(value, (env + length + 1)) == 0) {
-	    Tcl_DStringFree(&envString);
-	    Tcl_MutexUnlock(&envMutex);
+	if (strcmp(value, environ[index]+length+1) == 0) {
 	    return;
 	}
-	Tcl_DStringFree(&envString);
-
 	oldValue = environ[index];
 	nameLength = length;
     }
-
+	
 
     /*
-     * Create a new entry.  Build a complete UTF string that contains
-     * a "name=value" pattern.  Then convert the string to the native
-     * encoding, and set the environ array value.
+     * Create a new entry.
      */
 
     p = (char *) ckalloc((unsigned) (nameLength + strlen(value) + 2));
     strcpy(p, name);
     p[nameLength] = '=';
     strcpy(p+nameLength+1, value);
-    p2 = Tcl_UtfToExternalDString(NULL, p, -1, &envString);
 
-    /*
-     * Copy the native string to heap memory.
-     */
-
-    p = (char *) ckrealloc(p, (unsigned) (strlen(p2) + 1));
-    strcpy(p, p2);
-    Tcl_DStringFree(&envString);
-
-#ifdef USE_PUTENV
     /*
      * Update the system environment.
      */
 
+#ifdef USE_PUTENV
     putenv(p);
-    index = TclpFindVariable(name, &length);
 #else
     environ[index] = p;
 #endif
 
     /*
-     * Watch out for versions of putenv that copy the string (e.g. VC++).
-     * In this case we need to free the string immediately.  Otherwise
-     * update the string in the cache.
+     * Replace the old value with the new value in the cache.
      */
 
-    if ((index != -1) && (environ[index] == p)) {
-	ReplaceString(oldValue, p);
-#ifdef HAVE_PUTENV_THAT_COPIES
-    } else {
-	/* This putenv() copies instead of taking ownership */
-	ckfree(p);
-#endif
-    }
+    ReplaceString(oldValue, p);
 
-    Tcl_MutexUnlock(&envMutex);
+    /*
+     * Update all of the interpreters.
+     */
 
-    if (!strcmp(name, "HOME")) {
-	/*
-	 * If the user's home directory has changed, we must invalidate
-	 * the filesystem cache, because '~' expansions will now be
-	 * incorrect.
-	 */
-        Tcl_FSMountsChanged(NULL);
+    for (eiPtr= firstInterpPtr; eiPtr != NULL; eiPtr = eiPtr->nextPtr) {
+	(void) Tcl_SetVar2(eiPtr->interp, "env", (char *) name,
+		(char *) value, TCL_GLOBAL_ONLY);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -320,39 +304,36 @@ TclSetEnv(name, value)
 int
 Tcl_PutEnv(string)
     CONST char *string;		/* Info about environment variable in the
-				 * form NAME=value. (native) */
+				 * form NAME=value. */
 {
-    Tcl_DString nameString;
     int nameLength;
-    CONST char *name;
-    char *value;
+    char *name, *value;
 
     if (string == NULL) {
 	return 0;
     }
 
     /*
-     * First convert the native string to UTF.  Then separate the
-     * string into name and value parts, and call TclSetEnv to do
-     * all of the real work.
+     * Separate the string into name and value parts, then call
+     * TclSetEnv to do all of the real work.
      */
 
-    name = Tcl_ExternalToUtfDString(NULL, string, -1, &nameString);
-    value = strchr(name, '=');
+    value = strchr(string, '=');
     if (value == NULL) {
 	return 0;
     }
-    nameLength = value - name;
+    nameLength = value - string;
     if (nameLength == 0) {
 	return 0;
     }
-
-    value[0] = '\0';
+    name = (char *) ckalloc((unsigned) nameLength+1);
+    memcpy((VOID *) name, (VOID *) string, (size_t) nameLength);
+    name[nameLength] = 0;
     TclSetEnv(name, value+1);
-    Tcl_DStringFree(&nameString);
+    ckfree(name);
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -375,28 +356,31 @@ Tcl_PutEnv(string)
 
 void
 TclUnsetEnv(name)
-    CONST char *name;		/* Name of variable to remove (UTF-8). */
+    CONST char *name;			/* Name of variable to remove. */
 {
+    EnvInterp *eiPtr;
     char *oldValue;
-    int length;
-    int index;
+    int length, index;
 #ifdef USE_PUTENV
-    Tcl_DString envString;
     char *string;
 #else
     char **envPtr;
 #endif
 
-    Tcl_MutexLock(&envMutex);
-    index = TclpFindVariable(name, &length);
+#ifdef MAC_TCL
+    if (environ == NULL) {
+	environSize = TclMacCreateEnv();
+    }
+#endif
+
+    index = FindVariable(name, &length);
 
     /*
      * First make sure that the environment variable exists to avoid
      * doing needless work and to avoid recursion on the unset.
      */
-
+    
     if (index == -1) {
-	Tcl_MutexUnlock(&envMutex);
 	return;
     }
     /*
@@ -406,7 +390,7 @@ TclUnsetEnv(name)
     oldValue = environ[index];
 
     /*
-     * Update the system environment.  This must be done before we
+     * Update the system environment.  This must be done before we 
      * update the interpreters or we will recurse.
      */
 
@@ -415,23 +399,8 @@ TclUnsetEnv(name)
     memcpy((VOID *) string, (VOID *) name, (size_t) length);
     string[length] = '=';
     string[length+1] = '\0';
-
-    Tcl_UtfToExternalDString(NULL, string, -1, &envString);
-    string = ckrealloc(string, (unsigned) (Tcl_DStringLength(&envString)+1));
-    strcpy(string, Tcl_DStringValue(&envString));
-    Tcl_DStringFree(&envString);
-
     putenv(string);
-
-    /*
-     * Watch out for versions of putenv that copy the string (e.g. VC++).
-     * In this case we need to free the string immediately.  Otherwise
-     * update the string in the cache.
-     */
-
-    if (environ[index] == string) {
-	ReplaceString(oldValue, string);
-    }
+    ckfree(string);
 #else
     for (envPtr = environ+index+1; ; envPtr++) {
 	envPtr[-1] = *envPtr;
@@ -439,25 +408,34 @@ TclUnsetEnv(name)
 	    break;
 	}
     }
-    ReplaceString(oldValue, NULL);
 #endif
 
-    Tcl_MutexUnlock(&envMutex);
-}
+    /*
+     * Replace the old value in the cache.
+     */
 
+    ReplaceString(oldValue, NULL);
+
+    /*
+     * Update all of the interpreters.
+     */
+
+    for (eiPtr = firstInterpPtr; eiPtr != NULL; eiPtr = eiPtr->nextPtr) {
+	(void) Tcl_UnsetVar2(eiPtr->interp, "env", (char *) name,
+		TCL_GLOBAL_ONLY);
+    }
+}
+
 /*
- *---------------------------------------------------------------------------
+ *----------------------------------------------------------------------
  *
  * TclGetEnv --
  *
  *	Retrieve the value of an environment variable.
  *
  * Results:
- *	The result is a pointer to a string specifying the value of the
- *	environment variable, or NULL if that environment variable does
- *	not exist.  Storage for the result string is allocated in valuePtr;
- *	the caller must call Tcl_DStringFree() when the result is no
- *	longer needed.
+ *	Returns a pointer to a static string in the environment,
+ *	or NULL if the value was not found.
  *
  * Side effects:
  *	None.
@@ -465,47 +443,35 @@ TclUnsetEnv(name)
  *----------------------------------------------------------------------
  */
 
-CONST char *
-TclGetEnv(name, valuePtr)
-    CONST char *name;		/* Name of environment variable to find
-				 * (UTF-8). */
-    Tcl_DString *valuePtr;	/* Uninitialized or free DString in which
-				 * the value of the environment variable is
-				 * stored. */
+char *
+TclGetEnv(name)
+    CONST char *name;		/* Name of variable to find. */
 {
     int length, index;
-    CONST char *result;
 
-    Tcl_MutexLock(&envMutex);
-    index = TclpFindVariable(name, &length);
-    result = NULL;
-    if (index != -1) {
-	Tcl_DString envStr;
-
-	result = Tcl_ExternalToUtfDString(NULL, environ[index], -1, &envStr);
-	result += length;
-	if (*result == '=') {
-	    result++;
-	    Tcl_DStringInit(valuePtr);
-	    Tcl_DStringAppend(valuePtr, result, -1);
-	    result = Tcl_DStringValue(valuePtr);
-	} else {
-	    result = NULL;
-	}
-	Tcl_DStringFree(&envStr);
+#ifdef MAC_TCL
+    if (environ == NULL) {
+	environSize = TclMacCreateEnv();
     }
-    Tcl_MutexUnlock(&envMutex);
-    return result;
-}
+#endif
 
+    index = FindVariable(name, &length);
+    if ((index != -1) &&  (*(environ[index]+length) == '=')) {
+	return environ[index]+length+1;
+    } else {
+	return NULL;
+    }
+}
+
 /*
  *----------------------------------------------------------------------
  *
  * EnvTraceProc --
  *
  *	This procedure is invoked whenever an environment variable
- *	is read, modified or deleted.  It propagates the change to the global
- *	"environ" array.
+ *	is modified or deleted.  It propagates the change to the
+ *	"environ" array and to any other interpreters for whom
+ *	we're managing an "env" array.
  *
  * Results:
  *	Always returns NULL to indicate success.
@@ -525,25 +491,39 @@ EnvTraceProc(clientData, interp, name1, name2, flags)
     ClientData clientData;	/* Not used. */
     Tcl_Interp *interp;		/* Interpreter whose "env" variable is
 				 * being modified. */
-    CONST char *name1;		/* Better be "env". */
-    CONST char *name2;		/* Name of variable being modified, or NULL
-				 * if whole array is being deleted (UTF-8). */
+    char *name1;		/* Better be "env". */
+    char *name2;		/* Name of variable being modified, or
+				 * NULL if whole array is being deleted. */
     int flags;			/* Indicates what's happening. */
 {
     /*
-     * For array traces, let TclSetupEnv do all the work.
-     */
-
-    if (flags & TCL_TRACE_ARRAY) {
-	TclSetupEnv(interp);
-	return NULL;
-    }
-
-    /*
-     * If name2 is NULL, then return and do nothing.
+     * First see if the whole "env" variable is being deleted.  If
+     * so, just forget about this interpreter.
      */
 
     if (name2 == NULL) {
+	register EnvInterp *eiPtr, *prevPtr;
+
+	if ((flags & (TCL_TRACE_UNSETS|TCL_TRACE_DESTROYED))
+		!= (TCL_TRACE_UNSETS|TCL_TRACE_DESTROYED)) {
+	    panic("EnvTraceProc called with confusing arguments");
+	}
+	eiPtr = firstInterpPtr;
+	if (eiPtr->interp == interp) {
+	    firstInterpPtr = eiPtr->nextPtr;
+	} else {
+	    for (prevPtr = eiPtr, eiPtr = eiPtr->nextPtr; ;
+		    prevPtr = eiPtr, eiPtr = eiPtr->nextPtr) {
+		if (eiPtr == NULL) {
+		    panic("EnvTraceProc couldn't find interpreter");
+		}
+		if (eiPtr->interp == interp) {
+		    prevPtr->nextPtr = eiPtr->nextPtr;
+		    break;
+		}
+	    }
+	}
+	ckfree((char *) eiPtr);
 	return NULL;
     }
 
@@ -552,38 +532,15 @@ EnvTraceProc(clientData, interp, name1, name2, flags)
      */
 
     if (flags & TCL_TRACE_WRITES) {
-	CONST char *value;
-
-	value = Tcl_GetVar2(interp, "env", name2, TCL_GLOBAL_ONLY);
-	TclSetEnv(name2, value);
+	TclSetEnv(name2, Tcl_GetVar2(interp, "env", name2, TCL_GLOBAL_ONLY));
     }
-
-    /*
-     * If a value is being read, call TclGetEnv to do all of the work.
-     */
-
-    if (flags & TCL_TRACE_READS) {
-	Tcl_DString valueString;
-	CONST char *value;
-
-	value = TclGetEnv(name2, &valueString);
-	if (value == NULL) {
-	    return "no such variable";
-	}
-	Tcl_SetVar2(interp, name1, name2, value, 0);
-	Tcl_DStringFree(&valueString);
-    }
-
-    /*
-     * For unset traces, let TclUnsetEnv do all the work.
-     */
 
     if (flags & TCL_TRACE_UNSETS) {
 	TclUnsetEnv(name2);
     }
     return NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -630,7 +587,7 @@ ReplaceString(oldStr, newStr)
 	if (environCache[i]) {
 	    ckfree(environCache[i]);
 	}
-
+	    
 	if (newStr) {
 	    environCache[i] = newStr;
 	} else {
@@ -639,28 +596,72 @@ ReplaceString(oldStr, newStr)
 	    }
 	    environCache[cacheSize-1] = NULL;
 	}
-    } else {
+    } else {	
         int allocatedSize = (cacheSize + 5) * sizeof(char *);
 
 	/*
 	 * We need to grow the cache in order to hold the new string.
 	 */
 
-	newCache = (char **) ckalloc((unsigned) allocatedSize);
+	newCache = (char **) ckalloc((size_t) allocatedSize);
         (VOID *) memset(newCache, (int) 0, (size_t) allocatedSize);
-
+        
 	if (environCache) {
 	    memcpy((VOID *) newCache, (VOID *) environCache,
 		    (size_t) (cacheSize * sizeof(char*)));
 	    ckfree((char *) environCache);
 	}
 	environCache = newCache;
-	environCache[cacheSize] = newStr;
+	environCache[cacheSize] = (char *) newStr;
 	environCache[cacheSize+1] = NULL;
 	cacheSize += 5;
     }
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * FindVariable --
+ *
+ *	Locate the entry in environ for a given name.
+ *
+ * Results:
+ *	The return value is the index in environ of an entry with the
+ *	name "name", or -1 if there is no such entry.   The integer at
+ *	*lengthPtr is filled in with the length of name (if a matching
+ *	entry is found) or the length of the environ array (if no matching
+ *	entry is found).
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
 
+static int
+FindVariable(name, lengthPtr)
+    CONST char *name;		/* Name of desired environment variable. */
+    int *lengthPtr;		/* Used to return length of name (for
+				 * successful searches) or number of non-NULL
+				 * entries in environ (for unsuccessful
+				 * searches). */
+{
+    int i;
+    register CONST char *p1, *p2;
+
+    for (i = 0, p1 = environ[i]; p1 != NULL; i++, p1 = environ[i]) {
+	for (p2 = name; *p2 == *p1; p1++, p2++) {
+	    /* NULL loop body. */
+	}
+	if ((*p1 == '=') && (*p2 == '\0')) {
+	    *lengthPtr = p2-name;
+	    return i;
+	}
+    }
+    *lengthPtr = i;
+    return -1;
+}
+
 /*
  *----------------------------------------------------------------------
  *

@@ -9,7 +9,8 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkFileFilter.c,v 1.5 2002/01/27 11:10:50 das Exp $
+ * RCS: @(#) $Id: tkFileFilter.c,v 1.2 1998/09/14 18:23:10 stanton Exp $
+ *
  */
 
 #include "tkInt.h"
@@ -25,8 +26,8 @@ static void		FreeGlobPatterns _ANSI_ARGS_((
 static void		FreeMacFileTypes _ANSI_ARGS_((
 			    FileFilterClause * clausePtr));
 static FileFilter *	GetFilter _ANSI_ARGS_((FileFilterList * flistPtr,
-			    CONST char * name));
-
+			    char * name));
+
 /*
  *----------------------------------------------------------------------
  *
@@ -57,7 +58,7 @@ TkInitFileFilters(flistPtr)
     flistPtr->filtersTail = NULL;
     flistPtr->numFilters = 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -87,8 +88,8 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
 {
     int listArgc;
     Arg * listArgv = NULL;
-    Arg * typeInfo = NULL;
     int typeCount;
+    Arg * typeInfo = NULL;
     int code = TCL_OK;
     int i;
 
@@ -124,14 +125,14 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
 	}
 	
 	if (typeCount != 2 && typeCount != 3) {
-	    Tcl_AppendResult(interp, "bad file type \"", Tcl_GetString(listArgv[i]), "\", ",
+	    Tcl_AppendResult(interp, "bad file type \"", LangString(listArgv[i]), "\", ",
 		"should be \"typeName {extension ?extensions ...?} ",
 		"?{macType ?macTypes ...?}?\"",	NULL);
 	    code = TCL_ERROR;
 	    goto done;
 	}
 
-	filterPtr = GetFilter(flistPtr, Tcl_GetString(typeInfo[0]));
+	filterPtr = GetFilter(flistPtr, LangString(typeInfo[0]));
 
 	if (typeCount == 2) {
 	    code = AddClause(interp, filterPtr, typeInfo[1], NULL,
@@ -150,7 +151,7 @@ TkGetFileFilters(interp, flistPtr, arg, isWindows)
   done:
     return code;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -182,7 +183,7 @@ TkFreeFileFilters(flistPtr)
     }
     flistPtr->filters = NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -237,7 +238,7 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
     }
 
     /*
-     * Add the clause into the list of clauses
+     * Add the clause into the list of clauses 
      */
 
     clausePtr = (FileFilterClause*)ckalloc(sizeof(FileFilterClause));
@@ -259,14 +260,14 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
 	    GlobPattern * globPtr = (GlobPattern*)ckalloc(sizeof(GlobPattern));
 	    int len;
 	    char *globi = Tcl_GetStringFromObj(globList[i],NULL);
-	
+	    
 	    len = (strlen(globi) + 1) * sizeof(char);
 
 	    if (globi[0] && globi[0] != '*') {
 		/*
 		 * Prepend a "*" to patterns that do not have a leading "*"
 		 */
-		globPtr->pattern = (char*)ckalloc((unsigned int) len+1);
+		globPtr->pattern = (char*)ckalloc(len+1);
 		globPtr->pattern[0] = '*';
 		strcpy(globPtr->pattern+1, globi);
 	    }
@@ -285,11 +286,11 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
 		    strcpy(globPtr->pattern, "*.");
 		}
 		else {
-		    globPtr->pattern = (char*)ckalloc((unsigned int) len);
+		    globPtr->pattern = (char*)ckalloc(len);
 		    strcpy(globPtr->pattern, globi);
 		}
 	    } else {
-		globPtr->pattern = (char*)ckalloc((unsigned int) len);
+		globPtr->pattern = (char*)ckalloc(len);
 		strcpy(globPtr->pattern, globi);
 	    }
 
@@ -328,8 +329,8 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
   done:
 
     return code;
-}
-
+}	
+
 /*
  *----------------------------------------------------------------------
  *
@@ -348,7 +349,7 @@ static int AddClause(interp, filterPtr, patternsStr, ostypesStr, isWindows)
 static FileFilter * GetFilter(flistPtr, name)
     FileFilterList * flistPtr;	/* The FileFilterList that contains the
 				 * newly created filter */
-    CONST char * name;		/* Name of the filter. It is usually displayed
+    char * name;		/* Name of the filter. It is usually displayed
 				 * in the "File Types" listbox in the file
 				 * dialogs. */
 {
@@ -377,7 +378,7 @@ static FileFilter * GetFilter(flistPtr, name)
     ++flistPtr->numFilters;
     return filterPtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -410,7 +411,7 @@ FreeClauses(filterPtr)
     filterPtr->clauses = NULL;
     filterPtr->clausesTail = NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -442,7 +443,7 @@ FreeGlobPatterns(clausePtr)
     }
     clausePtr->patterns = NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -473,4 +474,3 @@ FreeMacFileTypes(clausePtr)
     }
     clausePtr->macTypes = NULL;
 }
-

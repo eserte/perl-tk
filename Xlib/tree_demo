@@ -52,7 +52,7 @@ $mw->Display->XQueryTree($mw->WindowId,$root);
 if (defined $root)
  {
   $win_image = $mw->Bitmap(-file => Tk->findINC('win.xbm'));
-  my $hl = $mw->Scrolled('HList',-separator => '.',-drawbranch => 1, -width => '4i');
+  my $hl = $mw->Scrolled('HList',-separator => '.',-drawbranch => 1, -width => 40);
   $hl->configure(-command => [\&More,$hl]);
   my $name = sprintf("%X",$$root);
   $hl->add($name, -itemtype => 'imagetext', -image => $win_image, -text => $name, -data => $root);

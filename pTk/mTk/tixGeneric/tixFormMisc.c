@@ -1,6 +1,3 @@
-
-/*	$Id: tixFormMisc.c,v 1.1.1.1 2000/05/17 11:08:41 idiscovery Exp $	*/
-
 /*
  * tixFormMisc.c --
  *
@@ -40,7 +37,7 @@ static int		ConfigureSpring _ANSI_ARGS_((FormInfo *clientPtr,
 			    Tk_Window topLevel, Tcl_Interp* interp,
 			    int axis, int which, Arg value));
 
-
+
 /*----------------------------------------------------------------------
  * TixFm_Info --
  *
@@ -86,7 +83,7 @@ int TixFm_Info(clientData, interp, argc, argv)
 
 		/* Do you want to know padding? */
 		if (strcmp(argv[1], padNames[i][j]) == 0) {
-		    Tcl_SetIntObj(Tcl_GetObjResult(interp),clientPtr->pad[i][j]);
+		    Tcl_IntResults(interp, 1, 0, clientPtr->pad[i][j]);
 		    return TCL_OK;
 		}
 	    }
@@ -159,24 +156,24 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
     int axis, which;
     Arg avalue;
 {
-    char *value = Tcl_GetString(avalue);
+    char *value = LangString(avalue);
     Tk_Window tkwin;
     FormInfo * attWidget;
     int code = TCL_OK;
     int offset;
     int grid;
     int argc;
-    Tcl_Obj **objv;
+    char ** argv;
     int delta = 0;
 
-    if (Tcl_ListObjGetElements(interp, avalue, &argc, &objv) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, avalue, &argc, &argv) != TCL_OK) {
 	return TCL_ERROR;
     }
 
     switch (argv[0][0]) {
       case '#':		/* Attached to grid */
       case '%': 	/* Attached to percent (aka grid) */
-	{Tcl_Obj *temp = Tcl_NewStringObj(Tcl_GetString(objv[0])+1,-1);
+	{Tcl_Obj *temp = Tcl_NewStringObj(LangString(objv[0])+1,-1);
 	 if (Tcl_GetIntFromObj(interp,temp,&grid) != TCL_OK) {
 	    Tcl_DecrRefCount(temp);
 	    goto error;
@@ -190,11 +187,11 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
       case '&': 		/* Attached to parallel widget */
 	if (argc < 2)
 	   goto malformed;
-	tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[++delta]), topLevel);
+	tkwin = Tk_NameToWindow(interp, LangString(objv[++delta]), topLevel);
 
 	if (tkwin != NULL) {
 	    if (Tk_IsTopLevel(tkwin)) {
-		Tcl_AppendResult(interp, "can't attach to \"", Tcl_GetString(objv[1]),
+		Tcl_AppendResult(interp, "can't attach to \"", LangString(objv[1]),
 	    	    "\": it's a top-level window", (char *) NULL);
 		goto error;
 	    }
@@ -209,7 +206,7 @@ static int ConfigureAttachment(clientPtr, topLevel, interp, axis, which, avalue)
 	break;
 
       case '.': 		/* Attach to opposite widget */
-	tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[0]), topLevel);
+	tkwin = Tk_NameToWindow(interp, LangString(objv[0]), topLevel);
 
 	if (tkwin != NULL) {
 	    if (Tk_IsTopLevel(tkwin)) {
@@ -344,7 +341,7 @@ static int ConfigureSpring(clientPtr, topLevel, interp, axis, which, value)
     int         strength;
     int		i = axis, j = which;
 
-    if (Tcl_GetIntFromObj(interp, value, &strength) != TCL_OK) {
+    if (Tcl_GetInt(interp, value, &strength) != TCL_OK) {
 	return TCL_ERROR;
     }
 

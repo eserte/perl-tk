@@ -13,13 +13,8 @@
  *	   Department of Computer Science,
  *	   Australian National University.
  *
- * RCS: @(#) $Id: tkImgPPM.c,v 1.10 2002/06/14 13:35:48 dkf Exp $
+ * RCS: @(#) $Id: tkImgPPM.c,v 1.2 1998/09/14 18:23:13 stanton Exp $
  */
-
-#if 0
-#define USE_OLD_IMAGE
-#endif
-
 #include "tkInt.h"
 #include "tkPort.h"
 #include "tkVMacro.h"
@@ -42,9 +37,9 @@
  * The format record for the PPM file format:
  */
 
-static int		FileMatchPPM _ANSI_ARGS_((Tcl_Channel chan,
+static int		FileMatchPPM _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
 			    Tcl_Obj *fileName, Tcl_Obj *formatString,
-			    int *widthPtr, int *heightPtr, Tcl_Interp *interp));
+			    int *widthPtr, int *heightPtr));
 static int		FileReadPPM  _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Channel chan, Tcl_Obj *fileName,
 			    Tcl_Obj *formatString, Tk_PhotoHandle imageHandle,
@@ -71,7 +66,7 @@ Tk_PhotoImageFormat tkImgFmtPPM = {
 static int		ReadPPMFileHeader _ANSI_ARGS_((Tcl_Channel chan,
 			    int *widthPtr, int *heightPtr,
 			    int *maxIntensityPtr));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -91,20 +86,20 @@ static int		ReadPPMFileHeader _ANSI_ARGS_((Tcl_Channel chan,
  */
 
 static int
-FileMatchPPM(chan, fileName, formatString, widthPtr, heightPtr, interp)
+FileMatchPPM(interp, chan, fileName, formatString, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image file, open for reading. */
     Tcl_Obj *fileName;		/* The name of the image file. */
     Tcl_Obj *formatString;	/* User-specified format string, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw PPM file. */
-    Tcl_Interp *interp;
 {
     int dummy;
 
     return ReadPPMFileHeader(chan, widthPtr, heightPtr, &dummy);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -116,7 +111,7 @@ FileMatchPPM(chan, fileName, formatString, widthPtr, heightPtr, interp)
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in the interp's result.
+ *	then an error message is left in interp->result.
  *
  * Side effects:
  *	The access position in file f is changed, and new data is
@@ -157,7 +152,7 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	return TCL_ERROR;
     }
     if ((maxIntensity <= 0) || (maxIntensity >= 256)) {
-	char buffer[TCL_INTEGER_SPACE];
+	char buffer[30];
 
 	sprintf(buffer, "%d", maxIntensity);
 	Tcl_AppendResult(interp, "PPM image file \"", fileName,
@@ -189,14 +184,13 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	block.offset[1] = 1;
 	block.offset[2] = 2;
     }
-    block.offset[3] = 0;
     block.width = width;
     block.pitch = block.pixelSize * fileWidth;
 
     Tk_PhotoExpand(imageHandle, destX + width, destY + height);
 
     if (srcY > 0) {
-	Tcl_Seek(chan, (Tcl_WideInt)(srcY * block.pitch), SEEK_CUR);
+	Tcl_Seek(chan, (srcY * block.pitch), SEEK_CUR);
     }
 
     nLines = (MAX_MEMORY + block.pitch - 1) / block.pitch;
@@ -232,15 +226,15 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
 	    }
 	}
 	block.height = nLines;
-	Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, nLines,
-		TK_PHOTO_COMPOSITE_SET);
+	Tk_PhotoPutBlock(imageHandle, &block, destX, destY, width, nLines);
 	destY += nLines;
     }
 
     ckfree((char *) pixelPtr);
+    Tcl_AppendResult(interp, tkImgFmtPPM.name, (char *) NULL);   
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -251,7 +245,7 @@ FileReadPPM(interp, chan, fileName, formatString, imageHandle, destX, destY,
  *
  * Results:
  *	A standard TCL completion code.  If TCL_ERROR is returned
- *	then an error message is left in the interp's result.
+ *	then an error message is left in interp->result.
  *
  * Side effects:
  *	Data is written to the file given by "fileName".
@@ -270,27 +264,19 @@ FileWritePPM(interp, fileName, formatString, blockPtr)
     int w, h;
     int greenOffset, blueOffset, nBytes;
     unsigned char *pixelPtr, *pixLinePtr;
-    char header[16 + TCL_INTEGER_SPACE * 2];
+    char header[30];
 
     chan = Tcl_OpenFileChannel(interp, fileName, "w", 0666);
     if (chan == NULL) {
 	return TCL_ERROR;
     }
-
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary")
-	    != TCL_OK) {
-	Tcl_Close(NULL, chan);
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-encoding", "binary")
-	    != TCL_OK) {
-	Tcl_Close(NULL, chan);
+    if (Tcl_SetChannelOption(interp, chan, "translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 
     sprintf(header, "P6\n%d %d\n255\n", blockPtr->width, blockPtr->height);
     Tcl_Write(chan, header, -1);
-
+	
     pixLinePtr = blockPtr->pixelPtr + blockPtr->offset[0];
     greenOffset = blockPtr->offset[1] - blockPtr->offset[0];
     blueOffset = blockPtr->offset[2] - blockPtr->offset[0];
@@ -329,7 +315,7 @@ FileWritePPM(interp, fileName, formatString, blockPtr)
     }
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -362,7 +348,7 @@ ReadPPMFileHeader(chan, widthPtr, heightPtr, maxIntensityPtr)
 {
 #define BUFFER_SIZE 1000
     char buffer[BUFFER_SIZE];
-    int i, numFields;
+    int i, numFields, firstInLine;
     int type = 0;
     char c;
 
@@ -374,6 +360,7 @@ ReadPPMFileHeader(chan, widthPtr, heightPtr, maxIntensityPtr)
     if (Tcl_Read(chan, &c, 1) != 1) {
 	return 0;
     }
+    firstInLine = 1;
     i = 0;
     for (numFields = 0; numFields < 4; numFields++) {
 	/*
@@ -382,6 +369,7 @@ ReadPPMFileHeader(chan, widthPtr, heightPtr, maxIntensityPtr)
 
 	while (1) {
 	    while (isspace(UCHAR(c))) {
+		firstInLine = (c == '\n');
 		if (Tcl_Read(chan, &c, 1) != 1) {
 		    return 0;
 		}
@@ -394,6 +382,7 @@ ReadPPMFileHeader(chan, widthPtr, heightPtr, maxIntensityPtr)
 		    return 0;
 		}
 	    } while (c != '\n');
+	    firstInLine = 1;
 	}
 
 	/*
@@ -413,6 +402,7 @@ ReadPPMFileHeader(chan, widthPtr, heightPtr, maxIntensityPtr)
 	    buffer[i] = ' ';
 	    i++;
 	}
+	firstInLine = 0;
     }
     done:
     buffer[i] = 0;

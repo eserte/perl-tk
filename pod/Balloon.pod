@@ -34,6 +34,14 @@ Tk::Balloon - pop up help balloons.
 				},
 	      );
 
+    # Balloon attached to items in a listbox widget:
+    $b->attach($listbox, -balloonposition => 'mouse',
+			 -msg => ['first listbox element',
+				  '2nd listbox element',
+				  ...
+				 ],
+	      );
+
 =head1 DESCRIPTION
 
 B<Balloon> provides the framework to create and attach help
@@ -41,15 +49,15 @@ balloons to various widgets so that when the mouse pauses over the
 widget for more than a specified amount of time, a help balloon is
 popped up.
 
-=head2 Balloons and Menus
+=head2 Balloons and Menus or Listboxes
 
-If the balloon is attached to a B<Menu> widget and the message arguments
-are array references, then each element in the array will be the
-message corresponding to a menu entry. The balloon message will then
-be shown for the entry which the mouse pauses over. Otherwise it is
-assumed that the balloon is to be attached to the B<Menu> as a whole.
-You can have separate status and balloon messages just like normal
-balloons.
+If the balloon is attached to a B<Menu> or B<Listbox> widget and the
+message arguments are array references, then each element in the array
+will be the message corresponding to a menu entry or listbox element.
+The balloon message will then be shown for the entry which the mouse
+pauses over. Otherwise it is assumed that the balloon is to be
+attached to the B<Menu> or B<Listbox> as a whole. You can have
+separate status and balloon messages just like normal balloons.
 
 =head2 Balloons and Canvases
 
@@ -61,6 +69,16 @@ the current item (the one at the position of the mouse). Otherwise it is
 assumed that the balloon is to be attached to the B<Canvas> as a whole.
 You can have separate status and balloon messages just like normal
 balloons.
+
+=head2 Balloon Position
+
+By default, the balloon pops up at the lower right side of the client.
+If it would extend outside the lower screen border, its positioned at the
+upper right side. If it would extend outside the right screen border
+it's shown on the lower left side of the client. If it would extend
+outside both the lower and the right screen border, it's positioned
+at the upper left side of the client. Thus, the little arrow always
+points to the attached client.
 
 =head1 OPTIONS
 
@@ -198,6 +216,10 @@ Detaches the specified I<widget> from the help system.
 
 Destroys the specified balloon.
 
+=head1 ADVERTISED SUBWIDGETS
+
+The balloon label is advertised as C<message>.
+
 =head1 EXAMPLES
 
 See the balloon demo included with the widget demo script that came with
@@ -222,7 +244,10 @@ then the balloon will remain until you move off of it.
 
 =head1 BUGS
 
-Hopefully none, probably some.
+If using balloons attached to listbox entries or canvas items in a
+scrolled widget, then the subwidget have to be used:
+
+    $balloon->attach($w->Subwidget("scrolled"), -msg => ...);
 
 =head1 AUTHORS
 
@@ -232,6 +257,8 @@ B<Jason A. Smith> <smithj4@rpi.edu> added support for menus and made some
 other enhancements.
 
 B<Slaven Rezic> <eserte@cs.tu-berlin.de> added support for canvas items.
+
+B<Gerhard Petrowitsch> <gerhard@petrowitsch.de> added intelligent positioning
 
 =head1 HISTORY
 

@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -12,9 +12,9 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
-#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -24,7 +24,7 @@ void
 entry(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,0,Tk_EntryObjCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,Tk_EntryCmd,items,&ST(0)));
  }
 
 PROTOTYPES: DISABLE

@@ -108,6 +108,10 @@ This option is special in that it may not be specified via the option
 database, and it may not be modified with the B<configure>
 method.
 
+=item Switch:	B<-title>
+
+Specifies the title of the toplevel window.
+
 =item Name:	B<use>
 
 =item Class:	B<Use>

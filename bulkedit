@@ -9,13 +9,13 @@ use ExtUtils::Manifest "/mani/";
 my $containing = '/perl\b';
 my $matching   = '\.p[ml]$';
 my $mode       = 'MANIFEST';
-my %filefunc   = ( MANIFEST => \&manifiles,
+my %filefunc   = ( MANIFEST => \&manifiles, 
                    Dummy    => \&dummyfiles,
                    'find' => \&findfiles );
 
 sub accept_file
 {
- my ($file) = @_;
+ my ($file) = @_; 
  return 0 unless (-w $file);
  my $accept = $matching && ($file =~ /$matching/);
  if (!$accept && $containing)
@@ -42,7 +42,7 @@ sub findfiles
  elsif (-d $_)
   {
    $File::Find::prune = 1 if ($_ eq 'blib');
-  }},$dir);
+  }},$dir); 
  return @files;
 }
 

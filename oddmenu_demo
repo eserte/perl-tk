@@ -14,7 +14,7 @@ $lb->insert('end',grep(-T $_,<*>));
 $mw->Message(-text => qq(
 Example of (ab)use of Menu. Creates a list box as a child of Menu and packs it.
 Interaction is tricky. <Escape> should unpost, if menu  as a whole has 'focus'.
-))->pack;
+))->pack; 
 
 
 $mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;

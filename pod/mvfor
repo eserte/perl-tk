@@ -2,7 +2,7 @@
 use strict;
 
 $/ = '';
-$^I = '.bak';
+$^I = '.bak';             
 
 my @undo;
 my $edits = 0;
@@ -10,12 +10,12 @@ my $seen_NAME = 0;
 my @pend;
 
 while (<>)
- {
+ {            
   if (/^=for/ && !$seen_NAME)
    {
     print "\n";
     push(@pend,$_);
-   }
+   }     
   else
    {
     print;
@@ -33,7 +33,7 @@ while (<>)
 
   if (eof)
    {
-    warn "$edits $ARGV\n";
+    warn "$edits $ARGV\n";          
     if (defined $^I)
      {
       push(@undo,$ARGV) unless $edits;

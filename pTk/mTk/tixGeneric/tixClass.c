@@ -1,6 +1,3 @@
-
-/*	$Id: tixClass.c,v 1.1.1.1 2000/05/17 11:08:37 idiscovery Exp $	*/
-
 /*
  * tixClass.c --
  *
@@ -99,7 +96,7 @@ TIX_DECLARE_CMD(Tix_UninitializedClassCmd);
 
 static char * TIX_EMPTY_STRING = "";
 
-
+
 /*----------------------------------------------------------------------
  * GetClassByName --
  *
@@ -145,7 +142,7 @@ CreateClassByName(interp, classRec)
 
     return cPtr;
 }
-
+
 /*----------------------------------------------------------------------
  * CreateClassRecord --
  *
@@ -204,7 +201,7 @@ CreateClassRecord(interp, classRec, mainWindow, isWidget)
 	return NULL;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_ClassCmd
  *
@@ -322,7 +319,7 @@ done:
     }
     return code;
 }
-
+
 static int
 ParseClassOptions(interp, opts, parsePtr)
     Tcl_Interp * interp;
@@ -382,7 +379,7 @@ ParseClassOptions(interp, opts, parsePtr)
     }
 
     if ((parsePtr->optArgc %2) == 1) {
-	Tcl_AppendResult(interp, "value for \"",
+	Tcl_AppendResult(interp, "value for \"", 
 		parsePtr->optArgv[parsePtr->optArgc-1],
 	        "\" missing", (char*)NULL);
 	code = TCL_ERROR;
@@ -455,7 +452,7 @@ FreeParseOptions(parsePtr)
     }
     ckfree((char*)parsePtr);
 }
-
+
 /*----------------------------------------------------------------------
  * InitClass --
  *
@@ -528,9 +525,9 @@ InitClass(interp, classRec, cPtr, scPtr, parsePtr)
      */
     for (i=0; i<cPtr->nSpecs; i++) {
 	if (cPtr->specs[i]->isAlias) {
-	    cPtr->specs[i]->realPtr =
+	    cPtr->specs[i]->realPtr = 
 	      Tix_FindConfigSpecByName(interp, cPtr, cPtr->specs[i]->dbName);
-	}
+	} 
     }
 
     /*
@@ -662,7 +659,7 @@ InitClass(interp, classRec, cPtr, scPtr, parsePtr)
   done:
     return code;
 }
-
+
 /*
  *----------------------------------------------------------------------
  * FreeClassRecord --
@@ -748,14 +745,14 @@ TIX_DEFINE_CMD(Tix_UninitializedClassCmd)
     return TCL_ERROR;
 }
 
-
+
 /*----------------------------------------------------------------------
  * Tix_CreateInstanceCmd --
  *
  * 	Create an instance object of a normal Tix class.
  *
  * argv[0]  = object name.
- * argv[1+] = args
+ * argv[1+] = args 
  *----------------------------------------------------------------------
  */
 
@@ -823,7 +820,7 @@ TIX_DEFINE_CMD(Tix_CreateInstanceCmd)
     TixItclRestoreGlobalNameSp(&nameSp, interp);
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_InstanceCmd
  *
@@ -847,7 +844,7 @@ TIX_DEFINE_CMD(Tix_InstanceCmd)
 
     cPtr = (TixClassRecord *)clientData;
     classRec = cPtr->className;
-
+    
     if (argc <= 1) {
 	return Tix_ArgcError(interp, argc, argv, 1, "option ...");
     }
@@ -1059,7 +1056,7 @@ SetupDefault(interp, cPtr, s)
 	    ckfree((char*)list);
 	    goto error;
 	}
-
+	
 	Tix_SimpleListIteratorInit(&li);
 	for (Tix_SimpleListStart(&cPtr->subWDefs, &li);
 	     !Tix_SimpleListDone(&li);
@@ -1096,7 +1093,7 @@ SetupDefault(interp, cPtr, s)
 
 	Tix_SubwidgetDef * p = (Tix_SubwidgetDef*)li.curr;
 
-	if (Tix_GlobalVarEval(interp, "option add *", cPtr->ClassName,
+	if (Tix_GlobalVarEval(interp, "option add *", cPtr->ClassName, 
 		p->spec, " [list ", p->value, "] widgetDefault",
 		NULL) != TCL_OK) {
 	    goto error;
@@ -1189,7 +1186,7 @@ SetupSpec(interp, cPtr, s, isWidget)
 		    dupSpec->forceCall = scPtr->specs[i]->forceCall;
 		}
 	    } else {
-		/*
+		/* 
 		 *Let's copy the parent's configSpec
 		 */
 		cPtr->specs[cPtr->nSpecs] = CopySpec(scPtr->specs[i]);
@@ -1209,7 +1206,7 @@ SetupSpec(interp, cPtr, s, isWidget)
     }
     return code;
 }
-
+
 static TixConfigSpec *
 InitSpec(interp, s, isWidget)
     Tcl_Interp * interp;
@@ -1296,7 +1293,7 @@ InitSpec(interp, s, isWidget)
     }
     return sPtr;
 }
-
+
 static TixConfigSpec *
 CopySpec(sPtr)
     TixConfigSpec *sPtr;	/* The spec record from the super class. */
@@ -1338,7 +1335,7 @@ CopySpec(sPtr)
 
     return nPtr;
 }
-
+
 static void
 FreeSpec(sPtr)
     TixConfigSpec *sPtr;	/* The spec record to free. */
@@ -1360,7 +1357,7 @@ FreeSpec(sPtr)
     }
     ckfree((char*)sPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * SetupAttribute --
@@ -1413,7 +1410,7 @@ SetupAttribute(interp, cPtr, s, which)
     ckfree((char*)listArgv);
     return TCL_OK;
 }
-
+
 static int
 SetupAlias(interp, cPtr, s)
     Tcl_Interp * interp;
@@ -1446,7 +1443,7 @@ SetupAlias(interp, cPtr, s)
     ckfree((char*)listArgv);
     return TCL_OK;
 }
-
+
 static TixConfigSpec *
 InitAlias(interp, cPtr, s)
     Tcl_Interp * interp;
@@ -1477,7 +1474,7 @@ InitAlias(interp, cPtr, s)
 	return sPtr;
     }
 }
-
+
 static int
 InitHashEntries(interp, cPtr)
     Tcl_Interp * interp;
@@ -1551,7 +1548,7 @@ ParseInstanceOptions(interp, cPtr, widRec, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  * ClassTableDeleteProc --
@@ -1781,25 +1778,25 @@ static int DefineExport(interp, exPtr, name, spec)
 
     for (i=0; i<listArgc; i+=2) {
 	if (strcmp(listArgv[i], "-exportcmd") == 0) {
-	    if (AppendStrings(interp, &exPtr->exportCmds,
+	    if (AppendStrings(interp, &exPtr->exportCmds, 
 		listArgv[i+1])==TCL_ERROR) {
 		goto error;
 	    }
 	}
 	else if (strcmp(listArgv[i], "-restrictcmd") == 0) {
-	    if (AppendStrings(interp, &exPtr->restrictCmds,
+	    if (AppendStrings(interp, &exPtr->restrictCmds, 
 		listArgv[i+1])==TCL_ERROR){
 		goto error;
 	    }
 	}
 	else if (strcmp(listArgv[i], "-exportopt") == 0) {
-	    if (AppendStrings(interp, &exPtr->exportOpts,
+	    if (AppendStrings(interp, &exPtr->exportOpts,  
 		listArgv[i+1])==TCL_ERROR) {
 		goto error;
 	    }
 	}
 	else if (strcmp(listArgv[i], "-restrictopt") == 0) {
-	    if (AppendStrings(interp, &exPtr->restrictOpts,
+	    if (AppendStrings(interp, &exPtr->restrictOpts, 
 		listArgv[i+1])==TCL_ERROR){
 		goto error;
 	    }
@@ -1870,7 +1867,7 @@ GetSubWidgetSpec(cPtr, name)
 static Tix_SubWidgetSpec *
 AllocSubWidgetSpec()
 {
-    Tix_SubWidgetSpec * newPtr =
+    Tix_SubWidgetSpec * newPtr = 
       (Tix_SubWidgetSpec *)ckalloc(sizeof(Tix_SubWidgetSpec));
 
     newPtr->next 	= NULL;
@@ -1951,7 +1948,7 @@ SetupSubWidget(interp, cPtr, s)
 
 	    Tix_SimpleListAppend(&cPtr->subWidgets, (char*)newSpec, 0);
 
-	    if (DefineExport(interp, &newSpec->exportSpec, name, spec)
+	    if (DefineExport(interp, &newSpec->exportSpec, name, spec) 
 		    != TCL_OK) {
 		goto error;
 	    }

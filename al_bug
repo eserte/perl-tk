@@ -9,7 +9,7 @@ sub Foo::new {
 }
 
 
-$MAX_ITEMS = 10;
+$MAX_ITEMS = 10;   
 $VIEWED_ITEMS = 5;
 
 $f = new Foo;  # Used later for callback setup.
@@ -21,7 +21,7 @@ my $t  = $top->Table(-scrollbars => 'e',
 		      -columns => 3,
 		      -highlightthickness => 0,
 		      );
-$t->pack(-expand => 1,
+$t->pack(-expand => 1, 
 	 -fill => 'both'
 	 );
 
@@ -31,20 +31,20 @@ foreach $r (0..$MAX_ITEMS-1) {
     $c = 0;
     $tmp = ["0,$r","1,$r","2,$r"];
     foreach (@$tmp) {
-	$e = $t->Entry(-width => 5,
+	$e = $t->Entry(-width => 5, 
 		       -relief => 'sunken',
 		       -highlightthickness => 0,
 		       -borderwidth => 1,
 		       -textvariable => \$_);
-	$t->put($r, $c++, $e);
-    }
-
+	$t->put($r, $c++, $e);	
+    } 
+    
     $t->get($r, 0)->bind('<Return>' => [$f, 'recalc', $r]);
     $t->get($r, 1)->bind('<Return>' => [$f, 'find', $r]);
 }
 
 MainLoop();
-exit;
+exit; 
 
 sub recalc {
     my($self, $r) = @_;

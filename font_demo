@@ -4,7 +4,7 @@ use Tk::X11Font;
 use Tk::ROText;
 
 my $mw   = MainWindow->new;
-my $font = $mw->X11Font(space   => 'm',
+my $font = $mw->X11Font(space   => 'm', 
 			weight  => 'medium',
 			point   => 140);
 my $mb    = $mw->Frame->pack(-fill => 'x');
@@ -28,5 +28,5 @@ while (<FILE>)
  }
 
 $text->bind('<b>',[$bold,'add',Ev('index' => 'sel.first'),Ev('index' => 'sel.last')]);
-
+   
 MainLoop;

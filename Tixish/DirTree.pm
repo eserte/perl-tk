@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tixish/DirTree.pm#6 $
+$VERSION = '3.025'; # $Id: //depot/Tk8/Tixish/DirTree.pm#25 $
 
 use Tk;
 use Tk::Derived;
@@ -62,16 +62,22 @@ sub fullpath
  return $path;
 }
 
-sub directory
-{
+sub directory {
     my ($w,$key,$val) = @_;
-    # We need a value for -image, so its being undefined
-    # is probably caused by order of handling config defaults
-    # so defer it.
-    $w->afterIdle([$w, 'set_dir' => $val]);
+    if (defined $w->cget('-image'))
+     {
+      $w->chdir( $val );
+     }
+    else
+     {
+      # We have a default for -image, so its being undefined
+      # is probably caused by order of handling config defaults
+      # so defer it.
+      $w->afterIdle([$w, 'chdir' => $val]);
+     }
 }
 
-sub set_dir {
+sub chdir {
     my( $w, $val ) = @_;
     my $fulldir = fullpath( $val );
 
@@ -90,6 +96,7 @@ sub set_dir {
         next unless length $name;
         push @dirs, $name;
         my $dir = join( '/', @dirs );
+	$dir =~ s|^//|/|;
         $w->add_to_tree( $dir, $name, $parent )
             unless $w->infoExists( $dir );
         $parent = $dir;
@@ -129,7 +136,7 @@ sub add_to_tree {
     my @args = (-image => $image, -text => $name);
     if( $parent ) {             # Add in alphabetical order.
         foreach my $sib ($w->infoChildren( $parent )) {
-            if( $sib gt $name ) {
+            if( $sib gt $dir ) {
                 push @args, (-before => $sib);
                 last;
             }

@@ -3,7 +3,7 @@ BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
 
-BEGIN
+BEGIN 
   {
    plan test => 15;
   };

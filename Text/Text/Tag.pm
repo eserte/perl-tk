@@ -5,7 +5,7 @@ use overload '""' => \&name;
 
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Text/Text/Tag.pm#2 $
+$VERSION = '3.007'; # $Id: //depot/Tk8/Text/Text/Tag.pm#7 $
 
 sub _apply
 {

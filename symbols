@@ -6,7 +6,7 @@ $nm_opt = "";
 $nm_opt = "-g" if ($Config{'osname'} eq 'sunos');
 $nm_opt = "-px" if ($Config{'osname'} eq 'solaris');
 
-chomp(@so_files = `find blib -name '*.so' -print`);
+chomp(@so_files = `find blib -name '*.so' -print`); 
 
 %sym = ();
 

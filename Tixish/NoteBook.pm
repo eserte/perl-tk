@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tixish/NoteBook.pm#4 $
+$VERSION = '3.026'; # $Id: //depot/Tk8/Tixish/NoteBook.pm#26 $
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);
@@ -50,11 +50,12 @@ sub Populate
  my ($w, $args) = @_;
 
  $w->SUPER::Populate($args);
- $w->{'pad-x1'} = 0;
- $w->{'pad-x2'} = 0;
- $w->{'pad-y1'} = 0;
- $w->{'pad-y2'} = 0;
+ $w->{'pad-x1'} = undef;
+ $w->{'pad-x2'} = undef;
+ $w->{'pad-y1'} = undef;
+ $w->{'pad-y2'} = undef;
 
+ $w->{'windows'} = [];
  $w->{'nWindows'} = 0;
  $w->{'minH'} = 1;
  $w->{'minW'} = 1;
@@ -161,6 +162,10 @@ sub raise
      my $myW = $w->Width;
      my $myH = $w->Height;
 
+     if (!defined $w->{'pad-x1'}) {
+	 $w->InitTabSize;
+     }
+
      my $cW = $myW - $w->{'pad-x1'} - $w->{'pad-x2'} - 2 * (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
      my $cH = $myH - $w->{'pad-y1'} - $w->{'pad-y2'} - 2 * (defined $w->{-ipady} ? $w->{-ipady} : 0);
      my $cX = $w->{'pad-x1'} + (defined $w->{-ipadx} ? $w->{-ipadx} : 0);
@@ -259,8 +264,8 @@ sub MouseDown {
 sub MouseUp {
     my ($w, $x, $y) = @_;
     my $name = $w->identify($x, $y);
-    if ((defined $name) &&
-        ($name eq $w->{'down'}) &&
+    if ((defined $name) && (defined $w->{'down'}) &&
+	($name eq $w->{'down'}) &&
         ($w->pagecget($name, -state) eq 'normal')) {
         $w->raise($name);
     } else {
@@ -378,13 +383,7 @@ sub Resize {
 
     return unless Tk::Exists($w) && $w->{'nWindows'} && $w->{'resize'};
 
-    my ($tW, $tH) = $w->geometryinfo;
-    $w->{'pad-x1'} = 2;
-    $w->{'pad-x2'} = 2;
-    $w->{'pad-y1'} = $tH + (defined $w->{'-ipadx'} ? $w->{'-ipadx'} : 0) + 1;
-    $w->{'pad-y2'} = 2;
-    $w->{'minW'} = $tW;
-    $w->{'minH'} = $tH;
+    $w->InitTabSize;
 
     $w->{'resize'} = 0;
     my $reqW = $w->{-width} || 0;
@@ -434,6 +433,17 @@ sub Resize {
     $w->{'counter'} = 0;
     $w->raise($w->{'topchild'} || ${$w->{'windows'}}[0]);
     $w->{'resize'} = 0;
+}
+
+sub InitTabSize {
+    my ($w) = @_;
+    my ($tW, $tH) = $w->geometryinfo;
+    $w->{'pad-x1'} = 2;
+    $w->{'pad-x2'} = 2;
+    $w->{'pad-y1'} = $tH + (defined $w->{'-ipadx'} ? $w->{'-ipadx'} : 0) + 1;
+    $w->{'pad-y2'} = 2;
+    $w->{'minW'} = $tW;
+    $w->{'minH'} = $tH;
 }
 
 1;

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 use strict;
-use Tk;
+use Tk;              
 use Data::Dumper;
 use Tk::Font;
 
@@ -11,7 +11,7 @@ my $b = $mw->Button(-text => 'Quit', -command => [destroy => $mw])->pack;
 
 print 'Families : ',join(',',$b->fontFamilies),"\n";
 
-my $f = $b->cget('-font');
+my $f = $b->cget('-font');               
 
 my @info = $f->actual;
 print 'Actual : ',Dumper(\@info);
@@ -24,13 +24,13 @@ print 'Metrics : ',Dumper(\@info);
 
 print 'Ascent : ',$f->metrics('-ascent'),"\n";
 
-
+                     
 @info = $b->fontNames;
 print 'Names : ',Dumper(\@info);
 print 'Measure : ',join(',',$f->measure("Hugo")),"\n";
 
 my $name;
-my $size = $f->PostscriptFontName($name);
+my $size = $f->PostscriptFontName($name); 
 print "$name @ $size\n";
 $b->configure('-font' => $f);
 
@@ -47,4 +47,4 @@ print 'FConfigure (arg) : ',Dumper(\@f);
 print 'Configure : ',Dumper($f,\@f);
 # MainLoop;
 
-
+ 

@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 use blib;
-use Tk;
+use Tk;                     
 use strict;
 no strict 'refs';
 BEGIN { $ENV{'PERL_DL_NONLAZY'} = 1 }
@@ -29,7 +29,7 @@ my @al = ();
 find(sub { push(@al,$File::Find::name) if (/\.al$/); }, "$dir/../auto/Tk" );
 
 while (@al)
- {
+ {          
   my $file = shift(@al);
   require $file;
  }
@@ -39,11 +39,11 @@ sub dump_subs
  my $pack = shift;
  warn "Dumping $pack\n";
  foreach (sort keys %{$pack."::"})
-  {
+  {                           
    local *foo = *{$pack."::$_"};
    if (defined &foo)
     {
-     print $pack."::$_\n";
+     print $pack."::$_\n"; 
     }
    elsif (/^(.*)::$/)
     {

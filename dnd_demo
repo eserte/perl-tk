@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl -w
 #
-# Demo code to exhibit features of dynamic construction and destruction of
-# local (within app.) Drag and Drop sources and sinks. Written for and tested
+# Demo code to exhibit features of dynamic construction and destruction of 
+# local (within app.) Drag and Drop sources and sinks. Written for and tested 
 # with Perl v5.004_01 and Tk version 400.202, on a DEC Alpha (OSI) platform.
 #
 # Drag and drop is only possible after the 'New' button has been used, and
@@ -9,7 +9,7 @@
 # is used, dragging from the listbox is no longer possible.
 #
 # Pod documentation appended is a draft outline for the official documentation,
-# and is almost certainly neither complete nor correct. Comments/suggestions
+# and is almost certainly neither complete nor correct. Comments/suggestions 
 # for improvements welcomed.
 #
 # John Attwood (ja1@sanger.ac.uk), May '98
@@ -25,12 +25,12 @@ use strict;
 my ($ButtonClr, $ListClr, $DfltClr) = ("SkyBlue1", "LightSkyBlue2", "#d9d9d9");
 my ($rows, $marker_repeat) = (9, 4);
 my $font3 = '-*-fixed-*-*-*-*-*-140-*-*-*-*-*-*';
-my ($rdgel_ref, $user_id, $session_id, $source, @clones, @enzymes, @reqs,
+my ($rdgel_ref, $user_id, $session_id, $source, @clones, @enzymes, @reqs, 
     @lbls, @drops, $method);
-my $changed = 0;
+my $changed = 0; 
 
 #
-# Create a main window with a listbox, a table and some buttons
+# Create a main window with a listbox, a table and some buttons 
 #
 
 my $w = MainWindow->new();
@@ -53,10 +53,10 @@ my $table = $tf->Table(-rows => 10,
 		      -takefocus => 1,
 		     );
 $table->pack(-side => 'bottom', -fill => 'both');
-my $geltitle = $tf->Label(-relief => 'raised')->pack(-side => 'top',
+my $geltitle = $tf->Label(-relief => 'raised')->pack(-side => 'top', 
 						     -fill => 'x');
 $w_buttons->pack(qw(-side bottom -fill x -pady 0.5m));
-
+											 
 $w_buttons->Button(
 		   -background => $ButtonClr,
 		   -text    => 'Quit',
@@ -82,9 +82,9 @@ $bf->Radiobutton(-text => 'Variable', -value => 'variable',
 		 -variable => \$method)->pack(-side => 'top',
 					      -anchor => 'nw');
 my $aw = $w->Frame->pack(qw(-side bottom));
-$aw->Label(-text => "Requests Outstanding")->pack(-side => 'top',
+$aw->Label(-text => "Requests Outstanding")->pack(-side => 'top', 
 						  -fill => 'x');
-my $lb = $aw->Listbox(-height => 10, -width => 62,
+my $lb = $aw->Listbox(-height => 10, -width => 62, 
 		      -background => $DfltClr, -font => $font3);
 $lb->pack(-side => 'left', -fill => 'y');
 my $awsb = $aw->Scrollbar(-command => [$lb => 'yview']);
@@ -99,14 +99,14 @@ $lb->configure(-yscrollcommand => [$awsb => 'set']);
 # The last 3 parameters to the DragDrop invocation are (mutually exclusive)
 # alternatives, the commented-out versions allow fixed text or a fixed image
 # to be displayed in the Drag window, whilst defining a -startcommand callback
-# allows us to choose the text on the fly and show visually exactly what is
+# allows us to choose the text on the fly and show visually exactly what is 
 # being dragged.
 #
 
 $source = $lb->DragDrop(-event => '<B1-Motion>',
 			-sitetypes => [qw(Local)],
 			-handlers => [[\&send_string],
-				      [-type => 'FILE_NAME',
+				      [-type => 'FILE_NAME', 
 				       \&send_file]],
 			-startcommand => [\&DragInhibit],
 #			-image => $image,    #use an image, not text
@@ -172,30 +172,30 @@ sub Fill_lb {
 sub BuildTable {
     my ($row);
 
-    $table->put(0, 1, $table->Label(-text => "Clone",
-				    -relief => 'raised',
-				    -width => 15));
-    $table->put(0, 2, $table->Label(-text => "Enzyme",
-				    -relief => 'raised',
-				    -width => 15));
+    $table->put(0, 1, $table->Label(-text => "Clone", 
+				    -relief => 'raised', 
+				    -width => 15)); 
+    $table->put(0, 2, $table->Label(-text => "Enzyme", 
+				    -relief => 'raised', 
+				    -width => 15)); 
     foreach $row (1..$rows) {
 	if (($row - 1) % $marker_repeat == 0) {
-	    my $lbl = $table->Label(-text => "Marker",
-				    -relief => 'sunken',
+	    my $lbl = $table->Label(-text => "Marker", 
+				    -relief => 'sunken', 
 				    -width => 15);
 	    $table->put($rows - $row + 1,0,$lbl);
 	} else {
-	    my $lbl = $table->Label(-text => "Lane $row",
+	    my $lbl = $table->Label(-text => "Lane $row", 
 				    -relief => 'sunken',
 				    );
 	    $lbls[$row] = $lbl;
 	    $table->put($rows - $row + 1,0,$lbl);
-	    my $centry = $table->Entry(-width => 15,
-				       -textvariable => \$clones[$row],
+	    my $centry = $table->Entry(-width => 15, 
+				       -textvariable => \$clones[$row], 
 				       -state => 'disabled');
 	    $table->put($rows - $row + 1,1,$centry);
-	    my $dentry = $table->Entry(-width => 15,
-				       -textvariable => \$enzymes[$row],
+	    my $dentry = $table->Entry(-width => 15, 
+				       -textvariable => \$enzymes[$row], 
 				       -state => 'disabled');
 	    $table->put($rows - $row + 1,2,$dentry);
 	}
@@ -299,7 +299,7 @@ sub NewGel {
     foreach $i (1..$rows) {
 	if (($i - 1) % $marker_repeat > 0) {
 	    $lbls[$i]->configure(-background => $ButtonClr);
-	    $drops[$i] = $lbls[$i]->DropSite(-droptypes => [qw(Local)],
+	    $drops[$i] = $lbls[$i]->DropSite(-droptypes => [qw(Local)], 
 			   -dropcommand => [\&Dropit,$i],
 			   -entercommand => [\&SiteEntry, $lbls[$i]],
 			   );
@@ -398,11 +398,11 @@ DropSite - create and manipulate DropSites for Dragged selections
     $source = $widget->DragDrop(-event => '<Event>',
 				-sitetypes => ['Local'],
 				-handlers => [[\&callback],
-					      [-type => 'TYPENAME',
+					      [-type => 'TYPENAME', 
 					        \&callback]],
 			        );
 
-    $drop = $widget->DropSite(-droptypes => ['Local'],
+    $drop = $widget->DropSite(-droptypes => ['Local'], 
 			      -dropcommand => [\&Dropit,?params?],
 			      );
 
@@ -416,14 +416,14 @@ any platform for local (within one application) droptypes, but only the Sun
 interface is defined for global (interapplication) droptypes.
 
 User can drag objects with the mouse (Button-1 by default) from
-DragDrop sources, and drop them on DropSites. By default, pressing any key
+DragDrop sources, and drop them on DropSites. By default, pressing any key 
 during the Drag operation will abort it. There is support for different
 types of information transfer (eg STRING, ATOM, INTEGER - see Tk::Selection
-and/or the X Inter-Client Communication Conventions Manual (ICCCM)
+and/or the X Inter-Client Communication Conventions Manual (ICCCM) 
 for details) and also user-defined types (eg FILE_NAME in the example
 code below) via user-defined handlers.
 
-Local (intra-application) transfer is via the X Selection mechanism. Global
+Local (intra-application) transfer is via the X Selection mechanism. Global 
 (interapplication) transfer uses the Sun protocols defined in the
 Tk::DragDrop::Sunconstant module.
 
@@ -444,9 +444,9 @@ Tk::DragDrop::Sunconstant module.
  $source = $lb->DragDrop(-event => '<B1-Motion>',
 			 -sitetypes => [qw(Local)],
 			 -handlers => [[\&send_string],
-				       [-type => 'FILE_NAME',
+				       [-type => 'FILE_NAME', 
 					\&send_file]]);
- $drop = $lab->DropSite(-droptypes => [qw(Local)],
+ $drop = $lab->DropSite(-droptypes => [qw(Local)], 
 			-dropcommand => [\&Dropit, $lb],
 			-entercommand => [\&SiteEntry, $lab],
 			);
@@ -477,7 +477,7 @@ Tk::DragDrop::Sunconstant module.
      my ($w, $entry, @data) = @_;
      $w->configure(-relief => $entry == 1 ? 'raised' : 'sunken');
  }
-
+ 
 
 =head1 CONFIGURATION
 
@@ -491,12 +491,12 @@ The event which will initiate dragging.
 
 =item B<-sitetypes>
 
-Whether the applications served by this source will be local ('local'),
+Whether the applications served by this source will be local ('local'), 
 global ('Sun') or both (I<undef>).
 
 =item B<-handlers>
 
-Handler routines for each supported type of data to be
+Handler routines for each supported type of data to be 
 transferred
 
 =item B<-image>
@@ -513,8 +513,8 @@ allowed, otherwise the event will be ignored. Defaults to I<undef>.
 =item B<-predropcommand>
 
 Optionally a callback invoked before dropping occurs. Subroutine
-(which will be called with the source application ID string and the
-dropsite widget as parameters) must return 0 if Drop is allowed,
+(which will be called with the source application ID string and the 
+dropsite widget as parameters) must return 0 if Drop is allowed, 
 otherwise no handler is called. Defaults to I<undef>.
 
 =item B<-postdropcommand>
@@ -529,7 +529,7 @@ Optionally the cursor to use whilst dragging. Defaults to 'hand2'
 
 =item B<-text>
 
-Optionally some fixed text to display in the drag window.
+Optionally some fixed text to display in the drag window. 
 Defaults to the classname of the parent widget.
 
 =back
@@ -540,7 +540,7 @@ The non-standard options recognised by B<DropSite> are as follows:-
 
 =item B<-droptypes>
 
-Whether items will be dropped from local ('local'), global ('Sun')
+Whether items will be dropped from local ('local'), global ('Sun') 
 or both (I<undef>) applications
 
 =item B<-dropcommand>
@@ -596,7 +596,7 @@ binding once it has been installed (however this can be done
 manually by removing the binding from the parent widget).
 
 Destroying a DragDrop source doesn't remove the binding from the
-parent widget, causing Tk to complain if the bound callback is
+parent widget, causing Tk to complain if the bound callback is 
 later invoked.
 
 DropSites can't be within a scrolling Table (this is a Table bug,
@@ -610,7 +610,7 @@ B<John Attwood> ja1@sanger.ac.uk    : This demo and draft pod docs
 
 
 =cut
-
+ 
 
 
 

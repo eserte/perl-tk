@@ -6,7 +6,7 @@
 # 	    Department of Computer Science,
 # 	    Australian National University.
 #  RCS: @(#) $Id: photo.n,v 1.2 1998/09/14 18:22:59 stanton Exp $
-#
+#  
 
 =head1 NAME
 

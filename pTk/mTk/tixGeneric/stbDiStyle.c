@@ -10,7 +10,7 @@ static Arg   DItemStylePrintProc _ANSI_ARGS_((
 		ClientData clientData, Tk_Window tkwin, char *widRec,
 		int offset, Tcl_FreeProc **freeProcPtr));
 
-static int
+static int 
 DItemStyleParseProc(clientData, interp, tkwin, value, widRec,offset)
     ClientData clientData;
     Tcl_Interp *interp;

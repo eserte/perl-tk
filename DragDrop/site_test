@@ -2,7 +2,7 @@
 use Tk;
 use strict;
 use Tk::DropSite;
-use vars qw($kind $STRING $FILE_NAME);
+use vars qw($kind $STRING $FILE_NAME);           
 BEGIN
 {
  $kind = ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))?
@@ -10,10 +10,10 @@ BEGIN
 }
 use Tk::DropSite @$kind;
 use Tk::DragDrop @$kind;
-use Tk::Menubar;
+use Tk::Menubar;  
 
 sub enter_leave
-{
+{          
  my ($ds,$flag) = @_;
  $ds->configure(-relief => ($flag) ? 'sunken' : 'ridge');
  return 1;
@@ -61,7 +61,7 @@ foreach my $k ('Local',@$kind,'Any')
   @list = (-droptypes => $k) unless $k eq 'Any';
   my $sun = $dst->Message('-text' => "$k Drops here", '-relief' => 'ridge' )->pack(-side => 'left');
   $sun->DropSite(-dropcommand => [\&ShowTargets,$lb],
-                 -entercommand => [\&enter_leave,$sun],
+                 -entercommand => [\&enter_leave,$sun], 
                  @list);
  }
 
@@ -72,11 +72,11 @@ foreach my $targ (qw(STRING FILE_NAME))
   my $l = $str->Label(-anchor => 'e', -justify => 'right', -text => $targ);
   my $v = $str->Label(-anchor => 'w', -justify => 'left', -relief => 'groove',
               -textvariable => \${$targ});
-  Tk::grid($l,$v,-sticky => 'ew');
- }
-$str->gridColumnconfigure(0,-weight => 0);
-$str->gridColumnconfigure(1,-weight => 1);
-
+  Tk::grid($l,$v,-sticky => 'ew');	
+ } 
+$str->gridColumnconfigure(0,-weight => 0); 
+$str->gridColumnconfigure(1,-weight => 1); 
+ 
 sub string_handler
 {
  my ($text,$offset,$max) = @_;
@@ -104,7 +104,7 @@ sub ShowTargets
      $FILE_NAME = $lb->SelectionGet('-selection'=>$seln,'FILE_NAME');
     }
    if (/_SUN/ && !/(END|ACK|DONE|YIELD)/)
-    {
+    {       
      my @info;
      Tk::catch { @info  = $lb->SelectionGet('-selection'=>$seln,$_) };
      if ($@)
@@ -121,7 +121,7 @@ sub ShowTargets
      my $string = $lb->SelectionGet('-selection'=>$seln,$_);
      $string = substr($string,0,37)."..." if length($string) > 40;
      $STRING = $string;
-    }
+    } 
   }
 }
 

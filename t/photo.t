@@ -1,7 +1,7 @@
 BEGIN { $^W = 1; $| = 1;}
 use strict;
 use Test;
-use Tk;
+use Tk;        
 use Tk::Photo;
 
 
@@ -23,7 +23,7 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
   $mw->Label(-text  => 'Initial')->grid(-row => $row, -column => $col);
   $mw->Label(-background => 'white',-image => $src)->grid(-row => $row+1, -column => $col++);
   $mw->update;
-
+    
   foreach $kind ($src->formats)
    {
     my $f = lc("t/test.$kind");
@@ -42,14 +42,14 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
     $mw->Label(-background => 'white', -image => $new)->grid(-row => $row+1, -column => $col++);
     $mw->update;
    }
- $row += 2;
+ $row += 2; 
 }
 
 $mw->after(1000,[destroy => $mw]);
 MainLoop;
 
 foreach (@files)
- {
+ {               
   unlink($_) if -f $_;
- }
+ }               
 

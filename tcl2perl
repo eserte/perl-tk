@@ -47,7 +47,7 @@ $InBind = 0;
 
 %widget = ();
 
-foreach (qw(entry menu menubutton frame text canvas scale scrollbar
+foreach (qw(entry menu menubutton frame text canvas scale scrollbar 
             button label radiobutton checkbutton))
  {
   $widget{$_} = \&tcl_widget;
@@ -68,14 +68,14 @@ sub tokenize
   }
  while (length($_))
   {
-   if (/^(\s*[$term]?)/s)
+   if (/^(\s*[$term]?)/s) 
     {
      my $spc = $1;
      $. += $spc =~ tr/\n/\n/;
      substr($_,0,length($spc)) = "";
      last if ($spc =~ /[$term]/s);
     }
-   if (/^(\{|!?\[)/)
+   if (/^(\{|!?\[)/) 
     {
      substr($_,0,length($1)) = "";
      my $count = 1;
@@ -89,7 +89,7 @@ sub tokenize
      else
       {
        $close = ']';
-       $var   = $open;
+       $var   = $open; 
        $open  = '[';
       }
      while (length($_))
@@ -97,22 +97,22 @@ sub tokenize
        if (/^"([^\\"]|\\.)*"/)
         {
          $var .= $&;
-         $_ = $';
+         $_ = $'; 
         }
        else
         {
          my $ch = substr($_,0,1);
          substr($_,0,1) = "";
-         $count++ if ($ch eq $open);
-         $count-- if ($ch eq $close);
+         $count++ if ($ch eq $open);  
+         $count-- if ($ch eq $close);  
          last unless ($count);
          $var .= $ch;
         }
-      }
+      } 
      $var .= ']' if ($close eq ']');
      push(@tokens,$var);
     }
-   elsif (/^("([^\\"]|\\.)*"|([^\s$term]|\\\s)+)/)
+   elsif (/^("([^\\"]|\\.)*"|([^\s$term]|\\\s)+)/) 
     {
      my $token = $1;
      die "$_" if ($token =~ /^"/ && $token !~ /"$/);
@@ -219,7 +219,7 @@ sub primary
  s/^\s+//;
  if (/^\(/)
   {
-   $_ = $';
+   $_ = $'; 
    $val = subexpr(0);
    if (/^\s*\)/)
     {
@@ -230,7 +230,7 @@ sub primary
      die ") missing in '$_' from '$start'";
     }
   }
- elsif (/^\[/)
+ elsif (/^\[/)             
   {
    substr($_,0,1) = "";
    my $count = 1;
@@ -246,7 +246,7 @@ sub primary
     }
    $val = translate(tokenize("\n;",$str));
   }
- elsif (/^\{/)
+ elsif (/^\{/)             
   {
    substr($_,0,1) = "";
    my $count = 1;
@@ -254,10 +254,10 @@ sub primary
    while (length($_))
     {
      if (/^"([^\\"]|\\.)*"/)
-      {
+      {  
        $val .= $&;
-       $_ = $';
-      }
+       $_ = $'; 
+      }  
      else
       {
        my $ch = substr($_,0,1);
@@ -272,7 +272,7 @@ sub primary
  elsif (/^(\w+)\(/)
   {
    my $key = $1;
-   $_   = $';
+   $_   = $'; 
    my $str = "";
    my $count = 1;
    $val = "";
@@ -293,7 +293,7 @@ sub primary
    my $base  = $1;
    my $vname = $&;
    my $index = "";
-   $_   = $';
+   $_   = $'; 
    if (/^\(/)
     {
      my $count = 0;
@@ -320,20 +320,20 @@ sub primary
       }
      $val = $global{$base}.$index;
     }
-   else
-    {
+   else 
+    {             
      unless (exists $variable{$base})
       {
        push(@vars,['my',($variable{$base} = '$'.$base)]);
       }
      $val  = $variable{$base};
      $val .= $index if (defined $index);
-    }
+    }             
   }
  elsif (/^((#|0x)[\da-fA-F]+)/ || /^(\d+(\.\d+|[cm])?)/)
   {
    $val = $1;
-   $_   = $';
+   $_   = $'; 
   }
  elsif ($_ eq '.' || /^\.\W/)
   {
@@ -343,12 +343,12 @@ sub primary
  elsif (/^(-((\w*|\*)-)+\*)/)
   {
    $val = $1;
-   $_ = $';
+   $_ = $'; 
   }
  elsif (/^([-!\/+\@])/)
   {
    my $op = $1;
-   $_ = $';
+   $_ = $'; 
    return $op unless (length($_));
    my $rhs = primary();
    return $op.$rhs if ($op eq '-' && $rhs =~ /^\w+$/);
@@ -359,7 +359,7 @@ sub primary
  elsif (/^([\w:\$]+|"([^\\"]|\\.)*"|%\w|<[\w-]+>)/)
   {
    $val = $1;
-   $_ = $';
+   $_ = $'; 
    $val = $1 if ($val =~ /^"(\w+)"$/);
   }
  unless (defined $val)
@@ -372,11 +372,11 @@ sub primary
 sub subexpr
 {
  my $pri  = shift;
- my $lhs  = primary();
+ my $lhs  = primary(); 
  while (/^\s*(\.|<=?|>=?|==|&&?|\|\|?|!=|[-+*\/])/ && $pri <= $leftpri{$1})
   {
    my $op  = $1;
-   $_ = $';
+   $_ = $'; 
    my $rhs = subexpr($rightpri{$op});
    if (!ref($rhs) && !length($rhs) && ($op eq '==' || $op eq '!='))
     {
@@ -388,7 +388,7 @@ sub subexpr
      $lhs = ['!',$lhs] if ($op eq '==');
     }
    elsif ($op eq '.')
-    {
+    {                                                
      $lhs = ['->{}',$lhs,'.'.$rhs];
     }
    else
@@ -410,7 +410,7 @@ sub expr
  croak "Trailing expression:$_ in $_[0]" if (/\S/);
  return $val;
 }
-
+ 
 sub translate;
 sub block;
 
@@ -970,7 +970,7 @@ sub subname
  return $_;
 }
 
-sub output_sub
+sub output_sub 
 {
  my ($depth,$key,$name,$body) = @_;
  print indent($depth),"\nsub ",subname($name),"\n";
@@ -1001,7 +1001,7 @@ sub output_for
  output_block($depth+1,$body);
 }
 
-sub output_if
+sub output_if 
 {
  my $depth = shift;
  my $name  = shift;
@@ -1061,8 +1061,8 @@ sub output_diadic
  my $name = shift;
  if (@_ == 2)
   {
-   expression($pri,shift);
-   print " $name ";
+   expression($pri,shift); 
+   print " $name ";        
    expression($pri,shift);
   }
  else
@@ -1087,24 +1087,24 @@ sub output_compare
  my ($pri,$name,$lhs,$rhs) = @_;
  $name = $strCmp{$name} if (isString($lhs) || isString($rhs));
  &Tk::Pretty::PrintArgs unless (defined $name);
- expression($pri,$lhs);
- print " $name ";
+ expression($pri,$lhs); 
+ print " $name ";        
  expression($pri,$rhs);
 }
 
 sub output_member
 {
  my ($pri,$name,$lhs,$rhs) = @_;
- expression($pri,$lhs);
- print "->{";
+ expression($pri,$lhs); 
+ print "->{";        
  expression($pri,$rhs);
- print "}";
+ print "}";        
 }
 
 sub output_prefix
 {
  my ($pri,$name,$right) = @_;
- print "$name ";
+ print "$name "; 
  expression($pri,$right);
 }
 
@@ -1115,7 +1115,7 @@ sub output_my
  expression(0,$left);
  if (defined $right)
   {
-   print " = ";
+   print " = "; 
    expression(0,$right);
   }
  print ";\n";
@@ -1138,12 +1138,12 @@ sub output_eval
 
 sub output_list
 {
- print "(";
+ print "(";    
  while (@_)
-  {
+  {        
    expression(0,shift);
    print "," if (@_);
-  }
+  }        
  print ")";
 }
 
@@ -1236,39 +1236,39 @@ sub output_group
 }
 
 
-%expression = (
-               '=='    => \&output_compare,
-               '!='    => \&output_compare,
-               '<='    => \&output_compare,
-               '<'     => \&output_compare,
-               '>='    => \&output_compare,
-               '>'     => \&output_compare,
-               '='     => \&output_diadic,
-               '.'     => \&output_diadic,
-               '+='    => \&output_diadic,
-               '+'     => \&output_diadic,
-               '||'    => \&output_diadic,
-               '&'    => \&output_diadic,
-               '&&'    => \&output_diadic,
-               '=~'    => \&output_diadic,
-               '[]'    => \&output_group,
-               '()'    => \&output_group,
-               '-'     => \&output_diadic,
-               '*'     => \&output_diadic,
-               '/'     => \&output_diadic,
+%expression = ( 
+               '=='    => \&output_compare, 
+               '!='    => \&output_compare, 
+               '<='    => \&output_compare, 
+               '<'     => \&output_compare, 
+               '>='    => \&output_compare, 
+               '>'     => \&output_compare, 
+               '='     => \&output_diadic, 
+               '.'     => \&output_diadic, 
+               '+='    => \&output_diadic, 
+               '+'     => \&output_diadic, 
+               '||'    => \&output_diadic, 
+               '&'    => \&output_diadic, 
+               '&&'    => \&output_diadic, 
+               '=~'    => \&output_diadic, 
+               '[]'    => \&output_group, 
+               '()'    => \&output_group, 
+               '-'     => \&output_diadic, 
+               '*'     => \&output_diadic, 
+               '/'     => \&output_diadic, 
                '->'    => \&output_method,
                '?:'    => \&output_cond,
                '!'     => \&output_prefix,
                '++'     => \&output_prefix,
                'bindsub' => \&output_bind,
-               'eval'  => \&output_eval,
-               'lindex'  => \&output_lindex,
-               'return' => \&output_return,
-               'last'   => \&output_return,
-               'next'   => \&output_return,
-               'shift'  => \&output_return,
-               'glob'   => \&output_glob,
-               '->{}'   => \&output_member,
+               'eval'  => \&output_eval, 
+               'lindex'  => \&output_lindex, 
+               'return' => \&output_return, 
+               'last'   => \&output_return, 
+               'next'   => \&output_return, 
+               'shift'  => \&output_return, 
+               'glob'   => \&output_glob, 
+               '->{}'   => \&output_member, 
               );
 
 
@@ -1348,12 +1348,12 @@ sub expression
 
 
 %statement = ( 'sub'   => \&output_sub,
-               'my'    => \&output_my,
-               'if'    => \&output_if,
-               'while' => \&output_if,
-               'foreach' => \&output_foreach,
-               'tixforeach' => \&output_foreach,
-               'for'     => \&output_for,
+               'my'    => \&output_my, 
+               'if'    => \&output_if, 
+               'while' => \&output_if, 
+               'foreach' => \&output_foreach, 
+               'tixforeach' => \&output_foreach, 
+               'for'     => \&output_for, 
            );
 
 sub statement
@@ -1438,7 +1438,7 @@ foreach $file (@ARGV)
     if (system("perl","-wc",$perl) != 0)
      {
       rename($perl,"$perl.oops");
-      exit(4)
+      exit(4) 
      }
    }
  }

@@ -1,6 +1,3 @@
-
-/*	$Id: tixMethod.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixMethod.c --
  *
@@ -46,7 +43,7 @@ static void		MethodTableDeleteProc _ANSI_ARGS_((
 
 /*
  *
- * argv[1] = widget record
+ * argv[1] = widget record 
  * argv[2] = method
  * argv[3+] = args
  *
@@ -62,7 +59,7 @@ TIX_DEFINE_CMD(Tix_CallMethodCmd)
     if (argc<3) {
 	return Tix_ArgcError(interp, argc, argv, 1, "w method ...");
     }
-
+ 
     if ((context = GET_RECORD(interp, widRec, "className")) == NULL) {
 	Tcl_ResetResult(interp);
 	Tcl_AppendResult(interp, "invalid object reference \"", widRec,
@@ -88,7 +85,7 @@ TIX_DEFINE_CMD(Tix_CallMethodCmd)
 
 /*
  *
- * argv[1] = widget record
+ * argv[1] = widget record 
  * argv[2] = method
  * argv[3+] = args
  *
@@ -142,7 +139,7 @@ TIX_DEFINE_CMD(Tix_ChainMethodCmd)
 
 /*
  *
- * argv[1] = widget record
+ * argv[1] = widget record 
  * argv[2] = class (context)
  * argv[3] = method
  *
@@ -394,7 +391,7 @@ int Tix_GetCommandInfo(interp, cmdName, infoPtr)
     DECLARE_ITCL_NAMESP(nameSp, interp);
 
     result = TixItclSetGlobalNameSp(&nameSp, interp);
-
+    
     if (result != 0) {
         result = Tcl_GetCommandInfo(interp, cmdName, infoPtr);
     }
@@ -417,7 +414,7 @@ int Tix_ExistMethod(interp, context, method)
     exist = Tix_GetCommandInfo(interp, cmdName, &dummy);
 
     if (!exist) {
-	if (Tix_GlobalVarEval(interp, "auto_load ", cmdName,
+	if (Tix_GlobalVarEval(interp, "auto_load ", cmdName, 
 	        (char*)NULL)!= TCL_OK) {
 	    goto done;
 	}
@@ -533,7 +530,7 @@ int Tix_EvalArgv(interp, argc, argv)
 	cmdArgv[0] = "auto_load";
 	cmdArgv[1] = argv[0];
 
-	if ((*cmdInfo.proc)(cmdInfo.clientData, interp, 2, cmdArgv)!= TCL_OK){
+	if ((*cmdInfo.proc)(cmdInfo.clientData, interp, 2, cmdArgv)!= TCL_OK){ 
 	    return TCL_ERROR;
 	}
 
@@ -565,7 +562,7 @@ Tix_FindPublicMethod(interp, cPtr, method)
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  * MethodTableDeleteProc --

@@ -116,7 +116,7 @@ so some of the pitfalls may not be present using ActivePerl on Win*
 		  by apache, instead of a list of (one) PPM
 		  distribution.
 
-
+			
 That's it.  If someone is adventuresome enough, try with ppm.pl
 
 	install http://www.xray.mpe.mpg.de/~ach/ptk/ppm/Tk-Pod.ppd
@@ -132,7 +132,7 @@ One can of course inspect http://www.xray.mpe.mpg.de/~ach/ptk/ppm
 with a WWW browser to check the input used by ppm.pl
 
 Hope this helps to create one's own PPM distribution,
-Achim
+Achim	
 ==========================================================================
 This message was posted through the Stanford campus mailing list
 server.  If you wish to unsubscribe from this mailing list, send the

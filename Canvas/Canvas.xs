@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -12,9 +12,9 @@
 
 #include "pTk/tkPort.h"
 #include "pTk/tkInt.h"
+#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
-#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -28,7 +28,7 @@ void
 canvas(...)
 CODE:
  {
-  XSRETURN(XSTkCommand(cv,1,Tk_CanvasObjCmd,items,&ST(0)));
+  XSRETURN(XSTkCommand(cv,(Tcl_CmdProc *)Tk_CanvasObjCmd,items,&ST(0)));
  }
 
 

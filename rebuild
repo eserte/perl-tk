@@ -9,9 +9,9 @@ print "$host in $cwd executing $0\n";
 print $ENV{'PATH'},"\n";
 #System("make",'-f','Makefile.old',"clean") if -f "Makefile.old";
 #System("make","clean") if -f "Makefile";
-System("cleanup");
+System("cleanup"); 
 System("$^X","Makefile.PL");
-System("time","make","parallel");
+System("time","make","parallel"); 
 
 sub System
 {

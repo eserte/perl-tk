@@ -443,9 +443,11 @@
 #endif
 #endif /* !DO_X_EXCLUDE */
 
+#ifndef DO_X_EXCLUDE
 #ifndef XRectInRegion
 #  define XRectInRegion (*XlibVptr->V_XRectInRegion)
 #endif
+#endif /* !DO_X_EXCLUDE */
 
 #ifndef XRefreshKeyboardMapping
 #  define XRefreshKeyboardMapping (*XlibVptr->V_XRefreshKeyboardMapping)
@@ -587,10 +589,6 @@
 
 #ifndef XStringToKeysym
 #  define XStringToKeysym (*XlibVptr->V_XStringToKeysym)
-#endif
-
-#ifndef XSubtractRegion
-#  define XSubtractRegion (*XlibVptr->V_XSubtractRegion)
 #endif
 
 #ifndef XSync

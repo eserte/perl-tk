@@ -2,7 +2,7 @@ package Tk::ColorSelect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/ColorEditor.pm#4 $
+$VERSION = '3.034'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#34 $
 
 use Tk qw(Ev);
 
@@ -442,7 +442,7 @@ sub Show
 package Tk::ColorEditor;
 
 use vars qw($VERSION $SET_PALETTE);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/ColorEditor.pm#4 $
+$VERSION = '3.034'; # $Id: //depot/Tk8/Tk/ColorEditor.pm#34 $
 
 use Tk qw(lsearch Ev);
 use Tk::Toplevel;
@@ -658,6 +658,7 @@ sub Populate
             sub {
                 my ($objref) = @_;
                 $objref->Callback(-command => ($objref->{'highlight'}, $objref->cget('-color')));
+		$cw->{'done'} = 1;
             }, $cw,
         ],
     );
@@ -711,9 +712,9 @@ sub Populate
 
 sub Show {
 
-    my($objref) = @_;
+    my($objref, @args) = @_;
 
-    $objref->deiconify;
+    Tk::ColorDialog::Show(@_);
 
 } # end show
 

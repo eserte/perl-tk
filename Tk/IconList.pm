@@ -38,7 +38,7 @@ package Tk::IconList;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/IconList.pm#4 $
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/IconList.pm#8 $
 
 use Tk qw(Ev);
 use strict;
@@ -106,7 +106,7 @@ sub Populate {
     $canvas->Tk::bind('<2>',['scan','mark',Ev('x'),Ev('y')]);
     $canvas->Tk::bind('<B2-Motion>',['scan','dragto',Ev('x'),Ev('y')]);
     # Remove the standard Canvas bindings
-    $canvas->bindtags([$canvas]);
+    $canvas->bindtags([$canvas, $canvas->toplevel, "all"]);
     # ... and define some again
     $canvas->Tk::bind('<Home>', ['xview','moveto',0]);
     $canvas->Tk::bind('<End>',  ['xview','moveto',1]);
@@ -519,4 +519,3 @@ sub Reset {
 }
 
 1;
-

@@ -1,4 +1,4 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -7,7 +7,7 @@ require Tk;
 
 
 use vars qw($VERSION);
-$VERSION = '4.003'; # $Id: //depot/Tkutf8/Tk/Label.pm#3 $
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/Label.pm#13 $
 
 use base  qw(Tk::Widget);
 

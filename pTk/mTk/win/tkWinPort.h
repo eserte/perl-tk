@@ -6,11 +6,12 @@
  *	file that contains #ifdefs to handle different flavors of OS.
  *
  * Copyright (c) 1995-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1998 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinPort.h,v 1.7 1999/11/19 22:00:19 hobbs Exp $
+ * RCS: @(#) $Id: tkWinPort.h,v 1.3 1998/09/30 19:01:22 rjohnson Exp $
  */
 
 #ifndef _WINPORT
@@ -33,18 +34,9 @@
 #ifdef __EMX__
 #   include <sys/types.h>
 #endif
-
-/*
- * Need to block out this include for building extensions with MetroWerks
- * compiler for Win32.
- */
-
-#ifndef __MWERKS__
 #include <sys/stat.h>
-#endif
-
+#include <sys/timeb.h>
 #include <time.h>
-#include <tchar.h>
 
 #ifdef _MSC_VER
 #    define hypot _hypot
@@ -54,14 +46,14 @@
 #    endif
 #endif /* _MSC_VER */
 
-#ifndef __GNUC__
-#    define strncasecmp strnicmp
-#    define strcasecmp stricmp
-#endif
+#define strncasecmp strnicmp
+#define strcasecmp stricmp
 
 #define NBBY 8
 
+#ifndef OPEN_MAX
 #define OPEN_MAX 32
+#endif
 
 /*
  * The following define causes Tk to use its internal keysym hash table
@@ -140,11 +132,11 @@ struct timezone {
 #undef timezone
 struct timezone;
 struct timeval;
-#endif
+#endif 
 
-#ifndef _TCLINT
-#include <tclInt.h>
+extern int gettimeofday(struct timeval *, struct timezone *);
+#if 0
+EXTERN void		panic _ANSI_ARGS_(TCL_VARARGS(char *,format));
 #endif
-
 
 #endif /* _WINPORT */

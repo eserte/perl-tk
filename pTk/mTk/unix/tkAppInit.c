@@ -1,25 +1,32 @@
-/*
+/* 
  * tkAppInit.c --
  *
  *	Provides a default version of the Tcl_AppInit procedure for
  *	use in wish and similar Tk-based applications.
  *
  * Copyright (c) 1993 The Regents of the University of California.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1994 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkAppInit.c,v 1.7 2002/06/21 20:24:29 dgp Exp $
+ * RCS: @(#) $Id: tkAppInit.c,v 1.3 1999/02/04 20:57:18 stanton Exp $
  */
 
 #include "tk.h"
-#include "locale.h"
+
+/*
+ * The following variable is a special hack that is needed in order for
+ * Sun shared libraries to be used for Tcl.
+ */
+
+extern int matherr();
+int *tclDummyMathPtr = (int *) matherr;
 
 #ifdef TK_TEST
 extern int		Tktest_Init _ANSI_ARGS_((Tcl_Interp *interp));
 #endif /* TK_TEST */
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -42,33 +49,10 @@ main(argc, argv)
     int argc;			/* Number of command-line arguments. */
     char **argv;		/* Values of command-line arguments. */
 {
-    /*
-     * The following #if block allows you to change the AppInit
-     * function by using a #define of TCL_LOCAL_APPINIT instead
-     * of rewriting this entire file.  The #if checks for that
-     * #define and uses Tcl_AppInit if it doesn't exist.
-     */
-
-#ifndef TK_LOCAL_APPINIT
-#define TK_LOCAL_APPINIT Tcl_AppInit
-#endif
-    extern int TK_LOCAL_APPINIT _ANSI_ARGS_((Tcl_Interp *interp));
-
-    /*
-     * The following #if block allows you to change how Tcl finds the startup
-     * script, prime the library or encoding paths, fiddle with the argv,
-     * etc., without needing to rewrite Tk_Main()
-     */
-
-#ifdef TK_LOCAL_MAIN_HOOK
-    extern int TK_LOCAL_MAIN_HOOK _ANSI_ARGS_((int *argc, char ***argv));
-    TK_LOCAL_MAIN_HOOK(&argc, &argv);
-#endif
-
-    Tk_Main(argc, argv, TK_LOCAL_APPINIT);
+    Tk_Main(argc, argv, Tcl_AppInit);
     return 0;			/* Needed only to prevent compiler warning. */
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -80,7 +64,7 @@ main(argc, argv)
  *
  * Results:
  *	Returns a standard Tcl completion code, and leaves an error
- *	message in the interp's result if an error occurs.
+ *	message in interp->result if an error occurs.
  *
  * Side effects:
  *	Depends on the startup script.

@@ -50,11 +50,11 @@
  * The format record for the XPM file format:
  */
 
-static int		ChanMatchXPM _ANSI_ARGS_((Tcl_Channel chan,
+static int		ChanMatchXPM _ANSI_ARGS_((Tcl_Interp *interp,Tcl_Channel chan,
 			    Tcl_Obj *fileName, Tcl_Obj *format, int *widthPtr,
-			    int *heightPtr, Tcl_Interp *interp));
-static int      	ObjMatchXPM _ANSI_ARGS_((Tcl_Obj *dataObj,
-		            Tcl_Obj *format, int *widthPtr, int *heightPt, Tcl_Interp *interp));
+			    int *heightPtr));
+static int      	ObjMatchXPM _ANSI_ARGS_((Tcl_Interp *interp,Tcl_Obj *dataObj,
+		            Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int		ChanReadXPM  _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Channel chan, Tcl_Obj *fileName,
 			    Tcl_Obj *format, Tk_PhotoHandle imageHandle,
@@ -158,13 +158,13 @@ Gets(handle, buffer, size)
  *----------------------------------------------------------------------
  */
 static int
-ObjMatchXPM(dataObj, format, widthPtr, heightPtr, interp)
+ObjMatchXPM(interp, dataObj, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Obj *dataObj;		/* The data supplied by the image */
     Tcl_Obj *format;		/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
-    Tcl_Interp *interp;
 {
     int numColors, byteSize;
     MFile handle;
@@ -177,7 +177,7 @@ ObjMatchXPM(dataObj, format, widthPtr, heightPtr, interp)
     return ReadXPMFileHeader(&handle, widthPtr, heightPtr, &numColors, &byteSize);
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -197,14 +197,14 @@ ObjMatchXPM(dataObj, format, widthPtr, heightPtr, interp)
  */
 
 static int
-ChanMatchXPM(chan, fileName, format, widthPtr, heightPtr, interp)
+ChanMatchXPM(interp, chan, fileName, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;		/* The image channel, open for reading. */
     Tcl_Obj *fileName;		/* The name of the image file. */
     Tcl_Obj *format;		/* User-specified format object, or NULL. */
     int *widthPtr, *heightPtr;	/* The dimensions of the image are
 				 * returned here if the file is a valid
 				 * raw XPM file. */
-    Tcl_Interp *interp;
 {
     int numColors, byteSize;
     MFile handle;
@@ -216,7 +216,7 @@ ChanMatchXPM(chan, fileName, format, widthPtr, heightPtr, interp)
 
     return ReadXPMFileHeader(&handle, widthPtr, heightPtr, &numColors, &byteSize);
 }
-
+
 
 /*
  *----------------------------------------------------------------------
@@ -447,7 +447,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 	}
 	p += byteSize * srcX + 1;
 	pixelPtr = block.pub.pixelPtr;
-
+	
 	for (i = 0; i < width; ) {
 	    unsigned int col;
 
@@ -462,14 +462,14 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 	        col = (int)Tcl_GetHashValue(hPtr);
 	    else
 	        col = (int)0;
-
+	
 	    /*
 	     * we've found a non-transparent pixel, let's search the next
 	     * transparent pixel and copy this block to the image
 	     */
 	    if (col) {
 	        int len = 0, j;
-
+		
 		j = i;
 		pixelPtr = block.pub.pixelPtr;
 		do {
@@ -478,7 +478,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 		    i++;
 		    len++;
 		    p += byteSize;
-
+		
 		    if (i < width) {
 		        memcpy((char *) &color1, p, byteSize);
 			hPtr = Tcl_FindHashEntry(&colorTable, (char *) color1);
@@ -488,7 +488,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
 			    col = (int)0;
 		    }
 		} while ((i < width) && col);
-		Tk_PhotoPutBlock(imageHandle, &block.pub, destX+j, destY, len, 1, TK_PHOTO_COMPOSITE_SET);
+		Tk_PhotoPutBlock(imageHandle, &block.pub, destX+j, destY, len, 1);
 	    } else {
 	        p += byteSize;
 	        i++;
@@ -503,7 +503,7 @@ CommonReadXPM(interp, handle, format, imageHandle, destX, destY,
     return TCL_OK;
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -771,7 +771,7 @@ static char * GetColor(colorDefn, colorName, type_ret)
 	if (GetType(colorDefn, &dummy) == NULL) {
 	    /* the next string should also be considered as a part of a color
 	     * name */
-
+	
 	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
@@ -833,7 +833,7 @@ FileWriteXPM(interp, fileName, format, blockPtr)
  *
  *----------------------------------------------------------------------
  */
-static int
+static int	
 StringWriteXPM(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
     Tcl_DString *dataPtr;
@@ -1034,7 +1034,7 @@ CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
 		/* make transparent pixel */
 		memcpy(buffer, "    ", chars_per_pixel);
 	    }
-	    pp += blockPtr->pixelSize;
+	    pp += blockPtr->pixelSize;	
 	    WRITE(buffer);
 	}
 	if (y == blockPtr->height - 1) {
@@ -1053,4 +1053,3 @@ CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
     }
     return TCL_OK;
 }
-

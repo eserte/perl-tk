@@ -22,7 +22,7 @@ sub DoKey
  unless (defined $w->{GC})
   {
    $w->{GC} = GC->new($dpy,$id,
-                     Foreground => 5,
+                     Foreground => 5, 
                      Font => $dpy->XLoadFont("-*-Courier-Medium-R-Normal--*-240-*-*-*-*-*-*"));
   }
  my $gc  = $w->{GC};

@@ -6,7 +6,7 @@ package Tk::Tree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tixish/Tree.pm#2 $
+$VERSION = '3.021'; # $Id: //depot/Tk8/Tixish/Tree.pm#21 $
 
 use Tk ();
 use Tk::Derived;
@@ -33,6 +33,7 @@ sub Populate
         -indent       => ['SELF', 'indent', 'Indent', 20],
         -width        => ['SELF', 'width', 'Width', 20],
         -itemtype     => ['SELF', 'itemtype', 'Itemtype', 'imagetext'],
+	-foreground   => ['SELF'],
        );
 }
 

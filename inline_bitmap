@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl -w
 use strict;
-use Tk;
+use Tk;             
 
 my $mw = MainWindow->new;
 
@@ -27,5 +27,5 @@ Tk::grid('^',$dn);
 Tk::grid($qu,'-');
 
 MainLoop;
-
+       
 

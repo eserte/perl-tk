@@ -291,13 +291,15 @@ S<    >I<$another> = I<$mega>-E<gt>B<privateData>(I<unique_key>|I<package>);
 
 Get the widget reference of an advertised subwidget.
 
+S<    >I<@subwidget> = I<$cw>-E<gt>B<Subwidget>();
+
 S<    >I<$subwidget> = I<$cw>-E<gt>B<Subwidget>(I<name>);
 
 S<    >I<@subwidget> = I<$cw>-E<gt>B<Subwidget>(I<name> ?,...?);
 
-Returns the widget reference(s) of the subwidget known under the
-name I<name>.  See L<Advertise|"Advertise"> method how to define
-I<name> for a subwidget.
+Returns the widget reference(s) of the subwidget known under the given
+name(s). Without arguments, return all known subwidgets of I<$cw>. See
+L<Advertise|"Advertise"> method how to define I<name> for a subwidget.
 
 B<Comment:> Mega Widget Users: Use B<Subwidget> to get I<only>
 documented subwidgets.

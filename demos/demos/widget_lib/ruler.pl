@@ -31,7 +31,7 @@ sub ruler {
     if ($TOP->depth > 1) {
 	$rinfo{activeStyle} = [qw/-fill red -stipple/ => undef];
 	$rinfo{deleteStyle} = [
-            -fill    => 'red',
+            -fill    => 'red',  
 	    -stipple => '@'.Tk->findINC('demos/images/grey.25'),
         ];
     } else {
@@ -102,7 +102,7 @@ sub ruler_move_tab {
 } # end ruler_move_tab
 
 sub ruler_new_tab {
-
+    
     my($c, $rinfo) = @_;
 
     my $e = $c->XEvent;

@@ -2,7 +2,7 @@
   Copyright (c) 1998 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as FileHandle itself.
-*/
+*/   
 #ifdef TCL_EVENT_IMPLEMENT
 
 #include "tkPort.h"
@@ -39,7 +39,7 @@ typedef struct FileHandlerEvent {
 } FileHandlerEvent;
 
 
-static int initialized;
+static int initialized;               
 
 static FileHandler *firstFileHandlerPtr;
 
@@ -47,7 +47,7 @@ static void FileHandleEventInit(void);
 
 static void
 FileReadyProc(ClientData clientData, HANDLE handle)
-{
+{             
     FileHandler *filePtr = (FileHandler *) clientData;
     filePtr->readyMask |= TCL_READABLE;
 }
@@ -62,11 +62,11 @@ FileHandleSetupProc(ClientData data, int flags)
     if (!(flags & TCL_FILE_EVENTS)) {
 	return;
     }
-
+    
     for (filePtr = firstFileHandlerPtr; filePtr != NULL; filePtr = filePtr->nextPtr) {
 	if (!filePtr->readyMask && filePtr->mask & TCL_READABLE) {
 	    HANDLE fh = (HANDLE) Lang_OSHandle(filePtr->fd);
-#if 0
+#if 0 
 		/* Now see if the handle is a socket */
         char sockbuf[256];
         int optlen = sizeof(sockbuf);
@@ -80,7 +80,7 @@ FileHandleSetupProc(ClientData data, int flags)
 			/* Socket handle */
 			if (!filePtr->auxEvent) {
  			  filePtr->auxEvent =  WSACreateEvent();
-            }
+            } 
 			WSAEventSelect((SOCKET) fh, filePtr->auxEvent, FD_READ|FD_ACCEPT);
 			Tcl_WatchHandle(filePtr->auxEvent, FileReadyProc, (ClientData) filePtr);
 		}
@@ -89,7 +89,7 @@ FileHandleSetupProc(ClientData data, int flags)
 	}
     }
 
-}
+}                                
 
 static int
 FileHandlerEventProc(evPtr, flags)
@@ -156,7 +156,7 @@ FileHandleCheckProc(data, flags)
 
     while (filePtr)
      {
-      if (filePtr->readyMask && !filePtr->pending)
+      if (filePtr->readyMask && !filePtr->pending) 
        {
     	fileEvPtr = (FileHandlerEvent *) ckalloc(sizeof(FileHandlerEvent));
 	    fileEvPtr->fd = filePtr->fd;
@@ -207,7 +207,7 @@ Tcl_CreateFileHandler(fd, mask, proc, clientData)
 	if (filePtr->fd == fd) {
 	    break;
 	}
-    }
+    }                     
 
     if (filePtr == NULL) {
 	filePtr = (FileHandler*) ckalloc(sizeof(FileHandler)); /* MLK */

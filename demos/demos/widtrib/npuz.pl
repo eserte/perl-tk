@@ -46,7 +46,7 @@ sub create_puz {
 
     return if $PIECES == $OLD_PIECES;
 
-    # Create all the puzzle pieces - buttons with images - and arrange them
+    # Create all the puzzle pieces - buttons with images - and arrange them 
     # in a rectangular grid.  @PUZ is a list of button widget references which
     # represent the puzzle pieces.
     #
@@ -95,7 +95,7 @@ sub create_puz {
 	$gif->copy($CAMEL, -from => $x, $y, $x+$w, $y+$h);
 	$but = $PF->Button(-image              => $gif,
 			   -relief             => 'flat',
-			   -borderwidth        => 0,
+			   -borderwidth        => 0, 
 			   -command            => \&beep,
 			   -highlightthickness => 0,
 			   );
@@ -160,7 +160,7 @@ END
 sub puz_fini {
 
     # Return true iff all puzzle pieces are in order.
-
+    
     my($i, $c, $r, %info);
     for($i = 0; $i <= $#PUZ; $i++) {
 	($c, $r) = xy $i;

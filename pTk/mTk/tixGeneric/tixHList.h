@@ -1,6 +1,3 @@
-
-/*	$Id: tixHList.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixHList.h --
  *
@@ -81,7 +78,7 @@ typedef struct _HListElement {
     struct _HListElement * childHead;
     struct _HListElement * childTail;
 
-    int numSelectedChild;	/* number of childs that has selection(s) in
+    int numSelectedChild;	/* number of childs that has selection(s) in 
 				 * them (either this child is selected or some
 				 * of its descendants are selected */
     int numCreatedChild;	/* this var gets increment by one each
@@ -169,7 +166,7 @@ typedef struct HListStruct {
     int topPixel;		/* Vertical offset */
     int leftPixel;		/* Horizontal offset */
     int bottomPixel;
-    int wideSelect;		/* BOOL: if 1, use a wide selection: the
+    int wideSelect;		/* BOOL: if 1, use a wide selection: the 
 				 * selection background color covers the whole
 				 * widget. If 0, only the "significant" part
 				 * of a list entry is highlighted */
@@ -213,7 +210,7 @@ typedef struct HListStruct {
 				 * changes. */
     LangCallback *indicatorCmd;		/* The command to call when the user touches
 				 * the indicator. */
-    LangCallback *dragCmd;	/* The command to call when info about a
+    LangCallback *dragCmd;	/* The command to call when info about a 
 				 * drag source is needed */
     LangCallback *dropCmd;	/* The command to call when action at a drop
 				 * side needs to be performed */

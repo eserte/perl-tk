@@ -29,7 +29,7 @@ Cannot find pTk/mTk/open32/tkWinOS2.c, trying to find Tk-OS2src nearby...
 
 EOD
     my @zips = <../Tk-OS2src-*/perltk_os2_common.zip>;
-
+    
     die <<EOD unless @zips;
 
 Cannot find ../Tk-OS2src-*/perltk_os2_common.zip, did you read README.os2?
@@ -46,7 +46,7 @@ Cannot find pTk/mTk/os2/tkOS2Int.h, trying to find Tk-OS2src nearby...
 
 EOD
     my @zips = <../Tk-OS2src-*/perltk_os2_pm.zip>;
-
+    
     die <<EOD unless @zips;
 
 Cannot find ../Tk-OS2src-*/perltk_os2_pm.zip, did you read README.os2?

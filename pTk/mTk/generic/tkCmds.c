@@ -5,43 +5,32 @@
  *	that didn't fit in any particular file of the toolkit.
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
- * Copyright (c) 2000 Scriptics Corporation.
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc.
+ * Copyright (c) 1998 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkCmds.c,v 1.31 2002/09/02 19:16:23 hobbs Exp $
+ * RCS: @(#) $Id: tkCmds.c,v 1.4 1998/09/30 19:01:19 rjohnson Exp $
  */
 
 #include "tkPort.h"
 #include "tkInt.h"
 #include <errno.h>
 
-#if defined(WIN32)
-#include "tkWinInt.h"
-#else 
-#if defined(MAC_TCL)
-#include "tkMacInt.h"
-#elif defined(MAC_OSX_TK)
-#include "tkMacOSXInt.h"
-#else
-#include "tkUnixInt.h"
-#endif
-#endif
 /*
  * Forward declarations for procedures defined later in this file:
  */
 
 static TkWindow *	GetToplevel _ANSI_ARGS_((Tk_Window tkwin));
 static char *		WaitVariableProc _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, Var name1, 
-			    CONST char *name2, int flags));
+			    Tcl_Interp *interp, Var name1, char *name2,
+			    int flags));
 static void		WaitVisibilityProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
 static void		WaitWindowProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -66,50 +55,39 @@ Tk_BellObjCmd(clientData, interp, objc, objv)
     int objc;			/* Number of arguments. */
     Tcl_Obj *CONST objv[];	/* Argument objects. */
 {
-    static CONST char *bellOptions[] = {"-displayof", "-nice", (char *) NULL};
-    enum options { TK_BELL_DISPLAYOF, TK_BELL_NICE };
     Tk_Window tkwin = (Tk_Window) clientData;
-    int i, index, nice = 0;
+    int index;
+    char *string;
+    static char *optionStrings[] = {
+	"-displayof",	NULL
+    };
 
-    if (objc > 4) {
-	Tcl_WrongNumArgs(interp, 1, objv, "?-displayof window? ?-nice?");
+    if ((objc != 1) && (objc != 3)) {
+	Tcl_WrongNumArgs(interp, 1, objv, "?-displayof window?");
 	return TCL_ERROR;
     }
 
-    for (i = 1; i < objc; i++) {
-	if (Tcl_GetIndexFromObj(interp, objv[i], bellOptions, "option", 0,
+    if (objc == 3) {
+	if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "option", 0,
 		&index) != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	switch ((enum options) index) {
-	    case TK_BELL_DISPLAYOF:
-		if (++i >= objc) {
-		    Tcl_WrongNumArgs(interp, 1, objv,
-			    "?-displayof window? ?-nice?");
-		    return TCL_ERROR;
-		}
-		tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[i]), tkwin);
-		if (tkwin == NULL) {
-		    return TCL_ERROR;
-		}
-		break;
-	    case TK_BELL_NICE:
-		nice = 1;
-		break;
+	string = Tcl_GetStringFromObj(objv[2], NULL);
+	tkwin = Tk_NameToWindow(interp, string, tkwin);
+	if (tkwin == NULL) {
+	    return TCL_ERROR;
 	}
     }
     XBell(Tk_Display(tkwin), 0);
-    if (!nice) {
-	XForceScreenSaver(Tk_Display(tkwin), ScreenSaverReset);
-    }
+    XForceScreenSaver(Tk_Display(tkwin), ScreenSaverReset);
     XFlush(Tk_Display(tkwin));
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_BindObjCmd --
+ * Tk_BindCmd --
  *
  *	This procedure is invoked to process the "bind" Tcl command.
  *	See the user documentation for details on what it does.
@@ -124,82 +102,54 @@ Tk_BellObjCmd(clientData, interp, objc, objv)
  */
 
 int
-Tk_BindObjCmd(clientData, interp, objc, objv)
+Tk_BindCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window tkwin = (Tk_Window) clientData;
     TkWindow *winPtr;
     ClientData object;
-    char *string;
 
-    if ((objc < 2) || (objc > 4)) {
-	Tcl_WrongNumArgs(interp, 1, objv, "window ?pattern? ?command?");
+    if ((argc < 2) || (argc > 4)) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" window ?pattern? ?command?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    string = Tcl_GetString(objv[1]);
-
-    /*
-     * Bind tags either a window name or a tag name for the first argument.
-     * If the argument starts with ".", assume it is a window; otherwise, it
-     * is a tag.
-     */
-
-    if (string[0] == '.') {
-	winPtr = (TkWindow *) Tk_NameToWindow(interp, string, tkwin);
+    if (argv[1][0] == '.') {
+	winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[1], tkwin);
 	if (winPtr == NULL) {
 	    return TCL_ERROR;
 	}
 	object = (ClientData) winPtr->pathName;
     } else {
 	winPtr = (TkWindow *) clientData;
-	object = (ClientData) Tk_GetUid(string);
+	object = (ClientData) Tk_GetUid(argv[1]);
     }
 
-    /*
-     * If there are four arguments, the command is modifying a binding.  If
-     * there are three arguments, the command is querying a binding.  If there
-     * are only two arguments, the command is querying all the bindings for
-     * the given tag/window.
-     */
-
-    if (objc == 4) {
+    if (argc == 4) {
 	int append = 0;
 	unsigned long mask;
-	char *sequence, *script;
-	sequence	= Tcl_GetString(objv[2]);
-	script		= Tcl_GetString(objv[3]);
 
-	/*
-	 * If the script is null, just delete the binding.
-	 */
-
-	if (script[0] == 0) {
+	if (argv[3][0] == 0) {
 	    return Tk_DeleteBinding(interp, winPtr->mainPtr->bindingTable,
-		    object, sequence);
+		    object, argv[2]);
 	}
-
-	/*
-	 * If the script begins with "+", append this script to the existing
-	 * binding.
-	 */
-
-	if (script[0] == '+') {
-	    script++;
+	if (argv[3][0] == '+') {
+	    argv[3]++;
 	    append = 1;
 	}
 	mask = Tk_CreateBinding(interp, winPtr->mainPtr->bindingTable,
-		object, sequence, objv[3], append);
+		object, argv[2], objv[3], append);
 	if (mask == 0) {
 	    return TCL_ERROR;
 	}
-    } else if (objc == 3) {
+    } else if (argc == 3) {
 	Tcl_Obj *command;
 
 	command = Tk_GetBinding(interp, winPtr->mainPtr->bindingTable,
-		object, Tcl_GetString(objv[2]));
+		object, argv[2]);
 	if (command == NULL) {
 	    Tcl_ResetResult(interp);
 	    return TCL_OK;
@@ -210,7 +160,7 @@ Tk_BindObjCmd(clientData, interp, objc, objv)
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -236,6 +186,7 @@ TkBindEventProc(winPtr, eventPtr)
 {
 #define MAX_OBJS 20
     ClientData objects[MAX_OBJS], *objPtr;
+    static Tk_Uid allUid = NULL;
     TkWindow *topLevPtr;
     int i, count;
     char *p;
@@ -273,7 +224,7 @@ TkBindEventProc(winPtr, eventPtr)
 	objPtr[0] = (ClientData) winPtr->pathName;
 	objPtr[1] = (ClientData) winPtr->classUid;
 	for (topLevPtr = winPtr;
-		(topLevPtr != NULL) && !(topLevPtr->flags & TK_TOP_HIERARCHY);
+		(topLevPtr != NULL) && !(topLevPtr->flags & TK_TOP_LEVEL);
 		topLevPtr = topLevPtr->parentPtr) {
 	    /* Empty loop body. */
 	}
@@ -283,7 +234,10 @@ TkBindEventProc(winPtr, eventPtr)
 	} else {
 	    count = 3;
 	}
-	objPtr[count-1] = (ClientData) Tk_GetUid("all");
+	if (allUid == NULL) {
+	    allUid = Tk_GetUid("all");
+	}
+	objPtr[count-1] = (ClientData) allUid;
     }
     Tk_BindEvent(winPtr->mainPtr->bindingTable, eventPtr, (Tk_Window) winPtr,
 	    count, objPtr);
@@ -291,11 +245,11 @@ TkBindEventProc(winPtr, eventPtr)
 	ckfree((char *) objPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_BindtagsObjCmd --
+ * Tk_BindtagsCmd --
  *
  *	This procedure is invoked to process the "bindtags" Tcl command.
  *	See the user documentation for details on what it does.
@@ -310,70 +264,61 @@ TkBindEventProc(winPtr, eventPtr)
  */
 
 int
-Tk_BindtagsObjCmd(clientData, interp, objc, objv)
+Tk_BindtagsCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window tkwin = (Tk_Window) clientData;
     TkWindow *winPtr, *winPtr2;
-    int i, length;
-    char *p;
-    Tcl_Obj *listPtr, **tags;
+    int i, tagArgc;
+    char *p, **tagArg;
+    Arg *tagArgv;
 
-    if ((objc < 2) || (objc > 3)) {
-	Tcl_WrongNumArgs(interp, 1, objv, "window ?taglist?");
+    if ((argc < 2) || (argc > 3)) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" window ?tags?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    winPtr = (TkWindow *) Tk_NameToWindow(interp, Tcl_GetString(objv[1]),
-	    tkwin);
+    winPtr = (TkWindow *) Tk_NameToWindow(interp, argv[1], tkwin);
     if (winPtr == NULL) {
 	return TCL_ERROR;
     }
-    if (objc == 2) {
-	listPtr = Tcl_NewObj();
-	Tcl_IncrRefCount(listPtr);
+    if (argc == 2) {
 	if (winPtr->numTags == 0) {
-	    Tcl_ListObjAppendElement(interp, listPtr,
-		    Tcl_NewStringObj(winPtr->pathName, -1));
-	    Tcl_ListObjAppendElement(interp, listPtr,
-		    Tcl_NewStringObj(winPtr->classUid, -1));
-	    winPtr2 = winPtr;
-	    while ((winPtr2 != NULL) && !(Tk_TopWinHierarchy(winPtr2))) {
-		winPtr2 = winPtr2->parentPtr;
+	    Tcl_AppendElement(interp, winPtr->classUid);
+	    Tcl_AppendElement(interp, winPtr->pathName);
+	    for (winPtr2 = winPtr;
+		    (winPtr2 != NULL) && !(winPtr2->flags & TK_TOP_LEVEL);
+		    winPtr2 = winPtr2->parentPtr) {
+		/* Empty loop body. */
 	    }
 	    if ((winPtr != winPtr2) && (winPtr2 != NULL)) {
-		Tcl_ListObjAppendElement(interp, listPtr,
-			Tcl_NewStringObj(winPtr2->pathName, -1));
+		Tcl_AppendElement(interp, winPtr2->pathName);
 	    }
-	    Tcl_ListObjAppendElement(interp, listPtr,
-		    Tcl_NewStringObj("all", -1));
+	    Tcl_AppendElement(interp, "all");
 	} else {
 	    for (i = 0; i < winPtr->numTags; i++) {
-		Tcl_ListObjAppendElement(interp, listPtr,
-			Tcl_NewStringObj((char *)winPtr->tagPtr[i], -1));
+		Tcl_AppendElement(interp, (char *) winPtr->tagPtr[i]);
 	    }
 	}
-	Tcl_SetObjResult(interp, listPtr);
-	Tcl_DecrRefCount(listPtr);
 	return TCL_OK;
     }
     if (winPtr->tagPtr != NULL) {
 	TkFreeBindingTags(winPtr);
     }
-    if (Tcl_ListObjGetElements(interp, objv[2], &length, &tags) != TCL_OK) {
-	return TCL_ERROR;
-    }
-    if (length == 0) {
+    if (argv[2][0] == 0) {
 	return TCL_OK;
     }
-
-    winPtr->numTags = length;
+    if (Tcl_ListObjGetElements(interp, objv[2], &tagArgc, &tagArgv) != TCL_OK) {
+	return TCL_ERROR;
+    }
+    winPtr->numTags = tagArgc;
     winPtr->tagPtr = (ClientData *) ckalloc((unsigned)
-	    (length * sizeof(ClientData)));
-    for (i = 0; i < length; i++) {
-	p = Tcl_GetString(tags[i]);
+	    (tagArgc * sizeof(ClientData)));
+    for (i = 0; i < tagArgc; i++) {
+	p = LangString(tagArgv[i]);
 	if (p[0] == '.') {
 	    char *copy;
 
@@ -393,7 +338,7 @@ Tk_BindtagsObjCmd(clientData, interp, objc, objv)
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -434,11 +379,11 @@ TkFreeBindingTags(winPtr)
     winPtr->numTags = 0;
     winPtr->tagPtr = NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_DestroyObjCmd --
+ * Tk_DestroyCmd --
  *
  *	This procedure is invoked to process the "destroy" Tcl command.
  *	See the user documentation for details on what it does.
@@ -453,19 +398,19 @@ TkFreeBindingTags(winPtr)
  */
 
 int
-Tk_DestroyObjCmd(clientData, interp, objc, objv)
+Tk_DestroyCmd(clientData, interp, argc, argv)
     ClientData clientData;		/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window window;
     Tk_Window tkwin = (Tk_Window) clientData;
     int i;
 
-    for (i = 1; i < objc; i++) {
-	window = Tk_NameToWindow(interp, Tcl_GetString(objv[i]), tkwin);
+    for (i = 1; i < argc; i++) {
+	window = Tk_NameToWindow(interp, argv[i], tkwin);
 	if (window == NULL) {
 	    Tcl_ResetResult(interp);
 	    continue;
@@ -483,11 +428,11 @@ Tk_DestroyObjCmd(clientData, interp, objc, objv)
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_LowerObjCmd --
+ * Tk_LowerCmd --
  *
  *	This procedure is invoked to process the "lower" Tcl command.
  *	See the user documentation for details on what it does.
@@ -503,46 +448,46 @@ Tk_DestroyObjCmd(clientData, interp, objc, objv)
 
 	/* ARGSUSED */
 int
-Tk_LowerObjCmd(clientData, interp, objc, objv)
+Tk_LowerCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window mainwin = (Tk_Window) clientData;
     Tk_Window tkwin, other;
 
-    if ((objc != 2) && (objc != 3)) {
-	Tcl_WrongNumArgs(interp, 1, objv, "window ?belowThis?");
+    if ((argc != 2) && (argc != 3)) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"",
+		argv[0], " window ?belowThis?\"", (char *) NULL);
 	return TCL_ERROR;
     }
 
-    tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[1]), mainwin);
+    tkwin = Tk_NameToWindow(interp, argv[1], mainwin);
     if (tkwin == NULL) {
 	return TCL_ERROR;
     }
-    if (objc == 2) {
+    if (argc == 2) {
 	other = NULL;
     } else {
-	other = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), mainwin);
+	other = Tk_NameToWindow(interp, argv[2], mainwin);
 	if (other == NULL) {
 	    return TCL_ERROR;
 	}
     }
     if (Tk_RestackWindow(tkwin, Below, other) != TCL_OK) {
-	Tcl_AppendResult(interp, "can't lower \"", Tcl_GetString(objv[1]),
-		"\" below \"", (other ? Tcl_GetString(objv[2]) : ""),
-		"\"", (char *) NULL);
+	Tcl_AppendResult(interp, "can't lower \"", argv[1], "\" below \"",
+		argv[2], "\"", (char *) NULL);
 	return TCL_ERROR;
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_RaiseObjCmd --
+ * Tk_RaiseCmd --
  *
  *	This procedure is invoked to process the "raise" Tcl command.
  *	See the user documentation for details on what it does.
@@ -558,42 +503,42 @@ Tk_LowerObjCmd(clientData, interp, objc, objv)
 
 	/* ARGSUSED */
 int
-Tk_RaiseObjCmd(clientData, interp, objc, objv)
+Tk_RaiseCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window mainwin = (Tk_Window) clientData;
     Tk_Window tkwin, other;
 
-    if ((objc != 2) && (objc != 3)) {
-	Tcl_WrongNumArgs(interp, 1, objv, "window ?aboveThis?");
+    if ((argc != 2) && (argc != 3)) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"",
+		argv[0], " window ?aboveThis?\"", (char *) NULL);
 	return TCL_ERROR;
     }
 
-    tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[1]), mainwin);
+    tkwin = Tk_NameToWindow(interp, argv[1], mainwin);
     if (tkwin == NULL) {
 	return TCL_ERROR;
     }
-    if (objc == 2) {
+    if (argc == 2) {
 	other = NULL;
     } else {
-	other = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), mainwin);
+	other = Tk_NameToWindow(interp, argv[2], mainwin);
 	if (other == NULL) {
 	    return TCL_ERROR;
 	}
     }
     if (Tk_RestackWindow(tkwin, Above, other) != TCL_OK) {
-	Tcl_AppendResult(interp, "can't raise \"", Tcl_GetString(objv[1]),
-		"\" above \"", (other ? Tcl_GetString(objv[2]) : ""),
-		"\"", (char *) NULL);
+	Tcl_AppendResult(interp, "can't raise \"", argv[1], "\" above \"",
+		argv[2], "\"", (char *) NULL);
 	return TCL_ERROR;
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -620,13 +565,11 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 {
     int index;
     Tk_Window tkwin;
-    static CONST char *optionStrings[] = {
-	"appname",	"caret",	"scaling",	"useinputmethods",
-	"windowingsystem",		NULL
+    static char *optionStrings[] = {
+	"appname",	"scaling",	NULL
     };
     enum options {
-	TK_APPNAME,	TK_CARET,	TK_SCALING,	TK_USE_IM,
-	TK_WINDOWINGSYSTEM
+	TK_APPNAME,	TK_SCALING
     };
 
     tkwin = (Tk_Window) clientData;
@@ -645,13 +588,6 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 	    TkWindow *winPtr;
 	    char *string;
 
-	    if (Tcl_IsSafe(interp)) {
-		Tcl_SetResult(interp,
-			"appname not accessible in a safe interpreter",
-			TCL_STATIC);
-		return TCL_ERROR;
-	    }
-
 	    winPtr = (TkWindow *) tkwin;
 
 	    if (objc > 3) {
@@ -662,100 +598,14 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 		string = Tcl_GetStringFromObj(objv[2], NULL);
 		winPtr->nameUid = Tk_GetUid(Tk_SetAppName(tkwin, string));
 	    }
-	    Tcl_AppendResult(interp, winPtr->nameUid, NULL);
-	    break;
-	}
-	case TK_CARET: {
-	    Tcl_Obj *objPtr;
-	    TkCaret *caretPtr;
-	    Tk_Window window;
-	    static CONST char *caretStrings[]
-		= { "-x",	"-y", "-height", NULL };
-	    enum caretOptions
-		{ TK_CARET_X, TK_CARET_Y, TK_CARET_HEIGHT };
-
-	    if ((objc < 3) || ((objc > 4) && !(objc & 1))) {
-	        Tcl_WrongNumArgs(interp, 2, objv,
-			"window ?-x x? ?-y y? ?-height height?");
-		return TCL_ERROR;
-	    }
-	    window = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), tkwin);
-	    if (window == NULL) {
-		return TCL_ERROR;
-	    }
-	    caretPtr = &(((TkWindow *) window)->dispPtr->caret);
-	    if (objc == 3) {
-		/*
-		 * Return all the current values
-		 */
-		objPtr = Tcl_NewObj();
-		Tcl_ListObjAppendElement(interp, objPtr,
-			Tcl_NewStringObj("-height", 7));
-		Tcl_ListObjAppendElement(interp, objPtr,
-			Tcl_NewIntObj(caretPtr->height));
-		Tcl_ListObjAppendElement(interp, objPtr,
-			Tcl_NewStringObj("-x", 2));
-		Tcl_ListObjAppendElement(interp, objPtr,
-			Tcl_NewIntObj(caretPtr->x));
-		Tcl_ListObjAppendElement(interp, objPtr,
-			Tcl_NewStringObj("-y", 2));
-		Tcl_ListObjAppendElement(interp, objPtr,
-			Tcl_NewIntObj(caretPtr->y));
-		Tcl_SetObjResult(interp, objPtr);
-	    } else if (objc == 4) {
-		int value;
-		/*
-		 * Return the current value of the selected option
-		 */
-		if (Tcl_GetIndexFromObj(interp, objv[3], caretStrings,
-			"caret option", 0, &index) != TCL_OK) {
-		    return TCL_ERROR;
-		}
-		if (index == TK_CARET_X) {
-		    value = caretPtr->x;
-		} else if (index == TK_CARET_Y) {
-		    value = caretPtr->y;
-		} else /* if (index == TK_CARET_HEIGHT) -- last case */ {
-		    value = caretPtr->height;
-		}
-		Tcl_SetIntObj(Tcl_GetObjResult(interp), value);
-	    } else {
-		int i, value, x = 0, y = 0, height = -1;
-
-		for (i = 3; i < objc; i += 2) {
-		    if ((Tcl_GetIndexFromObj(interp, objv[i], caretStrings,
-			    "caret option", 0, &index) != TCL_OK) ||
-			    (Tcl_GetIntFromObj(interp, objv[i+1], &value)
-				!= TCL_OK)) {
-			return TCL_ERROR;
-		    }
-		    if (index == TK_CARET_X) {
-			x = value;
-		    } else if (index == TK_CARET_Y) {
-			y = value;
-		    } else /* if (index == TK_CARET_HEIGHT) -- last case */ {
-			height = value;
-		    }
-		}
-		if (height < 0) {
-		    height = Tk_Height(window);
-		}
-		Tk_SetCaretPos(window, x, y, height);
-	    }
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), winPtr->nameUid, -1);
 	    break;
 	}
 	case TK_SCALING: {
 	    Screen *screenPtr;
 	    int skip, width, height;
 	    double d;
-
-	    if (Tcl_IsSafe(interp)) {
-		Tcl_SetResult(interp,
-			"scaling not accessible in a safe interpreter",
-			TCL_STATIC);
-		return TCL_ERROR;
-	    }
-
+	
 	    screenPtr = Tk_Screen(tkwin);
 
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
@@ -768,7 +618,7 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 		d /= WidthMMOfScreen(screenPtr);
 		Tcl_SetDoubleObj(Tcl_GetObjResult(interp), d);
 	    } else if (objc - skip == 3) {
-		if (Tcl_GetDoubleFromObj(interp, objv[2+skip], &d) != TCL_OK) {
+		if (Tcl_GetDoubleFromObj(interp, objv[2 + skip], &d) != TCL_OK) {
 		    return TCL_ERROR;
 		}
 		d = (25.4 / 72) / d;
@@ -789,78 +639,14 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 	    }
 	    break;
 	}
-	case TK_USE_IM: {
-	    TkDisplay *dispPtr = ((TkWindow *) tkwin)->dispPtr;
-	    int skip;
-
-	    if (Tcl_IsSafe(interp)) {
-		Tcl_SetResult(interp,
-			"useinputmethods not accessible in a safe interpreter",
-			TCL_STATIC);
-		return TCL_ERROR;
-	    }
-
-	    skip = TkGetDisplayOf(interp, objc-2, objv+2, &tkwin);
-	    if (skip < 0) {
-		return TCL_ERROR;
-	    } else if (skip) {
-		dispPtr = ((TkWindow *) tkwin)->dispPtr;
-	    }
-	    if ((objc - skip) == 3) {
-		/*
-		 * In the case where TK_USE_INPUT_METHODS is not defined,
-		 * this will be ignored and we will always return 0.
-		 * That will indicate to the user that input methods
-		 * are just not available.
-		 */
-		int boolVal;
-		if (Tcl_GetBooleanFromObj(interp, objv[2+skip], &boolVal)
-			!= TCL_OK) {
-		    return TCL_ERROR;
-		}
-#ifdef TK_USE_INPUT_METHODS
-		if (boolVal) {
-		    dispPtr->flags |= TK_DISPLAY_USE_IM;
-		} else {
-		    dispPtr->flags &= ~TK_DISPLAY_USE_IM;
-		}
-#endif /* TK_USE_INPUT_METHODS */
-	    } else if ((objc - skip) != 2) {
-		Tcl_WrongNumArgs(interp, 2, objv,
-			"?-displayof window? ?boolean?");
-		return TCL_ERROR;
-	    }
-	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp),
-		    (int) (dispPtr->flags & TK_DISPLAY_USE_IM));
-	    break;
-	}
-        case TK_WINDOWINGSYSTEM: {
-	    CONST char *windowingsystem;
-
-	    if (objc != 2) {
-	        Tcl_WrongNumArgs(interp, 2, objv, NULL);
-		return TCL_ERROR;
-	    }
-#if defined(WIN32)
-	    windowingsystem = "win32";
-#elif defined(MAC_TCL)
-	    windowingsystem = "classic";
-#elif defined(MAC_OSX_TK)
-	    windowingsystem = "aqua";
-#else
-	    windowingsystem = "x11";
-#endif
-	    Tcl_SetStringObj(Tcl_GetObjResult(interp), windowingsystem, -1);
-	    break;
-	}
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_TkwaitObjCmd --
+ * Tk_TkwaitCmd --
  *
  *	This procedure is invoked to process the "tkwait" Tcl command.
  *	See the user documentation for details on what it does.
@@ -876,97 +662,91 @@ Tk_TkObjCmd(clientData, interp, objc, objv)
 
 	/* ARGSUSED */
 int
-Tk_TkwaitObjCmd(clientData, interp, objc, objv)
+Tk_TkwaitCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window tkwin = (Tk_Window) clientData;
-    int done, index;
-    static CONST char *optionStrings[] = { "variable", "visibility", "window",
-					 (char *) NULL };
-    enum options { TKWAIT_VARIABLE, TKWAIT_VISIBILITY, TKWAIT_WINDOW };
+    int c, done;
+    size_t length;
 
-    if (objc != 3) {
-	Tcl_WrongNumArgs(interp, 1, objv, "variable|visibility|window name");
+    if (argc != 3) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"",
+		argv[0], " variable|visibility|window name\"", (char *) NULL);
 	return TCL_ERROR;
     }
-
-    if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "option", 0,
-	    &index) != TCL_OK) {
-	return TCL_ERROR;
-    }
-
-    switch ((enum options) index) {
-	case TKWAIT_VARIABLE: {
-	    if (Lang_TraceVar(interp, objv[2],
-		    TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
-		    WaitVariableProc, (ClientData) &done) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    done = 0;
-	    while (!done) {
-		Tcl_DoOneEvent(0);
-	    }
-	    Lang_UntraceVar(interp, objv[2],
-		    TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
-		    WaitVariableProc, (ClientData) &done);
-	    break;
+    c = argv[1][0];
+    length = strlen(argv[1]);
+    if ((c == 'v') && (strncmp(argv[1], "variable", length) == 0)
+	    && (length >= 2)) {
+        Var variable;
+        if (LangSaveVar(interp,objv[2],&variable,TK_CONFIG_SCALARVAR) != TCL_OK)
+	    return TCL_ERROR;
+	if (Tcl_TraceVar(interp, variable,
+		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
+		WaitVariableProc, (ClientData) &done) != TCL_OK) {
+	    return TCL_ERROR;
 	}
-
-	case TKWAIT_VISIBILITY: {
-	    Tk_Window window;
-
-	    window = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), tkwin);
-	    if (window == NULL) {
-		return TCL_ERROR;
-	    }
-	    Tk_CreateEventHandler(window,
-		    VisibilityChangeMask|StructureNotifyMask,
-		    WaitVisibilityProc, (ClientData) &done);
-	    done = 0;
-	    while (!done) {
-		Tcl_DoOneEvent(0);
-	    }
-	    if (done != 1) {
-		/*
-		 * Note that we do not delete the event handler because it
-		 * was deleted automatically when the window was destroyed.
-		 */
-
-		Tcl_ResetResult(interp);
-		Tcl_AppendResult(interp, "window \"", Tcl_GetString(objv[2]),
-			"\" was deleted before its visibility changed",
-			(char *) NULL);
-		return TCL_ERROR;
-	    }
-	    Tk_DeleteEventHandler(window,
-		    VisibilityChangeMask|StructureNotifyMask,
-		    WaitVisibilityProc, (ClientData) &done);
-	    break;
+	done = 0;
+	while (!done) {
+	    Tcl_DoOneEvent(0);
 	}
+	Tcl_UntraceVar(interp, variable,
+		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
+		WaitVariableProc, (ClientData) &done);
+        LangFreeVar(variable);
+    } else if ((c == 'v') && (strncmp(argv[1], "visibility", length) == 0)
+	    && (length >= 2)) {
+	Tk_Window window;
 
-	case TKWAIT_WINDOW: {
-	    Tk_Window window;
-
-	    window = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), tkwin);
-	    if (window == NULL) {
-		return TCL_ERROR;
-	    }
-	    Tk_CreateEventHandler(window, StructureNotifyMask,
-		    WaitWindowProc, (ClientData) &done);
-	    done = 0;
-	    while (!done) {
-		Tcl_DoOneEvent(0);
-	    }
+	window = Tk_NameToWindow(interp, argv[2], tkwin);
+	if (window == NULL) {
+	    return TCL_ERROR;
+	}
+	Tk_CreateEventHandler(window, VisibilityChangeMask|StructureNotifyMask,
+	    WaitVisibilityProc, (ClientData) &done);
+	done = 0;
+	while (!done) {
+	    Tcl_DoOneEvent(0);
+	}
+	if (done != 1) {
 	    /*
-	     * Note:  there's no need to delete the event handler.  It was
-	     * deleted automatically when the window was destroyed.
+	     * Note that we do not delete the event handler because it
+	     * was deleted automatically when the window was destroyed.
 	     */
-	    break;
+
+	    Tcl_ResetResult(interp);
+	    Tcl_AppendResult(interp, "window \"", argv[2],
+		    "\" was deleted before its visibility changed",
+		    (char *) NULL);
+	    return TCL_ERROR;
 	}
+	Tk_DeleteEventHandler(window, VisibilityChangeMask|StructureNotifyMask,
+	    WaitVisibilityProc, (ClientData) &done);
+    } else if ((c == 'w') && (strncmp(argv[1], "window", length) == 0)) {
+	Tk_Window window;
+
+	window = Tk_NameToWindow(interp, argv[2], tkwin);
+	if (window == NULL) {
+	    return TCL_ERROR;
+	}
+	Tk_CreateEventHandler(window, StructureNotifyMask,
+	    WaitWindowProc, (ClientData) &done);
+	done = 0;
+	while (!done) {
+	    Tcl_DoOneEvent(0);
+	}
+	/*
+	 * Note:  there's no need to delete the event handler.  It was
+	 * deleted automatically when the window was destroyed.
+	 */
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": must be variable, visibility, or window", (char *) NULL);
+	return TCL_ERROR;
     }
 
     /*
@@ -984,7 +764,7 @@ WaitVariableProc(clientData, interp, name1, name2, flags)
     ClientData clientData;	/* Pointer to integer to set to 1. */
     Tcl_Interp *interp;		/* Interpreter containing variable. */
     Var name1;			/* Name of variable. */
-    CONST char *name2;		/* Second part of variable name. */
+    char *name2;		/* Second part of variable name. */
     int flags;			/* Information about what happened. */
 {
     int *donePtr = (int *) clientData;
@@ -1020,11 +800,11 @@ WaitWindowProc(clientData, eventPtr)
 	*donePtr = 1;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * Tk_UpdateObjCmd --
+ * Tk_UpdateCmd --
  *
  *	This procedure is invoked to process the "update" Tcl command.
  *	See the user documentation for details on what it does.
@@ -1040,27 +820,28 @@ WaitWindowProc(clientData, eventPtr)
 
 	/* ARGSUSED */
 int
-Tk_UpdateObjCmd(clientData, interp, objc, objv)
+Tk_UpdateCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
-    static CONST char *updateOptions[] = {"idletasks", (char *) NULL};
-    int flags, index;
+    int flags;
     TkDisplay *dispPtr;
 
-    if (objc == 1) {
+    if (argc == 1) {
 	flags = TCL_DONT_WAIT;
-    } else if (objc == 2) {
-	if (Tcl_GetIndexFromObj(interp, objv[1], updateOptions, "option", 0,
-		&index) != TCL_OK) {
+    } else if (argc == 2) {
+	if (strncmp(argv[1], "idletasks", strlen(argv[1])) != 0) {
+	    Tcl_AppendResult(interp, "bad option \"", argv[1],
+		    "\": must be idletasks", (char *) NULL);
 	    return TCL_ERROR;
 	}
 	flags = TCL_IDLE_EVENTS;
     } else {
-        Tcl_WrongNumArgs(interp, 1, objv, "?idletasks?");
+	Tcl_AppendResult(interp, "wrong # args: should be \"",
+		argv[0], " ?idletasks?\"", (char *) NULL);
 	return TCL_ERROR;
     }
 
@@ -1077,7 +858,7 @@ Tk_UpdateObjCmd(clientData, interp, objc, objv)
 	while (Tcl_DoOneEvent(flags) != 0) {
 	    /* Empty loop body */
 	}
-	for (dispPtr = TkGetDisplayList(); dispPtr != NULL;
+	for (dispPtr = tkDisplayList; dispPtr != NULL;
 		dispPtr = dispPtr->nextPtr) {
 	    XSync(dispPtr->display, False);
 	}
@@ -1094,7 +875,7 @@ Tk_UpdateObjCmd(clientData, interp, objc, objv)
     Tcl_ResetResult(interp);
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1121,10 +902,10 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
     Tcl_Obj *CONST objv[];	/* Argument objects. */
 {
     int index, x, y, width, height, useX, useY, class, skip;
+    char buf[128];
     char *string;
     TkWindow *winPtr;
     Tk_Window tkwin;
-    Tcl_Obj *resultPtr;
 
     static TkStateMap visualMap[] = {
 	{PseudoColor,	"pseudocolor"},
@@ -1135,7 +916,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	{StaticGray,	"staticgray"},
 	{-1,		NULL}
     };
-    static CONST char *optionStrings[] = {
+    static char *optionStrings[] = {
 	"cells",	"children",	"class",	"colormapfull",
 	"depth",	"geometry",	"height",	"id",
 	"ismapped",	"manager",	"name",		"parent",
@@ -1146,7 +927,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	"toplevel",	"viewable",	"visual",	"visualid",
 	"vrootheight",	"vrootwidth",	"vrootx",	"vrooty",
 	"width",	"x",		"y",
-
+	
 	"atom",		"atomname",	"containing",	"interps",
 	"pathname",
 
@@ -1166,7 +947,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	WIN_TOPLEVEL,	WIN_VIEWABLE,	WIN_VISUAL,	WIN_VISUALID,
 	WIN_VROOTHEIGHT,WIN_VROOTWIDTH,	WIN_VROOTX,	WIN_VROOTY,
 	WIN_WIDTH,	WIN_X,		WIN_Y,
-
+	
 	WIN_ATOM,	WIN_ATOMNAME,	WIN_CONTAINING,	WIN_INTERPS,
 	WIN_PATHNAME,
 
@@ -1197,73 +978,82 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	}
     }
     winPtr = (TkWindow *) tkwin;
-    resultPtr = Tcl_GetObjResult(interp);
 
     switch ((enum options) index) {
 	case WIN_CELLS: {
-	    Tcl_SetIntObj(resultPtr, Tk_Visual(tkwin)->map_entries);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    Tk_Visual(tkwin)->map_entries);
 	    break;
 	}
 	case WIN_CHILDREN: {
 	    Tcl_Obj *strPtr;
 
+	    Tcl_ResetResult(interp);
 	    winPtr = winPtr->childList;
 	    for ( ; winPtr != NULL; winPtr = winPtr->nextPtr) {
-		if (!(winPtr->flags & TK_ANONYMOUS_WINDOW)) {
-		    strPtr = LangWidgetObj(interp,(Tk_Window) winPtr);
-		    Tcl_ListObjAppendElement(NULL, resultPtr, strPtr);
-		}
+		strPtr = LangWidgetObj(interp,(Tk_Window) winPtr);
+		Tcl_ListObjAppendElement(NULL,
+		     Tcl_GetObjResult(interp), strPtr);
 	    }
 	    break;
 	}
 	case WIN_CLASS: {
-	    Tcl_SetStringObj(resultPtr, Tk_Class(tkwin), -1);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_Class(tkwin), -1);
 	    break;
 	}
 	case WIN_COLORMAPFULL: {
-	    Tcl_SetBooleanObj(resultPtr,
+	    Tcl_ResetResult(interp);
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp),
 		    TkpCmapStressed(tkwin, Tk_Colormap(tkwin)));
 	    break;
 	}
 	case WIN_DEPTH: {
-	    Tcl_SetIntObj(resultPtr, Tk_Depth(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Depth(tkwin));
 	    break;
 	}
 	case WIN_GEOMETRY: {
-	    char buf[16 + TCL_INTEGER_SPACE * 4];
-
+	    Tcl_ResetResult(interp);
 	    sprintf(buf, "%dx%d+%d+%d", Tk_Width(tkwin), Tk_Height(tkwin),
 		    Tk_X(tkwin), Tk_Y(tkwin));
-	    Tcl_SetStringObj(resultPtr, buf, -1);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
 	    break;
 	}
 	case WIN_HEIGHT: {
-	    Tcl_SetIntObj(resultPtr, Tk_Height(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Height(tkwin));
 	    break;
 	}
 	case WIN_ID: {
-	    char buf[TCL_INTEGER_SPACE];
-
 	    Tk_MakeWindowExist(tkwin);
 	    TkpPrintWindowId(buf, Tk_WindowId(tkwin));
-	    Tcl_SetStringObj(resultPtr, buf, -1);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
 	    break;
 	}
 	case WIN_ISMAPPED: {
-	    Tcl_SetBooleanObj(resultPtr, (int) Tk_IsMapped(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp),
+		    (int) Tk_IsMapped(tkwin));
 	    break;
 	}
 	case WIN_MANAGER: {
+	    Tcl_ResetResult(interp);
 	    if (winPtr->geomMgrPtr != NULL) {
-		Tcl_SetStringObj(resultPtr, winPtr->geomMgrPtr->name, -1);
+		Tcl_SetStringObj(Tcl_GetObjResult(interp),
+		        winPtr->geomMgrPtr->name, -1);
 	    }
 	    break;
 	}
 	case WIN_NAME: {
-	    Tcl_SetStringObj(resultPtr, Tk_Name(tkwin), -1);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), Tk_Name(tkwin), -1);
 	    break;
 	}
 	case WIN_PARENT: {
+	    Tcl_ResetResult(interp);
 	    if (winPtr->parentPtr != NULL) {
 		Tcl_SetObjResult(interp, LangWidgetObj(interp, (Tk_Window) winPtr->parentPtr));
 	    }
@@ -1291,63 +1081,79 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    } else {
 		TkGetPointerCoords((Tk_Window) winPtr, &x, &y);
 	    }
+	    Tcl_ResetResult(interp);
 	    if (useX & useY) {
 		Tcl_IntResults(interp, 2, 0, x, y);
 	    } else if (useX) {
-		Tcl_SetIntObj(resultPtr, x);
+		Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
 	    } else {
-		Tcl_SetIntObj(resultPtr, y);
+		Tcl_SetIntObj(Tcl_GetObjResult(interp), y);
 	    }
 	    break;
 	}
 	case WIN_REQHEIGHT: {
-	    Tcl_SetIntObj(resultPtr, Tk_ReqHeight(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_ReqHeight(tkwin));
 	    break;
 	}
 	case WIN_REQWIDTH: {
-	    Tcl_SetIntObj(resultPtr, Tk_ReqWidth(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_ReqWidth(tkwin));
 	    break;
 	}
 	case WIN_ROOTX: {
 	    Tk_GetRootCoords(tkwin, &x, &y);
-	    Tcl_SetIntObj(resultPtr, x);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
 	    break;
 	}
 	case WIN_ROOTY: {
 	    Tk_GetRootCoords(tkwin, &x, &y);
-	    Tcl_SetIntObj(resultPtr, y);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), y);
 	    break;
 	}
 	case WIN_SCREEN: {
-	    char buf[TCL_INTEGER_SPACE];
-
 	    sprintf(buf, "%d", Tk_ScreenNumber(tkwin));
-	    Tcl_AppendStringsToObj(resultPtr, Tk_DisplayName(tkwin), ".",
-		    buf, NULL);
+	    Tcl_ResetResult(interp);
+	    Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		    Tk_DisplayName(tkwin), ".", buf, NULL);
 	    break;
 	}
 	case WIN_SCREENCELLS: {
-	    Tcl_SetIntObj(resultPtr, CellsOfScreen(Tk_Screen(tkwin)));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    CellsOfScreen(Tk_Screen(tkwin)));
 	    break;
 	}
 	case WIN_SCREENDEPTH: {
-	    Tcl_SetIntObj(resultPtr, DefaultDepthOfScreen(Tk_Screen(tkwin)));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    DefaultDepthOfScreen(Tk_Screen(tkwin)));
 	    break;
 	}
 	case WIN_SCREENHEIGHT: {
-	    Tcl_SetIntObj(resultPtr, HeightOfScreen(Tk_Screen(tkwin)));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    HeightOfScreen(Tk_Screen(tkwin)));
 	    break;
 	}
 	case WIN_SCREENWIDTH: {
-	    Tcl_SetIntObj(resultPtr, WidthOfScreen(Tk_Screen(tkwin)));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    WidthOfScreen(Tk_Screen(tkwin)));
 	    break;
 	}
 	case WIN_SCREENMMHEIGHT: {
-	    Tcl_SetIntObj(resultPtr, HeightMMOfScreen(Tk_Screen(tkwin)));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    HeightMMOfScreen(Tk_Screen(tkwin)));
 	    break;
 	}
 	case WIN_SCREENMMWIDTH: {
-	    Tcl_SetIntObj(resultPtr, WidthMMOfScreen(Tk_Screen(tkwin)));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp),
+		    WidthMMOfScreen(Tk_Screen(tkwin)));
 	    break;
 	}
 	case WIN_SCREENVISUAL: {
@@ -1367,18 +1173,20 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    break;
 	}
 	case WIN_VIEWABLE: {
-	    int viewable = 0;
+	    int viewable;
+
+	    viewable = 0;
 	    for ( ; ; winPtr = winPtr->parentPtr) {
 		if ((winPtr == NULL) || !(winPtr->flags & TK_MAPPED)) {
 		    break;
 		}
-		if (winPtr->flags & TK_TOP_HIERARCHY) {
+		if (winPtr->flags & TK_TOP_LEVEL) {
 		    viewable = 1;
 		    break;
 		}
 	    }
-
-	    Tcl_SetBooleanObj(resultPtr, viewable);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), viewable);
 	    break;
 	}
 	case WIN_VISUAL: {
@@ -1389,54 +1197,61 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    if (string == NULL) {
 		string = "unknown";
 	    }
-	    Tcl_SetStringObj(resultPtr, string, -1);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), string, -1);
 	    break;
 	}
 	case WIN_VISUALID: {
-	    char buf[TCL_INTEGER_SPACE];
-
+	    Tcl_ResetResult(interp);
 	    sprintf(buf, "0x%x",
 		    (unsigned int) XVisualIDFromVisual(Tk_Visual(tkwin)));
-	    Tcl_SetStringObj(resultPtr, buf, -1);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
 	    break;
 	}
 	case WIN_VROOTHEIGHT: {
 	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
-	    Tcl_SetIntObj(resultPtr, height);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), height);
 	    break;
 	}
 	case WIN_VROOTWIDTH: {
 	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
-	    Tcl_SetIntObj(resultPtr, width);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), width);
 	    break;
 	}
 	case WIN_VROOTX: {
 	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
-	    Tcl_SetIntObj(resultPtr, x);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), x);
 	    break;
 	}
 	case WIN_VROOTY: {
 	    Tk_GetVRootGeometry(tkwin, &x, &y, &width, &height);
-	    Tcl_SetIntObj(resultPtr, y);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), y);
 	    break;
 	}
 	case WIN_WIDTH: {
-	    Tcl_SetIntObj(resultPtr, Tk_Width(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Width(tkwin));
 	    break;
 	}
 	case WIN_X: {
-	    Tcl_SetIntObj(resultPtr, Tk_X(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_X(tkwin));
 	    break;
 	}
 	case WIN_Y: {
-	    Tcl_SetIntObj(resultPtr, Tk_Y(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), Tk_Y(tkwin));
 	    break;
 	}
 
 	/*
 	 * Uses -displayof.
 	 */
-
+	
 	case WIN_ATOM: {
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
@@ -1448,13 +1263,15 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    }
 	    objv += skip;
 	    string = Tcl_GetStringFromObj(objv[2], NULL);
-	    Tcl_SetLongObj(resultPtr, (long) Tk_InternAtom(tkwin, string));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetLongObj(Tcl_GetObjResult(interp),
+		    (long) Tk_InternAtom(tkwin, string));
 	    break;
 	}
 	case WIN_ATOMNAME: {
-	    CONST char *name;
+	    char *name;
 	    long id;
-
+	
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
 		return TCL_ERROR;
@@ -1467,14 +1284,15 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    if (Tcl_GetLongFromObj(interp, objv[2], &id) != TCL_OK) {
 		return TCL_ERROR;
 	    }
+	    Tcl_ResetResult(interp);
 	    name = Tk_GetAtomName(tkwin, (Atom) id);
 	    if (strcmp(name, "?bad atom?") == 0) {
 		string = Tcl_GetStringFromObj(objv[2], NULL);
-		Tcl_AppendStringsToObj(resultPtr,
+		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
 			"no atom exists with id \"", string, "\"", NULL);
 		return TCL_ERROR;
 	    }
-	    Tcl_SetStringObj(resultPtr, name, -1);
+	    Tcl_SetStringObj(Tcl_GetObjResult(interp), name, -1);
 	    break;
 	}
 	case WIN_CONTAINING: {
@@ -1505,7 +1323,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	}
 	case WIN_INTERPS: {
 	    int result;
-
+	
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
 		return TCL_ERROR;
@@ -1518,7 +1336,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    return result;
 	}
 	case WIN_PATHNAME: {
-	    Window id;
+	    int id;
 
 	    skip = TkGetDisplayOf(interp, objc - 2, objv + 2, &tkwin);
 	    if (skip < 0) {
@@ -1529,13 +1347,16 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 		return TCL_ERROR;
 	    }
 	    string = Tcl_GetStringFromObj(objv[2 + skip], NULL);
-	    if (TkpScanWindowId(interp, Tcl_GetString(objv[2+skip]), &id) != TCL_OK) {
+	    if (TkpScanWindowId(interp, objv[2+skip], &id) != TCL_OK) {
 		return TCL_ERROR;
 	    }
-	    winPtr = (TkWindow *)Tk_IdToWindow(Tk_Display(tkwin), id);
+	    winPtr = (TkWindow *)
+	            Tk_IdToWindow(Tk_Display(tkwin), (Window) id);
 	    if ((winPtr == NULL) ||
 		    (winPtr->mainPtr != ((TkWindow *) tkwin)->mainPtr)) {
-		Tcl_AppendStringsToObj(resultPtr, "window id \"", string,
+		Tcl_ResetResult(interp);
+		Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+			"window id \"", string,
 			"\" doesn't exist in this application", (char *) NULL);
 		return TCL_ERROR;
 	    }
@@ -1567,14 +1388,12 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    }
 	    string = Tcl_GetStringFromObj(objv[2], NULL);
 	    winPtr = (TkWindow *) Tk_NameToWindow(interp, string, tkwin);
-	    Tcl_ResetResult(interp);
-	    resultPtr = Tcl_GetObjResult(interp);
-
 	    alive = 1;
 	    if ((winPtr == NULL) || (winPtr->flags & TK_ALREADY_DEAD)) {
 		alive = 0;
 	    }
-	    Tcl_SetBooleanObj(resultPtr, alive);
+	    Tcl_ResetResult(interp); /* clear any error msg */
+	    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), alive);
 	    break;
 	}
 	case WIN_FPIXELS: {
@@ -1594,13 +1413,14 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 		return TCL_ERROR;
 	    }
 	    pixels = mm * WidthOfScreen(Tk_Screen(tkwin))
-		    / WidthMMOfScreen(Tk_Screen(tkwin));
-	    Tcl_SetDoubleObj(resultPtr, pixels);
+		/ WidthMMOfScreen(Tk_Screen(tkwin));
+	    Tcl_ResetResult(interp);
+	    Tcl_SetDoubleObj(Tcl_GetObjResult(interp), pixels);
 	    break;
 	}
 	case WIN_PIXELS: {
 	    int pixels;
-
+	
 	    if (objc != 4) {
 		Tcl_WrongNumArgs(interp, 2, objv, "window number");
 		return TCL_ERROR;
@@ -1614,7 +1434,8 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    if (Tk_GetPixels(interp, tkwin, string, &pixels) != TCL_OK) {
 		return TCL_ERROR;
 	    }
-	    Tcl_SetIntObj(resultPtr, pixels);
+	    Tcl_ResetResult(interp);
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), pixels);
 	    break;
 	}
 	case WIN_RGB: {
@@ -1642,10 +1463,9 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	case WIN_VISUALSAVAILABLE: {
 	    XVisualInfo template, *visInfoPtr;
 	    int count, i;
+	    char visualIdString[16];
 	    int includeVisualId;
 	    Tcl_Obj *strPtr;
-	    char buf[16 + TCL_INTEGER_SPACE];
-	    char visualIdString[TCL_INTEGER_SPACE];
 
 	    if (objc == 3) {
 		includeVisualId = 0;
@@ -1667,8 +1487,9 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 	    template.screen = Tk_ScreenNumber(tkwin);
 	    visInfoPtr = XGetVisualInfo(Tk_Display(tkwin), VisualScreenMask,
 		    &template, &count);
+	    Tcl_ResetResult(interp);
 	    if (visInfoPtr == NULL) {
-		Tcl_SetStringObj(resultPtr,
+		Tcl_SetStringObj(Tcl_GetObjResult(interp),
 			"can't find any visuals for screen", -1);
 		return TCL_ERROR;
 	    }
@@ -1685,7 +1506,8 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
 		    strcat(buf, visualIdString);
 		}
 		strPtr = Tcl_NewStringObj(buf, -1);
-		Tcl_ListObjAppendElement(NULL, resultPtr, strPtr);
+		Tcl_ListObjAppendElement(NULL, Tcl_GetObjResult(interp),
+		        strPtr);
 	    }
 	    XFree((char *) visInfoPtr);
 	    break;
@@ -1693,232 +1515,7 @@ Tk_WinfoObjCmd(clientData, interp, objc, objv)
     }
     return TCL_OK;
 }
-
-#if 0
-/*
- *----------------------------------------------------------------------
- *
- * Tk_WmObjCmd --
- *
- *	This procedure is invoked to process the "wm" Tcl command.
- *	See the user documentation for details on what it does.
- *
- * Results:
- *	A standard Tcl result.
- *
- * Side effects:
- *	See the user documentation.
- *
- *----------------------------------------------------------------------
- */
-
-	/* ARGSUSED */
-int
-Tk_WmObjCmd(clientData, interp, objc, objv)
-    ClientData clientData;	/* Main window associated with
-				 * interpreter. */
-    Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
-{
-    Tk_Window tkwin;
-    TkWindow *winPtr;
-
-    static CONST char *optionStrings[] = {
-	"aspect",	"client",	"command",	"deiconify",
-	"focusmodel",	"frame",	"geometry",	"grid",
-	"group",	"iconbitmap",	"iconify",	"iconmask",
-	"iconname",	"iconposition",	"iconwindow",	"maxsize",
-	"minsize",	"overrideredirect",	"positionfrom",	"protocol",
-	"resizable",	"sizefrom",	"state",	"title",
-	"tracing",	"transient",	"withdraw",	(char *) NULL
-    };
-    enum options {
-	TKWM_ASPECT,	TKWM_CLIENT,	TKWM_COMMAND,	TKWM_DEICONIFY,
-	TKWM_FOCUSMOD,	TKWM_FRAME,	TKWM_GEOMETRY,	TKWM_GRID,
-	TKWM_GROUP,	TKWM_ICONBMP,	TKWM_ICONIFY,	TKWM_ICONMASK,
-	TKWM_ICONNAME,	TKWM_ICONPOS,	TKWM_ICONWIN,	TKWM_MAXSIZE,
-	TKWM_MINSIZE,	TKWM_OVERRIDE,	TKWM_POSFROM,	TKWM_PROTOCOL,
-	TKWM_RESIZABLE,	TKWM_SIZEFROM,	TKWM_STATE,	TKWM_TITLE,
-	TKWM_TRACING,	TKWM_TRANSIENT,	TKWM_WITHDRAW
-    };
-
-    tkwin = (Tk_Window) clientData;
-
-    if (objc < 2) {
-	Tcl_WrongNumArgs(interp, 1, objv, "option window ?arg?");
-	return TCL_ERROR;
-    }
-    if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "option", 0,
-	    &index) != TCL_OK) {
-	return TCL_ERROR;
-    }
-
-    if (index == TKWM_TRACING) {
-	int wmTracing;
-	TkDisplay *dispPtr = ((TkWindow *) tkwin)->dispPtr;
-
-	if ((objc != 2) && (objc != 3)) {
-	    Tcl_WrongNumArgs(interp, 1, objv, "tracing ?boolean?");
-	    return TCL_ERROR;
-	}
-	if (objc == 2) {
-	    Tcl_SetObjResult(interp,
-		    Tcl_NewBooleanObj(dispPtr->flags & TK_DISPLAY_WM_TRACING));
-	    return TCL_OK;
-	}
-	if (Tcl_GetBooleanFromObj(interp, objv[2], &wmTracing) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (wmTracing) {
-	    dispPtr->flags |= TK_DISPLAY_WM_TRACING;
-	} else {
-	    dispPtr->flags &= ~TK_DISPLAY_WM_TRACING;
-	}
-	return TCL_OK;
-    }
-
-    if (objc < 3) {
-	Tcl_WrongNumArgs(interp, 2, objv, "window ?arg?");
-	return TCL_ERROR;
-    }
-
-    winPtr = (TkWindow *) Tk_NameToWindow(interp,
-	    Tcl_GetString(objv[2]), tkwin);
-    if (winPtr == NULL) {
-	return TCL_ERROR;
-    }
-    if (!(winPtr->flags & TK_TOP_LEVEL)) {
-	Tcl_AppendResult(interp, "window \"", winPtr->pathName,
-		"\" isn't a top-level window", (char *) NULL);
-	return TCL_ERROR;
-    }
-
-    switch ((enum options) index) {
-	case TKWM_ASPECT: {
-	    TkpWmAspectCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_CLIENT: {
-	    TkpWmClientCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_COMMAND: {
-	    TkpWmCommandCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_DEICONIFY: {
-	    TkpWmDeiconifyCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_FOCUSMOD: {
-	    TkpWmFocusmodCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_FRAME: {
-	    TkpWmFrameCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_GEOMETRY: {
-	    TkpWmGeometryCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_GRID: {
-	    TkpWmGridCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_GROUP: {
-	    TkpWmGroupCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_ICONBMP: {
-	    TkpWmIconbitmapCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_ICONIFY: {
-	    TkpWmIconifyCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_ICONMASK: {
-	    TkpWmIconmaskCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_ICONNAME: {
-	    /* slight Unix variation */
-	    TkpWmIconnameCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_ICONPOS: {
-	    /* nearly same - 1 line more on Unix */
-	    TkpWmIconpositionCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_ICONWIN: {
-	    TkpWmIconwindowCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_MAXSIZE: {
-	    /* nearly same, win diffs */
-	    TkpWmMaxsizeCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_MINSIZE: {
-	    /* nearly same, win diffs */
-	    TkpWmMinsizeCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_OVERRIDE: {
-	    /* almost same */
-	    TkpWmOverrideCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_POSFROM: {
-	    /* Equal across platforms */
-	    TkpWmPositionfromCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_PROTOCOL: {
-	    /* Equal across platforms */
-	    TkpWmProtocolCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_RESIZABLE: {
-	    /* almost same */
-	    TkpWmResizableCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_SIZEFROM: {
-	    /* Equal across platforms */
-	    TkpWmSizefromCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_STATE: {
-	    TkpWmStateCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_TITLE: {
-	    TkpWmTitleCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_TRANSIENT: {
-	    TkpWmTransientCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-	case TKWM_WITHDRAW: {
-	    TkpWmWithdrawCmd(interp, tkwin, winPtr, objc, objv);
-	    break;
-	}
-    }
-
-    updateGeom:
-    if (!(wmPtr->flags & (WM_UPDATE_PENDING|WM_NEVER_MAPPED))) {
-	Tcl_DoWhenIdle(UpdateGeometryInfo, (ClientData) winPtr);
-	wmPtr->flags |= WM_UPDATE_PENDING;
-    }
-    return TCL_OK;
-}
-#endif
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1967,8 +1564,7 @@ TkGetDisplayOf(interp, objc, objv, tkwinPtr)
 	return 0;
     }
     string = Tcl_GetStringFromObj(objv[0], &length);
-    if ((length >= 2) &&
-	    (strncmp(string, "-displayof", (unsigned) length) == 0)) {
+    if ((length >= 2) && (strncmp(string, "-displayof", (unsigned) length) == 0)) {
         if (objc < 2) {
 	    Tcl_SetStringObj(Tcl_GetObjResult(interp),
 		    "value for \"-displayof\" missing", -1);
@@ -1983,7 +1579,7 @@ TkGetDisplayOf(interp, objc, objv, tkwinPtr)
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2004,17 +1600,17 @@ TkGetDisplayOf(interp, objc, objv, tkwinPtr)
 
 	/* ARGSUSED */
 int
-TkDeadAppCmd(clientData, interp, argc, objv)
+TkDeadAppCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Dummy. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int argc;			/* Number of arguments. */
-    Tcl_Obj *CONST *objv;	/* Argument strings. */
+    char **argv;		/* Argument strings. */
 {
-    Tcl_AppendResult(interp, "can't invoke \"", Tcl_GetString(objv[0]),
+    Tcl_AppendResult(interp, "can't invoke \"", argv[0],
 	    "\" command:  application has been destroyed", (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2048,8 +1644,3 @@ GetToplevel(tkwin)
      }
      return winPtr;
 }
-
-
-
-
-

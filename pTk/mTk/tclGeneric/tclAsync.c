@@ -1,4 +1,4 @@
-/*
+/* 
  * tclAsync.c --
  *
  *	This file provides low-level support needed to invoke signal
@@ -12,14 +12,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclAsync.c,v 1.6 2001/08/30 07:50:18 davygrvy Exp $
+ * RCS: @(#) $Id: tclAsync.c,v 1.2 1998/09/14 18:39:57 stanton Exp $
  */
-#ifdef TCL_EVENT_IMPLEMENT
+
 #include "tkPort.h"
 #include "Lang.h"
-
-/* Forward declaration */
-struct ThreadSpecificData;
 
 /*
  * One of the following structures exists for each asynchronous
@@ -36,75 +33,33 @@ typedef struct AsyncHandler {
 					 * is invoked. */
     ClientData clientData;		/* Value to pass to handler when it
 					 * is invoked. */
-    struct ThreadSpecificData *originTsd;
-					/* Used in Tcl_AsyncMark to modify thread-
-					 * specific data from outside the thread
-					 * it is associated to. */
-    Tcl_ThreadId originThrdId;		/* Origin thread where this token was
-					 * created and where it will be
-					 * yielded. */
 } AsyncHandler;
 
-
-typedef struct ThreadSpecificData {
-    /*
-     * The variables below maintain a list of all existing handlers
-     * specific to the calling thread.
-     */
-    AsyncHandler *firstHandler;	    /* First handler defined for process,
-				     * or NULL if none. */
-    AsyncHandler *lastHandler;	    /* Last handler or NULL. */
-
-    /*
-     * The variable below is set to 1 whenever a handler becomes ready and
-     * it is cleared to zero whenever Tcl_AsyncInvoke is called.  It can be
-     * checked elsewhere in the application by calling Tcl_AsyncReady to see
-     * if Tcl_AsyncInvoke should be invoked.
-     */
-
-    int asyncReady;
-
-    /*
-     * The variable below indicates whether Tcl_AsyncInvoke is currently
-     * working.  If so then we won't set asyncReady again until
-     * Tcl_AsyncInvoke returns.
-     */
-
-    int asyncActive;
-
-    Tcl_Mutex asyncMutex;   /* Thread-specific AsyncHandler linked-list lock */
-
-} ThreadSpecificData;
-static Tcl_ThreadDataKey dataKey;
-
-
 /*
- *----------------------------------------------------------------------
- *
- * TclFinalizeAsync --
- *
- *	Finalizes the mutex in the thread local data structure for the
- *	async subsystem.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Forgets knowledge of the mutex should it have been created.
- *
- *----------------------------------------------------------------------
+ * The variables below maintain a list of all existing handlers.
  */
 
-void
-TclFinalizeAsync()
-{
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+static AsyncHandler *firstHandler;	/* First handler defined for process,
+					 * or NULL if none. */
+static AsyncHandler *lastHandler;	/* Last handler or NULL. */
 
-    if (tsdPtr->asyncMutex != NULL) {
-	Tcl_MutexFinalize(&tsdPtr->asyncMutex);
-    }
-}
+/*
+ * The variable below is set to 1 whenever a handler becomes ready and
+ * it is cleared to zero whenever Tcl_AsyncInvoke is called.  It can be
+ * checked elsewhere in the application by calling Tcl_AsyncReady to see
+ * if Tcl_AsyncInvoke should be invoked.
+ */
 
+static int asyncReady = 0;
+
+/*
+ * The variable below indicates whether Tcl_AsyncInvoke is currently
+ * working.  If so then we won't set asyncReady again until
+ * Tcl_AsyncInvoke returns.
+ */
+
+static int asyncActive = 0;
+
 /*
  *----------------------------------------------------------------------
  *
@@ -131,27 +86,21 @@ Tcl_AsyncCreate(proc, clientData)
     ClientData clientData;		/* Argument to pass to handler. */
 {
     AsyncHandler *asyncPtr;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     asyncPtr = (AsyncHandler *) ckalloc(sizeof(AsyncHandler));
     asyncPtr->ready = 0;
     asyncPtr->nextPtr = NULL;
     asyncPtr->proc = proc;
     asyncPtr->clientData = clientData;
-    asyncPtr->originTsd = tsdPtr;
-    asyncPtr->originThrdId = Tcl_GetCurrentThread();
-
-    Tcl_MutexLock(&tsdPtr->asyncMutex);
-    if (tsdPtr->firstHandler == NULL) {
-	tsdPtr->firstHandler = asyncPtr;
+    if (firstHandler == NULL) {
+	firstHandler = asyncPtr;
     } else {
-	tsdPtr->lastHandler->nextPtr = asyncPtr;
+	lastHandler->nextPtr = asyncPtr;
     }
-    tsdPtr->lastHandler = asyncPtr;
-    Tcl_MutexUnlock(&tsdPtr->asyncMutex);
+    lastHandler = asyncPtr;
     return (Tcl_AsyncHandler) asyncPtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -175,17 +124,12 @@ void
 Tcl_AsyncMark(async)
     Tcl_AsyncHandler async;		/* Token for handler. */
 {
-    AsyncHandler *token = (AsyncHandler *) async;
-
-    Tcl_MutexLock(&token->originTsd->asyncMutex);
-    token->ready = 1;
-    if (!token->originTsd->asyncActive) {
-	token->originTsd->asyncReady = 1;
-	Tcl_ThreadAlert(token->originThrdId);
+    ((AsyncHandler *) async)->ready = 1;
+    if (!asyncActive) {
+	asyncReady = 1;
     }
-    Tcl_MutexUnlock(&token->originTsd->asyncMutex);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -216,16 +160,12 @@ Tcl_AsyncInvoke(interp, code)
 					 * just completed. */
 {
     AsyncHandler *asyncPtr;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    Tcl_MutexLock(&tsdPtr->asyncMutex);
-
-    if (tsdPtr->asyncReady == 0) {
-	Tcl_MutexUnlock(&tsdPtr->asyncMutex);
+    if (asyncReady == 0) {
 	return code;
     }
-    tsdPtr->asyncReady = 0;
-    tsdPtr->asyncActive = 1;
+    asyncReady = 0;
+    asyncActive = 1;
     if (interp == NULL) {
 	code = 0;
     }
@@ -242,7 +182,7 @@ Tcl_AsyncInvoke(interp, code)
      */
 
     while (1) {
-	for (asyncPtr = tsdPtr->firstHandler; asyncPtr != NULL;
+	for (asyncPtr = firstHandler; asyncPtr != NULL;
 		asyncPtr = asyncPtr->nextPtr) {
 	    if (asyncPtr->ready) {
 		break;
@@ -252,15 +192,12 @@ Tcl_AsyncInvoke(interp, code)
 	    break;
 	}
 	asyncPtr->ready = 0;
-	Tcl_MutexUnlock(&tsdPtr->asyncMutex);
 	code = (*asyncPtr->proc)(asyncPtr->clientData, interp, code);
-	Tcl_MutexLock(&tsdPtr->asyncMutex);
     }
-    tsdPtr->asyncActive = 0;
-    Tcl_MutexUnlock(&tsdPtr->asyncMutex);
+    asyncActive = 0;
     return code;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -282,30 +219,27 @@ void
 Tcl_AsyncDelete(async)
     Tcl_AsyncHandler async;		/* Token for handler to delete. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
     AsyncHandler *asyncPtr = (AsyncHandler *) async;
     AsyncHandler *prevPtr;
 
-    Tcl_MutexLock(&tsdPtr->asyncMutex);
-    if (tsdPtr->firstHandler == asyncPtr) {
-	tsdPtr->firstHandler = asyncPtr->nextPtr;
-	if (tsdPtr->firstHandler == NULL) {
-	    tsdPtr->lastHandler = NULL;
+    if (firstHandler == asyncPtr) {
+	firstHandler = asyncPtr->nextPtr;
+	if (firstHandler == NULL) {
+	    lastHandler = NULL;
 	}
     } else {
-	prevPtr = tsdPtr->firstHandler;
+	prevPtr = firstHandler;
 	while (prevPtr->nextPtr != asyncPtr) {
 	    prevPtr = prevPtr->nextPtr;
 	}
 	prevPtr->nextPtr = asyncPtr->nextPtr;
-	if (tsdPtr->lastHandler == asyncPtr) {
-	    tsdPtr->lastHandler = prevPtr;
+	if (lastHandler == asyncPtr) {
+	    lastHandler = prevPtr;
 	}
     }
-    Tcl_MutexUnlock(&tsdPtr->asyncMutex);
     ckfree((char *) asyncPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -313,7 +247,7 @@ Tcl_AsyncDelete(async)
  *
  *	This procedure can be used to tell whether Tcl_AsyncInvoke
  *	needs to be called.  This procedure is the external interface
- *	for checking the thread-specific asyncReady variable.
+ *	for checking the internal asyncReady variable.
  *
  * Results:
  * 	The return value is 1 whenever a handler is ready and is 0
@@ -328,8 +262,5 @@ Tcl_AsyncDelete(async)
 int
 Tcl_AsyncReady()
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-    return tsdPtr->asyncReady;
+    return asyncReady;
 }
-
-#endif

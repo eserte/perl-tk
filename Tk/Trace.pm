@@ -1,11 +1,8 @@
 package Tk::Trace;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tk/Trace.pm#2 $
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Trace.pm#4 $
 
-use Exporter;
-use base qw/Exporter/;
-@EXPORT = qw/traceVariable traceVdelete traceVinfo/;
 use Tie::Watch;
 use strict;
 
@@ -84,7 +81,7 @@ sub destroy {
     $self->Destroy(@_);                      # destroy variable
 }
 
-sub traceVariable {
+sub Tk::Widget::traceVariable {
     my($parent, $vref, $op, $callback) = @_;
     die "Illegal parent." unless ref $parent;
     die "Illegal variable." unless ref $vref;
@@ -120,7 +117,7 @@ sub traceVariable {
 
 } # end traceVariable
 
-sub traceVdelete {
+sub Tk::Widget::traceVdelete {
     my($parent, $vref, $op_not_honored, $callabck_not_honored) = @_;
     if (defined $trace{$vref}) {
         $trace{$vref}->Unwatch;
@@ -128,7 +125,7 @@ sub traceVdelete {
     }
 }
 
-sub traceVinfo {
+sub Tk::Widget::traceVinfo {
     my($parent, $vref) = @_;
     return (defined $trace{$vref}) ? $trace{$vref}->Info : undef;
 }
@@ -226,6 +223,7 @@ Stop tracing the variable.
 =head1 EXAMPLE
 
  use Tk;
+ use Tk::Trace;
 
  # Trace a Scale's variable and move a meter in unison.
 
@@ -266,7 +264,7 @@ Stop tracing the variable.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000 - 2000 Stephen O. Lidie. All rights reserved.
+Copyright (C) 2000 - 2003 Stephen O. Lidie. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.

@@ -9,11 +9,11 @@ while (<KEY>)
  {
   if (/\(\("(.*)",NULL\)\)/)
    {
-    my @words = split(/","/,$1);
-    my $word;
+    my @words = split(/","/,$1); 
+    my $word; 
     foreach $word (@words)
      {
-      next if ($word =~ /^[A-Z]/);
+      next if ($word =~ /^[A-Z]/); 
       unless (exists $words{$word})
        {
         $words{$word} = 1;
@@ -33,7 +33,7 @@ sub match
    unless (exists $word{$1})
     {
      print STDERR "$1 '$2/$3'\n";
-     $word{$1} = []
+     $word{$1} = [] 
     }
    push(@{$word{$1}},"${File::Find::name}:$.");
   }
@@ -48,12 +48,12 @@ sub wanted
    if (/\.pm$/)
     {
      local $file   = ($_);
-     local ($_);
+     local ($_);  
      open($file,"<$file") || die "Cannot open $file:$!";
      while (<$file>)
-      {
+      {           
        last if &match;
-      }
+      }           
      close($file);
     }
   }
@@ -69,5 +69,5 @@ find(\&wanted,@ARGV);
 
 foreach (sort keys %word)
  {
-  print "$_:",join(' ',@{$word{$_}}),"\n";
+  print "$_:",join(' ',@{$word{$_}}),"\n"; 
  }

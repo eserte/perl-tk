@@ -1,6 +1,3 @@
-
-/*	$Id: tixWinDraw.c,v 1.1.1.1 2000/05/17 11:08:55 idiscovery Exp $	*/
-
 /*
  * tixWinDraw.c --
  *
@@ -24,7 +21,7 @@
 #include "tixPort.h"
 
 
-
+
 /*----------------------------------------------------------------------
  * TixpDrawTmpLine --
  *
@@ -64,10 +61,10 @@ TixpDrawTmpLine(x1, y1, x2, y2, tkwin)
 
     SelectObject(hdc, old);
     DeleteObject(hpen);
-    ReleaseDC(desktop, hdc);
+    ReleaseDC(desktop, hdc);	
 #endif
 }
-
+
 /*----------------------------------------------------------------------
  * TixpDrawAnchorLines --
  *
@@ -107,7 +104,7 @@ TixpDrawAnchorLines(display, drawable, gc, x, y, w, h)
     TkWinReleaseDrawableDC(drawable, hdc, &state);
 }
 #endif
-
+
 /*----------------------------------------------------------------------
  * TixpStartSubRegionDraw --
  *
@@ -174,7 +171,7 @@ TixpStartSubRegionDraw(display, drawable, gc, subRegPtr, origX, origY,
 	subRegPtr->pixmap = None;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixpEndSubRegionDraw --
  *
@@ -196,7 +193,7 @@ TixpEndSubRegionDraw(display, drawable, gc, subRegPtr)
 	subRegPtr->pixmap = None;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -244,7 +241,7 @@ TixpSubRegDisplayText(display, drawable, gc, subRegPtr, font, string,
 		numChars, x, y,	length, justify, underline, gc);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixpSubRegFillRectangle --
  *
@@ -270,7 +267,7 @@ TixpSubRegFillRectangle(display, drawable, gc, subRegPtr, x, y, width, height)
 	XFillRectangle(display, drawable, gc, x, y, width, height);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * TixpSubRegDrawImage	--
  *

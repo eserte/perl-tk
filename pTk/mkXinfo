@@ -4,7 +4,7 @@ $file = shift;
 
 @cargs = @ARGV;
 
-@ARGV = grep(!/\.ft\./,<*.c>,<xpm/*.c>);
+@ARGV = grep(!/\.ft\./,<*.c>,<xpm/*.c>); 
 
 print STDERR "Scanning .c files for X functions\n";
 while (<>)
@@ -16,8 +16,8 @@ while (<>)
  }
 
 open(STDOUT,">$file") || die "Cannot open $file:$!";
-$gard = "\U$file";
-$gard =~ s/\..*$//;
+$gard = "\U$file";             
+$gard =~ s/\..*$//;                 
 $gard =~ s#/#_#g;
 
 print "#ifndef _$gard\n";

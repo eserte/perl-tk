@@ -10,7 +10,7 @@ use blib;
 my %file;
 my @files;
 my %cat;
-my @cat;
+my @cat;        
 
 my $podindex;
 GetOptions("podindex!" => \$podindex);
@@ -20,8 +20,8 @@ sub category
  my ($cat,$file) = @_;
  unless (exists $cat{$cat})
   {
-   $cat{$cat} = [];
-   push(@cat,$cat);
+   $cat{$cat} = []; 
+   push(@cat,$cat); 
   }
  if (defined $file)
   {
@@ -35,7 +35,7 @@ sub category
    else
     {
      $file{$file} = $cat;
-     push(@{$cat{$cat}},$file)
+     push(@{$cat{$cat}},$file) 
     }
   }
 }
@@ -43,18 +43,18 @@ sub category
 @ARGV = ("Tk.cmd") if (!@ARGV && -r "Tk.cmd");
 
 if (@ARGV)
- {
+ {                    
   my $sec;
   while (<>)
    {
     if (/^beginBookmark\s+'(.*)'\s*$/i)
-     {
+     { 
       $sec = $1;
       category($sec);
      }
     elsif (/^file\s+(\S+)/)
-     {
-      my $file = $1;
+     {                  
+      my $file = $1;                   
       if (-f $file)
        {
         category($sec,$file);
@@ -67,7 +67,7 @@ if (@ARGV)
    }
  }
 
-find(sub {
+find(sub { 
           $File::Find::prune = 1 if /\b(blib|doc|pod[3n])\b/;
 	  return if /^Tk.pod$/;
           push(@files,$File::Find::name) if /\.(pod|pm)$/
@@ -151,7 +151,7 @@ END
      }
     print POD "=back\n\n";
    }
-
+  
   print POD <<END;
 
 =head1 AUTHOR
@@ -170,14 +170,14 @@ else
   open(CMD,">Tk.cmd") || die "Cannot open Tk.cmd:$!";
   print CMD <<END;
 # This is a command file for pod2ps
-#
-cover true
+# 
+cover true                 
 booktitle 'Perl/Tk Reference'
 release 'Version Tk$Tk::VERSION'
 author 'Nick Ing-Simmons'
 linkbox off color
 pagesize a4
-output tkman.ps
+output tkman.ps 
 path .
 END
 
@@ -190,7 +190,7 @@ END
      }
     print CMD "endBookmark\n";
    }
-
+  
   print CMD <<END;
 ToC 1
 END

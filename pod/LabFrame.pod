@@ -1,4 +1,3 @@
-
 =head1 NAME
 
 Tk::LabFrame - labeled frame.
@@ -28,6 +27,14 @@ Additional options of B<LabFrame> are:
 
 =over 4
 
+=item B<-font> =E<gt> I<font>
+
+Specifies the label's font
+
+=item B<-foreground> =E<gt> I<color>
+
+Specifies the label's foreground color
+
 =item B<-label> =E<gt> I<text>
 
 The text of the label to be placed with the Frame.
@@ -40,6 +47,33 @@ left, right, above or below the frame respectively. The B<acrosstop>
 creates a grooved frame around the central frame and puts the label
 near the northwest corner such that it appears to "overwrite" the
 groove.
+
+=item B<-labelvariable> =E<gt> I<scalar_ref>
+
+Specifies a reference to a variable and used as an 
+alternative to -label. If the value of the variable changes,
+then the widget will be updated automatically to reflect the
+change. Used like -textvariable.
+
+=back
+
+=head1 ADVERTISED SUBWIDGETS
+
+See L<Tk::mega/"Subwidget"> how to use advertised widgets.
+
+=over 4
+
+=item I<border>
+
+  Frame used to display the border
+
+=item I<frame>
+
+  Frame used to create new LabFrame children. 
+
+=item I<label>
+
+  Label used for displaying text
 
 =back
 
@@ -74,4 +108,3 @@ distribution by Ioi Lam. The code may be redistributed under the same
 terms as Perl.
 
 =cut
-

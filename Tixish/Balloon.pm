@@ -1,11 +1,17 @@
 #
 # The help widget that provides both "balloon" and "status bar"
 # types of help messages.
+#
+# This is a patched version of Balloon 3.037 - it adds support
+# for different orientations of the balloon widget, depending
+# on wether there's enough space for it. The little arrow now
+# should always point directly to the client.
+# Added by Gerhard Petrowitsch (gerhard.petrowitsch@philips.com)
 
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/Tixish/Balloon.pm#2 $
+$VERSION = '3.039'; # $Id: //depot/Tk8/Tixish/Balloon.pm#39 $
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -20,6 +26,13 @@ use strict;
 
 my @balloons;
 my $button_up = 0;
+my %arrows = ( TL => 'R0lGODlhBgAGAJEAANnZ2QAAAP///////yH5BAEAAAAALAAAAAAGAAYAAAINjA0HAEdwLCwMKIQfBQA7',
+	       TR => 'R0lGODlhBgAGAJEAANnZ2QAAAP///////yH5BAEAAAAALAAAAAAGAAYAAAIRBGMDwAEQkgAIAAoCABEEuwAAOw==',
+	       BR => 'R0lGODlhBgAGAJEAANnZ2QAAAP///////yH5BAEAAAAALAAAAAAGAAYAAAIPDOHHhYVRAIgIAEISQLELADs=',
+	       BL => 'R0lGODlhBgAGAJEAANnZ2QAAAP///////yH5BAEAAAAALAAAAAAGAAYAAAIPhB1xAUFALCIMKAaAWQAVADs=',
+	       NO => 'R0lGODlhAQABAJEAANnZ2f///////////yH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
+	     );
+
 
 sub ClassInit {
     my ($class, $mw) = @_;
@@ -42,17 +55,43 @@ sub Populate {
     $w->configure(-background => 'black');
     my $a = $w->Frame;
     my $m = $w->Frame;
+    my $d = $w->Frame;
+    # the balloon arrows
+    $w->{img_tl} = $w->Photo(-data => $arrows{TL}, '-format' => 'gif');
+    $w->{img_tr} = $w->Photo(-data => $arrows{TR}, '-format' => 'gif');
+    $w->{img_bl} = $w->Photo(-data => $arrows{BL}, '-format' => 'gif');
+    $w->{img_br} = $w->Photo(-data => $arrows{BR}, '-format' => 'gif');
+    $w->{img_no} = $w->Photo(-data => $arrows{NO}, '-format' => 'gif');
+    $w->OnDestroy([$w, 'deletePhotos']);
     $a->configure(-bd => 0);
-    my $al = $a->Label(-bd => 0,
+    $d->configure(-bd => 0);
+    my $atl = $a->Label(-bd => 0,
 		       -relief => 'flat',
-		       -bitmap => '@' . Tk->findINC('balArrow.xbm'));
-    $al->pack(-side => 'left', -padx => 1, -pady => 1, -anchor => 'nw');
+		       -image => $w->{img_no});
+    $atl->pack(-side => 'top', -padx => 1, -pady => 1, -anchor => 'nw');
+    my $abl = $a->Label(-bd => 0,
+		       -relief => 'flat',
+		       -image => $w->{img_no});
+    $abl->pack(-side => 'bottom', -padx => 1, -pady => 1, -anchor => 'sw');
+    my $dtr = $d->Label(-bd => 0,
+		       -relief => 'flat',
+		       -image => $w->{img_no});
+    $dtr->pack(-side => 'top', -padx => 1, -pady => 1, -anchor => 'ne');
+    my $dbr = $d->Label(-bd => 0,
+		       -relief => 'flat',
+		       -image => $w->{img_no});
+    $dbr->pack(-side => 'bottom', -padx => 1, -pady => 1, -anchor => 'se');
+    # the balloon message
     $m->configure(-bd => 0);
     my $ml = $m->Label(-bd => 0,
 		       -padx => 0,
 		       -pady => 0,
 		       -text => $args->{-message});
     $w->Advertise('message' => $ml);
+    $w->Advertise('TLarrow' => $atl);
+    $w->Advertise('TRarrow' => $dtr);
+    $w->Advertise('BLarrow' => $abl);
+    $w->Advertise('BRarrow' => $dbr);
     $ml->pack(-side => 'left',
 	      -anchor => 'w',
 	      -expand => 1,
@@ -61,6 +100,7 @@ sub Populate {
 	      -pady => 3);
     $a->pack(-fill => 'both', -side => 'left');
     $m->pack(-fill => 'both', -side => 'left');
+    $d->pack(-fill => 'both', -side => 'left');
 
     # append to global list of balloons
     push(@balloons, $w);
@@ -70,6 +110,7 @@ sub Populate {
     $w->{'menu_index_over'} = 'none';
     $w->{'canvas_tag'} = '';
     $w->{'canvas_tag_over'} = '';
+
     $w->ConfigSpecs(-installcolormap => ['PASSIVE', 'installColormap', 'InstallColormap', 0],
 		    -initwait => ['PASSIVE', 'initWait', 'InitWait', 350],
 		    -state => ['PASSIVE', 'state', 'State', 'both'],
@@ -77,10 +118,12 @@ sub Populate {
 		    -statusmsg => ['PASSIVE', 'statusMsg', 'StatusMsg', ''],
 		    -balloonmsg => ['PASSIVE', 'balloonMsg', 'BalloonMsg', ''],
 		    -balloonposition => ['PASSIVE', 'balloonPosition', 'BalloonPosition', 'widget'],
+#    -balloonanchor => ['PASSIVE', 'balloonAnchor', 'BalloonAnchor', 'nw'],
 		    -postcommand => ['CALLBACK', 'postCommand', 'PostCommand', undef],
 		    -cancelcommand => ['CALLBACK', 'cancelCommand', 'CancelCommand', undef],
 		    -motioncommand => ['CALLBACK', 'motionCommand', 'MotionCommand', undef],
 		    -background => ['DESCENDANTS', 'background', 'Background', '#C0C080'],
+		    -foreground => ['DESCENDANTS', 'foreground', 'Foreground', undef],
 		    -font => [$ml, 'font', 'Font', '-*-helvetica-medium-r-normal--*-120-*-*-*-*-*-*'],
 		    -borderwidth => ['SELF', 'borderWidth', 'BorderWidth', 1]
 		   );
@@ -125,12 +168,14 @@ sub GetOption
 sub Motion {
     my ($ewin, $x, $y, $s) = @_;
 
-    # Don't do anything if a button is down or a grab is active
-    # 0x1f00 is (Button1Mask | .. | Button5Mask)
-    return if not defined $ewin or ((($s & 0x1f00) or $ewin->grabCurrent()) and not $ewin->isa('Tk::Menu'));
+    return if not defined $ewin;
 
     # Find which window we are over
     my $over = $ewin->Containing($x, $y);
+
+    #return if not defined $ewin or ((($s & 0x1f00) or $ewin->grabCurrent()) and not $ewin->isa('Tk::Menu'));
+#    return if $ewin->grabBad($over);
+    return if &grabBad($ewin, $over);
 
     foreach my $w (@balloons) {
 	# if cursor has moved over the balloon -- ignore
@@ -199,7 +244,9 @@ sub SwitchToClient {
     return unless Exists($w);
     return unless Exists($client);
     return unless $client->IS($w->{'client'});
-    return if $w->grabCurrent and not $client->isa('Tk::Menu');
+    #return if $w->grabCurrent and not $client->isa('Tk::Menu');
+    #return if $w->grabBad($client);
+    return if &grabBad($w, $client);
     my $command = $w->GetOption(-postcommand => $client);
     if (defined $command) {
 	# Execute the user's command and return if it returns false:
@@ -216,6 +263,27 @@ sub SwitchToClient {
     $w->{'popped'} = 1;
     $w->{'delay'}  = $w->repeat(200, ['Verify', $w, $client]);
 }
+
+sub grabBad {
+
+    my ($w, $client) = @_;
+
+    return 0 unless Exists($client);
+    my $g = $w->grabCurrent;
+    return 0 unless defined $g;
+    return 0 if $g->isa('Tk::Menu');
+    return 0 if $g eq $client;
+
+    # The grab is OK if $client is a decendant of $g. Use the internal Tcl/Tk
+    # pathname (yes, it's cheating, but it's legal).
+
+    return 0 if $g == $w->MainWindow;
+    my $wp = $w->PathName;
+    my $gp = $g->PathName;
+    return 0 if $wp =~ /^$gp/;
+    return 1;			# bad grab
+
+} # end grabBad
 
 sub Subclient
 {
@@ -236,7 +304,9 @@ sub Verify {
     my $deactivate = # DELETE? or move it to the isa-Menu section?:
 	             # ($over ne $client) or
 	             not $client->IS($w->{'client'})
-                     or (!$client->isa('Tk::Menu') && $w->grabCurrent);
+#                     or (!$client->isa('Tk::Menu') && $w->grabCurrent);
+#                     or $w->grabbad($client);
+                     or &grabBad($w, $client);
     if ($deactivate)
      {
       $w->Deactivate;
@@ -288,6 +358,7 @@ sub Popup {
 
     my ($x, $y);
     my $pos = $w->GetOption(-balloonposition => $client);
+#    my $anc = $w->GetOption(-balloonanchor => $client);
     my $postpos = delete $w->{'clients'}{$client}{'postposition'};
     if (defined $postpos) {
 	# The postcommand must have returned a position for the balloon - I will use that:
@@ -304,12 +375,46 @@ sub Popup {
 
     $w->idletasks;
     my($width, $height) = ($w->reqwidth, $w->reqheight);
-    my $xx = ($x + $width > $w->screenwidth
-	      ? $w->screenwidth - $width
-	      : $x);
-    my $yy = ($y + $height > $w->screenheight
-	      ? $w->screenheight - $height
-	      : $y);
+    my($xx, $yy) = ($x,$y);
+    my $ex = 0;
+    if ($x + $width > $w->screenwidth) {
+      $ex |= 1;
+    }
+    if ($y + $height > $w->screenheight) {
+      $ex |= 2;
+    }
+    if ($ex == 0) {
+      $w->Subwidget('TLarrow')->configure(-image => $w->{img_tl});
+      $w->Subwidget('TRarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('BLarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('BRarrow')->configure(-image => $w->{img_no});
+      ($xx,$yy) = ($x,$y);
+    } elsif ($ex == 1) {
+      $w->Subwidget('TLarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('TRarrow')->configure(-image => $w->{img_tr});
+      $w->Subwidget('BLarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('BRarrow')->configure(-image => $w->{img_no});
+      $x = int($client->pointerx - 2) if ($pos eq 'mouse');
+      ($xx,$yy) = ($x-$width,$y);
+    } elsif ($ex == 2) {
+      $w->Subwidget('TLarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('TRarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('BLarrow')->configure(-image => $w->{img_bl});
+      $w->Subwidget('BRarrow')->configure(-image => $w->{img_no});
+      $x = int($client->pointerx + 2) if ($pos eq 'mouse');
+      $y = int($client->pointery - 2) if ($pos eq 'mouse');
+      $y = int($client->rooty + int ($client->height/4.3)) if ($pos eq 'widget');
+      ($xx,$yy) = ($x,$y-$height);
+    } else {
+      $w->Subwidget('TLarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('TRarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('BLarrow')->configure(-image => $w->{img_no});
+      $w->Subwidget('BRarrow')->configure(-image => $w->{img_br});
+      $x = int($client->pointerx - 2) if ($pos eq 'mouse');
+      $y = int($client->pointery - 2) if ($pos eq 'mouse');
+      $y = int($client->rooty + int ($client->height/4.3)) if ($pos eq 'widget');
+      ($xx,$yy) = ($x-$width,$y-$height);
+    }
 
     $w->geometry("+$xx+$yy");
     #$w->MoveToplevelWindow($x,$y);
@@ -356,7 +461,15 @@ sub destroy {
     #$w->SUPER::destroy;
     # Above doesn't seem to work but at least I have removed it from the
     # list of balloons and maybe undef'ing the object will get rid of it.
+    $w->deletePhotos();
     undef $w;
+}
+
+sub deletePhotos {
+    my ($w) = @_;
+    for (qw(no tl tr bl br)) {
+	$w->{"img_$_"}->delete if defined $w->{"img_$_"};
+    }
 }
 
 1;

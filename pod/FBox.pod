@@ -1,0 +1,71 @@
+=head1 NAME
+
+Tk::FBox - a file dialog
+
+=for pm Tk/FBox.pm
+
+=for category Popups and Dialogs
+
+=head1 SYNOPSIS
+
+    use Tk::FBox;
+    $file = $mw->FBox(...)->Show;
+
+=head1 DESCRIPTION
+
+C<Tk::FBox> is the dialog implementation behind the C<getOpenFile> and
+C<getSaveFile> method calls in the Unix/X11 world. As such, it
+supports all options for these methods and additionally:
+
+=over
+
+=item -sortcmd => sub { $_[0] cmp $_[1] }
+
+Specified a callback for changing the sorting of the icons in the
+C<IconList> widget. By default, perl's C<cmp> operator will be used.
+
+From the source code:
+
+  # Using -sortcmd is really strange :-(
+  # $top->getOpenFile(-sortcmd => sub { package Tk::FBox; uc $b cmp uc $a});
+  # or, un-perlish, but useable (now activated in code):
+  # $top->getOpenFile(-sortcmd => sub { uc $_[1] cmp uc $_[0]});
+
+This is an experimental option and subject to change.
+
+=item -type => $type
+
+Type should be "open" (default) or "save".
+
+=item -filter => $val
+
+A filter to restrict the directories and files in the icon list. If
+specified as a glob pattern, then only B<files> will be filtered by
+the pattern. If specified as a subroutine, then this subroutine will
+be called for every file and directory and should return a true value,
+if the argument should be accepted for the icon list. The arguments of
+this subroutine are: I<FBox widget reference>, I<basename of file>,
+and I<directory name>.
+
+The subroutine form of this option is experimental.
+
+=item -force => $bool
+
+If true, then there will be no dialog if a file already exists.
+
+=back
+
+=head1 COPYRIGHT
+
+The original tkfbox.tcl from Tcl/Tk is:
+
+Copyright (c) 1994-1996 Sun Microsystems, Inc.
+
+See the file "license.terms" for information on usage and redistribution
+of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+
+Translated to Perl/Tk by Slaven Rezic <slaven@rezic.de>.
+
+=head1 SEE ALSO
+
+Tk::getOpenFile, Tk::IconList.

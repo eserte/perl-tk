@@ -1,13 +1,13 @@
 #!/usr/local/bin/new/perl -w
 
 undef $/;
-$^I = '.bak';
+$^I = '.bak';             
 
 my @undo;
 
 my $edits = 0;
 while (<>)
- {
+ {                  
   $edits += s/[\t ]+(?=\n)//mg;
   $edits += s/\n=back\n+=over\s+\d+\n/\n\n/mg;
   $edits += s/\n{3,}/\n\n/mg;
@@ -23,7 +23,7 @@ while (<>)
   print;
   if (eof)
    {
-    warn "$edits $ARGV\n";
+    warn "$edits $ARGV\n"; 
     push(@undo,$ARGV) unless $edits;
     $edits = 0;
    }

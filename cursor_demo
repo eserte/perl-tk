@@ -8,7 +8,7 @@ my @names = (
     "boat", "bogosity", "bottom_left_corner", "bottom_right_corner",
     "bottom_side", "bottom_tee", "box_spiral", "center_ptr",
     "circle", "clock", "coffee_mug", "cross", "cross_reverse",
-    "crosshair", "diamond_cross", "dot", "dotbox", "double_arrow",
+    "crosshair", "diamond_cross", "dot", "dotbox", "double_arrow", 
     "draft_large", "draft_small", "draped_box", "exchange", "fleur",
     "gobbler", "gumby", "hand1", "hand2", "heart", "icon", "iron_cross",
     "left_ptr", "left_side", "left_tee", "leftbutton", "ll_angle",

@@ -19,7 +19,7 @@ sub unres
   {
    if (/^[\d[a-fA-F]+\s+U\s+(\w+)$/)
     {
-     $unres{$1} = 1 unless (exists $defs{$1});
+     $unres{$1} = 1 unless (exists $defs{$1});            
     }
   }
  close(NM);
@@ -51,7 +51,7 @@ sub defs
   {
    if (/^[\d[a-fA-F]+\s+[DTB]\s+(\w+)$/)
     {
-     $defs{$1} = $file;
+     $defs{$1} = $file;            
     }
   }
  close(NM);

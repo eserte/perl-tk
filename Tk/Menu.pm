@@ -21,7 +21,7 @@ require Tk::Menu::Item;
 
 
 use vars qw($VERSION);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/Menu.pm#9 $
+$VERSION = '3.048'; # $Id: //depot/Tk8/Tk/Menu.pm#48 $
 
 use strict;
 
@@ -989,24 +989,21 @@ sub tearOffMenu
 #
 # Arguments:
 # src - Source window. Must be a menu. It and its
-# menu descendants will be duplicated at path.
-# path - Name to use for topmost menu in duplicate
+# menu descendants will be duplicated at dst.
+# dst - Name to use for topmost menu in duplicate
 # hierarchy.
-
-use Data::Dumper;
-sub tkMenuDup
+sub MenuDup
 {
- my ($src,$path,$type) = @_;
- my ($pname,$name) = $path =~ /^(.*)\.([^\.]*)$/;
- my $parent = ($pname) ? $src->Widget($pname) : $src->MainWindow;
- my %args  = (Name => $name, -type => $type);
+ my $src    = shift;
+ my $parent = shift;
+ my $type  = (@_) ? shift : 'normal';
+ my %args  = (-type => $type) ;
  foreach my $option ($src->configure())
   {
    next if (@$option == 2);
    $args{$$option[0]} = $$option[4] unless exists $args{$$option[0]};
   }
  my $dst = ref($src)->new($parent,%args);
- $_[1] = $dst;
  if ($type eq 'tearoff')
   {
    $dst->transient($parent->MainWindow);
@@ -1031,7 +1028,7 @@ sub tkMenuDup
   }
  # Duplicate the binding tags and bindings from the source menu.
  my @bindtags = $src->bindtags;
- $path = $src->PathName;
+ my $path = $src->PathName;
  foreach (@bindtags)
   {
    $_ = $dst if ($_ eq $path);

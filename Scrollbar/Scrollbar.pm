@@ -1,13 +1,17 @@
 # Conversion from Tk4.0 scrollbar.tcl competed.
 package Tk::Scrollbar;
-require Tk;
-import Tk qw($XS_VERSION);
-use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Scrollbar/Scrollbar.pm#7 $
+$VERSION = '3.018'; # $Id: //depot/Tk8/Scrollbar/Scrollbar.pm#18 $
+
+use Tk qw($XS_VERSION Ev);
+use AutoLoader;
+
 
 use base  qw(Tk::Widget);
+
+#use strict;
+#use vars qw($pressX $pressY @initValues $initPos $activeBg);
 
 Construct Tk::Widget 'Scrollbar';
 
@@ -36,14 +40,14 @@ sub ClassInit
  $mw->bind($class, '<Leave>', 'Leave');
 
  $mw->bind($class, '<1>', 'ButtonDown');
- $mw->bind($class, '<B1-Motion>', 'Drag');
+ $mw->bind($class, '<B1-Motion>', ['Drag', Ev('x'), Ev('y')]);
  $mw->bind($class, '<ButtonRelease-1>', 'ButtonUp');
  $mw->bind($class, '<B1-Leave>', 'NoOp'); # prevent generic <Leave>
  $mw->bind($class, '<B1-Enter>', 'NoOp'); # prevent generic <Enter>
  $mw->bind($class, '<Control-1>', 'ScrlTopBottom');
 
  $mw->bind($class, '<2>', 'ButtonDown');
- $mw->bind($class, '<B2-Motion>', 'Drag');
+ $mw->bind($class, '<B2-Motion>', ['Drag', Ev('x'), Ev('y')]);
  $mw->bind($class, '<ButtonRelease-2>', 'ButtonUp');
  $mw->bind($class, '<B2-Leave>', 'NoOp'); # prevent generic <Leave>
  $mw->bind($class, '<B2-Enter>', 'NoOp'); # prevent generic <Enter>
@@ -68,6 +72,9 @@ sub ClassInit
 
  $mw->bind($class, '<Home>',          ['ScrlToPos', 0]);
  $mw->bind($class, '<End>',           ['ScrlToPos', 1]);
+
+ $mw->bind($class, '<4>',             ['ScrlByUnits','v',-3]);
+ $mw->bind($class, '<5>',             ['ScrlByUnits','v', 3]);
 
  return $class;
 
@@ -232,19 +239,24 @@ sub Select
 # x, y -	The mouse position at the start of the drag operation.
 
 sub StartDrag
-{my $w = shift;
- my $x = shift;
- my $y = shift;
+{
+ my($w,$x,$y) = @_;
  return unless (defined ($w->cget('-command')));
- $initMouse  = $w->fraction($x,$y);
- @initValues = $w->get();
+ $pressX = $x;
+ $pressY = $y;
+ @initValues = $w->get;
+ my $iv0 = $initValues[0];
  if (@initValues == 2)
   {
-   $initPos = $initValues[0];
+   $initPos = $iv0;
+  }
+ elsif ($iv0 == 0)
+  {
+   $initPos = 0;
   }
  else
   {
-   $initPos = $initValues[2] / $initValues[0];
+   $initPos = $initValues[2]/$initValues[0];
   }
 }
 
@@ -259,23 +271,22 @@ sub StartDrag
 # x, y -	The current mouse position.
 
 sub Drag
-{my $w = shift;
- my $e = $w->XEvent;
- return unless (defined $initMouse);
- my $f = $w->fraction($e->x,$e->y);
- my $delta = $f - $initMouse;
+{
+ my($w,$x,$y) = @_;
+ return if !defined $initPos;
+ my $delta = $w->delta($x-$pressX, $y-$pressY);
  if ($w->cget('-jump'))
   {
    if (@initValues == 2)
     {
-     $w->set($initValues[0]+$delta,$initValues[1]+$delta);
+     $w->set($initValues[0]+$delta, $initValues[1]+$delta);
     }
    else
     {
-     $delta = int($delta * $initValues[0]);
+     $delta = sprintf "%d", $delta * $initValues[0]; # round()
      $initValues[2] += $delta;
      $initValues[3] += $delta;
-     $w->set(@initValues);
+     $w->set(@initValues[2,3]);
     }
   }
  else
@@ -294,15 +305,14 @@ sub Drag
 
 sub EndDrag
 {
- my $w = shift;
- my $x = shift;
- my $y = shift;
- return unless defined($initMouse);
+ my($w,$x,$y) = @_;
+ return if (!defined $initPos);
  if ($w->cget('-jump'))
   {
-   $w->ScrlToPos($initPos + $w->fraction($x,$y) - $initMouse);
+   my $delta = $w->delta($x-$pressX, $y-$pressY);
+   $w->ScrlToPos($initPos+$delta);
   }
- undef $initMouse;
+ undef $initPos;
 }
 
 # tkScrlByUnits --

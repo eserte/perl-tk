@@ -1,4 +1,4 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons.
+# Copyright (c) 1995-2003 Nick Ing-Simmons.
 # Copyright (c) 1999 Greg London.
 # All rights reserved.
 # This program is free software; you can redistribute it and/or
@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#9 $
+$VERSION = '3.054'; # $Id: //depot/Tk8/Tk/TextUndo.pm#54 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -173,7 +173,7 @@ sub CheckForRedoShuffle
  while ($w->SizeRedo)
   {
    my $ref = $w->ShiftRedo;
-   $w->PushUndo($ref);
+   $w->PushUndo($ref);		
   }
 
  # Finally undo whatever we did to compensate for doing it
@@ -571,6 +571,7 @@ sub Insert
  $w->addGlobStart;
  $w->SUPER::Insert($char);
  $w->addGlobEnd;
+ $w->see('insert');
 }
 
 
@@ -709,7 +710,7 @@ sub Save
    my $count=0;
    my $index = '1.0';
    my $progress;
-   my ($lines) = $w->index('end') =~ /^(\d+)\./;
+   my ($lines) = $w->index('end - 1 chars') =~ /^(\d+)\./;
    while ($w->compare($index,'<','end'))
     {
 #    my $end = $w->index("$index + 1024 chars");
@@ -910,7 +911,7 @@ sub MarkSelectionsSavePositions
 sub RestoreSelectionsMarkedSaved
 {
  my ($w)=@_;
- my $i = 0;
+ my $i = 1;
  my %mark_hash;
  foreach my $mark ($w->markNames)
   {
@@ -932,10 +933,30 @@ sub RestoreSelectionsMarkedSaved
 
 ####################################################################
 # selected lines may be discontinous sequence.
-sub SelectedLineNumbers
+sub GetMarkedSelectedLineNumbers
 {
  my ($w) = @_;
- my @ranges = $w->tagRanges('sel');
+
+ my $i = 1;
+ my %mark_hash;
+ my @ranges;
+ foreach my $mark ($w->markNames)
+  {
+   $mark_hash{$mark}=1;
+  }
+
+ while(1)
+  {
+   my $markstart = 'MarkSelectionsSavePositions_'.$i++;
+   last unless(exists($mark_hash{$markstart}));
+   my $indexstart = $w->index($markstart);
+   my $markend = 'MarkSelectionsSavePositions_'.$i++;
+   last unless(exists($mark_hash{$markend}));
+   my $indexend = $w->index($markend);
+
+   push(@ranges, $indexstart, $indexend);
+  }
+
  my @selection_list;
  while (@ranges)
   {
@@ -959,7 +980,7 @@ sub insertStringAtStartOfSelectedLines
  my ($w,$insert_string)=@_;
  $w->addGlobStart;
  $w->MarkSelectionsSavePositions;
- foreach my $line ($w->SelectedLineNumbers)
+ foreach my $line ($w->GetMarkedSelectedLineNumbers)
   {
    $w->insert($line.'.0', $insert_string);
   }
@@ -973,7 +994,7 @@ sub deleteStringAtStartOfSelectedLines
  $w->addGlobStart;
  $w->MarkSelectionsSavePositions;
  my $length = length($insert_string);
- foreach my $line ($w->SelectedLineNumbers)
+ foreach my $line ($w->GetMarkedSelectedLineNumbers)
   {
    my $start = $line.'.0';
    my $end   = $line.'.'.$length;

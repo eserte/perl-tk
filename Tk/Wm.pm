@@ -1,4 +1,4 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Wm;
@@ -14,17 +14,20 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Wm.pm#8 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Wm.pm#28 $
 
-use Tk::Submethods ( 'wm' => [qw(grid tracing)] );
+use Tk::Submethods;
+
+*{Tk::Wm::wmGrid}    = sub { shift->wm("grid", @_) };
+*{Tk::Wm::wmTracing} = sub { shift->wm("tracing", @_) };
 
 Direct Tk::Submethods ('wm' => [qw(aspect client colormapwindows command
                        deiconify focusmodel frame geometry group
                        iconbitmap iconify iconimage iconmask iconname
                        iconwindow maxsize minsize overrideredirect positionfrom
-                       protocol resizable sizefrom state title transient
+                       protocol resizable saveunder sizefrom state title transient
                        withdraw wrapper)]);
-		
+
 sub SetBindtags
 {
  my ($obj) = @_;
@@ -75,8 +78,8 @@ sub Post
  $X = int($X);
  $Y = int($Y);
  $w->positionfrom('user');
- # $w->geometry("+$X+$Y");
- $w->MoveToplevelWindow($X,$Y);
+ $w->geometry("+$X+$Y");
+ # $w->MoveToplevelWindow($X,$Y);
  $w->deiconify;
  $w->raise;
 }
@@ -166,4 +169,3 @@ sub iconposition
   }
  $w->wm('iconposition',@_);
 }
-

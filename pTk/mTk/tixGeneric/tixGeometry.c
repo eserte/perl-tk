@@ -1,7 +1,4 @@
-
-/*	$Id: tixGeometry.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
-/*
+/* 
  * tixGeometry.c --
  *
  *	TCL bindings of TK Geometry Management functions.
@@ -81,7 +78,7 @@ GeoReqProc(clientData, tkwin)
 	return;
     }
 
-    result = Tix_GlobalVarEval(cnPtr->interp,	cnPtr->command, " -request ",
+    result = Tix_GlobalVarEval(cnPtr->interp,	cnPtr->command, " -request ", 
 	Tk_PathName(cnPtr->tkwin), (char*)NULL);
 
     if (result != TCL_OK) {
@@ -92,7 +89,7 @@ GeoReqProc(clientData, tkwin)
 }
 
 /*
- * This function is called when the clients is grabbed by another
+ * This function is called when the clients is grabbed by another 
  * geometry manager. %% Should inform with a -lost call
  */
 static void
@@ -111,7 +108,7 @@ GeoLostSlaveProc(clientData, tkwin)
 	return;
     }
 
-    result = Tix_GlobalVarEval(cnPtr->interp, cnPtr->command, " -lostslave ",
+    result = Tix_GlobalVarEval(cnPtr->interp, cnPtr->command, " -lostslave ", 
 	Tk_PathName(cnPtr->tkwin), (char*)NULL);
 
     if (result != TCL_OK) {
@@ -225,7 +222,7 @@ TIX_DEFINE_CMD(Tix_GeometryRequestCmd)
     int reqHeight;
 
     if (argc != 4) {
-	return Tix_ArgcError(interp, argc, argv, 1,
+	return Tix_ArgcError(interp, argc, argv, 1, 
 	    "pathname reqwidth reqheight");
     }
 

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkScrollbar.h,v 1.6 2000/11/22 01:49:38 ericm Exp $
+ * RCS: @(#) $Id: tkScrollbar.h,v 1.4 1998/09/14 18:23:17 stanton Exp $
  */
 
 #ifndef _TKSCROLLBAR
@@ -138,6 +138,9 @@ typedef struct TkScrollbar {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, activeTile, troughTile;
+    GC activeTileGC;
+    Tk_TSOffset tsoffset;
 } TkScrollbar;
 
 /*
@@ -174,7 +177,7 @@ typedef struct TkScrollbar {
  * Declaration of scrollbar class procedures structure.
  */
 
-extern Tk_ClassProcs tkpScrollbarProcs;
+extern TkClassProcs tkpScrollbarProcs;
 
 /*
  * Declaration of scrollbar configuration options.

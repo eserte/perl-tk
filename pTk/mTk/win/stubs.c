@@ -1,10 +1,18 @@
-#include "tk.h"
+#ifndef NULL
+#    define NULL 0
+#endif 
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <stdio.h>
+#include <tkInt.h>
+#include <tkPort.h>
 
 /*
  * Undocumented Xlib internal function
  */
 
-int _XInitImageFuncPtrs(XImage *image)
+int
+_XInitImageFuncPtrs(XImage *image)
 {
     return 0;
 }
@@ -194,7 +202,7 @@ XQueryColor(display, colormap, def_in_out)
     XQueryColors(display, colormap, def_in_out, 1);
 }
 
-#if 0
+#if 0 
 void
 XQueryColors(display, colormap, defs_in_out, ncolors)
     Display* display;
@@ -255,7 +263,7 @@ void
 XSetCommand(display, w, args, argc)
     Display* display;
     Window w;
-    CONST char** args;
+    char** args;
     int argc;
 {
 }
@@ -368,7 +376,7 @@ XmbLookupString(ic, event, buffer_return, bytes_buffer, keysym_return,
 {
     return 0;
 }
-
+
 int
 XGetWindowProperty(display, w, property, long_offset, long_length, delete,
 	req_type, actual_type_return, actual_format_return, nitems_return,
@@ -393,6 +401,5 @@ XGetWindowProperty(display, w, property, long_offset, long_length, delete,
     *prop_return = NULL;
     return BadValue;
 }
-
 
 

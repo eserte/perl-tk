@@ -6,25 +6,25 @@ or if these machines are particularly obscure.
 
 Nick.
 
-From  owner-ptk@WPI.EDU  Thu Jul 27 21:13:26 1995
-Return-Path: <owner-ptk@WPI.EDU>
-Message-Id: <m0sbZHt-0006KIC@holos.com>
+From  owner-ptk@WPI.EDU  Thu Jul 27 21:13:26 1995 
+Return-Path: <owner-ptk@WPI.EDU> 
+Message-Id: <m0sbZHt-0006KIC@holos.com> 
 From: mgm@holos.com (Martha Armour)
-Subject: Yet Another SVR4 Update
-To: ptk@WPI.EDU
-Date: Thu, 27 Jul 1995 16:12:08 -0400 (EDT)
-Cc: perl5-porters@nicoh.com
-Reply-To: mgm@holos.com
-X-Mailer: ELM [version 2.4 PL24]
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Length: 3791
-Sender: owner-ptk@WPI.EDU
-Precedence: bulk
-P-From: mgm@holos.com (Martha Armour)
+Subject: Yet Another SVR4 Update 
+To: ptk@WPI.EDU 
+Date: Thu, 27 Jul 1995 16:12:08 -0400 (EDT) 
+Cc: perl5-porters@nicoh.com 
+Reply-To: mgm@holos.com 
+X-Mailer: ELM [version 2.4 PL24] 
+Content-Type: text/plain; charset=US-ASCII 
+Content-Transfer-Encoding: 7bit 
+Content-Length: 3791 
+Sender: owner-ptk@WPI.EDU 
+Precedence: bulk 
+P-From: mgm@holos.com (Martha Armour) 
 
-Tk-b5 is finally working on both of my SVR4 platforms.  After much
-gnashing of my teeth and pulling of my hair, I turned my problems over
+Tk-b5 is finally working on both of my SVR4 platforms.  After much 
+gnashing of my teeth and pulling of my hair, I turned my problems over 
 to a co-worker.  His trials, tribulations and successes follow:
 
 The following was written by Len Reed <lbr@holos.com>:
@@ -88,7 +88,7 @@ a bug in the /dev/tty driver.
 After fixing that, basic_demo (and other perl Tk scripts) worked fine on
 the console but not on other X servers.  I discovered that XOpenDisplay()
 was hanging up on everything except the console.  Even setting DISPLAY
-to something like "nosuchmachine:0" would lock it up.  The fix was to
+to something like "nosuchmachine:0" would lock it up.  The fix was to 
 remove -lnet from the perl link command.  The /usr/lib/libnet.so library
 appears to contain something that really messes XOpenDisplay(): a
 trivial C program that did nothing but call XOpenDisplay() was the
@@ -105,7 +105,7 @@ Let me (lbr@holos.com) know if you'd like more info leading to easing
 installation on this GIS/NCR machine.
 
 --- End of Len's comments ---
---
+-- 
 Martha G. Armour
 Holos Software, Inc.
 Atlanta, Georgia USA

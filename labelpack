@@ -8,7 +8,7 @@ my $mw = MainWindow->new;
 my $canvas_total = 'Entry Text';
 my $le_t_text    = 'The Label';
 
-$le = $mw->LabEntry(-textvariable =>\$canvas_total,
+$le = $mw->LabEntry(-textvariable =>\$canvas_total, 
                -labelVariable => \$le_t_text,
                -labelPack => [-side => 'left']);
 

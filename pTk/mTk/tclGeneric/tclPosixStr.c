@@ -1,4 +1,4 @@
-/*
+/* 
  * tclPosixStr.c --
  *
  *	This file contains procedures that generate strings
@@ -11,12 +11,12 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclPosixStr.c,v 1.9 2002/05/27 10:14:21 dkf Exp $
+ * RCS: @(#) $Id: tclPosixStr.c,v 1.3 1999/02/02 22:27:16 stanton Exp $
  */
 
 #include "tclInt.h"
 #include "tclPort.h"
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -35,7 +35,7 @@
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tcl_ErrnoId()
 {
     switch (errno) {
@@ -336,11 +336,8 @@ Tcl_ErrnoId()
 #ifdef ENXIO
 	case ENXIO: return "ENXIO";
 #endif
-#if defined(EOPNOTSUPP) &&  (!defined(ENOTSUP) || (ENOTSUP != EOPNOTSUPP))
+#if defined(EOPNOTSUPP) && (!defined(ENOTSUP) || (ENOTSUP != EOPNOTSUPP))
 	case EOPNOTSUPP: return "EOPNOTSUPP";
-#endif
-#if defined(EOVERFLOW) && ( !defined(EFBIG) || (EOVERFLOW != EFBIG) ) && ( !defined(EINVAL) || (EOVERFLOW != EINVAL) )
-        case EOVERFLOW: return "EOVERFLOW";
 #endif
 #ifdef EPERM
 	case EPERM: return "EPERM";
@@ -459,7 +456,7 @@ Tcl_ErrnoId()
     }
     return "unknown error";
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -483,7 +480,7 @@ Tcl_ErrnoId()
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tcl_ErrnoMsg(err)
     int err;			/* Error number (such as in errno variable). */
 {
@@ -739,7 +736,7 @@ Tcl_ErrnoMsg(err)
 	case ENOPKG: return "package not installed";
 #endif
 #ifdef ENOPROTOOPT
-	case ENOPROTOOPT: return "bad protocol option";
+	case ENOPROTOOPT: return "bad proocol option";
 #endif
 #ifdef ENOSPC
 	case ENOSPC: return "no space left on device";
@@ -786,11 +783,8 @@ Tcl_ErrnoMsg(err)
 #ifdef ENXIO
 	case ENXIO: return "no such device or address";
 #endif
-#if defined(EOPNOTSUPP) &&  (!defined(ENOTSUP) || (ENOTSUP != EOPNOTSUPP))
+#if defined(EOPNOTSUPP) && (!defined(ENOTSUP) || (ENOTSUP != EOPNOTSUPP))
 	case EOPNOTSUPP: return "operation not supported on socket";
-#endif
-#if defined(EOVERFLOW) && ( !defined(EFBIG) || (EOVERFLOW != EFBIG) ) && ( !defined(EINVAL) || (EOVERFLOW != EINVAL) )
-        case EOVERFLOW: return "file too big";
 #endif
 #ifdef EPERM
 	case EPERM: return "not owner";
@@ -914,7 +908,7 @@ Tcl_ErrnoMsg(err)
 #endif
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -933,7 +927,7 @@ Tcl_ErrnoMsg(err)
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tcl_SignalId(sig)
     int sig;			/* Number of signal. */
 {
@@ -992,7 +986,7 @@ Tcl_SignalId(sig)
 #ifdef SIGPROF
 	case SIGPROF: return "SIGPROF";
 #endif
-#if defined(SIGPWR) && (!defined(SIGXFSZ) || (SIGPWR != SIGXFSZ)) && (!defined(SIGLOST) || (SIGPWR != SIGLOST))
+#if defined(SIGPWR) && (!defined(SIGXFSZ) || (SIGPWR != SIGXFSZ))
 	case SIGPWR: return "SIGPWR";
 #endif
 #ifdef SIGQUIT
@@ -1046,7 +1040,7 @@ Tcl_SignalId(sig)
     }
     return "unknown signal";
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1065,7 +1059,7 @@ Tcl_SignalId(sig)
  *----------------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tcl_SignalMsg(sig)
     int sig;			/* Number of signal. */
 {
@@ -1124,7 +1118,7 @@ Tcl_SignalMsg(sig)
 #ifdef SIGPROF
 	case SIGPROF: return "profiling alarm";
 #endif
-#if defined(SIGPWR) && (!defined(SIGXFSZ) || (SIGPWR != SIGXFSZ)) && (!defined(SIGLOST) || (SIGPWR != SIGLOST))
+#if defined(SIGPWR) && (!defined(SIGXFSZ) || (SIGPWR != SIGXFSZ))
 	case SIGPWR: return "power-fail restart";
 #endif
 #ifdef SIGQUIT

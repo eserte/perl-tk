@@ -1,6 +1,3 @@
-
-/*	$Id: tixGrid.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixGrid.h --
  *
@@ -114,7 +111,7 @@ typedef struct RenderInfo {
 } RenderInfo;
 
 typedef struct ExposedArea {
-    int x1, y1, x2, y2;
+    int x1, y1, x2, y2; 
 } ExposedArea, Rect;
 
 /*----------------------------------------------------------------------
@@ -163,7 +160,7 @@ typedef struct SelectBlock {
 } SelectBlock;
 
 /*----------------------------------------------------------------------
- * 			GrSortItem
+ * 			GrSortItem 
  *
  * Used to sort the items in the grid
  *----------------------------------------------------------------------
@@ -293,7 +290,7 @@ typedef struct GridStruct {
 				 * the listbox changes. E.g., when the user
 				 * add/deletes elements. Useful for auto-
 				 * scrollbar geometry managers */
-
+   
     /*
      * Info for lay-out
      */

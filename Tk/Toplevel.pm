@@ -1,11 +1,11 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Toplevel;
 use AutoLoader;
 
 use vars qw($VERSION);
-$VERSION = '4.003'; # $Id: //depot/Tkutf8/Tk/Toplevel.pm#3 $
+$VERSION = '3.030'; # $Id: //depot/Tk8/Tk/Toplevel.pm#30 $
 
 use base  qw(Tk::Wm Tk::Frame);
 

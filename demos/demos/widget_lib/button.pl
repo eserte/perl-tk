@@ -14,7 +14,7 @@ sub button {
         -iconname => 'button',
     );
 
-    foreach my $color (qw/PeachPuff1 LightBlue1 SeaGreen2 Yellow1/) {
+    foreach my $color (qw/PeachPuff1 LightBlue1 SeaGreen2 Yellow1/) {  
 	my $b = $TOP->Button(
             -text    => $color,
             -width   => 10,

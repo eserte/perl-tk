@@ -3,8 +3,8 @@ use File::Find;
 find(\&strip,'blib/arch');
 
 sub strip
-{
- my $sz;
+{        
+ my $sz; 
  if (-f $_ && ($sz = -s _) && -B _)
   {
    if (system("strip",$_) != 0)

@@ -87,7 +87,7 @@ static XrmQuarkList Qclass;     /* class Quark list (malloced) */
 static int Qsize  = 0;          /* Number of slots in Quark lists */
 static int Qindex = 0;          /* index just beyond cacheWindow in Quark list */
 
-
+
 #ifdef XRM_DEBUG
 static void
 Qshow(FILE *f,char *lab,XrmQuarkList l)
@@ -102,7 +102,7 @@ Qshow(FILE *f,char *lab,XrmQuarkList l)
  fprintf(f,"\"\n");
 }
 #endif
-
+
 static int
 SetupQuarks(winPtr,depth)
 TkWindow *winPtr;
@@ -146,7 +146,7 @@ int depth;
  Qclass[depth] = XrmPermStringToQuark(Tk_Class(winPtr));
  return depth+1;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -172,8 +172,8 @@ Tk_Uid
 Xrm_GetOption(tkwin, name, className)
 Tk_Window tkwin;                  /* Token for window that option is
                                      * associated with. */
-CONST char *name;                 /* Name of option. */
-CONST char *className;            /* Class of option.  NULL means there
+char *name;                       /* Name of option. */
+char *className;                  /* Class of option.  NULL means there
                                      * is no class for this option:  just
                                      * check for name. */
 {
@@ -248,8 +248,8 @@ void
 Xrm_AddOption(tkwin, name, value, priority)
 Tk_Window tkwin;                  /* Window token;  option will be associated
                                      * with main window for this window. */
-CONST char *name;                       /* Multi-element name of option. */
-CONST char *value;                      /* String value for option. */
+char *name;                       /* Multi-element name of option. */
+char *value;                      /* String value for option. */
 int priority;                     /* Overall priority level to use for
                                      * this option, such as TK_USER_DEFAULT_PRIO
                                      * or TK_INTERACTIVE_PRIO.  Must be between
@@ -271,7 +271,7 @@ int priority;                     /* Overall priority level to use for
  fprintf(stdout, "Xrm_AddOption %p %s %s %d\n", database, name, value, priority);
 #endif
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -295,7 +295,7 @@ ClientData clientData;            /* Main window associated with
                                      * interpreter. */
 Tcl_Interp *interp;               /* Current interpreter. */
 int argc;                         /* Number of arguments. */
-Tcl_Obj *CONST args[];                  /* Argument strings. */
+Arg *args;                        /* Argument strings. */
 {
  Tk_Window tkwin = (Tk_Window) clientData;
  size_t length;
@@ -303,20 +303,20 @@ Tcl_Obj *CONST args[];                  /* Argument strings. */
 
  if (argc < 2)
   {
-   Tcl_AppendResult(interp, "wrong # args: should be \"", Tcl_GetString(args[0]),
+   Tcl_AppendResult(interp, "wrong # args: should be \"", LangString(args[0]),
                     " cmd arg ?arg ...?\"", NULL);
    return TCL_ERROR;
   }
- c = Tcl_GetString(args[1])[0];
- length = strlen(Tcl_GetString(args[1]));
- if ((c == 'a') && (strncmp(Tcl_GetString(args[1]), "add", length) == 0))
+ c = LangString(args[1])[0];
+ length = strlen(LangString(args[1]));
+ if ((c == 'a') && (strncmp(LangString(args[1]), "add", length) == 0))
   {
    int priority;
 
    if ((argc != 4) && (argc != 5))
     {
      Tcl_AppendResult(interp, "wrong # args: should be \"",
-                  Tcl_GetString(args[0]), " add pattern value ?priority?\"", NULL);
+                  LangString(args[0]), " add pattern value ?priority?\"", NULL);
      return TCL_ERROR;
     }
    if (argc == 4)
@@ -325,23 +325,23 @@ Tcl_Obj *CONST args[];                  /* Argument strings. */
     }
    else
     {
-     priority = ParsePriority(interp, Tcl_GetString(args[4]));
+     priority = ParsePriority(interp, LangString(args[4]));
      if (priority < 0)
       {
        return TCL_ERROR;
       }
     }
-   Xrm_AddOption(tkwin, Tcl_GetString(args[2]), Tcl_GetString(args[3]), priority);
+   Xrm_AddOption(tkwin, LangString(args[2]), LangString(args[3]), priority);
    return TCL_OK;
   }
- else if ((c == 'c') && (strncmp(Tcl_GetString(args[1]), "clear", length) == 0))
+ else if ((c == 'c') && (strncmp(LangString(args[1]), "clear", length) == 0))
   {
    TkMainInfo *mainPtr;
 
    if (argc != 2)
     {
      Tcl_AppendResult(interp, "wrong # args: should be \"",
-                      Tcl_GetString(args[0]), " clear\"", NULL);
+                      LangString(args[0]), " clear\"", NULL);
      return TCL_ERROR;
     }
    mainPtr = ((TkWindow *) tkwin)->mainPtr;
@@ -354,7 +354,7 @@ Tcl_Obj *CONST args[];                  /* Argument strings. */
    Qindex = 0;
    return TCL_OK;
   }
- else if ((c == 'g') && (strncmp(Tcl_GetString(args[1]), "get", length) == 0))
+ else if ((c == 'g') && (strncmp(LangString(args[1]), "get", length) == 0))
   {
    Tk_Window window;
    Tk_Uid value;
@@ -362,35 +362,35 @@ Tcl_Obj *CONST args[];                  /* Argument strings. */
    if (argc != 5)
     {
      Tcl_AppendResult(interp, "wrong # args: should be \"",
-                      Tcl_GetString(args[0]), " get window name class\"", NULL);
+                      LangString(args[0]), " get window name class\"", NULL);
      return TCL_ERROR;
     }
-   window = Tk_NameToWindow(interp, Tcl_GetString(args[2]), tkwin);
+   window = Tk_NameToWindow(interp, LangString(args[2]), tkwin);
    if (window == NULL)
     {
      return TCL_ERROR;
     }
-   value = Xrm_GetOption(window, Tcl_GetString(args[3]), Tcl_GetString(args[4]));
+   value = Xrm_GetOption(window, LangString(args[3]), LangString(args[4]));
    if (value != NULL)
     {
-     Tcl_SetResult(interp, (char *) value, TCL_STATIC);
+     Tcl_SetResult(interp, value, TCL_STATIC);
     }
    return TCL_OK;
   }
- else if ((c == 'r') && (strncmp(Tcl_GetString(args[1]), "readfile", length) == 0))
+ else if ((c == 'r') && (strncmp(LangString(args[1]), "readfile", length) == 0))
   {
    int priority;
 
    if ((argc != 3) && (argc != 4))
     {
      Tcl_AppendResult(interp, "wrong # args:  should be \"",
-                      Tcl_GetString(args[0]), " readfile fileName ?priority?\"",
+                      LangString(args[0]), " readfile fileName ?priority?\"",
                       NULL);
      return TCL_ERROR;
     }
    if (argc == 4)
     {
-     priority = ParsePriority(interp, Tcl_GetString(args[3]));
+     priority = ParsePriority(interp, LangString(args[3]));
      if (priority < 0)
       {
        return TCL_ERROR;
@@ -400,16 +400,16 @@ Tcl_Obj *CONST args[];                  /* Argument strings. */
     {
      priority = TK_INTERACTIVE_PRIO;
     }
-   return ReadOptionFile(interp, tkwin, Tcl_GetString(args[2]), priority);
+   return ReadOptionFile(interp, tkwin, LangString(args[2]), priority);
   }
  else
   {
-   Tcl_AppendResult(interp, "bad option \"", Tcl_GetString(args[1]),
+   Tcl_AppendResult(interp, "bad option \"", LangString(args[1]),
                     "\": must be add, clear, get, or readfile", NULL);
    return TCL_ERROR;
   }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -451,7 +451,7 @@ register TkWindow *winPtr;        /* Window to be cleaned up. */
    winPtr->mainPtr->optionRootPtr = NULL;
   }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -489,7 +489,7 @@ TkWindow *winPtr;                 /* Window whose class changed. */
     }
   }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -557,7 +557,7 @@ char *string;                     /* Describes a priority level, either
   }
  return priority;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -620,7 +620,7 @@ int priority;                     /* Priority level to use for options in
  Tcl_DStringFree(&newName);
  return result;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -716,7 +716,7 @@ register TkMainInfo *mainPtr;     /* Top-level information about
     }
   }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -763,5 +763,3 @@ char *class;
  TkoptionVptr->V_TkOptionDeadWindow = XrmOptionDeadWindow;
 #endif
 }
-
-

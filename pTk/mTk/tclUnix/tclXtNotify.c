@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclXtNotify.c,v 1.4 1999/07/02 06:05:34 welch Exp $
+ * RCS: @(#) $Id: tclXtNotify.c,v 1.3 1999/02/03 02:59:08 stanton Exp $
  */
 
 #include <X11/Intrinsic.h>
@@ -79,16 +79,11 @@ static int		FileHandlerEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
 			    int flags));
 static void		FileProc _ANSI_ARGS_((caddr_t clientData,
 			    int *source, XtInputId *id));
-void			InitNotifier _ANSI_ARGS_((void));
+static void		InitNotifier _ANSI_ARGS_((void));
 static void		NotifierExitHandler _ANSI_ARGS_((
 			    ClientData clientData));
 static void		TimerProc _ANSI_ARGS_((caddr_t clientData,
 			    XtIntervalId *id));
-static void		CreateFileHandler _ANSI_ARGS_((int fd, int mask, 
-				Tcl_FileProc * proc, ClientData clientData));
-static void		DeleteFileHandler _ANSI_ARGS_((int fd));
-static void		SetTimer _ANSI_ARGS_((Tcl_Time * timePtr));
-static int		WaitForEvent _ANSI_ARGS_((Tcl_Time * timePtr));
 
 /*
  * Functions defined in this file for use by users of the Xt Notifier:
@@ -185,10 +180,9 @@ TclSetAppContext(appContext)
  *----------------------------------------------------------------------
  */
 
-void
-InitNotifier()
+static void
+InitNotifier(void)
 {
-    Tcl_NotifierProcs notifier;
     /*
      * Only reinitialize if we are not in exit handling. The notifier
      * can get reinitialized after its own exit handler has run, because
@@ -198,12 +192,6 @@ InitNotifier()
     if (TclInExit()) {
         return;
     }
-
-    notifier.createFileHandlerProc = CreateFileHandler;
-    notifier.deleteFileHandlerProc = DeleteFileHandler;
-    notifier.setTimerProc = SetTimer;
-    notifier.waitForEventProc = WaitForEvent;
-    Tcl_SetNotifier(&notifier);
 
     /*
      * DO NOT create the application context yet; doing so would prevent
@@ -253,7 +241,7 @@ NotifierExitHandler(
 /*
  *----------------------------------------------------------------------
  *
- * SetTimer --
+ * Tcl_SetTimer --
  *
  *	This procedure sets the current notifier timeout value.
  *
@@ -266,8 +254,8 @@ NotifierExitHandler(
  *----------------------------------------------------------------------
  */
 
-static void
-SetTimer(timePtr)
+void
+Tcl_SetTimer(timePtr)
     Tcl_Time *timePtr;		/* Timeout value, may be NULL. */
 {
     long timeout;
@@ -323,7 +311,7 @@ TimerProc(data, id)
 /*
  *----------------------------------------------------------------------
  *
- * CreateFileHandler --
+ * Tcl_CreateFileHandler --
  *
  *	This procedure registers a file handler with the Xt notifier.
  *
@@ -337,8 +325,8 @@ TimerProc(data, id)
  *----------------------------------------------------------------------
  */
 
-static void
-CreateFileHandler(fd, mask, proc, clientData)
+void
+Tcl_CreateFileHandler(fd, mask, proc, clientData)
     int fd;			/* Handle of stream to watch. */
     int mask;			/* OR'ed combination of TCL_READABLE,
 				 * TCL_WRITABLE, and TCL_EXCEPTION:
@@ -419,7 +407,7 @@ CreateFileHandler(fd, mask, proc, clientData)
 /*
  *----------------------------------------------------------------------
  *
- * DeleteFileHandler --
+ * Tcl_DeleteFileHandler --
  *
  *	Cancel a previously-arranged callback arrangement for
  *	a file.
@@ -433,8 +421,8 @@ CreateFileHandler(fd, mask, proc, clientData)
  *----------------------------------------------------------------------
  */
 
-static void
-DeleteFileHandler(fd)
+void
+Tcl_DeleteFileHandler(fd)
     int fd;			/* Stream id for which to remove
 				 * callback procedure. */
 {
@@ -621,7 +609,7 @@ FileHandlerEventProc(evPtr, flags)
 /*
  *----------------------------------------------------------------------
  *
- * WaitForEvent --
+ * Tcl_WaitForEvent --
  *
  *	This function is called by Tcl_DoOneEvent to wait for new
  *	events on the message queue.  If the block time is 0, then
@@ -638,8 +626,8 @@ FileHandlerEventProc(evPtr, flags)
  *----------------------------------------------------------------------
  */
 
-static int
-WaitForEvent(
+int
+Tcl_WaitForEvent(
     Tcl_Time *timePtr)		/* Maximum block time, or NULL. */
 {
     int timeout;

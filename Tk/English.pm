@@ -3,7 +3,7 @@ package Tk::English;
 require Exporter;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/English.pm#4 $
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/English.pm#11 $
 
 use base  qw(Exporter);
 
@@ -251,6 +251,7 @@ sub ROUND () { 'round' }
 sub ROW () { 'row' }
 sub ROWCONFIGURE () { 'rowconfigure' }
 sub ROWS () { 'rows' }
+sub SAVEUNDER () { 'saveunder' }
 sub SCALE () { 'scale' }
 sub SCAN () { 'scan' }
 sub SCROLL () { 'scroll' }

@@ -1,4 +1,4 @@
-/*
+/* 
  * tclNotify.c --
  *
  *	This file implements the generic portion of the Tcl notifier.
@@ -13,18 +13,18 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclNotify.c,v 1.9 2002/08/31 06:09:45 das Exp $
+ * RCS: @(#) $Id: tclNotify.c,v 1.3 1998/10/14 21:12:09 rjohnson Exp $
  */
 #include "tkPort.h"
 #include "Lang.h"
 
 #ifdef TCL_EVENT_IMPLEMENT
 
-#ifndef _LANG
-extern TclStubs tclStubs;
-#else
-#include "tkEvent_f.h"
-#endif
+/*
+ * The following static indicates whether this module has been initialized.
+ */
+
+static int initialized = 0;
 
 /*
  * For each event source (created with Tcl_CreateEventSource) there
@@ -39,25 +39,21 @@ typedef struct EventSource {
 } EventSource;
 
 /*
- * The following structure keeps track of the state of the notifier on a
- * per-thread basis. The first three elements keep track of the event queue.
- * In addition to the first (next to be serviced) and last events in the queue,
- * we keep track of a "marker" event.  This provides a simple priority
- * mechanism whereby events can be inserted at the front of the queue but
- * behind all other high-priority events already in the queue (this is used for
- * things like a sequence of Enter and Leave events generated during a grab in
- * Tk).  These elements are protected by the queueMutex so that any thread
- * can queue an event on any notifier.  Note that all of the values in this
- * structure will be initialized to 0.
+ * The following structure keeps track of the state of the notifier.
+ * The first three elements keep track of the event queue.  In addition to
+ * the first (next to be serviced) and last events in the queue, we keep
+ * track of a "marker" event.  This provides a simple priority mechanism
+ * whereby events can be inserted at the front of the queue but behind all
+ * other high-priority events already in the queue (this is used for things
+ * like a sequence of Enter and Leave events generated during a grab in
+ * Tk).
  */
 
-typedef struct ThreadSpecificData {
+static struct {
     Tcl_Event *firstEventPtr;	/* First pending event, or NULL if none. */
     Tcl_Event *lastEventPtr;	/* Last pending event, or NULL if none. */
     Tcl_Event *markerEventPtr;	/* Last high-priority event in queue, or
 				 * NULL if none. */
-    Tcl_Mutex queueMutex;	/* Mutex to protect access to the previous
-				 * three fields. */
     int serviceMode;		/* One of TCL_SERVICE_NONE or
 				 * TCL_SERVICE_ALL. */
     int blockTimeSet;		/* 0 means there is no maximum block
@@ -68,152 +64,68 @@ typedef struct ThreadSpecificData {
 				 * called during an event source traversal. */
     EventSource *firstEventSourcePtr;
 				/* Pointer to first event source in
-				 * list of event sources for this thread. */
-    Tcl_ThreadId threadId;	/* Thread that owns this notifier instance. */
-    ClientData clientData;	/* Opaque handle for platform specific
-				 * notifier. */
-    struct ThreadSpecificData *nextPtr;
-				/* Next notifier in global list of notifiers.
-				 * Access is controlled by the listLock global
-				 * mutex. */
-} ThreadSpecificData;
-
-static Tcl_ThreadDataKey dataKey;
+				 * global list of event sources. */
+} notifier;
 
 /*
- * Global list of notifiers.  Access to this list is controlled by the
- * listLock mutex.  If this becomes a performance bottleneck, this could
- * be replaced with a hashtable.
+ * Declarations for functions used in this file.
  */
 
-static ThreadSpecificData *firstNotifierPtr;
-TCL_DECLARE_MUTEX(listLock)
+static void	InitNotifier _ANSI_ARGS_((void));
+static void	NotifierExitHandler _ANSI_ARGS_((ClientData clientData));
 
-/*
- * Declarations for routines used only in this file.
- */
+static void	InitNotifier _ANSI_ARGS_((void));
+static void	NotifierExitHandler _ANSI_ARGS_((ClientData clientData));
 
-static void		QueueEvent _ANSI_ARGS_((ThreadSpecificData *tsdPtr,
-			    Tcl_Event* evPtr, Tcl_QueuePosition position));
-
+
 /*
  *----------------------------------------------------------------------
  *
- * TclInitNotifier --
+ * InitNotifier --
  *
- *	Initialize the thread local data structures for the notifier
- *	subsystem.
+ *	This routine is called to initialize the notifier module.
  *
  * Results:
  *	None.
  *
  * Side effects:
- *	Adds the current thread to the global list of notifiers.
+ *	Creates an exit handler and initializes static data.
  *
  *----------------------------------------------------------------------
  */
 
-void
-TclInitNotifier()
+static void
+InitNotifier()
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-
-    Tcl_MutexLock(&listLock);
-
-    tsdPtr->threadId = Tcl_GetCurrentThread();
-    tsdPtr->clientData = tclStubs.tcl_InitNotifier();
-    tsdPtr->nextPtr = firstNotifierPtr;
-    firstNotifierPtr = tsdPtr;
-
-    Tcl_MutexUnlock(&listLock);
+    initialized = 1;
+    memset(&notifier, 0, sizeof(notifier));
+    notifier.serviceMode = TCL_SERVICE_NONE;
+    Tcl_CreateExitHandler(NotifierExitHandler, NULL);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * TclFinalizeNotifier --
+ * NotifierExitHandler --
  *
- *	Finalize the thread local data structures for the notifier
- *	subsystem.
+ *	This routine is called during Tcl finalization.
  *
  * Results:
  *	None.
  *
  * Side effects:
- *	Removes the notifier associated with the current thread from
- *	the global notifier list.
+ *	Clears the notifier intialization flag.
  *
  *----------------------------------------------------------------------
  */
 
-void
-TclFinalizeNotifier()
+static void
+NotifierExitHandler(clientData)
+    ClientData clientData;  /* Not used. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-    ThreadSpecificData **prevPtrPtr;
-    Tcl_Event *evPtr, *hold;
-
-    Tcl_MutexLock(&(tsdPtr->queueMutex));
-    for (evPtr = tsdPtr->firstEventPtr; evPtr != (Tcl_Event *) NULL; ) {
-	hold = evPtr;
-	evPtr = evPtr->nextPtr;
-	ckfree((char *) hold);
-    }
-    tsdPtr->firstEventPtr = NULL;
-    tsdPtr->lastEventPtr = NULL;
-    Tcl_MutexUnlock(&(tsdPtr->queueMutex));
-
-    Tcl_MutexLock(&listLock);
-
-    tclStubs.tcl_FinalizeNotifier(tsdPtr->clientData);
-    Tcl_MutexFinalize(&(tsdPtr->queueMutex));
-    for (prevPtrPtr = &firstNotifierPtr; *prevPtrPtr != NULL;
-	 prevPtrPtr = &((*prevPtrPtr)->nextPtr)) {
-	if (*prevPtrPtr == tsdPtr) {
-	    *prevPtrPtr = tsdPtr->nextPtr;
-	    break;
-	}
-    }
-
-    Tcl_MutexUnlock(&listLock);
+    initialized = 0;
 }
-
-/*
- *----------------------------------------------------------------------
- *
- * Tcl_SetNotifier --
- *
- *	Install a set of alternate functions for use with the notifier.
- *	In particular, this can be used to install the Xt-based
- *	notifier for use with the Browser plugin.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Overstomps part of the stub vector.  This relies on hooks
- *	added to the default procedures in case those are called
- *	directly (i.e., not through the stub table.)
- *
- *----------------------------------------------------------------------
- */
-
-void
-Tcl_SetNotifier(notifierProcPtr)
-    Tcl_NotifierProcs *notifierProcPtr;
-{
-#if !defined(__WIN32__) && !defined(MAC_TCL) /* UNIX */
-    tclStubs.tcl_CreateFileHandler = notifierProcPtr->createFileHandlerProc;
-    tclStubs.tcl_DeleteFileHandler = notifierProcPtr->deleteFileHandlerProc;
-#endif
-    tclStubs.tcl_SetTimer = notifierProcPtr->setTimerProc;
-    tclStubs.tcl_WaitForEvent = notifierProcPtr->waitForEventProc;
-    tclStubs.tcl_InitNotifier = notifierProcPtr->initNotifierProc;
-    tclStubs.tcl_FinalizeNotifier = notifierProcPtr->finalizeNotifierProc;
-    tclStubs.tcl_AlertNotifier = notifierProcPtr->alertNotifierProc;
-    tclStubs.tcl_ServiceModeHook = notifierProcPtr->serviceModeHookProc;
-}
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -232,12 +144,12 @@ Tcl_SetNotifier(notifierProcPtr)
  *	SetupProc and checkProc will be invoked each time that Tcl_DoOneEvent
  *	runs out of things to do.  SetupProc will be invoked before
  *	Tcl_DoOneEvent calls select or whatever else it uses to wait
- *	for events.  SetupProc typically calls functions like
- *	Tcl_SetMaxBlockTime to indicate what to wait for.
+ *	for events.  SetupProc typically calls functions like Tcl_WatchFile
+ *	or Tcl_SetMaxBlockTime to indicate what to wait for.
  *
  *	CheckProc is called after select or whatever operation was actually
  *	used to wait.  It figures out whether anything interesting actually
- *	happened (e.g. by calling Tcl_AsyncReady), and then calls
+ *	happened (e.g. by calling Tcl_FileReady), and then calls
  *	Tcl_QueueEvent to queue any events that are ready.
  *
  *	Each of these procedures is passed two arguments, e.g.
@@ -259,16 +171,20 @@ Tcl_CreateEventSource(setupProc, checkProc, clientData)
     ClientData clientData;		/* One-word argument to pass to
 					 * setupProc and checkProc. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-    EventSource *sourcePtr = (EventSource *) ckalloc(sizeof(EventSource));
+    EventSource *sourcePtr;
 
+    if (!initialized) {
+	InitNotifier();
+    }
+
+    sourcePtr = (EventSource *) ckalloc(sizeof(EventSource));
     sourcePtr->setupProc = setupProc;
     sourcePtr->checkProc = checkProc;
     sourcePtr->clientData = clientData;
-    sourcePtr->nextPtr = tsdPtr->firstEventSourcePtr;
-    tsdPtr->firstEventSourcePtr = sourcePtr;
+    sourcePtr->nextPtr = notifier.firstEventSourcePtr;
+    notifier.firstEventSourcePtr = sourcePtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -297,10 +213,9 @@ Tcl_DeleteEventSource(setupProc, checkProc, clientData)
     ClientData clientData;		/* One-word argument to pass to
 					 * setupProc and checkProc. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
     EventSource *sourcePtr, *prevPtr;
 
-    for (sourcePtr = tsdPtr->firstEventSourcePtr, prevPtr = NULL;
+    for (sourcePtr = notifier.firstEventSourcePtr, prevPtr = NULL;
 	    sourcePtr != NULL;
 	    prevPtr = sourcePtr, sourcePtr = sourcePtr->nextPtr) {
 	if ((sourcePtr->setupProc != setupProc)
@@ -309,7 +224,7 @@ Tcl_DeleteEventSource(setupProc, checkProc, clientData)
 	    continue;
 	}
 	if (prevPtr == NULL) {
-	    tsdPtr->firstEventSourcePtr = sourcePtr->nextPtr;
+	    notifier.firstEventSourcePtr = sourcePtr->nextPtr;
 	} else {
 	    prevPtr->nextPtr = sourcePtr->nextPtr;
 	}
@@ -317,14 +232,18 @@ Tcl_DeleteEventSource(setupProc, checkProc, clientData)
 	return;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
  * Tcl_QueueEvent --
  *
- *	Queue an event on the event queue associated with the
- *	current thread.
+ *	Insert an event into the Tk event queue at one of three
+ *	positions: the head, the tail, or before a floating marker.
+ *	Events inserted before the marker will be processed in
+ *	first-in-first-out order, but before any events inserted at
+ *	the tail of the queue.  Events inserted at the head of the
+ *	queue will be processed in last-in-first-out order.
  *
  * Results:
  *	None.
@@ -346,16 +265,55 @@ Tcl_QueueEvent(evPtr, position)
     Tcl_QueuePosition position;	/* One of TCL_QUEUE_TAIL, TCL_QUEUE_HEAD,
 				 * TCL_QUEUE_MARK. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-    QueueEvent(tsdPtr, evPtr, position);
-}
+    if (!initialized) {
+	InitNotifier();
+    }
 
+    if (position == TCL_QUEUE_TAIL) {
+	/*
+	 * Append the event on the end of the queue.
+	 */
+
+	evPtr->nextPtr = NULL;
+	if (notifier.firstEventPtr == NULL) {
+	    notifier.firstEventPtr = evPtr;
+	} else {
+	    notifier.lastEventPtr->nextPtr = evPtr;
+	}
+	notifier.lastEventPtr = evPtr;
+    } else if (position == TCL_QUEUE_HEAD) {
+	/*
+	 * Push the event on the head of the queue.
+	 */
+
+	evPtr->nextPtr = notifier.firstEventPtr;
+	if (notifier.firstEventPtr == NULL) {
+	    notifier.lastEventPtr = evPtr;
+	}	    
+	notifier.firstEventPtr = evPtr;
+    } else if (position == TCL_QUEUE_MARK) {
+	/*
+	 * Insert the event after the current marker event and advance
+	 * the marker to the new event.
+	 */
+
+	if (notifier.markerEventPtr == NULL) {
+	    evPtr->nextPtr = notifier.firstEventPtr;
+	    notifier.firstEventPtr = evPtr;
+	} else {
+	    evPtr->nextPtr = notifier.markerEventPtr->nextPtr;
+	    notifier.markerEventPtr->nextPtr = evPtr;
+	}
+	notifier.markerEventPtr = evPtr;
+	if (evPtr->nextPtr == NULL) {
+	    notifier.lastEventPtr = evPtr;
+	}
+    }
+}
 /*
  *----------------------------------------------------------------------
  *
- * Tcl_ThreadQueueEvent --
- *
- *	Queue an event on the specified thread's event queue.
+ * Tcl_QueueProcEvent --
  *
  * Results:
  *	None.
@@ -367,8 +325,8 @@ Tcl_QueueEvent(evPtr, position)
  */
 
 void
-Tcl_ThreadQueueEvent(threadId, evPtr, position)
-    Tcl_ThreadId threadId;	/* Identifier for thread to use. */
+Tcl_QueueProcEvent(proc, evPtr, position)
+    Tcl_EventProc *proc;	
     Tcl_Event* evPtr;		/* Event to add to queue.  The storage
 				 * space must have been allocated the caller
 				 * with malloc (ckalloc), and it becomes
@@ -378,106 +336,10 @@ Tcl_ThreadQueueEvent(threadId, evPtr, position)
     Tcl_QueuePosition position;	/* One of TCL_QUEUE_TAIL, TCL_QUEUE_HEAD,
 				 * TCL_QUEUE_MARK. */
 {
-    ThreadSpecificData *tsdPtr;
-
-    /*
-     * Find the notifier associated with the specified thread.
-     */
-
-    Tcl_MutexLock(&listLock);
-    for (tsdPtr = firstNotifierPtr; tsdPtr && tsdPtr->threadId != threadId;
-	     tsdPtr = tsdPtr->nextPtr) {
-	/* Empty loop body. */
-    }
-
-    /*
-     * Queue the event if there was a notifier associated with the thread.
-     */
-
-    if (tsdPtr) {
-	QueueEvent(tsdPtr, evPtr, position);
-    }
-    Tcl_MutexUnlock(&listLock);
+    evPtr->proc = proc;
+    Tcl_QueueEvent(evPtr, position);
 }
-
-/*
- *----------------------------------------------------------------------
- *
- * QueueEvent --
- *
- *	Insert an event into the specified thread's event queue at one
- *	of three positions: the head, the tail, or before a floating
- *	marker. Events inserted before the marker will be processed in
- *	first-in-first-out order, but before any events inserted at
- *	the tail of the queue.  Events inserted at the head of the
- *	queue will be processed in last-in-first-out order.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-QueueEvent(tsdPtr, evPtr, position)
-    ThreadSpecificData *tsdPtr;	/* Handle to thread local data that indicates
-				 * which event queue to use. */
-    Tcl_Event* evPtr;		/* Event to add to queue.  The storage
-				 * space must have been allocated the caller
-				 * with malloc (ckalloc), and it becomes
-				 * the property of the event queue.  It
-				 * will be freed after the event has been
-				 * handled. */
-    Tcl_QueuePosition position;	/* One of TCL_QUEUE_TAIL, TCL_QUEUE_HEAD,
-				 * TCL_QUEUE_MARK. */
-{
-    Tcl_MutexLock(&(tsdPtr->queueMutex));
-    if (position == TCL_QUEUE_TAIL) {
-	/*
-	 * Append the event on the end of the queue.
-	 */
-
-	evPtr->nextPtr = NULL;
-	if (tsdPtr->firstEventPtr == NULL) {
-	    tsdPtr->firstEventPtr = evPtr;
-	} else {
-	    tsdPtr->lastEventPtr->nextPtr = evPtr;
-	}
-	tsdPtr->lastEventPtr = evPtr;
-    } else if (position == TCL_QUEUE_HEAD) {
-	/*
-	 * Push the event on the head of the queue.
-	 */
-
-	evPtr->nextPtr = tsdPtr->firstEventPtr;
-	if (tsdPtr->firstEventPtr == NULL) {
-	    tsdPtr->lastEventPtr = evPtr;
-	}
-	tsdPtr->firstEventPtr = evPtr;
-    } else if (position == TCL_QUEUE_MARK) {
-	/*
-	 * Insert the event after the current marker event and advance
-	 * the marker to the new event.
-	 */
-
-	if (tsdPtr->markerEventPtr == NULL) {
-	    evPtr->nextPtr = tsdPtr->firstEventPtr;
-	    tsdPtr->firstEventPtr = evPtr;
-	} else {
-	    evPtr->nextPtr = tsdPtr->markerEventPtr->nextPtr;
-	    tsdPtr->markerEventPtr->nextPtr = evPtr;
-	}
-	tsdPtr->markerEventPtr = evPtr;
-	if (evPtr->nextPtr == NULL) {
-	    tsdPtr->lastEventPtr = evPtr;
-	}
-    }
-    Tcl_MutexUnlock(&(tsdPtr->queueMutex));
-}
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -485,8 +347,7 @@ QueueEvent(tsdPtr, evPtr, position)
  *
  *	Calls a procedure for each event in the queue and deletes those
  *	for which the procedure returns 1. Events for which the
- *	procedure returns 0 are left in the queue.  Operates on the
- *	queue associated with the current thread.
+ *	procedure returns 0 are left in the queue.
  *
  * Results:
  *	None.
@@ -503,20 +364,22 @@ Tcl_DeleteEvents(proc, clientData)
     ClientData clientData;    		/* type-specific data. */
 {
     Tcl_Event *evPtr, *prevPtr, *hold;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    Tcl_MutexLock(&(tsdPtr->queueMutex));
-    for (prevPtr = (Tcl_Event *) NULL, evPtr = tsdPtr->firstEventPtr;
+    if (!initialized) {
+	InitNotifier();
+    }
+
+    for (prevPtr = (Tcl_Event *) NULL, evPtr = notifier.firstEventPtr;
              evPtr != (Tcl_Event *) NULL;
              ) {
         if ((*proc) (evPtr, clientData) == 1) {
-            if (tsdPtr->firstEventPtr == evPtr) {
-                tsdPtr->firstEventPtr = evPtr->nextPtr;
-                if (evPtr->nextPtr == (Tcl_Event *) NULL) {
-                    tsdPtr->lastEventPtr = prevPtr;
+            if (notifier.firstEventPtr == evPtr) {
+                notifier.firstEventPtr = evPtr->nextPtr;
+                if (evPtr->nextPtr == NULL) {
+                    notifier.lastEventPtr = prevPtr;
                 }
-		if (tsdPtr->markerEventPtr == evPtr) {
-		    tsdPtr->markerEventPtr = prevPtr;
+		if (notifier.markerEventPtr == evPtr) {
+		    notifier.markerEventPtr = prevPtr;
 		}
             } else {
                 prevPtr->nextPtr = evPtr->nextPtr;
@@ -529,17 +392,15 @@ Tcl_DeleteEvents(proc, clientData)
             evPtr = evPtr->nextPtr;
         }
     }
-    Tcl_MutexUnlock(&(tsdPtr->queueMutex));
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
  * Tcl_ServiceEvent --
  *
  *	Process one event from the event queue, or invoke an
- *	asynchronous event handler.  Operates on event queue for
- *	current thread.
+ *	asynchronous event handler.
  *
  * Results:
  *	The return value is 1 if the procedure actually found an event
@@ -564,15 +425,17 @@ Tcl_ServiceEvent(flags)
 {
     Tcl_Event *evPtr, *prevPtr;
     Tcl_EventProc *proc;
-    int result;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+
+    if (!initialized) {
+	InitNotifier();
+    }
 
     /*
      * Asynchronous event handlers are considered to be the highest
      * priority events, and so must be invoked before we process events
      * on the event queue.
      */
-
+    
     if (Tcl_AsyncReady()) {
 	(void) Tcl_AsyncInvoke((Tcl_Interp *) NULL, 0);
 	return 1;
@@ -581,7 +444,7 @@ Tcl_ServiceEvent(flags)
     /*
      * No event flags is equivalent to TCL_ALL_EVENTS.
      */
-
+    
     if ((flags & TCL_ALL_EVENTS) == 0) {
 	flags |= TCL_ALL_EVENTS;
     }
@@ -591,13 +454,12 @@ Tcl_ServiceEvent(flags)
      * that can actually be handled.
      */
 
-    Tcl_MutexLock(&(tsdPtr->queueMutex));
-    for (evPtr = tsdPtr->firstEventPtr; evPtr != NULL;
+    for (evPtr = notifier.firstEventPtr; evPtr != NULL;
 	 evPtr = evPtr->nextPtr) {
 	/*
 	 * Call the handler for the event.  If it actually handles the
 	 * event then free the storage for the event.  There are two
-	 * tricky things here, both stemming from the fact that the event
+	 * tricky things here, but stemming from the fact that the event
 	 * code may be re-entered while servicing the event:
 	 *
 	 * 1. Set the "proc" field to NULL.  This is a signal to ourselves
@@ -611,57 +473,30 @@ Tcl_ServiceEvent(flags)
 	 */
 
 	proc = evPtr->proc;
-	if (proc == NULL) {
-	    continue;
-	}
 	evPtr->proc = NULL;
-
-	/*
-	 * Release the lock before calling the event procedure.  This
-	 * allows other threads to post events if we enter a recursive
-	 * event loop in this thread.  Note that we are making the assumption
-	 * that if the proc returns 0, the event is still in the list.
-	 */
-
-	Tcl_MutexUnlock(&(tsdPtr->queueMutex));
-	result = (*proc)(evPtr, flags);
-	Tcl_MutexLock(&(tsdPtr->queueMutex));
-
-	if (result) {
-	    /*
-	     * The event was processed, so remove it from the queue.
-	     */
-
-	    if (tsdPtr->firstEventPtr == evPtr) {
-		tsdPtr->firstEventPtr = evPtr->nextPtr;
+	if ((proc != NULL) && (*proc)(evPtr, flags)) {
+	    if (notifier.firstEventPtr == evPtr) {
+		notifier.firstEventPtr = evPtr->nextPtr;
 		if (evPtr->nextPtr == NULL) {
-		    tsdPtr->lastEventPtr = NULL;
+		    notifier.lastEventPtr = NULL;
 		}
-		if (tsdPtr->markerEventPtr == evPtr) {
-		    tsdPtr->markerEventPtr = NULL;
+		if (notifier.markerEventPtr == evPtr) {
+		    notifier.markerEventPtr = NULL;
 		}
 	    } else {
-		for (prevPtr = tsdPtr->firstEventPtr;
-		     prevPtr && prevPtr->nextPtr != evPtr;
-		     prevPtr = prevPtr->nextPtr) {
+		for (prevPtr = notifier.firstEventPtr;
+		     prevPtr->nextPtr != evPtr; prevPtr = prevPtr->nextPtr) {
 		    /* Empty loop body. */
 		}
-		if (prevPtr) {
-		    prevPtr->nextPtr = evPtr->nextPtr;
-		    if (evPtr->nextPtr == NULL) {
-			tsdPtr->lastEventPtr = prevPtr;
-		    }
-		    if (tsdPtr->markerEventPtr == evPtr) {
-			tsdPtr->markerEventPtr = prevPtr;
-		    }
-		} else {
-		    evPtr = NULL;
+		prevPtr->nextPtr = evPtr->nextPtr;
+		if (evPtr->nextPtr == NULL) {
+		    notifier.lastEventPtr = prevPtr;
+		}
+		if (notifier.markerEventPtr == evPtr) {
+		    notifier.markerEventPtr = prevPtr;
 		}
 	    }
-	    if (evPtr) {
-		ckfree((char *) evPtr);
-	    }
-	    Tcl_MutexUnlock(&(tsdPtr->queueMutex));
+	    ckfree((char *) evPtr);
 	    return 1;
 	} else {
 	    /*
@@ -671,11 +506,17 @@ Tcl_ServiceEvent(flags)
 
 	    evPtr->proc = proc;
 	}
+
+	/*
+	 * The handler for this event asked to defer it.  Just go on to
+	 * the next event.
+	 */
+
+	continue;
     }
-    Tcl_MutexUnlock(&(tsdPtr->queueMutex));
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -695,23 +536,25 @@ Tcl_ServiceEvent(flags)
 int
 Tcl_GetServiceMode()
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    if (!initialized) {
+	InitNotifier();
+    }
 
-    return tsdPtr->serviceMode;
+    return notifier.serviceMode;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
  * Tcl_SetServiceMode --
  *
- *	This routine sets the current service mode of the tsdPtr->
+ *	This routine sets the current service mode of the notifier.
  *
  * Results:
  *	Returns the previous service mode.
  *
  * Side effects:
- *	Invokes the notifier service mode hook procedure.
+ *	None.
  *
  *----------------------------------------------------------------------
  */
@@ -722,14 +565,16 @@ Tcl_SetServiceMode(mode)
 				 * TCL_SERVICE_NONE */
 {
     int oldMode;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    oldMode = tsdPtr->serviceMode;
-    tsdPtr->serviceMode = mode;
-    tclStubs.tcl_ServiceModeHook(mode);
+    if (!initialized) {
+	InitNotifier();
+    }
+
+    oldMode = notifier.serviceMode;
+    notifier.serviceMode = mode;
     return oldMode;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -744,7 +589,7 @@ Tcl_SetServiceMode(mode)
  *	None.
  *
  * Side effects:
- *	May reduce the length of the next sleep in the tsdPtr->
+ *	May reduce the length of the next sleep in the notifier.
  *
  *----------------------------------------------------------------------
  */
@@ -753,15 +598,17 @@ void
 Tcl_SetMaxBlockTime(timePtr)
     Tcl_Time *timePtr;		/* Specifies a maximum elapsed time for
 				 * the next blocking operation in the
-				 * event tsdPtr-> */
+				 * event notifier. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    if (!initialized) {
+	InitNotifier();
+    }
 
-    if (!tsdPtr->blockTimeSet || (timePtr->sec < tsdPtr->blockTime.sec)
-	    || ((timePtr->sec == tsdPtr->blockTime.sec)
-	    && (timePtr->usec < tsdPtr->blockTime.usec))) {
-	tsdPtr->blockTime = *timePtr;
-	tsdPtr->blockTimeSet = 1;
+    if (!notifier.blockTimeSet || (timePtr->sec < notifier.blockTime.sec)
+	    || ((timePtr->sec == notifier.blockTime.sec)
+	    && (timePtr->usec < notifier.blockTime.usec))) {
+	notifier.blockTime = *timePtr;
+	notifier.blockTimeSet = 1;
     }
 
     /*
@@ -769,15 +616,15 @@ Tcl_SetMaxBlockTime(timePtr)
      * timeout immediately.
      */
 
-    if (!tsdPtr->inTraversal) {
-	if (tsdPtr->blockTimeSet) {
-	    Tcl_SetTimer(&tsdPtr->blockTime);
+    if (!notifier.inTraversal) {
+	if (notifier.blockTimeSet) {
+	    Tcl_SetTimer(&notifier.blockTime);
 	} else {
 	    Tcl_SetTimer(NULL);
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -812,13 +659,16 @@ Tcl_DoOneEvent(flags)
     int result = 0, oldMode;
     EventSource *sourcePtr;
     Tcl_Time *timePtr;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+
+    if (!initialized) {
+	InitNotifier();
+    }
 
     /*
      * The first thing we do is to service any asynchronous event
      * handlers.
      */
-
+    
     if (Tcl_AsyncReady()) {
 	(void) Tcl_AsyncInvoke((Tcl_Interp *) NULL, 0);
 	return 1;
@@ -827,7 +677,7 @@ Tcl_DoOneEvent(flags)
     /*
      * No event flags is equivalent to TCL_ALL_EVENTS.
      */
-
+    
     if ((flags & TCL_ALL_EVENTS) == 0) {
 	flags |= TCL_ALL_EVENTS;
     }
@@ -837,8 +687,8 @@ Tcl_DoOneEvent(flags)
      * try to service events recursively.
      */
 
-    oldMode = tsdPtr->serviceMode;
-    tsdPtr->serviceMode = TCL_SERVICE_NONE;
+    oldMode = notifier.serviceMode;
+    notifier.serviceMode = TCL_SERVICE_NONE;
 
     /*
      * The core of this procedure is an infinite loop, even though
@@ -864,7 +714,7 @@ Tcl_DoOneEvent(flags)
 	 */
 
 	if (Tcl_ServiceEvent(flags)) {
-	    result = 1;
+	    result = 1;	    
 	    break;
 	}
 
@@ -874,11 +724,11 @@ Tcl_DoOneEvent(flags)
 	 */
 
 	if (flags & TCL_DONT_WAIT) {
-	    tsdPtr->blockTime.sec = 0;
-	    tsdPtr->blockTime.usec = 0;
-	    tsdPtr->blockTimeSet = 1;
+	    notifier.blockTime.sec = 0;
+	    notifier.blockTime.usec = 0;
+	    notifier.blockTimeSet = 1;
 	} else {
-	    tsdPtr->blockTimeSet = 0;
+	    notifier.blockTimeSet = 0;
 	}
 
 	/*
@@ -886,17 +736,17 @@ Tcl_DoOneEvent(flags)
 	 * cause the block time to be updated if necessary.
 	 */
 
-	tsdPtr->inTraversal = 1;
-	for (sourcePtr = tsdPtr->firstEventSourcePtr; sourcePtr != NULL;
+	notifier.inTraversal = 1;
+	for (sourcePtr = notifier.firstEventSourcePtr; sourcePtr != NULL;
 	     sourcePtr = sourcePtr->nextPtr) {
 	    if (sourcePtr->setupProc) {
 		(sourcePtr->setupProc)(sourcePtr->clientData, flags);
 	    }
 	}
-	tsdPtr->inTraversal = 0;
+	notifier.inTraversal = 0;
 
-	if ((flags & TCL_DONT_WAIT) || tsdPtr->blockTimeSet) {
-	    timePtr = &tsdPtr->blockTime;
+	if ((flags & TCL_DONT_WAIT) || notifier.blockTimeSet) {
+	    timePtr = &notifier.blockTime;
 	} else {
 	    timePtr = NULL;
 	}
@@ -916,7 +766,7 @@ Tcl_DoOneEvent(flags)
 	 * Check all the event sources for new events.
 	 */
 
-	for (sourcePtr = tsdPtr->firstEventSourcePtr; sourcePtr != NULL;
+	for (sourcePtr = notifier.firstEventSourcePtr; sourcePtr != NULL;
 	     sourcePtr = sourcePtr->nextPtr) {
 	    if (sourcePtr->checkProc) {
 		(sourcePtr->checkProc)(sourcePtr->clientData, flags);
@@ -954,8 +804,8 @@ Tcl_DoOneEvent(flags)
 	 * indicating that one system event has been dispatched
 	 * (and thus that some Tcl code might have been indirectly executed),
 	 * we break out of the loop.
-	 * We do this to give VwaitCmd for instance a chance to check
-	 * if that system event had the side effect of changing the
+	 * We do this to give VwaitCmd for instance a chance to check 
+	 * if that system event had the side effect of changing the 
 	 * variable (so the vwait can return and unwind properly).
 	 *
 	 * NB: We will process idle events if any first, because
@@ -969,10 +819,10 @@ Tcl_DoOneEvent(flags)
 
     }
 
-    tsdPtr->serviceMode = oldMode;
+    notifier.serviceMode = oldMode;
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -999,9 +849,12 @@ Tcl_ServiceAll()
 {
     int result = 0;
     EventSource *sourcePtr;
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    if (tsdPtr->serviceMode == TCL_SERVICE_NONE) {
+    if (!initialized) {
+	InitNotifier();
+    }
+
+    if (notifier.serviceMode == TCL_SERVICE_NONE) {
 	return result;
     }
 
@@ -1009,8 +862,8 @@ Tcl_ServiceAll()
      * We need to turn off event servicing like we to in Tcl_DoOneEvent,
      * to avoid recursive calls.
      */
-
-    tsdPtr->serviceMode = TCL_SERVICE_NONE;
+    
+    notifier.serviceMode = TCL_SERVICE_NONE;
 
     /*
      * Check async handlers first.
@@ -1026,16 +879,16 @@ Tcl_ServiceAll()
      * timer until the end so we can avoid multiple changes.
      */
 
-    tsdPtr->inTraversal = 1;
-    tsdPtr->blockTimeSet = 0;
+    notifier.inTraversal = 1;
+    notifier.blockTimeSet = 0;
 
-    for (sourcePtr = tsdPtr->firstEventSourcePtr; sourcePtr != NULL;
+    for (sourcePtr = notifier.firstEventSourcePtr; sourcePtr != NULL;
 	 sourcePtr = sourcePtr->nextPtr) {
 	if (sourcePtr->setupProc) {
 	    (sourcePtr->setupProc)(sourcePtr->clientData, TCL_ALL_EVENTS);
 	}
     }
-    for (sourcePtr = tsdPtr->firstEventSourcePtr; sourcePtr != NULL;
+    for (sourcePtr = notifier.firstEventSourcePtr; sourcePtr != NULL;
 	 sourcePtr = sourcePtr->nextPtr) {
 	if (sourcePtr->checkProc) {
 	    (sourcePtr->checkProc)(sourcePtr->clientData, TCL_ALL_EVENTS);
@@ -1049,74 +902,14 @@ Tcl_ServiceAll()
 	result = 1;
     }
 
-    if (!tsdPtr->blockTimeSet) {
+    if (!notifier.blockTimeSet) {
 	Tcl_SetTimer(NULL);
     } else {
-	Tcl_SetTimer(&tsdPtr->blockTime);
+	Tcl_SetTimer(&notifier.blockTime);
     }
-    tsdPtr->inTraversal = 0;
-    tsdPtr->serviceMode = TCL_SERVICE_ALL;
+    notifier.inTraversal = 0;
+    notifier.serviceMode = TCL_SERVICE_ALL;
     return result;
 }
 
-/*
- *----------------------------------------------------------------------
- *
- * Tcl_ThreadAlert --
- *
- *	This function wakes up the notifier associated with the
- *	specified thread (if there is one).
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-void
-Tcl_ThreadAlert(threadId)
-    Tcl_ThreadId threadId;	/* Identifier for thread to use. */
-{
-    ThreadSpecificData *tsdPtr;
-
-    /*
-     * Find the notifier associated with the specified thread.
-     * Note that we need to hold the listLock while calling
-     * Tcl_AlertNotifier to avoid a race condition where
-     * the specified thread might destroy its notifier.
-     */
-
-    Tcl_MutexLock(&listLock);
-    for (tsdPtr = firstNotifierPtr; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
-	if (tsdPtr->threadId == threadId) {
-	    tclStubs.tcl_AlertNotifier(tsdPtr->clientData);
-	    break;
-	}
-    }
-    Tcl_MutexUnlock(&listLock);
-}
-
-
-
-void
-Tcl_QueueProcEvent(proc, evPtr, position)
-    Tcl_EventProc *proc;
-    Tcl_Event* evPtr;		/* Event to add to queue.  The storage
-				 * space must have been allocated the caller
-				 * with malloc (ckalloc), and it becomes
-				 * the property of the event queue.  It
-				 * will be freed after the event has been
-				 * handled. */
-    Tcl_QueuePosition position;	/* One of TCL_QUEUE_TAIL, TCL_QUEUE_HEAD,
-				 * TCL_QUEUE_MARK. */
-{
-    evPtr->proc = proc;
-    Tcl_QueueEvent(evPtr, position);
-}
-
-
-
-#endif /* TCL_EVENT_IMPLEMENT */
+#endif

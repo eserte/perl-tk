@@ -26,12 +26,12 @@ $f2b2->pack(-side=>'left');
 
 my $cref = $MW->ColorEditor(
     -title  => 'Test CE',
-    -cursor => ['@' . Tk->findINC('demos/images/cursor.xbm'),
+    -cursor => ['@' . Tk->findINC('demos/images/cursor.xbm'), 
                  Tk->findINC('demos/images/cursor.mask'), 'red', 'green'],
 );
 $ce->configure(-command => [$cref => 'Show']);
 
-# Configure the color menu slightly.  The default color_list explicity
+# Configure the color menu slightly.  The default color_list explicity 
 # references only three of the four buttons so applying colors only effects
 # them.  If you uncomment the `get_widget_tree' call the color_list then
 # becomes those widgets of the hierarchy starting at $f2, i.e. only the last
@@ -43,7 +43,7 @@ sub my_special_configurator {
     # If you choose to supply a non-standard color configurator use the
     # default code `configure_application_colors' in ColorEditor.pm as a
     # guide to the internals of the ColorEditor object.
-
+    
     my($objref, $type, $color) = @_;
 
     print "\nColorEditor object reference : $objref\n";

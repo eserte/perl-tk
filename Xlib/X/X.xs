@@ -2157,7 +2157,7 @@ not_there:
 }
 
 
-MODULE = Tk::X		PACKAGE = Tk::X
+MODULE = Tk::X		PACKAGE = Tk::X		
 
 PROTOTYPES: ENABLE
 

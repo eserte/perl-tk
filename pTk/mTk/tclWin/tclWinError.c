@@ -1,4 +1,4 @@
-/*
+/* 
  * tclWinError.c --
  *
  *	This file contains code for converting from Win32 errors to
@@ -9,10 +9,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclWinError.c,v 1.5 2002/05/27 10:14:21 dkf Exp $
+ * RCS: @(#) $Id: tclWinError.c,v 1.2 1998/09/14 18:40:19 stanton Exp $
  */
 
-#include "tclWinInt.h"
+#include "tclInt.h"
+#include "tclPort.h"
 
 /*
  * The following table contains the mapping from Win32 errors to
@@ -147,11 +148,11 @@ static char errorTable[] = {
     EINVAL,	/* 124 */
     EINVAL,	/* 125 */
     EINVAL,	/* 126 */
-    EINVAL,	/* ERROR_PROC_NOT_FOUND		127 */
+    ESRCH,	/* ERROR_PROC_NOT_FOUND		127 */
     ECHILD,	/* ERROR_WAIT_NO_CHILDREN	128 */
     ECHILD,	/* ERROR_CHILD_NOT_COMPLETE	129 */
     EBADF,	/* ERROR_DIRECT_ACCESS_HANDLE	130 */
-    EINVAL,	/* ERROR_NEGATIVE_SEEK		131 */
+    EINVAL,	/* 131 */
     ESPIPE,	/* ERROR_SEEK_ON_DEVICE		132 */
     EINVAL,	/* 133 */
     EINVAL,	/* 134 */
@@ -336,7 +337,7 @@ static int wsaErrorTable[] = {
     ESTALE,		/* WSAESTALE */
     EREMOTE,		/* WSAEREMOTE */
 };
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -363,7 +364,7 @@ TclWinConvertError(errCode)
 	Tcl_SetErrno(errorTable[errCode]);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

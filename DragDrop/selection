@@ -48,7 +48,7 @@ sub ShowTargets
   {
    printf "owner of $seln is %x\n",$own;
    $lb->delete(0,'end');
-   eval {
+   eval { 
    my @targ = $lb->SelectionGet('-selection'=>$seln,'TARGETS');
    $lb->insert('end',@targ);
    foreach (@targ)

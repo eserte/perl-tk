@@ -48,7 +48,7 @@ static int tob64 _ANSI_ARGS_((ClientData clientData, Tcl_Interp *interp,
 		int argc, Tcl_Obj *CONST objv[]));
 static int fromb64 _ANSI_ARGS_((ClientData clientData, Tcl_Interp *interp,
 		int argc, Tcl_Obj *CONST objv[]));
-#endif
+#endif                
 
 #ifndef _LANG
 
@@ -132,7 +132,7 @@ EXPORT(int,Img_Init)(interp)
 	    Tk_CreatePhotoImageFormat(*formatPtr++);
 	}
 #ifdef __WIN32__
-	CreateMutex(NULL, FALSE, "ImgDllMutex");
+	CreateMutex(NULL, FALSE, "ImgDllMutex"); 
 #endif
 
 #ifndef TCL_MAC

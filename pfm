@@ -23,7 +23,7 @@ use base  qw(Tk::Label);
  {
   my $w = shift;
   my @config = ();
-  my $option;
+  my $option; 
   foreach $option ($w->configure())
    {
     next if (@$option == 2 || !defined $$option[4]);
@@ -71,11 +71,11 @@ sub choose_icon
     }
    else
     {
-     my $file = "$icon_dir/$icon.icon";
-     my $mask = "$icon_dir/$icon.mask";
+     my $file = "$icon_dir/$icon.icon";              
+     my $mask = "$icon_dir/$icon.mask";              
      $file = "$icon_dir/page.icon" unless (-f $file);
      $mask = "$icon_dir/page.mask" unless (-f $mask);
-     $icons{$icon} = $w->Bitmap($icon,-file=> $file,-maskfile=>$mask);
+     $icons{$icon} = $w->Bitmap($icon,-file=> $file,-maskfile=>$mask); 
     }
    if ($icons{$icon}->width != 32)
     {
@@ -94,7 +94,7 @@ sub handle_string
 
 sub do_dir
 {
- my $w   = shift;
+ my $w   = shift; 
  my $dir = shift;
  opendir(DIR,$dir);
  my @files = readdir(DIR);

@@ -1,4 +1,6 @@
-#!/tools/local/perl -w
+#!/bin/sh
+exec perl -wSx $0 "$@"
+#!perl -w
 
 use Getopt::Std;
 
@@ -65,16 +67,17 @@ sub wanted
    local $file   = ($_);
    local ($_);
    local $count = 0;
-   unless (open($file,"<$file"))
+   my $fh;
+   unless (open($fh,"<$file"))
     {
      warn "Cannot open $file:$!";
      return;
     }
-   while (<$file>)
+   while (<$fh>)
     {
      last if &match;
     }
-   close($file);
+   close($fh);
    if ($opt{'c'} && $count)
     {
      print "$File::Find::dir/$file: $count\n"
@@ -90,3 +93,5 @@ sub wanted
 @ARGV = '.' unless (@ARGV);
 
 find(\&wanted,@ARGV);
+
+

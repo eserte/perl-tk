@@ -1,6 +1,6 @@
 package Tk::X11Font;
 use vars qw($VERSION);
-$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/X11Font.pm#5 $
+$VERSION = '3.013'; # $Id: //depot/Tk8/Tk/X11Font.pm#13 $
 
 require Tk::Widget;
 require Tk::Xlib;

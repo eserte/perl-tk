@@ -1,4 +1,4 @@
-/*
+/* 
  * tkWinCursor.c --
  *
  *	This file contains Win32 specific cursor related routines.
@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinCursor.c,v 1.10 2002/08/05 04:30:41 dgp Exp $
+ * RCS: @(#) $Id: tkWinCursor.c,v 1.2 1998/09/14 18:23:59 stanton Exp $
  */
 
 #include "tkWinInt.h"
@@ -61,16 +61,16 @@ static struct CursorName {
 
 #define TK_DEFAULT_CURSOR	IDC_ARROW
 
-
+
 /*
  *----------------------------------------------------------------------
  *
  * TkGetCursorByName --
  *
- *	Retrieve a system cursor by name.
+ *	Retrieve a system cursor by name.  
  *
  * Results:
- *	Returns a new cursor, or NULL on errors.
+ *	Returns a new cursor, or NULL on errors.  
  *
  * Side effects:
  *	Allocates a new cursor.
@@ -79,94 +79,55 @@ static struct CursorName {
  */
 
 TkCursor *
-TkGetCursorByName(interp, tkwin, string)
+TkGetCursorByName(interp, tkwin, arg)
     Tcl_Interp *interp;		/* Interpreter to use for error reporting. */
     Tk_Window tkwin;		/* Window in which cursor will be used. */
-    Tk_Uid string;		/* Description of cursor.  See manual entry
+    Arg arg;			/* Description of cursor.  See manual entry
 				 * for details on legal syntax. */
 {
     struct CursorName *namePtr;
     TkWinCursor *cursorPtr;
-    int argc;
-    Tcl_Obj **objv = NULL;
+    char *string = LangString(arg);
 
     /*
-     * All cursor names are valid lists of one element (for
-     * Unix-compatability), even unadorned system cursor names.
+     * Check for the cursor in the system cursor set.
      */
 
-    Tcl_Obj *tmp = Tcl_NewStringObj(string,-1);
-    if (Tcl_ListObjGetElements(interp, tmp, &argc, &objv) != TCL_OK) {
-	Tcl_DecrRefCount(tmp);
-	return NULL;
+    for (namePtr = cursorNames; namePtr->name != NULL; namePtr++) {
+	if (strcmp(namePtr->name, string) == 0) {
+	    break;
+	}
     }
-    if (argc != 1) {
-	goto badCursorSpec;
-    }
-    string = (Tk_Uid) Tcl_GetString(objv[0]);
 
     cursorPtr = (TkWinCursor *) ckalloc(sizeof(TkWinCursor));
     cursorPtr->info.cursor = (Tk_Cursor) cursorPtr;
     cursorPtr->winCursor = NULL;
-    cursorPtr->system = 0;
-
-    if (string[0] == '@') {
-	/*
-	 * Check for system cursor of type @<filename>, where only
-	 * the name is allowed.  This accepts any of:
-	 *	-cursor @/winnt/cursors/globe.ani
-	 *	-cursor @C:/Winnt/cursors/E_arrow.cur
-	 *	-cursor {@C:/Program\ Files/Cursors/bart.ani}
-	 *      -cursor {{@C:/Program Files/Cursors/bart.ani}}
-	 *	-cursor [list @[file join "C:/Program Files" Cursors bart.ani]]
-	 */
-
-	if (Tcl_IsSafe(interp)) {
-	    Tcl_AppendResult(interp, "can't get cursor from a file in",
-		    " a safe interpreter", (char *) NULL);
-	    ckfree((char *) cursorPtr);
-	    return NULL;
-	}
-	cursorPtr->winCursor = LoadCursorFromFile(&(string[1]));
-    } else {
-	/*
-	 * Check for the cursor in the system cursor set.
-	 */
-	for (namePtr = cursorNames; namePtr->name != NULL; namePtr++) {
-	    if (strcmp(namePtr->name, string) == 0) {
-		cursorPtr->winCursor = LoadCursor(NULL, namePtr->id);
-		break;
-	    }
-	}
-
-	if (cursorPtr->winCursor == NULL) {
-	    /*
-	     * Hmm, it is not in the system cursor set.  Check to see
-	     * if it is one of our application resources.
-	     */
+    if (namePtr->name != NULL) {
+	cursorPtr->winCursor = LoadCursor(NULL, namePtr->id);
+	cursorPtr->system = 1;
 #ifdef __OPEN32__
-	    cursorPtr->winCursor = os2LoadCursor(TkWinGetTkModule(), string);
-#else
-	    cursorPtr->winCursor = LoadCursor(Tk_GetHINSTANCE(), string);
+    } else {
+	cursorPtr->winCursor = os2LoadCursor(TkWinGetTkModule(), string);
 #endif
-	} else {
-	    cursorPtr->system = 1;
-	}
     }
-
     if (cursorPtr->winCursor == NULL) {
-	ckfree((char *) cursorPtr);
-    badCursorSpec:
+	cursorPtr->winCursor = LoadCursor(Tk_GetHINSTANCE(), string);
+	cursorPtr->system = 0;
+    }
+    if (cursorPtr->winCursor == NULL) {
+        cursorPtr->winCursor = LoadCursorFromFile(string);
+	cursorPtr->system = 0;
+    }
+    if (cursorPtr->winCursor == NULL) {
+	ckfree((char *)cursorPtr);
 	Tcl_AppendResult(interp, "bad cursor spec \"", string, "\"",
 		(char *) NULL);
-	Tcl_DecrRefCount(tmp);
 	return NULL;
     } else {
-	Tcl_DecrRefCount(tmp);
 	return (TkCursor *) cursorPtr;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -187,8 +148,8 @@ TkCursor *
 TkCreateCursorFromData(tkwin, source, mask, width, height, xHot, yHot,
 	fgColor, bgColor)
     Tk_Window tkwin;		/* Window in which cursor will be used. */
-    CONST char *source;		/* Bitmap data for cursor shape. */
-    CONST char *mask;		/* Bitmap data for cursor mask. */
+    char *source;		/* Bitmap data for cursor shape. */
+    char *mask;			/* Bitmap data for cursor mask. */
     int width, height;		/* Dimensions of cursor. */
     int xHot, yHot;		/* Location of hot-spot in cursor. */
     XColor fgColor;		/* Foreground color for cursor. */
@@ -196,11 +157,11 @@ TkCreateCursorFromData(tkwin, source, mask, width, height, xHot, yHot,
 {
     return NULL;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * TkpFreeCursor --
+ * TkFreeCursor --
  *
  *	This procedure is called to release a cursor allocated by
  *	TkGetCursorByName.
@@ -215,12 +176,13 @@ TkCreateCursorFromData(tkwin, source, mask, width, height, xHot, yHot,
  */
 
 void
-TkpFreeCursor(cursorPtr)
+TkFreeCursor(cursorPtr)
     TkCursor *cursorPtr;
 {
     TkWinCursor *winCursorPtr = (TkWinCursor *) cursorPtr;
+    ckfree((char *) winCursorPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -255,4 +217,3 @@ TkpSetCursor(cursor)
 	SetCursor(hcursor);
     }
 }
-

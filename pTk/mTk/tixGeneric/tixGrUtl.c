@@ -1,7 +1,4 @@
-
-/*	$Id: tixGrUtl.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
-/*
+/* 
  * tixGrUtl.c --
  *
  *	Utility functions for Grid

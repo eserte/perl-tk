@@ -59,7 +59,7 @@ sub pipe_in {
 
     $MW->fileevent(\*PR, 'readable' => sub {
 
-#        print STDERR "IN: about to sysread ...\n" if $DEBUG;
+#        print STDERR "IN: about to sysread ...\n" if $DEBUG;		
 	if ( ($Tk::VERSION cmp '800.015') <= 0 ) {
 #	if ( defined($ARGV[0]) ) {
 	    $sysbuf = <PR>;

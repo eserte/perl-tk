@@ -1,6 +1,3 @@
-
-/*	$Id: tixWidget.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixWidget.c --
  *
@@ -109,7 +106,7 @@ TIX_DEFINE_CMD(Tix_CreateWidgetCmd)
     Tcl_DStringAppendElement(&ds, "rename");
     Tcl_DStringAppendElement(&ds, widRec);
     Tcl_DStringAppendElement(&ds, rootCmd);
-
+	
     if (Tcl_Eval(interp, ds.string) != TCL_OK) {
 	Tcl_DStringFree(&ds);
 	code = TCL_ERROR;
@@ -289,7 +286,7 @@ static int ParseOptions(interp, cPtr, widRec, argc, argv)
 	if (spec == NULL) {	/* this is an invalid flag */
 	    return TCL_ERROR;
 	}
-
+	
 	if (Tix_ChangeOneOption(interp, cPtr, widRec, spec,
 		argv[i+1], 0, 1)!=TCL_OK) {
 	    return TCL_ERROR;

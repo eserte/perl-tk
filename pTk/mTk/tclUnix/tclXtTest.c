@@ -1,4 +1,4 @@
-/*
+/* 
  * tclXtTest.c --
  *
  *	Contains commands for Xt notifier specific tests on Unix.
@@ -8,17 +8,15 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclXtTest.c,v 1.5 2002/08/05 03:24:41 dgp Exp $
+ * RCS: @(#) $Id: tclXtTest.c,v 1.2 1998/09/14 18:40:18 stanton Exp $
  */
 
 #include <X11/Intrinsic.h>
 #include "tcl.h"
 
 static int	TesteventloopCmd _ANSI_ARGS_((ClientData clientData,
-		    Tcl_Interp *interp, int argc, CONST char **argv));
-extern void	InitNotifier _ANSI_ARGS_((void));
-
-
+		    Tcl_Interp *interp, int argc, char **argv));
+
 /*
  *----------------------------------------------------------------------
  *
@@ -30,7 +28,7 @@ extern void	InitNotifier _ANSI_ARGS_((void));
  *
  * Results:
  *	Returns a standard Tcl completion code, and leaves an error
- *	message in the interp's result if an error occurs.
+ *	message in interp->result if an error occurs.
  *
  * Side effects:
  *	Depends on the startup script.
@@ -42,16 +40,11 @@ int
 Tclxttest_Init(interp)
     Tcl_Interp *interp;		/* Interpreter for application. */
 {
-    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
-	return TCL_ERROR;
-    }
-    XtToolkitInitialize();
-    InitNotifier();
     Tcl_CreateCommand(interp, "testeventloop", TesteventloopCmd,
             (ClientData) 0, (Tcl_CmdDeleteProc *) NULL);
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -75,7 +68,7 @@ TesteventloopCmd(clientData, interp, argc, argv)
     ClientData clientData;		/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int argc;				/* Number of arguments. */
-    CONST char **argv;			/* Argument strings. */
+    char **argv;			/* Argument strings. */
 {
     static int *framePtr = NULL; /* Pointer to integer on stack frame of
 				  * innermost invocation of the "wait"

@@ -5,7 +5,7 @@ use vars qw/$TOP/;
 
 sub plot {
 
-    # Create a top-level window containing a canvas displaying a simple
+    # Create a top-level window containing a canvas displaying a simple 
     # graph with data points that can be dragged with the pointing device.
 
     my($demo) = @_;
@@ -22,7 +22,7 @@ sub plot {
         -active_highlight   => 'red',
     );
     $c->pack(qw/-fill x/);
-
+  
 } # end plot
 
 1;

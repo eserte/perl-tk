@@ -1,4 +1,4 @@
-/*
+/* 
  * tkOption.c --
  *
  *	This module contains procedures to manage the option
@@ -6,12 +6,12 @@
  *	with windows either by name or by class or both.
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1996 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkOption.c,v 1.15 2002/08/05 04:30:40 dgp Exp $
+ * RCS: @(#) $Id: tkOption.c,v 1.2 1998/09/14 18:23:15 stanton Exp $
  */
 
 #include "tkPort.h"
@@ -26,35 +26,6 @@
  * structures exists for each node or leaf in the option tree.  It is
  * actually stored as part of the parent node, and describes a particular
  * child of the parent.
- *
- * The structure of the option db tree is a little confusing.  There are
- * four different kinds of nodes in the tree:
- *	interior class nodes
- *	interior name nodes
- *	leaf class nodes
- *	leaf name nodes
- *
- * All interior nodes refer to _window_ classes and names; all leaf nodes
- * refer to _option_ classes and names.  When looking for a particular option,
- * therefore, you must compare interior node values to corresponding window
- * values, and compare leaf node values to corresponding option values.
- *
- * The tree is actually stored in a collection of arrays; there is one each
- * combination of WILDCARD/EXACT and CLASS/NAME and NODE/LEAF.  The NODE arrays
- * contain the interior nodes of the tree; each element has a pointer to an
- * array of elements which are the leaves of the tree.  The LEAF arrays, rather
- * than holding the leaves of the tree, hold a cached subset of the option
- * database, consisting of the values of all defined options for a single
- * window, and some additional information about each ancestor of the window
- * (since some options may be inherited from a parent), all the way back to the
- * root window.
- *
- * Each time a call is made to Tk_GetOption, Tk will attempt to use the cached
- * information to satisfy the lookup.  If the call is for a window other than
- * that for which options are currently cached, the portion of the cache that
- * contains information for common ancestors of the two windows is retained and
- * the remainder is discarded and rebuilt with new information for the new
- * window.
  */
 
 typedef struct Element {
@@ -170,6 +141,13 @@ typedef struct ElArray {
  */
 
 #define NUM_STACKS 8
+static ElArray *stacks[NUM_STACKS];
+static TkWindow *cachedWindow = NULL;	/* Lowest-level window currently
+					 * loaded in stacks at present. 
+					 * NULL means stacks have never
+					 * been used, or have been
+					 * invalidated because of a change
+					 * to the database. */
 
 /*
  * One of the following structures is used to keep track of each
@@ -185,41 +163,33 @@ typedef struct StackLevel {
 				 * fields when popping out of a level. */
 } StackLevel;
 
-typedef struct ThreadSpecificData {
-    int initialized;            /* 0 means the ThreadSpecific Data structure
-				 * for the current thread needs to be
-				 * initialized. */
-    ElArray *stacks[NUM_STACKS];
-    TkWindow *cachedWindow;
-                                /* Lowest-level window currently
-				 * loaded in stacks at present.
-				 * NULL means stacks have never
-				 * been used, or have been
-				 * invalidated because of a change
-				 * to the database. */
-    /*
-     * Information about all of the stack levels that are currently
-     * active.  This array grows dynamically to become as large as needed.
-     */
+/*
+ * Information about all of the stack levels that are currently
+ * active.  This array grows dynamically to become as large as needed.
+ */
 
-    StackLevel *levels;	        /* Array describing current stack. */
-    int numLevels;	        /* Total space allocated. */
-    int curLevel;	        /* Highest level currently in use.  Note:
+static StackLevel *levels = NULL;
+				/* Array describing current stack. */
+static int numLevels = 0;	/* Total space allocated. */
+static int curLevel = -1;	/* Highest level currently in use.  Note:
 				 * curLevel is never 0!  (I don't remember
 				 * why anymore...) */
-    /*
-     * The variable below is a serial number for all options entered into
-     * the database so far.  It increments on each addition to the option
-     * database.  It is used in computing option priorities, so that the
-     * most recent entry wins when choosing between options at the same
-     * priority level.
-     */
 
-    int serial;
-    Element defaultMatch;       /* Special "no match" Element to use as
-				 * default for searches.*/
-} ThreadSpecificData;
-static Tcl_ThreadDataKey dataKey;
+/*
+ * The variable below is a serial number for all options entered into
+ * the database so far.  It increments on each addition to the option
+ * database.  It is used in computing option priorities, so that the
+ * most recent entry wins when choosing between options at the same
+ * priority level.
+ */
+
+static int serial = 0;
+
+/*
+ * Special "no match" Element to use as default for searches.
+ */
+
+static Element defaultMatch;
 
 /*
  * Forward declarations for procedures defined in this file:
@@ -233,17 +203,15 @@ static ElArray *	ExtendArray _ANSI_ARGS_((ElArray *arrayPtr,
 static void		ExtendStacks _ANSI_ARGS_((ElArray *arrayPtr,
 			    int leaf));
 static int		GetDefaultOptions _ANSI_ARGS_((Tcl_Interp *interp,
-			    TkWindow *winPtr));
-static ElArray *	NewArray _ANSI_ARGS_((int numEls));
-static void		OptionThreadExitProc _ANSI_ARGS_((
-			    ClientData clientData));
+			    TkWindow *winPtr));	
+static ElArray *	NewArray _ANSI_ARGS_((int numEls));	
 static void		OptionInit _ANSI_ARGS_((TkMainInfo *mainPtr));
 static int		ParsePriority _ANSI_ARGS_((Tcl_Interp *interp,
 			    char *string));
 static int		ReadOptionFile _ANSI_ARGS_((Tcl_Interp *interp,
 			    Tk_Window tkwin, char *fileName, int priority));
 static void		SetupStacks _ANSI_ARGS_((TkWindow *winPtr, int leaf));
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -264,8 +232,8 @@ void
 Tk_AddOption(tkwin, name, value, priority)
     Tk_Window tkwin;		/* Window token;  option will be associated
 				 * with main window for this window. */
-    CONST char *name;		/* Multi-element name of option. */
-    CONST char *value;		/* String value for option. */
+    char *name;			/* Multi-element name of option. */
+    char *value;		/* String value for option. */
     int priority;		/* Overall priority level to use for
 				 * this option, such as TK_USER_DEFAULT_PRIO
 				 * or TK_INTERACTIVE_PRIO.  Must be between
@@ -275,18 +243,16 @@ Tk_AddOption(tkwin, name, value, priority)
     register ElArray **arrayPtrPtr;
     register Element *elPtr;
     Element newEl;
-    register CONST char *p;
-    CONST char *field;
+    register char *p;
+    char *field;
     int count, firstField, length;
 #define TMP_SIZE 100
     char tmp[TMP_SIZE+1];
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     if (winPtr->mainPtr->optionRootPtr == NULL) {
 	OptionInit(winPtr->mainPtr);
     }
-    tsdPtr->cachedWindow = NULL;	/* Invalidate the cache. */
+    cachedWindow = NULL;	/* Invalidate the cache. */
 
     /*
      * Compute the priority for the new element, including both the
@@ -299,8 +265,8 @@ Tk_AddOption(tkwin, name, value, priority)
     } else if (priority > TK_MAX_PRIO) {
 	priority = TK_MAX_PRIO;
     }
-    newEl.priority = (priority << 24) + tsdPtr->serial;
-    tsdPtr->serial++;
+    newEl.priority = (priority << 24) + serial;
+    serial++;
 
     /*
      * Parse the option one field at a time.
@@ -396,7 +362,7 @@ Tk_AddOption(tkwin, name, value, priority)
 	}
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -422,199 +388,68 @@ Tk_Uid
 Tk_GetOption(tkwin, name, className)
     Tk_Window tkwin;		/* Token for window that option is
 				 * associated with. */
-    CONST char *name;		/* Name of option. */
-    CONST char *className;	/* Class of option.  NULL means there
+    char *name;			/* Name of option. */
+    char *className;		/* Class of option.  NULL means there
 				 * is no class for this option:  just
 				 * check for name. */
 {
-    Tk_Uid nameId, classId = NULL;
-    char *masqName;
+    Tk_Uid nameId, classId;
     register Element *elPtr, *bestPtr;
     register int count;
-    StackLevel *levelPtr;
-    int stackDepth[NUM_STACKS];
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     /*
      * Note:  no need to call OptionInit here:  it will be done by
      * the SetupStacks call below (squeeze out those nanoseconds).
      */
 
-    if (tkwin != (Tk_Window) tsdPtr->cachedWindow) {
+    if (tkwin != (Tk_Window) cachedWindow) {
 	SetupStacks((TkWindow *) tkwin, 1);
     }
 
-    /*
-     * Get a default "best" match.
-     */
-
-    bestPtr = &tsdPtr->defaultMatch;
-
-    /*
-     * For megawidget support, we want to have some widget options masquerade
-     * as options for other widgets.  For example, a combobox has a button in
-     * it; this button ought to pick up the *Button.background, etc., options.
-     * But because the class of the widget is Combobox, our normal search
-     * won't get that option.
-     *
-     * To work around this, the option name field syntax was extended to allow
-     * for a "." in the name; if this character occurs in the name, then it
-     * indicates that this name contains a new window class and an option name,
-     * ie, "Button.foreground".  If we see this form in the name field, we
-     * query the option database directly (since the option stacks will not
-     * have the information we need).
-     */
-
-    masqName = strchr(name, (int)'.');
-    if (masqName != NULL) {
-	/*
-	 * This option is masquerading with a different window class.
-	 * Search the stack to the depth it was before the current window's
-	 * information was pushed (the value for which is stored in the bases
-	 * field).
-	 */
-	levelPtr = &tsdPtr->levels[tsdPtr->curLevel];
-	nameId = Tk_GetUid(masqName+1);
-	for (count = 0; count < NUM_STACKS; count++) {
-	    stackDepth[count] = levelPtr->bases[count];
-	}
-    } else {
-	/*
-	 * No option masquerading here.  Just use the current level to get the
-	 * stack depths.
-	 */
-	nameId = Tk_GetUid(name);
-	for (count = 0; count < NUM_STACKS; count++) {
-	    stackDepth[count] = tsdPtr->stacks[count]->numUsed;
-	}
-    }
-
-    /*
-     * Probe the stacks for matches.
-     */
-
-    for (elPtr = tsdPtr->stacks[EXACT_LEAF_NAME]->els,
-	     count = stackDepth[EXACT_LEAF_NAME]; count > 0;
-	 elPtr++, count--) {
+    nameId = Tk_GetUid(name);
+    bestPtr = &defaultMatch;
+    for (elPtr = stacks[EXACT_LEAF_NAME]->els,
+	    count = stacks[EXACT_LEAF_NAME]->numUsed; count > 0;
+	    elPtr++, count--) {
 	if ((elPtr->nameUid == nameId)
 		&& (elPtr->priority > bestPtr->priority)) {
 	    bestPtr = elPtr;
 	}
     }
-    for (elPtr = tsdPtr->stacks[WILDCARD_LEAF_NAME]->els,
-	     count = stackDepth[WILDCARD_LEAF_NAME]; count > 0;
-	 elPtr++, count--) {
+    for (elPtr = stacks[WILDCARD_LEAF_NAME]->els,
+	    count = stacks[WILDCARD_LEAF_NAME]->numUsed; count > 0;
+	    elPtr++, count--) {
 	if ((elPtr->nameUid == nameId)
 		&& (elPtr->priority > bestPtr->priority)) {
 	    bestPtr = elPtr;
 	}
     }
-
     if (className != NULL) {
 	classId = Tk_GetUid(className);
-	for (elPtr = tsdPtr->stacks[EXACT_LEAF_CLASS]->els,
-		 count = stackDepth[EXACT_LEAF_CLASS]; count > 0;
-	     elPtr++, count--) {
+	for (elPtr = stacks[EXACT_LEAF_CLASS]->els,
+		count = stacks[EXACT_LEAF_CLASS]->numUsed; count > 0;
+		elPtr++, count--) {
 	    if ((elPtr->nameUid == classId)
 		    && (elPtr->priority > bestPtr->priority)) {
 		bestPtr = elPtr;
 	    }
 	}
-	for (elPtr = tsdPtr->stacks[WILDCARD_LEAF_CLASS]->els,
-		 count = stackDepth[WILDCARD_LEAF_CLASS]; count > 0;
-	     elPtr++, count--) {
+	for (elPtr = stacks[WILDCARD_LEAF_CLASS]->els,
+		count = stacks[WILDCARD_LEAF_CLASS]->numUsed; count > 0;
+		elPtr++, count--) {
 	    if ((elPtr->nameUid == classId)
 		    && (elPtr->priority > bestPtr->priority)) {
 		bestPtr = elPtr;
 	    }
 	}
     }
-
-    /*
-     * If this option was masquerading with a different window class,
-     * probe the option database now.  Note that this will be inefficient
-     * if the option database is densely populated, or if the widget has many
-     * masquerading options.
-     */
-
-    if (masqName != NULL) {
-	char *masqClass;
-	Tk_Uid nodeId, winClassId, winNameId;
-	unsigned int classNameLength;
-	register Element *nodePtr, *leafPtr;
-	static int searchOrder[] = { EXACT_NODE_NAME,
-					 WILDCARD_NODE_NAME,
-					 EXACT_NODE_CLASS,
-					 WILDCARD_NODE_CLASS,
-					 -1 };
-	int *currentPtr, currentStack, leafCount;
-
-	/*
-	 * Extract the masquerade class name from the name field.
-	 */
-
-	classNameLength	= (unsigned int)(masqName - name);
-	masqClass	= (char *)ckalloc(classNameLength + 1);
-	strncpy(masqClass, name, classNameLength);
-	masqClass[classNameLength] = '\0';
-
-	winClassId	= Tk_GetUid(masqClass);
-	ckfree(masqClass);
-	winNameId	= ((TkWindow *)tkwin)->nameUid;
-
-	levelPtr = &tsdPtr->levels[tsdPtr->curLevel];
-
-	for (currentPtr = searchOrder; *currentPtr != -1; currentPtr++) {
-	    currentStack = *currentPtr;
-	    nodePtr	= tsdPtr->stacks[currentStack]->els;
-	    count	= levelPtr->bases[currentStack];
-
-	    /*
-	     * For wildcard stacks, check all entries;  for non-wildcard
-	     * stacks, only check things that matched in the parent.
-	     */
-
-	    if (!(currentStack & WILDCARD)) {
-		nodePtr += levelPtr[-1].bases[currentStack];
-		count	-= levelPtr[-1].bases[currentStack];
-	    }
-
-	    if (currentStack && CLASS) {
-		nodeId = winClassId;
-	    } else {
-		nodeId = winNameId;
-	    }
-
-	    for ( ; count > 0; nodePtr++, count--) {
-		if (nodePtr->nameUid == nodeId) {
-		    leafPtr	= nodePtr->child.arrayPtr->els;
-		    leafCount	= nodePtr->child.arrayPtr->numUsed;
-		    for ( ; leafCount > 0; leafPtr++, leafCount--) {
-			if (leafPtr->flags & CLASS && className != NULL) {
-			    if (leafPtr->nameUid == classId &&
-				    leafPtr->priority > bestPtr->priority) {
-				bestPtr = leafPtr;
-			    }
-			} else {
-			    if (leafPtr->nameUid == nameId &&
-				    leafPtr->priority > bestPtr->priority) {
-				bestPtr = leafPtr;
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
-
     return bestPtr->child.valueUid;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
- * Tk_OptionObjCmd --
+ * Tk_OptionCmd --
  *
  *	This procedure is invoked to process the "option" Tcl command.
  *	See the user documentation for details on what it does.
@@ -629,119 +464,100 @@ Tk_GetOption(tkwin, name, className)
  */
 
 int
-Tk_OptionObjCmd(clientData, interp, objc, objv)
+Tk_OptionCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Main window associated with
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of Tcl_Obj arguments. */
-    Tcl_Obj *CONST objv[];	/* Tcl_Obj arguments. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     Tk_Window tkwin = (Tk_Window) clientData;
-    int index, result;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
+    size_t length;
+    char c;
 
-    static CONST char *optionCmds[] = {
-	"add", "clear", "get", "readfile", NULL
-    };
-
-    enum optionVals {
-	OPTION_ADD, OPTION_CLEAR, OPTION_GET, OPTION_READFILE
-    };
-
-    if (objc < 2) {
-	Tcl_WrongNumArgs(interp, 1, objv, "cmd arg ?arg ...?");
+    if (argc < 2) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" cmd arg ?arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
+    c = argv[1][0];
+    length = strlen(argv[1]);
+    if ((c == 'a') && (strncmp(argv[1], "add", length) == 0)) {
+	int priority;
 
-    result = Tcl_GetIndexFromObj(interp, objv[1], optionCmds, "option", 0,
-	    &index);
-    if (result != TCL_OK) {
-	return result;
+	if ((argc != 4) && (argc != 5)) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], " add pattern value ?priority?\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (argc == 4) {
+	    priority = TK_INTERACTIVE_PRIO;
+	} else {
+	    priority = ParsePriority(interp, argv[4]);
+	    if (priority < 0) {
+		return TCL_ERROR;
+	    }
+	}
+	Tk_AddOption(tkwin, argv[2], argv[3], priority);
+	return TCL_OK;
+    } else if ((c == 'c') && (strncmp(argv[1], "clear", length) == 0)) {
+	TkMainInfo *mainPtr;
+
+	if (argc != 2) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], " clear\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	mainPtr = ((TkWindow *) tkwin)->mainPtr;
+	if (mainPtr->optionRootPtr != NULL) {
+	    ClearOptionTree(mainPtr->optionRootPtr);
+	    mainPtr->optionRootPtr = NULL;
+	}
+	cachedWindow = NULL;
+	return TCL_OK;
+    } else if ((c == 'g') && (strncmp(argv[1], "get", length) == 0)) {
+	Tk_Window window;
+	Tk_Uid value;
+
+	if (argc != 5) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], " get window name class\"", (char *) NULL);
+	    return TCL_ERROR;
+	}
+	window = Tk_NameToWindow(interp, argv[2], tkwin);
+	if (window == NULL) {
+	    return TCL_ERROR;
+	}
+	value = Tk_GetOption(window, argv[3], argv[4]);
+	if (value != NULL) {
+	    interp->result = value;
+	}
+	return TCL_OK;
+    } else if ((c == 'r') && (strncmp(argv[1], "readfile", length) == 0)) {
+	int priority;
+
+	if ((argc != 3) && (argc != 4)) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], " readfile fileName ?priority?\"",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	if (argc == 4) {
+	    priority = ParsePriority(interp, argv[3]);
+	    if (priority < 0) {
+		return TCL_ERROR;
+	    }
+	} else {
+	    priority = TK_INTERACTIVE_PRIO;
+	}
+	return ReadOptionFile(interp, tkwin, argv[2], priority);
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": must be add, clear, get, or readfile", (char *) NULL);
+	return TCL_ERROR;
     }
-
-    result = TCL_OK;
-    switch ((enum optionVals) index) {
-	case OPTION_ADD: {
-	    int priority;
-	    if ((objc != 4) && (objc != 5)) {
-		Tcl_WrongNumArgs(interp, 2, objv, "pattern value ?priority?");
-		return TCL_ERROR;
-	    }
-
-	    if (objc == 4) {
-		priority = TK_INTERACTIVE_PRIO;
-	    } else {
-		priority = ParsePriority(interp, Tcl_GetString(objv[4]));
-		if (priority < 0) {
-		    return TCL_ERROR;
-		}
-	    }
-	    Tk_AddOption(tkwin, Tcl_GetString(objv[2]),
-		    Tcl_GetString(objv[3]), priority);
-	    break;
-	}
-
-	case OPTION_CLEAR: {
-	    TkMainInfo *mainPtr;
-
-	    if (objc != 2) {
-		Tcl_WrongNumArgs(interp, 2, objv, "");
-		return TCL_ERROR;
-	    }
-	    mainPtr = ((TkWindow *) tkwin)->mainPtr;
-	    if (mainPtr->optionRootPtr != NULL) {
-		ClearOptionTree(mainPtr->optionRootPtr);
-		mainPtr->optionRootPtr = NULL;
-	    }
-	    tsdPtr->cachedWindow = NULL;
-	    break;
-	}
-
-	case OPTION_GET: {
-	    Tk_Window window;
-	    Tk_Uid value;
-
-	    if (objc != 5) {
-		Tcl_WrongNumArgs(interp, 2, objv, "window name class");
-		return TCL_ERROR;
-	    }
-	    window = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), tkwin);
-	    if (window == NULL) {
-		return TCL_ERROR;
-	    }
-	    value = Tk_GetOption(window, Tcl_GetString(objv[3]),
-		    Tcl_GetString(objv[4]));
-	    if (value != NULL) {
-		Tcl_SetResult(interp, (char *)value, TCL_STATIC);
-	    }
-	    break;
-	}
-
-	case OPTION_READFILE: {
-	    int priority;
-
-	    if ((objc != 3) && (objc != 4)) {
-		Tcl_WrongNumArgs(interp, 2, objv, "fileName ?priority?");
-		return TCL_ERROR;
-	    }
-
-	    if (objc == 4) {
-		priority = ParsePriority(interp, Tcl_GetString(objv[3]));
-		if (priority < 0) {
-		    return TCL_ERROR;
-		}
-	    } else {
-		priority = TK_INTERACTIVE_PRIO;
-	    }
-	    result = ReadOptionFile(interp, tkwin, Tcl_GetString(objv[2]),
-		    priority);
-	    break;
-	}
-    }
-    return result;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -765,9 +581,6 @@ void
 TkOptionDeadWindow(winPtr)
     register TkWindow *winPtr;		/* Window to be cleaned up. */
 {
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
     /*
      * If this window is in the option stacks, then clear the stacks.
      */
@@ -775,11 +588,11 @@ TkOptionDeadWindow(winPtr)
     if (winPtr->optionLevel != -1) {
 	int i;
 
-	for (i = 1; i <= tsdPtr->curLevel; i++) {
-	    tsdPtr->levels[i].winPtr->optionLevel = -1;
+	for (i = 1; i <= curLevel; i++) {
+	    levels[i].winPtr->optionLevel = -1;
 	}
-	tsdPtr->curLevel = -1;
-	tsdPtr->cachedWindow = NULL;
+	curLevel = -1;
+	cachedWindow = NULL;
     }
 
     /*
@@ -787,13 +600,13 @@ TkOptionDeadWindow(winPtr)
      * database.
      */
 
-    if ((winPtr->mainPtr != NULL) && (winPtr->mainPtr->winPtr == winPtr)
+    if ((winPtr->mainPtr->winPtr == winPtr)
 	    && (winPtr->mainPtr->optionRootPtr != NULL)) {
 	ClearOptionTree(winPtr->mainPtr->optionRootPtr);
 	winPtr->mainPtr->optionRootPtr = NULL;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -819,8 +632,6 @@ TkOptionClassChanged(winPtr)
 {
     int i, j, *basePtr;
     ElArray *arrayPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     if (winPtr->optionLevel == -1) {
 	return;
@@ -831,28 +642,28 @@ TkOptionClassChanged(winPtr)
      * flush all of the levels above the matching one.
      */
 
-    for (i = 1; i <= tsdPtr->curLevel; i++) {
-	if (tsdPtr->levels[i].winPtr == winPtr) {
-	    for (j = i; j <= tsdPtr->curLevel; j++) {
-		tsdPtr->levels[j].winPtr->optionLevel = -1;
+    for (i = 1; i <= curLevel; i++) {
+	if (levels[i].winPtr == winPtr) {
+	    for (j = i; j <= curLevel; j++) {
+		levels[j].winPtr->optionLevel = -1;
 	    }
-	    tsdPtr->curLevel = i-1;
-	    basePtr = tsdPtr->levels[i].bases;
+	    curLevel = i-1;
+	    basePtr = levels[i].bases;
 	    for (j = 0; j < NUM_STACKS; j++) {
-		arrayPtr = tsdPtr->stacks[j];
+		arrayPtr = stacks[j];
 		arrayPtr->numUsed = basePtr[j];
 		arrayPtr->nextToUse = &arrayPtr->els[arrayPtr->numUsed];
 	    }
-	    if (tsdPtr->curLevel <= 0) {
-		tsdPtr->cachedWindow = NULL;
+	    if (curLevel <= 0) {
+		cachedWindow = NULL;
 	    } else {
-		tsdPtr->cachedWindow = tsdPtr->levels[tsdPtr->curLevel].winPtr;
+		cachedWindow = levels[curLevel].winPtr;
 	    }
 	    break;
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -863,7 +674,7 @@ TkOptionClassChanged(winPtr)
  * Results:
  *	The return value is the integer priority level corresponding
  *	to string, or -1 if string doesn't point to a valid priority level.
- *	In this case, an error message is left in the interp's result.
+ *	In this case, an error message is left in interp->result.
  *
  * Side effects:
  *	None.
@@ -909,7 +720,7 @@ ParsePriority(interp, string)
     }
     return priority;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -923,7 +734,7 @@ ParsePriority(interp, string)
  * Results:
  *	The return value is a standard Tcl return code.  In the case of
  *	an error in parsing string, TCL_ERROR will be returned and an
- *	error message will be left in the interp's result.  The memory at
+ *	error message will be left in interp->result.  The memory at
  *	string is totally trashed by this procedure.  If you care about
  *	its contents, make a copy before calling here.
  *
@@ -973,7 +784,7 @@ AddFromString(interp, tkwin, string, priority)
 	    src++;
 	    lineNum++;
 	    continue;
-	}
+	} 
 	if (*src == '\0') {
 	    break;
 	}
@@ -986,10 +797,8 @@ AddFromString(interp, tkwin, string, priority)
 	dst = name = src;
 	while (*src != ':') {
 	    if ((*src == '\0') || (*src == '\n')) {
-		char buf[32 + TCL_INTEGER_SPACE];
-
-		sprintf(buf, "missing colon on line %d", lineNum);
-		Tcl_SetResult(interp, buf, TCL_VOLATILE);
+		sprintf(interp->result, "missing colon on line %d",
+			lineNum);
 		return TCL_ERROR;
 	    }
 	    if ((src[0] == '\\') && (src[1] == '\n')) {
@@ -1021,10 +830,7 @@ AddFromString(interp, tkwin, string, priority)
 	    src++;
 	}
 	if (*src == '\0') {
-	    char buf[32 + TCL_INTEGER_SPACE];
-
-	    sprintf(buf, "missing value on line %d", lineNum);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    sprintf(interp->result, "missing value on line %d", lineNum);
 	    return TCL_ERROR;
 	}
 
@@ -1036,10 +842,8 @@ AddFromString(interp, tkwin, string, priority)
 	dst = value = src;
 	while (*src != '\n') {
 	    if (*src == '\0') {
-		char buf[32 + TCL_INTEGER_SPACE];
-
-		sprintf(buf, "missing newline on line %d", lineNum);
-		Tcl_SetResult(interp, buf, TCL_VOLATILE);
+		sprintf(interp->result, "missing newline on line %d",
+			lineNum);
 		return TCL_ERROR;
 	    }
 	    if ((src[0] == '\\') && (src[1] == '\n')) {
@@ -1063,7 +867,7 @@ AddFromString(interp, tkwin, string, priority)
     }
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1075,7 +879,7 @@ AddFromString(interp, tkwin, string, priority)
  * Results:
  *	The return value is a standard Tcl return code.  In the case of
  *	an error in parsing string, TCL_ERROR will be returned and an
- *	error message will be left in the interp's result.
+ *	error message will be left in interp->result.
  *
  * Side effects:
  *	None.
@@ -1094,8 +898,7 @@ ReadOptionFile(interp, tkwin, fileName, priority)
 				 * or TK_INTERACTIVE_PRIO.  Must be between
 				 * 0 and TK_MAX_PRIO. */
 {
-    CONST char *realName;
-    char *buffer;
+    char *realName, *buffer;
     int result, bufferSize;
     Tcl_Channel chan;
     Tcl_DString newName;
@@ -1103,13 +906,13 @@ ReadOptionFile(interp, tkwin, fileName, priority)
     /*
      * Prevent file system access in a safe interpreter.
      */
-
+    
     if (Tcl_IsSafe(interp)) {
         Tcl_AppendResult(interp, "can't read options from a file in a",
                 " safe interpreter", (char *) NULL);
         return TCL_ERROR;
     }
-
+    
     realName = Tcl_TranslateFileName(interp, fileName, &newName);
     if (realName == NULL) {
 	return TCL_ERROR;
@@ -1127,9 +930,9 @@ ReadOptionFile(interp, tkwin, fileName, priority)
      * Compute size of file by seeking to the end of the file.  This will
      * overallocate if we are performing CRLF translation.
      */
-
-    bufferSize = (int) Tcl_Seek(chan, (Tcl_WideInt) 0, SEEK_END);
-    (void) Tcl_Seek(chan, (Tcl_WideInt) 0, SEEK_SET);
+    
+    bufferSize = Tcl_Seek(chan, 0L, SEEK_END);
+    (void) Tcl_Seek(chan, 0L, SEEK_SET);
 
     if (bufferSize < 0) {
 	Tcl_AppendResult(interp, "error seeking to end of file \"",
@@ -1152,7 +955,7 @@ ReadOptionFile(interp, tkwin, fileName, priority)
     ckfree(buffer);
     return result;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1183,7 +986,7 @@ NewArray(numEls)
     arrayPtr->nextToUse = arrayPtr->els;
     return arrayPtr;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1229,7 +1032,7 @@ ExtendArray(arrayPtr, elPtr)
     arrayPtr->numUsed++;
     return arrayPtr;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1259,8 +1062,6 @@ SetupStacks(winPtr, leaf)
     int level, i, *iPtr;
     register StackLevel *levelPtr;
     register ElArray *arrayPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     /*
      * The following array defines the order in which the current
@@ -1285,7 +1086,7 @@ SetupStacks(winPtr, leaf)
 
     if (winPtr->parentPtr != NULL) {
 	level = winPtr->parentPtr->optionLevel;
-	if ((level == -1) || (tsdPtr->cachedWindow == NULL)) {
+	if ((level == -1) || (cachedWindow == NULL)) {
 	    SetupStacks(winPtr->parentPtr, 0);
 	    level = winPtr->parentPtr->optionLevel;
 	}
@@ -1299,19 +1100,19 @@ SetupStacks(winPtr, leaf)
      * mark those windows as no longer having cached information.
      */
 
-    if (tsdPtr->curLevel >= level) {
-	while (tsdPtr->curLevel >= level) {
-	    tsdPtr->levels[tsdPtr->curLevel].winPtr->optionLevel = -1;
-	    tsdPtr->curLevel--;
+    if (curLevel >= level) {
+	while (curLevel >= level) {
+	    levels[curLevel].winPtr->optionLevel = -1;
+	    curLevel--;
 	}
-	levelPtr = &tsdPtr->levels[level];
+	levelPtr = &levels[level];
 	for (i = 0; i < NUM_STACKS; i++) {
-	    arrayPtr = tsdPtr->stacks[i];
+	    arrayPtr = stacks[i];
 	    arrayPtr->numUsed = levelPtr->bases[i];
 	    arrayPtr->nextToUse = &arrayPtr->els[arrayPtr->numUsed];
 	}
     }
-    tsdPtr->curLevel = winPtr->optionLevel = level;
+    curLevel = winPtr->optionLevel = level;
 
     /*
      * Step 3:  if the root database information isn't loaded or
@@ -1319,11 +1120,11 @@ SetupStacks(winPtr, leaf)
      * database root (this only happens if winPtr is a main window).
      */
 
-    if ((tsdPtr->curLevel == 1)
-	    && ((tsdPtr->cachedWindow == NULL)
-	    || (tsdPtr->cachedWindow->mainPtr != winPtr->mainPtr))) {
+    if ((curLevel == 1)
+	    && ((cachedWindow == NULL)
+	    || (cachedWindow->mainPtr != winPtr->mainPtr))) {
 	for (i = 0; i < NUM_STACKS; i++) {
-	    arrayPtr = tsdPtr->stacks[i];
+	    arrayPtr = stacks[i];
 	    arrayPtr->numUsed = 0;
 	    arrayPtr->nextToUse = arrayPtr->els;
 	}
@@ -1337,28 +1138,35 @@ SetupStacks(winPtr, leaf)
      * any more).
      */
 
-    if (tsdPtr->curLevel >= tsdPtr->numLevels) {
+    if (curLevel >= numLevels) {
 	StackLevel *newLevels;
 
 	newLevels = (StackLevel *) ckalloc((unsigned)
-		(tsdPtr->numLevels*2*sizeof(StackLevel)));
-	memcpy((VOID *) newLevels, (VOID *) tsdPtr->levels,
-		(tsdPtr->numLevels*sizeof(StackLevel)));
-	ckfree((char *) tsdPtr->levels);
-	tsdPtr->numLevels *= 2;
-	tsdPtr->levels = newLevels;
+		(numLevels*2*sizeof(StackLevel)));
+	memcpy((VOID *) newLevels, (VOID *) levels,
+		(numLevels*sizeof(StackLevel)));
+	ckfree((char *) levels);
+	numLevels *= 2;
+	levels = newLevels;
     }
-    levelPtr = &tsdPtr->levels[tsdPtr->curLevel];
+    levelPtr = &levels[curLevel];
     levelPtr->winPtr = winPtr;
-    arrayPtr = tsdPtr->stacks[EXACT_LEAF_NAME];
+    arrayPtr = stacks[EXACT_LEAF_NAME];
     arrayPtr->numUsed = 0;
     arrayPtr->nextToUse = arrayPtr->els;
-    arrayPtr = tsdPtr->stacks[EXACT_LEAF_CLASS];
+    arrayPtr = stacks[EXACT_LEAF_CLASS];
     arrayPtr->numUsed = 0;
     arrayPtr->nextToUse = arrayPtr->els;
-    for (i = 0; i < NUM_STACKS; i++) {
-	levelPtr->bases[i] = tsdPtr->stacks[i]->numUsed;
-    }
+    levelPtr->bases[EXACT_LEAF_NAME] = stacks[EXACT_LEAF_NAME]->numUsed;
+    levelPtr->bases[EXACT_LEAF_CLASS] = stacks[EXACT_LEAF_CLASS]->numUsed;
+    levelPtr->bases[EXACT_NODE_NAME] = stacks[EXACT_NODE_NAME]->numUsed;
+    levelPtr->bases[EXACT_NODE_CLASS] = stacks[EXACT_NODE_CLASS]->numUsed;
+    levelPtr->bases[WILDCARD_LEAF_NAME] = stacks[WILDCARD_LEAF_NAME]->numUsed;
+    levelPtr->bases[WILDCARD_LEAF_CLASS] = stacks[WILDCARD_LEAF_CLASS]->numUsed;
+    levelPtr->bases[WILDCARD_NODE_NAME] = stacks[WILDCARD_NODE_NAME]->numUsed;
+    levelPtr->bases[WILDCARD_NODE_CLASS] = stacks[WILDCARD_NODE_CLASS]->numUsed;
+
+
     /*
      * Step 5: scan the current stack level looking for matches to this
      * window's name or class;  where found, add new information to the
@@ -1376,7 +1184,7 @@ SetupStacks(winPtr, leaf)
 	} else {
 	    id = winPtr->nameUid;
 	}
-	elPtr = tsdPtr->stacks[i]->els;
+	elPtr = stacks[i]->els;
 	count = levelPtr->bases[i];
 
 	/*
@@ -1395,9 +1203,9 @@ SetupStacks(winPtr, leaf)
 	    ExtendStacks(elPtr->child.arrayPtr, leaf);
 	}
     }
-    tsdPtr->cachedWindow = winPtr;
+    cachedWindow = winPtr;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1424,52 +1232,16 @@ ExtendStacks(arrayPtr, leaf)
 {
     register int count;
     register Element *elPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     for (elPtr = arrayPtr->els, count = arrayPtr->numUsed;
 	    count > 0; elPtr++, count--) {
 	if (!(elPtr->flags & (NODE|WILDCARD)) && !leaf) {
 	    continue;
 	}
-	tsdPtr->stacks[elPtr->flags] = ExtendArray(
-                tsdPtr->stacks[elPtr->flags], elPtr);
+	stacks[elPtr->flags] = ExtendArray(stacks[elPtr->flags], elPtr);
     }
 }
-
-/*
- *--------------------------------------------------------------
- *
- * OptionThreadExitProc --
- *
- *	Free data structures for option handling.
- *
- * Results:
- *	None.
- *
- * Side effects:
- *	Option-related data structures get freed.
- *
- *--------------------------------------------------------------
- */
-
-static void
-OptionThreadExitProc(clientData)
-    ClientData clientData;	/* not used */
-{
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
-    if (tsdPtr->initialized) {
-	int i;
-	for (i = 0; i < NUM_STACKS; i++) {
-	    ckfree((char *) tsdPtr->stacks[i]);
-	}
-	ckfree((char *) tsdPtr->levels);
-	tsdPtr->initialized = 0;
-    }
-}
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1494,33 +1266,24 @@ OptionInit(mainPtr)
 {
     int i;
     Tcl_Interp *interp;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-    Element *defaultMatchPtr = &tsdPtr->defaultMatch;
 
     /*
      * First, once-only initialization.
      */
 
-    if (tsdPtr->initialized == 0) {
-        tsdPtr->initialized = 1;
-        tsdPtr->cachedWindow = NULL;
-	tsdPtr->numLevels = 5;
-	tsdPtr->curLevel = -1;
-	tsdPtr->serial = 0;
+    if (numLevels == 0) {
 
-	tsdPtr->levels = (StackLevel *) ckalloc((unsigned)
-                (5*sizeof(StackLevel)));
+	numLevels = 5;
+	levels = (StackLevel *) ckalloc((unsigned) (5*sizeof(StackLevel)));
 	for (i = 0; i < NUM_STACKS; i++) {
-	    tsdPtr->stacks[i] = NewArray(10);
-	    tsdPtr->levels[0].bases[i] = 0;
+	    stacks[i] = NewArray(10);
+	    levels[0].bases[i] = 0;
 	}
-
-	defaultMatchPtr->nameUid = NULL;
-	defaultMatchPtr->child.valueUid = NULL;
-	defaultMatchPtr->priority = -1;
-	defaultMatchPtr->flags = 0;
-	Tcl_CreateThreadExitHandler(OptionThreadExitProc, NULL);
+    
+	defaultMatch.nameUid = NULL;
+	defaultMatch.child.valueUid = NULL;
+	defaultMatch.priority = -1;
+	defaultMatch.flags = 0;
     }
 
     /*
@@ -1533,7 +1296,7 @@ OptionInit(mainPtr)
     (void) GetDefaultOptions(interp, mainPtr->winPtr);
     Tcl_DeleteInterp(interp);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1569,7 +1332,7 @@ ClearOptionTree(arrayPtr)
     }
     ckfree((char *) arrayPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *

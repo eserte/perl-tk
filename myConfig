@@ -27,7 +27,7 @@ if (defined $Config{'gccversion'})
       if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
        {
         # This is the author - catch as many bugs as possible
-        $gccopt .= "  -MMD -Werror -Wno-format";
+        $gccopt .= "  -MMD -Werror";
         @macro = ( macro => { INSTALLDIRS => 'perl' });
        }
      }
@@ -60,14 +60,7 @@ $define{'USE_PROTOTYPE'} = 1     if ($Config{'prototype'});
 $define{'HAVE_UNISTD_H'} = 1     if ($Config{'i_unistd'});
 $define{'HAVE_SYS_SELECT_H'} = 1 if ($Config{'i_sysselct'});
 $define{'NO_STDLIB_H'} = 1       unless ($Config{'i_stdlib'});
-if ($Config{'i_systime'})
- {
-  $define{'HAVE_SYS_TIME_H'} = 1;
-  if ($Config{'i_time'})
-   {
-    $define{'TIME_WITH_SYS_TIME'} = 1;
-   }
- }
+$define{'HAVE_SYS_TIME_H'} = 1   if ($Config{'i_systime'});
 $define{'HAVE_LIMITS_H'} = 1     if ($Config{'i_limits'});
 $define{'HAS_STDARG'} = 1        if ($Config{'i_stdarg'});
 $define{'USE_BCOPY'} = 1         if (!$Config{'d_memmove'} && $Config{'d_bcopy'});
@@ -347,7 +340,7 @@ if ($win_arch eq 'x') {
   $define .= " -D__PM__";
   $inc = "-I../pTk/mTk/xlib -I../../pTk/mTk/xlib -IpTk/mTk/xlib -ImTk/os2_rc";
   $xlib = "";                          # No library is needed
-} elsif ($IsWin32) {
+} elsif ($IsWin32 or $^O eq 'cygwin') {
   $inc = '-I$(TKDIR)/pTk/mTk/xlib';
 }
 

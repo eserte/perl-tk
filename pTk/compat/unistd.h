@@ -31,8 +31,8 @@
 #define LSEEK_TYPE long
 #endif
 
-/*
- * Strict POSIX stuff goes here.  Extensions go down below, in the
+/* 
+ * Strict POSIX stuff goes here.  Extensions go down below, in the 
  * ifndef _POSIX_SOURCE section.
  */
 

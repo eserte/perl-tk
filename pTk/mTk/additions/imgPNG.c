@@ -339,7 +339,7 @@ static int ChnReadPNG(interp, chan, fileName, formatString, imageHandle,
 
     png_ptr=png.create_read_struct(PNG_LIBPNG_VER_STRING,
 	    (png_voidp) &cleanup,tk_png_error,tk_png_warning);
-    if (!png_ptr) return(0);
+    if (!png_ptr) return(0); 
 
     png.set_read_fn(png_ptr, (png_voidp) chan, tk_png_chanread);
 
@@ -370,7 +370,7 @@ static int FileReadPNG(interp, f, fileName, formatString, imageHandle,
 
     png_ptr=png.create_read_struct(PNG_LIBPNG_VER_STRING,
 	    (png_voidp) &cleanup,tk_png_error,tk_png_warning);
-    if (!png_ptr) return(0);
+    if (!png_ptr) return(0); 
 
     png.init_io(png_ptr,f);
 
@@ -401,7 +401,7 @@ static int ObjReadPNG(interp, dataObj, formatString, imageHandle,
 
     png_ptr=png.create_read_struct(PNG_LIBPNG_VER_STRING,
 	    (png_voidp) &cleanup,tk_png_error,tk_png_warning);
-    if (!png_ptr) return TCL_ERROR;
+    if (!png_ptr) return TCL_ERROR; 
 
     ImgReadInit(dataObj,'\211',&handle);
 
@@ -538,7 +538,7 @@ static int FileWritePNG(interp, filename, formatString, blockPtr)
     FILE *outfile = NULL;
     png_structp png_ptr;
     png_infop info_ptr;
-    Tcl_DString nameBuffer;
+    Tcl_DString nameBuffer; 
     char *fullname;
     int result;
     cleanup_info cleanup;
@@ -565,7 +565,7 @@ static int FileWritePNG(interp, filename, formatString, blockPtr)
 
     png_ptr=png.create_write_struct(PNG_LIBPNG_VER_STRING,
 	    (png_voidp) &cleanup,tk_png_error,tk_png_warning);
-    if (!png_ptr) return TCL_ERROR;
+    if (!png_ptr) return TCL_ERROR; 
 
     info_ptr=png.create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -602,7 +602,7 @@ static int StringWritePNG(interp, dataPtr, formatString, blockPtr)
 
     png_ptr=png.create_write_struct(PNG_LIBPNG_VER_STRING,
 	    (png_voidp) &cleanup,tk_png_error,tk_png_warning);
-    if (!png_ptr) return TCL_ERROR;
+    if (!png_ptr) return TCL_ERROR; 
 
     info_ptr = png.create_info_struct(png_ptr);
     if (!info_ptr) {
@@ -629,7 +629,7 @@ static int CommonWritePNG(interp, png_ptr, info_ptr, formatString, blockPtr)
     int greenOffset, blueOffset, alphaOffset;
     int tagcount = 0;
     char **tags = NULL;
-    int I, pass, number_passes, color_type;
+    int I, pass, number_passes, color_type;  
     int newPixelSize;
     png_bytep row_pointers;
     png_textp text = NULL;
@@ -637,7 +637,7 @@ static int CommonWritePNG(interp, png_ptr, info_ptr, formatString, blockPtr)
     if (formatString != NULL) {
 	if (Tcl_SplitList(interp,formatString,&tagcount,&tags)!=TCL_OK) {
 	    Tcl_AppendResult(interp,"invalid format: \"",
-		    formatString, "\"",(char *) NULL);
+		    formatString, "\"",(char *) NULL); 
 	    return TCL_ERROR;
 	}
 	tagcount = tagcount/2 - 1;
@@ -702,7 +702,7 @@ static int CommonWritePNG(interp, png_ptr, info_ptr, formatString, blockPtr)
 	    text.key = tags[2*I+1];
 	    text.text = tags[2*I+2];
 	    text.text_length=strlen(tags[2*I+2]);
-	    if (text.text_length>COMPRESS_THRESHOLD) {
+	    if (text.text_length>COMPRESS_THRESHOLD) { 
 		text.compression = -1;
 	    }
 	    png.set_text(png_ptr, info_ptr, &text, 1);

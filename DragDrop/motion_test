@@ -21,7 +21,7 @@ $either->DragDrop(-event => '<B1-Motion>', -text => 'Either', -sitetypes => [qw(
 my $loc = $f->Label(-relief => 'ridge','-text' => "Loc")->pack(-side => 'right');
 $loc->DragDrop(-event => '<B1-Motion>', -text => 'Local', -sitetypes => [qw(Local)]);
 
-my $canvas = $top->Canvas(-width => 200, -height => 200,
+my $canvas = $top->Canvas(-width => 200, -height => 200, 
                           -relief => 'groove', -borderwidth => 3)->pack;
 
 my $sid = $canvas->create('oval',0,0,10,10,-fill => 'red');

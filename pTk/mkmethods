@@ -40,7 +40,7 @@ while (<>)
     if (/strn?cmp\s*\(\s*LangString\(args\[2\]\)\s*,\s*("[^"]*")\s*/)
      {
       push(@{$tags{$Tag}},$1);
-      print "$Tag : $1\n";
+      print "$Tag : $1\n"; 
      }
    }
   else
@@ -76,7 +76,7 @@ while (<>)
 
 if (%{$table{WIDGET}} || %{$table{COMMAND}} || %{$table{IMAGE}})
  {
-  if (open(SRC,"<$dst"))
+  if (open(SRC,"<$dst"))           
    {
     while (<SRC>)
      {
@@ -87,7 +87,7 @@ if (%{$table{WIDGET}} || %{$table{COMMAND}} || %{$table{IMAGE}})
          {
           chop($list);
           print STDERR "Keep $kind $Widget : $list\n";
-          my @list = split(/,/,$list);
+          my @list = split(/,/,$list); 
           @list = grep(!/^(configure|cget)$/,@list);
           ${$table{$kind}}{$Widget} = \@list;
          }
@@ -101,7 +101,7 @@ if (%{$table{WIDGET}} || %{$table{COMMAND}} || %{$table{IMAGE}})
     close(SRC);
    }
 
-  open(SRC,">$dst") || die "Cannot open $dst:$!";
+  open(SRC,">$dst") || die "Cannot open $dst:$!"; 
   foreach $kind (sort keys %table)
    {
     foreach $Widget (sort keys %{$table{$kind}})
@@ -110,9 +110,9 @@ if (%{$table{WIDGET}} || %{$table{COMMAND}} || %{$table{IMAGE}})
        {
         print SRC "$kind((\"$Widget\",";
         foreach (sort @{$table{$kind}{$Widget}})
-         {
-          print SRC "$_,";
-         }
+         {                   
+          print SRC "$_,";   
+         }                   
         print SRC "NULL))\n";
        }
      }

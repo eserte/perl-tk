@@ -244,7 +244,7 @@ static int ObjReadPS(interp, data, format, imageHandle,
 
     ImgReadInit(data,'%',&handle);
 
-    return CommonReadPS(interp, &handle, format, imageHandle,
+    return CommonReadPS(interp, &handle, format, imageHandle, 
 	    destX, destY, width, height, srcX, srcY);
 }
 
@@ -477,7 +477,7 @@ static int ObjReadPDF(interp, data, format, imageHandle,
     int width, height;
     int srcX, srcY;
 {
-    return ObjReadPS(interp, data, format, imageHandle,
+    return ObjReadPS(interp, data, format, imageHandle, 
 	    destX, destY, width, height, srcX, srcY);
 }
 

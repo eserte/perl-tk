@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/local/bin/perl 
 
 %def   = ();
 %need  = ();
@@ -9,7 +9,7 @@ sub read_need
  my $need = shift;
  open(NEED,"<$need") || die "Cannot open $need:$!";
  while (<NEED>)
-  {
+  {  
    next if (/^ld:/);
    next if (/^\s+\./);
    if (/^([A-Za-z][A-Za-z0-9_]*).*\.o\s*$/)
@@ -33,7 +33,7 @@ sub read_nm
 {
  my $src = shift;
  open(NM,"nm -p $src|") || die "Cannot open pipe:$!";
- while (<NM>)
+ while (<NM>)  
   {
    if (/^\S+\s+([A-Z])\s+(\S+)\s*$/)
     {

@@ -7,7 +7,7 @@
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
 # perl/Tk version:
-# Copyright (c) 1995-2000 Nick Ing-Simmons
+# Copyright (c) 1995-2003 Nick Ing-Simmons
 # Copyright (c) 1999 Greg London
 #
 # See the file "license.terms" for information on usage and redistribution
@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '4.013'; # $Id: //depot/Tkutf8/Text/Text.pm#13 $
+$VERSION = '3.053'; # $Id: //depot/Tk8/Text/Text.pm#53 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -144,6 +144,8 @@ sub bindRdOnly
  $mw->bind($class, '<3>', ['PostPopupMenu', Ev('X'), Ev('Y')]  );
  $mw->YMouseWheelBind($class);
  $mw->XMouseWheelBind($class);
+
+ $mw->MouseWheelBind($class);
 
  return $class;
 }
@@ -631,7 +633,7 @@ sub ToggleInsertMode
 sub InsertKeypress
 {
  my ($w,$char)=@_;
- return unless length $char;
+ return unless length($char);
  if ($w->OverstrikeMode)
   {
    my $current=$w->get('insert');
@@ -1009,32 +1011,32 @@ sub findandreplacepopup
   ->grid(-row=> 1, -column=>1, -padx=> 20, -sticky => 'nw');
  my $direction = '-forward';
  $frame->Radiobutton(
-  -variable => \$direction,
-  -text => '-forward',-value => '-forward' )
+  variable => \$direction,
+  text => 'forward',value => '-forward' )
   ->grid(-row=> 2, -column=>1, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  -variable => \$direction,
-  -text => '-backward',-value => '-backward' )
+  variable => \$direction,
+  text => 'backward',value => '-backward' )
   ->grid(-row=> 3, -column=>1, -padx=> 20, -sticky => 'nw');
 
  $frame->Label(-text=>"Mode:")
   ->grid(-row=> 1, -column=>2, -padx=> 20, -sticky => 'nw');
  my $mode = '-exact';
  $frame->Radiobutton(
-  -variable => \$mode, -text => '-exact',-value => '-exact' )
+  variable => \$mode, text => 'exact',value => '-exact' )
   ->grid(-row=> 2, -column=>2, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  -variable => \$mode, -text => '-regexp',-value => '-regexp' )
+  variable => \$mode, text => 'regexp',value => '-regexp' )
   ->grid(-row=> 3, -column=>2, -padx=> 20, -sticky => 'nw');
 
  $frame->Label(-text=>"Case:")
   ->grid(-row=> 1, -column=>3, -padx=> 20, -sticky => 'nw');
  my $case = '-case';
  $frame->Radiobutton(
-  -variable => \$case, -text => '-case',-value => '-case' )
+  variable => \$case, text => 'case',value => '-case' )
   ->grid(-row=> 2, -column=>3, -padx=> 20, -sticky => 'nw');
  $frame->Radiobutton(
-  -variable => \$case, -text => '-nocase',-value => '-nocase' )
+  variable => \$case, text => 'nocase',value => '-nocase' )
   ->grid(-row=> 3, -column=>3, -padx=> 20, -sticky => 'nw');
 
  ######################################################
@@ -1106,6 +1108,9 @@ sub findandreplacepopup
 
   $find_entry->bind("<Return>" => [$button_find, 'invoke']);
   $find_entry->bind("<Escape>" => [$button_cancel, 'invoke']);
+
+ $find_entry->bind("<Return>" => [$button_find, 'invoke']);
+ $find_entry->bind("<Escape>" => [$button_cancel, 'invoke']);
 
  $pop->resizable('yes','no');
  return $pop;
@@ -1605,5 +1610,6 @@ sub GetMenu
 
 1;
 __END__
+
 
 

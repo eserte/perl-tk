@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclResolve.c,v 1.4 2002/01/25 22:01:32 dgp Exp $
+ * RCS: @(#) $Id: tclResolve.c,v 1.3 1998/10/06 19:12:06 rjohnson Exp $
  */
 
 #include "tclInt.h"
@@ -23,7 +23,7 @@
 
 static void		BumpCmdRefEpochs _ANSI_ARGS_((Namespace *nsPtr));
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -63,7 +63,7 @@ Tcl_AddInterpResolvers(interp, name, cmdProc, varProc, compiledVarProc)
 
     Tcl_Interp *interp;			/* Interpreter whose name resolution
 					 * rules are being modified. */
-    CONST char *name;			/* Name of this resolution scheme. */
+    char *name;				/* Name of this resolution scheme. */
     Tcl_ResolveCmdProc *cmdProc;	/* New procedure for command
 					 * resolution */
     Tcl_ResolveVarProc *varProc;	/* Procedure for variable resolution
@@ -115,7 +115,7 @@ Tcl_AddInterpResolvers(interp, name, cmdProc, varProc, compiledVarProc)
     resPtr->nextPtr = iPtr->resolverPtr;
     iPtr->resolverPtr = resPtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -142,7 +142,7 @@ Tcl_GetInterpResolvers(interp, name, resInfoPtr)
 
     Tcl_Interp *interp;			/* Interpreter whose name resolution
 					 * rules are being queried. */
-    CONST char *name;                   /* Look for a scheme with this name. */
+    char *name;                         /* Look for a scheme with this name. */
     Tcl_ResolverInfo *resInfoPtr;	/* Returns pointers to the procedures,
 					 * if found */
 {
@@ -164,7 +164,7 @@ Tcl_GetInterpResolvers(interp, name, resInfoPtr)
 
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -194,7 +194,7 @@ Tcl_RemoveInterpResolvers(interp, name)
 
     Tcl_Interp *interp;			/* Interpreter whose name resolution
 					 * rules are being modified. */
-    CONST char *name;                   /* Name of the scheme to be removed. */
+    char *name;                         /* Name of the scheme to be removed. */
 {
     Interp *iPtr = (Interp*)interp;
     ResolverScheme **prevPtrPtr, *resPtr;
@@ -235,7 +235,7 @@ Tcl_RemoveInterpResolvers(interp, name)
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -275,7 +275,7 @@ BumpCmdRefEpochs(nsPtr)
     }
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -291,9 +291,9 @@ BumpCmdRefEpochs(nsPtr)
  *	type:
  *
  *	  typedef int (Tcl_ResolveCmdProc) _ANSI_ARGS_((
- *		Tcl_Interp* interp, CONST char* name, Tcl_Namespace *context,
+ *		Tcl_Interp* interp, char* name, Tcl_Namespace *context,
  *              int flags, Tcl_Command *rPtr));
- *
+ *          
  *	Whenever a command is executed or Tcl_FindCommand is invoked
  *	within the namespace, this procedure is called to resolve the
  *	command name.  If this procedure is able to resolve the name,
@@ -308,7 +308,7 @@ BumpCmdRefEpochs(nsPtr)
  *	time:
  *
  *        typedef int (Tcl_ResolveCompiledVarProc) _ANSI_ARGS_((
- *	        Tcl_Interp* interp, CONST char* name, Tcl_Namespace *context,
+ *	        Tcl_Interp* interp, char* name, Tcl_Namespace *context,
  *	        Tcl_ResolvedVarInfo *rPtr));
  *
  *      If this procedure is able to resolve the name, it should return
@@ -325,7 +325,7 @@ BumpCmdRefEpochs(nsPtr)
  *	Tcl_FindNamespaceVar.) This procedure has the following type:
  *
  *	  typedef int (Tcl_ResolveVarProc) _ANSI_ARGS_((
- *	        Tcl_Interp* interp, CONST char* name, Tcl_Namespace *context,
+ *	        Tcl_Interp* interp, char* name, Tcl_Namespace *context,
  *	        int flags, Tcl_Var *rPtr));
  *
  *	This procedure is quite similar to the compile-time version.
@@ -370,7 +370,7 @@ Tcl_SetNamespaceResolvers(namespacePtr, cmdProc, varProc, compiledVarProc)
     nsPtr->cmdRefEpoch++;
     nsPtr->resolverEpoch++;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

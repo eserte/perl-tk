@@ -1,6 +1,3 @@
-
-/*	$Id: tixHList.c,v 1.3 2000/10/17 16:38:11 idiscovery Exp $	*/
-
 /*
  * tixHList.c --
  *
@@ -334,7 +331,7 @@ static TIX_DECLARE_SUBCMD(Tix_HLXView);
 static TIX_DECLARE_SUBCMD(Tix_HLYView);
 
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -493,7 +490,7 @@ Tix_HListCmd(clientData, interp, argc, argv)
     return TCL_OK;
 }
 
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -581,7 +578,7 @@ WidgetCommand(clientData, interp, argc, argv)
 
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * "add" sub command --
  *
@@ -619,10 +616,10 @@ Tix_HLAdd(clientData, interp, argc, argv)
 	}
     }
 
-    Tcl_AppendResult(interp, chPtr->pathName, NULL);
+    Tcl_AppendResult(interp, chPtr->pathName, NULL);	
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "addchild" sub command --
  *
@@ -667,10 +664,10 @@ Tix_HLAddChild(clientData, interp, argc, argv)
 	}
     }
 
-    Tcl_AppendResult(interp, chPtr->pathName, NULL);
+    Tcl_AppendResult(interp, chPtr->pathName, NULL);	
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "anchor", "dragsite" and "dropsire" sub commands --
  *
@@ -739,7 +736,7 @@ Tix_HLSetSite(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "cget" sub command --
  *----------------------------------------------------------------------
@@ -756,7 +753,7 @@ Tix_HLCGet(clientData, interp, argc, argv)
     return Tk_ConfigureValue(interp, wPtr->dispData.tkwin, configSpecs,
 		(char *)wPtr, argv[0], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "configure" sub command
  *----------------------------------------------------------------------
@@ -781,7 +778,7 @@ Tix_HLConfig(clientData, interp, argc, argv)
 	    TK_CONFIG_ARGV_ONLY);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "delete" sub command
  *----------------------------------------------------------------------
@@ -855,7 +852,7 @@ wrong_option:
     return TCL_ERROR;
 
 }
-
+
 /*----------------------------------------------------------------------
  * "entrycget" sub command
  *----------------------------------------------------------------------
@@ -881,7 +878,7 @@ Tix_HLEntryCget(clientData, interp, argc, argv)
     return Tix_ConfigureValue2(interp, wPtr->dispData.tkwin, (char *)chPtr,
 	entryConfigSpecs, chPtr->col[0].iPtr, argv[1], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "entryconfigure" sub command
  *----------------------------------------------------------------------
@@ -913,7 +910,7 @@ Tix_HLEntryConfig(clientData, interp, argc, argv)
 	    TK_CONFIG_ARGV_ONLY, 0);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "geometryinfo" sub command
  *----------------------------------------------------------------------
@@ -931,10 +928,10 @@ Tix_HLGeometryInfo(clientData, interp, argc, argv)
     char string[80];
 
     if (argc == 2) {
-	if (Tcl_GetIntFromObj(interp, argv[0], &qSize[0]) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[0], &qSize[0]) != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	if (Tcl_GetIntFromObj(interp, argv[1], &qSize[1]) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[1], &qSize[1]) != TCL_OK) {
 	    return TCL_ERROR;
 	}
     } else {
@@ -963,7 +960,7 @@ Tix_HLGeometryInfo(clientData, interp, argc, argv)
 #endif
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "hide" sub command
  *----------------------------------------------------------------------
@@ -991,7 +988,7 @@ Tix_HLHide(clientData, interp, argc, argv)
     Tix_HLResizeWhenIdle(wPtr);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "show" sub command
  *----------------------------------------------------------------------
@@ -1016,7 +1013,7 @@ Tix_HLShow(clientData, interp, argc, argv)
     Tix_HLResizeWhenIdle(wPtr);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "info" sub command
  *----------------------------------------------------------------------
@@ -1077,7 +1074,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
         Tcl_IncrRefCount(chPtr->data);
-	Tcl_SetObjResult(interp, chPtr->data);
+	Tcl_ListObjAppendElement(interp, Tcl_GetObjResult(interp), chPtr->data);
 	return TCL_OK;
     }
     else if (strncmp(argv[0], "dragsite", len)==0) {
@@ -1099,9 +1096,9 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	chPtr = Tix_HLFindElement(interp, wPtr, argv[1]);
 
 	if (chPtr) {
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 1);
+	    Tcl_IntResults(interp, 1, 1, 1);
 	} else {
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+	    Tcl_IntResults(interp, 1, 0, 0);
 	}
 	return TCL_OK;
     }
@@ -1113,9 +1110,9 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 	if (chPtr->hidden) {
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 1);
+	    Tcl_IntResults(interp, 1, 1, 1);
 	} else {
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+	    Tcl_IntResults(interp, 1, 1, 0);
 	}
 
 	return TCL_OK;
@@ -1138,7 +1135,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 
 	if (nextPtr) {
 	    Tcl_AppendResult(interp, nextPtr->pathName, NULL);
-	}
+	}	
 
 	return TCL_OK;
     }
@@ -1165,7 +1162,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	prevPtr = FindPrevEntry(wPtr, chPtr);
 	if (prevPtr) {
 	    Tcl_AppendResult(interp, prevPtr->pathName, NULL);
-	}
+	}	
 
 	return TCL_OK;
     }
@@ -1180,7 +1177,7 @@ Tix_HLInfo(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * "info item" sub-sub command
  * argv[0] = x
@@ -1206,10 +1203,10 @@ Tix_HLItemInfo(interp, wPtr, argc, argv)
     if (argc != 2) {
 	return Tix_ArgcError(interp, argc+3, argv-3, 3, "x y");
     }
-    if (Tcl_GetIntFromObj(interp, argv[0], &widX) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[0], &widX) != TCL_OK) {
 	return TCL_ERROR;
     }
-    if (Tcl_GetIntFromObj(interp, argv[1], &widY) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[1], &widY) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (wPtr->root->dirty || wPtr->allDirty) {
@@ -1311,12 +1308,12 @@ _column:
 	    Tix_DItemComponent(chPtr->col[i].iPtr, itemX, itemY));
     }
     return TCL_OK;
-
+	
 none:
     Tcl_ResetResult(interp);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "nearest" sub command
  *----------------------------------------------------------------------
@@ -1332,7 +1329,7 @@ Tix_HLNearest(clientData, interp, argc, argv)
     HListElement * chPtr;
     int y;
 
-    if (Tcl_GetIntFromObj(interp, argv[0], &y) != TCL_OK) {
+    if (Tcl_GetInt(interp, argv[0], &y) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (wPtr->root->dirty || wPtr->allDirty) {
@@ -1349,7 +1346,7 @@ Tix_HLNearest(clientData, interp, argc, argv)
     }
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "see" sub command
  *----------------------------------------------------------------------
@@ -1379,7 +1376,7 @@ Tix_HLSee(clientData, interp, argc, argv)
 	return TCL_OK;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * Tix_HLBBox --
  *
@@ -1559,7 +1556,7 @@ static int Tix_HLSeeElement(wPtr, chPtr, callRedraw)
     }
 }
 
-
+
 /*----------------------------------------------------------------------
  * "selection" sub command
  *	Modify the selection in this HList box
@@ -1615,9 +1612,9 @@ Tix_HLSelection(clientData, interp, argc, argv)
 	    goto done;
 	}
 	if (chPtr->selected) {
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 1);
+	    Tcl_IntResults(interp, 1, 1, 1);
 	} else {
-	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+	    Tcl_IntResults(interp, 1, 1, 0);
 	}
     }
     else if (strncmp(argv[0], "get", len)==0) {
@@ -1680,7 +1677,7 @@ Tix_HLSelection(clientData, interp, argc, argv)
 
     return code;
 }
-
+
 /*----------------------------------------------------------------------
  * "xview" sub command
  *----------------------------------------------------------------------
@@ -1703,7 +1700,7 @@ Tix_HLXView(clientData, interp, argc, argv)
     else if ((chPtr = Tix_HLFindElement(interp, wPtr, argv[0])) != NULL) {
 	leftPixel = Tix_HLElementLeftOffset(wPtr, chPtr);
     }
-    else if (Tcl_GetIntFromObj(interp, argv[0], &leftPixel) == TCL_OK) {
+    else if (Tcl_GetInt(interp, argv[0], &leftPixel) == TCL_OK) {
 	/* %% todo backward-compatible mode */
 
     }
@@ -1743,7 +1740,7 @@ Tix_HLXView(clientData, interp, argc, argv)
     Tcl_ResetResult(interp);
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "yview" sub command
  *----------------------------------------------------------------------
@@ -1767,7 +1764,7 @@ Tix_HLYView(clientData, interp, argc, argv)
     else if ((chPtr = Tix_HLFindElement(interp, wPtr, argv[0])) != NULL) {
 	topPixel = Tix_HLElementTopOffset(wPtr, chPtr);
     }
-    else if (Tcl_GetIntFromObj(interp, argv[0], &topPixel) == TCL_OK) {
+    else if (Tcl_GetInt(interp, argv[0], &topPixel) == TCL_OK) {
 	/* %% todo backward-compatible mode */
     }
     else {
@@ -1806,7 +1803,7 @@ Tix_HLYView(clientData, interp, argc, argv)
     Tcl_ResetResult(interp);
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2003,7 +2000,7 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -2061,7 +2058,7 @@ WidgetEventProc(clientData, eventPtr)
 	break;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -2103,7 +2100,7 @@ SubWindowEventProc(clientData, eventPtr)
 	break;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2182,7 +2179,7 @@ WidgetDestroy(clientData)
     Tk_FreeOptions(configSpecs, (char *) wPtr, wPtr->dispData.display, 0);
     ckfree((char *) wPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2219,7 +2216,7 @@ WidgetCmdDeletedProc(clientData)
 	Tk_DestroyWindow(tkwin);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -2324,7 +2321,7 @@ Tix_HLComputeGeometry(clientData)
 
     RedrawWhenIdle(wPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * Tix_HLResizeWhenIdle --
@@ -2347,7 +2344,7 @@ Tix_HLResizeWhenIdle(wPtr)
 	CancelRedrawWhenIdle(wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * Tix_HLResizeNow --
@@ -2363,7 +2360,7 @@ Tix_HLResizeNow(wPtr)
 	Tix_HLComputeGeometry((ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * Tix_HLCancelResizeWhenIdle --
@@ -2378,7 +2375,7 @@ Tix_HLCancelResizeWhenIdle(wPtr)
 	Tcl_CancelIdleCall(Tix_HLComputeGeometry, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * RedrawWhenIdle --
@@ -2398,7 +2395,7 @@ RedrawWhenIdle(wPtr)
 	Tcl_DoWhenIdle(WidgetDisplay, (ClientData)wPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * CancelRedrawWhenIdle --
@@ -2414,7 +2411,7 @@ CancelRedrawWhenIdle(wPtr)
 	Tcl_CancelIdleCall(WidgetDisplay, (ClientData)wPtr);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * DItemSizeChangedProc --
  *
@@ -2464,7 +2461,7 @@ static void DItemSizeChangedProc(iPtr)
 	break;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -2565,7 +2562,7 @@ AllocElement(wPtr, parent, pathName, name, ditemType)
 
     return chPtr;
 }
-
+
 static void
 FreeElement(wPtr, chPtr)
     WidgetPtr wPtr;
@@ -2632,7 +2629,7 @@ FreeElement(wPtr, chPtr)
 
     ckfree((char*)chPtr);
 }
-
+
 static void
 AppendList(wPtr, parent, chPtr, at, afterPtr, beforePtr)
     WidgetPtr wPtr;
@@ -2708,7 +2705,7 @@ AppendList(wPtr, parent, chPtr, at, afterPtr, beforePtr)
 	parent->childTail = chPtr;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -2729,7 +2726,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
     Tcl_Interp *interp;
     WidgetPtr wPtr;
     int argc;
-    Tcl_Obj *CONST *objv;
+    char ** argv;
     char * pathName;		/* Default pathname, if -pathname is not
 				 * specified in the options */
     char * defParentName;	/* Default parent name (will NULL if pathName
@@ -2792,7 +2789,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 		continue;
 	    }
 	    else if (strncmp(argv[i], "-at", len) == 0) {
-		if (Tcl_GetIntFromObj(interp, objv[i+1], &at) != TCL_OK) {
+		if (Tcl_GetInt(interp, objv[i+1], &at) != TCL_OK) {
 		    chPtr = NULL;
 		    goto done;
 		}
@@ -2802,13 +2799,8 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 
 	  copy:
 	    if (n!=i) {
-#if 0
-                /* FIXME */
 		objv[n] = objv[i];
 		objv[n+1] = objv[i+1];
-#else
-		abort();
-#endif
 	    }
 	    n+=2;
 	}
@@ -2897,7 +2889,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 		if ((pathName[0] == sep) && (pathName[1] == '\0')) {
 		    /*
 		     * The separator by itself is also a toplevel entry
-		     */
+		     */		
 		    parentName = 0;
 		} else {
 		    parentName[0] = sep;
@@ -2964,7 +2956,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
     }
     return chPtr;
 }
-
+
 /*--------------------------------------------------------------
  * ConfigElement --
  *
@@ -3009,7 +3001,7 @@ ConfigElement(wPtr, chPtr, argc, argv, flags, forced)
 
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3111,7 +3103,7 @@ static HListElement * FindElementAtPosition(wPtr, y)
 	return NULL;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3149,7 +3141,7 @@ HListElement * Tix_HLFindElement(interp, wPtr, pathName)
 	return wPtr->root;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3226,7 +3218,7 @@ static int SelectionModifyRange(wPtr, from, to, select)
 
     return changed;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3258,7 +3250,7 @@ int Tix_HLElementTopOffset(wPtr, chPtr)
     }
     return top;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3281,7 +3273,7 @@ int Tix_HLElementLeftOffset(wPtr, chPtr)
 
     return left;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3313,7 +3305,7 @@ static int CurSelection(interp, wPtr, chPtr)
     }
     return TCL_OK;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3339,7 +3331,7 @@ void Tix_HLMarkElementDirty(wPtr, chPtr)
 	ptr->dirty = 1;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3403,7 +3395,7 @@ static void ComputeElementGeometry(wPtr, chPtr, indent)
 	chPtr->allHeight += ptr->allHeight;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3450,7 +3442,7 @@ static void ComputeOneElementGeometry(wPtr, chPtr, indent)
     }
     chPtr->col[0].width += indent;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -3594,7 +3586,7 @@ WidgetDisplay(clientData)
 
     if (wPtr->elmToSee != NULL) {
 	HListElement *chPtr;
-
+	
 	if ((chPtr = Tix_HLFindElement(interp, wPtr,
 		wPtr->elmToSee)) == NULL) {
 	    Tcl_ResetResult(interp);
@@ -3736,7 +3728,7 @@ WidgetDisplay(clientData)
     /* unmap those windows we mapped the last time */
     Tix_UnmapInvisibleWindowItems(&wPtr->mappedWindows, wPtr->serial);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -3895,17 +3887,13 @@ static void DrawElements(wPtr, pixmap, gc, chPtr, x, y, xOffset)
 		TIX_DITEM_NORMAL_FG|TIX_DITEM_NORMAL_BG);
 
 	    if (justMapped) {
-#if 1
-		Tk_RestackWindow(ptr->indicator->window.tkwin, Below, NULL);
-#else
 		XLowerWindow(Tk_Display(ptr->indicator->window.tkwin),
 		    Tk_WindowId(ptr->indicator->window.tkwin));
-#endif
 	    }
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4023,13 +4011,8 @@ static void DrawOneElement(wPtr, pixmap, gc, chPtr, x, y, xOffset)
 		 * We need to lower it so that it doesn't
 		 * overlap the header subwindow
 		 */
-#if 1
-		Tk_RestackWindow(iPtr->window.tkwin, Below, NULL);
-#else
 		XLowerWindow(Tk_Display(iPtr->window.tkwin),
 		    Tk_WindowId(iPtr->window.tkwin));
-#endif
-
 	    }
 	}
 
@@ -4045,7 +4028,7 @@ static void DrawOneElement(wPtr, pixmap, gc, chPtr, x, y, xOffset)
 	    wPtr->anchorGC, selectX, y, ancW, ancH);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * SelectionAdd --
@@ -4062,7 +4045,7 @@ static void SelectionAdd(wPtr, chPtr)
     chPtr->selected = 1;
     SelectionNotifyAncestors(wPtr, chPtr->parent);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * HL_SelectionClear --
@@ -4079,7 +4062,7 @@ static void HL_SelectionClear(wPtr, chPtr)
     chPtr->selected = 0;
     HL_SelectionClearNotifyAncestors(wPtr, chPtr->parent);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * HL_SelectionClearAll --
@@ -4107,7 +4090,7 @@ static void HL_SelectionClearAll(wPtr, chPtr, changed_ret)
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * SelectionNotifyAncestors --
@@ -4152,7 +4135,7 @@ static void HL_SelectionClearNotifyAncestors(wPtr, chPtr)
 	    SelectionNotifyAncestors(wPtr, chPtr->parent);
 	}
     }
-}
+}
 /*
  *--------------------------------------------------------------
  * DeleteOffsprings --
@@ -4176,7 +4159,7 @@ static void DeleteOffsprings(wPtr, chPtr)
     chPtr->childHead = 0;
     chPtr->childTail = 0;
 }
-
+
 /*
  *--------------------------------------------------------------
  * DeleteSiblings --
@@ -4194,7 +4177,7 @@ static void DeleteSiblings(wPtr, chPtr)
 	}
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  * DeleteNode --
@@ -4235,7 +4218,7 @@ static void DeleteNode(wPtr, chPtr)
 
     FreeElement(wPtr, chPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  * UpdateOneScrollBar --
@@ -4259,7 +4242,7 @@ static void UpdateOneScrollBar(wPtr, command, total, window, first)
 	Tcl_BackgroundError(wPtr->dispData.interp);
     }
 }
-
+
 /*----------------------------------------------------------------------
  *  UpdateScrollBars
  *----------------------------------------------------------------------
@@ -4301,7 +4284,7 @@ static void UpdateScrollBars(wPtr, sizeChanged)
 	}
     }
 }
-
+
 /*----------------------------------------------------------------------
  * XScrollByUnits
  *----------------------------------------------------------------------
@@ -4312,7 +4295,7 @@ static int XScrollByUnits(wPtr, count)
 {
     return wPtr->leftPixel + count*wPtr->scrollUnit[0];
 }
-
+
 /*----------------------------------------------------------------------
  * XScrollByPages
  *----------------------------------------------------------------------
@@ -4323,7 +4306,7 @@ static int XScrollByPages(wPtr, count)
 {
     return wPtr->leftPixel + count*Tk_Width(wPtr->dispData.tkwin);
 }
-
+
 /*----------------------------------------------------------------------
  * YScrollByUnits
  *----------------------------------------------------------------------
@@ -4345,7 +4328,7 @@ static int YScrollByUnits(wPtr, count)
 
     return wPtr->topPixel + count*height;
 }
-
+
 /*----------------------------------------------------------------------
  * YScrollByPages
  *----------------------------------------------------------------------
@@ -4363,7 +4346,7 @@ static int YScrollByPages(wPtr, count)
 
     return wPtr->topPixel + count*window;
 }
-
+
 /*----------------------------------------------------------------------
  * CheckScrollBar
  *
@@ -4411,7 +4394,7 @@ static void CheckScrollBar(wPtr, which)
 	wPtr->leftPixel = first;
     }
 }
-
+
 /*----------------------------------------------------------------------
  * GetScrollFractions --
  *
@@ -4433,7 +4416,7 @@ static void GetScrollFractions(total, window, first, first_ret, last_ret)
 	*last_ret  = (double)(first+window) / (double)(total);
     }
 }
-
+
 /*----------------------------------------------------------------------
  * Find the element that's immediately below this element.
  *
@@ -4450,7 +4433,7 @@ FindNextEntry(wPtr, chPtr)
     if (chPtr->next) {
 	return chPtr->next;
     }
-
+	
     /* go to a different branch */
     while (1) {
 	if (chPtr == wPtr->root) {
@@ -4462,7 +4445,7 @@ FindNextEntry(wPtr, chPtr)
 	}
     }
 }
-
+
 /*----------------------------------------------------------------------
  * Find the element that's immediately above this element.
  *
@@ -4489,7 +4472,7 @@ FindPrevEntry(wPtr, chPtr)
     }
 }
 
-
+
 /*----------------------------------------------------------------------
  * Recurse through all items and gather the -text arguments of selected
  * entries.
@@ -4517,12 +4500,12 @@ GetSelectedText(wPtr, chPtr, selection)
 		    switch (Tix_DItemType(iPtr)) {
 		        case TIX_DITEM_TEXT:
 			    Tcl_DStringAppend(selection,
-					      Tcl_GetString(iPtr->text.text),
+					      LangString(iPtr->text.text),
 					      iPtr->text.numChars);
 			    break;
 		        case TIX_DITEM_IMAGETEXT:
 			    Tcl_DStringAppend(selection,
-					      Tcl_GetString(iPtr->imagetext.text),
+					      LangString(iPtr->imagetext.text),
 					      iPtr->imagetext.numChars);
 			    break;
 		    }
@@ -4539,7 +4522,7 @@ GetSelectedText(wPtr, chPtr, selection)
     }
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -4613,7 +4596,7 @@ HListFetchSelection(clientData, offset, buffer, maxBytes)
     Tcl_DStringFree(&selection);
     return count;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *

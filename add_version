@@ -3,7 +3,7 @@ use strict;
 use File::Find;
 use Getopt::Std;
 use Cwd;
-my %opt = ('p' => '4');
+my %opt = ('p' => '3');
 getopts('oeap:',\%opt);
 my $path = getcwd();
 chdir($path);

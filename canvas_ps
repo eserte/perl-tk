@@ -30,7 +30,7 @@ sub Tk::Font
  return $name;
 }
 
-%colormap = ();
+%colormap = (); 
 
 sub plot
 {
@@ -53,7 +53,7 @@ $b->pack;
 $f1 = $c->Font(family => 'courier', weight => 'bold', size => 120);
 
 $c->create('text', 20, 20, -font => $f1, -anchor => 'nw', -fill => 'red',
-           -justify => 'left',
+           -justify => 'left', 
            -text => 'This is a piece of "courier" Text');
 
 $colormap{'red'} = '0.2 setgray';
@@ -64,9 +64,9 @@ $c->create('text', 20, 80, -font => $f2, -anchor => 'nw', -fill => 'green',
            -justify => 'left',
            -text => 'This is a piece of "times" Text');
 
-$c->create('text', 20, 120,
+$c->create('text', 20, 120, 
             -font => $c->Font(family => 'times', weight => 'bold', size => 240),
-            -anchor => 'nw',
+            -anchor => 'nw', 
            -justify => 'left',
            -text => 'This is a piece of "times" Text');
 

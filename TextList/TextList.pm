@@ -25,15 +25,15 @@ package Tk::TextList;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/TextList/TextList.pm#2 $
+$VERSION = '3.004'; # $Id: //depot/Tk8/TextList/TextList.pm#4 $
 
-use Tk::Reindex qw(Tk::ROText ReindexedROText);
+#XXXdel: use Tk::Reindex qw(Tk::ROText); #XXXdel: ReindexedROText);
 
 use base qw(Tk::Derived Tk::ReindexedROText );
 
 use Tk qw (Ev);
 
-use base qw(Tk::ReindexedROText);
+#XXX del: use base qw(Tk::ReindexedROText);
 
 Construct Tk::Widget 'TextList';
 
@@ -46,8 +46,11 @@ sub Populate
  my ($w,$args)=@_;
  my $option=delete $args->{'-selectmode'};
  $w->SUPER::Populate($args);
- $w->ConfigSpecs( -selectmode => ['PASSIVE','selectMode','SelectMode','browse'] );
- $w->ConfigSpecs( -takefocus  => ['PASSIVE','takeFocus','TakeFocus','browse'] );
+ $w->ConfigSpecs( -selectmode  => ['PASSIVE','selectMode','SelectMode','browse'],
+		  -takefocus   => ['PASSIVE','takeFocus','TakeFocus',1],
+		  -spacing3    => ['SELF', undef, undef, 3],
+		  -insertwidth => ['SELF', undef, undef, 0],
+		);
 
 }
 
@@ -107,11 +110,11 @@ sub ClassInit
 sub activate
 {
  my($w,$element)=@_;
- $element=$w->index($element).'.0';
- $w->SUPER::tagRemove('_ACTIVE_TAG', '1.0','end');
- $w->SUPER::tagAdd('_ACTIVE_TAG',
+ $element= $w->index($element).'.0';
+ $w->SUPER::tag('remove', '_ACTIVE_TAG', '1.0','end');
+ $w->SUPER::tag('add', '_ACTIVE_TAG',
    $element.' linestart', $element.' lineend');
- $w->SUPER::markSet('active', $element);
+ $w->SUPER::mark('set', 'active', $element);
 }
 
 
@@ -132,7 +135,7 @@ sub bbox
 sub curselection
 {
  my ($w)=@_;
- my @ranges = $w->SUPER::tagRanges('sel');
+ my @ranges = $w->SUPER::tag('ranges', 'sel');
  my @selection_list;
  while (@ranges)
   {
@@ -295,7 +298,7 @@ sub selectionAnchor
 {
  my ($w, $element)=@_;
  $element=$w->index($element);
- $w->SUPER::markSet('anchor', $element.'.0');
+ $w->SUPER::mark('set', 'anchor', $element.'.0');
 }
 
 #######################################################################
@@ -307,7 +310,7 @@ sub selectionClear
  $element1=$w->index($element1);
  $element2=$element1 unless(defined($element2));
  $element2=$w->index($element2);
- $w->SUPER::tagRemove('sel', $element1.'.0', $element2.'.0 lineend +1c');
+ $w->SUPER::tag('remove', 'sel', $element1.'.0', $element2.'.0 lineend +1c');
 }
 
 #######################################################################
@@ -335,7 +338,7 @@ sub selectionSet
  $element1=$w->index($element1);
  $element2=$element1 unless(defined($element2));
  $element2=$w->index($element2);
- $w->SUPER::tagAdd('sel', $element1.'.0', $element2.'.0 lineend +1c');
+ $w->SUPER::tag('add', 'sel', $element1.'.0', $element2.'.0 lineend +1c');
 }
 
 #######################################################################
@@ -390,7 +393,7 @@ sub tagAdd
  $element2=$w->index($element2);
  $element2.='.0 lineend +1c';
 
- $w->SUPER::tagAdd($tagName, $element1, $element2);
+ $w->SUPER::tag('add', $tagName, $element1, $element2);
 }
 
 #######################################################################
@@ -399,7 +402,7 @@ sub tagAdd
 sub tagAddChar
 {
  my $w=shift;
- $w->SUPER::tagAdd(@_);
+ $w->SUPER::tag('add',@_);
 }
 
 
@@ -416,7 +419,7 @@ sub tagRemove
  $element2=$w->index($element2);
  $element2.='.0 lineend +1c';
 
- $w->SUPER::tagRemove('sel', $element1, $element2);
+ $w->SUPER::tag('remove', 'sel', $element1, $element2);
 }
 
 #######################################################################
@@ -425,7 +428,7 @@ sub tagRemove
 sub tagRemoveChar
 {
  my $w=shift;
- $w->SUPER::tagRemove(@_);
+ $w->SUPER::tag('remove', @_);
 }
 
 
@@ -444,7 +447,7 @@ sub tagNextRange
  $element2=$w->index($element2);
  $element2.='.0 lineend +1c';
 
- my $index = $w->SUPER::tagNextrange('sel', $element1, $element2);
+ my $index = $w->SUPER::tag('nextrange', 'sel', $element1, $element2);
  my ($line,$col)=split(/\./,$index);
  return $line;
 }
@@ -455,7 +458,7 @@ sub tagNextRange
 sub tagNextRangeChar
 {
  my $w=shift;
- $w->SUPER::tagNextrange(@_);
+ $w->SUPER::tag('nextrange', @_);
 }
 
 #######################################################################
@@ -471,7 +474,7 @@ sub tagPrevRange
  $element2=$w->index($element2);
  $element2.='.0 lineend +1c';
 
- my $index = $w->SUPER::tagPrevrange('sel', $element1, $element2);
+ my $index = $w->SUPER::tag('prevrange', 'sel', $element1, $element2);
  my ($line,$col)=split(/\./,$index);
  return $line;
 }
@@ -482,7 +485,7 @@ sub tagPrevRange
 sub tagPrevRangeChar
 {
  my $w=shift;
- $w->SUPER::tagPrevrange(@_);
+ $w->SUPER::tag('prevrange', @_);
 }
 
 
@@ -495,7 +498,7 @@ sub markSet
  my ($w,$mark,$element1)=@_;
  $element1=$w->index($element1);
  $element1.='.0';
- $w->SUPER::markSet($element1,$mark);
+ $w->SUPER::mark('set', $element1,$mark);
 }
 
 #######################################################################
@@ -504,7 +507,7 @@ sub markSet
 sub markSetChar
 {
  my $w=shift;
- $w->SUPER::markSet(@_);
+ $w->SUPER::mark('set', @_);
 }
 
 #######################################################################
@@ -515,7 +518,7 @@ sub markNext
  my ($w,$element1)=@_;
  $element1=$w->index($element1);
  $element1.='.0';
- return $w->SUPER::markNext($element1);
+ return $w->SUPER::mark('next', $element1);
 }
 
 #######################################################################
@@ -524,7 +527,7 @@ sub markNext
 sub markNextChar
 {
  my $w=shift;
- $w->SUPER::markNext(@_);
+ $w->SUPER::mark('next', @_);
 }
 
 
@@ -536,7 +539,7 @@ sub markPrevious
  my ($w,$element1)=@_;
  $element1=$w->index($element1);
  $element1.='.0';
- return $w->SUPER::markPrevious($element1);
+ return $w->SUPER::mark('previous', $element1);
 }
 
 #######################################################################
@@ -545,7 +548,7 @@ sub markPrevious
 sub markPreviousChar
 {
  my $w=shift;
- $w->SUPER::markPrevious(@_);
+ $w->SUPER::mark('previous', @_);
 }
 
 

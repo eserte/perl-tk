@@ -1,11 +1,11 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Table.pm#5 $
+$VERSION = '3.024'; # $Id: //depot/Tk8/Tk/Table.pm#24 $
 
 use Tk::Pretty;
 use AutoLoader;
@@ -164,12 +164,12 @@ sub Layout
  my $why   = $t->{LayoutPending};
  $t->{LayoutPending} = 0;
 
- if ($sb =~ /^[ns]/)
+ if ($sb =~ /[ns]/)
   {
    $t->{xsb} = $t->Scrollbar(-orient => 'horizontal', -command => ['xview' => $t]) unless (defined $t->{xsb});
    $xsb   = $t->{xsb};
    $xs[3] = $xsb->ReqHeight;
-   if ($sb =~ /^n/)
+   if ($sb =~ /n/)
     {
      $xs[1] = $tadj;
      $tadj += $xs[3];
@@ -185,12 +185,12 @@ sub Layout
    $t->{xsb}->UnmapWindow if (defined $t->{xsb});
   }
 
- if ($sb =~ /[ew]$/)
+ if ($sb =~ /[ew]/)
   {
    $t->{ysb} = $t->Scrollbar(-orient => 'vertical', -command => ['yview' => $t]) unless (defined $t->{ysb});
    $ysb    = $t->{ysb};
    $ys[2]  = $ysb->ReqWidth;
-   if ($sb =~ /w$/)
+   if ($sb =~ /w/)
     {
      $ys[0] = $ladj;
      $ladj += $ys[2];
@@ -432,6 +432,17 @@ sub rows
  if (@_ > 1)
   {
    $t->_configure(-rows => $r);
+   if ($t->{Row} && @{$t->{Row}} > $r)
+    {
+     for my $y ($r .. $#{$t->{Row}})
+      {
+       for my $s (@{$t->{Row}[$y]})
+        {
+	 $s->destroy if $s;
+	}
+      }
+     splice @{ $t->{Row} }, $r;
+    }
    $t->QueueLayout(16);
   }
  return $t->_cget('-rows');
@@ -454,6 +465,17 @@ sub columns
  if (@_ > 1)
   {
    $t->_configure(-columns => $r);
+   if ($t->{Row})
+    {
+     for my $row (@{$t->{Row}})
+      {
+       for my $s (@$row[$r .. $#$row])
+        {
+	 $s->destroy if $s;
+	}
+       splice @$row, $r;
+      }
+    }
    $t->QueueLayout(16);
   }
  return $t->_cget('-columns');

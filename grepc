@@ -6,17 +6,21 @@ use Data::Dumper;
 use File::Find;
 use Getopt::Std;
 
+
 my %opt;
-getopts("mlce:",\%opt);
+getopts("iSmlce:",\%opt);
+$File::Find::dont_use_nlink = 1 if $opt{'S'};
 
 my $expr = (defined $opt{'e'}) ? $opt{'e'} : shift;
 warn "Matching '$expr'\n";
+
+my $re = ($opt{'i'}) ? qr/$expr/i : qr/$expr/;
 
 my $count = 0;
 
 sub match
 {
- if (/$expr/o)
+ if ($_ =~ $re)
   {
    if ($opt{'l'})
     {
@@ -35,7 +39,7 @@ sub match
 sub wanted
 {
  $File::Find::prune = 0;
- if (-T $_ && !/%$/ && /\.([chC]|cpp|xs)$/)
+ if (-T $_ && !/%$/ && /\.([chC]|cpp|cxx|cc)$/)
   {
    local $file   = ($_);
    local ($_);
@@ -60,12 +64,3 @@ sub wanted
 @ARGV = '.' unless (@ARGV);
 
 find(\&wanted,@ARGV);
-
-
-
-
-
-
-
-
-

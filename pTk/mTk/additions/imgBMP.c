@@ -18,10 +18,10 @@
  * The format record for the BMP file format:
  */
 
-static int ChnMatchBMP _ANSI_ARGS_((Tcl_Channel chan, Tcl_Obj *fileName,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr,Tcl_Interp *interp));
-static int ObjMatchBMP _ANSI_ARGS_((Tcl_Obj *dataObj,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr, Tcl_Interp *interp));
+static int ChnMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan, Tcl_Obj *fileName,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ObjMatchBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
+	Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int ChnReadBMP _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
 	Tcl_Obj *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
@@ -58,12 +58,12 @@ static int CommonWriteBMP _ANSI_ARGS_((Tcl_Interp *interp, MFile *handle,
 	Tk_PhotoImageBlock *blockPtr));
 static void putint _ANSI_ARGS_((MFile *handle, int i));
 
-static int ChnMatchBMP(chan, fileName, format, widthPtr, heightPtr, interp)
+static int ChnMatchBMP(interp, chan, fileName, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;
     Tcl_Obj *fileName;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
-    Tcl_Interp *interp;
 {
     MFile handle;
 
@@ -75,11 +75,11 @@ static int ChnMatchBMP(chan, fileName, format, widthPtr, heightPtr, interp)
     return CommonMatchBMP(&handle, widthPtr, heightPtr, NULL, NULL, NULL, NULL);
 }
 
-static int ObjMatchBMP(data, format, widthPtr, heightPtr, interp)
+static int ObjMatchBMP(interp, data, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Obj *data;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
-    Tcl_Interp *interp;
 {
     MFile handle;
 
@@ -256,7 +256,7 @@ static int CommonReadBMP(interp, handle, imageHandle, destX, destY,
 	    for( y = height-1; y>=0; y--) {
 		ImgRead(handle, line, bytesPerLine);
 		Tk_PhotoPutBlock(imageHandle, &block, destX, destY+y,
-			width,1, TK_PHOTO_COMPOSITE_SET);
+			width,1);
 	    }
 	    break;
 	case 8:
@@ -268,7 +268,7 @@ static int CommonReadBMP(interp, handle, imageHandle, destX, destY,
 		    expline += 3;
 		}
 		Tk_PhotoPutBlock(imageHandle, &block, destX, destY+y,
-			width,1, TK_PHOTO_COMPOSITE_SET);
+			width,1);
 		expline = block.pixelPtr;
 	    }
 	    break;
@@ -287,7 +287,7 @@ static int CommonReadBMP(interp, handle, imageHandle, destX, destY,
 		    expline += 3;
 		}
 		Tk_PhotoPutBlock(imageHandle, &block, destX, destY+y,
-			width,1, TK_PHOTO_COMPOSITE_SET);
+			width,1);
 		expline = block.pixelPtr;
 	    }
 	    break;
@@ -302,7 +302,7 @@ static int CommonReadBMP(interp, handle, imageHandle, destX, destY,
 		    expline += 3;
 		}
 		Tk_PhotoPutBlock(imageHandle, &block, destX, destY+y,
-			width,1, TK_PHOTO_COMPOSITE_SET);
+			width,1);
 		expline = block.pixelPtr;
 	    }
 	    break;
@@ -502,4 +502,3 @@ static int CommonWriteBMP(interp, handle, blockPtr)
     }
     return(TCL_OK);
 }
-

@@ -1,4 +1,4 @@
-/*
+/* 
  * tkWin32Dll.c --
  *
  *	This file contains a stub dll entry point.
@@ -25,7 +25,7 @@ static HINSTANCE tclInstance;	/* Global library instance handle. */
 
 BOOL APIENTRY		DllMain _ANSI_ARGS_((HINSTANCE hInst,
 			    DWORD reason, LPVOID reserved));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -52,7 +52,7 @@ DllEntryPoint(hInst, reason, reserved)
 {
     return DllMain(hInst, reason, reserved);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -80,17 +80,17 @@ DllMain(hInstance, reason, reserved)
      * the hInstance to use. If we are detaching then clean up any
      * data structures related to this DLL.
      */
-
+    
     if (reason == DLL_PROCESS_ATTACH) {
 	tclInstance = hInstance;
         TkWinXInit(hInstance);
     } else if (reason == DLL_PROCESS_DETACH) {
-//        TkWinXCleanup(hInstance);
+        TkWinXCleanup(hInstance);
     }
     return(TRUE);
 }
 
-/*
+/* 
  * TkWin32DllPresent() can be referenced elsewhere to
  * force inclusion of this file and hence DLLMain()
  */

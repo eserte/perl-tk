@@ -1,6 +1,3 @@
-
-/*	$Id: tixGrData.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixGData.h --
  *
@@ -53,7 +50,7 @@
  */
 typedef struct TixGridDataSet {
     Tcl_HashTable index[2];		/* the row and column indices */
-    					/* index[0] holds the columns
+    					/* index[0] holds the columns 
 					 * (horizontal index)
 					 */
     int maxIdx[2];			/* the max row/col, or {-1,-1}

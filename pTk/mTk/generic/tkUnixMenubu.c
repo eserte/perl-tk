@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUnixMenubu.c,v 1.6 2001/05/21 14:07:33 tmh Exp $
+ * RCS: @(#) $Id: tkUnixMenubu.c,v 1.2 1998/09/14 18:23:57 stanton Exp $
  */
 
 #include "default.h"
@@ -21,9 +21,10 @@
  * procedures that can be invoked from generic window code.
  */
 
-Tk_ClassProcs tkpMenubuttonClass = {
-    sizeof(Tk_ClassProcs),	/* size */
-    TkMenuButtonWorldChanged,	/* worldChangedProc */
+TkClassProcs tkpMenubuttonClass = {
+    NULL,			/* createProc. */
+    TkMenuButtonWorldChanged,	/* geometryProc. */
+    NULL			/* modalProc. */
 };
 
 /*
@@ -73,40 +74,29 @@ TkpDisplayMenuButton(clientData)
     register TkMenuButton *mbPtr = (TkMenuButton *) clientData;
     GC gc;
     Tk_3DBorder border;
-    Pixmap pixmap;
+    Pixmap pixmap, tilepixmap;
+    Tk_Tile tile;
     int x = 0;			/* Initialization needed only to stop
 				 * compiler warning. */
-    int y = 0;
+    int y;
     register Tk_Window tkwin = mbPtr->tkwin;
-    int width, height, fullWidth, fullHeight;
-    int imageXOffset, imageYOffset, textXOffset, textYOffset;
-    int haveImage = 0, haveText = 0;
+    int width, height;
 
     mbPtr->flags &= ~REDRAW_PENDING;
     if ((mbPtr->tkwin == NULL) || !Tk_IsMapped(tkwin)) {
 	return;
     }
 
-    if ((mbPtr->state == STATE_DISABLED) && (mbPtr->disabledFg != NULL)) {
+    if ((mbPtr->state == TK_STATE_DISABLED) && (mbPtr->disabledFg != NULL)) {
 	gc = mbPtr->disabledGC;
 	border = mbPtr->normalBorder;
-    } else if ((mbPtr->state == STATE_ACTIVE)
-	       && !Tk_StrictMotif(mbPtr->tkwin)) {
+    } else if ((mbPtr->state == TK_STATE_ACTIVE) && !Tk_StrictMotif(mbPtr->tkwin)) {
 	gc = mbPtr->activeTextGC;
 	border = mbPtr->activeBorder;
     } else {
 	gc = mbPtr->normalTextGC;
 	border = mbPtr->normalBorder;
     }
-
-    if (mbPtr->image != None) {
-	Tk_SizeOfImage(mbPtr->image, &width, &height);
-	haveImage = 1;
-    } else if (mbPtr->bitmap != None) {
-	Tk_SizeOfBitmap(mbPtr->display, mbPtr->bitmap, &width, &height);
-	haveImage = 1;
-    }
-    haveText = (mbPtr->textWidth != 0 && mbPtr->textHeight != 0);
 
     /*
      * In order to avoid screen flashes, this procedure redraws
@@ -115,110 +105,78 @@ TkpDisplayMenuButton(clientData)
      * point in time where the on-sreen image has been cleared.
      */
 
+    if ((mbPtr->state == TK_STATE_ACTIVE) && (mbPtr->activeTile != NULL)) {
+	tile = mbPtr->activeTile;
+    } else if ((mbPtr->state == TK_STATE_DISABLED) &&
+	    (mbPtr->disabledTile != NULL)) {
+	tile = mbPtr->disabledTile;
+    } else {
+	tile = mbPtr->tile;
+    }
+
     pixmap = Tk_GetPixmap(mbPtr->display, Tk_WindowId(tkwin),
 	    Tk_Width(tkwin), Tk_Height(tkwin), Tk_Depth(tkwin));
-    Tk_Fill3DRectangle(tkwin, pixmap, border, 0, 0, Tk_Width(tkwin),
-	    Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
-
-    imageXOffset = 0;
-    imageYOffset = 0;
-    textXOffset = 0;
-    textYOffset = 0;
-    fullWidth = 0;
-    fullHeight = 0;
-
-    if (mbPtr->compound != COMPOUND_NONE && haveImage && haveText) {
-
-        switch ((enum compound) mbPtr->compound) {
-            case COMPOUND_TOP:
-            case COMPOUND_BOTTOM: {
-                /* Image is above or below text */
-                if (mbPtr->compound == COMPOUND_TOP) {
-                    textYOffset = height + mbPtr->padY;
-                } else {
-                    imageYOffset = mbPtr->textHeight + mbPtr->padY;
-                }
-                fullHeight = height + mbPtr->textHeight + mbPtr->padY;
-                fullWidth = (width > mbPtr->textWidth ? width :
-                        mbPtr->textWidth);
-                textXOffset = (fullWidth - mbPtr->textWidth)/2;
-                imageXOffset = (fullWidth - width)/2;
-                break;
-            }
-            case COMPOUND_LEFT:
-            case COMPOUND_RIGHT: {
-                /* Image is left or right of text */
-                if (mbPtr->compound == COMPOUND_LEFT) {
-                    textXOffset = width + mbPtr->padX;
-                } else {
-                    imageXOffset = mbPtr->textWidth + mbPtr->padX;
-                }
-                fullWidth = mbPtr->textWidth + mbPtr->padX + width;
-                fullHeight = (height > mbPtr->textHeight ? height :
-                        mbPtr->textHeight);
-                textYOffset = (fullHeight - mbPtr->textHeight)/2;
-                imageYOffset = (fullHeight - height)/2;
-                break;
-            }
-            case COMPOUND_CENTER: {
-                /* Image and text are superimposed */
-                fullWidth = (width > mbPtr->textWidth ? width :
-                        mbPtr->textWidth);
-                fullHeight = (height > mbPtr->textHeight ? height :
-                        mbPtr->textHeight);
-                textXOffset = (fullWidth - mbPtr->textWidth)/2;
-                imageXOffset = (fullWidth - width)/2;
-                textYOffset = (fullHeight - mbPtr->textHeight)/2;
-                imageYOffset = (fullHeight - height)/2;
-                break;
-            }
-            case COMPOUND_NONE: {break;}
-        }
-
-        TkComputeAnchor(mbPtr->anchor, tkwin, 0, 0,
-                mbPtr->indicatorWidth + fullWidth, fullHeight,
-		&x, &y);
-
-        if (mbPtr->image != NULL) {
-            Tk_RedrawImage(mbPtr->image, 0, 0, width, height, pixmap,
-                    x + imageXOffset, y + imageYOffset);
-        }
-        if (mbPtr->bitmap != None) {
-            XCopyPlane(mbPtr->display, mbPtr->bitmap, pixmap,
-                    gc, 0, 0, (unsigned) width, (unsigned) height, 
-		    x + imageXOffset, y + imageYOffset, 1);
-        }
-        if (haveText) {
-            Tk_DrawTextLayout(mbPtr->display, pixmap, gc, mbPtr->textLayout, 
-		    x  + textXOffset, y + textYOffset ,
-                    0, -1);
-            Tk_UnderlineTextLayout(mbPtr->display, pixmap, gc, 
-		    mbPtr->textLayout, x + textXOffset, y + textYOffset ,
-		    mbPtr->underline);
-        }
+    if ((tilepixmap = Tk_PixmapOfTile(tile)) != None) {
+	if (mbPtr->tsoffset.flags) {
+	    int w=0; int h=0;
+	    if (mbPtr->tsoffset.flags & (TK_OFFSET_CENTER|TK_OFFSET_MIDDLE)) {
+		    Tk_SizeOfTile(tile, &w, &h);
+	    }
+	    if (mbPtr->tsoffset.flags & TK_OFFSET_LEFT) {
+		w = 0;
+	    } else if (mbPtr->tsoffset.flags & TK_OFFSET_RIGHT) {
+		w = Tk_Width(tkwin);
+	    } else {
+		w = (Tk_Width(tkwin) - w) / 2;
+	    }
+	    if (mbPtr->tsoffset.flags & TK_OFFSET_TOP) {
+		h = 0;
+	    } else if (mbPtr->tsoffset.flags & TK_OFFSET_BOTTOM) {
+		h = Tk_Height(tkwin);
+	    } else {
+		h = (Tk_Height(tkwin) - h) / 2;
+	    }
+	    XSetTSOrigin(mbPtr->display, mbPtr->tileGC, w , h);
+	} else {
+	    Tk_SetTileOrigin(tkwin, mbPtr->tileGC, mbPtr->tsoffset.xoffset,
+		    mbPtr->tsoffset.yoffset);
+	}
+	XFillRectangle(mbPtr->display, pixmap, mbPtr->tileGC, 0, 0,
+		Tk_Width(tkwin), Tk_Height(tkwin));
+	XSetTSOrigin(mbPtr->display, mbPtr->tileGC, 0, 0);
     } else {
-       if (mbPtr->image != NULL) {
-           TkComputeAnchor(mbPtr->anchor, tkwin, 0, 0,
-                   width + mbPtr->indicatorWidth, height, &x, &y);
-           Tk_RedrawImage(mbPtr->image, 0, 0, width, height, pixmap,
-                   x + imageXOffset, y + imageYOffset);
-       } else if (mbPtr->bitmap != None) {
-           TkComputeAnchor(mbPtr->anchor, tkwin, 0, 0,
-                   width + mbPtr->indicatorWidth, height, &x, &y);
-           XCopyPlane(mbPtr->display, mbPtr->bitmap, pixmap,
-                   gc, 0, 0, (unsigned) width, (unsigned) height, 
-		   x + imageXOffset, y + imageYOffset, 1);
-       } else {
-           TkComputeAnchor(mbPtr->anchor, tkwin, mbPtr->padX, mbPtr->padY,
-                   mbPtr->textWidth + mbPtr->indicatorWidth,
-                   mbPtr->textHeight, &x, &y);
-           Tk_DrawTextLayout(mbPtr->display, pixmap, gc, mbPtr->textLayout, 
-		   x  + textXOffset, y + textYOffset ,
-                   0, -1);
-           Tk_UnderlineTextLayout(mbPtr->display, pixmap, gc, 
-		   mbPtr->textLayout, x + textXOffset, y + textYOffset ,
-		   mbPtr->underline);
-        }
+	Tk_Fill3DRectangle(tkwin, pixmap, border, 0, 0, Tk_Width(tkwin),
+		Tk_Height(tkwin), 0, TK_RELIEF_FLAT);
+    }
+
+    /*
+     * Display image or bitmap or text for button.
+     */
+
+    if (mbPtr->image != None) {
+	Tk_SizeOfImage(mbPtr->image, &width, &height);
+
+	imageOrBitmap:
+	TkComputeAnchor(mbPtr->anchor, tkwin, 0, 0, 
+		width + mbPtr->indicatorWidth, height, &x, &y);
+	if (mbPtr->image != NULL) {
+	    Tk_RedrawImage(mbPtr->image, 0, 0, width, height, pixmap,
+		    x, y);
+	} else {
+	    XCopyPlane(mbPtr->display, mbPtr->bitmap, pixmap,
+		    gc, 0, 0, (unsigned) width, (unsigned) height, x, y, 1);
+	}
+    } else if (mbPtr->bitmap != None) {
+	Tk_SizeOfBitmap(mbPtr->display, mbPtr->bitmap, &width, &height);
+	goto imageOrBitmap;
+    } else {
+	TkComputeAnchor(mbPtr->anchor, tkwin, mbPtr->padX, mbPtr->padY,
+		mbPtr->textWidth + mbPtr->indicatorWidth,
+		mbPtr->textHeight, &x, &y);
+	Tk_DrawTextLayout(mbPtr->display, pixmap, gc, mbPtr->textLayout, x, y,
+		0, -1);
+	Tk_UnderlineTextLayout(mbPtr->display, pixmap, gc, mbPtr->textLayout,
+		x, y, mbPtr->underline);
     }
 
     /*
@@ -226,8 +184,8 @@ TkpDisplayMenuButton(clientData)
      * foreground color, generate the stippled effect.
      */
 
-    if ((mbPtr->state == STATE_DISABLED) 
-            && ((mbPtr->disabledFg == NULL) || (mbPtr->image != NULL))) {
+    if ((mbPtr->state == TK_STATE_DISABLED)
+	    && ((mbPtr->disabledFg == NULL) || (mbPtr->image != NULL))) {
 	XFillRectangle(mbPtr->display, pixmap, mbPtr->disabledGC,
 		mbPtr->inset, mbPtr->inset,
 		(unsigned) (Tk_Width(tkwin) - 2*mbPtr->inset),
@@ -332,116 +290,57 @@ TkpDestroyMenuButton(mbPtr)
 
 void
 TkpComputeMenuButtonGeometry(mbPtr)
-    TkMenuButton *mbPtr;	/* Widget record for menu button. */
+    register TkMenuButton *mbPtr;	/* Widget record for menu button. */
 {
     int width, height, mm, pixels;
-    int  avgWidth, txtWidth, txtHeight;
-    int haveImage = 0, haveText = 0;
-    Tk_FontMetrics fm;
 
     mbPtr->inset = mbPtr->highlightWidth + mbPtr->borderWidth;
-
-    width = 0;
-    height = 0;
-    txtWidth = 0;
-    txtHeight = 0;
-    avgWidth = 0;
-
     if (mbPtr->image != None) {
 	Tk_SizeOfImage(mbPtr->image, &width, &height);
-	haveImage = 1;
+	if (mbPtr->width > 0) {
+	    width = mbPtr->width;
+	}
+	if (mbPtr->height > 0) {
+	    height = mbPtr->height;
+	}
     } else if (mbPtr->bitmap != None) {
 	Tk_SizeOfBitmap(mbPtr->display, mbPtr->bitmap, &width, &height);
-	haveImage = 1;
-    }
-
-    if (haveImage == 0 || mbPtr->compound != COMPOUND_NONE) {
+	if (mbPtr->width > 0) {
+	    width = mbPtr->width;
+	}
+	if (mbPtr->height > 0) {
+	    height = mbPtr->height;
+	}
+    } else {
 	Tk_FreeTextLayout(mbPtr->textLayout);
-
 	mbPtr->textLayout = Tk_ComputeTextLayout(mbPtr->tkfont, mbPtr->text,
 		-1, mbPtr->wrapLength, mbPtr->justify, 0, &mbPtr->textWidth,
 		&mbPtr->textHeight);
-	txtWidth = mbPtr->textWidth;
-	txtHeight = mbPtr->textHeight;
-        avgWidth = Tk_TextWidth(mbPtr->tkfont, "0", 1);
-        Tk_GetFontMetrics(mbPtr->tkfont, &fm);
-        haveText = (txtWidth != 0 && txtHeight != 0);
-    }
-
-    /*
-     * If the menubutton is compound (ie, it shows both an image and text),
-     * the new geometry is a combination of the image and text geometry.
-     * We only honor the compound bit if the menubutton has both text and
-     * an image, because otherwise it is not really a compound menubutton.
-     */
-
-    if (mbPtr->compound != COMPOUND_NONE && haveImage && haveText) {
-        switch ((enum compound) mbPtr->compound) {
-            case COMPOUND_TOP:
-            case COMPOUND_BOTTOM: {
-                /* Image is above or below text */
-                height += txtHeight + mbPtr->padY;
-                width = (width > txtWidth ? width : txtWidth);
-                break;
-            }
-            case COMPOUND_LEFT:
-            case COMPOUND_RIGHT: {
-                /* Image is left or right of text */
-                width += txtWidth + mbPtr->padX;
-                height = (height > txtHeight ? height : txtHeight);
-                break;
-            }
-            case COMPOUND_CENTER: {
-                /* Image and text are superimposed */
-                width = (width > txtWidth ? width : txtWidth);
-                height = (height > txtHeight ? height : txtHeight);
-                break;
-            }
-            case COMPOUND_NONE: {break;}
-        }
-        if (mbPtr->width > 0) {
-            width = mbPtr->width;
-        }
-        if (mbPtr->height > 0) {
-            height = mbPtr->height;
-        }
-        width += 2*mbPtr->padX;
-        height += 2*mbPtr->padY;
-    } else {
-	if (haveImage) {
-            if (mbPtr->width > 0) {
-                width = mbPtr->width;
-            }
-            if (mbPtr->height > 0) {
-                height = mbPtr->height;
-            }
-	} else {
-	    width = txtWidth;
-	    height = txtHeight;
-            if (mbPtr->width > 0) {
-                width = mbPtr->width * avgWidth;
-            }
-            if (mbPtr->height > 0) {
-                height = mbPtr->height * fm.linespace;
-            }
+	width = mbPtr->textWidth;
+	height = mbPtr->textHeight;
+	if (mbPtr->width > 0) {
+	    width = mbPtr->width * Tk_TextWidth(mbPtr->tkfont, "0", 1);
 	}
-    }
+	if (mbPtr->height > 0) {
+	    Tk_FontMetrics fm;
 
-    if (! haveImage) {
-        width += 2*mbPtr->padX;
-        height += 2*mbPtr->padY;
+	    Tk_GetFontMetrics(mbPtr->tkfont, &fm);
+	    height = mbPtr->height * fm.linespace;
+	}
+	width += 2*mbPtr->padX;
+	height += 2*mbPtr->padY;
     }
 
     if (mbPtr->indicatorOn) {
-        mm = WidthMMOfScreen(Tk_Screen(mbPtr->tkwin));
-        pixels = WidthOfScreen(Tk_Screen(mbPtr->tkwin));
-        mbPtr->indicatorHeight= (INDICATOR_HEIGHT * pixels)/(10*mm);
-        mbPtr->indicatorWidth = (INDICATOR_WIDTH * pixels)/(10*mm)
-    	    + 2*mbPtr->indicatorHeight;
-        width += mbPtr->indicatorWidth;
+	mm = WidthMMOfScreen(Tk_Screen(mbPtr->tkwin));
+	pixels = WidthOfScreen(Tk_Screen(mbPtr->tkwin));
+	mbPtr->indicatorHeight= (INDICATOR_HEIGHT * pixels)/(10*mm);
+	mbPtr->indicatorWidth = (INDICATOR_WIDTH * pixels)/(10*mm)
+		+ 2*mbPtr->indicatorHeight;
+	width += mbPtr->indicatorWidth;
     } else {
-        mbPtr->indicatorHeight = 0;
-        mbPtr->indicatorWidth = 0;
+	mbPtr->indicatorHeight = 0;
+	mbPtr->indicatorWidth = 0;
     }
 
     Tk_GeometryRequest(mbPtr->tkwin, (int) (width + 2*mbPtr->inset),

@@ -11,15 +11,15 @@ my $t = $top->Scrolled('Text',"-relief" => "raised",
                      "-setgrid" => "true");
 
 my $m = $t->Menu();
-$m->add("command", "-label" => "Open", "-underline" => 0,
+$m->add("command", "-label" => "Open", "-underline" => 0, 
         "-command" => \&sayopen);
-$m->add("command", "-label" => "Close", "-underline" => 0,
+$m->add("command", "-label" => "Close", "-underline" => 0, 
         "-command" => \&sayclose);
 $m->add("separator");
-$m->add("command", "-label" => "Selection", "-underline" => 0,
+$m->add("command", "-label" => "Selection", "-underline" => 0, 
         "-command" => \&showsel);
 $m->add("separator");
-$m->add("command", "-label" => "Exit", "-underline" => 1,
+$m->add("command", "-label" => "Exit", "-underline" => 1, 
         "-command" => \&doexit);
 
 $t->pack(-expand => 1, "-fill"   => "both");
@@ -87,10 +87,10 @@ sub sayclose { print "Close something\n" }
 sub showsel  { my @info = $t->tagRanges('sel');
                if (@info)
                 {
-                 print "start=$info[0] end=$info[1]\n"
+                 print "start=$info[0] end=$info[1]\n" 
                 }
              }
-sub doexit
-{
+sub doexit 
+{ 
  die "'die' no longer exits"
 }

@@ -6,35 +6,37 @@
  *	a focus highlight.
  *
  * Copyright (c) 1994 The Regents of the University of California.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
+ * Copyright (c) 1994-1995 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkUtil.c,v 1.12 2002/08/05 04:30:40 dgp Exp $
+ * RCS: @(#) $Id: tkUtil.c,v 1.2 1998/09/14 18:23:20 stanton Exp $
  */
 
 #include "tkInt.h"
 #include "tkPort.h"
 
+#ifndef _LANG
 /*
  * The structure below defines the implementation of the "statekey"
  * Tcl object, used for quickly finding a mapping in a TkStateMap.
  */
 
-Tcl_ObjType tkStateKeyObjType = {
+static Tcl_ObjType stateKeyType = {
     "statekey",				/* name */
     (Tcl_FreeInternalRepProc *) NULL,	/* freeIntRepProc */
     (Tcl_DupInternalRepProc *) NULL,	/* dupIntRepProc */
     (Tcl_UpdateStringProc *) NULL,	/* updateStringProc */
     (Tcl_SetFromAnyProc *) NULL		/* setFromAnyProc */
 };
+#endif
 
-
+
 /*
  *--------------------------------------------------------------
  *
- * TkStateParseProc --
+ * Tk_StateParseProc --
  *
  *	This procedure is invoked during option processing to handle
  *	the "-state" and "-default" options.
@@ -50,7 +52,7 @@ Tcl_ObjType tkStateKeyObjType = {
  */
 
 int
-Tk_StateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
+TkStateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     ClientData clientData;		/* some flags.*/
     Tcl_Interp *interp;			/* Used for reporting errors. */
     Tk_Window tkwin;			/* Window containing canvas widget. */
@@ -61,7 +63,7 @@ Tk_StateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     int c;
     int flags = (int)clientData;
     size_t length;
-    char *value = Tcl_GetString(ovalue);
+    char *value = LangString(ovalue);
 
     register Tk_State *statePtr = (Tk_State *) (widgRec + offset);
 
@@ -106,11 +108,11 @@ Tk_StateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     *statePtr = TK_STATE_NORMAL;
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
- * TkStatePrintProc --
+ * Tk_StatePrintProc --
  *
  *	This procedure is invoked by the Tk configuration code
  *	to produce a printable string for the "-state"
@@ -130,7 +132,7 @@ Tk_StateParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
  */
 
 Arg
-Tk_StatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
+TkStatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     ClientData clientData;		/* Ignored. */
     Tk_Window tkwin;			/* Window containing canvas widget. */
     char *widgRec;			/* Pointer to record for item. */
@@ -153,11 +155,11 @@ Tk_StatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	return LangStringArg("");
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
- * TkOrientParseProc --
+ * Tk_OrientParseProc --
  *
  *	This procedure is invoked during option processing to handle
  *	the "-orient" option.
@@ -183,7 +185,7 @@ TkOrientParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
 {
     int c;
     size_t length;
-    char *value = Tcl_GetString(ovalue);
+    char *value = LangString(ovalue);
 
     register int *orientPtr = (int *) (widgRec + offset);
 
@@ -209,11 +211,11 @@ TkOrientParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     *orientPtr = 0;
     return TCL_ERROR;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
- * TkOrientPrintProc --
+ * Tk_OrientPrintProc --
  *
  *	This procedure is invoked by the Tk configuration code
  *	to produce a printable string for the "-orient"
@@ -250,7 +252,7 @@ TkOrientPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	return LangStringArg("horizontal");
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -272,7 +274,7 @@ TkTileParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
 {
     Tk_Tile *tilePtr = (Tk_Tile *)(widgRec + offset);
     Tk_Tile tile, lastTile;
-    char *value = Tcl_GetString(ovalue);
+    char *value = LangString(ovalue);
 
     lastTile = *tilePtr;
     tile = NULL;
@@ -288,8 +290,7 @@ TkTileParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     *tilePtr = tile;
     return TCL_OK;
 }
-
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -315,10 +316,11 @@ TkTilePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 
     return LangStringArg(Tk_NameOfTile(tile));
 }
-/*
+
+/*
  *----------------------------------------------------------------------
  *
- * TkOffsetParseProc --
+ * Tk_OffsetParseProc --
  *
  *	Converts the offset of a stipple or tile into the Tk_TSOffset structure.
  *
@@ -345,7 +347,7 @@ TkOffsetParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
 	goto badTSOffset;
     }
     if (argc > 0) {
-	value = Tcl_GetString(args[0]);
+	value = LangString(args[0]);
     }
     if ((value == NULL) || (*value == 0)) {
 	tsoffset.flags = TK_OFFSET_CENTER|TK_OFFSET_MIDDLE;
@@ -412,7 +414,7 @@ TkOffsetParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     }
     if (argc == 1) {
 	if (((int)clientData) & TK_OFFSET_INDEX) {
-	    if (Tcl_GetIntFromObj(interp, args[0], &tsoffset.flags) != TCL_OK) {
+	    if (Tcl_GetInt(interp, args[0], &tsoffset.flags) != TCL_OK) {
 		Tcl_ResetResult(interp);
 		goto badTSOffset;
 	    }
@@ -421,11 +423,11 @@ TkOffsetParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
 	}
 	goto badTSOffset;
     } else if (argc == 2) {
-	result = Tk_GetPixels(interp, tkwin, Tcl_GetString(args[0]), &tsoffset.xoffset);
+	result = Tk_GetPixels(interp, tkwin, LangString(args[0]), &tsoffset.xoffset);
 	if (result != TCL_OK) {
 	    return TCL_ERROR;
 	}
-	result = Tk_GetPixels(interp, tkwin, Tcl_GetString(args[1]), &tsoffset.yoffset);
+	result = Tk_GetPixels(interp, tkwin, LangString(args[1]), &tsoffset.yoffset);
 	if (result != TCL_OK) {
 	    return TCL_ERROR;
 	}
@@ -457,11 +459,11 @@ badTSOffset:
 	    (char *) NULL);
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * TkOffsetPrintProc --
+ * Tk_OffsetPrintProc --
  *
  *	Returns the offset of the tile.
  *
@@ -523,12 +525,12 @@ TkOffsetPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
 	return result;
     }
 }
-
-
+
+
 /*
  *----------------------------------------------------------------------
  *
- * TkPixelParseProc --
+ * Tk_PixelParseProc --
  *
  *	Converts the name of an image into a tile.
  *
@@ -548,20 +550,20 @@ TkPixelParseProc(clientData, interp, tkwin, ovalue, widgRec, offset)
     double *doublePtr = (double *)(widgRec + offset);
     int result;
 
-    result = TkGetDoublePixels(interp, tkwin, Tcl_GetString(ovalue), doublePtr);
+    result = Tk_GetDoublePixels(interp, tkwin, LangString(ovalue), doublePtr);
 
     if ((result == TCL_OK) && (clientData == NULL) && (*doublePtr < 0.0)) {
-	Tcl_AppendResult(interp, "bad screen distance \"", Tcl_GetString(ovalue),
+	Tcl_AppendResult(interp, "bad screen distance \"", LangString(ovalue),
 		"\"", (char *) NULL);
 	return TCL_ERROR;
     }
     return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
- * TkPixelPrintProc --
+ * Tk_PixelPrintProc --
  *
  *	Returns the name of the tile.
  *
@@ -582,7 +584,7 @@ TkPixelPrintProc(clientData, tkwin, widgRec, offset, freeProcPtr)
     double *doublePtr = (double *)(widgRec + offset);
     return Tcl_NewDoubleObj(*doublePtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -616,6 +618,22 @@ TkDrawInsetFocusHighlight(tkwin, gc, width, drawable, padding)
 {
     XRectangle rects[4];
 
+    /*
+     * On the Macintosh the highlight ring needs to be "padded"
+     * out by one pixel.  Unfortunantly, none of the Tk widgets
+     * had a notion of padding between the focus ring and the
+     * widget.  So we add this padding here.  This introduces
+     * two things to worry about:
+     *
+     * 1) The widget must draw the background color covering
+     *    the focus ring area before calling Tk_DrawFocus.
+     * 2) It is impossible to draw a focus ring of width 1.
+     *    (For the Macintosh Look & Feel use width of 3)
+     */
+#ifdef MAC_TCL
+    width--;
+#endif
+
     rects[0].x = padding;
     rects[0].y = padding;
     rects[0].width = Tk_Width(tkwin) - (2 * padding);
@@ -634,7 +652,7 @@ TkDrawInsetFocusHighlight(tkwin, gc, width, drawable, padding)
     rects[3].height = rects[2].height;
     XFillRectangles(Tk_Display(tkwin), drawable, gc, rects, 4);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -642,12 +660,6 @@ TkDrawInsetFocusHighlight(tkwin, gc, width, drawable, padding)
  *
  *	This procedure draws a rectangular ring around the outside of
  *	a widget to indicate that it has received the input focus.
- *
- *      This function is now deprecated.  Use TkpDrawHighlightBorder instead,
- *      since this function does not handle drawing the Focus ring properly
- *      on the Macintosh - you need to know the background GC as well
- *      as the foreground since the Mac focus ring separated from the widget
- *      by a 1 pixel border.
  *
  * Results:
  *	None.
@@ -671,7 +683,7 @@ Tk_DrawFocusHighlight(tkwin, gc, width, drawable)
 {
     TkDrawInsetFocusHighlight(tkwin, gc, width, drawable, 0);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -688,7 +700,7 @@ Tk_DrawFocusHighlight(tkwin, gc, width, drawable)
  *	took.  If TK_SCROLL_MOVETO, *dblPtr is filled in with the
  *	desired position;  if TK_SCROLL_PAGES or TK_SCROLL_UNITS,
  *	*intPtr is filled in with the number of lines to move (may be
- *	negative);  if TK_SCROLL_ERROR, the interp's result contains an
+ *	negative);  if TK_SCROLL_ERROR, interp->result contains an
  *	error message.
  *
  * Side effects:
@@ -701,7 +713,7 @@ int
 Tk_GetScrollInfo(interp, argc, argv, dblPtr, intPtr)
     Tcl_Interp *interp;			/* Used for error reporting. */
     int argc;				/* # arguments for command. */
-    CONST char **argv;			/* Arguments for command. */
+    char **argv;			/* Arguments for command. */
     double *dblPtr;			/* Filled in with argument "moveto"
 					 * option, if any. */
     int *intPtr;			/* Filled in with number of pages
@@ -719,7 +731,7 @@ Tk_GetScrollInfo(interp, argc, argv, dblPtr, intPtr)
 		    (char *) NULL);
 	    return TK_SCROLL_ERROR;
 	}
-	if (Tcl_GetDoubleFromObj(interp, argv[3], dblPtr) != TCL_OK) {
+	if (Tcl_GetDouble(interp, argv[3], dblPtr) != TCL_OK) {
 	    return TK_SCROLL_ERROR;
 	}
 	return TK_SCROLL_MOVETO;
@@ -731,7 +743,7 @@ Tk_GetScrollInfo(interp, argc, argv, dblPtr, intPtr)
 		    (char *) NULL);
 	    return TK_SCROLL_ERROR;
 	}
-	if (Tcl_GetIntFromObj(interp, argv[3], intPtr) != TCL_OK) {
+	if (Tcl_GetInt(interp, argv[3], intPtr) != TCL_OK) {
 	    return TK_SCROLL_ERROR;
 	}
 	length = strlen(argv[4]);
@@ -751,86 +763,7 @@ Tk_GetScrollInfo(interp, argc, argv, dblPtr, intPtr)
 	    "\": must be moveto or scroll", (char *) NULL);
     return TK_SCROLL_ERROR;
 }
-
-/*
- *----------------------------------------------------------------------
- *
- * Tk_GetScrollInfoObj --
- *
- *	This procedure is invoked to parse "xview" and "yview"
- *	scrolling commands for widgets using the new scrolling
- *	command syntax ("moveto" or "scroll" options).
- *
- * Results:
- *	The return value is either TK_SCROLL_MOVETO, TK_SCROLL_PAGES,
- *	TK_SCROLL_UNITS, or TK_SCROLL_ERROR.  This indicates whether
- *	the command was successfully parsed and what form the command
- *	took.  If TK_SCROLL_MOVETO, *dblPtr is filled in with the
- *	desired position;  if TK_SCROLL_PAGES or TK_SCROLL_UNITS,
- *	*intPtr is filled in with the number of lines to move (may be
- *	negative);  if TK_SCROLL_ERROR, the interp's result contains an
- *	error message.
- *
- * Side effects:
- *	None.
- *
- *----------------------------------------------------------------------
- */
-
-int
-Tk_GetScrollInfoObj(interp, objc, objv, dblPtr, intPtr)
-    Tcl_Interp *interp;			/* Used for error reporting. */
-    int objc;				/* # arguments for command. */
-    Tcl_Obj *CONST objv[];		/* Arguments for command. */
-    double *dblPtr;			/* Filled in with argument "moveto"
-					 * option, if any. */
-    int *intPtr;			/* Filled in with number of pages
-					 * or lines to scroll, if any. */
-{
-    int c;
-    size_t length;
-    char *arg2, *arg4;
-
-    arg2 = Tcl_GetString(objv[2]);
-    length = strlen(arg2);
-    c = arg2[0];
-    if ((c == 'm') && (strncmp(arg2, "moveto", length) == 0)) {
-	if (objc != 4) {
-	    Tcl_WrongNumArgs(interp, 2, objv, "moveto fraction");
-	    return TK_SCROLL_ERROR;
-	}
-	if (Tcl_GetDoubleFromObj(interp, objv[3], dblPtr) != TCL_OK) {
-	    return TK_SCROLL_ERROR;
-	}
-	return TK_SCROLL_MOVETO;
-    } else if ((c == 's')
-	    && (strncmp(arg2, "scroll", length) == 0)) {
-	if (objc != 5) {
-	    Tcl_WrongNumArgs(interp, 2, objv, "scroll number units|pages");
-	    return TK_SCROLL_ERROR;
-	}
-	if (Tcl_GetIntFromObj(interp, objv[3], intPtr) != TCL_OK) {
-	    return TK_SCROLL_ERROR;
-	}
-	arg4 = Tcl_GetString(objv[4]);
-	length = (strlen(arg4));
-	c = arg4[0];
-	if ((c == 'p') && (strncmp(arg4, "pages", length) == 0)) {
-	    return TK_SCROLL_PAGES;
-	} else if ((c == 'u')
-		&& (strncmp(arg4, "units", length) == 0)) {
-	    return TK_SCROLL_UNITS;
-	} else {
-	    Tcl_AppendResult(interp, "bad argument \"", arg4,
-		    "\": must be units or pages", (char *) NULL);
-	    return TK_SCROLL_ERROR;
-	}
-    }
-    Tcl_AppendResult(interp, "unknown option \"", arg2,
-	    "\": must be moveto or scroll", (char *) NULL);
-    return TK_SCROLL_ERROR;
-}
-
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -865,7 +798,7 @@ TkComputeAnchor(anchor, tkwin, padX, padY, innerWidth, innerHeight, xPtr, yPtr)
 	case TK_ANCHOR_NW:
 	case TK_ANCHOR_W:
 	case TK_ANCHOR_SW:
-	    *xPtr = Tk_InternalBorderLeft(tkwin) + padX;
+	    *xPtr = Tk_InternalBorderWidth(tkwin) + padX;
 	    break;
 
 	case TK_ANCHOR_N:
@@ -875,7 +808,7 @@ TkComputeAnchor(anchor, tkwin, padX, padY, innerWidth, innerHeight, xPtr, yPtr)
 	    break;
 
 	default:
-	    *xPtr = Tk_Width(tkwin) - (Tk_InternalBorderRight(tkwin) + padX)
+	    *xPtr = Tk_Width(tkwin) - (Tk_InternalBorderWidth(tkwin) + padX)
 		    - innerWidth;
 	    break;
     }
@@ -884,7 +817,7 @@ TkComputeAnchor(anchor, tkwin, padX, padY, innerWidth, innerHeight, xPtr, yPtr)
 	case TK_ANCHOR_NW:
 	case TK_ANCHOR_N:
 	case TK_ANCHOR_NE:
-	    *yPtr = Tk_InternalBorderTop(tkwin) + padY;
+	    *yPtr = Tk_InternalBorderWidth(tkwin) + padY;
 	    break;
 
 	case TK_ANCHOR_W:
@@ -894,12 +827,12 @@ TkComputeAnchor(anchor, tkwin, padX, padY, innerWidth, innerHeight, xPtr, yPtr)
 	    break;
 
 	default:
-	    *yPtr = Tk_Height(tkwin) - Tk_InternalBorderBottom(tkwin) - padY
+	    *yPtr = Tk_Height(tkwin) - Tk_InternalBorderWidth(tkwin) - padY
 		    - innerHeight;
 	    break;
     }
 }
-
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -931,7 +864,7 @@ TkFindStateString(mapPtr, numKey)
     }
     return NULL;
 }
-
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -945,7 +878,7 @@ TkFindStateString(mapPtr, numKey)
  *	Returns the numKey associated with the last element (the NULL
  *	string one) in the table if strKey was not equal to any of the
  *	string keys in the table.  In that case, an error message is
- *	also left in the interp's result (if interp is not NULL).
+ *	also left in interp->result (if interp is not NULL).
  *
  * Side effects.
  *	None.
@@ -954,13 +887,17 @@ TkFindStateString(mapPtr, numKey)
  */
 
 int
-TkFindStateNum(interp, option, mapPtr, strKey)
+TkFindStateNum(interp, field, mapPtr, strKey)
     Tcl_Interp *interp;		/* Interp for error reporting. */
-    CONST char *option;		/* String to use when constructing error. */
+    CONST char *field;		/* String to use when constructing error. */
     CONST TkStateMap *mapPtr;	/* Lookup table. */
     CONST char *strKey;		/* String to try to find in lookup table. */
 {
     CONST TkStateMap *mPtr;
+
+    if (mapPtr->strKey == NULL) {
+	panic("TkFindStateNum: no choices in lookup table");
+    }
 
     for (mPtr = mapPtr; mPtr->strKey != NULL; mPtr++) {
 	if (strcmp(strKey, mPtr->strKey) == 0) {
@@ -969,43 +906,45 @@ TkFindStateNum(interp, option, mapPtr, strKey)
     }
     if (interp != NULL) {
 	mPtr = mapPtr;
-	Tcl_AppendResult(interp, "bad ", option, " value \"", strKey,
+	Tcl_AppendResult(interp, "bad ", field, " value \"", strKey,
 		"\": must be ", mPtr->strKey, (char *) NULL);
 	for (mPtr++; mPtr->strKey != NULL; mPtr++) {
-	    Tcl_AppendResult(interp,
-		    ((mPtr[1].strKey != NULL) ? ", " : ", or "),
-		    mPtr->strKey, (char *) NULL);
+	    Tcl_AppendResult(interp, ", ", mPtr->strKey, (char *) NULL);
 	}
     }
     return mPtr->numKey;
 }
 
+
 int
-TkFindStateNumObj(interp, optionPtr, mapPtr, keyObjPtr)
+TkFindStateNumObj(interp, optionPtr, mapPtr, keyPtr)
     Tcl_Interp *interp;		/* Interp for error reporting. */
     Tcl_Obj *optionPtr;		/* String to use when constructing error. */
     CONST TkStateMap *mapPtr;	/* Lookup table. */
-    Tcl_Obj *keyObjPtr;		/* String key to find in lookup table. */
+    Tcl_Obj *keyPtr;		/* String key to find in lookup table. */
 {
+#ifdef _LANG
+    return TkFindStateNum(interp, LangString(optionPtr), mapPtr, LangString(keyPtr));
+#else
     CONST TkStateMap *mPtr;
     CONST char *key;
     CONST Tcl_ObjType *typePtr;
 
-    if ((TclObjGetType(keyObjPtr) == &tkStateKeyObjType)
-	    && (keyObjPtr->internalRep.twoPtrValue.ptr1 == (VOID *) mapPtr)) {
-	return (int) keyObjPtr->internalRep.twoPtrValue.ptr2;
+    if ((keyPtr->typePtr == &stateKeyType)
+	    && (keyPtr->internalRep.twoPtrValue.ptr1 == (VOID *) mapPtr)) {
+	return (int) keyPtr->internalRep.twoPtrValue.ptr2;
     }
 
-    key = Tcl_GetStringFromObj(keyObjPtr, NULL);
+    key = Tcl_GetStringFromObj(keyPtr, NULL);
     for (mPtr = mapPtr; mPtr->strKey != NULL; mPtr++) {
 	if (strcmp(key, mPtr->strKey) == 0) {
-	    typePtr = TclObjGetType(keyObjPtr);
+	    typePtr = keyPtr->typePtr;
 	    if ((typePtr != NULL) && (typePtr->freeIntRepProc != NULL)) {
-		(*typePtr->freeIntRepProc)(keyObjPtr);
+		(*typePtr->freeIntRepProc)(keyPtr);
 	    }
-	    keyObjPtr->internalRep.twoPtrValue.ptr1 = (VOID *) mapPtr;
-	    keyObjPtr->internalRep.twoPtrValue.ptr2 = (VOID *) mPtr->numKey;
-	    keyObjPtr->typePtr = &tkStateKeyObjType;
+	    keyPtr->internalRep.twoPtrValue.ptr1 = (VOID *) mapPtr;
+	    keyPtr->internalRep.twoPtrValue.ptr2 = (VOID *) mPtr->numKey;
+	    keyPtr->typePtr = &stateKeyType;	
 	    return mPtr->numKey;
 	}
     }
@@ -1015,15 +954,11 @@ TkFindStateNumObj(interp, optionPtr, mapPtr, keyObjPtr)
 		Tcl_GetStringFromObj(optionPtr, NULL), " value \"", key,
 		"\": must be ", mPtr->strKey, (char *) NULL);
 	for (mPtr++; mPtr->strKey != NULL; mPtr++) {
-	    Tcl_AppendResult(interp,
-		((mPtr[1].strKey != NULL) ? ", " : ", or "),
-		mPtr->strKey, (char *) NULL);
+	    Tcl_AppendResult(interp, ", ", mPtr->strKey, (char *) NULL);
 	}
     }
     return mPtr->numKey;
+#endif
 }
-
-
-
 
 

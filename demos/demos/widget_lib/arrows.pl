@@ -84,7 +84,7 @@ sub arrow_err {
 
     my($c) = @_;
 
-    my $i = $c->create(qw/text .6i .1i -anchor n -text/ => "Range error!");
+    my $i = $c->createText(qw/.6i .1i -anchor n -text/ => "Range error!");
     $c->after(4000, sub { $c->delete($i) });
 
 } # end errow_err
@@ -164,40 +164,40 @@ sub arrow_setup {
     # Create the arrow and outline.
 
     $c->delete('all');
-    $c->create('line', $v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'},
+    $c->createLine($v->{x1}, $v->{'y'}, $v->{x2}, $v->{'y'},
 	       -width => 10*$v->{width},
 	       -arrowshape => [10*$v->{a}, 10*$v->{b}, 10*$v->{c}],
 	       -arrow => 'last', @{$v->{bigLineStyle}});
     my $xtip = $v->{x2}-10*$v->{b};
     my $deltaY =  10*$v->{c}+5*$v->{width};
-    $c->create('line', $v->{x2}, $v->{'y'}, $xtip, $v->{'y'}+$deltaY,
+    $c->createLine($v->{x2}, $v->{'y'}, $xtip, $v->{'y'}+$deltaY,
 	       $v->{x2}-10*$v->{a}, $v->{'y'}, $xtip, $v->{'y'}-$deltaY,
 	       $v->{x2}, $v->{'y'}, -width => 2, -capstyle => 'round',
 	       -joinstyle => 'round');
 
     # Create the boxes for reshaping the line and arrowhead.
 
-    $c->create('rectangle', $v->{x2}-10*$v->{a}-5, $v->{'y'}-5,
+    $c->createRectangle($v->{x2}-10*$v->{a}-5, $v->{'y'}-5,
 	       $v->{x2}-10*$v->{a}+5, $v->{'y'}+5, @{$v->{boxStyle}},
 	       -tags => ['box1', 'box']);
-    $c->create('rectangle', $xtip-5, $v->{'y'}-$deltaY-5, $xtip+5,
+    $c->createRectangle($xtip-5, $v->{'y'}-$deltaY-5, $xtip+5,
 	       $v->{'y'}-$deltaY+5, @{$v->{boxStyle}},
 	       -tags => ['box2', 'box']);
-    $c->create('rectangle', $v->{x1}-5, $v->{'y'}-5*$v->{width}-5,
+    $c->createRectangle($v->{x1}-5, $v->{'y'}-5*$v->{width}-5,
 	       $v->{x1}+5, $v->{'y'}-5*$v->{width}+5, @{$v->{boxStyle}},
 	       -tags => ['box3', 'box']);
 
     # Create three arrows in actual size with the same parameters
 
-    $c->create('line', $v->{x2}+50, 0, $v->{x2}+50, 1000, -width => 2);
+    $c->createLine($v->{x2}+50, 0, $v->{x2}+50, 1000, -width => 2);
     my $tmp = $v->{x2}+100;
-    $c->create('line', $tmp, $v->{'y'}-125, $tmp, $v->{'y'}-75,
+    $c->createLine($tmp, $v->{'y'}-125, $tmp, $v->{'y'}-75,
 	       -width => $v->{width}, -arrow => 'both',
 	       -arrowshape => [$v->{a}, $v->{b}, $v->{c}]);
-    $c->create('line', $tmp-25, $v->{'y'}, $tmp+25, $v->{'y'},
+    $c->createLine($tmp-25, $v->{'y'}, $tmp+25, $v->{'y'},
 	       -width => $v->{width}, -arrow => 'both',
 	       -arrowshape =>[$v->{a}, $v->{b}, $v->{c}]);
-    $c->create('line', $tmp-25, $v->{'y'}+75, $tmp+25, $v->{'y'}+125,
+    $c->createLine($tmp-25, $v->{'y'}+75, $tmp+25, $v->{'y'}+125,
 	       -width => $v->{width}, -arrow => 'both',
 	       -arrowshape => [$v->{a}, $v->{b}, $v->{c}]);
     $c->itemconfigure($cur, @{$v->{activeStyle}}) if $cur =~ /box?/;
@@ -206,31 +206,31 @@ sub arrow_setup {
     # dimensions.
 
     $tmp = $v->{x2}+10;
-    $c->create('line', $tmp, $v->{'y'}-5*$v->{width}, $tmp, $v->{'y'}-$deltaY,
+    $c->createLine($tmp, $v->{'y'}-5*$v->{width}, $tmp, $v->{'y'}-$deltaY,
 	       -arrow => 'both', -arrowshape => $v->{smallTips});
-    $c->create('text', $v->{x2}+15, $v->{'y'}-$deltaY+5*$v->{c},
+    $c->createText($v->{x2}+15, $v->{'y'}-$deltaY+5*$v->{c},
 	       -text => $v->{c}, -anchor => 'w');
     $tmp =  $v->{x1}-10;
-    $c->create('line', $tmp, $v->{'y'}-5*$v->{width}, $tmp,
+    $c->createLine($tmp, $v->{'y'}-5*$v->{width}, $tmp,
 	       $v->{'y'}+5*$v->{width}, -arrow => 'both',
 	       -arrowshape => $v->{smallTips});
-    $c->create('text', $v->{x1}-15, $v->{'y'}, -text => $v->{width},
+    $c->createText($v->{x1}-15, $v->{'y'}, -text => $v->{width},
 	       -anchor => 'e');
     $tmp = $v->{'y'}+5*$v->{width}+10*$v->{c}+10;
-    $c->create('line', $v->{x2}-10*$v->{a}, $tmp, $v->{x2}, $tmp,
+    $c->createLine($v->{x2}-10*$v->{a}, $tmp, $v->{x2}, $tmp,
 	       -arrow => 'both', -arrowshape => $v->{smallTips});
-    $c->create('text', $v->{x2}-5*$v->{a}, $tmp+5, -text => $v->{a},
+    $c->createText($v->{x2}-5*$v->{a}, $tmp+5, -text => $v->{a},
 	       -anchor => 'n');
     $tmp = $tmp+25;
-    $c->create('line', $v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp,
+    $c->createLine($v->{x2}-10*$v->{b}, $tmp, $v->{x2}, $tmp,
 	       -arrow => 'both', -arrowshape => $v->{smallTips});
-    $c->create('text', $v->{x2}-5*$v->{b}, $tmp+5, -text => $v->{b},
+    $c->createText($v->{x2}-5*$v->{b}, $tmp+5, -text => $v->{b},
 	       -anchor => 'n');
 
-    $c->create('text', $v->{x1}, 310, -text => "-width =>  $v->{width}",
+    $c->createText($v->{x1}, 310, -text => "-width =>  $v->{width}",
 	       -anchor => 'w',
 	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');
-    $c->create('text', $v->{x1}, 330,
+    $c->createText($v->{x1}, 330,
 	       -text => "-arrowshape =>  [$v->{a}, $v->{b}, $v->{c}]",
 	       -anchor => 'w',
 	       -font => '-*-Helvetica-Medium-R-Normal--*-180-*-*-*-*-*-*');

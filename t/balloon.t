@@ -4,7 +4,7 @@ use strict;
 use Test;
 use Tk;
 
-BEGIN { plan tests => 8 };
+BEGIN { plan tests => 10 };
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -43,6 +43,17 @@ ok($@, "", 'Problem attaching message to Menu');
 
 eval { $balloon->configure(-motioncommand => \&motioncmd); };
 ok($@, "", "Can't set motioncommand option");
+
+my $lb = $mw->Listbox->pack;
+$lb->insert("end",1,2,3,4);
+eval { $balloon->attach($lb, -msg => ['one','two','three','four']); };
+ok($@, "", 'Problem attaching message to Listbox items');
+
+my $slb = $mw->Scrolled('Listbox')->pack;
+$lb->insert("end",1,2,3,4);
+eval { $balloon->attach($slb->Subwidget('scrolled'),
+			-msg => ['one','two','three','four']); };
+ok($@, "", 'Problem attaching message to scrolled Listbox items');
 
 ## not yet:
 #  $l->eventGenerate("<Motion>");

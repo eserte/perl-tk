@@ -1,4 +1,4 @@
-/*
+/* 
  * tkMessage.c --
  *
  *	This module implements a message widgets for the Tk
@@ -6,13 +6,12 @@
  *	in a window according to a particular aspect ratio.
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
- * Copyright (c) 1994-1997 Sun Microsystems, Inc.
- * Copyright (c) 1998-2000 by Ajuba Solutions.
+ * Copyright (c) 1994-1995 Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkMessage.c,v 1.14 2002/08/05 04:30:40 dgp Exp $
+ * RCS: @(#) $Id: tkMessage.c,v 1.2 1998/09/14 18:23:15 stanton Exp $
  */
 
 #include "tkPort.h"
@@ -30,8 +29,6 @@ typedef struct {
 				 * means that the window has been destroyed
 				 * but the data structures haven't yet been
 				 * cleaned up.*/
-    Tk_OptionTable optionTable;	/* Table that defines options available for
-				 * this widget. */
     Display *display;		/* Display containing widget.  Used, among
 				 * other things, so that resources can be
 				 * freed even after tkwin has gone away. */
@@ -62,7 +59,6 @@ typedef struct {
     XColor *highlightColorPtr;	/* Color for drawing traversal highlight. */
     Tk_Font tkfont;		/* Information about text font, or NULL. */
     XColor *fgColorPtr;		/* Foreground color in normal mode. */
-    Tcl_Obj *padXPtr, *padYPtr;	/* Tcl_Obj rep's of padX, padY values. */
     int padX, padY;		/* User-requested extra space around text. */
     int width;			/* User-requested width, in pixels.  0 means
 				 * compute width using aspect ratio below. */
@@ -90,6 +86,8 @@ typedef struct {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile;		/* tiling */
+    GC tileGC;			/* GC for tiling */
 } Message;
 
 /*
@@ -100,12 +98,10 @@ typedef struct {
  *				this window.
  * GOT_FOCUS:			Non-zero means this button currently
  *				has the input focus.
- * MESSAGE_DELETED:		The message has been effectively deleted.
  */
 
 #define REDRAW_PENDING		1
 #define GOT_FOCUS		4
-#define MESSAGE_DELETED		8
 
 /*
  * Custom option for handling "-tile"
@@ -121,61 +117,61 @@ static Tk_CustomOption tileOption = {
  * Information used for argv parsing.
  */
 
-static Tk_OptionSpec optionSpecs[] = {
-    {TK_OPTION_ANCHOR, "-anchor", "anchor", "Anchor", DEF_MESSAGE_ANCHOR,
-	 -1, Tk_Offset(Message, anchor), 0, 0, 0},
-    {TK_OPTION_INT, "-aspect", "aspect", "Aspect", DEF_MESSAGE_ASPECT,
-	 -1, Tk_Offset(Message, aspect), 0, 0, 0},
-    {TK_OPTION_BORDER, "-background", "background", "Background",
-	 DEF_MESSAGE_BG_COLOR, -1, Tk_Offset(Message, border), 0,
-	 (ClientData) DEF_MESSAGE_BG_MONO, 0},
-    {TK_OPTION_SYNONYM, "-bd", (char *) NULL, (char *) NULL, (char *) NULL,
-	 0, -1, 0, (ClientData) "-borderwidth", 0},
-    {TK_OPTION_SYNONYM, "-bg", (char *) NULL, (char *) NULL, (char *) NULL,
-	 0, -1, 0, (ClientData) "-background", 0},
-    {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-	 DEF_MESSAGE_BORDER_WIDTH, -1,
-	 Tk_Offset(Message, borderWidth), 0, 0, 0},
-    {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor",
-	 DEF_MESSAGE_CURSOR, -1, Tk_Offset(Message, cursor),
-	 TK_OPTION_NULL_OK, 0, 0},
-    {TK_OPTION_SYNONYM, "-fg", (char *) NULL, (char *) NULL, (char *) NULL,
-	 0, -1, 0, (ClientData) "-foreground", 0},
-    {TK_OPTION_FONT, "-font", "font", "Font",
-	DEF_MESSAGE_FONT, -1, Tk_Offset(Message, tkfont), 0, 0, 0},
-    {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
-	DEF_MESSAGE_FG, -1, Tk_Offset(Message, fgColorPtr), 0, 0, 0},
-    {TK_OPTION_COLOR, "-highlightbackground", "highlightBackground",
-	 "HighlightBackground", DEF_MESSAGE_HIGHLIGHT_BG, -1,
-	 Tk_Offset(Message, highlightBgColorPtr), 0, 0},
-    {TK_OPTION_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
-	 DEF_MESSAGE_HIGHLIGHT, -1, Tk_Offset(Message, highlightColorPtr),
-	 0, 0, 0},
-    {TK_OPTION_PIXELS, "-highlightthickness", "highlightThickness",
-	"HighlightThickness", DEF_MESSAGE_HIGHLIGHT_WIDTH, -1,
-	 Tk_Offset(Message, highlightWidth), 0, 0, 0},
-    {TK_OPTION_JUSTIFY, "-justify", "justify", "Justify",
-	DEF_MESSAGE_JUSTIFY, -1, Tk_Offset(Message, justify), 0, 0, 0},
-    {TK_OPTION_PIXELS, "-padx", "padX", "Pad",
-	 DEF_MESSAGE_PADX, Tk_Offset(Message, padXPtr),
-	 Tk_Offset(Message, padX), 0, 0, 0},
-    {TK_OPTION_PIXELS, "-pady", "padY", "Pad",
-	 DEF_MESSAGE_PADY, Tk_Offset(Message, padYPtr),
-	 Tk_Offset(Message, padY), 0, 0, 0},
-    {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-	DEF_MESSAGE_RELIEF, -1, Tk_Offset(Message, relief), 0, 0, 0},
-    {TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
-	DEF_MESSAGE_TAKE_FOCUS, -1, Tk_Offset(Message, takeFocus),
-	TK_OPTION_NULL_OK, 0, 0},
-    {TK_OPTION_STRING, "-text", "text", "Text",
-	DEF_MESSAGE_TEXT, -1, Tk_Offset(Message, string), 0, 0, 0},
-    {TK_OPTION_STRING, "-textvariable", "textVariable", "Variable",
-	DEF_MESSAGE_TEXT_VARIABLE, -1, Tk_Offset(Message, textVarName),
-	TK_OPTION_NULL_OK, 0, 0},
-    {TK_OPTION_PIXELS, "-width", "width", "Width",
-	DEF_MESSAGE_WIDTH, -1, Tk_Offset(Message, width), 0, 0 ,0},
-    {TK_OPTION_END, (char *) NULL, (char *) NULL, (char *) NULL,
-	(char *) NULL, 0, 0, 0, 0}
+static Tk_ConfigSpec configSpecs[] = {
+    {TK_CONFIG_ANCHOR, "-anchor", "anchor", "Anchor",
+	DEF_MESSAGE_ANCHOR, Tk_Offset(Message, anchor), 0},
+    {TK_CONFIG_INT, "-aspect", "aspect", "Aspect",
+	DEF_MESSAGE_ASPECT, Tk_Offset(Message, aspect), 0},
+    {TK_CONFIG_BORDER, "-background", "background", "Background",
+	DEF_MESSAGE_BG_COLOR, Tk_Offset(Message, border),
+	TK_CONFIG_COLOR_ONLY},
+    {TK_CONFIG_BORDER, "-background", "background", "Background",
+	DEF_MESSAGE_BG_MONO, Tk_Offset(Message, border),
+	TK_CONFIG_MONO_ONLY},
+    {TK_CONFIG_SYNONYM, "-bd", "borderWidth", (char *) NULL,
+	(char *) NULL, 0, 0},
+    {TK_CONFIG_SYNONYM, "-bg", "background", (char *) NULL,
+	(char *) NULL, 0, 0},
+    {TK_CONFIG_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
+	DEF_MESSAGE_BORDER_WIDTH, Tk_Offset(Message, borderWidth), 0},
+    {TK_CONFIG_ACTIVE_CURSOR, "-cursor", "cursor", "Cursor",
+	DEF_MESSAGE_CURSOR, Tk_Offset(Message, cursor), TK_CONFIG_NULL_OK},
+    {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
+	(char *) NULL, 0, 0},
+    {TK_CONFIG_FONT, "-font", "font", "Font",
+	DEF_MESSAGE_FONT, Tk_Offset(Message, tkfont), 0},
+    {TK_CONFIG_COLOR, "-foreground", "foreground", "Foreground",
+	DEF_MESSAGE_FG, Tk_Offset(Message, fgColorPtr), 0},
+    {TK_CONFIG_COLOR, "-highlightbackground", "highlightBackground",
+	"HighlightBackground", DEF_MESSAGE_HIGHLIGHT_BG,
+	Tk_Offset(Message, highlightBgColorPtr), 0},
+    {TK_CONFIG_COLOR, "-highlightcolor", "highlightColor", "HighlightColor",
+	DEF_MESSAGE_HIGHLIGHT, Tk_Offset(Message, highlightColorPtr), 0},
+    {TK_CONFIG_PIXELS, "-highlightthickness", "highlightThickness",
+	"HighlightThickness",
+	DEF_MESSAGE_HIGHLIGHT_WIDTH, Tk_Offset(Message, highlightWidth), 0},
+    {TK_CONFIG_JUSTIFY, "-justify", "justify", "Justify",
+	DEF_MESSAGE_JUSTIFY, Tk_Offset(Message, justify), 0},
+    {TK_CONFIG_PIXELS, "-padx", "padX", "Pad",
+	DEF_MESSAGE_PADX, Tk_Offset(Message, padX), 0},
+    {TK_CONFIG_PIXELS, "-pady", "padY", "Pad",
+	DEF_MESSAGE_PADY, Tk_Offset(Message, padY), 0},
+    {TK_CONFIG_RELIEF, "-relief", "relief", "Relief",
+	DEF_MESSAGE_RELIEF, Tk_Offset(Message, relief), 0},
+    {TK_CONFIG_STRING, "-takefocus", "takeFocus", "TakeFocus",
+	DEF_MESSAGE_TAKE_FOCUS, Tk_Offset(Message, takeFocus),
+	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_STRING, "-text", "text", "Text",
+	DEF_MESSAGE_TEXT, Tk_Offset(Message, string), 0},
+    {TK_CONFIG_SCALARVAR, "-textvariable", "textVariable", "Variable",
+	DEF_MESSAGE_TEXT_VARIABLE, Tk_Offset(Message, textVarName),
+	TK_CONFIG_NULL_OK},
+    {TK_CONFIG_CUSTOM, "-tile", "tile", "Tile", (char *) NULL,
+	Tk_Offset(Message, tile),TK_CONFIG_DONT_SET_DEFAULT, &tileOption},
+    {TK_CONFIG_PIXELS, "-width", "width", "Width",
+	DEF_MESSAGE_WIDTH, Tk_Offset(Message, width), 0},
+    {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
+	(char *) NULL, 0, 0}
 };
 
 /*
@@ -187,35 +183,37 @@ static void		MessageCmdDeletedProc _ANSI_ARGS_((
 static void		MessageEventProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
 static char *		MessageTextVarProc _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, Var name1, 
-			    CONST char *name2, int flags));
-static int		MessageWidgetObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc,
-	                    Tcl_Obj *CONST objv[]));
+			    Tcl_Interp *interp, Var name1, char *name2,
+			    int flags));
+static int		MessageWidgetCmd _ANSI_ARGS_((ClientData clientData,
+			    Tcl_Interp *interp, int argc, char **argv));
 static void		MessageWorldChanged _ANSI_ARGS_((
 			    ClientData instanceData));
 static void		ComputeMessageGeometry _ANSI_ARGS_((Message *msgPtr));
 static int		ConfigureMessage _ANSI_ARGS_((Tcl_Interp *interp,
-			    Message *msgPtr, int objc, Tcl_Obj *CONST objv[],
+			    Message *msgPtr, int argc, char **argv,
 			    int flags));
 static void		DestroyMessage _ANSI_ARGS_((char *memPtr));
 static void		DisplayMessage _ANSI_ARGS_((ClientData clientData));
+static void		TileChangedProc _ANSI_ARGS_((ClientData clientData,
+			    Tk_Tile tile, Tk_Item *itemPtr));
 
 /*
  * The structure below defines message class behavior by means of procedures
  * that can be invoked from generic window code.
  */
 
-static Tk_ClassProcs messageClass = {
-    sizeof(Tk_ClassProcs),	/* size */
-    MessageWorldChanged,	/* worldChangedProc */
+static TkClassProcs messageClass = {
+    NULL,			/* createProc. */
+    MessageWorldChanged,	/* geometryProc. */
+    NULL			/* modalProc. */
 };
 
-
+
 /*
  *--------------------------------------------------------------
  *
- * Tk_MessageObjCmd --
+ * Tk_MessageCmd --
  *
  *	This procedure is invoked to process the "message" Tcl
  *	command.  See the user documentation for details on what
@@ -231,77 +229,82 @@ static Tk_ClassProcs messageClass = {
  */
 
 int
-Tk_MessageObjCmd(clientData, interp, objc, objv)
-    ClientData clientData;	/* NULL. */
+Tk_MessageCmd(clientData, interp, argc, argv)
+    ClientData clientData;	/* Main window associated with
+				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument strings. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     register Message *msgPtr;
-    Tk_OptionTable optionTable;
-    Tk_Window tkwin;
+    Tk_Window new;
+    Tk_Window tkwin = (Tk_Window) clientData;
 
-    if (objc < 2) {
-	Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
+    if (argc < 2) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"",
+		argv[0], " pathName ?options?\"", (char *) NULL);
 	return TCL_ERROR;
     }
 
-    tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp),
-	    Tcl_GetString(objv[1]), (char *) NULL);
-    if (tkwin == NULL) {
+    new = Tk_CreateWindowFromPath(interp, tkwin, argv[1], (char *) NULL);
+    if (new == NULL) {
 	return TCL_ERROR;
     }
-
-    /*
-     * Create the option table for this widget class.  If it has already
-     * been created, the cached pointer will be returned.
-     */
-
-    optionTable = Tk_CreateOptionTable(interp, optionSpecs);
 
     msgPtr = (Message *) ckalloc(sizeof(Message));
-    memset(msgPtr, 0, (size_t) sizeof(Message));
+    msgPtr->tkwin = new;
+    msgPtr->display = Tk_Display(new);
+    msgPtr->interp = interp;
+    msgPtr->widgetCmd = Tcl_CreateCommand(interp, Tk_PathName(msgPtr->tkwin),
+	    MessageWidgetCmd, (ClientData) msgPtr, MessageCmdDeletedProc);
+    msgPtr->textLayout = NULL;
+    msgPtr->string = NULL;
+    msgPtr->numChars = 0;
+    msgPtr->textVarName = NULL;
+    msgPtr->border = NULL;
+    msgPtr->borderWidth = 0;
+    msgPtr->relief = TK_RELIEF_FLAT;
+    msgPtr->highlightWidth = 0;
+    msgPtr->highlightBgColorPtr = NULL;
+    msgPtr->highlightColorPtr = NULL;
+    msgPtr->tkfont = NULL;
+    msgPtr->fgColorPtr = NULL;
+    msgPtr->textGC = None;
+    msgPtr->padX = 0;
+    msgPtr->padY = 0;
+    msgPtr->anchor = TK_ANCHOR_CENTER;
+    msgPtr->width = 0;
+    msgPtr->aspect = 150;
+    msgPtr->msgWidth = 0;
+    msgPtr->msgHeight = 0;
+    msgPtr->justify = TK_JUSTIFY_LEFT;
+    msgPtr->cursor = None;
+    msgPtr->takeFocus = NULL;
+    msgPtr->flags = 0;
+    msgPtr->tile = NULL;
+    msgPtr->tileGC = NULL;
 
-    /*
-     * Set values for those fields that don't take a 0 or NULL value.
-     */
-    msgPtr->tkwin		= tkwin;
-    msgPtr->display		= Tk_Display(tkwin);
-    msgPtr->interp		= interp;
-    msgPtr->widgetCmd		= Tcl_CreateObjCommand(interp,
-	    Tk_PathName(msgPtr->tkwin), MessageWidgetObjCmd,
-	    (ClientData) msgPtr, MessageCmdDeletedProc);
-    msgPtr->optionTable		= optionTable;
-    msgPtr->relief		= TK_RELIEF_FLAT;
-    msgPtr->textGC		= None;
-    msgPtr->anchor		= TK_ANCHOR_CENTER;
-    msgPtr->aspect		= 150;
-    msgPtr->justify		= TK_JUSTIFY_LEFT;
-    msgPtr->cursor		= None;
-
-    Tk_SetClass(msgPtr->tkwin, "Message");
-    Tk_SetClassProcs(msgPtr->tkwin, &messageClass, (ClientData) msgPtr);
+    TkClassOption(msgPtr->tkwin, "Message",&argc,&argv);
+    TkSetClassProcs(msgPtr->tkwin, &messageClass, (ClientData) msgPtr);
     Tk_CreateEventHandler(msgPtr->tkwin,
 	    ExposureMask|StructureNotifyMask|FocusChangeMask,
 	    MessageEventProc, (ClientData) msgPtr);
-    if (Tk_InitOptions(interp, (char *)msgPtr, optionTable, tkwin) != TCL_OK) {
-	Tk_DestroyWindow(msgPtr->tkwin);
-	return TCL_ERROR;
+    if (ConfigureMessage(interp, msgPtr, argc-2, argv+2, 0) != TCL_OK) {
+	goto error;
     }
 
-    if (ConfigureMessage(interp, msgPtr, objc-2, objv+2, 0) != TCL_OK) {
-	Tk_DestroyWindow(msgPtr->tkwin);
-	return TCL_ERROR;
-    }
-
-    Tcl_SetResult(interp, Tk_PathName(msgPtr->tkwin), TCL_STATIC);
+    interp->result = Tk_PathName(msgPtr->tkwin);
     return TCL_OK;
-}
 
+    error:
+    Tk_DestroyWindow(msgPtr->tkwin);
+    return TCL_ERROR;
+}
+
 /*
  *--------------------------------------------------------------
  *
- * MessageWidgetObjCmd --
+ * MessageWidgetCmd --
  *
  *	This procedure is invoked to process the Tcl command
  *	that corresponds to a widget managed by this module.
@@ -317,70 +320,52 @@ Tk_MessageObjCmd(clientData, interp, objc, objv)
  */
 
 static int
-MessageWidgetObjCmd(clientData, interp, objc, objv)
+MessageWidgetCmd(clientData, interp, argc, argv)
     ClientData clientData;	/* Information about message widget. */
     Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument strings. */
+    int argc;			/* Number of arguments. */
+    char **argv;		/* Argument strings. */
 {
     register Message *msgPtr = (Message *) clientData;
-    static CONST char *optionStrings[] = { "cget", "configure", (char *) NULL };
-    enum options { MESSAGE_CGET, MESSAGE_CONFIGURE };
-    int index;
-    int result = TCL_OK;
-    Tcl_Obj *objPtr;
+    size_t length;
+    int c;
 
-    if (objc < 2) {
-	Tcl_WrongNumArgs(interp, 1, objv, "option ?arg arg ...?");
+    if (argc < 2) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" option ?arg arg ...?\"", (char *) NULL);
 	return TCL_ERROR;
     }
-
-    if (Tcl_GetIndexFromObj(interp, objv[1], optionStrings, "option", 0,
-	    &index) != TCL_OK) {
+    c = argv[1][0];
+    length = strlen(argv[1]);
+    if ((c == 'c') && (strncmp(argv[1], "cget", length) == 0)
+	    && (length >= 2)) {
+	if (argc != 3) {
+	    Tcl_AppendResult(interp, "wrong # args: should be \"",
+		    argv[0], " cget option\"",
+		    (char *) NULL);
+	    return TCL_ERROR;
+	}
+	return Tk_ConfigureValue(interp, msgPtr->tkwin, configSpecs,
+		(char *) msgPtr, argv[2], 0);
+    } else if ((c == 'c') && (strncmp(argv[1], "configure", length) == 0)
+	    && (length  >= 2)) {
+	if (argc == 2) {
+	    return Tk_ConfigureInfo(interp, msgPtr->tkwin, configSpecs,
+		    (char *) msgPtr, (char *) NULL, 0);
+	} else if (argc == 3) {
+	    return Tk_ConfigureInfo(interp, msgPtr->tkwin, configSpecs,
+		    (char *) msgPtr, argv[2], 0);
+	} else {
+	    return ConfigureMessage(interp, msgPtr, argc-2, argv+2,
+		    TK_CONFIG_ARGV_ONLY);
+	}
+    } else {
+	Tcl_AppendResult(interp, "bad option \"", argv[1],
+		"\": must be cget or configure", (char *) NULL);
 	return TCL_ERROR;
     }
-
-    Tcl_Preserve((ClientData) msgPtr);
-
-    switch ((enum options) index) {
-	case MESSAGE_CGET: {
-	    if (objc != 3) {
-		Tcl_WrongNumArgs(interp, 2, objv, "option");
-		return TCL_ERROR;
-	    }
-	    objPtr = Tk_GetOptionValue(interp, (char *) msgPtr,
-		    msgPtr->optionTable, objv[2], msgPtr->tkwin);
-	    if (objPtr == NULL) {
-		result = TCL_ERROR;
-	    } else {
-		Tcl_SetObjResult(interp, objPtr);
-		result = TCL_OK;
-	    }
-	    break;
-	}
-	case MESSAGE_CONFIGURE: {
-	    if (objc <= 3) {
-		objPtr = Tk_GetOptionInfo(interp, (char *) msgPtr,
-			msgPtr->optionTable,
-			(objc == 3) ? objv[2] : (Tcl_Obj *) NULL,
-			msgPtr->tkwin);
-		if (objPtr == NULL) {
-		    result = TCL_ERROR;
-		} else {
-		    Tcl_SetObjResult(interp, objPtr);
-		    result = TCL_OK;
-		}
-	    } else {
-		result = ConfigureMessage(interp, msgPtr, objc-2, objv+2, 0);
-	    }
-	    break;
-	}
-    }
-
-    Tcl_Release((ClientData) msgPtr);
-    return result;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -405,35 +390,47 @@ DestroyMessage(memPtr)
 {
     register Message *msgPtr = (Message *) memPtr;
 
-    msgPtr->flags |= MESSAGE_DELETED;
-
-    Tcl_DeleteCommandFromToken(msgPtr->interp, msgPtr->widgetCmd);
-    if (msgPtr->flags & REDRAW_PENDING) {
-	Tcl_CancelIdleCall(DisplayMessage, (ClientData) msgPtr);
-    }
-
     /*
      * Free up all the stuff that requires special handling, then
-     * let Tk_FreeConfigOptions handle all the standard option-related
+     * let Tk_FreeOptions handle all the standard option-related
      * stuff.
      */
 
-    if (msgPtr->textGC != None) {
-	Tk_FreeGC(msgPtr->display, msgPtr->textGC);
-    }
-    if (msgPtr->textLayout != NULL) {
-	Tk_FreeTextLayout(msgPtr->textLayout);
-    }
+    Tk_FreeTextLayout(msgPtr->textLayout);
     if (msgPtr->textVarName != NULL) {
-	Lang_UntraceVar(msgPtr->interp, msgPtr->textVarName,
+	Tcl_UntraceVar(msgPtr->interp, msgPtr->textVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		MessageTextVarProc, (ClientData) msgPtr);
     }
-    Tk_FreeConfigOptions((char *) msgPtr, msgPtr->optionTable, msgPtr->tkwin);
-    msgPtr->tkwin = NULL;
+    if (msgPtr->textGC != None) {
+	Tk_FreeGC(msgPtr->display, msgPtr->textGC);
+    }
+    Tk_FreeOptions(configSpecs, (char *) msgPtr, msgPtr->display, 0);
     ckfree((char *) msgPtr);
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TileChangedProc
+ *
+ * Results:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+/* ARGSUSED */
+static void
+TileChangedProc(clientData, tile, itemPtr)
+    ClientData clientData;
+    Tk_Tile tile;
+    Tk_Item *itemPtr;			/* Not used */
+{
+    register Message *msgPtr = (Message *) clientData;
 
+    ConfigureMessage(msgPtr->interp , msgPtr, 0, NULL, 0);
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -445,7 +442,7 @@ DestroyMessage(memPtr)
  *
  * Results:
  *	The return value is a standard Tcl result.  If TCL_ERROR is
- *	returned, then the interp's result contains an error message.
+ *	returned, then interp->result contains an error message.
  *
  * Side effects:
  *	Configuration information, such as text string, colors, font,
@@ -456,33 +453,29 @@ DestroyMessage(memPtr)
  */
 
 static int
-ConfigureMessage(interp, msgPtr, objc, objv, flags)
+ConfigureMessage(interp, msgPtr, argc, argv, flags)
     Tcl_Interp *interp;		/* Used for error reporting. */
     register Message *msgPtr;	/* Information about widget;  may or may
 				 * not already have values for some fields. */
-    int objc;			/* Number of valid entries in argv. */
-    Tcl_Obj *CONST objv[];	/* Arguments. */
+    int argc;			/* Number of valid entries in argv. */
+    char **argv;		/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
-    Tk_SavedOptions savedOptions;
-
     /*
      * Eliminate any existing trace on a variable monitored by the message.
      */
 
     if (msgPtr->textVarName != NULL) {
-	Lang_UntraceVar(interp, msgPtr->textVarName,
+	Tcl_UntraceVar(interp, msgPtr->textVarName, 
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		MessageTextVarProc, (ClientData) msgPtr);
     }
 
-    if (Tk_SetOptions(interp, (char *) msgPtr, msgPtr->optionTable, objc, objv,
-	    msgPtr->tkwin, &savedOptions, (int *)NULL) != TCL_OK) {
-	Tk_RestoreSavedOptions(&savedOptions);
+    if (Tk_ConfigureWidget(interp, msgPtr->tkwin, configSpecs,
+	    argc, argv, (char *) msgPtr, flags) != TCL_OK) {
 	return TCL_ERROR;
     }
-
-
+    
     /*
      * If the message is to display the value of a variable, then set up
      * a trace on the variable's value, create the variable if it doesn't
@@ -490,21 +483,19 @@ ConfigureMessage(interp, msgPtr, objc, objv, flags)
      */
 
     if (msgPtr->textVarName != NULL) {
-	CONST char *value;
+	char *value;
 
-	value = Tcl_GetString(Tcl_ObjGetVar2(interp, msgPtr->textVarName, NULL, TCL_GLOBAL_ONLY));
+	value = LangString(Tcl_GetVar(interp, msgPtr->textVarName, TCL_GLOBAL_ONLY));
 	if (value == NULL) {
-	    Tcl_Obj *temp = Tcl_NewStringObj(msgPtr->string,-1);
-	    Tcl_ObjSetVar2(interp, msgPtr->textVarName, NULL, temp,
+	    Tcl_SetVar(interp, msgPtr->textVarName, msgPtr->string,
 		    TCL_GLOBAL_ONLY);
-	    Tcl_DecrRefCount(temp);
 	} else {
 	    if (msgPtr->string != NULL) {
 		ckfree(msgPtr->string);
 	    }
 	    msgPtr->string = strcpy(ckalloc(strlen(value) + 1), value);
 	}
-	Lang_TraceVar(interp, msgPtr->textVarName,
+	Tcl_TraceVar(interp, msgPtr->textVarName,
 		TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		MessageTextVarProc, (ClientData) msgPtr);
     }
@@ -515,17 +506,16 @@ ConfigureMessage(interp, msgPtr, objc, objv, flags)
      * that couldn't be specified to Tk_ConfigureWidget.
      */
 
-    msgPtr->numChars = Tcl_NumUtfChars(msgPtr->string, -1);
+    msgPtr->numChars = strlen(msgPtr->string);
 
     if (msgPtr->highlightWidth < 0) {
 	msgPtr->highlightWidth = 0;
     }
 
-    Tk_FreeSavedOptions(&savedOptions);
     MessageWorldChanged((ClientData) msgPtr);
     return TCL_OK;
 }
-
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -543,21 +533,33 @@ ConfigureMessage(interp, msgPtr, objc, objv, flags)
  *
  *---------------------------------------------------------------------------
  */
-
+ 
 static void
 MessageWorldChanged(instanceData)
     ClientData instanceData;	/* Information about widget. */
 {
     XGCValues gcValues;
     GC gc = None;
+    Pixmap pixmap;
     Tk_FontMetrics fm;
     Message *msgPtr;
 
     msgPtr = (Message *) instanceData;
 
-    if (msgPtr->border != NULL) {
+    Tk_SetTileChangedProc(msgPtr->tile, TileChangedProc,
+	    (ClientData)msgPtr, (Tk_Item *) NULL);
+
+    if ((pixmap = Tk_PixmapOfTile(msgPtr->tile)) != None) {
+	gcValues.fill_style = FillTiled;
+	gcValues.tile = pixmap;
+	gc = Tk_GetGC(msgPtr->tkwin, GCTile|GCFillStyle, &gcValues);
+    } else if (msgPtr->border != NULL) {
 	Tk_SetBackgroundFromBorder(msgPtr->tkwin, msgPtr->border);
     }
+    if (msgPtr->tileGC != None) {
+	Tk_FreeGC(msgPtr->display, msgPtr->tileGC);
+    }
+    msgPtr->tileGC = gc;
 
     gcValues.font = Tk_FontId(msgPtr->tkfont);
     gcValues.foreground = msgPtr->fgColorPtr->pixel;
@@ -587,7 +589,7 @@ MessageWorldChanged(instanceData)
 	msgPtr->flags |= REDRAW_PENDING;
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -673,7 +675,7 @@ ComputeMessageGeometry(msgPtr)
     Tk_GeometryRequest(msgPtr->tkwin, maxWidth, height);
     Tk_SetInternalBorder(msgPtr->tkwin, inset);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -706,14 +708,24 @@ DisplayMessage(clientData)
     if (msgPtr->border != NULL) {
 	borderWidth += msgPtr->borderWidth;
     }
-    if (msgPtr->relief == TK_RELIEF_FLAT) {
-	borderWidth = msgPtr->highlightWidth;
+    if (msgPtr->tileGC != NULL) {
+	if ((Tk_Width(tkwin) > (2 * borderWidth)) && (Tk_Height(tkwin) > (2 * borderWidth))) {
+	    Tk_SetTileOrigin(tkwin, msgPtr->tileGC, 0, 0);
+	    XFillRectangle(msgPtr->display, Tk_WindowId(tkwin), msgPtr->tileGC,
+		    borderWidth, borderWidth, Tk_Width(tkwin) - 2 * borderWidth,
+		    Tk_Height(tkwin) - 2 * borderWidth);
+	    XSetTSOrigin(msgPtr->display, msgPtr->tileGC, 0, 0);
+	}
+    } else {
+	if (msgPtr->relief == TK_RELIEF_FLAT) {
+	    borderWidth = msgPtr->highlightWidth;
+	}
+	Tk_Fill3DRectangle(tkwin, Tk_WindowId(tkwin), msgPtr->border,
+		borderWidth, borderWidth,
+		Tk_Width(tkwin) - 2 * borderWidth,
+		Tk_Height(tkwin) - 2 * borderWidth,
+		0, TK_RELIEF_FLAT);
     }
-    Tk_Fill3DRectangle(tkwin, Tk_WindowId(tkwin), msgPtr->border,
-	    borderWidth, borderWidth,
-	    Tk_Width(tkwin) - 2 * borderWidth,
-	    Tk_Height(tkwin) - 2 * borderWidth,
-	    0, TK_RELIEF_FLAT);
 
     /*
      * Compute starting y-location for message based on message size
@@ -733,20 +745,18 @@ DisplayMessage(clientData)
 		msgPtr->borderWidth, msgPtr->relief);
     }
     if (msgPtr->highlightWidth != 0) {
-	GC fgGC, bgGC;
+	GC gc;
 
-	bgGC = Tk_GCForColor(msgPtr->highlightBgColorPtr, Tk_WindowId(tkwin));
 	if (msgPtr->flags & GOT_FOCUS) {
-	    fgGC = Tk_GCForColor(msgPtr->highlightColorPtr, Tk_WindowId(tkwin));
-	    TkpDrawHighlightBorder(tkwin, fgGC, bgGC, msgPtr->highlightWidth,
-		    Tk_WindowId(tkwin));
+	    gc = Tk_GCForColor(msgPtr->highlightColorPtr, Tk_WindowId(tkwin));
 	} else {
-	    TkpDrawHighlightBorder(tkwin, bgGC, bgGC, msgPtr->highlightWidth,
-		    Tk_WindowId(tkwin));
+	    gc = Tk_GCForColor(msgPtr->highlightBgColorPtr, Tk_WindowId(tkwin));
 	}
+	Tk_DrawFocusHighlight(tkwin, gc, msgPtr->highlightWidth,
+		Tk_WindowId(tkwin));
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -776,7 +786,14 @@ MessageEventProc(clientData, eventPtr)
 	    || (eventPtr->type == ConfigureNotify)) {
 	goto redraw;
     } else if (eventPtr->type == DestroyNotify) {
-	DestroyMessage((char *) clientData);
+	if (msgPtr->tkwin != NULL) {
+	    msgPtr->tkwin = NULL;
+	    Tcl_DeleteCommandFromToken(msgPtr->interp, msgPtr->widgetCmd);
+	}
+	if (msgPtr->flags & REDRAW_PENDING) {
+	    Tcl_CancelIdleCall(DisplayMessage, (ClientData) msgPtr);
+	}
+	Tcl_EventuallyFree((ClientData) msgPtr, DestroyMessage);
     } else if (eventPtr->type == FocusIn) {
 	if (eventPtr->xfocus.detail != NotifyInferior) {
 	    msgPtr->flags |= GOT_FOCUS;
@@ -800,7 +817,7 @@ MessageEventProc(clientData, eventPtr)
 	msgPtr->flags |= REDRAW_PENDING;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -824,6 +841,7 @@ MessageCmdDeletedProc(clientData)
     ClientData clientData;	/* Pointer to widget record for widget. */
 {
     Message *msgPtr = (Message *) clientData;
+    Tk_Window tkwin = msgPtr->tkwin;
 
     /*
      * This procedure could be invoked either because the window was
@@ -832,11 +850,12 @@ MessageCmdDeletedProc(clientData)
      * destroys the widget.
      */
 
-    if (!(msgPtr->flags & MESSAGE_DELETED)) {
-	Tk_DestroyWindow(msgPtr->tkwin);
+    if (tkwin != NULL) {
+	msgPtr->tkwin = NULL;
+	Tk_DestroyWindow(tkwin);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -861,11 +880,11 @@ MessageTextVarProc(clientData, interp, name1, name2, flags)
     ClientData clientData;	/* Information about message. */
     Tcl_Interp *interp;		/* Interpreter containing variable. */
     Var  name1;			/* Name of variable. */
-    CONST char *name2;		/* Second part of variable name. */
+    char *name2;		/* Second part of variable name. */
     int flags;			/* Information about what happened. */
 {
     register Message *msgPtr = (Message *) clientData;
-    CONST char *value;
+    char *value;
 
     /*
      * If the variable is unset, then immediately recreate it unless
@@ -874,26 +893,24 @@ MessageTextVarProc(clientData, interp, name1, name2, flags)
 
     if (flags & TCL_TRACE_UNSETS) {
 	if ((flags & TCL_TRACE_DESTROYED) && !(flags & TCL_INTERP_DESTROYED)) {
-	    Tcl_Obj *temp = Tcl_NewStringObj(msgPtr->string,-1);
-	    Tcl_ObjSetVar2(interp, msgPtr->textVarName, NULL, temp,
+	    Tcl_SetVar(interp, msgPtr->textVarName, msgPtr->string,
 		    TCL_GLOBAL_ONLY);
-	    Tcl_DecrRefCount(temp);
-	    Lang_TraceVar(interp, msgPtr->textVarName,
+	    Tcl_TraceVar(interp, msgPtr->textVarName,
 		    TCL_GLOBAL_ONLY|TCL_TRACE_WRITES|TCL_TRACE_UNSETS,
 		    MessageTextVarProc, clientData);
 	}
 	return (char *) NULL;
     }
 
-    value = Tcl_GetString(Tcl_ObjGetVar2(interp, msgPtr->textVarName, NULL, TCL_GLOBAL_ONLY));
+    value = LangString(Tcl_GetVar(interp, msgPtr->textVarName, TCL_GLOBAL_ONLY));
     if (value == NULL) {
 	value = "";
     }
     if (msgPtr->string != NULL) {
 	ckfree(msgPtr->string);
     }
-    msgPtr->numChars = Tcl_NumUtfChars(value, -1);
-    msgPtr->string = (char *) ckalloc((unsigned) (strlen(value) + 1));
+    msgPtr->numChars = strlen(value);
+    msgPtr->string = (char *) ckalloc((unsigned) (msgPtr->numChars + 1));
     strcpy(msgPtr->string, value);
     ComputeMessageGeometry(msgPtr);
 
@@ -904,5 +921,3 @@ MessageTextVarProc(clientData, interp, name1, name2, flags)
     }
     return (char *) NULL;
 }
-
-

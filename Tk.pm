@@ -1,7 +1,7 @@
 #
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 
 # modify it under the same terms as Perl itself, subject
@@ -9,23 +9,13 @@
 # derivation from Tk8.0 sources.
 #
 package Tk;
-require 5.007;
+require 5.00404;
 use     Tk::Event ();
 use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 use base qw(Exporter DynaLoader);
 
 *fileevent = \&Tk::Event::IO::fileevent;
-
-use Encode;
-$Tk::encode_fallback = Encode::FB_QUIET();
-
-our %font_encoding = ('jis0208' => 'jis0208-raw',
-                      'jis0212' => 'jis0212-raw',
-                      'ksc5601' => 'ksc5601-raw',
-                      'gb2312'  => 'gb2312-raw',
-                      'unicode' => 'ucs-2le',
-                     );
 
 BEGIN {
  if($^O eq 'cygwin')
@@ -41,7 +31,6 @@ BEGIN {
 };
 
 $Tk::tearoff = 1 if ($Tk::platform eq 'unix');
-
 
 @EXPORT    = qw(Exists Ev exit MainLoop DoOneEvent tkinit);
 @EXPORT_OK = qw(NoOp after *widget *event lsearch catch $XS_VERSION
@@ -62,9 +51,9 @@ use Carp;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
-$Tk::version     = '8.4';
-$Tk::patchLevel  = '8.4';
-$Tk::VERSION     = '804.024';
+$Tk::version     = '8.0';
+$Tk::patchLevel  = '8.0';
+$Tk::VERSION     = '800.025';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 
@@ -147,18 +136,15 @@ sub NoOp  { }
 
 sub Ev
 {
- my @args = @_;
- my $obj;
- if (@args == 1)
+ if (@_ == 1)
   {
-   my $arg = pop(@args);
-   $obj = (ref $arg) ? $arg : \$arg;
+   my $arg = $_[0];
+   return bless (((ref $arg) ? $arg : \$arg), 'Tk::Ev');
   }
  else
   {
-   $obj = \@args;
+   return bless [@_],'Tk::Ev';
   }
- return bless $obj,'Tk::Ev';
 }
 
 sub InitClass
@@ -240,23 +226,6 @@ sub Methods
   }
 }
 
-my %dialog = ( tk_chooseColor => 'ColorDialog',
-               tk_messageBox  => 'MessageBox',
-               tk_getOpenFile => 'FDialog',
-               tk_getSaveFile => 'FDialog',
-               tk_chooseDirectory => 'FDialog'
-             );
-
-foreach my $dialog (keys %dialog)
- {
-  no strict 'refs';
-  unless (defined &$dialog)
-   {
-    my $kind = $dialog;
-    my $code = \&{"Tk::$dialog{$dialog}"};
-    *$dialog = sub { &$code($kind,@_) };
-   }
- }
 
 sub MessageBox {
     my ($kind,%args) = @_;
@@ -275,7 +244,7 @@ sub MessageBox {
                       split(/(abort|retry|ignore|yes|no|cancel|ok)/,
                             lc($type))));
 	$args->{-buttons} = [@buttons];
-	$args->{-default_button} = delete $args->{-default} if
+	$args->{-default_button} = ucfirst(delete $args->{-default}) if
 	    defined $args->{-default};
 	if (not defined $args->{-default_button} and scalar(@buttons) == 1) {
 	   $args->{-default_button} = $buttons[0];
@@ -290,8 +259,18 @@ sub MessageBox {
 sub messageBox
 {
  my ($widget,%args) = @_;
- $args{'-type'} = (exists $args{'-type'}) ? lc($args{'-type'}) : 'ok';
- tk_messageBox(-parent => $widget, %args);
+ # remove in a later version:
+ if (exists $args{'-text'})
+  {
+   warn "The -text option is deprecated. Please use -message instead";
+   if (!exists $args{'-message'})
+    {
+     $args{'-message'} = delete $args{'-text'};
+    }
+  }
+ $args{'-type'}    = (exists $args{'-type'})    ? lc($args{'-type'}) : 'ok';
+ $args{'-default'} = lc($args{'-default'}) if (exists $args{'-default'});
+ ucfirst tk_messageBox(-parent => $widget, %args);
 }
 
 sub getOpenFile
@@ -386,7 +365,7 @@ sub TranslateFileName
  local $_ = shift;
  unless (defined $Home)
   {
-   $Home = $ENV{'HOME'} || ($ENV{'HOMEDRIVE'}.$ENV{'HOMEPATH'});
+   $Home = $ENV{'HOME'} || (defined $ENV{'HOMEDRIVE'} && defined $ENV{'HOMEPATH'} ? $ENV{'HOMEDRIVE'}.$ENV{'HOMEPATH'} : "");
    $Home =~ s#\\#/#g;
    $Home .= '/' unless $Home =~ m#/$#;
   }
@@ -412,28 +391,6 @@ sub idletasks
 {
  shift->update('idletasks');
 }
-
-sub backtrace
-{
- my ($self,$msg) = @_;
- my $i = 1;
- my ($pack,$file,$line,$sub) = caller($i++);
- while (1)
-  {
-   my $loc = "at $file line $line";
-   ($pack,$file,$line,$sub) = caller($i++);
-   last unless defined($sub);
-   $msg .= " $sub $loc\n";
-  }
- return $msg;
-}
-
-sub die_with_trace
-{
- my ($self,$msg) = @_;
- die $self->backtrace($msg);
-}
-
 
 
 1;
@@ -741,41 +698,6 @@ sub lsearch
  return -1;
 }
 
-
-sub getEncoding
-{
- my ($class,$name) = @_;
- eval { require Encode };
- if ($@)
-  {
-   require Tk::DummyEncode;
-   return Tk::DummyEncode->getEncoding($name);
-  }
- $name = $Tk::font_encoding{$name} if exists $Tk::font_encoding{$name};
- my $enc = Encode::find_encoding($name);
-
- unless ($enc)
-  {
-   $enc = Encode::find_encoding($name) if ($name =~ s/[-_]\d+$//)
-  }
-# if ($enc)
-#  {
-#   print STDERR "Lookup '$name' => ".$enc->name."\n";
-#  }
-# else
-#  {
-#   print STDERR "Failed '$name'\n";
-#  }
- unless ($enc)
-  {
-   if ($name eq 'X11ControlChars')
-    {
-     require Tk::DummyEncode;
-     $Encode::encoding{$name} = $enc = Tk::DummyEncode->getEncoding($name);
-    }
-  }
- return $enc;
-}
 
 
 

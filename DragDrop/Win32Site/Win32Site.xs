@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -19,9 +19,9 @@
 #include "pTk/tkInt.h"
 #include "pTk/tixPort.h"
 #include "pTk/tixInt.h"
+#include "pTk/tkVMacro.h"
 #include "tkGlue.h"
 #include "tkGlue.m"
-#include "pTk/tkVMacro.h"
 
 DECLARE_VTABLES;
 
@@ -35,7 +35,6 @@ HWND	win
 BOOL 	flag
 CODE:
  {
-  LangDebug("Accept %x %d\n",win,flag);
   DragAcceptFiles(win,flag);
  }
 
@@ -63,11 +62,11 @@ PPCODE:
     SV *sv = newSVpv("",0);
     SvGROW(sv,len+1);
     len = DragQueryFile(drop,i,SvPVX(sv),SvLEN(sv));
-    SvCUR(sv) = len;
+    SvCUR(sv) = len; 
     XPUSHs(sv_2mortal(sv));
    }
   DragFinish(drop);
-  PUTBACK;
+  PUTBACK; 
  }
 
 BOOT:

@@ -9,23 +9,15 @@ package Plot;
 #
 # Advertised Plot widgets:  canvas, entry, PostScript_button, view_button.
 
-require 5.002;
+require 5.005_03;
 
 use vars qw/$VERSION @ISA/;
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Plot.pm#2 $
+$VERSION = '3.016'; # $Id: //depot/Tk8/demos/demos/widget_lib/Plot.pm#16 $
 
 use Tk::Frame;
-use base  qw(Tk::Frame);
+use base  qw/Tk::Frame/;
 Construct Tk::Widget 'Plot';
 use strict;
-
-# Plot Virtual Methods
-#
-# 	$plot = $MW->Plot(
-#           -title_color        => 'Brown',
-#           -inactive_highlight => 'Skyblue2',
-#           -active_highlight   => 'red',
-#       );
 
 sub Populate {
 

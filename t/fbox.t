@@ -35,7 +35,7 @@ eval {
 };
 ok($@, "", "creating Tk::FBox widget");
 
-$f->after(1000, sub { $f->destroy });
+$top->after(300, sub { $f->destroy });
 $f->Show;
 ok(1);
 
@@ -58,7 +58,8 @@ eval {
 		   );
 };
 ok($@, "", "creating Tk::FBox widget for save");
-$f->after(1000, sub { $f->destroy });
+
+$top->after(300, sub { $f->destroy });
 $f->Show;
 ok(1);
 

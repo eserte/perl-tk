@@ -3,7 +3,7 @@
 #ifndef _IMG
 #define _IMG
 
-#include "Lang.h"
+#include "tcl.h"
 #include "tk.h"
 
 #define IMG_MAJOR_VERSION 1

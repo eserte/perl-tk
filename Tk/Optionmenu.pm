@@ -1,13 +1,12 @@
-# Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Optionmenu;
 require Tk::Menubutton;
 require Tk::Menu;
-use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tk/Optionmenu.pm#9 $
+$VERSION = '3.029'; # $Id: //depot/Tk8/Tk/Optionmenu.pm#29 $
 
 use base  qw(Tk::Derived Tk::Menubutton);
 
@@ -20,7 +19,14 @@ sub Populate
  my ($w,$args) = @_;
  $w->SUPER::Populate($args);
  $args->{-indicatoron} = 1;
+ my $var = delete $args->{-textvariable};
+ unless (defined $var)
+  {
+   my $gen = undef;
+   $var = \$gen;
+  }
  my $menu = $w->menu(-tearoff => 0);
+ $w->configure(-textvariable => $var);
 
  # Should we allow -menubackground etc. as in -label* of Frame ?
 
@@ -28,6 +34,7 @@ sub Populate
                  -options => ['METHOD', undef, undef, undef],
 		 -variable=> ['PASSIVE', undef, undef, undef],
 		 -font    => [['SELF',$menu], undef, undef, undef],
+		 -foreground => [['SELF', 'CHILDREN'], undef, undef, undef],
 
    -takefocus          => [ qw/SELF takefocus          Takefocus          1/ ],
    -highlightthickness => [ qw/SELF highlightThickness HighlightThickness 1/ ],
@@ -37,47 +44,27 @@ sub Populate
 
  # configure -variable and -command now so that when -options
  # is set by main-line configure they are there to be set/called.
-
- my $tvar = delete $args->{-textvariable};
- my $vvar = delete $args->{-variable};
- if (!defined($vvar))
-  {
-   if (defined $tvar)
-    {
-     $vvar = $tvar;
-    }
-   else
-    {
-     my $new;
-     $vvar = \$new;
-    }
-  }
- $tvar = $vvar if (!defined($tvar));
- $w->configure(-textvariable => $tvar, -variable => $vvar);
- $w->configure(-command  => $vvar) if ($vvar = delete $args->{-command});
+ $w->configure(-variable => $var) if ($var = delete $args->{-variable});
+ $w->configure(-command  => $var) if ($var = delete $args->{-command});
 }
 
 sub setOption
 {
  my ($w, $label, $val) = @_;
- my $tvar = $w->cget(-textvariable);
- my $vvar = $w->cget(-variable);
- if (@_ == 2)
-  {
-   $val = $label;
-  }
- $$tvar = $label if $tvar;
- $$vvar = $val   if $vvar;
+ $val = $label if @_ == 2;
+ my $var = $w->cget(-textvariable);
+ $$var = $label;
+ $var = $w->cget(-variable);
+ $$var = $val if $var;
  $w->Callback(-command => $val);
 }
 
 sub addOptions
 {
- my $w     = shift;
- my $menu  = $w->menu;
- my $tvar  = $w->cget(-textvariable);
- my $vvar  = $w->cget(-variable);
- my $oldt  = $$tvar;
+ my $w = shift;
+ my $menu = $w->menu;
+ my $var = $w->cget(-textvariable);
+ my $old = $$var;
  my $width = $w->cget('-width');
  my %hash;
  my $first;
@@ -87,11 +74,6 @@ sub addOptions
    my $label = $val;
    if (ref $val)
     {
-     if ($vvar == $tvar)
-      {
-       my $new = $label;
-       $w->configure(-textvariable => ($tvar = \$new));
-      }
      ($label, $val) = @$val;
     }
    my $len = length($label);
@@ -100,7 +82,7 @@ sub addOptions
    $hash{$label} = $val;
    $first = $label unless defined $first;
   }
- if (!defined($oldt) || !exists($hash{$oldt}))
+ if (!defined($old) || !exists($hash{$old}))
   {
    $w->setOption($first, $hash{$first}) if defined $first;
   }

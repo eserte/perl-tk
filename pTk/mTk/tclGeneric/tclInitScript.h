@@ -1,14 +1,20 @@
-/*
+/* 
  * tclInitScript.h --
  *
  *	This file contains Unix & Windows common init script
  *      It is not used on the Mac. (the mac init script is in tclMacInit.c)
+ *	This file should only be included once in the entire set of C
+ *	source files for Tcl (by the respective platform initialization
+ *	C source file, tclUnixInit.c and tclWinInit.c) and thus the
+ *	presence of the routine, TclSetPreInitScript, below, should be
+ *	harmless.
  *
  * Copyright (c) 1998 Sun Microsystems, Inc.
- * Copyright (c) 1999 by Scriptics Corporation.
- * All rights reserved.
  *
- * RCS: @(#) $Id: tclInitScript.h,v 1.13 2001/09/10 21:06:55 dgp Exp $
+ * See the file "license.terms" for information on usage and redistribution
+ * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+ *
+ * RCS: @(#) $Id: tclInitScript.h,v 1.8 1998/10/23 22:22:15 welch Exp $
  */
 
 /*
@@ -26,8 +32,28 @@
  *				  from a static C variable that was set at
  *				  compile time
  *
- *	$tcl_libPath		- this value is initialized by a call to
- *				  TclGetLibraryPath called from Tcl_Init.
+ *	<executable directory>/../lib/tcl$tcl_version
+ *				- look for a lib/tcl<ver> in a sibling of
+ *				  the bin directory (e.g. install hierarchy)
+ *
+ *	<executable directory>/../../lib/tcl$tcl_version
+ *				- look for a lib/tcl<ver> in a sibling of
+ *				  the bin/arch directory
+ *
+ *	<executable directory>/../library
+ *				- look in build directory
+ *
+ *	<executable directory>/../../library
+ *				- look in build directory from unix/arch
+ *
+ *	<executable directory>/../../tcl$tcl_patchLevel/library
+ *				- look for tcl build directory relative
+ *				  to a parallel build directory (e.g. Tk)
+ *
+ *	<executable directory>/../../../tcl$tcl_patchLevel/library
+ *				- look for tcl build directory relative
+ *				  to a parallel build directory from
+ *				  down inside unix/arch directory
  *
  * The first directory on this path that contains a valid init.tcl script
  * will be set as the value of tcl_library.
@@ -38,7 +64,7 @@
 
 static char initScript[] = "if {[info proc tclInit]==\"\"} {\n\
   proc tclInit {} {\n\
-    global tcl_libPath tcl_library errorInfo\n\
+    global tcl_library tcl_version tcl_patchLevel errorInfo\n\
     global env tclDefaultLibrary\n\
     rename tclInit {}\n\
     set errors {}\n\
@@ -49,18 +75,27 @@ static char initScript[] = "if {[info proc tclInit]==\"\"} {\n\
 	if {[info exists env(TCL_LIBRARY)]} {\n\
 	    lappend dirs $env(TCL_LIBRARY)\n\
 	}\n\
-	catch {\n\
-	    lappend dirs $tclDefaultLibrary\n\
-	    unset tclDefaultLibrary\n\
+	lappend dirs $tclDefaultLibrary\n\
+	unset tclDefaultLibrary\n\
+	set parentDir [file dirname [file dirname [info nameofexecutable]]]\n\
+	lappend dirs [file join $parentDir lib tcl$tcl_version]\n\
+	lappend dirs [file join [file dirname $parentDir] lib tcl$tcl_version]\n\
+	lappend dirs [file join $parentDir library]\n\
+	lappend dirs [file join [file dirname $parentDir] library]\n\
+	if {[string match {*[ab]*} $tcl_patchLevel]} {\n\
+	    set ver $tcl_patchLevel\n\
+	} else {\n\
+	    set ver $tcl_version\n\
 	}\n\
-        set dirs [concat $dirs $tcl_libPath]\n\
+	lappend dirs [file join [file dirname $parentDir] tcl$ver library]\n\
+	lappend dirs [file join [file dirname [file dirname $parentDir]] tcl$ver library]\n\
     }\n\
     foreach i $dirs {\n\
 	set tcl_library $i\n\
 	set tclfile [file join $i init.tcl]\n\
 	if {[file exists $tclfile]} {\n\
 	    if {![catch {uplevel #0 [list source $tclfile]} msg]} {\n\
-		return\n\
+	        return\n\
 	    } else {\n\
 		append errors \"$tclfile: $msg\n$errorInfo\n\"\n\
 	    }\n\
@@ -75,16 +110,15 @@ static char initScript[] = "if {[info proc tclInit]==\"\"} {\n\
 }\n\
 tclInit";
 
-
 /*
  * A pointer to a string that holds an initialization script that if non-NULL
  * is evaluated in Tcl_Init() prior to the the built-in initialization script
  * above.  This variable can be modified by the procedure below.
  */
-
+ 
 static char *          tclPreInitScript = NULL;
 
-
+
 /*
  *----------------------------------------------------------------------
  *

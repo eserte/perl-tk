@@ -1,6 +1,3 @@
-
-/*	$Id: tixDiImg.c,v 1.1.1.1 2000/05/17 11:08:38 idiscovery Exp $	*/
-
 /*
  * tixDiImgTxt.c --
  *
@@ -33,7 +30,7 @@ static Tk_ConfigSpec imageItemConfigSpecs[] = {
        DEF_IMAGEITEM_IMAGE, Tk_Offset(TixImageItem, imageString),
        TK_CONFIG_NULL_OK},
 
-    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType",
+    {TK_CONFIG_CUSTOM, "-itemtype", "itemType", "ItemType", 
        DEF_IMAGEITEM_TYPE, Tk_Offset(TixImageItem, diTypePtr),
        0, &tixConfigItemType},
 
@@ -53,8 +50,8 @@ static Tk_ConfigSpec imageItemConfigSpecs[] = {
  */
 
 
-#define SELECTED_BG SELECT_BG
-#define DISABLED_BG DISABLED
+#define SELECTED_BG SELECT_BG 
+#define DISABLED_BG DISABLED  
 
 #define DEF_IMAGESTYLE_NORMAL_FG_COLOR		BLACK
 #define DEF_IMAGESTYLE_NORMAL_FG_MONO		BLACK
@@ -89,7 +86,7 @@ static Tk_ConfigSpec imageStyleConfigSpecs[] = {
        (char *) NULL, 0, 0},
     {TK_CONFIG_SYNONYM, "-fg", "foreground", (char *) NULL,
        (char *) NULL, 0, 0},
-
+ 
     {TK_CONFIG_PIXELS, "-padx", "padX", "Pad",
        DEF_IMAGESTYLE_PADX, Tk_Offset(TixImageStyle, pad[0]), 0},
 
@@ -424,7 +421,7 @@ static void Tix_ImageItemLostStyle(iPtr)
 
     Tix_ImageItemStyleChanged(iPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -458,7 +455,7 @@ ImageProc(clientData, x, y, width, height, imgWidth, imgHeight)
 	itPtr->ddPtr->sizeChangedProc((Tix_DItem *)itPtr);
     }
 }
-
+
 /*----------------------------------------------------------------------
  *
  *
@@ -491,7 +488,7 @@ Tix_ImageStyleCreate(interp, tkwin, diTypePtr, name)
 
     return (Tix_DItemStyle *)stylePtr;
 }
-
+
 static int
 Tix_ImageStyleConfigure(style, argc, argv, flags)
     Tix_DItemStyle *style;
@@ -540,7 +537,7 @@ Tix_ImageStyleConfigure(style, argc, argv, flags)
 
     return TCL_OK;
 }
-
+
 static void Tix_ImageStyleFree(style)
     Tix_DItemStyle *style;
 {

@@ -46,6 +46,34 @@ The amount of internal horizontal padding around the pages.
 
 The amount of internal vertical padding around the pages.
 
+=item B<-backpagecolor>
+
+The background color of the tabs and back page.
+
+=item B<-disabledforeground>
+
+XXX
+
+=item B<-focuscolor>
+
+The color of the focus border around the tabs.
+
+=item B<-font>
+
+The font of the tab labels.
+
+=item B<-inactivebackground>
+
+XXX
+
+=item B<-tabpadx>
+
+Horizonzal padding around the tab label.
+
+=item B<-tabpady>
+
+Vertical padding around the tab label.
+
 =back
 
 =head1 METHODS
@@ -142,6 +170,11 @@ the values accepted in the B<add> method.
 Like configure for the page indicated by I<pageName>. I<Options> may
 be any of the options accepted by the B<add> method.
 
+=item B<pages>
+
+Returns a list consisting of the names of all currently defined
+pages, i.e., those created with the B<add> method.
+
 =item B<raise(>I<pageName>B<)>
 
 Raise the page identified by I<pageName>.
@@ -149,6 +182,35 @@ Raise the page identified by I<pageName>.
 =item B<raised()>
 
 Returns the name of the currently raised page.
+
+=item B<geometryinfo>
+
+Return the dimensions of the tab area.
+
+=item B<identify(>I<x>,I<y>B<)>
+
+Identify the tab's page name under the specified coordinates. Return
+an empty string if there's no tab.
+
+=item B<info(E<quot>pagesE<quot>)>
+
+Return a list of all pages.
+
+=item B<info(E<quot>focusE<quot>)>
+
+Return the page name of the tab with the current focus.
+
+=item B<info(E<quot>focusnextE<quot>)>
+
+Return the page name of the tab which would receive the next focus.
+
+=item B<info(E<quot>focusprevE<quot>)>
+
+Return the page name of the tab which had the previous focus.
+
+=item B<info(E<quot>activeE<quot>)>
+
+Return the page name of the active tab.
 
 =back
 

@@ -1,6 +1,3 @@
-
-/*	$Id: tixHLHdr.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  *  tixHLHdr.c ---
  *
@@ -126,11 +123,11 @@ Tix_HLGetHeader(interp, wPtr, string, requireIPtr)
 {
     int column;
 
-    if (Tcl_GetIntFromObj(interp, string, &column) != TCL_OK) {
+    if (Tcl_GetInt(interp, string, &column) != TCL_OK) {
 	return NULL;
     }
     if (column >= wPtr->numColumns || column < 0) {
-	Tcl_AppendResult(interp, "Column \"", Tcl_GetString(string),
+	Tcl_AppendResult(interp, "Column \"", LangString(string),
 	    "\" does not exist", (char*)NULL);
 	return NULL;
     }
@@ -356,7 +353,7 @@ Tix_HLHeader(clientData, interp, argc, argv)
     return Tix_HandleSubCmds(&cmdInfo, subCmdInfo, clientData,
 	interp, argc+1, argv-1);
 }
-
+
 /*----------------------------------------------------------------------
  * "header cget" sub command
  *----------------------------------------------------------------------
@@ -378,7 +375,7 @@ Tix_HLHdrCGet(clientData, interp, argc, argv)
     return Tix_ConfigureValue2(interp, wPtr->dispData.tkwin,
 	(char*)hPtr, headerConfigSpecs, hPtr->iPtr, argv[1], 0);
 }
-
+
 /*----------------------------------------------------------------------
  * "header configure" sub command
  *----------------------------------------------------------------------
@@ -421,7 +418,7 @@ Tix_HLHdrConfig(clientData, interp, argc, argv)
     }
 }
 
-
+
 /*----------------------------------------------------------------------
  * "header create" sub command
  *----------------------------------------------------------------------
@@ -548,7 +545,7 @@ Tix_HLHdrExist(clientData, interp, argc, argv)
 
     return TCL_OK;
 }
-
+
 /*----------------------------------------------------------------------
  * "header size" sub command
  *----------------------------------------------------------------------

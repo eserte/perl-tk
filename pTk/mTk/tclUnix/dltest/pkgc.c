@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: pkgc.c,v 1.4 2000/04/04 08:06:07 hobbs Exp $
+ * RCS: @(#) $Id: pkgc.c,v 1.2 1998/09/14 18:40:18 stanton Exp $
  */
 #include "tcl.h"
 
@@ -18,15 +18,15 @@
  * Prototypes for procedures defined later in this file:
  */
 
-static int    Pkgc_SubObjCmd _ANSI_ARGS_((ClientData clientData,
-		Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]));
-static int    Pkgc_UnsafeObjCmd _ANSI_ARGS_((ClientData clientData,
-		Tcl_Interp *interp, int objc, Tcl_Obj * CONST objv[]));
+static int	Pkgc_SubCmd _ANSI_ARGS_((ClientData clientData,
+		    Tcl_Interp *interp, int argc, char **argv));
+static int	Pkgc_UnsafeCmd _ANSI_ARGS_((ClientData clientData,
+		    Tcl_Interp *interp, int argc, char **argv));
 
 /*
  *----------------------------------------------------------------------
  *
- * Pkgc_SubObjCmd --
+ * Pkgc_SubCmd --
  *
  *	This procedure is invoked to process the "pkgc_sub" Tcl command.
  *	It expects two arguments and returns their difference.
@@ -41,23 +41,24 @@ static int    Pkgc_UnsafeObjCmd _ANSI_ARGS_((ClientData clientData,
  */
 
 static int
-Pkgc_SubObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;		/* Not used. */
-    Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj * CONST objv[];	/* Argument objects. */
+Pkgc_SubCmd(dummy, interp, argc, argv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
 {
     int first, second;
 
-    if (objc != 3) {
-	Tcl_WrongNumArgs(interp, 1, objv, "num num");
+    if (argc != 3) {
+	Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+		" num num\"", (char *) NULL);
 	return TCL_ERROR;
     }
-    if ((Tcl_GetIntFromObj(interp, objv[1], &first) != TCL_OK)
-	    || (Tcl_GetIntFromObj(interp, objv[2], &second) != TCL_OK)) {
+    if ((Tcl_GetInt(interp, argv[1], &first) != TCL_OK)
+	    || (Tcl_GetInt(interp, argv[2], &second) != TCL_OK)) {
 	return TCL_ERROR;
     }
-    Tcl_SetObjResult(interp, Tcl_NewIntObj(first - second));
+    sprintf(interp->result, "%d", first - second);
     return TCL_OK;
 }
 
@@ -79,13 +80,13 @@ Pkgc_SubObjCmd(dummy, interp, objc, objv)
  */
 
 static int
-Pkgc_UnsafeObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;		/* Not used. */
-    Tcl_Interp *interp;		/* Current interpreter. */
-    int objc;			/* Number of arguments. */
-    Tcl_Obj * CONST objv[];	/* Argument objects. */
+Pkgc_UnsafeCmd(dummy, interp, argc, argv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int argc;				/* Number of arguments. */
+    char **argv;			/* Argument strings. */
 {
-    Tcl_SetObjResult(interp, Tcl_NewStringObj("unsafe command invoked", -1));
+    interp->result = "unsafe command invoked";
     return TCL_OK;
 }
 
@@ -113,17 +114,14 @@ Pkgc_Init(interp)
 {
     int code;
 
-    if (Tcl_InitStubs(interp, TCL_VERSION, 1) == NULL) {
-	return TCL_ERROR;
-    }
     code = Tcl_PkgProvide(interp, "Pkgc", "1.7.2");
     if (code != TCL_OK) {
 	return code;
     }
-    Tcl_CreateObjCommand(interp, "pkgc_sub", Pkgc_SubObjCmd,
-	    (ClientData) 0, (Tcl_CmdDeleteProc *) NULL);
-    Tcl_CreateObjCommand(interp, "pkgc_unsafe", Pkgc_UnsafeObjCmd,
-	    (ClientData) 0, (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "pkgc_sub", Pkgc_SubCmd, (ClientData) 0,
+	    (Tcl_CmdDeleteProc *) NULL);
+    Tcl_CreateCommand(interp, "pkgc_unsafe", Pkgc_UnsafeCmd, (ClientData) 0,
+	    (Tcl_CmdDeleteProc *) NULL);
     return TCL_OK;
 }
 
@@ -149,16 +147,7 @@ Pkgc_SafeInit(interp)
     Tcl_Interp *interp;		/* Interpreter in which the package is
 				 * to be made available. */
 {
-    int code;
-
-    if (Tcl_InitStubs(interp, TCL_VERSION, 1) == NULL) {
-	return TCL_ERROR;
-    }
-    code = Tcl_PkgProvide(interp, "Pkgc", "1.7.2");
-    if (code != TCL_OK) {
-      return code;
-    }
-    Tcl_CreateObjCommand(interp, "pkgc_sub", Pkgc_SubObjCmd, (ClientData) 0,
+    Tcl_CreateCommand(interp, "pkgc_sub", Pkgc_SubCmd, (ClientData) 0,
 	    (Tcl_CmdDeleteProc *) NULL);
     return TCL_OK;
 }

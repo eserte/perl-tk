@@ -28,7 +28,7 @@ sub about_pop_up
 		{
 		my $pop = $TOP->Toplevel();
 		$pop->title("About");
-
+	
 		$pop->Label(text=>"Gedi (Gregs EDItor)")->pack();
 		$pop->Label(text=>"Ver. 1.0")->pack();
 		$pop->Label(text=>"Copyright 1999")->pack();
@@ -63,7 +63,7 @@ sub update_indicators
 
 	my $mode = $textwindow->OverstrikeMode;
 	my $overstrke_insert='Insert Mode';
-	if ($mode)
+	if ($mode) 
 		{$overstrke_insert='Overstrike Mode';}
 	$insert_overstrike_mode_label->configure
 		(text=> "$overstrke_insert");
@@ -71,7 +71,7 @@ sub update_indicators
 	my $filename = $textwindow->FileName;
 	$filename = 'NoName' unless(defined($filename));
 	my $edit_flag='';
-	if($textwindow->numberChanges)
+	if($textwindow->numberChanges) 
  		{$edit_flag='edited';}
 	$TOP->configure(-title => "Gedi  $edit_flag $filename");
 	$textwindow->idletasks;
@@ -93,7 +93,7 @@ sub Gedi {
         -iconname         => 'GEDI',
     );
 
-
+$TOP->withdraw;
 
 $text_frame = $TOP->Frame->pack
 	(-anchor=>'nw', expand=>'yes', -fill => 'both'); # autosizing
@@ -102,44 +102,44 @@ $counter_frame = $TOP->Frame->pack(-anchor=>'nw');
 $textwindow = $text_frame->Scrolled(
 	'TextEdit',
 	exportselection => 'true',  # 'sel' tag is associated with selections
-	# initial height, if it isnt 1, then autosizing fails
+	# initial height, if it isnt 1, then autosizing fails 
 	# once window shrinks below height
 	# and the line counters go off the screen.
 	# seems to be a problem with the Tk::pack command;
-	height => 40,
+#	height => 40, 	 
 	-background => 'white',
-	-wrap=> 'none',
+	-wrap=> 'none', 
 	-setgrid => 'true', # use this for autosizing
 	-scrollbars =>'se')
 	-> pack(-expand => 'yes' , -fill => 'both');	# autosizing
 
 $TOP->protocol('WM_DELETE_WINDOW'=>
- sub{$textwindow->ConfirmExit;}
+ sub{$textwindow->ConfirmExit;} 
  );
 
 $SIG{INT} = sub {$textwindow->ConfirmExit;};
 
 $current_line_label = $counter_frame
-	-> Label(text=>'line: 1')
+	-> Label(text=>'line: 1') 
 	-> grid(-row=>1,-column=>1, -sticky=>'nw' );
 
 $total_line_label = $counter_frame
-	-> Label(text=>'total lines: 1')
+	-> Label(text=>'total lines: 1') 
 	-> grid(-row=>2,-column=>1, -sticky=>'nw' );
 
 $current_column_label = $counter_frame
-	-> Label(text=>'column: 0')
+	-> Label(text=>'column: 0') 
 	-> grid(-row=>3,-column=>1, -sticky=>'nw' );
 
 $insert_overstrike_mode_label = $counter_frame
-	-> Label(text=>' ')
+	-> Label(text=>' ') 
 	-> grid(-row=>5,-column=>1, -sticky=>'nw' );
 
 $textwindow->SetGUICallbacks (
  [
-  \&update_indicators,
+  \&update_indicators, 
   sub{$textwindow->HighlightAllPairsBracketingCursor}
- ]
+ ] 
 );
 
 $menu = $textwindow->menu;
@@ -160,25 +160,34 @@ $textwindow->ResetUndo;
 
 $textwindow->CallNextGUICallback;
 
+# adjust height
+$TOP->update;
+my $menuheight = ($TOP->wrapper)[1];
+my $TOPheight = 30 + $TOP->reqheight + $menuheight;
+if ($TOP->screenheight < $TOPheight) {
+    $textwindow->GeometryRequest($textwindow->reqwidth, $textwindow->reqheight - ($TOPheight - $TOP->screenheight));
+}
+$TOP->deiconify;
+
 }
 
 
 __DATA__
 
-Tk800.015 contains many modifications to the
-text based modules, as well as new text modules
+Tk800.015 contains many modifications to the 
+text based modules, as well as new text modules 
 and an application that uses them all.
 Text.pm, TextUndo.pm, TextEdit.pm, and gedi
 have all been updated since the release prior
-to Tk800.015.
+to Tk800.015.  
 
 This demo contains a rundown of all the features
-of the text modules, and
+of the text modules, and 
 
 What is available in the text modules?
 ================================================
 
-Text.pm
+Text.pm 
 ========
 
 Text.pm is the base text editing module.
@@ -191,16 +200,16 @@ Line Number queries.
 These functions are available simply by right
 clicking the mouse over the text area. Doing
 so will cause a pop-up menu to appear which will
-contain cascading menus to give access to all of
+contain cascading menus to give access to all of 
 these new functions.
 
-Many of these functions will create their own
+Many of these functions will create their own 
 pop-up windows. Find/Replace will create a pop-up
 window which contains an entry for text to
 find, an entry for replace text, a number of
-radio buttons to control options such as
+radio buttons to control options such as 
 case sensitivity, and several command buttons to
-perform functions such as Find, Find All,
+perform functions such as Find, Find All, 
 Replace, Replace All.
 
 All of these features have corresponding methods
@@ -219,13 +228,13 @@ Column based copy/cut/paste features are also
 available in the Text.pm module. They are bound
 to the following keys:
 
-<F1> clipboardColumnCopy
-<F2> clipboardColumnCut
-<F3> clipboardColumnPaste
+<F1> clipboardColumnCopy 
+<F2> clipboardColumnCut 
+<F3> clipboardColumnPaste 
 
 Currently, column based operations are beta versions.
-They compensate for tabs, but they will not behave
-properly unless the text is all the same font, and
+They compensate for tabs, but they will not behave 
+properly unless the text is all the same font, and 
 is the same width per character.
 
 Hopefully some future version of Text.pm will correct
@@ -238,7 +247,7 @@ TextUndo.pm
 =============
 
 TextUndo.pm is the second level module, being
-derived from the Text.pm module. As it's name
+derived from the Text.pm module. As it's name 
 implies, TextUndo supports "UNDO" capability.
 It now also supports "REDO" capability.
 
@@ -254,14 +263,14 @@ if you delete text with tags, undo will re-insert
 the text and re-tag it as well. This will eventually
 allow the text modules to support more sophisticated
 word processing type features. Such functionality
-should be available in a future release of the
+should be available in a future release of the 
 text modules.
 
-The TextUndo.pm module also has several added
+The TextUndo.pm module also has several added 
 features to support file based operations.
 File based methods include ->Save, ->Load, and
-->Include. All methods take a filename as a
-parameter. These methods will create a progress
+->Include. All methods take a filename as a 
+parameter. These methods will create a progress 
 widget to indicate the progress of the operation.
 
 The other feature of the TextUndo.pm module
@@ -270,7 +279,7 @@ see if the text has been modified since it was
 last saved. If it has been modified, and the
 it will create a pop-up menu asking the user
 if they want to save the text to a file before
-exiting. This method can easily be tied into
+exiting. This method can easily be tied into 
 the exit routines, and signal handlers, to provide
 a consistent "save before exit?" feel.
 
@@ -281,9 +290,9 @@ The TextEdit.pm is a new module in prototype version
 which adds further features to the text modules.
 TextEdit is based off of the TextUndo module,
 and so has all of the features of TextUndo and
-Text.
+Text. 
 
-Features of the TextEdit.pm module include
+Features of the TextEdit.pm module include 
 parenthesis matching. The module looks at the
 current cursor position and then tries to find
 the parenthesis that bracket the cursor.
@@ -338,9 +347,9 @@ for application level indicators which reflect
 the status of certain internals.  The line and
 column position of the cursor, the total length
 of the file, whether the widget is in insert or
-overstrike mode.  Anytime anything occurs that could
+overstrike mode.  Anytime anything occurs that could 
 affect these values, a user supplied callback
-is invoked. This callback is supplied by the
+is invoked. This callback is supplied by the 
 application so that the application can update
 whatever indicators it uses, however it implements
 them.
@@ -349,25 +358,25 @@ One other feature of the TextEdit.pm module is
 block level text indention and block level text
 commenting. If a block of text is selected,
 that text can be indented or unindented wiht
-a single keystroke. It can also be commented
+a single keystroke. It can also be commented 
 out or uncommented as well. The keystroke bindings
 that support this are:
 
-<F5> IndentSelectedLines
-<F6> UnindentSelectedLines
+<F5> IndentSelectedLines  
+<F6> UnindentSelectedLines  
 
-<F7> CommentSelectedLines
-<F8> UncommentSelectedLines
+<F7> CommentSelectedLines  
+<F8> UncommentSelectedLines  
 
-These bindings only operate on the currently
+These bindings only operate on the currently 
 selected text. The indent string and the comment
-string can be programmed to be anything, but
+string can be programmed to be anything, but 
 defaults to "\t" (tab) for indent and "#" for
 comments.
 
-(currently the widget hash is used to store these values.
+(currently the widget hash is used to store these values. 
 $w->{'INDENT_STRING'} and $w->{'LINE_COMMENT_STRING'}
-At some point in the future, this will be changed to
+At some point in the future, this will be changed to 
 use configure options to set these values.
 any application that changes these values should do
 so in such a way that when the TextEdit module changes,
@@ -380,7 +389,7 @@ gedi application
 gedi is short for Greg's EDItor.
 The "g" is soft, pronounced like a "j".
 
-The gedi application uses all of the features of
+The gedi application uses all of the features of 
 the text modules, Text, TextUndo, and TextEdit.
 It supplies TextEdit with a callback to update
 the indicator displays. This information includes
@@ -388,13 +397,13 @@ the current cursor position, insert/overstrike
 mode, length of the file, filename, and whether
 the file has been edited or not.
 
-The bottom of this display contains
+The bottom of this display contains 
 line number
 column number
 total lines
 insert/overstrike mode.
 
-The title bar contains
+The title bar contains 
 filename
 and if the file has been edited, the word "edited".
 
@@ -402,7 +411,7 @@ Where gedi is installed depends on your system,
 but it is part of the tarkit for Tk800.015 and above.
 
 gedi was created to be put a perl editor in with the
-perl tar kit.
+perl tar kit. 
 
 NOTE: THIS IS NOT THE ACTUAL GEDI APPLICATION, BUT
 A DEMO SET UP TO BE SIMILAR IN NATURE TO THE GEDI

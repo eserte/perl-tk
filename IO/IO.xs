@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2000 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -49,7 +49,7 @@ int mask;
    nIO_read *info = (nIO_read *) clientData;
    SV *buf = info->buf;
    int count;
-   SvGROW(buf,info->offset+info->len+1);
+   SvGROW(buf,(Size_t) (info->offset+info->len+1));
    count = read(PerlIO_fileno(info->f),SvPVX(buf)+info->offset,(size_t) info->len);
    if (count == 0)
     {
@@ -294,5 +294,5 @@ InputStream	f
 
 BOOT:
  {
-  TkeventVptr  = (TkeventVtab *) SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD));
+  TkeventVptr  = INT2PTR(TkeventVtab *, SvIV(perl_get_sv("Tk::TkeventVtab",GV_ADDWARN|GV_ADD)));
  }

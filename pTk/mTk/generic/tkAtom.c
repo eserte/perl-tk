@@ -1,4 +1,4 @@
-/*
+/* 
  * tkAtom.c --
  *
  *	This file manages a cache of X Atoms in order to avoid
@@ -13,7 +13,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkAtom.c,v 1.3 2002/08/05 04:30:38 dgp Exp $
+ * RCS: @(#) $Id: tkAtom.c,v 1.2 1998/09/14 18:23:03 stanton Exp $
  */
 
 #include "tkPort.h"
@@ -56,7 +56,7 @@ static char * atomNameArray[] = {
  */
 
 static void	AtomInit _ANSI_ARGS_((TkDisplay *dispPtr));
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -80,7 +80,7 @@ Atom
 Tk_InternAtom(tkwin, name)
     Tk_Window tkwin;		/* Window token;  map name to atom
 				 * for this window's display. */
-    CONST char *name;		/* Name to turn into atom. */
+    char *name;			/* Name to turn into atom. */
 {
     register TkDisplay *dispPtr;
     register Tcl_HashEntry *hPtr;
@@ -104,7 +104,7 @@ Tk_InternAtom(tkwin, name)
     }
     return (Atom) Tcl_GetHashValue(hPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -127,7 +127,7 @@ Tk_InternAtom(tkwin, name)
  *--------------------------------------------------------------
  */
 
-CONST char *
+char *
 Tk_GetAtomName(tkwin, atom)
     Tk_Window tkwin;		/* Window token;  map atom to name
 				 * relative to this window's
@@ -168,9 +168,9 @@ Tk_GetAtomName(tkwin, atom)
 		&new);
 	Tcl_SetHashValue(hPtr, name);
     }
-    return Tcl_GetHashValue(hPtr);
+    return (char *) Tcl_GetHashValue(hPtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *

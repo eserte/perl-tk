@@ -1,7 +1,7 @@
 package Tk::Adjuster;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Adjuster.pm#4 $
+$VERSION = '3.028'; # $Id: //depot/Tk8/Tk/Adjuster.pm#28 $
 
 use base  qw(Tk::Frame);
 

@@ -1,6 +1,3 @@
-
-/*	$Id: tixImgXpm.c,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixImgXpm.c --
  *
@@ -24,13 +21,13 @@
  */
 
 static int		ImgXpmCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, Tcl_Obj *CONST *objv,
+			    char *name, int argc, Tcl_Obj **objv,
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgXpmGet _ANSI_ARGS_((Tk_Window tkwin,
 			    ClientData clientData));
 static void		ImgXpmDisplay _ANSI_ARGS_((ClientData clientData,
-			    Display *display, Drawable drawable,
+			    Display *display, Drawable drawable, 
 			    int imageX, int imageY, int width, int height,
 			    int drawableX, int drawableY));
 static void		ImgXpmFree _ANSI_ARGS_((ClientData clientData,
@@ -43,14 +40,14 @@ static void		ImgXpmCmdDeletedProc _ANSI_ARGS_((
 static void		ImgXpmConfigureInstance _ANSI_ARGS_((
 			    PixmapInstance *instancePtr));
 static int		ImgXpmConfigureMaster _ANSI_ARGS_((
-			    PixmapMaster *masterPtr, int argc, Tcl_Obj *CONST *objv,
+			    PixmapMaster *masterPtr, int argc, Tcl_Obj **objv,
 			    int flags));
 static int		ImgXpmGetData _ANSI_ARGS_((Tcl_Interp *interp,
 			    PixmapMaster *masterPtr));
 static char ** 		ImgXpmGetDataFromFile _ANSI_ARGS_((Tcl_Interp * interp,
 			    char * string, int * numLines_return));
 static char ** 		ImgXpmGetDataFromId _ANSI_ARGS_((Tcl_Interp * interp,
-			    Tk_Uid id));
+			    char * id));
 static char ** 		ImgXpmGetDataFromString _ANSI_ARGS_((Tcl_Interp*interp,
 			    char * string, int * numLines_return));
 static void 		ImgXpmGetPixmapFromData _ANSI_ARGS_((
@@ -84,7 +81,7 @@ Tk_ImageType tixPixmapImageType = {
     ImgXpmDisplay,		/* displayProc */
     ImgXpmFree,			/* freeProc */
     ImgXpmDelete,		/* deleteProc */
-    NULL,			/* postscriptProc */
+    NULL,			/* postscriptProc */ 
     (Tk_ImageType *) NULL	/* nextPtr */
 };
 
@@ -95,7 +92,7 @@ Tk_ImageType tixPixmapImageType = {
 static Tcl_HashTable xpmTable;
 static int xpmTableInited = 0;
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -118,7 +115,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 				 * image. */
     char *name;			/* Name to use for image. */
     int argc;			/* Number of arguments. */
-    Tcl_Obj *CONST *objv;	/* Argument strings for options (doesn't
+    Tcl_Obj **objv;		/* Argument strings for options (doesn't
 				 * include image name or type). */
     Tk_ImageType *typePtr;	/* Pointer to our type record (not used). */
     Tk_ImageMaster master;	/* Token for image, to be used by us in
@@ -127,7 +124,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 				 * it will be returned in later callbacks. */
 {
     PixmapMaster *masterPtr;
-    int i;
+    int i;      
 
 #ifndef _LANG
     char *argvbuf[10];
@@ -141,7 +138,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     }
     for (i = 0; i < argc; i++) {
 	argv[i] = TixGetStringFromObj(objv[i], NULL);
-    }
+    }        
 #endif /* _LANG */
 
     masterPtr = (PixmapMaster *) ckalloc(sizeof(PixmapMaster));
@@ -164,7 +161,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     *clientDataPtr = (ClientData) masterPtr;
     return TCL_OK;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -192,7 +189,7 @@ ImgXpmConfigureMaster(masterPtr, argc, objv, flags)
     PixmapMaster *masterPtr;	/* Pointer to data structure describing
 				 * overall pixmap image to (reconfigure). */
     int argc;			/* Number of entries in argv. */
-    Tcl_Obj *CONST *objv;	/* Pairs of configuration options for image. */
+    Tcl_Obj **objv;		/* Pairs of configuration options for image. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget,
 				 * such as TK_CONFIG_ARGV_ONLY. */
 {
@@ -255,7 +252,7 @@ ImgXpmConfigureMaster(masterPtr, argc, objv, flags)
     masterPtr->id = oldId;
     return TCL_ERROR;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -311,7 +308,7 @@ ImgXpmGetData(interp, masterPtr)
     }
 
     /* Parse the first line of the data and get info about this pixmap */
-    count = sscanf(data[0],"%i %i %i %i",
+    count = sscanf(data[0],"%i %i %i %i", 
 		   &size[0], &size[1], &ncolors, &cpp);
 
     if (count != 4) {
@@ -349,10 +346,10 @@ ImgXpmGetData(interp, masterPtr)
 
     return code;
 }
-
+
 static char ** ImgXpmGetDataFromId(interp, id)
     Tcl_Interp * interp;
-    Tk_Uid id;
+    char * id;
 {
     Tcl_HashEntry * hashPtr;
 
@@ -370,7 +367,7 @@ static char ** ImgXpmGetDataFromId(interp, id)
 	return (char**)Tcl_GetHashValue(hashPtr);
     }
 }
-
+
 static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
     Tcl_Interp * interp;
     char * string;
@@ -438,7 +435,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
     }
 
     bytes += (numLines + 1) * sizeof(char *);
-    data  = (char **) ckalloc(bytes);
+    data  = (char **) ckalloc(bytes); 
 
     memset((VOID *) data, 0, bytes );
 
@@ -500,7 +497,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
     return data;
 
   error:
-    if (data) {
+    if (data) { 
 	ckfree((char *) data);
 	data = NULL;
     }
@@ -508,7 +505,7 @@ static char ** ImgXpmGetDataFromString(interp, string, numLines_return)
     *numLines_return = 0;
     return (char**) NULL;
 }
-
+
 static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
     Tcl_Interp * interp;
     char * fileName;
@@ -658,7 +655,7 @@ GetColor(colorDefn, colorName, type_ret)
 	if (GetType(colorDefn, &dummy) == NULL) {
 	    /* the next string should also be considered as a part of a color
 	     * name */
-
+	    
 	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
@@ -675,7 +672,7 @@ GetColor(colorDefn, colorName, type_ret)
 
     return colorDefn;
 }
-
+
 /*----------------------------------------------------------------------
  * ImgXpmGetPixmapFromData --
  *
@@ -790,7 +787,7 @@ ImgXpmGetPixmapFromData(interp, masterPtr, instancePtr)
 	} else {
 	    strncpy(colors[i].cstring, masterPtr->data[i+lOffset],
 		(size_t)masterPtr->cpp);
-	}
+	} 
 
 	if (found) {
 	    if (strcasecmp(useName, "none") != 0) {
@@ -832,7 +829,7 @@ ImgXpmGetPixmapFromData(interp, masterPtr, instancePtr)
 		}
 	    } else {
 		for (k=0; k<masterPtr->ncolors; k++) {
-		    if (strncmp(p, colors[k].cstring,
+		    if (strncmp(p, colors[k].cstring, 
 			    (size_t)masterPtr->cpp) == 0) {
 			TixpXpmSetPixel(instancePtr, image, mask, j, i,
 			        colors[k].colorPtr, &isTransp);
@@ -851,7 +848,7 @@ ImgXpmGetPixmapFromData(interp, masterPtr, instancePtr)
     TixpXpmRealizePixmap(masterPtr, instancePtr, image, mask, isTransp);
     TixpXpmFreeTmpBuffer(masterPtr, instancePtr, image, mask);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -907,7 +904,7 @@ ImgXpmConfigureInstance(instancePtr)
      */
     ImgXpmGetPixmapFromData(masterPtr->interp, masterPtr, instancePtr);
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -980,7 +977,7 @@ ImgXpmCmd(clientData, interp, argc, argv)
 	     instancePtr = instancePtr->nextPtr) {
 	    count += instancePtr->refCount;
 	}
-	Tcl_SetIntObj(Tcl_GetObjResult(interp), count);
+	Tcl_IntResults(interp, 1, 0, count);
 	return TCL_OK;
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],
@@ -988,7 +985,7 @@ ImgXpmCmd(clientData, interp, argc, argv)
 	return TCL_ERROR;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1062,7 +1059,7 @@ ImgXpmGet(tkwin, masterData)
 
     return (ClientData) instancePtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1095,7 +1092,7 @@ ImgXpmDisplay(clientData, display, drawable, imageX, imageY, width,
     TixpXpmDisplay(clientData, display, drawable, imageX, imageY, width,
 	height, drawableX, drawableY);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1160,7 +1157,7 @@ ImgXpmFree(clientData, display)
     }
     ckfree((char *) instancePtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1201,7 +1198,7 @@ ImgXpmDelete(masterData)
     Tk_FreeOptions(configSpecs, (char *) masterPtr, (Display *) NULL, 0);
     ckfree((char *) masterPtr);
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1234,7 +1231,7 @@ ImgXpmCmdDeletedProc(clientData)
     }
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1275,4 +1272,3 @@ Tix_DefinePixmap(interp, name, data)
     Tcl_SetHashValue(hshPtr, (char*)data);
     return TCL_OK;
 }
-

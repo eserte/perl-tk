@@ -7,7 +7,7 @@
 package Tk::Pane;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Pane.pm#4 $
+$VERSION = '3.011'; # $Id: //depot/Tk8/Tk/Pane.pm#11 $
 
 use Tk;
 use Tk::Widget;

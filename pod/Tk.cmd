@@ -1,12 +1,12 @@
 # This is a command file for pod2ps
-#
-cover true
+# 
+cover true                 
 booktitle 'Perl/Tk Reference'
 release 'Version Tk800.019'
 author 'Nick Ing-Simmons'
 linkbox off color
 pagesize a4
-output tkman.ps
+output tkman.ps 
 path .
 beginBookmark 'Contents'
 file ../Tk.pod '' 'Contents' ''

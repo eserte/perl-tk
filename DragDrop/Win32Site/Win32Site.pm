@@ -1,14 +1,11 @@
 package Tk::DragDrop::Win32Site;
 
 use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/Win32Site/Win32Site.pm#2 $
+$VERSION = '3.009'; # $Id: //depot/Tk8/DragDrop/Win32Site/Win32Site.pm#9 $
 
 use Tk qw($XS_VERSION);
 require DynaLoader;
 require Tk::DropSite;
-
-use vars qw($VERSION);
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/DragDrop/Win32Site/Win32Site.pm#2 $
 
 use base qw(Tk::DropSite DynaLoader);
 

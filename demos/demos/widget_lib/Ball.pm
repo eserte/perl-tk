@@ -9,16 +9,16 @@ package Ball;
 #
 # Essentially, move_all_balls() is invoked to move all of the balls in a
 # simulation's @BALLS list once - from their current to their new postion.
-# After moving one ball a call to DoOneEvent() is made to handle pending
-# XEvents.  The *user* of this  module, in this case bounce.pl, has their
-# own main loop which also calls DoOneEvent() and move_all_balls() to keep
+# After moving one ball a call to DoOneEvent() is made to handle pending 
+# XEvents.  The *user* of this  module, in this case bounce.pl, has their 
+# own main loop which also calls DoOneEvent() and move_all_balls() to keep 
 # the simulation active.
 #
 # Gurusamy Sarathy (gsar@engin.umich.edu)
 # Tidied up by SOL.
 
 use vars qw/$VERSION/;
-$VERSION = '4.002'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Ball.pm#2 $
+$VERSION = '3.009'; # $Id: //depot/Tk8/demos/demos/widget_lib/Ball.pm#9 $
 
 use Tk::Canvas;
 use Tk::Widget;
@@ -53,7 +53,7 @@ sub new {			# Ball object constructor
     @args{@missing_args} = @DEFAULTS{@missing_args};
     my($color, $size, $pos, $vel) = @args{-color, -size, -position, -velocity};
 
-    my $ball = $canvas->create('oval',
+    my $ball = $canvas->create('oval', 
         ($pos->[0] - ($size/2.0)), ($pos->[1] - ($size/2.0)),
         ($pos->[0] + ($size/2.0)), ($pos->[1] + ($size/2.0)),
         -fill => $color,
@@ -64,7 +64,7 @@ sub new {			# Ball object constructor
 
     my $ball_obj = {'canvas_ID' => $ball,
 		    'canvas'    => $canvas,
-		    'color'     => $color,
+		    'color'     => $color, 
 		    'size'      => $size,
 		    'pos'       => [@$pos],
 		    'vel'       => [@$vel],
@@ -86,7 +86,7 @@ sub get_canvas_hash {
 
     return $canvas
 
-} # end get_canvas_hash
+} # end get_canvas_hash    
 
 sub move_one_ball {
 

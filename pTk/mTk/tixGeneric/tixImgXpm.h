@@ -1,6 +1,3 @@
-
-/*	$Id: tixImgXpm.h,v 1.1.1.1 2000/05/17 11:08:42 idiscovery Exp $	*/
-
 /*
  * tixImgXpm.h --
  *
@@ -53,7 +50,7 @@ typedef struct PixmapMaster {
     int size[2];		/* width and height */
     int ncolors;		/* number of colors */
     int cpp;			/* characters per pixel */
-    char ** data;		/* The data that defines this pixmap
+    char ** data;		/* The data that defines this pixmap 
 				 * image (array of strings). It is
 				 * converted into an X Pixmap when this
 				 * image is instanciated

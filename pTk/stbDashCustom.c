@@ -1,28 +1,28 @@
 #include "tkPort.h"
-#include "tkInt.h"
+#include "tk.h"
 #include "tkVMacro.h"
 
 int
-TkStateParseProc (clientData, interp, tkwin, value, widgRec, offset)
+Tk_StateParseProc (clientData, interp, tkwin, value, widgRec, offset)
 ClientData clientData;
 Tcl_Interp *interp;
 Tk_Window tkwin;
 Arg value;
 char *widgRec;
 int offset;
-{
- return Tk_StateParseProc(clientData, interp, tkwin, value, widgRec, offset);
+{                 
+ return TkStateParseProc(clientData, interp, tkwin, value, widgRec, offset);
 }
 
 Arg
-TkStatePrintProc (clientData, tkwin, widgRec, offset, freeProcPtr)
+Tk_StatePrintProc (clientData, tkwin, widgRec, offset, freeProcPtr)
 ClientData clientData;
 Tk_Window tkwin;
 char *widgRec;
 int offset;
 Tcl_FreeProc **freeProcPtr;
 {
- return Tk_StatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr);
+ return TkStatePrintProc(clientData, tkwin, widgRec, offset, freeProcPtr);
 }
 
 
@@ -34,7 +34,7 @@ Tk_Window tkwin;
 Arg value;
 char *widgRec;
 int offset;
-{
+{                 
  return TkTileParseProc(clientData, interp, tkwin, value, widgRec, offset);
 }
 
@@ -58,7 +58,7 @@ Tk_Window tkwin;
 Arg value;
 char *widgRec;
 int offset;
-{
+{                 
  return TkOffsetParseProc(clientData, interp, tkwin, value, widgRec, offset);
 }
 
@@ -81,7 +81,7 @@ Tk_Window tkwin;
 Arg value;
 char *widgRec;
 int offset;
-{
+{                 
  return TkOrientParseProc(clientData, interp, tkwin, value, widgRec, offset);
 }
 
@@ -104,7 +104,7 @@ Tk_Window tkwin;
 Arg value;
 char *widgRec;
 int offset;
-{
+{                 
  return TkPixelParseProc(clientData, interp, tkwin, value, widgRec, offset);
 }
 

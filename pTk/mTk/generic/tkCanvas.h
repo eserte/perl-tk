@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkCanvas.h,v 1.5 2002/08/05 04:30:38 dgp Exp $
+ * RCS: @(#) $Id: tkCanvas.h,v 1.3 1998/10/13 18:13:06 rjohnson Exp $
  */
 
 #ifndef _TKCANVAS
@@ -224,9 +224,11 @@ typedef struct TkCanvas {
 				 * no Postscript is currently being
 				 * generated. */
     Tcl_HashTable idTable;	/* Table of integer indices. */
+
     /*
      * Additional information, added by the 'dash'-patch
      */
+
     Tk_State canvas_state;	/* state of canvas */
     Tk_Tile tile;
     Tk_Tile disabledTile;
@@ -236,7 +238,6 @@ typedef struct TkCanvas {
 #endif
     /* pTk additions */
     Tk_Item *activeGroup;		/* Which group item is active */
-    Tcl_Obj *updateCmds;
 } TkCanvas;
 
 /*
@@ -288,15 +289,6 @@ typedef struct TkCanvas {
  */
 
 #define FORCE_REDRAW		8
-#define NEEDS_DISPLAY		16
-
-/*
- * Canvas-related procedures that are shared among Tk modules but not
- * exported to the outside world:
- */
-
-extern int		TkCanvPostscriptCmd _ANSI_ARGS_((TkCanvas *canvasPtr,
-			    Tcl_Interp *interp, int argc, CONST84 Tcl_Obj *CONST *objv));
 
 /*
  * The following definition is shared between tkCanvPs.c and tkCanvImg.c,
@@ -314,26 +306,24 @@ typedef struct TkColormapData {	/* Hold color information for a window */
 
 #define Tk_CanvasActiveGroup(canvas) ((TkCanvas *) (canvas))->activeGroup
 
-#define Tk_CanvasGroupHidden(canvas,itemPtr) (             \
+#define Tk_CanvasGroupHidden(canvas,itemPtr)               \
  ( Tk_CanvasActiveGroup(canvas) &&                         \
    (itemPtr)->group != Tk_CanvasActiveGroup(canvas)) ||    \
  ( (itemPtr)->group &&                                     \
    (itemPtr)->group != Tk_CanvasActiveGroup(canvas) &&     \
-   (itemPtr)->group->state != TK_STATE_ACTIVE ))
+   (itemPtr)->group->state != TK_STATE_ACTIVE )
 
-#define Tk_GetItemState(canvas,itemPtr)                    \
+#define Tk_GetItemState(canvas,itemPtr)                         \
 (                                                          \
- (0 && Tk_CanvasGroupHidden(canvas,itemPtr))               \
-  ? TK_STATE_HIDDEN                                        \
-  : (((itemPtr)->state == TK_STATE_NULL)                   \
-    ? ((TkCanvas *)(canvas))->canvas_state                 \
-    : (itemPtr)->state                                     \
-    )                                                      \
+ Tk_CanvasGroupHidden(canvas,itemPtr)                      \
+    ? TK_STATE_HIDDEN                                           \
+    : (((itemPtr)->state == TK_STATE_NULL)                      \
+      ? ((TkCanvas *)(canvas))->canvas_state                    \
+      : (itemPtr)->state                                        \
+      )                                                         \
 )
+
 
 EXTERN void		TkGroupRemoveItem _ANSI_ARGS_((Tk_Item *item));
 
 #endif /* _TKCANVAS */
-
-
-

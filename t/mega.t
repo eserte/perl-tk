@@ -33,7 +33,7 @@ eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacemen
 	    my ($cw,$args) = @_;
 	    $cw->SUPER::Populate($args);
 	    my $b1 = $cw->Component('Button'=>'b1', -delegate=>["invoke"]);
-	    $b1->pack;
+	    $b1->pack;	
             $cw;
           }
         package main;

@@ -8,9 +8,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWin32Dll.c,v 1.4 2000/03/31 09:24:26 hobbs Exp $
+ * RCS: @(#) $Id: tkWin32Dll.c,v 1.2 1998/09/14 18:23:59 stanton Exp $
  */
 
+#include "tkPort.h"
 #include "tkWinInt.h"
 
 static HINSTANCE tclInstance;	/* Global library instance handle. */
@@ -71,7 +72,6 @@ DllMain(hInstance, reason, reserved)
     DWORD reason;
     LPVOID reserved;
 {
-
     /*
      * If we are attaching to the DLL from a new process, tell Tk about
      * the hInstance to use. If we are detaching then clean up any
@@ -87,7 +87,7 @@ DllMain(hInstance, reason, reserved)
     return(TRUE);
 }
 
-/*
+/* 
  * TkWin32DllPresent() can be referenced elsewhere to
  * force inclusion of this file and hence DLLMain()
  */

@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkMenubutton.h,v 1.8 2001/10/12 13:30:31 tmh Exp $
+ * RCS: @(#) $Id: tkMenubutton.h,v 1.4 1998/09/14 18:23:15 stanton Exp $
  */
 
 #ifndef _TKMENUBUTTON
@@ -20,31 +20,10 @@
 #endif
 #include "tkVMacro.h"
 
-#ifndef _TKMENU
-#include "tkMenu.h"
-#endif
-
 #ifdef BUILD_tk
 # undef TCL_STORAGE_CLASS
 # define TCL_STORAGE_CLASS DLLEXPORT
 #endif
-
-/*
- * Legal values for the "orient" field of TkMenubutton records.
- */
-
-enum direction {
-    DIRECTION_ABOVE, DIRECTION_BELOW, DIRECTION_FLUSH,
-    DIRECTION_LEFT, DIRECTION_RIGHT
-};
-
-/*
- * Legal values for the "state" field of TkMenubutton records.
- */
-
-enum state {
-    STATE_ACTIVE, STATE_DISABLED, STATE_NORMAL
-};
 
 /*
  * A data structure of the following type is kept for each
@@ -61,9 +40,7 @@ typedef struct {
 				 * freed up even after tkwin has gone away. */
     Tcl_Interp *interp;		/* Interpreter associated with menubutton. */
     Tcl_Command widgetCmd;	/* Token for menubutton's widget command. */
-    Tk_OptionTable optionTable;	/* Table that defines configuration options
-				 * available for this widget. */
-    Tk_Window menuName;		/* Name of menu associated with widget.
+    char *menuName;		/* Name of menu associated with widget.
 				 * Malloc-ed. */
 
     /*
@@ -73,7 +50,7 @@ typedef struct {
     char *text;			/* Text to display in button (malloc'ed)
 				 * or NULL. */
     int underline;		/* Index of character to underline. */
-    Tcl_Obj *textVarName;		/* Name of variable (malloc'ed) or NULL.
+    Var textVarName;		/* Name of variable (malloc'ed) or NULL.
 				 * If non-NULL, button displays the contents
 				 * of this variable. */
     Pixmap bitmap;		/* Bitmap to display or None.  If not None
@@ -89,7 +66,7 @@ typedef struct {
      * Information used when displaying widget:
      */
 
-    enum state state;          	/* State of button for display purposes:
+    Tk_State state;		/* State of button for display purposes:
 				 * normal, active, or disabled. */
     Tk_3DBorder normalBorder;	/* Structure used to draw 3-D
 				 * border and background when window
@@ -134,8 +111,8 @@ typedef struct {
     int leftBearing;		/* Distance from text origin to leftmost drawn
 				 * pixel (positive means to right). */
     int rightBearing;		/* Amount text sticks right from its origin. */
-    Tcl_Obj *widthString;	/* Value of -width option.  Malloc'ed. */
-    Tcl_Obj *heightString;	/* Value of -height option.  Malloc'ed. */
+    Arg widthString;		/* Value of -width option.  Malloc'ed. */
+    Arg heightString;		/* Value of -height option.  Malloc'ed. */
     int width, height;		/* If > 0, these specify dimensions to request
 				 * for window, in characters for text and in
 				 * pixels for bitmaps.  In this case the actual
@@ -167,11 +144,7 @@ typedef struct {
      * Miscellaneous information:
      */
 
-    int compound;               /* Value of -compound option; specifies whether
-                                 * the menubutton should show both an image and
-                                 * text, and, if so, how. */
-
-    enum direction direction;	/* Direction for where to pop the menu.
+    Tk_Uid direction;		/* Direction for where to pop the menu.
     				 * Valid directions are "above", "below",
     				 * "left", "right", and "flush". "flush"
     				 * means that the upper left corner of the
@@ -188,6 +161,9 @@ typedef struct {
 				 * scripts.  Malloc'ed, but may be NULL. */
     int flags;			/* Various flags;  see below for
 				 * definitions. */
+    Tk_Tile tile, activeTile, disabledTile;
+    Tk_TSOffset tsoffset;
+    GC tileGC;
 } TkMenuButton;
 
 /*
@@ -220,11 +196,11 @@ typedef struct {
  * Declaration of variables shared between the files in the button module.
  */
 
-extern Tk_ClassProcs tkpMenubuttonClass;
+extern TkClassProcs tkpMenubuttonClass;
 
 /*
  * Declaration of procedures used in the implementation of the button
- * widget.
+ * widget. 
  */
 
 EXTERN void		TkpComputeMenuButtonGeometry _ANSI_ARGS_((

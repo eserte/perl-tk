@@ -10,7 +10,7 @@ my $mw = MainWindow->new;
 
 
 # Uncomment next line to avoid the warning - this a test of the warning
-# use Tk::TextUndo;
+# use Tk::TextUndo;       
 my $t1 = $mw->Scrolled('TextUndo', -wrap => 'none');
 my $lb = $mw->Scrolled('Listbox');
 $lb->packAdjust(-side => 'left', -fill => 'both', -delay => 1);

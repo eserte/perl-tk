@@ -1,17 +1,16 @@
-/*
+/* 
  * tclAppInit.c --
  *
  *	Provides a default version of the main program and Tcl_AppInit
  *	procedure for Tcl applications (without Tk).  Note that this
  *	program must be built in Win32 console mode to work properly.
  *
- * Copyright (c) 1996-1997 by Sun Microsystems, Inc.
- * Copyright (c) 1998-1999 by Scriptics Corporation.
+ * Copyright (c) 1996 by Sun Microsystems, Inc.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclAppInit.c,v 1.8 2002/02/21 21:20:08 davygrvy Exp $
+ * RCS: @(#) $Id: tclAppInit.c,v 1.4 1999/02/03 02:58:26 stanton Exp $
  */
 
 #include "tcl.h"
@@ -23,14 +22,11 @@ extern int		Procbodytest_Init _ANSI_ARGS_((Tcl_Interp *interp));
 extern int		Procbodytest_SafeInit _ANSI_ARGS_((Tcl_Interp *interp));
 extern int		Tcltest_Init _ANSI_ARGS_((Tcl_Interp *interp));
 extern int		TclObjTest_Init _ANSI_ARGS_((Tcl_Interp *interp));
-#ifdef TCL_THREADS
-extern int		TclThread_Init _ANSI_ARGS_((Tcl_Interp *interp));
-#endif
 #endif /* TCL_TEST */
 
 static void		setargv _ANSI_ARGS_((int *argcPtr, char ***argvPtr));
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -53,36 +49,16 @@ main(argc, argv)
     int argc;			/* Number of command-line arguments. */
     char **argv;		/* Values of command-line arguments. */
 {
-    /*
-     * The following #if block allows you to change the AppInit
-     * function by using a #define of TCL_LOCAL_APPINIT instead
-     * of rewriting this entire file.  The #if checks for that
-     * #define and uses Tcl_AppInit if it doesn't exist.
-     */
-
-#ifndef TCL_LOCAL_APPINIT
-#define TCL_LOCAL_APPINIT Tcl_AppInit
-#endif
-    extern int TCL_LOCAL_APPINIT _ANSI_ARGS_((Tcl_Interp *interp));
-
-    /*
-     * The following #if block allows you to change how Tcl finds the startup
-     * script, prime the library or encoding paths, fiddle with the argv,
-     * etc., without needing to rewrite Tcl_Main()
-     */
-
-#ifdef TCL_LOCAL_MAIN_HOOK
-    extern int TCL_LOCAL_MAIN_HOOK _ANSI_ARGS_((int *argc, char ***argv));
-#endif
-
-    char buffer[MAX_PATH +1];
     char *p;
+    char buffer[MAX_PATH];
+
     /*
      * Set up the default locale to be standard "C" locale so parsing
      * is performed correctly.
      */
 
     setlocale(LC_ALL, "C");
+
     setargv(&argc, &argv);
 
     /*
@@ -98,16 +74,11 @@ main(argc, argv)
 	}
     }
 
-#ifdef TCL_LOCAL_MAIN_HOOK
-    TCL_LOCAL_MAIN_HOOK(&argc, &argv);
-#endif
-
-    Tcl_Main(argc, argv, TCL_LOCAL_APPINIT);
-
+    Tcl_Main(argc, argv, Tcl_AppInit);
     return 0;			/* Needed only to prevent compiler warning. */
 }
 
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -119,7 +90,7 @@ main(argc, argv)
  *
  * Results:
  *	Returns a standard Tcl completion code, and leaves an error
- *	message in the interp's result if an error occurs.
+ *	message in interp->result if an error occurs.
  *
  * Side effects:
  *	Depends on the startup script.
@@ -144,11 +115,6 @@ Tcl_AppInit(interp)
     if (TclObjTest_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
     }
-#ifdef TCL_THREADS
-    if (TclThread_Init(interp) == TCL_ERROR) {
-	return TCL_ERROR;
-    }
-#endif
     if (Procbodytest_Init(interp) == TCL_ERROR) {
 	return TCL_ERROR;
     }
@@ -182,14 +148,14 @@ Tcl_AppInit(interp)
     Tcl_SetVar(interp, "tcl_rcFileName", "~/tclshrc.tcl", TCL_GLOBAL_ONLY);
     return TCL_OK;
 }
-
+
 /*
  *-------------------------------------------------------------------------
  *
  * setargv --
  *
  *	Parse the Windows command line string into argc/argv.  Done here
- *	because we don't trust the builtin argument parser in crt0.
+ *	because we don't trust the builtin argument parser in crt0.  
  *	Windows applications are responsible for breaking their command
  *	line into arguments.
  *
@@ -218,8 +184,8 @@ setargv(argcPtr, argvPtr)
     char *cmdLine, *p, *arg, *argSpace;
     char **argv;
     int argc, size, inquote, copy, slashes;
-
-    cmdLine = GetCommandLine();	/* INTL: BUG */
+    
+    cmdLine = GetCommandLine();
 
     /*
      * Precompute an overly pessimistic guess at the number of arguments
@@ -228,9 +194,9 @@ setargv(argcPtr, argvPtr)
 
     size = 2;
     for (p = cmdLine; *p != '\0'; p++) {
-	if ((*p == ' ') || (*p == '\t')) {	/* INTL: ISO space. */
+	if (isspace(*p)) {
 	    size++;
-	    while ((*p == ' ') || (*p == '\t')) { /* INTL: ISO space. */
+	    while (isspace(*p)) {
 		p++;
 	    }
 	    if (*p == '\0') {
@@ -238,8 +204,8 @@ setargv(argcPtr, argvPtr)
 	    }
 	}
     }
-    argSpace = (char *) Tcl_Alloc(
-	    (unsigned) (size * sizeof(char *) + strlen(cmdLine) + 1));
+    argSpace = (char *) ckalloc((unsigned) (size * sizeof(char *) 
+	    + strlen(cmdLine) + 1));
     argv = (char **) argSpace;
     argSpace += size * sizeof(char *);
     size--;
@@ -247,7 +213,7 @@ setargv(argcPtr, argvPtr)
     p = cmdLine;
     for (argc = 0; argc < size; argc++) {
 	argv[argc] = arg = argSpace;
-	while ((*p == ' ') || (*p == '\t')) {	/* INTL: ISO space. */
+	while (isspace(*p)) {
 	    p++;
 	}
 	if (*p == '\0') {
@@ -281,8 +247,7 @@ setargv(argcPtr, argvPtr)
 		slashes--;
 	    }
 
-	    if ((*p == '\0')
-		    || (!inquote && ((*p == ' ') || (*p == '\t')))) { /* INTL: ISO space. */
+	    if ((*p == '\0') || (!inquote && isspace(*p))) {
 		break;
 	    }
 	    if (copy != 0) {

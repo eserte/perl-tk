@@ -1,4 +1,4 @@
-/*
+/* 
  * tkWinImage.c --
  *
  *	This file contains routines for manipulation full-color images.
@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkWinImage.c,v 1.4 2002/03/26 20:13:39 chengyemao Exp $
+ * RCS: @(#) $Id: tkWinImage.c,v 1.2 1998/09/14 18:24:00 stanton Exp $
  */
 
 #include "tkWinInt.h"
@@ -17,7 +17,7 @@ static int		DestroyImage _ANSI_ARGS_((XImage* data));
 static unsigned long	ImageGetPixel _ANSI_ARGS_((XImage *image, int x, int y));
 static int		ImgPutPixel _ANSI_ARGS_((XImage *image, int x, int y,
 			    unsigned long pixel));
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -35,7 +35,7 @@ static int		ImgPutPixel _ANSI_ARGS_((XImage *image, int x, int y,
  *----------------------------------------------------------------------
  */
 
-static int
+int
 DestroyImage(imagePtr)
      XImage *imagePtr;		/* image to free */
 {
@@ -47,7 +47,7 @@ DestroyImage(imagePtr)
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -64,7 +64,7 @@ DestroyImage(imagePtr)
  *----------------------------------------------------------------------
  */
 
-static unsigned long
+unsigned long
 ImageGetPixel(image, x, y)
     XImage *image;
     int x, y;
@@ -95,7 +95,7 @@ ImageGetPixel(image, x, y)
     }
     return pixel;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -142,7 +142,7 @@ ImgPutPixel(image, x, y, pixel)
 	     * Pixel is WORD: 5-5-5 (R-G-B)
 	     */
 
-	    (*(WORD*)destPtr) =
+	    (*(WORD*)destPtr) = 
 		((GetRValue(pixel) & 0xf8) << 7)
 		| ((GetGValue(pixel) & 0xf8) <<2)
 		| ((GetBValue(pixel) & 0xf8) >> 3);
@@ -182,8 +182,7 @@ ImgPutPixel(image, x, y, pixel)
     }
     return 0;
 }
-
-
+
 static int
 ImgDestroy(image)
 XImage *image;
@@ -195,7 +194,7 @@ XImage *image;
     }
     return 0;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -234,7 +233,7 @@ XCreateImage(display, visual, depth, format, offset, data, width, height,
     imagePtr->data = data;
     imagePtr->byte_order = LSBFirst;
     imagePtr->bitmap_unit = 8;
-    imagePtr->bitmap_bit_order = LSBFirst;
+    imagePtr->bitmap_bit_order = MSBFirst;
     imagePtr->bitmap_pad = bitmap_pad;
     imagePtr->bits_per_pixel = depth;
     imagePtr->depth = depth;
@@ -268,10 +267,10 @@ XCreateImage(display, visual, depth, format, offset, data, width, height,
     imagePtr->f.create_image = NULL;
     imagePtr->f.sub_image = NULL;
     imagePtr->f.add_pixel = NULL;
-
+    
     return imagePtr;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -340,4 +339,3 @@ XGetImage(display, d, x, y, width, height, plane_mask, format)
 
     return imagePtr;
 }
-

@@ -1,4 +1,4 @@
-/*
+/* 
  * tkEvent.c --
  *
  *	This file provides basic low-level facilities for managing
@@ -6,12 +6,12 @@
  *
  * Copyright (c) 1990-1994 The Regents of the University of California.
  * Copyright (c) 1994-1995 Sun Microsystems, Inc.
- * Copyright (c) 1998-2000 Ajuba Solutions.
+ * Copyright (c) 1998 by Scriptics Corporation.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tkEvent.c,v 1.16 2002/06/19 19:37:54 mdejong Exp $
+ * RCS: @(#) $Id: tkEvent.c,v 1.3 1998/10/10 00:30:36 rjohnson Exp $
  */
 
 #include "tkPort.h"
@@ -42,6 +42,10 @@ typedef struct InProgress {
     struct InProgress *nextPtr;	 /* Next higher nested search. */
 } InProgress;
 
+static InProgress *pendingPtr = NULL;
+				/* Topmost search in progress, or
+				 * NULL if none. */
+
 /*
  * For each call to Tk_CreateGenericHandler, an instance of the following
  * structure will be created.  All of the active handlers are linked into a
@@ -57,6 +61,11 @@ typedef struct GenericHandler {
 				 * handlers, or NULL for end of list. */
 } GenericHandler;
 
+static GenericHandler *genericList = NULL;
+				/* First handler in the list, or NULL. */
+static GenericHandler *lastGenericPtr = NULL;
+				/* Last handler in list. */
+
 /*
  * There's a potential problem if Tk_HandleEvent is entered recursively.
  * A handler cannot be deleted physically until we have returned from
@@ -64,7 +73,10 @@ typedef struct GenericHandler {
  * its `next' entry.  We deal with the problem by using the `delete flag' and
  * deleting handlers only when it's known that there's no handler active.
  *
+ * The following variable has a non-zero value when a handler is active.
  */
+
+static int genericHandlersActive = 0;
 
 /*
  * The following structure is used for queueing X-style events on the
@@ -125,36 +137,15 @@ static unsigned long eventMasks[TK_LASTEVENT] = {
     MouseWheelMask			/* MouseWheelEvent */
 };
 
-
 /*
- * The structure below is used to store Data for the Event module that
- * must be kept thread-local.  The "dataKey" is used to fetch the
- * thread-specific storage for the current thread.
+ * If someone has called Tk_RestrictEvents, the information below
+ * keeps track of it.
  */
 
-typedef struct ThreadSpecificData {
-    int handlersActive;		/* The following variable has a non-zero
-				 * value when a handler is active. */
-    InProgress *pendingPtr;	/* Topmost search in progress, or
-				 * NULL if none. */
-
-    GenericHandler *genericList; /* First handler in the list, or NULL. */
-    GenericHandler *lastGenericPtr;	/* Last handler in list. */
-
-    GenericHandler *cmList; /* First handler in the list, or NULL. */
-    GenericHandler *lastCmPtr;	/* Last handler in list. */
-
-    /*
-     * If someone has called Tk_RestrictEvents, the information below
-     * keeps track of it.
-     */
-
-    Tk_RestrictProc *restrictProc;
+static Tk_RestrictProc *restrictProc;
 				/* Procedure to call.  NULL means no
 				 * restrictProc is currently in effect. */
-    ClientData restrictArg;	/* Argument to pass to restrictProc. */
-} ThreadSpecificData;
-static Tcl_ThreadDataKey dataKey;
+static ClientData restrictArg;	/* Argument to pass to restrictProc. */
 
 /*
  * Prototypes for procedures that are only referenced locally within
@@ -164,10 +155,7 @@ static Tcl_ThreadDataKey dataKey;
 static void		DelayedMotionProc _ANSI_ARGS_((ClientData clientData));
 static int		WindowEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
 			    int flags));
-static int		TkXErrorHandler _ANSI_ARGS_((ClientData clientData,
-			    XErrorEvent *errEventPtr));
-
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -251,7 +239,7 @@ Tk_CreateEventHandler(token, mask, proc, clientData)
      * for all windows (needed to support bindings on classes and "all").
      */
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -281,8 +269,6 @@ Tk_DeleteEventHandler(token, mask, proc, clientData)
     register InProgress *ipPtr;
     TkEventHandler *prevPtr;
     register TkWindow *winPtr = (TkWindow *) token;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     /*
      * Find the event handler to be deleted, or return
@@ -305,7 +291,7 @@ Tk_DeleteEventHandler(token, mask, proc, clientData)
      * process the next one instead.
      */
 
-    for (ipPtr = tsdPtr->pendingPtr; ipPtr != NULL; ipPtr = ipPtr->nextPtr) {
+    for (ipPtr = pendingPtr; ipPtr != NULL; ipPtr = ipPtr->nextPtr) {
 	if (ipPtr->nextHandler == handlerPtr) {
 	    ipPtr->nextHandler = handlerPtr->nextPtr;
 	}
@@ -328,7 +314,7 @@ Tk_DeleteEventHandler(token, mask, proc, clientData)
      * for all windows (needed to support bindings on classes and "all").
      */
 }
-
+
 /*--------------------------------------------------------------
  *
  * Tk_CreateGenericHandler --
@@ -354,23 +340,21 @@ Tk_CreateGenericHandler(proc, clientData)
      ClientData clientData;	/* One-word value to pass to proc. */
 {
     GenericHandler *handlerPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
+    
     handlerPtr = (GenericHandler *) ckalloc (sizeof (GenericHandler));
-
-    handlerPtr->proc		= proc;
-    handlerPtr->clientData	= clientData;
-    handlerPtr->deleteFlag	= 0;
-    handlerPtr->nextPtr		= NULL;
-    if (tsdPtr->genericList == NULL) {
-	tsdPtr->genericList	= handlerPtr;
+    
+    handlerPtr->proc = proc;
+    handlerPtr->clientData = clientData;
+    handlerPtr->deleteFlag = 0;
+    handlerPtr->nextPtr = NULL;
+    if (genericList == NULL) {
+	genericList = handlerPtr;
     } else {
-	tsdPtr->lastGenericPtr->nextPtr = handlerPtr;
+	lastGenericPtr->nextPtr = handlerPtr;
     }
-    tsdPtr->lastGenericPtr	= handlerPtr;
+    lastGenericPtr = handlerPtr;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -396,216 +380,14 @@ Tk_DeleteGenericHandler(proc, clientData)
      ClientData clientData;
 {
     GenericHandler * handler;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-	Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
-    for (handler = tsdPtr->genericList; handler; handler = handler->nextPtr) {
+    
+    for (handler = genericList; handler; handler = handler->nextPtr) {
 	if ((handler->proc == proc) && (handler->clientData == clientData)) {
 	    handler->deleteFlag = 1;
 	}
     }
 }
-
-/*--------------------------------------------------------------
- *
- * Tk_CreateClientMessageHandler --
- *
- *	Register a procedure to be called on each ClientMessage event.
- *	ClientMessage handlers are useful for Drag&Drop extensions.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	From now on, whenever a ClientMessage event is received that isn't
- *	a WM_PROTOCOL event or SelectionEvent, invoke proc, giving it
- *	tkwin and the event as arguments.
- *
- *--------------------------------------------------------------
- */
-
-void
-Tk_CreateClientMessageHandler(proc)
-     Tk_ClientMessageProc *proc;	/* Procedure to call on event. */
-{
-    GenericHandler *handlerPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-	Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
-    /*
-     * We use a GenericHandler struct, because it's basically the same,
-     * except with an extra clientData field we'll never use.
-     */
-    handlerPtr = (GenericHandler *)
-	ckalloc (sizeof (GenericHandler));
-
-    handlerPtr->proc		= (Tk_GenericProc *) proc;
-    handlerPtr->clientData	= NULL;	/* never used */
-    handlerPtr->deleteFlag	= 0;
-    handlerPtr->nextPtr		= NULL;
-    if (tsdPtr->cmList == NULL) {
-	tsdPtr->cmList		= handlerPtr;
-    } else {
-	tsdPtr->lastCmPtr->nextPtr = handlerPtr;
-    }
-    tsdPtr->lastCmPtr		= handlerPtr;
-}
-
-/*
- *--------------------------------------------------------------
- *
- * Tk_DeleteClientMessageHandler --
- *
- *	Delete a previously-created ClientMessage handler.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	If there existed a handler as described by the parameters,
- *	that handler is logically deleted so that proc will not be
- *	invoked again.  The physical deletion happens in the event
- *	loop in TkClientMessageEventProc.
- *
- *--------------------------------------------------------------
- */
-
-void
-Tk_DeleteClientMessageHandler(proc)
-     Tk_ClientMessageProc *proc;
-{
-    GenericHandler * handler;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-	Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
-    for (handler = tsdPtr->cmList; handler != NULL;
-	 handler = handler->nextPtr) {
-	if (handler->proc == (Tk_GenericProc *) proc) {
-	    handler->deleteFlag = 1;
-	}
-    }
-}
-
-/*
- *--------------------------------------------------------------
- *
- * TkEventInit --
- *
- *	This procedures initializes all the event module
- *      structures used by the current thread.  It must be
- *      called before any other procedure in this file is
- *      called.
- *
- * Results:
- *	None.
- *
- * Side Effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
-
-void
-TkEventInit _ANSI_ARGS_((void))
-{
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-	Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
-
-    tsdPtr->handlersActive	= 0;
-    tsdPtr->pendingPtr		= NULL;
-    tsdPtr->genericList		= NULL;
-    tsdPtr->lastGenericPtr	= NULL;
-    tsdPtr->cmList		= NULL;
-    tsdPtr->lastCmPtr		= NULL;
-    tsdPtr->restrictProc	= NULL;
-    tsdPtr->restrictArg		= NULL;
-}
-
-/*
- *--------------------------------------------------------------
- *
- * TkXErrorHandler --
- *
- *	TkXErrorHandler is an error handler, to be installed
- *	via Tk_CreateErrorHandler, that will set a flag if an
- *	X error occurred.
- *
- * Results:
- *	Always returns 0, indicating that the X error was
- *	handled.
- *
- * Side effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
-
-static int
-TkXErrorHandler (clientData, errEventPtr)
-    ClientData clientData;      /* Pointer to flag we set       */
-    XErrorEvent *errEventPtr;   /* X error info                 */
-{
-    int *error;
-
-    error = (int *) clientData;
-    *error = 1;
-    return 0;
-}
-
-/*
- *--------------------------------------------------------------
- *
- * ParentXId --
- *
- *	Returns the parent of the given window, or "None"
- *	if the window doesn't exist.
- *
- * Results:
- *	Returns an X window ID.
- *
- * Side effects:
- *	None.
- *
- *--------------------------------------------------------------
- */
-
-static Window
-ParentXId(display, w)
-    Display *display;
-    Window w;
-{
-    Tk_ErrorHandler handler;
-    int gotXError;
-    Status status;
-    Window parent;
-    Window root;
-    Window *childList;
-    unsigned int nChildren;
-
-    /* Handle errors ourselves. */
-
-    gotXError = 0;
-    handler = Tk_CreateErrorHandler(display, -1, -1, -1,
-			TkXErrorHandler, (ClientData) (&gotXError));
-
-    /* Get the parent window. */
-
-    status = XQueryTree(display, w, &root, &parent, &childList, &nChildren);
-
-    /* Do some cleanup; gotta return "None" if we got an error. */
-
-    Tk_DeleteErrorHandler(handler);
-    XSync(display, False);
-    if (status != 0 && childList != NULL) {
-	XFree(childList);
-    }
-    if (status == 0) {
-        parent = None;
-    }
-
-    return parent;
-}
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -634,11 +416,8 @@ Tk_HandleEvent(eventPtr)
     unsigned long mask;
     InProgress ip;
     Window handlerWindow;
-    Window parentXId;
     TkDisplay *dispPtr;
     Tcl_Interp *interp = (Tcl_Interp *) NULL;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-	Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     /*
      * Hack for simulated X-events: Correct the state field
@@ -650,16 +429,16 @@ Tk_HandleEvent(eventPtr)
 	dispPtr = TkGetDisplay(eventPtr->xbutton.display);
 	eventPtr->xbutton.state |= dispPtr->mouseButtonState;
 	switch (eventPtr->xbutton.button) {
-	    case 1: dispPtr->mouseButtonState |= Button1Mask; break;
-	    case 2: dispPtr->mouseButtonState |= Button2Mask; break;
-	    case 3: dispPtr->mouseButtonState |= Button3Mask; break;
+	    case 1: dispPtr->mouseButtonState |= Button1Mask; break; 
+	    case 2: dispPtr->mouseButtonState |= Button2Mask; break; 
+	    case 3: dispPtr->mouseButtonState |= Button3Mask; break; 
 	}
     } else if (eventPtr->type==ButtonRelease) {
 	dispPtr = TkGetDisplay(eventPtr->xbutton.display);
 	switch (eventPtr->xbutton.button) {
-	    case 1: dispPtr->mouseButtonState &= ~Button1Mask; break;
-	    case 2: dispPtr->mouseButtonState &= ~Button2Mask; break;
-	    case 3: dispPtr->mouseButtonState &= ~Button3Mask; break;
+	    case 1: dispPtr->mouseButtonState &= ~Button1Mask; break; 
+	    case 2: dispPtr->mouseButtonState &= ~Button2Mask; break; 
+	    case 3: dispPtr->mouseButtonState &= ~Button3Mask; break; 
 	}
 	eventPtr->xbutton.state |= dispPtr->mouseButtonState;
     } else if (eventPtr->type==MotionNotify) {
@@ -667,16 +446,15 @@ Tk_HandleEvent(eventPtr)
 	eventPtr->xmotion.state |= dispPtr->mouseButtonState;
     }
 
-    /*
+    /* 
      * Next, invoke all the generic event handlers (those that are
      * invoked for all events).  If a generic event handler reports that
      * an event is fully processed, go no further.
      */
 
-    for (genPrevPtr = NULL, genericPtr = tsdPtr->genericList;
-            genericPtr != NULL; ) {
+    for (genPrevPtr = NULL, genericPtr = genericList;  genericPtr != NULL; ) {
 	if (genericPtr->deleteFlag) {
-	    if (!tsdPtr->handlersActive) {
+	    if (!genericHandlersActive) {
 		GenericHandler *tmpPtr;
 
 		/*
@@ -687,12 +465,12 @@ Tk_HandleEvent(eventPtr)
 
 		tmpPtr = genericPtr->nextPtr;
 		if (genPrevPtr == NULL) {
-		    tsdPtr->genericList = tmpPtr;
+		    genericList = tmpPtr;
 		} else {
 		    genPrevPtr->nextPtr = tmpPtr;
 		}
 		if (tmpPtr == NULL) {
-		    tsdPtr->lastGenericPtr = genPrevPtr;
+		    lastGenericPtr = genPrevPtr;
 		}
 		(void) ckfree((char *) genericPtr);
 		genericPtr = tmpPtr;
@@ -701,9 +479,9 @@ Tk_HandleEvent(eventPtr)
 	} else {
 	    int done;
 
-	    tsdPtr->handlersActive++;
+	    genericHandlersActive++;
 	    done = (*genericPtr->proc)(genericPtr->clientData, eventPtr);
-	    tsdPtr->handlersActive--;
+	    genericHandlersActive--;
 	    if (done) {
 		return;
 	    }
@@ -745,9 +523,9 @@ Tk_HandleEvent(eventPtr)
 	}
     }
     winPtr = (TkWindow *) Tk_IdToWindow(eventPtr->xany.display, handlerWindow);
-
+                        
     /* Some Drag&Drop messages get sent to wrappers for which there is
-     * an X ICCM scheme to locate the "real" window - it is not clear
+     * an X ICCM scheme to locate the "real" window - it is not clear 
      * if this is "done right" yet but should be harmless.
      */
     if (winPtr == NULL && eventPtr->type == ClientMessage) {
@@ -756,38 +534,18 @@ Tk_HandleEvent(eventPtr)
     }
 
     if (winPtr == NULL) {
+
 	/*
 	 * There isn't a TkWindow structure for this window.
 	 * However, if the event is a PropertyNotify event then call
 	 * the selection manager (it deals beneath-the-table with
-	 * certain properties). Also, if the window's parent is a
-	 * Tk window that has the TK_PROP_PROPCHANGE flag set, then
-	 * we must propagate the PropertyNotify event up to the parent.
+	 * certain properties).
 	 */
 
-	if (eventPtr->type != PropertyNotify) {
-	    return;
+	if (eventPtr->type == PropertyNotify) {
+	    TkSelPropProc(eventPtr);
 	}
-
-	TkSelPropProc(eventPtr);
-
-	/* Get handlerWindow's parent. */
-
-	parentXId = ParentXId(eventPtr->xany.display, handlerWindow);
-	if (parentXId == None) {
-	    return;
-	}
-
-	winPtr = (TkWindow *) Tk_IdToWindow(eventPtr->xany.display, parentXId);
-	if (winPtr == NULL) {
-	    return;
-	}
-
-	if (!(winPtr->flags & TK_PROP_PROPCHANGE)) {
-	    return;
-	}
-
-	handlerWindow = parentXId;
+	return;
     }
 
     /*
@@ -812,10 +570,10 @@ Tk_HandleEvent(eventPtr)
          * widget writers do not have to worry about protecting the
          * interpreter in their own code.
          */
-
+        
         interp = winPtr->mainPtr->interp;
         Tcl_Preserve((ClientData) interp);
-
+        
 	/*
 	 * Call focus-related code to look at FocusIn, FocusOut, Enter,
 	 * and Leave events;  depending on its return value, ignore the
@@ -827,7 +585,7 @@ Tk_HandleEvent(eventPtr)
             Tcl_Release((ClientData) interp);
 	    return;
 	}
-
+    
 	/*
 	 * Redirect KeyPress and KeyRelease events to the focus window,
 	 * or ignore them entirely if there is no focus window.  We also
@@ -835,7 +593,7 @@ Tk_HandleEvent(eventPtr)
 	 * event is an extension to the X event set.  Currently, it is only
 	 * available on the Windows version of Tk.
 	 */
-
+    
 	if (mask & (KeyPressMask|KeyReleaseMask|MouseWheelMask)) {
 	    winPtr->dispPtr->lastEventTime = eventPtr->xkey.time;
 	    winPtr = TkFocusKeyEvent(winPtr, eventPtr);
@@ -844,12 +602,12 @@ Tk_HandleEvent(eventPtr)
 		return;
 	    }
 	}
-
+    
 	/*
 	 * Call a grab-related procedure to do special processing on
 	 * pointer events.
 	 */
-
+    
 	if (mask & (ButtonPressMask|ButtonReleaseMask|PointerMotionMask
 		|EnterWindowMask|LeaveWindowMask)) {
 	    if (mask & (ButtonPressMask|ButtonReleaseMask)) {
@@ -870,60 +628,21 @@ Tk_HandleEvent(eventPtr)
      * Pass the event to the input method(s), if there are any, and
      * discard the event if the input method(s) insist.  Create the
      * input context for the window if it hasn't already been done
-     * (XFilterEvent needs this context).  XIM is only ever enabled on
-     * Unix, but this hasn't been factored out of the generic code yet.
+     * (XFilterEvent needs this context).
      */
-    dispPtr = winPtr->dispPtr;
-    if ((dispPtr->flags & TK_DISPLAY_USE_IM)) {
-	if (!(winPtr->flags & (TK_CHECKED_IC|TK_ALREADY_DEAD))) {
-	    winPtr->flags |= TK_CHECKED_IC;
-	    if (dispPtr->inputMethod != NULL) {
-#if TK_XIM_SPOT
-		if (dispPtr->flags & TK_DISPLAY_XIM_SPOT) {
-		    XVaNestedList preedit_attr;
-		    XPoint spot = {0, 0};
 
-		    if (dispPtr->inputXfs == NULL) {
-			/*
-			 * We only need to create one XFontSet
-			 */
-			char      **missing_list;
-			int       missing_count;
-			char      *def_string;
-
-			dispPtr->inputXfs = XCreateFontSet(dispPtr->display,
-				"-*-*-*-R-Normal--14-130-75-75-*-*",
-				&missing_list, &missing_count, &def_string);
-			if (missing_count > 0) {
-			    XFreeStringList(missing_list);
-			}
-		    }
-
-		    preedit_attr = XVaCreateNestedList(0, XNSpotLocation,
-			    &spot, XNFontSet, dispPtr->inputXfs, NULL);
-		    if (winPtr->inputContext != NULL)
-		        panic("inputContext not NULL");
-		    winPtr->inputContext = XCreateIC(dispPtr->inputMethod,
-			    XNInputStyle, XIMPreeditPosition|XIMStatusNothing,
-			    XNClientWindow, winPtr->window,
-			    XNFocusWindow, winPtr->window,
-			    XNPreeditAttributes, preedit_attr,
-			    NULL);
-		    XFree(preedit_attr);
-		} else
-#endif
-		    if (winPtr->inputContext != NULL)
-		        panic("inputContext not NULL");
-		    winPtr->inputContext = XCreateIC(dispPtr->inputMethod,
-			    XNInputStyle, XIMPreeditNothing|XIMStatusNothing,
-			    XNClientWindow, winPtr->window,
-			    XNFocusWindow, winPtr->window,
-			    NULL);
-	    }
+    if (!(winPtr->flags & TK_CHECKED_IC)) {
+	if (winPtr->dispPtr->inputMethod != NULL) {
+	    winPtr->inputContext = XCreateIC(
+		    winPtr->dispPtr->inputMethod, XNInputStyle,
+		    XIMPreeditNothing|XIMStatusNothing,
+		    XNClientWindow, winPtr->window,
+		    XNFocusWindow, winPtr->window, NULL);
 	}
-	if (XFilterEvent(eventPtr, None)) {
-	    goto done;
-	}
+	winPtr->flags |= TK_CHECKED_IC;
+    }
+    if (XFilterEvent(eventPtr, None)) {
+        goto done;
     }
 #endif /* TK_USE_INPUT_METHODS */
 
@@ -944,66 +663,31 @@ Tk_HandleEvent(eventPtr)
     ip.eventPtr = eventPtr;
     ip.winPtr = winPtr;
     ip.nextHandler = NULL;
-    ip.nextPtr = tsdPtr->pendingPtr;
-    tsdPtr->pendingPtr = &ip;
+    ip.nextPtr = pendingPtr;
+    pendingPtr = &ip;
     if (mask == 0) {
 	if ((eventPtr->type == SelectionClear)
 		|| (eventPtr->type == SelectionRequest)
 		|| (eventPtr->type == SelectionNotify)) {
 	    TkSelEventProc((Tk_Window) winPtr, eventPtr);
-	} else if (eventPtr->type == ClientMessage) {
-	    if (eventPtr->xclient.message_type ==
-		    Tk_InternAtom((Tk_Window) winPtr, "WM_PROTOCOLS")) {
+#if 0
+	} else if ((eventPtr->type == ClientMessage)
+		&& (eventPtr->xclient.message_type ==
+		    Tk_InternAtom((Tk_Window) winPtr, "WM_PROTOCOLS"))) {
+	    TkWmProtocolEventProc(winPtr, eventPtr);
+	}
+#else
+	} else if ((eventPtr->type == ClientMessage)) {
+	    if (((eventPtr->xclient.message_type ==
+	          Tk_InternAtom((Tk_Window) winPtr, "WM_PROTOCOLS"))
+	        ||(eventPtr->xclient.message_type ==
+	    Tk_InternAtom((Tk_Window) winPtr,"_MOTIF_WM_MESSAGES")))) {
 		TkWmProtocolEventProc(winPtr, eventPtr);
 	    } else {
-		/* Perl/Tk had/has its own hook for this */
 		LangClientMessage(winPtr->mainPtr->interp, (Tk_Window) winPtr, eventPtr);
-
-		/*
-		 * Finally, invoke any ClientMessage event handlers.
-		 */
-
-		for (genPrevPtr = NULL, genericPtr = tsdPtr->cmList;
-		     genericPtr != NULL; ) {
-		    if (genericPtr->deleteFlag) {
-			if (!tsdPtr->handlersActive) {
-			    GenericHandler *tmpPtr;
-
-			    /*
-			     * This handler needs to be deleted and there are
-			     * no calls pending through any handlers, so now
-			     * is a safe time to delete it.
-			     */
-
-			    tmpPtr = genericPtr->nextPtr;
-			    if (genPrevPtr == NULL) {
-				tsdPtr->cmList = tmpPtr;
-			    } else {
-				genPrevPtr->nextPtr = tmpPtr;
-			    }
-			    if (tmpPtr == NULL) {
-				tsdPtr->lastGenericPtr = genPrevPtr;
-			    }
-			    (void) ckfree((char *) genericPtr);
-			    genericPtr = tmpPtr;
-			    continue;
-			}
-		    } else {
-			int done;
-
-			tsdPtr->handlersActive++;
-			done = (*(Tk_ClientMessageProc *)genericPtr->proc)
-			    ((Tk_Window) winPtr, eventPtr);
-			tsdPtr->handlersActive--;
-			if (done) {
-			    break;
-			}
-		    }
-		    genPrevPtr	= genericPtr;
-		    genericPtr	= genPrevPtr->nextPtr;
-		}
 	    }
 	}
+#endif
     } else {
 	for (handlerPtr = winPtr->handlerList; handlerPtr != NULL; ) {
 	    if ((handlerPtr->mask & mask) != 0) {
@@ -1022,30 +706,23 @@ Tk_HandleEvent(eventPtr)
 	 * these events here than in the lower-level procedures.
 	 */
 
-	/*
-	 * ...well, except when we use the tkwm patches, in which case
-	 * we DO handle CreateNotify events, so we gotta pass 'em through.
-	 */
-
-	if ((ip.winPtr != None)
-		&& ((mask != SubstructureNotifyMask)
-				|| (eventPtr->type == CreateNotify))) {
+	if ((ip.winPtr != None) && (mask != SubstructureNotifyMask)) {
 	    TkBindEventProc(winPtr, eventPtr);
 	}
     }
-    tsdPtr->pendingPtr = ip.nextPtr;
+    pendingPtr = ip.nextPtr;
 done:
 
     /*
      * Release the interpreter for this window so that it can be potentially
      * deleted if requested.
      */
-
+    
     if (interp != (Tcl_Interp *) NULL) {
         Tcl_Release((ClientData) interp);
     }
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1071,8 +748,6 @@ TkEventDeadWindow(winPtr)
 {
     register TkEventHandler *handlerPtr;
     register InProgress *ipPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     /*
      * While deleting all the handlers, be careful to check for
@@ -1084,8 +759,7 @@ TkEventDeadWindow(winPtr)
     while (winPtr->handlerList != NULL) {
 	handlerPtr = winPtr->handlerList;
 	winPtr->handlerList = handlerPtr->nextPtr;
-	for (ipPtr = tsdPtr->pendingPtr; ipPtr != NULL;
-                ipPtr = ipPtr->nextPtr) {
+	for (ipPtr = pendingPtr; ipPtr != NULL; ipPtr = ipPtr->nextPtr) {
 	    if (ipPtr->nextHandler == handlerPtr) {
 		ipPtr->nextHandler = NULL;
 	    }
@@ -1096,7 +770,7 @@ TkEventDeadWindow(winPtr)
 	ckfree((char *) handlerPtr);
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1123,13 +797,11 @@ TkCurrentTime(dispPtr)
     TkDisplay *dispPtr;		/* Display for which the time is desired. */
 {
     register XEvent *eventPtr;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
-    if (tsdPtr->pendingPtr == NULL) {
+    if (pendingPtr == NULL) {
 	return dispPtr->lastEventTime;
     }
-    eventPtr = tsdPtr->pendingPtr->eventPtr;
+    eventPtr = pendingPtr->eventPtr;
     switch (eventPtr->type) {
 	case ButtonPress:
 	case ButtonRelease:
@@ -1147,7 +819,7 @@ TkCurrentTime(dispPtr)
     }
     return dispPtr->lastEventTime;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1179,50 +851,14 @@ Tk_RestrictEvents(proc, arg, prevArgPtr)
 				 * argument. */
 {
     Tk_RestrictProc *prev;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
-    prev = tsdPtr->restrictProc;
-    *prevArgPtr = tsdPtr->restrictArg;
-    tsdPtr->restrictProc = proc;
-    tsdPtr->restrictArg = arg;
+    prev = restrictProc;
+    *prevArgPtr = restrictArg;
+    restrictProc = proc;
+    restrictArg = arg;
     return prev;
 }
-
-/*
- *----------------------------------------------------------------------
- *
- * Tk_CollapseMotionEvents --
- *
- *	This procedure controls whether we collapse motion events in a
- *	particular display or not.
- *
- * Results:
- *	The return value is the previous collapse value in effect.
- *
- * Side effects:
- *	Filtering of motion events may be changed after calling this.
- *
- *----------------------------------------------------------------------
- */
-
-int
-Tk_CollapseMotionEvents(display, collapse)
-    Display *display;		/* Display handling these events. */
-    int collapse;		/* boolean value that specifies whether
-				 * motion events should be collapsed. */
-{
-    TkDisplay *dispPtr = (TkDisplay *) display;
-    int prev = (dispPtr->flags & TK_DISPLAY_COLLAPSE_MOTION_EVENTS);
-
-    if (collapse) {
-	dispPtr->flags |= TK_DISPLAY_COLLAPSE_MOTION_EVENTS;
-    } else {
-	dispPtr->flags &= ~TK_DISPLAY_COLLAPSE_MOTION_EVENTS;
-    }
-    return prev;
-}
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1258,7 +894,7 @@ Tk_QueueWindowEvent(eventPtr, position)
      * Find our display structure for the event's display.
      */
 
-    for (dispPtr = TkGetDisplayList(); ; dispPtr = dispPtr->nextPtr) {
+    for (dispPtr = tkDisplayList; ; dispPtr = dispPtr->nextPtr) {
 	if (dispPtr == NULL) {
 	    return;
 	}
@@ -1267,32 +903,19 @@ Tk_QueueWindowEvent(eventPtr, position)
 	}
     }
 
-    /*
-     * Don't filter motion events if the user
-     * defaulting to true (1), which could be set to false (0) when the
-     * user wishes to receive all the motion data)
-     */
-    if (!(dispPtr->flags & TK_DISPLAY_COLLAPSE_MOTION_EVENTS)) {
-	wevPtr = (TkWindowEvent *) ckalloc(sizeof(TkWindowEvent));
-	wevPtr->header.proc = WindowEventProc;
-	wevPtr->event = *eventPtr;
-	Tcl_QueueEvent(&wevPtr->header, position);
-	return;
-    }
-
-    if (eventPtr->xany.window == PointerWindow && eventPtr->type == ClientMessage)
-     {
+    if (eventPtr->xany.window == PointerWindow && eventPtr->type == ClientMessage) 
+     {         
       /* XDE Drag&Drop does SendEvent to 0 which is "PointerWindow".
          X does not fill in real Window so do so here
          The pointer may have moved - but what else can we do ?
        */
       Window root = DefaultRootWindow(eventPtr->xany.display);
-      Window child = None;
+      Window child = None;       
       int rx, ry, wx, wy, mask;
       if (!XQueryPointer(eventPtr->xany.display, root, &root, &child, &rx, &ry, &wx, &wy, &mask) || child == None)
        child = root;
       while (child != None)
-       {
+       {                                                                   
         eventPtr->xany.window = child;
         XTranslateCoordinates(eventPtr->xany.display, root, child, rx, ry, &wx, &wy, &child);
        }
@@ -1342,14 +965,14 @@ Tk_QueueWindowEvent(eventPtr, position)
 	Tcl_QueueProcEvent(WindowEventProc, &wevPtr->header, position);
     }
 }
-
+
 /*
  *---------------------------------------------------------------------------
  *
  * TkQueueEventForAllChildren --
  *
  *	Given an XEvent, recursively queue the event for this window and
- *	all non-toplevel children of the given window.
+ *	all non-toplevel children of the given window.  
  *
  * Results:
  *	None.
@@ -1369,16 +992,16 @@ TkQueueEventForAllChildren(winPtr, eventPtr)
 
     eventPtr->xany.window = winPtr->window;
     Tk_QueueWindowEvent(eventPtr, TCL_QUEUE_TAIL);
-
+    
     childPtr = winPtr->childList;
     while (childPtr != NULL) {
-	if (!Tk_TopWinHierarchy(childPtr)) {
+	if (!Tk_IsTopLevel(childPtr)) {
 	    TkQueueEventForAllChildren(childPtr, eventPtr);
 	}
 	childPtr = childPtr->nextPtr;
     }
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1409,18 +1032,16 @@ WindowEventProc(evPtr, flags)
 {
     TkWindowEvent *wevPtr = (TkWindowEvent *) evPtr;
     Tk_RestrictAction result;
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)
-            Tcl_GetThreadData(&dataKey, sizeof(ThreadSpecificData));
 
     if (!(flags & TCL_WINDOW_EVENTS)) {
 	return 0;
     }
-    if (tsdPtr->restrictProc != NULL) {
-	result = (*tsdPtr->restrictProc)(tsdPtr->restrictArg, &wevPtr->event);
+    if (restrictProc != NULL) {
+	result = (*restrictProc)(restrictArg, &wevPtr->event);
 	if (result != TK_PROCESS_EVENT) {
 	    if (result == TK_DEFER_EVENT) {
 		/* TK_DEFER_EVENT */
-		/* WARNING - Beware this happening to SelectionNotify events
+		/* WARNING - Beware this happening to SelectionNotify events 
 		 * DragDrop is broken if they don't happen...
 		 */
 		return 0;
@@ -1440,7 +1061,7 @@ WindowEventProc(evPtr, flags)
     Tk_HandleEvent(&wevPtr->event);
     return 1;
 }
-
+
 /*
  *----------------------------------------------------------------------
  *
@@ -1473,7 +1094,7 @@ DelayedMotionProc(clientData)
     Tcl_QueueProcEvent(WindowEventProc, &dispPtr->delayedMotionPtr->header, TCL_QUEUE_TAIL);
     dispPtr->delayedMotionPtr = NULL;
 }
-
+
 /*
  *--------------------------------------------------------------
  *
@@ -1498,4 +1119,3 @@ Tk_MainLoop()
 	Tcl_DoOneEvent(0);
     }
 }
-
