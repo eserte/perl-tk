@@ -194,8 +194,6 @@ dnd_demo
 DragDrop/drag_test
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
-DragDrop/DragDrop/KDEDrop.pm
-DragDrop/DragDrop/KDESite.pm
 DragDrop/DragDrop/LocalDrop.pm
 DragDrop/DragDrop/Rect.pm
 DragDrop/DragDrop/SunConst.pm
@@ -1689,7 +1687,6 @@ pTk/mTk/xlib/xgc.c
 pTk/mTk/xlib/ximage.c
 pTk/mTk/xlib/xutil.c
 pTk/p4e
-pTk/patchlevel.h
 pTk/pned
 pTk/process_object
 pTk/prune_vtab

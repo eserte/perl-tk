@@ -2,7 +2,7 @@ package Tk::DragDrop::SunDrop;
 require  Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/SunDrop.pm#4 $
+$VERSION = sprintf '4.%03d', q$Revision: #5 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::DragDrop::Rect);
 use strict;
@@ -12,7 +12,8 @@ Tk::DragDrop->Type('Sun');
 
 BEGIN
  {
-  my @fields = qw(name win X Y width height flags);
+  # Define the Rect API as members of the array
+  my @fields = qw(name win X Y width height flags ancestor widget);
   my $i = 0;
   no strict 'refs';
   for ($i=0; $i < @fields; $i++)
@@ -21,6 +22,7 @@ BEGIN
     *{"$fields[$i]"} = sub { shift->[$j] };
    }
  }
+
 
 sub Preview
 {
@@ -90,7 +92,6 @@ sub Drop
  $w->SendClientMessage('_SUN_DRAGDROP_TRIGGER',$site->win,32,$data);
 }
 
-
 sub FindSite
 {
  my ($class,$token,$X,$Y) = @_;
@@ -105,6 +106,7 @@ sub FindSite
      Tk::catch { @prop = $token->property('get','_SUN_DRAGDROP_INTEREST', $id) };
      if (!$@ && shift(@prop) eq '_SUN_DRAGDROP_INTEREST' && shift(@prop) == 0)
       {
+       # This is a "toplevel" which has some sites associated with it.
        my ($bx,$by) = $token->WindowXY($id);
        $token->{'SunDDSeen'} = {} unless exists $token->{'SunDDSeen'};
        return $site if $token->{'SunDDSeen'}{$id};
@@ -122,7 +124,7 @@ sub FindSite
          while (@prop >= 4 && $n-- > 0)
           {
            my ($x,$y,$w,$h) = splice(@prop,0,4);
-           push(@$sites,bless [$sn,$xid,$x+$bx,$y+$by,$w,$h,$flags],$class);
+           push(@$sites,bless [$sn,$xid,$x+$bx,$y+$by,$w,$h,$flags,$id,$token],$class);
           }
         }
        return $class->SUPER::FindSite($token,$X,$Y);
@@ -145,8 +147,22 @@ sub NewDrag
 sub SiteList
 {
  my ($class,$token) = @_;
- # this code is obsolete now that we look at properties ourselves
- # which means we don't need dropsite manager running
+ return @{$token->{'SunDD'}};
+}
+
+1;
+__END__
+
+# this code is obsolete now that we look at properties ourselves
+# which means we don't need dropsite manager running
+# On Sun's running OpenLook the window manager or dropsite mananger
+# watches for and caches site info in a special selection
+# This code got sites from that
+#
+
+sub SiteList
+{
+ my ($class,$token) = @_;
  unless (1 || $busy || exists $token->{'SunDD'})
   {
    Carp::confess('Already doing it!') if ($busy++);
@@ -181,4 +197,4 @@ sub SiteList
 }
 
 1;
-__END__
+

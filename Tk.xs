@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -1056,8 +1056,14 @@ SV *	&name
 OUTPUT:
 	name
 
+MODULE = Tk	PACKAGE = Tk	PREFIX = Lang_
+
+SV *
+Lang_SystemEncoding()
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
+
+
 
 void
 abort()

@@ -7,7 +7,7 @@
 # Copyright (c) 1992-1994 The Regents of the University of California.
 # Copyright (c) 1994 Sun Microsystems, Inc.
 # perl/Tk version:
-# Copyright (c) 1995-2003 Nick Ing-Simmons
+# Copyright (c) 1995-2004 Nick Ing-Simmons
 # Copyright (c) 1999 Greg London
 #
 # See the file "license.terms" for information on usage and redistribution
@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #23 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #24 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);

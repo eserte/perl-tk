@@ -1,9 +1,9 @@
-# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = sprintf '4.%03d', q$Revision: #29 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #30 $ =~ /\D(\d+)\s*$/;
 
 require Tk;
 use AutoLoader;
@@ -994,6 +994,8 @@ sub XMouseWheelBind
  # <4> and <5> are how mousewheel looks on X
  $mw->bind($class,'<Shift-4>',      ['xview','scroll',-1,'units']);
  $mw->bind($class,'<Shift-5>',      ['xview','scroll',1,'units']);
+ $mw->bind($class,'<Button-6>',     ['xview','scroll',-1,'units']);
+ $mw->bind($class,'<Button-7>',     ['xview','scroll',1,'units']);
 }
 
 sub YMouseWheelBind

@@ -3946,9 +3946,9 @@ SpinboxWidgetObjCmd(clientData, interp, objc, objv)
 	    }
 	    Tk_CharBbox(entryPtr->textLayout, index, &x, &y,
 		    &width, &height);
-	    sprintf(buf, "%d %d %d %d", x + entryPtr->layoutX,
+	    Tcl_IntResults(interp, 4, 0,
+		    x + entryPtr->layoutX,
 		    y + entryPtr->layoutY, width, height);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
 	    break;
 	}
 
@@ -4587,7 +4587,8 @@ SpinboxInvoke(interp, sbPtr, element)
 		TCL_EVAL_GLOBAL | TCL_EVAL_DIRECT);
 	Tcl_DStringFree(&script);
 #else
-	code = LangDoCallback(entryPtr->interp, sbPtr->command, 1, 1, "%d", type);
+	code = LangDoCallback(entryPtr->interp, sbPtr->command, 1, 2,
+		              " %s %s", entryPtr->string, type);
 #endif
 
 	if (code != TCL_OK) {

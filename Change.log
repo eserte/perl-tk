@@ -1,3 +1,121 @@
+Change 3214 on 2004/03/18 by nick@llama
+
+	Bump version to Tk804.026
+
+Change 3213 on 2004/03/18 by nick@dromedary
+
+	Heisenbug hunting in entry.t
+
+Change 3212 on 2004/03/18 by nick@camel
+
+	WinNT getOpenFile/getSaveFile uses non-dstring encode call
+	which did not have code to append a wide NUL to end 
+	of string.
+
+Change 3210 on 2004/03/18 by nick@llama
+
+	Loose patchlevel.h as it causes warnings with Tk-TableMatrix
+
+Change 3208 on 2004/03/18 by nick@llama
+
+	Spinbox validate fix
+	from (Roderich Schupp) forwared from newsgroub by Steve
+
+Change 3207 on 2004/03/18 by nick@llama
+
+	Spinbox bbox should return list
+
+Change 3206 on 2004/03/17 by nick@llama
+
+	Mark cause of POE callback issue, pending confirmation.
+
+Change 3205 on 2004/03/17 by nick@llama
+
+	Re-factor DragDrop:: Rect and SunDrop so latter works again
+	while keeping the fix to local and XDND protocols.
+	Remove KDEDrop and KDESite (a weak ad hoc protocol used by KDE 2).
+
+Change 3204 on 2004/03/17 by nick@llama
+
+	Copyright dates
+
+Change 3203 on 2004/03/17 by nick@llama
+
+	When calling C code with perl args on stack as "objv"
+	swap perl stack so if C calls back into perl it gets
+	a private stack to mess with.
+	(t/leak.t needs minor tuning as a result of above.)
+
+Change 3202 on 2004/03/17 by nick@llama
+
+	Slaven's best-guess patch to get <6> and <7> working
+	for multi-wheel mice.
+
+Change 3201 on 2004/03/17 by nick@llama
+
+	"Michael Krause" <VKrauseM@web.de> reports that
+	EnterFocus sometimes doesn't have widget defined
+	and suggests this workround.
+
+Change 3200 on 2004/03/17 by nick@llama
+
+	Give TextUndo a PerlIO_layers hook
+	Use it to make ptked do encodings.
+
+Change 3199 on 2004/03/17 by nick@llama
+
+	Set SystemEncoding from locale via nl_langinfo if available.
+	Make Tk::SystemEncoding return corresponding Encode object.
+
+Change 3198 on 2004/03/17 by nick@llama
+
+	Cannot use "->containing" for DND's Over has it doesn't return
+	our window if cursor is in toplevel belonging to another app
+	(e.g. a drag token). So do our own search using PointToWindow.
+
+Change 3197 on 2004/03/16 by nick@llama
+
+	Revised fix for RT ticket #5678 - Drag&Drop bug.
+	Site is only valid if its widget is viewable and
+	it "contains" the drop point.
+
+Change 3196 on 2004/03/16 by nick@llama
+
+	Revert change 3195 to DragDrop/Rect.pm
+	It isn't right and breaks Konqueror Xdnd drops on pTk sites.
+
+Change 3195 on 2004/03/16 by nick@llama
+
+	Slaven's patch for Drag&Drop from
+	https://rt.cpan.org/Ticket/Display.html?id=5678
+
+Change 3179 on 2004/03/10 by nick@llama
+
+	Fallout of post-destroy call to After object means
+	that Tk::After::Cancelled needs a method.
+
+Change 3178 on 2004/03/10 by nick@llama
+
+	POD markup glitches
+
+Change 3177 on 2004/03/09 by nick@llama
+
+	HPUX build fix from chris.seip@hp.com
+
+Change 3176 on 2004/03/08 by nick@nickwork
+
+	Detect and warn RedHat UTF-8 (But RedHat9.0 seems to build ok now.)
+	Update README
+
+Change 3175 on 2004/03/08 by nick@nickwork
+
+	Fix die-after-exit for t/browseentry.t (at least as occurs with
+	threaded official perl5.8.0 on RedHat 9).
+
+Change 3174 on 2004/03/07 by nick@llama
+
+	Tk-804.025_beta16 Release Preparation
+
 Change 3173 on 2004/03/07 by nick@llama
 
 	Work round LVs (e.g. substr) not upgrading to UTF-8

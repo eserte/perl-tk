@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -1633,6 +1633,7 @@ EventAndKeySym *obj;
    if (SvROK(sv) && SvTYPE(SvRV(sv)) != SVt_PVCV)
     sv = SvRV(sv);
   }
+
  PUSHMARK(sp);
  if (SvTYPE(sv) == SVt_PVAV)
   {
@@ -1647,6 +1648,15 @@ EventAndKeySym *obj;
       {
        croak("Callback slot 0 tainted %_",sv);
       }
+     /* FIXME:
+        POE would like window passed to its callback objects
+        Pending suggestion is:
+         if ($object->can('_Tk_passWidget') &&
+             $object->_Tk_passWidget($widget)
+          {
+           # proceed as if it wasn't an object
+          }
+      */
      if (!sv_isobject(sv))
       {
        if (obj && obj->window) {
@@ -2233,18 +2243,12 @@ SV **args;
         stack moves as a result of the call
       */
      int offset = args - sp;
-     /* BEWARE - FIXME ? if Tk code does a callback to perl and perl grows the
-        stack then args that Tk code has will still point at old stack.
-        Thus if Tk tests args[i] *after* the callback it will get junk.
-        Only solid fix that occurs to me at present is to take a copy
-        of args here - but that seems expensive.
-        (Note it is only vector that is at risk, SVs themselves will stay put.)
-        Possible alternate fix is for (all the) Lang_*Callback() to be passed &args,
-        and fix it if stack moves.
-      */
      int code;
+     SV **our_sp = sp;
+
      Tcl_ObjCmdProc *proc = info->Tk.objProc;
      ClientData cd = info->Tk.objClientData;
+
      if (!proc)
       {
        proc = (Tcl_ObjCmdProc *) (info->Tk.proc);
@@ -2259,9 +2263,35 @@ SV **args;
        if (SvPOK(args[i]))
         Tcl_GetString(args[i]);
       }
+
      Tcl_Preserve(interp);
+
+     /* BEWARE if Tk code does a callback to perl and perl grows the
+        stack then args that Tk code has will still point at old stack.
+        Thus if Tk tests args[i] *after* the callback it will get junk.
+        (Note it is only vector that is at risk, SVs themselves will stay put.)
+
+        So we pre-emptively swap perl stack so any callbacks
+        which grow their stack don't move our "args"
+      */
+     ENTER;
+     SAVETMPS;
+     SPAGAIN;
+     PUSHSTACK;
+     PUTBACK;
+
      code = (*proc) (cd, interp, items, args);
+
+     POPSTACK;
+     SPAGAIN;
+     FREETMPS;
+     LEAVE;
+
+     if (sp != our_sp)
+      abort();
+
      Tcl_Release(interp);
+
      /* info stucture may have been free'ed now ... */
 #ifdef WIN32
      if (DCcount)

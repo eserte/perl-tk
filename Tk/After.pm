@@ -1,11 +1,11 @@
-# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/After.pm#7 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/After.pm#10 $
 
 sub _cancelAll
 {
@@ -15,8 +15,11 @@ sub _cancelAll
   {
    # carp "Auto cancel ".$obj->[1]." for ".$obj->[0]->PathName;
    $obj->cancel;
+   bless $obj,"Tk::After::Cancelled";
   }
 }
+
+sub Tk::After::Cancelled::once { }
 
 sub submit
 {
@@ -40,7 +43,9 @@ sub submit
 sub DESTROY
 {
  my $obj = shift;
- @{$obj} = ();
+ $obj->cancel;
+ undef $obj->[0];
+ undef $obj->[4];
 }
 
 sub new
@@ -58,7 +63,7 @@ sub cancel
  my $w   = $obj->[0];
  if ($id)
   {
-   $w->Tk::after('cancel'=> $id);
+   $w->Tk::after('cancel'=> $id) if Tk::Exists($w);
    delete $w->{_After_}{$id} if exists $w->{_After_};
    $obj->[1] = undef;
   }

@@ -64,6 +64,7 @@ extern void Tk_CheckHash _((SV *sv,struct pTkCheckChain *chain));
 
 extern int	has_highbit(CONST char *s,int l);
 extern SV *	sv_maybe_utf8(SV *sv);
+extern SV *	Lang_SystemEncoding(void);
 
 #ifndef WIN32
 #define HWND void *

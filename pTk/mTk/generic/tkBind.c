@@ -4775,10 +4775,14 @@ ParseEventDescription(interp, eventStringPtr, patPtr,
 	p = GetField(p, field, FIELD_SIZE);
     }
     if (*field != '\0') {
-	if ((*field >= '1') && (*field <= '5') && (field[1] == '\0')) {
+	if ((*field >= '1') && (*field <= '7') && (field[1] == '\0')) {
 	    if (eventFlags == 0) {
-		patPtr->eventType = ButtonPress;
-		eventMask = ButtonPressMask;
+	        if (*field <= '5') {
+		    patPtr->eventType = ButtonPress;
+		    eventMask = ButtonPressMask;
+		} else {
+		    goto getKeysym;
+		}
 	    } else if (eventFlags & KEY) {
 		goto getKeysym;
 	    } else if ((eventFlags & BUTTON) == 0) {

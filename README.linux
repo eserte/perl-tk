@@ -1,70 +1,57 @@
-This is written by Nick - who never tried linux...
 
-There are several ways to build Tk-b* for linux.
+These days perl/Tk is developed on Linux so things should work.
+Nick uses SuSE Distributions, currently using SuSE 9.0.
+All SuSE's /usr/bin/perl (perl >= perl5.8.0) should work.
+SuSE's fontconfig is fine for building with XFT=1, but
+there are some dodgy TrueType fonts in its set.
 
-1. Build it static - should work on *any* platform, but will be
-   larger than dynamic load version.
-   Hassle here is all the demos etc. really need the #! line
-   changing to point at 'tkperl' rather than 'perl'.
+RedHat is more variable. Nick uses this version under RedHat7.* and
+RedHat9.0 at work. RedHat9.0 will build with XFT=1 but scalable
+fonts installed by default are limited.
 
-2. Use a.out and dld
-     - you need dld-3.2.6
-     - You also need the "right" 'bash'.
-     - " Fall 1994 Yggdrasil Linux" + above dld has been known to work
-     - you may need to run ranlib on libX11.*
+Main snag on RedHat is that /usr/bin/perl tends to be a RedHat
+patched version rather than an approved perl release. Its 5.8.0 has
+bugs which mean that it is worse that official perl5.8.0 in UTF-8
+locales - but UTF-8 locales are default on RedHat :-(
 
-On Wed, 30 Aug 95 12:04:19 EDT
-Adam Wasserman <awasser@hermes.sgc.com> writes:
->
->Let me state for the record that I'm using Linux 1.2.1 (Infomagic Mar '95
->Slackware), with gcc 2.6.3, dld 3.2.6, Tk-b6 and perl5.001m, and it
->all compiled and worked with dynamic loading with little effort or
->problem under /usr/local (besides the Pretty.pm stuff).  I DID have to
->do "ranlib libX11.a" and get the updated dld.  I don't believe my system
->is configured for ELF.
+Nick has installed this version with RedHat's perl on RedHat9.
+BUT there are a lot of reports that it doesn't work. If the problem
+hits you try this:
 
+1. Delete the unpacked version that had trouble - the bug mangles
+   some files.
 
-3. Use ELF, either distributed that way, or by building yourself.
-     - I believe ELF versions are 'new enough' to have 'right' bash
-     - Make sure *perl* is configured to use dl_dlopen rather than dld
-       as the load method. Or you get this symptom:
+2. Change to a non UTF-8 locale. i.e.
+   echo $LANG            # find out what your locale is
+   export LANG=en_GB     # what above printed but without UTF-8 bit
 
-> Can't load './blib/auto/Tk/Tk.so' for module Tk: File not found at
-> /usr/lib/perl5/DynaLoader.pm line 450.
->
-> at blib/Tk.pm line 31
-> BEGIN failed--compilation aborted at ./basic_demo line 5.
+3. tar xzf Tk804.026.tar.gz  # re-extract
+   cd Tk804.026
 
+4. perl Makefile.PL          # normal build
+   make
+   make test
 
-Chris. (stoner@cs.buffalo.edu)  http://www.cs.buffalo.edu/~stoner
-Says:
+   (Steps 3 & 4 can be done using CPAN module provided you stay
+    in non-UTF-8 locale.)
 
-I had the same problem, I had to reconfigure perl to get it to work. Here is a
-summary of my perl configuration that works:
+5. Optionally:
+   export LANG=en_GB.UTF-8 # or original from step 2
+   make test               # prove it works in the locale
 
-Summary of my perl5 (patchlevel 1) configuration:
-  Platform:
-    osname=linux, osver=1, archname=i486-linux
-    uname='linux valhalla 1.2.8 #6 sun aug 20 16:49:00 edt 1995 i486 '
-    hint=recommended
-  Compiler:
-    cc='cc', optimize='-O2', ld='cc'
-    cppflags='-D__USE_BSD_SIGNAL -Dbool=char -DHAS_BOOL'
-    ccflags ='-D__USE_BSD_SIGNAL -Dbool=char -DHAS_BOOL'
-    ldflags =''
-    stdchar='char', d_stdstdio=define, usevfork=false
-    voidflags=15, castflags=0, d_casti32=undef, d_castneg=define
-    intsize=4, alignbytes=4, usemymalloc=n, randbits=31
-  Libraries:
-    so=so
-    libpth=/lib /usr/lib /usr/local/lib
-    libs=-lgdbm -ldbm -ldb -ldl -lm -lc -lbsd
-    libc=/usr/lib/libc.a
-  Dynamic Linking:
-    dlsrc=dl_dlopen.xs, dlext=so, d_dlsymun=undef
-    cccdlflags='-fpic', ccdlflags='-rdynamic', lddlflags='-shared'
+6. make install
 
-You can get this output with the myconfig script that comes with the perl5
-distribution. I think it was using dl_dlopen that fixed the problem for me.
+Or just get perl5.8.3 kit from CPAN and build a real perl.
 
 
+Other issues are that distributions vary in the fonts they come
+with and window managers vary by user AND distribution.
+So a t/entry.t and t/listbox.t in particular (which are new tests
+compared to Tk800 series) sometimes fail a few subtests.
+Sometimes when run like:
+
+  perl -Mblib t/entry.t
+
+they will pass :-(
+
+Nick Ing-Simmons 2004/03/18

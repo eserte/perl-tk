@@ -5,8 +5,8 @@
 # For conditions of distribution and use, see copyright notice in png.h
 
 # Where the zlib library and include files are located
-ZLIBLIB=/opt/zlib/lib
-ZLIBINC=/opt/zlib/include
+ZLIBLIB=../zlib
+ZLIBINC=../zlib
 
 # Note that if you plan to build a libpng shared library, zlib must also
 # be a shared library, which zlib's configure does not do.  After running

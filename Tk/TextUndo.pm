@@ -1,4 +1,4 @@
-# Copyright (c) 1995-2003 Nick Ing-Simmons.
+# Copyright (c) 1995-2004 Nick Ing-Simmons.
 # Copyright (c) 1999 Greg London.
 # All rights reserved.
 # This program is free software; you can redistribute it and/or
@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '4.013'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#13 $
+$VERSION = '4.013'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#15 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -653,6 +653,13 @@ sub FileName
  return $w->{'FILENAME'};
 }
 
+sub PerlIO_layers
+{
+ my ($w,$layers) = @_;
+ $w->{PERLIO_LAYERS} = $layers if @_ > 1;
+ return $w->{PERLIO_LAYERS} || '' ;
+}
+
 sub ConfirmDiscard
 {
  my ($w)=@_;
@@ -703,8 +710,8 @@ sub Save
  my ($w,$filename) = @_;
  $filename = $w->FileName unless defined $filename;
  return $w->FileSaveAsPopup unless defined $filename;
- local *FILE;
- if (open(FILE,">$filename"))
+ my $layers = $w->PerlIO_layers;
+ if (open(my $file,">$layers",$filename))
   {
    my $status;
    my $count=0;
@@ -715,7 +722,7 @@ sub Save
     {
 #    my $end = $w->index("$index + 1024 chars");
      my $end = $w->index("$index  lineend +1c");
-     print FILE $w->get($index,$end);
+     print $file $w->get($index,$end);
      $index = $end;
      if (($count++%1000) == 0)
       {
@@ -723,7 +730,7 @@ sub Save
       }
     }
    $progress->withdraw if defined $progress;
-   if (close(FILE))
+   if (close($file))
     {
      $w->ResetUndo;
      $w->FileName($filename);
@@ -742,22 +749,23 @@ sub Load
  my ($w,$filename) = @_;
  $filename = $w->FileName unless (defined($filename));
  return 0 unless defined $filename;
- local *FILE;
- if (open(FILE,"<$filename"))
+ my $layers = $w->PerlIO_layers;
+ if (open(my $file,"<$layers",$filename))
   {
    $w->MainWindow->Busy;
    $w->EmptyDocument;
    my $count=1;
    my $progress;
-   while (<FILE>)
+   while (<$file>)
     {
      $w->SUPER::insert('end',$_);
      if (($count++%1000) == 0)
       {
-       $progress = $w->TextUndoFileProgress (Loading => $filename,$count,tell(FILE),-s $filename);
+       $progress = $w->TextUndoFileProgress (Loading => $filename,
+                         $count,tell($file),-s $filename);
       }
     }
-   close(FILE);
+   close($file);
    $progress->withdraw if defined $progress;
    $w->markSet('insert' => '1.0');
    $w->FileName($filename);
@@ -774,23 +782,25 @@ sub IncludeFile
  my ($w,$filename) = @_;
  unless (defined($filename))
   {$w->BackTrace("filename not specified"); return;}
- if (open(FILE,"<$filename"))
+ my $layers = $w->PerlIO_layers;
+ if (open(my $file,"<$layers",$filename))
   {
    $w->Busy;
    my $count=1;
    $w->addGlobStart;
    my $progress;
-   while (<FILE>)
+   while (<$file>)
     {
      $w->insert('insert',$_);
      if (($count++%1000) == 0)
       {
-       $progress = $w->TextUndoFileProgress(Including => $filename,$count,tell(FILE),-s $filename);
+       $progress = $w->TextUndoFileProgress(Including => $filename,
+                        $count,tell($file),-s $filename);
       }
     }
    $progress->withdraw if defined $progress;
    $w->addGlobEnd;
-   close(FILE);
+   close($file);
    $w->Unbusy;
   }
  else

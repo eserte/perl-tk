@@ -1,4 +1,4 @@
-# Copyright (c) 1995-2003 Nick Ing-Simmons. All rights reserved.
+# Copyright (c) 1995-2004 Nick Ing-Simmons. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 # An example of a geometry manager "widget" in perl
@@ -7,7 +7,7 @@ require Tk;
 require Tk::Frame;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::Frame);
 

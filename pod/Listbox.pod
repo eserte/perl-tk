@@ -468,7 +468,7 @@ I<Fraction> is a fraction between 0 and 1;  0 indicates the first
 element in the listbox, 0.33 indicates the element one-third the
 way through the listbox, and so on.
 
-=item I<$listbox>-E<gt>B<yviewScroll( I<number, what> );
+=item I<$listbox>-E<gt>B<yviewScroll>( I<number, what> );
 
 This command adjusts the view in the window up or down according to
 I<number> and I<what>.

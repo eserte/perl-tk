@@ -9,7 +9,7 @@ sub MAX_LEN () { 48 }
 BEGIN
 {
  $kind = ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))?
-          ['Win32'] : ['Sun','XDND','KDE']
+          ['Win32'] : ['Sun','XDND']
 }
 use Tk::DropSite @$kind;
 use Tk::DragDrop @$kind;
@@ -18,7 +18,7 @@ use Tk::Menubar;
 $SIG{__WARN__} = sub {
 local ($_) = @_;
 warn "$_";
-if (/Malformed UTF-8 character|Attempt to free unreferenced/)
+if (/Malformed UTF-8 character|Attempt to free unreferenced|Use of uninitialized/)
  {
   Tk::abort();
  }
@@ -51,16 +51,13 @@ close(FOO);
 my $src = $top->Frame->pack;
 foreach my $k ('Local',@$kind,'Any')
  {
-  # next if $k eq 'KDE';
   my $thing = $src->Message('-text' => "$k Source")->pack(-side => 'left');
   my @list;
   @list = (-sitetypes => $k) unless $k eq 'Any';
   $thing->DragDrop(-event => '<B1-Motion>', @list,
                  -handlers => [
                    [-type => 'text/plain',[\&string_handler,"This is text/plain"]],
-#                  [-type => 'FILE_NAME',[\&string_handler,$filename]],
                    [-type => 'text/uri-list',[\&string_handler,$uri]],
-#                  [[\&string_handler,"This is STRING"]]
                  ]);
  }
 

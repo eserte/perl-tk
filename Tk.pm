@@ -62,13 +62,13 @@ use strict;
 use Carp;
 
 # Record author's perforce depot record
-$Tk::CHANGE      = q$Change: 3174 $;
+$Tk::CHANGE      = q$Change: 3215 $;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.4';
 $Tk::patchLevel  = '8.4';
-$Tk::VERSION     = '804.025';
+$Tk::VERSION     = '804.026';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 
@@ -667,6 +667,7 @@ sub FocusOK
 sub EnterFocus
 {
  my $w  = shift;
+ return unless $w;
  my $Ev = $w->XEvent;
  my $d  = $Ev->d;
  $w->Tk::focus() if ($d eq 'NotifyAncestor' ||  $d eq 'NotifyNonlinear' ||  $d eq 'NotifyInferior');

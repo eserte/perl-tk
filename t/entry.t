@@ -31,7 +31,13 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 336 }
+BEGIN {
+        # these fail (sometimes) under 'make test'
+        my @fragile = qw(160 161 167 191 193 195);
+        @fragile = () ; # unless $ENV{PERL_DL_NONLAZY};
+        plan tests => 336,
+        todo => \@fragile
+      }
 
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');

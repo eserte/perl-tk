@@ -59,6 +59,8 @@ my($c1,$c2);
 # Tests for leaking subroutine set
 
 # first binding always creates some SVs
+my $N = 100;
+
 $mw->bind("<Motion>" => [sub { warn }]);
 
 $c1 = Devel::Leak::NoteSV($handle);
@@ -66,7 +68,7 @@ for(1..100) {
     $mw->bind("<Motion>" => [sub { warn }]);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c2, $c1);
+ok($c2-$c1 <= 1, 1);
 
 
 $c1 = Devel::Leak::NoteSV($handle);
@@ -145,7 +147,6 @@ $mw->withdraw;
 $mw->update;
 my $count = 0;
 Tk->after(cancel => Tk->after(10,sub { $count-- }));
-my $N = 100;
 $c1 = Devel::Leak::NoteSV($handle);
 for (1..$N)
 {

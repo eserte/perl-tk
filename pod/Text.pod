@@ -830,14 +830,13 @@ cursor, and the insertion cursor will automatically be drawn at
 this point whenever the text widget has the input focus.
 
 =head1 THE MODIFIED FLAG
-       
+
 The text widget can keep track of changes to the content of the  widget
 by means of the modified flag. Inserting or deleting text will set this
 flag. The flag can be queried, set and cleared programatically as well.
 Whenever  the flag changes state a B<<<Modified>>> virtual event is gener-
 ated. See the edit modified widget command for more details.
 
-=back
 
 =head1 WIDGET METHODS
 
@@ -1034,7 +1033,7 @@ of the value.
 
 =item B<-window>
 
-=back 
+=back
 
 Include information about embedded windows in the dump results.
 The value of a window is its Tk pathname, unless the window
@@ -1047,7 +1046,7 @@ window by its index position to get more information.
 This  command controls the undo mechanism and the modified flag.
 The exact behavior of the command depends on the option argument
 that follows the edit argument.  The following forms of the command
-are currently supported:                                   
+are currently supported:
 
 =over 4
 
@@ -1057,7 +1056,7 @@ If boolean is not specified, returns the modified flag of
 the widget. The insert, delete, edit undo and  edit  redo
 commands  or the user can set or clear the modified flag.
 If boolean is specified, sets the modified  flag  of  the
-widget to boolean.                                       
+widget to boolean.
 
 =item I<$text>-E<gt>B<editRedo>;
 
@@ -2128,7 +2127,7 @@ true)  undoes  the last edit action if the -undo option is true.
 Does nothing otherwise.
 
 =item [33]
-     
+
 Control-Z (or Control-y on Windows) reapplies the last undone edit
 action if the -undo option is true. Does nothing otherwise.
 
@@ -2142,7 +2141,6 @@ take place.
 The behavior of texts can be changed by defining new bindings for
 individual widgets or by redefining the class bindings.
 
-=back
 
 =head1 TIED INTERFACE
 
@@ -2168,7 +2166,6 @@ For example:
 
  MainLoop;
 
-=back
 
 =head1 PERFORMANCE ISSUES
 

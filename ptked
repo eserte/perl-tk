@@ -3,9 +3,10 @@ use strict;
 use Socket;
 use IO::Socket;
 use Cwd;
+use Getopt::Long;
 
 use vars qw($VERSION $portfile);
-$VERSION = '3.006'; # $Id: //depot/Tkutf8/ptked#7 $
+$VERSION = sprintf '4.%03d', q$Revision: #29 $ =~ /\D(\d+)\s*$/;
 
 my %opt;
 INIT
@@ -14,7 +15,7 @@ INIT
   $portfile = "$home/.ptkedsn";
   my $port = $ENV{'PTKEDPORT'};
   return if $^C;
-  getopts("s",\%opt);
+  GetOptions(\%opt,qw(server! encoding=s));
   unless (defined $port)
    {
     if (open(SN,"$portfile"))
@@ -50,31 +51,59 @@ INIT
  }
 
 use Tk;
-use Tk::DropSite qw(XDND KDE Sun);
-use Tk::DragDrop qw(XDND KDE Sun);
+use Tk::DropSite qw(XDND Sun);
+use Tk::DragDrop qw(XDND Sun);
 use Tk::widgets qw(TextUndo Scrollbar Menu Dialog);
-use Getopt::Std;
 # use Tk::ErrorDialog;
 
 {
  package Tk::TextUndoPtked;
  @Tk::TextUndoPtked::ISA = qw(Tk::TextUndo);
  Construct Tk::Widget 'TextUndoPtked';
+
  sub Save {
   my $w = shift;
   $w->SUPER::Save(@_);
   $w->toplevel->title($w->FileName);
  }
+
  sub Load {
   my $w = shift;
   $w->SUPER::Load(@_);
   $w->toplevel->title($w->FileName);
  }
+
+ sub MenuLabels { shift->SUPER::MenuLabels, 'Encoding' }
+
+ sub Encoding
+ {
+  my ($w,$enc) = @_;
+  if (@_ > 1)
+   {
+    $enc = $w->getEncoding($enc) unless ref($enc);
+    $w->{ENCODING} = $enc;
+    $enc = $enc->name;
+    $w->PerlIO_layers(":encoding($enc)");
+   }
+  return $w->{ENCODING};
+ }
+
+ sub EncodingMenuItems
+ {
+  my ($w) = @_;
+  return [ [ command => 'System', -command => [ $w, Encoding => Tk::SystemEncoding()->name ]],
+           [ command => 'UTF-8',  -command => [ $w, Encoding => 'UTF-8'] ],
+           [ command => 'iso-8859-1', -command => [ $w, Encoding => 'iso8859-1'] ],
+           [ command => 'iso-8859-15', -command => [ $w, Encoding => 'iso8859-15'] ],
+         ];
+
+ }
+
 }
 
 my $top = MainWindow->new();
 
-if ($opt{'s'})
+if ($opt{'server'})
  {
   my $sock = IO::Socket::INET->new(Listen => 5, Proto => 'tcp');
   die "Cannot open listen socket:$!" unless defined $sock;
@@ -147,6 +176,9 @@ sub Create_Edit
          );
  $t->pack(-expand => 1, -fill => 'both');
  $t = $t->Subwidget('scrolled');
+
+ $t->Encoding($opt{encoding}) if $opt{encoding};
+
  my $menu = $t->menu;
  $menu->cascade(-label => '~Help', -menuitems => [
                 [Button => '~About...', -command => [\&About,$ed]],
@@ -283,7 +315,7 @@ sub About
 $0 version $VERSION
 perl$]/Tk$Tk::VERSION
 
-Copyright © 1995-2003 Nick Ing-Simmons. All rights reserved.
+Copyright © 1995-2004 Nick Ing-Simmons. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 END

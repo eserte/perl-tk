@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2000-2003 Nick Ing-Simmons. All rights reserved.
+  Copyright (c) 2000-2004 Nick Ing-Simmons. All rights reserved.
   This program is free software; you can redistribute it and/or
   modify it under the same terms as Perl itself.
 */
@@ -8,6 +8,11 @@
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
+
+#ifdef HAS_NL_LANGINFO
+#include <langinfo.h>
+#endif
+
 #define U8 U8
 #include "tkGlue.def"
 
@@ -536,12 +541,23 @@ GetSystemEncoding(void)
 {
  if (!system_encoding)
   {
-   system_encoding = Tcl_GetEncoding(NULL,"iso8859-1");
+   char *codeset = "iso8859-1";
+/* This assumes perl's Configure probe stuff is #include-d above */
+#if defined(HAS_NL_LANGINFO) && defined(CODESET)
+   codeset = nl_langinfo(CODESET);
+#endif
+   system_encoding = Tcl_GetEncoding(NULL,codeset);
   }
  return system_encoding;
 }
 
 #define PerlEncObj(enc) (HeVAL((HE *) (enc)))
+
+SV *
+Lang_SystemEncoding(void)
+{
+ return PerlEncObj(GetSystemEncoding());
+}
 
 Tcl_Encoding
 Tcl_GetEncoding (Tcl_Interp * interp, CONST char * name)
@@ -673,7 +689,7 @@ CallEncode(Tcl_Interp * interp,
  if (srcLen < 0)
   srcLen = strlen(src);
  send = s+srcLen;
- dstLen--;
+ dstLen -= 2;
  dend = d + dstLen;
  stmp = newSV(srcLen);
  while (s < send)
@@ -751,7 +767,10 @@ CallEncode(Tcl_Interp * interp,
  SvREFCNT_dec(stmp);
  *srcReadPtr  = (s - (U8 *)src);
  *dstCharsPtr = chars;
- dst[dstLen]  = '\0';
+ dst[dstLen]   = '\0';
+ dst[dstLen+1]   = '\0';
+ /* If dest is wide single '\0' may not be enough */
+ Zero(d,dend-d,char);
  *dstWrotePtr = (d- (U8 *)dst);
  return code;
 }
