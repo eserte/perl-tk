@@ -138,6 +138,14 @@ Text/README
 Text/Text.pm
 Text/Text.xs
 Text/Text/Tag.pm
+TextList/Makefile.PL
+TextList/README
+TextList/Reindex.pm
+TextList/ReindexedROText.pm
+TextList/ReindexedText.pm
+TextList/TextList.pm
+TextList/reindex.pl
+TextList/textlist_demo
 TixGrid/FloatEntry.pm
 TixGrid/Makefile.PL
 TixGrid/TixGrid.pm
@@ -210,6 +218,7 @@ Tk/ProgressBar.pm
 Tk/README.Adjust
 Tk/ROText.pm
 Tk/Radiobutton.pm
+Tk/Region.pm
 Tk/Stats.pm
 Tk/Submethods.pm
 Tk/Table.pm
@@ -261,7 +270,6 @@ WinPhoto/try
 Xlib/GC.def
 Xlib/Makefile.PL
 Xlib/README
-Xlib/X/Changes
 Xlib/X/Makefile.PL
 Xlib/X/X.pm
 Xlib/X/X.xs
@@ -1116,6 +1124,7 @@ pTk/p4e
 pTk/patchlevel.h
 pTk/process_object
 pTk/ptkCanvGrid.c
+pTk/ptkCanvGroup.c
 pTk/refs
 pTk/stbDashCustom.c
 pTk/strcasecmp.c
@@ -1141,7 +1150,6 @@ pTk/tix_f.h
 pTk/tk.exc
 pTk/tk.m
 pTk/tk.t
-pTk/tkCanvPoly.c.save
 pTk/tkCanvases.h
 pTk/tkEvent.h
 pTk/tkEvent.m
@@ -1393,11 +1401,13 @@ symbols
 t/Require.t
 t/Trace.t
 t/X.t
+t/balloon.t
 t/browseentry.t
 t/create.t
 t/fileselect.t
 t/font.t
 t/geomgr.t
+t/list.t
 t/mega.t
 t/mwm.t
 t/optmenu.t

@@ -1,12 +1,12 @@
 # Copyright (c) 1995-1999 Nick Ing-Simmons.
-# Copyright (c) 1999 Greg London. 
+# Copyright (c) 1999 Greg London.
 # All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '3.043'; # $Id: //depot/Tk8/Tk/TextUndo.pm#43 $
+$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/TextUndo.pm#45 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -20,11 +20,11 @@ sub ClassInit
 {
  my ($class,$mw) = @_;
  $mw->bind($class,'<<Undo>>','undo');
- $mw->bind($class,'<<Redo>>','redo');   
+ $mw->bind($class,'<<Redo>>','redo');
 
  return $class->SUPER::ClassInit($mw);
-}                                      
-                                                          
+}
+
 
 ####################################################################
 # methods for manipulating the undo and redo stacks.
@@ -39,7 +39,7 @@ sub ResetUndo
 }
 
 sub PushUndo
-{       
+{
  my $w = shift;
  $w->{UNDO} = [] unless (exists $w->{UNDO});
  push(@{$w->{UNDO}},@_);
@@ -130,17 +130,17 @@ sub CheckForRedoShuffle
  my $size_redo = $w->SizeRedo;
  return unless $size_redo && ($w->OperationMode eq 'normal');
  # local $DoDebug = 1;
- 
+
  # we are about to 'do' something new, but have something in REDO stack.
  # The REDOs may conflict with new ops, but we want to preserve them.
  # So convert them to UNDOs - effectively do them and their inverses
  # so net effect on the widget is no-change.
- 
+
  $w->dump_array('StartShuffle');
 
  $w->OperationMode('REDO_MAGIC');
  $w->MarkSelectionsSavePositions;
- 
+
  my @pvtundo;
 
  # go through REDO array from end downto 0, i.e. pseudo pop
@@ -151,24 +151,24 @@ sub CheckForRedoShuffle
    my ($op,@args) = @{$w->getRedoAtIndex($i)};
    my $op_undo = $op .'_UNDO';
    # save the inverse of the op on the UNDO array
-   # do this before the re-doing the op - after a 'delete' we cannot see 
-   # text we deleted! 
+   # do this before the re-doing the op - after a 'delete' we cannot see
+   # text we deleted!
    my $undo = $w->$op_undo(@args);
    $w->PushUndo($undo);
-   # We must 'do' the operation now so if this is an insert 
+   # We must 'do' the operation now so if this is an insert
    # the text and tags are available for inspection in delete_UNDO, and
    # indices reflect changes.
    $w->$op(@args);
-   # Save the undo that will reverse what we just did - it is 
+   # Save the undo that will reverse what we just did - it is
    # on the undo stack but will be tricky to find
-   push(@pvtundo,$undo);  
+   push(@pvtundo,$undo);
   }
 
  # Now shift each item off REDO array until empty
  # push each item onto UNDO array - this reverses the order
  # and we are not altering buffer so we cannot look in the
  # buffer to compute inverses - which is why we saved them above
- 
+
  while ($w->SizeRedo)
   {
    my $ref = $w->ShiftRedo;
@@ -176,13 +176,13 @@ sub CheckForRedoShuffle
   }
 
  # Finally undo whatever we did to compensate for doing it
- # and get buffer back to state it was before we started. 
+ # and get buffer back to state it was before we started.
  while (@pvtundo)
   {
    my ($op,@args) = @{pop(@pvtundo)};
    $w->$op(@args);
-  } 
-  
+  }
+
  $w->RestoreSelectionsMarkedSaved;
  $w->OperationMode('normal');
  $w->dump_array('EndShuffle');
@@ -193,7 +193,7 @@ sub OperationMode
 {
  my ($w,$mode) = @_;
  $w->{'OPERATION_MODE'} = $mode  if (@_ > 1);
- $w->{'OPERATION_MODE'} = 'normal' unless exists($w->{'OPERATION_MODE'}); 
+ $w->{'OPERATION_MODE'} = 'normal' unless exists($w->{'OPERATION_MODE'});
  return $w->{'OPERATION_MODE'};
 }
 
@@ -212,7 +212,7 @@ sub dump_array
      print " $key array is:\n";
      my $array = $w->{$key};
      foreach my $ref (@$array)
-      {                              
+      {
        my @items;
        foreach my $item (@$ref)
         {
@@ -269,7 +269,7 @@ sub addGlobStart	# add it to end of undo list
 
 sub addGlobEnd		# add it to end of undo list
 {
- my ($w, $who) = @_;                            
+ my ($w, $who) = @_;
  unless (defined($who)) {$who = (caller(1))[3];}
  my $topundo = $w->getUndoAtIndex(-1);
  if ($topundo->[0] eq 'GlobStart')
@@ -298,7 +298,7 @@ sub GlobStart
  my ($w, $who) = @_;
  unless (defined($w->{GLOB_COUNT})) {$w->{GLOB_COUNT}=0;}
  if ($w->OperationMode eq 'normal')
-  { 
+  {
    $w->PushUndo($w->GlobStart_UNDO($who));
   }
  $w->{GLOB_COUNT} = $w->{GLOB_COUNT} + 1;
@@ -316,8 +316,8 @@ sub GlobEnd
  my ($w, $who) = @_;
  unless (defined($w->{GLOB_COUNT})) {$w->{GLOB_COUNT}=0;}
  if ($w->OperationMode eq 'normal')
-  { 
-   $w->PushUndo($w->GlobStart_UNDO($who)); 
+  {
+   $w->PushUndo($w->GlobStart_UNDO($who));
   }
  $w->{GLOB_COUNT} = $w->{GLOB_COUNT} - 1;
 }
@@ -333,7 +333,7 @@ sub GlobCount
 {
  my ($w,$count) = @_;
  unless ( exists($w->{'GLOB_COUNT'}) and defined($w->{'GLOB_COUNT'}) )
-  { 
+  {
    $w->{'GLOB_COUNT'}=0;
   }
  if (defined($count))
@@ -445,7 +445,7 @@ sub insert_UNDO
  else
   {
    $col += length($string);
-  }    
+  }
  return ['delete', $index, $line.'.'.$col];
 }
 
@@ -471,8 +471,8 @@ sub delete_UNDO
 {
  my ($w, $index1, $index2) = @_;
  my %tags;
- my @result = ( 'insert' => $index1 );          
- my $str   = ''; 
+ my @result = ( 'insert' => $index1 );
+ my $str   = '';
 
  ###############################################################
  # get tags in range and return them in a format that
@@ -578,14 +578,14 @@ sub InsertKeypress
  my ($w,$char)=@_;
  return if $char eq '';
  if ($char =~ /^\S$/ and !$w->OverstrikeMode and !$w->tagRanges('sel'))
-  {        
+  {
    my $index = $w->index('insert');
    my $undo_item = $w->getUndoAtIndex(-1);
-   if (defined($undo_item) && 
+   if (defined($undo_item) &&
        ($undo_item->[0] eq 'delete') &&
-       ($undo_item->[2] == $index) 
+       ($undo_item->[2] == $index)
       )
-    {        
+    {
      $w->SUPER::insert($index,$char);
      $undo_item->[2] = $w->index('insert');
      return;
@@ -604,22 +604,22 @@ sub TextUndoFileProgress
 
  my $popup = $w->{'FILE_PROGRESS_POP_UP'};
  unless (defined($popup))
-  {  
-   $w->update;                    
-   $popup = $w->Toplevel(-title => "File Progress",-popover => $w); 
+  {
+   $w->update;
+   $popup = $w->Toplevel(-title => "File Progress",-popover => $w);
    $popup->transient($w->toplevel);
    $popup->withdraw;
    $popup->resizable('no','no');
    $popup->Label(-textvariable => \$popup->{ACTION})->pack;
    $popup->Label(-textvariable => \$popup->{FILENAME})->pack;
-   $popup->Label(-textvariable => \$popup->{COUNT})->pack;                       
+   $popup->Label(-textvariable => \$popup->{COUNT})->pack;
    my $f = $popup->Frame(-height => 10, -border => 2, -relief => 'sunken')->pack(-fill => 'x');
    my $i = $f->Frame(-background => 'blue', -relief => 'raised', -border => 2);
    $w->{'FILE_PROGRESS_POP_UP'} = $popup;
    $popup->{PROGBAR} = $i;
-  }     
+  }
  $popup->{ACTION}   = $action;
- $popup->{COUNT}    = "lines: $count"; 
+ $popup->{COUNT}    = "lines: $count";
  $popup->{FILENAME} = "Filename: $filename";
  if (defined($val) && defined($total) && $total != 0)
   {
@@ -630,12 +630,12 @@ sub TextUndoFileProgress
    $popup->{PROGBAR}->placeForget;
   }
 
- $popup->idletasks; 
+ $popup->idletasks;
  unless ($popup->viewable)
-  {    
+  {
    $w->idletasks;
    $w->toplevel->deiconify unless $w->viewable;
-   $popup->Popup; 
+   $popup->Popup;
   }
  $popup->update;
  return $popup;
@@ -716,7 +716,7 @@ sub Save
      print FILE $w->get($index,$end);
      $index = $end;
      if (($count++%1000) == 0)
-      { 
+      {
        $progress = $w->TextUndoFileProgress (Saving => $filename,$count,$count,$lines);
       }
     }
@@ -731,7 +731,7 @@ sub Save
  else
   {
    $w->BackTrace("Cannot open $filename:$!");
-  }          
+  }
  return 0;
 }
 
@@ -751,7 +751,7 @@ sub Load
     {
      $w->SUPER::insert('end',$_);
      if (($count++%1000) == 0)
-      { 
+      {
        $progress = $w->TextUndoFileProgress (Loading => $filename,$count,tell(FILE),-s $filename);
       }
     }
@@ -818,11 +818,11 @@ sub FileMenuItems
 {
  my ($w) = @_;
  return [
-   ["command"=>'~Open',    -command => sub{$w->FileLoadPopup;}],
-   ["command"=>'~Save',    -command => sub{$w->Save} ],
-   ["command"=>'Save ~As', -command => sub{$w->FileSaveAsPopup;}],
-   ["command"=>'~Include', -command => sub{$w->IncludeFilePopup;}],
-   ["command"=>'~Clear',   -command => sub{$w->ConfirmEmptyDocument;}],
+   ["command"=>'~Open',    -command => [$w => 'FileLoadPopup']],
+   ["command"=>'~Save',    -command => [$w => 'Save' ]],
+   ["command"=>'Save ~As', -command => [$w => 'FileSaveAsPopup']],
+   ["command"=>'~Include', -command => [$w => 'IncludeFilePopup']],
+   ["command"=>'~Clear',   -command => [$w => 'ConfirmEmptyDocument']],
    "-",@{$w->SUPER::FileMenuItems}
   ]
 }
@@ -832,8 +832,8 @@ sub EditMenuItems
  my ($w) = @_;
 
  return [
-    ["command"=>'Undo', -command => sub{$w->undo;}],
-    ["command"=>'Redo', -command => sub{$w->redo;}],
+    ["command"=>'Undo', -command => [$w => 'undo']],
+    ["command"=>'Redo', -command => [$w => 'redo']],
      "-",@{$w->SUPER::EditMenuItems}
   ];
 }
@@ -894,9 +894,9 @@ sub MarkSelectionsSavePositions
  while (@ranges)
   {
    my ($start,$end) = splice(@ranges,0,2);
-   $w->markSet( 'MarkSelectionsSavePositions_'.++$i, $start); 
-   $w->markSet( 'MarkSelectionsSavePositions_'.++$i, $end); 
-   $w->tagRemove('sel',$start,$end); 
+   $w->markSet( 'MarkSelectionsSavePositions_'.++$i, $start);
+   $w->markSet( 'MarkSelectionsSavePositions_'.++$i, $end);
+   $w->tagRemove('sel',$start,$end);
   }
 }
 
@@ -936,7 +936,7 @@ sub SelectedLineNumbers
    my ($last) = split(/\./,shift(@ranges));
    # if previous selection ended on the same line that this selection starts,
    # then fiddle the numbers so that this line number isnt included twice.
-   if (defined($selection_list[-1]) and ($first == $selection_list[-1])) 
+   if (defined($selection_list[-1]) and ($first == $selection_list[-1]))
     {
      # if this selection ends on the same line its starts, then skip this sel
      next if ($first == $last);

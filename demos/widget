@@ -6,7 +6,7 @@ eval 'exec /usr/local/bin/perl -w -S $0 ${1+"$@"}'
 require 5.004;
 
 use English;
-use Tk;
+use Tk 800.000;
 use lib Tk->findINC('demos/widget_lib');
 use Tk::widgets qw/Dialog ErrorDialog ROText/;
 use WidgetDemo;
@@ -19,6 +19,7 @@ use strict;
 
  
 $MW = Tk::MainWindow->new;
+$MW->configure(-menu => my $menubar = $MW->Menu);
 
 { 
     package WidgetWrap;
@@ -52,25 +53,22 @@ unless (Tk::tainting) {
 # and a text widget that explains how to use the program, plus lists
 # all of the demos as hypertext items.
 
-my $menubar = $MW->Frame;
-$menubar->grid(qw/-sticky ew/);
-$menubar->gridColumnconfigure(qw/0 -weight 1/);
+my $file = $menubar->cascade(qw/-label File -underline 0 -menuitems/ =>
+    [
+      [cascade    => '~View', -menuitems =>
+        [
+          [command  => '~widget', -command => [\&view_widget_code, __FILE__]],
+          [command  => '~WidgetDemo', -command => [\&view_widget_code, $wd]],
+        ], # end cascade menuitems
+      ], # end view cascade
+      '',
+      [command    => '~Quit', -command => [\&exit]],
+    ]);
 
-my $file = $menubar->Menubutton(qw/-text File -underline 0 -menuitems/ =>
+my $help = $menubar->cascade(qw/-label Help -underline 0 -menuitems/ =>
     [
-     [Cascade   => '~View', -menuitems =>
-      [
-       [Button  => '~widget', -command => [\&view_widget_code, __FILE__]],
-       [Button  => '~WidgetDemo', -command => [\&view_widget_code, $wd]],
-      ], # end cascade menuitems
-     ], # end view cascade
-     [Separator => ''],
-     [Button    => '~Quit', -command => [\&exit]],
-    ])->grid(qw/-sticky w/); 
-my $about = $menubar->Menubutton(qw/-text About -underline 0 -menuitems/ =>
-    [
-     [Button    => '~Widget'],
-    ])->grid(qw/-row 0 -column 1 -sticky w/); 
+      [command    => '~About'],
+    ]);
 
 my $T = $MW->Scrolled('ROText',
     -scrollbars => 'e',		  
@@ -244,9 +242,11 @@ my $DIALOG_ABOUT = $MW->Dialog(
     -default_button => 'OK',
     -buttons        => ['OK'],
     -text           => "         widget\n\nPerl Version $]" .
-		       "\nTk Version $Tk::VERSION\n\n        98/05/24",
+		       "\nTk Version $Tk::VERSION\n\n      2000/01/11",
 );
-$about->entryconfigure('Widget', -command => [$DIALOG_ABOUT => 'Show']);
+$help->cget(-menu)->entryconfigure('About',
+    -command => [$DIALOG_ABOUT => 'Show'],
+);
 
 my $DIALOG_ICON = $MW->Dialog(
     -title          => 'Bitmap Menu Entry',
@@ -267,7 +267,6 @@ sub AUTOLOAD {
 
     $T->Busy;
     {
-	local @Tk::EXPORT;
 	$DEMO_FILE = "$WIDTRIB/${demo}.pl" if -f "$WIDTRIB/${demo}.pl";
 	$DEMO_FILE = "$widget_lib/${demo}.pl" if -f "$widget_lib/${demo}.pl";
 	do $DEMO_FILE;
@@ -513,11 +512,13 @@ defaults to the released user contributed directory.
  #     Update for Tk8.
  # Stephen O. Lidie, LUCC, 98/06/26.  Stephen.O.Lidie@Lehigh.EDU
  #     Add Common Dialogs for Tk800.007.
+ # Stephen.O.Lidie@Lehigh.EDU, 1999/11/29, Lehigh University.
+ #     Demo some "dash patch" changes.
+ # Stephen.O.Lidie@Lehigh.EDU, 2000/01/11, Lehigh University.
+ #     Update menubar to Tk 8, fix color palette Menubutton demo.
 
 =head1 AUTHOR
 
 Steve Lidie <Stephen.O.Lidie@Lehigh.EDU>
 
 =cut 
-
-

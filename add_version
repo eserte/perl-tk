@@ -31,7 +31,7 @@ if ($opt{'o'})
       warn "Not ktext : $_";
       next;
      }
-    chomp;               
+    chomp;
     s/#\d+\s+-.*$//;
     $_ = `p4 have $_`;
     s/^.*#\d+\s+-\s+//;
@@ -64,12 +64,15 @@ my $seen = 0;
 my $edit = 0;
 while (<>)
  {
-  if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$.*$/)
+  $edit |= s/\r//g;
+  s/ +$//;
+  if (/^\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$\s*(?:\+(\d+))?.*$/)
    {
     $seen = 1;
     my $maj  = $1;
     my $min  = $2;
     my $path = $3;
+    my $inc  = $4;
     my $need = 0;
     unless ($path =~ /#(\d+)/)
      {
@@ -81,11 +84,20 @@ while (<>)
      {
       $need = (-w $ARGV) ? $1+1 : $1;
      }
+    if (defined($inc))
+     {
+      $need += $inc;
+      $inc  = " +$inc";
+     }
+    else
+     {
+      $inc = '';
+     }
     if ($maj != $opt{'p'} || $min != $need)
      {
       warn "-$ARGV:$_";
       $need++ unless -w $ARGV;
-      $_ = sprintf("\$VERSION = '%d.%03d'; # \$Id: $path\$\n",$opt{'p'},$need);
+      $_ = sprintf("\$VERSION = '%d.%03d'; # \$Id: $path\$$inc\n",$opt{'p'},$need);
       warn "+$ARGV:$_";
       $edit = 1;
      }

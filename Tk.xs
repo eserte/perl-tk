@@ -49,6 +49,7 @@ DebugHook(SV *sv)
 #define pTk_exit(status) Tcl_Exit(status)
 
 #define XEvent_DESTROY(obj)
+#define Callback_DESTROY(obj)
 
 #define Tk_XRaiseWindow(w) XRaiseWindow(Tk_Display(w),Tk_WindowId(w))
 
@@ -217,7 +218,7 @@ CODE:
  }
 
 
-MODULE = Tk	PACKAGE = Tk::Callback
+MODULE = Tk	PACKAGE = Tk::Callback	PREFIX = Callback_
 
 void
 new(package,what)
@@ -278,12 +279,8 @@ CODE:
 }
 
 void
-DESTROY(object)
+Callback_DESTROY(object)
 SV *	object
-CODE:
- {
-  ST(0) = &PL_sv_undef;
- }
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk
 
@@ -333,6 +330,19 @@ pTk_exit(status = 0)
 int	status
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = Tk_
+
+void
+Tk_CheckHash(widget)
+SV *	widget
+
+void
+Debug(widget,string)
+SV *	widget;
+char *	string
+CODE:
+ {
+  LangDumpVec(string,1,&SvRV(widget));
+ }
 
 void
 WidgetMethod(widget,name,...)

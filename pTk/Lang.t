@@ -1,9 +1,5 @@
 #ifdef _LANG
 VVAR(Tcl_CmdProc *,LangOptionCommand,V_LangOptionCommand)
-#ifndef LangAllocVec
-VFUNC(Arg *,LangAllocVec,V_LangAllocVec,_ANSI_ARGS_((int count)))
-#endif
-
 #ifndef LangBadFile
 VFUNC(void,LangBadFile,V_LangBadFile,_ANSI_ARGS_((int fd)))
 #endif
@@ -50,10 +46,6 @@ VFUNC(void,LangFreeArg,V_LangFreeArg,_ANSI_ARGS_((Arg,Tcl_FreeProc *freeProc)))
 
 #ifndef LangFreeVar
 VFUNC(void,LangFreeVar,V_LangFreeVar,_ANSI_ARGS_((Var)))
-#endif
-
-#ifndef LangFreeVec
-VFUNC(void,LangFreeVec,V_LangFreeVec,_ANSI_ARGS_((int,Arg *)))
 #endif
 
 #ifndef LangLibraryDir
@@ -110,10 +102,6 @@ VFUNC(void,LangSetString,V_LangSetString,_ANSI_ARGS_((Arg *,char *)))
 
 #ifndef LangString
 VFUNC(char *,LangString,V_LangString,_ANSI_ARGS_((Arg)))
-#endif
-
-#ifndef LangStringArg
-VFUNC(Arg,LangStringArg,V_LangStringArg,_ANSI_ARGS_((char *)))
 #endif
 
 #ifndef LangStringMatch
@@ -184,18 +172,6 @@ VFUNC(void,Lang_SetBinaryResult,V_Lang_SetBinaryResult,_ANSI_ARGS_((Tcl_Interp *
 VFUNC(void,Lang_SetErrorCode,V_Lang_SetErrorCode,_ANSI_ARGS_((Tcl_Interp *interp,char *code)))
 #endif
 
-#ifndef Lang_SplitList
-VFUNC(int,Lang_SplitList,V_Lang_SplitList,_ANSI_ARGS_((Tcl_Interp *interp,
-			    Arg list, int *argcPtr, Arg **argsPtr, 
-			    LangFreeProc **)))
-#endif
-
-#ifndef Lang_SplitString
-VFUNC(int,Lang_SplitString,V_Lang_SplitString,_ANSI_ARGS_((Tcl_Interp *interp,
-			    const char *list, int *argcPtr, Arg **argsPtr, 
-			    LangFreeProc **)))
-#endif
-
 #ifndef Tcl_AddErrorInfo
 VFUNC(void,Tcl_AddErrorInfo,V_Tcl_AddErrorInfo,_ANSI_ARGS_((Tcl_Interp *interp,
 			    char *message)))
@@ -224,10 +200,6 @@ VFUNC(void,Tcl_AppendResult,V_Tcl_AppendResult,_ANSI_ARGS_(TCL_VARARGS(Tcl_Inter
 
 #ifndef Tcl_AppendStringsToObj
 VFUNC(void,Tcl_AppendStringsToObj,V_Tcl_AppendStringsToObj,_ANSI_ARGS_(TCL_VARARGS(Tcl_Obj *,interp)))
-#endif
-
-#ifndef Tcl_ArgResult
-VFUNC(void,Tcl_ArgResult,V_Tcl_ArgResult,_ANSI_ARGS_((Tcl_Interp *interp, Arg)))
 #endif
 
 #ifndef Tcl_BackgroundError
@@ -504,10 +476,6 @@ VFUNC(int,Tcl_ListObjLength,V_Tcl_ListObjLength,_ANSI_ARGS_((Tcl_Interp *interp,
 VFUNC(int,Tcl_ListObjReplace,V_Tcl_ListObjReplace,_ANSI_ARGS_((Tcl_Interp *interp,
 			    Tcl_Obj *listPtr, int first, int count,
 			    int objc, Tcl_Obj *CONST objv[])))
-#endif
-
-#ifndef Tcl_Merge
-VFUNC(Arg,Tcl_Merge,V_Tcl_Merge,_ANSI_ARGS_((int argc, Arg *argv)))
 #endif
 
 #ifndef Tcl_NewBooleanObj

@@ -242,10 +242,10 @@ Tk_ItemType tkPolygonType = {
     PolygonToPostscript,		/* postscriptProc */
     ScalePolygon,			/* scaleProc */
     TranslatePolygon,			/* translateProc */
-    (Tk_ItemIndexProc *) GetPolygonIndex,/* indexProc */
+    GetPolygonIndex,			/* indexProc */
     (Tk_ItemCursorProc *) NULL,		/* icursorProc */
     (Tk_ItemSelectionProc *) NULL,	/* selectionProc */
-    (Tk_ItemInsertProc *) PolygonInsert,/* insertProc */
+    PolygonInsert,			/* insertProc */
     PolygonDeleteCoords,		/* dTextProc */
     (Tk_ItemType *) NULL,		/* nextPtr */
     (Tk_ItemBboxProc *) ComputePolygonBbox,/* bboxProc */
@@ -495,7 +495,7 @@ ConfigurePolygon(interp, canvas, itemPtr, argc, argv, flags)
      * graphics contexts.
      */
 
-    state = itemPtr->state;
+    state = Tk_GetItemState(canvas, itemPtr);
 
     if (polyPtr->outline.activeWidth > polyPtr->outline.width ||
 	    polyPtr->outline.activeDash.number > 0 ||
@@ -510,9 +510,6 @@ ConfigurePolygon(interp, canvas, itemPtr, argc, argv, flags)
 	itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
     }
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
     if (state==TK_STATE_HIDDEN) {
 	ComputePolygonBbox(canvas, polyPtr);
 	return TCL_OK;
@@ -686,12 +683,9 @@ ComputePolygonBbox(canvas, polyPtr)
     double *coordPtr;
     int i;
     double width;
-    Tk_State state = polyPtr->header.state;
+    Tk_State state = Tk_GetItemState(canvas, &polyPtr->header);
     Tk_TSOffset *tsoffset;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
     width = polyPtr->outline.width;
     if (polyPtr->coordPtr == NULL || (polyPtr->numPoints < 1) || (state==TK_STATE_HIDDEN)) {
 	polyPtr->header.x1 = polyPtr->header.x2 =
@@ -943,7 +937,7 @@ DisplayPolygon(canvas, itemPtr, display, drawable, x, y, width, height)
 					 * must be redisplayed (not used). */
 {
     PolygonItem *polyPtr = (PolygonItem *) itemPtr;
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
     Tk_Tile tile = polyPtr->fillTile;
     Pixmap stipple = polyPtr->fillStipple;
     double linewidth = polyPtr->outline.width;
@@ -954,9 +948,6 @@ DisplayPolygon(canvas, itemPtr, display, drawable, x, y, width, height)
 	return;
     }
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
 	if (polyPtr->outline.activeWidth>linewidth) {
 	    linewidth = polyPtr->outline.activeWidth;
@@ -1094,11 +1085,7 @@ PolygonInsert(canvas, itemPtr, beforeThis, obj)
     int length, argc, i;
     Tcl_Obj **objv;
     double *new;
-    Tk_State state = itemPtr->state;
-
-    if (state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
     if (!obj || (Tcl_ListObjGetElements((Tcl_Interp *) NULL, obj, &argc, &objv) != TCL_OK)
 	    || !argc || argc&1) {
@@ -1301,13 +1288,10 @@ PolygonToPoint(canvas, itemPtr, pointPtr)
 				 * had to be treated as beveled after all
 				 * because the angle was < 11 degrees. */
     int width;
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
     bestDist = 1.0e36;
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
     width = (int) polyPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
 	if (polyPtr->outline.activeWidth>width) {
@@ -1501,11 +1485,7 @@ PolygonToArea(canvas, itemPtr, rectPtr)
 				 * was outside the area.  0 means overlap
 				 * has been found. */ 
     double width;
-    Tk_State state = itemPtr->state;
-
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
 
     width = polyPtr->outline.width;
     if (((TkCanvas *)canvas)->currentItemPtr == itemPtr) {
@@ -1733,7 +1713,20 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
 {
     PolygonItem *polyPtr = (PolygonItem *) itemPtr;
     int length;
-    char *string = Tcl_GetStringFromObj(obj, &length);
+    char *string;
+    int i;
+    double x ,y, bestDist, dist, *coordPtr;
+    char *end, *p;                                      
+
+    Tcl_Obj **objv;
+
+    if (Tcl_ListObjGetElements(interp, obj, &i, &objv) == TCL_OK && i == 2
+	&& Tcl_GetDoubleFromObj(interp, objv[0], &x) == TCL_OK
+	&& Tcl_GetDoubleFromObj(interp, objv[1], &y) == TCL_OK) {
+	goto doxy;
+    } 
+
+    string = Tcl_GetStringFromObj(obj, &length);
 
     if (string[0] == 'e') {
 	if (strncmp(string, "end", length) == 0) {
@@ -1752,9 +1745,6 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
 	    return TCL_ERROR;
 	}
     } else if (string[0] == '@') {
-	int i;
-	double x ,y, bestDist, dist, *coordPtr;
-	char *end, *p;
 
 	p = string+1;
 	x = strtod(p, &end);
@@ -1765,7 +1755,8 @@ GetPolygonIndex(interp, canvas, itemPtr, obj, indexPtr)
 	y = strtod(p, &end);
 	if ((end == p) || (*end != 0)) {
 	    goto badIndex;
-	}
+	}                       
+      doxy:
 	bestDist = 1.0e36;
 	coordPtr = polyPtr->coordPtr;
 	*indexPtr = 0;
@@ -1872,16 +1863,13 @@ PolygonToPostscript(interp, canvas, itemPtr, prepass)
     XColor *fillColor;
     Pixmap stipple;
     Pixmap fillStipple;
-    Tk_State state = itemPtr->state;
+    Tk_State state = Tk_GetItemState(canvas, itemPtr);
     double width;
 
     if (polyPtr->numPoints<2 || polyPtr->coordPtr==NULL) {
 	return TCL_OK;
     }
 
-    if(state == TK_STATE_NULL) {
-	state = ((TkCanvas *)canvas)->canvas_state;
-    }
     width = polyPtr->outline.width;
     color = polyPtr->outline.color;
     stipple = polyPtr->fillStipple;

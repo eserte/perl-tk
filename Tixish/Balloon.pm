@@ -5,7 +5,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = '3.030'; # $Id: //depot/Tk8/Tixish/Balloon.pm#30 $
+$VERSION = '3.037'; # $Id: //depot/Tk8/Tixish/Balloon.pm#37 $
 
 use Tk qw(Ev Exists);
 use Carp;
@@ -103,19 +103,24 @@ sub attach {
 # detach a client from the balloon.
 sub detach {
     my ($w, $client) = @_;
-    return unless Exists($w);
-    $w->Deactivate if ($client->IS($w->{'client'}));
+    if (Exists($w))
+     {
+      $w->Deactivate if ($client->IS($w->{'client'}));
+     }
     delete $w->{'clients'}{$client};
-}                                    
+}
 
 sub GetOption
 {
  my ($w,$opt,$client) = @_;
- $client = $w->{'client'} unless $client;
- my $info = $w->{'clients'}{$client};
- return $info->{$opt} if exists $info->{$opt};
+ $client = $w->{'client'} unless defined $client;
+ if (defined $client)
+  {
+   my $info = $w->{'clients'}{$client};
+   return $info->{$opt} if exists $info->{$opt};
+  }
  return $w->cget($opt);
-} 
+}
 
 sub Motion {
     my ($ewin, $x, $y, $s) = @_;
@@ -149,20 +154,21 @@ sub Motion {
 	    }
 	    # Deactivate it if the motioncommand says to:
             my $command = $w->GetOption(-motioncommand => $client);
-	    $deactivate = $command->Call if defined $command;
+	    $deactivate = $command->Call($client, $x, $y) if defined $command;
             if ($deactivate)
              {
               $w->Deactivate;
              }
             else
              {
+              # warn "deact: $client $w->{'client'}";
               $w->Deactivate unless $client->IS($w->{'client'});
-              my $msg = $client->BalloonInfo($w,$x,$y,'-statusmsg','-balloonmsg');    
+              my $msg = $client->BalloonInfo($w,$x,$y,'-statusmsg','-balloonmsg');
               if (defined($msg))
-               {   
+               {
                 my $delay = delete $w->{'delay'};
                 $delay->cancel if defined $delay;
-                my $initwait = $w->GetOption(-initwait => $client);                   
+                my $initwait = $w->GetOption(-initwait => $client);
                 $w->{'delay'} = $client->after($initwait, sub {$w->SwitchToClient($client);});
                 $w->{'client'} = $client;
                }
@@ -197,7 +203,7 @@ sub SwitchToClient {
     my $command = $w->GetOption(-postcommand => $client);
     if (defined $command) {
 	# Execute the user's command and return if it returns false:
-	my $pos = $command->Call;
+	my $pos = $command->Call($client);
 	return if not $pos;
 	if ($pos =~ /^(\d+),(\d+)$/) {
 	    # Save the returned position so the Popup method can use it:
@@ -217,17 +223,19 @@ sub Subclient
  if (defined($w->{'subclient'}) && (!defined($data) || $w->{'subclient'} ne $data))
   {
    $w->Deactivate;
-  } 
+  }
  $w->{'subclient'} = $data;
 }
 
-sub Verify {                
+sub Verify {
     my $w      = shift;
     my $client = shift;
     my ($X,$Y) = (@_) ? @_ : ($w->pointerxy);
     my $over = $w->Containing($X,$Y);
     return if not defined $over or ($over->toplevel eq $w);
-    my $deactivate = ($over ne $client) or not $client->IS($w->{'client'}) 
+    my $deactivate = # DELETE? or move it to the isa-Menu section?:
+	             # ($over ne $client) or
+	             not $client->IS($w->{'client'})
                      or (!$client->isa('Tk::Menu') && $w->grabCurrent);
     if ($deactivate)
      {
@@ -239,7 +247,7 @@ sub Verify {
      }
 }
 
-sub Deactivate {                 
+sub Deactivate {
     my ($w) = @_;
     my $delay = delete $w->{'delay'};
     $delay->cancel if defined $delay;
@@ -248,7 +256,7 @@ sub Deactivate {
 	my $command = $w->GetOption(-cancelcommand => $client);
 	if (defined $command) {
 	    # Execute the user's command and return if it returns false:
-	    return if not $command->Call;
+	    return if not $command->Call($client);
 	}
 	$w->withdraw;
 	$w->ClearStatus;
@@ -259,48 +267,6 @@ sub Deactivate {
     $w->{'client'} = undef;
     $w->{'subclient'} = undef;
 }
-
-sub Tk::Canvas::BalloonInfo
-{
- my ($canvas,$balloon,$X,$Y,@opt) = @_;
- my @tags = ($canvas->find('withtag', 'current'),$canvas->gettags('current'));
- foreach my $opt (@opt)
-  {
-   my $info = $balloon->GetOption($opt,$canvas);
-   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'HASH'))
-    {                     
-     $balloon->Subclient($tags[0]);
-     foreach my $tag (@tags) 
-      {              
-       return $info->{$tag} if exists $info->{$tag};
-      }         
-     return ''; 
-    }           
-   return $info;
-  }
-}                                  
-
-sub Tk::Menu::BalloonInfo
-{
- my ($menu,$balloon,$X,$Y,@opt) = @_;
- my $i = $menu->index('active');
- if ($i eq 'none') 
-  {
-   my $y = $Y - $menu->rooty;
-   $i = $menu->index("\@$y");
-  }                             
- foreach my $opt (@opt)
-  {
-   my $info = $balloon->GetOption($opt,$menu);
-   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'ARRAY'))
-    {           
-     $balloon->Subclient($i);
-     return '' if $i eq 'none';
-     return ${$info}[$i] || '';
-    }           
-   return $info;
-  }
-}       
 
 sub Popup {
     my ($w) = @_;
@@ -350,16 +316,6 @@ sub Popup {
     $w->deiconify();
     $w->raise;
     #$w->update;  # This can cause confusion by processing more Motion events before this one has finished.
-}                                           
-
-sub Tk::Widget::BalloonInfo
-{
- my ($widget,$balloon,$X,$Y,@opt) = @_;
- foreach my $opt (@opt)
-  {
-   my $info = $balloon->GetOption($opt,$widget);
-   return $info if defined $info;
-  }
 }
 
 sub SetStatus {

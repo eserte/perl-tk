@@ -1,6 +1,6 @@
 package Tk::Canvas;
 use vars qw($VERSION);
-$VERSION = '3.014'; # $Id: //depot/Tk8/Canvas/Canvas.pm#14 $
+$VERSION = '3.016'; # $Id: //depot/Tk8/Canvas/Canvas.pm#16 $
 
 use Tk qw($XS_VERSION);
 
@@ -32,7 +32,29 @@ sub ClassInit
  my ($class,$mw) = @_;
  $mw->XYscrollBind($class);
  return $class;
-}
+}          
+
+sub BalloonInfo
+{
+ my ($canvas,$balloon,$X,$Y,@opt) = @_;
+ my @tags = ($canvas->find('withtag', 'current'),$canvas->gettags('current'));
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$canvas);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'HASH'))
+    {                     
+     $balloon->Subclient($tags[0]);
+     foreach my $tag (@tags) 
+      {              
+       return $info->{$tag} if exists $info->{$tag};
+      }         
+     return ''; 
+    }           
+   return $info;
+  }
+}                                  
+
+
 
 1;
 

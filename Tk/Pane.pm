@@ -7,7 +7,7 @@
 package Tk::Pane;
 
 use vars qw($VERSION);
-$VERSION = '3.006'; # $Id: //depot/Tk8/Tk/Pane.pm#6 $
+$VERSION = '3.008'; # $Id: //depot/Tk8/Tk/Pane.pm#8 $
 
 use Tk;
 use Tk::Widget;
@@ -32,8 +32,8 @@ sub Populate {
 
     my $frame    = $pan->Component(Frame => "frame");
 
-    $pan->DoWhenIdle(['Manage',$pan,$frame]);
-    $pan->DoWhenIdle(['QueueLayout',$pan,1]);
+    $pan->afterIdle(['Manage',$pan,$frame]);
+    $pan->afterIdle(['QueueLayout',$pan,1]);
 
     $pan->Delegates(
 	DEFAULT => $frame,
@@ -86,7 +86,7 @@ sub pack {
 sub QueueLayout {
     shift if ref $_[1];
     my($m,$why) = @_;
-    $m->DoWhenIdle(['Layout',$m]) unless ($m->{LayoutPending});
+    $m->afterIdle(['Layout',$m]) unless ($m->{LayoutPending});
     $m->{LayoutPending} |= $why;
 }
 

@@ -119,6 +119,7 @@ Tcl_Main
 Tcl_MakeFileChannel
 Tcl_MakeSafe
 Tcl_MakeTcpClientChannel
+Tcl_Merge
 Tcl_NotifyChannel
 Tcl_ObjGetVar2
 Tcl_ObjSetVar2

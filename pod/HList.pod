@@ -20,10 +20,11 @@ I<$hlist> = I<$parent>-E<gt>B<HList>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
-B<-background>	B<-borderwidth>	B<-cursor>	B<-foreground>
-B<-font>	B<-height>	B<-highlightcolor>	B<-highlightthickness>
-B<-relief>	B<-selectbackground>	B<-selectforeground>
-B<-xscrollcommand>	B<-yscrollcommand>	B<-width>
+B<-background>	B<-borderwidth>	B<-cursor>	B<-exportselection>
+B<-foreground>	B<-font>	B<-height>	B<-highlightcolor>
+B<-highlightthickness>	B<-relief>	B<-selectbackground>
+B<-selectforeground>	B<-xscrollcommand>	B<-yscrollcommand>
+B<-width>
 
 See L<Tk::options> for details of the standard options.
 

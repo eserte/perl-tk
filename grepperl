@@ -6,7 +6,7 @@ my %opt;
 
 use File::Find;
 
-getopts("Flce",\%opt);
+getopts("Flce:",\%opt);
 
 my $expr;
 unless ($opt{'F'})

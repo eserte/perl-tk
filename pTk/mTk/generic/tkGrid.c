@@ -713,7 +713,6 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	Arg *indexP;		/* String value of current index list item. */
 	int ok;			/* temporary TCL result code */
 	int i;
-        LangFreeProc *freeProc = NULL;
 
 	if (((argc%2 != 0) && (argc>6)) || (argc < 4)) {
 	    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
@@ -727,7 +726,7 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	    return TCL_ERROR;
 	}
 
-	if (Lang_SplitList(interp, args[3], &argcPtr, &argsPtr, &freeProc) != TCL_OK) {
+	if (Tcl_ListObjGetElements(interp, args[3], &argcPtr, &argsPtr) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 
@@ -738,8 +737,6 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	    Tcl_AppendResult(interp, argv[3],
 		    " must be a single element.", (char *) NULL);
         problem:
-            if (freeProc)
-               (*freeProc)(argcPtr, argsPtr);
 	    return TCL_ERROR;
 	}
 	for (indexP=argsPtr; indexP < (argsPtr + argcPtr); indexP++) {
@@ -764,8 +761,6 @@ Tk_GridCmd(clientData, interp, argc, argv)
 	     */
 
 	    if (argc == 4) {
-		if (freeProc)
-		    (*freeProc)(argcPtr, argsPtr);
 		Tcl_ResetResult(interp);
 		Tcl_AppendElement(interp,"-minsize");
 		Tcl_IntResults(interp, 1, 1, (ok == TCL_OK) ? slotPtr[slot].minSize : 0);
@@ -838,8 +833,6 @@ Tk_GridCmd(clientData, interp, argc, argv)
 		}
 	    }
 	}
-	if (freeProc)
-	    (*freeProc)(argcPtr, argsPtr);
 
 	/*
 	 * If we changed a property, re-arrange the table,

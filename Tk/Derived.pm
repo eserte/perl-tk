@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '3.029'; # $Id: //depot/Tk8/Tk/Derived.pm#29 $
+$VERSION = '3.042'; # $Id: //depot/Tk8/Tk/Derived.pm#42 $
 
 $Tk::Derived::Debug = 0;
 
@@ -24,8 +24,7 @@ sub Subwidget
   {
    if (@_)
     {
-     my $name;
-     foreach $name (@_)
+     foreach my $name (@_)
       {
        push(@result,$cw->{SubWidget}{$name}) if (exists $cw->{SubWidget}{$name});
       }
@@ -92,11 +91,9 @@ sub Subconfigure
       }
      elsif ($ref eq 'HASH')
       {
-       my $key;
-       foreach $key (%$widget)
+       foreach my $key (%$widget)
         {
-         my $sw;
-         foreach $sw (_makelist($widget->{$key}))
+         foreach my $sw (_makelist($widget->{$key}))
           {
            push(@subwidget,Tk::Configure->new($sw,$key));
           }
@@ -168,7 +165,7 @@ sub _callback
 {
  my ($cw,$opt,$val) = @_;
  $cw->BackTrace('Wrong number of args to configure') unless (@_ == 3);
- $val = Tk::Callback->new($val) if defined $val;
+ $val = Tk::Callback->new($val) if defined($val) && ref($val);
  $cw->{Configure}{$opt} = $val;
 }
 
@@ -178,10 +175,17 @@ sub cget
  local $SIG{'__DIE__'};
  foreach my $sw ($cw->Subconfigure($opt))
   {
-   eval {  @result = $sw->cget($opt) };
-   last unless @_;
+   if (wantarray)
+    {
+     eval {  @result = $sw->cget($opt) };
+    }
+   else
+    {
+     eval {  $result[0] = $sw->cget($opt) };
+    }
+   last unless $@;
   }
- return (wantarray) ? @result : $result[0];
+ return wantarray ? @result : $result[0];
 }
 
 sub Configured
@@ -190,7 +194,7 @@ sub Configured
  my ($cw,$args,$changed) = @_;
  if (@_ > 1)
   {
-   $cw->DoWhenIdle(['ConfigChanged',$cw,$changed]) if (%$changed);
+   $cw->afterIdle(['ConfigChanged',$cw,$changed]) if (%$changed);
   }
  return exists $cw->{'Configure'};
 }
@@ -275,12 +279,11 @@ sub configure
    my (%args) = @_;
    my %changed = ();
    my ($opt,$val);
-   $cw->{Configure} = {} unless exists $cw->{Configure};
+   my $config = $cw->TkHash('Configure');
    while (($opt,$val) = each %args)
     {
-     my $var = \$cw->{Configure}{$opt};
+     my $var = \$config->{$opt};
      my $old = $$var;
-     my $subwidget;
      $$var = $val;
      my $accepted = 0;
      my $error = "No widget handles $opt";
@@ -305,7 +308,7 @@ sub configure
     }
    $cw->Configured(\%args,\%changed);
   }
- return (wantarray) ? @results : $results[0];
+ return (wantarray) ? @results : \@results;
 }
 
 sub ConfigDefault
@@ -328,26 +331,25 @@ sub ConfigDefault
  # tree - really needs more thought, other options adding such as active
  # colours too and maybe fonts
 
- my $children = scalar($cw->children);
+ my $child = ($cw->children)[0]; # 1st child window (if any)
 
  unless (exists($specs->{'-background'}))
   {
    my (@bg) = ('SELF');
-   push(@bg,'CHILDREN') if $children;
+   push(@bg,'CHILDREN') if $child;
    $specs->{'-background'} = [\@bg,'background','Background',NORMAL_BG];
   }
  unless (exists($specs->{'-foreground'}))
   {
    my (@fg) = ('PASSIVE');
-   unshift(@fg,'CHILDREN') if $children;
+   unshift(@fg,'CHILDREN') if $child;
    $specs->{'-foreground'} = [\@fg,'foreground','Foreground',BLACK];
   }
  $cw->ConfigAlias(-fg => '-foreground', -bg => '-background');
 
  # Pre-scan args for aliases - this avoids defaulting
  # options specified via alias
- my $opt;
- foreach $opt (keys %$args)
+ foreach my $opt (keys %$args)
   {
    my $info = $specs->{$opt};
    if (defined($info) && !ref($info))
@@ -360,7 +362,7 @@ sub ConfigDefault
  # which have a defined default value, potentially looking up .Xdefaults database
  # options for the name/class of the 'frame'
 
- foreach $opt (keys %$specs)
+ foreach my $opt (keys %$specs)
   {
    if ($opt ne 'DEFAULT')
     {
@@ -392,25 +394,42 @@ sub ConfigDefault
   }
 }
 
-
 sub ConfigSpecs
 {
  my $cw = shift;
- if (exists $cw->{'ConfigSpecs'})
+ my $specs = $cw->TkHash('ConfigSpecs');
+ while (@_)
   {
-   my $specs = $cw->{'ConfigSpecs'};
-   while (@_)
+   my $key = shift;
+   my $val = shift;
+   $specs->{$key} = $val;
+  }
+ return $specs;
+}
+
+sub _alias
+{
+ my ($specs,$opt,$main) = @_;
+ if (exists($specs->{$opt}))
+  {
+   unless (exists $specs->{$main})
     {
-     my $key = shift;
-     my $val = shift;
-     $specs->{$key} = $val;
+     my $targ = $specs->{$opt};
+     if (ref($targ))
+      {
+       # opt is a real option
+       $specs->{$main} = $opt
+      }
+     else
+      {
+       # opt is itself an alias
+       # make main point to same place
+       $specs->{$main} = $targ unless $targ eq $main;
+      }
     }
+   return 1;
   }
- else
-  {
-   $cw->{'ConfigSpecs'} = { @_ };
-  }
- return $cw->{'ConfigSpecs'};
+ return 0;
 }
 
 sub ConfigAlias
@@ -421,15 +440,7 @@ sub ConfigAlias
   {
    my $opt  = shift;
    my $main = shift;
-   if (exists($specs->{$opt}) && ref($specs->{$opt}))
-    {
-     $specs->{$main} = $opt unless (exists $specs->{$main});
-    }
-   elsif (exists($specs->{$main}) && ref($specs->{$main}))
-    {
-     $specs->{$opt}  = $main unless (exists $specs->{$opt});
-    }
-   else
+   unless (_alias($specs,$opt,$main) || _alias($specs,$main,$opt))
     {
      $cw->BackTrace("Neither $opt nor $main exist");
     }
@@ -441,7 +452,10 @@ sub Delegate
 {
  my ($cw,$method,@args) = @_;
  my $widget = $cw->DelegateFor($method);
- $method = "Tk::$method" if ($widget == $cw);
+ if ($widget == $cw)
+  {
+   $method = "Tk::Widget::$method"
+  }
  my @result;
  if (wantarray)
   {
@@ -471,8 +485,8 @@ sub Advertise
  my ($cw,$name,$widget)  = @_;
  confess 'No name' unless (defined $name);
  croak 'No widget' unless (defined $widget);
- $cw->{SubWidget} = {} unless (exists $cw->{SubWidget});
- $cw->{SubWidget}{$name} = $widget;              # advertise it
+ my $hash = $cw->TkHash('SubWidget');
+ $hash->{$name} = $widget;              # advertise it
  return $widget;
 }
 

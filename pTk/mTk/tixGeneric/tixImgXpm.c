@@ -972,14 +972,12 @@ ImgXpmCmd(clientData, interp, argc, argv)
 	 */
 	PixmapInstance *instancePtr;
 	int count = 0;
-	char buff[30];
 
 	for (instancePtr=masterPtr->instancePtr; instancePtr;
 	     instancePtr = instancePtr->nextPtr) {
 	    count += instancePtr->refCount;
 	}
-	sprintf(buff, "%d", count);
-	Tcl_SetResult(interp, buff, TCL_VOLATILE);
+	Tcl_IntResults(interp, 1, 0, count);
 	return TCL_OK;
     } else {
 	Tcl_AppendResult(interp, "bad option \"", argv[1],

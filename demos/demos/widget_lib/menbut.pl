@@ -38,44 +38,85 @@ sub menbut {
     $bbutt->Optionmenu(-options => [qw/one two three/])->pack(qw/-side left 
 						        -padx 25 -pady 25/);
 
-    my $colors = $bbutt->Menubutton(qw/-text Colors -relief raised/)->
-        pack(qw/-side left -padx 25 -pady 25/);
-    my $m = $colors->Menu(-tearoff => 1);
+    my $palette;
     my(@colors) = qw/Black red4 DarkGreen  NavyBlue gray75 Red Green Blue
         gray50 Yellow Cyan Magenta White Brown  DarkSeaGreen  DarkViolet/;
-    foreach (@colors) {
-	$m->command(-label => $_);
-    }
-    $colors->configure(-menu => $m);
 
-    my $topBorderColor = 'gray50';
-    my $bottomBorderColor = 'gray75';
+    my $colors =  native_optionmenu(
+        $bbutt,
+        \$palette,
+        [sub {print "args=@_.\n"}, 'First'],
+        @colors,
+    );
+    $colors->pack(qw/-side left -padx 25 -pady 25/);
 
-    for (my $i = 1; $i <= $#colors + 1; $i++) {
-        my $name = $m->entrycget($i, -label);
-        my $i1 = $m->Photo(qw/-height 16 -width 16/);
-        $i1->put($topBorderColor, qw/-to 0 0 16 1/);
-        $i1->put($topBorderColor, qw/-to 0 1 1 16/);
-        $i1->put($bottomBorderColor, qw/-to 0 15 16 16/);
-        $i1->put($bottompBorderColor, qw/-to 15 1 16 15/);
-        $i1->put($name, qw/-to 1 1 15 15/);
- 
-        # Incomplete demo.... Tk Optionmenu has no -selectionimage, so I'm
-        # faking it with a mere menu.
-   
-#        $i2 = $m->Photo(qw/-height 16 -width 16/);
-#        $i2->put(qw/Black -to 0 0 16 2/);
-#        $i2->put(qw/Black -to 0 2 2 16/);
-#        $i2->put(qw/Black -to 2 14 16 16/);
-#        $i2->put(qw/Black -to 14 2 16 14/);
-#        $i2->put($name, qw/-to 2 2 14 14/);
-        $m->entryconfigure($i, -image => $i1);
-    }
+    my $menu = $colors->cget(-menu);
+    my $topborder    = 'gray50';
+    my $bottomborder = 'gray75';
 
-    foreach my $i (qw/Black gray75 gray50 White/) {
-        $m->entryconfigure($i, qw/-columnbreak 1/);
-    }
+    foreach my $i (0 .. $#colors) {
+
+        # Create a 16 pixel x 16 pixel solid color swatch.
+        # Add a black ring around the currently selected item.
+
+        my $color = $menu->entrycget($i, -label);
+        my $p = $TOP->Photo(qw/-width 16 -height 16/);
+        $p->put($topborder,    qw/-to  0  0 16  1/);
+        $p->put($topborder,    qw/-to  0  1  1 16/);
+        $p->put($bottomborder, qw/-to  1 15 16 16/);
+        $p->put($bottomborder, qw/-to 15  1 16 15/);
+        $p->put($color,        qw/-to  1  1 15 15/);
+
+        my $r = $TOP->Photo(qw/-width 16 -height 16/);
+        $r->put(qw/black          -to  0  0 16  2/);
+        $r->put(qw/black          -to  0  2  2 16/);
+        $r->put(qw/black          -to  2 14 16 16/);
+        $r->put(qw/black          -to 14  2 16 14/);
+        $r->put($color       , qw/-to  2  2 14 14/);
+
+        $menu->entryconfigure($i, -columnbreak => 1) unless $i % 4;
+        $menu->entryconfigure($i,
+            -image       => $p,
+            -hidemargin  => 1,
+            -selectimage => $r,
+        );
+
+    } # forend all colors
+
+    $menu->configure(-tearoff => 1);
 
 } # end menbut
+
+sub native_optionmenu {
+
+    my($parent, $varref, $command, @optionvals) = @_;
+
+    $$varref = $optionvals[0];
+
+    my $mb = $parent->Menubutton(
+        -textvariable       => $varref,
+        -indicatoron        => 1,
+        -relief             => 'raised',
+        -borderwidth        => 2,
+        -highlightthickness => 2,
+        -anchor             => 'c',
+        -direction          => 'flush',
+    );
+    my $menu = $mb->Menu(-tearoff => 0);
+    $mb->configure(-menu => $menu);
+
+    my $callback = ref($command) =~ /CODE/ ? [$command] : $command;
+
+    foreach (@optionvals) {
+        $menu->radiobutton(
+            -label     => $_,
+            -variable  => $varref,
+            -command   => [@$callback, $_],
+        );
+    }
+
+   $mb;
+
+} # end native_optionmenu
 
 1;

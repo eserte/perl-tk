@@ -235,7 +235,9 @@ typedef struct TkCanvas {
     Tk_TSOffset tsoffset;
 #ifndef USE_OLD_TAG_SEARCH
     TagSearchExpr *bindTagExprs; /* linked list of tag expressions used in bindings */
-#endif
+#endif                      
+    /* pTk additions */
+    Tk_Item *activeGroup;		/* Which group item is active */
 } TkCanvas;
 
 /*
@@ -300,6 +302,18 @@ typedef struct TkColormapData {	/* Hold color information for a window */
     XColor *colors;		/* Pixel value -> RGB mappings */
     int red_mask, green_mask, blue_mask;	/* Masks and shifts for each */
     int red_shift, green_shift, blue_shift;	/* color band */
-} TkColormapData;
+} TkColormapData;     
+
+#define Tk_GetItemState(canvas,itemPtr)                         \
+  (                                                             \
+   ((itemPtr)->group != ((TkCanvas *) (canvas))->activeGroup)   \
+    ? TK_STATE_HIDDEN                                           \
+    : (((itemPtr)->state == TK_STATE_NULL)                      \
+      ? ((TkCanvas *)(canvas))->canvas_state                    \
+      : (itemPtr)->state                                        \
+      )                                                         \
+  )                   
+
+EXTERN void		TkGroupRemoveItem _ANSI_ARGS_((Tk_Item *item));
 
 #endif /* _TKCANVAS */

@@ -1,13 +1,12 @@
 package Tk::Event::IO;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '3.001'; # $Id: //depot/Tk8/Event/IO.pm#1$
+$VERSION = '3.032'; # $Id: //depot/Tk8/Event/Event/IO.pm#8 $ +24
 
 use base qw(Exporter);
 use Symbol ();
 
 @EXPORT_OK = qw(READABLE WRITABLE);
-
 
 sub PrintArgs
 {
@@ -18,21 +17,15 @@ sub PrintArgs
 sub PRINT
 {
  my $obj = shift;
- unless ($obj->handler(WRITABLE))
-  {
-   Tk::Event::DoOneEvent(0) until $obj->writable;
-  }
+ $obj->wait(WRITABLE);
  my $h = $obj->handle;
  return print $h @_;
-}   
+}
 
 sub PRINTF
 {
  my $obj = shift;
- unless ($obj->handler(WRITABLE))
-  {
-   Tk::Event::DoOneEvent(0) until $obj->writable;
-  }
+ $obj->wait(WRITABLE);
  my $h = $obj->handle;
  return printf $h @_;
 }
@@ -40,22 +33,16 @@ sub PRINTF
 sub WRITE
 {
  my $obj = $_[0];
- unless ($obj->handler(WRITABLE))
-  {
-   Tk::Event::DoOneEvent(0) until $obj->writable;
-  }
+ $obj->wait(WRITABLE);
  return syswrite($obj->handle,$_[1],$_[2]);
 }
-            
+
 my $depth = 0;
 sub READLINE
-{         
+{
  my $obj = shift;
+ $obj->wait(READABLE);
  my $h = $obj->handle;
- unless ($obj->handler(READABLE))
-  {
-   Tk::Event::DoOneEvent(0) until $obj->readable;
-  }
  my $w = <$h>;
  return $w;
 }
@@ -63,21 +50,15 @@ sub READLINE
 sub READ
 {
  my $obj = $_[0];
- unless ($obj->handler(READABLE))
-  {
-   Tk::Event::DoOneEvent(0) until $obj->readable;
-  }
+ $obj->wait(READABLE);
  my $h = $obj->handle;
- return read($h,$_[1],$_[2],defined $_[3] ? $_[3] : 0);
+ return sysread($h,$_[1],$_[2],defined $_[3] ? $_[3] : 0);
 }
 
 sub GETC
 {
  my $obj = $_[0];
- unless ($obj->handler(READABLE))
-  {
-   Tk::Event::DoOneEvent(0) until $obj->readable;
-  }
+ $obj->wait(READABLE);
  my $h = $obj->handle;
  return getc($h);
 }
@@ -85,10 +66,10 @@ sub GETC
 sub CLOSE
 {
  my $obj = shift;
- $obj->watch(0);
+ $obj->unwatch;
  my $h = $obj->handle;
  return close($h);
-}      
+}
 
 sub EOF
 {
@@ -107,7 +88,7 @@ sub FILENO
 sub imode
 {
  my $mode = shift;
- my $imode = ${{'readable' => READABLE(), 
+ my $imode = ${{'readable' => READABLE(),
                 'writable' => WRITABLE()}}{$mode};
  croak("Invalid handler type '$mode'") unless (defined $imode);
  return $imode;

@@ -1,7 +1,7 @@
 package Tk::HList;
 
 use vars qw($VERSION);
-$VERSION = '3.030'; # $Id: //depot/Tk8/HList/HList.pm#30 $
+$VERSION = '3.034'; # $Id: //depot/Tk8/HList/HList.pm#34 $
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -28,17 +28,17 @@ Tk::Methods qw(add addchild anchor column
                entryconfigure geometryinfo indicator header hide item info
                nearest see select selection show xview yview);
 
-use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],
-                     'header' => [qw(configure cget create delete exists size)],
+use Tk::Submethods ( 'delete'    => [qw(all entry offsprings siblings)],
+                     'header'    => [qw(configure cget create delete exists size)],
                      'indicator' => [qw(configure cget create delete exists size)],
-                     'info' => [qw(anchor bbox children data dragsite
-                                   dropsite exists hidden item next parent prev
-                                   selection)],
-                     'item' => [qw(configure cget create delete exists)],
+                     'info'      => [qw(anchor bbox children data dragsite
+                                     dropsite exists hidden item next parent prev
+                                     selection)],
+                     'item'      => [qw(configure cget create delete exists)],
                      'selection' => [qw(clear get includes set)],
-                     'anchor' => [qw(clear set)],
-                     'column' => [qw(width)],
-                     'hide' => [qw(entry)],
+                     'anchor'    => [qw(clear set)],
+                     'column'    => [qw(width)],
+                     'hide'      => [qw(entry)],
                    );
 
 
@@ -84,7 +84,6 @@ sub Control_ButtonRelease_1
 {
 }
 
-
 sub ButtonRelease_1
 {
  my $w = shift;
@@ -94,11 +93,9 @@ sub ButtonRelease_1
  $w->ButtonRelease1($Ev);
 }
 
-
 sub Control_B1_Motion
 {
 }
-
 
 sub B1_Enter
 {
@@ -108,7 +105,6 @@ sub B1_Enter
  if($w->cget('-selectmode') ne 'dragdrop');
 }
 
-
 sub Button1
 {
  my $w = shift;
@@ -117,8 +113,7 @@ sub Button1
  delete $w->{'shiftanchor'};
  delete $w->{tixindicator};
 
- $w->focus()
-    if($w->cget('-takefocus'));
+ $w->focus() if($w->cget('-takefocus'));
 
  my $mode = $w->cget('-selectmode');
 
@@ -132,12 +127,10 @@ sub Button1
 
  if (!defined($ent) || !length($ent))
   {
-    $w->select('clear');
-    $w->anchor('clear');
+    $w->selectionClear;
+    $w->anchorClear;
     return;
   }
-
-
 
  my @info = $w->info('item',$Ev->x, $Ev->y);
  if (@info)
@@ -158,29 +151,29 @@ sub Button1
   {
    my $browse = 0;
 
-   if($mode eq 'single')
+   if ($mode eq 'single')
     {
-     $w->anchor('set', $ent);
+     $w->anchorSet($ent);
     }
-   elsif($mode eq 'browse')
+   elsif ($mode eq 'browse')
     {
-     $w->anchor('set', $ent);
-     $w->select('clear' );
-     $w->select('set', $ent);
+     $w->anchorSet($ent);
+     $w->selectionClear;
+     $w->selectionSet($ent);
      $browse = 1;
     }
-   elsif($mode eq 'multiple')
+   elsif ($mode eq 'multiple')
     {
-     $w->select('clear');
-     $w->anchor('set', $ent);
-     $w->select('set', $ent);
+     $w->selectionClear;
+     $w->anchorSet($ent);
+     $w->selectionSet($ent);
      $browse = 1;
     }
-   elsif($mode eq 'extended')
+   elsif ($mode eq 'extended')
     {
-     $w->anchor('set', $ent);
-     $w->select('clear');
-     $w->select('set', $ent);
+     $w->anchorSet($ent);
+     $w->selectionClear;
+     $w->selectionSet($ent);
      $browse = 1;
     }
 
@@ -210,14 +203,14 @@ sub ShiftButton1
    my $from = $w->info('anchor');
    if(defined $from)
     {
-     $w->select('clear');
-     $w->select('set', $from, $to);
+     $w->selectionClear;
+     $w->selectionSet($from, $to);
     }
    else
     {
-     $w->anchor('set', $to);
-     $w->select('clear');
-     $w->select('set', $to);
+     $w->anchorSet($to);
+     $w->selectionClear;
+     $w->selectionSet($to);
     }
   }
 }
@@ -232,7 +225,7 @@ sub GetNearest
     {
      my $borderwidth = $w->cget('-borderwidth');
      my $highlightthickness = $w->cget('-highlightthickness');
-     my $bottomy = (split(' ', $w->infoBbox($ent)))[3];
+     my $bottomy = ($w->infoBbox($ent))[3];
      $bottomy += $borderwidth + $highlightthickness;
      if ($w->header('exist', 0)){ $bottomy += ($w->header('size', 0))[1]; };
      if ($y > $bottomy){ return undef; }
@@ -265,7 +258,7 @@ sub ButtonRelease1
      my $ent = $w->info('selection');
      if (defined $ent)
       {
-        $w->anchor('set', $ent);
+        $w->anchorSet($ent);
       }
   }
  return unless (defined($ent) and length($ent));
@@ -283,18 +276,18 @@ sub ButtonRelease1
 
   if($mode eq 'single' || $mode eq 'browse')
    {
-    $w->anchor('set', $ent);
-    $w->select('clear');
-    $w->select('set', $ent);
+    $w->anchorSet($ent);
+    $w->selectionClear;
+    $w->selectionSet($ent);
 
    }
   elsif($mode eq 'multiple')
    {
-    $w->select('set', $ent);
+    $w->selectionSet($ent);
    }
   elsif($mode eq 'extended')
    {
-    $w->select('set', $ent);
+    $w->selectionSet($ent);
    }
 
  $w->Callback(-browsecmd =>$ent);
@@ -304,6 +297,7 @@ sub Button1Motion
 {
  my $w = shift;
  my $Ev = $w->XEvent;
+ return unless defined $Ev;
 
  delete $w->{'shiftanchor'};
 
@@ -335,21 +329,21 @@ sub Button1Motion
 
  if ($mode eq 'single')
   {
-   $w->anchor('set', $ent);
+   $w->anchorSet($ent);
   }
  elsif ($mode eq 'multiple' || $mode eq 'extended')
   {
    my $from = $w->info('anchor');
    if(defined $from)
     {
-     $w->select('clear');
-     $w->select('set', $from, $ent);
+     $w->selectionClear;
+     $w->selectionSet($from, $ent);
     }
    else
     {
-     $w->anchor('set', $ent);
-     $w->select('clear');
-     $w->select('set', $ent);
+     $w->anchorSet($ent);
+     $w->selectionClear;
+     $w->selectionSet($ent);
     }
   }
 
@@ -370,10 +364,11 @@ sub Double1
 
  return unless (defined($ent) and length($ent));
 
- $w->anchor('set', $ent)
+ $w->anchorSet($ent)
 	unless(defined $w->info('anchor'));
 
- $w->select('set', $ent);
+ $w->selectionSet($ent);
+ 
  $w->Callback(-command => $ent);
 }
 
@@ -392,7 +387,7 @@ sub CtrlButton1
 
  if($mode eq 'extended')
   {
-   $w->anchor('set', $ent) unless( defined $w->info('anchor') );
+   $w->anchorSet($ent) unless( defined $w->info('anchor') );
 
    if($w->select('includes', $ent))
     {
@@ -400,7 +395,7 @@ sub CtrlButton1
     }
    else
     {
-     $w->select('set', $ent);
+     $w->selectionSet($ent);
     }
    $w->Callback(-browsecmd =>$ent);
   }
@@ -453,12 +448,12 @@ sub UpDown
    return;
   }
 
- $w->anchor('set', $ent);
+ $w->anchorSet($ent);
  $w->see($ent);
 
  if($w->cget('-selectmode') ne 'single')
   {
-   $w->select('clear');
+   $w->selectionClear;
    $w->selection('set', $ent);
    $w->Callback(-browsecmd =>$ent);
   }
@@ -499,7 +494,7 @@ sub ShiftUpDown
    return;
   }
 
- $w->select('clear');
+ $w->selectionClear;
  $w->selection('set', $anchor, $ent);
  $w->see($ent);
 
@@ -554,13 +549,13 @@ sub LeftRight
    return;
   }
 
- $w->anchor('set', $ent);
+ $w->anchorSet($ent);
  $w->see($ent);
 
  if($w->cget('-selectmode') ne 'single')
   {
-   $w->select('clear');
-   $w->selection('set', $ent);
+   $w->selectionClear;
+   $w->selectionSet($ent);
 
    $w->Callback(-browsecmd =>$ent);
   }
@@ -584,15 +579,16 @@ sub KeyboardActivate
 {
  my $w = shift;
 
- my $anchor = $w->info('anchor');
+ my $anchor = $w->info('anchor'); 
 
  return unless (defined($anchor) and length($anchor));
 
  if($w->cget('-selectmode'))
   {
-   $w->select('clear');
-   $w->select('set', $anchor);
+   $w->selectionClear;
+   $w->selectionSet($anchor);
   }
+
  $w->Callback(-command => $anchor);
 }
 
@@ -611,21 +607,24 @@ sub KeyboardBrowse
 
  if($w->cget('-selectmode'))
   {
-   $w->select('clear');
-   $w->select('set', $anchor);
+   $w->selectionClear;
+   $w->selectionSet($anchor);
   }
  $w->Callback(-browsecmd =>$anchor);
 }
 
 sub AutoScan
-{
- my $w = shift;
+{                                                  
+ my ($w,$x,$y) = @_;
 
- return if($w->cget('-selectmode') eq 'dragdrop');
-
- my $Ev = $w->XEvent;
- my $y = $Ev->y;
- my $x = $Ev->x;
+ return if ($w->cget('-selectmode') eq 'dragdrop');
+ if (@_ < 3)
+  {
+   my $Ev = $w->XEvent;
+   return unless defined $Ev;
+   $y = $Ev->y;
+   $x = $Ev->x;
+  }
 
  if($y >= $w->height)
   {
@@ -647,7 +646,7 @@ sub AutoScan
   {
    return;
   }
- $w->RepeatId($w->SUPER::after(50,[ AutoScan => $w ]));
+ $w->RepeatId($w->SUPER::after(50,[ AutoScan => $w, $x, $y ]));
  $w->Button1Motion;
 }
 
