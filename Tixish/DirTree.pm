@@ -6,7 +6,7 @@ package Tk::DirTree;
 # Chris Dean <ctdean@cogit.com>
 
 use vars qw($VERSION);
-$VERSION = '4.009'; # $Id: //depot/Tkutf8/Tixish/DirTree.pm#10 $
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use Tk;
 use Tk::Derived;
@@ -232,6 +232,8 @@ sub dirnames {
 	$ret;
     }
 }
+
+1;
 
 __END__
 

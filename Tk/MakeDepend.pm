@@ -11,7 +11,7 @@ $SIG{__DIE__} = \&Carp::confess;
 
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
 
 sub scan_file;
 
@@ -213,8 +213,10 @@ sub command_line
   }
  my $flags = $Config{ccflags};
  $flags =~ s/^\s+|\s+$//g;
- foreach (@_, split(/\s+/,$flags))
+ my @opt = (@_, split(/\s+/,$flags));
+ while (@opt)
   {
+   local $_ = shift(@opt);
    if (/^-I(.*)$/)
     {
      push @include,$1;
@@ -227,17 +229,20 @@ sub command_line
     {
      delete $define{$1};
     }
-   elsif (/^-[fm][\w-]*$/)
-    {
-     # GCC-ish
-    }
    elsif (/^(-.*)$/)
     {
-     warn "Ignoring $1\n";
+     # Some option
+     if ($opt[0] !~ /^-/)
+      {
+       # next arg does not start with '-' assume it
+       # belongs to this option and discard it silently
+       shift(@opt);
+      }
     }
    else
     {
-     croak "Unexpected arg $_\n";
+     # We got confused
+     warn "Ignoring $1\n";
     }
   }
  # force /usr/include to be last element of @include
@@ -246,7 +251,7 @@ sub command_line
  # warn "Include:@include\n";
  while (@files)
   {
-   $_ = shift(@files);
+   local $_ = shift(@files);
    unless (/^(.*)\.[^\.]+$/)
     {
      warn "Skip $_";

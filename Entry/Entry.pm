@@ -12,7 +12,8 @@ package Tk::Entry;
 # This program is free software; you can redistribute it and/or
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d',q$Revision: #16 $ =~ /#(\d+)/;
+use strict;
+$VERSION = sprintf '4.%03d',q$Revision: #17 $ =~ /#(\d+)/;
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial
@@ -79,7 +80,21 @@ sub ClassInit
 
  $class->SUPER::ClassInit($mw);
 
+ # <<Cut>>, <<Copy>> and <<Paste>> defined in Tk::Clipboard
+ $mw->bind($class,'<<Clear>>' => sub {
+	       my $w = shift;
+	       $w->delete("sel.first", "sel.last");
+	   });
+ $mw->bind($class,'<<PasteSelection>>' => [sub {
+	       my($w, $x) = @_;
+	       # XXX logic in Tcl/Tk version screwed up?
+	       if (!$Tk::strictMotif && !$Tk::mouseMoved) {
+		   $w->Paste($x);
+	       }
+	   }, Ev('x')]);
+
  # Standard Motif bindings:
+ # The <Escape> binding is different from the Tcl/Tk version:
  $mw->bind($class,'<Escape>','selectionClear');
 
  $mw->bind($class,'<1>',['Button1',Ev('x'),Ev('y')]);
@@ -136,8 +151,18 @@ sub ClassInit
  $mw->bind($class,'<Return>' ,'NoOp');
  $mw->bind($class,'<KP_Enter>' ,'NoOp');
  $mw->bind($class,'<Tab>' ,'NoOp');
+ if ($mw->windowingsystem =~ /^(?:classic|aqua)$/)
+  {
+   $mw->bind($class,'<Command-KeyPress>', 'NoOp');
+  }
 
- $mw->bind($class,'<Insert>','InsertSelection');
+ # On Windows, paste is done using Shift-Insert.  Shift-Insert already
+ # generates the <<Paste>> event, so we don't need to do anything here.
+ if ($Tk::platform ne 'MSWin32')
+  {
+   $mw->bind($class,'<Insert>','InsertSelection');
+  }
+
  if (!$Tk::strictMotif)
   {
    # Additional emacs-like bindings:
@@ -151,19 +176,22 @@ sub ClassInit
 
    $mw->bind($class,'<Control-t>','Transpose');
 
+   # XXX The original Tcl/Tk bindings use NextWord/PreviousWord instead
    $mw->bind($class,'<Meta-b>',['SetCursor',Ev(['wordstart'])]);
    $mw->bind($class,'<Meta-d>',['delete','insert',Ev(['wordend'])]);
    $mw->bind($class,'<Meta-f>',['SetCursor',Ev(['wordend'])]);
    $mw->bind($class,'<Meta-BackSpace>',['delete',Ev(['wordstart']),'insert']);
+   $mw->bind($class,'<Meta-Delete>',['delete',Ev(['wordstart']),'insert']);
 
    # A few additional bindings from John Ousterhout.
-   $mw->bind($class,'<Control-w>',['delete',Ev(['wordstart']),'insert']);
+# XXX conflicts with <<Copy>>:  $mw->bind($class,'<Control-w>',['delete',Ev(['wordstart']),'insert']);
    $mw->bind($class,'<2>','Button_2');
    $mw->bind($class,'<B2-Motion>','B2_Motion');
-   $mw->bind($class,'<ButtonRelease-2>','ButtonRelease_2');
+# XXX superseded by <<PasteSelection>>: $mw->bind($class,'<ButtonRelease-2>','ButtonRelease_2');
   }
  return $class;
 }
+
 
 sub Shift_1
 {
@@ -199,10 +227,11 @@ sub Delete
 sub InsertSelection
 {
  my $w = shift;
- eval {local $SIG{__DIE__}; $w->Insert($w->SelectionGet)}
+ eval {local $SIG{__DIE__}; $w->Insert($w->GetSelection)}
 }
 
 
+# Original is ::tk::EntryScanMark
 sub Button_2
 {
  my $w = shift;
@@ -214,10 +243,14 @@ sub Button_2
 }
 
 
+# Original is ::tk::EntryScanDrag
 sub B2_Motion
 {
  my $w = shift;
  my $Ev = $w->XEvent;
+ # Make sure these exist, as some weird situations can trigger the
+ # motion binding without the initial press.  [Tcl/Tk Bug #220269]
+ if (!defined $Tk::x) { $Tk::x = $Ev->x }
  if (abs(($Ev->x-$Tk::x)) > 2)
  {
  $Tk::mouseMoved = 1
@@ -226,6 +259,7 @@ sub B2_Motion
 }
 
 
+# XXX Not needed anymore
 sub ButtonRelease_2
 {
  my $w = shift;
@@ -245,6 +279,26 @@ sub Button1Release
  shift->CancelRepeat;
 }
 
+# ::tk::EntryClosestGap --
+# Given x and y coordinates, this procedure finds the closest boundary
+# between characters to the given coordinates and returns the index
+# of the character just after the boundary.
+#
+# Arguments:
+# w -           The entry window.
+# x -           X-coordinate within the window.
+sub ClosestGap
+{
+ my($w, $x) = @_;
+ my $pos = $w->index('@'.$x);
+ my @bbox = $w->bbox($pos);
+ if ($x - $bbox[0] < $bbox[2] / 2)
+  {
+   return $pos;
+  }
+ $pos + 1;
+}
+
 # Button1 --
 # This procedure is invoked to handle button-1 presses in entry
 # widgets. It moves the insertion cursor, sets the selection anchor,
@@ -257,14 +311,13 @@ sub Button1
 {
  my $w = shift;
  my $x = shift;
- my $y = shift;
  $Tk::selectMode = 'char';
  $Tk::mouseMoved = 0;
  $Tk::pressX = $x;
- $w->icursor('@' . $x);
- $w->selectionFrom('@' . $x);
+ $w->icursor($w->ClosestGap($x));
+ $w->selectionFrom('insert');
  $w->selectionClear;
- if ($w->cget('-state') eq 'normal')
+ if ($w->cget('-state') ne 'disabled')
   {
    $w->focus()
   }
@@ -273,6 +326,7 @@ sub Button1
 sub Motion
 {
  my ($w,$x,$y) = @_;
+ $Tk::x = $x; # XXX ?
  $w->MouseSelect($x);
 }
 
@@ -291,13 +345,13 @@ sub MouseSelect
 
  my $w = shift;
  my $x = shift;
- return if ref($w) eq 'Tk::Spinbox' and $w->{_element} ne 'entry';
+ return if UNIVERSAL::isa($w, 'Tk::Spinbox') and $w->{_element} ne 'entry';
  $Tk::selectMode = shift if (@_);
- my $cur = $w->index('@' . $x);
+ my $cur = $w->index($w->ClosestGap($x));
  return unless defined $cur;
  my $anchor = $w->index('anchor');
  return unless defined $anchor;
- $Tk::pressX ||= $x;
+ $Tk::pressX ||= $x; # XXX Better use "if !defined $Tk::pressX"?
  if (($cur != $anchor) || (abs($Tk::pressX - $x) >= 3))
   {
    $Tk::mouseMoved = 1
@@ -306,6 +360,7 @@ sub MouseSelect
  return unless $mode;
  if ($mode eq 'char')
   {
+   # The Tcl version uses selectionRange here XXX
    if ($Tk::mouseMoved)
     {
      if ($cur < $anchor)
@@ -320,6 +375,7 @@ sub MouseSelect
   }
  elsif ($mode eq 'word')
   {
+   # The Tcl version uses tcl_wordBreakBefore/After here XXX
    if ($cur < $w->index('anchor'))
     {
      $w->selectionRange($w->wordstart($cur),$w->wordend($anchor-1))
@@ -340,6 +396,26 @@ sub MouseSelect
   }
  $w->idletasks;
 }
+# ::tk::EntryPaste --
+# This procedure sets the insertion cursor to the current mouse position,
+# pastes the selection there, and sets the focus to the window.
+#
+# Arguments:
+# w -           The entry window.
+# x -           X position of the mouse.
+sub Paste
+{
+ my($w, $x) = @_;
+ $w->icursor($w->ClosestGap($x));
+ eval { local $SIG{__DIE__};
+	$w->insert("insert", $w->GetSelection);
+	$w->SeeInsert; # Perl/Tk extension
+      };
+ if ($w->cget(-state) ne 'disabled')
+  {
+   $w->focus;
+  }
+}
 # AutoScan --
 # This procedure is invoked when the mouse leaves an entry window
 # with button 1 down.  It scrolls the window left or right,
@@ -354,6 +430,7 @@ sub AutoScan
 {
  my $w = shift;
  my $x = shift;
+ return if !Tk::Exists($w);
  if ($x >= $w->width)
   {
    $w->xview('scroll',2,'units')
@@ -434,6 +511,7 @@ sub Backspace
   {
    my $x = $w->index('insert')-1;
    $w->delete($x) if ($x >= 0);
+   # XXX Missing repositioning part from Tcl/Tk source
   }
 }
 # SeeInsert
@@ -513,6 +591,12 @@ sub tabFocus
  $w->SUPER::tabFocus;
 }
 
+# ::tk::EntryGetSelection --
+#
+# Returns the selected text of the entry with respect to the -show option.
+#
+# Arguments:
+# w -         The entry window from which the text to get
 sub getSelected
 {
  my $w = shift;
@@ -525,8 +609,7 @@ sub getSelected
  return substr($str,$s,$e-$s);
 }
 
+
 1;
 
 __END__
-
-

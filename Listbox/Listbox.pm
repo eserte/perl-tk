@@ -37,7 +37,7 @@ package Tk::Listbox;
 
 use vars qw($VERSION @Selection $Prev);
 use strict;
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/Listbox/Listbox.pm#13 $
+$VERSION = sprintf '4.%03d', q$Revision: #14 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Clipboard ();

@@ -44,7 +44,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 427 , todo => [264 .. 266] }
+BEGIN { plan tests => 437 , todo => [274 .. 276] }
 
 my $partial_top;
 my $partial_lb;
@@ -111,8 +111,13 @@ my $skip_fixed_font_test;
 
 resetGridInfo();
 
+$mw->Photo("testimage", -file => Tk->findINC("Xcamel.gif"));
+
 foreach my $test
-    (['-background', '#ff0000', '#ff0000', 'non-existent',
+    (
+     ['-activestyle', 'under', 'underline', 'foo',
+      'bad activestyle "foo": must be dotbox, none, or underline'],
+     ['-background', '#ff0000', '#ff0000', 'non-existent',
       'unknown color name "non-existent"'],
      [qw{-bd 4 4 badValue}, q{bad screen distance "badValue"}],
      ['-bg', '#ff0000', '#ff0000', 'non-existent',
@@ -135,6 +140,8 @@ foreach my $test
       q{unknown color name "bogus"}],
      [qw{-highlightthickness 6 6 bogus}, q{bad screen distance "bogus"}],
      [qw{-highlightthickness -2 0}, '', ''],
+     ['-offset', '1,1', '1,1', 'wrongside',
+      'bad offset "wrongside": expected "x,y", n, ne, e, se, s, sw, w, nw, or center'],
      [qw{-relief groove groove 1.5},
       ($Tk::VERSION < 803
        ? q{bad relief type "1.5": must be flat, groove, raised, ridge, solid, or sunken}
@@ -148,7 +155,11 @@ foreach my $test
      [qw{-selectmode string string}, '', ''],
      [qw{-setgrid false 0}, "", # XXX "lousy",
       q{expected boolean value but got "lousy"}],
+     ['-state', 'disabled', 'disabled', 'foo',
+      'bad state "foo": must be disabled, or normal'],
      ['-takefocus', "any string", "any string", '', ''],
+     ['-tile', 'testimage', 'testimage', 'non-existant',
+      'image "non-existant" doesn\'t exist'],
      [qw{-width 45 45 3p}, "'3p' isn't numeric"],
       #XXXq{expected integer but got "3p"}],
 #XXX Callback object      ['-xscrollcommand', 'Some command', 'Some command', '', ''],
@@ -158,10 +169,31 @@ foreach my $test
 	my $name = $test->[0];
 
 	if ($Listbox eq 'TextList' &&
-	    $name =~ /^-(bg|fg|foreground|height|selectborderwidth)$/) {
-	    skip(1,1);
+	    $name =~ /^-(activestyle|bg|fg|foreground|height|selectborderwidth)$/) {
+	    my $skip = "$name test not supported for $Listbox";
+	    skip($skip,1);
 	    if ($test->[3] ne "") {
-		skip(1,1);
+		skip($skip,1);
+	    }
+	    next;
+	}
+
+	if ($Listbox eq 'Listbox' && $Tk::VERSION < 804 &&
+	    $name =~ /^-(activestyle)$/) {
+	    my $skip = "$name not implemented on $Tk::VERSION";
+	    skip($skip,1);
+	    if ($test->[3] ne "") {
+		skip($skip,1);
+	    }
+	    next;
+	}
+
+	if ($Listbox eq 'Listbox' && $Tk::VERSION >= 804 &&
+	    $name =~ /^-(tile|offset)$/) {
+	    my $skip = "*TODO* $name not yet implemented on $Tk::VERSION";
+	    skip($skip,1);
+	    if ($test->[3] ne "") {
+		skip($skip,1);
 	    }
 	    next;
 	}
@@ -965,13 +997,13 @@ $mw->geometry("+0+0");
 $lb->pack;
 $mw->update;
 $mw->deiconify;
-ok(getsize($mw), "30x20");
+ok(getsize($mw), "30x20"); # TODO
 $mw->geometry("26x15");
 $mw->update;
-ok(getsize($mw), "26x15");
+ok(getsize($mw), "26x15"); # TODO
 $lb->configure(-setgrid => 1);
 $lb->update;
-ok(getsize($mw), "26x15");
+ok(getsize($mw), "26x15"); # TODO
 
 $mw->geometry("");
 $lb->destroy;

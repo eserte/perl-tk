@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/MainWindow.pm#8 $
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -81,25 +81,50 @@ sub InitBindings
 {
  my $mw = shift;
  $mw->bind('all','<Tab>','focusNext');
+ # <<LeftTab>> is named <<PrevWindow>> in Tcl/Tk
  $mw->eventAdd(qw[<<LeftTab>> <Shift-Tab>]);
- catch {  $mw->eventAdd(qw[<<LeftTab>> <ISO_Left_Tab>]) };
+ # This is needed for XFree86 systems
+ catch { $mw->eventAdd(qw[<<LeftTab>> <ISO_Left_Tab>]) };
+ # This seems to be correct on *some* HP systems.
+ catch { $mw->eventAdd(qw[<<LeftTab>> <hpBackTab>]) };
  $mw->bind('all','<<LeftTab>>','focusPrev');
- if ($Tk::platform eq 'unix')
+ if ($mw->windowingsystem eq 'x11')
   {
    $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F20> <Meta-Key-w>]);
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F16> <Control-Key-w>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F18> <Control-Key-y>]);
+   $mw->eventAdd(qw[<<PasteSelection>> <ButtonRelease-2>]);
    $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-Undo> <Key-F14>
                     <Control-Key-underscore>]);
    $mw->eventAdd(qw[<<Redo>> <Control-Key-y> <Shift-Key-Undo> <Key-F12> <Shift-Key-F14>]);
   }
- else
+ elsif ($mw->windowingsystem eq 'win32')
   {
    $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Shift-Key-Delete>]);
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Control-Key-Insert>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Shift-Key-Insert>]);
    $mw->eventAdd(qw[<<Undo>> <Control-Key-z>]);
    $mw->eventAdd(qw[<<Redo>> <Control-Key-y>]);
+  }
+ elsif ($mw->windowingsystem eq 'aqua')
+  {
+   $mw->eventAdd(qw[<<Cut>> <Command-Key-x> <Key-F2>]);
+   $mw->eventAdd(qw[<<Copy>> <Command-Key-c> <Key-F3>]);
+   $mw->eventAdd(qw[<<Paste>> <Command-Key-v> <Key-F4>]);
+   $mw->eventAdd(qw[<<PasteSelection>> <ButtonRelease-2>]);
+   $mw->eventAdd(qw[<<Clear>> <Clear>]);
+   $mw->eventAdd(qw[<<Undo>> <Command-Key-z>]);
+   $mw->eventAdd(qw[<<Redo>> <Command-Key-y>]);
+  }
+ elsif ($mw->windowingsystem eq 'classic')
+  {
+   $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F2>]);
+   $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F3>]);
+   $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F4>]);
+   $mw->eventAdd(qw[<<PasteSelection>> <ButtonRelease-2>]);
+   $mw->eventAdd(qw[<<Clear>> <Clear>]);
+   $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-F1>]);
+   $mw->eventAdd(qw[<<Redo>> <Control-Key-Z>]);
   }
 
  # FIXME - Should these move to Menubutton ?

@@ -39,7 +39,7 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = sprintf '4.%03d', q$Revision: #17 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #18 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Tk::Toplevel);
 
@@ -795,11 +795,12 @@ sub OkCmd {
 	push @$filenames, $w->{'icons'}->Get($item);
     }
 
+    my $filename = $filenames->[0];
     if ($w->cget('-type') eq 'dir' && $from ne "iconlist") {
-	$w->Done($w->{'selectPath'});
+	my $file = $filename eq '' ? $w->{'selectPath'} : JoinFile($w->{'selectPath'}, $filename);
+	$w->Done($file);
     } elsif ((@$filenames && !$w->cget('-multiple')) ||
 	($w->cget('-multiple') && @$filenames == 1)) {
-	my $filename = $filenames->[0];
 	my $file = JoinFile($w->{'selectPath'}, $filename);
 	if (-d $file) {
 	    $w->ListInvoke($filename);

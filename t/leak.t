@@ -43,12 +43,12 @@ use Tk::Canvas;
 {
     # gather all todos marked with "TODO: number"
     my @todos;
-    open(DATA, $0) or die $!;
-    while(<DATA>) {
-	push @todos, $1 if (/^\#\s+TODO:\s+(\d+)/);
-    }
-    close DATA;
-    plan tests => 10, todo => [@todos];
+#    open(DATA, $0) or die $!;
+#    while(<DATA>) {
+#	push @todos, $1 if (/^\#\s+TODO:\s+(\d+)/);
+#    }
+#    close DATA;
+    plan tests => 12, todo => [@todos];
 }
 
 my $mw = new MainWindow;
@@ -166,5 +166,20 @@ print "# was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
 ok(($c2-$c1) < $N, 1);
 
 sub test { warn }
+
+{
+    # Tk::Listbox::insert leak
+    my $lb = $mw->Listbox;
+    $lb->insert("end", 1);
+    $c1 = Devel::Leak::NoteSV($handle);
+    $lb->insert("end", 2);
+    $c2 = Devel::Leak::CheckSV($handle);
+    ok($c2-$c1 <= 1, 1);
+    for (1..100) { $lb->insert("end", $_+2) }
+    $c1 = Devel::Leak::NoteSV($handle);
+    $lb->insert("end", 9999);
+    $c2 = Devel::Leak::CheckSV($handle);
+    ok($c2-$c1 <= 1, 1);
+}
 
 __END__

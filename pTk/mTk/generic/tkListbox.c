@@ -2255,6 +2255,9 @@ ListboxInsertSubCmd(listPtr, index, objc, objv)
     int result;
     char *stringRep;
     int length;
+#ifdef _LANG
+    int refFlag = 0;
+#endif
 
     oldMaxWidth = listPtr->maxWidth;
     for (i = 0; i < objc; i++) {
@@ -2278,16 +2281,30 @@ ListboxInsertSubCmd(listPtr, index, objc, objv)
     /* If the object is shared, duplicate it before writing to it */
     if (Tcl_IsShared(listPtr->listObj)) {
 	newListObj = Tcl_DuplicateObj(listPtr->listObj);
+#ifdef _LANG
+	refFlag = 1;
+#endif
     } else {
 	newListObj = listPtr->listObj;
     }
     result =
 	Tcl_ListObjReplace(listPtr->interp, newListObj, index, 0, objc, objv);
     if (result != TCL_OK) {
+#ifdef _LANG
+        if (refFlag) {
+	    Tcl_DecrRefCount(newListObj);
+	}
+#endif
 	return result;
     }
 
-    Tcl_IncrRefCount(newListObj);
+#ifdef _LANG
+    if (!refFlag) {
+#endif
+        Tcl_IncrRefCount(newListObj);
+#ifdef _LANG
+    }
+#endif
     /* Clean up the old reference */
     Tcl_DecrRefCount(listPtr->listObj);
 

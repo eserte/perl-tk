@@ -21,7 +21,7 @@ require Tk::Menu::Item;
 
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #19 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #20 $ =~ /\D(\d+)\s*$/;
 
 use strict;
 
@@ -1002,7 +1002,6 @@ sub tearOffMenu
 # path - Name to use for topmost menu in duplicate
 # hierarchy.
 
-use Data::Dumper;
 sub tkMenuDup
 {
  my ($src,$path,$type) = @_;

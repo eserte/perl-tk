@@ -4,7 +4,7 @@
 package Tk::ROText;
 
 use vars qw($VERSION);
-$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/ROText.pm#9 $
+$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk::Text;
 use base  qw(Tk::Derived Tk::Text);

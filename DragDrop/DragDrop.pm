@@ -4,7 +4,7 @@ require Tk::Toplevel;
 require Tk::Label;
 
 use vars qw($VERSION);
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/DragDrop/DragDrop.pm#13 $
+$VERSION = sprintf '4.%03d', q$Revision: #14 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::DragDrop::Common Tk::Toplevel);
 

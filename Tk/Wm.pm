@@ -14,7 +14,7 @@ use strict qw(vars);
 
 
 use vars qw($VERSION);
-$VERSION = '4.012'; # $Id: //depot/Tkutf8/Tk/Wm.pm#13 $
+$VERSION = sprintf '4.%03d', q$Revision: #14 $ =~ /\D(\d+)\s*$/;
 
 use Tk::Submethods;
 

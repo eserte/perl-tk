@@ -1,7 +1,7 @@
 package Tk::DragDrop::XDNDDrop;
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/XDNDDrop.pm#5 $
+$VERSION = sprintf '4.%03d', q$Revision: #6 $ =~ /\D(\d+)\s*$/;
 use base qw(Tk::DragDrop::Rect);
 
 sub XDND_PROTOCOL_VERSION () { 4 }

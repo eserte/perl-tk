@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = sprintf '4.%03d', q$Revision: #27 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #28 $ =~ /\D(\d+)\s*$/;
 
 require Tk;
 use AutoLoader;
@@ -1306,6 +1306,83 @@ sub BalloonInfo
   }
 }
 
+sub ConfigSpecs {
+
+    my $w = shift;
+
+    return map { ( $_->[0], [ $w, @$_[ 1 .. 4 ] ] ) } $w->configure;
+
+}
+
+*GetSelection =
+    ($Tk::platform eq 'unix'
+     ? sub
+        {
+         my $w = shift;
+         my $sel = @_ ? shift : "PRIMARY";
+         my $txt = eval { local $SIG{__DIE__};
+			  $w->SelectionGet(-selection => $sel, -type => "UTF8_STRING")
+  		        };
+         if ($@)
+	  {
+  	   $txt = eval { local $SIG{__DIE__};
+			 $w->SelectionGet(-selection => $sel)
+  		       };
+  	 if ($@)
+  	  {
+  	   die "could not find default selection";
+            }
+          }
+         $txt;
+        }
+     : sub
+        {
+	 my $w = shift;
+	 my $sel = @_ ? shift : "PRIMARY";
+	 my $txt = eval { local $SIG{__DIE__};
+			  $w->SelectionGet(-selection => $sel)
+		        };
+	 if ($@)
+	  {
+	   die "could not find default selection";
+          }
+	 $txt;
+        }
+    );
+
+1;
+__END__
+
+=head1 NAME
+
+Tk::bindDump - dump detailed binding information for a widget.
+
+=head1 SYNOPSIS
+
+ use Tk::bindDump;
+
+ $splash->bindDump;
+
+=head1 DESCRIPTION
+
+This subroutine prints a widget's bindtags.  For each binding tag it
+prints all the bindings, comprised of the event descriptor and the
+callback.  Callback arguments are printed, and Tk::Ev objects are
+expanded.
+
+=head1 COPYRIGHT
+
+Copyright (C) 2000 - 2001 Stephen O. Lidie. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+
+=cut
+
+
+1;
+__END__
+
 sub bindDump {
 
     # Dump lots of good binding information.  This pretty-print subroutine
@@ -1383,46 +1460,6 @@ sub bindDump {
 
 } # end bindDump
 
-sub ConfigSpecs {
-
-    my $w = shift;
-
-    return map { ( $_->[0], [ $w, @$_[ 1 .. 4 ] ] ) } $w->configure;
-
-}
-
-1;
-__END__
-
-=head1 NAME
-
-Tk::bindDump - dump detailed binding information for a widget.
-
-=head1 SYNOPSIS
-
- use Tk::bindDump;
-
- $splash->bindDump;
-
-=head1 DESCRIPTION
-
-This subroutine prints a widget's bindtags.  For each binding tag it
-prints all the bindings, comprised of the event descriptor and the
-callback.  Callback arguments are printed, and Tk::Ev objects are
-expanded.
-
-=head1 COPYRIGHT
-
-Copyright (C) 2000 - 2001 Stephen O. Lidie. All rights reserved.
-
-This program is free software; you can redistribute it and/or modify it under
-the same terms as Perl itself.
-
-=cut
-
-
-1;
-__END__
 
 sub ASkludge
 {

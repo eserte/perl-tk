@@ -1,3 +1,43 @@
+Change 3042 on 2003/12/14 by nick@llama
+
+	Switch $VERSION stuff to new style when file
+	has been touched.
+
+Change 3040 on 2003/12/14 by nick@llama
+
+	Slaven's Entry more like Tcl patch. Nick is not entierly
+	convinced by the Selection hackery here is an improvement.
+
+Change 3039 on 2003/12/13 by nick@llama
+
+	Slaven's ToDo additions and listbox test
+
+Change 3038 on 2003/12/13 by nick@llama
+
+	MANIFEST cleanup
+
+Change 3037 on 2003/12/13 by nick@llama
+
+	Heuristics for command line parse - ignore things
+	after -unknown - and no croaks only warn
+
+Change 3036 on 2003/12/13 by nick@llama
+
+	Slaven's Listbox patches
+
+Change 3035 on 2003/12/13 by nick@llama
+
+	Slaven's FBox patches
+
+Change 3034 on 2003/12/13 by nick@llama
+
+	Avoid a core dump if tkUnixFont cannot find (e.g.) Korean
+	glyph.
+
+Change 3033 on 2003/12/13 by nick@llama
+
+	Fixup beta9 MANIFEST issues etc.
+
 Change 3032 on 2003/12/10 by nick@llama
 
 	Makefile generation tweaks:

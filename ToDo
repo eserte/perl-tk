@@ -23,4 +23,31 @@ Non-Sun Drag&Drop (e.g. linux) (Win32 Site now at least partly working.)
 
 Now 5.005_5X has utf8 how do we display it?
 
+Tk::Photo::data dumps core with beta9 and perl5.8.2:
+	$photo = $mw->Photo(-file => "some.gif");
+	$string = $photo->data(-format => "gif");
 
+Stipple bug, see Message-ID: <2uwCb.683348$pl3.76050@pd7tw3no> (should
+be fixed with Tk 8.4.5).
+
+One can't use filenames with high-bit characters in the Photo constructor:
+	$photo = $mw->Photo(-file => "high-bit-chars");
+
+Add 'as_default_dir' support for chooseDirectory (similar to
+'as_default' for get(Open|Save)File). Documentation missing.
+
+Widget review (Listbox.pm and Canvas.pm done)
+
+Pod review (Listbox.pod done, options.pod and Canvas.pod in the works,
+others pending)
+
+Port all of Tcl/Tk test suite to Perl/Tk. t/listbox.t and t/entry.t
+was a beginning.
+
+Port message catalogs from Tcl/Tk to Perl/Tk.
+
+Write a new Tk/804delta.pod.
+
+Build and test with older perl releases.
+
+Move bindDump documentation from Widget.pm to pod/Widget.pod.

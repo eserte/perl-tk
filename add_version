@@ -4,7 +4,7 @@ use File::Find;
 use Getopt::Std;
 use Cwd;
 my %opt = ('p' => '4');
-getopts('oeap:',\%opt);
+getopts('oqeap:',\%opt);
 my $path = getcwd();
 chdir($path);
 $path = getcwd();
@@ -64,7 +64,7 @@ sub VERSION
  my $have = `p4 have $ARGV`;
  my ($path,$need)  = $have =~ /^(.*#(\d+))\s+-/;
  $need++ if (-w $ARGV);
- return sprintf "\$VERSION = sprintf '%d.%%03d', q\$Revision: #%d\$ =~ /\\D(\\d+)\\s*\$/;\n",$opt{'p'},$need;
+ return ($need,sprintf "\$VERSION = sprintf '%d.%%03d', q\$Revision: #%d\$ =~ /\\D(\\d+)\\s*\$/;\n",$opt{'p'},$need);
 }
 
 
@@ -75,22 +75,29 @@ while (<>)
  {
   $edit |= s/\r//g;
   s/ +$//;
-  if (/^\s*\$VERSION\s*=\s*'(\d+)\.(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$\s*(?:\+(\d+))?.*$/)
+  if (/^\s*\$VERSION\s*=\s*'(\d+)\.0*(\d+)'\s*;\s*#\s*\$Id[:\s]+(.*)\$\s*(?:\+(\d+))?.*$/)
    {
     $seen = 1;
-    warn "-$ARGV:_";
-    $_ = VERSION();
-    warn "+$ARGV:$_";
-    $edit = 1;
+    my $have = $2;
+    my ($want,$str) = VERSION();
+    if ($opt{q} && $have ne $want)
+     {
+      warn "!$ARGV:$have ne $want\n";
+      warn "-$ARGV:$_";
+      $_ = $str;
+      warn "+$ARGV:$_";
+      $edit = 1;
+     }
    }
-  elsif (/^\s*(our\s+)?\$VERSION\s*=[^#]*\$Revision[:\s]+(.*)\$/)
+  elsif (/^\s*(our\s+)?\$VERSION\s*=[^#]*\$Revision[:\s]+#(\d+)\s*\$/)
    {
     $seen = 1;
-    my $want = VERSION();
-    if ($_ ne $want)
+    my $have = $2;
+    my ($want,$str) = VERSION();
+    if ($have ne $want)
      {
       warn "-$ARGV:$_";
-      $_ = $want;
+      $_ = $str;
       warn "+$ARGV:$_";
       $edit = 1;
      }
@@ -110,7 +117,8 @@ while (<>)
    {
     warn "$ARGV:$.:insert before\n$_\n";
     print "\nuse vars qw(\$VERSION);\n";
-    print  VERSION();
+    my ($want,$str) = VERSION();
+    print  $str;
     $seen = $edit = 1;
    }
   print if $opt{'e'};;

@@ -1,7 +1,7 @@
 package Tk::FileSelect;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = '4.013'; # $Id: //depot/Tkutf8/Tk/FileSelect.pm#14 $
+$VERSION = sprintf '4.%03d', q$Revision: #15 $ =~ /\D(\d+)\s*$/;
 @EXPORT_OK = qw(glob_to_re);
 
 use Tk qw(Ev);

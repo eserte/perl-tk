@@ -17,17 +17,30 @@ I<$listbox> = I<$parent>-E<gt>B<Listbox>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
-B<-background>	B<-foreground>	B<-relief>	B<-takefocus>
-B<-borderwidth>	B<-height>	B<-selectbackground>	B<-width>
-B<-cursor>	B<-highlightbackground>	B<-selectborderwidth>	B<-xscrollcommand>
-B<-exportselection>	B<-highlightcolor>	B<-selectforeground>	B<-yscrollcommand>
-B<-font>	B<-highlightthickness>	B<-setgrid>
+B<-background> B<-borderwidth> B<-cursor> B<-disabledforeground>
+B<-exportselection> B<-font> B<-foreground> B<-height>
+B<-highlightbackground> B<-highlightcolor> B<-highlightthickness>
+B<-offset> B<-relief> B<-selectbackground> B<-selectborderwidth>
+B<-selectforeground> B<-setgrid> B<-state> B<-takefocus> B<-tile>
+B<-width> B<-xscrollcommand> B<-yscrollcommand>
+		
 
 See L<Tk::options> for details of the standard options.
 
 =head1 WIDGET-SPECIFIC OPTIONS
 
 =over 4
+
+=item Name:	B<activeStyle>
+
+=item Class:	B<ActiveStyle>
+
+=item Switch:	B<-activestyle>
+
+Specifies the style in which to draw the active element. This must be
+one of B<dotbox> (show a focus ring around the active element), B<none>
+(no special indication of active element) or B<underline> (underline the
+active element). The default is B<underline>.
 
 =item Name:	B<height>
 
@@ -39,6 +52,21 @@ Specifies the desired height for the window, in lines.
 If zero or less, then the desired height for the window is made just
 large enough to hold all the elements in the listbox.
 
+=item Name:	B<listVariable>
+
+=item Class:	B<Variable>
+
+=item Switch:	B<-listvariable>
+
+I<The following is only partially implemented in Perl/Tk:>
+
+Specifies the reference of a variable. The value of the variable is an array
+to be displayed inside the widget; if the variable value changes
+then the widget will automatically update itself to reflect the new
+value. Attempts to assign a variable with an invalid list value to
+B<-listvariable> will cause an error. Attempts to unset a variable in use
+as a B<-listvariable> will fail but will not generate an error.
+
 =item Name:	B<selectMode>
 
 =item Class:	B<SelectMode>
@@ -49,6 +77,18 @@ Specifies one of several styles for manipulating the selection.
 The value of the option may be arbitrary, but the default bindings
 expect it to be either B<single>, B<browse>, B<multiple>,
 or B<extended>;  the default value is B<browse>.
+
+=item Name:	B<state>
+
+=item Class:	B<State>
+
+=item Switch:	B<-state>
+
+Specifies one of two states for the listbox: B<normal> or B<disabled>.
+If the listbox is disabled then items may not be inserted or deleted,
+items are drawn in the B<-disabledforeground> color, and selection
+cannot be modified and is not shown (though selection information is
+retained).
 
 =item Name:	B<width>
 
@@ -217,6 +257,52 @@ Inserts zero or more new elements in the list just before the
 element given by I<index>.  If I<index> is specified as
 B<end> then the new elements are added to the end of the
 list.  Returns an empty string.
+
+=item I<$listbox>-E<gt>B<itemcget>(I<index>, I<option>)
+
+Returns the current value of the item configuration option given by
+I<option>. Option may have any of the values accepted by the listbox
+B<itemconfigure> command.
+
+=item I<$listbox>-E<gt>B<itemconfigure>(I<index, >?I<option, value,
+option, value, ...>?)
+
+Query or modify the configuration options of an item in the listbox.
+If no option is specified, returns a list describing all of the
+available options for the item (see Tk_ConfigureInfo for information
+on the format of this list). If option is specified with no value,
+then the command returns a list describing the one named option (this
+list will be identical to the corresponding sublist of the value
+returned if no option is specified). If one or more option-value pairs
+are specified, then the command modifies the given widget option(s) to
+have the given value(s); in this case the command returns an empty
+string. The following options are currently supported for items:
+
+=over
+
+=item B<-background> =E<gt> I<color>
+
+I<Color> specifies the background color to use when displaying the
+item. It may have any of the forms accepted by Tk_GetColor.
+
+=item B<-foreground> =E<gt> I<color>
+
+I<Color> specifies the foreground color to use when displaying the
+item. It may have any of the forms accepted by Tk_GetColor.
+
+=item B<-selectbackground> =E<gt> I<color>
+
+I<Color> specifies the background color to use when displaying the
+item while it is selected. It may have any of the forms accepted by
+Tk_GetColor.
+
+=item B<-selectforeground> =E<gt> I<color>
+
+I<Color> specifies the foreground color to use when displaying the
+item while it is selected. It may have any of the forms accepted by
+Tk_GetColor.
+
+=back
 
 =item I<$listbox>-E<gt>B<nearest>(I<y>)
 
@@ -426,6 +512,11 @@ the anchor and the element under the mouse, inclusive.
 Most people will probably want to use B<browse> mode for
 single selections and B<extended> mode for multiple selections;
 the other modes appear to be useful only in special situations.
+
+Any time the selection changes in the listbox, the virtual event
+B<<< <<ListboxSelect>> >>> will be generated. It is easiest to bind to this
+event to be made aware of any changes to listbox selection.
+
 
 In addition to the above behavior, the following additional behavior
 is defined by the default bindings:
@@ -694,6 +785,10 @@ you must pass a reference to the tied scalar between subroutines.
 =head1 KEYWORDS
 
 listbox, widget, tied
+
+=head1 SEE ALSO
+
+L<Tk::HList>, L<Tk::TextList>.
 
 =cut
 

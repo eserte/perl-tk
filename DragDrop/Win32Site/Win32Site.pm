@@ -1,7 +1,7 @@
 package Tk::DragDrop::Win32Site;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/Win32Site/Win32Site.pm#5 $
+$VERSION = sprintf '4.%03d', q$Revision: #6 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw($XS_VERSION);
 require DynaLoader;

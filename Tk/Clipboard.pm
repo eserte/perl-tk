@@ -5,7 +5,7 @@ package Tk::Clipboard;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tk/Clipboard.pm#6 $
+$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use AutoLoader qw(AUTOLOAD);
 use Tk qw(catch);
@@ -64,7 +64,19 @@ sub clipboardPaste
 {
  my $w = shift;
  local $@;
- catch { $w->insert('insert',$w->clipboardGet)};
+ catch
+  {
+## Different from Tcl/Tk version:
+#    if ($w->windowingsystem eq 'x11')
+#     {
+#      catch
+#       {
+#        $w->deleteSelected;
+#       };
+#     }
+   $w->insert("insert", $w->clipboardGet);
+   $w->SeeInsert if $w->can('SeeInsert');
+  };
 }
 
 sub clipboardOperations

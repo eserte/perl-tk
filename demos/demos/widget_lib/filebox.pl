@@ -38,10 +38,7 @@ sub filebox {
        -command => sub { local($^W) = 0;
 			 require Tk::FileSelect;
 			 Tk::FileSelect->import('as_default');
-			 # XXX remove cached dialogs
-			 my $mw = $TOP->MainWindow;
-			 delete $mw->{'tk_getOpenFile'};
-			 delete $mw->{'tk_getSaveFile'};
+			 _removeCachedFileDialogs();
 		     })->pack(-side => 'left');
     my $fdb = $cbf->Radiobutton
       (-text => 'FBox',
@@ -50,10 +47,7 @@ sub filebox {
        -command => sub { local($^W) = 0;
 			 require Tk::FBox;
 			 Tk::FBox->import('as_default');
-			 # XXX remove cached dialogs
-			 my $mw = $TOP->MainWindow;
-			 delete $mw->{'tk_getOpenFile'};
-			 delete $mw->{'tk_getSaveFile'};
+			 _removeCachedFileDialogs();
 		     })->pack(-side => 'left');
     $fdb->invoke;
 
@@ -97,4 +91,16 @@ sub fileDialog {
 	$ent->insert(0, $file);
 	$ent->xview('end');
     }
+}
+
+sub _removeCachedFileDialogs {
+    my $mw = $TOP->MainWindow;
+    my $remove = sub {
+	my $t = shift;
+	return if (!UNIVERSAL::isa($t, "Tk::Toplevel"));
+	delete $t->{'tk_getOpenFile'};
+	delete $t->{'tk_getSaveFile'};
+    };
+    $remove->($mw);
+    $mw->Walk($remove);
 }

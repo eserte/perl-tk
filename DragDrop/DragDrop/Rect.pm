@@ -4,7 +4,7 @@ use Carp;
 # Proxy class which represents sites to the dropping side
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/Rect.pm#5 $
+$VERSION = sprintf '4.%03d', q$Revision: #6 $ =~ /\D(\d+)\s*$/;
 
 sub Over
 {

@@ -3340,7 +3340,9 @@ TkFontParseXLFD(string, faPtr, xaPtr)
 
     memset(field, '\0', sizeof(field));
 
-    str = string;
+    if (!(str = string)) {
+	return TCL_ERROR;
+    }
     if (*str == '-') {
 	str++;
     }

@@ -9,7 +9,7 @@ package Tk::NoteBook;
 
 use vars qw($VERSION);
 
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tixish/NoteBook.pm#8 $
+$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);

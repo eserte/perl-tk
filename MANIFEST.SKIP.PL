@@ -93,6 +93,9 @@ doc/index\.html$
 doc/MANFILES$
 doc/.*\.htm$
 myConfig\.out
+JPEG/jpeg/testout*
+JPEG/jpeg/config\.(log|status)
+JPEG/jpeg/([cd]jpeg|jpegtran|(rd|wr)jpgcom)
 \.todo$
 \bswapm$
 bin/patchls$

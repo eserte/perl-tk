@@ -31,7 +31,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 335, todo => [181] }
+BEGIN { plan tests => 336, todo => [181] }
 
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
@@ -1151,7 +1151,7 @@ if ($^O ne 'MSWin32') {
     # selection range is reset.
 
     eval { $e->index("sel.first") };
-    skip("Test only for MSWin32", $@ =~ /selection isn\'t in widget/, 1, $@);
+    skip("Test only for MSWin32", $@ =~ /selection isn\'t in widget/, 1, $@) for (1..2);
 
 } else {
     # On mac and pc, when selection is cleared, entry widget remembers

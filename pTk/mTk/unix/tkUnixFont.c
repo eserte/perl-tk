@@ -2496,7 +2496,7 @@ CanUseFallback(fontPtr, faceName, ch, fixSubFontPtrPtr)
     Tcl_DStringFree(&dsEncodings);
     numEncodings = 0;
 
-    if (fontStructPtr == NULL) {
+    if (fontStructPtr == NULL || nameList[nameIdx] == NULL) {
 	if (nameList != nameListOrig) {
 	    ckfree((char *) nameList);
 	}
