@@ -541,12 +541,16 @@ GetSystemEncoding(void)
 {
  if (!system_encoding)
   {
-   char *codeset = "iso8859-1";
+   char *codeset = NULL;
 /* This assumes perl's Configure probe stuff is #include-d above */
 #if defined(HAS_NL_LANGINFO) && defined(CODESET)
    codeset = nl_langinfo(CODESET);
 #endif
+   if (!codeset)
+    codeset = "iso8859-1";
    system_encoding = Tcl_GetEncoding(NULL,codeset);
+   if (!system_encoding)
+    system_encoding = Tcl_GetEncoding(NULL,"iso8859-1");
   }
  return system_encoding;
 }
@@ -556,7 +560,8 @@ GetSystemEncoding(void)
 SV *
 Lang_SystemEncoding(void)
 {
- return PerlEncObj(GetSystemEncoding());
+ dTHX;
+ return SvREFCNT_inc(PerlEncObj(GetSystemEncoding()));
 }
 
 Tcl_Encoding

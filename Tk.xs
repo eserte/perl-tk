@@ -83,14 +83,38 @@ PointToWindow(Tk_Window tkwin, int x, int y, Window dest)
 {
  Display *dpy = Tk_Display(tkwin);
  Window root = RootWindowOfScreen(Tk_Screen(tkwin));
- Window win;
+ Window win = None;
  if (dest == None)
   dest = root;
+#ifdef WIN32
+ { 
+  HWND hwnd = (HWND) Tk_GetHWND(dest);
+  RECT  r;
+  if (GetWindowRect(hwnd,&r))
+   { 
+    POINT pt;
+    HWND child;
+    pt.x = x - r.left;
+    pt.y = y - r.top;
+    child = ChildWindowFromPoint(hwnd, pt);
+    if (child != hwnd)
+     {
+      TkWindow *winPtr = (TkWindow *) Tk_HWNDToWindow(child);
+      if (winPtr) 
+       {
+        win = winPtr->window;
+      } 
+     }
+   } 
+  return (IV) win;
+ }
+#else
  if (!XTranslateCoordinates(dpy, root, dest, x, y, &x, &y, &win))
   {
    win = None;
   }
  return (IV) win;
+#endif
 }
 
 static SV *

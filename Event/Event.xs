@@ -20,6 +20,8 @@
 
 extern void TclInitSubsystems(CONST char *argv0);
 
+static int parent_pid = 0;
+
 static SV *
 FindVarName(pTHX_ char *varName,int flags)
 {
@@ -1237,11 +1239,28 @@ XS(XS_Tk__Event_INIT)
 
 #define pTk_exit(status) TclpExit(status)
 
-#define pTk_END() Tcl_Finalize()
+#define IsParentProcess() (PerlProc_getpid() == parent_pid)
+
+void pTk_END()
+{
+ dTHX;
+ if (IsParentProcess())
+  {
+   Tcl_Finalize();
+  }
+}
 
 MODULE = Tk	PACKAGE = Tk	PREFIX = pTk_
 
 PROTOTYPES: ENABLE
+
+void
+pTk_IsParentProcess(...)
+CODE:
+ {
+  ST(0) = (IsParentProcess()) ? &PL_sv_yes : &PL_sv_no;
+  XSRETURN(1);
+ }
 
 void
 pTk_END()
@@ -1524,6 +1543,7 @@ BOOT:
   install_vtab(aTHX_ "TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
   sv_setiv(FindVarName(aTHX_ "LangDebug",GV_ADD|GV_ADDMULTI),1);
   TclInitSubsystems(SvPV_nolen(get_sv("0",FALSE)));
+  parent_pid = PerlProc_getpid();
  }
 
 

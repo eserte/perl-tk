@@ -1,5 +1,17 @@
-use Test::More (tests => 294);
 use Tk;
+use Encode qw(FB_CROAK);
+BEGIN
+{
+ my $enc = Tk::SystemEncoding();
+ eval { $enc->encode("\x{30C8}",FB_CROAK) };
+ if ($@)
+  {
+   my $err = "$@";
+   print "1..0 # Skipped: locale's '",$enc->name,"' cannot represent Japanese.\n";
+   CORE::exit(0);
+  }
+}
+use Test::More (tests => 294);
 use Tk::widgets qw(Text);
 my $mw   = MainWindow->new;
 $mw->geometry("+10+10");

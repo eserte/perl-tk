@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #20 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #21 $ =~ /\D(\d+)\s*$/;
 
 # warn __FILE__." $VERSION\n";
 
@@ -220,8 +220,13 @@ sub pasthru
  my $str = $self->MM::pasthru;
  if ($str =~ s/^\s+INC=.*\n//m)
   {
-   return "\n#Do NOT pasthru INC for Tk - it is computed by subdir\n".$str;
+   $str = "# - Do NOT pasthru INC for Tk - it is computed by subdir\n$str"
   }
+ if ($str =~ s/\bLIB="\$\(LIB\)"//)
+  {
+   $str = qq[# - Drop LIB="\$(LIB)" - not used\n$str];
+  }
+ $str = "#Tk::MMutil pasthru\n$str";
  return $str;
 }
 

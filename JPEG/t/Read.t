@@ -6,6 +6,7 @@ require Tk::JPEG;
 my $file = (@ARGV) ? shift : 'jpeg/testimg.jpg';
 
 my $mw = MainWindow->new;
+$mw->geometry('+10+10');
 my $image = $mw->Photo('-format' => 'jpeg', -file => $file);
 $mw->Label(-image => $image)->pack;
 $mw->update;

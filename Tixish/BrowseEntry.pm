@@ -8,7 +8,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev);
 use Carp;
@@ -96,6 +96,7 @@ sub Populate {
     $w->{'_BE_popped'} = 0;
     $w->Delegates(get => $sl, DEFAULT => $e);
     $w->ConfigSpecs(
+        -font        => [qw/DESCENDANTS font Font/],
         -listwidth   => [qw/PASSIVE  listWidth   ListWidth/,   undef],
         -listheight  => [{-height => $sl}, qw/listHeight ListHeight/, undef],
         -listcmd     => [qw/CALLBACK listCmd     ListCmd/,     undef],

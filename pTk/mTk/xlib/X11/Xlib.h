@@ -1203,7 +1203,7 @@ _XFUNCPROTOBEGIN
 
 
 
-#include "../../tkIntXlibDecls.h"
+#include "../pTk/tkIntXlibDecls.h"
 
 _XFUNCPROTOEND
 

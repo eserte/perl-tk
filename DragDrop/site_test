@@ -97,7 +97,7 @@ use Data::Dumper;
 
 sub ShowTargets
 {
- my ($ld,$seln,$action,$targ,$x,$y) = @_;
+ my ($lb,$seln,$action,$targ,$x,$y) = @_;
  my $own =  $lb->SelectionExists('-selection'=>$seln);
  unless ($targ && @$targ)
   {
@@ -136,13 +136,13 @@ sub ShowTargets
       }
      else
       {
+       $STRING = $string;
        $string =~ s/([^\x20-\x7e\xa0-\xff])/sprintf("\\x{%x}",ord($1))/ge;
        if (length($string) > MAX_LEN())
         {
          substr($string,MAX_LEN()-3) = "..."
         }
        print "$_:$string\n";
-       $STRING = $string;
       }
     }
   }

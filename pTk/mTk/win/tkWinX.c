@@ -86,6 +86,7 @@ static char winScreenName[] = ":0"; /* Default name of windows display. */
 static HINSTANCE tkInstance = NULL; /* Application instance handle. */
 static int childClassInitialized;   /* Registered child class? */
 static WNDCLASS childClass;         /* Window class for child windows. */
+static WNDCLASS ownDCClass;         /* Window class for child windows with private DC. */
 static int tkPlatformId = 0;        /* version of Windows platform */
 static Tcl_Encoding keyInputEncoding = NULL;/* The current character
 				     * encoding for keyboard input */
@@ -309,6 +310,13 @@ TkWinXInit(hInstance)
 	panic("Unable to register TkChild class");
     }
 
+	ownDCClass = childClass;
+	ownDCClass.lpszClassName = TK_WIN_OWNDC_CLASS_NAME;
+	ownDCClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+    if (!RegisterClass(&ownDCClass)) {
+	panic("Unable to register TkOwnDC class");
+    }
+
     /*
      * Make sure we cleanup on finalize.
      */
@@ -343,6 +351,7 @@ TkWinXCleanup(hInstance)
     if (childClassInitialized) {
 	childClassInitialized = 0;
 	UnregisterClass(TK_WIN_CHILD_CLASS_NAME, hInstance);
+	UnregisterClass(TK_WIN_OWNDC_CLASS_NAME, hInstance);
     }
 
     if (unicodeEncoding != NULL) {

@@ -2833,7 +2833,7 @@ Tk_TextLayoutToPostscript(interp, layout)
 		p +=(charsize= Tcl_UtfToUniChar(p,&ch));
 		Tcl_UtfToExternal(interp,NULL,last_p,charsize,0,NULL,one_char,4,
 			NULL,&bytecount,NULL);
-                if (bytecount == 1) {
+		if (bytecount == 1) {
 		    c = UCHAR(one_char[0]);
 		    /* c = UCHAR( ch & 0xFF) */;
 		    if ((c == '(') || (c == ')') || (c == '\\') || (c < 0x20)

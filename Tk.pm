@@ -62,13 +62,13 @@ use strict;
 use Carp;
 
 # Record author's perforce depot record
-$Tk::CHANGE      = q$Change: 3215 $;
+$Tk::CHANGE      = q$Change: 3279 $;
 
 # $tk_version and $tk_patchLevel are reset by pTk when a mainwindow
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.4';
 $Tk::patchLevel  = '8.4';
-$Tk::VERSION     = '804.026';
+$Tk::VERSION     = '804.027';
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 

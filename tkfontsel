@@ -24,10 +24,22 @@ Tk::grid($mw->Label(-text => 'Family:',-justify => 'right'), $family,
         );
 
 my $text = $mw->Scrolled(Text => -font => $font, -width => 40, -height => 20)->grid(-sticky => 'nsew', -columnspan => 6);
-$text->insert('end',<<"END");
-Example Text - list
-\x{20ac}40 Only.
-END
+
+my $l = '';
+for my $ch (0x20..0x7E,0xa0..0xff)
+ {
+  $l .= chr($ch);
+  if (length($l) == 16)
+   {
+    $text->insert(end => "$l\n");
+    $l = '';
+   }
+ }
+
+#$text->insert('end',<<"END");
+#Example Text - list
+#\x{20ac}40 Only.
+#END
 
 MainLoop;
 

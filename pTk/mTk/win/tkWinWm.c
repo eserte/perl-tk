@@ -546,6 +546,9 @@ static int 		WmTransientCmd _ANSI_ARGS_((Tk_Window tkwin,
 static int 		WmWithdrawCmd _ANSI_ARGS_((Tk_Window tkwin,
 			    TkWindow *winPtr, Tcl_Interp *interp, int objc,
 			    Tcl_Obj *CONST objv[]));
+static int 		WmWrapperCmd _ANSI_ARGS_((Tk_Window tkwin,
+			    TkWindow *winPtr, Tcl_Interp *interp, int objc,
+			    Tcl_Obj *CONST objv[]));
 static void		WmUpdateGeom _ANSI_ARGS_((WmInfo *wmPtr,
 			    TkWindow *winPtr));
 
@@ -2447,7 +2450,7 @@ Tk_WmObjCmd(clientData, interp, objc, objv)
 	"iconwindow", "maxsize", "minsize", "overrideredirect",
         "positionfrom", "protocol", "resizable", "sizefrom",
         "stackorder", "state", "title", "transient",
-	"withdraw", (char *) NULL };
+	"withdraw", "wrapper", (char *) NULL };
     enum options {
         WMOPT_ASPECT, WMOPT_ATTRIBUTES, WMOPT_CLIENT, WMOPT_COLORMAPWINDOWS,
 	WMOPT_COMMAND, WMOPT_DEICONIFY, WMOPT_FOCUSMODEL, WMOPT_FRAME,
@@ -2456,7 +2459,7 @@ Tk_WmObjCmd(clientData, interp, objc, objv)
 	WMOPT_ICONWINDOW, WMOPT_MAXSIZE, WMOPT_MINSIZE, WMOPT_OVERRIDEREDIRECT,
         WMOPT_POSITIONFROM, WMOPT_PROTOCOL, WMOPT_RESIZABLE, WMOPT_SIZEFROM,
         WMOPT_STACKORDER, WMOPT_STATE, WMOPT_TITLE, WMOPT_TRANSIENT,
-	WMOPT_WITHDRAW };
+	WMOPT_WITHDRAW, WMOPT_WRAPPER };
     int index, length;
     char *argv1;
     TkWindow *winPtr;
@@ -2573,6 +2576,8 @@ Tk_WmObjCmd(clientData, interp, objc, objv)
 	return WmTransientCmd(tkwin, winPtr, interp, objc, objv);
       case WMOPT_WITHDRAW:
 	return WmWithdrawCmd(tkwin, winPtr, interp, objc, objv);
+      case WMOPT_WRAPPER:
+	return WmWrapperCmd(tkwin, winPtr, interp, objc, objv);
     }
 
     /* This should not happen */
@@ -7205,39 +7210,60 @@ UpdateIcon(winPtr)
 TkWindow *winPtr;
 {
     WmInfo *wmPtr = winPtr->wmInfoPtr;
-    Pixmap old = wmPtr->hints.icon_pixmap;
-    int lWidth = GetSystemMetrics(SM_CXICON);
-    int lHeight = GetSystemMetrics(SM_CYICON);
-    ICONINFO info;
-    HICON icon;
-    info.fIcon = TRUE;
-    info.xHotspot = 0;
-    info.yHotspot = 0;
-    if (wmPtr->hints.icon_pixmap)
-     {
-      info.hbmColor  = TkWinGetHBITMAP(wmPtr->hints.icon_pixmap);
-      if (wmPtr->hints.icon_mask)
-       {
-        info.hbmMask  = TkWinGetHBITMAP(wmPtr->hints.icon_mask);
-       }
-      else
-       {
-        int size   = (lWidth+7)/8*lHeight;
-        char *bits = ckalloc(size);
-        memset(bits,0,size);
-        info.hbmMask  = CreateBitmap(lWidth,lHeight,1,1,bits);
-        ckfree(bits);
-       }
-      icon = CreateIconIndirect(&info);
-      SendMessage(wmPtr->wrapper, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) icon);
-      if (!wmPtr->hints.icon_mask)
-       {
-        DeleteObject(info.hbmMask);
-       }
+    Pixmap pixmap= wmPtr->hints.icon_pixmap;
+    Tcl_Interp *interp = 0;
+    if (pixmap){
+	int lWidth = GetSystemMetrics(SM_CXICON);
+	int lHeight = GetSystemMetrics(SM_CYICON);
+	ICONINFO info;
+	HICON hIcon;
+	SIZE  size;
+	WinIconPtr titlebaricon;
+	BlockOfIconImagesPtr lpIR;
+	TkWinDrawable* twdPtr = (TkWinDrawable*) pixmap;
+
+	info.fIcon = TRUE;
+	info.xHotspot = 0;
+	info.yHotspot = 0;
+	info.hbmColor  = TkWinGetHBITMAP(pixmap);
+	if (wmPtr->hints.icon_mask) {
+	    info.hbmMask  = TkWinGetHBITMAP(wmPtr->hints.icon_mask);
+	}
+	else {
+	    int size   = (lWidth+7)/8*lHeight;
+	    char *bits = ckalloc(size);
+	    memset(bits,0,size);
+	    info.hbmMask  = CreateBitmap(lWidth,lHeight,1,1,bits);
+	    ckfree(bits);
+	}
+	hIcon = CreateIconIndirect(&info);
+	lpIR = (BlockOfIconImagesPtr) ckalloc(sizeof(BlockOfIconImages));
+	if (lpIR == NULL) {
+	    DestroyIcon(hIcon);
+	    return;
+	}
+	lpIR->nNumImages = 1;
+	lpIR->IconImages[0].Width = lWidth;
+	lpIR->IconImages[0].Height = lHeight;
+	lpIR->IconImages[0].Colors = 1 << twdPtr->bitmap.depth;
+	lpIR->IconImages[0].hIcon = hIcon;
+	/* These fields are ignored */
+	lpIR->IconImages[0].lpBits = 0;
+	lpIR->IconImages[0].dwNumBytes = 0;
+	lpIR->IconImages[0].lpXOR = 0;
+	lpIR->IconImages[0].lpAND = 0;
+	titlebaricon = (WinIconPtr) ckalloc(sizeof(WinIconInstance));
+	titlebaricon->iconBlock = lpIR;
+	titlebaricon->refCount = 1;
+        if (WinSetIcon(interp, titlebaricon, (Tk_Window) winPtr) != TCL_OK) {
+    	    /* We didn't use the titlebaricon after all */
+	    DecrIconRefCount(titlebaricon);
+	    titlebaricon = NULL;
+	}
      }
     else
      {
-      SendMessage(wmPtr->wrapper, WM_SETICON, (WPARAM) ICON_BIG, (LPARAM) 0);
+	WinSetIcon(interp, NULL, (Tk_Window) winPtr);
      }
 }
 
@@ -7339,8 +7365,7 @@ Tcl_Obj *CONST objv[];
 	}
 	if (objc == 3) {
 	    if (wmPtr->hints.flags & IconPixmapHint && wmPtr->iconImage) {
-		interp->result = Tk_NameOfBitmap(winPtr->display,
-			wmPtr->hints.icon_pixmap);
+	        Tcl_SetResult(interp, (char *) Tk_NameOfBitmap(winPtr->display, wmPtr->hints.icon_pixmap),TCL_STATIC);
 	    }
 	    return TCL_OK;
 	}
@@ -7374,3 +7399,17 @@ Tcl_Obj *CONST objv[];
 }
 
 
+static int
+WmWrapperCmd(tkwin, winPtr, interp, objc, objv)
+Tk_Window tkwin;
+TkWindow *winPtr;
+Tcl_Interp *interp;
+int objc;
+Tcl_Obj *CONST objv[];
+{
+    register WmInfo *wmPtr = winPtr->wmInfoPtr;
+
+    Tcl_IntResults(interp,2,0,wmPtr->wrapper,0);
+    return TCL_OK;
+
+}

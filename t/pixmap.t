@@ -26,6 +26,7 @@ static char * junk_xpm[] = {
 END
 use Tk;
 my $mw = tkinit;
+$mw->geometry("+20+20");
 my $label = $mw->Label(-image=>$mw->Pixmap(-data=>$icon))->pack;
 $mw->after(1000,[destroy => $mw]);
 MainLoop;

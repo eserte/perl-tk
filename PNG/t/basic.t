@@ -1,6 +1,6 @@
-#!perl      
-BEGIN 
-{               
+#!perl
+BEGIN
+{
  $| = 1;
  print "1..4\n";
 }
@@ -8,6 +8,7 @@ use Tk;
 use Tk::PNG;
 print "ok 1\n";
 my $mw = MainWindow->new;
+$mw->geometry('+10+10');
 my $img = $mw->Photo(-format => "png", -file => "pngtest.png");
 print "not " unless $img;
 print "ok 2\n";

@@ -1,7 +1,7 @@
 package Tk::DragDrop::Win32Site;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw($XS_VERSION);
 require DynaLoader;
@@ -23,7 +23,6 @@ sub InitSite
  my $w = $site->widget;
  $w->BindClientMessage(WM_DROPFILES,[\&Win32Drop,$site]);
  DragAcceptFiles($w,1);
- warn "Enable $w";
 }
 
 sub Win32Drop
@@ -32,7 +31,7 @@ sub Win32Drop
  my ($w,$site,$msg,$wParam,$lParam) = @_;
  my ($x,$y,@files) = DropInfo($wParam);
  my $cb = $site->{'-dropcommand'};
- $site->Apply(-entercommand => $x, $y, 0);
+ $site->Apply(-entercommand => $x, $y, 1);
  if ($cb)
   {
    foreach my $file (@files)
@@ -40,10 +39,10 @@ sub Win32Drop
      # print "$file @ $x,$y\n";
      $w->clipboardClear;
      $w->clipboardAppend('--',$file);
-     $cb->Call('CLIPBOARD',$x,$y);
+     $cb->Call('CLIPBOARD',Win32Drop => ['STRING'],$x,$y);
     }
   }
- $site->Apply(-entercommand => $x, $y, 1);
+ $site->Apply(-entercommand => $x, $y, 0);
  return 0;
 }
 

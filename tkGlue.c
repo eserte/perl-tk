@@ -1654,7 +1654,7 @@ EventAndKeySym *obj;
          if ($object->can('_Tk_passWidget') &&
              $object->_Tk_passWidget($widget)
           {
-           # proceed as if it wasn't an object
+           proceed_as_non_object();
           }
       */
      if (!sv_isobject(sv))
@@ -4522,7 +4522,9 @@ Lang_WinEvent(tkwin, message, wParam, lParam, resultPtr)
      SV *data = struct_sv(NULL, sizeof(EventAndKeySym));
      EventAndKeySym *info = (EventAndKeySym *) SvPVX(data);
      int result;
+#if 0
      LangDebug("%s %d '%s'\n",Tk_PathName(tkwin), message,SvPV(sv,na));
+#endif
      info->keySym = 0;
      info->interp = interp;
      info->window = w;

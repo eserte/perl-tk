@@ -1,5 +1,17 @@
-use Test::More (tests => 271);
 use Tk;
+use Encode qw(FB_CROAK);
+BEGIN
+{
+ my $enc = Tk::SystemEncoding();
+ eval { $enc->encode("\x{AC00}",FB_CROAK) };
+ if ($@)
+  {
+   my $err = "$@";
+   print "1..0 # Skipped: locale's '",$enc->name,"' cannot represent Korean.\n";
+   CORE::exit(0);
+  }
+}
+use Test::More (tests => 271);
 use Tk::widgets qw(Text);
 my $mw   = MainWindow->new;
 $mw->geometry("+10+10");

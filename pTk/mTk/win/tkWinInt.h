@@ -124,6 +124,7 @@ typedef struct {
 
 #define TK_WIN_TOPLEVEL_CLASS_NAME "TkTopLevel"
 #define TK_WIN_CHILD_CLASS_NAME "TkChild"
+#define TK_WIN_OWNDC_CLASS_NAME "TkOwnDC"
 
 /*
  * The following variable is a translation table between X gc functions and

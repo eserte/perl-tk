@@ -7,7 +7,7 @@ of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.3 or Tk8.4.* sources.
 See doc/license.html for details of this license.
 
-Tk804.026 is now considered production worthy.
+Tk804.027 is now considered production worthy.
 (Previous stable release being Tk800.025.)
 
 This a re-port of a perl interface to Tk8.4.
@@ -20,7 +20,7 @@ been verified as compliant. There ARE differences see pod/804delta.pod.
 
 The goal of this release is Unicode support via perl's and
 core-tk's use of UTF-8.
-Tk804.026 builds and loads into a threaded perl but is NOT
+Tk804.027 builds and loads into a threaded perl but is NOT
 yet thread safe.
 
 This Tk804 is only likely to work with perl5.8.0 or later.

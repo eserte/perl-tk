@@ -1,3 +1,142 @@
+Change 3278 on 2004/04/11 by nick@llama
+
+	Change VERSION to 804.027
+
+Change 3277 on 2004/04/08 by nick@camel
+
+	Win32 cannot do CORE::exit.
+
+Change 3276 on 2004/04/08 by nick@llama
+
+	Forgot to add fork.t test to perforce
+
+Change 3275 on 2004/04/08 by nick@llama
+
+	XS variant of Slaven's fix for
+	[cpan #5783] fork/CORE::exit does not work anymore
+
+Change 3273 on 2004/04/03 by nick@camel
+
+	Tidy up the simple minded Win32Site stuff to 
+	it follows current DragDrop calling conventions etc.
+
+Change 3271 on 2004/04/03 by nick@camel
+
+	Avoid vtable mess of LangWinChildProc and possible
+	hInstance issues by having Tk define an CS_OWNDC window
+	class for Tk::GLX to use.
+
+Change 3270 on 2004/04/03 by nick@dromedary
+
+	Avoid perl-ish comment in comment looking like pragma
+
+Change 3267 on 2004/04/02 by nick@ElixentWinXP
+
+	#include path wasn't right after install
+
+Change 3263 on 2004/03/31 by nick@camel
+
+	Update .t/.m 
+
+Change 3262 on 2004/03/31 by nick@camel
+
+	Add a LangWinChildProc() wrapper on the special 
+	TkWinChildProc()
+
+Change 3259 on 2004/03/28 by nick@llama
+
+	JPEG fix for SPARC-64 etc. where LDFLAGs are needed.
+
+Change 3251 on 2004/03/27 by nick@camel
+
+	Reinstate wm imageicon on Win32
+
+Change 3250 on 2004/03/27 by nick@camel
+
+	Now we use PoitToWindow for Drag&Drop we need
+	a Win32 version that works.
+
+Change 3249 on 2004/03/27 by nick@camel
+
+	Dummy 'wm wrapper' command for Win32
+
+Change 3248 on 2004/03/27 by nick@camel
+
+	Missing dTHX for non GCC
+
+Change 3247 on 2004/03/27 by nick@llama
+
+	Drop LIB="$(LIB)" from PASTHRU - it breaks cygwin
+	which inherits LIB from environment, and is not used
+	anywhere in Tk.
+
+Change 3245 on 2004/03/27 by nick@llama
+
+	Revert to using system encoding in PostScript,
+	but make sure we set up CurrentEncoding.
+
+Change 3244 on 2004/03/27 by nick@llama
+
+	REFCNT issue with SystemEncoding
+
+Change 3243 on 2004/03/27 by nick@llama
+
+	Fix PostScript text being function of locale when Font encoding
+	isn't. Also makes it match %%DocumentData: Clean7Bit claim.
+
+Change 3242 on 2004/03/27 by nick@llama
+
+	Add more ->geometry calls (shown up by make test in Xvnc)
+	to make tests non-interactive.
+
+Change 3241 on 2004/03/26 by nick@llama
+
+	MaxSize patch to re-enable Maximize button on KDE3.2
+	from https://sourceforge.net/tracker/index.php?func=detail&aid=915350&group_id=12997&atid=112997
+
+Change 3240 on 2004/03/26 by nick@llama
+
+	This patch by Ondrej Koala Vacha (via Slaven) forwards the
+	-font option also to the Listbox portion of Tk::BrowseEntry.
+
+Change 3239 on 2004/03/24 by nick@llama
+
+	Use different arg reordering to allow Win32 users
+	to have as many -topmost (sic) windows as they like.
+
+Change 3238 on 2004/03/24 by nick@llama
+
+	Tweak the Scrolled test
+
+Change 3232 on 2004/03/23 by nick@llama
+
+	More safety still for SystemEncoding()
+
+Change 3231 on 2004/03/23 by nick@llama
+
+	Extra safety in SystemEncoding() detection.
+	Skip JP.t and KR.t unless locale can represent key codepoints.
+
+Change 3227 on 2004/03/22 by nick@llama
+
+	Move grep* util scripts out of Tk
+
+Change 3223 on 2004/03/21 by nick@llama
+
+	Fix for non-GCC threaded/multiplicity builds.
+
+Change 3221 on 2004/03/21 by nick@llama
+
+	Cancelled afters can have repeat called too.
+
+Change 3217 on 2004/03/19 by nick@llama
+
+	New YML
+
+Change 3215 on 2004/03/18 by nick@llama
+
+	Tk-804.026 Release Preparation
+
 Change 3214 on 2004/03/18 by nick@llama
 
 	Bump version to Tk804.026

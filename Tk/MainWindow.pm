@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
+$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -153,7 +153,7 @@ sub Existing
 
 END
 {
- if ($pid == $$)
+ if (Tk::IsParentProcess())
   {
    foreach my $top (values %Windows)
     {

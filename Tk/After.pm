@@ -5,7 +5,7 @@ package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/After.pm#10 $
+$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/After.pm#11 $
 
 sub _cancelAll
 {
@@ -20,6 +20,7 @@ sub _cancelAll
 }
 
 sub Tk::After::Cancelled::once { }
+sub Tk::After::Cancelled::repeat { }
 
 sub submit
 {

@@ -32,6 +32,7 @@ begin('update',2);
 $mw->update;
 
 my $t = $mw->Toplevel(-width => 100, -height => 100);
+$t->geometry("-0+0");
 my $l2 = $t->Label(-text => 'Content')->pack;
 $t->bind($event,[\&mapped,"Popup"]);
 #$l2->bind($event,[\&mapped,"Popup"]);

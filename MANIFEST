@@ -266,9 +266,6 @@ gedi
 generate
 geo_mgr
 geom
-grepc
-grepperl
-grept
 grid_adj
 grid_test
 gridbug
@@ -1845,6 +1842,7 @@ t/fbox.t
 t/fileevent.t
 t/fileselect.t
 t/font.t
+t/fork.t
 t/geomgr.t
 t/iso8859-1.t
 t/JP.dat

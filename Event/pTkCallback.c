@@ -99,9 +99,14 @@ LangCallback *
 LangCopyCallback(sv)
 SV *sv;
 {
- dTHXs;
  if (sv)
-  SvREFCNT_inc(sv);
+  {
+#if !defined(__GNUC__) || defined(__STRICT_ANSI__) || defined(PERL_GCC_PEDANTIC)
+ /* Unless using GCC extensions we need PL_Sv */
+   dTHX;
+#endif
+   SvREFCNT_inc(sv);
+  }
  return sv;
 }
 

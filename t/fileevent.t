@@ -145,6 +145,7 @@ sub init {
     $MW->title('ipadm - Administer IP Nodes');
     $MW->iconname('ipadm');
     $MW->minsize(50, 50);
+    $MW->geometry("+100+50");
     $MW->protocol('WM_DELETE_WINDOW' => \&fini);
 
     # Create the menubar and friends.

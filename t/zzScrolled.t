@@ -17,7 +17,7 @@ my $text;
    eval { $scrl = $mw->Scrolled('Text', -scrollbars=>'sw', -setgrid=>1); };
    ok($@, "", "Problem creating Scrolled('Text')");
    ok( Tk::Exists($scrl) );
-   eval { $scrl->grid; };
+   eval { $scrl->grid(-sticky => 'nw'); };
    ok($@, "", 'Problem managing Scrolled Text with grid');
    eval { $scrl->update; };
    ok($@, "", 'Problem with update');
@@ -98,6 +98,9 @@ my $text;
             ok($@, "", "Sizechg: Error reset update configure $opt");
             eval { $newgeo  = $scrl->geometry; };
             ok($@, "", "Sizechk: reset geometry $opt");
+            # Next one often fails - window stays same size but moves
+            # e.g. expect 589x341+0+32 get 589x341+17+32
+            # tried changing -sticky above as a fix?
             ok($newgeo, $oldgeo, "Sizechk: geometry has not changed not reset" .
 		" for $opt => $oldsize+($chg)"
 		);
