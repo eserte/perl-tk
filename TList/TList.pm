@@ -1,7 +1,7 @@
 package Tk::TList;
 
 use vars qw($VERSION);
-$VERSION = '3.016'; # $Id: //depot/Tk8/TList/TList.pm#16 $
+$VERSION = '3.018'; # $Id: //depot/Tk8/TList/TList.pm#18 $
 
 use Tk qw(Ev $XS_VERSION);
 
@@ -15,7 +15,7 @@ bootstrap Tk::TList;
 
 sub Tk_cmd { \&Tk::tlist }
 
-Tk::Methods qw(insert anchor delete dragsite dropsite entrycget
+Tk::Methods qw(insert index anchor delete dragsite dropsite entrycget
                entryconfigure info nearest see selection xview yview);
 
 use Tk::Submethods ( 'delete' => [qw(all entry offsprings siblings)],

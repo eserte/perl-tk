@@ -1,11 +1,11 @@
-# ProgressBar, progress bars
+# ProgressBar - display various progress bars.
 
 use strict;
 use Tk;
 use Tk::ProgressBar;
 use Tk::Scale;
 
-my $mw = Tk::MainWindow->new;
+my $mw = MainWindow->new;
 
 my $status_var = 0;
 
@@ -43,4 +43,4 @@ foreach my $loop (0..1) {
 
 $mw->Scale(-from => 0, -to => 100, -variable => \$status_var)->pack;
 
-Tk::MainLoop;
+MainLoop;

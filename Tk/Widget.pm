@@ -3,7 +3,7 @@
 # modify it under the same terms as Perl itself.
 package Tk::Widget;
 use vars qw($VERSION @DefaultMenuLabels);
-$VERSION = '3.072'; # $Id: //depot/Tk8/Tk/Widget.pm#72 $
+$VERSION = '3.074'; # $Id: //depot/Tk8/Tk/Widget.pm#74 $
 
 require Tk;
 use AutoLoader;
@@ -269,6 +269,7 @@ sub AUTOLOAD
  my $what = $Tk::Widget::AUTOLOAD;
  my $save = $@;
  my $name;
+ # warn "AUTOLOAD $what ".(ref($_[0]) || $_[0])."\n";
  # Braces used to preserve $1 et al.
  {
   my ($pkg,$func) = $what =~ /(.*)::([^:]+)$/;
@@ -291,7 +292,9 @@ sub AUTOLOAD
   {
    croak $@ unless ($@ =~ /Can't locate\s+(?:file\s+)?'?\Q$name\E'?/);
    my($package,$method) = ($what =~ /^(.*)::([^:]*)$/);
-   if (ref $_[0] && $method !~ /^(ConfigSpecs|Delegates)/ )
+   if (ref $_[0] && !$_[0]->can($method)
+       && $_[0]->can('Delegate')
+       && $method !~ /^(ConfigSpecs|Delegates)/ )
     {
      my $delegate = $_[0]->Delegates;
      if (%$delegate || tied %$delegate)

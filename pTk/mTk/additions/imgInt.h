@@ -32,6 +32,7 @@ typedef struct {
 #define IMG_TCL		(1<<9)
 #define IMG_OBJS	(1<<10)
 #define IMG_PERL	(1<<11)
+#define IMG_UTF		(1<<12)
 
 EXTERN int ImgPhotoPutBlock _ANSI_ARGS_((Tk_PhotoHandle handle,
 	Tk_PhotoImageBlock *blockPtr, int x, int y, int width, int height));
@@ -55,6 +56,14 @@ EXTERN int ImgWrite _ANSI_ARGS_((MFile *handle, CONST char *src, int count));
 EXTERN int ImgSeek _ANSI_ARGS_((MFile *handle, int off, int whence));
 EXTERN void ImgWriteInit _ANSI_ARGS_((Tcl_DString *buffer, MFile *handle));
 EXTERN int ImgReadInit _ANSI_ARGS_((Tcl_Obj *data, int c, MFile *handle));
+EXTERN Tcl_Channel ImgOpenFileChannel _ANSI_ARGS_((Tcl_Interp *interp,
+	CONST char *fileName, int permissions));
+EXTERN void ImgFixChanMatchProc _ANSI_ARGS_((Tcl_Interp **interp, Tcl_Channel *chan,
+	Tcl_Obj **file, Tcl_Obj **format, int **width, int **height));
+EXTERN void ImgFixObjMatchProc _ANSI_ARGS_((Tcl_Interp **interp, Tcl_Obj **data,
+	Tcl_Obj **format, int **width, int **height));
+EXTERN void ImgFixStringWriteProc _ANSI_ARGS_((Tcl_DString *data, Tcl_Interp **interp,
+	Tcl_DString **dataPtr, Tcl_Obj **format, Tk_PhotoImageBlock **blockPtr));
 
 EXTERN int ImgInitTIFFzip _ANSI_ARGS_((VOID *, int));
 EXTERN int ImgInitTIFFjpeg _ANSI_ARGS_((VOID *, int));

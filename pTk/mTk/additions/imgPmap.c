@@ -14,6 +14,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <imgPmap.h>
 
 #if defined(__WIN32__) && !defined (__GNUC__)
@@ -25,29 +26,24 @@
 #include <sys/stat.h>
 #endif
 
-extern int	strncasecmp _ANSI_ARGS_((CONST char *s1,
-			    CONST char *s2, size_t n));
-extern int	strncmp _ANSI_ARGS_((CONST char *s1, CONST char *s2,
-			    size_t nChars));
-extern char *	strncpy _ANSI_ARGS_((char *dst, CONST char *src,
-			    size_t numChars));
-
 #ifndef TCL_STUB_MAGIC
 EXTERN void		panic _ANSI_ARGS_(TCL_VARARGS(char *,format));
 #endif
+
+#define UCHAR(c) ((unsigned char) (c))
 
 /*
  * Prototypes for procedures used only locally in this file:
  */
 
 static int		ImgXpmCreate _ANSI_ARGS_((Tcl_Interp *interp,
-			    char *name, int argc, Tcl_Obj *CONST objv[],
+			    char *name, int argc, Tcl_Obj *objv[],
 			    Tk_ImageType *typePtr, Tk_ImageMaster master,
 			    ClientData *clientDataPtr));
 static ClientData	ImgXpmGet _ANSI_ARGS_((Tk_Window tkwin,
 			    ClientData clientData));
 static void		ImgXpmDisplay _ANSI_ARGS_((ClientData clientData,
-			    Display *display, Drawable drawable, 
+			    Display *display, Drawable drawable,
 			    int imageX, int imageY, int width, int height,
 			    int drawableX, int drawableY));
 static void		ImgXpmFree _ANSI_ARGS_((ClientData clientData,
@@ -140,7 +136,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
      * Convert the objc/objv arguments into string equivalent.
      */
     if (argc > 10) {
-	argv = (char **) ckalloc(argc * sizeof(char *));
+	args = (char **) ckalloc(argc * sizeof(char *));
     }
     for (i = 0; i < argc; i++) {
 	args[i] = ImgGetStringFromObj(objv[i], NULL);
@@ -162,8 +158,8 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
     if (ImgXpmConfigureMaster(masterPtr, argc, objv, 0) != TCL_OK) {
 	ImgXpmDelete((ClientData) masterPtr);
 #if 0
-	if (argv != argvbuf) {
-	    ckfree((char *) argv);
+	if (args != argvbuf) {
+	    ckfree((char *) args);
 	}
 #endif
 	return TCL_ERROR;
@@ -172,7 +168,7 @@ ImgXpmCreate(interp, name, argc, objv, typePtr, master, clientDataPtr)
 #if 0
     if (args != argvbuf) {
 	ckfree((char *) args);
-    }                       
+    }
 #endif
     return TCL_OK;
 }
@@ -374,7 +370,7 @@ ImgXpmGetData(interp, masterPtr)
     if (listArgv) {
 	ckfree((char*)listArgv);
     }
-		   
+		
     return code;
 }
 
@@ -517,11 +513,8 @@ static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
     char ** data = (char **) NULL;
     char *cmdBuffer = NULL;
 
-    chan = Tcl_OpenFileChannel(interp, fileName, "r", 0);
+    chan = ImgOpenFileChannel(interp, fileName, 0);
     if (!chan) {
-	return (char **) NULL;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return (char **) NULL;
     }
 
@@ -642,7 +635,7 @@ GetColor(colorDefn, colorName, type_ret)
 	if (GetType(colorDefn, &dummy) == NULL) {
 	    /* the next string should also be considered as a part of a color
 	     * name */
-	    
+	
 	    while (*colorDefn && isspace(UCHAR(*colorDefn))) {
 		*p++ = *colorDefn++;
 	    }
@@ -774,7 +767,7 @@ ImgXpmGetPixmapFromData(interp, masterPtr, instancePtr)
 	} else {
 	    strncpy(colors[i].cstring, masterPtr->data[i+lOffset],
 		(size_t)masterPtr->cpp);
-	} 
+	}
 
 	if (found) {
 	    if (strncasecmp(useName, "none", 5) != 0) {
@@ -816,7 +809,7 @@ ImgXpmGetPixmapFromData(interp, masterPtr, instancePtr)
 		}
 	    } else {
 		for (k=0; k<masterPtr->ncolors; k++) {
-		    if (strncmp(p, colors[k].cstring, 
+		    if (strncmp(p, colors[k].cstring,
 			    (size_t)masterPtr->cpp) == 0) {
 			ImgXpmSetPixel(instancePtr, image, mask, j, i,
 			        colors[k].colorPtr, &isTransp);

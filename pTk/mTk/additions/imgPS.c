@@ -17,34 +17,34 @@
  * The format record for the PS file format:
  */
 
-static int ChanMatchPS _ANSI_ARGS_((Tcl_Channel chan, char *fileName,
+static int ChanMatchPS _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+	CONST char *fileName, Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ObjMatchPS _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 	Tcl_Obj *format, int *widthPtr, int *heightPtr));
-static int ObjMatchPS _ANSI_ARGS_((Tcl_Obj *dataObj,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr));
-static int ChanMatchPDF _ANSI_ARGS_((Tcl_Channel chan, char *fileName,
-	Tcl_Obj *format, int *widthPtr, int *heightPtr));
-static int ObjMatchPDF _ANSI_ARGS_((Tcl_Obj *dataObj,
+static int ChanMatchPDF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
+	CONST char *fileName, Tcl_Obj *format, int *widthPtr, int *heightPtr));
+static int ObjMatchPDF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 	Tcl_Obj *format, int *widthPtr, int *heightPtr));
 static int ChanReadPS _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-	char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
+	CONST char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 static int ObjReadPS _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 	Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 static int ChanReadPDF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Channel chan,
-	char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
+	CONST char *fileName, Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
 static int ObjReadPDF _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj *dataObj,
 	Tcl_Obj *format, Tk_PhotoHandle imageHandle,
 	int destX, int destY, int width, int height, int srcX, int srcY));
-static int ChanWritePS _ANSI_ARGS_((Tcl_Interp *interp, char *filename,
+static int ChanWritePS _ANSI_ARGS_((Tcl_Interp *interp, CONST char *filename,
 	Tcl_Obj *format, Tk_PhotoImageBlock *blockPtr));
 static int StringWritePS _ANSI_ARGS_((Tcl_Interp *interp,
 	Tcl_DString *dataPtr, Tcl_Obj *format,
 	Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtPS = {
-    "POSTSCRIPT",				/* name */
+    "postscript",				/* name */
     (Tk_ImageFileMatchProc *) ChanMatchPS,	/* fileMatchProc */
     (Tk_ImageStringMatchProc *) ObjMatchPS,	/* stringMatchProc */
     (Tk_ImageFileReadProc *) ChanReadPS,	/* fileReadProc */
@@ -54,7 +54,7 @@ Tk_PhotoImageFormat imgFmtPS = {
 };
 
 Tk_PhotoImageFormat imgFmtPDF = {
-    "PDF",					/* name */
+    "pdf",					/* name */
     (Tk_ImageFileMatchProc *) ChanMatchPDF,	/* fileMatchProc */
     (Tk_ImageStringMatchProc *) ObjMatchPDF,	/* stringMatchProc */
     (Tk_ImageFileReadProc *) ChanReadPDF,	/* fileReadProc */
@@ -139,13 +139,16 @@ static int parseFormat(format, zoomx, zoomy)
     return index;
 }
 
-static int ChanMatchPS(chan, fileName, format, widthPtr, heightPtr)
+static int ChanMatchPS(interp, chan, fileName, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;
-    char *fileName;
+    CONST char *fileName;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
+
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
 
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
@@ -153,14 +156,17 @@ static int ChanMatchPS(chan, fileName, format, widthPtr, heightPtr)
     return CommonMatchPS(&handle, format, widthPtr, heightPtr);
 }
 
-static int ObjMatchPS(dataObj, format, widthPtr, heightPtr)
-    Tcl_Obj *dataObj;
+static int ObjMatchPS(interp, data, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
+    Tcl_Obj *data;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
 
-    handle.data = ImgGetStringFromObj(dataObj, &handle.length);
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
+
+    handle.data = ImgGetStringFromObj(data, &handle.length);
     handle.state = IMG_STRING;
 
     return CommonMatchPS(&handle, format, widthPtr, heightPtr);
@@ -208,7 +214,7 @@ static int ChanReadPS(interp, chan, fileName, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
     Tcl_Channel chan;
-    char *fileName;
+    CONST char *fileName;
     Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
@@ -387,7 +393,7 @@ CommonReadPS(interp, handle, format, imageHandle,
 	    break;
 	case '5':
 	    line = (unsigned char *) ckalloc(fileWidth);
-	    while (srcY--) {
+	    while (srcY-- > 0) {
 		Tcl_Read(chan, (char *) line, fileWidth);
 	    }
 	    block.pixelPtr = line + srcX;
@@ -406,7 +412,7 @@ CommonReadPS(interp, handle, format, imageHandle,
 	case '6':
 	    i = 3 * fileWidth;
 	    line = NULL;
-	    while (srcY--) {
+	    while (srcY-- > 0) {
 		Tcl_Read(chan, (char *) line3, i);
 	    }
 	    block.pixelPtr = line3 + (3 * srcX);
@@ -443,7 +449,7 @@ static int ChanReadPDF(interp, chan, fileName, format, imageHandle,
 	destX, destY, width, height, srcX, srcY)
     Tcl_Interp *interp;
     Tcl_Channel chan;
-    char *fileName;
+    CONST char *fileName;
     Tcl_Obj *format;
     Tk_PhotoHandle imageHandle;
     int destX, destY;
@@ -470,7 +476,7 @@ static int ObjReadPDF(interp, data, format, imageHandle,
 
 static int ChanWritePS(interp, filename, format, blockPtr)
     Tcl_Interp *interp;
-    char *filename;
+    CONST char *filename;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
@@ -478,11 +484,8 @@ static int ChanWritePS(interp, filename, format, blockPtr)
     MFile handle;
     int result;
 
-    chan = Tcl_OpenFileChannel(interp, filename, "w", 0644);
+    chan = ImgOpenFileChannel(interp, filename, 0644);
     if (!chan) {
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -496,18 +499,22 @@ static int ChanWritePS(interp, filename, format, blockPtr)
     return result;
 }
 
-static int StringWritePS(interp, data, format, blockPtr)
+static int StringWritePS(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *data;
+    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     MFile handle;
     int result;
-
-    ImgWriteInit(data, &handle);
+    Tcl_DString data;
+    ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
+    ImgWriteInit(dataPtr, &handle);
     result = CommonWritePS(interp, &handle, format, blockPtr);
     ImgPutc(IMG_DONE, &handle);
+    if ((result == TCL_OK) && (dataPtr == &data)) {
+	Tcl_DStringResult(interp, dataPtr);
+    }
     return result;
 }
 
@@ -517,16 +524,19 @@ static int CommonWritePS(interp, handle, format, blockPtr)
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
-    return(TCL_OK);
+    return TCL_OK;
 }
 
-static int ChanMatchPDF(chan, fileName, format, widthPtr, heightPtr)
+static int ChanMatchPDF(interp, chan, fileName, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;
-    char *fileName;
+    CONST char *fileName;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
+
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
 
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
@@ -534,14 +544,17 @@ static int ChanMatchPDF(chan, fileName, format, widthPtr, heightPtr)
     return CommonMatchPDF(&handle, format, widthPtr, heightPtr);
 }
 
-static int ObjMatchPDF(dataObj, format, widthPtr, heightPtr)
-    Tcl_Obj *dataObj;
+static int ObjMatchPDF(interp, data, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
+    Tcl_Obj *data;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
 
-    if (!ImgReadInit(dataObj,'%',&handle)) {
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
+
+    if (!ImgReadInit(data, '%', &handle)) {
 	return 0;
     }
 
@@ -564,7 +577,7 @@ static int CommonMatchPDF(handle, format, widthPtr, heightPtr)
     /* Here w and h should be set to the bounding box of the pdf
      * data. But I don't know how to extract that from the file.
      * For now I just assume A4-size with 72 pixels/inch. If anyone
-     * has a better idea, please mail to <Jan.Nijtmans@wxs.nl>.
+     * has a better idea, please mail to <j.nijtmans@chello.nl>.
      */
 
     w = 612/10;

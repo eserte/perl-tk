@@ -2,16 +2,16 @@ package Tk::Region;
 
 # Ideas in progress do not document ...
 
-use strict;            
+use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.002'; # $Id: //depot/Tk8/Tk/Region.pm#2 $
+$VERSION = '3.004'; # $Id: //depot/Tk8/Tk/Region.pm#4 $
 
 use Tk::Widget ();
 
 Construct Tk::Widget 'Region';
 
-my %index = (-widget => 1, -x => 2, -y => 3, -width => 4, -height => 5);
+my %index = (-widget => 1, '-x' => 2, '-y' => 3, -width => 4, -height => 5);
 
 sub _attr
 {
@@ -47,7 +47,7 @@ sub cfgDefault
 sub cfgName
 {
  my ($class,$key) = @_;
- $key =~ s/^-//; 
+ $key =~ s/^-//;
  return lcfirst($key);
 }
 
@@ -74,12 +74,12 @@ sub configure
       {
        my ($meth) = $key =~ /^-(\w+)$/;
        croak("Invalid option $key") unless $obj->can($meth);
-       $obj->$meth($val); 
+       $obj->$meth($val);
       }
     }
   }
  elsif (@_ == 1)
-  {              
+  {
    my $key     = shift;
    my $value   = $obj->cget($key);
    push(@results,$key,$obj->cfgName($key),$obj->cfgClass($key),$obj->cfgDefault($key),$value);
@@ -101,15 +101,15 @@ sub cget
  return $obj->{$key} if exists $obj->{$key};
  my ($meth) = $key =~ /^-(\w+)$/;
  croak("Invalid option $key") unless $obj->can($meth);
- return $obj->$meth(); 
+ return $obj->$meth();
 }
 
 sub bbox
 {
  my $obj = shift;
- my @results;                           
+ my @results;
  if (@_)
-  {  
+  {
    my $ref = (@_ == 1) ? shift : \@_;
    my ($x1,$y1,$x2,$y2) = (ref $ref) ? @$ref : split(/\s+/,$ref);
    ($x2,$x1) = ($x1,$x2) if ($x2 < $x1);
@@ -129,29 +129,29 @@ sub bbox
 }
 
 sub rootx
-{  
+{
  my $obj = shift;
  if (@_)
-  {            
+  {
    my $x = shift;
    $obj->x($x-$obj->widget->rootx);
   }
- return $obj->widget->rootx + $obj->{'-x'} 
+ return $obj->widget->rootx + $obj->{'-x'}
 }
 
 sub rooty
-{  
+{
  my $obj = shift;
  if (@_)
   {
    my $y = shift;
    $obj->y($y-$obj->widget->rootx);
   }
- return $obj->widget->rooty + $obj->{'-y'} 
-}         
+ return $obj->widget->rooty + $obj->{'-y'}
+}
 
 sub rootxy
-{               
+{
  my $obj = shift;
  if (@_)
   {
@@ -163,7 +163,7 @@ sub rootxy
 }
 
 sub rootbbox
-{               
+{
  my $obj = shift;
  my ($x1,$y1) = $obj->rootxy;
  my $x2 = $x1+$obj->width;

@@ -7,7 +7,7 @@ of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.0 or Tk8.0 sources. See doc/license.html
 for details of this license.
 
-Hopefully Tk800.020 should be production worthy.
+Hopefully Tk800.021 should be production worthy.
 
 (Consider Tk800.016..Tk800.019 its beta releases, previous stable
 release being Tk800.015.)
@@ -24,14 +24,14 @@ The perl code corresponding to Tix's Tcl code is not fully implemented.
 But does work with perl5.6.0 - although this required a couple of work-rounds
 for perl5.6.0 ->isa bug.
 
-This version (Tk800.020) requires perl5.005 or later on Win32
+This version (Tk800.021) requires perl5.005 or later on Win32
 and 5.004_04 or later on UNIX.
 
 This version also contains re-worked Image code based on tcl/tk Img extension
-(version img1.2b2) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/
+(version img1.2.3) by Jan Nijtmans: http://members1.chello.nl/~j.nijtmans/
 Jan's "dash" patch is also merged.
 
-Tk800.020 should build and run on Windows NT using Visual C++, Borland,
+Tk800.021 should build and run on Windows NT using Visual C++, Borland,
 or with the Mingw32 port of GCC with perl5.005 or later.
 Can be built using ActiveState's binrary distribution
 (see README-ActiveState.txt).
@@ -44,6 +44,9 @@ I have not tried a Borland build recently.
 Author has built against:
 
   Perl5.6.0
+   Pentium Suse Linux-6.1 egcs-1.1.2
+
+  Perl5.6.0 (ithreads)
    Pentium Suse Linux-6.1 egcs-1.1.2
 
   Perl5.00503

@@ -118,6 +118,7 @@ README.AIX
 README.HPUX
 README.IRIX
 README.OSF
+README.OpenBSD
 README.SCO
 README.SVR4
 README.Solaris
@@ -211,7 +212,6 @@ Tk/Menu.pm
 Tk/Menu/Item.pm
 Tk/Menubar.pm
 Tk/Message.pm
-Tk/MsgBox.pm
 Tk/Optionmenu.pm
 Tk/Pane.pm
 Tk/Pretty.pm
@@ -478,6 +478,7 @@ hackMM
 hlfm
 hlist_bg
 hlist_demo
+icon
 iconimg
 iconwin
 image_test
@@ -1210,6 +1211,7 @@ pod/CmdLine.pod
 pod/ColorEditor.pod
 pod/Common.pod
 pod/Compound.pod
+pod/ConfigSpecs.pod
 pod/DItem.pod
 pod/Derived.pod
 pod/Dialog.pod
@@ -1273,7 +1275,6 @@ pod/bindtags.pod
 pod/callbacks.pod
 pod/chooseColor.pod
 pod/composite.pod
-pod/configspec.pod
 pod/event.pod
 pod/exit.pod
 pod/extract/extpod
@@ -1404,10 +1405,12 @@ symbols
 t/Require.t
 t/Trace.t
 t/X.t
+t/autoload.t
 t/balloon.t
 t/browseentry.t
 t/create.t
 t/fbox.t
+t/fileevent.t
 t/fileselect.t
 t/font.t
 t/geomgr.t

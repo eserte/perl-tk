@@ -55,6 +55,10 @@ the B<Scrollbar> widget used for horizontal scrolling (if it exists)
 
 the B<Scrollbar> widget used for vertical scrolling (if it exists)
 
+=item corner
+
+a frame in the corner between the vertical and horizontal scrolbar
+
 =back
 
 =head1 BUGS

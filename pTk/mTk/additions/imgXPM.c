@@ -6,9 +6,9 @@
  * Written by:
  *	Jan Nijtmans
  *	CMG (Computer Management Group) Arnhem B.V.
- *	email: Jan.Nijtmans@wxs.nl (private)
- *	       Jan.Nijtmans@cmg.nl (work)
- *	url:   http://home.wxs.nl/~nijtmans/
+ *	email: j.nijtmans@chello.nl (private)
+ *	       jan.nijtmans@cmg.nl (work)
+ *	url:   http://purl.oclc.org/net/nijtmans/
  *
  * (with some code stolen from the XPM image type and the GIF handler)
  *
@@ -74,12 +74,12 @@ static int	        StringWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
 static int              FileWriteXPM _ANSI_ARGS_((Tcl_Interp *interp,
                             char *fileName, Tcl_Obj *format,
                             Tk_PhotoImageBlock *blockPtr));
-static int		CommonWriteXPM _ANSI_ARGS_((Tcl_Interp *interp, char *fileName,
+static int		CommonWriteXPM _ANSI_ARGS_((Tcl_Interp *interp, CONST char *fileName,
 			    Tcl_DString *dataPtr, Tcl_Obj *format,
 			    Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtXPM = {
-    "XPM",					/* name */
+    "xpm",					/* name */
     ChanMatchXPM,	/* fileMatchProc */
     ObjMatchXPM,	/* stringMatchProc */
     ChanReadXPM,	/* fileReadProc */
@@ -169,6 +169,8 @@ ObjMatchXPM(interp, dataObj, format, widthPtr, heightPtr)
     int numColors, byteSize;
     MFile handle;
 
+    ImgFixObjMatchProc(&interp, &dataObj, &format, &widthPtr, &heightPtr);
+
     handle.data = ImgGetStringFromObj(dataObj, &handle.length);
     handle.state = IMG_STRING;
 
@@ -206,6 +208,8 @@ ChanMatchXPM(interp, chan, fileName, format, widthPtr, heightPtr)
 {
     int numColors, byteSize;
     MFile handle;
+
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
 
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
@@ -833,7 +837,14 @@ StringWriteXPM(interp, dataPtr, format, blockPtr)
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
-  return CommonWriteXPM(interp, "unknown", dataPtr, format, blockPtr);
+    int result;
+    Tcl_DString data;
+    ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
+    result = CommonWriteXPM(interp, "unknown", dataPtr, format, blockPtr);
+    if ((result == TCL_OK) && (dataPtr == &data)) {
+	Tcl_DStringResult(interp, dataPtr);
+    }
+    return result;
 }
 
 
@@ -865,7 +876,7 @@ StringWriteXPM(interp, dataPtr, format, blockPtr)
 static int
 CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
-    char *fileName;
+    CONST char *fileName;
     Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
@@ -908,7 +919,7 @@ CommonWriteXPM(interp, fileName, dataPtr, format, blockPtr)
 
     /* open the output file (if needed) */
     if (!dataPtr) {
-      chan = Tcl_OpenFileChannel(interp, fileName, "w", 0644);
+      chan = Tcl_OpenFileChannel(interp, (char *) fileName, "w", 0644);
       if (!chan) {
 	return TCL_ERROR;
       }

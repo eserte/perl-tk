@@ -35,7 +35,7 @@ static int StringWriteBMP _ANSI_ARGS_((Tcl_Interp *interp,
 	Tk_PhotoImageBlock *blockPtr));
 
 Tk_PhotoImageFormat imgFmtBMP = {
-    "BMP",					/* name */
+    "bmp",					/* name */
     ChnMatchBMP,	/* fileMatchProc */
     ObjMatchBMP,	/* stringMatchProc */
     ChnReadBMP,		/* fileReadProc */
@@ -67,21 +67,25 @@ static int ChnMatchBMP(interp, chan, fileName, format, widthPtr, heightPtr)
 {
     MFile handle;
 
+    ImgFixChanMatchProc(&interp, &chan, &fileName, &format, &widthPtr, &heightPtr);
+
     handle.data = (char *) chan;
     handle.state = IMG_CHAN;
 
     return CommonMatchBMP(&handle, widthPtr, heightPtr, NULL, NULL, NULL, NULL);
 }
 
-static int ObjMatchBMP(interp, dataObj, format, widthPtr, heightPtr)
+static int ObjMatchBMP(interp, data, format, widthPtr, heightPtr)
     Tcl_Interp *interp;
-    Tcl_Obj *dataObj;
+    Tcl_Obj *data;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
 {
     MFile handle;
 
-    if (!ImgReadInit(dataObj,'B',&handle)) {
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
+
+    if (!ImgReadInit(data,'B',&handle)) {
 	return 0;
     }
     return CommonMatchBMP(&handle, widthPtr, heightPtr, NULL, NULL, NULL, NULL);
@@ -245,6 +249,7 @@ static int CommonReadBMP(interp, handle, imageHandle, destX, destY,
     block.offset[0] = 2;
     block.offset[1] = 1;
     block.offset[2] = 0;
+    block.offset[3] = block.offset[0];
     switch (numBits) {
 	case 24:
 	    block.pixelPtr = line + srcX*3;
@@ -342,11 +347,8 @@ static int ChnWriteBMP(interp, filename, format, blockPtr)
     MFile handle;
     int result;
 
-    chan = Tcl_OpenFileChannel(interp, filename, "w", 0644);
+    chan = ImgOpenFileChannel(interp, filename, 0644);
     if (!chan) {
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -360,18 +362,25 @@ static int ChnWriteBMP(interp, filename, format, blockPtr)
     return result;
 }
 
-static int StringWriteBMP(interp, data, format, blockPtr)
+static int StringWriteBMP(interp, dataPtr, format, blockPtr)
     Tcl_Interp *interp;
-    Tcl_DString *data;
+    Tcl_DString *dataPtr;
     Tcl_Obj *format;
     Tk_PhotoImageBlock *blockPtr;
 {
     MFile handle;
     int result;
+    Tcl_DString data;
 
-    ImgWriteInit(data, &handle);
+    ImgFixStringWriteProc(&data, &interp, &dataPtr, &format, &blockPtr);
+
+    ImgWriteInit(dataPtr, &handle);
     result = CommonWriteBMP(interp, &handle, blockPtr);
     ImgPutc(IMG_DONE, &handle);
+
+    if ((result == TCL_OK) && (dataPtr == &data)) {
+	Tcl_DStringResult(interp, dataPtr);
+    }
     return result;
 }
 
@@ -395,14 +404,47 @@ static int CommonWriteBMP(interp, handle, blockPtr)
     int bperline, nbytes, ncolors, i, x, y, greenOffset, blueOffset, alphaOffset;
     unsigned char *imagePtr, *pixelPtr;
     unsigned char buf[4];
+    int colors[256];
+    int testnum = 10;
 
-    if (blockPtr->offset[0] == blockPtr->offset[1]) {
-	/* we have a grayscale image */
-	nbytes = 1;
-	ncolors = 256;
+    greenOffset = blockPtr->offset[1] - blockPtr->offset[0];
+    blueOffset = blockPtr->offset[2] - blockPtr->offset[0];
+    alphaOffset = blockPtr->offset[0];
+    if (alphaOffset < blockPtr->offset[2]) {
+	alphaOffset = blockPtr->offset[2];
+    }
+    if (++alphaOffset < blockPtr->pixelSize) {
+	alphaOffset -= blockPtr->offset[0];
     } else {
-	nbytes = 3;
-	ncolors = 0;
+	alphaOffset = 0;
+    }
+    ncolors = 0;
+    if (greenOffset || blueOffset) {
+	for (y = 0; ncolors <= 256 && y < blockPtr->height; y++) {
+	    pixelPtr = blockPtr->pixelPtr + y*blockPtr->pitch + blockPtr->offset[0];
+	    for (x=0; ncolors <= 256 && x<blockPtr->width; x++) {
+		int pixel;
+		if (alphaOffset && (pixelPtr[alphaOffset] == 0))
+		    pixel = 0xd9d9d9;
+		else
+		    pixel = (pixelPtr[0]<<16) | (pixelPtr[greenOffset]<<8) | pixelPtr[blueOffset];
+		for (i = 0; i < ncolors && pixel != colors[i]; i++);
+		if ((i == ncolors) && (ncolors < 256))
+		    colors[ncolors++] = pixel;
+		pixelPtr += blockPtr->pixelSize;
+	    }
+	}
+	if (ncolors <= 256 && (blockPtr->width * blockPtr->height >= 512)) {
+            while (ncolors < 256) {
+		colors[ncolors++] = 0;
+	    }
+	    nbytes = 1;
+	} else {
+	    nbytes = 3;
+	    ncolors = 0;
+	}
+    } else {
+        nbytes = 1;
     }
 
     bperline = ((blockPtr->width  * nbytes + 3) / 4) * 4;
@@ -423,7 +465,7 @@ static int CommonWriteBMP(interp, handle, blockPtr)
     putint(handle, ncolors);
 
     for (i = 0; i < ncolors ; i++) {
-	putint(handle, i*65793);
+	putint(handle, colors[i]);
     }
 
     bperline -= blockPtr->width * nbytes;
@@ -444,7 +486,15 @@ static int CommonWriteBMP(interp, handle, blockPtr)
     for (y = 0; y < blockPtr->height; y++) {
 	pixelPtr = imagePtr -= blockPtr->pitch;
 	for (x=0; x<blockPtr->width; x++) {
-	    if (alphaOffset && (pixelPtr[alphaOffset] == 0)) {
+	    if (ncolors) {
+		int pixel;
+		if (alphaOffset && (pixelPtr[alphaOffset] == 0))
+		    pixel = 0xd9d9d9;
+		else
+		    pixel = (pixelPtr[0]<<16)|(pixelPtr[greenOffset]<<8)|pixelPtr[blueOffset];
+		for (i = 0; i < ncolors && pixel != colors[i]; i += 1);
+		buf[0] = i;
+	    } else if (alphaOffset && (pixelPtr[alphaOffset] == 0)) {
 		buf[0] = buf[1] = buf[2] = 0xd9;
 	    } else {
 		buf[0] = pixelPtr[blueOffset];
@@ -452,6 +502,9 @@ static int CommonWriteBMP(interp, handle, blockPtr)
 		buf[2] = pixelPtr[0];
 	    }
 	    ImgWrite(handle, (char *) buf, nbytes);
+	    if (testnum >0) {
+		testnum--;
+	    }
 	    pixelPtr += blockPtr->pixelSize;
 	}
 	if (bperline) {

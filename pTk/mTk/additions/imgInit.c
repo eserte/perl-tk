@@ -29,12 +29,12 @@
 
 #ifndef USE_TCL_STUBS
 #undef Tcl_InitStubs
-#define Tcl_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tcl",b,c)
+#define Tcl_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tcl",TCL_VERSION,1)
 #endif
 
 #ifndef USE_TK_STUBS
 #undef Tk_InitStubs
-#define Tk_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tk",b,c)
+#define Tk_InitStubs(a,b,c) Tcl_PkgRequire(a,"Tk",TK_VERSION,1)
 #endif
 
 /*
@@ -70,9 +70,6 @@ extern Tk_PhotoImageFormat	imgFmtWin;
 
 static Tk_PhotoImageFormat *Formats[] = {
 	&imgFmtTIFF,
-/*	&imgFmtRAW,*/
-/*	&imgFmtRAS,*/
-/*	&imgFmtRGB,*/
 	&imgFmtPS,
 	&imgFmtPDF,
 	&imgFmtXBM,
@@ -120,10 +117,10 @@ EXPORT(int,Img_Init)(interp)
     Tk_PhotoImageFormat **formatPtr = Formats;
     char *version;
 
-    if ((version = Tcl_InitStubs(interp, "8", 0)) == NULL) {
+    if ((version = Tcl_InitStubs(interp, "8.0", 0)) == NULL) {
 	return TCL_ERROR;
     }
-    if (Tk_InitStubs(interp, "8", 0) == NULL) {
+    if (Tk_InitStubs(interp, "8.0", 0) == NULL) {
 	return TCL_ERROR;
     }
 
@@ -142,7 +139,7 @@ EXPORT(int,Img_Init)(interp)
     Tcl_CreateObjCommand(interp,"img_to_base64", tob64, (ClientData) NULL, NULL);
     Tcl_CreateObjCommand(interp,"img_from_base64", fromb64, (ClientData) NULL, NULL);
 #endif
-    return Tcl_PkgProvide(interp,"Img","1.2");
+    return Tcl_PkgProvide(interp,"Img", IMG_PATCH_LEVEL);
 }
 
 EXPORT(int,Img_SafeInit)(interp)
@@ -567,15 +564,12 @@ int tob64(clientData, interp, argc, objv)
     int len;
 
     if (argc != 2) {
-	Tcl_WrongNumArgs(interp, objv, 1, "filename");
+	Tcl_WrongNumArgs(interp, 1, objv, "filename");
 	return TCL_ERROR;
     }
 
-    chan = Tcl_OpenFileChannel(interp, Tcl_GetStringFromObj(objv[1], &len), "r", 0);
+    chan = ImgOpenFileChannel(interp, Tcl_GetStringFromObj(objv[1], &len), 0);
     if (!chan) {
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 
@@ -627,15 +621,12 @@ int fromb64(clientData, interp, argc, objv)
     int len;
 
     if (argc != 3) {
-	Tcl_WrongNumArgs(interp, objv, 1, "filename data");
+	Tcl_WrongNumArgs(interp, 1, objv, "filename data");
 	return TCL_ERROR;
     }
 
-    chan = Tcl_OpenFileChannel(interp, Tcl_GetStringFromObj(objv[1], &len), "w", 0644);
+    chan = ImgOpenFileChannel(interp, Tcl_GetStringFromObj(objv[1], &len), 0644);
     if (!chan) {
-	return TCL_ERROR;
-    }
-    if (Tcl_SetChannelOption(interp, chan, "-translation", "binary") != TCL_OK) {
 	return TCL_ERROR;
     }
 

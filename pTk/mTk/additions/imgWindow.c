@@ -42,7 +42,7 @@ static int		xerrorhandler _ANSI_ARGS_((ClientData clientData,
 #endif
 
 Tk_PhotoImageFormat imgFmtWin = {
-    "WINDOW",					/* name */
+    "window",					/* name */
     ChanMatchWin,				/* fileMatchProc */
     ObjMatchWin,				/* stringMatchProc */
     (Tk_ImageFileReadProc *) NULL,		/* fileReadProc */
@@ -111,11 +111,11 @@ xerrorhandler(clientData, e)
  */
 
 static int ChanMatchWin(interp, chan, filename, format, widthPtr, heightPtr)
+    Tcl_Interp *interp;
     Tcl_Channel chan;
     Tcl_Obj *filename;
     Tcl_Obj *format;
     int *widthPtr, *heightPtr;
-    Tcl_Interp *interp;
 {
     return 0;
 }
@@ -144,9 +144,13 @@ static int ObjMatchWin(interp, data, format, widthPtr, heightPtr)
     int *widthPtr, *heightPtr;
 {
     Tk_Window tkwin;
-    char *name = ImgGetStringFromObj(data, NULL);
+    char *name;
 
-    if ((name[0] == '.') && ((name[1] == 0) || islower(UCHAR(name[1])))) {
+    ImgFixObjMatchProc(&interp, &data, &format, &widthPtr, &heightPtr);
+
+    name = ImgGetStringFromObj(data, NULL);
+
+    if (interp && name && (name[0] == '.') && ((name[1] == 0) || islower(UCHAR(name[1])))) {
 	tkwin = Tk_MainWindow(interp);
 	if (tkwin == NULL) {
 	    return 0;
@@ -259,7 +263,7 @@ static int ObjReadWin(interp, data, format, imageHandle,
 
 #ifndef	__WIN32__
     /*
-     * Generate an XImage from the window.  We can then read pixel 
+     * Generate an XImage from the window.  We can then read pixel
      * values out of the XImage.
      */
 

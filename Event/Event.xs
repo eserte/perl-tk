@@ -399,7 +399,7 @@ PerlIO_watch(PerlIOHandler *filePtr)
 }
 
 int
-PerlIO_writable(filePtr)
+PerlIO_is_writable(filePtr)
 PerlIOHandler *filePtr;
 {
  if (!(filePtr->readyMask & TCL_WRITABLE))
@@ -417,7 +417,7 @@ PerlIOHandler *filePtr;
 }
 
 int
-PerlIO_readable(filePtr)
+PerlIO_is_readable(filePtr)
 PerlIOHandler *filePtr;
 {
  if (!(filePtr->readyMask & TCL_READABLE))
@@ -436,7 +436,7 @@ PerlIOHandler *filePtr;
 }
 
 int
-PerlIO_exception(filePtr)
+PerlIO_has_exception(filePtr)
 PerlIOHandler *filePtr;
 {
  return (filePtr->readyMask & TCL_EXCEPTION);
@@ -457,13 +457,13 @@ int		mask;
    switch (mask)
     {
      case TCL_EXCEPTION:
-      check = PerlIO_exception;
+      check = PerlIO_has_exception;
       break;
      case TCL_WRITABLE:
-      check = PerlIO_writable;
+      check = PerlIO_is_writable;
       break;
      case TCL_READABLE:
-      check = PerlIO_readable;
+      check = PerlIO_is_readable;
       break;
      default:
       croak("Invalid wait type %d",mask);
@@ -516,13 +516,13 @@ PerlIOSetupProc(ClientData data, int flags)
     {
      /* file is ready do not block */
      if ((filePtr->mask & TCL_READABLE)
-          && PerlIO_readable(filePtr))
+          && PerlIO_is_readable(filePtr))
       Tcl_SetMaxBlockTime(&blockTime);
      if ((filePtr->mask & TCL_WRITABLE)
-          && PerlIO_writable(filePtr))
+          && PerlIO_is_writable(filePtr))
       Tcl_SetMaxBlockTime(&blockTime);
      if ((filePtr->mask & TCL_EXCEPTION)
-          && PerlIO_exception(filePtr))
+          && PerlIO_has_exception(filePtr))
       Tcl_SetMaxBlockTime(&blockTime);
      filePtr = filePtr->nextPtr;
     }
@@ -539,7 +539,7 @@ int flags;                        /* Flags that indicate what events to
   {
    PerlIOEvent *fileEvPtr = (PerlIOEvent *) evPtr;
    PerlIOHandler *filePtr = firstPerlIOHandler;
-   dTHR;
+   dTHX;
    /*
     * Search through the file handlers to find the one whose handle matches
     * the event.  We do this rather than keeping a pointer to the file
@@ -1054,6 +1054,16 @@ Callback_DESTROY(SV *sv)
 #define Const_IDLE_EVENTS()   (TCL_IDLE_EVENTS)
 #define Const_ALL_EVENTS()    (TCL_ALL_EVENTS)
 
+#define Event_INIT()
+
+extern XSdec(XS_Tk__Event_INIT);
+XS(XS_Tk__Event_INIT)
+{
+ dXSARGS;
+ install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
+ XSRETURN_EMPTY;
+}
+
 MODULE = Tk::Event	PACKAGE = Tk::Callback	PREFIX = Callback_
 PROTOTYPES: DISABLE
 
@@ -1125,15 +1135,15 @@ PerlIOHandler *	filePtr
 int		mode
 
 int
-PerlIO_readable(filePtr)
+PerlIO_is_readable(filePtr)
 PerlIOHandler *	filePtr
 
 int
-PerlIO_exception(filePtr)
+PerlIO_has_exception(filePtr)
 PerlIOHandler *	filePtr
 
 int
-PerlIO_writable(filePtr)
+PerlIO_is_writable(filePtr)
 PerlIOHandler *	filePtr
 
 SV *
@@ -1302,6 +1312,14 @@ PROTOTYPES: DISABLE
 
 BOOT:
  {
+#ifdef pWARN_NONE
+  SV *old_warn = PL_curcop->cop_warnings;
+  PL_curcop->cop_warnings = pWARN_NONE;
+#endif
+  newXS("Tk::Event::INIT", XS_Tk__Event_INIT, file);
+#ifdef pWARN_NONE
+ PL_curcop->cop_warnings = old_warn;
+#endif
   newXS("Tk::Callback::Call", XS_Tk__Callback_Call, __FILE__);
   install_vtab("TkeventVtab",TkeventVGet(),sizeof(TkeventVtab));
  }

@@ -20,7 +20,7 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = '3.040'; # $Id: //depot/Tk8/Text/Text.pm#40 $
+$VERSION = '3.042'; # $Id: //depot/Tk8/Text/Text.pm#42 $
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -1039,7 +1039,7 @@ sub findandreplacepopup
   command => sub {$w->FindNext ($direction,$mode,$case,$find_entry->get()),} )
   -> pack(-anchor=>'nw');
 
- $find_entry -> pack(-anchor=>'nw', -expand => 'yes' , -fill => 'x'); # autosizing
+ $find_entry -> pack(-anchor=>'nw', '-expand' => 'yes' , -fill => 'x'); # autosizing
 
  ######  if any $w text is selected, put it in the find entry
  ######  could be more than one text block selected, get first selection
@@ -1076,7 +1076,7 @@ sub findandreplacepopup
    command => sub {$w->ReplaceSelectionsWith($replace_entry->get());} )
    -> pack(-anchor=>'nw');
 
-  $replace_entry -> pack(-anchor=>'nw', -expand => 'yes' , -fill => 'x');
+  $replace_entry -> pack(-anchor=>'nw', '-expand' => 'yes' , -fill => 'x');
   }
 
  ######################################################

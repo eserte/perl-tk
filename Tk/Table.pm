@@ -5,7 +5,7 @@ package Tk::Table;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.018'; # $Id: //depot/Tk8/Tk/Table.pm#18 $
+$VERSION = '3.020'; # $Id: //depot/Tk8/Tk/Table.pm#20 $
 
 use Tk::Pretty;
 use AutoLoader;
@@ -144,6 +144,7 @@ sub constrain
 sub Layout
 {
  my ($t)    = @_;
+ return unless Tk::Exists($t);
  my $rows   = @{$t->{Row}};
  my $bw     = $t->cget(-highlightthickness);
  my $frows  = $t->cget(-fixedrows);

@@ -137,7 +137,7 @@ Specifies reference to a variable to set to indicate whether
 or not this button is selected.  Defaults to C<\$widget-E<gt>{'Value'}>
 member of the widget's hash. In general perl variables are C<undef> unless
 specifically initialized which will not match either default B<-onvalue> or
-deafult B<-offvalue>. 
+default B<-offvalue>.
 
 =item Name:	B<width>
 

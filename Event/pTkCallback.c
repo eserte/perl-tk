@@ -37,7 +37,7 @@ SV *sv;
 {
  if (sv)
   {
-   dTHR;
+   dTHX;
    AV *av;
    int old_taint = PL_tainted;
    if (SvTAINTED(sv))

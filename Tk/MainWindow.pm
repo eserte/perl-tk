@@ -8,7 +8,7 @@ BEGIN { @MainWindow::ISA = 'Tk::MainWindow' }
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '3.046'; # $Id: //depot/Tk8/Tk/MainWindow.pm#46 $
+$VERSION = '3.047'; # $Id: //depot/Tk8/Tk/MainWindow.pm#47 $
 
 use Tk::CmdLine;
 use Tk qw(catch);
@@ -68,7 +68,7 @@ sub new
  }
  $Windows{$top} = $top;
  return $top;
-}               
+}
 
 sub _Destroyed
 {
@@ -89,7 +89,8 @@ sub InitBindings
    $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F20> <Meta-Key-w>]);
    $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F16> <Control-Key-w>]);
    $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F18> <Control-Key-y>]);
-   $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-Undo> <Key-F14>]);
+   $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-Undo> <Key-F14>
+                    <Control-Key-underscore>]);
    $mw->eventAdd(qw[<<Redo>> <Control-Key-y> <Shift-Key-Undo> <Key-F12> <Shift-Key-F14>]);
   }
  else
@@ -108,17 +109,17 @@ sub InitBindings
 }
 
 sub Existing
-{  
- my @Windows;   
+{
+ my @Windows;
  foreach my $name (keys %Windows)
-  {           
+  {
    my $obj = $Windows{$name};
    if (Tk::Exists($obj))
     {
      push(@Windows,$obj);
     }
    else
-    {   
+    {
      delete $Windows{$name};
     }
   }
@@ -128,7 +129,7 @@ sub Existing
 END
 {
  if ($pid == $$)
-  {         
+  {
    foreach my $top (values %Windows)
     {
      if ($top->IsWidget)

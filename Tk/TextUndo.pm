@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '3.045'; # $Id: //depot/Tk8/Tk/TextUndo.pm#45 $
+$VERSION = '3.047'; # $Id: //depot/Tk8/Tk/TextUndo.pm#47 $
 $DoDebug = 0;
 
 use Tk qw (Ev);
@@ -623,7 +623,7 @@ sub TextUndoFileProgress
  $popup->{FILENAME} = "Filename: $filename";
  if (defined($val) && defined($total) && $total != 0)
   {
-   $popup->{PROGBAR}->place(-x => 0, -y => 0, -relheight => 1, -relwidth => $val/$total);
+   $popup->{PROGBAR}->place('-x' => 0, '-y' => 0, -relheight => 1, -relwidth => $val/$total);
   }
  else
   {

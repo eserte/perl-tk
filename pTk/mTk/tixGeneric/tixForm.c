@@ -21,7 +21,7 @@
  *     (1) Delete the master structure when there is no more client to manage
  *
  * Possible bugs:
- * (1) a client is deleted but the master doesn't know 
+ * (1) a client is deleted but the master doesn't know
  *     (clientPtr->tkwin == NULL)
  * (2) Whan a client S is deleted or detached from the master, all other
  *     clients attached to S must delete their reference to S
@@ -43,7 +43,7 @@ typedef struct SpringLink {
 } SpringLink;
 
 
-typedef struct SpringList { 
+typedef struct SpringList {
     SpringLink * head, * tail;
     int num;
 } SpringList;
@@ -250,8 +250,7 @@ static int TixFm_SetGrid(clientData, interp, argc, argv)
     }
 
     if (argc == 1) {
-	sprintf(buff, "%d %d", masterPtr->grids[0], masterPtr->grids[1]);
-	Tcl_AppendResult(interp, buff, NULL);
+	Tcl_IntResults(interp, 2, 0, masterPtr->grids[0], masterPtr->grids[1]);
     }
     else {
 	int x, y;
@@ -353,7 +352,7 @@ static int TixFm_Slaves(clientData, interp, argc, argv)
     }
 
     if (masterPtr == 0) {
-	Tcl_AppendResult(interp, "Window \"", argv[0], 
+	Tcl_AppendResult(interp, "Window \"", argv[0],
 	    "\" is not a tixForm master window", NULL);
 	return TCL_ERROR;
     }
@@ -390,7 +389,7 @@ static int TixFm_Spring(clientData, interp, argc, argv)
     }
 
     if ((clientPtr = TixFm_GetFormInfo(tkwin, 0)) == NULL) {
-	Tcl_AppendResult(interp, "Window \"", argv[0], 
+	Tcl_AppendResult(interp, "Window \"", argv[0],
 	    "\" is not managed by the tixForm manager", NULL);
 	return TCL_ERROR;
     }
@@ -413,7 +412,7 @@ static int TixFm_Spring(clientData, interp, argc, argv)
 	i = 0; j = 1;
     }
     else {
-	Tcl_AppendResult(interp, "Unknown option \"", argv[1], 
+	Tcl_AppendResult(interp, "Unknown option \"", argv[1],
 	    "\"", NULL);
 	return TCL_ERROR;
     }
@@ -471,10 +470,10 @@ static int TixFm_Check(clientData, interp, argc, argv)
     masterPtr = GetMasterInfo(master, 1);
 
     if (TestAndArrange(masterPtr) == TCL_OK) {
-	/* OK: no circular dependency */ 
+	/* OK: no circular dependency */
 	Tcl_AppendResult(interp, "0", NULL);
     } else {
-	/* Bad: circular dependency */ 
+	/* Bad: circular dependency */
 	Tcl_AppendResult(interp, "1", NULL);
     }
     return TCL_OK;
@@ -531,7 +530,7 @@ static int TixFm_SetClient(clientData, interp, argc, argv)
 	clientPtr = TixFm_GetFormInfo(client, 1);
     }
 
-    /* Check if the first argument is "-in". If so, 
+    /* Check if the first argument is "-in". If so,
      * reset the master of this client
      */
     if (argc >= 2 && strcmp(argv[0], "-in")==0) {
@@ -545,12 +544,12 @@ static int TixFm_SetClient(clientData, interp, argc, argv)
     else if (clientPtr->master == NULL) {
 	if ((master = Tk_Parent(client))==NULL) {
 	    return TCL_ERROR;
-	} 
+	}
 	masterPtr = GetMasterInfo(master, 1);
     }
     else {
 	masterPtr =clientPtr->master;
-    } 
+    }
 
     if (clientPtr->master != masterPtr) {
 	if (clientPtr->master != NULL) {
@@ -597,7 +596,7 @@ FormInfo * TixFm_FindClientPtrByName(interp, name, topLevel)
     }
 
     if ((clientPtr = TixFm_GetFormInfo(tkwin, 0)) == NULL) {
-	Tcl_AppendResult(interp, "Window \"", name, 
+	Tcl_AppendResult(interp, "Window \"", name,
 	    "\" is not managed by the tixForm manager", NULL);
 	return NULL;
     }
@@ -773,7 +772,7 @@ static void ArrangeGeometry(clientData)
 
 	if (masterPtr->numRequests++ > 50) {
 #if DEBUG
-	    fprintf(stderr, 
+	    fprintf(stderr,
 		"(TixForm) Error:Trying to use more than one geometry\n\
           manager for the same master window.\n\
           Giving up after 50 iterations.\n");
@@ -823,7 +822,7 @@ static void ArrangeGeometry(clientData)
 		    coord[i][j] -= 1;
 		}
 	    }
-	    cSize[i] = coord[i][1] - coord[i][0] 
+	    cSize[i] = coord[i][1] - coord[i][0]
 	      - clientPtr->pad[i][0] - clientPtr->pad[i][1] + 1;
 	}
 
@@ -879,16 +878,16 @@ PinnSide_AttNone(clientPtr, axis, which)
     PINN_CLIENT_SIDE(clientPtr, axis, NEXT_SIDE(which), 1);
 
     clientPtr->side[axis][which].pcnt =
-      clientPtr->side[axis][NEXT_SIDE(which)].pcnt;  
+      clientPtr->side[axis][NEXT_SIDE(which)].pcnt;
 
     switch (which) {
       case SIDE0:
-	clientPtr->side[axis][which].disp = 
+	clientPtr->side[axis][which].disp =
 	  clientPtr->side[axis][NEXT_SIDE(which)].disp - reqSize;
 	break;
 
       case SIDE1:
-	clientPtr->side[axis][which].disp = 
+	clientPtr->side[axis][which].disp =
 	  clientPtr->side[axis][NEXT_SIDE(which)].disp + reqSize;
 	break;
     }
@@ -920,10 +919,10 @@ PinnSide_AttOpposite(clientPtr, axis, which)
 
     PINN_CLIENT_SIDE(attachPtr, axis, NEXT_SIDE(which), 0);
 
-    clientPtr->side[axis][which].pcnt = 
+    clientPtr->side[axis][which].pcnt =
       attachPtr->side[axis][NEXT_SIDE(which)].pcnt;
     clientPtr->side[axis][which].disp =
-      attachPtr->side[axis][NEXT_SIDE(which)].disp + 
+      attachPtr->side[axis][NEXT_SIDE(which)].disp +
       clientPtr->off[axis][which];
 
     return TCL_OK;
@@ -941,10 +940,10 @@ PinnSide_AttParallel(clientPtr, axis, which)
 
     PINN_CLIENT_SIDE(attachPtr, axis, which, 0);
 
-    clientPtr->side[axis][which].pcnt = 
+    clientPtr->side[axis][which].pcnt =
       attachPtr->side[axis][which].pcnt;
-    clientPtr->side[axis][which].disp = 
-      attachPtr->side[axis][which].disp + 
+    clientPtr->side[axis][which].disp =
+      attachPtr->side[axis][which].disp +
       clientPtr->off[axis][which];
 
     return TCL_OK;
@@ -1066,7 +1065,7 @@ static void CalculateMasterSize(masterPtr)
 	cSize[1] += clientPtr->pad[1][0]+clientPtr->pad[1][1];
 
 	for (i=0; i<2; i++) {
-	    /* The required size of the master depends on 
+	    /* The required size of the master depends on
 	     *	(1) natural sizes of the clients
 	     *  (2) perc anchor points of the clients
 	     * Ideally, the master must include as much visible parts
@@ -1401,7 +1400,7 @@ void TixFm_UnlinkFromMaster(clientPtr)
     -- masterPtr->numClients;
 }
 
-void 
+void
 TixFm_FreeMasterInfo(clientData)
     char *clientData;
 {
@@ -1518,7 +1517,7 @@ TixFm_GetFormInfo(tkwin, create)
 	    clientPtr->tkwin	= tkwin;
 	    clientPtr->master	= NULL;
 	    clientPtr->next	= NULL;
-	    
+	
 	    for (i=0; i< 2; i++) {
 		for (j=0; j< 2; j++) {
 		    clientPtr->attType[i][j]    = ATT_NONE;
@@ -1529,19 +1528,19 @@ TixFm_GetFormInfo(tkwin, create)
 		    clientPtr->pad[i][j]        = 0;
 		    clientPtr->side[i][j].pcnt  = 0;
 		    clientPtr->side[i][j].disp  = 0;
-		    
+		
 		    clientPtr->spring[i][j]  	= -1;
 		    clientPtr->strWidget[i][j]  = 0;
 		}
 		clientPtr->springFail[i]  	= 0;
 		clientPtr->fill[i]  		= 0;
 	    }
-	    
+	
 	    Tcl_SetHashValue(hPtr, clientPtr);
-	    
+	
 	    Tk_CreateEventHandler(tkwin, StructureNotifyMask,
 		TixFm_StructureProc, (ClientData) clientPtr);
-	    
+	
 	    return clientPtr;
 	}
     }
@@ -1641,12 +1640,12 @@ static int PlaceSide_AttNone(clientPtr, axis, which)
 
     switch (which) {
       case SIDE0:
-	clientPtr->posn[axis][which] = 
+	clientPtr->posn[axis][which] =
 	  clientPtr->posn[axis][NEXT_SIDE(which)] - reqSize;
 	break;
 
       case SIDE1:
-	clientPtr->posn[axis][which] = 
+	clientPtr->posn[axis][which] =
 	  clientPtr->posn[axis][NEXT_SIDE(which)] + reqSize;
 	break;
     }
@@ -1725,7 +1724,7 @@ static int PlaceSimpleCase(clientPtr, axis, which)
 	    return TCL_ERROR;
 	}
 	break;
- 
+
       case ATT_OPPOSITE:
 	if (PlaceSide_AttOpposite(clientPtr, axis, which) == TCL_ERROR) {
 	    return TCL_ERROR;
@@ -1765,7 +1764,7 @@ FreeSpringLink(link)
 static void FreeSpringList(listPtr)
     SpringList * listPtr;
 {
-    SpringLink * link, * toFree; 
+    SpringLink * link, * toFree;
 
     for (link=listPtr->head; link; ) {
 	toFree = link;
@@ -1842,7 +1841,7 @@ PlaceWithSpring(clientPtr, axis, which)
 	    if ((ptr = ptr->strWidget[axis][1]) == 0) {
 		goto done1;
 	    }
-	    
+	
 	    switch (ptr->attType[axis][0]) {
 	      case ATT_GRID:
 	      case ATT_PARALLEL:
@@ -1912,7 +1911,7 @@ PlaceWithSpring(clientPtr, axis, which)
     for (link=springs.head; link; link=link->next) {
 	int size = ReqSize(link->clientPtr->tkwin, axis);
 
-	totalSize += size + link->clientPtr->pad[axis][0] + 
+	totalSize += size + link->clientPtr->pad[axis][0] +
 	  link->clientPtr->pad[axis][1];
 	
 	if (link->clientPtr->spring[axis][0] > 0) {
@@ -1923,11 +1922,11 @@ PlaceWithSpring(clientPtr, axis, which)
 	totalStrength += springs.tail->clientPtr->spring[axis][1];
     }
 
-    boundary[0] = (float) mSize[axis] * 
+    boundary[0] = (float) mSize[axis] *
       (float) springs.head->clientPtr->side[axis][0].pcnt /
       (float) masterPtr->grids[axis] +
       (float) springs.head->clientPtr->side[axis][0].disp;
-    boundary[1] = (float) mSize[axis] * 
+    boundary[1] = (float) mSize[axis] *
       (float) springs.tail->clientPtr->side[axis][1].pcnt /
       (float) masterPtr->grids[axis] +
       (float) springs.tail->clientPtr->side[axis][1].disp;
@@ -2053,7 +2052,7 @@ static int PlaceClientSide(clientPtr, axis, which, isSelf)
     }
 
     if (PlaceWithSpring(clientPtr, axis, which) != TCL_OK) {
-	/* if comes to here : (1) Not enough space for the spring expansion 
+	/* if comes to here : (1) Not enough space for the spring expansion
 	 * 		      (2) Not both end-sides are spring-attached */
 	return PlaceSimpleCase(clientPtr, axis, which);
     } else {

@@ -1,4 +1,4 @@
-/* 
+/*
  * tixNBFrame.c --
  *
  *	This module implements "tixNoteBookFrame" widgets.
@@ -221,7 +221,7 @@ static Tk_ConfigSpec configSpecs[] = {
 
     {TK_CONFIG_PIXELS, "-width", "width", "Width",
        DEF_NOTEBOOKFRAME_WIDTH, Tk_Offset(WidgetRecord, desiredWidth), 0},
-    
+
     {TK_CONFIG_END, (char *) NULL, (char *) NULL, (char *) NULL,
 	(char *) NULL, 0, 0}
 };
@@ -388,7 +388,7 @@ Tix_NoteBookFrameCmd(clientData, interp, argc, argv)
     wPtr->redrawing	 	= 0;
     wPtr->gotFocus	 	= 0;
 
-    Tk_CreateEventHandler(wPtr->tkwin, 
+    Tk_CreateEventHandler(wPtr->tkwin,
 	ExposureMask|StructureNotifyMask|FocusChangeMask,
 	WidgetEventProc, (ClientData) wPtr);
     wPtr->widgetCmd = Tcl_CreateCommand(interp, Tk_PathName(wPtr->tkwin),
@@ -532,7 +532,7 @@ WidgetCommand(clientData, interp, argc, argv)
 	    }
 	}
 	if (tPtr == NULL) {
-	    Tcl_AppendResult(wPtr->interp, 
+	    Tcl_AppendResult(wPtr->interp,
 		"Unknown tab \"", argv[2], "\"", (char*) NULL);
 	    goto error;
 	}
@@ -554,12 +554,8 @@ WidgetCommand(clientData, interp, argc, argv)
 	RedrawWhenIdle(wPtr);
     }
     else if ((c == 'g') && (strncmp(argv[1], "geometryinfo", length) == 0)) {
-	char buff[20];
-
 	ComputeGeometry(wPtr);
-	sprintf(buff, "%d %d", wPtr->width, wPtr->height);
-
-	Tcl_AppendResult(interp, buff, NULL);
+	Tcl_IntResults(interp, 2, 0, wPtr->width, wPtr->height);
     }
     else if ((c == 'i') && (strncmp(argv[1], "identify", length) == 0)) {
 	if (argc != 4) {
@@ -673,7 +669,7 @@ WidgetCommand(clientData, interp, argc, argv)
 	Tab * tPtr;
 
 	if (argc < 3) {
-	    Tix_ArgcError(interp, argc, argv, 2, 
+	    Tix_ArgcError(interp, argc, argv, 2,
 		"page ?option value ...?");
 	    goto error;
 	}
@@ -747,10 +743,10 @@ WidgetConfigure(interp, wPtr, argc, argv, flags)
 
     if (wPtr->tabPadx < 3) {
 	wPtr->tabPadx = 3;
-    } 
+    }
     if (wPtr->tabPady < 2) {
 	wPtr->tabPady = 2;
-    } 
+    }
 
     Tk_SetBackgroundFromBorder(wPtr->tkwin, wPtr->bgBorder);
 
@@ -859,7 +855,7 @@ WidgetEventProc(clientData, eventPtr)
       case DestroyNotify:
 	if (wPtr->tkwin != NULL) {
 	    wPtr->tkwin = NULL;
-	    Tcl_DeleteCommand(wPtr->interp, 
+	    Tcl_DeleteCommand(wPtr->interp,
 	        Tcl_GetCommandName(wPtr->interp, wPtr->widgetCmd));
 	}
 	CancelRedrawWhenIdle(wPtr);
@@ -993,7 +989,7 @@ static Tab * FindTab(interp, wPtr, name)
     char * name;
 {
     Tab *tPtr;
- 
+
     for (tPtr=wPtr->tabHead; tPtr; tPtr=tPtr->next) {
 	if (strcmp(tPtr->name, name) == 0) {
 	    return tPtr;
@@ -1135,7 +1131,7 @@ static void DeleteTab(tPtr)
     }
 
     if (tPtr->wPtr->tkwin) {
-	Tk_FreeOptions(tabConfigSpecs, (char *)tPtr, 
+	Tk_FreeOptions(tabConfigSpecs, (char *)tPtr,
 		       Tk_Display(tPtr->wPtr->tkwin), 0);
     }
     ckfree((char*)tPtr);
@@ -1241,7 +1237,7 @@ static void DrawTab(wPtr, tPtr, x, isActive, drawable)
     GetTabPoints(wPtr, tPtr, x, points);
     drawX = x + wPtr->borderWidth + wPtr->tabPadx;
     drawY = wPtr->borderWidth + wPtr->tabPady;
-    extraH = wPtr->tabsHeight - tPtr->height - 
+    extraH = wPtr->tabsHeight - tPtr->height -
       wPtr->borderWidth - wPtr->tabPady *2;
 
     if (extraH > 0) {
@@ -1306,7 +1302,7 @@ static void DrawTab(wPtr, tPtr, x, isActive, drawable)
     if (wPtr->gotFocus && tPtr == wPtr->focus) {
 	XDrawLine(Tk_Display(wPtr->tkwin), drawable, wPtr->focusGC,
             drawX,
-	    drawY + tPtr->height + 1, 
+	    drawY + tPtr->height + 1,
 	    drawX + tPtr->width,
 	    drawY + tPtr->height + 1);
     }
@@ -1398,7 +1394,7 @@ WidgetDisplay(clientData)
 
 	Tk_Fill3DRectangle(wPtr->tkwin, buffer,
 		wPtr->bgBorder, 0, wPtr->tabsHeight,
-		Tk_Width(wPtr->tkwin), 
+		Tk_Width(wPtr->tkwin),
 		Tk_Height(wPtr->tkwin) - wPtr->tabsHeight,
 		wPtr->borderWidth, wPtr->relief);
 
@@ -1423,7 +1419,7 @@ WidgetDisplay(clientData)
 	/* Draw the box */
 	Tk_Draw3DRectangle(wPtr->tkwin, buffer,
 		wPtr->bgBorder, 0, wPtr->tabsHeight,
-		Tk_Width(wPtr->tkwin), 
+		Tk_Width(wPtr->tkwin),
 		Tk_Height(wPtr->tkwin) - wPtr->tabsHeight,
 		wPtr->borderWidth, wPtr->relief);
 
@@ -1483,11 +1479,11 @@ ComputeGeometry(wPtr)
 	wPtr->tabsWidth  = 0;
 	wPtr->tabsHeight = 0;
 	for (tPtr=wPtr->tabHead; tPtr; tPtr=tPtr->next) {
-	    
+	
 	    if (tPtr->text != NULL) {
 		tPtr->numChars = strlen(tPtr->text);
 		TixComputeTextGeometry(wPtr->font, tPtr->text,
-		    tPtr->numChars, tPtr->wrapLength, 
+		    tPtr->numChars, tPtr->wrapLength,
 		    &tPtr->width, &tPtr->height);
 	    }
 	    else if (tPtr->image != NULL) {
