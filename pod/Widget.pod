@@ -613,6 +613,12 @@ to user interactions.
 If an event handler invokes B<tkwait> again, the nested call
 to B<tkwait> must complete before the outer call can complete.
 
+=item I<$widget>-E<gt>B<Walk>(I<proc>?, I<arg, ...>?)
+
+Traverse a widget hierarchy starting at I<$widget> while executing the
+subroutine I<proc> to every visited widget. The arguments I<arg, ...>
+are supplied to the subroutine.
+
 =item I<$widget>-E<gt>B<width>
 
 Returns a decimal string giving I<$widget>'s width in pixels.
