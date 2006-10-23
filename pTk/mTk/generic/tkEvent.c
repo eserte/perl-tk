@@ -986,7 +986,9 @@ Tk_HandleEvent(eventPtr)
 		TkWmProtocolEventProc(winPtr, eventPtr);
 	    } else {
 		/* Perl/Tk had/has its own hook for this */
-		LangClientMessage(winPtr->mainPtr->interp, (Tk_Window) winPtr, eventPtr);
+		if (eventPtr && winPtr && winPtr->mainPtr) {
+		    LangClientMessage(winPtr->mainPtr->interp, (Tk_Window) winPtr, eventPtr);
+		}
 
 		/*
 		 * Finally, invoke any ClientMessage event handlers.
