@@ -602,15 +602,14 @@ sub NextMenu
    my $m2 = $menu->parent;
    if ($m2->IsMenu)
     {
+     $menu->activate('none');
+     $menu->GenerateMenuSelect;
+     $m2->SetFocus;
+
+     $m2->postcascade('none');
+
      if ($m2->cget('-type') ne 'menubar')
       {
-       $menu->activate('none');
-       $menu->GenerateMenuSelect;
-       $m2->SetFocus;
-       # This code unposts any posted submenu in the parent.
-       my $tmp = $m2->index('active');
-       $m2->activate('none');
-       $m2->activate($tmp);
        return;
       }
     }
@@ -796,7 +795,7 @@ sub FirstEntry
      if ($menu->type($i) eq 'cascade')
       {
        my $cascade = $menu->entrycget($i,'-menu');
-       if (defined $cascade)
+       if (0 && defined $cascade)
         {
          $menu->postcascade($i);
          $cascade->FirstEntry;
