@@ -74,7 +74,6 @@ pTk/default\.h$
 pTk/exWinHandle\.c$
 pTk/img\.h$
 pTk/imgBMP\.c$
-pTk/imgGIF\.c$
 pTk/imgInit\.c$
 pTk/imgInt\.h$
 pTk/imgObj\.c$
@@ -207,6 +206,7 @@ pTk/tkGrab\.c$
 pTk/tkGrid\.c$
 pTk/tkImage\.c$
 pTk/tkImgBmap\.c$
+pTk/tkImgGIF\.c$
 pTk/tkImgPPM\.c$
 pTk/tkImgPhoto\.c$
 pTk/tkImgUtil\.c$
