@@ -231,7 +231,7 @@ sub delete
   {
    $childw->bind('<Destroy>', undef);
    $childw->destroy;
-   @{$w->{'windows'}} = grep($_ !~ /$child/, @{$w->{'windows'}});
+   @{$w->{'windows'}} = grep($_ ne $child, @{$w->{'windows'}});
    $w->{'nWindows'}--;
    $w->SUPER::delete($child);
    # see if the child to be deleted was the top child
