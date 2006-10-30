@@ -21,10 +21,10 @@ my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
 BEGIN {
     if (!eval q{
-	use Test;
+	use Test::More;
 	1;
     }) {
-	print "# tests only work with installed Test module\n";
+	print "# tests only work with installed Test::More module\n";
 	print "1..1\n";
 	print "ok 1\n";
 	exit;
@@ -39,12 +39,25 @@ BEGIN {
         todo => \@fragile
       }
 
+use Getopt::Long;
+
+my $do_wm_test   = (defined($ENV{WINDOWMANAGER}) &&
+		    $ENV{WINDOWMANAGER} eq '/usr/X11R6/bin/kde');
+my $do_font_test = 1;
+
+GetOptions("wmtest!" => \$do_wm_test)
+    or die "usage: $0 [-wmtest]";
+
+my $skip_wm_test = "window manager dependent tests";
+my $skip_font_test = "font-related tests";
+my $skip_wm_font_test = "window manager and/or font-related tests";
+
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
 
 my $e0 = $mw->Entry;
-ok(Tk::Exists($e0), 1);
-ok(ref $e0, "Tk::Entry");
+ok(Tk::Exists($e0), "Entry widget exists");
+isa_ok($e0, "Tk::Entry");
 
 my @scrollInfo;
 sub scroll {
@@ -71,7 +84,6 @@ $mw->option("add", "*Entry.font", $Xft ? '{Adobe Helvetica} -12' : "Helvetica -1
 my $e = $mw->Entry(qw(-bd 2 -relief sunken))->pack;
 $mw->update;
 
-my $skip_font_test;
 if (!$Xft) { # XXX Is this condition necessary?
     my %fa = $mw->fontActual($e->cget(-font));
     my %expected = (
@@ -84,15 +96,10 @@ if (!$Xft) { # XXX Is this condition necessary?
 		   );
     while(my($k,$v) = each %expected) {
 	if ($v ne $fa{$k}) {
-	    $skip_font_test = "font-related tests";
+	    $do_font_test = 0;
 	    last;
 	}
     }
-}
-my $skip_wm_test;
-unless (defined($ENV{WINDOWMANAGER}) &&
-        $ENV{WINDOWMANAGER} eq '/usr/X11R6/bin/kde') {
-    $skip_wm_test = "window manager dependent tests";
 }
 
 my $i;
@@ -140,43 +147,35 @@ my @tests = (
 foreach my $test (@tests) {
     my $name = $test->[0];
     $e->configure($name, $test->[1]);
-    if ($test->[SKIP_CGET]) {
-	skip(1,1);
-    } else {
-	ok($e->cget($name), $test->[2], "Failed to cget $name");
+    if (!$test->[SKIP_CGET]) {
+	is($e->cget($name), $test->[2], "cget $name");
     }
-    if ($test->[SKIP_CONF]) {
-	skip(1,1);
-    } else {
-	ok(($e->configure($name))[4], $e->cget($name), "Failed comparing configure and cget values for $name");
+    if (!$test->[SKIP_CONF]) {
+	is(($e->configure($name))[4], $e->cget($name), "Comparing configure and cget values for $name");
     }
 
     if (defined $test->[4]) {
-	if ($test->[SKIP_ERROR]) {
-	    skip(1,1);
-	} else {
+	if (!$test->[SKIP_ERROR]) {
 	    eval { $e->configure($name, $test->[3]) };
-	    ok($@ =~ /$test->[4]/, 1, "Error message for $name: Got $@, expected $test->[4]");
+	    like($@, qr/$test->[4]/, "Expected error message for $name");
 	}
     }
-    if ($test->[SKIP_RESTORE]) {
-	skip(1,1);
-    } else {
+    if (!$test->[SKIP_RESTORE]) {
 	$e->configure($name, ($e->configure($name))[3]);
     }
 }
 
 eval { $e->destroy };
 $e = $mw->Entry;
-ok(Tk::Exists($e), 1);
-ok($e->class, 'Entry');
-ok(ref $e, 'Tk::Entry');
+ok(Tk::Exists($e));
+is($e->class, 'Entry', "Tk class name");
+isa_ok($e, 'Tk::Entry');
 
 eval { $e->destroy; undef $e };
 eval { $e = $mw->Entry(-gorp => 'foo') };
-ok($@ =~ /unknown option "-gorp"/, 1, $@);
-ok(!Tk::Exists($e), 1);
-ok(!defined $e, 1);
+like($@, qr/unknown option "-gorp"/);
+ok(!Tk::Exists($e), "Expected failure while creating entry widget with bad options");
+ok(!defined $e);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed)->pack;
@@ -184,188 +183,180 @@ $e->update;
 
 my $cx = $mw->fontMeasure($fixed, 'a');
 my $cy = $mw->fontMetrics($fixed, '-linespace');
-my $ux = $mw->fontMeasure($fixed, "\x{4e4e}"); # XXX no unicode yet
+my $ux = $mw->fontMeasure($fixed, "\x{4e4e}");
 
 eval { $e->bbox };
-ok($@ =~ /wrong \# args: should be ".* bbox index"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* bbox index"/, "bbox error message");
 
 eval { $e->bbox(qw(a b)) };
-ok($@ =~ /wrong \# args: should be ".* bbox index"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* bbox index"/);
 
 eval { $e->bbox(qw(bogus)) };
-ok($@ =~ /bad entry index "bogus"/, 1, $@);
+like($@, qr/bad entry index "bogus"/);
 
 $e->delete(0,"end");
-ok(join(",",$e->bbox(0)),"5,5,0,$cy");
+is_deeply([$e->bbox(0)],[5,5,0,$cy], "Expected bbox");
 
 $e->delete(0,"end");
 $e->insert(0,"abc");
-ok(join(",",$e->bbox(3)),join(",",5+2*$cx,5,$cx,$cy));
-ok(join(",",$e->bbox("end")), join(",",$e->bbox(3)));
-
-# XXX no unicode yet
-#  test entry-3.7 {EntryWidgetCmd procedure, "bbox" widget command} {
-#      # Tcl_UtfAtIndex(): utf at end
-#      .e delete 0 end
-#      .e insert 0 "ab\u4e4e"
-#      .e bbox end
-#  } "[expr 5+2*$cx] 5 $ux $cy"
-#  test entry-3.8 {EntryWidgetCmd procedure, "bbox" widget command} {
-#      # Tcl_UtfAtIndex(): utf before index
-#      .e delete 0 end
-#      .e insert 0 "ab\u4e4ec"
-#      .e bbox 3
-#  } "[expr 5+2*$cx+$ux] 5 $cx $cy"
+is_deeply([$e->bbox(3)],[5+2*$cx,5,$cx,$cy]);
+is_deeply([$e->bbox("end")],[$e->bbox(3)]);
 
 $e->delete(0,"end");
-ok("5,5,0,$cy",join(",",$e->bbox("end")));
+$e->insert(0,"ab\x{4e4e}");
+is_deeply([$e->bbox("end")],[5+2*$cx,5,$ux,$cy], "Bbox check with unicode char (at end)");
 
-# XXX no unicode yet
-#  test entry-3.10 {EntryWidgetCmd procedure, "bbox" widget command} {
-#      .e delete 0 end
-#      .e insert 0 "abcdefghij\u4e4eklmnop"
-#      list [.e bbox 0] [.e bbox 1] [.e bbox 10] [.e bbox end]
-#  } [list "5 5 $cx $cy" "[expr 5+$cx] 5 $cx $cy" "[expr 5+10*$cx] 5 $ux $cy" "[expr 5+$ux+15*$cx] 5 $cx $cy"]
+$e->delete(0,"end");
+$e->insert(0,"ab\x{4e4e}c");
+is_deeply([$e->bbox(3)],[5+2*$cx+$ux,5,$cx,$cy], "Bbox check with unicode char (before index)");
+
+$e->delete(0,"end");
+is_deeply([5,5,0,$cy],[$e->bbox("end")]);
+
+$e->delete(0,"end");
+$e->insert(0,"abcdefghij\x{4e4e}klmnop");
+is_deeply([[$e->bbox(0)],
+	   [$e->bbox(1)],
+	   [$e->bbox(10)],
+	   [$e->bbox("end")]],
+	  [[5,5,$cx,$cy],
+	   [5+$cx,5,$cx,$cy],
+	   [5+10*$cx,5,$ux,$cy],
+	   [5+$ux+15*$cx,5,$cx,$cy]], "More bbox checks with unicode char");
 
 eval { $e->cget };
-ok($@ =~ /wrong \# args: should be ".* cget option"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* cget option"/, "cget error message");
 
 eval { $e->cget(qw(a b)) };
-ok($@ =~ /wrong \# args: should be ".* cget option"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* cget option"/);
 
 eval { $e->cget(-gorp) };
-ok($@ =~ /unknown option "-gorp"/, 1, $@);
+like($@, qr/unknown option "-gorp"/);
 
 $e->configure(-bd => 4);
-ok($e->cget(-bd), 4);
-ok(scalar @{$e->configure}, 36);
+is($e->cget(-bd), 4);
+is(scalar @{$e->configure}, 36);
 
 eval { $e->configure('-foo') };
-ok($@ =~ /unknown option "-foo"/, 1, $@);
+like($@, qr/unknown option "-foo"/, "Unknown option error message");
 
 $e->configure(-bd => 4);
 $e->configure(-bg => '#ffffff');
-ok(($e->configure(-bd))[4], 4);
+is(($e->configure(-bd))[4], 4);
 
 eval { $e->delete };
-ok($@ =~ /wrong \# args: should be ".* delete firstIndex \?lastIndex\?"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* delete firstIndex \?lastIndex\?"/, "delete error message");
 
 eval { $e->delete(qw(a b c)) };
-ok($@ =~ /wrong \# args: should be ".* delete firstIndex \?lastIndex\?"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* delete firstIndex \?lastIndex\?"/);
 
 eval { $e->delete("foo") };
-ok($@ =~ /bad entry index "foo"/, 1, $@);
+like($@, qr/bad entry index "foo"/);
 
 eval { $e->delete(0, "bar") };
-ok($@ =~ /bad entry index "bar"/, 1, $@);
+like($@, qr/bad entry index "bar"/);
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
 $e->delete(2, 4);
-ok($e->get, "014567890");
+is($e->get, "014567890", "Expected get after insert");
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
 $e->delete(6);
-ok($e->get, "0123457890");
+is($e->get, "0123457890");
 
-#  test entry-3.24 {EntryWidgetCmd procedure, "delete" widget command} {
-#      # UTF
-#      set x {}
-#      .e delete 0 end
-#      .e insert end "01234\u4e4e67890"
-#      .e delete 6
-#      lappend x [.e get]
-#      .e delete 0 end
-#      .e insert end "012345\u4e4e7890"
-#      .e delete 6
-#      lappend x [.e get]
-#      .e delete 0 end
-#      .e insert end "0123456\u4e4e890"
-#      .e delete 6
-#      lappend x [.e get]
-#  } [list "01234\u4e4e7890" "0123457890" "012345\u4e4e890"]
+$e->delete(0, "end");
+$e->insert("end", "01234\x{4e4e}67890");
+$e->delete(6);
+is($e->get, "01234\x{4e4e}7890", "Delete with unicode character before");
 
+$e->delete(0, "end");
+$e->insert("end", "012345\x{4e4e}7890");
+$e->delete(6);
+is($e->get, "0123457890", "Delete unicode character");
+
+$e->delete(0, "end");
+$e->insert("end", "0123456\x{4e4e}890");
+$e->delete(6);
+is($e->get, "012345\x{4e4e}890", "Delete with unicode character after");
 
 $e->delete(0,"end");
 $e->insert("end", "01234567890");
 $e->delete(6, 5);
-ok($e->get, "01234567890");
+is($e->get, "01234567890", "Delete reversed range");
 
 $e->delete(0,"end");
 $e->insert("end", "01234567890");
 $e->configure(-state => 'disabled');
 $e->delete(2, 8);
 $e->configure(-state => 'normal');
-ok($e->get, "01234567890");
+is($e->get, "01234567890", "Delete while disabled state");
 
 eval { $e->get("foo") };
-ok($@ =~ /wrong \# args: should be ".* get"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* get"/, "get error message");
 
 eval { $e->icursor };
-ok($@ =~ /wrong \# args: should be ".* icursor pos"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* icursor pos"/);
 
 eval { $e->icursor("foo") };
-ok($@ =~ /bad entry index "foo"/, 1, $@);
+like($@, qr/bad entry index "foo"/);
 
 $e->delete(0,"end");
 $e->insert("end", "01234567890");
 $e->icursor(4);
-ok($e->index('insert'), 4);
+is($e->index('insert'), 4, "Index method");
 
 eval { $e->in };
-ok($@ =~ /Can\'t locate(?: file)? auto\/Tk\/Entry\/in\.al/, 1, $@);
+like($@, qr/Can\'t locate(?: file)? auto\/Tk\/Entry\/in\.al/, "Invalid abbreviated method name (index)");
 
 eval { $e->index };
-ok($@ =~ /wrong \# args: should be ".* index string"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* index string"/, "index error message");
 
 eval { $e->index("foo") };
-ok($@ =~ /bad entry index "foo"/, 1, $@);
+like($@, qr/bad entry index "foo"/);
 
-ok($e->index(0), 0);
+is($e->index(0), 0);
 
-#  test entry-3.35 {EntryWidgetCmd procedure, "index" widget command} {
-#      # UTF
-#      .e delete 0 end
-#      .e insert 0 abc\u4e4e\u0153def
-#      list [.e index 3] [.e index 4] [.e index end]
-#  } {3 4 8}
+$e->delete(0,"end");
+$e->insert(0, "abc\x{4e4e}\x{0153}def");
+is_deeply([$e->index(3), $e->index(4), $e->index("end")],[3,4,8], "Index with unicode characters");
 
 eval { $e->insert(qw(a)) };
-ok($@ =~ /wrong \# args: should be ".* insert index text"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* insert index text"/, "insert error message");
 
 eval { $e->insert(qw(a b c)) };
-ok($@ =~ /wrong \# args: should be ".* insert index text"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* insert index text"/);
 
 eval { $e->insert(qw(foo Text)) };
-ok($@ =~ /bad entry index "foo"/, 1, $@);
+like($@, qr/bad entry index "foo"/);
 
 $e->delete(0,"end");
 $e->insert("end", "01234567890");
 $e->insert(3, "xxx");
-ok($e->get, '012xxx34567890');
+is($e->get, '012xxx34567890', "get after insert method call");
 
 $e->delete(0,"end");
 $e->insert("end", "01234567890");
 $e->configure(qw(-state disabled));
 $e->insert(qw(3 xxx));
 $e->configure(qw(-state normal));
-ok($e->get, "01234567890");
+is($e->get, "01234567890");
 
 eval { $e->insert(qw(a b c)) };
-ok($@ =~ /wrong \# args: should be ".* insert index text"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* insert index text"/);
 
 eval { $e->scan(qw(a)) };
-ok($@ =~ /wrong \# args: should be ".* scan mark\|dragto x"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* scan mark\|dragto x"/, "scan error message");
 
 eval { $e->scan(qw(a b c)) };
-ok($@ =~ /wrong \# args: should be ".* scan mark\|dragto x"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* scan mark\|dragto x"/);
 
 eval { $e->scan(qw(foobar 20)) };
-ok($@ =~ /bad scan option "foobar": must be mark or dragto/, 1, $@);
+like($@, qr/bad scan option "foobar": must be mark or dragto/);
 
 eval { $e->scan(qw(mark 20.1)) };
-ok($@, '');
+is($@, '', "Correct mark method call");
 
 # This test is non-portable because character sizes vary.
 
@@ -375,19 +366,19 @@ $e->insert(end => "This is quite a long string, in fact a ");
 $e->insert(end => "very very long string");
 $e->scan(qw(mark 30));
 $e->scan(qw(dragto 28));
-ok($e->index('@0'), 2);
+is($e->index('@0'), 2, "Index of a scrolled string");
 
 eval {$e->select };
-ok($@ =~ /Can\'t locate(?: file)? auto\/Tk\/Entry\/select\.al/, 1, $@);
+like($@, qr/Can\'t locate(?: file)? auto\/Tk\/Entry\/select\.al/, "Invalid abbreviated method name (selection)");
 
 eval {$e->selection };
-ok($@ =~ /wrong \# args: should be ".* selection option \?index\?"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection option \?index\?"/, "selection error message");
 
 eval {$e->selection('foo') };
-ok($@ =~ /bad selection option "foo": must be adjust, clear, from, present, range, or to/, 1, $@);
+like($@, qr/bad selection option "foo": must be adjust, clear, from, present, range, or to/);
 
 eval { $e->selection("clear", "gorp") };
-ok($@ =~ /wrong \# args: should be ".* selection clear"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection clear"/);
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
@@ -396,24 +387,24 @@ $e->selection("to", 4);
 $e->update;
 $e->selection("clear");
 eval { $mw->SelectionGet };
-ok($@ =~ /PRIMARY selection doesn\'t exist or form "(UTF8_)?STRING" not defined/, 1, $@);
-ok($mw->SelectionOwner, $e);
+like($@, qr/PRIMARY selection doesn\'t exist or form "(UTF8_)?STRING" not defined/);
+is($mw->SelectionOwner, $e, "Expected selection owner");
 
 eval { $e->selection("present", "foo") };
-ok($@ =~ /wrong \# args: should be ".* selection present"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection present"/);
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
 $e->selectionFrom(3);
 $e->selectionTo(6);
-ok($e->selectionPresent,1);
+ok($e->selectionPresent, "Selection is now present");
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
 $e->selectionFrom(3);
 $e->selectionTo(6);
 $e->configure(-exportselection => 0);
-ok($e->selection('present'), 1);
+ok($e->selection('present'), "Selection is also present with no exportselection");
 
 $e->configure(-exportselection => 1);
 
@@ -422,13 +413,13 @@ $e->insert("end", "01234567890");
 $e->selectionFrom(3);
 $e->selectionTo(6);
 $e->delete(0,"end");
-ok($e->selectionPresent, 0);
+ok(!$e->selectionPresent, "Selection is not present, -exportselection set to true");
 
 eval { $e->selectionAdjust("x") };
-ok($@ =~ /bad entry index "x"/, 1, $@);
+like($@, qr/bad entry index "x"/, "selectionAdjust error message");
 
 eval { $e->selection(qw(adjust 2 3)) };
-ok($@ =~ /wrong \# args: should be ".* selection adjust index"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection adjust index"/);
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
@@ -436,7 +427,7 @@ $e->selectionFrom(1);
 $e->selection(qw(to 5));
 $e->update;
 $e->selectionAdjust(4);
-ok($mw->SelectionGet, "123");
+is($mw->SelectionGet, "123", "Expected result with selectionGet");
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
@@ -444,16 +435,16 @@ $e->selectionFrom(1);
 $e->selection(qw(to 5));
 $e->update;
 $e->selectionAdjust(2);
-ok($mw->SelectionGet, "234");
+is($mw->SelectionGet, "234");
 
 eval { $e->selectionFrom(qw(2 3)) };
-ok($@ =~ /wrong \# args: should be ".* selection from index"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection from index"/, "selectionFrom error message");
 
 eval { $e->selection(qw(range 2)) };
-ok($@ =~ /wrong \# args: should be ".* selection range start end"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection range start end"/, "selectionRange error message");
 
 eval { $e->selection(qw(range 2 3 4)) };
-ok($@ =~ /wrong \# args: should be ".* selection range start end"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection range start end"/);
 
 $e->delete(0, "end");
 $e->insert("end", "01234567890");
@@ -461,100 +452,99 @@ $e->selectionFrom(1);
 $e->selection(qw(to 5));
 $e->selection(qw(range 4 4 ));
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in widget/, 1, $@);
+like($@, qr/selection isn\'t in widget/);
 
 $e->delete(0, "end");
 $e->insert("end", "0123456789");
 $e->selectionFrom(3);
 $e->selection(qw(to 7));
 $e->selection(qw(range 2 9));
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 9);
-ok($e->index("anchor"), 3);
+is($e->index("sel.first"), 2, "Index of selection");
+is($e->index("sel.last"), 9);
+is($e->index("anchor"), 3);
 
 $e->delete(qw(0 end));
 $e->insert(end => "This is quite a long text string, so long that it ");
 $e->insert(end => "runs off the end of the window quite a bit.");
 
 eval { $e->selectionTo(2,3) };
-ok($@ =~ /wrong \# args: should be ".* selection to index"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* selection to index"/);
 
 $e->xview(5);
-ok(join(",", map { substr($_, 0, 8) } $e->xview), "0.053763,0.268817");
+is_deeply([map { substr($_, 0, 8) } $e->xview],["0.053763","0.268817"], "Expected xview result");
 
 eval { $e->xview(qw(gorp)) };
-ok($@ =~ /bad entry index "gorp"/, 1, $@);
+like($@, qr/bad entry index "gorp"/, "xview error message");
 
 $e->xview(0);
 $e->icursor(10);
 $e->xview('insert');
-ok(join(",", map { substr($_, 0, 7) } $e->xview), "0.10752,0.32258");
+is_deeply([map { substr($_, 0, 7) } $e->xview],["0.10752","0.32258"]);
 
 eval { $e->xviewMoveto(qw(foo bar)) };
-ok($@ =~ /wrong \# args: should be ".* xview moveto fraction"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* xview moveto fraction"/);
 
 eval { $e->xview(qw(moveto foo)) };
-ok($@ =~ /\'foo\' isn\'t numeric/, 1, $@);
+like($@, qr/\'foo\' isn\'t numeric/);
 
 $e->xviewMoveto(0.5);
-ok(join(",", map { substr($_, 0, 7) } $e->xview), "0.50537,0.72043");
+is_deeply([map { substr($_, 0, 7) } $e->xview],["0.50537","0.72043"]);
 
 eval { $e->xviewScroll(24) };
-ok($@ =~ /wrong \# args: should be ".* xview scroll number units\|pages"/, 1, $@);
+like($@, qr/wrong \# args: should be ".* xview scroll number units\|pages"/, "xviewScroll error message");
 
 eval { $e->xviewScroll(qw(gorp units)) };
-ok($@ =~ /\'gorp\' isn\'t numeric/, 1, $@);
+like($@, qr/\'gorp\' isn\'t numeric/);
 
 $e->xviewMoveto(0);
 $e->xview(qw(scroll 1 pages));
-ok(join(",", map { substr($_, 0, 7) } $e->xview), "0.19354,0.40860");
+is_deeply([map { substr($_, 0, 7) } $e->xview],["0.19354","0.40860"]);
 
 $e->xview(qw(moveto .9));
 $e->update;
 $e->xview(qw(scroll -2 p));
-ok(join(",", map { substr($_, 0, 7) } $e->xview), "0.39784,0.61290");
+is_deeply([map { substr($_, 0, 7) } $e->xview],["0.39784","0.61290"]);
 
 $e->xview(30);
 $e->update;
 $e->xview(qw(scroll 2 units));
-ok($e->index('@0'), 32);
+is($e->index('@0'), 32);
 
 $e->xview(30);
 $e->update;
 $e->xview(qw(scroll -1 units));
-ok($e->index('@0'), 29);
+is($e->index('@0'), 29);
 
 eval { $e->xviewScroll(23,"foobars") };
-ok($@ =~ /bad argument "foobars": must be units or pages/, 1, $@);
+like($@, qr/bad argument "foobars": must be units or pages/);
 
 eval { $e->xview(qw(eat 23 hamburgers)) };
-ok($@ =~ /unknown option "eat": must be moveto or scroll/, 1, $@);
+like($@, qr/unknown option "eat": must be moveto or scroll/);
 
 $e->xview(0);
 $e->update;
 $e->xview(-4);
-ok($e->index('@0'), 0);
+is($e->index('@0'), 0);
 
 $e->xview(300);
-ok($e->index('@0'), 73);
+is($e->index('@0'), 73);
 
-#  .e insert 10 \u4e4e
-#  test entry-3.81 {EntryWidgetCmd procedure, "xview" widget command} {
-#      # UTF
-#      # If Tcl_NumUtfChars wasn't used, wrong answer would be:
-#      # 0.106383 0.117021 0.117021
+{
+    $e->insert(10, "\x{4e4e}");
 
-#      set x {}
-#      .e xview moveto .1
-#      lappend x [lindex [.e xview] 0]
-#      .e xview moveto .11
-#      lappend x [lindex [.e xview] 0]
-#      .e xview moveto .12
-#      lappend x [lindex [.e xview] 0]
-#  } {0.0957447 0.106383 0.117021}
+    my @x;
+    $e->xviewMoveto(0.1);
+    push @x, ($e->xview)[0];
+    $e->xviewMoveto(0.11);
+    push @x, ($e->xview)[0];
+    $e->xviewMoveto(0.12);
+    push @x, ($e->xview)[0];
+
+    is_deeply([map { substr($_, 0, 7) } @x],["0.09574","0.10638","0.11702"], "xviewMoveto with unicode character");
+}
 
 eval { $e->gorp };
-ok($@ =~ /Can\'t locate(?: file)? auto\/Tk\/Entry\/gorp\.al/, 1, $@);
+like($@, qr/Can\'t locate(?: file)? auto\/Tk\/Entry\/gorp\.al/, "Invalid method");
 
 # The test below doesn't actually check anything directly, but if run
 # with Purify or some other memory-allocation-checking program it will
@@ -573,7 +563,7 @@ my $f = $mw->Frame(qw(-width 200 -height 50 -relief raised -bd 2))
 #eval { $e->destroy };
 $x = 12345;
 $e = $mw->Entry(-textvariable => \$x);
-ok($e->get, "12345");
+is($e->get, "12345", "-textvariable check");
 
 eval { $e->destroy };
 $x = "12345";
@@ -581,21 +571,21 @@ $e = $mw->Entry(-textvariable => \$x);
 my $y = "abcde";
 $e->configure(-textvariable => \$y);
 $x = 54321;
-ok($e->get, "abcde");
+is($e->get, "abcde");
 
 eval { $e->destroy };
 undef $x;
 $e = $mw->Entry;
 $e->configure(-textvariable => \$x);
 $e->insert(0, "Some text");
-ok($x, "Some text");
+is($x, "Some text");
 
 eval { $e->destroy };
 undef $x;
 $e = $mw->Entry;
 $e->insert(0, "Some text");
 $e->configure(-textvariable => \$x);
-#ok($x, "Some text"); # XXX does not work with Perl/Tk!
+#is($x, "Some text"); # XXX does not work with Perl/Tk!
 
 sub override {
     $x = 12345;
@@ -610,20 +600,20 @@ $e->configure(-textvariable => \$x);
 $e->insert('0', "Some text");
 my @result = ($x,$e->get);
 undef $x;
-ok($result[0], "12345");
-ok($result[1], "12345");
+is($result[0], "12345", "-textvariable with traceVariable");
+is($result[1], "12345");
 
 eval { $e->destroy };
 $e = $mw->Entry(-exportselection => 0)->pack;
 $e->insert(qw(end 0123456789));
 $sel->selectionFrom(0);
 $sel->selectionTo(10);
-ok($mw->SelectionGet, "This is so");
+is($mw->SelectionGet, "This is so");
 $e->selectionFrom(1);
 $e->selectionTo(5);
-ok($mw->SelectionGet, "This is so");
+is($mw->SelectionGet, "This is so");
 $e->configure(-exportselection => 1);
-ok($mw->SelectionGet, "1234");
+is($mw->SelectionGet, "1234");
 
 eval { $e->destroy };
 $e = $mw->Entry->pack;
@@ -632,16 +622,16 @@ $e->selectionFrom(1);
 $e->selectionTo(5);
 $e->configure(-exportselection => 0);
 eval { $mw->SelectionGet };
-ok($@ =~ /PRIMARY selection doesn\'t exist or form "(UTF8_)?STRING" not defined/, 1, $@);
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 5);
+like($@, qr/PRIMARY selection doesn\'t exist or form "(UTF8_)?STRING" not defined/);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 5);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-width 4 -xscrollcommand), \&scroll)->pack;
 $e->insert(qw(end 01234567890));
 $e->update;
 $e->configure(qw(-width 5));
-ok(join(",", map { substr($_, 0, 8) } @scrollInfo), "0,0.363636");
+is_deeply([map { substr($_, 0, 8) } @scrollInfo], [0,0.363636]);
 
 eval { $e->destroy };
 
@@ -650,25 +640,29 @@ $e->insert(end => "0123");
 $e->update;
 $e->configure(-font => $big);
 $e->update;
-skip($skip_wm_test, $e->geometry, qr/62x3\d\+0\+0/);
+SKIP: {
+    skip($skip_wm_test, 1)
+	if !$do_wm_test;
+    like($e->geometry, qr/62x3\d\+0\+0/, "Geometry check");
+}
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "raised")->pack;
 $e->insert(end => "0123");
 $e->update;
-ok($e->index('@10'), 0);
-ok($e->index('@11'), 0);
-ok($e->index('@12'), 1);
-ok($e->index('@13'), 1);
+is($e->index('@10'), 0, "index with raised relief");
+is($e->index('@11'), 0);
+is($e->index('@12'), 1);
+is($e->index('@13'), 1);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "flat")->pack;
 $e->insert(end => "0123");
 $e->update;
-ok($e->index('@10'), 0);
-ok($e->index('@11'), 0);
-ok($e->index('@12'), 1);
-ok($e->index('@13'), 1);
+is($e->index('@10'), 0, "index with flat relief");
+is($e->index('@11'), 0);
+is($e->index('@12'), 1);
+is($e->index('@13'), 1);
 
 # If "0" in selected font had 0 width, caused divide-by-zero error.
 
@@ -683,85 +677,90 @@ eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, -bd => 2, -relief => "raised", -width => 20, -highlightthickness => 3)->pack;
 $e->insert("end", "012\t45");
 $e->update;
-ok($e->index('@61'), 3);
-ok($e->index('@62'), 4);
+is($e->index('@61'), 3, "index with highlightthickness");
+is($e->index('@62'), 4);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 20 -justify center -highlightthickness 3))->pack;
 $e->insert("end", "012\t45");
 $e->update;
-ok($e->index('@96'), 3);
-ok($e->index('@97'), 4);
+is($e->index('@96'), 3, "index with center justify");
+is($e->index('@97'), 4);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 20 -justify right -highlightthickness 3))->pack;
 $e->insert("end", "012\t45");
 $e->update;
-ok($e->index('@131'), 3);
-ok($e->index('@132'), 4);
+is($e->index('@131'), 3, "index with right justify");
+is($e->index('@132'), 4);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 5))->pack;
 $e->insert(qw(end 01234567890));
 $e->update;
 $e->xview(6);
-ok($e->index('@0'), 6);
+is($e->index('@0'), 6);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 5))->pack;
 $e->insert(qw(end 01234567890));
 $e->update;
 $e->xview(7);
-ok($e->index('@0'), 6);
+is($e->index('@0'), 6);
 
 eval { $e->destroy };
 $e = $mw->Entry(-font => $fixed, qw(-bd 2 -relief raised -width 10))->pack;
 $e->insert(qw(end), "01234\t67890");
 $e->update;
 $e->xview(3);
-ok($e->index('@39'), 5);
-ok($e->index('@40'), 6);
+is($e->index('@39'), 5, "index with tabulator in entry");
+is($e->index('@40'), 6);
 
-eval { $e->destroy };
-$e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 5))->pack;
-$e->insert(qw(end), "01234567");
-$e->update;
-skip($skip_font_test, $e->reqwidth, 77);
-skip($skip_font_test, $e->reqheight, 39);
+SKIP: {
+    skip($skip_wm_test, 10)
+	if !$do_wm_test;
 
-eval { $e->destroy };
-$e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 0))->pack;
-$e->insert(qw(end), "01234567");
-$e->update;
-skip($skip_font_test, $e->reqwidth, 116);
-skip($skip_font_test, $e->reqheight, 39);
+    eval { $e->destroy };
+    $e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 5))->pack;
+    $e->insert(qw(end), "01234567");
+    $e->update;
+    is($e->reqwidth, 77, "Expected reqwidth");
+    is($e->reqheight, 39, "Expected reqheight");
 
-eval { $e->destroy };
-$e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 0 -highlightthickness 2))->pack;
-$e->update;
-skip($skip_font_test, $e->reqwidth, 25);
-skip($skip_font_test, $e->reqheight, 39);
+    eval { $e->destroy };
+    $e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 0))->pack;
+    $e->insert(qw(end), "01234567");
+    $e->update;
+    is($e->reqwidth, 116);
+    is($e->reqheight, 39);
 
-eval { $e->destroy };
-$e = $mw->Entry(qw(-bd 1 -relief raised -width 0 -show .))->pack;
-$e->insert(0, "12345");
-$e->update;
-skip($skip_font_test, $e->reqwidth, 23);
-$e->configure(-show => 'X');
-skip($skip_font_test, $e->reqwidth, 53);
-#$e->configure(-show => '');
-#skip($skip_font_test, $e->reqwidth, 43);
+    eval { $e->destroy };
+    $e = $mw->Entry(-font => $big, qw(-bd 3 -relief raised -width 0 -highlightthickness 2))->pack;
+    $e->update;
+    is($e->reqwidth, 25);
+    is($e->reqheight, 39);
 
-eval { $e->destroy };
-$e = $mw->Entry(qw(-bd 1 -relief raised -width 0 -show .),
-		-font => 'helvetica 12')->pack;
-$e->insert(0, "12345");
-$e->update;
-skip($skip_font_test, $e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "."));
-$e->configure(-show => 'X');
-skip($skip_font_test, $e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "X"));
-#$e->configure(-show => '');
-#ok($e->reqwidth, 8+$mw->fontMeasure("helvetica 12", "12345"));
+    eval { $e->destroy };
+    $e = $mw->Entry(qw(-bd 1 -relief raised -width 0 -show .))->pack;
+    $e->insert(0, "12345");
+    $e->update;
+    is($e->reqwidth, 23);
+    $e->configure(-show => 'X');
+    is($e->reqwidth, 53);
+    #$e->configure(-show => '');
+    #is($e->reqwidth, 43);
+
+    eval { $e->destroy };
+    $e = $mw->Entry(qw(-bd 1 -relief raised -width 0 -show .),
+		    -font => 'helvetica 12')->pack;
+    $e->insert(0, "12345");
+    $e->update;
+    is($e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "."));
+    $e->configure(-show => 'X');
+    is($e->reqwidth, 8+5*$mw->fontMeasure("helvetica 12", "X"));
+    #$e->configure(-show => '');
+    #is($e->reqwidth, 8+$mw->fontMeasure("helvetica 12", "12345"));
+}
 
 eval { $e->destroy };
 my $contents;
@@ -772,120 +771,120 @@ $e->delete(0, "end");
 $e->insert(0, "abcde");
 $e->insert(2, "XXX");
 $e->update;
-ok($e->get, "abXXXcde");
-ok($contents, "abXXXcde");
-ok(join(" ", @scrollInfo), "0 1");
+is($e->get, "abXXXcde");
+is($contents, "abXXXcde");
+is(join(" ", @scrollInfo), "0 1", "Result collected in -xscrollcommand callback");
 
 $e->delete(0, "end");
 $e->insert(0, "abcde");
 $e->insert(500, "XXX");
 $e->update;
-ok($e->get, "abcdeXXX");
-ok($contents, "abcdeXXX");
-ok(join(" ", @scrollInfo), "0 1");
+is($e->get, "abcdeXXX");
+is($contents, "abcdeXXX");
+is(join(" ", @scrollInfo), "0 1");
 
 $e->delete(0, "end");
 $e->insert(0, "0123456789");
 $e->selectionFrom(2);
 $e->selectionTo(6);
 $e->insert(2, "XXX");
-ok($e->index("sel.first"), 5);
-ok($e->index("sel.last"), 9);
+is($e->index("sel.first"), 5);
+is($e->index("sel.last"), 9);
 $e->selectionTo(8);
-ok($e->index("sel.first"), 5);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 5);
+is($e->index("sel.last"), 8);
 
 $e->delete(0, "end");
 $e->insert(0, "0123456789");
 $e->selectionFrom(2);
 $e->selectionTo(6);
 $e->insert(3, "XXX");
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 9);
+is($e->index("sel.first"), 2);
+is($e->index("sel.last"), 9);
 $e->selectionTo(8);
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 2);
+is($e->index("sel.last"), 8);
 
 $e->delete(0, "end");
 $e->insert(0, "0123456789");
 $e->selectionFrom(2);
 $e->selectionTo(6);
 $e->insert(5, "XXX");
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 9);
+is($e->index("sel.first"), 2);
+is($e->index("sel.last"), 9);
 $e->selectionTo(8);
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 2);
+is($e->index("sel.last"), 8);
 
 $e->delete(0, "end");
 $e->insert(0, "0123456789");
 $e->selectionFrom(2);
 $e->selectionTo(6);
 $e->insert(6, "XXX");
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 6);
+is($e->index("sel.first"), 2);
+is($e->index("sel.last"), 6);
 $e->selectionTo(5);
-ok($e->index("sel.first"), 2);
-ok($e->index("sel.last"), 5);
+is($e->index("sel.first"), 2);
+is($e->index("sel.last"), 5);
 
 $e->delete(0, "end");
 $e->insert(0, "0123456789");
 $e->icursor(4);
 $e->insert(4, "XXX");
-ok($e->index("insert"), 7);
+is($e->index("insert"), 7);
 
 $e->delete(0, "end");
 $e->insert(0, "0123456789");
 $e->icursor(4);
 $e->insert(5, "XXX");
-ok($e->index("insert"), 4);
+is($e->index("insert"), 4);
 
 $e->delete(0, "end");
 $e->insert(0, "This is a very long string");
 $e->update;
 $e->xview(4);
 $e->insert(qw(3 XXX));
-ok($e->index('@0'), 7);
+is($e->index('@0'), 7);
 
 $e->delete(0, "end");
 $e->insert(0, "This is a very long string");
 $e->update;
 $e->xview(4);
 $e->insert(qw(4 XXX));
-ok($e->index('@0'), 4);
+is($e->index('@0'), 4);
 
 $e->delete(0, "end");
 $e->insert(0, "xyzzy");
 $e->update;
 $e->insert(2, "00");
-## XXX ok($e->reqwidth, 59);
+## XXX is($e->reqwidth, 59);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 abcde));
 $e->delete(qw(2 4));
 $e->update;
-ok($e->get, "abe");
-ok($contents, "abe");
-ok($scrollInfo[0], 0);
-ok($scrollInfo[1], 1);
+is($e->get, "abe");
+is($contents, "abe");
+is($scrollInfo[0], 0);
+is($scrollInfo[1], 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 abcde));
 $e->delete(qw(-2 2));
 $e->update;
-ok($e->get, "cde");
-ok($contents, "cde");
-ok($scrollInfo[0], 0);
-ok($scrollInfo[1], 1);
+is($e->get, "cde");
+is($contents, "cde");
+is($scrollInfo[0], 0);
+is($scrollInfo[1], 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 abcde));
 $e->delete(qw(3 1000));
 $e->update;
-ok($e->get, "abc");
-ok($contents, "abc");
-ok($scrollInfo[0], 0);
-ok($scrollInfo[1], 1);
+is($e->get, "abc");
+is($contents, "abc");
+is($scrollInfo[0], 0);
+is($scrollInfo[1], 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -893,11 +892,11 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 3));
 $e->update;
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 6);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 6);
 $e->selectionTo(5);
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 5);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 5);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -905,11 +904,11 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 4));
 $e->update;
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 5);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 5);
 $e->selectionTo(4);
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 4);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 4);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -917,11 +916,11 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 7));
 $e->update;
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 2);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 2);
 $e->selectionTo(5);
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 5);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 5);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -929,7 +928,7 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(1 8));
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in widget/, 1, $@);
+like($@, qr/selection isn\'t in widget/, "Expected error, no selection");
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -937,11 +936,11 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(3 7));
 $e->update;
-ok($e->index("sel.first"), 3);
-ok($e->index("sel.last"), 4);
+is($e->index("sel.first"), 3);
+is($e->index("sel.last"), 4);
 $e->selectionTo(8);
-ok($e->index("sel.first"), 3);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 3);
+is($e->index("sel.last"), 8);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -949,7 +948,7 @@ $e->selection(qw(from 3));
 $e->selection(qw(to 8));
 $e->delete(qw(3 8));
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in widget/, 1, $@);
+like($@, qr/selection isn\'t in widget/);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -957,11 +956,11 @@ $e->selection(qw(from 8));
 $e->selection(qw(to 3));
 $e->delete(qw(5 8));
 $e->update;
-ok($e->index("sel.first"), 3);
-ok($e->index("sel.last"), 5);
+is($e->index("sel.first"), 3);
+is($e->index("sel.last"), 5);
 $e->selectionTo(8);
-ok($e->index("sel.first"), 5);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 5);
+is($e->index("sel.last"), 8);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
@@ -969,47 +968,47 @@ $e->selection(qw(from 8));
 $e->selection(qw(to 3));
 $e->delete(qw(8 10));
 $e->update;
-ok($e->index("sel.first"), 3);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 3);
+is($e->index("sel.last"), 8);
 $e->selectionTo(4);
-ok($e->index("sel.first"), 4);
-ok($e->index("sel.last"), 8);
+is($e->index("sel.first"), 4);
+is($e->index("sel.last"), 8);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
 $e->icursor(4);
 $e->delete(qw(1 4));
-ok($e->index("insert"), 1);
+is($e->index("insert"), 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
 $e->icursor(4);
 $e->delete(qw(1 5));
-ok($e->index("insert"), 1);
+is($e->index("insert"), 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcde));
 $e->icursor(4);
 $e->delete(qw(4 6));
-ok($e->index("insert"), 4);
+is($e->index("insert"), 4);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0), "This is a very long string");
 $e->xview(4);
 $e->delete(qw(1 4));
-ok($e->index('@0'), 1);
+is($e->index('@0'), 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0), "This is a very long string");
 $e->xview(4);
 $e->delete(qw(1 5));
-ok($e->index("\@0"), 1);
+is($e->index("\@0"), 1);
 
 $e->delete(qw(0 end));
 $e->insert(qw(0), "This is a very long string");
 $e->xview(4);
 $e->delete(qw(4 6));
-ok($e->index("\@0"), 4);
+is($e->index("\@0"), 4);
 
 $e->configure(qw(-width 0));
 
@@ -1017,7 +1016,7 @@ $e->delete(qw(0 end));
 $e->insert(0, "xyzzy");
 $e->update;
 $e->delete(qw(2 4));
-ok($e->reqwidth, 31);
+is($e->reqwidth, 31);
 
 eval { $e->destroy };
 
@@ -1028,8 +1027,8 @@ undef $x;
 $mw->traceVariable(\$x, 'w', \&_override2);
 $e = $mw->Entry(-textvariable => \$x);
 $e->insert(0, "foo");
-ok($x, 12345);
-ok($e->get, 12345);
+is($x, 12345);
+is($e->get, 12345);
 undef $x;
 
 Tk::catch {$e->destroy};
@@ -1042,8 +1041,8 @@ $e->configure(-textvariable => \$x);
 $e->update;
 $e->configure(-textvariable => \$y);
 $e->update;
-ok($e->get, "ab");
-ok($e->reqwidth, 24);
+is($e->get, "ab");
+is($e->reqwidth, 24);
 
 $mw->traceVdelete(\$x); # XXX why?
 
@@ -1053,23 +1052,23 @@ $e->insert(0, "abcdefghjklmnopqrstu");
 $e->selection(qw(range 4 10));
 $x = "a";
 eval { $e->index("sel.first") };
-ok($@ =~ /selection isn\'t in widget/, 1, $@);
+like($@, qr/selection isn\'t in widget/);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-textvariable => \$x);
 $e->insert(0, "abcdefghjklmnopqrstu");
 $e->selection(qw(range 4 10));
 $x = "abcdefg";
-ok($e->index("sel.first"), 4);
-ok($e->index("sel.last"), 7);
+is($e->index("sel.first"), 4);
+is($e->index("sel.last"), 7);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-textvariable => \$x);
 $e->insert(0, "abcdefghjklmnopqrstu");
 $e->selection(qw(range 4 10));
 $x = "abcdefghijklmn";
-ok($e->index("sel.first"), 4);
-ok($e->index("sel.last"), 10);
+is($e->index("sel.first"), 4);
+is($e->index("sel.last"), 10);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-textvariable => \$x)->pack;
@@ -1078,7 +1077,7 @@ $e->xview(10);
 $e->update;
 $x = "abcdefg";
 $e->update;
-ok($e->index('@0'), 0);
+is($e->index('@0'), 0);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-font => $fixed, -width => 10, -textvariable => \$x)->pack;
@@ -1087,21 +1086,21 @@ $e->xview(10);
 $e->update;
 $x = "1234567890123456789012";
 $e->update;
-ok($e->index('@0'), 10);
+is($e->index('@0'), 10);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-font => $fixed, -width => 10, -textvariable => \$x)->pack;
 $e->insert(0, "abcdefghjklmnopqrstu");
 $e->icursor(5);
 $x = "123";
-ok($e->index("insert"), 3);
+is($e->index("insert"), 3);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(-font => $fixed, -width => 10, -textvariable => \$x)->pack;
 $e->insert(0, "abcdefghjklmnopqrstuvwxyz");
 $e->icursor(5);
 $x = "123456";
-ok($e->index("insert"), 5);
+is($e->index("insert"), 5);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry;
@@ -1111,45 +1110,45 @@ $mw->update;
 
 $_->destroy for ($mw->children);
 my $e1 = $mw->Entry(-fg => '#112233');
-ok(($mw->children)[0], $e1);
+is(($mw->children)[0], $e1);
 $e1->destroy;
-ok(scalar($mw->children), undef); # XXX why not 0?
+is(scalar($mw->children), undef); # XXX why not 0?
 
 $e = $mw->Entry(-font => $fixed, qw(-width 5 -bd 2 -relief sunken))->pack;
 $e->insert(qw(0 012345678901234567890));
 $e->xview(4);
 $e->update;
-ok($e->index("end"), 21);
+is($e->index("end"), 21);
 
 eval { $e->index("abogus") };
-ok($@ =~ /bad entry index "abogus"/, 1, $@);
+like($@, qr/bad entry index "abogus"/);
 
 $e->selection(qw(from 1));
 $e->selection(qw(to 6));
-ok($e->index(qw(anchor)), 1);
+is($e->index(qw(anchor)), 1);
 
 $e->selection(qw(from 4));
 $e->selection(qw(to 1));
-ok($e->index(qw(anchor)), 4);
+is($e->index(qw(anchor)), 4);
 
 $e->selection(qw(from 3));
 $e->selection(qw(to 15));
 $e->selection(qw(adjust 4));
-ok($e->index(qw(anchor)), 15);
+is($e->index(qw(anchor)), 15);
 
 eval { $e->index("ebogus") };
-ok($@ =~ /bad entry index "ebogus"/, 1, $@);
+like($@, qr/bad entry index "ebogus"/);
 
 $e->icursor(2);
-ok($e->index('insert'), 2);
+is($e->index('insert'), 2);
 
 eval { $e->index("ibogus") };
-ok($@ =~ /bad entry index "ibogus"/, 1, $@);
+like($@, qr/bad entry index "ibogus"/);
 
 $e->selectionFrom(1);
 $e->selectionTo(6);
-ok($e->index("sel.first"), 1);
-ok($e->index("sel.last"), 6);
+is($e->index("sel.first"), 1);
+is($e->index("sel.last"), 6);
 
 $mw->SelectionClear($e);
 
@@ -1158,49 +1157,54 @@ if ($^O ne 'MSWin32') {
     # selection range is reset.
 
     eval { $e->index("sel.first") };
-    skip("Test only for MSWin32", $@ =~ /selection isn\'t in widget/, 1, $@) for (1..2);
+    like($@, qr/selection isn\'t in widget/);
+    pass("Dummy to align number of tests with MSWin32");
 
 } else {
     # On mac and pc, when selection is cleared, entry widget remembers
     # last selected range.  When selection ownership is restored to
     # entry, the old range will be rehighlighted.
 
-    ok($e->getSelected, '12345');
-    ok($e->index("sel.first"), 1);
+    is($e->getSelected, '12345');
+    is($e->index("sel.first"), 1);
 }
 
 if ($^O ne 'MSWin32') {
     eval { $e->index("sbogus") };
-    ok($@ =~ /selection isn\'t in widget/, 1, $@);
+    like($@, qr/selection isn\'t in widget/);
 } else {
     eval { $e->index("sbogus") };
-    ok($@ =~ /bad entry index "sbogus"/, 1, $@);
+    like($@, qr/bad entry index "sbogus"/);
 }
 
 eval { $e->index('@xyz') };
-ok($@ =~ /bad entry index "\@xyz"/, 1, $@);
+like($@, qr/bad entry index "\@xyz"/);
 
-ok($e->index('@4'), 4);
-ok($e->index('@11'), 4);
-ok($e->index('@12'), 5);
-ok($e->index('@' . ($e->width-6)), 8);
-ok($e->index('@' . ($e->width-5)), 9);
-ok($e->index('@1000'), 9);
+is($e->index('@4'), 4);
+is($e->index('@11'), 4);
+is($e->index('@12'), 5);
+is($e->index('@' . ($e->width-6)), 8);
+is($e->index('@' . ($e->width-5)), 9);
+is($e->index('@1000'), 9);
 
 eval { $e->index('1xyz') };
-ok($@ =~ /bad entry index "1xyz"/, 1, $@);
+like($@, qr/bad entry index "1xyz"/);
 
-ok($e->index(-10), 0);
-ok($e->index(12), 12);
-ok($e->index(49), 21);
+is($e->index(-10), 0);
+is($e->index(12), 12);
+is($e->index(49), 21);
 
 Tk::catch { $e->destroy };
 $e = $mw->Entry(-show => ".");
 $e->insert(qw(0 XXXYZZY));
 $e->pack;
 $e->update;
-skip($skip_font_test, $e->index('@7'), 0);
-skip($skip_font_test, $e->index('@8'), 1);
+SKIP: {
+    skip($skip_font_test, 2)
+	if !$do_font_test;
+    is($e->index('@7'), 0);
+    is($e->index('@8'), 1);
+}
 
 # XXX Still need to write tests for EntryScanTo and EntrySelectTo.
 
@@ -1214,32 +1218,32 @@ $e = $mw->Entry;
 $e->insert(end => "This is a test string");
 $e->selection(qw(from 1));
 $e->selection(qw(to 18));
-ok($mw->SelectionGet, "his is a test str");
+is($mw->SelectionGet, "his is a test str");
 
 Tk::catch { $e->destroy };
 $e = $mw->Entry(-show => "*");
 $e->insert(end => "This is a test string");
 $e->selection(qw(from 1));
 $e->selection(qw(to 18));
-ok($mw->SelectionGet, "*****************");
+is($mw->SelectionGet, "*****************");
 
 Tk::catch { $e->destroy };
 $e = $mw->Entry;
 $e->insert("end", $x);
 $e->selectionFrom(0);
 $e->selectionTo("end");
-ok($mw->SelectionGet, $x);
+is($mw->SelectionGet, $x);
 
 Tk::catch { $e->destroy };
 $e = $mw->Entry;
 $e->insert(0, "Text");
 $e->selectionFrom(0);
 $e->selectionTo(4);
-ok($mw->SelectionGet, "Text");
+is($mw->SelectionGet, "Text");
 $mw->SelectionClear;
 $e->selectionFrom(0);
 $e->selectionTo(4);
-ok($mw->SelectionGet, "Text");
+is($mw->SelectionGet, "Text");
 
 # No tests for EventuallyRedraw.
 
@@ -1249,7 +1253,11 @@ $e->update;
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 .............................));
-skip($skip_font_test || $skip_wm_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
+SKIP: {
+    skip($skip_wm_font_test, 1)
+	if !$do_font_test || !$do_wm_test;
+    is_deeply([map { substr($_, 0, 8) } $e->xview], [0, 0.827586]);
+}
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
@@ -1258,16 +1266,20 @@ my $Xw = join(" ", map { substr($_, 0, 8) } $e->xview);
 $e->configure(-show => 'X');
 $e->delete(qw(0 end));
 $e->insert(qw(0 .............................));
-ok(join(" ", map { substr($_, 0, 8) } $e->xview), $Xw);
+is(join(" ", map { substr($_, 0, 8) } $e->xview), $Xw);
 
 $e->configure(-show => '.');
 $e->delete(qw(0 end));
 $e->insert(qw(0 XXXXXXXXXXXXXXXXXXXXXXXXXXXXX));
-skip($skip_font_test || $skip_wm_test, join(" ", map { substr($_, 0, 8) } $e->xview), "0 0.827586");
+SKIP: {
+    skip($skip_wm_font_test, 1)
+	if !$do_font_test || !$do_wm_test;
+    is_deeply([map { substr($_, 0, 8) } $e->xview], [0, 0.827586]);
+}
 
 $e->configure(-show => "");
 $e->delete(qw(0 end));
-ok(($e->xview)[$_], $_) for (0 .. 1);
+is(($e->xview)[$_], $_) for (0 .. 1);
 
 Tk::catch {$e->destroy};
 $e = $mw->Entry(qw(-width 10 -xscrollcommand), \&scroll, -font => $fixed)->pack;
@@ -1276,19 +1288,27 @@ $e->update;
 $e->delete(qw(0 end));
 $e->insert(qw(0 123));
 $e->update;
-ok(join(" ",@scrollInfo),"0 1");
+is(join(" ",@scrollInfo),"0 1");
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 0123456789abcdef));
 $e->xview(3);
 $e->update;
-skip($skip_font_test || $skip_wm_test, join(" ",@scrollInfo),"0.1875 0.8125");
+SKIP: {
+    skip($skip_wm_font_test, 1)
+	if !$do_font_test || !$do_wm_test;
+    is_deeply([@scrollInfo],[0.1875, 0.8125]);
+}
 
 $e->delete(qw(0 end));
 $e->insert(qw(0 abcdefghijklmnopqrs));
 $e->xview(6);
 $e->update;
-skip($skip_font_test || $skip_wm_test, join(" ",map { sprintf "%8f", $_ } @scrollInfo),"0.315789 0.842105");
+SKIP: {
+    skip($skip_wm_font_test, 1)
+	if !$do_font_test || !$do_wm_test;
+    is_deeply([map { sprintf "%8f", $_ } @scrollInfo],[0.315789, 0.842105]);
+}
 
 Tk::catch {$e->destroy};
 my $err;
@@ -1297,7 +1317,7 @@ eval {
     $e = $mw->Entry(qw(-width 5 -xscrollcommand thisisnotacommand))->pack;
     $e->update;
 };
-ok($err =~ /Undefined subroutine &main::thisisnotacommand/);
+like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
 
 #      pack .e
 #      update
@@ -1323,7 +1343,7 @@ ok($err =~ /Undefined subroutine &main::thisisnotacommand/);
 # Additional tests
 
 $e->validate; # check whether validate method is defined
-ok(1);
+pass("validate method seems to be defined");
 
 __END__
 
