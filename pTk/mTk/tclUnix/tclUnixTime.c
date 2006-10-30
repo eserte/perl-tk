@@ -18,6 +18,8 @@
 
 #ifdef __EMX__
 #   include <sys/time.h>
+#else
+#   include <time.h>
 #endif
 
 #if 0
