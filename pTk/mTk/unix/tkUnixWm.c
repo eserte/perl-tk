@@ -363,7 +363,8 @@ static void		UpdateCommand _ANSI_ARGS_((TkWindow *winPtr));
 static void		UpdateGeometryInfo _ANSI_ARGS_((
 			    ClientData clientData));
 static void		UpdateHints _ANSI_ARGS_((TkWindow *winPtr));
-static void		UpdateSizeHints _ANSI_ARGS_((TkWindow *winPtr));
+static void		UpdateSizeHints _ANSI_ARGS_((TkWindow *winPtr,
+			    int newWidth, int newHeight));
 static void		UpdateVRootGeometry _ANSI_ARGS_((WmInfo *wmPtr));
 static void		UpdateWmProtocols _ANSI_ARGS_((WmInfo *wmPtr));
 static void		WaitForConfigureNotify _ANSI_ARGS_((TkWindow *winPtr,
@@ -4197,7 +4198,7 @@ UpdateGeometryInfo(clientData)
 	wmPtr->flags |= WM_UPDATE_SIZE_HINTS;
     }
     if (wmPtr->flags & WM_UPDATE_SIZE_HINTS) {
-	UpdateSizeHints(winPtr);
+	UpdateSizeHints(winPtr, width, height);
     }
 
     /*
@@ -4331,8 +4332,10 @@ UpdateGeometryInfo(clientData)
  */
 
 static void
-UpdateSizeHints(winPtr)
+UpdateSizeHints(winPtr, newWidth, newHeight)
     TkWindow *winPtr;
+    int newWidth;
+    int newHeight;
 {
     register WmInfo *wmPtr = winPtr->wmInfoPtr;
     XSizeHints *hintsPtr;
@@ -4394,20 +4397,13 @@ UpdateSizeHints(winPtr)
      */
 
     if (wmPtr->flags & WM_WIDTH_NOT_RESIZABLE) {
-	if (wmPtr->width >= 0) {
-	    hintsPtr->min_width = wmPtr->width;
-	} else {
-	    hintsPtr->min_width = winPtr->reqWidth;
-	}
-	hintsPtr->max_width = hintsPtr->min_width;
+	hintsPtr->max_width = hintsPtr->min_width = newWidth;
+	hintsPtr->flags |= PMaxSize;
     }
     if (wmPtr->flags & WM_HEIGHT_NOT_RESIZABLE) {
-	if (wmPtr->height >= 0) {
-	    hintsPtr->min_height = wmPtr->height;
-	} else {
-	    hintsPtr->min_height = winPtr->reqHeight + wmPtr->menuHeight;
-	}
-	hintsPtr->max_height = hintsPtr->min_height;
+	hintsPtr->max_height = hintsPtr->min_height =
+		newHeight + wmPtr->menuHeight;
+	hintsPtr->flags |= PMaxSize;
     }
 
     XSetWMNormalHints(winPtr->display, wmPtr->wrapperPtr->window, hintsPtr);
