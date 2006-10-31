@@ -62,7 +62,7 @@ my $file = $menubar->cascade(qw/-label File -underline 0 -menuitems/ =>
         ], # end cascade menuitems
       ], # end view cascade
       '',
-      [command    => '~Quit', -command => [\&exit]],
+      [command    => '~Quit', -command => [\&exit], -accelerator => 'Ctrl-Q'],
     ]);
 
 my $help = $menubar->cascade(qw/-label Help -underline 0 -menuitems/ =>
@@ -84,6 +84,8 @@ my $T = $MW->Scrolled('ROText',
 )->grid(qw/-sticky nsew/);
 $MW->gridRowconfigure(   0, -weight => 1); # allow expansion in both ...
 $MW->gridColumnconfigure(0, -weight => 1); # ... X and Y dimensions
+
+$MW->bind('<Control-q>' => \&exit);
 
 my $STATUS_VAR;
 my $status = $MW->Label(-textvariable => \$STATUS_VAR, qw/-anchor w/);
@@ -308,7 +310,7 @@ sub build_about_dialog {
         -default_button => 'OK',
         -buttons        => ['OK'],
     );
-    my $df = $dialog->add( 'Labelframe', -text => '  2004 - Feb - 11  ' );
+    my $df = $dialog->add( 'Labelframe', -text => '  2006 - Oct - 31  ' );
     $df->pack( qw/ -fill both -expand 1 / );
     my( $change ) = $Tk::CHANGE =~ /Change:\s+(.*)/;
     my( $tk_date ) = scalar localtime( ( stat $Tk::library )[9] );
