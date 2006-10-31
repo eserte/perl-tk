@@ -383,6 +383,14 @@ ConfigureWinItem(interp, canvas, itemPtr, objc, objv, flags)
 		    (ClientData) winItemPtr);
 	}
     }
+    if ((winItemPtr->tkwin != NULL)
+	    && (itemPtr->state == TK_STATE_HIDDEN)) {
+	if (canvasTkwin == Tk_Parent(winItemPtr->tkwin)) {
+	    Tk_UnmapWindow(winItemPtr->tkwin);
+	} else {
+	    Tk_UnmaintainGeometry(winItemPtr->tkwin, canvasTkwin);
+	}
+    }
 
     ComputeWindowBbox(canvas, winItemPtr);
 
