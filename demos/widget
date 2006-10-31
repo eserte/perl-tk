@@ -270,6 +270,7 @@ while ($_ = shift @dirent) {
     my($name) = /^(.*)\.pl$/;
     $_ = <C>;
     my($title) = /^#\s*(.*)$/;
+    $title =~ s{\r}{}g; # strip DOS newlines
     $DEMO_DESCRIPTION{$name} = $title;
     close C;
     $T->insert('end', ++$i . ". $title\n", ['demo', "demo-$name"]);
