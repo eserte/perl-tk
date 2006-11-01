@@ -72,14 +72,19 @@ $sel->insert("end", "This is some sample text");
 # Font names
 
 my $big   = $Xft ? '{Adobe Helvetica} -24' : "-adobe-helvetica-medium-r-normal--24-240-75-75-p-*-iso8859-1";
-my $fixed = $Xft ? '{Adobe Courier} -12' : "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
+## Always use the X11 font, even with Xft, otherwise the measurements would
+## be wrong.
+#my $fixed = $Xft ? '{Adobe Courier} -12' : "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
+my $fixed = "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
 
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
 
 $mw->option("add", "*Entry.borderWidth", 2);
 $mw->option("add", "*Entry.highlightThickness", 2);
-$mw->option("add", "*Entry.font", $Xft ? '{Adobe Helvetica} -12' : "Helvetica -12");
+## Again, prefer the X11 font.
+#$mw->option("add", "*Entry.font", $Xft ? '{Adobe Helvetica} -12' : "Helvetica -12");
+$mw->option("add", "*Entry.font", "Helvetica -12");
 
 my $e = $mw->Entry(qw(-bd 2 -relief sunken))->pack;
 $mw->update;

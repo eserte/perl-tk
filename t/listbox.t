@@ -52,15 +52,20 @@ my $partial_lb;
 my $mw = new MainWindow;
 $mw->geometry('+10+10');
 $mw->raise;
-my $fixed = $Xft ? '{Adobe Courier} -12' : 'Courier -12';
+## Always use the X11 font, even with Xft, otherwise the measurements would
+## be wrong.
+#my $fixed = $Xft ? '{Adobe Courier} -12' : 'Courier -12';
+my $fixed = "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
 ok(Tk::Exists($mw), 1);
 
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
 $mw->optionAdd("*$Listbox.borderWidth",2);
 $mw->optionAdd("*$Listbox.highlightThickness",2);
-$mw->optionAdd("*$Listbox.font",
-                $Xft ? '{Adobe Helvetica} -12 bold' :'Helvetica -12 bold');
+## Again, prefer the X11 font.
+#$mw->optionAdd("*$Listbox.font",
+#                $Xft ? '{Adobe Helvetica} -12 bold' :'Helvetica -12 bold');
+$mw->optionAdd("*$Listbox.font", 'Helvetica -12 bold');
 
 my $lb = $mw->$Listbox->pack;
 ok(Tk::Exists($lb), 1);
@@ -89,24 +94,22 @@ if (!$Xft) { # XXX Is this condition necessary?
 my $skip_fixed_font_test;
 {
     my $fixed_lb = $mw->$Listbox(-font => $fixed);
-    if (!$Xft) { # XXX Is this condition necessary?
-	my %fa = $mw->fontActual($fixed_lb->cget(-font));
-	my %expected = (
-			"-weight" => "normal",
-			"-underline" => 0,
-			"-family" => "courier",
-			"-slant" => "roman",
-			"-size" => -12,
-			"-overstrike" => 0,
-		       );
-	while(my($k,$v) = each %expected) {
-	    if ($v ne $fa{$k}) {
-		$skip_fixed_font_test = "font-related tests (fixed font)";
-		last;
-	    }
+    my %fa = $mw->fontActual($fixed_lb->cget(-font));
+    my %expected = (
+		    "-weight" => "normal",
+		    "-underline" => 0,
+		    "-family" => "courier", # with $Xft, this would be "Courier"
+		    "-slant" => "roman",
+		    "-size" => -12,
+		    "-overstrike" => 0,
+		   );
+    while(my($k,$v) = each %expected) {
+	if ($v ne $fa{$k}) {
+	    $skip_fixed_font_test = "font-related tests (fixed font)";
+	    last;
 	}
-	$fixed_lb->destroy;
     }
+    $fixed_lb->destroy;
 }
 
 resetGridInfo();
