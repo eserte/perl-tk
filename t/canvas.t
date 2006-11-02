@@ -46,6 +46,10 @@ isa_ok($c, "Tk::Widget");
 $c->pack;
 $c->update;
 
+sub deleteWindows () {
+    eval { $_->destroy } for $mw->children;
+}
+
 use constant SKIP_CGET    => 5;
 use constant SKIP_CONF    => 6;
 use constant SKIP_ERROR   => 7;
@@ -101,151 +105,139 @@ foreach my $test (@tests) {
 	$c->configure($name, ($c->configure($name))[3]);
     }
 }
-__END__
-} {
-    lassign $testinfo name goodValue goodResult badValue badResult
-    test $testname-good "configuration options: good value for $name" {
-	.c configure $name $goodValue
-	lindex [.c configure $name] 4
-    } $goodResult
-    incr i
-    if {$badValue ne ""} {
-	test $testname-bad "configuration options: bad value for $name" -body {
-	    .c configure $name $badValue
-	} -returnCodes error -result $badResult
-    }
-    .c configure $name [lindex [.c configure $name] 3]
-    incr i
+
+eval { $c->configure(-gorp => "foo") };
+like($@, qr{Bad option `-gorp'}, "configure throws error on bad option");
+$c->create("rect",10,10,100,100);
+eval { $c->configure(-gorp => "foo") };
+like($@, qr{Bad option `-gorp'}, "configure throws error on bad option");
+
+eval { $c->destroy };
+$c = $mw->Canvas(qw(-width 60 -height 40),
+		 -scrollregion => [qw(0 0 200 150)],
+		 -bd => 0,
+		 -highlightthickness => 0,
+		)->pack;
+$c->update;
+
+{
+    my $i = $c->createRectangle(10,10,100,100);
+    eval { $c->bind($i, "<a>") };
+    is($@, "", "bind method");
 }
-test canvas-1.25 {configure throws error on bad option} {
-    set res [list [catch {.c configure -gorp foo}]]
-    .c create rect 10 10 100 100
-    lappend res [catch {.c configure -gorp foo}]
-    set res
-} [list 1 1]
 
-catch {destroy .c}
-canvas .c -width 60 -height 40 -scrollregion {0 0 200 150} -bd 0 \
-	-highlightthickness 0
-pack .c
-update
+{
+    my $i = $c->create('rect',10,10,100,100);
+    eval { $c->bind($i, "<") };
+    like($@, qr{no event type or button # or keysym}, "bind method with failure");
+}
 
-test canvas-2.1 {CanvasWidgetCmd, bind option} {
-    set i [.c create rect 10 10 100 100]
-    list [catch {.c bind $i <a>} msg] $msg
-} {0 {}}
-test canvas-2.2 {CanvasWidgetCmd, bind option} {
-    set i [.c create rect 10 10 100 100]
-    list [catch {.c bind $i <} msg] $msg
-} {1 {no event type or button # or keysym}}
-test canvas-2.3 {CanvasWidgetCmd, xview option} {
-    .c configure -xscrollincrement 40 -yscrollincrement 5
-    .c xview moveto 0
-    update
-    set x [list [.c xview]]
-    .c xview scroll 2 units
-    update
-    lappend x [.c xview]
-} {{0.0 0.3} {0.4 0.7}}
-test canvas-2.4 {CanvasWidgetCmd, xview option} {nonPortable} {
+{
+    $c->configure(-xscrollincrement => 40, -yscrollincrement => 5);
+    $c->xview('moveto', 0);
+    $c->update;
+    is_deeply([$c->xview], [0, 0.3], "xview method");
+    $c->xview('scroll', 2, 'units');
+    $c->update;
+    is_deeply([$c->xview], [0.4, 0.7], "xview method after scroll");
+}
+
+{
+    # Tcl/Tk comment:
     # This test gives slightly different results on platforms such
     # as NetBSD.  I don't know why...
-    .c configure -xscrollincrement 0 -yscrollincrement 5
-    .c xview moveto 0.6
-    update
-    set x [list [.c xview]]
-    .c xview scroll 2 units
-    update
-    lappend x [.c xview]
-} {{0.6 0.9} {0.66 0.96}}
+    # Perl/Tk comment:
+    # Everything's ok on a FreeBSD machine.
+    $c->configure(-xscrollincrement => 0, -yscrollincrement => 5);
+    $c->xviewMoveto(0.6);
+    $c->update;
+    is_deeply([$c->xview], [0.6, 0.9], "xview method (2)");
+    $c->xviewScroll(2, 'units');
+    $c->update;
+    is_deeply([$c->xview], [0.66, 0.96], "xview method after scroll (2)");
+}
 
-catch {destroy .c}
-canvas .c -width 60 -height 40 -scrollregion {0 0 200 80} \
-	-borderwidth 0 -highlightthickness 0
-pack .c
-update
-test canvas-3.1 {CanvasWidgetCmd, yview option} {
-    .c configure -xscrollincrement 40 -yscrollincrement 5
-    .c yview moveto 0
-    update
-    set x [list [.c yview]]
-    .c yview scroll 3 units
-    update
-    lappend x [.c yview]
-} {{0.0 0.5} {0.1875 0.6875}}
-test canvas-3.2 {CanvasWidgetCmd, yview option} {
-    .c configure -xscrollincrement 40 -yscrollincrement 0
-    .c yview moveto 0
-    update
-    set x [list [.c yview]]
-    .c yview scroll 2 units
-    update
-    lappend x [.c yview]
-} {{0.0 0.5} {0.1 0.6}}
+eval { $c->destroy };
+$c = $mw->Canvas(qw(-width 60 -height 40),
+		 -scrollregion => [qw(0 0 200 80)],
+		 -borderwidth => 0,
+		 -highlightthickness => 0,
+		)->pack;
+$c->update;
 
-test canvas-4.1 {ButtonEventProc procedure} {
-    deleteWindows
-    canvas .c1 -bg #543210
-    rename .c1 .c2
-    set x {}
-    lappend x [winfo children .]
-    lappend x [.c2 cget -bg]
-    destroy .c1
-    lappend x [info command .c*] [winfo children .]
-} {.c1 #543210 {} {}}
+{
+    $c->configure(qw(-xscrollincrement 40 -yscrollincrement 5));
+    $c->yview('moveto', 0);
+    $c->update;
+    is_deeply([$c->yview], [0, 0.5], "yview method");
+    $c->yview('scroll', 3, 'units');
+    $c->update;
+    is_deeply([$c->yview], [0.1875, 0.6875], "yview method after scroll");
+}
 
-test canvas-5.1 {ButtonCmdDeletedProc procedure} {
-    deleteWindows
-    canvas .c1
-    rename .c1 {}
-    list [info command .c*] [winfo children .]
-} {{} {}}
+{
+    $c->configure(qw(-xscrollincrement 40 -yscrollincrement 0));
+    $c->yviewMoveto(0);
+    $c->update;
+    is_deeply([$c->yview], [0, 0.5], "yview method (2)");
+    $c->yviewScroll(2, 'units');
+    $c->update;
+    is_deeply([$c->yview], [0.1, 0.6], "yview method after scroll (2)");
+}
 
-catch {destroy .c}
-canvas .c -width 100 -height 50 -scrollregion {-200 -100 305 102} \
-	-borderwidth 2 -highlightthickness 3
-pack .c
-update
-test canvas-6.1 {CanvasSetOrigin procedure} {
-    .c configure -xscrollincrement 0 -yscrollincrement 0
-    .c xview moveto 0
-    .c yview moveto 0
-    update
-    list [.c canvasx 0] [.c canvasy 0]
-} {-205.0 -105.0}
-test canvas-6.2 {CanvasSetOrigin procedure} {
-    .c configure -xscrollincrement 20 -yscrollincrement 10
-    set x ""
-    foreach i {.08 .10 .48 .50} {
-	.c xview moveto $i
-	update
-	lappend x [.c canvasx 0]
+{
+    eval { $c->destroy };
+    $c = $mw->Canvas(qw(-width 100 -height 50),
+		     -scrollregion => [qw(-200 -100 305 102)],
+		     -borderwidth => 2,
+		     -highlightthickness => 3,
+		    )->pack;
+    $c->update;
+    $c->configure(qw(-xscrollincrement 0 -yscrollincrement 0));
+    $c->xview('moveto', 0);
+    $c->yview('moveto', 0);
+    $c->update;
+    is($c->canvasx(0), -205, "canvasx after scrolling to origin");
+    is($c->canvasy(0), -105, "canvasy after scrolling to origin");
+}
+
+{
+    $c->configure(qw(-xscrollincrement 20 -yscrollincrement 10));
+    my @x;
+    for my $i (qw(.08 .10 .48 .50)) {
+	$c->xviewMoveto($i);
+	$c->update;
+	push @x, $c->canvasx(0);
     }
-    set x
-} {-165.0 -145.0 35.0 55.0}
-test canvas-6.3 {CanvasSetOrigin procedure} {
-    .c configure -xscrollincrement 20 -yscrollincrement 10
-    set x ""
-    foreach i {.06 .08 .70 .72} {
-	.c yview moveto $i
-	update
-	lappend x [.c canvasy 0]
+    is_deeply(\@x, [-165, -145, 35, 55], "canvasx after multiple scroll");
+}
+
+{
+    $c->configure(qw(-xscrollincrement 20 -yscrollincrement 10));
+    my @x;
+    for my $i (qw(.06 .08 .70 .72)) {
+	$c->yviewMoveto($i);
+	$c->update;
+	push @x, $c->canvasy(0);
     }
-    set x
-} {-95.0 -85.0 35.0 45.0}
-test canvas-6.4 {CanvasSetOrigin procedure} {
-    .c configure -xscrollincrement 20 -yscrollincrement 10
-    .c xview moveto 1.0
-    .c canvasx 0
-} {215.0}
-test canvas-6.5 {CanvasSetOrigin procedure} {
-    .c configure -xscrollincrement 20 -yscrollincrement 10
-    .c yview moveto 1.0
-    .c canvasy 0
-} {55.0}
+    is_deeply(\@x, [-95, -85, 35, 45], "canvasy after multiple scroll");
+}
 
-deleteWindows
+{
+    $c->configure(qw(-xscrollincrement 20 -yscrollincrement 10));
+    $c->xview('moveto', 1.0);
+    is($c->canvasx(0), 215);
+}
 
+{
+    $c->configure(qw(-xscrollincrement 20 -yscrollincrement 10));
+    $c->yview(moveto => 1.0);
+    is($c->canvasy(0), 55);
+}
+
+deleteWindows;
+
+__END__
 set l [lsort [interp hidden]]
 test canvas-7.1 {canvas widget vs hidden commands} -setup {
     catch {destroy .c}
