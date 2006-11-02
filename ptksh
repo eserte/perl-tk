@@ -252,7 +252,12 @@ $st = $mw->Scrolled('Text', -scrollbars => 'osoe',
 				-width => 80, -height => 25, @FONT);
 $t = $st->Subwidget('scrolled');
 $st->pack(-fill => 'both', -expand => 'true');
-$mw->bind('<Map>', sub {Center($mw);} );
+# $mw_mapped assures that Center is only called exactly twice: first time
+# will determine geometry of window, second time centering will work.
+# I observed a couple of further <Map> events, which are now ignored
+# and thus window creation seems to be faster now.
+my $mw_mapped;
+$mw->bind('<Map>', sub {return if $mw_mapped && $mw_mapped>=2; Center($mw); $mw_mapped++;} );
 
 # Event bindings
 $t->bindtags([$t, ref($t), $t->toplevel, 'all']); # take first crack at events
@@ -331,6 +336,7 @@ $t->focus;
 #$mw->after(1000, sub {print STDERR "now\n"; $mw->focus; $t->focus;});
 
 ##### Now enter main loop
+#$mw->afterIdle(sub {Center($mw);});
 MainLoop();
 
 ####### Callbacks/etc.
@@ -446,11 +452,13 @@ sub History {
 	$hist->bind('<Double-1>', \&HistPick);
 	$hist->bind('<Return>', \&HistPick);
 	$hist->bind('<Escape>', \&HistKill);
-	$hist->bind('<Map>', sub {Center($hist);} );
+	my $hist_mapped; # see above for $mw_mapped
+	$hist->bind('<Map>', sub {return if $hist_mapped && $hist_mapped>=2; Center($hist); $hist_mapped++;} );
 	$hist->bind('<Destroy>', \&HistDestroy);
 	$hist->focus;
 	$list->focus;
 	$hist->grab;
+	#$mw->afterIdle(sub {Center($hist);});
 	Tk->break;
 }
 
