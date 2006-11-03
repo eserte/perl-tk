@@ -18,12 +18,13 @@ my $stderr_too = ($^O eq 'MSWin32') ? '' : '2>&1';
 
 sub try_compile
 {
- my ($file,$inc,$lib)  = @_;
+ my ($file,$inc,$lib,$def)  = @_;
  $inc = [] unless $inc;
  $lib = [] unless $lib;
+ $def = [] unless $def;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compiling $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib $stderr_too`;
+ my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def $stderr_too`;
  my $ok = ($? == 0);
 # warn $msgs if $msgs;
  unlink($out) if (-f $out);
@@ -32,14 +33,15 @@ sub try_compile
 
 sub try_run
 {
- my ($file,$inc,$lib)  = @_;
+ my ($file,$inc,$lib,$def)  = @_;
  $inc = [] unless $inc;
  $lib = [] unless $lib;
+ $def = [] unless $def;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compile/Run $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib $stderr_too`;
+ my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def $stderr_too`;
  my $ok = ($? == 0);
-# warn "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib:\n$msgs" if $msgs;
+# warn "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def:\n$msgs" if $msgs;
  if ($ok)
   {
    my $path = File::Spec->rel2abs($out);
