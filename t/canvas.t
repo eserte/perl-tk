@@ -32,7 +32,7 @@ BEGIN {
     }
 }
 
-plan tests => 67;
+plan tests => 85;
 
 use_ok("Tk::Canvas");
 
