@@ -20,6 +20,7 @@
 
 use strict;
 
+use Getopt::Long;
 use Tk;
 
 BEGIN {
@@ -32,14 +33,19 @@ BEGIN {
     }
 }
 
-plan tests => 85;
+plan tests => 158;
 
 use_ok("Tk::Canvas");
+
+my $verbose = 0;
+GetOptions("v" => \$verbose)
+    or die "usage: $0 [-v]";
 
 # XXX - This test file is woefully incomplete.  At present, only a
 # few of the features are tested.
 
 my $mw = MainWindow->new;
+$mw->geometry("+10+10");
 my $c = $mw->Canvas;
 isa_ok($c, "Tk::Canvas");
 isa_ok($c, "Tk::Widget");
@@ -237,335 +243,273 @@ $c->update;
 
 deleteWindows;
 
-__END__
-set l [lsort [interp hidden]]
-test canvas-7.1 {canvas widget vs hidden commands} -setup {
-    catch {destroy .c}
-} -body {
-    canvas .c
-    interp hide {} .c
-    destroy .c
-    list [winfo children .] [lsort [interp hidden]]
-} -result [list {} $l]
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test dumps SV contents ...
+    $c = $mw->Canvas;
+    $c->create(qw(arc -100 10 100 210 -start 10 -extent 50 -style arc -tags arc1));
+    is_deeply([$c->bbox("arc1")], [qw(48 21 100 94)], "BBox of arc");
+    $c->createArc(qw(100 10 300 210 -start 10 -extent 50 -style chord -tags arc2));
+    is_deeply([$c->bbox("arc2")], [qw(248 21 300 94)], "BBox of chord");
+    $c->create(qw(arc 300 10 500 210 -start 10 -extent 50 -style pieslice -tags arc3));
+    is_deeply([$c->bbox("arc3")], [qw(398 21 500 112)], "BBox of pieslice");
+}
 
-test canvas-8.1 {canvas arc bbox} -setup {
-    catch {destroy .c}
-    canvas .c
-} -body {
-    .c create arc -100 10 100 210 -start 10 -extent 50 -style arc -tags arc1
-    set arcBox [.c bbox arc1]
-    .c create arc 100 10 300 210 -start 10 -extent 50 -style chord -tags arc2
-    set coordBox [.c bbox arc2]
-    .c create arc 300 10 500 210 -start 10 -extent 50 -style pieslice -tags arc3
-    set pieBox [.c bbox arc3]
-    list $arcBox $coordBox $pieBox
-} -result {{48 21 100 94} {248 21 300 94} {398 21 500 112}}
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test dumps SV contents ...
+    $c = $mw->Canvas;
 
-test canvas-9.1 {canvas id creation and deletion} -setup {
-    catch {destroy .c}
-    canvas .c
-} -body {
     # With Tk 8.0.4 the ids are now stored in a hash table.  You
     # can use this test as a performance test with older versions
     # by changing the value of size.
-    set size 15
+    my $size = 15;
 
-    for {set i 0} {$i < $size} {incr i} {
-	set x [expr {-10 + 3*$i}]
-	for {set j 0; set y -10} {$j < 10} {incr j; incr y 3} {
-	    .c create rect ${x}c ${y}c [expr $x+2]c [expr $y+2]c \
-		    -outline black -fill blue -tags rect
-	    .c create text [expr $x+1]c [expr $y+1]c -text "$i,$j" \
-		    -anchor center -tags text
+    for my $i (0 .. $size-1) {
+	my $x = -10 + 3*$i;
+	for(my $j = 0, my $y = -10; $j < 10; $j++, $y+=3) {
+	    $c->create('rect', "${x}c", "${y}c", ($x+2)."c", ($y+2)."c",
+		       qw(-outline black -fill blue -tags rect));
+	    $c->create('text', ($x+1)."c", ($y+1)."c", -text => "$i,$j",
+		       qw(-anchor center -tags text));
 	}
     }
 
     # The actual bench mark - this code also exercises all the hash
     # table changes.
 
-    set time [lindex [time {
-	foreach id [.c find withtag all] {
-	    .c lower $id
-	    .c raise $id
-	    .c find withtag $id
-	    .c bind <Return> $id {}
-	    .c delete $id
-	}
-    }] 0]
-	
-    set x ""
-} -result {}
-test canvas-10.1 {find items using tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-} -body {
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 60 40 80 -fill yellow -tag [list b a]
-    .c create oval 20 100 40 120 -fill green -tag [list c b]
-    .c create oval 20 140 40 160 -fill blue -tag [list b]
-    .c create oval 20 180 40 200 -fill bisque -tag [list a d e]
-    .c create oval 20 220 40 240 -fill bisque -tag b
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-    set res {}
-    lappend res [.c find withtag {!a}]
-    lappend res [.c find withtag {b&&c}]
-    lappend res [.c find withtag {b||c}]
-    lappend res [.c find withtag {a&&!b}]
-    lappend res [.c find withtag {!b&&!c}]
-    lappend res [.c find withtag {d&&a&&c&&b}]
-    lappend res [.c find withtag {b^a}]
-    lappend res [.c find withtag {(a&&!b)||(!a&&b)}]
-    lappend res [.c find withtag { ( a && ! b ) || ( ! a && b ) }]
-    lappend res [.c find withtag {a&&!(c||d)}]
-    lappend res [.c find withtag {d&&"tag with spaces"}]
-    lappend res [.c find withtag "tag with spaces"]
-} -result {{3 4 6 7} {1 3} {1 2 3 4 6} 5 {5 7} 1 {3 4 5 6} {3 4 5 6} {3 4 5 6} 2 7 7}
-test canvas-10.2 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {&&c}
-} -returnCodes error -result {Unexpected operator in tag search expression}
-test canvas-10.3 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {!!c}
-} -returnCodes error -result {Too many '!' in tag search expression}
-test canvas-10.4 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {b||}
-} -returnCodes error -result {Missing tag in tag search expression}
-test canvas-10.5 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {b&&(c||)}
-} -returnCodes error -result {Unexpected operator in tag search expression}
-test canvas-10.6 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {d&&""}
-} -returnCodes error -result {Null quoted tag string in tag search expression}
-test canvas-10.7 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag "d&&\"tag with spaces"
-} -returnCodes error -result {Missing endquote in tag search expression}
-test canvas-10.8 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {a&&"tag with spaces"z}
-} -returnCodes error -result {Invalid boolean operator in tag search expression}
-test canvas-10.9 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {a&&b&c}
-} -returnCodes error -result {Singleton '&' in tag search expression}
-test canvas-10.10 {check errors from tag expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list a b c d]
-    .c create oval 20 260 40 280 -fill bisque -tag [list d "tag with spaces"]
-} -body {
-    .c find withtag {a||b|c}
-} -returnCodes error -result {Singleton '|' in tag search expression}
-test canvas-10.11 {backward compatility - strange tags that are not expressions} -setup {
-    catch {destroy .c}
-    canvas .c
-    .c create oval 20 20 40 40 -fill red -tag [list { strange tag(xxx&yyy|zzz) " && \" || ! ^ " }]
-} -body {
-    .c find withtag { strange tag(xxx&yyy|zzz) " && \" || ! ^ " }
-} -result 1
-test canvas-10.12 {multple events bound to same tag expr} -setup {
-    catch {destroy .c}
-    canvas .c
-} -body {
-    .c bind {a && b} <Enter> {puts Enter}
-    .c bind {a && b} <Leave> {puts Leave}
-} -result {}
+    my $time = Tk::timeofday();
+    foreach my $id ($c->find(withtag => "all")) {
+	$c->lower($id);
+	$c->raise($id);
+	$c->find(withtag => $id);
+	$c->bind('<Return>', $id, '');
+	$c->delete($id);
+    }
+    my $delta = Tk::timeofday() - $time;
+    diag "Canvas creation and deletion test needed $delta s"
+	if $verbose;
+}
 
-test canvas-11.1 {canvas poly fill check, bug 5783} -setup {
-    destroy .c
-    pack [canvas .c]
-} -body {
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test dumps SV contents ...
+    $c = $mw->Canvas;
+
+    $c->create(qw(oval 20 20 40 40 -fill red -tag) , [qw(a b c d)]);
+    $c->create(qw(oval 20 60 40 80 -fill yellow -tag), [qw(b a)]);
+    $c->create(qw(oval 20 100 40 120 -fill green -tag), [qw(c b)]);
+    $c->create(qw(oval 20 140 40 160 -fill blue -tag), [qw(b)]);
+    $c->create(qw(oval 20 180 40 200 -fill bisque -tag), [qw(a d e)]);
+    $c->create(qw(oval 20 220 40 240 -fill bisque -tag b));
+    $c->create(qw(oval 20 260 40 280 -fill bisque -tag), ['d', "tag with spaces"]);
+
+    is_deeply([$c->find(withtag => q{!a})],[qw(3 4 6 7)], "Tag expressions");
+    is_deeply([$c->find(withtag => q{b&&c})],[qw(1 3)]);
+    is_deeply([$c->find(withtag => q{b||c})],[qw(1 2 3 4 6)]);
+    is_deeply([$c->find(withtag => q{a&&!b})],[qw(5)]);
+    is_deeply([$c->find(withtag => q{!b&&!c})],[qw(5 7)]);
+    is_deeply([$c->find(withtag => q{d&&a&&c&&b})],[qw(1)]);
+    is_deeply([$c->find(withtag => q{b^a})],[qw(3 4 5 6)]);
+    is_deeply([$c->find(withtag => q{(a&&!b)||(!a&&b)})],[qw(3 4 5 6)]);
+    is_deeply([$c->find(withtag => q{ ( a && ! b ) || ( ! a && b ) })],[qw(3 4 5 6)]);
+    is_deeply([$c->find(withtag => q{a&&!(c||d)})],[qw(2)]);
+    is_deeply([$c->find(withtag => q{d&&"tag with spaces"})],[qw(7)], "Tag with spaces");
+    is_deeply([$c->find(withtag => q"tag with spaces")],[qw(7)]);
+}
+
+for my $testdef (
+		 [q{&&c}, qr{Unexpected operator in tag search expression}],
+		 [q{!!c}, qr{Too many '!' in tag search expression}],
+		 [q{b||}, qr{Missing tag in tag search expression}],
+		 [q{b&&(c||)}, qr{Unexpected operator in tag search expression}],
+		 [q{d&&""}, qr{Null quoted tag string in tag search expression}],
+		 [q"d&&\"tag with spaces", qr{Missing endquote in tag search expression}],
+		 [q{a&&"tag with spaces"z}, qr{Invalid boolean operator in tag search expression}],
+		 [q{a&&b&c}, qr{Singleton '&' in tag search expression}],
+		 [q{a||b|c}, qr{Singleton '|' in tag search expression}],
+		) {
+    my($tag_expr, $error_rx) = @$testdef;
+
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas;
+
+    $c->create(qw(oval 20 20 40 40 -fill red -tag), [qw(a b c d)]);
+    $c->create(qw(oval 20 260 40 280 -fill bisque -tag), ['d', "tag with spaces"]);
+    eval { $c->find(withtag => $tag_expr) };
+    like($@, $error_rx, "Tag expression error ($tag_expr)");
+}
+
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas;
+
+    $c->create(qw(oval 20 20 40 40 -fill red -tag), [q{ strange tag(xxx&yyy|zzz) " && \" || ! ^ " }]);
+    ok($c->find(withtag => q{ strange tag(xxx&yyy|zzz) " && \" || ! ^ " }), 
+       q{backward compatility - strange tags that are not expressions});
+} 
+
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas;
+
+    $c->bind(q{a && b}, '<Enter>' => sub {warn "Enter"});
+    $c->bind(q{a && b}, '<Leave>' => sub {warn "Leave"});
+
+    pass(q{multple events bound to same tag expr});
+}
+
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
+
     # This would crash in 8.3.0 and 8.3.1
-    .c create polygon 0 0 100 100 200 50 \
-	    -fill {} -stipple gray50 -outline black
-} -result 1
-test canvas-11.2 {canvas poly overlap fill check, bug 226357} -setup {
-    destroy .c
-    pack [canvas .c]
-} -body {
-    set result {}
-    .c create poly 30 30 90 90 30 90 90 30
-    lappend result [.c find over 40 40 45 45]; # rect region inc. edge
-    lappend result [.c find over 60 40 60 40]; # top-center point
-    lappend result [.c find over 0 0 0 0]; # not on poly
-    lappend result [.c find over 60 60 60 60]; # center-point
-    lappend result [.c find over 45 50 45 50]; # outside poly
-    .c itemconfig 1 -fill "" -outline black
-    lappend result [.c find over 40 40 45 45]; # rect region inc. edge
-    lappend result [.c find over 60 40 60 40]; # top-center point
-    lappend result [.c find over 0 0 0 0]; # not on poly
-    lappend result [.c find over 60 60 60 60]; # center-point
-    lappend result [.c find over 45 50 45 50]; # outside poly
-    .c itemconfig 1 -width 8
-    lappend result [.c find over 45 50 45 50]; # outside poly
-} -result {1 1 {} 1 {} 1 1 {} 1 {} 1}
+    $c->create(qw(polygon 0 0 100 100 200 50),
+	       -fill => undef,
+	       qw(-stipple gray50 -outline black));
+    pass(q{canvas poly fill check, bug 5783});
+}
+   
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
 
-test canvas-12.1 {canvas mm obj, patch SF-403327, 102471} -setup {
-    destroy .c
-    pack [canvas .c]
-} -body {
-    set qx [expr {1.+1.}] 
-    # qx has type double and no string representation 
-    .c scale all $qx 0 1. 1.
-    # qx has now type MMRep and no string representation 
-    list $qx [string length $qx]
-} -result {2.0 3}
-test canvas-12.2 {canvas mm obj, patch SF-403327, 102471} -setup {
-    destroy .c
-    pack [canvas .c]
-} -body {
-    set val 10
-    incr val
-    # qx has type double and no string representation 
-    .c scale all $val 0 1 1
-    # qx has now type MMRep and no string representation 
-    incr val
-} -result 12
+    $c->create(qw(poly 30 30 90 90 30 90 90 30));
+    ok($c->find(qw(over 40 40 45 45)), "rect region inc. edge; canvas poly overlap fill check, bug 226357");
+    ok($c->find(qw(over 60 40 60 40)), "top-center point");
+    ok(!$c->find(qw(over 0 0 0 0)), "not on poly");
+    ok($c->find(qw(over 60 60 60 60)), "center-point");
+    ok(!$c->find(qw(over 45 50 45 50)), "outside poly");
 
-proc kill_canvas {w} {
-    destroy $w
-    pack [canvas $w -height 200 -width 200] -fill both -expand yes
-    update idle
-    $w create rectangle 80 80 120 120 -fill blue -tags blue
-    # bind a button press to re-build the canvas
-    $w bind blue <ButtonRelease-1> [subst {
-	[lindex [info level 0] 0] $w
-	append ::x ok
-    }
-    ]
+    $c->itemconfigure(1, -fill => "", -outline => "black");
+    ok($c->find(qw(over 40 40 45 45)), "rect region inc. edge");
+    ok($c->find(qw(over 60 40 60 40)), "top-center point");
+    ok(!$c->find(qw(over 0 0 0 0)), "not on poly");
+    ok($c->find(qw(over 60 60 60 60)), "center-point");
+    ok(!$c->find(qw(over 45 50 45 50)), "outside poly");
+
+    $c->itemconfigure(1, -width => 8);
+    ok($c->find(qw(over 45 50 45 50)), "outside poly?");
 }
 
-test canvas-13.1 {canvas delete during event, SF bug-228024} {
-    kill_canvas .c
-    set ::x {}
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
+
+    my $qx = 1.+1.;
+    # qx has type double and no string representation (in Tcl?)
+    $c->scale('all', $qx, 0, 1., 1.);
+    # qx has now type MMRep and no string representation (in Tcl?);
+    is($qx, 2, q{canvas mm obj, patch SF-403327, 102471});
+}
+
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
+
+    my $val = 10;
+    $val++;
+    # qx has type double and no string representation (in Tcl?)
+    $c->scale('all', $val, 0, 1, 1);
+    # qx has now type MMRep and no string representation (in Tcl?)
+    $val++;
+    is($val, 12, q{canvas mm obj, patch SF-403327, 102471});
+}
+
+{
+    my $x = "";
+    
+    my $kill_canvas = sub {
+	my $w = shift;
+	$w->destroy;
+	$w = $mw->Canvas(qw(-height 200 -width 200))->pack(qw(-fill both -expand yes));
+	$mw->idletasks;
+	$w->create('rectangle', qw(80 80 120 120 -fill blue -tags blue));
+	# bind a button press to re-build the canvas
+	$w->bind('blue', '<ButtonRelease-1>' => sub { $x .= "ok" });
+	$w;
+    };
+
+    $c = $kill_canvas->($c);
+
     # do this many times to improve chances of triggering the crash
-    for {set i 0} {$i < 30} {incr i} {
-	event generate .c <1> -x 100 -y 100
-	event generate .c <ButtonRelease-1> -x 100 -y 100
+    for my $i (0 .. 29) {
+	$c->eventGenerate('<1>', qw(-x 100 -y 100));
+	$c->eventGenerate('<ButtonRelease-1>', qw(-x 100 -y 100));
     }
-    set ::x
-} okokokokokokokokokokokokokokokokokokokokokokokokokokokokokok
-
-test canvas-14.1 {canvas scan SF bug 581560} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    .c scan
-} -returnCodes error -result {wrong # args: should be ".c scan mark|dragto x y ?dragGain?"}
-test canvas-14.2 {canvas scan} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    .c scan bogus
-} -returnCodes error -result {wrong # args: should be ".c scan mark|dragto x y ?dragGain?"}
-test canvas-14.3 {canvas scan} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    .c scan mark
-} -returnCodes error -result {wrong # args: should be ".c scan mark|dragto x y ?dragGain?"}
-test canvas-14.4 {canvas scan} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    .c scan mark 10 10
-} -result {}
-test canvas-14.5 {canvas scan} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    .c scan mark 10 10 5
-} -returnCodes error -result {wrong # args: should be ".c scan mark x y"}
-test canvas-14.6 {canvas scan} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    .c scan dragto 10 10 5
-} -result {}
-
-set i 0
-proc create {w type args} {
-    eval [list $w create $type] $args
-}
-foreach type {arc bitmap image line oval polygon rect text window} {
-    incr i
-    test canvas-15.$i "basic types check: $type requires coords" -setup {
-	destroy .c
-	canvas .c
-    } -body {
-	.c create $type
-    } -returnCodes error -result [format {wrong # args: should be ".c create %s coords ?arg arg ...?"} $type]
-    incr i
-    test canvas-15.$i "basic coords check: $type coords are paired" -setup {
-	destroy .c
-	canvas .c
-    } -match glob -body {
-	.c create $type 0
-    } -returnCodes error -result "wrong # coordinates: expected*"
+    is($x, "okokokokokokokokokokokokokokokokokokokokokokokokokokokokokok",
+       q{canvas delete during event, SF bug-228024});
 }
 
-test canvas-16.1 {arc coords check} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    set id [.c create arc {0 10 20 30} -start 33]
-    .c itemcget $id -start
-} -result {33.0}
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
 
-test canvas-17.1 {default smooth method handling} -setup {
-    destroy .c
-    canvas .c
-} -body {
-    set id [.c create line {0 0 1 1 2 2 3 3 4 4 5 5 6 6}]
-    set result [.c itemcget $id -smooth]
-    foreach smoother {yes 1 bezier raw r b} {
-	.c itemconfigure $id -smooth $smoother
-	lappend result [.c itemcget $id -smooth]
+    eval { $c->scan };
+    like($@, qr{\Qwrong # args: should be ".canvas scan mark|dragto x y ?dragGain?"\E},
+	 qr{canvas scan SF bug 581560});
+
+    eval { $c->scan("bogus") };
+    like($@, qr{\Qwrong # args: should be ".canvas scan mark|dragto x y ?dragGain?"\E},
+	 "canvas scan");
+
+    eval { $c->scan("mark") };
+    like($@, qr{\Qwrong # args: should be ".canvas scan mark|dragto x y ?dragGain?"\E});
+
+    $c->scan(qw(mark 10 10));
+    pass("correct canvas scan mark");
+
+    eval { $c->scan(qw(mark 10 10 5)) };
+    like($@, qr{wrong # args: should be ".canvas scan mark x y"});
+
+    $c->scan(qw(dragto 10 10 5));
+    pass("correct canvas scan dragto");
+}
+
+{
+    foreach my $type (qw{arc bitmap image line oval polygon rect text window}) {
+	eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+	$c = $mw->Canvas->pack;
+
+	eval { $c->create($type) };
+	like($@, qr{wrong # args: should be ".canvas create $type coords \Q?arg arg ...?"\E},
+	     "basic types check: $type requires coords");
+
+	eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+	$c = $mw->Canvas->pack;
+
+	eval { $c->create($type, 0) };
+	like($@, qr{wrong # coordinates: expected},
+	     "basic coords check: $type coords are paired");
     }
-    set result
-} -result {0 true true true raw raw true}
+}
 
-destroy .c
+{
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
 
-# cleanup
-cleanupTests
-return
+    my $id = $c->createArc(qw(0 10 20 30 -start 33));
+    is($c->itemcget($id, "-start"), 33, "arc coords check");
+}
 
+{
+    local $TODO = "Decide whether test failures are expected or not...";
+
+    eval { $c->destroy } if Tk::Exists($c); # without existence test may dump SV contents ...
+    $c = $mw->Canvas->pack;
+
+    my $id = $c->createLine(qw{0 0 1 1 2 2 3 3 4 4 5 5 6 6});
+    is($c->itemcget($id, '-smooth'), 0);
+
+    foreach my $smoothtest (
+			    ['yes', 'true'],
+			    [1, 'true'],
+			    ['bezier', 'true'],
+			    ['raw', 'raw'],
+			    ['r', 'raw'],
+			    ['b', 'b']
+			   ) {
+	my($smoother, $expected) = @$smoothtest;
+	$c->itemconfigure($id, -smooth => $smoother);
+	is($c->itemcget($id, '-smooth'), $expected, "smooth test");
+    }
+}
 
 __END__
