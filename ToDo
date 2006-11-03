@@ -1,3 +1,4 @@
+Tk::Tree has a dual live on CPAN. Incorporate the 4.3 version.
 
 Debug icon redraw issues on Solaris/olvwm
 
@@ -11,7 +12,7 @@ Do HTML build
 
 Make "compiled" Tk scripts work.
 
-Add one of FontSelect variants
+Add one of FontSelect variants (e.g. Tk::FontDialog)
 
 TixGrid repair/replace.
 
@@ -20,12 +21,6 @@ Release tkmail
 Start tkdraw ;-)
 
 Non-Sun Drag&Drop (e.g. linux) (Win32 Site now at least partly working.)
-
-Now 5.005_5X has utf8 how do we display it?
-
-Tk::Photo::data dumps core with beta9 and perl5.8.2:
-	$photo = $mw->Photo(-file => "some.gif");
-	$string = $photo->data(-format => "gif");
 
 Stipple bug, see Message-ID: <2uwCb.683348$pl3.76050@pd7tw3no> (should
 be fixed with Tk 8.4.5).
