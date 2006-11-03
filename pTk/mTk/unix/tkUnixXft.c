@@ -27,6 +27,9 @@
 
 #ifdef USE_XFT_FONTS
 
+#ifdef NEED_FT2BUILD_H
+#include <ft2build.h>
+#endif
 #include <X11/Xft/Xft.h>
 #include <ctype.h>
 

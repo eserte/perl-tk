@@ -1,3 +1,6 @@
+#ifdef NEED_FT2BUILD_H
+#include <ft2build.h>
+#endif
 #include <X11/Xft/Xft.h>
 
 const char *name = "-*-fixed-medium-r-*-*-*-120-*-*-*-*-iso8859-1";

@@ -348,15 +348,31 @@ if ($win_arch eq 'x') {
     if ($ftinc)
      {
       print "xlib='$xlib' xinc='$xinc'\n";
-      if (try_run("config/xft.c",[$xinc,$ftinc],[$xlib,'-lXft','-lfontconfig']))
+      my $success = 0;
+      # Including ft2build.h additionally seems to be necessary
+      # on an old RedHat 8.0 system
+      for my $def ([], ["-DNEED_FT2BUILD_H"])
        {
-        $inc .= " $ftinc";
-        warn "Seem to have -lXft\n";
-        $define{USE_XFT_FONTS} = 1;
-        $xlib .= " -lXft";
-        $xtra = ' -lfontconfig';
+	if (try_run("config/xft.c",[$xinc,$ftinc],[$xlib,'-lXft','-lfontconfig'],$def))
+         {
+          $inc .= " $ftinc";
+          warn "Seem to have -lXft\n";
+          $define{USE_XFT_FONTS} = 1;
+          $xlib .= " -lXft";
+          $xtra = ' -lfontconfig';
+	  if (@$def)
+	   {
+	    for my $d (@$def)
+	     {
+	      $d =~ s{-D}{};
+	      $define{$d} = 1;
+	     }
+	   }
+	  $success = 1;
+	  last;
+         }
        }
-      else
+      if (!$success)
        {
 	warn "Xft and/or fontconfig libraries and/or includes are missing\n";
        }
