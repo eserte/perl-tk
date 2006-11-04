@@ -206,13 +206,13 @@ such as lower-case ``g'' stick below the baseline.
 
 The amount in pixels that the tallest letter sticks up above the baseline of
 the font, plus any extra blank space added by the designer of the font.
-(I<$font>-<gt>B<ascent> is provided for compatibility.)
+(I<$font>-E<gt>B<ascent> is provided for compatibility.)
 
 =item B<-descent>
 
 The largest amount in pixels that any letter sticks down below the baseline
 of the font, plus any extra blank space added by the designer of the font.
-(I<$font>-<gt>B<descent> is provided for compatibility.)
+(I<$font>-E<gt>B<descent> is provided for compatibility.)
 
 =item B<-linespace>
 
