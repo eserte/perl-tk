@@ -20,7 +20,8 @@ use strict;
 use Text::Tabs;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #24 $ =~ /\D(\d+)\s*$/;
+#$VERSION = sprintf '4.%03d', q$Revision: #24 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.025';
 
 use Tk qw(Ev $XS_VERSION);
 use base  qw(Tk::Clipboard Tk::Widget);
@@ -275,7 +276,12 @@ sub ButtonRelease2
  my $Ev = $w->XEvent;
  if (!$Tk::mouseMoved)
   {
-   Tk::catch { $w->insert($Ev->xy,$w->SelectionGet) }
+   Tk::catch
+    {
+     $w->mark('set','insert',$Ev->xy);
+     $w->insert($Ev->xy,$w->SelectionGet);
+     $w->focus if ($w->cget('-state') eq "normal");
+    }
   }
 }
 
