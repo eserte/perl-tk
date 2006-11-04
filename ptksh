@@ -31,6 +31,8 @@
 #  - Clarify <Up> in docs and help means "up arrow"
 #  - Use HOMEDRIVE/HOMEPATH on Win32
 #
+# For more history look at the various Changes files in the Perl/Tk
+# distribution.
 
 =head1 NAME
 
@@ -94,10 +96,12 @@ in perl/Tk widget easier:
 
 displays a short help summary.
 
-=item B<d> ?I<args>, ...?
+=item B<d>, or B<x> ?I<args>, ...?
 
 Dumps recursively arguments to stdout. (see L<Data::Dumper>).
 You must have <Data::Dumper> installed to support this feature.
+
+B<x> was introduced for perl debugger compatibility.
 
 =item B<p> ?I<arg>, ...?
 
@@ -194,7 +198,7 @@ L<perldebug|perldebug>
 
 =head1 VERSION
 
-VERSION 2.02
+VERSION 2.03
 
 =head1 AUTHORS
 
@@ -217,7 +221,7 @@ use Tk;
 use vars qw($NAME $VERSION $FONT @FONT $WIN32 $HOME $HISTFILE $HISTSAVE $PROMPT $INITFILE);
 
 $NAME = 'ptksh';
-$VERSION = '2.02';
+$VERSION = '2.03';
 $WIN32 = 1 if $^O =~ /Win32/;
 $HOME = $WIN32 ? ($ENV{HOMEDRIVE} . $ENV{HOMEPATH}) || 'C:\\' : $ENV{HOME} . "/";
 @FONT = ($WIN32 ? (-font => 'systemfixed') : () );
@@ -269,9 +273,19 @@ $t->bind('<Control-a>', \&BeginLine);
 $t->bind('<Home>', \&BeginLine);
 $t->bind('<Any-KeyPress>', [\&Key, Tk::Ev('K'), Tk::Ev('A')]);
 
+my $default_font = $t->cget(-font);
+my %default_font = $t->fontActual($default_font);
+my $normal_font;
+if (!$t->fontMetrics($default_font, '-fixed')) {
+    $normal_font = $t->fontCreate(%default_font, -family => "courier");
+    $t->configure(-font => $normal_font);
+}
+my %normal_font = $t->fontActual($normal_font);
+my $bold_font = $t->fontCreate(%normal_font, -weight => "bold");
+
 # Set up different colors for the various window outputs
 #$t->tagConfigure('prompt', -underline => 'true');
-$t->tagConfigure('prompt', -foreground => 'blue');
+$t->tagConfigure('prompt', -foreground => 'blue', -font => $bold_font);
 $t->tagConfigure('result', -foreground => 'purple');
 $t->tagConfigure('error', -foreground => 'red');
 $t->tagConfigure('output', -foreground => 'blue');
@@ -650,7 +664,7 @@ sub _h
     print <<'EOT';
 
   ? or h          print this message
-  d arg,...       calls Data::Dumper::Dumper
+  d or x arg,...  calls Data::Dumper::Dumper
   p arg,...       print args, each on a line and "|\n"
   o $w /regexp/   print options of widget matching regexp
   o $w [opt ...]  print (all) options of widget
@@ -676,7 +690,7 @@ sub PtkshCommand {
 		last if s/^\?\s*$/Tk::ptksh::_h /;
 		last if s/^h\s*$/Tk::ptksh::_h /;
 		last if s/^u(\s+|$)/Tk::ptksh::_u /;
-		last if s/^d\s+/Tk::ptksh::_d /;
+		last if s/^[dx]\s+/Tk::ptksh::_d /;
 		last if s/^u\s+(\S+)/Tk::ptksh::_u('$1')/;
 		last if s/^p\s+(.*)$/Tk::ptksh::_p $1;/;
 		last if s/^o\s+(\S+)\s*?$/Tk::ptksh::_o $1;/;
