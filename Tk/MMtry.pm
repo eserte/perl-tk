@@ -6,7 +6,8 @@ use Config;
 require Exporter;
 
 use vars qw($VERSION @EXPORT);
-$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
+#$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.010';
 
 use base  qw(Exporter);
 @EXPORT = qw(try_compile try_run);
