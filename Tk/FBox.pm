@@ -39,7 +39,8 @@ require Tk::Toplevel;
 use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
-$VERSION = sprintf '4.%03d', q$Revision: #18 $ =~ /\D(\d+)\s*$/;
+#$VERSION = sprintf '4.%03d', q$Revision: #18 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.019';
 
 use base qw(Tk::Toplevel);
 
@@ -796,6 +797,7 @@ sub OkCmd {
     }
 
     my $filename = $filenames->[0];
+    $filename = "" if !defined $filename;
     if ($w->cget('-type') eq 'dir' && $from ne "iconlist") {
 	my $file = $filename eq '' ? $w->{'selectPath'} : JoinFile($w->{'selectPath'}, $filename);
 	$w->Done($file);
