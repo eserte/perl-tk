@@ -1,14 +1,19 @@
 use Tk;
+use Tk::Config ();
 use Encode qw(FB_CROAK);
 BEGIN
 {
- my $enc = Tk::SystemEncoding();
- eval { $enc->encode("\x{AC00}",FB_CROAK) };
- if ($@)
+ my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
+ if (!$Xft) # assume we have CJK charsets with ttf fonts available
   {
-   my $err = "$@";
-   print "1..0 # Skipped: locale's '",$enc->name,"' cannot represent Korean.\n";
-   CORE::exit(0);
+   my $enc = Tk::SystemEncoding();
+   eval { $enc->encode("\x{AC00}",FB_CROAK) };
+   if ($@)
+    {
+     my $err = "$@";
+     print "1..0 # Skipped: locale's '",$enc->name,"' cannot represent Korean.\n";
+     CORE::exit(0);
+    }
   }
 }
 use Test::More (tests => 271);
@@ -30,5 +35,5 @@ while (<$fh>)
   ok(1);
  }
 close($fh);
-$mw->after(2000,[ destroy => $mw ]);
+$mw->after(100,[ destroy => $mw ]);
 MainLoop;
