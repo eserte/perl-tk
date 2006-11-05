@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 2 }
+BEGIN { plan tests => 4 }
 
 my $mw = MainWindow->new;
 $mw->withdraw;
@@ -47,6 +47,9 @@ $t->Message(-text => "This toplevel should also get the same icon")->pack;
 $mw->idletasks;
 pass("Set iconphoto");
 
+my($wrapper_id, $menu_height) = $mw->wrapper;
+ok(defined $wrapper_id, "Wrapper Id <$wrapper_id>");
+ok(defined $menu_height, "Menu height <$menu_height>");
 
 $mw->after(1000,[destroy => $mw]);
 MainLoop;

@@ -1870,6 +1870,7 @@ t/slaves.t
 t/widget.t
 t/wm.t
 t/wm-time.t
+t/wm-tcl.t
 t/X.t
 t/zzHList.t
 t/zzPhoto.t

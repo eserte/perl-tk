@@ -18,8 +18,7 @@ displaying filenames, but with graceful degradation).
 What about getOpen/SaveFile and Windows, are there also encoding
 issues with filenames?
 
-Incorporate latest unix/tkUnixWm.c from Tcl/Tk sources (has a lot of
-OpenDesktop support).
+Minimize diffs to original Tcl/Tk sources to make merging easier.
 
 ----------------------------------------------------------------------
 - OLDER ToDos --------------------------------------------------------

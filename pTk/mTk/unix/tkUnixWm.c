@@ -1150,7 +1150,7 @@ Tk_WmObjCmd(
 	"iconwindow", "maxsize", "minsize", "overrideredirect",
 	"positionfrom", "protocol", "release", "resizable", "sizefrom",
 	"stackorder", "state", "title", "transient",
-	"withdraw", NULL };
+	"withdraw", "wrapper", NULL };
     enum options {
         WMOPT_ASPECT, WMOPT_ATTRIBUTES, WMOPT_CAPTURE, WMOPT_CLIENT, WMOPT_COLORMAPWINDOWS,
 	WMOPT_COMMAND, WMOPT_DEICONIFY, WMOPT_FOCUSMODEL, WMOPT_FRAME,
@@ -1337,10 +1337,9 @@ WmAspectCmd(
 	if (wmPtr->sizeHintsFlags & PAspect) {
 	    char buf[TCL_INTEGER_SPACE * 4];
 
-	    sprintf(buf, "%d %d %d %d", wmPtr->minAspect.x,
-		    wmPtr->minAspect.y, wmPtr->maxAspect.x,
-		    wmPtr->maxAspect.y);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    Tcl_IntResults(interp, 4, 0, wmPtr->minAspect.x,
+			   wmPtr->minAspect.y, wmPtr->maxAspect.x,
+			   wmPtr->maxAspect.y);
 	}
 	return TCL_OK;
     }
