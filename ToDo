@@ -1,5 +1,19 @@
 Tk::Tree has a dual live on CPAN. Incorporate the 4.3 version.
 
+Support for some OpenDesktop window manager standards, like setting
+icons through _NET_WM_ICON or using utf8 window titles.
+
+Port more Tcl/Tk tests to Perl/Tk (text.test etc.)
+
+messageBox fixes: <Return> does not use the currently selected button,
+but always the default button, which seems not untuitive. Also, the
+Tcl/Tk counterpart has nicer colored bitmaps, port them to Perl/Tk.
+
+Check all Tk-related bugs on rt.cpan.org (some are already fixed).
+
+----------------------------------------------------------------------
+- OLDER ToDos --------------------------------------------------------
+
 Debug icon redraw issues on Solaris/olvwm
 
 Add "make strip" target ?
