@@ -11,6 +11,16 @@ Tcl/Tk counterpart has nicer colored bitmaps, port them to Perl/Tk.
 
 Check all Tk-related bugs on rt.cpan.org (some are already fixed).
 
+Tk::FBox should deal with 8bit characters in filenames (i.e. use byte
+semantics in filesystem operations, maybe use system encoding when
+displaying filenames, but with graceful degradation).
+
+What about getOpen/SaveFile and Windows, are there also encoding
+issues with filenames?
+
+Incorporate latest unix/tkUnixWm.c from Tcl/Tk sources (has a lot of
+OpenDesktop support).
+
 ----------------------------------------------------------------------
 - OLDER ToDos --------------------------------------------------------
 
