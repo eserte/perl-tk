@@ -611,12 +611,10 @@ void TkWmCleanup(
 	}
 	ckfree((char *) wmPtr);
     }
-#if NOTYET_XXX
     if (dispPtr->iconDataPtr != NULL) {
 	ckfree((char *)dispPtr->iconDataPtr);
 	dispPtr->iconDataPtr = NULL;
     }
-#endif
 }
 
 /*
@@ -2502,6 +2500,8 @@ WmIconphotoCmd(
 
 #ifdef NOTYET_XXX
     iconPropertyData = (long *) Tcl_AttemptAlloc(sizeof(long)*size);
+#else
+    iconPropertyData = (long *) ckalloc(sizeof(long)*size);
 #endif
     if (iconPropertyData == NULL) {
 	return TCL_ERROR;
@@ -2563,13 +2563,11 @@ WmIconphotoCmd(
 	wmPtr->iconDataPtr = NULL;
     }
     if (isDefault) {
-#if NOTYET_XXX
 	if (winPtr->dispPtr->iconDataPtr != NULL) {
 	    ckfree((char *) winPtr->dispPtr->iconDataPtr);
 	}
 	winPtr->dispPtr->iconDataPtr = (unsigned char *) iconPropertyData;
 	winPtr->dispPtr->iconDataSize = size;
-#endif
     } else {
 	wmPtr->iconDataPtr = (unsigned char *) iconPropertyData;
 	wmPtr->iconDataSize = size;
@@ -4950,10 +4948,8 @@ UpdatePhotoIcon(
     int size = wmPtr->iconDataSize;
 
     if (data == NULL) {
-#if NOTYET_XXX
 	data = winPtr->dispPtr->iconDataPtr;
 	size = winPtr->dispPtr->iconDataSize;
-#endif
     }
     if (data != NULL) {
 	/*

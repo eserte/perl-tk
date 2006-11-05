@@ -23,7 +23,7 @@ use Tk::Submethods;
 
 Direct Tk::Submethods ('wm' => [qw(aspect attributes client colormapwindows command
                        deiconify focusmodel frame geometry group
-                       iconbitmap iconify iconimage iconmask iconname
+                       iconbitmap iconify iconimage iconmask iconname iconphoto
                        iconwindow maxsize minsize overrideredirect positionfrom
                        protocol resizable sizefrom state title transient
                        withdraw wrapper)]);

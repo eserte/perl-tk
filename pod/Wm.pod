@@ -298,6 +298,29 @@ or an empty string if no icon name has been specified (in this
 case the window manager will normally display the window's title,
 as specified with the B<title> method).
 
+=item I<$toplevel>-E<gt>B<iconphoto>(?-default? I<image1> ?I<image2>
+...?)
+
+Sets the titlebar icon for  window  based  on  the  named  photo
+images.  If -default is specified, this is applied to all future
+created toplevels as well.  The data in the images is taken as a
+snapshot  at  the  time  of invocation.  If the images are later
+changed, this is not reflected to the titlebar icons.   Multiple
+images  are  accepted to allow different images sizes (eg, 16x16
+and 32x32) to be provided.  The window manager  may  scale  pro-
+vided icons to an appropriate size.
+
+On Windows, the images are packed into a Windows icon structure.
+This will override an ico specified to wm iconbitmap,  and  vice
+versa. [NOTE: This is not implemented yet!]
+
+On  X, the images are arranged into the _NET_WM_ICON X property,
+which most modern window managers support.  A wm iconbitmap  may
+exist  simultaneously.  It is recommended to use not more than 2
+icons, placing the larger icon first.
+
+On Macintosh, this is currently does nothing.
+
 =item I<$toplevel>-E<gt>B<iconposition>(?I<x y>?)
 
 If I<x> and I<y> are specified, they are passed to the window
