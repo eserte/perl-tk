@@ -2064,10 +2064,9 @@ WmGridCmd(
 	if (wmPtr->sizeHintsFlags & PBaseSize) {
 	    char buf[TCL_INTEGER_SPACE * 4];
 
-	    sprintf(buf, "%d %d %d %d", wmPtr->reqGridWidth,
-		    wmPtr->reqGridHeight, wmPtr->widthInc,
-		    wmPtr->heightInc);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    Tcl_IntResults(interp, 4, 0, wmPtr->reqGridWidth,
+			   wmPtr->reqGridHeight, wmPtr->widthInc,
+			   wmPtr->heightInc);
 	}
 	return TCL_OK;
     }
@@ -2613,9 +2612,8 @@ WmIconpositionCmd(
 	if (wmPtr->hints.flags & IconPositionHint) {
 	    char buf[TCL_INTEGER_SPACE * 2];
 
-	    sprintf(buf, "%d %d", wmPtr->hints.icon_x,
-		    wmPtr->hints.icon_y);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    Tcl_IntResults(interp, 2, 0, wmPtr->hints.icon_x,
+			   wmPtr->hints.icon_y);
 	}
 	return TCL_OK;
     }
