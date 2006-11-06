@@ -34,7 +34,7 @@ BEGIN {
     }
 }
 
-plan tests => 48;
+plan tests => 197;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -849,706 +849,750 @@ stdWindow;
     $mw->iconposition(undef, undef);
     is_deeply([$mw->iconposition], []);
 }
+
+{
+    ### wm iconwindow ###
+    eval { $mw->iconwindow(12, 13) };
+    like($@, qr{\Qwrong # args: should be "wm iconwindow window ?pathName?"},
+	 q{wm iconwindow usage});
+
+    eval { $mw->iconwindow("bogus") };
+    like($@, qr{bad window path name "bogus"});
+}
+
+{
+    my $b = $mw->Button(Name => "b", -text => "Help");
+    eval { $t->iconwindow($b) };
+    like($@, qr{\Qcan't use .b as icon window: not at top level});
+    $b->destroy;
+}
+
+{
+    my $icon = $mw->Toplevel(Name => "icon",
+			     qw(-width 50 -height 50 -bg green));
+    my $t2 = $mw->Toplevel(Name => "t2");
+    $t2->geometry("-0+0");
+    $t2->iconwindow($icon);
+    eval { $t->iconwindow($icon) };
+    like($@, qr{\Q.icon is already an icon for .t2});
+
+    $t2->destroy;
+    $icon->destroy;
+}
+
+{
+    is($t->iconwindow, undef, "wm iconwindow, setting and reading values");
+    my $icon = $mw->Toplevel(Name => "icon",
+			     qw(-width 50 -height 50 -bg green));
+    $t->iconwindow($icon);
+    is($t->iconwindow, $icon);
+    $t->iconwindow(undef);
+    is($t->iconwindow, undef);
+}
+
+{
+    ### wm maxsize ###
+    eval { $mw->maxsize("a") };
+    like($@, qr{\Qwrong # args: should be "wm maxsize window ?width height?"},
+	 q{wm maxsize usage});
+
+    eval { $mw->maxsize(qw(a b c)) };
+    like($@, qr{\Qwrong # args: should be "wm maxsize window ?width height?"});
+
+    eval { $mw->maxsize(qw(x 100)) };
+    like($@, qr{'x' isn't numeric});
+
+    eval { $mw->maxsize(qw(100 bogus)) };
+    like($@, qr{'bogus' isn't numeric});
+}
+
+{
+    my $t2 = $mw->Toplevel;
+    $t2->geometry("+0+0");
+    $t2->maxsize(300, 200);
+    is_deeply([$t2->maxsize], [300,200]);
+    $t2->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    my($t_width, $t_height) = $t->maxsize;
+    my($s_width, $s_height) = ($t->screenwidth, $t->screenheight);
+    cmp_ok($t_width, "<=", $s_width, 
+	   "maxsize must be <= screen size");
+    cmp_ok($t_height, "<=", $s_height);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(qw(-width 300 -height 300));
+    $t->geometry("+0+0");
+    $t->update;
+    $t->maxsize(200, 150);
+    # UpdateGeometryInfo invoked at idle
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 200, q{setting the maxsize to a smaller value will resize a toplevel});
+    is($h, 150);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->wmGrid(0,0,50,50);
+    $t->geometry("6x6");
+    $t->update;
+    $t->maxsize(4, 3);
+    # UpdateGeometryInfo invoked at idle
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 4, q{setting the maxsize to a smaller value will resize a gridded toplevel});
+    is($h, 3);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(qw(-width 200 -height 200));
+    $t->geometry("+0+0");
+    $t->maxsize(300, 250);
+    $t->update;
+    $t->geometry("400x300");
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 300, q{attempting to resize to a value bigger than the current maxsize});
+    # ... will set it to the max size
+    is($h, 250);
+    $t->destroy;
+}    
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    $t->wmGrid(qw(1 1 50 50));
+    $t->geometry("4x4");
+    $t->maxsize(6, 5);
+    $t->update;
+    $t->geometry("8x6");
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 6, q{attempting to resize a gridded toplevel to a value bigger});
+    # ... than the current maxsize will set it to the max size
+    is($h, 5);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    my $tf = $t->Frame(qw(-width 400 -height 400))->pack;
+    $t->idletasks;
+    is($t->reqwidth, 400);
+    is($t->reqheight, 400);
+    $t->maxsize(300, 300);
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 300, q{Use max size if window size is not explicitly set});
+    # ... and the reqWidth/reqHeight are bigger than the max size
+    is($h, 300);
+}    
+
+{
+    ### wm minsize ###
+    eval { $mw->minsize("a") };
+    like($@, qr{\Qwrong # args: should be "wm minsize window ?width height?"},
+	 q{wm minsize usage});
+
+    eval { $mw->minsize(qw(a b c)) };
+    like($@, qr{\Qwrong # args: should be "wm minsize window ?width height?"});
+
+    eval { $mw->minsize(qw(x 100)) };
+    like($@, qr{'x' isn't numeric});
+
+    eval { $mw->minsize(qw(100 bogus)) };
+    like($@, qr{'bogus' isn't numeric});
+}
+
+{
+    my $t2 = $mw->Toplevel;
+    $t2->geometry("+0+0");
+    $t2->minsize(300, 200);
+    is_deeply([$t2->minsize], [300,200]);
+    $t2->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(qw(-width 200 -height 200));
+    $t->geometry("+0+0");
+    $t->update;
+    $t->minsize(400, 300);
+    # UpdateGeometryInfo invoked at idle
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 400, q{setting the minsize to a larger value will resize a toplevel});
+    is($h, 300);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    $t->wmGrid(qw(1 1 50 50));
+    $t->geometry("4x4");
+    $t->update;
+    $t->minsize(8,8);
+    # UpdateGeometryInfo invoked at idle
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 8, q{setting the minsize to a larger value will resize a gridded toplevel});
+    is($h, 8);
+    $t->destroy;
+}    
+
+{
+    my $t = $mw->Toplevel(qw(-width 400 -height 400));
+    $t->geometry("+0+0");
+    $t->minsize(300, 300);
+    $t->update;
+    $t->geometry("200x200");
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 300, q{attempting to resize to a value smaller than the current minsize});
+    # ... will set it to the minsize
+    is($h, 300);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    $t->wmGrid(qw(1 1 50 50));
+    $t->geometry("8x8");
+    $t->minsize(6, 6);
+    $t->update;
+    $t->geometry("4x4");
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 6, q{attempting to resize a gridded toplevel to a value smaller});
+    # than the current minsize will set it to the minsize when gridded
+    is($h, 6);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    my $tf = $t->Frame(qw(-width 250 -height 250))->pack;
+    $t->idletasks;
+    is($t->reqwidth, 250);
+    is($t->reqheight, 250);
+    $t->minsize(300, 300);
+    $t->update;
+    my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
+    is($w, 300, q{Use min size if window size is not explicitly set});
+    # ... and the reqWidth/reqHeight are smaller than the min size
+    is($h, 300);
+    $t->destroy;
+}
+
+{
+    ### wm overrideredirect ###
+    eval { $mw->overrideredirect(1, 2) };
+    like($@, qr{\Qwrong # args: should be "wm overrideredirect window ?boolean?"},
+	 "wm overrideredirect usage");
+
+    ## In Perl probably interpreted as a true value
+    #eval { $mw->overrideredirect("boo") };
+    #like($@, qr{\Qexpected boolean value but got "boo"});
+
+    is($mw->overrideredirect, 0, "wm overrideredirect, setting and reading values");
+    $mw->overrideredirect(1);
+    is($mw->overrideredirect, 1);
+    $mw->overrideredirect(0);
+    is($mw->overrideredirect, 0);
+}
+
+{
+    ### wm positionfrom ###
+    eval { $mw->positionfrom(1, 2) };
+    like($@, qr{\Qwrong # args: should be "wm positionfrom window ?user/program?"},
+	 "wm positionfrom usage");
+
+    eval { $mw->positionfrom("none") };
+    like($@, qr{bad argument "none": must be program, or user});
+}
+
+{
+    my $t2 = $mw->Toplevel;
+    $t2->geometry("+0+0");
+    $t2->positionfrom("user");
+    is($t2->positionfrom, "user", "wm positionfrom, setting and reading values");
+    $t2->positionfrom("program");
+    is($t2->positionfrom, "program");
+    $t2->positionfrom(undef);
+    is($t2->positionfrom, undef);    
+    $t2->destroy;
+}
+
+{
+    ### wm protocol ###
+    eval { $mw->protocol(1, 2, 3) };
+    like($@, qr{\Qwrong # args: should be "wm protocol window ?name? ?command?"},
+	 "wm protocol usage");
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    $t->protocol("foo a", "a b c");
+    $t->protocol("bar", "test script for bar");
+    is_deeply([$t->protocol], ["bar", "foo a"],
+	      "wm protocol, setting and reading values");
+    $t->protocol("foo a", undef);
+    $t->protocol("bar", undef);
+    is_deeply([$t->protocol], []);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    $t->protocol("foo", "a b c");
+    $t->protocol("bar", "test script for bar");
+    isa_ok($t->protocol("foo"), "Tk::Callback");
+    isa_ok($t->protocol("bar"), "Tk::Callback");
+    $t->protocol("foo", undef);
+    $t->protocol("bar", undef);
+    is($t->protocol("foo"), undef);
+    is($t->protocol("bar"), undef);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel;
+    $t->geometry("+0+0");
+    my $code1 = sub { "a b c" };
+    $t->protocol("foo", $code1);
+    my $code2 = sub { "test script" };
+    $t->protocol("foo", $code2);
+    is($t->protocol("foo")->[0], $code2);
+    $t->protocol("foo", ["bla"]);
+    isa_ok($t->protocol("foo"), "Tk::Callback");
+    is($t->protocol("foo")->[0], "bla");
+    $t->destroy;
+}
+
+{
+    ### wm resizable ###
+    eval { $mw->resizable(1) };
+    like($@, qr{\Qwrong # args: should be "wm resizable window ?width height?"},
+	 "wm resizable usage");
+
+    eval { $mw->resizable(1,2,3) };
+    like($@, qr{\Qwrong # args: should be "wm resizable window ?width height?"});
+
+    ## Valid in Perl, "bad" is a boolean value
+    #eval { $mw->resizable("bad", 0) };
+
+    $mw->resizable(0, 1);
+    is_deeply([$mw->resizable], [0, 1], "wm resizable, setting and reading values");
+    $mw->resizable(1, 0);
+    is_deeply([$mw->resizable], [1, 0]);
+    $mw->resizable(1, 1);
+    is_deeply([$mw->resizable], [1, 1]);
+}
+
+{
+    ### wm sizefrom ###
+    eval { $mw->sizefrom(1, 2) };
+    like($@, qr{\Qwrong # args: should be "wm sizefrom window ?user|program?"},
+	 "wm sizefrom usage");
+
+    eval { $mw->sizefrom("bad") };
+    like($@, qr{bad argument "bad": must be program, or user});
+
+    $t->sizefrom("user");
+    is($t->sizefrom, "user", "wm sizefrom, setting and reading values");
+    $t->sizefrom("program");
+    is($t->sizefrom, "program");
+    $t->sizefrom(undef);
+    is($t->sizefrom, undef);
+}
+
+{
+    ### wm stackorder ###
+    eval { $mw->stackorder("_") };
+    like($@, qr{\Qwrong # args: should be "wm stackorder window ?isabove|isbelow window?"},
+	 "wm stackorder usage");
+
+    eval { $mw->stackorder("_", "_", "_") };
+    like($@, qr{\Qwrong # args: should be "wm stackorder window ?isabove|isbelow window?"});
+
+    eval { $mw->stackorder("is", ".") };
+    like($@, qr{\Qambiguous argument "is": must be isabove, or isbelow});
+
+    eval { $mw->stackorder("isabove", "_") };
+    like($@, qr{\Qbad window path name "_"});
+}
+
+for my $is ("isabove", "isbelow") {
+    my $t = $mw->Toplevel(Name => "t");
+    $t->geometry("+0+0");
+    my $tb = $t->Button(Name => "b")->pack;
+    $mw->update;
+    eval { $mw->stackorder($is, $tb) };
+    like($@, qr{\Qwindow ".t.b" isn't a top-level window});
+    $t->destroy;
+}
+
+for my $is ("isabove", "isbelow") {
+    my $t = $mw->Toplevel(Name => "t");
+    $t->geometry("+0+0");
+    $t->update;
+    $t->withdraw;
+    eval { $t->stackorder($is, $mw) };
+    like($@, qr{\Qwindow ".t" isn't mapped},
+	 "wm stackorder usage, isabove|isbelow toplevels must be mapped");
+    $t->destroy;
+}
+    
+deleteWindows;
+
+{
+    my $t = $mw->Toplevel(Name => "t");
+    $t->geometry("+0+0");
+    $t->update;
+    is_deeply([$mw->stackorder], [".", ".t"]);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(Name => "t");
+    $t->geometry("+0+0");
+    $t->update;
+    $mw->raise;
+    raiseDelay;
+    is_deeply([$mw->stackorder], [".t", "."]);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(Name => "t"); $t->geometry("+0+0"); $t->update;
+    my $t2 = $mw->Toplevel(Name => "t2"); $t2->geometry("+0+0"); $t2->update;
+    $mw->raise;
+    $t2->raise;
+    raiseDelay;
+    is_deeply([$mw->stackorder], [".t", ".", ".t2"]);
+    Tk::destroy($t, $t2);
+}
+
+{
+    my $t = $mw->Toplevel(Name => "t"); $t->geometry("+0+0"); $t->update;
+    my $t2 = $mw->Toplevel(Name => "t2"); $t2->geometry("+0+0"); $t2->update;
+    $mw->raise;
+    $t2->lower;
+    raiseDelay;
+    is_deeply([$mw->stackorder], [".t2", ".t", "."]);
+    Tk::destroy($t, $t2);
+}
+
+{
+    my $parent = $mw->Toplevel(Name => "parent");
+    $parent->geometry("+0+0");
+    $parent->update;
+    my $parent_child1 = $parent->Toplevel(Name => "child1");
+    $parent_child1->geometry("+0+0");
+    $parent_child1->update;
+    my $parent_child2 = $parent->Toplevel(Name => "child2");
+    $parent_child2->geometry("+0+0");
+    $parent_child2->update;
+    my $extra = $mw->Toplevel(Name => "extra");
+    $extra->geometry("+0+0");
+    $extra->update;
+    $parent->raise;
+    $parent_child2->lower;
+    raiseDelay;
+    is_deeply([$parent->stackorder], [qw(.parent.child2 .parent.child1 .parent)]);
+}
+
+deleteWindows;
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    my $t1b = $t1->Button->pack;
+    $mw->update;
+    is_deeply([$mw->stackorder], [".", ".t1"],
+	      q{non-toplevel widgets ignored});
+}
+
+deleteWindows;
+
+{
+    is_deeply([$mw->stackorder], ["."],
+	      q{no children returns self});
+}
+
+deleteWindows;
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t2 = $mw->Toplevel(Name => "t2");
+    $t2->geometry("+0+0");
+    $t2->update;
+    $t1->iconify;
+    is_deeply([$mw->stackorder], [".", ".t2"],
+	      "unmapped toplevel");
+    $t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t2 = $mw->Toplevel(Name => "t2");
+    $t2->geometry("+0+0");
+    $t2->update;
+    $t2->withdraw;
+    is_deeply([$mw->stackorder], [".", ".t1"]);
+    $t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t2 = $mw->Toplevel(Name => "t2");
+    $t2->geometry("+0+0");
+    $t2->update;
+    $t2->withdraw;
+    is_deeply([$t2->stackorder], []);
+    $t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t1t2 = $t1->Toplevel(Name => "t2");
+    $t1t2->geometry("+0+0");
+    $t1t2->update;
+    $t1t2->withdraw;
+    is_deeply([$t1->stackorder], [".t1"]);
+    $t1t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t1t2 = $t1->Toplevel(Name => "t2");
+    $t1t2->geometry("+0+0");
+    $t1t2->update;
+    $t1->withdraw;
+    is_deeply([$t1->stackorder], [".t1.t2"]);
+    $t1t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t1t2 = $t1->Toplevel(Name => "t2");
+    $t1t2->geometry("+0+0");
+    $t1t2->update;
+    my $t1t2t3 = $t1t2->Toplevel(Name => "t3");
+    $t1t2t3->geometry("+0+0");
+    $t1t2t3->update;
+    $t1t2->withdraw;
+    is_deeply([$t1->stackorder],[".t1", ".t1.t2.t3"]);
+    $t1t2t3->destroy;
+    $t1t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel(Name => "t1");
+    $t1->geometry("+0+0");
+    $t1->update;
+    my $t1t2 = $t1->Toplevel(Name => "t2");
+    $t1t2->geometry("+0+0");
+    $t1t2->update;
+    $t1->withdraw;
+    is_deeply([$t1->stackorder], [".t1.t2"],
+	      q{unmapped toplevel, mapped children returned});
+    $t1t2->destroy;
+    $t1->destroy;
+}
+
+{
+    my $t1 = $mw->Toplevel;
+    is_deeply([$mw->stackorder], ["."],
+	      q{toplevel mapped in idle callback });
+    $t1->destroy;
+}
+
+deleteWindows;
+
+{
+    my $t = $mw->Toplevel; $t->update;
+    $t->raise;
+    is($mw->stackorder("isabove", $t), 0,
+       q{wm stackorder isabove|isbelow});
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel; $t->update;
+    $t->raise;
+    is($mw->stackorder("isbelow", $t), 1);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel; $t->update;
+    $mw->raise;
+    raiseDelay;
+    is($t->stackorder("isa", $mw), 0);
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel; $t->update;
+    $mw->raise;
+    raiseDelay;
+    is($t->stackorder("isb", $mw), 1);
+    $t->destroy;
+}
+
+deleteWindows;
+
+{
+    my $t = $mw->Toplevel(Name => "t");
+    my $tm = $t->Menu(-type => "menubar");
+    $tm->add("cascade", -label => "File");
+    $t->configure(-menu => $tm);
+    $mw->update;
+    $mw->raise;
+    raiseDelay;
+    is_deeply([$mw->stackorder], [".t", "."],
+	      q{a menu is not a toplevel});
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(Name => "t");
+    $t->overrideredirect(1);
+    $mw->raise;
+    $mw->update;
+    raiseDelay;
+    is($mw->stackorder("isabove", $t), 0,
+       q{A normal toplevel can't be raised above an overrideredirect toplevel});
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Toplevel(Name => "t");
+    $t->overrideredirect(1);
+    $mw->lower;
+    $mw->update;
+    raiseDelay;
+    is($mw->stackorder("isbelow", $t), 1,
+       q{A normal toplevel can be explicitely lowered});
+    $t->destroy;
+}
+
+{
+    my $real = $mw->Toplevel(Name => "real", -container => 1);
+    my $embd = $mw->Toplevel(Name => "embd",
+			     -bg => "blue", -use => $real->id);
+    $mw->update;
+    is_deeply([$mw->stackorder], [".", ".real"],
+	      q{An embedded toplevel does not appear in the stacking order});
+    $embd->destroy;
+    $real->destroy;
+}
+
+stdWindow;
+
+{
+    ### wm title ###
+    eval { $mw->title("1", "2") };
+    like($@, qr{\Qwrong # args: should be "wm title window ?newTitle?"},
+	 "wm title usage");
+
+    my $t = $mw->Toplevel;
+    is($t->title, "Toplevel", "wm title, setting and reading values");
+    $t->title("Apa");
+    is($t->title, "Apa");
+    $t->title(undef);
+    is($t->title, "");
+    $t->destroy;
+}
+
+{
+    ### wm transient ###
+    my $t = $mw->Toplevel(Name => "t");
+    eval { $t->transient(1, 2) };
+    like($@, qr{\Qwrong # args: should be "wm transient window ?master?"},
+	 "wm transient usage");
+
+    eval { $t->transient("foo") };
+    like($@, qr{bad window path name "foo"});    
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    my $subject = $mw->Toplevel(Name => "subject");
+    $subject->transient($master);
+    eval { $subject->iconify };
+    like($@, qr{\Qcan't iconify ".subject": it is a transient});
+}
+
+{
+    deleteWindows;
+    my $icon = $mw->Toplevel(Name => "icon", -bg => "blue");
+    my $top = $mw->Toplevel(Name => "top");
+    $top->iconwindow($icon);
+    my $dummy = $mw->Toplevel;
+    eval { $icon->transient($dummy) };
+    like($@, qr{\Qcan't make ".icon" a transient: it is an icon for .top});
+}
+
+{
+    deleteWindows;
+    my $icon = $mw->Toplevel(Name => "icon", -bg => "blue");
+    my $top = $mw->Toplevel(Name => "top");
+    $top->iconwindow($icon);
+    my $dummy = $mw->Toplevel;
+    eval { $dummy->transient($icon) };
+    like($@, qr{\Qcan't make ".icon" a master: it is an icon for .top});
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    eval { $master->transient($master) };
+    like($@, qr{\Qcan't make ".master" its own master});
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    my $f = $master->Frame(Name => "f");
+    eval { $master->transient($f) };
+    like($@, qr{\Qcan't make ".master" its own master});
+}
+
 __END__
-
-### wm iconwindow ###
-test wm-iconwindow-1.1 {usage} {
-    list [catch {wm iconwindow} err] $err
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-iconwindow-1.2 {usage} {
-    list [catch {wm iconwindow .t 12 13} msg] $msg
-} {1 {wrong # args: should be "wm iconwindow window ?pathName?"}}
-test wm-iconwindow-1.3 {usage} {
-    list [catch {wm iconwindow .t bogus} msg] $msg
-} {1 {bad window path name "bogus"}}
-test wm-iconwindow-1.4 {usage} -setup {
-    destroy .b
-} -body {
-    button .b -text Help
-    wm iconwindow .t .b
-} -returnCodes error -cleanup {
-    destroy .b
-} -result {can't use .b as icon window: not at top level}
-test wm-iconwindow-1.5 {usage} -setup {
-    destroy .icon .t2
-} -body {
-    toplevel .icon -width 50 -height 50 -bg green
-    toplevel .t2
-    wm geom .t2 -0+0
-    wm iconwindow .t2 .icon
-    wm iconwindow .t .icon
-} -returnCodes error -cleanup {
-    destroy .t2 .icon
-} -result {.icon is already an icon for .t2}
-
-test wm-iconwindow-2.1 {setting and reading values} -setup {
-    destroy .icon
-} -body {
-    set result {}
-    lappend result [wm iconwindow .t]
-    toplevel .icon -width 50 -height 50 -bg green
-    wm iconwindow .t .icon
-    lappend result [wm iconwindow .t]
-    wm iconwindow .t {}
-    destroy .icon
-    lappend result [wm iconwindow .t]
-} -result {{} .icon {}}
-
-
-### wm maxsize ###
-test wm-maxsize-1.1 {usage} {
-    list [catch {wm maxsize} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-maxsize-1.2 {usage} {
-    list [catch {wm maxsize . a} msg]  $msg
-} {1 {wrong # args: should be "wm maxsize window ?width height?"}}
-test wm-maxsize-1.3 {usage} {
-    list [catch {wm maxsize . a b c} msg]  $msg
-} {1 {wrong # args: should be "wm maxsize window ?width height?"}}
-test wm-maxsize-1.4 {usage} {
-    list [catch {wm maxsize . x 100} msg]  $msg
-} {1 {expected integer but got "x"}}
-test wm-maxsize-1.5 {usage} {
-    list [catch {wm maxsize . 100 bogus} msg]  $msg
-} {1 {expected integer but got "bogus"}}
-test wm-maxsize-1.6 {usage} -setup {
-    destroy .t2
-} -body {
-    toplevel .t2
-    wm maxsize .t2 300 200
-    wm maxsize .t2
-} -cleanup {
-    destroy .t2
-} -result {300 200}
-test wm-maxsize-1.7 {maxsize must be <= screen size} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    foreach {t_width t_height} [wm maxsize .t] break
-    set s_width [winfo screenwidth .t]
-    set s_height [winfo screenheight .t]
-    expr {($t_width <= $s_width) && ($t_height <= $s_height)}
-} -result 1
-
-test wm-maxsize-2.1 {setting the maxsize to a value smaller\
-        than the current size will resize a toplevel} -setup {
-    destroy .t
-} -body {
-    toplevel .t -width 300 -height 300
-    update
-    wm maxsize .t 200 150
-    # UpdateGeometryInfo invoked at idle
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {200 150}
-test wm-maxsize-2.2 {setting the maxsize to a value smaller\
-        than the current size will resize a gridded toplevel} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    wm grid .t 0 0 50 50
-    wm geometry .t 6x6
-    update
-    wm maxsize .t 4 3
-    # UpdateGeometryInfo invoked at idle
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {4 3}
-test wm-maxsize-2.3 {attempting to resize to a value\
-        bigger than the current maxsize will set it to the max size} -setup {
-    destroy .t
-} -body {
-    toplevel .t -width 200 -height 200
-    wm maxsize .t 300 250
-    update
-    wm geom .t 400x300
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {300 250}
-test wm-maxsize-2.4 {attempting to resize to a value bigger than the\
-	current maxsize will set it to the max size when gridded} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    wm grid .t 1 1 50 50
-    wm geom .t 4x4
-    wm maxsize .t 6 5
-    update
-    wm geom .t 8x6
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {6 5}
-test wm-maxsize-2.5 {Use max size if window size is not explicitly set\
-	and the reqWidth/reqHeight are bigger than the max size} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    pack [frame .t.f -width 400 -height 400]
-    update idletasks
-    set req [list [winfo reqwidth .t] [winfo reqheight .t]]
-    wm maxsize .t 300 300
-    update
-    list $req [lrange [split [wm geom .t] x+] 0 1]
-} -result {{400 400} {300 300}}
-
-
-### wm minsize ###
-test wm-minsize-1.1 {usage} {
-    list [catch {wm minsize} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-minsize-1.2 {usage} {
-    list [catch {wm minsize . a} msg]  $msg
-} {1 {wrong # args: should be "wm minsize window ?width height?"}}
-test wm-minsize-1.3 {usage} {
-    list [catch {wm minsize . a b c} msg]  $msg
-} {1 {wrong # args: should be "wm minsize window ?width height?"}}
-test wm-minsize-1.4 {usage} {
-    list [catch {wm minsize . x 100} msg]  $msg
-} {1 {expected integer but got "x"}}
-test wm-minsize-1.5 {usage} {
-    list [catch {wm minsize . 100 bogus} msg]  $msg
-} {1 {expected integer but got "bogus"}}
-test wm-minsize-1.6 {usage} -setup {
-    destroy .t2
-} -body {
-    toplevel .t2
-    wm minsize .t2 300 200
-    wm minsize .t2
-} -cleanup {
-    destroy .t2
-} -result {300 200}
-
-test wm-minsize-2.1 {setting the minsize to a value larger\
-        than the current size will resize a toplevel} -setup {
-    destroy .t
-} -body {
-    toplevel .t -width 200 -height 200
-    update
-    wm minsize .t 400 300
-    # UpdateGeometryInfo invoked at idle
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {400 300}
-test wm-minsize-2.2 {setting the minsize to a value larger\
-        than the current size will resize a gridded toplevel} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    wm grid .t 1 1 50 50
-    wm geom .t 4x4
-    update
-    wm minsize .t 8 8
-    # UpdateGeometryInfo invoked at idle
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {8 8}
-test wm-minsize-2.3 {attempting to resize to a value\
-        smaller than the current minsize will set it to the minsize} -setup {
-    destroy .t
-} -body {
-    toplevel .t -width 400 -height 400
-    wm minsize .t 300 300
-    update
-    wm geom .t 200x200
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {300 300}
-test wm-minsize-2.4 {attempting to resize to a value smaller than the\
-	current minsize will set it to the minsize when gridded} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    wm grid .t 1 1 50 50
-    wm geom .t 8x8
-    wm minsize .t 6 6
-    update
-    wm geom .t 4x4
-    update
-    lrange [split [wm geom .t] x+] 0 1
-} -result {6 6}
-test wm-minsize-2.5 {Use min size if window size is not explicitly set\
-	and the reqWidth/reqHeight are smaller than the min size} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    pack [frame .t.f -width 250 -height 250]
-    update idletasks
-    set req [list [winfo reqwidth .t] \
-                      [winfo reqheight .t]]
-    wm minsize .t 300 300
-    update
-    list $req [lrange [split [wm geom .t] x+] 0 1]
-} -result {{250 250} {300 300}}
-
-
-### wm overrideredirect ###
-test wm-overrideredirect-1.1 {usage} {
-    list [catch {wm overrideredirect} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-overrideredirect-1.2 {usage} {
-    list [catch {wm overrideredirect .t 1 2} msg]  $msg
-} {1 {wrong # args: should be "wm overrideredirect window ?boolean?"}}
-test wm-overrideredirect-1.3 {usage} {
-    list [catch {wm overrideredirect .t boo} msg]  $msg
-} {1 {expected boolean value but got "boo"}}
-
-test wm-overrideredirect-2.1 {setting and reading values} {
-    set result {}
-    lappend result [wm overrideredirect .t]
-    wm overrideredirect .t true
-    lappend result [wm overrideredirect .t]
-    wm overrideredirect .t off
-    lappend result [wm overrideredirect .t]
-} {0 1 0}
-
-
-### wm positionfrom ###
-test wm-positionfrom-1.1 {usage} {
-    list [catch {wm positionfrom} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-positionfrom-1.2 {usage} {
-    list [catch {wm positionfrom .t 1 2} msg]  $msg
-} {1 {wrong # args: should be "wm positionfrom window ?user/program?"}}
-test wm-positionfrom-1.3 {usage} {
-    list [catch {wm positionfrom .t none} msg]  $msg
-} {1 {bad argument "none": must be program or user}}
-
-test wm-positionfrom-2.1 {setting and reading values} -setup {
-    destroy .t2
-} -body {
-    toplevel .t2
-    set result {}
-    wm positionfrom .t user
-    lappend result [wm positionfrom .t]
-    wm positionfrom .t program
-    lappend result [wm positionfrom .t]
-    wm positionfrom .t {}
-    lappend result [wm positionfrom .t]
-} -cleanup {
-    destroy .t2
-} -result {user program {}}
-
-
-### wm protocol ###
-test wm-protocol-1.1 {usage} {
-    list [catch {wm protocol} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-protocol-1.2 {usage} {
-    list [catch {wm protocol .t 1 2 3} msg]  $msg
-} {1 {wrong # args: should be "wm protocol window ?name? ?command?"}}
-
-test wm-protocol-2.1 {setting and reading values} {
-    wm protocol .t {foo a} {a b c}
-    wm protocol .t bar {test script for bar}
-    set result [wm protocol .t]
-    wm protocol .t {foo a} {}
-    wm protocol .t bar {}
-    set result
-} {bar {foo a}}
-test wm-protocol-2.2 {setting and reading values} {
-    set result {}
-    wm protocol .t foo {a b c}
-    wm protocol .t bar {test script for bar}
-    lappend result [wm protocol .t foo] [wm protocol .t bar]
-    wm protocol .t foo {}
-    wm protocol .t bar {}
-    lappend result [wm protocol .t foo] [wm protocol .t bar]
-} {{a b c} {test script for bar} {} {}}
-test wm-protocol-2.3 {setting and reading values} {
-    wm protocol .t foo {a b c}
-    wm protocol .t foo {test script}
-    set result [wm protocol .t foo]
-    wm protocol .t foo {}
-    set result
-} {test script}
-
-
-### wm resizable ###
-test wm-resizable-1.1 {usage} {
-    list [catch {wm resizable} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-resizable-1.2 {usage} {
-    list [catch {wm resizable .t 1} msg]  $msg
-} {1 {wrong # args: should be "wm resizable window ?width height?"}}
-test wm-resizable-1.3 {usage} {
-    list [catch {wm resizable .t 1 2 3} msg]  $msg
-} {1 {wrong # args: should be "wm resizable window ?width height?"}}
-test wm-resizable-1.4 {usage} {
-    list [catch {wm resizable .t bad 0} msg]  $msg
-} {1 {expected boolean value but got "bad"}}
-test wm-resizable-1.5 {usage} {
-    list [catch {wm resizable .t 1 bad} msg]  $msg
-} {1 {expected boolean value but got "bad"}}
-
-test wm-resizable-2.1 {setting and reading values} {
-    wm resizable .t 0 1
-    set result [wm resizable .t]
-    wm resizable .t 1 0
-    lappend result [wm resizable .t]
-    wm resizable .t 1 1
-    lappend result [wm resizable .t]
-} {0 1 {1 0} {1 1}}
-
-
-### wm sizefrom ###
-test wm-sizefrom-1.1 {usage} {
-    list [catch {wm sizefrom} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-sizefrom-1.2 {usage} {
-    list [catch {wm sizefrom .t 1 2} msg]  $msg
-} {1 {wrong # args: should be "wm sizefrom window ?user|program?"}}
-test wm-sizefrom-1.4 {usage} {
-    list [catch {wm sizefrom .t bad} msg]  $msg
-} {1 {bad argument "bad": must be program or user}}
-
-test wm-sizefrom-2.1 {setting and reading values} {
-    set result [list [wm sizefrom .t]]
-    wm sizefrom .t user
-    lappend result [wm sizefrom .t]
-    wm sizefrom .t program
-    lappend result [wm sizefrom .t]
-    wm sizefrom .t {}
-    lappend result [wm sizefrom .t]
-} {{} user program {}}
-
-
-### wm stackorder ###
-test wm-stackorder-1.1 {usage} {
-    list [catch {wm stackorder} err] $err
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-stackorder-1.2 {usage} {
-    list [catch {wm stackorder . _} err] $err
-} {1 {wrong # args: should be "wm stackorder window ?isabove|isbelow window?"}}
-test wm-stackorder-1.3 {usage} {
-    list [catch {wm stackorder . _ _ _} err] $err
-} {1 {wrong # args: should be "wm stackorder window ?isabove|isbelow window?"}}
-test wm-stackorder-1.4 {usage} {
-    list [catch {wm stackorder . is .} err] $err
-} {1 {ambiguous argument "is": must be isabove or isbelow}}
-test wm-stackorder-1.5 {usage} {
-    list [catch {wm stackorder _} err] $err
-} {1 {bad window path name "_"}}
-test wm-stackorder-1.6 {usage} {
-    list [catch {wm stackorder . isabove _} err] $err
-} {1 {bad window path name "_"}}
-test wm-stackorder-1.7 {usage} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    button .t.b
-    wm stackorder .t.b
-} -returnCodes error -result {window ".t.b" isn't a top-level window}
-test wm-stackorder-1.8 {usage} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    button .t.b
-    pack .t.b
-    update
-    wm stackorder . isabove .t.b
-} -returnCodes error -result {window ".t.b" isn't a top-level window}
-test wm-stackorder-1.9 {usage} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    button .t.b
-    pack .t.b
-    update
-    wm stackorder . isbelow .t.b
-} -returnCodes error -result {window ".t.b" isn't a top-level window}
-test wm-stackorder-1.10 {usage, isabove|isbelow toplevels must be mapped} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    update
-    wm withdraw .t
-    wm stackorder .t isabove .
-} -returnCodes error -result {window ".t" isn't mapped}
-test wm-stackorder-1.11 {usage, isabove|isbelow toplevels must be mapped} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    update
-    wm withdraw .t
-    wm stackorder . isbelow .t
-} -returnCodes error -result {window ".t" isn't mapped}
-deleteWindows
-
-test wm-stackorder-2.1 {} -setup {
-    destroy .t
-} -body {
-    toplevel .t ; update
-    wm stackorder .
-} -result {. .t}
-test wm-stackorder-2.2 {} -setup {
-    destroy .t
-} -body {
-    toplevel .t ; update
-    raise .
-    raiseDelay
-    wm stackorder .
-} -result {.t .}
-test wm-stackorder-2.3 {} -setup {
-    destroy .t .t2
-} -body {
-    toplevel .t ; update
-    toplevel .t2 ; update
-    raise .
-    raise .t2
-    raiseDelay
-    wm stackorder .
-} -result {.t . .t2}
-test wm-stackorder-2.4 {} -setup {
-    destroy .t .t2
-} -body {
-    toplevel .t ; update
-    toplevel .t2 ; update
-    raise .
-    lower .t2
-    raiseDelay
-    wm stackorder .
-} -result {.t2 .t .}
-test wm-stackorder-2.5 {} {
-    destroy .parent
-    toplevel .parent ; update
-    destroy .parent.child1
-    toplevel .parent.child1 ; update
-    destroy .parent.child2
-    toplevel .parent.child2 ; update
-    destroy .extra
-    toplevel .extra ; update
-    raise .parent
-    lower .parent.child2
-    raiseDelay
-    wm stackorder .parent
-} {.parent.child2 .parent.child1 .parent}
-deleteWindows
-test wm-stackorder-2.6 {non-toplevel widgets ignored} -setup {
-    destroy .t1
-} -body {
-    toplevel .t1
-    button .t1.b
-    pack .t1.b
-    update
-    wm stackorder .
-} -result {. .t1}
-deleteWindows
-test wm-stackorder-2.7 {no children returns self} {
-    wm stackorder .
-} {.}
-deleteWindows
-
-test wm-stackorder-3.1 {unmapped toplevel} -setup {
-    destroy .t1 .t2
-} -body {
-    toplevel .t1 ; update
-    toplevel .t2 ; update
-    wm iconify .t1
-    wm stackorder .
-} -result {. .t2}
-test wm-stackorder-3.2 {unmapped toplevel} -setup {
-    destroy .t1 .t2
-} -body {
-    toplevel .t1 ; update
-    toplevel .t2 ; update
-    wm withdraw .t2
-    wm stackorder .
-} -result {. .t1}
-test wm-stackorder-3.3 {unmapped toplevel} -setup {
-    destroy .t1 .t2
-} -body {
-    toplevel .t1 ; update
-    toplevel .t2 ; update
-    wm withdraw .t2
-    wm stackorder .t2
-} -result {}
-test wm-stackorder-3.4 {unmapped toplevel} -setup {
-    destroy .t1
-} -body {
-    toplevel .t1 ; update
-    toplevel .t1.t2 ; update
-    wm withdraw .t1.t2
-    wm stackorder .t1
-} -result {.t1}
-test wm-stackorder-3.5 {unmapped toplevel} -setup {
-    destroy .t1
-} -body {
-    toplevel .t1 ; update
-    toplevel .t1.t2 ; update
-    wm withdraw .t1
-    wm stackorder .t1
-} -result {.t1.t2}
-test wm-stackorder-3.6 {unmapped toplevel} -setup {
-    destroy .t1
-} -body {
-    toplevel .t1 ; update
-    toplevel .t1.t2 ; update
-    toplevel .t1.t2.t3 ; update
-    wm withdraw .t1.t2
-    wm stackorder .t1
-} -result {.t1 .t1.t2.t3}
-test wm-stackorder-3.7 {unmapped toplevel, mapped children returned} -setup {
-    destroy .t1
-} -body {
-    toplevel .t1 ; update
-    toplevel .t1.t2 ; update
-    wm withdraw .t1
-    wm stackorder .t1
-} -result {.t1.t2}
-test wm-stackorder-3.8 {toplevel mapped in idle callback } -setup {
-    destroy .t1
-} -body {
-    toplevel .t1
-    wm stackorder .
-} -result {.}
-deleteWindows
-
-test wm-stackorder-4.1 {wm stackorder isabove|isbelow} -setup {
-    destroy .t
-} -body {
-    toplevel .t ; update
-    raise .t
-    wm stackorder . isabove .t
-} -result {0}
-test wm-stackorder-4.2 {wm stackorder isabove|isbelow} -setup {
-    destroy .t
-} -body {
-    toplevel .t ; update
-    raise .t
-    wm stackorder . isbelow .t
-} -result {1}
-test wm-stackorder-4.3 {wm stackorder isabove|isbelow} -setup {
-    destroy .t
-} -body {
-    toplevel .t ; update
-    raise .
-    raiseDelay
-    wm stackorder .t isa .
-} -result {0}
-test wm-stackorder-4.4 {wm stackorder isabove|isbelow} -setup {
-    destroy .t
-} -body {
-    toplevel .t ; update
-    raise .
-    raiseDelay
-    wm stackorder .t isb .
-} -result {1}
-deleteWindows
-
-test wm-stackorder-5.1 {a menu is not a toplevel} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    menu .t.m -type menubar
-    .t.m add cascade -label "File"
-    .t configure -menu .t.m
-    update
-    raise .
-    raiseDelay
-    wm stackorder .
-} -result {.t .}
-test wm-stackorder-5.2 {A normal toplevel can't be\
-        raised above an overrideredirect toplevel} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    wm overrideredirect .t 1
-    raise .
-    update
-    raiseDelay
-    wm stackorder . isabove .t
-} -result 0
-test wm-stackorder-5.3 {An overrideredirect window\
-        can be explicitly lowered} -setup {
-    destroy .t
-} -body {
-    toplevel .t
-    wm overrideredirect .t 1
-    lower .t
-    update
-    raiseDelay
-    wm stackorder .t isbelow .
-} -result 1
-
-test wm-stackorder-6.1 {An embedded toplevel does not\
-        appear in the stacking order} -setup {
-    deleteWindows
-} -body {
-    toplevel .real -container 1
-    toplevel .embd -bg blue -use [winfo id .real]
-    update
-    wm stackorder .
-} -result {. .real}
-
-stdWindow
-
-
-### wm title ###
-test wm-title-1.1 {usage} {
-    list [catch {wm title} msg]  $msg
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-title-1.2 {usage} {
-    list [catch {wm title . 1 2} msg]  $msg
-} {1 {wrong # args: should be "wm title window ?newTitle?"}}
-
-test wm-title-2.1 {setting and reading values} {
-    destroy .t
-    toplevel .t
-    set result [wm title .t]
-    wm title .t Apa
-    lappend result [wm title .t]
-    wm title .t {}
-    lappend result [wm title .t]
-} {t Apa {}}
-
-
-### wm transient ###
-test wm-transient-1.1 {usage} {
-    catch {destroy .t} ; toplevel .t
-    list [catch {wm transient .t 1 2} msg]  $msg
-} {1 {wrong # args: should be "wm transient window ?master?"}}
-test wm-transient-1.2 {usage} {
-    catch {destroy .t} ; toplevel .t
-    list [catch {wm transient .t foo} msg]  $msg
-} {1 {bad window path name "foo"}}
-test wm-transient-1.3 {usage} {
-    catch {destroy .t} ; toplevel .t
-    list [catch {wm transient foo .t} msg]  $msg
-} {1 {bad window path name "foo"}}
-test wm-transient-1.4 {usage} {
-    deleteWindows
-    toplevel .master
-    toplevel .subject
-    wm transient .subject .master
-    list [catch {wm iconify .subject} msg] $msg
-} {1 {can't iconify ".subject": it is a transient}}
-test wm-transient-1.5 {usage} {
-    deleteWindows
-    toplevel .icon -bg blue
-    toplevel .top
-    wm iconwindow .top .icon
-    toplevel .dummy
-    list [catch {wm transient .icon .dummy} msg] $msg
-} {1 {can't make ".icon" a transient: it is an icon for .top}}
-test wm-transient-1.6 {usage} {
-    deleteWindows
-    toplevel .icon -bg blue
-    toplevel .top
-    wm iconwindow .top .icon
-    toplevel .dummy
-    list [catch {wm transient .dummy .icon} msg] $msg
-} {1 {can't make ".icon" a master: it is an icon for .top}}
-test wm-transient-1.7 {usage} {
-    deleteWindows
-    toplevel .master
-    list [catch {wm transient .master .master} err] $err
-} {1 {can't make ".master" its own master}}
-test wm-transient-1.8 {usage} {
-    deleteWindows
-    toplevel .master
-    frame .master.f
-    list [catch {wm transient .master .master.f} err] $err
-} {1 {can't make ".master" its own master}}
 
 test wm-transient-2.1 { basic get/set of master } {
     deleteWindows
