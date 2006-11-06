@@ -1335,8 +1335,6 @@ WmAspectCmd(
     }
     if (objc == 3) {
 	if (wmPtr->sizeHintsFlags & PAspect) {
-	    char buf[TCL_INTEGER_SPACE * 4];
-
 	    Tcl_IntResults(interp, 4, 0, wmPtr->minAspect.x,
 			   wmPtr->minAspect.y, wmPtr->maxAspect.x,
 			   wmPtr->maxAspect.y);
@@ -2062,8 +2060,6 @@ WmGridCmd(
     }
     if (objc == 3) {
 	if (wmPtr->sizeHintsFlags & PBaseSize) {
-	    char buf[TCL_INTEGER_SPACE * 4];
-
 	    Tcl_IntResults(interp, 4, 0, wmPtr->reqGridWidth,
 			   wmPtr->reqGridHeight, wmPtr->widthInc,
 			   wmPtr->heightInc);
@@ -2610,8 +2606,6 @@ WmIconpositionCmd(
     }
     if (objc == 3) {
 	if (wmPtr->hints.flags & IconPositionHint) {
-	    char buf[TCL_INTEGER_SPACE * 2];
-
 	    Tcl_IntResults(interp, 2, 0, wmPtr->hints.icon_x,
 			   wmPtr->hints.icon_y);
 	}
@@ -3110,12 +3104,9 @@ WmResizableCmd(
 	return TCL_ERROR;
     }
     if (objc == 3) {
-	char buf[TCL_INTEGER_SPACE * 2];
-
-	sprintf(buf, "%d %d",
-		(wmPtr->flags & WM_WIDTH_NOT_RESIZABLE) ? 0 : 1,
-		(wmPtr->flags & WM_HEIGHT_NOT_RESIZABLE) ? 0 : 1);
-	Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	Tcl_IntResults(interp, 2, 0,
+		       (wmPtr->flags & WM_WIDTH_NOT_RESIZABLE) ? 0 : 1,
+		       (wmPtr->flags & WM_HEIGHT_NOT_RESIZABLE) ? 0 : 1);
 	return TCL_OK;
     }
     if ((Tcl_GetBooleanFromObj(interp, objv[3], &width) != TCL_OK)
