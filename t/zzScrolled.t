@@ -1,8 +1,19 @@
 # -*- perl -*-
 BEGIN { $|=1; $^W=1; }
 use strict;
-use Test;
 use Tk;
+
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "# tests only work with installed Test::More module\n";
+	print "1..1\n";
+	print "ok 1\n";
+	exit;
+    }
+}
 
 BEGIN { plan tests => 94};
 
@@ -13,16 +24,16 @@ my $scrl;
 my $text;
 {
    eval { require Tk::Text; };
-   ok($@, "", "Problem loading Tk::Text");
+   is($@, "", "loading Tk::Text");
    eval { $scrl = $mw->Scrolled('Text', -scrollbars=>'sw', -setgrid=>1); };
-   ok($@, "", "Problem creating Scrolled('Text')");
+   is($@, "", "creating Scrolled('Text')");
    ok( Tk::Exists($scrl) );
    eval { $scrl->grid(-sticky => 'nw'); };
-   ok($@, "", 'Problem managing Scrolled Text with grid');
+   is($@, "", 'managing Scrolled Text with grid');
    eval { $scrl->update; };
-   ok($@, "", 'Problem with update');
+   is($@, "", 'update');
    eval { $text = $scrl->Subwidget('text'); };
-   ok($@, "", 'Problem get subwidget text');
+   is($@, "", 'get subwidget text');
 }
 ##
 ## -fg/-foreground was not propagated to Text widget until
@@ -35,24 +46,24 @@ my $text;
     for my $opt ( qw(-fg -foreground -bg -background) )
       {
         eval { $oldcol = $scrl->cget($opt); };
-        ok($@, "", "cget $opt");
+        is($@, "", "cget $opt");
 
-        ok( $oldcol ne $newcol, 1, "Ooops, colors are already the same $oldcol=$newcol");
+        isnt($oldcol, $newcol, "colors aren't already the same $oldcol=$newcol");
 
 	## Set
         eval { $scrl->configure($opt=>$newcol); };
-        ok($@, "", "configure $opt => $newcol");
+        is($@, "", "configure $opt => $newcol");
         eval { $txtcol = $text->cget($opt); };
-        ok($@, "", "text cget $opt");
-        ok($txtcol, $newcol, "$opt not propagated to Text subwidget");
+        is($@, "", "text cget $opt");
+        is($txtcol, $newcol, "$opt propagated to Text subwidget");
         $mw->update;
 
 	## ReSet
         eval { $scrl->configure($opt=>$oldcol); };
-        ok($@, "", "Reset: configure $opt => $oldcol");
+        is($@, "", "Reset: configure $opt => $oldcol");
         eval { $txtcol = $scrl->cget($opt); };
-        ok($@, "", "Reset: text cget $opt");
-        ok($txtcol, $oldcol, "Reset scrolled $opt color");
+        is($@, "", "Reset: text cget $opt");
+        is($txtcol, $oldcol, "Reset scrolled $opt color");
         $mw->update;
       }
 }
@@ -68,40 +79,42 @@ my $text;
         for my $chg (qw(-5 5))
           {
             eval { $oldsize = $scrl->cget($opt); };
-            ok($@, "", "Sizechk: cget $opt");
+            is($@, "", "Sizechk: cget $opt");
             eval { $oldgeo  = $scrl->geometry; };
-            ok($@, "", "Sizechk: geometry $opt");
+            is($@, "", "Sizechk: geometry $opt");
 
 	    ## Set
             eval { $scrl->configure($opt=>($oldsize+$chg)); };
-            ok($@, "", "configure $opt => $oldsize + $chg");
+            is($@, "", "configure $opt => $oldsize + $chg");
             eval { $mw->update; };
-            ok($@, "", "Sizechg: Error update configure $opt");
+            is($@, "", "Sizechg: Error update configure $opt");
             eval { $newsize = $text->cget($opt); };
-            ok($@, "", "Sizechg: cget $opt");
-            ok($newsize, $oldsize+$chg, "No size change.");
+            is($@, "", "Sizechg: cget $opt");
+            is($newsize, $oldsize+$chg, "No size change.");
 
 	    # check if geometry has changed
             eval { $newgeo  = $scrl->geometry; };
-            ok($@, "", "Sizechk: new geometry $opt");
-            ok($newgeo, $oldgeo, "Sizechk: Ooops, geometry has changed " .
+            is($@, "", "Sizechk: new geometry $opt");
+            is($newgeo, $oldgeo, "Sizechk: geometry is the same " .
 		"($newgeo) for $opt => $oldsize+($chg)"
 		);
 
 	    ## ReSet
             eval { $scrl->configure($opt=>$oldsize); };
-            ok($@, "", "Reset size: configure $opt => $oldsize");
+            is($@, "", "Reset size: configure $opt => $oldsize");
             eval { $mw->update; };
             eval { $newsize = $text->cget($opt); };
-            ok($@, "", "Reset size: text cget $opt");
-            ok($newsize, $oldsize, "Reset size: scrolled $opt ");
-            ok($@, "", "Sizechg: Error reset update configure $opt");
+            is($@, "", "Reset size: text cget $opt");
+            is($newsize, $oldsize, "Reset size: scrolled $opt ");
+            is($@, "", "Sizechg: no error reset update configure $opt");
             eval { $newgeo  = $scrl->geometry; };
-            ok($@, "", "Sizechk: reset geometry $opt");
-            # Next one often fails - window stays same size but moves
+            is($@, "", "Sizechk: reset geometry $opt");
+
+	    local $TODO = "Next one often fails - window stays same size but moves";
             # e.g. expect 589x341+0+32 get 589x341+17+32
             # tried changing -sticky above as a fix?
-            ok($newgeo, $oldgeo, "Sizechk: geometry has not changed not reset" .
+	    # Only seen on metacity, but not fvwm2 or twm
+            is($newgeo, $oldgeo, "Sizechk: geometry has changed not reset" .
 		" for $opt => $oldsize+($chg)"
 		);
           }
