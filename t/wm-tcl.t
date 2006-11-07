@@ -20,6 +20,10 @@
 # Translated by Slaven Rezic (2006-11, from CVS version 1.36)
 #
 
+# Some tests are marked as TODO because they fail with
+# metacity 2.16.3
+# All tests pass with fvwm 2.4.19 and twm
+
 use strict;
 
 use Tk;
@@ -35,13 +39,22 @@ BEGIN {
     }
 }
 
-plan tests => 278;
+plan tests => 315;
 
 my $mw = MainWindow->new;
 
-my $poswin = 0; # set this for window manager like twm with default manual positioning
-GetOptions("poswin!" => \$poswin)
-    or die "usage: $0 [-poswin]";
+my $poswin = 1;
+my $netwm = 0;
+GetOptions("poswin!" => \$poswin,
+	   "trace!"  => sub { $mw->wmTracing(1) },
+	   "netwm!"  => \$netwm,
+	  )
+    or die "usage: $0 [-poswin] [-trace] [-netwm]
+-noposwin: turn off fixed geometry setting (fixed geometry setting is needed
+           for some window managers like twm with default manual positioning)
+-trace:    turns wmTracing on
+-netwm:    set this is using modern opendesktop compliant X11 window manager
+";
 
 
 $mw->geometry("+10+10");
@@ -180,303 +193,344 @@ EOF
 }
 
 SKIP: {
-    skip("fullscreen tests only on windows", 1) # XXX correct no. of tests
-	if $Tk::platform ne 'MSWin32';
+    skip("fullscreen tests only on windows", 38)
+ 	if $Tk::platform ne 'MSWin32';
+## Getting fullscreen attribute is not yet implemented for X11
+#     skip("fullscreen tests only on windows or on X11 with option -netwm", 38)
+# 	if !($Tk::platform eq 'MSWin32' || ($Tk::platform eq 'unix' && $netwm));
 
-    die <<'EOF';
-TESTS NOT YET TRANSLATED!
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	is($t->attributes(-fullscreen), 0,
+	   "default -fullscreen value");
+    }
 
-test wm-attributes-1.3.0 {default -fullscreen value} {win} {
-    deleteWindows
-    toplevel .t
-    wm attributes .t -fullscreen
-} {0}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	$t->attributes(-fullscreen => 1);
+	is($t->attributes(-fullscreen), 1,
+	   q{change -fullscreen before map});
+    }
 
-test wm-attributes-1.3.1 {change -fullscreen before map} {win} {
-    deleteWindows
-    toplevel .t
-    wm attributes .t -fullscreen 1
-    wm attributes .t -fullscreen
-} {1}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$t->attributes(-fullscreen => 1);
+	$mw->update;
+	is($t->attributes(-fullscreen), 1,
+	   q{change -fullscreen before map});
+    }
 
-test wm-attributes-1.3.2 {change -fullscreen before map} {win} {
-    deleteWindows
-    toplevel .t
-    wm attributes .t -fullscreen 1
-    update
-    wm attributes .t -fullscreen
-} {1}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$mw->update;
+	$t->attributes(-fullscreen => 1);
+	is($t->attributes(-fullscreen), 1,
+	   q{change -fullscreen after map});
+    }
 
-test wm-attributes-1.3.3 {change -fullscreen after map} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm attributes .t -fullscreen 1
-    wm attributes .t -fullscreen
-} {1}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$mw->update;
+	is($t->attributes(-fullscreen), 0,
+	   q{change -fullscreen after map});
+	$t->attributes(-fullscreen => 1);
+	is($t->attributes(-fullscreen), 1);
+	# Query above should not clear fullscreen state
+	is($t->attributes(-fullscreen), 1);
+	$t->attributes(-fullscreen => 0);
+	is($t->attributes(-fullscreen), 0);
+    }
 
-test wm-attributes-1.3.4 {change -fullscreen after map} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    set booleans [list]
-    lappend booleans [wm attributes .t -fullscreen]
-    wm attributes .t -fullscreen 1
-    lappend booleans [wm attributes .t -fullscreen]
-    # Query above should not clear fullscreen state
-    lappend booleans [wm attributes .t -fullscreen]
-    wm attributes .t -fullscreen 0
-    lappend booleans [wm attributes .t -fullscreen]
-    set booleans
-} {0 1 1 0}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	my $normal_geom = "301x302+101+102";
+	my $fullscreen_geom = $mw->screenwidth . "x" . $mw->screenheight . "+0+0";
+	$t->geometry($normal_geom);
+	$mw->update;
+	is($t->geometry, $normal_geom, q{change -fullscreen after map});
+	$t->attributes(-fullscreen => 1);
+	is($t->geometry, $fullscreen_geom);
+	$t->attributes(-fullscreen => 0);
+	is($t->geometry, $normal_geom);
+    }
 
-test wm-attributes-1.3.5 {change -fullscreen after map} {win} {
-    deleteWindows
-    toplevel .t
-    set normal_geom "301x302+101+102"
-    set fullscreen_geom "[winfo screenwidth .t]x[winfo screenheight .t]+0+0"
-    wm geom .t $normal_geom
-    update
-    set results [list]
-    lappend results [string equal [wm geom .t] $normal_geom]
-    wm attributes .t -fullscreen 1
-    lappend results [string equal [wm geom .t] $fullscreen_geom]
-    wm attributes .t -fullscreen 0
-    lappend results [string equal [wm geom .t] $normal_geom]
-    set results
-} {1 1 1}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$mw->update;
+	$t->attributes(-fullscreen => 1);
+	$t->withdraw;
+	$t->deiconify;
+	is($t->attributes(-fullscreen), 1,
+	   q{state change does not change -fullscreen});
+    }
 
-test wm-attributes-1.3.6 {state change does not change -fullscreen} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm attributes .t -fullscreen 1
-    wm withdraw .t
-    wm deiconify .t
-    wm attributes .t -fullscreen
-} {1}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	$mw->update;
+	$t->attributes(-fullscreen => 1);
+	$t->iconify;
+	$t->deiconify;
+	is($t->attributes(-fullscreen), 1,
+	   q{state change (iconify) does not change -fullscreen});
+    }
 
-test wm-attributes-1.3.7 {state change does not change -fullscreen} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm attributes .t -fullscreen 1
-    wm iconify .t
-    wm deiconify .t
-    wm attributes .t -fullscreen
-} {1}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$mw->update;
+	$t->overrideredirect(1);
+	eval { $t->attributes(-fullscreen => 1) };
+	like($@, qr{\Qcan't set fullscreen attribute for ".t": override-redirect flag is set},
+	     q{override-redirect not compatible with fullscreen attribute});
+    }
 
-test wm-attributes-1.3.8 {override-redirect not compatible with fullscreen attribute} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm overrideredirect .t 1
-    list [catch {wm attributes .t -fullscreen 1} err] $err
-} {1 {can't set fullscreen attribute for ".t": override-redirect flag is set}}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$mw->update;
+	$t->maxsize(5000, 450);
+	eval { $t->attributes(-fullscreen => 1) };
+	like($@, qr{\Qcan't set fullscreen attribute for ".t": max width/height is too small},
+	     q{max height too small});
+    }
 
-test wm-attributes-1.3.9 {max height too small} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm maxsize .t 5000 450
-    list [catch {wm attributes .t -fullscreen 1} err] $err
-} {1 {can't set fullscreen attribute for ".t": max width/height is too small}}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$mw->update;
+	$t->maxsize(450, 5000);
+	eval { $t->attributes(-fullscreen => 1) };
+	like($@, qr{\Qcan't set fullscreen attribute for ".t": max width/height is too small},
+	     q{max width too small});
+    }
 
-test wm-attributes-1.3.10 {max height too small} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm maxsize .t 450 5000
-    list [catch {wm attributes .t -fullscreen 1} err] $err
-} {1 {can't set fullscreen attribute for ".t": max width/height is too small}}
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$mw->update;
+	$t->attributes(-alpha => 1.0, -fullscreen => 1);
+	is($t->attributes(-fullscreen), 1,
+	   q{another attribute, then -fullscreen});
+    }
 
-test wm-attributes-1.3.11 {another attribute, then -fullscreen} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm attributes .t -alpha 1.0 -fullscreen 1
-    wm attributes .t -fullscreen
-} 1
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$mw->update;
+	# This was originally -toolwindow instead of -alpha; changed
+	# this to make the test runnable under X11
+	$t->attributes(-alpha => 0.1, -fullscreen => 1, -topmost => 0);
+	is($t->attributes(-fullscreen), 1,
+	   q{another attribute, then -fullscreen, then another});
+    }
 
-test wm-attributes-1.3.12 {another attribute, then -fullscreen, then another} {win} {
-    deleteWindows
-    toplevel .t
-    update
-    wm attributes .t -toolwindow 0 -fullscreen 1 -topmost 0
-    wm attributes .t -fullscreen
-} 1
+    {
+	deleteWindows;
+	$mw->focusForce;
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$t->lower;
+	$mw->update;
+	is($mw->focus, $mw,
+	   q{setting/unsetting fullscreen does not change the focus});
 
-test wm-attributes-1.4.0 {setting/unsetting fullscreen does not change the focus} {win} {
-    deleteWindows
-    focus -force .
-    toplevel .t
-    lower .t
-    update
-    set results [list]
-    lappend results [focus]
+	my $done;
+	$t->attributes(-fullscreen => 1);
+	$mw->after(200, sub { $done = 1 });
+	$mw->waitVariable(\$done);
+	is($mw->focus, $mw);
 
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [focus]
+	$done = 0;
+	$t->attributes(-fullscreen => 0);
+	$mw->after(200, sub { $done = 1 });
+	$mw->waitVariable(\$done);
+	is($mw->focus, $mw);
+    }
 
-    wm attributes .t -fullscreen 0
-    after 200 "set done 1" ; vwait done
-    lappend results [focus]
+    {
+	deleteWindows;
+	my(@focusin, $done);
+	$mw->focusForce;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	my $te = $t->Entry(Name => "e")->pack;
+	$t->lower;
+	$t->bind("<FocusIn>", [sub {push @focusin, $_[0]}, Ev('W')]);
+	$mw->after(200, sub { $done = 1 });
+	$mw->waitVariable(\$done);
 
-    set results
-} {. . .}
+	push @focusin, 1;
+	$te->focusForce;
+	$mw->after(200, sub { $done = 2 });
+	$mw->waitVariable(\$done);
 
-test wm-attributes-1.4.1 {setting fullscreen does not generate FocusIn on wrapper create} {win} {
-    deleteWindows
-    catch {unset focusin}
-    focus -force .
-    toplevel .t
-    pack [entry .t.e]
-    lower .t
-    bind .t <FocusIn> {lappend focusin %W}
-    after 200 "set done 1" ; vwait done
+	push @focusin, 2;
+	$t->attributes(-fullscreen => 1);
+	$mw->after(200, sub { $done = 3 });
+	$mw->waitVariable(\$done);
 
-    lappend focusin 1
-    focus -force .t.e
-    after 200 "set done 1" ; vwait done
+	push @focusin, 3;
+	$t->attributes(-fullscreen => 0);
+	$mw->after(200, sub { $done = 4 });
+	$mw->waitVariable(\$done);
+
+	push @focusin, "final";
+
+	$mw->bind("<FocusIn>" => '');
+	$t->bind("<FocusIn>" => '');
+	
+	is_deeply(\@focusin, [1, $t, $te, 2, 3, "final", $te],
+		  q{setting fullscreen does not generate FocusIn on wrapper create});
+    }
+	
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	is_deeply([$mw->stackorder], ["."],
+		  "fullscreen stackorder");
+	my $done;
+	$mw->after(200, sub { $done = 1 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".t"]);
+
+	# Default stacking is on top of other windows
+	# on the display. Setting the fullscreen attribute
+	# does not change this.
+	$t->attributes(qw(-fullscreen 1));
+	$mw->after(200, sub { $done = 2 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".t"]);
+    }
+
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->lower;
+	my $done;
+	$mw->after(200, sub { $done = 1 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".t", "."],
+		  q{fullscreen stackorder});
     
-    lappend focusin 2
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
+	# If stacking order is explicitly set, then
+	# setting the fullscreen attribute should
+	# not change it.
+	$t->attributes(-fullscreen => 1);
+	$mw->after(200, sub { $done = 2 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".t", "."]);
+    }
 
-    lappend focusin 3
-    wm attributes .t -fullscreen 0
-    after 200 "set done 1" ; vwait done
-    
-    lappend focusin final [focus]
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	# lower forces the window to be mapped, it would not be otherwise
+	$t->lower;
+	is_deeply([$mw->stackorder], [".t", "."]);
 
-    bind . <FocusIn> {}
-    bind .t <FocusIn> {}
-    set focusin
-} {1 .t .t.e 2 3 final .t.e}
+	# If stacking order is explicitly set
+	# for an unmapped window, then setting
+	# the fullscreen attribute should
+	# not change it.
+	$t->attributes(qw(-fullscreen 1));
+	my $done;
+	$mw->after(200 => sub { $done = 1 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".t", "."]);
+    }
 
-test wm-attributes-1.5.0 {fullscreen stackorder} {win} {
-    deleteWindows
-    toplevel .t
-    set results [list]
-    lappend results [wm stackorder .]
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	my $done;
+	$mw->after(200, sub { $done = 1});
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".t"],
+		  q{fullscreen stackorder});
 
-    # Default stacking is on top of other windows
-    # on the display. Setting the fullscreen attribute
-    # does not change this.
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
+	$t->attributes(qw(-fullscreen 1));
+	$mw->after(200, sub { $done = 2});
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".t"]);
 
-    set results
-} {. {. .t} {. .t}}
+	# Unsetting the fullscreen attribute
+	# should not change the stackorder.
+	$t->attributes(qw(-fullscreen 0));
+	$mw->after(200, sub { $done = 3 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".t"]);
+    }
 
-test wm-attributes-1.5.1 {fullscreen stackorder} {win} {
-    deleteWindows
-    toplevel .t
-    lower .t
-    after 200 "set done 1" ; vwait done
-    set results [list]
-    lappend results [wm stackorder .]
+    {
+	deleteWindows;
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->lower;
+	my $done;
+	$mw->after(200, sub { $done = 1 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".t", "."]);
 
-    # If stacking order is explicitly set, then
-    # setting the fullscreen attribute should
-    # not change it.
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
+	$t->attributes(qw(-fullscreen 1));
+	$mw->after(200, sub { $done = 2 });
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".t", "."]);
 
-    set results
-} {{.t .} {.t .}}
+	# Unsetting the fullscreen attribute
+	# should not change the stackorder.
+	$t->attributes(qw(-fullscreen 0));
+	$mw->after(200, sub { $done = 3});
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".t", "."]);
+    }
 
-test wm-attributes-1.5.2 {fullscreen stackorder} {win} {
-    deleteWindows
-    toplevel .t
-    # lower forces the window to be mapped, it would not be otherwise
-    lower .t
-    set results [list]
-    lappend results [wm stackorder .]
+    {
+	deleteWindows;
+	my $a = $mw->Toplevel(Name => "a");
+	my $b = $mw->Toplevel(Name => "b");
+	my $c = $mw->Toplevel(Name => "c");
+	poswin $a, $b, $c;
+	$a->raise;
+	$b->raise;
+	$c->raise;
+	my $done;
+	$mw->after(200, sub { $done = 1});
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".a", ".b", ".c"]);
 
-    # If stacking order is explicitly set
-    # for an unmapped window, then setting
-    # the fullscreen attribute should
-    # not change it.
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
+	$b->attributes(-fullscreen => 1);
+	$mw->after(200, sub { $done = 2});
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".a", ".b", ".c"]);
 
-    set results
-} {{.t .} {.t .}}
-
-test wm-attributes-1.5.3 {fullscreen stackorder} {win} {
-    deleteWindows
-    toplevel .t
-    after 200 "set done 1" ; vwait done
-    set results [list]
-    lappend results [wm stackorder .]
-
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
-
-    # Unsetting the fullscreen attribute
-    # should not change the stackorder.
-    wm attributes .t -fullscreen 0
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
-
-    set results
-} {{. .t} {. .t} {. .t}}
-
-test wm-attributes-1.5.4 {fullscreen stackorder} {win} {
-    deleteWindows
-    toplevel .t
-    lower .t
-    after 200 "set done 1" ; vwait done
-    set results [list]
-    lappend results [wm stackorder .]
-
-    wm attributes .t -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
-
-    # Unsetting the fullscreen attribute
-    # should not change the stackorder.
-    wm attributes .t -fullscreen 0
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
-
-    set results
-} {{.t .} {.t .} {.t .}}
-
-test wm-attributes-1.5.5 {fullscreen stackorder} {win} {
-    deleteWindows
-    toplevel .a
-    toplevel .b
-    toplevel .c
-    raise .a
-    raise .b
-    raise .c
-    after 200 "set done 1" ; vwait done
-    set results [list]
-    lappend results [wm stackorder .]
-
-    wm attributes .b -fullscreen 1
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
-
-    # Unsetting the fullscreen attribute
-    # should not change the stackorder.
-    wm attributes .b -fullscreen 0
-    after 200 "set done 1" ; vwait done
-    lappend results [wm stackorder .]
-
-    set results
-} {{. .a .b .c} {. .a .b .c} {. .a .b .c}}
-EOF
+	# Unsetting the fullscreen attribute
+	# should not change the stackorder.
+	$b->attributes(qw(-fullscreen 0));
+	$mw->after(200, sub { $done = 3});
+	$mw->waitVariable(\$done);
+	is_deeply([$mw->stackorder], [".", ".a", ".b", ".c"]);
+    }
 }
+
 deleteWindows;
 stdWindow;
 
@@ -1297,6 +1351,8 @@ eval {
     }
 
     {
+	local $TODO = "May fail sometimes on some window managers (e.g. metacity)";
+
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
 	$t->update;
@@ -1311,6 +1367,8 @@ eval {
     }
 
     {
+	local $TODO = "May fail sometimes on some window managers (e.g. metacity)";
+
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
 	$t->update;
@@ -1325,6 +1383,8 @@ eval {
     }
 
     {
+	local $TODO = "May fail sometimes on some window managers (e.g. metacity)";
+
 	my $parent = $mw->Toplevel(Name => "parent");
 	poswin $parent;
 	$parent->update;
@@ -1709,6 +1769,8 @@ stdWindow;
 }
 
 {
+    local $TODO = "May fail on some window managers (e.g. metacity)";
+
     deleteWindows;
     my $master = $mw->Toplevel;
     poswin $master;
@@ -1724,6 +1786,8 @@ stdWindow;
 }
 
 {
+    local $TODO = "May fail on some window managers (e.g. metacity)";
+
     deleteWindows;
     my $master = $mw->Toplevel;
     poswin $master;
