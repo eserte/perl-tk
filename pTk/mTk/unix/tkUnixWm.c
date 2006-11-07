@@ -1177,17 +1177,18 @@ Tk_WmObjCmd(
     if ((argv1[0] == 't') && (strncmp(argv1, "tracing", (size_t) length) == 0)
 	    && (length >= 3)) {
 	int wmTracing;
-	if ((objc != 2) && (objc != 3)) {
+	/* Perl/Tk: increased parameter position by one because of implicite window parameter */
+	if ((objc != 3) && (objc != 4)) {
 	    Tcl_WrongNumArgs(interp, 2, objv, "?boolean?");
 	    return TCL_ERROR;
 	}
-	if (objc == 2) {
+	if (objc == 3) {
 	    Tcl_SetResult(interp,
 		    ((dispPtr->flags & TK_DISPLAY_WM_TRACING) ? "1" : ""),
                     TCL_STATIC);
 	    return TCL_OK;
 	}
-	if (Tcl_GetBooleanFromObj(interp, objv[2], &wmTracing) != TCL_OK) {
+	if (Tcl_GetBooleanFromObj(interp, objv[3], &wmTracing) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (wmTracing) {
