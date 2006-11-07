@@ -20,9 +20,10 @@ BEGIN {
     }
 }
 
-BEGIN { plan tests => 4 }
+BEGIN { plan tests => 7 }
 
 my $mw = MainWindow->new;
+
 $mw->withdraw;
 $mw->geometry("+10+10");
 $mw->Message(-text => "Set the icon with iconimage and iconphoto")->pack;
@@ -35,21 +36,42 @@ pass("Set iconimage");
 
 tk_sleep(0.5);
 
-my $icon2 = $mw->Photo(-file => Tk->findINC("icon.gif"));
-$mw->withdraw;
-$mw->iconphoto('-default', $icon2);
-$mw->deiconify;
+{
+    my $icon2 = $mw->Photo(-file => Tk->findINC("icon.gif"));
+    $mw->withdraw;
+    $mw->iconphoto('-default', $icon2);
+    $mw->deiconify;
 
-my $t = $mw->Toplevel;
-$t->geometry("+100+20");
-$t->Message(-text => "This toplevel should also get the same icon")->pack;
+    my $t = $mw->Toplevel;
+    $t->geometry("+100+20");
+    $t->Message(-text => "This toplevel should also get the same icon")->pack;
 
-$mw->idletasks;
-pass("Set iconphoto");
+    $mw->idletasks;
+    pass("Set iconphoto");
+}
 
-my($wrapper_id, $menu_height) = $mw->wrapper;
-ok(defined $wrapper_id, "Wrapper Id <$wrapper_id>");
-ok(defined $menu_height, "Menu height <$menu_height>");
+{
+    my($wrapper_id, $menu_height) = $mw->wrapper;
+    ok(defined $wrapper_id, "Wrapper Id <$wrapper_id>");
+    ok(defined $menu_height, "Menu height <$menu_height>");
+}
+
+if (0) { # capture/release not anymore available in Tk???
+    my $t2 = $mw->Toplevel;
+    $t2->capture;
+    $mw->update;
+    $mw->after(100);
+    $t2->release;
+    pass("wm capture/release ok");
+}
+
+{
+    is($mw->wmTracing, "", "wmTracing");
+    $mw->wmTracing(1);
+    is($mw->wmTracing, 1);
+    $mw->wmTracing(0);
+    is($mw->wmTracing, "");
+}
 
 $mw->after(1000,[destroy => $mw]);
 MainLoop;
