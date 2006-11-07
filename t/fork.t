@@ -7,6 +7,7 @@ use Tk;
 plan tests => 1;
 
 my $mw = tkinit;
+$mw->geometry("+10+10");
 
 if ($^O ne 'MSWin32' && fork == 0) {
     print "# Child $$\n";
