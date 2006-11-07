@@ -23,6 +23,7 @@
 use strict;
 
 use Tk;
+use Getopt::Long;
 
 BEGIN {
     if (!eval q{
@@ -34,9 +35,16 @@ BEGIN {
     }
 }
 
-plan tests => 197;
+#plan tests => 197;
+plan 'no_plan';#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
 
 my $mw = MainWindow->new;
+
+my $poswin = 0; # set this for window manager like twm with default manual positioning
+GetOptions("poswin!" => \$poswin)
+    or die "usage: $0 [-poswin]";
+
+
 $mw->geometry("+10+10");
 
 $mw->deiconify;
@@ -65,6 +73,14 @@ sub deleteWindows () {
 sub raiseDelay () {
     $mw->after(100);
     $mw->update;
+}
+
+sub poswin ($;@) {
+    if ($poswin) {
+	for (@_) {
+	    $_->geometry("+0+0");
+	}
+    }
 }
 
 deleteWindows;
@@ -477,7 +493,7 @@ stdWindow;
 
 {
     my $t1 = $mw->Toplevel(qw(Name toplevel1 -width 200 -height 200 -colormap new));
-    $t1->geometry("+0+0");
+    poswin $t1;
     my $t1a = $t1->Frame(qw(-width 100 -height 30));
     my $t1b = $t1->Frame(qw(-width 100 -height 30 -colormap new));
     Tk::pack($t1a, $t1b, qw(-side top));
@@ -495,7 +511,7 @@ stdWindow;
 
 {
     my $t1 = $mw->Toplevel(qw(Name toplevel2 -width 200 -height 200));
-    $t1->geometry("+0+0");
+    poswin $t1;
     my @f;
     for (1 .. 3) {
 	push @f, $t1->Frame(qw(-width 100 -height 30))->pack(-side => "top");
@@ -559,6 +575,7 @@ stdWindow;
 {
     deleteWindows;
     $t = $mw->Toplevel;
+    poswin $t;
     $mw->idletasks;
     $t->withdraw;
     $t->deiconify;
@@ -573,6 +590,7 @@ stdWindow;
     $t->deiconify;
     is($t->geometry, "1x1+0+0",
        q{geometry for an unmapped window should not be calculated by deiconify()});
+    poswin $t;
     $mw->idletasks;
     like($t->geometry, qr{^200x200},
 	 q{... it should be done at idle time});
@@ -735,7 +753,7 @@ stdWindow;
 
 {
     my $t2 = $mw->Toplevel(qw(Name toplevel2));
-    $t2->geometry("+0+0");
+    poswin $t2;
     $t2->transient($t);
     eval { $t2->iconify };
     like($@, qr{\Qcan't iconify ".toplevel2": it is a transient});
@@ -744,7 +762,7 @@ stdWindow;
 
 {
     my $t2 = $mw->Toplevel(qw(Name toplevel2));
-    $t2->geometry("+0+0");
+    poswin $t2;
     $t->iconwindow($t2);
     eval { $t2->iconify };
     like($@, qr{can't iconify .toplevel2: it is an icon for .toplevel});
@@ -871,7 +889,7 @@ stdWindow;
     my $icon = $mw->Toplevel(Name => "icon",
 			     qw(-width 50 -height 50 -bg green));
     my $t2 = $mw->Toplevel(Name => "t2");
-    $t2->geometry("-0+0");
+    poswin $t2;
     $t2->iconwindow($icon);
     eval { $t->iconwindow($icon) };
     like($@, qr{\Q.icon is already an icon for .t2});
@@ -908,7 +926,7 @@ stdWindow;
 
 {
     my $t2 = $mw->Toplevel;
-    $t2->geometry("+0+0");
+    poswin $t2;
     $t2->maxsize(300, 200);
     is_deeply([$t2->maxsize], [300,200]);
     $t2->destroy;
@@ -916,7 +934,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     my($t_width, $t_height) = $t->maxsize;
     my($s_width, $s_height) = ($t->screenwidth, $t->screenheight);
     cmp_ok($t_width, "<=", $s_width, 
@@ -927,7 +945,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel(qw(-width 300 -height 300));
-    $t->geometry("+0+0");
+    poswin $t;
     $t->update;
     $t->maxsize(200, 150);
     # UpdateGeometryInfo invoked at idle
@@ -940,6 +958,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
+    poswin $t;
     $t->wmGrid(0,0,50,50);
     $t->geometry("6x6");
     $t->update;
@@ -954,7 +973,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
-    $t->geometry("+0+0");
+    poswin $t;
     $t->maxsize(300, 250);
     $t->update;
     $t->geometry("400x300");
@@ -968,7 +987,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     $t->wmGrid(qw(1 1 50 50));
     $t->geometry("4x4");
     $t->maxsize(6, 5);
@@ -984,7 +1003,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     my $tf = $t->Frame(qw(-width 400 -height 400))->pack;
     $t->idletasks;
     is($t->reqwidth, 400);
@@ -1015,7 +1034,7 @@ stdWindow;
 
 {
     my $t2 = $mw->Toplevel;
-    $t2->geometry("+0+0");
+    poswin $t2;
     $t2->minsize(300, 200);
     is_deeply([$t2->minsize], [300,200]);
     $t2->destroy;
@@ -1023,7 +1042,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
-    $t->geometry("+0+0");
+    poswin $t;
     $t->update;
     $t->minsize(400, 300);
     # UpdateGeometryInfo invoked at idle
@@ -1036,7 +1055,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     $t->wmGrid(qw(1 1 50 50));
     $t->geometry("4x4");
     $t->update;
@@ -1051,7 +1070,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel(qw(-width 400 -height 400));
-    $t->geometry("+0+0");
+    poswin $t;
     $t->minsize(300, 300);
     $t->update;
     $t->geometry("200x200");
@@ -1065,7 +1084,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     $t->wmGrid(qw(1 1 50 50));
     $t->geometry("8x8");
     $t->minsize(6, 6);
@@ -1081,7 +1100,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     my $tf = $t->Frame(qw(-width 250 -height 250))->pack;
     $t->idletasks;
     is($t->reqwidth, 250);
@@ -1124,7 +1143,7 @@ stdWindow;
 
 {
     my $t2 = $mw->Toplevel;
-    $t2->geometry("+0+0");
+    poswin $t2;
     $t2->positionfrom("user");
     is($t2->positionfrom, "user", "wm positionfrom, setting and reading values");
     $t2->positionfrom("program");
@@ -1143,7 +1162,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     $t->protocol("foo a", "a b c");
     $t->protocol("bar", "test script for bar");
     is_deeply([$t->protocol], ["bar", "foo a"],
@@ -1156,7 +1175,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     $t->protocol("foo", "a b c");
     $t->protocol("bar", "test script for bar");
     isa_ok($t->protocol("foo"), "Tk::Callback");
@@ -1170,7 +1189,7 @@ stdWindow;
 
 {
     my $t = $mw->Toplevel;
-    $t->geometry("+0+0");
+    poswin $t;
     my $code1 = sub { "a b c" };
     $t->protocol("foo", $code1);
     my $code2 = sub { "test script" };
@@ -1237,7 +1256,7 @@ stdWindow;
 
 for my $is ("isabove", "isbelow") {
     my $t = $mw->Toplevel(Name => "t");
-    $t->geometry("+0+0");
+    poswin $t;
     my $tb = $t->Button(Name => "b")->pack;
     $mw->update;
     eval { $mw->stackorder($is, $tb) };
@@ -1247,7 +1266,7 @@ for my $is ("isabove", "isbelow") {
 
 for my $is ("isabove", "isbelow") {
     my $t = $mw->Toplevel(Name => "t");
-    $t->geometry("+0+0");
+    poswin $t;
     $t->update;
     $t->withdraw;
     eval { $t->stackorder($is, $mw) };
@@ -1258,266 +1277,293 @@ for my $is ("isabove", "isbelow") {
     
 deleteWindows;
 
-{
-    my $t = $mw->Toplevel(Name => "t");
-    $t->geometry("+0+0");
-    $t->update;
-    is_deeply([$mw->stackorder], [".", ".t"]);
-    $t->destroy;
-}
+# stackorder was not defined before Tk804.027_001
+eval {
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->update;
+	is_deeply([$mw->stackorder], [".", ".t"]);
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel(Name => "t");
-    $t->geometry("+0+0");
-    $t->update;
-    $mw->raise;
-    raiseDelay;
-    is_deeply([$mw->stackorder], [".t", "."]);
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->update;
+	$mw->raise;
+	raiseDelay;
+	is_deeply([$mw->stackorder], [".t", "."]);
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel(Name => "t"); $t->geometry("+0+0"); $t->update;
-    my $t2 = $mw->Toplevel(Name => "t2"); $t2->geometry("+0+0"); $t2->update;
-    $mw->raise;
-    $t2->raise;
-    raiseDelay;
-    is_deeply([$mw->stackorder], [".t", ".", ".t2"]);
-    Tk::destroy($t, $t2);
-}
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->update;
+	my $t2 = $mw->Toplevel(Name => "t2");
+	poswin $t2;
+	$t2->update;
+	$mw->raise;
+	$t2->raise;
+	raiseDelay;
+	is_deeply([$mw->stackorder], [".t", ".", ".t2"]);
+	Tk::destroy($t, $t2);
+    }
 
-{
-    my $t = $mw->Toplevel(Name => "t"); $t->geometry("+0+0"); $t->update;
-    my $t2 = $mw->Toplevel(Name => "t2"); $t2->geometry("+0+0"); $t2->update;
-    $mw->raise;
-    $t2->lower;
-    raiseDelay;
-    is_deeply([$mw->stackorder], [".t2", ".t", "."]);
-    Tk::destroy($t, $t2);
-}
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->update;
+	my $t2 = $mw->Toplevel(Name => "t2");
+	poswin $t2;
+	$t2->update;
+	$mw->raise;
+	$t2->lower;
+	raiseDelay;
+	is_deeply([$mw->stackorder], [".t2", ".t", "."]);
+	Tk::destroy($t, $t2);
+    }
 
-{
-    my $parent = $mw->Toplevel(Name => "parent");
-    $parent->geometry("+0+0");
-    $parent->update;
-    my $parent_child1 = $parent->Toplevel(Name => "child1");
-    $parent_child1->geometry("+0+0");
-    $parent_child1->update;
-    my $parent_child2 = $parent->Toplevel(Name => "child2");
-    $parent_child2->geometry("+0+0");
-    $parent_child2->update;
-    my $extra = $mw->Toplevel(Name => "extra");
-    $extra->geometry("+0+0");
-    $extra->update;
-    $parent->raise;
-    $parent_child2->lower;
-    raiseDelay;
-    is_deeply([$parent->stackorder], [qw(.parent.child2 .parent.child1 .parent)]);
-}
+    {
+	my $parent = $mw->Toplevel(Name => "parent");
+	poswin $parent;
+	$parent->update;
+	my $parent_child1 = $parent->Toplevel(Name => "child1");
+	poswin $parent_child1;
+	$parent_child1->update;
+	my $parent_child2 = $parent->Toplevel(Name => "child2");
+	poswin $parent_child2;
+	$parent_child2->update;
+	my $extra = $mw->Toplevel(Name => "extra");
+	poswin $extra;
+	$extra->update;
+	$parent->raise;
+	$parent_child2->lower;
+	raiseDelay;
+	is_deeply([$parent->stackorder], [qw(.parent.child2 .parent.child1 .parent)]);
+    }
 
-deleteWindows;
+    deleteWindows;
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    my $t1b = $t1->Button->pack;
-    $mw->update;
-    is_deeply([$mw->stackorder], [".", ".t1"],
-	      q{non-toplevel widgets ignored});
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	my $t1b = $t1->Button->pack;
+	$mw->update;
+	is_deeply([$mw->stackorder], [".", ".t1"],
+		  q{non-toplevel widgets ignored});
+    }
 
-deleteWindows;
+    deleteWindows;
 
-{
-    is_deeply([$mw->stackorder], ["."],
-	      q{no children returns self});
-}
+    {
+	is_deeply([$mw->stackorder], ["."],
+		  q{no children returns self});
+    }
 
-deleteWindows;
+    deleteWindows;
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t2 = $mw->Toplevel(Name => "t2");
-    $t2->geometry("+0+0");
-    $t2->update;
-    $t1->iconify;
-    is_deeply([$mw->stackorder], [".", ".t2"],
-	      "unmapped toplevel");
-    $t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t2 = $mw->Toplevel(Name => "t2");
+	poswin $t2;
+	$t2->update;
+	$t1->iconify;
+	is_deeply([$mw->stackorder], [".", ".t2"],
+		  "unmapped toplevel");
+	$t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t2 = $mw->Toplevel(Name => "t2");
-    $t2->geometry("+0+0");
-    $t2->update;
-    $t2->withdraw;
-    is_deeply([$mw->stackorder], [".", ".t1"]);
-    $t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t2 = $mw->Toplevel(Name => "t2");
+	poswin $t2;
+	$t2->update;
+	$t2->withdraw;
+	is_deeply([$mw->stackorder], [".", ".t1"]);
+	$t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t2 = $mw->Toplevel(Name => "t2");
-    $t2->geometry("+0+0");
-    $t2->update;
-    $t2->withdraw;
-    is_deeply([$t2->stackorder], []);
-    $t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t2 = $mw->Toplevel(Name => "t2");
+	poswin $t2;
+	$t2->update;
+	$t2->withdraw;
+	is_deeply([$t2->stackorder], []);
+	$t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t1t2 = $t1->Toplevel(Name => "t2");
-    $t1t2->geometry("+0+0");
-    $t1t2->update;
-    $t1t2->withdraw;
-    is_deeply([$t1->stackorder], [".t1"]);
-    $t1t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t1t2 = $t1->Toplevel(Name => "t2");
+	poswin $t1t2;
+	$t1t2->update;
+	$t1t2->withdraw;
+	is_deeply([$t1->stackorder], [".t1"]);
+	$t1t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t1t2 = $t1->Toplevel(Name => "t2");
-    $t1t2->geometry("+0+0");
-    $t1t2->update;
-    $t1->withdraw;
-    is_deeply([$t1->stackorder], [".t1.t2"]);
-    $t1t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t1t2 = $t1->Toplevel(Name => "t2");
+	poswin $t1t2;
+	$t1t2->update;
+	$t1->withdraw;
+	is_deeply([$t1->stackorder], [".t1.t2"]);
+	$t1t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t1t2 = $t1->Toplevel(Name => "t2");
-    $t1t2->geometry("+0+0");
-    $t1t2->update;
-    my $t1t2t3 = $t1t2->Toplevel(Name => "t3");
-    $t1t2t3->geometry("+0+0");
-    $t1t2t3->update;
-    $t1t2->withdraw;
-    is_deeply([$t1->stackorder],[".t1", ".t1.t2.t3"]);
-    $t1t2t3->destroy;
-    $t1t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t1t2 = $t1->Toplevel(Name => "t2");
+	poswin $t1t2;
+	$t1t2->update;
+	my $t1t2t3 = $t1t2->Toplevel(Name => "t3");
+	poswin $t1t2t3;
+	$t1t2t3->update;
+	$t1t2->withdraw;
+	is_deeply([$t1->stackorder],[".t1", ".t1.t2.t3"]);
+	$t1t2t3->destroy;
+	$t1t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel(Name => "t1");
-    $t1->geometry("+0+0");
-    $t1->update;
-    my $t1t2 = $t1->Toplevel(Name => "t2");
-    $t1t2->geometry("+0+0");
-    $t1t2->update;
-    $t1->withdraw;
-    is_deeply([$t1->stackorder], [".t1.t2"],
-	      q{unmapped toplevel, mapped children returned});
-    $t1t2->destroy;
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel(Name => "t1");
+	poswin $t1;
+	$t1->update;
+	my $t1t2 = $t1->Toplevel(Name => "t2");
+	poswin $t1t2;
+	$t1t2->update;
+	$t1->withdraw;
+	is_deeply([$t1->stackorder], [".t1.t2"],
+		  q{unmapped toplevel, mapped children returned});
+	$t1t2->destroy;
+	$t1->destroy;
+    }
 
-{
-    my $t1 = $mw->Toplevel;
-    is_deeply([$mw->stackorder], ["."],
-	      q{toplevel mapped in idle callback });
-    $t1->destroy;
-}
+    {
+	my $t1 = $mw->Toplevel;
+	is_deeply([$mw->stackorder], ["."],
+		  q{toplevel mapped in idle callback});
+	$t1->destroy;
+    }
 
-deleteWindows;
+    deleteWindows;
 
-{
-    my $t = $mw->Toplevel; $t->update;
-    $t->raise;
-    is($mw->stackorder("isabove", $t), 0,
-       q{wm stackorder isabove|isbelow});
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$t->update;
+	$t->raise;
+	is($mw->stackorder("isabove", $t), 0,
+	   q{wm stackorder isabove|isbelow});
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel; $t->update;
-    $t->raise;
-    is($mw->stackorder("isbelow", $t), 1);
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$t->update;
+	$t->raise;
+	is($mw->stackorder("isbelow", $t), 1);
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel; $t->update;
-    $mw->raise;
-    raiseDelay;
-    is($t->stackorder("isa", $mw), 0);
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$t->update;
+	$mw->raise;
+	raiseDelay;
+	is($t->stackorder("isa", $mw), 0);
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel; $t->update;
-    $mw->raise;
-    raiseDelay;
-    is($t->stackorder("isb", $mw), 1);
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel;
+	poswin $t;
+	$t->update;
+	$mw->raise;
+	raiseDelay;
+	is($t->stackorder("isb", $mw), 1);
+	$t->destroy;
+    }
 
-deleteWindows;
+    deleteWindows;
 
-{
-    my $t = $mw->Toplevel(Name => "t");
-    my $tm = $t->Menu(-type => "menubar");
-    $tm->add("cascade", -label => "File");
-    $t->configure(-menu => $tm);
-    $mw->update;
-    $mw->raise;
-    raiseDelay;
-    is_deeply([$mw->stackorder], [".t", "."],
-	      q{a menu is not a toplevel});
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	my $tm = $t->Menu(-type => "menubar");
+	$tm->add("cascade", -label => "File");
+	$t->configure(-menu => $tm);
+	$mw->update;
+	$mw->raise;
+	raiseDelay;
+	is_deeply([$mw->stackorder], [".t", "."],
+		  q{a menu is not a toplevel});
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel(Name => "t");
-    $t->overrideredirect(1);
-    $mw->raise;
-    $mw->update;
-    raiseDelay;
-    is($mw->stackorder("isabove", $t), 0,
-       q{A normal toplevel can't be raised above an overrideredirect toplevel});
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->overrideredirect(1);
+	$mw->raise;
+	$mw->update;
+	raiseDelay;
+	is($mw->stackorder("isabove", $t), 0,
+	   q{A normal toplevel can't be raised above an overrideredirect toplevel});
+	$t->destroy;
+    }
 
-{
-    my $t = $mw->Toplevel(Name => "t");
-    $t->overrideredirect(1);
-    $mw->lower;
-    $mw->update;
-    raiseDelay;
-    is($mw->stackorder("isbelow", $t), 1,
-       q{A normal toplevel can be explicitely lowered});
-    $t->destroy;
-}
+    {
+	my $t = $mw->Toplevel(Name => "t");
+	poswin $t;
+	$t->overrideredirect(1);
+	$mw->lower;
+	$mw->update;
+	raiseDelay;
+	is($mw->stackorder("isbelow", $t), 1,
+	   q{A normal toplevel can be explicitely lowered});
+	$t->destroy;
+    }
 
-{
-    my $real = $mw->Toplevel(Name => "real", -container => 1);
-    my $embd = $mw->Toplevel(Name => "embd",
-			     -bg => "blue", -use => $real->id);
-    $mw->update;
-    is_deeply([$mw->stackorder], [".", ".real"],
-	      q{An embedded toplevel does not appear in the stacking order});
-    $embd->destroy;
-    $real->destroy;
+    {
+	my $real = $mw->Toplevel(Name => "real", -container => 1);
+	poswin $real;
+	my $embd = $mw->Toplevel(Name => "embd",
+				 -bg => "blue", -use => $real->id);
+	poswin $embd;
+	$mw->update;
+	is_deeply([$mw->stackorder], [".", ".real"],
+		  q{An embedded toplevel does not appear in the stacking order});
+	$embd->destroy;
+	$real->destroy;
+    }
+};
+if ($@) {
+    fail("stackorder tests failed: $@");
 }
 
 stdWindow;
@@ -1592,449 +1638,507 @@ stdWindow;
     like($@, qr{\Qcan't make ".master" its own master});
 }
 
-__END__
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    my $subject = $mw->Toplevel(Name => "subject");
+    is($subject->transient, undef, "basic get/set of master");
+    $subject->transient($master);
+    is($subject->transient, $master);
+    $subject->transient(undef);
+    is($subject->transient, undef);
+}
 
-test wm-transient-2.1 { basic get/set of master } {
-    deleteWindows
-    set results [list]    
-    toplevel .master
-    toplevel .subject
-    lappend results [wm transient .subject]
-    wm transient .subject .master
-    lappend results [wm transient .subject]
-    wm transient .subject {}
-    lappend results [wm transient .subject]
-    set results
-} {{} .master {}}
-test wm-transient-2.2 { first toplevel parent of
-        non-toplevel master is used } {
-    deleteWindows
-    toplevel .master
-    frame .master.f
-    toplevel .subject
-    wm transient .subject .master.f
-    wm transient .subject
-} {.master}
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    my $f = $master->Frame;
+    my $subject = $mw->Toplevel(Name => "subject");
+    $subject->transient($f);
+    is($subject->transient, $master,
+       "first toplevel parent of non-toplevel master is used");
+}
 
-test wm-transient-3.1 { transient toplevel is withdrawn
-        when mapped if master is withdrawn } {
-    deleteWindows
-    toplevel .master
-    wm withdraw .master
-    update
-    toplevel .subject
-    wm transient .subject .master
-    update
-    list [wm state .subject] [winfo ismapped .subject]
-} {withdrawn 0}
-test wm-transient-3.2 { already mapped transient toplevel
-        takes on withdrawn state of master } {
-    deleteWindows
-    toplevel .master
-    wm withdraw .master
-    update
-    toplevel .subject
-    update
-    wm transient .subject .master
-    update
-    list [wm state .subject] [winfo ismapped .subject]
-} {withdrawn 0}
-test wm-transient-3.3 { withdraw/deiconify on the master
-        also does a withdraw/deiconify on the transient } {
-    deleteWindows
-    set results [list]
-    toplevel .master
-    toplevel .subject
-    update
-    wm transient .subject .master
-    wm withdraw .master
-    update
-    lappend results [wm state .subject] \
-        [winfo ismapped .subject]
-    wm deiconify .master
-    update
-    lappend results [wm state .subject] \
-        [winfo ismapped .subject]
-    set results
-} {withdrawn 0 normal 1}
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    poswin $master;
+    $master->withdraw;
+    $mw->update;
+    my $subject = $mw->Toplevel(Name => "subject");
+    poswin $subject;
+    $subject->transient($master);
+    $mw->update;
+    is($subject->state, "withdrawn",
+       "transient toplevel is withdrawn when mapped if master is withdrawn");
+    is($subject->ismapped, 0);
+}
 
-test wm-transient-4.1 { transient toplevel is withdrawn
-        when mapped if master is iconic } {
-    deleteWindows
-    toplevel .master
-    wm iconify .master
-    update
-    toplevel .subject
-    wm transient .subject .master
-    update
-    list [wm state .subject] [winfo ismapped .subject]
-} {withdrawn 0}
-test wm-transient-4.2 { already mapped transient toplevel
-        is withdrawn if master is iconic } {
-    deleteWindows
-    toplevel .master
-    wm iconify .master
-    update
-    toplevel .subject
-    update
-    wm transient .subject .master
-    update
-    list [wm state .subject] [winfo ismapped .subject]
-} {withdrawn 0}
-test wm-transient-4.3 { iconify/deiconify on the master
-        does a withdraw/deiconify on the transient } {
-    deleteWindows
-    set results [list]
-    toplevel .master
-    toplevel .subject
-    update
-    wm transient .subject .master
-    wm iconify .master
-    update
-    lappend results [wm state .subject] \
-        [winfo ismapped .subject]
-    wm deiconify .master
-    update
-    lappend results [wm state .subject] \
-        [winfo ismapped .subject]
-    set results
-} {withdrawn 0 normal 1}
+{
+    deleteWindows;
+    my $master = $mw->Toplevel(Name => "master");
+    poswin $master;
+    $master->withdraw;
+    $mw->update;
+    my $subject = $mw->Toplevel(Name => "subject");
+    poswin $subject;
+    $mw->update;
+    $subject->transient($master);
+    $mw->update;
+    is($subject->state, "withdrawn",
+       q{already mapped transient toplevel takes on withdrawn state of master});
+    is($subject->ismapped, 0);
+}
 
-test wm-transient-5.1 { an error during transient command should not
-        cause the map/unmap binding to be deleted } {
-    deleteWindows
-    set results [list]
-    toplevel .master
-    toplevel .subject
-    update
-    wm transient .subject .master
-    # Expect a bad window path error here
-    lappend results [catch {wm transient .subject .bad}]
-    wm withdraw .master
-    update
-    lappend results [wm state .subject]
-    wm deiconify .master
-    update
-    lappend results [wm state .subject]
-    set results
-} {1 withdrawn normal}
-test wm-transient-5.2 { remove transient property when master
-        is destroyed } {
-    deleteWindows
-    toplevel .master
-    toplevel .subject
-    wm transient .subject .master
-    update
-    destroy .master
-    update
-    wm transient .subject
-} {}
-test wm-transient-5.3 { remove transient property from window
-        that had never been mapped when master is destroyed } {
-    deleteWindows
-    toplevel .master
-    toplevel .subject
-    wm transient .subject .master
-    destroy .master
-    wm transient .subject
-} {}
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $mw->update;
+    $subject->transient($master);
+    $master->withdraw;
+    $mw->update;
+    is($subject->state, "withdrawn",
+       q{withdraw on the master also does a withdraw on the transient});
+    is($subject->ismapped, 0);
+    $master->deiconify;
+    $mw->update;
+    is($subject->state, "normal",
+       q{deiconify on the master also does a deiconify on the transient});
+    is($subject->ismapped, 1);
+}
 
-test wm-transient-6.1 { a withdrawn transient does not track
-        state changes in the master } {
-    deleteWindows
-    toplevel .master
-    toplevel .subject
-    update
-    wm transient .subject .master
-    wm withdraw .subject
-    wm withdraw .master
-    wm deiconify .master
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    poswin $master;
+    $master->iconify;
+    $mw->update;
+    my $subject = $mw->Toplevel;
+    poswin $subject;
+    $subject->transient($master);
+    $mw->update;
+    is($subject->state, "withdrawn",
+       q{transient toplevel is withdrawn when mapped if master is iconic});
+    is($subject->ismapped, 0);
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    poswin $master;
+    $master->iconify;
+    $mw->update;
+    my $subject = $mw->Toplevel;
+    poswin $subject;
+    $mw->update;
+    $subject->transient($master);
+    $mw->update;
+    is($subject->state, "withdrawn",
+       q{already mapped transient toplevel is withdrawn if master is iconic});
+    is($subject->ismapped, 0);
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $mw->update;
+    $subject->transient($master);
+    $master->iconify;
+    $mw->update;
+    is($subject->state, "withdrawn",
+       q{iconify on the master does a withdraw on the transient});
+    is($subject->ismapped, 0);
+    $master->deiconify;
+    $mw->update;
+    is($subject->state, "normal",
+       q{deiconify on the master does a deiconify on the transient});
+    is($subject->ismapped, 1);
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $mw->update;
+    $subject->transient($master);
+    eval { $subject->transient(".bad") };
+    ok($@, q{error during transient should not cause deletion of map/unmap binding});
+    $master->withdraw;
+    $mw->update;
+    is($subject->state, "withdrawn");
+    $master->deiconify;
+    $mw->update;
+    is($subject->state, "normal");
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $subject->transient($master);
+    $mw->update;
+    $master->destroy;
+    $mw->update;
+    is($subject->transient, undef,
+       q{remove transient property when master is destroyed});
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    $subject->transient($master);
+    $master->destroy;
+    is($subject->transient, undef,
+       q{remove transient property from unmapped window when master is destroyed});
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $mw->update;
+    $subject->transient($master);
+    $subject->withdraw;
+    $master->withdraw;
+    $master->deiconify;
     # idle handler should not map the transient
-    update
-    wm state .subject
-} {withdrawn}
-test wm-transient-6.2 { a withdrawn transient does not track
-        state changes in the master } {
-    set results [list]
-    deleteWindows
-    toplevel .master
-    toplevel .subject
-    update
-    wm transient .subject .master
-    wm withdraw .subject
-    wm withdraw .master
-    wm deiconify .master
+    $mw->update;
+    is($subject->state, q{withdrawn},
+       q{a withdrawn transient does not track state changes in the master});
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $mw->update;
+    $subject->transient($master);
+    $subject->withdraw;
+    $master->withdraw;
+    $master->deiconify;
     # idle handler should not map the transient
-    update
-    lappend results [wm state .subject]
-    wm deiconify .subject
-    lappend results [wm state .subject]
-    wm withdraw .master
-    lappend results [wm state .subject]
-    wm deiconify .master
+    $mw->update;
+    is($subject->state, "withdrawn",
+       q{a withdrawn transient does not track state changes in the master});
+    $subject->deiconify;
+    is($subject->state, "normal");
+    $master->withdraw;
+    is($subject->state, "withdrawn");
+    $master->deiconify;
     # idle handler should map transient
-    update
-    lappend results [wm state .subject]
-} {withdrawn normal withdrawn normal}
-test wm-transient-6.3 { a withdrawn transient does not track
-        state changes in the master } {
-    deleteWindows
-    toplevel .master
-    toplevel .subject
-    update
+    $mw->update;
+    is($subject->state, "normal");
+}
+
+{
+    deleteWindows;
+    my $master = $mw->Toplevel;
+    my $subject = $mw->Toplevel;
+    poswin $master, $subject;
+    $mw->update;
     # withdraw before making window a transient
-    wm withdraw .subject
-    wm transient .subject .master
-    wm withdraw .master
-    wm deiconify .master
+    $subject->withdraw;
+    $subject->transient($master);
+    $master->withdraw;
+    $master->deiconify;
     # idle handler should not map the transient
-    update
-    wm state .subject
-} {withdrawn}
+    $mw->update;
+    is($subject->state, q{withdrawn},
+       q{a withdrawn transient does not track state changes in the master});
+}
 
-# wm-transient-7.*: See SF Tk Bug #592201 "wm transient fails with two masters"
-# wm-transient-7.3 through 7.5 all caused panics on Unix in Tk 8.4b1.
-# 7.1 and 7.2 added to catch (potential) future errors.
-#
-test wm-transient-7.1 {Destroying transient} {
-    deleteWindows
-    toplevel .t 
-    toplevel .transient 
-    wm transient .transient .t
-    destroy .transient
-    destroy .t
-    # OK: the above did not cause a panic.
-} {}
-test wm-transient-7.2 {Destroying master} {
-    deleteWindows
-    toplevel .t
-    toplevel .transient 
-    wm transient .transient .t
-    destroy .t
-    set result [wm transient .transient]
-    destroy .transient
-    set result
-} {}
-test wm-transient-7.3 {Reassign transient, destroy old master} {
-    deleteWindows
-    toplevel .t1 
-    toplevel .t2 
-    toplevel .transient
-    wm transient .transient .t1
-    wm transient .transient .t2
-    destroy .t1	;# Caused panic in 8.4b1
-    destroy .t2 
-    destroy .transient
-} {}
-test wm-transient-7.4 {Reassign transient, destroy new master} {
-    deleteWindows
-    toplevel .t1 
-    toplevel .t2 
-    toplevel .transient
-    wm transient .transient .t1
-    wm transient .transient .t2
-    destroy .t2 	;# caused panic in 8.4b1
-    destroy .t1
-    destroy .transient
-} {}
-test wm-transient-7.5 {Reassign transient, destroy transient} {
-    deleteWindows
-    toplevel .t1 
-    toplevel .t2 
-    toplevel .transient
-    wm transient .transient .t1
-    wm transient .transient .t2
-    destroy .transient
-    destroy .t2 	;# caused panic in 8.4b1
-    destroy .t1		;# so did this
-} {}
+{
+    # wm-transient-7.*: See SF Tk Bug #592201 "wm transient fails with two masters"
+    # wm-transient-7.3 through 7.5 all caused panics on Unix in Tk 8.4b1.
+    # 7.1 and 7.2 added to catch (potential) future errors.
 
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    my $transient = $mw->Toplevel;
+    $transient->transient($t);
+    $transient->destroy;
+    $t->destroy;
+    pass("Destroying transient did not cause a panic");
+}
 
-### wm state ###
-test wm-state-1.1 {usage} {
-    list [catch {wm state} err] $err
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-state-1.2 {usage} {
-    list [catch {wm state . _ _} err] $err
-} {1 {wrong # args: should be "wm state window ?state?"}}
+{
+    my $t = $mw->Toplevel;
+    my $transient = $mw->Toplevel;
+    $transient->transient($t);
+    $t->destroy;
+    is($transient->transient, undef);
+    $transient->destroy;
+    pass("Destroying master did not cause a panic");
+}
 
-test wm-state-2.1 {initial state} {
-    deleteWindows
-    toplevel .t
-    wm state .t
-} {normal}
-test wm-state-2.2 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm state .t withdrawn
-    wm state .t
-} {withdrawn}
-test wm-state-2.3 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm withdraw .t
-    wm state .t
-} {withdrawn}
-test wm-state-2.4 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm state .t withdrawn
-    wm state .t
-} {withdrawn}
-test wm-state-2.5 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm withdraw .t
-    wm state .t
-} {withdrawn}
-test wm-state-2.6 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm state .t iconic
-    wm state .t
-} {iconic}
-test wm-state-2.7 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm iconify .t
-    wm state .t
-} {iconic}
-test wm-state-2.8 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm state .t iconic
-    wm state .t
-} {iconic}
-test wm-state-2.9 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm iconify .t
-    wm state .t
-} {iconic}
-test wm-state-2.10 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm withdraw .t
-    wm state .t normal
-    wm state .t
-} {normal}
-test wm-state-2.11 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm withdraw .t
-    wm deiconify .t
-    wm state .t
-} {normal}
-test wm-state-2.12 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm withdraw .t
-    wm state .t normal
-    wm state .t
-} {normal}
-test wm-state-2.13 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm withdraw .t
-    wm deiconify .t
-    wm state .t
-} {normal}
-test wm-state-2.14 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm iconify .t
-    wm state .t normal
-    wm state .t
-} {normal}
-test wm-state-2.15 {state change before map} {
-    deleteWindows
-    toplevel .t
-    wm iconify .t
-    wm deiconify .t
-    wm state .t
-} {normal}
-test wm-state-2.16 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm iconify .t
-    wm state .t normal
-    wm state .t
-} {normal}
-test wm-state-2.17 {state change after map} {
-    deleteWindows
-    toplevel .t
-    update
-    wm iconify .t
-    wm deiconify .t
-    wm state .t
-} {normal}
-test wm-state-2.18 {state change after map} win {
-    deleteWindows
-    toplevel .t
-    update
-    wm state .t zoomed
-    wm state .t
-} {zoomed}
+{
+    deleteWindows;
+    my $t1 = $mw->Toplevel;
+    my $t2 = $mw->Toplevel;
+    my $transient = $mw->Toplevel;
+    $transient->transient($t1);
+    $transient->transient($t2);
+    $t1->destroy; # Caused panic in 8.4b1
+    $t2->destroy;
+    $transient->destroy;
+    pass(q{Reassign transient, destroy old master});
+}
 
+{
+    deleteWindows;
+    my $t1 = $mw->Toplevel;
+    my $t2 = $mw->Toplevel;
+    my $transient = $mw->Toplevel;
+    $transient->transient($t1);
+    $transient->transient($t2);
+    $t2->destroy; # caused panic in 8.4b1
+    $t1->destroy;
+    $transient->destroy;
+    pass(q{Reassign transient, destroy new master});
+}
 
-### wm withdraw ###
-test wm-withdraw-1.1 {usage} {
-    list [catch {wm withdraw} err] $err
-} {1 {wrong # args: should be "wm option window ?arg ...?"}}
-test wm-withdraw-1.2 {usage} {
-    list [catch {wm withdraw . _} msg] $msg
-} {1 {wrong # args: should be "wm withdraw window"}}
+{
+    my $t1 = $mw->Toplevel;
+    my $t2 = $mw->Toplevel;
+    my $transient = $mw->Toplevel;
+    $transient->transient($t1);
+    $transient->transient($t2);
+    $transient->destroy;
+    $t2->destroy; # caused panic in 8.4b1
+    $t1->destroy; # so did this
+    pass(q{Reassign transient, destroy transient});
+}
 
-test wm-withdraw-2.1 {Misc errors} -setup {
-    deleteWindows
-} -body {
-    toplevel .t
-    toplevel .t2
-    wm iconwindow .t .t2
-    wm withdraw .t2
-} -returnCodes error -cleanup {
-    destroy .t2
-} -result {can't withdraw .t2: it is an icon for .t}
+{
+    ### wm state ###
+    eval { $mw->state("_", "_") };
+    like($@, qr{\Qwrong # args: should be "wm state window ?state?"},
+	 "wm state usage");
+}
 
-test wm-withdraw-3.1 {} {
-    update
-    set result {}
-    wm withdraw .t
-    lappend result [wm state .t] [winfo ismapped .t]
-    wm deiconify .t
-    lappend result [wm state .t] [winfo ismapped .t]
-} {withdrawn 0 normal 1}
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    is($t->state, "normal", "initial state");
+}
 
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->state("withdrawn");
+    is($t->state, "withdrawn",
+       q{state change before map});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->withdraw;
+    is($t->state, "withdrawn",
+       q{state change before map});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->state("withdrawn");
+    is($t->state, "withdrawn",
+       q{state change after map});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->withdraw;
+    is($t->state, "withdrawn",
+       q{state change after map});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->state("iconic");
+    is($t->state, q{iconic},
+       q{state change before map, iconic});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->iconify;
+    is($t->state, q{iconic},
+       q{state change before map, iconic});
+}
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->state("iconic");
+    is($t->state, q{iconic},
+       q{state change after map, iconic});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->iconify;
+    is($t->state, q{iconic},
+       q{state change after map, iconic});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->withdraw;
+    $t->state("normal");
+    is($t->state, "normal",
+       q{state change before map, normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->withdraw;
+    $t->deiconify;
+    is($t->state, "normal",
+       q{state change before map, normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->withdraw;
+    $t->state("normal");
+    is($t->state, "normal",
+       q{state change after map, normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->withdraw;
+    $t->deiconify;
+    is($t->state, "normal",
+       q{state change after map, normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->iconify;
+    $t->state("normal");
+    is($t->state, "normal",
+       q{state change before map, iconify+normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    $t->iconify;
+    $t->deiconify;
+    is($t->state, "normal",
+       q{state change before map, iconify+normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->iconify;
+    $t->state("normal");
+    is($t->state, "normal",
+       q{state change after map, iconify+normal});
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->iconify;
+    $t->deiconify;
+    is($t->state, "normal",
+       q{state change after map, iconify+normal});
+}
+
+SKIP: {
+    skip("zoomed only implemented on win", 1)
+	if $Tk::platform ne 'MSWin32';
+    deleteWindows;
+    my $t = $mw->Toplevel;
+    poswin $t;
+    $mw->update;
+    $t->state("zoomed");
+    is($t->state, "zoomed",
+       q{state change after map, zoomed});
+}
+
+{
+    ### wm withdraw ###
+    eval { $mw->withdraw("_") };
+    like($@, qr{\Qwrong # args: should be "wm withdraw window"},
+	 "wm withdraw usage");
+}
+
+{
+    deleteWindows;
+    my $t = $mw->Toplevel(Name => "t");
+    my $t2 = $mw->Toplevel(Name => "t2");
+    poswin $t;
+    $t->iconwindow($t2);
+    eval { $t2->withdraw };
+    like($@, qr{\Qcan't withdraw .t2: it is an icon for .t});
+    
+    $mw->update;
+    $t->withdraw;
+    is($t->state, "withdrawn");
+    is($t->ismapped, 0);
+    $t->deiconify;
+    is($t->state, "normal");
+    is($t->ismapped, 1);
+}
 
 ### Misc. wm tests ###
-test wm-deletion-epoch-1.1 {Deletion epoch on multiple displays} -constraints altDisplay -setup {
-    deleteWindows
-} -body {
+
+if (0) {
+    ## This test probably cannot be translated to Perl/Tk;
+    ## also needs TK_ALT_DISPLAY defined
+
     # See Tk Bug #671330 "segfault when e.g. deiconifying destroyed window"
-    set w [toplevel .t -screen $env(TK_ALT_DISPLAY)]
-    wm deiconify $w         ;# this caches the WindowRep
-    destroy .t
-    wm deiconify $w
-} -returnCodes error -result {bad window path name ".t"}
+    my $w = $mw->Toplevel(Name => "t", -screen => $ENV{TK_ALT_DISPLAY});
+    my $w2 = $w;
+    $w->deiconify  ;# this caches the WindowRep
+    $w->destroy;
+    eval { $w2->deiconify };
+    like($@, qr{\Qbad window path name ".t"},
+	 q{Deletion epoch on multiple displays});
+}
 
 # FIXME:
 
 # Test delivery of virtual events to the WM. We could check to see
 # if the window was raised after a button click for example.
 # This sort of testing may not be possible.
-
-deleteWindows
-cleanupTests
-catch {unset results}
-catch {unset focusin}
-return
-
 
 __END__
