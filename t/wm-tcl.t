@@ -35,8 +35,7 @@ BEGIN {
     }
 }
 
-#plan tests => 197;
-plan 'no_plan';#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+plan tests => 278;
 
 my $mw = MainWindow->new;
 
