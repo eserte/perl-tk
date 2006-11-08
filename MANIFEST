@@ -1825,6 +1825,7 @@ stripblib
 style_test
 submethods
 symbols
+t/00wmcheck.t			Provide information about wm
 t/after.t
 t/autoload.t
 t/balloon.t
