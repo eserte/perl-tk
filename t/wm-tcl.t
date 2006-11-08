@@ -24,6 +24,8 @@
 # metacity 2.16.3
 # With metacity 2.10.3 there are even more failures.
 # All tests pass with fvwm 2.4.19 and twm
+# Test failures with fvwm 2.5.18
+
 
 use strict;
 
@@ -1772,6 +1774,9 @@ stdWindow;
     is($subject->ismapped, 0);
     $master->deiconify;
     $mw->update;
+
+    local $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)";
+
     is($subject->state, "normal",
        q{deiconify on the master also does a deiconify on the transient});
     is($subject->ismapped, 1);
@@ -1842,6 +1847,9 @@ stdWindow;
     ok($@, q{error during transient should not cause deletion of map/unmap binding});
     $master->withdraw;
     $mw->update;
+
+    local $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)";
+
     is($subject->state, "withdrawn");
     $master->deiconify;
     $mw->update;
@@ -1888,6 +1896,8 @@ stdWindow;
 }
 
 {
+    local $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)";
+
     deleteWindows;
     my $master = $mw->Toplevel;
     my $subject = $mw->Toplevel;
