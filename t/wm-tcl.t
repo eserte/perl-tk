@@ -22,6 +22,7 @@
 
 # Some tests are marked as TODO because they fail with
 # metacity 2.16.3
+# With metacity 2.10.3 there are even more failures.
 # All tests pass with fvwm 2.4.19 and twm
 
 use strict;
@@ -1341,6 +1342,8 @@ eval {
     }
 
     {
+	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
 	$t->update;
@@ -1549,6 +1552,8 @@ eval {
     }
 
     {
+	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+
 	my $t = $mw->Toplevel;
 	poswin $t;
 	$t->update;
@@ -1559,6 +1564,8 @@ eval {
     }
 
     {
+	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+
 	my $t = $mw->Toplevel;
 	poswin $t;
 	$t->update;
@@ -1571,6 +1578,8 @@ eval {
     deleteWindows;
 
     {
+	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
 	my $tm = $t->Menu(-type => "menubar");
