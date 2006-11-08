@@ -46,7 +46,7 @@ BEGIN {
     }
 }
 
-plan tests => 441;
+plan tests => 537;
 
 my $partial_top;
 my $partial_lb;
@@ -118,6 +118,11 @@ resetGridInfo();
 
 $mw->Photo("testimage", -file => Tk->findINC("Xcamel.gif"));
 
+use constant SKIP_CGET    => 5;
+use constant SKIP_CONF    => 6;
+
+my $testVariable;
+
 foreach my $test
     (
      ['-activestyle', 'under', 'underline', 'foo',
@@ -129,16 +134,12 @@ foreach my $test
       'unknown color name "non-existent"'],
      [qw{-borderwidth 1.3 1 badValue}, q{bad screen distance "badValue"}],
      [qw{-cursor arrow arrow badValue}, q{bad cursor spec "badValue"}],
-# XXX error test skipped...
-     [qw{-exportselection yes 1}, "", #"xyzzy",
-      q{expected boolean value but got "xyzzy"}],
+     [qw{-exportselection yes 1}, ""], # Perl/Tk thinks different about booleans: "xyzzy", q{expected boolean value but got "xyzzy"}],
      ['-fg', '#110022', '#110022', 'bogus', q{unknown color name "bogus"}],
-# XXX should test perl font object
-#     ['-font', 'Helvetica 12', 'Helvetica 12', '', "font \"\" doesn't exist"],
+     ['-font', 'Helvetica 12', 'Helvetica 12', '', "font \"\" doesn't exist", 1, 1],
      ['-foreground', '#110022', '#110022', 'bogus',
       q{unknown color name "bogus"}],
-# XXX q{expected integer but got "20p"}
-     [qw{-height 30 30 20p}, "'20p' isn't numeric"],
+     [qw{-height 30 30 20p}, "'20p' isn't numeric"], # in Tcl/Tk nowadays: expected integer but got "20p"
      ['-highlightbackground', '#112233', '#112233', 'ugly',
       q{unknown color name "ugly"}],
      ['-highlightcolor', '#123456', '#123456', 'bogus',
@@ -158,18 +159,17 @@ foreach my $test
      ['-selectforeground', '#654321', '#654321', 'bogus',
       q{unknown color name "bogus"}],
      [qw{-selectmode string string}, '', ''],
-     [qw{-setgrid false 0}, "", # XXX "lousy",
+     [qw{-setgrid false 0}, "", "lousy",
       q{expected boolean value but got "lousy"}],
      ['-state', 'disabled', 'disabled', 'foo',
       'bad state "foo": must be disabled, or normal'],
      ['-takefocus', "any string", "any string", '', ''],
      ['-tile', 'testimage', 'testimage', 'non-existant',
       'image "non-existant" doesn\'t exist'],
-     [qw{-width 45 45 3p}, "'3p' isn't numeric"],
-      #XXXq{expected integer but got "3p"}],
-#XXX Callback object      ['-xscrollcommand', 'Some command', 'Some command', '', ''],
-#XXX     ['-yscrollcommand', 'Another command', 'Another command', '', ''],
-#XXX not yet in 800.022     [qw{-listvar}, \$testVariable,  testVariable {}}, q{}],
+     [qw{-width 45 45 3p}, "'3p' isn't numeric"], # In Tcl/Tk nowadays q{expected integer but got "3p"}
+     [qw(-xscrollcommand), q{Some command}, q{Some command}, '', undef, 1, 1],
+     [qw(-yscrollcommand), q{Another command}, q{Another command}, '', undef, 1, 1],
+     [qw{-listvar}, \$testVariable,  \$testVariable, '', undef],
     ) {
 	my $name = $test->[0];
 
@@ -187,15 +187,21 @@ foreach my $test
 		    $name =~ /^-(tile|offset)$/);
 
 	    $lb->configure($name, $test->[1]);
-	    is(($lb->configure($name))[4], $test->[2], "configuration option $name");
-	    is($lb->cget($name), $test->[2], "cget call with $name");
-	    if ($test->[3] ne "") {
+	    pass("configure set for $name");
+	SKIP: {
+		skip("configure test for $name", 1) if $test->[SKIP_CONF];
+		is(($lb->configure($name))[4],$test->[2], "configuration option $name");
+	    }
+	SKIP: {
+		skip("cget test for $name", 1) if $test->[SKIP_CGET];
+		is($lb->cget($name), $test->[2], "cget call with $name");
+	    }
+	SKIP: {
+		skip("error test for $name", 1) if $test->[3] eq "";
 		eval {
 		    $lb->configure($name, $test->[3]);
 		};
 		like($@,qr/$test->[4]/,"error message for $name");
-	    } else {
-		pass("No error message test for option $name");
 	    }
 
 	    $lb->configure($name, ($lb->configure($name))[3]);
@@ -346,7 +352,7 @@ eval { $lb->cget(-gorp) };
 like($@,qr/unknown option "-gorp"/);
 
 is($lb->cget(-setgrid), 0);
-# XXX why 25 in Tk800?
+# XXX why 25 in Tk800? probably because of less configuration options!
 is(scalar @{[$lb->configure]}, ($Tk::VERSION < 803 ? 25 : 27), "Listbox configure");
 is_deeply([$lb->configure(-setgrid)],
 	  [qw(-setgrid setGrid SetGrid 0 0)]);
@@ -476,11 +482,6 @@ like($@, $Tk::VERSION < 803
      ? qr/wrong \# args: should be \"\.listbox.* get first \?last\?\"/
      : qr/wrong \# args: should be \"\.listbox.* get firstIndex \?lastIndex\?\"/);
 
-# XXX is in perl/Tk
-#  eval { $lb->get("2.4") };
-#  ok($@ ,qr/bad listbox index "2.4": must be active, anchor, end, \@x,y, or a number/,
-#     "wrong error message");
-
 eval { $lb->get("badindex") };
 like($@ ,qr/bad listbox index "badindex": must be active, anchor, end, \@x,y, or a number/);
 
@@ -492,6 +493,8 @@ like($@ ,qr/bad listbox index "bogus": must be active, anchor, end, \@x,y, or a 
     $l2->insert(0, qw(el0 el1 el2 el3 el4 el5 el6 el7));
     is($l2->get(0), "el0");
     is($l2->get(3), "el3");
+    # This is valid in perl/Tk, but not Tcl/Tk
+    is($lb->get("3.4"), "el3", "get with float");
     is($l2->get("end"), "el7");
     $l2->destroy;
 }
@@ -613,11 +616,6 @@ like($@,qr/wrong \# args: should be \"\.listbox.* scan mark\|dragto x y\"/);
 eval { $lb->scan(qw/foo bogus 2/) };
 like($@ ,qr/\'bogus\' isn\'t numeric/);
 
-## is in perl
-#  eval { $lb->scan(qw/foo 2 2.3/) };
-#  ok($@ ,qr/'2.3' isn't numeric/,
-#     "wrong error message");
-
 eval { $lb->scan(qw/foo 2 3/) };
 like($@, $Tk::VERSION < 803
      ? qr/bad scan option \"foo\": must be mark or dragto/
@@ -634,6 +632,7 @@ like($@, $Tk::VERSION < 803
     $lb->update;
     $lb->scan("mark", 100, 140);
     $lb->scan("dragto", 90, 137);
+    $lb->scan("dragto", "90.1", "137.1"); # ok in Perl/Tk, an error in Tcl/Tk
     $lb->update;
  SKIP: {
 	skip($skip_font_test, 2) if $skip_font_test;
@@ -1006,82 +1005,114 @@ is($log[0], "y 0 1");
 is($log[1], "x 0 1");
 
 $lb->destroy;
-my @x = qw/a b c d/;
-#XXX these are missing: -listvar tests, because 800.023 do not know this option
-# $lb = $mw->$Listbox(-listvar => \@x);
-# ok(join(",",$lb->get(0, "end")), "a,b,c,d");
 
-#test listbox-4.10 {ConfigureListbox, no listvar -> existing listvar} {
-#    catch {destroy $_lb}
-#    set x [list a b c d]
-#    listbox $_lb
-#    $_lb insert end 1 2 3 4
-#    $_lb configure -listvar x
-#    $_lb get 0 end
-#} [list a b c d]
-#test listbox-4.11 {ConfigureListbox procedure, listvar -> no listvar} {
-#    catch {destroy $_lb}
-#    set x [list a b c d]
-#    listbox $_lb -listvar x
-#    $_lb configure -listvar {}
-#    $_lb insert end 1 2 3 4
-#    list $x [$_lb get 0 end]
-#} [list [list a b c d] [list a b c d 1 2 3 4]]
-#test listbox-4.12 {ConfigureListbox procedure, listvar -> different listvar} {
-#    catch {destroy $_lb}
-#    set x [list a b c d]
-#    set y [list 1 2 3 4]
-#    listbox $_lb
-#    $_lb configure -listvar x
-#    $_lb configure -listvar y
-#    $_lb insert end 5 6 7 8
-#    list $x $y
-#} [list [list a b c d] [list 1 2 3 4 5 6 7 8]]
-#test listbox-4.13 {ConfigureListbox, no listvar -> non-existant listvar} {
-#    catch {destroy $_lb}
-#    catch {unset x}
-#    listbox $_lb
-#    $_lb insert end a b c d
-#    $_lb configure -listvar x
-#    set x
-#} [list a b c d]
-#test listbox-4.14 {ConfigureListbox, non-existant listvar} {
-#    catch {destroy $_lb}
-#    catch {unset x}
-#    listbox $_lb -listvar x
-#    list [info exists x] $x
-#} [list 1 {}]
-#test listbox-4.15 {ConfigureListbox, listvar -> non-existant listvar} {
-#    catch {destroy $_lb}
-#    catch {unset y}
-#    set x [list a b c d]
-#    listbox $_lb -listvar x
-#    $_lb configure -listvar y
-#    list [info exists y] $y
-#} [list 1 [list a b c d]]
-#test listbox-4.16 {ConfigureListbox, listvar -> same listvar} {
-#    catch {destroy $_lb}
-#    set x [list a b c d]
-#    listbox $_lb -listvar x
-#    $_lb configure -listvar x
-#    set x
-#} [list a b c d]
-#test listbox-4.17 {ConfigureListbox, no listvar -> no listvar} {
-#    catch {destroy $_lb}
-#    listbox $_lb
-#    $_lb insert end a b c d
-#    $_lb configure -listvar {}
-#    $_lb get 0 end
-#} [list a b c d]
-#test listbox-4.18 {ConfigureListbox, no listvar -> bad listvar} {
-#    catch {destroy $_lb}
-#    listbox $_lb
-#    $_lb insert end a b c d
-#    set x {this is a " bad list}
-#    catch {$_lb configure -listvar x} result
-#    list [$_lb get 0 end] [$_lb cget -listvar] $result
-#} [list [list a b c d] {} \
-#	"unmatched open quote in list: invalid listvar value"]
+SKIP: {
+    skip("no -listvar in older Tks", 12)
+	if $Tk::VERSION < 804;
+    {
+	my @x = qw/a b c d/;
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	is_deeply([$lb->get(0, "end")], [qw(a b c d)], "-listvar after initial setting");
+	$lb->destroy;
+    }
+
+    {
+	my @x = qw(a b c d);
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end 1 2 3 4));
+	$lb->configure(-listvar => \@x);
+	is_deeply([$lb->get(qw(0 end))], [qw(a b c d)],
+		  q{ConfigureListbox, no listvar -> existing listvar});
+	$lb->destroy;
+    }
+
+    {
+ 	local $TODO = "Not yet implemented in Perl/Tk";
+
+ 	my @x = qw(a b c d);
+ 	my $lb = $mw->$Listbox(-listvar => \@x);
+ 	$lb->configure(-listvar => undef);
+ 	$lb->insert(qw(end 1 2 3 4));
+ 	is_deeply([@x], [qw(a b c d)],
+ 		  q{ConfigureListbox procedure, listvar -> no listvar});
+ 	is_deeply([$lb->get(qw(0 end))], [qw(a b c d 1 2 3 4)]);
+ 	$lb->destroy;
+    }
+    
+    if (0) { # TODO: dumps core!!!
+	my @x = qw(a b c d);
+	my @y = (1..4);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->configure(-listvar => \@x);
+	$lb->configure(-listvar => \@y);
+	$lb->insert(qw(end 5 6 7 8));
+	is_deeply(\@x, [qw(a b c d)],
+		  q{ConfigureListbox procedure, listvar -> different listvar});
+	is_deeply(\@y, [qw(1 2 3 4 5 6 7 8)]);
+	$lb->destroy;
+    }
+
+    {
+ 	local $TODO = "Not yet implemented in Perl/Tk";
+
+	my @x;
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	$lb->configure(-listvar => \@x);
+	is_deeply(\@x, [qw(a b c d)],
+		  q{ConfigureListbox, no listvar -> non-existant listvar});
+	$lb->destroy;
+    }
+
+    {
+	my @x;
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	is_deeply(\@x, [], q{ConfigureListbox, non-existant listvar});
+    }
+
+    {
+ 	local $TODO = "Not yet implemented in Perl/Tk";
+
+	my @x = qw(a b c d);
+	my @y;
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->configure(-listvar => \@y);
+	is_deeply(\@y, [qw(a b c d)],
+		  q{ConfigureListbox, listvar -> non-existant listvar});
+	$lb->destroy;
+    }
+
+
+    {
+	my @x = qw(a b c d);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->configure(-listvar => \@x);
+	is_deeply(\@x, [qw(a b c d)],
+		  q{ConfigureListbox, listvar -> same listvar});
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	$lb->configure(-listvar => undef);
+	is_deeply([$lb->get(qw(0 end))], [qw(a b c d)],
+		  q{ConfigureListbox, no listvar -> no listvar});
+    }
+
+    {
+	local $TODO = "Not yet implemented in Perl/Tk";
+
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	my $x = "this is not an array";
+	eval { $lb->configure(-listvar => \$x) };
+	like($@, qr{Should have an error message about invalid type});
+	is_deeply([$lb->get(qw(0 end))], [qw(a b c d)],
+		  q{ConfigureListbox, no listvar -> bad listvar});
+	is($lb->cget(-listvar), undef);
+    }
+}
 
 # No tests for DisplayListbox:  I don't know how to test this procedure.
 
@@ -1227,16 +1258,16 @@ SKIP: {
     $l2->destroy;
 }
 
-{
-      my @x = qw(a b c d);
-    ## -listvar XXX
-#      my $l2 = $mw->$Listbox(-listvar => \@x);
-#      $l2->insert(0, 1 .. 4);
-#      ok(join(" ", @x), "1 2 3 4 a b c d");
-#      ok(scalar @x, 8);
-#      ok($x[0], 1);
-#      ok($x[-1], "d");
-#      $l2->destroy;
+SKIP: {
+    skip("-listvar not implemented in older Tks", 1)
+	if $Tk::VERSION < 804;
+    skip("dumps core *TODO*", 1);
+
+    my @x = qw(a b c d);
+    my $l2 = $mw->$Listbox(-listvar => \@x);
+    $l2->insert(0, 1 .. 4);
+    is_deeply([@x], [qw(1 2 3 4 a b c d)]);
+    $l2->destroy;
 }
 
 {
@@ -1396,15 +1427,17 @@ SKIP: {
     $l2->destroy;
 }
 
-## -listvar
-#  catch {destroy .l2}
-#  test listbox-7.21 {DeleteEls procedure, check -listvar update} {
-#      catch {destroy .l2}
-#      set x [list a b c d]
-#      listbox .l2 -listvar x
-#      .l2 delete 0 1
-#      set x
-#  } [list c d]
+SKIP: {
+    skip("-listvar not implemented in older Tks", 1)
+	if $Tk::VERSION < 804;
+    skip("dumps core *TODO*", 1);
+
+    my @x = qw(a b c d);
+    my $l2 = $mw->Listbox(-listvar => \@x);
+    $l2->delete(0, 1);
+    is_deeply(\@x, ["c","d"],
+	      q{DeleteEls procedure, check -listvar update});
+}
 
 $lb->destroy;
 $lb = $mw->$Listbox(-setgrid => 1)->pack;
@@ -1795,7 +1828,7 @@ $partial_lb->yview(3);
 $partial_lb->update;
 like($log[0], qr/^y 0\.2(0000+\d+)? 0\.\d+/);
 
-@x = ();
+my @x = ();
 
 sub Tk::Error {
     push @x, @_;
@@ -1831,70 +1864,77 @@ like("@x" ,qr/Undefined subroutine &main::bogus.*horizontal scrolling command ex
 
 foreach ($mw->children) { $_->destroy }
 
-## XXX not yet
-#  # tests for ListboxListVarProc
-#  test listbox-21.1 {ListboxListVarProc} {
-#      catch {destroy $_lb}
-#      catch {unset x}
-#      listbox $_lb -listvar x
-#      set x [list a b c d]
-#      $_lb get 0 end
-#  } [list a b c d]
-#  test listbox-21.2 {ListboxListVarProc} {
-#      catch {destroy $_lb}
-#      set x [list a b c d]
-#      listbox $_lb -listvar x
-#      unset x
-#      set x
-#  } [list a b c d]
-#  test listbox-21.3 {ListboxListVarProc} {
-#      catch {destroy $_lb}
-#      set x [list a b c d]
-#      listbox $_lb -listvar x
-#      $_lb configure -listvar {}
-#      unset x
-#      info exists x
-#  } 0
-#  test listbox-21.4 {ListboxListVarProc} {
-#      catch {destroy $_lb}
-#      set x [list a b c d]
-#      listbox $_lb -listvar x
-#      lappend x e f g
-#      $_lb size
-#  } 7
-#  test listbox-21.5 {ListboxListVarProc, test selection after listvar mod} {
-#      catch {destroy $_lb}
-#      set x [list a b c d e f g]
-#      listbox $_lb -listvar x
-#      $_lb selection set end
-#      set x [list a b c d]
-#      set x [list 0 1 2 3 4 5 6]
-#      $_lb curselection
-#  } {}
-#  test listbox-21.6 {ListboxListVarProc, test selection after listvar mod} {
-#      catch {destroy $_lb}
-#      set x [list a b c d]
-#      listbox $_lb -listvar x
-#      $_lb selection set 3
-#      lappend x e f g
-#      $_lb curselection
-#  } 3
-#  test listbox-21.7 {ListboxListVarProc, test selection after listvar mod} {
-#      catch {destroy $_lb}
-#      set x [list a b c d]
-#      listbox $_lb -listvar x
-#      $_lb selection set 0
-#      set x [linsert $x 0 1 2 3 4]
-#      $_lb curselection
-#  } 0
-#  test listbox-21.8 {ListboxListVarProc, test selection after listvar mod} {
-#      catch {destroy $_lb}
-#      set x [list a b c d]
-#      listbox $_lb -listvar x
-#      $_lb selection set 2
-#      set x [list a b c]
-#      $_lb curselection
-#  } 2
+SKIP: {
+    skip("no -listvar in older Tks", 12)
+	if $Tk::VERSION < 804;
+
+    {
+	my @x;
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	@x = qw(a b c d);
+	is_deeply([$lb->get(0, "end")], [qw(a b c d)],
+		  "ListboxListVarProc");
+	$lb->destroy;
+    }
+
+    {
+	my @x;
+	@x = qw(a b c d);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->configure(-listvar => undef);
+	@x = ();
+	is_deeply(\@x, []);
+	$lb->destroy;
+    }
+
+    {
+	my @x = qw(a b c d);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	push @x, qw(e f g);
+	is(scalar(@x), 7);
+	$lb->destroy;
+    }
+
+    {
+	my @x = qw(a b c d e f g);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->selection(qw(set end));
+	@x = qw(a b c d);
+	@x = (0..6);
+	is($lb->curselection, undef,
+	   q{ListboxListVarProc, test selection after listvar mod});
+	$lb->destroy;
+    }
+
+    {
+	my @x = qw(a b c d);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->selection(qw(set 3));
+	push @x, qw(e f g);
+	is_deeply([$lb->curselection], [3]);
+	$lb->destroy;
+    }
+
+    {
+	my @x = qw(a b c d);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->selection(qw(set 0));
+	splice @x, 0, 0, (1, 2, 3, 4); # not sure if this is the correct linsert translation
+	is_deeply([$lb->curselection], [0]);
+	$lb->destroy;
+    }
+
+    {
+	local $TODO = "Not yet implemented in Perl/Tk";
+
+	my @x = qw(a b c d);
+	my $lb = $mw->$Listbox(-listvar => \@x);
+	$lb->selection(qw(set 2));
+	@x = qw(a b c);
+	is_deeply([$lb->curselection], [2]);
+	$lb->destroy;
+    }
+
 #  test listbox-21.9 {ListboxListVarProc, test hscrollbar after listvar mod} {
 #      catch {destroy $_lb}
 #      catch {unset x}
@@ -1996,6 +2036,7 @@ foreach ($mw->children) { $_->destroy }
 #      lappend result [$_lb yview]
 #      set result
 #  } [list {0.5 1} {0 1}]
+}
 
 # UpdateHScrollbar
 
@@ -2010,128 +2051,148 @@ is($log[0], "x 0 1");
 is($log[1], "x 0 1");
 is($log[2], "x 0 0.5");
 
-## no itemconfigure in Tk800.x
-#  # ConfigureListboxItem
-#  test listbox-23.1 {ConfigureListboxItem} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      catch {$_lb itemconfigure 0} result
-#      set result
-#  } {item number "0" out of range}
-#  test listbox-23.2 {ConfigureListboxItem} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c d
-#      $_lb itemconfigure 0
-#  } [list {-background background Background {} {}} \
-#  	{-bg -background} \
-#  	{-fg -foreground} \
-#  	{-foreground foreground Foreground {} {}} \
-#  	{-selectbackground selectBackground Foreground {} {}} \
-#  	{-selectforeground selectForeground Background {} {}}]
-#  test listbox-23.3 {ConfigureListboxItem, itemco shortcut} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c d
-#      $_lb itemco 0 -background
-#  } {-background background Background {} {}}
-#  test listbox-23.4 {ConfigureListboxItem, wrong num args} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a
-#      catch {$_lb itemco} result
-#      set result
-#  } {wrong # args: should be "$_lb itemconfigure index ?option? ?value? ?option value ...?"}
-#  test listbox-23.5 {ConfigureListboxItem, multiple calls} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      set i 0
-#      foreach color {red orange yellow green blue darkblue violet} {
-#  	$_lb insert end $color
-#  	$_lb itemconfigure $i -bg $color
-#  	incr i
-#      }
-#      pack $_lb
-#      update
-#      list [$_lb itemcget 0 -bg] [$_lb itemcget 1 -bg] [$_lb itemcget 2 -bg] \
-#  	    [$_lb itemcget 3 -bg] [$_lb itemcget 4 -bg] [$_lb itemcget 5 -bg] \
-#  	    [$_lb itemcget 6 -bg]
-#  } {red orange yellow green blue darkblue violet}
-#  catch {destroy $_lb}
-#  listbox $_lb
-#  $_lb insert end a b c d
-#  set i 6
-#  #      {-background #ff0000 #ff0000 non-existent
-#  #  	    {unknown color name "non-existent"}}
-#  #      {-bg #ff0000 #ff0000 non-existent {unknown color name "non-existent"}}
-#  #      {-fg #110022 #110022 bogus {unknown color name "bogus"}}
-#  #      {-foreground #110022 #110022 bogus {unknown color name "bogus"}}
-#  #      {-selectbackground #110022 #110022 bogus {unknown color name "bogus"}}
-#  #      {-selectforeground #654321 #654321 bogus {unknown color name "bogus"}}
-#  #XXX
-#  foreach test { A } {
-#      set name [lindex $test 0]
-#      test listbox-23.$i {configuration options} {
-#  	$_lb itemconfigure 0 $name [lindex $test 1]
-#  	list [lindex [$_lb itemconfigure 0 $name] 4] [$_lb itemcget 0 $name]
-#      } [list [lindex $test 2] [lindex $test 2]]
-#      incr i
-#      if {[lindex $test 3] != ""} {
-#  	test listbox-1.$i {configuration options} {
-#  	    list [catch {$_lb configure $name [lindex $test 3]} msg] $msg
-#  	} [list 1 [lindex $test 4]]
-#      }
-#      $_lb configure $name [lindex [$_lb configure $name] 3]
-#      incr i
-#  }
+SKIP: {
+    skip("no itemconfigure in Tk800.x", 35)
+	if $Tk::VERSION < 804;
 
-#  # ListboxWidgetObjCmd, itemcget
-#  test listbox-24.1 {itemcget} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c d
-#      $_lb itemcget 0 -fg
-#  } {}
-#  test listbox-24.2 {itemcget} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c d
-#      $_lb itemconfigure 0 -fg red
-#      $_lb itemcget 0 -fg
-#  } red
-#  test listbox-24.3 {itemcget} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c d
-#      catch {$_lb itemcget 0} result
-#      set result
-#  } {wrong # args: should be "$_lb itemcget index option"}
-#  test listbox-24.3 {itemcget, itemcg shortcut} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c d
-#      catch {$_lb itemcg 0} result
-#      set result
-#  } {wrong # args: should be "$_lb itemcget index option"}
+    {
+	my $lb = $mw->$Listbox;
+	eval { $lb->itemconfigure(0) };
+	like($@, qr{item number "0" out of range},
+	     "ConfigureListboxItem error");
+	$lb->destroy;
+    }
 
-#  # General item configuration issues
-#  test listbox-25.1 {listbox item configurations and widget based deletions} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a
-#      $_lb itemconfigure 0 -fg red
-#      $_lb delete 0 end
-#      $_lb insert end a
-#      $_lb itemcget 0 -fg
-#  } {}
-#  test listbox-25.2 {listbox item configurations and widget based inserts} {
-#      catch {destroy $_lb}
-#      listbox $_lb
-#      $_lb insert end a b c
-#      $_lb itemconfigure 0 -fg red
-#      $_lb insert 0 1 2 3 4
-#      list [$_lb itemcget 0 -fg] [$_lb itemcget 4 -fg]
-#  } [list {} red]
+    {
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	is_deeply([$lb->itemconfigure(0)],
+		  [[qw(-background background Background), undef, undef],
+		   [qw(-bg -background)],
+		   [qw(-fg -foreground)],
+		   [qw(-foreground foreground Foreground), undef, undef],
+		   [qw(-selectbackground selectBackground Foreground), undef, undef],
+		   [qw(-selectforeground selectForeground Background), undef, undef],
+		  ], "itemconfigure options");
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	is_deeply([$lb->itemconfigure(0, -background)],[qw(-background background Background),undef,undef],
+		  "itemconfigure with just one option"
+		 );
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox(Name => "lb");
+	$lb->insert(qw(end a));
+	eval { $lb->itemconfigure };
+	like($@, qr{\Qwrong # args: should be ".lb itemconfigure index ?option? ?value? ?option value ...?"},
+	     q{ConfigureListboxItem, wrong num args});
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox(Name => "lb");
+	my $i = 0;
+	my @colors = qw(red orange yellow green blue darkblue violet);
+	for my $color (@colors) {
+	    $lb->insert(end => $color);
+	    $lb->itemconfigure($i, -bg => $color);
+	    $i++;
+	}
+	$lb->pack;
+	$lb->update;
+	for my $i (0 .. 6) {
+	    is($lb->itemcget($i, -bg), $colors[$i],
+	       q{ConfigureListboxItem, multiple calls, } . $colors[$i]);
+	}
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+
+	no warnings 'qw';
+
+	foreach my $test
+	    (
+	     [qw(-background #ff0000 #ff0000 non-existent),
+	      qr{unknown color name "non-existent"}],
+	     [qw(-bg #ff0000 #ff0000 non-existent),
+	      qr{unknown color name "non-existent"}],
+	     [qw(-fg #110022 #110022 bogus),
+	      qr{unknown color name "bogus"}],
+	     [qw(-foreground #110022 #110022 bogus),
+	      qr{unknown color name "bogus"}],
+	     [qw(-selectbackground #110022 #110022 bogus),
+	      qr{unknown color name "bogus"}],
+	     [qw(-selectforeground #654321 #654321 bogus),
+	      qr{unknown color name "bogus"}],
+	    ) {
+		my($name, $set_val, $get_val, $err_val, $err_msg) = @$test;
+		$lb->itemconfigure(0, $name, $set_val);
+		is($lb->itemcget(0, $name), $get_val, "itemconfigure $name");
+		eval { $lb->itemconfigure(0, $name, $err_val) };
+		like($@, $err_msg, "itemconfigure $name error ");
+		is($lb->itemcget(0, $name), $get_val, "still same value after error");
+	    }
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	is($lb->itemcget(0, -fg), undef, "itemcget with undef value");
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox;
+	$lb->insert(qw(end a b c d));
+	$lb->itemconfigure(0, -fg => "red");
+	is($lb->itemcget(0, -fg), "red");
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox(Name => "lb");
+	$lb->insert(qw(end a b c d));
+	eval { $lb->itemcget(0) };
+	like($@, qr{\Qwrong # args: should be ".lb itemcget index option"},
+	     "itemcget error");
+	$lb->destroy;
+    }
+
+    # No shortcuts in Perl/Tk, skipping shortcut test
+
+    # General item configuration issues
+    {
+	my $lb = $mw->$Listbox(Name => "lb");
+	$lb->insert(qw(end a));
+	$lb->itemconfigure(0, -fg => "red");
+	$lb->delete(0, "end");
+	$lb->insert("end", "a");
+	is($lb->itemcget(0, -fg), undef,
+	   q{listbox item configurations and widget based deletions});
+	$lb->destroy;
+    }
+
+    {
+	my $lb = $mw->$Listbox(Name => "lb");
+	$lb->insert(end => a => b => "c");
+	$lb->itemconfigure(0 => -fg => "red");
+	$lb->insert(0, 1, 2, 3, 4);
+	is($lb->itemcget(0, -fg), undef,
+	   q{listbox item configurations and widget based inserts});
+	is($lb->itemcget(4, -fg), "red");
+	$lb->destroy;
+    }
+}
 
 resetGridInfo();
 
