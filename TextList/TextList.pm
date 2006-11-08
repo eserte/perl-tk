@@ -125,7 +125,7 @@ sub activate
 sub bbox
 {
  my($w,$element)=@_;
- $element=$w->index($element).'.0' unless ($element=~/./);
+ $element=$w->index($element).'.0' unless ($element=~/\./);
  return $w->SUPER::bbox($element);
 }
 
@@ -235,6 +235,7 @@ sub index
 {
  my ($w,$element)=@_;
  return undef unless(defined($element));
+ $element=0 if $element<0;
  $element .= '.0' unless $element=~/\D/;
  $element = $w->SUPER::index($element);
  my($line,$col)=split(/\./,$element);

@@ -149,9 +149,12 @@ foreach my $test
      ['-offset', '1,1', '1,1', 'wrongside',
       'bad offset "wrongside": expected "x,y", n, ne, e, se, s, sw, w, nw, or center'],
      [qw{-relief groove groove 1.5},
-      ($Tk::VERSION < 803
+      ($Listbox eq 'TextList'
        ? q{bad relief type "1.5": must be flat, groove, raised, ridge, solid, or sunken}
-       : q{bad relief "1.5": must be flat, groove, raised, ridge, solid, or sunken})],
+       : ($Tk::VERSION < 803
+	  ? q{bad relief type "1.5": must be flat, groove, raised, ridge, solid, or sunken}
+	  : q{bad relief "1.5": must be flat, groove, raised, ridge, solid, or sunken})
+      )],
      ['-selectbackground', '#110022', '#110022', 'bogus',
       q{unknown color name "bogus"}],
      [qw{-selectborderwidth 1.3 1 badValue},
@@ -162,7 +165,10 @@ foreach my $test
      [qw{-setgrid false 0}, "", "lousy",
       q{expected boolean value but got "lousy"}],
      ['-state', 'disabled', 'disabled', 'foo',
-      'bad state "foo": must be disabled, or normal'],
+      ($Listbox eq 'TextList'
+       ? q{bad state value "foo": must be normal or disabled}
+       : 'bad state "foo": must be disabled, or normal'
+      )],
      ['-takefocus', "any string", "any string", '', ''],
      ['-tile', 'testimage', 'testimage', 'non-existant',
       'image "non-existant" doesn\'t exist'],
@@ -176,14 +182,14 @@ foreach my $test
     SKIP: {
 	    skip("$name test not supported for $Listbox", 3)
 		if ($Listbox eq 'TextList' &&
-		    $name =~ /^-(activestyle|bg|fg|foreground|height|selectborderwidth)$/);
+		    $name =~ /^-(activestyle|bg|fg|foreground|height|selectborderwidth|listvar)$/);
 
 	    skip("$name not implemented on $Tk::VERSION", 3)
 		if ($Listbox eq 'Listbox' && $Tk::VERSION < 804 &&
 		    $name =~ /^-(activestyle)$/);
 
 	    skip("*TODO* $name not yet implemented on $Tk::VERSION", 3)
-		if ($Listbox eq 'Listbox' && $Tk::VERSION >= 804 &&
+		if ($Tk::VERSION >= 804 &&
 		    $name =~ /^-(tile|offset)$/);
 
 	    $lb->configure($name, $test->[1]);
@@ -590,18 +596,23 @@ like($@ ,qr/bad listbox index "badindex": must be active, anchor, end, \@x,y, or
     $l2->destroy;
 }
 
-eval { $lb->nearest };
-like($@ ,qr/wrong \# args: should be \"\.listbox.* nearest y\"/,
-     "Listbox nearest error message");
+SKIP: {
+    skip("nearest not yet implemented", 4)
+	if $Listbox eq 'TextList';
 
-eval { $lb->nearest(qw/a b/) };
-like($@ ,qr/wrong \# args: should be \"\.listbox.* nearest y\"/);
+    eval { $lb->nearest };
+    like($@ ,qr/wrong \# args: should be \"\.listbox.* nearest y\"/,
+	 "Listbox nearest error message");
 
-eval { $lb->nearest("badindex") };
-like($@ ,qr/\'badindex\' isn\'t numeric/);
+    eval { $lb->nearest(qw/a b/) };
+    like($@ ,qr/wrong \# args: should be \"\.listbox.* nearest y\"/);
 
-$lb->yview(3);
-is($lb->nearest(1000), 7, "Listbox nearest");
+    eval { $lb->nearest("badindex") };
+    like($@ ,qr/\'badindex\' isn\'t numeric/);
+
+    $lb->yview(3);
+    is($lb->nearest(1000), 7, "Listbox nearest");
+}
 
 eval { $lb->scan };
 like($@,qr/wrong \# args: should be \"\.listbox.* scan mark\|dragto x y\"/,
@@ -711,17 +722,22 @@ like($@ ,qr/bad listbox index \"lousy\": must be active, anchor, end, \@x,y, or 
 eval { $lb->selection(qw/anchor 0 0/) };
 like($@ ,qr/wrong \# args: should be \"\.listbox.* selection anchor index\"/);
 
-$lb->selection("anchor", 5);
-is($lb->index("anchor"), 5, "Listbox selection");
-$lb->selectionAnchor(0);
-is($lb->index("anchor"), 0);
+SKIP: {
+    skip("anchor index not yet implemented", 5)
+	if $Listbox eq 'TextList';
 
-$lb->selectionAnchor(-1);
-is($lb->index("anchor"), 0);
-$lb->selectionAnchor("end");
-is($lb->index("anchor"), 17);
-$lb->selectionAnchor(44);
-is($lb->index("anchor"), 17);
+    $lb->selection("anchor", 5);
+    is($lb->index("anchor"), 5, "Listbox selection");
+    $lb->selectionAnchor(0);
+    is($lb->index("anchor"), 0);
+
+    $lb->selectionAnchor(-1);
+    is($lb->index("anchor"), 0);
+    $lb->selectionAnchor("end");
+    is($lb->index("anchor"), 17);
+    $lb->selectionAnchor(44);
+    is($lb->index("anchor"), 17);
+}
 
 $lb->selection("clear", 0, "end");
 $lb->selection("set", 2, 8);
@@ -784,8 +800,8 @@ is($lb->size, 18, "Listbox size");
 {
     my $l2 = $mw->$Listbox;
     $l2->update;
-    is(($l2->xview)[0], 0);
-    is(($l2->xview)[1], 1);
+    is(($l2->xview)[0], 0, "xview, first value");
+    is(($l2->xview)[1], 1, "xview, second value");
     $l2->destroy;
 }
 
@@ -804,8 +820,13 @@ $lb->insert(qw/1 0123456789a123456789b123456789c123456789d123456789/);
 $lb->pack;
 $lb->update;
 
-$lb->xview(4);
-is_float(join(",",$lb->xview), "0.08,0.28", "Listbox xview with floats");
+SKIP: {
+    skip("xview not fully implemented", 1)
+	if $Listbox eq 'TextList';
+
+    $lb->xview(4);
+    is_float(join(",",$lb->xview), "0.08,0.28", "Listbox xview with floats");
+}
 
 eval { $lb->xview("foo") };
 like($@ ,qr/\'foo\' isn\'t numeric/,
@@ -814,28 +835,33 @@ like($@ ,qr/\'foo\' isn\'t numeric/,
 eval { $lb->xview("zoom", "a", "b") };
 like($@ ,qr/unknown option \"zoom\": must be moveto or scroll/);
 
-$lb->xview(0);
-$lb->xview(moveto => 0.4);
-$lb->update;
-is_float(($lb->xview)[0], 0.4);
-is_float(($lb->xview)[1], 0.6);
+SKIP: {
+    skip("xview not fully implemented", 5)
+	if $Listbox eq 'TextList';
 
-$lb->xview(0);
-$lb->xview(scroll => 2, "units");
-$lb->update;
-is_float("@{[ $lb->xview ]}", '0.04 0.24');
+    $lb->xview(0);
+    $lb->xview(moveto => 0.4);
+    $lb->update;
+    is_float(($lb->xview)[0], 0.4);
+    is_float(($lb->xview)[1], 0.6);
 
-$lb->xview(30);
-$lb->xview(scroll => -1, "pages");
-$lb->update;
-is_float("@{[ $lb->xview ]}", '0.44 0.64');
+    $lb->xview(0);
+    $lb->xview(scroll => 2, "units");
+    $lb->update;
+    is_float("@{[ $lb->xview ]}", '0.04 0.24');
 
-$lb->configure(-width => 1);
-$lb->update;
-$lb->xview(30);
-$lb->xview("scroll", -4, "pages");
-$lb->update;
-is_float("@{[ $lb->xview ]}", '0.52 0.54');
+    $lb->xview(30);
+    $lb->xview(scroll => -1, "pages");
+    $lb->update;
+    is_float("@{[ $lb->xview ]}", '0.44 0.64');
+
+    $lb->configure(-width => 1);
+    $lb->update;
+    $lb->xview(30);
+    $lb->xview("scroll", -4, "pages");
+    $lb->update;
+    is_float("@{[ $lb->xview ]}", '0.52 0.54');
+}
 
 eval { $lb->destroy };
 $lb = $mw->$Listbox->pack;
