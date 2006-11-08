@@ -21,11 +21,19 @@
 #
 
 # Some tests are marked as TODO because they fail with
-# metacity 2.16.3
-# With metacity 2.10.3 there are even more failures.
-# All tests pass with fvwm 2.4.19 and twm
-# Test failures with fvwm 2.5.18
-
+# some window managers.
+#
+# Window managers passing all tests: 
+# * fvwm 2.4.19
+# * twm
+# * windowmaker 0.92.0
+#
+# Window managers with test failures
+# * metacity 2.16.3
+# * metacity 2.10.3 (even more failures)
+# * fvwm 2.5.18
+# * blackbox 0.70.1
+# * KWin: 3.0
 
 use strict;
 
@@ -706,7 +714,7 @@ stdWindow;
        "wm geometry, setting and getting values");
     $t->geometry(undef);
     $t->update;
-    isnt($t->geometry, "150x150+50+50", "geometry is now " . $t->geometry);
+    isnt($t->geometry, "150x150+50+50", "geometry should change and is now " . $t->geometry);
 }
 
 {
