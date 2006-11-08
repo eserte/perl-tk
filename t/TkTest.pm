@@ -9,15 +9,15 @@ use vars qw(@EXPORT $eps $VERSION);
 $VERSION = sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
-@EXPORT = qw(ok_float);
+@EXPORT = qw(is_float);
 
 use POSIX qw(DBL_EPSILON);
-use Test qw(ok);
 $eps = DBL_EPSILON;
 
 
-sub ok_float ($$;$) {
-    my($value, $expected, $diag) = @_;
+sub is_float ($$;$) {
+    my($value, $expected, $testname) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level+1;
     my @value    = split /[\s,]+/, $value;
     my @expected = split /[\s,]+/, $expected;
     my $ok = 1;
@@ -35,11 +35,9 @@ sub ok_float ($$;$) {
 	}
     }
     if ($ok) {
-	@_ = (1, 1, $diag);
-	goto &ok;
+	Test::More::pass($testname);
     } else {
-	@_ = ($value, $expected, $diag);
-	goto &ok;
+	Test::More::is($value, $expected, $testname); # will fail
     }
 }
 
