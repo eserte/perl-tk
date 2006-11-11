@@ -237,8 +237,14 @@ sub find
 
 package main;
 
+use Getopt::Long;
+my %opt;
+GetOptions(\%opt, "server=s")
+    or die "usage: $0 [-server host]";
+
 my $mw    = MainWindow->new;
-my $news  = new Net::NNTP;
+my $news  = Net::NNTP->new($opt{server})
+    or die "Can't connect to news server, please specify -server";
 my $group = 'comp.lang.perl.tk';
 
 sub SetGroup
