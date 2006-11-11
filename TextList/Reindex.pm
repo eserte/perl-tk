@@ -166,6 +166,8 @@ widget, which defaults to B<Text>.
 
 =head1 WIDGET-SPECIFIC OPTIONS
 
+=over
+
 =item Name:   B<lineStart>
 
 =item Class:  B<LineStart>
@@ -196,7 +198,11 @@ B<-linestart> option for all indexes in 'line.character' format.
 It would probably be prudent to make these functions inverses of each
 other.
 
+=back
+
 =head1 CLASS METHODS
+
+=over
 
 =item import
 
@@ -204,6 +210,8 @@ To make new Reindex widgets, this function should be called via B<use>
 with the name of the Text-like base class that you are extending with
 "Reindex" capability.  'use base(Tk::Reindex Tk::nameofbasewidget)'
 should also be specified for that widget.
+
+=back
 
 =head1 BUGS
 
