@@ -444,7 +444,7 @@ sub WriteIfChanged
 
 if (!defined($MakefileName) || $MakefileName eq 'Makefile')
  {
-  my $config = "package Tk::Config;\nrequire Exporter;\nuse base qw(Exporter);\n";
+  my $config = "# DO NOT EDIT. CREATED AUTOMATICALLY BY myConfig\npackage Tk::Config;\nrequire Exporter;\nuse base qw(Exporter);\n";
   my $sym;
   my @export = ();
   foreach $sym (qw(VERSION inc define xlib xinc gccopt win_arch))

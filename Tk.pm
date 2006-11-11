@@ -70,6 +70,7 @@ $Tk::CHANGE      = 'sfsvn-' . q$Change: 27 $;
 $Tk::version     = '8.4';
 $Tk::patchLevel  = '8.4';
 $Tk::VERSION     = '804.027_001';
+$Tk::VERSION     = eval $Tk::VERSION;
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;
 

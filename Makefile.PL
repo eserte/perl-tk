@@ -18,6 +18,7 @@ BEGIN
     if (/\$Tk::VERSION\s+=\s+'([0-9._]+)'/)
      {
       $VERSION = $1;
+      $VERSION = eval $VERSION;
       last;
      }
    }
