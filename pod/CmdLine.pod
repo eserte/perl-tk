@@ -28,11 +28,11 @@ The X11R5 man page for X11 says: "Most X programs attempt to use the same names
 for command line options and arguments. All applications written with the
 X Toolkit Intrinsics automatically accept the following options: ...".
 This module processes these command line options for perl/Tk applications
-using the C<SetArguments> function.
+using the C<SetArguments>() function.
 
 This module can optionally be used to load initial resources explicitly via
-function C<SetResources>, or from specified files (default: the standard X11
-application-specific resource files) via function C<LoadResources>.
+function C<SetResources>(), or from specified files (default: the standard X11
+application-specific resource files) via function C<LoadResources>().
 
 =head2 Command Line Options
 
@@ -134,8 +134,8 @@ for a description of E<lt>I<pattern>E<gt>:E<lt>I<value>E<gt>.
 =item System Application Defaults Files
 
 System application defaults files may be specified via environment variable
-$C<XFILESEARCHPATH> which, if set, contains a colon-separated list of file
-patterns.
+$C<XFILESEARCHPATH> which, if set, contains a list of file patterns
+(joined using the OS-dependent path delimiter, e.g. colon on B<UNIX>).
 
 =item User Application Defaults Files
 
@@ -148,7 +148,7 @@ $C<XUSERFILESEARCHPATH>, $C<XAPPLRESDIR> or $C<HOME>.
 
 =over 4
 
-=item B<SetArguments>
+=item B<SetArguments> - Tk::CmdLine::SetArguments([@argument])
 
 Extract the X11 options contained in a specified array (@ARGV by default).
 
@@ -162,24 +162,29 @@ A I<--> by itself terminates option processing.
 
 By default, command line options are extracted from @ARGV the first time
 a MainWindow is created. The Tk::MainWindow constructor indirectly invokes
-C<SetArguments> to do this.
+C<SetArguments>() to do this.
 
-=item B<cget>
+=item B<GetArguments> - Tk::CmdLine::GetArguments()
 
-Get the value of a configuration option specified via C<SetArguments>.
-(C<cget> first invokes C<SetArguments> if it has not already been invoked.)
+Get a list of the X11 options that have been processed by C<SetArguments>().
+(C<GetArguments>() first invokes C<SetArguments>() if it has not already been invoked.)
+
+=item B<cget> - Tk::CmdLine::cget([$option])
+
+Get the value of a configuration option specified via C<SetArguments>().
+(C<cget>() first invokes C<SetArguments>() if it has not already been invoked.)
 
   Tk::CmdLine::cget([$option])
 
 The valid options are: B<-class>, B<-name>, B<-screen> and B<-title>.
 If no option is specified, B<-class> is implied.
 
-A typical use of C<cget> might be to obtain the application class in order
-to define the name of a resource file to be loaded in via C<LoadResources>.
+A typical use of C<cget>() might be to obtain the application class in order
+to define the name of a resource file to be loaded in via C<LoadResources>().
 
   my $class = Tk::CmdLine::cget(); # process command line and return class
 
-=item B<SetResources>
+=item B<SetResources> - Tk::CmdLine::SetResources((\@resource | $resource) [, $priority])
 
 Set the initial resources.
 
@@ -193,10 +198,10 @@ E<lt>I<value>E<gt> ]. The optional second argument specifies the priority,
 as defined in L<option|Tk::option>, to be associated with the resources
 (default: I<userDefault>).
 
-Note that C<SetResources> first invokes C<SetArguments> if it has not already
+Note that C<SetResources>() first invokes C<SetArguments>() if it has not already
 been invoked.
 
-=item B<LoadResources>
+=item B<LoadResources> - Tk::CmdLine::LoadResources([%options])
 
 Load initial resources from one or more files.
 
@@ -207,8 +212,9 @@ Load initial resources from one or more files.
       [ -echo     => $fileHandle ] );
 
 [ B<-symbol> =E<gt> $symbol ] specifies the name of an environment variable
-that, if set, defines a colon-separated list of one or more directories and/or
-file patterns. $C<XUSERFILESEARCHPATH> is a special case.
+that, if set, defines a list of one or more directories and/or file patterns
+(joined using the OS-dependent path delimiter, e.g. colon on B<UNIX>).
+$C<XUSERFILESEARCHPATH> is a special case.
 If $C<XUSERFILESEARCHPATH> is not set, $C<XAPPLRESDIR> is checked instead.
 If $C<XAPPLRESDIR> is not set, $C<HOME> is checked instead.
 
@@ -236,18 +242,18 @@ L<option|Tk::option>, to be associated with the resources
 printed to the corresponding FileHandle (default: \*STDOUT) everytime a file
 is examined / loaded.
 
-If no B<-symbol> or B<-file> options are specified, C<LoadResources>
+If no B<-symbol> or B<-file> options are specified, C<LoadResources>()
 processes symbol $C<XFILESEARCHPATH> with priority I<startupFile> and
 $C<XUSERFILESEARCHPATH> with priority I<userDefault>.
 (Note that $C<XFILESEARCHPATH> and $C<XUSERFILESEARCHPATH> are supposed to
 contain only patterns. $C<XAPPLRESDIR> and $C<HOME> are supposed to be a single
-directory. C<LoadResources> does not check/care whether this is the case.)
+directory. C<LoadResources>() does not check/care whether this is the case.)
 
-For each set of FileSpecs, C<LoadResources> examines each FileSpec to
+For each set of FileSpecs, C<LoadResources>() examines each FileSpec to
 determine if the file exists and is readable. The first file that meets this
-criteria is read in and C<SetResources> is invoked.
+criteria is read in and C<SetResources>() is invoked.
 
-Note that C<LoadResources> first invokes C<SetArguments> if it has not already
+Note that C<LoadResources>() first invokes C<SetArguments>() if it has not already
 been invoked.
 
 =back
@@ -257,8 +263,8 @@ been invoked.
 This module is an object-oriented module whose methods can be invoked as object
 methods, class methods or regular functions. This is accomplished via an
 internally-maintained object reference which is created as necessary, and which
-always points to the last object used. C<SetArguments>, C<SetResources> and
-C<LoadResources> return the object reference.
+always points to the last object used. C<SetArguments>(), C<SetResources>() and
+C<LoadResources>() return the object reference.
 
 =head1 EXAMPLES
 
@@ -280,7 +286,7 @@ C<LoadResources> return the object reference.
 
 @ARGV is processed by Tk::CmdLine before MainWindow creation.
 An @ARGV of (--geometry=100x100 -opt1 a b c -bg red)
-is equal to (-opt1 a b c) after C<SetArguments> is invoked.
+is equal to (-opt1 a b c) after C<SetArguments>() is invoked.
 
   use Tk;
 
@@ -388,13 +394,15 @@ The current language (default: I<C>).
 
 =item B<XFILESEARCHPATH> (optional)
 
-Colon-separated list of FileSpec patterns used in defining
-system application defaults files.
+List of FileSpec patterns
+(joined using the OS-dependent path delimiter, e.g. colon on B<UNIX>)
+used in defining system application defaults files.
 
 =item B<XUSERFILESEARCHPATH> (optional)
 
-Colon-separated list of FileSpec patterns used in defining
-user application defaults files.
+List of FileSpec patterns
+(joined using the OS-dependent path delimiter, e.g. colon on B<UNIX>)
+used in defining user application defaults files.
 
 =item B<XAPPLRESDIR> (optional)
 
@@ -424,9 +432,23 @@ Eliminate restrictions on the format and location of the options within the arra
 (previously the X11 options could not be specified in POSIX format and had to be
 at the beginning of the array).
 
-Added the C<SetResources> and C<LoadResources> functions to allow the definition
+Added the C<SetResources>() and C<LoadResources>() functions to allow the definition
 of resources prior to MainWindow creation.
+
+=item *
+
+2000.08.31 Ben Pavon E<lt>ben.pavon@hsc.hac.comE<gt>
+
+Added the C<GetArguments>() method which returns the list of arguments that
+have been processed by C<SetArguments>().
+
+Modified C<LoadResources>() to split the symbols using the OS-dependent
+path delimiter defined in the B<Config> module.
+
+Modified C<LoadResources>() to eliminate a warning message when processing
+patterns B<%l>, B<%C>, B<%S>.
 
 =back
 
 =cut
+
