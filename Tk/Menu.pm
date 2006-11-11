@@ -516,8 +516,8 @@ sub Invoke
   }
  elsif ($w->typeIS('active','tearoff'))
   {
-   $w->Unpost();
    $w->tearOffMenu();
+   $w->Unpost();
   }
  elsif ($w->typeIS('active','menubar'))
   {
