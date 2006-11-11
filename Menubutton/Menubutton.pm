@@ -269,7 +269,7 @@ sub Post
  if ($tearoff)
   {
    $menu->focus;
-   if ($w->vieable)
+   if ($w->viewable)
     {
      $w->SaveGrabInfo;
      $w->grabGlobal;
