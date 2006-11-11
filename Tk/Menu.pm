@@ -404,8 +404,9 @@ sub Motion
 sub ButtonDown
 {
  my $menu = shift;
+ return if (!$menu->viewable);
  $menu->postcascade('active');
- if (defined $Tk::postedMb)
+ if (defined $Tk::postedMb && $Tk::postedMb->viewable)
   {
    $Tk::postedMb->grabGlobal
   }
@@ -891,10 +892,13 @@ sub Post
  my $entry = shift;
  Unpost(undef) if (defined($Tk::popup) || defined($Tk::postedMb));
  $menu->PostOverPoint($x,$y,$entry);
- $menu->grabGlobal;
- $Tk::popup = $menu;
- $Tk::focus = $menu->focusCurrent;
- $menu->focus();
+ if ($Tk::platform eq 'unix' && $menu->viewable)
+  {
+   $menu->grabGlobal;
+   $Tk::popup = $menu;
+   $Tk::focus = $menu->focusCurrent;
+   $menu->focus();
+  }
 }
 
 sub SetFocus

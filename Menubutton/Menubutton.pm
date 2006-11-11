@@ -269,8 +269,11 @@ sub Post
  if ($tearoff)
   {
    $menu->focus;
-   $w->SaveGrabInfo;
-   $w->grabGlobal;
+   if ($w->vieable)
+    {
+     $w->SaveGrabInfo;
+     $w->grabGlobal;
+    }
   }
 }
 # Motion --
