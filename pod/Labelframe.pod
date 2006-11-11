@@ -199,7 +199,7 @@ Labelframes are not intended to be interactive.
 
 =head1 SEE ALSO
 
-Tk::Frame, Tk::Label
+L<Tk::Frame>, L<Tk::Label>
 
 =head1 KEYWORDS
 

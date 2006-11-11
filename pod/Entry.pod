@@ -518,6 +518,8 @@ become visible.
 
 =back
 
+=back
+
 =head1 DEFAULT BINDINGS
 
 Tk automatically creates class bindings for entries that give them

@@ -79,6 +79,8 @@ to be returned and should be an atom  name  such  as  STRING  or
 FILE_NAME.  Type defaults to STRING.  This command is equivalent 
 to C<selectionGet( -selection =E<gt> 'CLIPBOARD' )>.
 
+=back
+
 =head1 KEYWORDS
 
 clear, format, clipboard, append, selection, type

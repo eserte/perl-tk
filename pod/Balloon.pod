@@ -259,12 +259,12 @@ scrolled widget, then the subwidget have to be used:
 
 =head1 AUTHORS
 
-B<Rajappa Iyer> rsi@earthling.net did the original coding.
+B<Rajappa Iyer> <rsi@earthling.net> did the original coding.
 
 B<Jason A. Smith> <smithj4@rpi.edu> added support for menus and made some
 other enhancements.
 
-B<Slaven Rezic> <eserte@cs.tu-berlin.de> added support for canvas items.
+B<Slaven Rezic> <srezic@cpan.org> added support for canvas items.
 
 B<Gerhard Petrowitsch> <gerhard@petrowitsch.de> added intelligent positioning
 

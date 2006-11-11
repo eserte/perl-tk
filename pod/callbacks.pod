@@ -58,18 +58,16 @@ will call I<$b>-E<gt>B<Delete>.
 Note that method/object ordering only matters for C<bind> callbacks,
 the auto-quoting in perl5.001 makes the first of these a little more readable:
 
-$w-E<gt>configure(-yscrollcommand =E<gt> [ set =E<gt> $ysb]);
-
-$w-E<gt>configure(-yscrollcommand =E<gt> [ $ysb =E<gt> 'set' ]);
+    $w->configure(-yscrollcommand => [ set => $ysb]);
+    $w->configure(-yscrollcommand => [ $ysb => 'set' ]);
 
 but both will call C<$ysb>-E<gt>set(args provided by Tk)
 
 Another use of arguments allows you to write generalized methods which are
 easier to re-use:
 
-$a-E<gt>bind("E<lt>NextE<gt>",['Next','Page']);
-
-$a-E<gt>bind("E<lt>DownE<gt>",['Next','Line']);
+    $a->bind("<Next>",['Next','Page']);
+    $a->bind("<Down>",['Next','Line']);
 
 This will call C<$a>-E<gt>I<Next>('Page') or C<$a>-E<gt>I<Next>('Line') respectively.
 
@@ -101,18 +99,6 @@ L<Tk::fileevent|Tk::fileevent>
 =head1 KEYWORDS
 
 callback, closure, anonymous subroutine, bind
-
-=cut
-
-## pod2man complain and I can see why
-
-#=head1 EXAMPLES
-#
-#$e-E<gt>bind('E<lt>ReturnE<gt>' =E<gt> [$w , 'validate', Ev(['get'])] );
-#
-#$topLevelWin-E<gt>bind('all',"E<lt>VisibilityE<gt>", [\E<amp>unobscure, Ev('s')] );
-#
-#$mw-E<gt>bind($class,"E<lt>DownE<gt>",['SetCursor', Ev('UpDownLine',1)] );
 
 =cut
 

@@ -20,7 +20,7 @@ The method B<chooseColor> is implemented as a perl wrapper
 on the core tk "command" B<tk_chooseColor>, and I<$widget>
 is passed as the argument to the hidden B<-parent> option.
 The implementation of internal B<tk_chooseColor> is platform
-specific, on Win32 it is a native dialog, and on UNIX/X it is implemented
+specific, on Win32 it is a native dialog, and on UNIX/X11 it is implemented
 in terms of L<Tk::ColorEditor|Tk::ColorEditor>.
 
 The B<chooseColor> method pops up a dialog box for the
@@ -54,7 +54,7 @@ user cancels the operation, the command will return B<undef>.
 =head1 EXAMPLE
 
  $widget->configure(-fg => $parent->chooseColor(-initialcolor => 'gray',
-                 -title => "Choose color"));
+                                                -title => "Choose color"));
 
 =head1 KEYWORDS
 

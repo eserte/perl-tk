@@ -14,6 +14,19 @@ Tk::Compound - Create multi-line compound images.
 
 =for category  Tk Image Classes
 
+=head1 SYNOPSIS
+
+    use Tk::Compound;
+    $image = $widget->Compound(name,options);
+    $image->Line(options);
+    $image->Text(options);
+    $image->Bitmap(options);
+    $image->Image(options);
+    $image->Space(options);
+
+=for comment
+This paragraph used to be written different, but perldoc 3.14 cannot
+display this paragraph.
 S<    >use Tk::Compound;
 S<    >I<$image> = I<$widget>-E<gt>B<Compound>?(I<name>??,I<options>?)
 S<    >I<$image>-E<gt>B<Line>?(I<options>?)
@@ -21,7 +34,6 @@ S<    >I<$image>-E<gt>B<Text>?(I<options>?)
 S<    >I<$image>-E<gt>B<Bitmap>?(I<options>?)
 S<    >I<$image>-E<gt>B<Image>?(I<options>?)
 S<    >I<$image>-E<gt>B<Space>?(I<options>?)
-
 
 =head1 DESCRIPTION
 
