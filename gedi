@@ -71,7 +71,7 @@ my $top = MainWindow->new();
 
 # my $menu_frame = $top->Frame->pack(-anchor=>'nw');
 my $text_frame = $top->Frame->pack
-	(-anchor=>'nw', expand=>'yes', -fill => 'both'); # autosizing
+	(-anchor=>'nw', -expand=>'yes', -fill => 'both'); # autosizing
 my $counter_frame = $top->Frame->pack(-anchor=>'nw');
 
 ##############################################
@@ -87,12 +87,12 @@ my $counter_frame = $top->Frame->pack(-anchor=>'nw');
 
 my $textwindow = $text_frame->Scrolled(
 	'TextEdit',
-	exportselection => 'true',  # 'sel' tag is associated with selections
+	-exportselection => 'true',  # 'sel' tag is associated with selections
 	# initial height, if it isnt 1, then autosizing fails
 	# once window shrinks below height
 	# and the line counters go off the screen.
 	# seems to be a problem with the Tk::pack command;
-	height => 1,
+	-height => 1,
 	-background => 'white',
 	-wrap=> 'none',
 	-setgrid => 'true', # use this for autosizing
@@ -114,36 +114,36 @@ $SIG{INT} = sub {$textwindow->ConfirmExit;};
 ##############################################
 ##############################################
 my $current_line_label = $counter_frame
-	-> Label(text=>'line: 1')
+	-> Label(-text=>'line: 1')
 	-> grid(-row=>1,-column=>1, -sticky=>'nw' );
 
 my $total_line_label = $counter_frame
-	-> Label(text=>'total lines: 1')
+	-> Label(-text=>'total lines: 1')
 	-> grid(-row=>2,-column=>1, -sticky=>'nw' );
 
 my $current_column_label = $counter_frame
-	-> Label(text=>'column: 0')
+	-> Label(-text=>'column: 0')
 	-> grid(-row=>3,-column=>1, -sticky=>'nw' );
 
 my $insert_overstrike_mode_label = $counter_frame
-	-> Label(text=>' ')
+	-> Label(-text=>' ')
 	-> grid(-row=>5,-column=>1, -sticky=>'nw' );
 
 sub update_indicators
 {
 	my ($line,$column)= split(/\./,$textwindow->index('insert'));
-	$current_line_label->configure (text=> "line: $line");
-	$current_column_label->configure (text=> "column: $column");
+	$current_line_label->configure (-text=> "line: $line");
+	$current_column_label->configure (-text=> "column: $column");
 
 	my ($last_line,$last_col) = split(/\./,$textwindow->index('end'));
-	$total_line_label->configure (text=> "total lines: $last_line");
+	$total_line_label->configure (-text=> "total lines: $last_line");
 
 	my $mode = $textwindow->OverstrikeMode;
 	my $overstrke_insert='Insert Mode';
 	if ($mode)
 		{$overstrke_insert='Overstrike Mode';}
 	$insert_overstrike_mode_label->configure
-		(text=> "$overstrke_insert");
+		(-text=> "$overstrke_insert");
 
 	my $filename = $textwindow->FileName;
 	$filename = 'NoName' unless(defined($filename));
@@ -184,20 +184,20 @@ sub about_pop_up
 		my $pop = $top->Toplevel();
 		$pop->title("About");
 
-		$pop->Label(text=>"Gedi (Gregs EDItor)")->pack();
-		$pop->Label(text=>"Ver. 1.0")->pack();
-		$pop->Label(text=>"Copyright 1999")->pack();
-		$pop->Label(text=>"Greg London")->pack();
-		$pop->Label(text=>"All Rights Reserved.")->pack();
-		$pop->Label(text=>"This program is free software.")->pack();
-		$pop->Label(text=>"You can redistribute it and/or")->pack();
-		$pop->Label(text=>"modify it under the same terms")->pack();
-		$pop->Label(text=>"as Perl itself.")->pack();
-		$pop->Label(text=>"Special Thanks to")->pack();
-		$pop->Label(text=>"Nick Ing-Simmons.")->pack();
+		$pop->Label(-text=>"Gedi (Gregs EDItor)")->pack();
+		$pop->Label(-text=>"Ver. 1.0")->pack();
+		$pop->Label(-text=>"Copyright 1999")->pack();
+		$pop->Label(-text=>"Greg London")->pack();
+		$pop->Label(-text=>"All Rights Reserved.")->pack();
+		$pop->Label(-text=>"This program is free software.")->pack();
+		$pop->Label(-text=>"You can redistribute it and/or")->pack();
+		$pop->Label(-text=>"modify it under the same terms")->pack();
+		$pop->Label(-text=>"as Perl itself.")->pack();
+		$pop->Label(-text=>"Special Thanks to")->pack();
+		$pop->Label(-text=>"Nick Ing-Simmons.")->pack();
 
-		my $button_ok = $pop->Button(text=>'OK',
-			command => sub {$pop->destroy();
+		my $button_ok = $pop->Button(-text=>'OK',
+			-command => sub {$pop->destroy();
 			$about_pop_up_reference = undef;
 			} )
 			->pack();
