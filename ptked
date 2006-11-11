@@ -138,11 +138,17 @@ $top->fontCreate('ptked',-family => 'courier', -size => ($^O eq 'MSWin32' ? 11 :
                  -weight => 'normal', -slant => 'roman');
 $top->optionAdd('*TextUndoPtked.Font' => 'ptked');
 
-foreach my $file (@ARGV)
+if (@ARGV)
  {
-  Create_Edit($file);
+  foreach my $file (@ARGV)
+   {
+    Create_Edit($file);
+   }
  }
-
+else
+ {
+  Create_Edit();
+ }
 
 sub EditRequest
 {
@@ -209,7 +215,7 @@ sub Create_Edit
  $t->bind('<F3>',\&DoFind);
 
  $ed->idletasks;
- if (-e $path)
+ if (defined $path && -e $path)
   {
    $t->Load($path);
   }
