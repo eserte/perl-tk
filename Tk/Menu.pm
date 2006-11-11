@@ -960,7 +960,7 @@ sub tearOffMenu
  # original: if the parent is a menu, then use the text of the active
  # entry. If it's a menubutton then use its text.
  my $title = $w->cget('-title');
- # print ref($w),' ',$w->PathName," $w\n";
+ # print ref($w),' ',$w->PathName," ",$menu->PathName," $w\n";
  unless (defined $title && length($title))
   {
    $parent = $w->parent;
@@ -978,6 +978,12 @@ sub tearOffMenu
   }
  $menu->title($title) if (defined $title && length($title));
  $menu->post($x,$y);
+
+ if (!Tk::Exists($menu))
+  {
+   return;
+  }
+
  # Set tkPriv(focus) on entry: otherwise the focus will get lost
  # after keyboard invocation of a sub-menu (it will stay on the
  # submenu).
@@ -988,6 +994,11 @@ sub tearOffMenu
  # will get saved in $Tk::focus
  # $menu->bind('<Enter>','EnterFocus');
  $menu->Callback('-tearoffcommand');
+
+ # Strangely tear-off menus do not work in tkpod and Tk804.027.
+ # Explicitely setting normal state helps here - why?
+ $menu->state("normal");
+
  return $menu;
 }
 
