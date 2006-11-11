@@ -846,7 +846,6 @@ pod/Image.pod
 pod/InputO.pod
 pod/Internals.pod
 pod/IO.pod
-pod/Item.pod
 pod/Label.pod
 pod/Labelframe.pod
 pod/LabFrame.pod
@@ -855,6 +854,7 @@ pod/MainWindow.pod
 pod/Makefile.PL
 pod/mega.pod
 pod/Menu.pod
+pod/Menu/Item.pod
 pod/Menubutton.pod
 pod/Message.pod
 pod/messageBox.pod
