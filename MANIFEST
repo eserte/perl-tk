@@ -1857,6 +1857,7 @@ t/listbox.t
 t/listvar.t
 t/magic.t
 t/mega.t
+t/msgbox.t
 t/mwm.t
 t/optmenu.t
 t/photo.t
@@ -1988,6 +1989,7 @@ Tk/Menubar.pm
 Tk/Message.pm
 Tk/MMtry.pm
 Tk/MMutil.pm
+Tk/MsgBox.pm
 Tk/openfile.xbm
 Tk/openfolder.xbm
 Tk/openfolder.xpm
