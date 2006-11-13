@@ -1508,3 +1508,129 @@ sub pathname
  my $x = $w->winfo('pathname',-displayof  => oct($id));
  return $x->PathName;
 }
+
+# ::tk::UnderlineAmpersand --
+# This procedure takes some text with ampersand and returns
+# text w/o ampersand and position of the ampersand.
+# Double ampersands are converted to single ones.
+# Position returned is -1 when there is no ampersand.
+#
+sub UnderlineAmpersand
+{
+ my (undef,$text) = @_;
+ if ($text =~ m{(?<!&)&(?!&)}g)
+  {
+   my $idx = pos $text;
+   $text =~ s{(?<!&)&(?!&)}{};
+   ($text, $idx);
+  }
+ else
+  {
+   ($text, -1);
+  }
+}
+
+# ::tk::SetAmpText -- 
+# Given widget path and text with "magic ampersands",
+# sets -text and -underline options for the widget
+#
+sub SetAmpText
+{
+ my ($w,$text) = @_;
+ my ($newtext,$under) =  $w->UnderlineAmpersand($text);
+ $w->configure(-text => $newtext, -underline => $under);
+}
+
+# ::tk::AmpWidget --
+# Creates new widget, turning -text option into -text and
+# -underline options, returned by ::tk::UnderlineAmpersand.
+#
+sub AmpWidget
+{
+ my ($w,$class,%args) = @_;
+ my @options;
+ while(my($opt,$val) = each %args)
+  {
+   if ($opt eq "-text")
+    {
+     my ($newtext,$under) = $w->UnderlineAmpersand($val);
+     push @options, -text => $newtext, -underline => $under;
+    }
+   else
+    {
+     push @options, $opt, $val;
+    }
+  }
+ my $result = $w->$class(@options);
+ if ($result->isa('Tk::Button')) # XXX Can this be done in a OO way? Yes!
+  {
+   $result->bind('<<AltUnderlined>>' => ['invoke']);
+  }
+ return $result;
+}
+
+# ::tk::AmpMenuArgs --
+# Processes arguments for a menu entry, turning -label option into
+# -label and -underline options, returned by ::tk::UnderlineAmpersand.
+#
+sub AmpMenuArgs # XXX should probably go to Tk::Menu!
+{
+ my ($w, $add, $type, %args) = @_;
+ my @options;
+ while(my($opt,$val) = each %args)
+  {
+   if ($opt eq "-label")
+    {
+     my ($newtext,$under) = $w->UnderlineAmpersand($val);
+     push @options, -label => $newtext, -underline => $under;
+    }
+   else
+    {
+     push @options, $opt, $val;
+    }
+  }
+ $w->$type(@options);
+}
+
+# ::tk::FindAltKeyTarget --
+# search recursively through the hierarchy of visible widgets
+# to find button or label which has $char as underlined character
+#
+sub FindAltKeyTarget
+{
+ my ($w,$char) = @_;
+ $char = lc $char;
+ if ($w->isa('Tk::Button') || $w->isa('Tk::Label'))
+  {
+   if ($char eq lc substr($w->cget(-text), $w->cget(-underline), 1))
+    {
+     return $w;
+    }
+   else
+    {
+     return undef;
+    }
+  }
+ else
+  {
+   for my $cw ($w->gridSlaves, $w->packSlaves, $w->placeSlaves) # XXX what about formslaves???
+    {
+     my $target = $cw->FindAltKeyTarget($char);
+     return $target if ($target);
+    }
+  }
+ undef;
+}
+
+# ::tk::AltKeyInDialog --
+# <Alt-Key> event handler for standard dialogs. Sends <<AltUnderlined>>
+# to button or label which has appropriate underlined character
+#
+sub AltKeyInDialog
+{
+ my ($w, $key) = @_;
+ my $target = $w->FindAltKeyTarget($key);
+ return if !$target;
+ $target->eventGenerate('<<AltUnderlined>>');
+}
+
