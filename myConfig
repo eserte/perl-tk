@@ -202,12 +202,16 @@ foreach $arg (@ARGV)
   if ($arg =~ /^(X11\w*|XFT)=(.*)$/)
    {
     ${"$1"} = $2;
+    # Pushing these args to @ARGV will generate MakeMaker warnings
+    # ("... is not a known MakeMaker parameter name") but
+    # will asure that the parameters are reused when automatically
+    # re-building Makefiles.
    }
   else
    {
     $MakefileName = $1 if ($arg =~ /^MAKEFILE=(.*)$/);
-    push(@args,$arg);
    }
+  push(@args,$arg);
  }
 @ARGV = @args;
 
