@@ -63,11 +63,16 @@ BEGIN
 		Table
 		Tiler
 		TextUndo
+		TextEdit
 		Dialog
 		DialogBox
 		FileSelect
-
-	)
+	),
+	# Tclish composites
+	qw(
+		FBox
+		IconList
+	),
    );
 
    require Tk if ($^O eq 'cygwin');
