@@ -1864,6 +1864,7 @@ t/pixmap.t
 t/progbar.t
 t/regexp.t
 t/Require.t
+t/text.t
 t/Trace.t
 t/TkTest.pm
 t/trace1.t
