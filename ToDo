@@ -1,8 +1,5 @@
 Tk::Tree has a dual live on CPAN. Incorporate the 4.3 version.
 
-Support for some OpenDesktop window manager standards, like setting
-icons through _NET_WM_ICON or using utf8 window titles.
-
 Port more Tcl/Tk tests to Perl/Tk (text.test etc.)
 
 messageBox fixes: <Return> does not use the currently selected button,
@@ -19,6 +16,10 @@ What about getOpen/SaveFile and Windows, are there also encoding
 issues with filenames?
 
 Minimize diffs to original Tcl/Tk sources to make merging easier.
+
+Integrate libpng 1.2.12 (or newer?)
+
+Introduce msgcat support like in Tcl/Tk?
 
 ----------------------------------------------------------------------
 - OLDER ToDos --------------------------------------------------------
