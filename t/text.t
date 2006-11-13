@@ -28,7 +28,7 @@ BEGIN {
     }
 }
 
-plan tests => 1;
+plan tests => 119;
 
 use_ok('Tk::Text');
 
