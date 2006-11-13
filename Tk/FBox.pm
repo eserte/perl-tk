@@ -79,6 +79,8 @@ sub Populate {
 
     $w->SUPER::Populate($args);
 
+    $w->{'encoding'} = $w->getEncoding('iso_8859_1');
+
     # f1: the frame with the directory option menu
     my $f1 = $w->Frame;
     my $lab = $f1->Label(-text => 'Directory:', -underline => 0);
@@ -403,14 +405,14 @@ sub Update {
     my $folder = $folderImage->{$w->MainWindow};
     my $file   = $fileImage->{$w->MainWindow};
     my $appPWD = _cwd();
-    if (!ext_chdir($w->{'selectPath'})) {
+    if (!ext_chdir($w->_get_select_path)) {
 	# We cannot change directory to $data(selectPath). $data(selectPath)
 	# should have been checked before tkFDialog_Update is called, so
 	# we normally won't come to here. Anyways, give an error and abort
 	# action.
 	$w->messageBox(-type => 'OK',
 		       -message => 'Cannot change to the directory "' .
-		       $w->{'selectPath'} . "\".\nPermission denied.",
+		       $w->_get_select_path . "\".\nPermission denied.",
 		       -icon => 'warning',
 		      );
 	ext_chdir($appPWD);
@@ -466,7 +468,7 @@ sub Update {
     # Update the Directory: option menu
     my @list;
     my $dir = '';
-    foreach my $subdir (TclFileSplit($w->{'selectPath'})) {
+    foreach my $subdir (TclFileSplit($w->_get_select_path)) {
 	$dir = TclFileJoin($dir, $subdir);
 	push @list, $dir;
     }
@@ -635,8 +637,6 @@ sub EntFocusOut {
 #
 sub ActivateEnt {
     my $w = shift;
-    my $ent = $w->{'ent'};
-    my $text = $ent->get;
     if ($w->cget(-multiple)) {
 	# For the multiple case we have to be careful to get the file
 	# names as a true list, watching out for a single file with a
@@ -644,9 +644,11 @@ sub ActivateEnt {
 
 	$w->{'selectFile'} = [];
 	for my $item ($w->{'icons'}->Curselection) {
-	    $w->VerifyFileName($w->{'icons'}->Get($item));
+	    $w->VerifyFileName($w->_get_from_icons($item));
 	}
     } else {
+	my $ent = $w->{'ent'};
+	my $text = $w->_encode_filename($ent->get);
 	$w->VerifyFileName($text);
     }
 }
@@ -658,7 +660,7 @@ sub VerifyFileName {
 #XXX leave this here?
 #    $text =~ s/^\s+//;
 #    $text =~ s/\s+$//;
-    my($flag, $path, $file) = ResolveFile($w->{'selectPath'}, $text,
+    my($flag, $path, $file) = ResolveFile($w->_get_select_path, $text,
 					  $w->cget(-defaultextension));
     my $ent = $w->{'ent'};
     if ($flag eq 'OK') {
@@ -728,8 +730,8 @@ sub InvokeBtn {
 #
 sub UpDirCmd {
     my $w = shift;
-    $w->SetPath(File::Basename::dirname($w->{'selectPath'}))
-      unless ($w->{'selectPath'} eq '/');
+    $w->SetPath(File::Basename::dirname($w->_get_select_path))
+      unless ($w->_get_select_path eq '/');
 }
 
 # Join a file name to a path name. The "file join" command will break
@@ -793,17 +795,17 @@ sub OkCmd {
 
     my $filenames = [];
     for my $item ($w->{'icons'}->Curselection) {
-	push @$filenames, $w->{'icons'}->Get($item);
+	push @$filenames, $w->_get_from_icons($item);
     }
 
     my $filename = $filenames->[0];
     $filename = "" if !defined $filename;
     if ($w->cget('-type') eq 'dir' && $from ne "iconlist") {
-	my $file = $filename eq '' ? $w->{'selectPath'} : JoinFile($w->{'selectPath'}, $filename);
+	my $file = $filename eq '' ? $w->_get_select_path : JoinFile($w->_get_select_path, $filename);
 	$w->Done($file);
     } elsif ((@$filenames && !$w->cget('-multiple')) ||
 	($w->cget('-multiple') && @$filenames == 1)) {
-	my $file = JoinFile($w->{'selectPath'}, $filename);
+	my $file = JoinFile($w->_get_select_path, $filename);
 	if (-d $file) {
 	    $w->ListInvoke($filename);
 	    return;
@@ -828,14 +830,14 @@ sub ListBrowse {
 
     my $text = [];
     for my $item ($w->{'icons'}->Curselection) {
-	push @$text, $w->{'icons'}->Get($item);
+	push @$text, $w->_get_from_icons($item);
     }
     return if @$text == 0;
     my $isDir;
     if (@$text > 1) {
 	my $newtext = [];
 	for my $file (@$text) {
-	    my $fullfile = JoinFile($w->{'selectPath'}, $file);
+	    my $fullfile = JoinFile($w->_get_select_path, $file);
 	    if (!-d $fullfile) {
 		push @$newtext, $file;
 	    }
@@ -843,7 +845,7 @@ sub ListBrowse {
 	$text = $newtext;
 	$isDir = 0;
     } else {
-	my $file = JoinFile($w->{'selectPath'}, $text->[0]);
+	my $file = JoinFile($w->_get_select_path, $text->[0]);
 	$isDir = -d $file;
     }
     my $ent = $w->{'ent'};
@@ -868,7 +870,7 @@ sub ListBrowse {
 sub ListInvoke {
     my($w, @filenames) = @_;
     return if !@filenames;
-    my $file = JoinFile($w->{'selectPath'}, $filenames[0]);
+    my $file = JoinFile($w->_get_select_path, $filenames[0]);
     if (-d $file) {
 	my $appPWD = _cwd();
 	if (!ext_chdir($file)) {
@@ -904,10 +906,10 @@ sub Done {
 	if ($w->cget('-multiple')) {
 	    $selectFilePath = [];
 	    for my $f (@{ $w->{'selectFile'} }) {
-		push @$selectFilePath, JoinFile($w->{'selectPath'}, $f);
+		push @$selectFilePath, JoinFile($w->_get_select_Path, $f);
 	    }
 	} else {
-	    $selectFilePath = JoinFile($w->{'selectPath'},
+	    $selectFilePath = JoinFile($w->_get_select_path,
 				       $w->{'selectFile'});
 	}
 	if ($w->cget(-type) eq 'save' and
@@ -1039,6 +1041,22 @@ sub _rx_to_glob {
 	$arg = qr/$arg/;
     }
     $arg;
+}
+
+sub _get_from_icons {
+    my($w, $item) = @_;
+    $w->_encode_filename($w->{'icons'}->Get($item));
+}
+
+sub _get_select_path {
+    my($w) = @_;
+    $w->_encode_filename($w->{'selectPath'});
+}
+
+sub _encode_filename {
+    my($w, $filename) = @_;
+    $filename = $w->{encoding}->encode($filename);
+    $filename;
 }
 
 1;
