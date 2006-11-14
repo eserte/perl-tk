@@ -42,6 +42,27 @@ sub msgBox {
 			    qw/-side top -pady 2 -anchor w -fill x/);
     }
 
+    {
+	my $cbf = $TOP->Frame->pack(-fill => 'x', -padx => '.5c', -pady => 3);
+	my $fd;
+	my $fdb = $cbf->Radiobutton
+	    (-text => 'Tk::DialogBox',
+	     -variable => \$fd,
+	     -value => 'DialogBox',
+	     -command => sub { local($^W) = 0;
+			       *Tk::tk_messageBox = sub{ Tk::MessageBox('tk_messageBox', @_) };
+			   })->pack(-side => 'left');
+	$cbf->Radiobutton
+	    (-text => 'Tk::MsgBox',
+	     -variable => \$fd,
+	     -value => 'MsgBox',
+	     -command => sub { local($^W) = 0;
+			       require Tk::MsgBox;
+			       Tk::MsgBox->import('as_default');
+			   })->pack(-side => 'left');
+	$fdb->invoke;
+    }
+
     my $show = $TOP->Button(-text => "Message Box",
 			    -command => [\&show_messageBox, \$iconvar, \$typevar]);
     $show->pack;
