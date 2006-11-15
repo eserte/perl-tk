@@ -9,7 +9,7 @@ Tk::Optionmenu - Let the user select one of some predefined options values
 
 =head1 SYNOPSIS
 
-    use Optionmenu;
+    use Tk::Optionmenu;
 
     $opt = $w->Optionmenu(
 			-options => REFERENCE_to_OPTIONLIST,
