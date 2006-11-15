@@ -34,6 +34,7 @@ myConfig\.out
 JPEG/jpeg/testout*
 JPEG/jpeg/config\.(log|status)
 JPEG/jpeg/([cd]jpeg|jpegtran|(rd|wr)jpgcom)
+JPEG/jpeg/Makefile\.PL$
 \.todo$
 \bswapm$
 bin/patchls$
@@ -54,6 +55,11 @@ Menubutton/Menubutton\.c$
 Mwm/Mwm\.c$
 NBFrame/NBFrame\.c$
 PNG/PNG\.c$
+PNG/libpng/Makefile\.PL$
+PNG/libpng/pngtest$
+PNG/zlib/example$
+PNG/zlib/Makefile\.PL$
+PNG/zlib/minigzip$
 Scale/Scale\.c$
 Scrollbar/Scrollbar\.c$
 TList/TList\.c$
