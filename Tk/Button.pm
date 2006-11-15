@@ -136,6 +136,12 @@ sub Invoke
   }
 }
 
+# Used for Tk::Widget::AmpWidget
+sub AmpWidgetPostHook
+{
+ my $w = shift;
+ $w->bind('<<AltUnderlined>>' => ['invoke']);
+}
 
 
 1;

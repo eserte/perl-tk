@@ -247,6 +247,7 @@ sub Populate {
 sub Show {
     my $w = shift;
 
+    # If reusing the widget:
     $_->destroy for ($w->children);
 
     my @buttons;
@@ -273,15 +274,7 @@ sub Show {
 	die "invalid default button \"" . $w->cget(-default) . "\"";
     }
 
-### skip this step
-#     # 2. Set the dialog to be a child window of $parent
-#     #
-#     #
-#     if {$data(-parent) ne "."} {
-# 	set w $data(-parent).__tk__messagebox
-#     } else {
-# 	set w .__tk__messagebox
-#     }
+    ### skip the step 2, not needed in Perl/Tk
 
     # 3. Create the top-level window and divide it into top
     # and bottom parts.
@@ -385,7 +378,7 @@ sub Show {
 	    }
 	}
     } else {
-	# XXX hmmm, need a placeholder here...
+	# Unlike in Tcl/Tk, a placeholder is needed here
 	$w_bitmap = $w->Label;
     }
     Tk::grid($w_bitmap, $w_msg, -in => $w_top, qw(-sticky news -padx 2m -pady 2m));
@@ -417,7 +410,7 @@ sub Show {
 	}
 	$cw->grid(-in => $w_bot, -row => 0, -column => $i,
 		  qw(-padx 3m -pady 2m -sticky ew));
-	$w_bot->gridColumnconfigure($i, -uniform => 'buttons');# XXX gibt's dat?
+	$w_bot->gridColumnconfigure($i, -uniform => 'buttons');
         $i++;
 
 	# create the binding for the key accelerator, based on the underline
@@ -454,7 +447,7 @@ sub Show {
 		 my $e = shift->XEvent;
 		 my $w = $e->W;
 		 if ($w->isa('Tk::Button')) {
-		     $w->invoke; # XXX tk::ButtonInvoke %W ?
+		     $w->invoke;
 		 }
 	     });
 
@@ -473,12 +466,13 @@ sub Show {
 
     # 8. Set a grab and claim the focus too.
 
+    my $focus;
     if ($w->cget(-default) ne "") {
-	$w->Subwidget($w->cget(-default))->focus;
+	$focus = $w->Subwidget($w->cget(-default));
     } else {
-	$w->focus;
+	$focus = $w;
     }
-    #XXX what's that??? ::tk::SetFocusGrab $w $focus
+    $w->SetFocusGrab($focus);
 
     # 9. Wait for the user to respond, then restore the focus and
     # return the index of the selected button.  Restore the focus
@@ -491,7 +485,7 @@ sub Show {
     # trouble
     my $result = $w->{selectedButton};
 
-    # XXX ???? ::tk::RestoreFocusGrab $w $focus
+    $w->RestoreFocusGrab($focus, 'withdraw');
 
     return $result;
 }

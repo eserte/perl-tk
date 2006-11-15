@@ -1562,34 +1562,11 @@ sub AmpWidget
     }
   }
  my $result = $w->$class(@options);
- if ($result->isa('Tk::Button')) # XXX Can this be done in a OO way? Yes!
+ if ($result->can('AmpWidgetPostHook'))
   {
-   $result->bind('<<AltUnderlined>>' => ['invoke']);
+   $result->AmpWidgetPostHook;
   }
  return $result;
-}
-
-# ::tk::AmpMenuArgs --
-# Processes arguments for a menu entry, turning -label option into
-# -label and -underline options, returned by ::tk::UnderlineAmpersand.
-#
-sub AmpMenuArgs # XXX should probably go to Tk::Menu!
-{
- my ($w, $add, $type, %args) = @_;
- my @options;
- while(my($opt,$val) = each %args)
-  {
-   if ($opt eq "-label")
-    {
-     my ($newtext,$under) = $w->UnderlineAmpersand($val);
-     push @options, -label => $newtext, -underline => $under;
-    }
-   else
-    {
-     push @options, $opt, $val;
-    }
-  }
- $w->$type(@options);
 }
 
 # ::tk::FindAltKeyTarget --
@@ -1613,7 +1590,7 @@ sub FindAltKeyTarget
   }
  else
   {
-   for my $cw ($w->gridSlaves, $w->packSlaves, $w->placeSlaves) # XXX what about formslaves???
+   for my $cw ($w->gridSlaves, $w->packSlaves, $w->placeSlaves) # Cannot handle $w->formSlaves here?
     {
      my $target = $cw->FindAltKeyTarget($char);
      return $target if ($target);
@@ -1634,3 +1611,83 @@ sub AltKeyInDialog
  $target->eventGenerate('<<AltUnderlined>>');
 }
 
+# ::tk::SetFocusGrab --
+#   swap out current focus and grab temporarily (for dialogs)
+# Arguments:
+#   grab	new window to grab
+#   focus	window to give focus to
+# Results:
+#   Returns nothing
+#
+sub SetFocusGrab
+{
+ my ($grab,$focus) = @_;
+ my $index = "$grab,$focus";
+ $Tk::FocusGrab{$index} ||= [];
+ my $data = $Tk::FocusGrab{$index};
+ push @$data, $grab->focusCurrent;
+ my $oldGrab = $grab->grabCurrent;
+ push @$data, $oldGrab;
+ if (Tk::Exists($oldGrab))
+  {
+   push @$data, $oldGrab->grabStatus;
+  }
+ # The "grab" command will fail if another application
+ # already holds the grab.  So catch it.
+ Tk::catch { $grab->grab };
+ if (Tk::Exists($focus))
+  {
+   $focus->focus;
+  }
+}
+
+# ::tk::RestoreFocusGrab --
+#   restore old focus and grab (for dialogs)
+# Arguments:
+#   grab	window that had taken grab
+#   focus	window that had taken focus
+#   destroy	destroy|withdraw - how to handle the old grabbed window
+# Results:
+#   Returns nothing
+#
+sub RestoreFocusGrab
+{
+ my ($grab, $focus, $destroy) = @_;
+ $destroy = 'destroy' if !$destroy;
+ my $index = "$grab,$focus";
+ my ($oldFocus, $oldGrab, $oldStatus);
+ if (exists $Tk::FocusGrab{$index})
+  {
+   ($oldFocus, $oldGrab, $oldStatus) = $Tk::FocusGrab{$index};
+   delete $Tk::FocusGrab{$index};
+  }
+ else
+  {
+   $oldGrab = "";
+  }
+
+ Tk::catch { $oldFocus->focus };
+ if (Tk::Exists($grab))
+  {
+   $grab->grabRelease;
+   if ($destroy eq "withdraw")
+    {
+     $grab->withdraw;
+    }
+   else
+    {
+     $grab->destroy;
+    }
+  }
+ if (Tk::Exists($oldGrab) && $oldGrab->ismapped)
+  {
+   if ($oldStatus eq "global")
+    {
+     $oldGrab->grabGlobal;
+    }
+   else
+    {
+     $oldGrab->grab;
+    }
+  }
+}

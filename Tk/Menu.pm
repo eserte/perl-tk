@@ -1152,6 +1152,29 @@ sub BalloonInfo
   }
 }
 
+# ::tk::AmpMenuArgs --
+# Processes arguments for a menu entry, turning -label option into
+# -label and -underline options, returned by ::tk::UnderlineAmpersand.
+#
+sub AmpArgs
+{
+ my ($w, $add, $type, %args) = @_;
+ my @options;
+ while(my($opt,$val) = each %args)
+  {
+   if ($opt eq "-label")
+    {
+     my ($newtext,$under) = $w->UnderlineAmpersand($val);
+     push @options, -label => $newtext, -underline => $under;
+    }
+   else
+    {
+     push @options, $opt, $val;
+    }
+  }
+ $w->$type(@options);
+}
+
 1;
 
 __END__
