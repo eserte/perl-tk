@@ -96,6 +96,12 @@ myConfig\.out
 JPEG/jpeg/testout*
 JPEG/jpeg/config\.(log|status)
 JPEG/jpeg/([cd]jpeg|jpegtran|(rd|wr)jpgcom)
+JPEG/jpeg/Makefile\.PL$
+PNG/libpng/Makefile\.PL$
+PNG/libpng/pngtest$
+PNG/zlib/example$
+PNG/zlib/Makefile\.PL$
+PNG/zlib/minigzip$
 \.todo$
 \bswapm$
 bin/patchls$
