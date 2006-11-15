@@ -365,9 +365,9 @@ TkpGetFontFromAttributes(tkFontPtr, tkwin, faPtr)
     int		weight, slant;
     UnixFtFont	*fontPtr = (UnixFtFont *)tkFontPtr;
 
-    pattern = XftPatternBuild (0,
-			       XFT_FAMILY, XftTypeString, faPtr->family,
-			       0);
+    pattern = XftPatternCreate ();
+    XftPatternAddString (pattern,
+		         XFT_FAMILY, faPtr->family);
     if (faPtr->size > 0)
 	XftPatternAddInteger (pattern, XFT_SIZE, faPtr->size);
     else

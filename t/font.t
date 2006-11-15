@@ -99,5 +99,11 @@ foreach my $sf (@subfonts)
   print '# ',join(',',@$sf),"\n";
  }
 
+{
+ # This caused core dumps with Xft version of Perl/Tk
+ my $l = $mw->Label(-font => '-*-*-bold-r-*--12-*-*-*-*-*-*-*');
+ $l->destroy;
+ ok(1);
+}
 
 __END__
