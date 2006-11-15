@@ -4,7 +4,7 @@ use Test;
 use Tk;
 use Tk::Font;
 
-BEGIN { plan tests => 13 };
+BEGIN { plan tests => 14 };
 
 my $mw = Tk::MainWindow->new;
 $mw->geometry("+10+10");
