@@ -844,8 +844,8 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
    int i;
    if (first < 0)
     first = 0;
-   if (first > len)
-     first = len;
+   if (first >= len)
+     first = len;	/* So we'll insert after last element. */
    if (first + count > len)
     count = first-len;
    newlen = len-count+objc;
@@ -862,6 +862,11 @@ Tcl_ListObjReplace (Tcl_Interp *interp, Tcl_Obj *listPtr, int first, int count,
     }
    else if (newlen < len)
     {
+     /* Delete array elements which will be sliced away */
+     for (i=first; i < first+count; i++)
+      {
+       av_delete(av,i,0);
+      }
      /* Move entries beyond old range down to new location */
      for (i=first+count; i < len; i++)
       {
