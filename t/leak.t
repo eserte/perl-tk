@@ -176,14 +176,14 @@ sub test { warn }
 
     $lb->delete(0, "end");
     $c1 = Devel::Leak::NoteSV($handle);
-    $lb->insert("end", 1..1000);
+    $lb->insert("end", 1..10);
     $lb->delete(0, "end");
     $c2 = Devel::Leak::CheckSV($handle);
     is($c2-$c1, 0, "Inserting and deleting listbox elements");
 
     $lb->delete(0, 'end');
     $c1 = Devel::Leak::NoteSV($handle);
-    for(1..1000) {
+    for(1..10) {
 	$lb->insert('end', $_);
     }
     $lb->delete(0, 'end');
