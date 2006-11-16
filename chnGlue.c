@@ -20,7 +20,8 @@ Tcl_Interp *interp;
 CONST char *fileName;
 CONST char *modeString;
 int permissions;
-{PerlIO *f = PerlIO_open(fileName,modeString);
+{PerlIO *f = PerlIO_open(Lang_Utf8ToBytes(fileName),modeString);
+ /* Hopefully every fileName here should be translated back to octets ... */
  if (!f)
   {
    /* FIXME - use strerr() or perl's equivalent */

@@ -525,7 +525,12 @@ static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
 	goto error;
     }
 
+#if 0 /* def _LANG */
+    /* Hopefully every fileName here should be translated back to octets ... */
+    fileId = open(Lang_Utf8ToBytes(fileName), O_RDONLY, 0);
+#else
     fileId = open(fileName, O_RDONLY, 0);
+#endif
     if (fileId < 0) {
 	Tcl_AppendResult(interp, "couldn't read file \"", fileName,
 		"\": ", Tcl_PosixError(interp), (char *) NULL);
