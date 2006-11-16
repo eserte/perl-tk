@@ -21,7 +21,7 @@ use Devel::Peek;
 
 BEGIN {
     if (!eval q{
-	use Test;
+	use Test::More;
 	use Devel::Leak;
 	die if ($Config{usemymalloc} eq 'y' &&
                 $Config{optimize} !~ /-DPERL_DEBUGGING_MSTATS/);
@@ -40,16 +40,7 @@ use Tk::Button;
 use Tk::Canvas;
 
 
-{
-    # gather all todos marked with "TODO: number"
-    my @todos;
-#    open(DATA, $0) or die $!;
-#    while(<DATA>) {
-#	push @todos, $1 if (/^\#\s+TODO:\s+(\d+)/);
-#    }
-#    close DATA;
-    plan tests => 12, todo => [@todos];
-}
+plan tests => 14;
 
 my $mw = new MainWindow;
 $mw->optionAdd("*Button.Background",'#dcdcdc');
@@ -68,7 +59,7 @@ for(1..100) {
     $mw->bind("<Motion>" => [sub { warn }]);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c2-$c1 <= 1, 1);
+cmp_ok($c2-$c1, "<=", 1, "Array reference with subroutine to bind");
 
 
 $c1 = Devel::Leak::NoteSV($handle);
@@ -76,7 +67,7 @@ for(1..100) {
     $mw->bind("<Motion>" => sub { warn });
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c2, $c1);
+is($c2, $c1, "Anonymous subroutine to bind");
 
 
 $c1 = Devel::Leak::NoteSV($handle);
@@ -84,7 +75,7 @@ for(1..100) {
     $mw->bind("<Motion>" => \&test);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok($c2, $c1);
+is($c2, $c1, "Subroutine reference to bind");
 
 my $btn = $mw->Button(-command => sub { warn });
 $c1 = Devel::Leak::NoteSV($handle);
@@ -92,7 +83,7 @@ for(1..100) {
     $btn->configure(-command => sub { warn });
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok(($c2-$c1) < 10, 1);
+cmp_ok($c2-$c1, "<", 10, "configure -command multiple times (got " . ($c2-$c1) . " leaked scalars)");
 
 # Tests for leaking Tk_GetUid (e.g. canvas items)
 
@@ -105,7 +96,7 @@ for(1..1000) {
     $c->delete("a");
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok(($c2-$c1) < 10, 1);
+cmp_ok(($c2-$c1), "<", 10, "Leaking Tk_GetUid, e.g. canvas items");
 
 $c1 = Devel::Leak::NoteSV($handle);
 for(1..100) {
@@ -113,7 +104,7 @@ for(1..100) {
     $c->delete($id);
 }
 $c2 = Devel::Leak::NoteSV($handle);
-ok(($c2-$c1) < 10, 1);
+cmp_ok(($c2-$c1), "<", 10, "Canvas createLine");
 
 # Tests for leaking widget destroys
 my $btn2 = $mw->Button;
@@ -127,7 +118,7 @@ for(1..100) {
 }
 $c2 = Devel::Leak::CheckSV($handle);
 print "# was $c1 now $c2 ",($c2-$c1)/100," per iter\n";
-ok(($c2-$c1) < 10, 1);
+cmp_ok(($c2-$c1), "<", 10, "Creating and destroying buttons");
 
 # Tests for leaking fileevent callbacks
 $mw->fileevent(\*STDIN, 'readable', sub { });
@@ -140,7 +131,7 @@ for (1..100)
   $mw->fileevent(\*STDIN, 'readable','');
  }
 $c2 = Devel::Leak::CheckSV($handle);
-ok(($c2-$c1) < 10, 1);
+cmp_ok(($c2-$c1), "<", 10, "Fileevent callbacks");
 
 require Tk::After;
 $mw->withdraw;
@@ -153,8 +144,8 @@ for (1..$N)
  Tk->after(cancel => Tk->after($_*10,sub { $count-- }));
 }
 $c2 = Devel::Leak::CheckSV($handle);
-print "# was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
-ok(($c2-$c1) < $N, 1);
+diag "was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
+cmp_ok(($c2-$c1), "<", $N, "after");
 
 $mw->repeat(30,sub {})->cancel;
 my $id;
@@ -163,8 +154,8 @@ $id = $mw->repeat(2, sub { $id->cancel if ($count++ == $N)});
 Tk::DoOneEvent(0) while $id->[1];
 undef $id;
 $c2 = Devel::Leak::CheckSV($handle);
-print "# was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
-ok(($c2-$c1) < $N, 1);
+diag "was $c1 now $c2 ",($c2-$c1)/$N," per iter\n";
+cmp_ok(($c2-$c1), "<", $N, "repeat");
 
 sub test { warn }
 
@@ -175,12 +166,29 @@ sub test { warn }
     $c1 = Devel::Leak::NoteSV($handle);
     $lb->insert("end", 2);
     $c2 = Devel::Leak::CheckSV($handle);
-    ok($c2-$c1 <= 1, 1);
+    cmp_ok($c2-$c1, "<=", 1, "Insert one listbox element");
+
     for (1..100) { $lb->insert("end", $_+2) }
     $c1 = Devel::Leak::NoteSV($handle);
     $lb->insert("end", 9999);
     $c2 = Devel::Leak::CheckSV($handle);
-    ok($c2-$c1 <= 1, 1);
+    cmp_ok($c2-$c1, "<=", 1, "Insert one listbox element at end");
+
+    $lb->delete(0, "end");
+    $c1 = Devel::Leak::NoteSV($handle);
+    $lb->insert("end", 1..1000);
+    $lb->delete(0, "end");
+    $c2 = Devel::Leak::CheckSV($handle);
+    is($c2-$c1, 0, "Inserting and deleting listbox elements");
+
+    $lb->delete(0, 'end');
+    $c1 = Devel::Leak::NoteSV($handle);
+    for(1..1000) {
+	$lb->insert('end', $_);
+    }
+    $lb->delete(0, 'end');
+    $c2 = Devel::Leak::CheckSV($handle);
+    is($c2-$c1, 0, "Inserting and deleting individual listbox elements");
 }
 
 __END__
