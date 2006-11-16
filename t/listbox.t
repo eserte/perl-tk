@@ -51,6 +51,8 @@ plan tests => 537;
 my $partial_top;
 my $partial_lb;
 
+my $listvar_impl = $Tk::VERSION >= 804;
+
 my $mw = new MainWindow;
 $mw->geometry('+10+10');
 $mw->raise;
@@ -1034,7 +1036,7 @@ $lb->destroy;
 
 SKIP: {
     skip("no -listvar in older Tks", 12)
-	if $Tk::VERSION < 804;
+	if !$listvar_impl;
     {
 	my @x = qw/a b c d/;
 	my $lb = $mw->$Listbox(-listvar => \@x);
@@ -1286,7 +1288,7 @@ SKIP: {
 
 SKIP: {
     skip("-listvar not implemented in older Tks", 1)
-	if $Tk::VERSION < 804;
+	if !$listvar_impl;
     skip("dumps core *TODO*", 1);
 
     my @x = qw(a b c d);
@@ -1301,7 +1303,8 @@ SKIP: {
     $l2->insert(0, 0 .. 4);
     $l2->selection("set", 2, 4);
     $l2->insert(0, "a");
-    is_deeply([ $l2->curselection ], [qw(3 4 5)]);
+    is_deeply([ $l2->curselection ], [qw(3 4 5)],
+	      "curselection after selection set");
     is(scalar @{[ $l2->curselection ]}, 3);
     $l2->destroy;
 }
@@ -1310,13 +1313,13 @@ $lb->delete(0, "end");
 $lb->insert(0, qw/a b c d e f g h i j/);
 $lb->selectionSet(1, 6);
 $lb->delete(4, 3);
-is($lb->size, 10);
+is($lb->size, 10, "size after negative delete");
 is($mw->SelectionGet, "b
 c
 d
 e
 f
-g");
+g", "SelectionGet after selectionSet");
 
 $lb->delete(qw/0 end/);
 $lb->insert(qw/0 a b c d e f g h i j/);
@@ -1455,7 +1458,7 @@ SKIP: {
 
 SKIP: {
     skip("-listvar not implemented in older Tks", 1)
-	if $Tk::VERSION < 804;
+	if !$listvar_impl;
     skip("dumps core *TODO*", 1);
 
     my @x = qw(a b c d);
@@ -1471,7 +1474,7 @@ $lb->update;
 like(getsize($mw), qr/^\d+x\d+$/); # still worth it ?
 $lb->destroy;
 like(getsize($mw), qr/^\d+x\d+$/); # still worth it ?
-ok(!Tk::Exists($lb));
+ok(!Tk::Exists($lb), "Listbox is destroyed");
 
 resetGridInfo();
 
@@ -1892,7 +1895,7 @@ foreach ($mw->children) { $_->destroy }
 
 SKIP: {
     skip("no -listvar in older Tks", 12)
-	if $Tk::VERSION < 804;
+	if !$listvar_impl;
 
     {
 	my @x;
