@@ -1870,6 +1870,7 @@ t/Trace.t
 t/TkTest.pm
 t/trace1.t
 t/slaves.t
+t/unicode.t
 t/widget.t
 t/wm.t
 t/wm-time.t
