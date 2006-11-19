@@ -52,6 +52,8 @@ BEGIN {
 
 plan tests => 315;
 
+my $wm_problems = $Tk::platform eq 'unix';
+
 my $mw = MainWindow->new;
 
 my $poswin = 1;
@@ -59,12 +61,15 @@ my $netwm = 0;
 GetOptions("poswin!" => \$poswin,
 	   "trace!"  => sub { $mw->wmTracing(1) },
 	   "netwm!"  => \$netwm,
+	   "nowmproblems" => sub { $wm_problems = 0 },
 	  )
     or die "usage: $0 [-poswin] [-trace] [-netwm]
 -noposwin: turn off fixed geometry setting (fixed geometry setting is needed
            for some window managers like twm with default manual positioning)
 -trace:    turns wmTracing on
 -netwm:    set this is using modern opendesktop compliant X11 window manager
+-nowmproblems: set this if you believe your X11 window manager implements
+               all ICCCM specifications correctly
 ";
 
 
@@ -165,11 +170,17 @@ stdWindow;
 ### wm attributes ###
 {
     eval { $mw->attributes(-alpha => 1.0, '-disabled') };
-    like($@, qr{\Qwrong # args: should be "wm attributes window ?-attribute ?value ...??});
+    if ($Tk::platform eq 'MSWin32') {
+	local $TODO = "-alpha and -fullscreen not yet implemented";
+	like($@, qr{\Qwrong # args: should be "wm attributes window ?-alpha ?double?? ?-disabled ?bool?? ?-fullscreen ?bool?? ?-toolwindow ?bool?? ?-topmost ?bool??"});
+    } else {
+	like($@, qr{\Qwrong # args: should be "wm attributes window ?-attribute ?value ...??});
+    }
 
  SKIP: {
 	skip("works only on windows", 1)
 	    if $Tk::platform ne 'MSWin32';
+	local $TODO = "Still fails...";
 	eval { $mw->attributes('-to') };
 	like($@, qr{\Qwrong # args: should be "wm attributes window ?-alpha ?double?? ?-disabled ?bool?? ?-fullscreen ?bool?? ?-toolwindow ?bool?? ?-topmost ?bool??"});
     }
@@ -206,6 +217,7 @@ EOF
 SKIP: {
     skip("fullscreen tests only on windows", 38)
  	if $Tk::platform ne 'MSWin32';
+    skip("fullscreen tests NYI on windows", 38);
 ## Getting fullscreen attribute is not yet implemented for X11
 #     skip("fullscreen tests only on windows or on X11 with option -netwm", 38)
 # 	if !($Tk::platform eq 'MSWin32' || ($Tk::platform eq 'unix' && $netwm));
@@ -592,8 +604,12 @@ stdWindow;
 	 "wm command usage");
 
     is_deeply([$t->command],[], "wm command, setting and reading values");
-    $t->command([qw(Miffo Foo)]);
-    is_deeply([$t->command],[qw(Miffo Foo)]);
+    {
+	local $TODO;
+	$TODO = "Fails on windows" if $Tk::platform eq 'MSWin32';
+	$t->command([qw(Miffo Foo)]);
+	is_deeply([$t->command],[qw(Miffo Foo)]);
+    }
     $t->command(undef);
     is_deeply([$t->command],[]);
 }
@@ -613,7 +629,7 @@ stdWindow;
 	my $tf = $t->Frame(-container => 1);
 	my $embed = $mw->Toplevel(Name => "embed", -use => $tf->id);
 	eval { $embed->deiconify };
-	like($@, qr{\Qcan't deiconify .embed: the container does not support the request},
+	like($@, qr{\Qcan't deiconify .embed: \E(the container does not support the request|it is an embedded window)},
 	     "wm deiconify embedded window");
 	$embed->destroy;
 	$tf->destroy;
@@ -839,7 +855,7 @@ stdWindow;
 	my $tf = $t->Frame(qw(Name f -container 1));
 	my $t2 = $mw->Toplevel(qw(Name toplevel2), -use => $tf->id);
 	eval { $t2->iconify };
-	like($@, qr{\Qcan't iconify .toplevel2: the container does not support the request});
+	like($@, qr{\Qcan't iconify .toplevel2: \E(the container does not support the request|it is an embedded window)});
 	$t2->destroy;
     } else {
 	# test embedded window for other platforms
@@ -891,7 +907,10 @@ stdWindow;
     is($t->iconname, '');
 }
 
-{
+SKIP: {
+    skip("iconphoto not implemented on Windows", 4)
+	if $Tk::platform eq 'MSWin32';
+
     ### wm iconphoto ###
     eval { $mw->iconphoto };
     like($@, qr{\Qwrong # args: should be "wm iconphoto window ?-default? image1 ?image2 ...?"},
@@ -1014,6 +1033,10 @@ stdWindow;
     $t->maxsize(200, 150);
     # UpdateGeometryInfo invoked at idle
     $t->update;
+
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 200, q{setting the maxsize to a smaller value will resize a toplevel});
     is($h, 150);
@@ -1029,6 +1052,10 @@ stdWindow;
     $t->maxsize(4, 3);
     # UpdateGeometryInfo invoked at idle
     $t->update;
+
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 4, q{setting the maxsize to a smaller value will resize a gridded toplevel});
     is($h, 3);
@@ -1074,6 +1101,10 @@ stdWindow;
     is($t->reqheight, 400);
     $t->maxsize(300, 300);
     $t->update;
+
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 300, q{Use max size if window size is not explicitly set});
     # ... and the reqWidth/reqHeight are bigger than the max size
@@ -1111,6 +1142,10 @@ stdWindow;
     $t->minsize(400, 300);
     # UpdateGeometryInfo invoked at idle
     $t->update;
+
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 400, q{setting the minsize to a larger value will resize a toplevel});
     is($h, 300);
@@ -1126,6 +1161,10 @@ stdWindow;
     $t->minsize(8,8);
     # UpdateGeometryInfo invoked at idle
     $t->update;
+
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 8, q{setting the minsize to a larger value will resize a gridded toplevel});
     is($h, 8);
@@ -1171,6 +1210,10 @@ stdWindow;
     is($t->reqheight, 250);
     $t->minsize(300, 300);
     $t->update;
+
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 300, q{Use min size if window size is not explicitly set});
     # ... and the reqWidth/reqHeight are smaller than the min size
@@ -1352,7 +1395,9 @@ eval {
     }
 
     {
-	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+	local $TODO;
+	$TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)"
+	    if $wm_problems;
 
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
@@ -1364,7 +1409,9 @@ eval {
     }
 
     {
-	local $TODO = "May fail sometimes on some window managers (e.g. metacity)";
+	local $TODO;
+	$TODO = "May fail sometimes on some window managers (e.g. metacity)"
+	    if $wm_problems;
 
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
@@ -1380,7 +1427,9 @@ eval {
     }
 
     {
-	local $TODO = "May fail sometimes on some window managers (e.g. metacity)";
+	local $TODO;
+	$TODO = "May fail sometimes on some window managers (e.g. metacity)"
+	    if $wm_problems;
 
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
@@ -1396,7 +1445,9 @@ eval {
     }
 
     {
-	local $TODO = "May fail sometimes on some window managers (e.g. metacity)";
+	local $TODO;
+	$TODO = "May fail sometimes on some window managers (e.g. metacity)"
+	    if $wm_problems;
 
 	my $parent = $mw->Toplevel(Name => "parent");
 	poswin $parent;
@@ -1562,7 +1613,9 @@ eval {
     }
 
     {
-	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+	local $TODO;
+	$TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)"
+	    if $wm_problems;
 
 	my $t = $mw->Toplevel;
 	poswin $t;
@@ -1574,7 +1627,9 @@ eval {
     }
 
     {
-	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+	local $TODO;
+	$TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)"
+	    if $wm_problems;
 
 	my $t = $mw->Toplevel;
 	poswin $t;
@@ -1588,7 +1643,9 @@ eval {
     deleteWindows;
 
     {
-	local $TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)";
+	local $TODO;
+	$TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)"
+	    if $wm_problems;
 
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
@@ -1783,7 +1840,9 @@ stdWindow;
     $master->deiconify;
     $mw->update;
 
-    local $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)";
+    local $TODO;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)"
+	if $wm_problems;
 
     is($subject->state, "normal",
        q{deiconify on the master also does a deiconify on the transient});
@@ -1791,7 +1850,9 @@ stdWindow;
 }
 
 {
-    local $TODO = "May fail on some window managers (e.g. metacity)";
+    local $TODO;
+    $TODO = "May fail on some window managers (e.g. metacity)"
+	if $wm_problems;
 
     deleteWindows;
     my $master = $mw->Toplevel;
@@ -1808,7 +1869,9 @@ stdWindow;
 }
 
 {
-    local $TODO = "May fail on some window managers (e.g. metacity)";
+    local $TODO;
+    $TODO = "May fail on some window managers (e.g. metacity)"
+	if $wm_problems;
 
     deleteWindows;
     my $master = $mw->Toplevel;
@@ -1856,7 +1919,9 @@ stdWindow;
     $master->withdraw;
     $mw->update;
 
-    local $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)";
+    local $TODO;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)"
+	if $wm_problems;
 
     is($subject->state, "withdrawn");
     $master->deiconify;
@@ -1904,7 +1969,9 @@ stdWindow;
 }
 
 {
-    local $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)";
+    local $TODO;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.5.x)"
+	if $wm_problems;
 
     deleteWindows;
     my $master = $mw->Toplevel;

@@ -2475,17 +2475,18 @@ Tk_WmObjCmd(clientData, interp, objc, objv)
     if ((argv1[0] == 't') && (strncmp(argv1, "tracing", length) == 0)
 	    && (length >= 3)) {
 	int wmTracing;
-	if ((objc != 2) && (objc != 3)) {
+	/* Perl/Tk: increased parameter position by one because of implicite window parameter */
+	if ((objc != 3) && (objc != 4)) {
 	    Tcl_WrongNumArgs(interp, 2, objv, "?boolean?");
 	    return TCL_ERROR;
 	}
-	if (objc == 2) {
+	if (objc == 3) {
 	    Tcl_SetResult(interp,
 		    ((dispPtr->flags & TK_DISPLAY_WM_TRACING) ? "1" : ""),
 		    TCL_STATIC);
 	    return TCL_OK;
 	}
-	if (Tcl_GetBooleanFromObj(interp, objv[2], &wmTracing) != TCL_OK) {
+	if (Tcl_GetBooleanFromObj(interp, objv[3], &wmTracing) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (wmTracing) {
@@ -2619,12 +2620,9 @@ WmAspectCmd(tkwin, winPtr, interp, objc, objv)
     }
     if (objc == 3) {
 	if (wmPtr->sizeHintsFlags & PAspect) {
-	    char buf[TCL_INTEGER_SPACE * 4];
-
-	    sprintf(buf, "%d %d %d %d", wmPtr->minAspect.x,
-		    wmPtr->minAspect.y, wmPtr->maxAspect.x,
-		    wmPtr->maxAspect.y);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    Tcl_IntResults(interp, 4, 0, wmPtr->minAspect.x,
+			   wmPtr->minAspect.y, wmPtr->maxAspect.x,
+			   wmPtr->maxAspect.y);
 	}
 	return TCL_OK;
     }
@@ -2695,6 +2693,7 @@ WmAttributesCmd(tkwin, winPtr, interp, objc, objv)
     exStyle = wmPtr->exStyleConfig;
     style   = wmPtr->styleConfig;
     if (objc == 3) {
+	/* FIXME XXX should not return Tcl-ish list */
 	sprintf(buf, "%d", ((style & WS_DISABLED) != 0));
 	Tcl_AppendResult(interp, "-disabled ", buf, (char *) NULL);
 	sprintf(buf, "%d", ((exStyle & WS_EX_TOOLWINDOW) != 0));
@@ -3274,12 +3273,9 @@ WmGridCmd(tkwin, winPtr, interp, objc, objv)
     }
     if (objc == 3) {
 	if (wmPtr->sizeHintsFlags & PBaseSize) {
-	    char buf[TCL_INTEGER_SPACE * 4];
-
-	    sprintf(buf, "%d %d %d %d", wmPtr->reqGridWidth,
-		    wmPtr->reqGridHeight, wmPtr->widthInc,
-		    wmPtr->heightInc);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    Tcl_IntResults(interp, 4, 0, wmPtr->reqGridWidth,
+			   wmPtr->reqGridHeight, wmPtr->widthInc,
+			   wmPtr->heightInc);
 	}
 	return TCL_OK;
     }
@@ -3313,12 +3309,12 @@ WmGridCmd(tkwin, winPtr, interp, objc, objv)
 	    Tcl_SetResult(interp, "baseHeight can't be < 0", TCL_STATIC);
 	    return TCL_ERROR;
 	}
-	if (widthInc < 0) {
-	    Tcl_SetResult(interp, "widthInc can't be < 0", TCL_STATIC);
+	if (widthInc <= 0) {
+	    Tcl_SetResult(interp, "widthInc can't be <= 0", TCL_STATIC);
 	    return TCL_ERROR;
 	}
-	if (heightInc < 0) {
-	    Tcl_SetResult(interp, "heightInc can't be < 0", TCL_STATIC);
+	if (heightInc <= 0) {
+	    Tcl_SetResult(interp, "heightInc can't be <= 0", TCL_STATIC);
 	    return TCL_ERROR;
 	}
 	Tk_SetGrid((Tk_Window) winPtr, reqWidth, reqHeight, widthInc,
@@ -3716,11 +3712,8 @@ WmIconpositionCmd(tkwin, winPtr, interp, objc, objv)
     }
     if (objc == 3) {
 	if (wmPtr->hints.flags & IconPositionHint) {
-	    char buf[TCL_INTEGER_SPACE * 2];
-
-	    sprintf(buf, "%d %d", wmPtr->hints.icon_x,
-		    wmPtr->hints.icon_y);
-	    Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	    Tcl_IntResults(interp, 2, 0, wmPtr->hints.icon_x,
+			   wmPtr->hints.icon_y);
 	}
 	return TCL_OK;
     }
@@ -4203,12 +4196,9 @@ WmResizableCmd(tkwin, winPtr, interp, objc, objv)
 	return TCL_ERROR;
     }
     if (objc == 3) {
-	char buf[TCL_INTEGER_SPACE * 2];
-
-	sprintf(buf, "%d %d",
-		(wmPtr->flags  & WM_WIDTH_NOT_RESIZABLE) ? 0 : 1,
-		(wmPtr->flags  & WM_HEIGHT_NOT_RESIZABLE) ? 0 : 1);
-	Tcl_SetResult(interp, buf, TCL_VOLATILE);
+	Tcl_IntResults(interp, 2, 0,
+		       (wmPtr->flags & WM_WIDTH_NOT_RESIZABLE) ? 0 : 1,
+		       (wmPtr->flags & WM_HEIGHT_NOT_RESIZABLE) ? 0 : 1);
 	return TCL_OK;
     }
     if ((Tcl_GetBooleanFromObj(interp, objv[3], &width) != TCL_OK)

@@ -80,7 +80,18 @@ else
 package MY;
 
 sub pasthru {
-  qq[PASTHRU="CC=$Config::Config{cc} $Config::Config{cccdlflags}" RANLIB=\"$Config::Config{ranlib}\"];
+  if ($^O eq 'MSWin32' && $Config::Config{cc} =~ /gcc/)
+   {
+    # gcc usually has ranlib, also dmake does not understand "rem"
+    # which is default setting for $Config::Config{ranlib} under
+    # Windows, unless .USE_SHELL: is specified (see also special_targets
+    # in ExtUtils::MM_Win32)
+    qq[PASTHRU="CC=$Config::Config{cc} $Config::Config{cccdlflags}"];
+   }
+  else
+   {
+    qq[PASTHRU="CC=$Config::Config{cc} $Config::Config{cccdlflags}" RANLIB=\"$Config::Config{ranlib}\"];
+   }
 }
 
 sub postamble {

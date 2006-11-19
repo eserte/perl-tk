@@ -160,7 +160,11 @@ TkpUseWindow(interp, tkwin, string)
     }
 
     if (Tcl_GetIntFromObj(interp, string, &id) != TCL_OK) {
-        return TCL_ERROR;
+        char *s = Tcl_GetString(string);
+        char *e = NULL;
+	id = strtoul(s,&e,0);
+        if (!e || *e)
+	    return TCL_ERROR;
     }
     hwnd = (HWND) id;
 

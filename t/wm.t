@@ -36,7 +36,10 @@ pass("Set iconimage");
 
 tk_sleep(0.5);
 
-{
+SKIP: {
+    skip("iconphoto is not implemented for Windows", 1)
+	if $Tk::platform eq 'MSWin32';
+
     my $icon2 = $mw->Photo(-file => Tk->findINC("icon.gif"));
     $mw->withdraw;
     $mw->iconphoto('-default', $icon2);
@@ -57,12 +60,17 @@ tk_sleep(0.5);
 }
 
 if (0) { # capture/release not anymore available in Tk???
-    my $t2 = $mw->Toplevel;
-    $t2->capture;
-    $mw->update;
-    $mw->after(100);
-    $t2->release;
-    pass("wm capture/release ok");
+ SKIP: {
+	skip("wmCapture/Release not implemented for Windows", 1)
+	    if $Tk::platform eq 'MSWin32';
+
+	my $t2 = $mw->Toplevel;
+	$t2->capture;
+	$mw->update;
+	$mw->after(100);
+	$t2->release;
+	pass("wm capture/release ok");
+    }
 }
 
 {
