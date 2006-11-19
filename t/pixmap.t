@@ -1,7 +1,15 @@
 #!/usr/bin/perl -w
 use strict;
-use Test;
-plan tests => 1;
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "1..0 # skip: no Test::More module\n";
+	exit;
+    }
+}
+plan tests => 2;
 
 my($icon)=<<'END';
 /* XPM */
@@ -28,6 +36,10 @@ use Tk;
 my $mw = tkinit;
 $mw->geometry("+20+20");
 my $label = $mw->Label(-image=>$mw->Pixmap(-data=>$icon))->pack;
-$mw->after(1000,[destroy => $mw]);
+pass("Loaded and displayed pixmap");
+eval { $mw->Pixmap(-file => "__nonexistingpixmap__") };
+like($@, qr{(\QCannot open '__nonexistingpixmap__' in mode 'r'\E
+	    |\Qcouldn't read file "__nonexistingpixmap__": No such file or directory\E
+	   )}x, "Non-existing xpm error");
+$mw->after(500,[destroy => $mw]);
 MainLoop;
-ok(1);

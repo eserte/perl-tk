@@ -63,8 +63,6 @@ cp(Tk->findINC("Xcamel.gif"), $eurogif)
 }
 
 {
-    local $TODO = "Pixmap file handling not yet fixed";
-
     my $p = eval { $mw->Pixmap(-file => $umlautxpm) };
     is($@, "", "Create a pixmap with non-ascii chars in filename");
     $p->delete if $p;

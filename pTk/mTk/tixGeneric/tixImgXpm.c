@@ -514,7 +514,8 @@ static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
     char * fileName;
     int * numLines_return;
 {
-    int fileId, size;
+    Tcl_Channel chan;
+    int size;
     char ** data;
     struct stat statBuf;
     char *cmdBuffer = NULL;
@@ -525,34 +526,36 @@ static char ** ImgXpmGetDataFromFile(interp, fileName, numLines_return)
 	goto error;
     }
 
-#if 0 /* def _LANG */
-    /* Hopefully every fileName here should be translated back to octets ... */
-    fileId = open(Lang_Utf8ToBytes(fileName), O_RDONLY, 0);
-#else
-    fileId = open(fileName, O_RDONLY, 0);
-#endif
-    if (fileId < 0) {
-	Tcl_AppendResult(interp, "couldn't read file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
+    chan = Tcl_OpenFileChannel(interp, fileName, "r", 0);
+    if (chan == NULL) {
 	goto error;
     }
-    if (fstat(fileId, &statBuf) == -1) {
-	Tcl_AppendResult(interp, "couldn't stat file \"", fileName,
+
+    size = Tcl_Seek(chan, 0, SEEK_END);
+    if (size == -1) {
+	Tcl_AppendResult(interp, "couldn't seek to end of file \"", fileName,
 		"\": ", Tcl_PosixError(interp), (char *) NULL);
-	close(fileId);
+	Tcl_Close(interp, chan);
 	goto error;
     }
-    cmdBuffer = (char *) ckalloc((unsigned) statBuf.st_size+1);
-    size = read(fileId, cmdBuffer, (size_t) statBuf.st_size);
+
+    /* seek back to beginning */
+    if (Tcl_Seek(chan, 0, SEEK_SET) == -1) {
+	goto error;
+    }
+
+    cmdBuffer = (char *) ckalloc((unsigned) size+1);
+    size = Tcl_Read(chan, cmdBuffer, size);
     if (size < 0) {
 	Tcl_AppendResult(interp, "error in reading file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
-	close(fileId);
+			 "\": ", Tcl_PosixError(interp), (char *) NULL);
+	Tcl_Close(interp,chan);
 	goto error;
     }
-    if (close(fileId) != 0) {
+
+    if (Tcl_Close(interp,chan) != TCL_OK) {
 	Tcl_AppendResult(interp, "error closing file \"", fileName,
-		"\": ", Tcl_PosixError(interp), (char *) NULL);
+			 "\": ", Tcl_PosixError(interp), (char *) NULL);
 	goto error;
     }
     cmdBuffer[size] = 0;
