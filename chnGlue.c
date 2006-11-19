@@ -14,6 +14,8 @@
 #include "pTk/tkInt.h"
 #include "tkGlue.h"
 
+static char *Lang_Utf8ToBytes(char *src);
+
 Tcl_Channel
 Tcl_OpenFileChannel(interp,fileName,modeString,permissions)
 Tcl_Interp *interp;
@@ -141,6 +143,14 @@ Tcl_SetChannelOption(Tcl_Interp *interp, Tcl_Channel chan,
  return TCL_OK;
 }
 
+char *
+Lang_Utf8ToBytes(char *src)
+{
+ SV* sv = newSVpv(src,0);
+ sv_2mortal(sv);
+ sv_utf8_decode(sv);
+ return SvPVbyte_nolen(sv);
+}
 
 
 

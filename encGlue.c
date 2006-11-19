@@ -910,16 +910,6 @@ Tcl_ExternalToUtfDString(Tcl_Encoding encoding, CONST char * src,
  return Tcl_DStringValue(dsPtr);
 }
 
-char *
-Lang_Utf8ToBytes(char *src)
-{
- SV* sv = newSVpv(src,0);
- sv_2mortal(sv);
- sv_utf8_decode(sv);
- return SvPVbyte_nolen(sv);
-}
-
-
 #if defined(WIN32) || (defined(__WIN32__) && defined(__CYGWIN__))
 /*
  *---------------------------------------------------------------------------
