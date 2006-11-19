@@ -479,7 +479,6 @@ menubug
 Menubutton/Makefile.PL
 Menubutton/Menubutton.pm
 Menubutton/Menubutton.xs
-META.yml
 mitem_test
 mkdist
 mkExt
