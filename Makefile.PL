@@ -77,6 +77,7 @@ Tk::MMutil::TkExtMakefile(
     'LIBS'    => \@libs,
     'OBJECT'  => '$(O_FILES)',
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
+    'NO_META'    => 1,
     @macro
    );
 
