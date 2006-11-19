@@ -279,6 +279,8 @@ my $normal_font;
 if (!$t->fontMetrics($default_font, '-fixed')) {
     $normal_font = $t->fontCreate(%default_font, -family => "courier");
     $t->configure(-font => $normal_font);
+} else {
+    $normal_font = $default_font;
 }
 my %normal_font = $t->fontActual($normal_font);
 my $bold_font = $t->fontCreate(%normal_font, -weight => "bold");

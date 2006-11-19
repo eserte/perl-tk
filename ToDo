@@ -21,6 +21,10 @@ Integrate libpng 1.2.12 (or newer?)
 
 Introduce msgcat support like in Tcl/Tk?
 
+Simple tests for EXE_FILES (at least checking with perl -c, maybe also
+starting and immediately destroying)
+
+$mw->fontActual(undef) dumps core (both Windows and X11)
 ----------------------------------------------------------------------
 - OLDER ToDos --------------------------------------------------------
 
