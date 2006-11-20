@@ -1598,7 +1598,10 @@ TclObjSetType(Tcl_Obj *obj,Tcl_ObjType *type)
   {
    LangDebug("%s %p was %s\n",__FUNCTION__,obj,m->type->name);
   }
- LangDebug("%s %p now %s\n",__FUNCTION__,obj,type->name);
+ if (type)
+  {
+   LangDebug("%s %p now %s\n",__FUNCTION__,obj,type->name);
+  }
 #endif
  m->type = type;
 }
