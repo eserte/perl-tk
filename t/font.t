@@ -15,7 +15,7 @@ use Tk;
 use Tk::Font;
 use Getopt::Long;
 
-plan tests => 17;
+plan tests => 20;
 
 my $v;
 GetOptions("v" => \$v)
@@ -126,6 +126,17 @@ SKIP:
 
  eval { $mw->fontActual(undef) };
  like($@, qr{Cannot use undef as font object});
+}
+
+{
+ my $l = $mw->Label;
+ my $f = $l->cget(-font);
+ isa_ok($f, 'Tk::Font');
+ my $ascent = $f->measure(-ascent);
+ ok(defined $ascent, "Got ascent from measure");
+ eval { $f->actual(undef,undef) };
+ like($@, qr{\Qwrong # args: should be "font actual font},
+      "Does not get error about undef font object");
 }
 
 __END__
