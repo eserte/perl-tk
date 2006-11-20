@@ -1,10 +1,25 @@
 BEGIN { $|=1; $^W=1; }
 use strict;
-use Test;
+
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "1..0 # skip: no Test::More module\n";
+	exit;
+    }
+}
+
 use Tk;
 use Tk::Font;
+use Getopt::Long;
 
-BEGIN { plan tests => 14 };
+plan tests => 17;
+
+my $v;
+GetOptions("v" => \$v)
+    or die "usage: $0 [-v]";
 
 my $mw = Tk::MainWindow->new;
 $mw->geometry("+10+10");
@@ -17,8 +32,8 @@ $mw->geometry("+10+10");
 {
     my @fam = ();
     eval { @fam = $mw->fontFamilies; };
-    ok($@ eq "");
-    ok(@fam>1, 1, "Num. of font families=".scalar @fam)
+    is($@, "", "fontFamilies");
+    cmp_ok(@fam,">",1, "Num. of font families=".scalar @fam);
 }
 ##
 ## Tk800.003 writes 'ont ...' in warning instead of 'font ...'
@@ -26,10 +41,8 @@ $mw->geometry("+10+10");
 ##  opps,  looks like fault of ptksh
 {
   eval { $mw->fontActual; };
-  ok(
-	( $@ =~ /^wrong # args: should be "font/), 1,
-	"Warning should match /^wrong # args: should be \"font/ but was '". $@ . "'"
-    );
+  like($@, qr/^wrong # args: should be "font/,
+       "fontActual without font error");
 }
 ##
 ## Stephen O. Lidie reported that Tk800.003
@@ -39,71 +52,80 @@ $mw->geometry("+10+10");
 {
   my $fontname = ($^O eq 'MSWin32') ? 'ansifixed': 'fixed';
   eval { $mw->fontMeasure; };
-  ok(
-	($@ ne "") , 1,
-	"Opps fontMeasure works without args. Documented to require two"
-    );
+  isnt($@, "", "fontMeasure documented to require two args, not zero");
   eval { $mw->fontMeasure($fontname); };
-  ok(
-	($@ ne "") , 1,
-	"Opps fontMeasure works with one arg. Documented to require two"
-    );
+  isnt($@, "", "fontMeasure documented to require two args, not one");
   my $num = undef;
   eval { $num = $mw->fontMeasure($fontname, 'Hi'); };
-  ok(
-	($@ eq "") , 1,
-	"Opps fontMeasure works doesn't work with fixed font and a string: ".$@
-    );
-  ok(
-	defined($num) , 1,
-	"Opps fontMeasure returned undefined value"
-    );
-  ok(
-	($num > 2), 1,
-	"Opps fontMeasure claims string 'Hi' is only $num pixels wide."
-    );
+  is($@, "", "fontMeasure works with fixed font and a string");
+  ok(defined $num);
+  cmp_ok($num, ">=", 2, "fontMeasure value is large enough");
   my $l = $mw->Label(-font => $fontname);
   my $name;
   eval { $name = $l->cget('-font') };
-  ok(
-        "$name", $fontname,
-        "cget(-font) returns wrong value."
-    );
+  is("$name", $fontname, "cget(-font) returns same fontname");
 }
 
 my @fam = $mw->fontFamilies;
-foreach my $fam (@fam)
+if ($v)
  {
-  print "# $fam\n";
+  diag "Font families:";
+  foreach my $fam (@fam)
+   {
+    diag "* $fam";
+   }
  }
 
-my $skip_times = (grep { /^times$/i } @fam) ? undef : "Times not available";
-$mw->optionAdd('*Listbox.font','Times -12 bold');
-my $lb = $mw->Listbox()->pack;
-$lb->insert(end => '0',"\xff","\x{20ac}","\x{0289}");
-$lb->update;
-my $lf = $lb->cget('-font');
-print "# $$lf:",join(',',$mw->fontActual($lf)),"\n";
-my %expect = (-family => 'Times',
-              -size   => -12, -weight => 'bold',
-              -slant  => 'roman');
-foreach my $key (sort keys %expect)
+SKIP:
  {
-  my $val = $mw->fontActual($lf,$key);
-  skip($skip_times, $val,qr/$expect{$key}/i,"Value of $key");
- }
+  skip("Times not available", 4)
+      if !grep { /^times$/i } @fam;
 
-my @subfonts = $mw->fontSubfonts($lf);
-foreach my $sf (@subfonts)
- {
-  print '# ',join(',',@$sf),"\n";
+  $mw->optionAdd('*Listbox.font','Times -12 bold');
+  my $lb = $mw->Listbox()->pack;
+  $lb->insert(end => '0',"\xff","\x{20ac}","\x{0289}");
+  $lb->update;
+  my $lf = $lb->cget('-font');
+  diag "Font attributes: $$lf:" . join(',',$mw->fontActual($lf))
+      if $v;
+  my %expect = (-family => 'Times',
+		-size   => -12, -weight => 'bold',
+		-slant  => 'roman');
+  foreach my $key (sort keys %expect)
+   {
+    my $val = $mw->fontActual($lf,$key);
+    is($val, $expect{$key}, "Value of $key from fontActual");
+   }
+
+  my @subfonts = $mw->fontSubfonts($lf);
+  if ($v)
+   {
+    diag "Subfonts of $$lf:";
+    foreach my $sf (@subfonts)
+     {
+      diag '* ' . join(',',@$sf);
+     }
+   }
  }
 
 {
  # This caused core dumps with Xft version of Perl/Tk
  my $l = $mw->Label(-font => '-*-*-bold-r-*--12-*-*-*-*-*-*-*');
  $l->destroy;
- ok(1);
+ pass("Core dump check (especially for XFT)");
+}
+
+{
+ # This caused core dumps with Perl/Tk 804.027
+ eval { $mw->fontMeasure(undef, -ascent)};
+ like($@, qr{Cannot use undef as font object},
+      "Core dump check with undef font object");
+
+ eval { $mw->fontConfigure(undef) };
+ like($@, qr{Cannot use undef as font object});
+
+ eval { $mw->fontActual(undef) };
+ like($@, qr{Cannot use undef as font object});
 }
 
 __END__

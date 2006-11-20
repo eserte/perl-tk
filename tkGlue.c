@@ -3003,12 +3003,20 @@ XS(XStoFont)
    char *opt = SvPV(ST(1),na);
    if (strcmp(opt,"create") && strcmp(opt,"names") && strcmp(opt,"families"))
     {
+     if (ST(2) == &PL_sv_undef)
+      {
+#if 0
+       LangDumpVec("Font undef",items,&ST(0));
+#endif
+       croak("Cannot use undef as font object");
+      }
      /* FIXME: would be better to use hint from info rather than fact that
         object is not hash-based */
      if (SvROK(ST(0)) && SvTYPE(SvRV(ST(0))) != SVt_PVHV)
       items = InsertArg(mark,2,ST(0));
     }
   }
+ 
  ST(0) = name;                      /* Fill in command name */
 #if 0
  LangDumpVec("Font Post",items,&ST(0));
