@@ -1,7 +1,6 @@
-package Tie::Watch;
+$Tie::Watch::VERSION = '1.2';
 
-use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/lib/Tie/Watch.pm#6 $
+package Tie::Watch;
 
 =head1 NAME
 
@@ -14,7 +13,7 @@ $VERSION = '4.006'; # $Id: //depot/Tkutf8/lib/Tie/Watch.pm#6 $
  $watch = Tie::Watch->new(
      -variable => \$frog,
      -debug    => 1,
-     -shadow   => 0,
+     -shadow   => 0,			  
      -fetch    => [\&fetch, 'arg1', 'arg2', ..., 'argn'],
      -store    => \&store,
      -destroy  => sub {print "Final value=$frog.\n"},
@@ -30,11 +29,12 @@ $VERSION = '4.006'; # $Id: //depot/Tkutf8/lib/Tie/Watch.pm#6 $
 
 This class module binds one or more subroutines of your devising to a
 Perl variable.  All variables can have B<FETCH>, B<STORE> and
-B<DESTROY> callbacks.  Additionally, arrays can define B<CLEAR>, B<EXTEND>,
-B<FETCHSIZE>, B<POP>, B<PUSH>, B<SHIFT>, B<SPLICE>, B<STORESIZE> and
-B<UNSHIFT> callbacks, and hashes can define B<CLEAR>, B<DELETE>, B<EXISTS>,
-B<FIRSTKEY> and B<NEXTKEY> callbacks.  If these term are unfamiliar to you,
-I I<really> suggest you read L<perltie>.
+B<DESTROY> callbacks.  Additionally, arrays can define B<CLEAR>,
+B<DELETE>, B<EXISTS>, B<EXTEND>, B<FETCHSIZE>, B<POP>, B<PUSH>,
+B<SHIFT>, B<SPLICE>, B<STORESIZE> and B<UNSHIFT> callbacks, and hashes
+can define B<CLEAR>, B<DELETE>, B<EXISTS>, B<FIRSTKEY> and B<NEXTKEY>
+callbacks.  If these term are unfamiliar to you, I I<really> suggest
+you read L<perltie>.
 
 With Tie::Watch you can:
 
@@ -191,7 +191,7 @@ performance, at the risk of your code breaking in the future.
 
 =head1 AUTHOR
 
-Stephen.O.Lidie@Lehigh.EDU
+Stephen O. Lidie
 
 =head1 HISTORY
 
@@ -220,24 +220,33 @@ Stephen.O.Lidie@Lehigh.EDU
  . Version 1.0, for Perl 5.005_03, update Makefile.PL for ActiveState, and
    add two examples (one for Perl/Tk).
 
+ sol0@lehigh.edu, Lehigh University Computing Center, 2003/06/07
+ . Version 1.1, for Perl 5.8, can trace a reference now, patch from Slaven
+   Rezic.
+
+ sol0@lehigh.edu, Lehigh University Computing Center, 2005/05/17
+ . Version 1.2, for Perl 5.8, per Rob Seegel's suggestion, support array
+   DELETE and EXISTS.
+
 =head1 COPYRIGHT
 
-Copyright (C) 1996 - 1999 Stephen O. Lidie. All rights reserved.
+Copyright (C) 1996 - 2005 Stephen O. Lidie. All rights reserved.
 
 This program is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =cut
 
-use 5.004_57;
+use 5.004_57;;
 use Carp;
 use strict;
 use subs qw/normalize_callbacks/;
 use vars qw/@array_callbacks @hash_callbacks @scalar_callbacks/;
 
-@array_callbacks  = qw/-clear -destroy -extend -fetch -fetchsize -pop -push
-                       -shift -splice -store -storesize -unshift/;
-@hash_callbacks   = qw/-clear -delete -destroy -exists -fetch -firstkey
+@array_callbacks  = qw/-clear -delete -destroy -exists -extend -fetch
+                       -fetchsize -pop -push -shift -splice -store
+                       -storesize -unshift/;
+@hash_callbacks   = qw/-clear -delete -destroy -exists -fetch -firstkey 
                        -nextkey -store/;
 @scalar_callbacks = qw/-destroy -fetch -store/;
 
@@ -261,7 +270,8 @@ sub new {
 	    [\&Tie::Watch::Scalar::Store]);
     } elsif ($type =~ /ARRAY/) {
 	@arg_defaults{@array_callbacks}  = (
-	    [\&Tie::Watch::Array::Clear],     [\&Tie::Watch::Array::Destroy],
+	    [\&Tie::Watch::Array::Clear],     [\&Tie::Watch::Array::Delete],
+	    [\&Tie::Watch::Array::Destroy],   [\&Tie::Watch::Array::Exists],
 	    [\&Tie::Watch::Array::Extend],    [\&Tie::Watch::Array::Fetch],
 	    [\&Tie::Watch::Array::Fetchsize], [\&Tie::Watch::Array::Pop],
             [\&Tie::Watch::Array::Push],      [\&Tie::Watch::Array::Shift],
@@ -369,13 +379,13 @@ sub base_watch {
     # Watch base class constructor invoked by other Watch modules.
 
     my($class, %args) = @_;
-    my $watch_obj = {%args};
+    my $watch_obj = {%args}; 
     $watch_obj;
 
 } # end base_watch
 
 sub callback {
-
+    
     # Execute a Watch callback, either the default or user specified.
     # Note that the arguments are those supplied by the tied method,
     # not those (if any) specified by the user when the watch object
@@ -438,9 +448,9 @@ sub Store   {$_[0]->{-value} = $_[1]}
 
 # Scalar access methods.
 
-sub DESTROY {$_[0]->callback(-destroy)}
-sub FETCH   {$_[0]->callback(-fetch)}
-sub STORE   {$_[0]->callback(-store, $_[1])}
+sub DESTROY {$_[0]->callback('-destroy')}
+sub FETCH   {$_[0]->callback('-fetch')}
+sub STORE   {$_[0]->callback('-store', $_[1])}
 
 ###############################################################################
 
@@ -467,7 +477,9 @@ sub Info {$_[0]->SUPER::Info('-ptr', @Tie::Watch::array_callbacks)}
 # Default array callbacks.
 
 sub Clear     {$_[0]->{-ptr} = ()}
+sub Delete    {delete $_[0]->{-ptr}->[$_[1]]}
 sub Destroy   {undef %{$_[0]}}
+sub Exists    {exists $_[0]->{-ptr}->[$_[1]]}
 sub Extend    {}
 sub Fetch     {$_[0]->{-ptr}->[$_[1]]}
 sub Fetchsize {scalar @{$_[0]->{-ptr}}}
@@ -481,22 +493,24 @@ sub Splice    {
     return splice @{$_[0]->{-ptr}}, $_[1], $_[2], @_[3 .. $#_] if $n >= 4;
 }
 sub Store     {$_[0]->{-ptr}->[$_[1]] = $_[2]}
-sub Storesize {$#{@{$_[0]->{-ptr}}} = $_[1] - 1}
+sub Storesize {$#{$_[0]->{-ptr}} = $_[1] - 1}
 sub Unshift   {unshift @{$_[0]->{-ptr}}, @_[1 .. $#_]}
 
 # Array access methods.
 
-sub CLEAR     {$_[0]->callback(-clear)}
-sub DESTROY   {$_[0]->callback(-destroy)}
-sub EXTEND    {$_[0]->callback(-extend, $_[1])}
-sub FETCH     {$_[0]->callback(-fetch, $_[1])}
-sub FETCHSIZE {$_[0]->callback(-fetchsize)}
+sub CLEAR     {$_[0]->callback('-clear')}
+sub DELETE    {$_[0]->callback('-delete', $_[1])}
+sub DESTROY   {$_[0]->callback('-destroy')}
+sub EXISTS    {$_[0]->callback('-exists', $_[1])}
+sub EXTEND    {$_[0]->callback('-extend', $_[1])}
+sub FETCH     {$_[0]->callback('-fetch', $_[1])}
+sub FETCHSIZE {$_[0]->callback('-fetchsize')}
 sub POP       {$_[0]->callback('-pop')}
 sub PUSH      {$_[0]->callback('-push', @_[1 .. $#_])}
 sub SHIFT     {$_[0]->callback('-shift')}
 sub SPLICE    {$_[0]->callback('-splice', @_[1 .. $#_])}
-sub STORE     {$_[0]->callback(-store, $_[1], $_[2])}
-sub STORESIZE {$_[0]->callback(-storesize, $_[1])}
+sub STORE     {$_[0]->callback('-store', $_[1], $_[2])}
+sub STORESIZE {$_[0]->callback('-storesize', $_[1])}
 sub UNSHIFT   {$_[0]->callback('-unshift', @_[1 .. $#_])}
 
 ###############################################################################
@@ -534,13 +548,13 @@ sub Store    {$_[0]->{-ptr}->{$_[1]} = $_[2]}
 
 # Hash access methods.
 
-sub CLEAR    {$_[0]->callback(-clear)}
+sub CLEAR    {$_[0]->callback('-clear')}
 sub DELETE   {$_[0]->callback('-delete', $_[1])}
-sub DESTROY  {$_[0]->callback(-destroy)}
+sub DESTROY  {$_[0]->callback('-destroy')}
 sub EXISTS   {$_[0]->callback('-exists', $_[1])}
-sub FETCH    {$_[0]->callback(-fetch, $_[1])}
-sub FIRSTKEY {$_[0]->callback(-firstkey)}
-sub NEXTKEY  {$_[0]->callback(-nextkey)}
-sub STORE    {$_[0]->callback(-store, $_[1], $_[2])}
+sub FETCH    {$_[0]->callback('-fetch', $_[1])}
+sub FIRSTKEY {$_[0]->callback('-firstkey')}
+sub NEXTKEY  {$_[0]->callback('-nextkey')}
+sub STORE    {$_[0]->callback('-store', $_[1], $_[2])}
 
 1;

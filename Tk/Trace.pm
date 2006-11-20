@@ -49,7 +49,7 @@ sub fetch {
     return $val unless $call->[0];             # if fetch inactive
 
     my $final_val;
-    foreach my $aref (reverse  @$call[ 1 .. $#{@$call} ] ) {
+    foreach my $aref (reverse  @$call[ 1 .. $#{$call} ] ) {
         my ( @args_copy ) = @$aref;
         my $sub = shift @args_copy;            # user's callback
         unshift @_, undef if scalar @_ == 0;   # undef "index" for a scalar
@@ -86,7 +86,7 @@ sub store {
     my $call = $TRACE{$aref->[0]}->[1]->{-store}; # active flag/callbacks
     return $val unless $call->[0];             # if store inactive
 
-    foreach my $aref ( reverse @$call[ 1 .. $#{@$call} ] ) {
+    foreach my $aref ( reverse @$call[ 1 .. $#{$call} ] ) {
         my ( @args_copy ) = @$aref;
         my $sub = shift @args_copy;            # user's callback
         unshift @_, undef if scalar @_ == 1;   # undef "index" for a scalar
@@ -118,7 +118,7 @@ sub destroy {
     my $call = $TRACE{$aref->[0]}->[1]->{-destroy}; # active flag/callbacks
     return $val unless $call->[0];             # if destroy inactive
 
-    foreach my $aref ( reverse @$call[ 1 .. $#{@$call} ] ) {
+    foreach my $aref ( reverse @$call[ 1 .. $#{$call} ] ) {
         my ( @args_copy ) = @$aref;
         my $sub = shift @args_copy;            # user's callback
         my $val = $self->Fetch(@_);            # get final value
