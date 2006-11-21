@@ -80,6 +80,15 @@ if (!$mw->ismapped) {
     $mw->waitVisibility;
 }
 
+# Weak guess whether a window manager is running at all (only done on
+# X11)
+my $wm_running = 1;
+if ($Tk::platform eq 'unix') {
+    $mw->iconify;
+    $wm_running = $mw->state eq 'iconic';
+    $mw->deiconify;
+}
+
 my $t;
 
 sub stdWindow () {
@@ -867,7 +876,10 @@ stdWindow;
     }
 }
 
-{
+SKIP: {
+    skip("Needs a window manager", 2)
+	if !$wm_running;
+
     my $t2 = $mw->Toplevel;
     $t2->geometry("-0+0");
     $mw->update;
@@ -1487,7 +1499,10 @@ eval {
 
     deleteWindows;
 
-    {
+ SKIP: {
+	skip("Needs a window manager", 1)
+	    if !$wm_running;
+
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
 	$t1->update;
@@ -1500,6 +1515,7 @@ eval {
 	$t2->destroy;
 	$t1->destroy;
     }
+
 
     {
 	my $t1 = $mw->Toplevel(Name => "t1");
@@ -1849,7 +1865,10 @@ stdWindow;
     is($subject->ismapped, 1);
 }
 
-{
+SKIP: {
+    skip("Needs a window manager", 2)
+	if !$wm_running;
+
     local $TODO;
     $TODO = "May fail on some window managers (e.g. metacity)"
 	if $wm_problems;
@@ -1868,7 +1887,10 @@ stdWindow;
     is($subject->ismapped, 0);
 }
 
-{
+SKIP: {
+    skip("Needs a window manager", 2)
+	if !$wm_running;
+
     local $TODO;
     $TODO = "May fail on some window managers (e.g. metacity)"
 	if $wm_problems;
@@ -1888,7 +1910,10 @@ stdWindow;
     is($subject->ismapped, 0);
 }
 
-{
+SKIP: {
+    skip("Needs a window manager", 4)
+	if !$wm_running;
+
     deleteWindows;
     my $master = $mw->Toplevel;
     my $subject = $mw->Toplevel;
@@ -2124,7 +2149,10 @@ stdWindow;
        q{state change after map});
 }
 
-{
+SKIP: {
+    skip("Needs a window manager", 1)
+	if !$wm_running;
+
     deleteWindows;
     my $t = $mw->Toplevel;
     $t->state("iconic");
@@ -2139,7 +2167,11 @@ stdWindow;
     is($t->state, q{iconic},
        q{state change before map, iconic});
 }
-{
+
+SKIP: {
+    skip("Needs a window manager", 1)
+	if !$wm_running;
+
     deleteWindows;
     my $t = $mw->Toplevel;
     poswin $t;
@@ -2149,7 +2181,10 @@ stdWindow;
        q{state change after map, iconic});
 }
 
-{
+SKIP: {
+    skip("Needs a window manager", 1)
+	if !$wm_running;
+
     deleteWindows;
     my $t = $mw->Toplevel;
     poswin $t;
