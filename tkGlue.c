@@ -5263,6 +5263,9 @@ Lang_catch(pTHX_ XSUBADDR_t subaddr, void *any, I32 flags,char *filename)
  CvFILE(cv) = filename;
  CvXSUB(cv) = subaddr;
  CvXSUBANY(cv).any_ptr = any;
+#ifdef CvISXSUB_on
+ CvISXSUB_on(cv); /* this is needed for perl5.9@27244 */
+#endif
  count = call_sv((SV *)cv,flags|G_EVAL);
  SPAGAIN;
  if (sp != oldSP)
