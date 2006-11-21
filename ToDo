@@ -2,9 +2,8 @@ Tk::Tree has a dual live on CPAN. Incorporate the 4.3 version.
 
 Port more Tcl/Tk tests to Perl/Tk (text.test etc.)
 
-messageBox fixes: <Return> does not use the currently selected button,
-but always the default button, which seems not untuitive. Also, the
-Tcl/Tk counterpart has nicer colored bitmaps, port them to Perl/Tk.
+Should Tk::MsgBox be the default messageBox? Are there compatibility
+issued?
 
 Check all Tk-related bugs on rt.cpan.org (some are already fixed).
 
@@ -24,7 +23,8 @@ Introduce msgcat support like in Tcl/Tk?
 Simple tests for EXE_FILES (at least checking with perl -c, maybe also
 starting and immediately destroying)
 
-$mw->fontActual(undef) dumps core (both Windows and X11)
+Document font('subfonts')?
+
 ----------------------------------------------------------------------
 - OLDER ToDos --------------------------------------------------------
 
