@@ -94,7 +94,7 @@ SKIP:
   foreach my $key (sort keys %expect)
    {
     my $val = $mw->fontActual($lf,$key);
-    is($val, $expect{$key}, "Value of $key from fontActual");
+    like($val, qr{\Q$expect{$key}}i, "Value of $key from fontActual");
    }
 
   my @subfonts = $mw->fontSubfonts($lf);
