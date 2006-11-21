@@ -23,7 +23,7 @@ use vars qw/$AUTHORIZED_CLIENTS $DAEMON_HOST $DAEMON_PORT $DEBUG
 
 BEGIN { plan test => 1}
 
-if ($^O eq 'MSWin32') {
+if ($^O eq 'MSWin32' || $^O eq 'cygwin') {
     skip(1, 'Cannot test pipe/fork/exec/fileevent on Win32 systems.');
     CORE::exit();
 }
