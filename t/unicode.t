@@ -25,7 +25,7 @@ BEGIN {
     }
 }
 
-plan tests => 7;
+plan tests => 8;
 
 my $dir = tempdir(CLEANUP => 1);
 die "Cannot create temporary directory" if !$dir;
@@ -110,5 +110,26 @@ cp(Tk->findINC("Xcamel.gif"), $eurogif)
     $fb->Show;
     pass("Setting FBox -initialfile with non-ascii file name");
 }
+
+######################################################################
+# Text
+{
+    local $TODO = "Fix utf-8 warnings in Text widget";
+
+    my @warnings;
+    my $t = $mw->Text->pack;
+    $t->insert("end", "\xfc" x 20);
+    $t->markSet('insert','end');
+    $t->focusForce;
+    $t->update;
+    {
+	local $SIG{__WARN__} = sub { push @warnings, @_ };
+	$t->eventGenerate('<Control-KeyPress>', -keysym=>'Left');
+    }
+    is("@warnings", "", "No utf-8 warnings");
+    $t->destroy;
+}
+
+#MainLoop;
 
 __END__
