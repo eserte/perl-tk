@@ -304,7 +304,6 @@ Tcl_UniCharIsGraph
 Tcl_UniCharIsLower
 Tcl_UniCharIsPrint
 Tcl_UniCharIsPunct
-Tcl_UniCharIsWordChar
 Tcl_UniCharLen
 Tcl_UniCharNcasecmp
 Tcl_UniCharNcmp

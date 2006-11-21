@@ -470,6 +470,10 @@
 #  define Tcl_UniCharIsUpper (*TcldeclsVptr->V_Tcl_UniCharIsUpper)
 #endif
 
+#ifndef Tcl_UniCharIsWordChar
+#  define Tcl_UniCharIsWordChar (*TcldeclsVptr->V_Tcl_UniCharIsWordChar)
+#endif
+
 #ifndef Tcl_UniCharToLower
 #  define Tcl_UniCharToLower (*TcldeclsVptr->V_Tcl_UniCharToLower)
 #endif

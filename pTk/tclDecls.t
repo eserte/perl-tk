@@ -592,6 +592,10 @@ VFUNC(int,Tcl_UniCharIsSpace,V_Tcl_UniCharIsSpace,_ANSI_ARGS_((int ch)))
 VFUNC(int,Tcl_UniCharIsUpper,V_Tcl_UniCharIsUpper,_ANSI_ARGS_((int ch)))
 #endif /* #ifndef Tcl_UniCharIsUpper */
 
+#ifndef Tcl_UniCharIsWordChar
+VFUNC(int,Tcl_UniCharIsWordChar,V_Tcl_UniCharIsWordChar,_ANSI_ARGS_((int ch)))
+#endif /* #ifndef Tcl_UniCharIsWordChar */
+
 #ifndef Tcl_UniCharToLower
 VFUNC(Tcl_UniChar,Tcl_UniCharToLower,V_Tcl_UniCharToLower,_ANSI_ARGS_((int ch)))
 #endif /* #ifndef Tcl_UniCharToLower */
