@@ -25,6 +25,8 @@ starting and immediately destroying)
 
 Document font('subfonts')?
 
+Port tkText*.c changes, as there are some unicode-related fixes.
+
 ----------------------------------------------------------------------
 - OLDER ToDos --------------------------------------------------------
 

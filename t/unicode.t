@@ -25,7 +25,7 @@ BEGIN {
     }
 }
 
-plan tests => 11;
+plan tests => 13;
 
 my $dir = tempdir(CLEANUP => 1);
 die "Cannot create temporary directory" if !$dir;
@@ -137,6 +137,22 @@ cp(Tk->findINC("Xcamel.gif"), $eurogif)
     is("@warnings", "", "No utf-8 warnings");
     is($t->index("insert"), "1.20", "Text: right word movement"); # XXX 1.20 correct?
 
+    $t->destroy;
+}
+
+{
+    local $TODO = "Fix utf-8 warnings+errors in Text widget";
+
+    my @warnings;
+    my $t = $mw->Text->pack;
+    $t->insert("end", "\xfc" x 20);
+    $t->markSet('anchor',$t->index("current -1c"));
+    {
+	@warnings = ();
+	local $SIG{__WARN__} = sub { push @warnings, @_ };
+	is($t->index("1.19 wordstart"), "1.0");
+    }
+    is("@warnings", "", "No utf-8 warnings");
     $t->destroy;
 }
 
