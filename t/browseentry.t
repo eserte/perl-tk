@@ -5,7 +5,7 @@ use Test;
 
 BEGIN
   {
-   plan test => 15;
+   plan test => 17;
   };
 
 eval { require Tk };
