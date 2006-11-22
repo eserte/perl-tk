@@ -1592,6 +1592,17 @@ TclObjLength(Tcl_Obj *obj)
 void
 TclObjSetType(Tcl_Obj *obj,Tcl_ObjType *type)
 {
+ if (obj == &PL_sv_undef || SvTYPE(obj) == SVt_NULL)
+  {
+   if (type)
+    {
+     croak("Cannot use undef value for object of type '%s'", type->name);
+    }
+   else
+    {
+     croak("Cannot assign magic to undef");
+    }
+  }
  TclObjMagic_t *m = Tcl_ObjMagic(obj,1);
 #ifdef DEBUG_TCLOBJ
  if (m->type)

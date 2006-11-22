@@ -15,7 +15,7 @@ use Tk;
 use Tk::Font;
 use Getopt::Long;
 
-plan tests => 20;
+plan tests => 23;
 
 my $v;
 GetOptions("v" => \$v)
@@ -126,6 +126,21 @@ SKIP:
 
  eval { $mw->fontActual(undef) };
  like($@, qr{Cannot use undef as font object});
+}
+
+{
+ # This caused core dumps with Perl/Tk 804.027
+ my $l = $mw->Label(-font => "helvetica 10");
+ my $f = $l->cget(-font);
+ eval { $l->configure(-font => undef) };
+ like($@, qr{\QCannot use undef value for object of type 'font'},
+      "Core dump check with undef font in configure");
+ is($l->cget(-font), $f, "Font stays unchanged");
+ $l->destroy;
+
+ eval { $mw->Label(-font => undef) };
+ like($@, qr{\QCannot use undef value for object of type 'font'},
+      "Core dump check with undef font in initial setup");
 }
 
 {
