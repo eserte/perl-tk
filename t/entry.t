@@ -35,7 +35,7 @@ BEGIN {
         # these fail (sometimes) under 'make test'
         my @fragile = qw(160 161 167 191 193 195);
         @fragile = () ; # unless $ENV{PERL_DL_NONLAZY};
-        plan tests => 336,
+        plan tests => 337,
         todo => \@fragile
       }
 
