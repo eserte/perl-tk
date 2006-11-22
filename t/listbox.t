@@ -46,7 +46,7 @@ BEGIN {
     }
 }
 
-plan tests => 537;
+plan tests => 539;
 
 my $partial_top;
 my $partial_lb;
@@ -184,15 +184,15 @@ foreach my $test
 	my $name = $test->[0];
 
     SKIP: {
-	    skip("$name test not supported for $Listbox", 3)
+	    skip("$name test not supported for $Listbox", 4)
 		if ($Listbox eq 'TextList' &&
 		    $name =~ /^-(activestyle|bg|fg|foreground|height|selectborderwidth|listvar)$/);
 
-	    skip("$name not implemented on $Tk::VERSION", 3)
+	    skip("$name not implemented on $Tk::VERSION", 4)
 		if ($Listbox eq 'Listbox' && $Tk::VERSION < 804 &&
 		    $name =~ /^-(activestyle)$/);
 
-	    skip("*TODO* $name not yet implemented on $Tk::VERSION", 3)
+	    skip("*TODO* $name not yet implemented on $Tk::VERSION", 4)
 		if ($Tk::VERSION >= 804 &&
 		    $name =~ /^-(tile|offset)$/);
 
