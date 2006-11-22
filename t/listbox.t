@@ -77,7 +77,9 @@ isa_ok($lb, "Tk::$Listbox");
 $lb->update;
 
 my $skip_font_test;
-if (!$Xft) { # XXX Is this condition necessary?
+# XXX Is the Xft condition still necessary?
+# On cygwin/X11 with Xfvb running all font related tests fail.
+if (!$Xft && !($^O eq 'cygwin' && $Tk::platform eq 'unix')) {
     my %fa = $mw->fontActual($lb->cget(-font));
     my %expected = (
 		    "-weight" => "bold",

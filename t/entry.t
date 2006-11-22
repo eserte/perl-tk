@@ -1047,7 +1047,9 @@ $e->update;
 $e->configure(-textvariable => \$y);
 $e->update;
 is($e->get, "ab");
-is($e->reqwidth, 24);
+# On Unix/X11 and Windows it's 24, on cygwin/X11 with Xvfb running it's 25:
+cmp_ok($e->reqwidth, ">=", 24);
+cmp_ok($e->reqwidth, "<=", 25);
 
 $mw->traceVdelete(\$x); # XXX why?
 
