@@ -267,6 +267,7 @@ sub PopupChoices {
 	if (defined $current_sel) {
 	    my $i = 0;
 	    foreach my $str ($s->get(0, "end")) {
+		local $^W = 0; # in case of undefined strings
 		if ($str eq $current_sel) {
 		    $s->selectionClear(0, "end");
 		    $s->selectionSet($i);
@@ -376,11 +377,12 @@ sub choices
    my $old = $$var;
    foreach my $val (@$choices)
     {
+     local $^W = 0; # in case of undefined values
      $w->insert( 'end', $val);
      $hash{$val} = 1;
     }
    $old = $choices->[0]
-    if defined $old && not exists $hash{$old} && defined $choices->[0];
+    if defined $old && !exists $hash{$old} && defined $choices->[0];
    $$var = $old;
   }
  else

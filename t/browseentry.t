@@ -64,6 +64,24 @@ eval { $be2 = $mw->BrowseEntry(-choices => [qw/a b c d e/],
 ok("$@", "", "can't create BrowseEntry");
 ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
 
+{
+    # Testcase:
+    # From: "Puetz Kevin A" <PuetzKevinA AT JohnDeere.com>
+    # Message-ID: <0B4BDC724143544EB509F90F7791EB64026EF8E1@edxmb16.jdnet.deere.com>
+    my $var = 'val2';
+    my $browse = $mw->BrowseEntry
+	(-label => 'test',
+	 -listcmd => sub { $_[0]->choices([undef, 'val1','val2']) },
+	 -variable => \$var,
+	)->pack;
+    ok($var eq 'val2');
+    $browse->update;
+    $browse->BtnDown;
+    $browse->update;
+    ok($var eq 'val2');
+    $browse->destroy;
+}
+
 #&Tk::MainLoop;
 
 1;
