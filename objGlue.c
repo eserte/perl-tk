@@ -1593,7 +1593,7 @@ void
 TclObjSetType(Tcl_Obj *obj,Tcl_ObjType *type)
 {
  TclObjMagic_t *m;
- if (obj == &PL_sv_undef || SvTYPE(obj) == SVt_NULL)
+ if (type != NULL && !SvOK(obj))
   {
    if (type)
     {

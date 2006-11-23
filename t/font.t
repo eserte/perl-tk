@@ -142,13 +142,13 @@ SKIP:
  like($@, qr{\QCannot use undef value for object of type 'font'},
       "Core dump check with undef font in initial setup (label)");
 
- SKIP: { skip("Dumps core!",1);
  require Tk::TextList; # TextList seems to be special
  eval { $mw->TextList(-font => undef) };
  like($@, qr{\QCannot use undef value for object of type 'font'},
       "Core dump check with undef font in initial setup (textlist)");
- }
-
+ # FIXME XXX
+ # The above failure causes a font to be left in the cache. The message:
+ # Font -*-helvetica-medium-r-normal--14-*-*-*-*-iso8859-1 still in cache.
 }
 
 {
