@@ -28,7 +28,7 @@ BEGIN {
     }
 }
 
-plan tests => 119;
+plan tests => 180;
 
 use_ok('Tk::Text');
 
@@ -64,13 +64,13 @@ my $te = $t->Entry(qw(Name e));
 $te->insert(qw(end abcdefg));
 $te->selection(qw(from 0));
 
-$t->insert("1.0", "Line 1
+$t->insert("1.0", q{Line 1
 abcdefghijklm
 12345
 Line 4
 bOy GIrl .#@? x_yz
 !@#$%
-Line 7");
+Line 7});
 
 my $t2 = $mw->Text(qw(Name t2));
 
@@ -180,296 +180,386 @@ foreach my $test (@tests) {
     is($t2->Class, 'Text');
 }
 	      
-__END__
+{
+    eval { $t->gorp(qw(1.0 z 1.2)) };
+    like($@, qr{\QCan't locate auto/Tk/Text/gorp.al},
+	 q{TextWidgetCmd procedure});
+}
 
-test text-3.1 {TextWidgetCmd procedure, basics} {
-    list [catch {.t} msg] $msg
-} {1 {wrong # args: should be ".t option ?arg arg ...?"}}
-test text-3.2 {TextWidgetCmd procedure} {
-    list [catch {.t gorp 1.0 z 1.2} msg] $msg
-} {1 {bad option "gorp": must be bbox, cget, compare, configure, count, debug, delete, dlineinfo, dump, edit, get, image, index, insert, mark, peer, replace, scan, search, see, tag, window, xview, or yview}}
+{
+    local $TODO = "Error NYI in Perl/Tk";
 
-test text-4.1 {TextWidgetCmd procedure, "bbox" option} {
-    list [catch {.t bbox} msg] $msg
-} {1 {wrong # args: should be ".t bbox index"}}
-test text-4.2 {TextWidgetCmd procedure, "bbox" option} {
-    list [catch {.t bbox a b} msg] $msg
-} {1 {wrong # args: should be ".t bbox index"}}
-test text-4.3 {TextWidgetCmd procedure, "bbox" option} {
-    list [catch {.t bbox bad_mark} msg] $msg
-} {1 {bad text index "bad_mark"}}
+    eval { $t->bbox };
+    like($@, qr{\Qwrong # args: should be ".t bbox index"},
+	 q{TextWidgetCmd procedure, "bbox" option});
+}
 
-test text-5.1 {TextWidgetCmd procedure, "cget" option} {
-    list [catch {.t cget} msg] $msg
-} {1 {wrong # args: should be ".t cget option"}}
-test text-5.2 {TextWidgetCmd procedure, "cget" option} {
-    list [catch {.t cget a b} msg] $msg
-} {1 {wrong # args: should be ".t cget option"}}
-test text-5.3 {TextWidgetCmd procedure, "cget" option} {
-    list [catch {.t cget -gorp} msg] $msg
-} {1 {unknown option "-gorp"}}
-test text-5.4 {TextWidgetCmd procedure, "cget" option} {
-    .t configure -bd 17
-    .t cget -bd
-} {17}
-.t configure -bd [lindex [.t configure -bd] 3]
+{
+    eval { $t->bbox(qw(a b)) };
+    like($@, qr{\Qwrong # args: should be ".t bbox index"});
+}
 
-test text-6.1 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare a b} msg] $msg
-} {1 {wrong # args: should be ".t compare index1 op index2"}}
-test text-6.2 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare a b c d} msg] $msg
-} {1 {wrong # args: should be ".t compare index1 op index2"}}
-test text-6.3 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare @x == 1.0} msg] $msg
-} {1 {bad text index "@x"}}
-test text-6.4 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare 1.0 < @y} msg] $msg
-} {1 {bad text index "@y"}}
-test text-6.5 {TextWidgetCmd procedure, "compare" option} {
-    list [.t compare 1.1 < 1.0] [.t compare 1.1 < 1.1] [.t compare 1.1 < 1.2]
-} {0 0 1}
-test text-6.6 {TextWidgetCmd procedure, "compare" option} {
-    list [.t compare 1.1 <= 1.0] [.t compare 1.1 <= 1.1] [.t compare 1.1 <= 1.2]
-} {0 1 1}
-test text-6.7 {TextWidgetCmd procedure, "compare" option} {
-    list [.t compare 1.1 == 1.0] [.t compare 1.1 == 1.1] [.t compare 1.1 == 1.2]
-} {0 1 0}
-test text-6.8 {TextWidgetCmd procedure, "compare" option} {
-    list [.t compare 1.1 >= 1.0] [.t compare 1.1 >= 1.1] [.t compare 1.1 >= 1.2]
-} {1 1 0}
-test text-6.9 {TextWidgetCmd procedure, "compare" option} {
-    list [.t compare 1.1 > 1.0] [.t compare 1.1 > 1.1] [.t compare 1.1 > 1.2]
-} {1 0 0}
-test text-6.10 {TextWidgetCmd procedure, "compare" option} {
-    list [.t com 1.1 != 1.0] [.t compare 1.1 != 1.1] [.t compare 1.1 != 1.2]
-} {1 0 1}
-test text-6.11 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare 1.0 <x 1.2} msg] $msg
-} {1 {bad comparison operator "<x": must be <, <=, ==, >=, >, or !=}}
-test text-6.12 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare 1.0 >> 1.2} msg] $msg
-} {1 {bad comparison operator ">>": must be <, <=, ==, >=, >, or !=}}
-test text-6.13 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t compare 1.0 z 1.2} msg] $msg
-} {1 {bad comparison operator "z": must be <, <=, ==, >=, >, or !=}}
-test text-6.14 {TextWidgetCmd procedure, "compare" option} {
-    list [catch {.t co 1.0 z 1.2} msg] $msg
-} {1 {ambiguous option "co": must be bbox, cget, compare, configure, count, debug, delete, dlineinfo, dump, edit, get, image, index, insert, mark, peer, replace, scan, search, see, tag, window, xview, or yview}}
+{
+    eval { $t->bbox('bad_mark') };
+    like($@, qr{\Qbad text index "bad_mark"});
+}
+
+{
+    eval { $t->cget };
+    like($@, qr{\Qwrong # args: should be ".t cget option"},
+	 q{TextWidgetCmd procedure, "cget" option});
+}
+
+{
+    eval { $t->cget(qw(a b)) };
+    like($@, qr{\Qwrong # args: should be ".t cget option"});
+}
+
+{
+    eval { $t->cget(-gorp) };
+    like($@, qr{\Qunknown option "-gorp"});
+}
+
+{
+    $t->configure(-bd => 17);
+    is($t->cget(-bd), 17);
+    # Restore
+    $t->configure(-bd => ($t->configure(-bd))[3]);
+}
+
+{
+    eval { $t->compare(qw(a b)) };
+    like($@, qr{\Qwrong # args: should be ".t compare index1 op index2"},
+	 q{TextWidgetCmd procedure, "compare" option});
+}
+
+{
+    eval { $t->compare(qw(a b c d)) };
+    like($@, qr{\Qwrong # args: should be ".t compare index1 op index2"});
+}
+
+{
+    eval { $t->compare('@x', '==', '1.0') };
+    like($@, qr{\Qbad text index "\E\@x\Q"});
+}
+
+{
+    eval { $t->compare('1.0', '<', '@y') };
+    like($@, qr{\Qbad text index "\E\@y\Q"});
+}
+
+{
+    is($t->compare('1.1','<','1.0'), 0);
+    is($t->compare('1.1','<','1.1'), 0);
+    is($t->compare('1.1','<','1.2'), 1);
+
+    is($t->compare('1.1','<=','1.0'), 0);
+    is($t->compare('1.1','<=','1.1'), 1);
+    is($t->compare('1.1','<=','1.2'), 1);
+
+    is($t->compare('1.1','==','1.0'), 0);
+    is($t->compare('1.1','==','1.1'), 1);
+    is($t->compare('1.1','==','1.2'), 0);
+
+    is($t->compare('1.1','>=','1.0'), 1);
+    is($t->compare('1.1','>=','1.1'), 1);
+    is($t->compare('1.1','>=','1.2'), 0);
+
+    is($t->compare('1.1','>','1.0'), 1);
+    is($t->compare('1.1','>','1.1'), 0);
+    is($t->compare('1.1','>','1.2'), 0);
+
+    is($t->compare('1.1','!=','1.0'), 1);
+    is($t->compare('1.1','!=','1.1'), 0);
+    is($t->compare('1.1','!=','1.2'), 1);
+}
+
+{
+    eval { $t->compare('1.0', '<x', '1.2') };
+    like($@, qr{\Qbad comparison operator "<x": must be <, <=, ==, >=, >, or !=});
+
+    eval { $t->compare('1.0', '>>', '1.2') };
+    like($@, qr{\Qbad comparison operator ">>": must be <, <=, ==, >=, >, or !=});
+
+    eval { $t->compare('1.0', 'z', '1.2') };
+    like($@, qr{\Qbad comparison operator "z": must be <, <=, ==, >=, >, or !=});
+}
 
 # "configure" option is already covered above
 
-test text-7.1 {TextWidgetCmd procedure, "debug" option} {
-    list [catch {.t debug 0 1} msg] $msg
-} {1 {wrong # args: should be ".t debug boolean"}}
-test text-7.2 {TextWidgetCmd procedure, "debug" option} {
-    list [catch {.t de 0 1} msg] $msg
-} {1 {ambiguous option "de": must be bbox, cget, compare, configure, count, debug, delete, dlineinfo, dump, edit, get, image, index, insert, mark, peer, replace, scan, search, see, tag, window, xview, or yview}}
-test text-7.3 {TextWidgetCmd procedure, "debug" option} {
-    .t debug true
-    .t deb
-} 1
-test text-7.4 {TextWidgetCmd procedure, "debug" option} {
-    .t debug false
-    .t debug
-} 0
-.t debug
+{
+    eval { $t->debug(qw(0 1)) };
+    like($@, qr{\Qwrong # args: should be ".t debug boolean"},
+	 q{TextWidgetCmd procedure, "debug" option});
+}
 
-test text-8.1 {TextWidgetCmd procedure, "delete" option} {
-    list [catch {.t delete} msg] $msg
-} {1 {wrong # args: should be ".t delete index1 ?index2 ...?"}}
-test text-8.2 {TextWidgetCmd procedure, "delete" option} {
-    list [catch {.t delete a b c} msg] $msg
-} {1 {bad text index "a"}}
-test text-8.3 {TextWidgetCmd procedure, "delete" option} {
-    list [catch {.t delete @x 2.2} msg] $msg
-} {1 {bad text index "@x"}}
-test text-8.4 {TextWidgetCmd procedure, "delete" option} {
-    list [catch {.t delete 2.3 @y} msg] $msg
-} {1 {bad text index "@y"}}
-test text-8.5 {TextWidgetCmd procedure, "delete" option} {
-    .t configure -state disabled
-    .t delete 2.3
-    .t g 2.0 2.end
-} abcdefghijklm
-.t configure -state normal
-test text-8.6 {TextWidgetCmd procedure, "delete" option} {
-    .t delete 2.3
-    .t get 2.0 2.end
-} abcefghijklm
-test text-8.7 {TextWidgetCmd procedure, "delete" option} {
-    .t delete 2.1 2.3
-    .t get 2.0 2.end
-} aefghijklm
-test text-8.8 {TextWidgetCmd procedure, "delete" option} {
-    # All indices are checked before we actually delete anything
-    list [catch {.t delete 2.1 2.3 foo} msg] $msg \
-	    [.t get 2.0 2.end]
-} {1 {bad text index "foo"} aefghijklm}
-set prevtext [.t get 1.0 end-1c]
-test text-8.9 {TextWidgetCmd procedure, "delete" option} {
-    # auto-forward one byte if the last "pair" is just one
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.1 2.3 2.3
-    .t get 1.0 end-1c
-} foo\naefghijklm
-test text-8.10 {TextWidgetCmd procedure, "delete" option} {
-    # all indices will be ordered before deletion
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.3 2.7 2.9 2.4
-    .t get 1.0 end-1c
-} foo\ndfgjklm
-test text-8.11 {TextWidgetCmd procedure, "delete" option} {
-    # and check again with even pairs
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.2 2.7 2.9 2.4 2.5
-    .t get 1.0 end-1c
-} foo\ncdfgjklm
-test text-8.12 {TextWidgetCmd procedure, "delete" option} {
-    # we should get the longest range on equal start indices
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.2 2.0 2.5 2.0 2.3 2.8 2.7
-    .t get 1.0 end-1c
-} foo\nfghijklm
-test text-8.13 {TextWidgetCmd procedure, "delete" option} {
-    # we should get the longest range on equal start indices
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.2 1.2 2.6 2.0 2.5
-    .t get 1.0 end-1c
-} foghijklm
-test text-8.14 {TextWidgetCmd procedure, "delete" option} {
-    # we should get the longest range on equal start indices
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.2 2.0 2.5 1.1 2.3 2.8 2.7
-    .t get 1.0 end-1c
-} ffghijklm
-test text-8.15 {TextWidgetCmd procedure, "delete" option} {
-    # we should get the watch for overlapping ranges - they should
-    # essentially be merged into one span.
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.6 2.2 2.8
-    .t get 1.0 end-1c
-} foo\nijklm
-test text-8.16 {TextWidgetCmd procedure, "delete" option} {
-    # we should get the watch for overlapping ranges - they should
-    # essentially be merged into one span.
-    .t delete 1.0 end; .t insert 1.0 "foo\nabcdefghijklm"
-    .t delete 2.0 2.6 2.2 2.4
-    .t get 1.0 end-1c
-} foo\nghijklm
-.t delete 1.0 end; .t insert 1.0 $prevtext
-test text-8.17 {TextWidgetCmd procedure, "replace" option} {
-    list [catch {.t replace 1.3 2.3} err] $err
-} {1 {wrong # args: should be ".t replace index1 index2 chars ?tagList chars tagList ...?"}}
-test text-8.18 {TextWidgetCmd procedure, "replace" option} {
-    list [catch {.t replace 3.1 2.3 foo} err] $err
-} {1 {Index "2.3" before "3.1" in the text}}
-test text-8.19 {TextWidgetCmd procedure, "replace" option} {
-    list [catch {.t replace 2.1 2.3 foo} err] $err
-} {0 {}}
-.t delete 1.0 end; .t insert 1.0 $prevtext
-test text-8.20 {TextWidgetCmd procedure, "replace" option with undo} {
-    .t configure -undo 0
-    .t configure -undo 1
-    # Ensure it is treated as a single undo action
-    .t replace 2.1 2.3 foo
-    .t edit undo
-    .t configure -undo 0
-    string equal [.t get 1.0 end-1c] $prevtext
-} {1}
-test text-8.21 {TextWidgetCmd procedure, "replace" option with undo} {
-    .t configure -undo 0
-    .t configure -undo 1
-    .t replace 2.1 2.3 foo
-    # Ensure we can override a text widget and intercept undo
-    # actions.  If in the future a different mechanism is available
-    # to do this, then we should be able to change this test.  The
-    # behaviour tested for here is not, strictly speaking, documented.
-    rename .t test.t
-    set res {}
-    proc .t {args} { lappend ::res $args ; uplevel 1 test.t $args }
-    .t edit undo
-    rename .t {}
-    rename test.t .t
-    .t configure -undo 0
-    set res
-} {{edit undo} {delete 2.1 2.4} {mark set insert 2.1} {see insert} {insert 2.1 ef} {mark set insert 2.3} {see insert}}
-test text-8.22 {TextWidgetCmd procedure, "replace" option with undo} {
-    .t configure -undo 0
-    .t configure -undo 1
-    # Ensure that undo (even composite undo like 'replace')
-    # works when the widget shows nothing useful.
-    .t replace 2.1 2.3 foo
-    .t configure -start 1 -end 1
-    .t edit undo
-    .t configure -start {} -end {}
-    .t configure -undo 0
-    if {![string equal [.t get 1.0 end-1c] $prevtext]} {
-	set res [list [.t get 1.0 end-1c] ne $prevtext]
-    } else {
-	set res 1
-    }
-} {1}
-.t delete 1.0 end; .t insert 1.0 $prevtext
-test text-8.23 {TextWidgetCmd procedure, "replace" option with peers, undo} {
-    .t configure -undo 0
-    .t configure -undo 1
-    .t peer create .tt -undo 1
-    # Ensure that undo (even composite undo like 'replace')
-    # works when the the event took place in one peer, which
-    # is then deleted, before the undo takes place in another peer.
-    .tt replace 2.1 2.3 foo
-    .tt configure -start 1 -end 1
-    destroy .tt
-    .t edit undo
-    .t configure -start {} -end {}
-    .t configure -undo 0
-    if {![string equal [.t get 1.0 end-1c] $prevtext]} {
-	set res [list [.t get 1.0 end-1c] ne $prevtext]
-    } else {
-        set res 1
-    }
-} {1}
-.t delete 1.0 end; .t insert 1.0 $prevtext
-test text-8.24 {TextWidgetCmd procedure, "replace" option with peers, undo} {
-    .t configure -undo 0
-    .t configure -undo 1
-    .t peer create .tt -undo 1
-    # Ensure that undo (even composite undo like 'replace')
-    # works when the the event took place in one peer, which
-    # is then deleted, before the undo takes place in another peer
-    # which isn't showing everything.
-    .tt replace 2.1 2.3 foo
-    set res [.tt get 2.1 2.4]
-    .tt configure -start 1 -end 1
-    destroy .tt
-    .t configure -start 3 -end 4
-    # msg will actually be set to a silently ignored error message here,
-    # (that the .tt command doesn't exist), but that is not important.
-    lappend res [catch {.t edit undo} msg]
-    .t configure -undo 0
-    .t configure -start {} -end {}
-    if {![string equal [.t get 1.0 end-1c] $prevtext]} {
-	lappend res [list [.t get 1.0 end-1c] ne $prevtext]
-    } else {
-	lappend res 1
-    }
-} {foo 0 1}
+{
+    $t->debug("true");
+    is($t->debug, 1);
+}
 
-.t delete 1.0 end; .t insert 1.0 $prevtext
+{
+    $t->debug("false");
+    is($t->debug, 0);
+}
 
-test text-9.1 {TextWidgetCmd procedure, "get" option} {
-    list [catch {.t get} msg] $msg
-} {1 {wrong # args: should be ".t get ?-displaychars? ?--? index1 ?index2 ...?"}}
-test text-9.2 {TextWidgetCmd procedure, "get" option} {
-    list [catch {.t get a b c} msg] $msg
-} {1 {bad text index "a"}}
-test text-9.3 {TextWidgetCmd procedure, "get" option} {
-    list [catch {.t get @q 3.1} msg] $msg
-} {1 {bad text index "@q"}}
-test text-9.4 {TextWidgetCmd procedure, "get" option} {
-    list [catch {.t get 3.1 @r} msg] $msg
-} {1 {bad text index "@r"}}
+{
+    eval { $t->delete };
+    like($@, qr{\Qwrong # args: should be ".t delete index1 ?index2 ...?"},
+	 q{TextWidgetCmd procedure, "delete" option});
+}
+
+{
+    eval { $t->delete(qw(a b c)) };
+    like($@, qr{\Qbad text index "a"});
+}
+
+{
+    eval { $t->delete('@x', '2.2') };
+    like($@, qr{\Qbad text index "\E\@x\Q"});
+}
+
+{
+    eval { $t->delete('2.3', '@y') };
+    like($@, qr{\Qbad text index "\E\@y\Q"});
+}
+
+{
+    $t->configure(-state => "disabled");
+    $t->delete('2.3');
+    is($t->get('2.0', '2.end'), 'abcdefghijklm');
+}
+
+{
+    $t->configure(-state => 'normal');
+    $t->delete('2.3');
+    is($t->get('2.0', '2.end'), 'abcefghijklm');
+}
+
+{
+    $t->delete(qw(2.1 2.3));
+    is($t->get(qw(2.0 2.end)), 'aefghijklm');
+}
+
+{
+    eval { $t->delete(qw(2.1 2.3 foo)) };
+    like($@, qr{\Qbad text index "foo"});
+    is($t->get(qw(2.0 2.end)), 'aefghijklm',
+       'All indices are checked before we actually delete anything');
+}       
+
+my $prevtext = $t->get('1.0', 'end-1c');
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.1 2.3 2.3));
+    is($t->get("1.0", "end-1c"), "foo\naefghijklm",
+       'auto-forward one byte if the last "pair" is just one');
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.3 2.7 2.9 2.4));
+    is($t->get('1.0', 'end-1c'), "foo\ndfgjklm",
+       'all indices will be ordered before deletion');
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.2 2.7 2.9 2.4 2.5));
+    is($t->get('1.0', 'end-1c'), "foo\ncdfgjklm",
+       "and check again with even pairs");
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.2 2.0 2.5 2.0 2.3 2.8 2.7));
+    is($t->get('1.0', 'end-1c'), "foo\nfghijklm",
+       "we should get the longest range on equal start indices");
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.2 1.2 2.6 2.0 2.5));
+    is($t->get('1.0', 'end-1c'), "foghijklm",
+       "we should get the longest range on equal start indices");
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.2 2.0 2.5 1.1 2.3 2.8 2.7));
+    is($t->get('1.0', 'end-1c'), "ffghijklm",
+       "we should get the longest range on equal start indices");
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.6 2.2 2.8));
+    is($t->get('1.0', 'end-1c'), "foo\nijklm",
+       "we should get the watch for overlapping ranges - "
+       # they should essentially be merged into one span.
+      );
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "foo\nabcdefghijklm");
+    $t->delete(qw(2.0 2.6 2.2 2.4));
+    is($t->get('1.0', 'end-1c'), "foo\nghijklm");
+}
+
+$t->delete(qw(1.0 end));
+$t->insert('1.0', $prevtext);
+
+SKIP: {
+    skip("replace NYI in Perl/Tk", 1);
+    eval { $t->replace('1.3', '2.3') };
+    like($@, qr{\Qwrong # args: should be ".t replace index1 index2 chars ?tagList chars tagList ...?"},
+	 q{TextWidgetCmd procedure, "replace" option});
+
+# test text-8.17  {
+#     list [catch {.t replace 1.3 2.3} err] $err
+# } {1 
+# test text-8.18 {TextWidgetCmd procedure, "replace" option} {
+#     list [catch {.t replace 3.1 2.3 foo} err] $err
+# } {1 {Index "2.3" before "3.1" in the text}}
+# test text-8.19 {TextWidgetCmd procedure, "replace" option} {
+#     list [catch {.t replace 2.1 2.3 foo} err] $err
+# } {0 {}}
+# .t delete 1.0 end; .t insert 1.0 $prevtext
+# test text-8.20 {TextWidgetCmd procedure, "replace" option with undo} {
+#     .t configure -undo 0
+#     .t configure -undo 1
+#     # Ensure it is treated as a single undo action
+#     .t replace 2.1 2.3 foo
+#     .t edit undo
+#     .t configure -undo 0
+#     string equal [.t get 1.0 end-1c] $prevtext
+# } {1}
+# test text-8.21 {TextWidgetCmd procedure, "replace" option with undo} {
+#     .t configure -undo 0
+#     .t configure -undo 1
+#     .t replace 2.1 2.3 foo
+#     # Ensure we can override a text widget and intercept undo
+#     # actions.  If in the future a different mechanism is available
+#     # to do this, then we should be able to change this test.  The
+#     # behaviour tested for here is not, strictly speaking, documented.
+#     rename .t test.t
+#     set res {}
+#     proc .t {args} { lappend ::res $args ; uplevel 1 test.t $args }
+#     .t edit undo
+#     rename .t {}
+#     rename test.t .t
+#     .t configure -undo 0
+#     set res
+# } {{edit undo} {delete 2.1 2.4} {mark set insert 2.1} {see insert} {insert 2.1 ef} {mark set insert 2.3} {see insert}}
+# test text-8.22 {TextWidgetCmd procedure, "replace" option with undo} {
+#     .t configure -undo 0
+#     .t configure -undo 1
+#     # Ensure that undo (even composite undo like 'replace')
+#     # works when the widget shows nothing useful.
+#     .t replace 2.1 2.3 foo
+#     .t configure -start 1 -end 1
+#     .t edit undo
+#     .t configure -start {} -end {}
+#     .t configure -undo 0
+#     if {![string equal [.t get 1.0 end-1c] $prevtext]} {
+# 	set res [list [.t get 1.0 end-1c] ne $prevtext]
+#     } else {
+# 	set res 1
+#     }
+# } {1}
+# .t delete 1.0 end; .t insert 1.0 $prevtext
+# test text-8.23 {TextWidgetCmd procedure, "replace" option with peers, undo} {
+#     .t configure -undo 0
+#     .t configure -undo 1
+#     .t peer create .tt -undo 1
+#     # Ensure that undo (even composite undo like 'replace')
+#     # works when the the event took place in one peer, which
+#     # is then deleted, before the undo takes place in another peer.
+#     .tt replace 2.1 2.3 foo
+#     .tt configure -start 1 -end 1
+#     destroy .tt
+#     .t edit undo
+#     .t configure -start {} -end {}
+#     .t configure -undo 0
+#     if {![string equal [.t get 1.0 end-1c] $prevtext]} {
+# 	set res [list [.t get 1.0 end-1c] ne $prevtext]
+#     } else {
+#         set res 1
+#     }
+# } {1}
+# .t delete 1.0 end; .t insert 1.0 $prevtext
+# test text-8.24 {TextWidgetCmd procedure, "replace" option with peers, undo} {
+#     .t configure -undo 0
+#     .t configure -undo 1
+#     .t peer create .tt -undo 1
+#     # Ensure that undo (even composite undo like 'replace')
+#     # works when the the event took place in one peer, which
+#     # is then deleted, before the undo takes place in another peer
+#     # which isn't showing everything.
+#     .tt replace 2.1 2.3 foo
+#     set res [.tt get 2.1 2.4]
+#     .tt configure -start 1 -end 1
+#     destroy .tt
+#     .t configure -start 3 -end 4
+#     # msg will actually be set to a silently ignored error message here,
+#     # (that the .tt command doesn't exist), but that is not important.
+#     lappend res [catch {.t edit undo} msg]
+#     .t configure -undo 0
+#     .t configure -start {} -end {}
+#     if {![string equal [.t get 1.0 end-1c] $prevtext]} {
+# 	lappend res [list [.t get 1.0 end-1c] ne $prevtext]
+#     } else {
+# 	lappend res 1
+#     }
+# } {foo 0 1}
+
+# .t delete 1.0 end; .t insert 1.0 $prevtext
+
+}
+
+{
+    local $TODO = "get -displaychars is missing in Perl/Tk";
+
+    eval { $t->get };
+    like($@, qr{\Qwrong # args: should be ".t get ?-displaychars? ?--? index1 ?index2 ...?"},
+	 q{TextWidgetCmd procedure, "get" option});
+}
+
+{
+    eval { $t->get(qw(a b c)) };
+    like($@, qr{\Qbad text index "a"});
+}
+
+{
+    eval { $t->get('@q', '3.1') };
+    like($@, qr{\Qbad text index "\E\@q\Q"});
+}
+
+{
+    eval { $t->get('3.1', '@r') };
+    like($@, qr{\Qbad text index "\E\@r\Q"});
+}
+
+{
+    is($t->get("5.7", "5.3"), undef);
+    is($t->get("5.3", "5.5"), " G");
+    is($t->get("5.3", "end"), q{ GIrl .#@? x_yz
+!@#$%
+Line 7
+});
+}
+
+__END__
+
 test text-9.5 {TextWidgetCmd procedure, "get" option} {
     .t get 5.7 5.3
 } {}
