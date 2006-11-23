@@ -15,7 +15,7 @@ use Tk;
 use Tk::Font;
 use Getopt::Long;
 
-plan tests => 23;
+plan tests => 24;
 
 my $v;
 GetOptions("v" => \$v)
@@ -140,7 +140,15 @@ SKIP:
 
  eval { $mw->Label(-font => undef) };
  like($@, qr{\QCannot use undef value for object of type 'font'},
-      "Core dump check with undef font in initial setup");
+      "Core dump check with undef font in initial setup (label)");
+
+ SKIP: { skip("Dumps core!",1);
+ require Tk::TextList; # TextList seems to be special
+ eval { $mw->TextList(-font => undef) };
+ like($@, qr{\QCannot use undef value for object of type 'font'},
+      "Core dump check with undef font in initial setup (textlist)");
+ }
+
 }
 
 {
