@@ -27,11 +27,15 @@ use TkTest;
 
 use Getopt::Long;
 
+my $v;
+
 BEGIN {
     $Listbox = "Listbox";
     #$Listbox = "TextList";
-    GetOptions("listboxclass=s" => \$Listbox)
-	or die "usage: $0 [-listboxclass baseclass]";
+    GetOptions("listboxclass=s" => \$Listbox,
+	       "v" => \$v,
+	      )
+	or die "usage: $0 [-listboxclass baseclass] [-v]";
 
     eval "use Tk::$Listbox";
 }
@@ -77,21 +81,25 @@ isa_ok($lb, "Tk::$Listbox");
 $lb->update;
 
 my $skip_font_test;
-# XXX Is the Xft condition still necessary?
-# On cygwin/X11 with Xfvb running all font related tests fail.
-if (!$Xft && !($^O eq 'cygwin' && $Tk::platform eq 'unix')) {
-    my %fa = $mw->fontActual($lb->cget(-font));
+{
+    my %fa = ($mw->fontActual($lb->cget(-font)),
+	      $mw->fontMetrics($lb->cget(-font)));
     my %expected = (
-		    "-weight" => "bold",
-		    "-underline" => 0,
-		    "-family" => "helvetica",
-		    "-slant" => "roman",
-		    "-size" => -12,
+		    "-weight"	  => "bold",
+		    "-underline"  => 0,
+		    "-family"	  => "helvetica",
+		    "-slant"	  => "roman",
+		    "-size"	  => -12,
 		    "-overstrike" => 0,
+		    "-ascent"	  => 11,
+		    "-descent"	  => 3,
+		    "-linespace"  => 14,
+		    "-fixed"	  => 0,
 		   );
     while(my($k,$v) = each %expected) {
-	if ($v ne $fa{$k}) {
-	    $skip_font_test = "font-related tests";
+	if (lc $v ne lc $fa{$k}) {
+	    diag "Value $k does not match: got $fa{$k}, expected $v\n" if $v;
+	    $skip_font_test = "font-related tests (proportional font not std helvetica)";
 	    last;
 	}
     }
@@ -100,18 +108,24 @@ if (!$Xft && !($^O eq 'cygwin' && $Tk::platform eq 'unix')) {
 my $skip_fixed_font_test;
 {
     my $fixed_lb = $mw->$Listbox(-font => $fixed);
-    my %fa = $mw->fontActual($fixed_lb->cget(-font));
+    my %fa = ($mw->fontActual($fixed_lb->cget(-font)),
+	      $mw->fontMetrics($fixed_lb->cget(-font)));
     my %expected = (
-		    "-weight" => "normal",
-		    "-underline" => 0,
-		    "-family" => "courier", # with $Xft, this would be "Courier"
-		    "-slant" => "roman",
-		    "-size" => -12,
+		    "-weight"     => "normal",
+		    "-underline"  => 0,
+		    "-family"     => "courier",
+		    "-slant"      => "roman",
+		    "-size"       => -12,
 		    "-overstrike" => 0,
+		    "-ascent"     => 10,
+		    "-descent"    => 3,
+		    "-linespace"  => 13,
+		    "-fixed"      => 1,
 		   );
     while(my($k,$v) = each %expected) {
-	if ($v ne $fa{$k}) {
-	    $skip_fixed_font_test = "font-related tests (fixed font)";
+	if (lc $v ne lc $fa{$k}) {
+	    diag "Value $k does not match: got $fa{$k}, expected $v\n" if $v;
+	    $skip_fixed_font_test = "font-related tests (fixed font not std courier)";
 	    last;
 	}
     }
