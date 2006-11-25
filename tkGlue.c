@@ -722,8 +722,8 @@ ClientData clientData;
  dTHX;
  HV *hv = InterpHv(interp,1);
  AV *av = FindAv(aTHX_ interp, "Tcl_CallWhenDeleted", 1, "_When_Deleted_");
- av_push(av, newSViv((IV) proc));
- av_push(av, newSViv((IV) clientData));
+ av_push(av, newSViv(PTR2IV(proc)));
+ av_push(av, newSViv(PTR2IV(clientData)));
 }
 
 XS(XS_Tk__Interp_DESTROY)
@@ -751,8 +751,8 @@ DeleteInterp(char *cd)
     {
      SV *cd = av_pop(av);
      SV *pr = av_pop(av);
-     Tcl_InterpDeleteProc *proc = (Tcl_InterpDeleteProc *) SvIV(pr);
-     ClientData clientData = (ClientData) SvIV(cd);
+     Tcl_InterpDeleteProc *proc = INT2PTR(Tcl_InterpDeleteProc *, SvIV(pr));
+     ClientData clientData = INT2PTR(ClientData, SvIV(cd));
      (*proc) (clientData, interp);
      SvREFCNT_dec(cd);
      SvREFCNT_dec(pr);
@@ -2695,7 +2695,7 @@ Tcl_Interp *interp;
    MAGIC *mg = mg_find((SV *) hv, PERL_MAGIC_ext);
    if (mg)
     {
-     return (Tk_Window) SvIV(mg->mg_obj);
+     return INT2PTR(Tk_Window, SvIV(mg->mg_obj));
     }
   }
  return NULL;
@@ -3314,7 +3314,7 @@ Tcl_Interp *interp;
 Tk_Window tkwin;
 {
  dTHX;
- tilde_magic((SV *) InterpHv(interp,1),newSViv((IV) tkwin));
+ tilde_magic((SV *) InterpHv(interp,1),newSViv(PTR2IV(tkwin)));
 }
 
 Tcl_Command
@@ -3712,7 +3712,7 @@ CONST SV *b;
 static I32
 Perl_Value(pTHX_ IV ix, SV *sv)
 {
- Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
+ Tk_TraceInfo *p = INT2PTR(Tk_TraceInfo *, ix);
  char *result;
 
  /* We are a "magic" set processor, whether we like it or not
@@ -3758,7 +3758,7 @@ TraceExitHandler(ClientData clientData)
 
 static DECL_MG_UFUNC(Perl_Trace, ix, sv)
 {
- Tk_TraceInfo *p = (Tk_TraceInfo *) ix;
+ Tk_TraceInfo *p = INT2PTR(Tk_TraceInfo *, ix);
  char *result;
 
  /* We are a "magic" set processor, whether we like it or not
@@ -3869,7 +3869,7 @@ ClientData clientData;
  Newz(666, ufp, 1, struct ufuncs);
  ufp->uf_val = Perl_Value;
  ufp->uf_set = Perl_Trace;
- ufp->uf_index = (IV) p;
+ ufp->uf_index = PTR2IV(p);
 
  mg = SvMAGIC(sv);
  mg->mg_ptr = (char *) ufp;
@@ -3933,7 +3933,7 @@ LangLibraryDir()
 static
 DECL_MG_UFUNC(LinkIntSet,ix,sv)
 {
- int *p = (int *) ix;
+ int *p = INT2PTR(int *, ix);
  (*p) = SvIV(sv);
  return 0;
 }
@@ -3941,7 +3941,7 @@ DECL_MG_UFUNC(LinkIntSet,ix,sv)
 static
 DECL_MG_UFUNC(LinkDoubleSet,ix,sv)
 {
- double *p = (double *) ix;
+ double *p = INT2PTR(double *, ix);
  (*p) = SvNV(sv);
  return 0;
 }
@@ -3956,7 +3956,7 @@ DECL_MG_UFUNC(LinkCannotSet,ix,sv)
 static
 DECL_MG_UFUNC(LinkIntVal,ix,sv)
 {
- int *p = (int *) ix;
+ int *p = INT2PTR(int *, ix);
  sv_setiv(sv,*p);
  return 0;
 }
@@ -3964,7 +3964,7 @@ DECL_MG_UFUNC(LinkIntVal,ix,sv)
 static
 DECL_MG_UFUNC(LinkDoubleVal,ix,sv)
 {
- double *p = (double *) ix;
+ double *p = INT2PTR(double *, ix);
  sv_setnv(sv,*p);
  return 0;
 }
@@ -3981,7 +3981,7 @@ int type;
  if (sv)
   {
    struct ufuncs uf;
-   uf.uf_index = (IV) addr;
+   uf.uf_index = PTR2IV(addr);
    switch(type & ~TCL_LINK_READ_ONLY)
     {
      case TCL_LINK_INT:
@@ -4063,7 +4063,7 @@ ClientData clientData;
          ((struct ufuncs *) (mg->mg_ptr))->uf_set == Perl_Trace)
       {
        struct ufuncs *uf = (struct ufuncs *) (mg->mg_ptr);
-       Tk_TraceInfo *p = (Tk_TraceInfo *) (uf->uf_index);
+       Tk_TraceInfo *p = INT2PTR(Tk_TraceInfo *, uf->uf_index);
        if (p && p->proc == tkproc && p->interp == interp &&
            p->clientData == clientData)
         {
@@ -5466,7 +5466,7 @@ size_t size;
     {
      croak("%s table is %u not %u",name,(*q[0])(),(unsigned) size);
     }
-   sv_setiv(FindTkVarName(name,GV_ADD|GV_ADDMULTI),(IV) table);
+   sv_setiv(FindTkVarName(name,GV_ADD|GV_ADDMULTI),PTR2IV(table));
    if (size % sizeof(fptr))
     {
      warn("%s is strange size %d",name,size);
