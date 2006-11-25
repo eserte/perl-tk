@@ -96,9 +96,9 @@ my $skip_font_test;
 		    "-linespace"  => 14,
 		    "-fixed"	  => 0,
 		   );
-    while(my($k,$v) = each %expected) {
-	if (lc $v ne lc $fa{$k}) {
-	    diag "Value $k does not match: got $fa{$k}, expected $v\n" if $v;
+    while(my($key,$val) = each %expected) {
+	if (lc $val ne lc $fa{$key}) {
+	    diag "Value $key does not match: got $fa{$key}, expected $val\n" if $v;
 	    $skip_font_test = "font-related tests (proportional font not std helvetica)";
 	    last;
 	}
@@ -122,9 +122,9 @@ my $skip_fixed_font_test;
 		    "-linespace"  => 13,
 		    "-fixed"      => 1,
 		   );
-    while(my($k,$v) = each %expected) {
-	if (lc $v ne lc $fa{$k}) {
-	    diag "Value $k does not match: got $fa{$k}, expected $v\n" if $v;
+    while(my($key,$val) = each %expected) {
+	if (lc $val ne lc $fa{$key}) {
+	    diag "Value $key does not match: got $fa{$key}, expected $val\n" if $v;
 	    $skip_fixed_font_test = "font-related tests (fixed font not std courier)";
 	    last;
 	}
