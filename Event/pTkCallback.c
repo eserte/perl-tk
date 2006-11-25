@@ -42,7 +42,7 @@ SV *sv;
    AV *av;
    int old_taint = PL_tainted;
    if (SvTAINTED(sv))
-    croak("Attempt to make callback from tainted %_", sv);
+    croak("Attempt to make callback from tainted %"SVf, sv);
    PL_tainted = 0;
    /* Case of a Tcl_Merge which returns an AV * */
    if (SvTYPE(sv) == SVt_PVAV)
@@ -91,7 +91,7 @@ SV *sv;
    PL_tainted = old_taint;
   }
  if (sv && SvTAINTED(sv))
-  croak("Making callback tainted %_", sv);
+  croak("Making callback tainted %"SVf, sv);
  return sv;
 }
 
@@ -164,7 +164,7 @@ int flags;
   mg_get(sv);
  if (SvTAINTED(sv))
   {
-   croak("Call of tainted value %_",sv);
+   croak("Call of tainted value %"SVf,sv);
   }
  if (!SvOK(sv))
   {
@@ -232,7 +232,7 @@ LangPushCallbackArgs(SV **svp)
  STRLEN na;
  if (SvTAINTED(sv))
   {
-   croak("Tainted callback %_",sv);
+   croak("Tainted callback %"SVf,sv);
   }
  if (SvROK(sv) && SvTYPE(SvRV(sv)) != SVt_PVCV)
   sv = SvRV(sv);
@@ -248,7 +248,7 @@ LangPushCallbackArgs(SV **svp)
      sv = *x;
      if (SvTAINTED(sv))
       {
-       croak("Callback slot 0 tainted %_",sv);
+       croak("Callback slot 0 tainted %"SVf,sv);
       }
      for (i = 1; i < n; i++)
       {
@@ -257,7 +257,7 @@ LangPushCallbackArgs(SV **svp)
         {SV *arg = *x;
          if (SvTAINTED(arg))
           {
-           croak("Callback slot %d tainted %_",i,arg);
+           croak("Callback slot %d tainted %"SVf,i,arg);
           }
          XPUSHs(sv_mortalcopy(arg));
         }

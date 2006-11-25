@@ -1446,7 +1446,7 @@ Tcl_ObjMagic(Tcl_Obj *obj,int add)
     {
      if (add)
       {
-       warn("Wrong kind of '~' magic on %_",obj);
+       warn("Wrong kind of '~' magic on %"SVf,obj);
        sv_dump(obj);
        abort();
       }

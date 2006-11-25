@@ -191,7 +191,7 @@ StringReadWindow(interp,dataObj,formatString,imageHandle,
   }
  else
   {
-   croak("Cannot get window from %_",dataObj);
+   croak("Cannot get window from %"SVf,dataObj);
   }
  return TCL_OK;
 }

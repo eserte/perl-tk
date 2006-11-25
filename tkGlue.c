@@ -1622,7 +1622,7 @@ EventAndKeySym *obj;
  STRLEN na;
  if (SvTAINTED(sv))
   {
-   croak("Tainted callback %_",sv);
+   croak("Tainted callback %"SVf,sv);
   }
  if (1 && interp && !sv_isa(sv,"Tk::Callback") && !sv_isa(sv,"Tk::Ev"))
   {
@@ -1646,7 +1646,7 @@ EventAndKeySym *obj;
      sv = *x;
      if (SvTAINTED(sv))
       {
-       croak("Callback slot 0 tainted %_",sv);
+       croak("Callback slot 0 tainted %"SVf,sv);
       }
      /* FIXME:
         POE would like window passed to its callback objects
@@ -1670,7 +1670,7 @@ EventAndKeySym *obj;
         {SV *arg = *x;
          if (SvTAINTED(arg))
           {
-           croak("Callback slot %d tainted %_",i,arg);
+           croak("Callback slot %d tainted %"SVf,i,arg);
           }
          if (obj && sv_isa(arg,"Tk::Ev"))
           {
@@ -1729,7 +1729,7 @@ EventAndKeySym *obj;
                default:
                 LangDumpVec("Ev",1,&arg);
                 LangDumpVec("  ",1,&what);
-                warn("Unexpected type %ld %s",SvTYPE(what),SvPV(arg,na));
+                warn("Unexpected type %d %s",SvTYPE(what),SvPV(arg,na));
                 arg = sv_mortalcopy(arg);
                 break;
               }
@@ -2148,7 +2148,7 @@ Lang_TaintCheck(char *s, int items, SV **args)
    for (i=0; i < items; i++)
     {
      if (SvTAINTED(args[i]))
-      croak("Tcl_Obj * %d to `%s' (%_) is tainted",i,s,args[i]);
+      croak("Tcl_Obj * %d to `%s' (%"SVf") is tainted",i,s,args[i]);
     }
   }
 }
@@ -4268,7 +4268,7 @@ LangConfigObj(Tcl_Interp *interp, Tcl_Obj **save, Tcl_Obj *obj, int type)
    case TK_OPTION_HASHVAR:
      return LangSaveVar(interp,obj,save,TK_CONFIG_HASHVAR);
    default:
-     Tcl_SprintfResult(interp,"Unexpected type %d for LangConfigObj(%_)",
+     Tcl_SprintfResult(interp,"Unexpected type %d for LangConfigObj(%"SVf")",
                        type,obj);
   }
  return TCL_ERROR;

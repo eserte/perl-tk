@@ -1162,7 +1162,7 @@ XS(XS_Tk__Callback_Call)
   {
    if (SvTAINTED(ST(i)))
     {
-     croak("Tcl_Obj * %d to callback %_ is tainted",i,ST(i));
+     croak("Tcl_Obj * %d to callback %"SVf" is tainted",i,ST(i));
     }
    XPUSHs(ST(i));
   }

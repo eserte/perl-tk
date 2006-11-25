@@ -215,7 +215,7 @@ LangFontRank(unsigned int suggested,
     }
    if (SvTRUE(ERRSV))
     {
-     warn("%_",ERRSV);
+     warn("%"SVf,ERRSV);
      sv_setsv(hook,&PL_sv_undef);
     }
    else

@@ -614,7 +614,7 @@ Tcl_GetEncoding (Tcl_Interp * interp, CONST char * name)
  else
   {
    if (SvOK(sv))
-    warn("Strange encoding %_",sv);
+    warn("Strange encoding %"SVf,sv);
   }
  return NULL;
 }
@@ -743,7 +743,7 @@ CallEncode(Tcl_Interp * interp,
       }
      else
       {
-       warn("%_",ERRSV);
+       warn("%"SVf,ERRSV);
       }
      break;
     }
