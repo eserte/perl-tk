@@ -1579,8 +1579,12 @@ $lb->delete(qw/0 end/);
 $lb->insert(qw/0 el0 el1 el2 el3 el4 el5 el6 el7 el8 el9 el10 el11/);
 $lb->update;
 
-is($lb->index(q/@5,57/), 3);
-is($lb->index(q/@5,58/), 3);
+SKIP: {
+    skip($skip_font_test, 2) if $skip_font_test;
+
+    is($lb->index(q/@5,57/), 3);
+    is($lb->index(q/@5,58/), 3);
+}
 
 is($lb->index(qw/3/), 3);
 is($lb->index(qw/20/), 20);
