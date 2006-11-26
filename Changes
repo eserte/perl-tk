@@ -1,3 +1,46 @@
+Tk-804.027-p4.patch.gz (2006-11-26)
+----------------------
+
+Compiles and passes tests on
+
+  FreeBSD 6.1 + perl5.8.8 + fontconfig 2.3.2
+  FreeBSD 6.1 + bleadperl + fontconfig 2.3.2
+  Linux Debian + perl5.8.8 + fontconfig 2.4.1
+
+I also had success with compiling under recent cygwin using the x11
+libraries a few days earlier.
+
+Fixes
+  XFT works now with recent fontconfig, no core dumps anymore.
+
+  Fix for segfault in t/regexp.t with perl 5.9.x. See also
+  http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/2006-02/msg00748.html
+  for a similar issue.
+
+  Workaround for core dumps when using -font=>undef.
+
+  Fixed wrong usage of $#{@...} which does not work anymore in
+  bleadperl.
+
+  Fixed Tk::Text movements wordstart and wordend in unicode content.
+
+  Better handling of undef in BrowseEntry widgets. Bug reported by
+  Puetz Kevin A.
+
+  A couple of compilation warning fixes.
+
+Tests
+  Continued text.t conversion.
+
+  More tests in font.t.
+
+  Fixed failing tests if no windows manager (under X11) is running.
+
+  Fixed some false test failures in listbox.t (font detection was
+  wrong).
+
+  Disabled fork.t and fileevent.t on cygwin (same like MSWin32).
+
 Tk-804.027-p3.patch.gz (2006-11-20)
 ----------------------
 
