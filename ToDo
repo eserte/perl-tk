@@ -1,9 +1,10 @@
 Tk::Tree has a dual live on CPAN. Incorporate the 4.3 version.
 
-Port more Tcl/Tk tests to Perl/Tk (text.test etc.)
+Port all of Tcl/Tk test suite to Perl/Tk (text.test etc.). t/listbox.t
+and t/entry.t was a beginning.
 
 Should Tk::MsgBox be the default messageBox? Are there compatibility
-issued?
+issues?
 
 Check all Tk-related bugs on rt.cpan.org (some are already fixed).
 
@@ -18,7 +19,7 @@ Minimize diffs to original Tcl/Tk sources to make merging easier.
 
 Integrate libpng 1.2.12 (or newer?)
 
-Introduce msgcat support like in Tcl/Tk?
+Port message catalogs from Tcl/Tk to Perl/Tk.
 
 Simple tests for EXE_FILES (at least checking with perl -c, maybe also
 starting and immediately destroying)
@@ -27,8 +28,13 @@ Document font('subfonts')?
 
 Port tkText*.c changes, as there are some unicode-related fixes.
 
+Widget review (Listbox.pm and Canvas.pm done)
+
+Pod review (Listbox.pod done, options.pod and Canvas.pod in the works,
+others pending)
+
 ----------------------------------------------------------------------
-- OLDER ToDos --------------------------------------------------------
+- OLDER ToDos, possibly still unresolved -----------------------------
 
 Debug icon redraw issues on Solaris/olvwm
 
@@ -61,18 +67,5 @@ One can't use filenames with high-bit characters in the Photo constructor:
 Add 'as_default_dir' support for chooseDirectory (similar to
 'as_default' for get(Open|Save)File). Documentation missing.
 
-Widget review (Listbox.pm and Canvas.pm done)
-
-Pod review (Listbox.pod done, options.pod and Canvas.pod in the works,
-others pending)
-
-Port all of Tcl/Tk test suite to Perl/Tk. t/listbox.t and t/entry.t
-was a beginning.
-
-Port message catalogs from Tcl/Tk to Perl/Tk.
-
-Write a new Tk/804delta.pod.
-
 Build and test with older perl releases.
 
-Move bindDump documentation from Widget.pm to pod/Widget.pod.
