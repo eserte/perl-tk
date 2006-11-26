@@ -33,6 +33,25 @@ Widget review (Listbox.pm and Canvas.pm done)
 Pod review (Listbox.pod done, options.pod and Canvas.pod in the works,
 others pending)
 
+Create a xft test which tests measures of one or two populate ttf fonts
+(e.g. bitstream vera and nimbus). Another benefit: this indicates indirectly
+that user compiled with xft support.
+
+Protect all tests with DISPLAY check? Or just bailout in the first test
+if no connection to X server could be created? Does bailout work at all?
+
+Try visual c+nmake build on MSWin32.
+
+cygwin build seems to fail if doing in a directory with spaces, eg.
+/cygdrive/c/documents and settings/...
+
+Try to build on a mixed 32/64bit platform, e.g. amd64 or x86_64. Strange
+errors may occur:
+/usr/bin/ld: skipping incompatible /usr/X11R6/lib/libX11.so when searching for -lX11
+/usr/bin/ld: skipping incompatible /usr/X11R6/lib/libX11.a when searching for -lX11
+/usr/bin/ld: cannot find -lX11
+Maybe checking should be stricter here in myConfig?
+
 ----------------------------------------------------------------------
 - OLDER ToDos, possibly still unresolved -----------------------------
 
