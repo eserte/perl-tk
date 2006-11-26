@@ -15,7 +15,7 @@ use Tk;
 use Tk::Font;
 use Getopt::Long;
 
-plan tests => 24;
+plan tests => 34;
 
 my $v;
 GetOptions("v" => \$v)
@@ -107,6 +107,39 @@ SKIP:
      }
    }
  }
+
+# This is really only needed for checking the -ascent and -descent values
+# if Perl/Tk was built with XFT=1 and by requesting helvetica really
+# the X11 helvetica was returned.
+SKIP: {
+ skip("Test only work on X11", 10)
+     if $Tk::platform ne 'unix';
+
+ my $l = $mw->Label(-font => '-*-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*');
+ my $f = $l->cget(-font);
+ my %fa = ($mw->fontActual($f), $mw->fontMetrics($f));
+
+ skip("Helvetica requested, but got $fa{-family}", 10)
+     if lc $fa{-family} ne 'helvetica';
+
+ my %expected = (
+		 "-weight"     => "bold",
+		 "-underline"  => 0,
+		 "-family"     => "helvetica",
+		 "-slant"      => "roman",
+		 "-size"       => -18,
+		 "-overstrike" => 0,
+		 "-ascent"     => 16,
+		 "-descent"    => 5,
+		 "-linespace"  => 21,
+		 "-fixed"      => 0,
+		);
+ while(my($key,$val) = each %expected)
+  {
+   is(lc $fa{$key}, $val, "Expected $key value");
+  }
+ $l->destroy;
+}
 
 {
  # This caused core dumps with Xft version of Perl/Tk
