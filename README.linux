@@ -55,3 +55,14 @@ Sometimes when run like:
 they will pass :-(
 
 Nick Ing-Simmons 2004/03/18
+
+----------------------------------------------------------------------
+Debian Linux:
+
+The libfreetype6-dev and libxft-dev packages are necessary to compile
+with XFT=1.
+
+Either fontconfig 2.4.1 which comes with Debian has a bug causing a
+segmentation fault, or tkUnixXft.c has wrong fontconfig handling. The
+problematic code line is commented out, causing a memory leak when
+destroying fonts.
