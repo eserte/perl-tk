@@ -412,7 +412,11 @@ TkpDeleteFont(tkFontPtr)
 {
     UnixFtFont	*fontPtr = (UnixFtFont *) tkFontPtr;
 
+#if FC_VERSION == 20401
+#warning Skipping FiniFont because of possible segfaults
+#else
     FiniFont (fontPtr);
+#endif
     /* XXX tkUnixFont.c doesn't free tkFontPtr... */
 }
 
