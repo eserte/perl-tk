@@ -5,7 +5,7 @@ package Tk::MMtry;
 use Config;
 require Exporter;
 
-use vars qw($VERSION @EXPORT);
+use vars qw($VERSION @EXPORT $VERBOSE);
 #$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
 $VERSION = '4.010';
 
@@ -27,7 +27,7 @@ sub try_compile
  warn "Test Compiling $file\n";
  my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def $stderr_too`;
  my $ok = ($? == 0);
-# warn $msgs if $msgs;
+ warn "$msgs\n" if $VERBOSE && $msgs;
  unlink($out) if (-f $out);
  return $ok;
 }
@@ -40,15 +40,16 @@ sub try_run
  $def = [] unless $def;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compile/Run $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def $stderr_too`;
+ my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def";
+ my $msgs  = `$cmdline $stderr_too`;
  my $ok = ($? == 0);
-# warn "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def:\n$msgs" if $msgs;
+ warn "$cmdline:\n$msgs\n" if $VERBOSE && $msgs;
  if ($ok)
   {
    my $path = File::Spec->rel2abs($out);
    $msgs = `$path $stderr_too`;
    $ok = ($? == 0);
-#  warn "$path:$msgs" if $msgs;
+   warn "$path:$msgs\n" if $VERBOSE && $msgs;
   }
  unlink($out) if (-f $out);
  return $ok;

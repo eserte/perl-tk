@@ -207,6 +207,10 @@ foreach $arg (@ARGV)
     # will asure that the parameters are reused when automatically
     # re-building Makefiles.
    }
+  elsif ($arg eq 'VERBOSE=1')
+   {
+    $Tk::MMtry::VERBOSE = 1;
+   }
   else
    {
     $MakefileName = $1 if ($arg =~ /^MAKEFILE=(.*)$/);
@@ -378,7 +382,9 @@ if ($win_arch eq 'x') {
        }
       if (!$success)
        {
-	warn "Xft and/or fontconfig libraries and/or includes are missing\n";
+	warn "Xft and/or fontconfig libraries and/or includes are missing" .
+	     (!$Tk::MMtry::VERBOSE ? ",\ntry perl Makefile.PL VERBOSE=1 for more information" : "") .
+	     ".\n";
        }
      }
     else
