@@ -473,7 +473,7 @@ TkpGetSubFonts(
     Tcl_Obj *objv[3], *listPtr, *resultPtr;
     UnixFtFont *fontPtr = (UnixFtFont *) tkfont;
     FcPattern *pattern;
-    char *family, *foundry, *encoding;
+    char *family, *foundry, *encoding, *file;
     int i;
 
     resultPtr = Tcl_NewListObj(0, NULL);
@@ -494,10 +494,16 @@ TkpGetSubFonts(
 		&encoding) != XftResultMatch) {
 	    encoding = "Unknown";
 	}
+	if (XftPatternGetString(pattern, XFT_FILE, 0,
+		&file) != XftResultMatch) {
+	    encoding = "Unknown";
+	}
 	objv[0] = Tcl_NewStringObj(family, -1);
 	objv[1] = Tcl_NewStringObj(foundry, -1);
 	objv[2] = Tcl_NewStringObj(encoding, -1);
-	listPtr = Tcl_NewListObj(3, objv);
+	objv[3] = Tcl_NewIntObj(-1); /* trigger (?), NYI, added in Perl/Tk */
+	objv[4] = Tcl_NewStringObj(file, -1); /* added in Perl/Tk */
+	listPtr = Tcl_NewListObj(5, objv);
 	Tcl_ListObjAppendElement(NULL, resultPtr, listPtr);
     }
     Tcl_SetObjResult(interp, resultPtr);

@@ -13,13 +13,17 @@ BEGIN {
 
 use Tk;
 use Tk::Font;
+use Tk::Config;
 use Getopt::Long;
+use Data::Dumper;
 
 plan tests => 34;
 
 my $v;
 GetOptions("v" => \$v)
     or die "usage: $0 [-v]";
+
+my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
 my $mw = Tk::MainWindow->new;
 $mw->geometry("+10+10");
@@ -117,11 +121,21 @@ SKIP: {
 
  my $l = $mw->Label(-font => '-*-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*');
  my $f = $l->cget(-font);
+ my @subfonts = $mw->font('subfonts', $f);
+
+ if ($Xft)
+  {
+   my $subfont_file = $subfonts[0]->[4];
+   skip("Unexpected subfont file $subfont_file", 10)
+       if $subfont_file =~ m{\Q75dpi/helvB18.pcf\E(.gz)?$};
+  }
+
  my %fa = ($mw->fontActual($f), $mw->fontMetrics($f));
 
  skip("Helvetica requested, but got $fa{-family}", 10)
      if lc $fa{-family} ne 'helvetica';
 
+ my $font_dump_shown = 0;
  my %expected = (
 		 "-weight"     => "bold",
 		 "-underline"  => 0,
@@ -136,7 +150,11 @@ SKIP: {
 		);
  while(my($key,$val) = each %expected)
   {
-   is(lc $fa{$key}, $val, "Expected $key value");
+   if (!is(lc $fa{$key}, $val, "Expected $key value"))
+    {
+     diag(Dumper(\@subfonts)) if !$font_dump_shown;
+     $font_dump_shown++;
+    }
   }
  $l->destroy;
 }
