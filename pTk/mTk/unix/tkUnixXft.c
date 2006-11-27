@@ -470,7 +470,7 @@ TkpGetSubFonts(
     Tcl_Interp *interp,
     Tk_Font tkfont)
 {
-    Tcl_Obj *objv[3], *listPtr, *resultPtr;
+    Tcl_Obj *objv[5], *listPtr, *resultPtr;
     UnixFtFont *fontPtr = (UnixFtFont *) tkfont;
     FcPattern *pattern;
     char *family, *foundry, *encoding, *file;
