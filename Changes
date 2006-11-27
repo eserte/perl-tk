@@ -6,6 +6,8 @@ Compiles and passes tests on
   FreeBSD 6.1 + perl5.8.8 + fontconfig 2.3.2
   FreeBSD 6.1 + bleadperl + fontconfig 2.3.2
   Linux Debian + perl5.8.8 + fontconfig 2.4.1
+  Solaris 8 + gcc-4.0.3 + perl-5.8.8 + fontconfig-2.4.1 (with two test
+    errors in font.t)
 
 I also had success with compiling under recent cygwin using the x11
 libraries a few days earlier.
