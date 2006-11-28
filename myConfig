@@ -221,8 +221,6 @@ foreach $arg (@ARGV)
 
 $win_arch or die '$win_arch not set in myConfig';
 
-$define{'WINARCH_' . uc($win_arch)} = 1;
-
 if ($win_arch eq 'x') {
   @xdirs = ();
 

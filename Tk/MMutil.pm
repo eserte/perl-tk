@@ -259,10 +259,12 @@ sub perldepend
       {
        push(@def,qw(-D__WIN32__)) unless $self->{'DEFINE'} =~ /-D__WIN32__/;
        push(@def,qw(-DWIN32)) if $self->{'NAME'} eq 'Tk::pTk';
+       push(@def,qw(-dWINARCH_MSWIN32));
       }
      elsif ($win_arch eq 'x')
       {
        push(@def,qw(-U_WIN32));
+       push(@def,qw(-DWINARCH_X));
       }
     }
    foreach (@inc)
@@ -563,12 +565,12 @@ sub TkExtMakefile
        my $extra = "-L/lib/w32api -lcomdlg32 -lgdi32";
        my $libs = $att{'LIBS'}->[0];
        $att{'LIBS'}->[0] = "$extra $libs";
-       $att{'DEFINE'} .= ' -D__WIN32__ -D_WIN32';
+       $att{'DEFINE'} .= ' -D__WIN32__ -D_WIN32 -DWINARCH_MSWIN32';
        $att{'DEFINE'} .= ' -DWIN32' if($att{'NAME'} eq 'Tk::pTk');
       }
      elsif ($win_arch eq 'x')
       {
-       $att{'DEFINE'} .= ' -U_WIN32';
+       $att{'DEFINE'} .= ' -U_WIN32 -DWINARCH_X';
       }
     }
    if (delete $att{'ptk_include'})
