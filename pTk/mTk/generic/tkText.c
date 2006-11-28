@@ -802,6 +802,9 @@ TextWidgetCmd(clientData, interp, argc, argv)
 			 * the first element of the list object.
 			 */
 			objPtr = Tcl_NewObj();
+#ifdef _LANG
+			Tcl_IncrRefCount(Tcl_GetObjResult(interp));
+#endif
 			Tcl_ListObjAppendElement(NULL, objPtr,
 				Tcl_GetObjResult(interp));
 		    }

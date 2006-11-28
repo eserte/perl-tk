@@ -28,7 +28,7 @@ BEGIN {
     }
 }
 
-plan tests => 180;
+plan tests => 194;
 
 use_ok('Tk::Text');
 
@@ -558,107 +558,95 @@ Line 7
 });
 }
 
-__END__
-
-test text-9.5 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.7 5.3
-} {}
-test text-9.6 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.3 5.5
-} { G}
-test text-9.7 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.3 end
-} { GIrl .#@? x_yz
-!@#$%
-Line 7
+{
+    $t->mark(qw(set a 5.3));
+    $t->mark(qw(set b 5.3));
+    $t->mark(qw(set c 5.5));
+    is($t->get(qw(5.2 5.7)), q{y GIr});
 }
-.t mark set a 5.3
-.t mark set b 5.3
-.t mark set c 5.5
-test text-9.8 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.7
-} {y GIr}
-test text-9.9 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2
-} {y}
-test text-9.10 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4
-} {y }
-test text-9.11 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4 5.4
-} {{y } G}
-test text-9.12 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4 5.4 5.5
-} {{y } G}
-test text-9.13 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4 5.5 "5.5+5c"
-} {{y } {Irl .}}
-test text-9.14 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4 5.4 5.5 end-3c
-} {{y } G { }}
-test text-9.15 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4 5.4 5.5 end-3c end
-} {{y } G { 7
-}}
-test text-9.16 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.3 5.4 5.3
-} {y}
-test text-9.17 {TextWidgetCmd procedure, "get" option} {
-    .t index "5.2 +3 indices"
-} {5.5}
-test text-9.17a {TextWidgetCmd procedure, "get" option} {
-    .t index "5.2 +3chars"
-} {5.5}
-test text-9.17b {TextWidgetCmd procedure, "get" option} {
-    .t index "5.2 +3displayindices"
-} {5.5}
-.t tag configure elide -elide 1
-.t tag add elide 5.2 5.4
-test text-9.18 {TextWidgetCmd procedure, "get" option} {
-    list [catch {.t get 5.2 5.4 5.5 foo} msg] $msg
-} {1 {bad text index "foo"}}
-test text-9.19 {TextWidgetCmd procedure, "get" option} {
-    .t get 5.2 5.4 5.4 5.5 end-3c end
-} {{y } G { 7
-}}
-test text-9.20 {TextWidgetCmd procedure, "get" option} {
-    .t get -displaychars 5.2 5.4 5.4 5.5 end-3c end
-} {{} G { 7
-}}
-test text-9.21 {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.1 +4indices"] [.t index "5.1+4d indices"]
-} {5.5 5.7}
-test text-9.22 {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.1 +4a chars"] [.t index "5.1+4d chars"]
-} {5.5 5.7}
-test text-9.23 {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.5 -4indices"] [.t index "5.7-4d indices"]
-} {5.1 5.1}
-test text-9.24 {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.5 -4a chars"] [.t index "5.7-4d chars"]
-} {5.1 5.1}
-.t window create 5.4
-test text-9.25 {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.1 +4indices"] [.t index "5.1+4d indices"]
-} {5.5 5.7}
-test text-9.25a {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.1 +4a chars"] [.t index "5.1+4d chars"]
-} {5.6 5.8}
-test text-9.26 {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.5 -4indices"] [.t index "5.7-4d indices"]
-} {5.1 5.1}
-test text-9.26a {TextWidgetCmd procedure, "get" option} {
-    list [.t index "5.6 -4a chars"] [.t index "5.8-4d chars"]
-} {5.1 5.1}
-.t delete 5.4 
-.t tag add elide 5.5 5.6
-test text-9.27 {TextWidgetCmd procedure, "get" option} {
-    .t get -displaychars 5.2 5.8
-} {Grl}
-.t tag delete elide
-.t mark unset a
-.t mark unset b
-.t mark unset c
+
+{
+    is($t->get('5.2'), q{y});
+    is($t->get(qw(5.2 5.4)), q{y });
+}
+
+{
+    # These tests went wrong in Tk804.027 (bizarre copy of array...)
+    is_deeply([$t->get(qw(5.2 5.4 5.4))], [q{y }, 'G']);
+    is_deeply([$t->get(qw(5.2 5.4 5.4 5.5))], [q{y }, 'G']);
+    is_deeply([$t->get(qw(5.2 5.4 5.5), "5.5+5c")], [q{y }, q{Irl .}]);
+    is_deeply([$t->get(qw(5.2 5.4 5.4 5.5 end-3c))], [q{y }, 'G', q{ }]);
+    is_deeply([$t->get(qw(5.2 5.4 5.4 5.5 end-3c end))], [q{y }, 'G', q{ 7
+}]);
+    is_deeply([$t->get(qw(5.2 5.3 5.4 5.3))], ['y']);
+}
+
+SKIP: {
+    skip("indices index NYI in Perl/Tk", 1);
+    is($t->index("5.2 +3 indices"), '5.5', 'text index');
+}
+
+{
+    is($t->index("5.2 +3chars"), '5.5');
+}
+
+SKIP: {
+    skip("displayindices index NYI in Perl/Tk", 1);
+    is($t->index("5.2 +3displayindices"), '5.5');
+}
+
+{
+    $t->tag(qw(configure elide -elide 1));
+    $t->tag(qw(add elide 5.2 5.4));
+
+    eval { $t->get(qw(5.2 5.4 5.5 foo)) };
+    like($@, qr{\Qbad text index "foo"}, "wrong index in get");
+
+    is_deeply([$t->get(qw(5.2 5.4 5.4 5.5 end-3c end))],
+	      [q{y }, 'G', q{ 7
+}]);
+}
+
+## indices not yet implemented
+#test text-9.21 {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.1 +4indices"] [.t index "5.1+4d indices"]
+#} {5.5 5.7}
+#test text-9.22 {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.1 +4a chars"] [.t index "5.1+4d chars"]
+#} {5.5 5.7}
+#test text-9.23 {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.5 -4indices"] [.t index "5.7-4d indices"]
+#} {5.1 5.1}
+#test text-9.24 {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.5 -4a chars"] [.t index "5.7-4d chars"]
+#} {5.1 5.1}
+#.t window create 5.4
+#test text-9.25 {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.1 +4indices"] [.t index "5.1+4d indices"]
+#} {5.5 5.7}
+#test text-9.25a {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.1 +4a chars"] [.t index "5.1+4d chars"]
+#} {5.6 5.8}
+#test text-9.26 {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.5 -4indices"] [.t index "5.7-4d indices"]
+#} {5.1 5.1}
+#test text-9.26a {TextWidgetCmd procedure, "get" option} {
+#    list [.t index "5.6 -4a chars"] [.t index "5.8-4d chars"]
+#} {5.1 5.1}
+
+{
+    $t->delete('5.4');
+    $t->tag(qw(add elide 5.5 5.6));
+    ## -displaychars NYI
+    #is($t->get(qw(-displaychars 5.2 5.8)), q{Grl}, "get -displaychars");
+
+    $t->tag(qw(delete elide));
+    $t->mark(qw(unset a));
+    $t->mark(qw(unset b));
+    $t->mark(qw(unset c));
+}
+
+__END__
 test text-9.2.1 {TextWidgetCmd procedure, "count" option} {
     list [catch {.t count} msg] $msg
 } {1 {wrong # args: should be ".t count ?options? index1 index2"}}
