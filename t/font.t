@@ -186,7 +186,13 @@ SKIP: {
  eval { $l->configure(-font => undef) };
  like($@, qr{\QCannot use undef value for object of type 'font'},
       "Core dump check with undef font in configure");
- is($l->cget(-font), $f, "Font stays unchanged");
+ # This used to be:
+ #     is($l->cget(-font), $f, "Font stays unchanged");
+ # but there's a bug in some Test::More versions, so I do have to do it
+ # differently:
+ my $got = "@{[ $l->cget(-font) ]}";
+ my $expected = "$f";
+ is($got, $expected, "Font stays unchanged");
  $l->destroy;
 
  eval { $mw->Label(-font => undef) };
