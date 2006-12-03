@@ -28,7 +28,13 @@ BEGIN {
     }
 }
 
-plan tests => 194;
+plan tests => 258;
+
+use Getopt::Long;
+my $v;
+
+GetOptions("v" => \$v)
+    or die "usage: $0 [-v]";
 
 use_ok('Tk::Text');
 
@@ -51,6 +57,32 @@ $t->pack(qw(-expand 1 -fill both));
 #?
 $t->update;
 $t->debug("on");
+
+my $skip_fixed_font_test;
+{
+    my $font = $t->cget(-font);
+    my %fa = ($mw->fontActual($font),
+	      $mw->fontMetrics($font));
+    my %expected = (
+		    "-weight"     => "normal",
+		    "-underline"  => 0,
+		    "-family"     => "courier",
+		    "-slant"      => "roman",
+		    "-size"       => -12,
+		    "-overstrike" => 0,
+		    "-ascent"     => 10,
+		    "-descent"    => 3,
+		    "-linespace"  => 13,
+		    "-fixed"      => 1,
+		   );
+    while(my($key,$val) = each %expected) {
+	if (lc $val ne lc $fa{$key}) {
+	    diag "Value $key does not match: got $fa{$key}, expected $val\n" if $v;
+	    $skip_fixed_font_test = "font-related tests (fixed font not std courier)";
+	    last;
+	}
+    }
+}
 
 # The statements below reset the main window;  it's needed if the window
 # manager is mwm to make mwm forget about a previous minimum size setting.
@@ -646,553 +678,560 @@ SKIP: {
     $t->mark(qw(unset c));
 }
 
-__END__
-test text-9.2.1 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count} msg] $msg
-} {1 {wrong # args: should be ".t count ?options? index1 index2"}}
-test text-9.2.2.1 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count blah 1.0 2.0} msg] $msg
-} {1 {bad option "blah" must be -chars, -displaychars, -displayindices, -displaylines, -indices, -lines, -update, -xpixels, or -ypixels}}
-test text-9.2.2 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count a b} msg] $msg
-} {1 {bad text index "a"}}
-test text-9.2.3 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count @q 3.1} msg] $msg
-} {1 {bad text index "@q"}}
-test text-9.2.4 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count 3.1 @r} msg] $msg
-} {1 {bad text index "@r"}}
-test text-9.2.5 {TextWidgetCmd procedure, "count" option} {
-    .t count 5.7 5.3
-} {-4}
-test text-9.2.6 {TextWidgetCmd procedure, "count" option} {
-    .t count 5.3 5.5
-} {2}
-test text-9.2.7 {TextWidgetCmd procedure, "count" option} {
-    .t count 5.3 end
-} {29}
-.t mark set a 5.3
-.t mark set b 5.3
-.t mark set c 5.5
-test text-9.2.8 {TextWidgetCmd procedure, "count" option} {
-    .t count 5.2 5.7
-} {5}
-test text-9.2.9 {TextWidgetCmd procedure, "count" option} {
-    .t count 5.2 5.3
-} {1}
-test text-9.2.10 {TextWidgetCmd procedure, "count" option} {
-    .t count 5.2 5.4
-} {2}
-test text-9.2.17 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count 5.2 foo} msg] $msg
-} {1 {bad text index "foo"}}
-.t tag configure elide -elide 1
-.t tag add elide 2.2 3.4
-.t tag add elide 4.0 4.1
-test text-9.2.18 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices 2.0 3.0
-} {2}
-test text-9.2.19 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices 2.2 3.0
-} {0}
-test text-9.2.20 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices 2.0 4.2
-} {5}
-# Create one visible and one invisible window
-frame .t.w1
-frame .t.w2
-.t mark set a 2.2
-# Creating this window here means that the elidden text
-# now starts at 2.3, but 'a' is automatically moved to 2.3
-.t window create 2.1 -window .t.w1
-.t window create 3.1 -window .t.w2
-test text-9.2.21 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices 2.0 3.0
-} {3}
-test text-9.2.22 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices 2.2 3.0
-} {1}
-test text-9.2.23 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices a 3.0
-} {0}
-test text-9.2.24 {TextWidgetCmd procedure, "count" option} {
-    .t count -displayindices 2.0 4.2
-} {6}
-test text-9.2.25 {TextWidgetCmd procedure, "count" option} {
-    .t count -displaychars 2.0 3.0
-} {2}
-test text-9.2.26 {TextWidgetCmd procedure, "count" option} {
-    .t count -displaychars 2.2 3.0
-} {1}
-test text-9.2.27 {TextWidgetCmd procedure, "count" option} {
-    .t count -displaychars a 3.0
-} {0}
-test text-9.2.28 {TextWidgetCmd procedure, "count" option} {
-    .t count -displaychars 2.0 4.2
-} {5}
-test text-9.2.29 {TextWidgetCmd procedure, "count" option} {
-    list [.t count -indices 2.2 3.0] [.t count 2.2 3.0]
-} {10 10}
-test text-9.2.30 {TextWidgetCmd procedure, "count" option} {
-    list [.t count -indices a 3.0] [.t count a 3.0]
-} {9 9}
-test text-9.2.31 {TextWidgetCmd procedure, "count" option} {
-    .t count -indices 2.0 4.2
-} {21}
-test text-9.2.32 {TextWidgetCmd procedure, "count" option} {
-    .t count -chars 2.2 3.0
-} {10}
-test text-9.2.33 {TextWidgetCmd procedure, "count" option} {
-    .t count -chars a 3.0
-} {9}
-test text-9.2.34 {TextWidgetCmd procedure, "count" option} {
-    .t count -chars 2.0 4.2
-} {19}
-destroy .t.w1
-destroy .t.w2
-set current [.t get 1.0 end-1c]
-.t delete 1.0 end
-.t insert end [string repeat "abcde " 50]\n
-.t insert end [string repeat "fghij " 50]\n
-.t insert end [string repeat "klmno " 50]
-test text-9.2.35 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines 1.0 end
-} {3}
-test text-9.2.36 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines end 1.0
-} {-3}
-test text-9.2.37 {TextWidgetCmd procedure, "count" option} {
-    list [catch {.t count -lines 1.0 2.0 3.0} res] $res
-} {1 {bad option "1.0" must be -chars, -displaychars, -displayindices, -displaylines, -indices, -lines, -update, -xpixels, or -ypixels}}
-test text-9.2.38 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines end end
-} {0}
-test text-9.2.39 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines 1.5 2.5
-} {1}
-test text-9.2.40 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines 2.5 "2.5 lineend"
-} {0}
-test text-9.2.41 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines 2.7 "1.0 lineend"
-} {-1}
-test text-9.2.42 {TextWidgetCmd procedure, "count" option} {
-    set old_wrap [.t cget -wrap]
-    .t configure -wrap none
-    set res [.t count -displaylines 1.0 end]
-    .t configure -wrap $old_wrap
-    set res
-} {3}
-test text-9.2.43 {TextWidgetCmd procedure, "count" option} {
-    .t count -lines -chars -indices -displaylines 1.0 end
-} {3 903 903 45}
-.t configure -wrap none
+SKIP: {
+    skip("count not yet implemented in Perl/Tk", 1);
 
-# Newer tags are higher priority
-.t tag configure elide1 -elide 0
-.t tag configure elide2 -elide 1
-.t tag configure elide3 -elide 0
-.t tag configure elide4 -elide 1
+    eval { $t->count };
+    like($@, qr{\Qwrong # args: should be ".t count ?options? index1 index2"},
+	 q{TextWidgetCmd procedure, "count" option});
 
-test text-0.2.44.0 {counting with tag priority eliding} {
-    .t delete 1.0 end
-    .t insert end "hello"
-    list [.t count -displaychars 1.0 1.0] \
-      [.t count -displaychars 1.0 1.1] \
-      [.t count -displaychars 1.0 1.2] \
-      [.t count -displaychars 1.0 1.3] \
-      [.t count -displaychars 1.0 1.4] \
-      [.t count -displaychars 1.0 1.5] \
-      [.t count -displaychars 1.0 1.6] \
-      [.t count -displaychars 1.0 2.6] \
-} {0 1 2 3 4 5 5 6}
-test text-0.2.44 {counting with tag priority eliding} {
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide1 1.2 1.4
-    .t count -displaychars 1.0 1.5
-} {5}
-test text-0.2.45 {counting with tag priority eliding} {
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide2 1.2 1.4
-    .t count -displaychars 1.0 1.5
-} {3}
-test text-0.2.46 {counting with tag priority eliding} {
-    set res {}
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide2 1.2 1.4
-    .t tag add elide1 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide1 1.2 1.4
-    .t tag add elide2 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-} {3 3}
-test text-0.2.47 {counting with tag priority eliding} {
-    set res {}
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide2 1.2 1.4
-    .t tag add elide3 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide3 1.2 1.4
-    .t tag add elide3 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-} {5 5}
-test text-0.2.48 {counting with tag priority eliding} {
-    set res {}
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide2 1.2 1.4
-    .t tag add elide3 1.2 1.4
-    .t tag add elide4 1.2 1.4
-    .t tag add elide1 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide1 1.2 1.4
-    .t tag add elide4 1.2 1.4
-    .t tag add elide2 1.2 1.4
-    .t tag add elide3 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-} {3 3}
-test text-0.2.49 {counting with tag priority eliding} {
-    set res {}
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide2 1.2 1.4
-    .t tag add elide3 1.2 1.4
-    .t tag add elide1 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide1 1.2 1.4
-    .t tag add elide2 1.2 1.4
-    .t tag add elide3 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-} {5 5}
-test text-0.2.50 {counting with tag priority eliding} {
-    set res {}
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide2 1.0 1.5
-    .t tag add elide1 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-    lappend res [.t count -displaychars 1.1 1.5]
-    lappend res [.t count -displaychars 1.2 1.5]
-    lappend res [.t count -displaychars 1.3 1.5]
-    .t delete 1.0 end
-    .t insert end "hello"
-    .t tag add elide1 1.0 1.5
-    .t tag add elide2 1.2 1.4
-    lappend res [.t count -displaychars 1.0 1.5]
-    lappend res [.t count -displaychars 1.1 1.5]
-    lappend res [.t count -displaychars 1.2 1.5]
-    lappend res [.t count -displaychars 1.3 1.5]
-} {0 0 0 0 3 2 1 1}
-test text-0.2.51 {counting with tag priority eliding} {
-    set res {}
-    .t delete 1.0 end
-    .t tag configure WELCOME -elide 1
-    .t tag configure SYSTEM -elide 0
-    .t tag configure TRAFFIC -elide 1
-    .t insert end "\n" {SYSTEM TRAFFIC}
-    .t insert end "\n" WELCOME
-    lappend res [.t count -displaychars 1.0 end]
-    lappend res [.t count -displaychars 1.0 end-1c]
-    lappend res [.t count -displaychars 1.0 1.2]
-    lappend res [.t count -displaychars 2.0 end]
-    lappend res [.t count -displaychars 2.0 end-1c]
-    lappend res [.t index "1.0 +1 indices"]
-    lappend res [.t index "1.0 +1 display indices"]
-    lappend res [.t index "1.0 +1 display chars"]
-    lappend res [.t index end] 
-    lappend res [.t index "end -1 indices"]
-    lappend res [.t index "end -1 display indices"]
-    lappend res [.t index "end -1 display chars"]
-    lappend res [.t index "end -2 indices"]
-    lappend res [.t index "end -2 display indices"]
-    lappend res [.t index "end -2 display chars"]
-} {1 0 0 1 0 2.0 4.0 4.0 4.0 3.0 3.0 3.0 2.0 1.0 1.0}
+    eval { $t->count(qw(blah 1.0 2.0)) };
+    like($@, qr{\Qbad option "blah" must be -chars, -displaychars, -displayindices, -displaylines, -indices, -lines, -update, -xpixels, or -ypixels});
 
-.t delete 1.0 end
-.t insert end $current
-unset current
+    eval { $t->count(qw(a b)) };
+    like($@, qr{\Qbad text index "a"});
 
-test text-10.1 {TextWidgetCmd procedure, "index" option} {
-    list [catch {.t index} msg] $msg
-} {1 {wrong # args: should be ".t index index"}}
-test text-10.2 {TextWidgetCmd procedure, "index" option} {
-    list [catch {.t ind a b} msg] $msg
-} {1 {wrong # args: should be ".t index index"}}
-test text-10.3 {TextWidgetCmd procedure, "index" option} {
-    list [catch {.t in a b} msg] $msg
-} {1 {ambiguous option "in": must be bbox, cget, compare, configure, count, debug, delete, dlineinfo, dump, edit, get, image, index, insert, mark, peer, replace, scan, search, see, tag, window, xview, or yview}}
-test text-10.4 {TextWidgetCmd procedure, "index" option} {
-    list [catch {.t index @xyz} msg] $msg
-} {1 {bad text index "@xyz"}}
-test text-10.5 {TextWidgetCmd procedure, "index" option} {
-    .t index 1.2
-} 1.2
+    eval { $t->count(qw(@q 3.1)) };
+    like($@, qr{\Qbad text index "\E\@\Qq"});
 
-test text-11.1 {TextWidgetCmd procedure, "insert" option} {
-    list [catch {.t insert 1.2} msg] $msg
-} {1 {wrong # args: should be ".t insert index chars ?tagList chars tagList ...?"}}
-test text-11.2 {TextWidgetCmd procedure, "insert" option} {
-    .t config -state disabled
-    .t insert 1.2 xyzzy
-    .t get 1.0 1.end
-} {Line 1}
-.t config -state normal
-test text-11.3 {TextWidgetCmd procedure, "insert" option} {
-    .t insert 1.2 xyzzy
-    .t get 1.0 1.end
-} {Lixyzzyne 1}
-test text-11.4 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    .t insert 1.0 "Sample text" x
-    .t tag ranges x
-} {1.0 1.11}
-test text-11.5 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    .t insert 1.0 "Sample text" x
-    .t insert 1.2 "XYZ" y
-    list [.t tag ranges x] [.t tag ranges y]
-} {{1.0 1.2 1.5 1.14} {1.2 1.5}}
-test text-11.6 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    .t insert 1.0 "Sample text" {x y z}
-    list [.t tag ranges x] [.t tag ranges y] [.t tag ranges z]
-} {{1.0 1.11} {1.0 1.11} {1.0 1.11}}
-test text-11.7 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    .t insert 1.0 "Sample text" {x y z}
-    .t insert 1.3 "A" {a b z}
-    list [.t tag ranges a] [.t tag ranges b] [.t tag ranges x] [.t tag ranges y] [.t tag ranges z]
-} {{1.3 1.4} {1.3 1.4} {1.0 1.3 1.4 1.12} {1.0 1.3 1.4 1.12} {1.0 1.12}}
-test text-11.8 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    list [catch {.t insert 1.0 "Sample text" "a \{b"} msg] $msg
-} {1 {unmatched open brace in list}}
-test text-11.9 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    .t insert 1.0 "First" bold " " {} second "x y z" " third"
-    list [.t get 1.0 1.end] [.t tag ranges bold] [.t tag ranges x] \
-	    [.t tag ranges y] [.t tag ranges z]
-} {{First second third} {1.0 1.5} {1.6 1.12} {1.6 1.12} {1.6 1.12}}
-test text-11.10 {TextWidgetCmd procedure, "insert" option} {
-    .t delete 1.0 end
-    .t insert 1.0 "First" bold " second" silly
-    list [.t get 1.0 1.end] [.t tag ranges bold] [.t tag ranges silly]
-} {{First second} {1.0 1.5} {1.5 1.12}}
+    eval { $t->count(qw(3.1 @r)) };
+    like($@, qr{\Qbad text index "\E\@\Qr"});
+
+    is($t->count(qw(5.7 5.3)), -4);
+    is($t->count(qw(5.3 5.5)), 2);
+    is($t->count(qw(5.3 end)), 29);
+
+# test text-9.2.7 {TextWidgetCmd procedure, "count" option} {
+#     .t count 
+# .t mark set a 5.3
+# .t mark set b 5.3
+# .t mark set c 5.5
+# test text-9.2.8 {TextWidgetCmd procedure, "count" option} {
+#     .t count 5.2 5.7
+# } {5}
+# test text-9.2.9 {TextWidgetCmd procedure, "count" option} {
+#     .t count 5.2 5.3
+# } {1}
+# test text-9.2.10 {TextWidgetCmd procedure, "count" option} {
+#     .t count 5.2 5.4
+# } {2}
+# test text-9.2.17 {TextWidgetCmd procedure, "count" option} {
+#     list [catch {.t count 5.2 foo} msg] $msg
+# } {1 {bad text index "foo"}}
+# .t tag configure elide -elide 1
+# .t tag add elide 2.2 3.4
+# .t tag add elide 4.0 4.1
+# test text-9.2.18 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices 2.0 3.0
+# } {2}
+# test text-9.2.19 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices 2.2 3.0
+# } {0}
+# test text-9.2.20 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices 2.0 4.2
+# } {5}
+# # Create one visible and one invisible window
+# frame .t.w1
+# frame .t.w2
+# .t mark set a 2.2
+# # Creating this window here means that the elidden text
+# # now starts at 2.3, but 'a' is automatically moved to 2.3
+# .t window create 2.1 -window .t.w1
+# .t window create 3.1 -window .t.w2
+# test text-9.2.21 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices 2.0 3.0
+# } {3}
+# test text-9.2.22 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices 2.2 3.0
+# } {1}
+# test text-9.2.23 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices a 3.0
+# } {0}
+# test text-9.2.24 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displayindices 2.0 4.2
+# } {6}
+# test text-9.2.25 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displaychars 2.0 3.0
+# } {2}
+# test text-9.2.26 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displaychars 2.2 3.0
+# } {1}
+# test text-9.2.27 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displaychars a 3.0
+# } {0}
+# test text-9.2.28 {TextWidgetCmd procedure, "count" option} {
+#     .t count -displaychars 2.0 4.2
+# } {5}
+# test text-9.2.29 {TextWidgetCmd procedure, "count" option} {
+#     list [.t count -indices 2.2 3.0] [.t count 2.2 3.0]
+# } {10 10}
+# test text-9.2.30 {TextWidgetCmd procedure, "count" option} {
+#     list [.t count -indices a 3.0] [.t count a 3.0]
+# } {9 9}
+# test text-9.2.31 {TextWidgetCmd procedure, "count" option} {
+#     .t count -indices 2.0 4.2
+# } {21}
+# test text-9.2.32 {TextWidgetCmd procedure, "count" option} {
+#     .t count -chars 2.2 3.0
+# } {10}
+# test text-9.2.33 {TextWidgetCmd procedure, "count" option} {
+#     .t count -chars a 3.0
+# } {9}
+# test text-9.2.34 {TextWidgetCmd procedure, "count" option} {
+#     .t count -chars 2.0 4.2
+# } {19}
+# destroy .t.w1
+# destroy .t.w2
+# set current [.t get 1.0 end-1c]
+# .t delete 1.0 end
+# .t insert end [string repeat "abcde " 50]\n
+# .t insert end [string repeat "fghij " 50]\n
+# .t insert end [string repeat "klmno " 50]
+# test text-9.2.35 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines 1.0 end
+# } {3}
+# test text-9.2.36 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines end 1.0
+# } {-3}
+# test text-9.2.37 {TextWidgetCmd procedure, "count" option} {
+#     list [catch {.t count -lines 1.0 2.0 3.0} res] $res
+# } {1 {bad option "1.0" must be -chars, -displaychars, -displayindices, -displaylines, -indices, -lines, -update, -xpixels, or -ypixels}}
+# test text-9.2.38 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines end end
+# } {0}
+# test text-9.2.39 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines 1.5 2.5
+# } {1}
+# test text-9.2.40 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines 2.5 "2.5 lineend"
+# } {0}
+# test text-9.2.41 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines 2.7 "1.0 lineend"
+# } {-1}
+# test text-9.2.42 {TextWidgetCmd procedure, "count" option} {
+#     set old_wrap [.t cget -wrap]
+#     .t configure -wrap none
+#     set res [.t count -displaylines 1.0 end]
+#     .t configure -wrap $old_wrap
+#     set res
+# } {3}
+# test text-9.2.43 {TextWidgetCmd procedure, "count" option} {
+#     .t count -lines -chars -indices -displaylines 1.0 end
+# } {3 903 903 45}
+# .t configure -wrap none
+# 
+# 
+# # Newer tags are higher priority
+# .t tag configure elide1 -elide 0
+# .t tag configure elide2 -elide 1
+# .t tag configure elide3 -elide 0
+# .t tag configure elide4 -elide 1
+# 
+# test text-0.2.44.0 {counting with tag priority eliding} {
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     list [.t count -displaychars 1.0 1.0] \
+#       [.t count -displaychars 1.0 1.1] \
+#       [.t count -displaychars 1.0 1.2] \
+#       [.t count -displaychars 1.0 1.3] \
+#       [.t count -displaychars 1.0 1.4] \
+#       [.t count -displaychars 1.0 1.5] \
+#       [.t count -displaychars 1.0 1.6] \
+#       [.t count -displaychars 1.0 2.6] \
+# } {0 1 2 3 4 5 5 6}
+# test text-0.2.44 {counting with tag priority eliding} {
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide1 1.2 1.4
+#     .t count -displaychars 1.0 1.5
+# } {5}
+# test text-0.2.45 {counting with tag priority eliding} {
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide2 1.2 1.4
+#     .t count -displaychars 1.0 1.5
+# } {3}
+# test text-0.2.46 {counting with tag priority eliding} {
+#     set res {}
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide2 1.2 1.4
+#     .t tag add elide1 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide1 1.2 1.4
+#     .t tag add elide2 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+# } {3 3}
+# test text-0.2.47 {counting with tag priority eliding} {
+#     set res {}
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide2 1.2 1.4
+#     .t tag add elide3 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide3 1.2 1.4
+#     .t tag add elide3 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+# } {5 5}
+# test text-0.2.48 {counting with tag priority eliding} {
+#     set res {}
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide2 1.2 1.4
+#     .t tag add elide3 1.2 1.4
+#     .t tag add elide4 1.2 1.4
+#     .t tag add elide1 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide1 1.2 1.4
+#     .t tag add elide4 1.2 1.4
+#     .t tag add elide2 1.2 1.4
+#     .t tag add elide3 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+# } {3 3}
+# test text-0.2.49 {counting with tag priority eliding} {
+#     set res {}
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide2 1.2 1.4
+#     .t tag add elide3 1.2 1.4
+#     .t tag add elide1 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide1 1.2 1.4
+#     .t tag add elide2 1.2 1.4
+#     .t tag add elide3 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+# } {5 5}
+# test text-0.2.50 {counting with tag priority eliding} {
+#     set res {}
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide2 1.0 1.5
+#     .t tag add elide1 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+#     lappend res [.t count -displaychars 1.1 1.5]
+#     lappend res [.t count -displaychars 1.2 1.5]
+#     lappend res [.t count -displaychars 1.3 1.5]
+#     .t delete 1.0 end
+#     .t insert end "hello"
+#     .t tag add elide1 1.0 1.5
+#     .t tag add elide2 1.2 1.4
+#     lappend res [.t count -displaychars 1.0 1.5]
+#     lappend res [.t count -displaychars 1.1 1.5]
+#     lappend res [.t count -displaychars 1.2 1.5]
+#     lappend res [.t count -displaychars 1.3 1.5]
+# } {0 0 0 0 3 2 1 1}
+# test text-0.2.51 {counting with tag priority eliding} {
+#     set res {}
+#     .t delete 1.0 end
+#     .t tag configure WELCOME -elide 1
+#     .t tag configure SYSTEM -elide 0
+#     .t tag configure TRAFFIC -elide 1
+#     .t insert end "\n" {SYSTEM TRAFFIC}
+#     .t insert end "\n" WELCOME
+#     lappend res [.t count -displaychars 1.0 end]
+#     lappend res [.t count -displaychars 1.0 end-1c]
+#     lappend res [.t count -displaychars 1.0 1.2]
+#     lappend res [.t count -displaychars 2.0 end]
+#     lappend res [.t count -displaychars 2.0 end-1c]
+#     lappend res [.t index "1.0 +1 indices"]
+#     lappend res [.t index "1.0 +1 display indices"]
+#     lappend res [.t index "1.0 +1 display chars"]
+#     lappend res [.t index end] 
+#     lappend res [.t index "end -1 indices"]
+#     lappend res [.t index "end -1 display indices"]
+#     lappend res [.t index "end -1 display chars"]
+#     lappend res [.t index "end -2 indices"]
+#     lappend res [.t index "end -2 display indices"]
+#     lappend res [.t index "end -2 display chars"]
+# } {1 0 0 1 0 2.0 4.0 4.0 4.0 3.0 3.0 3.0 2.0 1.0 1.0}
+# 
+# $t->delete(qw(1.0 end));
+# $t->insert('end', $current);
+# undef $current;
+}
+
+{
+    eval { $t->index };
+    like($@, qr{\Qwrong # args: should be ".t index index"},
+	 q{TextWidgetCmd procedure, "index" option});
+
+    eval { $t->index(qw(a b)) };
+    like($@, qr{\Qwrong # args: should be ".t index index"});
+
+    eval { $t->index(qw(@xyz)) };
+    like($@, qr{\Qbad text index "\E\@\Qxyz"});
+
+    is($t->index("1.2"), "1.2");
+}
+
+{
+    eval { $t->insert("1.2") };
+    like($@, qr{\Qwrong # args: should be ".t insert index chars ?tagList chars tagList ...?"},
+	 q{TextWidgetCmd procedure, "insert" option});
+}
+
+{
+    $t->configure(-state => "disabled");
+    $t->insert("1.2", "xyzzy");
+    is($t->get("1.0", "1.end"), "Line 1");
+}
+$t->configure(-state => "normal");
+{
+    $t->insert("1.2", "xyzzy");
+    is($t->get("1.0", "1.end"), "Lixyzzyne 1");
+}
+{
+    $t->delete("1.0", "end");
+    $t->insert("1.0", "Sample text", "x");
+    is_deeply([$t->tag(qw(ranges x))],
+	      ["1.0", "1.11"], "Insert with tag");
+}
+{
+    $t->delete("1.0", "end");
+    $t->insert("1.0", "Sample text", "x");
+    $t->insert("1.2", "XYZ", "y");
+    is_deeply([$t->tag(qw(ranges x))],
+	      [qw(1.0 1.2 1.5 1.14)]);
+    is_deeply([$t->tag(qw(ranges y))],
+	      [qw(1.2 1.5)]);
+}
+{
+    $t->delete("1.0", "end");
+    $t->insert("1.0", "Sample text", [qw(x y z)]);
+    for (qw(x y z)) {
+	is_deeply([$t->tagRanges($_)], [qw(1.0 1.11)]);
+    }
+}
+{
+    $t->delete("1.0", "end");
+    $t->insert("1.0", "Sample text", [qw(x y z)]);
+    $t->insert("1.3", "A", [qw(a b z)]);
+    for (qw(a b)) {
+	is_deeply([$t->tagRanges($_)], [qw(1.3 1.4)]);
+    }
+    for (qw(x y)) {
+	is_deeply([$t->tagRanges($_)], [qw(1.0 1.3 1.4 1.12)]);
+    }
+    is_deeply([$t->tagRanges('z')], [qw(1.0 1.12)]);
+}
+{
+    $t->delete("1.0", "end");
+    $t->insert("1.0", "First", "bold", " ", [], "second", [qw(x y z)], " third");
+    is($t->get("1.0", "1.end"), q{First second third});
+    is_deeply([$t->tagRanges("bold")], [qw{1.0 1.5}]);
+    for (qw(x y z)) {
+	is_deeply([$t->tagRanges($_)], [qw{1.6 1.12}]);
+    }
+}
+{
+    $t->delete("1.0", "end");
+    $t->insert("1.0", "First", "bold", " second", "silly");
+    is($t->get("1.0", "1.end"), q{First second});
+    is_deeply([$t->tagRanges("bold")], [qw{1.0 1.5}]);
+    is_deeply([$t->tagRanges("silly")], [qw{1.5 1.12}]);
+}
 
 # Edit, mark, scan, search, see, tag, window, xview, and yview actions are tested elsewhere.
 
-test text-12.1 {ConfigureText procedure} {
-    list [catch {.t2 configure -state foobar} msg] $msg
-} {1 {bad state "foobar": must be disabled or normal}}
-test text-12.2 {ConfigureText procedure} {
-    .t2 configure -spacing1 -2 -spacing2 1 -spacing3 1
-    list [.t2 cget -spacing1] [.t2 cget -spacing2] [.t2 cget -spacing3]
-} {0 1 1}
-test text-12.3 {ConfigureText procedure} {
-    .t2 configure -spacing1 1 -spacing2 -1 -spacing3 1
-    list [.t2 cget -spacing1] [.t2 cget -spacing2] [.t2 cget -spacing3]
-} {1 0 1}
-test text-12.4 {ConfigureText procedure} {
-    .t2 configure -spacing1 1 -spacing2 1 -spacing3 -3
-    list [.t2 cget -spacing1] [.t2 cget -spacing2] [.t2 cget -spacing3]
-} {1 1 0}
-test text-12.5 {ConfigureText procedure} {
-    set x [list [catch {.t2 configure -tabs {30 foo}} msg] $msg $errorInfo]
-    .t2 configure -tabs {10 20 30}
-    set x
-} {1 {bad tab alignment "foo": must be left, right, center, or numeric} {bad tab alignment "foo": must be left, right, center, or numeric
-    (while processing -tabs option)
-    invoked from within
-".t2 configure -tabs {30 foo}"}}
-test text-12.6 {ConfigureText procedure} {
-    .t2 configure -tabs {10 20 30}
-    .t2 configure -tabs {}
-    .t2 cget -tabs
-} {}
-test text-12.7 {ConfigureText procedure} {
-    list [catch {.t2 configure -wrap bogus} msg] $msg
-} {1 {bad wrap "bogus": must be char, none, or word}}
-test text-12.8 {ConfigureText procedure} {
-    .t2 configure -selectborderwidth 17 -selectforeground #332211 \
-	    -selectbackground #abc
-    list [lindex [.t2 tag config sel -borderwidth] 4] \
-	[lindex [.t2 tag config sel -foreground] 4] \
-	[lindex [.t2 tag config sel -background] 4]
-} {17 #332211 #abc}
-test text-12.9 {ConfigureText procedure} {
-    .t2 configure -selectborderwidth {}
-    .t2 tag cget sel -borderwidth
-} {}
-test text-12.10 {ConfigureText procedure} {
-    list [catch {.t2 configure -selectborderwidth foo} msg] $msg
-} {1 {bad screen distance "foo"}}
-test text-12.11 {ConfigureText procedure} {
-    catch {destroy .t2}
-    .t.e select to 2
-    text .t2 -exportselection 1
-    selection get
-} {ab}
-test text-12.12 {ConfigureText procedure} {
-    catch {destroy .t2}
-    .t.e select to 2
-    text .t2 -exportselection 0
-    .t2 insert insert 1234657890
-    .t2 tag add sel 1.0 1.4
-    selection get
-} {ab}
-test text-12.13 {ConfigureText procedure} {
-    catch {destroy .t2}
-    .t.e select to 1
-    text .t2 -exportselection 1
-    .t2 insert insert 1234657890
-    .t2 tag add sel 1.0 1.4
-    selection get
-} {1234}
-test text-12.14 {ConfigureText procedure} {
-    catch {destroy .t2}
-    .t.e select to 1
-    text .t2 -exportselection 0
-    .t2 insert insert 1234657890
-    .t2 tag add sel 1.0 1.4
-    .t2 configure -exportselection 1
-    selection get
-} {1234}
-test text-12.15 {ConfigureText procedure} {
-    catch {destroy .t2}
-    text .t2 -exportselection 1
-    .t2 insert insert 1234657890
-    .t2 tag add sel 1.0 1.4
-    set result [selection get]
-    .t2 configure -exportselection 0
-    lappend result [catch {selection get} msg] $msg
-} {1234 1 {PRIMARY selection doesn't exist or form "STRING" not defined}}
-test text-12.16 {ConfigureText procedure} {fonts} {
+{
+    eval { $t2->configure(-state => "foobar") };
+    like($@, qr{\Qbad state value "foobar": must be normal or disabled},
+	 q{ConfigureText procedure});
+}
+{
+    $t2->configure(-spacing1 => -2, -spacing2 => 1, -spacing3 => 1);
+    is($t2->cget(-spacing1), 0);
+    is($t2->cget(-spacing2), 1);
+    is($t2->cget(-spacing3), 1);
+}
+{
+    $t2->configure(qw(-spacing1 1 -spacing2 -1 -spacing3 1));
+    is($t2->cget(-spacing1), 1);
+    is($t2->cget(-spacing2), 0);
+    is($t2->cget(-spacing3), 1);
+}
+{
+    $t2->configure(qw(-spacing1 1 -spacing2 1 -spacing3 -3));
+    is($t2->cget(-spacing1), 1);
+    is($t2->cget(-spacing2), 1);
+    is($t2->cget(-spacing3), 0);
+}
+{
+    eval { $t2->configure(-tabs => '30 foo') };
+    like($@, qr{\Qbad tab alignment "foo": must be left, right, center, or numeric});
+}
+{
+    $t2->configure(-tabs => [qw{10 20 30}]);
+    $t2->configure(-tabs => []);
+    is_deeply([$t2->cget(-tabs)],[]);
+}
+{
+    eval { $t2->configure(-wrap => "bogus") };
+    like($@, qr{\Qbad wrap mode "bogus": must be char, none, or word});
+}
+{
+    $t2->configure(qw(-selectborderwidth 17
+		      -selectforeground #332211
+		      -selectbackground #abc));
+    is(($t2->tagConfigure('sel', -borderwidth))[4], 17);
+    is(($t2->tagConfigure('sel', -foreground))[4], '#332211');
+    is(($t2->tagConfigure('sel', -background))[4], '#abc');
+}
+{
+    $t2->configure(-selectborderwidth => "");
+    is($t2->tagCget('sel', '-borderwidth'), "");
+    $t2->configure(-selectborderwidth => undef);
+    is($t2->tagCget('sel', '-borderwidth'), "");
+}
+{
+    eval { $t2->configure(-selectborderwidth => "foo") };
+    like($@, qr{\Qbad screen distance "foo"});
+}
+{
+    $t2->destroy if Tk::Exists($t2);
+    $te->selection(qw(to 2));
+    $t2 = $mw->Text(-exportselection => 1);
+    is($mw->SelectionGet, "ab");
+}
+{
+    $t2->destroy if Tk::Exists($t2);
+    $te->selection(qw(to 2));
+    $t2 = $mw->Text(-exportselection => 0);
+    $t2->insert('insert', '1234657890');
+    $t2->tag(qw(add sel 1.0 1.4));
+    is($mw->SelectionGet, "ab");
+}
+{
+    $t2->destroy if Tk::Exists($t2);
+    $te->selection(qw(to 1));
+    $t2 = $mw->Text(-exportselection => 1);
+    $t2->insert('insert', '1234657890');
+    $t2->tag(qw(add sel 1.0 1.4));
+    is($mw->SelectionGet, "1234");
+}
+{
+    $t2->destroy if Tk::Exists($t2);
+    $te->selection(qw(to 1));
+    $t2 = $mw->Text(-exportselection => 0);
+    $t2->insert('insert', '1234657890');
+    $t2->tag(qw(add sel 1.0 1.4));
+    $t2->configure(-exportselection => 1);
+    is($mw->SelectionGet, "1234");
+}
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text(-exportselection => 1);
+    $t2->insert('insert', '1234657890');
+    $t2->tag(qw(add sel 1.0 1.4));
+    is($mw->SelectionGet, "1234");
+    $t2->configure(-exportselection => 0);
+    eval { $mw->SelectionGet };
+    like($@, qr{\QPRIMARY selection doesn't exist or form "STRING" not defined});
+}
+SKIP: {
+    skip($skip_fixed_font_test, 1) if $skip_fixed_font_test;
     # This test is non-portable because the window size will vary depending
     # on the font size, which can vary.
-    catch {destroy .t2}
-    toplevel .t2
-    text .t2.t -width 20 -height 10
-    pack append .t2 .t2.t top
-    wm geometry .t2 +0+0
-    update
-    wm geometry .t2
-} {150x140+0+0}
-test text-12.17 {ConfigureText procedure} {
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    my $t2t = $t2->Text(qw(-width 20 -height 10));
+    $t2t->pack(-side => 'top'); # XXX append?
+    $t2->geometry("+0+0");
+    $t2->update;
+    is($t2->geometry, q{150x140+0+0});    
+}
+{
     # This test was failing Windows because the title bar on .t2
     # was a certain minimum size and it was interfering with the size
     # requested by the -setgrid.  The "overrideredirect" gets rid of the
     # titlebar so the toplevel can shrink to the appropriate size.
-    catch {destroy .t2}
-    toplevel .t2
-    wm overrideredirect .t2 1
-    text .t2.t -width 20 -height 10 -setgrid 1
-    pack append .t2 .t2.t top
-    wm geometry .t2 +0+0
-    update
-    wm geometry .t2
-} {20x10+0+0}
-test text-12.18 {ConfigureText procedure} {
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    $t2->overrideredirect(1);
+    my $t2t = $t2->Text(qw(-width 20 -height 10 -setgrid 1));
+    $t2t->pack(-side => "top"); # XXX append?
+    $t2->geometry('+0+0');
+    $t2->update;
+    is($t2->geometry, q{20x10+0+0});
+}
+{
     # This test was failing on Windows because the title bar on .t2
     # was a certain minimum size and it was interfering with the size
     # requested by the -setgrid.  The "overrideredirect" gets rid of the
     # titlebar so the toplevel can shrink to the appropriate size.
-    catch {destroy .t2}
-    toplevel .t2
-    wm overrideredirect .t2 1
-    text .t2.t -width 20 -height 10 -setgrid 1
-    pack append .t2 .t2.t top
-    wm geometry .t2 +0+0
-    update
-    set result [wm geometry .t2]
-    wm geometry .t2 15x8
-    update
-    lappend result [wm geometry .t2]
-    .t2.t configure -wrap word
-    update
-    lappend result [wm geometry .t2]
-} {20x10+0+0 15x8+0+0 15x8+0+0}
-
-test text-13.1 {TextWorldChanged procedure, spacing options} fonts {
-    catch {destroy .t2}
-    text .t2 -width 20 -height 10
-    set result [winfo reqheight .t2]
-    .t2 configure -spacing1 2
-    lappend result [winfo reqheight .t2]
-    .t2  configure -spacing3 1
-    lappend result [winfo reqheight .t2]
-    .t2 configure -spacing1 0
-    lappend result [winfo reqheight .t2]
-} {140 160 170 150}
-
-test text-14.1 {TextEventProc procedure} {
-    text .tx1 -bg #543210
-    rename .tx1 .tx2
-    set x {}
-    lappend x [winfo exists .tx1]
-    lappend x [.tx2 cget -bg]
-    destroy .tx1
-    lappend x [info command .tx*] [winfo exists .tx1] [winfo exists .tx2]
-} {1 #543210 {} 0 0}
-
-test text-15.1 {TextCmdDeletedProc procedure} {
-    text .tx1
-    rename .tx1 {}
-    list [info command .tx*] [winfo exists .tx1]
-} {{} 0}
-test text-15.2 {TextCmdDeletedProc procedure, disabling -setgrid} fonts {
-    catch {destroy .top}
-    toplevel .top
-    wm geom .top +0+0
-    text .top.t -setgrid 1 -width 20 -height 10
-    pack .top.t
-    update
-    set x [wm geometry .top]
-    rename .top.t {}
-    update
-    lappend x [wm geometry .top]
-    destroy .top
-    set x
-} {20x10+0+0 150x140+0+0}
-
-test text-16.1 {InsertChars procedure} {
-    catch {destroy .t2}
-    text .t2
-    .t2 insert 2.0 abcd\n
-    .t2 get 1.0 end
-} {abcd
-
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    $t2->overrideredirect(1);
+    my $t2t = $t2->Text(qw(-width 20 -height 10 -setgrid 1));
+    $t2t->pack(-side => "top"); # XXX append?
+    $t2->geometry('+0+0');
+    $t2->update;
+    is($t2->geometry, q{20x10+0+0});
+    $t2->geometry("15x8");
+    $t2->update;
+    is($t2->geometry, q{15x8+0+0});
+    $t2t->configure(-wrap => 'word');
+    $t2->update;
+    is($t2->geometry, q{15x8+0+0});
 }
-test text-16.2 {InsertChars procedure} {
-    catch {destroy .t2}
-    text .t2
-    .t2 insert 1.0 abcd\n
-    .t2 insert end 123\n
-    .t2 get 1.0 end
-} {abcd
+SKIP: {
+    skip($skip_fixed_font_test, 4) if $skip_fixed_font_test;
+
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text(qw(-width 20 -height 10));
+    is($t2->reqheight, 140,
+       q{TextWorldChanged procedure, spacing options}
+      );
+    $t2->configure(-spacing1 => 2);
+    is($t2->reqheight, 160);
+    $t2->configure(-spacing3 => 1);
+    is($t2->reqheight, 170);
+    $t2->configure(-spacing1 => 0);
+    is($t2->reqheight, 150);
+}
+
+# (Skipped tests text-15.* because of non-existing "rename" in Perl/Tk
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    $t2->insert("2.0", "abcd\n");
+    is($t2->get("1.0", "end"), q{abcd
+
+}, q{InsertChars procedure});
+}    
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    $t2->insert("1.0", "abcd\n");
+    $t2->insert("end", "123\n");
+    is($t2->get("1.0", "end"), q{abcd
 123
 
+});
 }
-test text-16.3 {InsertChars procedure} {
-    catch {destroy .t2}
-    text .t2
-    .t2 insert 1.0 abcd\n
-    .t2 insert 10.0 123
-    .t2 get 1.0 end
-} {abcd
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    $t2->insert("1.0", "abcd\n");
+    $t2->insert("10.0", "123");
+    is($t2->get("1.0", "end"), q{abcd
 123
+});
 }
+__END__
+
+
 test text-16.4 {InsertChars procedure, inserting on top visible line} {
     catch {destroy .t2}
     text .t2 -width 20 -height 4 -wrap word
