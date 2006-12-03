@@ -28,14 +28,16 @@ use TkTest;
 use Getopt::Long;
 
 my $v;
+my $visual;
 
 BEGIN {
     $Listbox = "Listbox";
     #$Listbox = "TextList";
     GetOptions("listboxclass=s" => \$Listbox,
 	       "v" => \$v,
+	       "visual" => \$visual,
 	      )
-	or die "usage: $0 [-listboxclass baseclass] [-v]";
+	or die "usage: $0 [-listboxclass baseclass] [-v] [-visual]";
 
     eval "use Tk::$Listbox";
 }
@@ -2241,6 +2243,33 @@ SKIP: {
 	is($lb->itemcget(4, -fg), "red");
 	$lb->destroy;
     }
+}
+
+# Additional visual itemconfigure tests
+if ($visual) {
+    skip("no itemconfigure in Tk800.x", 1) # XXX correct!
+	if $Tk::VERSION < 804;
+
+    my $lb = $mw->$Listbox->pack;
+    my $next;
+    my $b = $mw->Button(-text => "Next",
+			-command => sub { $next++ })->pack;
+    $lb->insert("end", 1..10);
+    $lb->itemconfigure(0, -background => "red");
+    $lb->waitVariable(\$next);
+    $lb->itemconfigure(1, -background => "green");
+    $lb->waitVariable(\$next);
+    $lb->itemconfigure(0, -foreground => "white");
+    $lb->waitVariable(\$next);
+    $lb->itemconfigure(1, -foreground => "red");
+    $lb->waitVariable(\$next);
+    $lb->selectionSet(2,3);
+    $lb->waitVariable(\$next);
+    $lb->itemconfigure(2, -selectforeground => "cyan");
+    $lb->waitVariable(\$next);
+    $lb->itemconfigure(3, -selectbackground => "orange");
+    $lb->waitVariable(\$next);
+    $lb->destroy;
 }
 
 resetGridInfo();

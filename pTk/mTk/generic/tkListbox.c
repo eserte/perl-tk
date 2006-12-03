@@ -390,7 +390,7 @@ static int		ConfigureListbox _ANSI_ARGS_((Tcl_Interp *interp,
 			    int flags));
 static int		ConfigureListboxItem _ANSI_ARGS_ ((Tcl_Interp *interp,
 			    Listbox *listPtr, ItemAttr *attrs, int objc,
-			    Tcl_Obj *CONST objv[]));
+			    Tcl_Obj *CONST objv[], int index));
 static int		ListboxDeleteSubCmd _ANSI_ARGS_((Listbox *listPtr,
 			    int first, int last));
 static void		DestroyListbox _ANSI_ARGS_((char *memPtr));
@@ -942,7 +942,7 @@ ListboxWidgetObjCmd(clientData, interp, objc, objv)
 		}
 	    } else {
 		result = ConfigureListboxItem(interp, listPtr, attrPtr,
-			objc-3, objv+3);
+			objc-3, objv+3, index);
 	    }
 	    break;
 	}
@@ -1696,13 +1696,14 @@ ConfigureListbox(interp, listPtr, objc, objv, flags)
  */
 
 static int
-ConfigureListboxItem(interp, listPtr, attrs, objc, objv)
+ConfigureListboxItem(interp, listPtr, attrs, objc, objv, index)
     Tcl_Interp *interp;		/* Used for error reporting. */
     register Listbox *listPtr;	/* Information about widget;  may or may
 				 * not already have values for some fields. */
     ItemAttr *attrs;		/* Information about the item to configure */
     int objc;			/* Number of valid entries in argv. */
     Tcl_Obj *CONST objv[];	/* Arguments. */
+    int index;			/* Index of the listbox item for EventuallyRedrawRange */
 {
     Tk_SavedOptions savedOptions;
 
@@ -1713,7 +1714,8 @@ ConfigureListboxItem(interp, listPtr, attrs, objc, objv)
 	return TCL_ERROR;
     }
     Tk_FreeSavedOptions(&savedOptions);
-    ListboxWorldChanged((ClientData) listPtr);
+    /* ListboxWorldChanged((ClientData) listPtr); -- too slow if a lot of items are in the listbox! */
+    EventuallyRedrawRange(listPtr, index, index); /* this is much faster */
     return TCL_OK;
 }
 
