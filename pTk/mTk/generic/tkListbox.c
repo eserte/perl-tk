@@ -1703,7 +1703,7 @@ ConfigureListboxItem(interp, listPtr, attrs, objc, objv, index)
     ItemAttr *attrs;		/* Information about the item to configure */
     int objc;			/* Number of valid entries in argv. */
     Tcl_Obj *CONST objv[];	/* Arguments. */
-    int index;			/* Index of the listbox item for EventuallyRedrawRange */
+    int index;			/* Index of the listbox item being configure */
 {
     Tk_SavedOptions savedOptions;
 
@@ -1714,8 +1714,11 @@ ConfigureListboxItem(interp, listPtr, attrs, objc, objv, index)
 	return TCL_ERROR;
     }
     Tk_FreeSavedOptions(&savedOptions);
-    /* ListboxWorldChanged((ClientData) listPtr); -- too slow if a lot of items are in the listbox! */
-    EventuallyRedrawRange(listPtr, index, index); /* this is much faster */
+    /*
+     * Redraw this index - ListboxWorldChanged would need to be called
+     * if item attributes were checked in the "world".
+     */
+    EventuallyRedrawRange(listPtr, index, index);
     return TCL_OK;
 }
 
