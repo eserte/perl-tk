@@ -9,6 +9,7 @@
 use strict;
 
 use Tk;
+use Tk::Config ();
 
 BEGIN {
     if (!eval q{
@@ -28,7 +29,9 @@ my $wm_version  = "<unknown>";
 my $mw = MainWindow->new;
 $mw->withdraw;
 
-diag("Tk platform: $Tk::platform");
+my @diag = ("",
+	    "Tk platform:    $Tk::platform",
+	   );
 
 SKIP: {
     skip("window manager check only on X11", 1)
@@ -57,10 +60,16 @@ SKIP: {
 	}
     }
 
-    diag("window manager: $wm_name");
-    diag("version: $wm_version");
+    push @diag, ("window manager: $wm_name",
+		 "       version: $wm_version",
+		);
 
     pass("window manager check done");
 }
+
+my $Xft = $Tk::Config::xlib =~ /-lXft\b/ ? "yes" : "no";
+push @diag, ("XFT:            $Xft");
+
+diag join("\n", @diag);
 
 __END__
