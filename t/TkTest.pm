@@ -9,11 +9,26 @@ use vars qw(@EXPORT $eps $VERSION);
 $VERSION = sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
-@EXPORT = qw(is_float);
+@EXPORT = qw(is_float check_display_harness);
 
 use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
 
+sub check_display_harness () {
+    eval q{
+	use blib;
+	use Tk;
+    };
+    die $@ if $@;
+    if (defined $Tk::platform && $Tk::platform eq 'unix') {
+	my $mw = eval { MainWindow->new() };
+	if (!Tk::Exists($mw)) {
+	    warn "Cannot create MainWindow (maybe no X11 server is running or DISPLAY is not set?)\n$@\n";
+	    exit 0;
+	}
+	$mw->destroy;
+    }
+}
 
 sub is_float ($$;$) {
     my($value, $expected, $testname) = @_;
