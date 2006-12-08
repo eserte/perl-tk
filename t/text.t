@@ -28,7 +28,7 @@ BEGIN {
     }
 }
 
-plan tests => 258;
+plan tests => 373;
 
 use Getopt::Long;
 my $v;
@@ -1229,501 +1229,583 @@ SKIP: {
 123
 });
 }
-__END__
 
+{
+    
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text(qw(-width 20 -height 4 -wrap word))->pack;
+    $t2->insert('insert', "Now is the time for all great men to come to the ");
+    $t2->insert('insert', "aid of their party.\n");
+    $t2->insert('insert', "Now is the time for all great men.\n");
+    $t2->see('end');
+    $mw->update;
+    $t2->insert('1.0' => "Short\n");
+    is($t2->index('@0,0'), '2.56',
+       q{InsertChars procedure, inserting on top visible line});
+}
 
-test text-16.4 {InsertChars procedure, inserting on top visible line} {
-    catch {destroy .t2}
-    text .t2 -width 20 -height 4 -wrap word
-    pack .t2
-    .t2 insert insert "Now is the time for all great men to come to the "
-    .t2 insert insert "aid of their party.\n"
-    .t2 insert insert "Now is the time for all great men.\n"
-    .t2 see end
-    update
-    .t2 insert 1.0 "Short\n"
-    .t2 index @0,0
-} {2.56}
-test text-16.5 {InsertChars procedure, inserting on top visible line} {
-    catch {destroy .t2}
-    text .t2 -width 20 -height 4 -wrap word
-    pack .t2
-    .t2 insert insert "Now is the time for all great men to come to the "
-    .t2 insert insert "aid of their party.\n"
-    .t2 insert insert "Now is the time for all great men.\n"
-    .t2 see end
-    update
-    .t2 insert 1.55 "Short\n"
-    .t2 index @0,0
-} {2.0}
-test text-16.6 {InsertChars procedure, inserting on top visible line} {
-    catch {destroy .t2}
-    text .t2 -width 20 -height 4 -wrap word
-    pack .t2
-    .t2 insert insert "Now is the time for all great men to come to the "
-    .t2 insert insert "aid of their party.\n"
-    .t2 insert insert "Now is the time for all great men.\n"
-    .t2 see end
-    update
-    .t2 insert 1.56 "Short\n"
-    .t2 index @0,0
-} {1.56}
-test text-16.7 {InsertChars procedure, inserting on top visible line} {
-    catch {destroy .t2}
-    text .t2 -width 20 -height 4 -wrap word
-    pack .t2
-    .t2 insert insert "Now is the time for all great men to come to the "
-    .t2 insert insert "aid of their party.\n"
-    .t2 insert insert "Now is the time for all great men.\n"
-    .t2 see end
-    update
-    .t2 insert 1.57 "Short\n"
-    .t2 index @0,0
-} {1.56}
-catch {destroy .t2}
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text(qw(-width 20 -height 4 -wrap word))->pack;
+    $t2->insert('insert', "Now is the time for all great men to come to the ");
+    $t2->insert('insert', "aid of their party.\n");
+    $t2->insert('insert', "Now is the time for all great men.\n");
+    $t2->see('end');
+    $mw->update;
+    $t2->insert('1.55' => "Short\n");
+    is($t2->index('@0,0'), '2.0');
+}
 
-proc setup {} {
-    .t delete 1.0 end
-    .t insert 1.0 "Line 1
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text(qw(-width 20 -height 4 -wrap word))->pack;
+    $t2->insert('insert', "Now is the time for all great men to come to the ");
+    $t2->insert('insert', "aid of their party.\n");
+    $t2->insert('insert', "Now is the time for all great men.\n");
+    $t2->see('end');
+    $mw->update;
+    $t2->insert('1.56' => "Short\n");
+    is($t2->index('@0,0'), '1.56');
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text(qw(-width 20 -height 4 -wrap word))->pack;
+    $t2->insert('insert', "Now is the time for all great men to come to the ");
+    $t2->insert('insert', "aid of their party.\n");
+    $t2->insert('insert', "Now is the time for all great men.\n");
+    $t2->see('end');
+    $mw->update;
+    $t2->insert('1.57' => "Short\n");
+    is($t2->index('@0,0'), '1.56');
+}
+
+$t2->destroy if Tk::Exists($t2);
+
+sub setup () {
+    $t->delete(qw(1.0 end));
+    $t->insert('1.0', "Line 1
 abcde
 12345
-Line 4"
+Line 4");
 }
 
-.t delete 1.0 end
-test text-17.1 {DeleteChars procedure} {
-    .t get 1.0 end
-} {
+{
+    $t->delete('1.0', 'end');
+    is($t->get('1.0', 'end'), "\n",
+       q{DeleteChars procedure});
 }
-test text-17.2 {DeleteChars procedure} {
-    list [catch {.t delete foobar} msg] $msg
-} {1 {bad text index "foobar"}}
-test text-17.3 {DeleteChars procedure} {
-    list [catch {.t delete 1.0 lousy} msg] $msg
-} {1 {bad text index "lousy"}}
-test text-17.4 {DeleteChars procedure} {
-    setup
-    .t delete 2.1
-    .t get 1.0 end
-} {Line 1
+
+{
+    eval { $t->delete("foobar") };
+    like($@, qr{\Qbad text index "foobar"});
+}
+
+{
+    eval { $t->delete("1.0", "lousy") };
+    like($@, qr{\Qbad text index "lousy"});
+}
+
+{
+    setup;
+    $t->delete("2.1");
+    is($t->get('1.0', 'end'), q{Line 1
 acde
 12345
 Line 4
+});
 }
-test text-17.5 {DeleteChars procedure} {
-    setup
-    .t delete 2.3
-    .t get 1.0 end
-} {Line 1
+
+{
+    setup;
+    $t->delete("2.3");
+    is($t->get('1.0', 'end'), q{Line 1
 abce
 12345
 Line 4
+});
 }
-test text-17.6 {DeleteChars procedure} {
-    setup
-    .t delete 2.end
-    .t get 1.0 end
-} {Line 1
+
+{
+    setup;
+    $t->delete("2.end");
+    is($t->get('1.0', 'end'), q{Line 1
 abcde12345
 Line 4
+});
 }
-test text-17.7 {DeleteChars procedure} {
-    setup
-    .t tag add sel 4.2 end
-    .t delete 4.2 end
-    list [.t tag ranges sel] [.t get 1.0 end]
-} {{} {Line 1
+
+{
+    setup;
+    $t->tag(qw(add sel 4.2 end));
+    $t->delete(qw(4.2 end));
+    is($t->tagRanges('sel'), undef);
+    is($t->get('1.0', 'end'), q{Line 1
 abcde
 12345
 Li
-}}
-test text-17.8 {DeleteChars procedure} {
-    setup
-    .t tag add sel 1.0 end
-    .t delete 4.0 end
-    list [.t tag ranges sel] [.t get 1.0 end]
-} {{1.0 3.5} {Line 1
-abcde
-12345
-}}
-test text-17.9 {DeleteChars procedure} {
-    setup
-    .t delete 2.2 2.2
-    .t get 1.0 end
-} {Line 1
-abcde
-12345
-Line 4
+});
 }
-test text-17.10 {DeleteChars procedure} {
-    setup
-    .t delete 2.3 2.1
-    .t get 1.0 end
-} {Line 1
+
+{
+    setup;
+    $t->tag('add', 'sel', '1.0', 'end');
+    $t->delete('4.0', 'end');
+    is_deeply([$t->tagRanges('sel')], [qw(1.0 3.5)]);
+    is($t->get('1.0', 'end'), q{Line 1
+abcde
+12345
+});
+}
+
+{
+    setup;
+    $t->delete(qw(2.2 2.2));
+    is($t->get(qw(1.0 end)), q{Line 1
 abcde
 12345
 Line 4
+});
 }
-test text-17.11 {DeleteChars procedure} {
-    catch {destroy .t2}
-    toplevel .t2
-    text .t2.t -width 20 -height 5
-    pack append .t2 .t2.t top
-    wm geometry .t2 +0+0
-    .t2.t insert 1.0 "abc\n123\nx\ny\nz\nq\nr\ns"
-    update
-    .t2.t delete 1.0 3.0
-    list [.t2.t index @0,0] [.t2.t get @0,0]
-} {1.0 x}
-test text-17.12 {DeleteChars procedure} {
-    catch {destroy .t2}
-    toplevel .t2
-    text .t2.t -width 20 -height 5
-    pack append .t2 .t2.t top
-    wm geometry .t2 +0+0
-    .t2.t insert 1.0 "abc\n123\nx\ny\nz\nq\nr\ns"
-    .t2.t yview 3.0
-    update
-    .t2.t delete 2.0 4.0
-    list [.t2.t index @0,0] [.t2.t get @0,0]
-} {2.0 y}
-catch {destroy .t2}
-toplevel .t2
-text .t2.t -width 1 -height 10 -wrap char
-frame .t2.f -width 200 -height 20 -relief raised -bd 2
-pack .t2.f .t2.t -side left
-wm geometry .t2 +0+0
-update
-test text-17.13 {DeleteChars procedure, updates affecting topIndex} {
-    .t2.t delete 1.0 end
-    .t2.t insert end "abcde\n12345\nqrstuv"
-    .t2.t yview 2.1
-    .t2.t delete 1.4 2.3
-    .t2.t index @0,0
-} {1.2}
-test text-17.14 {DeleteChars procedure, updates affecting topIndex} {
-    .t2.t delete 1.0 end
-    .t2.t insert end "abcde\n12345\nqrstuv"
-    .t2.t yview 2.1
-    .t2.t delete 2.3 2.4
-    .t2.t index @0,0
-} {2.0}
-test text-17.15 {DeleteChars procedure, updates affecting topIndex} {
-    .t2.t delete 1.0 end
-    .t2.t insert end "abcde\n12345\nqrstuv"
-    .t2.t yview 1.3
-    .t2.t delete 1.0 1.2
-    .t2.t index @0,0
-} {1.1}
-test text-17.16 {DeleteChars procedure, updates affecting topIndex} {
-    catch {destroy .t2}
-    toplevel .t2
-    text .t2.t -width 6 -height 10 -wrap word
-    frame .t2.f -width 200 -height 20 -relief raised -bd 2
-    pack .t2.f .t2.t -side left
-    wm geometry .t2 +0+0
-    update
-    .t2.t insert end "abc def\n01 2345 678 9101112\nLine 3\nLine 4\nLine 5\n6\n7\n8\n"
-    .t2.t yview 2.4
-    .t2.t delete 2.5
-    set x [.t2.t index @0,0]
-    .t2.t delete 2.5
-    list $x [.t2.t index @0,0]
-} {2.3 2.0}
 
-.t delete 1.0 end
-foreach i {a b c d e f g h i j k l m n o p q r s t u v w x y z} {
-    .t insert end $i.0$i.1$i.2$i.3$i.4\n
+{
+    setup;
+    $t->delete(qw(2.3 2.1));
+    is($t->get(qw(1.0 end)), q{Line 1
+abcde
+12345
+Line 4
+});
 }
-test text-18.1 {TextFetchSelection procedure} {
-    .t tag add sel 1.3 3.4
-    selection get
-} {a.1a.2a.3a.4
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    my $t2t = $t2->Text(qw(-width 20 -height 5))->pack;
+    $t2->geometry("+0+0");
+    $t2t->insert("1.0", "abc\n123\nx\ny\nz\nq\nr\ns");
+    $mw->update;
+    $t2t->delete("1.0", "3.0");
+    is($t2t->index('@0,0'), '1.0');
+    is($t2t->get('@0,0'), 'x');    
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    my $t2t = $t2->Text(qw(-width 20 -height 5))->pack;
+    $t2->geometry("+0+0");
+    $t2t->insert("1.0", "abc\n123\nx\ny\nz\nq\nr\ns");
+    $t2t->yview('3.0');
+    $mw->update;
+    $t2t->delete(qw(2.0 4.0));
+    is($t2t->index('@0,0'), '2.0');
+    is($t2t->get('@0,0'), 'y');
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    my $t2t = $t2->Text(qw(-width 1 -height 10 -wrap char));
+    my $t2f = $t2->Frame(qw(-width 200 -height 20 -relief raised -bd 2));
+    Tk::pack($t2f, $t2t, -side => 'left');
+    $t2->geometry('+0+0');
+    $mw->update;
+
+    $t2t->delete(qw(1.0 end));
+    $t2t->insert('end', "abcde\n12345\nqrstuv");
+    $t2t->yview('2.1');
+    $t2t->delete('1.4', '2.3');
+    is($t2t->index('@0,0'), '1.2');
+
+    $t2t->delete(qw(1.0 end));
+    $t2t->insert('end', "abcde\n12345\nqrstuv");
+    $t2t->yview('2.1');
+    $t2t->delete('2.3', '2.4');
+    is($t2t->index('@0,0'), '2.0');
+
+    $t2t->delete(qw(1.0 end));
+    $t2t->insert('end', "abcde\n12345\nqrstuv");
+    $t2t->yview('1.3');
+    $t2t->delete('1.0', '1.2');
+    is($t2t->index('@0,0'), '1.1');
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    my $t2t = $t2->Text(qw(-width 6 -height 10 -wrap word))->pack(-side => "left");
+    my $t2f = $t2->Frame(qw(-width 200 -height 20 -relief raised -bd 2))->pack(-side => "left");
+    $t2->geometry('+0+0');
+    $mw->update;
+    $t2t->insert('end', "abc def\n01 2345 678 9101112\nLine 3\nLine 4\nLine 5\n6\n7\n8\n");
+    $t2t->yview(qw(2.4));
+    $t2t->delete(qw(2.5));
+    is($t2t->index('@0,0'), '2.3',
+       q{DeleteChars procedure, updates affecting topIndex});
+    $t2t->delete('2.5');
+    is($t2t->index('@0,0'), '2.0');
+}
+
+$t->delete('1.0', 'end');
+for my $i ('a' .. 'z') {
+    $t->insert('end', "$i.0$i.1$i.2$i.3$i.4\n");
+}
+
+{
+    $t->tagAdd('sel', '1.3', '3.4');
+    is($mw->SelectionGet, q{a.1a.2a.3a.4
 b.0b.1b.2b.3b.4
-c.0c}
-test text-18.2 {TextFetchSelection procedure} {
-    .t tag add x 1.2
-    .t tag add x 1.4
-    .t tag add x 2.0
-    .t tag add x 2.3
-    .t tag remove sel 1.0 end
-    .t tag add sel 1.0 3.4
-    selection get
-} {a.0a.1a.2a.3a.4
-b.0b.1b.2b.3b.4
-c.0c}
-test text-18.3 {TextFetchSelection procedure} {
-    .t tag remove sel 1.0 end
-    .t tag add sel 13.3
-    selection get
-} {m}
-test text-18.4 {TextFetchSelection procedure} {
-    .t tag remove x 1.0 end
-    .t tag add sel 1.0 3.4
-    .t tag remove sel 1.0 end
-    .t tag add sel 1.2 1.5
-    .t tag add sel 2.4 3.1
-    .t tag add sel 10.0 10.end
-    .t tag add sel 13.3
-    selection get
-} {0a..1b.2b.3b.4
-cj.0j.1j.2j.3j.4m}
-set x ""
-for {set i 1} {$i < 200} {incr i} {
-    append x "This is line $i, padded to just about 53 characters.\n"
+c.0c}, q{TextFetchSelection procedure});
 }
-test text-18.5 {TextFetchSelection procedure, long selections} {
-    .t delete 1.0 end
-    .t insert end $x
-    .t tag add sel 1.0 end
-    selection get
-} $x\n
 
-test text-19.1 {TkTextLostSelection procedure} unix {
-    catch {destroy .t2}
-    text .t2
-    .t2 insert 1.0 "abc\ndef\nghijk\n1234"
-    .t2 tag add sel 1.2 3.3
-    .t.e select to 1
-    .t2 tag ranges sel
-} {}
-test text-19.2 {TkTextLostSelection procedure} win {
-    catch {destroy .t2}
-    text .t2
-    .t2 insert 1.0 "abc\ndef\nghijk\n1234"
-    .t2 tag add sel 1.2 3.3
-    .t.e select to 1
-    .t2 tag ranges sel
-} {1.2 3.3}
-catch {destroy .t2}
-test text-19.3 {TkTextLostSelection procedure} {
-    catch {destroy .t2}
-    text .t2
-    .t2 insert 1.0 "abcdef\nghijk\n1234"
-    .t2 tag add sel 1.0 1.3
-    set x [selection get]
-    selection clear
-    lappend x [catch {selection get} msg] $msg
-    .t2 tag add sel 1.0 1.3
-    lappend x [selection get]
-} {abc 1 {PRIMARY selection doesn't exist or form "STRING" not defined} abc}
+{
+    $t->tagAdd('x', '1.2');
+    $t->tagAdd('x', '1.4');
+    $t->tagAdd('x', '2.0');
+    $t->tagAdd('x', '2.3');
+    $t->tagRemove('sel', '1.0', 'end');
+    $t->tagAdd('sel', '1.0', '3.4');
+    is($mw->SelectionGet, q{a.0a.1a.2a.3a.4
+b.0b.1b.2b.3b.4
+c.0c});
+}
 
-.t delete 1.0 end
-.t insert end "xxyz xyz x. the\nfoo -forward bar xxxxx BaR foo\nxyz xxyzx"
-test text-20.1 {TextSearchCmd procedure, argument parsing} {
-    list [catch {.t search -} msg] $msg
-} {1 {bad switch "-": must be --, -all, -backward, -count, -elide, -exact, -forward, -nocase, -nolinestop, -overlap, -regexp, or -strictlimits}}
-test text-20.2 {TextSearchCmd procedure, -backwards option} {
-    .t search -backwards xyz 1.4
-} {1.1}
-test text-20.2.1 {TextSearchCmd procedure, -all option} {
-    .t search -all xyz 1.4
-} {1.5 3.0 3.5 1.1}
-test text-20.3 {TextSearchCmd procedure, -forwards option} {
-    .t search -forwards xyz 1.4
-} {1.5}
-test text-20.4 {TextSearchCmd procedure, -exact option} {
-    .t search -f -exact x. 1.0
-} {1.9}
-test text-20.5 {TextSearchCmd procedure, -regexp option} {
-    .t search -b -regexp x.z 1.4
-} {1.1}
-test text-20.6 {TextSearchCmd procedure, -count option} {
-    set length unmodified
-    list [.t search -count length x. 1.4] $length
-} {1.9 2}
-test text-20.7 {TextSearchCmd procedure, -count option} {
-    list [catch {.t search -count} msg] $msg
-} {1 {no value given for "-count" option}}
-test text-20.8 {TextSearchCmd procedure, -nocase option} {
-    list [.t search -nocase BaR 1.1] [.t search BaR 1.1]
-} {2.13 2.23}
-test text-20.9 {TextSearchCmd procedure, -n ambiguous option} {
-    list [catch {.t search -n BaR 1.1} msg] $msg
-} {1 {bad switch "-n": must be --, -all, -backward, -count, -elide, -exact, -forward, -nocase, -nolinestop, -overlap, -regexp, or -strictlimits}}
-test text-20.9.1 {TextSearchCmd procedure, -nocase option} {
-    .t search -noc BaR 1.1
-} {2.13}
-test text-20.9.2 {TextSearchCmd procedure, -nolinestop option} {
-    list [catch {.t search -nolinestop BaR 1.1} msg] $msg
-} {1 {the "-nolinestop" option requires the "-regexp" option to be present}}
-test text-20.9.3 {TextSearchCmd procedure, -nolinestop option} {
-    set msg ""
-    list [.t search -nolinestop -regexp -count msg e.*o 1.1] $msg
-} {1.14 32}
-test text-20.10 {TextSearchCmd procedure, -- option} {
-    .t search -- -forward 1.0
-} {2.4}
-test text-20.11 {TextSearchCmd procedure, argument parsing} {
-    list [catch {.t search abc} msg] $msg
-} {1 {wrong # args: should be ".t search ?switches? pattern index ?stopIndex?"}}
-test text-20.12 {TextSearchCmd procedure, argument parsing} {
-    list [catch {.t search abc d e f} msg] $msg
-} {1 {wrong # args: should be ".t search ?switches? pattern index ?stopIndex?"}}
-test text-20.13 {TextSearchCmd procedure, check index} {
-    list [catch {.t search abc gorp} msg] $msg
-} {1 {bad text index "gorp"}}
-test text-20.14 {TextSearchCmd procedure, startIndex == "end"} {
-    .t search non-existent end
-} {}
-test text-20.15 {TextSearchCmd procedure, startIndex == "end"} {
-    .t search non-existent end
-} {}
-test text-20.16 {TextSearchCmd procedure, bad stopIndex} {
-    list [catch {.t search abc 1.0 lousy} msg] $msg
-} {1 {bad text index "lousy"}}
-test text-20.17 {TextSearchCmd procedure, pattern case conversion} {
-    list [.t search -nocase BAR 1.1] [.t search BAR 1.1]
-} {2.13 {}}
-test text-20.18 {TextSearchCmd procedure, bad regular expression pattern} {
-    list [catch {.t search -regexp a( 1.0} msg] $msg
-} {1 {couldn't compile regular expression pattern: parentheses () not balanced}}
-test text-20.19 {TextSearchCmd procedure, skip dummy last line} {
-    .t search -backwards BaR end 1.0
-} {2.23}
-test text-20.20 {TextSearchCmd procedure, skip dummy last line} {
-    .t search -backwards \n end 1.0
-} {3.9}
-test text-20.21 {TextSearchCmd procedure, skip dummy last line} {
-    .t search \n end
-} {1.15}
-test text-20.22 {TextSearchCmd procedure, skip dummy last line} {
-    .t search -back \n 1.0
-} {3.9}
-test text-20.23 {TextSearchCmd procedure, extract line contents} {
-    .t tag add foo 1.2
-    .t tag add x 1.3
-    .t mark set silly 1.2
-    .t search xyz 3.6
-} {1.1}
-test text-20.24 {TextSearchCmd procedure, stripping newlines} {
-    .t search the\n 1.0
-} {1.12}
-test text-20.25 {TextSearchCmd procedure, handling newlines} {
-    .t search -regexp the\n 1.0
-} {1.12}
-test text-20.26 {TextSearchCmd procedure, stripping newlines} {
-    .t search -regexp {the$} 1.0
-} {1.12}
-test text-20.27 {TextSearchCmd procedure, handling newlines} {
-    .t search -regexp \n 1.0
-} {1.15}
-test text-20.28 {TextSearchCmd procedure, line case conversion} {
-    list [.t search -nocase bar 2.18] [.t search bar 2.18]
-} {2.23 2.13}
-test text-20.29 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search -backwards xyz 1.6
-} {1.5}
-test text-20.30 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search -backwards xyz 1.5
-} {1.1}
-test text-20.31 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search xyz 1.5
-} {1.5}
-test text-20.32 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search xyz 1.6
-} {3.0}
-test text-20.33 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search {} 1.end
-} {1.15}
-test text-20.34 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search f 1.end
-} {2.0}
-test text-20.35 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search {} end
-} {1.0}
-test text-20.35a {TextSearchCmd procedure, regexp finds empty lines} {
+{
+    $t->tagRemove('sel', '1.0', 'end');
+    $t->tagAdd('sel', '13.3');
+    is($mw->SelectionGet, 'm');
+}
+
+{
+    $t->tag(qw(remove x 1.0 end));
+    $t->tag(qw(add sel 1.0 3.4));
+    $t->tag(qw(remove sel 1.0 end));
+    $t->tag(qw(add sel 1.2 1.5));
+    $t->tag(qw(add sel 2.4 3.1));
+    $t->tag(qw(add sel 10.0 10.end));
+    $t->tag(qw(add sel 13.3));
+    is($mw->SelectionGet, q{0a..1b.2b.3b.4
+cj.0j.1j.2j.3j.4m});
+}
+
+{
+    my $x = "";
+    for(my $i = 1; $i < 200; $i++) {
+	$x .= "This is line $i, padded to just about 53 characters.\n";
+    }
+
+    $t->delete(qw(1.0 end));
+    $t->insert('end', $x);
+    $t->tagAdd('sel', '1.0', 'end');
+    is($mw->SelectionGet, "$x\n", q{TextFetchSelection procedure, long selections});
+}
+
+SKIP: {
+    skip("Only for unix", 1)
+	if $Tk::platform ne 'unix';
+
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    $t2->insert('1.0', "abc\ndef\nghijk\n1234");
+    $t2->tagAdd('sel', '1.2', '3.3');
+    $te->selectionTo(1);
+    is_deeply([$t2->tagRanges('sel')], [],
+	      q{TkTextLostSelection procedure});
+}
+
+SKIP: {
+    skip("Only for windows", 1)
+	if $Tk::platform ne 'MSWin32';
+
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    $t2->insert('1.0', "abc\ndef\nghijk\n1234");
+    $t2->tagAdd('sel', '1.2', '3.3');
+    $te->selectionTo(1);
+    is_deeply([$t2->tagRanges('sel')], [qw(1.2 3.3)],
+	      q{TkTextLostSelection procedure});
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    $t2->insert('1.0', "abcdef\nghijk\n1234");
+    $t2->tagAdd('sel', '1.0', '1.3');
+    is($mw->SelectionGet, 'abc');
+    $mw->SelectionClear;
+    eval { $mw->SelectionGet };
+    like($@, qr{\QPRIMARY selection doesn't exist or form "STRING" not defined});
+    $t2->tagAdd('sel', '1.0', '1.3');
+    is($mw->SelectionGet, 'abc');
+}
+
+{
+    $t->delete('1.0', 'end');
+    $t->insert("end", "xxyz xyz x. the\nfoo -forward bar xxxxx BaR foo\nxyz xxyzx");
+
+    {
+	local $TODO = "Many options NYI in Perl/Tk";
+
+	eval { $t->search('-') };
+	like($@, qr{\Qbad switch "-": must be --, -all, -backward, -count, -elide, -exact, -forward, -nocase, -nolinestop, -overlap, -regexp, or -strictlimits},
+	     q{TextSearchCmd procedure, argument parsing});
+    }
+
+    is($t->search('-backwards', 'xyz', '1.4'), '1.1',
+       q{TextSearchCmd procedure, -backwards option});
+
+    SKIP: {
+	    skip("-all NYI in Perl/Tk # TODO", 1);
+
+	    is_deeply([$t->search('-all', 'xyz', '1.4')],
+		      [qw{1.5 3.0 3.5 1.1}],
+		      q{TextSearchCmd procedure, -all option});
+	}
+
+    is($t->search('-forwards', 'xyz', '1.4'), '1.5',
+       q{TextSearchCmd procedure, -forwards option});
+
+    is($t->search('-f', '-exact', 'x.', '1.0'), '1.9',
+       q{TextSearchCmd procedure, -exact option});
+
+    is($t->search('-b', '-regexp', 'x.z', '1.4'), '1.1',
+       q{TextSearchCmd procedure, -regexp option});
+
+    is($t->search('-b', '-regexp', qr{x.z}, '1.4'), '1.1',
+       q{TextSearchCmd procedure, -regexp option with qr regexp});
+
+    is($t->search('-b', '-regexp', qr{X.Z}i, '1.4'), '1.1',
+       q{TextSearchCmd procedure, -regexp option with qr regexp and flags});
+
+    is($t->search('-f', '-regexp', '(?i:BAR)', '1.0'), '2.13',
+       q{Perl regexp, embedded option});
+
+    my $length = "unmodified";
+    is($t->search(-count => \$length, 'x.', '1.4'), '1.9',
+      q{TextSearchCmd procedure, -count option});
+    is($length, 2);
+
+## It's not yet clear if the array form is also needed...
+#     my @length;
+#     is($t->search(-count => \@length, 'x.', '1.4'), '1.9',
+#       q{TextSearchCmd procedure, -count option});
+#     is_deeply(\@length, [2]);
+
+    eval { $t->search('-count') };
+    like($@, qr{\Qno value given for "-count" option});
+
+    is($t->search(-nocase => 'BaR', '1.1'), '2.13',
+       q{TextSearchCmd procedure, -nocase option});
+    is($t->search('BaR', '1.1'), '2.23');
+
+    {
+	local $TODO = "not clear if this should be a failure...";
+
+	eval { $t->search(qw(-n BaR 1.1)) };
+	isnt($@, "", q{TextSearchCmd procedure, -n ambiguous option});
+    }
+
+    is($t->search(-noc => 'BaR', '1.1'), '2.13');
+
+    {
+	local $TODO = "-nolinestop NYI in Perl/Tk";
+
+	eval { $t->search(-nolinestop => 'BaR', '1.1') };
+	like($@, qr{\Qthe "-nolinestop" option requires the "-regexp" option to be present},
+	     q{TextSearchCmd procedure, -nolinestop option});
+    }
+
+ SKIP: {
+	skip("-nolinestop NYI in Perl/Tk # TODO", 2);
+
+	my $msg = "";
+	is($t->search(-nolinestop => -regexp => -count => \$msg, 'e.*o', '1.1'), '1.14');
+	is($msg, "32");
+    }
+
+    is($t->search('--', '-forward', '1.0'), '2.4',
+       q{TextSearchCmd procedure, -- option});
+
+    eval { $t->search('abc') };
+    like($@, qr{\Qwrong # args: should be ".t search ?switches? pattern index ?stopIndex?"},
+	 q{TextSearchCmd procedure, argument parsing});
+
+    eval { $t->search(qw(abc d e f)) };
+    like($@, qr{\Qwrong # args: should be ".t search ?switches? pattern index ?stopIndex?"});
+
+    eval { $t->search(qw(abc gorp)) };
+    like($@, qr{\Qbad text index "gorp"},
+	 q{TextSearchCmd procedure, check index});
+
+    is($t->search("non-existent", "end"), undef,
+       q{TextSearchCmd procedure, startIndex == "end"});
+
+    eval { $t->search(qw(abc 1.0 lousy)) };
+    like($@, qr{\Qbad text index "lousy"},
+	 q{TextSearchCmd procedure, bad stopIndex});
+
+    is($t->search(-nocase => BAR => '1.1'), "2.13",
+       q{TextSearchCmd procedure, pattern case conversion});
+
+    is($t->search('BAR' => '1.1'), undef);
+
+    # This test causes a "Stack moved ........ => ........" message
+    eval { $t->search(-regexp => 'a(', '1.0') };
+    like($@, qr{Unmatched \( in regex}, # this is a perl error message, not a Tcl error message
+	 q{TextSearchCmd procedure, bad regular expression pattern});
+
+    is($t->search(-backwards => 'BaR', 'end', '1.0'), '2.23',
+       q{TextSearchCmd procedure, skip dummy last line});
+
+    is($t->search(-backwards => "\n", "end", "1.0"), "3.9");
+
+    is($t->search("\n", "end"), "1.15");
+
+    is($t->search(-back => "\n", "1.0"), "3.9");
+
+    $t->tagAdd("foo", "1.2");
+    $t->tagAdd("x", "1.3");
+    $t->markSet("silly", "1.2");
+    is($t->search("xyz", "3.6"), "1.1",
+       q{TextSearchCmd procedure, extract line contents});
+
+    is($t->search("the\n", "1.0"), "1.12",
+       q{TextSearchCmd procedure, stripping newlines});
+
+    {
+	local $TODO = "This is probably implemented in tk8.5";
+
+	is($t->search(-regexp => "the\n", "1.0"), "1.12",
+	   q{TextSearchCmd procedure, handling newlines});
+
+	is($t->search(-regexp => "\n", "1.0"), "1.15");
+    }
+
+    is($t->search(-regexp => q{the$}, "1.0"), "1.12",
+       q{TextSearchCmd procedure, stripping newlines});
+
+    is($t->search(-nocase => "bar", "2.18"), "2.23",
+       q{TextSearchCmd procedure, line case conversion});
+    is($t->search('bar', '2.18'), "2.13");
+
+    is($t->search(-backwards => 'xyz', '1.6'), '1.5',
+       q{TextSearchCmd procedure, firstChar and lastChar});
+    is($t->search(-backwards => 'xyz', '1.5'), '1.1');
+    is($t->search('xyz', '1.5'), '1.5');
+    is($t->search('xyz', '1.6'), '3.0');
+    is($t->search(undef, '1.end'), '1.15');
+    is($t->search('', '1.end'), '1.15');
+    is($t->search('f', '1.end'), '2.0');
+    is($t->search(undef, 'end'), '1.0');
+
     # Test for fix of bug #1643
-    .t insert end "\n"
-    tk::TextSetCursor .t 4.0
-    .t search -forward -regexp {^$} insert end
-} {4.0}
-    
-catch {destroy .t2}
-toplevel .t2
-wm geometry .t2 +0+0
-text .t2.t -width 30 -height 10
-pack .t2.t
-.t2.t insert 1.0 "This is a line\nand this is another"
-.t2.t insert end "\nand this is yet another"
-frame .t2.f -width 20 -height 20 -bd 2 -relief raised
-.t2.t window create 2.5 -window .t2.f
-test text-20.36 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t2.t search his 2.6
-} {2.6}
-test text-20.37 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t2.t search this 2.6
-} {3.4}
-test text-20.38 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t2.t search is 2.6
-} {2.7}
-test text-20.39 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t2.t search his 2.7
-} {3.5}
-test text-20.40 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t2.t search -backwards "his is another" 2.6
-} {2.6}
-test text-20.41 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t2.t search -backwards "his is" 2.6
-} {1.1}
-destroy .t2
-test text-20.42 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search -backwards forw 2.5
-} {2.5}
-test text-20.43 {TextSearchCmd procedure, firstChar and lastChar} {
-    .t search forw 2.5
-} {2.5}
-test text-20.44 {TextSearchCmd procedure, firstChar and lastChar} {
-    catch {destroy .t2}
-    text .t2
-    list [.t2 search a 1.0] [.t2 search -backward a 1.0]
-} {{} {}}
-test text-20.45 {TextSearchCmd procedure, regexp match length} {
-    set length unchanged
-    list [.t search -regexp -count length x(.)(.*)z 1.1] $length
-} {1.1 7}
-test text-20.46 {TextSearchCmd procedure, regexp match length} {
-    set length unchanged
-    list [.t search -regexp -backward -count length fo* 2.5] $length
-} {2.0 3}
-test text-20.47 {TextSearchCmd procedure, checking stopIndex} {
-    list [.t search bar 2.1 2.13] [.t search bar 2.1 2.14] \
-	    [.t search bar 2.12 2.14] [.t search bar 2.14 2.14]
-} {{} 2.13 2.13 {}}
-test text-20.48 {TextSearchCmd procedure, checking stopIndex} {
-    list [.t search -backwards bar 2.20 2.13] \
-      [.t search -backwards bar 2.20 2.14] \
-      [.t search -backwards bar 2.14 2.13] \
-      [.t search -backwards bar 2.13 2.13]
-} {2.13 {} 2.13 {}}
-test text-20.48.1 {TextSearchCmd procedure, checking stopIndex} {
-    list [.t search -backwards -strict bar 2.20 2.13] \
-      [.t search -backwards -strict bar 2.20 2.14] \
-      [.t search -backwards -strict bar 2.14 2.13] \
-      [.t search -backwards -strict bar 2.13 2.13]
-} {2.13 {} {} {}}
-test text-20.49 {TextSearchCmd procedure, embedded windows and index/count} {
-    frame .t.f1 -width 20 -height 20 -relief raised -bd 2
-    frame .t.f2 -width 20 -height 20 -relief raised -bd 2
-    frame .t.f3 -width 20 -height 20 -relief raised -bd 2
-    frame .t.f4 -width 20 -height 20 -relief raised -bd 2
-    .t window create 2.10 -window .t.f3
-    .t window create 2.8 -window .t.f2
-    .t window create 2.8 -window .t.f1
-    .t window create 2.1 -window .t.f4
-    set result ""
-    lappend result [.t search -count x forward 1.0] $x
-    lappend result [.t search -count x wa 1.0] $x
-    .t delete 2.1
-    .t delete 2.8 2.10
-    .t delete 2.10
-    set result
-} {2.6 10 2.11 2}
-test text-20.50 {TextSearchCmd procedure, error setting variable} {
-    catch {unset a}
-    set a 44
-    list [catch {.t search -count a(2) xyz 1.0} msg] $msg
-} {1 {can't set "a(2)": variable isn't array}}
+    $t->insert("end", "\n");
+    $t->SetCursor("4.0");
+    is($t->search(-forward => -regexp => q{^$}, 'insert', 'end'), "4.0",
+       q{TextSearchCmd procedure, regexp finds empty lines});
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Toplevel;
+    my $t2t = $t2->Text(qw(-width 30 -height 10))->pack;
+    $t2t->insert('1.0', "This is a line\nand this is another");
+    $t2t->insert('end', "\nand this is yet another");
+    my $t2f = $t2->Frame(qw(-width 20 -height 20 -bd 2 -relief raised));
+    $t2t->windowCreate("2.5", -window => $t2f);
+
+    is($t2t->search("his", "2.6"), "2.6",
+       q{TextSearchCmd procedure, firstChar and lastChar});
+    is($t2t->search("this", "2.6"), "3.4");
+    is($t2t->search("is", "2.6"), "2.7");
+    is($t2t->search("his", "2.7"), "3.5");
+    is($t2t->search("-backwards", "his is another", "2.6"), "2.6");
+    is($t2t->search("-backwards", "his is", "2.6"), "1.1");
+
+    $t2->destroy;
+}
+
+{
+    is($t->search(-backwards => 'forw', '2.5'), '2.5');
+    is($t->search('forw', '2.5'), '2.5');
+}
+
+{
+    $t2->destroy if Tk::Exists($t2);
+    $t2 = $mw->Text;
+    is($t2->search("a", "1.0"), undef);
+    is($t2->search(-backward, "a", "1.0"), undef);
+    is_deeply([$t2->search("a", "1.0")], []);
+    is_deeply([$t2->search(-backward, "a", "1.0")], []);
+}
+
+{
+    my $length = "unchanged";
+    is($t->search(-regexp => -count => \$length, 'x(.)(.*)z', '1.1'), '1.1');
+    is($length, 7, q{TextSearchCmd procedure, regexp match length});
+}
+
+{
+    my $length = "unchanged";
+    is($t->search(-regexp => -backward => -count => \$length, 'fo*', '2.5'), '2.0');
+    is($length, 3, q{TextSearchCmd procedure, regexp match length});
+}
+
+{
+    is($t->search("bar", "2.1", "2.13"), undef,
+       q{TextSearchCmd procedure, checking stopIndex});
+    is($t->search("bar", "2.1", "2.14"), "2.13");
+    is($t->search("bar", "2.12", "2.14"), "2.13");
+    is($t->search("bar", "2.14", "2.14"), undef);
+}
+
+{
+    is($t->search(qw(-backwards bar 2.20 2.13)), "2.13");
+    is($t->search(qw(-backwards bar 2.20 2.14)), undef);
+    is($t->search(qw(-backwards bar 2.14 2.13)), "2.13");
+    is($t->search(qw(-backwards bar 2.13 2.13)), undef);
+}
+
+SKIP:{
+    skip("-strict NYI in Perl/Tk # TODO", 4);
+
+    is($t->search(qw(-backwards -strict bar 2.20 2.13)), "2.13");
+    is($t->search(qw(-backwards -strict bar 2.20 2.14)), undef);
+    is($t->search(qw(-backwards -strict bar 2.14 2.13)), undef);
+    is($t->search(qw(-backwards -strict bar 2.13 2.13)), undef);
+}
+
+{
+    my @tf;
+    $tf[$_] = $t->Frame(qw(-width 20 -height 20 -relief raised -bd 2))
+	for 1 .. 4;
+
+    $t->windowCreate("2.10", -window => $tf[3]);
+    $t->windowCreate("2.8",  -window => $tf[2]);
+    $t->windowCreate("2.8",  -window => $tf[1]);
+    $t->windowCreate("2.1",  -window => $tf[4]);
+
+    my $x;
+    is($t->search(-count => \$x, 'forward', '1.0'), "2.6",
+       q{TextSearchCmd procedure, embedded windows and index/count});
+    is($x, 10);
+    is($t->search(-count => \$x, 'wa', '1.0'), "2.11");
+    is($x, 2);
+
+    $t->delete("2.1");
+    $t->delete("2.8", "2.10");
+    $t->delete("2.10");
+}
+
+{
+    my $a = {};
+    eval { $t->search(-count => \$a, qw(xyz 1.0)) };
+    warn $@;
+}
+
+__END__
+
 test text-20.51 {TextSearchCmd procedure, wrap-around} {
     .t search -backwards xyz 1.1
 } {3.5}
