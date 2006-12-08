@@ -52,6 +52,8 @@ else
 
 $macro[1]->{WINARCH} = $win_arch;
 
+push @macro, PREREQ_PM => { 'Encode' => 0 };
+
 #
 # Convert perls Config info into -DXXXX for Tk
 #
