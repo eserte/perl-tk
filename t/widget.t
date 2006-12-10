@@ -1,6 +1,16 @@
 BEGIN { $|=1; $^W=1; }
 use strict;
-use Test;
+
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "1..0 # skip: no Test::More module\n";
+	exit;
+    }
+}
+
 use Tk;
 
 BEGIN { plan tests => 7 };
@@ -14,10 +24,10 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
 {
     my $name;
     eval { $name = $w->appname; };
-    ok($@, "", "Problem \$w->appname.");
+    is($@, "", "\$w->appname works");
     my ($leaf) = $name =~ /^(\w+)/;
-    ok( $leaf, 'widget', "Appname does not match filename" );
-    ok( $mw->name, $name, "\$mw->name is not equal to appname");
+    is( $leaf, 'widget', "Appname matches filename" );
+    is( $mw->name, $name, "\$mw->name is equal to appname");
 }
 ##
 ## scaling (missing until Tk800 until .004)
@@ -25,8 +35,8 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
 {
     my $scale;
     eval { $scale = $w->scaling; };
-    ok($@, "", "Problem \$w->scaling.");
-    ok( scalar($scale=~/^[0-9.]+$/), 1, "Scaling factor not a number: '$scale'" );
+    is($@, "", "\$w->scaling works");
+    like($scale, qr/^[0-9.]+$/, "Scaling factor is a number: '$scale'" );
 }
 ##
 ## pathname did not work until Tk800.004
@@ -35,8 +45,8 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
     my $path;
     my $c = $w->PathName;
     eval { $path = $mw->pathname($w->id); };
-    ok($@, "", "Problem \$mw->pathname.");
-    ok( $path, $c, "Pathname and pathname don't agree" );
+    is($@, "", "\$mw->pathname works");
+    is( $path, $c, "Pathname and pathname agree" );
 }
 
 1;
