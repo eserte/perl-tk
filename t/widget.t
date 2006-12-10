@@ -13,7 +13,7 @@ BEGIN {
 
 use Tk;
 
-BEGIN { plan tests => 7 };
+BEGIN { plan tests => 13 };
 
 my $mw = Tk::MainWindow->new;
 my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
@@ -47,6 +47,35 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
     eval { $path = $mw->pathname($w->id); };
     is($@, "", "\$mw->pathname works");
     is( $path, $c, "Pathname and pathname agree" );
+}
+
+##
+## Busy/Unbusy
+##
+{
+    my $oldcursor = $mw->cget(-cursor);
+    $mw->update; # make main window viewable, necessary for Busy
+    $mw->Busy;
+    is($mw->cget(-cursor), "watch", "The busy cursor");
+    $mw->after(10);
+    $mw->Unbusy;
+    is($mw->cget(-cursor), $oldcursor, "Old cursor restored");
+}
+
+##
+## Busy/Unbusy with recursion
+##
+{
+    my $oldcursor = $mw->cget(-cursor);
+    my $w2 = $mw->Label(-cursor => "cross")->grid;
+    $mw->Busy(-recurse => 1, -cursor => "watch");
+    is($mw->cget(-cursor), "watch", "The busy cursor");
+    is($w2->cget(-cursor), "watch", "Subwidget has also the busy cursor");
+    $mw->after(10);
+    $mw->Unbusy;
+    is($mw->cget(-cursor), $oldcursor, "Old cursor restored");
+    is($w2->cget(-cursor), "cross", "Oldsubwidget cursor also restored");
+    $w2->destroy;
 }
 
 1;
