@@ -888,9 +888,12 @@ sub Busy
    $g->grabRelease;
   }
  $w->update;
- eval {local $SIG{'__DIE__'};  $w->grab };
- $w->update;
- if ($sub)
+ if (Tk::Exists($w))
+  {
+   eval {local $SIG{'__DIE__'};  $w->grab };
+   $w->update;
+  }
+ if ($sub && Tk::Exists($w))
   {
    eval { $sub->() };
    my $err = $@;
