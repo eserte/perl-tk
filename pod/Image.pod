@@ -124,6 +124,13 @@ See L<Tk::Photo> documentation for more information.
 
 =back
 
+=head1 CAVEATS
+
+It's necessary to use the L</delete> method to delete an image object
+and free memory associated with it. Just using a lexical variable for
+storing the image object and letting the variable to go out of scope
+or setting to C<undef> is not sufficient.
+
 =head1 SEE ALSO
 
 L<Tk::Bitmap|Tk::Bitmap>
