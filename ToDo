@@ -24,8 +24,6 @@ Port message catalogs from Tcl/Tk to Perl/Tk.
 Simple tests for EXE_FILES (at least checking with perl -c, maybe also
 starting and immediately destroying)
 
-Document font('subfonts')?
-
 Port tkText*.c changes, as there are some unicode-related fixes.
 
 Widget review (Listbox.pm and Canvas.pm done)
@@ -51,6 +49,28 @@ errors may occur:
 /usr/bin/ld: skipping incompatible /usr/X11R6/lib/libX11.a when searching for -lX11
 /usr/bin/ld: cannot find -lX11
 Maybe checking should be stricter here in myConfig?
+
+Documentation:
+
+Create a new document Tk::unicode to explain common pitfalls with
+utf8.
+
+Some FAQ entries should go into corresponging Pod documents. Maybe the
+rest of the FAQ (renovated!) could go as Tk::faq into the
+distribution. (See also ~eserte/src/ptkfaq/faq.html)
+
+Document font('subfonts')?
+
+Tk::tkvars: the versioning scheme documented here was already
+abandonded in Tk800 and Tk804. There was a suggestion by Nick
+Ing-Simmons to use the minor version as some kind of "API version" and
+to have Perl/Tk releases with same minor versions but different major
+versions API-compatible. I think this also won't stay, it will simply
+be Tk805.000 when a new Tk built on Tcl/Tk 8.5 comes out.
+
+Either document $Tk::Config::xlib can be used to determine if XFT
+support was built in. Or introduce a new variable for XFT and make the
+tests use this one.
 
 ----------------------------------------------------------------------
 - OLDER ToDos, possibly still unresolved -----------------------------
