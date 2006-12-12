@@ -1530,9 +1530,8 @@ This option defaults to B<center>.
 =item B<-disabledimage> =E<gt> I<name>
 
 Specifies the name of the images to display in the item in is normal,
-active and disabled states.
-This image must have been created previously with the
-B<imageCreate> method.
+active and disabled states. This image must have been created
+previously, see L<Tk::Image>.
 
 =item B<-state> =E<gt> I<state>
 

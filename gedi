@@ -29,6 +29,10 @@ use File::Basename;
 # note, wildcard automatically gets handled by perl interpreter,
 #	so that @ARGV contains list of matches.
 ###########################################
+
+# Create MainWindow first to handle X11 options.
+my $top = MainWindow->new();
+
 my $argcount = @ARGV;
 my ($global_filename) = @ARGV;
 
@@ -67,8 +71,6 @@ my $global_directory = dirname($global_filename);
 ## menu_frame, text_frame, counter_frame
 ##############################################
 ##############################################
-my $top = MainWindow->new();
-
 # my $menu_frame = $top->Frame->pack(-anchor=>'nw');
 my $text_frame = $top->Frame->pack
 	(-anchor=>'nw', -expand=>'yes', -fill => 'both'); # autosizing

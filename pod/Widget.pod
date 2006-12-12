@@ -85,7 +85,7 @@ bindtags.  For each binding tag it prints all the bindings, comprised
 of the event descriptor and the callback.  Callback arguments are
 printed, and B<Tk::Ev> objects are expanded.
 
-=item I<$widget>-E<gt>B<Busy>?(?-recurse => 1?I<-option => value>?)?
+=item I<$widget>-E<gt>B<Busy>?(?-recurse => 1?,I<-option> => I<value>?)?
 
 This method B<configure>s a B<-cursor> option for I<$widget> and
 (if B<-recurse => 1> is specified) all its descendants. The cursor to
@@ -98,7 +98,8 @@ B<bell>). It then acquires a local B<grab> for I<$widget>.
 The state of the widgets and the grab is restored by a call to
 I<$widget>-E<gt>B<Unbusy>.
 
-=item I<$widget>-E<gt>B<caret>( I<?-x x?, ?-y y?, ?-height height?> );
+=item I<$widget>-E<gt>B<caret>( ?-x => I<x>?, ?-y => I<y>?, ?-height
+=> I<height>? );
 
 Sets and queries the caret location for the display of the specified
 Tk window window.  The caret is the per-display cursor location used
@@ -630,7 +631,7 @@ invoke B<update> to force the geometry manager to arrange it,
 or use I<$widget>-E<gt>B<reqwidth> to get the window's requested width
 instead of its actual width.
 
-=item  I<$widget>-E<gt>B<useinputmethods>( ?boolean? );
+=item  I<$widget>-E<gt>B<useinputmethods>( ?I<boolean>? )
 
 Sets and queries the state of whether Tk should use XIM (X Input
 Methods) for filtering events.  The resulting state is returned.
@@ -640,7 +641,7 @@ If  XIM support is not available, this will always return 0.
 If  the  boolean  argument  is  omitted,  the  current  state is
 returned.  This is turned on by default for the main display.
 
-=item I<$widget>-E<gt>B<windowingsystem>;
+=item I<$widget>-E<gt>B<windowingsystem>
 
 Returns the current Tk windowing system, one of B<x11> (X11-based),
 B<win32> (MS Windows), B<classic> (Mac OS Classic), or B<aqua> (Mac OS  X Aqua).

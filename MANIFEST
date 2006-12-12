@@ -857,6 +857,7 @@ pod/Menu/Item.pod
 pod/Menubutton.pod
 pod/Message.pod
 pod/messageBox.pod
+pod/MsgBox.pod
 pod/mvfor
 pod/Mwm.pod
 pod/NoteBook.pod
@@ -1839,6 +1840,7 @@ t/cursor.t
 t/dash.t
 t/dialogbox.t
 t/entry.t
+t/exefiles.t
 t/fbox.t
 t/fileevent.t
 t/fileselect.t

@@ -70,7 +70,7 @@ L<Tk::Wm|Tk::Wm>
 
 =item *
 
-L<Tk::After|Tk::After>
+L<Tk::after|Tk::after>
 
 =item *
 
@@ -128,69 +128,19 @@ L<Tk::Image|Tk::Image>
 
 =item *
 
+L<Tk::JPEG|Tk::JPEG>
+
+=item *
+
 L<Tk::Photo|Tk::Photo>
 
 =item *
 
 L<Tk::Pixmap|Tk::Pixmap>
 
-=back
-
-=head2 Tix Extensions
-
-=over 4
-
 =item *
 
-L<Tk::Balloon|Tk::Balloon>
-
-=item *
-
-L<Tk::BrowseEntry|Tk::BrowseEntry>
-
-=item *
-
-L<Tk::DialogBox|Tk::DialogBox>
-
-=item *
-
-L<Tk::DirTree|Tk::DirTree>
-
-=item *
-
-L<Tk::DItem|Tk::DItem>
-
-=item *
-
-L<Tk::InputO|Tk::InputO>
-
-=item *
-
-L<Tk::LabFrame|Tk::LabFrame>
-
-=item *
-
-L<Tk::Mwm|Tk::Mwm>
-
-=item *
-
-L<Tk::NoteBook|Tk::NoteBook>
-
-=item *
-
-L<Tk::TixGrid|Tk::TixGrid>
-
-=item *
-
-L<Tk::tixWm|Tk::tixWm>
-
-=item *
-
-L<Tk::TList|Tk::TList>
-
-=item *
-
-L<Tk::Tree|Tk::Tree>
+L<Tk::PNG|Tk::PNG>
 
 =back
 
@@ -265,6 +215,64 @@ L<Tk::Text|Tk::Text>
 =item *
 
 L<Tk::Toplevel|Tk::Toplevel>
+
+=back
+
+=head2 Tix Extensions
+
+=over 4
+
+=item *
+
+L<Tk::Balloon|Tk::Balloon>
+
+=item *
+
+L<Tk::BrowseEntry|Tk::BrowseEntry>
+
+=item *
+
+L<Tk::DialogBox|Tk::DialogBox>
+
+=item *
+
+L<Tk::DirTree|Tk::DirTree>
+
+=item *
+
+L<Tk::DItem|Tk::DItem>
+
+=item *
+
+L<Tk::InputO|Tk::InputO>
+
+=item *
+
+L<Tk::LabFrame|Tk::LabFrame>
+
+=item *
+
+L<Tk::Mwm|Tk::Mwm>
+
+=item *
+
+L<Tk::NoteBook|Tk::NoteBook>
+
+=item *
+
+L<Tk::TixGrid|Tk::TixGrid>
+
+=item *
+
+L<Tk::tixWm|Tk::tixWm>
+
+=item *
+
+L<Tk::TList|Tk::TList>
+
+=item *
+
+L<Tk::Tree|Tk::Tree>
 
 =back
 
@@ -360,6 +368,10 @@ L<Tk::chooseColor|Tk::chooseColor>
 
 =item *
 
+L<Tk::chooseDirectory|Tk::chooseDirectory>
+
+=item *
+
 L<Tk::ColorEditor|Tk::ColorEditor>
 
 =item *
@@ -368,7 +380,11 @@ L<Tk::Dialog|Tk::Dialog>
 
 =item *
 
-L<Tk::Dialog|Tk::Dialog>
+L<Tk::DialogBox|Tk::DialogBox>
+
+=item *
+
+L<Tk::FBox|Tk::FBox>
 
 =item *
 
@@ -381,6 +397,10 @@ L<Tk::getOpenFile|Tk::getOpenFile>
 =item *
 
 L<Tk::messageBox|Tk::messageBox>
+
+=item *
+
+L<Tk::MsgBox|Tk::MsgBox>
 
 =back
 
@@ -778,7 +798,7 @@ L<Tk::Eventloop|Tk::Eventloop>
 
 =item *
 
-L<Tk::Item|Tk::Item>
+L<Tk::Menu::Item|Tk::Menu::Item>
 
 =item *
 
@@ -818,7 +838,7 @@ L<Tk::WinPhoto|Tk::WinPhoto>
 
 =item *
 
-L<Tk::Compile|Tk::Compile>
+Tk::Compile
 
 =item *
 
@@ -837,6 +857,6 @@ Nick Ing-Simmons
 
 =head1 SEE ALSO
 
-L<perl(1)|perl>, L<wish(1)|wish>.
+L<perl>, L<wish(1)>.
 
 =cut

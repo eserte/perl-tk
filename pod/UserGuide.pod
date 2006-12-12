@@ -15,12 +15,12 @@ your default path, so type I<widget> at a command prompt.
 
 Here are links to other novice tutorials:
 
-http://www.lehigh.edu/~sol0/ptk/tpj1.html
-http://www.lehigh.edu/~sol0/ptk/perlmonth01/pm1.html
+L<http://www.lehigh.edu/~sol0/ptk/tpj1.html>
+L<http://www.lehigh.edu/~sol0/ptk/perlmonth01/pm1.html>
 
 I<Mastering Perl/Tk> is the definitive book on Perl/Tk:
 
-http://www.oreilly.com/catalog/mastperltk
+L<http://www.oreilly.com/catalog/mastperltk>
 
 =head1 Some Background
 
@@ -46,15 +46,15 @@ B<Perl> programs that use Tk need to include C<use Tk>.
 A program should also use C<use strict> and the B<-w> switch to ensure
 the program is working without common errors.
 
-Any Perl/Tk application starts by creating the Tk B<MainWindow>.  You
+Any Perl/Tk application starts by creating the Tk B<L<MainWindow|Tk::MainWindow>>.  You
 then create items inside the B<MainWindow>, and/or create new windows
-called B<Toplevel>s that also contain child items, before starting the
+called B<L<Toplevel|Tk::Toplevel>>s that also contain child items, before starting the
 B<MainLoop>, which is the last logical statment in your program. You
 can also create more items and windows while you're running, using
 callbacks.  Items are only shown on the display after they have been
-arranged by a I<geometry manager> like B<pack>; more information on
+arranged by a I<geometry manager> like B<L<pack|Tk::pack>>; more information on
 this later.  B<MainLoop> starts the GUI and handle all events.  That's
-all there is to it!.  A trivial one-window example is shown below:
+all there is to it!  A trivial one-window example is shown below:
 
     #!/usr/bin/perl -w	
     use Tk;
@@ -68,9 +68,9 @@ all there is to it!.  A trivial one-window example is shown below:
     )->pack;
     MainLoop;
 
-Please run this example.  It shows you two widget types, a B<Label>
-and a B<Button>, and how they are packed. When clicked, the <Button>
-widget invokes the callback specified by the -command option.  Finally,
+Please run this example.  It shows you two widget types, a B<L<Label|Tk::Label>>
+and a B<L<Button|Tk::Button>>, and how they are packed. When clicked, the B<Button>
+widget invokes the callback specified by the C<-command> option.  Finally,
 note the typical Tk style using C<-option> =E<gt> C<value> pairs.
 
 =head1 Widget creation
@@ -93,9 +93,9 @@ creates a new outermost window.
 
 After you create any widget (other than the B<MainWindow> or
 B<Toplevel>s, you must render it by calling B<pack>.  (This is not
-entirely true; more later).  If you do not need to refer to the widget
+entirely true; more later)).  If you do not need to refer to the widget
 after construction and packing, call B<pack> off the constructor
-results, as shown for the B<Label> and B<utton> in the example above.  Note
+results, as shown for the B<Label> and B<Button> in the example above.  Note
 that the result of the compound call is the result of B<pack>, which
 is a valid Tk handle.
 
@@ -108,41 +108,41 @@ Here is an itemize of the standard Tk widget set.
 
 =over 4
 
-=item Button
+=item L<Button|Tk::Button>
 
-=item Canvas
+=item L<Canvas|Tk::Canvas>
 
-=item Checkbutton
+=item L<Checkbutton|Tk::Checkbutton>
 
-=item Entry
+=item L<Entry|Tk::Entry>
 
-=item Frame
+=item L<Frame|Tk::Frame>
 
-=item Label
+=item L<Label|Tk::Label>
 
-=item Labelframe
+=item L<Labelframe|Tk::Labelframe>
 
-=item Listbox
+=item L<Listbox|Tk::Listbox>
 
-=item Menu
+=item L<Menu|Tk::Menu>
 
-=item Menubutton
+=item L<Menubutton|Tk::Menubutton>
 
-=item Message
+=item L<Message|Tk::Message>
 
-=item Panedwindow
+=item L<Panedwindow|Tk::Panedwindow>
 
-=item Radiobutton
+=item L<Radiobutton|Tk::Radiobutton>
 
-=item Scale
+=item L<Scale|Tk::Scale>
 
-=item Scrollbar
+=item L<Scrollbar|Tk::Scrollbar>
 
-=item Spinbox
+=item L<Spinbox|Tk::Spinbox>
 
-=item Text
+=item L<Text|Tk::Text>
 
-=item Toplevel
+=item L<Toplevel|Tk::Toplevel>
 
 =back
 
@@ -151,45 +151,51 @@ core set.
 
 =over 4
 
-=item Adjuster
+=item L<Adjuster|Tk::Adjuster>
 
-=item Ballon
+=item L<Balloon|Tk::Balloon>
 
-=item BrowseEntry
+=item L<BrowseEntry|Tk::BrowseEntry>
 
-=item ColorEditor
+=item L<ColorEditor|Tk::ColorEditor>
 
-=item DirTree
+=item L<Dialog|Tk::Dialog>
+
+=item L<DialogBox|Tk::DialogBox>
+
+=item L<DirTree|Tk::DirTree>
 
 =item ErrorDialog
 
-=item FileSelect
+=item L<FBox|Tk::FBox>
 
-=item HList
+=item L<FileSelect|Tk::FileSelect>
+
+=item L<HList|Tk::HList>
 
 =item LabEntry
 
-=item LabFrame
+=item L<LabFrame|Tk::LabFrame>
 
-=item NoteBook
+=item L<NoteBook|Tk::NoteBook>
 
-=item Optionmenu
+=item L<Optionmenu|Tk::Optionmenu>
 
-=item Pane
+=item L<Pane|Tk::Pane>
 
-=item ProgressBar
+=item L<ProgressBar|Tk::ProgressBar>
 
-=item ROText
+=item L<ROText|Tk::ROText>
 
-=item Table
+=item L<Table|Tk::Table>
 
-=item TextUndo
+=item L<TextUndo|Tk::TextUndo>
 
-=item Tiler
+=item L<Tiler|Tk::Tiler>
 
-=item TList
+=item L<TList|Tk::TList>
 
-=item Tree
+=item L<Tree|Tk::Tree>
 
 =back
 
@@ -274,7 +280,7 @@ the application never notices; it's all handled by Tk.
 In the examples above, you must have noticed the B<pack> calls.  This
 is one of the more complicated parts of Tk.  The basic idea is that
 any window or widget should be subject to a Tk geometry manager; the
-I<packer> is one of the placement managers, and Bgrid> is another.
+I<packer> is one of the placement managers, and B<L<grid|Tk::grid>> is another.
 
 The actions of the packer are rather simple: when applied
 to a widget, the packer positions that widget on the indicated position
@@ -284,11 +290,11 @@ specify the left, right, or bottom positions.  Specify position
 using B<-side =E<gt> 'right'>.
 
 Additional packing parameters specify the behavior of the widget when
-there is some space left in the B<Frame> or when the window size is
+there is some space left in the B<L<Frame|Tk::Frame>> or when the window size is
 increased.  If widgets should maintain a fixed size, specify nothing;
 this is the default.  For widgets that you want to fill up the current
-horizontal and/or vertical space, specify B<-fill =E<gt> 'x'>, B<y>,
-or B<both>; for widgets that should grow, specify B<-expand =E<gt> 1>.
+horizontal and/or vertical space, specify B<-fill =E<gt> 'x'>, B<'y'>,
+or B<'both'>; for widgets that should grow, specify B<-expand =E<gt> 1>.
 These parameters are not shown in the example below; see the B<widget>
 demonstration.
 
@@ -374,8 +380,8 @@ scrollbar when its size or offset has changed.  In this way,
 the items are linked.  You can still ask a scrollbar's position,
 or set it by hand - but the defaults will be taken care of.
 
-The example below shows a B<listbox> with a scroll bar.  Moving
-the scrollbar moves the B<listbox>.  Scanning a B<listbox> (dragging
+The example below shows a B<L<Listbox|Tk::Listbox>> with a scroll bar.  Moving
+the scrollbar moves the B<Listbox>.  Scanning a B<Listbox> (dragging
 an item with the left mouse button) moves the scrollbar.
 
      #!/usr/bin/perl -w
@@ -400,11 +406,15 @@ an item with the left mouse button) moves the scrollbar.
 
     MainLoop;
 
+Note that there's a convenience method B<L<Scrolled|Tk::Scrolled>>
+which helps constructing widgets with automatically managed
+scrollbars.
+
 =head1 Canvases and tags
 
-One of the most powerful widgets in Tk is the B<Canvas> window.
-In a <Canvas> window, you can draw simple graphics and include
-other widgets.  The <Canvas> area may be larger than the visible window,
+One of the most powerful widgets in Tk is the B<L<Canvas|Tk::Canvas>> window.
+In a B<Canvas> window, you can draw simple graphics and include
+other widgets.  The B<Canvas> area may be larger than the visible window,
 and may then be scrolled.  Any item you draw on the canvas has its own id,
 and may optionally have one or more I<tags>.  You may refer to any
 item by its id, and may refer to any group of items by a common tag;

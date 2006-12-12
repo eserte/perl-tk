@@ -28,6 +28,12 @@ If calling C<exit> from code invoked via a Tk callback then
 this Tk version of C<exit> cleans up more reliably than using
 the perl C<exit>.
 
+=head1 CAVEATS
+
+Using C<exit> from a forked process will terminate both the child
+process B<and> the parent process. As C<Tk::exit> is imported by
+default one should use C<CORE::exit> in the forked process instead.
+
 =head1 KEYWORDS
 
 exit, process

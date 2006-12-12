@@ -1,23 +1,23 @@
 
 =head1 NAME
 
-B<Tk> - An overview of an Object Oriented Tk8.0 extension for perl5
+B<Tk> - An overview of an Object Oriented Tk8 extension for perl5
 
 =for category  Introduction
 
 =head1 SYNOPSIS
 
-use Tk;
+C<< use Tk; >>
 
-$main = MainWindow-E<gt>new();
+C<< $main = MainWindow-E<gt>new(); >>
 
-$widget = $main-E<gt>I<Widget>(...);
+C<< $widget = $main-E<gt>I<Widget>(...); >>
 
-$widget-E<gt>pack(...);
+C<< $widget-E<gt>pack(...); >>
 
 ...
 
-MainLoop;
+C<< MainLoop; >>
 
 =head1 DESCRIPTION
 
@@ -33,7 +33,7 @@ The package is composed of three loosely connected parts:
 
 =item I<pTk> - Converted Tk source
 
-The I<pTk> sub-directory is a copy of the C code of Tk4.0, modified
+The I<pTk> sub-directory is a copy of the C code of Tk8.x, modified
 to allow use by languages other than the original Tcl.
 (The pTk can be read as 'perl' Tk or 'portable' Tk, depending on
 your sensibilities.)
@@ -45,7 +45,7 @@ which provide the perl-callable interfaces to pTk
 
 =item Perl code for 'Widget' Classes
 
-The I<Tk/Tk> sub-directory contains the various perl modules that comprise
+The I<Tk> sub-directory contains the various perl modules that comprise
 the "Classes" that are visible to Tk applications.
 
 The "major" widgets such as B<Tk::Text> are actually in separate directories
@@ -103,14 +103,14 @@ Thus 'proc tkMenuNextEntry' becomes 'sub NextEntry' in the Tk::Menu package.
 
 =item B<Tk::Image>
 
-This does for Tk4.0's "images" what B<Tk::Widget> does for widgets.
-Images are new to Tk4.0 and the class structure is not mature either.
+This does for Tk8.x's "images" what B<Tk::Widget> does for widgets.
+Images are new to Tk8.x and the class structure is not mature either.
 
 There are three sub-classes B<Tk::Bitmap>, B<Tk::Pixmap> and B<Tk::Photo>.
 
-It is expected that B<Tk::Image> hierarchy will evolve during the "beta"
-phase of Tk to allow dynamic or auto-loaded image types or photo formats
-(e.g. support for JPEG format for photos).
+It is possible to create dynamic or auto-loaded image types inherited
+from B<Tk::Image> for other image types or photo formats (e.g. support
+for TIFF format).
 
 =item Composite Widgets
 

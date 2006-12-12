@@ -107,8 +107,7 @@ such as that provide by B<xauth>.
 
 =head1 SEE ALSO
 
-Perl's B<eval>
-perl's B<Safe> Module
+L<perlfunc/eval>, L<Safe>,
 system's administrator/corporate security guidelines etc.
 
 =head1 KEYWORDS

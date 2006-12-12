@@ -69,5 +69,8 @@ The 'period' should probably be a property of the Animation object
 rather than specified at 'start' time. It may even be embedded
 in the GIF.
 
+Rather than calling C<blank> manually the default value from the GIF
+animation itself should be used.
+
 =cut
 
