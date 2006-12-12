@@ -1,3 +1,41 @@
+Tk-804.027-p5.patch.gz (2006-XX-XX)
+----------------------
+
+Compiles and passes tests on
+
+  FreeBSD 6.1 + perl5.8.8 + fontconfig 2.3.2
+  FreeBSD 6.1 + bleadperl + fontconfig 2.3.2
+  cygwin 1.5.x + perl5.8.7 + fontconfig (X11 build only)
+
+New features
+  The undocumented method font('subfonts') returns now more
+  diagnostics.
+
+Fixes
+  gedi accepts now X11 command line options.
+
+  Encode.pm is specified as a PREREQ_PM.
+
+  Fixed slow listbox itemconfigure.
+
+  Fixed array return of Tk::Text::get method.
+
+Documentation
+  New Pod for Tk::MsgBox.
+
+  Created a CAVEATS section in Tk::Image for the FAQ about memory
+  leaks and images.
+
+  Some minor Pod fixes.
+
+Tests
+  Make sure that tests won't be run if no X11 is running to prevent
+  unnecessary cpantesters reports.
+
+  New test for Text widget (t/text.t)
+
+  New test for scripts (t/exefiles.t)
+
 Tk-804.027-p4.patch.gz (2006-11-26)
 ----------------------
 
