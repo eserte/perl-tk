@@ -14,7 +14,7 @@ $numFormats++ unless $@;
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
 
-plan tests => (2*(7 * $numFormats) + 2);
+plan tests => (2*(7 * $numFormats) + 2 + 2);
 
 my @files = ();
 
@@ -81,6 +81,38 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
    }
  $row += 3;
 }
+
+# Extra tests
+my $col = 0;
+$mw->Label(-text => "Extra tests")->grid(-row => $row++, -column => $col);
+my $file = Tk->findINC('Xcamel.gif');
+my $data = do { open my $fh, $file or die $!; local $/; <$fh> };
+
+if ($Tk::VERSION <= 804.027)
+ {
+  skip("Binary GIF data not supported",1,1);
+ }
+else
+ {
+  my $image = $mw->Photo(-data => $data);
+  ok(defined $image, 1, "Read binary GIF data");
+  $mw->Label(-background => 'white', -image => $image)->grid(-row => $row, -column => $col);
+  $mw->update;
+ }
+$col++;
+
+if (!eval { require MIME::Base64; 1 })
+ {
+  skip("Need MIME::Base64 module",1,1);
+ }
+else
+ {
+  my $image = $mw->Photo(-data => MIME::Base64::encode_base64($data));
+  ok(defined $image, 1, "Read base64 encoded GIF data");
+  $mw->Label(-background => 'white', -image => $image)->grid(-row => $row, -column => $col);
+  $mw->update;
+ }
+$col++;
 
 $mw->after(2500,[destroy => $mw]);
 MainLoop;

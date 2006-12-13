@@ -584,7 +584,17 @@ Tcl_GetByteArrayFromObj(Tcl_Obj * objPtr, int * lengthPtr)
  /* FIXME: presumably should downgrade from UTF-8,
     what frees it ?
   */
- return (unsigned char *) Tcl_GetStringFromObj (objPtr, lengthPtr);
+ /* SRT: Is this correct? */
+ sv_utf8_downgrade(objPtr, 0);
+ if (lengthPtr)
+  {
+   return (unsigned char *) SvPV(objPtr, *lengthPtr);
+  }
+ else
+  {
+   return (unsigned char *) SvPV(objPtr, PL_na);
+  }
+/* return (unsigned char *) Tcl_GetStringFromObj (objPtr, lengthPtr); */
 }
 
 
