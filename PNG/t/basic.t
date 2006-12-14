@@ -32,6 +32,7 @@ $mw->geometry('+10+10');
 
 my $image_data = do {
     open my $fh, $file or die "Cannot load $file: $!";
+    binmode $fh; 
     local $/;
     <$fh>;
 };

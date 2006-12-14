@@ -86,7 +86,7 @@ foreach my $leaf('Tk.xbm','Xcamel.gif')
 my $col = 0;
 $mw->Label(-text => "Extra tests")->grid(-row => $row++, -column => $col);
 my $file = Tk->findINC('Xcamel.gif');
-my $data = do { open my $fh, $file or die $!; local $/; <$fh> };
+my $data = do { open my $fh, $file or die $!; binmode $fh; local $/; <$fh> };
 
 if ($Tk::VERSION <= 804.027)
  {
