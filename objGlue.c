@@ -585,6 +585,7 @@ Tcl_GetByteArrayFromObj(Tcl_Obj * objPtr, int * lengthPtr)
     what frees it ?
   */
  /* SRT: Is this correct? */
+ dTHX;
  sv_utf8_downgrade(objPtr, 0);
  if (lengthPtr)
   {
