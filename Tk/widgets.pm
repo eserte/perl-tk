@@ -18,4 +18,3 @@ sub import
 1;
 __END__
 
-=cut

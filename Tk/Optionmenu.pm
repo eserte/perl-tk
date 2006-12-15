@@ -126,5 +126,3 @@ sub options
 
 __END__
 
-=cut
-

@@ -594,5 +594,3 @@ sub see
  return $see;
 }
 
-=cut
-

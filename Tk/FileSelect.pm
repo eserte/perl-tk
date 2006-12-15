@@ -574,5 +574,3 @@ sub FDialog
 
 __END__
 
-=cut
-

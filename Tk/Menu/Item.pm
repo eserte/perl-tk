@@ -176,5 +176,3 @@ package Tk::Menu::Item;
 1;
 __END__
 
-=cut
-

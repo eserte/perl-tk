@@ -210,4 +210,3 @@ sub WMSaveYourself
 
 __END__
 
-=cut

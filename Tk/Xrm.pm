@@ -7,5 +7,3 @@ use Tk ();
 1;
 __END__
 
-=cut
-

@@ -757,5 +757,3 @@ sub set_colors {
 
 __END__
 
-=cut
-

@@ -43,4 +43,3 @@ sub Direct
 
 __END__
 
-=cut

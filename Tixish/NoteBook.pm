@@ -450,4 +450,3 @@ sub InitTabSize {
 
 __END__
 
-=cut

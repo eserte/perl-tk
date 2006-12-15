@@ -225,4 +225,3 @@ __END__
 #  The license terms of the Tcl/Tk distrobution are in the file
 #  license.tcl.
 
-=cut

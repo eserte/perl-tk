@@ -140,9 +140,8 @@ sub stop_animation
 }
 
 1;
-__END__
 
-=cut
+__END__
 
 #
 # This almost works for changing the animation on the fly

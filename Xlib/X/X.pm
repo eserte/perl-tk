@@ -387,12 +387,5 @@ sub AUTOLOAD {
 
 bootstrap Tk::X;
 
-# Preloaded methods go here.
-
-# Autoload methods go after =cut, and are processed by the autosplit program.
-
 1;
 __END__
-# Below is the stub of documentation for your module. You better edit it!
-
-=cut
