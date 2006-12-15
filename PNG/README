@@ -10,7 +10,7 @@ It can be used in combination with Tk800.005 or later.
 
 The "zlib" library must already be installed.
 The "png" library is bundled with this module as libpng directory.
-If you don't already have libpng then you can install it fdrom there,
+If you don't already have libpng then you can install it from there,
 but this process is not automated.
 
 More info about the PNG format (and sources) can be found via
