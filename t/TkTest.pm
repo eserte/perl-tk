@@ -15,11 +15,21 @@ use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
 
 sub check_display_harness () {
+    # In case of cygwin, use'ing Tk before forking (which is done by
+    # Test::Harness) may lead to "remap" errors, which are normally
+    # solved by the rebase or rebaseall utilities.
+    #
+    # Here, I just skip the DISPLAY check on cygwin to not force users
+    # to run rebase.
+    #
+    return if $^O eq 'cygwin' || $^O eq 'MSWin32';
+
     eval q{
-	use blib;
-	use Tk;
-    };
-    die $@ if $@;
+           use blib;
+           use Tk;
+        };
+    die "Strange: could not load Tk library: $@" if $@;
+
     if (defined $Tk::platform && $Tk::platform eq 'unix') {
 	my $mw = eval { MainWindow->new() };
 	if (!Tk::Exists($mw)) {
