@@ -1,0 +1,55 @@
+#!perl
+use strict;
+use Config;
+use File::Copy;
+chmod(0666,'Makefile');
+my $file;
+
+if ($^O eq 'MSWin32')
+ {
+  if ($Config{'cc'} =~ /gcc/)
+   {
+    $file = 'scripts/makefile.mingw';
+   }
+  elsif ($Config{'cc'} =~ /bcc/)
+   {
+    $file = 'scripts/makefile.bc32';
+   }
+  else
+   {
+    $file = 'scripts/makefile.vcwin32';
+    warn "Assuming ".$Config{'cc'}." is visual C of some kind\n";
+   }
+ }
+else
+ {
+  if ($Config{'gccversion'})
+   {
+    $file = 'scripts/makefile.gcc';
+   }
+  else
+   {
+    if (($Config{archname} =~ /^IA64\./) && ($^O eq "hpux"))
+     {
+      $file = 'scripts/makefile.hpux.ia64';
+     }
+    else
+     {
+      $file = 'scripts/makefile.std';
+      my %makefiles = map { /makefile\.(.*)/ && ($1 => $_) } glob('scripts/makefile.*');
+      foreach my $arch (sort keys %makefiles)
+       {
+        if ($^O =~ /$arch/i)
+         {
+          $file = $makefiles{$arch};
+         }
+       }
+     }
+   }
+  warn "Using $file for $^O\nIf make fails read PNG/libpng/INSTALL\n";
+ }
+
+copy($file,"Makefile")
+   || die "Cannot copy $file to Makefile:$!";
+1;
+
