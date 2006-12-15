@@ -25,7 +25,7 @@ else
  {
   push(@args, MYEXTLIB  => "jpeg/libjpeg$l",
               'INC'     => '-Ijpeg');
-  copy("jpeg/Makefile.maybe","jpeg/Makefile.PL");
+  copy("Makefile.jpeg.maybe","jpeg/Makefile.PL");
   warn "Building jpeg/libjpeg$l\n";
  }
 

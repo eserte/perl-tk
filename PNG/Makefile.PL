@@ -36,14 +36,14 @@ else
     chmod(0666,$file);
     unlink($file);
    }
-  unless (copy("libpng/Makefile.maybe","libpng/Makefile.PL"))
+  unless (copy("Makefile.libpng.maybe","libpng/Makefile.PL"))
    {
-    warn "Cannot copy libpng/Makefile.maybe => libpng/Makefile.PL ($!)";
+    warn "Cannot copy Makefile.libpng.maybe => libpng/Makefile.PL ($!)";
     $ok = 0;
    }
-  unless (copy("zlib/Makefile.maybe","zlib/Makefile.PL"))
+  unless (copy("Makefile.zlib.maybe","zlib/Makefile.PL"))
    {
-    warn "Cannot copy zlib/Makefile.maybe => zlib/Makefile.PL ($!)";
+    warn "Cannot copy Makefile.zlib.maybe => zlib/Makefile.PL ($!)";
     $ok = 0;
    }
   if ($ok)

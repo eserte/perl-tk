@@ -405,7 +405,6 @@ JPEG/jpeg/makefile.bcc
 JPEG/jpeg/makefile.cfg
 JPEG/jpeg/makefile.dj
 JPEG/jpeg/makefile.manx
-JPEG/jpeg/Makefile.maybe
 JPEG/jpeg/makefile.mc6
 JPEG/jpeg/makefile.mingw32
 JPEG/jpeg/makefile.mms
@@ -449,6 +448,7 @@ JPEG/jpeg/wrppm.c
 JPEG/jpeg/wrrle.c
 JPEG/jpeg/wrtarga.c
 JPEG/Makefile.PL
+JPEG/Makefile.jpeg.maybe
 JPEG/MANIFEST
 JPEG/MANIFEST.SKIP
 JPEG/Nick.jpg
@@ -573,7 +573,6 @@ PNG/libpng/libpng.3
 PNG/libpng/libpng.txt
 PNG/libpng/libpngpf.3
 PNG/libpng/LICENSE
-PNG/libpng/Makefile.maybe
 PNG/libpng/png.5
 PNG/libpng/png.c
 PNG/libpng/png.h
@@ -684,6 +683,8 @@ PNG/libpng/scripts/smakefile.ppc
 PNG/libpng/TODO
 PNG/libpng/Y2KINFO
 PNG/Makefile.PL
+PNG/Makefile.libpng.maybe
+PNG/Makefile.zlib.maybe
 PNG/MANIFEST
 PNG/MANIFEST.SKIP
 PNG/PNG.pm
@@ -763,7 +764,6 @@ PNG/zlib/infutil.c
 PNG/zlib/infutil.h
 PNG/zlib/Make_vms.com
 PNG/zlib/Makefile.in
-PNG/zlib/Makefile.maybe
 PNG/zlib/Makefile.riscos
 PNG/zlib/maketree.c
 PNG/zlib/minigzip.c
