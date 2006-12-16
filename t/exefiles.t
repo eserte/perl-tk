@@ -45,9 +45,9 @@ OPT:
 for my $opt (@cmd) {
     my $script = shift @$opt;
     my $testname = "Executing $script with " . (@$opt ? "@$opt" : "no args");
+    my @cmd = ($^X, "-Mblib", "blib/script/$script", "-geometry", "+10+10", @$opt);
     my $pid = fork;
     if ($pid == 0) {
-	my @cmd = ($^X, "-Mblib", "blib/script/$script", "-geometry", "+10+10", @$opt);
 	warn "@cmd\n" if $DEBUG;
 	open(STDERR, ">" . File::Spec->devnull);
 	exec @cmd;
@@ -57,7 +57,8 @@ for my $opt (@cmd) {
 	select(undef,undef,undef,0.1);
 	my $kid = waitpid($pid, WNOHANG);
 	if ($kid) {
-	    is($?, 0, "$testname (exited spontaneously)");
+	    is($?, 0, "$testname (exited spontaneously)")
+		or diag "@cmd";
 	    next OPT;
 	}
     }
