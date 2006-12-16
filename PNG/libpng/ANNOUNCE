@@ -1,29 +1,51 @@
 
-Libpng 1.2.5 - October 3, 2002
+Libpng 1.2.12 - June 27, 2006
 
 This is a public release of libpng, intended for use in production codes.
 
-Changes since the last public release (1.2.4):
+Files available for download:
 
-  Revised makefile.cygwin to use DLL number 12 instead of 13.
-  Added code to contrib/gregbook/readpng2.c to ignore unused chunks.
-  Replaced toucan.png in contrib/gregbook (it has been corrupt since 1.0.11)
-  Removed some stray *.o files from contrib/gregbook.
-  Changed png_error() to png_warning() about "Too much data" in pngpread.c
-    and about "Extra compressed data" in pngrutil.c.
-  Prevent png_ptr->pass from exceeding 7 in png_push_finish_row().
-  Updated makefile.hggcc
-  Updated png.c and pnggccrd.c handling of return from png_mmx_support()
-  Only issue png_warning() about "Too much data" in pngpread.c when avail_in
-    is nonzero.
-  Updated makefiles to install a separate libpng.so.3 with its own rpath.
-  Revised makefiles to not remove previous minor versions of shared libraries.
-  Revised 13 makefiles to remove "-lz" and "-L$(ZLIBLIB)", etc., from shared
-    library loader directive.
-  Revised libpng-config script.
-  Relocated two misplaced PNGAPI lines in pngtest.c
+Source files with LF line endings (for Unix/Linux) and with a
+"configure" script
 
-Send comments/corrections/commendations to
-png-implement@ccrc.wustl.edu or to randeg@alum.rpi.edu
+   libpng-1.2.12.tar.gz
+   libpng-1.2.12.tar.bz2
+
+Source files with LF line endings (for Unix/Linux) without the
+"configure" script
+
+   libpng-1.2.12-no-config.tar.gz
+   libpng-1.2.12-no-config.tar.bz2
+
+Source files with CRLF line endings (for Windows), without the
+"configure" script
+
+   lpng1212.zip
+   lpng1212.tar.bz2
+
+Project files
+
+   libpng-1.2.12-project-netware.zip
+   libpng-1.2.12-project-wince.zip
+
+Other information:
+
+   libpng-1.2.12-README.txt
+   libpng-1.2.12-KNOWNBUGS.txt
+   libpng-1.2.12-LICENSE.txt
+   libpng-1.2.12-Y2K-compliance.txt
+
+Changes since the last public release (1.2.11):
+
+version 1.2.12 [June 27, 2006]
+
+version 1.0.20, 1.2.12 [June 27, 2006]
+  Really increased sprintf buffer from 50 to 52 chars in pngrutil.c to avoid
+    buffer overflow.
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net
+(subscription required; visit 
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe) or to glennrp at users.sourceforge.net
 
 Glenn R-P
