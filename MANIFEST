@@ -449,8 +449,6 @@ JPEG/jpeg/wrrle.c
 JPEG/jpeg/wrtarga.c
 JPEG/Makefile.PL
 JPEG/Makefile.jpeg.maybe
-JPEG/MANIFEST
-JPEG/MANIFEST.SKIP
 JPEG/Nick.jpg
 JPEG/README
 JPEG/t/more.t
@@ -695,8 +693,6 @@ PNG/libpng/test-pngtest.sh
 PNG/Makefile.PL
 PNG/Makefile.libpng.maybe
 PNG/Makefile.zlib.maybe
-PNG/MANIFEST
-PNG/MANIFEST.SKIP
 PNG/PNG.pm
 PNG/PNG.xs
 PNG/pngtest.png

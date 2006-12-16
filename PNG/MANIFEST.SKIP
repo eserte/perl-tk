@@ -1,6 +1,0 @@
-[%~]$
-\.[oad]$
-\.(bak|old|bs|tar\.gz)$
-\bblib\b
-\b(Makefile|pm_to_blib)$
-\bPNG.c
