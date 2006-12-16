@@ -5,7 +5,7 @@ use Test;
 
 BEGIN
   {
-   plan test => 17;
+   plan test => 22;
   };
 
 eval { require Tk };
@@ -80,6 +80,27 @@ ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
     $browse->update;
     ok($var eq 'val2');
     $browse->destroy;
+}
+
+{
+    # http://perlmonks.org/?node_id=590170
+    my $active_text_color = "#000000";
+    my $bgcolor = "#FFFFFF";
+    my $text_font = 'helvetica 12';
+    my $browse = $mw->BrowseEntry(-label=>'Try Me:',
+				  -labelPack=>[qw(-side left -anchor w)],
+				  -labelFont=>$text_font,
+				  -labelForeground=>$active_text_color,
+				  -labelBackground=>$bgcolor,
+				  -width=>5,
+				  -choices=>[qw(A B C)],
+				 )->pack(-side=>'left', -expand=>1, -fill=>'x');
+    my @children = $browse->children;
+    ok(scalar(@children), 3, "No auto-creation of Frame label");
+    ok((scalar grep { $_->isa("Tk::LabEntry") } @children), 1, "Has one LabEntry");
+    ok((scalar grep { $_->isa("Tk::Button")   } @children), 1, "Has one Button");
+    ok((scalar grep { $_->isa("Tk::Toplevel") } @children), 1, "Has one Toplevel");
+    ok((scalar grep { $_->isa("Tk::Label")    } @children), 0, "Has no Label");
 }
 
 #&Tk::MainLoop;

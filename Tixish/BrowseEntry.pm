@@ -26,7 +26,17 @@ sub ListboxWidget  { "Listbox"  }
 sub Populate {
     my ($w, $args) = @_;
 
+    my %labelArgs;
+    while(my($k,$v) = each %$args) {
+	$labelArgs{$k} = $v;
+	delete $args->{$k};
+    }
+
     $w->Tk::Frame::Populate($args);
+
+    while(my($k,$v) = each %labelArgs) {
+	$args->{$k} = $v;
+    }
 
     # entry widget and arrow button
     my $lpack = delete $args->{-labelPack};
