@@ -705,7 +705,6 @@ PNG/t/basic.t
 PNG/zlib/ChangeLog
 PNG/zlib/FAQ
 PNG/zlib/INDEX
-PNG/zlib/Makefile
 PNG/zlib/Makefile.in
 PNG/zlib/README
 PNG/zlib/adler32.c
