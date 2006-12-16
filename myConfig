@@ -24,11 +24,11 @@ if (defined $Config{'gccversion'})
     $gccopt .= " -Wall -Wno-implicit-int -Wno-comment -Wno-unused -D__USE_FIXED_PROTOTYPES__";
     eval
      {
-      if ((getpwuid($<))[6] =~ /Nick\s+Ing-Simmons/)
+      if ((getpwuid($<))[6] =~ /(Nick\s+Ing-Simmons|XXXSlaven\s+Rezic)/)
        {
         # This is the author - catch as many bugs as possible
+        # libpng causes some warnings, so this is not enabled for me - srt
         $gccopt .= "  -MMD -Werror -Wno-format";
-#       @macro = ( macro => { INSTALLDIRS => 'perl' });
        }
      }
    }
@@ -42,7 +42,11 @@ if ($] >= 5.005)
        AUTHOR   => 'nick@ing-simmons.net (Nick Ing-Simmons)'
       );
   my $arch = ($^O eq 'MSWin32') ? $ENV{'PROCESSOR_ARCHITECTURE'} : $Config{'archname'};
-  push(@ARGV,"BINARY_LOCATION=$arch/Tk$VERSION-PPM.tar.gz");
+  my $binloc = "BINARY_LOCATION=$arch/Tk$VERSION-PPM.tar.gz";
+  if (!grep { $binloc eq $_ } @ARGV)
+   {
+    push(@ARGV,$binloc);
+   }
   warn "PPM for perl$]\n";
  }
 else

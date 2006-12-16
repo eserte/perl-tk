@@ -17,8 +17,8 @@ BEGIN
    {
     if (/\$Tk::VERSION\s+=\s+'([0-9._]+)'/)
      {
-      $VERSION = $1;
-      $VERSION = eval $VERSION;
+      $DISTVERSION = $1;
+      $VERSION = eval $DISTVERSION;
       last;
      }
    }
@@ -71,6 +71,7 @@ Tk::MMutil::TkExtMakefile(
     'NAME'     => 'Tk',
     'DIR'      => ['pTk',reverse(sort(keys %$dir))],
     'DISTNAME' => "Tk",
+    'DISTVNAME'=> "Tk-$DISTVERSION",
     'MYEXTLIB' => 'pTk/libpTk$(LIB_EXT)' . ($win_arch =~ /^(open32|pm)$/
 					    ? ' pTk/dllInit$(LIB_EXT)'
 					    : ''),
