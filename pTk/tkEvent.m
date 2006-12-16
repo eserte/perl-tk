@@ -2,6 +2,10 @@
 #define _TKEVENT_VM
 #include "tkEvent_f.h"
 #ifndef NO_VTABLES
+#ifndef LangAsyncCheck
+#  define LangAsyncCheck (*TkeventVptr->V_LangAsyncCheck)
+#endif
+
 #ifndef LangCallCallback
 #  define LangCallCallback (*TkeventVptr->V_LangCallCallback)
 #endif

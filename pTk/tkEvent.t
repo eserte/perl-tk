@@ -1,4 +1,8 @@
 #ifdef _TKEVENT
+#ifndef LangAsyncCheck
+VFUNC(void,LangAsyncCheck,V_LangAsyncCheck,_ANSI_ARGS_((void)))
+#endif /* #ifndef LangAsyncCheck */
+
 #ifndef LangCallCallback
 VFUNC(int,LangCallCallback,V_LangCallCallback,_ANSI_ARGS_((LangCallback *cb, int flags)))
 #endif /* #ifndef LangCallCallback */

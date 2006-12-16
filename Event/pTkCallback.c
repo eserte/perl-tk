@@ -449,6 +449,13 @@ TclFinalizeObjSubsystem(void)
 {
 }
 
+void
+LangAsyncCheck(void)
+{
+#ifdef PERL_ASYNC_CHECK
+ PERL_ASYNC_CHECK();
+#endif
+}
 
 
 

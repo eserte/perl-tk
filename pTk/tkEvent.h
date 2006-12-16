@@ -8,6 +8,7 @@ EXTERN Tcl_Obj *	LangCallbackObj _ANSI_ARGS_((LangCallback *));
 EXTERN int		LangCmpCallback _ANSI_ARGS_((LangCallback *a,Tcl_Obj * b));
 EXTERN LangCallback *	LangCopyCallback _ANSI_ARGS_((LangCallback *));
 EXTERN void		LangDebug _ANSI_ARGS_((CONST char *fmt,...));
+EXTERN void		LangAsyncCheck _ANSI_ARGS_((void));
 EXTERN void		LangFreeCallback _ANSI_ARGS_((LangCallback *));
 EXTERN LangCallback *	LangMakeCallback _ANSI_ARGS_((Tcl_Obj *));
 EXTERN Tcl_Obj *		LangOldCallbackArg _ANSI_ARGS_((LangCallback *,char *,int));

@@ -22,6 +22,9 @@
 #include "Lang.h"
 #endif
 #include <signal.h>
+#ifdef _LANG
+#include <errno.h>
+#endif
 
 #ifdef TCL_EVENT_IMPLEMENT
 
@@ -798,6 +801,16 @@ Tcl_WaitForEvent(timePtr)
     if (numFound == -1) {
 	memset((VOID *) tsdPtr->readyMasks, 0, 3*MASK_SIZE*sizeof(fd_mask));
     }
+
+#ifdef _LANG
+    /*
+     * Language-specific check for signals
+     */
+    if (numFound == -1 && errno == EINTR) {
+	LangAsyncCheck();
+    }
+#endif
+
 #endif
 
     /*
