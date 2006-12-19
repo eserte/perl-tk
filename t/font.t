@@ -119,7 +119,7 @@ SKIP: {
  skip("Test only work on X11", 10)
      if $Tk::platform ne 'unix';
 
- my $l = $mw->Label(-font => '-*-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*');
+ my $l = $mw->Label(-font => '-adobe-helvetica-bold-r-normal--*-180-*-*-*-*-*-*');
  my $f = $l->cget(-font);
  my @subfonts = $mw->font('subfonts', $f);
 
