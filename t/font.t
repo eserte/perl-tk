@@ -134,6 +134,8 @@ SKIP: {
 
  skip("Helvetica requested, but got $fa{-family}", 10)
      if lc $fa{-family} ne 'helvetica';
+ skip("18 pixels requested, but got " . -$fa{-size}, 10)
+     if lc $fa{-size} != -18;
 
  my $font_dump_shown = 0;
  my %expected = (
