@@ -17,12 +17,7 @@ issues with filenames?
 
 Minimize diffs to original Tcl/Tk sources to make merging easier.
 
-Integrate libpng 1.2.12 (or newer?)
-
 Port message catalogs from Tcl/Tk to Perl/Tk.
-
-Simple tests for EXE_FILES (at least checking with perl -c, maybe also
-starting and immediately destroying)
 
 Port tkText*.c changes, as there are some unicode-related fixes.
 
@@ -32,11 +27,7 @@ Pod review (Listbox.pod done, options.pod and Canvas.pod in the works,
 others pending)
 
 Create a xft test which tests measures of one or two populate ttf fonts
-(e.g. bitstream vera and nimbus). Another benefit: this indicates indirectly
-that user compiled with xft support.
-
-Protect all tests with DISPLAY check? Or just bailout in the first test
-if no connection to X server could be created? Does bailout work at all?
+(e.g. bitstream vera and nimbus).
 
 Try visual c+nmake build on MSWin32.
 

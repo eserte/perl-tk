@@ -11,6 +11,13 @@ New features
   The undocumented method font('subfonts') returns now more
   diagnostics.
 
+  Library upgrades:
+    libpng from 1.2.5 to 1.2.12
+    zlib from 1.1.4 to 1.2.3
+
+  It's possible to use binary (and not anymore base64 encoded) -data
+  for GIF files.
+
 Fixes
   gedi accepts now X11 command line options.
 
@@ -20,11 +27,19 @@ Fixes
 
   Fixed array return of Tk::Text::get method.
 
+  Fixed Tk::BrowseEntry problem with -label* options, see
+  http://perlmonks.org/?node_id=590170
+
+  Introduced LangAsyncCheck, which fixes
+  http://rt.cpan.org/Ticket/Display.html?id=23879
+
 Documentation
   New Pod for Tk::MsgBox.
 
   Created a CAVEATS section in Tk::Image for the FAQ about memory
   leaks and images.
+
+  Added missing L<...> links.
 
   Some minor Pod fixes.
 
