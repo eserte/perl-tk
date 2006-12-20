@@ -28,7 +28,7 @@ BEGIN {
     }
 }
 
-plan tests => 373;
+plan tests => 415;
 
 use Getopt::Long;
 my $v;
@@ -40,6 +40,10 @@ use_ok('Tk::Text');
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
+
+sub deleteWindows () {
+    eval { $_->destroy } for $mw->children;
+}
 
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
@@ -1801,224 +1805,299 @@ SKIP:{
 {
     my $a = {};
     eval { $t->search(-count => \$a, qw(xyz 1.0)) };
-    warn $@;
+    is($@, "");
 }
 
-__END__
+{
+    is($t->search(-backwards => 'xyz', '1.1'), "3.5",
+       q{TextSearchCmd procedure, wrap-around});
+    is($t->search(qw(-backwards xyz 1.1 1.0)), undef);
+    is($t->search(qw(xyz 3.6)), '1.1');
+    is($t->search(qw(xyz 3.6 end)), undef);
+}
 
-test text-20.51 {TextSearchCmd procedure, wrap-around} {
-    .t search -backwards xyz 1.1
-} {3.5}
-test text-20.52 {TextSearchCmd procedure, wrap-around} {
-    .t search -backwards xyz 1.1 1.0
-} {}
-test text-20.53 {TextSearchCmd procedure, wrap-around} {
-    .t search xyz 3.6
-} {1.1}
-test text-20.54 {TextSearchCmd procedure, wrap-around} {
-    .t search xyz 3.6 end
-} {}
-test text-20.55 {TextSearchCmd procedure, no match} {
-    .t search non_existent 3.5
-} {}
-test text-20.56 {TextSearchCmd procedure, no match} {
-    .t search -regexp non_existent 3.5
-} {}
-test text-20.57 {TextSearchCmd procedure, special cases} {
-    .t search -back x 1.1
-} {1.0}
-test text-20.58 {TextSearchCmd procedure, special cases} {
-    .t search -back x 1.0
-} {3.8}
-test text-20.59 {TextSearchCmd procedure, special cases} {
-    .t search \n {end-2c}
-} {3.9}
-test text-20.60 {TextSearchCmd procedure, special cases} {
-    .t search \n end
-} {1.15}
-test text-20.61 {TextSearchCmd procedure, special cases} {
-    .t search x 1.0
-} {1.0}
-test text-20.62 {TextSearchCmd, freeing copy of pattern} {
+{
+    is($t->search(qw(non_existent 3.5)), undef,
+       q{TextSearchCmd procedure, no match});
+    is($t->search(qw(-regexp non_existent 3.5)), undef);
+}
+
+{
+    is($t->search(qw(-back x 1.1)), '1.0',
+       q{TextSearchCmd procedure, special cases});
+    is($t->search(qw(-back x 1.0)), '3.8');
+    is($t->search("\n", "end-2c"), '3.9');
+    is($t->search("\n", "end"), '1.15');
+    is($t->search(qw(x 1.0)), '1.0');
+}
+
+{
     # This test doesn't return a result, but it will generate
     # a core leak if the pattern copy isn't properly freed.
     # (actually in Tk 8.5 objectification means there is no
     # longer a copy of the pattern, but we leave this test in
     # anyway).
-    set p abcdefg1234567890
-    set p $p$p$p$p$p$p$p$p
-    set p $p$p$p$p$p
-    .t search -nocase $p 1.0
-} {}
-test text-20.63 {TextSearchCmd, unicode} {
-    .t delete 1.0 end
-    .t insert end "foo\u30c9\u30cabar"
-    .t search \u30c9\u30ca 1.0
-} 1.3
-test text-20.64 {TextSearchCmd, unicode} {
-    .t delete 1.0 end
-    .t insert end "foo\u30c9\u30cabar"
-    list [.t search -count n \u30c9\u30ca 1.0] $n
-} {1.3 2}
-test text-20.65 {TextSearchCmd, unicode with non-text segments} {
-    .t delete 1.0 end
-    button .b1 -text baz
-    .t insert end "foo\u30c9"
-    .t window create end -window .b1
-    .t insert end "\u30cabar"
-    set result [list [.t search -count n \u30c9\u30ca 1.0] $n]
-    destroy .b1
-    set result
-} {1.3 3}
-test text-20.66 {TextSearchCmd, hidden text does not affect match index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "12345H7890"
-    .t2 search 7 1.0
-} 1.6
-test text-20.67 {TextSearchCmd, hidden text does not affect match index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "12345H7890"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.5
-    .t2 search 7 1.0
-} 1.6
-test text-20.68 {TextSearchCmd, hidden text does not affect match index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nbarbaz\nbazboo"
-    .t2 search boo 1.0
-} 3.3
-test text-20.69 {TextSearchCmd, hidden text does not affect match index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nbarbaz\nbazboo"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 2.0 3.0
-    .t2 search boo 1.0
-} 3.3
-test text-20.70 {TextSearchCmd, -regexp -nocase searches} {
-    catch {destroy .t}
-    pack [text .t]
-    .t insert end "word1 word2"
-    set res [.t search -nocase -regexp {\mword.} 1.0 end]
-    destroy .t
-    set res
-} 1.0
-test text-20.71 {TextSearchCmd, -regexp -nocase searches} {
-    catch {destroy .t}
-    pack [text .t]
-    .t insert end "word1 word2"
-    set res [.t search -nocase -regexp {word.\M} 1.0 end]
-    destroy .t
-    set res
-} 1.0
-test text-20.72 {TextSearchCmd, -regexp -nocase searches} {
-    catch {destroy .t}
-    pack [text .t]
-    .t insert end "word1 word2"
-    set res [.t search -nocase -regexp {word.\W} 1.0 end]
-    destroy .t
-    set res
-} 1.0
-test text-20.73 {TextSearchCmd, hidden text and start index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 search bar 1.3
-} 1.3
-test text-20.74 {TextSearchCmd, hidden text shouldn't influence start index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.0 1.2
-    .t2 search bar 1.3
-} 1.3
-test text-20.75 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    list [.t2 search -count foo foar 1.3] $foo
-} {1.0 6}
-test text-20.75.1 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    list \
-      [.t2 search -strict -count foo foar 1.3] \
-      [.t2 search -strict -count foo foar 2.3] $foo
-} {{} 1.0 6}
-test text-20.76 {TextSearchCmd, hidden text and start index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 search -regexp bar 1.3
-} 1.3
-test text-20.77 {TextSearchCmd, hidden text shouldn't influence start index} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.0 1.2
-    .t2 search -regexp bar 1.3
-} 1.3
-test text-20.78 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    list [.t2 search -regexp -count foo foar 1.3] $foo
-} {1.0 6}
-test text-20.78.1 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    list [.t2 search -count foo foar 1.3] $foo
-} {1.0 6}
-test text-20.78.2 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoobar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    .t2 search -strict -count foo foar 1.3
-} {}
-test text-20.78.3 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    .t2 tag add hidden 2.2 2.4
-    list [.t2 search -regexp -all -count foo foar 1.3] $foo
-} {{2.0 3.0 1.0} {6 4 6}}
-test text-20.78.4 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    .t2 tag add hidden 2.2 2.4
-    list [.t2 search -all -count foo foar 1.3] $foo
-} {{2.0 3.0 1.0} {6 4 6}}
-test text-20.78.5 {TextSearchCmd, hidden text inside match must count in length} {
-    deleteWindows
-    pack [text .t2]
-    .t2 insert end "foobar\nfoobar\nfoar"
-    .t2 tag configure hidden -elide true
-    .t2 tag add hidden 1.2 1.4
-    .t2 tag add hidden 2.2 2.4
-    list [.t2 search -strict -all -count foo foar 1.3] $foo
-} {{2.0 3.0} {6 4}}
+
+    my $p = "abcdefg1234567890";
+    $p = "$p$p$p$p$p$p$p$p";
+    $p = "$p$p$p$p$p";
+    $t->search('-nocase', $p, '1.0');
+    pass(q{TextSearchCmd, freeing copy of pattern});
+}
+
+{
+    $t->delete(qw(1.0 end));
+    $t->insert(end => "foo\x{30c9}\x{30ca}bar");
+    is($t->search("\x{30c9}\x{30ca}", "1.0"), "1.3",
+       q{TextSearchCmd, unicode});
+
+    $t->delete(qw(1.0 end));
+    $t->insert(end => "foo\x{30c9}\x{30ca}bar");
+    my $n;
+    is($t->search(-count => \$n, "\x{30c9}\x{30ca}", "1.0"), "1.3");
+    is($n, 2);
+}
+
+{
+    $t->delete(qw(1.0 end));
+    my $b1 = $mw->Button(-text => "baz");
+    $t->insert(end => "foo\x{30c9}");
+    $t->windowCreate(end => -window => $b1);
+    $t->insert(end => "\x{30ca}bar");
+    my $n;
+    is($t->search(-count => \$n, "\x{30c9}\x{30ca}", "1.0"), "1.3",
+       q{TextSearchCmd, unicode with non-text segments});
+    is($n, 3);
+    $b1->destroy;
+}
+
+{
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert(end => "12345H7890");
+    is($t2->search(qw(7 1.0)), "1.6",
+       q{TextSearchCmd, hidden text does not affect match index});
+}
+
+{
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert(end => "12345H7890");
+    $t2->tagConfigure(hidden => -elide => "true");
+    $t2->tagAdd(hidden => "1.5");
+    is($t2->search(7, "1.0"), "1.6",
+       q{TextSearchCmd, hidden text does not affect match index});
+}
+
+{
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert(end => "foobar\nbarbaz\nbazboo");
+    is($t2->search(boo => "1.0"), "3.3");
+}
+
+{
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert(end => "foobar\nbarbaz\nbazboo");
+    $t2->tagConfigure(hidden => -elide => "true");
+    $t2->tagAdd(hidden => "2.0", "3.0");
+    is($t2->search(boo => "1.0"), "3.3");
+}
+
+{
+    $t->destroy if Tk::Exists($t);
+    $t = $mw->Text->pack;
+    $t->insert(end => "word1", "word2");
+    # the original regexp was {\mword.}
+    is($t->search(-nocase => -regexp => qr{\bword.}, "1.0", "end"), "1.0",
+       q{TextSearchCmd, -regexp -nocase searches});
+    $t->destroy;
+}
+
+{
+    $t->destroy if Tk::Exists($t);
+    $t = $mw->Text->pack;
+    $t->insert(end => "word1", "word2");
+    # the original regexp was {word.\M}
+    is($t->search(-nocase => -regexp => qr{word.\b}, "1.0", "end"), "1.0",
+       q{TextSearchCmd, -regexp -nocase searches});
+    $t->destroy;
+}
+
+{
+    $t->destroy if Tk::Exists($t);
+    $t = $mw->Text->pack;
+    $t->insert(end => "word1 word2");
+    is($t->search(-nocase => -regexp => qr{word.\W}, "1.0", "end"), "1.0",
+       q{TextSearchCmd, -regexp -nocase searches});
+    $t->destroy;
+}
+
+{
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    is($t2->search(qw(bar 1.3)), "1.3",
+       q{TextSearchCmd, hidden text and start index});
+}
+
+SKIP: {
+    skip("Seems to be buggy in Tk 8.4 and earlier", 1)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.0 1.2));
+    is($t2->search(qw(bar 1.3)), "1.3",
+       q{TextSearchCmd, hidden text shouldn't influence start index});
+}
+
+SKIP: {
+    skip("Seems to be buggy in Tk 8.4 and earlier", 2)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    my $foo;
+    is($t2->search(-count => \$foo, qw(foar 1.3)), "1.0",
+       q{TextSearchCmd, hidden text inside match must count in length});
+    is($foo, 6);
+}
+
+SKIP: {
+    skip("-strict is NYI implemented", 3)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    my $foo;
+    is($t2->search(-strict => -count => \$foo, qw(foar 1.3)), undef);
+    is($t2->search(-strict => -count => \$foo, qw(foar 2.3)), "1.0");
+    is($foo, 6);
+}
+
+{
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    is($t2->search(-regexp => bar => "1.3"), "1.3",
+       q{TextSearchCmd, hidden text and start index});
+}
+
+SKIP: {
+    skip("Seems to be buggy in Tk 8.4 and earlier", 1)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.0 1.2));
+    is($t2->search(-regexp => bar => "1.3"), "1.3",
+       q{TextSearchCmd, hidden text shouldn't influence start index});
+}
+
+SKIP: {
+    skip("Seems to be buggy in Tk 8.4 and earlier", 2)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    my $foo;
+    is($t2->search(-regexp => -count => \$foo, foar => "1.3"), "1.0",
+       q{TextSearchCmd, hidden text inside match must count in length});
+    is($foo, 6);
+}
+
+SKIP: {
+    skip("Seems to be buggy in Tk 8.4 and earlier", 2)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    my $foo;
+    is($t2->search(-count => \$foo, foar => "1.3"), "1.0");
+    is($foo, 6);
+}
+
+SKIP: {
+    skip("-strict NYI implemented", 1)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    my $foo;
+    is($t2->search(-strict => -count => \$foo, foar => "1.3"), undef);
+}
+
+SKIP: {
+    skip("-all NYI implemented", 1)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    $t2->tag(qw(add hidden 2.2 2.4));
+    my $foo;
+    is_deeply([$t2->search(-regexp => -all => -count => \$foo, foar => "1.3")],
+	      [qw(2.0 3.0 1.0)]);
+    is_deeply($foo, [qw(6 4 6)]);
+}
+
+SKIP: {
+    skip("-all NYI implemented", 1)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    $t2->tag(qw(add hidden 2.2 2.4));
+    my $foo;
+    is_deeply([$t2->search(-all => -count => \$foo, foar => "1.3")],
+	      [qw(2.0 3.0 1.0)]);
+    is_deeply($foo, [qw(6 4 6)]);
+}
+
+SKIP: {
+    skip("-strict and -all NYI implemented", 1)
+	if $Tk::VERSION < 805;
+
+    deleteWindows;
+    my $t2 = $mw->Text->pack;
+    $t2->insert("end", "foobar\nfoobar\nfoobar");
+    $t2->tag(qw(configure hidden -elide true));
+    $t2->tag(qw(add hidden 1.2 1.4));
+    $t2->tag(qw(add hidden 2.2 2.4));
+    my $foo;
+    is_deeply([$t2->search(-strict => -all => -count => \$foo, foar => "1.3")],
+	      [qw(2.0 3.0)]);
+    is_deeply($foo, [qw(6 4)]);
+}
+
+__END__
+
 test text-20.78.6 {TextSearchCmd, single line with -all} {
     deleteWindows
     pack [text .t2]
