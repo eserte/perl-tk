@@ -5,17 +5,19 @@ use Config;
 use Tk 804.000;
 use lib Tk->findINC( 'demos/widget_lib' );
 use Tk::widgets qw/ DialogBox ErrorDialog LabEntry ROText /;
+use Tk::Config ();
 use WidgetDemo;
 use subs qw/
     build_about_dialog demos invoke lsearch
     see_code see_vars show_stat view_widget
 /;
-use vars qw/ $MW $FONT $WIDTRIB /;
+use vars qw/ $MW $FONT $BOLD_FONT $LARGE_FONT $MONOSPACE_FONT $WIDTRIB /;
 use vars qw/ $CODE $CODE_RERUN $CODE_TEXT $VARS $VIEW $VIEW_TEXT /;
 use vars qw/ $ALIGN $BRAKES $LIGHTS $OIL $SOBER $TRANS $WIPERS /;
-use vars qw/ $COLOR $FONT_STYLE $POINT_SIZE $DEMO_FILE %DEMO_DESCRIPTION /;
+use vars qw/ $COLOR $FONT_STYLE $POINT_SIZE $DEMO_FILE %DEMO_DESCRIPTION $XFT /;
 use strict;
 
+$XFT = $Tk::Config::xlib =~ /-lXft\b/;
 
 $MW = Tk::MainWindow->new;
 $MW->configure(-menu => my $menubar = $MW->Menu);
@@ -40,7 +42,26 @@ $MW->configure(-menu => my $menubar = $MW->Menu);
 
 $MW->title('Perl/Tk Widget Demonstration');
 $MW->iconname('widget');
-$FONT = 'Helvetica 12';
+
+my $DEFAULT_FONT_FAMILY = $XFT ? "sans-serif" : "Helvetica";
+{
+    $FONT           = "$DEFAULT_FONT_FAMILY 12";
+    $BOLD_FONT      = "$DEFAULT_FONT_FAMILY 12 bold";
+    $LARGE_FONT     = "$DEFAULT_FONT_FAMILY 18";
+    $MONOSPACE_FONT = "Courier 12";
+    my $l = $MW->Label;
+    my $default_font = $l->cget(-font);
+    if ($default_font) {
+	my %default_font = $MW->fontActual($default_font);
+	$FONT           = $MW->fontCreate(%default_font, -family => $DEFAULT_FONT_FAMILY);
+	$BOLD_FONT      = $MW->fontCreate(%default_font, -family => $DEFAULT_FONT_FAMILY, -weight => "bold");
+	$LARGE_FONT     = $MW->fontCreate(%default_font, -family => $DEFAULT_FONT_FAMILY, -weight => "bold", -size => -18);
+	$MONOSPACE_FONT = $MW->fontCreate(%default_font, -family => $XFT ? "monospace" : "Courier");
+	$MW->optionAdd("*font", $FONT);
+    }
+    $l->destroy;
+}
+
 my $widget_lib = Tk->findINC('demos/widget_lib');
 my $wd = "$widget_lib/WidgetDemo.pm";
 $WIDTRIB = Tk->findINC('demos/widtrib');
@@ -95,7 +116,7 @@ $status->grid(qw/-sticky ew/);
 # section titles and demo descriptions.  Also define the bindings for
 # tags.
 
-$T->tagConfigure(qw/title -font -*-Helvetica-Bold-R-Normal--*-180-*-*-*-*-*-*/);
+$T->tagConfigure(qw/title -font/, $LARGE_FONT);
 $T->tagConfigure(qw/demo -lmargin1 1c -lmargin2 1c -foreground blue/);
 
 if ($MW->depth  == 1) {
@@ -106,7 +127,7 @@ if ($MW->depth  == 1) {
     $T->tagConfigure(qw/visited -lmargin1 1c -lmargin2 1c -foreground/ =>
 	    '#303080');
 }
-$T->tagConfigure('bold', -font => 'Helvetica 12 bold');
+$T->tagConfigure('bold', -font => $BOLD_FONT);
 
 $T->tagBind(qw/demo <ButtonRelease-1>/ => \&invoke);
 my $last_line = '';
@@ -413,7 +434,7 @@ sub see_code {
             -command => [$CODE => 'withdraw'],
 	);
 	$CODE_RERUN = $code_buttons->Button(-text => 'Rerun Demo');
-	$CODE_TEXT = $CODE->Scrolled('Text', qw/ -height 40 -scrollbars oe /);
+	$CODE_TEXT = $CODE->Scrolled('Text', qw/ -height 40 -scrollbars oe -font /, $MONOSPACE_FONT);
 	$code_buttons_dismiss->pack(qw/-side left -expand 1/);
 	$CODE_RERUN->pack(qw/-side left -expand 1/);
 	$CODE_TEXT->pack(qw/-side left -expand 1 -fill both/);
@@ -467,7 +488,7 @@ sub see_vars {
         -text   => 'Variable Values:',
         -width  => 20,
         -anchor => 'center',
-        -font   => '-*-helvetica-medium-r-normal--*-180-*-*-*-*-*-*',
+        -font   => $LARGE_FONT,
     );
     $title->pack(qw/-side top -fill x/);
     my($label, $var);
