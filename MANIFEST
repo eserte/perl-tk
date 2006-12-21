@@ -167,6 +167,7 @@ demos/demos/widget_lib/virtevents1.pl
 demos/demos/widget_lib/vscale.pl
 demos/demos/widget_lib/WidgetDemo.pm
 demos/demos/widtrib/Gedi.pl
+demos/demos/widtrib/cursor.pl
 demos/demos/widtrib/lib/npuz/Xcamel.npuz
 demos/demos/widtrib/npuz.pl
 demos/demos/widtrib/plop.pl

@@ -1,0 +1,55 @@
+# Predefined cursors.
+# -*- perl -*-
+
+#
+# $Id: $
+# Author: Slaven Rezic
+#
+# Copyright (C) 2006 Slaven Rezic. All rights reserved.
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+# Mail: slaven@rezic.de
+# WWW:  http://www.rezic.de/eserte/
+#
+
+use vars qw/$TOP/;
+
+sub cursor {
+    my($demo) = @_;
+    $TOP = $MW->WidgetDemo(
+        -name             => $demo,
+        -text             => 'Predefined cursors',
+	-geometry_manager => 'grid',
+        -title            => 'Predefined cursors',
+        -iconname         => 'Predefined cursors',
+    );
+
+    my $cursorfonth = Tk->findINC("X11/cursorfont.h");
+    if (!$cursorfonth) {
+	$cursorfonth = "/usr/X11R6/include/X11/cursorfont.h";
+    }
+    my $fh;
+    if (!open $fh, $cursorfonth) {
+	$TOP->Label(-text => "Sorry. I can't find X11/cursorfont.h on this system.")->grid;
+	return;
+    }
+	
+    while(<$fh>) {
+	chomp;
+	if (/XC_(\S+)/) {
+	    my $cursorname = $1;
+	    next if $cursorname eq 'num_glyphs';
+	    push @cursors, $cursorname;
+	}
+    }
+
+    $lb = $TOP->Scrolled("Listbox", -scrollbars => "ose")->grid;
+    $lb->insert("end", @cursors);
+    $lb->bind("<1>", sub {
+		  my($inx) = $lb->curselection;
+		  $lb->configure(-cursor => $cursors[$inx]);
+	      });
+}
+
+__END__
