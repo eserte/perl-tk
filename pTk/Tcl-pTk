@@ -11,8 +11,9 @@ $dst = shift;
 die "Usage: $0 <src> <dst> \n" unless (defined $src and defined $dst);
 
 chmod(0666, $dst);
+chmod(0666, "$dst~");
 unlink($dst);
-open(DST,">$dst") || die "Cannot open $dst;$!";
+open(DST,">$dst~") || die "Cannot open $dst~: $!";
 select(DST);
 
 my $copyright;
@@ -249,7 +250,9 @@ while ($_ = &getline)
  }
 
 select(STDOUT);
-close(DST);
+close(DST) or die "While writing to $dst~: $!";
+
+rename "$dst~", $dst or die "Could not rename $dst~ to $dst: $!";
 
 chmod(0444,$dst);
 
