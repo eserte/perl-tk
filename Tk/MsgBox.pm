@@ -462,6 +462,7 @@ sub Show {
     # display and de-iconify it.
 
     #    ::tk::PlaceWindow $w widget $data(-parent)
+    $w->withdraw;
     $w->Popup;
 
     # 8. Set a grab and claim the focus too.
