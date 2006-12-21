@@ -19,7 +19,11 @@ sub cursor {
     my($demo) = @_;
     $TOP = $MW->WidgetDemo(
         -name             => $demo,
-        -text             => 'Predefined cursors',
+        -text             => <<'EOF',
+This window displays the names of Tk's built-in
+resp. predefined X11 cursors. Click on the names
+to see the cursor shape.
+EOF
 	-geometry_manager => 'grid',
         -title            => 'Predefined cursors',
         -iconname         => 'Predefined cursors',
