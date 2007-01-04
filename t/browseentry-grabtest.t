@@ -29,6 +29,16 @@ BEGIN { plan tests => 1 }
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
+sub catch_grabs (&) {
+    my $code = shift;
+    eval {
+	$code->();
+    };
+    if ($@ && $@ !~ m{^\Qgrab failed: another application has grab}) {
+	die $@;
+    }
+}
+
 my $mw = tkinit;
 $mw->geometry("+10+10");
 my $t = $mw->Toplevel;
@@ -40,7 +50,7 @@ $mw->Entry->pack;
 $t->BrowseEntry->pack;
 $t->Button(-text => "OK",
 	   -command => sub { $mw->destroy })->pack;
-$t->grab;
+catch_grabs { $t->grab };
 
 if ($ENV{BATCH}) {
     $mw->after(500,sub{$mw->destroy});

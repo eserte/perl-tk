@@ -8,6 +8,16 @@ BEGIN
    plan test => 22;
   };
 
+sub catch_grabs (&) {
+    my $code = shift;
+    eval {
+	$code->();
+    };
+    if ($@ && $@ !~ m{^\Qgrab failed: another application has grab}) {
+	die $@;
+    }
+}
+
 eval { require Tk };
 ok($@, "", "loading Tk module");
 
@@ -39,8 +49,7 @@ $be->idletasks;
 # this can "fail" if KDE screen save is up, or user is doing something
 # else - such snags are what we should expect when calling binding
 # methods directly ...
-eval { $be->BtnDown };
-warn $@ if $@;
+catch_grabs { $be->BtnDown };
 ok(@listcmd, 1, "-listcmd failed");
 ok($listcmd[0]->isa('Tk::BrowseEntry'), 1, "wrong 1st argument in -listcmd");
 
@@ -64,7 +73,7 @@ eval { $be2 = $mw->BrowseEntry(-choices => [qw/a b c d e/],
 ok("$@", "", "can't create BrowseEntry");
 ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
 
-{
+catch_grabs {
     # Testcase:
     # From: "Puetz Kevin A" <PuetzKevinA AT JohnDeere.com>
     # Message-ID: <0B4BDC724143544EB509F90F7791EB64026EF8E1@edxmb16.jdnet.deere.com>
@@ -80,7 +89,7 @@ ok(Tk::Exists($be2), 1, "BrowseEntry creation failed");
     $browse->update;
     ok($var eq 'val2');
     $browse->destroy;
-}
+};
 
 {
     # http://perlmonks.org/?node_id=590170
