@@ -51,6 +51,15 @@ no default Button is specified, then the first element of the
 array whose reference is passed to the B<-buttons> option is used
 as the default.
 
+=item B<-cancel_button>
+
+Specifies the Button that is considered invoked when the user closes
+the DialogBox using the window manager's close button. If the
+B<-cancel_button> option is not given, and if there's only one button
+configured, then this button is also used as the cancel button.
+Otherwise no button is considered as the cancel button; in such a case
+B<Show> just returns C<undef> when the user closes the DialogBox.
+
 =item B<-command>
 
 A callback which is executed after invoking an action to close the

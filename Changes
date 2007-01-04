@@ -18,6 +18,8 @@ New features
   It's possible to use binary (and not anymore base64 encoded) -data
   for GIF files.
 
+  New -cancel_button option for Tk::DialogBox
+
 Fixes
   gedi accepts now X11 command line options.
 
@@ -32,6 +34,12 @@ Fixes
 
   Introduced LangAsyncCheck, which fixes
   http://rt.cpan.org/Ticket/Display.html?id=23879
+
+  Fixed http://bugs.activestate.com/show_bug.cgi?id=40231 (missing
+  default button indicator on win32 for Tk::DialogBox widgets)
+
+  Fixed http://bugs.activestate.com/show_bug.cgi?id=40217 (wm close
+  window button does not call the default button)
 
 Documentation
   New Pod for Tk::MsgBox.
