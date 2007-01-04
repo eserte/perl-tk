@@ -23,14 +23,18 @@ sub Populate {
     $buttons = ['OK'] unless defined $buttons;
     my $default_button = delete $args->{'-default_button'};
     $default_button = $buttons->[0] unless defined $default_button;
+    my $cancel_button = delete $args->{'-cancel_button'};
+    if (!$cancel_button && @$buttons == 1) {
+	$cancel_button = $buttons->[0];
+    }
 
     $cw->{'selected_button'} = '';
     $cw->transient($cw->Parent->toplevel);
     $cw->withdraw;
-    if (@$buttons == 1) {
-	$cw->protocol('WM_DELETE_WINDOW' => sub { $cw->{'default_button'}->invoke });
+    if ($cancel_button) {
+	$cw->protocol('WM_DELETE_WINDOW' => sub { $cw->{'cancel_button'}->invoke });
     } else {
-	$cw->protocol('WM_DELETE_WINDOW' => sub {});
+	$cw->protocol('WM_DELETE_WINDOW' => sub { $cw->{'selected_button'} = undef });
     }
 
     # create the two frames
@@ -53,19 +57,24 @@ sub Populate {
           $b->configure(-width => 10, -pady => 0);
          }
 	if ($bl eq $default_button) {
-            if ($Tk::platform eq 'MSWin32') {
-                $b->pack(-side => 'left', -expand => 1,  -padx => 1, -pady => 1);
-            } else {
-	        my $db = $bot->Frame(-relief => 'sunken', -bd => 1);
-	        $b->raise($db);
-	        $b->pack(-in => $db, -padx => '2', -pady => '2');
-	        $db->pack(-side => 'left', -expand => 1, -padx => 1, -pady => 1);
-            }
+	    my $db = $bot->Frame(-relief => 'sunken', -bd => 1);
+	    $b->raise($db);
+	    $b->pack(-in => $db, -padx => '2', -pady => '2');
+	    $db->pack(-side => 'left', -expand => 1, -padx => 1, -pady => 1);
 	    $cw->{'default_button'} = $b;
 	    $cw->bind('<Return>' => [ $b, 'Invoke']);
 	} else {
 	    $b->pack(-side => 'left', -expand => 1,  -padx => 1, -pady => 1);
 	}
+	if (defined $cancel_button && $bl eq $cancel_button) {
+	    $cw->{'cancel_button'} = $b;
+	}
+    }
+    if (defined $default_button && !$cw->{'default_button'}) {
+	warn "Default button `$default_button' does not exist.\n";
+    }
+    if (defined $cancel_button && !$cw->{'cancel_button'}) {
+	warn "Cancel button `$cancel_button' does not exist.\n";
     }
     $cw->ConfigSpecs(-command    => ['CALLBACK', undef, undef, undef ],
                      -foreground => ['DESCENDANTS', 'foreground','Foreground', 'black'],
@@ -88,8 +97,8 @@ sub Wait
  my $cw = shift;
  $cw->Callback(-showcommand => $cw);
  $cw->waitVariable(\$cw->{'selected_button'});
- $cw->grabRelease;
- $cw->withdraw;
+ $cw->grabRelease if Tk::Exists($cw);
+ $cw->withdraw if Tk::Exists($cw);
  $cw->Callback(-command => $cw->{'selected_button'});
 }
 
