@@ -59,6 +59,9 @@ Tests
 
   New test for scripts (t/exefiles.t)
 
+  Tests are now more robust if another application has the global grab
+  (see catch_grabs in TkTest.pm).
+
 Tk-804.027-p4.patch.gz (2006-11-26)
 ----------------------
 
