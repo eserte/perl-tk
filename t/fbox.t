@@ -1,15 +1,25 @@
 # -*- perl -*-
 BEGIN { $|=1; $^W=1; }
 use strict;
-use Test;
+use FindBin;
+use lib $FindBin::RealBin;
 
-BEGIN { plan test => 6 };
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "1..0 # skip: no Test::More module\n";
+	exit;
+    }
+}
 
-eval { require Tk };
-ok($@, "", "loading Tk module");
+use TkTest qw(catch_grabs);
 
-eval { require Tk::FBox };
-ok($@, "", "loading Tk::FBox module");
+plan tests => 6;
+
+use_ok("Tk");
+use_ok("Tk::FBox");
 
 my $top = new MainWindow;
 eval { $top->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -33,11 +43,11 @@ eval {
 		    -font => "Helvetica 14",
 		   );
 };
-ok($@, "", "creating Tk::FBox widget");
+is($@, "", "creating Tk::FBox widget");
 
 $f->after(1000, sub { $f->destroy });
 $f->Show;
-ok(1);
+pass("After showing FBox");
 
 eval {
     $f = $top->FBox(-defaultextension => ".PL",
@@ -57,10 +67,10 @@ eval {
 		    -font => "Helvetica 14",
 		   );
 };
-ok($@, "", "creating Tk::FBox widget for save");
+is($@, "", "creating Tk::FBox widget for save");
 $f->after(1000, sub { $f->destroy });
 $f->Show;
-ok(1);
+pass("After showing FBox");
 
 1;
 __END__
