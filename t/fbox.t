@@ -22,7 +22,7 @@ use_ok("Tk");
 use_ok("Tk::FBox");
 
 my $top = new MainWindow;
-eval { $top->geometry('+10+10'); };  # This works for mwm and interactivePlacement
+eval { $top->geometry('+10+10'); }; # This works for mwm and interactivePlacement
 
 my $f;
 eval {

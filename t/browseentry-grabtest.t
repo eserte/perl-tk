@@ -9,35 +9,27 @@
 # test whether grabs are correctly saved
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 
 use Tk;
 use Tk::BrowseEntry;
 
 BEGIN {
     if (!eval q{
-	use Test;
+	use Test::More;
 	1;
     }) {
-	print "# tests only work with installed Test module\n";
-	print "1..1\n";
-	print "ok 1\n";
+	print "1..0 # skip: no Test::More module\n";
 	exit;
     }
 }
 
-BEGIN { plan tests => 1 }
+use TkTest qw(catch_grabs);
+
+plan tests => 1;
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
-
-sub catch_grabs (&) {
-    my $code = shift;
-    eval {
-	$code->();
-    };
-    if ($@ && $@ !~ m{^\Qgrab failed: another application has grab}) {
-	die $@;
-    }
-}
 
 my $mw = tkinit;
 $mw->geometry("+10+10");
@@ -50,7 +42,7 @@ $mw->Entry->pack;
 $t->BrowseEntry->pack;
 $t->Button(-text => "OK",
 	   -command => sub { $mw->destroy })->pack;
-catch_grabs { $t->grab };
+catch_grabs { $t->grab } 0;
 
 if ($ENV{BATCH}) {
     $mw->after(500,sub{$mw->destroy});

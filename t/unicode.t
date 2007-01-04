@@ -7,6 +7,8 @@
 #
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 
 use File::Copy qw(cp);
 use File::Spec::Functions qw(catfile);
@@ -24,6 +26,8 @@ BEGIN {
 	exit;
     }
 }
+
+use TkTest qw(catch_grabs);
 
 plan tests => 13;
 
@@ -95,21 +99,21 @@ cp(Tk->findINC("Xcamel.gif"), $eurogif)
 
 ######################################################################
 # File box
-{
+catch_grabs {
     my $fb = $mw->FBox;
     $fb->configure(-initialdir => $umlautdir);
     $fb->after(500, sub { $fb->destroy });
     $fb->Show;
     pass("Setting FBox -initialdir with non-ascii directory name");
-}
+} 1;
 
-{
+catch_grabs {
     my $fb = $mw->FBox;
     $fb->configure(-initialfile => $umlautgif);
     $fb->after(500, sub { $fb->destroy });
     $fb->Show;
     pass("Setting FBox -initialfile with non-ascii file name");
-}
+} 1;
 
 ######################################################################
 # Text
