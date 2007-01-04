@@ -5,11 +5,12 @@
 package TkTest;
 
 use strict;
-use vars qw(@EXPORT $eps $VERSION);
+use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
 $VERSION = sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
-@EXPORT = qw(is_float check_display_harness);
+@EXPORT    = qw(is_float check_display_harness);
+@EXPORT_OK = qw(catch_grabs);
 
 use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
@@ -63,6 +64,24 @@ sub is_float ($$;$) {
 	Test::More::pass($testname);
     } else {
 	Test::More::is($value, $expected, $testname); # will fail
+    }
+}
+
+sub catch_grabs (&;$) {
+    my($code, $tests) = @_;
+    $tests = 1 if !defined $tests;
+    my $tests_before = Test::More->builder->current_test;
+    eval {
+	$code->();
+    };
+    if ($@ && $@ !~ m{^\Qgrab failed: another application has grab}) {
+	die $@;
+    }
+    my $tests_after = Test::More->builder->current_test;
+    if ($tests_after - $tests_before != $tests) {
+	for (1 .. $tests - ($tests_after - $tests_before)) {
+	    Test::More::pass("Ignore test because other application had grab");
+	}
     }
 }
 
