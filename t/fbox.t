@@ -45,9 +45,11 @@ eval {
 };
 is($@, "", "creating Tk::FBox widget");
 
-$f->after(1000, sub { $f->destroy });
-$f->Show;
-pass("After showing FBox");
+catch_grabs {
+    $f->after(1000, sub { $f->destroy });
+    $f->Show;
+    pass("After showing FBox")
+} 1;
 
 eval {
     $f = $top->FBox(-defaultextension => ".PL",
@@ -68,9 +70,12 @@ eval {
 		   );
 };
 is($@, "", "creating Tk::FBox widget for save");
-$f->after(1000, sub { $f->destroy });
-$f->Show;
-pass("After showing FBox");
+
+catch_grabs {
+    $f->after(1000, sub { $f->destroy });
+    $f->Show;
+    pass("After showing FBox");
+} 1;
 
 1;
 __END__
