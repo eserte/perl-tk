@@ -13,9 +13,10 @@ Tk::FBox - a file dialog
 
 =head1 DESCRIPTION
 
-C<Tk::FBox> is the dialog implementation behind the C<getOpenFile> and
-C<getSaveFile> method calls in the Unix/X11 world. As such, it
-supports all options for these methods and additionally:
+C<Tk::FBox> is the dialog implementation behind the C<getOpenFile>,
+C<getSaveFile>, and C<chooseDirectory> method calls in the Unix/X11
+world. As such, it supports all options for these methods and
+additionally:
 
 =over
 
@@ -35,11 +36,14 @@ This is an experimental option!
 
 =item -type => $type
 
-Type should be "open" (default) or "save".
+Type should be "open" for choosing existing files to open (default),
+"save" for choosing existing or non-existing files to save, or "dir"
+for choosing directories.
 
 =item -filter => $glob
 
-To be documented...
+A file glob to restrict displayed files. This is only active if no
+B<-filetypes> are defined.
 
 =item -force => $bool
 

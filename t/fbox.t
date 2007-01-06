@@ -16,7 +16,9 @@ BEGIN {
 
 use TkTest qw(catch_grabs);
 
-plan tests => 6;
+plan tests => 13;
+
+if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 use_ok("Tk");
 use_ok("Tk::FBox");
@@ -25,6 +27,11 @@ my $top = new MainWindow;
 eval { $top->geometry('+10+10'); }; # This works for mwm and interactivePlacement
 
 my $f;
+
+my $delay = 500;
+
+######################################################################
+# open
 eval {
     $f = $top->FBox(-defaultextension => ".PL",
 		    -filetypes => [
@@ -37,7 +44,30 @@ eval {
 				  ],
 		    -initialdir => ".",
 		    -initialfile => "Makefile.PL",
-		    -title => "Load file",
+		    -title => "Load file (with filetypes)",
+		    -type => "open",
+		    -filter => "*.PL", # ignored
+		    -font => "Helvetica 14",
+		   );
+};
+is($@, "", "creating Tk::FBox widget");
+
+catch_grabs {
+    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    my $result = $f->Show;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
+    pass("After showing FBox")
+} 1;
+
+######################################################################
+# open without filetypes
+eval {
+    $f = $top->FBox(-defaultextension => ".PL",
+		    -initialdir => ".",
+		    -initialfile => "Makefile.PL",
+		    -title => "Load file (without filetypes, with filter)",
 		    -type => "open",
 		    -filter => "*.PL",
 		    -font => "Helvetica 14",
@@ -46,11 +76,16 @@ eval {
 is($@, "", "creating Tk::FBox widget");
 
 catch_grabs {
-    $f->after(1000, sub { $f->destroy });
-    $f->Show;
+    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    my $result = $f->Show;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
     pass("After showing FBox")
 } 1;
 
+######################################################################
+# save
 eval {
     $f = $top->FBox(-defaultextension => ".PL",
 		    -filetypes => [
@@ -65,17 +100,74 @@ eval {
 		    -initialfile => "Makefile.PL",
 		    -title => "Save file",
 		    -type => "save",
-		    -filter => "*.PL",
+		    -filter => "*.PL", # ignored
 		    -font => "Helvetica 14",
 		   );
 };
 is($@, "", "creating Tk::FBox widget for save");
 
 catch_grabs {
-    $f->after(1000, sub { $f->destroy });
-    $f->Show;
+    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    my $result = $f->Show;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
     pass("After showing FBox");
 } 1;
+
+######################################################################
+# dir
+eval {
+    $f = $top->FBox(-initialdir => ".",
+		    -title => "Choose directory",
+		    -type => "dir",
+		    -font => "Helvetica 14",
+		   );
+};
+is($@, "", "creating Tk::FBox widget for choosing directories");
+
+catch_grabs {
+    $f->after($delay, sub { $f->destroy }) if $ENV{BATCH};
+    my $result = $f->Show;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
+    pass("After showing FBox");
+} 1;
+
+######################################################################
+# getOpenFile etc.
+SKIP: {
+    skip("getOpenFile etc. only on X11", 3)
+	if $Tk::platform ne 'unix';
+
+    my $mw;
+    my $result;
+
+    $mw = MainWindow->new;
+    $mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+    $result = $mw->getOpenFile;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
+    pass("called getOpenFile");
+
+    $mw = MainWindow->new;
+    $mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+    $result = $mw->getSaveFile;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
+    pass("called getSaveFile");
+
+    $mw = MainWindow->new;
+    $mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+    $result = $mw->chooseDirectory;
+    if (!$ENV{BATCH}) {
+	diag "Result is <$result>";
+    }
+    pass("called chooseDirectory");
+}
 
 1;
 __END__
