@@ -168,7 +168,7 @@ Text widgets support four different kinds of annotations on the
 text, called tags, marks, embedded windows or embedded images.
 Tags allow different portions of the text
 to be displayed with different fonts and colors.
-In addition, L<perl\/Tk callbacks|Tk::callbacks> can be associated with tags so
+In addition, L<perl/Tk callbacks|Tk::callbacks> can be associated with tags so
 that scripts are invoked when particular actions such as keystrokes
 and mouse button presses occur in particular ranges of the text.
 See L<"TAGS"> below for more details.
