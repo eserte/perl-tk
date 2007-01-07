@@ -40,7 +40,7 @@ use Tk::Button;
 use Tk::Canvas;
 
 
-plan tests => 14;
+plan tests => 15;
 
 my $mw = new MainWindow;
 $mw->optionAdd("*Button.Background",'#dcdcdc');
@@ -189,6 +189,17 @@ sub test { warn }
     $lb->delete(0, 'end');
     $c2 = Devel::Leak::CheckSV($handle);
     is($c2-$c1, 0, "Inserting and deleting individual listbox elements");
+}
+
+{
+    $mw->afterIdle(sub {});
+    $mw->idletasks;
+    $c1 = Devel::Leak::NoteSV($handle);
+    $mw->afterIdle(sub {});
+    $mw->idletasks;
+    $c2 = Devel::Leak::CheckSV($handle);
+
+    is($c2-$c1, 0, "afterIdle callback");
 }
 
 __END__

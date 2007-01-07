@@ -930,7 +930,10 @@ processInteger:
 		afterPtr->commandPtr = LangMakeCallback(objPtr);
 		Tcl_DecrRefCount(objPtr);
 	    }
+#ifndef _LANG
+	    /* commandPtr already has refcnt==1 */
 	    Tcl_IncrRefCount(afterPtr->commandPtr);
+#endif
 	    afterPtr->id = tsdPtr->afterId;
 	    tsdPtr->afterId += 1;
 	    afterPtr->token = NULL;
