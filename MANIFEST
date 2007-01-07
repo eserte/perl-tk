@@ -1933,6 +1933,7 @@ style_test
 submethods
 symbols
 t/00wmcheck.t			Provide information about wm
+t/adjuster.t
 t/after.t
 t/autoload.t
 t/balloon.t
