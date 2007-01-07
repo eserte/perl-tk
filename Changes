@@ -41,6 +41,15 @@ Fixes
   Fixed http://bugs.activestate.com/show_bug.cgi?id=40217 (wm close
   window button does not call the default button)
 
+  Fixed non-working Balloon attachments to individual menu items,
+  see http://board.perl-community.de/cgi-bin/ikonboard/ikonboard.cgi?act=ST;f=3;t=665
+
+  Adjuster now works in DialogBoxes, see
+  http://groups.google.de/group/comp.lang.perl.tk/browse_frm/thread/5366757a4c6cd844/8ff9d1745d2b75b8
+
+  Fixed memory leak in after* callbacks, see
+  http://rt.perl.org/rt3/Ticket/Display.html?id=41130
+
 Documentation
   New Pod for Tk::MsgBox.
 
@@ -58,6 +67,10 @@ Tests
   New test for Text widget (t/text.t)
 
   New test for scripts (t/exefiles.t)
+
+  New test for Tk::Adjuster (t/adjuster.t)
+
+  More Tk::FBox tests (e.g. chooseDirectory ...)
 
   Tests are now more robust if another application has the global grab
   (see catch_grabs in TkTest.pm).
