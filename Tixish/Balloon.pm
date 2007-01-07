@@ -256,6 +256,11 @@ sub grabBad {
     return 0 if $g->isa('Tk::Menu');
     return 0 if $g eq $client;
 
+    # Ignore grab check if $w is the balloon itself.
+    # XXX Why is this necessary? Is it possible to remove the grabBad
+    # condition in SwitchToClient altogether?
+    return 0 if $w->isa(__PACKAGE__);
+
     # The grab is OK if $client is a decendant of $g. Use the internal Tcl/Tk
     # pathname (yes, it's cheating, but it's legal).
 
