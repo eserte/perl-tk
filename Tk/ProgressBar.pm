@@ -132,7 +132,7 @@ sub _arrange {
 	my $colors = $c->{Configure}{'-colors'} || [];
 	my $bdir = $from < $to ? $dir : 0 - $dir;
 
-	$c->delete($c->find('all'));
+	$c->delete('all');
 
 	$c->createRectangle(0,0,$w+$x*2,$h+$y*2,
 		-fill =>  $c->{Configure}{'-troughcolor'},
