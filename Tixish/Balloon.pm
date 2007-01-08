@@ -169,6 +169,13 @@ sub Motion {
 	my $client = $over;
 	while (defined $client) {
 	    last if (exists $w->{'clients'}{$client});
+	    if ($client->can("MasterMenu")) {
+		my $master = $client->MasterMenu;
+		if ($master && exists $w->{'clients'}{$master}) {
+		    $w->{'clients'}{$client} = $w->{'clients'}{$master};
+		    last;
+		}
+	    }
 	    $client = $client->Parent;
 	}
 	if (defined $client) {

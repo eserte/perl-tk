@@ -1152,6 +1152,25 @@ sub BalloonInfo
   }
 }
 
+sub MasterMenu
+{
+ my ($menu) = @_;
+ my $pathname = $menu->PathName;
+ my $master_menu;
+ if ($pathname =~ m{#})
+  {
+   my $master_pathname = (split m{\.}, $pathname)[-1];
+   $master_pathname =~ s{#}{.}g;
+   $master_menu = $menu->Widget($master_pathname);
+   if (!Tk::Exists($master_menu))
+    {
+     warn "Cannot find master menu <$master_pathname>";
+    }
+  }
+ $master_menu;
+}
+
+
 # ::tk::AmpMenuArgs --
 # Processes arguments for a menu entry, turning -label option into
 # -label and -underline options, returned by ::tk::UnderlineAmpersand.
