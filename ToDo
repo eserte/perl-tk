@@ -26,8 +26,8 @@ Widget review (Listbox.pm and Canvas.pm done)
 Pod review (Listbox.pod done, options.pod and Canvas.pod in the works,
 others pending)
 
-Create a xft test which tests measures of one or two populate ttf fonts
-(e.g. bitstream vera and nimbus).
+Create a xft test in font.t which tests measures of one or two
+populate ttf fonts (e.g. bitstream vera and nimbus).
 
 Try visual c+nmake build on MSWin32.
 
@@ -59,9 +59,20 @@ to have Perl/Tk releases with same minor versions but different major
 versions API-compatible. I think this also won't stay, it will simply
 be Tk805.000 when a new Tk built on Tcl/Tk 8.5 comes out.
 
+BTW, the VERSIONS file seems to duplicate most of Tk::tkvars.
+
 Either document $Tk::Config::xlib can be used to determine if XFT
 support was built in. Or introduce a new variable for XFT and make the
 tests use this one.
+
+----------------------------------------------------------------------
+- Big projects
+
+Make Perl/Tk thread-safe.
+
+Make a native aqua port.
+
+Port tk8.5.x
 
 ----------------------------------------------------------------------
 - OLDER ToDos, possibly still unresolved -----------------------------
