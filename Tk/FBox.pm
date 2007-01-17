@@ -451,7 +451,7 @@ sub Update {
 	    if ($fltcb) {
 		next if !$fltcb->($w, $f, $cwd);
 	    } else {
-		next if -f $f && $f !~ m!$flt!;
+		next if !-d $f && $f !~ m!$flt!;
 	    }
 	    if (-d $f) {
 		$icons->Add($folder, $f);
