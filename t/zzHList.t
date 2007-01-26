@@ -2,10 +2,19 @@
 BEGIN { $^W = 1; $| = 1; }
 
 use strict;
-use Test;
 use Tk;
 
-BEGIN { plan tests => 23 };
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "1..0 # skip: no Test::More module\n";
+	exit;
+    }
+}
+
+plan tests => 24;
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -13,20 +22,20 @@ eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacemen
 my $hlist;
 {
    eval { require Tk::HList; };
-   ok($@, "", 'Problem loading Tk::HList');
+   is($@, "", 'Loading Tk::HList');
    eval { $hlist = $mw->HList(); };
-   ok($@, "", 'Problem creating HList widget');
+   is($@, "", 'Creating HList widget');
    ok( Tk::Exists($hlist) );
    eval { $hlist->grid; };
-   ok($@, "", '$hlist->grid problem');
+   is($@, "", '$hlist->grid');
    eval { $hlist->update; };
-   ok($@, "", '$hlist->update problem.');
+   is($@, "", '$hlist->update.');
 
    $hlist->delete("all");
    $hlist->add("entry with spaces");
    my @bbox = $hlist->info('bbox', 'entry with spaces');
    my @info = $hlist->info('item', @bbox[0, 1]);
-   ok($info[0], 'entry with spaces', 'Problems with spaces in entry path');
+   is($info[0], 'entry with spaces', 'Spaces in entry path');
 }
 ##
 ## With Tk800.004:
@@ -43,44 +52,63 @@ my $hlist;
 
     my @dim;
     eval { @dim = $hl->headerSize(0); };
-    ok($@, '', "Problems with headerSize method");
-    ok(scalar(@dim), 2, 'headerSize returned not a 2 element array: |'.
-	join('|',@dim,'')
-	);
+    is($@, '', "headerSize method");
+    is(scalar(@dim), 2, 'headerSize returned a 2 element array: |'.
+       join('|',@dim,'')
+      );
     eval { $hlist->update; };
-    ok($@, "", '$hlist->update problem.');
+    is($@, "", '$hlist->update.');
 
     eval { $hl->header('size', 1); }; # does not exist
-    ok($@ ne "", 1, "Oops, no error for non existent header field");
-    ok($@=~m/^Column "1" does not exist/, 1,
-	"'$@' does not match /^Column \"1\" does not exist/"
+    isnt($@, "", "Error for non existent header field");
+    like($@, qr/^Column "1" does not exist/,
+	 "Error message matches /^Column \"1\" does not exist/"
 	);
     eval { $hlist->update; };
-    ok($@, "", '$hlist->update problem.');
+    is($@, "", '$hlist->update.');
 
     eval { $hl->info('selection'); };
-    ok($@, "", "Problem with info('selection') method.");
+    is($@, "", "info('selection') method.");
     eval { $hl->infoSelection; };
-    ok($@, "", "Problem with infoSelection method.");
+    is($@, "", "infoSelection method.");
     eval { $hlist->update; };
-    ok($@, "", '$hlist->update problem.');
+    is($@, "", '$hlist->update.');
 
     $hl->add(1,-text=>'one');
     my $val1 = ( $hl->entryconfigure(1, '-style') )[4];
     # comment out the next line and at least I get always a SEGV
-    ok(!defined($val1), 1, "Ooops entryconfigure -style is defined");
+    isnt(defined($val1), "entryconfigure -style is not defined");
     my $val2 = $hl->entrycget(1, '-style');
-    ok(!defined($val2), 1, "Ooops entrycget -style is defined");
+    isnt(defined($val2), "entrycget -style is not defined");
     # ok($val1, $val2, "entryconfigure and entrycget do not agree");
 
     my @bbox = $hl->infoBbox(1);
-    ok(scalar(@bbox), 4, "\@bbox not 4 items");
+    is(scalar(@bbox), 4, "\@bbox 4 items");
     my $bbox = $hl->infoBbox(1);
-    ok(ref($bbox), 'ARRAY', "$bbox not an ARRAY");
+    is(ref($bbox), 'ARRAY', "$bbox is an ARRAY");
     foreach my $a (@bbox)
      {
-      ok($a, shift(@$bbox), "\$bbox values differ");
+      is($a, shift(@$bbox), "\$bbox values OK");
      }
+    $hl->destroy;
+}
+
+SKIP: {
+    skip("Aborts with Tk804", 1)
+	if $Tk::VERSION <= 804.027001;
+
+    my $hl = $mw->HList;
+
+    $hl->add("top", -text => "top");
+    $hl->add("top.item1", -text => "item1");
+    $hl->add("top.item2", -text => "item2");
+
+    $hl->add("top.item3", -at => 0, -text => "item2");
+    $hl->add("top.item3", -before => "top:item1", -text => "item2");
+    $hl->add("top.item3", -after => "top:item1", -text => "item2");
+
+    pass("No abort with -at/-before/-after");
+
     $hl->destroy;
 }
 
