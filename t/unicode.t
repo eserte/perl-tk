@@ -20,6 +20,7 @@ use Tk::FBox;
 BEGIN {
     if (!eval q{
 	use Test::More;
+	use Devel::Peek;
 	1;
     }) {
 	print "1..0 # skip: no Test::More module\n";
@@ -30,6 +31,8 @@ BEGIN {
 use TkTest qw(catch_grabs);
 
 plan tests => 13;
+
+if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 my $dir = tempdir(CLEANUP => 1);
 die "Cannot create temporary directory" if !$dir;
@@ -102,16 +105,18 @@ cp(Tk->findINC("Xcamel.gif"), $eurogif)
 catch_grabs {
     my $fb = $mw->FBox;
     $fb->configure(-initialdir => $umlautdir);
-    $fb->after(500, sub { $fb->destroy });
-    $fb->Show;
+    $fb->after(500, sub { $fb->destroy }) if $ENV{BATCH};
+    my $value = $fb->Show;
+    Dump($value) if defined $value;
     pass("Setting FBox -initialdir with non-ascii directory name");
 } 1;
 
 catch_grabs {
     my $fb = $mw->FBox;
     $fb->configure(-initialfile => $umlautgif);
-    $fb->after(500, sub { $fb->destroy });
-    $fb->Show;
+    $fb->after(500, sub { $fb->destroy }) if $ENV{BATCH};
+    my $value = $fb->Show;
+    Dump($value) if defined $value;
     pass("Setting FBox -initialfile with non-ascii file name");
 } 1;
 
