@@ -51,5 +51,11 @@ else
 
 copy($file,"Makefile")
    || die "Cannot copy $file to Makefile:$!";
+
+if ($^O eq 'darwin')
+ {
+  system(sh => "./configure");
+ }
+
 1;
 

@@ -453,6 +453,7 @@ void
 LangAsyncCheck(void)
 {
 #ifdef PERL_ASYNC_CHECK
+ dTHX;
  PERL_ASYNC_CHECK();
 #endif
 }
