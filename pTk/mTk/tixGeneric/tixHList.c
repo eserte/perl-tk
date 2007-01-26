@@ -268,7 +268,7 @@ static void		FreeElement _ANSI_ARGS_((WidgetPtr wPtr,
 static HListElement *	NewElement _ANSI_ARGS_((Tcl_Interp *interp,
 			    WidgetPtr wPtr, int argc, char ** argv,
 			    char * pathName, char * defParentName,
-			    int * newArgc));
+			    int * newArgc, Tcl_Obj *** newArgv));
 static void		RedrawWhenIdle _ANSI_ARGS_((WidgetPtr wPtr));
 static int		XScrollByPages _ANSI_ARGS_((WidgetPtr wPtr,
 			    int count));
@@ -598,29 +598,38 @@ Tix_HLAdd(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListElement * chPtr;
     char * pathName = argv[0];
+    int code = TCL_ERROR;
+    Tcl_Obj ** newArgv = NULL;
+    int newArgc = 0;
 
     argc --;
     argv ++;
 
     if ((chPtr = NewElement(interp, wPtr, argc, argv, pathName,
-	 NULL, &argc)) == NULL) {
-	return TCL_ERROR;
+	 NULL, &newArgc, &newArgv)) == NULL) {
+	goto cleanup;
     }
 
     if (argc > 0) {
-	if (ConfigElement(wPtr, chPtr, argc, argv, 0, 1) != TCL_OK) {
+	if (ConfigElement(wPtr, chPtr, newArgc, newArgv, 0, 1) != TCL_OK) {
 	    DeleteNode(wPtr, chPtr);
-	    return TCL_ERROR;
+	    goto cleanup;
 	}
     } else {
 	if (Tix_DItemConfigure(chPtr->col[0].iPtr, 0, 0, 0) != TCL_OK) {
 	    DeleteNode(wPtr, chPtr);
-	    return TCL_ERROR;
+	    goto cleanup;
 	}
     }
 
     Tcl_AppendResult(interp, chPtr->pathName, NULL);
-    return TCL_OK;
+    code = TCL_OK;
+
+cleanup:
+    if (newArgv) {
+	ckfree((void*) newArgv);
+    }
+    return code;
 }
 
 /*----------------------------------------------------------------------
@@ -642,6 +651,9 @@ Tix_HLAddChild(clientData, interp, argc, argv)
     WidgetPtr wPtr = (WidgetPtr) clientData;
     HListElement * chPtr;
     char * parentName;
+    int code = TCL_ERROR;
+    Tcl_Obj ** newArgv = NULL;
+    int newArgc = 0;
 
     parentName = argv[0];
     if (argv[0] && strcmp(argv[0], "") == 0) {
@@ -651,24 +663,29 @@ Tix_HLAddChild(clientData, interp, argc, argv)
     argc --;
     argv ++;
     if ((chPtr = NewElement(interp, wPtr, argc, argv, NULL,
-	 parentName, &argc)) == NULL) {
-	return TCL_ERROR;
+	 parentName, &newArgc, &newArgv)) == NULL) {
+	goto cleanup;
     }
 
     if (argc > 0) {
-	if (ConfigElement(wPtr, chPtr, argc, argv, 0, 1) != TCL_OK) {
+	if (ConfigElement(wPtr, chPtr, newArgc, newArgv, 0, 1) != TCL_OK) {
 	    DeleteNode(wPtr, chPtr);
-	    return TCL_ERROR;
+	    goto cleanup;
 	}
     } else {
 	if (Tix_DItemConfigure(chPtr->col[0].iPtr, 0, 0, 0) != TCL_OK) {
 	    DeleteNode(wPtr, chPtr);
-	    return TCL_ERROR;
+	    goto cleanup;
 	}
     }
 
     Tcl_AppendResult(interp, chPtr->pathName, NULL);
-    return TCL_OK;
+
+cleanup:
+    if (newArgv) {
+	ckfree((void*) newArgv);
+    }
+    return code;
 }
 
 /*----------------------------------------------------------------------
@@ -2729,7 +2746,7 @@ AppendList(wPtr, parent, chPtr, at, afterPtr, beforePtr)
  *--------------------------------------------------------------
  */
 static HListElement *
-NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
+NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc, newArgv)
     Tcl_Interp *interp;
     WidgetPtr wPtr;
     int argc;
@@ -2739,6 +2756,7 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
     char * defParentName;	/* Default parent name (will NULL if pathName
 				 * is not NULL */
     int * newArgc;
+    Tcl_Obj *** newArgv;
 {
 #define FIXED_SPACE 20
     char fixedSpace[FIXED_SPACE+1];
@@ -2805,15 +2823,9 @@ NewElement(interp, wPtr, argc, argv, pathName, defParentName, newArgc)
 	    }
 
 	  copy:
-	    if (n!=i) {
-#if 0
-                /* FIXME */
-		objv[n] = objv[i];
-		objv[n+1] = objv[i+1];
-#else
-		abort();
-#endif
-	    }
+	    *newArgv = (Tcl_Obj**) ckrealloc((void*)*newArgv, (sizeof(Tcl_Obj*)) * (n+2));
+	    (*newArgv)[n] = objv[i];
+	    (*newArgv)[n+1] = objv[i+1];
 	    n+=2;
 	}
 	* newArgc = n;

@@ -95,7 +95,7 @@ my $hlist;
 
 SKIP: {
     skip("Aborts with Tk804", 1)
-	if $Tk::VERSION <= 804.027001;
+	if $Tk::VERSION <= 804.027;
 
     my $hl = $mw->HList;
 
@@ -104,8 +104,8 @@ SKIP: {
     $hl->add("top.item2", -text => "item2");
 
     $hl->add("top.item3", -at => 0, -text => "item2");
-    $hl->add("top.item3", -before => "top:item1", -text => "item2");
-    $hl->add("top.item3", -after => "top:item1", -text => "item2");
+    $hl->add("top.item4", -before => "top.item1", -text => "item2");
+    $hl->add("top.item5", -after => "top.item1", -text => "item2");
 
     pass("No abort with -at/-before/-after");
 
