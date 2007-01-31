@@ -750,12 +750,19 @@ CallEncode(Tcl_Interp * interp,
    SPAGAIN;
    dtmp = POPs;
    PUTBACK;
+#if 0
+   /* XXX This code seems to be wrong since Encode 2.10, when LEAVE_SRC was
+    * default (is this true?).
+    * This would fix the "selection conversion left too many bytes unconverted"
+    * aborts.
+    */
    if (SvCUR(stmp))
     {
      /* This could also be TCL_CONVERT_MULTIBYTE - how do we tell ? */
      code = TCL_CONVERT_UNKNOWN;
      break;
     }
+#endif
    td = SvPV(dtmp,dbytes);
    if (!dbytes)
     {
