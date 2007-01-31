@@ -65,6 +65,16 @@ Either document $Tk::Config::xlib can be used to determine if XFT
 support was built in. Or introduce a new variable for XFT and make the
 tests use this one.
 
+Mac OS X needs X11INC?
+
+"selection conversion left too many bytes unconverted" panic: may be
+reproduced by handling big (>= 4000 bytes) selections (containing
+high-bit characters???). To reproduce:
+
+cat ~/.cshrc | perl -MTk -e '{local $/;$sel=<>;} $mw=tkinit; $mw->SelectionOwn(-selection => "CLIPBOARD"); $mw->SelectionHandle(-selection => "CLIPBOARD",sub { $sel });MainLoop'
+
+And then CTRL-V in a Mozilla Textarea.
+
 ----------------------------------------------------------------------
 - Big projects
 
