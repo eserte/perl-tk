@@ -115,8 +115,9 @@ SKIP:
 # This is really only needed for checking the -ascent and -descent values
 # if Perl/Tk was built with XFT=1 and by requesting helvetica really
 # the X11 helvetica was returned.
+my $font_metric_tests = 10;
 SKIP: {
- skip("Test only work on X11", 10)
+ skip("Test only work on X11", $font_metric_tests)
      if $Tk::platform ne 'unix';
 
  my $l = $mw->Label(-font => '-adobe-helvetica-bold-r-normal--*-180-*-*-*-*-*-*');
@@ -126,15 +127,19 @@ SKIP: {
  if ($Xft)
   {
    my $subfont_file = $subfonts[0]->[4];
-   skip("Unexpected subfont file $subfont_file", 10)
-       if $subfont_file =~ m{\Q75dpi/helvB18.pcf\E(.gz)?$};
+   skip("Unexpected subfont file $subfont_file", $font_metric_tests)
+       if $subfont_file !~ m{75dpi/helvB18(-ISO8859-1)?\.pcf(.gz)?$};
+   if ($v)
+    {
+     diag("Subfont file is $subfont_file");
+    }
   }
 
  my %fa = ($mw->fontActual($f), $mw->fontMetrics($f));
 
- skip("Helvetica requested, but got $fa{-family}", 10)
+ skip("Helvetica requested, but got $fa{-family}", $font_metric_tests)
      if lc $fa{-family} ne 'helvetica';
- skip("18 pixels requested, but got " . -$fa{-size}, 10)
+ skip("18 pixels requested, but got " . -$fa{-size}, $font_metric_tests)
      if lc $fa{-size} != -18;
 
  my $font_dump_shown = 0;
