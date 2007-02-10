@@ -7,17 +7,11 @@ variable, i.e.
 
 This was seen on a Mac OS X 10.3 (Panther) system.
 
-Turning on True Type support with XFT=1 seems to work.
+It is expected that make test passes without failures.
 
-There are still some test failures:
-
-Failed Test Stat Wstat Total Fail  List of Failed
--------------------------------------------------------------------------------
-t/unicode.t  255 65280    13   26  1-13
-t/wm-time.t    1   256     6    1  2
-
-With XFT=1, there are additional font metrics-related test failures,
-which are mostly harmless:
+Turning on True Type support with XFT=1 also seems to work, but there
+are some font metrics-related test failures, which are
+harmless:
 
 Failed Test Stat Wstat Total Fail  List of Failed
 -------------------------------------------------------------------------------
@@ -25,8 +19,7 @@ t/entry.t      7  1792   337    7  85 87-88 90 160 166 284
 t/font.t       1   256    34    1  13
 t/listbox.t   19  4864   539   19  280 283-287 443-444 446-449 451 453 455-456
                                    459 461 492
-t/unicode.t  255 65280    13   26  1-13
-t/wm-time.t    1   256     6    1  2
+ (24 subtests UNEXPECTEDLY SUCCEEDED), 188 subtests skipped.
 
 ----------------------------------------------------------------------
 Older notes:
