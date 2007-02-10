@@ -30,6 +30,7 @@ Change.log
 Changes				What has changed
 check_source
 check_syms
+check_Tk_version		Make sure all $VERSION values are increased.
 checklen			Check names not > 14 chars long for old UNIXes.
 chfont				Test of chinese fonts
 chnGlue.c
