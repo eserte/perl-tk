@@ -1,4 +1,4 @@
-Tk-804.027-p5.patch.gz (2006-XX-XX)
+Tk-804.027_001 release (2007-XX-XX)
 ----------------------
 
 Compiles and passes tests on
@@ -43,12 +43,22 @@ Fixes
 
   Fixed non-working Balloon attachments to individual menu items,
   see http://board.perl-community.de/cgi-bin/ikonboard/ikonboard.cgi?act=ST;f=3;t=665
+  As a side effect, there is now a new method Tk::Menu::MasterMenu for
+  getting the master menu of a cloned menu.
 
   Adjuster now works in DialogBoxes, see
   http://groups.google.de/group/comp.lang.perl.tk/browse_frm/thread/5366757a4c6cd844/8ff9d1745d2b75b8
 
   Fixed memory leak in after* callbacks, see
   http://rt.perl.org/rt3/Ticket/Display.html?id=41130
+
+  Fixed Tk:: FBox to treat special files like sockets, pipes as files,
+  not as directories.
+
+  Fixed -at/-before/-after problem with Tk::HList.
+
+  Workaround for 'selection conversion left too many bytes
+  unconverted' aborts.
 
 Documentation
   New Pod for Tk::MsgBox.
