@@ -9,11 +9,11 @@ if ($^O eq 'MSWin32')
   chmod(0666,'Makefile');
   if ($Config{'cc'} =~ /gcc/)
    {
-    $file = "nt/Makefile.gcc";
+    $file = "win32/Makefile.gcc";
    }
   else
    {
-    $file = 'nt/makefile.nt';
+    $file = 'win32/Makefile.msc';
     warn "Assuming ".$Config{'cc'}." is visual C of some kind\n";
    }
   copy($file,"Makefile")

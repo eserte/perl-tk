@@ -7,7 +7,12 @@ my $file;
 
 if ($^O eq 'MSWin32')
  {
-  if ($Config{'cc'} =~ /gcc/)
+  if ($Config{'cc'} =~ /gcc/ && $Config{'make'} =~ /dmake/)
+   {
+    # This is the StrawberryPerl configuration
+    $file = 'scripts/makefile.gcc';
+   }
+  elsif ($Config{'cc'} =~ /gcc/)
    {
     $file = 'scripts/makefile.mingw';
    }
