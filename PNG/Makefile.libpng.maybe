@@ -60,6 +60,16 @@ copy($file,"Makefile")
 if ($^O eq 'darwin')
  {
   system(sh => "./configure");
+  open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
+  print $fh <<'EOF';
+
+libpng.a: all
+	cp .libs/libpng.a libpng.a
+
+clean:
+	rm -f libpng.a
+
+EOF
  }
 
 1;
