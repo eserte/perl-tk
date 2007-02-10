@@ -2,7 +2,7 @@ package Tk::JPEG;
 require DynaLoader;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #2$ =~ /\D(\d+)\s*$/;
+$VERSION = '4.003'; # was: sprintf '4.%03d', q$Revision: #2$ =~ /\D(\d+)\s*$/;
 use Tk 800.015;
 require Tk::Image;
 require Tk::Photo;

@@ -15,7 +15,7 @@
 package Tk::Balloon;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.011'; # was: sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev Exists);
 use Carp;

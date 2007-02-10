@@ -1,7 +1,7 @@
 package Tk::Dialog;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Dialog.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Dialog.pm#4 $
 
 # Dialog - a translation of `tk_dialog' from Tcl/Tk to TkPerl (based on
 # John Stoffel's idea).

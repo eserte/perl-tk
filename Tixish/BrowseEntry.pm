@@ -8,7 +8,7 @@
 package Tk::BrowseEntry;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.014'; # was: sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev);
 use Carp;

@@ -1,7 +1,7 @@
 package Tk::Trace;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.008'; # was: sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
 
 use Carp;
 use Tie::Watch;

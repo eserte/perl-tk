@@ -3,7 +3,7 @@ package Tk::X;
 use strict;
 use Carp;
 use vars qw($VERSION @EXPORT $AUTOLOAD);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Xlib/X/X.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Xlib/X/X.pm#4 $
 use Tk qw($XS_VERSION);
 
 require Exporter;

@@ -6,7 +6,7 @@ use Carp;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/Tk/Menu/Item.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/Tk/Menu/Item.pm#4 $
 
 sub PreInit
 {

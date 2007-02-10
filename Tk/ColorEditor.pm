@@ -1,8 +1,8 @@
-package Tk::ColorSelect;
+package Tk::ColorSelect; # XXX why is this the Tk::ColorSelect package?
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.009'; # was: sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev);
 
