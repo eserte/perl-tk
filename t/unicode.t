@@ -10,6 +10,7 @@ use strict;
 use FindBin;
 use lib $FindBin::RealBin;
 
+use Encode qw(encode);
 use File::Copy qw(cp);
 use File::Spec::Functions qw(catfile);
 use File::Temp qw(tempdir);
@@ -37,23 +38,28 @@ if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 my $dir = tempdir(CLEANUP => 1);
 die "Cannot create temporary directory" if !$dir;
 
+my $encoding = "iso-8859-1";
+if ($^O eq 'darwin') {
+    $encoding = 'utf-8';
+}
+
 my $mw = tkinit;
 $mw->geometry("+10+10");
 
-my $umlautdir = catfile $dir, "äöüß";
+my $umlautdir = catfile $dir, encode($encoding, "äöüß");
 mkdir $umlautdir
     or die "Cannot create $umlautdir: $!";
 
-my $umlautgif = catfile $umlautdir, "äöüß.gif";
+my $umlautgif = catfile $umlautdir, encode($encoding, "äöüß.gif");
 cp(Tk->findINC("Xcamel.gif"), $umlautgif)
     or die "Can't copy Xcamel.gif to $umlautgif: $!";
 
-my $umlautxpm = catfile $umlautdir, "èé.xpm";
+my $umlautxpm = catfile $umlautdir, encode($encoding, "èé.xpm");
 cp(Tk->findINC("Camel.xpm"), $umlautxpm)
     or die "Can't copy Camel.xpm to $umlautxpm: $!";
 utf8::upgrade($umlautxpm); # upgrade to utf8 it before Perl/Tk...
 
-my $umlautxbm = catfile $umlautdir, "ÈÉ.xbm";
+my $umlautxbm = catfile $umlautdir, encode($encoding, "ÈÉ.xbm");
 cp(Tk->findINC("Tk.xbm"), $umlautxbm)
     or die "Can't copy Tk.xbm to $umlautxbm: $!";
 
