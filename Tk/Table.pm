@@ -170,6 +170,7 @@ sub Layout
   {
    $t->{xsb} = $t->Scrollbar(-orient => 'horizontal', -command => ['xview' => $t]) unless (defined $t->{xsb});
    $xsb   = $t->{xsb};
+   $t->Advertise('xscrollbar' => $xsb);
    $xs[3] = $xsb->ReqHeight;
    if ($sb =~ /n/)
     {
@@ -191,6 +192,7 @@ sub Layout
   {
    $t->{ysb} = $t->Scrollbar(-orient => 'vertical', -command => ['yview' => $t]) unless (defined $t->{ysb});
    $ysb    = $t->{ysb};
+   $t->Advertise('yscrollbar' => $ysb);
    $ys[2]  = $ysb->ReqWidth;
    if ($sb =~ /w/)
     {
