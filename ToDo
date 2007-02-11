@@ -75,9 +75,10 @@ cat ~/.cshrc | perl -MTk -e '{local $/;$sel=<>;} $mw=tkinit; $mw->SelectionOwn(-
 
 And then CTRL-V in a Mozilla Textarea.
 
-Check for DTWM_IS_RUNNING property for t/00wmcheck.t
-
 Have a search path for libraries (LOCAL_PREFIX=/.../...)
+
+Use pre-installed libjpeg and libpng, if existing on the system (and
+maybe not older than the bundled libjpeg and libpng).
 
 ----------------------------------------------------------------------
 - Big projects

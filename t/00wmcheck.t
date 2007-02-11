@@ -58,6 +58,12 @@ SKIP: {
 		}
 	    }
 	}
+    } else {
+	my($dtwm_integer) = eval { $mw->property('get', 'DTWM_IS_RUNNING', 'root') };
+	if (defined $dtwm_integer) { # XXX really have to check this
+                                     # integer, probably a Window id?
+	    $wm_name = "dtwm";
+	}
     }
 
     push @diag, ("window manager: $wm_name",
