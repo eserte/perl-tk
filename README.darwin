@@ -5,7 +5,7 @@ variable, i.e.
 
     perl Makefile.PL X11INC=/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include
 
-This was seen on a Mac OS X 10.3 (Panther) system.
+This was seen on a Mac OS X 10.4.8 (Tiger) system.
 
 It is expected that make test passes without failures.
 

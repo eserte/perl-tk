@@ -1,11 +1,19 @@
-Tk-804.027_500 release (2007-XX-XX)
+Tk-804.027_500 release (2007-02-11)
 ----------------------
 
 Compiles and passes tests on
 
   FreeBSD 6.1 + perl5.8.8 + fontconfig 2.3.2
   FreeBSD 6.1 + bleadperl + fontconfig 2.3.2
+  Linux (Debian) + perl5.8.8
+  Windows 2000 + Strawberry Perl 5.8.8 alpha 2
+  Mac OS X 10.4  
+
+At some earlier point, there were successful builds with
+
   cygwin 1.5.x + perl5.8.7 + fontconfig (X11 build only)
+  Solaris 8
+  Linux (RedHat 8.0) + perl5.8.0
 
 New features
   The undocumented method font('subfonts') returns now more
