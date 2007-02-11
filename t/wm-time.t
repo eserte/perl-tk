@@ -14,22 +14,29 @@ plan tests => $tests;
 my $event = '<Map>';
 my $why;
 my $start;
+my $skip_slow_connection;
 
 sub begin
 {
  $start = Tk::timeofday();
  $why = shift;
  $expect = shift;
- print "# Start $why $expect\n";
+ diag "Start $why $expect";
 }
 
 my $mw = new MainWindow;
 my $l = $mw->Label(-text => 'Content')->pack;
 #$l->bind($event,[\&mapped,"update"]);
-$mw->bind($event,[\&mapped,"update"]);
+$mw->bind($event,[\&mapped,"initial"]);
 $mw->geometry("+0+0");
 begin('update',2);
 $mw->update;
+
+if ($skip_slow_connection)
+ {
+  pass("skip tests because of slow connection") for 1 .. $tests;
+  exit 0;
+ }
 
 my $t = $mw->Toplevel(-width => 100, -height => 100);
 $t->geometry("-0+0");
@@ -44,20 +51,25 @@ $t->withdraw;
 begin('Popup Again',2);
 $t->Popup(-popover => $mw);
 
-$mw->after(1000, sub { begin('destroy',0); $mw->destroy });
+$mw->after(500, sub { begin('destroy',0); $mw->destroy });
 
 MainLoop;
 
 
 sub mapped
 {
- my ($w) = @_;
+ my ($w, $state) = @_;
  my $now = Tk::timeofday();
  my $delay = $now - $start;
- printf "# %s $why %.3g $expect\n",$w->PathName,$delay;
+ diag sprintf "%s $why %.3g $expect\n",$w->PathName,$delay;
+ if ($state eq 'initial' && $delay > 0.4)
+  {
+   $skip_slow_connection = 1;
+   return;
+  }
  if ($expect-- > 0)
   {
-   ok($delay < 0.5,$why);
+   cmp_ok($delay, "<", 0.5, $why);
   }
 }
 
