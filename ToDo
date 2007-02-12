@@ -65,8 +65,6 @@ Either document $Tk::Config::xlib can be used to determine if XFT
 support was built in. Or introduce a new variable for XFT and make the
 tests use this one.
 
-Mac OS X needs X11INC?
-
 "selection conversion left too many bytes unconverted" panic: may be
 reproduced by handling big (>= 4000 bytes) selections (containing
 high-bit characters???). To reproduce:
@@ -79,6 +77,10 @@ Have a search path for libraries (LOCAL_PREFIX=/.../...)
 
 Use pre-installed libjpeg and libpng, if existing on the system (and
 maybe not older than the bundled libjpeg and libpng).
+
+ptked: populate Encoding menu with more encodings (see
+Mozilla/Firefox), have checkbuttons to indicate current encoding and
+have a "custom" menu which has all perl-available encodings
 
 ----------------------------------------------------------------------
 - Big projects
