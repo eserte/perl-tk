@@ -83,6 +83,7 @@ use Tk::widgets qw(TextUndo Scrollbar Menu Dialog);
     $enc = $w->getEncoding($enc) unless ref($enc);
     $w->{ENCODING} = $enc;
     $enc = $enc->name;
+    $w->{ENCODINGNAME} = $enc;
     $w->PerlIO_layers(":encoding($enc)");
    }
   return $w->{ENCODING};
@@ -91,12 +92,28 @@ use Tk::widgets qw(TextUndo Scrollbar Menu Dialog);
  sub EncodingMenuItems
  {
   my ($w) = @_;
-  return [ [ command => 'System', -command => [ $w, Encoding => Tk::SystemEncoding()->name ]],
-           [ command => 'UTF-8',  -command => [ $w, Encoding => 'UTF-8'] ],
-           [ command => 'iso-8859-1', -command => [ $w, Encoding => 'iso8859-1'] ],
-           [ command => 'iso-8859-15', -command => [ $w, Encoding => 'iso8859-15'] ],
-         ];
+  my @menu;
+  my @encoding_defs = ( # use canonical encoding names for radiobutton value
+		       ['Unicode (UTF-8)', 'utf-8-strict'],
+		       ['Western (iso-8859-1)', 'iso-8859-1'],
+		       ['Western (Windows-1252)', 'cp1252'],
+		       ["Western with \x{20ac} (iso-8859-15)", 'iso-8859-15'],
+		       ['Central European (Windows-1250)', 'cp1250'],
+		      );
+  if (!grep { $_->[1] eq Tk::SystemEncoding()->name } @encoding_defs)
+   {
+    unshift @encoding_defs, ['System', Tk::SystemEncoding()->name];
+   }
 
+  for my $encoding_def (@encoding_defs)
+   {
+    my($label, $encoding) = @$encoding_def;
+    push @menu, [ radiobutton => $label,
+		  -command => [ $w, Encoding => $encoding ],
+		  -variable => \$w->{ENCODINGNAME},
+		  -value => $encoding ];
+   }
+  return [ @menu ];
  }
 
 }
@@ -183,7 +200,7 @@ sub Create_Edit
  $t->pack(-expand => 1, -fill => 'both');
  $t = $t->Subwidget('scrolled');
 
- $t->Encoding($opt{encoding}) if $opt{encoding};
+ $t->Encoding($opt{encoding} || Tk::SystemEncoding()->name);
 
  my $menu = $t->menu;
  $menu->cascade(-label => '~Help', -menuitems => [

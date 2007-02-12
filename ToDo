@@ -1,4 +1,4 @@
-Tk::Tree has a dual live on CPAN. Incorporate the 4.3 version.
+Tk::Tree has a dual life on CPAN. Incorporate the 4.7 version.
 
 Port all of Tcl/Tk test suite to Perl/Tk (text.test etc.). t/listbox.t
 and t/entry.t was a beginning.
@@ -71,9 +71,14 @@ Have a search path for libraries (LOCAL_PREFIX=/.../...)
 Use pre-installed libjpeg and libpng, if existing on the system (and
 maybe not older than the bundled libjpeg and libpng).
 
-ptked: populate Encoding menu with more encodings (see
-Mozilla/Firefox), have checkbuttons to indicate current encoding and
-have a "custom" menu which has all perl-available encodings
+ptked: Encoding: have a "custom" menu which has all perl-available
+encodings
+
+Some test failures reported on Mac OS X 10.4.8 Tiger:
+* canvas.t #84 (returned 255 instead of 215) (this failure also seen on CentOS and Altix)
+* unicode.t #9 (Control-any not working with XDarwin?)
+
+A lot of test failures with Altix, mostly core dumps.
 
 ----------------------------------------------------------------------
 - Big projects
