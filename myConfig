@@ -302,6 +302,14 @@ if ($win_arch eq 'x') {
     }
 
   #
+  # Prefer 64bit libraries on certain architectures
+  #
+  unless (defined $xlib and $Config{'archname'} =~ m/x86_64/)
+    {
+      $xlib = &lX11(0, chooseX11(</usr/X11*/lib64>));
+    }
+
+  #
   # If no luck there try "common" places
   #
   unless (defined $xlib)
