@@ -446,6 +446,30 @@ sub InitTabSize {
     $w->{'minH'} = $tH;
 }
 
+sub BalloonInfo
+{
+ my ($notebook,$balloon,$X,$Y,@opt) = @_;
+ my $page = $notebook->identify($X-$notebook->rootx,$Y-$notebook->rooty);
+ return if !$page;
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$notebook);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/ && UNIVERSAL::isa($info,'HASH'))
+    {
+     $balloon->Subclient($page);
+     if (exists $info->{$page})
+      {
+       return $info->{$page}
+      }
+     else
+      {
+       return '';
+      }
+    }
+   return $info;
+  }
+}
+
 1;
 
 __END__

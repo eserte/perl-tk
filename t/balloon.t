@@ -12,7 +12,9 @@ BEGIN {
     }
 }
 
-plan tests => 10;
+plan tests => 12;
+
+if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -51,17 +53,36 @@ is($@, "", 'Attaching message to Menu');
 
 eval { $balloon->configure(-motioncommand => \&motioncmd); };
 is($@, "", "Set motioncommand option");
+eval { $balloon->configure(-motioncommand => undef); };
+is($@, "", "Reset motioncommand option");
 
 my $lb = $mw->Listbox->pack;
 $lb->insert("end",1,2,3,4);
 eval { $balloon->attach($lb, -msg => ['one','two','three','four']); };
 is($@, "", 'Attaching message to Listbox items');
 
-my $slb = $mw->Scrolled('Listbox')->pack;
-$lb->insert("end",1,2,3,4);
+my $slb = $mw->Scrolled('Listbox', -height => 2)->pack;
+$slb->insert("end",1,2,3,4);
 eval { $balloon->attach($slb->Subwidget('scrolled'),
 			-msg => ['one','two','three','four']); };
 is($@, "", 'Attaching message to scrolled Listbox items');
+
+{
+    require Tk::NoteBook;
+    my $nb = $mw->NoteBook->pack;
+    for (1..4) {
+	my $p = $nb->add("page$_", -label => "Page$_");
+	$p->Label(-text => "Page $_")->pack;
+    }
+    $balloon->attach($nb,
+		     -balloonposition => 'mouse',
+		     -msg => { page1 => "This is page1",
+			       page2 => "This is page2",
+			       page3 => "This is page3",
+			       page4 => "This is page4",
+			     });
+    pass("Attached hash ballooninfo to NoteBook");
+}
 
 ## not yet:
 #  $l->eventGenerate("<Motion>");
@@ -70,5 +91,8 @@ is($@, "", 'Attaching message to scrolled Listbox items');
 #      warn "<<<@args";
 #  }
 
-1;
+MainLoop if !$ENV{BATCH};
+
+sub motioncmd { warn "dummy motioncommand\n" }
+
 __END__
