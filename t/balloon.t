@@ -1,10 +1,18 @@
 # -*- perl -*-
-BEGIN { $|=1; $^W=1; }
 use strict;
-use Test;
 use Tk;
 
-BEGIN { plan tests => 10 };
+BEGIN {
+    if (!eval q{
+	use Test::More;
+	1;
+    }) {
+	print "1..0 # skip: no Test::More module\n";
+	exit;
+    }
+}
+
+plan tests => 10;
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -13,21 +21,21 @@ my $statusbar = $mw->Label->pack;
 
 my $balloon;
 eval { require Tk::Balloon; };
-ok($@, "", 'Problem loading Tk::Balloon');
+is($@, "", 'Loading Tk::Balloon');
 eval { $balloon = $mw->Balloon; };
-ok($@, "", 'Problem creating Balloon widget');
-ok( Tk::Exists($balloon) );
+is($@, "", 'Creating Balloon widget');
+ok( Tk::Exists($balloon), "Existance of ballon" );
 
 my $l = $mw->Label->pack;
 eval { $balloon->attach($l, -msg => "test"); };
-ok($@, "", 'Problem attaching message to Label widget');
+is($@, "", 'Attaching message to Label widget');
 eval { $balloon->attach($l, -statusmsg => "test1", -balloonmsg => "test2"); };
-ok($@, "", 'Problem attaching statusmsg/baloonmsg to Label widget');
+is($@, "", 'Attaching statusmsg/baloonmsg to Label widget');
 
 my $c = $mw->Canvas->pack;
 my $ci = $c->createLine(0,0,10,10);
 eval { $balloon->attach($c, -msg => {$ci => "test"}); };
-ok($@, "", 'Problem attaching message to Canvas item');
+is($@, "", 'Attaching message to Canvas item');
 
 my $menubar = $mw->Menu;
 $mw->configure(-menu => $menubar);
@@ -39,21 +47,21 @@ my $filemenu_menu = $filemenu->cget(-menu);
 
 eval { $balloon->attach($filemenu_menu,
 			-msg => ["Test1 msg", "Test2 msg", "Test3 msg"]); };
-ok($@, "", 'Problem attaching message to Menu');
+is($@, "", 'Attaching message to Menu');
 
 eval { $balloon->configure(-motioncommand => \&motioncmd); };
-ok($@, "", "Can't set motioncommand option");
+is($@, "", "Set motioncommand option");
 
 my $lb = $mw->Listbox->pack;
 $lb->insert("end",1,2,3,4);
 eval { $balloon->attach($lb, -msg => ['one','two','three','four']); };
-ok($@, "", 'Problem attaching message to Listbox items');
+is($@, "", 'Attaching message to Listbox items');
 
 my $slb = $mw->Scrolled('Listbox')->pack;
 $lb->insert("end",1,2,3,4);
 eval { $balloon->attach($slb->Subwidget('scrolled'),
 			-msg => ['one','two','three','four']); };
-ok($@, "", 'Problem attaching message to scrolled Listbox items');
+is($@, "", 'Attaching message to scrolled Listbox items');
 
 ## not yet:
 #  $l->eventGenerate("<Motion>");
