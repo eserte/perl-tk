@@ -80,6 +80,15 @@ Some test failures reported on Mac OS X 10.4.8 Tiger:
 
 A lot of test failures with Altix, mostly core dumps.
 
+ptked and gedi: introduce new +line option (like in vi or emacsclient)
+
+Message-ID: <er80om$okm$1@online.de> (Ch. Lamprecht): introduce new
+option or method for global iconimages?
+
+A double destroy would show an unfriendly error message including an
+SV dump. Maybe remove the dump? And add "maybe the widget was already
+destroyed?"?
+
 ----------------------------------------------------------------------
 - Big projects
 
