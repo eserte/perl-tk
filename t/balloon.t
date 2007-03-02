@@ -12,7 +12,7 @@ BEGIN {
     }
 }
 
-plan tests => 12;
+plan tests => 13;
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
@@ -34,7 +34,7 @@ is($@, "", 'Attaching message to Label widget');
 eval { $balloon->attach($l, -statusmsg => "test1", -balloonmsg => "test2"); };
 is($@, "", 'Attaching statusmsg/baloonmsg to Label widget');
 
-my $c = $mw->Canvas->pack;
+my $c = $mw->Canvas(-width => 100, -height => 50)->pack;
 my $ci = $c->createLine(0,0,10,10);
 eval { $balloon->attach($c, -msg => {$ci => "test"}); };
 is($@, "", 'Attaching message to Canvas item');
@@ -56,7 +56,7 @@ is($@, "", "Set motioncommand option");
 eval { $balloon->configure(-motioncommand => undef); };
 is($@, "", "Reset motioncommand option");
 
-my $lb = $mw->Listbox->pack;
+my $lb = $mw->Listbox(-height => 6)->pack;
 $lb->insert("end",1,2,3,4);
 eval { $balloon->attach($lb, -msg => ['one','two','three','four']); };
 is($@, "", 'Attaching message to Listbox items');
@@ -82,6 +82,19 @@ is($@, "", 'Attaching message to scrolled Listbox items');
 			       page4 => "This is page4",
 			     });
     pass("Attached hash ballooninfo to NoteBook");
+}
+
+{
+    my $nb = $mw->NoteBook->pack;
+    for (1..4) {
+	my $p = $nb->add("page$_", -label => "Page$_");
+	$p->Label(-text => "Page $_")->pack;
+    }
+    $balloon->attach($nb,
+		     -balloonposition => 'mouse',
+		     -msg => "Balloon applies to whole notebook",
+		    );
+    pass("Attached scalar ballooninfo to NoteBook");
 }
 
 ## not yet:
