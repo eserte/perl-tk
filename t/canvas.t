@@ -444,7 +444,7 @@ for my $testdef (
 
     eval { $c->scan };
     like($@, qr{\Qwrong # args: should be ".canvas scan mark|dragto x y ?dragGain?"\E},
-	 qr{canvas scan SF bug 581560});
+	 q{canvas scan SF bug 581560});
 
     eval { $c->scan("bogus") };
     like($@, qr{\Qwrong # args: should be ".canvas scan mark|dragto x y ?dragGain?"\E},
