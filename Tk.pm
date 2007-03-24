@@ -15,6 +15,7 @@ use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 use     Cwd();
 use base qw(Exporter DynaLoader);
+use     File::Spec qw(catfile);
 
 *fileevent = \&Tk::Event::IO::fileevent;
 
@@ -316,15 +317,29 @@ sub messageBox
  $args{'-default'} = lc($args{'-default'}) if (exists $args{'-default'});
  ucfirst tk_messageBox(-parent => $widget, %args);
 }
-
+sub _adapt_path_to_os
+{
+ # adapting the path of -initalfile and -initialdir to the operating system
+ # (like that getOpenFile(-initialdir => 'c:/WINNT') will work, as it will
+ #  be converted to c:\WINNT)
+ my %args = @_;
+ foreach my $option (qw(-initialfile -initialdir))
+  {
+   if ($args{$option})
+    {
+     $args{$option} = File::Spec->catfile($args{$option});
+    }
+   }
+ return %args;
+}    
 sub getOpenFile
 {
- tk_getOpenFile(-parent => shift,@_);
+ tk_getOpenFile(-parent => shift,_adapt_path_to_os(@_));
 }
 
 sub getSaveFile
 {
- tk_getSaveFile(-parent => shift,@_);
+ tk_getSaveFile(-parent => shift,_adapt_path_to_os(@_));
 }
 
 sub chooseColor
@@ -334,7 +349,7 @@ sub chooseColor
 
 sub chooseDirectory
 {
- tk_chooseDirectory(-parent => shift,@_);
+ tk_chooseDirectory(-parent => shift,_adapt_path_to_os(@_));
 }
 
 sub DialogWrapper
