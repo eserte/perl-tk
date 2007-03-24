@@ -1408,7 +1408,7 @@ sub bindDump {
                     } else {
                         push @out, sprintf( "%s '%s'\n", ' ' x $spc1, $callback->[0], "\n" );
                     }
-                    foreach my $arg (@$callback[1 .. $#{@$callback}]) {
+                    foreach my $arg (@$callback[1 .. $#$callback]) {
                         if (ref $arg) {
                             push @out, sprintf( "%s %-40s", ' ' x $spc2, $arg );
                         } else {
