@@ -391,8 +391,8 @@ sub Resize {
 
     if ($reqW * $reqH == 0)
      {
-	if ((not defined $w->{-dynamicgeometry}) ||
-	    ($w->{-dynamicgeometry} == 0)) {
+	if ((not defined $w->cget('-dynamicgeometry')) ||
+	    ($w->cget('-dynamicgeometry') == 0)) {
 	    $reqW = 1;
 	    $reqH = 1;
 
