@@ -80,9 +80,10 @@ if ($v)
    }
  }
 
+my $times_tests = 4;
 SKIP:
  {
-  skip("Times not available", 4)
+  skip("Times not available", $times_tests)
       if !grep { /^times$/i } @fam;
 
   $mw->optionAdd('*Listbox.font','Times -12 bold');
@@ -92,13 +93,19 @@ SKIP:
   my $lf = $lb->cget('-font');
   diag "Font attributes: $$lf:" . join(',',$mw->fontActual($lf))
       if $v;
+
+  my %fa = ($mw->fontActual($lf), $mw->fontMetrics($lf));
+
+  skip("Times requested, but got $fa{-family}", $times_tests)
+      if lc $fa{-family} !~ /^times$/i;
+
   my %expect = (-family => 'Times',
 		-size   => -12, -weight => 'bold',
 		-slant  => 'roman');
   foreach my $key (sort keys %expect)
    {
-    my $val = $mw->fontActual($lf,$key);
-    like($val, qr{\Q$expect{$key}}i, "Value of $key from fontActual");
+    my $val = $fa{$key};
+    like($val, qr{\Q$expect{$key}}i, "Value of $key from fontActual (Times font)");
    }
 
   my @subfonts = $mw->fontSubfonts($lf);
@@ -157,7 +164,7 @@ SKIP: {
 		);
  while(my($key,$val) = each %expected)
   {
-   if (!is(lc $fa{$key}, $val, "Expected $key value"))
+   if (!is(lc $fa{$key}, $val, "Expected $key value (Helvetica font)"))
     {
      diag(Dumper(\@subfonts)) if !$font_dump_shown;
      $font_dump_shown++;
