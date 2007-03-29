@@ -5370,11 +5370,19 @@ CONST84 char **startPtr;
 CONST84 char **endPtr;
 {
  regexp *re = wrap->pat;
+#if USE_NEWSTYLE_REGEXP_STRUCT
+ if (re->offs[index].start != -1 && re->offs[index].end != -1)
+  {
+   *startPtr = re->subbeg+re->offs[index].start;
+   *endPtr   = re->subbeg+re->offs[index].end;
+  }
+#else
  if (re->startp[index] != -1 && re->endp[index] != -1)
   {
    *startPtr = re->subbeg+re->startp[index];
    *endPtr   = re->subbeg+re->endp[index];
   }
+#endif
  else
   {
    *startPtr = NULL;

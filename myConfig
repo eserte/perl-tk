@@ -96,6 +96,11 @@ my $voidused  = $Config{'defvoidused'}+0;
 $define{'NOVOID'}  = 1 if (($voidflags & $voidused) != $voidused);
 $define{'NOCONST'} = 1 unless ($Config{'d_const'});
 
+if (try_compile("config/perlrx.c", ["-I$Config{'archlibexp'}/CORE"]))
+ {
+  $define{'USE_NEWSTYLE_REGEXP_STRUCT'} = 1;
+ }
+
 if (try_compile("config/signedchar.c"))
  {
   $define{'ANSI_SIGNED_CHAR'} = 1;
