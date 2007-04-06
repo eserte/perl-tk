@@ -101,6 +101,11 @@ if (try_compile("config/perlrx.c", ["-I$Config{'archlibexp'}/CORE"]))
   $define{'USE_NEWSTYLE_REGEXP_STRUCT'} = 1;
  }
 
+if (try_compile("config/pmop.c", ["-I$Config{'archlibexp'}/CORE"]))
+ {
+  $define{'HAS_PMOP_EXTRA_FLAGS'} = 1;
+ }
+
 if (try_compile("config/signedchar.c"))
  {
   $define{'ANSI_SIGNED_CHAR'} = 1;

@@ -1,4 +1,4 @@
-use Test::More tests => 21;
+use Test::More tests => 22;
 use Tk;
 use Tk::widgets qw(Text);
 use utf8;
@@ -29,6 +29,9 @@ my $rcount;
 $rposn = $tw->search(-count => \$rcount, -regexp => 'matching','1.0');
 is($rposn,'2.24',"Correct -regexp postion");
 is($rcount,8,"Correct -regexp length");
+
+$rposn = $tw->search(-count => \$rcount, -regexp => 'tHiS','1.0');
+is($rposn,undef,"Correct non-match");
 
 $rposn = $tw->search(-count => \$rcount, -nocase => -regexp => 'tHiS','1.0');
 is($rposn,'2.0',"Correct -regexp -nocase");
