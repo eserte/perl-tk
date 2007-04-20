@@ -47,6 +47,7 @@ Compound/compound_demo
 Compound/Makefile.PL
 config/Ksprintf.c
 config/perlrx.c			Test for changed regexp structure in perl5.9.x
+config/pmop.c			Test for changed pmop structure in perl5.9.x
 config/signedchar.c		Test to see of 'signed char' is legal
 config/tod.c			Test for gettimeofday()
 config/unsigned.c		See if 'char' is signed
@@ -701,6 +702,7 @@ PNG/PNG.xs
 PNG/pngtest.png
 PNG/README
 PNG/t/basic.t
+PNG/t/crash.t
 PNG/zlib/ChangeLog
 PNG/zlib/FAQ
 PNG/zlib/INDEX
