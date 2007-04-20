@@ -429,7 +429,7 @@ sub UpDown
 
  unless( defined $anchor )
   {
-   $anchor = ($w->info('children'))[0] || '';
+   $anchor = ($w->info('children'))[0];
 
    return unless (defined($anchor) and length($anchor));
 
@@ -530,7 +530,11 @@ sub LeftRight
 
  unless(defined $anchor)
   {
-   $anchor = ($w->info('children'))[0] || '';
+   $anchor = ($w->info('children'))[0]
+  }
+ unless(defined $anchor)
+  {
+   $anchor = '';
   }
 
  my $done = 0;
