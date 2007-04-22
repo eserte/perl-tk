@@ -1,3 +1,19 @@
+Tk-804.XXXXXXX release (2007-XX-XX)
+----------------------
+
+At some earlier point, there were success reports for the following
+configurations:
+
+* Solaris 8 (Sparc), gcc-4.0.3, perl-5.8.8 with
+  freetype-2.2.1, expat-2.0.0, libXft-2.1.11, fontconfig-2.4.1,
+  libXrender-0.9.2, renderproto-0.9.2, zlib-1.2.3, libjpeg-6b,
+  libpng-1.2.14
+
+* RedHat Enterprise Linux 3.0 update 8 (i686), gcc-4.0.3, perl-5.8.8 with
+  freetype-2.2.1, expat-2.0.0, libXft-2.1.11, fontconfig-2.4.1,
+  libXrender-0.9.2, renderproto-0.9.2, zlib-1.2.3, libjpeg-6b,
+  libpng-1.2.14
+
 Tk-804.027_500 release (2007-02-11)
 ----------------------
 
