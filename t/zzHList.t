@@ -14,7 +14,7 @@ BEGIN {
     }
 }
 
-plan tests => 24;
+plan tests => 25;
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -110,6 +110,12 @@ SKIP: {
     pass("No abort with -at/-before/-after");
 
     $hl->destroy;
+}
+
+{
+    my $hl = $mw->HList;
+    $hl->addchild("");
+    pass("addchild with empty string");
 }
 
 1;

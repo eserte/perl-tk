@@ -610,7 +610,7 @@ Tix_HLAdd(clientData, interp, argc, argv)
 	goto cleanup;
     }
 
-    if (argc > 0) {
+    if (newArgc > 0) {
 	if (ConfigElement(wPtr, chPtr, newArgc, newArgv, 0, 1) != TCL_OK) {
 	    DeleteNode(wPtr, chPtr);
 	    goto cleanup;
@@ -667,7 +667,7 @@ Tix_HLAddChild(clientData, interp, argc, argv)
 	goto cleanup;
     }
 
-    if (argc > 0) {
+    if (newArgc > 0) {
 	if (ConfigElement(wPtr, chPtr, newArgc, newArgv, 0, 1) != TCL_OK) {
 	    DeleteNode(wPtr, chPtr);
 	    goto cleanup;
@@ -680,6 +680,7 @@ Tix_HLAddChild(clientData, interp, argc, argv)
     }
 
     Tcl_AppendResult(interp, chPtr->pathName, NULL);
+    code = TCL_OK;
 
 cleanup:
     if (newArgv) {
