@@ -1976,6 +1976,7 @@ t/optmenu.t
 t/photo.t
 t/pixmap.t
 t/progbar.t
+t/property.t
 t/regexp.t
 t/Require.t
 t/table.t

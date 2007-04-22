@@ -78,28 +78,26 @@ long unsigned int count;
    while (count--)
     {
      unsigned long value = 0;
-     if (8 * sizeof(unsigned char) == format)
+     if (format == 8)
       {
        value = *((unsigned char *) p);
+       p += sizeof(unsigned char);
       }
-     else if (8 * sizeof(unsigned short) == format)
+     else if (format == 16)
       {
        value = *((unsigned short *) p);
+       p += sizeof(unsigned short);
       }
-     else if (8 * sizeof(unsigned int) == format)
-      {
-       value = *((unsigned int *) p);
-      }
-     else if (8 * sizeof(unsigned long) == format)
+     else if (format == 32)
       {
        value = *((unsigned long *) p);
+       p += sizeof(unsigned long);
       }
      else
       {
        Tcl_SprintfResult(interp, "No type for format %d", format);
        return TCL_ERROR;
       }
-     p += (format / 8);
 
      if (type == XA_ATOM)
       {
@@ -141,7 +139,7 @@ long unsigned int *count;
    result = Tcl_ListObjGetElements(interp, arg, &valc, &valv);
    if (result == TCL_OK)
     {
-     unsigned char *p = (unsigned char *) ckalloc(valc * format / 8);
+     unsigned char *p = (unsigned char *) ckalloc(valc * (format == 8 ? sizeof(unsigned char) : format == 16 ? sizeof(unsigned short) : sizeof(unsigned long)));
      int i;
      *prop = p;
      *count = valc;
@@ -159,21 +157,20 @@ long unsigned int *count;
          else
           break;
         }
-       if (8 * sizeof(unsigned char) == format)
+       if (format == 8)
         {
          *((unsigned char *) p) = value;
+	 p += sizeof(unsigned char);
         }
-       else if (8 * sizeof(unsigned short) == format)
+       else if (format == 16)
         {
          *((unsigned short *) p) = value;
+	 p += sizeof(unsigned short);
         }
-       else if (8 * sizeof(unsigned int) == format)
-        {
-         *((unsigned int *) p) = value;
-        }
-       else if (8 * sizeof(unsigned long) == format)
+       else if (format == 32)
         {
          *((unsigned long *) p) = value;
+	 p += sizeof(unsigned long);
         }
        else
         {
@@ -181,7 +178,6 @@ long unsigned int *count;
          result = TCL_ERROR;
          break;
         }
-       p += (format / 8);
       }
      if (result != TCL_OK)
       {
