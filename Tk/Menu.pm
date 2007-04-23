@@ -1162,7 +1162,7 @@ sub MasterMenu
    my $master_pathname = (split m{\.}, $pathname)[-1];
    $master_pathname =~ s{#}{.}g;
    $master_menu = $menu->Widget($master_pathname);
-   if (!Tk::Exists($master_menu))
+   if (0 && !Tk::Exists($master_menu))
     {
      warn "Cannot find master menu <$master_pathname>";
     }
