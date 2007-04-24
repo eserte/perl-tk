@@ -5246,8 +5246,12 @@ do_comp(pTHX_ CV *cv)
  dMARK;
  dAX;
  struct WrappedRegExp *p = (struct WrappedRegExp *) CvXSUBANY(cv).any_ptr;
+#if USE_PREGCOMP_31027
+ p->pat = pregcomp(p->source,p->flags);
+#else /* USE_PREGCOMP_31027 */
  int len = 0;
  char *string = Tcl_GetStringFromObj(p->source,&len);
+
 #if HAS_PMOP_EXTRA_FLAGS
  p->op.op_pmdynflags |= PMdf_DYN_UTF8;
  p->pat = pregcomp(string,string+len,&p->op);
@@ -5257,6 +5261,7 @@ do_comp(pTHX_ CV *cv)
 #if 0
  LangDebug("/%.*s/ => %p\n",len,string,p->pat);
 #endif
+#endif /* USE_PREGCOMP_31027 */
  XSRETURN(0);
 }
 

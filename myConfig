@@ -96,64 +96,6 @@ my $voidused  = $Config{'defvoidused'}+0;
 $define{'NOVOID'}  = 1 if (($voidflags & $voidused) != $voidused);
 $define{'NOCONST'} = 1 unless ($Config{'d_const'});
 
-if (try_compile("config/perlrx.c", ["-I$Config{'archlibexp'}/CORE"]))
- {
-  $define{'USE_NEWSTYLE_REGEXP_STRUCT'} = 1;
- }
-
-if (try_compile("config/pmop.c", ["-I$Config{'archlibexp'}/CORE"]))
- {
-  $define{'HAS_PMOP_EXTRA_FLAGS'} = 1;
- }
-
-if (try_compile("config/signedchar.c"))
- {
-  $define{'ANSI_SIGNED_CHAR'} = 1;
- }
-else
- {
-  if (try_run("config/unsigned.c"))
-   {
-    $define{'CHAR_UNSIGNED'} = 1;
-   }
- }
-
-if (!try_compile("config/Ksprintf.c") &&
-     try_compile("-DSPRINTF_RETURN_CHAR config/Ksprintf.c"))
- {
-  $define{'SPRINTF_RETURN_CHAR'} = 1;
- }
-
-if (!$IsWin32)
- {
-  if (!try_compile("config/tod.c"))
-   {
-    my $d;
-    my $def;
-    foreach $d (qw(TZ NO_TZ DOTS))
-     {
-      if (try_compile("-DTIMEOFDAY_$d config/tod.c"))
-       {
-        $def = "TIMEOFDAY_$d";
-        print STDERR "$d gettimeofday()\n";
-        last;
-       }
-     }
-    if (defined $def)
-     {
-      $define{$def} = 1;
-     }
-    else
-     {
-      print STDERR "Problem gettimeofday()\n";
-     }
-   }
-  else
-   {
-    print STDERR "Generic gettimeofday()\n";
-   }
- }
-
 #
 # Hunt down X Library - first a function
 #
@@ -232,6 +174,71 @@ foreach $arg (@ARGV)
   push(@args,$arg);
  }
 @ARGV = @args;
+
+# Now we have possibly $Tk::MMtry::VERBOSE set, we can
+# use the try_compile stuff
+if (try_compile("config/perlrx.c", ["-I$Config{'archlibexp'}/CORE"]))
+ {
+  $define{'USE_NEWSTYLE_REGEXP_STRUCT'} = 1;
+ }
+
+if (try_compile("config/pmop.c", ["-I$Config{'archlibexp'}/CORE"]))
+ {
+  $define{'HAS_PMOP_EXTRA_FLAGS'} = 1;
+ }
+
+if (try_compile("config/pregcomp2.c",  ["-I$Config{'archlibexp'}/CORE"], undef, ["-c"]))
+ {
+  $define{'USE_PREGCOMP_31027'} = 1; # pregcomp after perl change 31027
+ }
+
+if (try_compile("config/signedchar.c"))
+ {
+  $define{'ANSI_SIGNED_CHAR'} = 1;
+ }
+else
+ {
+  if (try_run("config/unsigned.c"))
+   {
+    $define{'CHAR_UNSIGNED'} = 1;
+   }
+ }
+
+if (!try_compile("config/Ksprintf.c") &&
+     try_compile("-DSPRINTF_RETURN_CHAR config/Ksprintf.c"))
+ {
+  $define{'SPRINTF_RETURN_CHAR'} = 1;
+ }
+
+if (!$IsWin32)
+ {
+  if (!try_compile("config/tod.c"))
+   {
+    my $d;
+    my $def;
+    foreach $d (qw(TZ NO_TZ DOTS))
+     {
+      if (try_compile("-DTIMEOFDAY_$d config/tod.c"))
+       {
+        $def = "TIMEOFDAY_$d";
+        print STDERR "$d gettimeofday()\n";
+        last;
+       }
+     }
+    if (defined $def)
+     {
+      $define{$def} = 1;
+     }
+    else
+     {
+      print STDERR "Problem gettimeofday()\n";
+     }
+   }
+  else
+   {
+    print STDERR "Generic gettimeofday()\n";
+   }
+ }
 
 $win_arch or die '$win_arch not set in myConfig';
 
