@@ -29,16 +29,18 @@ EOF
         -iconname         => 'Predefined cursors',
     );
 
-    my $cursorfonth = Tk->findINC("X11/cursorfont.h");
-    if (!$cursorfonth) {
-	$cursorfonth = "/usr/X11R6/include/X11/cursorfont.h";
-    }
     my $fh;
-    if (!open $fh, $cursorfonth) {
+ TRY_CURSORFONTH: {
+	for my $cursorfonth (Tk->findINC("X11/cursorfont.h"),
+			     "/usr/X11R6/include/X11/cursorfont.h",
+			     "/usr/include/X11/cursorfont.h",
+			    ) {
+	    last TRY_CURSORFONTH if (open $fh, $cursorfonth);
+	}
 	$TOP->Label(-text => "Sorry. I can't find X11/cursorfont.h on this system.")->grid;
 	return;
     }
-	
+
     while(<$fh>) {
 	chomp;
 	if (/XC_(\S+)/) {
