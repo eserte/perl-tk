@@ -108,4 +108,7 @@ Author has built against:
 For questions on this package try news:comp.lang.perl.tk or e-mail
 to <ptk@lists.stanford.edu> or <nick@ing-simmons.net>
 
+Perl/Tk's source code can be found in the Subversion repository:
+
+	https://svn.perl.org/modules/Tk/trunk
 
