@@ -32,6 +32,10 @@ $mb->separator;
 $mb->command(-label => 'Close',
 	     -command => sub {$top->destroy;});
 
+my $tm = $top->Menu(-title => "Balloon menu");
+$tm->cascade(-label => "Toplevel menu", -menu => $menu);
+$top->configure(-menu => $tm);
+
 my $b1 = $top->Button(-text => "Something Unexpected",
 		      -command => sub {$top->destroy;});
 my $b2 = $top->Button(-text => "Something Else Unexpected");
