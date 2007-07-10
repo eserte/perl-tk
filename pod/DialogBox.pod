@@ -108,6 +108,10 @@ The actual Dialog is shown using the B<Popup> method. Any other
 options supplied to B<Show> are passed to B<Popup>, and can be used to
 position the Dialog on the screen. Please read Tk::Popup for details.
 
+=item B<Exit()>
+
+Close the dialogbox, by emulating a click on the default button.
+
 =back
 
 =head1 ADVERTISED WIDGETS
