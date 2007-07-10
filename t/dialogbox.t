@@ -12,7 +12,8 @@ BEGIN {
     }
 }
 
-plan tests => 11;
+my $interactive_tests = 4;
+plan tests => 8 + $interactive_tests;
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
@@ -20,11 +21,17 @@ use_ok("Tk");
 use_ok("Tk::DialogBox");
 
 my $top = new MainWindow;
+$top->Message(-font => "Helvetica 24",
+	      -text => "This is the Main Window")->pack;
 $top->withdraw unless $^O eq 'MSWin32';
 eval { $top->geometry('+10+10'); };  # This works for mwm and interactivePlacement
 
 {
     my $d = $top->DialogBox;
+    $d->add("Label",
+	    -text => "A dialog box with some widgets." . 
+	    (!$ENV{BATCH} ? "\nClick OK to continue." : ""),
+	   )->pack;
     my $e = $d->add("Entry")->pack;
     $d->configure(-focus => $e,
 		  -showcommand => sub {
@@ -55,7 +62,7 @@ eval { $top->geometry('+10+10'); };  # This works for mwm and interactivePlaceme
 }
 
 SKIP: {
-    skip("Needs non-BATCH mode (env BATCH=0 $^X -Mblib t/dialogbox.t)", 3)
+    skip("Needs non-BATCH mode (env BATCH=0 $^X -Mblib t/dialogbox.t)", $interactive_tests)
 	if $ENV{BATCH};
 
     my $close_text = "Please close the dialog by using the window manager's close button";
@@ -76,7 +83,16 @@ SKIP: {
 	my $d = $top->DialogBox(-buttons => [qw(OK Cancel)]);
 	my $e = $d->add("Label", -text => $close_text)->pack;
 	is($d->Show, undef, "No implicite cancel button with more than one buttons");
-    }    
+    }
+
+    # This should be the last test
+    {
+	$top->raise;
+	$top->deiconify;
+	my $d = $top->DialogBox(-buttons => [qw(Ok Cancel)]);
+	my $e = $d->add("Message", -text => "Please close the ***Main window*** using the window manager's close button. The test program must not hang.")->pack;
+	ok(!$d->Show, "No hanging program after destroying main window");
+    }
 }
 
 1;

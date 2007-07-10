@@ -36,6 +36,8 @@ sub Populate {
     } else {
 	$cw->protocol('WM_DELETE_WINDOW' => sub { $cw->{'selected_button'} = undef });
     }
+    # Make sure waitVariable exits if a waiting dialog is destroyed
+    $cw->OnDestroy(sub { $cw->{'selected_button'} = $cw->{'selected_button'} });
 
     # create the two frames
     my $top = $cw->Component('Frame', 'top');
