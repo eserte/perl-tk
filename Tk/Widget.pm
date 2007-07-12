@@ -616,6 +616,7 @@ sub Palette
    $Palette{'activeForeground'}    = ($c->configure('-activeforeground'))[3];
    $Palette{'background'}          = ($c->configure('-background'))[3];
    $Palette{'disabledForeground'}  = ($c->configure('-disabledforeground'))[3];
+
    $Palette{'foreground'}          = ($c->configure('-foreground'))[3];
    $Palette{'highlightBackground'} = ($c->configure('-highlightbackground'))[3];
    $Palette{'highlightColor'}      = ($c->configure('-highlightcolor'))[3];
@@ -643,9 +644,13 @@ sub Palette
 # be computed from this) or an even number of values consisting of
 # option names and values. The name for an option is the one used
 # for the option database, such as activeForeground, not -activeforeground.
+# Additional special option names are:
+#   priority: set the priority for the option database entries, see Tk::option
 sub setPalette
 {
  my $w = shift->MainWindow;
+ # Just return on monochrome displays, otherwise errors will occur
+ return if $w->depth == 1;
  my %new = (@_ == 1) ? (background => $_[0]) : @_;
  my $priority = delete($new{'priority'}) || 'widgetDefault';
 
@@ -653,8 +658,23 @@ sub setPalette
  # aren't specified, compute them from other colors that are specified.
 
  die 'must specify a background color' if (!exists $new{background});
- $new{'foreground'} = 'black' unless (exists $new{foreground});
  my @bg = $w->rgb($new{'background'});
+
+ if (!exists $new{foreground})
+  {
+   # Note that the range of each value in the triple returned by
+   # [winfo rgb] is 0-65535, and your eyes are more sensitive to
+   # green than to red, and more to red than to blue.
+   my($r,$g,$b) = @bg;
+   if ($r+1.5*$g+0.5*$b > 100000)
+    {
+     $new{'foreground'} = 'black';
+    }
+   else
+    {
+     $new{'foreground'} = 'white';
+    }
+  }
  my @fg = $w->rgb($new{'foreground'});
  my $darkerBg = sprintf('#%02x%02x%02x',9*$bg[0]/2560,9*$bg[1]/2560,9*$bg[2]/2560);
  foreach my $i ('activeForeground','insertBackground','selectForeground','highlightColor')
@@ -703,8 +723,30 @@ sub setPalette
  # doesn't exist, fill it in using the defaults from a few widgets.
  my $Palette = $w->Palette;
 
+ # let's make one of each of the widgets so we know what the 
+ # defaults are currently for this platform.
+ $Tk::___tk_set_palette = $w->Toplevel(Name => "___tk_set_palette");
+ $Tk::___tk_set_palette->withdraw;
+ foreach my $q (qw(Button Canvas Checkbutton Entry Frame Label Labelframe
+		   Listbox Menubutton Menu Message Radiobutton Scale Scrollbar
+		   Spinbox Text
+		 ))
+  {     
+   $Tk::___tk_set_palette->Component($q, $q);
+  }
+
  # Walk the widget hierarchy, recoloring all existing windows.
- $w->RecolorTree(\%new);
+ my $res = $w->RecolorTree(\%new);
+ if ($res->{addOptionDB})
+  {
+   for (@{ $res->{addOptionDB} })
+    {
+     $w->optionAdd(@$_);
+    }
+  }
+
+ $Tk::___tk_set_palette->destroy;
+
  # Change the option database so that future windows will get the
  # same colors.
  foreach my $option (keys %new)
@@ -733,24 +775,49 @@ sub RecolorTree
 {
  my ($w,$colors) = @_;
  local ($@);
- my $Palette = $w->Palette;
+ my @addOptionDB;
+ my $prototype = $Tk::___tk_set_palette->Subwidget($w->Class) || undef;
  foreach my $dbOption (keys %$colors)
   {
    my $option = "-\L$dbOption";
-   my $value;
-   eval {local $SIG{'__DIE__'}; $value = $w->cget($option) };
-   if (defined $value)
+   my $class = ucfirst($dbOption);
+   my @value;
+   eval {local $SIG{'__DIE__'}; @value = $w->configure($option) };
+   if (@value)
     {
-     if ($value eq $Palette->{$dbOption})
+     # if the option database has a preference for this
+     # dbOption, then use it, otherwise use the defaults
+     # for the widget.
+     my $defaultcolor = $w->optionGet($dbOption, $class);
+     no warnings 'uninitialized';
+     if ($defaultcolor eq '' ||
+	 ($prototype && $prototype->cget($option) ne $defaultcolor))
       {
-       $w->configure($option,$colors->{$dbOption});
+       $defaultcolor = $value[3];
+      }
+     if ($defaultcolor ne '' && $value[4] ne '') # XXX why this can be empty?
+      {
+       $defaultcolor = join ",", $w->rgb($defaultcolor);
+       my $chosencolor = join ",", $w->rgb($value[4]);
+       if ($defaultcolor eq $chosencolor)
+        {
+         # Change the option database so that future windows will get
+         # the same colors.
+         push @addOptionDB, ['*'.$w->Class.".$dbOption", $colors->{$dbOption}, 60];
+         $w->configure($option,$colors->{$dbOption});
+        }
       }
     }
   }
  foreach my $child ($w->children)
   {
-   $child->RecolorTree($colors);
+   my $res = $child->RecolorTree($colors);
+   if ($res->{addOptionDB})
+    {
+     push @addOptionDB, @{ $res->{addOptionDB} };
+    }
   }
+ return { addOptionDB => \@addOptionDB };
 }
 # tkDarken --
 # Given a color name, computes a new color value that darkens (or
