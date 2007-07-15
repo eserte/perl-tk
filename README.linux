@@ -59,6 +59,8 @@ Nick Ing-Simmons 2004/03/18
 ----------------------------------------------------------------------
 Debian Linux:
 
+The libx11-dev and x-dev packages are necessary to compile Perl/Tk.
+
 The libfreetype6-dev, libxrender-dev and libxft-dev packages are
 necessary to compile with XFT=1.
 
