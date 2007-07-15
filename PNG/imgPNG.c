@@ -511,15 +511,23 @@ static int CommonReadPNG(png_ptr, format, imageHandle, destX, destY,
 	block.offset[3] = 0;
     }
 
-    if (png_get_sRGB && png_get_sRGB(png_ptr, info_ptr, &intent)) {
+#if defined(PNG_sRGB_SUPPORTED) || defined(PNG_gAMA_SUPPORTED)
+#if defined(PNG_sRGB_SUPPORTED)
+    if (png_get_sRGB(png_ptr, info_ptr, &intent)) {
 	png_set_sRGB(png_ptr, info_ptr, intent);
-    } else if (png_get_gAMA) {
+    } else {
+#endif
+#if defined(PNG_gAMA_SUPPORTED)
 	double gamma;
 	if (!png_get_gAMA(png_ptr, info_ptr, &gamma)) {
 	    gamma = 0.45455;
 	}
 	png_set_gamma(png_ptr, 1.0, gamma);
+#endif
+#if defined(PNG_sRGB_SUPPORTED)
     }
+#endif
+#endif
 
     png_data= (char **) ckalloc(sizeof(char *) * info_height +
 	    info_height * block.pitch);
@@ -700,9 +708,9 @@ static int CommonWritePNG(interp, png_ptr, info_ptr, format, blockPtr)
 	    color_type, PNG_INTERLACE_ADAM7, PNG_COMPRESSION_TYPE_BASE,
 	    PNG_FILTER_TYPE_BASE);
 
-    if (png_set_gAMA) {
-	png_set_gAMA(png_ptr, info_ptr, 1.0);
-    }
+#if defined(PNG_gAMA_SUPPORTED)
+    png_set_gAMA(png_ptr, info_ptr, 1.0);
+#endif
 
     if (tagcount > 0) {
 	png_text_compat text;
