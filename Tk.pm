@@ -552,6 +552,16 @@ sub FocusChildren { shift->children }
 sub focusNext
 {
  my $w = shift;
+ my $cur = $w->getNextFocus;
+ if ($cur)
+  {
+   $cur->tabFocus;
+  }
+}
+
+sub getNextFocus
+{
+ my $w = shift;
  my $cur = $w;
  while (1)
   {
@@ -580,8 +590,7 @@ sub focusNext
     }
    if ($cur == $w || $cur->FocusOK)
     {
-     $cur->tabFocus;
-     return;
+     return $cur;
     }
   }
 }
@@ -596,6 +605,16 @@ sub focusNext
 # to the previous window before this one in the traversal
 # order.
 sub focusPrev
+{
+ my $w = shift;
+ my $cur = $w->getPrevFocus;
+ if ($cur)
+  {
+   $cur->tabFocus;
+  }
+}
+
+sub getPrevFocus
 {
  my $w = shift;
  my $cur = $w;
@@ -635,8 +654,7 @@ sub focusPrev
    $cur = $parent;
    if ($cur == $w || $cur->FocusOK)
     {
-     $cur->tabFocus;
-     return;
+     return $cur;
     }
   }
 
