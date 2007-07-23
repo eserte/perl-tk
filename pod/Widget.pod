@@ -429,8 +429,6 @@ window of the screen, of the
 upper-left corner of I<$widget>'s border (or I<$widget> if it
 has no border).
 
-=item B<scaling>
-
 =item I<$widget>-E<gt>B<scaling>?(I<number>)?
 
 Sets and queries the current scaling factor used by Tk to convert between
@@ -509,6 +507,10 @@ is an integer release number provided by the server.
 
 Returns the reference of the top-level window containing I<$widget>.
 
+=item I<$widget>-E<gt>B<Unbusy>
+
+Restores widget state after a call to  I<$widget>-E<gt>B<Busy>.
+
 =item I<$widget>-E<gt>B<UnmapWindow>
 
 Cause I<$widget> to be "unmapped" i.e. removed from the display.
@@ -528,9 +530,15 @@ to events such as user interactions; if you occasionally call
 B<update> then user input will be processed during the next call to
 B<update>.
 
-=item I<$widget>-E<gt>B<Unbusy>
+=item  I<$widget>-E<gt>B<useinputmethods>( ?I<boolean>? )
 
-Restores widget state after a call to  I<$widget>-E<gt>B<Busy>.
+Sets and queries the state of whether Tk should use XIM (X Input
+Methods) for filtering events.  The resulting state is returned.
+XIM  is  used  in some locales (ie: Japanese, Korean), to handle
+special input devices.  This feature is only significant  on  X.
+If  XIM support is not available, this will always return 0.
+If  the  boolean  argument  is  omitted,  the  current  state is
+returned.  This is turned on by default for the main display.
 
 =item I<$widget>-E<gt>B<viewable>
 
@@ -630,16 +638,6 @@ If you need the true width immediately after creating a widget,
 invoke B<update> to force the geometry manager to arrange it,
 or use I<$widget>-E<gt>B<reqwidth> to get the window's requested width
 instead of its actual width.
-
-=item  I<$widget>-E<gt>B<useinputmethods>( ?I<boolean>? )
-
-Sets and queries the state of whether Tk should use XIM (X Input
-Methods) for filtering events.  The resulting state is returned.
-XIM  is  used  in some locales (ie: Japanese, Korean), to handle
-special input devices.  This feature is only significant  on  X.
-If  XIM support is not available, this will always return 0.
-If  the  boolean  argument  is  omitted,  the  current  state is
-returned.  This is turned on by default for the main display.
 
 =item I<$widget>-E<gt>B<windowingsystem>
 
