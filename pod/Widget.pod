@@ -330,8 +330,8 @@ if I<$widget> is the main window of the application.
 
 =item I<$widget>-E<gt>B<PathName>
 
-Returns the tk path name of I<$widget>. (This is an import from the
-C interface.)
+Returns the Tk path name of I<$widget>. This is the inverse of the
+L</Widget> method. (This is an import from the C interface.)
 
 =item I<$widget>-E<gt>B<pathname>(I<id>)
 
@@ -627,6 +627,12 @@ to B<tkwait> must complete before the outer call can complete.
 Traverse a widget hierarchy starting at I<$widget> while executing the
 subroutine I<proc> to every visited widget. The arguments I<arg, ...>
 are supplied to the subroutine.
+
+=item I<$widget>-E<gt>B<Widget>(I<pathname>)
+
+Returns the widget reference for the given Tk path name, or C<undef>
+if the path name does not match a Tk widget. This is the inverse of
+the L</PathName> method. (This is an import from the C interface.)
 
 =item I<$widget>-E<gt>B<width>
 

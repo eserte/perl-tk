@@ -13,7 +13,7 @@ BEGIN {
 
 use Tk;
 
-BEGIN { plan tests => 13 };
+BEGIN { plan tests => 14 };
 
 my $mw = Tk::MainWindow->new;
 my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
@@ -76,6 +76,14 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
     is($mw->cget(-cursor), $oldcursor, "Old cursor restored");
     is($w2->cget(-cursor), "cross", "Oldsubwidget cursor also restored");
     $w2->destroy;
+}
+
+##
+## PathName vs. Widget
+##
+{
+    my $path = $w->PathName;
+    is($mw->Widget($path), $w, "PathName() and Widget()");
 }
 
 1;
