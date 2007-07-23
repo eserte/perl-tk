@@ -148,6 +148,7 @@ sub Accept {
 sub Accept_dir
 {
  my ($cw,$new) = @_;
+ return if !defined $new;
  my $dir  = $cw->cget('-directory');
  $cw->configure(-directory => "$dir/$new");
 }
