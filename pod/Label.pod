@@ -17,11 +17,30 @@ I<$label> = I<$parent>-E<gt>B<Label>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
-B<-anchor>	B<-font>	B<-image>	B<-takefocus>
-B<-background>	B<-foreground>	B<-justify>	B<-text>
-B<-bitmap>	B<-highlightbackground>	B<-padx>	B<-textvariable>
-B<-borderwidth>	B<-highlightcolor>	B<-pady>	B<-underline>
-B<-cursor>	B<-highlightthickness>	B<-relief>	B<-wraplength>
+B<-activebackground>
+B<-activeforeground>
+B<-anchor>
+B<-background>
+B<-bitmap>
+B<-borderwidth>
+B<-compound>
+B<-cursor>
+B<-disabledforeground>
+B<-font>
+B<-foreground>
+B<-highlightbackground>
+B<-highlightcolor>
+B<-highlightthickness>
+B<-image>
+B<-justify>
+B<-padx>
+B<-pady>
+B<-relief>
+B<-takefocus>
+B<-text>
+B<-textvariable>
+B<-underline>
+B<-wraplength>
 
 See L<Tk::options> for details of the standard options.
 
@@ -41,6 +60,19 @@ screen units (i.e. any of the forms acceptable to B<Tk_GetPixels>);
 for text it is in lines of text.
 If this option isn't specified, the label's desired height is computed
 from the size of the image or bitmap or text being displayed in it.
+
+=item Name:	B<state>
+
+=item Class:	B<State>
+
+=item Switch:	B<-state>
+
+Specifies one of three states for the label: B<normal>, B<active>, or
+B<disabled>. In normal state the label is displayed using the
+B<foreground> and B<background> options. In active state the label is
+displayed using the B<activeForeground> and B<activeBackground>
+options. In the disabled state the B<disabledForeground> and
+B<background> options determine how the button is displayed.
 
 =item Name:	B<width>
 

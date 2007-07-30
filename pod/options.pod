@@ -251,6 +251,22 @@ this).  The value may also be used when drawing 3-D effects in the
 interior of the widget.
 The value may have any of the forms acceptable to B<Tk_GetPixels>.
 
+=item Name:	B<compound>
+
+=item Class:	B<Compound>
+
+=item Switch:	B<-compound>
+
+Specifies if the widget should display text and bitmaps/images at the
+same time, and if so, where the bitmap/image should be placed relative
+to the text. Must be one of the values B<none>, B<bottom>, B<top>,
+B<left>, B<right>, or B<center>. For example, the (default) value
+B<none> specifies that the bitmap or image should (if defined) be
+displayed instead of the text, the value B<left> specifies that the
+bitmap or image should be displayed to the left of the text, and the
+value B<center> specifies that the bitmap or image should be displayed on
+top of the text.
+
 =item Name:	B<cursor>
 
 =item Class:	B<Cursor>

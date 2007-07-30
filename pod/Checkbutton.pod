@@ -17,13 +17,31 @@ I<$checkbutton> = I<$parent>-E<gt>B<Checkbutton>(?I<options>?);
 
 =head1 STANDARD OPTIONS
 
-B<-activebackground>	B<-cursor>	B<-highlightthickness>	B<-takefocus>
-B<-activeforeground>	B<-disabledforeground>	B<-image>	B<-text>
-B<-anchor>	B<-font>	B<-justify>	B<-textvariable>
-B<-background>	B<-foreground>	B<-padx>	B<-underline>
-B<-bitmap>	B<-highlightbackground>	B<-pady>	B<-wraplength>
-B<-borderwidth>	B<-highlightcolor>	B<-relief>
-
+B<-activebackground>
+B<-activeforeground>
+B<-anchor>
+B<-background>
+B<-bitmap>
+B<-borderwidth>
+B<-compound>
+B<-cursor>
+B<-disabledforeground>
+B<-font>
+B<-foreground>
+B<-highlightbackground>
+B<-highlightcolor>
+B<-highlightthickness>
+B<-image>
+B<-justify>
+B<-padx>
+B<-pady>
+B<-relief>
+B<-takefocus>
+B<-text>
+B<-textvariable>
+B<-underline>
+B<-wraplength>
+	
 See L<Tk::options> for details of the standard options.
 
 =head1 WIDGET-SPECIFIC OPTIONS
