@@ -89,7 +89,8 @@ A double destroy would show an unfriendly error message including an
 SV dump. Maybe remove the dump? And add "maybe the widget was already
 destroyed?"?
 
-Support for new option -overrelief (Tk::Button ...).
+Port windows/aqua specific style from Tk8.4 to
+Tk::Button/Checkbutton/Radiobutton.
 
 Is it easy to support non-base64 operation for Tk::JPEG and Tk::PNG?
 

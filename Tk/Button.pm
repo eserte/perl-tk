@@ -18,7 +18,7 @@ use strict;
 require Tk::Widget;
 use base  qw(Tk::Widget);
 
-use vars qw($buttonWindow $relief);
+use vars qw($buttonWindow $afterId $repeated);
 
 Tk::Methods('deselect','flash','invoke','select','toggle');
 
@@ -52,8 +52,22 @@ sub Enter
  my $E = shift;
  if ($w->cget('-state') ne 'disabled')
   {
-   $w->configure('-state' => 'active');
-   $w->configure('-state' => 'active', '-relief' => 'sunken') if (defined($buttonWindow) && $w == $buttonWindow)
+   # On unix the state is active just with mouse-over
+   $w->configure(-state => 'active');
+
+   # If the mouse button is down, set the relief to sunken on entry.
+   # Overwise, if there's an -overrelief value, set the relief to that.
+   $w->{__relief__} = $w->cget('-relief');
+   if (defined $buttonWindow && $w == $buttonWindow)
+    {
+     $w->configure(-relief => 'sunken');
+     $w->{__prelief__} = 'sunken';
+    }
+   elsif ((my $over = $w->cget('-overrelief')) ne '')
+    {
+     $w->configure(-relief => $over);
+     $w->{__prelief__} = $over;
+    }
   }
  $Tk::window = $w;
 }
@@ -71,7 +85,18 @@ sub Leave
 {
  my $w = shift;
  $w->configure('-state'=>'normal') if ($w->cget('-state') ne 'disabled');
- $w->configure('-relief' => $relief) if (defined($buttonWindow) && $w == $buttonWindow);
+ # Restore the original button relief if it was changed by Tk.
+ # That is signaled by the existence of Priv($w,prelief).
+ if (exists $w->{__relief__})
+  {
+   if (exists $w->{__prelief__} &&
+       $w->{__prelief__} eq $w->cget('-relief'))
+    {
+     $w->configure(-relief => $w->{__relief__});
+    }
+   delete $w->{__relief__};
+   delete $w->{__prelief__};
+  }
  undef $Tk::window;
 }
 
@@ -86,11 +111,30 @@ sub Leave
 sub butDown
 {
  my $w = shift;
- $relief = $w->cget('-relief');
+
+ # Only save the button's relief if it does not yet exist.  If there
+ # is an overrelief setting, Priv($w,relief) will already have been set,
+ # and the current value of the -relief option will be incorrect.
+
+ if (!exists $w->{__relief__})
+  {
+   $w->{__relief__} = $w->cget('-relief');
+  }
+
  if ($w->cget('-state') ne 'disabled')
   {
    $buttonWindow = $w;
-   $w->configure('-relief' => 'sunken')
+   $w->configure('-relief' => 'sunken', '-state' => 'active');
+   $w->{__prelief__} = 'sunken';
+
+   # If this button has a repeatdelay set up, get it going with an after
+   $w->afterCancel($afterId);
+   my $delay = $w->cget('-repeatdelay');
+   $repeated = 0;
+   if ($delay > 0)
+    {
+     $afterId = $w->after($delay, [$w, 'AutoInvoke']);
+    }
   }
 }
 
@@ -107,10 +151,31 @@ sub butUp
  if (defined($buttonWindow) && $buttonWindow == $w)
   {
    undef $buttonWindow;
-   $w->configure('-relief' => $relief);
+
+   # Restore the button's relief if it was cached.
+   if (exists $w->{__relief__})
+    {
+     if (exists $w->{__prelief__} &&
+	 $w->{__prelief__} eq $w->cget('-relief'))
+      {
+       $w->configure(-relief => $w->{__relief__});
+      }
+     delete $w->{__relief__};
+     delete $w->{__prelief__};
+    }
+
+   # Clean up the after event from the auto-repeater
+   $w->afterCancel($afterId);
+
    if ($w->IS($Tk::window) && $w->cget('-state') ne 'disabled')
     {
-     $w->invoke;
+     $w->configure(-state => 'normal');
+     # Only invoke the command if it wasn't already invoked by the
+     # auto-repeater functionality
+     if ($repeated == 0)
+      {
+       $w->invoke;
+      }
     }
   }
 }
@@ -133,6 +198,34 @@ sub Invoke
    $w->after(100);
    $w->configure('-state' => $oldState, '-relief' => $oldRelief);
    $w->invoke;
+  }
+}
+
+# ::tk::ButtonAutoInvoke --
+#
+#      Invoke an auto-repeating button, and set it up to continue to repeat.
+#
+# Arguments:
+#      w       button to invoke.
+#
+# Results:
+#      None.
+#
+# Side effects:
+#      May create an after event to call ::tk::ButtonAutoInvoke.
+sub AutoInvoke
+{
+ my $w = shift;
+ $w->afterCancel($afterId);
+ my $delay = $w->cget('-repeatinterval');
+ if ($w->IS($Tk::window))
+  {
+   $repeated++;
+   $w->invoke;
+  }
+ if ($delay > 0)
+  {
+   $afterId = $w->after($delay, [$w, 'AutoInvoke']);
   }
 }
 
