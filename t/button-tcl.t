@@ -31,7 +31,7 @@ BEGIN {
     }
 }
 
-plan tests => 1;
+plan tests => 288;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
