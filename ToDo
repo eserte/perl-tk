@@ -94,6 +94,9 @@ Tk::Button/Checkbutton/Radiobutton.
 
 Is it easy to support non-base64 operation for Tk::JPEG and Tk::PNG?
 
+XMouseWheelBind and YMouseWheelBind only sets mouse wheel bindings for
+X11, not for Windows. Was this accidental or intended?
+
 ----------------------------------------------------------------------
 - Big projects
 
