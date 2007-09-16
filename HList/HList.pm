@@ -38,9 +38,10 @@ use Tk::Submethods ( 'delete'    => [qw(all entry offsprings siblings)],
                      'selection' => [qw(clear get includes set)],
                      'anchor'    => [qw(clear set)],
                      'column'    => [qw(width)],
-                     'hide'      => [qw(entry)],
                    );
 
+# This is undocumented, but worked until 804.027:
+sub hideEntry { shift->hide('entry', @_) }
 
 sub ClassInit
 {

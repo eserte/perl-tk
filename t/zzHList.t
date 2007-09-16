@@ -14,7 +14,7 @@ BEGIN {
     }
 }
 
-plan tests => 25;
+plan tests => 29;
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -108,6 +108,24 @@ SKIP: {
     $hl->add("top.item5", -after => "top.item1", -text => "item2");
 
     pass("No abort with -at/-before/-after");
+
+    $hl->destroy;
+}
+
+{
+    my $hl = $mw->HList;
+
+    $hl->add("top", -text => "top");
+    $hl->add("top.item1", -text => "item1");
+    $hl->add("top.item2", -text => "item2");
+
+    ok(!$hl->info('hidden', 'top.item1'), "Item initially not hidden");
+    $hl->hide('entry','top.item1');
+    ok($hl->info('hidden', 'top.item1'), "Item now hidden");
+    $hl->show('entry','top.item1');
+    ok(!$hl->info('hidden', 'top.item1'), "Item not hidden again");
+    $hl->hideEntry('top.item1');
+    ok($hl->info('hidden', 'top.item1'), "Undocumented method hideEntry also works");
 
     $hl->destroy;
 }
