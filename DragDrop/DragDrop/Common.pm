@@ -11,6 +11,7 @@ sub Type
  my ($base,$name,$class) = @_;
  no strict 'refs';
  my $hash  = \%{"${base}::type"};
+ %{"${base}::type"} = %{"${base}::type"} if 0; # cease -w
  my $array = \@{"${base}::types"};
  unless (exists $hash->{$name})
   {
