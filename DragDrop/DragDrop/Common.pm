@@ -3,6 +3,8 @@ package Tk::DragDrop::Common;
 use strict;
 use Carp;
 
+no warnings 'once'; # cease warning about Tk::DragDrop::type
+
 use vars qw($VERSION);
 $VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/Common.pm#4 $
 
@@ -11,7 +13,6 @@ sub Type
  my ($base,$name,$class) = @_;
  no strict 'refs';
  my $hash  = \%{"${base}::type"};
- %{"${base}::type"} = %{"${base}::type"} if 0; # cease -w
  my $array = \@{"${base}::types"};
  unless (exists $hash->{$name})
   {
