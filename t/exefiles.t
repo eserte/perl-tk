@@ -63,7 +63,7 @@ for my $opt (@cmd) {
 	}
     }
     kill TERM => $pid;
-    for (1..10) {
+    for (1..20) {
 	select(undef,undef,undef,0.1);
 	my $kid = waitpid($pid, WNOHANG); # reap zombie
 	if (!kill 0 => $pid) {
