@@ -10,7 +10,7 @@ package Tk::NoteBook;
 use vars qw($VERSION);
 
 #$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
-$VERSION = '4.010';
+$VERSION = '4.011';
 require Tk::NBFrame;
 
 use base  qw(Tk::Derived Tk::NBFrame);

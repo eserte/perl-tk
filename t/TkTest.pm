@@ -6,7 +6,7 @@ package TkTest;
 
 use strict;
 use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.004'; # was: sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float check_display_harness);

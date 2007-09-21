@@ -6,7 +6,7 @@ use Carp;
 no warnings 'once'; # cease warning about Tk::DragDrop::type
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/Common.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/DragDrop/DragDrop/Common.pm#4 $
 
 sub Type
 {
