@@ -1,5 +1,11 @@
-Tk-804.XXXXXXX release (2007-XX-XX)
+Tk-804.027_501 release (2007-09-22)
 ----------------------
+
+Compiles and passes tests on
+  FreeBSD 6.2 (amd64) + perl5.8.8
+  FreeBSD 6.2 (amd64) + perl5.10.0 patch 31894
+  FreeBSD 6.1 (i386) + perl5.8.8
+  Linux (Debian) + perl5.8.8
 
 At some earlier point, there were success reports for the following
 configurations:
@@ -15,6 +21,67 @@ configurations:
   libpng-1.2.14
 
 * Windows, VC++ 6.0, perl-5.9.5
+
+New features
+  Implemented -overrelief,-repeatinterval,-repeatdelay for Tk::Button.
+
+  Additional item in the "widget" demonstration showing all Tk widgets.
+
+  Added BalloonInfo to NoteBook.
+
+  ptked: Encoding menu now with radiobuttons, also added some popular
+  encodings to menu.
+
+Fixes
+  Fix for not working 'hide entry' in HList.
+
+  HList: fixed errors with disabled entries and a entry named 0.
+
+  Various warning fixes.
+
+  Enable compiling of PNG-related files with Sun compiler.
+
+  Fixed setPalette and RecolorTree.
+
+  Make sure waitVariable exits if a waiting dialog is destroyed.
+
+  Again compiles under bleadperl.
+
+  Various fixes for 64bit platforms (e.g. property method, libpng
+  building).
+
+  Fixed situation when resizing a mainwindow containing a PNG image
+  crashed Tk Tcl/Tk bug 979239 fixed by George Peter Staplin, brought
+  to Perl/Tk by Franck Aniere.
+
+  Adapt path for getOpen/SaveFile's -initialfile and -initialdir to
+  the OS (patch provided by Roland Minner).
+
+  Fixed not working -dynamicgeometry in Tk::NoteBook.
+
+  Fixed zlib compilation problem under Windows (unistd.h does not
+  exist there). Reported by esskar.
+
+  Fixed configure problems on mixed 32/64 bit architectures, patch by
+  Steve Lidie.
+
+Documentation
+  Documented the Widget() method
+
+  Widget.pod: resorted methods alphabetically
+
+  Documented Tk::DialogBox::Exit
+
+Tests
+  New test script for Button widget, yet uncomplete (t/button-tcl.t)
+
+  New HList tests for show/hide
+
+  font.t is more robust if unexpected fonts are used.
+
+The complete log of changes can be get using
+
+    svn log https://svn.perl.org/modules/Tk/trunk
 
 Tk-804.027_500 release (2007-02-11)
 ----------------------
