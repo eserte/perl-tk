@@ -28,6 +28,9 @@ Perl's UTF-8 support has improved since it was introduced in perl5.6.0.
 Some functions (regular expression match in Text widgets) are known
 to only work with perl5.8.1 and later
 
+The latest Perl/Tk version running with perl5.6.x is Tk800.025.
+The latest Perl/Tk version running with perl5.005_xx is Tk800.024.
+
 There are a lot more tests in Tk804. Some notably t/entry.t and
 t/listbox.t very dependant on the available fonts and to a lesser
 extent the window manager used. (See below for a list of fails
