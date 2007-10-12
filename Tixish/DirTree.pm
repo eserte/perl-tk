@@ -13,6 +13,7 @@ use Tk::Derived;
 use Tk::Tree;
 use Cwd;
 use DirHandle;
+use File::Spec qw();
 
 use base  qw(Tk::Derived Tk::Tree);
 use strict;
@@ -89,8 +90,7 @@ sub set_dir {
     foreach my $name (split( /[\/\\]/, $fulldir )) {
         next unless length $name;
         push @dirs, $name;
-        my $dir = join( '/', @dirs );
-	$dir =~ s|^//|/|;
+	my $dir = File::Spec->catfile( '/', @dirs );
         $w->add_to_tree( $dir, $name, $parent )
             unless $w->infoExists( $dir );
         $parent = $dir;
@@ -106,10 +106,9 @@ sub OpenCmd {
     my( $w, $dir ) = @_;
 
     my $parent = $dir;
-    $dir = '' if $dir eq '/';
     foreach my $name ($w->dirnames( $parent )) {
         next if ($name eq '.' || $name eq '..');
-        my $subdir = "$dir/$name";
+        my $subdir = File::Spec->catfile( $dir, $name );
         next unless -d $subdir;
         if( $w->infoExists( $subdir ) ) {
             $w->show( -entry => $subdir );
@@ -150,7 +149,7 @@ sub has_subdir {
     foreach my $name ($w->dirnames( $dir )) {
         next if ($name eq '.' || $name eq '..');
         next if ($name =~ /^\.+$/);
-        return( 1 ) if -d "$dir/$name";
+        return( 1 ) if -d File::Spec->catfile( $dir, $name );
     }
     return( 0 );
 }
@@ -195,9 +194,6 @@ sub dirnames {
 			  -exportselection => 1,
 			  -browsecmd => sub {
 			      $w->{curr_dir} = shift;
-			      if ($^O ne 'MSWin32') {
-				  $w->{curr_dir} =~ s|^//|/|; # bugfix
-			      }
 			  },
 
 			  # With this version of -command a double-click will
