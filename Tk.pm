@@ -15,7 +15,7 @@ use     AutoLoader qw(AUTOLOAD);
 use     DynaLoader;
 use     Cwd();
 use base qw(Exporter DynaLoader);
-use     File::Spec qw(catfile);
+use     File::Spec qw();
 
 *fileevent = \&Tk::Event::IO::fileevent;
 
