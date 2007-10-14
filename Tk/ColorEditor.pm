@@ -18,6 +18,7 @@ sub Populate
     require Tk::Config;
     my(@xlibpath) = map { s/^-L//; "$_/X11/rgb.txt" }
                     split /\s+/, $Tk::Config::xlib;
+    my %seen_names;
     foreach $i (@xlibpath,
 		'/usr/local/lib/X11/rgb.txt', '/usr/lib/X11/rgb.txt',
 		'/usr/X11R6/lib/X11/rgb.txt',
@@ -38,6 +39,7 @@ sub Populate
             -borderwidth     => 2,
             -exportselection => 0,
         );
+	$middle->Advertise(Names => $names);
 
         $names->bind('<Double-1>' => [$middle,'color',Ev(['getSelected'])]);
 
@@ -67,9 +69,9 @@ sub Populate
 		    die $@;
 		}
             }
-            if (!exists($Tk::ColorEditor::names{$hex}) ||
-                length($Tk::ColorEditor::names{$hex}) > length($color)) {
-                  $Tk::ColorEditor::names{$hex} = $color;
+            if (!exists($seen_names{$hex}) ||
+                length($seen_names{$hex}) > length($color)) {
+                $seen_names{$hex} = $color;
                 $names->insert('end', $color);
             }
         }
@@ -435,9 +437,17 @@ sub Show
  my $cw = shift;
  $cw->configure(@_) if @_;
  $cw->Popup();
+ $cw->OnDestroy(sub { $cw->{'done'} = 0 }); # auto-cancel
  $cw->waitVariable(\$cw->{'done'});
- $cw->withdraw;
- return $cw->cget('-color');
+ if (Tk::Exists($cw))
+  {
+   $cw->withdraw;
+   $cw->cget('-color');
+  }
+ else
+  {
+   undef;
+  }
 }
 
 package Tk::ColorEditor;
@@ -450,9 +460,6 @@ use Tk::Toplevel;
 use base  qw(Tk::Toplevel);
 use Tk::widgets qw(Pixmap);
 Construct Tk::Widget 'ColorEditor';
-
-%Tk::ColorEditor::names = ();
-
 
 use Tk::Dialog;
 use Tk::Pretty;
