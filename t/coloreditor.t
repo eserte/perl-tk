@@ -26,9 +26,13 @@ for (1..2) {
     my $c = $mw->ColorSelect->pack;
     isa_ok($c, "Tk::ColorSelect");
     my $lb = $c->Subwidget("Names");
-    isa_ok($lb, "Tk::Listbox");
-    # This used to fail until Tk804.027_501:
-    cmp_ok(scalar @{ $lb->get(0,"end") }, ">=", 10, "Some colors found in listbox");
+ SKIP: {
+	skip("Probably no rgb.txt found on this system", 2)
+	    if $Tk::platform eq 'MSWin32' && !$lb;
+	isa_ok($lb, "Tk::Listbox");
+	# This used to fail until Tk804.027_501:
+	cmp_ok(scalar @{ $lb->get(0,"end") }, ">=", 10, "Some colors found in listbox");
+    }
     $c->destroy;
 }
 

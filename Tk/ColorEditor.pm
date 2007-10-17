@@ -23,7 +23,9 @@ sub Populate
 		'/usr/local/lib/X11/rgb.txt', '/usr/lib/X11/rgb.txt',
 		'/usr/X11R6/lib/X11/rgb.txt',
                 '/usr/local/X11R5/lib/X11/rgb.txt', '/X11/R5/lib/X11/rgb.txt',
-                '/X11/R4/lib/rgb/rgb.txt', '/usr/openwin/lib/X11/rgb.txt') {
+                '/X11/R4/lib/rgb/rgb.txt', '/usr/openwin/lib/X11/rgb.txt',
+		'/usr/share/X11/rgb.txt', # This is the Debian location
+	       ) {
         local *FOO;
         next if ! open FOO, $i;
         my $middle_left = $middle->Frame;
