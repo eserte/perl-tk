@@ -250,6 +250,9 @@ void
 TkWinXInit(hInstance)
     HINSTANCE hInstance;
 {
+    CHARSETINFO lpCs;
+    DWORD lpCP;
+
     if (childClassInitialized != 0) {
 	return;
     }
@@ -316,6 +319,17 @@ TkWinXInit(hInstance)
     if (!RegisterClass(&ownDCClass)) {
 	panic("Unable to register TkOwnDC class");
     }
+
+    /*
+     * Initialize input language info
+     */
+    if(GetLocaleInfo(LANGIDFROMLCID(GetKeyboardLayout(0)),
+		     LOCALE_IDEFAULTANSICODEPAGE | LOCALE_RETURN_NUMBER,
+		     (LPWSTR) &lpCP,sizeof(lpCP)/sizeof(TCHAR))==0)
+	return CP_ACP;
+    if (TranslateCharsetInfo((DWORD *)lpCP, &lpCs, TCI_SRCCODEPAGE)==0)
+	return CP_ACP;
+    UpdateInputLanguage(lpCs.ciCharset);
 
     /*
      * Make sure we cleanup on finalize.
