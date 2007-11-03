@@ -1,5 +1,3 @@
-Tk::Tree has a dual life on CPAN. Incorporate the 4.7 version.
-
 Port all of Tcl/Tk test suite to Perl/Tk (text.test etc.). t/listbox.t
 and t/entry.t was a beginning.
 
