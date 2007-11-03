@@ -5,8 +5,9 @@ package Tk::DirTree;
 #
 # Chris Dean <ctdean@cogit.com>
 
+use strict;
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #14 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.015';
 
 use Tk;
 use Tk::Derived;
