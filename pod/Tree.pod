@@ -137,12 +137,74 @@ The following additional methods are available for Tree widgets:
 
 =over 4
 
+=item I<$tree-E<gt>>B<add_pathimage>(I<treeRegExp [, openImg, closeImg]>)
+
+This method defines images for a given path (images must be in xpm
+format). The path can be determined by a simplified regular
+expression. There are just three metasymbols:
+
+=over
+
+=item ^
+
+at the beginning of the C<treeRegExp> same as in Perl regular
+expressions
+
+=item *
+
+anything
+
+=item $
+
+at the end of the C<TreeRegExp>, the same as in Perl regular
+expressions
+
+=back
+
+Examples:
+  
+  $tree->add_pathimage('^root','openfolder','folder');
+  
+matches C<root>, C<root.foo>, C<root.bar>, but not C<foo.root>
+
+  $tree->add_pathimage('root.*.class','openfolder','folder');
+  
+matches all paths containing C<< root.<anything>.class >>, but not
+C<< root.<anything>.<anything>.class >> C<*> is one part of the path. If
+you want to use a wildcard for two steps, you have to use C<*.*>.
+
+  $tree->add_pathimage('class$','openfolder','folder');
+  
+This matches all path with C<class> at the end.
+
 =item I<$tree>-E<gt>B<autosetmode>
 
 This method calls the B<setmode> method for all the entries in
 this Tree widget: if an entry has no child entries, its mode is set to
 B<none>. Otherwise, if the entry has any hidden child entries, its
 mode is set to B<open>; otherwise its mode is set to B<close>.
+
+=item I<$tree-E<gt>>B<child_entries>([$path][,$depth])
+
+This method returns in list context an array that contains all
+pathnames of subentries within the given path. In scalar context it
+returns the number of subentries in the given path.
+
+  Example:
+    root
+     | foo
+     | bar
+     |  | bar1
+     |  | bar2
+
+  my @childentries = $tree->child_entries('root.bar');
+  # returns (root.bar.bar1, root.bar.bar2)
+  
+  my $nr_of_subentries = $tree->child_entries('root',2);
+  # returns 4
+
+If C<$path> is omitted, all it is assumed, that the entry above
+'root' is meant. C<$depth> defines the numbers of levels.
 
 =item I<$tree>-E<gt>B<close>(I<entryPath>)
 
@@ -201,6 +263,8 @@ L<Tk::HList|Tk::HList>
 
 Perl/TK version by Chris Dean <ctdean@cogit.com>.  Original Tcl/Tix
 version by Ioi Kim Lam.
+
+Additions by Renee Baecker <module@renee-baecker.de>
 
 =head1 ACKNOWLEDGEMENTS
 

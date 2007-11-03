@@ -4,15 +4,17 @@ package Tk::Tree;
 # Derived from Tree.tcl in Tix 4.1
 #
 # Chris Dean <ctdean@cogit.com>
+# Changes: Renee Baecker <module@renee-baecker.de>
 
 use vars qw($VERSION);
-$VERSION = '4.006'; # $Id: //depot/Tkutf8/Tixish/Tree.pm#5 $
+$VERSION = '4.71'; # $Id: //depot/Tkutf8/Tixish/Tree.pm#5 $
 
 use Tk ();
 use Tk::Derived;
 use Tk::HList;
 use base  qw(Tk::Derived Tk::HList);
 use strict;
+use warnings;
 
 Construct Tk::Widget 'Tree';
 
@@ -43,6 +45,54 @@ sub autosetmode
  $w->setmode();
 }
 
+sub add_pathimage
+{
+ my ($w,$path,$imgopen,$imgclose) = @_;
+ $imgopen  ||= "minusarm";
+ $imgclose ||= "plusarm";
+  
+ my $separator = $w->cget(-separator);
+  
+ $path =~ s/([\.?()|])/\\$1/g;
+ $path =~ s/\$/\\\$/g;
+ $path =~ s/\\\$$/\$/;
+ $path =~ s/\*/[^$separator]+/g;
+  
+ push(@{$w->{Images}},[$path,$imgopen,$imgclose]);
+}
+
+sub child_entries
+{
+ my ($w,$path,$depth) = @_;
+  
+ my $level =  1;
+ $depth  ||=  1;
+ $path   ||= '';
+  
+ my @children = $w->_get_childinfos($depth,$level,$path);
+  
+ return wantarray ? @children : scalar(@children);
+}
+
+sub _get_childinfos
+{
+ my ($w,$maxdepth,$level,$path) = @_;
+ my @children = $w->infoChildren($path);
+ my @tmp;
+  
+ if($level < $maxdepth)
+  {
+   for my $child(@children)
+    {
+     push(@tmp,$w->_get_childinfos($maxdepth,$level +1,$child));
+    }
+  }
+  
+ push(@children,@tmp);
+  
+ return @children;
+}
+
 sub IndicatorCmd
 {
  my( $w, $ent, $event ) = @_;
@@ -53,22 +103,26 @@ sub IndicatorCmd
   {
    if ($mode eq 'open' )
     {
-     $w->_indicator_image( $ent, 'plusarm' );
+     #$w->_indicator_image( $ent, 'plusarm' );
+     $w->_open($ent);
     }
    else
     {
-     $w->_indicator_image( $ent, 'minusarm' );
+     #$w->_indicator_image( $ent, 'minusarm' );
+     $w->_close($ent);
     }
   }
  elsif ( $event eq '<Disarm>' )
   {
    if ($mode eq 'open' )
     {
-     $w->_indicator_image( $ent, 'plus' );
+     #$w->_indicator_image( $ent, 'plus' );
+     $w->_open($ent);
     }
    else
     {
-     $w->_indicator_image( $ent, 'minus' );
+     #$w->_indicator_image( $ent, 'minus' );
+     $w->_close($ent);
     }
   }
  elsif( $event eq '<Activate>' )
@@ -99,7 +153,10 @@ sub getmode
  return( 'none' ) unless $w->indicatorExists( $ent );
 
  my $img = $w->_indicator_image( $ent );
- return( 'open' ) if( $img eq 'plus' || $img eq 'plusarm' );
+ if ($img eq "plus" || $img eq "plusarm" || grep{$img eq $_->[2]}@{$w->{Images}})
+  {
+   return( 'open' );
+  }
  return( 'close' );
 }
 
@@ -127,15 +184,43 @@ sub setmode
   {
    if ( $mode eq 'open' )
     {
-     $w->_indicator_image( $ent, 'plus' );
+     #$w->_indicator_image( $ent, 'plus' );
+     $w->_open($ent);
     }
    elsif ( $mode eq 'close' )
     {
-     $w->_indicator_image( $ent, 'minus' );
+     #$w->_indicator_image( $ent, 'minus' );
+     $w->_close($ent);
     }
    elsif( $mode eq 'none' )
     {
      $w->_indicator_image( $ent, undef );
+    }
+  }
+}
+
+sub _open
+{
+ my ($w,$ent) = @_;
+ $w->_indicator_image( $ent, "plus" );
+ for my $entry (@{$w->{Images}})
+  {
+   if($ent =~ $entry->[0])
+    {
+     $w->_indicator_image( $ent, $entry->[2] );
+    }
+  }
+}
+
+sub _close
+{
+ my ($w,$ent) = @_;
+ $w->_indicator_image( $ent, "minus" );
+ for my $entry (@{$w->{Images}})
+  {
+   if($ent =~ $entry->[0])
+    {
+     $w->_indicator_image( $ent, $entry->[1] );
     }
   }
 }
@@ -146,12 +231,14 @@ sub Activate
  if ( $mode eq 'open' )
   {
    $w->Callback( -opencmd => $ent );
-   $w->_indicator_image( $ent, 'minus' );
+   #$w->_indicator_image( $ent, 'minus' );
+   $w->_close($ent);
   }
  elsif ( $mode eq 'close' )
   {
    $w->Callback( -closecmd => $ent );
-   $w->_indicator_image( $ent, 'plus' );
+   #$w->_indicator_image( $ent, 'plus' );
+   $w->_open($ent);
   }
  else
   {
