@@ -1955,6 +1955,7 @@ t/create.t
 t/cursor.t
 t/dash.t
 t/dialogbox.t
+t/dirtree.t
 t/entry.t
 t/exefiles.t
 t/fbox.t
