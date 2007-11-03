@@ -125,6 +125,30 @@ Change the current directory to I<dir>.
 
 =back
 
+=head1 OTHER METHODS
+
+These methods have to be documented or made private:
+
+=over 4
+
+=item OpenCmd
+
+=item Populate
+
+=item add_to_tree
+
+=item dirnames
+
+=item fullpath
+
+=item has_subdir
+
+=item opencmd
+
+=item set_dir
+
+=back
+
 =head1 BINDINGS
 
 The mouse and keyboard bindings of the DirTree widget are the same as
