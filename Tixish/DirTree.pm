@@ -7,7 +7,7 @@ package Tk::DirTree;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.015';
+$VERSION = '4.016';
 
 use Tk;
 use Tk::Derived;
@@ -187,7 +187,7 @@ sub dirnames {
 	my $f = $w->Frame->pack(-fill => "x", -side => "bottom");
 
 	my $d;
-	$d = $f->Scrolled('DirTree',
+	$d = $w->Scrolled('DirTree',
 			  -scrollbars => 'osoe',
 			  -width => 35,
 			  -height => 20,
@@ -207,7 +207,7 @@ sub dirnames {
 			  #-command   => sub { $d->opencmd($_[0]) },
 			 )->pack(-fill => "both", -expand => 1);
 	# Set the initial directory
-	exists &Tk::DirTree::chdir ? $d->chdir($w->{curr_dir}) : $d->set_dir($w->{curr_dir});
+	$d->set_dir($w->{curr_dir});
 
 	$f->Button(-text => 'Ok',
 		   -command => sub { $w->{ok} =  1 })->pack(-side => 'left');
