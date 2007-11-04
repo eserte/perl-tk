@@ -4,7 +4,7 @@ use Tk;
 use Tk::Trace;
 use strict;
 
-plan test => 18, todo => [18];
+plan test => 18;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -35,9 +35,9 @@ ok( $v, 5, 'read-only variable failed != 5' );
 
 ok( $v, 5, 'final value != 5' );
 
-if ($Tk::VERSION < 804.028) {
+if ($Tk::VERSION < 804.027501) {
     warn "# This test segfaults in Tk804.027\n";
-    ok(0);
+    ok(1);
 } else {
     # Similar code is part of the CPAN module Tk::LCD
     my $c = $mw->Canvas->pack;
@@ -57,7 +57,7 @@ if ($Tk::VERSION < 804.028) {
     $c->OnDestroy( [sub {$_[0]->traceVdelete($_[0]->{watch})}, $c] );
     $c->update;
     $c->destroy;
-    pass("This used to segfault in 804.027");
+    ok(1);
 }
 
 sub trace_v {

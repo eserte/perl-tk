@@ -1,3 +1,10 @@
+Next release
+------------
+
+Fixes
+  Make sure canvas methods are really accessible in OnDestroy. This
+  fixes problems in the CPAN module Tk::LCD.
+
 Tk-804.027_501 release (2007-09-22)
 ----------------------
 

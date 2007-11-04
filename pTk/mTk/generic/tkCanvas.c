@@ -2724,9 +2724,10 @@ CanvasEventProc(clientData, eventPtr)
 	}
     } else if (eventPtr->type == DestroyNotify) {
 	if (canvasPtr->tkwin != NULL) {
-	    canvasPtr->tkwin = NULL;
 	    Tcl_DeleteCommandFromToken(canvasPtr->interp,
 		    canvasPtr->widgetCmd);
+	    /* set to NULL not until calling Lang_DeleteWidget */
+	    canvasPtr->tkwin = NULL;
 	}
 	if (canvasPtr->flags & REDRAW_PENDING) {
 	    Tcl_CancelIdleCall(DisplayCanvas, (ClientData) canvasPtr);
