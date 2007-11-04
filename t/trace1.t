@@ -4,7 +4,7 @@ use Tk;
 use Tk::Trace;
 use strict;
 
-plan test => 17;
+plan test => 18, todo => [18];
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -34,6 +34,31 @@ $e->traceVdelete( \$v );
 ok( $v, 5, 'read-only variable failed != 5' );
 
 ok( $v, 5, 'final value != 5' );
+
+if ($Tk::VERSION < 804.028) {
+    warn "# This test segfaults in Tk804.027\n";
+    ok(0);
+} else {
+    # Similar code is part of the CPAN module Tk::LCD
+    my $c = $mw->Canvas->pack;
+    my $foo;
+    my $vref = \$foo;
+    my $st = [sub {
+        my ($index, $new_val, $op, $lcd) = @_;
+        return unless $op eq 'w';
+	# Problem: $c is not alive (or half-alive only) here
+	# and internal data structures seem not to be valid
+        $c->move("foo", 20,30);
+        $new_val;
+    }, $c];
+    $c->traceVariable($vref, 'w' => $st);
+    $c->{watch} = $vref;
+    $c->createPolygon(10,10,20,10,20,20,10,20,-tags=>"foo");
+    $c->OnDestroy( [sub {$_[0]->traceVdelete($_[0]->{watch})}, $c] );
+    $c->update;
+    $c->destroy;
+    pass("This used to segfault in 804.027");
+}
 
 sub trace_v {
 
