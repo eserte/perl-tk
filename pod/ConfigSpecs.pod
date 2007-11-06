@@ -237,6 +237,17 @@ is returned.
 
 =head1 CAVEATS
 
+The C<-background> and C<-foreground> option values are automatically
+propagated down to all composite widget's children. This may be
+sometimes not desirable, especially if some subwidgets should use own
+color schemes, either by using explicit options or by option database
+definitions. If this is the case, then just add
+
+    -foreground => 'SELF',
+    -background => 'SELF',
+
+to C<ConfigSpecs>.
+
 It is the author's intention to port as many of the "Tix" composite widgets
 as make sense. The mechanism described above may have to evolve in order to
 make this possible, although now aliases are handled I think the above is
