@@ -728,6 +728,7 @@ CallEncode(Tcl_Interp * interp,
     {
      sv_setpvn(stmp,s,len);
     }
+   SPAGAIN;
    PUSHMARK(sp);
    XPUSHs(PerlEncObj(encoding));
    XPUSHs(stmp);
@@ -842,6 +843,7 @@ Tcl_UtfToExternalDString(Tcl_Encoding encoding, CONST char * src,
  if (srcLen)
   {
    int count;
+   SPAGAIN;
    ENTER;
    SAVETMPS;
    PUSHMARK(sp);
@@ -892,6 +894,7 @@ Tcl_ExternalToUtfDString(Tcl_Encoding encoding, CONST char * src,
  STRLEN len;
  if (!encoding)
   encoding = GetSystemEncoding();
+ SPAGAIN;
  ENTER;
  SAVETMPS;
  if (!src)
@@ -907,6 +910,7 @@ Tcl_ExternalToUtfDString(Tcl_Encoding encoding, CONST char * src,
 #endif
    srcLen = strlen(src);
  }
+ SPAGAIN;
  PUSHMARK(sp);
  XPUSHs(PerlEncObj(encoding));
  sv = newSV(srcLen);
