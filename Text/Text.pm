@@ -1226,10 +1226,13 @@ sub UpDownLine
  #    time the up or down key was pressed -- or --
  # 3. The cursor has reached the beginning or end of the widget.
 
- if (not defined $w->{'origx'} or ($w->{'lastindex'} != $i) )
-  {
-   $w->{'origx'} = $bx;
-  }
+ {
+  no warnings 'uninitialized';
+  if (not defined $w->{'origx'} or ($w->{'lastindex'} != $i) )
+   {
+    $w->{'origx'} = $bx;
+   }
+ }
 
  # Try to keep the same column if possible
  $testX = $w->{'origx'};
