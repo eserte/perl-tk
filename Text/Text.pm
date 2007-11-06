@@ -1181,19 +1181,19 @@ sub Insert
 # +1 for down one line.
 sub UpDownLine
 {
-my ($w,$n) = @_;
-$w->see('insert');
-my $i = $w->index('insert');
+ my ($w,$n) = @_;
+ $w->see('insert');
+ my $i = $w->index('insert');
 
-my ($line,$char) = split(/\./,$i);
+ my ($line,$char) = split(/\./,$i);
 
-my $testX; #used to check the "new" position
-my $testY; #used to check the "new" position
+ my $testX; #used to check the "new" position
+ my $testY; #used to check the "new" position
 
-(my $bx, my $by, my $bw, my $bh) = $w->bbox($i);
-(my $lx, my $ly, my $lw, my $lh) = $w->dlineinfo($i);
+ (my $bx, my $by, my $bw, my $bh) = $w->bbox($i);
+ (my $lx, my $ly, my $lw, my $lh) = $w->dlineinfo($i);
 
-if ( ($n == -1) and ($by <= $bh) )
+ if ( ($n == -1) and ($by <= $bh) )
   {
    #On first display line.. so scroll up and recalculate..
    $w->yview('scroll', -1, 'units');
@@ -1204,7 +1204,7 @@ if ( ($n == -1) and ($by <= $bh) )
    ($bx, $by, $bw, $bh) = $w->bbox($i);
    ($lx, $ly, $lw, $lh) = $w->dlineinfo($i);
   }
-elsif ( ($n == 1) and
+ elsif ( ($n == 1) and
          ($ly + $lh) > ( $w->height - 2*$w->cget(-bd) - 2*$w->cget(-highlightthickness) ) )
   {
    #On last display line.. so scroll down and recalculate..
@@ -1213,51 +1213,51 @@ elsif ( ($n == 1) and
    ($lx, $ly, $lw, $lh) = $w->dlineinfo($i);
   }
 
-# Calculate the vertical position of the next display line
-my $Yoffset = 0;
-$Yoffset = $by - $ly + 1 if ($n== -1);
-$Yoffset = $ly + $lh + 1 - $by if ($n == 1);
-$Yoffset*=$n;
-$testY = $by + $Yoffset;
+ # Calculate the vertical position of the next display line
+ my $Yoffset = 0;
+ $Yoffset = $by - $ly + 1 if ($n== -1);
+ $Yoffset = $ly + $lh + 1 - $by if ($n == 1);
+ $Yoffset*=$n;
+ $testY = $by + $Yoffset;
 
-# Save the original 'x' position of the insert cursor if:
-# 1. This is the first time through -- or --
-# 2. The insert cursor position has changed from the previous
-#    time the up or down key was pressed -- or --
-# 3. The cursor has reached the beginning or end of the widget.
+ # Save the original 'x' position of the insert cursor if:
+ # 1. This is the first time through -- or --
+ # 2. The insert cursor position has changed from the previous
+ #    time the up or down key was pressed -- or --
+ # 3. The cursor has reached the beginning or end of the widget.
 
-if (not defined $w->{'origx'} or ($w->{'lastindex'} != $i) )
+ if (not defined $w->{'origx'} or ($w->{'lastindex'} != $i) )
   {
    $w->{'origx'} = $bx;
   }
 
-# Try to keep the same column if possible
-$testX = $w->{'origx'};
+ # Try to keep the same column if possible
+ $testX = $w->{'origx'};
 
-# Get the coordinates of the possible new position
-my $testindex = $w->index('@'.$testX.','.$testY );
-$w->see($testindex);
-my ($nx,$ny,$nw,$nh) = $w->bbox($testindex);
+ # Get the coordinates of the possible new position
+ my $testindex = $w->index('@'.$testX.','.$testY );
+ $w->see($testindex);
+ my ($nx,$ny,$nw,$nh) = $w->bbox($testindex);
 
-# Which side of the character should we position the cursor -
-# mainly for a proportional font
-if ($testX > $nx+$nw/2)
+ # Which side of the character should we position the cursor -
+ # mainly for a proportional font
+ if ($testX > $nx+$nw/2)
   {
    $testX = $nx+$nw+1;
   }
 
-my $newindex = $w->index('@'.$testX.','.$testY );
+ my $newindex = $w->index('@'.$testX.','.$testY );
 
-if ( $w->compare($newindex,'==','end - 1 char') and ($ny == $ly ) )
+ if ( $w->compare($newindex,'==','end - 1 char') and ($ny == $ly ) )
   {
     # Then we are trying to the 'end' of the text from
     # the same display line - don't do that
     return $i;
   }
 
-$w->{'lastindex'} = $newindex;
-$w->see($newindex);
-return $newindex;
+ $w->{'lastindex'} = $newindex;
+ $w->see($newindex);
+ return $newindex;
 }
 
 # PrevPara --
