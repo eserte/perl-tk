@@ -1950,6 +1950,7 @@ t/browseentry2.t
 t/button.t
 t/button-tcl.t
 t/canvas.t
+t/canvas2.t
 t/coloreditor.t
 t/create.t
 t/cursor.t
