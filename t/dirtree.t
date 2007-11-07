@@ -16,7 +16,9 @@ BEGIN {
     }
 }
 
-plan tests => 6;
+plan tests => 5;
+
+if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 use_ok('Tk::DirTree');
 
@@ -35,9 +37,9 @@ pass('after create, with -directory option');
 my $tree = $f->Subwidget();
 isa_ok($tree, 'Tk::DirTree');
 $mw->update;
-$mw->after(
-           500, sub { pass('Tk::After'); $mw->destroy; },
-          );
+if ($ENV{BATCH}) {
+    $mw->after(300, sub { $mw->destroy });
+}
 pass('before MainLoop');
 MainLoop;
 pass('after MainLoop');

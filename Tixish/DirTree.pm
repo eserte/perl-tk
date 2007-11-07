@@ -21,6 +21,7 @@ use strict;
 
 Construct Tk::Widget 'DirTree';
 
+my $sep = $^O eq 'MSWin32' ? '\\' : '/';
 
 sub Populate {
     my( $cw, $args ) = @_;
@@ -34,12 +35,14 @@ sub Populate {
         -directory      => [qw/SETMETHOD directory Directory ./],
         -value          => '-directory' );
 
-    $cw->configure( -separator => '/', -itemtype => 'imagetext' );
+    $cw->configure( -separator => $sep,
+		    -itemtype => 'imagetext',
+		  );
 }
 
 sub DirCmd {
     my( $w, $dir, $showhidden ) = @_;
-    $dir .= "/" if $dir =~ /^[a-z]:$/i and $^O eq 'MSWin32';
+    $dir .= $sep if $dir =~ /^[a-z]:$/i and $^O eq 'MSWin32';
     my $h = DirHandle->new( $dir ) or return();
     my @names = grep( $_ ne '.' && $_ ne '..', $h->read );
     @names = grep( ! /^[.]/, @names ) unless $showhidden;
@@ -77,7 +80,7 @@ sub set_dir {
     my( $w, $val ) = @_;
     my $fulldir = fullpath( $val );
 
-    my $parent = '/';
+    my $parent = $sep;
     if ($^O eq 'MSWin32')
      {
       if ($fulldir =~ s/^([a-z]:)//i)
@@ -88,7 +91,7 @@ sub set_dir {
     $w->add_to_tree( $parent, $parent)  unless $w->infoExists($parent);
 
     my @dirs = ($parent);
-    foreach my $name (split( /[\/\\]/, $fulldir )) {
+    foreach my $name (split( /\Q$sep\E/, $fulldir )) {
         next unless length $name;
         push @dirs, $name;
 	my $dir = File::Spec->catfile( '/', @dirs );
