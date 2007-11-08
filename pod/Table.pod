@@ -88,5 +88,10 @@ No equivalent of pack's -anchor/-pad etc. options
 
 =back
 
+=head1 SEE ALSO
+
+L<Tk::grid>, L<Tk::HList>, L<Tk::TableMatrix>, L<Tk::MListbox>,
+L<Tk::Columns>
+
 =cut
 
