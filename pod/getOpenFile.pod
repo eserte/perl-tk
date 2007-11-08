@@ -150,6 +150,10 @@ extensions, except as in the special extension *. Extensions
 without a full stop character (e.g, ~) are allowed but may not
 work on all platforms.
 
+=head1 CAVEATS
+
+See L<Tk::chooseDirectory/CAVEATS>.
+
 =head1 EXAMPLE
 
  my $types = [

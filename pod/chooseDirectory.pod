@@ -56,6 +56,26 @@ already exist.  The default value is I<false>.
 
 =back
 
+=head1 CAVEATS
+
+Perl does not have a concept of encoded filesystems yet. This means
+that operations on filenames like C<opendir> and C<open> still use
+byte semantics. Tk however uses character semantics internally, which
+means that you can get filenames with the UTF-8 flag set in functions
+like C<chooseDirectory>, C<getOpenFile> and similar. It's the user's
+responsibility to determine the encoding of the underlying filesystem
+and convert the result into bytes, e.g.
+
+    use Encode;
+    ...
+    my $dir = $mw->chooseDirectory;
+    $dir = encode("windows-1252", $dir);
+    opendir DIR, $dir or die $!;
+    ...
+
+See also L<perlunicode/When Unicode Does Not Happen> and
+L<perltodo/Unicode in Filenames>.
+
 =head1 SEE ALSO
 
 L<Tk::getOpenFile>, L<Tk::getOpenFile>
