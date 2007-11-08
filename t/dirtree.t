@@ -26,7 +26,7 @@ my $mw = new MainWindow;
 $mw->geometry("+10+10");
 $mw->Button(
             -text => 'exit',
-            -command => sub { pass('use clicked exit'); $mw->destroy; },
+            -command => sub { $mw->destroy; },
            )->pack(qw( -side bottom -pady 6 ));
 my $f = $mw->Scrolled('DirTree',
                       -width => 55,

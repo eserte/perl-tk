@@ -64,6 +64,7 @@ sub fullpath
   {
    warn "Cannot cd to $path:$!"
   }
+ $path = File::Spec->canonpath($path);
  return $path;
 }
 
