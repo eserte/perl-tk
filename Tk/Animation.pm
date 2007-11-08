@@ -1,7 +1,7 @@
 package Tk::Animation;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/Animation.pm#8 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Animation.pm#8 $
 
 use Tk::Photo;
 use base  qw(Tk::Photo);
@@ -45,8 +45,7 @@ sub new
     }
   }
  $obj->set_image( 0 );
- $obj->{_delta_} = 1;
- $obj->{_blank_} = 0;
+ $obj->_get_gif_info;
  return $obj;
 }
 
@@ -74,7 +73,7 @@ sub frame_count {
     return @$frames;
 }
 
-sub blank {
+sub set_disposal_method {
     my( $self, $blank ) = @_;
     $blank = 1 if not defined $blank;
     $self->{_blank_} = $blank;
@@ -95,13 +94,36 @@ sub set_image
 sub next_image
 {
  my ($obj, $delta)  = @_;
+ $obj->_next_image($delta);
+}
+
+sub _next_image
+{
+ my ($obj, $delta, $in_animation)  = @_;
  $delta = $obj->{_delta_} unless $delta;
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
- $obj->set_image((($obj->{'_frame_index_'} || 0) + $delta) % @$frames);
+ my $next_index = (($obj->{'_frame_index_'} || 0) + $delta);
+ if ($next_index > @$frames && $in_animation && $obj->{'_loop_'} ne 'forever')
+  {
+   return 0; # signal to stop animation
+  }
+ $next_index %= @$frames;
+ $obj->set_image($next_index);
+ 1;
 }
 
 sub prev_image { shift->next_image( -1 ) }
+
+sub next_image_in_animation
+{
+ my ($obj, $delta) = @_;
+ my $continue = $obj->_next_image($delta, 1);
+ if (!$continue && $self->{'_NextId_'})
+  {
+   $obj->pause_animation;
+  }
+}
 
 sub pause_animation { 
     my $self = shift;
@@ -116,19 +138,18 @@ sub resume_animation {
     }
     $period = $self->{'_period_'};
     my $w = $self->MainWindow;
-    $self->{'_NextId_'} = $w->repeat( $period => [ $self => 'next_image' ] );
+    $self->{'_NextId_'} = $w->repeat( $period => [ $self => 'next_image_in_animation' ] );
 }
 
 sub start_animation
 {
  my ($obj,$period) = @_;
- $period ||= 100;
  my $frames = $obj->{'_frames_'};
  return unless $frames && @$frames;
  my $w = $obj->MainWindow;
  $obj->stop_animation;
- $obj->{'_period_'} = $period;
- $obj->{'_NextId_'} = $w->repeat($period,[$obj,'next_image']);
+ $obj->{'_period_'} = $period if $period;
+ $obj->{'_NextId_'} = $w->repeat($obj->{'_period_'},[$obj,'next_image_in_animation']);
 }
 
 sub stop_animation
@@ -137,6 +158,38 @@ sub stop_animation
  my $id = delete $obj->{'_NextId_'};
  Tk::catch { $id->cancel } if $id;
  $obj->set_image(0);
+}
+
+sub _get_gif_info
+{
+ my ($obj) = @_;
+ my $info;
+ if (defined(my $file = $obj->cget(-file)) && eval { require Image::Info; 1; })
+  {
+   $info = Image::Info::image_info($file);
+  }
+ elsif (defined(my $data = $obj->cget(-data)))
+  {
+   if ($data =~ m{^GIF8} && eval { require Image::Info; 1; })
+    {
+     $info = Image::Info::image_info(\$data);
+    }
+   elsif (eval { require Image::Info; require MIME::Base64; 1; })
+    {
+     $data = MIME::Base64::decode_base64($data);
+     $info = Image::Info::image_info(\$data);
+    }
+  }
+ if ($info)
+  {
+   $obj->{'_blank_'} = $info->{DisposalMethod} == 2 || $info->{DisposalMethod} == 3;
+   $obj->{'_period_'} = $info->{Delay}*1000 if defined $info->{Delay};
+   $obj->{'_loop_'} = $info->{GIF_Loop};
+  }
+ $obj->{'_blank_'} = 0 if !defined $obj->{'_blank_'};
+ $obj->{'_period_'} = 100 if !defined $obj->{'_period_'};
+ $obj->{'_loop_'} = 'forever' if !defined $obj->{'_loop_'};
+ $obj->{'_delta_'} = 1;
 }
 
 1;

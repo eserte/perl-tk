@@ -14,6 +14,7 @@ Tk::Animation - Display sequence of Tk::Photo images
 
   $img->add_frame(@images);
 
+  $img->start_animation;
   $img->start_animation( $period );
 
   $img->next_image;
@@ -28,7 +29,7 @@ Tk::Animation - Display sequence of Tk::Photo images
 
   $img->stop_animation;
 
-  $img->blank( $boolean );
+  $img->set_disposal_method( $boolean );
 
 =head1 DESCRIPTION
 
@@ -42,7 +43,9 @@ All images must be C<Photo>s and should all be the same size.
 C<start_animation($period)> then initiates a C<repeat> with specified
 I<$period> to sequence through these images. As for raw C<repeat>
 I<$period> is in milliseconds, for a 50Hz monitor it should be at
-least 20mS. If $period is omitted it defaults to 100 milliseconds.
+least 20ms. If I<$period> is omitted it is determined from the GIF
+metadata (see below), or if this is not possible it defaults to 100
+milliseconds.
 
 C<stop_animation> cancels the C<repeat> and resets the image to the first
 image in the sequence.
@@ -57,20 +60,33 @@ C<fast_forward> and C<fast_reverse> speed through the movie either
 forwards or backwards.  $multiplier specifies how much faster the
 animation moves.
 
-By default Animation leaves the previous movie frame in the animation
-photo.  Many times overlaying subsequent frames produces a composite
-that looks blurred.  The C<blank> method is used to blank the
-animation photo before displaying new frames.  The default is 0 for
-backward compatibility.
+If L<Image::Info> is installed, then the repeat period time and
+disposal method of GIF animations are determined from the GIF metadata
+directly. Otherwise the disposal method must be set manually by using
+C<set_disposal_method> (1 for blanking the previous images, 0 for
+leaving the previous images as is). The repeat period time may be
+given in the C<start_animation> method.
+
+=head1 NOTES
+
+C<set_disposal_method> was formerly known as C<blank> method, but the
+naming of this method was a mistake.
+
+If the disposal method is not set correctly, either by
+C<set_disposal_method> or by determining from the GIF metadata, then
+the following may happen: By default Animation leaves the previous
+movie frame in the animation photo. Many times overlaying subsequent
+frames produces a composite that looks blurred.
 
 =head1 BUGS
 
-The 'period' should probably be a property of the Animation object
-rather than specified at 'start' time. It may even be embedded
-in the GIF.
+This module should not depend on a module which is not declared as a
+dependency (Image::Info).
 
-Rather than calling C<blank> manually the default value from the GIF
-animation itself should be used.
+The delays between images may vary in a GIF animation. This cannot be
+handled by this module yet.
+
+The handling of the various disposal methods is not correct.
 
 =cut
 
