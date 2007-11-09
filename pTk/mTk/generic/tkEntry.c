@@ -3371,6 +3371,7 @@ EntryTextVarProc(clientData, interp, name1, name2, flags)
  *--------------------------------------------------------------
  */
 
+#ifndef _LANG
 static int
 EntryValidate(entryPtr, cmd, string)
      register Entry *entryPtr;  /* Entry that needs validation. */
@@ -3410,6 +3411,7 @@ EntryValidate(entryPtr, cmd, string)
     Tcl_SetResult(interp, NULL, 0);
     return (bool ? TCL_OK : TCL_BREAK);
 }
+#endif
 
 /*
  *--------------------------------------------------------------
