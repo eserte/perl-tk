@@ -13,7 +13,7 @@ my $img = $mw->Animation('-format' => 'gif',-file => $file);
 
 my $lab = $mw->Label(-image => $img);
 
-my $start = $mw->Button(-text => 'Start', -command => ['start_animation' => $img, 100]);
+my $start = $mw->Button(-text => 'Start', -command => ['start_animation' => $img]);
 my $stop  = $mw->Button(-text => 'Stop', -command => ['stop_animation' => $img]);
 my $quit  = $mw->Button(-text => 'Quit', -command => [destroy => $mw]);
 Tk::grid($lab,'-','-',-sticky => 'nsew');
