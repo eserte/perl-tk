@@ -4,14 +4,7 @@ and t/entry.t was a beginning.
 Should Tk::MsgBox be the default messageBox? Are there compatibility
 issues?
 
-Check all Tk-related bugs on rt.cpan.org (some are already fixed).
-
-Tk::FBox should deal with 8bit characters in filenames (i.e. use byte
-semantics in filesystem operations, maybe use system encoding when
-displaying filenames, but with graceful degradation).
-
-What about getOpen/SaveFile and Windows, are there also encoding
-issues with filenames?
+Check all Tk-related bugs on rt.cpan.org.
 
 Minimize diffs to original Tcl/Tk sources to make merging easier.
 
@@ -94,6 +87,17 @@ Is it easy to support non-base64 operation for Tk::JPEG and Tk::PNG?
 
 XMouseWheelBind and YMouseWheelBind only sets mouse wheel bindings for
 X11, not for Windows. Was this accidental or intended?
+
+----------------------------------------------------------------------
+- Fixes needing perl support
+
+Tk::FBox should deal with 8bit characters in filenames (i.e. use byte
+semantics in filesystem operations, maybe use system encoding when
+displaying filenames, but with graceful degradation). The real
+solution would need filesystem encoding support in perl, though.
+
+getOpen/SaveFile/chooseDirectory has also encoding issues on Windows.
+This is documented.
 
 ----------------------------------------------------------------------
 - Big projects
