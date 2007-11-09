@@ -36,7 +36,7 @@ else
    {
     if (($Config{archname} =~ /^IA64\./) && ($^O eq "hpux"))
      {
-      $file = 'scripts/makefile.hpux.ia64';
+      $file = 'scripts/makefile.hp64';
      }
     else
      {
