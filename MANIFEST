@@ -1989,6 +1989,7 @@ t/table.t
 t/text.t
 t/Trace.t
 t/TkTest.pm
+t/Tkxs.t
 t/trace1.t
 t/slaves.t
 t/unicode.t

@@ -847,6 +847,15 @@ Tk_MoveToplevelWindow(win,x,y)
 Tk_Window	win
 int		x
 int		y
+CODE:
+ { 
+  TkWindow *winPtr = (TkWindow *) win;
+  if (!(winPtr->flags & TK_TOP_LEVEL))
+   {
+    croak("Tk_MoveToplevelWindow called with non-toplevel window");
+   }
+  Tk_MoveToplevelWindow(win,x,y);
+ }
 
 void
 Tk_MoveResizeWindow(win,x,y,width,height)
