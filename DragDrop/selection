@@ -1,5 +1,7 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 use Tk;
+use Encode qw(decode);
+use Encode::Guess;
 use strict;
 
 $Tk::FontRank = \&Ranker;
@@ -19,7 +21,7 @@ $tb->Label('-textvariable' => \$seln)->pack('-side'=>'left');
 $tb->Button('-text' => "Quit", '-command' => ['destroy',$mw])->pack('-side'=>'right');
 
 $lb->packAdjust(-expand => 1, -fill => 'both');
-my $tx = $mw->Scrolled('Text',-width => 40, -exportselection => 0, -wrap => 'none')->pack(-expand => 1, -fill => 'both');
+my $tx = $mw->Scrolled('ROText',-width => 40, -exportselection => 0, -wrap => 'none')->pack(-expand => 1, -fill => 'both');
 
 $lb->bind('<ButtonRelease-1>',[\&GetSelected,$tx]);
 
@@ -35,9 +37,18 @@ sub GetSelected
   {
    $tx->insert('end',"----- $name -----\n");
    my @targ = $lb->SelectionGet('-selection'=>$seln,$name);
-   foreach (@targ)
+   if ($name eq 'text/html')
     {
-     $tx->insert('end',"$_\n");
+     my $targ = join("", @targ);
+     $targ = decode("Guess", $targ);
+     $tx->insert('end', $targ);
+    }
+   else
+    {
+     foreach (@targ)
+      {
+       $tx->insert('end',"$_\n");
+      }
     }
    $tx->see('end');
   }

@@ -2476,9 +2476,11 @@ Tk_Window tkwin;
         and we have established it isn't
       */
      sv = newSVpvn(p, numItems);
+#if 0
      LangDebug("%s %d '%.*s'\n",__FUNCTION__,numItems,numItems,p);
      LangDumpVec(strType,1,&sv);
      abort();
+#endif
      Tcl_ListObjAppendElement(interp,result,sv);
     }
   }
