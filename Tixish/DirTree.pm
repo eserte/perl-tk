@@ -95,7 +95,7 @@ sub set_dir {
     foreach my $name (split( /\Q$sep\E/, $fulldir )) {
         next unless length $name;
         push @dirs, $name;
-	my $dir = File::Spec->catfile( '/', @dirs );
+	my $dir = File::Spec->catfile( @dirs );
         $w->add_to_tree( $dir, $name, $parent )
             unless $w->infoExists( $dir );
         $parent = $dir;
@@ -172,7 +172,7 @@ sub dirnames {
 
     sub Populate {
 	my($w, $args) = @_;
-	$w->{curr_dir} = $args->{-initialdir};
+	$w->{curr_dir} = delete $args->{-initialdir};
 	if (!defined $w->{curr_dir}) {
 	    require Cwd;
 	    $w->{curr_dir} = Cwd::cwd();

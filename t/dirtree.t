@@ -7,16 +7,17 @@ use Tk;
 
 BEGIN {
     if (!eval q{
-	use Test::More;
+	use Cwd;
 	use File::Spec;
+	use Test::More;
 	1;
     }) {
-	print "1..0 # skip: no Test::More and/or File::Spec modules\n";
+	print "1..0 # skip: no Test::More, Cwd and/or File::Spec modules\n";
 	exit;
     }
 }
 
-plan tests => 5;
+plan tests => 8;
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
@@ -32,11 +33,27 @@ my $f = $mw->Scrolled('DirTree',
                       -width => 55,
                       -height => 33,
                       -directory => File::Spec->rootdir(),
+		      -browsecmd => sub {
+			  my $currdir = shift;
+			  diag "You are browsing through <$currdir>";
+		      },
                      )->pack(qw( -fill both -expand 1 ));
 pass('after create, with -directory option');
 my $tree = $f->Subwidget();
 isa_ok($tree, 'Tk::DirTree');
+
+$f->configure(-directory => cwd);
 $mw->update;
+pass("After setting directory to " . cwd);
+
+{
+    my $d = $mw->DirTreeDialog(-initialdir => cwd);
+    isa_ok($d, "Tk::DirTreeDialog");
+    $mw->after(100, sub { $d->{ok} = 1 });
+    my $got_dir = $d->Show;
+    is($got_dir, cwd, "DirTreeDialog returned expected directory");
+}
+
 if ($ENV{BATCH}) {
     $mw->after(300, sub { $mw->destroy });
 }
