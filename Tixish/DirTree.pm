@@ -7,7 +7,7 @@ package Tk::DirTree;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.018';
+$VERSION = '4.019';
 
 use Tk;
 use Tk::Derived;
@@ -22,6 +22,8 @@ use strict;
 Construct Tk::Widget 'DirTree';
 
 my $sep = $^O eq 'MSWin32' ? '\\' : '/';
+
+*_fs_encode = eval { require Encode; 1 } ? sub { Encode::encode("iso-8859-1", $_[0]) } : sub { $_[0] };
 
 sub Populate {
     my( $cw, $args ) = @_;
@@ -114,6 +116,7 @@ sub OpenCmd {
     foreach my $name ($w->dirnames( $parent )) {
         next if ($name eq '.' || $name eq '..');
         my $subdir = File::Spec->catfile( $dir, $name );
+	$subdir = _fs_encode($subdir);
         next unless -d $subdir;
         if( $w->infoExists( $subdir ) ) {
             $w->show( -entry => $subdir );
@@ -128,6 +131,7 @@ sub OpenCmd {
 sub add_to_tree {
     my( $w, $dir, $name, $parent ) = @_;
 
+    my $dir8 = _fs_encode($dir);
     my $image = $w->cget('-image');
     if ( !UNIVERSAL::isa($image, 'Tk::Image') ) {
 	$image = $w->Getimage( $image );
@@ -138,7 +142,9 @@ sub add_to_tree {
     my @args = (-image => $image, -text => $name);
     if( $parent ) {             # Add in alphabetical order.
         foreach my $sib ($w->infoChildren( $parent )) {
-            if( $sib gt $dir ) {
+	    use locale;
+	    my $sib8 = _fs_encode($sib);
+	    if ($sib8 gt $dir8) {
                 push @args, (-before => $sib);
                 last;
             }

@@ -42,9 +42,21 @@ pass('after create, with -directory option');
 my $tree = $f->Subwidget();
 isa_ok($tree, 'Tk::DirTree');
 
-$f->configure(-directory => cwd);
+my $testdir;
+if (eval { require File::Temp; require File::Spec; 1 }) {
+    $testdir = File::Temp::tempdir("dirtree-XXXXXX", TMPDIR => 1, CLEANUP => 1);
+    if ($testdir) {
+	for my $chr (65..90, 97..122, 192..255) {
+	    my $testsubdir = File::Spec->catfile($testdir, chr($chr));
+	    mkdir $testsubdir, 0777;
+	}
+    }
+}
+$testdir = cwd if !$testdir;
+
+$f->configure(-directory => $testdir);
 $mw->update;
-pass("After setting directory to " . cwd);
+pass("After setting directory to " . $testdir);
 
 {
     my $d = $mw->DirTreeDialog(-initialdir => cwd);
