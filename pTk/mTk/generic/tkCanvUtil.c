@@ -798,21 +798,16 @@ Tk_GetDash(interp, ovalue, dash)
     if ((*value == '.') || (*value == ',') ||
 	    (*value == '-') || (*value == '_')) {
 	i = DashConvert((char *) NULL, value, -1, 0.0);
-	if (i>0) {
-	    i = strlen(value);
-	} else {
+	if (i<0) {
 	    goto badDashList;
 	}
-	if (i > (int) sizeof(char *)) {
-	    dash->pattern.pt = pt = (char *) ckalloc(strlen(value));
-	} else {
-	    pt = dash->pattern.array;
-	}
-	memcpy(pt,value, (unsigned int) i);
+        dash->pattern.pt = pt = (char *) ckalloc(strlen(value)+1);
+	strcpy( pt, value );
 	dash->number = -i;
 	return TCL_OK;
     }
-    if (Tcl_ListObjGetElements(interp, ovalue, &argc, &objv) != TCL_OK) {
+    if (Tcl_ListObjGetElements(interp, ovalue, &argc, &objv) != TCL_OK ||
+        argc <= 1) {
 	Tcl_ResetResult(interp);
     badDashList:
 	Tcl_AppendResult(interp, "bad dash list \"", value,
@@ -841,7 +836,7 @@ Tk_GetDash(interp, ovalue, dash)
 	    i < 1 || i>255) {
 	    Tcl_ResetResult(interp);
 	    Tcl_AppendResult(interp, "expected integer in the range 1..255 but got \"",
-			 *largv, "\"", (char *) NULL);
+			 Tcl_GetString(*largv), "\"", (char *) NULL);
 	    goto syntaxError;
 	}
 	*pt++ = i;
@@ -1054,8 +1049,6 @@ int Tk_ConfigOutlineGC(gcValues, canvas, item, outline)
 	gcValues->dash_offset = outline->offset;
 	if (dash->number >= 2) {
 	    gcValues->dashes = 4;
-	} else if (dash->number > 0) {
-	    gcValues->dashes = dash->pattern.array[0];
 	} else {
 	    gcValues->dashes = (char) (4 * width);
 	}
@@ -1141,18 +1134,17 @@ Tk_ChangeOutlineGC(canvas, item, outline)
 	return 0;
     }
 
-    if ((dash->number<-1) || ((dash->number == -1) && (dash->pattern.array[1]!=','))) {
+    if (dash->number<=-2) {
 	char *q;
 	int i = -dash->number;
 
-	p = (i > (int) sizeof(char *)) ? dash->pattern.pt : dash->pattern.array;
+	p = dash->pattern.pt;
 	q = (char *) ckalloc(2*(unsigned int)i);
 	i = DashConvert(q, p, i, width);
 	XSetDashes(((TkCanvas *)canvas)->display, outline->gc, outline->offset, q, i);
 	values.line_style = LineOnOffDash;
 	ckfree(q);
-    } else if ( dash->number>2 || (dash->number==2 &&
-		(dash->pattern.array[0]!=dash->pattern.array[1]))) {
+    } else if ( dash->number>=2 ) {
 	p = (char *) (dash->number > (int) sizeof(char *)) ? dash->pattern.pt : dash->pattern.array;
 	XSetDashes(((TkCanvas *)canvas)->display, outline->gc, outline->offset, p, dash->number);
 	values.line_style = LineOnOffDash;
@@ -1262,13 +1254,9 @@ Tk_ResetOutlineGC(canvas, item, outline)
 	return 0;
     }
 
-    if ((dash->number > 2) || (dash->number < -1) || (dash->number==2 &&
-		(dash->pattern.array[0] != dash->pattern.array[1])) ||
-		((dash->number == -1) && (dash->pattern.array[1] != ','))) {
+    if ( (dash->number >= 2) || (dash->number <= -2) ) {
 	if (dash->number < 0) {
 	    dashList = (int) (4 * width + 0.5);
-	} else if (dash->number<3) {
-	    dashList = dash->pattern.array[0];
 	} else {
 	    dashList = 4;
 	}
@@ -1365,8 +1353,8 @@ Tk_CanvasPsOutline(canvas, item, outline)
 	str = (char *)ckalloc((unsigned int) (1 - 8*dash->number));
 	lptr = (char *)ckalloc((unsigned int) (1 - 2*dash->number));
     }
-    ptr = (char *) ((ABS(dash->number) > sizeof(char *)) ) ?
-	dash->pattern.pt : dash->pattern.array;
+    ptr = (char *) ( dash->number > sizeof(char *)) ? dash->pattern.pt :
+                   ( dash->number < 0 ) ? dash->pattern.pt : dash->pattern.array;
     if (dash->number > 0) {
 	char *ptr0 = ptr;
 	sprintf(str, "[%d", *ptr++ & 0xff);
@@ -1427,7 +1415,7 @@ Tk_CanvasPsOutline(canvas, item, outline)
  *
  *      Converts a character-like dash-list (e.g. "-..")
  *      into an X11-style. l must point to a string that
- *      holds room to at least 2*n characters. if
+ *      holds room to at least 2*n characters. If
  *      l == NULL, this function can be used for
  *      syntax checking only.
  *
@@ -1463,7 +1451,7 @@ DashConvert (l, p, n, width)
 	    case ' ':
 		if (result) {
 		    if (l) {
-			l[-1] += intWidth + 1;
+			l[-1] += 2 * intWidth;
 		    }
 		    continue;
 		} else {
@@ -1471,23 +1459,23 @@ DashConvert (l, p, n, width)
 		}
 		break;
 	    case '_':
-		size = 8;
-		break;
-	    case '-':
-		size = 6;
-		break;
-	    case ',':
 		size = 4;
 		break;
-	    case '.':
+	    case '-':
+		size = 3;
+		break;
+	    case ',':
 		size = 2;
+		break;
+	    case '.':
+		size = 1;
 		break;
 	    default:
 		return -1;
 	}
 	if (l) {
 	    *l++ = size * intWidth;
-	    *l++ = 4 * intWidth;
+	    *l++ = 2 * intWidth;
 	}
 	result += 2;
     }

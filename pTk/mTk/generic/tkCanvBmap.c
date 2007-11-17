@@ -331,6 +331,8 @@ ConfigureBitmap(interp, canvas, itemPtr, objc, objv, flags)
     XColor *bgColor;
     Pixmap bitmap;
     Tk_State state;
+    int width, height;
+    int width1, height1;
 
     tkwin = Tk_CanvasTkwin(canvas);
     if (TCL_OK != Tk_ConfigureWidget(interp, tkwin, configSpecs, objc, 
@@ -351,6 +353,31 @@ ConfigureBitmap(interp, canvas, itemPtr, objc, objv, flags)
 	itemPtr->redraw_flags |= TK_ITEM_STATE_DEPENDANT;
     } else {
 	itemPtr->redraw_flags &= ~TK_ITEM_STATE_DEPENDANT;
+    }
+
+    /* Check that bitmaps have same width and height. This avoids problems
+       due to wrong position relative to the anchor point, displaying only
+       part of one of the bitmaps, etc.
+     */
+    Tk_SizeOfBitmap(Tk_Display(Tk_CanvasTkwin(canvas)), bmapPtr->bitmap,
+	    &width, &height);
+    if (bmapPtr->activeBitmap!=None) {
+        Tk_SizeOfBitmap(Tk_Display(Tk_CanvasTkwin(canvas)),
+                        bmapPtr->activeBitmap,
+	                &width1, &height1);
+        if (width != width1 || height != height1) {
+	    Tcl_SetResult(interp, "active bitmap dimensions differ", TCL_STATIC);
+            return TCL_ERROR;
+        }
+    }
+    if (bmapPtr->disabledBitmap!=None) {
+        Tk_SizeOfBitmap(Tk_Display(Tk_CanvasTkwin(canvas)),
+                        bmapPtr->disabledBitmap,
+	                &width1, &height1);
+        if (width != width1 || height != height1) {
+	    Tcl_SetResult(interp, "disabled bitmap dimensions differ", TCL_STATIC);
+            return TCL_ERROR;
+        }
     }
 
     if (state==TK_STATE_HIDDEN) {
@@ -382,7 +409,7 @@ ConfigureBitmap(interp, canvas, itemPtr, objc, objv, flags)
 	}
     }
 
-    if (state==TK_STATE_DISABLED || bitmap == None) {
+    if (bitmap == None) {
 	ComputeBitmapBbox(canvas, bmapPtr);
 	return TCL_OK;
     }

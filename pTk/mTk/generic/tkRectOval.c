@@ -476,8 +476,6 @@ ConfigureRectOval(interp, canvas, itemPtr, objc, objv, flags)
     if (mask && \
 	    rectOvalPtr->outline.width != 0 && \
 	    rectOvalPtr->outline.color != NULL) {
-	gcValues.cap_style = CapProjecting;
-	mask |= GCCapStyle;
 	newGC = Tk_GetGC(tkwin, mask, &gcValues);
     } else {
 	newGC = None;

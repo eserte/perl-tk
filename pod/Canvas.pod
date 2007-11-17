@@ -346,29 +346,32 @@ Many items support the notion of an dash pattern for outlines.
 The first possible syntax is a list of integers. Each element
 represents the number of pixels of a line segment. Only the odd
 segments are drawn using the "outline" color. The other segments
-are drawn transparant.
+are drawn transparent.
 
 The second possible syntax is a character list containing only
-5 possible characters B<[.,-_ ]>. The space can be used
-to enlarge the space between other line elements, and can not
-occur as the first position in the string. Some examples:
+5 possible characters B<[.,-_ ]>,  with the first 4 characters
+producing a segment of length 1 to 4, respectively, followed
+by a transparent segment of length 2. The space can be used
+repeatedly to enlarge the space between other line elements
+by 1, and can not occur as the first position in the string.
+The main difference of this syntax with the previous one is 
+that it it shape-conserving. This means that all values in the dash
+list will be multiplied by the line width before display. This
+assures that "." will always be displayed as a dot and "-"
+always as a dash regardless of the line width.
+
+Some examples, for a line width of 2:
 
  -dash .     = -dash [2,4]
  -dash -     = -dash [6,4]
  -dash -.    = -dash [6,4,2,4]
  -dash -..   = -dash [6,4,2,4,2,4]
- -dash '. '  = -dash [2,8]
+ -dash '.  ' = -dash [2,8]
  -dash ','   = -dash [4,4]
 
-The main difference of this syntax with the previous is that it
-it shape-conserving. This means that all values in the dash
-list will be multiplied by the line width before display. This
-assures that "." will always be displayed as a dot and "-"
-always as a dash regardless of the line width.
-
-On systems where only a limited set of dash patterns, the dash
-pattern will be displayed as the most close dash pattern that
-is available. For example, on Windows only the first 4 of the
+On systems where only a limited set of dash patterns is available,
+the dash pattern will be displayed as the closest available dash 
+pattern. For example, on Windows only the first 4 of the
 above examples are available. The last 2 examples will be
 displayed identically as the first one.
 
@@ -1355,14 +1358,14 @@ produces a transparent effect.
 =item B<-disabledbitmap> =E<gt> I<bitmap>
 
 Specifies the bitmaps to display in the item in its normal, active and
-disabled states.
+disabled states. All bitmaps must have the same width and height.
 I<Bitmap> may have any of the forms accepted by B<Tk_GetBitmap>.
 
 =item B<-foreground> =E<gt> I<color>
 
-=item B<-activeforeground> =E<gt> I<bitmap>
+=item B<-activeforeground> =E<gt> I<color>
 
-=item B<-disabledforeground> =E<gt> I<bitmap>
+=item B<-disabledforeground> =E<gt> I<color>
 
 Specifies the color to use for each of the bitmap's '1' valued pixels
 in its normal, active and disabled states.
