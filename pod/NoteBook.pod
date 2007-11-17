@@ -175,6 +175,10 @@ be any of the options accepted by the B<add> method.
 Returns a list consisting of the names of all currently defined
 pages, i.e., those created with the B<add> method.
 
+=item B<page_widget(>I<pageName>B<)>
+
+Returns the page with name I<pageName>.
+
 =item B<raise(>I<pageName>B<)>
 
 Raise the page identified by I<pageName>.
