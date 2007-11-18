@@ -57,7 +57,7 @@ else
 copy($file,"Makefile")
    || die "Cannot copy $file to Makefile:$!";
 
-if ($^O eq 'darwin' || $Config{'archname'} eq 'amd64-freebsd')
+if ($^O eq 'darwin' || $Config{'archname'} =~ m{^amd64-freebsd($|-.*)})
  {
   system(sh => "./configure");
   open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
