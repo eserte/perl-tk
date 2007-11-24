@@ -141,32 +141,35 @@ SKIP: {
     skip("getOpenFile etc. only on X11", 3)
 	if $Tk::platform ne 'unix';
 
-    my $mw;
-    my $result;
-
-    $mw = MainWindow->new;
-    $mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
-    $result = $mw->getOpenFile;
-    if (!$ENV{BATCH}) {
-	diag "Result is <$result>";
+    {
+	my $mw = MainWindow->new;
+	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+	my $result = $mw->getOpenFile;
+	if (!$ENV{BATCH}) {
+	    diag "Result is <$result>";
+	}
+	pass("called getOpenFile");
     }
-    pass("called getOpenFile");
 
-    $mw = MainWindow->new;
-    $mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
-    $result = $mw->getSaveFile;
-    if (!$ENV{BATCH}) {
-	diag "Result is <$result>";
+    {
+	my $mw = MainWindow->new;
+	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+	my $result = $mw->getSaveFile;
+	if (!$ENV{BATCH}) {
+	    diag "Result is <$result>";
+	}
+	pass("called getSaveFile");
     }
-    pass("called getSaveFile");
 
-    $mw = MainWindow->new;
-    $mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
-    $result = $mw->chooseDirectory;
-    if (!$ENV{BATCH}) {
-	diag "Result is <$result>";
+    {
+	my $mw = MainWindow->new;
+	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+	my $result = $mw->chooseDirectory;
+	if (!$ENV{BATCH}) {
+	    diag "Result is <$result>";
+	}
+	pass("called chooseDirectory");
     }
-    pass("called chooseDirectory");
 }
 
 1;
