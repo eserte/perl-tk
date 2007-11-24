@@ -7,9 +7,13 @@
 #
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 
 use Tk;
 use Tk::Config ();
+
+use TkTest qw(wm_info);
 
 BEGIN {
     if (!eval q{
@@ -23,9 +27,6 @@ BEGIN {
 
 plan tests => 1;
 
-my $wm_name     = "<unknown>";
-my $wm_version  = "<unknown>";
-
 my $mw = MainWindow->new;
 $mw->withdraw;
 
@@ -37,37 +38,10 @@ SKIP: {
     skip("window manager check only on X11", 1)
 	if $Tk::platform ne "unix";
 
-    my($type,$windowid) = eval { $mw->property('get', '_NET_SUPPORTING_WM_CHECK', 'root') };
-    if (defined $windowid) {
-	($wm_name) = eval { $mw->property('get', '_NET_WM_NAME', $windowid) };
-	if (!$wm_name) {
-	    if (eval { $mw->property('get', '_WINDOWMAKER_NOTICEBOARD', $windowid); 1 }
-		|| eval { $mw->property('get', '_WINDOWMAKER_ICON_TILE', $windowid); 1 }) {
-		$wm_name = "WindowMaker";
-	    } else {
-		$wm_name = "<unknown> (property _NET_SUPPORTING_WM_CHECK exists, but getting _NET_WM_NAME fails)";
-	    }
-	} else {
-	    if ($wm_name eq 'Metacity') {
-		($wm_version) = eval { $mw->property('get', '_METACITY_VERSION', $windowid) };
-	    } else {
-		# just guess the VERSION property
-		my($maybe_wm_version) = eval { $mw->property('get', '_'.$wm_name.'_VERSION', $windowid) };
-		if ($maybe_wm_version) {
-		    $wm_version = $maybe_wm_version;
-		}
-	    }
-	}
-    } else {
-	my($dtwm_integer) = eval { $mw->property('get', 'DTWM_IS_RUNNING', 'root') };
-	if (defined $dtwm_integer) { # XXX really have to check this
-                                     # integer, probably a Window id?
-	    $wm_name = "dtwm";
-	}
-    }
+    my %wm_info = wm_info($mw);
 
-    push @diag, ("window manager: $wm_name",
-		 "       version: $wm_version",
+    push @diag, ("window manager: $wm_info{name}",
+		 "       version: $wm_info{version}",
 		);
 
     pass("window manager check done");

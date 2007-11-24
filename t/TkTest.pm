@@ -10,7 +10,7 @@ $VERSION = '4.004'; # was: sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float check_display_harness);
-@EXPORT_OK = qw(catch_grabs);
+@EXPORT_OK = qw(catch_grabs wm_info);
 
 use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
@@ -83,6 +83,48 @@ sub catch_grabs (&;$) {
 	    Test::More::pass("Ignore test because other application had grab");
 	}
     }
+}
+
+sub wm_info ($) {
+    my $mw = shift;
+
+    return () if $Tk::platform ne "unix";
+
+    my $wm_name     = "<unknown>";
+    my $wm_version  = "<unknown>";
+
+    my($type,$windowid) = eval { $mw->property('get', '_NET_SUPPORTING_WM_CHECK', 'root') };
+    if (defined $windowid) {
+	($wm_name) = eval { $mw->property('get', '_NET_WM_NAME', $windowid) };
+	if (!$wm_name) {
+	    if (eval { $mw->property('get', '_WINDOWMAKER_NOTICEBOARD', $windowid); 1 }
+		|| eval { $mw->property('get', '_WINDOWMAKER_ICON_TILE', $windowid); 1 }) {
+		$wm_name = "WindowMaker";
+	    } else {
+		$wm_name = "<unknown> (property _NET_SUPPORTING_WM_CHECK exists, but getting _NET_WM_NAME fails)";
+	    }
+	} else {
+	    if ($wm_name eq 'Metacity') {
+		($wm_version) = eval { $mw->property('get', '_METACITY_VERSION', $windowid) };
+	    } else {
+		# just guess the VERSION property
+		my($maybe_wm_version) = eval { $mw->property('get', '_'.$wm_name.'_VERSION', $windowid) };
+		if ($maybe_wm_version) {
+		    $wm_version = $maybe_wm_version;
+		}
+	    }
+	}
+    } else {
+	my($dtwm_integer) = eval { $mw->property('get', 'DTWM_IS_RUNNING', 'root') };
+	if (defined $dtwm_integer) { # XXX really have to check this
+                                     # integer, probably a Window id?
+	    $wm_name = "dtwm";
+	}
+    }
+
+    (name    => $wm_name,
+     version => $wm_version,
+    );
 }
 
 1;

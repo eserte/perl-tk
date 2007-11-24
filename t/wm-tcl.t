@@ -36,9 +36,13 @@
 # * KWin: 3.0
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 
 use Tk;
 use Getopt::Long;
+
+use TkTest qw(wm_info);
 
 BEGIN {
     if (!eval q{
@@ -52,9 +56,12 @@ BEGIN {
 
 plan tests => 315;
 
-my $wm_problems = $Tk::platform eq 'unix';
-
 my $mw = MainWindow->new;
+my %wm_info = wm_info($mw);
+my $wm_name = $wm_info{name};
+
+my $wm_problems = $Tk::platform eq 'unix';
+my $kwin_problems = defined $wm_name && $wm_name eq 'KWin';
 
 my $poswin = 1;
 my $netwm = 0;
@@ -589,7 +596,12 @@ stdWindow;
 
     my $t1c = $t1->Frame(qw(-width 100 -height 30 -colormap new))->pack(-side => "top");
     $mw->update;
-    is_deeply([$t1->colormapwindows], [".toplevel1.frame1", ".toplevel1.frame2", ".toplevel1"]);
+
+    {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	is_deeply([$t1->colormapwindows], [".toplevel1.frame1", ".toplevel1.frame2", ".toplevel1"]);
+    }
 
     $t1->destroy;
 }
@@ -733,6 +745,10 @@ stdWindow;
 }
 
 {
+    local $TODO;
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
+
     $t->geometry("150x150+50+50");
     $t->update;
     is($t->geometry, "150x150+50+50",
@@ -1039,15 +1055,17 @@ SKIP: {
 }
 
 {
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
+
     my $t = $mw->Toplevel(qw(-width 300 -height 300));
     poswin $t;
     $t->update;
     $t->maxsize(200, 150);
     # UpdateGeometryInfo invoked at idle
     $t->update;
-
-    local $TODO;
-    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
 
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 200, q{setting the maxsize to a smaller value will resize a toplevel});
@@ -1056,6 +1074,11 @@ SKIP: {
 }
 
 {
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
+
     my $t = $mw->Toplevel;
     poswin $t;
     $t->wmGrid(0,0,50,50);
@@ -1065,9 +1088,6 @@ SKIP: {
     # UpdateGeometryInfo invoked at idle
     $t->update;
 
-    local $TODO;
-    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
-
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 4, q{setting the maxsize to a smaller value will resize a gridded toplevel});
     is($h, 3);
@@ -1075,6 +1095,9 @@ SKIP: {
 }
 
 {
+    local $TODO;
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
     $t->maxsize(300, 250);
@@ -1089,6 +1112,9 @@ SKIP: {
 }    
 
 {
+    local $TODO;
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
     my $t = $mw->Toplevel;
     poswin $t;
     $t->wmGrid(qw(1 1 50 50));
@@ -1116,6 +1142,8 @@ SKIP: {
 
     local $TODO;
     $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
 
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 300, q{Use max size if window size is not explicitly set});
@@ -1148,15 +1176,16 @@ SKIP: {
 }
 
 {
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
     $t->update;
     $t->minsize(400, 300);
     # UpdateGeometryInfo invoked at idle
     $t->update;
-
-    local $TODO;
-    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
 
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 400, q{setting the minsize to a larger value will resize a toplevel});
@@ -1165,6 +1194,10 @@ SKIP: {
 }
 
 {
+    local $TODO;
+    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
     my $t = $mw->Toplevel;
     poswin $t;
     $t->wmGrid(qw(1 1 50 50));
@@ -1174,9 +1207,6 @@ SKIP: {
     # UpdateGeometryInfo invoked at idle
     $t->update;
 
-    local $TODO;
-    $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
-
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 8, q{setting the minsize to a larger value will resize a gridded toplevel});
     is($h, 8);
@@ -1184,6 +1214,10 @@ SKIP: {
 }    
 
 {
+    local $TODO;
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
+
     my $t = $mw->Toplevel(qw(-width 400 -height 400));
     poswin $t;
     $t->minsize(300, 300);
@@ -1198,6 +1232,10 @@ SKIP: {
 }
 
 {
+    local $TODO;
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
+
     my $t = $mw->Toplevel;
     poswin $t;
     $t->wmGrid(qw(1 1 50 50));
@@ -1225,6 +1263,7 @@ SKIP: {
 
     local $TODO;
     $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
+    $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
 
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 300, q{Use min size if window size is not explicitly set});
@@ -1399,6 +1438,9 @@ deleteWindows;
 # stackorder was not defined before Tk804.027_001
 eval {
     {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
 	$t->update;
@@ -1408,8 +1450,8 @@ eval {
 
     {
 	local $TODO;
-	$TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)"
-	    if $wm_problems;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail sometimes on some older window managers (e.g. metacity 2.10.x)" if !$TODO && $wm_problems;
 
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
@@ -1482,6 +1524,9 @@ eval {
     deleteWindows;
 
     {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
 	my $t1b = $t1->Button->pack;
@@ -1502,6 +1547,9 @@ eval {
  SKIP: {
 	skip("Needs a window manager", 1)
 	    if !$wm_running;
+
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
 
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
@@ -1570,6 +1618,9 @@ eval {
     }
 
     {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
 	$t1->update;
@@ -1610,6 +1661,9 @@ eval {
     deleteWindows;
 
     {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
 	my $t = $mw->Toplevel;
 	poswin $t;
 	$t->update;
@@ -1620,6 +1674,9 @@ eval {
     }
 
     {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
 	my $t = $mw->Toplevel;
 	poswin $t;
 	$t->update;
@@ -1701,6 +1758,9 @@ eval {
     }
 
     {
+	local $TODO;
+	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+
 	my $real = $mw->Toplevel(Name => "real", -container => 1);
 	poswin $real;
 	my $embd = $mw->Toplevel(Name => "embd",
@@ -2184,6 +2244,9 @@ SKIP: {
 SKIP: {
     skip("Needs a window manager", 1)
 	if !$wm_running;
+
+    local $TODO;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
 
     deleteWindows;
     my $t = $mw->Toplevel;
