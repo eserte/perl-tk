@@ -35,7 +35,7 @@ BEGIN {
         # these fail (sometimes) under 'make test'
         my @fragile = qw(160 161 167 191 193 195);
         @fragile = () ; # unless $ENV{PERL_DL_NONLAZY};
-        plan tests => 337,
+        plan tests => 350,
         todo => \@fragile
       }
 
@@ -121,6 +121,10 @@ my @tests = (
     [qw(-bg), '#ff0000', '#ff0000', 'non-existent', 'unknown color name "non-existent"'],
     [qw(-borderwidth 1.3 1 badValue), 'bad screen distance "badValue"'],
     [qw(-cursor arrow arrow badValue), 'bad cursor spec "badValue"'],
+    [qw(-disabledbackground green green non-existent),
+        q{unknown color name "non-existent"}],
+    [qw(-disabledforeground blue blue non-existent),
+        q{unknown color name "non-existent"}],
     [qw(-exportselection yes 1 xyzzy), 'expected boolean value but got "xyzzy"', 0,0,1],
     [qw(-fg), '#110022', '#110022', 'bogus', 'unknown color name "bogus"'],
     [qw(-font -Adobe-Helvetica-Medium-R-Normal--*-120-*-*-*-*-*-*
@@ -136,7 +140,11 @@ my @tests = (
     [qw(-insertborderwidth 1.3 1 2.6x), 'bad screen distance "2.6x"'],
     [qw(-insertofftime 100 100 3.2), 'expected integer but got "3.2"', 0,0,1],
     [qw(-insertontime 100 100 3.2), 'expected integer but got "3.2"', 0,0,1],
+    [qw(-invalidcommand), \&Tk::NoOp, \&Tk::NoOp, undef, undef],
+    [qw(-invcmd), \&Tk::NoOp, \&Tk::NoOp, undef, undef],
     [qw(-justify right right bogus), 'bad justification "bogus": must be left, right, or center'],
+    [qw(-readonlybackground green green non-existent),
+        q{unknown color name "non-existent"}],
     [qw(-relief groove groove 1.5), 'bad relief "1.5": must be flat, groove, raised, ridge, solid, or sunken'],
     [qw(-selectbackground), '#110022', '#110022', 'bogus', 'unknown color name "bogus"'],
     [qw(-selectborderwidth 1.3 1 badValue), 'bad screen distance "badValue"'],
@@ -153,7 +161,11 @@ foreach my $test (@tests) {
     my $name = $test->[0];
     $e->configure($name, $test->[1]);
     if (!$test->[SKIP_CGET]) {
-	is($e->cget($name), $test->[2], "cget $name");
+	my $val = $e->cget($name);
+	if (UNIVERSAL::isa($val, "Tk::Callback")) {
+	    $val = $val->[0];
+	}
+	is($val, $test->[2], "cget $name");
     }
     if (!$test->[SKIP_CONF]) {
 	is(($e->configure($name))[4], $e->cget($name), "Comparing configure and cget values for $name");
