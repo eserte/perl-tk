@@ -1761,3 +1761,10 @@ sub RestoreFocusGrab
     }
   }
 }
+
+# See http://rt.cpan.org/Ticket/Display.html?id=30929 and
+# http://rt.cpan.org/Ticket/Display.html?id=31016
+sub MasterMenu
+ {
+ }
+
