@@ -1,3 +1,2952 @@
+------------------------------------------------------------------------
+r10322 | srezic | 2007-11-27 23:46:54 +0100 (Di, 27 Nov 2007) | 3 lines
+
+ r1942@biokovo:  eserte | 2007-11-27 23:46:43 +0100
+ added dummy MasterMenu for possible Balloon performance problems
+
+------------------------------------------------------------------------
+r10307 | srezic | 2007-11-25 13:43:20 +0100 (So, 25 Nov 2007) | 3 lines
+
+ r1940@biokovo:  eserte | 2007-11-25 13:43:09 +0100
+ basic test of new Entry options
+
+------------------------------------------------------------------------
+r10304 | srezic | 2007-11-24 14:04:55 +0100 (Sa, 24 Nov 2007) | 5 lines
+
+ r1938@biokovo-amd64:  eserte | 2007-11-24 14:04:44 +0100
+ moved window manager related code from 00wmcheck.t to TkTest.pm and use this
+ in wm-tcl.t to detect window manager
+ mark a lot of wm tests as "TODO" for KWin (and some also for other X11 wm)
+
+------------------------------------------------------------------------
+r10303 | srezic | 2007-11-24 11:31:28 +0100 (Sa, 24 Nov 2007) | 3 lines
+
+ r1936@biokovo-amd64:  eserte | 2007-11-24 11:28:53 +0100
+ workaround for segfaults under threaded perl
+
+------------------------------------------------------------------------
+r10302 | srezic | 2007-11-24 11:22:30 +0100 (Sa, 24 Nov 2007) | 3 lines
+
+ r1934@biokovo-amd64:  eserte | 2007-11-24 11:22:21 +0100
+ disabling a failed canvas test (only on linux)
+
+------------------------------------------------------------------------
+r10281 | srezic | 2007-11-18 22:35:01 +0100 (So, 18 Nov 2007) | 3 lines
+
+ r1932@biokovo-amd64:  eserte | 2007-11-18 22:34:51 +0100
+ libpng now also builds on amd64-freebsd with threads
+
+------------------------------------------------------------------------
+r10269 | srezic | 2007-11-17 19:42:33 +0100 (Sa, 17 Nov 2007) | 3 lines
+
+ r1930@biokovo-amd64:  eserte | 2007-11-17 19:42:22 +0100
+ documented missing page_widget method in Tk::NoteBook
+
+------------------------------------------------------------------------
+r10268 | srezic | 2007-11-17 17:50:03 +0100 (Sa, 17 Nov 2007) | 4 lines
+
+ r1928@biokovo-amd64:  eserte | 2007-11-17 17:49:52 +0100
+ Tk::DirTree: locale-specific sorting, convert unicode characters back
+ to something perl's filesystem functions understand
+
+------------------------------------------------------------------------
+r10267 | srezic | 2007-11-17 16:54:57 +0100 (Sa, 17 Nov 2007) | 4 lines
+
+ r1925@biokovo-amd64:  eserte | 2007-11-17 16:54:22 +0100
+ applied Wolfgang Laun's Canvas patches (especially for -dash), see
+ https://rt.cpan.org/Ticket/Display.html?id=11083
+
+------------------------------------------------------------------------
+r10266 | srezic | 2007-11-17 16:54:36 +0100 (Sa, 17 Nov 2007) | 3 lines
+
+ r1924@biokovo-amd64:  eserte | 2007-11-17 16:41:46 +0100
+ inc'd some versions
+
+------------------------------------------------------------------------
+r10265 | srezic | 2007-11-17 16:17:59 +0100 (Sa, 17 Nov 2007) | 3 lines
+
+ r1922@biokovo-amd64:  eserte | 2007-11-16 22:26:48 +0100
+ inc'd version
+
+------------------------------------------------------------------------
+r10263 | srezic | 2007-11-16 22:24:12 +0100 (Fr, 16 Nov 2007) | 5 lines
+
+ r1920@biokovo-amd64:  eserte | 2007-11-16 22:23:58 +0100
+ (hopefully) fixed DirTree problem on Windows, spotted by Martin Thurn
+ (http://rt.cpan.org/Ticket/Display.html?id=30781)
+ a couple of more tests for DirTree
+
+------------------------------------------------------------------------
+r10257 | srezic | 2007-11-15 22:05:00 +0100 (Do, 15 Nov 2007) | 4 lines
+
+ r1917@biokovo-amd64:  eserte | 2007-11-15 21:58:23 +0100
+ protect Tk_MoveToplevelWindow from being called on a non-toplevel
+ added new test Tkxs.t (but only enabled with TEST_AUTHOR env variable)
+
+------------------------------------------------------------------------
+r10256 | srezic | 2007-11-15 22:04:45 +0100 (Do, 15 Nov 2007) | 4 lines
+
+ r1916@biokovo-amd64:  eserte | 2007-11-15 20:53:55 +0100
+ removed some debugging code+abort() to enable selectionGet of
+ text/html from Mozilla, see also the selection test script
+
+------------------------------------------------------------------------
+r10217 | srezic | 2007-11-09 21:43:16 +0100 (Fr, 09 Nov 2007) | 3 lines
+
+ r1911@biokovo-amd64:  eserte | 2007-11-09 21:41:58 +0100
+ fix for hpux ia64
+
+------------------------------------------------------------------------
+r10216 | srezic | 2007-11-09 21:42:57 +0100 (Fr, 09 Nov 2007) | 3 lines
+
+ r1910@biokovo-amd64:  eserte | 2007-11-09 21:34:28 +0100
+ do not set period, use the image defaults
+
+------------------------------------------------------------------------
+r10215 | srezic | 2007-11-09 21:42:42 +0100 (Fr, 09 Nov 2007) | 3 lines
+
+ r1909@biokovo-amd64:  eserte | 2007-11-09 21:33:55 +0100
+ update, new section 'Fixes needing perl support'
+
+------------------------------------------------------------------------
+r10214 | srezic | 2007-11-09 21:42:29 +0100 (Fr, 09 Nov 2007) | 3 lines
+
+ r1908@biokovo-amd64:  eserte | 2007-11-09 21:33:37 +0100
+ EntryValidate not used in ptk
+
+------------------------------------------------------------------------
+r10206 | srezic | 2007-11-09 00:22:48 +0100 (Fr, 09 Nov 2007) | 5 lines
+
+ r1906@biokovo-amd64:  eserte | 2007-11-09 00:22:37 +0100
+ better disposal/period support in GIF animations, but only if
+ Image::Info is installed. See also
+ http://rt.cpan.org/Public/Bug/Display.html?id=30585
+
+------------------------------------------------------------------------
+r10205 | srezic | 2007-11-08 22:30:19 +0100 (Do, 08 Nov 2007) | 4 lines
+
+ r1904@biokovo-amd64:  eserte | 2007-11-08 22:30:07 +0100
+ new CAVEATS sections for chooseDirectory/getOpenFile Pods about missing
+ encoding support in perl's filesystem access
+
+------------------------------------------------------------------------
+r10204 | srezic | 2007-11-08 22:16:25 +0100 (Do, 08 Nov 2007) | 3 lines
+
+ r1902@biokovo-amd64:  eserte | 2007-11-08 22:15:38 +0100
+ increased version
+
+------------------------------------------------------------------------
+r10197 | srezic | 2007-11-08 12:13:04 +0100 (Do, 08 Nov 2007) | 1 line
+
+DirTree: canonify initial path; minor fix in dirtree test
+------------------------------------------------------------------------
+r10196 | srezic | 2007-11-08 08:47:24 +0100 (Do, 08 Nov 2007) | 3 lines
+
+ r1898@biokovo-amd64:  eserte | 2007-11-08 08:47:11 +0100
+ added SEE ALSO section to Tk::Table Pod
+
+------------------------------------------------------------------------
+r10193 | srezic | 2007-11-07 23:54:16 +0100 (Mi, 07 Nov 2007) | 3 lines
+
+ r1896@biokovo-amd64:  eserte | 2007-11-07 23:53:50 +0100
+ (untested) fixes for DirTree under windows; BATCH env for dirtree.t test
+
+------------------------------------------------------------------------
+r10190 | srezic | 2007-11-07 22:09:37 +0100 (Mi, 07 Nov 2007) | 3 lines
+
+ r1894@biokovo-amd64:  eserte | 2007-11-07 22:09:26 +0100
+ new canvas test file, for now with dash tests (may be called interactively)
+
+------------------------------------------------------------------------
+r10181 | srezic | 2007-11-07 00:15:36 +0100 (Mi, 07 Nov 2007) | 5 lines
+
+ r1891@biokovo-amd64:  eserte | 2007-11-07 00:15:16 +0100
+ fixed warning, reported in http://rt.cpan.org/Ticket/Display.html?id=20108 
+ to reproduce old problem: set the cursor by mouse at the end of the text,
+ go one down and then one up
+
+------------------------------------------------------------------------
+r10180 | srezic | 2007-11-07 00:15:26 +0100 (Mi, 07 Nov 2007) | 3 lines
+
+ r1890@biokovo-amd64:  eserte | 2007-11-07 00:11:08 +0100
+ fixed indentation in UpDownLine method
+
+------------------------------------------------------------------------
+r10172 | srezic | 2007-11-06 21:41:44 +0100 (Di, 06 Nov 2007) | 3 lines
+
+ r1888@biokovo-amd64:  eserte | 2007-11-06 21:41:34 +0100
+ possible memory corruption, applied patch from http://rt.cpan.org/Ticket/Display.html?id=24542
+
+------------------------------------------------------------------------
+r10171 | srezic | 2007-11-06 21:14:21 +0100 (Di, 06 Nov 2007) | 3 lines
+
+ r1886@biokovo-amd64:  eserte | 2007-11-06 21:14:10 +0100
+ explained automatic bg/fg propagation
+
+------------------------------------------------------------------------
+r10162 | srezic | 2007-11-04 17:56:41 +0100 (So, 04 Nov 2007) | 3 lines
+
+ r1884@biokovo-amd64:  eserte | 2007-11-04 17:53:10 +0100
+ make sure that Canvas methods are really accessible in OnDestroy
+
+------------------------------------------------------------------------
+r10161 | srezic | 2007-11-04 17:07:13 +0100 (So, 04 Nov 2007) | 3 lines
+
+ r1882@biokovo-amd64:  eserte | 2007-11-04 17:07:02 +0100
+ at least documented segfault in Tk::LCD test suite with a (skipped) testcase
+
+------------------------------------------------------------------------
+r10160 | srezic | 2007-11-04 10:32:35 +0100 (So, 04 Nov 2007) | 3 lines
+
+ r1880@biokovo-amd64:  eserte | 2007-11-04 10:32:25 +0100
+ synchronised with Tk-Tree-4.72 (fixed packing in DirTreeDialog, 5.005 compat)
+
+------------------------------------------------------------------------
+r10158 | srezic | 2007-11-03 22:37:31 +0100 (Sa, 03 Nov 2007) | 3 lines
+
+ r1878@biokovo-amd64:  eserte | 2007-11-03 22:34:01 +0100
+ added test for Tk::DirTree
+
+------------------------------------------------------------------------
+r10157 | srezic | 2007-11-03 22:24:26 +0100 (Sa, 03 Nov 2007) | 3 lines
+
+ r1872@biokovo-amd64:  eserte | 2007-11-03 22:23:31 +0100
+ Tk-Tree sync done
+
+------------------------------------------------------------------------
+r10156 | srezic | 2007-11-03 22:24:15 +0100 (Sa, 03 Nov 2007) | 6 lines
+
+ r1871@biokovo-amd64:  eserte | 2007-11-03 22:18:43 +0100
+ synchronized with CPAN version of Tk-Tree which added
+ * add_pathimage
+ * child_entries
+ including documentation for those both methods
+
+------------------------------------------------------------------------
+r10155 | srezic | 2007-11-03 22:24:04 +0100 (Sa, 03 Nov 2007) | 3 lines
+
+ r1870@biokovo-amd64:  eserte | 2007-11-03 21:40:28 +0100
+ new section OTHER METHODS, taken from Tk-Tree distribution
+
+------------------------------------------------------------------------
+r10154 | srezic | 2007-11-03 22:23:53 +0100 (Sa, 03 Nov 2007) | 3 lines
+
+ r1869@biokovo-amd64:  eserte | 2007-11-03 21:37:03 +0100
+ inc'd versions
+
+------------------------------------------------------------------------
+r10153 | srezic | 2007-11-03 22:23:42 +0100 (Sa, 03 Nov 2007) | 3 lines
+
+ r1868@biokovo-amd64:  eserte | 2007-11-03 21:34:26 +0100
+ use strict, inc'd version
+
+------------------------------------------------------------------------
+r10146 | srezic | 2007-11-01 00:36:42 +0100 (Do, 01 Nov 2007) | 3 lines
+
+ r1866@biokovo-amd64:  eserte | 2007-11-01 00:36:16 +0100
+ applied patch from http://sourceforge.net/tracker/index.php?func=detail&aid=1374119&group_id=12997&atid=312997 (but not tested yet)
+
+------------------------------------------------------------------------
+r10090 | srezic | 2007-10-17 12:21:44 +0200 (Mi, 17 Okt 2007) | 2 lines
+
+* test rule in zlib Makefile: windows cannot cope with the "./command" syntax
+
+------------------------------------------------------------------------
+r10089 | srezic | 2007-10-17 10:19:20 +0200 (Mi, 17 Okt 2007) | 4 lines
+
+* fixed location of rgb.txt on Debian systems
+* rgb.txt is probably missing on MSWin32 systems, so protect the coloreditor
+  test from failures there (untested)
+
+------------------------------------------------------------------------
+r10080 | srezic | 2007-10-14 13:27:03 +0200 (So, 14 Okt 2007) | 7 lines
+
+ r1861@biokovo-amd64:  eserte | 2007-10-14 13:26:50 +0200
+ * solved chooseColor issue reported in
+   http://groups.google.com/group/comp.lang.perl.tk/browse_frm/thread/8a1f994f532648be
+   (only first color dialog gets a color list)
+ * additional tests for ColorEditor
+ * make sure a destroyed waiting color dialog does not "block" the application
+
+------------------------------------------------------------------------
+r10079 | srezic | 2007-10-14 08:47:07 +0200 (So, 14 Okt 2007) | 3 lines
+
+ r1859@biokovo-amd64:  eserte | 2007-10-14 08:46:59 +0200
+ File::Spec does not export DynaLoader (bug spotted by Christoph Lamprecht)
+
+------------------------------------------------------------------------
+r10076 | srezic | 2007-10-12 21:27:44 +0200 (Fr, 12 Okt 2007) | 3 lines
+
+ r1857@biokovo-amd64:  eserte | 2007-10-12 21:26:38 +0200
+ use File::Spec to avoid problems with double-slashes (which are nearly fatal under cygwin)
+
+------------------------------------------------------------------------
+r10055 | srezic | 2007-10-06 14:53:26 +0200 (Sa, 06 Okt 2007) | 3 lines
+
+ r1854@biokovo-amd64:  eserte | 2007-10-06 14:53:18 +0200
+ note for older perls
+
+------------------------------------------------------------------------
+r9974 | srezic | 2007-09-22 00:46:56 +0200 (Sa, 22 Sep 2007) | 3 lines
+
+ r1850@biokovo:  eserte | 2007-09-22 00:46:11 +0200
+ increased versions
+
+------------------------------------------------------------------------
+r9973 | srezic | 2007-09-22 00:46:30 +0200 (Sa, 22 Sep 2007) | 3 lines
+
+ r1849@biokovo:  eserte | 2007-09-22 00:17:44 +0200
+ increased version to 804.027_501
+
+------------------------------------------------------------------------
+r9972 | srezic | 2007-09-22 00:46:19 +0200 (Sa, 22 Sep 2007) | 3 lines
+
+ r1848@biokovo:  eserte | 2007-09-22 00:17:23 +0200
+ Changes for the 804.027_501 release
+
+------------------------------------------------------------------------
+r9955 | srezic | 2007-09-21 00:58:03 +0200 (Fr, 21 Sep 2007) | 3 lines
+
+ r1846@biokovo-amd64:  eserte | 2007-09-21 00:57:53 +0200
+ 2nd attempt for ceasing warning
+
+------------------------------------------------------------------------
+r9954 | srezic | 2007-09-20 21:12:08 +0200 (Do, 20 Sep 2007) | 3 lines
+
+ r1844@biokovo-amd64:  eserte | 2007-09-20 21:12:01 +0200
+ wait zwo seconds instead only one before using SIGKILL
+
+------------------------------------------------------------------------
+r9953 | srezic | 2007-09-20 21:10:04 +0200 (Do, 20 Sep 2007) | 3 lines
+
+ r1841@biokovo-amd64:  eserte | 2007-09-20 21:09:34 +0200
+ cease warning
+
+------------------------------------------------------------------------
+r9952 | srezic | 2007-09-20 21:09:53 +0200 (Do, 20 Sep 2007) | 3 lines
+
+ r1840@biokovo-amd64:  eserte | 2007-09-20 21:09:15 +0200
+ corrected number of tests
+
+------------------------------------------------------------------------
+r9948 | srezic | 2007-09-16 22:52:43 +0200 (So, 16 Sep 2007) | 3 lines
+
+ r1838@biokovo-amd64:  eserte | 2007-09-16 22:52:33 +0200
+ fix for not working 'hide entry' in HList, together with tests for show/hide
+
+------------------------------------------------------------------------
+r9927 | srezic | 2007-09-10 16:37:30 +0200 (Mo, 10 Sep 2007) | 3 lines
+
+ r1835@biokovo-amd64:  eserte | 2007-09-10 16:37:22 +0200
+ about MouseWheel on windows
+
+------------------------------------------------------------------------
+r9818 | srezic | 2007-07-31 19:44:50 +0200 (Di, 31 Jul 2007) | 1 line
+
+fixed number of tests
+------------------------------------------------------------------------
+r9816 | srezic | 2007-07-31 00:11:44 +0200 (Di, 31 Jul 2007) | 3 lines
+
+ r1833@biokovo-amd64:  eserte | 2007-07-31 00:11:28 +0200
+ update of Button and Button-related Pods, more interactive tests
+
+------------------------------------------------------------------------
+r9815 | srezic | 2007-07-30 23:42:40 +0200 (Mo, 30 Jul 2007) | 3 lines
+
+ r1830@biokovo-amd64:  eserte | 2007-07-30 23:42:16 +0200
+ implemented -overrelief,-repeatinterval,-repeatdelay for Tk::Button, together with new test suite
+
+------------------------------------------------------------------------
+r9814 | srezic | 2007-07-30 23:42:24 +0200 (Mo, 30 Jul 2007) | 3 lines
+
+ r1829@biokovo-amd64:  eserte | 2007-07-30 22:13:33 +0200
+ 
+
+------------------------------------------------------------------------
+r9790 | srezic | 2007-07-23 22:52:01 +0200 (Mo, 23 Jul 2007) | 3 lines
+
+ r1825@biokovo-amd64:  eserte | 2007-07-23 22:50:05 +0200
+ documented the Widget() method and added a test
+
+------------------------------------------------------------------------
+r9789 | srezic | 2007-07-23 22:51:50 +0200 (Mo, 23 Jul 2007) | 3 lines
+
+ r1824@biokovo-amd64:  eserte | 2007-07-23 22:43:40 +0200
+ resorted methods alphabetically
+
+------------------------------------------------------------------------
+r9788 | srezic | 2007-07-23 22:51:40 +0200 (Mo, 23 Jul 2007) | 3 lines
+
+ r1823@biokovo-amd64:  eserte | 2007-07-23 22:37:21 +0200
+ added a defined check; spotted by Amit.Didwania
+
+------------------------------------------------------------------------
+r9741 | srezic | 2007-07-15 20:53:30 +0200 (So, 15 Jul 2007) | 3 lines
+
+ r1819@biokovo-amd64:  eserte | 2007-07-15 20:52:59 +0200
+ use PNG_sRGB_SUPPORTED and PNG_gAMA_SUPPORTED, removes gcc warnings and enables compiling with Sun compiler
+
+------------------------------------------------------------------------
+r9740 | srezic | 2007-07-15 20:53:21 +0200 (So, 15 Jul 2007) | 3 lines
+
+ r1818@biokovo-amd64:  eserte | 2007-07-15 20:52:03 +0200
+ extracted getNextFocus and getPrevFocus out of focusNext/Prev
+
+------------------------------------------------------------------------
+r9739 | srezic | 2007-07-15 20:53:11 +0200 (So, 15 Jul 2007) | 3 lines
+
+ r1817@biokovo-amd64:  eserte | 2007-07-15 20:51:21 +0200
+ more Debian instructions
+
+------------------------------------------------------------------------
+r9733 | srezic | 2007-07-12 22:25:40 +0200 (Do, 12 Jul 2007) | 3 lines
+
+ r1815@biokovo-amd64:  eserte | 2007-07-12 22:25:31 +0200
+ added an empty test rule, needed for new MakeMaker and freebsd/amd64 and darwin
+
+------------------------------------------------------------------------
+r9727 | srezic | 2007-07-12 08:27:27 +0200 (Do, 12 Jul 2007) | 5 lines
+
+ r1812@biokovo-amd64:  eserte | 2007-07-12 01:14:22 +0200
+ fixed setPalette and RecolorTree (using Tcl/Tk's current version;
+ solves problems if colors in X11's option database are defined (like by
+ default in KDE)
+
+------------------------------------------------------------------------
+r9726 | srezic | 2007-07-12 08:27:15 +0200 (Do, 12 Jul 2007) | 3 lines
+
+ r1811@biokovo-amd64:  eserte | 2007-07-12 01:12:30 +0200
+ new widget demonstration showing ALL Tk widgets
+
+------------------------------------------------------------------------
+r9719 | srezic | 2007-07-11 00:53:29 +0200 (Mi, 11 Jul 2007) | 3 lines
+
+ r1809@biokovo-amd64:  eserte | 2007-07-11 00:53:06 +0200
+ documented Tk::DialogBox::Exit
+
+------------------------------------------------------------------------
+r9718 | srezic | 2007-07-11 00:05:43 +0200 (Mi, 11 Jul 2007) | 3 lines
+
+ r1806@biokovo-amd64:  eserte | 2007-07-11 00:05:11 +0200
+ Make sure waitVariable exits if a waiting dialog is destroyed, with interactive tests
+
+------------------------------------------------------------------------
+r9717 | srezic | 2007-07-11 00:05:28 +0200 (Mi, 11 Jul 2007) | 3 lines
+
+ r1805@biokovo-amd64:  eserte | 2007-07-11 00:04:30 +0200
+ success report for Windows
+
+------------------------------------------------------------------------
+r9706 | srezic | 2007-07-07 16:26:04 +0200 (Sa, 07 Jul 2007) | 3 lines
+
+ r1802@biokovo-amd64:  eserte | 2007-07-07 16:25:27 +0200
+ mention subversion repository
+
+------------------------------------------------------------------------
+r9705 | srezic | 2007-07-07 16:25:53 +0200 (Sa, 07 Jul 2007) | 3 lines
+
+ r1801@biokovo-amd64:  eserte | 2007-05-20 19:24:16 +0200
+ balloon demo: also test balloons in standard menubar
+
+------------------------------------------------------------------------
+r9506 | srezic | 2007-05-05 21:11:15 +0200 (Sa, 05 Mai 2007) | 3 lines
+
+ r1797@biokovo-amd64:  eserte | 2007-05-05 21:11:06 +0200
+ clarified some issues mentioned at annocpan; removed duplicated section
+
+------------------------------------------------------------------------
+r9493 | srezic | 2007-05-03 11:08:14 +0200 (Do, 03 Mai 2007) | 2 lines
+
+look in more locations for cursorfont.h
+
+------------------------------------------------------------------------
+r9448 | srezic | 2007-04-24 22:39:40 +0200 (Di, 24 Apr 2007) | 3 lines
+
+ r1795@biokovo:  eserte | 2007-04-24 22:29:52 +0200
+ bleedperl #31027 changed pregcomp call
+
+------------------------------------------------------------------------
+r9447 | srezic | 2007-04-24 00:05:30 +0200 (Di, 24 Apr 2007) | 3 lines
+
+ r1793@biokovo:  eserte | 2007-04-24 00:05:22 +0200
+ remove warning in MasterMenu
+
+------------------------------------------------------------------------
+r9443 | srezic | 2007-04-22 22:39:39 +0200 (So, 22 Apr 2007) | 3 lines
+
+ r1789@biokovo:  eserte | 2007-04-22 22:39:03 +0200
+ fixed problems with property method on 64 bit platforms, with new test
+
+------------------------------------------------------------------------
+r9442 | srezic | 2007-04-22 22:39:26 +0200 (So, 22 Apr 2007) | 3 lines
+
+ r1788@biokovo:  eserte | 2007-04-22 22:38:37 +0200
+ prepared Changes for new release _501
+
+------------------------------------------------------------------------
+r9441 | srezic | 2007-04-22 22:39:16 +0200 (So, 22 Apr 2007) | 4 lines
+
+ r1787@biokovo:  eserte | 2007-04-22 22:38:11 +0200
+ fixed a new problem in HList (addChild with empty string) which occurred
+ with change r1465@biokovo
+
+------------------------------------------------------------------------
+r9440 | srezic | 2007-04-20 23:09:55 +0200 (Fr, 20 Apr 2007) | 4 lines
+
+ r1784@biokovo:  eserte | 2007-04-20 23:09:21 +0200
+ HList: fixed errors with disabled entries and a entry named 0, see Message-ID:
+ <bcb829052b42a0dabd486aefe4adaad4@localhost.talkaboutprogramming.com>
+
+------------------------------------------------------------------------
+r9439 | srezic | 2007-04-20 23:09:36 +0200 (Fr, 20 Apr 2007) | 3 lines
+
+ r1783@biokovo:  eserte | 2007-04-13 22:01:43 +0200
+ updated MANIFEST
+
+------------------------------------------------------------------------
+r9377 | srezic | 2007-04-06 10:57:46 +0200 (Fr, 06 Apr 2007) | 3 lines
+
+ r1781@biokovo:  eserte | 2007-04-06 10:45:52 +0200
+ bleedperl #30841 changed pmop structure
+
+------------------------------------------------------------------------
+r9371 | srezic | 2007-03-30 21:04:32 +0200 (Fr, 30 Mär 2007) | 4 lines
+
+ r1779@biokovo:  eserte | 2007-03-30 21:04:22 +0200
+ missing file and change for:
+ bleedperl #30769 changed regexp structure
+
+------------------------------------------------------------------------
+r9363 | srezic | 2007-03-29 23:48:29 +0200 (Do, 29 Mär 2007) | 4 lines
+
+ r1777@biokovo:  eserte | 2007-03-29 23:38:32 +0200
+ font.t: skip times-related tests if a times replacement was chosen by Tk or
+ X11. Problem reported by Ch Lamprecht
+
+------------------------------------------------------------------------
+r9362 | srezic | 2007-03-29 22:57:02 +0200 (Do, 29 Mär 2007) | 5 lines
+
+ r1775@biokovo:  eserte | 2007-03-29 22:56:47 +0200
+ fixed situation when resizing a mainwindow containing a PNG image crashed Tk
+ Tcl/Tk bug 979239 fixed by George Peter Staplin, brought to Perl/Tk by
+ Franck Aniere
+
+------------------------------------------------------------------------
+r9361 | srezic | 2007-03-29 22:07:33 +0200 (Do, 29 Mär 2007) | 3 lines
+
+ r1773@biokovo:  eserte | 2007-03-29 22:02:20 +0200
+ bleedperl #30769 changed regexp structure
+
+------------------------------------------------------------------------
+r9321 | srezic | 2007-03-24 22:26:27 +0100 (Sa, 24 Mär 2007) | 4 lines
+
+ r1771@biokovo:  eserte | 2007-03-24 22:26:18 +0100
+ adapt path for getOpen/SaveFile's -initialfile and -initialdir to the os
+ patch provided by Roland Minner
+
+------------------------------------------------------------------------
+r9320 | srezic | 2007-03-24 22:16:24 +0100 (Sa, 24 Mär 2007) | 4 lines
+
+ r1769@biokovo:  eserte | 2007-03-24 22:16:14 +0100
+ Fix for Tk::NoteBook: -dynamicgeometry did not work
+ (Spotted by Ch Lamprecht)
+
+------------------------------------------------------------------------
+r9318 | srezic | 2007-03-24 21:49:16 +0100 (Sa, 24 Mär 2007) | 4 lines
+
+ r1767@biokovo:  eserte | 2007-03-24 21:49:04 +0100
+ [PATCH] Tk/Widget.pm: fix perl syntax by Alexey Tourbin
+ http://rt.cpan.org/Ticket/Display.html?id=25119
+
+------------------------------------------------------------------------
+r9209 | srezic | 2007-03-03 00:25:43 +0100 (Sa, 03 Mär 2007) | 3 lines
+
+ r1765@biokovo:  eserte | 2007-03-03 00:25:33 +0100
+ qr{} should be replaced by q{}, spotted by Ch Lamprecht
+
+------------------------------------------------------------------------
+r9208 | srezic | 2007-03-02 20:38:02 +0100 (Fr, 02 Mär 2007) | 3 lines
+
+ r1761@biokovo:  eserte | 2007-03-02 20:37:25 +0100
+ 
+
+------------------------------------------------------------------------
+r9207 | srezic | 2007-03-02 20:37:52 +0100 (Fr, 02 Mär 2007) | 3 lines
+
+ r1760@biokovo:  eserte | 2007-03-02 20:37:17 +0100
+ test for notebook balloon; make main window smaller
+
+------------------------------------------------------------------------
+r9206 | srezic | 2007-03-02 20:37:40 +0100 (Fr, 02 Mär 2007) | 3 lines
+
+ r1759@biokovo:  eserte | 2007-03-02 20:36:51 +0100
+ deactivate Balloon if not on a tab
+
+------------------------------------------------------------------------
+r9109 | srezic | 2007-02-15 00:29:57 +0100 (Do, 15 Feb 2007) | 3 lines
+
+ r1754@biokovo:  eserte | 2007-02-14 23:29:25 +0100
+ added BalloonInfo to NoteBook, along with tests
+
+------------------------------------------------------------------------
+r9108 | srezic | 2007-02-15 00:29:46 +0100 (Do, 15 Feb 2007) | 3 lines
+
+ r1753@biokovo:  eserte | 2007-02-14 23:29:06 +0100
+ FreeBSD/amd64 also needs configure for libpng
+
+------------------------------------------------------------------------
+r9107 | srezic | 2007-02-15 00:29:35 +0100 (Do, 15 Feb 2007) | 3 lines
+
+ r1752@biokovo:  eserte | 2007-02-14 23:22:52 +0100
+ converted balloon.t to Test::More
+
+------------------------------------------------------------------------
+r9097 | srezic | 2007-02-13 00:09:47 +0100 (Di, 13 Feb 2007) | 5 lines
+
+ r1750@biokovo:  eserte | 2007-02-12 23:09:34 +0100
+ ptked: Encoding menu now with radiobuttons, also added some popular encodings
+ to menu
+ ToDo updated with recent test failures (Altix etc.)
+
+------------------------------------------------------------------------
+r9096 | srezic | 2007-02-12 23:16:58 +0100 (Mo, 12 Feb 2007) | 3 lines
+
+ r1747@biokovo:  eserte | 2007-02-12 21:55:04 +0100
+ Fixed zlib compilation problem under Windows (unistd.h does not exist there). Reported by esskar.
+
+------------------------------------------------------------------------
+r9095 | srezic | 2007-02-12 23:16:48 +0100 (Mo, 12 Feb 2007) | 3 lines
+
+ r1746@biokovo:  eserte | 2007-02-12 21:54:10 +0100
+ fixed configure problems on mixed 32/64 bit architectures, patch by Steve Lidie
+
+------------------------------------------------------------------------
+r9090 | srezic | 2007-02-12 18:29:26 +0100 (Mo, 12 Feb 2007) | 2 lines
+
+ignoring a lot of (generated) files
+
+------------------------------------------------------------------------
+r9088 | srezic | 2007-02-12 18:25:56 +0100 (Mo, 12 Feb 2007) | 1 line
+
+ptked todos
+------------------------------------------------------------------------
+r9078 | srezic | 2007-02-12 00:24:40 +0100 (Mo, 12 Feb 2007) | 3 lines
+
+ r1741@biokovo:  eserte | 2007-02-11 23:24:27 +0100
+ Tk::Table's scrollbars now advertised like in Tk::Scrolled; new test file for Tk::Table
+
+------------------------------------------------------------------------
+r9077 | srezic | 2007-02-12 00:09:05 +0100 (Mo, 12 Feb 2007) | 3 lines
+
+ r1738@biokovo:  eserte | 2007-02-11 23:08:57 +0100
+ ptksh: history listbox expands now
+
+------------------------------------------------------------------------
+r9074 | srezic | 2007-02-11 18:08:44 +0100 (So, 11 Feb 2007) | 3 lines
+
+ r1736@biokovo:  eserte | 2007-02-11 17:08:33 +0100
+ detect dtwm in 00wmcheck.t (not tested yet)
+
+------------------------------------------------------------------------
+r9073 | srezic | 2007-02-11 13:28:14 +0100 (So, 11 Feb 2007) | 3 lines
+
+ r1732@biokovo:  eserte | 2007-02-11 12:27:32 +0100
+ disable wm-time tests for slow X11 connections
+
+------------------------------------------------------------------------
+r9072 | srezic | 2007-02-11 13:28:01 +0100 (So, 11 Feb 2007) | 3 lines
+
+ r1731@biokovo:  eserte | 2007-02-11 12:27:08 +0100
+ Solaris 10 seems also to work
+
+------------------------------------------------------------------------
+r9068 | srezic | 2007-02-11 10:36:18 +0100 (So, 11 Feb 2007) | 3 lines
+
+ r1729@biokovo:  eserte | 2007-02-11 09:36:08 +0100
+ updated Changes; fixed version number in README.darwin
+
+------------------------------------------------------------------------
+r9067 | srezic | 2007-02-10 23:12:30 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1727@biokovo:  eserte | 2007-02-10 22:12:14 +0100
+ updated README.darwin: no more test failures with XFT=0
+
+------------------------------------------------------------------------
+r9066 | srezic | 2007-02-10 23:08:50 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1725@biokovo:  eserte | 2007-02-10 22:08:38 +0100
+ unicode.t: use utf-8 encoding for filenames on darwin (otherwise there are fatal errors)
+
+------------------------------------------------------------------------
+r9065 | srezic | 2007-02-10 22:51:41 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1723@biokovo:  eserte | 2007-02-10 21:51:30 +0100
+ inc'd version to 804.027_500
+
+------------------------------------------------------------------------
+r9064 | srezic | 2007-02-10 22:26:14 +0100 (Sa, 10 Feb 2007) | 7 lines
+
+ r1721@biokovo:  eserte | 2007-02-10 21:25:46 +0100
+ fixes to make Tk compile under Mac OS X 10.3
+ - libpng.a now builds correctly
+ - use X11INC for freetype include path, needed for Mac OS X
+ - updated README.darwin
+ - a tweak in entry.t (again different font metrics...)
+
+------------------------------------------------------------------------
+r9062 | srezic | 2007-02-10 16:37:06 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1719@biokovo:  eserte | 2007-02-10 15:36:55 +0100
+ png again compiles with Strawberry Perl (that is, dmake+gcc)
+
+------------------------------------------------------------------------
+r9061 | srezic | 2007-02-10 14:39:42 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1717@biokovo:  eserte | 2007-02-10 13:39:32 +0100
+ add new incompatible changes to 804delta pod
+
+------------------------------------------------------------------------
+r9060 | srezic | 2007-02-10 14:32:49 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1712@biokovo:  eserte | 2007-02-10 13:28:35 +0100
+ increased $VERSION
+
+------------------------------------------------------------------------
+r9059 | srezic | 2007-02-10 14:31:57 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1711@biokovo:  eserte | 2007-02-10 13:28:14 +0100
+ new helper for checking $VERSION strings
+
+------------------------------------------------------------------------
+r9058 | srezic | 2007-02-10 14:31:47 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1707@biokovo:  eserte | 2007-02-10 10:07:56 +0100
+ updated log for forthcoming release
+
+------------------------------------------------------------------------
+r9057 | srezic | 2007-02-10 14:31:37 +0100 (Sa, 10 Feb 2007) | 891 lines
+
+ r1706@biokovo:  eserte | 2007-02-10 09:58:15 +0100
+  r1493@biokovo (orig r8842):  eserte | 2006-10-23 23:51:54 +0200
+  initial checkin
+  r1494@biokovo (orig r8843):  eserte | 2006-10-24 00:25:33 +0200
+  applied informal patch from
+  https://rt.cpan.org/Ticket/Display.html?id=16053
+  
+  r1495@biokovo (orig r8844):  eserte | 2006-10-24 00:37:11 +0200
+  patch from
+  http://groups.google.com/group/comp.lang.perl.tk/browse_frm/thread/b8a65eadd66b2efe/97500370b02e1642?lnk=st&q=perl+tk+xlib+windows&rnum=1#97500370b02e1642
+  
+  r1496@biokovo (orig r8845):  eserte | 2006-10-24 01:14:17 +0200
+  documented Walk, as wished in
+  https://rt.cpan.org/Ticket/Display.html?id=394
+  
+  r1497@biokovo (orig r8846):  eserte | 2006-10-24 01:31:25 +0200
+  automatically changed by Makefile?
+  
+  r1498@biokovo (orig r8847):  eserte | 2006-10-24 01:32:56 +0200
+  see https://rt.cpan.org/Ticket/Display.html?id=6166
+  
+  r1499@biokovo (orig r8848):  eserte | 2006-10-30 23:14:48 +0100
+  https://rt.cpan.org/Ticket/Display.html?id=6708
+  r1500@biokovo (orig r8849):  eserte | 2006-10-30 23:28:55 +0100
+   r1075@biokovo:  eserte | 2006-10-30 23:28:40 +0100
+   http://rt.cpan.org/Ticket/Display.html?id=8567
+  
+  r1501@biokovo (orig r8850):  eserte | 2006-10-31 00:44:04 +0100
+   r1077@biokovo:  eserte | 2006-10-31 00:43:55 +0100
+   converted from Test to Test::More
+   force wm dependent tests with -wmtest option
+   enable all Unicode related tests
+  
+  r1502@biokovo (orig r8851):  eserte | 2006-10-31 01:19:13 +0100
+   r1079@biokovo:  eserte | 2006-10-31 01:19:05 +0100
+   manually merged from the Tcl/Tk counterpart from January 2006 to fix
+   http://rt.cpan.org/Ticket/Display.html?id=6026
+  
+  r1503@biokovo (orig r8852):  eserte | 2006-10-31 01:29:58 +0100
+   r1081@biokovo:  eserte | 2006-10-31 01:29:52 +0100
+   strip DOS newlines from user contributed demos titles
+  
+  r1504@biokovo (orig r8853):  eserte | 2006-10-31 01:34:05 +0100
+   r1083@biokovo:  eserte | 2006-10-31 01:34:00 +0100
+   Ctrl-Q accelerator, changed date
+  
+  r1505@biokovo (orig r8854):  eserte | 2006-10-31 01:43:06 +0100
+   r1085@biokovo:  eserte | 2006-10-31 01:42:57 +0100
+   change in ConfigureWinItem to fix
+   https://rt.cpan.org/Ticket/Display.html?id=4677
+   (which is the same as Bug 982248 in the Tcl/Tk version)
+  
+  r1506@biokovo (orig r8855):  eserte | 2006-11-01 23:06:21 +0100
+   r1087@biokovo:  eserte | 2006-11-01 23:05:07 +0100
+   entry.t/listbox.t tests work also with Xft
+  
+  r1507@biokovo (orig r8856):  eserte | 2006-11-02 22:28:44 +0100
+   r1089@biokovo:  eserte | 2006-11-02 22:28:36 +0100
+   avoid ptksh initial slowness and when popping up history
+  
+  r1508@biokovo (orig r8857):  eserte | 2006-11-02 23:26:49 +0100
+   r1091@biokovo:  eserte | 2006-11-02 22:51:47 +0100
+   started conversion from tcl original
+  
+  r1509@biokovo (orig r8858):  eserte | 2006-11-02 23:27:13 +0100
+   r1092@biokovo:  eserte | 2006-11-02 23:26:40 +0100
+   more tests converted
+  
+  r1510@biokovo (orig r8859):  eserte | 2006-11-03 19:26:42 +0100
+  corrected no of tests
+  r1511@biokovo (orig r8860):  eserte | 2006-11-03 19:27:27 +0100
+  allow setting defines in try_run/compile
+  r1512@biokovo (orig r8861):  eserte | 2006-11-03 19:35:26 +0100
+  NEED_FT2BUILD_H macro to get XFT build on an old RedHat version
+  r1513@biokovo (orig r8862):  eserte | 2006-11-03 19:50:53 +0100
+  update
+  r1514@biokovo (orig r8863):  eserte | 2006-11-03 22:02:21 +0100
+   r1100@biokovo:  eserte | 2006-11-03 22:01:18 +0100
+   translation completed
+  
+  r1515@biokovo (orig r8864):  eserte | 2006-11-04 14:18:40 +0100
+   r1102@biokovo:  eserte | 2006-11-04 14:18:29 +0100
+   x is an alias for d
+   font handling: force fixed font, use bold font for prompt
+  
+  r1516@biokovo (orig r8865):  eserte | 2006-11-04 14:56:23 +0100
+   r1104@biokovo:  eserte | 2006-11-04 14:53:49 +0100
+   Pasting selection with middle mouse sets cursor position now
+  
+  r1517@biokovo (orig r8866):  eserte | 2006-11-04 14:56:41 +0100
+   r1105@biokovo:  eserte | 2006-11-04 14:56:17 +0100
+   adjusted VERSION
+  
+  r1518@biokovo (orig r8867):  eserte | 2006-11-04 16:21:13 +0100
+   r1108@biokovo:  eserte | 2006-11-04 16:21:05 +0100
+   minor Pod tweaks
+  
+  r1519@biokovo (orig r8868):  eserte | 2006-11-05 11:43:59 +0100
+   r1110@biokovo:  eserte | 2006-11-05 11:43:03 +0100
+   enable tests for Xft builds; shorter delay before exit
+  
+  r1520@biokovo (orig r8869):  eserte | 2006-11-05 11:44:23 +0100
+   r1111@biokovo:  eserte | 2006-11-05 11:43:19 +0100
+   warning fix
+  
+  r1521@biokovo (orig r8870):  eserte | 2006-11-05 11:44:43 +0100
+   r1112@biokovo:  eserte | 2006-11-05 11:43:38 +0100
+   new ToDos
+  
+  r1522@biokovo (orig r8871):  eserte | 2006-11-05 11:45:05 +0100
+   r1113@biokovo:  eserte | 2006-11-05 11:43:52 +0100
+   inc VERSION
+  
+  r1523@biokovo (orig r8872):  eserte | 2006-11-05 21:09:57 +0100
+   r1118@biokovo:  eserte | 2006-11-05 19:52:32 +0100
+   
+  
+  r1524@biokovo (orig r8873):  eserte | 2006-11-05 21:10:19 +0100
+   r1119@biokovo:  eserte | 2006-11-05 19:53:41 +0100
+   integrate Tcl/Tk version 1.51, not fully completed
+  
+  r1525@biokovo (orig r8874):  eserte | 2006-11-05 21:11:09 +0100
+   r1120@biokovo:  eserte | 2006-11-05 21:09:49 +0100
+   iconphoto implementation, documentation and test
+  
+  r1526@biokovo (orig r8875):  eserte | 2006-11-05 21:47:27 +0100
+   r1124@biokovo:  eserte | 2006-11-05 21:47:16 +0100
+   beginning new test file wm-tcl.t
+   ups, forgotten wrapper in tkUnixWm.c (but now it's tested in wm.t)
+   output of aspect is now a list
+  
+  r1527@biokovo (orig r8876):  eserte | 2006-11-06 00:04:00 +0100
+   r1126@biokovo:  eserte | 2006-11-06 00:02:27 +0100
+   completed 40% of original wm.test from Tcl/Tk
+  
+  r1528@biokovo (orig r8877):  eserte | 2006-11-06 00:04:21 +0100
+   r1127@biokovo:  eserte | 2006-11-06 00:03:33 +0100
+   incompatible changes: iconposition and wmGrid return lists now
+  
+  r1529@biokovo (orig r8878):  eserte | 2006-11-06 23:57:43 +0100
+   r1130@biokovo:  eserte | 2006-11-06 23:56:37 +0100
+   stackorder was missing
+  
+  r1530@biokovo (orig r8879):  eserte | 2006-11-06 23:58:03 +0100
+   r1131@biokovo:  eserte | 2006-11-06 23:57:15 +0100
+   removed unused char arrays, resizable also returns list now
+  
+  r1531@biokovo (orig r8880):  eserte | 2006-11-06 23:58:24 +0100
+   r1132@biokovo:  eserte | 2006-11-06 23:57:31 +0100
+   completed nearly 80%
+  
+  r1532@biokovo (orig r8881):  eserte | 2006-11-07 23:57:03 +0100
+   r1136@biokovo:  eserte | 2006-11-07 22:04:47 +0100
+   completed
+  
+  r1533@biokovo (orig r8882):  eserte | 2006-11-08 00:03:38 +0100
+   r1137@biokovo:  eserte | 2006-11-07 22:05:42 +0100
+   set no of tests
+  
+  r1534@biokovo (orig r8883):  eserte | 2006-11-08 00:03:56 +0100
+   r1138@biokovo:  eserte | 2006-11-07 23:41:37 +0100
+   missing geometry
+  
+  r1535@biokovo (orig r8884):  eserte | 2006-11-08 00:04:15 +0100
+   r1139@biokovo:  eserte | 2006-11-07 23:42:18 +0100
+   translated fullscreen tests; some TODO tests for metacity; -poswin is default
+  
+  r1536@biokovo (orig r8885):  eserte | 2006-11-08 00:04:33 +0100
+   r1140@biokovo:  eserte | 2006-11-07 23:42:52 +0100
+   make wmTracing working
+  
+  r1537@biokovo (orig r8886):  eserte | 2006-11-08 00:04:56 +0100
+   r1141@biokovo:  eserte | 2006-11-07 23:43:12 +0100
+   tests for wmTracing; blocks
+  
+  r1538@biokovo (orig r8887):  eserte | 2006-11-08 00:05:18 +0100
+   r1142@biokovo:  eserte | 2006-11-07 23:56:34 +0100
+   Test -> Test::More
+   made one critical test case a TODO test (fails sometimes on metacity)
+  
+  r1539@biokovo (orig r8888):  eserte | 2006-11-08 19:41:37 +0100
+  even more wm tests may fail on older metacity
+  r1540@biokovo (orig r8889):  eserte | 2006-11-08 19:58:19 +0100
+  more wm tests may fail on newer fvwm 2.5.18
+  r1541@biokovo (orig r8890):  eserte | 2006-11-09 00:39:11 +0100
+   r1153@biokovo:  eserte | 2006-11-08 22:06:24 +0100
+   converted to Test::More
+  
+  r1542@biokovo (orig r8891):  eserte | 2006-11-09 00:39:34 +0100
+   r1154@biokovo:  eserte | 2006-11-08 23:28:34 +0100
+   new listbox tests: -listvar, itemconfigure
+  
+  r1543@biokovo (orig r8892):  eserte | 2006-11-09 00:39:53 +0100
+   r1155@biokovo:  eserte | 2006-11-09 00:14:14 +0100
+   more failure statistics
+  
+  r1544@biokovo (orig r8893):  eserte | 2006-11-09 00:40:14 +0100
+   r1156@biokovo:  eserte | 2006-11-09 00:14:37 +0100
+   show current window manager information before starting tests
+  
+  r1545@biokovo (orig r8894):  eserte | 2006-11-09 00:40:36 +0100
+   r1157@biokovo:  eserte | 2006-11-09 00:38:24 +0100
+   some minor TextList fixes, but still more than half of the tests fail
+  
+  r1546@biokovo (orig r8895):  eserte | 2006-11-11 01:30:18 +0100
+   r1163@biokovo:  eserte | 2006-11-11 01:30:06 +0100
+   tearOffMenu:
+     added an "Exists" protection (like in the Tcl original)
+     explicitely set state to normal
+  
+  r1547@biokovo (orig r8896):  eserte | 2006-11-11 01:53:07 +0100
+   r1165@biokovo:  eserte | 2006-11-11 01:52:58 +0100
+   protect some grabGlobal calls, should fix
+   https://rt.cpan.org/Public/Bug/Display.html?id=15677
+  
+  r1548@biokovo (orig r8897):  eserte | 2006-11-11 03:03:57 +0100
+   r1167@biokovo:  eserte | 2006-11-11 03:02:42 +0100
+   ups, typo
+  
+  r1549@biokovo (orig r8898):  eserte | 2006-11-11 03:04:16 +0100
+   r1168@biokovo:  eserte | 2006-11-11 03:03:46 +0100
+   tearoff menus: swaped call of tearOffMenu and Unpost, now title of tearoff
+   menu is set correctly
+  
+  r1550@biokovo (orig r8899):  eserte | 2006-11-11 15:59:31 +0100
+   r1171@biokovo:  eserte | 2006-11-11 15:59:24 +0100
+   cease warnings caused by underscore in VERSION
+  
+  r1551@biokovo (orig r8900):  eserte | 2006-11-12 00:45:25 +0100
+   r1173@biokovo:  eserte | 2006-11-11 23:55:25 +0100
+   moved Item.pod to Menu subdirectory
+  
+  r1552@biokovo (orig r8901):  eserte | 2006-11-12 00:45:44 +0100
+   r1174@biokovo:  eserte | 2006-11-11 23:56:13 +0100
+   moved Item.pod to Menu subdirectory
+  
+  r1553@biokovo (orig r8902):  eserte | 2006-11-12 00:46:02 +0100
+   r1175@biokovo:  eserte | 2006-11-11 23:56:36 +0100
+   minor Pod fixes
+  
+  r1554@biokovo (orig r8903):  eserte | 2006-11-12 00:46:50 +0100
+   r1176@biokovo:  eserte | 2006-11-12 00:14:59 +0100
+   more Pod fixes
+  
+  r1555@biokovo (orig r8904):  eserte | 2006-11-12 00:47:12 +0100
+   r1177@biokovo:  eserte | 2006-11-12 00:15:21 +0100
+   CmdLine Pod now only in own file; updated
+  
+  r1556@biokovo (orig r8905):  eserte | 2006-11-12 00:47:35 +0100
+   r1178@biokovo:  eserte | 2006-11-12 00:24:00 +0100
+   fix: starting empty ptksh now possible again
+  
+  r1557@biokovo (orig r8906):  eserte | 2006-11-12 00:47:51 +0100
+   r1179@biokovo:  eserte | 2006-11-12 00:27:20 +0100
+   added missing option dashes in gedi
+  
+  r1558@biokovo (orig r8907):  eserte | 2006-11-12 00:48:07 +0100
+   r1180@biokovo:  eserte | 2006-11-12 00:32:45 +0100
+   added -server option; dies if no NNTP server could be connected
+  
+  r1559@biokovo (orig r8908):  eserte | 2006-11-14 00:49:33 +0100
+   r1189@biokovo:  eserte | 2006-11-13 21:24:23 +0100
+   automatically rebuild Makefiles preserve all MakeMaker arguments, especially XFT
+  
+  r1560@biokovo (orig r8909):  eserte | 2006-11-14 00:49:52 +0100
+   r1190@biokovo:  eserte | 2006-11-13 22:00:45 +0100
+   can handle non-ascii chars in directory and file names, at least under Unix
+  
+  r1561@biokovo (orig r8910):  eserte | 2006-11-14 00:50:18 +0100
+   r1191@biokovo:  eserte | 2006-11-13 22:56:05 +0100
+   beginnings of t/text.t
+  
+  r1562@biokovo (orig r8911):  eserte | 2006-11-14 00:50:39 +0100
+   r1192@biokovo:  eserte | 2006-11-13 22:56:31 +0100
+   added more widgets to basic test
+  
+  r1563@biokovo (orig r8912):  eserte | 2006-11-14 00:50:56 +0100
+   r1193@biokovo:  eserte | 2006-11-14 00:40:57 +0100
+   
+  
+  r1564@biokovo (orig r8913):  eserte | 2006-11-14 00:51:20 +0100
+   r1194@biokovo:  eserte | 2006-11-14 00:48:13 +0100
+   corrected number of tests
+  
+  r1565@biokovo (orig r8914):  eserte | 2006-11-14 00:51:37 +0100
+   r1195@biokovo:  eserte | 2006-11-14 00:48:50 +0100
+   added UnderlineAmpersand et al. (primarily for Tk::MsgBox support)
+  
+  r1566@biokovo (orig r8915):  eserte | 2006-11-14 00:52:03 +0100
+   r1196@biokovo:  eserte | 2006-11-14 00:49:15 +0100
+   first implementation of Tk::MsgBox, together with tests
+  
+  r1567@biokovo (orig r8916):  eserte | 2006-11-14 01:17:25 +0100
+   r1205@biokovo:  eserte | 2006-11-14 01:17:05 +0100
+   extended messgebox demonstration: may select MsgBox implementation or old DialogBox implementation
+  
+  r1568@biokovo (orig r8917):  eserte | 2006-11-16 00:18:34 +0100
+   r1207@biokovo:  eserte | 2006-11-14 20:49:37 +0100
+   some cleanup in UnderlineAmpersand and MsgBox support
+  
+  r1569@biokovo (orig r8918):  eserte | 2006-11-16 00:18:51 +0100
+   r1208@biokovo:  eserte | 2006-11-14 20:52:09 +0100
+   make distcheck is now silent
+  
+  r1570@biokovo (orig r8919):  eserte | 2006-11-16 00:19:09 +0100
+   r1209@biokovo:  eserte | 2006-11-14 23:36:39 +0100
+   MANIFEST.SKIP is generated by MANIFEST.SKIP.PL
+  
+  r1571@biokovo (orig r8920):  eserte | 2006-11-16 00:19:35 +0100
+   r1210@biokovo:  eserte | 2006-11-15 22:30:52 +0100
+   solved core dump when using font patterns and Xft
+  
+  r1572@biokovo (orig r8921):  eserte | 2006-11-16 00:19:52 +0100
+   r1211@biokovo:  eserte | 2006-11-15 22:34:23 +0100
+   corrected number of tests
+  
+  r1573@biokovo (orig r8922):  eserte | 2006-11-16 00:20:15 +0100
+   r1212@biokovo:  eserte | 2006-11-16 00:18:08 +0100
+   Pod correction: wrong package name
+  
+  r1574@biokovo (orig r8923):  eserte | 2006-11-16 01:37:29 +0100
+   r1219@biokovo:  eserte | 2006-11-16 01:37:15 +0100
+   converted to Test::More; more test for leaking Tk::Listbox insert
+  
+  r1575@biokovo (orig r8924):  eserte | 2006-11-16 23:59:33 +0100
+   r1221@biokovo:  eserte | 2006-11-16 21:35:48 +0100
+   central -listvar check
+   more test names
+  
+  r1576@biokovo (orig r8925):  eserte | 2006-11-16 23:59:51 +0100
+   r1222@biokovo:  eserte | 2006-11-16 21:36:11 +0100
+   smaller values for leak check, 10 is enough
+  
+  r1577@biokovo (orig r8926):  eserte | 2006-11-17 00:00:09 +0100
+   r1223@biokovo:  eserte | 2006-11-16 21:41:22 +0100
+   maybe fixed listbox deletion leak, reported in http://rt.cpan.org/Ticket/Display.html?id=12466
+  
+  r1578@biokovo (orig r8927):  eserte | 2006-11-17 00:00:39 +0100
+   r1224@biokovo:  eserte | 2006-11-16 22:02:54 +0100
+   new unicode-related tests
+  
+  r1579@biokovo (orig r8928):  eserte | 2006-11-17 00:01:11 +0100
+   r1225@biokovo:  eserte | 2006-11-16 23:55:59 +0100
+   fixed loading of photos and bitmaps with non-ascii characters
+   see also Message-ID: <451e2719$0$21144$7a628cd7@news.club-internet.fr>
+   xpm pixmaps are not fixed yet
+  
+  r1580@biokovo (orig r8929):  eserte | 2006-11-19 14:43:36 +0100
+   r1231@biokovo:  eserte | 2006-11-18 16:32:56 +0100
+   ImgXpmGetDataFromFile now uses Tcl_Channel for file reading, thus filename
+   conversion from utf8 to native is now done right
+   pixmap.t converted to Test::More and added a test for non-existing pixmap
+   unicode.t now passes all tests
+  
+  r1581@biokovo (orig r8930):  eserte | 2006-11-19 14:43:54 +0100
+   r1232@biokovo:  eserte | 2006-11-19 14:43:03 +0100
+   removed META.yml from distro; let MakeMaker create a META.yml automatically
+  
+  r1582@biokovo (orig r8931):  eserte | 2006-11-19 22:51:09 +0100
+   r1235@biokovo:  eserte | 2006-11-19 22:43:13 +0100
+   moved Lang_Utf8ToBytes to encGlue.c, now static only
+  
+  r1583@biokovo (orig r8932):  eserte | 2006-11-19 22:51:26 +0100
+   r1236@biokovo:  eserte | 2006-11-19 22:43:50 +0100
+   prevent from generating a META.yml file
+  
+  r1584@biokovo (orig r8933):  eserte | 2006-11-19 22:52:02 +0100
+   r1237@biokovo:  eserte | 2006-11-19 22:50:46 +0100
+   various changes to make building under MSWin32 using Strawberry perl possible:
+     fixed libpng Makefile because dmake does not recognize "rem" as a command
+     the -use parameter for embedded windows accepts hex ids
+     fixed almost all tclish lists in tkWinWm.c (like formerly in tkUnixWm.c)
+     fixed wmTracing arguments (like formerly in tkUnixWM.c)
+     fixed widthInc and heightInc acceptance for wm grid
+     t/wm.t and t/wm-tcl.t now run under Windows, but with a lot of TODO tests
+  
+  r1585@biokovo (orig r8934):  eserte | 2006-11-19 23:06:39 +0100
+   r1241@biokovo:  eserte | 2006-11-19 23:06:20 +0100
+   fixed immediate ptksh core dump on Windows
+  
+  r1586@biokovo (orig r8935):  eserte | 2006-11-20 23:19:58 +0100
+   r1243@biokovo:  eserte | 2006-11-20 21:19:24 +0100
+   compiled Changes
+  
+  r1587@biokovo (orig r8936):  eserte | 2006-11-20 23:20:22 +0100
+   r1244@biokovo:  eserte | 2006-11-20 21:20:09 +0100
+   fixed wrong usage of $#{@...} which does not work anymore in bleedperl
+  
+  r1588@biokovo (orig r8937):  eserte | 2006-11-20 23:20:39 +0100
+   r1245@biokovo:  eserte | 2006-11-20 23:18:33 +0100
+   TclObjSetType: protect debugging code from unset type
+  
+  r1589@biokovo (orig r8938):  eserte | 2006-11-20 23:21:01 +0100
+   r1246@biokovo:  eserte | 2006-11-20 23:19:44 +0100
+   fix segfaults if undef font name was used in fontActual etc.
+   added tests to t/font.t which was also converted to Test::More
+  
+  r1590@biokovo (orig r8939):  eserte | 2006-11-20 23:53:17 +0100
+   r1251@biokovo:  eserte | 2006-11-20 23:52:58 +0100
+   last fix for fixing fontActual(undef) was not quite right, but hopefully now it is
+  
+  r1591@biokovo (orig r8940):  eserte | 2006-11-21 01:07:34 +0100
+   r1253@biokovo:  eserte | 2006-11-21 00:12:31 +0100
+   
+  
+  r1592@biokovo (orig r8941):  eserte | 2006-11-21 01:07:51 +0100
+   r1254@biokovo:  eserte | 2006-11-21 01:07:20 +0100
+   another unicode problem in Tk::Text, unfixed
+  
+  r1593@biokovo (orig r8942):  eserte | 2006-11-21 02:17:10 +0100
+   r1257@biokovo:  eserte | 2006-11-21 01:23:41 +0100
+   fixed Tk::Text movements wordstart and wordend in unicode content; new function Tcl_UniCharIsWordChar
+  
+  r1594@biokovo (orig r8943):  eserte | 2006-11-21 02:17:30 +0100
+   r1258@biokovo:  eserte | 2006-11-21 02:16:34 +0100
+   more test for unicode problems in Tk::Text (unfixed)
+  
+  r1595@biokovo (orig r8944):  eserte | 2006-11-21 20:25:42 +0100
+  make cygwin working with X11
+  r1596@biokovo (orig r8945):  eserte | 2006-11-21 22:43:48 +0100
+   r1263@biokovo:  eserte | 2006-11-21 22:28:36 +0100
+   Fix for segfault in t/regexp.t with perl 5.9.x. See also
+   http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/2006-02/msg00748.html
+   for a similar issue.
+  
+  r1597@biokovo (orig r8946):  eserte | 2006-11-22 00:09:20 +0100
+   r1265@biokovo:  eserte | 2006-11-21 23:00:31 +0100
+   disable fork.t and fileevent.t tests on cygwin
+  
+  r1598@biokovo (orig r8947):  eserte | 2006-11-22 00:09:38 +0100
+   r1266@biokovo:  eserte | 2006-11-21 23:12:09 +0100
+   skipping wm test which fail without a running window manager
+  
+  r1599@biokovo (orig r8948):  eserte | 2006-11-22 00:09:56 +0100
+   r1267@biokovo:  eserte | 2006-11-22 00:09:00 +0100
+   fixed font test: font family has to be matched case insensitive
+  
+  r1600@biokovo (orig r8949):  eserte | 2006-11-22 10:49:18 +0100
+  fix font-related failures on cygwin/X11
+  r1601@biokovo (orig r8950):  eserte | 2006-11-22 10:51:22 +0100
+  corrected number of tests
+  r1602@biokovo (orig r8951):  eserte | 2006-11-22 22:08:27 +0100
+   r1274@biokovo:  eserte | 2006-11-22 22:07:51 +0100
+   better handling of undef in BrowseEntry widgets
+   bug reported by Puetz Kevin A
+   Message-ID: <0B4BDC724143544EB509F90F7791EB64026EF8E1@edxmb16.jdnet.deere.com>
+  
+  r1603@biokovo (orig r8952):  eserte | 2006-11-23 00:12:03 +0100
+   r1276@biokovo:  eserte | 2006-11-22 23:28:03 +0100
+   corrected number of tests
+  
+  r1604@biokovo (orig r8953):  eserte | 2006-11-23 00:12:23 +0100
+   r1277@biokovo:  eserte | 2006-11-23 00:04:53 +0100
+   fixed number of tests
+  
+  r1605@biokovo (orig r8954):  eserte | 2006-11-23 00:12:45 +0100
+   r1278@biokovo:  eserte | 2006-11-23 00:06:16 +0100
+   fixed another core dump if configure(-font=>undef) was used (along with test cases)
+  
+  r1606@biokovo (orig r8955):  eserte | 2006-11-23 00:13:02 +0100
+   r1279@biokovo:  eserte | 2006-11-23 00:10:04 +0100
+   fixed wrong declaration in TclObjSetType
+  
+  r1607@biokovo (orig r8956):  eserte | 2006-11-23 01:59:51 +0100
+   r1284@biokovo:  eserte | 2006-11-23 01:59:34 +0100
+   yet another (unresolved) segfault with undefined font, just a skipped test case for now
+  
+  r1608@biokovo (orig r8957):  eserte | 2006-11-23 02:14:34 +0100
+   r1286@biokovo:  eserte | 2006-11-23 02:09:58 +0100
+   core dump with -font=>undef solved, but not perfect yet
+  
+  r1609@biokovo (orig r8958):  eserte | 2006-11-23 23:52:00 +0100
+   r1288@biokovo:  eserte | 2006-11-23 23:51:42 +0100
+   continued t/text.t conversion
+  
+  r1610@biokovo (orig r8959):  eserte | 2006-11-25 00:19:22 +0100
+   r1290@biokovo:  eserte | 2006-11-24 21:58:20 +0100
+   better checks if fonts have the expected metrics
+  
+  r1611@biokovo (orig r8960):  eserte | 2006-11-25 12:30:52 +0100
+   r1292@biokovo:  eserte | 2006-11-25 12:27:29 +0100
+   converted "%_" format string to "%"SVf to avoid warnings in bleadperl
+  
+  r1612@biokovo (orig r8961):  eserte | 2006-11-25 21:38:29 +0100
+   r1294@biokovo:  eserte | 2006-11-25 21:36:29 +0100
+   listbox test: confused $v and $v
+  
+  r1613@biokovo (orig r8962):  eserte | 2006-11-25 21:38:46 +0100
+   r1295@biokovo:  eserte | 2006-11-25 21:37:57 +0100
+   more warning fixes in tkGlue.c (occurred only id perl was compiled with
+   use64bitint)
+  
+  r1614@biokovo (orig r8963):  eserte | 2006-11-26 17:18:29 +0100
+   r1298@biokovo:  eserte | 2006-11-25 21:56:34 +0100
+   ceased warning in bleedperl, probably caused by cop_warnings change
+   (perl@27779)
+  
+  r1615@biokovo (orig r8964):  eserte | 2006-11-26 17:18:45 +0100
+   r1299@biokovo:  eserte | 2006-11-26 12:36:18 +0100
+   added release date
+  
+  r1616@biokovo (orig r8965):  eserte | 2006-11-26 17:19:01 +0100
+   r1300@biokovo:  eserte | 2006-11-26 12:36:42 +0100
+   merged old and new todos
+  
+  r1617@biokovo (orig r8966):  eserte | 2006-11-26 17:19:22 +0100
+   r1301@biokovo:  eserte | 2006-11-26 17:11:33 +0100
+   more font-dependent tests
+  
+  r1618@biokovo (orig r8967):  eserte | 2006-11-26 17:19:43 +0100
+   r1302@biokovo:  eserte | 2006-11-26 17:11:43 +0100
+   implemented VERBOSE=1 switch in Makefile.PL
+  
+  r1619@biokovo (orig r8968):  eserte | 2006-11-26 17:19:59 +0100
+   r1303@biokovo:  eserte | 2006-11-26 17:13:18 +0100
+   debian notes
+  
+  r1620@biokovo (orig r8969):  eserte | 2006-11-26 17:20:25 +0100
+   r1304@biokovo:  eserte | 2006-11-26 17:13:49 +0100
+   workaround for segmentation faults with fontconfig 2.4.1
+  
+  r1621@biokovo (orig r8970):  eserte | 2006-11-26 20:25:51 +0100
+   r1312@biokovo:  eserte | 2006-11-26 20:06:37 +0100
+   merge of current tkUnixXft.c from Tcl/Tk, but retained Perl/Tk changes
+   (special font size handling, X11 font name selection)
+   added tests to font.t to check X11 font name selection under Xft
+  
+  r1622@biokovo (orig r8971):  eserte | 2006-11-26 20:26:10 +0100
+   r1313@biokovo:  eserte | 2006-11-26 20:25:19 +0100
+   Tk-804.027-p4.patch.gz preparations
+  
+  r1623@biokovo (orig r8972):  eserte | 2006-11-27 00:16:40 +0100
+   r1316@biokovo:  eserte | 2006-11-27 00:16:27 +0100
+   more Todos
+  
+  r1624@biokovo (orig r8973):  eserte | 2006-11-28 00:17:38 +0100
+   r1318@biokovo:  eserte | 2006-11-27 21:52:31 +0100
+   Solaris success
+  
+  r1625@biokovo (orig r8974):  eserte | 2006-11-28 00:18:03 +0100
+   r1319@biokovo:  eserte | 2006-11-27 21:53:09 +0100
+   subfonts now also returns file of font, for better diagnostics. font.t
+   checks for the helvetica metrics test for an expected font name.
+  
+  r1626@biokovo (orig r8975):  eserte | 2006-11-28 00:18:26 +0100
+   r1320@biokovo:  eserte | 2006-11-27 22:55:21 +0100
+   ups, forgotten to increase array index
+  
+  r1627@biokovo (orig r8976):  eserte | 2006-11-28 00:18:49 +0100
+   r1321@biokovo:  eserte | 2006-11-28 00:17:22 +0100
+   define WINARCH_... macro, use it for cygwin/X11 detection
+  
+  r1628@biokovo (orig r8977):  eserte | 2006-11-28 16:24:44 +0100
+  workaround for Test::More bug generating a false error in t/font.t
+  r1629@biokovo (orig r8978):  eserte | 2006-11-28 16:25:38 +0100
+  compiles now on cygwin
+  r1630@biokovo (orig r8979):  eserte | 2006-11-28 23:37:32 +0100
+   r1329@biokovo:  eserte | 2006-11-28 21:52:12 +0100
+   increased version to be greater than the old Tk::MsgBox of Tk800.015
+  
+  r1631@biokovo (orig r8980):  eserte | 2006-11-28 23:37:56 +0100
+   r1330@biokovo:  eserte | 2006-11-28 23:34:43 +0100
+   Text widget: fixed array returns of get method; more text.t tests converted
+  
+  r1632@biokovo (orig r8981):  eserte | 2006-12-03 18:51:32 +0100
+   r1333@biokovo:  eserte | 2006-12-02 23:18:11 +0100
+   more tests converted
+  
+  r1633@biokovo (orig r8982):  eserte | 2006-12-03 18:51:57 +0100
+   r1334@biokovo:  eserte | 2006-12-03 17:28:28 +0100
+   Fixed slow listbox itemconfigure if many items were in the widget by
+   replacing ListboxWorldChanged with EventuallyRedrawRange with one element
+   Problem spotted by Stephen in
+   Message-ID: <1165144192.226228.254620@16g2000cwy.googlegroups.com>
+  
+  r1634@biokovo (orig r8983):  eserte | 2006-12-04 22:09:15 +0100
+   r1337@biokovo:  eserte | 2006-12-04 22:08:55 +0100
+   just changed comments in the last tkListbox.c change to match the official Tcl/Tk changes
+  
+  r1635@biokovo (orig r8984):  eserte | 2006-12-08 01:38:32 +0100
+   r1339@biokovo:  eserte | 2006-12-08 00:41:52 +0100
+   more tests converted
+  
+  r1636@biokovo (orig r8985):  eserte | 2006-12-08 01:38:50 +0100
+   r1340@biokovo:  eserte | 2006-12-08 00:47:08 +0100
+   more info in 00wmcheck.t, now with aligned output
+  
+  r1637@biokovo (orig r8986):  eserte | 2006-12-08 01:39:06 +0100
+   r1341@biokovo:  eserte | 2006-12-08 01:37:28 +0100
+   added Encode prereq (normally build with perl 5.8.x, but could be disabled
+  
+  r1638@biokovo (orig r8987):  eserte | 2006-12-08 01:39:35 +0100
+   r1342@biokovo:  eserte | 2006-12-08 01:38:13 +0100
+   check_display_harness
+  
+  r1639@biokovo (orig r8988):  eserte | 2006-12-11 00:59:06 +0100
+   r1347@biokovo:  eserte | 2006-12-10 21:30:47 +0100
+   added CAVEATS section to Pod to explain the necessity of using delete()
+  
+  r1640@biokovo (orig r8989):  eserte | 2006-12-11 00:59:24 +0100
+   r1348@biokovo:  eserte | 2006-12-10 23:48:43 +0100
+   converted widget.t to Test::More
+  
+  r1641@biokovo (orig r8990):  eserte | 2006-12-11 00:59:41 +0100
+   r1349@biokovo:  eserte | 2006-12-11 00:07:50 +0100
+   added some Busy/Unbusy tests to widget.t
+  
+  r1642@biokovo (orig r8991):  eserte | 2006-12-11 00:59:58 +0100
+   r1350@biokovo:  eserte | 2006-12-11 00:08:25 +0100
+   Busy: protect from a widget prematurely destroyed
+  
+  r1643@biokovo (orig r8992):  eserte | 2006-12-11 01:00:14 +0100
+   r1351@biokovo:  eserte | 2006-12-11 00:08:43 +0100
+   added some documentation Todos
+  
+  r1644@biokovo (orig r8993):  eserte | 2006-12-12 23:20:17 +0100
+   r1357@biokovo:  eserte | 2006-12-12 23:09:42 +0100
+   new documentation for Tk::MsgBox
+  
+  r1645@biokovo (orig r8994):  eserte | 2006-12-12 23:20:35 +0100
+   r1358@biokovo:  eserte | 2006-12-12 23:09:53 +0100
+   new test for EXE_FILES
+  
+  r1646@biokovo (orig r8995):  eserte | 2006-12-12 23:21:25 +0100
+   r1359@biokovo:  eserte | 2006-12-12 23:10:04 +0100
+   updated MANIFEST
+  
+  r1647@biokovo (orig r8996):  eserte | 2006-12-12 23:35:19 +0100
+   r1363@biokovo:  eserte | 2006-12-12 23:35:02 +0100
+   prepared Changes for next patch
+   
+   missing in last log:
+   some Pod cleanup (added some Pod markup, added hypertext links), corrected some typos
+   added new widgets to overview.pod
+   fixed gedi to handle X11 options
+   
+  
+  r1648@biokovo (orig r8997):  eserte | 2006-12-13 22:35:12 +0100
+   r1365@biokovo:  eserte | 2006-12-13 22:34:45 +0100
+   convert JPEG and PNG test scripts to Test::More and now also test -data option
+  
+  r1649@biokovo (orig r8998):  eserte | 2006-12-14 00:33:35 +0100
+   r1367@biokovo:  eserte | 2006-12-14 00:33:00 +0100
+   Tcl_GetByteArrayFromObj now downgrades to bytes
+   this means that GIF data can be specified as binary data, not only base64
+       encoded data
+   photo.t has tests cases for using GIF -data as base64 encoded and binary
+  
+  r1650@biokovo (orig r8999):  eserte | 2006-12-14 10:01:42 +0100
+  image-related tests: binmode necessary after open (e.g. for perl5.8.0+utf8 locale)
+  r1651@biokovo (orig r9000):  eserte | 2006-12-14 12:24:24 +0100
+  Tcl_GetByteArrayFromObj: missing dTHX for threaded perls
+  
+  r1652@biokovo (orig r9001):  eserte | 2006-12-15 09:49:54 +0100
+   r1372@biokovo:  eserte | 2006-12-15 09:49:17 +0100
+   check_display_harness never called ony cygwin because of `remap' problems
+  
+  r1653@biokovo (orig r9002):  eserte | 2006-12-16 00:23:32 +0100
+   r1374@biokovo:  eserte | 2006-12-15 23:23:11 +0100
+   fixed some minor Test::Pod nitpicks
+  
+  r1654@biokovo (orig r9003):  eserte | 2006-12-16 00:23:51 +0100
+   r1375@biokovo:  eserte | 2006-12-15 23:27:41 +0100
+   moved PREREQ_PM definition to Makefile.PL
+  
+  r1655@biokovo (orig r9004):  eserte | 2006-12-16 00:24:07 +0100
+   r1376@biokovo:  eserte | 2006-12-15 23:55:20 +0100
+   fixed warnings in chnGlue.c
+  
+  r1656@biokovo (orig r9005):  eserte | 2006-12-16 00:24:24 +0100
+   r1377@biokovo:  eserte | 2006-12-15 23:57:39 +0100
+   typo
+  
+  r1657@biokovo (orig r9006):  eserte | 2006-12-16 00:24:57 +0100
+   r1378@biokovo:  eserte | 2006-12-16 00:21:27 +0100
+   moved Makefile.maybe (PNG, JPEG) up one directory, to have libpng/zlib/jpeg
+       directories "clean"
+  
+  r1658@biokovo (orig r9007):  eserte | 2006-12-16 00:26:37 +0100
+   r1384@biokovo:  eserte | 2006-12-16 00:26:15 +0100
+   *maybe files vanished in the last svk operation?
+  
+  r1659@biokovo (orig r9008):  eserte | 2006-12-16 01:21:15 +0100
+   r1386@biokovo:  eserte | 2006-12-16 00:43:14 +0100
+   upgrades:
+      libpng from 1.2.5 to 1.2.12
+      zlib from 1.1.4 to 1.2.3
+  
+  r1660@biokovo (orig r9009):  eserte | 2006-12-16 01:21:45 +0100
+   r1387@biokovo:  eserte | 2006-12-16 00:58:22 +0100
+   corrected MANIFEST for latest libpng/zlib upgrade
+  
+  r1661@biokovo (orig r9010):  eserte | 2006-12-16 01:22:04 +0100
+   r1388@biokovo:  eserte | 2006-12-16 00:58:34 +0100
+   exefiles test: more diagnostics
+  
+  r1662@biokovo (orig r9011):  eserte | 2006-12-16 01:22:22 +0100
+   r1389@biokovo:  eserte | 2006-12-16 01:00:06 +0100
+   explicitely set DISTVNAME in Makefile.PL to have dists with underscore
+   avoid multiplication of BINARY_LOCATION in Makefile
+   -Werror compile not working (libpng fails)
+  
+  r1663@biokovo (orig r9012):  eserte | 2006-12-16 12:55:42 +0100
+   r1394@biokovo:  eserte | 2006-12-16 10:15:54 +0100
+   removed unnecessary zlib/Makefile
+  
+  r1664@biokovo (orig r9013):  eserte | 2006-12-16 12:56:03 +0100
+   r1395@biokovo:  eserte | 2006-12-16 10:54:11 +0100
+   removed unnecessary MANIFESTs in PNG and JPEG subdirectories
+  
+  r1665@biokovo (orig r9014):  eserte | 2006-12-16 12:56:36 +0100
+   r1396@biokovo:  eserte | 2006-12-16 10:55:44 +0100
+   new: LangAsyncCheck, which fixes http://rt.cpan.org/Ticket/Display.html?id=23879
+  
+  r1666@biokovo (orig r9015):  eserte | 2006-12-16 12:56:57 +0100
+   r1397@biokovo:  eserte | 2006-12-16 12:54:41 +0100
+   fixed BrowseEntry problem when -label* options where given, along with testcase (see http://perlmonks.org/?node_id=590170)
+  
+  r1667@biokovo (orig r9016):  eserte | 2006-12-19 21:33:01 +0100
+   r1402@biokovo:  eserte | 2006-12-18 21:40:05 +0100
+   Changes and ToDo updates
+  
+  r1668@biokovo (orig r9017):  eserte | 2006-12-19 21:33:19 +0100
+   r1403@biokovo:  eserte | 2006-12-19 21:18:08 +0100
+   font.t: make sure *adobe*-helvetica is used
+  
+  r1669@biokovo (orig r9018):  eserte | 2006-12-19 21:33:37 +0100
+   r1404@biokovo:  eserte | 2006-12-19 21:32:36 +0100
+   font.t: another check (for expected size)
+  
+  r1670@biokovo (orig r9019):  eserte | 2006-12-20 22:20:42 +0100
+   r1408@biokovo:  eserte | 2006-12-19 23:28:21 +0100
+   more tests converted
+  
+  r1671@biokovo (orig r9020):  eserte | 2006-12-20 22:21:02 +0100
+   r1409@biokovo:  eserte | 2006-12-20 22:20:28 +0100
+   missing dependency for debian systems
+  
+  r1672@biokovo (orig r9021):  eserte | 2006-12-21 22:44:05 +0100
+   r1412@biokovo:  eserte | 2006-12-21 22:38:48 +0100
+   new widget demostration: predefined cursors
+  
+  r1673@biokovo (orig r9022):  eserte | 2006-12-21 22:44:28 +0100
+   r1413@biokovo:  eserte | 2006-12-21 22:42:10 +0100
+   more descriptive text for cursor demo
+  
+  r1674@biokovo (orig r9023):  eserte | 2006-12-21 22:44:46 +0100
+   r1414@biokovo:  eserte | 2006-12-21 22:43:37 +0100
+   widget demonstration, main window: changed font definitions: use monospace font for source; prefer default sans-serif font on XFT systems; use default font size
+  
+  r1675@biokovo (orig r9024):  eserte | 2006-12-21 22:53:13 +0100
+   r1418@biokovo:  eserte | 2006-12-21 22:52:56 +0100
+   make Tcl-pTk conversion script more robust against SIGINT and full filesystems
+  
+  r1676@biokovo (orig r9025):  eserte | 2006-12-21 23:16:31 +0100
+   r1420@biokovo:  eserte | 2006-12-21 23:16:15 +0100
+   use withdraw to avoid MsgBox from jumping around
+  
+  r1677@biokovo (orig r9026):  eserte | 2007-01-04 23:30:05 +0100
+   r1422@biokovo:  eserte | 2007-01-04 23:23:21 +0100
+   fixes for http://bugs.activestate.com/show_bug.cgi?id=40231 (default
+   button indicator on win32) and
+   http://bugs.activestate.com/show_bug.cgi?id=40217 (wm close button
+   should not call the default button)
+   added -cancel_button option
+   converted t/dialogbox.t to use Test::More
+   extended t/dialogbox.t for close button tests (only in non-BATCH mode)
+  
+  r1678@biokovo (orig r9027):  eserte | 2007-01-04 23:30:30 +0100
+   r1423@biokovo:  eserte | 2007-01-04 23:29:41 +0100
+   documented -cancel_button in Tk::DialogBox's Pod
+   mentioned Tk::DialogBox changes in Changes
+  
+  r1679@biokovo (orig r9028):  eserte | 2007-01-04 23:43:04 +0100
+   r1426@biokovo:  eserte | 2007-01-04 23:42:43 +0100
+   BrowseEntry-related tests: protect from failures when other applications
+   have the grab
+  
+  r1680@biokovo (orig r9029):  eserte | 2007-01-05 00:12:37 +0100
+   r1428@biokovo:  eserte | 2007-01-05 00:06:40 +0100
+   converted t/fbox.t to Test::More
+  
+  r1681@biokovo (orig r9030):  eserte | 2007-01-05 00:12:55 +0100
+   r1429@biokovo:  eserte | 2007-01-05 00:07:21 +0100
+   converted t/fbox.t to Test::More
+  
+  r1682@biokovo (orig r9031):  eserte | 2007-01-05 00:13:13 +0100
+   r1430@biokovo:  eserte | 2007-01-05 00:09:40 +0100
+   corrected typo in TkTest.pm
+  
+  r1683@biokovo (orig r9032):  eserte | 2007-01-05 00:13:30 +0100
+   r1431@biokovo:  eserte | 2007-01-05 00:10:37 +0100
+   last change also introduced catch_grabs; copyright year
+  
+  r1684@biokovo (orig r9033):  eserte | 2007-01-05 00:13:58 +0100
+   r1432@biokovo:  eserte | 2007-01-05 00:11:08 +0100
+   use catch_grabs in a couple of tests
+  
+  r1685@biokovo (orig r9034):  eserte | 2007-01-05 00:14:14 +0100
+   r1433@biokovo:  eserte | 2007-01-05 00:12:07 +0100
+   mention catch_grabs in Changes
+  
+  r1686@biokovo (orig r9035):  eserte | 2007-01-06 19:48:19 +0100
+   r1440@biokovo:  eserte | 2007-01-06 19:28:01 +0100
+   corrected typo
+  
+  r1687@biokovo (orig r9036):  eserte | 2007-01-06 19:48:40 +0100
+   r1441@biokovo:  eserte | 2007-01-06 19:47:59 +0100
+   more Tk::FBox tests (-type => dir, getOpen/SaveFile/chooseDirectory)
+   some Tk::FBox Pod corrections 
+  
+  r1688@biokovo (orig r9037):  eserte | 2007-01-07 12:49:26 +0100
+   r1444@biokovo:  eserte | 2007-01-07 00:35:02 +0100
+   slight optimization when deleting canvas items in ProgressBar
+  
+  r1689@biokovo (orig r9038):  eserte | 2007-01-07 12:49:52 +0100
+   r1445@biokovo:  eserte | 2007-01-07 00:36:51 +0100
+   fix memory leak in afterIdle callbacks, reported in http://rt.perl.org/rt3/Ticket/Display.html?id=41130
+  
+  r1690@biokovo (orig r9039):  eserte | 2007-01-07 12:50:10 +0100
+   r1446@biokovo:  eserte | 2007-01-07 12:49:10 +0100
+   Force creation of Adjuster Frame in Toplevel. See also
+   http://groups.google.de/group/comp.lang.perl.tk/browse_frm/thread/5366757a4c6cd844/8ff9d1745d2b75b8
+  
+  r1691@biokovo (orig r9040):  eserte | 2007-01-07 22:45:33 +0100
+   r1450@biokovo:  eserte | 2007-01-07 22:41:36 +0100
+   fixed non-working Balloon attachments to invidual menu entries
+   (see http://board.perl-community.de/cgi-bin/ikonboard/ikonboard.cgi?act=ST;f=3;t=665
+   for bug report)
+  
+  r1692@biokovo (orig r9041):  eserte | 2007-01-07 22:45:55 +0100
+   r1451@biokovo:  eserte | 2007-01-07 22:42:12 +0100
+   new test adjuster.t
+  
+  r1693@biokovo (orig r9042):  eserte | 2007-01-07 22:46:12 +0100
+   r1452@biokovo:  eserte | 2007-01-07 22:45:13 +0100
+   updated Changes
+  
+  r1694@biokovo (orig r9043):  eserte | 2007-01-08 23:52:02 +0100
+   r1456@biokovo:  eserte | 2007-01-08 23:51:42 +0100
+   the last Balloon/Menu patch was not enough for cloned menus
+   added some extra code to fix this
+   also introduced a new method Tk::Menu::MasterMenu for getting the master
+       menu of a cloned menu
+  
+  r1695@biokovo (orig r9044):  eserte | 2007-01-17 22:46:00 +0100
+   r1458@biokovo:  eserte | 2007-01-16 20:43:35 +0100
+   patched FBox to treat special files like sockets, pipes as files, not as dirs
+  
+  r1696@biokovo (orig r9045):  eserte | 2007-01-17 22:46:17 +0100
+   r1459@biokovo:  eserte | 2007-01-17 22:45:35 +0100
+   more todos, big projects
+  
+  r1697@biokovo (orig r9046):  eserte | 2007-01-26 22:22:20 +0100
+   r1462@biokovo:  eserte | 2007-01-17 22:56:10 +0100
+   unicode test: dump fbox results in non-batch mode
+  
+  r1698@biokovo (orig r9047):  eserte | 2007-01-26 22:22:42 +0100
+   r1463@biokovo:  eserte | 2007-01-24 21:43:16 +0100
+   fixes for darwin (PNG needs configure, a dTHX decl needed
+  
+  r1699@biokovo (orig r9048):  eserte | 2007-01-26 22:23:01 +0100
+   r1464@biokovo:  eserte | 2007-01-24 22:31:21 +0100
+   hlist test converted to Test::More and prepared for -at/-after/-before test
+  
+  r1700@biokovo (orig r9049):  eserte | 2007-01-26 22:23:26 +0100
+   r1465@biokovo:  eserte | 2007-01-26 21:53:52 +0100
+   fixed -at/-before/-after problem with Tk::HList
+  
+  r1701@biokovo (orig r9050):  eserte | 2007-01-31 01:15:00 +0100
+   r1470@biokovo:  eserte | 2007-01-31 01:13:53 +0100
+   
+  
+  r1702@biokovo (orig r9051):  eserte | 2007-01-31 01:15:17 +0100
+   r1471@biokovo:  eserte | 2007-01-31 01:14:45 +0100
+   workaround for 'selection conversion left too many bytes unconverted' aborts
+  
+  r1703@biokovo (orig r9052):  eserte | 2007-02-02 00:42:13 +0100
+   r1474@biokovo:  eserte | 2007-02-02 00:20:38 +0100
+   font.t: corrected check for helvetica under XFT
+  
+  r1704@biokovo (orig r9053):  eserte | 2007-02-02 00:42:31 +0100
+   r1475@biokovo:  eserte | 2007-02-02 00:27:12 +0100
+   additional include, suggested by marek.rouchal for Solaris
+  
+  r1705@biokovo (orig r9054):  eserte | 2007-02-07 01:25:06 +0100
+   r1481@biokovo:  eserte | 2007-02-07 01:24:50 +0100
+   
+  
+ 
+
+------------------------------------------------------------------------
+r9056 | srezic | 2007-02-10 11:09:44 +0100 (Sa, 10 Feb 2007) | 3 lines
+
+ r1707@biokovo:  eserte | 2007-02-10 10:07:56 +0100
+ updated log for forthcoming release
+
+------------------------------------------------------------------------
+r9054 | eserte | 2007-02-07 01:25:06 +0100 (Mi, 07 Feb 2007) | 3 lines
+
+ r1481@biokovo:  eserte | 2007-02-07 01:24:50 +0100
+ 
+
+------------------------------------------------------------------------
+r9053 | eserte | 2007-02-02 00:42:31 +0100 (Fr, 02 Feb 2007) | 3 lines
+
+ r1475@biokovo:  eserte | 2007-02-02 00:27:12 +0100
+ additional include, suggested by marek.rouchal for Solaris
+
+------------------------------------------------------------------------
+r9052 | eserte | 2007-02-02 00:42:13 +0100 (Fr, 02 Feb 2007) | 3 lines
+
+ r1474@biokovo:  eserte | 2007-02-02 00:20:38 +0100
+ font.t: corrected check for helvetica under XFT
+
+------------------------------------------------------------------------
+r9051 | eserte | 2007-01-31 01:15:17 +0100 (Mi, 31 Jan 2007) | 3 lines
+
+ r1471@biokovo:  eserte | 2007-01-31 01:14:45 +0100
+ workaround for 'selection conversion left too many bytes unconverted' aborts
+
+------------------------------------------------------------------------
+r9050 | eserte | 2007-01-31 01:15:00 +0100 (Mi, 31 Jan 2007) | 3 lines
+
+ r1470@biokovo:  eserte | 2007-01-31 01:13:53 +0100
+ 
+
+------------------------------------------------------------------------
+r9049 | eserte | 2007-01-26 22:23:26 +0100 (Fr, 26 Jan 2007) | 3 lines
+
+ r1465@biokovo:  eserte | 2007-01-26 21:53:52 +0100
+ fixed -at/-before/-after problem with Tk::HList
+
+------------------------------------------------------------------------
+r9048 | eserte | 2007-01-26 22:23:01 +0100 (Fr, 26 Jan 2007) | 3 lines
+
+ r1464@biokovo:  eserte | 2007-01-24 22:31:21 +0100
+ hlist test converted to Test::More and prepared for -at/-after/-before test
+
+------------------------------------------------------------------------
+r9047 | eserte | 2007-01-26 22:22:42 +0100 (Fr, 26 Jan 2007) | 3 lines
+
+ r1463@biokovo:  eserte | 2007-01-24 21:43:16 +0100
+ fixes for darwin (PNG needs configure, a dTHX decl needed
+
+------------------------------------------------------------------------
+r9046 | eserte | 2007-01-26 22:22:20 +0100 (Fr, 26 Jan 2007) | 3 lines
+
+ r1462@biokovo:  eserte | 2007-01-17 22:56:10 +0100
+ unicode test: dump fbox results in non-batch mode
+
+------------------------------------------------------------------------
+r9045 | eserte | 2007-01-17 22:46:17 +0100 (Mi, 17 Jan 2007) | 3 lines
+
+ r1459@biokovo:  eserte | 2007-01-17 22:45:35 +0100
+ more todos, big projects
+
+------------------------------------------------------------------------
+r9044 | eserte | 2007-01-17 22:46:00 +0100 (Mi, 17 Jan 2007) | 3 lines
+
+ r1458@biokovo:  eserte | 2007-01-16 20:43:35 +0100
+ patched FBox to treat special files like sockets, pipes as files, not as dirs
+
+------------------------------------------------------------------------
+r9043 | eserte | 2007-01-08 23:52:02 +0100 (Mo, 08 Jan 2007) | 6 lines
+
+ r1456@biokovo:  eserte | 2007-01-08 23:51:42 +0100
+ the last Balloon/Menu patch was not enough for cloned menus
+ added some extra code to fix this
+ also introduced a new method Tk::Menu::MasterMenu for getting the master
+     menu of a cloned menu
+
+------------------------------------------------------------------------
+r9042 | eserte | 2007-01-07 22:46:12 +0100 (So, 07 Jan 2007) | 3 lines
+
+ r1452@biokovo:  eserte | 2007-01-07 22:45:13 +0100
+ updated Changes
+
+------------------------------------------------------------------------
+r9041 | eserte | 2007-01-07 22:45:55 +0100 (So, 07 Jan 2007) | 3 lines
+
+ r1451@biokovo:  eserte | 2007-01-07 22:42:12 +0100
+ new test adjuster.t
+
+------------------------------------------------------------------------
+r9040 | eserte | 2007-01-07 22:45:33 +0100 (So, 07 Jan 2007) | 5 lines
+
+ r1450@biokovo:  eserte | 2007-01-07 22:41:36 +0100
+ fixed non-working Balloon attachments to invidual menu entries
+ (see http://board.perl-community.de/cgi-bin/ikonboard/ikonboard.cgi?act=ST;f=3;t=665
+ for bug report)
+
+------------------------------------------------------------------------
+r9039 | eserte | 2007-01-07 12:50:10 +0100 (So, 07 Jan 2007) | 4 lines
+
+ r1446@biokovo:  eserte | 2007-01-07 12:49:10 +0100
+ Force creation of Adjuster Frame in Toplevel. See also
+ http://groups.google.de/group/comp.lang.perl.tk/browse_frm/thread/5366757a4c6cd844/8ff9d1745d2b75b8
+
+------------------------------------------------------------------------
+r9038 | eserte | 2007-01-07 12:49:52 +0100 (So, 07 Jan 2007) | 3 lines
+
+ r1445@biokovo:  eserte | 2007-01-07 00:36:51 +0100
+ fix memory leak in afterIdle callbacks, reported in http://rt.perl.org/rt3/Ticket/Display.html?id=41130
+
+------------------------------------------------------------------------
+r9037 | eserte | 2007-01-07 12:49:26 +0100 (So, 07 Jan 2007) | 3 lines
+
+ r1444@biokovo:  eserte | 2007-01-07 00:35:02 +0100
+ slight optimization when deleting canvas items in ProgressBar
+
+------------------------------------------------------------------------
+r9036 | eserte | 2007-01-06 19:48:40 +0100 (Sa, 06 Jan 2007) | 4 lines
+
+ r1441@biokovo:  eserte | 2007-01-06 19:47:59 +0100
+ more Tk::FBox tests (-type => dir, getOpen/SaveFile/chooseDirectory)
+ some Tk::FBox Pod corrections 
+
+------------------------------------------------------------------------
+r9035 | eserte | 2007-01-06 19:48:19 +0100 (Sa, 06 Jan 2007) | 3 lines
+
+ r1440@biokovo:  eserte | 2007-01-06 19:28:01 +0100
+ corrected typo
+
+------------------------------------------------------------------------
+r9034 | eserte | 2007-01-05 00:14:14 +0100 (Fr, 05 Jan 2007) | 3 lines
+
+ r1433@biokovo:  eserte | 2007-01-05 00:12:07 +0100
+ mention catch_grabs in Changes
+
+------------------------------------------------------------------------
+r9033 | eserte | 2007-01-05 00:13:58 +0100 (Fr, 05 Jan 2007) | 3 lines
+
+ r1432@biokovo:  eserte | 2007-01-05 00:11:08 +0100
+ use catch_grabs in a couple of tests
+
+------------------------------------------------------------------------
+r9032 | eserte | 2007-01-05 00:13:30 +0100 (Fr, 05 Jan 2007) | 3 lines
+
+ r1431@biokovo:  eserte | 2007-01-05 00:10:37 +0100
+ last change also introduced catch_grabs; copyright year
+
+------------------------------------------------------------------------
+r9031 | eserte | 2007-01-05 00:13:13 +0100 (Fr, 05 Jan 2007) | 3 lines
+
+ r1430@biokovo:  eserte | 2007-01-05 00:09:40 +0100
+ corrected typo in TkTest.pm
+
+------------------------------------------------------------------------
+r9030 | eserte | 2007-01-05 00:12:55 +0100 (Fr, 05 Jan 2007) | 3 lines
+
+ r1429@biokovo:  eserte | 2007-01-05 00:07:21 +0100
+ converted t/fbox.t to Test::More
+
+------------------------------------------------------------------------
+r9029 | eserte | 2007-01-05 00:12:37 +0100 (Fr, 05 Jan 2007) | 3 lines
+
+ r1428@biokovo:  eserte | 2007-01-05 00:06:40 +0100
+ converted t/fbox.t to Test::More
+
+------------------------------------------------------------------------
+r9028 | eserte | 2007-01-04 23:43:04 +0100 (Do, 04 Jan 2007) | 4 lines
+
+ r1426@biokovo:  eserte | 2007-01-04 23:42:43 +0100
+ BrowseEntry-related tests: protect from failures when other applications
+ have the grab
+
+------------------------------------------------------------------------
+r9027 | eserte | 2007-01-04 23:30:30 +0100 (Do, 04 Jan 2007) | 4 lines
+
+ r1423@biokovo:  eserte | 2007-01-04 23:29:41 +0100
+ documented -cancel_button in Tk::DialogBox's Pod
+ mentioned Tk::DialogBox changes in Changes
+
+------------------------------------------------------------------------
+r9026 | eserte | 2007-01-04 23:30:05 +0100 (Do, 04 Jan 2007) | 9 lines
+
+ r1422@biokovo:  eserte | 2007-01-04 23:23:21 +0100
+ fixes for http://bugs.activestate.com/show_bug.cgi?id=40231 (default
+ button indicator on win32) and
+ http://bugs.activestate.com/show_bug.cgi?id=40217 (wm close button
+ should not call the default button)
+ added -cancel_button option
+ converted t/dialogbox.t to use Test::More
+ extended t/dialogbox.t for close button tests (only in non-BATCH mode)
+
+------------------------------------------------------------------------
+r9025 | eserte | 2006-12-21 23:16:31 +0100 (Do, 21 Dez 2006) | 3 lines
+
+ r1420@biokovo:  eserte | 2006-12-21 23:16:15 +0100
+ use withdraw to avoid MsgBox from jumping around
+
+------------------------------------------------------------------------
+r9024 | eserte | 2006-12-21 22:53:13 +0100 (Do, 21 Dez 2006) | 3 lines
+
+ r1418@biokovo:  eserte | 2006-12-21 22:52:56 +0100
+ make Tcl-pTk conversion script more robust against SIGINT and full filesystems
+
+------------------------------------------------------------------------
+r9023 | eserte | 2006-12-21 22:44:46 +0100 (Do, 21 Dez 2006) | 3 lines
+
+ r1414@biokovo:  eserte | 2006-12-21 22:43:37 +0100
+ widget demonstration, main window: changed font definitions: use monospace font for source; prefer default sans-serif font on XFT systems; use default font size
+
+------------------------------------------------------------------------
+r9022 | eserte | 2006-12-21 22:44:28 +0100 (Do, 21 Dez 2006) | 3 lines
+
+ r1413@biokovo:  eserte | 2006-12-21 22:42:10 +0100
+ more descriptive text for cursor demo
+
+------------------------------------------------------------------------
+r9021 | eserte | 2006-12-21 22:44:05 +0100 (Do, 21 Dez 2006) | 3 lines
+
+ r1412@biokovo:  eserte | 2006-12-21 22:38:48 +0100
+ new widget demostration: predefined cursors
+
+------------------------------------------------------------------------
+r9020 | eserte | 2006-12-20 22:21:02 +0100 (Mi, 20 Dez 2006) | 3 lines
+
+ r1409@biokovo:  eserte | 2006-12-20 22:20:28 +0100
+ missing dependency for debian systems
+
+------------------------------------------------------------------------
+r9019 | eserte | 2006-12-20 22:20:42 +0100 (Mi, 20 Dez 2006) | 3 lines
+
+ r1408@biokovo:  eserte | 2006-12-19 23:28:21 +0100
+ more tests converted
+
+------------------------------------------------------------------------
+r9018 | eserte | 2006-12-19 21:33:37 +0100 (Di, 19 Dez 2006) | 3 lines
+
+ r1404@biokovo:  eserte | 2006-12-19 21:32:36 +0100
+ font.t: another check (for expected size)
+
+------------------------------------------------------------------------
+r9017 | eserte | 2006-12-19 21:33:19 +0100 (Di, 19 Dez 2006) | 3 lines
+
+ r1403@biokovo:  eserte | 2006-12-19 21:18:08 +0100
+ font.t: make sure *adobe*-helvetica is used
+
+------------------------------------------------------------------------
+r9016 | eserte | 2006-12-19 21:33:01 +0100 (Di, 19 Dez 2006) | 3 lines
+
+ r1402@biokovo:  eserte | 2006-12-18 21:40:05 +0100
+ Changes and ToDo updates
+
+------------------------------------------------------------------------
+r9015 | eserte | 2006-12-16 12:56:57 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1397@biokovo:  eserte | 2006-12-16 12:54:41 +0100
+ fixed BrowseEntry problem when -label* options where given, along with testcase (see http://perlmonks.org/?node_id=590170)
+
+------------------------------------------------------------------------
+r9014 | eserte | 2006-12-16 12:56:36 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1396@biokovo:  eserte | 2006-12-16 10:55:44 +0100
+ new: LangAsyncCheck, which fixes http://rt.cpan.org/Ticket/Display.html?id=23879
+
+------------------------------------------------------------------------
+r9013 | eserte | 2006-12-16 12:56:03 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1395@biokovo:  eserte | 2006-12-16 10:54:11 +0100
+ removed unnecessary MANIFESTs in PNG and JPEG subdirectories
+
+------------------------------------------------------------------------
+r9012 | eserte | 2006-12-16 12:55:42 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1394@biokovo:  eserte | 2006-12-16 10:15:54 +0100
+ removed unnecessary zlib/Makefile
+
+------------------------------------------------------------------------
+r9011 | eserte | 2006-12-16 01:22:22 +0100 (Sa, 16 Dez 2006) | 5 lines
+
+ r1389@biokovo:  eserte | 2006-12-16 01:00:06 +0100
+ explicitely set DISTVNAME in Makefile.PL to have dists with underscore
+ avoid multiplication of BINARY_LOCATION in Makefile
+ -Werror compile not working (libpng fails)
+
+------------------------------------------------------------------------
+r9010 | eserte | 2006-12-16 01:22:04 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1388@biokovo:  eserte | 2006-12-16 00:58:34 +0100
+ exefiles test: more diagnostics
+
+------------------------------------------------------------------------
+r9009 | eserte | 2006-12-16 01:21:45 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1387@biokovo:  eserte | 2006-12-16 00:58:22 +0100
+ corrected MANIFEST for latest libpng/zlib upgrade
+
+------------------------------------------------------------------------
+r9008 | eserte | 2006-12-16 01:21:15 +0100 (Sa, 16 Dez 2006) | 5 lines
+
+ r1386@biokovo:  eserte | 2006-12-16 00:43:14 +0100
+ upgrades:
+    libpng from 1.2.5 to 1.2.12
+    zlib from 1.1.4 to 1.2.3
+
+------------------------------------------------------------------------
+r9007 | eserte | 2006-12-16 00:26:37 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1384@biokovo:  eserte | 2006-12-16 00:26:15 +0100
+ *maybe files vanished in the last svk operation?
+
+------------------------------------------------------------------------
+r9006 | eserte | 2006-12-16 00:24:57 +0100 (Sa, 16 Dez 2006) | 4 lines
+
+ r1378@biokovo:  eserte | 2006-12-16 00:21:27 +0100
+ moved Makefile.maybe (PNG, JPEG) up one directory, to have libpng/zlib/jpeg
+     directories "clean"
+
+------------------------------------------------------------------------
+r9005 | eserte | 2006-12-16 00:24:24 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1377@biokovo:  eserte | 2006-12-15 23:57:39 +0100
+ typo
+
+------------------------------------------------------------------------
+r9004 | eserte | 2006-12-16 00:24:07 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1376@biokovo:  eserte | 2006-12-15 23:55:20 +0100
+ fixed warnings in chnGlue.c
+
+------------------------------------------------------------------------
+r9003 | eserte | 2006-12-16 00:23:51 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1375@biokovo:  eserte | 2006-12-15 23:27:41 +0100
+ moved PREREQ_PM definition to Makefile.PL
+
+------------------------------------------------------------------------
+r9002 | eserte | 2006-12-16 00:23:32 +0100 (Sa, 16 Dez 2006) | 3 lines
+
+ r1374@biokovo:  eserte | 2006-12-15 23:23:11 +0100
+ fixed some minor Test::Pod nitpicks
+
+------------------------------------------------------------------------
+r9001 | eserte | 2006-12-15 09:49:54 +0100 (Fr, 15 Dez 2006) | 3 lines
+
+ r1372@biokovo:  eserte | 2006-12-15 09:49:17 +0100
+ check_display_harness never called ony cygwin because of `remap' problems
+
+------------------------------------------------------------------------
+r9000 | eserte | 2006-12-14 12:24:24 +0100 (Do, 14 Dez 2006) | 2 lines
+
+Tcl_GetByteArrayFromObj: missing dTHX for threaded perls
+
+------------------------------------------------------------------------
+r8999 | eserte | 2006-12-14 10:01:42 +0100 (Do, 14 Dez 2006) | 1 line
+
+image-related tests: binmode necessary after open (e.g. for perl5.8.0+utf8 locale)
+------------------------------------------------------------------------
+r8998 | eserte | 2006-12-14 00:33:35 +0100 (Do, 14 Dez 2006) | 6 lines
+
+ r1367@biokovo:  eserte | 2006-12-14 00:33:00 +0100
+ Tcl_GetByteArrayFromObj now downgrades to bytes
+ this means that GIF data can be specified as binary data, not only base64
+     encoded data
+ photo.t has tests cases for using GIF -data as base64 encoded and binary
+
+------------------------------------------------------------------------
+r8997 | eserte | 2006-12-13 22:35:12 +0100 (Mi, 13 Dez 2006) | 3 lines
+
+ r1365@biokovo:  eserte | 2006-12-13 22:34:45 +0100
+ convert JPEG and PNG test scripts to Test::More and now also test -data option
+
+------------------------------------------------------------------------
+r8996 | eserte | 2006-12-12 23:35:19 +0100 (Di, 12 Dez 2006) | 9 lines
+
+ r1363@biokovo:  eserte | 2006-12-12 23:35:02 +0100
+ prepared Changes for next patch
+ 
+ missing in last log:
+ some Pod cleanup (added some Pod markup, added hypertext links), corrected some typos
+ added new widgets to overview.pod
+ fixed gedi to handle X11 options
+ 
+
+------------------------------------------------------------------------
+r8995 | eserte | 2006-12-12 23:21:25 +0100 (Di, 12 Dez 2006) | 3 lines
+
+ r1359@biokovo:  eserte | 2006-12-12 23:10:04 +0100
+ updated MANIFEST
+
+------------------------------------------------------------------------
+r8994 | eserte | 2006-12-12 23:20:35 +0100 (Di, 12 Dez 2006) | 3 lines
+
+ r1358@biokovo:  eserte | 2006-12-12 23:09:53 +0100
+ new test for EXE_FILES
+
+------------------------------------------------------------------------
+r8993 | eserte | 2006-12-12 23:20:17 +0100 (Di, 12 Dez 2006) | 3 lines
+
+ r1357@biokovo:  eserte | 2006-12-12 23:09:42 +0100
+ new documentation for Tk::MsgBox
+
+------------------------------------------------------------------------
+r8992 | eserte | 2006-12-11 01:00:14 +0100 (Mo, 11 Dez 2006) | 3 lines
+
+ r1351@biokovo:  eserte | 2006-12-11 00:08:43 +0100
+ added some documentation Todos
+
+------------------------------------------------------------------------
+r8991 | eserte | 2006-12-11 00:59:58 +0100 (Mo, 11 Dez 2006) | 3 lines
+
+ r1350@biokovo:  eserte | 2006-12-11 00:08:25 +0100
+ Busy: protect from a widget prematurely destroyed
+
+------------------------------------------------------------------------
+r8990 | eserte | 2006-12-11 00:59:41 +0100 (Mo, 11 Dez 2006) | 3 lines
+
+ r1349@biokovo:  eserte | 2006-12-11 00:07:50 +0100
+ added some Busy/Unbusy tests to widget.t
+
+------------------------------------------------------------------------
+r8989 | eserte | 2006-12-11 00:59:24 +0100 (Mo, 11 Dez 2006) | 3 lines
+
+ r1348@biokovo:  eserte | 2006-12-10 23:48:43 +0100
+ converted widget.t to Test::More
+
+------------------------------------------------------------------------
+r8988 | eserte | 2006-12-11 00:59:06 +0100 (Mo, 11 Dez 2006) | 3 lines
+
+ r1347@biokovo:  eserte | 2006-12-10 21:30:47 +0100
+ added CAVEATS section to Pod to explain the necessity of using delete()
+
+------------------------------------------------------------------------
+r8987 | eserte | 2006-12-08 01:39:35 +0100 (Fr, 08 Dez 2006) | 3 lines
+
+ r1342@biokovo:  eserte | 2006-12-08 01:38:13 +0100
+ check_display_harness
+
+------------------------------------------------------------------------
+r8986 | eserte | 2006-12-08 01:39:06 +0100 (Fr, 08 Dez 2006) | 3 lines
+
+ r1341@biokovo:  eserte | 2006-12-08 01:37:28 +0100
+ added Encode prereq (normally build with perl 5.8.x, but could be disabled
+
+------------------------------------------------------------------------
+r8985 | eserte | 2006-12-08 01:38:50 +0100 (Fr, 08 Dez 2006) | 3 lines
+
+ r1340@biokovo:  eserte | 2006-12-08 00:47:08 +0100
+ more info in 00wmcheck.t, now with aligned output
+
+------------------------------------------------------------------------
+r8984 | eserte | 2006-12-08 01:38:32 +0100 (Fr, 08 Dez 2006) | 3 lines
+
+ r1339@biokovo:  eserte | 2006-12-08 00:41:52 +0100
+ more tests converted
+
+------------------------------------------------------------------------
+r8983 | eserte | 2006-12-04 22:09:15 +0100 (Mo, 04 Dez 2006) | 3 lines
+
+ r1337@biokovo:  eserte | 2006-12-04 22:08:55 +0100
+ just changed comments in the last tkListbox.c change to match the official Tcl/Tk changes
+
+------------------------------------------------------------------------
+r8982 | eserte | 2006-12-03 18:51:57 +0100 (So, 03 Dez 2006) | 6 lines
+
+ r1334@biokovo:  eserte | 2006-12-03 17:28:28 +0100
+ Fixed slow listbox itemconfigure if many items were in the widget by
+ replacing ListboxWorldChanged with EventuallyRedrawRange with one element
+ Problem spotted by Stephen in
+ Message-ID: <1165144192.226228.254620@16g2000cwy.googlegroups.com>
+
+------------------------------------------------------------------------
+r8981 | eserte | 2006-12-03 18:51:32 +0100 (So, 03 Dez 2006) | 3 lines
+
+ r1333@biokovo:  eserte | 2006-12-02 23:18:11 +0100
+ more tests converted
+
+------------------------------------------------------------------------
+r8980 | eserte | 2006-11-28 23:37:56 +0100 (Di, 28 Nov 2006) | 3 lines
+
+ r1330@biokovo:  eserte | 2006-11-28 23:34:43 +0100
+ Text widget: fixed array returns of get method; more text.t tests converted
+
+------------------------------------------------------------------------
+r8979 | eserte | 2006-11-28 23:37:32 +0100 (Di, 28 Nov 2006) | 3 lines
+
+ r1329@biokovo:  eserte | 2006-11-28 21:52:12 +0100
+ increased version to be greater than the old Tk::MsgBox of Tk800.015
+
+------------------------------------------------------------------------
+r8978 | eserte | 2006-11-28 16:25:38 +0100 (Di, 28 Nov 2006) | 1 line
+
+compiles now on cygwin
+------------------------------------------------------------------------
+r8977 | eserte | 2006-11-28 16:24:44 +0100 (Di, 28 Nov 2006) | 1 line
+
+workaround for Test::More bug generating a false error in t/font.t
+------------------------------------------------------------------------
+r8976 | eserte | 2006-11-28 00:18:49 +0100 (Di, 28 Nov 2006) | 3 lines
+
+ r1321@biokovo:  eserte | 2006-11-28 00:17:22 +0100
+ define WINARCH_... macro, use it for cygwin/X11 detection
+
+------------------------------------------------------------------------
+r8975 | eserte | 2006-11-28 00:18:26 +0100 (Di, 28 Nov 2006) | 3 lines
+
+ r1320@biokovo:  eserte | 2006-11-27 22:55:21 +0100
+ ups, forgotten to increase array index
+
+------------------------------------------------------------------------
+r8974 | eserte | 2006-11-28 00:18:03 +0100 (Di, 28 Nov 2006) | 4 lines
+
+ r1319@biokovo:  eserte | 2006-11-27 21:53:09 +0100
+ subfonts now also returns file of font, for better diagnostics. font.t
+ checks for the helvetica metrics test for an expected font name.
+
+------------------------------------------------------------------------
+r8973 | eserte | 2006-11-28 00:17:38 +0100 (Di, 28 Nov 2006) | 3 lines
+
+ r1318@biokovo:  eserte | 2006-11-27 21:52:31 +0100
+ Solaris success
+
+------------------------------------------------------------------------
+r8972 | eserte | 2006-11-27 00:16:40 +0100 (Mo, 27 Nov 2006) | 3 lines
+
+ r1316@biokovo:  eserte | 2006-11-27 00:16:27 +0100
+ more Todos
+
+------------------------------------------------------------------------
+r8971 | eserte | 2006-11-26 20:26:10 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1313@biokovo:  eserte | 2006-11-26 20:25:19 +0100
+ Tk-804.027-p4.patch.gz preparations
+
+------------------------------------------------------------------------
+r8970 | eserte | 2006-11-26 20:25:51 +0100 (So, 26 Nov 2006) | 5 lines
+
+ r1312@biokovo:  eserte | 2006-11-26 20:06:37 +0100
+ merge of current tkUnixXft.c from Tcl/Tk, but retained Perl/Tk changes
+ (special font size handling, X11 font name selection)
+ added tests to font.t to check X11 font name selection under Xft
+
+------------------------------------------------------------------------
+r8969 | eserte | 2006-11-26 17:20:25 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1304@biokovo:  eserte | 2006-11-26 17:13:49 +0100
+ workaround for segmentation faults with fontconfig 2.4.1
+
+------------------------------------------------------------------------
+r8968 | eserte | 2006-11-26 17:19:59 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1303@biokovo:  eserte | 2006-11-26 17:13:18 +0100
+ debian notes
+
+------------------------------------------------------------------------
+r8967 | eserte | 2006-11-26 17:19:43 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1302@biokovo:  eserte | 2006-11-26 17:11:43 +0100
+ implemented VERBOSE=1 switch in Makefile.PL
+
+------------------------------------------------------------------------
+r8966 | eserte | 2006-11-26 17:19:22 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1301@biokovo:  eserte | 2006-11-26 17:11:33 +0100
+ more font-dependent tests
+
+------------------------------------------------------------------------
+r8965 | eserte | 2006-11-26 17:19:01 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1300@biokovo:  eserte | 2006-11-26 12:36:42 +0100
+ merged old and new todos
+
+------------------------------------------------------------------------
+r8964 | eserte | 2006-11-26 17:18:45 +0100 (So, 26 Nov 2006) | 3 lines
+
+ r1299@biokovo:  eserte | 2006-11-26 12:36:18 +0100
+ added release date
+
+------------------------------------------------------------------------
+r8963 | eserte | 2006-11-26 17:18:29 +0100 (So, 26 Nov 2006) | 4 lines
+
+ r1298@biokovo:  eserte | 2006-11-25 21:56:34 +0100
+ ceased warning in bleedperl, probably caused by cop_warnings change
+ (perl@27779)
+
+------------------------------------------------------------------------
+r8962 | eserte | 2006-11-25 21:38:46 +0100 (Sa, 25 Nov 2006) | 4 lines
+
+ r1295@biokovo:  eserte | 2006-11-25 21:37:57 +0100
+ more warning fixes in tkGlue.c (occurred only id perl was compiled with
+ use64bitint)
+
+------------------------------------------------------------------------
+r8961 | eserte | 2006-11-25 21:38:29 +0100 (Sa, 25 Nov 2006) | 3 lines
+
+ r1294@biokovo:  eserte | 2006-11-25 21:36:29 +0100
+ listbox test: confused $v and $v
+
+------------------------------------------------------------------------
+r8960 | eserte | 2006-11-25 12:30:52 +0100 (Sa, 25 Nov 2006) | 3 lines
+
+ r1292@biokovo:  eserte | 2006-11-25 12:27:29 +0100
+ converted "%_" format string to "%"SVf to avoid warnings in bleadperl
+
+------------------------------------------------------------------------
+r8959 | eserte | 2006-11-25 00:19:22 +0100 (Sa, 25 Nov 2006) | 3 lines
+
+ r1290@biokovo:  eserte | 2006-11-24 21:58:20 +0100
+ better checks if fonts have the expected metrics
+
+------------------------------------------------------------------------
+r8958 | eserte | 2006-11-23 23:52:00 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1288@biokovo:  eserte | 2006-11-23 23:51:42 +0100
+ continued t/text.t conversion
+
+------------------------------------------------------------------------
+r8957 | eserte | 2006-11-23 02:14:34 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1286@biokovo:  eserte | 2006-11-23 02:09:58 +0100
+ core dump with -font=>undef solved, but not perfect yet
+
+------------------------------------------------------------------------
+r8956 | eserte | 2006-11-23 01:59:51 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1284@biokovo:  eserte | 2006-11-23 01:59:34 +0100
+ yet another (unresolved) segfault with undefined font, just a skipped test case for now
+
+------------------------------------------------------------------------
+r8955 | eserte | 2006-11-23 00:13:02 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1279@biokovo:  eserte | 2006-11-23 00:10:04 +0100
+ fixed wrong declaration in TclObjSetType
+
+------------------------------------------------------------------------
+r8954 | eserte | 2006-11-23 00:12:45 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1278@biokovo:  eserte | 2006-11-23 00:06:16 +0100
+ fixed another core dump if configure(-font=>undef) was used (along with test cases)
+
+------------------------------------------------------------------------
+r8953 | eserte | 2006-11-23 00:12:23 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1277@biokovo:  eserte | 2006-11-23 00:04:53 +0100
+ fixed number of tests
+
+------------------------------------------------------------------------
+r8952 | eserte | 2006-11-23 00:12:03 +0100 (Do, 23 Nov 2006) | 3 lines
+
+ r1276@biokovo:  eserte | 2006-11-22 23:28:03 +0100
+ corrected number of tests
+
+------------------------------------------------------------------------
+r8951 | eserte | 2006-11-22 22:08:27 +0100 (Mi, 22 Nov 2006) | 5 lines
+
+ r1274@biokovo:  eserte | 2006-11-22 22:07:51 +0100
+ better handling of undef in BrowseEntry widgets
+ bug reported by Puetz Kevin A
+ Message-ID: <0B4BDC724143544EB509F90F7791EB64026EF8E1@edxmb16.jdnet.deere.com>
+
+------------------------------------------------------------------------
+r8950 | eserte | 2006-11-22 10:51:22 +0100 (Mi, 22 Nov 2006) | 1 line
+
+corrected number of tests
+------------------------------------------------------------------------
+r8949 | eserte | 2006-11-22 10:49:18 +0100 (Mi, 22 Nov 2006) | 1 line
+
+fix font-related failures on cygwin/X11
+------------------------------------------------------------------------
+r8948 | eserte | 2006-11-22 00:09:56 +0100 (Mi, 22 Nov 2006) | 3 lines
+
+ r1267@biokovo:  eserte | 2006-11-22 00:09:00 +0100
+ fixed font test: font family has to be matched case insensitive
+
+------------------------------------------------------------------------
+r8947 | eserte | 2006-11-22 00:09:38 +0100 (Mi, 22 Nov 2006) | 3 lines
+
+ r1266@biokovo:  eserte | 2006-11-21 23:12:09 +0100
+ skipping wm test which fail without a running window manager
+
+------------------------------------------------------------------------
+r8946 | eserte | 2006-11-22 00:09:20 +0100 (Mi, 22 Nov 2006) | 3 lines
+
+ r1265@biokovo:  eserte | 2006-11-21 23:00:31 +0100
+ disable fork.t and fileevent.t tests on cygwin
+
+------------------------------------------------------------------------
+r8945 | eserte | 2006-11-21 22:43:48 +0100 (Di, 21 Nov 2006) | 5 lines
+
+ r1263@biokovo:  eserte | 2006-11-21 22:28:36 +0100
+ Fix for segfault in t/regexp.t with perl 5.9.x. See also
+ http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/2006-02/msg00748.html
+ for a similar issue.
+
+------------------------------------------------------------------------
+r8944 | eserte | 2006-11-21 20:25:42 +0100 (Di, 21 Nov 2006) | 1 line
+
+make cygwin working with X11
+------------------------------------------------------------------------
+r8943 | eserte | 2006-11-21 02:17:30 +0100 (Di, 21 Nov 2006) | 3 lines
+
+ r1258@biokovo:  eserte | 2006-11-21 02:16:34 +0100
+ more test for unicode problems in Tk::Text (unfixed)
+
+------------------------------------------------------------------------
+r8942 | eserte | 2006-11-21 02:17:10 +0100 (Di, 21 Nov 2006) | 3 lines
+
+ r1257@biokovo:  eserte | 2006-11-21 01:23:41 +0100
+ fixed Tk::Text movements wordstart and wordend in unicode content; new function Tcl_UniCharIsWordChar
+
+------------------------------------------------------------------------
+r8941 | eserte | 2006-11-21 01:07:51 +0100 (Di, 21 Nov 2006) | 3 lines
+
+ r1254@biokovo:  eserte | 2006-11-21 01:07:20 +0100
+ another unicode problem in Tk::Text, unfixed
+
+------------------------------------------------------------------------
+r8940 | eserte | 2006-11-21 01:07:34 +0100 (Di, 21 Nov 2006) | 3 lines
+
+ r1253@biokovo:  eserte | 2006-11-21 00:12:31 +0100
+ 
+
+------------------------------------------------------------------------
+r8939 | eserte | 2006-11-20 23:53:17 +0100 (Mo, 20 Nov 2006) | 3 lines
+
+ r1251@biokovo:  eserte | 2006-11-20 23:52:58 +0100
+ last fix for fixing fontActual(undef) was not quite right, but hopefully now it is
+
+------------------------------------------------------------------------
+r8938 | eserte | 2006-11-20 23:21:01 +0100 (Mo, 20 Nov 2006) | 4 lines
+
+ r1246@biokovo:  eserte | 2006-11-20 23:19:44 +0100
+ fix segfaults if undef font name was used in fontActual etc.
+ added tests to t/font.t which was also converted to Test::More
+
+------------------------------------------------------------------------
+r8937 | eserte | 2006-11-20 23:20:39 +0100 (Mo, 20 Nov 2006) | 3 lines
+
+ r1245@biokovo:  eserte | 2006-11-20 23:18:33 +0100
+ TclObjSetType: protect debugging code from unset type
+
+------------------------------------------------------------------------
+r8936 | eserte | 2006-11-20 23:20:22 +0100 (Mo, 20 Nov 2006) | 3 lines
+
+ r1244@biokovo:  eserte | 2006-11-20 21:20:09 +0100
+ fixed wrong usage of $#{@...} which does not work anymore in bleedperl
+
+------------------------------------------------------------------------
+r8935 | eserte | 2006-11-20 23:19:58 +0100 (Mo, 20 Nov 2006) | 3 lines
+
+ r1243@biokovo:  eserte | 2006-11-20 21:19:24 +0100
+ compiled Changes
+
+------------------------------------------------------------------------
+r8934 | eserte | 2006-11-19 23:06:39 +0100 (So, 19 Nov 2006) | 3 lines
+
+ r1241@biokovo:  eserte | 2006-11-19 23:06:20 +0100
+ fixed immediate ptksh core dump on Windows
+
+------------------------------------------------------------------------
+r8933 | eserte | 2006-11-19 22:52:02 +0100 (So, 19 Nov 2006) | 9 lines
+
+ r1237@biokovo:  eserte | 2006-11-19 22:50:46 +0100
+ various changes to make building under MSWin32 using Strawberry perl possible:
+   fixed libpng Makefile because dmake does not recognize "rem" as a command
+   the -use parameter for embedded windows accepts hex ids
+   fixed almost all tclish lists in tkWinWm.c (like formerly in tkUnixWm.c)
+   fixed wmTracing arguments (like formerly in tkUnixWM.c)
+   fixed widthInc and heightInc acceptance for wm grid
+   t/wm.t and t/wm-tcl.t now run under Windows, but with a lot of TODO tests
+
+------------------------------------------------------------------------
+r8932 | eserte | 2006-11-19 22:51:26 +0100 (So, 19 Nov 2006) | 3 lines
+
+ r1236@biokovo:  eserte | 2006-11-19 22:43:50 +0100
+ prevent from generating a META.yml file
+
+------------------------------------------------------------------------
+r8931 | eserte | 2006-11-19 22:51:09 +0100 (So, 19 Nov 2006) | 3 lines
+
+ r1235@biokovo:  eserte | 2006-11-19 22:43:13 +0100
+ moved Lang_Utf8ToBytes to encGlue.c, now static only
+
+------------------------------------------------------------------------
+r8930 | eserte | 2006-11-19 14:43:54 +0100 (So, 19 Nov 2006) | 3 lines
+
+ r1232@biokovo:  eserte | 2006-11-19 14:43:03 +0100
+ removed META.yml from distro; let MakeMaker create a META.yml automatically
+
+------------------------------------------------------------------------
+r8929 | eserte | 2006-11-19 14:43:36 +0100 (So, 19 Nov 2006) | 6 lines
+
+ r1231@biokovo:  eserte | 2006-11-18 16:32:56 +0100
+ ImgXpmGetDataFromFile now uses Tcl_Channel for file reading, thus filename
+ conversion from utf8 to native is now done right
+ pixmap.t converted to Test::More and added a test for non-existing pixmap
+ unicode.t now passes all tests
+
+------------------------------------------------------------------------
+r8928 | eserte | 2006-11-17 00:01:11 +0100 (Fr, 17 Nov 2006) | 5 lines
+
+ r1225@biokovo:  eserte | 2006-11-16 23:55:59 +0100
+ fixed loading of photos and bitmaps with non-ascii characters
+ see also Message-ID: <451e2719$0$21144$7a628cd7@news.club-internet.fr>
+ xpm pixmaps are not fixed yet
+
+------------------------------------------------------------------------
+r8927 | eserte | 2006-11-17 00:00:39 +0100 (Fr, 17 Nov 2006) | 3 lines
+
+ r1224@biokovo:  eserte | 2006-11-16 22:02:54 +0100
+ new unicode-related tests
+
+------------------------------------------------------------------------
+r8926 | eserte | 2006-11-17 00:00:09 +0100 (Fr, 17 Nov 2006) | 3 lines
+
+ r1223@biokovo:  eserte | 2006-11-16 21:41:22 +0100
+ maybe fixed listbox deletion leak, reported in http://rt.cpan.org/Ticket/Display.html?id=12466
+
+------------------------------------------------------------------------
+r8925 | eserte | 2006-11-16 23:59:51 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1222@biokovo:  eserte | 2006-11-16 21:36:11 +0100
+ smaller values for leak check, 10 is enough
+
+------------------------------------------------------------------------
+r8924 | eserte | 2006-11-16 23:59:33 +0100 (Do, 16 Nov 2006) | 4 lines
+
+ r1221@biokovo:  eserte | 2006-11-16 21:35:48 +0100
+ central -listvar check
+ more test names
+
+------------------------------------------------------------------------
+r8923 | eserte | 2006-11-16 01:37:29 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1219@biokovo:  eserte | 2006-11-16 01:37:15 +0100
+ converted to Test::More; more test for leaking Tk::Listbox insert
+
+------------------------------------------------------------------------
+r8922 | eserte | 2006-11-16 00:20:15 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1212@biokovo:  eserte | 2006-11-16 00:18:08 +0100
+ Pod correction: wrong package name
+
+------------------------------------------------------------------------
+r8921 | eserte | 2006-11-16 00:19:52 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1211@biokovo:  eserte | 2006-11-15 22:34:23 +0100
+ corrected number of tests
+
+------------------------------------------------------------------------
+r8920 | eserte | 2006-11-16 00:19:35 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1210@biokovo:  eserte | 2006-11-15 22:30:52 +0100
+ solved core dump when using font patterns and Xft
+
+------------------------------------------------------------------------
+r8919 | eserte | 2006-11-16 00:19:09 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1209@biokovo:  eserte | 2006-11-14 23:36:39 +0100
+ MANIFEST.SKIP is generated by MANIFEST.SKIP.PL
+
+------------------------------------------------------------------------
+r8918 | eserte | 2006-11-16 00:18:51 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1208@biokovo:  eserte | 2006-11-14 20:52:09 +0100
+ make distcheck is now silent
+
+------------------------------------------------------------------------
+r8917 | eserte | 2006-11-16 00:18:34 +0100 (Do, 16 Nov 2006) | 3 lines
+
+ r1207@biokovo:  eserte | 2006-11-14 20:49:37 +0100
+ some cleanup in UnderlineAmpersand and MsgBox support
+
+------------------------------------------------------------------------
+r8916 | eserte | 2006-11-14 01:17:25 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1205@biokovo:  eserte | 2006-11-14 01:17:05 +0100
+ extended messgebox demonstration: may select MsgBox implementation or old DialogBox implementation
+
+------------------------------------------------------------------------
+r8915 | eserte | 2006-11-14 00:52:03 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1196@biokovo:  eserte | 2006-11-14 00:49:15 +0100
+ first implementation of Tk::MsgBox, together with tests
+
+------------------------------------------------------------------------
+r8914 | eserte | 2006-11-14 00:51:37 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1195@biokovo:  eserte | 2006-11-14 00:48:50 +0100
+ added UnderlineAmpersand et al. (primarily for Tk::MsgBox support)
+
+------------------------------------------------------------------------
+r8913 | eserte | 2006-11-14 00:51:20 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1194@biokovo:  eserte | 2006-11-14 00:48:13 +0100
+ corrected number of tests
+
+------------------------------------------------------------------------
+r8912 | eserte | 2006-11-14 00:50:56 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1193@biokovo:  eserte | 2006-11-14 00:40:57 +0100
+ 
+
+------------------------------------------------------------------------
+r8911 | eserte | 2006-11-14 00:50:39 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1192@biokovo:  eserte | 2006-11-13 22:56:31 +0100
+ added more widgets to basic test
+
+------------------------------------------------------------------------
+r8910 | eserte | 2006-11-14 00:50:18 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1191@biokovo:  eserte | 2006-11-13 22:56:05 +0100
+ beginnings of t/text.t
+
+------------------------------------------------------------------------
+r8909 | eserte | 2006-11-14 00:49:52 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1190@biokovo:  eserte | 2006-11-13 22:00:45 +0100
+ can handle non-ascii chars in directory and file names, at least under Unix
+
+------------------------------------------------------------------------
+r8908 | eserte | 2006-11-14 00:49:33 +0100 (Di, 14 Nov 2006) | 3 lines
+
+ r1189@biokovo:  eserte | 2006-11-13 21:24:23 +0100
+ automatically rebuild Makefiles preserve all MakeMaker arguments, especially XFT
+
+------------------------------------------------------------------------
+r8907 | eserte | 2006-11-12 00:48:07 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1180@biokovo:  eserte | 2006-11-12 00:32:45 +0100
+ added -server option; dies if no NNTP server could be connected
+
+------------------------------------------------------------------------
+r8906 | eserte | 2006-11-12 00:47:51 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1179@biokovo:  eserte | 2006-11-12 00:27:20 +0100
+ added missing option dashes in gedi
+
+------------------------------------------------------------------------
+r8905 | eserte | 2006-11-12 00:47:35 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1178@biokovo:  eserte | 2006-11-12 00:24:00 +0100
+ fix: starting empty ptksh now possible again
+
+------------------------------------------------------------------------
+r8904 | eserte | 2006-11-12 00:47:12 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1177@biokovo:  eserte | 2006-11-12 00:15:21 +0100
+ CmdLine Pod now only in own file; updated
+
+------------------------------------------------------------------------
+r8903 | eserte | 2006-11-12 00:46:50 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1176@biokovo:  eserte | 2006-11-12 00:14:59 +0100
+ more Pod fixes
+
+------------------------------------------------------------------------
+r8902 | eserte | 2006-11-12 00:46:02 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1175@biokovo:  eserte | 2006-11-11 23:56:36 +0100
+ minor Pod fixes
+
+------------------------------------------------------------------------
+r8901 | eserte | 2006-11-12 00:45:44 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1174@biokovo:  eserte | 2006-11-11 23:56:13 +0100
+ moved Item.pod to Menu subdirectory
+
+------------------------------------------------------------------------
+r8900 | eserte | 2006-11-12 00:45:25 +0100 (So, 12 Nov 2006) | 3 lines
+
+ r1173@biokovo:  eserte | 2006-11-11 23:55:25 +0100
+ moved Item.pod to Menu subdirectory
+
+------------------------------------------------------------------------
+r8899 | eserte | 2006-11-11 15:59:31 +0100 (Sa, 11 Nov 2006) | 3 lines
+
+ r1171@biokovo:  eserte | 2006-11-11 15:59:24 +0100
+ cease warnings caused by underscore in VERSION
+
+------------------------------------------------------------------------
+r8898 | eserte | 2006-11-11 03:04:16 +0100 (Sa, 11 Nov 2006) | 4 lines
+
+ r1168@biokovo:  eserte | 2006-11-11 03:03:46 +0100
+ tearoff menus: swaped call of tearOffMenu and Unpost, now title of tearoff
+ menu is set correctly
+
+------------------------------------------------------------------------
+r8897 | eserte | 2006-11-11 03:03:57 +0100 (Sa, 11 Nov 2006) | 3 lines
+
+ r1167@biokovo:  eserte | 2006-11-11 03:02:42 +0100
+ ups, typo
+
+------------------------------------------------------------------------
+r8896 | eserte | 2006-11-11 01:53:07 +0100 (Sa, 11 Nov 2006) | 4 lines
+
+ r1165@biokovo:  eserte | 2006-11-11 01:52:58 +0100
+ protect some grabGlobal calls, should fix
+ https://rt.cpan.org/Public/Bug/Display.html?id=15677
+
+------------------------------------------------------------------------
+r8895 | eserte | 2006-11-11 01:30:18 +0100 (Sa, 11 Nov 2006) | 5 lines
+
+ r1163@biokovo:  eserte | 2006-11-11 01:30:06 +0100
+ tearOffMenu:
+   added an "Exists" protection (like in the Tcl original)
+   explicitely set state to normal
+
+------------------------------------------------------------------------
+r8894 | eserte | 2006-11-09 00:40:36 +0100 (Do, 09 Nov 2006) | 3 lines
+
+ r1157@biokovo:  eserte | 2006-11-09 00:38:24 +0100
+ some minor TextList fixes, but still more than half of the tests fail
+
+------------------------------------------------------------------------
+r8893 | eserte | 2006-11-09 00:40:14 +0100 (Do, 09 Nov 2006) | 3 lines
+
+ r1156@biokovo:  eserte | 2006-11-09 00:14:37 +0100
+ show current window manager information before starting tests
+
+------------------------------------------------------------------------
+r8892 | eserte | 2006-11-09 00:39:53 +0100 (Do, 09 Nov 2006) | 3 lines
+
+ r1155@biokovo:  eserte | 2006-11-09 00:14:14 +0100
+ more failure statistics
+
+------------------------------------------------------------------------
+r8891 | eserte | 2006-11-09 00:39:34 +0100 (Do, 09 Nov 2006) | 3 lines
+
+ r1154@biokovo:  eserte | 2006-11-08 23:28:34 +0100
+ new listbox tests: -listvar, itemconfigure
+
+------------------------------------------------------------------------
+r8890 | eserte | 2006-11-09 00:39:11 +0100 (Do, 09 Nov 2006) | 3 lines
+
+ r1153@biokovo:  eserte | 2006-11-08 22:06:24 +0100
+ converted to Test::More
+
+------------------------------------------------------------------------
+r8889 | eserte | 2006-11-08 19:58:19 +0100 (Mi, 08 Nov 2006) | 1 line
+
+more wm tests may fail on newer fvwm 2.5.18
+------------------------------------------------------------------------
+r8888 | eserte | 2006-11-08 19:41:37 +0100 (Mi, 08 Nov 2006) | 1 line
+
+even more wm tests may fail on older metacity
+------------------------------------------------------------------------
+r8887 | eserte | 2006-11-08 00:05:18 +0100 (Mi, 08 Nov 2006) | 4 lines
+
+ r1142@biokovo:  eserte | 2006-11-07 23:56:34 +0100
+ Test -> Test::More
+ made one critical test case a TODO test (fails sometimes on metacity)
+
+------------------------------------------------------------------------
+r8886 | eserte | 2006-11-08 00:04:56 +0100 (Mi, 08 Nov 2006) | 3 lines
+
+ r1141@biokovo:  eserte | 2006-11-07 23:43:12 +0100
+ tests for wmTracing; blocks
+
+------------------------------------------------------------------------
+r8885 | eserte | 2006-11-08 00:04:33 +0100 (Mi, 08 Nov 2006) | 3 lines
+
+ r1140@biokovo:  eserte | 2006-11-07 23:42:52 +0100
+ make wmTracing working
+
+------------------------------------------------------------------------
+r8884 | eserte | 2006-11-08 00:04:15 +0100 (Mi, 08 Nov 2006) | 3 lines
+
+ r1139@biokovo:  eserte | 2006-11-07 23:42:18 +0100
+ translated fullscreen tests; some TODO tests for metacity; -poswin is default
+
+------------------------------------------------------------------------
+r8883 | eserte | 2006-11-08 00:03:56 +0100 (Mi, 08 Nov 2006) | 3 lines
+
+ r1138@biokovo:  eserte | 2006-11-07 23:41:37 +0100
+ missing geometry
+
+------------------------------------------------------------------------
+r8882 | eserte | 2006-11-08 00:03:38 +0100 (Mi, 08 Nov 2006) | 3 lines
+
+ r1137@biokovo:  eserte | 2006-11-07 22:05:42 +0100
+ set no of tests
+
+------------------------------------------------------------------------
+r8881 | eserte | 2006-11-07 23:57:03 +0100 (Di, 07 Nov 2006) | 3 lines
+
+ r1136@biokovo:  eserte | 2006-11-07 22:04:47 +0100
+ completed
+
+------------------------------------------------------------------------
+r8880 | eserte | 2006-11-06 23:58:24 +0100 (Mo, 06 Nov 2006) | 3 lines
+
+ r1132@biokovo:  eserte | 2006-11-06 23:57:31 +0100
+ completed nearly 80%
+
+------------------------------------------------------------------------
+r8879 | eserte | 2006-11-06 23:58:03 +0100 (Mo, 06 Nov 2006) | 3 lines
+
+ r1131@biokovo:  eserte | 2006-11-06 23:57:15 +0100
+ removed unused char arrays, resizable also returns list now
+
+------------------------------------------------------------------------
+r8878 | eserte | 2006-11-06 23:57:43 +0100 (Mo, 06 Nov 2006) | 3 lines
+
+ r1130@biokovo:  eserte | 2006-11-06 23:56:37 +0100
+ stackorder was missing
+
+------------------------------------------------------------------------
+r8877 | eserte | 2006-11-06 00:04:21 +0100 (Mo, 06 Nov 2006) | 3 lines
+
+ r1127@biokovo:  eserte | 2006-11-06 00:03:33 +0100
+ incompatible changes: iconposition and wmGrid return lists now
+
+------------------------------------------------------------------------
+r8876 | eserte | 2006-11-06 00:04:00 +0100 (Mo, 06 Nov 2006) | 3 lines
+
+ r1126@biokovo:  eserte | 2006-11-06 00:02:27 +0100
+ completed 40% of original wm.test from Tcl/Tk
+
+------------------------------------------------------------------------
+r8875 | eserte | 2006-11-05 21:47:27 +0100 (So, 05 Nov 2006) | 5 lines
+
+ r1124@biokovo:  eserte | 2006-11-05 21:47:16 +0100
+ beginning new test file wm-tcl.t
+ ups, forgotten wrapper in tkUnixWm.c (but now it's tested in wm.t)
+ output of aspect is now a list
+
+------------------------------------------------------------------------
+r8874 | eserte | 2006-11-05 21:11:09 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1120@biokovo:  eserte | 2006-11-05 21:09:49 +0100
+ iconphoto implementation, documentation and test
+
+------------------------------------------------------------------------
+r8873 | eserte | 2006-11-05 21:10:19 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1119@biokovo:  eserte | 2006-11-05 19:53:41 +0100
+ integrate Tcl/Tk version 1.51, not fully completed
+
+------------------------------------------------------------------------
+r8872 | eserte | 2006-11-05 21:09:57 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1118@biokovo:  eserte | 2006-11-05 19:52:32 +0100
+ 
+
+------------------------------------------------------------------------
+r8871 | eserte | 2006-11-05 11:45:05 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1113@biokovo:  eserte | 2006-11-05 11:43:52 +0100
+ inc VERSION
+
+------------------------------------------------------------------------
+r8870 | eserte | 2006-11-05 11:44:43 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1112@biokovo:  eserte | 2006-11-05 11:43:38 +0100
+ new ToDos
+
+------------------------------------------------------------------------
+r8869 | eserte | 2006-11-05 11:44:23 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1111@biokovo:  eserte | 2006-11-05 11:43:19 +0100
+ warning fix
+
+------------------------------------------------------------------------
+r8868 | eserte | 2006-11-05 11:43:59 +0100 (So, 05 Nov 2006) | 3 lines
+
+ r1110@biokovo:  eserte | 2006-11-05 11:43:03 +0100
+ enable tests for Xft builds; shorter delay before exit
+
+------------------------------------------------------------------------
+r8867 | eserte | 2006-11-04 16:21:13 +0100 (Sa, 04 Nov 2006) | 3 lines
+
+ r1108@biokovo:  eserte | 2006-11-04 16:21:05 +0100
+ minor Pod tweaks
+
+------------------------------------------------------------------------
+r8866 | eserte | 2006-11-04 14:56:41 +0100 (Sa, 04 Nov 2006) | 3 lines
+
+ r1105@biokovo:  eserte | 2006-11-04 14:56:17 +0100
+ adjusted VERSION
+
+------------------------------------------------------------------------
+r8865 | eserte | 2006-11-04 14:56:23 +0100 (Sa, 04 Nov 2006) | 3 lines
+
+ r1104@biokovo:  eserte | 2006-11-04 14:53:49 +0100
+ Pasting selection with middle mouse sets cursor position now
+
+------------------------------------------------------------------------
+r8864 | eserte | 2006-11-04 14:18:40 +0100 (Sa, 04 Nov 2006) | 4 lines
+
+ r1102@biokovo:  eserte | 2006-11-04 14:18:29 +0100
+ x is an alias for d
+ font handling: force fixed font, use bold font for prompt
+
+------------------------------------------------------------------------
+r8863 | eserte | 2006-11-03 22:02:21 +0100 (Fr, 03 Nov 2006) | 3 lines
+
+ r1100@biokovo:  eserte | 2006-11-03 22:01:18 +0100
+ translation completed
+
+------------------------------------------------------------------------
+r8862 | eserte | 2006-11-03 19:50:53 +0100 (Fr, 03 Nov 2006) | 1 line
+
+update
+------------------------------------------------------------------------
+r8861 | eserte | 2006-11-03 19:35:26 +0100 (Fr, 03 Nov 2006) | 1 line
+
+NEED_FT2BUILD_H macro to get XFT build on an old RedHat version
+------------------------------------------------------------------------
+r8860 | eserte | 2006-11-03 19:27:27 +0100 (Fr, 03 Nov 2006) | 1 line
+
+allow setting defines in try_run/compile
+------------------------------------------------------------------------
+r8859 | eserte | 2006-11-03 19:26:42 +0100 (Fr, 03 Nov 2006) | 1 line
+
+corrected no of tests
+------------------------------------------------------------------------
+r8858 | eserte | 2006-11-02 23:27:13 +0100 (Do, 02 Nov 2006) | 3 lines
+
+ r1092@biokovo:  eserte | 2006-11-02 23:26:40 +0100
+ more tests converted
+
+------------------------------------------------------------------------
+r8857 | eserte | 2006-11-02 23:26:49 +0100 (Do, 02 Nov 2006) | 3 lines
+
+ r1091@biokovo:  eserte | 2006-11-02 22:51:47 +0100
+ started conversion from tcl original
+
+------------------------------------------------------------------------
+r8856 | eserte | 2006-11-02 22:28:44 +0100 (Do, 02 Nov 2006) | 3 lines
+
+ r1089@biokovo:  eserte | 2006-11-02 22:28:36 +0100
+ avoid ptksh initial slowness and when popping up history
+
+------------------------------------------------------------------------
+r8855 | eserte | 2006-11-01 23:06:21 +0100 (Mi, 01 Nov 2006) | 3 lines
+
+ r1087@biokovo:  eserte | 2006-11-01 23:05:07 +0100
+ entry.t/listbox.t tests work also with Xft
+
+------------------------------------------------------------------------
+r8854 | eserte | 2006-10-31 01:43:06 +0100 (Di, 31 Okt 2006) | 5 lines
+
+ r1085@biokovo:  eserte | 2006-10-31 01:42:57 +0100
+ change in ConfigureWinItem to fix
+ https://rt.cpan.org/Ticket/Display.html?id=4677
+ (which is the same as Bug 982248 in the Tcl/Tk version)
+
+------------------------------------------------------------------------
+r8853 | eserte | 2006-10-31 01:34:05 +0100 (Di, 31 Okt 2006) | 3 lines
+
+ r1083@biokovo:  eserte | 2006-10-31 01:34:00 +0100
+ Ctrl-Q accelerator, changed date
+
+------------------------------------------------------------------------
+r8852 | eserte | 2006-10-31 01:29:58 +0100 (Di, 31 Okt 2006) | 3 lines
+
+ r1081@biokovo:  eserte | 2006-10-31 01:29:52 +0100
+ strip DOS newlines from user contributed demos titles
+
+------------------------------------------------------------------------
+r8851 | eserte | 2006-10-31 01:19:13 +0100 (Di, 31 Okt 2006) | 4 lines
+
+ r1079@biokovo:  eserte | 2006-10-31 01:19:05 +0100
+ manually merged from the Tcl/Tk counterpart from January 2006 to fix
+ http://rt.cpan.org/Ticket/Display.html?id=6026
+
+------------------------------------------------------------------------
+r8850 | eserte | 2006-10-31 00:44:04 +0100 (Di, 31 Okt 2006) | 5 lines
+
+ r1077@biokovo:  eserte | 2006-10-31 00:43:55 +0100
+ converted from Test to Test::More
+ force wm dependent tests with -wmtest option
+ enable all Unicode related tests
+
+------------------------------------------------------------------------
+r8849 | eserte | 2006-10-30 23:28:55 +0100 (Mo, 30 Okt 2006) | 3 lines
+
+ r1075@biokovo:  eserte | 2006-10-30 23:28:40 +0100
+ http://rt.cpan.org/Ticket/Display.html?id=8567
+
+------------------------------------------------------------------------
+r8848 | eserte | 2006-10-30 23:14:48 +0100 (Mo, 30 Okt 2006) | 1 line
+
+https://rt.cpan.org/Ticket/Display.html?id=6708
+------------------------------------------------------------------------
+r8847 | eserte | 2006-10-24 01:32:56 +0200 (Di, 24 Okt 2006) | 2 lines
+
+see https://rt.cpan.org/Ticket/Display.html?id=6166
+
+------------------------------------------------------------------------
+r8846 | eserte | 2006-10-24 01:31:25 +0200 (Di, 24 Okt 2006) | 2 lines
+
+automatically changed by Makefile?
+
+------------------------------------------------------------------------
+r8845 | eserte | 2006-10-24 01:14:17 +0200 (Di, 24 Okt 2006) | 3 lines
+
+documented Walk, as wished in
+https://rt.cpan.org/Ticket/Display.html?id=394
+
+------------------------------------------------------------------------
+r8844 | eserte | 2006-10-24 00:37:11 +0200 (Di, 24 Okt 2006) | 3 lines
+
+patch from
+http://groups.google.com/group/comp.lang.perl.tk/browse_frm/thread/b8a65eadd66b2efe/97500370b02e1642?lnk=st&q=perl+tk+xlib+windows&rnum=1#97500370b02e1642
+
+------------------------------------------------------------------------
+r8843 | eserte | 2006-10-24 00:25:33 +0200 (Di, 24 Okt 2006) | 3 lines
+
+applied informal patch from
+https://rt.cpan.org/Ticket/Display.html?id=16053
+
+------------------------------------------------------------------------
+r8842 | eserte | 2006-10-23 23:51:54 +0200 (Mo, 23 Okt 2006) | 1 line
+
+initial checkin
+------------------------------------------------------------------------
+r8798 | robert | 2007-02-04 06:48:03 +0100 (So, 04 Feb 2007) | 2 lines
+
+41370 - Tk
+
+------------------------------------------------------------------------
+
+Following the old perforce changelog
+========================================================================
+
 Change 3278 on 2004/04/11 by nick@llama
 
 	Change VERSION to 804.027

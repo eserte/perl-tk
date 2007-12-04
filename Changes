@@ -1,9 +1,41 @@
-Next release
-------------
+Tk-804.027_502 release (2007-12-04)
+----------------------
+
+New features
+  Merged with CPAN version of Tk::Tree
+
+  Tk::Animation now reads delay and disposal information from GIF file
+  (experimental, may change, needs an installed Image::Info)
 
 Fixes
   Make sure canvas methods are really accessible in OnDestroy. This
   fixes problems in the CPAN module Tk::LCD.
+
+  Some path-related problems fixed with Tk::DirTree.
+
+  Solved some Tk::ColorEditor issues (missing rgb.txt, multiple
+  chooseColor invocations)
+
+  Fixed some build problems under Windows.
+
+  Fixed possible memory corruption
+  (http://rt.cpan.org/Ticket/Display.html?id=24542)
+
+  Dash patches by Wolfgang Laun
+  (http://rt.cpan.org/Ticket/Display.html?id=11083)
+
+  hpux ia64 should now compile.
+
+  Tk::FBox: workaround for segfaults under threaded perl.
+
+  Fixed possible performance problem when using Tk::Balloon and
+  AutoLoader 5.63 is installed.
+
+Documentation
+  Documented missing page_widget method in Tk::NoteBook.
+
+Tests
+  Disabled more failing wm tests (notably on kwin).
 
 Tk-804.027_501 release (2007-09-22)
 ----------------------

@@ -63,8 +63,3 @@ The libx11-dev and x-dev packages are necessary to compile Perl/Tk.
 
 The libfreetype6-dev, libxrender-dev and libxft-dev packages are
 necessary to compile with XFT=1.
-
-Either fontconfig 2.4.1 which comes with Debian has a bug causing a
-segmentation fault, or tkUnixXft.c has wrong fontconfig handling. The
-problematic code line is commented out, causing a memory leak when
-destroying fonts.

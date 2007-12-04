@@ -1,3 +1,8 @@
+Currently building Perl/Tk under cygwin seems to be broken, either
+with native Win32 GUI or X11 libraries. Patches to fix the build are
+welcome.
+
+----------------------------------------------------------------------
 
 This is a brief description of how to get the Tk module working with
 Perl and Cygwin.
