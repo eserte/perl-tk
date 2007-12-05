@@ -88,6 +88,10 @@ Is it easy to support non-base64 operation for Tk::JPEG and Tk::PNG?
 XMouseWheelBind and YMouseWheelBind only sets mouse wheel bindings for
 X11, not for Windows. Was this accidental or intended?
 
+Add event_mask argument to SendClientMessage, so that the script in
+http://board.perl-community.de/thread/10961/#MSG0
+could be implemented with Perl/Tk, too.
+
 ----------------------------------------------------------------------
 - Fixes needing perl support
 
