@@ -82,6 +82,10 @@ GetOptions("poswin!" => \$poswin,
 
 $mw->geometry("+10+10");
 
+# Create entries in the option database to be sure that geometry options
+# like border width have predictable values.
+$mw->optionAdd('*Toplevel.borderWidth', 0);
+
 $mw->deiconify;
 if (!$mw->ismapped) {
     $mw->waitVisibility;
