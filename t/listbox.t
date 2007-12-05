@@ -70,6 +70,7 @@ ok(Tk::Exists($mw));
 
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
+$mw->optionAdd("*Toplevel.borderWidth",0);
 $mw->optionAdd("*$Listbox.borderWidth",2);
 $mw->optionAdd("*$Listbox.highlightThickness",2);
 ## Again, prefer the X11 font.

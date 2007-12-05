@@ -48,6 +48,7 @@ sub deleteWindows () {
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
 
+$mw->optionAdd('*Toplevel.borderWidth', 0);
 $mw->optionAdd('*Text.borderWidth', 2);
 $mw->optionAdd('*Text.highlightThickness', 2);
 $mw->optionAdd('*Text.font', 'Courier -12');
