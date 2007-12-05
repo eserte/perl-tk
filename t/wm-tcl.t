@@ -34,6 +34,7 @@
 # * fvwm 2.5.18
 # * blackbox 0.70.1
 # * KWin: 3.0
+# * Xfwm4: 4.2.3.2
 
 use strict;
 use FindBin;
@@ -62,6 +63,7 @@ my $wm_name = $wm_info{name};
 
 my $wm_problems = $Tk::platform eq 'unix';
 my $kwin_problems = defined $wm_name && $wm_name eq 'KWin';
+my $xfwm4_problems = defined $wm_name && $wm_name eq 'Xfwm4';
 
 my $poswin = 1;
 my $netwm = 0;
@@ -604,6 +606,7 @@ stdWindow;
     {
 	local $TODO;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 	is_deeply([$t1->colormapwindows], [".toplevel1.frame1", ".toplevel1.frame2", ".toplevel1"]);
     }
 
@@ -1101,6 +1104,7 @@ SKIP: {
 {
     local $TODO;
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
@@ -1118,6 +1122,7 @@ SKIP: {
 {
     local $TODO;
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 
     my $t = $mw->Toplevel;
     poswin $t;
@@ -1183,6 +1188,7 @@ SKIP: {
     local $TODO;
     $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
@@ -1201,6 +1207,7 @@ SKIP: {
     local $TODO;
     $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 
     my $t = $mw->Toplevel;
     poswin $t;
@@ -1268,6 +1275,7 @@ SKIP: {
     local $TODO;
     $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+    $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 300, q{Use min size if window size is not explicitly set});
@@ -1444,6 +1452,7 @@ eval {
     {
 	local $TODO;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 
 	my $t = $mw->Toplevel(Name => "t");
 	poswin $t;
@@ -2250,7 +2259,7 @@ SKIP: {
 	if !$wm_running;
 
     local $TODO;
-    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x)" if !$TODO && $wm_problems;
+    $TODO = "May fail on some window managers (e.g. fvwm 2.4.x or xfwm4 4.2.3.2)" if !$TODO && $wm_problems;
 
     deleteWindows;
     my $t = $mw->Toplevel;

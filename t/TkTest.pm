@@ -122,6 +122,8 @@ sub wm_info ($) {
 	}
     }
 
+    $wm_name =~ s{\0}{}g; # null byte at end seen in xfwm4 4.2.3.2
+
     (name    => $wm_name,
      version => $wm_version,
     );
