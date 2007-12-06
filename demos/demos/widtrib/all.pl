@@ -94,6 +94,14 @@ EOF
 		 {class => 'Menubutton', w_args => [-text => 'Menu button']},#XXX menuitems
 		 {class => 'Message', w_args => [-text => 'This is a message widget']},
 		 {class => 'MsgBox', dialog => 1},
+		 {class => 'NoteBook', action => sub {
+		      my $w = shift;
+		      for (1..5) {
+			  my $p = $w->add("page$_", -label => "Page $_");
+			  $p->Label(-text => "A label in the page $_")->pack;
+		      }
+		  },
+		 },
 		 # XXX Pane
 		 {class => 'Radiobutton', w_args => [-text => 'This is a radiobutton']},
 		 {class => 'ROText', w_args => [@txt_geom], action => $insert_txt, scrolled => 'oe'},
@@ -106,17 +114,63 @@ EOF
 		 {class => 'TextUndo', w_args => [@txt_geom], action => $insert_txt, scrolled => 'oe'},
 		 # XXX Toplevel
 		 qw(FloatEntry HList IconList InputO
-		    LabEntry LabFrame LabRadio NBFrame NoteBook Optionmenu
+		    LabEntry LabFrame LabRadio NBFrame Optionmenu
 		    Panedwindow ProgressBar TList Table
 		    Tiler TixGrid Tree
 		  ),
 
 		 {separator => 'Installed non-core Tk modules'},
 
- 		 qw(Date DateEntry FireButton NumEntry NumEntryPlain TFrame
- 		    ToolBar HistEntry
- 		    MListbox PathEntry
+ 		 qw(Date DateEntry NumEntry NumEntryPlain
+ 		    PathEntry
 		  ),
+		 {class => 'FireButton', action => sub {
+		      my $w = shift;
+		      my $text = 'This is a firebutton 0';
+		      $w->configure(-textvariable => \$text,
+				    -command => sub {
+					$text =~ s{(\d+)}{$1+1}e;
+				    },
+				   );
+		  },
+		 },
+		 {class => 'TFrame', w_args => [@px_geom, -bg => 'red',
+						-label => [ -text => 'Title' ],
+						-borderwidth => 2,
+						-relief => 'groove',
+					       ],
+		 },
+		 {class => 'ToolBar', w_args => [qw/-movable 1 -side top
+						    -indicatorcolor blue/],
+		  action => sub {
+		      my $tb = shift;
+		      $tb->ToolButton  (-text  => 'Button',
+					-tip   => 'tool tip',
+					-command => sub { print "hi\n" });
+		      $tb->ToolLabel   (-text  => 'A Label');
+		      $tb->Label       (-text  => 'Another Label');
+		      $tb->ToolLabEntry(-label => 'A LabEntry',
+					-labelPack => [-side => "left",
+						       -anchor => "w"]);
+		  },
+		 },
+		 {class => 'HistEntry', action => sub {
+		      my $w = shift;
+		      $w->bind("<Return>" => sub {
+				   # do something with value, and then:
+				   $w->historyAdd;
+				   $w->delete('0', 'end');
+			       });
+		  },
+		 },
+		 {class => 'MListbox', w_args => [-columns=>[[-text=>'Heading1',
+							      -sortable=>0],
+							     [-text=>'Heading2']]],
+		  action => sub {
+		      my $w = shift;
+		      $w->insert("end", [qw(Cell11 Cell12)], [qw(Cell21 Cell22)]);
+		  },
+		 },
 		 {class => 'Cloth', w_args => [@px_geom],
 		  action => sub {
 		      my($w) = @_;
@@ -142,7 +196,9 @@ EOF
 		 {class => 'ObjScanner', w_args => [@txt_geom, -caller => $TOP]},
 		 {class => 'PodText', require => 'Tk::Pod::Text',
 		  w_args => [@txt_geom, -file => 'Tk']},
-		 {class => 'XMLViewer', w_args => [@txt_geom], scrolled => 'oe'},
+		 {class => 'XMLViewer', w_args => [@txt_geom], action => sub {
+		      shift->insertXML(-text => "<?xml version='1.0' ?><a><bla /><foo>bar</foo></a>");
+		  }, scrolled => 'oe'},
 		 {class => 'Zinc', w_args => [@px_geom],
 		  action => sub {
 		      my($w) = @_;
