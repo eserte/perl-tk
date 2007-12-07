@@ -34,6 +34,11 @@ my @diag = ("",
 	    "Tk platform:    $Tk::platform",
 	   );
 
+my $server = eval { $mw->server }; # not sure if this works on non-X11 systems
+if ($server) {
+    push @diag, "X11 server:     $server";
+}
+
 SKIP: {
     skip("window manager check only on X11", 1)
 	if $Tk::platform ne "unix";
