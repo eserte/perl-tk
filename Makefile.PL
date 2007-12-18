@@ -215,7 +215,7 @@ tkGlue.m     : tkGlue.h pTk/mkVFunc
 	$(PERL) pTk/mkVFunc -m $(WINARCH) tkGlue.h
 
 $(MYEXTLIB)  : config FORCE
-	cd pTk && $(MAKE) DEFINE="$(DEFINE)"
+	cd pTk && $(MAKE) DEFINE="$(DEFINE)" $(PASTHRU)
 
 perlmain.c : config Makefile
 
