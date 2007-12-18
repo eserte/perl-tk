@@ -9,7 +9,7 @@ use Test::More;
 # UNIX/X is more complex, as windows overlap (deliberately)
 our $tests = 6;
 our $expect = 0;
-plan tests => $tests;
+plan 'no_plan'; # $tests for fast connections, $tests-1 for slow connections
 
 my $event = '<Map>';
 my $why;
