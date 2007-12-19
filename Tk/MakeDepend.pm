@@ -43,8 +43,8 @@ sub term
  return !term() if s/^\s*!//;
  return exists($define{$1}) if s/^\s*defined\s*\(([_A-Za-z][_\w]*)\s*\)//;
  return exists($define{$1}) if s/^\s*defined\s*([_A-Za-z][_\w]*)//;
- return eval "$1" if s/^\s*(0x[0-9a-f]+)//i;
- return $1 if s/^\s*(\d+)//;
+ return eval "$1" if s/^\s*(0x[0-9a-f]+)L?//i;
+ return $1 if s/^\s*(\d+)L?//;
  return $define{$1} || 0 if s/^\s*([_A-Za-z][_\w]*)//;
  if (s/^\s*\(//)
   {
