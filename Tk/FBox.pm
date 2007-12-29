@@ -906,7 +906,7 @@ sub Done {
 	if ($w->cget('-multiple')) {
 	    $selectFilePath = [];
 	    for my $f (@{ $w->{'selectFile'} }) {
-		push @$selectFilePath, JoinFile($w->_get_select_Path, $f);
+		push @$selectFilePath, JoinFile($w->_get_select_path, $f);
 	    }
 	} else {
 	    $selectFilePath = JoinFile($w->_get_select_path,
