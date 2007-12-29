@@ -16,7 +16,7 @@ BEGIN {
 
 use TkTest qw(catch_grabs);
 
-plan tests => 13;
+plan tests => 15;
 
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
@@ -138,8 +138,9 @@ catch_grabs {
 ######################################################################
 # getOpenFile etc.
 SKIP: {
-    skip("getOpenFile etc. only on X11", 3)
-	if $Tk::platform ne 'unix';
+## XXX works everywhere?
+#     skip("getOpenFile etc. only on X11", 3)
+# 	if $Tk::platform ne 'unix';
 
     {
 	my $mw = MainWindow->new;
@@ -169,6 +170,17 @@ SKIP: {
 	    diag "Result is <$result>";
 	}
 	pass("called chooseDirectory");
+    }
+
+    {
+	my $mw = MainWindow->new;
+	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
+	my $result = $mw->getOpenFile(-multiple => 1, -title => "getOpenFile with -multiple");
+	ok(!defined $result || ref($result) eq "ARRAY", "Result of -multiple is an array reference or undef");
+	if (!$ENV{BATCH}) {
+	    diag "Result is <@$result>" if $result;
+	}
+	pass("called getOpenFile with -multiple");
     }
 }
 
