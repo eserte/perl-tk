@@ -366,7 +366,21 @@ if ($win_arch eq 'x') {
 		    $Config{'usrinc'});
     }
 
-  die "Cannot find X include files anywhere" unless (defined $xinc);
+  unless (defined $xinc)
+    {
+      warn <<EOF;
+Cannot find X include files anywhere.
+EOF
+      if ($^O eq 'linux')
+        {
+          warn <<EOF;
+You probably need to install the X11 development package first.
+On Debian Linux, these are the packages libx11-dev and x-dev.
+Please see README.linux for more information.
+EOF
+        }
+      exit 0;
+    }
 
   if (defined($Config{'gccversion'}) &&
       $Config{'gccversion'} =~ /\S/  &&
