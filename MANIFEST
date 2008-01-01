@@ -1941,6 +1941,7 @@ symbols
 t/00wmcheck.t			Provide information about wm
 t/adjuster.t
 t/after.t
+t/async.t
 t/autoload.t
 t/balloon.t
 t/browseentry-grabtest.t
