@@ -1962,6 +1962,7 @@ t/entry.t
 t/exefiles.t
 t/fbox.t
 t/fileevent.t
+t/fileevent2.t
 t/fileselect.t
 t/font.t
 t/fork.t
