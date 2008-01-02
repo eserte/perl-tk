@@ -8,7 +8,6 @@
 
 use strict;
 
-use Tk;
 use Config qw(%Config);
 
 BEGIN {
@@ -24,11 +23,15 @@ BEGIN {
 BEGIN {
     if (!defined $Config{sig_name}) {
 	print "1..0 # skip: No signals on this system?\n";
+	exit;
     }
     if ($Config{sig_name} !~ m{\bUSR2\b}) {
 	print "1..0 # skip: signal USR2 is not available on this system\n";
+	exit;
     }
 }
+
+use Tk;
 
 plan tests => 1;
 
