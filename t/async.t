@@ -35,21 +35,20 @@ plan tests => 1;
 my $caught_USR2 = 0;
 $SIG{USR2} = sub { $caught_USR2++ };
 
-my $ppid = $$;
-if (fork == 0) {
-    select undef,undef,undef,0.2;
-    kill USR2 => $ppid;
-    select undef,undef,undef,0.05;
-    kill USR2 => $ppid;
-    CORE::exit;
-}
-
 my $mw = tkinit;
 $mw->geometry("+0+0");
 $mw->Label(-text => "Waiting for USR2 signals...")->pack;
 $mw->idletasks;
 
-$mw->after(400, sub { $mw->destroy });
+my $ppid = $$;
+if (fork == 0) {
+    kill USR2 => $ppid;
+    select undef,undef,undef,0.2;
+    kill USR2 => $ppid;
+    CORE::exit;
+}
+
+$mw->after(500, sub { $mw->destroy });
 
 MainLoop;
 
