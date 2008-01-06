@@ -1,3 +1,27 @@
+Tk-804.029 release (XXXX-XX-XX)
+------------------
+
+Fixes
+ Make sure Tk::MsgBox is not displayed before calling Show()
+
+ Solved problems with fileevent on 64bit architectures (this also
+ fixes a problem with POE)
+
+ Makefile.PL updates (auto-creation of META.yml, added LICENSE, exit
+ cleanly if prereqs are missing --- this is for cpan testers)
+
+ Fixed typo in Tk::FBox
+ http://rt.cpan.org/Ticket/Display.html?id=31989
+
+ Added different location of rgb.txt on Mac OS X 10.5.1 systems
+
+ Fixed a makedepend issue, reported by marek.rouchal
+
+Tests
+ Tests for signal handling (testing LangAsyncCheck introduced earlier)
+
+ Various skips for broken (?) window managers and slow connections.
+
 Tk-804.028 release (2007-12-18)
 ------------------
 
