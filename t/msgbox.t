@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-plan tests => 13;
+plan tests => 17;
 
 use_ok('Tk::MsgBox');
 
@@ -37,6 +37,7 @@ my @opts = (-icon    => "info",
 for my $icon (qw(info warning error question)) {
     my $w = $mw->MsgBox(@opts, -icon => $icon);
     ok(Tk::Exists($w), "Setting -icon to $icon");
+    is($w->state, "withdrawn", "Initially invisible");
     $w->after(100, sub { $w->destroy });
     $w->Show;
 }

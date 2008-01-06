@@ -228,6 +228,7 @@ sub Populate {
 
     $w->iconname('Dialog');
 
+    $w->withdraw;
     #
     # The default value of the title is space (" ") not the empty string
     # because for some window managers, a 
