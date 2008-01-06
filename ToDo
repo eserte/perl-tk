@@ -92,6 +92,14 @@ Add event_mask argument to SendClientMessage, so that the script in
 http://board.perl-community.de/thread/10961/#MSG0
 could be implemented with Perl/Tk, too.
 
+HList:
+- Document the -wideselection option, or ignore it?
+- Make sure that the last column always fits the whole HList? The
+  itemWidth is set in tixHlist.c, function DrawOneElement, about line
+  4003. This would check if i==wPtr->numColumns-1, if
+  itemWidth+2*selBorderWidth is larger than the available widget space
+  (how?) and adjust itemWidth.
+
 ----------------------------------------------------------------------
 - Fixes needing perl support
 
