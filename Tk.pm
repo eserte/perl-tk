@@ -296,7 +296,7 @@ sub MessageBox {
 	}
         my $md = $parent->Dialog(%$args);
         my $an = $md->Show;
-        $md->destroy;
+        $md->destroy if Tk::Exists($md);
         return $an;
     }
 } # end messageBox
