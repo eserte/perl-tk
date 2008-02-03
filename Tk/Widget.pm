@@ -881,7 +881,7 @@ sub BusyRecurse
  my ($restore,$w,$cursor,$recurse,$top) = @_;
  my $c = $w->cget('-cursor');
  my @tags = $w->bindtags;
- if ($top || defined($c))
+ if ($top || defined($c) || $w->isa('Tk::Toplevel'))
   {
    push(@$restore, sub { return unless Tk::Exists($w); $w->configure(-cursor => $c); $w->bindtags(\@tags) });
    $w->configure(-cursor => $cursor);

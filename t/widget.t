@@ -13,7 +13,7 @@ BEGIN {
 
 use Tk;
 
-BEGIN { plan tests => 14 };
+BEGIN { plan tests => 18 };
 
 my $mw = Tk::MainWindow->new;
 my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
@@ -76,6 +76,19 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
     is($mw->cget(-cursor), $oldcursor, "Old cursor restored");
     is($w2->cget(-cursor), "cross", "Oldsubwidget cursor also restored");
     $w2->destroy;
+}
+
+## [rt.cpan.org #32858]
+{
+    my $top = $mw->Toplevel;
+    $mw->update;
+    $mw->Busy(-recurse => 1);
+    for my $w ($mw, $top) {
+	is(($w->bindtags)[0], 'Busy', "tag 'Busy' set for $w");
+	is($w->cget('-cursor'), 'watch', "cursor 'watch'set for $w");
+    }
+    $mw->Unbusy;
+    $top->destroy;
 }
 
 ##
