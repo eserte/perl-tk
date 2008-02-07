@@ -315,7 +315,9 @@ SV *b;
    case SVt_PVGV:
    case SVt_PVCV:
     return 0;
+#ifdef HAS_REAL_SVT_RV
    case SVt_RV:
+#endif
    case SVt_IV:
    case SVt_NV:
    case SVt_PV:
