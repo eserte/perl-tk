@@ -776,7 +776,7 @@ ReadImage(interp, imagePtr, handle, len, rows, cmap,
     /*
      *  Initialize the decoder
      */
-    if (! ReadOK(handle,&initialCodeSize,1))  {
+    if (! ReadOK(handle,&initialCodeSize,1) || inititalCodeSize > MAX_LWZ_BITS)  {
 	Tcl_AppendResult(interp, "error reading GIF image: ",
 		Tcl_PosixError(interp), (char *) NULL);
 	return TCL_ERROR;
