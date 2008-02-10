@@ -2,6 +2,9 @@ Tk-804.029 release (XXXX-XX-XX)
 ------------------
 
 Fixes
+ Security fix for GIF reader (CVE-2006-4484, report and patch by
+ Anicka Bernathova)
+
  Make sure Tk::MsgBox is not displayed before calling Show()
 
  Solved problems with fileevent on 64bit architectures (this also
@@ -16,6 +19,10 @@ Fixes
  Added different location of rgb.txt on Mac OS X 10.5.1 systems
 
  Fixed a makedepend issue, reported by marek.rouchal
+
+ A BusyRecurse issue [rt.cpan.org #32858]
+
+ Fixed Tk::ColorEditor problem with OpenBSD (another rgb.txt location)
 
 Tests
  Tests for signal handling (testing LangAsyncCheck introduced earlier)
