@@ -53,9 +53,13 @@ tests use this one.
 reproduced by handling big (>= 4000 bytes) selections (containing
 high-bit characters???). To reproduce:
 
-cat ~/.cshrc | perl -MTk -e '{local $/;$sel=<>;} $mw=tkinit; $mw->SelectionOwn(-selection => "CLIPBOARD"); $mw->SelectionHandle(-selection => "CLIPBOARD",sub { $sel });MainLoop'
+    cat ~/.cshrc | perl -MTk -e '{local $/;$sel=<>;} $mw=tkinit; $mw->SelectionOwn(-selection => "CLIPBOARD"); $mw->SelectionHandle(-selection => "CLIPBOARD",sub { $sel });MainLoop'
 
-And then CTRL-V in a Mozilla Textarea.
+And then CTRL-V in a Mozilla Textarea. (The example has a flow, it should be probably
+
+    cat ~/.cshrc | perl -MTk -e '{local $/;$sel=<>;} $mw=tkinit; $mw->SelectionOwn(-selection => "CLIPBOARD"); $mw->SelectionHandle(-selection => "CLIPBOARD",sub { warn "@_"; return undef if $_[0]>length($sel); substr($sel,@_) });MainLoop'
+
+)
 
 Have a search path for libraries (LOCAL_PREFIX=/.../...)
 
