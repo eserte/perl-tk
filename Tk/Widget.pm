@@ -1433,7 +1433,7 @@ sub bindDump {
     # print "Binding information for $w\n";
     # foreach my $tag ($w->bindtags) {
     #     printf "\n Binding tag '$tag' has these bindings:\n";
-    #     foreach my $binding ($w->bind($tag)) {
+    #     foreach my $binding ($w->Tk::bind($tag)) {
     #         printf "  $binding\n";
     #     }
     # }
@@ -1451,7 +1451,7 @@ sub bindDump {
     push @out, sprintf( "\n## Binding information for '%s', %s ##", $w->PathName, $w );
 
     foreach my $tag (@bindtags) {
-        my (@bindings) = $w->bind($tag);
+        my (@bindings) = $w->Tk::bind($tag);
         $n++;                   # count this bindtag
 
         if ($#bindings == -1) {
@@ -1460,7 +1460,7 @@ sub bindDump {
             push @out, sprintf( "\n$format1 Binding tag '$tag' has these bindings:\n", $n );
 
             foreach my $binding ( @bindings ) {
-                my $callback = $w->bind($tag, $binding);
+                my $callback = $w->Tk::bind($tag, $binding);
                 push @out, sprintf( "$format2%27s : %-40s\n", $binding, $callback );
 
                 if ($callback =~ /SCALAR/) {

@@ -1945,6 +1945,7 @@ t/after.t
 t/async.t
 t/autoload.t
 t/balloon.t
+t/bind.t
 t/browseentry-grabtest.t
 t/browseentry-subclassing.t
 t/browseentry.t
