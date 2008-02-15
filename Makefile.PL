@@ -31,7 +31,9 @@ BEGIN
   $win_arch = shift @ARGV if @ARGV and $ARGV[0] =~ /^(open32|pm|x|MSWin32)$/;
   require('fix_4_os2.pl'), OS2_massage() if $^O eq 'os2';
 
-  $win_arch = ($IsWin32 or $^O eq 'cygwin') ? 'MSWin32' : 'x'
+  # XXX cygwin should preferably use the MSWin32 windows architecture, but
+  #     this is currently broken.
+  $win_arch = $IsWin32 ? 'MSWin32' : 'x'
     if not defined $win_arch; # Currently 'x', 'pm', 'open32', 'MSWin32'
 
   require "./myConfig";
