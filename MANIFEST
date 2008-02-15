@@ -1989,6 +1989,7 @@ t/progbar.t
 t/property.t
 t/regexp.t
 t/Require.t
+t/rotext.t
 t/table.t
 t/text.t
 t/Trace.t

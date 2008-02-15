@@ -28,11 +28,15 @@ sub ClassInit
  return $val;
 }
 
-sub Populate {
-    my($self,$args) = @_;
-    $self->SUPER::Populate($args);
-    my $m = $self->menu->entrycget($self->menu->index('Search'), '-menu');
-    $m->delete($m->index('Replace'));
+sub Populate
+{
+ my($self,$args) = @_;
+ $self->SUPER::Populate($args);
+ my $m = $self->menu->entrycget($self->menu->index('Search'), '-menu');
+ $m->delete($m->index('Replace'));
+ $self->ConfigSpecs(-background => ['SELF'],
+		    -foreground => ['SELF'],
+		   );
 }
 
 sub Tk::Widget::ScrlROText { shift->Scrolled('ROText' => @_) }
