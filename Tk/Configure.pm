@@ -3,7 +3,6 @@ use vars qw($VERSION);
 $VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/Configure.pm#8 $
 
 use Carp;
-use Tk::Pretty;
 
 
 # Class that handles cget/configure for options that
