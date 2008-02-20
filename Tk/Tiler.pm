@@ -14,8 +14,6 @@ use base  qw(Tk::Frame);
 Construct Tk::Widget 'Tiler';
 sub Tk::Widget::ScrlTiler { shift->Scrolled('Tiler' => @_) }
 
-use Tk::Pretty;
-
 sub FocusChildren
 {
  return (wantarray) ? () : 0;
