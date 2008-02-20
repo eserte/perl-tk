@@ -132,6 +132,7 @@ sub exec
     }
    else
     {
+     require Tk::Pretty;
      croak Tk::Pretty::Pretty(\%{*$fh});
     }
    return $pid;
