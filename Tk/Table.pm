@@ -7,7 +7,6 @@ use strict;
 use vars qw($VERSION);
 $VERSION = '4.014'; # was: sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
-use Tk::Pretty;
 use AutoLoader;
 use base qw(Tk::Frame);
 
