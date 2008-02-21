@@ -1,11 +1,9 @@
 Currently building Perl/Tk under cygwin is broken using the native
-Win32 GUI libraries. Therefore the default is to build using X11
-libraries (but note that this may change, so it's best to specify the
-window architecture, see below).
+Win32 GUI libraries.
 
-"make test" will very probably fail due to "rebase" problems, but
-Perl/Tk should be mostly usable after an installation and maybe a
-manual "rebaseall" after.
+Using the X11 libraries, "make test" will very probably fail due to
+"rebase" problems, but Perl/Tk should be mostly usable after an
+installation and maybe a manual "rebaseall" after.
 
 ----------------------------------------------------------------------
 
