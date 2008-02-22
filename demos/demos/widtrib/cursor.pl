@@ -5,7 +5,7 @@
 # $Id: $
 # Author: Slaven Rezic
 #
-# Copyright (C) 2006 Slaven Rezic. All rights reserved.
+# Copyright (C) 2006,2008 Slaven Rezic. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
@@ -21,8 +21,8 @@ sub cursor {
         -name             => $demo,
         -text             => <<'EOF',
 This window displays the names of Tk's built-in
-resp. predefined X11 cursors. Click on the names
-to see the cursor shape.
+resp. predefined X11 cursors. Click or move on
+the names to see the cursor shape.
 EOF
 	-geometry_manager => 'grid',
         -title            => 'Predefined cursors',
@@ -50,9 +50,13 @@ EOF
 	}
     }
 
-    $lb = $TOP->Scrolled("Listbox", -scrollbars => "ose")->grid;
+    $lb = $TOP->Scrolled("Listbox", -scrollbars => "ose", -selectmode => "browse")->grid(-sticky => "ns");
     $lb->insert("end", @cursors);
-    $lb->bind("<1>", sub {
+    $lb->bind("<Motion>", sub {
+		  my($inx) = $lb->nearest($lb->Subwidget("scrolled")->XEvent->y);
+		  $lb->configure(-cursor => $cursors[$inx]);
+	      });
+    $lb->bind("<<ListboxSelect>>", sub {
 		  my($inx) = $lb->curselection;
 		  $lb->configure(-cursor => $cursors[$inx]);
 	      });
