@@ -93,7 +93,7 @@ Preload(DynaLoader::dl_findfile('-L/usr/openwin/lib','-lX11'))
   if (NeedPreload() && -d '/usr/openwin/lib');
 
 use Tk::Submethods ('option'    =>  [qw(add get clear readfile)],
-                    'clipboard' =>  [qw(clear append)]
+                    'clipboard' =>  [qw(clear append get)]
                    );
 
 #

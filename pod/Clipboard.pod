@@ -77,7 +77,7 @@ Retrieve data from the clipboard on  I<widget>'s  display.
 I<-type> specifies the form in which the data is
 to be returned and should be an atom  name  such  as  STRING  or
 FILE_NAME.  Type defaults to STRING.  This command is equivalent 
-to C<selectionGet( -selection =E<gt> 'CLIPBOARD' )>.
+to C<SelectionGet( -selection =E<gt> 'CLIPBOARD' )>.
 
 =back
 
