@@ -33,7 +33,10 @@ $mw->geometry("+10+10");
 
 {
     my @prop = $mw->property('list');
-    is(scalar(@prop), 0, "No properties on mw");
+    # Here a test used to check if @prop is empty. But KDE defines a
+    # _KDE_NET_WM_USER_CREATION_TIME property, so the test cannot be
+    # used anymore.
+    pass("property list call on windows");
     ok(!$mw->property('exists','_PERL_TK_ThisPropertyDoesNotExist'), "Not-existent property");
 }
 
