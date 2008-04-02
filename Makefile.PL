@@ -77,7 +77,9 @@ Tk::MMutil::TkExtMakefile(
 					    : ''),
     'LIBS'    => \@libs,
     'OBJECT'  => '$(O_FILES)',
-    'PREREQ_PM'  => { 'Encode' => 0 },
+    'PREREQ_PM'  => { 'Encode' => 0,
+		      'Test::More' => 0,
+		    },
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     'LICENSE'    => 'unrestricted',
     @macro
