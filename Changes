@@ -24,6 +24,9 @@ Fixes
 
  Fixed Tk::ColorEditor problem with OpenBSD (another rgb.txt location)
 
+ clipboardGet was documented, but did not work (note that clipboard("get")
+ always worked)
+
 Tests
  Tests for signal handling (testing LangAsyncCheck introduced earlier)
 
