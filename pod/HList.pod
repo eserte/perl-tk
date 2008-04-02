@@ -552,7 +552,7 @@ Deletes the header display item for the I<$col>-th column.
 Return true if an header display item exists for the I<$col>-th
 column; return false otherwise.
 
-=item I<$hlist>-E<gt>B<header>(B<size>, I<$entryPath>)
+=item I<$hlist>-E<gt>B<header>(B<size>, I<$col>)
 
 If an header display item exists for the I<$col>-th column , returns
 its size in pixels in a two element list I<(width, height)>;
