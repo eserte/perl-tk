@@ -21,6 +21,7 @@ sub _cancelAll
 
 sub Tk::After::Cancelled::once { }
 sub Tk::After::Cancelled::repeat { }
+sub Tk::After::Cancelled::cancel { }
 
 sub submit
 {
