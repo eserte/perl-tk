@@ -28,7 +28,7 @@ Fixes
  always worked)
 
  Fixed event handling for newer X servers
- http://rt.cpan.org/Public/Bug/Display.html?id=38745
+ http://rt.cpan.org/Public/Bug/Display.html?id=38746
 
 Tests
  Tests for signal handling (testing LangAsyncCheck introduced earlier)
