@@ -27,6 +27,9 @@ Fixes
  clipboardGet was documented, but did not work (note that clipboard("get")
  always worked)
 
+ Fixed event handling for newer X servers
+ http://rt.cpan.org/Public/Bug/Display.html?id=38745
+
 Tests
  Tests for signal handling (testing LangAsyncCheck introduced earlier)
 
