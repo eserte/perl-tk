@@ -57,7 +57,7 @@ foreach my $dir (sort keys %maybe)
  }
 
 
-chmod(0666,"MANIFEST.SKIP");
+chmod(0644,"MANIFEST.SKIP");
 open(SKIP,">MANIFEST.SKIP") || die "Cannot open MANIFEST.SKIP:$!";
 print SKIP <<'EOF'
 \.[oaid]$
