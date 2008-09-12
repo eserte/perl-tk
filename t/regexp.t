@@ -1,3 +1,4 @@
+# -*- coding:utf-8; -*-
 use Test::More tests => 22;
 use Tk;
 use Tk::widgets qw(Text);
