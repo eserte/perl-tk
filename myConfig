@@ -192,6 +192,11 @@ if (try_compile("config/pregcomp2.c",  ["-I$Config{'archlibexp'}/CORE"], undef, 
   $define{'USE_PREGCOMP_31027'} = 1; # pregcomp after perl change 31027
  }
 
+if (try_compile("config/regexp511.c",  ["-I$Config{'archlibexp'}/CORE"], undef, ["-c"]))
+ {
+  $define{'USE_REGEXP_511'} = 1; # REGEXP in perl 5.11.x
+ }
+
 if (try_compile("config/signedchar.c"))
  {
   $define{'ANSI_SIGNED_CHAR'} = 1;

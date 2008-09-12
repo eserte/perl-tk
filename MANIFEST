@@ -49,6 +49,7 @@ config/Ksprintf.c
 config/perlrx.c			Test for changed regexp structure in perl5.9.x
 config/pmop.c			Test for changed pmop structure in perl5.9.x
 config/pregcomp2.c		Test for changed pregcomp call in perl5.9.x
+config/regexp511.c		Test for changed REGEXP in perl5.11.x
 config/signedchar.c		Test to see of 'signed char' is legal
 config/svtrv.c			Test for changed SVt_RV in perl5.11.0
 config/tod.c			Test for gettimeofday()

@@ -5225,7 +5225,11 @@ struct WrappedRegExp
 #else
  U32 flags;
 #endif
+#if USE_REGEXP_511
+ REGEXP *pat;
+#else
  regexp *pat;
+#endif
  SV    *source;
 };
 
@@ -5318,12 +5322,20 @@ Tcl_GetRegExpFromObj(Tcl_Interp *interp, Tcl_Obj *obj, int flags)
    re->op.op_pmflags |= PMf_FOLD;
  }
 #else
+#if USE_REGEXP_511
+ re->flags =            (flags & TCL_REG_NOCASE ? RXf_PMf_FOLD : 0);
+#else
  re->flags = RXf_UTF8 | (flags & TCL_REG_NOCASE ? RXf_PMf_FOLD : 0);
+#endif
 #endif
 
  if (mg)
   {
+#if USE_REGEXP_511
+   re->pat = (REGEXP *)mg->mg_obj;
+#else
    re->pat = (regexp *)mg->mg_obj;
+#endif
    /* Guess wildly ... */
    ReREFCNT_inc(re->pat);
   }
@@ -5388,7 +5400,12 @@ int index;
 CONST84 char **startPtr;
 CONST84 char **endPtr;
 {
+#if USE_REGEXP_511
+ REGEXP *rx = wrap->pat;
+ regexp *const re = (struct regexp *)SvANY(rx);
+#else
  regexp *re = wrap->pat;
+#endif
 #if USE_NEWSTYLE_REGEXP_STRUCT
  if (re->offs[index].start != -1 && re->offs[index].end != -1)
   {
