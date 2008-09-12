@@ -3,7 +3,7 @@ BEGIN { $|=1; $^W=1; }
 use strict;
 use Test;
 
-BEGIN { plan test => 5 };
+BEGIN { plan test => 6 };
 
 eval { require Tk };
 ok($@, "", "loading Tk module");
