@@ -590,6 +590,7 @@ sub InsertKeypress
     {
      $w->SUPER::insert($index,$char);
      $undo_item->[2] = $w->index('insert');
+     $w->see('insert');
      return;
     }
   }

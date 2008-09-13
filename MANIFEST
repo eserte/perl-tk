@@ -1993,6 +1993,7 @@ t/Require.t
 t/rotext.t
 t/table.t
 t/text.t
+t/textundo.t
 t/Trace.t
 t/TkTest.pm
 t/Tkxs.t
