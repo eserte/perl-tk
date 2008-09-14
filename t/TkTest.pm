@@ -9,7 +9,7 @@ use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
 $VERSION = '4.006'; # was: sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
-@EXPORT    = qw(is_float check_display_harness);
+@EXPORT    = qw(is_float is_float_pair check_display_harness);
 @EXPORT_OK = qw(catch_grabs wm_info);
 
 use POSIX qw(DBL_EPSILON);
@@ -64,6 +64,17 @@ sub is_float ($$;$) {
 	Test::More::pass($testname);
     } else {
 	Test::More::is($value, $expected, $testname); # will fail
+    }
+}
+
+sub is_float_pair ($$;$) {
+    my($values, $expected, $testname) = @_;
+    local $Test::Builder::Level = $Test::Builder::Level+1;
+    for my $def ([0, "first value"],
+		 [1, "second value"],
+		) {
+	my($inx, $testname_add) = @$def;
+	is_float($values->[$def], $expected->[$def], (defined $testname ? "$testname " : "") . "($testname_add)");
     }
 }
 

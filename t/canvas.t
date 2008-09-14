@@ -19,6 +19,8 @@
 # RCS: @(#) $Id: canvas.test,v 1.23 2004/12/07 21:22:19 dgp Exp $
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 
 use Getopt::Long;
 use Tk;
@@ -33,7 +35,9 @@ BEGIN {
     }
 }
 
-plan tests => 158;
+use TkTest qw(is_float_pair);
+
+plan tests => 166;
 
 use_ok("Tk::Canvas");
 
@@ -142,10 +146,10 @@ $c->update;
     $c->configure(-xscrollincrement => 40, -yscrollincrement => 5);
     $c->xview('moveto', 0);
     $c->update;
-    is_deeply([$c->xview], [0, 0.3], "xview method");
+    is_float_pair([$c->xview], [0, 0.3], "xview method");
     $c->xview('scroll', 2, 'units');
     $c->update;
-    is_deeply([$c->xview], [0.4, 0.7], "xview method after scroll");
+    is_float_pair([$c->xview], [0.4, 0.7], "xview method after scroll");
 }
 
 {
@@ -157,10 +161,10 @@ $c->update;
     $c->configure(-xscrollincrement => 0, -yscrollincrement => 5);
     $c->xviewMoveto(0.6);
     $c->update;
-    is_deeply([$c->xview], [0.6, 0.9], "xview method (2)");
+    is_float_pair([$c->xview], [0.6, 0.9], "xview method (2)");
     $c->xviewScroll(2, 'units');
     $c->update;
-    is_deeply([$c->xview], [0.66, 0.96], "xview method after scroll (2)");
+    is_float_pair([$c->xview], [0.66, 0.96], "xview method after scroll (2)");
 }
 
 eval { $c->destroy };
@@ -175,20 +179,20 @@ $c->update;
     $c->configure(qw(-xscrollincrement 40 -yscrollincrement 5));
     $c->yview('moveto', 0);
     $c->update;
-    is_deeply([$c->yview], [0, 0.5], "yview method");
+    is_float_pair([$c->yview], [0, 0.5], "yview method");
     $c->yview('scroll', 3, 'units');
     $c->update;
-    is_deeply([$c->yview], [0.1875, 0.6875], "yview method after scroll");
+    is_float_pair([$c->yview], [0.1875, 0.6875], "yview method after scroll");
 }
 
 {
     $c->configure(qw(-xscrollincrement 40 -yscrollincrement 0));
     $c->yviewMoveto(0);
     $c->update;
-    is_deeply([$c->yview], [0, 0.5], "yview method (2)");
+    is_float_pair([$c->yview], [0, 0.5], "yview method (2)");
     $c->yviewScroll(2, 'units');
     $c->update;
-    is_deeply([$c->yview], [0.1, 0.6], "yview method after scroll (2)");
+    is_float_pair([$c->yview], [0.1, 0.6], "yview method after scroll (2)");
 }
 
 {
