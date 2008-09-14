@@ -11,11 +11,27 @@ $mw->withdraw;
 my $start = time;
 $mw->after(1000/$divisor,sub { my $t = time;
 			       isnt($t,$start);
-			       cmp_ok($t, ">=", $start+1/$divisor,"$t >= $start");
-			       cmp_ok($t, "<=", $start+3/$divisor) });
+			       my $expected_min = $start+1/$divisor;
+			       my $expected_max = $start+3/$divisor;
+			       cmp_ok($t, ">=", $expected_min, "short after: $t >= $expected_min");
+			       if ($t <= $expected_max) {
+				   pass("$t <= $expected_max");
+			       } else {
+				   local $TODO = "Probably loaded machine";
+				   fail("$t is not <= $expected_max");
+			       }
+			   });
 $mw->after(2000/$divisor,sub { my $t = time;
-			       cmp_ok($t, ">=", $start+2/$divisor);
-			       cmp_ok($t, "<=", $start+4/$divisor) });
+			       my $expected_min = $start+2/$divisor;
+			       my $expected_max = $start+4/$divisor;
+			       cmp_ok($t, ">=", $expected_min, "longer after: $t >= $expected_min");
+			       if ($t <= $expected_max) {
+				   pass("$t <= $expected_max");
+			       } else {
+				   local $TODO = "Probably loaded machine";
+				   fail("$t is not <= $expected_max");
+			       }
+			   });
 $mw->after(3000/$divisor,[destroy => $mw ]);
 MainLoop;
 cmp_ok(time, ">=", $start+3/$divisor);
