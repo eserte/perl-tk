@@ -1205,7 +1205,7 @@ sub UpDownLine
    ($lx, $ly, $lw, $lh) = $w->dlineinfo($i);
   }
  elsif ( ($n == 1) and
-         ($ly + $lh) > ( $w->height - 2*$w->cget(-bd) - 2*$w->cget(-highlightthickness) ) )
+         ($ly + $lh) > ( $w->height - 2*$w->cget(-bd) - 2*$w->cget(-highlightthickness) - $lh + 1) )
   {
    #On last display line.. so scroll down and recalculate..
    $w->yview('scroll', 1, 'units');
