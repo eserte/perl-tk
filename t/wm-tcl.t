@@ -36,6 +36,7 @@
 # * KWin: 3.0
 # * Xfwm4: 4.2.3.2
 # * X11 on Mac OS X 10.5.1
+# * fluxbox 1.0.0
 
 use strict;
 use FindBin;
@@ -66,6 +67,7 @@ my $wm_problems = $Tk::platform eq 'unix';
 my $kwin_problems = defined $wm_name && $wm_name eq 'KWin';
 my $xfwm4_problems = defined $wm_name && $wm_name eq 'Xfwm4';
 my $macosx_x11_problems = $Tk::platform eq 'unix' && $^O eq 'darwin';
+my $fluxbox_problems = defined $wm_name && $wm_name eq 'Fluxbox';
 
 my $poswin = 1;
 my $netwm = 0;
@@ -610,6 +612,7 @@ stdWindow;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
 	$TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
 	$TODO = "May fail on MacOSX" if !$TODO && $macosx_x11_problems;
+	$TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 	is_deeply([$t1->colormapwindows], [".toplevel1.frame1", ".toplevel1.frame2", ".toplevel1"]);
     }
 
@@ -1108,6 +1111,7 @@ SKIP: {
     local $TODO;
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
     $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
+    $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
@@ -1126,6 +1130,7 @@ SKIP: {
     local $TODO;
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
     $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
+    $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
     my $t = $mw->Toplevel;
     poswin $t;
@@ -1193,6 +1198,7 @@ SKIP: {
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
     $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
     $TODO = "May fail on MacOSX" if !$TODO && $macosx_x11_problems;
+    $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
@@ -1213,6 +1219,7 @@ SKIP: {
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
     $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
     $TODO = "May fail on MacOSX" if !$TODO && $macosx_x11_problems;
+    $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
     my $t = $mw->Toplevel;
     poswin $t;
@@ -1281,6 +1288,7 @@ SKIP: {
     $TODO = "Fails currently on Windows" if $Tk::platform eq 'MSWin32';
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
     $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
+    $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
     my($w,$h) = $t->geometry =~ m{(\d+)x(\d+)};
     is($w, 300, q{Use min size if window size is not explicitly set});
