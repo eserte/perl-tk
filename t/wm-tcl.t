@@ -2013,6 +2013,10 @@ SKIP: {
     is($subject->ismapped, 0);
     $master->deiconify;
     $mw->update;
+
+    local $TODO;
+    $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
+
     is($subject->state, "normal",
        q{deiconify on the master does a deiconify on the transient});
     is($subject->ismapped, 1);
