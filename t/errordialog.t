@@ -28,27 +28,44 @@ my $mw = tkinit;
 $mw->geometry("+10+10");
 
 my $errmsg = "Intentional error.";
-$mw->after(100, sub { die "$errmsg\n" });
+$mw->afterIdle(sub { die "$errmsg\n" });
 
-my $found_error_msg;
-$mw->after(200, sub {
-	       my $dialog;
-	       $mw->Walk(sub {
-			     return if $found_error_msg;
-			     for my $opt (qw(text message)) {
-				 my $val = eval { $_[0]->cget("-$opt") };
-				 if (defined $val && $val =~ m{\Q$errmsg}) {
-				     $found_error_msg = 1;
-				     $dialog = $_[0]->toplevel;
-				 }
-			     }
-			 });
+my $ed;
+$mw->after(100, sub {
+	       my $dialog = search_error_dialog($mw);
 	       isa_ok($dialog, "Tk::Dialog", "dialog");
-	       $dialog->Exit;
-	       $mw->after(100, sub { $mw->destroy });
+	       $ed = $dialog;
+	       $dialog->SelectButton('Stack trace');
+	       second_error();
 	   });
 
 MainLoop;
-is($found_error_msg, 1, "Found error message in some dialog");
+
+sub second_error {
+    $mw->afterIdle(sub { die "$errmsg\n" });
+    $mw->after(100, sub {
+		   my $dialog = search_error_dialog($mw);
+		   is($ed, $dialog, "ErrorDialog reused");
+		   $dialog->Exit;
+		   $mw->after(100, sub { $mw->destroy });
+	       });
+}
+
+sub search_error_dialog {
+    my $w = shift;
+    my $dialog;
+    my $found_error_dialog;
+    $w->Walk(sub {
+		 return if $found_error_dialog;
+		 for my $opt (qw(text message)) {
+		     my $val = eval { $_[0]->cget("-$opt") };
+		     if (defined $val && $val =~ m{\Q$errmsg}) {
+			 $found_error_dialog = 1;
+			 $dialog = $_[0]->toplevel;
+		     }
+		 }
+	     });
+    $dialog;
+}
 
 __END__

@@ -21,7 +21,7 @@ Construct Tk::Widget 'ErrorDialog';
 my %options = ( -buttons => ['OK', 'Skip Messages', 'Stack trace'],
                 -bitmap  => 'error'
               );
-my $ED_OBJECT;
+my %ED_OBJECT; # ErrorDialog per MainWindow (singleton)
 
 sub import
 {
@@ -42,8 +42,9 @@ sub Populate {
 
     my($cw, $args) = @_;
 
-    my $dr = $cw->Dialog(
-        -title          => 'Error in '.$cw->MainWindow->name,
+    my $mw = $cw->MainWindow;
+    my $dr = $mw->Dialog(
+        -title          => 'Error in '.$mw->name,
         -text           => 'on-the-fly-text',
         -bitmap         => $options{'-bitmap'},
 	-buttons        => $options{'-buttons'},
@@ -80,7 +81,7 @@ sub Populate {
     $cw->Advertise(text => $t_text);     # advertise text widget
     $cw->ConfigSpecs(-cleanupcode => [PASSIVE => undef, undef, undef],
                      -appendtraceback => [ PASSIVE => undef, undef, 1 ]);
-    $ED_OBJECT = $cw;
+    $ED_OBJECT{$mw} = $cw;
     $cw->protocol('WM_DELETE_WINDOW' => sub {$cw->withdraw});
     return $cw;
 
@@ -96,15 +97,17 @@ sub Tk::Error {
     my $grab = $w->grab('current');
     $grab->Unbusy if (defined $grab);
 
-    $w->ErrorDialog if not defined $ED_OBJECT;
+    my $mw = $w->MainWindow;
+    my $ed = $ED_OBJECT{$mw} || $w->ErrorDialog;
 
-    my($d, $t) = ($ED_OBJECT->Subwidget('error_dialog'), $ED_OBJECT->Subwidget('text'));
-#   chop $error;
+    my($d, $t) = ($ed->Subwidget('error_dialog'), $ed->Subwidget('text'));
+
     $d->configure(-text => "Error:  $error");
     $d->bell;
+    $mw->deiconify if $mw->state ne 'normal';
     my $ans = $d->Show;
 
-    $t->delete('0.0', 'end') if not $ED_OBJECT->{'-appendtraceback'};
+    $t->delete('0.0', 'end') if not $ed->{'-appendtraceback'};
     $t->insert('end', "\n");
     $t->mark('set', 'ltb', 'end');
     $t->insert('end', "--- Begin Traceback ---\n$error\n");
@@ -114,9 +117,9 @@ sub Tk::Error {
     }
     $t->yview('ltb');
 
-    $ED_OBJECT->deiconify if ($ans =~ /trace/i);
+    $ed->deiconify if ($ans =~ /trace/i);
 
-    my $c = $ED_OBJECT->{Configure}{'-cleanupcode'};
+    my $c = $ed->{Configure}{'-cleanupcode'};
     &$c if defined $c;		# execute any cleanup code if it was defined
     $w->break if ($ans =~ /skip/i);
 
