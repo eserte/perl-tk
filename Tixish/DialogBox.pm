@@ -136,6 +136,12 @@ sub Show {
     return $cw->{'selected_button'};
 }
 
+sub SelectButton
+{
+ my ($w, $button_text) = @_;
+ $w->{'selected_button'} = $button_text;
+}
+
 sub Exit
 {
  my $cw = shift;
