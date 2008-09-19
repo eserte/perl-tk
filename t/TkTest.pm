@@ -74,7 +74,7 @@ sub is_float_pair ($$;$) {
 		 [1, "second value"],
 		) {
 	my($inx, $testname_add) = @$def;
-	is_float($values->[$def], $expected->[$def], (defined $testname ? "$testname " : "") . "($testname_add)");
+	is_float($values->[$inx], $expected->[$inx], (defined $testname ? "$testname " : "") . "($testname_add)");
     }
 }
 
