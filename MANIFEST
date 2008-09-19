@@ -1962,6 +1962,7 @@ t/dash.t
 t/dialogbox.t
 t/dirtree.t
 t/entry.t
+t/errordialog.t
 t/exefiles.t
 t/fbox.t
 t/fileevent.t
