@@ -50,6 +50,19 @@ GetOptions("v" => \$verbose)
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
+
+if ($^O eq 'darwin') {
+    # Under some newer MacOSX versions it seems that there are
+    # problems by creating and destroying widgets with different
+    # widths. The canvas widget with requested -width 100 created
+    # after the one with -width 60 will only be 60px wide. This is
+    # probably some wm-related bug, but as we test here for canvas
+    # features, we need to workaround this bug. This is just done with
+    # a dummy frame, which just makes sure that the mainwindow width
+    # is at least 100 pixels.
+    $mw->Frame(-width => 100, -height => 1)->pack;
+}
+
 my $c = $mw->Canvas;
 isa_ok($c, "Tk::Canvas");
 isa_ok($c, "Tk::Widget");
