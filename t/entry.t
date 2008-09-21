@@ -35,7 +35,7 @@ BEGIN {
         # these fail (sometimes) under 'make test'
         my @fragile = qw(160 161 167 191 193 195);
         @fragile = () ; # unless $ENV{PERL_DL_NONLAZY};
-        plan tests => 350,
+        plan tests => 351,
         todo => \@fragile
       }
 
@@ -1331,13 +1331,36 @@ SKIP: {
 }
 
 Tk::catch {$e->destroy};
-my $err;
-eval {
-    sub Tk::Error { $err = $_[1] }
-    $e = $mw->Entry(qw(-width 5 -xscrollcommand thisisnotacommand))->pack;
-    $e->update;
-};
-like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
+{
+    my $e;
+    my $err;
+    eval {
+	local *Tk::Error = sub { $err = $_[1] };
+	$e = $mw->Entry(qw(-width 5 -xscrollcommand thisisnotacommand))->pack;
+	$e->update;
+    };
+    like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
+    $e->destroy;
+}
+
+{
+    # A variation of the previous test. Define -xscrollcommand after
+    # the widget creation, and force the callback by using a xviewMove
+    # call.
+    my $e;
+    my $err;
+    eval {
+	local *Tk::Error = sub { $err = $_[1] };
+	$e = $mw->Entry(qw(-width 5))->pack;
+	$e->update;
+	$e->configure(qw(-xscrollcommand thisisnotacommand));
+	$e->insert("end", "more than 5 chars");
+	$e->xviewMoveto(1); # should really scroll
+	$e->update;
+    };
+    like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
+    $e->destroy;
+}
 
 #      pack .e
 #      update
@@ -1362,8 +1385,11 @@ like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid 
 ######################################################################
 # Additional tests
 
-$e->validate; # check whether validate method is defined
-pass("validate method seems to be defined");
+{
+    my $e = $mw->Entry;
+    $e->validate; # check whether validate method is defined
+    pass("validate method seems to be defined");
+}
 
 __END__
 
