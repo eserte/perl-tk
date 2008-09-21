@@ -38,7 +38,7 @@ plan tests => 351;
 
 use Getopt::Long;
 
-my $do_wm_test   = 1;
+my $do_wm_test   = 0; # tests seem to pass only with Kwin
 my $do_font_test = 1;
 
 GetOptions("wmtest!"   => \$do_wm_test,
