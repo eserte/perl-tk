@@ -85,8 +85,12 @@ sub catch_grabs (&;$) {
     eval {
 	$code->();
     };
-    if ($@ && $@ !~ m{^\Qgrab failed: another application has grab}) {
-	die $@;
+    if ($@) {
+	if ($@ !~ m{^grab failed: (window not viewable|another application has grab)}) {
+	    die $@;
+	} else {
+	    Test::More::diag("Ignore grab problem: $@");
+	}
     }
     my $tests_after = Test::More->builder->current_test;
     if ($tests_after - $tests_before != $tests) {
