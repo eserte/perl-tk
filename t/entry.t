@@ -12,12 +12,15 @@
 # Translated to Perl/Tk by Slaven Rezic
 
 use strict;
+use FindBin;
+use lib $FindBin::RealBin;
 
 use Tk;
 use Tk::Trace;
 use Tk::Config ();
 my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
+use TkTest qw(wm_info);
 
 BEGIN {
     if (!eval q{
@@ -31,22 +34,17 @@ BEGIN {
     }
 }
 
-BEGIN {
-        # these fail (sometimes) under 'make test'
-        my @fragile = qw(160 161 167 191 193 195);
-        @fragile = () ; # unless $ENV{PERL_DL_NONLAZY};
-        plan tests => 351,
-        todo => \@fragile
-      }
+plan tests => 351;
 
 use Getopt::Long;
 
-my $do_wm_test   = (defined($ENV{WINDOWMANAGER}) &&
-		    $ENV{WINDOWMANAGER} eq '/usr/X11R6/bin/kde');
+my $do_wm_test   = 1;
 my $do_font_test = 1;
 
-GetOptions("wmtest!" => \$do_wm_test)
-    or die "usage: $0 [-wmtest]";
+GetOptions("wmtest!"   => \$do_wm_test,
+	   "fonttest!" => \$do_font_test,
+	  )
+    or die "usage: $0 [-[no]wmtest] [-[no]fonttest]";
 
 my $skip_wm_test = "window manager dependent tests";
 my $skip_font_test = "font-related tests";
@@ -54,6 +52,23 @@ my $skip_wm_font_test = "window manager and/or font-related tests";
 
 my $mw = Tk::MainWindow->new();
 $mw->geometry('+10+10');
+
+my %wm_info = wm_info($mw);
+my $wm_name = $wm_info{name};
+
+my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
+my $fluxbox_problems  = defined $wm_name && $wm_name eq 'Fluxbox';
+my $metacity_problems = defined $wm_name && $wm_name eq 'Metacity';
+my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
+
+# It seems that scripts using -xscrollcommand have the same problem
+# with wish8.4 (Tcl/Tk 8.4.19)
+sub TODO_xscrollcommand_problem () {
+    $TODO = "May fail under some conditions (another grab?) on KDE"      if !$TODO && $kwin_problems;
+    $TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
+    $TODO = "May fail under some conditions (another grab?) on Fluxbox"  if !$TODO && $fluxbox_problems;
+    $TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
+}
 
 my $e0 = $mw->Entry;
 ok(Tk::Exists($e0), "Entry widget exists");
@@ -648,7 +663,13 @@ $e = $mw->Entry(-font => $fixed, qw(-width 4 -xscrollcommand), \&scroll)->pack;
 $e->insert(qw(end 01234567890));
 $e->update;
 $e->configure(qw(-width 5));
-is_deeply([map { substr($_, 0, 8) } @scrollInfo], [0,0.363636]);
+if (!do {
+    local $TODO;
+    TODO_xscrollcommand_problem;
+    is_deeply([map { substr($_, 0, 8) } @scrollInfo], [0,0.363636]);
+}) {
+    diag "Scrollinfo not as expected (after insert): <@scrollInfo>"
+}
 
 eval { $e->destroy };
 
@@ -660,7 +681,7 @@ $e->update;
 SKIP: {
     skip($skip_wm_test, 1)
 	if !$do_wm_test;
-    like($e->geometry, qr/62x3\d\+0\+0/, "Geometry check");
+    like($e->geometry, qr/62x(?:29|3\d)\+0\+0/, "Geometry check"); # under kwin the result is 62x29+0+0, otherwise 62x3\d+0+0
 }
 
 eval { $e->destroy };
@@ -790,7 +811,13 @@ $e->insert(2, "XXX");
 $e->update;
 is($e->get, "abXXXcde");
 is($contents, "abXXXcde");
-is(join(" ", @scrollInfo), "0 1", "Result collected in -xscrollcommand callback");
+if (!do {
+    local $TODO;
+    TODO_xscrollcommand_problem;
+    is(join(" ", @scrollInfo), "0 1", "Result collected in -xscrollcommand callback");
+}) {
+    diag "Scrollinfo not as expected (after delete/insert): <@scrollInfo>";
+}
 
 $e->delete(0, "end");
 $e->insert(0, "abcde");
@@ -1339,7 +1366,13 @@ Tk::catch {$e->destroy};
 	$e = $mw->Entry(qw(-width 5 -xscrollcommand thisisnotacommand))->pack;
 	$e->update;
     };
-    like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");
+    if (!do {
+	local $TODO;
+	TODO_xscrollcommand_problem;
+	like($err, qr/Undefined subroutine &main::thisisnotacommand/, "Expected invalid -xscrollcommand callback");;
+    }) {
+	diag "Undefined subroutine thisisnotacommand not detected";
+    }
     $e->destroy;
 }
 
