@@ -60,7 +60,7 @@ copy($file,"Makefile")
 
 if ($^O eq 'darwin' ||
     $Config{'archname'} =~ m{^amd64-freebsd($|-.*)} ||
-    $Config{'archname'} =~ m{^sun4-solaris($|-.*)} ||
+    $Config{'archname'} =~ m{^sun4-solaris($|-.*)}
    )
  {
   system(sh => "./configure");
