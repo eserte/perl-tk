@@ -14,7 +14,7 @@ Fixes
  cleanly if prereqs are missing --- this is for cpan testers)
 
  Fixed typo in Tk::FBox
- http://rt.cpan.org/Ticket/Display.html?id=31989
+ http://rt.cpan.org/Public/Bug/Display.html?id=31989
 
  Added different location of rgb.txt on Mac OS X 10.5.1 systems
 
@@ -27,13 +27,38 @@ Fixes
  clipboardGet was documented, but did not work (note that clipboard("get")
  always worked)
 
+ Tk::After::Cancelled needs also a dummy cancel() method
+
  Fixed event handling for newer X servers
  http://rt.cpan.org/Public/Bug/Display.html?id=38746
+
+ Permission issue [rt.cpan.org #39038]
+
+ Support for changed regexp-related functions and structures in perl
+ 5.11.x.
+
+ Fix for: Tk::FileSelect fails to select file with "'" in file name
+ (with new fileselect.t tests)
+ http://rt.cpan.org/Public/Bug/Display.html?id=39096
+
+ Fixed movement of cursor on insertations in Tk::TextUndo
+ http://rt.cpan.org/Public/Bug/Display.html?id=34513
+
+ Tk::Test fix for: skips lines when arrowing down in a window not
+ exactly sized to a text
+ http://rt.cpan.org/Public/Bug/Display.html?id=39343
+
+ ErrorDialog fix for Windows (dialog was never displayed)
+ http://rt.cpan.org/Public/Bug/Display.html?id=39417
+
+ Use 'configure' for building libpng under Solaris.
 
 Tests
  Tests for signal handling (testing LangAsyncCheck introduced earlier)
 
- Various skips for broken (?) window managers and slow connections.
+ Various skips and $TODOs for broken (?) window managers and slow
+ connections (for example -xscrollcommand-related, floating-point
+ precision-related, signal availability and many more ...)
 
 Tk-804.028 release (2007-12-18)
 ------------------
