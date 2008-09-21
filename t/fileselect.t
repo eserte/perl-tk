@@ -54,7 +54,15 @@ if (eval { require File::Temp; 1 }) {
     if ($slow_machine) {
 	ok(1);
     } else {
-	ok($res, $tempfile);
+	if ($res eq $tempfile) {
+	    ok(1);
+	} else {
+	    # On MacOSX /tmp is hardlinked to /private/tmp. Check
+	    # stat() output to determine if it's the same file.
+	    my($dev_ino_tempfile) = join(" ", ((stat($tempfile))[0,1]));
+	    my($dev_ino_res)      = join(" ", ((stat($res))     [0,1]));
+	    ok($dev_ino_res, $dev_ino_tempfile, "device/inode of tempfile and result not the same");
+	}
     }
 } else {
     ok(1); # skipping, not File::Temp
