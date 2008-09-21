@@ -1,4 +1,5 @@
 #!perl
+# -*- cperl -*-
 use strict;
 use Config;
 use File::Copy;
@@ -57,7 +58,10 @@ else
 copy($file,"Makefile")
    || die "Cannot copy $file to Makefile:$!";
 
-if ($^O eq 'darwin' || $Config{'archname'} =~ m{^amd64-freebsd($|-.*)})
+if ($^O eq 'darwin' ||
+    $Config{'archname'} =~ m{^amd64-freebsd($|-.*)} ||
+    $Config{'archname'} =~ m{^sun4-solaris($|-.*)} ||
+   )
  {
   system(sh => "./configure");
   open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
