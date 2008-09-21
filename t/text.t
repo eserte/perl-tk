@@ -1151,7 +1151,12 @@ SKIP: {
     $t2t->pack(-side => 'top'); # XXX append?
     $t2->geometry("+0+0");
     $t2->update;
-    is($t2->geometry, q{150x140+0+0});    
+    ## There is no guarantee that the toplevel will be positioned at
+    ## +0+0 if overrideredirect is not used. At least with the compiz
+    ## wm the test would fail, so check only the width and height
+    ## portions of the geometry.
+    # is($t2->geometry, q{150x140+0+0}); # the original test as in Tcl/Tk
+    like($t2->geometry, qr{^150x140\+}, "Toplevel width and height expected for given -width/-height");
 }
 {
     # This test was failing Windows because the title bar on .t2
@@ -1165,7 +1170,7 @@ SKIP: {
     $t2t->pack(-side => "top"); # XXX append?
     $t2->geometry('+0+0');
     $t2->update;
-    is($t2->geometry, q{20x10+0+0});
+    is($t2->geometry, q{20x10+0+0}, "geometry with -setgrid");
 }
 {
     # This test was failing on Windows because the title bar on .t2
