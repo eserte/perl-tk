@@ -23,7 +23,7 @@ my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
 
 use FindBin;
 use lib "$FindBin::RealBin";
-use TkTest;
+use TkTest qw(is_float wm_info);
 
 use Getopt::Long;
 
@@ -52,7 +52,7 @@ BEGIN {
     }
 }
 
-plan tests => 539;
+plan tests => 537;
 
 my $partial_top;
 my $partial_lb;
@@ -67,6 +67,22 @@ $mw->raise;
 #my $fixed = $Xft ? '{Adobe Courier} -12' : 'Courier -12';
 my $fixed = "-adobe-courier-medium-r-normal--12-120-75-75-m-*-iso8859-1";
 ok(Tk::Exists($mw));
+
+my %wm_info = wm_info($mw);
+my $wm_name = $wm_info{name};
+
+my $kwin_problems     = defined $wm_name && $wm_name eq 'KWin';
+my $fluxbox_problems  = defined $wm_name && $wm_name eq 'Fluxbox';
+my $metacity_problems = defined $wm_name && $wm_name eq 'Metacity';
+my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
+
+# This is probably the same problem as in t/entry.t
+sub TODO_xscrollcommand_problem () {
+    $TODO = "May fail under some conditions (another grab?) on KDE"      if !$TODO && $kwin_problems;
+    $TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
+    $TODO = "May fail under some conditions (another grab?) on Fluxbox"  if !$TODO && $fluxbox_problems;
+    $TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
+}
 
 # Create entries in the option database to be sure that geometry options
 # like border width have predictable values.
@@ -2099,9 +2115,13 @@ $lb->insert("end", "0000000000");
 $mw->update;
 $lb->insert("end", "00000000000000000000");
 $mw->update;
-is($log[0], "x 0 1");
-is($log[1], "x 0 1");
-is($log[2], "x 0 0.5");
+if (!do {
+    local $TODO;
+    TODO_xscrollcommand_problem;
+    is_deeply(\@log, ["x 0 1", "x 0 1", "x 0 0.5"]);
+}) {
+    diag "Scrollinfo not as expected (after double insert): <" . join(";", @log) . ">";
+}
 
 SKIP: {
     skip("no itemconfigure in Tk800.x", 35)
