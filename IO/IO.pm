@@ -1,7 +1,7 @@
 package Tk::IO;
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/IO/IO.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/IO/IO.pm#4 $
 
 require 5.002;
 use Tk::Event qw($XS_VERSION);

@@ -70,7 +70,7 @@ $Tk::CHANGE      = 'sfsvn-' . q$Change: 27 $;
 # is created, $VERSION is checked by bootstrap
 $Tk::version     = '8.4';
 $Tk::patchLevel  = '8.4';
-$Tk::VERSION     = '804.028';
+$Tk::VERSION     = '804.028_500';
 $Tk::VERSION     = eval $Tk::VERSION;
 $Tk::XS_VERSION  = $Tk::VERSION;
 $Tk::strictMotif = 0;

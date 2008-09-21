@@ -9,7 +9,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.015'; # was: sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.016'; # was: sprintf '4.%03d', q$Revision: #13 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::Toplevel);
 

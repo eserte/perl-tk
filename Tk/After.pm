@@ -5,7 +5,7 @@ package Tk::After;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = '4.007'; # $Id: //depot/Tkutf8/Tk/After.pm#11 $
+$VERSION = '4.008'; # $Id: //depot/Tkutf8/Tk/After.pm#11 $
 
 sub _cancelAll
 {

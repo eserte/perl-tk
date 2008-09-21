@@ -21,7 +21,7 @@ use Tk qw(Ev);
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.001';
+$VERSION = '4.002';
 
 use base qw(Tk::Toplevel);
 Construct Tk::Widget 'MsgBox';

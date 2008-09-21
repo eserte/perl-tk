@@ -1,7 +1,8 @@
 package Tk::ErrorDialog;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
+#$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.008';
 
 use Tk ();
 require Tk::Dialog;
