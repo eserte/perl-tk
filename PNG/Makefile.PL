@@ -1,3 +1,4 @@
+# -*- cperl -*-
 use strict;
 use Tk::MMutil;
 use Tk::Config ();

@@ -1,4 +1,4 @@
-
+# -*- cperl -*-
 
 use Tk::MMutil;
 Tk::MMutil::TkExtMakefile(

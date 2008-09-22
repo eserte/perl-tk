@@ -1,3 +1,4 @@
+# -*- cperl -*-
 use Config;
 use ExtUtils::MakeMaker;
 

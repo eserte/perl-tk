@@ -1,3 +1,4 @@
+# -*- cperl -*-
 use Tk::MMutil;
 use Tk::Config ();
 use File::Copy;

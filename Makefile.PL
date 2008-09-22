@@ -1,3 +1,4 @@
+# -*- cperl -*-
 use 5.007;
 use open IO => ':bytes';
 use Cwd;

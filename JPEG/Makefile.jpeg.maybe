@@ -1,4 +1,5 @@
 #!perl
+# -*- cperl -*-
 use Config;
 use File::Copy;
 if ($^O eq 'MSWin32')
