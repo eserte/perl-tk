@@ -143,6 +143,11 @@ sub wm_info ($) {
 			if ($maybe_wm_version) {
 			    $wm_version = "$maybe_wm_version (maybe)";
 			}
+		    } elsif ($wm_name eq 'KWin') {
+			my($maybe_wm_version) = `kwin --version` =~ m{KWin:\s+([\d\.]+)}i;
+			if ($maybe_wm_version) {
+			    $wm_version = "$maybe_wm_version (maybe)";
+			}
 		    } elsif ($wm_name eq 'Xfwm4') {
 			my($maybe_wm_version) = `xfwm4 --version` =~ m{xfwm4\s+version\s+([\d\.]+)}i;
 			if ($maybe_wm_version) {
