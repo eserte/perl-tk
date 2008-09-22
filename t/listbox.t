@@ -1596,6 +1596,7 @@ is($lb->index(qw/end/), 0);
 
 $lb->delete(qw/0 end/);
 $lb->insert(qw/0 el0 el1 el2 el3 el4 el5 el6 el7 el8 el9 el10 el11/);
+$mw->geometry(""); # XXX hack to force a fully visible listbox, see http://rt.cpan.org/Ticket/Display.html?id=31290
 $lb->update;
 
 SKIP: {
