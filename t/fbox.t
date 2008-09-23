@@ -14,6 +14,8 @@ BEGIN {
     }
 }
 
+use Getopt::Long;
+
 use TkTest qw(catch_grabs);
 
 plan tests => 15;
@@ -29,6 +31,9 @@ eval { $top->geometry('+10+10'); }; # This works for mwm and interactivePlacemen
 my $f;
 
 my $delay = 500;
+
+GetOptions("delay=i" => \$delay)
+    or die "usage: $0 [-delay ...ms]";
 
 ######################################################################
 # open
