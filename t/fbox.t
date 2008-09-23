@@ -147,7 +147,7 @@ SKIP: {
 #     skip("getOpenFile etc. only on X11", 3)
 # 	if $Tk::platform ne 'unix';
 
-    {
+    catch_grabs {
 	my $mw = MainWindow->new;
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->getOpenFile;
@@ -155,9 +155,9 @@ SKIP: {
 	    diag "Result is <$result>";
 	}
 	pass("called getOpenFile");
-    }
+    };
 
-    {
+    catch_grabs {
 	my $mw = MainWindow->new;
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->getSaveFile;
@@ -165,9 +165,9 @@ SKIP: {
 	    diag "Result is <$result>";
 	}
 	pass("called getSaveFile");
-    }
+    };
 
-    {
+    catch_grabs {
 	my $mw = MainWindow->new;
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->chooseDirectory;
@@ -175,9 +175,9 @@ SKIP: {
 	    diag "Result is <$result>";
 	}
 	pass("called chooseDirectory");
-    }
+    };
 
-    {
+    catch_grabs {
 	my $mw = MainWindow->new;
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->getOpenFile(-multiple => 1, -title => "getOpenFile with -multiple");
@@ -186,7 +186,7 @@ SKIP: {
 	    diag "Result is <@$result>" if $result;
 	}
 	pass("called getOpenFile with -multiple");
-    }
+    };
 }
 
 1;
