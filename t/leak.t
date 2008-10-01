@@ -29,9 +29,8 @@ BEGIN {
     }) {
 	print "# tests only work with installed Test and Devel::Leak modules\n";
 	print "# also -DPERL_DEBUGGING_MSTATS have to be set\n";
-	print "1..1\n";
-	print "ok 1\n";
-	exit;
+	print "1..0 # skip need Devel::Leak and -DPERL_DEBUGGING_MSTATS\n";
+	CORE::exit;
     }
 }
 
