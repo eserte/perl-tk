@@ -44,6 +44,6 @@ for (1..100) {
 $mw->after(300, sub { $mw->destroy });
 MainLoop;
 
-ok($callback_called == 0, "Fileevent callback should never be called");
+is($callback_called, 0, "Fileevent callback should never be called");
 
 __END__
