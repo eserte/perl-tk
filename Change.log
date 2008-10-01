@@ -1,4 +1,236 @@
 ------------------------------------------------------------------------
+r11907 | srezic | 2008-10-01 22:56:05 +0200 (Mi, 01. Okt 2008) | 3 lines
+
+ r2136@biokovo:  eserte | 2008-10-01 22:55:57 +0200
+ * skip correctly the leak test
+
+------------------------------------------------------------------------
+r11875 | srezic | 2008-09-23 23:01:08 +0200 (Di, 23. Sep 2008) | 3 lines
+
+ r2134@biokovo:  eserte | 2008-09-23 23:00:54 +0200
+ * more fbox tests protected by catch_grabs
+
+------------------------------------------------------------------------
+r11874 | srezic | 2008-09-23 22:18:29 +0200 (Di, 23. Sep 2008) | 3 lines
+
+ r2132@biokovo:  eserte | 2008-09-23 22:18:21 +0200
+ * added -delay option to fbox test
+
+------------------------------------------------------------------------
+r11862 | srezic | 2008-09-22 22:49:15 +0200 (Mo, 22. Sep 2008) | 4 lines
+
+ r2130@biokovo:  eserte | 2008-09-22 22:48:36 +0200
+ * hack to force a fully visible listbox in the tests
+   http://rt.cpan.org/Ticket/Display.html?id=31290
+
+------------------------------------------------------------------------
+r11861 | srezic | 2008-09-22 22:36:22 +0200 (Mo, 22. Sep 2008) | 3 lines
+
+ r2128@biokovo:  eserte | 2008-09-22 22:36:12 +0200
+ * heuristics for KWin version
+
+------------------------------------------------------------------------
+r11860 | srezic | 2008-09-22 21:41:07 +0200 (Mo, 22. Sep 2008) | 3 lines
+
+ r2126@biokovo:  eserte | 2008-09-22 21:40:59 +0200
+ * modeline for emacs
+
+------------------------------------------------------------------------
+r11859 | srezic | 2008-09-22 21:40:41 +0200 (Mo, 22. Sep 2008) | 3 lines
+
+ r2124@biokovo:  eserte | 2008-09-22 21:40:28 +0200
+ * modeline for emacs
+
+------------------------------------------------------------------------
+r11853 | srezic | 2008-09-21 22:49:44 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2121@biokovo:  eserte | 2008-09-21 22:49:24 +0200
+ * another -xscrollcommand related possible failure in entry test
+
+------------------------------------------------------------------------
+r11852 | srezic | 2008-09-21 22:49:31 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2120@biokovo:  eserte | 2008-09-21 22:48:45 +0200
+ * catch_grabs: another possible 'grab failed' error message
+
+------------------------------------------------------------------------
+r11851 | srezic | 2008-09-21 22:24:05 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2118@biokovo:  eserte | 2008-09-21 22:23:57 +0200
+ * more for 804.028_500
+
+------------------------------------------------------------------------
+r11850 | srezic | 2008-09-21 22:10:40 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2116@biokovo:  eserte | 2008-09-21 22:10:18 +0200
+ * VERSION update
+
+------------------------------------------------------------------------
+r11849 | srezic | 2008-09-21 22:09:22 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2114@biokovo:  eserte | 2008-09-21 22:09:11 +0200
+ * skip a problematic xscrollcommand-related listbox test on some wms
+
+------------------------------------------------------------------------
+r11848 | srezic | 2008-09-21 21:39:42 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2112@biokovo:  eserte | 2008-09-21 21:39:33 +0200
+ * ups, syntax error
+
+------------------------------------------------------------------------
+r11847 | srezic | 2008-09-21 21:33:57 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2110@biokovo:  eserte | 2008-09-21 21:33:44 +0200
+ * use libpng's configure also on sun4-solaris
+
+------------------------------------------------------------------------
+r11846 | srezic | 2008-09-21 20:24:34 +0200 (So, 21. Sep 2008) | 4 lines
+
+ r2108@biokovo:  eserte | 2008-09-21 20:24:25 +0200
+ * workaround for failing text.t test with compiz wm (position +0+0 was
+   not preserved)
+
+------------------------------------------------------------------------
+r11845 | srezic | 2008-09-21 20:05:54 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2106@biokovo:  eserte | 2008-09-21 20:05:22 +0200
+ * workaround for MacOSX mainwindow width problems in the canvas test
+
+------------------------------------------------------------------------
+r11844 | srezic | 2008-09-21 16:33:55 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2104@biokovo:  eserte | 2008-09-21 16:33:48 +0200
+ * again disabled wm-related entry tests - seems to work only on kwin
+
+------------------------------------------------------------------------
+r11843 | srezic | 2008-09-21 16:31:04 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2102@biokovo:  eserte | 2008-09-21 16:30:56 +0200
+ * make sure fileselect check works on MacOSX where /tmp is hardlinked to /private/tmp
+
+------------------------------------------------------------------------
+r11842 | srezic | 2008-09-21 16:10:55 +0200 (So, 21. Sep 2008) | 4 lines
+
+ r2098@biokovo:  eserte | 2008-09-21 16:10:22 +0200
+ * enabled wmtest for all wms
+ * made some xscrollcommand-related tests TODO tests on some WMs
+
+------------------------------------------------------------------------
+r11841 | srezic | 2008-09-21 16:10:45 +0200 (So, 21. Sep 2008) | 4 lines
+
+ r2097@biokovo:  eserte | 2008-09-21 11:31:20 +0200
+ * update
+ * removed duplicated changelog entries (artifact from svn repo movement)
+
+------------------------------------------------------------------------
+r11840 | srezic | 2008-09-21 16:10:32 +0200 (So, 21. Sep 2008) | 3 lines
+
+ r2096@biokovo:  eserte | 2008-09-20 22:34:49 +0200
+ * added another -xscrollcommand check
+
+------------------------------------------------------------------------
+r11839 | srezic | 2008-09-20 22:10:21 +0200 (Sa, 20. Sep 2008) | 4 lines
+
+ r2094@biokovo:  eserte | 2008-09-20 22:10:12 +0200
+ * more heuristics for wm version
+ * fix for zero byte in Xfwm4 window manager name
+
+------------------------------------------------------------------------
+r11838 | srezic | 2008-09-20 00:18:48 +0200 (Sa, 20. Sep 2008) | 4 lines
+
+ r2091@biokovo:  eserte | 2008-09-20 00:18:27 +0200
+ * ErrorDialog fix for Windows
+   http://rt.cpan.org/Ticket/Display.html?id=39417
+
+------------------------------------------------------------------------
+r11837 | srezic | 2008-09-20 00:18:38 +0200 (Sa, 20. Sep 2008) | 3 lines
+
+ r2090@biokovo:  eserte | 2008-09-20 00:12:02 +0200
+ * added method SelectButton for programmatic button selection
+
+------------------------------------------------------------------------
+r11836 | srezic | 2008-09-19 22:35:03 +0200 (Fr, 19. Sep 2008) | 3 lines
+
+ r2086@biokovo:  eserte | 2008-09-19 22:34:29 +0200
+ * new test for Tk::ErrorDialog
+
+------------------------------------------------------------------------
+r11835 | srezic | 2008-09-19 22:34:54 +0200 (Fr, 19. Sep 2008) | 3 lines
+
+ r2085@biokovo:  eserte | 2008-09-19 22:34:12 +0200
+ * new test for Tk::ErrorDialog
+
+------------------------------------------------------------------------
+r11834 | srezic | 2008-09-19 22:34:44 +0200 (Fr, 19. Sep 2008) | 3 lines
+
+ r2084@biokovo:  eserte | 2008-09-19 22:33:50 +0200
+ * better variable name
+
+------------------------------------------------------------------------
+r11809 | srezic | 2008-09-18 08:56:57 +0200 (Do, 18. Sep 2008) | 4 lines
+
+ r2080@biokovo:  eserte | 2008-09-18 08:56:30 +0200
+ * fix for: skips lines when arrowing down in a window not exactly sized to
+   a text line (http://rt.cpan.org/Ticket/Display.html?id=39343)
+
+------------------------------------------------------------------------
+r11808 | srezic | 2008-09-18 08:56:48 +0200 (Do, 18. Sep 2008) | 3 lines
+
+ r2079@biokovo:  eserte | 2008-09-14 23:23:50 +0200
+ * more fluxbox failures
+
+------------------------------------------------------------------------
+r11807 | srezic | 2008-09-18 08:56:39 +0200 (Do, 18. Sep 2008) | 3 lines
+
+ r2078@biokovo:  eserte | 2008-09-14 23:15:36 +0200
+ * ignore wm-related failures under fluxbox
+
+------------------------------------------------------------------------
+r11789 | srezic | 2008-09-14 20:35:37 +0200 (So, 14. Sep 2008) | 3 lines
+
+ r2076@biokovo:  eserte | 2008-09-14 20:35:24 +0200
+ * do not fail if exceeding expected_max, may happen easily on loaded machines
+
+------------------------------------------------------------------------
+r11788 | srezic | 2008-09-14 08:23:03 +0200 (So, 14. Sep 2008) | 5 lines
+
+ r2074@biokovo:  eserte | 2008-09-14 08:22:53 +0200
+ * new test function is_float_pair
+ * canvas.t test uses is_float_pair tests (see
+   http://www.nntp.perl.org/group/perl.cpan.testers/2008/09/msg2204594.html)
+
+------------------------------------------------------------------------
+r11781 | srezic | 2008-09-13 11:41:03 +0200 (Sa, 13. Sep 2008) | 4 lines
+
+ r2072@biokovo:  eserte | 2008-09-13 11:40:50 +0200
+ * fixed movement of cursor on insertations in Tk::TextUndo
+   (http://rt.cpan.org/Ticket/Display.html?id=34513)
+
+------------------------------------------------------------------------
+r11780 | srezic | 2008-09-12 23:38:32 +0200 (Fr, 12. Sep 2008) | 3 lines
+
+ r2070@biokovo:  eserte | 2008-09-12 23:27:00 +0200
+ * regexp support for perl 5.11.0
+
+------------------------------------------------------------------------
+r11779 | srezic | 2008-09-12 22:39:53 +0200 (Fr, 12. Sep 2008) | 3 lines
+
+ r2067@biokovo:  eserte | 2008-09-12 22:39:31 +0200
+ * fixed number of tests
+
+------------------------------------------------------------------------
+r11778 | srezic | 2008-09-12 22:39:43 +0200 (Fr, 12. Sep 2008) | 3 lines
+
+ r2066@biokovo:  eserte | 2008-09-12 21:39:14 +0200
+ * help emacs with utf-8
+
+------------------------------------------------------------------------
+r11773 | srezic | 2008-09-12 20:42:07 +0200 (Fr, 12. Sep 2008) | 3 lines
+
+ r2064@biokovo:  eserte | 2008-09-12 20:41:57 +0200
+ * minor typo
+
+------------------------------------------------------------------------
 r11754 | srezic | 2008-09-08 21:24:58 +0200 (Mo, 08. Sep 2008) | 3 lines
 
  r2062@biokovo:  eserte | 2008-09-08 21:24:48 +0200
