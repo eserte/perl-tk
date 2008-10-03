@@ -1552,6 +1552,7 @@ eval {
     {
 	local $TODO;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
@@ -1592,6 +1593,9 @@ eval {
 
 
     {
+	local $TODO;
+	$TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
+
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
 	$t1->update;
@@ -1646,6 +1650,7 @@ eval {
     {
 	local $TODO;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
 	my $t1 = $mw->Toplevel(Name => "t1");
 	poswin $t1;
@@ -1689,6 +1694,7 @@ eval {
     {
 	local $TODO;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
 	my $t = $mw->Toplevel;
 	poswin $t;
@@ -1702,6 +1708,7 @@ eval {
     {
 	local $TODO;
 	$TODO = "May fail on KDE" if !$TODO && $kwin_problems;
+	$TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
 
 	my $t = $mw->Toplevel;
 	poswin $t;
