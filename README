@@ -5,9 +5,10 @@ This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself, with the exception
 of all the files in the pTk sub-directory which have separate terms
 derived from those of the orignal Tix4.1.3 or Tk8.4.* sources.
-See doc/license.html for details of this license.
+See the files pTk/license.terms, pTk/license.html_lib, and
+pTk/Tix.license for details of this license.
 
-Tk804.027 is now considered production worthy.
+The Tk804 series is considered production worthy since Tk804.027.
 (Previous stable release being Tk800.025.)
 
 This a re-port of a perl interface to Tk8.4.
@@ -23,7 +24,7 @@ core-tk's use of UTF-8.
 Tk804.027 builds and loads into a threaded perl but is NOT
 yet thread safe.
 
-This Tk804 is only likely to work with perl5.8.0 or later.
+This Tk804 works only with perl5.8.0 or later.
 Perl's UTF-8 support has improved since it was introduced in perl5.6.0.
 Some functions (regular expression match in Text widgets) are known
 to only work with perl5.8.1 and later
@@ -33,8 +34,10 @@ The latest Perl/Tk version running with perl5.005_xx is Tk800.024.
 
 There are a lot more tests in Tk804. Some notably t/entry.t and
 t/listbox.t very dependant on the available fonts and to a lesser
-extent the window manager used. (See below for a list of fails
-which can be "expected" even if nothing is really wrong.)
+extent the window manager used. As a rule of thumb older window
+managers like twm, fvwm2, and windowmaker are more robust than newer
+like Metacity (often used in GNOME), kwin (the KDE window manager), or
+xfwm4.
 
 Others t/JP.t and t/KR.t need oriental fonts and can take a long time to
 run on a machine with a lot of fonts but which lacks the glyphs tests are
@@ -52,61 +55,6 @@ To try this install do
   perl Makefile.PL XFT=1
 
 See http://fontconfig.org
-
-The author has installed
-  http://fontconfig.org/release/xrender-0.8.3.tar.gz
-  http://fontconfig.org/release/xft-2.1.2.tar.gz
-  http://fontconfig.org/release/fontconfig-2.2.0.tar.gz
-
-but it also works with versions in SuSE8.2 and SuSE9.0.
-
-RedHat 9 builds and runs, but has different fonts installed
-so fails the listbox.t and entry.t in a manner which shows
-those tests fragility:
-
-Failed Test Stat Wstat Total Fail  Failed  List of Failed
--------------------------------------------------------------------------------
-t/entry.t                336   12   3.57%  93 152 154 157 160-161 167 201 203
-                                           205 207 280
-t/listbox.t              437   46  10.53%  89 92-93 95-97 99-101 186 234 237-
-                                           241 280 282-284 286 288 301-304 336-
-                                           337 339 343 348 365 383-384 386-389
-                                           391 393 395-396 399 401 406 432
- (3 subtests UNEXPECTEDLY SUCCEEDED), 35 subtests skipped.
-Failed 2/46 test scripts, 95.65% okay. 58/2618 subtests failed, 97.78% okay.
-
-----------------------------
-
-Author has built against:
-
-  Perl5.8.0
-   Has Unicode mis-features and is not recommended.
-   Author has tested against official perl5.8.0 and
-   the version shipped with RedHat 9.0.
-   (This latter's perl -V shows it to have MAINT18379 applied as
-    a local patch.)
-
-   SuSE's perl5.8.0 was fine, and they now distribute a 5.8.1
-
-   Note that on RedHat Linux in particular the build process may
-   need to be done in a non UTF-8 locale i.e. LANG=en_GB
-   not LANG=en_GB.UTF-8
-   (This is due to bugs in some perl5.8.0's as shipped by RedHat.)
-
-  Perl5.8.1
-   Pentium Suse Linux-8.2 gcc-3.3
-   Visual C++ 6.0, Windows-XP, dmake/nmake
-   Mingw 2.0, Windows-XP, dmake  (perl without PERL_IMP_SYS, that is
-   broken for MinGW).
-   ActivePerl based on 5.8.1 also works with Visual C++ 6.0/nmake
-
-  Perl5.8.2
-   Pentium Suse Linux-8.2/9.0 gcc-3.3
-   Visual C++ 6.0, Windows-XP, dmake/nmake
-
-  Perl5.8.3
-   Pentium Suse Linux-9.0 gcc-3.3
-   Visual C++ 6.0, Windows-XP, dmake/nmake
 
 For questions on this package try news:comp.lang.perl.tk or e-mail
 to <ptk@lists.stanford.edu> or <srezic@cpan.org>
