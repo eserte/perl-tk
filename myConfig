@@ -472,7 +472,7 @@ EOF
   $inc = "-I../pTk/mTk/xlib -I../../pTk/mTk/xlib -IpTk/mTk/xlib -ImTk/os2_rc";
   $xlib = "";                          # No library is needed
 } elsif ($IsWin32 or $^O eq 'cygwin') {
-  $inc = '-I$(TKDIR)/pTk/mTk/xlib';
+  $inc = '-I$(TKDIR) -I$(TKDIR)/pTk/mTk/xlib';
 }
 
 
