@@ -125,6 +125,14 @@ zlib/$zlib : FORCE
  return $s;
 }
 
+sub realclean {
+  my $self = shift;
+  my $str  = $self->MM::realclean(@_);
+  $str =~ s/(::\s*clean)/$1 realclean2/;
+  $str .= "\nrealclean2 ::\n";
+  $str .= "\t\$(RM_F) ".join(" \\\n\t","libpng/Makefile","libpng/Makefile.PL","zlib/Makefile","zlib/Makefile.PL")."\n";
+  return $str;
+}
 
 
 
