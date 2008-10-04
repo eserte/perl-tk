@@ -713,6 +713,55 @@ CODE:
 OUTPUT:
   RETVAL
 
+#if 0
+int
+SendNetWMClientMessage(win,type,xid,format,data)
+Tk_Window	win
+char *		type
+IV		xid
+IV		format
+SV *		data
+CODE:
+ {
+/*
+   It's not clear if this function should go into Perl/Tk. This
+   function would make is possible to send some netwm messages, for
+   example NET_WM_STATE_ABOVE:
+
+   my($wrapper) = $toplevel->wrapper;
+   my $_NET_WM_STATE_ADD = 1;
+   my $data = pack("LLLLL", $_NET_WM_STATE_ADD, $w->InternAtom('_NET_WM_STATE_ABOVE'), 0, 0, 0);
+   $w->SendNetWMClientMessage('_NET_WM_STATE', $wrapper, 32, $data);
+*/
+  XClientMessageEvent cM;
+  Window root = RootWindowOfScreen(Tk_Screen(win));
+  STRLEN len;
+  char *s = SvPV(data,len);
+  if (len > sizeof(cM.data))
+   len = sizeof(cM.data);
+  cM.type = ClientMessage;
+  cM.serial  = 0;
+  cM.send_event = 0;
+  cM.display = Tk_Display(win);
+  cM.window = xid;
+  cM.message_type = Tk_InternAtom(win,type);
+  cM.format = format;
+  memmove(cM.data.b,s,len);
+  if ((RETVAL = XSendEvent(cM.display, root, False, SubstructureNotifyMask|SubstructureRedirectMask, (XEvent *) & cM)))
+   {
+    /* XSync may be overkill - but need XFlush ... */
+    XSync(cM.display, False);
+   }
+  else
+   {
+    croak("XSendEvent failed");
+   }
+ }
+OUTPUT:
+  RETVAL
+
+#endif
+
 void
 XSync(win,flush)
 Tk_Window	win
