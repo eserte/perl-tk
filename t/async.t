@@ -15,18 +15,18 @@ BEGIN {
 	use Test::More;
 	1;
     }) {
-	print "1..0 # skip: no Test::More module\n";
+	print "1..0 # skip no Test::More module\n";
 	exit;
     }
 }
 
 BEGIN {
     if (!defined $Config{sig_name}) {
-	print "1..0 # skip: No signals on this system?\n";
+	print "1..0 # skip No signals on this system?\n";
 	exit;
     }
     if ($Config{sig_name} !~ m{\bUSR2\b}) {
-	print "1..0 # skip: signal USR2 is not available on this system\n";
+	print "1..0 # skip signal USR2 is not available on this system\n";
 	exit;
     }
 }

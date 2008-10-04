@@ -4,7 +4,7 @@ BEGIN
  require Tk if ($^O eq 'cygwin');
  if ($^O eq 'MSWin32' or ($^O eq 'cygwin' and $Tk::platform eq 'MSWin32'))
   {
-   print "1..0\n";
+   print "1..0 # skip Tk::Mwm not built on MSWin32\n";
    exit;
   }
 }

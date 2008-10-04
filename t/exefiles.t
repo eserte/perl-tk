@@ -16,11 +16,11 @@ BEGIN {
 	use POSIX ":sys_wait_h";
 	1;
     }) {
-	print "1..0 # skip: no Test::More and/or POSIX module\n";
+	print "1..0 # skip no Test::More and/or POSIX module\n";
 	exit;
     }
     if ($^O eq 'MSWin32') {
-	print "1..0 # skip: not on Windows\n";
+	print "1..0 # skip not on Windows (because of fork, waitpid...)\n";
 	exit;
     }
 }
