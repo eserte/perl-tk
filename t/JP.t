@@ -1,21 +1,24 @@
 use Tk;
-use Tk::Config ();
-use Encode qw(FB_CROAK);
-BEGIN
-{
- my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
- if (!$Xft) # assume we have CJK charsets with ttf fonts available
-  {
-   my $enc = Tk::SystemEncoding();
-   eval { $enc->encode("\x{30C8}",FB_CROAK) };
-   if ($@)
-    {
-     my $err = "$@";
-     print "1..0 # Skipped: locale's '",$enc->name,"' cannot represent Japanese.\n";
-     CORE::exit(0);
-    }
-  }
-}
+## Be optimistic, run the test everywhere.
+## It won't fail if fonts are missing, just
+## empty lines will be shown.
+# use Tk::Config ();
+# use Encode qw(FB_CROAK);
+# BEGIN
+# {
+#  my $Xft = $Tk::Config::xlib =~ /-lXft\b/;
+#  if (!$Xft) # assume we have CJK charsets with ttf fonts available
+#   {
+#    my $enc = Tk::SystemEncoding();
+#    eval { $enc->encode("\x{30C8}",FB_CROAK) };
+#    if ($@)
+#     {
+#      my $err = "$@";
+#      print "1..0 # Skipped: locale's '",$enc->name,"' cannot represent Japanese.\n";
+#      CORE::exit(0);
+#     }
+#   }
+# }
 use Test::More (tests => 294);
 use Tk::widgets qw(Text);
 my $mw   = MainWindow->new;
