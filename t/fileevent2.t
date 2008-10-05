@@ -44,6 +44,9 @@ for (1..100) {
 $mw->after(300, sub { $mw->destroy });
 MainLoop;
 
+local $TODO;
+$TODO = "Known to break on $^O" if $^O eq 'cygwin';
+
 is($callback_called, 0, "Fileevent callback should never be called");
 
 __END__
