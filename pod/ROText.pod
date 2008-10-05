@@ -19,7 +19,24 @@ This "I<IS A>" text widget with all bindings removed that would alter
 the contents of the text widget. The contents can still be modified
 via method calls.
 
-=head1 KEYS
+=head2 BINDINGS
+
+Only read-only bindings from L<Tk::Text> are available in
+B<Tk::ROText>. Additionally the following bindings are defined:
+
+=over
+
+=item <space>
+
+Move the cursor forward by one screenful.
+
+=item <BackSpave>
+
+Move the cursor backward by one screenful.
+
+=back
+
+=head1 KEYWORDS
 
 widget, text, readonly
 
