@@ -15,11 +15,15 @@
 #include "Lang.h"
 #ifdef TCL_EVENT_IMPLEMENT
 
-
-#ifdef __EMX__
+#if TIME_WITH_SYS_TIME
 #   include <sys/time.h>
-#else
 #   include <time.h>
+#else
+#   if HAVE_SYS_TIME_H
+#       include <sys/time.h>
+#   else
+#       include <time.h>
+#   endif
 #endif
 
 #if 0

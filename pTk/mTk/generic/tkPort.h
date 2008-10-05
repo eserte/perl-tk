@@ -24,6 +24,10 @@
 #include "Lang.h"
 #endif
 
+#if defined(__WIN32__) && !defined(WIN32)
+#define WIN32
+#endif
+
 #if defined(__WIN32__) || defined(_WIN32)
 #   include "tkWinPort.h"
 #   ifndef strcasecmp

@@ -35,6 +35,34 @@ extern TclStubs tclStubs;
 #endif
 extern Tcl_NotifierProcs tclOriginalNotifier;
 
+#ifndef MASK_SIZE
+/* under Cygwin we use tclUnix but tkWin.
+   So bring in some "tkUnixPort.h" definitions
+ */
+#ifdef HAVE_SYS_SELECT_H
+#   include <sys/select.h>
+#endif
+
+/*
+ * The following macro defines the number of fd_masks in an fd_set:
+ */
+
+#ifndef FD_SETSIZE
+#   ifdef OPEN_MAX
+#	define FD_SETSIZE OPEN_MAX
+#   else
+#	define FD_SETSIZE 256
+#   endif
+#endif
+#if !defined(howmany)
+#   define howmany(x, y) (((x)+((y)-1))/(y))
+#endif
+#ifndef NFDBITS
+#   define NFDBITS NBBY*sizeof(fd_mask)
+#endif
+#define MASK_SIZE howmany(FD_SETSIZE, NFDBITS)
+#endif
+
 /*
  * This structure is used to keep track of the notifier info for a
  * a registered file.

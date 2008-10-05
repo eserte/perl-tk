@@ -66,14 +66,14 @@ extern int	has_highbit(CONST char *s,int l);
 extern SV *	sv_maybe_utf8(SV *sv);
 extern SV *	Lang_SystemEncoding(void);
 
+#ifdef WIN32
+#include "pTk/tkWinInt.h"
+#endif
+
 #ifndef WIN32
 #define HWND void *
 #endif
 EXTERN HWND SVtoHWND _ANSI_ARGS_((SV *win));
-
-#ifdef WIN32
-#include "pTk/tkWinInt.h"
-#endif
 
 #endif
 

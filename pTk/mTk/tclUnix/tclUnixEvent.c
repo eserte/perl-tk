@@ -20,6 +20,11 @@
 #include "Lang.h"
 #endif
 #ifdef TCL_EVENT_IMPLEMENT
+
+#ifdef __CYGWIN__
+#   include <sys/time.h>
+#endif
+
 /*
  *----------------------------------------------------------------------
  *
