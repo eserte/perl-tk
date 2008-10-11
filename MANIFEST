@@ -1,11 +1,4 @@
 add_version
-adj_demo			Example of packAdjust usage.
-after_demo			Simple (= boring) demo of after.
-after_leak			Check for "leaked" values when using after.
-al_bug				Simple Table app.
-animate				Demo of animated GIFs
-autoraise			Popup which attempts to keep itself "on top"
-basic_demo			Scruffy demo/test of many Tk constucts.
 bin/defs
 bin/defunc
 bin/newstyle
@@ -13,30 +6,20 @@ bin/perms
 bin/tkman
 bin/unres
 bin/uselib
-bindtest			Test of key bindings with qualifiers
 build				Perl Script to rebuild "perl build"
-bulkedit			Utility to make changes in many files - with Tk GUI
 Canvas/Canvas.pm
 Canvas/Canvas.xs
 Canvas/canvtxt
 Canvas/demo.txt
 Canvas/Makefile.PL
-canvas_ps			Writes PostScript for Canvas to a file.
-canvas_scroll			Basic test of scrolling a Canvas
-canvasps
-canvastile
-cbtest				Test of callback returns.
 Change.log
 Changes				What has changed
 check_source
 check_syms
 check_Tk_version		Make sure all $VERSION values are increased.
 checklen			Check names not > 14 chars long for old UNIXes.
-chfont				Test of chinese fonts
 chnGlue.c
-classtree
 cleanup				Remove authour's junk files
-clip_bug			Demonstrates some "features" of clipping.
 compile/Compile.pod
 compile/findloader
 compile/PreLoad.pm
@@ -72,7 +55,6 @@ Contrib/testlistbox
 Contrib/TickerTape
 copydate			Utility to update copyright notices
 COPYING				CopyRight and License info.
-cursor_demo			Lists all built-in (X) cursors.
 db57
 debug				Run perl Tk script under GNU gdb
 debug.bat
@@ -193,12 +175,6 @@ demos/timer
 demos/tom
 demos/widget
 demos/widget_old
-derived_test			Test of Tk::Derived
-destroy_test			Test of <Destroy> binding
-dfpy				Author's utility for putting Tk on a floppy
-dialog_test
-disbutton
-dnd_demo
 DragDrop/drag_test
 DragDrop/DragDrop.pm
 DragDrop/DragDrop/Common.pm
@@ -222,14 +198,11 @@ DragDrop/Win32Site/NotUnix.exc
 DragDrop/Win32Site/Win32Drop.pm
 DragDrop/Win32Site/Win32Site.pm
 DragDrop/Win32Site/Win32Site.xs
-dump_test
 dupsyms
-embed
 encGlue.c
 Entry/Entry.pm
 Entry/Entry.xs
 Entry/Makefile.PL
-error_prop
 Event/Event.pm
 Event/Event.xs
 Event/Event/IO.pm
@@ -248,7 +221,108 @@ Event/tclPlatTime.c
 Event/tclTimer.c
 Event/typemap
 evtGlue.c
-ewidth_demo
+examples/adj_demo		Example of packAdjust usage.
+examples/after_demo		Simple (= boring) demo of after.
+examples/after_leak		Check for "leaked" values when using after.
+examples/al_bug			Simple Table app.
+examples/animate		Demo of animated GIFs
+examples/autoraise		Popup which attempts to keep itself "on top"
+examples/basic_demo		Scruffy demo/test of many Tk constucts.
+examples/bindtest		Test of key bindings with qualifiers
+examples/bulkedit		Utility to make changes in many files - with Tk GUI
+examples/canvas_ps		Writes PostScript for Canvas to a file.
+examples/canvas_scroll		Basic test of scrolling a Canvas
+examples/canvasps
+examples/canvastile		Test background tiles in a Canvas.
+examples/cbtest			Test of callback returns.
+examples/chfont			Test of chinese fonts
+examples/classtree		Show the Tk class tree.
+examples/clip_bug		Demonstrates some "features" of clipping.
+examples/cursor_demo		Lists all built-in (X) cursors.
+examples/derived_test		Test of Tk::Derived
+examples/destroy_test		Test of <Destroy> binding
+examples/dialog_test
+examples/disbutton
+examples/dnd_demo
+examples/dump_test
+examples/embed
+examples/error_prop
+examples/ewidth_demo
+examples/fedemo
+examples/fetail
+examples/font_demo
+examples/font_test
+examples/fonthook
+examples/fonts
+examples/forward_test		Send events to other widgets.
+examples/geo_mgr
+examples/geom
+examples/grid_adj
+examples/grid_test
+examples/gridbug
+examples/hlfm
+examples/hlist_bg
+examples/hlist_demo
+examples/icon
+examples/iconimg
+examples/iconwin
+examples/image_test
+examples/inline_bitmap
+examples/iso8859-1
+examples/labelpack
+examples/lbformat_demo
+examples/leak_test
+examples/lentry
+examples/linux-progbar-toy
+examples/local_demo
+examples/ls_table
+examples/lsfonts
+examples/mcHL
+examples/menubar
+examples/mitem_test
+examples/motif_hack
+examples/nested_dialog
+examples/oddmenu_demo
+examples/olduni
+examples/pfm
+examples/pipe_test
+examples/pixels-points
+examples/pixmap_test
+examples/point_test
+examples/popup
+examples/popup_menu
+examples/prop_demo
+examples/ptknews
+examples/scale_test
+examples/scrolled_demo
+examples/sillymenu
+examples/sockets
+examples/spinbox
+examples/style_test
+examples/table_demo
+examples/taint_test
+examples/taint_test2
+examples/tainted
+examples/tcolour
+examples/tent
+examples/text_demo
+examples/tie_basic
+examples/tiehandle
+examples/tietext
+examples/time
+examples/tiny
+examples/tixwm_demo
+examples/tkperldoc
+examples/tkpsh
+examples/tktail
+examples/tlist_demo
+examples/tmenu
+examples/try
+examples/two_main
+examples/unicode
+examples/unidemo
+examples/ventry_demo
+examples/xlib_demo
 exetype
 Extensions/ImageBack/background
 Extensions/ImageBack/ImageBack.pm
@@ -257,39 +331,17 @@ Extensions/ImageBack/Makefile.PL
 Extensions/ImageBack/MANIFEST
 Extensions/ImageBack/MANIFEST.SKIP
 Extensions/ImageBack/README
-fedemo
-fetail
-findbase
 fix_4_os2.pl
 fixfunc
-floppy
-font_demo
-font_test
-fonthook
-fonts
-forward_test
 Funcs.doc			Ancient but better than nothing list of functions
 gdb.plx
 gedi
 generate
-geo_mgr
-geom
-grid_adj
-grid_test
-gridbug
 hackMM
-hlfm
 HList/HList.pm
 HList/HList.xs
 HList/Makefile.PL
 HList/Tix2perl
-hlist_bg
-hlist_demo
-icon
-iconimg
-iconwin
-image_test
-inline_bitmap
 InputO/InputO.pm
 InputO/InputO.xs
 InputO/Makefile.PL
@@ -298,7 +350,6 @@ INSTALL
 IO/IO.pm
 IO/IO.xs
 IO/Makefile.PL
-iso8859-1
 JPEG/imgJPEG.c
 JPEG/JPEG.pm
 JPEG/JPEG.xs
@@ -463,33 +514,20 @@ JPEG/t/more.t
 JPEG/t/Read.t
 JPEG/tkjpeg
 keyWords
-labelpack
-lbformat_demo
-leak_test
-lentry
 lib/Tie/Watch.pm
-linux-progbar-toy
 Listbox/Listbox.pm
 Listbox/Listbox.xs
 Listbox/Makefile.PL
-local_demo
-ls_table
-lsfonts
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 MANIFEST.SKIP.PL
-mcHL
-menubar
 menubug
 Menubutton/Makefile.PL
 Menubutton/Menubutton.pm
 Menubutton/Menubutton.xs
-mitem_test
-mkdist
 mkExt
 mkppm.bat
-motif_hack
 Mwm/Makefile.PL
 Mwm/Mwm.pm
 Mwm/Mwm.xs
@@ -499,15 +537,8 @@ NBFrame/Makefile.PL
 NBFrame/NBFrame.pm
 NBFrame/NBFrame.xs
 needed
-nested_dialog
 objGlue.c
-oddmenu_demo
-olduni
 perlfiles
-pfm
-pipe_test
-pixels-points
-pixmap_test
 PNG/config/has_png.c
 PNG/imgPNG.c
 PNG/libpng/ANNOUNCE
@@ -1105,11 +1136,7 @@ pod/Wm.pod
 pod/X.pod
 pod/X11Font.pod
 pod/Xrm.pod
-point_test
-popup
-popup_menu
 PPM-HowTo
-prop_demo
 pTk/bitmaps/error.bmp
 pTk/bitmaps/gray12.bmp
 pTk/bitmaps/gray25.bmp
@@ -1905,7 +1932,6 @@ pTk/Xlib_f.c
 pTk/Xlib_f.h
 pTk/XrmOption.c
 ptked
-ptknews
 ptksh
 r
 README				General Information
@@ -1928,17 +1954,11 @@ rebuild
 Scale/Makefile.PL
 Scale/Scale.pm
 Scale/Scale.xs
-scale_test
 Scrollbar/Makefile.PL
 Scrollbar/Scrollbar.pm
 Scrollbar/Scrollbar.xs
-scrolled_demo
-sillymenu
 sm
-sockets
-spinbox
 stripblib
-style_test
 submethods
 symbols
 t/00wmcheck.t			Provide information about wm
@@ -2012,19 +2032,12 @@ t/zzPhoto.t
 t/zzScrolled.t
 t/zzText.t
 t/zzTixGrid.t
-table_demo
-taint_test
-taint_test2
-tainted
 tcl2perl
-tcolour
-tent
 Text/Makefile.PL
 Text/README
 Text/Text.pm
 Text/Text.xs
 Text/Text/Tag.pm
-text_demo
 TextList/Makefile.PL
 TextList/README
 TextList/reindex.pl
@@ -2033,11 +2046,6 @@ TextList/ReindexedROText.pm
 TextList/ReindexedText.pm
 TextList/TextList.pm
 TextList/textlist_demo
-tie_basic
-tiehandle
-tietext
-time
-tiny
 tixGlue.c
 TixGrid/fedemo
 TixGrid/FloatEntry.pm
@@ -2067,7 +2075,6 @@ Tixish/Tree.pm
 TixPixmap/Makefile.PL
 TixPixmap/Pixmap.pm
 TixPixmap/Pixmap.xs
-tixwm_demo
 Tk.pm				"Base" class/package
 Tk.pod
 Tk.xs
@@ -2169,23 +2176,13 @@ tkGlue.m
 tkGlue.t
 tkGlue_f.c
 tkGlue_f.h
-tkperldoc
-tkpsh
-tktail
 tkWin32Dll.c
 TkXSUB.def
 TList/Makefile.PL
 TList/TList.pm
 TList/TList.xs
-tlist_demo
-tmenu
 ToDo
-try
-two_main
-unicode
-unidemo
 uninstall
-ventry_demo
 VERSIONS			Description of version naming scheme
 vg
 vtab.def
@@ -2208,4 +2205,3 @@ Xlib/X/X.pm
 Xlib/X/X.xs
 Xlib/Xlib.pm
 Xlib/Xlib.xs
-xlib_demo

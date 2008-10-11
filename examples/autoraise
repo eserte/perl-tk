@@ -1,5 +1,10 @@
 #!/usr/local/bin/perl -w
 
+# This is the old method, nowadays one would
+# use
+#     $mw->attributes(-topmost => 1) 
+# instead.
+
 use Tk;
 
 $mw = MainWindow->new;

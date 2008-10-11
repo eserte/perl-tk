@@ -1,5 +1,7 @@
 #!/usr/local/bin/perl
 
+# XXX Seems not to work, exits without an error message
+
 # use Memory (2440);
 
 # BEGIN { $ENV{'PERL_DL_NONLAZY'} = 1 }

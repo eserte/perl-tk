@@ -2,6 +2,7 @@ use blib;
 use Tk;
 my $mw = MainWindow->new;
 my $kind = shift;
+die "usage: $0 widgetclass" if !$kind;
 require "Tk/$kind.pm";
 my $w = $mw->$kind();
 if ($w->isa('Tk::Wm'))

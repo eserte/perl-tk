@@ -8,7 +8,7 @@ $top = MainWindow->new;
 chomp(@fonts = `xlsfonts`) ;
 
 $list = $top->ScrlListbox(-scrollbars => 'e', -width => 70) ;
-$list->pack ;
+$list->pack(qw(-fill both -expand 1)) ;
 $list->bind('<1>' => [sub {&changeFont} ] ) ;
 
 grep ($list->insert('end',$_), @fonts) ;

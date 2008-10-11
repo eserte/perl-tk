@@ -1,5 +1,8 @@
 #!/usr/local/bin/perl -w
 
+# XXX Does not work.
+# Error message: Don't know how to handle magic of type \165
+# Problem is caused by usage of -variable => $widget
 
 use Tk;
 

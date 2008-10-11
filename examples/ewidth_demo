@@ -12,7 +12,7 @@ Construct Tk::Widget 'LimitEntry';
 sub Insert
 {
  my ($w,$char) = @_;
- my $width = $w->cget('width');
+ my $width = $w->cget('-width');
  my $len   = $w->index('end');
  if ($len >= $width)
   {

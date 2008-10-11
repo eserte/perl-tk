@@ -1,5 +1,8 @@
 #!/usr/local/bin/perl -w
 
+# XXX Does not work:
+# "Bad arg length for Socket::pack_sockaddr_in, length is 9, should be 4"
+
 use IO::Socket;
 use Tk::IO;
 use Tk;

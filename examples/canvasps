@@ -1,4 +1,4 @@
-#!/opt/tools/bin/perl -w
+#!/usr/local/bin/perl -w
 use strict;
 use Tk;
 use Data::Dumper;
@@ -7,7 +7,7 @@ warn "Tk$Tk::VERSION\n";
 my $ps = page_sizes();
 my $psize = $ARGV[0];
 
-unless (exists $ps->{$psize})
+unless (defined $psize && exists $ps->{$psize})
  {
   my @sizes = keys %$ps;
   die "@sizes\n";

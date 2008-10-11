@@ -16,7 +16,7 @@ sub flash_widget
 $mw = MainWindow->new;
 $b = $mw->Button(-text => 'Flash', -bg => 'azure');
 $b->pack;
-flash_widget $b, -background, 'azure', 'yellow', 1000;
+flash_widget $b, -background, 'azure', 'yellow', 40;
 $mw->update;
 print STDERR "Before ",$start = Devel::Leak::NoteSV($hook),"\n";
 $count = 0;

@@ -20,7 +20,7 @@ my $QuitPBa = $mw->Pixmap('-file' => Tk->findINC("demos/images/QuitPBa.xpm"));
 $mw->Label(-background => 'yellow', -image => $QuitPB)->pack;
 
 
-$mw->Button(-image => $QuitPB, -activeimage => $QuitPBa,
+$mw->Button(-image => $QuitPB, #-activeimage => $QuitPBa,
             -background => 'green',
             -activebackground => 'green',
             -command => [destroy => $mw])->pack;

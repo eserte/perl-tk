@@ -1,3 +1,4 @@
+#!/usr/local/bin/perl
 use Tk;
 use Tk::widgets qw(Canvas);
 my $mw = MainWindow->new();

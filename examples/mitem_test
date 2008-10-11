@@ -9,7 +9,7 @@ use Tk::Menubutton;
 {
  package NoisyButton;
  require Tk::Menu::Item;
-use base  Tk::Menu::Button;
+ use base  'Tk::Menu::Button';
 
  Construct Tk::Menu 'NoisyButton';
 

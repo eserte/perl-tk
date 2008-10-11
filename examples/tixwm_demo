@@ -1,5 +1,8 @@
 #!/usr/local/bin/perl -w
 
+# XXX Does not work anymore: 
+# "can't pack ".dialog": it's a top-level window"
+
 use Tk;
 use Tk::Dialog;
 my $mw = MainWindow->new;

@@ -1,4 +1,8 @@
 #!/usr/local/bin/perl -w
+
+# XXX Does not work:
+# "Can't locate object method "CLEAR" via package "Tk::Text::Contents" at tietext line 63"
+
 use Tk;
 
 {package Tk::Text::Contents;

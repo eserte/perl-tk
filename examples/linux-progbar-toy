@@ -3,7 +3,14 @@ use Tk;
 use Tk::widgets qw(ProgressBar);
 
 my $mw = MainWindow->new;
-my $info = `cat /proc/meminfo`;
+my $meminfo = "/proc/meminfo";
+if (!-e $meminfo) {
+    $meminfo = "/compat/linux/proc/meminfo";
+    if (!-e $meminfo) {
+	die "Sorry, no /proc/meminfo or /compat/linux/proc/meminfo available";
+    }
+}
+my $info = `cat $meminfo`;
 my ($max) = $info =~ /MemTotal:\s*(\d+)/;
 print "Max = $max\n";
 my %values;
@@ -24,7 +31,7 @@ MainLoop;
 
 sub newValue
 {
- my $info = `cat /proc/meminfo`;
+ my $info = `cat $meminfo`;
  foreach my $name (keys %values)
   {
    ($values{$name}) = $info =~ /$name:\s*(\d+)/;

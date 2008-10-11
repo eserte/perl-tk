@@ -8,7 +8,7 @@ my $mb = $mw->Menubutton(-text => "Strange Menu")->pack;
 
 my $menu = $mb->menu;
 my $lb = $menu->Scrolled('Listbox')->pack;
-$menu->configure(-takefocus => 1, -highlightborder => 1);
+$menu->configure(-takefocus => 1);
 $lb->insert('end',grep(-T $_,<*>));
 
 $mw->Message(-text => qq(

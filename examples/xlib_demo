@@ -39,6 +39,7 @@ $top->bind('<ButtonPress-2>',[\&DrawWin,1]);
 $top->bind('<ButtonRelease-2>',[\&DrawWin,0]);
 $top->bind('<B2-Motion>',[\&DrawWin,1]);
 
+# XXX Does not work.
 sub DrawLine
 {
  my $w = shift;

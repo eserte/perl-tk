@@ -1,6 +1,7 @@
 #!/usr/local/bin/perl -w
 
 package StickyButton;
+use Tk;
 require Tk::Widget;
 require Tk::Button;
 use base  qw(Tk::Button);

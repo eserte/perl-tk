@@ -1,4 +1,4 @@
-#!/usr/local/bin/nperl -w
+#!/usr/local/bin/perl -w
 
 use Tk;
 use Tk::Table;

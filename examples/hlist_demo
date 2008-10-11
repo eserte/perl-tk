@@ -1,6 +1,5 @@
-#!/usr/local/bin/nperl -w
+#!/usr/local/bin/perl -w
 
-use lib qw(blib .);
 use Tk;
 require Tk::HList;
 

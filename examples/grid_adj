@@ -16,9 +16,9 @@ my $mw = MainWindow->new;
 my $t1  = $mw->Scrolled('TextUndo', -wrap => 'none');
 my $lb  = $mw->Scrolled('Listbox');
 my $aj  = $mw->Adjuster(-widget => $lb, -side => 'left', -delay => 1);
-$lb->grid(-col => 0, -row => 0, -sticky => 'nsew');
-$aj->grid(-col => 1, -row => 0, -sticky => 'nsew');
-$t1->grid(-col => 2, -row => 0, -sticky => 'nsew');
+$lb->grid(-column => 0, -row => 0, -sticky => 'nsew');
+$aj->grid(-column => 1, -row => 0, -sticky => 'nsew');
+$t1->grid(-column => 2, -row => 0, -sticky => 'nsew');
 $mw->gridColumnconfigure(2, -weight => 1);
 $lb->bind('<Double-ButtonRelease-1>',sub { $t1->Load($lb->getSelected) });
 
