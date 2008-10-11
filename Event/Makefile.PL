@@ -9,3 +9,9 @@ Tk::MMutil::TkExtMakefile(
       );
 
 
+sub MY::test_via_harness
+{
+ my($self, $perl, $tests) = @_;
+ qq{\t$perl "-I../t" "-MTkTest" "-MExtUtils::Command::MM" }.
+ qq{"-e" "check_display_harness; test_harness(\$(TEST_VERBOSE), '\$(INST_LIB)', '\$(INST_ARCHLIB)')" $tests\n};
+}
