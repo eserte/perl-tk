@@ -26,3 +26,17 @@ __END__
 This message was posted through the Stanford campus mailing list
 server.  If you wish to unsubscribe from this mailing list, send the
 message body of "unsubscribe ptk" to majordomo@lists.stanford.edu
+
+The same problem can be reproduced with original Tk8.4 and Tk8.5:
+
+menubutton .mb -text test
+pack .mb 
+menu .mb.menu -type menubar
+.mb configure -menu .mb.menu
+
+$ wish8.4 /tmp/menubug.tk 
+Tk_MoveToplevelWindow called with non-toplevel window
+zsh: 32762 abort (core dumped)  wish8.4 /tmp/menubug.tk
+
+It is reported as 
+https://sourceforge.net/tracker2/?func=detail&aid=2160206&group_id=12997&atid=112997
