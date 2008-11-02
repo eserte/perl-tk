@@ -1,3 +1,11 @@
+Tk-804.028_501 release (XXXX-XX-XX)
+----------------------
+
+Fixes
+ File permissions of the tarball seemed to be problematic under
+ Windows Vista and Strawberry Perl 5.10.0.3, causing aborted builds.
+ This is hopefully fixed now.
+
 Tk-804.028_500 release (2008-10-01)
 ----------------------
 
