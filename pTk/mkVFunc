@@ -21,7 +21,7 @@ sub openRO
   {
    chmod(0666,$file) || warn "Cannot change permissions on $file:$!";
   }
- open($fh,">$file") || return 0;
+ open($fh,">","$file~") || return 0;
  push(@Files,$file);
  return 1;
 }
@@ -33,7 +33,13 @@ END
     my $file = pop(@Files);
     if (-f $file)
      {
-      chmod(0444,$file) || warn "Cannot change permissions on $file:$!";
+      chmod(0444,"$file~") || warn "Cannot change permissions on $file:$!";
+      if (!rename("$file~",$file))
+       {
+	warn "Cannot rename $file to $file~ ($!), trying again with deleting $file before...";
+        unlink($file) || warn "Cannot delete $file:$!";
+	rename("$file~",$file) || warn "Cannot rename $file~ to $file ($!), expect major problems now...";
+       }
      }
    }
  }
