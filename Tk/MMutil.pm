@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '4.022'; # was: sprintf '4.%03d', q$Revision: #21 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.023'; # was: sprintf '4.%03d', q$Revision: #21 $ =~ /\D(\d+)\s*$/;
 
 # warn __FILE__." $VERSION\n";
 
