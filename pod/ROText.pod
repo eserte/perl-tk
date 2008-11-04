@@ -30,7 +30,7 @@ B<Tk::ROText>. Additionally the following bindings are defined:
 
 Move the cursor forward by one screenful.
 
-=item <BackSpave>
+=item <BackSpace>
 
 Move the cursor backward by one screenful.
 
