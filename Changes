@@ -1,10 +1,28 @@
-Tk-804.028_501 release (XXXX-XX-XX)
+Tk-804.028_501 release (2008-11-04)
 ----------------------
 
 Fixes
  File permissions of the tarball seemed to be problematic under
  Windows Vista and Strawberry Perl 5.10.0.3, causing aborted builds.
  This is hopefully fixed now.
+
+ Changed cygwin default to x11 (native MSWin32 port still does not
+ work).
+
+New
+ There's now an "examples" directory containing some useful scripts
+ previously been elsewhere in the distribution.
+
+Documentation
+ Documented ROText key bindings.
+
+ New README for Strawberry Perl.
+
+Tests
+ Prevent Event mini tests to be run when the rest of Tk is not tested,
+ to avoid insignificant PASSes at cpantesters.
+
+ More tests marked as TODO or SKIP.
 
 Tk-804.028_500 release (2008-10-01)
 ----------------------
