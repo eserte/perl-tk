@@ -39,6 +39,10 @@ else
      {
       $file = 'scripts/makefile.hp64';
      }
+    elsif ($^O eq 'aix') # untested! see http://rt.cpan.org/Ticket/Display.html?id=40064
+     {
+      $file = 'scripts/makefile.aix';
+     }
     else
      {
       $file = 'scripts/makefile.std';
