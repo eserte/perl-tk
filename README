@@ -56,8 +56,9 @@ To try this install do
 
 See http://fontconfig.org
 
-For questions on this package try news:comp.lang.perl.tk or e-mail
-to <ptk@lists.stanford.edu> or <srezic@cpan.org>
+For questions on this package try news:comp.lang.perl.tk or e-mail to
+<ptk@lists.stanford.edu> (needs registration to the mailing list) or
+<srezic@cpan.org>
 
 Perl/Tk's source code can be found in the Subversion repository:
 
