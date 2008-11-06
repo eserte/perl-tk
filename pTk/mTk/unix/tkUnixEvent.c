@@ -454,7 +454,8 @@ TkUnixDoOneXEvent(timePtr)
     static fd_mask readMask[MASK_SIZE];
     struct timeval blockTime, *timeoutPtr;
     Tcl_Time now;
-    int fd, index, bit, numFound, numFdBits = 0;
+    int fd, index, numFound, numFdBits = 0;
+    fd_mask bit;
 
     /*
      * Look for queued events first.
@@ -504,7 +505,7 @@ TkUnixDoOneXEvent(timePtr)
 	}
 	fd = ConnectionNumber(dispPtr->display);
 	index = fd/(NBBY*sizeof(fd_mask));
-	bit = 1 << (fd%(NBBY*sizeof(fd_mask)));
+	bit = ((fd_mask)1) << (fd%(NBBY*sizeof(fd_mask)));
 	readMask[index] |= bit;
 	if (numFdBits <= fd) {
 	    numFdBits = fd+1;
@@ -530,7 +531,7 @@ TkUnixDoOneXEvent(timePtr)
 	 dispPtr = dispPtr->nextPtr) {
 	fd = ConnectionNumber(dispPtr->display);
 	index = fd/(NBBY*sizeof(fd_mask));
-	bit = 1 << (fd%(NBBY*sizeof(fd_mask)));
+	bit = ((fd_mask)1) << (fd%(NBBY*sizeof(fd_mask)));
 	if ((readMask[index] & bit) || (QLength(dispPtr->display) > 0)) {
 	    DisplayFileProc((ClientData)dispPtr, TCL_READABLE);
 	}
