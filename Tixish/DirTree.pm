@@ -142,7 +142,7 @@ sub add_to_tree {
     my @args = (-image => $image, -text => $name);
     if( $parent ) {             # Add in alphabetical order.
         foreach my $sib ($w->infoChildren( $parent )) {
-	    use locale;
+	    use if $^O ne 'MSWin32', "locale"; # dumps core under Windows under some (japanese?) locales, see http://www.nntp.perl.org/group/perl.cpan.testers/2008/11/msg2550386.html
 	    my $sib8 = _fs_encode($sib);
 	    if ($sib8 gt $dir8) {
                 push @args, (-before => $sib);
