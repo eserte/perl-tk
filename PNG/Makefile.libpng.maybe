@@ -29,6 +29,8 @@ if ($^O eq 'MSWin32')
  }
 else
  {
+  try_configure(); # may exit
+
   if ($Config{'gccversion'})
    {
     $file = 'scripts/makefile.gcc';
@@ -62,14 +64,23 @@ else
 copy($file,"Makefile")
    || die "Cannot copy $file to Makefile:$!";
 
-if ($^O eq 'darwin' ||
-    $Config{'archname'} =~ m{^amd64-freebsd($|-.*)} ||
-    $Config{'archname'} =~ m{^sun4-solaris($|-.*)}
-   )
- {
-  system(sh => "./configure");
-  open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
-  print $fh <<'EOF';
+sub try_configure
+{
+ if ($^O eq 'darwin' ||
+     $Config{'archname'} =~ m{^(?:
+ 			       amd64-freebsd
+ 			      |i386-freebsd
+ 			      |sun4-solaris
+ 			      |IP35-irix
+ 			      )(?:$|-.*)
+ 			    }x
+    )
+  {
+   local $ENV{CC} = $Config{cc};
+   local $ENV{CFLAGS} = "$Config{ccflags} $Config{cccdlflags}";
+   system(sh => "./configure");
+   open my $fh, ">> Makefile" or die "Can't write to Makefile: $!";
+   print $fh <<'EOF';
 
 libpng.a: all
 	cp .libs/libpng.a libpng.a
@@ -81,7 +92,9 @@ clean:
 test:
 
 EOF
- }
+   exit 0;
+  }
+}
 
 1;
 
