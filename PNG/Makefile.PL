@@ -131,6 +131,16 @@ sub realclean {
   $str =~ s/(::\s*clean)/$1 realclean2/;
   $str .= "\nrealclean2 ::\n";
   $str .= "\t\$(RM_F) ".join(" \\\n\t","libpng/Makefile","libpng/Makefile.PL","zlib/Makefile","zlib/Makefile.PL")."\n";
+  $str .= "\t\$(RM_F) ".join(" \\\n\t", map { "libpng/$_" } qw(
+								  config.h
+								  config.log
+								  config.status
+								  libpng-config
+								  libpng.pc
+								  libtool
+								  stamp-h1
+							     ))."\n";
+  $str .= "\t\$(RM_RF) ".join(" \\\n\t","libpng/.deps")."\n";
   return $str;
 }
 
