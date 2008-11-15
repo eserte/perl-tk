@@ -355,7 +355,11 @@ if ($win_arch eq 'x') {
       $xlib = &lX11(0,split(/\s+/,$Config{'libpth'}))
     }
 
-  die "Cannot find -lX11 anywhere" unless(defined $xlib);
+  unless(defined $xlib)
+    {
+      warn "Cannot find -lX11 anywhere --- cannot build Perl/Tk\n";
+      exit 0;
+    }
 
   ($base) = $xlib =~ m#-L(.*)(?:/lib)$#x;
   if (defined $X11INC)
