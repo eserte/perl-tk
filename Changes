@@ -1,3 +1,19 @@
+Tk-804.028_502 release (XXXX-XX-XX)
+----------------------
+Fixes
+ Use 'configure' for building libpng under IRIX64
+ http://rt.cpan.org/Ticket/Display.html?id=40820
+
+ PNG did not build under AIX, unchecked fix
+ http://rt.cpan.org/Ticket/Display.html?id=40064
+
+ Workaround for a perl bug (?) when using "eq" under a Japanese locale
+ under Windows (sample fail report:
+ http://www.nntp.perl.org/group/perl.cpan.testers/2008/11/msg2550386.html)
+
+ Tk did not support more than 32 fds on 64bit machines
+ http://rt.cpan.org/Ticket/Display.html?id=40688
+
 Tk-804.028_501 release (2008-11-04)
 ----------------------
 
