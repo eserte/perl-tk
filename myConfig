@@ -419,13 +419,14 @@ EOF
       # on an old RedHat 8.0 system
       for my $def ([], ["-DNEED_FT2BUILD_H"])
        {
-	if (try_run("config/xft.c",[$xinc,$ftinc],[$xlib,'-lXft','-lfontconfig'],$def))
+	my $ftlib = '-L/usr/local/lib'; # XXX needed if freetype and xlibs are in different lib directories, but should probably check if this is necessary
+	if (try_run("config/xft.c",[$xinc,$ftinc],[$xlib,$ftlib,'-lXft','-lfontconfig'],$def))
          {
           $inc .= " $ftinc";
           warn "Seem to have -lXft\n";
           $define{USE_XFT_FONTS} = 1;
           $xlib .= " -lXft";
-          $xtra = ' -lfontconfig';
+          $xtra = " $ftlib -lfontconfig";
 	  if (@$def)
 	   {
 	    for my $d (@$def)
