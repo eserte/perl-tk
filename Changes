@@ -4,8 +4,9 @@ Fixes
  Use 'configure' for building libpng under IRIX64
  http://rt.cpan.org/Ticket/Display.html?id=40820
 
- PNG did not build under AIX, unchecked fix
+ PNG did not build under AIX and IRIC64, unchecked fix
  http://rt.cpan.org/Ticket/Display.html?id=40064
+ http://rt.cpan.org/Ticket/Display.html?id=40820
 
  Workaround for a perl bug (?) when using "eq" under a Japanese locale
  under Windows (sample fail report:
@@ -13,6 +14,9 @@ Fixes
 
  Tk did not support more than 32 fds on 64bit machines
  http://rt.cpan.org/Ticket/Display.html?id=40688
+
+ Tk::Trace fix to make Tk::Gauge work
+ http://rt.cpan.org/Ticket/Display.html?id=41069
 
 Tk-804.028_501 release (2008-11-04)
 ----------------------
