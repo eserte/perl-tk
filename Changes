@@ -13,7 +13,7 @@ Fixes
  http://www.nntp.perl.org/group/perl.cpan.testers/2008/11/msg2550386.html)
 
  Tk did not support more than 32 fds on 64bit machines
- http://rt.cpan.org/Ticket/Display.html?id=40688
+ http://rt.cpan.org/Ticket/Display.html?id=41158
 
  Tk::Trace fix to make Tk::Gauge work
  http://rt.cpan.org/Ticket/Display.html?id=41069
