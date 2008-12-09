@@ -6,14 +6,7 @@
 # Author: Slaven Rezic
 #
 
-# Some leak tests. You need Devel::Leak installed and a debugging perl.
-# I usually use this arguments to perl's Configure:
-#
-#     -Doptimize='-g -DPERL_DEBUGGING_MSTATS' -Dusemymalloc='y'
-#
-# With the patches for tkGlue.c and pTkCallback.c (see the patches
-# subdirectory), the problems here should get away.
-#
+# Some leak tests. You need Devel::Leak installed.
 
 use strict;
 use Config;
@@ -23,13 +16,10 @@ BEGIN {
     if (!eval q{
 	use Test::More;
 	use Devel::Leak;
-	die if ($Config{usemymalloc} eq 'y' &&
-                $Config{optimize} !~ /-DPERL_DEBUGGING_MSTATS/);
 	1;
     }) {
 	print "# tests only work with installed Test and Devel::Leak modules\n";
-	print "# also -DPERL_DEBUGGING_MSTATS have to be set\n";
-	print "1..0 # skip need Devel::Leak and -DPERL_DEBUGGING_MSTATS\n";
+	print "1..0 # skip need Devel::Leak\n";
 	CORE::exit;
     }
 }
