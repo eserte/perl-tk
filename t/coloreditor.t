@@ -30,8 +30,17 @@ for (1..2) {
 	skip("Probably no rgb.txt found on this system", 2)
 	    if $Tk::platform eq 'MSWin32' && !$lb;
 	isa_ok($lb, "Tk::Listbox");
-	# This used to fail until Tk804.027_501:
-	cmp_ok(scalar @{ $lb->get(0,"end") }, ">=", 10, "Some colors found in listbox");
+	if (!$lb) {
+	    fail "Could not get color name listbox";
+	    my @rgbTxtPath = $c->_rgbTxtPath;
+	    diag <<EOF;
+This failure usually indicates that rgb.txt could not be found on your system.
+The search path was: @rgbTxtPath
+EOF
+	} else {
+	    # This used to fail until Tk804.027_501:
+	    cmp_ok(scalar @{ $lb->get(0,"end") }, ">=", 10, "Some colors found in listbox");
+	}
     }
     $c->destroy;
 }

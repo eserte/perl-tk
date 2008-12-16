@@ -15,19 +15,8 @@ sub Populate
 {
     my ($middle,$args) = @_;
     my($i, @a);
-    require Tk::Config;
-    my(@xlibpath) = map { s/^-L//; "$_/X11/rgb.txt" }
-                    split /\s+/, $Tk::Config::xlib;
     my %seen_names;
-    foreach $i (@xlibpath,
-		'/usr/local/lib/X11/rgb.txt', '/usr/lib/X11/rgb.txt',
-		'/usr/X11R6/lib/X11/rgb.txt',
-                '/usr/local/X11R5/lib/X11/rgb.txt', '/X11/R5/lib/X11/rgb.txt',
-                '/X11/R4/lib/rgb/rgb.txt', '/usr/openwin/lib/X11/rgb.txt',
-		'/usr/share/X11/rgb.txt', # This is the Debian location
-		'/usr/X11/share/X11/rgb.txt', # seen on a Mac OS X 10.5.1 system
-		'/usr/X11R6/share/X11/rgb.txt', # seen on a OpenBSD 4.2 system
-	       ) {
+    foreach $i ($middle->_rgbTxtPath) {
         local *FOO;
         next if ! open FOO, $i;
         my $middle_left = $middle->Frame;
@@ -189,6 +178,26 @@ sub Populate
     $middle->{'blue'} = 0;
     $middle->{'green'} = 0;
 
+}
+
+sub _rgbTxtPath
+{
+ require Tk::Config;
+ my(@xlibpath) = map { s/^-L//; "$_/X11/rgb.txt" }
+                 split /\s+/, $Tk::Config::xlib;
+ (
+  @xlibpath,
+  '/usr/local/lib/X11/rgb.txt',
+  '/usr/lib/X11/rgb.txt',
+  '/usr/X11R6/lib/X11/rgb.txt',
+  '/usr/local/X11R5/lib/X11/rgb.txt',
+  '/X11/R5/lib/X11/rgb.txt',
+  '/X11/R4/lib/rgb/rgb.txt',
+  '/usr/openwin/lib/X11/rgb.txt',
+  '/usr/share/X11/rgb.txt', # This is the Debian location
+  '/usr/X11/share/X11/rgb.txt', # seen on a Mac OS X 10.5.1 system
+  '/usr/X11R6/share/X11/rgb.txt', # seen on a OpenBSD 4.2 system
+ );       
 }
 
 sub Hex
