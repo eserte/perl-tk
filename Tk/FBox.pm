@@ -33,6 +33,8 @@
 #       be called directly. Call tk_getOpenFile or tk_getSaveFile instead.
 #
 
+use 5.005; # qr//
+
 package Tk::FBox;
 require Tk::Toplevel;
 
@@ -451,7 +453,7 @@ sub Update {
 	    if ($fltcb) {
 		next if !$fltcb->($w, $f, $cwd);
 	    } else {
-		next if !-d $f && $f !~ m!$flt!;
+		next if !-d $f && $f !~ m!$flt!s;
 	    }
 	    if (-d $f) {
 		$icons->Add($folder, $f);
@@ -557,7 +559,7 @@ sub ResolveFile {
     # If the file has no extension, append the default.  Be careful not
     # to do this for directories, otherwise typing a dirname in the box
     # will give back "dirname.extension" instead of trying to change dir.
-    if (!-d $path && $path !~ /\..+$/ && defined $defaultext) {
+    if (!-d $path && $path !~ /\..+$/s && defined $defaultext) {
 	$path = "$path$defaultext";
     }
     # Cannot just test for existance here as non-existing files are
@@ -745,14 +747,13 @@ sub JoinFile {
     }
 }
 
-# XXX replace with File::Spec when perl/Tk depends on 5.005
+# XXX replace with File::Spec if possible
 sub TclFileJoin {
     my $path = '';
     foreach (@_) {
 	if (m|^/|) {
 	    $path = $_;
-	}
-	elsif (m|^[a-z]:/|i) {  # DOS-ish
+	} elsif (m|^[a-z]:/|i) {  # DOS-ish
 	    $path = $_;
 	} elsif ($_ eq '~') {
 	    $path = _get_homedir();
@@ -992,9 +993,9 @@ sub ext_chdir {
     my $dir = shift;
     if ($dir eq '~') {
 	chdir _get_homedir();
-    } elsif ($dir =~ m|^~/(.*)|) {
+    } elsif ($dir =~ m|^~/(.*)|s) {
 	chdir _get_homedir() . "/" . $1;
-    } elsif ($dir =~ m|^~([^/]+(.*))|) {
+    } elsif ($dir =~ m|^~([^/]+(.*))|s) {
 	chdir _get_homedir($1) . $2;
     } else {
 	chdir $dir;
@@ -1033,13 +1034,10 @@ sub _untaint {
 
 sub _rx_to_glob {
     my $arg = shift;
-    $arg = join('|', split(' ', $arg));
-    $arg =~ s!([\.\+])!\\$1!g;
-    $arg =~ s!\*!.*!g;
-    $arg = "^" . $arg . "\$";
-    if ($] >= 5.005) {
-	$arg = qr/$arg/;
-    }
+    $arg =~ s!([.+^()|\${}\[\]\\])!\\$1!g;
+    $arg = join('|', map {"^$_\\z"} split(' ', $arg));
+    $arg =~ s!\*!.*!g;$arg =~ s!\?!.!g;
+    $arg = qr/$arg/s;
     $arg;
 }
 
