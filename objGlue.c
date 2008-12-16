@@ -403,6 +403,36 @@ Tcl_NewListObj (int objc, Tcl_Obj *CONST objv[])
  return MakeReference((SV *) av);
 }
 
+static char * LangString(SV *sv);
+
+/*
+ * Workaround for http://rt.cpan.org/Public/Bug/Display.html?id=41436
+ * This seems to be necessary for perl < 5.10.0 and if a magic
+ * readonly variable like $1 is about to be utf8-ified, and only for
+ * bytes >= 0x80 and <= 0xff
+ *
+ */
+static char *
+FixBuggyUTF8String(SV *sv)
+{
+ char* s = NULL;
+ if (SvREADONLY(sv))
+  {
+   STRLEN len = 0;
+   SvREADONLY_off(sv);
+   (void) SvPV_force(sv,len);
+   s = LangString(sv);
+   SvREADONLY_on(sv);
+  }
+ else
+  {
+   LangDebug("%s @ %d not utf8 and cannot be fixed\n",__FUNCTION__,__LINE__);
+   sv_dump(sv);
+   abort();
+  }
+ return s;
+}
+
 static char *
 LangString(SV *sv)
 {
@@ -556,6 +586,10 @@ Tcl_GetStringFromObj (Tcl_Obj *objPtr, int *lengthPtr)
     {
      s = LangString(objPtr);
 #ifdef SvUTF8
+     if (!is_utf8_string(s,strlen(s)))
+      {
+       s = FixBuggyUTF8String(objPtr);
+      }
      if (!is_utf8_string(s,strlen(s)))
       {
        LangDebug("%s @ %d not utf8\n",__FUNCTION__,__LINE__);
