@@ -16,6 +16,8 @@ $define = '';
 $gccopt = "";
 @macro = ( macro => {} );
 
+$is_maintainer = (getpwuid($<))[6] =~ /(Nick\s+Ing-Simmons|Slaven\s+Rezic)/;
+
 if (defined $Config{'gccversion'})
  {
   $ver = $Config{'gccversion'};
@@ -25,10 +27,10 @@ if (defined $Config{'gccversion'})
     $gccopt .= " -Wall -Wno-implicit-int -Wno-comment -Wno-unused -D__USE_FIXED_PROTOTYPES__";
     eval
      {
-      if ((getpwuid($<))[6] =~ /(Nick\s+Ing-Simmons|XXXSlaven\s+Rezic)/)
+      if (0 && $is_maintainer)
        {
         # This is the author - catch as many bugs as possible
-        # libpng causes some warnings, so this is not enabled for me - srt
+        # XXX libpng causes some warnings, so this is not enabled anymore
         $gccopt .= "  -MMD -Werror -Wno-format";
        }
      }
