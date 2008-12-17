@@ -415,6 +415,7 @@ static char * LangString(SV *sv);
 static char *
 FixBuggyUTF8String(SV *sv)
 {
+ dTHX;
  char* s = NULL;
  if (SvREADONLY(sv))
   {
