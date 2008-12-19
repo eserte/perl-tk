@@ -197,6 +197,8 @@ sub _rgbTxtPath
   '/usr/share/X11/rgb.txt', # This is the Debian location
   '/usr/X11/share/X11/rgb.txt', # seen on a Mac OS X 10.5.1 system
   '/usr/X11R6/share/X11/rgb.txt', # seen on a OpenBSD 4.2 system
+  '/etc/X11R6/rgb.txt',
+  '/etc/X11/rgb.txt', # seen on HP-UX 11.31
  );       
 }
 
