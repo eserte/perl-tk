@@ -14,7 +14,7 @@ BEGIN {
     }
 }
 
-plan tests => 29;
+plan tests => 30;
 
 my $mw = Tk::MainWindow->new;
 eval { $mw->geometry('+10+10'); };  # This works for mwm and interactivePlacement
@@ -134,6 +134,16 @@ SKIP: {
     my $hl = $mw->HList;
     $hl->addchild("");
     pass("addchild with empty string");
+    $hl->destroy;
+}
+
+TODO: {
+    todo_skip "Currently dumps core", 1;
+
+    my $hl = $mw->HList;
+    $hl->add(0);
+    eval { $hl->itemCreate(0, 0, -text => "Something", -data => "invalid") };
+    like($@, qr{Bad option `-data' at}, "-data not valid for itemCreate");
 }
 
 1;
