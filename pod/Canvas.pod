@@ -1406,7 +1406,7 @@ and are not near any point. That is they are intended to be always visible
 but not "pickable", as such they do support the "active" state.
 They are like other items in that: multiple
 grids are permitted, they can be raised and lowered relative to other
-items, they can be moved and scaled. As yet grids do not apear in
+items, they can be moved and scaled. As yet grids do not appear in
 PostScript output.
 
 Grids have outline like configure options. Grids are created with methods of the
@@ -1421,6 +1421,7 @@ pairs, each of which sets one of the configuration options
 for the item.  These same I<option>-I<value> pairs may be
 used in B<itemconfigure> methods to change the item's
 configuration.
+
 The following options are supported for grids:
 
 =over 4
