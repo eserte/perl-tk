@@ -115,9 +115,19 @@ sub Populate {
 		   );
 }
 
+sub _get_client {
+    my ($w, $client) = @_;
+    if ($client->can("Subwidget") and my $scrolled = $client->Subwidget("scrolled")) {
+        $scrolled;
+    } else {
+	$client;
+    }
+}
+
 # attach a client to the balloon
 sub attach {
     my ($w, $client, %args) = @_;
+    $client = $w->_get_client($client);
     foreach my $key (grep(/command$/,keys %args))
      {
       $args{$key} = Tk::Callback->new($args{$key});
@@ -132,6 +142,7 @@ sub attach {
 # detach a client from the balloon.
 sub detach {
     my ($w, $client) = @_;
+    $client = $w->_get_client($client);
     if (Exists($w))
      {
       $w->Deactivate if ($client->IS($w->{'client'}));

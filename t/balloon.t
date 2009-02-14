@@ -12,8 +12,11 @@ BEGIN {
     }
 }
 
-plan tests => 13;
+plan tests => 14;
 
+# Run
+#    env BATCH=0 perl -Mblib t/balloon.t
+# for interactive balloon test
 if (!defined $ENV{BATCH}) { $ENV{BATCH} = 1 }
 
 my $mw = Tk::MainWindow->new;
@@ -34,10 +37,19 @@ is($@, "", 'Attaching message to Label widget');
 eval { $balloon->attach($l, -statusmsg => "test1", -balloonmsg => "test2"); };
 is($@, "", 'Attaching statusmsg/baloonmsg to Label widget');
 
-my $c = $mw->Canvas(-width => 100, -height => 50)->pack;
-my $ci = $c->createLine(0,0,10,10);
-eval { $balloon->attach($c, -msg => {$ci => "test"}); };
-is($@, "", 'Attaching message to Canvas item');
+{
+    my $c = $mw->Canvas(-width => 100, -height => 50)->pack;
+    my $ci = $c->createLine(0,0,10,10);
+    eval { $balloon->attach($c, -msg => {$ci => "test"}); };
+    is($@, "", 'Attaching message to Canvas item');
+}
+
+{
+    my $c = $mw->Scrolled("Canvas", -width => 100, -height => 50)->pack;
+    my $ci = $c->createLine(0,0,10,10);
+    eval { $balloon->attach($c, -msg => {$ci => "test"}); };
+    is($@, "", 'Attaching message to scrolled Canvas item');
+}
 
 my $menubar = $mw->Menu;
 $mw->configure(-menu => $menubar);
@@ -56,16 +68,20 @@ is($@, "", "Set motioncommand option");
 eval { $balloon->configure(-motioncommand => undef); };
 is($@, "", "Reset motioncommand option");
 
-my $lb = $mw->Listbox(-height => 6)->pack;
-$lb->insert("end",1,2,3,4);
-eval { $balloon->attach($lb, -msg => ['one','two','three','four']); };
-is($@, "", 'Attaching message to Listbox items');
+{
+    my $lb = $mw->Listbox(-height => 6)->pack;
+    $lb->insert("end",1,2,3,4);
+    eval { $balloon->attach($lb, -msg => ['one','two','three','four']); };
+    is($@, "", 'Attaching message to Listbox items');
+}
 
-my $slb = $mw->Scrolled('Listbox', -height => 2)->pack;
-$slb->insert("end",1,2,3,4);
-eval { $balloon->attach($slb->Subwidget('scrolled'),
-			-msg => ['one','two','three','four']); };
-is($@, "", 'Attaching message to scrolled Listbox items');
+{
+    my $slb = $mw->Scrolled('Listbox', -height => 2)->pack;
+    $slb->insert("end",1,2,3,4);
+    eval { $balloon->attach($slb,
+			    -msg => ['one','two','three','four']); };
+    is($@, "", 'Attaching message to scrolled Listbox items');
+}
 
 {
     require Tk::NoteBook;
