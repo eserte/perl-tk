@@ -86,7 +86,7 @@ In normal usage, an application should not claim the focus for
 itself;  instead, it should wait for the window manager to give it
 the focus.
 
-=item I<$widget>-E<gt>B<focusLast>
+=item I<$widget>-E<gt>B<focusLastfor>
 
 Returns the name of the most recent window to have the input focus
 among all the windows in the same top-level as I<$widget>.
