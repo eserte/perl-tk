@@ -4,7 +4,7 @@ use Test;
 use Tk;
 use Tk::widgets qw(ProgressBar);
 
-plan tests => 15;
+plan tests => 25;
 
 my $mw  = MainWindow->new();
 $mw->geometry('+100+100');
@@ -22,6 +22,7 @@ for my $v (map(10*$_+3,1..10))
  {
   $var = $v;
   ok($pb->cget('-value'),$v,"Value not $v");
+  ok($pb->value,$v,"Value not $v");
   $mw->update;
  }
 
