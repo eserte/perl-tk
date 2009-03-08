@@ -334,8 +334,8 @@ Tk::ProgressBar - A graphical progress bar
     use Tk::ProgressBar;
 
     $progress = $parent->ProgressBar(
-	-width => 200,
-	-length => 20,
+	-width => 20,
+	-length => 200,
         -anchor => 's',
 	-from => 0,
 	-to => 100,
