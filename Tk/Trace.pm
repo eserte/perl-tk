@@ -178,12 +178,10 @@ sub Tk::Widget::traceVdelete {
 
     my ( $parent, $vref, $op_not_honored, $callabck_not_honored ) = @_;
 
-    if ( defined $TRACE{$vref} ) {
-	if ( defined $TRACE{$vref}->[0] ) {
-	    $$vref = $TRACE{$vref}->[0]->Fetch;
-	    $TRACE{$vref}->[0]->Unwatch;
-	    delete $TRACE{$vref};
-	}
+    if ( defined $vref && defined $TRACE{$vref} && defined $TRACE{$vref}->[0] ) {
+	$$vref = $TRACE{$vref}->[0]->Fetch;
+	$TRACE{$vref}->[0]->Unwatch;
+	delete $TRACE{$vref};
     }
 
 } # end traceVdelete
