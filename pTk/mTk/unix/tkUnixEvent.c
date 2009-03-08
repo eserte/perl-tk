@@ -305,22 +305,26 @@ DisplaySetupProc(clientData, flags)
  */
 
 static void
-TransferXEventsToTcl(display)
-    Display *display;
+TransferXEventsToTcl(
+    Display *display)
 {
-    int numFound;
     XEvent event;
 
-    numFound = QLength(display);
-
     /*
-     * Transfer events from the X event queue to the Tk event queue.
+     * Transfer events from the X event queue to the Tk event queue after XIM
+     * event filtering. KeyPress and KeyRelease events are filtered in
+     * Tk_HandleEvent instead of here, so that Tk's focus management code can
+     * redirect them.
      */
 
-    while (numFound > 0) {
+    while (QLength(display) > 0) {
 	XNextEvent(display, &event);
+	if (event.type != KeyPress && event.type != KeyRelease) {
+	    if (XFilterEvent(&event, None)) {
+		continue;
+	    }
+	}
 	Tk_QueueWindowEvent(&event, TCL_QUEUE_TAIL);
-	numFound--;
     }
 }
 
