@@ -496,7 +496,7 @@ tag or group of tags.
 
 Perl/Tk follows Perl's model of handling Unicode. That is, if a string
 is correctly flagged as a E<quot>characterE<quot> string in the sense
-like described in the L<Encode> manpage, then Perl/Tk will very
+like described in L<Encode/TERMINOLOGY>, then Perl/Tk will very
 probably display and handle this string correctly.
 
 Note that every variable which is passed somehow into a Perl/Tk method
