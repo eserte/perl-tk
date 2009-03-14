@@ -491,3 +491,97 @@ tag or group of tags.
         my $name = get_name($can);
         print "Action on blue item $name...\n";
     }
+
+=head1 Perl/Tk and Unicode
+
+Perl/Tk follows Perl's model of handling Unicode. That is, if a string
+is correctly flagged as a E<quot>characterE<quot> string in the sense
+like described in the L<Encode> manpage, then Perl/Tk will very
+probably display and handle this string correctly.
+
+Note that every variable which is passed somehow into a Perl/Tk method
+will be implicitely changed into a internally utf8-flagged variable.
+Semantically nothing changes (the series of codepoints stays the
+same), but things will change if variables with high-bit iso-8859-1
+characters will be passed to the "outer" world. In this case you have
+to explicitely mark the encoding of your output stream if using IO, or
+encode the variables using L<Encode> for other style of communication.
+
+This is the theory, now some examples.
+
+If you use non-iso-8859-1 characters in the source code, then use
+either the C<use utf8;> or C<use encoding 'I<encodingname>'> pragma:
+
+     use utf8;
+     use Tk;
+     my $x = "some characters using utf8 encoding";
+     tkinit->Label(-text => $x)->pack;
+     MainLoop;
+
+For data which comes from an file you have to specify the encoding
+unless it's encoded as ascii or iso-8559-1:
+
+     use Tk;
+     open my $FH, "<:encoding(utf-8)", "filename" or die $!;
+     # or for utf-16 data: open my $FH, "<:encoding(utf-16)", "filename" or die $!;
+     my $data = <$FH>;
+     tkinit->Label(-text => $data)->pack;
+     MainLoop;
+
+Likewise, for data which is read from Tk widgets and should be output
+into a file, the encoding has to be specified. In the output case the
+encoding should be always specified, even if it should be written as
+iso-8859-1:
+
+     use Tk;
+     $mw = tkinit;
+     $mw->Entry(-textvariable => \$input)->pack;
+     $mw->Button(
+         -text => "Write to file",
+         -command => sub {
+             open my $FH, ">:encoding(iso-8859-1)", "filename" or die $!;
+             print $FH $input;
+         },
+     )->pack;
+     MainLoop;
+
+Note that Tk is Unicode-capable. So you need to be prepared that the
+user has the appropriate input methods activated to enter non-ascii
+characters. If an output encoding is used which does not cover the
+whole of Unicode codepoints then a warning will be issued when writing
+the file, like this:
+
+    "\x{20ac}" does not map to iso-8859-1 at /usr/local/lib/perl5/site_perl/5.8.8/mach/Tk.pm line 250.
+
+Also, the same hexadecimal notation will be used as replacements for
+the unhandled characters.
+
+Handling encoding in I/O is pretty simple using the C<encoding> PerlIO
+layer, as described above. For other cases, for example dealing with
+databases, most often the encoding has to be done manually, unless the
+database driver has some means for automatically do this for you. So
+when working with a MySQL database, one could use:
+
+     use Tk;
+     use DBI;
+     use Encode qw(encode);
+     $mw = tkinit;
+     $mw->Entry(-textvariable => \$input)->pack;
+     $mw->Button(
+         -text => "Write to database",
+         -command => sub {
+             my $dbh = DBI->connect("dbi:mysql:test", "root", "") or die;
+             my $encoded_input = encode("iso-8859-1", $input);
+             $dbh->do("INSERT INTO testtable VALUES (?)", undef, $encoded_input) or die;
+         },
+     )->pack;
+     MainLoop;
+
+Unfortunately, there are still places in Perl where Unicode does not
+happen. One of these places are filenames. Consequently, the file
+selectors in Perl/Tk do not handle encoding of filenames properly.
+Currently they suppose that filenames are in iso-8859-1 encoding, at
+least on Unix systems. As soon as Perl has a concept of filename
+encodings, then Perl/Tk will also implement such schemes.
+
+=cut
