@@ -139,7 +139,8 @@ sub wm_info ($) {
 		    $wm_version = $maybe_wm_version;
 		} else {
 		    if ($wm_name eq 'FVWM') {
-			my($maybe_wm_version) = `fvwm --version` =~ m{fvwm\s+([\d\.]+)}i;
+			# -version is understood by both fvwm 2.4.x and 2.5.x
+			my($maybe_wm_version) = `fvwm -version` =~ m{fvwm\s+([\d\.]+)}i;
 			if ($maybe_wm_version) {
 			    $wm_version = "$maybe_wm_version (maybe)";
 			}
