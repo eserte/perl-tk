@@ -65,11 +65,10 @@ Returns  the  value for the specific option.
 
 Sets one or more of the values. The values are as follows:
 
-On Windows, -disabled gets or sets whether the window  is  in  a 
-disabled state. -toolwindow gets or sets the style of the window 
-to toolwindow (as defined in the MSDN). -topmost  gets  or  sets 
-whether  this is a topmost window (displays above all other win- 
-dows).                                                           
+On Windows, B<-disabled> gets or sets whether the window is in  a 
+disabled state. B<-toolwindow> gets or sets the style of the window 
+to toolwindow (as defined in the MSDN). B<-topmost> gets or sets 
+whether this is a topmost window (displays above all other windows).
 
 On Macintosh, there are currently no special attribute values.
 

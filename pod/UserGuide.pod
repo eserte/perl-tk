@@ -500,7 +500,7 @@ like described in L<Encode/TERMINOLOGY>, then Perl/Tk will very
 probably display and handle this string correctly.
 
 Note that every variable which is passed somehow into a Perl/Tk method
-will be implicitely changed into a internally utf8-flagged variable.
+will be implicitely changed into an internally utf8-flagged variable.
 Semantically nothing changes, as the series of codepoints stays the
 same, but things will change when variables with high-bit iso-8859-1
 characters will be passed to the "outer" world. In this case you have
