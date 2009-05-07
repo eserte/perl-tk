@@ -18,6 +18,23 @@ Fixes
  Tk::Trace fix to make Tk::Gauge work
  http://rt.cpan.org/Ticket/Display.html?id=41069
 
+ Fixed some regular expression-related and other errors, patch by
+ Alexander Krasnorutsky, see
+ http://rt.cpan.org/Public/Bug/Display.html?id=41068
+
+ Workaround for SvREADONLY issue with 5.8.x
+ http://rt.cpan.org/Public/Bug/Display.html?id=41436
+
+ Another possible rgb.txt location, by h.m.brand
+
+ Fix for attaching balloons to items of scrolled widgets
+ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=246363
+
+ Fixed XIM event filtering.
+
+Documentation
+ Documentation on "Perl/Tk and Unicode"
+
 Tk-804.028_501 release (2008-11-04)
 ----------------------
 
