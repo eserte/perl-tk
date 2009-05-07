@@ -1767,7 +1767,7 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
 	}
 	*((long *) buffer) = (long) infoPtr->time;
 	*typePtr = XA_INTEGER;
-	*formatPtr = 8*sizeof(long);
+	*formatPtr = 32;
 	return 1;
     }
 
@@ -1800,7 +1800,7 @@ TkSelDefaultSelection(infoPtr, target, lbuffer, maxBytes, typePtr, formatPtr)
 	    }
 	}
 	*typePtr = XA_ATOM;
-	*formatPtr = 8*sizeof(Atom);
+	*formatPtr = 32;
 	return (ap - ((Atom *) buffer));
     }
 
