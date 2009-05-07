@@ -90,9 +90,9 @@ sub InitBindings
  $mw->bind('all','<<LeftTab>>','focusPrev');
  if ($mw->windowingsystem eq 'x11')
   {
-   $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Key-F20> <Meta-Key-w>]);
-   $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Key-F16> <Control-Key-w>]);
-   $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Key-F18> <Control-Key-y>]);
+   $mw->eventAdd(qw[<<Cut>> <Control-Key-x> <Lock-Control-Key-X> <Key-F20> <Meta-Key-w>]);
+   $mw->eventAdd(qw[<<Copy>> <Control-Key-c> <Lock-Control-Key-C> <Key-F16> <Control-Key-w>]);
+   $mw->eventAdd(qw[<<Paste>> <Control-Key-v> <Lock-Control-Key-V> <Key-F18> <Control-Key-y>]);
    $mw->eventAdd(qw[<<PasteSelection>> <ButtonRelease-2>]);
    $mw->eventAdd(qw[<<Undo>> <Control-Key-z> <Key-Undo> <Key-F14>
                     <Control-Key-underscore>]);
