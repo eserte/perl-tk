@@ -15,9 +15,11 @@ $xlib   = "";
 $define = '';
 $gccopt = "";
 @macro = ( macro => {} );
-
-$is_maintainer = (getpwuid($<))[6] =~ /(Nick\s+Ing-Simmons|Slaven\s+Rezic)/;
-
+$is_maintainer = 0;
+eval{
+    $is_maintainer = (getpwuid($<))[6]
+        =~ /(Nick\s+Ing-Simmons|Slaven\s+Rezic)/;
+};
 if (defined $Config{'gccversion'})
  {
   $ver = $Config{'gccversion'};
