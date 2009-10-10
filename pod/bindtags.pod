@@ -92,7 +92,7 @@ The current mapping of the 'native' Tk behaviour of this method
 i.e. returning a list but only accepting a reference to an array is
 counter intuitive. The perl/Tk interface  may be tidied up, returning
 a list is sensible so, most likely fix will be to allow a list to be
-passed to /fIset/fR the bindtags.
+passed to I<set> the bindtags.
 
 =head1 SEE ALSO
 
