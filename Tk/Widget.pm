@@ -776,7 +776,7 @@ sub RecolorTree
  my ($w,$colors) = @_;
  local ($@);
  my @addOptionDB;
- my $prototype = $Tk::___tk_set_palette->Subwidget($w->Class) || undef;
+ my $prototype = (defined $Tk::___tk_set_palette ? $Tk::___tk_set_palette->Subwidget($w->Class) || undef : undef);
  foreach my $dbOption (keys %$colors)
   {
    my $option = "-\L$dbOption";
@@ -795,17 +795,21 @@ sub RecolorTree
       {
        $defaultcolor = $value[3];
       }
-     if ($defaultcolor ne '' && $value[4] ne '') # XXX why this can be empty?
+     if ($defaultcolor ne '')
       {
-       $defaultcolor = join ",", $w->rgb($defaultcolor);
-       my $chosencolor = join ",", $w->rgb($value[4]);
-       if ($defaultcolor eq $chosencolor)
-        {
-         # Change the option database so that future windows will get
-         # the same colors.
-         push @addOptionDB, ['*'.$w->Class.".$dbOption", $colors->{$dbOption}, 60];
-         $w->configure($option,$colors->{$dbOption});
-        }
+       $defaultcolor = join ',', $w->rgb($defaultcolor);
+      }
+     my $chosencolor = $value[4];
+     if ($chosencolor ne '')
+      {
+       $chosencolor = join ',', $w->rgb($chosencolor);
+      }
+     if ($defaultcolor eq $chosencolor)
+      {
+       # Change the option database so that future windows will get
+       # the same colors.
+       push @addOptionDB, ['*'.$w->Class.".$dbOption", $colors->{$dbOption}, 60];
+       $w->configure($option,$colors->{$dbOption});
       }
     }
   }

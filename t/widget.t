@@ -13,7 +13,7 @@ BEGIN {
 
 use Tk;
 
-BEGIN { plan tests => 18 };
+BEGIN { plan tests => 19 };
 
 my $mw = Tk::MainWindow->new;
 my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
@@ -97,6 +97,15 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
 {
     my $path = $w->PathName;
     is($mw->Widget($path), $w, "PathName() and Widget()");
+}
+
+## [rt.cpan.org #49515]
+SKIP: {
+    skip 'Probably does not work on monochrome displays', 1
+	if $w->depth == 1;
+    my $w2 = $mw->Label;
+    $w2->RecolorTree({background => 'green'});
+    is($w2->cget('-background'), 'green', 'RecolorTree was effective');
 }
 
 1;
