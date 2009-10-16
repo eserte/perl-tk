@@ -573,7 +573,7 @@ CODE:
     {
      Tcl_ResetResult(interp);
      if (Tk_DefineBitmap(interp, Tk_GetUid(name), data, width, height) != TCL_OK)
-      croak(Tcl_GetStringResult(interp));
+      croak("%s",Tcl_GetStringResult(interp));
     }
    else
     {

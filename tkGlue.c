@@ -2627,7 +2627,7 @@ XS(XS_Tk__Widget_SelectionGet)
  if (retval != TCL_OK)
   {
    Tcl_DecrRefCount(result);
-   croak(Tcl_GetString(Tcl_GetObjResult(info->interp)));
+   croak("%s", Tcl_GetString(Tcl_GetObjResult(info->interp)));
   }
  retval = Return_Object(items,offset,result);
  Tcl_DecrRefCount(result);
