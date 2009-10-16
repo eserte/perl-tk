@@ -35,6 +35,9 @@ Fixes
 Documentation
  Documentation on "Perl/Tk and Unicode"
 
+ Fixed cget/delete confusion in Entry.pod
+ http://rt.cpan.org/Public/Bug/Display.html?id=50253
+
 Tk-804.028_501 release (2008-11-04)
 ----------------------
 
