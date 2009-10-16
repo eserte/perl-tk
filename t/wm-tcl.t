@@ -1112,6 +1112,7 @@ SKIP: {
     $TODO = "May fail on KDE" if !$TODO && $kwin_problems;
     $TODO = "May fail on xfwm4" if !$TODO && $xfwm4_problems;
     $TODO = "May fail on fluxbox" if !$TODO && $fluxbox_problems;
+    $TODO = "May fail on MacOSX" if !$TODO && $macosx_x11_problems;
 
     my $t = $mw->Toplevel(qw(-width 200 -height 200));
     poswin $t;
