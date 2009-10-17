@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/env perl
 
 # Demonstrate how to use Dialog to create and manipulate dialog objects.
 # lusol@Lehigh.EDU  95/06/14

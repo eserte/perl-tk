@@ -1,4 +1,5 @@
-#!/usr/local/bin/perl -wT
+#!/usr/bin/perl -wT
+# (cannot use /usr/bin/env here)
 #
 # This script implements a simple remote-control mechanism for Tk
 # applications.  It allows you to select an application and then type

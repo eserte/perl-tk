@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/env perl
 #
 # This script demonstrates the various widgets provided by Tk, along with many of the features of the Tk toolkit.  This file
 # only contains code to generate the main window for the application, which invokes individual demonstrations.  The code for

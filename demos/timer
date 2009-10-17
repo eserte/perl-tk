@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/env perl
 #
 # This script generates a counter with start and stop buttons.  Exit with
 # Ctrl/c or Ctrl/q.
