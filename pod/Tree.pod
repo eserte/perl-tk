@@ -224,8 +224,8 @@ This method is used to indicate whether the entry given by
 I<entryPath> has children entries and whether the children are
 visible. I<mode> must be one of B<open>,
 B<close> or B<none>. If I<mode> is set to B<open>, a (+)
-indicator is drawn next the the entry. If I<mode> is set to
-B<close>, a (-) indicator is drawn next the the entry. If
+indicator is drawn next to the entry. If I<mode> is set to
+B<close>, a (-) indicator is drawn next to the entry. If
 I<mode> is set to B<none>, no indicators will be drawn for this
 entry. The default I<mode> is none. The B<open> mode indicates
 the entry has hidden children and this entry can be opened by the
