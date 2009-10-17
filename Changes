@@ -32,6 +32,19 @@ Fixes
 
  Fixed XIM event filtering.
 
+ Fixed compilation with newer gcc
+ http://rt.cpan.org/Ticket/Display.html?id=49499
+
+ RecolorTree was broken since Tk-804.027_501 if called separately.
+ Reported and patched by Michael Parker
+ http://rt.cpan.org/Public/Bug/Display.html?id=49515
+
+ Control-X/Y/C now also works if Caps Lock is active
+ http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=205895
+
+ Copy/paste operations between KDE and Perl/Tk applications
+ on 64bit system did not work, patch by Petr Pajas
+
 Documentation
  Documentation on "Perl/Tk and Unicode"
 
