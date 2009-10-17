@@ -36,10 +36,11 @@ sub yes_no{
   return $OKMOD;
 }
 
-for(1..1000) {
+my $n = 1000;
+diag "Creating and destroying $n MainWindows. This may take some time...";
+for(1..$n) {
     yes_no('test'); 
 }
-
 pass 'No segfault';
 
 __END__
