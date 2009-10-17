@@ -45,6 +45,10 @@ Fixes
  Copy/paste operations between KDE and Perl/Tk applications
  on 64bit system did not work, patch by Petr Pajas
 
+ Canvas grids: -color was documented, but only -fill was implemented.
+ In future both is supported.
+ http://rt.cpan.org/Ticket/Display.html?id=47132
+
 Documentation
  Documentation on "Perl/Tk and Unicode"
 

@@ -87,8 +87,14 @@ static Tk_ConfigSpec configSpecs[] = {
 	TK_CONFIG_DONT_SET_DEFAULT, &pixelOption},
     {TK_CONFIG_BOOLEAN, "-lines",          NULL,          NULL,
 	"0", Tk_Offset(GridItem, drawLines), TK_CONFIG_NULL_OK},
-    {TK_CONFIG_COLOR, "-fill",            NULL,          NULL,
+    /* Previously only -fill was implemented, but -color documented.
+       Misuse the "synonym" mechanism to support both. The dbName
+       specification is here just to make TK_CONFIG_SYNONYM work.
+     */
+    {TK_CONFIG_COLOR, "-color",            "canvasGridColor", NULL,
 	"black", Tk_Offset(GridItem, outline.color), TK_CONFIG_NULL_OK},
+    {TK_CONFIG_SYNONYM, "-fill",           "canvasGridColor", NULL,
+        NULL, 0, 0},
     {TK_CONFIG_CUSTOM, "-offset",          NULL,          NULL,
 	"0,0", Tk_Offset(GridItem, outline.tsoffset),
 	TK_CONFIG_DONT_SET_DEFAULT, &offsetOption},

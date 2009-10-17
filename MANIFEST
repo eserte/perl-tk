@@ -1976,6 +1976,7 @@ t/button.t
 t/button-tcl.t
 t/canvas.t
 t/canvas2.t
+t/canvas-grid.t
 t/coloreditor.t
 t/create.t
 t/cursor.t
