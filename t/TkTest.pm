@@ -12,6 +12,8 @@ use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair check_display_harness);
 @EXPORT_OK = qw(catch_grabs wm_info);
 
+sub _is_in_path ($);
+
 use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
 
@@ -121,9 +123,11 @@ sub wm_info ($) {
 	    if (eval { $mw->property('get', '_WINDOWMAKER_NOTICEBOARD', $windowid); 1 }
 		|| eval { $mw->property('get', '_WINDOWMAKER_ICON_TILE', $windowid); 1 }) {
 		$wm_name = "WindowMaker";
-		my($maybe_wm_version) = `wmaker --version` =~ m{Window Maker\s+([\d\.]+)}i;
-		if ($maybe_wm_version) {
-		    $wm_version = "$maybe_wm_version (maybe)";
+		if (_is_in_path 'wmaker') {
+		    my($maybe_wm_version) = `wmaker --version` =~ m{Window Maker\s+([\d\.]+)}i;
+		    if ($maybe_wm_version) {
+			$wm_version = "$maybe_wm_version (maybe)";
+		    }
 		}
 	    } else {
 		$wm_name = "<unknown> (property _NET_SUPPORTING_WM_CHECK exists, but getting _NET_WM_NAME fails)";
@@ -139,26 +143,36 @@ sub wm_info ($) {
 		    $wm_version = $maybe_wm_version;
 		} else {
 		    if ($wm_name eq 'FVWM') {
-			# -version is understood by both fvwm 2.4.x and 2.5.x
-			my($maybe_wm_version) = `fvwm -version` =~ m{fvwm\s+([\d\.]+)}i;
-			if ($maybe_wm_version) {
-			    $wm_version = "$maybe_wm_version (maybe)";
+			if (_is_in_path 'fvwm') {
+			    # -version is understood by both fvwm 2.4.x and 2.5.x
+			    my($maybe_wm_version) = `fvwm -version` =~ m{fvwm\s+([\d\.]+)}i;
+			    if ($maybe_wm_version) {
+				$wm_version = "$maybe_wm_version (maybe)";
+			    }
 			}
 		    } elsif ($wm_name eq 'KWin') {
-			my($maybe_wm_version) = `kwin --version` =~ m{KWin:\s+([\d\.]+)}i;
-			if ($maybe_wm_version) {
-			    $wm_version = "$maybe_wm_version (maybe)";
+			if (_is_in_path 'kwin') {
+			    my($maybe_wm_version) = `kwin --version` =~ m{KWin:\s+([\d\.]+)}i;
+			    if ($maybe_wm_version) {
+				$wm_version = "$maybe_wm_version (maybe)";
+			    }
 			}
 		    } elsif ($wm_name eq 'Xfwm4') {
-			my($maybe_wm_version) = `xfwm4 --version` =~ m{xfwm4\s+version\s+([\d\.]+)}i;
-			if ($maybe_wm_version) {
-			    $wm_version = "$maybe_wm_version (maybe)";
+			if (_is_in_path 'xfwm4') {
+			    my($maybe_wm_version) = `xfwm4 --version` =~ m{xfwm4\s+version\s+([\d\.]+)}i;
+			    if ($maybe_wm_version) {
+				$wm_version = "$maybe_wm_version (maybe)";
+			    }
 			}
 		    } elsif ($wm_name eq 'Fluxbox') {
-			my($maybe_wm_version) = `fluxbox -v` =~ m{fluxbox\s+([\d\.]+)}i;
-			if ($maybe_wm_version) {
-			    $wm_version = "$maybe_wm_version (maybe)";
+			if (_is_in_path 'fluxbox') {
+			    my($maybe_wm_version) = `fluxbox -v` =~ m{fluxbox\s+([\d\.]+)}i;
+			    if ($maybe_wm_version) {
+				$wm_version = "$maybe_wm_version (maybe)";
+			    }
 			}
+			# fluxbox is also defining this property in the root window:
+			# _BLACKBOX_PID(CARDINAL) = 69367
 		    }
 		}
 	    }
@@ -177,6 +191,52 @@ sub wm_info ($) {
      version => $wm_version,
     );
 }
+
+# REPO BEGIN
+# REPO NAME is_in_path /home/e/eserte/work/srezic-repository 
+# REPO MD5 e18e6687a056e4a3cbcea4496aaaa1db
+
+=head2 is_in_path($prog)
+
+=for category File
+
+Return the pathname of $prog, if the program is in the PATH, or undef
+otherwise.
+
+=cut
+
+sub _is_in_path ($) {
+    my($prog) = @_;
+    require File::Spec;
+    if (File::Spec->file_name_is_absolute($prog)) {
+	if ($^O eq 'MSWin32') {
+	    return $prog       if (-f $prog && -x $prog);
+	    return "$prog.bat" if (-f "$prog.bat" && -x "$prog.bat");
+	    return "$prog.com" if (-f "$prog.com" && -x "$prog.com");
+	    return "$prog.exe" if (-f "$prog.exe" && -x "$prog.exe");
+	    return "$prog.cmd" if (-f "$prog.cmd" && -x "$prog.cmd");
+	} else {
+	    return $prog if -f $prog and -x $prog;
+	}
+    }
+    require Config;
+    %Config::Config = %Config::Config if 0; # cease -w
+    my $sep = $Config::Config{'path_sep'} || ':';
+    foreach (split(/$sep/o, $ENV{PATH})) {
+	if ($^O eq 'MSWin32') {
+	    # maybe use $ENV{PATHEXT} like maybe_command in ExtUtils/MM_Win32.pm?
+	    return "$_\\$prog"     if (-f "$_\\$prog" && -x "$_\\$prog");
+	    return "$_\\$prog.bat" if (-f "$_\\$prog.bat" && -x "$_\\$prog.bat");
+	    return "$_\\$prog.com" if (-f "$_\\$prog.com" && -x "$_\\$prog.com");
+	    return "$_\\$prog.exe" if (-f "$_\\$prog.exe" && -x "$_\\$prog.exe");
+	    return "$_\\$prog.cmd" if (-f "$_\\$prog.cmd" && -x "$_\\$prog.cmd");
+	} else {
+	    return "$_/$prog" if (-x "$_/$prog" && !-d "$_/$prog");
+	}
+    }
+    undef;
+}
+# REPO END
 
 1;
 
