@@ -403,7 +403,7 @@ sub insert
   {
    my $index1 = $w->index('insert');
    my $string = shift;
-   my $taglist_ref = shift if @_;
+   my $taglist_ref; $taglist_ref = shift if @_;
 
    if ($w->OperationMode eq 'normal')
     {
@@ -427,7 +427,7 @@ sub insert_UNDO
  while (@_)
   {
    $string .= shift;
-   my $tags    = shift if (@_);
+   shift if (@_); # discard tag
   }
  # calculate index
  # possible things to insert:

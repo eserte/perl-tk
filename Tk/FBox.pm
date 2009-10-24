@@ -332,7 +332,7 @@ sub Show {
 #XXX use Tk::setFocusGrab when it's available
     my $oldFocus = $w->focusCurrent;
     my $oldGrab = $w->grabCurrent;
-    my $grabStatus = $oldGrab->grabStatus if ($oldGrab);
+    my $grabStatus; $grabStatus = $oldGrab->grabStatus if ($oldGrab);
     $w->grab;
     my $ent = $w->{'ent'};
     $ent->focus;

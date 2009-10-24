@@ -298,7 +298,7 @@ sub value {
 sub variable {
     my $c = shift;
     my $oldvarref = $c->{'-variable'};
-    my $oldval = $$oldvarref if $oldvarref;
+    my $oldval; $oldval = $$oldvarref if $oldvarref;
     if(@_) {
 	my $varref = shift;
         if ($oldvarref)

@@ -355,7 +355,7 @@ sub Unwatch {
 
     my $variable = $_[0]->{-variable};
     my $type = ref $variable;
-    my $copy = $_[0]->{-ptr} if $type !~ /(SCALAR|REF)/;
+    my $copy; $copy = $_[0]->{-ptr} if $type !~ /(SCALAR|REF)/;
     my $shadow = $_[0]->{-shadow};
     undef $_[0];
     if ($type =~ /(SCALAR|REF)/) {
@@ -463,7 +463,7 @@ sub TIEARRAY {
 
     my($class, %args) = @_;
     my($variable, $shadow) = @args{-variable, -shadow};
-    my @copy = @$variable if $shadow; # make a private copy of user's array
+    my @copy; @copy = @$variable if $shadow; # make a private copy of user's array
     $args{-ptr} = $shadow ? \@copy : [];
     my $watch_obj = Tie::Watch->base_watch(%args);
     print "WatchArray new: $variable created, \@_=", join(',', @_), "!\n"
@@ -524,7 +524,7 @@ sub TIEHASH {
 
     my($class, %args) = @_;
     my($variable, $shadow) = @args{-variable, -shadow};
-    my %copy = %$variable if $shadow; # make a private copy of user's hash
+    my %copy; %copy = %$variable if $shadow; # make a private copy of user's hash
     $args{-ptr} = $shadow ? \%copy : {};
     my $watch_obj = Tie::Watch->base_watch(%args);
     print "WatchHash new: $variable created, \@_=", join(',', @_), "!\n"

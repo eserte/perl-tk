@@ -62,7 +62,7 @@ BEGIN
     {
       my($w)=shift;
       my(@iargs)=grep($_<=$#_,@{$argsub->(@_)});
-      my $iret=shift @iargs if @iargs && $iargs[0]==-1;
+      my $iret; $iret=shift @iargs if @iargs && $iargs[0]==-1;
       my(@args)=@_;
       @args[@iargs]=$w->Callback(-toindexcmd,@args[@iargs]);
       my(@ret)=$w->_callbase($sub,@args);
