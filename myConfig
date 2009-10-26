@@ -220,7 +220,7 @@ if (!try_compile("config/Ksprintf.c") &&
   $define{'SPRINTF_RETURN_CHAR'} = 1;
  }
 
-if (try_compile("config/svtrv.c"))
+if (try_compile("config/svtrv.c",  ["-I$Config{'archlibexp'}/CORE"], undef, ["-c"]))
  {
   $define{'HAS_REAL_SVT_RV'} = 1; # changed in perl 5.11.0, SVt_RV is since then defined as SVt_IV 
  }

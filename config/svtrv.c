@@ -9,7 +9,5 @@ int main() {
     case SVt_IV:
 	/* something */
 	break;
-    default:
-	/* something else */
     }
 }
