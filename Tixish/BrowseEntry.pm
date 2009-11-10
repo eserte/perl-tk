@@ -370,9 +370,11 @@ sub Popdown {
 #
 sub ButtonHack {
     my ($w) = @_;
-    my $b = $w->Subwidget('arrow');
     if ($w->{'_BE_buttonHack'}) {
-	$b->butUp;
+	my $b = $w->Subwidget('arrow');
+	if (Tk::Exists($b)) {
+	    $b->butUp;
+	}
     }
 }
 
