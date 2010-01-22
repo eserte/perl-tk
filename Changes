@@ -1,6 +1,10 @@
 Tk-804.028_502 release (XXXX-XX-XX)
 ----------------------
 Fixes
+ Support for perl 5.11.2 and later (UTF8_MAXLEN_UCLC is not available
+ anymore)
+ http://rt.cpan.org/Public/Bug/Display.html?id=53465
+
  Use 'configure' for building libpng under IRIX64
  http://rt.cpan.org/Ticket/Display.html?id=40820
 
