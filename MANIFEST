@@ -2006,6 +2006,7 @@ t/magic.t
 t/mega.t
 t/msgbox.t
 t/mwm.t
+t/objglue.t
 t/optmenu.t
 t/photo.t
 t/pixmap.t
@@ -2205,3 +2206,4 @@ Xlib/X/X.pm
 Xlib/X/X.xs
 Xlib/Xlib.pm
 Xlib/Xlib.xs
+xt/mw_segfault.t
