@@ -53,6 +53,9 @@ Fixes
  In future both is supported.
  http://rt.cpan.org/Ticket/Display.html?id=47132
 
+ Patch for mingw-w64 gcc compiler, supplied by kmx
+ http://rt.cpan.org/Public/Bug/Display.html?id=53467
+
 Documentation
  Documentation on "Perl/Tk and Unicode"
 

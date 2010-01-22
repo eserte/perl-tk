@@ -19,9 +19,12 @@
  * The w32api 1.1 package (included in Mingw 1.1) does not define _WIN32_IE
  * by default. Define it here to gain access to the InitCommonControlsEx API
  * in commctrl.h.
+ *
+ * For the addition of the __MINGW64_VERSION_MAJOR check see
+ * http://rt.cpan.org/Public/Bug/Display.html?id=53467
  */
 
-#ifndef _WIN32_IE
+#if !defined( _WIN32_IE) && !defined(__MINGW64_VERSION_MAJOR)
 #define _WIN32_IE 0x0300
 #endif
 
