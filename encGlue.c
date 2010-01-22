@@ -31,6 +31,10 @@
 #define utf8_to_uv utf8_to_uvchr
 #endif
 
+#ifndef UTF8_MAXBYTES_CASE
+#define UTF8_MAXBYTES_CASE UTF8_MAXLEN_UCLC
+#endif
+
 /* -------------------------------------------------------------------------- */
 /* UTF8-ness routines
 /* -------------------------------------------------------------------------- */
@@ -49,7 +53,7 @@ Tcl_UniChar
 Tcl_UniCharToUpper(int ch)
 {
  dTHX;
- U8 tmpbuf[UTF8_MAXLEN_UCLC+1];
+ U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
  STRLEN len;
  return Perl_to_uni_upper(aTHX_ ch, tmpbuf, &len);
 }
@@ -58,7 +62,7 @@ Tcl_UniChar
 Tcl_UniCharToLower(int ch)
 {
  dTHX;
- U8 tmpbuf[UTF8_MAXLEN_UCLC+1];
+ U8 tmpbuf[UTF8_MAXBYTES_CASE+1];
  STRLEN len;
  return Perl_to_uni_lower(aTHX_ ch, tmpbuf, &len);
 }
@@ -183,7 +187,7 @@ Tcl_UniCharToUtfDString(wString, numChars, dsPtr)
      */
 
     oldLength = Tcl_DStringLength(dsPtr);
-    Tcl_DStringSetLength(dsPtr, (oldLength + numChars + 1) * UTF8_MAXLEN_UCLC);
+    Tcl_DStringSetLength(dsPtr, (oldLength + numChars + 1) * UTF8_MAXBYTES_CASE);
     string = Tcl_DStringValue(dsPtr) + oldLength;
 
     p = string;
