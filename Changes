@@ -1,5 +1,6 @@
-Tk-804.028_502 release (XXXX-XX-XX)
+Tk-804.028_502 release (2010-01-30)
 ----------------------
+
 Fixes
  Support for perl 5.11.2 and later (UTF8_MAXLEN_UCLC is not available
  anymore)
