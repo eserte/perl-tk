@@ -2,7 +2,7 @@ package Tk::ColorSelect; # XXX why is this the Tk::ColorSelect package?
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '4.011'; # was: sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.012'; # was: sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev);
 

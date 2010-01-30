@@ -6,7 +6,7 @@
 package Tk::TextUndo;
 
 use vars qw($VERSION $DoDebug);
-$VERSION = '4.014'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#15 $
+$VERSION = '4.015'; # $Id: //depot/Tkutf8/Tk/TextUndo.pm#15 $
 $DoDebug = 0;
 
 use Tk qw (Ev);

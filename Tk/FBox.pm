@@ -42,7 +42,7 @@ use strict;
 use vars qw($VERSION $updirImage $folderImage $fileImage);
 
 #$VERSION = sprintf '4.%03d', q$Revision: #18 $ =~ /\D(\d+)\s*$/;
-$VERSION = '4.020';
+$VERSION = '4.021';
 
 use base qw(Tk::Toplevel);
 

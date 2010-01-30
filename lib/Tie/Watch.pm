@@ -1,4 +1,4 @@
-$Tie::Watch::VERSION = '1.2';
+$Tie::Watch::VERSION = '1.3';
 
 package Tie::Watch;
 

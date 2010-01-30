@@ -7,7 +7,7 @@ package Tk::DirTree;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '4.019';
+$VERSION = '4.020';
 
 use Tk;
 use Tk::Derived;
