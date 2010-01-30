@@ -1,4 +1,311 @@
 ------------------------------------------------------------------------
+r13781 | srezic | 2010-01-30 18:25:01 +0100 (Sa, 30. Jan 2010) | 1 line
+
+* release preparations
+------------------------------------------------------------------------
+r13780 | srezic | 2010-01-30 18:24:51 +0100 (Sa, 30. Jan 2010) | 1 line
+
+* release preparations (version inc)
+------------------------------------------------------------------------
+r13766 | srezic | 2010-01-22 21:46:27 +0100 (Fr, 22. Jan 2010) | 2 lines
+
+* patch for mingw-w64 gcc compiler by kmx
+  http://rt.cpan.org/Public/Bug/Display.html?id=53467
+------------------------------------------------------------------------
+r13765 | srezic | 2010-01-22 21:46:14 +0100 (Fr, 22. Jan 2010) | 1 line
+
+* document the change for perl 5.11.x in Changes file
+------------------------------------------------------------------------
+r13764 | srezic | 2010-01-22 21:41:32 +0100 (Fr, 22. Jan 2010) | 2 lines
+
+* use UTF8_MAXBYTES_CASE instead of not anymore existent
+  UTF8_MAXLEN_UCLC (was removed in perl 5.11.2 or so)
+------------------------------------------------------------------------
+r13763 | srezic | 2010-01-22 21:41:08 +0100 (Fr, 22. Jan 2010) | 1 line
+
+* updated MANIFEST
+------------------------------------------------------------------------
+r13479 | srezic | 2009-11-10 08:17:09 +0100 (Di, 10. Nov 2009) | 2 lines
+
+* Tk::BrowseEntry and destroy
+  https://rt.cpan.org/Ticket/Display.html?id=50882
+------------------------------------------------------------------------
+r13478 | srezic | 2009-11-09 00:39:01 +0100 (Mo, 09. Nov 2009) | 1 line
+
+* earth.gif in demo was corrupted
+------------------------------------------------------------------------
+r13428 | srezic | 2009-10-26 22:38:15 +0100 (Mo, 26. Okt 2009) | 1 line
+
+* SVt_RV/IV check probably never worked, but hopefully now
+------------------------------------------------------------------------
+r13427 | srezic | 2009-10-24 22:59:38 +0200 (Sa, 24. Okt 2009) | 1 line
+
+* get rid of conditional declarations
+------------------------------------------------------------------------
+r13404 | srezic | 2009-10-17 12:14:50 +0200 (Sa, 17. Okt 2009) | 4 lines
+
+* canvas grids: -color was documented, but only -fill was implemented.
+  https://rt.cpan.org/Ticket/Display.html?id=47132
+  * support now both
+  * added also a new test
+------------------------------------------------------------------------
+r13403 | srezic | 2009-10-17 11:33:46 +0200 (Sa, 17. Okt 2009) | 2 lines
+
+* modified shebangs in scripts located in demos to use /usr/bin/env
+  (this was spotted in Debian's bug tracker: Bug#543663: perl-tk)
+------------------------------------------------------------------------
+r13402 | srezic | 2009-10-17 11:33:26 +0200 (Sa, 17. Okt 2009) | 2 lines
+
+* check with _is_in_path whether window manager is at all available on
+  local system, to avoid "Can't exec ..." errors in remote operation
+------------------------------------------------------------------------
+r13401 | srezic | 2009-10-17 10:29:34 +0200 (Sa, 17. Okt 2009) | 1 line
+
+* small Pod fix (Tree.pod), submitted by H.Merijn Brand
+------------------------------------------------------------------------
+r13400 | srezic | 2009-10-17 10:29:23 +0200 (Sa, 17. Okt 2009) | 1 line
+
+* mw_segfault test runs long, output a comment about this fact
+------------------------------------------------------------------------
+r13399 | srezic | 2009-10-17 10:29:12 +0200 (Sa, 17. Okt 2009) | 2 lines
+
+* fixed a buffer overflow (CVE-2006-4484)
+  patch is 1.40..1.41 from original Tcl/Tk CVS repo
+------------------------------------------------------------------------
+r13398 | srezic | 2009-10-17 10:29:00 +0200 (Sa, 17. Okt 2009) | 3 lines
+
+* added (adapted) test case from
+  https://bugzilla.redhat.com/show_bug.cgi?id=235666 
+  (segfault when destroying and re-creating MainWindows)
+------------------------------------------------------------------------
+r13397 | srezic | 2009-10-17 10:28:46 +0200 (Sa, 17. Okt 2009) | 1 line
+
+* Changes update
+------------------------------------------------------------------------
+r13396 | srezic | 2009-10-16 20:27:37 +0200 (Fr, 16. Okt 2009) | 1 line
+
+* ignore .prove file
+------------------------------------------------------------------------
+r13395 | srezic | 2009-10-16 20:27:28 +0200 (Fr, 16. Okt 2009) | 2 lines
+
+* another TODO for a failure under MacOSX
+  reported in https://rt.cpan.org/Ticket/Display.html?id=48760
+------------------------------------------------------------------------
+r13394 | srezic | 2009-10-16 20:23:06 +0200 (Fr, 16. Okt 2009) | 2 lines
+
+* fix compile errors with gcc version 4.3.2 (format related)
+  patch by MWARD: https://rt.cpan.org/Ticket/Display.html?id=49499
+------------------------------------------------------------------------
+r13393 | srezic | 2009-10-16 19:58:43 +0200 (Fr, 16. Okt 2009) | 4 lines
+
+* fix for rt.cpan.org #49515 (reported by Michael Parker)
+* made RecolorTree implementation as close as possible to Tcl/Tk
+  implementation
+* new test for RecolorTree
+------------------------------------------------------------------------
+r13392 | srezic | 2009-10-16 16:12:42 +0200 (Fr, 16. Okt 2009) | 1 line
+
+* documentation for "cget" was accidentally titled as "delete" (RT #50253)
+------------------------------------------------------------------------
+r13391 | srezic | 2009-10-16 16:12:24 +0200 (Fr, 16. Okt 2009) | 1 line
+
+* ignore for git checkout
+------------------------------------------------------------------------
+r13386 | srezic | 2009-10-10 21:37:19 +0200 (Sa, 10. Okt 2009) | 1 line
+
+* fixed some nroff(?) leftover
+------------------------------------------------------------------------
+r12772 | srezic | 2009-05-17 23:07:43 +0200 (So, 17. Mai 2009) | 1 line
+
+* getpwuid not available on Windows systems (patch by Ch Lamprecht)
+------------------------------------------------------------------------
+r12756 | srezic | 2009-05-07 22:47:48 +0200 (Do, 07. Mai 2009) | 3 lines
+
+* Control-X/Y/C now also works if Caps Lock is active
+  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=205895
+  (applied a variation of the patch in the bugreport)
+------------------------------------------------------------------------
+r12755 | srezic | 2009-05-07 22:20:27 +0200 (Do, 07. Mai 2009) | 1 line
+
+* use fvwm -version instead of --version for compat with 2.4.x
+------------------------------------------------------------------------
+r12754 | srezic | 2009-05-07 22:20:17 +0200 (Do, 07. Mai 2009) | 2 lines
+
+* bugfix: copy/paste operations between KDE and Perl/Tk applications
+  on 64bit system did not work, patch by Petr Pajas
+------------------------------------------------------------------------
+r12753 | srezic | 2009-05-07 22:20:03 +0200 (Do, 07. Mai 2009) | 1 line
+
+* Changes update
+------------------------------------------------------------------------
+r12752 | srezic | 2009-05-07 21:21:39 +0200 (Do, 07. Mai 2009) | 1 line
+
+* minor documentation fixes
+------------------------------------------------------------------------
+r12609 | srezic | 2009-03-14 14:54:49 +0100 (Sa, 14. Mär 2009) | 1 line
+
+* link directly to Encode/TERMINOLOGY
+------------------------------------------------------------------------
+r12608 | srezic | 2009-03-14 14:54:39 +0100 (Sa, 14. Mär 2009) | 2 lines
+
+* implemented some mostly stylistic suggestions by David Haller
+  Message-ID: <6unl86-3s5.ln1@ID-1222.user.individual.de>
+------------------------------------------------------------------------
+r12607 | srezic | 2009-03-14 14:54:26 +0100 (Sa, 14. Mär 2009) | 1 line
+
+* first sketch on section "Perl/Tk and Unicode"
+------------------------------------------------------------------------
+r12589 | srezic | 2009-03-08 22:19:34 +0100 (So, 08. Mär 2009) | 1 line
+
+* XIM event filtering
+------------------------------------------------------------------------
+r12588 | srezic | 2009-03-08 22:19:22 +0100 (So, 08. Mär 2009) | 2 lines
+
+* fixed an warning in traceVdelete (seen when destroying a
+  progressbar widget)
+------------------------------------------------------------------------
+r12587 | srezic | 2009-03-08 22:19:10 +0100 (So, 08. Mär 2009) | 2 lines
+
+* minor change in ProgressBar's Pod: swap the values for -length and
+  -width in the SYNOPSIS, which seems to be more sensible
+------------------------------------------------------------------------
+r12564 | srezic | 2009-03-02 21:47:00 +0100 (Mo, 02. Mär 2009) | 1 line
+
+* also test the ->value method
+------------------------------------------------------------------------
+r12503 | srezic | 2009-02-14 15:27:23 +0100 (Sa, 14. Feb 2009) | 1 line
+
+* pod fix: focusLast is correctly spelled focusLastfor
+------------------------------------------------------------------------
+r12502 | srezic | 2009-02-14 15:23:16 +0100 (Sa, 14. Feb 2009) | 1 line
+
+* minor typo fix
+------------------------------------------------------------------------
+r12501 | srezic | 2009-02-14 15:23:05 +0100 (Sa, 14. Feb 2009) | 1 line
+
+* test case for core dump if -data is used inappropriately
+------------------------------------------------------------------------
+r12500 | srezic | 2009-02-14 15:22:50 +0100 (Sa, 14. Feb 2009) | 2 lines
+
+* fix for attaching balloons to items of scrolled widgets
+  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=246363
+------------------------------------------------------------------------
+r12184 | srezic | 2008-12-19 09:21:35 +0100 (Fr, 19. Dez 2008) | 1 line
+
+* another rgb.txt location, by h.m.brand
+------------------------------------------------------------------------
+r12178 | srezic | 2008-12-17 13:19:21 +0100 (Mi, 17. Dez 2008) | 2 lines
+
+* svn ignore Makefile.old and other generated files
+
+------------------------------------------------------------------------
+r12177 | srezic | 2008-12-17 13:09:05 +0100 (Mi, 17. Dez 2008) | 2 lines
+
+* missing dTHX declaration in new FixBuggyUTF8String
+
+------------------------------------------------------------------------
+r12176 | srezic | 2008-12-17 00:35:32 +0100 (Mi, 17. Dez 2008) | 2 lines
+
+* workaround for http://rt.cpan.org/Public/Bug/Display.html?id=41436
+  (SvREADONLY issue with 5.8.x?), including test
+------------------------------------------------------------------------
+r12172 | srezic | 2008-12-16 23:41:51 +0100 (Di, 16. Dez 2008) | 3 lines
+
+* fixing some regular expression-related and other errors, patch by
+  Alexander Krasnorutsky, see
+  http://rt.cpan.org/Public/Bug/Display.html?id=41068
+------------------------------------------------------------------------
+r12171 | srezic | 2008-12-16 23:41:40 +0100 (Di, 16. Dez 2008) | 1 line
+
+* $is_maintainer
+------------------------------------------------------------------------
+r12170 | srezic | 2008-12-16 23:25:56 +0100 (Di, 16. Dez 2008) | 1 line
+
+* better diagnostics if rgb.txt could not be found
+------------------------------------------------------------------------
+r12169 | srezic | 2008-12-16 23:25:42 +0100 (Di, 16. Dez 2008) | 1 line
+
+* use XFT=1 by default
+------------------------------------------------------------------------
+r12143 | srezic | 2008-12-09 12:32:50 +0100 (Di, 09. Dez 2008) | 2 lines
+
+* no check for PERL_DEBUGGING_MSTATS needed anymore
+
+------------------------------------------------------------------------
+r12136 | srezic | 2008-12-04 22:31:41 +0100 (Do, 04. Dez 2008) | 3 lines
+
+* in order to fix http://rt.cpan.org/Ticket/Display.html?id=41435 the
+  Perl/Tk documentation was re-ordered according the current Tcl/Tk
+  documentation and slightly proof-read
+------------------------------------------------------------------------
+r12135 | srezic | 2008-12-04 22:31:30 +0100 (Do, 04. Dez 2008) | 1 line
+
+* a ticket number changed
+------------------------------------------------------------------------
+r12098 | srezic | 2008-11-22 01:16:21 +0100 (Sa, 22. Nov 2008) | 1 line
+
+* changes update
+------------------------------------------------------------------------
+r12097 | srezic | 2008-11-22 01:12:12 +0100 (Sa, 22. Nov 2008) | 1 line
+
+* fixed mode of trace1.t
+------------------------------------------------------------------------
+r12096 | srezic | 2008-11-22 01:12:03 +0100 (Sa, 22. Nov 2008) | 3 lines
+
+* avoid autovivifying %TRACE values, fixes
+  http://rt.cpan.org/Ticket/Display.html?id=41069 and makes Tk::Gauge
+  work (patch by Steve Lidie)
+------------------------------------------------------------------------
+r12095 | srezic | 2008-11-22 01:11:53 +0100 (Sa, 22. Nov 2008) | 2 lines
+
+* freetype lib does not need to be necessarily in $xlib, check also in
+  /usr/local/lib
+------------------------------------------------------------------------
+r12079 | srezic | 2008-11-16 19:36:59 +0100 (So, 16. Nov 2008) | 1 line
+
+* fix: exit() cannot be used in Makefile.libpng.maybe!
+------------------------------------------------------------------------
+r12077 | srezic | 2008-11-15 14:04:21 +0100 (Sa, 15. Nov 2008) | 1 line
+
+* Changes towards Tk-804.028_502
+------------------------------------------------------------------------
+r12076 | srezic | 2008-11-15 14:04:13 +0100 (Sa, 15. Nov 2008) | 3 lines
+
+* new function try_configure
+* fixing build on IRIX64
+  http://rt.cpan.org/Ticket/Display.html?id=40820
+------------------------------------------------------------------------
+r12075 | srezic | 2008-11-15 14:04:03 +0100 (Sa, 15. Nov 2008) | 2 lines
+
+* realclean now also cleans files which are created when using
+  libpng's configure
+------------------------------------------------------------------------
+r12074 | srezic | 2008-11-15 14:03:54 +0100 (Sa, 15. Nov 2008) | 1 line
+
+* workaround for perl bug under Windows (when using japanese? locale)
+------------------------------------------------------------------------
+r12073 | srezic | 2008-11-15 14:03:44 +0100 (Sa, 15. Nov 2008) | 1 line
+
+* exit gracefully if X11 library could not be found
+------------------------------------------------------------------------
+r12055 | srezic | 2008-11-06 21:44:02 +0100 (Do, 06. Nov 2008) | 2 lines
+
+* Tk doesn't support more than 32 fds on 64bit machines
+  http://rt.cpan.org/Ticket/Display.html?id=40688
+------------------------------------------------------------------------
+r12046 | srezic | 2008-11-05 22:32:59 +0100 (Mi, 05. Nov 2008) | 1 line
+
+* PNG does not build under aix, unchecked fix
+------------------------------------------------------------------------
+r12045 | srezic | 2008-11-05 22:32:47 +0100 (Mi, 05. Nov 2008) | 1 line
+
+* mailing list cannot be used without registration, it seems
+------------------------------------------------------------------------
+r12043 | srezic | 2008-11-04 23:16:07 +0100 (Di, 04. Nov 2008) | 2 lines
+
+* update
+* re-generated log, using English dates now
+------------------------------------------------------------------------
 r12042 | srezic | 2008-11-04 23:11:24 +0100 (Tue, 04 Nov 2008) | 1 line
 
 * inc'd versions
