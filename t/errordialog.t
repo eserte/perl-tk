@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-plan tests => 3;
+plan tests => 5;
 
 use_ok 'Tk::ErrorDialog';
 
@@ -35,6 +35,10 @@ $mw->after(100, sub {
 	       my $dialog = search_error_dialog($mw);
 	       isa_ok($dialog, "Tk::Dialog", "dialog");
 	       $ed = $dialog;
+	       my $error_stacktrace_toplevel = search_error_stacktrace_toplevel($mw);
+	       isa_ok($error_stacktrace_toplevel, 'Tk::ErrorDialog', 'Found stacktrace window');
+	       is($error_stacktrace_toplevel->state, 'withdrawn', 'Stacktrace not visible');
+	       $error_stacktrace_toplevel->geometry('+0+0'); # for WMs with interactive placement
 	       $dialog->SelectButton('Stack trace');
 	       second_error();
 	   });
@@ -54,18 +58,28 @@ sub second_error {
 sub search_error_dialog {
     my $w = shift;
     my $dialog;
-    my $found_error_dialog;
     $w->Walk(sub {
-		 return if $found_error_dialog;
+		 return if $dialog;
 		 for my $opt (qw(text message)) {
 		     my $val = eval { $_[0]->cget("-$opt") };
 		     if (defined $val && $val =~ m{\Q$errmsg}) {
-			 $found_error_dialog = 1;
 			 $dialog = $_[0]->toplevel;
 		     }
 		 }
 	     });
     $dialog;
+}
+
+sub search_error_stacktrace_toplevel {
+    my $w = shift;
+    my $toplevel;
+    $w->Walk(sub {
+		 return if $toplevel;
+		 if ($_[0]->isa('Tk::ErrorDialog')) {
+		     $toplevel = $_[0];
+		 }
+	     });
+    $toplevel;
 }
 
 __END__

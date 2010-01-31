@@ -151,6 +151,7 @@ TODO: {
 
     catch_grabs {
 	my $mw = MainWindow->new;
+	$mw->geometry('+0+0');
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->getOpenFile;
 	if (!$ENV{BATCH}) {
@@ -161,6 +162,7 @@ TODO: {
 
     catch_grabs {
 	my $mw = MainWindow->new;
+	$mw->geometry('+0+0');
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->getSaveFile;
 	if (!$ENV{BATCH}) {
@@ -171,6 +173,7 @@ TODO: {
 
     catch_grabs {
 	my $mw = MainWindow->new;
+	$mw->geometry('+0+0');
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->chooseDirectory;
 	if (!$ENV{BATCH}) {
@@ -181,6 +184,7 @@ TODO: {
 
     catch_grabs {
 	my $mw = MainWindow->new;
+	$mw->geometry('+0+0');
 	$mw->after($delay, sub { $mw->destroy }) if $ENV{BATCH};
 	my $result = $mw->getOpenFile(-multiple => 1, -title => "getOpenFile with -multiple");
 	ok(!defined $result || ref($result) eq "ARRAY", "Result of -multiple is an array reference or undef");

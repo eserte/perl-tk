@@ -32,6 +32,7 @@ my $show;
 GetOptions("show!" => \$show)
     or die "usage: $0 [-show]";
 
+$mw->geometry('+0+0');
 my $c = $mw->Canvas->pack;
 $c->createGrid(0,0,20,20, -color=>'blue'); # as documented
 $c->createGrid(10,10,30,30, -fill=>'red'); # as implemented for a long time

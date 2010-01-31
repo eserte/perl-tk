@@ -16,6 +16,7 @@ use Tk;
 BEGIN { plan tests => 19 };
 
 my $mw = Tk::MainWindow->new;
+$mw->geometry('+0+0');
 my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
 
 ##
@@ -81,6 +82,7 @@ my $w = $mw->Label(-text=>'a widget but not a Wm')->grid;
 ## [rt.cpan.org #32858]
 {
     my $top = $mw->Toplevel;
+    $top->geometry('+0+0');
     $mw->update;
     $mw->Busy(-recurse => 1);
     for my $w ($mw, $top) {
