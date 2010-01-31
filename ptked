@@ -15,7 +15,7 @@ INIT
   $portfile = "$home/.ptkedsn";
   my $port = $ENV{'PTKEDPORT'};
   return if $^C;
-  GetOptions(\%opt,qw(server! encoding=s));
+  GetOptions(\%opt,qw(server! encoding=s geometry=s));
   unless (defined $port)
    {
     if (open(SN,"$portfile"))
@@ -191,6 +191,7 @@ sub Create_Edit
 {
  my $path = shift;
  my $ed   = $top->Toplevel(-title => $path);
+ $ed->geometry($opt{geometry}) if $opt{geometry};
  $ed->withdraw;
  $top->{'Edits'}++;
  $ed->OnDestroy([\&RemoveEdit,$top]);
@@ -352,17 +353,10 @@ ptked - an editor in Perl/Tk
 
 =head1 SYNOPSIS
 
-S<  >B<ptked> [I<file-to-edit>]
+S<  >B<ptked> [-server] [-encoding I<encoding>] [-geometry I<geometry>] [I<file-to-edit>]
 
 =head1 DESCRIPTION
 
 B<ptked> is a simple text editor based on perl/Tk's TextUndo widget.
 
 =cut
-
-
-
-
-
-
-
