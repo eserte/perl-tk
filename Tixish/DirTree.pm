@@ -192,6 +192,8 @@ sub dirnames {
 	$w->title($title);
 	$w->{ok} = 0; # flag: "1" means OK, "-1" means cancelled
 
+	$w->transient($w->Parent->toplevel);
+
 	# Create Frame widget before the DirTree widget, so it's always visible
 	# if the window gets resized.
 	my $f = $w->Frame->pack(-fill => "x", -side => "bottom");
