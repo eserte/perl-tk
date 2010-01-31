@@ -66,9 +66,22 @@ my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
 sub TODO_xscrollcommand_problem () {
     $TODO = "May fail under some conditions (another grab?) on KDE"      if !$TODO && $kwin_problems;
     $TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
-    $TODO = "May fail under some conditions (another grab?) on Fluxbox"  if !$TODO && $fluxbox_problems;
     $TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
 }
+
+# Some WMs are slow when resizing the main window. This may cause test
+# failures, because the test suite does not wait for completion of the
+# WM (and probably cannot do it anyway). To avoid resizing the main
+# window, a placeholder widget is created. This widget has to be
+# re-created every time the main window is re-created, or if all
+# children are destroyed.
+sub create_placeholder_widget () {
+    if ($fluxbox_problems) {
+	$mw->Frame(-width => 640, -height => 1)->pack;
+    }
+}
+
+create_placeholder_widget;
 
 my $e0 = $mw->Entry;
 ok(Tk::Exists($e0), "Entry widget exists");
@@ -1160,6 +1173,7 @@ my $e1 = $mw->Entry(-fg => '#112233');
 is(($mw->children)[0], $e1);
 $e1->destroy;
 is(scalar($mw->children), undef); # XXX why not 0?
+create_placeholder_widget;
 
 $e = $mw->Entry(-font => $fixed, qw(-width 5 -bd 2 -relief sunken))->pack;
 $e->insert(qw(0 012345678901234567890));
