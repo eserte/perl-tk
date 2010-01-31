@@ -64,7 +64,6 @@ my $xfwm4_problems    = defined $wm_name && $wm_name eq 'Xfwm4';
 # It seems that scripts using -xscrollcommand have the same problem
 # with wish8.4 (Tcl/Tk 8.4.19)
 sub TODO_xscrollcommand_problem () {
-    $TODO = "May fail under some conditions (another grab?) on KDE"      if !$TODO && $kwin_problems;
     $TODO = "May fail under some conditions (another grab?) on Metacity" if !$TODO && $metacity_problems;
     $TODO = "May fail under some conditions (another grab?) on xfwm4"    if !$TODO && $xfwm4_problems;
 }
@@ -76,7 +75,7 @@ sub TODO_xscrollcommand_problem () {
 # re-created every time the main window is re-created, or if all
 # children are destroyed.
 sub create_placeholder_widget () {
-    if ($fluxbox_problems) {
+    if ($kwin_problems || $fluxbox_problems) {
 	$mw->Frame(-width => 640, -height => 1)->pack;
     }
 }
