@@ -119,6 +119,7 @@ use Tk::widgets qw(TextUndo Scrollbar Menu Dialog);
 }
 
 my $top = MainWindow->new();
+$top->geometry('+0+0');
 
 if ($opt{'server'})
  {
