@@ -76,6 +76,16 @@ and convert the result into bytes, e.g.
 See also L<perlunicode/When Unicode Does Not Happen> and
 L<perltodo/Unicode in Filenames>.
 
+=head1 EXAMPLE
+
+    my $dir = $mw->chooseDirectory(-initialdir => '~',
+                                   -title => 'Choose a directory');
+    if (!defined $dir) {
+        warn 'No directory selected';
+    } else {
+        warn "Selected $dir";
+    }
+
 =head1 SEE ALSO
 
 L<Tk::getOpenFile>, L<Tk::getOpenFile>
