@@ -23,9 +23,10 @@ sub try_compile
  $inc = [] unless $inc;
  $lib = [] unless $lib;
  $def = [] unless $def;
+ my $stderr_too = $VERBOSE ? '' : $stderr_too;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compiling $file\n";
- my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def $stderr_too`;
+ my $msgs  = `$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def $stderr_too`;
  my $ok = ($? == 0);
  warn "$msgs\n" if $VERBOSE && $msgs;
  unlink($out) if (-f $out);
@@ -38,9 +39,10 @@ sub try_run
  $inc = [] unless $inc;
  $lib = [] unless $lib;
  $def = [] unless $def;
+ my $stderr_too = $VERBOSE ? '' : $stderr_too;
  my $out   = basename($file,'.c').$Config{'exe_ext'};
  warn "Test Compile/Run $file\n";
- my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file @$lib @$def";
+ my $cmdline = "$Config{'cc'} -o $out $Config{'ccflags'} @$inc $file $Config{ldflags} @$lib @$def";
  my $msgs  = `$cmdline $stderr_too`;
  my $ok = ($? == 0);
  warn "$cmdline:\n$msgs\n" if $VERBOSE && $msgs;
