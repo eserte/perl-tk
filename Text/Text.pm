@@ -855,8 +855,9 @@ sub FindNext
  ## if backward, start search from start of selected block.
  ## dont want search to find currently selected text.
  ## tag 'sel' may not be defined, use eval loop to trap error
+ my $is_forward = $direction =~ m{^-f} && $direction eq substr("-forwards", 0, length($direction));
  eval {
-  if ($direction eq '-forward')
+  if ($is_forward)
    {
    $w->markSet('insert', 'sel.last');
    $w->markSet('current', 'sel.last');
@@ -908,7 +909,7 @@ sub FindNext
 
  $w->see($start_index);
 
- if ($direction eq '-forward')
+ if ($is_forward)
   {
   $w->markSet('insert', $end_index);
   $w->markSet('current', $end_index);

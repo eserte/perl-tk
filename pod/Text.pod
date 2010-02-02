@@ -1114,7 +1114,7 @@ If there is currently selected text, then the 'find' field will be
 
 Removes any current selections and then performs a forward or reverse
 text search. All matches are tagged with the B<sel> tag. I<direction>
-can be B<-forward> or B<-reverse>. I<mode, case> and I<pattern> are
+can be B<-forwards> or B<-backwards>. I<mode, case> and I<pattern> are
 as for the B<FindAll> method.
 
 =item I<$text>-E<gt>B<FindPopUp>

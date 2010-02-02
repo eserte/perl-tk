@@ -2017,6 +2017,7 @@ t/Require.t
 t/rotext.t
 t/table.t
 t/text.t
+t/text2.t
 t/textundo.t
 t/Trace.t
 t/TkTest.pm

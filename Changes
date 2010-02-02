@@ -1,3 +1,11 @@
+Tk-804.XXX release (XXXX-XX-XX)
+------------------
+
+Fixes
+ Tk::Text documentation mentioned -reverse where it should be -backwards.
+ Also allow -forwards/-backwards to be abbreviated in FindNext call.
+ https://rt.cpan.org/Ticket/Display.html?id=51552
+
 Tk-804.028_502 release (2010-01-30)
 ----------------------
 
