@@ -218,6 +218,10 @@ Return the page name of the active tab.
 
 =back
 
+=head1 BUGS
+
+The options C<-width> and C<-height> do not work.
+
 =head1 AUTHORS
 
 B<Rajappa Iyer>  <rsi@earthling.net>
