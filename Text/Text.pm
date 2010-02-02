@@ -1446,6 +1446,14 @@ sub PRINTF
  $w->PRINT(sprintf(shift,@_));
 }
 
+sub WRITE
+{
+ my ($w, $scalar, $length, $offset) = @_;
+ unless (defined $length) { $length = length $scalar }
+ unless (defined $offset) { $offset = 0 }
+ $w->PRINT(substr($scalar, $offset, $length));
+}
+
 sub WhatLineNumberPopUp
 {
  my ($w)=@_;

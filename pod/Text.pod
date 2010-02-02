@@ -2166,6 +2166,11 @@ For example:
 
  MainLoop;
 
+To tie a scrolled Text widget, use the Subwidget method to get to the
+E<quot>realE<quot> widget:
+
+ my $text = $mw->Scrolled('Text')->pack;
+ tie *STDOUT, 'Tk::Text', $text->Subwidget('scrolled');
 
 =head1 PERFORMANCE ISSUES
 

@@ -20,7 +20,7 @@ BEGIN {
     }
 }
 
-plan tests => 6;
+plan tests => 8;
 
 my $mw = MainWindow->new;
 $mw->geometry("+10+10");
@@ -41,6 +41,36 @@ $mw->geometry("+10+10");
     ok($t->FindNext('-b', '-e', '-c', 'world'), 'Backwards search');
     my @third_index = split /\./, $t->index('insert');
     cmp_ok($third_index[0], "<", $second_index[0], 'Really a backwards search');
+
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Text(qw(-width 20 -height 10))->pack;
+    tie *FH, ref $t, $t
+	or die $!;
+
+    print FH "Hello Text World!\n";
+    printf FH "formatted: %s\n", "string";
+    syswrite FH, "toto\n", 3, 2;
+
+    # XXX For some reason, an additional \n appears at the end
+    is($t->Contents, "Hello Text World!\nformatted: string\nto\n\n", "tied handle and Contents()");
+    # XXX untie attempted while 3 inner references still exist
+    untie *FH;
+    $t->destroy;
+}
+
+{
+    my $t = $mw->Scrolled(qw(Text -width 20 -height 10))->pack;
+    tie *FH, 'Tk::Text', $t
+	or die $!;
+    print FH "Scrolled\n";
+    # XXX For some reason, an additional \n appears at the end
+    is($t->Contents, "Scrolled\n\n", "tied handle on scrolled Text widget");
+    # XXX untie attempted while 3 inner references still exist
+    untie *FH;
+    $t->destroy;
 }
 
 __END__
