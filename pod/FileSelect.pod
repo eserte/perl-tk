@@ -142,5 +142,9 @@ By request of Jim Stern <js@world.northgrum.com> and Brad Vance
 <bvance@ti.com>, I updated the Accept and Show functions to support
 selection of multiple files.  I also corrected a typo in the -verify code.
 
+=head1 SEE ALSO
+
+L<Tk::getOpenFile>, L<Tk::FBox>.
+
 =cut
 
