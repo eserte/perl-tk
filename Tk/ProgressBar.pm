@@ -455,7 +455,7 @@ to reflect this value. (See also the B<value> method below.)
 
 =item B<-value>
 
-The can be used to set the current position of the progress bar
+This can be used to set the current position of the progress bar
 when used in conjunction with the standard C<configure>. It is
 usually recommended to use the B<value> method instead.
 
