@@ -2207,4 +2207,5 @@ Xlib/X/X.pm
 Xlib/X/X.xs
 Xlib/Xlib.pm
 Xlib/Xlib.xs
+xt/font_attrs.t
 xt/mw_segfault.t
