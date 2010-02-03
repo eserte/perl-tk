@@ -9,6 +9,9 @@ Fixes
  Added WRITE method for tied Text widgets.
  https://rt.cpan.org/Ticket/Display.html?id=45818
 
+ Fixed display of Unicode characters in Windows toplevel menus.
+ https://rt.cpan.org/Ticket/Display.html?id=50681
+
 Tk-804.028_502 release (2010-01-30)
 ----------------------
 
