@@ -1,4 +1,4 @@
-# Copyright (C) 2003,2006,2007 Slaven Rezic. All rights reserved.
+# Copyright (C) 2003,2006,2007,2010 Slaven Rezic. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -6,7 +6,7 @@ package TkTest;
 
 use strict;
 use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
-$VERSION = '4.008'; # was: sprintf '4.%03d', q$Revision: #3 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.009';
 
 use base qw(Exporter);
 @EXPORT    = qw(is_float is_float_pair check_display_harness);
@@ -36,7 +36,10 @@ sub check_display_harness () {
     if (defined $Tk::platform && $Tk::platform eq 'unix') {
 	my $mw = eval { MainWindow->new() };
 	if (!Tk::Exists($mw)) {
-	    warn "Cannot create MainWindow (maybe no X11 server is running or DISPLAY is not set?)\n$@\n";
+	    print "1..0 # SKIP Cannot create MainWindow (maybe no X11 server is running or DISPLAY is not set?)\n";
+	    for (split /\n/, $@) {
+		print "# $_\n";
+	    }
 	    exit 0;
 	}
 	$mw->destroy;
