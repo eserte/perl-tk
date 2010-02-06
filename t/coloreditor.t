@@ -27,20 +27,20 @@ for (1..2) {
     isa_ok($c, "Tk::ColorSelect");
     my $lb = $c->Subwidget("Names");
  SKIP: {
-	skip("Probably no rgb.txt found on this system", 2)
-	    if $Tk::platform eq 'MSWin32' && !$lb;
-	isa_ok($lb, "Tk::Listbox");
 	if (!$lb) {
-	    fail "Could not get color name listbox";
 	    my @rgbTxtPath = $c->_rgbTxtPath;
-	    diag <<EOF;
-This failure usually indicates that rgb.txt could not be found on your system.
-The search path was: @rgbTxtPath
-EOF
-	} else {
-	    # This used to fail until Tk804.027_501:
-	    cmp_ok(scalar @{ $lb->get(0,"end") }, ">=", 10, "Some colors found in listbox");
+	    my $found = grep { -e $_ } @rgbTxtPath;
+	    # This is expexted on MSWin32 systems, and even not all
+	    # X11 systems install rgb.txt (seen on FreeBSD, where the
+	    # file is part of the x11/rgb package, which is not
+	    # mandatory for xorg)
+	    skip("No rgb.txt found on this system", 2)
+		if !$found;
 	}
+
+	isa_ok($lb, "Tk::Listbox");
+	# This used to fail until Tk804.027_501:
+	cmp_ok(scalar @{ $lb->get(0,"end") }, ">=", 10, "Some colors found in listbox");
     }
     $c->destroy;
 }
