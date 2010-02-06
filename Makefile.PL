@@ -9,10 +9,6 @@ BEGIN
   $IsWin32 = ($^O eq 'MSWin32' || $Config{'ccflags'} =~ /-D_?WIN32_?/);
   $xtra = "";
 
-  if ($Config{myuname} =~ /\bredhat\.com\b/ && $ENV{LANG} =~ /\.UTF-8/)
-   {
-    warn "RedHat perl in UTF-8 locale may not build Tk\n";
-   }
   open(M, "Tk.pm") or die "Can't open Tk.pm for reading VERSION: $!";
   while(<M>)
    {
