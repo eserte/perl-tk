@@ -233,4 +233,12 @@ MANIFEST : MANIFEST.SKIP $(FIRST_MAKEFILE)
  $str;
 }
 
-
+{
+ package MY;
+ sub init_PM
+ {
+  my $self = shift;
+  $self->SUPER::init_PM(@_);
+  delete $self->{PM}->{"fix_4_os2.pl"};
+ }
+}
