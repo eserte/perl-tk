@@ -9,7 +9,7 @@ use Carp;
 use File::Basename;
 
 use vars qw($VERSION);
-$VERSION = '4.023'; # was: sprintf '4.%03d', q$Revision: #21 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.024';
 
 # warn __FILE__." $VERSION\n";
 
@@ -297,15 +297,20 @@ sub const_config
   {
    $self->{'LDDLFLAGS'} =~ s/-flat_namespace//;
    $self->{'LDDLFLAGS'} =~ s/-undefined\s+suppress//;
-   if ( -e "$Config{'archlib'}/CORE/$Config{'libperl'}" ) {
-    $self->{'LDDLFLAGS'} .= " -L\${PERL_ARCHLIB}/CORE -lperl ";
-   }
-   elsif ( -e "/System/Library/Perl/darwin/CORE/libperl.dylib" ) {
-    $self->{'LDDLFLAGS'} .= " -L/System/Library/Perl/darwin/CORE -lperl ";
-   }
-   else {
-    warn "Can't find libperl.dylib";
-   }
+## These lines seem to be not necessary for Panther, both
+## builds with and without shared libperl, and seem to
+## be dangerous for other MacOSX versions using perl builds
+## without shared libperl, so disabled completely.
+## See http://rt.cpan.org/Public/Bug/Display.html?id=39593
+#   if ( -e "$Config{'archlib'}/CORE/$Config{'libperl'}" ) {
+#    $self->{'LDDLFLAGS'} .= " -L\${PERL_ARCHLIB}/CORE -lperl ";
+#   }
+#   elsif ( -e "/System/Library/Perl/darwin/CORE/libperl.dylib" ) {
+#    $self->{'LDDLFLAGS'} .= " -L/System/Library/Perl/darwin/CORE -lperl ";
+#   }
+#   else {
+#    warn "Can't find libperl.dylib";
+#   }
    $self->{'LDFLAGS'} =~ s/-flat_namespace//;
    $self->{'LDFLAGS'} =~ s/-undefined\s+suppress//;
   } elsif ($^O =~ /(openbsd)/i)

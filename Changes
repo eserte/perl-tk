@@ -12,6 +12,10 @@ Fixes
  Fixed display of Unicode characters in Windows toplevel menus.
  https://rt.cpan.org/Ticket/Display.html?id=50681
 
+ No special LDDLFLAGS handling on MacOSX systems, which probably
+ caused an unusable Tk module (i.e. bus errors)
+ http://rt.cpan.org/Public/Bug/Display.html?id=39593
+
 Tk-804.028_502 release (2010-01-30)
 ----------------------
 
