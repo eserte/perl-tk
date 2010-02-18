@@ -2,7 +2,7 @@ package Tk::Labelframe;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #2 $ =~ /#(\d+)/;
+$VERSION = '4.003'; # sprintf '4.%03d', q$Revision: #2 $ =~ /#(\d+)/;
 
 # New widget which is a kind of Frame with a label ...
 

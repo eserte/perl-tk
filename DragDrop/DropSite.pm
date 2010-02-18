@@ -3,7 +3,7 @@ require Tk::DragDrop::Common;
 require Tk::DragDrop::Rect;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.008'; # sprintf '4.%03d', q$Revision: #7 $ =~ /\D(\d+)\s*$/;
 
 use base  qw(Tk::DragDrop::Common Tk::DragDrop::Rect);
 

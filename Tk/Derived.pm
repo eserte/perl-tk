@@ -8,7 +8,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.011'; # sprintf '4.%03d', q$Revision: #10 $ =~ /\D(\d+)\s*$/;
 
 $Tk::Derived::Debug = 0;
 

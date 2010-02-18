@@ -1,6 +1,6 @@
 package Tk::Canvas;
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.013'; # sprintf '4.%03d', q$Revision: #12 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw($XS_VERSION);
 

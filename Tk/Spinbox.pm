@@ -2,7 +2,7 @@ package Tk::Spinbox;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d',q$Revision: #6 $ =~ /#(\d+)/;
+$VERSION = '4.007'; # sprintf '4.%03d',q$Revision: #6 $ =~ /#(\d+)/;
 
 use base 'Tk::Entry';
 

@@ -5,7 +5,7 @@ use Carp;
 # Proxy class which represents sites to the dropping side
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.012'; # sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
 
 # Some default methods when called site side
 # XIDs and viewable-ness from widget

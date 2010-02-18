@@ -13,7 +13,7 @@ package Tk::Entry;
 
 use vars qw($VERSION);
 use strict;
-$VERSION = sprintf '4.%03d',q$Revision: #17 $ =~ /#(\d+)/;
+$VERSION = '4.018'; # sprintf '4.%03d',q$Revision: #17 $ =~ /#(\d+)/;
 
 # modify it under the same terms as Perl itself, subject
 # to additional disclaimer in license.terms due to partial

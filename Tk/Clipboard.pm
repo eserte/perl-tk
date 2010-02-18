@@ -5,7 +5,7 @@ package Tk::Clipboard;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.009'; # sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use AutoLoader qw(AUTOLOAD);
 use Tk qw(catch);

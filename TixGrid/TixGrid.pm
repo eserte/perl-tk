@@ -20,7 +20,7 @@ BEGIN
 
 use strict;
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.010'; # sprintf '4.%03d', q$Revision: #9 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw(Ev $XS_VERSION);
 use Tk::Widget;

@@ -1,7 +1,7 @@
 package Tk::Photo;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', 4+q$Revision: #4 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.006'; # sprintf '4.%03d', 4+q$Revision: #4 $ =~ /\D(\d+)\s*$/;
 
 use Tk qw($XS_VERSION);
 

@@ -3,7 +3,7 @@ use strict;
 use Carp;
 
 use vars qw($VERSION @EXPORT_OK);
-$VERSION = sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.009'; # sprintf '4.%03d', q$Revision: #8 $ =~ /\D(\d+)\s*$/;
 
 use base qw(Exporter);
 use Symbol ();

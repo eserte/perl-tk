@@ -2,7 +2,7 @@ package Tk::Panedwindow;
 use strict;
 
 use vars qw/$VERSION/;
-$VERSION = sprintf '4.%03d', q$Revision: #3 $ =~ /#(\d+)/;
+$VERSION = '4.004'; # sprintf '4.%03d', q$Revision: #3 $ =~ /#(\d+)/;
 
 # A Panedwindow widget (similar to Adjuster).
 

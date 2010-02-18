@@ -3,7 +3,7 @@ package WidgetDemo;
 use 5.005_03;
 
 use vars qw($VERSION);
-$VERSION = sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
+$VERSION = '4.012'; # sprintf '4.%03d', q$Revision: #11 $ =~ /\D(\d+)\s*$/;
 
 use Tk 800.000;
 use Carp;
