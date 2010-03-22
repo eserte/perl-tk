@@ -1,4 +1,4 @@
-Tk-804.XXX release (XXXX-XX-XX)
+Tk-804.029 release (2010-03-XX)
 ------------------
 
 Fixes
@@ -15,6 +15,14 @@ Fixes
  No special LDDLFLAGS handling on MacOSX systems, which probably
  caused an unusable Tk module (i.e. bus errors)
  http://rt.cpan.org/Public/Bug/Display.html?id=39593
+
+Tests
+ A missing rgb.txt is no more an error in the Tk::ColorEditor tests,
+ as rgb.txt may be missing completely in some X11 installations.
+
+Documetation
+ Fixed minor typo in ProgressBar documentation
+ https://rt.cpan.org/Ticket/Display.html?id=39182
 
 Tk-804.028_502 release (2010-01-30)
 ----------------------
