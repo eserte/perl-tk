@@ -554,7 +554,7 @@ sub TkExtMakefile
    if ($IsWin32 && $Config{'cc'} =~ /^gcc/i)
     {
      my $base  = $Config{'libpth'};
-     $base =~ s#lib$#i386-mingw32/lib#;
+     #$base =~ s#lib$#i386-mingw32/lib#;
      my $extra = "-L$base -limm32 -lcomctl32 -lcomdlg32 -lgdi32";
      my $libs = $att{'LIBS'}->[0];
      $att{'LIBS'}->[0] = "$extra $libs";
