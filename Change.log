@@ -1,4 +1,133 @@
 ------------------------------------------------------------------------
+r13974 | srezic | 2010-05-10 21:14:54 +0200 (Mo, 10. Mai 2010) | 2 Zeilen
+
+* fixed Strawberry Perl builds
+  (informal patch by Eduard Wulff)
+------------------------------------------------------------------------
+r13873 | srezic | 2010-03-22 21:43:53 +0100 (Mo, 22. Mär 2010) | 1 Zeile
+
+* updated Changes
+------------------------------------------------------------------------
+r13830 | srezic | 2010-02-18 12:02:25 +0100 (Do, 18. Feb 2010) | 2 Zeilen
+
+* get rid of all computed $VERSIONs
+  https://rt.cpan.org/Ticket/Display.html?id=54745
+------------------------------------------------------------------------
+r13813 | srezic | 2010-02-06 18:29:59 +0100 (Sa, 06. Feb 2010) | 1 Zeile
+
+* a missing rgb.txt on X11 systems is not anymore an error
+------------------------------------------------------------------------
+r13812 | srezic | 2010-02-06 18:29:50 +0100 (Sa, 06. Feb 2010) | 3 Zeilen
+
+* removed special lddlflags setting on Darwin systems, which might
+  cause bus errors
+  http://rt.cpan.org/Public/Bug/Display.html?id=39593
+------------------------------------------------------------------------
+r13811 | srezic | 2010-02-06 18:29:39 +0100 (Sa, 06. Feb 2010) | 1 Zeile
+
+* avoid installing fix_4_os2.pl
+------------------------------------------------------------------------
+r13810 | srezic | 2010-02-06 18:29:31 +0100 (Sa, 06. Feb 2010) | 1 Zeile
+
+* removed probably outdated RedHat-specific warning from Makefile.PL
+------------------------------------------------------------------------
+r13809 | srezic | 2010-02-06 18:29:22 +0100 (Sa, 06. Feb 2010) | 1 Zeile
+
+* check_display_harness now outputs a formally correct TAP skip
+------------------------------------------------------------------------
+r13808 | srezic | 2010-02-06 18:29:11 +0100 (Sa, 06. Feb 2010) | 2 Zeilen
+
+* the test case for RT #7474 (segfault after placing a destroyed
+  widget)
+------------------------------------------------------------------------
+r13805 | srezic | 2010-02-03 14:25:00 +0100 (Mi, 03. Feb 2010) | 2 Zeilen
+
+* added test case for RT #42043 (combining -size and -weight does not
+  work in font specs)
+------------------------------------------------------------------------
+r13804 | srezic | 2010-02-03 14:24:49 +0100 (Mi, 03. Feb 2010) | 2 Zeilen
+
+* fixed minor typo in ProgressBar documentation
+  spotted in https://rt.cpan.org/Ticket/Display.html?id=39182
+------------------------------------------------------------------------
+r13803 | srezic | 2010-02-03 14:24:39 +0100 (Mi, 03. Feb 2010) | 1 Zeile
+
+* update Changes
+------------------------------------------------------------------------
+r13802 | srezic | 2010-02-03 08:52:38 +0100 (Mi, 03. Feb 2010) | 3 Zeilen
+
+* fixed display of Unicode characters in Windows toplevel menus
+  https://rt.cpan.org/Ticket/Display.html?id=50681
+  applied original Tk changeset (with changes) from Mon May 3 22:40:30 2004
+------------------------------------------------------------------------
+r13801 | srezic | 2010-02-03 08:52:26 +0100 (Mi, 03. Feb 2010) | 1 Zeile
+
+* avoid installing reindex.pl
+------------------------------------------------------------------------
+r13800 | srezic | 2010-02-03 08:52:16 +0100 (Mi, 03. Feb 2010) | 1 Zeile
+
+* added SEE ALSO section in Tk::FileSelect documentation
+------------------------------------------------------------------------
+r13799 | srezic | 2010-02-02 22:01:28 +0100 (Di, 02. Feb 2010) | 3 Zeilen
+
+* tied Text widgets: add WRITE method (see
+  https://rt.cpan.org/Ticket/Display.html?id=45818)
+* add tests for tied Text widgets in text2.t
+------------------------------------------------------------------------
+r13798 | srezic | 2010-02-02 22:01:13 +0100 (Di, 02. Feb 2010) | 2 Zeilen
+
+* document that -width and -height do not work with NoteBook widgets
+  https://rt.cpan.org/Ticket/Display.html?id=52609
+------------------------------------------------------------------------
+r13797 | srezic | 2010-02-02 16:03:47 +0100 (Di, 02. Feb 2010) | 4 Zeilen
+
+* MMtry improvements
+  * VERBOSE is now even more verbose by showing all of compiler stderr
+    output
+  * use $Config{ldflags} when trying to compile things
+------------------------------------------------------------------------
+r13796 | srezic | 2010-02-02 14:29:12 +0100 (Di, 02. Feb 2010) | 3 Zeilen
+
+* documentation fix for Tk::Text::FindNext (-backwards vs. -reverse),
+  see https://rt.cpan.org/Ticket/Display.html?id=51552
+* added a new test file t/text2.t
+------------------------------------------------------------------------
+r13795 | srezic | 2010-02-02 14:28:55 +0100 (Di, 02. Feb 2010) | 2 Zeilen
+
+* added an example to chooseDirectory.pod, similar to the one found in
+  Tcl/Tk docs
+------------------------------------------------------------------------
+r13789 | srezic | 2010-01-31 13:18:39 +0100 (So, 31. Jan 2010) | 1 Zeile
+
+* entry.t: placeholder workaround also used for KDE's kwin
+------------------------------------------------------------------------
+r13788 | srezic | 2010-01-31 13:18:29 +0100 (So, 31. Jan 2010) | 1 Zeile
+
+* fixed all interactive placement issues in test suite
+------------------------------------------------------------------------
+r13787 | srezic | 2010-01-31 13:18:18 +0100 (So, 31. Jan 2010) | 2 Zeilen
+
+* ptked: make sure that invisible mainwindow works well with WMs with
+  interactive placement (i.e. twm)
+------------------------------------------------------------------------
+r13786 | srezic | 2010-01-31 13:18:09 +0100 (So, 31. Jan 2010) | 2 Zeilen
+
+* added -geometry option to ptked
+* documented ptked's options in SYNOPSIS
+------------------------------------------------------------------------
+r13785 | srezic | 2010-01-31 13:18:00 +0100 (So, 31. Jan 2010) | 1 Zeile
+
+* DirTreeDialog is now marked as transient
+------------------------------------------------------------------------
+r13784 | srezic | 2010-01-31 13:17:49 +0100 (So, 31. Jan 2010) | 2 Zeilen
+
+* made entry.t behave better on fluxbox by creating a placeholder
+  widget
+------------------------------------------------------------------------
+r13782 | srezic | 2010-01-30 18:26:37 +0100 (Sa, 30. Jan 2010) | 1 Zeile
+
+* update
+------------------------------------------------------------------------
 r13781 | srezic | 2010-01-30 18:25:01 +0100 (Sa, 30. Jan 2010) | 1 line
 
 * release preparations

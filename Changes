@@ -1,5 +1,5 @@
-Tk-804.029 release (2010-03-XX)
-------------------
+Tk-804.028_503 release (2010-05-13)
+----------------------
 
 Fixes
  Tk::Text documentation mentioned -reverse where it should be -backwards.
@@ -16,13 +16,19 @@ Fixes
  caused an unusable Tk module (i.e. bus errors)
  http://rt.cpan.org/Public/Bug/Display.html?id=39593
 
+ Fixes Strawberry Perl builds (probably was broken on all 64bit systems)
+ Informal patch by Eduard Wulff
+
 Tests
  A missing rgb.txt is no more an error in the Tk::ColorEditor tests,
  as rgb.txt may be missing completely in some X11 installations.
 
-Documetation
+Documentation
  Fixed minor typo in ProgressBar documentation
  https://rt.cpan.org/Ticket/Display.html?id=39182
+
+ Documented that -width and -height do not work with NoteBook widgets
+ https://rt.cpan.org/Ticket/Display.html?id=52609
 
 Tk-804.028_502 release (2010-01-30)
 ----------------------
