@@ -37,6 +37,13 @@ JPEG/jpeg/([cd]jpeg|jpegtran|(rd|wr)jpgcom)
 JPEG/jpeg/Makefile\.PL$
 PNG/libpng/Makefile\.PL$
 PNG/libpng/pngtest$
+PNG/libpng/config.h$
+PNG/libpng/config.log$
+PNG/libpng/config.status$
+PNG/libpng/libpng-config$
+PNG/libpng/libpng.pc$
+PNG/libpng/libtool$
+PNG/libpng/stamp-h1$
 PNG/zlib/example$
 PNG/zlib/Makefile\.PL$
 PNG/zlib/minigzip$
