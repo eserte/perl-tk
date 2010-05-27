@@ -27,7 +27,7 @@ All Tk widgets at a glance in one Toplevel.
 
 The left column contains the class name, the middle column a sample representation of this widget, and the right column a button to the widget's Pod (requires Tk::Pod from CPAN).
 
-There are two sections: core Tk modules which come with stock Tk $Tk::VERSION and a sample of non-standard Tk modules from CPAN. The non-standard modules are only displayed if installed, otherwise they are skipped.
+There are three sections: core Tk modules and Tix modules which come with stock Tk $Tk::VERSION and a sample of non-standard Tk modules from CPAN. The non-standard modules are only displayed if installed, otherwise they are skipped.
 EOF
 	-geometry_manager => 'pack',
 	-title		  => 'All widgets',
@@ -74,6 +74,7 @@ EOF
 					 -width => rand(4)+1,
 					);
 		      }
+		      $w->configure(-scrollregion => [$w->bbox("all")]);
 		  },
 		 },
 		 {class => 'Checkbutton', w_args => [-text => 'This is a checkbutton']},
@@ -113,7 +114,22 @@ EOF
 		 {class => 'TextList', w_args => [@txt_geom], action => $insert_lb, scrolled => 'oe'},
 		 {class => 'TextUndo', w_args => [@txt_geom], action => $insert_txt, scrolled => 'oe'},
 		 # XXX Toplevel
-		 qw(FloatEntry HList IconList InputO
+
+		 {separator => 'Tix modules'},
+
+		 'FloatEntry',
+		 {class => 'HList', action => sub {
+		      my $w = shift;
+		      my $b = $w->Balloon;
+		      my %binfo;
+		      for my $path ('1', '1.1', '1.2', '2', '2.1') {
+			  $w->add($path, -text => $path);
+			  $binfo{$path} = "BalloonInfo: $path";
+		      }
+		      $b->attach($w, -balloonposition => "mouse", -msg => \%binfo);
+		  },
+		 },
+		 qw(IconList InputO
 		    LabEntry LabFrame LabRadio NBFrame Optionmenu
 		    Panedwindow ProgressBar TList Table
 		    Tiler TixGrid Tree
