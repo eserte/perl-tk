@@ -82,6 +82,10 @@ Tk::MMutil::TkExtMakefile(
 		    },
     'clean'      => { FILES => 'pTk/tkConfig.h Tk/Config.pm' },
     'LICENSE'    => 'unrestricted',
+
+    ($ExtUtils::MakeMaker::VERSION >= 6.54 ?
+      (META_ADD => { resources => { repository => 'https://svn.perl.org/modules/Tk/trunk' } }) : ()),
+
     @macro
    );
 
