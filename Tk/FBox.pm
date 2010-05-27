@@ -559,7 +559,7 @@ sub ResolveFile {
     # If the file has no extension, append the default.  Be careful not
     # to do this for directories, otherwise typing a dirname in the box
     # will give back "dirname.extension" instead of trying to change dir.
-    if (!-d $path && $path !~ /\..+$/s && defined $defaultext) {
+    if (!-d $path && $text !~ /\..+$/s && defined $defaultext) {
 	$path = "$path$defaultext";
     }
     # Cannot just test for existance here as non-existing files are
