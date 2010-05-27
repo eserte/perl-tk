@@ -1,3 +1,11 @@
+Tk-804.029 release (2010-05-27)
+------------------
+
+This is basically the same like Tk-804.028_503.
+
+Tests
+ after.t is a TODO test on Windows.
+
 Tk-804.028_503 release (2010-05-13)
 ----------------------
 
