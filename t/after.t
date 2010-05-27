@@ -9,6 +9,12 @@ BEGIN {
 my $mw = MainWindow->new;
 $mw->withdraw;
 my $start = time;
+
+local $TODO;
+if ($^O eq 'MSWin32') {
+    $TODO = "May fail on Windows, see https://rt.cpan.org/Ticket/Display.html?id=57009";
+}
+
 $mw->after(1000/$divisor,sub { my $t = time;
 			       isnt($t,$start);
 			       my $expected_min = $start+1/$divisor;
