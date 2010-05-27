@@ -70,6 +70,17 @@ assumed that the balloon is to be attached to the B<Canvas> as a whole.
 You can have separate status and balloon messages just like normal
 balloons.
 
+=head2 Balloons and HLists
+
+If the balloon is attached to a B<HList> widget and the message
+arguments are hash references, then each hash key should correspond to
+a HList path and the associated value will correspond to the message
+for that HList item. The balloon message will then be shown for the
+current item (the one at the position of the mouse). Otherwise it is
+assumed that the balloon is to be attached to the B<HList> as a whole.
+You can have separate status and balloon messages just like normal
+balloons.
+
 =head2 Balloon Position
 
 By default, the balloon pops up at the lower right side of the client.

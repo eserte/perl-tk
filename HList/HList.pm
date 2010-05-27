@@ -680,6 +680,29 @@ sub children
  @info;
 }
 
+sub BalloonInfo
+{
+ my ($listbox,$balloon,$X,$Y,@opt) = @_;
+ my $e = $listbox->XEvent;
+ return if !$e;
+ my $path = $listbox->GetNearest($e->y, 1);
+ $path = '' unless defined($path);
+ foreach my $opt (@opt)
+  {
+   my $info = $balloon->GetOption($opt,$listbox);
+   if ($opt =~ /^-(statusmsg|balloonmsg)$/
+       && UNIVERSAL::isa($info,'HASH'))
+    {
+     $balloon->Subclient($path);
+     if (defined $info->{$path})
+      {
+       return $info->{$path};
+      }
+     return '';
+    }
+   return $info if (defined $info);
+  }
+ return '';
+}
+
 1;
-
-
