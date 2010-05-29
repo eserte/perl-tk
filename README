@@ -60,7 +60,11 @@ For questions on this package try news:comp.lang.perl.tk or e-mail to
 <ptk@lists.stanford.edu> (needs registration to the mailing list) or
 <srezic@cpan.org>
 
-Perl/Tk's source code can be found in the Subversion repository:
+Perl/Tk's source code can be found in the git repository:
 
-	https://svn.perl.org/modules/Tk/trunk
+	http://github.com/eserte/perl-tk
+
+To clone the repository, just execute
+
+	git://github.com/eserte/perl-tk.git
 

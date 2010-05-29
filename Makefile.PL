@@ -84,7 +84,7 @@ Tk::MMutil::TkExtMakefile(
     'LICENSE'    => 'unrestricted',
 
     ($ExtUtils::MakeMaker::VERSION >= 6.54 ?
-      (META_ADD => { resources => { repository => 'https://svn.perl.org/modules/Tk/trunk' } }) : ()),
+      (META_ADD => { resources => { repository => 'http://github.com/eserte/perl-tk' } }) : ()),
 
     @macro
    );
