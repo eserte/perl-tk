@@ -20,6 +20,11 @@ BEGIN {
 
 use Tk;
 
+if ($] < 5.008005) {
+    plan skip_all => "RT #41436 is still not fixed for perls < 5.8.5";
+    exit 0;
+}
+
 plan tests => 1;
 
 my $mw = tkinit;
