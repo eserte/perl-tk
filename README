@@ -66,5 +66,5 @@ Perl/Tk's source code can be found in the git repository:
 
 To clone the repository, just execute
 
-	git://github.com/eserte/perl-tk.git
+	git clone git://github.com/eserte/perl-tk.git
 
