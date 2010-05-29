@@ -9,7 +9,7 @@ use vars qw(@EXPORT @EXPORT_OK $eps $VERSION);
 $VERSION = '4.009';
 
 use base qw(Exporter);
-@EXPORT    = qw(is_float is_float_pair check_display_harness);
+@EXPORT    = qw(is_float is_float_pair checked_test_harness);
 @EXPORT_OK = qw(catch_grabs wm_info);
 
 sub _is_in_path ($);
@@ -17,7 +17,10 @@ sub _is_in_path ($);
 use POSIX qw(DBL_EPSILON);
 $eps = DBL_EPSILON;
 
-sub check_display_harness () {
+sub checked_test_harness ($@) {
+    my($skip_test, @test_harness_args) = @_;
+
+    require ExtUtils::Command::MM;
     # In case of cygwin, use'ing Tk before forking (which is done by
     # Test::Harness) may lead to "remap" errors, which are normally
     # solved by the rebase or rebaseall utilities.
@@ -25,25 +28,24 @@ sub check_display_harness () {
     # Here, I just skip the DISPLAY check on cygwin to not force users
     # to run rebase.
     #
-    return if $^O eq 'cygwin' || $^O eq 'MSWin32';
-
-    eval q{
+    if (!($^O eq 'cygwin' || $^O eq 'MSWin32')) {
+	eval q{
            use blib;
            use Tk;
         };
-    die "Strange: could not load Tk library: $@" if $@;
+	die "Strange: could not load Tk library: $@" if $@;
+    }
 
-    if (defined $Tk::platform && $Tk::platform eq 'unix') {
+    if (defined $Tk::platform && $Tk::platform eq 'unix') { # undef for cygwin+MSWin32, because Tk not yet loaded
 	my $mw = eval { MainWindow->new() };
 	if (!Tk::Exists($mw)) {
-	    print "1..0 # SKIP Cannot create MainWindow (maybe no X11 server is running or DISPLAY is not set?)\n";
-	    for (split /\n/, $@) {
-		print "# $_\n";
-	    }
-	    exit 0;
+	    local @ARGV = $skip_test;
+	    return ExtUtils::Command::MM::test_harness(@test_harness_args);
 	}
 	$mw->destroy;
     }
+
+    return ExtUtils::Command::MM::test_harness(@test_harness_args);
 }
 
 sub is_float ($$;$) {

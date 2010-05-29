@@ -2210,3 +2210,4 @@ Xlib/Xlib.xs
 xt/font_attrs.t
 xt/mw_segfault.t
 xt/rt7474.t
+xt/skip_all.t
