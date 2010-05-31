@@ -181,15 +181,15 @@ following.
 
 =over 8
 
-=item B<x_region>
+=item B<x_margin>
 
 The horizontal margin.
 
-=item B<y_region>
+=item B<y_margin>
 
 The vertical margin.
 
-=item B<s_region>
+=item B<s_margin>
 
 The area in the top left corner where the horizontal and vertical margins
 are joined.
