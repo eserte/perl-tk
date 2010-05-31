@@ -4,13 +4,6 @@ use Tk::Config ();
 use File::Copy;
 my $l = $Config::Config{'lib_ext'};
 
-# use ExtUtils::MakeMaker '6.05';
-
-my @local_jpeg = (
-    'INC'          => '-Ijpeg',
-    'MYEXTLIB'     => "jpeg/libjpeg$l",
-);
-
 use Tk::MMtry;
 
 if ($Tk::MMtry::VERSION ge '4.007' && try_run("jpeg/has_jpeg.c",['-I/usr/local/include'],['-ljpeg']))
