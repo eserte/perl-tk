@@ -350,6 +350,7 @@ INSTALL
 IO/IO.pm
 IO/IO.xs
 IO/Makefile.PL
+JPEG/config/has_jpeg.c
 JPEG/imgJPEG.c
 JPEG/JPEG.pm
 JPEG/JPEG.xs
@@ -370,7 +371,6 @@ JPEG/jpeg/djpeg.1
 JPEG/jpeg/djpeg.c
 JPEG/jpeg/example.c
 JPEG/jpeg/filelist.doc
-JPEG/jpeg/has_jpeg.c
 JPEG/jpeg/install-sh
 JPEG/jpeg/install.doc
 JPEG/jpeg/jcapimin.c

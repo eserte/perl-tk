@@ -6,7 +6,7 @@ my $l = $Config::Config{'lib_ext'};
 
 use Tk::MMtry;
 
-if ($Tk::MMtry::VERSION ge '4.007' && try_run("jpeg/has_jpeg.c",['-I/usr/local/include'],['-ljpeg']))
+if ($Tk::MMtry::VERSION ge '4.007' && try_run("config/has_jpeg.c",['-I/usr/local/include'],['-ljpeg']))
  {
   push(@args, LIBS => ['-ljpeg'],
               INC  => '-I/usr/local/include',
