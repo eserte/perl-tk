@@ -40,7 +40,7 @@ SOFTWARE.
 
 /* Resources */
 
-#ifdef _WIN64
+#if defined(_WIN64) && defined(_MSC_VER)
 typedef __int64 XID;
 #else
 typedef unsigned long XID;
