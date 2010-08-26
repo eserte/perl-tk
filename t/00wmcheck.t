@@ -36,7 +36,7 @@ my @diag = ("",
 
 my $server = eval { $mw->server }; # not sure if this works on non-X11 systems
 if ($server) {
-    push @diag, "X11 server:     $server";
+    push @diag, "server info:    $server";
 }
 
 SKIP: {
