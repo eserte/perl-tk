@@ -1,7 +1,8 @@
-package PreLoad;
+package # hide from CPAN indexer
+    PreLoad;
 
 use vars qw($VERSION);
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/compile/PreLoad.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/compile/PreLoad.pm#4 $
 
 require AutoLoader;
 

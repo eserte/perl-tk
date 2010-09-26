@@ -1,5 +1,6 @@
 
-package Ball;
+package # hide from CPAN indexer
+    Ball;
 
 # Ball.pm, a class module that allows concurrent simulation (canvas) instances.
 #
@@ -18,7 +19,7 @@ package Ball;
 # Tidied up by SOL.
 
 use vars qw/$VERSION/;
-$VERSION = '4.004'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Ball.pm#4 $
+$VERSION = '4.005'; # $Id: //depot/Tkutf8/demos/demos/widget_lib/Ball.pm#4 $
 
 use Tk::Canvas;
 use Tk::Widget;
